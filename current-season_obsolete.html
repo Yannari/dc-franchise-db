@@ -186,6 +186,39 @@
 .gp-table th,.gp-table td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.08);font-size:13px;text-align:left}
 .gp-table th{font-size:12px;letter-spacing:.12em;text-transform:uppercase;opacity:.75;background:rgba(255,255,255,.04);position:sticky;top:0}
 .row-player{display:inline-flex;gap:8px;align-items:center}
+
+/* EPISODE WRITER */
+.episode-maker{display:grid;grid-template-columns:1fr 1.2fr;gap:18px;align-items:stretch}
+@media (max-width: 980px){.episode-maker{grid-template-columns:1fr}}
+.episode-editor,.episode-preview{background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.08);border-radius:18px;box-shadow:0 18px 60px rgba(0,0,0,.35);overflow:hidden}
+.editor-head,.preview-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:14px 14px 12px;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.15)}
+.editor-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.script-input{width:100%;min-height:540px;resize:vertical;border:0;outline:0;background:transparent;color:var(--text);padding:14px 14px 0;font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-size:13px;line-height:1.5}
+.editor-foot{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 14px 14px;border-top:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.08)}
+.toggle{display:inline-flex;gap:8px;align-items:center;font-size:12px;color:rgba(255,255,255,.78);user-select:none}
+.toggle input{accent-color:var(--accent)}
+.script-preview{padding:14px;max-height:720px;overflow:auto}
+.script-preview::-webkit-scrollbar{width:10px}
+.script-preview::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14);border-radius:10px}
+.script-preview .empty-state{padding:30px 12px;text-align:center}
+.script-line{display:flex;gap:10px;align-items:flex-start;margin:10px 0;opacity:0;transform:translateY(6px);animation:fadeUp .28s ease forwards}
+@keyframes fadeUp{to{opacity:1;transform:translateY(0)}}
+.avatar{width:36px;height:36px;border-radius:50%;flex:0 0 auto;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.10);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.bubble{flex:1;min-width:0;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:16px;padding:10px 12px}
+.bubble .who{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.bubble .name{font-weight:750}
+.bubble .tag{font-size:11px;padding:3px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);color:rgba(255,255,255,.78)}
+.bubble .text{margin-top:6px;white-space:pre-wrap;word-break:break-word;color:rgba(255,255,255,.92)}
+.scene-card{margin:12px 0 16px;padding:12px 14px;border-radius:16px;border:1px solid rgba(255,255,255,.10);background:linear-gradient(90deg, rgba(124,77,255,.16), rgba(0,0,0,.10));box-shadow:0 10px 30px rgba(0,0,0,.25);opacity:0;transform:translateY(6px);animation:fadeUp .28s ease forwards}
+.scene-card .scene-title{display:flex;gap:10px;align-items:center;font-weight:800;letter-spacing:.3px}
+.scene-card .scene-title .pill{margin-left:auto;font-size:11px;padding:3px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.16);background:rgba(0,0,0,.12);color:rgba(255,255,255,.75)}
+.scene-card .scene-text{margin-top:6px;color:rgba(255,255,255,.80)}
+.scene-card.suspense{background:linear-gradient(90deg, rgba(255,96,76,.14), rgba(124,77,255,.12), rgba(0,0,0,.10));border-color:rgba(255,120,100,.22);position:relative;overflow:hidden}
+.scene-card.suspense:before{content:"";position:absolute;inset:-40px;background:radial-gradient(circle at 20% 40%, rgba(255,155,90,.18), transparent 55%),radial-gradient(circle at 80% 70%, rgba(255,70,70,.14), transparent 60%);animation:flicker 1.7s ease-in-out infinite}
+@keyframes flicker{0%,100%{opacity:.55}50%{opacity:.85}}
+.scene-divider{height:1px;background:linear-gradient(90deg, transparent, rgba(255,255,255,.10), transparent);margin:14px 0}
+
 </style>
 
 </head>
@@ -392,7 +425,7 @@
       <div class="window-tabs" role="tablist" aria-label="Analytics tabs">
         <button class="tab-btn active" id="tabOverview" role="tab" aria-selected="true">📘 Overview</button>
         <button class="tab-btn" id="tabGameplay" role="tab" aria-selected="false">🧭 Gameplay</button>
-        <button class="tab-btn" id="tabEpisode" role="tab" aria-selected="false">📺 Episode</button>
+        <button class="tab-btn" id="tabEpisode" role="tab" aria-selected="false">🎬 Episode</button>
       </div>
     </div>
 
@@ -485,65 +518,49 @@
         </div>
       </div>
     </div>
+    <!-- EPISODE PAGE -->
+    <div class="window-body" id="viewEpisode" hidden>
+      <div class="episode-maker">
+        <div class="episode-editor">
+          <div class="editor-head">
+            <div>
+              <h3 class="h3">🎬 Episode Writer</h3>
+              <div class="muted tiny">Paste your transcript and render a readable episode with speaker icons + scene transitions.</div>
+            </div>
+            <div class="editor-actions">
+              <button class="btn btn-primary" id="btnGenerateEpisode" type="button">Generate (AI)</button>
+              <button class="btn" id="btnRenderScript" type="button">Render</button>
+              <button class="btn ghost" id="btnSaveScript" type="button">Save</button>
+              <button class="btn ghost danger" id="btnClearScript" type="button">Clear</button>
+            </div>
+          </div>
 
-    <!-- EPISODE TAB -->
-    <div class="window-body hidden" id="viewEpisode">
-      <div class="episode-viewer">
-        
-        <!-- Summary Input for AI Generation -->
-        <div class="glass-card" style="padding: 20px; margin-bottom: 20px;">
-          <h3 style="margin-top: 0;">🤖 AI Episode Generation</h3>
-          <p style="opacity: 0.8; font-size: 14px; margin-bottom: 16px;">
-            Paste your BrantSteele episode summary here, then click "Generate Episode" to create a full Total Drama episode transcript.
-          </p>
-          <textarea 
-            id="episode-summary-input" 
-            class="episode-input" 
-            placeholder="Paste your BrantSteele episode summary here...
+          <textarea id="scriptInput" class="script-input" placeholder="Paste your episode transcript here...&#10;&#10;Tip: Use [Scene ...] lines for scene changes and NAME: dialogue lines for speech."></textarea>
 
-Example:
-Episode 2: Tribal swap! Belo won immunity. At Reba, Ella was voted out 2-1..."
-            style="width: 100%; min-height: 150px; margin-bottom: 12px;"></textarea>
-          <button onclick="generateEpisodeAI()" id="generate-episode-btn" class="btn btn-primary">
-            🎬 Generate Episode with AI
-          </button>
+          <div class="editor-foot">
+            <label class="toggle">
+              <input id="chkAutoRenderScript" type="checkbox" checked />
+              <span>Auto-render</span>
+            </label>
+            <div class="muted tiny" id="scriptStatus">Not saved yet.</div>
+          </div>
         </div>
 
-        <!-- Manual Transcript Input -->
-        <div class="glass-card" style="padding: 20px; margin-bottom: 20px;">
-          <h3 style="margin-top: 0;">📝 Episode Transcript</h3>
-          <p style="opacity: 0.8; font-size: 14px; margin-bottom: 16px;">
-            Or paste a manually written episode transcript here.
-          </p>
-          <textarea 
-            id="episode-input" 
-            class="episode-input" 
-            placeholder="Paste or generate your episode transcript here...
-
-Format:
-[Scene: Beach. Morning.]
-
-Chris: Welcome to Total Drama!
-
-Owen: I'm so excited!
-
-[Confessional: Owen]
-Owen: This is going to be amazing!"
-            style="width: 100%; min-height: 300px;"></textarea>
+        <div class="episode-preview">
+          <div class="preview-head">
+            <h3 class="h3">📺 Episode Preview</h3>
+            <div class="muted tiny">Scene cards + dialogue bubbles. Tribal council sections get a suspense glow.</div>
+          </div>
+          <div id="scriptPreview" class="script-preview">
+            <div class="empty-state">
+              <div class="muted">No episode transcript yet.</div>
+              <div class="tiny muted">Paste your script on the left, then click <b>Render</b>.</div>
+            </div>
+          </div>
         </div>
-        
-        <!-- Controls -->
-        <div class="episode-controls">
-          <button onclick="renderEpisode()" class="btn btn-primary">🎬 Render Episode</button>
-          <button onclick="saveEpisode()" class="btn">💾 Save Episode</button>
-          <button onclick="loadEpisode()" class="btn">📂 Load Saved</button>
-          <button onclick="clearEpisode()" class="btn btn-ghost">🗑️ Clear</button>
-        </div>
-        
-        <!-- Rendered Episode -->
-        <div id="episode-rendered"></div>
       </div>
     </div>
+
   </section>
 
   <!-- SCRIPT: AI + RENDERING -->
@@ -571,10 +588,8 @@ Owen: This is going to be amazing!"
 
       tabOverview: $("tabOverview"),
       tabGameplay: $("tabGameplay"),
-      tabEpisode: $("tabEpisode"),
       viewOverview: $("viewOverview"),
       viewGameplay: $("viewGameplay"),
-      viewEpisode: $("viewEpisode"),
 
       cardBestMove: $("cardBestMove"),
       cardBiggestRisk: $("cardBiggestRisk"),
@@ -587,6 +602,16 @@ Owen: This is going to be amazing!"
 
       compassPoints: $("compassPoints"),
       gpTableBody: $("gpTableBody"),
+      tabEpisode: document.getElementById("tabEpisode"),
+      viewEpisode: document.getElementById("viewEpisode"),
+      scriptInput: document.getElementById("scriptInput"),
+      scriptPreview: document.getElementById("scriptPreview"),
+      btnRenderScript: document.getElementById("btnRenderScript"),
+      btnSaveScript: document.getElementById("btnSaveScript"),
+      btnClearScript: document.getElementById("btnClearScript"),
+      chkAutoRenderScript: document.getElementById("chkAutoRenderScript"),
+      scriptStatus: document.getElementById("scriptStatus"),
+
     };
 
     // ----------------------------
@@ -671,44 +696,41 @@ Owen: This is going to be amazing!"
     }
 
     function parseCastFromSummary(text) {
-      const lines = (text || "").split(/\r?\n/).map(l => l.trim());
+      const lines = (text || "").split(/\r?\n/).map(l => l.trimEnd());
       let names = [];
 
-      // META block: === CAST (ALL) ===
+      // Pattern 0: Explicit CAST blocks (recommended)
       const castBlock = parseBlock(text, /^===\s*CAST\b/i);
-      if (castBlock.length) {
-        castBlock.forEach(l => {
-          const n = cleanNameLine(l);
-          if (isProbablyName(n)) names.push(n);
-        });
+      if (castBlock.length) names.push(...castBlock.map(cleanNameLine).filter(isProbablyName));
+
+      // Pattern 0b: Also accept "=== CAST (ACTIVE) ===" etc
+      if (!names.length) {
+        const alt = parseBlock(text, /^===\s*CAST\s*\(/i);
+        if (alt.length) names.push(...alt.map(cleanNameLine).filter(isProbablyName));
       }
 
-      // TRIBES block: === TRIBES (ACTIVE) === with # Tribe headings
-      const tribesBlock = parseBlock(text, /^===\s*TRIBES\b/i);
-      if (tribesBlock.length) {
-        tribesBlock.forEach(l => {
-          if (/^#\s*/.test(l)) return; // header
-          const n = cleanNameLine(l);
-          if (isProbablyName(n)) names.push(n);
-        });
-      }
-
-      // Pattern 1: after "The Cast arrives"
-      const idx = lines.findIndex(l => /the\s+cast\s+arrives/i.test(l));
-      if (idx !== -1) {
-        for (let i = idx + 1; i < lines.length; i++) {
-          const l = lines[i];
-          if (!l) break;
-          if (/^(PRE-CHALLENGE|CHALLENGES|POST-CHALLENGE|VOTING|TRIBAL|CURRENT GAME STATUS|NEXT EPISODE QUESTIONS)\b/i.test(l)) break;
-          const n = cleanNameLine(l);
-          if (isProbablyName(n)) names.push(n);
+      // Pattern 1: "The Cast arrives" then list of names (legacy)
+      if (!names.length) {
+        const idx = lines.findIndex(l => /\bthe\s+cast\s+arrives\b/i.test(l));
+        if (idx >= 0) {
+          for (let i = idx + 1; i < lines.length; i++) {
+            const l = lines[i].trim();
+            if (!l) break;
+            if (/^(PRE-CHALLENGE|CHALLENGES|POST-CHALLENGE|VOTING|TRIBAL|ELIMINATED|CURRENT GAME STATUS|NEXT EPISODE QUESTIONS|===)\b/i.test(l)) break;
+            const n = cleanNameLine(l);
+            if (isProbablyName(n)) names.push(n);
+          }
         }
       }
 
-      // Pattern 2: Active Players lines like "Belo Tribe (6): Amy, Rodney..."
-      const tribeLines = lines.filter(l => /tribe\s*\(\d+\)\s*:/i.test(l));
-      for (const tl of tribeLines) {
-        const after = tl.split(":")[1] || "";
+      // Pattern 2: TRIBES block (active)
+      const tribesBlock = parseBlock(text, /^===\s*TRIBES\b/i);
+      if (tribesBlock.length) names.push(...tribesBlock.map(cleanNameLine).filter(isProbablyName));
+
+      // Pattern 3: Lines like "Belo Tribe (6): Amy, Rodney..."
+      for (const l of lines) {
+        if (!/tribe\s*\(\d+\)\s*:/i.test(l)) continue;
+        const after = (l.split(":")[1] || "");
         after.split(",").map(x => x.trim()).filter(Boolean).forEach(n => {
           const cn = cleanNameLine(n);
           if (isProbablyName(cn)) names.push(cn);
@@ -717,30 +739,17 @@ Owen: This is going to be amazing!"
 
       // De-dup while preserving order
       const seen = new Set();
-      names = names
-        .map(n => n.trim())
-        .filter(Boolean)
-        .filter(n => {
-          const k = n.toLowerCase();
-          if (seen.has(k)) return false;
-          seen.add(k);
-          return true;
-        });
-
-      return names;
+      const out = [];
+      for (const n of names) {
+        const k = (n || "").trim().toLowerCase();
+        if (!k || seen.has(k)) continue;
+        seen.add(k);
+        out.push((n || "").trim());
+      }
+      return out;
     }
 
-    function parseEpisodeTitle(text) {
-      // Episode 2: "Shadows of Doubt"
-      const m = (text || "").match(/Episode\s+(\d+)\s*[:\-]\s*["“]?([^"\n”]+)["”]?/i);
-      if (m) return { num: parseInt(m[1], 10), title: m[2].trim() };
-      // EPISODE 1 SUMMARY (no title)
-      const m2 = (text || "").match(/EPISODE\s+(\d+)/i);
-      if (m2) return { num: parseInt(m2[1], 10), title: "" };
-      return null;
-    }
-
-        function parseEliminated(text) {
+function parseEliminated(text) {
       const rawLines = (text || "").split(/\r?\n/);
       const lines = rawLines.map(l => (l || "").trim());
 
@@ -991,7 +1000,154 @@ Owen: This is going to be amazing!"
     // ----------------------------
     // Rendering: Gameplay page
     // ----------------------------
-    function renderCompass(analytics, castNames, eliminatedNames) {
+        function escapeHtml(s) {
+      return (s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    }
+
+    function makeAvatar(name) {
+      const div = document.createElement("div");
+      div.className = "avatar";
+      const url = getAvatarUrl(name);
+      if (url) {
+        const img = document.createElement("img");
+        img.loading = "lazy";
+        img.alt = name || "";
+        img.src = url;
+        div.appendChild(img);
+      } else {
+        div.textContent = (name || "?").trim().slice(0,1).toUpperCase();
+      }
+      return div;
+    }
+
+    function parseScriptToBlocks(text) {
+      const lines = (text || "").split(/\r?\n/);
+      const blocks = [];
+      for (let raw of lines) {
+        const line = (raw || "").trimEnd();
+        if (!line.trim()) { blocks.push({ type: "spacer" }); continue; }
+
+        const t = line.trim();
+
+        if (/^\[CONFESSIONAL\s*:\s*/i.test(t)) {
+          const m = t.match(/^\[CONFESSIONAL\s*:\s*([^\]]+)\]/i);
+          const who = (m?.[1] || "Confessional").trim();
+          blocks.push({ type: "scene", text: `CONFESSIONAL: ${who}`, kind: "confessional" });
+          continue;
+        }
+
+        if (t.startsWith("[") && t.endsWith("]")) {
+          blocks.push({ type: "scene", text: t.slice(1, -1).trim(), kind: "scene" });
+          continue;
+        }
+
+        const dm = line.match(/^([A-Za-z][A-Za-z0-9'\-\s]{0,32}):\s*(.+)$/);
+        if (dm) { blocks.push({ type: "dialogue", who: dm[1].trim(), text: dm[2] }); continue; }
+
+        if (t.startsWith("##")) { blocks.push({ type: "scene", text: t.replace(/^##\s*/, "").trim(), kind: "scene" }); continue; }
+
+        blocks.push({ type: "narration", text: t });
+      }
+
+      const compact = [];
+      for (const b of blocks) {
+        if (b.type === "spacer" && compact.length && compact[compact.length - 1].type === "spacer") continue;
+        compact.push(b);
+      }
+      return compact;
+    }
+
+    function renderScriptPreview(text) {
+      const container = els.scriptPreview;
+      if (!container) return;
+
+      container.innerHTML = "";
+      if (!text || !text.trim()) {
+        container.innerHTML = '<div class="empty-state"><div class="muted">No episode transcript yet.</div><div class="tiny muted">Paste your script on the left, then click <b>Render</b>.</div></div>';
+        return;
+      }
+
+      const blocks = parseScriptToBlocks(text);
+      let animIndex = 0;
+
+      for (const b of blocks) {
+        if (b.type === "spacer") {
+          const div = document.createElement("div");
+          div.className = "scene-divider";
+          container.appendChild(div);
+          continue;
+        }
+
+        if (b.type === "scene") {
+          const suspense = /TRIBAL|CAMPFIRE|ELIMINATION|VOTING|BOAT OF LOSERS|DOCK OF SHAME/i.test(b.text || "");
+          const card = document.createElement("div");
+          card.className = "scene-card" + (suspense ? " suspense" : "");
+          card.style.animationDelay = Math.min(0.75, animIndex * 0.015) + "s";
+          animIndex++;
+
+          const label = suspense ? "SUSPENSE" : (b.kind === "confessional" ? "CONFESSIONAL" : "SCENE");
+          const sub = suspense ? "Hold your marshmallows…" : (b.kind === "confessional" ? "Camera zooms in." : "");
+
+          card.innerHTML = `
+            <div class="scene-title">
+              <span>🎞️ ${escapeHtml(b.text || "Scene")}</span>
+              <span class="pill">${label}</span>
+            </div>
+            <div class="scene-text">${escapeHtml(sub)}</div>
+          `;
+          container.appendChild(card);
+          continue;
+        }
+
+        if (b.type === "dialogue") {
+          const line = document.createElement("div");
+          line.className = "script-line";
+          line.style.animationDelay = Math.min(0.75, animIndex * 0.015) + "s";
+          animIndex++;
+
+          const av = makeAvatar(b.who);
+          const bubble = document.createElement("div");
+          bubble.className = "bubble";
+
+          const who = document.createElement("div");
+          who.className = "who";
+          who.innerHTML = `<span class="name">${escapeHtml(b.who)}</span>`;
+
+          const txt = document.createElement("div");
+          txt.className = "text";
+          txt.textContent = b.text || "";
+
+          bubble.appendChild(who);
+          bubble.appendChild(txt);
+
+          line.appendChild(av);
+          line.appendChild(bubble);
+          container.appendChild(line);
+          continue;
+        }
+
+        if (b.type === "narration") {
+          const line = document.createElement("div");
+          line.className = "script-line";
+          line.style.animationDelay = Math.min(0.75, animIndex * 0.015) + "s";
+          animIndex++;
+
+          const av = makeAvatar("•");
+          const bubble = document.createElement("div");
+          bubble.className = "bubble";
+          bubble.innerHTML = `<div class="who"><span class="tag">Direction</span></div><div class="text">${escapeHtml(b.text)}</div>`;
+
+          line.appendChild(av);
+          line.appendChild(bubble);
+          container.appendChild(line);
+          continue;
+        }
+      }
+
+      container.scrollTop = 0;
+    }
+
+function renderCompass(analytics, castNames, eliminatedNames) {
       const eliminated = new Set((eliminatedNames||[]).map(n=>n.toLowerCase()));
 
       // Build a map of power scores
@@ -1108,15 +1264,13 @@ Owen: This is going to be amazing!"
       const seasonNow = Number(els.season.value || 1);
       const episodeNow = Number(els.episode.value || 1);
 
-      if ((!cast || cast.length === 0) || (eliminated && eliminated.size === 0 && !txt)) {
+      if (!cast.length || !eliminatedArr.length) {
         const saved = loadCastState(seasonNow, episodeNow);
         if (saved) {
-          if (!cast || cast.length === 0) cast = Array.isArray(saved.cast) ? saved.cast : [];
-          if ((!eliminated || eliminated.size === 0) && Array.isArray(saved.eliminated)) {
-            eliminated = new Set(saved.eliminated.map(s => String(s).toLowerCase()));
-          }
-          if (!txt && saved.title && els.uiEpName) {
-            els.uiEpName.textContent = saved.title;
+          if (!cast.length && Array.isArray(saved.cast) && saved.cast.length) cast = saved.cast;
+          if (!eliminatedArr.length && Array.isArray(saved.eliminated) && saved.eliminated.length) {
+            eliminatedArr = saved.eliminated;
+            eliminatedSet = new Set(eliminatedArr.map((p) => (p || "").toLowerCase()));
           }
         }
       }
@@ -1150,43 +1304,120 @@ Owen: This is going to be amazing!"
     // Tabs
     // ----------------------------
     function showTab(which) {
-      const isOverview = which === "overview";
-      const isGameplay = which === "gameplay";
-      const isEpisode = which === "episode";
+      const tab = (which === "overview" || which === "gameplay" || which === "episode") ? which : "overview";
 
-      els.viewOverview.classList.toggle("hidden", !isOverview);
-      els.viewGameplay.classList.toggle("hidden", !isGameplay);
-      els.viewEpisode.classList.toggle("hidden", !isEpisode);
+      // Persist active tab globally + per season/episode
+      try {
+        localStorage.setItem("AI_ACTIVE_TAB", tab);
+        const s = Number(els.season.value || 1);
+        const e = Number(els.episode.value || 1);
+        localStorage.setItem(tabKey(s, e), tab);
+      } catch {}
 
-      els.tabOverview.classList.toggle("active", isOverview);
-      els.tabGameplay.classList.toggle("active", isGameplay);
-      els.tabEpisode.classList.toggle("active", isEpisode);
-      
-      els.tabOverview.setAttribute("aria-selected", isOverview ? "true" : "false");
-      els.tabGameplay.setAttribute("aria-selected", isGameplay ? "true" : "false");
-      els.tabEpisode.setAttribute("aria-selected", isEpisode ? "true" : "false");
+      els.tabOverview.classList.toggle("active", tab === "overview");
+      els.tabGameplay.classList.toggle("active", tab === "gameplay");
+      els.tabEpisode.classList.toggle("active", tab === "episode");
 
-      // Persist tab choice per episode
-      const s = Number(els.season.value || 1);
-      const e = Number(els.episode.value || 1);
-      try { localStorage.setItem(tabKey(s, e), which); } catch {}
+      els.viewOverview.hidden = tab !== "overview";
+      els.viewGameplay.hidden = tab !== "gameplay";
+      els.viewEpisode.hidden = tab !== "episode";
 
-      // If switching to gameplay, ensure it's rendered (in case cast was synced later)
-      if (isGameplay && CURRENT.analytics) {
-        const cast = (CURRENT.cast && CURRENT.cast.length) ? CURRENT.cast : parseCastFromSummary(CURRENT.summaryText || "");
-        const eliminated = (CURRENT.eliminated && CURRENT.eliminated.size) ? CURRENT.eliminated : parseEliminated(CURRENT.summaryText || "");
-        renderCompass(CURRENT.analytics, cast, eliminated, CURRENT.titlesMap || {});
-        renderGameplayTable(CURRENT.analytics, cast, eliminated, CURRENT.titlesMap || {});
-      }
+      // aria
+      els.tabOverview.setAttribute("aria-selected", String(tab === "overview"));
+      els.tabGameplay.setAttribute("aria-selected", String(tab === "gameplay"));
+      els.tabEpisode.setAttribute("aria-selected", String(tab === "episode"));
     }
 
     els.tabOverview.addEventListener("click", () => showTab("overview"));
     els.tabGameplay.addEventListener("click", () => showTab("gameplay"));
-    els.tabEpisode.addEventListener("click", () => {
-      showTab("episode");
-      // Try to auto-load saved episode
-      if (typeof loadEpisode === 'function') loadEpisode();
-    });
+    els.tabEpisode.addEventListener("click", () => showTab("episode"));
+
+    // ----------------------------
+    // Episode Writer actions
+    // ----------------------------
+    function setScriptStatus(msg) {
+      if (els.scriptStatus) els.scriptStatus.textContent = msg || "";
+    }
+
+    function currentSE() {
+      return { s: Number(els.season.value || 1), e: Number(els.episode.value || 1) };
+    }
+
+    if (els.btnRenderScript) {
+      els.btnRenderScript.addEventListener("click", () => {
+        renderScriptPreview(els.scriptInput?.value || "");
+        setScriptStatus("Rendered.");
+      });
+    }
+
+    if (els.btnSaveScript) {
+      els.btnSaveScript.addEventListener("click", () => {
+        const { s, e } = currentSE();
+        saveScript(s, e, els.scriptInput?.value || "");
+        setScriptStatus("Saved transcript for this episode.");
+      });
+    }
+
+    if (els.btnClearScript) {
+      els.btnClearScript.addEventListener("click", () => {
+        const { s, e } = currentSE();
+        if (els.scriptInput) els.scriptInput.value = "";
+        saveScript(s, e, "");
+        if (els.scriptPreview) els.scriptPreview.innerHTML = "";
+        setScriptStatus("Cleared.");
+      });
+    }
+
+    if (els.chkAutoRenderScript && els.scriptInput) {
+      els.scriptInput.addEventListener("input", () => {
+        if (els.chkAutoRenderScript.checked) {
+          renderScriptPreview(els.scriptInput.value || "");
+        }
+        // light autosave
+        const { s, e } = currentSE();
+        saveScript(s, e, els.scriptInput.value || "");
+        setScriptStatus("Autosaved.");
+      });
+    }
+
+    if (els.btnGenerateEpisode) {
+      els.btnGenerateEpisode.addEventListener("click", async () => {
+        const { s, e } = currentSE();
+        const summaryText = (els.summary?.value || "").trim();
+        if (!summaryText) return setScriptStatus("Paste an episode summary first (left box).");
+
+        try {
+          setScriptStatus("Generating episode transcript…");
+          els.btnGenerateEpisode.disabled = true;
+
+          const data = await callAI(s, e, summaryText, "episode");
+          const transcript =
+            (typeof data?.episodeTranscript === "string" && data.episodeTranscript.trim()) ? data.episodeTranscript.trim()
+            : (typeof data?.output_text === "string" && data.output_text.trim()) ? data.output_text.trim()
+            : "";
+
+          if (!transcript) {
+            setScriptStatus("No transcript returned. Check your Worker output.");
+            els.btnGenerateEpisode.disabled = false;
+            return;
+          }
+
+          if (els.scriptInput) els.scriptInput.value = transcript;
+          saveScript(s, e, transcript);
+
+          if (els.chkAutoRenderScript?.checked) {
+            renderScriptPreview(transcript);
+          }
+
+          setScriptStatus("Generated + saved for this episode.");
+        } catch (err) {
+          setScriptStatus("Error: " + (err?.message || String(err)));
+        } finally {
+          els.btnGenerateEpisode.disabled = false;
+        }
+      });
+    }
+
 
     // ----------------------------
     // Actions
@@ -1236,23 +1467,23 @@ Owen: This is going to be amazing!"
       setStatus("Synced from summary (saved for reload).");
     });
 
-    async function callAI(season, episode, summaryText) {
+    async function callAI(season, episode, summaryText, mode) {
       const url = normalizeWorkerUrl(els.workerUrl.value || localStorage.getItem("AI_ENDPOINT_URL") || "");
       if (!url) throw new Error("Missing AI endpoint URL.");
+      const reqBody = { season, episode, summaryText };
+      if (mode) reqBody.mode = mode;
       const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ season, episode, summaryText }),
+        body: JSON.stringify(reqBody),
       });
       const data = await res.json();
       if (!res.ok) {
-        // Try to surface OpenAI error nicely
-        const msg = data?.error?.message || data?.message || "Unknown error.";
+        const msg = data?.error?.message || data?.error || data?.message || "Worker error";
         throw new Error(msg);
       }
       return data;
     }
-
     function loadCached(season, episode) {
       const key = cacheKey(season, episode);
       const raw = localStorage.getItem(key);
@@ -1277,8 +1508,17 @@ Owen: This is going to be amazing!"
       try { return localStorage.getItem(summaryKey(season, episode)) || ""; } catch { return ""; }
     }
 
-    function saveCastState(season, episode, cast, eliminated, epTitle) {
-      const payload = { cast: cast || [], eliminated: Array.from(eliminated || []), title: epTitle || "" };
+    
+    function scriptKey(season, episode) { return `AI_SCRIPT_s${season}_e${episode}`; }
+    function loadScript(season, episode) {
+      try { return localStorage.getItem(scriptKey(season, episode)) || ""; } catch (_) { return ""; }
+    }
+    function saveScript(season, episode, text) {
+      try { localStorage.setItem(scriptKey(season, episode), text || ""); } catch (_) {}
+    }
+
+function saveCastState(season, episode, cast, eliminated, epTitle) {
+      const payload = { cast: cast || [], eliminated: Array.isArray(eliminated) ? eliminated : Array.from(eliminated || []), title: epTitle || "" };
       try { localStorage.setItem(castStateKey(season, episode), JSON.stringify(payload)); } catch {}
     }
     function loadCastState(season, episode) {
@@ -1296,7 +1536,7 @@ Owen: This is going to be amazing!"
       episode: null,
       summaryText: "",
       cast: [],
-      eliminated: new Set(),
+      eliminated: [],
       titlesMap: {}
     };
 
@@ -1374,7 +1614,7 @@ Owen: This is going to be amazing!"
       els.cardTitles.innerHTML = "<div class='muted'>No titles yet.</div>";
 
       // Gameplay placeholders
-      els.gpSvg.innerHTML = "";
+      if (els.compassPoints) els.compassPoints.innerHTML = "";
       els.gpTableBody.innerHTML = "";
 
       // Players placeholder
@@ -1415,7 +1655,22 @@ Owen: This is going to be amazing!"
       // Restore last tab for this episode
       let savedTab = "overview";
       try { savedTab = localStorage.getItem(tabKey(season, episode)) || "overview"; } catch {}
-      showTab(savedTab === "gameplay" ? "gameplay" : "overview");
+      showTab(savedTab);
+
+      // Restore saved episode script for this selection
+      const savedScript = loadScript(season, episode);
+      if (els.scriptInput) {
+        els.scriptInput.value = savedScript || "";
+        if (els.chkAutoRenderScript?.checked) {
+          renderScriptPreview(els.scriptInput.value || "");
+        } else {
+          // If not auto-render, clear preview when switching episodes
+          if (els.scriptPreview) els.scriptPreview.innerHTML = "";
+        }
+        if (els.scriptStatus) {
+          els.scriptStatus.textContent = savedScript ? "Loaded saved episode transcript." : "No saved transcript yet.";
+        }
+      }
 
       // If we have cached analytics for this selection, load it (if auto-load enabled)
       const cached = loadCached(season, episode);
@@ -1436,8 +1691,7 @@ Owen: This is going to be amazing!"
       if (cast.length) {
         renderPlayersGrid(cast, eliminated, {});
       } else if (savedCast?.cast?.length) {
-        const elim = new Set((savedCast.eliminated || []).map(s => String(s).toLowerCase()));
-        renderPlayersGrid(savedCast.cast, elim, {});
+        renderPlayersGrid(savedCast.cast, savedCast.eliminated || [], {});
       }
 
       if (!quiet) {
@@ -1480,326 +1734,6 @@ Owen: This is going to be amazing!"
       else setStatus("Ready — paste summary and generate analytics.");
     })();
   })();
-  
-  // ========================================
-  // EPISODE TAB FUNCTIONALITY
-  // ========================================
-  
-  // Configuration
-  const EPISODE_WORKER_URL = 'https://dc-analytics.yannari19.workers.dev'; // Update with your worker URL
-  
-  // Character avatar mapping
-  const CHARACTER_AVATARS = {
-    'chris': '😏', 'chef': '👨‍🍳', 'owen': '🍔', 'gwen': '🎨', 'duncan': '💀',
-    'courtney': '📋', 'heather': '💅', 'lindsay': '💁', 'alejandro': '👑',
-    'sierra': '📱', 'noah': '📚', 'cody': '😬', 'izzy': '🤪', 'eva': '😠',
-    'tyler': '🏀', 'trent': '🎸', 'bridgette': '🏄', 'geoff': '🎉', 'beth': '🌸',
-    'justin': '😎', 'katie': '💖', 'sadie': '💖', 'ezekiel': '🏔️', 'leshawna': '💁',
-    'harold': '🤓', 'amy': '😈', 'samey': '😊', 'scarlett': '🧪', 'max': '🦹',
-    'ella': '🎶', 'topher': '📺', 'jasmine': '🌿', 'shawn': '🧟', 'dave': '😤',
-    'sky': '🥋', 'sugar': '🍭', 'rodney': '💘', 'beardo': '🎵', 'leonard': '🪄',
-    'josee': '⛷️', 'mickey': '🐭', 'ryan': '🏋️', 'blaineley': '🎤'
-  };
-  
-  // Storage key generator
-  function getEpisodeStorageKey() {
-    const seasonEl = document.getElementById('aiSeason');
-    const episodeEl = document.getElementById('aiEpisode');
-    const season = seasonEl ? seasonEl.value : '5';
-    const episode = episodeEl ? episodeEl.value : '1';
-    return `td_episode_s${season}_e${episode}`;
-  }
-  
-  // Save episode to localStorage
-  function saveEpisode() {
-    const transcript = document.getElementById('episode-input').value;
-    if (!transcript.trim()) {
-      alert('⚠️ Please paste or generate an episode transcript first!');
-      return;
-    }
-    
-    localStorage.setItem(getEpisodeStorageKey(), transcript);
-    alert('✅ Episode saved successfully!');
-    renderEpisode();
-  }
-  
-  // Load episode from localStorage
-  function loadEpisode() {
-    const saved = localStorage.getItem(getEpisodeStorageKey());
-    if (saved) {
-      document.getElementById('episode-input').value = saved;
-      renderEpisode();
-      return true;
-    }
-    return false;
-  }
-  
-  // Clear episode
-  function clearEpisode() {
-    if (confirm('⚠️ Clear the current episode? This cannot be undone.')) {
-      document.getElementById('episode-input').value = '';
-      document.getElementById('episode-rendered').innerHTML = '';
-      localStorage.removeItem(getEpisodeStorageKey());
-      alert('🗑️ Episode cleared!');
-    }
-  }
-  
-  // Generate episode using AI
-  async function generateEpisodeAI() {
-    const summaryInput = document.getElementById('episode-summary-input');
-    const summary = summaryInput ? summaryInput.value.trim() : '';
-    
-    if (!summary) {
-      alert('⚠️ Please paste your BrantSteele episode summary first!');
-      return;
-    }
-    
-    const seasonEl = document.getElementById('aiSeason');
-    const episodeEl = document.getElementById('aiEpisode');
-    const season = seasonEl ? seasonEl.value : '5';
-    const episode = episodeEl ? episodeEl.value : '1';
-    
-    const generateBtn = document.getElementById('generate-episode-btn');
-    const originalText = generateBtn.innerHTML;
-    generateBtn.innerHTML = '⏳ Generating Episode...';
-    generateBtn.disabled = true;
-    
-    try {
-      const response = await fetch(EPISODE_WORKER_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          mode: 'episode',
-          season: season,
-          episode: episode,
-          summaryText: summary
-        })
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      const transcript = data.episodeTranscript || data.output_text || '';
-      
-      if (!transcript) {
-        throw new Error('No episode transcript returned from AI');
-      }
-      
-      document.getElementById('episode-input').value = transcript;
-      saveEpisode();
-      alert('✅ Episode generated successfully!');
-      
-    } catch (error) {
-      console.error('Error generating episode:', error);
-      alert('❌ Error generating episode: ' + error.message);
-    } finally {
-      generateBtn.innerHTML = originalText;
-      generateBtn.disabled = false;
-    }
-  }
-  
-  // Render episode from transcript
-  function renderEpisode() {
-    const transcript = document.getElementById('episode-input').value;
-    const container = document.getElementById('episode-rendered');
-    
-    if (!transcript.trim()) {
-      container.innerHTML = `
-        <div class="episode-empty">
-          <div class="episode-empty-icon">📺</div>
-          <div class="episode-empty-text">No episode to display.</div>
-          <div style="margin-top: 16px; opacity: 0.7; font-size: 14px;">
-            Paste a transcript and click "Render Episode" or generate one with AI!
-          </div>
-        </div>
-      `;
-      return;
-    }
-    
-    const html = parseTranscript(transcript);
-    container.innerHTML = html;
-    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-  
-  // Parse transcript into beautiful HTML with animations
-  function parseTranscript(text) {
-    let html = '<div class="episode-content">';
-    const lines = text.split('\n');
-    let currentScene = '';
-    let inConfessional = false;
-    let inTribal = false;
-    let lineIndex = 0; // For staggered animations
-    
-    lines.forEach((line) => {
-      line = line.trim();
-      if (!line) return;
-      
-      // Scene headers: [Scene: ...] or [Location...]
-      if (line.match(/^\[.*\]$/)) {
-        const sceneText = line.replace(/[\[\]]/g, '');
-        
-        // Confessional detection
-        if (sceneText.toLowerCase().includes('confessional')) {
-          if (!inConfessional) {
-            html += '<div class="confessional" style="animation-delay: ' + (lineIndex * 0.05) + 's">';
-            html += '<div class="confessional-label">🎥 ' + escapeHtml(sceneText).toUpperCase() + '</div>';
-            inConfessional = true;
-            lineIndex++;
-          }
-          return;
-        }
-        
-        // Close confessional if we hit a new scene
-        if (inConfessional && !sceneText.toLowerCase().includes('confessional')) {
-          html += '</div>';
-          inConfessional = false;
-        }
-        
-        // Tribal Council detection with suspense
-        if (sceneText.toLowerCase().includes('tribal') || sceneText.toLowerCase().includes('campfire ceremony')) {
-          if (!inTribal) {
-            html += '<div class="tribal-council" style="animation-delay: ' + (lineIndex * 0.05) + 's">';
-            html += '<div class="tribal-header">🔥 ' + escapeHtml(sceneText).toUpperCase() + ' 🔥</div>';
-            html += '<div class="tribal-suspense">⏳ The tension is palpable...</div>';
-            inTribal = true;
-            lineIndex++;
-          }
-          return;
-        }
-        
-        // Close tribal if new scene
-        if (inTribal && !sceneText.toLowerCase().includes('tribal') && !sceneText.toLowerCase().includes('vote') && !sceneText.toLowerCase().includes('campfire')) {
-          html += '</div>';
-          inTribal = false;
-        }
-        
-        // Regular scene with sticky header
-        if (currentScene && !inConfessional) html += '</div>';
-        html += '<div class="scene">';
-        html += '<div class="scene-header scene-sticky" style="animation-delay: ' + (lineIndex * 0.05) + 's">📍 ' + escapeHtml(sceneText) + '</div>';
-        currentScene = sceneText;
-        lineIndex++;
-        return;
-      }
-      
-      // Dialogue: "Name: Text" - rendered as chat bubbles
-      const dialogueMatch = line.match(/^([A-Z][a-zA-Z\s']+):\s*(.+)$/);
-      if (dialogueMatch) {
-        let [, character, dialogue] = dialogueMatch;
-        character = character.trim();
-        const charKey = character.toLowerCase();
-        const avatar = getCharacterAvatar(charKey);
-        
-        html += '<div class="dialogue-line chat-bubble" style="animation-delay: ' + (lineIndex * 0.05) + 's">';
-        html += `<div class="character-avatar">${avatar}</div>`;
-        html += '<div class="dialogue-bubble">';
-        html += `<div class="character-name">${escapeHtml(character)}</div>`;
-        html += `<div class="dialogue-text">${escapeHtml(dialogue)}</div>`;
-        html += '</div>';
-        html += '</div>';
-        lineIndex++;
-        return;
-      }
-      
-      // Elimination announcement - special styling in Tribal
-      if (line.toLowerCase().includes('eliminated') || line.toLowerCase().includes('voted out')) {
-        html += `<div class="eliminated-player" style="animation-delay: ' + (lineIndex * 0.05) + 's">`;
-        html += `<div class="eliminated-message">${escapeHtml(line)}</div>`;
-        html += `</div>`;
-        lineIndex++;
-        return;
-      }
-      
-      // Vote reveals in Tribal Council with suspense animation
-      if (inTribal && (line.toLowerCase().includes('vote') || line.toLowerCase().includes('marshmallow'))) {
-        html += `<div class="vote-reveal suspense-reveal" style="animation-delay: ${lineIndex * 0.1}s">${escapeHtml(line)}</div>`;
-        lineIndex++;
-        return;
-      }
-      
-      // Stage directions or other text
-      html += `<div class="stage-direction" style="animation-delay: ${lineIndex * 0.05}s">${escapeHtml(line)}</div>`;
-      lineIndex++;
-    });
-    
-    // Close any open sections
-    if (currentScene) html += '</div>';
-    if (inConfessional) html += '</div>';
-    if (inTribal) html += '</div>';
-    
-    html += '</div>';
-    return html;
-  }
-      if (line.toLowerCase().includes('eliminated') || line.toLowerCase().includes('voted out')) {
-        html += `<div class="eliminated-player">`;
-        html += `<div class="eliminated-message">${escapeHtml(line)}</div>`;
-        html += `</div>`;
-        return;
-      }
-      
-      // Vote reveals
-      if (inTribal && (line.toLowerCase().includes('vote') || line.toLowerCase().includes('marshmallow'))) {
-        html += `<div class="vote-reveal">${escapeHtml(line)}</div>`;
-        return;
-      }
-      
-      // Stage directions or other text
-      html += `<div class="stage-direction">${escapeHtml(line)}</div>`;
-    });
-    
-    // Close any open sections
-    if (currentScene) html += '</div>';
-    if (inConfessional) html += '</div>';
-    if (inTribal) html += '</div>';
-    
-    html += '</div>';
-    return html;
-  }
-  
-  // Get character avatar (image or emoji)
-  function getCharacterAvatar(characterName) {
-    const key = characterName.toLowerCase().replace(/\s+/g, '-');
-    const keySimple = characterName.toLowerCase().replace(/\s+/g, '');
-    
-    const paths = [
-      `assets/avatars/${key}.png`,
-      `assets/avatars/${keySimple}.png`,
-      `assets/avatars/${characterName.toLowerCase()}.png`
-    ];
-    
-    const emoji = CHARACTER_AVATARS[keySimple] || CHARACTER_AVATARS[key] || '👤';
-    
-    return `
-      <img src="${paths[0]}" alt="${escapeHtml(characterName)}" 
-        onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
-      <span class="character-avatar-fallback" style="display:none;">
-        ${emoji}
-      </span>
-    `;
-  }
-  
-  // Escape HTML to prevent XSS
-  function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-  }
-  
-  // Clear episode when season/episode changes
-  let lastEpisodeKey = getEpisodeStorageKey();
-  setInterval(() => {
-    const currentKey = getEpisodeStorageKey();
-    if (currentKey !== lastEpisodeKey) {
-      const rendered = document.getElementById('episode-rendered');
-      const input = document.getElementById('episode-input');
-      if (rendered) rendered.innerHTML = '';
-      if (input) input.value = '';
-      lastEpisodeKey = currentKey;
-      loadEpisode();
-    }
-  }, 1000);
   
 </script>
 </div><footer class="siteFooter">

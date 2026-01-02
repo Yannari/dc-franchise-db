@@ -1732,31 +1732,6 @@ Owen: This is going to be amazing!"
     html += '</div>';
     return html;
   }
-      if (line.toLowerCase().includes('eliminated') || line.toLowerCase().includes('voted out')) {
-        html += `<div class="eliminated-player">`;
-        html += `<div class="eliminated-message">${escapeHtml(line)}</div>`;
-        html += `</div>`;
-        return;
-      }
-      
-      // Vote reveals
-      if (inTribal && (line.toLowerCase().includes('vote') || line.toLowerCase().includes('marshmallow'))) {
-        html += `<div class="vote-reveal">${escapeHtml(line)}</div>`;
-        return;
-      }
-      
-      // Stage directions or other text
-      html += `<div class="stage-direction">${escapeHtml(line)}</div>`;
-    });
-    
-    // Close any open sections
-    if (currentScene) html += '</div>';
-    if (inConfessional) html += '</div>';
-    if (inTribal) html += '</div>';
-    
-    html += '</div>';
-    return html;
-  }
   
   // Get character avatar (image or emoji)
   function getCharacterAvatar(characterName) {

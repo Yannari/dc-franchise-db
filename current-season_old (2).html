@@ -5,6 +5,36 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Current Season — Season 5</title>
   <link rel="stylesheet" href="styles.css">
+
+  <style>
+    .muted{opacity:.78}
+    .ai-controls{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin:14px 0}
+    .ai-field{flex:1;min-width:240px}
+    .ai-field label{display:block;margin-bottom:6px}
+    .ai-field input,.ai-field textarea{
+      width:100%;
+      border-radius:12px;
+      padding:10px 12px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.18);
+      color:inherit;
+      outline:none;
+    }
+    .ai-field textarea{resize:vertical}
+    .ai-actions{display:flex;gap:10px;flex-wrap:wrap}
+    .ai-inline{display:flex;gap:12px;flex-wrap:wrap}
+    .ai-list{display:flex;flex-direction:column;gap:12px;margin-top:8px}
+    .ai-row{padding:10px 10px;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.12)}
+    .ai-row-top{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+    .ai-row-label{font-weight:700}
+    .ai-row-val{opacity:.85;font-variant-numeric:tabular-nums}
+    .ai-row-sub{margin-top:6px;opacity:.78;font-size:.92rem}
+    .ai-bar{height:8px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:8px}
+    .ai-bar span{display:block;height:100%;background:rgba(150,100,255,.85)}
+    .ai-tag{display:inline-block;margin-left:8px;font-size:.8rem;padding:2px 8px;border-radius:999px;background:rgba(255,255,255,.08);opacity:.85}
+    .ai-line{padding:6px 2px}
+  </style>
+
 </head>
 <body>
 <!-- SITE HEADER START -->
@@ -385,7 +415,337 @@
     </div>
   </div>
 
-  <div class="center" style="margin-top:22px;">
+  
+  <div class="section-title">
+    <h2>📈 Cullhouse Analytics (AI)</h2>
+  </div>
+
+  <div class="panel" id="aiPanel">
+    <p class="muted" style="margin-top:0;">
+      Paste your episode summary (like your Episode 1 write-up) and click <b>Generate Analytics</b>.
+      This will create narrative + inferred stats (power rankings, boot odds, alliance stability) without changing your canonical season facts.
+    </p>
+
+    <div class="ai-controls">
+      <div class="ai-field">
+        <label for="aiWorkerUrl"><b>AI Endpoint (Cloudflare Worker URL)</b></label>
+        <input id="aiWorkerUrl" type="url" placeholder="https://dc-analytics.YOURSUBDOMAIN.workers.dev" />
+      </div>
+      <div class="ai-actions">
+        <button class="btn" id="aiSaveUrl" type="button">Save URL</button>
+      </div>
+    </div>
+
+    <div class="ai-controls">
+      <div class="ai-inline">
+        <div class="ai-field">
+          <label for="aiSeason"><b>Season</b></label>
+          <input id="aiSeason" type="number" min="1" value="5" />
+        </div>
+        <div class="ai-field">
+          <label for="aiEpisode"><b>Episode</b></label>
+          <input id="aiEpisode" type="number" min="1" value="1" />
+        </div>
+      </div>
+      <div class="ai-actions">
+        <button class="btn" id="aiGenerate" type="button">Generate Analytics</button>
+        <button class="btn" id="aiLoadCache" type="button">Load Cached</button>
+      </div>
+    </div>
+
+    <div class="ai-field">
+      <label for="aiSummaryText"><b>Episode Summary Input</b></label>
+      <textarea id="aiSummaryText" rows="10" placeholder="Paste your episode summary here..."></textarea>
+      <div class="muted" id="aiStatus" style="margin-top:8px;"></div>
+      <details id="aiRawDetails" style="display:none; margin-top:10px;">
+        <summary class="muted">Debug: raw AI response</summary>
+        <pre id="aiRaw" style="white-space:pre-wrap; font-size:12px; margin-top:8px;"></pre>
+      </details>
+
+    </div>
+  </div>
+
+  <div class="kpi-grid" id="aiTopGrid" style="display:none;">
+    <div class="kpi">
+      <h3>Best Move</h3>
+      <ul>
+        <li id="aiBestMove"><b>—</b></li>
+      </ul>
+    </div>
+    <div class="kpi">
+      <h3>Biggest Risk</h3>
+      <ul>
+        <li id="aiBiggestRisk"><b>—</b></li>
+      </ul>
+    </div>
+    <div class="kpi">
+      <h3>Episode Summary</h3>
+      <ul>
+        <li id="aiNarrative"><b>—</b></li>
+      </ul>
+    </div>
+    <div class="kpi">
+      <h3>Quick Notes</h3>
+      <ul>
+        <li id="aiQuickNote"><b>Generated</b> insights are inferred from your summary; update your summary and re-run any time.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="kpi-grid" id="aiMidGrid" style="display:none;">
+    <div class="kpi">
+      <h3>Boot Odds (Next)</h3>
+      <div id="aiBootOdds" class="ai-list"></div>
+    </div>
+    <div class="kpi">
+      <h3>Power Rankings</h3>
+      <div id="aiPowerRankings" class="ai-list"></div>
+    </div>
+    <div class="kpi">
+      <h3>Alliance Stability</h3>
+      <div id="aiAllianceStability" class="ai-list"></div>
+    </div>
+    <div class="kpi">
+      <h3>Titles</h3>
+      <div id="aiTitles" class="ai-list"></div>
+    </div>
+  </div>
+
+  <script>
+  (function() {
+    const $ = (id) => document.getElementById(id);
+
+    const statusEl = $('aiStatus');
+    const workerUrlEl = $('aiWorkerUrl');
+    const seasonEl = $('aiSeason');
+    const episodeEl = $('aiEpisode');
+    const summaryEl = $('aiSummaryText');
+
+    const topGrid = $('aiTopGrid');
+    const midGrid = $('aiMidGrid');
+
+    function setStatus(msg) {
+      if (statusEl) statusEl.textContent = msg || '';
+    }
+
+    function slugify(name) {
+      return String(name || '')
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '');
+    }
+
+    function cacheKey(season, episode) {
+      return `AI_ANALYTICS_s${season}_e${episode}`;
+    }
+
+    function getWorkerUrl() {
+      return normalizeWorkerUrl(workerUrlEl?.value || localStorage.getItem('AI_WORKER_URL') || '');
+    }
+
+    function saveWorkerUrl(url) {
+      localStorage.setItem('AI_WORKER_URL', url);
+    }
+
+
+    function normalizeWorkerUrl(raw) {
+      let url = (raw || '').trim();
+      if (!url) return '';
+      if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+      return url.replace(/\/+$/, ''); // trim trailing /
+    }
+
+    function extractAnalytics(payload) {
+      if (!payload) return null;
+      // Already in expected shape
+      if (payload.narrativeSummary && payload.bestMove && payload.biggestRisk) return payload;
+
+      // Common wrappers
+      if (payload.data && payload.data.narrativeSummary) return payload.data;
+
+      // Candidates that might contain JSON text
+      const candidates = [];
+      if (typeof payload.output_text === 'string') candidates.push(payload.output_text);
+      if (typeof payload.outputText === 'string') candidates.push(payload.outputText);
+
+      // Responses API: output[].content[] may include text or json
+      if (Array.isArray(payload.output)) {
+        for (const item of payload.output) {
+          const content = item && Array.isArray(item.content) ? item.content : [];
+          for (const c of content) {
+            if (!c) continue;
+            if (c.type === 'output_json' && c.json && c.json.narrativeSummary) return c.json;
+            if (c.json && c.json.narrativeSummary) return c.json;
+            if (typeof c.text === 'string') candidates.push(c.text);
+          }
+        }
+      }
+
+      // Try parsing JSON text
+      for (const t of candidates) {
+        try {
+          const obj = JSON.parse(t);
+          if (obj && obj.narrativeSummary) return obj;
+        } catch (_) {}
+      }
+
+      return null;
+    }
+
+    function showRaw(payload) {
+      const rawEl = $('aiRaw');
+      const detailsEl = $('aiRawDetails');
+      if (!rawEl || !detailsEl) return;
+      rawEl.textContent = JSON.stringify(payload, null, 2);
+      detailsEl.style.display = '';
+      detailsEl.open = true;
+    }
+
+    function linkPlayer(name) {
+      const id = slugify(name);
+      if (!id) return name;
+      return `<a href="player.html?player=${id}"><b>${name}</b></a>`;
+    }
+
+    function escapeHtml(str) {
+      return String(str ?? '').replace(/[&<>"']/g, (c) => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+      }[c]));
+    }
+
+    function renderBarRow(labelHtml, valueText, pct) {
+      const width = Math.max(0, Math.min(100, pct));
+      return `
+        <div class="ai-row">
+          <div class="ai-row-top">
+            <div class="ai-row-label">${labelHtml}</div>
+            <div class="ai-row-val">${escapeHtml(valueText)}</div>
+          </div>
+          <div class="ai-bar"><span style="width:${width}%"></span></div>
+        </div>
+      `;
+    }
+
+    function renderAnalytics(data) {
+      if (!data || typeof data !== 'object') return;
+
+      // Show grids
+      topGrid.style.display = '';
+      midGrid.style.display = '';
+
+      // Top cards
+      const best = data.bestMove ? `${linkPlayer(data.bestMove.player)} — ${escapeHtml(data.bestMove.reason)}` : '—';
+      const risk = data.biggestRisk ? `${linkPlayer(data.biggestRisk.player)} — ${escapeHtml(data.biggestRisk.reason)}` : '—';
+      $('aiBestMove').innerHTML = best;
+      $('aiBiggestRisk').innerHTML = risk;
+      $('aiNarrative').innerHTML = escapeHtml(data.narrativeSummary || '—');
+
+      // Boot odds
+      const boot = Array.isArray(data.bootPredictions) ? data.bootPredictions.slice() : [];
+      boot.sort((a,b) => (b.prob||0) - (a.prob||0));
+      $('aiBootOdds').innerHTML = boot.length
+        ? boot.map(x => renderBarRow(linkPlayer(x.player), `${Math.round((x.prob||0)*100)}%`, (x.prob||0)*100) +
+            `<div class="ai-row-sub">${escapeHtml(x.why || '')}</div>`).join('')
+        : '<div class="muted">No boot predictions returned.</div>';
+
+      // Power rankings
+      const pr = Array.isArray(data.powerRankings) ? data.powerRankings.slice() : [];
+      pr.sort((a,b) => (b.score||0) - (a.score||0));
+      $('aiPowerRankings').innerHTML = pr.length
+        ? pr.map(x => {
+            const tag = escapeHtml(x.tag || '');
+            const label = `${linkPlayer(x.player)} <span class="ai-tag">${tag}</span>`;
+            return renderBarRow(label, `${Math.round(x.score||0)}/100`, (x.score||0)) +
+              `<div class="ai-row-sub">${escapeHtml(x.blurb || '')}</div>`;
+          }).join('')
+        : '<div class="muted">No power rankings returned.</div>';
+
+      // Alliance stability
+      const as = Array.isArray(data.allianceStability) ? data.allianceStability.slice() : [];
+      as.sort((a,b) => (b.score||0) - (a.score||0));
+      $('aiAllianceStability').innerHTML = as.length
+        ? as.map(x => renderBarRow(`<b>${escapeHtml(x.name)}</b>`, `${Math.round(x.score||0)}/100`, (x.score||0)) +
+            `<div class="ai-row-sub">${escapeHtml(x.note || '')}</div>`).join('')
+        : '<div class="muted">No alliances detected (or not provided in summary).</div>';
+
+      // Titles
+      const titles = Array.isArray(data.titles) ? data.titles.slice() : [];
+      $('aiTitles').innerHTML = titles.length
+        ? titles.map(x => `<div class="ai-line">${linkPlayer(x.player)} — <span class="muted">${escapeHtml(x.title || '')}</span></div>`).join('')
+        : '<div class="muted">No titles returned.</div>';
+    }
+
+    async function generate() {
+      const workerUrl = getWorkerUrl();
+      if (!workerUrl) {
+        setStatus('Add your Cloudflare Worker URL first (then click Save URL).');
+        return;
+      }
+
+      const season = Number(seasonEl.value || 0);
+      const episode = Number(episodeEl.value || 0);
+      const summaryText = summaryEl.value.trim();
+
+      if (!summaryText) {
+        setStatus('Paste an episode summary first.');
+        return;
+      }
+
+      setStatus('Generating analytics…');
+
+      try {
+        const res = await fetch(workerUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ season, episode, summaryText }),
+        });
+
+        const data = await res.json();
+        localStorage.setItem(cacheKey(season, episode), JSON.stringify(data));
+        renderAnalytics(data);
+        setStatus(`Done. Cached as ${cacheKey(season, episode)}.`);
+      } catch (err) {
+        console.error(err);
+        setStatus('Error calling AI endpoint. Check your Worker URL and that your Worker is deployed.');
+      }
+    }
+
+    function loadCache() {
+      const season = Number(seasonEl.value || 0);
+      const episode = Number(episodeEl.value || 0);
+      const raw = localStorage.getItem(cacheKey(season, episode));
+      if (!raw) {
+        setStatus('No cached analytics for this season/episode yet.');
+        return;
+      }
+      try {
+        const rawObj = JSON.parse(raw);
+        const data = extractAnalytics(rawObj) || rawObj;
+        if (!data || !data.narrativeSummary) { showRaw(rawObj); throw new Error('Cached object is not analytics'); }
+        renderAnalytics(data);
+        setStatus(`Loaded cached analytics (${cacheKey(season, episode)}).`);
+      } catch (e) {
+        setStatus('Cached analytics is corrupted. Re-generate.');
+      }
+    }
+
+    // Init URL from storage
+    const storedUrl = localStorage.getItem('AI_WORKER_URL');
+    if (storedUrl && workerUrlEl) workerUrlEl.value = normalizeWorkerUrl(storedUrl);
+
+    $('aiSaveUrl')?.addEventListener('click', () => {
+      const url = normalizeWorkerUrl(workerUrlEl.value || '');
+      if (!url) { setStatus('Paste your Worker URL first.'); return; }
+      saveWorkerUrl(url);
+      setStatus('Saved Worker URL.');
+    });
+
+    $('aiGenerate')?.addEventListener('click', generate);
+    $('aiLoadCache')?.addEventListener('click', loadCache);
+  })();
+  </script>
+
+<div class="center" style="margin-top:22px;">
     <a class="btn" href="season5.html">📄 Season 5 page</a>
     <a class="btn" href="season5-awards.html">🏅 Season 5 Awards</a>
     <a class="btn" href="seasons.html">🗂️ All Seasons</a>

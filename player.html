@@ -8,33 +8,130 @@
 </head>
 <body>
 <!-- SITE HEADER START -->
-<header class="siteHeader">
-  <div class="siteHeader__inner">
-    <a class="brandChip" href="index.html" aria-label="Go to home">
-      <span class="brandDot" aria-hidden="true"></span>
-      <div>
-        <div class="brandText">DC <b>Franchise</b> Database</div>
-        <span class="brandSub">Local static website • Season 5 is live • Click to explore</span>
+<header class="modern-header" id="modernHeader">
+  <div class="header-container">
+    <!-- Top Bar -->
+    <div class="header-top">
+      <a href="index.html" class="brand-section" aria-label="Go to home">
+        <div class="brand-icon">
+          <span class="brand-logo-text">⚡</span>
+        </div>
+        <div class="brand-content">
+          <h1>DC <span class="brand-gradient">Franchise</span> Database</h1>
+          <p class="brand-subtitle">Season <span id="currentSeasonNum">5</span> Live • Click to Explore</p>
+        </div>
+      </a>
+
+      <div class="stats-badge">
+        <div class="stats-main"><span id="totalSeasons">5</span> Seasons • <span id="totalPlayers">58</span> Players</div>
+        <div class="stats-sub">Icons: <span id="iconFormat">name.png</span></div>
       </div>
-    </a>
-
-    <div class="statsChip">
-      <div class="big">5 seasons • 58 players</div>
-      <div class="small">Icons: <code>name.png</code></div>
     </div>
-  </div>
 
-  <nav class="siteNav" aria-label="Primary">
-    <a class="navPill" href="index.html"><span class="navIcon">🏠</span>Home</a>
-    <a class="navPill" href="current-season.html"><span class="navIcon">📊</span>Current Season</a>
-    <a class="navPill" href="voting-analytics.html"><span class="navIcon">🧾</span>Voting Analytics</a>
-    <a class="navPill" href="franchise.html"><span class="navIcon">🏛️</span>Franchise</a>
-    <a class="navPill" href="rankings.html"><span class="navIcon">🏆</span>Rankings</a>
-    <a class="navPill" href="seasons.html"><span class="navIcon">🗂️</span>Seasons</a>
-    <a class="navPill" href="devotees.html"><span class="navIcon">👥</span>Players</a>
-    <a class="navPill" href="awards.html"><span class="navIcon">🏅</span>Awards</a>
-  </nav>
+    <!-- Navigation -->
+    <nav class="header-nav" aria-label="Primary navigation">
+      <ul class="nav-list">
+        <li class="nav-item">
+          <a href="index.html" class="nav-link" data-page="index">
+            <span class="nav-icon">🏠</span>
+            <span>Home</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="current-season.html" class="nav-link" data-page="current-season">
+            <span class="nav-icon">📊</span>
+            <span>Current Season</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="voting-analytics.html" class="nav-link" data-page="voting-analytics">
+            <span class="nav-icon">🧾</span>
+            <span>Voting Analytics</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="franchise.html" class="nav-link" data-page="franchise">
+            <span class="nav-icon">🏛️</span>
+            <span>Franchise</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="rankings.html" class="nav-link" data-page="rankings">
+            <span class="nav-icon">🏆</span>
+            <span>Rankings</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="seasons.html" class="nav-link" data-page="seasons">
+            <span class="nav-icon">🗂️</span>
+            <span>Seasons</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="devotees.html" class="nav-link" data-page="devotees">
+            <span class="nav-icon">👥</span>
+            <span>Players</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="awards.html" class="nav-link" data-page="awards">
+            <span class="nav-icon">🏅</span>
+            <span>Awards</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </div>
 </header>
+
+<script>
+(function() {
+  // Load site config and update header stats
+  if (window.SITE_CONFIG) {
+    document.getElementById('totalSeasons').textContent = window.SITE_CONFIG.seasons;
+    document.getElementById('totalPlayers').textContent = window.SITE_CONFIG.players;
+    document.getElementById('currentSeasonNum').textContent = window.SITE_CONFIG.currentSeason;
+    document.getElementById('iconFormat').textContent = window.SITE_CONFIG.iconFormat;
+  }
+
+  // Scroll behavior
+  const header = document.getElementById('modernHeader');
+  if (!header) return;
+  
+  window.addEventListener('scroll', () => {
+    const currentScroll = window.pageYOffset;
+    if (currentScroll > 20) {
+      header.classList.add('scrolled');
+    } else {
+      header.classList.remove('scrolled');
+    }
+  }, { passive: true });
+
+  // Active page highlighting
+  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+  const navLinks = document.querySelectorAll('.nav-link');
+  
+  navLinks.forEach(link => {
+    const linkPage = link.getAttribute('href');
+    if (linkPage === currentPage || (currentPage === '' && linkPage === 'index.html')) {
+      link.classList.add('active');
+    }
+  });
+
+  // Path resolution for nested folders
+  const root = (document.documentElement.dataset.root || document.body.dataset.root || ".").replace(/\/+$/, "");
+  
+  if (root !== ".") {
+    const allLinks = header.querySelectorAll('a[href]');
+    allLinks.forEach(link => {
+      const href = link.getAttribute('href');
+      if (href && !href.startsWith('http') && !href.startsWith('#')) {
+        link.setAttribute('href', root + '/' + href);
+      }
+    });
+  }
+})();
+</script>
 <!-- SITE HEADER END -->
 
 <div class="container">

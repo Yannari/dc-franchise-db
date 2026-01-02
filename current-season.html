@@ -392,6 +392,7 @@
       <div class="window-tabs" role="tablist" aria-label="Analytics tabs">
         <button class="tab-btn active" id="tabOverview" role="tab" aria-selected="true">📘 Overview</button>
         <button class="tab-btn" id="tabGameplay" role="tab" aria-selected="false">🧭 Gameplay</button>
+        <button class="tab-btn" id="tabEpisode" role="tab" aria-selected="false">📺 Episode</button>
       </div>
     </div>
 
@@ -484,6 +485,65 @@
         </div>
       </div>
     </div>
+
+    <!-- EPISODE TAB -->
+    <div class="window-body hidden" id="viewEpisode">
+      <div class="episode-viewer">
+        
+        <!-- Summary Input for AI Generation -->
+        <div class="glass-card" style="padding: 20px; margin-bottom: 20px;">
+          <h3 style="margin-top: 0;">🤖 AI Episode Generation</h3>
+          <p style="opacity: 0.8; font-size: 14px; margin-bottom: 16px;">
+            Paste your BrantSteele episode summary here, then click "Generate Episode" to create a full Total Drama episode transcript.
+          </p>
+          <textarea 
+            id="episode-summary-input" 
+            class="episode-input" 
+            placeholder="Paste your BrantSteele episode summary here...
+
+Example:
+Episode 2: Tribal swap! Belo won immunity. At Reba, Ella was voted out 2-1..."
+            style="width: 100%; min-height: 150px; margin-bottom: 12px;"></textarea>
+          <button onclick="generateEpisodeAI()" id="generate-episode-btn" class="btn btn-primary">
+            🎬 Generate Episode with AI
+          </button>
+        </div>
+
+        <!-- Manual Transcript Input -->
+        <div class="glass-card" style="padding: 20px; margin-bottom: 20px;">
+          <h3 style="margin-top: 0;">📝 Episode Transcript</h3>
+          <p style="opacity: 0.8; font-size: 14px; margin-bottom: 16px;">
+            Or paste a manually written episode transcript here.
+          </p>
+          <textarea 
+            id="episode-input" 
+            class="episode-input" 
+            placeholder="Paste or generate your episode transcript here...
+
+Format:
+[Scene: Beach. Morning.]
+
+Chris: Welcome to Total Drama!
+
+Owen: I'm so excited!
+
+[Confessional: Owen]
+Owen: This is going to be amazing!"
+            style="width: 100%; min-height: 300px;"></textarea>
+        </div>
+        
+        <!-- Controls -->
+        <div class="episode-controls">
+          <button onclick="renderEpisode()" class="btn btn-primary">🎬 Render Episode</button>
+          <button onclick="saveEpisode()" class="btn">💾 Save Episode</button>
+          <button onclick="loadEpisode()" class="btn">📂 Load Saved</button>
+          <button onclick="clearEpisode()" class="btn btn-ghost">🗑️ Clear</button>
+        </div>
+        
+        <!-- Rendered Episode -->
+        <div id="episode-rendered"></div>
+      </div>
+    </div>
   </section>
 
   <!-- SCRIPT: AI + RENDERING -->
@@ -511,8 +571,10 @@
 
       tabOverview: $("tabOverview"),
       tabGameplay: $("tabGameplay"),
+      tabEpisode: $("tabEpisode"),
       viewOverview: $("viewOverview"),
       viewGameplay: $("viewGameplay"),
+      viewEpisode: $("viewEpisode"),
 
       cardBestMove: $("cardBestMove"),
       cardBiggestRisk: $("cardBiggestRisk"),
@@ -1089,13 +1151,20 @@
     // ----------------------------
     function showTab(which) {
       const isOverview = which === "overview";
+      const isGameplay = which === "gameplay";
+      const isEpisode = which === "episode";
+
       els.viewOverview.classList.toggle("hidden", !isOverview);
-      els.viewGameplay.classList.toggle("hidden", isOverview);
+      els.viewGameplay.classList.toggle("hidden", !isGameplay);
+      els.viewEpisode.classList.toggle("hidden", !isEpisode);
 
       els.tabOverview.classList.toggle("active", isOverview);
-      els.tabGameplay.classList.toggle("active", !isOverview);
+      els.tabGameplay.classList.toggle("active", isGameplay);
+      els.tabEpisode.classList.toggle("active", isEpisode);
+      
       els.tabOverview.setAttribute("aria-selected", isOverview ? "true" : "false");
-      els.tabGameplay.setAttribute("aria-selected", !isOverview ? "true" : "false");
+      els.tabGameplay.setAttribute("aria-selected", isGameplay ? "true" : "false");
+      els.tabEpisode.setAttribute("aria-selected", isEpisode ? "true" : "false");
 
       // Persist tab choice per episode
       const s = Number(els.season.value || 1);
@@ -1103,7 +1172,7 @@
       try { localStorage.setItem(tabKey(s, e), which); } catch {}
 
       // If switching to gameplay, ensure it's rendered (in case cast was synced later)
-      if (!isOverview && CURRENT.analytics) {
+      if (isGameplay && CURRENT.analytics) {
         const cast = (CURRENT.cast && CURRENT.cast.length) ? CURRENT.cast : parseCastFromSummary(CURRENT.summaryText || "");
         const eliminated = (CURRENT.eliminated && CURRENT.eliminated.size) ? CURRENT.eliminated : parseEliminated(CURRENT.summaryText || "");
         renderCompass(CURRENT.analytics, cast, eliminated, CURRENT.titlesMap || {});
@@ -1113,6 +1182,11 @@
 
     els.tabOverview.addEventListener("click", () => showTab("overview"));
     els.tabGameplay.addEventListener("click", () => showTab("gameplay"));
+    els.tabEpisode.addEventListener("click", () => {
+      showTab("episode");
+      // Try to auto-load saved episode
+      if (typeof loadEpisode === 'function') loadEpisode();
+    });
 
     // ----------------------------
     // Actions
@@ -1406,6 +1480,292 @@
       else setStatus("Ready — paste summary and generate analytics.");
     })();
   })();
+  
+  // ========================================
+  // EPISODE TAB FUNCTIONALITY
+  // ========================================
+  
+  // Configuration
+  const EPISODE_WORKER_URL = 'https://dc-analytics.yannari19.workers.dev'; // Update with your worker URL
+  
+  // Character avatar mapping
+  const CHARACTER_AVATARS = {
+    'chris': '😏', 'chef': '👨‍🍳', 'owen': '🍔', 'gwen': '🎨', 'duncan': '💀',
+    'courtney': '📋', 'heather': '💅', 'lindsay': '💁', 'alejandro': '👑',
+    'sierra': '📱', 'noah': '📚', 'cody': '😬', 'izzy': '🤪', 'eva': '😠',
+    'tyler': '🏀', 'trent': '🎸', 'bridgette': '🏄', 'geoff': '🎉', 'beth': '🌸',
+    'justin': '😎', 'katie': '💖', 'sadie': '💖', 'ezekiel': '🏔️', 'leshawna': '💁',
+    'harold': '🤓', 'amy': '😈', 'samey': '😊', 'scarlett': '🧪', 'max': '🦹',
+    'ella': '🎶', 'topher': '📺', 'jasmine': '🌿', 'shawn': '🧟', 'dave': '😤',
+    'sky': '🥋', 'sugar': '🍭', 'rodney': '💘', 'beardo': '🎵', 'leonard': '🪄',
+    'josee': '⛷️', 'mickey': '🐭', 'ryan': '🏋️', 'blaineley': '🎤'
+  };
+  
+  // Storage key generator
+  function getEpisodeStorageKey() {
+    const seasonEl = document.getElementById('aiSeason');
+    const episodeEl = document.getElementById('aiEpisode');
+    const season = seasonEl ? seasonEl.value : '5';
+    const episode = episodeEl ? episodeEl.value : '1';
+    return `td_episode_s${season}_e${episode}`;
+  }
+  
+  // Save episode to localStorage
+  function saveEpisode() {
+    const transcript = document.getElementById('episode-input').value;
+    if (!transcript.trim()) {
+      alert('⚠️ Please paste or generate an episode transcript first!');
+      return;
+    }
+    
+    localStorage.setItem(getEpisodeStorageKey(), transcript);
+    alert('✅ Episode saved successfully!');
+    renderEpisode();
+  }
+  
+  // Load episode from localStorage
+  function loadEpisode() {
+    const saved = localStorage.getItem(getEpisodeStorageKey());
+    if (saved) {
+      document.getElementById('episode-input').value = saved;
+      renderEpisode();
+      return true;
+    }
+    return false;
+  }
+  
+  // Clear episode
+  function clearEpisode() {
+    if (confirm('⚠️ Clear the current episode? This cannot be undone.')) {
+      document.getElementById('episode-input').value = '';
+      document.getElementById('episode-rendered').innerHTML = '';
+      localStorage.removeItem(getEpisodeStorageKey());
+      alert('🗑️ Episode cleared!');
+    }
+  }
+  
+  // Generate episode using AI
+  async function generateEpisodeAI() {
+    const summaryInput = document.getElementById('episode-summary-input');
+    const summary = summaryInput ? summaryInput.value.trim() : '';
+    
+    if (!summary) {
+      alert('⚠️ Please paste your BrantSteele episode summary first!');
+      return;
+    }
+    
+    const seasonEl = document.getElementById('aiSeason');
+    const episodeEl = document.getElementById('aiEpisode');
+    const season = seasonEl ? seasonEl.value : '5';
+    const episode = episodeEl ? episodeEl.value : '1';
+    
+    const generateBtn = document.getElementById('generate-episode-btn');
+    const originalText = generateBtn.innerHTML;
+    generateBtn.innerHTML = '⏳ Generating Episode...';
+    generateBtn.disabled = true;
+    
+    try {
+      const response = await fetch(EPISODE_WORKER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: 'episode',
+          season: season,
+          episode: episode,
+          summaryText: summary
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      const transcript = data.episodeTranscript || data.output_text || '';
+      
+      if (!transcript) {
+        throw new Error('No episode transcript returned from AI');
+      }
+      
+      document.getElementById('episode-input').value = transcript;
+      saveEpisode();
+      alert('✅ Episode generated successfully!');
+      
+    } catch (error) {
+      console.error('Error generating episode:', error);
+      alert('❌ Error generating episode: ' + error.message);
+    } finally {
+      generateBtn.innerHTML = originalText;
+      generateBtn.disabled = false;
+    }
+  }
+  
+  // Render episode from transcript
+  function renderEpisode() {
+    const transcript = document.getElementById('episode-input').value;
+    const container = document.getElementById('episode-rendered');
+    
+    if (!transcript.trim()) {
+      container.innerHTML = `
+        <div class="episode-empty">
+          <div class="episode-empty-icon">📺</div>
+          <div class="episode-empty-text">No episode to display.</div>
+          <div style="margin-top: 16px; opacity: 0.7; font-size: 14px;">
+            Paste a transcript and click "Render Episode" or generate one with AI!
+          </div>
+        </div>
+      `;
+      return;
+    }
+    
+    const html = parseTranscript(transcript);
+    container.innerHTML = html;
+    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  
+  // Parse transcript into beautiful HTML
+  function parseTranscript(text) {
+    let html = '<div class="episode-content">';
+    const lines = text.split('\n');
+    let currentScene = '';
+    let inConfessional = false;
+    let inTribal = false;
+    
+    lines.forEach((line) => {
+      line = line.trim();
+      if (!line) return;
+      
+      // Scene headers: [Scene: ...] or [Location...]
+      if (line.match(/^\[.*\]$/)) {
+        const sceneText = line.replace(/[\[\]]/g, '');
+        
+        // Confessional detection
+        if (sceneText.toLowerCase().includes('confessional')) {
+          if (!inConfessional) {
+            html += '<div class="confessional">';
+            html += '<div class="confessional-label">🎥 ' + escapeHtml(sceneText).toUpperCase() + '</div>';
+            inConfessional = true;
+          }
+          return;
+        }
+        
+        // Close confessional if we hit a new scene
+        if (inConfessional && !sceneText.toLowerCase().includes('confessional')) {
+          html += '</div>';
+          inConfessional = false;
+        }
+        
+        // Tribal Council detection
+        if (sceneText.toLowerCase().includes('tribal')) {
+          if (!inTribal) {
+            html += '<div class="tribal-council">';
+            html += '<div class="tribal-header">🔥 ' + escapeHtml(sceneText).toUpperCase() + ' 🔥</div>';
+            inTribal = true;
+          }
+          return;
+        }
+        
+        // Close tribal if new scene
+        if (inTribal && !sceneText.toLowerCase().includes('tribal') && !sceneText.toLowerCase().includes('vote') && !sceneText.toLowerCase().includes('campfire')) {
+          html += '</div>';
+          inTribal = false;
+        }
+        
+        // Regular scene
+        if (currentScene && !inConfessional) html += '</div>';
+        html += '<div class="scene">';
+        html += '<div class="scene-header">📍 ' + escapeHtml(sceneText) + '</div>';
+        currentScene = sceneText;
+        return;
+      }
+      
+      // Dialogue: "Name: Text"
+      const dialogueMatch = line.match(/^([A-Z][a-zA-Z\s']+):\s*(.+)$/);
+      if (dialogueMatch) {
+        let [, character, dialogue] = dialogueMatch;
+        character = character.trim();
+        const charKey = character.toLowerCase();
+        const avatar = getCharacterAvatar(charKey);
+        
+        html += '<div class="dialogue-line">';
+        html += `<div class="character-avatar">${avatar}</div>`;
+        html += '<div class="dialogue-content">';
+        html += `<div class="character-name">${escapeHtml(character)}</div>`;
+        html += `<div class="dialogue-text">${escapeHtml(dialogue)}</div>`;
+        html += '</div>';
+        html += '</div>';
+        return;
+      }
+      
+      // Elimination announcement
+      if (line.toLowerCase().includes('eliminated') || line.toLowerCase().includes('voted out')) {
+        html += `<div class="eliminated-player">`;
+        html += `<div class="eliminated-message">${escapeHtml(line)}</div>`;
+        html += `</div>`;
+        return;
+      }
+      
+      // Vote reveals
+      if (inTribal && (line.toLowerCase().includes('vote') || line.toLowerCase().includes('marshmallow'))) {
+        html += `<div class="vote-reveal">${escapeHtml(line)}</div>`;
+        return;
+      }
+      
+      // Stage directions or other text
+      html += `<div class="stage-direction">${escapeHtml(line)}</div>`;
+    });
+    
+    // Close any open sections
+    if (currentScene) html += '</div>';
+    if (inConfessional) html += '</div>';
+    if (inTribal) html += '</div>';
+    
+    html += '</div>';
+    return html;
+  }
+  
+  // Get character avatar (image or emoji)
+  function getCharacterAvatar(characterName) {
+    const key = characterName.toLowerCase().replace(/\s+/g, '-');
+    const keySimple = characterName.toLowerCase().replace(/\s+/g, '');
+    
+    const paths = [
+      `assets/avatars/${key}.png`,
+      `assets/avatars/${keySimple}.png`,
+      `assets/avatars/${characterName.toLowerCase()}.png`
+    ];
+    
+    const emoji = CHARACTER_AVATARS[keySimple] || CHARACTER_AVATARS[key] || '👤';
+    
+    return `
+      <img src="${paths[0]}" alt="${escapeHtml(characterName)}" 
+        onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
+      <span class="character-avatar-fallback" style="display:none;">
+        ${emoji}
+      </span>
+    `;
+  }
+  
+  // Escape HTML to prevent XSS
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+  
+  // Clear episode when season/episode changes
+  let lastEpisodeKey = getEpisodeStorageKey();
+  setInterval(() => {
+    const currentKey = getEpisodeStorageKey();
+    if (currentKey !== lastEpisodeKey) {
+      const rendered = document.getElementById('episode-rendered');
+      const input = document.getElementById('episode-input');
+      if (rendered) rendered.innerHTML = '';
+      if (input) input.value = '';
+      lastEpisodeKey = currentKey;
+      loadEpisode();
+    }
+  }, 1000);
   
 </script>
 </div><footer class="siteFooter">

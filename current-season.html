@@ -488,6 +488,7 @@
 
   <!-- SCRIPT: AI + RENDERING -->
   <script>
+
   (function() {
     const $ = (id) => document.getElementById(id);
 
@@ -942,10 +943,38 @@
         if (t?.player) titlesMap[t.player.toLowerCase()] = t.title || "";
       }
 
+      CURRENT.titlesMap = titlesMap;
+
       // Detect cast + eliminated from current summary input (best effort)
-      const txt = summaryText || els.summary.value || "";
-      const cast = parseCastFromSummary(txt);
-      const eliminated = parseEliminated(txt);
+      const txt = (summaryText || els.summary.value || "").trim();
+
+      // Prefer parsing from summary; fall back to saved cast state if summary isn't present.
+      let cast = parseCastFromSummary(txt);
+      let eliminated = parseEliminated(txt);
+
+      const seasonNow = Number(els.season.value || 1);
+      const episodeNow = Number(els.episode.value || 1);
+
+      if ((!cast || cast.length === 0) || (eliminated && eliminated.size === 0 && !txt)) {
+        const saved = loadCastState(seasonNow, episodeNow);
+        if (saved) {
+          if (!cast || cast.length === 0) cast = Array.isArray(saved.cast) ? saved.cast : [];
+          if ((!eliminated || eliminated.size === 0) && Array.isArray(saved.eliminated)) {
+            eliminated = new Set(saved.eliminated.map(s => String(s).toLowerCase()));
+          }
+          if (!txt && saved.title && els.uiEpName) {
+            els.uiEpName.textContent = saved.title;
+          }
+        }
+      }
+
+      // Save for later use (tab switches, etc.)
+      CURRENT.analytics = analytics;
+      CURRENT.season = seasonNow;
+      CURRENT.episode = episodeNow;
+      CURRENT.summaryText = txt;
+      CURRENT.cast = cast || [];
+      CURRENT.eliminated = eliminated || new Set();
 
       renderPlayersGrid(cast, eliminated, titlesMap);
 
@@ -976,6 +1005,19 @@
       els.tabGameplay.classList.toggle("active", !isOverview);
       els.tabOverview.setAttribute("aria-selected", isOverview ? "true" : "false");
       els.tabGameplay.setAttribute("aria-selected", !isOverview ? "true" : "false");
+
+      // Persist tab choice per episode
+      const s = Number(els.season.value || 1);
+      const e = Number(els.episode.value || 1);
+      try { localStorage.setItem(tabKey(s, e), which); } catch {}
+
+      // If switching to gameplay, ensure it's rendered (in case cast was synced later)
+      if (!isOverview && CURRENT.analytics) {
+        const cast = (CURRENT.cast && CURRENT.cast.length) ? CURRENT.cast : parseCastFromSummary(CURRENT.summaryText || "");
+        const eliminated = (CURRENT.eliminated && CURRENT.eliminated.size) ? CURRENT.eliminated : parseEliminated(CURRENT.summaryText || "");
+        renderCompass(CURRENT.analytics, cast, eliminated, CURRENT.titlesMap || {});
+        renderGameplayTable(CURRENT.analytics, cast, eliminated, CURRENT.titlesMap || {});
+      }
     }
 
     els.tabOverview.addEventListener("click", () => showTab("overview"));
@@ -994,15 +1036,39 @@
 
     els.syncFromSummary.addEventListener("click", () => {
       const txt = els.summary.value || "";
+      const s = Number(els.season.value || 1);
+
       const ep = parseEpisodeTitle(txt);
       if (ep?.num) els.episode.value = ep.num;
+
+      const e = Number(els.episode.value || 1);
       if (ep?.title) els.uiEpName.textContent = `“${ep.title}”`;
-      els.uiEpNum.textContent = `Episode ${els.episode.value || 1}`;
-      // render grid even without AI
+      els.uiEpNum.textContent = `Episode ${e}`;
+
+      // Persist summary + cast for reloads
+      saveSummary(s, e, txt);
+
       const cast = parseCastFromSummary(txt);
       const eliminated = parseEliminated(txt);
+
+      // Save cast state even if empty (lets us show “no cast detected” consistently)
+      saveCastState(s, e, cast, eliminated, ep?.title ? `“${ep.title}”` : els.uiEpName.textContent);
+
+      // Update runtime state
+      CURRENT.season = s;
+      CURRENT.episode = e;
+      CURRENT.summaryText = (txt || "").trim();
+      CURRENT.cast = cast;
+      CURRENT.eliminated = eliminated;
+
       renderPlayersGrid(cast, eliminated, {});
-      setStatus("Synced from summary.");
+      // If AI already loaded, refresh gameplay view too
+      if (CURRENT.analytics) {
+        renderCompass(CURRENT.analytics, cast, eliminated, CURRENT.titlesMap || {});
+        renderGameplayTable(CURRENT.analytics, cast, eliminated, CURRENT.titlesMap || {});
+      }
+
+      setStatus("Synced from summary (saved for reload).");
     });
 
     async function callAI(season, episode, summaryText) {
@@ -1029,6 +1095,46 @@
       try { return JSON.parse(raw); } catch { return null; }
     }
 
+    function summaryKey(season, episode) {
+      return `AI_SUMMARY_s${season}_e${episode}`;
+    }
+    function castStateKey(season, episode) {
+      return `AI_CAST_s${season}_e${episode}`;
+    }
+    function tabKey(season, episode) {
+      return `AI_TAB_s${season}_e${episode}`;
+    }
+
+    function saveSummary(season, episode, text) {
+      try { localStorage.setItem(summaryKey(season, episode), text || ""); } catch {}
+    }
+    function loadSummary(season, episode) {
+      try { return localStorage.getItem(summaryKey(season, episode)) || ""; } catch { return ""; }
+    }
+
+    function saveCastState(season, episode, cast, eliminated, epTitle) {
+      const payload = { cast: cast || [], eliminated: Array.from(eliminated || []), title: epTitle || "" };
+      try { localStorage.setItem(castStateKey(season, episode), JSON.stringify(payload)); } catch {}
+    }
+    function loadCastState(season, episode) {
+      try {
+        const raw = localStorage.getItem(castStateKey(season, episode));
+        if (!raw) return null;
+        return JSON.parse(raw);
+      } catch { return null; }
+    }
+
+    // Runtime state
+    let CURRENT = {
+      analytics: null,
+      season: null,
+      episode: null,
+      summaryText: "",
+      cast: [],
+      eliminated: new Set(),
+      titlesMap: {}
+    };
+
     function saveCached(season, episode, analytics) {
       const key = cacheKey(season, episode);
       localStorage.setItem(key, JSON.stringify(analytics));
@@ -1050,13 +1156,26 @@
       const episode = Number(els.episode.value || 1);
       const summaryText = els.summary.value || "";
       if (!summaryText.trim()) return setStatus("Paste an episode summary first.");
-      updateEpisodeHeaderFromInputs();
 
+      // Persist summary so reload keeps cast + gameplay
+      saveSummary(season, episode, summaryText);
+
+      updateEpisodeHeaderFromInputs();
       setStatus("Generating analytics...");
+
       try {
         const analytics = await callAI(season, episode, summaryText);
         saveCached(season, episode, analytics);
+
+        // Save cast/elims for reloads
+        const cast = parseCastFromSummary(summaryText);
+        const eliminated = parseEliminated(summaryText);
+        const ep = parseEpisodeTitle(summaryText);
+        const epTitle = ep?.title ? `“${ep.title}”` : els.uiEpName.textContent;
+        saveCastState(season, episode, cast, eliminated, epTitle);
+
         renderAll(analytics, summaryText);
+
         setStatus(`Done. Cached as ${cacheKey(season, episode)}.`);
       } catch (e) {
         setStatus("Error: " + (e?.message || String(e)));
@@ -1089,26 +1208,46 @@
 
       updateEpisodeHeaderFromInputs();
 
-      // Auto-load cached (this fixes “reload clears the UI”)
       const season = Number(els.season.value || 1);
       const episode = Number(els.episode.value || 1);
+
+      // Restore saved summary for this episode (so cast + gameplay persist on reload)
+      const savedSummary = loadSummary(season, episode);
+      if (savedSummary && !String(els.summary.value || "").trim()) {
+        els.summary.value = savedSummary;
+      }
+
+      // Restore last tab for this episode
+      let savedTab = "overview";
+      try { savedTab = localStorage.getItem(tabKey(season, episode)) || "overview"; } catch {}
+      showTab(savedTab === "gameplay" ? "gameplay" : "overview");
+
+      // Auto-load cached analytics (this fixes “reload clears the UI”)
       const cached = loadCached(season, episode);
 
       if (cached && els.autoLoad.checked) {
         renderAll(cached, els.summary.value || "");
         setStatus("Auto-loaded cached analytics.");
       } else {
-        // Still render player grid if summary already pasted (if browser restores textarea)
+        // Render player grid from summary or saved cast state
         const txt = els.summary.value || "";
-        if (txt.trim()) {
-          const cast = parseCastFromSummary(txt);
-          const eliminated = parseEliminated(txt);
+        const cast = parseCastFromSummary(txt);
+        const eliminated = parseEliminated(txt);
+
+        if (cast.length) {
           renderPlayersGrid(cast, eliminated, {});
+        } else {
+          const saved = loadCastState(season, episode);
+          if (saved?.cast?.length) {
+            const elim = new Set((saved.eliminated || []).map(s => String(s).toLowerCase()));
+            renderPlayersGrid(saved.cast, elim, {});
+          }
         }
       }
     })();
   })();
-  </script>
+  
+</script>
 </div><footer class="siteFooter">
   <div class="footerInner">
     <div class="footerTitle">DC Franchise Database</div>

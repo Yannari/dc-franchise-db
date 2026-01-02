@@ -572,9 +572,64 @@
     }
 
     // Extract cast list from summary (best effort)
+        function parseBlock(text, headerRegex) {
+      const lines = (text || "").split(/\r?\n/);
+      let start = -1;
+      for (let i = 0; i < lines.length; i++) {
+        if (headerRegex.test(lines[i].trim())) { start = i; break; }
+      }
+      if (start === -1) return [];
+      const out = [];
+      for (let i = start + 1; i < lines.length; i++) {
+        const raw = lines[i];
+        const l = (raw || "").trim();
+        if (!l) continue;
+        if (/^===\s*/.test(l)) break;
+        // stop if next major section starts (fallback)
+        if (/^(PRE-CHALLENGE|CHALLENGES|POST-CHALLENGE|TRIBAL|VOTING|CURRENT GAME STATUS|NEXT EPISODE QUESTIONS)\b/i.test(l)) break;
+        out.push(l);
+      }
+      return out;
+    }
+
+    function cleanNameLine(l) {
+      let s = (l || "").trim();
+      if (!s) return "";
+      s = s.replace(/^[-•]\s*/, "");
+      // strip numbering like "18. Leonard" or "18th Leonard"
+      s = s.replace(/^\d+\s*(?:[.)]|(?:st|nd|rd|th)\b)\s*/i, "");
+      // strip "Name:18th" or "Name - 18th"
+      s = s.replace(/:\s*\d+(?:st|nd|rd|th)\b.*$/i, "").trim();
+      s = s.replace(/[—–].*$/, "").trim();
+      return s;
+    }
+
+    function isProbablyName(s) {
+      return /^[A-Za-z][A-Za-z0-9' -]*$/.test(s) && s.length <= 30;
+    }
+
     function parseCastFromSummary(text) {
       const lines = (text || "").split(/\r?\n/).map(l => l.trim());
       let names = [];
+
+      // META block: === CAST (ALL) ===
+      const castBlock = parseBlock(text, /^===\s*CAST\b/i);
+      if (castBlock.length) {
+        castBlock.forEach(l => {
+          const n = cleanNameLine(l);
+          if (isProbablyName(n)) names.push(n);
+        });
+      }
+
+      // TRIBES block: === TRIBES (ACTIVE) === with # Tribe headings
+      const tribesBlock = parseBlock(text, /^===\s*TRIBES\b/i);
+      if (tribesBlock.length) {
+        tribesBlock.forEach(l => {
+          if (/^#\s*/.test(l)) return; // header
+          const n = cleanNameLine(l);
+          if (isProbablyName(n)) names.push(n);
+        });
+      }
 
       // Pattern 1: after "The Cast arrives"
       const idx = lines.findIndex(l => /the\s+cast\s+arrives/i.test(l));
@@ -582,13 +637,9 @@
         for (let i = idx + 1; i < lines.length; i++) {
           const l = lines[i];
           if (!l) break;
-          if (/^[A-Z0-9 _-]{6,}$/.test(l) && /STATUS|PRE-CHALLENGE|CHALLENGES|POST-CHALLENGE|VOTING|TRIBAL/i.test(l)) break;
-          if (/^[-•]/.test(l)) {
-            names.push(l.replace(/^[-•]\s*/, ""));
-          } else {
-            // single-name line
-            if (/^[A-Za-z][A-Za-z0-9'-]+$/.test(l)) names.push(l);
-          }
+          if (/^(PRE-CHALLENGE|CHALLENGES|POST-CHALLENGE|VOTING|TRIBAL|CURRENT GAME STATUS|NEXT EPISODE QUESTIONS)\b/i.test(l)) break;
+          const n = cleanNameLine(l);
+          if (isProbablyName(n)) names.push(n);
         }
       }
 
@@ -596,13 +647,16 @@
       const tribeLines = lines.filter(l => /tribe\s*\(\d+\)\s*:/i.test(l));
       for (const tl of tribeLines) {
         const after = tl.split(":")[1] || "";
-        after.split(",").map(x => x.trim()).filter(Boolean).forEach(n => names.push(n));
+        after.split(",").map(x => x.trim()).filter(Boolean).forEach(n => {
+          const cn = cleanNameLine(n);
+          if (isProbablyName(cn)) names.push(cn);
+        });
       }
 
       // De-dup while preserving order
       const seen = new Set();
       names = names
-        .map(n => n.replace(/[—–].*$/, "").trim())
+        .map(n => n.trim())
         .filter(Boolean)
         .filter(n => {
           const k = n.toLowerCase();
@@ -624,17 +678,54 @@
       return null;
     }
 
-    function parseEliminated(text) {
-      const lines = (text || "").split(/\r?\n/).map(l => l.trim());
-      const idx = lines.findIndex(l => /^ELIMINATED\b/i.test(l));
-      if (idx === -1) return [];
-      for (let i = idx + 1; i < lines.length; i++) {
-        const l = lines[i];
-        if (!l) continue;
-        // first non-empty line after ELIMINATED
-        return [l.split(/\s+/)[0] ? l.trim() : l.trim()];
+        function parseEliminated(text) {
+      const rawLines = (text || "").split(/\r?\n/);
+      const lines = rawLines.map(l => (l || "").trim());
+
+      const out = [];
+      const pushName = (l) => {
+        const n = cleanNameLine(l);
+        if (isProbablyName(n)) out.push(n);
+      };
+
+      // META block: === ELIMINATED ===
+      const elimBlock = parseBlock(text, /^===\s*ELIMINATED\b/i);
+      if (elimBlock.length) {
+        elimBlock.forEach(pushName);
       }
-      return [];
+
+      // Traditional "ELIMINATED" section(s)
+      for (let i = 0; i < lines.length; i++) {
+        if (!/^ELIMINATED\b/i.test(lines[i])) continue;
+        for (let j = i + 1; j < lines.length; j++) {
+          const l = lines[j];
+          if (!l) break;
+          if (/^===\s*/.test(l)) break;
+          if (/^(Vote count|Reason|Edge of Extinction|Not applicable|TRIBAL|MAJOR STRATEGIC|CURRENT GAME STATUS|NEXT EPISODE QUESTIONS)\b/i.test(l)) break;
+          pushName(l);
+        }
+      }
+
+      // Footer style: "Eliminated:" list
+      for (let i = 0; i < lines.length; i++) {
+        if (!/^Eliminated\s*:/i.test(lines[i])) continue;
+        for (let j = i + 1; j < lines.length; j++) {
+          const l = lines[j];
+          if (!l) break;
+          if (/^===\s*/.test(l)) break;
+          if (/^(NEXT EPISODE QUESTIONS|CURRENT GAME STATUS|TRIBAL|MAJOR STRATEGIC)\b/i.test(l)) break;
+          pushName(l);
+        }
+      }
+
+      // De-dup
+      const seen = new Set();
+      return out.filter(n => {
+        const k = n.toLowerCase();
+        if (seen.has(k)) return false;
+        seen.add(k);
+        return true;
+      });
     }
 
     function getProbForPlayer(bootPredictions, player) {

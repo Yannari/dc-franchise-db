@@ -525,28 +525,14 @@
           <div class="editor-head">
             <div>
               <h3 class="h3">🎬 Episode Writer</h3>
-              <div class="muted tiny">Generate episodes with AI or paste your own transcript.</div>
+              <div class="muted tiny">Paste your transcript and render a readable episode with speaker icons + scene transitions.</div>
             </div>
             <div class="editor-actions">
+              <button class="btn btn-primary" id="btnGenerateEpisode" type="button">Generate (AI)</button>
               <button class="btn" id="btnRenderScript" type="button">Render</button>
               <button class="btn ghost" id="btnSaveScript" type="button">Save</button>
               <button class="btn ghost danger" id="btnClearScript" type="button">Clear</button>
             </div>
-          </div>
-
-          <!-- AI Generation Section -->
-          <div style="background: rgba(125, 76, 255, 0.08); border: 1px solid rgba(125, 76, 255, 0.2); border-radius: 12px; padding: 16px; margin-bottom: 16px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-              <div>
-                <strong style="color: rgba(125, 76, 255, 1);">🤖 AI Episode Generator</strong>
-                <div class="muted tiny" style="margin-top: 4px;">Paste BrantSteele summary → Generate full Total Drama episode</div>
-              </div>
-              <button class="btn btn-primary" id="btnGenerateEpisode" type="button">🎬 Generate</button>
-            </div>
-            <textarea id="episodeSummaryInput" style="width: 100%; min-height: 100px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 8px; padding: 10px; font-size: 13px; resize: vertical;" placeholder="Paste your BrantSteele episode summary here...
-
-Example:
-Episode 2: Tribal swap! Belo won immunity. Reba lost. Ella was voted out 2-1."></textarea>
           </div>
 
           <textarea id="scriptInput" class="script-input" placeholder="Paste your episode transcript here...&#10;&#10;Tip: Use [Scene ...] lines for scene changes and NAME: dialogue lines for speech."></textarea>
@@ -625,8 +611,6 @@ Episode 2: Tribal swap! Belo won immunity. Reba lost. Ella was voted out 2-1."><
       btnClearScript: document.getElementById("btnClearScript"),
       chkAutoRenderScript: document.getElementById("chkAutoRenderScript"),
       scriptStatus: document.getElementById("scriptStatus"),
-      episodeSummaryInput: document.getElementById("episodeSummaryInput"),
-      btnGenerateEpisode: document.getElementById("btnGenerateEpisode"),
 
     };
 
@@ -1321,7 +1305,14 @@ function renderCompass(analytics, castNames, eliminatedNames) {
     // ----------------------------
     function showTab(which) {
       const tab = (which === "overview" || which === "gameplay" || which === "episode") ? which : "overview";
-      localStorage.setItem("AI_ACTIVE_TAB", tab);
+
+      // Persist active tab globally + per season/episode
+      try {
+        localStorage.setItem("AI_ACTIVE_TAB", tab);
+        const s = Number(els.season.value || 1);
+        const e = Number(els.episode.value || 1);
+        localStorage.setItem(tabKey(s, e), tab);
+      } catch {}
 
       els.tabOverview.classList.toggle("active", tab === "overview");
       els.tabGameplay.classList.toggle("active", tab === "gameplay");
@@ -1336,11 +1327,97 @@ function renderCompass(analytics, castNames, eliminatedNames) {
       els.tabGameplay.setAttribute("aria-selected", String(tab === "gameplay"));
       els.tabEpisode.setAttribute("aria-selected", String(tab === "episode"));
     }
-    }
 
     els.tabOverview.addEventListener("click", () => showTab("overview"));
     els.tabGameplay.addEventListener("click", () => showTab("gameplay"));
     els.tabEpisode.addEventListener("click", () => showTab("episode"));
+
+    // ----------------------------
+    // Episode Writer actions
+    // ----------------------------
+    function setScriptStatus(msg) {
+      if (els.scriptStatus) els.scriptStatus.textContent = msg || "";
+    }
+
+    function currentSE() {
+      return { s: Number(els.season.value || 1), e: Number(els.episode.value || 1) };
+    }
+
+    if (els.btnRenderScript) {
+      els.btnRenderScript.addEventListener("click", () => {
+        renderScriptPreview(els.scriptInput?.value || "");
+        setScriptStatus("Rendered.");
+      });
+    }
+
+    if (els.btnSaveScript) {
+      els.btnSaveScript.addEventListener("click", () => {
+        const { s, e } = currentSE();
+        saveScript(s, e, els.scriptInput?.value || "");
+        setScriptStatus("Saved transcript for this episode.");
+      });
+    }
+
+    if (els.btnClearScript) {
+      els.btnClearScript.addEventListener("click", () => {
+        const { s, e } = currentSE();
+        if (els.scriptInput) els.scriptInput.value = "";
+        saveScript(s, e, "");
+        if (els.scriptPreview) els.scriptPreview.innerHTML = "";
+        setScriptStatus("Cleared.");
+      });
+    }
+
+    if (els.chkAutoRenderScript && els.scriptInput) {
+      els.scriptInput.addEventListener("input", () => {
+        if (els.chkAutoRenderScript.checked) {
+          renderScriptPreview(els.scriptInput.value || "");
+        }
+        // light autosave
+        const { s, e } = currentSE();
+        saveScript(s, e, els.scriptInput.value || "");
+        setScriptStatus("Autosaved.");
+      });
+    }
+
+    if (els.btnGenerateEpisode) {
+      els.btnGenerateEpisode.addEventListener("click", async () => {
+        const { s, e } = currentSE();
+        const summaryText = (els.summary?.value || "").trim();
+        if (!summaryText) return setScriptStatus("Paste an episode summary first (left box).");
+
+        try {
+          setScriptStatus("Generating episode transcript…");
+          els.btnGenerateEpisode.disabled = true;
+
+          const data = await callAI(s, e, summaryText, "episode");
+          const transcript =
+            (typeof data?.episodeTranscript === "string" && data.episodeTranscript.trim()) ? data.episodeTranscript.trim()
+            : (typeof data?.output_text === "string" && data.output_text.trim()) ? data.output_text.trim()
+            : "";
+
+          if (!transcript) {
+            setScriptStatus("No transcript returned. Check your Worker output.");
+            els.btnGenerateEpisode.disabled = false;
+            return;
+          }
+
+          if (els.scriptInput) els.scriptInput.value = transcript;
+          saveScript(s, e, transcript);
+
+          if (els.chkAutoRenderScript?.checked) {
+            renderScriptPreview(transcript);
+          }
+
+          setScriptStatus("Generated + saved for this episode.");
+        } catch (err) {
+          setScriptStatus("Error: " + (err?.message || String(err)));
+        } finally {
+          els.btnGenerateEpisode.disabled = false;
+        }
+      });
+    }
+
 
     // ----------------------------
     // Actions
@@ -1390,23 +1467,23 @@ function renderCompass(analytics, castNames, eliminatedNames) {
       setStatus("Synced from summary (saved for reload).");
     });
 
-    async function callAI(season, episode, summaryText) {
+    async function callAI(season, episode, summaryText, mode) {
       const url = normalizeWorkerUrl(els.workerUrl.value || localStorage.getItem("AI_ENDPOINT_URL") || "");
       if (!url) throw new Error("Missing AI endpoint URL.");
+      const reqBody = { season, episode, summaryText };
+      if (mode) reqBody.mode = mode;
       const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ season, episode, summaryText }),
+        body: JSON.stringify(reqBody),
       });
       const data = await res.json();
       if (!res.ok) {
-        // Try to surface OpenAI error nicely
-        const msg = data?.error?.message || data?.message || "Unknown error.";
+        const msg = data?.error?.message || data?.error || data?.message || "Worker error";
         throw new Error(msg);
       }
       return data;
     }
-
     function loadCached(season, episode) {
       const key = cacheKey(season, episode);
       const raw = localStorage.getItem(key);
@@ -1580,6 +1657,21 @@ function saveCastState(season, episode, cast, eliminated, epTitle) {
       try { savedTab = localStorage.getItem(tabKey(season, episode)) || "overview"; } catch {}
       showTab(savedTab);
 
+      // Restore saved episode script for this selection
+      const savedScript = loadScript(season, episode);
+      if (els.scriptInput) {
+        els.scriptInput.value = savedScript || "";
+        if (els.chkAutoRenderScript?.checked) {
+          renderScriptPreview(els.scriptInput.value || "");
+        } else {
+          // If not auto-render, clear preview when switching episodes
+          if (els.scriptPreview) els.scriptPreview.innerHTML = "";
+        }
+        if (els.scriptStatus) {
+          els.scriptStatus.textContent = savedScript ? "Loaded saved episode transcript." : "No saved transcript yet.";
+        }
+      }
+
       // If we have cached analytics for this selection, load it (if auto-load enabled)
       const cached = loadCached(season, episode);
 
@@ -1641,186 +1733,6 @@ function saveCastState(season, episode, cast, eliminated, epTitle) {
       else if (cached) setStatus("Cached analytics found — enable auto-load or click “Load Cached”.");
       else setStatus("Ready — paste summary and generate analytics.");
     })();
-    
-    // ========================================
-    // EPISODE TAB - AI GENERATION & STORAGE
-    // ========================================
-    
-    const EPISODE_WORKER_URL = els.workerUrl.value || 'https://dc-analytics.yannari19.workers.dev';
-    
-    // Storage key for episodes
-    function getEpisodeKey() {
-      const s = Number(els.season.value || 1);
-      const e = Number(els.episode.value || 1);
-      return `td_episode_s${s}_e${e}`;
-    }
-    
-    // Save episode to localStorage
-    function saveEpisodeScript() {
-      const script = els.scriptInput.value;
-      if (!script.trim()) {
-        els.scriptStatus.textContent = "No script to save.";
-        return;
-      }
-      
-      try {
-        localStorage.setItem(getEpisodeKey(), script);
-        els.scriptStatus.textContent = "✅ Saved!";
-        setTimeout(() => { els.scriptStatus.textContent = "Saved to browser storage."; }, 2000);
-      } catch (e) {
-        els.scriptStatus.textContent = "❌ Save failed: " + e.message;
-      }
-    }
-    
-    // Load episode from localStorage
-    function loadEpisodeScript() {
-      try {
-        const saved = localStorage.getItem(getEpisodeKey());
-        if (saved) {
-          els.scriptInput.value = saved;
-          els.scriptStatus.textContent = "Loaded from storage.";
-          if (els.chkAutoRenderScript.checked) {
-            renderScriptPreview(saved);
-          }
-          return true;
-        }
-      } catch (e) {
-        console.error("Load error:", e);
-      }
-      return false;
-    }
-    
-    // Clear episode
-    function clearEpisodeScript() {
-      if (!confirm('Clear the current episode script?')) return;
-      
-      els.scriptInput.value = '';
-      els.episodeSummaryInput.value = '';
-      els.scriptPreview.innerHTML = '<div class="empty-state"><div class="muted">No episode transcript yet.</div><div class="tiny muted">Paste your script on the left, then click <b>Render</b>.</div></div>';
-      
-      try {
-        localStorage.removeItem(getEpisodeKey());
-        els.scriptStatus.textContent = "Cleared.";
-      } catch (e) {
-        console.error("Clear error:", e);
-      }
-    }
-    
-    // Generate episode with AI
-    async function generateEpisodeWithAI() {
-      const summary = els.episodeSummaryInput.value.trim();
-      if (!summary) {
-        alert('⚠️ Please paste your BrantSteele episode summary first!');
-        return;
-      }
-      
-      const season = els.season.value || '5';
-      const episode = els.episode.value || '1';
-      const workerUrl = els.workerUrl.value || EPISODE_WORKER_URL;
-      
-      const btn = els.btnGenerateEpisode;
-      const originalText = btn.innerHTML;
-      btn.innerHTML = '⏳ Generating...';
-      btn.disabled = true;
-      els.scriptStatus.textContent = "Generating episode with AI...";
-      
-      try {
-        const response = await fetch(workerUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            mode: 'episode',
-            season: season,
-            episode: episode,
-            summaryText: summary
-          })
-        });
-        
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        
-        const data = await response.json();
-        const transcript = data.episodeTranscript || data.output_text || '';
-        
-        if (!transcript) {
-          throw new Error('No episode transcript returned from AI');
-        }
-        
-        els.scriptInput.value = transcript;
-        els.scriptStatus.textContent = "✅ Episode generated!";
-        saveEpisodeScript();
-        
-        if (els.chkAutoRenderScript.checked) {
-          renderScriptPreview(transcript);
-        }
-        
-      } catch (error) {
-        console.error('AI generation error:', error);
-        els.scriptStatus.textContent = "❌ Error: " + error.message;
-        alert('Error generating episode: ' + error.message);
-      } finally {
-        btn.innerHTML = originalText;
-        btn.disabled = false;
-      }
-    }
-    
-    // Episode tab button handlers
-    if (els.btnRenderScript) {
-      els.btnRenderScript.addEventListener('click', () => {
-        const script = els.scriptInput.value;
-        renderScriptPreview(script);
-        els.scriptStatus.textContent = "Rendered.";
-      });
-    }
-    
-    if (els.btnSaveScript) {
-      els.btnSaveScript.addEventListener('click', saveEpisodeScript);
-    }
-    
-    if (els.btnClearScript) {
-      els.btnClearScript.addEventListener('click', clearEpisodeScript);
-    }
-    
-    if (els.btnGenerateEpisode) {
-      els.btnGenerateEpisode.addEventListener('click', generateEpisodeWithAI);
-    }
-    
-    // Auto-render on input
-    if (els.scriptInput && els.chkAutoRenderScript) {
-      let debounceTimer;
-      els.scriptInput.addEventListener('input', () => {
-        if (!els.chkAutoRenderScript.checked) return;
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(() => {
-          renderScriptPreview(els.scriptInput.value);
-        }, 500);
-      });
-    }
-    
-    // Auto-load episode when switching to Episode tab
-    if (els.tabEpisode) {
-      els.tabEpisode.addEventListener('click', () => {
-        setTimeout(() => {
-          loadEpisodeScript();
-        }, 100);
-      });
-    }
-    
-    // Clear episode when season/episode changes
-    let lastEpisodeKey = getEpisodeKey();
-    setInterval(() => {
-      const currentKey = getEpisodeKey();
-      if (currentKey !== lastEpisodeKey) {
-        els.scriptInput.value = '';
-        els.episodeSummaryInput.value = '';
-        els.scriptPreview.innerHTML = '<div class="empty-state"><div class="muted">No episode transcript yet.</div></div>';
-        els.scriptStatus.textContent = "Not saved yet.";
-        lastEpisodeKey = currentKey;
-        loadEpisodeScript();
-      }
-    }, 1000);
-    
   })();
   
 </script>

@@ -6,47 +6,289 @@
   <title>DC Franchise — Players</title>
   <link rel="stylesheet" href="styles.css">
   <style>
-    .devotees-hero { text-align: center; padding: 50px 20px; background: linear-gradient(135deg, rgba(125,76,255,.2), rgba(255,179,71,.15), rgba(76,255,179,.1)); border-radius: 28px; border: 1px solid rgba(125,76,255,.35); margin-bottom: 32px; position: relative; overflow: hidden; }
-    .devotees-hero::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(125,76,255,.1) 0%, transparent 70%); animation: rotate 20s linear infinite; }
-    @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-    .devotees-hero h1 { position: relative; font-size: 48px; margin: 0 0 16px; background: linear-gradient(135deg, #fff, var(--accent2), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-shadow: 0 0 40px rgba(125,76,255,.5); }
-    .devotees-hero p { position: relative; color: var(--muted); font-size: 16px; margin: 0; }
-    .controls { background: linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.04)); border: 1px solid rgba(255,255,255,.15); border-radius: 20px; padding: 20px; margin: 24px 0; backdrop-filter: blur(10px); box-shadow: 0 8px 32px rgba(0,0,0,.2); }
-    input[type="search"] { background: rgba(0,0,0,.3); border: 2px solid rgba(125,76,255,.3); transition: all 0.3s ease; }
-    input[type="search"]:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(125,76,255,.15); transform: scale(1.02); }
-    select { background: rgba(0,0,0,.3); border: 2px solid rgba(255,179,71,.3); transition: all 0.3s ease; cursor: pointer; }
-    select:hover { border-color: var(--accent2); transform: scale(1.02); }
-    #count { text-align: center; padding: 12px; background: linear-gradient(90deg, transparent, rgba(125,76,255,.15), transparent); border-radius: 12px; font-weight: 700; color: var(--accent2); margin-bottom: 20px !important; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
-    .card { position: relative; background: linear-gradient(135deg, rgba(255,255,255,.1), rgba(255,255,255,.05)); border: 1px solid rgba(255,255,255,.15); border-radius: 20px; padding: 20px; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; overflow: hidden; text-decoration: none; color: inherit; display: block; }
-    .card::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,.1), transparent); transition: left 0.5s ease; }
-    .card:hover::before { left: 100%; }
-    .card:hover { transform: translateY(-12px) scale(1.03); border-color: var(--accent); box-shadow: 0 20px 60px rgba(125,76,255,.4), 0 0 0 1px rgba(125,76,255,.3), inset 0 1px 0 rgba(255,255,255,.2); background: linear-gradient(135deg, rgba(125,76,255,.15), rgba(255,179,71,.1)); }
-    .card.winner { border: 2px solid var(--accent2); background: linear-gradient(135deg, rgba(255,179,71,.15), rgba(125,76,255,.1)); position: relative; }
-    .card.winner::after { content: '👑'; position: absolute; top: 10px; right: 10px; font-size: 32px; opacity: 0.3; transition: all 0.3s ease; }
-    .card.winner:hover::after { opacity: 1; transform: scale(1.2) rotate(15deg); }
-    .card.winner:hover { border-color: var(--accent2); box-shadow: 0 20px 60px rgba(255,179,71,.5), 0 0 0 2px rgba(255,179,71,.4), inset 0 1px 0 rgba(255,255,255,.3); }
-    .player-avatar { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, rgba(125,76,255,.3), rgba(255,179,71,.2)); border: 3px solid var(--accent); overflow: hidden; position: relative; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 16px rgba(0,0,0,.3), inset 0 2px 4px rgba(255,255,255,.2); transition: all 0.3s ease; }
-    .card:hover .player-avatar { transform: scale(1.1) rotate(5deg); border-color: var(--accent2); box-shadow: 0 12px 24px rgba(125,76,255,.5), inset 0 2px 4px rgba(255,255,255,.3); }
-    .player-avatar img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease; }
-    .card:hover .player-avatar img { transform: scale(1.1); }
-    .player-avatar .fallback { font-weight: 800; font-size: 32px; position: absolute; display: none; }
-    .row { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
-    .name { font-weight: 900; font-size: 20px; color: var(--text); margin-bottom: 6px; transition: all 0.3s ease; }
-    .card:hover .name { color: var(--accent2); transform: translateX(4px); }
-    .sub { color: var(--muted); font-size: 13px; font-weight: 500; }
-    .badges { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
-    .badge { background: rgba(0,0,0,.4); border: 1px solid rgba(255,255,255,.15); padding: 6px 12px; border-radius: 12px; font-size: 12px; font-weight: 700; color: var(--muted); transition: all 0.3s ease; }
-    .card:hover .badge { transform: translateY(-2px); border-color: rgba(255,255,255,.3); }
-    .badge.gold { background: linear-gradient(135deg, rgba(255,179,71,.3), rgba(255,179,71,.15)); border-color: var(--accent2); color: var(--accent2); box-shadow: 0 4px 12px rgba(255,179,71,.3); }
-    .badge.purple { background: linear-gradient(135deg, rgba(125,76,255,.3), rgba(125,76,255,.15)); border-color: var(--accent); color: var(--accent); box-shadow: 0 4px 12px rgba(125,76,255,.3); }
-    .badge.good { background: linear-gradient(135deg, rgba(76,255,179,.3), rgba(76,255,179,.15)); border-color: rgba(76,255,179,.7); color: rgba(76,255,179,.9); box-shadow: 0 4px 12px rgba(76,255,179,.3); }
+    /* Advanced Modern Design for Devotees */
+    
+    .devotees-hero {
+      text-align: center;
+      padding: 50px 20px;
+      background: linear-gradient(135deg, rgba(125,76,255,.2), rgba(255,179,71,.15), rgba(76,255,179,.1));
+      border-radius: 28px;
+      border: 1px solid rgba(125,76,255,.35);
+      margin-bottom: 32px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .devotees-hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(125,76,255,.1) 0%, transparent 70%);
+      animation: rotate 20s linear infinite;
+    }
+    
+    @keyframes rotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    
+    .devotees-hero h1 {
+      position: relative;
+      font-size: 48px;
+      margin: 0 0 16px;
+      background: linear-gradient(135deg, #fff, var(--accent2), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: 0 0 40px rgba(125,76,255,.5);
+    }
+    
+    .devotees-hero p {
+      position: relative;
+      color: var(--muted);
+      font-size: 16px;
+      margin: 0;
+    }
+    
+    .controls {
+      background: linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 20px;
+      padding: 20px;
+      margin: 24px 0;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 32px rgba(0,0,0,.2);
+    }
+    
+    input[type="search"] {
+      background: rgba(0,0,0,.3);
+      border: 2px solid rgba(125,76,255,.3);
+      transition: all 0.3s ease;
+    }
+    
+    input[type="search"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(125,76,255,.15);
+      transform: scale(1.02);
+    }
+    
+    select {
+      background: rgba(0,0,0,.3);
+      border: 2px solid rgba(255,179,71,.3);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    
+    select:hover {
+      border-color: var(--accent2);
+      transform: scale(1.02);
+    }
+    
+    #count {
+      text-align: center;
+      padding: 12px;
+      background: linear-gradient(90deg, transparent, rgba(125,76,255,.15), transparent);
+      border-radius: 12px;
+      font-weight: 700;
+      color: var(--accent2);
+      margin-bottom: 20px !important;
+    }
+    
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+    }
+    
+    .card {
+      position: relative;
+      background: linear-gradient(135deg, rgba(255,255,255,.1), rgba(255,255,255,.05));
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 20px;
+      padding: 20px;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      cursor: pointer;
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+    
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.1), transparent);
+      transition: left 0.5s ease;
+    }
+    
+    .card:hover::before {
+      left: 100%;
+    }
+    
+    .card:hover {
+      transform: translateY(-12px) scale(1.03);
+      border-color: var(--accent);
+      box-shadow: 
+        0 20px 60px rgba(125,76,255,.4),
+        0 0 0 1px rgba(125,76,255,.3),
+        inset 0 1px 0 rgba(255,255,255,.2);
+      background: linear-gradient(135deg, rgba(125,76,255,.15), rgba(255,179,71,.1));
+    }
+    
+    .card.winner {
+      border: 2px solid var(--accent2);
+      background: linear-gradient(135deg, rgba(255,179,71,.15), rgba(125,76,255,.1));
+      position: relative;
+    }
+    
+    .card.winner::after {
+      content: '👑';
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 32px;
+      opacity: 0.3;
+      transition: all 0.3s ease;
+    }
+    
+    .card.winner:hover::after {
+      opacity: 1;
+      transform: scale(1.2) rotate(15deg);
+    }
+    
+    .card.winner:hover {
+      border-color: var(--accent2);
+      box-shadow: 
+        0 20px 60px rgba(255,179,71,.5),
+        0 0 0 2px rgba(255,179,71,.4),
+        inset 0 1px 0 rgba(255,255,255,.3);
+    }
+    
+    .player-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(125,76,255,.3), rgba(255,179,71,.2));
+      border: 3px solid var(--accent);
+      overflow: hidden;
+      position: relative;
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 
+        0 8px 16px rgba(0,0,0,.3),
+        inset 0 2px 4px rgba(255,255,255,.2);
+      transition: all 0.3s ease;
+    }
+    
+    .card:hover .player-avatar {
+      transform: scale(1.1) rotate(5deg);
+      border-color: var(--accent2);
+      box-shadow: 
+        0 12px 24px rgba(125,76,255,.5),
+        inset 0 2px 4px rgba(255,255,255,.3);
+    }
+    
+    .player-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+    
+    .card:hover .player-avatar img {
+      transform: scale(1.1);
+    }
+    
+    .player-avatar .fallback {
+      font-weight: 800;
+      font-size: 32px;
+      position: absolute;
+      display: none;
+    }
+    
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    
+    .name {
+      font-weight: 900;
+      font-size: 20px;
+      color: var(--text);
+      margin-bottom: 6px;
+      transition: all 0.3s ease;
+    }
+    
+    .card:hover .name {
+      color: var(--accent2);
+      transform: translateX(4px);
+    }
+    
+    .sub {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 500;
+    }
+    
+    .badges {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    
+    .badge {
+      background: rgba(0,0,0,.4);
+      border: 1px solid rgba(255,255,255,.15);
+      padding: 6px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      transition: all 0.3s ease;
+    }
+    
+    .card:hover .badge {
+      transform: translateY(-2px);
+      border-color: rgba(255,255,255,.3);
+    }
+    
+    .badge.gold {
+      background: linear-gradient(135deg, rgba(255,179,71,.3), rgba(255,179,71,.15));
+      border-color: var(--accent2);
+      color: var(--accent2);
+      box-shadow: 0 4px 12px rgba(255,179,71,.3);
+    }
+    
+    .badge.purple {
+      background: linear-gradient(135deg, rgba(125,76,255,.3), rgba(125,76,255,.15));
+      border-color: var(--accent);
+      color: var(--accent);
+      box-shadow: 0 4px 12px rgba(125,76,255,.3);
+    }
+    
+    .badge.good {
+      background: linear-gradient(135deg, rgba(76,255,179,.3), rgba(76,255,179,.15));
+      border-color: rgba(76,255,179,.7);
+      color: rgba(76,255,179,.9);
+      box-shadow: 0 4px 12px rgba(76,255,179,.3);
+    }
   </style>
 </head>
 <body>
 
-<!-- MODERN SITE HEADER START -->
-
+<!-- SITE HEADER START -->
 <header class="modern-header" id="modernHeader">
   <div class="header-container">
     <!-- Top Bar -->
@@ -171,17 +413,17 @@
   }
 })();
 </script>
-<!-- MODERN SITE HEADER END -->
-
+<!-- SITE HEADER END -->
 
 <main style="min-height:100vh; padding-bottom:100px;">
   <div class="container">
+    
     <div class="topbar">
       <div>
         <div class="brand">DC <span>Franchise</span> Database</div>
-        <div class="meta">✅ Works offline! • Search & sort enabled</div>
+        <div class="meta">Dynamic player profiles • Powered by JSON • Search & sort enabled</div>
       </div>
-      <div class="meta">58 total players • 86 appearances</div>
+      <div class="meta">40 total players • 68 appearances</div>
     </div>
     
     <div class="tabs">
@@ -201,154 +443,215 @@
 
     <div class="controls">
       <div style="display:grid; grid-template-columns:2fr 1fr; gap:16px;">
-        <input type="search" id="search" placeholder="🔍 Search players by name..." style="padding:14px 20px; border-radius:14px; font-size:15px; width:100%; color:var(--text);"/>
-        <select id="sort" style="padding:14px 20px; border-radius:14px; font-size:15px; color:var(--text);">
+        <input 
+          type="search" 
+          id="search" 
+          placeholder="🔍 Search players by name..." 
+          style="padding:14px 20px; border-radius:14px; font-size:15px; width:100%; color:var(--text);"
+        />
+        <select 
+          id="sort" 
+          style="padding:14px 20px; border-radius:14px; font-size:15px; color:var(--text);"
+        >
           <option value="place-asc">📈 Best Placement (1st → Last)</option>
           <option value="place-desc">📉 Worst Placement (Last → 1st)</option>
           <option value="name-asc">🔤 Name (A → Z)</option>
           <option value="name-desc">🔤 Name (Z → A)</option>
-          <option value="seasons-desc">📅 Seasons (Most → Fewest)</option>
-          <option value="seasons-asc">📅 Seasons (Fewest → Most)</option>
-          <option value="votes-desc">🗳️ Votes Against (Most → Fewest)</option>
-          <option value="votes-asc">🗳️ Votes Against (Fewest → Most)</option>
-          <option value="chwins-desc">🏅 Challenge Wins (Most → Fewest)</option>
-          <option value="chwins-asc">🏅 Challenge Wins (Fewest → Most)</option>
         </select>
       </div>
     </div>
 
-    <div id="count" style="margin:20px 0; font-size:14px; color:var(--muted);">Loading players...</div>
-    <div class="grid" id="grid"></div>
-    <div class="footer">58 total players across 5 seasons • 86 total appearances</div>
+    <div id="count" style="margin:20px 0; font-size:14px; color:var(--muted);">
+      Loading players...
+    </div>
+
+    <div class="grid" id="grid">
+      <!-- Player cards will be inserted here by JavaScript -->
+    </div>
+
+    <div class="footer">40 total players across 4 seasons • 68 total appearances</div>
   </div>
 </main>
 
+<!-- SITE FOOTER START -->
 <footer class="siteFooter">
   <div class="footerInner">
     <div class="footerTitle">DC Franchise Database</div>
     <div class="footerSub">Static archive • 5 seasons • 58 players • Icons: name.png</div>
   </div>
 </footer>
+<!-- SITE FOOTER END -->
 
 <script>
-const PLAYERS_DATA = {"franchise":{"name":"DC Franchise Database","totalSeasons":5,"totalPlayers":58,"description":"Total Drama franchise player statistics and performance data"},"players":[{"id":"alejandro","name":"Alejandro","seasons":[1,2,4],"totalSeasons":3,"bestPlacement":1,"wins":1,"totalChallengeWins":13,"totalImmunityWins":9,"totalRewardWins":2,"totalVotesAgainst":34,"totalIdolsFound":0,"totalJuryVotes":12,"tier":"S+","badges":["S4 Winner","Tier S+ Player","Strategic Mastermind","3 Finals Appearances"],"seasonDetails":[{"season":4,"placement":1,"status":"Winner","tribe":"Yellow \u2192 Red \u2192 Green \u2192 Campers","challengeWins":4,"immunityWins":2,"rewardWins":2,"votesReceived":9,"idolsFound":0,"strategicRank":1,"juryVotes":7,"finalVote":"7-6-1","unbreakableBonds":["Cameron","Noah"],"notes":["Won fire-making vs Gwen","2 major meltdowns (Ep 10, 14)","Back-to-back immunities (Ep 7-8)"]},{"season":2,"placement":2,"status":"Runner-up","tribe":"Screaming Gaffers","challengeWins":5,"immunityWins":5,"rewardWins":0,"votesReceived":11,"idolsFound":0,"strategicRank":1,"juryVotes":1,"finalVote":"1-5-1","notes":["Saved by Ezekiel's idol play (Ep 8)"]},{"season":1,"placement":2,"status":"Runner-up","tribe":"Screaming Gophers","challengeWins":4,"immunityWins":4,"rewardWins":0,"votesReceived":5,"idolsFound":0,"strategicRank":"High","juryVotes":4,"finalVote":"4-5","unbreakableBonds":["Trent"],"notes":["Lost to Lindsay"]}],"story":"Three finals, one crown. Strategic mastermind who finally won in Season 4 after two runner-up finishes. Known for alliance control, adaptability, and clutch fire-making performance."},{"id":"anne-maria","name":"Anne Maria","seasons":[3,4],"totalSeasons":2,"bestPlacement":5,"wins":0,"totalChallengeWins":1,"totalImmunityWins":0,"totalRewardWins":1,"totalVotesAgainst":21,"totalIdolsFound":1,"badges":["Wasted Idol (Episode 1)","EoE Advantage Giver","Pre-Merge Boot"],"seasonDetails":[{"season":4,"placement":16,"status":"Juror (EoE)","tribe":"Red","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":6,"idolsFound":1,"strategicRank":"Low","notes":["WASTED idol on Zoey (0 votes!)","Episode 1 boot (Dakota eliminated)","Gave extra vote to Jo from EoE","Voted Alejandro at FTC"]},{"season":3,"placement":5,"status":"6th Juror","tribe":"Mutant Maggots \u2192 Toxic Rats \u2192 Campers","challengeWins":1,"immunityWins":0,"rewardWins":1,"votesReceived":15,"idolsFound":0,"strategicRank":"Low","unbreakableBonds":["Cameron"],"notes":["Most targeted in S3 (15 votes)","Voted Emma at FTC"]}],"story":"Betrayed by unbreakable partner Cameron in S3. Wasted idol on Zoey in S4 Episode 1, leading to early elimination."},{"id":"b","name":"B","seasons":[3],"totalSeasons":1,"bestPlacement":14,"wins":0,"totalChallengeWins":0,"totalImmunityWins":0,"totalRewardWins":0,"totalVotesAgainst":6,"totalIdolsFound":0,"seasonDetails":[{"season":3,"placement":14,"status":"Pre-Jury","tribe":"Toxic Rats","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":6,"idolsFound":0,"strategicRank":"Very Low","notes":["Unanimous target Episode 3","Socially isolated"]}],"story":"Socially isolated pre-merge boot. Never formed alliances or meaningful connections."},{"id":"beth","name":"Beth","seasons":[1,2],"totalSeasons":2,"bestPlacement":4,"wins":0,"totalChallengeWins":1,"totalImmunityWins":1,"totalRewardWins":0,"totalVotesAgainst":26,"totalIdolsFound":1,"seasonDetails":[{"season":2,"placement":4,"status":"Juror","tribe":"Screaming Gaffers","challengeWins":1,"immunityWins":1,"rewardWins":0,"votesReceived":4,"idolsFound":1,"notes":["2-1-1 vote"]},{"season":1,"placement":5,"status":"Final Juror","tribe":"Screaming Gophers","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":22,"idolsFound":0,"notes":["Used Safety Without Power","Found Mystery Box key"]}],"story":"Strong alliance loyalty with Lindsay. Made Final 4 in both seasons but seen as too dangerous to take to the end."},{"id":"brick","name":"Brick","seasons":[3],"totalSeasons":1,"bestPlacement":9,"wins":0,"totalChallengeWins":1,"totalImmunityWins":1,"totalRewardWins":0,"totalVotesAgainst":5,"totalIdolsFound":0,"seasonDetails":[{"season":3,"placement":9,"status":"2nd Juror","tribe":"Mutant Maggots","challengeWins":1,"immunityWins":1,"rewardWins":0,"votesReceived":5,"idolsFound":0,"strategicRank":"Low","unbreakableBonds":["Dwayne","Mike"],"notes":["Won merge immunity (Episode 7)","Voted Scott at FTC"]}],"story":"Won first individual immunity at merge. Solid mid-merge player with strong bonds but no strategic control."},{"id":"bridgette","name":"Bridgette","seasons":[1,2],"totalSeasons":2,"bestPlacement":3,"wins":0,"totalChallengeWins":5,"totalImmunityWins":4,"totalRewardWins":1,"totalVotesAgainst":24,"totalIdolsFound":1,"seasonDetails":[{"season":2,"placement":14,"status":"Pre-Juror","tribe":"Killer Grips","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":4,"idolsFound":0,"notes":["First boot - 4-3 vote"]},{"season":1,"placement":3,"status":"Final Juror","tribe":"Screaming Gophers","challengeWins":5,"immunityWins":4,"rewardWins":1,"votesReceived":20,"idolsFound":1,"unbreakableBonds":["Trent","Alejandro"],"notes":["Used Safety Without Power (Ep 22)"]}],"story":"Social heart of Season 1 with multiple immunities and idol. First boot in Season 2 due to tribe disagreements."},{"id":"cameron","name":"Cameron","seasons":[3,4],"totalSeasons":2,"bestPlacement":3,"wins":0,"totalChallengeWins":6,"totalImmunityWins":2,"totalRewardWins":4,"totalVotesAgainst":6,"totalIdolsFound":1,"badges":["Strategic #3","Unbreakable: Alejandro","Final 5"],"seasonDetails":[{"season":4,"placement":5,"status":"5th Place Juror","tribe":"Red \u2192 Yellow \u2192 Red \u2192 Campers","challengeWins":3,"immunityWins":1,"rewardWins":2,"votesReceived":2,"idolsFound":0,"strategicRank":3,"unbreakableBonds":["Alejandro"],"notes":["Core of Red Alliance #4","Voted Zoey at FTC"]},{"season":3,"placement":3,"status":"Finalist","tribe":"Mutant Maggots \u2192 Toxic Rats \u2192 Campers","challengeWins":3,"immunityWins":1,"rewardWins":2,"votesReceived":4,"idolsFound":1,"strategicRank":3,"unbreakableBonds":["Anne Maria"],"notes":["1 jury vote (Mike)","Cast tiebreaker for Emma"]}],"story":"Strategic mastermind who made brutal move voting out unbreakable partner Anne Maria in S3. Strong strategic player across both seasons."},{"id":"cody","name":"Cody","seasons":[1],"totalSeasons":1,"bestPlacement":19,"wins":0,"totalChallengeWins":0,"totalImmunityWins":0,"totalRewardWins":0,"totalVotesAgainst":6,"totalIdolsFound":0,"seasonDetails":[{"season":1,"placement":19,"status":"Pre-Juror","tribe":"Screaming Gophers","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":6,"idolsFound":0,"notes":["6-5 vote","Leshawna flipped"]}],"story":"First casualty of the Gophers' internal alliance war. Voted out 6-5 in Episode 6 when Leshawna unexpectedly flipped."},{"id":"courtney","name":"Courtney","seasons":[1,2,4],"totalSeasons":3,"bestPlacement":9,"wins":0,"totalChallengeWins":0,"totalImmunityWins":0,"totalRewardWins":0,"totalVotesAgainst":32,"totalIdolsFound":1,"badges":["Wasted Extra Vote","Major Meltdown"],"seasonDetails":[{"season":4,"placement":14,"status":"Juror","tribe":"Yellow \u2192 Red \u2192 Campers","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":13,"idolsFound":0,"strategicRank":"Medium","notes":["4-2 on revote (Episode 5 Part 2)","Major meltdown","Wasted extra vote","Voted Alejandro at FTC"]},{"season":2,"placement":11,"status":"Pre-Juror","tribe":"Screaming Gaffers","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":9,"idolsFound":1,"notes":["3-2 vote"]},{"season":1,"placement":9,"status":"Juror","tribe":"Screaming Gophers","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":10,"idolsFound":0,"notes":["Multiple meltdowns"]}],"story":"Volatile gameplay across three seasons. Multiple meltdowns and catastrophic extra vote misplay in S4 led to elimination."},{"id":"crimson","name":"Crimson","seasons":[3],"totalSeasons":1,"bestPlacement":16,"wins":0,"totalChallengeWins":0,"totalImmunityWins":0,"totalRewardWins":0,"totalVotesAgainst":7,"totalIdolsFound":0,"seasonDetails":[{"season":3,"placement":16,"status":"First Boot","tribe":"Mutant Maggots","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":7,"idolsFound":0,"strategicRank":"Very Low","notes":["First boot (Episode 1)","7-1 vote"]}],"story":"First boot of Season 3. Rested at camp instead of bonding, targeted as challenge liability."},{"id":"dakota","name":"Dakota","seasons":[3,4],"totalSeasons":2,"bestPlacement":12,"wins":0,"totalChallengeWins":0,"totalImmunityWins":0,"totalRewardWins":0,"totalVotesAgainst":19,"totalIdolsFound":0,"badges":["First Boot","QUIT EoE (Only One!)","S3 Fan Favorite"],"seasonDetails":[{"season":4,"placement":18,"status":"Pre-Juror (QUIT EoE)","tribe":"Red","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":9,"idolsFound":0,"strategicRank":"Low","notes":["First boot Episode 1 (7-2)","QUIT EoE (first & only!)","Practice advantage exhausted"]},{"season":3,"placement":12,"status":"Pre-Jury","tribe":"Toxic Rats \u2192 Mutant Maggots","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":10,"idolsFound":0,"strategicRank":"Low","notes":["FAN FAVORITE winner!","Swap casualty"]}],"story":"Fan Favorite winner in S3 despite pre-merge exit. First boot in S4, became first and only person to quit Edge of Extinction."},{"id":"dawn","name":"Dawn","seasons":[3],"totalSeasons":1,"bestPlacement":8,"wins":0,"totalChallengeWins":0,"totalImmunityWins":0,"totalRewardWins":0,"totalVotesAgainst":10,"totalIdolsFound":0,"seasonDetails":[{"season":3,"placement":8,"status":"3rd Juror","tribe":"Toxic Rats \u2192 Mutant Maggots","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":10,"idolsFound":0,"strategicRank":"Low","notes":["Consensus target Episode 9","Voted Scott at FTC"]}],"story":"Consensus target Episode 9. Even allies voted her out when she became the agreed-upon target."},{"id":"dj","name":"DJ","seasons":[1,2],"totalSeasons":2,"bestPlacement":5,"wins":0,"totalChallengeWins":0,"totalImmunityWins":0,"totalRewardWins":0,"totalVotesAgainst":20,"totalIdolsFound":0,"seasonDetails":[{"season":2,"placement":5,"status":"Juror","tribe":"Killer Grips","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":11,"idolsFound":0,"notes":["4-1 vote at Final Five"]},{"season":1,"placement":22,"status":"Pre-Juror","tribe":"Killer Bass","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":9,"idolsFound":0,"notes":["9 votes in Episode 3"]}],"story":"Made merge and jury in S2 after early boot in S1. Social friction and conflicts prevented deeper runs."},{"id":"duncan","name":"Duncan","seasons":[1,2,4],"totalSeasons":3,"bestPlacement":1,"wins":1,"totalChallengeWins":2,"totalImmunityWins":1,"totalRewardWins":1,"totalVotesAgainst":17,"totalIdolsFound":1,"badges":["S2 Winner","Unbreakable: Gwen","Final 6","Major Meltdown"],"seasonDetails":[{"season":4,"placement":7,"status":"Juror","tribe":"Yellow \u2192 Green \u2192 Campers","challengeWins":1,"immunityWins":0,"rewardWins":1,"votesReceived":10,"idolsFound":0,"strategicRank":"Medium","unbreakableBonds":["Gwen"],"notes":["Consensus target (3-2-1)","Voted Scott at FTC (only vote!)"]},{"season":2,"placement":1,"status":"Winner","tribe":"Screaming Gaffers","challengeWins":1,"immunityWins":1,"rewardWins":0,"votesReceived":2,"idolsFound":0,"notes":["Won Final Tribal 5-1-1"]},{"season":1,"placement":14,"status":"Juror","tribe":"Killer Bass","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":5,"idolsFound":1,"notes":["5-3 vote"]}],"story":"Season 2 Winner. Survived constant targeting through clutch immunity wins. Previous winner eliminated at Final 6 in S4."},{"id":"dwayne","name":"Dwayne","seasons":[3],"totalSeasons":1,"bestPlacement":10,"wins":0,"totalChallengeWins":0,"totalImmunityWins":0,"totalRewardWins":0,"totalVotesAgainst":6,"totalIdolsFound":0,"seasonDetails":[{"season":3,"placement":10,"status":"1st Juror","tribe":"Mutant Maggots","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":6,"idolsFound":0,"strategicRank":"Low-Medium","unbreakableBonds":["Brick"],"notes":["First juror","Voted Emma at FTC"]}],"story":"First juror of Season 3. Strong social game but blindsided 5-3-2 at merge by Campers Alliance."},{"id":"emma","name":"Emma","seasons":[3,4],"totalSeasons":2,"bestPlacement":1,"wins":1,"totalChallengeWins":4,"totalImmunityWins":1,"totalRewardWins":3,"totalVotesAgainst":5,"totalIdolsFound":0,"badges":["S3 Winner","2nd Boot (Previous Winner Target)","Red Alliance Betrayed"],"seasonDetails":[{"season":4,"placement":17,"status":"Juror (EoE)","tribe":"Red","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":5,"idolsFound":0,"strategicRank":"Medium","notes":["Episode 2 boot (5-3)","Previous winner too dangerous","Voted Zoey at FTC","Re-entry penalty used on Anne Maria"]},{"season":3,"placement":1,"status":"WINNER","tribe":"Toxic Rats \u2192 Campers","challengeWins":4,"immunityWins":1,"rewardWins":3,"votesReceived":0,"idolsFound":0,"strategicRank":2,"notes":["4-3-1 tiebreaker victory","Zero votes until Final 4"]}],"story":"Winner of Season 3 with perfect game (zero votes until F4). Second boot in S4 as previous winner threat."},{"id":"eva","name":"Eva","seasons":[1],"totalSeasons":1,"bestPlacement":21,"wins":0,"totalChallengeWins":0,"totalImmunityWins":0,"totalRewardWins":0,"totalVotesAgainst":6,"totalIdolsFound":0,"seasonDetails":[{"season":1,"placement":21,"status":"Pre-Juror","tribe":"Killer Bass","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":6,"idolsFound":0,"notes":["6-4 vote"]}],"story":"Voted out 6-4 in Episode 3 as challenge liability. Social friction prevented alliance formation."},{"id":"ezekiel","name":"Ezekiel","seasons":[1,2],"totalSeasons":2,"bestPlacement":4,"wins":0,"totalChallengeWins":1,"totalImmunityWins":0,"totalRewardWins":1,"totalVotesAgainst":12,"totalIdolsFound":3,"seasonDetails":[{"season":2,"placement":6,"status":"Juror","tribe":"Killer Grips","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":4,"idolsFound":1,"notes":["4-2 vote","Legendary idol play on Alejandro at merge"]},{"season":1,"placement":4,"status":"Final Juror","tribe":"Screaming Gophers","challengeWins":1,"immunityWins":0,"rewardWins":1,"votesReceived":8,"idolsFound":2,"notes":["Lost fire-making to Alejandro at F4"]}],"story":"Finalist in S1 who lost fire-making. Made legendary idol play saving Alejandro in S2 but fell to social isolation."},{"id":"geoff","name":"Geoff","seasons":[1,4],"totalSeasons":2,"bestPlacement":6,"wins":0,"totalChallengeWins":2,"totalImmunityWins":0,"totalRewardWins":1,"totalVotesAgainst":42,"totalIdolsFound":0,"badges":["EoE Returnee","TRAGIC ARC","Voted Out TWICE by Zoey","Shortest Return Ever","29 Total Votes!"],"seasonDetails":[{"season":4,"placement":6,"status":"Juror (double elimination!)","tribe":"Yellow \u2192 Green \u2192 Campers \u2192 EoE \u2192 Campers","challengeWins":2,"immunityWins":0,"rewardWins":1,"votesReceived":29,"idolsFound":0,"strategicRank":"Medium","unbreakableBonds":["Zoey"],"notes":["Voted out by Zoey TWICE","Won EoE return Ep 13","Re-eliminated SAME EPISODE","Still voted Zoey at FTC!"]},{"season":1,"placement":20,"status":"Pre-Juror","tribe":"Killer Bass","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":13,"idolsFound":0,"notes":["7-2 vote"]}],"story":"TRAGIC ARC: Voted out twice by unbreakable partner Zoey. Won EoE return only to be eliminated same episode - shortest return ever."},{"id":"gwen","name":"Gwen","seasons":[1,2,4],"totalSeasons":3,"bestPlacement":4,"wins":0,"totalChallengeWins":9,"totalImmunityWins":5,"totalRewardWins":1,"totalVotesAgainst":26,"totalIdolsFound":0,"badges":["4 Consecutive Immunities!","Challenge Beast","Massive Improvement Arc"],"seasonDetails":[{"season":4,"placement":4,"status":"Juror (lost fire-making)","tribe":"Yellow \u2192 Red \u2192 Campers","challengeWins":4,"immunityWins":4,"rewardWins":0,"votesReceived":13,"idolsFound":0,"strategicRank":"Medium","unbreakableBonds":["Duncan","Zoey"],"notes":["4 CONSECUTIVE immunities (Ep 11-14) - FRANCHISE RECORD!","Lost fire-making to Alejandro"]},{"season":2,"placement":8,"status":"First Juror","tribe":"Screaming Gaffers","challengeWins":1,"immunityWins":1,"rewardWins":1,"votesReceived":9,"idolsFound":0,"notes":["4-4 tie revote"]},{"season":1,"placement":16,"status":"Pre-Juror","tribe":"Screaming Gophers","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":4,"idolsFound":0,"notes":["5-4 tribe swap casualty"]}],"story":"Massive improvement arc: 16th \u2192 8th \u2192 4th. Set franchise record with 4 consecutive immunity wins. Lost when couldn't win fire-making."},{"id":"zoey","name":"Zoey","seasons":[3,4],"totalSeasons":2,"bestPlacement":2,"wins":0,"totalChallengeWins":8,"totalImmunityWins":5,"totalRewardWins":3,"totalVotesAgainst":4,"totalIdolsFound":1,"totalJuryVotes":6,"badges":["S4 Runner-Up (6 votes)","Social Queen","3 Unbreakable Bonds!"],"seasonDetails":[{"season":4,"placement":2,"status":"Runner-up","tribe":"Red \u2192 Green \u2192 Campers","challengeWins":4,"immunityWins":3,"rewardWins":1,"votesReceived":1,"idolsFound":1,"strategicRank":"High Social, Medium Strategic","juryVotes":6,"finalVote":"6-7","unbreakableBonds":["Gwen","Scott","Geoff"],"notes":["UNPRECEDENTED: 3 unbreakable bonds at once!","Perfect idol play saved Geoff (7 votes cancelled)","Voted out Geoff TWICE (Ep 10 & 13)","Made finals with zero votes against (1 cancelled)"]},{"season":3,"placement":4,"status":"7th Juror","tribe":"Mutant Maggots \u2192 Campers","challengeWins":4,"immunityWins":2,"rewardWins":2,"votesReceived":3,"idolsFound":0,"strategicRank":"Medium-High","unbreakableBonds":["Mike","Scott"],"notes":["Game-changing flip Episode 8","Back-to-back immunities (Ep 11-12)","Voted Scott at FTC"]}],"story":"UNPRECEDENTED social dominance with 3 unbreakable bonds at once in S4. Lost 6-7 to Alejandro in closest finale ever. Most socially connected player in franchise history."},{"id":"harold","name":"Harold","seasons":[1,4],"totalSeasons":2,"bestPlacement":8,"wins":0,"totalChallengeWins":3,"totalImmunityWins":1,"totalRewardWins":2,"totalVotesAgainst":12,"totalIdolsFound":0,"badges":["Strategic: Medium","Advantage Menu (Extra Vote)","Immunity Win Ep 10","Betrayed by Cameron"],"seasonDetails":[{"season":4,"placement":8,"status":"Juror","tribe":"Yellow \u2192 Campers","challengeWins":3,"immunityWins":1,"rewardWins":2,"votesReceived":6,"idolsFound":0,"strategicRank":"Medium","advantages":["Advantage Menu: Extra vote (used Ep 3)"],"notes":["Unbreakable with Gwen (dissolved)","3-2 revote at F8","Betrayed by Cameron","Voted Alejandro at FTC"]},{"season":1,"placement":17,"status":"Pre-Juror","tribe":"Killer Bass","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":6,"idolsFound":0,"notes":["4-3-2 vote","Held idol without playing it"]}],"story":"Found Advantage Menu in S4. Betrayed by Cameron (strong bond) at F8 revote. Won immunity Episode 10."},{"id":"heather","name":"Heather","seasons":[1,2,4],"totalSeasons":3,"bestPlacement":8,"wins":0,"totalChallengeWins":3,"totalImmunityWins":3,"totalRewardWins":1,"totalVotesAgainst":27,"totalIdolsFound":2,"badges":["Strategic: Medium","Pre-Merge Boot","Multiple Fights","Voted Alejandro at FTC"],"seasonDetails":[{"season":4,"placement":15,"status":"Juror (EoE)","tribe":"Yellow \u2192 Red \u2192 Campers","challengeWins":1,"immunityWins":1,"rewardWins":0,"votesReceived":10,"idolsFound":0,"strategicRank":"Medium","notes":["Yellow Alliance #1 (dissolved)","3-2 at Episode 5","Major fights with Noah & Courtney","Voted Alejandro at FTC"]},{"season":2,"placement":9,"status":"Juror","tribe":"Killer Grips","challengeWins":1,"immunityWins":1,"rewardWins":0,"votesReceived":7,"idolsFound":0,"notes":["7-2 vote"]},{"season":1,"placement":8,"status":"Juror","tribe":"Screaming Gophers","challengeWins":1,"immunityWins":1,"rewardWins":1,"votesReceived":10,"idolsFound":2,"notes":["Legendary save of Bridgette","Lost to Owen on Exile Beach"]}],"story":"Strategic player across three seasons. Found 2 idols in S1. Multiple major fights led to pre-merge exit in S4."},{"id":"izzy","name":"Izzy","seasons":[1],"totalSeasons":1,"bestPlacement":18,"wins":0,"totalChallengeWins":0,"totalImmunityWins":0,"totalRewardWins":0,"totalVotesAgainst":5,"totalIdolsFound":0,"seasonDetails":[{"season":1,"placement":18,"status":"Pre-Juror","tribe":"Screaming Gophers","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":5,"idolsFound":0,"notes":["5-4 vote","Tribe swap casualty"]}],"story":"Eliminated 5-4 in Episode 7 after tribe swap. Personal hatred with Beth led to elimination."},{"id":"jo","name":"Jo","seasons":[3,4],"totalSeasons":2,"bestPlacement":7,"wins":0,"totalChallengeWins":0,"totalImmunityWins":0,"totalRewardWins":1,"totalVotesAgainst":17,"totalIdolsFound":0,"badges":["S4 FAN FAVORITE!","4 Extreme Hatreds","Chaotic Gameplay","Pre-Merge Exit"],"seasonDetails":[{"season":4,"placement":10,"status":"Juror + FAN FAVORITE!","tribe":"Red \u2192 Yellow \u2192 Campers","challengeWins":0,"immunityWins":0,"rewardWins":1,"votesReceived":9,"idolsFound":0,"strategicRank":"Low","advantages":["Extra vote from Anne Maria (EoE), used Ep 8"],"notes":["4 EXTREME HATREDS (Mike, Cameron, Zoey, Harold)","5-3 revote at F9","Voted Alejandro at FTC"]},{"season":3,"placement":7,"status":"4th Juror","tribe":"Mutant Maggots","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":8,"idolsFound":0,"strategicRank":"Very Low","notes":["4 extreme hatreds (Cameron, Zoey, Mike, Scott)","Voted Emma at FTC"]}],"story":"Most hated player with 4 EXTREME HATRED relationships. FAN FAVORITE winner in S4 for chaotic entertainment value."},{"id":"justin","name":"Justin","seasons":[1,2],"totalSeasons":2,"bestPlacement":10,"wins":0,"totalChallengeWins":0,"totalImmunityWins":0,"totalRewardWins":0,"totalVotesAgainst":16,"totalIdolsFound":1,"seasonDetails":[{"season":2,"placement":10,"status":"Juror","tribe":"Killer Grips","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":4,"idolsFound":0,"notes":["6-4* vote","First juror after Ezekiel's idol play"]},{"season":1,"placement":24,"status":"First Boot","tribe":"Killer Bass","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":12,"idolsFound":1,"notes":["Found idol early but didn't play it","Fan Favorite (S1)"]}],"story":"First boot in S1 despite finding idol. First juror in S2 after idol play chaos."},{"id":"katie","name":"Katie","seasons":[1],"totalSeasons":1,"bestPlacement":12,"wins":0,"totalChallengeWins":0,"totalImmunityWins":0,"totalRewardWins":0,"totalVotesAgainst":5,"totalIdolsFound":1,"seasonDetails":[{"season":1,"placement":12,"status":"Pre-Juror","tribe":"Killer Bass","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":5,"idolsFound":1,"notes":["5-3-3*-1 vote","Found Killer Bass HII","Part of MAPLV"]}],"story":"Played solid pre-merge game as part of MAPLV with Sadie. Found Hidden Immunity Idol."},{"id":"leshawna","name":"Leshawna","seasons":[1,2],"totalSeasons":2,"bestPlacement":11,"wins":0,"totalChallengeWins":1,"totalImmunityWins":1,"totalRewardWins":0,"totalVotesAgainst":13,"totalIdolsFound":0,"seasonDetails":[{"season":2,"placement":13,"status":"Pre-Juror","tribe":"Screaming Gaffers","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":6,"idolsFound":0,"notes":["6-1 vote","Second boot"]},{"season":1,"placement":11,"status":"First Juror","tribe":"Screaming Gophers","challengeWins":1,"immunityWins":1,"rewardWins":0,"votesReceived":7,"idolsFound":0,"unbreakableBonds":["Noah"],"notes":["7-3-1-1 vote at F11"]}],"story":"First juror in S1. Second boot in S2 despite unbreakable bond with Noah in S1."},{"id":"lightning","name":"Lightning","seasons":[3,4],"totalSeasons":2,"bestPlacement":11,"wins":0,"totalChallengeWins":0,"totalImmunityWins":0,"totalRewardWins":0,"totalVotesAgainst":25,"totalIdolsFound":2,"badges":["Triple Idol Tribal","First Merge Boot","Consensus Target"],"seasonDetails":[{"season":4,"placement":13,"status":"Juror (EoE)","tribe":"Red \u2192 Green \u2192 Campers","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":14,"idolsFound":1,"strategicRank":"Low","notes":["TRIPLE IDOL TRIBAL (Ep 5 Part 2)","First merge boot (9-4)","Consensus target","Voted Alejandro at FTC"]},{"season":3,"placement":11,"status":"Pre-Jury","tribe":"Toxic Rats","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":11,"idolsFound":1,"strategicRank":"Very Low","notes":["WORST idol play ever (wasted on Emma)","Tied vote twice (Episode 6)"]}],"story":"Part of TRIPLE IDOL TRIBAL in S4. Worst idol play in S3 (wasted on Emma who got 0 votes)."},{"id":"lindsay","name":"Lindsay","seasons":[1,2],"totalSeasons":2,"bestPlacement":1,"wins":1,"totalChallengeWins":1,"totalImmunityWins":1,"totalRewardWins":0,"totalVotesAgainst":2,"totalIdolsFound":0,"badges":["S1 Winner"],"seasonDetails":[{"season":2,"placement":3,"status":"Finalist","tribe":"Screaming Gaffers","challengeWins":1,"immunityWins":1,"rewardWins":0,"votesReceived":1,"idolsFound":0,"strategicRank":2,"juryVotes":1,"unbreakableBonds":["Beth","Duncan"],"notes":["Lost 1-5-1 to Duncan"]},{"season":1,"placement":1,"status":"WINNER","tribe":"Screaming Gophers","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":1,"idolsFound":0,"juryVotes":5,"finalVote":"5-4","unbreakableBonds":["Leshawna","Trent","Alejandro"],"notes":["Defeated Alejandro 5-4","Never needed immunity"]}],"story":"WINNER of Season 1. Social queen who maintained unbreakable bonds without burning bridges. Third place in S2."},{"id":"mike","name":"Mike","seasons":[3,4],"totalSeasons":2,"bestPlacement":6,"wins":0,"totalChallengeWins":2,"totalImmunityWins":0,"totalRewardWins":2,"totalVotesAgainst":8,"totalIdolsFound":0,"badges":["Unbreakable: Zoey (Rebuilt)","Strategic: Medium","Perfect Idol Victim"],"seasonDetails":[{"season":4,"placement":12,"status":"Juror (EoE)","tribe":"Red \u2192 Yellow \u2192 Campers","challengeWins":1,"immunityWins":0,"rewardWins":1,"votesReceived":4,"idolsFound":0,"strategicRank":"Medium","unbreakableBonds":["Zoey"],"notes":["Eliminated 2-0 (Sierra's perfect idol)","Extreme hatred with Jo","Voted Zoey at FTC"]},{"season":3,"placement":6,"status":"5th Juror","tribe":"Mutant Maggots","challengeWins":1,"immunityWins":0,"rewardWins":1,"votesReceived":4,"idolsFound":0,"strategicRank":"Medium","unbreakableBonds":["Zoey","Brick"],"notes":["Blindsided while Zoey held immunity","Voted Cameron at FTC"]}],"story":"REBUILT unbreakable bond with Zoey in S4. Victim of Sierra's perfect idol play (10 votes cancelled)."},{"id":"noah","name":"Noah","seasons":[1,4],"totalSeasons":2,"bestPlacement":9,"wins":0,"totalChallengeWins":0,"totalImmunityWins":0,"totalRewardWins":0,"totalVotesAgainst":20,"totalIdolsFound":1,"badges":["Unbreakable: Alejandro","Strategic: High","Triple Idol Tribal","Betrayed by Partner"],"seasonDetails":[{"season":4,"placement":9,"status":"Juror","tribe":"Yellow \u2192 Red \u2192 Campers","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":11,"idolsFound":1,"strategicRank":"High","unbreakableBonds":["Alejandro"],"notes":["TRIPLE IDOL TRIBAL (played idol)","Betrayed by Alejandro (unbreakable)","5-4 at F9","Voted Alejandro at FTC"]},{"season":1,"placement":15,"status":"Pre-Juror","tribe":"Screaming Gophers","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":9,"idolsFound":0,"notes":["4-3 vote"]}],"story":"Part of TRIPLE IDOL TRIBAL in S4. BETRAYED by unbreakable partner Alejandro at F9. Bitter jury vote."},{"id":"owen","name":"Owen","seasons":[1,2],"totalSeasons":2,"bestPlacement":7,"wins":0,"totalChallengeWins":1,"totalImmunityWins":0,"totalRewardWins":1,"totalVotesAgainst":7,"totalIdolsFound":0,"seasonDetails":[{"season":2,"placement":12,"status":"Pre-Juror","tribe":"Screaming Gaffers","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":1,"idolsFound":0,"notes":["5-1* vote","Third boot after idol play"]},{"season":1,"placement":7,"status":"Exile Beach / Medivac","tribe":"Screaming Gophers","challengeWins":1,"immunityWins":0,"rewardWins":1,"votesReceived":6,"idolsFound":0,"notes":["Sent to Exile, won return","Medically evacuated Episode 20"]}],"story":"Sent to Exile Beach in S1, won return but medically evacuated. Third boot in S2 after idol chaos."},{"id":"sadie","name":"Sadie","seasons":[1],"totalSeasons":1,"bestPlacement":13,"wins":0,"totalChallengeWins":0,"totalImmunityWins":0,"totalRewardWins":0,"totalVotesAgainst":0,"totalIdolsFound":0,"seasonDetails":[{"season":1,"placement":13,"status":"Pre-Juror","tribe":"Killer Bass","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":0,"idolsFound":0,"notes":["Rock draw elimination","Never received a vote","Part of MAPLV"]}],"story":"Eliminated by rock draw despite never receiving a vote and voting correctly. Inseparable from Katie in MAPLV."},{"id":"sam","name":"Sam","seasons":[3],"totalSeasons":1,"bestPlacement":13,"wins":0,"totalChallengeWins":0,"totalImmunityWins":0,"totalRewardWins":0,"totalVotesAgainst":0,"totalIdolsFound":0,"seasonDetails":[{"season":3,"placement":13,"status":"Pre-Jury","tribe":"Toxic Rats","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":0,"idolsFound":0,"strategicRank":"Very Low","notes":["NEVER voted for","Rock draw elimination","Part of Toxic Rats Alliance #1"]}],"story":"Most tragic exit - NEVER received a vote, voted correctly, eliminated by rock draw. Most unlucky player in franchise."},{"id":"scott","name":"Scott","seasons":[3,4],"totalSeasons":2,"bestPlacement":2,"wins":0,"totalChallengeWins":6,"totalImmunityWins":3,"totalRewardWins":3,"totalVotesAgainst":4,"totalIdolsFound":1,"totalJuryVotes":4,"badges":["S4 Third Place","Perfect Idol Play!","9 Tribals Patience"],"seasonDetails":[{"season":4,"placement":3,"status":"Finalist","tribe":"Red \u2192 Yellow \u2192 Green \u2192 Campers","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":3,"idolsFound":1,"strategicRank":2,"juryVotes":1,"unbreakableBonds":["Zoey"],"notes":["FRANCHISE RECORD: Held idol 9 tribals!","Perfect idol play at F5 (3 votes cancelled)","Eliminated Cameron 2-0","Only Duncan voted for him at FTC"]},{"season":3,"placement":2,"status":"Runner-up","tribe":"Toxic Rats \u2192 Campers","challengeWins":6,"immunityWins":3,"rewardWins":3,"votesReceived":1,"idolsFound":0,"strategicRank":2,"juryVotes":3,"finalVote":"3-4-1","unbreakableBonds":["Anne Maria","Zoey"],"notes":["Most challenge wins in S3 (6)","Voted out Zoey (unbreakable)","Lost 3-4-1 to Emma"]}],"story":"Best player to never win. PERFECT IDOL PLAY after holding for 9 tribals (franchise record). Runner-up in S3, third place in S4."},{"id":"sierra","name":"Sierra","seasons":[1,4],"totalSeasons":2,"bestPlacement":10,"wins":0,"totalChallengeWins":0,"totalImmunityWins":0,"totalRewardWins":0,"totalVotesAgainst":39,"totalIdolsFound":1,"badges":["EoE Returnee","Perfect Idol Play","10 Votes Cancelled","4 Extreme Hatreds"],"seasonDetails":[{"season":4,"placement":11,"status":"Juror (returnee)","tribe":"Yellow \u2192 Campers (EoE Return)","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":26,"idolsFound":0,"strategicRank":"Very Low","advantages":["2 EoE idol halves (played)"],"notes":["Won EoE return (Episode 6)","Perfect idol play (10 votes cancelled!)","4 extreme hatreds (Noah, Harold, Gwen, Duncan)","Voted Zoey at FTC"]},{"season":1,"placement":10,"status":"Juror","tribe":"Killer Bass","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":13,"idolsFound":1,"notes":["6-4 vote","Consensus safe cut"]}],"story":"Won EoE return in S4. Made PERFECT IDOL PLAY cancelling 10 votes - only 2 people didn't vote Sierra. Created 4 extreme hatreds."},{"id":"staci","name":"Staci","seasons":[3],"totalSeasons":1,"bestPlacement":15,"wins":0,"totalChallengeWins":0,"totalImmunityWins":0,"totalRewardWins":0,"totalVotesAgainst":6,"totalIdolsFound":0,"seasonDetails":[{"season":3,"placement":15,"status":"Pre-Jury","tribe":"Toxic Rats","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":6,"idolsFound":0,"strategicRank":"Very Low","notes":["Second boot (Episode 2)","Multiple early conflicts","6-2 vote"]}],"story":"Second boot. Multiple early conflicts prevented alliance formation. Challenge liability with no social capital."},{"id":"trent","name":"Trent","seasons":[1,2],"totalSeasons":2,"bestPlacement":6,"wins":0,"totalChallengeWins":4,"totalImmunityWins":3,"totalRewardWins":1,"totalVotesAgainst":12,"totalIdolsFound":0,"seasonDetails":[{"season":2,"placement":7,"status":"Juror","tribe":"Screaming Gaffers","challengeWins":1,"immunityWins":1,"rewardWins":0,"votesReceived":7,"idolsFound":0,"strategicRank":3,"notes":["5-2 vote","Double elimination (same night as Gwen)"]},{"season":1,"placement":6,"status":"Juror","tribe":"Screaming Gophers","challengeWins":3,"immunityWins":2,"rewardWins":1,"votesReceived":5,"idolsFound":0,"unbreakableBonds":["Alejandro","Bridgette","Lindsay","Leshawna"],"notes":["5-2 vote in double elimination","Extreme hatred with Heather"]}],"story":"Strong social player with multiple unbreakable bonds. Eliminated in double eliminations both seasons."},{"id":"tyler","name":"Tyler","seasons":[1],"totalSeasons":1,"bestPlacement":23,"wins":0,"totalChallengeWins":0,"totalImmunityWins":0,"totalRewardWins":0,"totalVotesAgainst":8,"totalIdolsFound":0,"seasonDetails":[{"season":1,"placement":23,"status":"Pre-Juror","tribe":"Killer Bass","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":8,"idolsFound":0,"notes":["8-4 vote","Challenge liability"]}],"story":"Challenge liability voted out 8-4 in Episode 2. Unable to build strong social connections."},{"id":"amy","name":"Amy","seasons":[5],"totalSeasons":1,"bestPlacement":7,"wins":0,"totalChallengeWins":0,"totalImmunityWins":0,"totalRewardWins":0,"totalVotesAgainst":3,"totalIdolsFound":0,"tier":"B","badges":["Juror"],"seasonDetails":[{"season":5,"placement":7,"status":"Juror","tribe":"Belo \u2192 (Tribe re-draw Ep 4) \u2192 Merge","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":3,"idolsFound":0,"notes":["7th place juror; Belo\u2019s early social lightning rod.","Voted out on a tight 2\u20132\u20131 style round (per season log).","Started on Belo with the unstable 'Sisters' dynamic vs Samey."]}],"story":"7th place juror; Belo\u2019s early social lightning rod. Voted out on a tight 2\u20132\u20131 style round (per season log)."},{"id":"beardo","name":"Beardo","seasons":[5],"totalSeasons":1,"bestPlacement":16,"wins":0,"totalChallengeWins":0,"totalImmunityWins":0,"totalRewardWins":0,"totalVotesAgainst":3,"totalIdolsFound":0,"tier":"D","badges":["Pre-Jury Boot"],"seasonDetails":[{"season":5,"placement":16,"status":"Pre-Juror","tribe":"Reba \u2192 (Tribe re-draw Ep 4) \u2192 Merge","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":3,"idolsFound":0,"notes":["16th place pre-juror; started on Reba.","Eliminated 2\u20131 with idol negation / chaos (per season log).","Received 3 votes against."]}],"story":"16th place pre-juror; started on Reba. Eliminated 2\u20131 with idol negation / chaos (per season log)."},{"id":"blaineley","name":"Blaineley","seasons":[5],"totalSeasons":1,"bestPlacement":8,"wins":0,"totalChallengeWins":0,"totalImmunityWins":0,"totalRewardWins":0,"totalVotesAgainst":8,"totalIdolsFound":1,"strategicRank":2,"tier":"A+","badges":["Strategic #2","Most Chaotic Player","Inheritance Advantage","1 Idol Found"],"seasonDetails":[{"season":5,"placement":8,"status":"Juror","tribe":"Reba \u2192 (Tribe re-draw Ep 4) \u2192 Merge","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":8,"idolsFound":1,"notes":["8th place juror; the season\u2019s most chaotic player.","Converted the Reba Beware into an idol and also held the Inheritance advantage.","Received 8 votes against across the season."],"strategicRank":2}],"story":"8th place juror; the season\u2019s most chaotic player. Converted the Reba Beware into an idol and also held the Inheritance advantage."},{"id":"dave","name":"Dave","seasons":[5],"totalSeasons":1,"bestPlacement":6,"wins":0,"totalChallengeWins":2,"totalImmunityWins":1,"totalRewardWins":1,"totalVotesAgainst":5,"totalIdolsFound":0,"tier":"A","badges":["2 Challenge Wins","Reward Winner","Tragic Exit (F6)"],"seasonDetails":[{"season":5,"placement":6,"status":"Juror","tribe":"Lulu \u2192 (Tribe re-draw Ep 4) \u2192 Merge","challengeWins":2,"immunityWins":1,"rewardWins":1,"votesReceived":5,"idolsFound":0,"notes":["6th place juror; key part of the Lulu core early.","Earned 2 total challenge wins and a reward win.","Eliminated at Final 6 after Sky\u2019s idol play blew up the plan."]}],"story":"6th place juror; key part of the Lulu core early. Earned 2 total challenge wins and a reward win."},{"id":"ella","name":"Ella","seasons":[5],"totalSeasons":1,"bestPlacement":17,"wins":0,"totalChallengeWins":0,"totalImmunityWins":0,"totalRewardWins":0,"totalVotesAgainst":2,"totalIdolsFound":0,"tier":"D","badges":["Pre-Jury Boot"],"seasonDetails":[{"season":5,"placement":17,"status":"Pre-Juror","tribe":"Reba \u2192 (Tribe re-draw Ep 4) \u2192 Merge","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":2,"idolsFound":0,"notes":["17th place pre-juror; early Reba casualty in vote-loss chaos.","Eliminated 2\u20131 after playing Shot in the Dark unsuccessfully (per episode summary).","Received 2 votes against."]}],"story":"17th place pre-juror; early Reba casualty in vote-loss chaos. Eliminated 2\u20131 after playing Shot in the Dark unsuccessfully (per episode summary)."},{"id":"jasmine","name":"Jasmine","seasons":[5],"totalSeasons":1,"bestPlacement":14,"wins":0,"totalChallengeWins":0,"totalImmunityWins":0,"totalRewardWins":0,"totalVotesAgainst":2,"totalIdolsFound":0,"tier":"D","badges":["Pre-Jury Boot"],"seasonDetails":[{"season":5,"placement":14,"status":"Pre-Juror","tribe":"Reba \u2192 (Tribe re-draw Ep 4) \u2192 Merge","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":2,"idolsFound":0,"notes":["14th place pre-juror; started on Reba and served as an early swing.","Received 2 votes against.","Eliminated 2\u20131 (per season log)."]}],"story":"14th place pre-juror; started on Reba and served as an early swing. Received 2 votes against."},{"id":"josee","name":"Josee","seasons":[5],"totalSeasons":1,"bestPlacement":13,"wins":0,"totalChallengeWins":0,"totalImmunityWins":0,"totalRewardWins":0,"totalVotesAgainst":5,"totalIdolsFound":1,"tier":"C","badges":["Beware Idol Found","Idol Stolen by KIP"],"seasonDetails":[{"season":5,"placement":13,"status":"Pre-Juror","tribe":"Lulu \u2192 (Tribe re-draw Ep 4) \u2192 Merge","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":5,"idolsFound":1,"notes":["13th place pre-juror; found the Lulu Beware \u2192 idol, but it was stolen by Rodney\u2019s KIP before play.","Eliminated in a very tight round (6\u20135) amid idol/advantage chaos (per season log).","Received 5 votes against."]}],"story":"13th place pre-juror; found the Lulu Beware \u2192 idol, but it was stolen by Rodney\u2019s KIP before play. Eliminated in a very tight round (6\u20135) amid idol/advantage chaos (per season log)."},{"id":"leonard","name":"Leonard","seasons":[5],"totalSeasons":1,"bestPlacement":18,"wins":0,"totalChallengeWins":0,"totalImmunityWins":0,"totalRewardWins":0,"totalVotesAgainst":5,"totalIdolsFound":0,"tier":"D","badges":["Pre-Jury Boot"],"seasonDetails":[{"season":5,"placement":18,"status":"Pre-Juror","tribe":"Reba \u2192 (Tribe re-draw Ep 4) \u2192 Merge","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":5,"idolsFound":0,"notes":["18th place; first boot from Reba.","Eliminated 5\u20132 in Episode 1 (per episode summary).","Received 5 votes against."]}],"story":"18th place; first boot from Reba. Eliminated 5\u20132 in Episode 1 (per episode summary)."},{"id":"max","name":"Max","seasons":[5],"totalSeasons":1,"bestPlacement":10,"wins":0,"totalChallengeWins":0,"totalImmunityWins":0,"totalRewardWins":0,"totalVotesAgainst":5,"totalIdolsFound":0,"tier":"B","badges":["Safety Without Power"],"seasonDetails":[{"season":5,"placement":10,"status":"Juror","tribe":"Lulu \u2192 (Tribe re-draw Ep 4) \u2192 Merge","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":5,"idolsFound":0,"notes":["10th place juror; held Safety Without Power from a Journey.","Received 5 votes against.","Known for volatility/meltdowns early in the game."]}],"story":"10th place juror; held Safety Without Power from a Journey. Received 5 votes against."},{"id":"mickey","name":"Mickey","seasons":[5],"totalSeasons":1,"bestPlacement":1,"wins":1,"totalChallengeWins":2,"totalImmunityWins":2,"totalRewardWins":0,"totalVotesAgainst":0,"totalIdolsFound":1,"totalJuryVotes":4,"strategicRank":3,"tier":"S","badges":["S5 Winner","0 Votes Against","Best Social Game","FTC Tiebreak Win"],"seasonDetails":[{"season":5,"placement":1,"status":"Winner","tribe":"Lulu \u2192 (Tribe re-draw Ep 4) \u2192 Merge","challengeWins":2,"immunityWins":2,"rewardWins":0,"votesReceived":0,"idolsFound":1,"notes":["Won Season 5 and received 0 votes against all season.","Won Final Tribal via tiebreak after a 3\u20133\u20132 vote; Ryan cast the deciding vote.","Found an idol at the auction round and held it for endgame confidence."],"strategicRank":3,"finalVote":"4-3-2 (tiebreak)","juryVotes":4}],"story":"Won Season 5 and received 0 votes against all season. Won Final Tribal via tiebreak after a 3\u20133\u20132 vote; Ryan cast the deciding vote."},{"id":"rodney","name":"Rodney","seasons":[5],"totalSeasons":1,"bestPlacement":12,"wins":0,"totalChallengeWins":0,"totalImmunityWins":0,"totalRewardWins":0,"totalVotesAgainst":9,"totalIdolsFound":0,"tier":"C","badges":["Knowledge Is Power","9 Votes Against"],"seasonDetails":[{"season":5,"placement":12,"status":"Pre-Juror","tribe":"Belo \u2192 (Tribe re-draw Ep 4) \u2192 Merge","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":9,"idolsFound":0,"notes":["12th place pre-juror; started on Belo.","Won Knowledge Is Power and used it at Earn-the-Merge to steal Josee\u2019s idol.","Second-most targeted overall (9 votes against)."]}],"story":"12th place pre-juror; started on Belo. Won Knowledge Is Power and used it at Earn-the-Merge to steal Josee\u2019s idol."},{"id":"ryan","name":"Ryan","seasons":[5],"totalSeasons":1,"bestPlacement":3,"wins":0,"totalChallengeWins":1,"totalImmunityWins":1,"totalRewardWins":0,"totalVotesAgainst":7,"totalIdolsFound":0,"totalJuryVotes":2,"tier":"A+","badges":["S5 Finalist","Fan Favorite","Tiebreak Kingmaker"],"seasonDetails":[{"season":5,"placement":3,"status":"Finalist","tribe":"Reba \u2192 (Tribe re-draw Ep 4) \u2192 Merge","challengeWins":1,"immunityWins":1,"rewardWins":0,"votesReceived":7,"idolsFound":0,"notes":["Finalist and Season 5 fan favorite.","Won one immunity and stayed central to the merge power talks.","Casted the deciding tiebreak vote for Mickey to win."],"finalVote":"4-3-2 (tiebreak)","juryVotes":2}],"story":"Finalist and Season 5 fan favorite. Won one immunity and stayed central to the merge power talks."},{"id":"samey","name":"Samey","seasons":[5],"totalSeasons":1,"bestPlacement":15,"wins":0,"totalChallengeWins":0,"totalImmunityWins":0,"totalRewardWins":0,"totalVotesAgainst":1,"totalIdolsFound":0,"tier":"D","badges":["Pre-Jury Boot"],"seasonDetails":[{"season":5,"placement":15,"status":"Pre-Juror","tribe":"Belo \u2192 (Tribe re-draw Ep 4) \u2192 Merge","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":1,"idolsFound":0,"notes":["15th place pre-juror; started on Belo.","Eliminated 4\u20131 with an idol negation twist (per season log).","Only received 1 vote against across the season."]}],"story":"15th place pre-juror; started on Belo. Eliminated 4\u20131 with an idol negation twist (per season log)."},{"id":"scarlett","name":"Scarlett","seasons":[5],"totalSeasons":1,"bestPlacement":4,"wins":0,"totalChallengeWins":2,"totalImmunityWins":2,"totalRewardWins":0,"totalVotesAgainst":2,"totalIdolsFound":0,"strategicRank":1,"tier":"S+","badges":["Strategic #1","Final 4 Fire-Making","2 Immunities"],"seasonDetails":[{"season":5,"placement":4,"status":"Juror","tribe":"Belo \u2192 (Tribe re-draw Ep 4) \u2192 Merge","challengeWins":2,"immunityWins":2,"rewardWins":0,"votesReceived":2,"idolsFound":0,"notes":["Best strategic player of Season 5; reached Final 4 and lost fire-making.","Won 2 immunities and 2 total challenges.","Had a late-game meltdown right before fire-making."],"strategicRank":1}],"story":"Best strategic player of Season 5; reached Final 4 and lost fire-making. Won 2 immunities and 2 total challenges."},{"id":"shawn","name":"Shawn","seasons":[5],"totalSeasons":1,"bestPlacement":9,"wins":0,"totalChallengeWins":0,"totalImmunityWins":0,"totalRewardWins":0,"totalVotesAgainst":6,"totalIdolsFound":1,"tier":"B","badges":["Beware Idol Found","Idol Played on Topher"],"seasonDetails":[{"season":5,"placement":9,"status":"Juror","tribe":"Belo \u2192 (Tribe re-draw Ep 4) \u2192 Merge","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":6,"idolsFound":1,"notes":["9th place juror; found Belo Beware and converted it into an idol.","Played an idol on Topher at Earn-the-Merge (per season log).","Received 6 votes against."]}],"story":"9th place juror; found Belo Beware and converted it into an idol. Played an idol on Topher at Earn-the-Merge (per season log)."},{"id":"sky","name":"Sky","seasons":[5],"totalSeasons":1,"bestPlacement":2,"wins":0,"totalChallengeWins":4,"totalImmunityWins":3,"totalRewardWins":1,"totalVotesAgainst":1,"totalIdolsFound":2,"totalJuryVotes":3,"tier":"A+","badges":["S5 Runner-up","Challenge Beast","3 Immunities","2 Idols Found"],"seasonDetails":[{"season":5,"placement":2,"status":"Runner-up","tribe":"Lulu \u2192 (Tribe re-draw Ep 4) \u2192 Merge","challengeWins":4,"immunityWins":3,"rewardWins":1,"votesReceived":1,"idolsFound":2,"notes":["Season 5 runner-up with the best challenge r\u00e9sum\u00e9 (4 total wins, 3 immunities).","Found 2 idols late-game; played one on Sugar at Final 6 and another on herself at Final 5.","Lost at Final Tribal despite challenge dominance."],"finalVote":"4-3-2 (tiebreak)","juryVotes":3}],"story":"Season 5 runner-up with the best challenge r\u00e9sum\u00e9 (4 total wins, 3 immunities). Found 2 idols late-game; played one on Sugar at Final 6 and another on herself at Final 5."},{"id":"sugar","name":"Sugar","seasons":[5],"totalSeasons":1,"bestPlacement":5,"wins":0,"totalChallengeWins":0,"totalImmunityWins":0,"totalRewardWins":0,"totalVotesAgainst":10,"totalIdolsFound":0,"tier":"A","badges":["Most Votes Against","Feud vs Dave"],"seasonDetails":[{"season":5,"placement":5,"status":"Juror","tribe":"Lulu \u2192 (Tribe re-draw Ep 4) \u2192 Merge","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":10,"idolsFound":0,"notes":["Finished 5th; major endgame figure with the season\u2019s messiest feud vs Dave.","Was saved at Final 6 by Sky\u2019s idol play, which flipped the boot onto Dave.","Most targeted player of the season (10 votes against)."]}],"story":"Finished 5th; major endgame figure with the season\u2019s messiest feud vs Dave. Was saved at Final 6 by Sky\u2019s idol play, which flipped the boot onto Dave."},{"id":"topher","name":"Topher","seasons":[5],"totalSeasons":1,"bestPlacement":11,"wins":0,"totalChallengeWins":0,"totalImmunityWins":0,"totalRewardWins":0,"totalVotesAgainst":5,"totalIdolsFound":0,"tier":"B","badges":["Juror"],"seasonDetails":[{"season":5,"placement":11,"status":"Juror","tribe":"Belo \u2192 (Tribe re-draw Ep 4) \u2192 Merge","challengeWins":0,"immunityWins":0,"rewardWins":0,"votesReceived":5,"idolsFound":0,"notes":["11th place juror; social connector on Belo early.","Received 5 votes against.","Was saved by Shawn\u2019s idol play at Earn-the-Merge (per season log)."]}],"story":"11th place juror; social connector on Belo early. Received 5 votes against."}]};
-
 const grid = document.getElementById('grid');
 const search = document.getElementById('search');
 const sortSelect = document.getElementById('sort');
 const countDiv = document.getElementById('count');
+
 let allPlayers = [];
 
+// Player emoji mapping
 const emojiMap = {
-  'alejandro': '👑', 'lindsay': '💁', 'duncan': '💀', 'emma': '🎯', 'cameron': '🧠',
-  'bridgette': '🏄', 'trent': '🎸', 'owen': '🍔', 'heather': '💅', 'beth': '🌸',
-  'gwen': '🎨', 'courtney': '📋', 'noah': '📚', 'ezekiel': '🏔️', 'geoff': '🎉',
-  'zoey': '❤️', 'scott': '🎯', 'mike': '🎭', 'anne maria': '💄', 'brick': '🎖️',
-  'dwayne': '👨‍👦', 'jo': '💪', 'dakota': '✨', 'dawn': '🌿', 'b': '🔧',
-  'sam': '🎮', 'lightning': '⚡', 'staci': '💬', 'crimson': '🖤', 'harold': '🤓',
-  'leshawna': '💁', 'justin': '😎', 'katie': '💖', 'sadie': '💖', 'izzy': '🤪',
-  'cody': '😬', 'eva': '😠', 'tyler': '🏀', 'sierra': '📱',
-  'amy': '😈', 'samey': '😊', 'scarlett': '🧪', 'shawn': '🧟', 'topher': '📺',
-  'rodney': '💘', 'dave': '😤', 'josee': '⛷️', 'max': '🦹', 'mickey': '🐭',
-  'sky': '🥋', 'sugar': '🍭', 'beardo': '🎵', 'blaineley': '🎤', 'ella': '🎶',
-  'jasmine': '🌿', 'leonard': '🪄', 'ryan': '🏋️'
+  'alejandro': '👑',
+  'lindsay': '💁',
+  'duncan': '💀',
+  'emma': '🎯',
+  'cameron': '🧠',
+  'bridgette': '🏄',
+  'trent': '🎸',
+  'owen': '🍔',
+  'heather': '💅',
+  'beth': '🌸',
+  'gwen': '🎨',
+  'courtney': '📋',
+  'noah': '📚',
+  'ezekiel': '🏔️',
+  'geoff': '🎉',
+  'zoey': '❤️',
+  'scott': '🎯',
+  'mike': '🎭',
+  'anne maria': '💄',
+  'brick': '🎖️',
+  'dwayne': '👨‍👦',
+  'jo': '💪',
+  'dakota': '✨',
+  'dawn': '🌿',
+  'b': '🔧',
+  'sam': '🎮',
+  'lightning': '⚡',
+  'staci': '💬',
+  'crimson': '🖤',
+  'harold': '🤓',
+  'leshawna': '💁',
+  'justin': '😎',
+  'katie': '💖',
+  'sadie': '💖',
+  'izzy': '🤪',
+  'cody': '😬',
+  'eva': '😠',
+  'tyler': '🏀',
+  'sierra': '📱'
 };
 
-try {
-  allPlayers = PLAYERS_DATA.players.map(player => ({
-    ...player,
-    emoji: emojiMap[player.name.toLowerCase()] || '👤'
-  }));
-  renderPlayers(allPlayers);
-  updateDisplay();
-} catch (error) {
-  console.error('Error:', error);
-  countDiv.textContent = 'Error loading players';
-}
+// Load player data from JSON
+fetch('players_database.json')
+  .then(response => response.json())
+  .then(data => {
+    allPlayers = data.players.map(player => {
+      const emoji = emojiMap[player.name.toLowerCase()] || '👤';
+      return {
+        ...player,
+        emoji: emoji
+      };
+    });
+    renderPlayers(allPlayers);
+    updateDisplay();
+  })
+  .catch(error => {
+    console.error('Error loading player data:', error);
+    countDiv.textContent = 'Error loading players';
+  });
 
 function renderPlayers(players) {
   grid.innerHTML = '';
+  
   players.forEach(player => {
     const card = document.createElement('a');
     card.className = 'card' + (player.wins > 0 ? ' winner' : '');
-    card.href = 'player.html?player=' + player.id;
+    card.href = `player.html?player=${player.id}`;
     card.setAttribute('data-name', player.name.toLowerCase());
     card.setAttribute('data-place', player.bestPlacement);
-    card.setAttribute('data-seasons', player.totalSeasons);
-    card.setAttribute('data-votes', player.totalVotesAgainst);
-    card.setAttribute('data-chwins', player.totalChallengeWins);
     
+    // Build season summary
     const seasonSummary = player.seasonDetails
       .sort((a, b) => a.season - b.season)
-      .map(s => 'S' + s.season + ': #' + s.placement)
+      .map(s => `S${s.season}: #${s.placement}`)
       .join(' • ');
     
+    // Build badges
     let badgesHtml = '';
+    
+    // Add special badges
     if (player.wins > 0) {
       const winSeason = player.seasonDetails.find(s => s.placement === 1);
-      badgesHtml += '<span class="badge gold">🏆 Season ' + winSeason.season + ' Winner</span>';
+      badgesHtml += `<span class="badge gold">🏆 Season ${winSeason.season} Winner</span>`;
     }
+    
+    // Add key badges from player.badges array
     if (player.badges && player.badges.length > 0) {
       player.badges.slice(0, 2).forEach(badge => {
         let badgeClass = 'badge';
         if (badge.includes('Strategic') || badge.includes('Social')) badgeClass += ' purple';
-        else if (badge.includes('Fan Favorite')) badgeClass += ' purple';
+        else if (badge.includes('Fan Favorite') || badge.includes('FAN FAVORITE')) badgeClass += ' purple';
         else if (badge.includes('Perfect') || badge.includes('Unbreakable')) badgeClass += ' good';
-        badgesHtml += '<span class="' + badgeClass + '">' + badge + '</span>';
+        badgesHtml += `<span class="${badgeClass}">${badge}</span>`;
       });
     }
-    badgesHtml += '<span class="badge">Best: #' + player.bestPlacement + '</span>';
-    badgesHtml += '<span class="badge">' + player.totalSeasons + ' season' + (player.totalSeasons > 1 ? 's' : '') + '</span>';
     
-    card.innerHTML = '<div class="row"><div class="player-avatar"><img src="assets/avatars/' + player.id + '.png" alt="' + player.name + '" onload="this.style.display=\'block\';" onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'block\';"/><div class="fallback">' + player.emoji + '</div></div><div><div class="name">' + player.emoji + ' ' + player.name + '</div><div class="sub">' + seasonSummary + '</div></div></div><div class="badges">' + badgesHtml + '</div>';
+    // Add basic badges
+    badgesHtml += `<span class="badge">Best: #${player.bestPlacement}</span>`;
+    badgesHtml += `<span class="badge">${player.totalSeasons} season${player.totalSeasons > 1 ? 's' : ''}</span>`;
+    
+    card.innerHTML = `
+      <div class="row">
+        <div class="player-avatar">
+          <img src="assets/avatars/${player.id}.png" alt="${player.name}" onload="this.style.display='block';" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"/>
+          <div class="fallback">${player.emoji}</div>
+        </div>
+        <div>
+          <div class="name">${player.emoji} ${player.name}</div>
+          <div class="sub">${seasonSummary}</div>
+        </div>
+      </div>
+      <div class="badges">
+        ${badgesHtml}
+      </div>
+    `;
     
     grid.appendChild(card);
   });
 }
 
 function updateDisplay() {
-  const query = search.value.toLowerCase().trim();
+  const query = search.value.toLowerCase();
   const sortValue = sortSelect.value;
   
-  // Filter players from the original data
-  let filtered = allPlayers.filter(player => 
-    player.name.toLowerCase().includes(query)
-  );
+  const cards = Array.from(grid.querySelectorAll('.card'));
   
-  // Sort the filtered players
+  let filtered = cards.filter(c => {
+    const name = c.getAttribute('data-name');
+    return name.includes(query);
+  });
+  
   filtered.sort((a, b) => {
-    const aPlace = a.bestPlacement;
-    const bPlace = b.bestPlacement;
-    const aSeasons = a.totalSeasons || 0;
-    const bSeasons = b.totalSeasons || 0;
-    const aVotes = a.totalVotesAgainst || 0;
-    const bVotes = b.totalVotesAgainst || 0;
-    const aChWins = a.totalChallengeWins || 0;
-    const bChWins = b.totalChallengeWins || 0;
-    const aName = a.name.toLowerCase();
-    const bName = b.name.toLowerCase();
+    const aPlace = parseInt(a.getAttribute('data-place'));
+    const bPlace = parseInt(b.getAttribute('data-place'));
+    const aName = a.getAttribute('data-name');
+    const bName = b.getAttribute('data-name');
     
     if (sortValue === 'place-asc') return aPlace - bPlace;
     if (sortValue === 'place-desc') return bPlace - aPlace;
     if (sortValue === 'name-asc') return aName.localeCompare(bName);
     if (sortValue === 'name-desc') return bName.localeCompare(aName);
-    if (sortValue === 'seasons-desc') return (bSeasons - aSeasons) || aName.localeCompare(bName);
-    if (sortValue === 'seasons-asc') return (aSeasons - bSeasons) || aName.localeCompare(bName);
-    if (sortValue === 'votes-desc') return (bVotes - aVotes) || aName.localeCompare(bName);
-    if (sortValue === 'votes-asc') return (aVotes - bVotes) || aName.localeCompare(bName);
-    if (sortValue === 'chwins-desc') return (bChWins - aChWins) || aName.localeCompare(bName);
-    if (sortValue === 'chwins-asc') return (aChWins - bChWins) || aName.localeCompare(bName);
     return 0;
   });
   
-  // Re-render the filtered and sorted players
-  renderPlayers(filtered);
+  // Hide all cards first
+  cards.forEach(c => c.style.display = 'none');
   
-  countDiv.textContent = 'Showing ' + filtered.length + ' of ' + allPlayers.length + ' players';
+  // Show filtered cards in sorted order
+  grid.innerHTML = '';
+  filtered.forEach(c => {
+    c.style.display = 'block';
+    grid.appendChild(c);
+  });
+  
+  countDiv.textContent = `Showing ${filtered.length} of ${allPlayers.length} players`;
 }
 
 search.addEventListener('input', updateDisplay);
 sortSelect.addEventListener('change', updateDisplay);
 </script>
+
 </body>
 </html>

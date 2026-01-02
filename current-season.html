@@ -1193,6 +1193,102 @@
       setStatus("Loaded cached analytics.");
     });
 
+
+    // ----------------------------
+    // Season/Episode switching
+    // ----------------------------
+    function clearRenderedUI() {
+      // Overview placeholders
+      els.cardBestMove.innerHTML = "—";
+      els.cardBiggestRisk.innerHTML = "—";
+      els.cardEpisodeSummary.textContent = "—";
+      els.cardBootOdds.innerHTML = "<div class='muted'>No boot predictions yet.</div>";
+      els.cardPowerRankings.innerHTML = "<div class='muted'>No power rankings yet.</div>";
+      els.cardAllianceOverview.innerHTML = "<div class='muted'>No alliance info yet.</div>";
+      els.cardAllianceStability.innerHTML = "<div class='muted'>No alliance stability yet.</div>";
+      els.cardTitles.innerHTML = "<div class='muted'>No titles yet.</div>";
+
+      // Gameplay placeholders
+      els.gpSvg.innerHTML = "";
+      els.gpTableBody.innerHTML = "";
+
+      // Players placeholder
+      els.playersGrid.innerHTML =
+        "<div class='muted'>No cast detected yet. Paste your summary and click “Sync title/players from summary”.</div>";
+
+      // Reset runtime
+      CURRENT.analytics = null;
+      CURRENT.summaryText = "";
+      CURRENT.cast = [];
+      CURRENT.eliminated = new Set();
+      CURRENT.titlesMap = {};
+    }
+
+    function applySelection(season, episode, opts = {}) {
+      const { quiet=false } = opts;
+
+      // Persist last selection (so reload returns here)
+      saveLastSelection(season, episode);
+
+      // Update inputs (normalize)
+      els.season.value = String(season);
+      els.episode.value = String(episode);
+
+      // Restore summary + cast state for this selection
+      const savedSummary = loadSummary(season, episode);
+      els.summary.value = savedSummary || "";
+
+      // Restore episode title (from saved cast state) if available
+      const savedCast = loadCastState(season, episode);
+      if (savedCast?.title) {
+        els.uiEpName.textContent = savedCast.title;
+      } else {
+        els.uiEpName.textContent = "—";
+      }
+      els.uiEpNum.textContent = `Episode ${episode}`;
+
+      // Restore last tab for this episode
+      let savedTab = "overview";
+      try { savedTab = localStorage.getItem(tabKey(season, episode)) || "overview"; } catch {}
+      showTab(savedTab === "gameplay" ? "gameplay" : "overview");
+
+      // If we have cached analytics for this selection, load it (if auto-load enabled)
+      const cached = loadCached(season, episode);
+
+      if (cached && els.autoLoad.checked) {
+        renderAll(cached, els.summary.value || "");
+        if (!quiet) setStatus("Loaded cached analytics for this season/episode.");
+        return;
+      }
+
+      // Otherwise, reset UI and show cast if we can infer it
+      clearRenderedUI();
+
+      const txt = els.summary.value || "";
+      const cast = parseCastFromSummary(txt);
+      const eliminated = parseEliminated(txt);
+
+      if (cast.length) {
+        renderPlayersGrid(cast, eliminated, {});
+      } else if (savedCast?.cast?.length) {
+        const elim = new Set((savedCast.eliminated || []).map(s => String(s).toLowerCase()));
+        renderPlayersGrid(savedCast.cast, elim, {});
+      }
+
+      if (!quiet) {
+        setStatus(cached ? "Cached analytics exists for this episode — click “Load Cached” (or enable auto-load)." : "No cached analytics for this season/episode yet.");
+      }
+    }
+
+    // Change handlers
+    function onSeasonEpisodeChange() {
+      const s = Number(els.season.value || 1);
+      const e = Number(els.episode.value || 1);
+      applySelection(s, e);
+    }
+    els.season.addEventListener("change", onSeasonEpisodeChange);
+    els.episode.addEventListener("change", onSeasonEpisodeChange);
+
     // ----------------------------
     // Init
     // ----------------------------
@@ -1201,49 +1297,22 @@
       const savedUrl = localStorage.getItem("AI_ENDPOINT_URL");
       if (savedUrl) els.workerUrl.value = savedUrl;
 
-      // Restore last selection
+      // Restore last selection (so reload returns to the last viewed episode)
       const last = loadLastSelection();
       if (last?.season) els.season.value = last.season;
       if (last?.episode) els.episode.value = last.episode;
 
-      updateEpisodeHeaderFromInputs();
-
       const season = Number(els.season.value || 1);
       const episode = Number(els.episode.value || 1);
 
-      // Restore saved summary for this episode (so cast + gameplay persist on reload)
-      const savedSummary = loadSummary(season, episode);
-      if (savedSummary && !String(els.summary.value || "").trim()) {
-        els.summary.value = savedSummary;
-      }
+      // Apply selection: restores summary, cast, tab, and (optionally) cached analytics
+      applySelection(season, episode, { quiet: true });
 
-      // Restore last tab for this episode
-      let savedTab = "overview";
-      try { savedTab = localStorage.getItem(tabKey(season, episode)) || "overview"; } catch {}
-      showTab(savedTab === "gameplay" ? "gameplay" : "overview");
-
-      // Auto-load cached analytics (this fixes “reload clears the UI”)
+      // Friendly status
       const cached = loadCached(season, episode);
-
-      if (cached && els.autoLoad.checked) {
-        renderAll(cached, els.summary.value || "");
-        setStatus("Auto-loaded cached analytics.");
-      } else {
-        // Render player grid from summary or saved cast state
-        const txt = els.summary.value || "";
-        const cast = parseCastFromSummary(txt);
-        const eliminated = parseEliminated(txt);
-
-        if (cast.length) {
-          renderPlayersGrid(cast, eliminated, {});
-        } else {
-          const saved = loadCastState(season, episode);
-          if (saved?.cast?.length) {
-            const elim = new Set((saved.eliminated || []).map(s => String(s).toLowerCase()));
-            renderPlayersGrid(saved.cast, elim, {});
-          }
-        }
-      }
+      if (cached && els.autoLoad.checked) setStatus("Auto-loaded cached analytics.");
+      else if (cached) setStatus("Cached analytics found — enable auto-load or click “Load Cached”.");
+      else setStatus("Ready — paste summary and generate analytics.");
     })();
   })();
   

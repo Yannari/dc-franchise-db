@@ -457,6 +457,11 @@
       <label for="aiSummaryText"><b>Episode Summary Input</b></label>
       <textarea id="aiSummaryText" rows="10" placeholder="Paste your episode summary here..."></textarea>
       <div class="muted" id="aiStatus" style="margin-top:8px;"></div>
+      <details id="aiRawDetails" style="display:none; margin-top:10px;">
+        <summary class="muted">Debug: raw AI response</summary>
+        <pre id="aiRaw" style="white-space:pre-wrap; font-size:12px; margin-top:8px;"></pre>
+      </details>
+
     </div>
   </div>
 
@@ -535,11 +540,65 @@
     }
 
     function getWorkerUrl() {
-      return (workerUrlEl?.value || localStorage.getItem('AI_WORKER_URL') || '').trim();
+      return normalizeWorkerUrl(workerUrlEl?.value || localStorage.getItem('AI_WORKER_URL') || '');
     }
 
     function saveWorkerUrl(url) {
       localStorage.setItem('AI_WORKER_URL', url);
+    }
+
+
+    function normalizeWorkerUrl(raw) {
+      let url = (raw || '').trim();
+      if (!url) return '';
+      if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+      return url.replace(/\/+$/, ''); // trim trailing /
+    }
+
+    function extractAnalytics(payload) {
+      if (!payload) return null;
+      // Already in expected shape
+      if (payload.narrativeSummary && payload.bestMove && payload.biggestRisk) return payload;
+
+      // Common wrappers
+      if (payload.data && payload.data.narrativeSummary) return payload.data;
+
+      // Candidates that might contain JSON text
+      const candidates = [];
+      if (typeof payload.output_text === 'string') candidates.push(payload.output_text);
+      if (typeof payload.outputText === 'string') candidates.push(payload.outputText);
+
+      // Responses API: output[].content[] may include text or json
+      if (Array.isArray(payload.output)) {
+        for (const item of payload.output) {
+          const content = item && Array.isArray(item.content) ? item.content : [];
+          for (const c of content) {
+            if (!c) continue;
+            if (c.type === 'output_json' && c.json && c.json.narrativeSummary) return c.json;
+            if (c.json && c.json.narrativeSummary) return c.json;
+            if (typeof c.text === 'string') candidates.push(c.text);
+          }
+        }
+      }
+
+      // Try parsing JSON text
+      for (const t of candidates) {
+        try {
+          const obj = JSON.parse(t);
+          if (obj && obj.narrativeSummary) return obj;
+        } catch (_) {}
+      }
+
+      return null;
+    }
+
+    function showRaw(payload) {
+      const rawEl = $('aiRaw');
+      const detailsEl = $('aiRawDetails');
+      if (!rawEl || !detailsEl) return;
+      rawEl.textContent = JSON.stringify(payload, null, 2);
+      detailsEl.style.display = '';
+      detailsEl.open = true;
     }
 
     function linkPlayer(name) {
@@ -660,7 +719,9 @@
         return;
       }
       try {
-        const data = JSON.parse(raw);
+        const rawObj = JSON.parse(raw);
+        const data = extractAnalytics(rawObj) || rawObj;
+        if (!data || !data.narrativeSummary) { showRaw(rawObj); throw new Error('Cached object is not analytics'); }
         renderAnalytics(data);
         setStatus(`Loaded cached analytics (${cacheKey(season, episode)}).`);
       } catch (e) {
@@ -670,10 +731,10 @@
 
     // Init URL from storage
     const storedUrl = localStorage.getItem('AI_WORKER_URL');
-    if (storedUrl && workerUrlEl) workerUrlEl.value = storedUrl;
+    if (storedUrl && workerUrlEl) workerUrlEl.value = normalizeWorkerUrl(storedUrl);
 
     $('aiSaveUrl')?.addEventListener('click', () => {
-      const url = (workerUrlEl.value || '').trim();
+      const url = normalizeWorkerUrl(workerUrlEl.value || '');
       if (!url) { setStatus('Paste your Worker URL first.'); return; }
       saveWorkerUrl(url);
       setStatus('Saved Worker URL.');

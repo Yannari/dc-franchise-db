@@ -1,0 +1,570 @@
+<!doctype html>
+<html lang="en" data-root=".">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>DC Franchise — Players</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Advanced Modern Design for Devotees */
+    
+    .devotees-hero {
+      text-align: center;
+      padding: 50px 20px;
+      background: linear-gradient(135deg, rgba(125,76,255,.2), rgba(255,179,71,.15), rgba(76,255,179,.1));
+      border-radius: 28px;
+      border: 1px solid rgba(125,76,255,.35);
+      margin-bottom: 32px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .devotees-hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(125,76,255,.1) 0%, transparent 70%);
+      animation: rotate 20s linear infinite;
+    }
+    
+    @keyframes rotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    
+    .devotees-hero h1 {
+      position: relative;
+      font-size: 48px;
+      margin: 0 0 16px;
+      background: linear-gradient(135deg, #fff, var(--accent2), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: 0 0 40px rgba(125,76,255,.5);
+    }
+    
+    .devotees-hero p {
+      position: relative;
+      color: var(--muted);
+      font-size: 16px;
+      margin: 0;
+    }
+    
+    .controls {
+      background: linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 20px;
+      padding: 20px;
+      margin: 24px 0;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 32px rgba(0,0,0,.2);
+    }
+    
+    input[type="search"] {
+      background: rgba(0,0,0,.3);
+      border: 2px solid rgba(125,76,255,.3);
+      transition: all 0.3s ease;
+    }
+    
+    input[type="search"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(125,76,255,.15);
+      transform: scale(1.02);
+    }
+    
+    select {
+      background: rgba(0,0,0,.3);
+      border: 2px solid rgba(255,179,71,.3);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    
+    select:hover {
+      border-color: var(--accent2);
+      transform: scale(1.02);
+    }
+    
+    #count {
+      text-align: center;
+      padding: 12px;
+      background: linear-gradient(90deg, transparent, rgba(125,76,255,.15), transparent);
+      border-radius: 12px;
+      font-weight: 700;
+      color: var(--accent2);
+      margin-bottom: 20px !important;
+    }
+    
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+    }
+    
+    .card {
+      position: relative;
+      background: linear-gradient(135deg, rgba(255,255,255,.1), rgba(255,255,255,.05));
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 20px;
+      padding: 20px;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      cursor: pointer;
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+    
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.1), transparent);
+      transition: left 0.5s ease;
+    }
+    
+    .card:hover::before {
+      left: 100%;
+    }
+    
+    .card:hover {
+      transform: translateY(-12px) scale(1.03);
+      border-color: var(--accent);
+      box-shadow: 
+        0 20px 60px rgba(125,76,255,.4),
+        0 0 0 1px rgba(125,76,255,.3),
+        inset 0 1px 0 rgba(255,255,255,.2);
+      background: linear-gradient(135deg, rgba(125,76,255,.15), rgba(255,179,71,.1));
+    }
+    
+    .card.winner {
+      border: 2px solid var(--accent2);
+      background: linear-gradient(135deg, rgba(255,179,71,.15), rgba(125,76,255,.1));
+      position: relative;
+    }
+    
+    .card.winner::after {
+      content: '👑';
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 32px;
+      opacity: 0.3;
+      transition: all 0.3s ease;
+    }
+    
+    .card.winner:hover::after {
+      opacity: 1;
+      transform: scale(1.2) rotate(15deg);
+    }
+    
+    .card.winner:hover {
+      border-color: var(--accent2);
+      box-shadow: 
+        0 20px 60px rgba(255,179,71,.5),
+        0 0 0 2px rgba(255,179,71,.4),
+        inset 0 1px 0 rgba(255,255,255,.3);
+    }
+    
+    .player-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(125,76,255,.3), rgba(255,179,71,.2));
+      border: 3px solid var(--accent);
+      overflow: hidden;
+      position: relative;
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 
+        0 8px 16px rgba(0,0,0,.3),
+        inset 0 2px 4px rgba(255,255,255,.2);
+      transition: all 0.3s ease;
+    }
+    
+    .card:hover .player-avatar {
+      transform: scale(1.1) rotate(5deg);
+      border-color: var(--accent2);
+      box-shadow: 
+        0 12px 24px rgba(125,76,255,.5),
+        inset 0 2px 4px rgba(255,255,255,.3);
+    }
+    
+    .player-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+    
+    .card:hover .player-avatar img {
+      transform: scale(1.1);
+    }
+    
+    .player-avatar .fallback {
+      font-weight: 800;
+      font-size: 32px;
+      position: absolute;
+      display: none;
+    }
+    
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    
+    .name {
+      font-weight: 900;
+      font-size: 20px;
+      color: var(--text);
+      margin-bottom: 6px;
+      transition: all 0.3s ease;
+    }
+    
+    .card:hover .name {
+      color: var(--accent2);
+      transform: translateX(4px);
+    }
+    
+    .sub {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 500;
+    }
+    
+    .badges {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    
+    .badge {
+      background: rgba(0,0,0,.4);
+      border: 1px solid rgba(255,255,255,.15);
+      padding: 6px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      transition: all 0.3s ease;
+    }
+    
+    .card:hover .badge {
+      transform: translateY(-2px);
+      border-color: rgba(255,255,255,.3);
+    }
+    
+    .badge.gold {
+      background: linear-gradient(135deg, rgba(255,179,71,.3), rgba(255,179,71,.15));
+      border-color: var(--accent2);
+      color: var(--accent2);
+      box-shadow: 0 4px 12px rgba(255,179,71,.3);
+    }
+    
+    .badge.purple {
+      background: linear-gradient(135deg, rgba(125,76,255,.3), rgba(125,76,255,.15));
+      border-color: var(--accent);
+      color: var(--accent);
+      box-shadow: 0 4px 12px rgba(125,76,255,.3);
+    }
+    
+    .badge.good {
+      background: linear-gradient(135deg, rgba(76,255,179,.3), rgba(76,255,179,.15));
+      border-color: rgba(76,255,179,.7);
+      color: rgba(76,255,179,.9);
+      box-shadow: 0 4px 12px rgba(76,255,179,.3);
+    }
+  </style>
+</head>
+<body>
+
+<!-- SITE HEADER START -->
+<header class="siteHeader">
+  <div class="siteHeader__inner">
+    <a class="brandChip" data-href="index.html" aria-label="Go to home">
+      <span class="brandDot" aria-hidden="true"></span>
+      <div>
+        <div class="brandText">DC <b>Franchise</b> Database</div>
+        <span class="brandSub">Local static website • Season 5 is live • Click to explore</span>
+      </div>
+    </a>
+
+    <div class="statsChip">
+      <div class="big">5 seasons • 58 players</div>
+      <div class="small">Icons: <code>name.png</code></div>
+    </div>
+  </div>
+
+  <nav class="siteNav" aria-label="Primary">
+    <a class="navPill" data-href="index.html"><span class="navIcon">🏠</span>Home</a>
+    <a class="navPill" data-href="current-season.html"><span class="navIcon">📊</span>Current Season</a>
+    <a class="navPill" data-href="voting-analytics.html"><span class="navIcon">🧾</span>Voting Analytics</a>
+    <a class="navPill" data-href="franchise.html"><span class="navIcon">🏛️</span>Franchise</a>
+    <a class="navPill" data-href="rankings.html"><span class="navIcon">🏆</span>Rankings</a>
+    <a class="navPill" data-href="seasons.html"><span class="navIcon">🗂️</span>Seasons</a>
+    <a class="navPill active" data-href="devotees.html"><span class="navIcon">👥</span>Players</a>
+    <a class="navPill" data-href="awards.html"><span class="navIcon">🏅</span>Awards</a>
+  </nav>
+
+  <script>
+    (function () {
+      var root = (document.documentElement.dataset.root || document.body.dataset.root || ".").replace(/\/+$/, "");
+      var join = function (p) { return (root === "." ? p : root + "/" + p); };
+      document.querySelectorAll(".siteHeader [data-href]").forEach(function (a) {
+        a.setAttribute("href", join(a.getAttribute("data-href")));
+      });
+    })();
+  </script>
+</header>
+<!-- SITE HEADER END -->
+
+<main style="min-height:100vh; padding-bottom:100px;">
+  <div class="container">
+    
+    <div class="topbar">
+      <div>
+        <div class="brand">DC <span>Franchise</span> Database</div>
+        <div class="meta">Dynamic player profiles • Powered by JSON • Search & sort enabled</div>
+      </div>
+      <div class="meta">40 total players • 68 appearances</div>
+    </div>
+    
+    <div class="tabs">
+      <a class="tab" href="current-season.html">📊 Current Season</a>
+      <a class="tab" href="voting-analytics.html">🗳️ Voting Analytics</a>
+      <a class="tab" href="franchise.html">🏛️ Franchise</a>
+      <a class="tab" href="rankings.html">🏆 Rankings</a>
+      <a class="tab" href="seasons.html">📚 Seasons</a>
+      <a class="tab active" href="devotees.html">👥 Players</a>
+      <a class="tab" href="awards.html">🥇 Awards</a>
+    </div>
+
+    <div class="devotees-hero">
+      <h1>👥 All Players</h1>
+      <p>Browse the complete roster of Total Drama contestants</p>
+    </div>
+
+    <div class="controls">
+      <div style="display:grid; grid-template-columns:2fr 1fr; gap:16px;">
+        <input 
+          type="search" 
+          id="search" 
+          placeholder="🔍 Search players by name..." 
+          style="padding:14px 20px; border-radius:14px; font-size:15px; width:100%; color:var(--text);"
+        />
+        <select 
+          id="sort" 
+          style="padding:14px 20px; border-radius:14px; font-size:15px; color:var(--text);"
+        >
+          <option value="place-asc">📈 Best Placement (1st → Last)</option>
+          <option value="place-desc">📉 Worst Placement (Last → 1st)</option>
+          <option value="name-asc">🔤 Name (A → Z)</option>
+          <option value="name-desc">🔤 Name (Z → A)</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="count" style="margin:20px 0; font-size:14px; color:var(--muted);">
+      Loading players...
+    </div>
+
+    <div class="grid" id="grid">
+      <!-- Player cards will be inserted here by JavaScript -->
+    </div>
+
+    <div class="footer">40 total players across 4 seasons • 68 total appearances</div>
+  </div>
+</main>
+
+<!-- SITE FOOTER START -->
+<footer class="siteFooter">
+  <div class="footerInner">
+    <div class="footerTitle">DC Franchise Database</div>
+    <div class="footerSub">Static archive • 5 seasons • 58 players • Icons: name.png</div>
+  </div>
+</footer>
+<!-- SITE FOOTER END -->
+
+<script>
+const grid = document.getElementById('grid');
+const search = document.getElementById('search');
+const sortSelect = document.getElementById('sort');
+const countDiv = document.getElementById('count');
+
+let allPlayers = [];
+
+// Player emoji mapping
+const emojiMap = {
+  'alejandro': '👑',
+  'lindsay': '💁',
+  'duncan': '💀',
+  'emma': '🎯',
+  'cameron': '🧠',
+  'bridgette': '🏄',
+  'trent': '🎸',
+  'owen': '🍔',
+  'heather': '💅',
+  'beth': '🌸',
+  'gwen': '🎨',
+  'courtney': '📋',
+  'noah': '📚',
+  'ezekiel': '🏔️',
+  'geoff': '🎉',
+  'zoey': '❤️',
+  'scott': '🎯',
+  'mike': '🎭',
+  'anne maria': '💄',
+  'brick': '🎖️',
+  'dwayne': '👨‍👦',
+  'jo': '💪',
+  'dakota': '✨',
+  'dawn': '🌿',
+  'b': '🔧',
+  'sam': '🎮',
+  'lightning': '⚡',
+  'staci': '💬',
+  'crimson': '🖤',
+  'harold': '🤓',
+  'leshawna': '💁',
+  'justin': '😎',
+  'katie': '💖',
+  'sadie': '💖',
+  'izzy': '🤪',
+  'cody': '😬',
+  'eva': '😠',
+  'tyler': '🏀',
+  'sierra': '📱'
+};
+
+// Load player data from JSON
+fetch('players_database.json')
+  .then(response => response.json())
+  .then(data => {
+    allPlayers = data.players.map(player => {
+      const emoji = emojiMap[player.name.toLowerCase()] || '👤';
+      return {
+        ...player,
+        emoji: emoji
+      };
+    });
+    renderPlayers(allPlayers);
+    updateDisplay();
+  })
+  .catch(error => {
+    console.error('Error loading player data:', error);
+    countDiv.textContent = 'Error loading players';
+  });
+
+function renderPlayers(players) {
+  grid.innerHTML = '';
+  
+  players.forEach(player => {
+    const card = document.createElement('a');
+    card.className = 'card' + (player.wins > 0 ? ' winner' : '');
+    card.href = `player.html?player=${player.id}`;
+    card.setAttribute('data-name', player.name.toLowerCase());
+    card.setAttribute('data-place', player.bestPlacement);
+    
+    // Build season summary
+    const seasonSummary = player.seasonDetails
+      .sort((a, b) => a.season - b.season)
+      .map(s => `S${s.season}: #${s.placement}`)
+      .join(' • ');
+    
+    // Build badges
+    let badgesHtml = '';
+    
+    // Add special badges
+    if (player.wins > 0) {
+      const winSeason = player.seasonDetails.find(s => s.placement === 1);
+      badgesHtml += `<span class="badge gold">🏆 Season ${winSeason.season} Winner</span>`;
+    }
+    
+    // Add key badges from player.badges array
+    if (player.badges && player.badges.length > 0) {
+      player.badges.slice(0, 2).forEach(badge => {
+        let badgeClass = 'badge';
+        if (badge.includes('Strategic') || badge.includes('Social')) badgeClass += ' purple';
+        else if (badge.includes('Fan Favorite') || badge.includes('FAN FAVORITE')) badgeClass += ' purple';
+        else if (badge.includes('Perfect') || badge.includes('Unbreakable')) badgeClass += ' good';
+        badgesHtml += `<span class="${badgeClass}">${badge}</span>`;
+      });
+    }
+    
+    // Add basic badges
+    badgesHtml += `<span class="badge">Best: #${player.bestPlacement}</span>`;
+    badgesHtml += `<span class="badge">${player.totalSeasons} season${player.totalSeasons > 1 ? 's' : ''}</span>`;
+    
+    card.innerHTML = `
+      <div class="row">
+        <div class="player-avatar">
+          <img src="assets/avatars/${player.id}.png" alt="${player.name}" onload="this.style.display='block';" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"/>
+          <div class="fallback">${player.emoji}</div>
+        </div>
+        <div>
+          <div class="name">${player.emoji} ${player.name}</div>
+          <div class="sub">${seasonSummary}</div>
+        </div>
+      </div>
+      <div class="badges">
+        ${badgesHtml}
+      </div>
+    `;
+    
+    grid.appendChild(card);
+  });
+}
+
+function updateDisplay() {
+  const query = search.value.toLowerCase();
+  const sortValue = sortSelect.value;
+  
+  const cards = Array.from(grid.querySelectorAll('.card'));
+  
+  let filtered = cards.filter(c => {
+    const name = c.getAttribute('data-name');
+    return name.includes(query);
+  });
+  
+  filtered.sort((a, b) => {
+    const aPlace = parseInt(a.getAttribute('data-place'));
+    const bPlace = parseInt(b.getAttribute('data-place'));
+    const aName = a.getAttribute('data-name');
+    const bName = b.getAttribute('data-name');
+    
+    if (sortValue === 'place-asc') return aPlace - bPlace;
+    if (sortValue === 'place-desc') return bPlace - aPlace;
+    if (sortValue === 'name-asc') return aName.localeCompare(bName);
+    if (sortValue === 'name-desc') return bName.localeCompare(aName);
+    return 0;
+  });
+  
+  // Hide all cards first
+  cards.forEach(c => c.style.display = 'none');
+  
+  // Show filtered cards in sorted order
+  grid.innerHTML = '';
+  filtered.forEach(c => {
+    c.style.display = 'block';
+    grid.appendChild(c);
+  });
+  
+  countDiv.textContent = `Showing ${filtered.length} of ${allPlayers.length} players`;
+}
+
+search.addEventListener('input', updateDisplay);
+sortSelect.addEventListener('change', updateDisplay);
+</script>
+
+</body>
+</html>

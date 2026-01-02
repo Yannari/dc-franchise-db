@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en" data-root="..">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Zoey — Profile</title>
+  <link rel="stylesheet" href="../styles.css">
+</head>
+\1\n<!-- SITE HEADER START -->
+<header class="siteHeader">
+  <div class="siteHeader__inner">
+    <a class="brandChip" data-href="index.html" aria-label="Go to home">
+      <span class="brandDot" aria-hidden="true"></span>
+      <div>
+        <div class="brandText">DC <b>Franchise</b> Database</div>
+        <span class="brandSub">Local static website • Season 5 is live • Click to explore</span>
+      </div>
+    </a>
+
+    <div class="statsChip">
+      <div class="big">5 seasons • 58 players</div>
+      <div class="small">Icons: <code>name.png</code></div>
+    </div>
+  </div>
+
+  <nav class="siteNav" aria-label="Primary">
+    <!-- Home added -->
+    <a class="navPill" data-href="index.html"><span class="navIcon">🏠</span>Home</a>
+
+    <a class="navPill" data-href="current-season.html"><span class="navIcon">📊</span>Current Season</a>
+    <a class="navPill" data-href="voting-analytics.html"><span class="navIcon">🧾</span>Voting Analytics</a>
+    <a class="navPill" data-href="franchise.html"><span class="navIcon">🏛️</span>Franchise</a>
+    <a class="navPill" data-href="rankings.html"><span class="navIcon">🏆</span>Rankings</a>
+    <a class="navPill" data-href="seasons.html"><span class="navIcon">🗂️</span>Seasons</a>
+    <a class="navPill" data-href="devotees.html"><span class="navIcon">👥</span>Players</a>
+    <a class="navPill" data-href="awards.html"><span class="navIcon">🏅</span>Awards</a>
+  </nav>
+
+  <!-- Folder-safe link resolver (so it works in /players and /seasons too) -->
+  <script>
+    (function () {
+      var root = (document.documentElement.dataset.root || document.body.dataset.root || ".").replace(/\/+$/, "");
+      var join = function (p) { return (root === "." ? p : root + "/" + p); };
+
+      document.querySelectorAll(".siteHeader [data-href]").forEach(function (a) {
+        a.setAttribute("href", join(a.getAttribute("data-href")));
+      });
+    })();
+  </script>
+</header>
+
+<!-- SITE HEADER END -->
+
+  <div class="container">
+    
+    <div class="topbar">
+      <div>
+        <div class="brand">DC <span>Franchise</span> Database</div>
+        <div class="meta">Local static website • Click seasons + player profiles • Search + sort included</div>
+      </div>
+      <div class="meta">Season count: 4 • Player count: 40</div>
+    </div>
+    <div class="tabs"><a class="tab" href="../current-season.html">📊 Current Season Analytics</a><a class="tab" href="../voting-analytics.html">🗳️ Voting Chart Analytics</a><a class="tab" href="../franchise.html">🏛️ Franchise Analytics</a><a class="tab" href="../rankings.html">🏆 Player Rankings</a><a class="tab" href="../seasons.html">📚 Seasons</a><a class="tab active" href="../devotees.html">👥 Devotees</a><a class="tab" href="../awards.html">🥇 Season Awards</a></div>
+    
+<div class="hero" style="text-align:left">
+  <div class="row" style="justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap">
+    <div class="row" style="gap:14px">
+      <div class="avatar" style="position:relative; overflow:hidden; width:80px; height:80px">
+        <img src="../assets/avatars/zoey.png" alt="" style="width:100%;height:100%;object-fit:cover" id="img-zoey"/>
+        <span id="fallback-zoey" style="display:none">👑</span>
+      </div>
+      <div>
+        <h1 style="margin:0 0 6px">Zoey</h1>
+        <div class="sub">Seasons: 3, 4 • Best: #2 • Wins: 0</div>
+        <div class="small" style="margin-top:6px">
+          <b>Avatar slot:</b> add image at <span class="tag">assets/avatars/zoey.png</span>
+        </div>
+      </div>
+    </div>
+    <div class="row" style="gap:10px">
+      <a class="tab" href="../devotees.html">← Devotees</a>
+      <a class="tab" href="../seasons/season3.html">Season 3</a>
+      <a class="tab" href="../seasons/season4.html">Season 4</a>
+    </div>
+  </div>
+</div>
+
+<div class="section-title">
+  <h2>Career Summary</h2>
+  <div class="hint">2 seasons</div>
+</div>
+
+<div class="statsbar">
+  <div class="stat"><div class="num">2</div><div class="label">Seasons</div></div>
+  <div class="stat"><div class="num">0</div><div class="label">Wins</div></div>
+  <div class="stat"><div class="num">#2</div><div class="label">Best Place</div></div>
+  <div class="stat"><div class="num">8</div><div class="label">Challenge Wins</div></div>
+</div>
+
+<div class="badges"><span class='badge gold'>S4 Runner-Up (6 votes)</span><span class='badge purple'>Social Queen</span><span class='badge good'>3 Unbreakable Bonds!</span></div>
+
+<div class="section-title" style="margin-top:26px">
+  <h2>🔥 Season 4 — Edge of Extinction</h2>
+  <div class="hint">Most Recent</div>
+</div>
+
+<div class="kpi-grid">
+  <div class="kpi">
+    <h3>Placement</h3>
+    <ul>
+      <li><b>Rank:</b> #2 (Runner-up)</li>
+      <li><b>Status:</b> Finalist</li>
+      <li><b>Final Vote:</b> Lost 6-7 to Alejandro</li>
+      <li><b>Tribe:</b> Red → Green → Campers (merge)</li>
+    </ul>
+  </div>
+  <div class="kpi">
+    <h3>Performance</h3>
+    <ul>
+      <li><b>Challenge wins:</b> 4</li>
+      <li><b>Immunity wins:</b> 3 (including Final 4!)</li>
+      <li><b>Reward wins:</b> 1</li>
+      <li><b>Final 4 Decision:</b> Saved Scott</li>
+    </ul>
+  </div>
+  <div class="kpi">
+    <h3>Advantages & Threat</h3>
+    <ul>
+      <li><b>Votes received:</b> 1 (cancelled by idol!)</li>
+      <li><b>Idols found:</b> 1</li>
+      <li><b>Idol play:</b> Perfect! (Saved Geoff, 7 votes cancelled)</li>
+      <li><b>Strategic rank:</b> High Social, Medium Strategic</li>
+    </ul>
+  </div>
+  <div class="kpi">
+    <h3>Notes</h3>
+    <ul>
+      <li><b>UNPRECEDENTED:</b> 3 unbreakable bonds at once!</li>
+      <li>Unbreakable: Gwen, Scott, Alejandro</li>
+      <li>Voted out Geoff TWICE (Ep 10 & 13!)</li>
+      <li>Made finals with zero votes against</li>
+    </ul>
+  </div>
+</div>
+
+<div class="section-title" style="margin-top:26px">
+  <h2>📊 Season 3 — Revenge of the Island</h2>
+</div>
+<div class="kpi-grid">
+  <div class="kpi">
+    <h3>Placement</h3>
+    <ul>
+      <li><b>Rank:</b> #4</li>
+      <li><b>Status:</b> 7th Juror</li>
+      <li><b>Tribe:</b> Mutant Maggots → Campers</li>
+    </ul>
+  </div>
+  <div class="kpi">
+    <h3>Performance</h3>
+    <ul>
+      <li><b>Challenge wins:</b> 4</li>
+      <li><b>Immunity wins:</b> 2</li>
+      <li><b>Reward wins:</b> 2</li>
+    </ul>
+  </div>
+  <div class="kpi">
+    <h3>Advantages & Threat</h3>
+    <ul>
+      <li><b>Votes received:</b> 3</li>
+      <li><b>Strategic rank:</b> Medium-High</li>
+    </ul>
+  </div>
+</div>
+
+<div class="section-title" style="margin-top:26px">
+  <h2>Player Story</h2>
+</div>
+<div class="panel">
+  <p><b>Season 3:</b> Made game-changing flip to Campers Alliance in Episode 8, giving minority control for rest of game. Won back-to-back immunities Episodes 11-12. Unbreakable bonds with Mike (voted out Ep 11) and Scott (who voted her out finale). Voted for Scott at FTC despite betrayal. Strong social positioning across factions. Finished 4th.</p>
+  
+  <p><b>Season 4:</b> RUNNER-UP (lost 6-7 to Alejandro in closest finale ever!). UNPRECEDENTED social dominance - <b>3 unbreakable relationships at once</b> (Gwen, Scott, Alejandro)! Most socially connected player in franchise history. Won 3 individual immunities including crucial Final 4 win where she saved Scott and forced Gwen vs Alejandro fire-making. Perfect idol play Episode 5 Part 2 (saved Geoff from 7 votes). Only received <b>1 vote entire season</b> (cancelled by Anne Maria's idol Episode 1) - made finals with zero votes against! Voted out unbreakable partner <b>Geoff TWICE</b> (Episodes 10 & 13!) but he still voted for her at FTC. Despite social mastery, lost to Alejandro's superior strategic gameplay as jury valued strategy over pure relationships. Came agonizingly close to winning (lost by 1 vote).</p>
+  
+  <p class="small" style="margin-top:12px; font-style:italic;">"3 unbreakable bonds at once. She had everyone's loyalty - but couldn't close the deal."</p>
+</div>
+
+<div class="section-title" style="margin-top:26px">
+  <h2>Career Totals</h2>
+</div>
+
+<div class="statsbar">
+  <div class="stat"><div class="num">4</div><div class="label">Total Votes Against</div></div>
+  <div class="stat"><div class="num">8</div><div class="label">Total Challenge Wins</div></div>
+  <div class="stat"><div class="num">5</div><div class="label">Total Immunity Wins</div></div>
+  <div class="stat"><div class="num">6</div><div class="label">Jury Votes (S4)</div></div>
+</div>
+
+<div class="section-title" style="margin-top:26px">
+  <h2>Awards & Recognition</h2>
+</div>
+
+<div class="panel">
+  <ul>
+    <li>👑 <b>Best Social Game S4</b> - 3 unbreakable bonds at once</li>
+    <li>⭐ <b>Social Queen</b> - Most connected player ever</li>
+    <li>🎯 <b>Perfect Idol Play</b> - Saved Geoff (7 votes cancelled)</li>
+    <li>🛡️ <b>Never Voted</b> - Only 1 vote in S4 (cancelled by idol)</li>
+    <li>💪 <b>Challenge Competitor</b> - 8 total wins across 2 seasons</li>
+    <li>😢 <b>Closest Runner-Up</b> - Lost 6-7 (smallest margin with Alejandro)</li>
+  </ul>
+</div>
+
+<div class="callout">
+  <h3>Why Zoey Lost Despite 3 Unbreakable Bonds</h3>
+  <p><b>How did Zoey lose with the most unprecedented social game ever?</b></p>
+  <ul>
+    <li><b>Betrayed Too Many:</b> Voted out Geoff twice - jury noticed the ruthlessness</li>
+    <li><b>Perceived as Follower:</b> Despite strong social game, seen as riding alliances</li>
+    <li><b>Less Strategic Visibility:</b> Social bonds vs. flashy strategic moves</li>
+    <li><b>Jury Valued Strategy:</b> Strategic players (Heather, Noah, Harold, Courtney) all voted for Alejandro</li>
+    <li><b>One Vote Away:</b> Lost 6-7 in franchise's closest finale</li>
+  </ul>
+</div>
+
+<script>
+const img = document.getElementById("img-zoey");
+const fb = document.getElementById("fallback-zoey");
+if(img) {
+  img.onload = () => { img.style.display="block"; if(fb) fb.style.display="none"; };
+  img.onerror = () => { img.style.display="none"; if(fb) fb.style.display="block"; };
+}
+</script>
+
+<div class="footer">4 seasons complete • 40 unique players • 68 total appearances</div>
+  </div>
+<!-- SITE FOOTER START -->
+<footer class="siteFooter">
+  <div class="footerInner">
+    <div class="footerTitle">DC Franchise Database</div>
+    <div class="footerSub">Static archive • 5 seasons • 58 players • Icons: name.png</div>
+  </div>
+</footer>
+<!-- SITE FOOTER END -->
+</body>
+</html>

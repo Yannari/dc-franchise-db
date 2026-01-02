@@ -1,0 +1,570 @@
+<!doctype html>
+<html lang="en" data-root="..">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Season 4 — Edge of Extinction</title>
+  <link rel="stylesheet" href="../styles.css">
+
+  <style>
+    .two-col { display:grid; grid-template-columns: 1.1fr .9fr; gap:16px; }
+    @media (max-width: 980px){ .two-col{ grid-template-columns:1fr; } }
+
+    .panel {
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.18);
+      border-radius: 18px;
+      padding: 16px;
+      backdrop-filter: blur(8px);
+    }
+
+    .cast-photo {
+      display:flex; gap:14px; align-items:flex-start; justify-content:space-between;
+    }
+    .cast-photo img{
+      width:100%;
+      max-height: 260px;
+      object-fit: contain;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.25);
+      margin-top: 10px;
+    }
+    .path-pill{
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      white-space: nowrap;
+    }
+
+    .placements { width:100%; }
+    .placements th, .placements td { vertical-align: middle; }
+    .placements td { padding-top: 10px; padding-bottom: 10px; }
+
+    .p-avatar{
+      width:42px;height:42px;border-radius:999px;overflow:hidden;
+      border:2px solid rgba(165,95,255,.55);
+      background:linear-gradient(135deg, rgba(255,255,255,.14), rgba(255,255,255,.06));
+      display:flex;align-items:center;justify-content:center;
+      flex:0 0 auto;
+    }
+    .p-avatar img{ width:100%; height:100%; object-fit:cover; display:none; }
+    .p-avatar .fb{ font-weight:800; font-size:12px; opacity:.95; }
+
+    .place-badge{
+      font-weight:800;
+      letter-spacing:.2px;
+    }
+
+    .subtle { opacity:.82; font-size: 13px; }
+    .notes { color: rgba(255,255,255,.85); font-size: 13px; line-height: 1.25; }
+    .phase { font-weight:700; }
+
+    .jumpline{
+      margin: 10px 0 0;
+      font-size: 12px;
+      opacity: .82;
+      word-break: break-word;
+    }
+    .jumpline a{ opacity:.9; margin-right: 6px; }
+
+    .callout {
+      background: linear-gradient(135deg, rgba(165,95,255,0.15), rgba(165,95,255,0.05));
+      border: 1px solid rgba(165,95,255,0.3);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+    .callout h3 { margin: 0 0 10px; color: rgba(165,95,255,1); }
+
+    .highlight-box {
+      background: rgba(255,215,0,0.08);
+      border-left: 3px solid rgba(255,215,0,0.6);
+      padding: 12px 16px;
+      margin: 10px 0;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+
+<body>
+<!-- SITE HEADER START -->
+<header class="modern-header" id="modernHeader">
+  <div class="header-container">
+    <!-- Top Bar -->
+    <div class="header-top">
+      <a href="index.html" class="brand-section" aria-label="Go to home">
+        <div class="brand-icon">
+          <span class="brand-logo-text">⚡</span>
+        </div>
+        <div class="brand-content">
+          <h1>DC <span class="brand-gradient">Franchise</span> Database</h1>
+          <p class="brand-subtitle">Season <span id="currentSeasonNum">5</span> Live • Click to Explore</p>
+        </div>
+      </a>
+
+      <div class="stats-badge">
+        <div class="stats-main"><span id="totalSeasons">5</span> Seasons • <span id="totalPlayers">58</span> Players</div>
+        <div class="stats-sub">Icons: <span id="iconFormat">name.png</span></div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="header-nav" aria-label="Primary navigation">
+      <ul class="nav-list">
+        <li class="nav-item">
+          <a href="index.html" class="nav-link" data-page="index">
+            <span class="nav-icon">🏠</span>
+            <span>Home</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="current-season.html" class="nav-link" data-page="current-season">
+            <span class="nav-icon">📊</span>
+            <span>Current Season</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="voting-analytics.html" class="nav-link" data-page="voting-analytics">
+            <span class="nav-icon">🧾</span>
+            <span>Voting Analytics</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="franchise.html" class="nav-link" data-page="franchise">
+            <span class="nav-icon">🏛️</span>
+            <span>Franchise</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="rankings.html" class="nav-link" data-page="rankings">
+            <span class="nav-icon">🏆</span>
+            <span>Rankings</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="seasons.html" class="nav-link" data-page="seasons">
+            <span class="nav-icon">🗂️</span>
+            <span>Seasons</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="devotees.html" class="nav-link" data-page="devotees">
+            <span class="nav-icon">👥</span>
+            <span>Players</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="awards.html" class="nav-link" data-page="awards">
+            <span class="nav-icon">🏅</span>
+            <span>Awards</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<script>
+(function() {
+  // Load site config and update header stats
+  if (window.SITE_CONFIG) {
+    document.getElementById('totalSeasons').textContent = window.SITE_CONFIG.seasons;
+    document.getElementById('totalPlayers').textContent = window.SITE_CONFIG.players;
+    document.getElementById('currentSeasonNum').textContent = window.SITE_CONFIG.currentSeason;
+    document.getElementById('iconFormat').textContent = window.SITE_CONFIG.iconFormat;
+  }
+
+  // Scroll behavior
+  const header = document.getElementById('modernHeader');
+  if (!header) return;
+  
+  window.addEventListener('scroll', () => {
+    const currentScroll = window.pageYOffset;
+    if (currentScroll > 20) {
+      header.classList.add('scrolled');
+    } else {
+      header.classList.remove('scrolled');
+    }
+  }, { passive: true });
+
+  // Active page highlighting
+  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+  const navLinks = document.querySelectorAll('.nav-link');
+  
+  navLinks.forEach(link => {
+    const linkPage = link.getAttribute('href');
+    if (linkPage === currentPage || (currentPage === '' && linkPage === 'index.html')) {
+      link.classList.add('active');
+    }
+  });
+
+  // Path resolution for nested folders
+  const root = (document.documentElement.dataset.root || document.body.dataset.root || ".").replace(/\/+$/, "");
+  
+  if (root !== ".") {
+    const allLinks = header.querySelectorAll('a[href]');
+    allLinks.forEach(link => {
+      const href = link.getAttribute('href');
+      if (href && !href.startsWith('http') && !href.startsWith('#')) {
+        link.setAttribute('href', root + '/' + href);
+      }
+    });
+  }
+})();
+</script>
+<!-- SITE HEADER END -->
+
+
+
+  <div class="container">
+    <div class="topbar">
+      <div>
+        <div class="brand">DC <span>Franchise</span> Database</div>
+        <div class="meta">Local static website • Seasons + player profiles • Search + sort</div>
+      </div>
+      <div class="meta">Season count: 4 • Player count: 40</div>
+    </div>
+    <div class="tabs"><a class="tab" href="../current-season.html">📊 Current Season Analytics</a><a class="tab" href="../voting-analytics.html">🗳️ Voting Chart Analytics</a><a class="tab" href="../franchise.html">🏛️ Franchise Analytics</a><a class="tab" href="../rankings.html">🏆 Player Rankings</a><a class="tab active" href="../seasons.html">📚 Seasons</a><a class="tab" href="../devotees.html">👥 Devotees</a><a class="tab" href="../awards.html">🥇 Season Awards</a></div>
+
+    <div class="hero">
+      <h1>🌴 Season 4: Edge of Extinction</h1>
+      <p>All-Stars with Edge of Extinction Twist • The season where redemption was offered—but rarely granted</p>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi">
+        <h3>👑 Winner</h3>
+        <p><a href="../players/alejandro.html"><b>Alejandro</b></a></p>
+        <p class="small">7-6-1 vote (closest ever!)</p>
+      </div>
+      
+      <div class="kpi">
+        <h3>🎬 Theme</h3>
+        <p><b>All-Stars + EoE</b></p>
+        <p class="small">9 Gen 1, 9 Gen 2</p>
+      </div>
+      
+      <div class="kpi">
+        <h3>👑 Fan Favorite</h3>
+        <p><a href="../players/jo.html"><b>Jo</b></a></p>
+        <p class="small">4 extreme hatreds</p>
+      </div>
+      
+      <div class="kpi">
+        <h3>📺 Episodes</h3>
+        <p><b>14 + Finale</b></p>
+        <p class="small">52 days</p>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <h2 style="margin-top:16px;">🎯 Season Highlights</h2>
+        
+        <div class="highlight-box">
+          <b>🏆 Alejandro's THIRD finals, FIRST win!</b><br/>
+          Finally won (7-6-1) after losing S1 & S2 finals
+        </div>
+
+        <div class="highlight-box">
+          <b>💪 Gwen: 4 consecutive immunity wins</b><br/>
+          Episodes 11-14 (franchise record!)
+        </div>
+
+        <div class="highlight-box">
+          <b>🃏 Scott: Perfect idol play</b><br/>
+          Held idol 9 tribals, played at F5 (record patience)
+        </div>
+
+        <div class="highlight-box">
+          <b>💕 Zoey: 3 unbreakable bonds at once!</b><br/>
+          Gwen, Scott, Alejandro (unprecedented)
+        </div>
+
+        <div class="highlight-box">
+          <b>🏝️ Edge of Extinction chaos</b><br/>
+          12 players (66% of cast!), 2 returns, 1 quit
+        </div>
+
+        <div class="highlight-box">
+          <b>🔥 Triple idol tribal (Ep 5 Part 2)</b><br/>
+          Noah, Lightning, Zoey — all 9 votes cancelled!
+        </div>
+      </div>
+
+      <div>
+        <h2 style="margin-top:16px;">Cast Photo</h2>
+        <img src="../assets/cast/s4-cast.png" alt="Season 4 cast photo"
+             onerror="this.style.display='none'; document.getElementById('cast-missing-s4').style.display='block';"/>
+
+        <div id="cast-missing-s4" class="panel" style="display:none; margin-top:10px; background:rgba(255,153,0,.08);">
+          <b>Cast photo not found yet.</b><br/>
+          Put your image at <b>assets/cast/s4-cast.png</b> and refresh.
+        </div>
+      </div>
+    </div>
+
+    <h2 style="margin-top:30px;">📊 Season Statistics</h2>
+
+    <div class="kpi-grid">
+      <div class="kpi">
+        <h3>Closest Finale Ever</h3>
+        <p><b>Alejandro won 7-6-1</b></p>
+        <p class="small">Zoey 1 vote away from winning</p>
+      </div>
+      
+      <div class="kpi">
+        <h3>Most Targeted</h3>
+        <p><b>Geoff — 29 Votes</b></p>
+        <p class="small">Voted out twice (Ep 10, Ep 13)</p>
+      </div>
+      
+      <div class="kpi">
+        <h3>Challenge Beast</h3>
+        <p><b>Gwen — 4 Immunities</b></p>
+        <p class="small">4 consecutive (Ep 11-14)</p>
+      </div>
+      
+      <div class="kpi">
+        <h3>Strategic Mastermind</h3>
+        <p><b>Alejandro — Strategic Rank #1</b></p>
+        <p class="small">Controlled alliances, won fire-making</p>
+      </div>
+      
+      <div class="kpi">
+        <h3>Most Connected</h3>
+        <p><b>Zoey — 3 Unbreakable Bonds</b></p>
+        <p class="small">Gwen, Scott, Alejandro (unprecedented)</p>
+      </div>
+      
+      <div class="kpi">
+        <h3>Biggest EoE Population</h3>
+        <p><b>12 Players (66% of cast!)</b></p>
+        <p class="small">2 returns, 1 quit (Dakota)</p>
+      </div>
+    </div>
+
+    <div style="margin-top:30px;">
+      <h2 style="margin:0 0 10px;">🏆 Placements</h2>
+      <div class="subtle" style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+        <div class="jumpline">
+          Jump:
+          <a href="#p1">#1</a><a href="#p2">#2</a><a href="#p3">#3</a><a href="#p4">#4</a><a href="#p5">#5</a>
+          <a href="#p6">#6</a><a href="#p7">#7</a><a href="#p8">#8</a><a href="#p9">#9</a><a href="#p10">#10</a>
+          <a href="#p11">#11</a><a href="#p12">#12</a><a href="#p13">#13</a><a href="#p14">#14</a><a href="#p15">#15</a><a href="#p16">#16</a><a href="#p17">#17</a><a href="#p18">#18</a>
+        </div>
+        <div class="subtle">Click any name to open the profile</div>
+      </div>
+
+      <div class="panel" style="margin-top:10px; padding:0;">
+        <table class="table placements">
+          <thead>
+            <tr>
+              <th style="width:64px;">Icon</th>
+              <th style="width:90px;">Place</th>
+              <th>Player</th>
+              <th style="width:130px;">Phase</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+
+            <tr id="p1">
+              <td><div class="p-avatar"><img src="../assets/avatars/alejandro.png" alt="Alejandro" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">👑</div></div></td>
+              <td class="place-badge">🥇 #1</td>
+              <td><a href="../players/alejandro.html"><b>Alejandro</b></a></td>
+              <td class="phase">WINNER</td>
+              <td class="notes">Won FTC <b>7–6–1</b> • 3rd finals, 1st win!</td>
+            </tr>
+
+            <tr id="p2">
+              <td><div class="p-avatar"><img src="../assets/avatars/zoey.png" alt="Zoey" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">💕</div></div></td>
+              <td class="place-badge">🥈 #2</td>
+              <td><a href="../players/zoey.html"><b>Zoey</b></a></td>
+              <td class="phase">Finalist</td>
+              <td class="notes">6 votes to win • 3 unbreakable bonds!</td>
+            </tr>
+
+            <tr id="p3">
+              <td><div class="p-avatar"><img src="../assets/avatars/scott.png" alt="Scott" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">🃏</div></div></td>
+              <td class="place-badge">🥉 #3</td>
+              <td><a href="../players/scott.html"><b>Scott</b></a></td>
+              <td class="phase">Finalist</td>
+              <td class="notes">1 vote (Gwen) • Perfect idol (9 tribals!)</td>
+            </tr>
+
+            <tr id="p4">
+              <td><div class="p-avatar"><img src="../assets/avatars/gwen.png" alt="Gwen" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">💪</div></div></td>
+              <td class="place-badge">💫 #4</td>
+              <td><a href="../players/gwen.html"><b>Gwen</b></a></td>
+              <td class="phase">Juror</td>
+              <td class="notes">Lost fire-making • 4 consecutive immunities!</td>
+            </tr>
+
+            <tr id="p5">
+              <td><div class="p-avatar"><img src="../assets/avatars/cameron.png" alt="Cameron" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">🧠</div></div></td>
+              <td class="place-badge">🔹 #5</td>
+              <td><a href="../players/cameron.html"><b>Cameron</b></a></td>
+              <td class="phase">Juror</td>
+              <td class="notes">2-0 victim of Scott's idol play</td>
+            </tr>
+
+            <tr id="p6">
+              <td><div class="p-avatar"><img src="../assets/avatars/geoff.png" alt="Geoff" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">🎉</div></div></td>
+              <td class="place-badge">🔸 #6</td>
+              <td><a href="../players/geoff.html"><b>Geoff</b></a></td>
+              <td class="phase">Juror</td>
+              <td class="notes">Returned Ep 13, re-eliminated same episode!</td>
+            </tr>
+
+            <tr id="p7">
+              <td><div class="p-avatar"><img src="../assets/avatars/duncan.png" alt="Duncan" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">⚔️</div></div></td>
+              <td class="place-badge">🔹 #7</td>
+              <td><a href="../players/duncan.html"><b>Duncan</b></a></td>
+              <td class="phase">Juror</td>
+              <td class="notes">S2 winner curse • Eliminated at F6</td>
+            </tr>
+
+            <tr id="p8">
+              <td><div class="p-avatar"><img src="../assets/avatars/harold.png" alt="Harold" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">🤓</div></div></td>
+              <td class="place-badge">🔸 #8</td>
+              <td><a href="../players/harold.html"><b>Harold</b></a></td>
+              <td class="phase">Juror</td>
+              <td class="notes">3-3-1 tie, eliminated on revote</td>
+            </tr>
+
+            <tr id="p9">
+              <td><div class="p-avatar"><img src="../assets/avatars/noah.png" alt="Noah" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">📚</div></div></td>
+              <td class="place-badge">🔹 #9</td>
+              <td><a href="../players/noah.html"><b>Noah</b></a></td>
+              <td class="phase">Juror</td>
+              <td class="notes">5-4 vote • Consensus target</td>
+            </tr>
+
+            <tr id="p10">
+              <td><div class="p-avatar"><img src="../assets/avatars/jo.png" alt="Jo" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">💥</div></div></td>
+              <td class="place-badge">👑 #10</td>
+              <td><a href="../players/jo.html"><b>Jo</b></a></td>
+              <td class="phase">Juror</td>
+              <td class="notes"><b>👑 FAN FAVORITE</b> • 4-4-2 tie, revote</td>
+            </tr>
+
+            <tr id="p11">
+              <td><div class="p-avatar"><img src="../assets/avatars/sierra.png" alt="Sierra" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">📱</div></div></td>
+              <td class="place-badge">🔸 #11</td>
+              <td><a href="../players/sierra.html"><b>Sierra</b></a></td>
+              <td class="phase">Juror</td>
+              <td class="notes">Returned Ep 6, perfect idol Ep 7 (10 votes!)</td>
+            </tr>
+
+            <tr id="p12">
+              <td><div class="p-avatar"><img src="../assets/avatars/mike.png" alt="Mike" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">🎭</div></div></td>
+              <td class="place-badge">🔹 #12</td>
+              <td><a href="../players/mike.html"><b>Mike</b></a></td>
+              <td class="phase">Juror</td>
+              <td class="notes">2-0 after Sierra's idol (10 votes cancelled)</td>
+            </tr>
+
+            <tr id="p13">
+              <td><div class="p-avatar"><img src="../assets/avatars/lightning.png" alt="Lightning" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">⚡</div></div></td>
+              <td class="place-badge">🔸 #13</td>
+              <td><a href="../players/lightning.html"><b>Lightning</b></a></td>
+              <td class="phase">Juror</td>
+              <td class="notes">9-4 merge boot</td>
+            </tr>
+
+            <tr id="p14">
+              <td><div class="p-avatar"><img src="../assets/avatars/courtney.png" alt="Courtney" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">📋</div></div></td>
+              <td class="place-badge">🔹 #14</td>
+              <td><a href="../players/courtney.html"><b>Courtney</b></a></td>
+              <td class="phase">Juror</td>
+              <td class="notes">Triple idol tribal (revote 4-2)</td>
+            </tr>
+
+            <tr id="p15">
+              <td><div class="p-avatar"><img src="../assets/avatars/heather.png" alt="Heather" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">🐍</div></div></td>
+              <td class="place-badge">🔸 #15</td>
+              <td><a href="../players/heather.html"><b>Heather</b></a></td>
+              <td class="phase">Juror</td>
+              <td class="notes">3-2 vote</td>
+            </tr>
+
+            <tr id="p16">
+              <td><div class="p-avatar"><img src="../assets/avatars/anne-maria.png" alt="Anne Maria" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">💋</div></div></td>
+              <td class="place-badge">🔹 #16</td>
+              <td><a href="../players/anne-maria.html"><b>Anne Maria</b></a></td>
+              <td class="phase">Juror</td>
+              <td class="notes">4-1 swap casualty</td>
+            </tr>
+
+            <tr id="p17">
+              <td><div class="p-avatar"><img src="../assets/avatars/emma.png" alt="Emma" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">🎯</div></div></td>
+              <td class="place-badge">🔸 #17</td>
+              <td><a href="../players/emma.html"><b>Emma</b></a></td>
+              <td class="phase">Juror</td>
+              <td class="notes">S3 winner curse • Episode 2 boot (5-3)</td>
+            </tr>
+
+            <tr id="p18">
+              <td><div class="p-avatar"><img src="../assets/avatars/dakota.png" alt="Dakota" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">✨</div></div></td>
+              <td class="place-badge">⚫ #18</td>
+              <td><a href="../players/dakota.html"><b>Dakota</b></a></td>
+              <td class="phase">Pre-Juror</td>
+              <td class="notes">First boot • Quit EoE Episode 6</td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <h2 style="margin-top:30px;">🔥 Key Storylines</h2>
+
+    <div class="callout">
+      <h3>Alejandro's Redemption Arc</h3>
+      <p>After losing S1 (4-5 to Lindsay) and S2 (1-5-1 to Duncan), Alejandro FINALLY won on his third finals appearance! His 7-6-1 victory was the closest finale ever.</p>
+    </div>
+
+    <div class="callout">
+      <h3>Previous Winners Curse</h3>
+      <p>Both Emma (S3 winner) and Duncan (S2 winner) were eliminated before reaching the finale—Emma in Episode 2, Duncan at Final 6.</p>
+    </div>
+
+    <div class="callout">
+      <h3>Edge of Extinction Chaos</h3>
+      <p>12 of 18 players (66%!) spent time on EoE. Sierra (Ep 6) and Geoff (Ep 13) returned. Geoff's arc was tragic—returned Episode 13, immediately re-eliminated the same episode. Dakota quit EoE Episode 6.</p>
+    </div>
+
+    <div class="callout">
+      <h3>Gwen's Challenge Beast Evolution</h3>
+      <p>Gwen won 4 consecutive immunity challenges (Episodes 11-14)—a franchise record! Despite this dominance, she lost the fire-making challenge to Alejandro at Final 4.</p>
+    </div>
+
+    <div class="callout">
+      <h3>Triple Idol Tribal (Episode 5 Part 2)</h3>
+      <p>Noah, Lightning, and Zoey all played idols in the same tribal—cancelling all 9 votes! Courtney was eliminated 4-2 on the revote.</p>
+    </div>
+
+    <div style="margin-top:30px; text-align:center;">
+      <a href="season4-awards.html" class="tab" style="display:inline-block; margin:0 8px;">🥇 Season 4 Awards →</a>
+      <a href="../seasons.html" class="tab" style="display:inline-block; margin:0 8px;">← All Seasons</a>
+    </div>
+
+    <div class="footer">4 seasons complete • 40 unique players • 68 total appearances</div>
+  </div>
+
+
+
+<!-- SITE FOOTER START -->
+<footer class="siteFooter">
+  <div class="footerInner">
+    <div class="footerTitle">DC Franchise Database</div>
+    <div class="footerSub">Static archive • 5 seasons • 58 players • Icons: name.png</div>
+  </div>
+</footer>
+<!-- SITE FOOTER END -->
+</body>
+</html>

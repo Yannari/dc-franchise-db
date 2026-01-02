@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="en" data-root="..">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Season 5 Awards — Rescue Island</title>
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+<!-- SITE HEADER START -->
+<header class="modern-header" id="modernHeader">
+  <div class="header-container">
+    <!-- Top Bar -->
+    <div class="header-top">
+      <a href="index.html" class="brand-section" aria-label="Go to home">
+        <div class="brand-icon">
+          <span class="brand-logo-text">⚡</span>
+        </div>
+        <div class="brand-content">
+          <h1>DC <span class="brand-gradient">Franchise</span> Database</h1>
+          <p class="brand-subtitle">Season <span id="currentSeasonNum">5</span> Live • Click to Explore</p>
+        </div>
+      </a>
+
+      <div class="stats-badge">
+        <div class="stats-main"><span id="totalSeasons">5</span> Seasons • <span id="totalPlayers">58</span> Players</div>
+        <div class="stats-sub">Icons: <span id="iconFormat">name.png</span></div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="header-nav" aria-label="Primary navigation">
+      <ul class="nav-list">
+        <li class="nav-item">
+          <a href="index.html" class="nav-link" data-page="index">
+            <span class="nav-icon">🏠</span>
+            <span>Home</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="current-season.html" class="nav-link" data-page="current-season">
+            <span class="nav-icon">📊</span>
+            <span>Current Season</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="voting-analytics.html" class="nav-link" data-page="voting-analytics">
+            <span class="nav-icon">🧾</span>
+            <span>Voting Analytics</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="franchise.html" class="nav-link" data-page="franchise">
+            <span class="nav-icon">🏛️</span>
+            <span>Franchise</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="rankings.html" class="nav-link" data-page="rankings">
+            <span class="nav-icon">🏆</span>
+            <span>Rankings</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="seasons.html" class="nav-link" data-page="seasons">
+            <span class="nav-icon">🗂️</span>
+            <span>Seasons</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="devotees.html" class="nav-link" data-page="devotees">
+            <span class="nav-icon">👥</span>
+            <span>Players</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="awards.html" class="nav-link" data-page="awards">
+            <span class="nav-icon">🏅</span>
+            <span>Awards</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<script>
+(function() {
+  // Load site config and update header stats
+  if (window.SITE_CONFIG) {
+    document.getElementById('totalSeasons').textContent = window.SITE_CONFIG.seasons;
+    document.getElementById('totalPlayers').textContent = window.SITE_CONFIG.players;
+    document.getElementById('currentSeasonNum').textContent = window.SITE_CONFIG.currentSeason;
+    document.getElementById('iconFormat').textContent = window.SITE_CONFIG.iconFormat;
+  }
+
+  // Scroll behavior
+  const header = document.getElementById('modernHeader');
+  if (!header) return;
+  
+  window.addEventListener('scroll', () => {
+    const currentScroll = window.pageYOffset;
+    if (currentScroll > 20) {
+      header.classList.add('scrolled');
+    } else {
+      header.classList.remove('scrolled');
+    }
+  }, { passive: true });
+
+  // Active page highlighting
+  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+  const navLinks = document.querySelectorAll('.nav-link');
+  
+  navLinks.forEach(link => {
+    const linkPage = link.getAttribute('href');
+    if (linkPage === currentPage || (currentPage === '' && linkPage === 'index.html')) {
+      link.classList.add('active');
+    }
+  });
+
+  // Path resolution for nested folders
+  const root = (document.documentElement.dataset.root || document.body.dataset.root || ".").replace(/\/+$/, "");
+  
+  if (root !== ".") {
+    const allLinks = header.querySelectorAll('a[href]');
+    allLinks.forEach(link => {
+      const href = link.getAttribute('href');
+      if (href && !href.startsWith('http') && !href.startsWith('#')) {
+        link.setAttribute('href', root + '/' + href);
+      }
+    });
+  }
+})();
+</script>
+<!-- SITE HEADER END -->
+
+
+
+
+<main class="container">
+
+<section class="hero">
+  <div class="kicker">Seasons / Season 5</div>
+  <h1>Season 5 Awards</h1>
+  <p class="lede">Official superlatives for <b>Total Drama: Rescue Island</b>.</p>
+  <div class="badges" style="margin-top:14px;">
+    <a class="badge" href="season5.html">Back to Season 5 overview</a>
+    <a class="badge" href="../awards.html">All seasons awards</a>
+  </div>
+</section>
+
+<style>
+  /* Season awards layout (matches the S4-style screenshot) */
+  .awardsSection { margin-top: 26px; }
+  .awardsTitle {
+    display:flex; align-items:center; gap:10px;
+    font-size: 22px; margin: 0 0 12px 0;
+    letter-spacing: .2px;
+  }
+  .awardsGrid{
+    display:grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+  }
+  @media (max-width: 1050px){ .awardsGrid{ grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 560px){ .awardsGrid{ grid-template-columns: 1fr; } }
+
+  .awardCard{
+    border-radius: 18px;
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(255,255,255,.10);
+    box-shadow: 0 10px 30px rgba(0,0,0,.22);
+    padding: 14px 14px 12px;
+    position: relative;
+    overflow:hidden;
+  }
+  .awardTop{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding: 8px 10px;
+    border-radius: 999px;
+    background: rgba(0,0,0,.18);
+    border: 1px solid rgba(255,255,255,.08);
+    margin-bottom: 10px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+  }
+  .awardTop .left{ display:flex; align-items:center; gap:8px; }
+  .awardTop .chipIcon{ font-size: 14px; }
+  .awardTop .chipLabel{ opacity: .92; }
+  .awardName{
+    font-weight: 800;
+    letter-spacing: .2px;
+    text-transform: uppercase;
+    font-size: 13px;
+    opacity: .9;
+  }
+  .awardBig{
+    font-size: 18px;
+    font-weight: 850;
+    margin: 8px 0 8px;
+    line-height: 1.15;
+  }
+  .awardBody{
+    color: var(--muted);
+    line-height: 1.45;
+    font-size: 13px;
+  }
+  .awardBody b{ color: var(--text); }
+  .awardLinks{
+    margin-top: 10px;
+    display:flex; gap:10px; flex-wrap:wrap;
+  }
+  .awardLinks a{
+    font-size: 12px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,.12);
+    background: rgba(255,255,255,.04);
+    text-decoration:none;
+  }
+
+  /* Subtle highlight variants (not "winner gold", just gentle accent) */
+  .awardCard.isWinner { border-color: rgba(255,255,255,.16); }
+</style>
+
+<section class="awardsSection">
+  <h2 class="awardsTitle">🏆 Major Awards</h2>
+  <div class="awardsGrid">
+
+    <article class="awardCard isWinner">
+      <div class="awardTop">
+        <div class="left"><span class="chipIcon">🏆</span><span class="chipLabel">Winner</span></div>
+        <span class="awardName">MICKEY</span>
+      </div>
+      <div class="awardBig">3–3–2 victory (tiebreak) over Sky &amp; Ryan</div>
+      <div class="awardBody">
+        Under-the-radar structure + relationship control.<br>
+        <b>0 votes against</b> all season — never became the real target.
+      </div>
+      <div class="awardLinks">
+        <a href="../player.html?player=mickey">View profile</a>
+      </div>
+    </article>
+
+    <article class="awardCard">
+      <div class="awardTop">
+        <div class="left"><span class="chipIcon">👑</span><span class="chipLabel">Fan Favorite</span></div>
+        <span class="awardName">RYAN</span>
+      </div>
+      <div class="awardBig">Finalist + deciding kingmaker vote</div>
+      <div class="awardBody">
+        The season’s most visible merge/endgame presence.<br>
+        Forced the finale outcome by breaking the FTC tie.
+      </div>
+      <div class="awardLinks">
+        <a href="../player.html?player=ryan">View profile</a>
+      </div>
+    </article>
+
+    <article class="awardCard">
+      <div class="awardTop">
+        <div class="left"><span class="chipIcon">🧠</span><span class="chipLabel">Best Strategic</span></div>
+        <span class="awardName">SCARLETT</span>
+      </div>
+      <div class="awardBig">#1 strategist (but fell at fire-making)</div>
+      <div class="awardBody">
+        Controlled vote structures through advantage warfare and merge blocs.<br>
+        Lost the last gate to FTC — <b>execution at F4</b> was the only miss.
+      </div>
+      <div class="awardLinks">
+        <a href="../player.html?player=scarlett">View profile</a>
+      </div>
+    </article>
+
+    <article class="awardCard">
+      <div class="awardTop">
+        <div class="left"><span class="chipIcon">🤝</span><span class="chipLabel">Best Social</span></div>
+        <span class="awardName">MICKEY</span>
+      </div>
+      <div class="awardBig">Relationships beat challenge dominance</div>
+      <div class="awardBody">
+        Built overlapping trust (Dave early, Ryan late) and stayed insulated.<br>
+        Won a jury tie because <b>people wanted to reward his stability</b>.
+      </div>
+      <div class="awardLinks">
+        <a href="../player.html?player=mickey">View profile</a>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+<section class="awardsSection">
+  <h2 class="awardsTitle">🎯 Performance Awards</h2>
+  <div class="awardsGrid">
+
+    <article class="awardCard">
+      <div class="awardTop">
+        <div class="left"><span class="chipIcon">💪</span><span class="chipLabel">Best Physical</span></div>
+        <span class="awardName">SKY</span>
+      </div>
+      <div class="awardBig">4 total wins • 3 immunities</div>
+      <div class="awardBody">
+        Dominant competitor and the true <b>challenge closer</b> (F6–F4 window).<br>
+        Clear win-equity résumé — just lost the kingmaker vote.
+      </div>
+      <div class="awardLinks">
+        <a href="../player.html?player=sky">View profile</a>
+      </div>
+    </article>
+
+    <article class="awardCard">
+      <div class="awardTop">
+        <div class="left"><span class="chipIcon">🔥</span><span class="chipLabel">Most Clutch</span></div>
+        <span class="awardName">RYAN</span>
+      </div>
+      <div class="awardBig">Fire-making champion</div>
+      <div class="awardBody">
+        Won the duel to reach FTC — and that single win created the <b>3–3 tie</b>.<br>
+        Without it, the finale outcome doesn’t exist.
+      </div>
+      <div class="awardLinks">
+        <a href="../player.html?player=ryan">View profile</a>
+      </div>
+    </article>
+
+    <article class="awardCard">
+      <div class="awardTop">
+        <div class="left"><span class="chipIcon">🎯</span><span class="chipLabel">Perfect Idol Play</span></div>
+        <span class="awardName">SKY</span>
+      </div>
+      <div class="awardBig">Final 6 — flipped the boot onto Dave</div>
+      <div class="awardBody">
+        Played the idol cleanly, collapsed the “boot Sugar” plan, and rewired the endgame.<br>
+        Most outcome-changing advantage moment of the season.
+      </div>
+      <div class="awardLinks">
+        <a href="../player.html?player=sky">View profile</a>
+      </div>
+    </article>
+
+    <article class="awardCard">
+      <div class="awardTop">
+        <div class="left"><span class="chipIcon">🛡️</span><span class="chipLabel">Iron Person</span></div>
+        <span class="awardName">MICKEY</span>
+      </div>
+      <div class="awardBig">“Never on the ropes” winner profile</div>
+      <div class="awardBody">
+        No panic rounds, no survival scrambles, no visible loss of control.<br>
+        Stayed steady through swap, merge, and endgame — <b>then closed</b>.
+      </div>
+      <div class="awardLinks">
+        <a href="../player.html?player=mickey">View profile</a>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+<section class="awardsSection" style="margin-bottom: 12px;">
+  <h2 class="awardsTitle">🎭 Character Awards</h2>
+  <div class="awardsGrid">
+
+    <article class="awardCard">
+      <div class="awardTop">
+        <div class="left"><span class="chipIcon">💣</span><span class="chipLabel">Most Chaotic</span></div>
+        <span class="awardName">BLAINELEY</span>
+      </div>
+      <div class="awardBig">Weaponized chaos (and still survived)</div>
+      <div class="awardBody">
+        Blowups, paranoia spirals, and advantage math all season.<br>
+        Chaos wasn’t random — it was the strategy, even when messy.
+      </div>
+      <div class="awardLinks">
+        <a href="../player.html?player=blaineley">View profile</a>
+      </div>
+    </article>
+
+    <article class="awardCard">
+      <div class="awardTop">
+        <div class="left"><span class="chipIcon">😬</span><span class="chipLabel">Messiest Storyline</span></div>
+        <span class="awardName">DAVE vs SUGAR</span>
+      </div>
+      <div class="awardBig">A feud that warped every merge vote</div>
+      <div class="awardBody">
+        A strategic anchor point — every round had to answer “can they coexist?”<br>
+        It finally ends with Dave’s tragic F6 exit after idol chaos.
+      </div>
+      <div class="awardLinks">
+        <a href="../player.html?player=dave">Dave</a>
+        <a href="../player.html?player=sugar">Sugar</a>
+      </div>
+    </article>
+
+    <article class="awardCard">
+      <div class="awardTop">
+        <div class="left"><span class="chipIcon">🎲</span><span class="chipLabel">Most Unlucky</span></div>
+        <span class="awardName">JOSEE</span>
+      </div>
+      <div class="awardBig">KIP stole safety at the worst moment</div>
+      <div class="awardBody">
+        Went from protected to doomed in a single Tribal chain reaction.<br>
+        One twist swing turned her into the clean fallback boot.
+      </div>
+      <div class="awardLinks">
+        <a href="../player.html?player=josee">View profile</a>
+      </div>
+    </article>
+
+    <article class="awardCard">
+      <div class="awardTop">
+        <div class="left"><span class="chipIcon">🤫</span><span class="chipLabel">Quietest Threat</span></div>
+        <span class="awardName">MICKEY</span>
+      </div>
+      <div class="awardBig">The win was built in silence</div>
+      <div class="awardBody">
+        People never successfully mobilized votes into a real danger round.<br>
+        Looked like a “safe ally” while being the season’s winning structure.
+      </div>
+      <div class="awardLinks">
+        <a href="../player.html?player=mickey">View profile</a>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+</main>
+
+
+
+<script>
+  // small helpers: preserve coverflow motion settings etc are in index only
+</script>
+<!-- SITE FOOTER START -->
+<footer class="siteFooter">
+  <div class="footerInner">
+    <div class="footerTitle">DC Franchise Database</div>
+    <div class="footerSub">Static archive • 5 seasons • 58 players • Icons: name.png</div>
+  </div>
+</footer>
+<!-- SITE FOOTER END -->
+</body>
+</html>

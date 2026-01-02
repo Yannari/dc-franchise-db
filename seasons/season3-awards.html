@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="en" data-root="..">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Season 3 Awards</title>
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+<!-- SITE HEADER START -->
+<header class="modern-header" id="modernHeader">
+  <div class="header-container">
+    <!-- Top Bar -->
+    <div class="header-top">
+      <a href="index.html" class="brand-section" aria-label="Go to home">
+        <div class="brand-icon">
+          <span class="brand-logo-text">⚡</span>
+        </div>
+        <div class="brand-content">
+          <h1>DC <span class="brand-gradient">Franchise</span> Database</h1>
+          <p class="brand-subtitle">Season <span id="currentSeasonNum">5</span> Live • Click to Explore</p>
+        </div>
+      </a>
+
+      <div class="stats-badge">
+        <div class="stats-main"><span id="totalSeasons">5</span> Seasons • <span id="totalPlayers">58</span> Players</div>
+        <div class="stats-sub">Icons: <span id="iconFormat">name.png</span></div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="header-nav" aria-label="Primary navigation">
+      <ul class="nav-list">
+        <li class="nav-item">
+          <a href="index.html" class="nav-link" data-page="index">
+            <span class="nav-icon">🏠</span>
+            <span>Home</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="current-season.html" class="nav-link" data-page="current-season">
+            <span class="nav-icon">📊</span>
+            <span>Current Season</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="voting-analytics.html" class="nav-link" data-page="voting-analytics">
+            <span class="nav-icon">🧾</span>
+            <span>Voting Analytics</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="franchise.html" class="nav-link" data-page="franchise">
+            <span class="nav-icon">🏛️</span>
+            <span>Franchise</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="rankings.html" class="nav-link" data-page="rankings">
+            <span class="nav-icon">🏆</span>
+            <span>Rankings</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="seasons.html" class="nav-link" data-page="seasons">
+            <span class="nav-icon">🗂️</span>
+            <span>Seasons</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="devotees.html" class="nav-link" data-page="devotees">
+            <span class="nav-icon">👥</span>
+            <span>Players</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="awards.html" class="nav-link" data-page="awards">
+            <span class="nav-icon">🏅</span>
+            <span>Awards</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<script>
+(function() {
+  // Load site config and update header stats
+  if (window.SITE_CONFIG) {
+    document.getElementById('totalSeasons').textContent = window.SITE_CONFIG.seasons;
+    document.getElementById('totalPlayers').textContent = window.SITE_CONFIG.players;
+    document.getElementById('currentSeasonNum').textContent = window.SITE_CONFIG.currentSeason;
+    document.getElementById('iconFormat').textContent = window.SITE_CONFIG.iconFormat;
+  }
+
+  // Scroll behavior
+  const header = document.getElementById('modernHeader');
+  if (!header) return;
+  
+  window.addEventListener('scroll', () => {
+    const currentScroll = window.pageYOffset;
+    if (currentScroll > 20) {
+      header.classList.add('scrolled');
+    } else {
+      header.classList.remove('scrolled');
+    }
+  }, { passive: true });
+
+  // Active page highlighting
+  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+  const navLinks = document.querySelectorAll('.nav-link');
+  
+  navLinks.forEach(link => {
+    const linkPage = link.getAttribute('href');
+    if (linkPage === currentPage || (currentPage === '' && linkPage === 'index.html')) {
+      link.classList.add('active');
+    }
+  });
+
+  // Path resolution for nested folders
+  const root = (document.documentElement.dataset.root || document.body.dataset.root || ".").replace(/\/+$/, "");
+  
+  if (root !== ".") {
+    const allLinks = header.querySelectorAll('a[href]');
+    allLinks.forEach(link => {
+      const href = link.getAttribute('href');
+      if (href && !href.startsWith('http') && !href.startsWith('#')) {
+        link.setAttribute('href', root + '/' + href);
+      }
+    });
+  }
+})();
+</script>
+<!-- SITE HEADER END -->
+
+
+
+
+  <div class="container">
+    
+    <div class="topbar">
+      <div>
+        <div class="brand">DC <span>Franchise</span> Database</div>
+        <div class="meta">Season 3 Awards</div>
+      </div>
+      <div class="meta">Season count: 3 • Player count: 40</div>
+    </div>
+    <div class="tabs"><a class="tab" href="../current-season.html">📊 Current Season Analytics</a><a class="tab" href="../voting-analytics.html">🗳️ Voting Chart Analytics</a><a class="tab" href="../franchise.html">🏛️ Franchise Analytics</a><a class="tab" href="../rankings.html">🏆 Player Rankings</a><a class="tab" href="../seasons.html">📚 Seasons</a><a class="tab" href="../devotees.html">👥 Devotees</a><a class="tab active" href="../awards.html">🥇 Season Awards</a></div>
+    
+<div class="hero">
+  <h1>🏆 Season 3 Awards</h1>
+  <p>Revenge of the Island • The season where loyalty was tested—and broken</p>
+</div>
+
+<div class="callout">
+  <b>Winner:</b> Emma (4-3-1 tiebreaker) | <b>Fan Favorite:</b> Dakota
+</div>
+
+<h2>🏆 Major Awards</h2>
+
+<div class="kpi-grid">
+  <div class="kpi">
+    <div class="badge gold">🏆 WINNER</div>
+    <h3>Emma</h3>
+    <p><b>4-3-1 Victory</b></p>
+    <p class="small">Zero votes until Final 4 • Core alliance member • Loyal player who impressed others • "Iron Person" - all 13 tribals</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge purple">👑 FAN FAVORITE</div>
+    <h3>Dakota</h3>
+    <p><b>12th Place</b></p>
+    <p class="small">Pre-merge exit (Episode 5) • Won hearts despite early elimination • Early alliance leader</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge good">🧠 BEST STRATEGIC</div>
+    <h3>Scott</h3>
+    <p><b>Runner-Up</b></p>
+    <p class="small">6 challenge wins (most in season) • Controlled Campers Alliance #3 • Built bonds with everyone • Lost to Emma's cleaner hands</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge good">😊 BEST SOCIAL</div>
+    <h3>Scott</h3>
+    <p><b>Social King</b></p>
+    <p class="small">Unbreakable/strong bonds with all finalists • Most connected player • Social dominance from merge to end</p>
+  </div>
+</div>
+
+<h2>🎯 Performance Awards</h2>
+
+<div class="kpi-grid">
+  <div class="kpi">
+    <div class="badge good">💪 BEST PHYSICAL</div>
+    <h3>Scott</h3>
+    <p><b>6 Total Wins</b></p>
+    <p class="small">3 immunity + 3 reward • Back-to-back immunities Ep 9-10 • Dominated when it mattered</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge good">🔥 MOST CLUTCH</div>
+    <h3>Cameron</h3>
+    <p><b>Idol Play (Ep 12)</b></p>
+    <p class="small">Last round to use idol • Cancelled Anne Maria's vote • Voted out unbreakable partner • Cold. Calculated. Effective.</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge good">🤝 MOST LOYAL</div>
+    <h3>Emma</h3>
+    <p><b>Never Flipped</b></p>
+    <p class="small">Core Campers Alliance member • Strong bond with Scott • Only vote that didn't blindside ally</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge good">📊 BEST UNDERDOG</div>
+    <h3>Cameron</h3>
+    <p><b>3rd Place</b></p>
+    <p class="small">Found idol despite obstacles • Survived leaving alliances • Made brutal strategic move • Cast deciding vote despite losing</p>
+  </div>
+</div>
+
+<h2>🎭 Character Awards</h2>
+
+<div class="kpi-grid">
+  <div class="kpi">
+    <div class="badge bad">😈 BIGGEST VILLAIN</div>
+    <h3>Jo</h3>
+    <p><b>4 Extreme Hatreds</b></p>
+    <p class="small">Cameron, Zoey, Mike, Scott • Left alliances repeatedly • Multiple meltdowns • Most hated player ever</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge">🌀 MOST CHAOTIC</div>
+    <h3>Lightning</h3>
+    <p><b>Unpredictable</b></p>
+    <p class="small">Found idol, wasted on Emma • Tied vote twice • You never knew what Lightning would do</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge">🤫 QUIETEST THREAT</div>
+    <h3>Emma</h3>
+    <p><b>Perfect Game</b></p>
+    <p class="small">No votes until Final 4 • Always in majority • Won when needed • Game noticed too late</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge purple">⭐ SEASON MVP</div>
+    <h3>Scott</h3>
+    <p><b>Protagonist</b></p>
+    <p class="small">Social king everywhere • Challenge domination • Toughest decision (Zoey) • The protagonist who didn't get the ending</p>
+  </div>
+</div>
+
+<h2>💔 Unfortunate Awards</h2>
+
+<div class="kpi-grid">
+  <div class="kpi">
+    <div class="badge bad">💥 BIGGEST MELTDOWN</div>
+    <h3>Jo</h3>
+    <p><b>Episodes 6-7</b></p>
+    <p class="small">Two major meltdowns Ep 6 • Left Mutant Maggots Alliance #3 • 4 extreme hatreds formed</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge bad">😢 MOST TRAGIC EXIT</div>
+    <h3>Sam</h3>
+    <p><b>Episode 4</b></p>
+    <p class="small">Never received a single vote • Voted correctly both times • Drew odd rock after deadlock • Sometimes the game chooses for you</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge bad">🎲 MOST UNLUCKY</div>
+    <h3>Sam</h3>
+    <p><b>Rock Draw</b></p>
+    <p class="small">Zero votes against • Did everything right • Only way to lose without being targeted</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge">🔥 MESSIEST FEUD</div>
+    <h3>Mike vs Anne Maria</h3>
+    <p><b>Mild → Extreme</b></p>
+    <p class="small">Escalated over episodes • Targeted each other constantly • Defined multiple votes • From annoyance to obsession</p>
+  </div>
+</div>
+
+<h2>💔 Betrayal Awards</h2>
+
+<div class="kpi-grid">
+  <div class="kpi">
+    <div class="badge bad">💔 BIGGEST BETRAYAL</div>
+    <h3>Cameron vs Anne Maria</h3>
+    <p><b>Episode 12</b></p>
+    <p class="small">Unbreakable relationship • Played idol on himself • Voted out closest ally • Strategic brilliance—emotional devastation</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge bad">💔 SECOND BIGGEST BETRAYAL</div>
+    <h3>Scott vs Zoey</h3>
+    <p><b>Episode 13</b></p>
+    <p class="small">Unbreakable relationship • Voted out to reach Final 3 • She still voted for him at FTC</p>
+  </div>
+</div>
+
+<h2>🏅 Special Awards</h2>
+
+<div class="kpi-grid">
+  <div class="kpi">
+    <div class="badge good">🛡️ IRON PERSON</div>
+    <h3>Emma</h3>
+    <p><b>All 13 Tribals</b></p>
+    <p class="small">Attended all 13 tribal councils • Never voted out • Never safe by default • Endurance is a strategy</p>
+  </div>
+</div>
+
+<h2>📊 Statistical Leaders</h2>
+
+<div class="panel">
+  <h3>Challenge Dominance</h3>
+  <ul>
+    <li><b>Most Total Wins:</b> Scott (6)</li>
+    <li><b>Most Immunity Wins:</b> Scott (3)</li>
+    <li><b>Most Reward Wins:</b> Emma & Scott (3 each)</li>
+  </ul>
+</div>
+
+<div class="panel">
+  <h3>Social Game</h3>
+  <ul>
+    <li><b>Fewest Votes Against:</b> Emma & Sam (0)</li>
+    <li><b>Most Votes Against:</b> Anne Maria (15)</li>
+    <li><b>Most Jury Votes:</b> Emma (4)</li>
+  </ul>
+</div>
+
+<div class="panel">
+  <h3>Strategic Game</h3>
+  <ul>
+    <li><b>Idols Found:</b> Cameron (1), Lightning (1)</li>
+    <li><b>Idols Played Successfully:</b> Cameron (1)</li>
+    <li><b>Idols Wasted:</b> Lightning (1 - on Emma who received 0 votes)</li>
+  </ul>
+</div>
+
+<div class="panel">
+  <h3>Extreme Records</h3>
+  <ul>
+    <li><b>Most Extreme Hatreds:</b> Jo (4 - franchise record)</li>
+    <li><b>Most Unbreakable Bonds Broken:</b> 2 (Cameron/Anne Maria, Scott/Zoey)</li>
+    <li><b>Most Tie Votes:</b> 2 (Episode 4 & 6)</li>
+    <li><b>Rock Draws:</b> 1 (Sam, Episode 4)</li>
+  </ul>
+</div>
+
+<h2>🎬 Season Legacy</h2>
+
+<div class="callout">
+  <h3>The Season Where Loyalty Was Tested—And Broken</h3>
+  <p>Season 3 will be remembered for:</p>
+  <ul>
+    <li>Most unpredictable season (2 tie votes + 1 rock draw)</li>
+    <li>Two unbreakable relationships broken in final episodes</li>
+    <li>Challenge beast (Scott) lost to social player (Emma)</li>
+    <li>Fan Favorite won by pre-merge player (Dakota)</li>
+    <li>Zero votes against winner (Emma)</li>
+    <li>Most hated player ever (Jo - 4 extreme hatreds)</li>
+  </ul>
+</div>
+
+<div class="footer">
+  <a href="../awards.html">← All Season Awards</a> | 
+  <a href="season3.html">Season 3 Overview →</a>
+</div>
+
+  </div>
+
+
+
+<!-- SITE FOOTER START -->
+<footer class="siteFooter">
+  <div class="footerInner">
+    <div class="footerTitle">DC Franchise Database</div>
+    <div class="footerSub">Static archive • 5 seasons • 58 players • Icons: name.png</div>
+  </div>
+</footer>
+<!-- SITE FOOTER END -->
+</body>
+</html>

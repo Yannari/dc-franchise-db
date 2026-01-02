@@ -1,0 +1,593 @@
+<!doctype html>
+<html lang="en" data-root="..">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Season 2 — Total Drama 2</title>
+  <link rel="stylesheet" href="../styles.css">
+
+  <style>
+    .two-col { display:grid; grid-template-columns: 1.1fr .9fr; gap:16px; }
+    @media (max-width: 980px){ .two-col{ grid-template-columns:1fr; } }
+
+    .panel {
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.18);
+      border-radius: 18px;
+      padding: 16px;
+      backdrop-filter: blur(8px);
+    }
+
+    .cast-photo {
+      display:flex; gap:14px; align-items:flex-start; justify-content:space-between;
+    }
+    .cast-photo img{
+      width:100%;
+      max-height: 260px;
+      object-fit: contain;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.25);
+      margin-top: 10px;
+    }
+    .path-pill{
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      white-space: nowrap;
+    }
+
+    .placements { width:100%; }
+    .placements th, .placements td { vertical-align: middle; }
+    .placements td { padding-top: 10px; padding-bottom: 10px; }
+
+    .p-avatar{
+      width:42px;height:42px;border-radius:999px;overflow:hidden;
+      border:2px solid rgba(165,95,255,.55);
+      background:linear-gradient(135deg, rgba(255,255,255,.14), rgba(255,255,255,.06));
+      display:flex;align-items:center;justify-content:center;
+      flex:0 0 auto;
+    }
+    .p-avatar img{ width:100%; height:100%; object-fit:cover; display:none; }
+    .p-avatar .fb{ font-weight:800; font-size:12px; opacity:.95; }
+
+    .place-badge{
+      font-weight:800;
+      letter-spacing:.2px;
+    }
+
+    .subtle { opacity:.82; font-size: 13px; }
+    .notes { color: rgba(255,255,255,.85); font-size: 13px; line-height: 1.25; }
+    .phase { font-weight:700; }
+
+    .jumpline{
+      margin: 10px 0 0;
+      font-size: 12px;
+      opacity: .82;
+      word-break: break-word;
+    }
+    .jumpline a{ opacity:.9; margin-right: 6px; }
+
+    .callout {
+      background: linear-gradient(135deg, rgba(165,95,255,0.15), rgba(165,95,255,0.05));
+      border: 1px solid rgba(165,95,255,0.3);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+    .callout h3 { margin: 0 0 10px; color: rgba(165,95,255,1); }
+
+    .highlight-box {
+      background: rgba(255,215,0,0.08);
+      border-left: 3px solid rgba(255,215,0,0.6);
+      padding: 12px 16px;
+      margin: 10px 0;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+
+<body>
+<!-- SITE HEADER START -->
+<header class="modern-header" id="modernHeader">
+  <div class="header-container">
+    <!-- Top Bar -->
+    <div class="header-top">
+      <a href="index.html" class="brand-section" aria-label="Go to home">
+        <div class="brand-icon">
+          <span class="brand-logo-text">⚡</span>
+        </div>
+        <div class="brand-content">
+          <h1>DC <span class="brand-gradient">Franchise</span> Database</h1>
+          <p class="brand-subtitle">Season <span id="currentSeasonNum">5</span> Live • Click to Explore</p>
+        </div>
+      </a>
+
+      <div class="stats-badge">
+        <div class="stats-main"><span id="totalSeasons">5</span> Seasons • <span id="totalPlayers">58</span> Players</div>
+        <div class="stats-sub">Icons: <span id="iconFormat">name.png</span></div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="header-nav" aria-label="Primary navigation">
+      <ul class="nav-list">
+        <li class="nav-item">
+          <a href="index.html" class="nav-link" data-page="index">
+            <span class="nav-icon">🏠</span>
+            <span>Home</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="current-season.html" class="nav-link" data-page="current-season">
+            <span class="nav-icon">📊</span>
+            <span>Current Season</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="voting-analytics.html" class="nav-link" data-page="voting-analytics">
+            <span class="nav-icon">🧾</span>
+            <span>Voting Analytics</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="franchise.html" class="nav-link" data-page="franchise">
+            <span class="nav-icon">🏛️</span>
+            <span>Franchise</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="rankings.html" class="nav-link" data-page="rankings">
+            <span class="nav-icon">🏆</span>
+            <span>Rankings</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="seasons.html" class="nav-link" data-page="seasons">
+            <span class="nav-icon">🗂️</span>
+            <span>Seasons</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="devotees.html" class="nav-link" data-page="devotees">
+            <span class="nav-icon">👥</span>
+            <span>Players</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="awards.html" class="nav-link" data-page="awards">
+            <span class="nav-icon">🏅</span>
+            <span>Awards</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<script>
+(function() {
+  // Load site config and update header stats
+  if (window.SITE_CONFIG) {
+    document.getElementById('totalSeasons').textContent = window.SITE_CONFIG.seasons;
+    document.getElementById('totalPlayers').textContent = window.SITE_CONFIG.players;
+    document.getElementById('currentSeasonNum').textContent = window.SITE_CONFIG.currentSeason;
+    document.getElementById('iconFormat').textContent = window.SITE_CONFIG.iconFormat;
+  }
+
+  // Scroll behavior
+  const header = document.getElementById('modernHeader');
+  if (!header) return;
+  
+  window.addEventListener('scroll', () => {
+    const currentScroll = window.pageYOffset;
+    if (currentScroll > 20) {
+      header.classList.add('scrolled');
+    } else {
+      header.classList.remove('scrolled');
+    }
+  }, { passive: true });
+
+  // Active page highlighting
+  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+  const navLinks = document.querySelectorAll('.nav-link');
+  
+  navLinks.forEach(link => {
+    const linkPage = link.getAttribute('href');
+    if (linkPage === currentPage || (currentPage === '' && linkPage === 'index.html')) {
+      link.classList.add('active');
+    }
+  });
+
+  // Path resolution for nested folders
+  const root = (document.documentElement.dataset.root || document.body.dataset.root || ".").replace(/\/+$/, "");
+  
+  if (root !== ".") {
+    const allLinks = header.querySelectorAll('a[href]');
+    allLinks.forEach(link => {
+      const href = link.getAttribute('href');
+      if (href && !href.startsWith('http') && !href.startsWith('#')) {
+        link.setAttribute('href', root + '/' + href);
+      }
+    });
+  }
+})();
+</script>
+<!-- SITE HEADER END -->
+
+
+
+
+  <div class="container">
+    <div class="topbar">
+      <div>
+        <div class="brand">DC <span>Franchise</span> Database</div>
+        <div class="meta">Local static website • Seasons + player profiles • Search + sort</div>
+      </div>
+      <div class="meta">Season count: 3 • Player count: 40</div>
+    </div>
+
+    <div class="tabs">
+      <a class="tab" href="../current-season.html">📊 Current Season Analytics</a>
+      <a class="tab" href="../voting-analytics.html">🗳️ Voting Chart Analytics</a>
+      <a class="tab" href="../franchise.html">🏛️ Franchise Analytics</a>
+      <a class="tab" href="../rankings.html">🏆 Player Rankings</a>
+      <a class="tab active" href="../seasons.html">📚 Seasons</a>
+      <a class="tab" href="../devotees.html">👥 Devotees</a>
+      <a class="tab" href="../awards.html">🥇 Season Awards</a>
+    </div>
+
+    <div class="hero">
+      <h1>🌊 Season 2 — Total Drama 2</h1>
+      <p>14 returnees • 10 episodes • The endurance test</p>
+    </div>
+
+    <div class="callout">
+      <h3>🏆 Winner: Duncan (5-1-1 over Alejandro & Lindsay)</h3>
+      <p><b>The Survivor:</b> Targeted early and often • Outlasted strategy and social game through resilience</p>
+      <p><b>Final 3:</b> Duncan (5 votes), Alejandro (1 vote from Ezekiel), Lindsay (1 vote from Beth)</p>
+      <p><b>Fan Favorite:</b> Alejandro</p>
+    </div>
+
+    <div class="two-col">
+      <div class="panel">
+        <h2 style="margin:0 0 10px;">Season Overview</h2>
+        <ul style="margin:0; padding-left: 18px;">
+          <li><b>Cast size:</b> 14 (all returnees from S1)</li>
+          <li><b>Winner:</b> Duncan</li>
+          <li><b>Runner-ups:</b> Alejandro (2nd), Lindsay (3rd)</li>
+          <li><b>Theme:</b> Total Drama 2 (Returnee Season)</li>
+          <li><b>Episodes:</b> 10</li>
+          <li><b>Jury size:</b> 7 jurors</li>
+          <li><b>Final Tribal:</b> 5-1-1</li>
+        </ul>
+      </div>
+
+      <div class="panel">
+        <div class="cast-photo">
+          <div>
+            <h2 style="margin:0;">Cast Photo</h2>
+            <div class="subtle" style="margin-top:6px;">
+              Put your cast image here (recommended):
+              <div style="margin-top:6px;"><b>assets/cast/s2-cast.png</b></div>
+            </div>
+          </div>
+          <div class="path-pill">assets/cast/s2-cast.png</div>
+        </div>
+
+        <img src="../assets/cast/s2-cast.png" alt="Season 2 cast photo"
+             onerror="this.style.display='none'; document.getElementById('cast-missing-s2').style.display='block';"/>
+
+        <div id="cast-missing-s2" class="panel" style="display:none; margin-top:10px; background:rgba(255,153,0,.08);">
+          <b>Cast photo not found yet.</b><br/>
+          Put your image at <b>assets/cast/s2-cast.png</b> and refresh.
+        </div>
+      </div>
+    </div>
+
+    <h2 style="margin-top:30px;">📊 Season Statistics</h2>
+
+    <div class="kpi-grid">
+      <div class="kpi">
+        <h3>Redemption Arc Winner</h3>
+        <p><b>Duncan: S1 14th → S2 Winner</b></p>
+        <p class="small">Biggest comeback in franchise history</p>
+      </div>
+      
+      <div class="kpi">
+        <h3>Strategic Dominance</h3>
+        <p><b>Alejandro: 2x Finalist</b></p>
+        <p class="small">S1 runner-up (2nd) → S2 runner-up (2nd)</p>
+      </div>
+      
+      <div class="kpi">
+        <h3>Challenge Beast</h3>
+        <p><b>Alejandro — Multiple Immunities</b></p>
+        <p class="small">Won when it mattered most</p>
+      </div>
+      
+      <div class="kpi">
+        <h3>Double Elimination</h3>
+        <p><b>Episode 7: Gwen & Trent</b></p>
+        <p class="small">Two tribals same night</p>
+      </div>
+      
+      <div class="kpi">
+        <h3>Legendary Idol Play</h3>
+        <p><b>Ezekiel saves Alejandro (Ep 5)</b></p>
+        <p class="small">6 votes voided at merge</p>
+      </div>
+      
+      <div class="kpi">
+        <h3>Season Theme</h3>
+        <p><b>Survival Under Pressure</b></p>
+        <p class="small">Strategy ≠ respect • Endurance wins</p>
+      </div>
+    </div>
+
+    <div style="margin-top:30px;">
+      <h2 style="margin:0 0 10px;">🏆 Placements</h2>
+      <div class="subtle" style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+        <div class="jumpline">
+          Jump:
+          <a href="#p1">#1</a><a href="#p2">#2</a><a href="#p3">#3</a><a href="#p4">#4</a><a href="#p5">#5</a>
+          <a href="#p6">#6</a><a href="#p7">#7</a><a href="#p8">#8</a><a href="#p9">#9</a><a href="#p10">#10</a>
+          <a href="#p11">#11</a><a href="#p12">#12</a><a href="#p13">#13</a><a href="#p14">#14</a>
+        </div>
+        <div class="subtle">Click any name to open the profile</div>
+      </div>
+
+      <div class="panel" style="margin-top:10px; padding:0;">
+        <table class="table placements">
+          <thead>
+            <tr>
+              <th style="width:64px;">Icon</th>
+              <th style="width:90px;">Place</th>
+              <th>Player</th>
+              <th style="width:130px;">Phase</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+
+            <tr id="p1">
+              <td><div class="p-avatar"><img src="../assets/avatars/duncan.png" alt="Duncan" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">DU</div></div></td>
+              <td class="place-badge">🥇 #1</td>
+              <td><a href="../players/duncan.html"><b>Duncan</b></a></td>
+              <td class="phase">WINNER</td>
+              <td class="notes">Won Final Tribal <b>5–1–1</b> • Redemption arc</td>
+            </tr>
+
+            <tr id="p2">
+              <td><div class="p-avatar"><img src="../assets/avatars/alejandro.png" alt="Alejandro" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">AL</div></div></td>
+              <td class="place-badge">🥈 #2</td>
+              <td><a href="../players/alejandro.html"><b>Alejandro</b></a></td>
+              <td class="phase">Finalist</td>
+              <td class="notes">1 vote to win • 2x runner-up (S1 & S2)</td>
+            </tr>
+
+            <tr id="p3">
+              <td><div class="p-avatar"><img src="../assets/avatars/lindsay.png" alt="Lindsay" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">LI</div></div></td>
+              <td class="place-badge">🥉 #3</td>
+              <td><a href="../players/lindsay.html"><b>Lindsay</b></a></td>
+              <td class="phase">Finalist</td>
+              <td class="notes">1 vote to win • S1 winner</td>
+            </tr>
+
+            <tr id="p4">
+              <td><div class="p-avatar"><img src="../assets/avatars/beth.png" alt="Beth" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">BE</div></div></td>
+              <td class="place-badge">#4</td>
+              <td><a href="../players/beth.html"><b>Beth</b></a></td>
+              <td class="phase">Juror</td>
+              <td class="notes">2–1–1 vote • Clean résumé threat</td>
+            </tr>
+
+            <tr id="p5">
+              <td><div class="p-avatar"><img src="../assets/avatars/dj.png" alt="DJ" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">DJ</div></div></td>
+              <td class="place-badge">#5</td>
+              <td><a href="../players/dj.html"><b>DJ</b></a></td>
+              <td class="phase">Juror</td>
+              <td class="notes">4–1 vote • Alejandro's target</td>
+            </tr>
+
+            <tr id="p6">
+              <td><div class="p-avatar"><img src="../assets/avatars/ezekiel.png" alt="Ezekiel" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">EZ</div></div></td>
+              <td class="place-badge">#6</td>
+              <td><a href="../players/ezekiel.html"><b>Ezekiel</b></a></td>
+              <td class="phase">Juror</td>
+              <td class="notes">4–2 vote • Played idol on Alejandro</td>
+            </tr>
+
+            <tr id="p7">
+              <td><div class="p-avatar"><img src="../assets/avatars/trent.png" alt="Trent" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">TR</div></div></td>
+              <td class="place-badge">#7</td>
+              <td><a href="../players/trent.html"><b>Trent</b></a></td>
+              <td class="phase">Juror</td>
+              <td class="notes">5–2 vote • Double Tribal (Ep 7, 2nd vote)</td>
+            </tr>
+
+            <tr id="p8">
+              <td><div class="p-avatar"><img src="../assets/avatars/gwen.png" alt="Gwen" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">GW</div></div></td>
+              <td class="place-badge">#8</td>
+              <td><a href="../players/gwen.html"><b>Gwen</b></a></td>
+              <td class="phase">Juror</td>
+              <td class="notes">4–4 tie → 5–1 revote • Double Tribal (Ep 7, 1st vote)</td>
+            </tr>
+
+            <tr id="p9">
+              <td><div class="p-avatar"><img src="../assets/avatars/heather.png" alt="Heather" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">HE</div></div></td>
+              <td class="place-badge">#9</td>
+              <td><a href="../players/heather.html"><b>Heather</b></a></td>
+              <td class="phase">Juror</td>
+              <td class="notes">7–2 vote • Universally distrusted</td>
+            </tr>
+
+            <tr id="p10">
+              <td><div class="p-avatar"><img src="../assets/avatars/justin.png" alt="Justin" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">JU</div></div></td>
+              <td class="place-badge">#10</td>
+              <td><a href="../players/justin.html"><b>Justin</b></a></td>
+              <td class="phase">1st Juror</td>
+              <td class="notes">4–0 vote (6 voided) • Ezekiel's idol save</td>
+            </tr>
+
+            <tr id="p11">
+              <td><div class="p-avatar"><img src="../assets/avatars/courtney.png" alt="Courtney" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">CO</div></div></td>
+              <td class="place-badge">#11</td>
+              <td><a href="../players/courtney.html"><b>Courtney</b></a></td>
+              <td class="phase">Pre-Juror</td>
+              <td class="notes">3–2 vote • Meltdown cost her</td>
+            </tr>
+
+            <tr id="p12">
+              <td><div class="p-avatar"><img src="../assets/avatars/owen.png" alt="Owen" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">OW</div></div></td>
+              <td class="place-badge">#12</td>
+              <td><a href="../players/owen.html"><b>Owen</b></a></td>
+              <td class="phase">Pre-Juror</td>
+              <td class="notes">Courtney's idol play • Fallback vote</td>
+            </tr>
+
+            <tr id="p13">
+              <td><div class="p-avatar"><img src="../assets/avatars/leshawna.png" alt="Leshawna" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">LE</div></div></td>
+              <td class="place-badge">#13</td>
+              <td><a href="../players/leshawna.html"><b>Leshawna</b></a></td>
+              <td class="phase">Pre-Juror</td>
+              <td class="notes">6–1 vote • No protection</td>
+            </tr>
+
+            <tr id="p14">
+              <td><div class="p-avatar"><img src="../assets/avatars/bridgette.png" alt="Bridgette" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">BR</div></div></td>
+              <td class="place-badge">#14</td>
+              <td><a href="../players/bridgette.html"><b>Bridgette</b></a></td>
+              <td class="phase">Pre-Juror</td>
+              <td class="notes">4–3 vote • First boot</td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <h2 style="margin-top:30px;">⚡ Key Episodes</h2>
+
+    <div class="panel">
+      <h3>Episode 3: Courtney's Idol Play</h3>
+      <p>Courtney finds and plays Hidden Immunity Idol, voiding 5 votes. Owen eliminated as fallback vote. Legendary idol save turned the pre-merge upside down.</p>
+    </div>
+
+    <div class="panel">
+      <h3>Episode 4: Fire-Making Duel</h3>
+      <p>Individual immunity challenge with twist: Alejandro beats Beth in fire-making to decide which tribe votes. Alejandro cements himself as clutch performer. Courtney voted out 3-2.</p>
+    </div>
+
+    <div class="panel">
+      <h3>Episode 5: The Merge - Alejandro's Survival</h3>
+      <p>Merge hits with 10 players. Alejandro becomes consensus threat, targeted by both Gaffers alliances. <b>Ezekiel plays idol on Alejandro</b>, voiding 6 votes and saving him from certain elimination. Justin voted out 4-0. Most important move of the season.</p>
+    </div>
+
+    <div class="panel">
+      <h3>Episode 7: Double Tribal Night</h3>
+      <p>Two Tribal Councils same night. <b>First vote:</b> Gwen eliminated 5-1 after 4-4 tie. <b>Second vote:</b> Alejandro wins immunity, Trent voted out 5-2. Two major social players gone in one brutal night.</p>
+    </div>
+
+    <div class="panel">
+      <h3>Episode 9: Beth's Perfect Idol Play</h3>
+      <p>Beth plays Hidden Immunity Idol at Final Five despite not needing it. Removes all chaos. DJ voted out 4-1. Textbook endgame idol usage.</p>
+    </div>
+
+    <div class="panel">
+      <h3>Finale: Duncan's Surprise Victory</h3>
+      <p>Final Four: Alejandro wins immunity and votes out Beth 2-1-1. Final Tribal: Duncan wins 5-1-1 over Alejandro and Lindsay. Jury rewards survival under pressure over strategy and social game.</p>
+    </div>
+
+    <h2 style="margin-top:30px;">🎯 The Final Three</h2>
+
+    <div class="kpi-grid">
+      <div class="kpi">
+        <h3>🥇 Duncan — WINNER</h3>
+        <p><b>5 votes</b> (DJ, Gwen, Heather, Justin, Trent)</p>
+        <p class="small">S1 14th place → S2 Winner • Survived constant targeting • Physical resilience • Won when he had to • Jury rewarded visible fight over smooth control</p>
+      </div>
+      
+      <div class="kpi">
+        <h3>🥈 Alejandro — Runner-Up</h3>
+        <p><b>1 vote</b> (Ezekiel)</p>
+        <p class="small">2x Finalist (S1 & S2) • Challenge dominance • Strategic backbone • Multiple alliances • Calculated betrayals • Too smooth, too untouched by consequence</p>
+      </div>
+      
+      <div class="kpi">
+        <h3>🥉 Lindsay — 3rd Place</h3>
+        <p><b>1 vote</b> (Beth)</p>
+        <p class="small">S1 Winner → S2 3rd • Socially flawless • Never isolated • Power center between alliances • Everyone's ally, no one's enemy • Nice ≠ most respected</p>
+      </div>
+    </div>
+
+    <h2 style="margin-top:30px;">🏆 Season 2 Awards</h2>
+
+    <div class="kpi-grid">
+      <div class="kpi">
+        <h3>🌟 Fan Favorite</h3>
+        <p><b>Alejandro</b></p>
+        <p class="small">Flashy, strategic, polarizing</p>
+      </div>
+      
+      <div class="kpi">
+        <h3>💪 Comp Beast</h3>
+        <p><b>Alejandro</b></p>
+        <p class="small">Multiple immunity wins at crucial moments</p>
+      </div>
+      
+      <div class="kpi">
+        <h3>🧠 Strategic MVP</h3>
+        <p><b>Alejandro</b></p>
+        <p class="small">Controlled game despite losing FTC</p>
+      </div>
+      
+      <div class="kpi">
+        <h3>🎭 Best Social Game</h3>
+        <p><b>Lindsay</b></p>
+        <p class="small">Unbreakable bonds, zero heat</p>
+      </div>
+      
+      <div class="kpi">
+        <h3>🦸 Hero Move</h3>
+        <p><b>Ezekiel saves Alejandro</b></p>
+        <p class="small">Episode 5 idol play</p>
+      </div>
+      
+      <div class="kpi">
+        <h3>🎖️ Redemption Arc</h3>
+        <p><b>Duncan</b></p>
+        <p class="small">14th → Winner</p>
+      </div>
+    </div>
+
+    <div class="footer">
+      <a href="../seasons.html">← Back to Seasons</a> | 
+      <a href="season2-awards.html">Season 2 Awards →</a>
+    </div>
+  </div>
+
+  <script>
+    document.querySelectorAll('.p-avatar').forEach(box=>{
+      const img = box.querySelector('img');
+      const fb = box.querySelector('.fb');
+      if(!img || !fb) return;
+      img.onload = ()=>{ img.style.display='block'; fb.style.display='none'; };
+      img.onerror = ()=>{ img.style.display='none'; fb.style.display='block'; };
+    });
+  </script>
+
+
+
+<!-- SITE FOOTER START -->
+<footer class="siteFooter">
+  <div class="footerInner">
+    <div class="footerTitle">DC Franchise Database</div>
+    <div class="footerSub">Static archive • 5 seasons • 58 players • Icons: name.png</div>
+  </div>
+</footer>
+<!-- SITE FOOTER END -->
+</body>
+</html>

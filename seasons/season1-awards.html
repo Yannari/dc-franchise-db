@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="en" data-root="..">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Season 1 Awards</title>
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+<!-- SITE HEADER START -->
+<header class="modern-header" id="modernHeader">
+  <div class="header-container">
+    <!-- Top Bar -->
+    <div class="header-top">
+      <a href="index.html" class="brand-section" aria-label="Go to home">
+        <div class="brand-icon">
+          <span class="brand-logo-text">⚡</span>
+        </div>
+        <div class="brand-content">
+          <h1>DC <span class="brand-gradient">Franchise</span> Database</h1>
+          <p class="brand-subtitle">Season <span id="currentSeasonNum">5</span> Live • Click to Explore</p>
+        </div>
+      </a>
+
+      <div class="stats-badge">
+        <div class="stats-main"><span id="totalSeasons">5</span> Seasons • <span id="totalPlayers">58</span> Players</div>
+        <div class="stats-sub">Icons: <span id="iconFormat">name.png</span></div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="header-nav" aria-label="Primary navigation">
+      <ul class="nav-list">
+        <li class="nav-item">
+          <a href="index.html" class="nav-link" data-page="index">
+            <span class="nav-icon">🏠</span>
+            <span>Home</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="current-season.html" class="nav-link" data-page="current-season">
+            <span class="nav-icon">📊</span>
+            <span>Current Season</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="voting-analytics.html" class="nav-link" data-page="voting-analytics">
+            <span class="nav-icon">🧾</span>
+            <span>Voting Analytics</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="franchise.html" class="nav-link" data-page="franchise">
+            <span class="nav-icon">🏛️</span>
+            <span>Franchise</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="rankings.html" class="nav-link" data-page="rankings">
+            <span class="nav-icon">🏆</span>
+            <span>Rankings</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="seasons.html" class="nav-link" data-page="seasons">
+            <span class="nav-icon">🗂️</span>
+            <span>Seasons</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="devotees.html" class="nav-link" data-page="devotees">
+            <span class="nav-icon">👥</span>
+            <span>Players</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="awards.html" class="nav-link" data-page="awards">
+            <span class="nav-icon">🏅</span>
+            <span>Awards</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<script>
+(function() {
+  // Load site config and update header stats
+  if (window.SITE_CONFIG) {
+    document.getElementById('totalSeasons').textContent = window.SITE_CONFIG.seasons;
+    document.getElementById('totalPlayers').textContent = window.SITE_CONFIG.players;
+    document.getElementById('currentSeasonNum').textContent = window.SITE_CONFIG.currentSeason;
+    document.getElementById('iconFormat').textContent = window.SITE_CONFIG.iconFormat;
+  }
+
+  // Scroll behavior
+  const header = document.getElementById('modernHeader');
+  if (!header) return;
+  
+  window.addEventListener('scroll', () => {
+    const currentScroll = window.pageYOffset;
+    if (currentScroll > 20) {
+      header.classList.add('scrolled');
+    } else {
+      header.classList.remove('scrolled');
+    }
+  }, { passive: true });
+
+  // Active page highlighting
+  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+  const navLinks = document.querySelectorAll('.nav-link');
+  
+  navLinks.forEach(link => {
+    const linkPage = link.getAttribute('href');
+    if (linkPage === currentPage || (currentPage === '' && linkPage === 'index.html')) {
+      link.classList.add('active');
+    }
+  });
+
+  // Path resolution for nested folders
+  const root = (document.documentElement.dataset.root || document.body.dataset.root || ".").replace(/\/+$/, "");
+  
+  if (root !== ".") {
+    const allLinks = header.querySelectorAll('a[href]');
+    allLinks.forEach(link => {
+      const href = link.getAttribute('href');
+      if (href && !href.startsWith('http') && !href.startsWith('#')) {
+        link.setAttribute('href', root + '/' + href);
+      }
+    });
+  }
+})();
+</script>
+<!-- SITE HEADER END -->
+
+
+
+
+
+  <div class="container">
+    
+    <div class="topbar">
+      <div>
+        <div class="brand">DC <span>Franchise</span> Database</div>
+        <div class="meta">Season 1 Awards</div>
+      </div>
+      <div class="meta">Season count: 4 • Player count: 40</div>
+    </div>
+    <div class="tabs"><a class="tab" href="../current-season.html">📊 Current Season Analytics</a><a class="tab" href="../voting-analytics.html">🗳️ Voting Chart Analytics</a><a class="tab" href="../franchise.html">🏛️ Franchise Analytics</a><a class="tab" href="../rankings.html">🏆 Player Rankings</a><a class="tab" href="../seasons.html">📚 Seasons</a><a class="tab" href="../devotees.html">👥 Devotees</a><a class="tab active" href="../awards.html">🥇 Season Awards</a></div>
+    
+<div class="hero">
+  <h1>🏆 Season 1 Awards</h1>
+  <p>Total Drama: Cullhouse • The season where kindness conquered chaos</p>
+</div>
+
+<div class="callout">
+  <b>Winner:</b> Lindsay (5-4) | <b>Fan Favorite:</b> Justin
+</div>
+
+<h2>🏆 Major Awards</h2>
+
+<div class="kpi-grid">
+  <div class="kpi">
+    <div class="badge gold">🏆 WINNER</div>
+    <h3>Lindsay</h3>
+    <p><b>5-4 Victory</b></p>
+    <p class="small">Only 1 vote against all season • Perfect social game • Loyal without being naïve • "Heart vs. Control" — heart won</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge purple">👑 FAN FAVORITE</div>
+    <h3>Justin</h3>
+    <p><b>24th Place (First Boot!)</b></p>
+    <p class="small">6-6 tie → 6-4 revote • Social charm despite early exit • Found idol but didn't play it • Beloved anyway</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge good">🧠 BEST STRATEGIC</div>
+    <h3>Alejandro</h3>
+    <p><b>Runner-Up</b></p>
+    <p class="small">Controlled midgame • Cut closest ally (Trent) at F6 • 4 challenge wins • Jury respected him but didn't reward him</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge good">😊 BEST SOCIAL</div>
+    <h3>Lindsay</h3>
+    <p><b>Social Queen</b></p>
+    <p class="small">Only 1 vote against entire season • Trusted by everyone • Relationships weren't strategy—they were real</p>
+  </div>
+</div>
+
+<h2>🎯 Performance Awards</h2>
+
+<div class="kpi-grid">
+  <div class="kpi">
+    <div class="badge good">💪 BEST PHYSICAL</div>
+    <h3>Bridgette</h3>
+    <p><b>5 Total Wins</b></p>
+    <p class="small">4 immunity + 1 reward • Undisputed physical force • Comp beast who reached F3</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge good">🔥 MOST CLUTCH</div>
+    <h3>Alejandro</h3>
+    <p><b>Final Immunity Win</b></p>
+    <p class="small">Won when he had to • Controlled Final Tribal setup • Cut Bridgette to reach F2</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge good">🤝 MOST LOYAL</div>
+    <h3>Lindsay</h3>
+    <p><b>Never Flipped</b></p>
+    <p class="small">Stayed true to allies • Made it to end without regrets • Trust never cracked under pressure</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge good">📊 BEST UNDERDOG</div>
+    <h3>Lindsay</h3>
+    <p><b>Winner</b></p>
+    <p class="small">Underestimated early • Growth arc throughout • Proved kindness can be strategic</p>
+  </div>
+</div>
+
+<h2>🎭 Character Awards</h2>
+
+<div class="kpi-grid">
+  <div class="kpi">
+    <div class="badge bad">😈 BIGGEST VILLAIN</div>
+    <h3>Heather</h3>
+    <p><b>High Conflict</b></p>
+    <p class="small">Extreme hatred with Noah, Gwen, Trent • 2 idols found • Saved Bridgette with idol (psychological warfare) • Never invisible</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge">🌀 MOST CHAOTIC</div>
+    <h3>Heather</h3>
+    <p><b>Unpredictable</b></p>
+    <p class="small">Multiple meltdowns • Idol plays that shocked everyone • You never knew what she'd do</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge">🤫 QUIETEST THREAT</div>
+    <h3>Lindsay</h3>
+    <p><b>Perfect Game</b></p>
+    <p class="small">Only 1 vote all season • Always in majority • Game noticed too late</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge purple">⭐ SEASON MVP</div>
+    <h3>Alejandro</h3>
+    <p><b>Strategic Protagonist</b></p>
+    <p class="small">Controlled the board • Shaped every phase • The player everyone orbited around</p>
+  </div>
+</div>
+
+<h2>💔 Unfortunate Awards</h2>
+
+<div class="kpi-grid">
+  <div class="kpi">
+    <div class="badge bad">💥 BIGGEST MELTDOWN</div>
+    <h3>Alejandro</h3>
+    <p><b>Episode 22 (Final 5)</b></p>
+    <p class="small">Weight of every promise crashing down • Even the best strategists bleed</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge bad">😢 MOST TRAGIC EXIT</div>
+    <h3>Owen</h3>
+    <p><b>Medical Evacuation</b></p>
+    <p class="small">Universally loved • Targeted unanimously • Left without anyone having to own it</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge bad">🎲 MOST UNLUCKY</div>
+    <h3>Sadie</h3>
+    <p><b>Rock Draw</b></p>
+    <p class="small">Tie → revote → rocks • Zero votes against in her elimination • Lost by refusing to blink</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge">🔥 MESSIEST FEUD</div>
+    <h3>Heather vs Trent</h3>
+    <p><b>Extreme Mutual Hatred</b></p>
+    <p class="small">Unbreakable bonds vs. pure hatred • Defined multiple episodes • Ended at F7</p>
+  </div>
+</div>
+
+<h2>💔 Betrayal Awards</h2>
+
+<div class="kpi-grid">
+  <div class="kpi">
+    <div class="badge bad">💔 BIGGEST BETRAYAL</div>
+    <h3>Alejandro vs Trent</h3>
+    <p><b>Episode 21 (Final 6)</b></p>
+    <p class="small">Unbreakable relationship • Alejandro played idol on Beth • Forced vote to Trent • "You don't cut your closest ally... until you have to"</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge bad">💔 SECOND BIGGEST BETRAYAL</div>
+    <h3>Alejandro vs Beth</h3>
+    <p><b>Episode 22 (Final 5)</b></p>
+    <p class="small">Beth believed partnership was real • Alejandro watched her elimination • Did nothing to save her</p>
+  </div>
+</div>
+
+<h2>🏅 Special Awards</h2>
+
+<div class="kpi-grid">
+  <div class="kpi">
+    <div class="badge good">🛡️ CLEANEST GAME</div>
+    <h3>Lindsay</h3>
+    <p><b>1 Vote Against</b></p>
+    <p class="small">Attended all tribals • Never truly targeted • Social mastery • Made F2 without regrets</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge good">🎯 MOST TARGETED</div>
+    <h3>Beth</h3>
+    <p><b>22 Votes</b></p>
+    <p class="small">Survived multiple close calls • Emotional and volatile • Made it to F5 despite constant targeting</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge">🔮 ADVANTAGE KINGS</div>
+    <h3>Ezekiel & Heather (Tie)</h3>
+    <p><b>2 Idols Each</b></p>
+    <p class="small">Ezekiel: Popcorn Machine + Limited Idol • Heather: Campers + Limited Idol • Most advantage-aware players</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge">💎 MOST ROBBED</div>
+    <h3>Gwen</h3>
+    <p><b>Pre-Juror</b></p>
+    <p class="small">Close votes • Strong social ties • Unlucky timing • Never got to show jury her game</p>
+  </div>
+</div>
+
+<h2>📊 Statistical Leaders</h2>
+
+<div class="panel">
+  <h3>Challenge Dominance</h3>
+  <ul>
+    <li><b>Most Total Wins:</b> Bridgette (5)</li>
+    <li><b>Most Immunity Wins:</b> Bridgette (4)</li>
+    <li><b>Most Reward Wins:</b> 6-way tie (Alejandro, Bridgette, Ezekiel, Heather, Owen, Trent - 1 each)</li>
+  </ul>
+</div>
+
+<div class="panel">
+  <h3>Social Game</h3>
+  <ul>
+    <li><b>Fewest Votes Against:</b> Lindsay (1)</li>
+    <li><b>Most Votes Against:</b> Beth (22)</li>
+    <li><b>Most Jury Votes:</b> Lindsay (5)</li>
+    <li><b>Closest Finale:</b> 5-4 (Lindsay over Alejandro)</li>
+  </ul>
+</div>
+
+<div class="panel">
+  <h3>Strategic Game</h3>
+  <ul>
+    <li><b>Idols Found:</b> 10 total (Ezekiel & Heather with 2 each)</li>
+    <li><b>Most Idol Plays:</b> Heather (saved Bridgette - psychological warfare)</li>
+    <li><b>Strategic Leaders:</b> Alejandro (#1), Heather (#2), Courtney (#3)</li>
+    <li><b>Most Unbreakable Bonds:</b> Trent (5 - with Alejandro, Bridgette, Lindsay, Leshawna, Owen)</li>
+  </ul>
+</div>
+
+<div class="panel">
+  <h3>Extreme Records</h3>
+  <ul>
+    <li><b>Tribe Swaps:</b> 1 (Episode 7)</li>
+    <li><b>Rock Draws:</b> 1 (Sadie, Episode 13)</li>
+    <li><b>Medical Evacuations:</b> 1 (Owen, Episode 20)</li>
+    <li><b>Kidnapping Twist:</b> 1 (Noah, Episode 9)</li>
+    <li><b>Fire-Making:</b> 1 (Alejandro beat Ezekiel at F4)</li>
+  </ul>
+</div>
+
+<h2>🎬 Season Legacy</h2>
+
+<div class="callout">
+  <h3>The Season Where Kindness Conquered Chaos</h3>
+  <p>Season 1 will be remembered for:</p>
+  <ul>
+    <li><b>Lindsay's Victory:</b> Only 1 vote against all season - cleanest win possible (5-4 over Alejandro)</li>
+    <li><b>Alejandro's Dominance:</b> Strategic mastermind who lost 4-5 to social gameplay - "Heart vs. Control"</li>
+    <li><b>Bridgette's Comp Beast Run:</b> 4 immunities, 5 total challenge wins - cut at F3</li>
+    <li><b>Heather's Chaos:</b> Psychological warfare idol play, extreme hatreds, pure entertainment</li>
+    <li><b>Most Chaotic Season:</b> Ties, revotes, rock draw, medevac, tribe swap, kidnapping twist, fire-making</li>
+    <li><b>Trent's Heartbreak:</b> Unbreakable with Alejandro - cut by his closest ally at F6</li>
+    <li><b>The Jury's Message:</b> Social trust beat strategic dominance 5-4</li>
+    <li><b>Justin as Fan Favorite:</b> First boot (6-6 → 6-4) still won audience hearts</li>
+  </ul>
+</div>
+
+<div class="footer">
+  <a href="../awards.html">← All Season Awards</a> | 
+  <a href="season1.html">Season 1 Overview →</a>
+</div>
+
+  </div>
+
+
+
+<!-- SITE FOOTER START -->
+<footer class="siteFooter">
+  <div class="footerInner">
+    <div class="footerTitle">DC Franchise Database</div>
+    <div class="footerSub">Static archive • 5 seasons • 58 players • Icons: name.png</div>
+  </div>
+</footer>
+<!-- SITE FOOTER END -->
+</body>
+</html>

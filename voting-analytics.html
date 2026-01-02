@@ -1,0 +1,570 @@
+<!doctype html>
+<html lang="en" data-root=".">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Voting Chart Analytics</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .season-toggle {
+      display: flex;
+      gap: 10px;
+      margin: 20px 0;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .season-btn {
+      padding: 12px 24px;
+      border: 2px solid rgba(165, 95, 255, 0.5);
+      background: rgba(0, 0, 0, 0.3);
+      color: rgba(255, 255, 255, 0.8);
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .season-btn:hover {
+      background: rgba(165, 95, 255, 0.2);
+      border-color: rgba(165, 95, 255, 0.8);
+    }
+    .season-btn.active {
+      background: rgba(165, 95, 255, 0.3);
+      border-color: rgba(165, 95, 255, 1);
+      color: white;
+    }
+    .voting-table {
+      display: none;
+      margin-top: 20px;
+    }
+    .voting-table.active {
+      display: block;
+    }
+    
+    .table-wrapper {
+      overflow-x: auto;
+      overflow-y: visible;
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      scrollbar-width: thin;
+      scrollbar-color: rgba(165, 95, 255, 0.6) rgba(0, 0, 0, 0.3);
+    }
+    
+    .table-wrapper::-webkit-scrollbar {
+      height: 14px;
+    }
+    
+    .table-wrapper::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 7px;
+    }
+    
+    .table-wrapper::-webkit-scrollbar-thumb {
+      background: rgba(165, 95, 255, 0.7);
+      border-radius: 7px;
+      border: 2px solid rgba(0, 0, 0, 0.3);
+    }
+    
+    .table-wrapper::-webkit-scrollbar-thumb:hover {
+      background: rgba(165, 95, 255, 1);
+    }
+    
+    .vote-table {
+      width: 100%;
+      min-width: 2600px;
+      border-collapse: collapse;
+      font-size: 12px;
+      background: transparent;
+    }
+    .vote-table th, .vote-table td {
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 10px 8px;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .vote-table th {
+      background: rgba(165, 95, 255, 0.2);
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .vote-table .player-name {
+      text-align: left;
+      font-weight: 600;
+      background: rgba(20, 15, 30, 0.95);
+      position: sticky;
+      left: 40px;
+      z-index: 5;
+      min-width: 100px;
+    }
+    .vote-table .rank-col {
+      background: rgba(20, 15, 30, 0.95);
+      position: sticky;
+      left: 0;
+      z-index: 5;
+      min-width: 50px;
+    }
+    .eliminated {
+      background: rgba(255, 100, 100, 0.25);
+      font-weight: 700;
+      color: #ff9999;
+    }
+    .finale-col {
+      background: rgba(255, 215, 0, 0.15);
+      font-weight: 700;
+      color: #ffd700;
+    }
+    .winner-col {
+      background: rgba(255, 215, 0, 0.25);
+      font-weight: 800;
+      color: #ffd700;
+    }
+    .winner-row {
+      background: rgba(255, 215, 0, 0.08);
+    }
+    .winner-row .rank-col,
+    .winner-row .player-name {
+      background: rgba(255, 215, 0, 0.15);
+    }
+    
+    .scroll-hint {
+      text-align: center;
+      padding: 12px;
+      background: rgba(165, 95, 255, 0.1);
+      border-radius: 8px;
+      margin-bottom: 10px;
+      font-weight: 600;
+      color: rgba(165, 95, 255, 1);
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+<!-- SITE HEADER START -->
+<!-- MODERN SITE HEADER START -->
+
+
+<header class="modern-header" id="modernHeader">
+  <div class="header-container">
+    <!-- Top Bar -->
+    <div class="header-top">
+      <a href="index.html" class="brand-section" aria-label="Go to home">
+        <div class="brand-icon">
+          <span class="brand-logo-text">⚡</span>
+        </div>
+        <div class="brand-content">
+          <h1>DC <span class="brand-gradient">Franchise</span> Database</h1>
+          <p class="brand-subtitle">Season <span id="currentSeasonNum">5</span> Live • Click to Explore</p>
+        </div>
+      </a>
+
+      <div class="stats-badge">
+        <div class="stats-main"><span id="totalSeasons">5</span> Seasons • <span id="totalPlayers">58</span> Players</div>
+        <div class="stats-sub">Icons: <span id="iconFormat">name.png</span></div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="header-nav" aria-label="Primary navigation">
+      <ul class="nav-list">
+        <li class="nav-item">
+          <a href="index.html" class="nav-link" data-page="index">
+            <span class="nav-icon">🏠</span>
+            <span>Home</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="current-season.html" class="nav-link" data-page="current-season">
+            <span class="nav-icon">📊</span>
+            <span>Current Season</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="voting-analytics.html" class="nav-link" data-page="voting-analytics">
+            <span class="nav-icon">🧾</span>
+            <span>Voting Analytics</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="franchise.html" class="nav-link" data-page="franchise">
+            <span class="nav-icon">🏛️</span>
+            <span>Franchise</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="rankings.html" class="nav-link" data-page="rankings">
+            <span class="nav-icon">🏆</span>
+            <span>Rankings</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="seasons.html" class="nav-link" data-page="seasons">
+            <span class="nav-icon">🗂️</span>
+            <span>Seasons</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="devotees.html" class="nav-link" data-page="devotees">
+            <span class="nav-icon">👥</span>
+            <span>Players</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="awards.html" class="nav-link" data-page="awards">
+            <span class="nav-icon">🏅</span>
+            <span>Awards</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<script>
+(function() {
+  // Load site config and update header stats
+  if (window.SITE_CONFIG) {
+    document.getElementById('totalSeasons').textContent = window.SITE_CONFIG.seasons;
+    document.getElementById('totalPlayers').textContent = window.SITE_CONFIG.players;
+    document.getElementById('currentSeasonNum').textContent = window.SITE_CONFIG.currentSeason;
+    document.getElementById('iconFormat').textContent = window.SITE_CONFIG.iconFormat;
+  }
+
+  // Scroll behavior
+  const header = document.getElementById('modernHeader');
+  if (!header) return;
+  
+  window.addEventListener('scroll', () => {
+    const currentScroll = window.pageYOffset;
+    if (currentScroll > 20) {
+      header.classList.add('scrolled');
+    } else {
+      header.classList.remove('scrolled');
+    }
+  }, { passive: true });
+
+  // Active page highlighting
+  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+  const navLinks = document.querySelectorAll('.nav-link');
+  
+  navLinks.forEach(link => {
+    const linkPage = link.getAttribute('href');
+    if (linkPage === currentPage || (currentPage === '' && linkPage === 'index.html')) {
+      link.classList.add('active');
+    }
+  });
+
+  // Path resolution for nested folders
+  const root = (document.documentElement.dataset.root || document.body.dataset.root || ".").replace(/\/+$/, "");
+  
+  if (root !== ".") {
+    const allLinks = header.querySelectorAll('a[href]');
+    allLinks.forEach(link => {
+      const href = link.getAttribute('href');
+      if (href && !href.startsWith('http') && !href.startsWith('#')) {
+        link.setAttribute('href', root + '/' + href);
+      }
+    });
+  }
+})();
+</script>
+<!-- MODERN SITE HEADER END -->
+
+<!-- SITE HEADER END -->
+
+  <div class="container">
+    
+    <div class="topbar">
+      <div>
+        <div class="brand">DC <span>Franchise</span> Database</div>
+        <div class="meta">Complete voting history across all seasons</div>
+      </div>
+      <div class="meta">Season count: 5 • Player count: 58</div>
+    </div>
+    <div class="tabs"><a class="tab" href="current-season.html">📊 Current Season Analytics</a><a class="tab active" href="voting-analytics.html">🗳️ Voting Chart Analytics</a><a class="tab" href="franchise.html">🏛️ Franchise Analytics</a><a class="tab" href="rankings.html">🏆 Player Rankings</a><a class="tab" href="seasons.html">📚 Seasons</a><a class="tab" href="devotees.html">👥 Devotees</a><a class="tab" href="awards.html">🥇 Season Awards</a></div>
+    
+<div class="hero">
+  <h1>🗳️ Voting Chart Analytics</h1>
+  <p>Complete voting history showing who voted for who each episode + finale votes</p>
+</div>
+
+<div class="season-toggle">
+  <button class="season-btn active" onclick="showSeason(1)">Season 1</button>
+  <button class="season-btn" onclick="showSeason(2)">Season 2</button>
+  <button class="season-btn" onclick="showSeason(3)">Season 3</button>
+  <button class="season-btn" onclick="showSeason(4)">Season 4</button>
+  <button class="season-btn" onclick="showSeason(5)">Season 5</button>
+</div>
+
+<!-- SEASON 1 -->
+<div id="season1-table" class="voting-table active">
+  <h2 style="text-align:center; margin: 20px 0;">📊 Season 1 Voting Chart</h2>
+  
+  <div class="callout">
+    24 players • 23 episodes + finale • Winner: Lindsay (5-4 jury vote)
+  </div>
+  
+  <div class="scroll-hint">
+    ⬅️ SCROLL RIGHT TO SEE ALL EPISODES + FINALE ➡️
+  </div>
+  
+  <div class="panel">
+    <div class="table-wrapper">
+      <table class="vote-table">
+        <thead>
+          <tr>
+            <th rowspan="2" class="rank-col">Rank</th>
+            <th rowspan="2" class="player-name">Castaway</th>
+<th>Episode 1</th><th>Episode 2</th><th>Episode 3</th><th>Episode 4</th><th>Episode 5</th><th>Episode 6</th><th>Episode 7</th><th>Episode 8</th><th>Episode 9</th><th>Episode 10</th><th>Episode 11</th><th>Episode 12</th><th>Episode 13</th><th>Episode 14</th><th>Episode 15</th><th>Episode 16</th><th>Episode 17</th><th>Episode 18</th><th>Episode 19</th><th>Episode 20</th><th>Episode 21</th><th>Episode 22</th><th>Episode 23</th><th class="finale-col">Bridgette</th><th class="finale-col">Alejandro</th><th class="winner-col">Lindsay</th>
+          </tr>
+          <tr>
+<th class="eliminated">Justin</th><th class="eliminated">Tyler</th><th class="eliminated">DJ</th><th class="eliminated">Eva</th><th class="eliminated">Geoff</th><th class="eliminated">Cody</th><th class="eliminated">Izzy</th><th class="eliminated">Harold</th><th class="eliminated">Noah</th><th class="eliminated">Gwen</th><th class="eliminated">Noah</th><th class="eliminated">Duncan</th><th class="eliminated">Sadie</th><th class="eliminated">Katie</th><th class="eliminated">Leshawna</th><th class="eliminated">Sierra</th><th class="eliminated">Courtney</th><th class="eliminated">Owen</th><th class="eliminated">Heather</th><th class="eliminated">Owen:Medevac</th><th class="eliminated">Trent</th><th class="eliminated">Beth</th><th class="eliminated">Ezekiel</th><th class="finale-col">3rd Place</th><th class="finale-col">2nd Place</th><th class="winner-col">Winner</th>
+          </tr>
+        </thead>
+        <tbody>
+<tr class="winner-row"><td class="rank-col">1</td><td class="player-name">Lindsay</td><td>Justin</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Noah</td><td>—</td><td>Bridgette</td><td>Gwen</td><td>—</td><td>Bridgette</td><td>Bridgette</td><td>—</td><td>Bridgette</td><td>Owen</td><td>Bridgette</td><td>Courtney</td><td>Bridgette</td><td>Heather</td><td>—</td><td>Beth</td><td>Beth</td><td>Alejandro</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td class="rank-col">2</td><td class="player-name">Alejandro</td><td>Beth Justin</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Cody</td><td>—</td><td>Harold</td><td>Noah</td><td>—</td><td>Noah</td><td>Duncan</td><td>—</td><td>Katie</td><td>Leshawna</td><td>Bridgette</td><td>Heather</td><td>Owen</td><td>Heather</td><td>—</td><td>Ezekiel</td><td>Ezekiel</td><td>Ezekiel</td><td>Bridgette</td><td>—</td><td>—</td></tr>
+<tr><td class="rank-col">3</td><td class="player-name">Bridgette</td><td>—</td><td>Geoff</td><td>DJ</td><td>Eva</td><td>Geoff</td><td>—</td><td>—</td><td>Harold</td><td>Courtney Noah</td><td>—</td><td>Noah</td><td>Duncan</td><td>—</td><td>Beth</td><td>Leshawna</td><td>Sierra</td><td>Courtney</td><td>Owen</td><td>Trent</td><td>—</td><td>Trent</td><td>—</td><td>Ezekiel</td><td>—</td><td>—</td><td>Lindsay</td></tr>
+<tr><td class="rank-col">4</td><td class="player-name">Ezekiel</td><td>—</td><td>Tyler</td><td>DJ</td><td>Eva</td><td>Geoff</td><td>—</td><td>Izzy</td><td>—</td><td>—</td><td>Gwen</td><td>—</td><td>—</td><td>Courtney</td><td>Trent</td><td>Leshawna</td><td>Sierra</td><td>Courtney</td><td>Alejandro</td><td>Heather</td><td>—</td><td>Alejandro</td><td>Beth</td><td>Alejandro</td><td>—</td><td>—</td><td>Lindsay</td></tr>
+<tr><td class="rank-col">5</td><td class="player-name">Beth</td><td>Justin</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Cody</td><td>Izzy</td><td>—</td><td>—</td><td>Gwen</td><td>—</td><td>—</td><td>Courtney</td><td>Katie</td><td>Leshawna</td><td>Sierra</td><td>Heather</td><td>Bridgette</td><td>Heather</td><td>—</td><td>Trent</td><td>Lindsay</td><td>—</td><td>—</td><td>Alejandro</td><td>—</td></tr>
+<tr><td class="rank-col">6</td><td class="player-name">Trent</td><td>Justin</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Cody</td><td>—</td><td>Harold</td><td>Gwen</td><td>—</td><td>Noah</td><td>Duncan</td><td>—</td><td>Katie</td><td>Heather</td><td>Sierra</td><td>Heather</td><td>Bridgette</td><td>Heather</td><td>—</td><td>Beth</td><td>—</td><td>—</td><td>—</td><td>Alejandro</td><td>—</td></tr>
+<tr><td class="rank-col">7</td><td class="player-name">Owen</td><td>Justin</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Noah</td><td>Sadie</td><td>—</td><td>—</td><td>Ezekiel</td><td>—</td><td>—</td><td>Courtney</td><td>Bridgette</td><td>Leshawna</td><td>Bridgette</td><td>Courtney</td><td>Bridgette</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Lindsay</td></tr>
+<tr><td class="rank-col">8</td><td class="player-name">Heather</td><td>Justin</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Noah</td><td>—</td><td>Sierra</td><td>Courtney Noah</td><td>—</td><td>Noah</td><td>Duncan</td><td>—</td><td>Beth</td><td>Leshawna</td><td>Sierra</td><td>Courtney</td><td>Owen</td><td>Trent</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Lindsay</td></tr>
+<tr><td class="rank-col">9</td><td class="player-name">Courtney</td><td>—</td><td>Tyler</td><td>DJ</td><td>Eva</td><td>Geoff</td><td>—</td><td>Izzy</td><td>—</td><td>—</td><td>Ezekiel</td><td>—</td><td>—</td><td>Beth</td><td>Katie</td><td>Owen</td><td>Sierra</td><td>Heather</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Alejandro</td><td>—</td></tr>
+<tr><td class="rank-col">10</td><td class="player-name">Sierra</td><td>—</td><td>Tyler</td><td>DJ</td><td>Eva</td><td>Harold</td><td>—</td><td>—</td><td>Harold</td><td>Gwen</td><td>—</td><td>Noah</td><td>Duncan</td><td>—</td><td>Katie</td><td>Leshawna</td><td>Bridgette</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Alejandro</td><td>—</td></tr>
+<tr><td class="rank-col">11</td><td class="player-name">Leshawna</td><td>Beth </td><td>—</td><td>—</td><td>—</td><td>—</td><td>Cody</td><td>—</td><td>Bridgette</td><td>Noah</td><td>—</td><td>Bridgette</td><td>Bridgette</td><td>—</td><td>Bridgette</td><td>Owen</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Lindsay</td></tr>
+<tr><td class="rank-col">12</td><td class="player-name">Katie</td><td>—</td><td>Tyler</td><td>DJ</td><td>Sierra</td><td>Geoff</td><td>—</td><td>Izzy</td><td>—</td><td>—</td><td>Gwen</td><td>—</td><td>—</td><td>Beth</td><td>Beth</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td class="rank-col">13</td><td class="player-name">Sadie</td><td>—</td><td>Tyler</td><td>DJ</td><td>Sierra</td><td>Geoff</td><td>—</td><td>Izzy</td><td>—</td><td>—</td><td>Gwen</td><td>—</td><td>—</td><td>Beth</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td class="rank-col">14</td><td class="player-name">Duncan</td><td>—</td><td>Geoff</td><td>DJ</td><td>Sierra</td><td>Geoff</td><td>—</td><td>—</td><td>Sierra</td><td>Noah</td><td>—</td><td>Noah</td><td>Bridgette</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td class="rank-col">15</td><td class="player-name">Noah</td><td>Beth </td><td>—</td><td>—</td><td>—</td><td>—</td><td>Cody</td><td>Sadie</td><td>—</td><td>—</td><td>—</td><td>Bridgette</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td class="rank-col">16</td><td class="player-name">Gwen</td><td>Justin</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Noah</td><td>Sadie</td><td>—</td><td>—</td><td>Ezekiel</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td class="rank-col">17</td><td class="player-name">Harold</td><td>—</td><td>Tyler</td><td>Geoff</td><td>Eva</td><td>Geoff</td><td>—</td><td>—</td><td>Sierra</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td class="rank-col">18</td><td class="player-name">Izzy</td><td>Beth </td><td>—</td><td>—</td><td>—</td><td>—</td><td>Cody</td><td>Sadie</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td class="rank-col">19</td><td class="player-name">Cody</td><td>Beth </td><td>—</td><td>—</td><td>—</td><td>—</td><td>Noah</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td class="rank-col">20</td><td class="player-name">Geoff</td><td>—</td><td>Tyler</td><td>DJ</td><td>Eva</td><td>Harold</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td class="rank-col">21</td><td class="player-name">Eva</td><td>—</td><td>Tyler</td><td>DJ</td><td>Sierra</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td class="rank-col">22</td><td class="player-name">DJ</td><td>—</td><td>Geoff</td><td>Geoff</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td class="rank-col">23</td><td class="player-name">Tyler</td><td>—</td><td>Geoff</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td class="rank-col">24</td><td class="player-name">Justin</td><td>Beth </td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- SEASON 2 -->
+<div id="season2-table" class="voting-table">
+  <h2 style="text-align:center; margin: 20px 0;">📊 Season 2 Voting Chart</h2>
+  
+  <div class="callout">
+    14 players (all returnees) • 11 episodes + finale • Winner: Duncan (5-1-1 jury vote)
+  </div>
+  
+  <div class="scroll-hint">
+    ⬅️ SCROLL RIGHT TO SEE ALL EPISODES + FINALE ➡️
+  </div>
+  
+  <div class="panel">
+    <div class="table-wrapper">
+      <table class="vote-table">
+        <thead>
+          <tr>
+            <th rowspan="2" class="rank-col">Rank</th>
+            <th rowspan="2" class="player-name">Castaway</th>
+<th>Episode 1</th><th>Episode 2</th><th>Episode 3</th><th>Episode 4</th><th>Episode 5</th><th>Episode 6</th><th>Episode 7</th><th>Episode 8</th><th>Episode 9</th><th>Episode 10</th><th>Episode 11</th><th class="finale-col">Lindsay</th><th class="finale-col">Alejandro</th><th class="winner-col">Duncan</th>
+          </tr>
+          <tr>
+<th class="eliminated">Bridgette</th><th class="eliminated">Leshawna</th><th class="eliminated">Owen</th><th class="eliminated">Courtney</th><th class="eliminated">Justin</th><th class="eliminated">Heather</th><th class="eliminated">Gwen</th><th class="eliminated">Trent</th><th class="eliminated">Ezekiel</th><th class="eliminated">DJ</th><th class="eliminated">Beth</th><th class="finale-col">3rd</th><th class="finale-col">2nd</th><th class="winner-col">Winner</th>
+          </tr>
+        </thead>
+        <tbody>
+<tr class="winner-row"><td class="rank-col">1</td><td class="player-name">Duncan</td><td>—</td><td>Leshawna</td><td>Owen</td><td>Trent</td><td>Alejandro</td><td>Heather</td><td>Gwen</td><td>Trent</td><td>Ezekiel</td><td>DJ</td><td>Beth</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td class="rank-col">2</td><td class="player-name">Alejandro</td><td>DJ</td><td>—</td><td>—</td><td>—</td><td>Justin</td><td>Heather</td><td>Gwen</td><td>Trent</td><td>DJ</td><td>DJ</td><td>Lindsay</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td class="rank-col">3</td><td class="player-name">Lindsay</td><td>—</td><td>Leshawna</td><td>Courtney</td><td>Courtney</td><td>Alejandro</td><td>Heather</td><td>Gwen</td><td>Trent</td><td>Ezekiel</td><td>DJ</td><td>Beth</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td class="rank-col">4</td><td class="player-name">Beth</td><td>—</td><td>Leshawna</td><td>Courtney</td><td>Courtney</td><td>Alejandro</td><td>Heather</td><td>Gwen</td><td>DJ</td><td>Ezekiel</td><td>DJ</td><td>Duncan</td><td>Lindsay</td><td>—</td><td>—</td></tr>
+<tr><td class="rank-col">5</td><td class="player-name">DJ</td><td>Bridgette</td><td>—</td><td>—</td><td>—</td><td>Justin</td><td>Beth</td><td>Alejandro Gwen</td><td>Trent</td><td>Ezekiel</td><td>Duncan</td><td>—</td><td>—</td><td>—</td><td>Duncan</td></tr>
+<tr><td class="rank-col">6</td><td class="player-name">Ezekiel</td><td>DJ</td><td>—</td><td>—</td><td>—</td><td>Justin</td><td>Heather</td><td>Alejandro Gwen</td><td>Trent</td><td>DJ</td><td>—</td><td>—</td><td>—</td><td>Alejandro</td><td>—</td></tr>
+<tr><td class="rank-col">7</td><td class="player-name">Trent</td><td>—</td><td>Leshawna</td><td>Courtney</td><td>Courtney</td><td>Alejandro</td><td>Heather</td><td>Alejandro</td><td>DJ</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Duncan</td></tr>
+<tr><td class="rank-col">8</td><td class="player-name">Gwen</td><td>Bridgette</td><td>—</td><td>—</td><td>—</td><td>Justin</td><td>Heather</td><td>Alejandro</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Duncan</td></tr>
+<tr><td class="rank-col">9</td><td class="player-name">Heather</td><td>Bridgette</td><td>—</td><td>—</td><td>—</td><td>Alejandro</td><td>Beth</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Duncan</td></tr>
+<tr><td class="rank-col">10</td><td class="player-name">Justin</td><td>Bridgette</td><td>—</td><td>—</td><td>—</td><td>Alejandro</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Duncan</td></tr>
+<tr><td class="rank-col">11</td><td class="player-name">Courtney</td><td>—</td><td>Leshawna</td><td>Courtney</td><td>Trent</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Duncan</td></tr>
+<tr><td class="rank-col">12</td><td class="player-name">Owen</td><td>—</td><td>Leshawna</td><td>Courtney</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td class="rank-col">13</td><td class="player-name">Leshawna</td><td>—</td><td>Duncan</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td class="rank-col">14</td><td class="player-name">Bridgette</td><td>DJ</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- SEASON 3 -->
+<div id="season3-table" class="voting-table">
+  <h2 style="text-align:center; margin: 20px 0;">📊 Season 3 Voting Chart</h2>
+  
+  <div class="callout">
+    16 players • 13 episodes + finale • Winner: Emma (4-3-1 tiebreaker vote)
+  </div>
+  
+  <div class="scroll-hint">
+    ⬅️ SCROLL RIGHT TO SEE ALL EPISODES + FINALE ➡️
+  </div>
+  
+  <div class="panel">
+    <div class="table-wrapper">
+      <table class="vote-table">
+        <thead>
+          <tr>
+            <th rowspan="2" class="rank-col">Rank</th>
+            <th rowspan="2" class="player-name">Castaway</th>
+<th>Episode 1</th><th>Episode 2</th><th>Episode 3</th><th>Episode 4</th><th>Episode 5</th><th>Episode 6</th><th>Episode 7</th><th>Episode 8</th><th>Episode 9</th><th>Episode 10</th><th>Episode 11</th><th>Episode 12</th><th>Episode 13</th><th class="finale-col">Cameron</th><th class="finale-col">Scott</th><th class="winner-col">Emma</th>
+          </tr>
+          <tr>
+<th class="eliminated">Crimson</th><th class="eliminated">Staci</th><th class="eliminated">B</th><th class="eliminated">Sam</th><th class="eliminated">Dakota</th><th class="eliminated">Lightning</th><th class="eliminated">Dwayne</th><th class="eliminated">Brick</th><th class="eliminated">Dawn</th><th class="eliminated">Jo</th><th class="eliminated">Mike</th><th class="eliminated">Anne Maria</th><th class="eliminated">Zoey</th><th class="finale-col">3rd</th><th class="finale-col">2nd</th><th class="winner-col">Winner</th>
+          </tr>
+        </thead>
+        <tbody>
+<tr class="winner-row"><td class="rank-col">1</td><td class="player-name">Emma</td><td>—</td><td>Staci</td><td>B</td><td>Dakota</td><td>Dakota</td><td>Anne Maria  Lightning</td><td>Dwayne</td><td>Brick</td><td>Dawn</td><td>Jo</td><td>Mike</td><td>Anne Maria</td><td>Zoey</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td class="rank-col">2</td><td class="player-name">Scott</td><td>—</td><td>Staci</td><td>B</td><td>Dakota</td><td>—</td><td>—</td><td>Dwayne</td><td>Dawn</td><td>Dawn</td><td>Jo</td><td>Mike</td><td>Anne Maria</td><td>Zoey</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td class="rank-col">3</td><td class="player-name">Cameron</td><td>Crimson</td><td>—</td><td>—</td><td>—</td><td>Lightning</td><td>Lightning</td><td>Dwayne</td><td>Brick</td><td>Dawn</td><td>Jo</td><td>Mike</td><td>Anne Maria</td><td>Zoey</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td class="rank-col">4</td><td class="player-name">Zoey</td><td>Crimson</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Jo</td><td>Jo</td><td>Anne Maria</td><td>Anne Maria</td><td>Anne Maria</td><td>Anne Maria</td><td>Cameron</td><td>—</td><td>Scott</td><td>—</td></tr>
+<tr><td class="rank-col">5</td><td class="player-name">Anne Maria</td><td>Crimson</td><td>—</td><td>—</td><td>—</td><td>Dakota</td><td>Lightning</td><td>Dwayne</td><td>Brick</td><td>Dawn</td><td>Jo</td><td>Mike</td><td>Cameron</td><td>—</td><td>—</td><td>—</td><td>Emma</td></tr>
+<tr><td class="rank-col">6</td><td class="player-name">Mike</td><td>Crimson</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Jo</td><td>Jo</td><td>Anne Maria</td><td>Anne Maria</td><td>Anne Maria</td><td>—</td><td>—</td><td>Cameron</td><td>—</td><td>—</td></tr>
+<tr><td class="rank-col">7</td><td class="player-name">Jo</td><td>Crimson</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Dawn</td><td>Brick</td><td>Dawn</td><td>Anne Maria</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Emma</td></tr>
+<tr><td class="rank-col">8</td><td class="player-name">Dawn</td><td>—</td><td>Staci</td><td>B</td><td>Lightning</td><td>—</td><td>—</td><td>Dwayne</td><td>Brick</td><td>Anne Maria</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Scott</td><td>—</td></tr>
+<tr><td class="rank-col">9</td><td class="player-name">Brick</td><td>Crimson</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Dawn</td><td>Dawn</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Scott</td><td>—</td></tr>
+<tr><td class="rank-col">10</td><td class="player-name">Dwayne</td><td>Crimson</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Dawn</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Emma</td></tr>
+<tr><td class="rank-col">11</td><td class="player-name">Lightning</td><td>—</td><td>Staci</td><td>B</td><td>Dakota</td><td>Dakota</td><td>Anne Maria</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td class="rank-col">12</td><td class="player-name">Dakota</td><td>—</td><td>Staci</td><td>B</td><td>Lightning</td><td>Anne Maria</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td class="rank-col">13</td><td class="player-name">Sam</td><td>—</td><td>Staci</td><td>B</td><td>Lightning</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td class="rank-col">14</td><td class="player-name">B</td><td>—</td><td>Dakota</td><td>Lightning</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td class="rank-col">15</td><td class="player-name">Staci</td><td>—</td><td>Dakota</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td class="rank-col">16</td><td class="player-name">Crimson</td><td>Dwayne</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- SEASON 4 -->
+<div id="season4-table" class="voting-table">
+  <h2 style="text-align:center; margin: 20px 0;">📊 Season 4 Voting Chart</h2>
+  
+  <div class="callout">
+    18 players • 14 episodes + finale • Winner: Alejandro (7-6-1 jury vote - closest ever!)
+  </div>
+  
+  <div class="scroll-hint">
+    ⬅️ SCROLL RIGHT TO SEE ALL EPISODES + FINALE ➡️
+  </div>
+  
+  <div class="panel">
+    <div class="table-wrapper">
+      <table class="vote-table">
+        <thead>
+          <tr>
+            <th rowspan="2" class="rank-col">Rank</th>
+            <th rowspan="2" class="player-name">Castaway</th>
+<th>Ep 1</th><th>Ep 2</th><th>Ep 3</th><th>Ep 4</th><th>Ep 5</th><th>Ep 6</th><th>Ep 7</th><th>Ep 8</th><th>Ep 9</th><th>Ep 10</th><th>Ep 11</th><th>Ep 12</th><th>Ep 13</th><th>Ep 14</th><th>Ep 15</th><th>Ep 16</th><th>Fire</th><th class="finale-col">Scott</th><th class="finale-col">Zoey</th><th class="winner-col">Alejandro</th>
+          </tr>
+          <tr>
+<th class="eliminated">Dakota</th><th class="eliminated">Emma</th><th class="eliminated">Sierra</th><th class="eliminated">Anne Maria</th><th class="eliminated">Heather</th><th class="eliminated">Courtney</th><th class="eliminated">Lightning</th><th class="eliminated">Mike</th><th class="eliminated">Sierra</th><th class="eliminated">Jo</th><th class="eliminated">Noah</th><th class="eliminated">Geoff</th><th class="eliminated">Harold</th><th class="eliminated">Duncan</th><th class="eliminated">Geoff</th><th class="eliminated">Cameron</th><th class="eliminated">Gwen</th><th class="finale-col">3rd</th><th class="finale-col">2nd</th><th class="winner-col">Winner</th>
+          </tr>
+        </thead>
+        <tbody>
+<tr class="winner-row"><td class="rank-col">1</td><td class="player-name">Alejandro</td><td>—</td><td>—</td><td>Sierra</td><td>—</td><td>Heather</td><td>Geoff Duncan</td><td>Lightning</td><td>Sierra</td><td>Sierra</td><td>Gwen Jo</td><td>Gwen</td><td>Gwen</td><td>Harold</td><td>Duncan</td><td>Geoff</td><td>Scott</td><td>Won</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td class="rank-col">2</td><td class="player-name">Zoey</td><td>Dakota</td><td>Emma</td><td>—</td><td>Anne Maria</td><td>—</td><td>Lightning Courtney</td><td>—</td><td>Sierra</td><td>Sierra</td><td>Jo</td><td>Noah</td><td>Geoff</td><td>Harold</td><td>Duncan</td><td>Geoff</td><td>Cameron</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td class="rank-col">3</td><td class="player-name">Scott</td><td>Dakota</td><td>Anne Maria</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Geoff</td><td>Sierra</td><td>Gwen</td><td>Jo</td><td>Noah</td><td>Geoff</td><td>Harold</td><td>Cameron</td><td>Geoff</td><td>Cameron</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td class="rank-col">4</td><td class="player-name">Gwen</td><td>—</td><td>—</td><td>Sierra</td><td>—</td><td>—</td><td>—</td><td>Lightning</td><td>Sierra</td><td>Sierra</td><td>Geoff</td><td>Noah</td><td>Geoff</td><td>Alejandro</td><td>Alejandro</td><td>Alejandro</td><td>Scott</td><td>Lost</td><td>Zoey</td><td>—</td><td>—</td></tr>
+<tr><td class="rank-col">5</td><td class="player-name">Cameron</td><td>Dakota</td><td>Emma</td><td>—</td><td>—</td><td>Heather</td><td>Geoff Duncan</td><td>Lightning</td><td>Sierra</td><td>Sierra</td><td>Gwen Jo</td><td>Gwen</td><td>Gwen</td><td>Duncan Harold</td><td>Duncan</td><td>Geoff</td><td>Scott</td><td>—</td><td>Zoey</td><td>—</td><td>—</td></tr>
+<tr><td class="rank-col">6</td><td class="player-name">Geoff</td><td>—</td><td>—</td><td>Sierra</td><td>Anne Maria</td><td>—</td><td>Lightning Courtney</td><td>Lightning</td><td>Sierra</td><td>Sierra</td><td>Jo</td><td>Noah</td><td>Gwen</td><td>—</td><td>—</td><td>Alejandro</td><td>—</td><td>—</td><td>Zoey</td><td>—</td><td>—</td></tr>
+<tr><td class="rank-col">7</td><td class="player-name">Duncan</td><td>—</td><td>—</td><td>Sierra</td><td>Anne Maria</td><td>—</td><td>Geoff Courtney</td><td>Geoff</td><td>Sierra</td><td>Sierra</td><td>Jo</td><td>Noah</td><td>Geoff</td><td>Alejandro</td><td>Alejandro</td><td>—</td><td>—</td><td>—</td><td>Scott</td><td>—</td><td>—</td></tr>
+<tr><td class="rank-col">8</td><td class="player-name">Harold</td><td>—</td><td>—</td><td>Sierra</td><td>—</td><td>—</td><td>—</td><td>Lightning</td><td>Sierra</td><td>Sierra</td><td>Geoff</td><td>Gwen</td><td>Geoff</td><td>Alejandro</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Alejandro</td></tr>
+<tr><td class="rank-col">9</td><td class="player-name">Noah</td><td>—</td><td>—</td><td>Sierra</td><td>—</td><td>Heather</td><td>Geoff Courtney</td><td>Geoff</td><td>Sierra</td><td>Sierra</td><td>Geoff</td><td>Gwen</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Alejandro</td></tr>
+<tr><td class="rank-col">10</td><td class="player-name">Jo</td><td>Dakota</td><td>Emma</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Lightning</td><td>Mike</td><td>Gwen*</td><td>Geoff</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Alejandro</td></tr>
+<tr><td class="rank-col">11</td><td class="player-name">Sierra</td><td>—</td><td>—</td><td>Geoff</td><td>—</td><td>—</td><td>—</td><td>Lightning</td><td>Mike</td><td>Gwen</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Zoey</td><td>—</td></tr>
+<tr><td class="rank-col">12</td><td class="player-name">Mike</td><td>Dakota</td><td>Emma</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Lightning</td><td>Sierra</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Zoey</td><td>—</td></tr>
+<tr><td class="rank-col">13</td><td class="player-name">Lightning</td><td>Dakota</td><td>Anne Maria</td><td>—</td><td>Anne Maria</td><td>—</td><td>Geoff Zoey Courtney</td><td>Geoff</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Alejandro</td></tr>
+<tr><td class="rank-col">14</td><td class="player-name">Courtney</td><td>—</td><td>—</td><td>Sierra</td><td>—</td><td>Noah</td><td>Geoff Duncan</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Alejandro</td></tr>
+<tr><td class="rank-col">15</td><td class="player-name">Heather</td><td>—</td><td>—</td><td>Geoff</td><td>—</td><td>Noah</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Alejandro</td></tr>
+<tr><td class="rank-col">16</td><td class="player-name">Anne Maria</td><td>Lightning</td><td>Emma</td><td>—</td><td>Lightning</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Alejandro</td></tr>
+<tr><td class="rank-col">17</td><td class="player-name">Emma</td><td>Dakota</td><td>Anne Maria</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Zoey</td><td>—</td></tr>
+<tr><td class="rank-col">18</td><td class="player-name">Dakota</td><td>Lightning</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+  <div class="callout" style="margin-top: 20px;">
+    <h3>Season 4 Notable Moments</h3>
+    <ul>
+      <li><b>Triple Idol Tribal (Ep 5):</b> Noah, Lightning, Zoey all played idols - all 9 votes cancelled!</li>
+      <li><b>Sierra's Perfect Play (Ep 7):</b> 10 votes cancelled (tied for most ever!)</li>
+      <li><b>Scott's Patience (Ep 14):</b> Held idol 9 tribals, played perfectly at F5</li>
+      <li><b>Geoff's Double Elimination:</b> Voted out Ep 10, returned Ep 13, re-eliminated same episode!</li>
+      <li><b>Closest Finale Ever:</b> Alejandro 7, Zoey 6, Scott 1</li>
+      <li><b>Fire-Making:</b> Alejandro beat Gwen at Final 4</li>
+    </ul>
+  </div>
+</div>
+
+
+<!-- SEASON 5 -->
+<div id="season5-table" class="voting-table">
+  <h2 style="text-align:center; margin: 20px 0;">📊 Season 5 Voting Chart</h2>
+
+  <div class="callout">
+    18 players • 14 episodes + finale • Winner: Mickey (4-3-2 jury vote)
+  </div>
+
+  <div class="scroll-hint">
+    ⬅️ SCROLL RIGHT TO SEE ALL EPISODES + FINALE ➡️
+  </div>
+
+  <div class="panel">
+    <div class="table-wrapper">
+      <table class="vote-table">
+        <thead>
+          <tr>
+            <th rowspan="2" class="rank-col">Rank</th>
+            <th rowspan="2" class="player-name">Castaway</th>
+            <th>Episode 1</th><th>Episode 2</th><th>Episode 3</th><th>Episode 4</th><th>Episode 5</th><th>Episode 6</th><th>Episode 7</th><th>Episode 8</th><th>Episode 9</th><th>Episode 10</th><th>Episode 11</th><th>Episode 12</th><th>Episode 13</th><th>Episode 14</th><th class="finale-col">Ryan</th><th class="finale-col">Sky</th><th class="winner-col">Mickey</th>
+          </tr>
+          <tr>
+            <th class="eliminated">Leonard</th><th class="eliminated">Ella</th><th class="eliminated">Beardo</th><th class="eliminated">Samey</th><th class="eliminated">Jasmine</th><th class="eliminated">Josee</th><th class="eliminated">Rodney &amp; Topher</th><th class="eliminated">Max</th><th class="eliminated">Shawn</th><th class="eliminated">Blaineley</th><th class="eliminated">Amy</th><th class="eliminated">Dave</th><th class="eliminated">Sugar</th><th class="eliminated">Scarlett</th><th class="finale-col">3rd</th><th class="finale-col">2nd</th><th class="winner-col">Winner</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="winner-row"><td class="rank-col">1</td><td class="player-name">Mickey</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Josee</td><td>Rodney</td><td>Max</td><td>Shawn</td><td>Blaineley</td><td>Amy</td><td>Sugar</td><td>Sugar</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td class="rank-col">2</td><td class="player-name">Sky</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Josee</td><td>Rodney</td><td>Ryan</td><td>—</td><td>Ryan</td><td>Scarlett</td><td>Dave</td><td>Sugar</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td class="rank-col">3</td><td class="player-name">Ryan</td><td>Leonard</td><td>Ella</td><td>Blaineley</td><td>—</td><td>—</td><td>Rodney</td><td>Rodney</td><td>—</td><td>Shawn</td><td>Blaineley</td><td>Amy</td><td>Sugar</td><td>Sugar</td><td>—</td><td>—</td><td>—</td><td>Mickey</td></tr><tr><td class="rank-col">4</td><td class="player-name">Scarlett</td><td>—</td><td>—</td><td>—</td><td>Blaineley</td><td>—</td><td>Rodney</td><td>Topher</td><td>Max</td><td>Shawn</td><td>Ryan</td><td>Dave</td><td>Dave</td><td>Sugar</td><td>—</td><td>Ryan</td><td>—</td><td>—</td></tr><tr><td class="rank-col">5</td><td class="player-name">Sugar</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Rodney</td><td>Topher</td><td>—</td><td>—</td><td>—</td><td>Dave</td><td>Dave</td><td>Sky</td><td>—</td><td>—</td><td>Sky</td><td>—</td></tr><tr><td class="rank-col">6</td><td class="player-name">Dave</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Josee</td><td>Topher</td><td>Max</td><td>Sugar</td><td>Sugar</td><td>—</td><td>Sugar</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Mickey</td></tr><tr><td class="rank-col">7</td><td class="player-name">Amy</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Rodney</td><td>Topher</td><td>Max</td><td>Shawn</td><td>Ryan</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Ryan</td><td>—</td><td>—</td></tr><tr><td class="rank-col">8</td><td class="player-name">Blaineley</td><td>Beardo</td><td>—</td><td>Beardo</td><td>Samey</td><td>Jasmine</td><td>Rodney</td><td>Topher</td><td>Max</td><td>Shawn</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Sky</td><td>—</td></tr><tr><td class="rank-col">9</td><td class="player-name">Shawn</td><td>Leonard</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Rodney</td><td>—</td><td>Ryan</td><td>Sugar</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Mickey</td></tr><tr><td class="rank-col">10</td><td class="player-name">Max</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Josee</td><td>—</td><td>Ryan</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Sky</td><td>—</td></tr><tr><td class="rank-col">11</td><td class="player-name">Topher</td><td>—</td><td>—</td><td>—</td><td>Blaineley</td><td>Jasmine</td><td>—</td><td>Amy</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Mickey</td></tr><tr><td class="rank-col">12</td><td class="player-name">Rodney</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Josee</td><td>Shawn</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td class="rank-col">13</td><td class="player-name">Josee</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td class="rank-col">14</td><td class="player-name">Jasmine</td><td>Leonard</td><td>Ella</td><td>Blaineley</td><td>Blaineley</td><td>Scarlett</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td class="rank-col">15</td><td class="player-name">Samey</td><td>—</td><td>—</td><td>—</td><td>Blaineley</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td class="rank-col">16</td><td class="player-name">Beardo</td><td>Leonard</td><td>Ryan</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td class="rank-col">17</td><td class="player-name">Ella</td><td>Leonard</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td class="rank-col">18</td><td class="player-name">Leonard</td><td>Beardo</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+function showSeason(season) {
+  document.querySelectorAll('.voting-table').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.season-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(`season${season}-table`).classList.add('active');
+  document.querySelectorAll('.season-btn')[season-1].classList.add('active');
+}
+</script>
+
+<div class="footer">Complete voting charts with finales • Drag scrollbar to see all episodes • 5 seasons • 58 players</div>
+  </div>
+<!-- SITE FOOTER START -->
+<footer class="siteFooter">
+  <div class="footerInner">
+    <div class="footerTitle">DC Franchise Database</div>
+    <div class="footerSub">Static archive • 5 seasons • 58 players • Icons: name.png</div>
+  </div>
+</footer>
+<!-- SITE FOOTER END -->
+</body>
+</html>

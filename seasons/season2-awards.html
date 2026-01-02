@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="en" data-root="..">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Season 2 Awards</title>
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+<!-- SITE HEADER START -->
+<header class="modern-header" id="modernHeader">
+  <div class="header-container">
+    <!-- Top Bar -->
+    <div class="header-top">
+      <a href="index.html" class="brand-section" aria-label="Go to home">
+        <div class="brand-icon">
+          <span class="brand-logo-text">⚡</span>
+        </div>
+        <div class="brand-content">
+          <h1>DC <span class="brand-gradient">Franchise</span> Database</h1>
+          <p class="brand-subtitle">Season <span id="currentSeasonNum">5</span> Live • Click to Explore</p>
+        </div>
+      </a>
+
+      <div class="stats-badge">
+        <div class="stats-main"><span id="totalSeasons">5</span> Seasons • <span id="totalPlayers">58</span> Players</div>
+        <div class="stats-sub">Icons: <span id="iconFormat">name.png</span></div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="header-nav" aria-label="Primary navigation">
+      <ul class="nav-list">
+        <li class="nav-item">
+          <a href="index.html" class="nav-link" data-page="index">
+            <span class="nav-icon">🏠</span>
+            <span>Home</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="current-season.html" class="nav-link" data-page="current-season">
+            <span class="nav-icon">📊</span>
+            <span>Current Season</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="voting-analytics.html" class="nav-link" data-page="voting-analytics">
+            <span class="nav-icon">🧾</span>
+            <span>Voting Analytics</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="franchise.html" class="nav-link" data-page="franchise">
+            <span class="nav-icon">🏛️</span>
+            <span>Franchise</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="rankings.html" class="nav-link" data-page="rankings">
+            <span class="nav-icon">🏆</span>
+            <span>Rankings</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="seasons.html" class="nav-link" data-page="seasons">
+            <span class="nav-icon">🗂️</span>
+            <span>Seasons</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="devotees.html" class="nav-link" data-page="devotees">
+            <span class="nav-icon">👥</span>
+            <span>Players</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="awards.html" class="nav-link" data-page="awards">
+            <span class="nav-icon">🏅</span>
+            <span>Awards</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<script>
+(function() {
+  // Load site config and update header stats
+  if (window.SITE_CONFIG) {
+    document.getElementById('totalSeasons').textContent = window.SITE_CONFIG.seasons;
+    document.getElementById('totalPlayers').textContent = window.SITE_CONFIG.players;
+    document.getElementById('currentSeasonNum').textContent = window.SITE_CONFIG.currentSeason;
+    document.getElementById('iconFormat').textContent = window.SITE_CONFIG.iconFormat;
+  }
+
+  // Scroll behavior
+  const header = document.getElementById('modernHeader');
+  if (!header) return;
+  
+  window.addEventListener('scroll', () => {
+    const currentScroll = window.pageYOffset;
+    if (currentScroll > 20) {
+      header.classList.add('scrolled');
+    } else {
+      header.classList.remove('scrolled');
+    }
+  }, { passive: true });
+
+  // Active page highlighting
+  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+  const navLinks = document.querySelectorAll('.nav-link');
+  
+  navLinks.forEach(link => {
+    const linkPage = link.getAttribute('href');
+    if (linkPage === currentPage || (currentPage === '' && linkPage === 'index.html')) {
+      link.classList.add('active');
+    }
+  });
+
+  // Path resolution for nested folders
+  const root = (document.documentElement.dataset.root || document.body.dataset.root || ".").replace(/\/+$/, "");
+  
+  if (root !== ".") {
+    const allLinks = header.querySelectorAll('a[href]');
+    allLinks.forEach(link => {
+      const href = link.getAttribute('href');
+      if (href && !href.startsWith('http') && !href.startsWith('#')) {
+        link.setAttribute('href', root + '/' + href);
+      }
+    });
+  }
+})();
+</script>
+<!-- SITE HEADER END -->
+
+
+
+
+
+  <div class="container">
+    
+    <div class="topbar">
+      <div>
+        <div class="brand">DC <span>Franchise</span> Database</div>
+        <div class="meta">Local static website • Click seasons + player profiles • Search + sort included</div>
+      </div>
+      <div class="meta">Season 2 Awards</div>
+    </div>
+    <div class="tabs"><a class="tab" href="../current-season.html">📊 Current Season Analytics</a><a class="tab" href="../voting-analytics.html">🗳️ Voting Chart Analytics</a><a class="tab" href="../franchise.html">🏛️ Franchise Analytics</a><a class="tab" href="../rankings.html">🏆 Player Rankings</a><a class="tab" href="../seasons.html">📚 Seasons</a><a class="tab" href="../devotees.html">👥 Devotees</a><a class="tab active" href="../awards.html">🥇 Season Awards</a></div>
+    
+<div class="hero">
+  <h1>🥇 Season 2 Awards</h1>
+  <p>Celebrating the standout players and moments from Total Drama 2</p>
+</div>
+
+<div class="kpi-grid">
+  <div class="kpi">
+    <h3>👑 Winner</h3>
+    <ul>
+      <li><b>Duncan</b></li>
+      <li class="small">Survived constant targeting</li>
+      <li class="small">Won immunity when it mattered</li>
+      <li class="small">Earned respect from allies and enemies</li>
+      <li class="small">Embodied endurance over control</li>
+    </ul>
+  </div>
+
+  <div class="kpi">
+    <h3>🌟 Fan Favorite</h3>
+    <ul>
+      <li><b>Alejandro</b></li>
+      <li class="small">Flashiest strategist of the season</li>
+      <li class="small">Always in the center of conflict</li>
+      <li class="small">Loved by viewers even when distrusted in-game</li>
+      <li class="small">Didn't win the jury — won the audience</li>
+    </ul>
+  </div>
+
+  <div class="kpi">
+    <h3>🧠 Best Strategic Player</h3>
+    <ul>
+      <li><b>Alejandro</b></li>
+      <li class="small">Multiple alliances across phases</li>
+      <li class="small">Correct reads on timing and targets</li>
+      <li class="small">Used protection without exposing himself</li>
+      <li class="small">Lost because jury wanted blood, not polish</li>
+    </ul>
+  </div>
+
+  <div class="kpi">
+    <h3>🤝 Best Social Game</h3>
+    <ul>
+      <li><b>Lindsay</b></li>
+      <li class="small">Strong bonds across every phase</li>
+      <li class="small">Rarely targeted despite lacking immunity wins</li>
+      <li class="small">Trusted by nearly everyone</li>
+      <li class="small">Too clean, too kind for jury votes</li>
+    </ul>
+  </div>
+</div>
+
+<div class="kpi-grid">
+  <div class="kpi">
+    <h3>🛡 Best Underdog</h3>
+    <ul>
+      <li><b>Duncan</b></li>
+      <li class="small">Frequently on wrong side of numbers</li>
+      <li class="small">Never collapsed socially</li>
+      <li class="small">Won without idols or twists</li>
+      <li class="small">"You couldn't kill him"</li>
+    </ul>
+  </div>
+
+  <div class="kpi">
+    <h3>🎭 Biggest Villain</h3>
+    <ul>
+      <li><b>Heather</b></li>
+      <li class="small">Weaponized secrecy</li>
+      <li class="small">Stirred paranoia before exit</li>
+      <li class="small">Left emotional damage behind</li>
+      <li class="small">Gone early — never forgotten</li>
+    </ul>
+  </div>
+
+  <div class="kpi">
+    <h3>💣 Most Chaotic Player</h3>
+    <ul>
+      <li><b>Ezekiel</b></li>
+      <li class="small">Idol magnet</li>
+      <li class="small">Flip risks everywhere</li>
+      <li class="small">Personal grudges shaped votes</li>
+      <li class="small">You never knew which Ezekiel was showing up</li>
+    </ul>
+  </div>
+
+  <div class="kpi">
+    <h3>😬 Messiest Feud</h3>
+    <ul>
+      <li><b>DJ vs Ezekiel</b></li>
+      <li class="small">Mutual extreme hatred</li>
+      <li class="small">Targeted each other repeatedly</li>
+      <li class="small">Defined multiple episodes</li>
+      <li class="small">No resolution. Just smoke.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="kpi-grid">
+  <div class="kpi">
+    <h3>💔 Biggest Betrayal</h3>
+    <ul>
+      <li><b>Alejandro voting out Lindsay's allies</b></li>
+      <li class="small">Strategic</li>
+      <li class="small">Cold</li>
+      <li class="small">Perfectly timed</li>
+      <li class="small">Cost him jury votes — gained him control</li>
+    </ul>
+  </div>
+
+  <div class="kpi">
+    <h3>🧱 Best Physical Performer</h3>
+    <ul>
+      <li><b>Alejandro & Duncan (Tie)</b></li>
+      <li class="small">Alejandro: consistency (5 immunities)</li>
+      <li class="small">Duncan: clutch wins</li>
+      <li class="small">Different styles. Same impact.</li>
+    </ul>
+  </div>
+
+  <div class="kpi">
+    <h3>🎯 Most Clutch Moment</h3>
+    <ul>
+      <li><b>Alejandro winning final immunity</b></li>
+      <li class="small">Controlled Final Tribal setup</li>
+      <li class="small">Forced hard choices</li>
+      <li class="small">Cemented his legacy — even in loss</li>
+    </ul>
+  </div>
+
+  <div class="kpi">
+    <h3>🕊 Most Loyal Player</h3>
+    <ul>
+      <li><b>Beth</b></li>
+      <li class="small">Rarely flipped</li>
+      <li class="small">Stayed true even when risky</li>
+      <li class="small">Cast the only Lindsay jury vote</li>
+    </ul>
+  </div>
+</div>
+
+<div class="kpi-grid">
+  <div class="kpi">
+    <h3>😵 Biggest Meltdown</h3>
+    <ul>
+      <li><b>Alejandro (Episode 7)</b></li>
+      <li class="small">Emotional crack</li>
+      <li class="small">Targeted Trent openly</li>
+      <li class="small">Almost cost him the game</li>
+      <li class="small">Even the best strategists bleed</li>
+    </ul>
+  </div>
+
+  <div class="kpi">
+    <h3>📉 Most Tragic Exit</h3>
+    <ul>
+      <li><b>Gwen</b></li>
+      <li class="small">Eliminated after tie + revote</li>
+      <li class="small">Targeted by both alliances</li>
+      <li class="small">Had social capital — not protection</li>
+    </ul>
+  </div>
+
+  <div class="kpi">
+    <h3>🧠 Quietest Threat</h3>
+    <ul>
+      <li><b>Lindsay</b></li>
+      <li class="small">Always in the numbers</li>
+      <li class="small">Rarely blamed</li>
+      <li class="small">Never fully exposed</li>
+      <li class="small">The game noticed too late</li>
+    </ul>
+  </div>
+
+  <div class="kpi">
+    <h3>🎬 Season MVP (Narrative Impact)</h3>
+    <ul>
+      <li><b>Duncan</b></li>
+      <li class="small">Central to conflicts</li>
+      <li class="small">Final winner</li>
+      <li class="small">Most juror respect</li>
+      <li class="small">If Season 2 were a story — Duncan is the spine</li>
+    </ul>
+  </div>
+</div>
+
+<div style="margin-top:20px; text-align:center;">
+  <a href="../seasons/season2.html" class="tab">← Back to Season 2</a>
+  <a href="../seasons.html" class="tab">All Seasons</a>
+</div>
+
+<div class="footer">Season 2 Awards • All pages are local</div>
+  </div>
+
+
+
+<!-- SITE FOOTER START -->
+<footer class="siteFooter">
+  <div class="footerInner">
+    <div class="footerTitle">DC Franchise Database</div>
+    <div class="footerSub">Static archive • 5 seasons • 58 players • Icons: name.png</div>
+  </div>
+</footer>
+<!-- SITE FOOTER END -->
+</body>
+</html>

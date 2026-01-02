@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="en" data-root="..">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Season 4 Awards</title>
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+<!-- SITE HEADER START -->
+<header class="modern-header" id="modernHeader">
+  <div class="header-container">
+    <!-- Top Bar -->
+    <div class="header-top">
+      <a href="index.html" class="brand-section" aria-label="Go to home">
+        <div class="brand-icon">
+          <span class="brand-logo-text">⚡</span>
+        </div>
+        <div class="brand-content">
+          <h1>DC <span class="brand-gradient">Franchise</span> Database</h1>
+          <p class="brand-subtitle">Season <span id="currentSeasonNum">5</span> Live • Click to Explore</p>
+        </div>
+      </a>
+
+      <div class="stats-badge">
+        <div class="stats-main"><span id="totalSeasons">5</span> Seasons • <span id="totalPlayers">58</span> Players</div>
+        <div class="stats-sub">Icons: <span id="iconFormat">name.png</span></div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="header-nav" aria-label="Primary navigation">
+      <ul class="nav-list">
+        <li class="nav-item">
+          <a href="index.html" class="nav-link" data-page="index">
+            <span class="nav-icon">🏠</span>
+            <span>Home</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="current-season.html" class="nav-link" data-page="current-season">
+            <span class="nav-icon">📊</span>
+            <span>Current Season</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="voting-analytics.html" class="nav-link" data-page="voting-analytics">
+            <span class="nav-icon">🧾</span>
+            <span>Voting Analytics</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="franchise.html" class="nav-link" data-page="franchise">
+            <span class="nav-icon">🏛️</span>
+            <span>Franchise</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="rankings.html" class="nav-link" data-page="rankings">
+            <span class="nav-icon">🏆</span>
+            <span>Rankings</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="seasons.html" class="nav-link" data-page="seasons">
+            <span class="nav-icon">🗂️</span>
+            <span>Seasons</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="devotees.html" class="nav-link" data-page="devotees">
+            <span class="nav-icon">👥</span>
+            <span>Players</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="awards.html" class="nav-link" data-page="awards">
+            <span class="nav-icon">🏅</span>
+            <span>Awards</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<script>
+(function() {
+  // Load site config and update header stats
+  if (window.SITE_CONFIG) {
+    document.getElementById('totalSeasons').textContent = window.SITE_CONFIG.seasons;
+    document.getElementById('totalPlayers').textContent = window.SITE_CONFIG.players;
+    document.getElementById('currentSeasonNum').textContent = window.SITE_CONFIG.currentSeason;
+    document.getElementById('iconFormat').textContent = window.SITE_CONFIG.iconFormat;
+  }
+
+  // Scroll behavior
+  const header = document.getElementById('modernHeader');
+  if (!header) return;
+  
+  window.addEventListener('scroll', () => {
+    const currentScroll = window.pageYOffset;
+    if (currentScroll > 20) {
+      header.classList.add('scrolled');
+    } else {
+      header.classList.remove('scrolled');
+    }
+  }, { passive: true });
+
+  // Active page highlighting
+  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+  const navLinks = document.querySelectorAll('.nav-link');
+  
+  navLinks.forEach(link => {
+    const linkPage = link.getAttribute('href');
+    if (linkPage === currentPage || (currentPage === '' && linkPage === 'index.html')) {
+      link.classList.add('active');
+    }
+  });
+
+  // Path resolution for nested folders
+  const root = (document.documentElement.dataset.root || document.body.dataset.root || ".").replace(/\/+$/, "");
+  
+  if (root !== ".") {
+    const allLinks = header.querySelectorAll('a[href]');
+    allLinks.forEach(link => {
+      const href = link.getAttribute('href');
+      if (href && !href.startsWith('http') && !href.startsWith('#')) {
+        link.setAttribute('href', root + '/' + href);
+      }
+    });
+  }
+})();
+</script>
+<!-- SITE HEADER END -->
+
+
+
+
+
+  <div class="container">
+    
+    <div class="topbar">
+      <div>
+        <div class="brand">DC <span>Franchise</span> Database</div>
+        <div class="meta">Season 4 Awards</div>
+      </div>
+      <div class="meta">Season count: 4 • Player count: 40</div>
+    </div>
+    <div class="tabs"><a class="tab" href="../current-season.html">📊 Current Season Analytics</a><a class="tab" href="../voting-analytics.html">🗳️ Voting Chart Analytics</a><a class="tab" href="../franchise.html">🏛️ Franchise Analytics</a><a class="tab" href="../rankings.html">🏆 Player Rankings</a><a class="tab" href="../seasons.html">📚 Seasons</a><a class="tab" href="../devotees.html">👥 Devotees</a><a class="tab active" href="../awards.html">🥇 Season Awards</a></div>
+    
+<div class="hero">
+  <h1>🏆 Season 4 Awards</h1>
+  <p>Edge of Extinction • Strategy defeats social gameplay</p>
+</div>
+
+<div class="callout">
+  <b>Winner:</b> Alejandro (7-6-1 closest finale ever!) | <b>Fan Favorite:</b> Jo
+</div>
+
+<h2>🏆 Major Awards</h2>
+
+<div class="kpi-grid">
+  <div class="kpi">
+    <div class="badge gold">🏆 WINNER</div>
+    <h3>Alejandro</h3>
+    <p><b>7-6-1 Victory (Closest Ever!)</b></p>
+    <p class="small">Strategic mastermind •  3rd finals appearance • 2 immunities + fire-making win • Survived constant targeting • "Three finals, one crown"</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge purple">👑 FAN FAVORITE</div>
+    <h3>Jo</h3>
+    <p><b>10th Place</b></p>
+    <p class="small">Most entertaining chaos agent • 3 extreme hatreds (Mike, Cameron, Zoey) • Challenge competitor spirit • Memorable conflicts</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge good">🧠 BEST STRATEGIC</div>
+    <h3>Alejandro</h3>
+    <p><b>Winner</b></p>
+    <p class="small">Multiple alliance control • Fire-making champion • Adapted through chaos • Respected by strategic jury members</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge good">😊 BEST SOCIAL</div>
+    <h3>Zoey</h3>
+    <p><b>Runner-Up (6 votes)</b></p>
+    <p class="small">3 UNBREAKABLE BONDS AT ONCE! (Gwen, Scott, Alejandro) • Most socially connected player ever • Strong bonds everywhere</p>
+  </div>
+</div>
+
+<h2>🎯 Performance Awards</h2>
+
+<div class="kpi-grid">
+  <div class="kpi">
+    <div class="badge good">💪 BEST PHYSICAL</div>
+    <h3>Gwen</h3>
+    <p><b>4 Consecutive Immunities!</b></p>
+    <p class="small">Episodes 11-14 • Most dominant immunity streak in franchise history • Lost fire-making to Alejandro</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge good">🔥 MOST CLUTCH</div>
+    <h3>Alejandro</h3>
+    <p><b>Fire-Making Champion</b></p>
+    <p class="small">Beat challenge beast Gwen at Final 4 • Clutch when it mattered most • Secured his finals spot</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge good">🎯 PERFECT IDOL PLAY</div>
+    <h3>Scott</h3>
+    <p><b>9 Tribals Patience!</b></p>
+    <p class="small">Held idol from Ep 6 to Ep 14 (9 tribals!) • Played perfectly at Final 5 • 3 votes cancelled • Franchise record patience</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge good">🎯 PERFECT IDOL PLAY #2</div>
+    <h3>Sierra</h3>
+    <p><b>10 Votes Cancelled!</b></p>
+    <p class="small">EoE returnee idol played Episode 7 • Saved herself from consensus boot • Tied for most votes cancelled</p>
+  </div>
+</div>
+
+<h2>🎭 Character Awards</h2>
+
+<div class="kpi-grid">
+  <div class="kpi">
+    <div class="badge">😈 BIGGEST VILLAIN</div>
+    <h3>Sierra</h3>
+    <p><b>4 Extreme Hatreds</b></p>
+    <p class="small">Noah, Harold, Duncan, Gwen • Consensus target Episode 8 • 8-4 elimination after using idol</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge">🌀 MOST CHAOTIC</div>
+    <h3>Jo</h3>
+    <p><b>Fan Favorite Chaos</b></p>
+    <p class="small">3 extreme hatreds • Multiple meltdowns • You never knew what Jo would do • Entertaining to watch</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge">🤐 QUIETEST THREAT</div>
+    <h3>Scott</h3>
+    <p><b>Perfect Under-Radar</b></p>
+    <p class="small">Held 2 idols • Unbreakable with Zoey • Never targeted until Final 5 • Ultimate UTR game</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge purple">⭐ SEASON MVP</div>
+    <h3>Alejandro</h3>
+    <p><b>Winner</b></p>
+    <p class="small">Strategic protagonist • 3rd finals appearance • Won despite meltdowns • The king finally got his throne</p>
+  </div>
+</div>
+
+<h2>💔 Unfortunate Awards</h2>
+
+<div class="kpi-grid">
+  <div class="kpi">
+    <div class="badge bad">💥 BIGGEST MELTDOWN</div>
+    <h3>Alejandro</h3>
+    <p><b>Episodes 10 & 14</b></p>
+    <p class="small">Two major meltdowns • Alliance loyalty dropped • Still won despite emotional cracks</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge bad">😢 MOST TRAGIC EXIT</div>
+    <h3>Geoff</h3>
+    <p><b>Episode 13</b></p>
+    <p class="small">Won EoE return challenge • Immediately re-eliminated same episode • Voted out by Zoey AGAIN (4-2) • 29 votes against (franchise record!)</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge bad">🎲 WORST IDOL PLAY</div>
+    <h3>Anne Maria</h3>
+    <p><b>Episode 1</b></p>
+    <p class="small">Found idol Episode 1 • Played on Zoey who received ZERO votes • Wasted her only protection immediately</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge bad">😰 WASTED ADVANTAGE</div>
+    <h3>Courtney</h3>
+    <p><b>Episode 5</b></p>
+    <p class="small">Received extra vote from EoE • Didn't use it when voting • Could have tied 3-3 but lost 3-2</p>
+  </div>
+</div>
+
+<h2>💔 Betrayal Awards</h2>
+
+<div class="kpi-grid">
+  <div class="kpi">
+    <div class="badge bad">💔 BIGGEST BETRAYAL</div>
+    <h3>Zoey Voting Out Geoff TWICE</h3>
+    <p><b>Episodes 10 & 13</b></p>
+    <p class="small">Unbreakable relationship • Voted him out Episode 10 (5-3) • He returned Episode 13 • She voted him out AGAIN (4-2) • He still voted for her at FTC!</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge bad">💔 SECOND BIGGEST BETRAYAL</div>
+    <h3>Zoey Choosing Scott Over Gwen</h3>
+    <p><b>Episode 14 (Finale)</b></p>
+    <p class="small">Won final immunity • Saved Scott (unbreakable) • Forced Gwen (unbreakable) vs Alejandro fire-making • Gwen lost</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge bad">💔 ALLIANCE BETRAYAL</div>
+    <h3>Alejandro Letting Noah Get Eliminated</h3>
+    <p><b>Episode 9 Part 2</b></p>
+    <p class="small">Noah ↔ Alejandro unbreakable • Alejandro voted with Alliance #2 for Gwen • Noah eliminated 5-4 • Lost his unbreakable partner</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge bad">💔 UNBREAKABLE BROKEN</div>
+    <h3>Harold Voting Against Gwen</h3>
+    <p><b>Episode 9 Part 2</b></p>
+    <p class="small">Harold ↔ Gwen unbreakable • Both had meltdowns • Alliance #1 dissolved • Harold voted Gwen (survived 4-4-2)</p>
+  </div>
+</div>
+
+<h2>🎬 Edge of Extinction Awards</h2>
+
+<div class="kpi-grid">
+  <div class="kpi">
+    <div class="badge purple">🏝️ EoE CHAMPION</div>
+    <h3>Sierra</h3>
+    <p><b>First Return Winner</b></p>
+    <p class="small">Eliminated Ep 3 (8-2) • Won return challenge Ep 6 • Perfect idol play Ep 7 (10 votes cancelled!) • Re-eliminated Ep 8</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge">🏝️ TRAGIC RETURN</div>
+    <h3>Geoff</h3>
+    <p><b>Same-Episode Elimination</b></p>
+    <p class="small">Won return challenge Ep 13 • Re-eliminated same episode (4-2) • Shortest return stint possible</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge">🏝️ ONLY QUITTER</div>
+    <h3>Dakota</h3>
+    <p><b>Episode 6</b></p>
+    <p class="small">First boot (7-2) • Quit EoE Episode 6 • "Has nothing left to give" • S3 Fan Favorite couldn't recover</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge">🏝️ MOST EXHAUSTED</div>
+    <h3>5-Way Tie</h3>
+    <p><b>Anne Maria, Courtney, Emma, Heather, Sierra</b></p>
+    <p class="small">All completely exhausted by end • Half of final EoE population maxed out • Still stayed for return chance</p>
+  </div>
+</div>
+
+<h2>🏆 Special Awards</h2>
+
+<div class="kpi-grid">
+  <div class="kpi">
+    <div class="badge good">👑 SOCIAL QUEEN</div>
+    <h3>Zoey</h3>
+    <p><b>3 Unbreakable Bonds!</b></p>
+    <p class="small">Unprecedented social dominance • Unbreakable with Gwen, Scott, Alejandro (later downgraded) • Connected to everyone in Final 5</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge good">🎯 MOST TARGETED</div>
+    <h3>Geoff</h3>
+    <p><b>29 Votes Against</b></p>
+    <p class="small">Franchise record! • Voted out twice (Ep 10, Ep 13) • Unbreakable partner Zoey voted him out both times</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge good">🛡️ NEVER VOTED</div>
+    <h3>Zoey</h3>
+    <p><b>Only 1 Vote (Cancelled!)</b></p>
+    <p class="small">Received 1 vote entire season • Anne Maria's idol cancelled it Episode 1 • Made finals with zero votes against</p>
+  </div>
+  
+  <div class="kpi">
+    <div class="badge">🔥 TRIPLE IDOL TRIBAL</div>
+    <h3>Episode 5 Part 2</h3>
+    <p><b>Historic Moment!</b></p>
+    <p class="small">Noah, Lightning, Zoey ALL played idols • All 9 votes cancelled • Revote required • Most chaotic tribal ever</p>
+  </div>
+</div>
+
+<h2>📊 Statistical Leaders</h2>
+
+<div class="panel">
+  <h3>Challenge Dominance</h3>
+  <ul>
+    <li><b>Most Total Wins:</b> Gwen & Zoey (4 each)</li>
+    <li><b>Most Immunity Wins:</b> Gwen (4 consecutive!)</li>
+    <li><b>Longest Streak:</b> Gwen (4 in a row - Episodes 11-14)</li>
+    <li><b>Fire-Making Winner:</b> Alejandro (beat Gwen)</li>
+  </ul>
+</div>
+
+<div class="panel">
+  <h3>Social Game</h3>
+  <ul>
+    <li><b>Fewest Votes Against:</b> Zoey (1, cancelled by idol)</li>
+    <li><b>Most Votes Against:</b> Geoff (29 total - franchise record!)</li>
+    <li><b>Most Jury Votes:</b> Alejandro (7 - winner)</li>
+    <li><b>Most Unbreakable Bonds:</b> Zoey (3 at once!)</li>
+  </ul>
+</div>
+
+<div class="panel">
+  <h3>Strategic Game</h3>
+  <ul>
+    <li><b>Idols Found:</b> 6 total (Anne Maria, Noah, Zoey, Lightning, Scott, Sierra)</li>
+    <li><b>Perfect Idol Plays:</b> Scott (3 votes), Sierra (10 votes), Zoey (7 votes)</li>
+    <li><b>Longest Idol Hold:</b> Scott (9 tribals - franchise record!)</li>
+    <li><b>Worst Idol Play:</b> Anne Maria (0 votes on Zoey)</li>
+    <li><b>Most Alliances:</b> 4 active at once (Episode 9)</li>
+  </ul>
+</div>
+
+<div class="panel">
+  <h3>Edge of Extinction Records</h3>
+  <ul>
+    <li><b>Peak Population:</b> 12 players (66% of cast)</li>
+    <li><b>Return Winners:</b> Sierra (Ep 6), Geoff (Ep 13)</li>
+    <li><b>Only Quit:</b> Dakota</li>
+    <li><b>Same-Episode Return:</b> Geoff (returned & eliminated Ep 13)</li>
+    <li><b>Most Exhausted:</b> 5 players completely exhausted</li>
+  </ul>
+</div>
+
+<div class="panel">
+  <h3>Extreme Records</h3>
+  <ul>
+    <li><b>Most Extreme Hatreds:</b> Sierra (4 - Noah, Harold, Duncan, Gwen)</li>
+    <li><b>Triple Idol Tribal:</b> Episode 5 Part 2 (all 9 votes cancelled)</li>
+    <li><b>Closest Finale:</b> 7-6-1 (smallest margin ever!)</li>
+    <li><b>Largest Jury:</b> 14 members (franchise record)</li>
+    <li><b>Geoff Voted Out Twice:</b> By Zoey both times</li>
+  </ul>
+</div>
+
+<h2>🎬 Season Legacy</h2>
+
+<div class="callout">
+  <h3>The Season Where Strategy Defeated Social Gameplay</h3>
+  <p>Season 4 will be remembered for:</p>
+  <ul>
+    <li><b>Alejandro's Redemption Arc:</b> 3rd finals appearance (2nd S1, 2nd S2, Won S4!) - The king finally got his throne</li>
+    <li><b>Gwen's Challenge Dominance:</b> 4 consecutive immunities (franchise record) but lost fire-making</li>
+    <li><b>Zoey's Social Mastery:</b> 3 unbreakable bonds at once (unprecedented) but lost to strategy 6-7</li>
+    <li><b>Scott's Patience:</b> Held idol 9 tribals before perfect play (franchise record)</li>
+    <li><b>Edge of Extinction Chaos:</b> 12 people (66% of cast!), 2 returns, Geoff's same-episode elimination</li>
+    <li><b>Previous Winners Cursed:</b> Emma (S3 winner) eliminated Ep 2, Duncan (S2 winner) eliminated Ep 12</li>
+    <li><b>Closest Finale Ever:</b> 7-6-1 vote (smallest margin in franchise history)</li>
+    <li><b>Triple Idol Tribal:</b> All 9 votes cancelled (Episode 5 Part 2)</li>
+  </ul>
+</div>
+
+<div class="footer">
+  <a href="../awards.html">← All Season Awards</a> | 
+  <a href="season4.html">Season 4 Overview →</a>
+</div>
+
+  </div>
+
+
+
+<!-- SITE FOOTER START -->
+<footer class="siteFooter">
+  <div class="footerInner">
+    <div class="footerTitle">DC Franchise Database</div>
+    <div class="footerSub">Static archive • 5 seasons • 58 players • Icons: name.png</div>
+  </div>
+</footer>
+<!-- SITE FOOTER END -->
+</body>
+</html>

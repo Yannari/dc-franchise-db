@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="en" data-root=".">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Current Season — Season 5</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<!-- SITE HEADER START -->
+<header class="modern-header" id="modernHeader">
+  <div class="header-container">
+    <!-- Top Bar -->
+    <div class="header-top">
+      <a href="index.html" class="brand-section" aria-label="Go to home">
+        <div class="brand-icon">
+          <span class="brand-logo-text">⚡</span>
+        </div>
+        <div class="brand-content">
+          <h1>DC <span class="brand-gradient">Franchise</span> Database</h1>
+          <p class="brand-subtitle">Season <span id="currentSeasonNum">5</span> Live • Click to Explore</p>
+        </div>
+      </a>
+
+      <div class="stats-badge">
+        <div class="stats-main"><span id="totalSeasons">5</span> Seasons • <span id="totalPlayers">58</span> Players</div>
+        <div class="stats-sub">Icons: <span id="iconFormat">name.png</span></div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="header-nav" aria-label="Primary navigation">
+      <ul class="nav-list">
+        <li class="nav-item">
+          <a href="index.html" class="nav-link" data-page="index">
+            <span class="nav-icon">🏠</span>
+            <span>Home</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="current-season.html" class="nav-link" data-page="current-season">
+            <span class="nav-icon">📊</span>
+            <span>Current Season</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="voting-analytics.html" class="nav-link" data-page="voting-analytics">
+            <span class="nav-icon">🧾</span>
+            <span>Voting Analytics</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="franchise.html" class="nav-link" data-page="franchise">
+            <span class="nav-icon">🏛️</span>
+            <span>Franchise</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="rankings.html" class="nav-link" data-page="rankings">
+            <span class="nav-icon">🏆</span>
+            <span>Rankings</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="seasons.html" class="nav-link" data-page="seasons">
+            <span class="nav-icon">🗂️</span>
+            <span>Seasons</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="devotees.html" class="nav-link" data-page="devotees">
+            <span class="nav-icon">👥</span>
+            <span>Players</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="awards.html" class="nav-link" data-page="awards">
+            <span class="nav-icon">🏅</span>
+            <span>Awards</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<script>
+(function() {
+  // Load site config and update header stats
+  if (window.SITE_CONFIG) {
+    document.getElementById('totalSeasons').textContent = window.SITE_CONFIG.seasons;
+    document.getElementById('totalPlayers').textContent = window.SITE_CONFIG.players;
+    document.getElementById('currentSeasonNum').textContent = window.SITE_CONFIG.currentSeason;
+    document.getElementById('iconFormat').textContent = window.SITE_CONFIG.iconFormat;
+  }
+
+  // Scroll behavior
+  const header = document.getElementById('modernHeader');
+  if (!header) return;
+  
+  window.addEventListener('scroll', () => {
+    const currentScroll = window.pageYOffset;
+    if (currentScroll > 20) {
+      header.classList.add('scrolled');
+    } else {
+      header.classList.remove('scrolled');
+    }
+  }, { passive: true });
+
+  // Active page highlighting
+  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+  const navLinks = document.querySelectorAll('.nav-link');
+  
+  navLinks.forEach(link => {
+    const linkPage = link.getAttribute('href');
+    if (linkPage === currentPage || (currentPage === '' && linkPage === 'index.html')) {
+      link.classList.add('active');
+    }
+  });
+
+  // Path resolution for nested folders
+  const root = (document.documentElement.dataset.root || document.body.dataset.root || ".").replace(/\/+$/, "");
+  
+  if (root !== ".") {
+    const allLinks = header.querySelectorAll('a[href]');
+    allLinks.forEach(link => {
+      const href = link.getAttribute('href');
+      if (href && !href.startsWith('http') && !href.startsWith('#')) {
+        link.setAttribute('href', root + '/' + href);
+      }
+    });
+  }
+})();
+</script>
+<!-- SITE HEADER END -->
+
+  <div class="container">
+  <div class="hero">
+    <h1>📊 Season 5: Rescue Island</h1>
+    <p>Current Season Analytics • Winner: Mickey</p>
+  </div>
+
+  <div class="callout">
+    <b>CURRENT SEASON:</b> Season 5: Rescue Island (18 players, 14 episodes) |
+    <b>WINNER:</b> <a href="player.html?player=mickey">Mickey</a> (3-3-2 tie → tiebreak) |
+    <b>FAN FAVORITE:</b> <a href="player.html?player=ryan">Ryan</a>
+  </div>
+
+  <div class="section-title">
+    <h2>Season Overview</h2>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi">
+      <h3>Season Details</h3>
+      <ul>
+        <li><b>Season:</b> 5 (Total Drama: Rescue Island)</li>
+        <li><b>Cast:</b> 18 players</li>
+        <li><b>Format:</b> 3 tribes (Belo / Lulu / Reba)</li>
+        <li><b>Key twists:</b> tribe re-draw (Ep 4) • earn-the-merge split (Ep 6) • split tribal (Ep 7) • auction lose-a-vote (Ep 8) • journey vote-loss (Ep 9) • final 4 fire-making</li>
+      </ul>
+    </div>
+
+    <div class="kpi">
+      <h3>Final 3</h3>
+      <ul>
+        <li><b>Winner:</b> <a href="player.html?player=mickey">Mickey</a></li>
+        <li><b>Runner-Up:</b> <a href="player.html?player=sky">Sky</a></li>
+        <li><b>Third Place:</b> <a href="player.html?player=ryan">Ryan</a></li>
+        <li><b>FTC:</b> 3–3–2 tie → Ryan breaks tie for Mickey</li>
+      </ul>
+    </div>
+
+    <div class="kpi">
+      <h3>Key Players</h3>
+      <ul>
+        <li><b>Fan Favorite:</b> <a href="player.html?player=ryan">Ryan</a></li>
+        <li><b>Challenge Beast:</b> <a href="player.html?player=sky">Sky</a> (4 total wins, 3 immunities)</li>
+        <li><b>Strategic #1:</b> <a href="player.html?player=scarlett">Scarlett</a> (best strategic ranking)</li>
+        <li><b>Quiet Threat:</b> <a href="player.html?player=mickey">Mickey</a> (0 votes against all season)</li>
+      </ul>
+    </div>
+
+    <div class="kpi">
+      <h3>Signature Moves</h3>
+      <ul>
+        <li><b>KIP Theft:</b> <a href="player.html?player=rodney">Rodney</a> steals <a href="player.html?player=josee">Josee</a>'s idol (Earn-the-Merge chaos)</li>
+        <li><b>Safety Without Power:</b> <a href="player.html?player=max">Max</a> leaves Tribal, forces a redirect boot</li>
+        <li><b>Idol patience:</b> <a href="player.html?player=sky">Sky</a>'s F6 idol play flips the endgame</li>
+        <li><b>Fire-making:</b> <a href="player.html?player=ryan">Ryan</a> wins the duel and becomes kingmaker</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-title">
+    <h2>Episode Progression</h2>
+  </div>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Episode</th>
+        <th>Eliminated</th>
+        <th>Vote</th>
+        <th>Key Events</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td><a href="player.html?player=leonard"><b>Leonard</b></a></td>
+        <td>5-2</td>
+        <td>Opening “keep tribe strong” boot • Shawn casts a secret vote at Tribal</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td><a href="player.html?player=ella"><b>Ella</b></a></td>
+        <td>2-1</td>
+        <td>Vote-loss chaos: Blaineley sacrifices her vote, Ella plays SITD (Not Safe)</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td><a href="player.html?player=beardo"><b>Beardo</b></a></td>
+        <td>1-0 (effective)</td>
+        <td>Blaineley plays idol + Inheritance • Beardo SITD removes his vote</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td><a href="player.html?player=samey"><b>Samey</b></a></td>
+        <td>4★-1</td>
+        <td><b>Random tribe re-draw</b> into new 3 tribes • idol negation chaos</td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td><a href="player.html?player=jasmine"><b>Jasmine</b></a></td>
+        <td>2-1</td>
+        <td>Simple numbers vote • tribe performance politics</td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td><a href="player.html?player=josee"><b>Josee</b></a></td>
+        <td>6★-5</td>
+        <td><b>Earn the Merge</b> split teams • Rodney uses KIP to steal Josee’s idol</td>
+      </tr>
+      <tr>
+        <td>7</td>
+        <td><a href="player.html?player=rodney"><b>Rodney</b></a> / <a href="player.html?player=topher"><b>Topher</b></a></td>
+        <td>3-1 / 5-1</td>
+        <td><b>Split Tribal (two boots)</b> • Max uses Safety Without Power • Topher becomes 1st juror</td>
+      </tr>
+      <tr>
+        <td>8</td>
+        <td><a href="player.html?player=max"><b>Max</b></a></td>
+        <td>5-3</td>
+        <td>Auction twist (lose a vote) • Mickey finds an idol</td>
+      </tr>
+      <tr>
+        <td>9</td>
+        <td><a href="player.html?player=shawn"><b>Shawn</b></a></td>
+        <td>5-2</td>
+        <td>Journey vote-loss round • endgame lines harden</td>
+      </tr>
+      <tr>
+        <td>10</td>
+        <td><a href="player.html?player=blaineley"><b>Blaineley</b></a></td>
+        <td>3-2-1</td>
+        <td>Advantage-heavy player finally cut • chaotic multi-target vote</td>
+      </tr>
+      <tr>
+        <td>11</td>
+        <td><a href="player.html?player=amy"><b>Amy</b></a></td>
+        <td>2-2-1</td>
+        <td>Tight split • twin storyline ends in jury</td>
+      </tr>
+      <tr>
+        <td>12</td>
+        <td><a href="player.html?player=dave"><b>Dave</b></a></td>
+        <td>3-3★</td>
+        <td>Sky’s idol play flips the consensus plan • Dave becomes the pivot boot</td>
+      </tr>
+      <tr>
+        <td>13</td>
+        <td><a href="player.html?player=sugar"><b>Sugar</b></a></td>
+        <td>4-1</td>
+        <td>Most-targeted survivor finally falls • clears the lane for the finale trio</td>
+      </tr>
+      <tr>
+        <td>14 (Finale)</td>
+        <td><a href="player.html?player=scarlett"><b>Scarlett</b></a></td>
+        <td>Fire-making</td>
+        <td>Ryan wins fire-making • Final Tribal: 3-3-2 tie, Ryan votes Mickey to win</td>
+      </tr>
+      <tr class="highlight">
+        <td colspan="4"><b>Final Tribal Council:</b> Mickey 3, Sky 3, Ryan 2 → <b>tiebreak:</b> Ryan votes Mickey (Mickey wins 👑)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="section-title">
+    <h2>Challenge Statistics</h2>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi">
+      <h3>Individual Immunity</h3>
+      <ul>
+        <li><b>Sky:</b> 3 wins</li>
+        <li><b>Mickey:</b> 2 wins</li>
+        <li><b>Scarlett:</b> 2 wins</li>
+        <li><b>Dave:</b> 1 win</li>
+        <li><b>Ryan:</b> 1 win</li>
+      </ul>
+    </div>
+
+    <div class="kpi">
+      <h3>Total Challenge Wins</h3>
+      <ul>
+        <li><b>Sky:</b> 4</li>
+        <li><b>Dave:</b> 2</li>
+        <li><b>Mickey:</b> 2</li>
+        <li><b>Scarlett:</b> 2</li>
+        <li><b>Ryan:</b> 1</li>
+      </ul>
+    </div>
+
+    <div class="kpi">
+      <h3>Voting Records</h3>
+      <ul>
+        <li><b>Most Votes Against:</b> Sugar (10)</li>
+        <li><b>Next Most Targeted:</b> Rodney (9), Blaineley (8), Ryan (7)</li>
+        <li><b>Zero Votes Against:</b> Mickey (0)</li>
+      </ul>
+    </div>
+
+    <div class="kpi">
+      <h3>Idols & Advantages</h3>
+      <ul>
+        <li><b>Idols found:</b> Sky (2), Shawn (1), Josee (1), Blaineley (1), Mickey (1)</li>
+        <li><b>Biggest advantage:</b> Rodney’s Knowledge Is Power steal</li>
+        <li><b>Other powers:</b> Max (Safety Without Power), Blaineley (Inheritance), Mickey (Goodwill)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-title">
+    <h2>Season Records & Milestones</h2>
+  </div>
+
+  <div class="panel">
+    <h3>🏆 Franchise Notes (Season 5)</h3>
+    <ul>
+      <li><b>Closest Finale (tie):</b> 3-3-2 → tiebreak winner vote</li>
+      <li><b>Winner with 0 votes against:</b> Mickey (elite threat management)</li>
+      <li><b>Most targeted player:</b> Sugar (10 votes) still reached Final 5</li>
+      <li><b>Biggest swing round:</b> Earn-the-Merge idol theft + chaos vote</li>
+      <li><b>Fire-making kingmaker:</b> Ryan (wins duel + decides winner)</li>
+    </ul>
+  </div>
+
+  <div class="section-title">
+    <h2>Jury Vote Breakdown</h2>
+  </div>
+
+  <div class="panel">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Juror</th>
+          <th>Vote</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><a href="player.html?player=topher"><b>Topher</b></a></td><td>Mickey</td></tr>
+        <tr><td><a href="player.html?player=sugar"><b>Sugar</b></a></td><td>Sky</td></tr>
+        <tr><td><a href="player.html?player=shawn"><b>Shawn</b></a></td><td>Mickey</td></tr>
+        <tr><td><a href="player.html?player=scarlett"><b>Scarlett</b></a></td><td>Ryan</td></tr>
+        <tr><td><a href="player.html?player=max"><b>Max</b></a></td><td>Sky</td></tr>
+        <tr><td><a href="player.html?player=dave"><b>Dave</b></a></td><td>Mickey</td></tr>
+        <tr><td><a href="player.html?player=blaineley"><b>Blaineley</b></a></td><td>Sky</td></tr>
+        <tr><td><a href="player.html?player=amy"><b>Amy</b></a></td><td>Ryan</td></tr>
+      </tbody>
+    </table>
+    <div class="callout" style="margin-top:12px;">
+      <b>Tally (before tiebreak):</b> Mickey 3 • Sky 3 • Ryan 2 → <b>Tiebreak:</b> Ryan votes Mickey
+    </div>
+  </div>
+
+  <div class="center" style="margin-top:22px;">
+    <a class="btn" href="season5.html">📄 Season 5 page</a>
+    <a class="btn" href="season5-awards.html">🏅 Season 5 Awards</a>
+    <a class="btn" href="seasons.html">🗂️ All Seasons</a>
+  </div>
+</div>
+
+<footer class="siteFooter">
+  <div class="footerInner">
+    <div class="footerTitle">DC Franchise Database</div>
+    <div class="footerSub">Static archive • 5 seasons • 58 players • Icons: name.png</div>
+  </div>
+</footer>
+<!-- SITE FOOTER END -->
+</body>
+</html>

@@ -1,0 +1,696 @@
+<!doctype html>
+<html lang="en" data-root=".">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Season Awards</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .awards-hero {
+      text-align: center;
+      padding: 40px 20px;
+      background: linear-gradient(135deg, rgba(125,76,255,.15), rgba(255,179,71,.12));
+      border-radius: 24px;
+      border: 1px solid rgba(125,76,255,.3);
+      margin-bottom: 32px;
+    }
+    
+    .awards-hero h1 {
+      font-size: 42px;
+      margin: 0 0 12px;
+      background: linear-gradient(135deg, var(--accent2), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .awards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+      margin-top: 32px;
+    }
+    
+    .award-card {
+      position: relative;
+      background: var(--panel);
+      border: 1px solid var(--stroke);
+      border-radius: 20px;
+      padding: 0;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+    }
+    
+    .award-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      border-color: var(--accent);
+      box-shadow: 0 20px 40px rgba(125,76,255,.4), 0 0 80px rgba(125,76,255,.2);
+    }
+    
+    .award-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .award-card:hover::before {
+      opacity: 1;
+    }
+    
+    .award-header {
+      padding: 24px;
+      background: linear-gradient(135deg, rgba(125,76,255,.12), rgba(255,179,71,.08));
+      border-bottom: 1px solid var(--stroke);
+    }
+    
+    .season-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: rgba(0,0,0,.3);
+      border: 1px solid rgba(255,179,71,.4);
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent2);
+      margin-bottom: 12px;
+    }
+    
+    .award-header h3 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 900;
+      color: var(--text);
+    }
+    
+    .award-header h3 a {
+      background: linear-gradient(135deg, var(--text), var(--muted));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      transition: all 0.3s ease;
+    }
+    
+    .award-card:hover .award-header h3 a {
+      background: linear-gradient(135deg, var(--accent2), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .award-body {
+      padding: 24px;
+    }
+    
+    .award-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      margin: 8px 0;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 12px;
+      transition: all 0.2s ease;
+    }
+    
+    .award-item:hover {
+      background: rgba(125,76,255,.15);
+      border-color: var(--accent);
+      transform: translateX(4px);
+    }
+    
+    .award-icon {
+      font-size: 24px;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, rgba(125,76,255,.2), rgba(255,179,71,.2));
+      border-radius: 10px;
+      border: 1px solid rgba(255,179,71,.3);
+      flex-shrink: 0;
+    }
+    
+    .award-content {
+      flex: 1;
+    }
+    
+    .award-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+    
+    .award-value {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    
+    .award-value .highlight {
+      color: var(--accent2);
+    }
+    
+    .award-footer {
+      padding: 16px 24px;
+      background: rgba(0,0,0,.2);
+      border-top: 1px solid var(--stroke);
+      text-align: center;
+    }
+    
+    .view-details {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none;
+      border-radius: 999px;
+      color: white;
+      font-weight: 700;
+      font-size: 13px;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .view-details:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 20px rgba(125,76,255,.5);
+    }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .award-card {
+      animation: fadeInUp 0.6s ease forwards;
+    }
+    
+    .award-card:nth-child(1) { animation-delay: 0.1s; opacity: 0; }
+    .award-card:nth-child(2) { animation-delay: 0.2s; opacity: 0; }
+    .award-card:nth-child(3) { animation-delay: 0.3s; opacity: 0; }
+    .award-card:nth-child(4) { animation-delay: 0.4s; opacity: 0; }
+    .award-card:nth-child(5) { animation-delay: 0.5s; opacity: 0; }
+  </style>
+</head>
+<body>
+<!-- SITE HEADER START -->
+<!-- MODERN SITE HEADER START -->
+
+
+<header class="modern-header" id="modernHeader">
+  <div class="header-container">
+    <!-- Top Bar -->
+    <div class="header-top">
+      <a href="index.html" class="brand-section" aria-label="Go to home">
+        <div class="brand-icon">
+          <span class="brand-logo-text">⚡</span>
+        </div>
+        <div class="brand-content">
+          <h1>DC <span class="brand-gradient">Franchise</span> Database</h1>
+          <p class="brand-subtitle">Season <span id="currentSeasonNum">5</span> Live • Click to Explore</p>
+        </div>
+      </a>
+
+      <div class="stats-badge">
+        <div class="stats-main"><span id="totalSeasons">5</span> Seasons • <span id="totalPlayers">58</span> Players</div>
+        <div class="stats-sub">Icons: <span id="iconFormat">name.png</span></div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="header-nav" aria-label="Primary navigation">
+      <ul class="nav-list">
+        <li class="nav-item">
+          <a href="index.html" class="nav-link" data-page="index">
+            <span class="nav-icon">🏠</span>
+            <span>Home</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="current-season.html" class="nav-link" data-page="current-season">
+            <span class="nav-icon">📊</span>
+            <span>Current Season</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="voting-analytics.html" class="nav-link" data-page="voting-analytics">
+            <span class="nav-icon">🧾</span>
+            <span>Voting Analytics</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="franchise.html" class="nav-link" data-page="franchise">
+            <span class="nav-icon">🏛️</span>
+            <span>Franchise</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="rankings.html" class="nav-link" data-page="rankings">
+            <span class="nav-icon">🏆</span>
+            <span>Rankings</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="seasons.html" class="nav-link" data-page="seasons">
+            <span class="nav-icon">🗂️</span>
+            <span>Seasons</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="devotees.html" class="nav-link" data-page="devotees">
+            <span class="nav-icon">👥</span>
+            <span>Players</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="awards.html" class="nav-link" data-page="awards">
+            <span class="nav-icon">🏅</span>
+            <span>Awards</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<script>
+(function() {
+  // Load site config and update header stats
+  if (window.SITE_CONFIG) {
+    document.getElementById('totalSeasons').textContent = window.SITE_CONFIG.seasons;
+    document.getElementById('totalPlayers').textContent = window.SITE_CONFIG.players;
+    document.getElementById('currentSeasonNum').textContent = window.SITE_CONFIG.currentSeason;
+    document.getElementById('iconFormat').textContent = window.SITE_CONFIG.iconFormat;
+  }
+
+  // Scroll behavior
+  const header = document.getElementById('modernHeader');
+  if (!header) return;
+  
+  window.addEventListener('scroll', () => {
+    const currentScroll = window.pageYOffset;
+    if (currentScroll > 20) {
+      header.classList.add('scrolled');
+    } else {
+      header.classList.remove('scrolled');
+    }
+  }, { passive: true });
+
+  // Active page highlighting
+  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+  const navLinks = document.querySelectorAll('.nav-link');
+  
+  navLinks.forEach(link => {
+    const linkPage = link.getAttribute('href');
+    if (linkPage === currentPage || (currentPage === '' && linkPage === 'index.html')) {
+      link.classList.add('active');
+    }
+  });
+
+  // Path resolution for nested folders
+  const root = (document.documentElement.dataset.root || document.body.dataset.root || ".").replace(/\/+$/, "");
+  
+  if (root !== ".") {
+    const allLinks = header.querySelectorAll('a[href]');
+    allLinks.forEach(link => {
+      const href = link.getAttribute('href');
+      if (href && !href.startsWith('http') && !href.startsWith('#')) {
+        link.setAttribute('href', root + '/' + href);
+      }
+    });
+  }
+})();
+</script>
+<!-- MODERN SITE HEADER END -->
+
+<!-- SITE HEADER END -->
+
+  <div class="container">
+    
+    <div class="topbar">
+      <div>
+        <div class="brand">DC <span>Franchise</span> Database</div>
+        <div class="meta">All Season Awards</div>
+      </div>
+      <div class="meta">Season count: 5 • Player count: 58</div>
+    </div>
+    <div class="tabs">
+      <a class="tab" href="current-season.html">📊 Current Season Analytics</a>
+      <a class="tab" href="voting-analytics.html">🗳️ Voting Chart Analytics</a>
+      <a class="tab" href="franchise.html">🏛️ Franchise Analytics</a>
+      <a class="tab" href="rankings.html">🏆 Player Rankings</a>
+      <a class="tab" href="seasons.html">📚 Seasons</a>
+      <a class="tab" href="devotees.html">👥 Devotees</a>
+      <a class="tab active" href="awards.html">🥇 Season Awards</a>
+    </div>
+    
+    <div class="awards-hero">
+      <h1>🏆 Season Awards</h1>
+      <p style="color: var(--muted); font-size: 16px; margin: 0;">Celebrating the best players, moments, and records from all 5 seasons</p>
+    </div>
+
+    <div class="awards-grid">
+      
+      <!-- Season 1 -->
+      <div class="award-card" onclick="window.location.href='seasons/season1-awards.html'">
+        <div class="award-header">
+          <div class="season-badge">
+            <span>🏝️</span>
+            <span>Season 1</span>
+          </div>
+          <h3><a href="seasons/season1-awards.html">Total Drama</a></h3>
+        </div>
+        
+        <div class="award-body">
+          <a href="player.html?player=lindsay" class="award-link">
+            <div class="award-item">
+              <div class="award-icon">👑</div>
+              <div class="award-content">
+                <div class="award-label">Winner</div>
+                <div class="award-value">
+                  Lindsay <span class="highlight">(5-4)</span>
+                </div>
+              </div>
+            </div>
+          </a>
+
+          <a href="player.html?player=justin" class="award-link">
+            <div class="award-item">
+              <div class="award-icon">⭐</div>
+              <div class="award-content">
+                <div class="award-label">Fan Favorite</div>
+                <div class="award-value">Justin</div>
+              </div>
+            </div>
+          </a>
+          
+          <a href="player.html?player=alejandro" class="award-link">
+            <div class="award-item">
+              <div class="award-icon">🧠</div>
+              <div class="award-content">
+                <div class="award-label">Best Strategic</div>
+                <div class="award-value">Alejandro</div>
+              </div>
+            </div>
+          </a>
+
+          <a href="player.html?player=bridgette" class="award-link">
+            <div class="award-item">
+              <div class="award-icon">💪</div>
+                <div class="award-content">
+                  <div class="award-label">Most Challenge Wins</div>
+                  <div class="award-value">Bridgette <span class="highlight">(5 total)</span></div>
+                </div>
+              </div>
+            </div>
+          </a>
+        
+        <div class="award-footer">
+          <a href="seasons/season1-awards.html" class="view-details">
+            <span>View All Awards</span>
+            <span>→</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Season 2 -->
+      <div class="award-card" onclick="window.location.href='seasons/season2-awards.html'">
+        <div class="award-header">
+          <div class="season-badge">
+            <span>🏝️</span>
+            <span>Season 2</span>
+          </div>
+          <h3><a href="seasons/season2-awards.html">Total Drama 2</a></h3>
+        </div>
+
+        <a href="player.html?player=duncan" class="award-link">
+        <div class="award-body">
+          <div class="award-item">
+            <div class="award-icon">👑</div>
+            <div class="award-content">
+              <div class="award-label">Winner</div>
+              <div class="award-value">Duncan</div>
+            </div>
+          </div>
+          </a>
+
+          <a href="player.html?player=alejandro" class="award-link"> 
+          <div class="award-item">
+            <div class="award-icon">⭐</div>
+            <div class="award-content">
+              <div class="award-label">Fan Favorite</div>
+              <div class="award-value">Alejandro</div>
+            </div>
+          </div>
+          </a> 
+
+          <a href="player.html?player=alejandro" class="award-link"> 
+          <div class="award-item">
+            <div class="award-icon">🧠</div>
+            <div class="award-content">
+              <div class="award-label">Best Strategic</div>
+              <div class="award-value">Alejandro</div>
+            </div>
+          </div>
+          </a> 
+          
+          <a href="player.html?player=alejandro" class="award-link"> 
+          <div class="award-item">
+            <div class="award-icon">💪</div>
+            <div class="award-content">
+              <div class="award-label">Most Challenge Wins</div>
+              <div class="award-value">Alejandro <span class="highlight">(5 immunity)</span></div>
+            </div>
+          </div>
+        </div>
+        </a>
+
+        <div class="award-footer">
+          <a href="seasons/season2-awards.html" class="view-details">
+            <span>View All Awards</span>
+            <span>→</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Season 3 -->
+      <div class="award-card" onclick="window.location.href='seasons/season3-awards.html'">
+        <div class="award-header">
+          <div class="season-badge">
+            <span>🏝️</span>
+            <span>Season 3</span>
+          </div>
+          <h3><a href="seasons/season3-awards.html">Revenge of the Island</a></h3>
+        </div>
+        
+
+        <div class="award-body">
+
+          <a href="player.html?player=emma" class="award-link"> 
+          <div class="award-item">
+            <div class="award-icon">👑</div>
+            <div class="award-content">
+              <div class="award-label">Winner</div>
+              <div class="award-value">Emma <span class="highlight">(4-3-1)</span></div>
+            </div>
+          </div>
+          </a>
+          
+          <a href="player.html?player=dakota" class="award-link"> 
+          <div class="award-item">
+            <div class="award-icon">⭐</div>
+            <div class="award-content">
+              <div class="award-label">Fan Favorite</div>
+              <div class="award-value">Dakota</div>
+            </div>
+          </div>
+          </a>
+
+          <a href="player.html?player=scott" class="award-link"> 
+          <div class="award-item">
+            <div class="award-icon">🧠</div>
+            <div class="award-content">
+              <div class="award-label">Best Strategic</div>
+              <div class="award-value">Scott</div>
+            </div>
+          </div>
+          </a>
+          
+          <a href="player.html?player=scott" class="award-link"> 
+          <div class="award-item">
+            <div class="award-icon">💪</div>
+            <div class="award-content">
+              <div class="award-label">Most Challenge Wins</div>
+              <div class="award-value">Scott <span class="highlight">(6 total)</span></div>
+            </div>
+          </div>
+        </div>
+        </a>
+
+        <div class="award-footer">
+          <a href="seasons/season3-awards.html" class="view-details">
+            <span>View All Awards</span>
+            <span>→</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Season 4 -->
+      <div class="award-card" onclick="window.location.href='seasons/season4-awards.html'">
+        <div class="award-header">
+          <div class="season-badge">
+            <span>🏝️</span>
+            <span>Season 4</span>
+          </div>
+          <h3><a href="seasons/season4-awards.html">Edge of Extinction</a></h3>
+        </div>
+        
+        <div class="award-body">
+
+          <a href="player.html?player=alejandro" class="award-link"> 
+          <div class="award-item">
+            <div class="award-icon">👑</div>
+            <div class="award-content">
+              <div class="award-label">Winner</div>
+              <div class="award-value">Alejandro <span class="highlight">(7-6-1)</span></div>
+            </div>
+          </div>
+          </a>
+
+          <a href="player.html?player=jo" class="award-link"> 
+          <div class="award-item">
+            <div class="award-icon">⭐</div>
+            <div class="award-content">
+              <div class="award-label">Fan Favorite</div>
+              <div class="award-value">Jo</div>
+            </div>
+          </div>
+          </a>
+
+          <a href="player.html?player=alejandro" class="award-link"> 
+          <div class="award-item">
+            <div class="award-icon">🧠</div>
+            <div class="award-content">
+              <div class="award-label">Best Strategic</div>
+              <div class="award-value">Alejandro</div>
+            </div>
+          </div>
+          </a>
+
+          <a href="player.html?player=gwen" class="award-link"> 
+          <div class="award-item">
+            <div class="award-icon">💪</div>
+            <div class="award-content">
+              <div class="award-label">Most Challenge Wins</div>
+              <div class="award-value">Gwen <span class="highlight">(4 consecutive!)</span></div>
+            </div>
+          </div>
+        </div>
+        </a>
+
+        <div class="award-footer">
+          <a href="seasons/season4-awards.html" class="view-details">
+            <span>View All Awards</span>
+            <span>→</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Season 5 -->
+      <div class="award-card" onclick="window.location.href='seasons/season5-awards.html'">
+        <div class="award-header">
+          <div class="season-badge">
+            <span>🏝️</span>
+            <span>Season 5</span>
+          </div>
+          <h3><a href="seasons/season5-awards.html">Rescue Island</a></h3>
+        </div>
+
+        <div class="award-body">
+
+          <a href="player.html?player=mickey" class="award-link">
+            <div class="award-item">
+              <div class="award-icon">👑</div>
+              <div class="award-content">
+                <div class="award-label">Winner</div>
+                <div class="award-value">Mickey <span class="highlight">(3-3-2)</span></div>
+              </div>
+            </div>
+          </a>
+
+          <a href="player.html?player=ryan" class="award-link">
+            <div class="award-item">
+              <div class="award-icon">⭐</div>
+              <div class="award-content">
+                <div class="award-label">Fan Favorite</div>
+                <div class="award-value">Ryan</div>
+              </div>
+            </div>
+          </a>
+
+          <a href="player.html?player=scarlett" class="award-link">
+            <div class="award-item">
+              <div class="award-icon">🧠</div>
+              <div class="award-content">
+                <div class="award-label">Best Strategic</div>
+                <div class="award-value">Scarlett</div>
+              </div>
+            </div>
+          </a>
+
+          <a href="player.html?player=sky" class="award-link">
+            <div class="award-item">
+              <div class="award-icon">💪</div>
+              <div class="award-content">
+                <div class="award-label">Most Challenge Wins</div>
+                <div class="award-value">Sky <span class="highlight">(4 total)</span></div>
+              </div>
+            </div>
+          </a>
+
+        </div>
+
+        <div class="award-footer">
+          <a href="seasons/season5-awards.html" class="view-details">
+            <span>View All Awards</span>
+            <span>→</span>
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="footer">5 seasons complete • 58 unique players • 86 total appearances</div>
+  </div>
+<!-- SITE FOOTER START -->
+<footer class="siteFooter">
+  <div class="footerInner">
+    <div class="footerTitle">DC Franchise Database</div>
+    <div class="footerSub">Static archive • 5 seasons • 58 players • Icons: name.png</div>
+  </div>
+</footer>
+<!-- SITE FOOTER END -->
+</body>
+</html>

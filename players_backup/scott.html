@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en" data-root="..">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Scott — Profile</title>
+  <link rel="stylesheet" href="../styles.css">
+</head>
+\1\n<!-- SITE HEADER START -->
+<header class="siteHeader">
+  <div class="siteHeader__inner">
+    <a class="brandChip" data-href="index.html" aria-label="Go to home">
+      <span class="brandDot" aria-hidden="true"></span>
+      <div>
+        <div class="brandText">DC <b>Franchise</b> Database</div>
+        <span class="brandSub">Local static website • Season 5 is live • Click to explore</span>
+      </div>
+    </a>
+
+    <div class="statsChip">
+      <div class="big">5 seasons • 58 players</div>
+      <div class="small">Icons: <code>name.png</code></div>
+    </div>
+  </div>
+
+  <nav class="siteNav" aria-label="Primary">
+    <!-- Home added -->
+    <a class="navPill" data-href="index.html"><span class="navIcon">🏠</span>Home</a>
+
+    <a class="navPill" data-href="current-season.html"><span class="navIcon">📊</span>Current Season</a>
+    <a class="navPill" data-href="voting-analytics.html"><span class="navIcon">🧾</span>Voting Analytics</a>
+    <a class="navPill" data-href="franchise.html"><span class="navIcon">🏛️</span>Franchise</a>
+    <a class="navPill" data-href="rankings.html"><span class="navIcon">🏆</span>Rankings</a>
+    <a class="navPill" data-href="seasons.html"><span class="navIcon">🗂️</span>Seasons</a>
+    <a class="navPill" data-href="devotees.html"><span class="navIcon">👥</span>Players</a>
+    <a class="navPill" data-href="awards.html"><span class="navIcon">🏅</span>Awards</a>
+  </nav>
+
+  <!-- Folder-safe link resolver (so it works in /players and /seasons too) -->
+  <script>
+    (function () {
+      var root = (document.documentElement.dataset.root || document.body.dataset.root || ".").replace(/\/+$/, "");
+      var join = function (p) { return (root === "." ? p : root + "/" + p); };
+
+      document.querySelectorAll(".siteHeader [data-href]").forEach(function (a) {
+        a.setAttribute("href", join(a.getAttribute("data-href")));
+      });
+    })();
+  </script>
+</header>
+
+<!-- SITE HEADER END -->
+
+  <div class="container">
+    
+    <div class="topbar">
+      <div>
+        <div class="brand">DC <span>Franchise</span> Database</div>
+        <div class="meta">Local static website • Click seasons + player profiles • Search + sort included</div>
+      </div>
+      <div class="meta">Season count: 4 • Player count: 40</div>
+    </div>
+    <div class="tabs"><a class="tab" href="../current-season.html">📊 Current Season Analytics</a><a class="tab" href="../voting-analytics.html">🗳️ Voting Chart Analytics</a><a class="tab" href="../franchise.html">🏛️ Franchise Analytics</a><a class="tab" href="../rankings.html">🏆 Player Rankings</a><a class="tab" href="../seasons.html">📚 Seasons</a><a class="tab active" href="../devotees.html">👥 Devotees</a><a class="tab" href="../awards.html">🥇 Season Awards</a></div>
+    
+<div class="hero" style="text-align:left">
+  <div class="row" style="justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap">
+    <div class="row" style="gap:14px">
+      <div class="avatar" style="position:relative; overflow:hidden; width:80px; height:80px">
+        <img src="../assets/avatars/scott.png" alt="" style="width:100%;height:100%;object-fit:cover" id="img-scott"/>
+        <span id="fallback-scott" style="display:none">🎯</span>
+      </div>
+      <div>
+        <h1 style="margin:0 0 6px">Scott</h1>
+        <div class="sub">Seasons: 3, 4 • Best: #2 • Wins: 0</div>
+        <div class="small" style="margin-top:6px">
+          <b>Avatar slot:</b> add image at <span class="tag">assets/avatars/scott.png</span>
+        </div>
+      </div>
+    </div>
+    <div class="row" style="gap:10px">
+      <a class="tab" href="../devotees.html">← Devotees</a>
+      <a class="tab" href="../seasons/season3.html">Season 3</a>
+      <a class="tab" href="../seasons/season4.html">Season 4</a>
+    </div>
+  </div>
+</div>
+
+<div class="section-title">
+  <h2>Career Summary</h2>
+  <div class="hint">2 seasons</div>
+</div>
+
+<div class="statsbar">
+  <div class="stat"><div class="num">2</div><div class="label">Seasons</div></div>
+  <div class="stat"><div class="num">0</div><div class="label">Wins</div></div>
+  <div class="stat"><div class="num">#2</div><div class="label">Best Place</div></div>
+  <div class="stat"><div class="num">6</div><div class="label">Challenge Wins</div></div>
+</div>
+
+<div class="badges"><span class='badge'>S4 Third Place</span><span class='badge gold'>Perfect Idol Play!</span><span class='badge good'>9 Tribals Patience</span></div>
+
+<div class="section-title" style="margin-top:26px">
+  <h2>🔥 Season 4 — Edge of Extinction</h2>
+  <div class="hint">Most Recent</div>
+</div>
+
+<div class="kpi-grid">
+  <div class="kpi">
+    <h3>Placement</h3>
+    <ul>
+      <li><b>Rank:</b> #3</li>
+      <li><b>Status:</b> Finalist</li>
+      <li><b>Jury votes:</b> 1 (Duncan only)</li>
+      <li><b>Tribe:</b> Red → Yellow → Green → Campers</li>
+    </ul>
+  </div>
+  <div class="kpi">
+    <h3>Performance</h3>
+    <ul>
+      <li><b>Challenge wins:</b> 0</li>
+      <li><b>Immunity wins:</b> 0</li>
+      <li><b>Reward wins:</b> 0</li>
+      <li><b>Strategy:</b> Under-the-radar perfection</li>
+    </ul>
+  </div>
+  <div class="kpi">
+    <h3>Advantages & Threat</h3>
+    <ul>
+      <li><b>Votes received:</b> 3 (ALL cancelled by idol!)</li>
+      <li><b>Idols found:</b> 1 (merge idol Ep 6)</li>
+      <li><b>Idol play:</b> PERFECT! (Final 5, 3 votes cancelled)</li>
+      <li><b>Strategic rank:</b> #2 Overall</li>
+    </ul>
+  </div>
+  <div class="kpi">
+    <h3>Notes</h3>
+    <ul>
+      <li><b>FRANCHISE RECORD:</b> Held idol 9 tribals!</li>
+      <li>Found Ep 6, played Ep 14 (Final 5)</li>
+      <li>Unbreakable bond with Zoey protected him</li>
+      <li>Ultimate patient gameplay</li>
+    </ul>
+  </div>
+</div>
+
+<div class="section-title" style="margin-top:26px">
+  <h2>📊 Season 3 — Revenge of the Island</h2>
+</div>
+<div class="kpi-grid">
+  <div class="kpi">
+    <h3>Placement</h3>
+    <ul>
+      <li><b>Rank:</b> #2 (Runner-up)</li>
+      <li><b>Jury votes:</b> 3 (lost 3-4-1)</li>
+    </ul>
+  </div>
+  <div class="kpi">
+    <h3>Performance</h3>
+    <ul>
+      <li><b>Challenge wins:</b> 6 (most in S3!)</li>
+      <li><b>Immunity wins:</b> 3</li>
+      <li><b>Reward wins:</b> 3</li>
+    </ul>
+  </div>
+  <div class="kpi">
+    <h3>Advantages & Threat</h3>
+    <ul>
+      <li><b>Votes received:</b> 1</li>
+      <li><b>Strategic rank:</b> #2</li>
+      <li><b>Betrayal:</b> Voted out Zoey (unbreakable)</li>
+    </ul>
+  </div>
+</div>
+
+<div class="section-title" style="margin-top:26px">
+  <h2>Player Story</h2>
+</div>
+<div class="panel">
+  <p><b>Season 3:</b> Runner-up (lost 3-4-1 to Emma). Won 6 individual challenges (most in season). Strong social bonds (Anne Maria, Brick, Cameron, Zoey). Voted out unbreakable partner Zoey in finale betrayal - she still voted for him at FTC. Lost because Emma's loyalty beat his comp wins. Strategic #2 player.</p>
+  
+  <p><b>Season 4:</b> Third place (1 jury vote from Duncan). <b>PERFECT IDOL PLAY</b> - found merge idol Episode 6, held for <b>9 CONSECUTIVE TRIBALS</b> (franchise record for patience!), played perfectly at Final 5 cancelling 3 votes and eliminating Cameron 2-0. Unbreakable bond with Zoey protected him throughout - she saved him at Final 4 over Gwen. Flew completely under radar with zero challenge wins but masterful strategic positioning. Left multiple alliances but always had Zoey's protection. Despite perfect idol play and UTR game, only received 1 jury vote (Duncan). Ultimate patient gameplay - the best player to never win.</p>
+  
+  <p class="small" style="margin-top:12px; font-style:italic;">"9 tribals of patience. One perfect play. Still couldn't win."</p>
+</div>
+
+<div class="section-title" style="margin-top:26px">
+  <h2>Career Totals</h2>
+</div>
+
+<div class="statsbar">
+  <div class="stat"><div class="num">4</div><div class="label">Total Votes Against</div></div>
+  <div class="stat"><div class="num">6</div><div class="label">Total Challenge Wins</div></div>
+  <div class="stat"><div class="num">3</div><div class="label">Total Immunity Wins</div></div>
+  <div class="stat"><div class="num">4</div><div class="label">Total Jury Votes</div></div>
+</div>
+
+<div class="section-title" style="margin-top:26px">
+  <h2>Awards & Recognition</h2>
+</div>
+
+<div class="panel">
+  <ul>
+    <li>🎯 <b>Perfect Idol Play S4</b> - 9 tribals patience (franchise record!)</li>
+    <li>🤐 <b>Quietest Threat S4</b> - Ultimate under-the-radar game</li>
+    <li>⭐ <b>Strategic Rank:</b> #2 Overall in Franchise</li>
+    <li>💪 <b>Most Challenge Wins S3:</b> 6 total</li>
+    <li>🏛️ <b>Tier S Player</b> - Best to never win</li>
+    <li>📊 <b>Two Finals Appearances</b> - S3 runner-up, S4 third</li>
+  </ul>
+</div>
+
+<div class="callout">
+  <h3>The Perfect Idol Play</h3>
+  <p><b>Scott's 9-tribal idol hold is the longest in franchise history.</b></p>
+  <p>Found the merge idol Episode 6, held it through Episodes 6, 7, 8, 9 Part 1, 9 Part 2, 10, 11, 12, 13, and finally played it perfectly Episode 14 at Final 5 - his last chance to use it.</p>
+  <p>The patience paid off: he cancelled 3 votes (from Alejandro, Cameron, Gwen) and eliminated Cameron 2-0, securing his Final 3 spot. Textbook idol strategy.</p>
+</div>
+
+<script>
+const img = document.getElementById("img-scott");
+const fb = document.getElementById("fallback-scott");
+if(img) {
+  img.onload = () => { img.style.display="block"; if(fb) fb.style.display="none"; };
+  img.onerror = () => { img.style.display="none"; if(fb) fb.style.display="block"; };
+}
+</script>
+
+<div class="footer">4 seasons complete • 40 unique players • 68 total appearances</div>
+  </div>
+<!-- SITE FOOTER START -->
+<footer class="siteFooter">
+  <div class="footerInner">
+    <div class="footerTitle">DC Franchise Database</div>
+    <div class="footerSub">Static archive • 5 seasons • 58 players • Icons: name.png</div>
+  </div>
+</footer>
+<!-- SITE FOOTER END -->
+</body>
+</html>

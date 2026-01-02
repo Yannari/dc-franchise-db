@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en" data-root="..">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Justin – Profile</title>
+  <link rel="stylesheet" href="../styles.css">
+</head>
+\1\n<!-- SITE HEADER START -->
+<header class="siteHeader">
+  <div class="siteHeader__inner">
+    <a class="brandChip" data-href="index.html" aria-label="Go to home">
+      <span class="brandDot" aria-hidden="true"></span>
+      <div>
+        <div class="brandText">DC <b>Franchise</b> Database</div>
+        <span class="brandSub">Local static website • Season 5 is live • Click to explore</span>
+      </div>
+    </a>
+
+    <div class="statsChip">
+      <div class="big">5 seasons • 58 players</div>
+      <div class="small">Icons: <code>name.png</code></div>
+    </div>
+  </div>
+
+  <nav class="siteNav" aria-label="Primary">
+    <!-- Home added -->
+    <a class="navPill" data-href="index.html"><span class="navIcon">🏠</span>Home</a>
+
+    <a class="navPill" data-href="current-season.html"><span class="navIcon">📊</span>Current Season</a>
+    <a class="navPill" data-href="voting-analytics.html"><span class="navIcon">🧾</span>Voting Analytics</a>
+    <a class="navPill" data-href="franchise.html"><span class="navIcon">🏛️</span>Franchise</a>
+    <a class="navPill" data-href="rankings.html"><span class="navIcon">🏆</span>Rankings</a>
+    <a class="navPill" data-href="seasons.html"><span class="navIcon">🗂️</span>Seasons</a>
+    <a class="navPill" data-href="devotees.html"><span class="navIcon">👥</span>Players</a>
+    <a class="navPill" data-href="awards.html"><span class="navIcon">🏅</span>Awards</a>
+  </nav>
+
+  <!-- Folder-safe link resolver (so it works in /players and /seasons too) -->
+  <script>
+    (function () {
+      var root = (document.documentElement.dataset.root || document.body.dataset.root || ".").replace(/\/+$/, "");
+      var join = function (p) { return (root === "." ? p : root + "/" + p); };
+
+      document.querySelectorAll(".siteHeader [data-href]").forEach(function (a) {
+        a.setAttribute("href", join(a.getAttribute("data-href")));
+      });
+    })();
+  </script>
+</header>
+
+<!-- SITE HEADER END -->
+
+  <div class="container">
+    
+    <div class="topbar">
+      <div>
+        <div class="brand">DC <span>Franchise</span> Database</div>
+        <div class="meta">Local static website • Click seasons + player profiles • Search + sort included</div>
+      </div>
+      <div class="meta">Season count: 3 • Player count: 40</div>
+    </div>
+    <div class="tabs"><a class="tab" href="../current-season.html">📊 Current Season Analytics</a><a class="tab" href="../voting-analytics.html">🗳️ Voting Chart Analytics</a><a class="tab" href="../franchise.html">🏛️ Franchise Analytics</a><a class="tab" href="../rankings.html">🏆 Player Rankings</a><a class="tab" href="../seasons.html">📚 Seasons</a><a class="tab active" href="../devotees.html">👥 Devotees</a><a class="tab" href="../awards.html">🥇 Season Awards</a></div>
+    
+    
+<div class="hero" style="text-align:left">
+  <div class="row" style="justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap">
+    <div class="row" style="gap:14px">
+      <div class="avatar" style="position:relative; overflow:hidden; width:80px; height:80px">
+        <img src="../assets/avatars/justin.png" alt="" style="width:100%;height:100%;object-fit:cover" id="img-justin"/>
+        <span id="fallback-justin" style="display:none">10</span>
+      </div>
+      <div>
+        <h1 style="margin:0 0 6px">Justin</h1>
+        <div class="sub">Seasons: 1, 2 • Best: #10 • Wins: 0</div>
+        <div class="small" style="margin-top:6px">
+          <b>Avatar slot:</b> add image at <span class="tag">assets/avatars/justin.png</span>
+        </div>
+      </div>
+    </div>
+    <div class="row" style="gap:10px">
+      <a class="tab" href="../devotees.html">← Devotees</a>
+      <a class="tab" href="../seasons/season1.html">Season 1</a>
+      <a class="tab" href="../seasons/season2.html">Season 2</a>
+    </div>
+  </div>
+</div>
+
+<div class="section-title">
+  <h2>Career Summary</h2>
+  <div class="hint">2 seasons</div>
+</div>
+
+<div class="statsbar">
+  <div class="stat"><div class="num">2</div><div class="label">Seasons</div></div>
+  <div class="stat"><div class="num">0</div><div class="label">Wins</div></div>
+  <div class="stat"><div class="num">#10</div><div class="label">Best Place</div></div>
+  <div class="stat"><div class="num">0</div><div class="label">Challenge Wins</div></div>
+</div>
+
+<div class="section-title" style="margin-top:26px">
+  <h2>🔥 Season 2 — Total Drama 2</h2>
+  <div class="hint">Most Recent</div>
+</div>
+
+<div class="kpi-grid">
+  <div class="kpi">
+    <h3>Placement</h3>
+    <ul>
+      <li><b>Rank:</b> #10</li>
+      <li><b>Status:</b> Juror</li>
+      <li><b>Tribe:</b> Killer Grips</li>
+    </ul>
+  </div>
+  <div class="kpi">
+    <h3>Performance</h3>
+    <ul>
+      <li><b>Challenge wins:</b> 0</li>
+      <li><b>Immunity wins:</b> 0</li>
+      <li><b>Reward wins:</b> 0</li>
+    </ul>
+  </div>
+  <div class="kpi">
+    <h3>Advantages & Threat</h3>
+    <ul>
+      <li><b>Votes received:</b> 4</li>
+      <li><b>Idols found:</b> 0</li>
+      <li><b>Strategic rank:</b> —</li>
+    </ul>
+  </div>
+  <div class="kpi">
+    <h3>Notes</h3>
+    <ul><li>6–4* vote</li></ul>
+  </div>
+</div>
+
+<div class="section-title" style="margin-top:26px">
+  <h2>📊 Season 1 — Total Drama: Cullhouse</h2>
+</div>
+<div class="kpi-grid">
+  <div class="kpi">
+    <h3>Placement</h3>
+    <ul>
+      <li><b>Rank:</b> #24</li>
+    </ul>
+  </div>
+  <div class="kpi">
+    <h3>Performance</h3>
+    <ul>
+      <li><b>Challenge wins:</b> 0</li>
+      <li><b>Immunity wins:</b> 0</li>
+      <li><b>Reward wins:</b> 0</li>
+    </ul>
+  </div>
+  <div class="kpi">
+    <h3>Advantages & Threat</h3>
+    <ul>
+      <li><b>Votes received:</b> 12</li>
+      <li><b>Idols found:</b> 1</li>
+    </ul>
+  </div>
+</div>
+
+
+<div class="section-title" style="margin-top:26px">
+  <h2>Player Story</h2>
+</div>
+<div class="panel">
+  <p><b>Season 1:</b> First boot of Season 1. Found the Killer Bass Limited Hidden Immunity Idol early but chose not to play it, leading to his elimination in a 6-4 revote. His early idol find and social charm weren't enough when the tribe turned on him.</p>
+  <p><b>Season 2:</b> Returned for redemption but fell victim to alliance warfare at the merge. Targeted by multiple groups including both Gaffers alliances, he became the first juror after Ezekiel's idol play on Alejandro voided 6 votes against Alejandro.</p>
+  <p><b>Awards:</b> 👑 Fan Favorite (S1 - First Impression)</p>
+</div>
+
+<div class="section-title" style="margin-top:26px">
+  <h2>Career Totals</h2>
+</div>
+
+<div class="statsbar">
+  <div class="stat"><div class="num">16</div><div class="label">Total Votes Against</div></div>
+  <div class="stat"><div class="num">0</div><div class="label">Total Challenge Wins</div></div>
+  <div class="stat"><div class="num">0</div><div class="label">Total Immunity Wins</div></div>
+  <div class="stat"><div class="num">1</div><div class="label">Total Idols Found</div></div>
+</div>
+
+<script>
+const img = document.getElementById("img-justin");
+const fb = document.getElementById("fallback-justin");
+if(img) {
+  img.onload = () => { img.style.display="block"; if(fb) fb.style.display="none"; };
+  img.onerror = () => { img.style.display="none"; if(fb) fb.style.display="block"; };
+}
+</script>
+
+    <div class="footer">3 seasons complete • 40 unique players • 54 total appearances</div>
+  </div>
+<!-- SITE FOOTER START -->
+<footer class="siteFooter">
+  <div class="footerInner">
+    <div class="footerTitle">DC Franchise Database</div>
+    <div class="footerSub">Static archive • 5 seasons • 58 players • Icons: name.png</div>
+  </div>
+</footer>
+<!-- SITE FOOTER END -->
+</body>
+</html>

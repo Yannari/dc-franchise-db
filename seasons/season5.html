@@ -1,0 +1,567 @@
+<!doctype html>
+<html lang="en" data-root="..">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Season 5 — Rescue Island</title>
+  <link rel="stylesheet" href="../styles.css">
+
+  <style>
+    .two-col { display:grid; grid-template-columns: 1.1fr .9fr; gap:16px; }
+    @media (max-width: 980px){ .two-col{ grid-template-columns:1fr; } }
+
+    .panel {
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.18);
+      border-radius: 18px;
+      padding: 16px;
+      backdrop-filter: blur(8px);
+    }
+
+    .cast-photo {
+      display:flex; gap:14px; align-items:flex-start; justify-content:space-between;
+    }
+    .cast-photo img{
+      width:100%;
+      max-height: 260px;
+      object-fit: contain;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.25);
+      margin-top: 10px;
+    }
+    .path-pill{
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      white-space: nowrap;
+    }
+
+    .placements { width:100%; }
+    .placements th, .placements td { vertical-align: middle; }
+    .placements td { padding-top: 10px; padding-bottom: 10px; }
+
+    .p-avatar{
+      width:42px;height:42px;border-radius:999px;overflow:hidden;
+      border:2px solid rgba(165,95,255,.55);
+      background:linear-gradient(135deg, rgba(255,255,255,.14), rgba(255,255,255,.06));
+      display:flex;align-items:center;justify-content:center;
+      flex:0 0 auto;
+    }
+    .p-avatar img{ width:100%; height:100%; object-fit:cover; display:none; }
+    .p-avatar .fb{ font-weight:800; font-size:12px; opacity:.95; }
+
+    .place-badge{
+      font-weight:800;
+      letter-spacing:.2px;
+    }
+
+    .subtle { opacity:.82; font-size: 13px; }
+    .notes { color: rgba(255,255,255,.85); font-size: 13px; line-height: 1.25; }
+    .phase { font-weight:700; }
+
+    .jumpline{
+      margin: 10px 0 0;
+      font-size: 12px;
+      opacity: .82;
+      word-break: break-word;
+    }
+    .jumpline a{ opacity:.9; margin-right: 6px; }
+
+    .callout {
+      background: linear-gradient(135deg, rgba(165,95,255,0.15), rgba(165,95,255,0.05));
+      border: 1px solid rgba(165,95,255,0.3);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+    .callout h3 { margin: 0 0 10px; color: rgba(165,95,255,1); }
+
+    .highlight-box {
+      background: rgba(255,215,0,0.08);
+      border-left: 3px solid rgba(255,215,0,0.6);
+      padding: 12px 16px;
+      margin: 10px 0;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+<!-- SITE HEADER START -->
+<header class="modern-header" id="modernHeader">
+  <div class="header-container">
+    <!-- Top Bar -->
+    <div class="header-top">
+      <a href="index.html" class="brand-section" aria-label="Go to home">
+        <div class="brand-icon">
+          <span class="brand-logo-text">⚡</span>
+        </div>
+        <div class="brand-content">
+          <h1>DC <span class="brand-gradient">Franchise</span> Database</h1>
+          <p class="brand-subtitle">Season <span id="currentSeasonNum">5</span> Live • Click to Explore</p>
+        </div>
+      </a>
+
+      <div class="stats-badge">
+        <div class="stats-main"><span id="totalSeasons">5</span> Seasons • <span id="totalPlayers">58</span> Players</div>
+        <div class="stats-sub">Icons: <span id="iconFormat">name.png</span></div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="header-nav" aria-label="Primary navigation">
+      <ul class="nav-list">
+        <li class="nav-item">
+          <a href="index.html" class="nav-link" data-page="index">
+            <span class="nav-icon">🏠</span>
+            <span>Home</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="current-season.html" class="nav-link" data-page="current-season">
+            <span class="nav-icon">📊</span>
+            <span>Current Season</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="voting-analytics.html" class="nav-link" data-page="voting-analytics">
+            <span class="nav-icon">🧾</span>
+            <span>Voting Analytics</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="franchise.html" class="nav-link" data-page="franchise">
+            <span class="nav-icon">🏛️</span>
+            <span>Franchise</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="rankings.html" class="nav-link" data-page="rankings">
+            <span class="nav-icon">🏆</span>
+            <span>Rankings</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="seasons.html" class="nav-link" data-page="seasons">
+            <span class="nav-icon">🗂️</span>
+            <span>Seasons</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="devotees.html" class="nav-link" data-page="devotees">
+            <span class="nav-icon">👥</span>
+            <span>Players</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="awards.html" class="nav-link" data-page="awards">
+            <span class="nav-icon">🏅</span>
+            <span>Awards</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<script>
+(function() {
+  // Load site config and update header stats
+  if (window.SITE_CONFIG) {
+    document.getElementById('totalSeasons').textContent = window.SITE_CONFIG.seasons;
+    document.getElementById('totalPlayers').textContent = window.SITE_CONFIG.players;
+    document.getElementById('currentSeasonNum').textContent = window.SITE_CONFIG.currentSeason;
+    document.getElementById('iconFormat').textContent = window.SITE_CONFIG.iconFormat;
+  }
+
+  // Scroll behavior
+  const header = document.getElementById('modernHeader');
+  if (!header) return;
+  
+  window.addEventListener('scroll', () => {
+    const currentScroll = window.pageYOffset;
+    if (currentScroll > 20) {
+      header.classList.add('scrolled');
+    } else {
+      header.classList.remove('scrolled');
+    }
+  }, { passive: true });
+
+  // Active page highlighting
+  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+  const navLinks = document.querySelectorAll('.nav-link');
+  
+  navLinks.forEach(link => {
+    const linkPage = link.getAttribute('href');
+    if (linkPage === currentPage || (currentPage === '' && linkPage === 'index.html')) {
+      link.classList.add('active');
+    }
+  });
+
+  // Path resolution for nested folders
+  const root = (document.documentElement.dataset.root || document.body.dataset.root || ".").replace(/\/+$/, "");
+  
+  if (root !== ".") {
+    const allLinks = header.querySelectorAll('a[href]');
+    allLinks.forEach(link => {
+      const href = link.getAttribute('href');
+      if (href && !href.startsWith('http') && !href.startsWith('#')) {
+        link.setAttribute('href', root + '/' + href);
+      }
+    });
+  }
+})();
+</script>
+<!-- SITE HEADER END -->
+
+<div class="container">
+  <div class="hero">
+    <h1>🏝️ Season 5: Rescue Island</h1>
+    <p>3 tribes + redraw + advantage warfare • The season of the quiet winner and the kingmaker tiebreak</p>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi">
+      <h3>👑 Winner</h3>
+      <p><a href="../player.html?player=mickey"><b>Mickey</b></a></p>
+      <p class="small">Won 3–3–2, tiebreak 4–3 (Ryan decides)</p>
+    </div>
+
+    <div class="kpi">
+      <h3>🎬 Theme</h3>
+      <p><b>Rescue Island</b></p>
+      <p class="small">3 tribes (Belo / Lulu / Reba) + Episode 4 redraw</p>
+    </div>
+
+    <div class="kpi">
+      <h3>🔥 Fan Favorite</h3>
+      <p><a href="../player.html?player=ryan"><b>Ryan</b></a></p>
+      <p class="small">Finalist + kingmaker vote</p>
+    </div>
+
+    <div class="kpi">
+      <h3>📺 Episodes</h3>
+      <p><b>14 + Finale</b></p>
+      <p class="small">Final 4 fire-making • Final 3 FTC (8 jurors)</p>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <h2 style="margin-top:16px;">🎯 Season Highlights</h2>
+
+      <div class="highlight-box">
+        <b>⚡ Mickey: 0 votes against all season (perfect threat management)</b><br/>
+        Clean “never the target” path → wins the tiebreak FTC.
+      </div>
+
+      <div class="highlight-box">
+        <b>🤝 Finale split: 3–3–2 → Ryan decides the winner</b><br/>
+        Mickey 3 / Sky 3 / Ryan 2 → Ryan votes Mickey for the crown.
+      </div>
+
+      <div class="highlight-box">
+        <b>🏅 Sky: Most dominant competitor</b><br/>
+        4 total challenge wins (3 immunities) + clutch idols at F6 & F5.
+      </div>
+
+      <div class="highlight-box">
+        <b>🎯 The F6 idol pivot</b><br/>
+        Sky saves Sugar → the vote flips and Dave becomes the tragic boot.
+      </div>
+
+      <div class="highlight-box">
+        <b>🧠 Scarlett: Strategic #1… but falls at the fire gate</b><br/>
+        Best strategist overall, then a Final 4 meltdown and fire-making loss.
+      </div>
+
+      <div class="highlight-box">
+        <b>🍭 Sugar: Most targeted (10 votes) and still reaches Final 5</b><br/>
+        The season’s default “easy boot” who kept surviving plan after plan.
+      </div>
+    </div>
+
+    <div>
+      <h2 style="margin-top:16px;">Cast Photo</h2>
+      <img src="../assets/cast/s5-cast.png" alt="Season 5 cast photo"
+           onerror="this.style.display='none'; document.getElementById('cast-missing-s5').style.display='block';"/>
+
+      <div id="cast-missing-s5" class="panel" style="display:none; margin-top:10px; background:rgba(255,153,0,.08);">
+        <b>Cast photo not found yet.</b><br/>
+        Put your image at <b>assets/cast/s5-cast.png</b> and refresh.
+      </div>
+
+      <div class="panel" style="margin-top:12px;">
+        <div style="display:flex; gap:10px; justify-content:space-between; flex-wrap:wrap; align-items:center;">
+          <div><b>Tribes (start):</b> Belo • Lulu • Reba</div>
+          <div class="path-pill"><a href="season5-awards.html">🏅 Season 5 Awards →</a></div>
+        </div>
+        <div class="subtle" style="margin-top:8px;">
+          Belo: Amy, Rodney, Samey, Scarlett, Shawn, Topher<br/>
+          Lulu: Dave, Josee, Max, Mickey, Sky, Sugar<br/>
+          Reba: Beardo, Blaineley, Ella, Jasmine, Leonard, Ryan
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h2 style="margin-top:30px;">📊 Season Statistics</h2>
+
+  <div class="kpi-grid">
+    <div class="kpi">
+      <h3>Only Tiebreak Finale</h3>
+      <p><b>3–3–2 → 4–3</b></p>
+      <p class="small">Ryan casts the deciding winner vote</p>
+    </div>
+
+    <div class="kpi">
+      <h3>Perfect Game</h3>
+      <p><b>Mickey — 0 votes against</b></p>
+      <p class="small">Won without ever being the target</p>
+    </div>
+
+    <div class="kpi">
+      <h3>Most Targeted</h3>
+      <p><b>Sugar — 10 votes</b></p>
+      <p class="small">Still makes Final 5</p>
+    </div>
+
+    <div class="kpi">
+      <h3>Challenge Beast</h3>
+      <p><b>Sky — 3 immunities</b></p>
+      <p class="small">4 total challenge wins</p>
+    </div>
+
+    <div class="kpi">
+      <h3>Strategic Mastermind</h3>
+      <p><b>Scarlett — Strategic Rank #1</b></p>
+      <p class="small">Controlled lanes until the fire gate</p>
+    </div>
+
+    <div class="kpi">
+      <h3>Fire-making Champion</h3>
+      <p><b>Ryan</b></p>
+      <p class="small">Wins fire → reaches FTC → becomes kingmaker</p>
+    </div>
+  </div>
+
+  <div style="margin-top:30px;">
+    <h2 style="margin:0 0 10px;">🏆 Placements</h2>
+    <div class="subtle" style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+      <div class="jumpline">
+        Jump:
+        <a href="#p1">#1</a><a href="#p2">#2</a><a href="#p3">#3</a><a href="#p4">#4</a><a href="#p5">#5</a>
+        <a href="#p6">#6</a><a href="#p7">#7</a><a href="#p8">#8</a><a href="#p9">#9</a><a href="#p10">#10</a>
+        <a href="#p11">#11</a><a href="#p12">#12</a><a href="#p13">#13</a><a href="#p14">#14</a><a href="#p15">#15</a><a href="#p16">#16</a><a href="#p17">#17</a><a href="#p18">#18</a>
+      </div>
+      <div class="subtle">Click any name to open the profile</div>
+    </div>
+
+    <div class="panel" style="margin-top:10px; padding:0;">
+      <table class="table placements">
+        <thead>
+          <tr>
+            <th style="width:64px;">Icon</th>
+            <th style="width:90px;">Place</th>
+            <th>Player</th>
+            <th style="width:130px;">Phase</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+          <tr id="p1">
+            <td><div class="p-avatar"><img src="../assets/avatars/mickey.png" alt="Mickey" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">🐭</div></div></td>
+            <td class="place-badge">🥇 #1</td>
+            <td><a href="../player.html?player=mickey"><b>Mickey</b></a></td>
+            <td class="phase">WINNER</td>
+            <td class="notes">Won FTC <b>3–3–2</b>; Ryan breaks tie → <b>4–3</b></td>
+          </tr>
+
+          <tr id="p2">
+            <td><div class="p-avatar"><img src="../assets/avatars/sky.png" alt="Sky" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">🏅</div></div></td>
+            <td class="place-badge">🥈 #2</td>
+            <td><a href="../player.html?player=sky"><b>Sky</b></a></td>
+            <td class="phase">Finalist</td>
+            <td class="notes">3 jury votes • challenge beast + idols</td>
+          </tr>
+
+          <tr id="p3">
+            <td><div class="p-avatar"><img src="../assets/avatars/ryan.png" alt="Ryan" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">🏹</div></div></td>
+            <td class="place-badge">🥉 #3</td>
+            <td><a href="../player.html?player=ryan"><b>Ryan</b></a></td>
+            <td class="phase">Finalist</td>
+            <td class="notes">2 jury votes • wins fire • casts deciding vote</td>
+          </tr>
+
+          <tr id="p4">
+            <td><div class="p-avatar"><img src="../assets/avatars/scarlett.png" alt="Scarlett" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">🧪</div></div></td>
+            <td class="place-badge">💫 #4</td>
+            <td><a href="../player.html?player=scarlett"><b>Scarlett</b></a></td>
+            <td class="phase">Juror</td>
+            <td class="notes">Lost fire-making at Final 4</td>
+          </tr>
+
+          <tr id="p5">
+            <td><div class="p-avatar"><img src="../assets/avatars/sugar.png" alt="Sugar" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">🍭</div></div></td>
+            <td class="place-badge">🔹 #5</td>
+            <td><a href="../player.html?player=sugar"><b>Sugar</b></a></td>
+            <td class="phase">Juror</td>
+            <td class="notes">Most targeted (10 votes) • out 4–1</td>
+          </tr>
+
+          <tr id="p6">
+            <td><div class="p-avatar"><img src="../assets/avatars/dave.png" alt="Dave" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">😓</div></div></td>
+            <td class="place-badge">🔸 #6</td>
+            <td><a href="../player.html?player=dave"><b>Dave</b></a></td>
+            <td class="phase">Juror</td>
+            <td class="notes">Tragic boot: 3–3 vote after idol play flips the plan</td>
+          </tr>
+
+          <tr id="p7">
+            <td><div class="p-avatar"><img src="../assets/avatars/amy.png" alt="Amy" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">😈</div></div></td>
+            <td class="place-badge">🔹 #7</td>
+            <td><a href="../player.html?player=amy"><b>Amy</b></a></td>
+            <td class="phase">Juror</td>
+            <td class="notes">Out on a 2–2–1 vote</td>
+          </tr>
+
+          <tr id="p8">
+            <td><div class="p-avatar"><img src="../assets/avatars/blaineley.png" alt="blaineley" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">💣</div></div></td>
+            <td class="place-badge">🔸 #8</td>
+            <td><a href="../player.html?player=blaineley"><b>blaineley</b></a></td>
+            <td class="phase">Juror</td>
+            <td class="notes">Chaotic run ends 3–2–1</td>
+          </tr>
+
+          <tr id="p9">
+            <td><div class="p-avatar"><img src="../assets/avatars/shawn.png" alt="Shawn" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">🛡️</div></div></td>
+            <td class="place-badge">🔹 #9</td>
+            <td><a href="../player.html?player=shawn"><b>Shawn</b></a></td>
+            <td class="phase">Juror</td>
+            <td class="notes">Eliminated 5–2</td>
+          </tr>
+
+          <tr id="p10">
+            <td><div class="p-avatar"><img src="../assets/avatars/max.png" alt="Max" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">🦹</div></div></td>
+            <td class="place-badge">🔸 #10</td>
+            <td><a href="../player.html?player=max"><b>Max</b></a></td>
+            <td class="phase">Juror</td>
+            <td class="notes">Eliminated 5–3</td>
+          </tr>
+
+          <tr id="p11">
+            <td><div class="p-avatar"><img src="../assets/avatars/topher.png" alt="Topher" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">📺</div></div></td>
+            <td class="place-badge">🔹 #11</td>
+            <td><a href="../player.html?player=topher"><b>Topher</b></a></td>
+            <td class="phase">Juror</td>
+            <td class="notes">Eliminated 5–1</td>
+          </tr>
+
+          <tr id="p12">
+            <td><div class="p-avatar"><img src="../assets/avatars/rodney.png" alt="Rodney" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">🔑</div></div></td>
+            <td class="place-badge">🔸 #12</td>
+            <td><a href="../player.html?player=rodney"><b>Rodney</b></a></td>
+            <td class="phase">Pre-Juror</td>
+            <td class="notes">Swap fallout • eliminated 3–1</td>
+          </tr>
+
+          <tr id="p13">
+            <td><div class="p-avatar"><img src="../assets/avatars/josee.png" alt="Josee" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">⛸️</div></div></td>
+            <td class="place-badge">🔹 #13</td>
+            <td><a href="../player.html?player=josee"><b>Josee</b></a></td>
+            <td class="phase">Pre-Juror</td>
+            <td class="notes">6–5 boot after KIP theft + idol chaos</td>
+          </tr>
+
+          <tr id="p14">
+            <td><div class="p-avatar"><img src="../assets/avatars/jasmine.png" alt="Jasmine" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">🏕️</div></div></td>
+            <td class="place-badge">🔸 #14</td>
+            <td><a href="../player.html?player=jasmine"><b>Jasmine</b></a></td>
+            <td class="phase">Pre-Juror</td>
+            <td class="notes">Eliminated 2–1</td>
+          </tr>
+
+          <tr id="p15">
+            <td><div class="p-avatar"><img src="../assets/avatars/samey.png" alt="Samey" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">🙂</div></div></td>
+            <td class="place-badge">🔹 #15</td>
+            <td><a href="../player.html?player=samey"><b>Samey</b></a></td>
+            <td class="phase">Pre-Juror</td>
+            <td class="notes">4–1 boot (idol negation)</td>
+          </tr>
+
+          <tr id="p16">
+            <td><div class="p-avatar"><img src="../assets/avatars/beardo.png" alt="Beardo" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">🎤</div></div></td>
+            <td class="place-badge">🔸 #16</td>
+            <td><a href="../player.html?player=beardo"><b>Beardo</b></a></td>
+            <td class="phase">Pre-Juror</td>
+            <td class="notes">2–1 boot (idol negation / chaos)</td>
+          </tr>
+
+          <tr id="p17">
+            <td><div class="p-avatar"><img src="../assets/avatars/ella.png" alt="Ella" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">🎶</div></div></td>
+            <td class="place-badge">🔹 #17</td>
+            <td><a href="../player.html?player=ella"><b>Ella</b></a></td>
+            <td class="phase">Pre-Juror</td>
+            <td class="notes">Eliminated 2–1</td>
+          </tr>
+
+          <tr id="p18">
+            <td><div class="p-avatar"><img src="../assets/avatars/leonard.png" alt="Leonard" onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" onerror="this.style.display='none';"><div class="fb">🧙</div></div></td>
+            <td class="place-badge">⚫ #18</td>
+            <td><a href="../player.html?player=leonard"><b>Leonard</b></a></td>
+            <td class="phase">Pre-Juror</td>
+            <td class="notes">First boot • eliminated 5–2</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <h2 style="margin-top:30px;">🔥 Key Storylines</h2>
+
+  <div class="callout">
+    <h3>The Quiet Threat Wins</h3>
+    <p>Mickey never received a single vote all season, stayed structurally safe through swap/merge chaos, then closed a tied FTC by securing Ryan’s deciding vote.</p>
+  </div>
+
+  <div class="callout">
+    <h3>Sky’s Idol Pivot (Final 6)</h3>
+    <p>The season’s biggest board-flip: Sky plays her idol on Sugar, forcing the vote to redirect onto Dave and reshaping the endgame.</p>
+  </div>
+
+  <div class="callout">
+    <h3>Ryan: Fire Win → Kingmaker</h3>
+    <p>Ryan wins the Final 4 fire-making duel, reaches FTC, then becomes the deciding vote in the 3–3–2 split.</p>
+  </div>
+
+  <div class="callout">
+    <h3>Scarlett’s Fire Gate Collapse</h3>
+    <p>Strategic Rank #1 and a real win lane… until the Final 4 volatility spike. She gets sent to fire and loses the duel.</p>
+  </div>
+
+  <div class="callout">
+    <h3>Advantage Warfare & Chaos</h3>
+    <p>Blaineley’s chaos game + KIP theft on Josee created unstable rounds, but the endgame ultimately consolidated into the Mickey/Ryan structure.</p>
+  </div>
+
+  <div style="margin-top:30px; text-align:center;">
+    <a href="season5-awards.html" class="tab" style="display:inline-block; margin:0 8px;">🏅 Season 5 Awards →</a>
+    <a href="../seasons.html" class="tab" style="display:inline-block; margin:0 8px;">← All Seasons</a>
+  </div>
+
+  <div class="footer">5 seasons complete • 58 unique players • 86 total appearances</div>
+</div>
+
+<!-- SITE FOOTER START -->
+<footer class="siteFooter">
+  <div class="footerInner">
+    <div class="footerTitle">DC Franchise Database</div>
+    <div class="footerSub">Static archive • 5 seasons • 58 players • Icons: name.png</div>
+  </div>
+</footer>
+<!-- SITE FOOTER END -->
+</body>
+</html>

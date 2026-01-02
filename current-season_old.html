@@ -33,6 +33,40 @@
     .ai-bar span{display:block;height:100%;background:rgba(150,100,255,.85)}
     .ai-tag{display:inline-block;margin-left:8px;font-size:.8rem;padding:2px 8px;border-radius:999px;background:rgba(255,255,255,.08);opacity:.85}
     .ai-line{padding:6px 2px}
+  
+    /* AI: avatars + cast grid */
+    .ai-player{display:flex;align-items:center;gap:10px;min-width:0}
+    .ai-avatar{width:28px;height:28px;border-radius:999px;overflow:hidden;flex:0 0 28px;
+      border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);
+      display:grid;place-items:center}
+    .ai-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+    .ai-avatar span{font-size:16px;opacity:.9;line-height:1}
+    .ai-name{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .ai-out{opacity:.45;filter:grayscale(1)}
+    .ai-cast-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+      gap:12px;
+      margin-top:10px
+    }
+    .ai-cast-card{
+      display:flex;gap:12px;align-items:center;
+      padding:12px;border-radius:16px;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(0,0,0,.12);
+      text-decoration:none;color:inherit
+    }
+    .ai-cast-card:hover{border-color:rgba(255,255,255,.16);background:rgba(0,0,0,.16)}
+    .ai-cast-left{display:flex;align-items:center;gap:10px;min-width:0}
+    .ai-cast-avatar{width:42px;height:42px;border-radius:999px;overflow:hidden;flex:0 0 42px;
+      border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);
+      display:grid;place-items:center}
+    .ai-cast-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+    .ai-cast-avatar span{font-size:20px;opacity:.9}
+    .ai-cast-meta{min-width:0}
+    .ai-cast-meta .t1{font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .ai-cast-meta .t2{opacity:.72;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
   </style>
 
 </head>
@@ -509,7 +543,16 @@
       <h3>Titles</h3>
       <div id="aiTitles" class="ai-list"></div>
     </div>
+  
+  <div class="kpi-grid" id="aiCastGridWrap" style="display:none; margin-top:14px;">
+    <div class="kpi" style="grid-column:1/-1;">
+      <h3>👥 Current Players</h3>
+      <div class="muted" style="margin-top:-6px;">Uses players mentioned in your AI output (Titles / Power Rankings / Boot Odds). Greyed-out = eliminated detected in your pasted summary.</div>
+      <div class="ai-cast-grid" id="aiCastGrid"></div>
+    </div>
   </div>
+
+</div>
 
   <script>
   (function() {
@@ -613,7 +656,102 @@
       }[c]));
     }
 
-    function renderBarRow(labelHtml, valueText, pct) {
+    
+    function avatarHtml(id, emoji='👤', cls='ai-avatar') {
+      const safeId = String(id || '').trim();
+      const src = safeId ? `assets/avatars/${safeId}.png` : '';
+      return `
+        <span class="${cls}">
+          <img alt="${escapeHtml(safeId)}" src="${src}"
+               onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';"
+               onload="this.style.display='block'; this.nextElementSibling.style.display='none';">
+          <span style="display:grid">${escapeHtml(emoji)}</span>
+        </span>`;
+    }
+
+    function playerLabel(name, tagText='') {
+      const id = slugify(name);
+      const tag = tagText ? `<span class="ai-tag">${escapeHtml(tagText)}</span>` : '';
+      return `
+        <span class="ai-player">
+          ${avatarHtml(id, '👤', 'ai-avatar')}
+          <span class="ai-name">${linkPlayer(name)}${tag}</span>
+        </span>`;
+    }
+
+    function detectEliminatedNames(summaryText) {
+      const txt = String(summaryText || '');
+      const out = new Set();
+      const m1 = txt.match(/\bELIMINATED\b\s*\n\s*([A-Za-z][A-Za-z0-9 _-]*)/i);
+      if (m1 && m1[1]) out.add(m1[1].trim());
+      return out;
+    }
+
+    function buildMentionedPlayers(data) {
+      const names = [];
+      const push = (n) => { if (n && typeof n === 'string') names.push(n.trim()); };
+      (data.bootPredictions || []).forEach(x => push(x.player));
+      (data.powerRankings || []).forEach(x => push(x.player));
+      (data.titles || []).forEach(x => push(x.player));
+      if (data.bestMove && data.bestMove.player) push(data.bestMove.player);
+      if (data.biggestRisk && data.biggestRisk.player) push(data.biggestRisk.player);
+
+      const seen = new Set();
+      const unique = [];
+      for (const n of names) {
+        const k = n.toLowerCase();
+        if (!k || seen.has(k)) continue;
+        seen.add(k);
+        unique.push(n);
+      }
+      return unique;
+    }
+
+    function renderCastGrid(data) {
+      const wrap = $('aiCastGridWrap');
+      const grid = $('aiCastGrid');
+      if (!wrap || !grid) return;
+
+      const players = buildMentionedPlayers(data);
+      if (!players.length) {
+        wrap.style.display = 'none';
+        grid.innerHTML = '';
+        return;
+      }
+
+      const elimNames = detectEliminatedNames(summaryEl?.value || '');
+      const elimSet = new Set(Array.from(elimNames).map(n => n.toLowerCase()));
+
+      const getTitle = (name) => {
+        const t = Array.isArray(data.titles)
+          ? data.titles.find(x => String(x.player||'').toLowerCase() === String(name).toLowerCase())
+          : null;
+        return t?.title || '';
+      };
+
+      grid.innerHTML = players.map(name => {
+        const id = slugify(name);
+        const isOut = elimSet.has(String(name).toLowerCase());
+        const cls = isOut ? 'ai-cast-card ai-out' : 'ai-cast-card';
+        const subtitle = getTitle(name) || (isOut ? 'Eliminated' : 'Active');
+
+        return `
+          <a class="${cls}" href="player.html?player=${id}">
+            <div class="ai-cast-left">
+              ${avatarHtml(id, '👤', 'ai-cast-avatar')}
+              <div class="ai-cast-meta">
+                <div class="t1">${escapeHtml(name)}</div>
+                <div class="t2">${escapeHtml(subtitle)}</div>
+              </div>
+            </div>
+          </a>
+        `;
+      }).join('');
+
+      wrap.style.display = '';
+    }
+
+function renderBarRow(labelHtml, valueText, pct) {
       const width = Math.max(0, Math.min(100, pct));
       return `
         <div class="ai-row">
@@ -634,8 +772,8 @@
       midGrid.style.display = '';
 
       // Top cards
-      const best = data.bestMove ? `${linkPlayer(data.bestMove.player)} — ${escapeHtml(data.bestMove.reason)}` : '—';
-      const risk = data.biggestRisk ? `${linkPlayer(data.biggestRisk.player)} — ${escapeHtml(data.biggestRisk.reason)}` : '—';
+      const best = data.bestMove ? `${playerLabel(data.bestMove.player)} — ${escapeHtml(data.bestMove.reason)}` : '—';
+      const risk = data.biggestRisk ? `${playerLabel(data.biggestRisk.player)} — ${escapeHtml(data.biggestRisk.reason)}` : '—';
       $('aiBestMove').innerHTML = best;
       $('aiBiggestRisk').innerHTML = risk;
       $('aiNarrative').innerHTML = escapeHtml(data.narrativeSummary || '—');
@@ -644,7 +782,7 @@
       const boot = Array.isArray(data.bootPredictions) ? data.bootPredictions.slice() : [];
       boot.sort((a,b) => (b.prob||0) - (a.prob||0));
       $('aiBootOdds').innerHTML = boot.length
-        ? boot.map(x => renderBarRow(linkPlayer(x.player), `${Math.round((x.prob||0)*100)}%`, (x.prob||0)*100) +
+        ? boot.map(x => renderBarRow(playerLabel(x.player), `${Math.round((x.prob||0)*100)}%`, (x.prob||0)*100) +
             `<div class="ai-row-sub">${escapeHtml(x.why || '')}</div>`).join('')
         : '<div class="muted">No boot predictions returned.</div>';
 
@@ -653,8 +791,7 @@
       pr.sort((a,b) => (b.score||0) - (a.score||0));
       $('aiPowerRankings').innerHTML = pr.length
         ? pr.map(x => {
-            const tag = escapeHtml(x.tag || '');
-            const label = `${linkPlayer(x.player)} <span class="ai-tag">${tag}</span>`;
+            const label = playerLabel(x.player, x.tag || '');
             return renderBarRow(label, `${Math.round(x.score||0)}/100`, (x.score||0)) +
               `<div class="ai-row-sub">${escapeHtml(x.blurb || '')}</div>`;
           }).join('')
@@ -671,8 +808,10 @@
       // Titles
       const titles = Array.isArray(data.titles) ? data.titles.slice() : [];
       $('aiTitles').innerHTML = titles.length
-        ? titles.map(x => `<div class="ai-line">${linkPlayer(x.player)} — <span class="muted">${escapeHtml(x.title || '')}</span></div>`).join('')
+        ? titles.map(x => `<div class="ai-line">${playerLabel(x.player)} — <span class="muted">${escapeHtml(x.title || '')}</span></div>`).join('')
         : '<div class="muted">No titles returned.</div>';
+
+      renderCastGrid(data);
     }
 
     async function generate() {

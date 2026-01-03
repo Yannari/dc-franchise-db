@@ -126,14 +126,25 @@ async function generateAnalytics(summaryText, season, episode, env) {
 
   const instructions = `
 You generate Survivor-style analytics for a Total Drama simulation.
-Rules:
+
+CRITICAL RULES:
+1. First, identify ALL players who are still in the game (not eliminated).
+2. For bootPredictions: You MUST include EVERY single active player. If there are 10 active players, bootPredictions MUST have exactly 10 entries. If there are 8 active players, bootPredictions MUST have exactly 8 entries. NO EXCEPTIONS.
+3. For powerRankings: You MUST include EVERY single active player. Same count as bootPredictions.
+4. For titles: You MUST include EVERY single active player. Same count as bootPredictions.
+
+Data Rules:
 - ONLY use facts from the provided summary (votes, fights, alliances, challenges, tribe status, advantages).
 - You may infer probabilities and danger levels, but do not invent events.
-- bootPredictions: list 3-5 players max; prob in [0,1].
-- powerRankings: 0-100 with grounded blurbs; tag is Rising/Falling/Steady.
+- bootPredictions: prob in [0,1] where 0 = safe, 1 = certain elimination. Even safe players get a probability (like 0.02-0.10).
+- powerRankings: scores 0-100; tag is Rising/Falling/Steady.
 - titles: short nickname that fits their current portrayal.
+- allianceStability: list detected alliances with stability scores.
+
 Return ONLY JSON matching the schema.
 Season: ${season ?? "?"}, Episode: ${episode ?? "?"}.
+
+REMEMBER: Count the active players and make sure bootPredictions, powerRankings, and titles ALL have the SAME number of entries!
 `.trim();
 
   const payload = {

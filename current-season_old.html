@@ -861,8 +861,11 @@ Owen: This is going to be amazing!"
         targetEl.textContent = "No boot predictions returned.";
         return;
       }
-      targetEl.innerHTML = bootPredictions
-        .slice(0, 6)
+      
+      // Sort by probability descending (highest risk first)
+      const sorted = [...bootPredictions].sort((a, b) => (Number(b.prob) || 0) - (Number(a.prob) || 0));
+      
+      targetEl.innerHTML = sorted
         .map((p) => {
           const name = p.player || "";
           const id = slugify(name);
@@ -1005,15 +1008,41 @@ Owen: This is going to be amazing!"
       const points = active.slice(0, 30).map((name) => {
         const key = name.toLowerCase();
         const power = bm.get(key) ?? 50;
-        const prob = probMap.get(key) ?? 0.15;
+        
+        // Use boot prediction from AI if available
+        // Otherwise use a safe default based on power
+        let prob = probMap.get(key);
+        if (prob === undefined) {
+          // Fallback: If AI didn't include this player, assume moderate-low risk
+          // Power 100 = 10% risk, Power 50 = 20% risk, Power 0 = 40% risk
+          prob = Math.max(0.10, Math.min(0.40, 0.50 - (power / 100) * 0.40));
+        }
+        
         // x: power (0..100)
         // y: safety = 100 - prob*100
         const x = power;
         const y = 100 - prob*100;
-        return { name, x, y };
+        return { name, x, y, prob, power };
+      });
+      
+      // Normalize to use full compass space
+      const xValues = points.map(p => p.x);
+      const yValues = points.map(p => p.y);
+      const xMin = Math.min(...xValues);
+      const xMax = Math.max(...xValues);
+      const yMin = Math.min(...yValues);
+      const yMax = Math.max(...yValues);
+      
+      // Scale to 10-90 range for better visualization (with 10% padding)
+      const normalizedPoints = points.map(p => {
+        const xRange = xMax - xMin || 1;
+        const yRange = yMax - yMin || 1;
+        const xNorm = 10 + ((p.x - xMin) / xRange) * 80;
+        const yNorm = 10 + ((p.y - yMin) / yRange) * 80;
+        return { name: p.name, x: xNorm, y: yNorm };
       });
 
-      els.compassPoints.innerHTML = points.map((p) => {
+      els.compassPoints.innerHTML = normalizedPoints.map((p) => {
         const id = slugify(p.name);
         // convert x,y (0..100) to %
         const left = Math.max(3, Math.min(97, p.x));
@@ -1250,6 +1279,47 @@ Owen: This is going to be amazing!"
         const msg = data?.error?.message || data?.message || "Unknown error.";
         throw new Error(msg);
       }
+      
+      // VALIDATION: Auto-fill missing players
+      const cast = parseCastFromSummary(summaryText);
+      const eliminated = parseEliminated(summaryText);
+      const active = cast.filter(name => !eliminated.some(e => e.toLowerCase() === name.toLowerCase()));
+      
+      // Ensure all active players are in bootPredictions
+      if (Array.isArray(data.bootPredictions)) {
+        const bootMap = new Map(data.bootPredictions.map(x => [x.player.toLowerCase(), x]));
+        active.forEach(player => {
+          const key = player.toLowerCase();
+          if (!bootMap.has(key)) {
+            // Missing player - add with default low risk
+            console.warn(`Missing in bootPredictions: ${player} - auto-adding with 10% risk`);
+            data.bootPredictions.push({
+              player: player,
+              prob: 0.10,
+              why: "Not in AI's top predictions; assumed moderate safety."
+            });
+          }
+        });
+      }
+      
+      // Ensure all active players are in powerRankings
+      if (Array.isArray(data.powerRankings)) {
+        const powerMap = new Map(data.powerRankings.map(x => [x.player.toLowerCase(), x]));
+        active.forEach(player => {
+          const key = player.toLowerCase();
+          if (!powerMap.has(key)) {
+            // Missing player - add with default middle score
+            console.warn(`Missing in powerRankings: ${player} - auto-adding with score 50`);
+            data.powerRankings.push({
+              player: player,
+              score: 50,
+              tag: "Steady",
+              blurb: "Not in AI's detailed rankings; neutral position."
+            });
+          }
+        });
+      }
+      
       return data;
     }
 

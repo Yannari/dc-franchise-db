@@ -1005,7 +1005,15 @@ Owen: This is going to be amazing!"
       const points = active.slice(0, 30).map((name) => {
         const key = name.toLowerCase();
         const power = bm.get(key) ?? 50;
-        const prob = probMap.get(key) ?? 0.15;
+        
+        // If player is in boot predictions, use that
+        // Otherwise, estimate boot risk based on power: low power = high risk
+        let prob = probMap.get(key);
+        if (prob === undefined) {
+          // Estimate: power 0 = 80% risk, power 50 = 30% risk, power 100 = 5% risk
+          prob = Math.max(0.05, Math.min(0.80, 0.85 - (power / 100) * 0.75));
+        }
+        
         // x: power (0..100)
         // y: safety = 100 - prob*100
         const x = power;

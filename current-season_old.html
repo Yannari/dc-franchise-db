@@ -1623,13 +1623,14 @@ Owen: This is going to be amazing!"
     container.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
   
-  // Parse transcript into beautiful HTML
+  // Parse transcript into beautiful HTML with animations
   function parseTranscript(text) {
     let html = '<div class="episode-content">';
     const lines = text.split('\n');
     let currentScene = '';
     let inConfessional = false;
     let inTribal = false;
+    let lineIndex = 0; // For staggered animations
     
     lines.forEach((line) => {
       line = line.trim();
@@ -1642,9 +1643,10 @@ Owen: This is going to be amazing!"
         // Confessional detection
         if (sceneText.toLowerCase().includes('confessional')) {
           if (!inConfessional) {
-            html += '<div class="confessional">';
+            html += '<div class="confessional" style="animation-delay: ' + (lineIndex * 0.05) + 's">';
             html += '<div class="confessional-label">🎥 ' + escapeHtml(sceneText).toUpperCase() + '</div>';
             inConfessional = true;
+            lineIndex++;
           }
           return;
         }
@@ -1655,12 +1657,14 @@ Owen: This is going to be amazing!"
           inConfessional = false;
         }
         
-        // Tribal Council detection
-        if (sceneText.toLowerCase().includes('tribal')) {
+        // Tribal Council detection with suspense
+        if (sceneText.toLowerCase().includes('tribal') || sceneText.toLowerCase().includes('campfire ceremony')) {
           if (!inTribal) {
-            html += '<div class="tribal-council">';
+            html += '<div class="tribal-council" style="animation-delay: ' + (lineIndex * 0.05) + 's">';
             html += '<div class="tribal-header">🔥 ' + escapeHtml(sceneText).toUpperCase() + ' 🔥</div>';
+            html += '<div class="tribal-suspense">⏳ The tension is palpable...</div>';
             inTribal = true;
+            lineIndex++;
           }
           return;
         }
@@ -1671,15 +1675,16 @@ Owen: This is going to be amazing!"
           inTribal = false;
         }
         
-        // Regular scene
+        // Regular scene with sticky header
         if (currentScene && !inConfessional) html += '</div>';
         html += '<div class="scene">';
-        html += '<div class="scene-header">📍 ' + escapeHtml(sceneText) + '</div>';
+        html += '<div class="scene-header scene-sticky" style="animation-delay: ' + (lineIndex * 0.05) + 's">📍 ' + escapeHtml(sceneText) + '</div>';
         currentScene = sceneText;
+        lineIndex++;
         return;
       }
       
-      // Dialogue: "Name: Text"
+      // Dialogue: "Name: Text" - rendered as chat bubbles
       const dialogueMatch = line.match(/^([A-Z][a-zA-Z\s']+):\s*(.+)$/);
       if (dialogueMatch) {
         let [, character, dialogue] = dialogueMatch;
@@ -1687,32 +1692,36 @@ Owen: This is going to be amazing!"
         const charKey = character.toLowerCase();
         const avatar = getCharacterAvatar(charKey);
         
-        html += '<div class="dialogue-line">';
+        html += '<div class="dialogue-line chat-bubble" style="animation-delay: ' + (lineIndex * 0.05) + 's">';
         html += `<div class="character-avatar">${avatar}</div>`;
-        html += '<div class="dialogue-content">';
+        html += '<div class="dialogue-bubble">';
         html += `<div class="character-name">${escapeHtml(character)}</div>`;
         html += `<div class="dialogue-text">${escapeHtml(dialogue)}</div>`;
         html += '</div>';
         html += '</div>';
+        lineIndex++;
         return;
       }
       
-      // Elimination announcement
+      // Elimination announcement - special styling in Tribal
       if (line.toLowerCase().includes('eliminated') || line.toLowerCase().includes('voted out')) {
-        html += `<div class="eliminated-player">`;
+        html += `<div class="eliminated-player" style="animation-delay: ' + (lineIndex * 0.05) + 's">`;
         html += `<div class="eliminated-message">${escapeHtml(line)}</div>`;
         html += `</div>`;
+        lineIndex++;
         return;
       }
       
-      // Vote reveals
+      // Vote reveals in Tribal Council with suspense animation
       if (inTribal && (line.toLowerCase().includes('vote') || line.toLowerCase().includes('marshmallow'))) {
-        html += `<div class="vote-reveal">${escapeHtml(line)}</div>`;
+        html += `<div class="vote-reveal suspense-reveal" style="animation-delay: ${lineIndex * 0.1}s">${escapeHtml(line)}</div>`;
+        lineIndex++;
         return;
       }
       
       // Stage directions or other text
-      html += `<div class="stage-direction">${escapeHtml(line)}</div>`;
+      html += `<div class="stage-direction" style="animation-delay: ${lineIndex * 0.05}s">${escapeHtml(line)}</div>`;
+      lineIndex++;
     });
     
     // Close any open sections

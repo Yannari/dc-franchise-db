@@ -1259,6 +1259,47 @@ Owen: This is going to be amazing!"
         const msg = data?.error?.message || data?.message || "Unknown error.";
         throw new Error(msg);
       }
+      
+      // VALIDATION: Auto-fill missing players
+      const cast = parseCastFromSummary(summaryText);
+      const eliminated = parseEliminated(summaryText);
+      const active = cast.filter(name => !eliminated.some(e => e.toLowerCase() === name.toLowerCase()));
+      
+      // Ensure all active players are in bootPredictions
+      if (Array.isArray(data.bootPredictions)) {
+        const bootMap = new Map(data.bootPredictions.map(x => [x.player.toLowerCase(), x]));
+        active.forEach(player => {
+          const key = player.toLowerCase();
+          if (!bootMap.has(key)) {
+            // Missing player - add with default low risk
+            console.warn(`Missing in bootPredictions: ${player} - auto-adding with 10% risk`);
+            data.bootPredictions.push({
+              player: player,
+              prob: 0.10,
+              why: "Not in AI's top predictions; assumed moderate safety."
+            });
+          }
+        });
+      }
+      
+      // Ensure all active players are in powerRankings
+      if (Array.isArray(data.powerRankings)) {
+        const powerMap = new Map(data.powerRankings.map(x => [x.player.toLowerCase(), x]));
+        active.forEach(player => {
+          const key = player.toLowerCase();
+          if (!powerMap.has(key)) {
+            // Missing player - add with default middle score
+            console.warn(`Missing in powerRankings: ${player} - auto-adding with score 50`);
+            data.powerRankings.push({
+              player: player,
+              score: 50,
+              tag: "Steady",
+              blurb: "Not in AI's detailed rankings; neutral position."
+            });
+          }
+        });
+      }
+      
       return data;
     }
 

@@ -440,26 +440,6 @@
           <div class="mini-title">TITLES</div>
           <div class="mini-body" id="cardTitles">No titles yet.</div>
         </div>
-        
-        <div class="mini-panel">
-          <div class="mini-title">SOCIAL NETWORK</div>
-          <div class="mini-body" id="cardSocialNetwork">No social network data yet.</div>
-        </div>
-        
-        <div class="mini-panel">
-          <div class="mini-title">JURY MANAGEMENT</div>
-          <div class="mini-body" id="cardJuryManagement">No jury management data yet.</div>
-        </div>
-        
-        <div class="mini-panel">
-          <div class="mini-title">THREAT BREAKDOWN</div>
-          <div class="mini-body" id="cardThreatBreakdown">No threat breakdown yet.</div>
-        </div>
-        
-        <div class="mini-panel">
-          <div class="mini-title">PATH TO VICTORY</div>
-          <div class="mini-body" id="cardPathToVictory">No path to victory data yet.</div>
-        </div>
       </div>
     </div>
 
@@ -502,6 +482,29 @@
               <tbody id="gpTableBody"></tbody>
             </table>
           </div>
+        </div>
+      </div>
+      
+      <!-- NEW ANALYTICS PANELS -->
+      <div class="cards-grid two" style="margin-top: 20px;">
+        <div class="mini-panel">
+          <div class="mini-title">SOCIAL NETWORK</div>
+          <div class="mini-body" id="cardSocialNetwork">No social network data yet.</div>
+        </div>
+        
+        <div class="mini-panel">
+          <div class="mini-title">JURY MANAGEMENT</div>
+          <div class="mini-body" id="cardJuryManagement">No jury management data yet.</div>
+        </div>
+        
+        <div class="mini-panel">
+          <div class="mini-title">THREAT BREAKDOWN</div>
+          <div class="mini-body" id="cardThreatBreakdown">No threat breakdown yet.</div>
+        </div>
+        
+        <div class="mini-panel">
+          <div class="mini-title">PATH TO VICTORY</div>
+          <div class="mini-body" id="cardPathToVictory">No path to victory data yet.</div>
         </div>
       </div>
     </div>
@@ -922,7 +925,6 @@ Owen: This is going to be amazing!"
         return;
       }
       targetEl.innerHTML = powerRankings
-        
         .map((r) => {
           const name = r.player || "";
           const id = slugify(name);
@@ -1161,7 +1163,7 @@ Owen: This is going to be amazing!"
     function renderAllianceOverview(targetEl, analytics, summaryText) {
       // Lightweight: show top alliance stability + any named alliances in summary (best effort)
       const st = Array.isArray(analytics?.allianceStability) ? analytics.allianceStability : [];
-      const top = st.map(a => `${a.name} (${Math.round(Number(a.score)||0)}/100)`).join(", ");
+      const top = st.slice(0, 2).map(a => `${a.name} (${Math.round(Number(a.score)||0)}/100)`).join(", ");
       const has = top ? `<b>Detected:</b> ${escapeHtml(top)}<br/>` : "";
 
       // Try to detect any explicit "Alliance Status" block names
@@ -1251,9 +1253,11 @@ Owen: This is going to be amazing!"
       const eliminated = new Set((eliminatedNames||[]).map(n=>n.toLowerCase()));
       const pr = Array.isArray(analytics?.powerRankings) ? analytics.powerRankings : [];
       const bp = Array.isArray(analytics?.bootPredictions) ? analytics.bootPredictions : [];
+      const rolesArr = Array.isArray(analytics?.roles) ? analytics.roles : [];
 
       const powerMap = new Map(pr.map(x => [(x.player||"").toLowerCase(), x]));
       const probMap = new Map(bp.map(x => [(x.player||"").toLowerCase(), x]));
+      const rolesMap = new Map(rolesArr.map(x => [(x.player||"").toLowerCase(), x.role||""]));
 
       const active = (castNames||[]).filter(n => !eliminated.has(n.toLowerCase()));
       const rows = active.map((name) => {
@@ -1263,11 +1267,15 @@ Owen: This is going to be amazing!"
         const score = Math.round(Number(r.score)||0);
         const prob = Math.round((Number(p.prob)||0)*100);
         const title = titlesMap?.[key] || "";
-        const role =
+        
+        // Use AI-generated role from analytics, fallback to calculated role
+        const role = rolesMap.get(key) || (
           prob >= 35 ? "In Danger" :
           score >= 80 ? "Power Player" :
           score >= 65 ? "Well-Positioned" :
-          "Under the Radar";
+          "Under the Radar"
+        );
+        
         return { name, score, prob, tag: r.tag || "Steady", title, role };
       }).sort((a,b)=>b.score-a.score);
 

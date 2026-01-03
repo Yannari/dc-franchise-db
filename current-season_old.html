@@ -440,6 +440,26 @@
           <div class="mini-title">TITLES</div>
           <div class="mini-body" id="cardTitles">No titles yet.</div>
         </div>
+        
+        <div class="mini-panel">
+          <div class="mini-title">SOCIAL NETWORK</div>
+          <div class="mini-body" id="cardSocialNetwork">No social network data yet.</div>
+        </div>
+        
+        <div class="mini-panel">
+          <div class="mini-title">JURY MANAGEMENT</div>
+          <div class="mini-body" id="cardJuryManagement">No jury management data yet.</div>
+        </div>
+        
+        <div class="mini-panel">
+          <div class="mini-title">THREAT BREAKDOWN</div>
+          <div class="mini-body" id="cardThreatBreakdown">No threat breakdown yet.</div>
+        </div>
+        
+        <div class="mini-panel">
+          <div class="mini-title">PATH TO VICTORY</div>
+          <div class="mini-body" id="cardPathToVictory">No path to victory data yet.</div>
+        </div>
       </div>
     </div>
 
@@ -584,6 +604,10 @@ Owen: This is going to be amazing!"
       cardPowerRankings: $("cardPowerRankings"),
       cardAllianceStability: $("cardAllianceStability"),
       cardTitles: $("cardTitles"),
+      cardSocialNetwork: $("cardSocialNetwork"),
+      cardJuryManagement: $("cardJuryManagement"),
+      cardThreatBreakdown: $("cardThreatBreakdown"),
+      cardPathToVictory: $("cardPathToVictory"),
 
       compassPoints: $("compassPoints"),
       gpTableBody: $("gpTableBody"),
@@ -898,7 +922,7 @@ Owen: This is going to be amazing!"
         return;
       }
       targetEl.innerHTML = powerRankings
-        .slice(0, 10)
+        
         .map((r) => {
           const name = r.player || "";
           const id = slugify(name);
@@ -953,7 +977,7 @@ Owen: This is going to be amazing!"
         targetEl.textContent = "No titles returned.";
         return;
       }
-      targetEl.innerHTML = titles.slice(0, 40).map((t) => {
+      targetEl.innerHTML = titles.map((t) => {
         const name = t.player || "";
         const id = slugify(name);
         return `
@@ -972,10 +996,172 @@ Owen: This is going to be amazing!"
       }).join("");
     }
 
+    function renderSocialNetwork(targetEl, socialNetwork) {
+      if (!Array.isArray(socialNetwork) || socialNetwork.length === 0) {
+        targetEl.textContent = "No social network data returned.";
+        return;
+      }
+      targetEl.innerHTML = socialNetwork.map((s) => {
+        const name = s.player || "";
+        const id = slugify(name);
+        const likes = s.strongLikes || [];
+        const dislikes = s.strongDislikes || [];
+        const centrality = Math.round(Number(s.centralityScore) || 0);
+        const isolated = s.isolated ? '🔴 Isolated' : '';
+        
+        return `
+          <div class="bar-row">
+            <div class="bar-head" style="flex-direction: column; align-items: flex-start; gap: 6px;">
+              <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
+                <span class="tiny-avatar">
+                  <img src="assets/avatars/${id}.png" alt="${escapeHtml(name)}"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"
+                    onload="this.style.display='inline-flex'; this.nextElementSibling.style.display='none';" />
+                  <span class="tiny-fallback">${escapeHtml((name||'?').slice(0,1).toUpperCase())}</span>
+                </span>
+                <a class="plink" href="player.html?player=${id}"><b>${escapeHtml(name)}</b></a>
+                <span class="muted" style="margin-left: auto; font-size: 11px;">Centrality: ${centrality}/100 ${isolated}</span>
+              </div>
+              <div style="font-size: 12px; opacity: 0.8;">
+                ${likes.length > 0 ? `💚 Likes: ${escapeHtml(likes.join(', '))}` : ''}
+                ${likes.length > 0 && dislikes.length > 0 ? '<br/>' : ''}
+                ${dislikes.length > 0 ? `❤️‍🔥 Dislikes: ${escapeHtml(dislikes.join(', '))}` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderJuryManagement(targetEl, juryManagement) {
+      if (!Array.isArray(juryManagement) || juryManagement.length === 0) {
+        targetEl.textContent = "No jury management data returned.";
+        return;
+      }
+      
+      const sorted = [...juryManagement].sort((a, b) => (Number(b.score) || 0) - (Number(a.score) || 0));
+      
+      targetEl.innerHTML = sorted.map((j) => {
+        const name = j.player || "";
+        const id = slugify(name);
+        const score = Math.round(Number(j.score) || 0);
+        const note = j.note || "";
+        
+        return `
+          <div class="bar-row">
+            <div class="bar-head">
+              <div class="bar-left">
+                <span class="tiny-avatar">
+                  <img src="assets/avatars/${id}.png" alt="${escapeHtml(name)}"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"
+                    onload="this.style.display='inline-flex'; this.nextElementSibling.style.display='none';" />
+                  <span class="tiny-fallback">${escapeHtml((name||'?').slice(0,1).toUpperCase())}</span>
+                </span>
+                <a class="plink" href="player.html?player=${id}"><b>${escapeHtml(name)}</b></a>
+              </div>
+              <div class="bar-pct">${score}/100</div>
+            </div>
+            <div class="bar-track"><div class="bar-fill" style="width:${score}%"></div></div>
+            <div class="bar-note">${escapeHtml(note)}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderThreatBreakdown(targetEl, threatBreakdown) {
+      if (!Array.isArray(threatBreakdown) || threatBreakdown.length === 0) {
+        targetEl.textContent = "No threat breakdown data returned.";
+        return;
+      }
+      
+      targetEl.innerHTML = threatBreakdown.map((t) => {
+        const name = t.player || "";
+        const id = slugify(name);
+        const physical = Math.round(Number(t.physical) || 0);
+        const strategic = Math.round(Number(t.strategic) || 0);
+        const social = Math.round(Number(t.social) || 0);
+        const advantage = Math.round(Number(t.advantage) || 0);
+        const total = Math.round((physical + strategic + social + advantage) / 4);
+        
+        return `
+          <div class="bar-row">
+            <div class="bar-head" style="flex-direction: column; align-items: flex-start; gap: 8px;">
+              <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
+                <span class="tiny-avatar">
+                  <img src="assets/avatars/${id}.png" alt="${escapeHtml(name)}"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"
+                    onload="this.style.display='inline-flex'; this.nextElementSibling.style.display='none';" />
+                  <span class="tiny-fallback">${escapeHtml((name||'?').slice(0,1).toUpperCase())}</span>
+                </span>
+                <a class="plink" href="player.html?player=${id}"><b>${escapeHtml(name)}</b></a>
+                <span class="muted" style="margin-left: auto;">Total: ${total}/100</span>
+              </div>
+              <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: 100%; font-size: 11px;">
+                <div>💪 Phys: ${physical}</div>
+                <div>🧠 Strat: ${strategic}</div>
+                <div>🤝 Social: ${social}</div>
+                <div>🎁 Adv: ${advantage}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderPathToVictory(targetEl, pathToVictory) {
+      if (!Array.isArray(pathToVictory) || pathToVictory.length === 0) {
+        targetEl.textContent = "No path to victory data returned.";
+        return;
+      }
+      
+      const viabilityOrder = { 'High': 1, 'Medium': 2, 'Low': 3, 'None': 4 };
+      const sorted = [...pathToVictory].sort((a, b) => 
+        (viabilityOrder[a.viability] || 99) - (viabilityOrder[b.viability] || 99)
+      );
+      
+      targetEl.innerHTML = sorted.map((p) => {
+        const name = p.player || "";
+        const id = slugify(name);
+        const viability = p.viability || "Unknown";
+        const winCondition = p.winCondition || "";
+        const obstacles = p.obstacles || "";
+        
+        const viabilityColor = {
+          'High': '#4ade80',
+          'Medium': '#fbbf24',
+          'Low': '#fb923c',
+          'None': '#ef4444'
+        }[viability] || '#9ca3af';
+        
+        return `
+          <div class="bar-row">
+            <div class="bar-head" style="flex-direction: column; align-items: flex-start; gap: 8px;">
+              <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
+                <span class="tiny-avatar">
+                  <img src="assets/avatars/${id}.png" alt="${escapeHtml(name)}"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"
+                    onload="this.style.display='inline-flex'; this.nextElementSibling.style.display='none';" />
+                  <span class="tiny-fallback">${escapeHtml((name||'?').slice(0,1).toUpperCase())}</span>
+                </span>
+                <a class="plink" href="player.html?player=${id}"><b>${escapeHtml(name)}</b></a>
+                <span style="margin-left: auto; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; background: ${viabilityColor}22; color: ${viabilityColor}; border: 1px solid ${viabilityColor};">
+                  ${escapeHtml(viability)}
+                </span>
+              </div>
+              <div style="font-size: 12px; opacity: 0.9;">
+                <div><b>Win Condition:</b> ${escapeHtml(winCondition)}</div>
+                <div style="margin-top: 4px;"><b>Obstacles:</b> ${escapeHtml(obstacles)}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
     function renderAllianceOverview(targetEl, analytics, summaryText) {
       // Lightweight: show top alliance stability + any named alliances in summary (best effort)
       const st = Array.isArray(analytics?.allianceStability) ? analytics.allianceStability : [];
-      const top = st.slice(0, 2).map(a => `${a.name} (${Math.round(Number(a.score)||0)}/100)`).join(", ");
+      const top = st.map(a => `${a.name} (${Math.round(Number(a.score)||0)}/100)`).join(", ");
       const has = top ? `<b>Detected:</b> ${escapeHtml(top)}<br/>` : "";
 
       // Try to detect any explicit "Alliance Status" block names
@@ -1169,6 +1355,10 @@ Owen: This is going to be amazing!"
       renderPowerRankings(els.cardPowerRankings, analytics.powerRankings);
       renderAllianceStability(els.cardAllianceStability, analytics.allianceStability);
       renderTitles(els.cardTitles, analytics.titles);
+      renderSocialNetwork(els.cardSocialNetwork, analytics.socialNetwork);
+      renderJuryManagement(els.cardJuryManagement, analytics.juryManagement);
+      renderThreatBreakdown(els.cardThreatBreakdown, analytics.threatBreakdown);
+      renderPathToVictory(els.cardPathToVictory, analytics.pathToVictory);
 
       // Gameplay
       renderCompass(analytics, cast, eliminated, titlesMap);
@@ -1442,6 +1632,10 @@ Owen: This is going to be amazing!"
       els.cardAllianceOverview.innerHTML = "<div class='muted'>No alliance info yet.</div>";
       els.cardAllianceStability.innerHTML = "<div class='muted'>No alliance stability yet.</div>";
       els.cardTitles.innerHTML = "<div class='muted'>No titles yet.</div>";
+      els.cardSocialNetwork.innerHTML = "<div class='muted'>No social network data yet.</div>";
+      els.cardJuryManagement.innerHTML = "<div class='muted'>No jury management data yet.</div>";
+      els.cardThreatBreakdown.innerHTML = "<div class='muted'>No threat breakdown yet.</div>";
+      els.cardPathToVictory.innerHTML = "<div class='muted'>No path to victory data yet.</div>";
 
       // Gameplay placeholders
       els.gpSvg.innerHTML = "";

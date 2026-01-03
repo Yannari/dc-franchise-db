@@ -1076,14 +1076,21 @@ Owen: This is going to be amazing!"
         return;
       }
       
-      targetEl.innerHTML = threatBreakdown.map((t) => {
-        const name = t.player || "";
-        const id = slugify(name);
+      // Calculate totals and sort by total threat (highest to lowest)
+      const withTotals = threatBreakdown.map((t) => {
         const physical = Math.round(Number(t.physical) || 0);
         const strategic = Math.round(Number(t.strategic) || 0);
         const social = Math.round(Number(t.social) || 0);
         const advantage = Math.round(Number(t.advantage) || 0);
         const total = Math.round((physical + strategic + social + advantage) / 4);
+        return { ...t, physical, strategic, social, advantage, total };
+      });
+      
+      const sorted = withTotals.sort((a, b) => b.total - a.total);
+      
+      targetEl.innerHTML = sorted.map((t) => {
+        const name = t.player || "";
+        const id = slugify(name);
         
         return `
           <div class="bar-row">
@@ -1096,13 +1103,13 @@ Owen: This is going to be amazing!"
                   <span class="tiny-fallback">${escapeHtml((name||'?').slice(0,1).toUpperCase())}</span>
                 </span>
                 <a class="plink" href="player.html?player=${id}"><b>${escapeHtml(name)}</b></a>
-                <span class="muted" style="margin-left: auto;">Total: ${total}/100</span>
+                <span class="muted" style="margin-left: auto;">Total: ${t.total}/100</span>
               </div>
               <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: 100%; font-size: 11px;">
-                <div>💪 Phys: ${physical}</div>
-                <div>🧠 Strat: ${strategic}</div>
-                <div>🤝 Social: ${social}</div>
-                <div>🎁 Adv: ${advantage}</div>
+                <div>💪 Phys: ${t.physical}</div>
+                <div>🧠 Strat: ${t.strategic}</div>
+                <div>🤝 Social: ${t.social}</div>
+                <div>🎁 Adv: ${t.advantage}</div>
               </div>
             </div>
           </div>

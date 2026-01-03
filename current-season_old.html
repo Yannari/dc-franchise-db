@@ -1754,7 +1754,7 @@ Owen: This is going to be amazing!"
   })();
   
   // ========================================
-  // EPISODE TAB FUNCTIONALITY
+  // EPISODE TAB FUNCTIONALITY (Global scope for onclick handlers)
   // ========================================
   
   // Configuration
@@ -1818,6 +1818,13 @@ Owen: This is going to be amazing!"
   
   // Generate episode using AI
   async function generateEpisodeAI() {
+    // Safety check: ensure EPISODE_WORKER_URL is defined
+    if (typeof EPISODE_WORKER_URL === 'undefined') {
+      console.error('EPISODE_WORKER_URL not initialized yet. Please refresh the page.');
+      alert('⚠️ Page not fully loaded. Please refresh and try again.');
+      return;
+    }
+    
     const summaryInput = document.getElementById('episode-summary-input');
     const summary = summaryInput ? summaryInput.value.trim() : '';
     

@@ -506,36 +506,9 @@ const emojiMap = {
   'jasmine': '🌿', 'leonard': '🪄', 'ryan': '🏋️'
 };
 
-// ========================================
-// UPDATED DEVOTEES.HTML SCRIPT
-// Replace the fetch() section in devotees.html (around line 509-526) with this:
-// ========================================
-
-// Load player data from localStorage first, fallback to JSON
-function loadPlayerData() {
-  // Try localStorage first (synced from current-season.html)
-  try {
-    const stored = localStorage.getItem('players_database');
-    if (stored) {
-      const data = JSON.parse(stored);
-      console.log('✅ Loaded player data from localStorage');
-      return Promise.resolve(data);
-    }
-  } catch (e) {
-    console.warn('Could not load from localStorage:', e);
-  }
-  
-  // Fallback to JSON file
-  console.log('📁 Loading from players_database.json...');
-  return fetch('players_database.json')
-    .then(response => response.json())
-    .catch(error => {
-      console.error('Error loading player data:', error);
-      throw error;
-    });
-}
-
-loadPlayerData()
+// Load player data from JSON
+fetch('players_database.json')
+  .then(response => response.json())
   .then(data => {
     allPlayers = data.players.map(player => {
       const emoji = emojiMap[player.name.toLowerCase()] || '👤';
@@ -546,16 +519,10 @@ loadPlayerData()
     });
     renderPlayers(allPlayers);
     updateDisplay();
-    
-    // Show data source indicator
-    const stored = localStorage.getItem('players_database');
-    if (stored) {
-      console.log('🔄 Data synced from current-season.html');
-    }
   })
   .catch(error => {
-    console.error('Failed to load player data:', error);
-    countDiv.textContent = '❌ Error loading players. Check console.';
+    console.error('Error loading player data:', error);
+    countDiv.textContent = 'Error loading players';
   });
 
 function renderPlayers(players) {

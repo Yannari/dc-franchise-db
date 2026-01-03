@@ -393,6 +393,7 @@
         <button class="tab-btn active" id="tabOverview" role="tab" aria-selected="true">📘 Overview</button>
         <button class="tab-btn" id="tabGameplay" role="tab" aria-selected="false">🧭 Gameplay</button>
         <button class="tab-btn" id="tabEpisode" role="tab" aria-selected="false">📺 Episode</button>
+        <button class="tab-btn" id="tabSeasonSetup" role="tab" aria-selected="false">⭐ Season Setup</button>
       </div>
     </div>
 
@@ -567,6 +568,109 @@ Owen: This is going to be amazing!"
         <div id="episode-rendered"></div>
       </div>
     </div>
+
+    <!-- SEASON SETUP TAB -->
+    <div class="window-body hidden" id="viewSeasonSetup">
+      <div class="glass-card" style="padding: 24px; margin-bottom: 20px;">
+        <h3 style="margin-top: 0;">🎬 Season Initialization</h3>
+        <p style="opacity: 0.8; font-size: 14px; margin-bottom: 20px;">
+          Start a new season by creating player profiles from your Episode 1 summary. 
+          The system will detect new players vs returning players automatically.
+        </p>
+        
+        <div style="margin-bottom: 20px;">
+          <label style="display: block; margin-bottom: 8px; font-weight: 600;">
+            📋 Episode 1 Summary (with cast list)
+          </label>
+          <textarea 
+            id="season-setup-summary" 
+            style="width: 100%; min-height: 300px; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: var(--text); font-family: monospace; font-size: 13px;"
+            placeholder="Paste your Episode 1 summary here...
+
+Must include:
+=== CAST (ALL) ===
+Amy
+Beardo
+Blaineley
+..."></textarea>
+        </div>
+        
+        <button id="analyze-cast-btn" class="btn btn-primary" style="margin-right: 10px;">
+          🔍 Analyze Cast
+        </button>
+        
+        <div id="cast-analysis-result" style="margin-top: 20px; padding: 16px; background: rgba(125,76,255,0.1); border: 1px solid rgba(125,76,255,0.3); border-radius: 12px; display: none;">
+          <!-- Analysis results will appear here -->
+        </div>
+        
+        <div id="create-profiles-section" style="margin-top: 20px; display: none;">
+          <button id="create-profiles-btn" class="btn" style="background: linear-gradient(135deg, #4ade80, #22c55e); font-weight: 700;">
+            🎭 Create Player Profiles
+          </button>
+        </div>
+      </div>
+      
+      <div class="glass-card" style="padding: 24px;">
+        <h3 style="margin-top: 0;">📊 Season Progress Tracking</h3>
+        <p style="opacity: 0.8; font-size: 14px; margin-bottom: 16px;">
+          Track eliminations throughout the season. Placement data updates automatically when you generate analytics.
+        </p>
+        
+        <div id="season-progress-info" style="padding: 16px; background: rgba(255,179,71,0.1); border: 1px solid rgba(255,179,71,0.3); border-radius: 12px;">
+          <p style="margin: 0; opacity: 0.7;">No season data loaded. Create profiles first.</p>
+        </div>
+      </div>
+      
+      <div class="glass-card" style="padding: 24px; margin-top: 20px;">
+        <h3 style="margin-top: 0;">🏆 End-of-Season Finalization</h3>
+        <p style="opacity: 0.8; font-size: 14px; margin-bottom: 16px;">
+          After the finale, manually edit the player database JSON to add:
+        </p>
+        <ul style="opacity: 0.8; font-size: 14px; line-height: 1.8;">
+          <li><strong>Challenge wins</strong> - Individual immunity/reward wins</li>
+          <li><strong>Strategic rank</strong> - Your assessment of their gameplay</li>
+          <li><strong>Alliance history</strong> - Key alliances they were part of</li>
+          <li><strong>Bonds & rivalries</strong> - Important relationships</li>
+          <li><strong>Jury votes</strong> - How many jury votes they received (finalists only)</li>
+          <li><strong>Tier ranking</strong> - Calculate based on performance</li>
+          <li><strong>Badges</strong> - Awards like "Challenge Beast", "Strategic Mastermind"</li>
+        </ul>
+        
+        <div style="margin-top: 16px; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+          <p style="margin: 0; font-size: 13px; opacity: 0.7;">
+            💡 <strong>Tip:</strong> The system auto-creates profiles and tracks eliminations. 
+            You focus on the rich gameplay data at season's end!
+          </p>
+        </div>
+      </div>
+      
+      <div class="glass-card" style="padding: 24px; margin-top: 20px;">
+        <h3 style="margin-top: 0;">💾 Database Management</h3>
+        <p style="opacity: 0.8; font-size: 14px; margin-bottom: 16px;">
+          Export, import, or sync your player database.
+        </p>
+        
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <button id="export-database-btn" class="btn" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
+            📥 Export Database to JSON
+          </button>
+          
+          <button id="import-database-btn" class="btn" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
+            📤 Import Database from JSON
+          </button>
+          
+          <button id="sync-devotees-btn" class="btn" style="background: linear-gradient(135deg, #a855f7, #9333ea);">
+            🔄 Sync to devotees.html
+          </button>
+        </div>
+        
+        <input type="file" id="import-file-input" accept=".json" style="display: none;">
+        
+        <div id="database-status" style="margin-top: 16px; padding: 12px; background: rgba(125,76,255,0.1); border: 1px solid rgba(125,76,255,0.3); border-radius: 8px; display: none;">
+          <!-- Status messages appear here -->
+        </div>
+      </div>
+    </div>
   </section>
 
   <!-- SCRIPT: AI + RENDERING -->
@@ -595,9 +699,11 @@ Owen: This is going to be amazing!"
       tabOverview: $("tabOverview"),
       tabGameplay: $("tabGameplay"),
       tabEpisode: $("tabEpisode"),
+      tabSeasonSetup: $("tabSeasonSetup"),
       viewOverview: $("viewOverview"),
       viewGameplay: $("viewGameplay"),
       viewEpisode: $("viewEpisode"),
+      viewSeasonSetup: $("viewSeasonSetup"),
 
       cardBestMove: $("cardBestMove"),
       cardBiggestRisk: $("cardBiggestRisk"),
@@ -1387,18 +1493,22 @@ Owen: This is going to be amazing!"
       const isOverview = which === "overview";
       const isGameplay = which === "gameplay";
       const isEpisode = which === "episode";
+      const isSeasonSetup = which === "seasonsetup";
 
       els.viewOverview.classList.toggle("hidden", !isOverview);
       els.viewGameplay.classList.toggle("hidden", !isGameplay);
       els.viewEpisode.classList.toggle("hidden", !isEpisode);
+      els.viewSeasonSetup.classList.toggle("hidden", !isSeasonSetup);
 
       els.tabOverview.classList.toggle("active", isOverview);
       els.tabGameplay.classList.toggle("active", isGameplay);
       els.tabEpisode.classList.toggle("active", isEpisode);
+      els.tabSeasonSetup.classList.toggle("active", isSeasonSetup);
       
       els.tabOverview.setAttribute("aria-selected", isOverview ? "true" : "false");
       els.tabGameplay.setAttribute("aria-selected", isGameplay ? "true" : "false");
       els.tabEpisode.setAttribute("aria-selected", isEpisode ? "true" : "false");
+      els.tabSeasonSetup.setAttribute("aria-selected", isSeasonSetup ? "true" : "false");
 
       // Persist tab choice per episode
       const s = Number(els.season.value || 1);
@@ -1421,6 +1531,7 @@ Owen: This is going to be amazing!"
       // Try to auto-load saved episode
       if (typeof loadEpisode === 'function') loadEpisode();
     });
+    els.tabSeasonSetup.addEventListener("click", () => showTab("seasonsetup"));
 
     // ----------------------------
     // Actions
@@ -1613,6 +1724,11 @@ Owen: This is going to be amazing!"
         const ep = parseEpisodeTitle(summaryText);
         const epTitle = ep?.title ? `“${ep.title}”` : els.uiEpName.textContent;
         saveCastState(season, episode, cast, eliminated, epTitle);
+
+        // 🆕 AUTO-UPDATE PLAYER DATABASE WITH ELIMINATIONS
+        if (typeof updatePlayerEliminationsFromEpisode === 'function') {
+          updatePlayerEliminationsFromEpisode(season, episode, cast, eliminated);
+        }
 
         renderAll(analytics, summaryText);
 
@@ -2061,7 +2177,460 @@ Owen: This is going to be amazing!"
       loadEpisode();
     }
   }, 1000);
+
+// ========================================
+// SEASON SETUP FUNCTIONS - COMPLETE VERSION
+// Insert this code before 
+// ========================================
+
+// Get Season Setup elements
+const seasonSetupSummary = document.getElementById("season-setup-summary");
+const analyzeCastBtn = document.getElementById("analyze-cast-btn");
+const castAnalysisResult = document.getElementById("cast-analysis-result");
+const createProfilesSection = document.getElementById("create-profiles-section");
+const createProfilesBtn = document.getElementById("create-profiles-btn");
+const exportDatabaseBtn = document.getElementById("export-database-btn");
+const importDatabaseBtn = document.getElementById("import-database-btn");
+const syncDevoteesBtn = document.getElementById("sync-devotees-btn");
+const importFileInput = document.getElementById("import-file-input");
+const databaseStatus = document.getElementById("database-status");
+
+let analyzedCastData = null;
+
+// ========================================
+// FEATURE 1: CAST ANALYSIS & PROFILE CREATION
+// ========================================
+
+if (analyzeCastBtn) {
+  analyzeCastBtn.addEventListener("click", () => {
+    const summary = seasonSetupSummary.value.trim();
+    if (!summary) {
+      alert("⚠️ Please paste Episode 1 summary first!");
+      return;
+    }
+    
+    const seasonInput = document.getElementById("aiSeason");
+    const season = Number(seasonInput ? seasonInput.value : 1);
+    analyzedCastData = analyzeCast(summary, season);
+    if (analyzedCastData) {
+      displayCastAnalysis(analyzedCastData);
+    }
+  });
+}
+
+if (createProfilesBtn) {
+  createProfilesBtn.addEventListener("click", () => {
+    if (!analyzedCastData) {
+      alert("⚠️ Please analyze cast first!");
+      return;
+    }
+    
+    if (!confirm(`Create/update profiles for ${analyzedCastData.total} players in Season ${analyzedCastData.season}?\n\nThis will:\n• Create ${analyzedCastData.newPlayers.length} new profiles\n• Update ${analyzedCastData.returningPlayers.length} returning players`)) {
+      return;
+    }
+    
+    createPlayerProfiles(analyzedCastData);
+  });
+}
+
+function analyzeCast(summaryText, season) {
+  const cast = parseCastFromSummary(summaryText);
   
+  if (cast.length === 0) {
+    alert("⚠️ No cast detected! Make sure your summary has:\n\n=== CAST (ALL) ===\nAmy\nBeardo\n...");
+    return null;
+  }
+  
+  const db = loadPlayerDatabase();
+  const seasonExists = db.players.some(p => 
+    p.seasonDetails && p.seasonDetails.some(s => s.season === season)
+  );
+  
+  if (seasonExists) {
+    alert(`⚠️ Season ${season} already has player data!\n\nProfiles were already created.`);
+    return null;
+  }
+  
+  const newPlayers = [];
+  const returningPlayers = [];
+  
+  for (const name of cast) {
+    const id = slugify(name);
+    const existing = db.players.find(p => p.id === id);
+    
+    if (existing) {
+      returningPlayers.push({
+        name: name,
+        id: id,
+        previousSeasons: existing.seasons,
+        bestPlacement: existing.bestPlacement,
+        wins: existing.wins
+      });
+    } else {
+      newPlayers.push({ name: name, id: id });
+    }
+  }
+  
+  let seasonType;
+  if (newPlayers.length === cast.length) {
+    seasonType = "All Newbies";
+  } else if (returningPlayers.length === cast.length) {
+    seasonType = "All-Stars";
+  } else {
+    seasonType = `Mixed (${returningPlayers.length} returnees, ${newPlayers.length} newbies)`;
+  }
+  
+  return {
+    season,
+    total: cast.length,
+    newPlayers,
+    returningPlayers,
+    seasonType,
+    castNames: cast
+  };
+}
+
+function displayCastAnalysis(data) {
+  if (!data) return;
+  
+  let html = `
+    <h4 style="margin-top: 0; color: var(--accent);">Season ${data.season} - Cast Analysis</h4>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 16px;">
+      <div style="padding: 12px; background: rgba(0,0,0,0.2); border-radius: 8px;">
+        <div style="font-size: 24px; font-weight: 700;">${data.total}</div>
+        <div style="opacity: 0.7; font-size: 13px;">Total Cast</div>
+      </div>
+      <div style="padding: 12px; background: rgba(76,255,179,0.15); border-radius: 8px;">
+        <div style="font-size: 24px; font-weight: 700; color: #4cffb3;">✨ ${data.newPlayers.length}</div>
+        <div style="opacity: 0.7; font-size: 13px;">New Players</div>
+      </div>
+      <div style="padding: 12px; background: rgba(255,179,71,0.15); border-radius: 8px;">
+        <div style="font-size: 24px; font-weight: 700; color: #ffb347;">🔄 ${data.returningPlayers.length}</div>
+        <div style="opacity: 0.7; font-size: 13px;">Returning Players</div>
+      </div>
+    </div>
+    <div style="padding: 12px; background: rgba(125,76,255,0.15); border-radius: 8px; margin-bottom: 16px;">
+      <strong>Season Type:</strong> ${data.seasonType}
+    </div>
+  `;
+  
+  if (data.returningPlayers.length > 0) {
+    html += `<details style="margin-top: 12px;">
+      <summary style="cursor: pointer; font-weight: 600; margin-bottom: 8px;">🔄 Returning Players (${data.returningPlayers.length})</summary>
+      <div style="display: grid; gap: 6px; margin-top: 8px; font-size: 13px;">`;
+    
+    for (const p of data.returningPlayers) {
+      const trophy = p.wins > 0 ? " 🏆".repeat(p.wins) : "";
+      html += `<div style="padding: 6px; background: rgba(0,0,0,0.2); border-radius: 4px;">
+        <strong>${p.name}</strong>${trophy} - Seasons: ${p.previousSeasons.join(", ")} | Best: ${p.bestPlacement}${p.bestPlacement === 1 ? "st" : p.bestPlacement === 2 ? "nd" : p.bestPlacement === 3 ? "rd" : "th"}
+      </div>`;
+    }
+    html += `</div></details>`;
+  }
+  
+  if (data.newPlayers.length > 0) {
+    html += `<details style="margin-top: 12px;" open>
+      <summary style="cursor: pointer; font-weight: 600; margin-bottom: 8px;">✨ New Players (${data.newPlayers.length})</summary>
+      <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; font-size: 13px;">`;
+    
+    for (const p of data.newPlayers) {
+      html += `<span style="padding: 4px 10px; background: rgba(76,255,179,0.2); border-radius: 6px;">${p.name}</span>`;
+    }
+    html += `</div></details>`;
+  }
+  
+  castAnalysisResult.innerHTML = html;
+  castAnalysisResult.style.display = "block";
+  createProfilesSection.style.display = "block";
+}
+
+function createPlayerProfiles(data) {
+  const db = loadPlayerDatabase();
+  const season = data.season;
+  
+  for (const name of data.castNames) {
+    const id = slugify(name);
+    let player = db.players.find(p => p.id === id);
+    
+    if (!player) {
+      player = {
+        id,
+        name,
+        seasons: [season],
+        totalSeasons: 1,
+        bestPlacement: 99,
+        wins: 0,
+        totalChallengeWins: 0,
+        totalImmunityWins: 0,
+        totalRewardWins: 0,
+        totalVotesAgainst: 0,
+        totalIdolsFound: 0,
+        totalJuryVotes: 0,
+        tier: "Unranked",
+        badges: [],
+        seasonDetails: []
+      };
+      db.players.push(player);
+    }
+    
+    if (!player.seasons.includes(season)) {
+      player.seasons.push(season);
+      player.totalSeasons++;
+    }
+    
+    const existingDetail = player.seasonDetails.find(s => s.season === season);
+    if (!existingDetail) {
+      player.seasonDetails.push({
+        season,
+        placement: 99,
+        status: "Active",
+        tribe: "TBD",
+        challengeWins: 0,
+        immunityWins: 0,
+        rewardWins: 0,
+        votesReceived: 0,
+        idolsFound: 0,
+        strategicRank: 0,
+        juryVotes: 0,
+        finalVote: "",
+        unbreakableBonds: [],
+        rivalries: [],
+        allianceHistory: []
+      });
+    }
+  }
+  
+  savePlayerDatabase(db);
+  
+  alert(`✅ Success!\n\nCreated ${data.newPlayers.length} new profiles\nUpdated ${data.returningPlayers.length} returning players\n\nSeason ${season} is ready!`);
+  
+  seasonSetupSummary.value = "";
+  castAnalysisResult.style.display = "none";
+  createProfilesSection.style.display = "none";
+  analyzedCastData = null;
+}
+
+// ========================================
+// FEATURE 2: AUTO-UPDATE ELIMINATIONS
+// ========================================
+
+function updatePlayerEliminationsFromEpisode(season, episode, cast, eliminated) {
+  const db = loadPlayerDatabase();
+  let updated = 0;
+  
+  const activeCount = cast.length;
+  const eliminatedCount = eliminated.length;
+  const remainingCount = activeCount - eliminatedCount;
+  
+  for (const eliminatedName of eliminated) {
+    const player = db.players.find(p => 
+      p.name.toLowerCase() === eliminatedName.toLowerCase()
+    );
+    
+    if (player) {
+      const seasonDetail = player.seasonDetails.find(s => s.season === season);
+      if (seasonDetail && seasonDetail.status === "Active") {
+        // Calculate placement: if 10 remain, this person is 11th
+        const placement = remainingCount + 1;
+        seasonDetail.placement = placement;
+        seasonDetail.status = "Eliminated";
+        
+        // Update best placement
+        if (placement < player.bestPlacement) {
+          player.bestPlacement = placement;
+        }
+        
+        updated++;
+        console.log(`✅ Updated ${player.name}: ${placement}${placement === 1 ? 'st' : placement === 2 ? 'nd' : placement === 3 ? 'rd' : 'th'} place`);
+      }
+    }
+  }
+  
+  if (updated > 0) {
+    savePlayerDatabase(db);
+    console.log(`📊 Auto-updated ${updated} elimination(s) for Season ${season} Episode ${episode}`);
+  }
+}
+
+// ========================================
+// FEATURE 3: EXPORT/IMPORT/SYNC DATABASE
+// ========================================
+
+if (exportDatabaseBtn) {
+  exportDatabaseBtn.addEventListener("click", () => {
+    const db = loadPlayerDatabase();
+    
+    const json = JSON.stringify(db, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `players_database_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    showDatabaseStatus(`✅ Database exported! (${db.players.length} players, ${db.franchise.totalSeasons} seasons)`);
+  });
+}
+
+if (importDatabaseBtn) {
+  importDatabaseBtn.addEventListener("click", () => {
+    importFileInput.click();
+  });
+}
+
+if (importFileInput) {
+  importFileInput.addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const db = JSON.parse(event.target.result);
+        
+        // Validate structure
+        if (!db.franchise || !Array.isArray(db.players)) {
+          throw new Error("Invalid database structure");
+        }
+        
+        if (!confirm(`Import database with ${db.players.length} players and ${db.franchise.totalSeasons} seasons?\n\nThis will REPLACE your current database!`)) {
+          return;
+        }
+        
+        localStorage.setItem('players_database', JSON.stringify(db, null, 2));
+        showDatabaseStatus(`✅ Database imported! (${db.players.length} players, ${db.franchise.totalSeasons} seasons)`);
+        
+      } catch (error) {
+        alert(`❌ Import failed: ${error.message}`);
+      }
+      
+      importFileInput.value = '';
+    };
+    
+    reader.readAsText(file);
+  });
+}
+
+if (syncDevoteesBtn) {
+  syncDevoteesBtn.addEventListener("click", () => {
+    const db = loadPlayerDatabase();
+    
+    if (db.players.length === 0) {
+      alert("⚠️ No players in database. Create profiles first!");
+      return;
+    }
+    
+    // Generate devotees.html compatible JSON
+    const devoteesData = generateDevoteesData(db);
+    
+    // Copy to clipboard
+    const json = JSON.stringify(devoteesData, null, 2);
+    navigator.clipboard.writeText(json).then(() => {
+      showDatabaseStatus(`✅ Player data copied to clipboard!\n\nNow:\n1. Open devotees.html\n2. Find the players array in <script>\n3. Replace it with the clipboard content`);
+    }).catch(() => {
+      // Fallback: show in modal
+      const textarea = document.createElement('textarea');
+      textarea.value = json;
+      textarea.style.width = '100%';
+      textarea.style.height = '300px';
+      textarea.style.fontFamily = 'monospace';
+      textarea.style.fontSize = '12px';
+      
+      const modal = document.createElement('div');
+      modal.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--card-bg);padding:24px;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.4);z-index:9999;max-width:800px;width:90%;';
+      modal.innerHTML = `
+        <h3>📋 Copy this JSON to devotees.html</h3>
+        <p style="opacity:0.7;font-size:14px;">Select all (Ctrl+A) and copy (Ctrl+C)</p>
+      `;
+      modal.appendChild(textarea);
+      
+      const closeBtn = document.createElement('button');
+      closeBtn.textContent = 'Close';
+      closeBtn.className = 'btn';
+      closeBtn.style.marginTop = '12px';
+      closeBtn.onclick = () => document.body.removeChild(modal);
+      modal.appendChild(closeBtn);
+      
+      document.body.appendChild(modal);
+      textarea.select();
+    });
+  });
+}
+
+function generateDevoteesData(db) {
+  // Transform database format to devotees.html format
+  return db.players.map(p => ({
+    id: p.id,
+    name: p.name,
+    seasons: p.seasons,
+    totalSeasons: p.totalSeasons,
+    bestPlacement: p.bestPlacement,
+    wins: p.wins,
+    totalChallengeWins: p.totalChallengeWins,
+    totalImmunityWins: p.totalImmunityWins,
+    totalRewardWins: p.totalRewardWins,
+    totalVotesAgainst: p.totalVotesAgainst,
+    totalIdolsFound: p.totalIdolsFound,
+    totalJuryVotes: p.totalJuryVotes,
+    tier: p.tier,
+    badges: p.badges,
+    seasonDetails: p.seasonDetails
+  }));
+}
+
+function showDatabaseStatus(message) {
+  if (databaseStatus) {
+    databaseStatus.textContent = message;
+    databaseStatus.style.display = 'block';
+    setTimeout(() => {
+      databaseStatus.style.display = 'none';
+    }, 5000);
+  }
+}
+
+// ========================================
+// DATABASE HELPERS
+// ========================================
+
+function loadPlayerDatabase() {
+  try {
+    const raw = localStorage.getItem("players_database");
+    if (raw) return JSON.parse(raw);
+  } catch (e) {
+    console.error("Error loading player database:", e);
+  }
+  
+  return {
+    franchise: {
+      name: "DC Franchise Database",
+      totalSeasons: 0,
+      totalPlayers: 0,
+      description: "Total Drama franchise player statistics and performance data"
+    },
+    players: []
+  };
+}
+
+function savePlayerDatabase(db) {
+  try {
+    db.franchise.totalPlayers = db.players.length;
+    const allSeasons = new Set();
+    db.players.forEach(p => p.seasons.forEach(s => allSeasons.add(s)));
+    db.franchise.totalSeasons = allSeasons.size;
+    
+    localStorage.setItem("players_database", JSON.stringify(db, null, 2));
+    console.log(`✅ Database saved: ${db.franchise.totalPlayers} players, ${db.franchise.totalSeasons} seasons`);
+  } catch (e) {
+    console.error("Error saving player database:", e);
+    alert("⚠️ Error saving database. Check console.");
+  }
+}
+
+
 </script>
 </div><footer class="siteFooter">
   <div class="footerInner">

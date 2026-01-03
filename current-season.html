@@ -861,8 +861,11 @@ Owen: This is going to be amazing!"
         targetEl.textContent = "No boot predictions returned.";
         return;
       }
-      targetEl.innerHTML = bootPredictions
-        .slice(0, 6)
+      
+      // Sort by probability descending (highest risk first)
+      const sorted = [...bootPredictions].sort((a, b) => (Number(b.prob) || 0) - (Number(a.prob) || 0));
+      
+      targetEl.innerHTML = sorted
         .map((p) => {
           const name = p.player || "";
           const id = slugify(name);

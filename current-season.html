@@ -1022,10 +1022,27 @@ Owen: This is going to be amazing!"
         // y: safety = 100 - prob*100
         const x = power;
         const y = 100 - prob*100;
-        return { name, x, y };
+        return { name, x, y, prob, power };
+      });
+      
+      // Normalize to use full compass space
+      const xValues = points.map(p => p.x);
+      const yValues = points.map(p => p.y);
+      const xMin = Math.min(...xValues);
+      const xMax = Math.max(...xValues);
+      const yMin = Math.min(...yValues);
+      const yMax = Math.max(...yValues);
+      
+      // Scale to 10-90 range for better visualization (with 10% padding)
+      const normalizedPoints = points.map(p => {
+        const xRange = xMax - xMin || 1;
+        const yRange = yMax - yMin || 1;
+        const xNorm = 10 + ((p.x - xMin) / xRange) * 80;
+        const yNorm = 10 + ((p.y - yMin) / yRange) * 80;
+        return { name: p.name, x: xNorm, y: yNorm };
       });
 
-      els.compassPoints.innerHTML = points.map((p) => {
+      els.compassPoints.innerHTML = normalizedPoints.map((p) => {
         const id = slugify(p.name);
         // convert x,y (0..100) to %
         const left = Math.max(3, Math.min(97, p.x));

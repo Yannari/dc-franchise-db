@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Season Profile</title>
+  <link rel="stylesheet" href="styles.css">
+  
+  <style>
+    .two-col { display:grid; grid-template-columns: 1.1fr .9fr; gap:16px; }
+    @media (max-width: 980px){ .two-col{ grid-template-columns:1fr; } }
+
+    .panel {
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.18);
+      border-radius: 18px;
+      padding: 16px;
+      backdrop-filter: blur(8px);
+    }
+
+    .cast-photo {
+      display:flex; gap:14px; align-items:flex-start; justify-content:space-between;
+    }
+    .cast-photo img{
+      width:100%;
+      max-height: 260px;
+      object-fit: contain;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.25);
+      margin-top: 10px;
+    }
+    .path-pill{
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      white-space: nowrap;
+    }
+
+    .placements { width:100%; }
+    .placements th, .placements td { vertical-align: middle; }
+    .placements td { padding-top: 10px; padding-bottom: 10px; }
+
+    .p-avatar{
+      width:42px;height:42px;border-radius:999px;overflow:hidden;
+      border:2px solid rgba(165,95,255,.55);
+      background:linear-gradient(135deg, rgba(255,255,255,.14), rgba(255,255,255,.06));
+      display:flex;align-items:center;justify-content:center;
+      flex:0 0 auto;
+    }
+    .p-avatar img{ width:100%; height:100%; object-fit:cover; display:none; }
+    .p-avatar .fb{ font-weight:800; font-size:12px; opacity:.95; }
+
+    .place-badge{
+      font-weight:800;
+      letter-spacing:.2px;
+    }
+
+    .subtle { opacity:.82; font-size: 13px; }
+    .notes { color: rgba(255,255,255,.85); font-size: 13px; line-height: 1.25; }
+    .phase { font-weight:700; }
+
+    .jumpline{
+      margin: 10px 0 0;
+      font-size: 12px;
+      opacity: .82;
+      word-break: break-word;
+    }
+    .jumpline a{ opacity:.9; margin-right: 6px; }
+
+    .callout {
+      background: linear-gradient(135deg, rgba(165,95,255,0.15), rgba(165,95,255,0.05));
+      border: 1px solid rgba(165,95,255,0.3);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+    .callout h3 { margin: 0 0 10px; color: rgba(165,95,255,1); }
+  </style>
+</head>
+
+<body>
+<!-- SITE HEADER START -->
+<header class="modern-header" id="modernHeader">
+  <div class="header-container">
+    <div class="header-top">
+      <a href="index.html" class="brand-section" aria-label="Go to home">
+        <div class="brand-icon">
+          <span class="brand-logo-text">⚡</span>
+        </div>
+        <div class="brand-content">
+          <h1>DC <span class="brand-gradient">Franchise</span> Database</h1>
+          <p class="brand-subtitle">Season <span id="currentSeasonNum">5</span> Live • Click to Explore</p>
+        </div>
+      </a>
+      <div class="stats-badge">
+        <div class="stats-main"><span id="totalSeasons">5</span> Seasons • <span id="totalPlayers">58</span> Players</div>
+        <div class="stats-sub">Icons: <span id="iconFormat">name.png</span></div>
+      </div>
+    </div>
+    <nav class="header-nav" aria-label="Primary navigation">
+      <ul class="nav-list">
+        <li class="nav-item"><a href="index.html" class="nav-link"><span class="nav-icon">🏠</span><span>Home</span></a></li>
+        <li class="nav-item"><a href="current-season.html" class="nav-link"><span class="nav-icon">📊</span><span>Current Season</span></a></li>
+        <li class="nav-item"><a href="voting-analytics.html" class="nav-link"><span class="nav-icon">🧾</span><span>Voting Analytics</span></a></li>
+        <li class="nav-item"><a href="franchise.html" class="nav-link"><span class="nav-icon">🏛️</span><span>Franchise</span></a></li>
+        <li class="nav-item"><a href="rankings.html" class="nav-link"><span class="nav-icon">🏆</span><span>Rankings</span></a></li>
+        <li class="nav-item"><a href="seasons.html" class="nav-link active"><span class="nav-icon">🗂️</span><span>Seasons</span></a></li>
+        <li class="nav-item"><a href="devotees.html" class="nav-link"><span class="nav-icon">👥</span><span>Players</span></a></li>
+        <li class="nav-item"><a href="awards.html" class="nav-link"><span class="nav-icon">🏅</span><span>Awards</span></a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<script>
+(function() {
+  if (window.SITE_CONFIG) {
+    document.getElementById('totalSeasons').textContent = window.SITE_CONFIG.seasons;
+    document.getElementById('totalPlayers').textContent = window.SITE_CONFIG.players;
+    document.getElementById('currentSeasonNum').textContent = window.SITE_CONFIG.currentSeason;
+    document.getElementById('iconFormat').textContent = window.SITE_CONFIG.iconFormat;
+  }
+  const header = document.getElementById('modernHeader');
+  if (!header) return;
+  window.addEventListener('scroll', () => {
+    if (window.pageYOffset > 20) {
+      header.classList.add('scrolled');
+    } else {
+      header.classList.remove('scrolled');
+    }
+  }, { passive: true });
+})();
+</script>
+<!-- SITE HEADER END -->
+
+<div class="container">
+  <div class="topbar">
+    <div>
+      <div class="brand">DC <span>Franchise</span> Database</div>
+      <div class="meta">Season Profile</div>
+    </div>
+    <div class="meta">Season count: 5 • Player count: 58</div>
+  </div>
+
+  <div class="tabs">
+    <a class="tab" href="current-season.html">📊 Current Season Analytics</a>
+    <a class="tab" href="voting-analytics.html">🗳️ Voting Chart Analytics</a>
+    <a class="tab" href="franchise.html">🏛️ Franchise Analytics</a>
+    <a class="tab" href="rankings.html">🏆 Player Rankings</a>
+    <a class="tab active" href="seasons.html">📚 Seasons</a>
+    <a class="tab" href="devotees.html">👥 Devotees</a>
+    <a class="tab" href="awards.html">🥇 Season Awards</a>
+  </div>
+
+  <!-- DYNAMIC CONTENT AREA -->
+  <div id="season-content">
+    <div class="hero">
+      <h1>Loading...</h1>
+      <p>Please wait...</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- SITE FOOTER -->
+<footer class="siteFooter">
+  <div class="footerInner">
+    <div class="footerTitle">DC Franchise Database</div>
+    <div class="footerSub">Static archive • 5 seasons • 58 players • Icons: name.png</div>
+  </div>
+</footer>
+
+<script>
+(async function() {
+  try {
+    // Get season number from URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const seasonNum = urlParams.get('season');
+    
+    if (!seasonNum) {
+      document.getElementById('season-content').innerHTML = `
+        <div class="hero">
+          <h1>⚠️ No Season Specified</h1>
+          <p>Please provide a season number in the URL</p>
+        </div>
+        <div class="panel">
+          <p>Example: <code>season.html?season=1</code></p>
+          <p><a href="seasons.html" class="tab">← Back to Seasons List</a></p>
+        </div>
+      `;
+      return;
+    }
+    
+    // Load season data from JSON
+    const response = await fetch(`season${seasonNum}-data.json`);
+    if (!response.ok) {
+      throw new Error(`Season ${seasonNum} data not found`);
+    }
+    const season = await response.json();
+    
+    // Update page title
+    document.title = `Season ${seasonNum} - ${season.title}`;
+    
+    // Helper function to create player link
+    function playerLink(name, slug) {
+      return slug ? `<a href="player.html?player=${slug}"><b>${name}</b></a>` : `<b>${name}</b>`;
+    }
+    
+    // Generate season content
+    const finalists = season.finalists;
+    const stats = season.statistics;
+    
+    // Generate jump links
+    const jumpLinksHTML = season.placements.map((p, i) => 
+      `<a href="#p${i+1}">#${i+1}</a>`
+    ).join('');
+    
+    // Generate placements table
+    const placementsHTML = season.placements.map((p, index) => {
+      const placeNum = p.placement;
+      let placeBadge = `#${placeNum}`;
+      if (placeNum === 1) placeBadge = `🥇 #${placeNum}`;
+      else if (placeNum === 2) placeBadge = `🥈 #${placeNum}`;
+      
+      const initials = p.name.substring(0, 2).toUpperCase();
+      
+      return `
+        <tr id="p${placeNum}">
+          <td>
+            <div class="p-avatar">
+              <img src="assets/avatars/${p.playerSlug}.png" alt="${p.name}" 
+                   onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" 
+                   onerror="this.style.display='none';">
+              <div class="fb">${initials}</div>
+            </div>
+          </td>
+          <td class="place-badge">${placeBadge}</td>
+          <td>${playerLink(p.name, p.playerSlug)}</td>
+          <td class="phase">${p.phase}</td>
+          <td class="notes">${p.notes}</td>
+        </tr>
+      `;
+    }).join('');
+    
+    // Build complete season page
+    document.getElementById('season-content').innerHTML = `
+      <div class="hero">
+        <h1>🏝️ Season ${season.seasonNumber} — ${season.title}</h1>
+        <p>${season.castSize} players • ${season.episodeCount} episodes • ${season.subtitle}</p>
+      </div>
+
+      <div class="callout">
+        <h3>🏆 Winner: ${season.winner.name} (${season.winner.vote} over ${season.winner.runnerUp})</h3>
+        <p><b>Strategy:</b> ${season.winner.strategy} • ${season.winner.keyStats}</p>
+        <p><b>Final ${finalists.length}:</b> ${finalists.map(f => 
+          `${f.name} (${f.votes} vote${f.votes !== 1 ? 's' : ''}${f.note ? ' - ' + f.note : ''})`
+        ).join(', ')}</p>
+        <p><b>Fan Favorite:</b> ${season.awards.fanFavorite.name} ${season.awards.fanFavorite.description ? '- ' + season.awards.fanFavorite.description : ''}</p>
+      </div>
+
+      <div class="two-col">
+        <div class="panel">
+          <h2 style="margin:0 0 10px;">Season Overview</h2>
+          <ul style="margin:0; padding-left: 18px;">
+            <li><b>Cast size:</b> ${season.castSize} players</li>
+            <li><b>Winner:</b> ${season.winner.name}</li>
+            <li><b>Runner-up:</b> ${season.winner.runnerUp}</li>
+            <li><b>Theme:</b> ${season.title}</li>
+            <li><b>Episodes:</b> ${season.episodeCount}</li>
+            <li><b>Jury size:</b> ${season.jurySize} jurors</li>
+            <li><b>Final Vote:</b> ${season.winner.vote}</li>
+          </ul>
+        </div>
+
+        <div class="panel">
+          <div class="cast-photo">
+            <div>
+              <h2 style="margin:0;">Cast Photo</h2>
+              <div class="subtle" style="margin-top:6px;">
+                Cast image location:
+                <div style="margin-top:6px;"><b>assets/cast/s${seasonNum}-cast.png</b></div>
+              </div>
+            </div>
+            <div class="path-pill">assets/cast/s${seasonNum}-cast.png</div>
+          </div>
+
+          <img src="assets/cast/s${seasonNum}-cast.png" alt="Season ${seasonNum} cast photo"
+               onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"/>
+
+          <div class="panel" style="display:none; margin-top:10px; background:rgba(255,153,0,.08);">
+            <b>Cast photo not found.</b><br/>
+            Put your image at <b>assets/cast/s${seasonNum}-cast.png</b> and refresh.
+          </div>
+        </div>
+      </div>
+
+      <h2 style="margin-top:30px;">📊 Season Statistics</h2>
+
+      <div class="kpi-grid">
+        ${stats.mostChaotic ? `
+        <div class="kpi">
+          <h3>Most Chaotic Season</h3>
+          <p><b>Ties, Revotes, Rocks</b></p>
+          <p class="small">${stats.mostChaotic}</p>
+        </div>` : ''}
+        
+        <div class="kpi">
+          <h3>Challenge Beast</h3>
+          <p><b>${stats.challengeWins.mostTotal.name} — ${stats.challengeWins.mostTotal.wins} Wins</b></p>
+          <p class="small">${stats.challengeWins.mostImmunity ? stats.challengeWins.mostImmunity.wins + ' immunity' : ''} • Physical dominance</p>
+        </div>
+        
+        ${stats.socialGame.mostVotes ? `
+        <div class="kpi">
+          <h3>Most Targeted</h3>
+          <p><b>${stats.socialGame.mostVotes.name} — ${stats.socialGame.mostVotes.votes} Votes</b></p>
+          <p class="small">Most votes against</p>
+        </div>` : ''}
+        
+        ${stats.strategic && stats.strategic.idolsFound ? `
+        <div class="kpi">
+          <h3>Idols Found</h3>
+          <p><b>${stats.strategic.idolsFound} Total</b></p>
+          <p class="small">${stats.strategic.mostIdols ? stats.strategic.mostIdols.map(p => p.name).join(' & ') : 'Various players'}</p>
+        </div>` : ''}
+        
+        <div class="kpi">
+          <h3>Perfect Social Game</h3>
+          <p><b>${stats.socialGame.fewestVotes ? (Array.isArray(stats.socialGame.fewestVotes) ? stats.socialGame.fewestVotes[0].name : stats.socialGame.fewestVotes.name) : season.winner.name}</b></p>
+          <p class="small">Cleanest winner path</p>
+        </div>
+        
+        <div class="kpi">
+          <h3>Strategic MVP</h3>
+          <p><b>${season.awards.bestStrategic ? season.awards.bestStrategic.name : season.winner.name}</b></p>
+          <p class="small">${season.awards.bestStrategic ? season.awards.bestStrategic.description : 'Controlled the game'}</p>
+        </div>
+      </div>
+
+      <div style="margin-top:30px;">
+        <h2 style="margin:0 0 10px;">🏆 Placements</h2>
+        <div class="subtle" style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+          <div class="jumpline">
+            Jump: ${jumpLinksHTML}
+          </div>
+          <div class="subtle">Click any name to open the profile</div>
+        </div>
+
+        <div class="panel" style="margin-top:10px; padding:0;">
+          <table class="table placements">
+            <thead>
+              <tr>
+                <th style="width:64px;">Icon</th>
+                <th style="width:90px;">Place</th>
+                <th>Player</th>
+                <th style="width:130px;">Phase</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${placementsHTML}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="footer">
+        Season ${seasonNum} • 
+        <a href="season-awards.html?season=${seasonNum}">View Season Awards →</a> • 
+        <a href="seasons.html">← All Seasons</a>
+      </div>
+    `;
+    
+  } catch (error) {
+    console.error('Error loading season data:', error);
+    document.getElementById('season-content').innerHTML = `
+      <div class="hero">
+        <h1>⚠️ Season Not Found</h1>
+        <p>Could not load data for this season</p>
+      </div>
+      <div class="panel">
+        <p><b>Error:</b> ${error.message}</p>
+        <p>Make sure <code>season${urlParams.get('season')}-data.json</code> exists in the root folder.</p>
+        <p><a href="seasons.html" class="tab">← Back to Seasons List</a></p>
+      </div>
+    `;
+  }
+})();
+</script>
+
+</body>
+</html>

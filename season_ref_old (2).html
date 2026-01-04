@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-root="..">
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Season Profile</title>
+  <title>Season 4 — Edge of Extinction</title>
   <link rel="stylesheet" href="styles.css">
-  
+
   <style>
     .two-col { display:grid; grid-template-columns: 1.1fr .9fr; gap:16px; }
     @media (max-width: 980px){ .two-col{ grid-template-columns:1fr; } }
@@ -78,6 +78,14 @@
       margin: 20px 0;
     }
     .callout h3 { margin: 0 0 10px; color: rgba(165,95,255,1); }
+
+    .highlight-box {
+      background: rgba(255,215,0,0.08);
+      border-left: 3px solid rgba(255,215,0,0.6);
+      padding: 12px 16px;
+      margin: 10px 0;
+      border-radius: 6px;
+    }
   </style>
 </head>
 
@@ -85,6 +93,7 @@
 <!-- SITE HEADER START -->
 <header class="modern-header" id="modernHeader">
   <div class="header-container">
+    <!-- Top Bar -->
     <div class="header-top">
       <a href="index.html" class="brand-section" aria-label="Go to home">
         <div class="brand-icon">
@@ -95,21 +104,64 @@
           <p class="brand-subtitle">Season <span id="currentSeasonNum">5</span> Live • Click to Explore</p>
         </div>
       </a>
+
       <div class="stats-badge">
         <div class="stats-main"><span id="totalSeasons">5</span> Seasons • <span id="totalPlayers">58</span> Players</div>
         <div class="stats-sub">Icons: <span id="iconFormat">name.png</span></div>
       </div>
     </div>
+
+    <!-- Navigation -->
     <nav class="header-nav" aria-label="Primary navigation">
       <ul class="nav-list">
-        <li class="nav-item"><a href="index.html" class="nav-link"><span class="nav-icon">🏠</span><span>Home</span></a></li>
-        <li class="nav-item"><a href="current-season.html" class="nav-link"><span class="nav-icon">📊</span><span>Current Season</span></a></li>
-        <li class="nav-item"><a href="voting-analytics.html" class="nav-link"><span class="nav-icon">🧾</span><span>Voting Analytics</span></a></li>
-        <li class="nav-item"><a href="franchise.html" class="nav-link"><span class="nav-icon">🏛️</span><span>Franchise</span></a></li>
-        <li class="nav-item"><a href="rankings.html" class="nav-link"><span class="nav-icon">🏆</span><span>Rankings</span></a></li>
-        <li class="nav-item"><a href="seasons.html" class="nav-link active"><span class="nav-icon">🗂️</span><span>Seasons</span></a></li>
-        <li class="nav-item"><a href="devotees.html" class="nav-link"><span class="nav-icon">👥</span><span>Players</span></a></li>
-        <li class="nav-item"><a href="awards.html" class="nav-link"><span class="nav-icon">🏅</span><span>Awards</span></a></li>
+        <li class="nav-item">
+          <a href="index.html" class="nav-link" data-page="index">
+            <span class="nav-icon">🏠</span>
+            <span>Home</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="current-season.html" class="nav-link" data-page="current-season">
+            <span class="nav-icon">📊</span>
+            <span>Current Season</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="voting-analytics.html" class="nav-link" data-page="voting-analytics">
+            <span class="nav-icon">🧾</span>
+            <span>Voting Analytics</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="franchise.html" class="nav-link" data-page="franchise">
+            <span class="nav-icon">🏛️</span>
+            <span>Franchise</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="rankings.html" class="nav-link" data-page="rankings">
+            <span class="nav-icon">🏆</span>
+            <span>Rankings</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="seasons.html" class="nav-link" data-page="seasons">
+            <span class="nav-icon">🗂️</span>
+            <span>Seasons</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="devotees.html" class="nav-link" data-page="devotees">
+            <span class="nav-icon">👥</span>
+            <span>Players</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="awards.html" class="nav-link" data-page="awards">
+            <span class="nav-icon">🏅</span>
+            <span>Awards</span>
+          </a>
+        </li>
       </ul>
     </nav>
   </div>
@@ -117,61 +169,85 @@
 
 <script>
 (function() {
+  // Load site config and update header stats
   if (window.SITE_CONFIG) {
     document.getElementById('totalSeasons').textContent = window.SITE_CONFIG.seasons;
     document.getElementById('totalPlayers').textContent = window.SITE_CONFIG.players;
     document.getElementById('currentSeasonNum').textContent = window.SITE_CONFIG.currentSeason;
     document.getElementById('iconFormat').textContent = window.SITE_CONFIG.iconFormat;
   }
+
+  // Scroll behavior
   const header = document.getElementById('modernHeader');
   if (!header) return;
+  
   window.addEventListener('scroll', () => {
-    if (window.pageYOffset > 20) {
+    const currentScroll = window.pageYOffset;
+    if (currentScroll > 20) {
       header.classList.add('scrolled');
     } else {
       header.classList.remove('scrolled');
     }
   }, { passive: true });
+
+  // Active page highlighting
+  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+  const navLinks = document.querySelectorAll('.nav-link');
+  
+  navLinks.forEach(link => {
+    const linkPage = link.getAttribute('href');
+    if (linkPage === currentPage || (currentPage === '' && linkPage === 'index.html')) {
+      link.classList.add('active');
+    }
+  });
+
+  // Path resolution for nested folders
+  const root = (document.documentElement.dataset.root || document.body.dataset.root || ".").replace(/\/+$/, "");
+  
+  if (root !== ".") {
+    const allLinks = header.querySelectorAll('a[href]');
+    allLinks.forEach(link => {
+      const href = link.getAttribute('href');
+      if (href && !href.startsWith('http') && !href.startsWith('#')) {
+        link.setAttribute('href', root + '/' + href);
+      }
+    });
+  }
 })();
 </script>
 <!-- SITE HEADER END -->
 
-<div class="container">
-  <div class="topbar">
-    <div>
-      <div class="brand">DC <span>Franchise</span> Database</div>
-      <div class="meta">Season Profile</div>
+
+  <div class="container">
+    <div class="topbar">
+      <div>
+        <div class="brand">DC <span>Franchise</span> Database</div>
+        <div class="meta">Local static website • Seasons + player profiles • Search + sort</div>
+      </div>
+      <div class="meta" id="topbar-meta">Loading...</div>
     </div>
-    <div class="meta">Season count: 5 • Player count: 58</div>
-  </div>
 
-  <div class="tabs">
-    <a class="tab" href="current-season.html">📊 Current Season Analytics</a>
-    <a class="tab" href="voting-analytics.html">🗳️ Voting Chart Analytics</a>
-    <a class="tab" href="franchise.html">🏛️ Franchise Analytics</a>
-    <a class="tab" href="rankings.html">🏆 Player Rankings</a>
-    <a class="tab active" href="seasons.html">📚 Seasons</a>
-    <a class="tab" href="devotees.html">👥 Devotees</a>
-    <a class="tab" href="awards.html">🥇 Season Awards</a>
-  </div>
+   
 
-  <!-- DYNAMIC CONTENT AREA -->
-  <div id="season-content">
-    <div class="hero">
-      <h1>Loading...</h1>
-      <p>Please wait...</p>
+    <!-- DYNAMIC CONTENT -->
+    <div id="season-content">
+      <div class="hero">
+        <h1>Loading...</h1>
+        <p>Please wait...</p>
+      </div>
     </div>
+
+    <div class="footer" id="footer-links">Loading...</div>
   </div>
 
-</div>
-
-<!-- SITE FOOTER -->
+<!-- SITE FOOTER START -->
 <footer class="siteFooter">
   <div class="footerInner">
     <div class="footerTitle">DC Franchise Database</div>
     <div class="footerSub">Static archive • 5 seasons • 58 players • Icons: name.png</div>
   </div>
 </footer>
+<!-- SITE FOOTER END -->
 
 <script>
 (async function() {
@@ -201,17 +277,124 @@
     }
     const season = await response.json();
     
-    // Update page title
-    document.title = `Season ${seasonNum} - ${season.title}`;
+    // Update page title and topbar
+    document.title = `Season ${seasonNum} — ${season.title}`;
+    document.getElementById('topbar-meta').textContent = `Season count: 5 • Player count: 58`;
     
     // Helper function to create player link
     function playerLink(name, slug) {
       return slug ? `<a href="player.html?player=${slug}"><b>${name}</b></a>` : `<b>${name}</b>`;
     }
     
-    // Generate season content
-    const finalists = season.finalists;
+    // Generate Season Highlights (from memorable moments)
+    let highlightsHTML = '';
+    if (season.legacy && season.legacy.memorableMoments) {
+      highlightsHTML = season.legacy.memorableMoments.slice(0, 6).map(moment => `
+        <div class="highlight-box">
+          <b>${moment}</b>
+        </div>
+      `).join('');
+    }
+    
+    // Generate KPI Overview Cards
+    const kpiOverviewHTML = `
+      <div class="kpi">
+        <h3>🏆 Winner</h3>
+        <p>${playerLink(season.winner.name, season.winner.playerSlug)}</p>
+        <p class="small">${season.winner.vote}</p>
+      </div>
+      
+      <div class="kpi">
+        <h3>🎬 Theme</h3>
+        <p><b>${season.theme || season.title}</b></p>
+        <p class="small">${season.castSize} players</p>
+      </div>
+      
+      <div class="kpi">
+        <h3>👑 Fan Favorite</h3>
+        <p>${playerLink(season.awards.fanFavorite.name, season.awards.fanFavorite.playerSlug)}</p>
+        <p class="small">${season.awards.fanFavorite.description ? season.awards.fanFavorite.description.substring(0, 50) : ''}</p>
+      </div>
+      
+      <div class="kpi">
+        <h3>📺 Episodes</h3>
+        <p><b>${season.episodeCount} + Finale</b></p>
+        <p class="small">${season.jurySize} jurors</p>
+      </div>
+    `;
+    
+    // Generate Statistics KPI Cards
     const stats = season.statistics;
+    let statsHTML = '';
+    
+    if (stats.mostChaotic) {
+      statsHTML += `
+        <div class="kpi">
+          <h3>Most Chaotic Season</h3>
+          <p><b>Ties, Revotes, Rocks</b></p>
+          <p class="small">${stats.mostChaotic}</p>
+        </div>
+      `;
+    }
+    
+    if (stats.challengeWins && stats.challengeWins.mostTotal) {
+      statsHTML += `
+        <div class="kpi">
+          <h3>Challenge Beast</h3>
+          <p><b>${stats.challengeWins.mostTotal.name} — ${stats.challengeWins.mostTotal.wins} Wins</b></p>
+          <p class="small">${stats.challengeWins.mostImmunity ? stats.challengeWins.mostImmunity.wins + ' immunities' : ''}</p>
+        </div>
+      `;
+    }
+    
+    if (stats.socialGame && stats.socialGame.mostVotes) {
+      statsHTML += `
+        <div class="kpi">
+          <h3>Most Targeted</h3>
+          <p><b>${stats.socialGame.mostVotes.name} — ${stats.socialGame.mostVotes.votes} Votes</b></p>
+          <p class="small">Most votes against</p>
+        </div>
+      `;
+    }
+    
+    if (stats.strategic && stats.strategic.mostIdols) {
+      const idolPlayers = Array.isArray(stats.strategic.mostIdols) ? 
+        stats.strategic.mostIdols.map(p => p.name).join(' & ') : 
+        stats.strategic.mostIdols;
+      statsHTML += `
+        <div class="kpi">
+          <h3>Idol Leaders</h3>
+          <p><b>${idolPlayers}</b></p>
+          <p class="small">${stats.strategic.idolsFound} total found</p>
+        </div>
+      `;
+    }
+    
+    if (stats.socialGame && stats.socialGame.fewestVotes) {
+      const fewestPlayer = Array.isArray(stats.socialGame.fewestVotes) ? 
+        stats.socialGame.fewestVotes[0].name : 
+        stats.socialGame.fewestVotes.name;
+      const fewestVotes = Array.isArray(stats.socialGame.fewestVotes) ? 
+        stats.socialGame.fewestVotes[0].votes : 
+        stats.socialGame.fewestVotes.votes;
+      statsHTML += `
+        <div class="kpi">
+          <h3>Perfect Social Game</h3>
+          <p><b>${fewestPlayer} — ${fewestVotes} Vote${fewestVotes !== 1 ? 's' : ''}</b></p>
+          <p class="small">Cleanest path</p>
+        </div>
+      `;
+    }
+    
+    if (season.awards.bestStrategic) {
+      statsHTML += `
+        <div class="kpi">
+          <h3>Strategic MVP</h3>
+          <p><b>${season.awards.bestStrategic.name}</b></p>
+          <p class="small">${season.awards.bestStrategic.description ? season.awards.bestStrategic.description.substring(0, 50) + '...' : 'Controlled the game'}</p>
+        </div>
+      `;
+    }
     
     // Generate jump links
     const jumpLinksHTML = season.placements.map((p, i) => 
@@ -245,7 +428,7 @@
       `;
     }).join('');
     
-    // Build complete season page
+    // Build complete season page with EXACT structure as season4.html
     document.getElementById('season-content').innerHTML = `
       <div class="hero">
         <h1>🏝️ Season ${season.seasonNumber} — ${season.title}</h1>
@@ -254,44 +437,28 @@
 
       <div class="callout">
         <h3>🏆 Winner: ${season.winner.name} (${season.winner.vote} over ${season.winner.runnerUp})</h3>
-        <p><b>Strategy:</b> ${season.winner.strategy} • ${season.winner.keyStats}</p>
-        <p><b>Final ${finalists.length}:</b> ${finalists.map(f => 
-          `${f.name} (${f.votes} vote${f.votes !== 1 ? 's' : ''}${f.note ? ' - ' + f.note : ''})`
-        ).join(', ')}</p>
-        <p><b>Fan Favorite:</b> ${season.awards.fanFavorite.name} ${season.awards.fanFavorite.description ? '- ' + season.awards.fanFavorite.description : ''}</p>
+        <p><b>Strategy:</b> ${season.winner.strategy} — ${season.winner.keyStats}</p>
+        <p><b>Legacy:</b> ${season.winner.legacy}</p>
+        <p><b>Fan Favorite:</b> ${season.awards.fanFavorite.name}</p>
+      </div>
+
+      <div class="kpi-grid">
+        ${kpiOverviewHTML}
       </div>
 
       <div class="two-col">
-        <div class="panel">
-          <h2 style="margin:0 0 10px;">Season Overview</h2>
-          <ul style="margin:0; padding-left: 18px;">
-            <li><b>Cast size:</b> ${season.castSize} players</li>
-            <li><b>Winner:</b> ${season.winner.name}</li>
-            <li><b>Runner-up:</b> ${season.winner.runnerUp}</li>
-            <li><b>Theme:</b> ${season.title}</li>
-            <li><b>Episodes:</b> ${season.episodeCount}</li>
-            <li><b>Jury size:</b> ${season.jurySize} jurors</li>
-            <li><b>Final Vote:</b> ${season.winner.vote}</li>
-          </ul>
+        <div>
+          <h2 style="margin-top:16px;">🎯 Season Highlights</h2>
+          ${highlightsHTML || '<p class="small">No highlights available</p>'}
         </div>
 
-        <div class="panel">
-          <div class="cast-photo">
-            <div>
-              <h2 style="margin:0;">Cast Photo</h2>
-              <div class="subtle" style="margin-top:6px;">
-                Cast image location:
-                <div style="margin-top:6px;"><b>assets/cast/s${seasonNum}-cast.png</b></div>
-              </div>
-            </div>
-            <div class="path-pill">assets/cast/s${seasonNum}-cast.png</div>
-          </div>
-
+        <div>
+          <h2 style="margin-top:16px;">Cast Photo</h2>
           <img src="assets/cast/s${seasonNum}-cast.png" alt="Season ${seasonNum} cast photo"
                onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"/>
 
           <div class="panel" style="display:none; margin-top:10px; background:rgba(255,153,0,.08);">
-            <b>Cast photo not found.</b><br/>
+            <b>Cast photo not found yet.</b><br/>
             Put your image at <b>assets/cast/s${seasonNum}-cast.png</b> and refresh.
           </div>
         </div>
@@ -300,44 +467,7 @@
       <h2 style="margin-top:30px;">📊 Season Statistics</h2>
 
       <div class="kpi-grid">
-        ${stats.mostChaotic ? `
-        <div class="kpi">
-          <h3>Most Chaotic Season</h3>
-          <p><b>Ties, Revotes, Rocks</b></p>
-          <p class="small">${stats.mostChaotic}</p>
-        </div>` : ''}
-        
-        <div class="kpi">
-          <h3>Challenge Beast</h3>
-          <p><b>${stats.challengeWins.mostTotal.name} — ${stats.challengeWins.mostTotal.wins} Wins</b></p>
-          <p class="small">${stats.challengeWins.mostImmunity ? stats.challengeWins.mostImmunity.wins + ' immunity' : ''} • Physical dominance</p>
-        </div>
-        
-        ${stats.socialGame.mostVotes ? `
-        <div class="kpi">
-          <h3>Most Targeted</h3>
-          <p><b>${stats.socialGame.mostVotes.name} — ${stats.socialGame.mostVotes.votes} Votes</b></p>
-          <p class="small">Most votes against</p>
-        </div>` : ''}
-        
-        ${stats.strategic && stats.strategic.idolsFound ? `
-        <div class="kpi">
-          <h3>Idols Found</h3>
-          <p><b>${stats.strategic.idolsFound} Total</b></p>
-          <p class="small">${stats.strategic.mostIdols ? stats.strategic.mostIdols.map(p => p.name).join(' & ') : 'Various players'}</p>
-        </div>` : ''}
-        
-        <div class="kpi">
-          <h3>Perfect Social Game</h3>
-          <p><b>${stats.socialGame.fewestVotes ? (Array.isArray(stats.socialGame.fewestVotes) ? stats.socialGame.fewestVotes[0].name : stats.socialGame.fewestVotes.name) : season.winner.name}</b></p>
-          <p class="small">Cleanest winner path</p>
-        </div>
-        
-        <div class="kpi">
-          <h3>Strategic MVP</h3>
-          <p><b>${season.awards.bestStrategic ? season.awards.bestStrategic.name : season.winner.name}</b></p>
-          <p class="small">${season.awards.bestStrategic ? season.awards.bestStrategic.description : 'Controlled the game'}</p>
-        </div>
+        ${statsHTML || '<div class="kpi"><p>No statistics available</p></div>'}
       </div>
 
       <div style="margin-top:30px;">
@@ -366,12 +496,13 @@
           </table>
         </div>
       </div>
-
-      <div class="footer">
-        Season ${seasonNum} • 
-        <a href="season-awards.html?season=${seasonNum}">View Season Awards →</a> • 
-        <a href="seasons.html">← All Seasons</a>
-      </div>
+    `;
+    
+    // Update footer
+    document.getElementById('footer-links').innerHTML = `
+      Season ${seasonNum} • 
+      <a href="season-awards.html?season=${seasonNum}">View Season Awards →</a> • 
+      <a href="seasons.html">← All Seasons</a>
     `;
     
   } catch (error) {

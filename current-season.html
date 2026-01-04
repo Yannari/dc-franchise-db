@@ -2184,10 +2184,9 @@ Blaineley
 // This version includes all necessary functions
 // ========================================
 
-// Wait for DOM to be ready before initializing Season Setup
-document.addEventListener('DOMContentLoaded', function() {
+// Run immediately since script is at end of body (DOM already loaded)
 (function() {
-  console.log("🔧 Season Setup: DOM ready, initializing...");
+  console.log("🔧 Season Setup: Initializing...");
   
   // Get Season Setup elements
   const seasonSetupSummary = document.getElementById("season-setup-summary");
@@ -2693,7 +2692,6 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
 })();
-}); // End DOMContentLoaded
 </script>
 </div><footer class="siteFooter">
   <div class="footerInner">

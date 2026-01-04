@@ -77,15 +77,7 @@
 </div>
 <div class="meta" id="topbar-stats">Season count: 5 • Player count: 58</div>
 </div>
-<div class="tabs">
-<a class="tab" href="current-season.html">📊 Current Season Analytics</a>
-<a class="tab" href="voting-analytics.html">🗳️ Voting Chart Analytics</a>
-<a class="tab" href="franchise.html">🏛️ Franchise Analytics</a>
-<a class="tab" href="rankings.html">🏆 Player Rankings</a>
-<a class="tab active" href="seasons.html">📚 Seasons</a>
-<a class="tab" href="devotees.html">👥 Devotees</a>
-<a class="tab" href="awards.html">🥇 Season Awards</a>
-</div>
+
 
 <div class="hero">
 <h1>📚 Seasons Wiki</h1>
@@ -139,7 +131,7 @@
       const isFirstSeason = season.seasonNumber === 1;
       
       return `
-<a class="card ${isFirstSeason ? 'winner' : ''}" href="seasons/season${season.seasonNumber}.html">
+<a class="card ${isFirstSeason ? 'winner' : ''}" href="season_ref.html?season=${season.seasonNumber}">
   <div class="row">
     <div class="avatar">S${season.seasonNumber}</div>
     <div>

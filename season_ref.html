@@ -1,103 +1,123 @@
 <!doctype html>
-<html lang="en" data-root=".">
+<html lang="en" data-root="..">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Season Profile</title>
   <link rel="stylesheet" href="styles.css">
+
   <style>
-    /* ===== HERO SECTION ===== */
-    .hero {
-      background: linear-gradient(135deg, rgba(125,76,255,.2), rgba(255,179,71,.15), rgba(76,255,179,.1));
-      border-radius: 28px;
-      border: 1px solid rgba(125,76,255,.35);
-      padding: 60px 40px;
-      margin: 32px 0;
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .hero::before {
-      content: '';
-      position: absolute;
-      top: -50px;
-      left: -50px;
-      width: 200px;
-      height: 200px;
-      background: radial-gradient(circle, rgba(125,76,255,.1) 0%, transparent 70%);
-      animation: rotate 20s linear infinite;
-    }
-    
-    .hero h1 {
-      position: relative;
-      font-size: 48px;
-      margin: 0 0 16px 0;
-      background: linear-gradient(135deg, #fff, var(--accent2), var(--accent));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      text-shadow: 0 0 40px rgba(125,76,255,.5);
-    }
-    
-    .hero p {
-      position: relative;
-      color: var(--muted);
-      font-size: 16px;
-      margin: 0;
-    }
-    
-    @keyframes rotate {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
+    .two-col { display:grid; grid-template-columns: 1.1fr .9fr; gap:16px; }
+    @media (max-width: 980px){ .two-col{ grid-template-columns:1fr; } }
+
+    .panel {
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.18);
+      border-radius: 18px;
+      padding: 16px;
+      backdrop-filter: blur(8px);
     }
 
-    /* ===== KPI GRID ===== */
-    .kpi-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
-      margin: 24px 0;
+    .cast-photo {
+      display:flex; gap:14px; align-items:flex-start; justify-content:space-between;
     }
-    
-    .kpi {
-      background: linear-gradient(135deg, rgba(255,255,255,.1), rgba(255,255,255,.05));
-      border: 1px solid rgba(255,255,255,.15);
-      border-radius: 16px;
+    .cast-photo img{
+      width:100%;
+      max-height: 260px;
+      object-fit: contain;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.25);
+      margin-top: 10px;
+    }
+    .path-pill{
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      white-space: nowrap;
+    }
+
+    .placements { width:100%; }
+    .placements th, .placements td { vertical-align: middle; }
+    .placements td { padding-top: 10px; padding-bottom: 10px; }
+
+    .p-avatar{
+      width:42px;height:42px;border-radius:999px;overflow:hidden;
+      border:2px solid rgba(165,95,255,.55);
+      background:linear-gradient(135deg, rgba(255,255,255,.14), rgba(255,255,255,.06));
+      display:flex;align-items:center;justify-content:center;
+      flex:0 0 auto;
+    }
+    .p-avatar img{ width:100%; height:100%; object-fit:cover; display:none; }
+    .p-avatar .fb{ font-weight:800; font-size:12px; opacity:.95; }
+
+    .place-badge{
+      font-weight:800;
+      letter-spacing:.2px;
+    }
+
+    .subtle { opacity:.82; font-size: 13px; }
+    .notes { color: rgba(255,255,255,.85); font-size: 13px; line-height: 1.25; }
+    .phase { font-weight:700; }
+
+    .jumpline{
+      margin: 10px 0 0;
+      font-size: 12px;
+      opacity: .82;
+      word-break: break-word;
+    }
+    .jumpline a{ opacity:.9; margin-right: 6px; }
+
+    .callout {
+      background: linear-gradient(135deg, rgba(165,95,255,0.15), rgba(165,95,255,0.05));
+      border: 1px solid rgba(165,95,255,0.3);
+      border-radius: 12px;
       padding: 20px;
-      text-align: center;
-      transition: all 0.3s ease;
+      margin: 20px 0;
     }
-    
-    .kpi:hover {
-      transform: translateY(-4px);
-      border-color: var(--accent);
-      box-shadow: 0 12px 24px rgba(125,76,255,.3);
-    }
-    
-    .kpi h3 {
-      font-size: 14px;
-      color: var(--muted);
-      margin: 0 0 8px 0;
-      font-weight: 600;
-    }
-    
-    .kpi p {
-      margin: 4px 0;
-      font-size: 18px;
-      font-weight: 700;
-    }
-    
-    .kpi .small {
-      font-size: 13px;
-      color: var(--muted);
-      font-weight: 500;
+    .callout h3 { margin: 0 0 10px; color: rgba(165,95,255,1); }
+
+    .highlight-box {
+      background: rgba(255,215,0,0.08);
+      border-left: 3px solid rgba(255,215,0,0.6);
+      padding: 12px 16px;
+      margin: 10px 0;
+      border-radius: 6px;
     }
 
-    /* ===== HIGHLIGHT BOXES ===== */
-    .highlight-box {
-      background: linear-gradient(135deg, rgba(125,76,255,.15), rgba(255,179,71,.1));
-      border-left: 4px solid var(--accent);
-      padding: 16px 20px;
+    .stats-panel {
+      background: rgba(0,0,0,.18);
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 12px;
+      padding: 16px;
+      margin: 10px 0;
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+
+    .stat-row:last-child {
+      border-bottom: none;
+    }
+
+    .stat-label {
+      opacity: 0.8;
+    }
+
+    .stat-value {
+      font-weight: 600;
+      color: var(--accent2);
+    }
+  </style>
+</head>
+
+<body>
       margin: 12px 0;
       border-radius: 8px;
       transition: all 0.3s ease;
@@ -218,195 +238,6 @@
       border-radius: 16px;
       padding: 20px;
       margin: 16px 0;
-    }
-    
-    .stat-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 10px 0;
-      border-bottom: 1px solid rgba(255,255,255,.1);
-    }
-    
-    .stat-row:last-child {
-      border-bottom: none;
-    }
-    
-    .stat-label {
-      color: var(--muted);
-      font-weight: 600;
-    }
-    
-    .stat-value {
-      color: var(--accent2);
-      font-weight: 700;
-    }
-
-    /* ===== KEY STORYLINES ===== */
-    .storylines-section {
-      margin: 40px 0;
-    }
-    
-    .storyline-card {
-      background: linear-gradient(135deg, rgba(125,76,255,.15), rgba(255,179,71,.08));
-      border: 1px solid rgba(125,76,255,.3);
-      border-radius: 12px;
-      padding: 20px;
-      margin: 16px 0;
-      transition: all 0.3s ease;
-    }
-    
-    .storyline-card:hover {
-      border-color: var(--accent);
-      box-shadow: 0 8px 20px rgba(125,76,255,.2);
-      transform: translateX(4px);
-    }
-    
-    .storyline-title {
-      color: var(--accent2);
-      font-weight: 700;
-      margin: 0 0 8px 0;
-      font-size: 16px;
-    }
-    
-    .storyline-description {
-      color: var(--text);
-      font-size: 14px;
-      line-height: 1.6;
-      margin: 0;
-    }
-
-    /* ===== FOOTER ===== */
-    .season-footer {
-      background: linear-gradient(135deg, rgba(255,255,255,.05), rgba(125,76,255,.08));
-      border-top: 1px solid rgba(255,255,255,.1);
-      border-radius: 16px;
-      padding: 40px 30px;
-      margin-top: 60px;
-      margin-bottom: 20px;
-      text-align: center;
-    }
-    
-    .season-footer h3 {
-      color: var(--accent);
-      font-size: 18px;
-      margin: 0 0 12px 0;
-    }
-    
-    .season-footer p {
-      color: var(--muted);
-      margin: 8px 0;
-      font-size: 14px;
-    }
-    
-    .footer-stats {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 20px;
-      margin-top: 24px;
-      padding-top: 24px;
-      border-top: 1px solid rgba(255,255,255,.1);
-    }
-    
-    .footer-stat {
-      text-align: center;
-    }
-    
-    .footer-stat-number {
-      font-size: 32px;
-      font-weight: 800;
-      color: var(--accent2);
-    }
-    
-    .footer-stat-label {
-      color: var(--muted);
-      font-size: 12px;
-      text-transform: uppercase;
-      font-weight: 600;
-      margin-top: 4px;
-    }
-
-    .loading-spinner {
-      text-align: center;
-      padding: 60px 20px;
-      color: var(--muted);
-    }
-    
-    .error-message {
-      background: linear-gradient(135deg, rgba(255,100,100,.2), rgba(255,100,100,.1));
-      border: 1px solid rgba(255,100,100,.3);
-      border-radius: 12px;
-      padding: 20px;
-      margin: 20px 0;
-      text-align: center;
-      color: #ff9999;
-    }
-  </style>
-</head>
-<body>
-
-<!-- SITE HEADER START -->
-<header class="modern-header" id="modernHeader">
-  <div class="header-container">
-    <div class="header-top">
-      <a href="index.html" class="brand-section" aria-label="Go to home">
-        <div class="brand-icon">
-          <span class="brand-logo-text">⚡</span>
-        </div>
-        <div class="brand-content">
-          <h1>DC <span class="brand-gradient">Franchise</span> Database</h1>
-          <p class="brand-subtitle">Season <span id="currentSeasonNum">5</span> Live • Click to Explore</p>
-        </div>
-      </a>
-      <div class="stats-badge">
-        <div class="stats-main"><span id="totalSeasons">5</span> Seasons • <span id="totalPlayers">58</span> Players</div>
-        <div class="stats-sub">Icons: <span id="iconFormat">name.png</span></div>
-      </div>
-    </div>
-    <nav class="header-nav" aria-label="Primary navigation">
-      <ul class="nav-list">
-        <li class="nav-item"><a href="index.html" class="nav-link" data-page="index"><span class="nav-icon">🏠</span><span>Home</span></a></li>
-        <li class="nav-item"><a href="current-season.html" class="nav-link" data-page="current-season"><span class="nav-icon">📊</span><span>Current Season</span></a></li>
-        <li class="nav-item"><a href="voting-analytics.html" class="nav-link" data-page="voting-analytics"><span class="nav-icon">🗳️</span><span>Voting Analytics</span></a></li>
-        <li class="nav-item"><a href="franchise.html" class="nav-link" data-page="franchise"><span class="nav-icon">🏛️</span><span>Franchise</span></a></li>
-        <li class="nav-item"><a href="rankings.html" class="nav-link" data-page="rankings"><span class="nav-icon">🏆</span><span>Rankings</span></a></li>
-        <li class="nav-item"><a href="seasons.html" class="nav-link" data-page="seasons"><span class="nav-icon">📚</span><span>Seasons</span></a></li>
-        <li class="nav-item"><a href="devotees.html" class="nav-link" data-page="devotees"><span class="nav-icon">👥</span><span>Players</span></a></li>
-        <li class="nav-item"><a href="awards.html" class="nav-link" data-page="awards"><span class="nav-icon">🥇</span><span>Awards</span></a></li>
-      </ul>
-    </nav>
-  </div>
-</header>
-
-<script>
-  if (window.SITECONFIG) {
-    document.getElementById('totalSeasons').textContent = window.SITECONFIG.seasons;
-    document.getElementById('totalPlayers').textContent = window.SITECONFIG.players;
-    document.getElementById('currentSeasonNum').textContent = window.SITECONFIG.currentSeason;
-    document.getElementById('iconFormat').textContent = window.SITECONFIG.iconFormat;
-  }
-  
-  const header = document.getElementById('modernHeader');
-  if (header) {
-    window.addEventListener('scroll', () => {
-      const currentScroll = window.pageYOffset;
-      if (currentScroll > 20) {
-        header.classList.add('scrolled');
-      } else {
-        header.classList.remove('scrolled');
-      }
-    }, { passive: true });
-  }
-  
-  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
-  const navLinks = document.querySelectorAll('.nav-link');
-  navLinks.forEach(link => {
-    const linkPage = link.getAttribute('href');
-    if (linkPage === currentPage || (currentPage === '' && linkPage === 'index.html')) {
-      link.classList.add('active');
-    }
-  });
-</script>
-<!-- SITE HEADER END -->
 
 <div class="container">
   <div class="topbar">
@@ -429,9 +260,9 @@
 
   <!-- DYNAMIC CONTENT AREA -->
   <div id="season-content">
-    <div class="loading-spinner">
-      <h2>⏳ Loading Season Data...</h2>
-      <p>Please wait while we fetch the season information</p>
+    <div class="hero">
+      <h1>Loading...</h1>
+      <p>Please wait...</p>
     </div>
   </div>
 </div>
@@ -445,137 +276,220 @@
 </footer>
 
 <script>
-// Get season number from URL query parameter
-const urlParams = new URLSearchParams(window.location.search);
-const seasonNum = parseInt(urlParams.get('season')) || 1;
-
-// Emoji map for seasons
-const emojiMap = {
-  1: '🏝️',
-  2: '🔁',
-  3: '🌋',
-  4: '⭐',
-  5: '🛟'
-};
-
-// Storylines loaded dynamically from JSON data
-
-// Function to render season data
-function renderSeasonPage(seasonData, episodeData) {
-  const container = document.getElementById('season-content');
-  
-  const emoji = emojiMap[seasonNum] || '📺';
-  const storylines = (episodeData && episodeData.storylines) ? episodeData.storylines : [];
-  
-  let html = `
-    <div class="hero">
-      <h1>${emoji} Season ${seasonData.seasonNumber}: ${seasonData.title}</h1>
-      <p>${seasonData.subtitle}</p>
-    </div>
-
-    <div class="kpi-grid">
+(async function() {
+  try {
+    // Get season number from URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const seasonNum = urlParams.get('season');
+    
+    if (!seasonNum) {
+      document.getElementById('season-content').innerHTML = `
+        <div class="hero">
+          <h1>⚠️ No Season Specified</h1>
+          <p>Please provide a season number in the URL</p>
+        </div>
+        <div class="panel">
+          <p>Example: <code>season_ref.html?season=1</code></p>
+          <p><a href="seasons.html" class="tab">← Back to Seasons List</a></p>
+        </div>
+      `;
+      return;
+    }
+    
+    // Load season data from JSON
+    const response = await fetch(`season${seasonNum}-data.json`);
+    if (!response.ok) {
+      throw new Error(`Season ${seasonNum} data not found`);
+    }
+    const season = await response.json();
+    
+    // Update page title
+    document.title = `Season ${seasonNum} — ${season.title}`;
+    
+    // Helper function to create player link
+    function playerLink(name, slug) {
+      return slug ? `<a href="player.html?player=${slug}"><b>${name}</b></a>` : `<b>${name}</b>`;
+    }
+    
+    // Helper to safely get award
+    function getAward(awards, key) {
+      return awards && awards[key] ? awards[key] : null;
+    }
+    
+    // Emoji map for seasons
+    const emojiMap = {
+      1: '🏝️',
+      2: '🔁',
+      3: '🌋',
+      4: '⭐',
+      5: '🛟'
+    };
+    const emoji = emojiMap[seasonNum] || '📺';
+    
+    // Generate Season Highlights (from memorable moments)
+    let highlightsHTML = '';
+    if (season.legacy && season.legacy.memorableMoments) {
+      highlightsHTML = season.legacy.memorableMoments.slice(0, 6).map(moment => `
+        <div class="highlight-box">
+          <b>${moment}</b>
+        </div>
+      `).join('');
+    }
+    
+    // Get physical/challenge award (different property names in different seasons)
+    const physicalAward = getAward(season.awards, 'bestPhysical') || getAward(season.awards, 'mostChallengeWins');
+    
+    // Generate KPI Overview Cards
+    const kpiOverviewHTML = `
       <div class="kpi">
         <h3>👑 Winner</h3>
-        <p><a href="player.html?player=${seasonData.winner.playerSlug}" style="color: var(--accent2); text-decoration: none;"><b>${seasonData.winner.name}</b></a></p>
-        <p class="small">${seasonData.winner.vote} jury vote</p>
+        <p>${playerLink(season.winner.name, season.winner.playerSlug)}</p>
+        <p class="small">${season.winner.vote}</p>
       </div>
       
       <div class="kpi">
         <h3>🎬 Theme</h3>
-        <p><b>${seasonData.theme}</b></p>
-        <p class="small">${seasonData.castSize} players</p>
+        <p><b>${season.theme || season.title}</b></p>
+        <p class="small">${season.castSize} players</p>
       </div>
       
       <div class="kpi">
         <h3>⭐ Fan Favorite</h3>
-        <p><a href="player.html?player=${seasonData.awards.fanFavorite.playerSlug}" style="color: var(--accent2); text-decoration: none;"><b>${seasonData.awards.fanFavorite.name}</b></a></p>
-        <p class="small">Community pick</p>
+        <p>${season.awards.fanFavorite ? playerLink(season.awards.fanFavorite.name, season.awards.fanFavorite.playerSlug) : 'TBD'}</p>
+        <p class="small">${season.awards.fanFavorite && season.awards.fanFavorite.description ? season.awards.fanFavorite.description.substring(0, 40) + '...' : 'Community pick'}</p>
       </div>
       
       <div class="kpi">
         <h3>📺 Episodes</h3>
-        <p><b>${seasonData.episodeCount}</b></p>
+        <p><b>${season.episodeCount}</b></p>
         <p class="small">Complete season</p>
       </div>
-    </div>
-
-    <div class="two-col">
-      <div>
-        <h2 style="margin-top:16px;">🏆 Season Awards</h2>
-        
-        <div class="stats-panel">
-          <div class="stat-row">
-            <span class="stat-label">🌟 Fan Favorite</span>
-            <span class="stat-value"><a href="player.html?player=${seasonData.awards.fanFavorite.playerSlug}" style="color: var(--accent2); text-decoration: none;">${seasonData.awards.fanFavorite.name}</a></span>
-          </div>
-          <div class="stat-row">
-            <span class="stat-label">🧠 Best Strategic</span>
-            <span class="stat-value"><a href="player.html?player=${seasonData.awards.bestStrategic.playerSlug}" style="color: var(--accent2); text-decoration: none;">${seasonData.awards.bestStrategic.name}</a></span>
-          </div>
-          <div class="stat-row">
-            <span class="stat-label">💪 Challenge Beast</span>
-            <span class="stat-value"><a href="player.html?player=${seasonData.awards.mostChallengeWins.playerSlug}" style="color: var(--accent2); text-decoration: none;">${seasonData.awards.mostChallengeWins.name}</a></span>
-          </div>
-        </div>
-
-        <h2 style="margin-top:24px;">📊 Season Statistics</h2>
-        <div class="stats-panel">
-          <div class="stat-row">
-            <span class="stat-label">Cast Size</span>
-            <span class="stat-value">${seasonData.castSize} players</span>
-          </div>
-          <div class="stat-row">
-            <span class="stat-label">Episodes</span>
-            <span class="stat-value">${seasonData.episodeCount}</span>
-          </div>
-          <div class="stat-row">
-            <span class="stat-label">Winner</span>
-            <span class="stat-value">${seasonData.winner.name}</span>
-          </div>
-          <div class="stat-row">
-            <span class="stat-label">Runner-Up</span>
-            <span class="stat-value">${seasonData.winner.runnerUp}</span>
-          </div>
-          <div class="stat-row">
-            <span class="stat-label">Final Vote</span>
-            <span class="stat-value">${seasonData.winner.vote}</span>
-          </div>
-          <div class="stat-row">
-            <span class="stat-label">Challenge Wins (Winner)</span>
-            <span class="stat-value">${seasonData.awards.mostChallengeWins.detail}</span>
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <h2 style="margin-top:16px;">🎯 Season Highlights</h2>
-  `;
-
-  // Add highlights from episodeData
-  if (episodeData && episodeData.highlights) {
-    episodeData.highlights.forEach(highlight => {
-      html += `
-        <div class="highlight-box">
-          <b>${highlight.title}</b>
-          ${highlight.description}
+    `;
+    
+    // Generate Statistics Panel
+    let statsHTML = '<div class="stats-panel">';
+    
+    if (season.awards.fanFavorite) {
+      statsHTML += `
+        <div class="stat-row">
+          <span class="stat-label">🌟 Fan Favorite</span>
+          <span class="stat-value">${playerLink(season.awards.fanFavorite.name, season.awards.fanFavorite.playerSlug)}</span>
         </div>
       `;
-    });
-  }
-
-  html += `
+    }
+    
+    if (season.awards.bestStrategic) {
+      statsHTML += `
+        <div class="stat-row">
+          <span class="stat-label">🧠 Best Strategic</span>
+          <span class="stat-value">${playerLink(season.awards.bestStrategic.name, season.awards.bestStrategic.playerSlug)}</span>
+        </div>
+      `;
+    }
+    
+    if (physicalAward) {
+      statsHTML += `
+        <div class="stat-row">
+          <span class="stat-label">💪 Best Physical</span>
+          <span class="stat-value">${playerLink(physicalAward.name, physicalAward.playerSlug)}</span>
+        </div>
+      `;
+    }
+    
+    statsHTML += `
+      <div class="stat-row">
+        <span class="stat-label">Cast Size</span>
+        <span class="stat-value">${season.castSize} players</span>
       </div>
-    </div>
-  `;
+      <div class="stat-row">
+        <span class="stat-label">Episodes</span>
+        <span class="stat-value">${season.episodeCount}</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Winner</span>
+        <span class="stat-value">${season.winner.name}</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Runner-Up</span>
+        <span class="stat-value">${season.winner.runnerUp}</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Final Vote</span>
+        <span class="stat-value">${season.winner.vote}</span>
+      </div>
+    </div>`;
+    
+    // Generate jump links
+    const jumpLinksHTML = season.placements ? season.placements.map((p, i) => 
+      `<a href="#p${i+1}">#${i+1}</a>`
+    ).join('') : '';
+    
+    // Generate placements table
+    let placementsHTML = '';
+    if (season.placements && season.placements.length > 0) {
+      placementsHTML = season.placements.map((p, index) => {
+        const placeNum = p.placement;
+        let placeBadge = `#${placeNum}`;
+        if (placeNum === 1) placeBadge = `🥇 #${placeNum}`;
+        else if (placeNum === 2) placeBadge = `🥈 #${placeNum}`;
+        
+        const initials = p.name.substring(0, 2).toUpperCase();
+        
+        return `
+          <tr id="p${placeNum}">
+            <td>
+              <div class="p-avatar">
+                <img src="assets/avatars/${p.playerSlug}.png" alt="${p.name}" 
+                     onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" 
+                     onerror="this.style.display='none';">
+                <div class="fb">${initials}</div>
+              </div>
+            </td>
+            <td class="place-badge">${placeBadge}</td>
+            <td>${playerLink(p.name, p.playerSlug)}</td>
+            <td class="phase">${p.phase}</td>
+            <td class="notes">${p.notes}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+    
+    // Build complete season page
+    document.getElementById('season-content').innerHTML = `
+      <div class="hero">
+        <h1>${emoji} Season ${season.seasonNumber} — ${season.title}</h1>
+        <p>${season.castSize} players • ${season.episodeCount} episodes • ${season.subtitle}</p>
+      </div>
 
-  // Add placement table
-  if (seasonData.placements && seasonData.placements.length > 0) {
-    html += `
+      <div class="callout">
+        <h3>🏆 Winner: ${season.winner.name} (${season.winner.vote} over ${season.winner.runnerUp})</h3>
+        <p><b>Strategy:</b> ${season.winner.strategy} — ${season.winner.keyStats}</p>
+        <p><b>Legacy:</b> ${season.winner.legacy}</p>
+        ${season.awards.fanFavorite ? `<p><b>Fan Favorite:</b> ${season.awards.fanFavorite.name}</p>` : ''}
+      </div>
+
+      <div class="kpi-grid">
+        ${kpiOverviewHTML}
+      </div>
+
+      <div class="two-col">
+        <div>
+          <h2 style="margin-top:16px;">🏆 Season Awards</h2>
+          ${statsHTML}
+        </div>
+
+        <div>
+          <h2 style="margin-top:16px;">🎯 Season Highlights</h2>
+          ${highlightsHTML || '<p class="small">Check the awards page for full season highlights</p>'}
+        </div>
+      </div>
+
+      ${season.placements && season.placements.length > 0 ? `
       <div style="margin-top:30px;">
         <h2 style="margin:0 0 10px;">🏆 Placements</h2>
         <div class="subtle" style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
           <div class="jumpline">
-            Jump: ${seasonData.placements.map((p, i) => `<a href="#p${i+1}">#${i+1}</a>`).join('')}
+            Jump: ${jumpLinksHTML}
           </div>
           <div class="subtle">Click any name to open the profile</div>
         </div>
@@ -592,116 +506,35 @@ function renderSeasonPage(seasonData, episodeData) {
               </tr>
             </thead>
             <tbody>
-    `;
-    
-    seasonData.placements.forEach((p, index) => {
-      const placeNum = p.placement;
-      let placeBadge = `#${placeNum}`;
-      if (placeNum === 1) placeBadge = `🥇 #${placeNum}`;
-      else if (placeNum === 2) placeBadge = `🥈 #${placeNum}`;
-      
-      const initials = p.name.substring(0, 2).toUpperCase();
-      
-      html += `
-        <tr id="p${placeNum}">
-          <td>
-            <div class="p-avatar">
-              <img src="assets/avatars/${p.playerSlug}.png" alt="${p.name}" 
-                   onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" 
-                   onerror="this.style.display='none';">
-              <div class="fb">${initials}</div>
-            </div>
-          </td>
-          <td class="place-badge">${placeBadge}</td>
-          <td><a href="player.html?player=${p.playerSlug}"><b>${p.name}</b></a></td>
-          <td class="phase">${p.phase}</td>
-          <td class="notes">${p.notes}</td>
-        </tr>
-      `;
-    });
-    
-    html += `
+              ${placementsHTML}
             </tbody>
           </table>
         </div>
       </div>
-    `;
-  }
+      ` : ''}
 
-  // Add key storylines section from episodeData
-  if (episodeData && episodeData.storylines && episodeData.storylines.length > 0) {
-    html += `
-      <div class="storylines-section">
-        <h2>📖 Key Storylines</h2>
-    `;
-    
-    episodeData.storylines.forEach(storyline => {
-      html += `
-        <div class="storyline-card">
-          <h3 class="storyline-title">${storyline.title}</h3>
-          <p class="storyline-description">${storyline.description}</p>
-        </div>
-      `;
-    });
-    
-    html += `
+      <div class="footer" style="margin-top: 30px;">
+        Season ${seasonNum} • 
+        <a href="season-awards_ref.html?season=${seasonNum}">View Season Awards →</a> • 
+        <a href="seasons.html">← All Seasons</a>
       </div>
     `;
-  }
-
-  // Add season footer
-  html += `
-    <div class="season-footer">
-      <h3>✨ Season ${seasonData.seasonNumber} Summary</h3>
-      <p><strong>${seasonData.winner.name}</strong> claimed victory with a ${seasonData.winner.vote} jury vote</p>
-      <p>A season of <strong>${seasonData.theme.toLowerCase()}</strong> featuring <strong>${seasonData.castSize}</strong> unforgettable players</p>
-      <div class="footer-stats">
-        <div class="footer-stat">
-          <div class="footer-stat-number">${seasonData.episodeCount}</div>
-          <div class="footer-stat-label">Episodes</div>
-        </div>
-        <div class="footer-stat">
-          <div class="footer-stat-number">${seasonData.castSize}</div>
-          <div class="footer-stat-label">Players</div>
-        </div>
-        <div class="footer-stat">
-          <div class="footer-stat-number">${seasonData.episodeCount * 42}</div>
-          <div class="footer-stat-label">Minutes</div>
-        </div>
-      </div>
-    </div>
-  `;
-
-  container.innerHTML = html;
-}
-
-// Load season data
-async function loadSeasonData() {
-  try {
-    // Load detailed season data from season{X}-data.json
-    const seasonResponse = await fetch(`season${seasonNum}-data.json`);
-    const seasonData = await seasonResponse.json();
-    
-    if (!seasonData) {
-      throw new Error(`Season ${seasonNum} not found`);
-    }
-    
-    renderSeasonPage(seasonData, null);
     
   } catch (error) {
     console.error('Error loading season data:', error);
     document.getElementById('season-content').innerHTML = `
-      <div class="error-message">
-        <h2>❌ Error Loading Season Data</h2>
-        <p>${error.message}</p>
-        <p>Make sure <code>season${seasonNum}-data.json</code> exists in the root folder.</p>
-        <p><a href="seasons.html">← Back to Seasons</a></p>
+      <div class="hero">
+        <h1>⚠️ Season Not Found</h1>
+        <p>Could not load data for this season</p>
+      </div>
+      <div class="panel">
+        <p><b>Error:</b> ${error.message}</p>
+        <p>Make sure <code>season${urlParams.get('season')}-data.json</code> exists in the root folder.</p>
+        <p><a href="seasons.html" class="tab">← Back to Seasons List</a></p>
       </div>
     `;
   }
-}
-
-loadSeasonData();
+})();
 </script>
 
 </body>

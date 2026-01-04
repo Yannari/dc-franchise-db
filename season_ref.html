@@ -568,40 +568,62 @@ function renderSeasonPage(seasonData, episodeData) {
     </div>
   `;
 
-  // Add placement table if episode data exists
-  if (episodeData && episodeData.bootlist) {
+  // Add placement table
+  if (seasonData.placements && seasonData.placements.length > 0) {
     html += `
-      <div class="placement-section">
-        <h2>📋 Final Placement Order</h2>
-        <table class="placement-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Player Name</th>
-              <th>Placement</th>
-              <th>Voted Out</th>
-            </tr>
-          </thead>
-          <tbody>
+      <div style="margin-top:30px;">
+        <h2 style="margin:0 0 10px;">🏆 Placements</h2>
+        <div class="subtle" style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+          <div class="jumpline">
+            Jump: ${seasonData.placements.map((p, i) => `<a href="#p${i+1}">#${i+1}</a>`).join('')}
+          </div>
+          <div class="subtle">Click any name to open the profile</div>
+        </div>
+
+        <div class="panel" style="margin-top:10px; padding:0;">
+          <table class="table placements">
+            <thead>
+              <tr>
+                <th style="width:64px;">Icon</th>
+                <th style="width:90px;">Place</th>
+                <th>Player</th>
+                <th style="width:130px;">Phase</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
     `;
     
-    episodeData.bootlist.forEach((boot, index) => {
-      const placement = episodeData.bootlist.length - index;
-      const placement_emoji = placement === 1 ? '👑' : placement === 2 ? '🥈' : placement === 3 ? '🥉' : '#';
+    seasonData.placements.forEach((p, index) => {
+      const placeNum = p.placement;
+      let placeBadge = `#${placeNum}`;
+      if (placeNum === 1) placeBadge = `🥇 #${placeNum}`;
+      else if (placeNum === 2) placeBadge = `🥈 #${placeNum}`;
+      
+      const initials = p.name.substring(0, 2).toUpperCase();
       
       html += `
-        <tr>
-          <td class="placement-rank ${placement === 1 ? 'winner' : ''}">${placement_emoji}</td>
-          <td class="player-name"><a href="player.html?player=${boot.playerSlug}" style="color: var(--accent2); text-decoration: none;">${boot.name}</a></td>
-          <td class="placement-status">${placement} place</td>
-          <td>${boot.votesOut || 'Jury'} votes</td>
+        <tr id="p${placeNum}">
+          <td>
+            <div class="p-avatar">
+              <img src="assets/avatars/${p.playerSlug}.png" alt="${p.name}" 
+                   onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" 
+                   onerror="this.style.display='none';">
+              <div class="fb">${initials}</div>
+            </div>
+          </td>
+          <td class="place-badge">${placeBadge}</td>
+          <td><a href="player.html?player=${p.playerSlug}"><b>${p.name}</b></a></td>
+          <td class="phase">${p.phase}</td>
+          <td class="notes">${p.notes}</td>
         </tr>
       `;
     });
     
     html += `
-          </tbody>
-        </table>
+            </tbody>
+          </table>
+        </div>
       </div>
     `;
   }
@@ -656,23 +678,15 @@ function renderSeasonPage(seasonData, episodeData) {
 // Load season data
 async function loadSeasonData() {
   try {
-    const seasonsResponse = await fetch('seasons_database.json');
-    const seasonsData = await seasonsResponse.json();
+    // Load detailed season data from season{X}-data.json
+    const seasonResponse = await fetch(`season${seasonNum}-data.json`);
+    const seasonData = await seasonResponse.json();
     
-    const season = seasonsData.seasons.find(s => s.seasonNumber === seasonNum);
-    if (!season) {
+    if (!seasonData) {
       throw new Error(`Season ${seasonNum} not found`);
     }
     
-    let episodeData = null;
-    try {
-      const episodeResponse = await fetch(`season${seasonNum}-data.json`);
-      episodeData = await episodeResponse.json();
-    } catch (e) {
-      console.log('Episode data not available');
-    }
-    
-    renderSeasonPage(season, episodeData);
+    renderSeasonPage(seasonData, null);
     
   } catch (error) {
     console.error('Error loading season data:', error);
@@ -680,6 +694,7 @@ async function loadSeasonData() {
       <div class="error-message">
         <h2>❌ Error Loading Season Data</h2>
         <p>${error.message}</p>
+        <p>Make sure <code>season${seasonNum}-data.json</code> exists in the root folder.</p>
         <p><a href="seasons.html">← Back to Seasons</a></p>
       </div>
     `;

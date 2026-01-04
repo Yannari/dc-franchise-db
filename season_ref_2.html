@@ -133,82 +133,56 @@
       margin: 40px 0;
     }
     
-    .placement-grid-wrapper {
-      background: linear-gradient(135deg, rgba(125,76,255,.08), rgba(255,179,71,.05));
-      border: 1px solid rgba(125,76,255,.2);
-      border-radius: 12px;
-      overflow: hidden;
-      margin-top: 16px;
-    }
-    
-    .placement-grid {
+    .placement-table {
       width: 100%;
       border-collapse: collapse;
+      margin-top: 20px;
+      background: linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 12px;
+      overflow: hidden;
     }
     
-    .placement-cell {
-      padding: 0;
+    .placement-table th {
+      background: rgba(125,76,255,.2);
+      padding: 16px 12px;
+      text-align: left;
+      font-weight: 600;
+      color: var(--accent);
       border-bottom: 1px solid rgba(255,255,255,.1);
     }
     
-    .placement-cell:last-child {
-      border-bottom: none;
+    .placement-table td {
+      padding: 14px 12px;
+      border-bottom: 1px solid rgba(255,255,255,.1);
+      color: var(--text);
     }
     
-    .placement-link {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 12px 16px;
-      text-decoration: none;
-      color: inherit;
-      transition: all 0.2s ease;
+    .placement-table tr:hover {
+      background: rgba(125,76,255,.1);
     }
     
-    .placement-link:hover {
-      background: rgba(125,76,255,.15);
-      padding-left: 24px;
-    }
-    
-    .placement-rank-box {
-      min-width: 45px;
-      height: 45px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg, rgba(255,179,71,.3), rgba(125,76,255,.2));
-      border: 1px solid rgba(255,179,71,.4);
-      border-radius: 8px;
+    .placement-rank {
       font-weight: 800;
       color: var(--accent2);
-      font-size: 18px;
+      min-width: 50px;
     }
     
-    .placement-info {
-      flex: 1;
-      min-width: 0;
+    .placement-rank.winner {
+      color: var(--accent2);
+      font-size: 20px;
     }
     
-    .placement-player {
+    .player-name {
       font-weight: 700;
       color: var(--text);
-      font-size: 15px;
-      margin-bottom: 2px;
     }
     
-    .placement-detail {
+    .placement-status {
       font-size: 12px;
       color: var(--muted);
       text-transform: uppercase;
       font-weight: 600;
-    }
-    
-    .placement-votes {
-      min-width: 60px;
-      text-align: right;
-      font-weight: 700;
-      color: var(--accent);
-      font-size: 14px;
     }
 
     /* ===== STATS PANEL ===== */
@@ -458,14 +432,41 @@ const emojiMap = {
   5: '🛟'
 };
 
-// Storylines loaded dynamically from JSON data
+// Key storylines for each season
+const storylinesMap = {
+  1: [
+    { title: '👑 Lindsay\'s Social Mastery', description: 'Defeated Alejandro 5-4 by maintaining strong bonds and never burning bridges throughout the game.' },
+    { title: '🏆 Alejandro\'s Strategic Game', description: 'Set up perfectly to win but fell short to Lindsay\'s superior social gameplay in the final vote.' },
+    { title: '🎯 Justin\'s First Boot Surprise', description: 'Despite finding a hidden immunity idol early, Justin was voted out first, shocked no one played it for him.' }
+  ],
+  2: [
+    { title: '👑 Duncan\'s Survival Story', description: 'Lived as constant target but earned jury respect through resilience and clutch immunity wins.' },
+    { title: '⚡ Alejandro\'s Dominance', description: 'Won 5 immunity challenges but couldn\'t overcome Duncan\'s narrative at Final Tribal Council.' },
+    { title: '🎭 Returnee Season Drama', description: 'All-returnee cast reignited old rivalries and strategic warfare between Gen 1 legends.' }
+  ],
+  3: [
+    { title: '👑 Emma\'s Perfect Game', description: 'Achieved zero votes until Final 4 with perfect loyalty strategy, won 4-3-1 tiebreaker.' },
+    { title: '💪 Scott\'s Challenge Beast', description: 'Won 6 challenges in a single season - franchise record - but fell short with jury votes.' },
+    { title: '🌋 New Generation Rises', description: 'Fresh cast of Gen 2 players established themselves as legitimate forces in the franchise.' }
+  ],
+  4: [
+    { title: '🏆 Alejandro\'s FINAL VICTORY', description: 'After 2 runner-up finishes, finally won on his 3rd finals appearance with strategic brilliance.' },
+    { title: '💔 Zoey\'s Unprecedented Social Game', description: 'Formed 3 unbreakable bonds simultaneously - unique in franchise history - but lost 6-7.' },
+    { title: '🎪 Edge of Extinction Returns', description: '12 players got second chances through EoE twist, making it the most complex finale ever.' }
+  ],
+  5: [
+    { title: '🎯 Mickey\'s Under-the-Radar Win', description: 'Played clean from start to finish with zero votes against entire season, won tiebreak 3-3-2.' },
+    { title: '⚔️ Chaos Twist Gauntlet', description: '3 tribes, multiple swaps, split-tribal merge, vote-loss twists created unpredictable gameplay.' },
+    { title: '🔥 Fire-Making Final Challenge', description: 'Fire-making at Final 4 determined finalist, adding extra tension to season finale.' }
+  ]
+};
 
 // Function to render season data
 function renderSeasonPage(seasonData, episodeData) {
   const container = document.getElementById('season-content');
   
   const emoji = emojiMap[seasonNum] || '📺';
-  const storylines = (episodeData && episodeData.storylines) ? episodeData.storylines : [];
+  const storylines = storylinesMap[seasonNum] || [];
   
   let html = `
     <div class="hero">
@@ -551,17 +552,15 @@ function renderSeasonPage(seasonData, episodeData) {
         <h2 style="margin-top:16px;">🎯 Season Highlights</h2>
   `;
 
-  // Add highlights from episodeData
-  if (episodeData && episodeData.highlights) {
-    episodeData.highlights.forEach(highlight => {
-      html += `
-        <div class="highlight-box">
-          <b>${highlight.title}</b>
-          ${highlight.description}
-        </div>
-      `;
-    });
-  }
+  // Add storylines
+  storylines.forEach(storyline => {
+    html += `
+      <div class="highlight-box">
+        <b>${storyline.title}</b>
+        ${storyline.description}
+      </div>
+    `;
+  });
 
   html += `
       </div>
@@ -606,14 +605,14 @@ function renderSeasonPage(seasonData, episodeData) {
     `;
   }
 
-  // Add key storylines section from episodeData
-  if (episodeData && episodeData.storylines && episodeData.storylines.length > 0) {
+  // Add key storylines section
+  if (storylines.length > 0) {
     html += `
       <div class="storylines-section">
         <h2>📖 Key Storylines</h2>
     `;
     
-    episodeData.storylines.forEach(storyline => {
+    storylines.forEach(storyline => {
       html += `
         <div class="storyline-card">
           <h3 class="storyline-title">${storyline.title}</h3>

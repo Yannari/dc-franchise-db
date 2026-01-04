@@ -1728,8 +1728,8 @@
         },
         {
           "season": 6,
-          "placement": 99,
-          "status": "Active",
+          "placement": 18,
+          "status": "Eliminated",
           "tribe": "TBD",
           "challengeWins": 0,
           "immunityWins": 0,
@@ -3188,7 +3188,7 @@
         6
       ],
       "totalSeasons": 1,
-      "bestPlacement": 99,
+      "bestPlacement": 17,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
@@ -3201,8 +3201,8 @@
       "seasonDetails": [
         {
           "season": 6,
-          "placement": 99,
-          "status": "Active",
+          "placement": 17,
+          "status": "Eliminated",
           "tribe": "TBD",
           "challengeWins": 0,
           "immunityWins": 0,

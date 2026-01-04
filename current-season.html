@@ -2184,8 +2184,10 @@ Blaineley
 // This version includes all necessary functions
 // ========================================
 
+// Wait for DOM to be ready before initializing Season Setup
+document.addEventListener('DOMContentLoaded', function() {
 (function() {
-  console.log("🔧 Season Setup: Initializing...");
+  console.log("🔧 Season Setup: DOM ready, initializing...");
   
   // Get Season Setup elements
   const seasonSetupSummary = document.getElementById("season-setup-summary");
@@ -2199,10 +2201,9 @@ Blaineley
   const importFileInput = document.getElementById("import-file-input");
   const databaseStatus = document.getElementById("database-status");
 
-  console.log("🔧 Season Setup Elements:");
-  console.log("  - Summary textarea:", seasonSetupSummary ? "✅ Found" : "❌ NOT FOUND");
-  console.log("  - Analyze button:", analyzeCastBtn ? "✅ Found" : "❌ NOT FOUND");
-  console.log("  - Result div:", castAnalysisResult ? "✅ Found" : "❌ NOT FOUND");
+  console.log("🔧 Elements check:");
+  console.log("  - Button:", analyzeCastBtn ? "✅ Found" : "❌ NOT FOUND");
+  console.log("  - Textarea:", seasonSetupSummary ? "✅ Found" : "❌ NOT FOUND");
 
   let analyzedCastData = null;
 
@@ -2236,11 +2237,8 @@ Blaineley
   // ========================================
 
   if (analyzeCastBtn) {
-    console.log("✅ Season Setup: Adding click listener to Analyze Cast button");
     analyzeCastBtn.addEventListener("click", () => {
-      console.log("🔥 Analyze Cast CLICKED!");
       const summary = seasonSetupSummary.value.trim();
-      console.log("  - Summary length:", summary.length);
       if (!summary) {
         alert("⚠️ Please paste Episode 1 summary first!");
         return;
@@ -2695,6 +2693,7 @@ Blaineley
   }
   
 })();
+}); // End DOMContentLoaded
 </script>
 </div><footer class="siteFooter">
   <div class="footerInner">

@@ -2186,6 +2186,26 @@ Blaineley
 
 console.log("🚀 Season Setup script tag reached!");
 
+// Auto-load database from JSON if localStorage is empty
+(function() {
+  const existingDB = localStorage.getItem('players_database');
+  if (!existingDB) {
+    console.log("📥 No database in localStorage, attempting to load from players_database.json...");
+    fetch('players_database.json')
+      .then(r => r.json())
+      .then(db => {
+        localStorage.setItem('players_database', JSON.stringify(db, null, 2));
+        console.log(`✅ Database auto-loaded! ${db.players.length} players, ${db.franchise.totalSeasons} seasons`);
+      })
+      .catch(e => {
+        console.warn("⚠️ Could not auto-load database:", e.message);
+        console.log("Database will be empty until you import it manually or create profiles");
+      });
+  } else {
+    console.log("✅ Database already in localStorage");
+  }
+})();
+
 // Use setTimeout to ensure ALL DOM elements are fully rendered
 setTimeout(function() {
 (function() {

@@ -1769,7 +1769,7 @@ Blaineley
       els.cardPathToVictory.innerHTML = "<div class='muted'>No path to victory data yet.</div>";
 
       // Gameplay placeholders
-      els.gpSvg.innerHTML = "";
+      // els.gpSvg.innerHTML = ""; // REMOVED - element doesnt exist
       els.gpTableBody.innerHTML = "";
 
       // Players placeholder
@@ -2186,7 +2186,8 @@ Blaineley
 
 console.log("🚀 Season Setup script tag reached!");
 
-// Run immediately since script is at end of body (DOM already loaded)
+// Use setTimeout to ensure ALL DOM elements are fully rendered
+setTimeout(function() {
 (function() {
   console.log("🔧 Season Setup: Initializing...");
   
@@ -2694,6 +2695,7 @@ console.log("🚀 Season Setup script tag reached!");
   }
   
 })();
+}, 100); // Wait 100ms for DOM to fully render
 </script>
 </div><footer class="siteFooter">
   <div class="footerInner">

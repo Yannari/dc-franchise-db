@@ -1,18 +1,16 @@
 <!DOCTYPE html>
-
 <html lang="en" data-root=".">
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>DC Franchise — Seasons</title>
+<title>DC Franchise – Seasons</title>
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<!-- SITE HEADER START -->
-<!-- MODERN SITE HEADER START -->
+
+<!-- Copy header from original file -->
 <header class="modern-header" id="modernHeader">
   <div class="header-container">
-    <!-- Top Bar -->
     <div class="header-top">
       <a href="index.html" class="brand-section" aria-label="Go to home">
         <div class="brand-icon">
@@ -23,64 +21,21 @@
           <p class="brand-subtitle">Season <span id="currentSeasonNum">5</span> Live • Click to Explore</p>
         </div>
       </a>
-
       <div class="stats-badge">
         <div class="stats-main"><span id="totalSeasons">5</span> Seasons • <span id="totalPlayers">58</span> Players</div>
         <div class="stats-sub">Icons: <span id="iconFormat">name.png</span></div>
       </div>
     </div>
-
-    <!-- Navigation -->
     <nav class="header-nav" aria-label="Primary navigation">
       <ul class="nav-list">
-        <li class="nav-item">
-          <a href="index.html" class="nav-link" data-page="index">
-            <span class="nav-icon">🏠</span>
-            <span>Home</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="current-season.html" class="nav-link" data-page="current-season">
-            <span class="nav-icon">📊</span>
-            <span>Current Season</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="voting-analytics.html" class="nav-link" data-page="voting-analytics">
-            <span class="nav-icon">🧾</span>
-            <span>Voting Analytics</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="franchise.html" class="nav-link" data-page="franchise">
-            <span class="nav-icon">🏛️</span>
-            <span>Franchise</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="rankings.html" class="nav-link" data-page="rankings">
-            <span class="nav-icon">🏆</span>
-            <span>Rankings</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="seasons.html" class="nav-link" data-page="seasons">
-            <span class="nav-icon">🗂️</span>
-            <span>Seasons</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="devotees.html" class="nav-link" data-page="devotees">
-            <span class="nav-icon">👥</span>
-            <span>Players</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="awards.html" class="nav-link" data-page="awards">
-            <span class="nav-icon">🏅</span>
-            <span>Awards</span>
-          </a>
-        </li>
+        <li class="nav-item"><a href="index.html" class="nav-link"><span class="nav-icon">🏠</span><span>Home</span></a></li>
+        <li class="nav-item"><a href="current-season.html" class="nav-link"><span class="nav-icon">📊</span><span>Current Season</span></a></li>
+        <li class="nav-item"><a href="voting-analytics.html" class="nav-link"><span class="nav-icon">🧾</span><span>Voting Analytics</span></a></li>
+        <li class="nav-item"><a href="franchise.html" class="nav-link"><span class="nav-icon">🏛️</span><span>Franchise</span></a></li>
+        <li class="nav-item"><a href="rankings.html" class="nav-link"><span class="nav-icon">🏆</span><span>Rankings</span></a></li>
+        <li class="nav-item"><a href="seasons.html" class="nav-link active"><span class="nav-icon">🗂️</span><span>Seasons</span></a></li>
+        <li class="nav-item"><a href="devotees.html" class="nav-link"><span class="nav-icon">👥</span><span>Players</span></a></li>
+        <li class="nav-item"><a href="awards.html" class="nav-link"><span class="nav-icon">🏅</span><span>Awards</span></a></li>
       </ul>
     </nav>
   </div>
@@ -88,56 +43,30 @@
 
 <script>
 (function() {
-  // Load site config and update header stats
   if (window.SITE_CONFIG) {
     document.getElementById('totalSeasons').textContent = window.SITE_CONFIG.seasons;
     document.getElementById('totalPlayers').textContent = window.SITE_CONFIG.players;
     document.getElementById('currentSeasonNum').textContent = window.SITE_CONFIG.currentSeason;
     document.getElementById('iconFormat').textContent = window.SITE_CONFIG.iconFormat;
   }
-
-  // Scroll behavior
   const header = document.getElementById('modernHeader');
   if (!header) return;
-  
   window.addEventListener('scroll', () => {
-    const currentScroll = window.pageYOffset;
-    if (currentScroll > 20) {
+    if (window.pageYOffset > 20) {
       header.classList.add('scrolled');
     } else {
       header.classList.remove('scrolled');
     }
   }, { passive: true });
-
-  // Active page highlighting
   const currentPage = window.location.pathname.split('/').pop() || 'index.html';
-  const navLinks = document.querySelectorAll('.nav-link');
-  
-  navLinks.forEach(link => {
+  document.querySelectorAll('.nav-link').forEach(link => {
     const linkPage = link.getAttribute('href');
     if (linkPage === currentPage || (currentPage === '' && linkPage === 'index.html')) {
       link.classList.add('active');
     }
   });
-
-  // Path resolution for nested folders
-  const root = (document.documentElement.dataset.root || document.body.dataset.root || ".").replace(/\/+$/, "");
-  
-  if (root !== ".") {
-    const allLinks = header.querySelectorAll('a[href]');
-    allLinks.forEach(link => {
-      const href = link.getAttribute('href');
-      if (href && !href.startsWith('http') && !href.startsWith('#')) {
-        link.setAttribute('href', root + '/' + href);
-      }
-    });
-  }
 })();
 </script>
-<!-- MODERN SITE HEADER END -->
-
-<!-- SITE HEADER END -->
-
 
 <main class="homeWrap">
 <div class="container">
@@ -146,46 +75,94 @@
 <div class="brand">DC <span>Franchise</span> Database</div>
 <div class="meta">Local static website • Click seasons + player profiles • Search + sort included</div>
 </div>
-<div class="meta">Season count: 4 • Player count: 40</div>
+<div class="meta" id="topbar-stats">Season count: 5 • Player count: 58</div>
 </div>
-<div class="tabs"><a class="tab" href="current-season.html">📊 Current Season Analytics</a><a class="tab" href="voting-analytics.html">🗳️ Voting Chart Analytics</a><a class="tab" href="franchise.html">🏛️ Franchise Analytics</a><a class="tab" href="rankings.html">🏆 Player Rankings</a><a class="tab active" href="seasons.html">📚 Seasons</a><a class="tab" href="devotees.html">👥 Devotees</a><a class="tab" href="awards.html">🥇 Season Awards</a></div>
+<div class="tabs">
+<a class="tab" href="current-season.html">📊 Current Season Analytics</a>
+<a class="tab" href="voting-analytics.html">🗳️ Voting Chart Analytics</a>
+<a class="tab" href="franchise.html">🏛️ Franchise Analytics</a>
+<a class="tab" href="rankings.html">🏆 Player Rankings</a>
+<a class="tab active" href="seasons.html">📚 Seasons</a>
+<a class="tab" href="devotees.html">👥 Devotees</a>
+<a class="tab" href="awards.html">🥇 Season Awards</a>
+</div>
+
 <div class="hero">
 <h1>📚 Seasons Wiki</h1>
 <p>Click a season to open its full profile.</p>
 </div>
-<div class="grid">
-<a class="card winner" href="seasons/season5.html">
-<div class="row"><div class="avatar">S5</div><div><div class="name">Season 5</div><div class="sub">Complete • Winner: Mickey</div></div></div>
-<div class="badges"><span class="badge">Cast size: 18</span><span class="badge gold">Most Recent</span></div>
-</a>
-<a class="card" href="seasons/season4.html">
-<div class="row"><div class="avatar">S4</div><div><div class="name">Season 4</div><div class="sub">Complete • Winner: Alejandro</div></div></div>
-<div class="badges"><span class="badge">Cast size: 18</span></div>
-</a>
-<a class="card" href="seasons/season3.html">
-<div class="row"><div class="avatar">S3</div><div><div class="name">Season 3</div><div class="sub">Complete • Winner: Emma</div></div></div>
-<div class="badges"><span class="badge">Cast size: 16</span></div>
-</a>
-<a class="card" href="seasons/season2.html">
-<div class="row"><div class="avatar">S2</div><div><div class="name">Season 2</div><div class="sub">Complete • Winner: Duncan</div></div></div>
-<div class="badges"><span class="badge">Cast size: 14</span></div>
-</a>
-<a class="card" href="seasons/season1.html">
-<div class="row"><div class="avatar">S1</div><div><div class="name">Season 1</div><div class="sub">Complete • Winner: Lindsay</div></div></div>
-<div class="badges"><span class="badge">Cast size: 24</span></div>
-</a>
+
+<div class="grid" id="seasons-grid">
+  <div style="text-align: center; padding: 40px; opacity: 0.6;">
+    Loading seasons...
+  </div>
 </div>
 
 </div>
 </main>
 
-<!-- SITE FOOTER START -->
 <footer class="siteFooter">
   <div class="footerInner">
     <div class="footerTitle">DC Franchise Database</div>
-    <div class="footerSub">Static archive • 5 seasons • 58 players • Icons: name.png</div>
+    <div class="footerSub">Static archive • <span id="footer-seasons">5</span> seasons • <span id="footer-players">58</span> players • Icons: name.png</div>
   </div>
 </footer>
-<!-- SITE FOOTER END -->
+
+<script>
+(async function() {
+  try {
+    // Load seasons from JSON database
+    const response = await fetch('seasons_database.json');
+    const data = await response.json();
+    
+    const grid = document.getElementById('seasons-grid');
+    
+    if (!data.seasons || data.seasons.length === 0) {
+      grid.innerHTML = '<div style="text-align: center; padding: 40px; opacity: 0.6;">No seasons found</div>';
+      return;
+    }
+    
+    // Update stats
+    document.getElementById('topbar-stats').textContent = 
+      `Season count: ${data.franchise.totalSeasons} • Player count: 58`;
+    document.getElementById('footer-seasons').textContent = data.franchise.totalSeasons;
+    
+    // Sort by season number descending (most recent first)
+    const seasons = [...data.seasons].sort((a, b) => b.seasonNumber - a.seasonNumber);
+    
+    // Find most recent season
+    const mostRecentSeason = Math.max(...seasons.map(s => s.seasonNumber));
+    
+    // Generate season cards
+    const cardsHTML = seasons.map(season => {
+      const isMostRecent = season.seasonNumber === mostRecentSeason;
+      const isFirstSeason = season.seasonNumber === 1;
+      
+      return `
+<a class="card ${isFirstSeason ? 'winner' : ''}" href="seasons/season${season.seasonNumber}.html">
+  <div class="row">
+    <div class="avatar">S${season.seasonNumber}</div>
+    <div>
+      <div class="name">Season ${season.seasonNumber}</div>
+      <div class="sub">${season.status} • Winner: ${season.winner.name}</div>
+    </div>
+  </div>
+  <div class="badges">
+    <span class="badge">Cast size: ${season.castSize}</span>
+    ${isMostRecent ? '<span class="badge gold">Most Recent</span>' : ''}
+  </div>
+</a>`;
+    }).join('');
+    
+    grid.innerHTML = cardsHTML;
+    
+  } catch (error) {
+    console.error('Error loading seasons:', error);
+    document.getElementById('seasons-grid').innerHTML = 
+      '<div style="text-align: center; padding: 40px; color: #ff6b6b;">⚠️ Error loading seasons<br><small style="opacity: 0.7;">Make sure seasons_database.json exists in the same folder</small></div>';
+  }
+})();
+</script>
+
 </body>
 </html>

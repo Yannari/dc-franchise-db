@@ -1,0 +1,103 @@
+{
+  "seasonNumber": 5,
+  "title": "Total Drama Rescue Island",
+  "subtitle": "3 tribes, swaps, and ultimate chaos",
+  "castSize": 18,
+  "episodeCount": 14,
+  "jurySize": 8,
+  
+  "winner": {
+    "name": "Mickey",
+    "playerSlug": "mickey",
+    "vote": "3-3-2 (tiebreak)",
+    "runnerUp": "Sky & Ryan",
+    "keyStats": "0 votes against all season",
+    "strategy": "Under-the-radar control",
+    "legacy": "Quiet threat who peaked at the end"
+  },
+  
+  "finalists": [
+    { "name": "Mickey", "playerSlug": "mickey", "placement": 1, "votes": 3, "note": "Won via Ryan's tiebreak vote" },
+    { "name": "Sky", "playerSlug": "sky", "placement": 2, "votes": 3 },
+    { "name": "Ryan", "playerSlug": "ryan", "placement": 3, "votes": 2, "note": "Fire-making champion, kingmaker tiebreak vote" }
+  ],
+  
+  "placements": [
+    { "placement": 1, "name": "Mickey", "playerSlug": "mickey", "phase": "Winner", "notes": "Won 3-3-2 tiebreak (Ryan's vote) • 0 votes against all season • Perfect game" },
+    { "placement": 2, "name": "Sky", "playerSlug": "sky", "phase": "Finalist", "notes": "3 jury votes • 5 challenge wins • Physical threat" },
+    { "placement": 3, "name": "Ryan", "playerSlug": "ryan", "phase": "Finalist", "notes": "2 jury votes • Fire-making champion • Cast deciding tiebreak vote • Fan Favorite" },
+    { "placement": 4, "name": "Dwayne", "playerSlug": "dwayne", "phase": "Juror", "notes": "" },
+    { "placement": 5, "name": "Blaineley", "playerSlug": "blaineley", "phase": "Juror", "notes": "" },
+    { "placement": 6, "name": "Geoff", "playerSlug": "geoff", "phase": "Juror", "notes": "" },
+    { "placement": 7, "name": "Emma", "playerSlug": "emma", "phase": "Juror", "notes": "" },
+    { "placement": 8, "name": "Josee", "playerSlug": "josee", "phase": "Juror", "notes": "" },
+    { "placement": 9, "name": "Brody", "playerSlug": "brody", "phase": "Pre-Merge", "notes": "" },
+    { "placement": 10, "name": "Kitty", "playerSlug": "kitty", "phase": "Pre-Merge", "notes": "" },
+    { "placement": 11, "name": "Junior", "playerSlug": "junior", "phase": "Pre-Merge", "notes": "" },
+    { "placement": 12, "name": "Jacques", "playerSlug": "jacques", "phase": "Pre-Merge", "notes": "" },
+    { "placement": 13, "name": "Jay", "playerSlug": "jay", "phase": "Pre-Merge", "notes": "" },
+    { "placement": 14, "name": "Stephanie", "playerSlug": "stephanie", "phase": "Pre-Merge", "notes": "" },
+    { "placement": 15, "name": "Kelly", "playerSlug": "kelly", "phase": "Pre-Merge", "notes": "" },
+    { "placement": 16, "name": "Crimson", "playerSlug": "crimson", "phase": "Early Game", "notes": "" },
+    { "placement": 17, "name": "Mary", "playerSlug": "mary", "phase": "Early Game", "notes": "" },
+    { "placement": 18, "name": "Ennui", "playerSlug": "ennui", "phase": "Early Game", "notes": "" }
+  ],
+  
+  "awards": {
+    "winner": {
+      "name": "Mickey",
+      "playerSlug": "mickey",
+      "description": "0 votes against all season, under-the-radar control, survived 3-3-2 FTC tie thanks to Ryan's deciding tiebreak vote, proved clean positioning and relationships can beat pure challenge dominance"
+    },
+    "fanFavorite": {
+      "name": "Ryan",
+      "playerSlug": "ryan",
+      "description": "Finalist, fire-making champion, kingmaker tiebreak vote, strategic and social player"
+    },
+    "bestStrategic": {
+      "name": "Mickey",
+      "playerSlug": "mickey",
+      "description": "Structure + threat management, perfect game with 0 votes, controlled endgame"
+    },
+    "bestPhysical": {
+      "name": "Sky",
+      "playerSlug": "sky",
+      "wins": 5,
+      "description": "5 total challenge wins, physical domination throughout season"
+    }
+  },
+  
+  "statistics": {
+    "challengeWins": {
+      "mostTotal": { "name": "Sky", "playerSlug": "sky", "wins": 5 }
+    },
+    "socialGame": {
+      "fewestVotes": { "name": "Mickey", "playerSlug": "mickey", "votes": 0 },
+      "perfectGame": { "name": "Mickey", "playerSlug": "mickey", "note": "0 votes against - entire season" }
+    },
+    "extreme": {
+      "onlyTiebreakFinale": true,
+      "finalVote": "3-3-2"
+    }
+  },
+  
+  "twists": [
+    "3 starting tribes",
+    "Tribe swap",
+    "Split-tribal merge round",
+    "Vote-loss twists",
+    "Final 4 fire-making"
+  ],
+  
+  "legacy": {
+    "summary": "Introduced 18 new players (Gen 3) and a Survivor-style twist gauntlet (3 tribes, swap, split-tribal merge round, vote-loss twists, and Final 4 fire-making). Mickey won with 0 votes against and survived a 3-3-2 FTC tie thanks to Ryan's deciding tiebreak vote — proving that clean positioning and relationships can beat pure challenge dominance.",
+    "memorableMoments": [
+      "First 3-tribe season",
+      "Only tiebreak finale (3-3-2)",
+      "Mickey's perfect game (0 votes)",
+      "Ryan's fire-making win and kingmaker vote",
+      "Sky's 5 challenge wins",
+      "Most twist-heavy season"
+    ]
+  }
+}

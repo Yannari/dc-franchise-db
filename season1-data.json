@@ -1,0 +1,105 @@
+{
+  "seasonNumber": 1,
+  "title": "Total Drama: Cullhouse",
+  "subtitle": "Where it all began",
+  "castSize": 24,
+  "episodeCount": 24,
+  "jurySize": 9,
+  
+  "winner": {
+    "name": "Lindsay",
+    "playerSlug": "lindsay",
+    "vote": "5-4",
+    "runnerUp": "Alejandro",
+    "keyStats": "Only 1 vote against all season",
+    "strategy": "Social mastery",
+    "legacy": "Perfect loyalty • Clean win"
+  },
+  
+  "finalists": [
+    { "name": "Lindsay", "playerSlug": "lindsay", "placement": 1, "votes": 5 },
+    { "name": "Alejandro", "playerSlug": "alejandro", "placement": 2, "votes": 4 },
+    { "name": "Bridgette", "playerSlug": "bridgette", "placement": 3, "votes": 1, "note": "Tiebreaker vote from Ezekiel" }
+  ],
+  
+  "placements": [
+    { "placement": 1, "name": "Lindsay", "playerSlug": "lindsay", "phase": "Winner", "notes": "Won Final Tribal 5-4 • 1 vote against all season" },
+    { "placement": 2, "name": "Alejandro", "playerSlug": "alejandro", "phase": "Finalist", "notes": "4 votes to win • Strategic mastermind" },
+    { "placement": 3, "name": "Bridgette", "playerSlug": "bridgette", "phase": "Juror", "notes": "1 vote (tiebreaker from Ezekiel) • 5 challenge wins" },
+    { "placement": 4, "name": "Ezekiel", "playerSlug": "ezekiel", "phase": "Juror", "notes": "Lost fire-making at F4 • Cast tiebreaker vote" },
+    { "placement": 5, "name": "Beth", "playerSlug": "beth", "phase": "Juror", "notes": "2-1-1 vote • 22 votes against (most in S1)" },
+    { "placement": 6, "name": "Trent", "playerSlug": "trent", "phase": "Juror", "notes": "5-2 vote • Double Tribal (Ep 19)" },
+    { "placement": 7, "name": "Owen", "playerSlug": "owen", "phase": "Juror", "notes": "Social player" },
+    { "placement": 8, "name": "Heather", "playerSlug": "heather", "phase": "Juror", "notes": "Strategic threat" },
+    { "placement": 9, "name": "Courtney", "playerSlug": "courtney", "phase": "Juror", "notes": "Pre-merge exit" },
+    { "placement": 10, "name": "Sierra", "playerSlug": "sierra", "phase": "Merge", "notes": "Early merge boot" },
+    { "placement": 11, "name": "Leshawna", "playerSlug": "leshawna", "phase": "Pre-Merge", "notes": "" },
+    { "placement": 12, "name": "Katie", "playerSlug": "katie", "phase": "Pre-Merge", "notes": "" },
+    { "placement": 13, "name": "Sadie", "playerSlug": "sadie", "phase": "Pre-Merge", "notes": "" },
+    { "placement": 14, "name": "Duncan", "playerSlug": "duncan", "phase": "Pre-Merge", "notes": "" },
+    { "placement": 15, "name": "Noah", "playerSlug": "noah", "phase": "Pre-Merge", "notes": "" },
+    { "placement": 16, "name": "Gwen", "playerSlug": "gwen", "phase": "Pre-Merge", "notes": "" },
+    { "placement": 17, "name": "Harold", "playerSlug": "harold", "phase": "Pre-Merge", "notes": "" },
+    { "placement": 18, "name": "Izzy", "playerSlug": "izzy", "phase": "Pre-Merge", "notes": "Medevac" },
+    { "placement": 19, "name": "Cody", "playerSlug": "cody", "phase": "Early Game", "notes": "" },
+    { "placement": 20, "name": "Geoff", "playerSlug": "geoff", "phase": "Early Game", "notes": "" },
+    { "placement": 21, "name": "Eva", "playerSlug": "eva", "phase": "Early Game", "notes": "" },
+    { "placement": 22, "name": "DJ", "playerSlug": "dj", "phase": "Early Game", "notes": "" },
+    { "placement": 23, "name": "Tyler", "playerSlug": "tyler", "phase": "Early Game", "notes": "" },
+    { "placement": 24, "name": "Justin", "playerSlug": "justin", "phase": "First Boot", "notes": "Found idol but didn't play it • Fan Favorite" }
+  ],
+  
+  "awards": {
+    "fanFavorite": {
+      "name": "Justin",
+      "playerSlug": "justin",
+      "description": "First boot who found an idol but didn't play it"
+    },
+    "bestStrategic": {
+      "name": "Alejandro",
+      "playerSlug": "alejandro",
+      "description": "Multiple alliances, perfect reads, controlled the game"
+    },
+    "bestSocial": {
+      "name": "Lindsay",
+      "playerSlug": "lindsay",
+      "description": "Perfect social game, only 1 vote against"
+    },
+    "bestPhysical": {
+      "name": "Bridgette",
+      "playerSlug": "bridgette",
+      "description": "5 challenge wins (4 immunity + 1 reward)"
+    }
+  },
+  
+  "statistics": {
+    "mostChaotic": "2 ties, multiple revotes, 1 rock draw, 1 medevac",
+    "challengeWins": {
+      "mostTotal": { "name": "Bridgette", "playerSlug": "bridgette", "wins": 5 },
+      "mostImmunity": { "name": "Bridgette", "playerSlug": "bridgette", "wins": 4 },
+      "mostReward": { "name": "Bridgette", "playerSlug": "bridgette", "wins": 1 }
+    },
+    "socialGame": {
+      "fewestVotes": { "name": "Lindsay", "playerSlug": "lindsay", "votes": 1 },
+      "mostVotes": { "name": "Beth", "playerSlug": "beth", "votes": 22 }
+    },
+    "strategic": {
+      "idolsFound": 10,
+      "mostIdols": [
+        { "name": "Ezekiel", "playerSlug": "ezekiel", "count": 2 },
+        { "name": "Heather", "playerSlug": "heather", "count": 2 }
+      ]
+    }
+  },
+  
+  "legacy": {
+    "summary": "Season 1 established the foundation with 24 new players and hidden immunity idols. Lindsay's social mastery won over Alejandro's strategic gameplay.",
+    "memorableMoments": [
+      "Justin's first boot with idol",
+      "Alejandro's strategic control",
+      "Lindsay's perfect social game",
+      "5-4 finale vote",
+      "Fire-making tiebreaker at F4"
+    ]
+  }
+}

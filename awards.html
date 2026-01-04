@@ -367,6 +367,7 @@
     </div>
     
     <div class="awards-hero">
+      <h1>🏆 Season Awards</h1>
     
     <div class="awards-hero">
       <h1>🏆 Season Awards</h1>
@@ -418,13 +419,13 @@
       
       return `
 <!-- Season ${season.seasonNumber} -->
-<div class="award-card" onclick="window.location.href='seasons/season${season.seasonNumber}-awards.html'" style="animation-delay: ${index * 0.1}s; opacity: 0;">
+<div class="award-card" onclick="window.location.href='season-awards.html?season=${season.seasonNumber}'" style="animation-delay: ${index * 0.1}s; opacity: 0;">
   <div class="award-header">
     <div class="season-badge">
       <span>${season.emoji || '🏝️'}</span>
       <span>Season ${season.seasonNumber}</span>
     </div>
-    <h3><a href="seasons/season${season.seasonNumber}-awards.html">${season.title}</a></h3>
+    <h3><a href="season-awards.html?season=${season.seasonNumber}">${season.title}</a></h3>
   </div>
   
   <div class="award-body">
@@ -515,7 +516,7 @@
   </div>
   
   <div class="award-footer">
-    <a href="seasons/season${season.seasonNumber}-awards.html" class="view-details">
+    <a href="season-awards.html?season=${season.seasonNumber}" class="view-details">
       <span>View All Awards</span>
       <span>→</span>
     </a>

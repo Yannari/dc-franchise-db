@@ -1,0 +1,144 @@
+{
+  "seasonNumber": 2,
+  "title": "Total Drama 2",
+  "subtitle": "The sequel that raised the stakes",
+  "castSize": 14,
+  "episodeCount": 13,
+  "jurySize": 7,
+  
+  "winner": {
+    "name": "Duncan",
+    "playerSlug": "duncan",
+    "vote": "5-3-1",
+    "runnerUp": "Alejandro & Lindsay",
+    "keyStats": "Constant targeting, earned respect",
+    "strategy": "Survival under pressure",
+    "legacy": "Endurance over control"
+  },
+  
+  "finalists": [
+    { "name": "Duncan", "playerSlug": "duncan", "placement": 1, "votes": 5 },
+    { "name": "Alejandro", "playerSlug": "alejandro", "placement": 2, "votes": 3 },
+    { "name": "Lindsay", "playerSlug": "lindsay", "placement": 3, "votes": 1, "note": "Only vote from Beth" }
+  ],
+  
+  "placements": [
+    { "placement": 1, "name": "Duncan", "playerSlug": "duncan", "phase": "Winner", "notes": "Won Final Tribal 5-3-1 • Survived constant targeting" },
+    { "placement": 2, "name": "Alejandro", "playerSlug": "alejandro", "phase": "Finalist", "notes": "3 jury votes • 5 immunity wins" },
+    { "placement": 3, "name": "Lindsay", "playerSlug": "lindsay", "phase": "Finalist", "notes": "1 jury vote (Beth) • Strong social bonds" },
+    { "placement": 4, "name": "Tyler", "playerSlug": "tyler", "phase": "Juror", "notes": "" },
+    { "placement": 5, "name": "Courtney", "playerSlug": "courtney", "phase": "Juror", "notes": "" },
+    { "placement": 6, "name": "Trent", "playerSlug": "trent", "phase": "Juror", "notes": "Alejandro's meltdown target (Ep 7)" },
+    { "placement": 7, "name": "Beth", "playerSlug": "beth", "phase": "Juror", "notes": "Most loyal player • Cast only Lindsay jury vote" },
+    { "placement": 8, "name": "Gwen", "playerSlug": "gwen", "phase": "Juror", "notes": "Eliminated after tie + revote" },
+    { "placement": 9, "name": "Heather", "playerSlug": "heather", "phase": "Juror", "notes": "Biggest villain • Weaponized secrecy" },
+    { "placement": 10, "name": "DJ", "playerSlug": "dj", "phase": "Pre-Merge", "notes": "Feud with Ezekiel" },
+    { "placement": 11, "name": "Ezekiel", "playerSlug": "ezekiel", "phase": "Pre-Merge", "notes": "Most chaotic • 3 idols found (career)" },
+    { "placement": 12, "name": "Owen", "playerSlug": "owen", "phase": "Pre-Merge", "notes": "" },
+    { "placement": 13, "name": "Noah", "playerSlug": "noah", "phase": "Pre-Merge", "notes": "" },
+    { "placement": 14, "name": "Sierra", "playerSlug": "sierra", "phase": "Early Game", "notes": "" }
+  ],
+  
+  "awards": {
+    "winner": {
+      "name": "Duncan",
+      "playerSlug": "duncan",
+      "description": "Survived constant targeting, won immunity when it mattered, earned respect from allies and enemies, embodied endurance over control"
+    },
+    "fanFavorite": {
+      "name": "Alejandro",
+      "playerSlug": "alejandro",
+      "description": "Flashiest strategist of the season, always in the center of conflict, loved by viewers even when distrusted in-game"
+    },
+    "bestStrategic": {
+      "name": "Alejandro",
+      "playerSlug": "alejandro",
+      "description": "Multiple alliances across phases, correct reads on timing and targets, used protection without exposing himself, lost because jury wanted blood not polish"
+    },
+    "bestSocial": {
+      "name": "Lindsay",
+      "playerSlug": "lindsay",
+      "description": "Strong bonds across every phase, rarely targeted despite lacking immunity wins, trusted by nearly everyone"
+    },
+    "bestUnderdog": {
+      "name": "Duncan",
+      "playerSlug": "duncan",
+      "description": "Frequently on wrong side of numbers, never collapsed socially, won without idols or twists"
+    },
+    "biggestVillain": {
+      "name": "Heather",
+      "playerSlug": "heather",
+      "description": "Weaponized secrecy, stirred paranoia before exit, left emotional damage behind"
+    },
+    "mostChaotic": {
+      "name": "Ezekiel",
+      "playerSlug": "ezekiel",
+      "description": "Idol magnet, flip risks everywhere, personal grudges shaped votes"
+    },
+    "messiestFeud": {
+      "players": ["DJ", "Ezekiel"],
+      "description": "Mutual extreme hatred, targeted each other repeatedly, defined multiple episodes"
+    },
+    "biggestBetrayal": {
+      "betrayer": "Alejandro",
+      "betrayed": "Lindsay's allies",
+      "description": "Strategic, cold, perfectly timed - cost him jury votes but gained him control"
+    },
+    "bestPhysical": {
+      "name": "Alejandro & Duncan (Tie)",
+      "playerSlug": "alejandro",
+      "description": "Alejandro: consistency (5 immunities), Duncan: clutch wins"
+    },
+    "mostClutch": {
+      "name": "Alejandro",
+      "playerSlug": "alejandro",
+      "description": "Winning final immunity - controlled Final Tribal setup, forced hard choices"
+    },
+    "mostLoyal": {
+      "name": "Beth",
+      "playerSlug": "beth",
+      "description": "Rarely flipped, stayed true even when risky, cast the only Lindsay jury vote"
+    },
+    "biggestMeltdown": {
+      "name": "Alejandro",
+      "playerSlug": "alejandro",
+      "episode": 7,
+      "description": "Emotional crack, targeted Trent openly, almost cost him the game"
+    },
+    "mostTragic": {
+      "name": "Gwen",
+      "playerSlug": "gwen",
+      "description": "Eliminated after tie + revote, targeted by both alliances, had social capital but not protection"
+    },
+    "quietestThreat": {
+      "name": "Lindsay",
+      "playerSlug": "lindsay",
+      "description": "Always in the numbers, rarely blamed, never fully exposed, game noticed too late"
+    },
+    "seasonMVP": {
+      "name": "Duncan",
+      "playerSlug": "duncan",
+      "description": "Central to conflicts, final winner, most juror respect - if Season 2 were a story, Duncan is the spine"
+    }
+  },
+  
+  "statistics": {
+    "challengeWins": {
+      "mostImmunity": { "name": "Alejandro", "playerSlug": "alejandro", "wins": 5 }
+    },
+    "socialGame": {
+      "fewestVotes": { "name": "Duncan", "playerSlug": "duncan", "votes": 2 }
+    }
+  },
+  
+  "legacy": {
+    "summary": "Brought back 14 returnees for intense warfare. Duncan's survival story beat Alejandro's immunity dominance (5 wins!). The season proved strategy alone doesn't guarantee victory - the jury wanted blood and struggle.",
+    "memorableMoments": [
+      "Duncan's underdog victory",
+      "Alejandro's 5 immunity wins",
+      "DJ vs Ezekiel feud",
+      "Alejandro's Episode 7 meltdown",
+      "Lindsay's social game earning 1 jury vote"
+    ]
+  }
+}

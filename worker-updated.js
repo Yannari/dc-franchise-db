@@ -112,6 +112,72 @@ async function generateAnalytics(summaryText, season, episode, env) {
           required: ["player", "title"],
         },
       },
+      roles: {
+        type: "array",
+        items: {
+          type: "object",
+          additionalProperties: false,
+          properties: { player: { type: "string" }, role: { type: "string" } },
+          required: ["player", "role"],
+        },
+      },
+      socialNetwork: {
+        type: "array",
+        items: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            player: { type: "string" },
+            strongLikes: { type: "array", items: { type: "string" } },
+            strongDislikes: { type: "array", items: { type: "string" } },
+            isolated: { type: "boolean" },
+            centralityScore: { type: "number" },
+          },
+          required: ["player", "strongLikes", "strongDislikes", "isolated", "centralityScore"],
+        },
+      },
+      juryManagement: {
+        type: "array",
+        items: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            player: { type: "string" },
+            score: { type: "number" },
+            note: { type: "string" },
+          },
+          required: ["player", "score", "note"],
+        },
+      },
+      threatBreakdown: {
+        type: "array",
+        items: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            player: { type: "string" },
+            physical: { type: "number" },
+            strategic: { type: "number" },
+            social: { type: "number" },
+            advantage: { type: "number" },
+          },
+          required: ["player", "physical", "strategic", "social", "advantage"],
+        },
+      },
+      pathToVictory: {
+        type: "array",
+        items: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            player: { type: "string" },
+            viability: { type: "string" },
+            winCondition: { type: "string" },
+            obstacles: { type: "string" },
+          },
+          required: ["player", "viability", "winCondition", "obstacles"],
+        },
+      },
     },
     required: [
       "narrativeSummary",
@@ -121,6 +187,11 @@ async function generateAnalytics(summaryText, season, episode, env) {
       "powerRankings",
       "allianceStability",
       "titles",
+      "roles",
+      "socialNetwork",
+      "juryManagement",
+      "threatBreakdown",
+      "pathToVictory",
     ],
   };
 
@@ -138,13 +209,24 @@ Data Rules:
 - You may infer probabilities and danger levels, but do not invent events.
 - bootPredictions: prob in [0,1] where 0 = safe, 1 = certain elimination. Even safe players get a probability (like 0.02-0.10).
 - powerRankings: scores 0-100; tag is Rising/Falling/Steady.
-- titles: short nickname that fits their current portrayal.
+- titles: Short, creative nickname for each player (e.g. "Scarlett's Scapegoat", "Middle Kingpin", "Paranoid Prepper") - BE CREATIVE AND SPECIFIC.
+- roles: ONE specific strategic role per player from these categories (evidence-based, max 1-2 uses of each per episode):
+  * POWER: Central Power Broker, Strategic Mastermind, Physical Threat, Merge Mayor
+  * STRATEGIC: Swing Vote, Alliance Anchor, Information Broker, Advantage Hunter  
+  * PROTECTED: Goat in Training, Shield Player, Loyalist, Under-Estimated
+  * DANGER: Primary Target, On Thin Ice, Social Pariah, Advantage Victim, Revenge Target
+  * CHAOS: Wildcard, Emotional Player, Chaos Agent, Rogue Voter
+  * DEAD: Dead Player Walking, Jury Threat, Betrayal Target
+- socialNetwork: For EACH player, list strongLikes (allies), strongDislikes (enemies), isolated (true/false), centralityScore (0-100, how connected they are).
+- juryManagement: For EACH player, score 0-100 (high = building jury votes, low = burning bridges), with note explaining.
+- threatBreakdown: For EACH player, four scores 0-100: physical (challenge ability), strategic (game IQ), social (relationships), advantage (has/finds advantages).
+- pathToVictory: For EACH player, viability (High/Medium/Low/None), winCondition (what they need to do), obstacles (what's blocking them).
 - allianceStability: list detected alliances with stability scores.
 
 Return ONLY JSON matching the schema.
 Season: ${season ?? "?"}, Episode: ${episode ?? "?"}.
 
-REMEMBER: Count the active players and make sure bootPredictions, powerRankings, and titles ALL have the SAME number of entries!
+REMEMBER: Count the active players and make sure bootPredictions, powerRankings, titles, roles, socialNetwork, juryManagement, threatBreakdown, and pathToVictory ALL have the SAME number of entries!
 `.trim();
 
   const payload = {

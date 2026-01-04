@@ -93,6 +93,29 @@
       font-weight: 600;
       color: var(--accent2);
     }
+
+    /* Placement row hover effects */
+    .placements tbody tr {
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border-left: 3px solid transparent;
+    }
+
+    .placements tbody tr:hover {
+      background: rgba(125, 76, 255, 0.15);
+      border-left-color: var(--accent2);
+      transform: translateX(4px);
+    }
+
+    .placements tbody tr:hover .place-badge {
+      color: var(--accent2);
+      transform: scale(1.1);
+    }
+
+    .placements tbody tr:hover .p-avatar {
+      border-color: var(--accent2);
+      box-shadow: 0 0 16px rgba(255, 179, 71, 0.4);
+    }
   </style>
 </head>
 
@@ -311,7 +334,7 @@
         
         const initials = p.name.substring(0, 2).toUpperCase();
         
-        placementsHTML += '<tr id="p' + placeNum + '">';
+        placementsHTML += '<tr id="p' + placeNum + '" onclick="window.location.href=\'player.html?player=' + p.playerSlug + '\'" style="cursor: pointer;">';
         placementsHTML +=   '<td>';
         placementsHTML +=     '<div class="p-avatar">';
         placementsHTML +=       '<img src="assets/avatars/' + p.playerSlug + '.png" alt="' + p.name + '" ';

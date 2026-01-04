@@ -2,6 +2,7 @@
   "franchise": {
     "name": "DC Franchise Database",
     "totalSeasons": 5,
+    "totalPlayers": 58,
     "description": "Total Drama franchise statistics and season data"
   },
   "seasons": [
@@ -13,13 +14,19 @@
       "episodeCount": 24,
       "winner": {
         "name": "Lindsay",
+        "playerSlug": "lindsay",
         "vote": "5-4",
         "runnerUp": "Alejandro"
       },
-      "fanFavorite": "Alejandro",
+      "awards": {
+        "fanFavorite": { "name": "Justin", "playerSlug": "justin" },
+        "bestStrategic": { "name": "Alejandro", "playerSlug": "alejandro" },
+        "mostChallengeWins": { "name": "Bridgette", "playerSlug": "bridgette", "detail": "5 total" }
+      },
       "theme": "Classic island survival",
       "status": "Complete",
-      "castPhotoPath": "assets/cast/s1-cast.png"
+      "castPhotoPath": "assets/cast/s1-cast.png",
+      "emoji": "🏝️"
     },
     {
       "seasonNumber": 2,
@@ -29,13 +36,19 @@
       "episodeCount": 13,
       "winner": {
         "name": "Duncan",
+        "playerSlug": "duncan",
         "vote": "5-3-1",
         "runnerUp": "Alejandro"
       },
-      "fanFavorite": "Alejandro",
+      "awards": {
+        "fanFavorite": { "name": "Alejandro", "playerSlug": "alejandro" },
+        "bestStrategic": { "name": "Alejandro", "playerSlug": "alejandro" },
+        "mostChallengeWins": { "name": "Alejandro", "playerSlug": "alejandro", "detail": "5 immunity" }
+      },
       "theme": "Returnees and new blood",
       "status": "Complete",
-      "castPhotoPath": "assets/cast/s2-cast.png"
+      "castPhotoPath": "assets/cast/s2-cast.png",
+      "emoji": "🏝️"
     },
     {
       "seasonNumber": 3,
@@ -45,13 +58,19 @@
       "episodeCount": 13,
       "winner": {
         "name": "Emma",
+        "playerSlug": "emma",
         "vote": "4-3-1",
         "runnerUp": "Scott"
       },
-      "fanFavorite": "Dakota",
+      "awards": {
+        "fanFavorite": { "name": "Dakota", "playerSlug": "dakota" },
+        "bestStrategic": { "name": "Scott", "playerSlug": "scott" },
+        "mostChallengeWins": { "name": "Scott", "playerSlug": "scott", "detail": "6 total" }
+      },
       "theme": "New generation rises",
       "status": "Complete",
-      "castPhotoPath": "assets/cast/s3-cast.png"
+      "castPhotoPath": "assets/cast/s3-cast.png",
+      "emoji": "🏝️"
     },
     {
       "seasonNumber": 4,
@@ -61,13 +80,19 @@
       "episodeCount": 14,
       "winner": {
         "name": "Alejandro",
+        "playerSlug": "alejandro",
         "vote": "7-6-1",
         "runnerUp": "Cameron"
       },
-      "fanFavorite": "Alejandro",
+      "awards": {
+        "fanFavorite": { "name": "Alejandro", "playerSlug": "alejandro" },
+        "bestStrategic": { "name": "Alejandro", "playerSlug": "alejandro" },
+        "mostChallengeWins": { "name": "Alejandro", "playerSlug": "alejandro", "detail": "4 total" }
+      },
       "theme": "All-Stars season",
       "status": "Complete",
-      "castPhotoPath": "assets/cast/s4-cast.png"
+      "castPhotoPath": "assets/cast/s4-cast.png",
+      "emoji": "🏆"
     },
     {
       "seasonNumber": 5,
@@ -77,13 +102,19 @@
       "episodeCount": 14,
       "winner": {
         "name": "Mickey",
+        "playerSlug": "mickey",
         "vote": "TBD",
         "runnerUp": "TBD"
       },
-      "fanFavorite": "TBD",
+      "awards": {
+        "fanFavorite": { "name": "TBD", "playerSlug": "" },
+        "bestStrategic": { "name": "TBD", "playerSlug": "" },
+        "mostChallengeWins": { "name": "TBD", "playerSlug": "", "detail": "TBD" }
+      },
       "theme": "TBD",
       "status": "Complete",
-      "castPhotoPath": "assets/cast/s5-cast.png"
+      "castPhotoPath": "assets/cast/s5-cast.png",
+      "emoji": "⭐"
     }
   ]
 }

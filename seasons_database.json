@@ -38,17 +38,17 @@
         "name": "Duncan",
         "playerSlug": "duncan",
         "vote": "5-3-1",
-        "runnerUp": "Alejandro"
+        "runnerUp": "Alejandro & Lindsay"
       },
       "awards": {
         "fanFavorite": { "name": "Alejandro", "playerSlug": "alejandro" },
         "bestStrategic": { "name": "Alejandro", "playerSlug": "alejandro" },
         "mostChallengeWins": { "name": "Alejandro", "playerSlug": "alejandro", "detail": "5 immunity" }
       },
-      "theme": "Returnees and new blood",
+      "theme": "Only Returnees",
       "status": "Complete",
       "castPhotoPath": "assets/cast/s2-cast.png",
-      "emoji": "🏝️"
+      "emoji": "🔁"
     },
     {
       "seasonNumber": 3,
@@ -60,7 +60,7 @@
         "name": "Emma",
         "playerSlug": "emma",
         "vote": "4-3-1",
-        "runnerUp": "Scott"
+        "runnerUp": "Scott & Cameron"
       },
       "awards": {
         "fanFavorite": { "name": "Dakota", "playerSlug": "dakota" },
@@ -70,7 +70,7 @@
       "theme": "New generation rises",
       "status": "Complete",
       "castPhotoPath": "assets/cast/s3-cast.png",
-      "emoji": "🏝️"
+      "emoji": "🌋"
     },
     {
       "seasonNumber": 4,
@@ -82,7 +82,7 @@
         "name": "Alejandro",
         "playerSlug": "alejandro",
         "vote": "7-6-1",
-        "runnerUp": "Cameron"
+        "runnerUp": "Zoey & Scott"
       },
       "awards": {
         "fanFavorite": { "name": "Alejandro", "playerSlug": "alejandro" },
@@ -92,29 +92,29 @@
       "theme": "All-Stars season",
       "status": "Complete",
       "castPhotoPath": "assets/cast/s4-cast.png",
-      "emoji": "🏆"
+      "emoji": "⭐"
     },
     {
       "seasonNumber": 5,
       "title": "Total Drama Rescue Island",
-      "subtitle": "Most recent season",
+      "subtitle": "3 tribes, swaps, and ultimate chaos",
       "castSize": 18,
       "episodeCount": 14,
       "winner": {
         "name": "Mickey",
         "playerSlug": "mickey",
-        "vote": "TBD",
-        "runnerUp": "TBD"
+        "vote": "3-3-2 (tiebreak)",
+        "runnerUp": "Sky & Ryan"
       },
       "awards": {
-        "fanFavorite": { "name": "TBD", "playerSlug": "" },
-        "bestStrategic": { "name": "TBD", "playerSlug": "" },
-        "mostChallengeWins": { "name": "TBD", "playerSlug": "", "detail": "TBD" }
+        "fanFavorite": { "name": "Ryan", "playerSlug": "ryan" },
+        "bestStrategic": { "name": "Scarlett", "playerSlug": "scarlett" },
+        "mostChallengeWins": { "name": "Sky", "playerSlug": "sky", "detail": "5 total" }
       },
-      "theme": "TBD",
+      "theme": "Rescue Island with 3 tribes",
       "status": "Complete",
       "castPhotoPath": "assets/cast/s5-cast.png",
-      "emoji": "⭐"
+      "emoji": "🛟"
     }
   ]
 }

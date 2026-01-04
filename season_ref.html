@@ -264,14 +264,14 @@
         </div>
         <div class="panel">
           <p>Example: <code>season.html?season=1</code></p>
-          <p><a href="../seasons.html" class="tab">← Back to Seasons List</a></p>
+          <p><a href="seasons.html" class="tab">← Back to Seasons List</a></p>
         </div>
       `;
       return;
     }
     
     // Load season data from JSON
-    const response = await fetch(`../season${seasonNum}-data.json`);
+    const response = await fetch(`season${seasonNum}-data.json`);
     if (!response.ok) {
       throw new Error(`Season ${seasonNum} data not found`);
     }
@@ -283,7 +283,7 @@
     
     // Helper function to create player link
     function playerLink(name, slug) {
-      return slug ? `<a href="../player.html?player=${slug}"><b>${name}</b></a>` : `<b>${name}</b>`;
+      return slug ? `<a href="player.html?player=${slug}"><b>${name}</b></a>` : `<b>${name}</b>`;
     }
     
     // Generate Season Highlights (from memorable moments)
@@ -414,7 +414,7 @@
         <tr id="p${placeNum}">
           <td>
             <div class="p-avatar">
-              <img src="../assets/avatars/${p.playerSlug}.png" alt="${p.name}" 
+              <img src="assets/avatars/${p.playerSlug}.png" alt="${p.name}" 
                    onload="this.style.display='block'; this.parentNode.querySelector('.fb').style.display='none';" 
                    onerror="this.style.display='none';">
               <div class="fb">${initials}</div>
@@ -454,7 +454,7 @@
 
         <div>
           <h2 style="margin-top:16px;">Cast Photo</h2>
-          <img src="../assets/cast/s${seasonNum}-cast.png" alt="Season ${seasonNum} cast photo"
+          <img src="assets/cast/s${seasonNum}-cast.png" alt="Season ${seasonNum} cast photo"
                onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"/>
 
           <div class="panel" style="display:none; margin-top:10px; background:rgba(255,153,0,.08);">
@@ -501,8 +501,8 @@
     // Update footer
     document.getElementById('footer-links').innerHTML = `
       Season ${seasonNum} • 
-      <a href="../season-awards.html?season=${seasonNum}">View Season Awards →</a> • 
-      <a href="../seasons.html">← All Seasons</a>
+      <a href="season-awards.html?season=${seasonNum}">View Season Awards →</a> • 
+      <a href="seasons.html">← All Seasons</a>
     `;
     
   } catch (error) {
@@ -515,7 +515,7 @@
       <div class="panel">
         <p><b>Error:</b> ${error.message}</p>
         <p>Make sure <code>season${urlParams.get('season')}-data.json</code> exists in the root folder.</p>
-        <p><a href="../seasons.html" class="tab">← Back to Seasons List</a></p>
+        <p><a href="seasons.html" class="tab">← Back to Seasons List</a></p>
       </div>
     `;
   }

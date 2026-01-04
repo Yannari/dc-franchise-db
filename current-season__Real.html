@@ -2185,8 +2185,6 @@ Blaineley
 // ========================================
 
 (function() {
-  console.log("🔧 Season Setup: Initializing...");
-  
   // Get Season Setup elements
   const seasonSetupSummary = document.getElementById("season-setup-summary");
   const analyzeCastBtn = document.getElementById("analyze-cast-btn");
@@ -2198,11 +2196,6 @@ Blaineley
   const syncDevoteesBtn = document.getElementById("sync-devotees-btn");
   const importFileInput = document.getElementById("import-file-input");
   const databaseStatus = document.getElementById("database-status");
-
-  console.log("🔧 Season Setup Elements:");
-  console.log("  - Summary textarea:", seasonSetupSummary ? "✅ Found" : "❌ NOT FOUND");
-  console.log("  - Analyze button:", analyzeCastBtn ? "✅ Found" : "❌ NOT FOUND");
-  console.log("  - Result div:", castAnalysisResult ? "✅ Found" : "❌ NOT FOUND");
 
   let analyzedCastData = null;
 
@@ -2236,11 +2229,8 @@ Blaineley
   // ========================================
 
   if (analyzeCastBtn) {
-    console.log("✅ Season Setup: Adding click listener to Analyze Cast button");
     analyzeCastBtn.addEventListener("click", () => {
-      console.log("🔥 Analyze Cast CLICKED!");
       const summary = seasonSetupSummary.value.trim();
-      console.log("  - Summary length:", summary.length);
       if (!summary) {
         alert("⚠️ Please paste Episode 1 summary first!");
         return;

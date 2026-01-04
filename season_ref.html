@@ -93,6 +93,90 @@
       font-weight: 600;
       color: var(--accent2);
     }
+
+    .hero {
+      background: linear-gradient(135deg, rgba(125,76,255,.2), rgba(255,179,71,.15));
+      border-radius: 28px;
+      border: 1px solid rgba(125,76,255,.35);
+      padding: 60px 40px;
+      margin: 32px 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero h1 {
+      font-size: 48px;
+      margin: 0 0 16px 0;
+      background: linear-gradient(135deg, #fff, var(--accent2), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero p {
+      color: var(--muted);
+      font-size: 16px;
+      margin: 0;
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin: 24px 0;
+    }
+
+    .kpi {
+      background: linear-gradient(135deg, rgba(255,255,255,.1), rgba(255,255,255,.05));
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .kpi:hover {
+      transform: translateY(-4px);
+      border-color: var(--accent);
+      box-shadow: 0 12px 24px rgba(125,76,255,.3);
+    }
+
+    .kpi h3 {
+      font-size: 14px;
+      color: var(--muted);
+      margin: 0 0 8px 0;
+      font-weight: 600;
+    }
+
+    .kpi p {
+      margin: 4px 0;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .kpi .small {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .footer {
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255,255,255,.1);
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .footer a {
+      color: var(--accent2);
+      text-decoration: none;
+      margin: 0 8px;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 
@@ -182,8 +266,8 @@
 
   <!-- DYNAMIC CONTENT AREA -->
   <div id="season-content">
-    <div class="loading-spinner">
-      <h2>⏳ Loading Season Data...</h2>
+    <div class="hero">
+      <h1>⏳ Loading Season Data...</h1>
       <p>Please wait while we fetch the season information</p>
     </div>
   </div>
@@ -198,146 +282,11 @@
 </footer>
 
 <script>
-// Get season number from URL query parameter
-const urlParams = new URLSearchParams(window.location.search);
-const seasonNum = parseInt(urlParams.get('season')) || 1;
-
-// Emoji map for seasons
-const emojiMap = {
-  1: '🏝️',
-  2: '🔁',
-  3: '🌋',
-  4: '⭐',
-  5: '🛟'
-};
-
-// Storylines loaded dynamically from JSON data
-
-// Function to render season data
-function renderSeasonPage(seasonData, episodeData) {
-  const container = document.getElementById('season-content');
-  
-  const emoji = emojiMap[seasonNum] || '📺';
-  const storylines = (episodeData && episodeData.storylines) ? episodeData.storylines : [];
-  
-  let html = `
-    <div class="hero">
-      <h1>${emoji} Season ${seasonData.seasonNumber}: ${seasonData.title}</h1>
-      <p>${seasonData.subtitle}</p>
-    </div>
-
-    <div class="kpi-grid">
-      <div class="kpi">
-        <h3>👑 Winner</h3>
-        <p><a href="player.html?player=${seasonData.winner.playerSlug}" style="color: var(--accent2); text-decoration: none;"><b>${seasonData.winner.name}</b></a></p>
-        <p class="small">${seasonData.winner.vote} jury vote</p>
-      </div>
-      
-      <div class="kpi">
-        <h3>🎬 Theme</h3>
-        <p><b>${seasonData.theme}</b></p>
-        <p class="small">${seasonData.castSize} players</p>
-      </div>
-      
-      <div class="kpi">
-        <h3>⭐ Fan Favorite</h3>
-        <p><a href="player.html?player=${seasonData.awards.fanFavorite.playerSlug}" style="color: var(--accent2); text-decoration: none;"><b>${seasonData.awards.fanFavorite.name}</b></a></p>
-        <p class="small">Community pick</p>
-      </div>
-      
-      <div class="kpi">
-        <h3>📺 Episodes</h3>
-        <p><b>${seasonData.episodeCount}</b></p>
-        <p class="small">Complete season</p>
-      </div>
-    </div>
-
-    <div class="two-col">
-      <div>
-        <h2 style="margin-top:16px;">🏆 Season Awards</h2>
-        
-        <div class="stats-panel">
-          <div class="stat-row">
-            <span class="stat-label">🌟 Fan Favorite</span>
-            <span class="stat-value"><a href="player.html?player=${seasonData.awards.fanFavorite.playerSlug}" style="color: var(--accent2); text-decoration: none;">${seasonData.awards.fanFavorite.name}</a></span>
-          </div>
-          <div class="stat-row">
-            <span class="stat-label">🧠 Best Strategic</span>
-            <span class="stat-value"><a href="player.html?player=${seasonData.awards.bestStrategic.playerSlug}" style="color: var(--accent2); text-decoration: none;">${seasonData.awards.bestStrategic.name}</a></span>
-          </div>
-          <div class="stat-row">
-            <span class="stat-label">💪 Challenge Beast</span>
-            <span class="stat-value"><a href="player.html?player=${seasonData.awards.mostChallengeWins.playerSlug}" style="color: var(--accent2); text-decoration: none;">${seasonData.awards.mostChallengeWins.name}</a></span>
-          </div>
-        </div>
-
-        <h2 style="margin-top:24px;">📊 Season Statistics</h2>
-        <div class="stats-panel">
-          <div class="stat-row">
-            <span class="stat-label">Cast Size</span>
-            <span class="stat-value">${seasonData.castSize} players</span>
-          </div>
-          <div class="stat-row">
-            <span class="stat-label">Episodes</span>
-            <span class="stat-value">${seasonData.episodeCount}</span>
-          </div>
-          <div class="stat-row">
-            <span class="stat-label">Winner</span>
-            <span class="stat-value">${seasonData.winner.name}</span>
-          </div>
-          <div class="stat-row">
-            <span class="stat-label">Runner-Up</span>
-            <span class="stat-value">${seasonData.winner.runnerUp}</span>
-          </div>
-          <div class="stat-row">
-            <span class="stat-label">Final Vote</span>
-            <span class="stat-value">${seasonData.winner.vote}</span>
-          </div>
-          <div class="stat-row">
-            <span class="stat-label">Challenge Wins (Winner)</span>
-            <span class="stat-value">${seasonData.awards.mostChallengeWins.detail}</span>
-          </div>
-
-<div class="container">
-  <div class="topbar">
-    <div>
-      <div class="brand">DC <span>Franchise</span> Database</div>
-      <div class="meta">Season Profile</div>
-    </div>
-    <div class="meta">Season count: 5 • Player count: 58</div>
-  </div>
-
-  <div class="tabs">
-    <a class="tab" href="current-season.html">📊 Current Season Analytics</a>
-    <a class="tab" href="voting-analytics.html">🗳️ Voting Chart Analytics</a>
-    <a class="tab" href="franchise.html">🏛️ Franchise Analytics</a>
-    <a class="tab" href="rankings.html">🏆 Player Rankings</a>
-    <a class="tab active" href="seasons.html">📚 Seasons</a>
-    <a class="tab" href="devotees.html">👥 Devotees</a>
-    <a class="tab" href="awards.html">🥇 Season Awards</a>
-  </div>
-
-  <div id="season-content">
-    <div class="hero">
-      <h1>Loading...</h1>
-      <p>Please wait...</p>
-    </div>
-  </div>
-</div>
-
-<footer class="siteFooter">
-  <div class="footerInner">
-    <div class="footerTitle">DC Franchise Database</div>
-    <div class="footerSub">Static archive • 5 seasons • 58 players • Icons: name.png</div>
-  </div>
-</footer>
-
-<script>
 (async function() {
   try {
     console.log('Starting to load season data...');
     const urlParams = new URLSearchParams(window.location.search);
-    const seasonNum = urlParams.get('season');
+    const seasonNum = parseInt(urlParams.get('season')) || 1;
     console.log('Season number from URL:', seasonNum);
     
     if (!seasonNum) {
@@ -526,7 +475,6 @@ function renderSeasonPage(seasonData, episodeData) {
       </div>
       <div class="panel">
         <p><b>Error:</b> ${error.message}</p>
-        <p>Make sure <code>season${urlParams.get('season')}-data.json</code> exists in the root folder.</p>
         <p><a href="seasons.html">← Back to Seasons</a></p>
       </div>
     `;

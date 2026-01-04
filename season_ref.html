@@ -335,10 +335,13 @@ function renderSeasonPage(seasonData, episodeData) {
 <script>
 (async function() {
   try {
+    console.log('Starting to load season data...');
     const urlParams = new URLSearchParams(window.location.search);
     const seasonNum = urlParams.get('season');
+    console.log('Season number from URL:', seasonNum);
     
     if (!seasonNum) {
+      console.log('No season number provided');
       document.getElementById('season-content').innerHTML = `
         <div class="hero">
           <h1>⚠️ No Season Specified</h1>
@@ -352,11 +355,14 @@ function renderSeasonPage(seasonData, episodeData) {
       return;
     }
     
+    console.log(`Fetching: season${seasonNum}-data.json`);
     const response = await fetch(`season${seasonNum}-data.json`);
+    console.log('Fetch response status:', response.status, response.ok);
     if (!response.ok) {
-      throw new Error(`Season ${seasonNum} data not found`);
+      throw new Error(`Season ${seasonNum} data not found (HTTP ${response.status})`);
     }
     const season = await response.json();
+    console.log('Season data loaded:', season);
     
     document.title = `Season ${seasonNum} — ${season.title}`;
     
@@ -508,8 +514,11 @@ function renderSeasonPage(seasonData, episodeData) {
       </div>
     `;
     
+    console.log('Rendering complete!');
+    
   } catch (error) {
-    console.error('Error loading season data:', error);
+    console.error('ERROR:', error);
+    console.error('Error stack:', error.stack);
     document.getElementById('season-content').innerHTML = `
       <div class="hero">
         <h1>⚠️ Season Not Found</h1>

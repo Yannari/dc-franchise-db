@@ -1,46 +1,153 @@
 {
   "seasonNumber": 3,
   "title": "Total Drama Revenge of the Island",
-  "subtitle": "The season where loyalty was tested—and broken",
+  "subtitle": "The season where loyalty was tested\u2014and broken",
   "castSize": 16,
   "episodeCount": 13,
-  "jurySize": 8,
-  
+  "jurySize": 7,
   "winner": {
     "name": "Emma",
     "playerSlug": "emma",
     "vote": "4-3-1",
-    "runnerUp": "Scott & Cameron",
-    "keyStats": "0 votes until Final 4",
+    "runnerUp": "Scott",
+    "keyStats": "0 votes against until Final 4",
     "strategy": "Perfect loyalty",
-    "legacy": "Iron Person - all 13 tribals"
+    "legacy": "Iron Person \u2022 tiebreaker win"
   },
-  
   "finalists": [
-    { "name": "Emma", "playerSlug": "emma", "placement": 1, "votes": 4 },
-    { "name": "Scott", "playerSlug": "scott", "placement": 2, "votes": 3 },
-    { "name": "Cameron", "playerSlug": "cameron", "placement": 3, "votes": 1 }
+    {
+      "name": "Emma",
+      "playerSlug": "emma",
+      "placement": 1,
+      "votes": 4
+    },
+    {
+      "name": "Scott",
+      "playerSlug": "scott",
+      "placement": 2,
+      "votes": 3
+    },
+    {
+      "name": "Cameron",
+      "playerSlug": "cameron",
+      "placement": 3,
+      "votes": 1
+    }
   ],
-  
   "placements": [
-    { "placement": 1, "name": "Emma", "playerSlug": "emma", "phase": "Winner", "notes": "Won 4-3-1 tiebreaker • 0 votes until Final 4 • Iron Person (all 13 tribals)" },
-    { "placement": 2, "name": "Scott", "playerSlug": "scott", "phase": "Finalist", "notes": "6 challenge wins (most in season) • Social king • Lost to Emma's cleaner hands" },
-    { "placement": 3, "name": "Cameron", "playerSlug": "cameron", "phase": "Finalist", "notes": "Best underdog • Idol play Ep 12 • Voted out Anne Maria (unbreakable partner)" },
-    { "placement": 4, "name": "Zoey", "playerSlug": "zoey", "phase": "Juror", "notes": "Betrayed by Scott (unbreakable bond) • Still voted for him at FTC" },
-    { "placement": 5, "name": "Anne Maria", "playerSlug": "anne-maria", "phase": "Juror", "notes": "15 votes against (most in S3) • Betrayed by Cameron (unbreakable bond)" },
-    { "placement": 6, "name": "Mike", "playerSlug": "mike", "phase": "Juror", "notes": "Feud with Anne Maria (mild → extreme)" },
-    { "placement": 7, "name": "Jo", "playerSlug": "jo", "phase": "Juror", "notes": "Biggest villain • 4 extreme hatreds (franchise record) • Multiple meltdowns Ep 6-7" },
-    { "placement": 8, "name": "Lightning", "playerSlug": "lightning", "phase": "Juror", "notes": "Most chaotic • Found idol, wasted on Emma • 2 tie votes" },
-    { "placement": 9, "name": "Brick", "playerSlug": "brick", "phase": "Pre-Merge", "notes": "" },
-    { "placement": 10, "name": "Staci", "playerSlug": "staci", "phase": "Pre-Merge", "notes": "" },
-    { "placement": 11, "name": "B", "playerSlug": "b", "phase": "Pre-Merge", "notes": "" },
-    { "placement": 12, "name": "Dakota", "playerSlug": "dakota", "phase": "Pre-Merge", "notes": "Fan Favorite • Pre-merge exit Ep 5 • Won hearts despite early elimination" },
-    { "placement": 13, "name": "Dawn", "playerSlug": "dawn", "phase": "Pre-Merge", "notes": "" },
-    { "placement": 14, "name": "Sam", "playerSlug": "sam", "phase": "Pre-Merge", "notes": "Most tragic exit • Never received a vote • Rock draw Ep 4 • Most unlucky" },
-    { "placement": 15, "name": "Scott", "playerSlug": "scott-duplicate", "phase": "Pre-Merge", "notes": "" },
-    { "placement": 16, "name": "Ella", "playerSlug": "ella", "phase": "Early Game", "notes": "" }
+    {
+      "placement": 1,
+      "name": "Emma",
+      "playerSlug": "emma",
+      "phase": "Winner",
+      "notes": "Won 4-3-1 (started 3-3-1) \u2022 Cameron cast tiebreaker vote \u2022 0 votes against until Final 4 \u2022 Iron Person (all 13 tribals)"
+    },
+    {
+      "placement": 2,
+      "name": "Scott",
+      "playerSlug": "scott",
+      "phase": "Finalist",
+      "notes": "3 jury votes \u2022 6 total challenge wins (3 immunity + 3 reward) \u2022 Betrayed Zoey to reach Final 3"
+    },
+    {
+      "placement": 3,
+      "name": "Cameron",
+      "playerSlug": "cameron",
+      "phase": "Finalist",
+      "notes": "1 jury vote \u2022 Cast tiebreaker vote at FTC \u2022 Found idol Ep 4, played Ep 12 (cancelled 1) \u2022 Voted out Anne Maria (unbreakable partner)"
+    },
+    {
+      "placement": 4,
+      "name": "Zoey",
+      "playerSlug": "zoey",
+      "phase": "Juror",
+      "notes": "Eliminated 3\u20131 \u2022 Final juror (Ep 13) \u2022 Betrayed by Scott (unbreakable bond) but still voted for him"
+    },
+    {
+      "placement": 5,
+      "name": "Anne Maria",
+      "playerSlug": "anne-maria",
+      "phase": "Juror",
+      "notes": "Eliminated 4\u20131* (idol cancelled 1) \u2022 Most votes against (15) \u2022 Betrayed by Cameron (unbreakable bond)"
+    },
+    {
+      "placement": 6,
+      "name": "Mike",
+      "playerSlug": "mike",
+      "phase": "Juror",
+      "notes": "Eliminated 4\u20132 \u2022 Voted for Cameron at FTC \u2022 Messy feud with Anne Maria (mild \u2192 extreme)"
+    },
+    {
+      "placement": 7,
+      "name": "Jo",
+      "playerSlug": "jo",
+      "phase": "Juror",
+      "notes": "Eliminated 4\u20133 \u2022 Biggest villain \u2022 4 extreme hatreds \u2022 Multiple meltdowns (Ep 6\u20137)"
+    },
+    {
+      "placement": 8,
+      "name": "Dawn",
+      "playerSlug": "dawn",
+      "phase": "Juror",
+      "notes": "Eliminated 5\u20133 \u2022 Consensus target after alliances converged"
+    },
+    {
+      "placement": 9,
+      "name": "Brick",
+      "playerSlug": "brick",
+      "phase": "Juror",
+      "notes": "Eliminated 5\u20132\u20132 \u2022 2nd juror (Ep 8) \u2022 1 immunity win"
+    },
+    {
+      "placement": 10,
+      "name": "Dwayne",
+      "playerSlug": "dwayne",
+      "phase": "Juror",
+      "notes": "Eliminated 5\u20133\u20132 \u2022 1st juror (merge boot, Ep 7)"
+    },
+    {
+      "placement": 11,
+      "name": "Lightning",
+      "playerSlug": "lightning",
+      "phase": "Pre-Juror",
+      "notes": "2\u20132 tie \u2192 2\u20132 revote \u2022 Earlier found idol (Ep 4) and wasted it on Emma (0 votes)"
+    },
+    {
+      "placement": 12,
+      "name": "Dakota",
+      "playerSlug": "dakota",
+      "phase": "Pre-Juror",
+      "notes": "Eliminated 3\u20131\u20131 \u2022 Fan Favorite \u2022 Swap casualty (Ep 5)"
+    },
+    {
+      "placement": 13,
+      "name": "Sam",
+      "playerSlug": "sam",
+      "phase": "Pre-Juror",
+      "notes": "Eliminated by rock draw \u2022 3\u20133 tie \u2192 rocks (Ep 4) \u2022 0 votes against"
+    },
+    {
+      "placement": 14,
+      "name": "B",
+      "playerSlug": "b",
+      "phase": "Pre-Juror",
+      "notes": "Eliminated 6\u20131 \u2022 Tribe target (Ep 3)"
+    },
+    {
+      "placement": 15,
+      "name": "Staci",
+      "playerSlug": "staci",
+      "phase": "Pre-Juror",
+      "notes": "Eliminated 6\u20132 (Ep 2)"
+    },
+    {
+      "placement": 16,
+      "name": "Crimson",
+      "playerSlug": "crimson",
+      "phase": "Pre-Juror",
+      "notes": "First boot \u2022 Eliminated 7\u20131 (Ep 1)"
+    }
   ],
-  
   "awards": {
     "winner": {
       "name": "Emma",
@@ -121,7 +228,10 @@
       "description": "Rock draw - zero votes against, did everything right, only way to lose without being targeted"
     },
     "messiestFeud": {
-      "players": ["Mike", "Anne Maria"],
+      "players": [
+        "Mike",
+        "Anne Maria"
+      ],
       "description": "Escalated over episodes from mild to extreme, targeted each other constantly, defined multiple votes"
     },
     "biggestBetrayal": {
@@ -142,42 +252,98 @@
       "description": "Attended all 13 tribal councils, never voted out, never safe by default, endurance is a strategy"
     }
   },
-  
   "statistics": {
     "challengeWins": {
-      "mostTotal": { "name": "Scott", "playerSlug": "scott", "wins": 6 },
-      "mostImmunity": { "name": "Scott", "playerSlug": "scott", "wins": 3 },
+      "mostTotal": {
+        "name": "Scott",
+        "playerSlug": "scott",
+        "wins": 6
+      },
+      "mostImmunity": {
+        "name": "Scott",
+        "playerSlug": "scott",
+        "wins": 3
+      },
       "mostReward": [
-        { "name": "Emma", "playerSlug": "emma", "wins": 3 },
-        { "name": "Scott", "playerSlug": "scott", "wins": 3 }
+        {
+          "name": "Emma",
+          "playerSlug": "emma",
+          "wins": 3
+        },
+        {
+          "name": "Scott",
+          "playerSlug": "scott",
+          "wins": 3
+        }
       ]
     },
     "socialGame": {
       "fewestVotes": [
-        { "name": "Emma", "playerSlug": "emma", "votes": 0, "note": "Until F4" },
-        { "name": "Sam", "playerSlug": "sam", "votes": 0 }
+        {
+          "name": "Emma",
+          "playerSlug": "emma",
+          "votes": 0,
+          "note": "Until F4"
+        },
+        {
+          "name": "Sam",
+          "playerSlug": "sam",
+          "votes": 0
+        }
       ],
-      "mostVotes": { "name": "Anne Maria", "playerSlug": "anne-maria", "votes": 15 },
-      "mostJuryVotes": { "name": "Emma", "playerSlug": "emma", "votes": 4 }
+      "mostVotes": {
+        "name": "Anne Maria",
+        "playerSlug": "anne-maria",
+        "votes": 15
+      },
+      "mostJuryVotes": {
+        "name": "Emma",
+        "playerSlug": "emma",
+        "votes": 4
+      }
     },
     "strategic": {
       "idolsFound": [
-        { "name": "Cameron", "playerSlug": "cameron", "count": 1 },
-        { "name": "Lightning", "playerSlug": "lightning", "count": 1 }
+        {
+          "name": "Cameron",
+          "playerSlug": "cameron",
+          "count": 1
+        },
+        {
+          "name": "Lightning",
+          "playerSlug": "lightning",
+          "count": 1
+        }
       ],
-      "idolsPlayedSuccessfully": [{ "name": "Cameron", "playerSlug": "cameron", "count": 1 }],
-      "idolsWasted": [{ "name": "Lightning", "playerSlug": "lightning", "detail": "On Emma who received 0 votes" }]
+      "idolsPlayedSuccessfully": [
+        {
+          "name": "Cameron",
+          "playerSlug": "cameron",
+          "count": 1
+        }
+      ],
+      "idolsWasted": [
+        {
+          "name": "Lightning",
+          "playerSlug": "lightning",
+          "detail": "On Emma who received 0 votes"
+        }
+      ]
     },
     "extreme": {
-      "mostExtremeHatreds": { "name": "Jo", "playerSlug": "jo", "count": 4, "note": "Franchise record" },
+      "mostExtremeHatreds": {
+        "name": "Jo",
+        "playerSlug": "jo",
+        "count": 4,
+        "note": "Franchise record"
+      },
       "unbreakableBondsBroken": 2,
       "tieVotes": 2,
       "rockDraws": 1
     }
   },
-  
   "legacy": {
-    "summary": "Introduced Gen 2 with 16 new players. Emma's perfect game (0 votes until F4) won in a tiebreaker. Scott's 6 challenge wins couldn't overcome Emma's loyalty strategy. The season where loyalty was tested—and broken.",
+    "summary": "Introduced Gen 2 with 16 new players. Emma's perfect game (0 votes until F4) won in a tiebreaker. Scott's 6 challenge wins couldn't overcome Emma's loyalty strategy. The season where loyalty was tested\u2014and broken.",
     "memorableMoments": [
       "Most unpredictable season (2 tie votes + 1 rock draw)",
       "Two unbreakable relationships broken in final episodes",

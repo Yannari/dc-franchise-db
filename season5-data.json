@@ -1,86 +1,218 @@
 {
   "seasonNumber": 5,
-  "title": "Total Drama Rescue Island",
+  "title": "Total Drama: Rescue Island",
   "subtitle": "3 tribes, swaps, and ultimate chaos",
   "castSize": 18,
   "episodeCount": 14,
   "jurySize": 8,
-  
   "winner": {
     "name": "Mickey",
     "playerSlug": "mickey",
     "vote": "3-3-2 (tiebreak)",
-    "runnerUp": "Sky & Ryan",
+    "runnerUp": "Sky",
     "keyStats": "0 votes against all season",
     "strategy": "Under-the-radar control",
     "legacy": "Quiet threat who peaked at the end"
   },
-  
   "finalists": [
-    { "name": "Mickey", "playerSlug": "mickey", "placement": 1, "votes": 3, "note": "Won via Ryan's tiebreak vote" },
-    { "name": "Sky", "playerSlug": "sky", "placement": 2, "votes": 3 },
-    { "name": "Ryan", "playerSlug": "ryan", "placement": 3, "votes": 2, "note": "Fire-making champion, kingmaker tiebreak vote" }
+    {
+      "name": "Mickey",
+      "playerSlug": "mickey",
+      "placement": 1,
+      "votes": 3,
+      "note": "Won via Ryan's tiebreak vote (final tally becomes 4–3–1)"
+    },
+    {
+      "name": "Sky",
+      "playerSlug": "sky",
+      "placement": 2,
+      "votes": 3,
+      "note": "4 total challenge wins (3 immunity, 1 reward)"
+    },
+    {
+      "name": "Ryan",
+      "playerSlug": "ryan",
+      "placement": 3,
+      "votes": 2,
+      "note": "Fire-making champion • Kingmaker tiebreak vote"
+    }
   ],
-  
   "placements": [
-    { "placement": 1, "name": "Mickey", "playerSlug": "mickey", "phase": "Winner", "notes": "Won 3-3-2 tiebreak (Ryan's vote) • 0 votes against all season • Perfect game" },
-    { "placement": 2, "name": "Sky", "playerSlug": "sky", "phase": "Finalist", "notes": "3 jury votes • 5 challenge wins • Physical threat" },
-    { "placement": 3, "name": "Ryan", "playerSlug": "ryan", "phase": "Finalist", "notes": "2 jury votes • Fire-making champion • Cast deciding tiebreak vote • Fan Favorite" },
-    { "placement": 4, "name": "Dwayne", "playerSlug": "dwayne", "phase": "Juror", "notes": "" },
-    { "placement": 5, "name": "Blaineley", "playerSlug": "blaineley", "phase": "Juror", "notes": "" },
-    { "placement": 6, "name": "Geoff", "playerSlug": "geoff", "phase": "Juror", "notes": "" },
-    { "placement": 7, "name": "Emma", "playerSlug": "emma", "phase": "Juror", "notes": "" },
-    { "placement": 8, "name": "Josee", "playerSlug": "josee", "phase": "Juror", "notes": "" },
-    { "placement": 9, "name": "Brody", "playerSlug": "brody", "phase": "Pre-Merge", "notes": "" },
-    { "placement": 10, "name": "Kitty", "playerSlug": "kitty", "phase": "Pre-Merge", "notes": "" },
-    { "placement": 11, "name": "Junior", "playerSlug": "junior", "phase": "Pre-Merge", "notes": "" },
-    { "placement": 12, "name": "Jacques", "playerSlug": "jacques", "phase": "Pre-Merge", "notes": "" },
-    { "placement": 13, "name": "Jay", "playerSlug": "jay", "phase": "Pre-Merge", "notes": "" },
-    { "placement": 14, "name": "Stephanie", "playerSlug": "stephanie", "phase": "Pre-Merge", "notes": "" },
-    { "placement": 15, "name": "Kelly", "playerSlug": "kelly", "phase": "Pre-Merge", "notes": "" },
-    { "placement": 16, "name": "Crimson", "playerSlug": "crimson", "phase": "Early Game", "notes": "" },
-    { "placement": 17, "name": "Mary", "playerSlug": "mary", "phase": "Early Game", "notes": "" },
-    { "placement": 18, "name": "Ennui", "playerSlug": "ennui", "phase": "Early Game", "notes": "" }
+    {
+      "placement": 1,
+      "name": "Mickey",
+      "playerSlug": "mickey",
+      "phase": "Winner",
+      "notes": "Won FTC via tiebreak (3–3–2 initial; Ryan breaks tie for Mickey) • 0 votes against all season"
+    },
+    {
+      "placement": 2,
+      "name": "Sky",
+      "playerSlug": "sky",
+      "phase": "Finalist",
+      "notes": "3 votes to win • 4 total challenge wins (3 immunity, 1 reward)"
+    },
+    {
+      "placement": 3,
+      "name": "Ryan",
+      "playerSlug": "ryan",
+      "phase": "Finalist",
+      "notes": "2 votes to win • Fire-making champion • Deciding tiebreak vote • Fan Favorite"
+    },
+    {
+      "placement": 4,
+      "name": "Scarlett",
+      "playerSlug": "scarlett",
+      "phase": "Juror",
+      "notes": "Lost fire-making (F4)"
+    },
+    {
+      "placement": 5,
+      "name": "Sugar",
+      "playerSlug": "sugar",
+      "phase": "Juror",
+      "notes": "Eliminated 4–1 vote • Most votes against this season (10)"
+    },
+    {
+      "placement": 6,
+      "name": "Dave",
+      "playerSlug": "dave",
+      "phase": "Juror",
+      "notes": "Eliminated 3–3 vote after idol play flipped outcome against him"
+    },
+    {
+      "placement": 7,
+      "name": "Amy",
+      "playerSlug": "amy",
+      "phase": "Juror",
+      "notes": "Eliminated 2–2–1 vote"
+    },
+    {
+      "placement": 8,
+      "name": "Blaineley",
+      "playerSlug": "blaineley",
+      "phase": "Juror",
+      "notes": "Eliminated 3–2–1 vote • Key chaos/advantage warfare"
+    },
+    {
+      "placement": 9,
+      "name": "Shawn",
+      "playerSlug": "shawn",
+      "phase": "Juror",
+      "notes": "Eliminated 5–2 vote"
+    },
+    {
+      "placement": 10,
+      "name": "Max",
+      "playerSlug": "max",
+      "phase": "Juror",
+      "notes": "Eliminated 5–3 vote"
+    },
+    {
+      "placement": 11,
+      "name": "Topher",
+      "playerSlug": "topher",
+      "phase": "Juror",
+      "notes": "Eliminated 5–1 vote"
+    },
+    {
+      "placement": 12,
+      "name": "Rodney",
+      "playerSlug": "rodney",
+      "phase": "Pre-Juror",
+      "notes": "Eliminated 3–1 vote"
+    },
+    {
+      "placement": 13,
+      "name": "Josee",
+      "playerSlug": "josee",
+      "phase": "Pre-Juror",
+      "notes": "Eliminated 6–5 vote • KIP theft + idol chaos round"
+    },
+    {
+      "placement": 14,
+      "name": "Jasmine",
+      "playerSlug": "jasmine",
+      "phase": "Pre-Juror",
+      "notes": "Eliminated 2–1 vote"
+    },
+    {
+      "placement": 15,
+      "name": "Samey",
+      "playerSlug": "samey",
+      "phase": "Pre-Juror",
+      "notes": "Eliminated 4–1 vote • Idol negation"
+    },
+    {
+      "placement": 16,
+      "name": "Beardo",
+      "playerSlug": "beardo",
+      "phase": "Pre-Juror",
+      "notes": "Eliminated 2–1 vote • Idol negation / chaos"
+    },
+    {
+      "placement": 17,
+      "name": "Ella",
+      "playerSlug": "ella",
+      "phase": "Pre-Juror",
+      "notes": "Eliminated 2–1 vote"
+    },
+    {
+      "placement": 18,
+      "name": "Leonard",
+      "playerSlug": "leonard",
+      "phase": "Pre-Juror",
+      "notes": "Eliminated 5–2 vote"
+    }
   ],
-  
   "awards": {
     "winner": {
       "name": "Mickey",
       "playerSlug": "mickey",
-      "description": "0 votes against all season, under-the-radar control, survived 3-3-2 FTC tie thanks to Ryan's deciding tiebreak vote, proved clean positioning and relationships can beat pure challenge dominance"
+      "description": "Won with 0 votes against all season and survived a 3–3–2 FTC tie; Ryan broke the tie for Mickey."
     },
     "fanFavorite": {
       "name": "Ryan",
       "playerSlug": "ryan",
-      "description": "Finalist, fire-making champion, kingmaker tiebreak vote, strategic and social player"
+      "description": "Finalist, fire-making champion, and deciding tiebreak vote in the 3–3–2 finale."
     },
     "bestStrategic": {
-      "name": "Mickey",
-      "playerSlug": "mickey",
-      "description": "Structure + threat management, perfect game with 0 votes, controlled endgame"
+      "name": "Scarlett",
+      "playerSlug": "scarlett",
+      "description": "Top long-game strategist; reached Final 4 and only fell at fire-making."
     },
     "bestPhysical": {
       "name": "Sky",
       "playerSlug": "sky",
-      "wins": 5,
-      "description": "5 total challenge wins, physical domination throughout season"
+      "wins": 4,
+      "description": "Most dominant competitor: 4 total challenge wins (3 immunities)."
     }
   },
-  
   "statistics": {
     "challengeWins": {
-      "mostTotal": { "name": "Sky", "playerSlug": "sky", "wins": 5 }
+      "mostTotal": {
+        "name": "Sky",
+        "playerSlug": "sky",
+        "wins": 4
+      }
     },
     "socialGame": {
-      "fewestVotes": { "name": "Mickey", "playerSlug": "mickey", "votes": 0 },
-      "perfectGame": { "name": "Mickey", "playerSlug": "mickey", "note": "0 votes against - entire season" }
+      "fewestVotes": {
+        "name": "Mickey",
+        "playerSlug": "mickey",
+        "votes": 0
+      },
+      "perfectGame": {
+        "name": "Mickey",
+        "playerSlug": "mickey",
+        "note": "0 votes against all season"
+      }
     },
     "extreme": {
       "onlyTiebreakFinale": true,
       "finalVote": "3-3-2"
     }
   },
-  
   "twists": [
     "3 starting tribes",
     "Tribe swap",
@@ -88,16 +220,14 @@
     "Vote-loss twists",
     "Final 4 fire-making"
   ],
-  
   "legacy": {
-    "summary": "Introduced 18 new players (Gen 3) and a Survivor-style twist gauntlet (3 tribes, swap, split-tribal merge round, vote-loss twists, and Final 4 fire-making). Mickey won with 0 votes against and survived a 3-3-2 FTC tie thanks to Ryan's deciding tiebreak vote — proving that clean positioning and relationships can beat pure challenge dominance.",
+    "summary": "Twist-heavy season (3 tribes, swap into 3 tribes, split-tribal merge round, vote-loss twists, and Final 4 fire-making). Mickey reached FTC with 0 votes against and won after a 3–3–2 jury tie; Ryan broke the tie for Mickey.",
     "memorableMoments": [
-      "First 3-tribe season",
-      "Only tiebreak finale (3-3-2)",
-      "Mickey's perfect game (0 votes)",
-      "Ryan's fire-making win and kingmaker vote",
-      "Sky's 5 challenge wins",
-      "Most twist-heavy season"
+      "Only tiebreak finale (3–3–2)",
+      "Mickey: 0 votes against all season",
+      "Ryan wins fire-making and becomes kingmaker",
+      "Sky’s late challenge run (4 total wins)",
+      "Scarlett falls at fire-making (F4)"
     ]
   }
 }

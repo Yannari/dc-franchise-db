@@ -360,11 +360,11 @@ a{color:inherit;text-decoration:none}
   border-color:rgba(125,76,255,.55);
 }
 
-body.hasSiteHeader .hero{
+.hero{
   margin:22px 0 10px;
   text-align:center;
 }
-body.hasSiteHeader .hero h1{margin:0 0 8px; font-size:34px; letter-spacing:.2px}
+.hero h1{margin:0 0 8px; font-size:34px; letter-spacing:.2px}
 .hero p{margin:0; color:var(--muted)}
 
 .statsbar{
@@ -1243,9 +1243,9 @@ body.hasSiteHeader .tabs{display:none !important;}
   margin: 0 0 10px 0 !important;
   line-height: 1.08 !important;
 }
-body.hasSiteHeader .hero .sub,
-body.hasSiteHeader .hero p,
-body.hasSiteHeader .hero .meta{
+.hero .sub,
+.hero p,
+.hero .meta{
   font-size: 15px !important;
   opacity: .92 !important;
   margin-top: 8px !important;
@@ -1270,6 +1270,11 @@ body.hasSiteHeader .hero .meta{
   margin-right: .5em !important;
 }
 
+/* ---- Legacy S4 template cleanup (remove fake header + hero) ---- */
+.topbar,
+.tabs {
+  display: none !important;
+}
 
 /* Bigger nav emoji icons + better alignment */
 .pillNav .navIcon{

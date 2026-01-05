@@ -905,26 +905,37 @@ function renderPlayerCard(ranking, player) {
   }
   
       // Show all badges from player.badges array
-  if (player.badges && player.badges.length > 0) {
-    player.badges.forEach(function(badge) {
-      // For lower tiers (A, B, C, D), filter out tier badges
-      if (['A', 'B', 'C', 'D','S','S+'].includes(ranking.tier)) {
-        if (badge.toLowerCase().includes('tier')) {
-          return; // Skip tier badges for lower tiers
-        }
-      }
+  // Show badges, but only 1 WINNER badge per season (S1, S2, S3...)
+if (player.badges && player.badges.length > 0) {
+  const seenWinnerSeasons = new Set(); // e.g. "S1", "S4"
 
-      let badgeClass = 'badge badge badge-season';
+  player.badges.forEach(function(badge) {
+    const b = String(badge || "").trim();
 
-      // Use special styling for winner badges
-      if (badge.toLowerCase().includes('winner')) {
-        badgeClass = 'badge badge-winner';
-        html += '<span class="' + badgeClass + '">🏆 ' + badge + '</span>';
-      } else {
-        html += '<span class="' + badgeClass + '">' + badge + '</span>';
-      }
-    });
-  }
+    // Skip tier badges if you want (your existing logic)
+    if (['A','B','C','D','S','S+'].includes(ranking.tier)) {
+      if (b.toLowerCase().includes('tier')) return;
+    }
+
+    const lower = b.toLowerCase();
+    const isWinner = lower.includes('winner');
+
+    if (isWinner) {
+      // Extract season token like "S1", "S2", etc (case-insensitive)
+      const m = b.match(/\bS(\d+)\b/i);
+      const seasonKey = m ? ('S' + m[1]) : 'WINNER_UNKNOWN';
+
+      // If we've already added a winner badge for this season, skip it
+      if (seenWinnerSeasons.has(seasonKey)) return;
+      seenWinnerSeasons.add(seasonKey);
+
+      html += '<span class="badge badge-winner">🏆 ' + b + '</span>';
+    } else {
+      html += '<span class="badge badge-season">' + b + '</span>';
+    }
+  });
+}
+
 
   html +=       '</div>';
   html +=     '</div>';

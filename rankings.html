@@ -987,8 +987,32 @@ function renderMiniCard(ranking, player) {
   html +=     '<div class="stat-mini-box">';
   html +=       '<div class="stat-mini-label"><span class="stat-mini-icon">📍</span> AVG. PLACEMENT</div>';
   html +=       '<div class="stat-mini-value">' + avgPlacement + (avgPlacement < 2.5 ? ' 🔥' : '') + '</div>';
-  html +=     '</div>';
+  html +=     '</div>'; // CLOSE Box
+  html +=   '</div>'; // CLOSE Grid
+    html +=   '<div class="player-badges">';
 
+  // Show badges from player.badges array (excluding tier badges)
+  if (player.badges && player.badges.length > 0) {
+    player.badges.forEach(function(badge) {
+      // Filter out tier badges for mini-cards
+      if (badge.toLowerCase().includes('tier')) {
+        return;
+      }
+
+      let badgeClass = 'badge badge badge-season';
+
+      // Use special styling for winner badges
+      if (badge.toLowerCase().includes('winner')) {
+        badgeClass = 'badge badge-winner';
+        html += '<span class="' + badgeClass + '">🏆 ' + badge + '</span>';
+      } else {
+        html += '<span class="' + badgeClass + '">' + badge + '</span>';
+      }
+
+    });
+  }
+
+  html +=   '</div>';
   html += '</a>';
 
   return html;

@@ -884,27 +884,7 @@ function renderPlayerCard(ranking, player) {
   html +=     '<h4>Why ' + ranking.tier + ':</h4>';
   html +=     '<p>' + ranking.reasoning + '</p>';
   
-  if (ranking.strengths && ranking.weaknesses) {
-    html +=   '<div class="strengths-weaknesses">';
-    html +=     '<div class="sw-box strengths">';
-    html +=       '<h5>💪 Strengths</h5>';
-    html +=       '<ul>';
-    ranking.strengths.forEach(function(s) {
-      html +=     '<li>' + s + '</li>';
-    });
-    html +=       '</ul>';
-    html +=     '</div>';
-    html +=     '<div class="sw-box weaknesses">';
-    html +=       '<h5>⚠️ Weaknesses</h5>';
-    html +=       '<ul>';
-    ranking.weaknesses.forEach(function(w) {
-      html +=     '<li>' + w + '</li>';
-    });
-    html +=       '</ul>';
-    html +=     '</div>';
-    html +=   '</div>';
-  }
-  
+
   html +=   '</div>';
   
   html += '</div>';

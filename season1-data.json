@@ -364,6 +364,31 @@
         "playerSlug": "beth",
         "description": "22 votes against—franchise record for most hostile reception"
       }
+    },
+    "mostClutch": {
+      "name": "Lindsay",
+      "playerSlug": "lindsay",
+      "description": "Perfect jury management—won 5-4 from final tribal"
+    },
+    "mostLoyal": {
+      "name": "Lindsay",
+      "playerSlug": "lindsay",
+      "description": "Low votes against, loyal gameplay, clean win"
+    },
+    "bestUnderdog": {
+      "name": "Gwen",
+      "playerSlug": "gwen",
+      "description": "Close votes, strong social ties, unlucky timing"
+    },
+    "mostChaotic": {
+      "name": "Total Drama: Cullhouse",
+      "playerSlug": null,
+      "description": "2 ties, multiple revotes, 1 rock draw, 1 medevac"
+    },
+    "quietestThreat": {
+      "name": "Ezekiel",
+      "playerSlug": "ezekiel",
+      "description": "Found 2 hidden immunity idols"
     }
   },
   "statistics": {

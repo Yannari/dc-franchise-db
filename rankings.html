@@ -872,7 +872,7 @@ function renderRankings(rankingsData, playersMap) {
 
 function renderPlayerCard(ranking, player) {
   const winRate = ranking.winRate || Math.round((player.wins / player.totalSeasons) * 100);
-  const avgPlacement = ranking.avgPlacement || calculateAvgPlacement(player);
+  const avgPlacement = calculateAvgPlacement(player) || ranking.avgPlacement;
   
   let html = '';
   html += '<div class="player-card" data-name="' + player.name + '" data-score="' + ranking.score + '" data-tier="' + ranking.tier + '">';

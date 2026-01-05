@@ -168,96 +168,23 @@
     "winner": {
       "name": "Mickey",
       "playerSlug": "mickey",
-      "description": "Won with structure + threat management; 0 votes against all season and sealed a 3–3–2 FTC tie by earning Ryan’s deciding tiebreak vote."
+      "description": "0 votes against all season, under-the-radar control, survived 3-3-2 FTC tie thanks to Ryan's deciding tiebreak vote, proved clean positioning and relationships can beat pure challenge dominance"
     },
     "fanFavorite": {
       "name": "Ryan",
       "playerSlug": "ryan",
-      "description": "Most visible merge/endgame presence; made FTC and became the kingmaker in the 3–3–2 finale."
+      "description": "Finalist, fire-making champion, kingmaker tiebreak vote, strategic and social player"
     },
     "bestStrategic": {
-      "name": "Scarlett",
-      "playerSlug": "scarlett",
-      "description": "Strongest long-game strategist; navigated swap/merge blocs and reached Final 4, only falling at fire-making."
-    },
-    "bestSocial": {
       "name": "Mickey",
       "playerSlug": "mickey",
-      "description": "Quietly decisive social game—overlap relationships kept votes from ever consolidating on him; Ryan chose him over Sky in the final tiebreak."
+      "description": "Structure + threat management, perfect game with 0 votes, controlled endgame"
     },
     "bestPhysical": {
       "name": "Sky",
       "playerSlug": "sky",
-      "wins": 4,
-      "description": "Season’s top competitor: 4 total challenge wins and 3 immunity wins; dominated the late-game power window."
-    },
-    "mostClutch": {
-      "name": "Sky",
-      "playerSlug": "sky",
-      "description": "Closed hard late (F6–F4) with immunity streak + the season’s most outcome-changing idol play at Final 6."
-    },
-    "mostLoyal": {
-      "name": "Ryan",
-      "playerSlug": "ryan",
-      "description": "Stayed locked with Mickey through the crucial stretch and proved it when he cast the deciding winner vote."
-    },
-    "bestUnderdog": {
-      "name": "Sugar",
-      "playerSlug": "sugar",
-      "description": "Took the most heat (10 votes against) and still pushed to Final 5—survived as the default boot through constant plan rewrites."
-    },
-    "biggestVillain": {
-      "name": "Blaineley",
-      "playerSlug": "blaineley",
-      "description": "Weaponized chaos and advantages to stay alive from the bottom; her presence kept the game in paranoia mode."
-    },
-    "mostChaotic": {
-      "name": "Blaineley",
-      "playerSlug": "blaineley",
-      "description": "Major blowups, constant heat, and chaos math—forced the entire merge to adapt around her."
-    },
-    "quietestThreat": {
-      "name": "Mickey",
-      "playerSlug": "mickey",
-      "description": "Never had a real danger round; stayed positioned as a “safe ally” while quietly being the winning structure."
-    },
-    "seasonMVP": {
-      "name": "Sky",
-      "playerSlug": "sky",
-      "description": "The season’s biggest momentum swings ran through her immunity dominance and the Final 6 idol decision that reshaped the endgame."
-    },
-    "biggestMeltdown": {
-      "name": "Scarlett",
-      "playerSlug": "scarlett",
-      "description": "Final 4 meltdown right before the fire-making gate—worst timing when calm execution mattered most."
-    },
-    "mostTragic": {
-      "name": "Dave",
-      "playerSlug": "dave",
-      "description": "Had real win equity late, but Sky’s idol flipped the plan and made him the clean pivot boot at Final 6."
-    },
-    "mostUnlucky": {
-      "name": "Josee",
-      "playerSlug": "josee",
-      "description": "Had an idol, then Knowledge Is Power stripped it at the worst moment; followed by a failed Shot in the Dark."
-    },
-    "messiestFeud": {
-      "name": "Dave vs Sugar",
-      "players": [
-        "Dave",
-        "Sugar"
-      ],
-      "description": "Season-long strategic anchor feud; every merge vote had to account for whether they could coexist another round."
-    },
-    "biggestBetrayal": {
-      "betrayer": "Mickey",
-      "betrayed": "Dave",
-      "description": "Not a sudden backstab—Mickey slowly replaced the early Lulu core (Dave/Mickey) with the endgame axis (Mickey/Ryan)."
-    },
-    "ironPerson": {
-      "name": "Mickey",
-      "playerSlug": "mickey",
-      "description": "Never looked on the ropes—stable through swap, merge, and endgame without panic rounds or visible survival scrambles."
+      "wins": 5,
+      "description": "5 total challenge wins, physical domination throughout season"
     }
   },
   "statistics": {

@@ -894,23 +894,34 @@ function renderPlayerCard(ranking, player) {
   html +=       '<div class="player-subtitle">' + ranking.title + ' • ' + player.totalSeasons + ' season' + (player.totalSeasons > 1 ? 's' : '') + ' • ' + player.wins + ' win' + (player.wins !== 1 ? 's' : '') + '</div>';
     html +=       '<div class="player-badges">';
 
-  if (player.wins > 0) {
-    const winSeason = player.seasonDetails.find(function(s) { return s.placement === 1; });
-    if (winSeason) {
-      html += '<span class="badge badge-winner">🏆 S' + winSeason.season + ' Winner</span>';
-    }
-  }
-  if (player.totalSeasons > 1) {
-    html += '<span class="badge badge-season">' + player.totalSeasons + ' Season' + (player.totalSeasons > 1 ? 's' : '') + '</span>';
-  }
-  
-      // Show all badges from player.badges array
-  // Show badges, but only 1 WINNER badge per season (S1, S2, S3...)
-if (player.badges && player.badges.length > 0) {
-  const seenWinnerSeasons = new Set(); // e.g. "S1", "S4"
+// --- Badges ---
+// Winner badges: show at most 1 per season (but allow multiple seasons: S1 + S3 etc.)
+const seenWinnerSeasons = new Set();
 
+// Add winner badges from seasonDetails placements (preferred source)
+if (Array.isArray(player.seasonDetails)) {
+  player.seasonDetails.forEach(function(s) {
+    if (!s) return;
+    if (s.placement === 1) {
+      const seasonNum = (s.season != null) ? String(s.season) : '';
+      const seasonKey = seasonNum ? ('S' + seasonNum) : ('WINNER:' + JSON.stringify(s));
+      if (seenWinnerSeasons.has(seasonKey)) return;
+      seenWinnerSeasons.add(seasonKey);
+      html += '<span class="badge badge-winner">🏆 ' + (seasonNum ? ('S' + seasonNum + ' Winner') : 'Winner') + '</span>';
+    }
+  });
+}
+
+// Seasons badge (once)
+if (player.totalSeasons > 1) {
+  html += '<span class="badge badge-season">' + player.totalSeasons + ' Season' + (player.totalSeasons > 1 ? 's' : '') + '</span>';
+}
+
+// Other badges from player.badges (dedupe winner-by-season + optional tier filtering)
+if (player.badges && player.badges.length > 0) {
   player.badges.forEach(function(badge) {
-    const b = String(badge || "").trim();
+    const b = String(badge || '').trim();
+    if (!b) return;
 
     // Skip tier badges if you want (your existing logic)
     if (['A','B','C','D','S','S+'].includes(ranking.tier)) {
@@ -923,7 +934,7 @@ if (player.badges && player.badges.length > 0) {
     if (isWinner) {
       // Extract season token like "S1", "S2", etc (case-insensitive)
       const m = b.match(/\bS(\d+)\b/i);
-      const seasonKey = m ? ('S' + m[1]) : 'WINNER_UNKNOWN';
+      const seasonKey = m ? ('S' + m[1]) : ('WINNER:' + lower);
 
       // If we've already added a winner badge for this season, skip it
       if (seenWinnerSeasons.has(seasonKey)) return;
@@ -935,7 +946,6 @@ if (player.badges && player.badges.length > 0) {
     }
   });
 }
-
 
   html +=       '</div>';
   html +=     '</div>';
@@ -991,7 +1001,7 @@ if (player.badges && player.badges.length > 0) {
 
 function renderMiniCard(ranking, player) {
   // Mini grid cards (Tier A/B/C/D)
-  const seasonsLabel = player.totalSeasons + ' season' + (player.totalSeasons > 1 ? 's' : '');
+  const seasonsLabel = (player.totalSeasons || 0) + ' season' + ((player.totalSeasons || 0) > 1 ? 's' : '');
   const title = ranking.title || '';
   const avgPlacement = calculateAvgPlacement(player);
 
@@ -1004,7 +1014,7 @@ function renderMiniCard(ranking, player) {
     });
   }
   const bestLabel = best
-    ? ((best.season ? 'S'+best.season + ': ' : '') + '#' + best.placement)
+    ? ((best.season ? 'S' + best.season + ': ' : '') + '#' + best.placement)
     : '—';
 
   const href = 'player.html?player=' + player.id;
@@ -1024,7 +1034,7 @@ function renderMiniCard(ranking, player) {
 
   html +=   '<div class="mini-subtitle">' + title + (title ? ' • ' : '') + seasonsLabel + '</div>';
 
-  // ✅ mini stat pills (prevents layout collapse — all tags closed properly)
+  // Mini stat pills
   html +=   '<div class="stat-mini-grid">';
   html +=     '<div class="stat-mini-box">';
   html +=       '<div class="stat-mini-label"><span class="stat-mini-icon">📍</span> AVG. PLACEMENT</div>';
@@ -1049,18 +1059,28 @@ function renderMiniCard(ranking, player) {
     html += '<span class="badge badge-season">' + bestLabel + '</span>';
   }
 
-  // Show a few curated badges from player.badges (excluding tier badges)
+  // Show up to 2 curated badges from player.badges (dedupe winner badges by season)
   let shownBadges = 0;
+  const seenWinnerSeasons = new Set();
+
   if (player.badges && player.badges.length > 0) {
     player.badges.forEach(function(badge) {
-      if (!badge || shownBadges >= 2) return;
-      if (String(badge).toLowerCase().includes('tier')) return;
+      if (shownBadges >= 2) return;
+      const b = String(badge || '').trim();
+      if (!b) return;
+      if (b.toLowerCase().includes('tier')) return;
 
-      // Winner badge gets special styling
-      if (String(badge).toLowerCase().includes('winner')) {
-        html += '<span class="badge badge-winner">🏆 ' + badge + '</span>';
+      const lower = b.toLowerCase();
+      const isWinner = lower.includes('winner');
+
+      if (isWinner) {
+        const m = b.match(/\\bS(\\d+)\\b/i);
+        const seasonKey = m ? ('S' + m[1]) : ('WINNER:' + lower);
+        if (seenWinnerSeasons.has(seasonKey)) return;
+        seenWinnerSeasons.add(seasonKey);
+        html += '<span class="badge badge-winner">🏆 ' + b + '</span>';
       } else {
-        html += '<span class="badge badge-season">' + badge + '</span>';
+        html += '<span class="badge badge-season">' + b + '</span>';
       }
       shownBadges++;
     });

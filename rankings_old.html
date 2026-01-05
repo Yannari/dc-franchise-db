@@ -1,10 +1,9 @@
 <!DOCTYPE html>
-
-<html data-root="." lang="en">
+<html lang="en">
 <head>
 <meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>Player Rankings — Updated S4</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Player Rankings — DC Franchise</title>
 <link href="styles.css" rel="stylesheet"/>
 <style>
     .tier-section { margin: 30px 0; }
@@ -117,7 +116,39 @@
       padding: 12px 16px;
     }
     
-    .stat-icon { opacity: 0.7; margin-right: 4px; }
+    
+    /* Mini-card stat pills (Tier A/B/C/D) */
+    .stat-mini-grid{
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin: 10px 0 10px;
+    }
+    .stat-mini-box{
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 8px 10px;
+    }
+    .stat-mini-icon{ opacity: 0.75; margin-right: 6px; }
+    .stat-mini-label{
+      font-size: 9px;
+      opacity: 0.75;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 4px;
+      display:flex;
+      align-items:center;
+      gap:4px;
+      line-height: 1.1;
+      white-space: nowrap;
+    }
+    .stat-mini-value{
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.2px;
+    }
+.stat-icon { opacity: 0.7; margin-right: 4px; }
     .stat-label { 
       font-size: 11px; 
       opacity: 0.7; 
@@ -179,7 +210,9 @@
     }
     
     .mini-card {
-      background: rgba(0, 0, 0, 0.2);
+      
+      display: block;
+background: rgba(0, 0, 0, 0.2);
       border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 12px;
       padding: 16px;
@@ -482,7 +515,7 @@
 
     /* 3D-ish hover lift (balanced) */
     .player-card:hover, .mini-card:hover{
-      transform: translateY(-7px) scale(1.02) !important;
+      transform: translateY(-7px) scale(1.02)!important;
       box-shadow:
         0 18px 42px rgba(0,0,0,0.50) ,
         0 0 0 1px rgba(165,95,255,0.10) inset !important;
@@ -602,150 +635,71 @@
   outline-offset: 4px;
 }
 
+
+    .badge-info {
+      background: rgba(79, 195, 247, 0.2);
+      border-color: rgba(79, 195, 247, 0.3);
+      font-size: 11px;
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      .stagger{ opacity: 1 !important; transform: none !important; }
+      .stagger.in{ transition: none !important; }
+      .player-card, .mini-card, .chip{ transition: none !important; }
+      .player-card::after, .mini-card::after{ transition: none !important; }
+    }
+
 </style>
 </head>
+
 <body>
-<!-- SITE HEADER START -->
-
-
-<header class="modern-header" id="modernHeader">
+<header class="modern-header">
   <div class="header-container">
-    <!-- Top Bar -->
     <div class="header-top">
-      <a href="index.html" class="brand-section" aria-label="Go to home">
+      <a href="index.html" class="brand-section">
         <div class="brand-icon">
           <span class="brand-logo-text">⚡</span>
         </div>
         <div class="brand-content">
           <h1>DC <span class="brand-gradient">Franchise</span> Database</h1>
-          <p class="brand-subtitle">Season <span id="currentSeasonNum">5</span> Live • Click to Explore</p>
+          <p class="brand-subtitle">Season 5 Live</p>
         </div>
       </a>
-
       <div class="stats-badge">
-        <div class="stats-main"><span id="totalSeasons">5</span> Seasons • <span id="totalPlayers">58</span> Players</div>
-        <div class="stats-sub">Icons: <span id="iconFormat">name.png</span></div>
+        <div class="stats-main">5 Seasons • 58 Players</div>
+        <div class="stats-sub">Rankings Updated</div>
       </div>
     </div>
-
-    <!-- Navigation -->
-    <nav class="header-nav" aria-label="Primary navigation">
+    <nav class="header-nav">
       <ul class="nav-list">
-        <li class="nav-item">
-          <a href="index.html" class="nav-link" data-page="index">
-            <span class="nav-icon">🏠</span>
-            <span>Home</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="current-season.html" class="nav-link" data-page="current-season">
-            <span class="nav-icon">📊</span>
-            <span>Current Season</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="voting-analytics.html" class="nav-link" data-page="voting-analytics">
-            <span class="nav-icon">🧾</span>
-            <span>Voting Analytics</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="franchise.html" class="nav-link" data-page="franchise">
-            <span class="nav-icon">🏛️</span>
-            <span>Franchise</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="rankings.html" class="nav-link" data-page="rankings">
-            <span class="nav-icon">🏆</span>
-            <span>Rankings</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="seasons.html" class="nav-link" data-page="seasons">
-            <span class="nav-icon">🗂️</span>
-            <span>Seasons</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="devotees.html" class="nav-link" data-page="devotees">
-            <span class="nav-icon">👥</span>
-            <span>Players</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="awards.html" class="nav-link" data-page="awards">
-            <span class="nav-icon">🏅</span>
-            <span>Awards</span>
-          </a>
-        </li>
+        <li class="nav-item"><a href="index.html" class="nav-link"><span class="nav-icon">🏠</span><span>Home</span></a></li>
+        <li class="nav-item"><a href="current-season.html" class="nav-link"><span class="nav-icon">📊</span><span>Current Season</span></a></li>
+        <li class="nav-item"><a href="voting-analytics.html" class="nav-link"><span class="nav-icon">🗳️</span><span>Voting Analytics</span></a></li>
+        <li class="nav-item"><a href="franchise.html" class="nav-link"><span class="nav-icon">🏛️</span><span>Franchise</span></a></li>
+        <li class="nav-item"><a href="rankings.html" class="nav-link active"><span class="nav-icon">🏆</span><span>Rankings</span></a></li>
+        <li class="nav-item"><a href="seasons.html" class="nav-link"><span class="nav-icon">📚</span><span>Seasons</span></a></li>
+        <li class="nav-item"><a href="devotees.html" class="nav-link"><span class="nav-icon">👥</span><span>Players</span></a></li>
+        <li class="nav-item"><a href="awards.html" class="nav-link"><span class="nav-icon">🥇</span><span>Awards</span></a></li>
       </ul>
     </nav>
   </div>
 </header>
 
-<script>
-(function() {
-  // Load site config and update header stats
-  if (window.SITE_CONFIG) {
-    document.getElementById('totalSeasons').textContent = window.SITE_CONFIG.seasons;
-    document.getElementById('totalPlayers').textContent = window.SITE_CONFIG.players;
-    document.getElementById('currentSeasonNum').textContent = window.SITE_CONFIG.currentSeason;
-    document.getElementById('iconFormat').textContent = window.SITE_CONFIG.iconFormat;
-  }
-
-  // Scroll behavior
-  const header = document.getElementById('modernHeader');
-  if (!header) return;
-  
-  window.addEventListener('scroll', () => {
-    const currentScroll = window.pageYOffset;
-    if (currentScroll > 20) {
-      header.classList.add('scrolled');
-    } else {
-      header.classList.remove('scrolled');
-    }
-  }, { passive: true });
-
-  // Active page highlighting
-  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
-  const navLinks = document.querySelectorAll('.nav-link');
-  
-  navLinks.forEach(link => {
-    const linkPage = link.getAttribute('href');
-    if (linkPage === currentPage || (currentPage === '' && linkPage === 'index.html')) {
-      link.classList.add('active');
-    }
-  });
-
-  // Path resolution for nested folders
-  const root = (document.documentElement.dataset.root || document.body.dataset.root || ".").replace(/\/+$/, "");
-  
-  if (root !== ".") {
-    const allLinks = header.querySelectorAll('a[href]');
-    allLinks.forEach(link => {
-      const href = link.getAttribute('href');
-      if (href && !href.startsWith('http') && !href.startsWith('#')) {
-        link.setAttribute('href', root + '/' + href);
-      }
-    });
-  }
-})();
-</script>
-<!-- SITE HEADER END -->
-
 <div class="container">
-<div class="topbar">
-<div>
-<div class="brand">DC <span>Franchise</span> Database</div>
-<div class="meta">Power rankings across all seasons</div>
-</div>
-<div class="meta">Season count: 5 • Player count: 58</div>
-</div>
-<div class="hero">
-<h1>🏆 Player Rankings</h1>
-<p>Performance-based tier rankings (Updated through Season 5)</p>
-</div>
+  <div class="topbar">
+    <div>
+      <div class="brand">DC <span>Franchise</span> Database</div>
+      <div class="meta">Power Rankings across all Seasons</div>
+    </div>
+    <div class="meta">Updated through Season 5</div>
+  </div>
+
+
+  <div class="hero">
+    <h1>🏆 Player Rankings</h1>
+    <p>Comprehensive tier rankings across all seasons • Updated through S5</p>
+  </div>
+
 <div class="callout">
       Rankings based on placement, win rate, challenge performance, social game, and strategic impact.
     </div>
@@ -803,686 +757,333 @@
 </div>
 <div class="global-list" id="globalList"></div>
 </div>
-<!-- TIER S+ -->
-<div class="tier-section" id="tier-splus">
-<div class="tier-header">
-<h2>🏅 TIER S+ — Elite Winners</h2>
-<span class="tier-desc">91+ • Franchise legends</span>
-</div><div class="player-card">
-<div class="player-header">
-<div class="player-avatar">
-<img alt="Alejandro" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block';" src="assets/avatars/alejandro.png"/>
-<span>👑</span>
-</div>
-<div class="player-title">
-<div class="player-name-row">
-<a class="player-name" data-href="player.html?player=alejandro" data-name="Alejandro" href="player.html?player=alejandro">👑 Alejandro</a>
-</div>
-<div class="player-subtitle">The Strategist • 3 seasons • 1 wins</div>
-<div class="player-badges">
-<span class="badge badge-winner">🏆 S4 Winner</span>
-<span class="badge badge-season">3 Seasons</span>
-<span class="badge badge-season">S3: #1 (4-3-1)</span>
-</div>
-</div>
-<div>
-<div class="score-display">95/100</div>
-<div class="score-bar-wrapper" style="width: 120px;">
-<div class="score-bar" style="width: 95%;"></div>
-</div>
-</div>
-</div>
-<div class="stat-grid">
-<div class="stat-box">
-<div class="stat-label"><span class="stat-icon">📍</span> AVG. PLACEMENT</div>
-<div class="stat-value">1.7 🔥</div>
-</div>
-<div class="stat-box">
-<div class="stat-label"><span class="stat-icon">🏆</span> WIN RATE</div>
-<div class="stat-value">33%</div>
-</div>
-<div class="stat-box">
-<div class="stat-label"><span class="stat-icon">☠️</span> VOTES AGAINST</div>
-<div class="stat-value">25 total 🔒</div>
-</div>
-<div class="stat-box">
-<div class="stat-label"><span class="stat-icon">💪</span> CHALLENGE WINS</div>
-<div class="stat-value">13 total</div>
-</div>
-<div class="stat-box">
-<div class="stat-label"><span class="stat-icon">🗳️</span> JURY VOTES</div>
-<div class="stat-value">12 total</div>
-</div>
-<div class="stat-box">
-<div class="stat-label"><span class="stat-icon">🧠</span> STRATEGIC</div>
-<div class="stat-value">#1 (S4)</div>
-</div>
-</div>
-<div class="why-section">
-<h4>Why S+:</h4>
-<p>THREE finals appearances (unprecedented). WINNER of Season 4 (7-6-1 closest finale ever). Most challenge wins in franchise (13 total). Fire-making champion (beat Gwen at F4). Strategic mastermind across all three seasons.</p>
-</div>
-</div><div class="player-card">
-<div class="player-header">
-<div class="player-avatar">
-<img alt="Mickey" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block';" src="assets/avatars/mickey.png"/>
-<span>🐭</span>
-</div>
-<div class="player-title">
-<div class="player-name-row">
-<a class="player-name" data-href="player.html?player=mickey" data-name="Mickey" href="player.html?player=mickey">🐭 Mickey</a>
-</div>
-<div class="player-subtitle">The Quiet Threat • 1 season • 1 wins</div>
-<div class="player-badges">
-<span class="badge badge-winner">🏆 S5 Winner</span>
-<span class="badge badge-season">Perfect Game (0 votes)</span>
-<span class="badge badge-season">S5: #1 (4-3-2)</span>
-</div>
-</div>
-<div>
-<div class="score-display">92/100</div>
-<div class="score-bar-wrapper" style="width: 120px;">
-<div class="score-bar" style="width: 92%;"></div>
-</div>
-</div>
-</div>
-<div class="stat-grid">
-<div class="stat-box">
-<div class="stat-label"><span class="stat-icon">📍</span> AVG. PLACEMENT</div>
-<div class="stat-value">1.0 🏆</div>
-</div>
-<div class="stat-box">
-<div class="stat-label"><span class="stat-icon">🏆</span> WIN RATE</div>
-<div class="stat-value">100%</div>
-</div>
-<div class="stat-box">
-<div class="stat-label"><span class="stat-icon">☠️</span> VOTES AGAINST</div>
-<div class="stat-value">0 total 🔒</div>
-</div>
-<div class="stat-box">
-<div class="stat-label"><span class="stat-icon">💪</span> CHALLENGE WINS</div>
-<div class="stat-value">2 total</div>
-</div>
-<div class="stat-box">
-<div class="stat-label"><span class="stat-icon">🗳️</span> JURY VOTES</div>
-<div class="stat-value">4 (S5)</div>
-</div>
-<div class="stat-box">
-<div class="stat-label"><span class="stat-icon">🧠</span> STRATEGIC</div>
-<div class="stat-value">#3 (S5)</div>
-</div>
-</div>
-<div class="tier-note">
-<div class="tier-note-title">Why S+:</div>
-<p>Perfect‑game champion (0 votes against) who won a tough final tiebreak and never became the main target. Quiet social threat, solid immunity ability, and clean positioning (Lulu duo → merge axis) let him control tempo without flashing power.</p>
-</div>
-</div><div class="player-card">
-<div class="player-header">
-<div class="player-avatar">
-<img alt="Lindsay" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block';" src="assets/avatars/lindsay.png"/>
-<span>💎</span>
-</div>
-<div class="player-title">
-<div class="player-name-row">
-<a class="player-name" data-href="player.html?player=lindsay" data-name="Lindsay" href="player.html?player=lindsay">💎 Lindsay</a>
-</div>
-<div class="player-subtitle">The Social Queen • 2 seasons • 1 wins</div>
-<div class="player-badges">
-<span class="badge badge-winner">🏆 S1 Winner</span>
-<span class="badge badge-season">2 Seasons</span>
-<span class="badge badge-season">S1: #1 (5-4)</span>
-</div>
-</div>
-<div>
-<div class="score-display">91/100</div>
-<div class="score-bar-wrapper" style="width: 120px;">
-<div class="score-bar" style="width: 90%;"></div>
-</div>
-</div>
-</div>
-<div class="stat-grid">
-<div class="stat-box">
-<div class="stat-label"><span class="stat-icon">📍</span> AVG. PLACEMENT</div>
-<div class="stat-value">1.5</div>
-</div>
-<div class="stat-box">
-<div class="stat-label"><span class="stat-icon">🏆</span> WIN RATE</div>
-<div class="stat-value">50%</div>
-</div>
-<div class="stat-box">
-<div class="stat-label"><span class="stat-icon">☠️</span> VOTES AGAINST</div>
-<div class="stat-value">2 total 🔒</div>
-</div>
-<div class="stat-box">
-<div class="stat-label"><span class="stat-icon">💪</span> CHALLENGE WINS</div>
-<div class="stat-value">2 total</div>
-</div>
-<div class="stat-box">
-<div class="stat-label"><span class="stat-icon">🗳️</span> MAJORITY VOTE RATE</div>
-<div class="stat-value">High</div>
-</div>
-<div class="stat-box">
-<div class="stat-label"><span class="stat-icon">🧠</span> SOCIAL GAME</div>
-<div class="stat-value">Elite 😊</div>
-</div>
-</div>
-<div class="why-section">
-<h4>Why S+:</h4>
-<p>Most consistent player across seasons. Survived to Day 39 in BOTH appearances. Elite social protection (only 2 votes in 2 full seasons). Central to multiple alliances without burning bridges. One of cleanest games in franchise history.</p>
-</div>
+
+  <div id="rankings-container">
+    <div class="hero">
+      <h2>⏳ Loading Rankings...</h2>
+      <p>Please wait while we fetch the player rankings</p>
+    </div>
+  </div>
 </div>
 
-
-
-</div>
-<!-- TIER S -->
-<div class="tier-section" id="tier-s">
-<div class="tier-header">
-<h2>🥇 TIER S — Championship Caliber</h2>
-<span class="tier-desc">81–90 • Elite threats &amp; finalists</span>
-</div>
-
-<div class="player-card">
-<div class="player-header">
-<div class="player-avatar">
-<img alt="Sky" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block';" src="assets/avatars/sky.png"/>
-<span>🏹</span>
-</div>
-<div class="player-title">
-<div class="player-name-row">
-<a class="player-name" data-href="player.html?player=sky" data-name="Sky" href="player.html?player=sky">🏹 Sky</a>
-<span class="badge badge-new">⭐ NEW</span>
-</div>
-<div class="player-subtitle">The Olympian • 1 season</div>
-<div class="player-badges">
-<span class="badge badge-season">S5 Runner-Up</span>
-<span class="badge badge-season">4 Challenge Wins</span>
-<span class="badge badge-season">2 Perfect Idol Plays</span>
-</div>
-</div>
-<div>
-<div class="score-display">88/100</div>
-<div class="score-bar-wrapper" style="width: 120px;">
-<div class="score-bar" style="width: 88%;"></div>
-</div>
-</div>
-</div>
-<div class="stat-grid">
-<div class="stat-box">
-<div class="stat-label"><span class="stat-icon">📍</span> AVG. PLACEMENT</div>
-<div class="stat-value">2.0</div>
-</div>
-<div class="stat-box">
-<div class="stat-label"><span class="stat-icon"></span> WIN RATE</div>
-<div class="stat-value">0%</div>
-</div>
-<div class="stat-box">
-<div class="stat-label"><span class="stat-icon">☠️</span> VOTES AGAINST</div>
-<div class="stat-value">1 total</div>
-</div>
-<div class="stat-box">
-<div class="stat-label"><span class="stat-icon">💪</span> CHALLENGE WINS</div>
-<div class="stat-value">4 total</div>
-</div>
-<div class="stat-box">
-<div class="stat-label"><span class="stat-icon">🗳️</span> JURY VOTES</div>
-<div class="stat-value">3 (S5)</div>
-</div>
-<div class="stat-box">
-<div class="stat-label"><span class="stat-icon">🧠</span> STRATEGIC</div>
-<div class="stat-value">High</div>
-</div>
-</div>
-<div class="tier-note">
-<div class="tier-note-title">Why S:</div>
-<p>Season 5’s most dominant competitor: four challenge wins, only one vote against, and two high‑leverage idol plays that shaped the endgame. She was a single jury vote away from the win—S‑tier résumé on pure performance.</p>
-</div>
-</div><div class="player-card">
-<div class="player-header">
-<div class="player-avatar">
-<img alt="Zoey" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block';" src="assets/avatars/zoey.png"/>
-<span>💕</span>
-</div>
-<div class="player-title">
-<div class="player-name-row">
-<a class="player-name" data-href="player.html?player=zoey" data-name="Zoey" href="player.html?player=zoey">💕 Zoey</a>
-</div>
-<div class="player-subtitle">The Loyalist • 2 seasons • 0 wins</div>
-<div class="player-badges">
-<span class="badge badge-season">2 Seasons</span>
-<span class="badge badge-season">S4: #2 (6 votes)</span>
-</div>
-</div>
-<div>
-<div class="score-display">87/100</div>
-<div class="score-bar-wrapper" style="width: 120px;">
-<div class="score-bar" style="width: 87%;"></div>
-</div>
-</div>
-</div>
-<div class="stat-grid">
-<div class="stat-box">
-<div class="stat-label"><span class="stat-icon">📍</span> AVG. PLACEMENT</div>
-<div class="stat-value">3.0</div>
-</div>
-<div class="stat-box">
-<div class="stat-label"><span class="stat-icon"></span> WIN RATE</div>
-<div class="stat-value">0%</div>
-</div>
-<div class="stat-box">
-<div class="stat-label"><span class="stat-icon">☠️</span> VOTES AGAINST</div>
-<div class="stat-value">4 total</div>
-</div>
-<div class="stat-box">
-<div class="stat-label"><span class="stat-icon">💪</span> CHALLENGE WINS</div>
-<div class="stat-value">8 total</div>
-</div>
-<div class="stat-box">
-<div class="stat-label"><span class="stat-icon">🗳️</span> JURY VOTES</div>
-<div class="stat-value">6 (S4)</div>
-</div>
-<div class="stat-box">
-<div class="stat-label"><span class="stat-icon">🧠</span> SOCIAL GAME</div>
-<div class="stat-value">Elite 😊</div>
-</div>
-</div>
-<div class="why-section">
-<h4>Why S:</h4>
-<p>UNPRECEDENTED: 3 unbreakable relationships at once (S4). Runner-up S4 (lost 6-7 to Alejandro by ONE vote). Most socially connected player in franchise history. 7 individual challenge wins total. Voted out unbreakable partner Geoff TWICE but he still voted for her.</p>
-</div>
-</div><div class="player-card">
-<div class="player-header">
-<div class="player-avatar">
-<img alt="Scott" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block';" src="assets/avatars/scott.png"/>
-<span>🃏</span>
-</div>
-<div class="player-title">
-<div class="player-name-row">
-<a class="player-name" data-href="player.html?player=scott" data-name="Scott" href="player.html?player=scott">🃏 Scott</a>
-</div>
-<div class="player-subtitle">The Mastermind • 2 seasons • 0 wins</div>
-<div class="player-badges">
-<span class="badge badge-season">2 Seasons</span>
-<span class="badge badge-season">S3: #2 • S4: #3</span>
-</div>
-</div>
-<div>
-<div class="score-display">86/100</div>
-<div class="score-bar-wrapper" style="width: 120px;">
-<div class="score-bar" style="width: 86%;"></div>
-</div>
-</div>
-</div>
-<div class="stat-grid">
-<div class="stat-box">
-<div class="stat-label"><span class="stat-icon">📍</span> AVG. PLACEMENT</div>
-<div class="stat-value">2.5</div>
-</div>
-<div class="stat-box">
-<div class="stat-label"><span class="stat-icon"></span> WIN RATE</div>
-<div class="stat-value">0%</div>
-</div>
-<div class="stat-box">
-<div class="stat-label"><span class="stat-icon">☠️</span> VOTES AGAINST</div>
-<div class="stat-value">4 total</div>
-</div>
-<div class="stat-box">
-<div class="stat-label"><span class="stat-icon">💪</span> CHALLENGE WINS</div>
-<div class="stat-value">6 total</div>
-</div>
-<div class="stat-box">
-<div class="stat-label"><span class="stat-icon">🗳️</span> JURY VOTES</div>
-<div class="stat-value">4 total</div>
-</div>
-<div class="stat-box">
-<div class="stat-label"><span class="stat-icon">🧠</span> STRATEGIC</div>
-<div class="stat-value">#2 Overall</div>
-</div>
-</div>
-<div class="why-section">
-<h4>Why S:</h4>
-<p>TWO finals appearances (S3 runner-up, S4 third). PERFECT IDOL PLAY S4: Held 9 tribals, played at Final 5. Most patient idol holder in franchise history. Most challenge wins in single season (6 in S3). Unbreakable bond with Zoey protected him both seasons.</p>
-</div>
-</div><div class="player-card">
-<div class="player-header">
-<div class="player-avatar">
-<img alt="Emma" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block';" src="assets/avatars/emma.png"/>
-<span>🎯</span>
-</div>
-<div class="player-title">
-<div class="player-name-row">
-<a class="player-name" data-href="player.html?player=emma" data-name="Emma" href="player.html?player=emma">🎯 Emma</a>
-<span class="badge badge-new">⭐ NEW</span>
-</div>
-<div class="player-subtitle">The Iron Person • 2 seasons • 1 win</div>
-<div class="player-badges"><span class="badge badge badge-winner">🏆 S3 Winner</span><span class="badge badge badge-season">2 Seasons</span><span class="badge badge badge-season">Perfect Game* (0 votes until F4)</span></div>
-</div>
-<div>
-<div class="score-display">84/100</div>
-<div class="score-bar-wrapper" style="width: 120px;">
-<div class="score-bar" style="width: 84%;"></div>
-</div>
-</div>
-</div>
-<div class="stat-grid"><div class="stat-box"><div class="stat-label"><span class="stat-icon">📍</span> AVG. PLACEMENT</div><div class="stat-value">9.0</div></div><div class="stat-box"><div class="stat-label"><span class="stat-icon">🏆</span> WIN RATE</div><div class="stat-value">50%</div></div><div class="stat-box"><div class="stat-label"><span class="stat-icon">☠️</span> VOTES AGAINST</div><div class="stat-value">5 total</div></div><div class="stat-box"><div class="stat-label"><span class="stat-icon">💪</span> CHALLENGE WINS</div><div class="stat-value">4 total</div></div><div class="stat-box"><div class="stat-label"><span class="stat-icon">🗳️</span> JURY VOTES</div><div class="stat-value">4 total</div></div><div class="stat-box"><div class="stat-label"><span class="stat-icon">🧠</span> STRATEGIC</div><div class="stat-value">#2 in S3</div></div></div>
-<div class="why-section">
-<h4>Why S:</h4>
-<p>Winner-level upside: a championship season with a near‑perfect voting record (no votes against until late) plus strong competitive chops. Even with a rougher follow‑up season, her peak game is absolutely S‑tier.</p>
-</div>
-</div><div class="player-card">
-<div class="player-header">
-<div class="player-avatar">
-<img alt="Duncan" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block';" src="assets/avatars/duncan.png"/>
-<span>⚔️</span>
-</div>
-<div class="player-title">
-<div class="player-name-row">
-<a class="player-name" data-href="player.html?player=duncan" data-name="Duncan" href="player.html?player=duncan">⚔️ Duncan</a>
-</div>
-<div class="player-subtitle">The Survivor • 3 seasons • 1 wins</div>
-<div class="player-badges">
-<span class="badge badge-winner">🏆 S2 Winner</span>
-<span class="badge badge-season">3 Seasons</span>
-<span class="badge badge-season">S2: #1 (5-1-1)</span>
-</div>
-</div>
-<div>
-<div class="score-display">83/100</div>
-<div class="score-bar-wrapper" style="width: 120px;">
-<div class="score-bar" style="width: 83%;"></div>
-</div>
-</div>
-</div>
-<div class="stat-grid">
-<div class="stat-box">
-<div class="stat-label"><span class="stat-icon">📍</span> AVG. PLACEMENT</div>
-<div class="stat-value">10.3</div>
-</div>
-<div class="stat-box">
-<div class="stat-label"><span class="stat-icon">🏆</span> WIN RATE</div>
-<div class="stat-value">33%</div>
-</div>
-<div class="stat-box">
-<div class="stat-label"><span class="stat-icon">☠️</span> VOTES AGAINST</div>
-<div class="stat-value">17 total</div>
-</div>
-<div class="stat-box">
-<div class="stat-label"><span class="stat-icon">💪</span> CHALLENGE WINS</div>
-<div class="stat-value">2 total</div>
-</div>
-<div class="stat-box">
-<div class="stat-label"><span class="stat-icon">🗳️</span> JURY VOTES</div>
-<div class="stat-value">6 total</div>
-</div>
-<div class="stat-box">
-<div class="stat-label"><span class="stat-icon">🧠</span> STRATEGIC</div>
-<div class="stat-value">Medium-High</div>
-</div>
-</div>
-<div class="why-section">
-<h4>Why S:</h4>
-<p>Season 2 WINNER (dominant 5-1-1 victory). Proved "survival under pressure" wins games. Previous winners curse S4 - eliminated Episode 12. Unbreakable bond with Gwen (S4) - power couple. Survived constant targeting across all seasons.</p>
-</div>
-</div><div class="player-card">
-<div class="player-header">
-<div class="player-avatar">
-<img alt="Scarlett" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block';" src="assets/avatars/scarlett.png"/>
-<span>🧠</span>
-</div>
-<div class="player-title">
-<div class="player-name-row">
-<a class="player-name" data-href="player.html?player=scarlett" data-name="Scarlett" href="player.html?player=scarlett">🧠 Scarlett</a>
-<span class="badge badge-new">⭐ NEW</span>
-</div>
-<div class="player-subtitle">The Puppetmaster • 1 season • 0 wins</div>
-<div class="player-badges"><span class="badge badge badge-season">Best Strategist (S5)</span><span class="badge badge badge-season">2 Immunity Wins</span><span class="badge badge badge-season">F4 fire-making</span></div>
-</div>
-<div>
-<div class="score-display">82/100</div>
-<div class="score-bar-wrapper" style="width: 120px;">
-<div class="score-bar" style="width: 82%;"></div>
-</div>
-</div>
-</div>
-<div class="stat-grid"><div class="stat-box"><div class="stat-label"><span class="stat-icon">📍</span> PLACEMENT</div><div class="stat-value">4th</div></div><div class="stat-box"><div class="stat-label"><span class="stat-icon">☠️</span> VOTES AGAINST</div><div class="stat-value">2</div></div><div class="stat-box"><div class="stat-label"><span class="stat-icon">💪</span> CHALLENGE WINS</div><div class="stat-value">2</div></div><div class="stat-box"><div class="stat-label"><span class="stat-icon">🧠</span> STRATEGIC</div><div class="stat-value">#1 in S5</div></div><div class="stat-box"><div class="stat-label"><span class="stat-icon"></span> WIN RATE</div><div class="stat-value">0%</div></div><div class="stat-box"><div class="stat-label"><span class="stat-icon">🔥</span> ENDGAME</div><div class="stat-value">Fire-making loss</div></div></div>
-<div class="why-section">
-<h4>Why S:</h4>
-<p>Season 5’s top strategist with real win equity: controlled key votes, won two immunities, and only missed the finale at fire-making. High impact per season played—exactly what an elite threat looks like.</p>
-</div>
-</div><div class="player-card">
-<div class="player-header">
-<div class="player-avatar">
-<img alt="Ryan" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block';" src="assets/avatars/ryan.png"/>
-<span>💪</span>
-</div>
-<div class="player-title">
-<div class="player-name-row">
-<a class="player-name" data-href="player.html?player=ryan" data-name="Ryan" href="player.html?player=ryan">💪 Ryan</a>
-<span class="badge badge-new">⭐ NEW</span>
-</div>
-<div class="player-subtitle">The Kingmaker • 1 season • 0 wins</div>
-<div class="player-badges"><span class="badge badge badge-season">Fan Favorite (S5)</span><span class="badge badge badge-season">Fire-Making Champion</span><span class="badge badge badge-season">Final tiebreak vote</span></div>
-</div>
-<div>
-<div class="score-display">81/100</div>
-<div class="score-bar-wrapper" style="width: 120px;">
-<div class="score-bar" style="width: 81%;"></div>
-</div>
-</div>
-</div>
-<div class="stat-grid"><div class="stat-box"><div class="stat-label"><span class="stat-icon">📍</span> PLACEMENT</div><div class="stat-value">3rd</div></div><div class="stat-box"><div class="stat-label"><span class="stat-icon">☠️</span> VOTES AGAINST</div><div class="stat-value">7</div></div><div class="stat-box"><div class="stat-label"><span class="stat-icon">💪</span> CHALLENGE WINS</div><div class="stat-value">1</div></div><div class="stat-box"><div class="stat-label"><span class="stat-icon">🗳️</span> JURY VOTES</div><div class="stat-value">2 + tiebreak</div></div><div class="stat-box"><div class="stat-label"><span class="stat-icon">🧠</span> STRATEGIC</div><div class="stat-value">Medium-High</div></div><div class="stat-box"><div class="stat-label"><span class="stat-icon">🤝</span> SOCIAL</div><div class="stat-value">Loyal core</div></div></div>
-<div class="why-section">
-<h4>Why S:</h4>
-<p>Massive social capital (Fan Favorite), a fire-making win, and the ultimate kingmaker moment in the final tiebreak decision. He converts loyalty and relationships into power—elite endgame influence for a one-season player.</p>
-</div>
-</div>
-
-
-
-
-</div>
-<!-- TIER A -->
-<div class="tier-section" id="tier-a">
-<div class="tier-header">
-<h2>🥈 TIER A — Elite Threats</h2>
-<span class="tier-desc">Top 15% • Deep runs</span>
-</div>
-<div class="mini-grid">
-
-
-
-<a class="mini-card" data-href="player.html?player=gwen" data-name="gwen" data-score="79" href="player.html?player=gwen">
-<div class="mini-header">
-<div class="mini-avatar">
-<img alt="Gwen" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/gwen.png"/>
-<span>💪</span>
-</div>
-<div class="mini-name">💪 Gwen</div>
-<div class="mini-score">79/100</div>
-</div>
-<div class="mini-subtitle">The Competitor • 3 seasons</div>
-<div class="player-badges">
-<span class="badge badge-season">S4: #4</span>
-</div>
-</a>
-<a class="mini-card" data-href="player.html?player=cameron" data-name="cameron" data-score="78" href="player.html?player=cameron">
-<div class="mini-header">
-<div class="mini-avatar">
-<img alt="Cameron" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/cameron.png"/>
-<span>🧠</span>
-</div>
-<div class="mini-name">🧠 Cameron</div>
-<div class="mini-score">78/100</div>
-</div>
-<div class="mini-subtitle">The Analyst • 2 seasons</div>
-<div class="player-badges">
-<span class="badge badge-season">S3: #3</span>
-</div>
-</a>
-<a class="mini-card" data-href="player.html?player=blaineley" data-name="blaineley" data-score="76" href="player.html?player=blaineley"><div class="mini-header"><div class="mini-avatar"><img alt="Blaineley" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/blaineley.png"/><span>🎤</span></div><div class="mini-name">🎤 Blaineley</div><div class="mini-score">76/100</div></div><div class="mini-subtitle">The Spotlight Sniper • 1 season</div><div class="player-badges"><span class="badge badge-season">S5: #8</span></div></a>
-<a class="mini-card" data-href="player.html?player=ezekiel" data-name="ezekiel" data-score="68" href="player.html?player=ezekiel"><div class="mini-header"><div class="mini-avatar"><img alt="Ezekiel" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/ezekiel.png"/><span>🗿</span></div><div class="mini-name">🗿 Ezekiel</div><div class="mini-score">75/100</div></div><div class="mini-subtitle">The Homeschooled • 2 seasons</div><div class="player-badges"><span class="badge badge-season">S1: #4</span></div></a>
-<a class="mini-card" data-href="player.html?player=bridgette" data-name="bridgette" data-score="74" href="player.html?player=bridgette">
-<div class="mini-header">
-<div class="mini-avatar">
-<img alt="Bridgette" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/bridgette.png"/>
-<span>🌊</span>
-</div>
-<div class="mini-name">🌊 Bridgette</div>
-<div class="mini-score">74/100</div>
-</div>
-<div class="mini-subtitle">The Surfer • 2 seasons</div>
-<div class="player-badges"><span class="badge badge-season">S1: #3</span></div>
-</a>
-<a class="mini-card" data-href="player.html?player=beth" data-name="beth" data-score="73" href="player.html?player=beth">
-<div class="mini-header">
-<div class="mini-avatar">
-<img alt="Beth" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/beth.png"/>
-<span>🌸</span>
-</div>
-<div class="mini-name">🌸 Beth</div>
-<div class="mini-score">73/100</div>
-</div>
-<div class="mini-subtitle">The Underdog • 2 seasons</div>
-<div class="player-badges"><span class="badge badge-season">S1: #4</span></div>
-</a>
-<a class="mini-card" data-href="player.html?player=heather" data-name="heather" data-score="72" href="player.html?player=heather">
-<div class="mini-header">
-<div class="mini-avatar">
-<img alt="Heather" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/heather.png"/>
-<span>🐍</span>
-</div>
-<div class="mini-name">🐍 Heather</div>
-<div class="mini-score">72/100</div>
-</div>
-<div class="mini-subtitle">The Villain • 3 seasons</div>
-<div class="player-badges"><span class="badge badge-season">S1: #8</span></div>
-</a>
-
-</div>
-</div>
-<!-- TIER B -->
-<div class="tier-section" id="tier-b">
-<div class="tier-header">
-<h2>🥉 TIER B — Above Average</h2>
-<span class="tier-desc">Top 35% • Solid gameplay</span>
-</div>
-<div class="mini-grid">
-  <a class="mini-card" data-href="player.html?player=trent" data-name="trent" data-score="70" href="player.html?player=trent">
-<div class="mini-header">
-<div class="mini-avatar">
-<img alt="Trent" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/trent.png"/>
-<span>🎸</span>
-</div>
-<div class="mini-name">🎸 Trent</div>
-<div class="mini-score">70/100</div>
-</div>
-<div class="mini-subtitle">The Musician • 2 seasons</div>
-<div class="player-badges"><span class="badge badge-season">S1: #6</span></div>
-</a>
-<a class="mini-card" data-href="player.html?player=dave" data-name="dave" data-score="70" href="player.html?player=dave"><div class="mini-header"><div class="mini-avatar"><img alt="Dave" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/dave.png"/><span>😓</span></div><div class="mini-name">😓 Dave</div><div class="mini-score">70/100</div></div><div class="mini-subtitle">The Anxious Planner • 1 season</div><div class="player-badges"><span class="badge badge-season">S1: #6</span></div></a>
-<a class="mini-card" data-href="player.html?player=geoff" data-name="geoff" data-score="72" href="player.html?player=geoff"><div class="mini-header"><div class="mini-avatar"><img alt="Geoff" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/geoff.png"/><span>🎉</span></div><div class="mini-name">🎉 Geoff</div><div class="mini-score">69/100</div></div><div class="mini-subtitle">The Party Guy • 2 seasons</div><div class="player-badges"><span class="badge badge-season">S4: #6</span></div></a>
-<a class="mini-card" data-href="player.html?player=mike" data-name="mike" data-score="68" href="player.html?player=mike"><div class="mini-header"><div class="mini-avatar"><img alt="Mike" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/mike.png"/><span>🎭</span></div><div class="mini-name">🎭 Mike</div><div class="mini-score">68/100</div></div><div class="mini-subtitle">The Actor • 2 seasons</div><div class="player-badges"><span class="badge badge-season">S3: #6</span></div></a>
-<a class="mini-card" data-href="player.html?player=noah" data-name="noah" data-score="73" href="player.html?player=noah"><div class="mini-header"><div class="mini-avatar"><img alt="Noah" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/noah.png"/><span>📚</span></div><div class="mini-name">📚 Noah</div><div class="mini-score">68/100</div></div><div class="mini-subtitle">The Cynic • 2 seasons</div><div class="player-badges"><span class="badge badge-season">S4: #9</span></div></a>
-<a class="mini-card" data-href="player.html?player=harold" data-name="harold" data-score="74" href="player.html?player=harold"><div class="mini-header"><div class="mini-avatar"><img alt="Harold" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/harold.png"/><span>🤓</span></div><div class="mini-name">🤓 Harold</div><div class="mini-score">66/100</div></div><div class="mini-subtitle">The Nerd • 2 seasons<div class="player-badges"><span class="badge badge-season">S4: #8</span></div></div></a>
-<a class="mini-card" data-href="player.html?player=dj" data-name="dj" data-score="65" href="player.html?player=dj"><div class="mini-header"><div class="mini-avatar"><img alt="DJ" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/dj.png"/><span>🐰</span></div><div class="mini-name">🐰 DJ</div><div class="mini-score">65/100</div></div><div class="mini-subtitle">The Gentle Giant • 2 seasons<div class="player-badges"><span class="badge badge-season">S2: #5</span></div></div></a>
-<a class="mini-card" data-href="player.html?player=courtney" data-name="courtney" data-score="64" href="player.html?player=courtney"><div class="mini-header"><div class="mini-avatar"><img alt="Courtney" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/courtney.png"/><span>📋</span></div><div class="mini-name">📋 Courtney</div><div class="mini-score">64/100</div></div><div class="mini-subtitle">The Overachiever • 3 seasons<div class="player-badges"><span class="badge badge-season">S1: #9 </span></div></div></a>
-<a class="mini-card" data-href="player.html?player=owen" data-name="owen" data-score="63" href="player.html?player=owen"><div class="mini-header"><div class="mini-avatar"><img alt="Owen" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/owen.png"/><span>🍔</span></div><div class="mini-name">🍔 Owen</div><div class="mini-score">63/100</div></div><div class="mini-subtitle">The Big Guy • 2 seasons</div><div class="player-badges"><span class="badge badge-season">S1: #7</span></div></a>
-<a class="mini-card" data-href="player.html?player=sierra" data-name="sierra" data-score="68" href="player.html?player=sierra"><div class="mini-header"><div class="mini-avatar"><img alt="Sierra" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/sierra.png"/><span>📱</span></div><div class="mini-name">📱 Sierra</div><div class="mini-score">68/100</div></div><div class="mini-subtitle">The Superfan • 2 seasons</div><div class="player-badges"><span class="badge badge-season">S1: #10</span></div></a>
-<a class="mini-card" data-href="player.html?player=jo" data-name="jo" data-score="64" href="player.html?player=jo"><div class="mini-header"><div class="mini-avatar"><img alt="Jo" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/jo.png"/><span>💥</span></div><div class="mini-name">💥 Jo</div><div class="mini-score">64/100</div></div><div class="mini-subtitle">The Evil Jock • ⭐ S4 Fan Fav • 2 seasons</div><div class="player-badges"><span class="badge badge-season">S3: #7</span></div></a>
-<a class="mini-card" data-href="player.html?player=sugar" data-name="sugar" data-score="62" href="player.html?player=sugar"><div class="mini-header"><div class="mini-avatar"><img alt="Sugar" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/sugar.png"/><span>🍭</span></div><div class="mini-name">🍭 Sugar</div><div class="mini-score">62/100</div></div><div class="mini-subtitle">The Pageant Menace • 1 season</div><div class="player-badges"><span class="badge badge-season">S5: #5</span></div></a>
-<a class="mini-card" data-href="player.html?player=justin" data-name="justin" data-score="61" href="player.html?player=justin"><div class="mini-header"><div class="mini-avatar"><img alt="Justin" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/justin.png"/><span>💅</span></div><div class="mini-name">💅 Justin</div><div class="mini-score">61/100</div></div><div class="mini-subtitle">The Model • ⭐ S1 Fan Favorite • 2 seasons</div><div class="player-badges"><span class="badge badge-season">S2: #10</span></div></a>
-
-</div>
-</div>
-<!-- TIER C -->
-<div class="tier-section" id="tier-c">
-<div class="tier-header">
-<h2>🟧 TIER C — Average</h2>
-<span class="tier-desc">Top 60%</span>
-</div>
-<div class="mini-grid">
-<a class="mini-card" data-href="player.html?player=anne-maria" data-name="anne maria" data-score="60" href="player.html?player=anne-maria"><div class="mini-header"><div class="mini-avatar"><img alt="Anne Maria" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/anne-maria.png"/><span>💋</span></div><div class="mini-name">💋 Anne Maria</div><div class="mini-score">60/100</div></div><div class="mini-subtitle">The Diva • 2 seasons</div><div class="player-badges"><span class="badge badge-season">S3: #5</span></div></a>
-<a class="mini-card" data-href="player.html?player=amy" data-name="amy" data-score="60" href="player.html?player=amy"><div class="mini-header"><div class="mini-avatar"><img alt="Amy" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/amy.png"/><span>😈</span></div><div class="mini-name">😈 Amy</div><div class="mini-score">60/100</div></div><div class="mini-subtitle">The Mean Twin • 1 season</div><div class="player-badges"><span class="badge badge-season">S5: #7</span></div></a>
-<a class="mini-card" data-href="player.html?player=brick" data-name="brick" data-score="58" href="player.html?player=brick"><div class="mini-header"><div class="mini-avatar"><img alt="Brick" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/brick.png"/><span>🪖</span></div><div class="mini-name">🪖 Brick</div><div class="mini-score">58/100</div></div><div class="mini-subtitle">The Soldier • 1 season</div><div class="player-badges"><span class="badge badge-season">S3: #9</span></div></a>
-<a class="mini-card" data-href="player.html?player=leshawna" data-name="leshawna" data-score="58" href="player.html?player=leshawna"><div class="mini-header"><div class="mini-avatar"><img alt="LeShawna" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/leshawna.png"/><span>💁</span></div><div class="mini-name">💁 LeShawna</div><div class="mini-score">58/100</div></div><div class="mini-subtitle">The Sister • 2 season</div><div class="player-badges"><span class="badge badge-season">S1: #11</span></div></a>
-<a class="mini-card" data-href="player.html?player=shawn" data-name="shawn" data-score="58" href="player.html?player=shawn"><div class="mini-header"><div class="mini-avatar"><img alt="Shawn" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/shawn.png"/><span>🛡️</span></div><div class="mini-name">🛡️ Shawn</div><div class="mini-score">58/100</div></div><div class="mini-subtitle">The Apocalypse Prepper • 1 season</div><div class="player-badges"><span class="badge badge-season">S5: #9</span></div></a>
-<a class="mini-card" data-href="player.html?player=dwayne" data-name="dwayne" data-score="56" href="player.html?player=dwayne"><div class="mini-header"><div class="mini-avatar"><img alt="Dwayne" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/dwayne.png"/><span>👨‍👦</span></div><div class="mini-name">👨‍👦 Dwayne</div><div class="mini-score">56/100</div></div><div class="mini-subtitle">The Dad • 1 season</div><div class="player-badges"><span class="badge badge-season">S3: #10</span></div></a>
-<a class="mini-card" data-href="player.html?player=max" data-name="max" data-score="56" href="player.html?player=max"><div class="mini-header"><div class="mini-avatar"><img alt="Max" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/max.png"/><span>🦹</span></div><div class="mini-name">🦹 Max</div><div class="mini-score">56/100</div></div><div class="mini-subtitle">The Wannabe Evil • 1 season</div><div class="player-badges"><span class="badge badge-season">S5: #10</span></div></a>
-<a class="mini-card" data-href="player.html?player=katie" data-name="katie" data-score="55" href="player.html?player=katie"><div class="mini-header"><div class="mini-avatar"><img alt="Katie" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/katie.png"/><span>💖</span></div><div class="mini-name">💖 Katie</div><div class="mini-score">55/100</div></div><div class="mini-subtitle">The BFF • 1 season</div><div class="player-badges"><span class="badge badge-season">S1: #12</span></div></a>
-<a class="mini-card" data-href="player.html?player=sadie" data-name="sadie" data-score="54" href="player.html?player=sadie"><div class="mini-header"><div class="mini-avatar"><img alt="Sadie" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/sadie.png"/><span>💖</span></div><div class="mini-name">💖 Sadie</div><div class="mini-score">54/100</div></div><div class="mini-subtitle">The BFF • 1 season</div><div class="player-badges"><span class="badge badge-season">S1: #13</span></div></a>
-<a class="mini-card" data-href="player.html?player=topher" data-name="topher" data-score="54" href="player.html?player=topher"><div class="mini-header"><div class="mini-avatar"><img alt="Topher" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/topher.png"/><span>📺</span></div><div class="mini-name">📺 Topher</div><div class="mini-score">54/100</div></div><div class="mini-subtitle">The Wannabe Host • 1 season</div><div class="player-badges"><span class="badge badge-season">S5: #11</span></div></a>
-<a class="mini-card" data-href="player.html?player=lightning" data-name="lightning" data-score="52" href="player.html?player=lightning"><div class="mini-header"><div class="mini-avatar"><img alt="Lightning" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/lightning.png"/><span>⚡</span></div><div class="mini-name">⚡ Lightning</div><div class="mini-score">52/100</div></div><div class="mini-subtitle">The Athlete • 2 season</div><div class="player-badges"><span class="badge badge-season">S3: #11</span></div></a>
-<a class="mini-card" data-href="player.html?player=rodney" data-name="rodney" data-score="52" href="player.html?player=rodney"><div class="mini-header"><div class="mini-avatar"><img alt="Rodney" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/rodney.png"/><span>🔑</span></div><div class="mini-name">🔑 Rodney</div><div class="mini-score">52/100</div></div><div class="mini-subtitle">The Hopeless Romantic • 1 season</div><div class="player-badges"><span class="badge badge-season">S5: #12</span></div></a>
-<a class="mini-card" data-href="player.html?player=josee" data-name="josee" data-score="51" href="player.html?player=josee"><div class="mini-header"><div class="mini-avatar"><img alt="Josee" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/josee.png"/><span>⛸️</span></div><div class="mini-name">⛸️ Josee</div><div class="mini-score">51/100</div></div><div class="mini-subtitle">The Ice Queen • 1 season</div><div class="player-badges"><span class="badge badge-season">S5: #13</span></div></a>
-
-</div>
-</div>
-<!-- TIER D -->
-<div class="tier-section" id="tier-d">
-<div class="tier-header">
-<h2>🟥 TIER D — Below Average</h2>
-<span class="tier-desc">Bottom 25%</span>
-</div>
-<div class="mini-grid">
-  <a class="mini-card" data-href="player.html?player=izzy" data-name="izzy" data-score="50" href="player.html?player=izzy"><div class="mini-header"><div class="mini-avatar"><img alt="Izzy" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/izzy.png"/><span>🤪</span></div><div class="mini-name">🤪 Izzy</div><div class="mini-score">50/100</div></div><div class="mini-subtitle">The Psycho • 1 season</div><div class="player-badges"><span class="badge badge-season">S1: #18</span></div></a>
-<a class="mini-card" data-href="player.html?player=jasmine" data-name="jasmine" data-score="49" href="player.html?player=jasmine"><div class="mini-header"><div class="mini-avatar"><img alt="Jasmine" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/jasmine.png"/><span>🏕️</span></div><div class="mini-name">🏕️ Jasmine</div><div class="mini-score">49/100</div></div><div class="mini-subtitle">The Outback Ace • 1 season</div><div class="player-badges"><span class="badge badge-season">S5: #14</span></div></a>
-<a  class="mini-card" data-href="player.html?player=dawn" class="mini-card" data-name="dawn" data-score="49" href="player.html?player=dawn"><div class="mini-header"><div class="mini-avatar"><img alt="Dawn" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/dawn.png"/><span>🌙</span></div><div class="mini-name">🌙 Dawn</div><div class="mini-score">49/100</div></div><div class="mini-subtitle">The Moonchild • 1 season</div><div class="player-badges"><span class="badge badge-season">S3: #8</span></div></a>
-<a class="mini-card" data-href="player.html?player=dakota" data-name="dakota" data-score="48" href="player.html?player=dakota"><div class="mini-header"><div class="mini-avatar"><img alt="Dakota" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/dakota.png"/><span>✨</span></div><div class="mini-name">✨ Dakota</div><div class="mini-score">48/100</div></div><div class="mini-subtitle">The Fame-Monger • ⭐ S4 Fan Fav • 2 season</div><div class="player-badges"><span class="badge badge-season">S3: #12</span></div></a>
-<a class="mini-card" data-href="player.html?player=cody" data-name="cody" data-score="48" href="player.html?player=cody"><div class="mini-header"><div class="mini-avatar"><img alt="Cody" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/cody.png"/><span>😬</span></div><div class="mini-name">😬 Cody</div><div class="mini-score">48/100</div></div><div class="mini-subtitle">The Geek • 1 season</div><div class="player-badges"><span class="badge badge-season">S1: #19</span></div></a>
-<a <a="" class="mini-card" data-href="player.html?player=samey" data-name="samey" data-score="47" href="player.html?player=samey"><div class="mini-header"><div class="mini-avatar"><img alt="Samey" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/samey.png"/><span>😇</span></div><div class="mini-name">😇 Samey</div><div class="mini-score">47/100</div></div><div class="mini-subtitle">The Underdog Twin • 1 season</div><div class="player-badges"><span class="badge badge-season">S5: #15</span></div></a>
-<a class="mini-card" data-href="player.html?player=beardo" data-name="beardo" data-score="45" href="player.html?player=beardo"><div class="mini-header"><div class="mini-avatar"><img alt="Beardo" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/beardo.png"/><span>🎧</span></div><div class="mini-name">🎧 Beardo</div><div class="mini-score">45/100</div></div><div class="mini-subtitle">The Soundboard • 1 season</div><div class="player-badges"><span class="badge badge-season">S5: #16</span></div></a>
-<a class="mini-card" data-href="player.html?player=eva" class="mini-card" data-name="eva" href="player.html?player=eva"><div class="mini-header"><div class="mini-avatar"><img alt="Eva" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/eva.png"/><span>😠</span></div><div class="mini-name">😠 Eva</div><div class="mini-score">45/100</div></div><div class="mini-subtitle">The Hothead • 1 season</div><div class="player-badges"><span class="badge badge-season">S1: #21</span></div></a>
-<a class="mini-card" data-href="player.html?player=tyler" data-name="tyler" data-score="43" href="player.html?player=tyler"><div class="mini-header"><div class="mini-avatar"><img alt="Tyler" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/tyler.png"/><span>🏀</span></div><div class="mini-name">🏀 Tyler</div><div class="mini-score">43/100</div></div><div class="mini-subtitle">The Jock • 1 season</div><div class="player-badges"><span class="badge badge-season">S1: #23</span></div></a>
-<a class="mini-card" data-href="player.html?player=ella" data-name="ella" data-score="43" href="player.html?player=ella"><div class="mini-header"><div class="mini-avatar"><img alt="Ella" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/ella.png"/><span>👸</span></div><div class="mini-name">👸 Ella</div><div class="mini-score">43/100</div></div><div class="mini-subtitle">The Singing Sweetheart • 1 season</div><div class="player-badges"><span class="badge badge-season">S5: #17</span></div></a>
-<a class="mini-card" data-href="player.html?player=sam" data-name="sam" data-score="41" href="player.html?player=sam"><div class="mini-header"><div class="mini-avatar"><img alt="Sam" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/sam.png"/><span>🎮</span></div><div class="mini-name">🎮 Sam</div><div class="mini-score">41/100</div></div><div class="mini-subtitle">The Gamer • 1 season</div><div class="player-badges"><span class="badge badge-season">S3: #13</span></div></a>
-<a class="mini-card" data-href="player.html?player=b" data-name="b" data-score="40" href="player.html?player=b"><div class="mini-header"><div class="mini-avatar"><img alt="B" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/b.png"/><span>🔧</span></div><div class="mini-name">🔧 B</div><div class="mini-score">40/100</div></div><div class="mini-subtitle">The Silent Genius • 1 season</div><div class="player-badges"><span class="badge badge-season">S3: #14</span></div></a>
-<a class="mini-card" data-href="player.html?player=leonard" data-name="leonard" data-score="40" href="player.html?player=leonard"><div class="mini-header"><div class="mini-avatar"><img alt="Leonard" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/leonard.png"/><span>🧙</span></div><div class="mini-name">🧙 Leonard</div><div class="mini-score">40/100</div></div><div class="mini-subtitle">The LARPer • 1 season</div><div class="player-badges"><span class="badge badge-season">S5: #18</span></div></a>
-<a class="mini-card" data-href="player.html?player=staci" data-name="staci" data-score="38" href="player.html?player=staci"><div class="mini-header"><div class="mini-avatar"><img alt="Staci" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/staci.png"/><span>💬</span></div><div class="mini-name">💬 Staci</div><div class="mini-score">38/100</div></div><div class="mini-subtitle">The Liar • 1 season</div><div class="player-badges"><span class="badge badge-season">S3: #15</span></div></a>
-<a class="mini-card" data-href="player.html?player=crimson" data-name="crimson" data-score="36" href="player.html?player=crimson"><div class="mini-header"><div class="mini-avatar"><img alt="Crimson" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';" src="assets/avatars/crimson.png"/><span>🖤</span></div><div class="mini-name">🖤 Crimson</div><div class="mini-score">36/100</div></div><div class="mini-subtitle">The Goth • 1 season</div><div class="player-badges"><span class="badge badge-season">S3: #16</span></div></a>
-</div>
-</div>
+<footer class="siteFooter">
+  <div class="footerInner">
+    <div class="footerTitle">DC Franchise Database</div>
+    <div class="footerSub">Player rankings • Updated through Season 5</div>
+  </div>
+</footer>
 
 <script>
-(function(){
-  // Winner detection + crown corner + staggered fade-in.
-  const cards = Array.from(document.querySelectorAll('.player-card, a.mini-card'));
-
-  function isWinner(node){
-    const t = (node.textContent || '').toUpperCase();
-    return t.includes('WINNER') || t.includes('🏆') || t.includes('👑');
+(async function() {
+  try {
+    console.log('Loading rankings data...');
+    
+    const [rankingsResponse, playersResponse] = await Promise.all([
+      fetch('rankings_database.json'),
+      fetch('players_database.json')
+    ]);
+    
+    if (!rankingsResponse.ok) throw new Error('Failed to load rankings_database.json');
+    if (!playersResponse.ok) throw new Error('Failed to load players_database.json');
+    
+    const rankingsData = await rankingsResponse.json();
+    const playersData = await playersResponse.json();
+    
+    console.log('✅ Loaded', rankingsData.rankings.length, 'rankings');
+    console.log('✅ Loaded', playersData.players.length, 'players');
+    
+    const playersMap = {};
+    playersData.players.forEach(function(p) {
+      playersMap[p.id] = p;
+    });
+    
+    renderRankings(rankingsData, playersMap);
+    initRankControls();
+    
+  
+    initCardEffects();
+} catch (error) {
+    console.error('Error:', error);
+    document.getElementById('rankings-container').innerHTML = 
+      '<div class="hero">' +
+        '<h2>❌ Error Loading Rankings</h2>' +
+        '<p>' + error.message + '</p>' +
+        '<p>Make sure rankings_database.json and players_database.json are in the root folder.</p>' +
+      '</div>';
   }
+})();
 
-  cards.forEach((c,i)=>{
-    // Winner styling
-    if (isWinner(c)){
-      c.classList.add('winner-card');
-      if (!c.querySelector('.crown-corner')){
-        const crown = document.createElement('div');
-        crown.className = 'crown-corner';
-        crown.textContent = '👑';
-        c.appendChild(crown);
-      }
-    }
+function renderRankings(rankingsData, playersMap) {
+  const container = document.getElementById('rankings-container');
 
-    // Stagger
-    c.classList.add('stagger');
-    c.style.transitionDelay = (Math.min(i, 80) * 0.05) + 's';
+  const tierGroups = {};
+  rankingsData.rankings.forEach(function(ranking) {
+    if (!tierGroups[ranking.tier]) tierGroups[ranking.tier] = [];
+    tierGroups[ranking.tier].push(ranking);
   });
 
-  const io = new IntersectionObserver((entries)=>{
-    entries.forEach(e=>{
-      if(e.isIntersecting){
-        e.target.classList.add('in');
-        io.unobserve(e.target);
-      }
-    });
-  }, {threshold: 0.12});
+  let html = '';
+  const tierOrder = ['S+', 'S', 'A', 'B', 'C', 'D'];
 
-  cards.forEach(c=>io.observe(c));
-})();
-</script>
-<script>
-(function(){
+  tierOrder.forEach(function(tierKey) {
+    if (!tierGroups[tierKey]) return;
+
+    const tierInfo = rankingsData.tiers[tierKey];
+    const players = tierGroups[tierKey];
+
+    // IDs must match your controls/anchors: tier-splus, tier-s, tier-a, ...
+    const tierId = tierKey.toLowerCase().replace('+', 'plus');
+
+    html += '<div class="tier-section" id="tier-' + tierId + '" data-tier="' + tierKey + '">';
+    html +=   '<div class="tier-header">';
+    html +=     '<h2>🏅 ' + tierInfo.name + '</h2>';
+    html +=     '<span class="tier-desc">' + tierInfo.description + '</span>';
+    html +=   '</div>';
+
+    // ✅ Tier A uses the compact mini-grid layout (like your screenshot)
+    if (['A','B','C','D'].includes(tierKey)) {
+      html += '<div class="mini-grid">';
+      players.forEach(function(ranking) {
+        const player = playersMap[ranking.playerId];
+        if (!player) {
+          console.warn('Player not found:', ranking.playerId);
+          return;
+        }
+        html += renderMiniCard(ranking, player);
+      });
+      html += '</div>';
+    } else {
+      // Default: full player cards
+      players.forEach(function(ranking) {
+        const player = playersMap[ranking.playerId];
+        if (!player) {
+          console.warn('Player not found:', ranking.playerId);
+          return;
+        }
+        html += renderPlayerCard(ranking, player);
+      });
+    }
+
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function renderPlayerCard(ranking, player) {
+  const winRate = ranking.winRate || Math.round((player.wins / player.totalSeasons) * 100);
+  const avgPlacement = ranking.avgPlacement || calculateAvgPlacement(player);
+  
+  let html = '';
+  html += '<div class="player-card" data-name="' + player.name + '" data-score="' + ranking.score + '" data-tier="' + ranking.tier + '">';
+  html +=   '<div class="player-header">';
+  
+  html +=     '<div class="player-avatar">';
+  html +=       '<img src="assets/avatars/' + player.id + '.png" alt="' + player.name + '" ';
+  html +=            'onload="this.style.display=\'block\';" ';
+  html +=            'onerror="this.style.display=\'none\';">';
+  html +=       '<span class="fallback">' + (ranking.emoji || '👤') + '</span>';
+  html +=     '</div>';
+  
+  html +=     '<div class="player-title">';
+  html +=       '<div class="player-name-row">';
+  html +=         '<a class="player-name" href="player.html?player=' + player.id + '">';
+  html +=           (ranking.emoji || '') + ' ' + player.name;
+  html +=         '</a>';
+  html +=       '</div>';
+  html +=       '<div class="player-subtitle">' + ranking.title + ' • ' + player.totalSeasons + ' season' + (player.totalSeasons > 1 ? 's' : '') + ' • ' + player.wins + ' win' + (player.wins !== 1 ? 's' : '') + '</div>';
+    html +=       '<div class="player-badges">';
+
+  if (player.wins > 0) {
+    const winSeason = player.seasonDetails.find(function(s) { return s.placement === 1; });
+    if (winSeason) {
+      html += '<span class="badge badge-winner">🏆 S' + winSeason.season + ' Winner</span>';
+    }
+  }
+  if (player.totalSeasons > 1) {
+    html += '<span class="badge badge-season">' + player.totalSeasons + ' Season' + (player.totalSeasons > 1 ? 's' : '') + '</span>';
+  }
+  
+      // Show all badges from player.badges array
+  // Show badges, but only 1 WINNER badge per season (S1, S2, S3...)
+if (player.badges && player.badges.length > 0) {
+  const seenWinnerSeasons = new Set(); // e.g. "S1", "S4"
+
+  player.badges.forEach(function(badge) {
+    const b = String(badge || "").trim();
+
+    // Skip tier badges if you want (your existing logic)
+    if (['A','B','C','D','S','S+'].includes(ranking.tier)) {
+      if (b.toLowerCase().includes('tier')) return;
+    }
+
+    const lower = b.toLowerCase();
+    const isWinner = lower.includes('winner');
+
+    if (isWinner) {
+      // Extract season token like "S1", "S2", etc (case-insensitive)
+      const m = b.match(/\bS(\d+)\b/i);
+      const seasonKey = m ? ('S' + m[1]) : 'WINNER_UNKNOWN';
+
+      // If we've already added a winner badge for this season, skip it
+      if (seenWinnerSeasons.has(seasonKey)) return;
+      seenWinnerSeasons.add(seasonKey);
+
+      html += '<span class="badge badge-winner">🏆 ' + b + '</span>';
+    } else {
+      html += '<span class="badge badge-season">' + b + '</span>';
+    }
+  });
+}
+
+
+  html +=       '</div>';
+  html +=     '</div>';
+  
+  html +=     '<div>';
+  html +=       '<div class="score-display">' + ranking.score + '/100</div>';
+  html +=       '<div class="score-bar-wrapper">';
+  html +=         '<div class="score-bar" style="width: ' + ranking.score + '%;"></div>';
+  html +=       '</div>';
+  html +=     '</div>';
+  
+  html +=   '</div>';
+  
+  html +=   '<div class="stat-grid">';
+  html +=     '<div class="stat-box">';
+  html +=       '<div class="stat-label"><span class="stat-icon">📍</span> AVG. PLACEMENT</div>';
+  html +=       '<div class="stat-value">' + avgPlacement + (avgPlacement < 2.5 ? ' 🔥' : '') + '</div>';
+  html +=     '</div>';
+  html +=     '<div class="stat-box">';
+  html +=       '<div class="stat-label"><span class="stat-icon">🏆</span> WIN RATE</div>';
+  html +=       '<div class="stat-value">' + winRate + '%</div>';
+  html +=     '</div>';
+  html +=     '<div class="stat-box">';
+  html +=       '<div class="stat-label"><span class="stat-icon">☠️</span> VOTES AGAINST</div>';
+  html +=       '<div class="stat-value">' + player.totalVotesAgainst + ' total' + (player.totalVotesAgainst < 5 ? ' 🔒' : '') + '</div>';
+  html +=     '</div>';
+  html +=     '<div class="stat-box">';
+  html +=       '<div class="stat-label"><span class="stat-icon">💪</span> CHALLENGE WINS</div>';
+  html +=       '<div class="stat-value">' + player.totalChallengeWins + ' total</div>';
+  html +=     '</div>';
+  html +=     '<div class="stat-box">';
+  html +=       '<div class="stat-label"><span class="stat-icon">🗳️</span> JURY VOTES</div>';
+  html +=       '<div class="stat-value">' + (player.totalJuryVotes || 0) + ' total</div>';
+  html +=     '</div>';
+  html +=     '<div class="stat-box">';
+  html +=       '<div class="stat-label"><span class="stat-icon">🧠</span> TIER</div>';
+  html +=       '<div class="stat-value">Tier ' + ranking.tier + '</div>';
+  html +=     '</div>';
+  html +=   '</div>';
+  
+  html +=   '<div class="why-section">';
+  html +=     '<h4>Why ' + ranking.tier + ':</h4>';
+  html +=     '<p>' + ranking.reasoning + '</p>';
+  
+
+  html +=   '</div>';
+  
+  html += '</div>';
+  
+  return html;
+}
+
+
+function renderMiniCard(ranking, player) {
+  // Mini grid cards (Tier A/B/C/D)
+  const seasonsLabel = player.totalSeasons + ' season' + (player.totalSeasons > 1 ? 's' : '');
+  const title = ranking.title || '';
+  const avgPlacement = calculateAvgPlacement(player);
+
+  // Best finish badge (e.g., S4: #4)
+  let best = null;
+  if (Array.isArray(player.seasonDetails)) {
+    player.seasonDetails.forEach(function(s) {
+      if (!s || typeof s.placement !== 'number') return;
+      if (!best || s.placement < best.placement) best = s;
+    });
+  }
+  const bestLabel = best
+    ? ((best.season ? 'S'+best.season + ': ' : '') + '#' + best.placement)
+    : '—';
+
+  const href = 'player.html?player=' + player.id;
+
+  let html = '';
+  html += '<a class="mini-card" data-href="' + href + '" data-name="' + (player.name || '').toLowerCase() + '" data-score="' + ranking.score + '" href="' + href + '">';
+  html +=   '<div class="mini-header">';
+  html +=     '<div class="mini-avatar">';
+  html +=       '<img src="assets/avatars/' + player.id + '.png" alt="' + player.name + '" ' +
+                'onload="this.style.display=\'block\'; this.nextElementSibling.style.display=\'none\';" ' +
+                'onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'block\';">';
+  html +=       '<span class="fallback">' + (ranking.emoji || '👤') + '</span>';
+  html +=     '</div>';
+  html +=     '<div class="mini-name">' + (ranking.emoji || '') + ' ' + player.name + '</div>';
+  html +=     '<div class="mini-score">' + ranking.score + '/100</div>';
+  html +=   '</div>';
+
+  html +=   '<div class="mini-subtitle">' + title + (title ? ' • ' : '') + seasonsLabel + '</div>';
+
+  // ✅ mini stat pills (prevents layout collapse — all tags closed properly)
+  html +=   '<div class="stat-mini-grid">';
+  html +=     '<div class="stat-mini-box">';
+  html +=       '<div class="stat-mini-label"><span class="stat-mini-icon">📍</span> AVG. PLACEMENT</div>';
+  html +=       '<div class="stat-mini-value">' + avgPlacement + '</div>';
+  html +=     '</div>';
+  html +=     '<div class="stat-mini-box">';
+  html +=       '<div class="stat-mini-label"><span class="stat-mini-icon">🏁</span> BEST FINISH</div>';
+  html +=       '<div class="stat-mini-value">' + bestLabel + '</div>';
+  html +=     '</div>';
+  html +=   '</div>';
+
+  // Badges (compact)
+  html +=   '<div class="player-badges">';
+
+  // Seasons badge (once)
+  if (player.totalSeasons) {
+    html += '<span class="badge badge-season">' + player.totalSeasons + ' Season' + (player.totalSeasons > 1 ? 's' : '') + '</span>';
+  }
+
+  // Best finish badge (if we have it)
+  if (best) {
+    html += '<span class="badge badge-season">' + bestLabel + '</span>';
+  }
+
+  // Show a few curated badges from player.badges (excluding tier badges)
+  let shownBadges = 0;
+  if (player.badges && player.badges.length > 0) {
+    player.badges.forEach(function(badge) {
+      if (!badge || shownBadges >= 2) return;
+      if (String(badge).toLowerCase().includes('tier')) return;
+
+      // Winner badge gets special styling
+      if (String(badge).toLowerCase().includes('winner')) {
+        html += '<span class="badge badge-winner">🏆 ' + badge + '</span>';
+      } else {
+        html += '<span class="badge badge-season">' + badge + '</span>';
+      }
+      shownBadges++;
+    });
+  }
+
+  html +=   '</div>';
+  html += '</a>';
+
+  return html;
+}
+
+
+function calculateAvgPlacement(player) {
+  let total = 0;
+  let count = 0;
+  if (!player || !Array.isArray(player.seasonDetails)) return '0.0';
+  player.seasonDetails.forEach(function(detail) {
+    total += detail.placement;
+    count++;
+  });
+  return count > 0 ? (total / count).toFixed(1) : 0;
+}
+function initRankControls(){
   const searchInput = document.getElementById('searchInput');
   const tierFilter  = document.getElementById('tierFilter');
   const sortBy      = document.getElementById('sortBy');
@@ -1503,11 +1104,10 @@
     return s ? parseInt(s, 10) : NaN;
   }
   function getName(node){
-    const n = (node.dataset.name || node.querySelector('a.player-name')?.dataset?.name || node.querySelector('a.player-name')?.textContent || '');
+    const n = (node.dataset.name || node.querySelector('a.player-name')?.textContent || '');
     return (n || '').toLowerCase().replace(/^([^\w]+)\s*/,'').trim();
   }
 
-  // Save original position for restoration
   const original = new Map();
   allCards.forEach((node, idx) => {
     node.dataset.order = String(idx);
@@ -1516,7 +1116,6 @@
     const sec = node.closest('.tier-section');
     if (sec?.id) node.dataset.tier = sec.id;
 
-    // Ensure score on big cards
     if (node.classList.contains('player-card') && !node.dataset.score) {
       const s = node.querySelector('.score-display')?.textContent?.match(/(\d+)\s*\/\s*100/)?.[1];
       if (s) node.dataset.score = s;
@@ -1538,15 +1137,10 @@
   }
 
   function restoreLayout(){
-    // Put everything back where it came from
     allCards.forEach(node => {
       const pos = original.get(node);
       if (!pos || !pos.parent) return;
-      try{
-        pos.parent.insertBefore(node, pos.next);
-      }catch(e){
-        // ignore
-      }
+      try{ pos.parent.insertBefore(node, pos.next); }catch(e){}
     });
     globalResults.style.display = 'none';
     tierSections.forEach(sec => sec.style.display = '');
@@ -1555,7 +1149,6 @@
   function applyFilters(){
     const q = (searchInput?.value || '').toLowerCase().trim();
     const tier = tierFilter?.value || 'all';
-
     let shown = 0;
 
     allCards.forEach(node => {
@@ -1567,7 +1160,6 @@
       if (show) shown++;
     });
 
-    // Hide empty tiers (only when not in global scope)
     if (sortScope?.value !== 'global'){
       tierSections.forEach(sec => {
         const anyVisible = Array.from(sec.querySelectorAll('.player-card, a.mini-card'))
@@ -1583,37 +1175,28 @@
 
   function sortWithinTiers(mode){
     tierSections.forEach(sec => {
-      // Sort big cards (direct children)
       const cards = Array.from(sec.querySelectorAll(':scope > .player-card'))
         .filter(n => n.style.display !== 'none');
-      const sortedCards = cards.slice().sort((a,b) => compare(a,b,mode));
-      sortedCards.forEach(n => sec.appendChild(n));
+      cards.sort((a,b) => compare(a,b,mode)).forEach(n => sec.appendChild(n));
 
-      // Sort minis within each mini-grid
       const grids = Array.from(sec.querySelectorAll('.mini-grid'));
       grids.forEach(grid => {
         const minis = Array.from(grid.querySelectorAll(':scope > a.mini-card'))
           .filter(n => n.style.display !== 'none');
-        const sortedMinis = minis.slice().sort((a,b) => compare(a,b,mode));
-        sortedMinis.forEach(n => grid.appendChild(n));
+        minis.sort((a,b) => compare(a,b,mode)).forEach(n => grid.appendChild(n));
       });
     });
   }
 
   function sortGlobal(mode){
-    // Restore first to avoid duplicating / losing structure
     restoreLayout();
-
-    // Collect visible cards only, sort, then move into globalList
     const visible = allCards.filter(n => n.style.display !== 'none');
-    const sorted = visible.slice().sort((a,b) => compare(a,b,mode));
+    visible.sort((a,b) => compare(a,b,mode));
 
-    // Hide tier sections and show global container
     tierSections.forEach(sec => sec.style.display = 'none');
     globalResults.style.display = '';
     globalList.innerHTML = '';
-
-    sorted.forEach(n => globalList.appendChild(n));
+    visible.forEach(n => globalList.appendChild(n));
   }
 
   function applySort(){
@@ -1623,7 +1206,6 @@
     if (scope === 'global' && mode !== 'default'){
       sortGlobal(mode);
     } else {
-      // back to normal
       restoreLayout();
       sortWithinTiers(mode);
     }
@@ -1640,65 +1222,64 @@
   sortScope?.addEventListener('change', () => { restoreLayout(); applyFilters(); applySort(); });
 
   applyFilters();
-})();
-</script>
-<script>
-(() => {
-  const cards = document.querySelectorAll('.player-card');
-  cards.forEach(card => {
-    const primaryLink = card.querySelector('a.player-name[href]');
-    if (!primaryLink) return;
-    const href = primaryLink.getAttribute('href');
+}
 
-    // Accessibility
-    card.setAttribute('role', 'link');
-    card.setAttribute('tabindex', '0');
 
-    card.addEventListener('click', (e) => {
-      // If user clicked a real link inside, let it work normally
-      if (e.target.closest('a[href]')) return;
-      window.location.href = href;
-    });
 
-    card.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        window.location.href = href;
+function initCardEffects(){
+  // Winner detection + crown corner + staggered fade-in + spotlight follow
+  const cards = Array.from(document.querySelectorAll('.player-card, a.mini-card'));
+  if (!cards.length) return;
+
+  function isWinner(node){
+    const t = (node.textContent || '').toUpperCase();
+    return t.includes('WINNER') || t.includes('🏆') || t.includes('👑');
+  }
+
+  cards.forEach((c,i)=>{
+    // Winner styling
+    if (isWinner(c)){
+      c.classList.add('winner-card');
+      if (!c.querySelector('.crown-corner')){
+        const crown = document.createElement('div');
+        crown.className = 'crown-corner';
+        crown.textContent = '👑';
+        c.appendChild(crown);
+      }
+    }
+
+    // Stagger setup (actual fade-in happens via IntersectionObserver below)
+    c.classList.add('stagger');
+    c.style.transitionDelay = (Math.min(i, 80) * 0.05) + 's';
+
+    // Spotlight follow (for your :before radial gradient using --mx/--my)
+    let raf = null;
+    c.addEventListener('pointermove', (ev) => {
+      if (raf) cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const r = c.getBoundingClientRect();
+        const x = ((ev.clientX - r.left) / r.width) * 100;
+        const y = ((ev.clientY - r.top) / r.height) * 100;
+        c.style.setProperty('--mx', x + '%');
+        c.style.setProperty('--my', y + '%');
+      });
+    }, { passive: true });
+  });
+
+  // Fade-in on scroll
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        e.target.classList.add('in');
+        io.unobserve(e.target);
       }
     });
-  });
-})();
-</script>
-<!-- SITE FOOTER START -->
-<footer class="siteFooter">
-<div class="footerInner">
-<div class="footerTitle">DC Franchise Database</div>
-<div class="footerSub">Static archive • 5 seasons • 58 players • Icons: name.png</div>
-</div>
-</footer>
-<!-- SITE FOOTER END -->
-<script>
-(function(){
-  const root = document.documentElement.getAttribute('data-root') || '.';
-  function join(root, path){
-    if(!path || path.startsWith('#') || path.startsWith('http')) return path;
-    if(root === '.' || root === '') return path;
-    return root.replace(/\/$/, '') + '/' + path.replace(/^\//,'');
-  }
-  document.querySelectorAll('a[data-href]').forEach(a => {
-    a.setAttribute('href', join(root, a.getAttribute('data-href')));
-  });
+  }, { threshold: 0.12 });
 
-  // Make whole card clickable
-  document.querySelectorAll('.player-card').forEach(card => {
-    card.addEventListener('click', (e) => {
-      const link = card.querySelector('a.player-name');
-      if(!link) return;
-      // don't hijack clicks on actual links/buttons inside
-      if(e.target && (e.target.closest('a') || e.target.closest('button'))) return;
-      window.location.href = link.getAttribute('href');
-    });
-  });
-})();
-</script></body>
+  cards.forEach(c=>io.observe(c));
+}
+
+</script>
+
+</body>
 </html>

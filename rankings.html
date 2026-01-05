@@ -853,11 +853,7 @@ function renderPlayerCard(ranking, player) {
   if (player.badges && player.badges.length > 0) {
     player.badges.forEach(function(badge) {
       // For lower tiers (A, B, C, D), filter out tier badges
-      if (['A', 'B', 'C', 'D'].includes(ranking.tier)) {
-        if (badge.toLowerCase().includes('tier')) {
-          return; // Skip tier badges for lower tiers
-        }
-      }
+      
 
       let badgeClass = 'badge badge badge-season';
 

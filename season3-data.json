@@ -4,7 +4,7 @@
   "subtitle": "The season where loyalty was tested—and broken",
   "castSize": 16,
   "episodeCount": 13,
-  "jurySize": 7,
+  "jurySize": 8,
   "winner": {
     "name": "Emma",
     "playerSlug": "emma",
@@ -31,8 +31,7 @@
       "name": "Cameron",
       "playerSlug": "cameron",
       "placement": 3,
-      "votes": 1,
-      "note": "Cast tiebreaker vote at FTC"
+      "votes": 1
     }
   ],
   "placements": [
@@ -41,112 +40,112 @@
       "name": "Emma",
       "playerSlug": "emma",
       "phase": "Winner",
-      "notes": "4 votes to win (3–3–1 tie + tiebreaker) • 4 challenge wins • 1 immunity wins • 0 votes against"
+      "notes": "Won 4-3-1 tiebreaker • 0 votes until Final 4 • Iron Person (all 13 tribals)"
     },
     {
       "placement": 2,
       "name": "Scott",
       "playerSlug": "scott",
       "phase": "Finalist",
-      "notes": "3 votes to win • 6 challenge wins • 3 immunity wins • 1 votes against"
+      "notes": "6 challenge wins (most in season) • Social king • Lost to Emma's cleaner hands"
     },
     {
       "placement": 3,
       "name": "Cameron",
       "playerSlug": "cameron",
       "phase": "Finalist",
-      "notes": "1 vote to win; cast tiebreaker • 3 challenge wins • 1 immunity wins • Found idol Ep4; played Ep12 • 4 votes against"
+      "notes": "Best underdog • Idol play Ep 12 • Voted out Anne Maria (unbreakable partner)"
     },
     {
       "placement": 4,
       "name": "Zoey",
       "playerSlug": "zoey",
       "phase": "Juror",
-      "notes": "3–1 vote • 4 challenge wins • 2 immunity wins • 3 votes against"
+      "notes": "Betrayed by Scott (unbreakable bond) • Still voted for him at FTC"
     },
     {
       "placement": 5,
       "name": "Anne Maria",
       "playerSlug": "anne-maria",
       "phase": "Juror",
-      "notes": "4–1* vote (idol cancelled 1) • 1 challenge wins • 15 votes against"
+      "notes": "15 votes against (most in S3) • Betrayed by Cameron (unbreakable bond)"
     },
     {
       "placement": 6,
       "name": "Mike",
       "playerSlug": "mike",
       "phase": "Juror",
-      "notes": "4–2 vote • 1 challenge wins • 4 votes against"
+      "notes": "Feud with Anne Maria (mild → extreme)"
     },
     {
       "placement": 7,
       "name": "Jo",
       "playerSlug": "jo",
       "phase": "Juror",
-      "notes": "4–3 vote • 8 votes against"
+      "notes": "Biggest villain • 4 extreme hatreds (franchise record) • Multiple meltdowns Ep 6-7"
     },
     {
       "placement": 8,
-      "name": "Dawn",
-      "playerSlug": "dawn",
+      "name": "Lightning",
+      "playerSlug": "lightning",
       "phase": "Juror",
-      "notes": "5–3 vote • 10 votes against"
+      "notes": "Most chaotic • Found idol, wasted on Emma • 2 tie votes"
     },
     {
       "placement": 9,
       "name": "Brick",
       "playerSlug": "brick",
-      "phase": "Juror",
-      "notes": "5–2–2 vote • 1 challenge wins • 1 immunity wins • 5 votes against"
+      "phase": "Pre-Merge",
+      "notes": ""
     },
     {
       "placement": 10,
-      "name": "Dwayne",
-      "playerSlug": "dwayne",
-      "phase": "Juror",
-      "notes": "5–3–2 vote (1st juror) • 6 votes against"
+      "name": "Staci",
+      "playerSlug": "staci",
+      "phase": "Pre-Merge",
+      "notes": ""
     },
     {
       "placement": 11,
-      "name": "Lightning",
-      "playerSlug": "lightning",
+      "name": "B",
+      "playerSlug": "b",
       "phase": "Pre-Merge",
-      "notes": "2–2 tie → 2–2 revote • Found idol Ep4; wasted on Emma • 11 votes against"
+      "notes": ""
     },
     {
       "placement": 12,
       "name": "Dakota",
       "playerSlug": "dakota",
       "phase": "Pre-Merge",
-      "notes": "3–1–1 vote (Fan Favorite) • 10 votes against"
+      "notes": "Fan Favorite • Pre-merge exit Ep 5 • Won hearts despite early elimination"
     },
     {
       "placement": 13,
-      "name": "Sam",
-      "playerSlug": "sam",
+      "name": "Dawn",
+      "playerSlug": "dawn",
       "phase": "Pre-Merge",
-      "notes": "3–3 tie → rocks • 0 votes against"
+      "notes": ""
     },
     {
       "placement": 14,
-      "name": "B",
-      "playerSlug": "b",
+      "name": "Sam",
+      "playerSlug": "sam",
       "phase": "Pre-Merge",
-      "notes": "6–1 vote • 6 votes against"
+      "notes": "Most tragic exit • Never received a vote • Rock draw Ep 4 • Most unlucky"
     },
     {
       "placement": 15,
-      "name": "Staci",
-      "playerSlug": "staci",
+      "name": "Scott",
+      "playerSlug": "scott-duplicate",
       "phase": "Pre-Merge",
-      "notes": "6–2 vote • 6 votes against"
+      "notes": ""
     },
     {
       "placement": 16,
-      "name": "Crimson",
-      "playerSlug": "crimson",
-      "phase": "Pre-Merge",
-      "notes": "7–1 vote • 7 votes against"
+      "name": "Ella",
+      "playerSlug": "ella",
+      "phase": "Early Game",
+      "notes": ""
     }
   ],
   "awards": {
@@ -346,12 +345,12 @@
   "legacy": {
     "summary": "Introduced Gen 2 with 16 new players. Emma's perfect game (0 votes until F4) won in a tiebreaker. Scott's 6 challenge wins couldn't overcome Emma's loyalty strategy. The season where loyalty was tested—and broken.",
     "memorableMoments": [
-      "Final Tribal 3–3–1 tie; Cameron breaks tie for Emma",
-      "Scott posts season-high 6 challenge wins",
-      "Dakota wins Fan Favorite despite 12th place",
-      "Sam eliminated by rocks after 3–3 tie",
-      "Lightning wastes an idol play early",
-      "Anne Maria absorbs 15 votes (most in season)"
+      "Most unpredictable season (2 tie votes + 1 rock draw)",
+      "Two unbreakable relationships broken in final episodes",
+      "Challenge beast (Scott) lost to social player (Emma)",
+      "Fan Favorite won by pre-merge player (Dakota)",
+      "Zero votes against winner (Emma)",
+      "Most hated player ever (Jo - 4 extreme hatreds)"
     ]
   }
 }

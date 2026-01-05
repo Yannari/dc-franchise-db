@@ -8,7 +8,7 @@
   "seasons": [
     {
       "seasonNumber": 1,
-      "title": "Total Drama: Cullhouse",
+      "title": "Total Drama",
       "subtitle": "Where it all began",
       "castSize": 24,
       "episodeCount": 24,
@@ -30,7 +30,7 @@
         "mostChallengeWins": {
           "name": "Bridgette",
           "playerSlug": "bridgette",
-          "detail": "5 total"
+          "detail": "5 total (4 immunities)"
         }
       },
       "theme": "Classic island survival",
@@ -47,7 +47,7 @@
       "winner": {
         "name": "Duncan",
         "playerSlug": "duncan",
-        "vote": "5-1-1",
+        "vote": "5-3-1",
         "runnerUp": "Alejandro & Lindsay"
       },
       "awards": {
@@ -104,7 +104,7 @@
     },
     {
       "seasonNumber": 4,
-      "title": "Total Drama Edge of Extinction",
+      "title": "Total Drama All-Stars",
       "subtitle": "All-Stars collide",
       "castSize": 18,
       "episodeCount": 14,
@@ -126,7 +126,7 @@
         "mostChallengeWins": {
           "name": "Gwen",
           "playerSlug": "gwen",
-          "detail": "Tie with Zoey — 4 total each"
+          "detail": "4 total (tied with Zoey)"
         }
       },
       "theme": "All-Stars season",
@@ -136,7 +136,7 @@
     },
     {
       "seasonNumber": 5,
-      "title": "Total Drama: Rescue Island",
+      "title": "Total Drama Rescue Island",
       "subtitle": "3 tribes, swaps, and ultimate chaos",
       "castSize": 18,
       "episodeCount": 14,
@@ -158,7 +158,7 @@
         "mostChallengeWins": {
           "name": "Sky",
           "playerSlug": "sky",
-          "detail": "4 total (3 immunity)"
+          "detail": "4 total (3 immunities)"
         }
       },
       "theme": "Rescue Island with 3 tribes",

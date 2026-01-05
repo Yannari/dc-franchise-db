@@ -166,89 +166,27 @@
     "winner": {
       "name": "Alejandro",
       "playerSlug": "alejandro",
-      "description": "Strategic mastermind finally wins on his 3rd finals appearance; survived 9 votes against and edged out Zoey 7\u20136\u20131."
+      "description": "3rd finals appearance, finally won his crown, strategic dominance, defeated Zoey's unprecedented 3 unbreakable bonds"
     },
     "fanFavorite": {
-      "name": "Jo",
-      "playerSlug": "jo",
-      "description": "Most entertaining chaos agent; stirred rivalries and survived tie chaos to reach the jury."
+      "name": "Alejandro",
+      "playerSlug": "alejandro",
+      "description": "Strategic brilliance, 4 challenge wins, finally broke the curse"
     },
     "bestStrategic": {
       "name": "Alejandro",
       "playerSlug": "alejandro",
-      "description": "Controlled the endgame and proved strategy can beat even dominant social bonds."
+      "description": "Strategic mastery, controlled game, proved strategy defeats pure social bonds in modern gameplay"
     },
     "bestPhysical": {
-      "name": "Gwen",
-      "playerSlug": "gwen",
-      "description": "Most dominant challenge run: four straight individual immunity wins (E11\u201314).",
-      "wins": 4
-    },
-    "bestSocial": {
-      "name": "Zoey",
-      "playerSlug": "zoey",
-      "description": "Built unprecedented social capital with multiple unbreakable bonds and reached the finale with virtually no votes against."
-    },
-    "mostClutch": {
-      "name": "Zoey",
-      "playerSlug": "zoey",
-      "description": "Made timely moves under pressure\u2014idol save and late immunity wins to reach the closest finale ever."
-    },
-    "mostLoyal": {
-      "name": "Zoey",
-      "playerSlug": "zoey",
-      "description": "Stayed fiercely loyal to her core relationships (Mike and Geoff) and leveraged bonds to the end."
-    },
-    "bestUnderdog": {
-      "name": "Geoff",
-      "playerSlug": "geoff",
-      "description": "Voted out twice yet kept fighting back\u2014returned from EoE and still finished 6th.",
-      "note": "Returnee run"
-    },
-    "biggestVillain": {
-      "name": "Sierra",
-      "playerSlug": "sierra",
-      "description": "Returned from Edge of Extinction and immediately ignited conflict; perfect-idol chaos and relentless targeting."
-    },
-    "mostChaotic": {
-      "name": "Jo",
-      "playerSlug": "jo",
-      "description": "Constant friction and big personality created the season\u2019s most memorable chaos."
-    },
-    "quietestThreat": {
-      "name": "Scott",
-      "playerSlug": "scott",
-      "description": "Played a patient, low-key game highlighted by a franchise-record idol hold and perfect timing."
-    },
-    "seasonMVP": {
       "name": "Alejandro",
       "playerSlug": "alejandro",
-      "description": "Overall most impactful player: strategic control + clutch wins in the closest jury vote ever."
+      "wins": 4,
+      "description": "4 total wins, strategic and physical dominance"
     },
-    "biggestMeltdown": {
-      "name": "Sierra",
-      "desc": "Major meltdown early-game after challenge frustration."
-    },
-    "mostTragic": {
-      "name": "Emma",
-      "desc": "Former winner blindsided and sent out despite strong positioning."
-    },
-    "mostUnlucky": {
-      "name": "Dakota",
-      "desc": "Eliminated early and later quit the Edge of Extinction (7-2)."
-    },
-    "messiestFeud": {
-      "players": [
-        "Mike",
-        "Jo"
-      ],
-      "desc": "Constant clash fueled by extreme hatred throughout the season."
-    },
-    "biggestBetrayal": {
-      "betrayer": "Scott",
-      "betrayed": "Emma",
-      "desc": "Flipped on his closest ally and helped engineer the blindside."
-    }
+    "biggestMeltdown": null,
+    "mostTragic": null,
+    "mostUnlucky": null
   },
   "statistics": {
     "challengeWins": {

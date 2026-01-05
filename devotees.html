@@ -467,7 +467,7 @@
       <!-- Player cards will be inserted here by JavaScript -->
     </div>
 
-    <div class="footer">68 total players across 6 seasons • 68 total appearances</div>
+    <div class="footer">40 total players across 4 seasons • 68 total appearances</div>
   </div>
 </main>
 
@@ -475,7 +475,7 @@
 <footer class="siteFooter">
   <div class="footerInner">
     <div class="footerTitle">DC Franchise Database</div>
-    <div class="footerSub">Static archive • 6 seasons • 68 players • Icons: name.png</div>
+    <div class="footerSub">Static archive • 5 seasons • 58 players • Icons: name.png</div>
   </div>
 </footer>
 <!-- SITE FOOTER END -->
@@ -520,31 +520,39 @@ const emojiMap = {
 // Replace the fetch() section in devotees.html (around line 509-526) with this:
 // ========================================
 
-// Load player data from localStorage first, fallback to JSON
+// Load player data from JSON file first (always fresh), then cache
 function loadPlayerData() {
-  // Try localStorage first (synced from current-season.html)
-  try {
-    const stored = localStorage.getItem('players_database');
-    if (stored) {
-      const data = JSON.parse(stored);
-      console.log('✅ Loaded player data from localStorage');
-      return Promise.resolve(data);
-    }
-  } catch (e) {
-    console.warn('Could not load from localStorage:', e);
-  }
-  
-  // Fallback to JSON file
-  console.log('📁 Loading from players_database.json...');
+  // Always fetch fresh data from JSON file
+  console.log('📁 Loading fresh data from players_database.json...');
   return fetch('players_database.json')
     .then(response => response.json())
+    .then(data => {
+      // Cache in localStorage for other pages
+      try {
+        localStorage.setItem('players_database', JSON.stringify(data));
+        console.log('✅ Cached fresh data to localStorage');
+      } catch (e) {
+        console.warn('Could not cache to localStorage:', e);
+      }
+      return data;
+    })
     .catch(error => {
-      console.error('Error loading player data:', error);
+      console.error('Error loading player data from JSON:', error);
+      
+      // Fallback to localStorage only if JSON fails
+      try {
+        const stored = localStorage.getItem('players_database');
+        if (stored) {
+          console.log('⚠️ Using cached data from localStorage (JSON failed)');
+          return JSON.parse(stored);
+        }
+      } catch (e) {
+        console.warn('Could not load from localStorage:', e);
+      }
+      
       throw error;
     });
 }
-
-loadPlayerData()
   .then(data => {
     allPlayers = data.players.map(player => {
       const emoji = emojiMap[player.name.toLowerCase()] || '👤';

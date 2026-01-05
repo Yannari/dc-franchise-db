@@ -993,7 +993,7 @@ function renderMiniCard(ranking, player) {
     });
   }
   const bestLabel = best
-    ? ((best.season ? best.season + ': ' : '') + '#' + best.placement)
+    ? ((best.season ? 'S'+best.season + ': ' : '') + '#' + best.placement)
     : '—';
 
   const href = 'player.html?player=' + player.id;

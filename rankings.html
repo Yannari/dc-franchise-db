@@ -913,7 +913,20 @@ function renderPlayerCard(ranking, player) {
 
   const winnerKeys = getWinnerKeys(player); // ["S1","S3"] etc.
   const isWinner = winnerKeys.length > 0;
+  
+  // Best finish badge (e.g., S4: #4)
+  let best = null;
+  if (Array.isArray(player.seasonDetails)) {
+    player.seasonDetails.forEach(function(s) {
+      if (!s || typeof s.placement !== 'number') return;
+      if (!best || s.placement < best.placement) best = s;
+    });
+  }
+  const bestLabel = best
+    ? ((best.season ? 'S'+best.season + ': ' : '') + '#' + best.placement)
+    : '—';
 
+    
   let html = '';
   html += '<div class="player-card" data-winner="' + (isWinner ? 'true' : 'false') + '" data-name="' + player.name + '" data-score="' + ranking.score + '" data-tier="' + ranking.tier + '">';
   html +=   '<div class="player-header">';

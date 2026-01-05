@@ -1316,6 +1316,29 @@ function initCardEffects(){
         c.appendChild(crown);
       }
     }
+        // Make full-size cards clickable (mini-cards are already <a>)
+    if (c.classList.contains('player-card')) {
+      const go = () => {
+        const url = c.dataset.href;
+        if (url) window.location.href = url;
+      };
+
+      c.addEventListener('click', (e) => {
+        // Don’t hijack clicks on real interactive elements
+        if (e.target.closest('a, button, input, select, textarea, label')) return;
+        go();
+      });
+
+      c.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          // Don’t hijack if focused inside an inner link/control
+          if (e.target.closest('a, button, input, select, textarea')) return;
+          e.preventDefault();
+          go();
+        }
+      });
+    }
+
 
     // Stagger setup (actual fade-in happens via IntersectionObserver below)
     c.classList.add('stagger');

@@ -750,7 +750,7 @@
     });
     
     renderRankings(rankingsData, playersMap);
-    applyFilters();
+    window.applyFilters = applyFilters;;
     
   } catch (error) {
     console.error('Error:', error);

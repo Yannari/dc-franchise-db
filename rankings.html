@@ -115,6 +115,20 @@
       border-radius: 8px;
       padding: 12px 16px;
     }
+
+    .stat-mini-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    
+    .stat-mini-box {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 6px 8px;
+    }
     
     .stat-icon { opacity: 0.7; margin-right: 4px; }
     .stat-label { 
@@ -969,8 +983,8 @@ function renderMiniCard(ranking, player) {
   html +=   '</div>';
 
   html +=   '<div class="mini-subtitle">' + title + (title ? ' • ' : '') + seasonsLabel + '</div>';
-  html +=   '<div class="stat-grid">';
-  html +=     '<div class="stat-box">';
+  html +=   '<div class="stat-mini-grid">';
+  html +=     '<div class="stat-mini-box">';
   html +=       '<div class="stat-mini-label"><span class="stat-mini-icon">📍</span> AVG. PLACEMENT</div>';
   html +=       '<div class="stat-mini-value">' + avgPlacement + (avgPlacement < 2.5 ? ' 🔥' : '') + '</div>';
   html +=     '</div>';

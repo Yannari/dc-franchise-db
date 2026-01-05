@@ -954,6 +954,7 @@ function renderMiniCard(ranking, player) {
   html +=   '</div>';
 
   html +=   '<div class="mini-subtitle">' + title + (title ? ' • ' : '') + seasonsLabel + '</div>';
+  html +=       '<div class="stat-value">' + avgPlacement + (avgPlacement < 2.5 ? ' 🔥' : '') + '</div>';
     html +=   '<div class="player-badges">';
 
   // Show badges from player.badges array (excluding tier badges)

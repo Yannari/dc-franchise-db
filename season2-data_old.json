@@ -155,11 +155,6 @@
       "playerSlug": "lindsay",
       "description": "Strong bonds across every phase, rarely targeted despite lacking immunity wins, trusted by nearly everyone"
     },
-    "bestPhysical": {
-      "name": "Alejandro",
-      "playerSlug": "alejandro",
-      "description": "5 challenge wins, 5 immunity wins - unmatched physical dominance"
-    },
     "bestUnderdog": {
       "name": "Duncan",
       "playerSlug": "duncan",
@@ -186,6 +181,11 @@
       "betrayer": "Alejandro",
       "betrayed": "Lindsay's allies",
       "description": "Strategic, cold, perfectly timed - cost him jury votes but gained him control"
+    },
+    "bestPhysical": {
+      "name": "Alejandro & Duncan (Tie)",
+      "playerSlug": "alejandro",
+      "description": "Alejandro: consistency (5 immunities), Duncan: clutch wins"
     },
     "mostClutch": {
       "name": "Alejandro",
@@ -217,130 +217,6 @@
       "name": "Duncan",
       "playerSlug": "duncan",
       "description": "Central to conflicts, final winner, most juror respect - if Season 2 were a story, Duncan is the spine"
-    },
-    "playerOfSeason": {
-      "gold": {
-        "name": "Alejandro",
-        "playerSlug": "alejandro",
-        "description": "Dominated strategic gameplay, controlled multiple alliances, 5 immunity wins, reached Final Tribal"
-      },
-      "silver": {
-        "name": "Duncan",
-        "playerSlug": "duncan",
-        "description": "Survived constant targeting to win the season - endurance and earned respect"
-      }
-    },
-    "heroOfSeason": {
-      "gold": {
-        "name": "Duncan",
-        "playerSlug": "duncan",
-        "description": "Underdog who never gave up, faced constant targeting, won with integrity"
-      },
-      "silver": {
-        "name": "Lindsay",
-        "playerSlug": "lindsay",
-        "description": "Loyal to allies, trusted by nearly everyone, played cleanly throughout"
-      }
-    },
-    "villainOfSeason": {
-      "gold": {
-        "name": "Heather",
-        "playerSlug": "heather",
-        "description": "Weaponized secrecy, stirred paranoia, left emotional damage before exit"
-      },
-      "silver": {
-        "name": "Alejandro",
-        "playerSlug": "alejandro",
-        "description": "Cold strategic moves, betrayed allies, prioritized control over compassion"
-      }
-    },
-    "compBeast": {
-      "gold": {
-        "name": "Alejandro",
-        "playerSlug": "alejandro",
-        "description": "5 challenge wins, 5 immunity wins - unmatched physical dominance"
-      },
-      "silver": {
-        "name": "Duncan",
-        "playerSlug": "duncan",
-        "description": "1 challenge win, 1 immunity win - clutch performances when it mattered most"
-      }
-    },
-    "socialQueenKing": {
-      "gold": {
-        "name": "Lindsay",
-        "playerSlug": "lindsay",
-        "description": "Only 1 vote against all season - strongest social game, trusted by all"
-      },
-      "silver": {
-        "name": "Beth",
-        "playerSlug": "beth",
-        "description": "Only 4 votes against, maintained loyalty, never alienated allies"
-      }
-    },
-    "masterStrategist": {
-      "gold": {
-        "name": "Alejandro",
-        "playerSlug": "alejandro",
-        "description": "Multiple alliances across phases, perfect reads on timing and targets, lost to jury preference"
-      },
-      "silver": {
-        "name": "Beth",
-        "playerSlug": "beth",
-        "description": "Found idol clue, won immunity when needed, manipulated narrative without exposure"
-      }
-    },
-    "mostRobbedPreJuror": {
-      "gold": {
-        "name": "Courtney",
-        "playerSlug": "courtney",
-        "description": "Found immunity idol at crucial moment but eliminated before merging with jury"
-      }
-    },
-    "mostBrutalExit": {
-      "gold": {
-        "name": "Gwen",
-        "playerSlug": "gwen",
-        "description": "Eliminated after 4-4 tie and revote despite having social capital and immunity wins"
-      },
-      "silver": {
-        "name": "Owen",
-        "playerSlug": "owen",
-        "description": "Vulnerable position, strong social ties, fallback vote when plans collapse"
-      }
-    },
-    "advantageKing": {
-      "gold": {
-        "name": "Beth",
-        "playerSlug": "beth",
-        "description": "Found Mystery Box key leading to idol clue, retrieved Steal-An-Idol advantage"
-      },
-      "silver": {
-        "name": "Ezekiel",
-        "playerSlug": "ezekiel",
-        "description": "Found 1 hidden immunity idol, used strategically to protect Alejandro at merge"
-      }
-    },
-    "biggest_Target": {
-      "gold": {
-        "name": "Alejandro",
-        "playerSlug": "alejandro",
-        "description": "11 votes against - most targeted player despite 5 immunity wins"
-      }
-    },
-    "ftcGame": {
-      "gold": {
-        "name": "Duncan",
-        "playerSlug": "duncan",
-        "description": "Survived consensus threat to win Final Tribal 5-1-1 - proved endurance beats control"
-      }
-    },
-    "mostRobbedFinalist": {
-      "gold": {
-        "name": "Alejandro",
-        "playerSlug": "alejandro",
-        "description": "Only received 1 jury vote despite 5 immunity wins, strategic dominance, and controlling endgame"
-      }
     }
   },
   "statistics": {
@@ -363,15 +239,11 @@
     "summary": "Brought back 14 returnees for intense warfare. Duncan's survival story beat Alejandro's immunity dominance (5 wins!). The season proved strategy alone doesn't guarantee victory - the jury wanted blood and struggle.",
     "memorableMoments": [
       "Duncan survives constant targeting and wins",
+      "Gwen eliminated after 4–4 tie → revote",
       "Alejandro wins 5 immunities (season record)",
       "Strategic MVP: Alejandro (flashy center of conflict)",
       "Idols enter the game (Beth/Courtney/Ezekiel)",
-      "Merge Tribal: Ezekiel plays idol on Alejandro",
-      "Episode 7: 4-4 tie forces revote, Gwen exits",
-      "Final Tribal ends 5–1–1",
-      "Bridgette blindsided in Episode 1",
-      "Courtney finds idol but exits pre-merge",
-      "DJ vs Ezekiel defines messiest feud"
+      "Final Tribal ends 5–1–1"
     ]
   }
 }

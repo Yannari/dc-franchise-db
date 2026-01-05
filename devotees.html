@@ -576,55 +576,68 @@ loadPlayerData()
 
 function renderPlayers(players) {
   grid.innerHTML = '';
-  
+
   players.forEach(player => {
     const card = document.createElement('a');
-    card.className = 'card' + (player.wins > 0 ? ' winner' : '');
+    card.className = 'card' + (Number(player.wins || 0) > 0 ? ' winner' : '');
     card.href = `player.html?player=${player.id}`;
-    card.setAttribute('data-name', player.name.toLowerCase());
-    card.setAttribute('data-place', player.bestPlacement);
-    card.setAttribute('data-seasons', player.totalSeasons || 0);
-    card.setAttribute('data-votes', player.totalVotesAgainst || 0);
-    card.setAttribute('data-chwins', player.totalChallengeWins || 0);
-    
-    // Build season summary
-    const seasonSummary = player.seasonDetails
-      .sort((a, b) => a.season - b.season)
-      .map(s => `S${s.season}: #${s.placement}`)
-      .join(' • ');
-    
+    card.setAttribute('data-name', (player.name || '').toLowerCase());
+    card.setAttribute('data-place', Number(player.bestPlacement ?? 9999));
+    card.setAttribute('data-seasons', Number(player.totalSeasons ?? 0));
+    card.setAttribute('data-votes', Number(player.totalVotesAgainst ?? 0));
+    card.setAttribute('data-chwins', Number(player.totalChallengeWins ?? 0));
+
+    // Build season summary (safe if seasonDetails missing)
+    const details = Array.isArray(player.seasonDetails) ? [...player.seasonDetails] : [];
+    const seasonSummary = details.length
+      ? details
+          .sort((a, b) => Number(a.season ?? 0) - Number(b.season ?? 0))
+          .map(s => `S${s.season}: #${s.placement}`)
+          .join(' • ')
+      : 'No season data';
+
     // Build badges
     let badgesHtml = '';
-    
-    // Add special badges
-    if (player.wins > 0) {
-      const winSeason = player.seasonDetails.find(s => s.placement === 1);
-      badgesHtml += `<span class="badge gold">🏆 Season ${winSeason.season} Winner</span>`;
+
+    // Add special badges (safe if winner season missing)
+    if (Number(player.wins || 0) > 0) {
+      const winSeason = details.find(s => Number(s.placement) === 1);
+      if (winSeason && winSeason.season != null) {
+        badgesHtml += `<span class="badge gold">🏆 Season ${winSeason.season} Winner</span>`;
+      } else {
+        badgesHtml += `<span class="badge gold">🏆 Season Winner</span>`;
+      }
     }
-    
+
     // Add key badges from player.badges array
-    if (player.badges && player.badges.length > 0) {
+    if (Array.isArray(player.badges) && player.badges.length > 0) {
       player.badges.slice(0, 2).forEach(badge => {
+        const label = String(badge);
         let badgeClass = 'badge';
-        if (badge.includes('Strategic') || badge.includes('Social')) badgeClass += ' purple';
-        else if (badge.includes('Fan Favorite') || badge.includes('FAN FAVORITE')) badgeClass += ' purple';
-        else if (badge.includes('Perfect') || badge.includes('Unbreakable')) badgeClass += ' good';
-        badgesHtml += `<span class="${badgeClass}">${badge}</span>`;
+        if (label.includes('Strategic') || label.includes('Social')) badgeClass += ' purple';
+        else if (label.includes('Fan Favorite') || label.includes('FAN FAVORITE')) badgeClass += ' purple';
+        else if (label.includes('Perfect') || label.includes('Unbreakable')) badgeClass += ' good';
+        badgesHtml += `<span class="${badgeClass}">${label}</span>`;
       });
     }
-    
-    // Add basic badges
-    badgesHtml += `<span class="badge">Best: #${player.bestPlacement}</span>`;
-    badgesHtml += `<span class="badge">${player.totalSeasons} season${player.totalSeasons > 1 ? 's' : ''}</span>`;
-    
+
+    // Add basic badges (safe defaults)
+    const bestPlacement = (player.bestPlacement != null ? player.bestPlacement : '—');
+    const totalSeasons = Number(player.totalSeasons ?? 0);
+    badgesHtml += `<span class="badge">Best: #${bestPlacement}</span>`;
+    badgesHtml += `<span class="badge">${totalSeasons} season${totalSeasons === 1 ? '' : 's'}</span>`;
+
+    const emoji = player.emoji || '👤';
+    const name = player.name || 'Unknown';
+
     card.innerHTML = `
       <div class="row">
         <div class="player-avatar">
-          <img src="assets/avatars/${player.id}.png" alt="${player.name}" onload="this.style.display='block';" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"/>
-          <div class="fallback">${player.emoji}</div>
+          <img src="assets/avatars/${player.id}.png" alt="${name}" onload="this.style.display='block';" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"/>
+          <div class="fallback">${emoji}</div>
         </div>
         <div>
-          <div class="name">${player.emoji} ${player.name}</div>
+          <div class="name">${emoji} ${name}</div>
           <div class="sub">${seasonSummary}</div>
         </div>
       </div>
@@ -632,10 +645,11 @@ function renderPlayers(players) {
         ${badgesHtml}
       </div>
     `;
-    
+
     grid.appendChild(card);
   });
 }
+
 
 function updateDisplay() {
   const query = (search.value || '').toLowerCase().trim();

@@ -256,14 +256,8 @@
       "desc": "Two alpha personalities clashed all season—fueling votes, side‑taking, and constant tribe tension."
     },
     "biggestBetrayal": {
-      "betrayer": {
-        "name": "Scott",
-        "playerSlug": "scott"
-      },
-      "betrayed": {
-        "name": "Emma",
-        "playerSlug": "emma"
-      },
+      "betrayer": "Scott",
+      "betrayed": "Emma",
       "description": "Scott turned on Emma at the crucial moment, cutting a dangerous competitor and reshaping the numbers overnight.",
       "desc": "Scott turned on Emma at the crucial moment, cutting a dangerous competitor and reshaping the numbers overnight."
     }

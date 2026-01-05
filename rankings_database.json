@@ -46,7 +46,7 @@
   },
   "rankings": [
     {
-      "playerId": "Alejandro",
+      "playerId": "alejandro",
       "tier": "S+",
       "score": 95,
       "title": "The Strategist",
@@ -67,7 +67,7 @@
       "rank": 1
     },
     {
-      "playerId": "Mickey",
+      "playerId": "mickey",
       "tier": "S+",
       "score": 92,
       "title": "The Quiet Threat",
@@ -88,7 +88,7 @@
       "rank": 2
     },
     {
-      "playerId": "Lindsay",
+      "playerId": "lindsay",
       "tier": "S+",
       "score": 91,
       "title": "The Social Queen",
@@ -109,7 +109,7 @@
       "rank": 3
     },
     {
-      "playerId": "Sky",
+      "playerId": "sky",
       "tier": "S",
       "score": 88,
       "title": "The Olympian",
@@ -129,7 +129,7 @@
       "rank": 4
     },
     {
-      "playerId": "Zoey",
+      "playerId": "zoey",
       "tier": "S",
       "score": 87,
       "title": "The Loyalist",
@@ -149,7 +149,7 @@
       "rank": 5
     },
     {
-      "playerId": "Scott",
+      "playerId": "scott",
       "tier": "S",
       "score": 86,
       "title": "The Mastermind",
@@ -169,7 +169,7 @@
       "rank": 6
     },
     {
-      "playerId": "Emma",
+      "playerId": "emma",
       "tier": "S",
       "score": 84,
       "title": "The Iron Person",
@@ -189,7 +189,7 @@
       "rank": 7
     },
     {
-      "playerId": "Duncan",
+      "playerId": "duncan",
       "tier": "S",
       "score": 83,
       "title": "The Survivor",
@@ -209,7 +209,7 @@
       "rank": 8
     },
     {
-      "playerId": "Scarlett",
+      "playerId": "scarlett",
       "tier": "S",
       "score": 82,
       "title": "The Puppetmaster",
@@ -229,7 +229,7 @@
       "rank": 9
     },
     {
-      "playerId": "Ryan",
+      "playerId": "ryan",
       "tier": "S",
       "score": 81,
       "title": "The Kingmaker",

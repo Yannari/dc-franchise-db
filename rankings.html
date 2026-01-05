@@ -929,6 +929,8 @@ function renderMiniCard(ranking, player) {
   // Mini grid cards (Tier A)
   const seasonsLabel = player.totalSeasons + ' season' + (player.totalSeasons > 1 ? 's' : '');
   const title = ranking.title || '';
+  const winRate = ranking.winRate || Math.round((player.wins / player.totalSeasons) * 100);
+  const avgPlacement = calculateAvgPlacement(player);
 
   // Best finish badge (e.g., S4: #4)
   let best = null;

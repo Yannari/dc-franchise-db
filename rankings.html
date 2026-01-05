@@ -949,8 +949,10 @@ function renderPlayerCard(ranking, player) {
   // ✅ Winner badges — ONLY once per season (S1, S2...) but allow multiple seasons (S1 + S3)
   winnerKeys.forEach(function(k){
     if (k === 'WINNER') {
-      html += '<span class="badge badge-winner">🏆 Winner</span>';
-    } 
+      html += '<span class="badge badge-winner"></span>';
+    } else {
+      html += '<span class="badge badge-winner">🏆 ' + k + ' Winner</span>';
+    }
   });
 
   // Seasons badge (once)

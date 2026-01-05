@@ -20,7 +20,7 @@
       "totalChallengeWins": 13,
       "totalImmunityWins": 9,
       "totalRewardWins": 2,
-      "totalVotesAgainst": 25,
+      "totalVotesAgainst": 34,
       "totalIdolsFound": 0,
       "totalJuryVotes": 12,
       "tier": "S+",
@@ -1017,7 +1017,7 @@
       "totalIdolsFound": 0,
       "badges": [
         "S3 Winner",
-        "2nd Boot",
+        "2nd Boot (Previous Winner Target)",
         "Red Alliance Betrayed"
       ],
       "seasonDetails": [
@@ -1728,8 +1728,8 @@
         },
         {
           "season": 6,
-          "placement": 18,
-          "status": "Eliminated",
+          "placement": 99,
+          "status": "Active",
           "tribe": "TBD",
           "challengeWins": 0,
           "immunityWins": 0,
@@ -2569,6 +2569,7 @@
       "totalRewardWins": 1,
       "totalVotesAgainst": 1,
       "totalIdolsFound": 2,
+      "totalJuryVotes": 3,
       "badges": [
         "S5 Runner-Up (3 votes)",
         "Season MVP",
@@ -3188,7 +3189,7 @@
         6
       ],
       "totalSeasons": 1,
-      "bestPlacement": 17,
+      "bestPlacement": 99,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
@@ -3201,8 +3202,8 @@
       "seasonDetails": [
         {
           "season": 6,
-          "placement": 17,
-          "status": "Eliminated",
+          "placement": 99,
+          "status": "Active",
           "tribe": "TBD",
           "challengeWins": 0,
           "immunityWins": 0,

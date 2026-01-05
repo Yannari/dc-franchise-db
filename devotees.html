@@ -553,7 +553,7 @@ function loadPlayerData() {
       throw error;
     });
 }
-  .then(data => {
+  then(data => {
     allPlayers = data.players.map(player => {
       const emoji = emojiMap[player.name.toLowerCase()] || '👤';
       return {

@@ -938,7 +938,16 @@ function renderPlayerCard(ranking, player) {
     : '—';
 
   let html = '';
-  html += '<div class="player-card" data-winner="' + (isWinner ? 'true' : 'false') + '" data-name="' + player.name + '" data-score="' + ranking.score + '" data-tier="' + ranking.tier + '">';
+  const href = 'player.html?player=' + player.id;
+
+  html += '<div class="player-card" ' +
+          'data-href="' + href + '" ' +
+          'data-winner="' + (isWinner ? 'true' : 'false') + '" ' +
+          'data-name="' + player.name + '" ' +
+          'data-score="' + ranking.score + '" ' +
+          'data-tier="' + ranking.tier + '" ' +
+          'role="link" tabindex="0">';
+
   html +=   '<div class="player-header">';
 
   html +=     '<div class="player-avatar">';

@@ -423,7 +423,7 @@
         <div class="brand">DC <span>Franchise</span> Database</div>
         <div class="meta">Dynamic player profiles • Powered by JSON • Search & sort enabled</div>
       </div>
-      <div class="meta">40 total players • 68 appearances</div>
+      <div class="meta">68 total players • 68 appearances</div>
     </div>
     
    
@@ -522,12 +522,10 @@ const emojiMap = {
 
 // Load player data from JSON file first (always fresh), then cache
 function loadPlayerData() {
-  // Always fetch fresh data from JSON file
   console.log('📁 Loading fresh data from players_database.json...');
   return fetch('players_database.json')
     .then(response => response.json())
     .then(data => {
-      // Cache in localStorage for other pages
       try {
         localStorage.setItem('players_database', JSON.stringify(data));
         console.log('✅ Cached fresh data to localStorage');
@@ -538,7 +536,7 @@ function loadPlayerData() {
     })
     .catch(error => {
       console.error('Error loading player data from JSON:', error);
-      
+
       // Fallback to localStorage only if JSON fails
       try {
         const stored = localStorage.getItem('players_database');
@@ -549,31 +547,32 @@ function loadPlayerData() {
       } catch (e) {
         console.warn('Could not load from localStorage:', e);
       }
-      
+
       throw error;
     });
 }
-  then(data => {
+
+// ✅ CALL THE FUNCTION AND CHAIN PROMISES
+loadPlayerData()
+  .then(data => {
     allPlayers = data.players.map(player => {
       const emoji = emojiMap[player.name.toLowerCase()] || '👤';
       return {
         ...player,
-        emoji: emoji
+        emoji
       };
     });
+
     renderPlayers(allPlayers);
     updateDisplay();
-    
-    // Show data source indicator
-    const stored = localStorage.getItem('players_database');
-    if (stored) {
-      console.log('🔄 Data synced from current-season.html');
-    }
+
+    console.log('🔄 Player data loaded successfully');
   })
   .catch(error => {
     console.error('Failed to load player data:', error);
     countDiv.textContent = '❌ Error loading players. Check console.';
   });
+
 
 function renderPlayers(players) {
   grid.innerHTML = '';

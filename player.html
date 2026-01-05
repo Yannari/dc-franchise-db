@@ -220,7 +220,7 @@ function renderPlayerProfile(player) {
   
   // Build season links
   const seasonLinks = player.seasons.map(function(s) {
-    return '<a class="tab" href="seasons/season' + s + '.html">Season ' + s + '</a>';
+  return '<a class="tab" href="season_ref.html?season=' + s + '">Season ' + s + '</a>';
   }).join('\n      ');
   
   // Find winner season if applicable

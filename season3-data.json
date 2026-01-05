@@ -1,7 +1,7 @@
 {
   "seasonNumber": 3,
   "title": "Total Drama Revenge of the Island",
-  "subtitle": "The season where loyalty was tested\u2014and broken",
+  "subtitle": "The season where loyalty was tested—and broken",
   "castSize": 16,
   "episodeCount": 13,
   "jurySize": 7,
@@ -9,10 +9,10 @@
     "name": "Emma",
     "playerSlug": "emma",
     "vote": "4-3-1",
-    "runnerUp": "Scott",
-    "keyStats": "0 votes against until Final 4",
+    "runnerUp": "Scott & Cameron",
+    "keyStats": "0 votes until Final 4",
     "strategy": "Perfect loyalty",
-    "legacy": "Iron Person \u2022 tiebreaker win"
+    "legacy": "Iron Person - all 13 tribals"
   },
   "finalists": [
     {
@@ -31,7 +31,8 @@
       "name": "Cameron",
       "playerSlug": "cameron",
       "placement": 3,
-      "votes": 1
+      "votes": 1,
+      "note": "Cast tiebreaker vote at FTC"
     }
   ],
   "placements": [
@@ -40,112 +41,112 @@
       "name": "Emma",
       "playerSlug": "emma",
       "phase": "Winner",
-      "notes": "Won 4-3-1 (started 3-3-1) \u2022 Cameron cast tiebreaker vote \u2022 0 votes against until Final 4 \u2022 Iron Person (all 13 tribals)"
+      "notes": "4 votes to win (3–3–1 tie + tiebreaker) • 4 challenge wins • 1 immunity wins • 0 votes against"
     },
     {
       "placement": 2,
       "name": "Scott",
       "playerSlug": "scott",
       "phase": "Finalist",
-      "notes": "3 jury votes \u2022 6 total challenge wins (3 immunity + 3 reward) \u2022 Betrayed Zoey to reach Final 3"
+      "notes": "3 votes to win • 6 challenge wins • 3 immunity wins • 1 votes against"
     },
     {
       "placement": 3,
       "name": "Cameron",
       "playerSlug": "cameron",
       "phase": "Finalist",
-      "notes": "1 jury vote \u2022 Cast tiebreaker vote at FTC \u2022 Found idol Ep 4, played Ep 12 (cancelled 1) \u2022 Voted out Anne Maria (unbreakable partner)"
+      "notes": "1 vote to win; cast tiebreaker • 3 challenge wins • 1 immunity wins • Found idol Ep4; played Ep12 • 4 votes against"
     },
     {
       "placement": 4,
       "name": "Zoey",
       "playerSlug": "zoey",
       "phase": "Juror",
-      "notes": "Eliminated 3\u20131 \u2022 Final juror (Ep 13) \u2022 Betrayed by Scott (unbreakable bond) but still voted for him"
+      "notes": "3–1 vote • 4 challenge wins • 2 immunity wins • 3 votes against"
     },
     {
       "placement": 5,
       "name": "Anne Maria",
       "playerSlug": "anne-maria",
       "phase": "Juror",
-      "notes": "Eliminated 4\u20131* (idol cancelled 1) \u2022 Most votes against (15) \u2022 Betrayed by Cameron (unbreakable bond)"
+      "notes": "4–1* vote (idol cancelled 1) • 1 challenge wins • 15 votes against"
     },
     {
       "placement": 6,
       "name": "Mike",
       "playerSlug": "mike",
       "phase": "Juror",
-      "notes": "Eliminated 4\u20132 \u2022 Voted for Cameron at FTC \u2022 Messy feud with Anne Maria (mild \u2192 extreme)"
+      "notes": "4–2 vote • 1 challenge wins • 4 votes against"
     },
     {
       "placement": 7,
       "name": "Jo",
       "playerSlug": "jo",
       "phase": "Juror",
-      "notes": "Eliminated 4\u20133 \u2022 Biggest villain \u2022 4 extreme hatreds \u2022 Multiple meltdowns (Ep 6\u20137)"
+      "notes": "4–3 vote • 8 votes against"
     },
     {
       "placement": 8,
       "name": "Dawn",
       "playerSlug": "dawn",
       "phase": "Juror",
-      "notes": "Eliminated 5\u20133 \u2022 Consensus target after alliances converged"
+      "notes": "5–3 vote • 10 votes against"
     },
     {
       "placement": 9,
       "name": "Brick",
       "playerSlug": "brick",
       "phase": "Juror",
-      "notes": "Eliminated 5\u20132\u20132 \u2022 2nd juror (Ep 8) \u2022 1 immunity win"
+      "notes": "5–2–2 vote • 1 challenge wins • 1 immunity wins • 5 votes against"
     },
     {
       "placement": 10,
       "name": "Dwayne",
       "playerSlug": "dwayne",
       "phase": "Juror",
-      "notes": "Eliminated 5\u20133\u20132 \u2022 1st juror (merge boot, Ep 7)"
+      "notes": "5–3–2 vote (1st juror) • 6 votes against"
     },
     {
       "placement": 11,
       "name": "Lightning",
       "playerSlug": "lightning",
-      "phase": "Pre-Juror",
-      "notes": "2\u20132 tie \u2192 2\u20132 revote \u2022 Earlier found idol (Ep 4) and wasted it on Emma (0 votes)"
+      "phase": "Pre-Merge",
+      "notes": "2–2 tie → 2–2 revote • Found idol Ep4; wasted on Emma • 11 votes against"
     },
     {
       "placement": 12,
       "name": "Dakota",
       "playerSlug": "dakota",
-      "phase": "Pre-Juror",
-      "notes": "Eliminated 3\u20131\u20131 \u2022 Fan Favorite \u2022 Swap casualty (Ep 5)"
+      "phase": "Pre-Merge",
+      "notes": "3–1–1 vote (Fan Favorite) • 10 votes against"
     },
     {
       "placement": 13,
       "name": "Sam",
       "playerSlug": "sam",
-      "phase": "Pre-Juror",
-      "notes": "Eliminated by rock draw \u2022 3\u20133 tie \u2192 rocks (Ep 4) \u2022 0 votes against"
+      "phase": "Pre-Merge",
+      "notes": "3–3 tie → rocks • 0 votes against"
     },
     {
       "placement": 14,
       "name": "B",
       "playerSlug": "b",
-      "phase": "Pre-Juror",
-      "notes": "Eliminated 6\u20131 \u2022 Tribe target (Ep 3)"
+      "phase": "Pre-Merge",
+      "notes": "6–1 vote • 6 votes against"
     },
     {
       "placement": 15,
       "name": "Staci",
       "playerSlug": "staci",
-      "phase": "Pre-Juror",
-      "notes": "Eliminated 6\u20132 (Ep 2)"
+      "phase": "Pre-Merge",
+      "notes": "6–2 vote • 6 votes against"
     },
     {
       "placement": 16,
       "name": "Crimson",
       "playerSlug": "crimson",
-      "phase": "Pre-Juror",
-      "notes": "First boot \u2022 Eliminated 7\u20131 (Ep 1)"
+      "phase": "Pre-Merge",
+      "notes": "7–1 vote • 7 votes against"
     }
   ],
   "awards": {
@@ -343,14 +344,14 @@
     }
   },
   "legacy": {
-    "summary": "Introduced Gen 2 with 16 new players. Emma's perfect game (0 votes until F4) won in a tiebreaker. Scott's 6 challenge wins couldn't overcome Emma's loyalty strategy. The season where loyalty was tested\u2014and broken.",
+    "summary": "Introduced Gen 2 with 16 new players. Emma's perfect game (0 votes until F4) won in a tiebreaker. Scott's 6 challenge wins couldn't overcome Emma's loyalty strategy. The season where loyalty was tested—and broken.",
     "memorableMoments": [
-      "Most unpredictable season (2 tie votes + 1 rock draw)",
-      "Two unbreakable relationships broken in final episodes",
-      "Challenge beast (Scott) lost to social player (Emma)",
-      "Fan Favorite won by pre-merge player (Dakota)",
-      "Zero votes against winner (Emma)",
-      "Most hated player ever (Jo - 4 extreme hatreds)"
+      "Final Tribal 3–3–1 tie; Cameron breaks tie for Emma",
+      "Scott posts season-high 6 challenge wins",
+      "Dakota wins Fan Favorite despite 12th place",
+      "Sam eliminated by rocks after 3–3 tie",
+      "Lightning wastes an idol play early",
+      "Anne Maria absorbs 15 votes (most in season)"
     ]
   }
 }

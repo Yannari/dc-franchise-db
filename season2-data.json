@@ -10,7 +10,7 @@
     "playerSlug": "duncan",
     "vote": "5-1-1",
     "runnerUp": "Alejandro & Lindsay",
-    "keyStats": "Constant targeting, earned respect (won 5-1-1)",
+    "keyStats": "Constant targeting, earned respect",
     "strategy": "Survival under pressure",
     "legacy": "Endurance over control"
   },
@@ -31,8 +31,7 @@
       "name": "Lindsay",
       "playerSlug": "lindsay",
       "placement": 3,
-      "votes": 1,
-      "note": "1 jury vote"
+      "votes": 1
     }
   ],
   "placements": [
@@ -41,98 +40,98 @@
       "name": "Duncan",
       "playerSlug": "duncan",
       "phase": "Winner",
-      "notes": "Won Final Tribal 5-1-1 • Only 2 votes against all season"
+      "notes": "Won Final Tribal — 5 votes to win • 1 challenge wins • 1 immunity wins • 2 votes against"
     },
     {
       "placement": 2,
       "name": "Alejandro",
       "playerSlug": "alejandro",
       "phase": "Finalist",
-      "notes": "Finalist • 1 jury vote • Season-high 5 immunity wins"
+      "notes": "1 vote to win • 5 challenge wins • 5 immunity wins • 11 votes against"
     },
     {
       "placement": 3,
       "name": "Lindsay",
       "playerSlug": "lindsay",
       "phase": "Finalist",
-      "notes": "Finalist • 1 jury vote • Strong social bonds, rarely targeted"
+      "notes": "1 vote to win • 1 challenge wins • 1 immunity wins • 1 votes against"
     },
     {
       "placement": 4,
       "name": "Beth",
       "playerSlug": "beth",
       "phase": "Juror",
-      "notes": "Eliminated at F4 (2-1-1) • Loyal core player"
+      "notes": "2–1–1 vote • 1 challenge wins • 1 immunity wins • Found 1 idol • 4 votes against"
     },
     {
       "placement": 5,
       "name": "DJ",
       "playerSlug": "dj",
       "phase": "Juror",
-      "notes": "Eliminated at F5 (4-1) • Feud with Ezekiel defined multiple rounds"
+      "notes": "4–1 vote • 11 votes against"
     },
     {
       "placement": 6,
       "name": "Ezekiel",
       "playerSlug": "ezekiel",
       "phase": "Juror",
-      "notes": "Eliminated at F6 (4-2) • Found an idol early, constant chaos factor"
+      "notes": "4–2 vote • Found 1 idol • 4 votes against"
     },
     {
       "placement": 7,
       "name": "Trent",
       "playerSlug": "trent",
       "phase": "Juror",
-      "notes": "Eliminated at F7 (5-2) • Targeted after Alejandro’s Episode 7 meltdown"
+      "notes": "5–2 vote • 1 challenge wins • 1 immunity wins • 7 votes against"
     },
     {
       "placement": 8,
       "name": "Gwen",
       "playerSlug": "gwen",
       "phase": "Juror",
-      "notes": "Eliminated at F8 after 4-4 tie → 5-1 revote"
+      "notes": "4–4 tie → 5–1 revote • 1 challenge wins • 1 immunity wins • 9 votes against"
     },
     {
       "placement": 9,
       "name": "Heather",
       "playerSlug": "heather",
       "phase": "Juror",
-      "notes": "Eliminated at F9 (7-2) • Main villain, stirred paranoia"
+      "notes": "7–2 vote • 1 challenge wins • 1 immunity wins • 7 votes against"
     },
     {
       "placement": 10,
       "name": "Justin",
       "playerSlug": "justin",
       "phase": "Juror",
-      "notes": "First juror • Vote recorded as 6-4* (idol/voided votes)"
+      "notes": "6–4* vote • 4 votes against"
     },
     {
       "placement": 11,
       "name": "Courtney",
       "playerSlug": "courtney",
-      "phase": "Pre-Juror",
-      "notes": "Eliminated at F11 (3-2) • Idol play earlier flipped a Tribal"
+      "phase": "Pre-Merge",
+      "notes": "3–2 vote • Found 1 idol • 9 votes against"
     },
     {
       "placement": 12,
       "name": "Owen",
       "playerSlug": "owen",
-      "phase": "Pre-Juror",
-      "notes": "Eliminated at F12 via idol (5 votes cancelled; Owen out 1-0)"
+      "phase": "Pre-Merge",
+      "notes": "5–1* vote • 1 votes against"
     },
     {
       "placement": 13,
       "name": "Leshawna",
       "playerSlug": "leshawna",
-      "phase": "Pre-Juror",
-      "notes": "Eliminated at F13 (6-1)"
+      "phase": "Pre-Merge",
+      "notes": "6–1 vote • 6 votes against"
     },
     {
       "placement": 14,
       "name": "Bridgette",
       "playerSlug": "bridgette",
-      "phase": "Pre-Juror",
-      "notes": "1st out • Eliminated (4-3) after early chaos"
+      "phase": "Pre-Merge",
+      "notes": "4–3 vote • 4 votes against"
     }
   ],
   "awards": {
@@ -230,20 +229,21 @@
     },
     "socialGame": {
       "fewestVotes": {
-        "name": "Lindsay",
-        "playerSlug": "lindsay",
-        "votes": 1
+        "name": "Duncan",
+        "playerSlug": "duncan",
+        "votes": 2
       }
     }
   },
   "legacy": {
     "summary": "Brought back 14 returnees for intense warfare. Duncan's survival story beat Alejandro's immunity dominance (5 wins!). The season proved strategy alone doesn't guarantee victory - the jury wanted blood and struggle.",
     "memorableMoments": [
-      "Duncan's underdog victory",
-      "Alejandro's 5 immunity wins",
-      "DJ vs Ezekiel feud",
-      "Alejandro's Episode 7 meltdown",
-      "Lindsay's social game earning 1 jury vote"
+      "Duncan survives constant targeting and wins",
+      "Gwen eliminated after 4–4 tie → revote",
+      "Alejandro wins 5 immunities (season record)",
+      "Strategic MVP: Alejandro (flashy center of conflict)",
+      "Idols enter the game (Beth/Courtney/Ezekiel)",
+      "Final Tribal ends 5–1–1"
     ]
   }
 }

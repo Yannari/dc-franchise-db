@@ -115,22 +115,40 @@
       border-radius: 8px;
       padding: 12px 16px;
     }
-
-    .stat-mini-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
-      gap: 12px;
-      margin-bottom: 10px;
-    }
     
-    .stat-mini-box {
+    
+    /* Mini-card stat pills (Tier A/B/C/D) */
+    .stat-mini-grid{
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin: 10px 0 10px;
+    }
+    .stat-mini-box{
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 8px;
-      padding: 6px 8px;
+      border-radius: 10px;
+      padding: 8px 10px;
     }
-    
-    .stat-icon { opacity: 0.7; margin-right: 4px; }
+    .stat-mini-icon{ opacity: 0.75; margin-right: 6px; }
+    .stat-mini-label{
+      font-size: 9px;
+      opacity: 0.75;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 4px;
+      display:flex;
+      align-items:center;
+      gap:4px;
+      line-height: 1.1;
+      white-space: nowrap;
+    }
+    .stat-mini-value{
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.2px;
+    }
+.stat-icon { opacity: 0.7; margin-right: 4px; }
     .stat-label { 
       font-size: 11px; 
       opacity: 0.7; 
@@ -138,21 +156,8 @@
       letter-spacing: 0.5px;
       margin-bottom: 4px;
     }
-
-    .stat-mini-icon { opacity: 0.7; margin-right: 4px; }
-    .stat-mini-label { 
-      font-size: 7px; 
-      opacity: 0.7; 
-      text-transform: uppercase; 
-      letter-spacing: 0.5px;
-      margin-bottom: 4px;
-    }
     .stat-value { 
       font-size: 20px; 
-      font-weight: 700;
-    }
-    .stat-mini-value { 
-      font-size: 10px; 
       font-weight: 700;
     }
     
@@ -205,7 +210,9 @@
     }
     
     .mini-card {
-      background: rgba(0, 0, 0, 0.2);
+      
+      display: block;
+background: rgba(0, 0, 0, 0.2);
       border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 12px;
       padding: 16px;
@@ -633,7 +640,16 @@
       background: rgba(79, 195, 247, 0.2);
       border-color: rgba(79, 195, 247, 0.3);
       font-size: 11px;
-    }</style>
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      .stagger{ opacity: 1 !important; transform: none !important; }
+      .stagger.in{ transition: none !important; }
+      .player-card, .mini-card, .chip{ transition: none !important; }
+      .player-card::after, .mini-card::after{ transition: none !important; }
+    }
+
+</style>
 </head>
 
 <body>
@@ -784,7 +800,9 @@
     renderRankings(rankingsData, playersMap);
     initRankControls();
     
-  } catch (error) {
+  
+    initCardEffects();
+} catch (error) {
     console.error('Error:', error);
     document.getElementById('rankings-container').innerHTML = 
       '<div class="hero">' +
@@ -854,7 +872,7 @@ function renderRankings(rankingsData, playersMap) {
 
 function renderPlayerCard(ranking, player) {
   const winRate = ranking.winRate || Math.round((player.wins / player.totalSeasons) * 100);
-  const avgPlacement = calculateAvgPlacement(player);
+  const avgPlacement = ranking.avgPlacement || calculateAvgPlacement(player);
   
   let html = '';
   html += '<div class="player-card" data-name="' + player.name + '" data-score="' + ranking.score + '" data-tier="' + ranking.tier + '">';
@@ -876,8 +894,16 @@ function renderPlayerCard(ranking, player) {
   html +=       '<div class="player-subtitle">' + ranking.title + ' • ' + player.totalSeasons + ' season' + (player.totalSeasons > 1 ? 's' : '') + ' • ' + player.wins + ' win' + (player.wins !== 1 ? 's' : '') + '</div>';
     html +=       '<div class="player-badges">';
 
-
-
+  if (player.wins > 0) {
+    const winSeason = player.seasonDetails.find(function(s) { return s.placement === 1; });
+    if (winSeason) {
+      html += '<span class="badge badge-winner">🏆 S' + winSeason.season + ' Winner</span>';
+    }
+  }
+  if (player.totalSeasons > 1) {
+    html += '<span class="badge badge-season">' + player.totalSeasons + ' Season' + (player.totalSeasons > 1 ? 's' : '') + '</span>';
+  }
+  
       // Show all badges from player.badges array
   if (player.badges && player.badges.length > 0) {
     player.badges.forEach(function(badge) {
@@ -953,24 +979,27 @@ function renderPlayerCard(ranking, player) {
 
 
 function renderMiniCard(ranking, player) {
-  // Mini grid cards (Tier A)
+  // Mini grid cards (Tier A/B/C/D)
   const seasonsLabel = player.totalSeasons + ' season' + (player.totalSeasons > 1 ? 's' : '');
   const title = ranking.title || '';
-  const winRate = ranking.winRate || Math.round((player.wins / player.totalSeasons) * 100);
   const avgPlacement = calculateAvgPlacement(player);
 
   // Best finish badge (e.g., S4: #4)
   let best = null;
   if (Array.isArray(player.seasonDetails)) {
     player.seasonDetails.forEach(function(s) {
-      if (!best || (s.placement && s.placement < best.placement)) best = s;
+      if (!s || typeof s.placement !== 'number') return;
+      if (!best || s.placement < best.placement) best = s;
     });
   }
+  const bestLabel = best
+    ? ((best.season ? best.season + ': ' : '') + '#' + best.placement)
+    : '—';
 
-  let html = '';
   const href = 'player.html?player=' + player.id;
 
-  html += '<a class="mini-card" data-href="' + href + '" data-name="' + player.name.toLowerCase() + '" data-score="' + ranking.score + '" href="' + href + '">';
+  let html = '';
+  html += '<a class="mini-card" data-href="' + href + '" data-name="' + (player.name || '').toLowerCase() + '" data-score="' + ranking.score + '" href="' + href + '">';
   html +=   '<div class="mini-header">';
   html +=     '<div class="mini-avatar">';
   html +=       '<img src="assets/avatars/' + player.id + '.png" alt="' + player.name + '" ' +
@@ -983,32 +1012,46 @@ function renderMiniCard(ranking, player) {
   html +=   '</div>';
 
   html +=   '<div class="mini-subtitle">' + title + (title ? ' • ' : '') + seasonsLabel + '</div>';
+
+  // ✅ mini stat pills (prevents layout collapse — all tags closed properly)
   html +=   '<div class="stat-mini-grid">';
   html +=     '<div class="stat-mini-box">';
   html +=       '<div class="stat-mini-label"><span class="stat-mini-icon">📍</span> AVG. PLACEMENT</div>';
-  html +=       '<div class="stat-mini-value">' + avgPlacement + (avgPlacement < 2.5 ? ' 🔥' : '') + '</div>';
-  html +=     '</div>'; // CLOSE Box
-  html +=   '</div>'; // CLOSE Grid
-    html +=   '<div class="player-badges">';
+  html +=       '<div class="stat-mini-value">' + avgPlacement + '</div>';
+  html +=     '</div>';
+  html +=     '<div class="stat-mini-box">';
+  html +=       '<div class="stat-mini-label"><span class="stat-mini-icon">🏁</span> BEST FINISH</div>';
+  html +=       '<div class="stat-mini-value">' + bestLabel + '</div>';
+  html +=     '</div>';
+  html +=   '</div>';
 
-  // Show badges from player.badges array (excluding tier badges)
+  // Badges (compact)
+  html +=   '<div class="player-badges">';
+
+  // Seasons badge (once)
+  if (player.totalSeasons) {
+    html += '<span class="badge badge-season">' + player.totalSeasons + ' Season' + (player.totalSeasons > 1 ? 's' : '') + '</span>';
+  }
+
+  // Best finish badge (if we have it)
+  if (best) {
+    html += '<span class="badge badge-season">' + bestLabel + '</span>';
+  }
+
+  // Show a few curated badges from player.badges (excluding tier badges)
+  let shownBadges = 0;
   if (player.badges && player.badges.length > 0) {
     player.badges.forEach(function(badge) {
-      // Filter out tier badges for mini-cards
-      if (badge.toLowerCase().includes('tier')) {
-        return;
-      }
+      if (!badge || shownBadges >= 2) return;
+      if (String(badge).toLowerCase().includes('tier')) return;
 
-      let badgeClass = 'badge badge badge-season';
-
-      // Use special styling for winner badges
-      if (badge.toLowerCase().includes('winner')) {
-        badgeClass = 'badge badge-winner';
-        html += '<span class="' + badgeClass + '">🏆 ' + badge + '</span>';
+      // Winner badge gets special styling
+      if (String(badge).toLowerCase().includes('winner')) {
+        html += '<span class="badge badge-winner">🏆 ' + badge + '</span>';
       } else {
-        html += '<span class="' + badgeClass + '">' + badge + '</span>';
+        html += '<span class="badge badge-season">' + badge + '</span>';
       }
-
+      shownBadges++;
     });
   }
 
@@ -1018,9 +1061,11 @@ function renderMiniCard(ranking, player) {
   return html;
 }
 
+
 function calculateAvgPlacement(player) {
   let total = 0;
   let count = 0;
+  if (!player || !Array.isArray(player.seasonDetails)) return '0.0';
   player.seasonDetails.forEach(function(detail) {
     total += detail.placement;
     count++;
@@ -1166,6 +1211,61 @@ function initRankControls(){
   sortScope?.addEventListener('change', () => { restoreLayout(); applyFilters(); applySort(); });
 
   applyFilters();
+}
+
+
+
+function initCardEffects(){
+  // Winner detection + crown corner + staggered fade-in + spotlight follow
+  const cards = Array.from(document.querySelectorAll('.player-card, a.mini-card'));
+  if (!cards.length) return;
+
+  function isWinner(node){
+    const t = (node.textContent || '').toUpperCase();
+    return t.includes('WINNER') || t.includes('🏆') || t.includes('👑');
+  }
+
+  cards.forEach((c,i)=>{
+    // Winner styling
+    if (isWinner(c)){
+      c.classList.add('winner-card');
+      if (!c.querySelector('.crown-corner')){
+        const crown = document.createElement('div');
+        crown.className = 'crown-corner';
+        crown.textContent = '👑';
+        c.appendChild(crown);
+      }
+    }
+
+    // Stagger setup (actual fade-in happens via IntersectionObserver below)
+    c.classList.add('stagger');
+    c.style.transitionDelay = (Math.min(i, 80) * 0.05) + 's';
+
+    // Spotlight follow (for your :before radial gradient using --mx/--my)
+    let raf = null;
+    c.addEventListener('pointermove', (ev) => {
+      if (raf) cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const r = c.getBoundingClientRect();
+        const x = ((ev.clientX - r.left) / r.width) * 100;
+        const y = ((ev.clientY - r.top) / r.height) * 100;
+        c.style.setProperty('--mx', x + '%');
+        c.style.setProperty('--my', y + '%');
+      });
+    }, { passive: true });
+  });
+
+  // Fade-in on scroll
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        e.target.classList.add('in');
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12 });
+
+  cards.forEach(c=>io.observe(c));
 }
 
 </script>

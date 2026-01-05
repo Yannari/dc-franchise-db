@@ -921,7 +921,7 @@ function calculateAvgPlacement(player) {
   });
   return count > 0 ? (total / count).toFixed(1) : 0;
 }
-(function initRankControls(){
+function initRankControls(){
   const searchInput = document.getElementById('searchInput');
   const tierFilter  = document.getElementById('tierFilter');
   const sortBy      = document.getElementById('sortBy');
@@ -1061,7 +1061,7 @@ function calculateAvgPlacement(player) {
 
   applyFilters();
 }
-)();
+
 </script>
 
 </body>

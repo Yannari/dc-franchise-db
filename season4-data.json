@@ -40,77 +40,77 @@
       "name": "Alejandro",
       "playerSlug": "alejandro",
       "phase": "Winner",
-      "notes": "7 votes to win \u2022 2 challenge wins \u2022 2 immunity wins \u2022 9 votes against"
+      "notes": "7 votes to win • 2 challenge wins • 2 immunity wins • 9 votes against"
     },
     {
       "placement": 2,
       "name": "Zoey",
       "playerSlug": "zoey",
       "phase": "Finalist",
-      "notes": "6 votes to win \u2022 4 challenge wins \u2022 3 immunity wins \u2022 Idol (found Ep3; played Ep5 Pt2) saved Geoff; 7 votes cancelled \u2022 Only 1 vote received all season (cancelled by idol)"
+      "notes": "6 votes to win • 4 challenge wins • 3 immunity wins • Idol (found Ep3; played Ep5 Pt2) saved Geoff; 7 votes cancelled • Only 1 vote received all season (cancelled by idol)"
     },
     {
       "placement": 3,
       "name": "Scott",
       "playerSlug": "scott",
       "phase": "Finalist",
-      "notes": "1 vote to win \u2022 Idol (found Ep6; played Ep14) perfect play; 3 votes cancelled"
+      "notes": "1 vote to win • Idol (found Ep6; played Ep14) perfect play; 3 votes cancelled"
     },
     {
       "placement": 4,
       "name": "Gwen",
       "playerSlug": "gwen",
       "phase": "Juror",
-      "notes": "Lost fire-making \u2022 4 challenge wins \u2022 4 immunity wins \u2022 13 votes against \u2022 4 consecutive immunity wins (E11\u201314)"
+      "notes": "Lost fire-making • 4 challenge wins • 4 immunity wins • 13 votes against • 4 consecutive immunity wins (E11–14)"
     },
     {
       "placement": 5,
       "name": "Cameron",
       "playerSlug": "cameron",
       "phase": "Juror",
-      "notes": "2-0 (Scott idol) \u2022 3 challenge wins \u2022 1 immunity wins"
+      "notes": "2-0 (Scott idol) • 3 challenge wins • 1 immunity wins"
     },
     {
       "placement": 6,
       "name": "Geoff",
       "playerSlug": "geoff",
       "phase": "Juror",
-      "notes": "4-2 (returnee) \u2022 2 challenge wins \u2022 29 votes against"
+      "notes": "4-2 (returnee) • 2 challenge wins • 29 votes against"
     },
     {
       "placement": 7,
       "name": "Duncan",
       "playerSlug": "duncan",
       "phase": "Juror",
-      "notes": "3-2-1 vote \u2022 10 votes against"
+      "notes": "3-2-1 vote • 10 votes against"
     },
     {
       "placement": 8,
       "name": "Harold",
       "playerSlug": "harold",
       "phase": "Juror",
-      "notes": "3-3-1 \u2192 3-2 \u2022 3 challenge wins \u2022 1 immunity wins"
+      "notes": "3-3-1 → 3-2 • 3 challenge wins • 1 immunity wins"
     },
     {
       "placement": 9,
       "name": "Noah",
       "playerSlug": "noah",
       "phase": "Juror",
-      "notes": "5-4 vote \u2022 Idol (found Ep2; played Ep5 Pt2) self-save"
+      "notes": "5-4 vote • Idol (found Ep2; played Ep5 Pt2) self-save"
     },
     {
       "placement": 10,
       "name": "Jo",
       "playerSlug": "jo",
       "phase": "Juror",
-      "notes": "4-4-2 \u2192 5-3 (Fan Fav) \u2022 9 votes against"
+      "notes": "4-4-2 → 5-3 (Fan Fav) • 9 votes against"
     },
     {
       "placement": 11,
       "name": "Sierra",
       "playerSlug": "sierra",
       "phase": "Juror",
-      "notes": "8-4 (EoE return) \u2022 Idol (found Ep6; played Ep7) perfect play; 10 votes cancelled \u2022 26 votes against"
+      "notes": "8-4 (EoE return) • Idol (found Ep6; played Ep7) perfect play; 10 votes cancelled • 26 votes against"
     },
     {
       "placement": 12,
@@ -124,7 +124,7 @@
       "name": "Lightning",
       "playerSlug": "lightning",
       "phase": "Juror",
-      "notes": "9-4 vote \u2022 Idol (found Ep5; played Ep5 Pt2) self-save; 2 votes cancelled \u2022 14 votes against"
+      "notes": "9-4 vote • Idol (found Ep5; played Ep5 Pt2) self-save; 2 votes cancelled • 14 votes against"
     },
     {
       "placement": 14,
@@ -145,7 +145,7 @@
       "name": "Anne Maria",
       "playerSlug": "anne-maria",
       "phase": "Juror",
-      "notes": "4-1 vote \u2022 Idol (Ep1) wasted on Zoey"
+      "notes": "4-1 vote • Idol (Ep1) wasted on Zoey"
     },
     {
       "placement": 17,
@@ -166,27 +166,86 @@
     "winner": {
       "name": "Alejandro",
       "playerSlug": "alejandro",
-      "description": "3rd finals appearance, finally won his crown, strategic dominance, defeated Zoey's unprecedented 3 unbreakable bonds"
+      "desc": "3rd finals appearance, finally won his crown, strategic dominance, defeated Zoey's unprecedented 3 unbreakable bonds"
     },
     "fanFavorite": {
       "name": "Alejandro",
       "playerSlug": "alejandro",
-      "description": "Strategic brilliance, 4 challenge wins, finally broke the curse"
+      "desc": "Strategic brilliance, 4 challenge wins, finally broke the curse"
     },
     "bestStrategic": {
       "name": "Alejandro",
       "playerSlug": "alejandro",
-      "description": "Strategic mastery, controlled game, proved strategy defeats pure social bonds in modern gameplay"
+      "desc": "Strategic mastery, controlled game, proved strategy defeats pure social bonds in modern gameplay"
     },
     "bestPhysical": {
       "name": "Alejandro",
       "playerSlug": "alejandro",
       "wins": 4,
-      "description": "4 total wins, strategic and physical dominance"
+      "desc": "4 total wins, strategic and physical dominance"
     },
-    "biggestMeltdown": null,
-    "mostTragic": null,
-    "mostUnlucky": null
+    "bestSocial": {
+      "name": "Zoey",
+      "playerSlug": "zoey",
+      "desc": "Only 1 vote received all season (and it was cancelled); strongest social bonds despite losing 7–6–1."
+    },
+    "mostClutch": {
+      "name": "Gwen",
+      "playerSlug": "gwen",
+      "desc": "Won 4 consecutive immunity challenges late-game (E11–E14), saving herself repeatedly under maximum pressure."
+    },
+    "mostLoyal": {
+      "name": "Zoey",
+      "playerSlug": "zoey",
+      "desc": "Stayed committed to her core alliances/bonds throughout the season; played a clean, loyal social game."
+    },
+    "bestUnderdog": {
+      "name": "Geoff",
+      "playerSlug": "geoff",
+      "desc": "Voted out twice but fought back through the twist and still finished 6th — the ultimate comeback run."
+    },
+    "biggestVillain": {
+      "name": "Alejandro",
+      "playerSlug": "alejandro",
+      "desc": "The season’s mastermind—pulled strings, managed idols and votes, and engineered the closest finale ever."
+    },
+    "mostChaotic": {
+      "name": "Sierra",
+      "playerSlug": "sierra",
+      "desc": "Huge swings, wild tribals, and a massive idol play that cancelled 10 votes — chaos embodied."
+    },
+    "quietestThreat": {
+      "name": "Scott",
+      "playerSlug": "scott",
+      "desc": "Kept a low profile while holding an idol for 9 tribals and delivering a perfect play at the finale."
+    },
+    "seasonMVP": {
+      "name": "Alejandro",
+      "playerSlug": "alejandro",
+      "desc": "Best overall impact: winner, top strategist, and among the top challenge performers."
+    },
+    "biggestMeltdown": {
+      "name": "Sierra",
+      "playerSlug": "sierra",
+      "desc": "A visible emotional spiral that derailed her game and forced a scramble to survive despite strong advantages."
+    },
+    "mostTragic": {
+      "name": "Emma",
+      "playerSlug": "emma",
+      "desc": "Went out early despite being a previous champion; a harsh exit that cut her story short."
+    },
+    "mostUnlucky": {
+      "name": "Dakota",
+      "playerSlug": "dakota",
+      "desc": "Hit by an early landslide vote and then quit the Edge twist — unlucky path from start to finish."
+    },
+    "biggestBetrayal": {
+      "betrayer": "Scott",
+      "betrayerSlug": "scott",
+      "betrayed": "Emma",
+      "betrayedSlug": "emma",
+      "desc": "Scott turned on Emma to protect his position and deepen his endgame path—one of the season’s most decisive flips."
+    }
   },
   "statistics": {
     "challengeWins": {
@@ -268,10 +327,10 @@
   "legacy": {
     "summary": "Combined All-Stars (9 Gen 1, 9 Gen 2) with Edge of Extinction. Alejandro FINALLY won his crown on his 3rd finals appearance, defeating Zoey's unprecedented 3 unbreakable bonds with strategic mastery. The closest finale ever (7-6-1) proved that in modern gameplay, strategy defeats pure social bonds.",
     "memorableMoments": [
-      "Closest finale ever: Alejandro wins 7\u20136\u20131",
-      "Gwen wins 4 straight immunities (E11\u201314)",
+      "Closest finale ever: Alejandro wins 7–6–1",
+      "Gwen wins 4 straight immunities (E11–14)",
       "Triple-idol tribal cancels all 9 votes (Ep5 Pt2)",
-      "Sierra\u2019s perfect idol play cancels 10 votes (Ep7)",
+      "Sierra’s perfect idol play cancels 10 votes (Ep7)",
       "Jo earns Fan Favorite and survives tie chaos",
       "Geoff voted out twice but still makes 6th"
     ]

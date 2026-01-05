@@ -224,48 +224,6 @@
       "name": "Alejandro",
       "playerSlug": "alejandro",
       "description": "Overall most impactful player: strategic control + clutch wins in the closest jury vote ever."
-    },
-    "biggestMeltdown": {
-      "name": "Sierra",
-      "playerSlug": "sierra",
-      "description": "Cracked under endgame pressure after returning from Edge of Extinction, drawing heavy heat and spiraling into a blow-up that tanked her position.",
-      "desc": "Cracked under endgame pressure after returning from Edge of Extinction, drawing heavy heat and spiraling into a blow-up that tanked her position."
-    },
-    "mostTragic": {
-      "name": "Emma",
-      "playerSlug": "emma",
-      "description": "A past winner who never found footing in the All‑Stars/EoE chaos; taken out early before she could regain control of the season.",
-      "desc": "A past winner who never found footing in the All‑Stars/EoE chaos; taken out early before she could regain control of the season."
-    },
-    "mostUnlucky": {
-      "name": "Dakota",
-      "playerSlug": "dakota",
-      "description": "Bad break after bad break—early target and then a rough Edge of Extinction experience that ended with a quit.",
-      "desc": "Bad break after bad break—early target and then a rough Edge of Extinction experience that ended with a quit."
-    },
-    "messiestFeud": {
-      "players": [
-        "Jo",
-        "Heather"
-      ],
-      "playerSlugs": [
-        "jo",
-        "heather"
-      ],
-      "description": "Two alpha personalities clashed all season—fueling votes, side‑taking, and constant tribe tension.",
-      "desc": "Two alpha personalities clashed all season—fueling votes, side‑taking, and constant tribe tension."
-    },
-    "biggestBetrayal": {
-      "betrayer": {
-        "name": "Scott",
-        "playerSlug": "scott"
-      },
-      "betrayed": {
-        "name": "Emma",
-        "playerSlug": "emma"
-      },
-      "description": "Scott turned on Emma at the crucial moment, cutting a dangerous competitor and reshaping the numbers overnight.",
-      "desc": "Scott turned on Emma at the crucial moment, cutting a dangerous competitor and reshaping the numbers overnight."
     }
   },
   "statistics": {

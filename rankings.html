@@ -950,9 +950,7 @@ function renderPlayerCard(ranking, player) {
   winnerKeys.forEach(function(k){
     if (k === 'WINNER') {
       html += '<span class="badge badge-winner">🏆 Winner</span>';
-    } else {
-      html += '<span class="badge badge-winner">🏆 ' + k + ' Winner</span>';
-    }
+    } 
   });
 
   // Seasons badge (once)

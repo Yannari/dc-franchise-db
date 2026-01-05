@@ -449,6 +449,12 @@
           <option value="place-desc">📉 Worst Placement (Last → 1st)</option>
           <option value="name-asc">🔤 Name (A → Z)</option>
           <option value="name-desc">🔤 Name (Z → A)</option>
+          <option value="seasons-desc">📅 Seasons (Most → Fewest)</option>
+          <option value="seasons-asc">📅 Seasons (Fewest → Most)</option>
+          <option value="votes-desc">🗳️ Votes Against (Most → Fewest)</option>
+          <option value="votes-asc">🗳️ Votes Against (Fewest → Most)</option>
+          <option value="chwins-desc">🏅 Challenge Wins (Most → Fewest)</option>
+          <option value="chwins-asc">🏅 Challenge Wins (Fewest → Most)</option>
         </select>
       </div>
     </div>
@@ -570,6 +576,9 @@ function renderPlayers(players) {
     card.href = `player.html?player=${player.id}`;
     card.setAttribute('data-name', player.name.toLowerCase());
     card.setAttribute('data-place', player.bestPlacement);
+    card.setAttribute('data-seasons', player.totalSeasons || 0);
+    card.setAttribute('data-votes', player.totalVotesAgainst || 0);
+    card.setAttribute('data-chwins', player.totalChallengeWins || 0);
     
     // Build season summary
     const seasonSummary = player.seasonDetails
@@ -637,11 +646,23 @@ function updateDisplay() {
     const bPlace = parseInt(b.getAttribute('data-place'));
     const aName = a.getAttribute('data-name');
     const bName = b.getAttribute('data-name');
+    const aSeasons = parseInt(a.getAttribute('data-seasons'));
+    const bSeasons = parseInt(b.getAttribute('data-seasons'));
+    const aVotes = parseInt(a.getAttribute('data-votes'));
+    const bVotes = parseInt(b.getAttribute('data-votes'));
+    const aChWins = parseInt(a.getAttribute('data-chwins'));
+    const bChWins = parseInt(b.getAttribute('data-chwins'));
     
     if (sortValue === 'place-asc') return aPlace - bPlace;
     if (sortValue === 'place-desc') return bPlace - aPlace;
     if (sortValue === 'name-asc') return aName.localeCompare(bName);
     if (sortValue === 'name-desc') return bName.localeCompare(aName);
+    if (sortValue === 'seasons-desc') return bSeasons - aSeasons;
+    if (sortValue === 'seasons-asc') return aSeasons - bSeasons;
+    if (sortValue === 'votes-desc') return bVotes - aVotes;
+    if (sortValue === 'votes-asc') return aVotes - bVotes;
+    if (sortValue === 'chwins-desc') return bChWins - aChWins;
+    if (sortValue === 'chwins-asc') return aChWins - bChWins;
     return 0;
   });
   

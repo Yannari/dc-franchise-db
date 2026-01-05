@@ -426,15 +426,7 @@
       <div class="meta">40 total players • 68 appearances</div>
     </div>
     
-    <div class="tabs">
-      <a class="tab" href="current-season.html">📊 Current Season</a>
-      <a class="tab" href="voting-analytics.html">🗳️ Voting Analytics</a>
-      <a class="tab" href="franchise.html">🏛️ Franchise</a>
-      <a class="tab" href="rankings.html">🏆 Rankings</a>
-      <a class="tab" href="seasons.html">📚 Seasons</a>
-      <a class="tab active" href="devotees.html">👥 Players</a>
-      <a class="tab" href="awards.html">🥇 Awards</a>
-    </div>
+   
 
     <div class="devotees-hero">
       <h1>👥 All Players</h1>
@@ -503,12 +495,50 @@ const emojiMap = {
   'amy': '😈', 'samey': '😊', 'scarlett': '🧪', 'shawn': '🧟', 'topher': '📺',
   'rodney': '💘', 'dave': '😤', 'josee': '⛷️', 'max': '🦹', 'mickey': '🐭',
   'sky': '🥋', 'sugar': '🍭', 'beardo': '🎵', 'blaineley': '🎤', 'ella': '🎶',
-  'jasmine': '🌿', 'leonard': '🪄', 'ryan': '🏋️'
+  'jasmine': '🌿', 'leonard': '🪄', 'ryan': '🏋️',
+  'mary': '🧩',
+  'brody': '🏄',
+  'kitty': '📸',
+  'junior': '🧒',
+  'ennui': '🫥',
+  'jacques': '🕺',
+  'jay': '🧢',
+  'stephanie': '😤',
+  'kelly': '👜',
+  'tammy': '🪄'
 };
 
-// Load player data from JSON
-fetch('players_database.json')
-  .then(response => response.json())
+
+// ========================================
+// UPDATED DEVOTEES.HTML SCRIPT
+// Replace the fetch() section in devotees.html (around line 509-526) with this:
+// ========================================
+
+// Load player data from localStorage first, fallback to JSON
+function loadPlayerData() {
+  // Try localStorage first (synced from current-season.html)
+  try {
+    const stored = localStorage.getItem('players_database');
+    if (stored) {
+      const data = JSON.parse(stored);
+      console.log('✅ Loaded player data from localStorage');
+      return Promise.resolve(data);
+    }
+  } catch (e) {
+    console.warn('Could not load from localStorage:', e);
+  }
+  
+  // Fallback to JSON file
+  console.log('📁 Loading from players_database.json...');
+  return fetch('players_database.json')
+    .then(response => response.json())
+    .catch(error => {
+      console.error('Error loading player data:', error);
+      throw error;
+    });
+}
+
+loadPlayerData()
   .then(data => {
     allPlayers = data.players.map(player => {
       const emoji = emojiMap[player.name.toLowerCase()] || '👤';
@@ -519,10 +549,16 @@ fetch('players_database.json')
     });
     renderPlayers(allPlayers);
     updateDisplay();
+    
+    // Show data source indicator
+    const stored = localStorage.getItem('players_database');
+    if (stored) {
+      console.log('🔄 Data synced from current-season.html');
+    }
   })
   .catch(error => {
-    console.error('Error loading player data:', error);
-    countDiv.textContent = 'Error loading players';
+    console.error('Failed to load player data:', error);
+    countDiv.textContent = '❌ Error loading players. Check console.';
   });
 
 function renderPlayers(players) {

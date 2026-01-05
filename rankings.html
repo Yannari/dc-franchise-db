@@ -765,60 +765,58 @@
 
 function renderRankings(rankingsData, playersMap) {
   const container = document.getElementById('rankings-container');
-  
+
   const tierGroups = {};
   rankingsData.rankings.forEach(function(ranking) {
-    if (!tierGroups[ranking.tier]) {
-      tierGroups[ranking.tier] = [];
-    }
+    if (!tierGroups[ranking.tier]) tierGroups[ranking.tier] = [];
     tierGroups[ranking.tier].push(ranking);
   });
-  
+
   let html = '';
   const tierOrder = ['S+', 'S', 'A', 'B', 'C', 'D'];
-  
+
   tierOrder.forEach(function(tierKey) {
     if (!tierGroups[tierKey]) return;
-    
+
     const tierInfo = rankingsData.tiers[tierKey];
     const players = tierGroups[tierKey];
-    
-    const tierId = tierKey.replace('+', 'plus');
-    
+
+    // IDs must match your controls/anchors: tier-splus, tier-s, tier-a, ...
+    const tierId = tierKey.toLowerCase().replace('+', 'plus');
+
     html += '<div class="tier-section" id="tier-' + tierId + '" data-tier="' + tierKey + '">';
     html +=   '<div class="tier-header">';
     html +=     '<h2>🏅 ' + tierInfo.name + '</h2>';
     html +=     '<span class="tier-desc">' + tierInfo.description + '</span>';
     html +=   '</div>';
-    
-    // Use mini-grid for tiers A, B, C, D
-    const useMiniGrid = ['A', 'B', 'C', 'D'].includes(tierKey);
 
-    if (useMiniGrid) {
+    // ✅ Tier A uses the compact mini-grid layout (like your screenshot)
+    if (['A','B','C','D'].includes(tierKey)) {
       html += '<div class="mini-grid">';
-    }
-
-    players.forEach(function(ranking) {
-      const player = playersMap[ranking.playerId];
-      if (!player) {
-        console.warn('Player not found:', ranking.playerId);
-        return;
-      }
-
-      if (useMiniGrid) {
+      players.forEach(function(ranking) {
+        const player = playersMap[ranking.playerId];
+        if (!player) {
+          console.warn('Player not found:', ranking.playerId);
+          return;
+        }
         html += renderMiniCard(ranking, player);
-      } else {
-        html += renderPlayerCard(ranking, player);
-      }
-    });
-
-    if (useMiniGrid) {
+      });
       html += '</div>';
+    } else {
+      // Default: full player cards
+      players.forEach(function(ranking) {
+        const player = playersMap[ranking.playerId];
+        if (!player) {
+          console.warn('Player not found:', ranking.playerId);
+          return;
+        }
+        html += renderPlayerCard(ranking, player);
+      });
     }
-    
+
     html += '</div>';
   });
-  
+
   container.innerHTML = html;
 }
 
@@ -907,37 +905,50 @@ function renderPlayerCard(ranking, player) {
   return html;
 }
 
+
 function renderMiniCard(ranking, player) {
+  // Mini grid cards (Tier A)
+  const seasonsLabel = player.totalSeasons + ' season' + (player.totalSeasons > 1 ? 's' : '');
+  const title = ranking.title || '';
+
+  // Best finish badge (e.g., S4: #4)
+  let best = null;
+  if (Array.isArray(player.seasonDetails)) {
+    player.seasonDetails.forEach(function(s) {
+      if (!best || (s.placement && s.placement < best.placement)) best = s;
+    });
+  }
+
   let html = '';
+  const href = 'player.html?player=' + player.id;
 
-  html += '<a class="mini-card" '
-  html +=    'href="player.html?player=' + player.id + '" ';
-  html +=    'data-href="player.html?player=' + player.id + '" ';
-  html +=    'data-name="' + player.name + '" ';
-  html +=    'data-score="' + ranking.score + '">';
-
+  html += '<a class="mini-card" data-href="' + href + '" data-name="' + player.name.toLowerCase() + '" data-score="' + ranking.score + '" href="' + href + '">';
   html +=   '<div class="mini-header">';
   html +=     '<div class="mini-avatar">';
-  html +=       '<img src="assets/avatars/' + player.id + '.png" alt="' + player.name + '" ';
-  html +=            'onload="this.style.display=\'block\'; this.nextElementSibling.style.display=\'none\';" ';
-  html +=            'onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'block\';" />';
-  html +=       '<span>' + (ranking.emoji || '👤') + '</span>';
+  html +=       '<img src="assets/avatars/' + player.id + '.png" alt="' + player.name + '" ' +
+                'onload="this.style.display=\'block\'; this.nextElementSibling.style.display=\'none\';" ' +
+                'onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'block\';">';
+  html +=       '<span class="fallback">' + (ranking.emoji || '👤') + '</span>';
   html +=     '</div>';
   html +=     '<div class="mini-name">' + (ranking.emoji || '') + ' ' + player.name + '</div>';
   html +=     '<div class="mini-score">' + ranking.score + '/100</div>';
   html +=   '</div>';
 
-  html +=   '<div class="mini-subtitle">' + ranking.title + ' • ' + player.totalSeasons + ' season' + (player.totalSeasons > 1 ? 's' : '') + '</div>';
-
+  html +=   '<div class="mini-subtitle">' + title + (title ? ' • ' : '') + seasonsLabel + '</div>';
   html +=   '<div class="player-badges">';
 
-  // Add season badge showing best placement
-  const bestSeason = player.seasonDetails.reduce(function(best, season) {
-    return (!best || season.placement < best.placement) ? season : best;
-  }, null);
+  if (player.wins > 0 && best && best.placement === 1) {
+    html += '<span class="badge badge-winner">🏆 S' + best.season + ' Winner</span>';
+  } else if (player.wins > 0) {
+    // If they have a win somewhere, show the first winning season
+    const winSeason = (player.seasonDetails || []).find(function(s){ return s.placement === 1; });
+    if (winSeason) {
+      html += '<span class="badge badge-winner">🏆 S' + winSeason.season + ' Winner</span>';
+    }
+  }
 
-  if (bestSeason) {
-    html += '<span class="badge badge-season">S' + bestSeason.season + ': #' + bestSeason.placement + '</span>';
+  if (best && best.season && best.placement) {
+    html += '<span class="badge badge-season">S' + best.season + ': #' + best.placement + '</span>';
   }
 
   html +=   '</div>';
@@ -945,7 +956,6 @@ function renderMiniCard(ranking, player) {
 
   return html;
 }
-
 
 function calculateAvgPlacement(player) {
   let total = 0;

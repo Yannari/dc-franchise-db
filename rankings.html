@@ -925,6 +925,17 @@ function renderPlayerCard(ranking, player) {
 
   const winnerKeys = getWinnerKeys(player); // ["S1","S3"] etc.
   const isWinner = winnerKeys.length > 0;
+  // Best finish badge (e.g., S4: #4)
+  let best = null;
+  if (Array.isArray(player.seasonDetails)) {
+    player.seasonDetails.forEach(function(s) {
+      if (!s || typeof s.placement !== 'number') return;
+      if (!best || s.placement < best.placement) best = s;
+    });
+  }
+  const bestLabel = best
+    ? ((best.season ? 'S'+best.season + ': ' : '') + '#' + best.placement)
+    : '—';
 
   let html = '';
   html += '<div class="player-card" data-winner="' + (isWinner ? 'true' : 'false') + '" data-name="' + player.name + '" data-score="' + ranking.score + '" data-tier="' + ranking.tier + '">';
@@ -949,7 +960,7 @@ function renderPlayerCard(ranking, player) {
   // ✅ Winner badges — ONLY once per season (S1, S2...) but allow multiple seasons (S1 + S3)
   winnerKeys.forEach(function(k){
     if (k === 'WINNER') {
-      html += '<span class="badge badge-winner"></span>';
+      html += '<span class="badge badge-winner">🏆 Winner</span>';
     } else {
       html += '<span class="badge badge-winner">🏆 ' + k + ' Winner</span>';
     }
@@ -1013,8 +1024,8 @@ function renderPlayerCard(ranking, player) {
   html +=       '<div class="stat-value">' + (player.totalJuryVotes || 0) + ' total</div>';
   html +=     '</div>';
   html +=     '<div class="stat-box">';
-  html +=       '<div class="stat-label"><span class="stat-icon">🧠</span> TIER</div>';
-  html +=       '<div class="stat-value">Tier ' + ranking.tier + '</div>';
+  html +=       '<div class="stat-label"><span class="stat-icon">🏁</span> BEST FINISH</div>';
+  html +=       '<div class="stat-value">' + bestLabel + '</div>';
   html +=     '</div>';
   html +=   '</div>';
 

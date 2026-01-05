@@ -638,55 +638,45 @@ function renderPlayers(players) {
 }
 
 function updateDisplay() {
-  const query = search.value.toLowerCase();
+  const query = (search.value || '').toLowerCase().trim();
   const sortValue = sortSelect.value;
-  
-  const cards = Array.from(grid.querySelectorAll('.card'));
-  
-  let filtered = cards.filter(c => {
-    const name = c.getAttribute('data-name');
-    return name.includes(query);
-  });
-  
-  filtered.sort((a, b) => {
-    const aPlace = parseInt(a.getAttribute('data-place'));
-    const bPlace = parseInt(b.getAttribute('data-place'));
-    const aName = a.getAttribute('data-name');
-    const bName = b.getAttribute('data-name');
-    const aSeasons = parseInt(a.getAttribute('data-seasons'));
-    const bSeasons = parseInt(b.getAttribute('data-seasons'));
-    const aVotes = parseInt(a.getAttribute('data-votes'));
-    const bVotes = parseInt(b.getAttribute('data-votes'));
-    const aChWins = parseInt(a.getAttribute('data-chwins'));
-    const bChWins = parseInt(b.getAttribute('data-chwins'));
-    
-    if (sortValue === 'place-asc') return aPlace - bPlace;
-    if (sortValue === 'place-desc') return bPlace - aPlace;
+
+  // ✅ Always filter from the original data (not from DOM cards)
+  let filteredPlayers = allPlayers.filter(p =>
+    (p.name || '').toLowerCase().includes(query)
+  );
+
+  filteredPlayers.sort((a, b) => {
+    const aPlace = Number(a.bestPlacement ?? 9999);
+    const bPlace = Number(b.bestPlacement ?? 9999);
+    const aName = (a.name || '').toLowerCase();
+    const bName = (b.name || '').toLowerCase();
+    const aSeasons = Number(a.totalSeasons ?? 0);
+    const bSeasons = Number(b.totalSeasons ?? 0);
+    const aVotes = Number(a.totalVotesAgainst ?? 0);
+    const bVotes = Number(b.totalVotesAgainst ?? 0);
+    const aChWins = Number(a.totalChallengeWins ?? 0);
+    const bChWins = Number(b.totalChallengeWins ?? 0);
+
+    if (sortValue === 'place-asc') return aPlace - bPlace || aName.localeCompare(bName);
+    if (sortValue === 'place-desc') return bPlace - aPlace || aName.localeCompare(bName);
     if (sortValue === 'name-asc') return aName.localeCompare(bName);
     if (sortValue === 'name-desc') return bName.localeCompare(aName);
-    if (sortValue === 'seasons-desc') return bSeasons - aSeasons;
-    if (sortValue === 'seasons-asc') return aSeasons - bSeasons;
-    if (sortValue === 'votes-desc') return bVotes - aVotes;
-    if (sortValue === 'votes-asc') return aVotes - bVotes;
-    if (sortValue === 'chwins-desc') return bChWins - aChWins;
-    if (sortValue === 'chwins-asc') return aChWins - bChWins;
+    if (sortValue === 'seasons-desc') return (bSeasons - aSeasons) || aName.localeCompare(bName);
+    if (sortValue === 'seasons-asc') return (aSeasons - bSeasons) || aName.localeCompare(bName);
+    if (sortValue === 'votes-desc') return (bVotes - aVotes) || aName.localeCompare(bName);
+    if (sortValue === 'votes-asc') return (aVotes - bVotes) || aName.localeCompare(bName);
+    if (sortValue === 'chwins-desc') return (bChWins - aChWins) || aName.localeCompare(bName);
+    if (sortValue === 'chwins-asc') return (aChWins - bChWins) || aName.localeCompare(bName);
     return 0;
   });
-  
-  // Hide all cards first
-  cards.forEach(c => c.style.display = 'none');
-  
-  // Show filtered cards in sorted order
-  grid.innerHTML = '';
-  filtered.forEach(c => {
-    c.style.display = 'block';
-    grid.appendChild(c);
-  });
-  
-  countDiv.textContent = `Showing ${filtered.length} of ${allPlayers.length} players`;
+
+  renderPlayers(filteredPlayers);
+  countDiv.textContent = `Showing ${filteredPlayers.length} of ${allPlayers.length} players`;
 }
 
 search.addEventListener('input', updateDisplay);
+search.addEventListener('search', updateDisplay);
 sortSelect.addEventListener('change', updateDisplay);
 </script>
 

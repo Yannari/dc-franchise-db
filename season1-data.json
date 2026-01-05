@@ -322,6 +322,48 @@
         "playerSlug": "lindsay",
         "description": "Perfect jury management—won 5-4 from final tribal"
       }
+    },
+    "winner": {
+      "name": "Lindsay",
+      "playerSlug": "lindsay",
+      "description": "Perfect loyalty • Clean win"
+    },
+    "fanFavorite": {
+      "name": "Lindsay",
+      "playerSlug": "lindsay",
+      "description": "Low votes against, loyal gameplay, clean win"
+    },
+    "bestStrategic": {
+      "name": "Alejandro",
+      "playerSlug": "alejandro",
+      "description": "Controlled idols, multiple alliances, perfect reads"
+    },
+    "bestSocial": {
+      "name": "Lindsay",
+      "playerSlug": "lindsay",
+      "description": "Only 1 vote against all season—strongest social game"
+    },
+    "bestPhysical": {
+      "name": "Bridgette",
+      "playerSlug": "bridgette",
+      "description": "5 challenge wins, 4 immunities—undisputed physical force"
+    },
+    "biggestVillain": {
+      "name": "Heather",
+      "playerSlug": "heather",
+      "description": "High conflict, high impact, never invisible"
+    },
+    "seasonMVP": {
+      "name": "Alejandro",
+      "playerSlug": "alejandro",
+      "description": "Dominated strategy, controlled idols, reached FTC"
+    },
+    "biggestTarget": {
+      "gold": {
+        "name": "Beth",
+        "playerSlug": "beth",
+        "description": "22 votes against—franchise record for most hostile reception"
+      }
     }
   },
   "statistics": {
@@ -335,32 +377,104 @@
           "wins": 4
         },
         "rankings": [
-          {"name": "Bridgette", "playerSlug": "bridgette", "wins": 4},
-          {"name": "Alejandro", "playerSlug": "alejandro", "wins": 3},
-          {"name": "Trent", "playerSlug": "trent", "wins": 2},
-          {"name": "Heather", "playerSlug": "heather", "wins": 1},
-          {"name": "Leshawna", "playerSlug": "leshawna", "wins": 1}
+          {
+            "name": "Bridgette",
+            "playerSlug": "bridgette",
+            "wins": 4
+          },
+          {
+            "name": "Alejandro",
+            "playerSlug": "alejandro",
+            "wins": 3
+          },
+          {
+            "name": "Trent",
+            "playerSlug": "trent",
+            "wins": 2
+          },
+          {
+            "name": "Heather",
+            "playerSlug": "heather",
+            "wins": 1
+          },
+          {
+            "name": "Leshawna",
+            "playerSlug": "leshawna",
+            "wins": 1
+          }
         ]
       },
       "rewardWins": {
         "rankings": [
-          {"name": "Alejandro", "playerSlug": "alejandro", "wins": 1},
-          {"name": "Bridgette", "playerSlug": "bridgette", "wins": 1},
-          {"name": "Ezekiel", "playerSlug": "ezekiel", "wins": 1},
-          {"name": "Heather", "playerSlug": "heather", "wins": 1},
-          {"name": "Owen", "playerSlug": "owen", "wins": 1},
-          {"name": "Trent", "playerSlug": "trent", "wins": 1}
+          {
+            "name": "Alejandro",
+            "playerSlug": "alejandro",
+            "wins": 1
+          },
+          {
+            "name": "Bridgette",
+            "playerSlug": "bridgette",
+            "wins": 1
+          },
+          {
+            "name": "Ezekiel",
+            "playerSlug": "ezekiel",
+            "wins": 1
+          },
+          {
+            "name": "Heather",
+            "playerSlug": "heather",
+            "wins": 1
+          },
+          {
+            "name": "Owen",
+            "playerSlug": "owen",
+            "wins": 1
+          },
+          {
+            "name": "Trent",
+            "playerSlug": "trent",
+            "wins": 1
+          }
         ]
       },
       "totalChallengeWins": {
         "rankings": [
-          {"name": "Bridgette", "playerSlug": "bridgette", "wins": 5},
-          {"name": "Alejandro", "playerSlug": "alejandro", "wins": 4},
-          {"name": "Trent", "playerSlug": "trent", "wins": 3},
-          {"name": "Heather", "playerSlug": "heather", "wins": 2},
-          {"name": "Ezekiel", "playerSlug": "ezekiel", "wins": 1},
-          {"name": "Leshawna", "playerSlug": "leshawna", "wins": 1},
-          {"name": "Owen", "playerSlug": "owen", "wins": 1}
+          {
+            "name": "Bridgette",
+            "playerSlug": "bridgette",
+            "wins": 5
+          },
+          {
+            "name": "Alejandro",
+            "playerSlug": "alejandro",
+            "wins": 4
+          },
+          {
+            "name": "Trent",
+            "playerSlug": "trent",
+            "wins": 3
+          },
+          {
+            "name": "Heather",
+            "playerSlug": "heather",
+            "wins": 2
+          },
+          {
+            "name": "Ezekiel",
+            "playerSlug": "ezekiel",
+            "wins": 1
+          },
+          {
+            "name": "Leshawna",
+            "playerSlug": "leshawna",
+            "wins": 1
+          },
+          {
+            "name": "Owen",
+            "playerSlug": "owen",
+            "wins": 1
+          }
         ]
       }
     },
@@ -376,32 +490,111 @@
         "votes": 22
       },
       "topTargets": [
-        {"name": "Beth", "playerSlug": "beth", "votes": 22},
-        {"name": "Bridgette", "playerSlug": "bridgette", "votes": 20},
-        {"name": "Geoff", "playerSlug": "geoff", "votes": 13},
-        {"name": "Sierra", "playerSlug": "sierra", "votes": 13},
-        {"name": "Justin", "playerSlug": "justin", "votes": 12},
-        {"name": "Noah", "playerSlug": "noah", "votes": 11},
-        {"name": "Courtney", "playerSlug": "courtney", "votes": 10},
-        {"name": "Heather", "playerSlug": "heather", "votes": 10}
+        {
+          "name": "Beth",
+          "playerSlug": "beth",
+          "votes": 22
+        },
+        {
+          "name": "Bridgette",
+          "playerSlug": "bridgette",
+          "votes": 20
+        },
+        {
+          "name": "Geoff",
+          "playerSlug": "geoff",
+          "votes": 13
+        },
+        {
+          "name": "Sierra",
+          "playerSlug": "sierra",
+          "votes": 13
+        },
+        {
+          "name": "Justin",
+          "playerSlug": "justin",
+          "votes": 12
+        },
+        {
+          "name": "Noah",
+          "playerSlug": "noah",
+          "votes": 11
+        },
+        {
+          "name": "Courtney",
+          "playerSlug": "courtney",
+          "votes": 10
+        },
+        {
+          "name": "Heather",
+          "playerSlug": "heather",
+          "votes": 10
+        }
       ]
     },
     "strategic": {
       "idolsFound": 10,
       "idolFindings": [
-        {"name": "Ezekiel", "playerSlug": "ezekiel", "count": 2},
-        {"name": "Heather", "playerSlug": "heather", "count": 2},
-        {"name": "Alejandro", "playerSlug": "alejandro", "count": 1},
-        {"name": "Bridgette", "playerSlug": "bridgette", "count": 1},
-        {"name": "Duncan", "playerSlug": "duncan", "count": 1},
-        {"name": "Justin", "playerSlug": "justin", "count": 1},
-        {"name": "Katie", "playerSlug": "katie", "count": 1},
-        {"name": "Sierra", "playerSlug": "sierra", "count": 1}
+        {
+          "name": "Ezekiel",
+          "playerSlug": "ezekiel",
+          "count": 2
+        },
+        {
+          "name": "Heather",
+          "playerSlug": "heather",
+          "count": 2
+        },
+        {
+          "name": "Alejandro",
+          "playerSlug": "alejandro",
+          "count": 1
+        },
+        {
+          "name": "Bridgette",
+          "playerSlug": "bridgette",
+          "count": 1
+        },
+        {
+          "name": "Duncan",
+          "playerSlug": "duncan",
+          "count": 1
+        },
+        {
+          "name": "Justin",
+          "playerSlug": "justin",
+          "count": 1
+        },
+        {
+          "name": "Katie",
+          "playerSlug": "katie",
+          "count": 1
+        },
+        {
+          "name": "Sierra",
+          "playerSlug": "sierra",
+          "count": 1
+        }
       ],
       "strategicRanking": [
-        {"rank": 1, "name": "Alejandro", "playerSlug": "alejandro", "note": "Clear strategic MVP"},
-        {"rank": 2, "name": "Heather", "playerSlug": "heather", "note": "Strong manipulation"},
-        {"rank": 3, "name": "Courtney", "playerSlug": "courtney", "note": "Dominant personality"}
+        {
+          "rank": 1,
+          "name": "Alejandro",
+          "playerSlug": "alejandro",
+          "note": "Clear strategic MVP"
+        },
+        {
+          "rank": 2,
+          "name": "Heather",
+          "playerSlug": "heather",
+          "note": "Strong manipulation"
+        },
+        {
+          "rank": 3,
+          "name": "Courtney",
+          "playerSlug": "courtney",
+          "note": "Dominant personality"
+        }
       ]
     },
     "juryComposition": {

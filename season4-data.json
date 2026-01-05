@@ -166,85 +166,64 @@
     "winner": {
       "name": "Alejandro",
       "playerSlug": "alejandro",
-      "desc": "3rd finals appearance, finally won his crown, strategic dominance, defeated Zoey's unprecedented 3 unbreakable bonds"
+      "description": "Strategic mastermind finally wins on his 3rd finals appearance; survived 9 votes against and edged out Zoey 7–6–1."
     },
     "fanFavorite": {
-      "name": "Alejandro",
-      "playerSlug": "alejandro",
-      "desc": "Strategic brilliance, 4 challenge wins, finally broke the curse"
+      "name": "Jo",
+      "playerSlug": "jo",
+      "description": "Most entertaining chaos agent; stirred rivalries and survived tie chaos to reach the jury."
     },
     "bestStrategic": {
       "name": "Alejandro",
       "playerSlug": "alejandro",
-      "desc": "Strategic mastery, controlled game, proved strategy defeats pure social bonds in modern gameplay"
+      "description": "Controlled the endgame and proved strategy can beat even dominant social bonds."
     },
     "bestPhysical": {
-      "name": "Alejandro",
-      "playerSlug": "alejandro",
-      "wins": 4,
-      "desc": "4 total wins, strategic and physical dominance"
+      "name": "Gwen",
+      "playerSlug": "gwen",
+      "description": "Most dominant challenge run: four straight individual immunity wins (E11–14).",
+      "wins": 4
     },
     "bestSocial": {
       "name": "Zoey",
       "playerSlug": "zoey",
-      "desc": "Only 1 vote received all season (and it was cancelled); strongest social bonds despite losing 7–6–1."
+      "description": "Built unprecedented social capital with multiple unbreakable bonds and reached the finale with virtually no votes against."
     },
     "mostClutch": {
-      "name": "Gwen",
-      "playerSlug": "gwen",
-      "desc": "Won 4 consecutive immunity challenges late-game (E11–E14), saving herself repeatedly under maximum pressure."
+      "name": "Zoey",
+      "playerSlug": "zoey",
+      "description": "Made timely moves under pressure—idol save and late immunity wins to reach the closest finale ever."
     },
     "mostLoyal": {
       "name": "Zoey",
       "playerSlug": "zoey",
-      "desc": "Stayed committed to her core alliances/bonds throughout the season; played a clean, loyal social game."
+      "description": "Stayed fiercely loyal to her core relationships (Mike and Geoff) and leveraged bonds to the end."
     },
     "bestUnderdog": {
       "name": "Geoff",
       "playerSlug": "geoff",
-      "desc": "Voted out twice but fought back through the twist and still finished 6th — the ultimate comeback run."
+      "description": "Voted out twice yet kept fighting back—returned from EoE and still finished 6th.",
+      "note": "Returnee run"
     },
     "biggestVillain": {
-      "name": "Alejandro",
-      "playerSlug": "alejandro",
-      "desc": "The season’s mastermind—pulled strings, managed idols and votes, and engineered the closest finale ever."
-    },
-    "mostChaotic": {
       "name": "Sierra",
       "playerSlug": "sierra",
-      "desc": "Huge swings, wild tribals, and a massive idol play that cancelled 10 votes — chaos embodied."
+      "description": "Returned from Edge of Extinction and immediately ignited conflict; perfect-idol chaos and relentless targeting."
+    },
+    "mostChaotic": {
+      "name": "Jo",
+      "playerSlug": "jo",
+      "description": "Constant friction and big personality created the season’s most memorable chaos."
     },
     "quietestThreat": {
       "name": "Scott",
       "playerSlug": "scott",
-      "desc": "Kept a low profile while holding an idol for 9 tribals and delivering a perfect play at the finale."
+      "description": "Played a patient, low-key game highlighted by a franchise-record idol hold and perfect timing."
     },
     "seasonMVP": {
       "name": "Alejandro",
       "playerSlug": "alejandro",
-      "desc": "Best overall impact: winner, top strategist, and among the top challenge performers."
-    },
-    "biggestMeltdown": {
-      "name": "Sierra",
-      "playerSlug": "sierra",
-      "desc": "A visible emotional spiral that derailed her game and forced a scramble to survive despite strong advantages."
-    },
-    "mostTragic": {
-      "name": "Emma",
-      "playerSlug": "emma",
-      "desc": "Went out early despite being a previous champion; a harsh exit that cut her story short."
-    },
-    "mostUnlucky": {
-      "name": "Dakota",
-      "playerSlug": "dakota",
-      "desc": "Hit by an early landslide vote and then quit the Edge twist — unlucky path from start to finish."
-    },
-    "biggestBetrayal": {
-      "betrayer": "Scott",
-      "betrayerSlug": "scott",
-      "betrayed": "Emma",
-      "betrayedSlug": "emma",
-      "desc": "Scott turned on Emma to protect his position and deepen his endgame path—one of the season’s most decisive flips."
+      "description": "Overall most impactful player: strategic control + clutch wins in the closest jury vote ever."
     }
   },
   "statistics": {

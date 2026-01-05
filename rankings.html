@@ -124,6 +124,15 @@
       letter-spacing: 0.5px;
       margin-bottom: 4px;
     }
+
+    .stat-mini-icon { opacity: 0.7; margin-right: 4px; }
+    .stat-mini-label { 
+      font-size: 4px; 
+      opacity: 0.7; 
+      text-transform: uppercase; 
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
     .stat-value { 
       font-size: 20px; 
       font-weight: 700;
@@ -956,7 +965,7 @@ function renderMiniCard(ranking, player) {
   html +=   '</div>';
 
   html +=   '<div class="mini-subtitle">' + title + (title ? ' • ' : '') + seasonsLabel + '</div>';
-  html +=       '<div class="stat-label"><span class="stat-icon">📍</span> AVG. PLACEMENT</div>';
+  html +=       '<div class="stat-mini-label"><span class="stat-mini-icon">📍</span> AVG. PLACEMENT</div>';
   html +=       '<div class="stat-value">' + avgPlacement + (avgPlacement < 2.5 ? ' 🔥' : '') + '</div>';
     html +=   '<div class="player-badges">';
 

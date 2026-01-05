@@ -62,28 +62,28 @@
       "name": "Ezekiel",
       "playerSlug": "ezekiel",
       "phase": "Juror",
-      "notes": "2–2 tie → revote → tiebreaker • 1 challenge wins • 8 votes against • Cast tiebreak vote at FTC (for Bridgette)"
+      "notes": "2–2 tie → revote → tiebreaker • 1 challenge wins • 8 votes against • Cast tiebreak vote at FTC"
     },
     {
       "placement": 5,
       "name": "Beth",
       "playerSlug": "beth",
       "phase": "Juror",
-      "notes": "2–1–1* • 22 votes against"
+      "notes": "2–1–1 • 22 votes against • Biggest jury threat"
     },
     {
       "placement": 6,
       "name": "Trent",
       "playerSlug": "trent",
       "phase": "Juror",
-      "notes": "2–2*–1–1 • 3 challenge wins • 2 immunity wins • 5 votes against"
+      "notes": "2–2–1–1 • 3 challenge wins • 2 immunity wins • 5 votes against"
     },
     {
       "placement": 7,
       "name": "Owen",
       "playerSlug": "owen",
       "phase": "Juror",
-      "notes": "Medevac • 1 challenge wins • 6 votes against • Left without a vote (medevac)"
+      "notes": "Medevac • 1 challenge wins • 6 votes against"
     },
     {
       "placement": 8,
@@ -118,7 +118,7 @@
       "name": "Katie",
       "playerSlug": "katie",
       "phase": "Pre-Merge",
-      "notes": "5–3–3*–1 • 5 votes against"
+      "notes": "5–3–3–1 • 5 votes against"
     },
     {
       "placement": 13,
@@ -202,48 +202,305 @@
       "name": "Justin",
       "playerSlug": "justin",
       "phase": "Pre-Merge",
-      "notes": "6–6 → 6–4 revote • 12 votes against • Found idol but didn't play it (early game)"
+      "notes": "6–6 → 6–4 revote • 12 votes against"
     }
   ],
   "awards": {
+    "playerOfSeason": {
+      "gold": {
+        "name": "Alejandro",
+        "playerSlug": "alejandro",
+        "description": "Dominated strategy, controlled idols, reached FTC"
+      },
+      "silver": {
+        "name": "Lindsay",
+        "playerSlug": "lindsay",
+        "description": "Clean victory with perfect social control"
+      }
+    },
+    "heroOfSeason": {
+      "gold": {
+        "name": "Lindsay",
+        "playerSlug": "lindsay",
+        "description": "Low votes against, loyal gameplay, clean win"
+      },
+      "silver": {
+        "name": "Owen",
+        "playerSlug": "owen",
+        "description": "Positive attitude, challenge contributions"
+      }
+    },
+    "villainOfSeason": {
+      "gold": {
+        "name": "Heather",
+        "playerSlug": "heather",
+        "description": "High conflict, high impact, never invisible"
+      },
+      "silver": {
+        "name": "Courtney",
+        "playerSlug": "courtney",
+        "description": "Dominant personality, strategic threat"
+      }
+    },
+    "compBeast": {
+      "gold": {
+        "name": "Bridgette",
+        "playerSlug": "bridgette",
+        "description": "5 challenge wins, 4 immunities—undisputed physical force"
+      },
+      "silver": {
+        "name": "Trent",
+        "playerSlug": "trent",
+        "description": "3 challenge wins, 2 immunity wins"
+      }
+    },
+    "socialQueenKing": {
+      "gold": {
+        "name": "Lindsay",
+        "playerSlug": "lindsay",
+        "description": "Only 1 vote against all season—strongest social game"
+      },
+      "silver": {
+        "name": "Owen",
+        "playerSlug": "owen",
+        "description": "6 votes against, strong jury connections"
+      }
+    },
+    "masterStrategist": {
+      "gold": {
+        "name": "Alejandro",
+        "playerSlug": "alejandro",
+        "description": "Controlled idols, multiple alliances, perfect reads"
+      },
+      "silver": {
+        "name": "Heather",
+        "playerSlug": "heather",
+        "description": "Found 2 idols, manipulative strategy"
+      }
+    },
+    "mostRobbedPreJuror": {
+      "gold": {
+        "name": "Gwen",
+        "playerSlug": "gwen",
+        "description": "Close votes, strong social ties, unlucky timing"
+      }
+    },
+    "mostBrutalExit": {
+      "gold": {
+        "name": "Sadie",
+        "playerSlug": "sadie",
+        "description": "Eliminated via rock draw after tie and revote"
+      },
+      "silver": {
+        "name": "Owen",
+        "playerSlug": "owen",
+        "description": "Medevac exit mid-jury—medical emergency"
+      }
+    },
+    "advantageKing": {
+      "gold": {
+        "name": "Ezekiel",
+        "playerSlug": "ezekiel",
+        "description": "Found 2 hidden immunity idols"
+      },
+      "silver": {
+        "name": "Heather",
+        "playerSlug": "heather",
+        "description": "Found 2 hidden immunity idols"
+      }
+    },
+    "biggest Target": {
+      "gold": {
+        "name": "Beth",
+        "playerSlug": "beth",
+        "description": "22 votes against—franchise record for most hostile reception"
+      }
+    },
+    "ftcGame": {
+      "gold": {
+        "name": "Lindsay",
+        "playerSlug": "lindsay",
+        "description": "Perfect jury management—won 5-4 from final tribal"
+      }
+    },
+    "winner": {
+      "name": "Lindsay",
+      "playerSlug": "lindsay",
+      "description": "Perfect loyalty • Clean win"
+    },
     "fanFavorite": {
-      "name": "Justin",
-      "playerSlug": "justin",
-      "description": "First boot who found an idol but didn't play it"
+      "name": "Lindsay",
+      "playerSlug": "lindsay",
+      "description": "Low votes against, loyal gameplay, clean win"
     },
     "bestStrategic": {
       "name": "Alejandro",
       "playerSlug": "alejandro",
-      "description": "Multiple alliances, perfect reads, controlled the game"
+      "description": "Controlled idols, multiple alliances, perfect reads"
     },
     "bestSocial": {
       "name": "Lindsay",
       "playerSlug": "lindsay",
-      "description": "Perfect social game, only 1 vote against"
+      "description": "Only 1 vote against all season—strongest social game"
     },
     "bestPhysical": {
       "name": "Bridgette",
       "playerSlug": "bridgette",
-      "description": "5 challenge wins (4 immunity + 1 reward)"
+      "description": "5 challenge wins, 4 immunities—undisputed physical force"
+    },
+    "biggestVillain": {
+      "name": "Heather",
+      "playerSlug": "heather",
+      "description": "High conflict, high impact, never invisible"
+    },
+    "seasonMVP": {
+      "name": "Alejandro",
+      "playerSlug": "alejandro",
+      "description": "Dominated strategy, controlled idols, reached FTC"
+    },
+    "biggestTarget": {
+      "gold": {
+        "name": "Beth",
+        "playerSlug": "beth",
+        "description": "22 votes against—franchise record for most hostile reception"
+      }
+    },
+    "mostClutch": {
+      "name": "Lindsay",
+      "playerSlug": "lindsay",
+      "description": "Perfect jury management—won 5-4 from final tribal"
+    },
+    "mostLoyal": {
+      "name": "Lindsay",
+      "playerSlug": "lindsay",
+      "description": "Low votes against, loyal gameplay, clean win"
+    },
+    "bestUnderdog": {
+      "name": "Gwen",
+      "playerSlug": "gwen",
+      "description": "Close votes, strong social ties, unlucky timing"
+    },
+    "mostChaotic": {
+      "name": "Total Drama: Cullhouse",
+      "playerSlug": null,
+      "description": "2 ties, multiple revotes, 1 rock draw, 1 medevac"
+    },
+    "quietestThreat": {
+      "name": "Ezekiel",
+      "playerSlug": "ezekiel",
+      "description": "Found 2 hidden immunity idols"
     }
   },
   "statistics": {
     "mostChaotic": "2 ties, multiple revotes, 1 rock draw, 1 medevac",
-    "challengeWins": {
-      "mostTotal": {
-        "name": "Bridgette",
-        "playerSlug": "bridgette",
-        "wins": 5
+    "challengeStats": {
+      "totalChallenges": 24,
+      "immunityWins": {
+        "mostImmunity": {
+          "name": "Bridgette",
+          "playerSlug": "bridgette",
+          "wins": 4
+        },
+        "rankings": [
+          {
+            "name": "Bridgette",
+            "playerSlug": "bridgette",
+            "wins": 4
+          },
+          {
+            "name": "Alejandro",
+            "playerSlug": "alejandro",
+            "wins": 3
+          },
+          {
+            "name": "Trent",
+            "playerSlug": "trent",
+            "wins": 2
+          },
+          {
+            "name": "Heather",
+            "playerSlug": "heather",
+            "wins": 1
+          },
+          {
+            "name": "Leshawna",
+            "playerSlug": "leshawna",
+            "wins": 1
+          }
+        ]
       },
-      "mostImmunity": {
-        "name": "Bridgette",
-        "playerSlug": "bridgette",
-        "wins": 4
+      "rewardWins": {
+        "rankings": [
+          {
+            "name": "Alejandro",
+            "playerSlug": "alejandro",
+            "wins": 1
+          },
+          {
+            "name": "Bridgette",
+            "playerSlug": "bridgette",
+            "wins": 1
+          },
+          {
+            "name": "Ezekiel",
+            "playerSlug": "ezekiel",
+            "wins": 1
+          },
+          {
+            "name": "Heather",
+            "playerSlug": "heather",
+            "wins": 1
+          },
+          {
+            "name": "Owen",
+            "playerSlug": "owen",
+            "wins": 1
+          },
+          {
+            "name": "Trent",
+            "playerSlug": "trent",
+            "wins": 1
+          }
+        ]
       },
-      "mostReward": {
-        "name": "Bridgette",
-        "playerSlug": "bridgette",
-        "wins": 1
+      "totalChallengeWins": {
+        "rankings": [
+          {
+            "name": "Bridgette",
+            "playerSlug": "bridgette",
+            "wins": 5
+          },
+          {
+            "name": "Alejandro",
+            "playerSlug": "alejandro",
+            "wins": 4
+          },
+          {
+            "name": "Trent",
+            "playerSlug": "trent",
+            "wins": 3
+          },
+          {
+            "name": "Heather",
+            "playerSlug": "heather",
+            "wins": 2
+          },
+          {
+            "name": "Ezekiel",
+            "playerSlug": "ezekiel",
+            "wins": 1
+          },
+          {
+            "name": "Leshawna",
+            "playerSlug": "leshawna",
+            "wins": 1
+          },
+          {
+            "name": "Owen",
+            "playerSlug": "owen",
+            "wins": 1
+          }
+        ]
       }
     },
     "socialGame": {
@@ -256,11 +513,53 @@
         "name": "Beth",
         "playerSlug": "beth",
         "votes": 22
-      }
+      },
+      "topTargets": [
+        {
+          "name": "Beth",
+          "playerSlug": "beth",
+          "votes": 22
+        },
+        {
+          "name": "Bridgette",
+          "playerSlug": "bridgette",
+          "votes": 20
+        },
+        {
+          "name": "Geoff",
+          "playerSlug": "geoff",
+          "votes": 13
+        },
+        {
+          "name": "Sierra",
+          "playerSlug": "sierra",
+          "votes": 13
+        },
+        {
+          "name": "Justin",
+          "playerSlug": "justin",
+          "votes": 12
+        },
+        {
+          "name": "Noah",
+          "playerSlug": "noah",
+          "votes": 11
+        },
+        {
+          "name": "Courtney",
+          "playerSlug": "courtney",
+          "votes": 10
+        },
+        {
+          "name": "Heather",
+          "playerSlug": "heather",
+          "votes": 10
+        }
+      ]
     },
     "strategic": {
       "idolsFound": 10,
-      "mostIdols": [
+      "idolFindings": [
         {
           "name": "Ezekiel",
           "playerSlug": "ezekiel",
@@ -270,19 +569,92 @@
           "name": "Heather",
           "playerSlug": "heather",
           "count": 2
+        },
+        {
+          "name": "Alejandro",
+          "playerSlug": "alejandro",
+          "count": 1
+        },
+        {
+          "name": "Bridgette",
+          "playerSlug": "bridgette",
+          "count": 1
+        },
+        {
+          "name": "Duncan",
+          "playerSlug": "duncan",
+          "count": 1
+        },
+        {
+          "name": "Justin",
+          "playerSlug": "justin",
+          "count": 1
+        },
+        {
+          "name": "Katie",
+          "playerSlug": "katie",
+          "count": 1
+        },
+        {
+          "name": "Sierra",
+          "playerSlug": "sierra",
+          "count": 1
+        }
+      ],
+      "strategicRanking": [
+        {
+          "rank": 1,
+          "name": "Alejandro",
+          "playerSlug": "alejandro",
+          "note": "Clear strategic MVP"
+        },
+        {
+          "rank": 2,
+          "name": "Heather",
+          "playerSlug": "heather",
+          "note": "Strong manipulation"
+        },
+        {
+          "rank": 3,
+          "name": "Courtney",
+          "playerSlug": "courtney",
+          "note": "Dominant personality"
         }
       ]
+    },
+    "juryComposition": {
+      "totalJurors": 9,
+      "lurkingJurors": 2,
+      "composition": "9 jurors voted, with 2-2 tie at Final 4 forcing revote/tiebreaker"
+    },
+    "votePatterns": {
+      "finalTribalVote": "5-4 Lindsay",
+      "tiesOccurred": 2,
+      "revotesOccurred": 2,
+      "rockDrawOccurred": 1,
+      "medevacOccurred": 1
     }
   },
   "legacy": {
-    "summary": "Season 1 established the foundation with 24 new players and hidden immunity idols. Lindsay's social mastery won over Alejandro's strategic gameplay.",
+    "summary": "Season 1 established the foundation with 24 new players and hidden immunity idols. Lindsay's social mastery defeated Alejandro's strategic gameplay in a classic 5-4 vote. The season featured unprecedented chaos: 2 ties, multiple revotes, a rock draw, and a medevac.",
+    "franchiseRecords": [
+      "👑 Most Wins: Lindsay (1)",
+      "🎯 Biggest Target: Beth (22 votes against)",
+      "💪 Best Challenge Player: Bridgette (5 challenge wins)",
+      "🧠 Best Strategic Player: Alejandro",
+      "🛡️ Best Social Game: Lindsay (1 vote against)",
+      "🪨 Most Chaotic Season: Season 1 (2 ties, revotes, rocks, medevac)"
+    ],
     "memorableMoments": [
-      "First season kickoff: Cullhouse begins",
-      "Lindsay wins a tight 5–4 Final Tribal",
-      "Ezekiel forces tiebreak drama at Final 4",
-      "Sadie eliminated via rocks after tie + revote",
-      "Owen exits by medevac mid-jury",
-      "Bridgette dominates challenges (5 wins)"
+      "Season premiere: Cullhouse introduces 24 new players",
+      "Hidden immunity idols introduced to the game",
+      "Ezekiel forces Final 4 tiebreak drama with perfect game balance",
+      "Sadie eliminated via rock draw after tie and revote",
+      "Owen medevac exit during jury phase",
+      "Bridgette dominates with 5 challenge wins (4 immunities + 1 reward)",
+      "Lindsay wins with historic social control (1 vote against)",
+      "Alejandro strategic MVP despite runner-up finish",
+      "Beth receives franchise-record 22 votes against"
     ]
   }
 }

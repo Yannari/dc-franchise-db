@@ -389,6 +389,42 @@
       "name": "Ezekiel",
       "playerSlug": "ezekiel",
       "description": "Found 2 hidden immunity idols"
+    },
+    "biggestMeltdown": {
+      "name": "Alejandro",
+      "playerSlug": "alejandro",
+      "episode": 22,
+      "description": "Major endgame meltdown under pressure after winning immunity—every promise caught up to him."
+    },
+    "mostTragic": {
+      "name": "Owen",
+      "playerSlug": "owen",
+      "description": "Medevac exit mid-jury—medical emergency."
+    },
+    "mostUnlucky": {
+      "name": "Justin",
+      "playerSlug": "justin",
+      "episode": 1,
+      "description": "Found an idol on Day 1 but didn’t play it and was eliminated in the opening vote."
+    },
+    "messiestFeud": {
+      "players": [
+        "Courtney",
+        "Owen"
+      ],
+      "description": "Explosive mutual hatred that dominated the merge’s relationship landscape."
+    },
+    "biggestBetrayal": {
+      "betrayer": "Alejandro",
+      "betrayed": "Trent",
+      "episode": 21,
+      "description": "Cut the person who trusted him most at Final Six—Trent left heartbroken."
+    },
+    "secondBiggestBetrayal": {
+      "betrayer": "Alejandro",
+      "betrayed": "Beth",
+      "episode": 1,
+      "description": "Flipped at the revote to break the deadlock, abandoning Beth’s side when it mattered."
     }
   },
   "statistics": {

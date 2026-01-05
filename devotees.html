@@ -1,288 +1,130 @@
 <!doctype html>
-<html lang="en" data-root=".">
+<html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>DC Franchise — Players</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Devotees — DC Franchise Database</title>
   <link rel="stylesheet" href="styles.css">
   <style>
-    /* Advanced Modern Design for Devotees */
-    
-    .devotees-hero {
-      text-align: center;
-      padding: 50px 20px;
-      background: linear-gradient(135deg, rgba(125,76,255,.2), rgba(255,179,71,.15), rgba(76,255,179,.1));
-      border-radius: 28px;
-      border: 1px solid rgba(125,76,255,.35);
-      margin-bottom: 32px;
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .devotees-hero::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(circle, rgba(125,76,255,.1) 0%, transparent 70%);
-      animation: rotate 20s linear infinite;
-    }
-    
-    @keyframes rotate {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-    
-    .devotees-hero h1 {
-      position: relative;
-      font-size: 48px;
-      margin: 0 0 16px;
-      background: linear-gradient(135deg, #fff, var(--accent2), var(--accent));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      text-shadow: 0 0 40px rgba(125,76,255,.5);
-    }
-    
-    .devotees-hero p {
-      position: relative;
-      color: var(--muted);
-      font-size: 16px;
-      margin: 0;
-    }
-    
-    .controls {
-      background: linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
-      border: 1px solid rgba(255,255,255,.15);
-      border-radius: 20px;
-      padding: 20px;
-      margin: 24px 0;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 8px 32px rgba(0,0,0,.2);
-    }
-    
-    input[type="search"] {
-      background: rgba(0,0,0,.3);
-      border: 2px solid rgba(125,76,255,.3);
-      transition: all 0.3s ease;
-    }
-    
-    input[type="search"]:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 4px rgba(125,76,255,.15);
-      transform: scale(1.02);
-    }
-    
-    select {
-      background: rgba(0,0,0,.3);
-      border: 2px solid rgba(255,179,71,.3);
-      transition: all 0.3s ease;
-      cursor: pointer;
-    }
-    
-    select:hover {
-      border-color: var(--accent2);
-      transform: scale(1.02);
-    }
-    
-    #count {
-      text-align: center;
-      padding: 12px;
-      background: linear-gradient(90deg, transparent, rgba(125,76,255,.15), transparent);
-      border-radius: 12px;
-      font-weight: 700;
-      color: var(--accent2);
-      margin-bottom: 20px !important;
-    }
-    
-    .grid {
+    .search-container {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 20px;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      margin-bottom: 24px;
+      align-items: center;
     }
-    
-    .card {
-      position: relative;
-      background: linear-gradient(135deg, rgba(255,255,255,.1), rgba(255,255,255,.05));
-      border: 1px solid rgba(255,255,255,.15);
-      border-radius: 20px;
-      padding: 20px;
-      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      cursor: pointer;
-      overflow: hidden;
-      text-decoration: none;
-      color: inherit;
-      display: block;
-    }
-    
-    .card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,.1), transparent);
-      transition: left 0.5s ease;
-    }
-    
-    .card:hover::before {
-      left: 100%;
-    }
-    
-    .card:hover {
-      transform: translateY(-12px) scale(1.03);
-      border-color: var(--accent);
-      box-shadow: 
-        0 20px 60px rgba(125,76,255,.4),
-        0 0 0 1px rgba(125,76,255,.3),
-        inset 0 1px 0 rgba(255,255,255,.2);
-      background: linear-gradient(135deg, rgba(125,76,255,.15), rgba(255,179,71,.1));
-    }
-    
-    .card.winner {
-      border: 2px solid var(--accent2);
-      background: linear-gradient(135deg, rgba(255,179,71,.15), rgba(125,76,255,.1));
-      position: relative;
-    }
-    
-    .card.winner::after {
-      content: '👑';
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      font-size: 32px;
-      opacity: 0.3;
+
+    .search-input {
+      padding: 12px 16px;
+      border: 1px solid rgba(125,76,255,.35);
+      background: rgba(0,0,0,.2);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 14px;
       transition: all 0.3s ease;
     }
-    
-    .card.winner:hover::after {
-      opacity: 1;
-      transform: scale(1.2) rotate(15deg);
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(125,76,255,.2);
+      background: rgba(0,0,0,.3);
     }
-    
-    .card.winner:hover {
-      border-color: var(--accent2);
-      box-shadow: 
-        0 20px 60px rgba(255,179,71,.5),
-        0 0 0 2px rgba(255,179,71,.4),
-        inset 0 1px 0 rgba(255,255,255,.3);
+
+    .search-input::placeholder {
+      color: rgba(255,255,255,.5);
     }
-    
+
+    .sort-dropdown {
+      padding: 10px 14px;
+      border: 1px solid rgba(125,76,255,.35);
+      background: rgba(0,0,0,.2);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .sort-dropdown:hover, .sort-dropdown:focus {
+      border-color: var(--accent);
+      background: rgba(0,0,0,.3);
+    }
+
+    .player-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 16px;
+      margin: 24px 0;
+    }
+
+    .player-card {
+      background: linear-gradient(135deg, rgba(125,76,255,.1), rgba(255,179,71,.05));
+      border: 1px solid rgba(125,76,255,.2);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .player-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--accent);
+      box-shadow: 0 8px 24px rgba(125,76,255,.2);
+    }
+
     .player-avatar {
-      width: 80px;
-      height: 80px;
+      width: 64px;
+      height: 64px;
       border-radius: 50%;
-      background: linear-gradient(135deg, rgba(125,76,255,.3), rgba(255,179,71,.2));
-      border: 3px solid var(--accent);
-      overflow: hidden;
-      position: relative;
-      flex: 0 0 auto;
+      margin: 0 auto 12px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 
-        0 8px 16px rgba(0,0,0,.3),
-        inset 0 2px 4px rgba(255,255,255,.2);
-      transition: all 0.3s ease;
-    }
-    
-    .card:hover .player-avatar {
-      transform: scale(1.1) rotate(5deg);
-      border-color: var(--accent2);
-      box-shadow: 
-        0 12px 24px rgba(125,76,255,.5),
-        inset 0 2px 4px rgba(255,255,255,.3);
-    }
-    
-    .player-avatar img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform 0.3s ease;
-    }
-    
-    .card:hover .player-avatar img {
-      transform: scale(1.1);
-    }
-    
-    .player-avatar .fallback {
-      font-weight: 800;
-      font-size: 32px;
-      position: absolute;
-      display: none;
-    }
-    
-    .row {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 16px;
-    }
-    
-    .name {
-      font-weight: 900;
-      font-size: 20px;
-      color: var(--text);
-      margin-bottom: 6px;
-      transition: all 0.3s ease;
-    }
-    
-    .card:hover .name {
-      color: var(--accent2);
-      transform: translateX(4px);
-    }
-    
-    .sub {
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 500;
-    }
-    
-    .badges {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-top: 12px;
-    }
-    
-    .badge {
-      background: rgba(0,0,0,.4);
-      border: 1px solid rgba(255,255,255,.15);
-      padding: 6px 12px;
-      border-radius: 12px;
-      font-size: 12px;
+      font-size: 24px;
       font-weight: 700;
-      color: var(--muted);
-      transition: all 0.3s ease;
     }
-    
-    .card:hover .badge {
-      transform: translateY(-2px);
-      border-color: rgba(255,255,255,.3);
-    }
-    
-    .badge.gold {
-      background: linear-gradient(135deg, rgba(255,179,71,.3), rgba(255,179,71,.15));
-      border-color: var(--accent2);
+
+    .player-name {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 8px;
       color: var(--accent2);
-      box-shadow: 0 4px 12px rgba(255,179,71,.3);
     }
-    
-    .badge.purple {
-      background: linear-gradient(135deg, rgba(125,76,255,.3), rgba(125,76,255,.15));
-      border-color: var(--accent);
-      color: var(--accent);
-      box-shadow: 0 4px 12px rgba(125,76,255,.3);
+
+    .player-meta {
+      font-size: 12px;
+      color: rgba(255,255,255,.7);
+      line-height: 1.6;
     }
-    
-    .badge.good {
-      background: linear-gradient(135deg, rgba(76,255,179,.3), rgba(76,255,179,.15));
-      border-color: rgba(76,255,179,.7);
-      color: rgba(76,255,179,.9);
-      box-shadow: 0 4px 12px rgba(76,255,179,.3);
+
+    .loading-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+    }
+
+    .no-results {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+    }
+
+    .no-results h2 {
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .stats-bar {
+      background: rgba(0,0,0,.2);
+      border: 1px solid rgba(125,76,255,.2);
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 16px;
     }
   </style>
 </head>
@@ -291,7 +133,6 @@
 <!-- SITE HEADER START -->
 <header class="modern-header" id="modernHeader">
   <div class="header-container">
-    <!-- Top Bar -->
     <div class="header-top">
       <a href="index.html" class="brand-section" aria-label="Go to home">
         <div class="brand-icon">
@@ -299,399 +140,250 @@
         </div>
         <div class="brand-content">
           <h1>DC <span class="brand-gradient">Franchise</span> Database</h1>
-          <p class="brand-subtitle">Season <span id="currentSeasonNum">5</span> Live • Click to Explore</p>
+          <p class="brand-subtitle">Dynamic player profiles • Powered by JSON • Search & sort enabled</p>
         </div>
       </a>
-
       <div class="stats-badge">
         <div class="stats-main"><span id="totalSeasons">5</span> Seasons • <span id="totalPlayers">58</span> Players</div>
         <div class="stats-sub">Icons: <span id="iconFormat">name.png</span></div>
       </div>
     </div>
-
-    <!-- Navigation -->
     <nav class="header-nav" aria-label="Primary navigation">
       <ul class="nav-list">
-        <li class="nav-item">
-          <a href="index.html" class="nav-link" data-page="index">
-            <span class="nav-icon">🏠</span>
-            <span>Home</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="current-season.html" class="nav-link" data-page="current-season">
-            <span class="nav-icon">📊</span>
-            <span>Current Season</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="voting-analytics.html" class="nav-link" data-page="voting-analytics">
-            <span class="nav-icon">🧾</span>
-            <span>Voting Analytics</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="franchise.html" class="nav-link" data-page="franchise">
-            <span class="nav-icon">🏛️</span>
-            <span>Franchise</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="rankings.html" class="nav-link" data-page="rankings">
-            <span class="nav-icon">🏆</span>
-            <span>Rankings</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="seasons.html" class="nav-link" data-page="seasons">
-            <span class="nav-icon">🗂️</span>
-            <span>Seasons</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="devotees.html" class="nav-link" data-page="devotees">
-            <span class="nav-icon">👥</span>
-            <span>Players</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="awards.html" class="nav-link" data-page="awards">
-            <span class="nav-icon">🏅</span>
-            <span>Awards</span>
-          </a>
-        </li>
+        <li class="nav-item"><a href="index.html" class="nav-link" data-page="index"><span class="nav-icon">🏠</span><span>Home</span></a></li>
+        <li class="nav-item"><a href="current-season.html" class="nav-link" data-page="current-season"><span class="nav-icon">📊</span><span>Current Season</span></a></li>
+        <li class="nav-item"><a href="voting-analytics.html" class="nav-link" data-page="voting-analytics"><span class="nav-icon">🗳️</span><span>Voting Analytics</span></a></li>
+        <li class="nav-item"><a href="franchise.html" class="nav-link" data-page="franchise"><span class="nav-icon">🏛️</span><span>Franchise</span></a></li>
+        <li class="nav-item"><a href="rankings.html" class="nav-link" data-page="rankings"><span class="nav-icon">🏆</span><span>Rankings</span></a></li>
+        <li class="nav-item"><a href="seasons.html" class="nav-link" data-page="seasons"><span class="nav-icon">📚</span><span>Seasons</span></a></li>
+        <li class="nav-item"><a href="devotees.html" class="nav-link active" data-page="devotees"><span class="nav-icon">👥</span><span>Players</span></a></li>
+        <li class="nav-item"><a href="awards.html" class="nav-link" data-page="awards"><span class="nav-icon">🥇</span><span>Awards</span></a></li>
       </ul>
     </nav>
   </div>
 </header>
 
 <script>
-(function() {
-  // Load site config and update header stats
-  if (window.SITE_CONFIG) {
-    document.getElementById('totalSeasons').textContent = window.SITE_CONFIG.seasons;
-    document.getElementById('totalPlayers').textContent = window.SITE_CONFIG.players;
-    document.getElementById('currentSeasonNum').textContent = window.SITE_CONFIG.currentSeason;
-    document.getElementById('iconFormat').textContent = window.SITE_CONFIG.iconFormat;
+  if (window.SITECONFIG) {
+    document.getElementById('totalSeasons').textContent = window.SITECONFIG.seasons;
+    document.getElementById('totalPlayers').textContent = window.SITECONFIG.players;
+    document.getElementById('iconFormat').textContent = window.SITECONFIG.iconFormat;
   }
-
-  // Scroll behavior
-  const header = document.getElementById('modernHeader');
-  if (!header) return;
   
-  window.addEventListener('scroll', () => {
-    const currentScroll = window.pageYOffset;
-    if (currentScroll > 20) {
-      header.classList.add('scrolled');
-    } else {
-      header.classList.remove('scrolled');
-    }
-  }, { passive: true });
-
-  // Active page highlighting
+  const header = document.getElementById('modernHeader');
+  if (header) {
+    window.addEventListener('scroll', () => {
+      const currentScroll = window.pageYOffset;
+      if (currentScroll > 20) {
+        header.classList.add('scrolled');
+      } else {
+        header.classList.remove('scrolled');
+      }
+    }, { passive: true });
+  }
+  
   const currentPage = window.location.pathname.split('/').pop() || 'index.html';
   const navLinks = document.querySelectorAll('.nav-link');
-  
   navLinks.forEach(link => {
     const linkPage = link.getAttribute('href');
     if (linkPage === currentPage || (currentPage === '' && linkPage === 'index.html')) {
       link.classList.add('active');
     }
   });
-
-  // Path resolution for nested folders
-  const root = (document.documentElement.dataset.root || document.body.dataset.root || ".").replace(/\/+$/, "");
-  
-  if (root !== ".") {
-    const allLinks = header.querySelectorAll('a[href]');
-    allLinks.forEach(link => {
-      const href = link.getAttribute('href');
-      if (href && !href.startsWith('http') && !href.startsWith('#')) {
-        link.setAttribute('href', root + '/' + href);
-      }
-    });
-  }
-})();
 </script>
 <!-- SITE HEADER END -->
 
-<main style="min-height:100vh; padding-bottom:100px;">
-  <div class="container">
-    
-    <div class="topbar">
-      <div>
-        <div class="brand">DC <span>Franchise</span> Database</div>
-        <div class="meta">Dynamic player profiles • Powered by JSON • Search & sort enabled</div>
-      </div>
-      <div class="meta">68 total players • 68 appearances</div>
+<div class="container">
+  <div class="topbar">
+    <div>
+      <div class="brand">DC <span>Franchise</span> Database</div>
+      <div class="meta">Devotees</div>
     </div>
-    
-   
-
-    <div class="devotees-hero">
-      <h1>👥 All Players</h1>
-      <p>Browse the complete roster of Total Drama contestants</p>
-    </div>
-
-    <div class="controls">
-      <div style="display:grid; grid-template-columns:2fr 1fr; gap:16px;">
-        <input 
-          type="search" 
-          id="search" 
-          placeholder="🔍 Search players by name..." 
-          style="padding:14px 20px; border-radius:14px; font-size:15px; width:100%; color:var(--text);"
-        />
-        <select 
-          id="sort" 
-          style="padding:14px 20px; border-radius:14px; font-size:15px; color:var(--text);"
-        >
-          <option value="place-asc">📈 Best Placement (1st → Last)</option>
-          <option value="place-desc">📉 Worst Placement (Last → 1st)</option>
-          <option value="name-asc">🔤 Name (A → Z)</option>
-          <option value="name-desc">🔤 Name (Z → A)</option>
-          <option value="seasons-desc">📅 Seasons (Most → Fewest)</option>
-          <option value="seasons-asc">📅 Seasons (Fewest → Most)</option>
-          <option value="votes-desc">🗳️ Votes Against (Most → Fewest)</option>
-          <option value="votes-asc">🗳️ Votes Against (Fewest → Most)</option>
-          <option value="chwins-desc">🏅 Challenge Wins (Most → Fewest)</option>
-          <option value="chwins-asc">🏅 Challenge Wins (Fewest → Most)</option>
-        </select>
-      </div>
-    </div>
-
-    <div id="count" style="margin:20px 0; font-size:14px; color:var(--muted);">
-      Loading players...
-    </div>
-
-    <div class="grid" id="grid">
-      <!-- Player cards will be inserted here by JavaScript -->
-    </div>
-
-    <div class="footer">40 total players across 4 seasons • 68 total appearances</div>
+    <div class="meta">68 total players • 68 appearances</div>
   </div>
-</main>
 
-<!-- SITE FOOTER START -->
+  <div class="tabs">
+    <a class="tab" href="index.html">🏠 Home</a>
+    <a class="tab" href="current-season.html">📊 Current Season</a>
+    <a class="tab" href="voting-analytics.html">🗳️ Voting Analytics</a>
+    <a class="tab active" href="devotees.html">👥 All Players</a>
+    <a class="tab" href="rankings.html">🏆 Rankings</a>
+    <a class="tab" href="seasons.html">📚 Seasons</a>
+    <a class="tab" href="awards.html">🥇 Awards</a>
+  </div>
+
+  <div style="margin: 32px 0;">
+    <h2 style="margin-bottom: 16px;">👥 All Players</h2>
+    <p style="color: var(--muted); margin-bottom: 24px;">Browse the complete roster of Total Drama contestants</p>
+
+    <div class="search-container">
+      <input 
+        type="text" 
+        id="searchInput" 
+        class="search-input" 
+        placeholder="🔍 Search players by name..." 
+        aria-label="Search players"
+      >
+      <select id="sortSelect" class="sort-dropdown" aria-label="Sort players">
+        <option value="best-placement">📈 Best Placement (1st → Last)</option>
+        <option value="worst-placement">📉 Worst Placement (Last → 1st)</option>
+        <option value="name-asc">🔤 Name (A → Z)</option>
+        <option value="name-desc">🔤 Name (Z → A)</option>
+        <option value="seasons-most">📅 Seasons (Most → Fewest)</option>
+        <option value="seasons-least">📅 Seasons (Fewest → Most)</option>
+        <option value="votes-most">🗳️ Votes Against (Most → Fewest)</option>
+        <option value="votes-least">🗳️ Votes Against (Fewest → Most)</option>
+        <option value="challenges-most">🏅 Challenge Wins (Most → Fewest)</option>
+        <option value="challenges-least">🏅 Challenge Wins (Fewest → Most)</option>
+      </select>
+    </div>
+
+    <div class="stats-bar">
+      <span id="resultCount">Showing 0 of 68 players</span>
+    </div>
+
+    <div id="playerContainer" class="player-grid">
+      <div class="loading-state">
+        <h2>⏳ Loading players...</h2>
+        <p>Please wait while we fetch the player database</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SITE FOOTER -->
 <footer class="siteFooter">
   <div class="footerInner">
     <div class="footerTitle">DC Franchise Database</div>
-    <div class="footerSub">Static archive • 5 seasons • 58 players • Icons: name.png</div>
+    <div class="footerSub">40 total players across 4 seasons • 68 total appearances</div>
   </div>
 </footer>
-<!-- SITE FOOTER END -->
 
 <script>
-const grid = document.getElementById('grid');
-const search = document.getElementById('search');
-const sortSelect = document.getElementById('sort');
-const countDiv = document.getElementById('count');
-
 let allPlayers = [];
+let filteredPlayers = [];
 
-// Player emoji mapping
-const emojiMap = {
-  'alejandro': '👑', 'lindsay': '💁', 'duncan': '💀', 'emma': '🎯', 'cameron': '🧠',
-  'bridgette': '🏄', 'trent': '🎸', 'owen': '🍔', 'heather': '💅', 'beth': '🌸',
-  'gwen': '🎨', 'courtney': '📋', 'noah': '📚', 'ezekiel': '🏔️', 'geoff': '🎉',
-  'zoey': '❤️', 'scott': '🚜', 'mike': '🎭', 'anne maria': '💄', 'brick': '🎖️',
-  'dwayne': '👨‍👦', 'jo': '💪', 'dakota': '✨', 'dawn': '🌿', 'b': '🔧',
-  'sam': '🎮', 'lightning': '⚡', 'staci': '💬', 'crimson': '🖤', 'harold': '🤓',
-  'leshawna': '💁', 'justin': '😎', 'katie': '💖', 'sadie': '💖', 'izzy': '🤪',
-  'cody': '😬', 'eva': '😠', 'tyler': '🏀', 'sierra': '📱',
-  'amy': '😈', 'samey': '😊', 'scarlett': '🧪', 'shawn': '🧟', 'topher': '📺',
-  'rodney': '💘', 'dave': '😤', 'josee': '⛷️', 'max': '🦹', 'mickey': '🐭',
-  'sky': '🥋', 'sugar': '🍭', 'beardo': '🎵', 'blaineley': '🎤', 'ella': '🎶',
-  'jasmine': '🌿', 'leonard': '🪄', 'ryan': '🏋️',
-  'mary': '🧩',
-  'brody': '🏄',
-  'kitty': '📸',
-  'junior': '🧒',
-  'ennui': '🫥',
-  'jacques': '🕺',
-  'jay': '🧢',
-  'stephanie': '😤',
-  'kelly': '👜',
-  'tammy': '🪄'
-};
-
-
-// ========================================
-// UPDATED DEVOTEES.HTML SCRIPT
-// Replace the fetch() section in devotees.html (around line 509-526) with this:
-// ========================================
-
-// Load player data from JSON file first (always fresh), then cache
-function loadPlayerData() {
-  console.log('📁 Loading fresh data from players_database.json...');
-  return fetch('players_database.json')
-    .then(response => response.json())
-    .then(data => {
-      try {
-        localStorage.setItem('players_database', JSON.stringify(data));
-        console.log('✅ Cached fresh data to localStorage');
-      } catch (e) {
-        console.warn('Could not cache to localStorage:', e);
-      }
-      return data;
-    })
-    .catch(error => {
-      console.error('Error loading player data from JSON:', error);
-
-      // Fallback to localStorage only if JSON fails
-      try {
-        const stored = localStorage.getItem('players_database');
-        if (stored) {
-          console.log('⚠️ Using cached data from localStorage (JSON failed)');
-          return JSON.parse(stored);
-        }
-      } catch (e) {
-        console.warn('Could not load from localStorage:', e);
-      }
-
-      throw error;
-    });
-}
-
-// ✅ CALL THE FUNCTION AND CHAIN PROMISES
-loadPlayerData()
-  .then(data => {
-    allPlayers = data.players.map(player => {
-      const emoji = emojiMap[player.name.toLowerCase()] || '👤';
-      return {
-        ...player,
-        emoji
-      };
-    });
-
-    renderPlayers(allPlayers);
-    updateDisplay();
-
-    console.log('🔄 Player data loaded successfully');
-  })
-  .catch(error => {
-    console.error('Failed to load player data:', error);
-    countDiv.textContent = '❌ Error loading players. Check console.';
-  });
-
-
-function renderPlayers(players) {
-  grid.innerHTML = '';
-
-  players.forEach(player => {
-    const card = document.createElement('a');
-    card.className = 'card' + (Number(player.wins || 0) > 0 ? ' winner' : '');
-    card.href = `player.html?player=${player.id}`;
-    card.setAttribute('data-name', (player.name || '').toLowerCase());
-    card.setAttribute('data-place', Number(player.bestPlacement ?? 9999));
-    card.setAttribute('data-seasons', Number(player.totalSeasons ?? 0));
-    card.setAttribute('data-votes', Number(player.totalVotesAgainst ?? 0));
-    card.setAttribute('data-chwins', Number(player.totalChallengeWins ?? 0));
-
-    // Build season summary (safe if seasonDetails missing)
-    const details = Array.isArray(player.seasonDetails) ? [...player.seasonDetails] : [];
-    const seasonSummary = details.length
-      ? details
-          .sort((a, b) => Number(a.season ?? 0) - Number(b.season ?? 0))
-          .map(s => `S${s.season}: #${s.placement}`)
-          .join(' • ')
-      : 'No season data';
-
-    // Build badges
-    let badgesHtml = '';
-
-    // Add special badges (safe if winner season missing)
-    if (Number(player.wins || 0) > 0) {
-      const winSeason = details.find(s => Number(s.placement) === 1);
-      if (winSeason && winSeason.season != null) {
-        badgesHtml += `<span class="badge gold">🏆 Season ${winSeason.season} Winner</span>`;
-      } else {
-        badgesHtml += `<span class="badge gold">🏆 Season Winner</span>`;
-      }
-    }
-
-    // Add key badges from player.badges array
-    if (Array.isArray(player.badges) && player.badges.length > 0) {
-      player.badges.slice(0, 2).forEach(badge => {
-        const label = String(badge);
-        let badgeClass = 'badge';
-        if (label.includes('Strategic') || label.includes('Social')) badgeClass += ' purple';
-        else if (label.includes('Fan Favorite') || label.includes('FAN FAVORITE')) badgeClass += ' purple';
-        else if (label.includes('Perfect') || label.includes('Unbreakable')) badgeClass += ' good';
-        badgesHtml += `<span class="${badgeClass}">${label}</span>`;
-      });
-    }
-
-    // Add basic badges (safe defaults)
-    const bestPlacement = (player.bestPlacement != null ? player.bestPlacement : '—');
-    const totalSeasons = Number(player.totalSeasons ?? 0);
-    badgesHtml += `<span class="badge">Best: #${bestPlacement}</span>`;
-    badgesHtml += `<span class="badge">${totalSeasons} season${totalSeasons === 1 ? '' : 's'}</span>`;
-
-    const emoji = player.emoji || '👤';
-    const name = player.name || 'Unknown';
-
-    card.innerHTML = `
-      <div class="row">
-        <div class="player-avatar">
-          <img src="assets/avatars/${player.id}.png" alt="${name}" onload="this.style.display='block';" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"/>
-          <div class="fallback">${emoji}</div>
-        </div>
-        <div>
-          <div class="name">${emoji} ${name}</div>
-          <div class="sub">${seasonSummary}</div>
-        </div>
-      </div>
-      <div class="badges">
-        ${badgesHtml}
+async function loadPlayers() {
+  try {
+    const response = await fetch('players_database.json');
+    if (!response.ok) throw new Error('Failed to load players');
+    allPlayers = await response.json();
+    filteredPlayers = [...allPlayers];
+    renderPlayers();
+    attachEventListeners();
+  } catch (error) {
+    console.error('Error loading players:', error);
+    document.getElementById('playerContainer').innerHTML = `
+      <div class="no-results">
+        <h2>⚠️ Error Loading Players</h2>
+        <p>${error.message}</p>
       </div>
     `;
+  }
+}
 
-    grid.appendChild(card);
+function filterPlayers() {
+  const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+  
+  if (searchTerm === '') {
+    // If search is empty, show all players
+    filteredPlayers = [...allPlayers];
+  } else {
+    // Filter by search term
+    filteredPlayers = allPlayers.filter(player => 
+      player.name.toLowerCase().includes(searchTerm)
+    );
+  }
+  
+  // Re-apply current sort
+  const sortValue = document.getElementById('sortSelect').value;
+  sortPlayers(sortValue);
+  renderPlayers();
+}
+
+function sortPlayers(sortValue) {
+  switch(sortValue) {
+    case 'best-placement':
+      filteredPlayers.sort((a, b) => (a.bestPlacement || 999) - (b.bestPlacement || 999));
+      break;
+    case 'worst-placement':
+      filteredPlayers.sort((a, b) => (b.bestPlacement || 0) - (a.bestPlacement || 0));
+      break;
+    case 'name-asc':
+      filteredPlayers.sort((a, b) => a.name.localeCompare(b.name));
+      break;
+    case 'name-desc':
+      filteredPlayers.sort((a, b) => b.name.localeCompare(a.name));
+      break;
+    case 'seasons-most':
+      filteredPlayers.sort((a, b) => (b.seasons || []).length - (a.seasons || []).length);
+      break;
+    case 'seasons-least':
+      filteredPlayers.sort((a, b) => (a.seasons || []).length - (b.seasons || []).length);
+      break;
+    case 'votes-most':
+      filteredPlayers.sort((a, b) => (b.totalVotes || 0) - (a.totalVotes || 0));
+      break;
+    case 'votes-least':
+      filteredPlayers.sort((a, b) => (a.totalVotes || 0) - (b.totalVotes || 0));
+      break;
+    case 'challenges-most':
+      filteredPlayers.sort((a, b) => (b.challengeWins || 0) - (a.challengeWins || 0));
+      break;
+    case 'challenges-least':
+      filteredPlayers.sort((a, b) => (a.challengeWins || 0) - (b.challengeWins || 0));
+      break;
+    default:
+      break;
+  }
+}
+
+function renderPlayers() {
+  const container = document.getElementById('playerContainer');
+  const resultCount = document.getElementById('resultCount');
+  
+  resultCount.textContent = `Showing ${filteredPlayers.length} of ${allPlayers.length} players`;
+  
+  if (filteredPlayers.length === 0) {
+    container.innerHTML = `
+      <div class="no-results">
+        <h2>No players found</h2>
+        <p>Try adjusting your search term</p>
+      </div>
+    `;
+    return;
+  }
+  
+  container.innerHTML = filteredPlayers.map(player => `
+    <a href="player.html?player=${player.playerSlug}" class="player-card" style="text-decoration: none; color: inherit;">
+      <div class="player-avatar">${player.name.charAt(0)}</div>
+      <div class="player-name">${player.name}</div>
+      <div class="player-meta">
+        <div>🎬 ${(player.seasons || []).length} season${(player.seasons || []).length !== 1 ? 's' : ''}</div>
+        <div>🏆 Avg: #${player.bestPlacement || 'N/A'}</div>
+        <div>🗳️ ${player.totalVotes || 0} votes</div>
+        <div>⚡ ${player.challengeWins || 0} wins</div>
+      </div>
+    </a>
+  `).join('');
+}
+
+function attachEventListeners() {
+  const searchInput = document.getElementById('searchInput');
+  const sortSelect = document.getElementById('sortSelect');
+  
+  // Search input event - fires on every character typed or deleted
+  searchInput.addEventListener('input', filterPlayers);
+  
+  // Sort dropdown event
+  sortSelect.addEventListener('change', (e) => {
+    sortPlayers(e.target.value);
+    renderPlayers();
   });
 }
 
-
-function updateDisplay() {
-  const query = (search.value || '').toLowerCase().trim();
-  const sortValue = sortSelect.value;
-
-  // ✅ Always filter from the original data (not from DOM cards)
-  let filteredPlayers = allPlayers.filter(p =>
-    (p.name || '').toLowerCase().includes(query)
-  );
-
-  filteredPlayers.sort((a, b) => {
-    const aPlace = Number(a.bestPlacement ?? 9999);
-    const bPlace = Number(b.bestPlacement ?? 9999);
-    const aName = (a.name || '').toLowerCase();
-    const bName = (b.name || '').toLowerCase();
-    const aSeasons = Number(a.totalSeasons ?? 0);
-    const bSeasons = Number(b.totalSeasons ?? 0);
-    const aVotes = Number(a.totalVotesAgainst ?? 0);
-    const bVotes = Number(b.totalVotesAgainst ?? 0);
-    const aChWins = Number(a.totalChallengeWins ?? 0);
-    const bChWins = Number(b.totalChallengeWins ?? 0);
-
-    if (sortValue === 'place-asc') return aPlace - bPlace || aName.localeCompare(bName);
-    if (sortValue === 'place-desc') return bPlace - aPlace || aName.localeCompare(bName);
-    if (sortValue === 'name-asc') return aName.localeCompare(bName);
-    if (sortValue === 'name-desc') return bName.localeCompare(aName);
-    if (sortValue === 'seasons-desc') return (bSeasons - aSeasons) || aName.localeCompare(bName);
-    if (sortValue === 'seasons-asc') return (aSeasons - bSeasons) || aName.localeCompare(bName);
-    if (sortValue === 'votes-desc') return (bVotes - aVotes) || aName.localeCompare(bName);
-    if (sortValue === 'votes-asc') return (aVotes - bVotes) || aName.localeCompare(bName);
-    if (sortValue === 'chwins-desc') return (bChWins - aChWins) || aName.localeCompare(bName);
-    if (sortValue === 'chwins-asc') return (aChWins - bChWins) || aName.localeCompare(bName);
-    return 0;
-  });
-
-  renderPlayers(filteredPlayers);
-  countDiv.textContent = `Showing ${filteredPlayers.length} of ${allPlayers.length} players`;
-}
-
-search.addEventListener('input', updateDisplay);
-search.addEventListener('search', updateDisplay);
-sortSelect.addEventListener('change', updateDisplay);
+// Load players on page load
+loadPlayers();
 </script>
 
 </body>

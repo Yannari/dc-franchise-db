@@ -829,7 +829,19 @@ function renderRankings(rankingsData, playersMap) {
     if (!tierGroups[tierKey]) return;
 
     const tierInfo = rankingsData.tiers[tierKey];
-    const players = tierGroups[tierKey];
+    const players = (tierGroups[tierKey] || []).slice().sort(function(a, b) {
+    // Prefer explicit rank if present (lower rank = higher), otherwise sort by score (higher first)
+    const ra = Number.isFinite(Number(a.rank)) ? Number(a.rank) : Number.POSITIVE_INFINITY;
+    const rb = Number.isFinite(Number(b.rank)) ? Number(b.rank) : Number.POSITIVE_INFINITY;
+    if (ra !== rb) return ra - rb;
+
+    const sa = Number(a.score || 0);
+    const sb = Number(b.score || 0);
+    if (sb !== sa) return sb - sa;
+
+    // stable-ish tie-breaker
+    return String(a.playerId || '').localeCompare(String(b.playerId || ''));
+  });
 
     // IDs must match your controls/anchors: tier-splus, tier-s, tier-a, ...
     const tierId = tierKey.toLowerCase().replace('+', 'plus');
@@ -913,20 +925,7 @@ function renderPlayerCard(ranking, player) {
 
   const winnerKeys = getWinnerKeys(player); // ["S1","S3"] etc.
   const isWinner = winnerKeys.length > 0;
-  
-  // Best finish badge (e.g., S4: #4)
-  let best = null;
-  if (Array.isArray(player.seasonDetails)) {
-    player.seasonDetails.forEach(function(s) {
-      if (!s || typeof s.placement !== 'number') return;
-      if (!best || s.placement < best.placement) best = s;
-    });
-  }
-  const bestLabel = best
-    ? ((best.season ? 'S'+best.season + ': ' : '') + '#' + best.placement)
-    : '—';
 
-    
   let html = '';
   html += '<div class="player-card" data-winner="' + (isWinner ? 'true' : 'false') + '" data-name="' + player.name + '" data-score="' + ranking.score + '" data-tier="' + ranking.tier + '">';
   html +=   '<div class="player-header">';
@@ -1014,8 +1013,8 @@ function renderPlayerCard(ranking, player) {
   html +=       '<div class="stat-value">' + (player.totalJuryVotes || 0) + ' total</div>';
   html +=     '</div>';
   html +=     '<div class="stat-box">';
-  html +=       '<div class="stat-label"><span class="stat-icon">🏁</span> BEST FINISH</div>';
-  html +=       '<div class="stat-value">' + bestLabel + '</div>';
+  html +=       '<div class="stat-label"><span class="stat-icon">🧠</span> TIER</div>';
+  html +=       '<div class="stat-value">Tier ' + ranking.tier + '</div>';
   html +=     '</div>';
   html +=   '</div>';
 

@@ -751,7 +751,6 @@
     
     renderRankings(rankingsData, playersMap);
     initRankControls();
-    window.applyFilters = applyFilters;;
     
   } catch (error) {
     console.error('Error:', error);
@@ -943,11 +942,10 @@ function calculateAvgPlacement(player) {
     return s ? parseInt(s, 10) : NaN;
   }
   function getName(node){
-    const n = (node.dataset.name || node.querySelector('a.player-name')?.dataset?.name || node.querySelector('a.player-name')?.textContent || '');
+    const n = (node.dataset.name || node.querySelector('a.player-name')?.textContent || '');
     return (n || '').toLowerCase().replace(/^([^\w]+)\s*/,'').trim();
   }
 
-  // Save original position for restoration
   const original = new Map();
   allCards.forEach((node, idx) => {
     node.dataset.order = String(idx);
@@ -956,7 +954,6 @@ function calculateAvgPlacement(player) {
     const sec = node.closest('.tier-section');
     if (sec?.id) node.dataset.tier = sec.id;
 
-    // Ensure score on big cards
     if (node.classList.contains('player-card') && !node.dataset.score) {
       const s = node.querySelector('.score-display')?.textContent?.match(/(\d+)\s*\/\s*100/)?.[1];
       if (s) node.dataset.score = s;
@@ -978,15 +975,10 @@ function calculateAvgPlacement(player) {
   }
 
   function restoreLayout(){
-    // Put everything back where it came from
     allCards.forEach(node => {
       const pos = original.get(node);
       if (!pos || !pos.parent) return;
-      try{
-        pos.parent.insertBefore(node, pos.next);
-      }catch(e){
-        // ignore
-      }
+      try{ pos.parent.insertBefore(node, pos.next); }catch(e){}
     });
     globalResults.style.display = 'none';
     tierSections.forEach(sec => sec.style.display = '');
@@ -995,7 +987,6 @@ function calculateAvgPlacement(player) {
   function applyFilters(){
     const q = (searchInput?.value || '').toLowerCase().trim();
     const tier = tierFilter?.value || 'all';
-
     let shown = 0;
 
     allCards.forEach(node => {
@@ -1007,7 +998,6 @@ function calculateAvgPlacement(player) {
       if (show) shown++;
     });
 
-    // Hide empty tiers (only when not in global scope)
     if (sortScope?.value !== 'global'){
       tierSections.forEach(sec => {
         const anyVisible = Array.from(sec.querySelectorAll('.player-card, a.mini-card'))
@@ -1023,37 +1013,28 @@ function calculateAvgPlacement(player) {
 
   function sortWithinTiers(mode){
     tierSections.forEach(sec => {
-      // Sort big cards (direct children)
       const cards = Array.from(sec.querySelectorAll(':scope > .player-card'))
         .filter(n => n.style.display !== 'none');
-      const sortedCards = cards.slice().sort((a,b) => compare(a,b,mode));
-      sortedCards.forEach(n => sec.appendChild(n));
+      cards.sort((a,b) => compare(a,b,mode)).forEach(n => sec.appendChild(n));
 
-      // Sort minis within each mini-grid
       const grids = Array.from(sec.querySelectorAll('.mini-grid'));
       grids.forEach(grid => {
         const minis = Array.from(grid.querySelectorAll(':scope > a.mini-card'))
           .filter(n => n.style.display !== 'none');
-        const sortedMinis = minis.slice().sort((a,b) => compare(a,b,mode));
-        sortedMinis.forEach(n => grid.appendChild(n));
+        minis.sort((a,b) => compare(a,b,mode)).forEach(n => grid.appendChild(n));
       });
     });
   }
 
   function sortGlobal(mode){
-    // Restore first to avoid duplicating / losing structure
     restoreLayout();
-
-    // Collect visible cards only, sort, then move into globalList
     const visible = allCards.filter(n => n.style.display !== 'none');
-    const sorted = visible.slice().sort((a,b) => compare(a,b,mode));
+    visible.sort((a,b) => compare(a,b,mode));
 
-    // Hide tier sections and show global container
     tierSections.forEach(sec => sec.style.display = 'none');
     globalResults.style.display = '';
     globalList.innerHTML = '';
-
-    sorted.forEach(n => globalList.appendChild(n));
+    visible.forEach(n => globalList.appendChild(n));
   }
 
   function applySort(){
@@ -1063,7 +1044,6 @@ function calculateAvgPlacement(player) {
     if (scope === 'global' && mode !== 'default'){
       sortGlobal(mode);
     } else {
-      // back to normal
       restoreLayout();
       sortWithinTiers(mode);
     }
@@ -1080,7 +1060,8 @@ function calculateAvgPlacement(player) {
   sortScope?.addEventListener('change', () => { restoreLayout(); applyFilters(); applySort(); });
 
   applyFilters();
-})();
+}
+)();
 </script>
 
 </body>

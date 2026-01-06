@@ -2866,9 +2866,9 @@ setTimeout(function() {
   }
   
   function getWorkerUrl() {
-    // Try to get from the analytics section
-    const workerUrlInput = document.getElementById("workerUrl");
-    if (workerUrlInput) {
+    // Try to get from the analytics section (aiWorkerUrl)
+    const workerUrlInput = document.getElementById("aiWorkerUrl");
+    if (workerUrlInput && workerUrlInput.value.trim()) {
       return normalizeWorkerUrl(workerUrlInput.value.trim());
     }
     

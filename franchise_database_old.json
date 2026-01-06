@@ -1,0 +1,202 @@
+{
+  "franchiseStats": {
+    "totalSeasons": 5,
+    "totalEpisodes": 75,
+    "uniquePlayers": 58,
+    "totalAppearances": 86
+  },
+  "champions": [
+    {
+      "season": 1,
+      "winner": "Lindsay",
+      "playerSlug": "lindsay",
+      "strategy": "Social mastery",
+      "finalVote": "5-4",
+      "runnerUp": "Alejandro",
+      "keyStats": "Only 1 vote against entire game",
+      "legacy": "Never burned bridges",
+      "votesAgainst": 1
+    },
+    {
+      "season": 2,
+      "winner": "Duncan",
+      "playerSlug": "duncan",
+      "strategy": "Survival under pressure",
+      "finalVote": "5-1-1",
+      "runnerUp": "Alejandro & Lindsay",
+      "keyStats": "Constant targeting, earned respect",
+      "legacy": "Endurance over control",
+      "votesAgainst": 2
+    },
+    {
+      "season": 3,
+      "winner": "Emma",
+      "playerSlug": "emma",
+      "strategy": "Perfect loyalty",
+      "finalVote": "4-3-1",
+      "runnerUp": "Scott & Cameron",
+      "keyStats": "0 votes until Final 4",
+      "legacy": "Iron Person - all tribals",
+      "votesAgainst": 4
+    },
+    {
+      "season": 4,
+      "winner": "Alejandro",
+      "playerSlug": "alejandro",
+      "strategy": "Strategic brilliance",
+      "finalVote": "7-6-1",
+      "runnerUp": "Zoey & Scott",
+      "keyStats": "3rd finals appearance (finally won!)",
+      "legacy": "Strategy defeats social gameplay",
+      "votesAgainst": 9
+    },
+    {
+      "season": 5,
+      "winner": "Mickey",
+      "playerSlug": "mickey",
+      "strategy": "Under-the-radar control",
+      "finalVote": "3-3-2 (tiebreak)",
+      "runnerUp": "Sky & Ryan",
+      "keyStats": "0 votes against all season",
+      "legacy": "Quiet threat who peaked at the end",
+      "votesAgainst": 0
+    }
+  ],
+  "records": {
+    "challengeRecords": [
+      { "category": "Most Total Wins", "holder": "Alejandro", "stat": "13 across 3 seasons", "playerSlug": "alejandro" },
+      { "category": "Most Immunity Wins", "holder": "Alejandro", "stat": "9 total", "playerSlug": "alejandro" },
+      { "category": "Longest Streak", "holder": "Gwen", "stat": "4 consecutive, S4", "playerSlug": "gwen" },
+      { "category": "Most in One Season", "holder": "Scott", "stat": "6 total, S3", "playerSlug": "scott" }
+    ],
+    "votingRecords": [
+      { "category": "Most Votes Against", "holder": "Geoff", "stat": "29 total, S4", "playerSlug": "geoff" },
+      { "category": "Fewest to Win", "holder": "Lindsay", "stat": "1 vote, S1", "playerSlug": "lindsay" },
+      { "category": "Perfect Game", "holder": "Emma", "stat": "0 votes until F4, S3", "playerSlug": "emma" },
+      { "category": "Zero to Finals", "holder": "Zoey", "stat": "1 cancelled, S4", "playerSlug": "zoey" }
+    ],
+    "strategicRecords": [
+      { "category": "Most Idols Found", "holder": "Ezekiel", "stat": "3 total", "playerSlug": "ezekiel" },
+      { "category": "Longest Idol Hold", "holder": "Scott", "stat": "9 tribals, S4", "playerSlug": "scott" },
+      { "category": "Most Votes Cancelled", "holder": "Sierra & Zoey", "stat": "10 & 7 - S4", "playerSlug": "sierra" },
+      { "category": "Most Unbreakable Bonds", "holder": "Zoey", "stat": "3 at once, S4", "playerSlug": "zoey" }
+    ],
+    "socialRecords": [
+      { "category": "Most Seasons", "holder": "5 players", "stat": "Alejandro, Gwen, Heather, Courtney, Duncan" },
+      { "category": "Most Finals", "holder": "Alejandro", "stat": "3 appearances", "playerSlug": "alejandro" },
+      { "category": "Closest Vote", "holder": "S4 finale", "stat": "7-6-1" },
+      { "category": "Largest Jury", "holder": "S4", "stat": "14 members" }
+    ]
+  },
+  "fanFavorites": [
+    { "season": 1, "player": "Justin", "playerSlug": "justin", "description": "First boot who found an idol but didn't play it" },
+    { "season": 2, "player": "Alejandro", "playerSlug": "alejandro", "description": "Strategic mastermind with 5 immunity wins" },
+    { "season": 3, "player": "Dakota", "playerSlug": "dakota", "description": "Social butterfly with massive target" },
+    { "season": 4, "player": "Jo", "playerSlug": "jo", "description": "Chaotic agent with 3 extreme hatreds and entertaining gameplay" },
+    { "season": 5, "player": "Ryan", "playerSlug": "ryan", "description": "Finalist, fire-making champion, and kingmaker tiebreak vote" }
+  ],
+  "multiSeasonPlayers": {
+    "threeSeasons": [
+      { "player": "Alejandro", "playerSlug": "alejandro", "record": "2nd (S1), 2nd (S2), WINNER (S4) - Finally got his crown!" },
+      { "player": "Gwen", "playerSlug": "gwen", "record": "16th (S1), 8th (S2), 4th (S4) - Massive improvement arc" },
+      { "player": "Heather", "playerSlug": "heather", "record": "8th (S1), 9th (S2), 15th (S4) - Strategic villain couldn't adapt S4" }
+    ],
+    "twoSeasons": [
+      { "player": "Zoey", "playerSlug": "zoey", "record": "4th (S3), 2nd (S4) - 6 jury votes, closest runner-up ever" },
+      { "player": "Scott", "playerSlug": "scott", "record": "2nd (S3), 3rd (S4) - Best player to never win" },
+      { "player": "Cameron", "playerSlug": "cameron", "record": "3rd (S3), 5th (S4)" },
+      { "player": "Duncan", "playerSlug": "duncan", "record": "14th (S1), WINNER (S2), 7th (S4)" },
+      { "player": "Emma", "playerSlug": "emma", "record": "WINNER (S3), 17th (S4) - Previous winner curse" }
+    ]
+  },
+  "trends": {
+    "winningStrategies": [
+      { "season": 1, "strategy": "Social mastery", "winner": "Lindsay" },
+      { "season": 2, "strategy": "Survival under pressure", "winner": "Duncan" },
+      { "season": 3, "strategy": "Perfect loyalty", "winner": "Emma" },
+      { "season": 4, "strategy": "Strategic dominance", "winner": "Alejandro" },
+      { "season": 5, "strategy": "Structure + threat management", "winner": "Mickey" }
+    ],
+    "castComposition": [
+      { "season": 1, "composition": "24 new players" },
+      { "season": 2, "composition": "14 returnees (Gen 1)" },
+      { "season": 3, "composition": "16 new players (Gen 2)" },
+      { "season": 4, "composition": "18 mixed (9 Gen 1, 9 Gen 2)" },
+      { "season": 5, "composition": "18 new players (Gen 3)" }
+    ],
+    "finaleVoteMargins": [
+      { "season": 1, "vote": "5-4", "winner": "Lindsay" },
+      { "season": 2, "vote": "5-1-1", "winner": "Duncan" },
+      { "season": 3, "vote": "4-3-1", "winner": "Emma" },
+      { "season": 4, "vote": "7-6-1 (closest!)", "winner": "Alejandro" },
+      { "season": 5, "vote": "3-3-2 (tiebreak)", "winner": "Mickey" }
+    ],
+    "majorTwists": [
+      { "season": 1, "twist": "Hidden immunity idols introduced" },
+      { "season": 2, "twist": "Returnee season, idol steals" },
+      { "season": 3, "twist": "Rock draws, new generation" },
+      { "season": 4, "twist": "Edge of Extinction (12 players!)" },
+      { "season": 5, "twist": "3 tribes + swap + split-tribal merge + vote-loss twists + fire-making" }
+    ]
+  },
+  "milestones": [
+    { "category": "Most Challenge Wins (Career)", "holder": "Alejandro", "stat": "13 total", "season": "S1, S2, S4", "playerSlug": "alejandro" },
+    { "category": "Longest Immunity Streak", "holder": "Gwen", "stat": "4 consecutive", "season": "S4 (Ep 11-14)", "playerSlug": "gwen" },
+    { "category": "Most Challenge Wins (Single Season)", "holder": "Scott", "stat": "6 total", "season": "S3", "playerSlug": "scott" },
+    { "category": "Fewest Votes to Win", "holder": "Lindsay", "stat": "1 vote", "season": "S1", "playerSlug": "lindsay" },
+    { "category": "Most Votes Received", "holder": "Geoff", "stat": "29 total", "season": "S4", "playerSlug": "geoff" },
+    { "category": "Perfect Game", "holder": "Emma", "stat": "0 votes until F4", "season": "S3", "playerSlug": "emma" },
+    { "category": "Winner with 0 Votes Against", "holder": "Mickey", "stat": "0 votes (entire season)", "season": "S5", "playerSlug": "mickey" },
+    { "category": "Most Idols Found", "holder": "Ezekiel", "stat": "3 total", "season": "S1, S2", "playerSlug": "ezekiel" },
+    { "category": "Longest Idol Hold", "holder": "Scott", "stat": "9 tribals", "season": "S4", "playerSlug": "scott" },
+    { "category": "Most Votes Cancelled (Single Play)", "holder": "Sierra, Geoff", "stat": "10, 7", "season": "S4" },
+    { "category": "Most Unbreakable Bonds (Simultaneous)", "holder": "Zoey", "stat": "3 at once", "season": "S4", "playerSlug": "zoey" },
+    { "category": "Most Finals Appearances", "holder": "Alejandro", "stat": "3 times", "season": "S1, S2, S4", "playerSlug": "alejandro" },
+    { "category": "Closest Finale", "holder": "S4", "stat": "7-6-1", "season": "Alejandro win" },
+    { "category": "Only Tiebreak Finale", "holder": "S5", "stat": "3-3-2 (tiebreak)", "season": "Mickey win" },
+    { "category": "Largest Jury", "holder": "S4", "stat": "14 members", "season": "EoE twist" },
+    { "category": "Most EoE Participants", "holder": "S4", "stat": "12 players", "season": "66% of cast" }
+  ],
+  "careerLeaders": {
+    "challengeDominance": [
+      { "player": "Alejandro", "playerSlug": "alejandro", "wins": 13, "breakdown": "4 S1, 5 S2, 4 S4" },
+      { "player": "Gwen", "playerSlug": "gwen", "wins": 9, "breakdown": "0 S1, 1 S2, 8 S4" },
+      { "player": "Zoey", "playerSlug": "zoey", "wins": 8, "breakdown": "4 S3, 4 S4" },
+      { "player": "Scott", "playerSlug": "scott", "wins": 6, "breakdown": "6 S3, 0 S4" },
+      { "player": "Bridgette", "playerSlug": "bridgette", "wins": 5, "breakdown": "5 S1" }
+    ],
+    "socialGame": [
+      { "player": "Mickey", "playerSlug": "mickey", "votes": 0, "note": "S5 winner" },
+      { "player": "Lindsay", "playerSlug": "lindsay", "votes": 1, "note": "S1 winner" },
+      { "player": "Duncan", "playerSlug": "duncan", "votes": 2, "note": "S2 winner" },
+      { "player": "Emma", "playerSlug": "emma", "votes": 4, "note": "S3 winner - 0 until F4!" },
+      { "player": "Alejandro", "playerSlug": "alejandro", "votes": 9, "note": "S4 winner" }
+    ],
+    "strategicImpact": {
+      "mostIdolsFound": [
+        { "player": "Ezekiel", "count": 3, "playerSlug": "ezekiel" },
+        { "player": "Heather", "count": 2, "playerSlug": "heather" }
+      ],
+      "perfectIdolPlays": [
+        { "player": "Scott", "season": "S4", "playerSlug": "scott" },
+        { "player": "Sierra", "season": "S4", "playerSlug": "sierra" },
+        { "player": "Zoey", "season": "S4", "playerSlug": "zoey" },
+        { "player": "Cameron", "season": "S3", "playerSlug": "cameron" },
+        { "player": "Beth", "season": "S2", "playerSlug": "beth" }
+      ],
+      "longestHold": { "player": "Scott", "tribals": 9, "season": "S4", "playerSlug": "scott" },
+      "mostVotesCancelled": [
+        { "player": "Sierra", "votes": 10, "season": "S4", "playerSlug": "sierra" },
+        { "player": "Zoey", "votes": 7, "season": "S4", "playerSlug": "zoey" }
+      ]
+    }
+  },
+  "evolution": {
+    "season1": "Established the foundation with 24 new players and hidden immunity idols. Lindsay's social mastery won over Alejandro's strategic gameplay.",
+    "season2": "Brought back 14 returnees for intense warfare. Duncan's survival story beat Alejandro's immunity dominance (5 wins!). The season proved strategy alone doesn't guarantee victory - the jury wanted blood and struggle.",
+    "season3": "Introduced Gen 2 with 16 new players. Emma's perfect game (0 votes until F4) won in a tiebreaker. Scott's 6 challenge wins couldn't overcome Emma's loyalty strategy.",
+    "season4": "Combined All-Stars (9 Gen 1, 9 Gen 2) with Edge of Extinction. Alejandro FINALLY won his crown on his 3rd finals appearance, defeating Zoey's unprecedented 3 unbreakable bonds with strategic mastery. The closest finale ever (7-6-1) proved that in modern gameplay, strategy defeats pure social bonds.",
+    "season5": "Introduced 18 new players and a Survivor-style twist gauntlet (3 tribes, swap, split-tribal merge round, vote-loss twists, and Final 4 fire-making). Mickey won with 0 votes against and survived a 3–3–2 FTC tie thanks to Ryan's deciding tiebreak vote — proving that clean positioning and relationships can beat pure challenge dominance.",
+    "message": "The message across 5 seasons: Different strategies can win, but adaptability and respect from the jury are essential. Alejandro needed 3 tries to learn this lesson."
+  }
+}

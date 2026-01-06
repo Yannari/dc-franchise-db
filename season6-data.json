@@ -1,0 +1,1546 @@
+{
+  "seasonNumber": 6,
+  "title": "Total Drama Blood VS Water",
+  "subtitle": "Family or Strategy",
+  "castSize": 20,
+  "episodeCount": 17,
+  "jurySize": 8,
+  "winner": {
+    "name": "Jacques",
+    "playerSlug": "jacques",
+    "vote": "7-1-0",
+    "runnerUp": "Mickey & Jay",
+    "keyStats": "2 votes against, 4 immunities, 0 idols, never sent to Redemption Island",
+    "strategy": "Jacques built overlapping ‘unbreakable’ bonds (Jay, Kelly, Mickey, Kitty) and used them as levers rather than promises. He timed strikes through others, induced an idol burn on himself at merge, and won the pivotal Final 4 immunity to shape the endgame.",
+    "legacy": "Defines the ‘low-target, high-control’ archetype: ruthless but respected. His 7–1–0 win cements him as one of the franchise’s cleanest surgeon-style victors."
+  },
+  "finalists": [
+    {
+      "name": "Jacques",
+      "playerSlug": "jacques",
+      "placement": 1,
+      "votes": 7
+    },
+    {
+      "name": "Mickey",
+      "playerSlug": "mickey",
+      "placement": 2,
+      "votes": 1
+    },
+    {
+      "name": "Jay",
+      "playerSlug": "jay",
+      "placement": 3,
+      "votes": 0
+    }
+  ],
+  "placements": [
+    {
+      "placement": 1,
+      "name": "Jacques",
+      "playerSlug": "jacques",
+      "phase": "Winner",
+      "notes": "Winner — 7–1–0 jury vote",
+      "strategicRank": 10,
+      "story": "Played a near-flawless cold-precision game, building overlapping ‘unbreakable’ bonds and cashing them only when needed. Controlled endgame tempo with immunity wins and social leverage while avoiding being a target.",
+      "gameplayStyle": "Ice-cold strategist",
+      "keyMoments": [
+        "Guided early Tadhana structure with Kelly",
+        "Induced Kitty’s merge idol burn on him (Ep9)",
+        "Won F4 immunity to lock his ideal finals"
+      ],
+      "challengeWins": 4,
+      "immunityWins": 4,
+      "idolsFound": 0,
+      "votesReceived": 2,
+      "alliances": [
+        "Jay",
+        "Kelly",
+        "Mickey",
+        "Kitty"
+      ],
+      "rivalries": [
+        "Geoff",
+        "Brody"
+      ]
+    },
+    {
+      "placement": 2,
+      "name": "Mickey",
+      "playerSlug": "mickey",
+      "phase": "Finalist",
+      "notes": "Runner-up — 1 jury vote",
+      "strategicRank": 8,
+      "story": "Anchor of AnxietyBro with Jay; found and held the Galang idol deep, then protected Jay with it at 5. Weathered chaotic merges as a protected hub and reached the finals via loyalty and timing.",
+      "gameplayStyle": "Shielded power core",
+      "keyMoments": [
+        "Found Galang idol (Ep8)",
+        "Chose not to play idol in the rock vote (Ep10)",
+        "Idoled Jay at F5 (Ep16)"
+      ],
+      "challengeWins": 1,
+      "immunityWins": 1,
+      "idolsFound": 1,
+      "votesReceived": 8,
+      "alliances": [
+        "Jay",
+        "Ryan",
+        "Geoff"
+      ],
+      "rivalries": [
+        "Kitty",
+        "Kelly"
+      ]
+    },
+    {
+      "placement": 3,
+      "name": "Jay",
+      "playerSlug": "jay",
+      "phase": "Finalist",
+      "notes": "Finalist — 0 jury votes",
+      "strategicRank": 6,
+      "story": "Stayed fiercely loyal to Mickey while building side trust with Jacques. Survived multiple split votes, occasionally going rogue, and leaned on social bonds to reach the end.",
+      "gameplayStyle": "Loyal lieutenant",
+      "keyMoments": [
+        "Bonded strongly with Emma at merge (Ep9)",
+        "Rogue vote on Geoff in rock episode (Ep10)",
+        "Protected by Mickey’s idol at F5 (Ep16)"
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "idolsFound": 0,
+      "votesReceived": 4,
+      "alliances": [
+        "Mickey",
+        "Jacques"
+      ],
+      "rivalries": [
+        "Geoff",
+        "Blaineley"
+      ]
+    },
+    {
+      "placement": 4,
+      "name": "Kelly",
+      "playerSlug": "kelly",
+      "phase": "Juror",
+      "notes": "Eliminated Final 4 — 2–2 tie, 1–1 revote, lost fire-making",
+      "strategicRank": 9,
+      "story": "Idol-wielding ‘momager’ who helped steer pre-merge Tadhana, nuked a swap vote to save herself, then rebuilt power with Ryan and Jacques. Fell at F4 after a showdown with Mickey.",
+      "gameplayStyle": "Idol-backed controller",
+      "keyMoments": [
+        "Found and played Tadhana idol to bounce vote (Ep7)",
+        "Drove Ryan boot coalition (Ep12)",
+        "Lost F4 fire-making after 2–2 tie (Ep17)"
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "idolsFound": 1,
+      "votesReceived": 11,
+      "alliances": [
+        "Blaineley",
+        "Jacques",
+        "Ryan"
+      ],
+      "rivalries": [
+        "Brody",
+        "Mickey"
+      ]
+    },
+    {
+      "placement": 5,
+      "name": "Geoff",
+      "playerSlug": "geoff",
+      "phase": "Juror",
+      "notes": "Returned from RI (Ep16) then voted out 4–1",
+      "strategicRank": 7,
+      "story": "The social mayor of Galang and half of Surfers Bros. Lost Brody, returned late from RI with an idol clue, but became the consensus jury-threat cut at 5.",
+      "gameplayStyle": "Social hub",
+      "keyMoments": [
+        "Formed Galang core with Mickey/Ryan",
+        "Misfired vote on Kitty in merge chaos (Ep9)",
+        "Returned from RI then cut at F5 (Ep16)"
+      ],
+      "challengeWins": 1,
+      "immunityWins": 1,
+      "idolsFound": 0,
+      "votesReceived": 12,
+      "alliances": [
+        "Brody",
+        "Mickey",
+        "Blaineley"
+      ],
+      "rivalries": [
+        "Jacques",
+        "Jay"
+      ]
+    },
+    {
+      "placement": 6,
+      "name": "Blaineley",
+      "playerSlug": "blaineley",
+      "phase": "Juror",
+      "notes": "Voted out 4–1 at Final 5; eliminated on RI (Ep16)",
+      "strategicRank": 6,
+      "story": "Chaotic social influencer tied to Kelly, later integrated with Geoff/Mickey. Her reputation made her the safe late-game boot despite short-term impressions.",
+      "gameplayStyle": "Social provocateur",
+      "keyMoments": [
+        "Early feud with Emma (Ep1)",
+        "Bonded into Galang majority via Mickey/Geoff",
+        "Boot at F5 as consensus name (Ep15)"
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "idolsFound": 0,
+      "votesReceived": 7,
+      "alliances": [
+        "Kelly",
+        "Geoff",
+        "Mickey"
+      ],
+      "rivalries": [
+        "Jay",
+        "Emma",
+        "Dwayne"
+      ]
+    },
+    {
+      "placement": 7,
+      "name": "Brody",
+      "playerSlug": "brody",
+      "phase": "Juror",
+      "notes": "Voted out 4–2 (Ep14); multiple RI runs",
+      "strategicRank": 7,
+      "story": "Endurance story of the season: returned at merge, won immunity, but drew heavy fire as a likable threat. Received a season-high 26 votes and still made jury.",
+      "gameplayStyle": "Popular competitor",
+      "keyMoments": [
+        "Targeted at swap; survived idol fallout (Ep7)",
+        "Returned from RI at merge (Ep9)",
+        "Voted out again 4–2 (Ep14)"
+      ],
+      "challengeWins": 1,
+      "immunityWins": 1,
+      "idolsFound": 0,
+      "votesReceived": 26,
+      "alliances": [
+        "Geoff",
+        "Jay",
+        "Ryan"
+      ],
+      "rivalries": [
+        "Kelly",
+        "Mickey"
+      ]
+    },
+    {
+      "placement": 8,
+      "name": "Ryan",
+      "playerSlug": "ryan",
+      "phase": "Juror",
+      "notes": "Voted out 5–2–1 (Ep12); eliminated on RI (Ep15)",
+      "strategicRank": 8,
+      "story": "Power connector who bonded tightly with Mickey, fought publicly with Emma, and swung key votes. Found and later burned Galang’s idol early, then became the consensus merge boss to cut.",
+      "gameplayStyle": "Aggressive connector",
+      "keyMoments": [
+        "Found Galang idol (Ep4) and misplayed it (Ep5)",
+        "Helped boot Brody at swap (Ep8)",
+        "Sent to RI 5–2–1 (Ep12)"
+      ],
+      "challengeWins": 1,
+      "immunityWins": 1,
+      "idolsFound": 1,
+      "votesReceived": 11,
+      "alliances": [
+        "Mickey",
+        "Geoff",
+        "Kelly"
+      ],
+      "rivalries": [
+        "Emma",
+        "Brody",
+        "Kitty"
+      ]
+    },
+    {
+      "placement": 9,
+      "name": "Kitty",
+      "playerSlug": "kitty",
+      "phase": "Juror",
+      "notes": "Voted out (Ep11) to RI; eliminated on RI (Ep14)",
+      "strategicRank": 5,
+      "story": "Social spark of Sis4ever; found the merge idol but misplayed it on Jacques. Became the post-rock ‘safe boot’ amid a bitter feud with Mickey.",
+      "gameplayStyle": "Social wildcard",
+      "keyMoments": [
+        "Found Campers idol (Ep9)",
+        "Misplayed idol on Jacques (Ep9)",
+        "Voted out 3–2–2–1–1 chaos (Ep11)"
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "idolsFound": 1,
+      "votesReceived": 15,
+      "alliances": [
+        "Emma",
+        "Jacques",
+        "Jay"
+      ],
+      "rivalries": [
+        "Mickey",
+        "Ryan"
+      ]
+    },
+    {
+      "placement": 10,
+      "name": "Emma",
+      "playerSlug": "emma",
+      "phase": "Juror",
+      "notes": "Eliminated by rock draw at merge (Ep10)",
+      "strategicRank": 7,
+      "story": "Calm strategist who won the first merge immunity and led the anti-Ryan push. Became the season’s unluckiest exit when rocks sent her out despite not being the target.",
+      "gameplayStyle": "Composed strategist",
+      "keyMoments": [
+        "Won merge immunity (Ep9)",
+        "Targeted Ryan at merge",
+        "Lost rock draw (Ep10)"
+      ],
+      "challengeWins": 1,
+      "immunityWins": 1,
+      "idolsFound": 0,
+      "votesReceived": 1,
+      "alliances": [
+        "Kitty",
+        "Geoff",
+        "Dwayne"
+      ],
+      "rivalries": [
+        "Ryan",
+        "Blaineley"
+      ]
+    },
+    {
+      "placement": 11,
+      "name": "Dwayne",
+      "playerSlug": "dwayne",
+      "phase": "Juror",
+      "notes": "Cut in merge chaos 4–3–3–1 (Ep9) — direct elimination",
+      "strategicRank": 6,
+      "story": "Tribe glue and steady worker who became the ‘overlap’ boot at merge when factions couldn’t agree. His exit removed a key stabilizer.",
+      "gameplayStyle": "Tribe dad glue",
+      "keyMoments": [
+        "Rocks spared him in Ep1 twist",
+        "Bridged pairs pre-merge on Galang",
+        "Merge overlap boot (Ep9)"
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "idolsFound": 0,
+      "votesReceived": 6,
+      "alliances": [
+        "Geoff",
+        "Mickey",
+        "Emma"
+      ],
+      "rivalries": [
+        "Josee",
+        "Blaineley"
+      ]
+    },
+    {
+      "placement": 12,
+      "name": "Josee",
+      "playerSlug": "josee",
+      "phase": "Pre-Juror",
+      "notes": "Voted out 6–1 (Ep5) to RI; eliminated at merge duel (Ep9)",
+      "strategicRank": 5,
+      "story": "Hyper-competitive Ice Partner who melted down on Galang and was exiled. Fought hard on RI but fell just short of re-entering at merge.",
+      "gameplayStyle": "Volatile competitor",
+      "keyMoments": [
+        "Major meltdowns on Galang (Eps2–3)",
+        "Sent to RI 6–1 (Ep5)",
+        "Eliminated at merge duel (Ep9)"
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "idolsFound": 0,
+      "votesReceived": 10,
+      "alliances": [
+        "Jacques",
+        "Mickey"
+      ],
+      "rivalries": [
+        "Dwayne",
+        "Geoff",
+        "Emma"
+      ]
+    },
+    {
+      "placement": 13,
+      "name": "Stephanie",
+      "playerSlug": "stephanie",
+      "phase": "Pre-Juror",
+      "notes": "Voted out 6–1 (Ep6) to RI; eliminated at RI (Ep9)",
+      "strategicRank": 5,
+      "story": "Fiery competitor who clashed with Jacques and became the controllable boot when Tadhana finally lost. Survived duels until merge return, then fell.",
+      "gameplayStyle": "Combative competitor",
+      "keyMoments": [
+        "Targeted by Jacques (Ep6)",
+        "Won RI duel then burned a clue (Ep7)",
+        "Eliminated at merge duel (Ep9)"
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "idolsFound": 0,
+      "votesReceived": 8,
+      "alliances": [
+        "Brody",
+        "Kelly"
+      ],
+      "rivalries": [
+        "Jacques",
+        "Jay"
+      ]
+    },
+    {
+      "placement": 14,
+      "name": "Mary",
+      "playerSlug": "mary",
+      "phase": "Pre-Juror",
+      "notes": "Idol casualty at swap (Ep7) — 4 votes voided, 2–0",
+      "strategicRank": 6,
+      "story": "Brainiacs planner who kept agency over optics early and pushed liability cuts. Became collateral when Kelly’s idol detonated the swap vote.",
+      "gameplayStyle": "Rational planner",
+      "keyMoments": [
+        "Refused to swap for Beth (Ep1)",
+        "Joined Jacques/Kelly alliance (Ep4)",
+        "Idol-casualty boot (Ep7)"
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "idolsFound": 0,
+      "votesReceived": 2,
+      "alliances": [
+        "Kelly",
+        "Jacques"
+      ],
+      "rivalries": [
+        "Junior"
+      ]
+    },
+    {
+      "placement": 15,
+      "name": "Junior",
+      "playerSlug": "junior",
+      "phase": "Pre-Juror",
+      "notes": "Voted out 6–2 (Ep4); eliminated at RI (Ep7)",
+      "strategicRank": 3,
+      "story": "Fought to prove independence from Dwayne, surviving several RI duels, but fell short before the swap carnage.",
+      "gameplayStyle": "Earnest underdog",
+      "keyMoments": [
+        "Early RI survival streak",
+        "Booted 6–2 (Ep4)",
+        "Eliminated in RI numbers duel (Ep7)"
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "idolsFound": 0,
+      "votesReceived": 9,
+      "alliances": [
+        "Dwayne",
+        "Jay"
+      ],
+      "rivalries": [
+        "Mary",
+        "Jacques"
+      ]
+    },
+    {
+      "placement": 16,
+      "name": "Ennui",
+      "playerSlug": "ennui",
+      "phase": "Pre-Juror",
+      "notes": "Voted out 6–3 (Ep3) to RI; eliminated (Ep6)",
+      "strategicRank": 5,
+      "story": "Outsider who bonded with Brody and became the first true Tadhana target. Performed well on RI before bowing out to Josee/Junior.",
+      "gameplayStyle": "Quiet competitor",
+      "keyMoments": [
+        "Feud with Jay sets target (Ep3)",
+        "Won early RI duel (Ep4)",
+        "Eliminated on RI (Ep6)"
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "idolsFound": 0,
+      "votesReceived": 7,
+      "alliances": [
+        "Brody",
+        "Kelly"
+      ],
+      "rivalries": [
+        "Jay"
+      ]
+    },
+    {
+      "placement": 17,
+      "name": "Tammy",
+      "playerSlug": "tammy",
+      "phase": "Pre-Juror",
+      "notes": "Swapped to RI (Ep2); eliminated on RI (Ep5)",
+      "strategicRank": 2,
+      "story": "Early twist casualty who yo-yoed with Leonard on RI. Couldn’t keep pace in the duel gauntlet.",
+      "gameplayStyle": "Swap casualty",
+      "keyMoments": [
+        "Instant-vote to RI (Ep1)",
+        "Leonard swapped for her (Ep1)",
+        "Eliminated on RI (Ep5)"
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "idolsFound": 0,
+      "votesReceived": 4,
+      "alliances": [
+        "Leonard",
+        "Blaineley"
+      ],
+      "rivalries": [
+        "Emma"
+      ]
+    },
+    {
+      "placement": 18,
+      "name": "Leonard",
+      "playerSlug": "leonard",
+      "phase": "Pre-Juror",
+      "notes": "Voted out 5–3 (Ep2) to RI; eliminated (Ep4)",
+      "strategicRank": 2,
+      "story": "Lovable ‘wizard’ volunteered to RI early and became the easy liability cut when Galang needed stability. Lost the duel later.",
+      "gameplayStyle": "Lovable liability",
+      "keyMoments": [
+        "Swapped to save Tammy (Ep1)",
+        "Booted 5–3 (Ep2)",
+        "Eliminated on RI (Ep4)"
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "idolsFound": 0,
+      "votesReceived": 6,
+      "alliances": [
+        "Tammy"
+      ],
+      "rivalries": [
+        "Geoff"
+      ]
+    },
+    {
+      "placement": 19,
+      "name": "Beth",
+      "playerSlug": "beth",
+      "phase": "Pre-Juror",
+      "notes": "Rock draw to RI (Ep1); eliminated on RI (Ep3)",
+      "strategicRank": 3,
+      "story": "Early twist victim from Galang’s disorganization. Couldn’t recover at the first duel.",
+      "gameplayStyle": "Early-game casualty",
+      "keyMoments": [
+        "Lost rocks at instant tribal (Ep1)",
+        "Eliminated in domino duel (Ep3)"
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "idolsFound": 0,
+      "votesReceived": 2,
+      "alliances": [
+        "Mary"
+      ],
+      "rivalries": [
+        "Dwayne"
+      ]
+    },
+    {
+      "placement": 20,
+      "name": "Crimson",
+      "playerSlug": "crimson",
+      "phase": "Pre-Juror",
+      "notes": "Medical evacuation (Ep1)",
+      "strategicRank": 1,
+      "story": "Gothic Hearts half removed by medevac before strategy took hold, destabilizing Ennui’s social footing.",
+      "gameplayStyle": "Medevac",
+      "keyMoments": [
+        "Medevac in premiere"
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "idolsFound": 0,
+      "votesReceived": 1,
+      "alliances": [
+        "Ennui"
+      ],
+      "rivalries": []
+    }
+  ],
+  "votingHistory": [
+    {
+      "episode": 1,
+      "eliminated": "Crimson",
+      "eliminatedSlug": "crimson",
+      "votes": [
+        {
+          "voter": "Ennui",
+          "voterSlug": "ennui",
+          "target": "Tammy",
+          "targetSlug": "tammy"
+        },
+        {
+          "voter": "Jay",
+          "voterSlug": "jay",
+          "target": "Tammy",
+          "targetSlug": "tammy"
+        },
+        {
+          "voter": "Kelly",
+          "voterSlug": "kelly",
+          "target": "Tammy",
+          "targetSlug": "tammy"
+        },
+        {
+          "voter": "Stephanie",
+          "voterSlug": "stephanie",
+          "target": "Tammy",
+          "targetSlug": "tammy"
+        },
+        {
+          "voter": "Jacques",
+          "voterSlug": "jacques",
+          "target": "Brody",
+          "targetSlug": "brody"
+        },
+        {
+          "voter": "Mary",
+          "voterSlug": "mary",
+          "target": "Brody",
+          "targetSlug": "brody"
+        },
+        {
+          "voter": "Tammy",
+          "voterSlug": "tammy",
+          "target": "Brody",
+          "targetSlug": "brody"
+        },
+        {
+          "voter": "Brody",
+          "voterSlug": "brody",
+          "target": "Kitty",
+          "targetSlug": "kitty"
+        },
+        {
+          "voter": "Junior",
+          "voterSlug": "junior",
+          "target": "Jacques",
+          "targetSlug": "jacques"
+        },
+        {
+          "voter": "Kitty",
+          "voterSlug": "kitty",
+          "target": "Ennui",
+          "targetSlug": "ennui"
+        },
+        {
+          "voter": "Beth",
+          "voterSlug": "beth",
+          "target": "Dwayne",
+          "targetSlug": "dwayne"
+        },
+        {
+          "voter": "Dwayne",
+          "voterSlug": "dwayne",
+          "target": "Beth",
+          "targetSlug": "beth"
+        },
+        {
+          "voter": "Emma",
+          "voterSlug": "emma",
+          "target": "Dwayne",
+          "targetSlug": "dwayne"
+        },
+        {
+          "voter": "Geoff",
+          "voterSlug": "geoff",
+          "target": "Beth",
+          "targetSlug": "beth"
+        }
+      ]
+    },
+    {
+      "episode": 2,
+      "eliminated": null,
+      "eliminatedSlug": null,
+      "votes": [
+        {
+          "voter": "Blaineley",
+          "voterSlug": "blaineley",
+          "target": "Leonard",
+          "targetSlug": "leonard"
+        },
+        {
+          "voter": "Emma",
+          "voterSlug": "emma",
+          "target": "Leonard",
+          "targetSlug": "leonard"
+        },
+        {
+          "voter": "Geoff",
+          "voterSlug": "geoff",
+          "target": "Leonard",
+          "targetSlug": "leonard"
+        },
+        {
+          "voter": "Josee",
+          "voterSlug": "josee",
+          "target": "Leonard",
+          "targetSlug": "leonard"
+        },
+        {
+          "voter": "Mickey",
+          "voterSlug": "mickey",
+          "target": "Leonard",
+          "targetSlug": "leonard"
+        },
+        {
+          "voter": "Dwayne",
+          "voterSlug": "dwayne",
+          "target": "Josee",
+          "targetSlug": "josee"
+        },
+        {
+          "voter": "Leonard",
+          "voterSlug": "leonard",
+          "target": "Josee",
+          "targetSlug": "josee"
+        },
+        {
+          "voter": "Ryan",
+          "voterSlug": "ryan",
+          "target": "Josee",
+          "targetSlug": "josee"
+        }
+      ]
+    },
+    {
+      "episode": 3,
+      "eliminated": "Beth",
+      "eliminatedSlug": "beth",
+      "votes": [
+        {
+          "voter": "Jacques",
+          "voterSlug": "jacques",
+          "target": "Ennui",
+          "targetSlug": "ennui"
+        },
+        {
+          "voter": "Jay",
+          "voterSlug": "jay",
+          "target": "Ennui",
+          "targetSlug": "ennui"
+        },
+        {
+          "voter": "Junior",
+          "voterSlug": "junior",
+          "target": "Ennui",
+          "targetSlug": "ennui"
+        },
+        {
+          "voter": "Kelly",
+          "voterSlug": "kelly",
+          "target": "Ennui",
+          "targetSlug": "ennui"
+        },
+        {
+          "voter": "Kitty",
+          "voterSlug": "kitty",
+          "target": "Ennui",
+          "targetSlug": "ennui"
+        },
+        {
+          "voter": "Stephanie",
+          "voterSlug": "stephanie",
+          "target": "Ennui",
+          "targetSlug": "ennui"
+        },
+        {
+          "voter": "Brody",
+          "voterSlug": "brody",
+          "target": "Junior",
+          "targetSlug": "junior"
+        },
+        {
+          "voter": "Ennui",
+          "voterSlug": "ennui",
+          "target": "Junior",
+          "targetSlug": "junior"
+        },
+        {
+          "voter": "Mary",
+          "voterSlug": "mary",
+          "target": "Junior",
+          "targetSlug": "junior"
+        }
+      ]
+    },
+    {
+      "episode": 4,
+      "eliminated": "Leonard",
+      "eliminatedSlug": "leonard",
+      "votes": [
+        {
+          "voter": "Brody",
+          "voterSlug": "brody",
+          "target": "Junior",
+          "targetSlug": "junior"
+        },
+        {
+          "voter": "Jacques",
+          "voterSlug": "jacques",
+          "target": "Junior",
+          "targetSlug": "junior"
+        },
+        {
+          "voter": "Jay",
+          "voterSlug": "jay",
+          "target": "Junior",
+          "targetSlug": "junior"
+        },
+        {
+          "voter": "Kelly",
+          "voterSlug": "kelly",
+          "target": "Junior",
+          "targetSlug": "junior"
+        },
+        {
+          "voter": "Mary",
+          "voterSlug": "mary",
+          "target": "Junior",
+          "targetSlug": "junior"
+        },
+        {
+          "voter": "Stephanie",
+          "voterSlug": "stephanie",
+          "target": "Junior",
+          "targetSlug": "junior"
+        },
+        {
+          "voter": "Junior",
+          "voterSlug": "junior",
+          "target": "Stephanie",
+          "targetSlug": "stephanie"
+        },
+        {
+          "voter": "Kitty",
+          "voterSlug": "kitty",
+          "target": "Stephanie",
+          "targetSlug": "stephanie"
+        }
+      ]
+    },
+    {
+      "episode": 5,
+      "eliminated": "Tammy",
+      "eliminatedSlug": "tammy",
+      "votes": [
+        {
+          "voter": "Blaineley",
+          "voterSlug": "blaineley",
+          "target": "Josee",
+          "targetSlug": "josee"
+        },
+        {
+          "voter": "Dwayne",
+          "voterSlug": "dwayne",
+          "target": "Josee",
+          "targetSlug": "josee"
+        },
+        {
+          "voter": "Emma",
+          "voterSlug": "emma",
+          "target": "Josee",
+          "targetSlug": "josee"
+        },
+        {
+          "voter": "Geoff",
+          "voterSlug": "geoff",
+          "target": "Josee",
+          "targetSlug": "josee"
+        },
+        {
+          "voter": "Mickey",
+          "voterSlug": "mickey",
+          "target": "Josee",
+          "targetSlug": "josee"
+        },
+        {
+          "voter": "Ryan",
+          "voterSlug": "ryan",
+          "target": "Josee",
+          "targetSlug": "josee"
+        },
+        {
+          "voter": "Josee",
+          "voterSlug": "josee",
+          "target": "Emma",
+          "targetSlug": "emma"
+        }
+      ]
+    },
+    {
+      "episode": 6,
+      "eliminated": "Ennui",
+      "eliminatedSlug": "ennui",
+      "votes": [
+        {
+          "voter": "Brody",
+          "voterSlug": "brody",
+          "target": "Stephanie",
+          "targetSlug": "stephanie"
+        },
+        {
+          "voter": "Jacques",
+          "voterSlug": "jacques",
+          "target": "Stephanie",
+          "targetSlug": "stephanie"
+        },
+        {
+          "voter": "Jay",
+          "voterSlug": "jay",
+          "target": "Stephanie",
+          "targetSlug": "stephanie"
+        },
+        {
+          "voter": "Kelly",
+          "voterSlug": "kelly",
+          "target": "Stephanie",
+          "targetSlug": "stephanie"
+        },
+        {
+          "voter": "Kitty",
+          "voterSlug": "kitty",
+          "target": "Stephanie",
+          "targetSlug": "stephanie"
+        },
+        {
+          "voter": "Mary",
+          "voterSlug": "mary",
+          "target": "Stephanie",
+          "targetSlug": "stephanie"
+        },
+        {
+          "voter": "Stephanie",
+          "voterSlug": "stephanie",
+          "target": "Jay",
+          "targetSlug": "jay"
+        }
+      ]
+    },
+    {
+      "episode": 7,
+      "eliminated": "Junior",
+      "eliminatedSlug": "junior",
+      "votes": [
+        {
+          "voter": "Brody",
+          "voterSlug": "brody",
+          "target": "Kelly",
+          "targetSlug": "kelly"
+        },
+        {
+          "voter": "Geoff",
+          "voterSlug": "geoff",
+          "target": "Kelly",
+          "targetSlug": "kelly"
+        },
+        {
+          "voter": "Jacques",
+          "voterSlug": "jacques",
+          "target": "Kelly",
+          "targetSlug": "kelly"
+        },
+        {
+          "voter": "Mary",
+          "voterSlug": "mary",
+          "target": "Kelly",
+          "targetSlug": "kelly"
+        },
+        {
+          "voter": "Kelly",
+          "voterSlug": "kelly",
+          "target": "Mary",
+          "targetSlug": "mary"
+        },
+        {
+          "voter": "Ryan",
+          "voterSlug": "ryan",
+          "target": "Mary",
+          "targetSlug": "mary"
+        }
+      ]
+    },
+    {
+      "episode": 8,
+      "eliminated": "Mary",
+      "eliminatedSlug": "mary",
+      "votes": [
+        {
+          "voter": "Jacques",
+          "voterSlug": "jacques",
+          "target": "Brody",
+          "targetSlug": "brody"
+        },
+        {
+          "voter": "Kelly",
+          "voterSlug": "kelly",
+          "target": "Brody",
+          "targetSlug": "brody"
+        },
+        {
+          "voter": "Ryan",
+          "voterSlug": "ryan",
+          "target": "Brody",
+          "targetSlug": "brody"
+        },
+        {
+          "voter": "Brody",
+          "voterSlug": "brody",
+          "target": "Kelly",
+          "targetSlug": "kelly"
+        },
+        {
+          "voter": "Geoff",
+          "voterSlug": "geoff",
+          "target": "Kelly",
+          "targetSlug": "kelly"
+        }
+      ]
+    },
+    {
+      "episode": 9,
+      "eliminated": "Dwayne",
+      "eliminatedSlug": "dwayne",
+      "votes": [
+        {
+          "voter": "Blaineley",
+          "voterSlug": "blaineley",
+          "target": "Dwayne",
+          "targetSlug": "dwayne"
+        },
+        {
+          "voter": "Brody",
+          "voterSlug": "brody",
+          "target": "Dwayne",
+          "targetSlug": "dwayne"
+        },
+        {
+          "voter": "Jacques",
+          "voterSlug": "jacques",
+          "target": "Dwayne",
+          "targetSlug": "dwayne"
+        },
+        {
+          "voter": "Kelly",
+          "voterSlug": "kelly",
+          "target": "Dwayne",
+          "targetSlug": "dwayne"
+        },
+        {
+          "voter": "Dwayne",
+          "voterSlug": "dwayne",
+          "target": "Brody",
+          "targetSlug": "brody"
+        },
+        {
+          "voter": "Mickey",
+          "voterSlug": "mickey",
+          "target": "Brody",
+          "targetSlug": "brody"
+        },
+        {
+          "voter": "Ryan",
+          "voterSlug": "ryan",
+          "target": "Brody",
+          "targetSlug": "brody"
+        },
+        {
+          "voter": "Emma",
+          "voterSlug": "emma",
+          "target": "Ryan",
+          "targetSlug": "ryan"
+        },
+        {
+          "voter": "Jay",
+          "voterSlug": "jay",
+          "target": "Ryan",
+          "targetSlug": "ryan"
+        },
+        {
+          "voter": "Kitty",
+          "voterSlug": "kitty",
+          "target": "Ryan",
+          "targetSlug": "ryan"
+        },
+        {
+          "voter": "Geoff",
+          "voterSlug": "geoff",
+          "target": "Kitty",
+          "targetSlug": "kitty"
+        }
+      ]
+    },
+    {
+      "episode": 10,
+      "eliminated": "Emma",
+      "eliminatedSlug": "emma",
+      "votes": [
+        {
+          "voter": "Blaineley",
+          "voterSlug": "blaineley",
+          "target": "Brody",
+          "targetSlug": "brody"
+        },
+        {
+          "voter": "Jacques",
+          "voterSlug": "jacques",
+          "target": "Brody",
+          "targetSlug": "brody"
+        },
+        {
+          "voter": "Kelly",
+          "voterSlug": "kelly",
+          "target": "Brody",
+          "targetSlug": "brody"
+        },
+        {
+          "voter": "Geoff",
+          "voterSlug": "geoff",
+          "target": "Kitty",
+          "targetSlug": "kitty"
+        },
+        {
+          "voter": "Mickey",
+          "voterSlug": "mickey",
+          "target": "Kitty",
+          "targetSlug": "kitty"
+        },
+        {
+          "voter": "Ryan",
+          "voterSlug": "ryan",
+          "target": "Kitty",
+          "targetSlug": "kitty"
+        },
+        {
+          "voter": "Brody",
+          "voterSlug": "brody",
+          "target": "Mickey",
+          "targetSlug": "mickey"
+        },
+        {
+          "voter": "Emma",
+          "voterSlug": "emma",
+          "target": "Mickey",
+          "targetSlug": "mickey"
+        },
+        {
+          "voter": "Kitty",
+          "voterSlug": "kitty",
+          "target": "Mickey",
+          "targetSlug": "mickey"
+        },
+        {
+          "voter": "Jay",
+          "voterSlug": "jay",
+          "target": "Geoff",
+          "targetSlug": "geoff"
+        }
+      ]
+    },
+    {
+      "episode": 11,
+      "eliminated": null,
+      "eliminatedSlug": null,
+      "votes": [
+        {
+          "voter": "Geoff",
+          "voterSlug": "geoff",
+          "target": "Kitty",
+          "targetSlug": "kitty"
+        },
+        {
+          "voter": "Mickey",
+          "voterSlug": "mickey",
+          "target": "Kitty",
+          "targetSlug": "kitty"
+        },
+        {
+          "voter": "Ryan",
+          "voterSlug": "ryan",
+          "target": "Kitty",
+          "targetSlug": "kitty"
+        },
+        {
+          "voter": "Blaineley",
+          "voterSlug": "blaineley",
+          "target": "Brody",
+          "targetSlug": "brody"
+        },
+        {
+          "voter": "Kelly",
+          "voterSlug": "kelly",
+          "target": "Brody",
+          "targetSlug": "brody"
+        },
+        {
+          "voter": "Brody",
+          "voterSlug": "brody",
+          "target": "Ryan",
+          "targetSlug": "ryan"
+        },
+        {
+          "voter": "Jay",
+          "voterSlug": "jay",
+          "target": "Ryan",
+          "targetSlug": "ryan"
+        },
+        {
+          "voter": "Jacques",
+          "voterSlug": "jacques",
+          "target": "Geoff",
+          "targetSlug": "geoff"
+        },
+        {
+          "voter": "Kitty",
+          "voterSlug": "kitty",
+          "target": "Mickey",
+          "targetSlug": "mickey"
+        }
+      ]
+    },
+    {
+      "episode": 12,
+      "eliminated": null,
+      "eliminatedSlug": null,
+      "votes": [
+        {
+          "voter": "Blaineley",
+          "voterSlug": "blaineley",
+          "target": "Ryan",
+          "targetSlug": "ryan"
+        },
+        {
+          "voter": "Brody",
+          "voterSlug": "brody",
+          "target": "Ryan",
+          "targetSlug": "ryan"
+        },
+        {
+          "voter": "Jacques",
+          "voterSlug": "jacques",
+          "target": "Ryan",
+          "targetSlug": "ryan"
+        },
+        {
+          "voter": "Jay",
+          "voterSlug": "jay",
+          "target": "Ryan",
+          "targetSlug": "ryan"
+        },
+        {
+          "voter": "Kelly",
+          "voterSlug": "kelly",
+          "target": "Ryan",
+          "targetSlug": "ryan"
+        },
+        {
+          "voter": "Geoff",
+          "voterSlug": "geoff",
+          "target": "Jay",
+          "targetSlug": "jay"
+        },
+        {
+          "voter": "Ryan",
+          "voterSlug": "ryan",
+          "target": "Jay",
+          "targetSlug": "jay"
+        },
+        {
+          "voter": "Mickey",
+          "voterSlug": "mickey",
+          "target": "Brody",
+          "targetSlug": "brody"
+        }
+      ]
+    },
+    {
+      "episode": 13,
+      "eliminated": "Emma",
+      "eliminatedSlug": "emma",
+      "votes": [
+        {
+          "voter": "Blaineley",
+          "voterSlug": "blaineley",
+          "target": "Geoff",
+          "targetSlug": "geoff"
+        },
+        {
+          "voter": "Jacques",
+          "voterSlug": "jacques",
+          "target": "Geoff",
+          "targetSlug": "geoff"
+        },
+        {
+          "voter": "Jay",
+          "voterSlug": "jay",
+          "target": "Geoff",
+          "targetSlug": "geoff"
+        },
+        {
+          "voter": "Kelly",
+          "voterSlug": "kelly",
+          "target": "Geoff",
+          "targetSlug": "geoff"
+        },
+        {
+          "voter": "Mickey",
+          "voterSlug": "mickey",
+          "target": "Geoff",
+          "targetSlug": "geoff"
+        },
+        {
+          "voter": "Geoff",
+          "voterSlug": "geoff",
+          "target": "Jay",
+          "targetSlug": "jay"
+        },
+        {
+          "voter": "Brody",
+          "voterSlug": "brody",
+          "target": "Kelly",
+          "targetSlug": "kelly"
+        }
+      ]
+    },
+    {
+      "episode": 14,
+      "eliminated": "Kitty",
+      "eliminatedSlug": "kitty",
+      "votes": [
+        {
+          "voter": "Blaineley",
+          "voterSlug": "blaineley",
+          "target": "Brody",
+          "targetSlug": "brody"
+        },
+        {
+          "voter": "Jacques",
+          "voterSlug": "jacques",
+          "target": "Brody",
+          "targetSlug": "brody"
+        },
+        {
+          "voter": "Kelly",
+          "voterSlug": "kelly",
+          "target": "Brody",
+          "targetSlug": "brody"
+        },
+        {
+          "voter": "Mickey",
+          "voterSlug": "mickey",
+          "target": "Brody",
+          "targetSlug": "brody"
+        },
+        {
+          "voter": "Brody",
+          "voterSlug": "brody",
+          "target": "Blaineley",
+          "targetSlug": "blaineley"
+        },
+        {
+          "voter": "Jay",
+          "voterSlug": "jay",
+          "target": "Blaineley",
+          "targetSlug": "blaineley"
+        }
+      ]
+    },
+    {
+      "episode": 15,
+      "eliminated": "Ryan",
+      "eliminatedSlug": "ryan",
+      "votes": [
+        {
+          "voter": "Jacques",
+          "voterSlug": "jacques",
+          "target": "Blaineley",
+          "targetSlug": "blaineley"
+        },
+        {
+          "voter": "Jay",
+          "voterSlug": "jay",
+          "target": "Blaineley",
+          "targetSlug": "blaineley"
+        },
+        {
+          "voter": "Kelly",
+          "voterSlug": "kelly",
+          "target": "Blaineley",
+          "targetSlug": "blaineley"
+        },
+        {
+          "voter": "Mickey",
+          "voterSlug": "mickey",
+          "target": "Blaineley",
+          "targetSlug": "blaineley"
+        },
+        {
+          "voter": "Blaineley",
+          "voterSlug": "blaineley",
+          "target": "Kelly",
+          "targetSlug": "kelly"
+        }
+      ]
+    },
+    {
+      "episode": 16,
+      "eliminated": "Geoff",
+      "eliminatedSlug": "geoff",
+      "votes": [
+        {
+          "voter": "Jacques",
+          "voterSlug": "jacques",
+          "target": "Geoff",
+          "targetSlug": "geoff"
+        },
+        {
+          "voter": "Jay",
+          "voterSlug": "jay",
+          "target": "Geoff",
+          "targetSlug": "geoff"
+        },
+        {
+          "voter": "Kelly",
+          "voterSlug": "kelly",
+          "target": "Geoff",
+          "targetSlug": "geoff"
+        },
+        {
+          "voter": "Mickey",
+          "voterSlug": "mickey",
+          "target": "Geoff",
+          "targetSlug": "geoff"
+        },
+        {
+          "voter": "Geoff",
+          "voterSlug": "geoff",
+          "target": "Jacques",
+          "targetSlug": "jacques"
+        }
+      ]
+    },
+    {
+      "episode": 17,
+      "eliminated": "Kelly",
+      "eliminatedSlug": "kelly",
+      "votes": [
+        {
+          "voter": "Jay",
+          "voterSlug": "jay",
+          "target": "Kelly",
+          "targetSlug": "kelly"
+        },
+        {
+          "voter": "Mickey",
+          "voterSlug": "mickey",
+          "target": "Kelly",
+          "targetSlug": "kelly"
+        },
+        {
+          "voter": "Jacques",
+          "voterSlug": "jacques",
+          "target": "Mickey",
+          "targetSlug": "mickey"
+        },
+        {
+          "voter": "Kelly",
+          "voterSlug": "kelly",
+          "target": "Mickey",
+          "targetSlug": "mickey"
+        }
+      ]
+    }
+  ],
+  "finalTribalCouncil": {
+    "votes": [
+      {
+        "juror": "blaineley",
+        "jurorSlug": "blaineley",
+        "votedFor": "jacques",
+        "votedForSlug": "jacques"
+      },
+      {
+        "juror": "brody",
+        "jurorSlug": "brody",
+        "votedFor": "jacques",
+        "votedForSlug": "jacques"
+      },
+      {
+        "juror": "dwayne",
+        "jurorSlug": "dwayne",
+        "votedFor": "mickey",
+        "votedForSlug": "mickey"
+      },
+      {
+        "juror": "emma",
+        "jurorSlug": "emma",
+        "votedFor": "jacques",
+        "votedForSlug": "jacques"
+      },
+      {
+        "juror": "geoff",
+        "jurorSlug": "geoff",
+        "votedFor": "jacques",
+        "votedForSlug": "jacques"
+      },
+      {
+        "juror": "kelly",
+        "jurorSlug": "kelly",
+        "votedFor": "jacques",
+        "votedForSlug": "jacques"
+      },
+      {
+        "juror": "kitty",
+        "jurorSlug": "kitty",
+        "votedFor": "jacques",
+        "votedForSlug": "jacques"
+      },
+      {
+        "juror": "ryan",
+        "jurorSlug": "ryan",
+        "votedFor": "jacques",
+        "votedForSlug": "jacques"
+      }
+    ]
+  },
+  "awards": {
+    "fanFavorite": {
+      "name": "jacques",
+      "playerSlug": "jacques"
+    },
+    "bestStrategic": {
+      "name": "jacques",
+      "playerSlug": "jacques"
+    },
+    "mostChallengeWins": {
+      "name": "jacques",
+      "playerSlug": "jacques",
+      "detail": "4 total"
+    }
+  },
+  "seasonNarrative": "Pairs and Redemption Island warped early loyalty, but by the swap and merge, numbers-first play eclipsed pair-first instincts. Idol detonations (Kelly’s swap bomb, Kitty’s merge misfire) and a rock draw removed stabilizers, while Jacques quietly accumulated power and immunities. In the end, AnxietyBro reached finals, but Jacques’ precision social web and endgame control earned a dominant 7–1–0 win.",
+  "theme": "2 tribes + redemption island",
+  "status": "Complete",
+  "castPhotoPath": "assets/cast/s6-cast.png",
+  "emoji": "🩸"
+}

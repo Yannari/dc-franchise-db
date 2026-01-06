@@ -70,7 +70,7 @@ async function generateSeasonDataExtraction(body, env) {
             alliances: { type: "array", items: { type: "string" } },
             rivalries: { type: "array", items: { type: "string" } }
           },
-          required: ["placement", "name", "phase", "notes", "strategicRank", "story", "gameplayStyle"]
+          required: ["placement", "name", "phase", "notes", "strategicRank", "story", "gameplayStyle", "keyMoments", "challengeWins", "immunityWins", "idolsFound", "votesReceived", "alliances", "rivalries"]
         }
       },
       finalists: {
@@ -159,41 +159,43 @@ CRITICAL TASKS:
    ${brantsteeleStats ? '- GET EXACT PLACEMENTS FROM BRANTSTEELE STATS' : '- Use elimination order from episodes (last eliminated = highest placement)'}
    - Finalists (top 3) get placements 1, 2, 3
    - Winner is placement 1
-   - For each player provide:
+   - For each player provide ALL fields (use empty arrays [] if no data):
      * placement: Number (1-${metadata.castSize || 'N'})
-     * name: Player name
-     * phase: "Winner", "Finalist", "Juror", or "Pre-Juror"
-     * notes: Brief note (e.g., "Eliminated Episode 5" or "Winner - 7 jury votes")
-     * strategicRank: 1-10 scale (10 = masterful, 1 = poor)
-     * story: 1-2 sentence summary of their game
-     * gameplayStyle: One phrase (e.g., "Social butterfly", "Challenge beast")
-     * keyMoments: 0-3 major moments (idol finds, big moves, challenge wins)
-     * challengeWins: ${brantsteeleStats ? 'GET FROM BRANTSTEELE STATS' : 'Count from episodes'}
-     * immunityWins: ${brantsteeleStats ? 'GET FROM BRANTSTEELE STATS' : 'Count individual immunity wins'}
-     * idolsFound: ${brantsteeleStats ? 'GET FROM BRANTSTEELE STATS' : 'Count idols found'}
-     * votesReceived: ${brantsteeleStats ? 'GET FROM BRANTSTEELE STATS' : 'Total votes received across all episodes'}
-     * alliances: 2-4 key allies
-     * rivalries: 0-3 rivals
+     * name: Player name (string)
+     * phase: "Winner", "Finalist", "Juror", or "Pre-Juror" (string)
+     * notes: Brief note like "Eliminated Episode 5" or "Winner - 7 jury votes" (string)
+     * strategicRank: 1-10 scale where 10=masterful, 1=poor (number)
+     * story: 1-2 sentence summary of their game (string)
+     * gameplayStyle: One phrase like "Social butterfly" or "Challenge beast" (string)
+     * keyMoments: Array of 0-3 major moments like ["Found idol Episode 3", "Won immunity"] (array, use [] if none)
+     * challengeWins: ${brantsteeleStats ? 'GET FROM BRANTSTEELE STATS' : 'Count from episodes'} (number, use 0 if none)
+     * immunityWins: ${brantsteeleStats ? 'GET FROM BRANTSTEELE STATS' : 'Count individual immunity wins'} (number, use 0 if none)
+     * idolsFound: ${brantsteeleStats ? 'GET FROM BRANTSTEELE STATS' : 'Count idols found'} (number, use 0 if none)
+     * votesReceived: ${brantsteeleStats ? 'GET FROM BRANTSTEELE STATS' : 'Total votes received across all episodes'} (number)
+     * alliances: Array of 2-4 key allies like ["Dave", "Emma"] (array, use [] if none)
+     * rivalries: Array of 0-3 rivals like ["Kelly"] (array, use [] if none)
 
 3. FINALISTS: Top 3 players with jury votes received
    - Winner gets placement 1
    - Calculate jury votes from finale
 
 4. WINNER ANALYSIS:
-   - name: Winner's name
-   - keyStats: Notable stats (e.g., "2 votes against", "4 immunities", "1 idol")
-   - strategy: 2-3 sentences explaining how they won
-   - legacy: 1-2 sentences on their franchise impact
+   - name: Winner's name (string)
+   - keyStats: Notable stats like "2 votes against, 4 immunities, 1 idol" (string)
+   - strategy: 2-3 sentences explaining how they won (string)
+   - legacy: 1-2 sentences on their franchise impact (string)
 
-5. JURY: List all jury members (players who voted at FTC)
+5. JURY: List all jury members (players who voted at FTC) - array of strings
 
 6. VOTING HISTORY: For EACH episode (1-${metadata.episodeCount}):
    - episode: Number
-   - eliminated: Player eliminated (or null if none/redemption island)
-   - votes: Array of {voter, target} for each vote cast
+   - eliminated: Player eliminated as string, or null if none/redemption island
+   - votes: Array of {voter, target} for each vote cast (use [] if no votes shown)
    - Parse voting charts carefully from episode summaries
 
-7. SEASON NARRATIVE: 2-3 sentence story arc of the season
+7. SEASON NARRATIVE: 2-3 sentence story arc of the season (string)
+
+IMPORTANT: Provide ALL fields for EVERY player. Use empty arrays [] for keyMoments/alliances/rivalries if no data. Use 0 for numeric fields if no data.
 
 BASE PLACEMENTS/STATS ON BRANTSTEELE DATA IF PROVIDED.
 BASE NARRATIVES/STORIES ON EPISODE SUMMARIES.
@@ -206,7 +208,7 @@ Cast Size: ${metadata.castSize}
 ${episodeSummaries}
 ${brantsteeleSection}
 
-Return ONLY JSON matching the schema.
+Return ONLY valid JSON matching the schema exactly.
 `.trim();
 
   const payload = {

@@ -2,7 +2,7 @@
   "franchise": {
     "name": "DC Franchise Database",
     "totalSeasons": 6,
-    "totalPlayers": 68,
+    "totalPlayers": 90,
     "description": "Total Drama franchise player statistics and performance data"
   },
   "players": [
@@ -298,6 +298,45 @@
         {
           "season": 6,
           "placement": 19,
+          "status": "Pre-Juror",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 2,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "Rock draw to RI (Ep1); eliminated on RI (Ep3)"
+          ]
+        }
+      ],
+      "story": "Strong alliance loyalty with Lindsay. Made Final 4 in both seasons but seen as too dangerous to take to the end."
+    },
+    {
+      "id": "beth-pre-juror-eliminated-opener",
+      "name": "Beth Pre-Juror Eliminated opener",
+      "seasons": [
+        6
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 19,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 6,
+          "placement": 19,
           "status": "Eliminated",
           "tribe": "TBD",
           "challengeWins": 0,
@@ -312,8 +351,7 @@
           "rivalries": [],
           "allianceHistory": []
         }
-      ],
-      "story": "Strong alliance loyalty with Lindsay. Made Final 4 in both seasons but seen as too dangerous to take to the end."
+      ]
     },
     {
       "id": "blaineley",
@@ -323,7 +361,7 @@
         6
       ],
       "totalSeasons": 2,
-      "bestPlacement": 8,
+      "bestPlacement": 5,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
@@ -349,8 +387,47 @@
         },
         {
           "season": 6,
-          "placement": 99,
-          "status": "Active",
+          "placement": 6,
+          "status": "Juror",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 6,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "Voted out 4–1 at Final 5; eliminated on RI (Ep16)"
+          ]
+        }
+      ],
+      "story": "Chaos engine of Season 5 with major advantage pressure; made jury but could not survive late-game consolidation."
+    },
+    {
+      "id": "blaineley-juror-voted-out",
+      "name": "Blaineley Juror Voted out",
+      "seasons": [
+        6
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 6,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 6,
+          "placement": 6,
+          "status": "Eliminated",
           "tribe": "TBD",
           "challengeWins": 0,
           "immunityWins": 0,
@@ -364,8 +441,7 @@
           "rivalries": [],
           "allianceHistory": []
         }
-      ],
-      "story": "Chaos engine of Season 5 with major advantage pressure; made jury but could not survive late-game consolidation."
+      ]
     },
     {
       "id": "brick",
@@ -455,6 +531,81 @@
         }
       ],
       "story": "Social heart of Season 1 with multiple immunities and idol. First boot in Season 2 due to tribe disagreements."
+    },
+    {
+      "id": "brody",
+      "name": "Brody",
+      "seasons": [
+        6
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 5,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 6,
+          "placement": 7,
+          "status": "Juror",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 19,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "Voted out 4–2 (Ep14); multiple RI runs"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "brody-juror-voted-out",
+      "name": "Brody Juror Voted out",
+      "seasons": [
+        6
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 7,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 6,
+          "placement": 7,
+          "status": "Eliminated",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
     },
     {
       "id": "cameron",
@@ -657,7 +808,46 @@
         {
           "season": 6,
           "placement": 20,
-          "status": "First Boot",
+          "status": "Pre-Juror",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "Medical evacuation (Ep1)"
+          ]
+        }
+      ],
+      "story": "First boot of Season 3. Rested at camp instead of bonding, targeted as challenge liability."
+    },
+    {
+      "id": "crimson-pre-juror-medevac",
+      "name": "Crimson Pre-Juror Medevac",
+      "seasons": [
+        6
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 20,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 6,
+          "placement": 20,
+          "status": "Eliminated",
           "tribe": "TBD",
           "challengeWins": 0,
           "immunityWins": 0,
@@ -671,8 +861,7 @@
           "rivalries": [],
           "allianceHistory": []
         }
-      ],
-      "story": "First boot of Season 3. Rested at camp instead of bonding, targeted as challenge liability."
+      ]
     },
     {
       "id": "dakota",
@@ -953,8 +1142,47 @@
         },
         {
           "season": 6,
-          "placement": 99,
-          "status": "Active",
+          "placement": 11,
+          "status": "Juror",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 6,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "Cut in merge chaos 4–3–3–1 (Ep9) — direct elimination"
+          ]
+        }
+      ],
+      "story": "First juror of Season 3. Strong social game but blindsided 5-3-2 at merge by Campers Alliance."
+    },
+    {
+      "id": "dwayne-juror-voted-out",
+      "name": "Dwayne Juror Voted out",
+      "seasons": [
+        6
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 11,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 6,
+          "placement": 11,
+          "status": "Eliminated",
           "tribe": "TBD",
           "challengeWins": 0,
           "immunityWins": 0,
@@ -968,8 +1196,7 @@
           "rivalries": [],
           "allianceHistory": []
         }
-      ],
-      "story": "First juror of Season 3. Strong social game but blindsided 5-3-2 at merge by Campers Alliance."
+      ]
     },
     {
       "id": "ella",
@@ -1060,8 +1287,47 @@
         },
         {
           "season": 6,
-          "placement": 99,
-          "status": "Active",
+          "placement": 10,
+          "status": "Juror",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 1,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "Eliminated by rock draw at merge (Ep10)"
+          ]
+        }
+      ],
+      "story": "Winner of Season 3 with perfect game (zero votes until F4). Second boot in S4 as previous winner threat."
+    },
+    {
+      "id": "emma-juror-voted-out",
+      "name": "Emma Juror Voted out",
+      "seasons": [
+        6
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 10,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 6,
+          "placement": 10,
+          "status": "Eliminated",
           "tribe": "TBD",
           "challengeWins": 0,
           "immunityWins": 0,
@@ -1075,8 +1341,82 @@
           "rivalries": [],
           "allianceHistory": []
         }
+      ]
+    },
+    {
+      "id": "ennui",
+      "name": "Ennui",
+      "seasons": [
+        6
       ],
-      "story": "Winner of Season 3 with perfect game (zero votes until F4). Second boot in S4 as previous winner threat."
+      "totalSeasons": 1,
+      "bestPlacement": 16,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 6,
+          "placement": 16,
+          "status": "Pre-Juror",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 7,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "Voted out 6–3 (Ep3) to RI; eliminated (Ep6)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ennui-pre-juror-voted-out",
+      "name": "Ennui Pre-Juror Voted out",
+      "seasons": [
+        6
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 16,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 6,
+          "placement": 16,
+          "status": "Eliminated",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
     },
     {
       "id": "eva",
@@ -1167,7 +1507,7 @@
         6
       ],
       "totalSeasons": 3,
-      "bestPlacement": 6,
+      "bestPlacement": 5,
       "wins": 0,
       "totalChallengeWins": 2,
       "totalImmunityWins": 0,
@@ -1219,8 +1559,47 @@
         },
         {
           "season": 6,
-          "placement": 99,
-          "status": "Active",
+          "placement": 5,
+          "status": "Juror",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 11,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "Returned from RI (Ep16) then voted out 4–1"
+          ]
+        }
+      ],
+      "story": "TRAGIC ARC: Voted out twice by unbreakable partner Zoey. Won EoE return only to be eliminated same episode - shortest return ever."
+    },
+    {
+      "id": "geoff-juror-voted-out-late",
+      "name": "Geoff Juror Voted out late",
+      "seasons": [
+        6
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 5,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 6,
+          "placement": 5,
+          "status": "Eliminated",
           "tribe": "TBD",
           "challengeWins": 0,
           "immunityWins": 0,
@@ -1234,8 +1613,7 @@
           "rivalries": [],
           "allianceHistory": []
         }
-      ],
-      "story": "TRAGIC ARC: Voted out twice by unbreakable partner Zoey. Won EoE return only to be eliminated same episode - shortest return ever."
+      ]
     },
     {
       "id": "gwen",
@@ -1478,6 +1856,88 @@
       "story": "Eliminated 5-4 in Episode 7 after tribe swap. Personal hatred with Beth led to elimination."
     },
     {
+      "id": "jacques",
+      "name": "Jacques",
+      "seasons": [
+        6
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 1,
+      "wins": 4,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [
+        "S6 Winner",
+        "S6 Winner",
+        "S6 Winner",
+        "S6 Winner"
+      ],
+      "seasonDetails": [
+        {
+          "season": 6,
+          "placement": 1,
+          "status": "Winner",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 2,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 7,
+          "finalVote": "7-1-0",
+          "advantages": [],
+          "notes": [
+            "Winner — 7–1–0 jury vote"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "jacques-winner",
+      "name": "Jacques Winner",
+      "seasons": [
+        6
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 1,
+      "wins": 1,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [
+        "S6 Winner"
+      ],
+      "seasonDetails": [
+        {
+          "season": 6,
+          "placement": 1,
+          "status": "Finalist",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "7-1-0",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
       "id": "jasmine",
       "name": "Jasmine",
       "seasons": [
@@ -1506,6 +1966,44 @@
         }
       ],
       "story": "Season 5 contestant. Finished 14th."
+    },
+    {
+      "id": "jay",
+      "name": "Jay",
+      "seasons": [
+        6
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 3,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 6,
+          "placement": 3,
+          "status": "Finalist",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 4,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "Finalist — 0 jury votes"
+          ]
+        }
+      ]
     },
     {
       "id": "jo",
@@ -1576,7 +2074,7 @@
         6
       ],
       "totalSeasons": 2,
-      "bestPlacement": 13,
+      "bestPlacement": 12,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
@@ -1600,8 +2098,47 @@
         },
         {
           "season": 6,
-          "placement": 99,
-          "status": "Active",
+          "placement": 12,
+          "status": "Pre-Juror",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 9,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "Voted out 6–1 (Ep5) to RI; eliminated at merge duel (Ep9)"
+          ]
+        }
+      ],
+      "story": "Season 5 contestant. Finished 13th."
+    },
+    {
+      "id": "josee-pre-juror-voted-out",
+      "name": "Josee Pre-Juror Voted out",
+      "seasons": [
+        6
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 12,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 6,
+          "placement": 12,
+          "status": "Eliminated",
           "tribe": "TBD",
           "challengeWins": 0,
           "immunityWins": 0,
@@ -1615,8 +2152,82 @@
           "rivalries": [],
           "allianceHistory": []
         }
+      ]
+    },
+    {
+      "id": "junior",
+      "name": "Junior",
+      "seasons": [
+        6
       ],
-      "story": "Season 5 contestant. Finished 13th."
+      "totalSeasons": 1,
+      "bestPlacement": 15,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 6,
+          "placement": 15,
+          "status": "Pre-Juror",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 9,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "Voted out 6–2 (Ep4); eliminated at RI (Ep7)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "junior-pre-juror-voted-out",
+      "name": "Junior Pre-Juror Voted out",
+      "seasons": [
+        6
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 15,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 6,
+          "placement": 15,
+          "status": "Eliminated",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
     },
     {
       "id": "justin",
@@ -1702,6 +2313,119 @@
       "story": "Played solid pre-merge game as part of MAPLV with Sadie. Found Hidden Immunity Idol."
     },
     {
+      "id": "kelly",
+      "name": "Kelly",
+      "seasons": [
+        6
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 4,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 6,
+          "placement": 4,
+          "status": "Juror",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 10,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "Eliminated Final 4 — 2–2 tie, 1–1 revote, lost fire-making"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "kitty",
+      "name": "Kitty",
+      "seasons": [
+        6
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 9,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 6,
+          "placement": 9,
+          "status": "Juror",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 8,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "Voted out (Ep11) to RI; eliminated on RI (Ep14)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "kitty-juror-voted-out",
+      "name": "Kitty Juror Voted out",
+      "seasons": [
+        6
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 9,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 6,
+          "placement": 9,
+          "status": "Eliminated",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
       "id": "leonard",
       "name": "Leonard",
       "seasons": [
@@ -1709,7 +2433,7 @@
         6
       ],
       "totalSeasons": 2,
-      "bestPlacement": 18,
+      "bestPlacement": 16,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
@@ -1731,8 +2455,47 @@
         },
         {
           "season": 6,
-          "placement": 99,
-          "status": "Active",
+          "placement": 18,
+          "status": "Pre-Juror",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 5,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "Voted out 5–3 (Ep2) to RI; eliminated (Ep4)"
+          ]
+        }
+      ],
+      "story": "Season 5 contestant. Finished 18th."
+    },
+    {
+      "id": "leonard-pre-juror-voted-out",
+      "name": "Leonard Pre-Juror Voted out",
+      "seasons": [
+        6
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 18,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 6,
+          "placement": 18,
+          "status": "Eliminated",
           "tribe": "TBD",
           "challengeWins": 0,
           "immunityWins": 0,
@@ -1746,8 +2509,7 @@
           "rivalries": [],
           "allianceHistory": []
         }
-      ],
-      "story": "Season 5 contestant. Finished 18th."
+      ]
     },
     {
       "id": "leshawna",
@@ -1924,6 +2686,81 @@
       "story": "WINNER of Season 1. Social queen who maintained unbreakable bonds without burning bridges. Third place in S2."
     },
     {
+      "id": "mary",
+      "name": "Mary",
+      "seasons": [
+        6
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 14,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 6,
+          "placement": 14,
+          "status": "Pre-Juror",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 2,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "Idol casualty at swap (Ep7) — 4 votes voided, 2–0"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mary-pre-juror-voted-out",
+      "name": "Mary Pre-Juror Voted out",
+      "seasons": [
+        6
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 14,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 6,
+          "placement": 14,
+          "status": "Eliminated",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
       "id": "max",
       "name": "Max",
       "seasons": [
@@ -1992,8 +2829,47 @@
         },
         {
           "season": 6,
-          "placement": 99,
-          "status": "Active",
+          "placement": 2,
+          "status": "Finalist",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 6,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 1,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "Runner-up — 1 jury vote"
+          ]
+        }
+      ],
+      "story": "Winner of Season 5 (Rescue Island). Quiet social core: received 0 votes against all season and won a 3–3–2 FTC tie via Ryan’s tiebreak vote."
+    },
+    {
+      "id": "mickey-finalist-1-vote-to-win-3-jay",
+      "name": "Mickey Finalist 1 vote to win 3 Jay",
+      "seasons": [
+        6
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 2,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 6,
+          "placement": 2,
+          "status": "Finalist",
           "tribe": "TBD",
           "challengeWins": 0,
           "immunityWins": 0,
@@ -2007,8 +2883,7 @@
           "rivalries": [],
           "allianceHistory": []
         }
-      ],
-      "story": "Winner of Season 5 (Rescue Island). Quiet social core: received 0 votes against all season and won a 3–3–2 FTC tie via Ryan’s tiebreak vote."
+      ]
     },
     {
       "id": "mike",
@@ -2249,8 +3124,47 @@
         },
         {
           "season": 6,
-          "placement": 99,
-          "status": "Active",
+          "placement": 8,
+          "status": "Juror",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 10,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "Voted out 5–2–1 (Ep12); eliminated on RI (Ep15)"
+          ]
+        }
+      ],
+      "story": "Fan Favorite of Season 5. Loyal endgame partner who won fire-making, reached FTC, then became kingmaker by casting the deciding winner vote."
+    },
+    {
+      "id": "ryan-juror-voted-out",
+      "name": "Ryan Juror Voted out",
+      "seasons": [
+        6
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 8,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 6,
+          "placement": 8,
+          "status": "Eliminated",
           "tribe": "TBD",
           "challengeWins": 0,
           "immunityWins": 0,
@@ -2264,8 +3178,7 @@
           "rivalries": [],
           "allianceHistory": []
         }
-      ],
-      "story": "Fan Favorite of Season 5. Loyal endgame partner who won fire-making, reached FTC, then became kingmaker by casting the deciding winner vote."
+      ]
     },
     {
       "id": "sadie",
@@ -2633,6 +3546,81 @@
       "story": "Second boot. Multiple early conflicts prevented alliance formation. Challenge liability with no social capital."
     },
     {
+      "id": "stephanie",
+      "name": "Stephanie",
+      "seasons": [
+        6
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 12,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 6,
+          "placement": 13,
+          "status": "Pre-Juror",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 8,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "Voted out 6–1 (Ep6) to RI; eliminated at RI (Ep9)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "stephanie-pre-juror-voted-out",
+      "name": "Stephanie Pre-Juror Voted out",
+      "seasons": [
+        6
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 13,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 6,
+          "placement": 13,
+          "status": "Eliminated",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
       "id": "sugar",
       "name": "Sugar",
       "seasons": [
@@ -2663,6 +3651,81 @@
         }
       ],
       "story": "Season 5 contestant. Finished 5th."
+    },
+    {
+      "id": "tammy",
+      "name": "Tammy",
+      "seasons": [
+        6
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 16,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 6,
+          "placement": 17,
+          "status": "Pre-Juror",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 4,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "advantages": [],
+          "notes": [
+            "Swapped to RI (Ep2); eliminated on RI (Ep5)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tammy-pre-juror-swapped-out",
+      "name": "Tammy Pre-Juror Swapped out",
+      "seasons": [
+        6
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 17,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 6,
+          "placement": 17,
+          "status": "Eliminated",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
     },
     {
       "id": "topher",
@@ -2784,6 +3847,80 @@
       "story": "Challenge liability voted out 8-4 in Episode 2. Unable to build strong social connections."
     },
     {
+      "id": "votes-to-win",
+      "name": "votes to win",
+      "seasons": [
+        6
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 7,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 6,
+          "placement": 7,
+          "status": "Eliminated",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "votes-to-win-4-kelly-juror",
+      "name": "votes to win 4 Kelly Juror",
+      "seasons": [
+        6
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 0,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 6,
+          "placement": 0,
+          "status": "Eliminated",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
       "id": "zoey",
       "name": "Zoey",
       "seasons": [
@@ -2855,13 +3992,13 @@
       "story": "UNPRECEDENTED social dominance with 3 unbreakable bonds at once in S4. Lost 6-7 to Alejandro in closest finale ever. Most socially connected player in franchise history."
     },
     {
-      "id": "brody",
-      "name": "Brody",
+      "id": "everyone",
+      "name": "everyone",
       "seasons": [
         6
       ],
       "totalSeasons": 1,
-      "bestPlacement": 99,
+      "bestPlacement": 4,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
@@ -2874,8 +4011,8 @@
       "seasonDetails": [
         {
           "season": 6,
-          "placement": 99,
-          "status": "Active",
+          "placement": 4,
+          "status": "Juror",
           "tribe": "TBD",
           "challengeWins": 0,
           "immunityWins": 0,
@@ -2885,20 +4022,22 @@
           "strategicRank": 0,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Eliminated Episode 5"
+          ]
         }
-      ]
+      ],
+      "story": "Competed in Season 6"
     },
     {
-      "id": "ennui",
-      "name": "Ennui",
+      "id": "eliminate",
+      "name": "eliminate",
       "seasons": [
         6
       ],
       "totalSeasons": 1,
-      "bestPlacement": 99,
+      "bestPlacement": 5,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
@@ -2911,8 +4050,8 @@
       "seasonDetails": [
         {
           "season": 6,
-          "placement": 99,
-          "status": "Active",
+          "placement": 5,
+          "status": "Juror",
           "tribe": "TBD",
           "challengeWins": 0,
           "immunityWins": 0,
@@ -2922,307 +4061,13 @@
           "strategicRank": 0,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Eliminated Episode 3"
+          ]
         }
-      ]
-    },
-    {
-      "id": "jacques",
-      "name": "Jacques",
-      "seasons": [
-        6
       ],
-      "totalSeasons": 1,
-      "bestPlacement": 99,
-      "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
-      "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
-      "totalJuryVotes": 0,
-      "tier": "Unranked",
-      "badges": [],
-      "seasonDetails": [
-        {
-          "season": 6,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
-          "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
-          "juryVotes": 0,
-          "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
-        }
-      ]
-    },
-    {
-      "id": "jay",
-      "name": "Jay",
-      "seasons": [
-        6
-      ],
-      "totalSeasons": 1,
-      "bestPlacement": 99,
-      "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
-      "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
-      "totalJuryVotes": 0,
-      "tier": "Unranked",
-      "badges": [],
-      "seasonDetails": [
-        {
-          "season": 6,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
-          "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
-          "juryVotes": 0,
-          "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
-        }
-      ]
-    },
-    {
-      "id": "junior",
-      "name": "Junior",
-      "seasons": [
-        6
-      ],
-      "totalSeasons": 1,
-      "bestPlacement": 99,
-      "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
-      "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
-      "totalJuryVotes": 0,
-      "tier": "Unranked",
-      "badges": [],
-      "seasonDetails": [
-        {
-          "season": 6,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
-          "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
-          "juryVotes": 0,
-          "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
-        }
-      ]
-    },
-    {
-      "id": "kelly",
-      "name": "Kelly",
-      "seasons": [
-        6
-      ],
-      "totalSeasons": 1,
-      "bestPlacement": 99,
-      "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
-      "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
-      "totalJuryVotes": 0,
-      "tier": "Unranked",
-      "badges": [],
-      "seasonDetails": [
-        {
-          "season": 6,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
-          "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
-          "juryVotes": 0,
-          "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
-        }
-      ]
-    },
-    {
-      "id": "kitty",
-      "name": "Kitty",
-      "seasons": [
-        6
-      ],
-      "totalSeasons": 1,
-      "bestPlacement": 99,
-      "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
-      "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
-      "totalJuryVotes": 0,
-      "tier": "Unranked",
-      "badges": [],
-      "seasonDetails": [
-        {
-          "season": 6,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
-          "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
-          "juryVotes": 0,
-          "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
-        }
-      ]
-    },
-    {
-      "id": "mary",
-      "name": "Mary",
-      "seasons": [
-        6
-      ],
-      "totalSeasons": 1,
-      "bestPlacement": 99,
-      "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
-      "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
-      "totalJuryVotes": 0,
-      "tier": "Unranked",
-      "badges": [],
-      "seasonDetails": [
-        {
-          "season": 6,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
-          "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
-          "juryVotes": 0,
-          "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
-        }
-      ]
-    },
-    {
-      "id": "stephanie",
-      "name": "Stephanie",
-      "seasons": [
-        6
-      ],
-      "totalSeasons": 1,
-      "bestPlacement": 99,
-      "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
-      "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
-      "totalJuryVotes": 0,
-      "tier": "Unranked",
-      "badges": [],
-      "seasonDetails": [
-        {
-          "season": 6,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
-          "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
-          "juryVotes": 0,
-          "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
-        }
-      ]
-    },
-    {
-      "id": "tammy",
-      "name": "Tammy",
-      "seasons": [
-        6
-      ],
-      "totalSeasons": 1,
-      "bestPlacement": 99,
-      "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
-      "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
-      "totalJuryVotes": 0,
-      "tier": "Unranked",
-      "badges": [],
-      "seasonDetails": [
-        {
-          "season": 6,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
-          "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
-          "juryVotes": 0,
-          "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
-        }
-      ]
+      "story": "Competed in Season 6"
     }
   ]
 }

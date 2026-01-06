@@ -471,6 +471,7 @@
       "totalRewardWins": 4,
       "totalVotesAgainst": 6,
       "totalIdolsFound": 1,
+      "totalJuryVotes": 1,
       "badges": [
         "Strategic #3",
         "Unbreakable: Alejandro",
@@ -655,8 +656,8 @@
         },
         {
           "season": 6,
-          "placement": 22,
-          "status": "Eliminated",
+          "placement": 20,
+          "status": "First Boot",
           "tribe": "TBD",
           "challengeWins": 0,
           "immunityWins": 0,
@@ -857,6 +858,7 @@
       "totalRewardWins": 1,
       "totalVotesAgainst": 17,
       "totalIdolsFound": 1,
+      "totalJuryVotes": 5,
       "badges": [
         "S2 Winner",
         "Unbreakable: Gwen",
@@ -1015,9 +1017,10 @@
       "totalRewardWins": 3,
       "totalVotesAgainst": 5,
       "totalIdolsFound": 0,
+      "totalJuryVotes": 4,
       "badges": [
         "S3 Winner",
-        "2nd Boot (Previous Winner Target)",
+        "2nd Boot (Previous Winning Target)",
         "Red Alliance Betrayed"
       ],
       "seasonDetails": [
@@ -1870,6 +1873,7 @@
       "totalRewardWins": 0,
       "totalVotesAgainst": 2,
       "totalIdolsFound": 0,
+      "totalJuryVotes": 6,
       "badges": [
         "S1 Winner"
       ],
@@ -1964,6 +1968,7 @@
       "totalRewardWins": 0,
       "totalVotesAgainst": 0,
       "totalIdolsFound": 1,
+      "totalJuryVotes": 4,
       "badges": [
         "S5 Winner",
         "0 Votes Against",
@@ -2569,6 +2574,7 @@
       "totalRewardWins": 1,
       "totalVotesAgainst": 1,
       "totalIdolsFound": 2,
+      "totalJuryVotes": 3,
       "badges": [
         "S5 Runner-Up (3 votes)",
         "Season MVP",

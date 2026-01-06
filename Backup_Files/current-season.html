@@ -1,0 +1,3182 @@
+<!doctype html>
+<html lang="en" data-root=".">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Current Season — Season 5</title>
+  <link rel="stylesheet" href="styles.css">
+
+  <style>
+    .muted{opacity:.78}
+    .ai-controls{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin:14px 0}
+    .ai-field{flex:1;min-width:240px}
+    .ai-field label{display:block;margin-bottom:6px}
+    .ai-field input,.ai-field textarea{
+      width:100%;
+      border-radius:12px;
+      padding:10px 12px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.18);
+      color:inherit;
+      outline:none;
+    }
+    .ai-field textarea{resize:vertical}
+    .ai-actions{display:flex;gap:10px;flex-wrap:wrap}
+    .ai-inline{display:flex;gap:12px;flex-wrap:wrap}
+    .ai-list{display:flex;flex-direction:column;gap:12px;margin-top:8px}
+    .ai-row{padding:10px 10px;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.12)}
+    .ai-row-top{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+    .ai-row-label{font-weight:700}
+    .ai-row-val{opacity:.85;font-variant-numeric:tabular-nums}
+    .ai-row-sub{margin-top:6px;opacity:.78;font-size:.92rem}
+    .ai-bar{height:8px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:8px}
+    .ai-bar span{display:block;height:100%;background:rgba(150,100,255,.85)}
+    .ai-tag{display:inline-block;margin-left:8px;font-size:.8rem;padding:2px 8px;border-radius:999px;background:rgba(255,255,255,.08);opacity:.85}
+    .ai-line{padding:6px 2px}
+  
+    /* AI: avatars + cast grid */
+    .ai-player{display:flex;align-items:center;gap:10px;min-width:0}
+    .ai-avatar{width:28px;height:28px;border-radius:999px;overflow:hidden;flex:0 0 28px;
+      border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);
+      display:grid;place-items:center}
+    .ai-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+    .ai-avatar span{font-size:16px;opacity:.9;line-height:1}
+    .ai-name{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .ai-out{opacity:.45;filter:grayscale(1)}
+    .ai-cast-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+      gap:12px;
+      margin-top:10px
+    }
+    .ai-cast-card{
+      display:flex;gap:12px;align-items:center;
+      padding:12px;border-radius:16px;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(0,0,0,.12);
+      text-decoration:none;color:inherit
+    }
+    .ai-cast-card:hover{border-color:rgba(255,255,255,.16);background:rgba(0,0,0,.16)}
+    .ai-cast-left{display:flex;align-items:center;gap:10px;min-width:0}
+    .ai-cast-avatar{width:42px;height:42px;border-radius:999px;overflow:hidden;flex:0 0 42px;
+      border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);
+      display:grid;place-items:center}
+    .ai-cast-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+    .ai-cast-avatar span{font-size:20px;opacity:.9}
+    .ai-cast-meta{min-width:0}
+    .ai-cast-meta .t1{font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .ai-cast-meta .t2{opacity:.72;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  
+/* --- AI RE-ARCH (current-season) --- */
+.ai-panel{padding:18px;margin:18px 0}
+.glass-card{background:rgba(24,16,34,.55);border:1px solid rgba(255,255,255,.08);border-radius:18px;box-shadow:0 18px 60px rgba(0,0,0,.35);backdrop-filter: blur(10px)}
+.section-title{margin:0 0 8px 0;font-size:20px}
+.muted{opacity:.75}
+.small{font-size:12px}
+.ai-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-end;flex-wrap:wrap}
+.ai-status{opacity:.85;font-size:13px}
+.ai-row{margin-top:12px}
+.ai-label{display:block;font-size:12px;letter-spacing:.04em;text-transform:uppercase;opacity:.8;margin-bottom:8px}
+.ai-endpoint{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.ai-input{width:100%;min-width:260px;background:rgba(10,8,18,.55);border:1px solid rgba(255,255,255,.10);color:#fff;border-radius:12px;padding:10px 12px;outline:none}
+.ai-textarea{width:100%;min-height:170px;background:rgba(10,8,18,.55);border:1px solid rgba(255,255,255,.10);color:#fff;border-radius:12px;padding:12px;outline:none;font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-size:12px;line-height:1.35}
+.ai-controls{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;align-items:flex-end}
+.ai-field{flex:1;min-width:160px}
+.ai-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.ai-toggle{display:flex;gap:8px;align-items:center;font-size:13px;opacity:.9;user-select:none}
+.ai-toggle input{accent-color: #9b6dff}
+.btn{border-radius:12px;padding:10px 14px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#fff;cursor:pointer}
+.btn:hover{background:rgba(255,255,255,.10)}
+.btn-primary{background:rgba(155,109,255,.22);border-color:rgba(155,109,255,.45)}
+.btn-primary:hover{background:rgba(155,109,255,.30)}
+.btn-ghost{background:rgba(255,255,255,.06)}
+
+.episode-panel{padding:18px;margin:18px 0}
+.episode-hero{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;padding:10px 6px 16px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:14px}
+.episode-kicker{font-size:12px;letter-spacing:.12em;text-transform:uppercase;opacity:.75}
+.episode-title{font-size:28px;font-weight:800;line-height:1.15;margin-top:4px}
+.episode-num{color:rgba(255,255,255,.95)}
+.episode-name{color:rgba(155,109,255,.95);margin-left:8px}
+.episode-sub{margin-top:8px;opacity:.85}
+.subhead{margin:0 0 10px 0}
+
+.players-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
+.player-card{position:relative;display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px;border-radius:16px;text-decoration:none;color:#fff;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);transition:transform .12s ease, border-color .12s ease, background .12s ease}
+.player-card:hover{transform:translateY(-2px);border-color:rgba(155,109,255,.38);background:rgba(155,109,255,.08)}
+.player-card.eliminated{opacity:.38;filter:grayscale(1)}
+.pc-avatar{width:64px;height:64px;border-radius:999px;background:rgba(0,0,0,.35);border:1px solid rgba(155,109,255,.35);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.pc-avatar img{width:100%;height:100%;object-fit:cover;display:none}
+.pc-fallback{display:flex;width:100%;height:100%;align-items:center;justify-content:center;font-weight:800;opacity:.75}
+.pc-name{font-weight:800;text-align:center}
+.pc-title{font-size:12px;opacity:.8;text-align:center;min-height:30px}
+.pc-badge{position:absolute;top:10px;right:10px;font-size:10px;letter-spacing:.06em;text-transform:uppercase;background:rgba(255,120,120,.18);border:1px solid rgba(255,120,120,.35);padding:4px 8px;border-radius:999px}
+.players-foot{margin-top:10px;opacity:.85;font-size:13px}
+
+.window{padding:18px;margin:18px 0}
+.window-head{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.window-tabs{display:flex;gap:8px;flex-wrap:wrap}
+.tab-btn{border-radius:12px;padding:10px 14px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#fff;cursor:pointer}
+.tab-btn.active{background:rgba(155,109,255,.22);border-color:rgba(155,109,255,.45)}
+.window-body.hidden{display:none}
+
+.cards-grid{display:grid;grid-template-columns:repeat(4, minmax(0,1fr));gap:12px}
+.cards-grid.two{grid-template-columns:repeat(4, minmax(0,1fr));margin-top:12px}
+@media (max-width: 1100px){
+  .cards-grid{grid-template-columns:repeat(2, minmax(0,1fr))}
+  .cards-grid.two{grid-template-columns:repeat(2, minmax(0,1fr))}
+}
+@media (max-width: 620px){
+  .cards-grid{grid-template-columns:1fr}
+  .cards-grid.two{grid-template-columns:1fr}
+}
+.mini-panel{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:16px;padding:14px}
+.mini-title{font-size:12px;letter-spacing:.12em;text-transform:uppercase;opacity:.75;margin-bottom:10px}
+.mini-subtitle{font-size:12px;opacity:.75;margin:-4px 0 10px}
+.mini-body{font-size:13px;line-height:1.4;opacity:.95}
+
+.rowline{display:flex;gap:10px;align-items:flex-start}
+.mini-avatar{width:38px;height:38px;border-radius:999px;background:rgba(0,0,0,.35);border:1px solid rgba(155,109,255,.35);display:flex;align-items:center;justify-content:center;overflow:hidden;flex:none}
+.mini-avatar img{width:100%;height:100%;object-fit:cover;display:none}
+.mini-fallback{display:flex;width:100%;height:100%;align-items:center;justify-content:center;font-weight:800;opacity:.75}
+.rowtext{display:flex;flex-direction:column;gap:6px}
+.plink{color:#fff;text-decoration:none}
+.plink:hover{text-decoration:underline}
+
+.bar-row{padding:10px 10px 12px;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.14);margin-bottom:10px}
+.bar-head{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.bar-left{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.bar-pct{opacity:.85;font-variant-numeric:tabular-nums}
+.bar-track{height:8px;border-radius:999px;background:rgba(255,255,255,.09);margin:8px 0 8px;overflow:hidden}
+.bar-fill{height:100%;background:rgba(155,109,255,.75);border-radius:999px}
+.bar-note{opacity:.82;font-size:12px;line-height:1.35}
+
+.tiny-avatar{width:22px;height:22px;border-radius:999px;background:rgba(0,0,0,.35);border:1px solid rgba(155,109,255,.35);display:inline-flex;align-items:center;justify-content:center;overflow:hidden}
+.tiny-avatar img{width:100%;height:100%;object-fit:cover;display:none}
+.tiny-fallback{display:inline-flex;width:100%;height:100%;align-items:center;justify-content:center;font-weight:800;font-size:11px;opacity:.75}
+
+.tag{font-size:11px;padding:3px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.14);opacity:.9}
+.tag-up{background:rgba(80,255,170,.12);border-color:rgba(80,255,170,.35)}
+.tag-down{background:rgba(255,90,120,.12);border-color:rgba(255,90,120,.35)}
+.tag-steady{background:rgba(255,255,255,.08)}
+
+.title-row{display:flex;gap:8px;align-items:center;padding:6px 0;border-bottom:1px dashed rgba(255,255,255,.08)}
+.title-row:last-child{border-bottom:none}
+
+.gameplay-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:12px}
+@media (max-width: 980px){ .gameplay-grid{grid-template-columns:1fr} }
+.compass-wrap{padding:8px}
+.compass{position:relative;width:100%;aspect-ratio: 1.6/1;background:rgba(0,0,0,.14);border:1px solid rgba(255,255,255,.10);border-radius:16px;overflow:hidden}
+.axis{position:absolute;background:rgba(255,255,255,.10)}
+.axis-x{left:0;right:0;top:50%;height:1px}
+.axis-y{top:0;bottom:0;left:50%;width:1px}
+.axis-label{position:absolute;font-size:11px;opacity:.75}
+.axis-label.left{left:10px;top:50%;transform:translateY(-50%)}
+.axis-label.right{right:10px;top:50%;transform:translateY(-50%)}
+.axis-label.top{top:10px;left:50%;transform:translateX(-50%)}
+.axis-label.bottom{bottom:10px;left:50%;transform:translateX(-50%)}
+.compass-points{position:absolute;inset:0}
+.dot{position:absolute;transform:translate(-50%,-50%);text-decoration:none;color:#fff}
+.dot-circle{width:30px;height:30px;border-radius:999px;background:rgba(255,255,255,.10);border:1px solid rgba(155,109,255,.40);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.dot-circle img{width:100%;height:100%;object-fit:cover;display:none}
+.dot-fallback{display:flex;width:100%;height:100%;align-items:center;justify-content:center;font-weight:800;font-size:12px;opacity:.8}
+.dot-label{display:block;margin-top:4px;font-size:10px;opacity:.85;text-shadow:0 2px 10px rgba(0,0,0,.6);max-width:90px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.table-wrap{overflow:auto;border-radius:16px;border:1px solid rgba(255,255,255,.10)}
+.gp-table{width:100%;border-collapse:collapse}
+.gp-table th,.gp-table td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.08);font-size:13px;text-align:left}
+.gp-table th{font-size:12px;letter-spacing:.12em;text-transform:uppercase;opacity:.75;background:rgba(255,255,255,.04);position:sticky;top:0}
+.row-player{display:inline-flex;gap:8px;align-items:center}
+</style>
+
+</head>
+<body>
+<!-- SITE HEADER START -->
+<header class="modern-header" id="modernHeader">
+  <div class="header-container">
+    <!-- Top Bar -->
+    <div class="header-top">
+      <a href="index.html" class="brand-section" aria-label="Go to home">
+        <div class="brand-icon">
+          <span class="brand-logo-text">⚡</span>
+        </div>
+        <div class="brand-content">
+          <h1>DC <span class="brand-gradient">Franchise</span> Database</h1>
+          <p class="brand-subtitle">Season <span id="currentSeasonNum">5</span> Live • Click to Explore</p>
+        </div>
+      </a>
+
+      <div class="stats-badge">
+        <div class="stats-main"><span id="totalSeasons">5</span> Seasons • <span id="totalPlayers">58</span> Players</div>
+        <div class="stats-sub">Icons: <span id="iconFormat">name.png</span></div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="header-nav" aria-label="Primary navigation">
+      <ul class="nav-list">
+        <li class="nav-item">
+          <a href="index.html" class="nav-link" data-page="index">
+            <span class="nav-icon">🏠</span>
+            <span>Home</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="current-season.html" class="nav-link" data-page="current-season">
+            <span class="nav-icon">📊</span>
+            <span>Current Season</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="voting-analytics.html" class="nav-link" data-page="voting-analytics">
+            <span class="nav-icon">🧾</span>
+            <span>Voting Analytics</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="franchise.html" class="nav-link" data-page="franchise">
+            <span class="nav-icon">🏛️</span>
+            <span>Franchise</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="rankings.html" class="nav-link" data-page="rankings">
+            <span class="nav-icon">🏆</span>
+            <span>Rankings</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="seasons.html" class="nav-link" data-page="seasons">
+            <span class="nav-icon">🗂️</span>
+            <span>Seasons</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="devotees.html" class="nav-link" data-page="devotees">
+            <span class="nav-icon">👥</span>
+            <span>Players</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="awards.html" class="nav-link" data-page="awards">
+            <span class="nav-icon">🏅</span>
+            <span>Awards</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<script>
+(function() {
+  // Load site config and update header stats
+  if (window.SITE_CONFIG) {
+    document.getElementById('totalSeasons').textContent = window.SITE_CONFIG.seasons;
+    document.getElementById('totalPlayers').textContent = window.SITE_CONFIG.players;
+    document.getElementById('currentSeasonNum').textContent = window.SITE_CONFIG.currentSeason;
+    document.getElementById('iconFormat').textContent = window.SITE_CONFIG.iconFormat;
+  }
+
+  // Scroll behavior
+  const header = document.getElementById('modernHeader');
+  if (!header) return;
+  
+  window.addEventListener('scroll', () => {
+    const currentScroll = window.pageYOffset;
+    if (currentScroll > 20) {
+      header.classList.add('scrolled');
+    } else {
+      header.classList.remove('scrolled');
+    }
+  }, { passive: true });
+
+  // Active page highlighting
+  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+  const navLinks = document.querySelectorAll('.nav-link');
+  
+  navLinks.forEach(link => {
+    const linkPage = link.getAttribute('href');
+    if (linkPage === currentPage || (currentPage === '' && linkPage === 'index.html')) {
+      link.classList.add('active');
+    }
+  });
+
+  // Path resolution for nested folders
+  const root = (document.documentElement.dataset.root || document.body.dataset.root || ".").replace(/\/+$/, "");
+  
+  if (root !== ".") {
+    const allLinks = header.querySelectorAll('a[href]');
+    allLinks.forEach(link => {
+      const href = link.getAttribute('href');
+      if (href && !href.startsWith('http') && !href.startsWith('#')) {
+        link.setAttribute('href', root + '/' + href);
+      }
+    });
+  }
+})();
+</script>
+<!-- SITE HEADER END -->
+
+  <div class="container">
+  <!-- 1) TOTAL DRAMA ANALYTICS (AI) -->
+  <section class="ai-panel glass-card" id="aiPanel">
+    <div class="ai-head">
+      <h2 class="section-title">📈 Total Drama Analytics <span class="muted">(AI)</span></h2>
+      <div class="ai-status" id="aiStatus">Paste your episode summary and generate analytics.</div>
+    </div>
+
+    <div class="ai-row">
+      <label class="ai-label" for="aiWorkerUrl">AI Endpoint (Cloudflare Worker URL)</label>
+      <div class="ai-endpoint">
+        <input id="aiWorkerUrl" class="ai-input" placeholder="https://dc-analytics.yoursubdomain.workers.dev" />
+        <button class="btn btn-ghost" id="aiSaveUrl">Save URL</button>
+      </div>
+    </div>
+
+    <div class="ai-controls">
+      <div class="ai-field">
+        <label class="ai-label" for="aiSeason">Season</label>
+        <input id="aiSeason" class="ai-input" type="number" min="1" value="5" />
+      </div>
+      <div class="ai-field">
+        <label class="ai-label" for="aiEpisode">Episode</label>
+        <input id="aiEpisode" class="ai-input" type="number" min="1" value="1" />
+      </div>
+
+      <div class="ai-actions">
+        <button class="btn btn-primary" id="aiGenerate">Generate Analytics</button>
+        <button class="btn btn-ghost" id="aiLoadCached">Load Cached</button>
+        <label class="ai-toggle">
+          <input type="checkbox" id="aiAutoLoad" checked />
+          <span>Auto-load on refresh</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="ai-row">
+      <label class="ai-label" for="aiSummary">Episode Summary Input</label>
+      <textarea id="aiSummary" class="ai-textarea" spellcheck="false" placeholder="Paste your episode write-up here (like your Episode 1 summary)..."></textarea>
+    </div>
+  </section>
+
+  <!-- 2) EPISODE HEADER + CURRENT PLAYERS (BIG) -->
+  <section class="episode-panel glass-card" id="episodePanel">
+    <div class="episode-hero">
+      <div>
+        <div class="episode-kicker">TOTAL DRAMA • Current Episode</div>
+        <div class="episode-title">
+          <span class="episode-num" id="uiEpisodeNum">Episode 1</span>
+          <span class="episode-name" id="uiEpisodeName">—</span>
+        </div>
+        <div class="episode-sub">
+          <span id="uiPlayersRemaining">—</span> remaining • Click any player to open their profile
+        </div>
+      </div>
+
+      <div class="episode-hero-actions">
+        <button class="btn btn-ghost" id="btnSyncFromSummary">Sync title/players from summary</button>
+      </div>
+    </div>
+
+    <h3 class="subhead">Current Players</h3>
+    <div class="players-grid" id="currentPlayersGrid"></div>
+    <div class="players-foot">
+      <span class="muted">Tip:</span> eliminated players are greyed out automatically if your summary includes an <b>ELIMINATED</b> block.
+    </div>
+  </section>
+
+  <!-- 3) SWITCHABLE ANALYTICS WINDOW -->
+  <section class="window glass-card" id="analyticsWindow">
+    <div class="window-head">
+      <h2 class="section-title">📊 Cullhouse Analytics</h2>
+      <div class="window-tabs" role="tablist" aria-label="Analytics tabs">
+        <button class="tab-btn active" id="tabOverview" role="tab" aria-selected="true">📘 Overview</button>
+        <button class="tab-btn" id="tabGameplay" role="tab" aria-selected="false">🧭 Gameplay</button>
+        <button class="tab-btn" id="tabEpisode" role="tab" aria-selected="false">📺 Episode</button>
+        <button class="tab-btn" id="tabSeasonSetup" role="tab" aria-selected="false">⭐ Season Setup</button>
+      </div>
+    </div>
+
+    <!-- OVERVIEW PAGE -->
+    <div class="window-body" id="viewOverview">
+      <div class="cards-grid">
+        <div class="mini-panel">
+          <div class="mini-title">BEST MOVE</div>
+          <div class="mini-body" id="cardBestMove">—</div>
+        </div>
+
+        <div class="mini-panel">
+          <div class="mini-title">BIGGEST RISK</div>
+          <div class="mini-body" id="cardBiggestRisk">—</div>
+        </div>
+
+        <div class="mini-panel">
+          <div class="mini-title">EPISODE SUMMARY</div>
+          <div class="mini-body" id="cardEpisodeSummary">—</div>
+        </div>
+
+        <div class="mini-panel">
+          <div class="mini-title">ALLIANCE OVERVIEW</div>
+          <div class="mini-body" id="cardAllianceOverview">—</div>
+        </div>
+      </div>
+
+      <div class="cards-grid two">
+        <div class="mini-panel">
+          <div class="mini-title">BOOT ODDS (NEXT)</div>
+          <div class="mini-body" id="cardBootOdds">No boot predictions yet.</div>
+        </div>
+
+        <div class="mini-panel">
+          <div class="mini-title">POWER RANKINGS</div>
+          <div class="mini-body" id="cardPowerRankings">No power rankings yet.</div>
+        </div>
+
+        <div class="mini-panel">
+          <div class="mini-title">ALLIANCE STABILITY</div>
+          <div class="mini-body" id="cardAllianceStability">No alliance stability yet.</div>
+        </div>
+
+        <div class="mini-panel">
+          <div class="mini-title">TITLES</div>
+          <div class="mini-body" id="cardTitles">No titles yet.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GAMEPLAY PAGE -->
+    <div class="window-body hidden" id="viewGameplay">
+      <div class="gameplay-grid">
+        <div class="mini-panel gameplay-panel">
+          <div class="mini-title">GAMEPLAY COMPASS</div>
+          <div class="mini-subtitle">AI-derived placement from your overview stats (Power vs Safety)</div>
+          <div class="compass-wrap">
+            <div class="compass" id="compass">
+              <div class="axis axis-x"></div>
+              <div class="axis axis-y"></div>
+              <div class="axis-label left">Low Power</div>
+              <div class="axis-label right">High Power</div>
+              <div class="axis-label top">Safe</div>
+              <div class="axis-label bottom">At Risk</div>
+              <div class="compass-points" id="compassPoints"></div>
+            </div>
+          </div>
+          <div class="muted small">If you want true “Social vs Competition”, I can upgrade your Worker to output compass coordinates directly.</div>
+        </div>
+
+        <div class="mini-panel gameplay-panel">
+          <div class="mini-title">INDIVIDUAL GAMEPLAY ANALYSIS</div>
+          <div class="mini-subtitle">Auto-built from AI output (tag + score + risk)</div>
+
+          <div class="table-wrap">
+            <table class="gp-table">
+              <thead>
+                <tr>
+                  <th>Player</th>
+                  <th>Title</th>
+                  <th>Trend</th>
+                  <th>Power</th>
+                  <th>Boot Risk</th>
+                  <th>Role</th>
+                </tr>
+              </thead>
+              <tbody id="gpTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      
+      <!-- NEW ANALYTICS PANELS -->
+      <div class="cards-grid two" style="margin-top: 20px;">
+        <div class="mini-panel">
+          <div class="mini-title">SOCIAL NETWORK</div>
+          <div class="mini-body" id="cardSocialNetwork">No social network data yet.</div>
+        </div>
+        
+        <div class="mini-panel">
+          <div class="mini-title">JURY MANAGEMENT</div>
+          <div class="mini-body" id="cardJuryManagement">No jury management data yet.</div>
+        </div>
+        
+        <div class="mini-panel">
+          <div class="mini-title">THREAT BREAKDOWN</div>
+          <div class="mini-body" id="cardThreatBreakdown">No threat breakdown yet.</div>
+        </div>
+        
+        <div class="mini-panel">
+          <div class="mini-title">PATH TO VICTORY</div>
+          <div class="mini-body" id="cardPathToVictory">No path to victory data yet.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EPISODE TAB -->
+    <div class="window-body hidden" id="viewEpisode">
+      <div class="episode-viewer">
+        
+        <!-- Summary Input for AI Generation -->
+        <div class="glass-card" style="padding: 20px; margin-bottom: 20px;">
+          <h3 style="margin-top: 0;">🤖 AI Episode Generation</h3>
+          <p style="opacity: 0.8; font-size: 14px; margin-bottom: 16px;">
+            Paste your BrantSteele episode summary here, then click "Generate Episode" to create a full Total Drama episode transcript.
+          </p>
+          <textarea 
+            id="episode-summary-input" 
+            class="episode-input" 
+            placeholder="Paste your BrantSteele episode summary here...
+
+Example:
+Episode 2: Tribal swap! Belo won immunity. At Reba, Ella was voted out 2-1..."
+            style="width: 100%; min-height: 150px; margin-bottom: 12px;"></textarea>
+          <button onclick="generateEpisodeAI()" id="generate-episode-btn" class="btn btn-primary">
+            🎬 Generate Episode with AI
+          </button>
+        </div>
+
+        <!-- Manual Transcript Input -->
+        <div class="glass-card" style="padding: 20px; margin-bottom: 20px;">
+          <h3 style="margin-top: 0;">📝 Episode Transcript</h3>
+          <p style="opacity: 0.8; font-size: 14px; margin-bottom: 16px;">
+            Or paste a manually written episode transcript here.
+          </p>
+          <textarea 
+            id="episode-input" 
+            class="episode-input" 
+            placeholder="Paste or generate your episode transcript here...
+
+Format:
+[Scene: Beach. Morning.]
+
+Chris: Welcome to Total Drama!
+
+Owen: I'm so excited!
+
+[Confessional: Owen]
+Owen: This is going to be amazing!"
+            style="width: 100%; min-height: 300px;"></textarea>
+        </div>
+        
+        <!-- Controls -->
+        <div class="episode-controls">
+          <button onclick="renderEpisode()" class="btn btn-primary">🎬 Render Episode</button>
+          <button onclick="saveEpisode()" class="btn">💾 Save Episode</button>
+          <button onclick="loadEpisode()" class="btn">📂 Load Saved</button>
+          <button onclick="clearEpisode()" class="btn btn-ghost">🗑️ Clear</button>
+        </div>
+        
+        <!-- Rendered Episode -->
+        <div id="episode-rendered"></div>
+      </div>
+    </div>
+
+    <!-- SEASON SETUP TAB -->
+    <div class="window-body hidden" id="viewSeasonSetup">
+      <div class="glass-card" style="padding: 24px; margin-bottom: 20px;">
+        <h3 style="margin-top: 0;">🎬 Season Initialization</h3>
+        <p style="opacity: 0.8; font-size: 14px; margin-bottom: 20px;">
+          Start a new season by creating player profiles from your Episode 1 summary. 
+          The system will detect new players vs returning players automatically.
+        </p>
+        
+        <div style="margin-bottom: 20px;">
+          <label style="display: block; margin-bottom: 8px; font-weight: 600;">
+            📋 Episode 1 Summary (with cast list)
+          </label>
+          <textarea 
+            id="season-setup-summary" 
+            style="width: 100%; min-height: 300px; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: var(--text); font-family: monospace; font-size: 13px;"
+            placeholder="Paste your Episode 1 summary here...
+
+Must include:
+=== CAST (ALL) ===
+Amy
+Beardo
+Blaineley
+..."></textarea>
+        </div>
+        
+        <button id="analyze-cast-btn" class="btn btn-primary" style="margin-right: 10px;">
+          🔍 Analyze Cast
+        </button>
+        
+        <div id="cast-analysis-result" style="margin-top: 20px; padding: 16px; background: rgba(125,76,255,0.1); border: 1px solid rgba(125,76,255,0.3); border-radius: 12px; display: none;">
+          <!-- Analysis results will appear here -->
+        </div>
+        
+        <div id="create-profiles-section" style="margin-top: 20px; display: none;">
+          <button id="create-profiles-btn" class="btn" style="background: linear-gradient(135deg, #4ade80, #22c55e); font-weight: 700;">
+            🎭 Create Player Profiles
+          </button>
+        </div>
+      </div>
+      
+      <!-- COMPLETE SEASON BUILDER -->
+      <div class="glass-card" style="padding: 24px; margin-top: 20px; background: linear-gradient(135deg, rgba(155,109,255,0.15), rgba(76,255,179,0.05)); border: 2px solid rgba(155,109,255,0.3);">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+          <span style="font-size: 32px;">⚡</span>
+          <div>
+            <h3 style="margin: 0;">Complete Season Builder</h3>
+            <p style="margin: 4px 0 0; opacity: 0.8; font-size: 13px;">
+              Build entire season database from episode summaries (generates all JSON files)
+            </p>
+          </div>
+        </div>
+        
+        <!-- SEASON METADATA -->
+        <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+          <h4 style="margin: 0 0 16px 0; display: flex; align-items: center; gap: 8px;">
+            <span>📝</span> Season Metadata
+          </h4>
+          
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+            <div>
+              <label style="display: block; margin-bottom: 6px; font-size: 13px; opacity: 0.9;">Season Number</label>
+              <input type="number" id="sb-season-number" value="6" 
+                style="width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff;" />
+            </div>
+            
+            <div>
+              <label style="display: block; margin-bottom: 6px; font-size: 13px; opacity: 0.9;">Episode Count</label>
+              <input type="number" id="sb-episode-count" value="14" 
+                style="width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff;" />
+            </div>
+            
+            <div>
+              <label style="display: block; margin-bottom: 6px; font-size: 13px; opacity: 0.9;">Emoji</label>
+              <input type="text" id="sb-season-emoji" value="🎯" maxlength="4"
+                style="width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-size: 24px; text-align: center;" />
+            </div>
+          </div>
+          
+          <div style="margin-top: 16px;">
+            <label style="display: block; margin-bottom: 6px; font-size: 13px; opacity: 0.9;">Season Title</label>
+            <input type="text" id="sb-season-title" placeholder="Total Drama [Theme Name]" 
+              style="width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff;" />
+          </div>
+          
+          <div style="margin-top: 12px;">
+            <label style="display: block; margin-bottom: 6px; font-size: 13px; opacity: 0.9;">Subtitle</label>
+            <input type="text" id="sb-season-subtitle" placeholder="Season tagline or description" 
+              style="width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff;" />
+          </div>
+          
+          <div style="margin-top: 12px;">
+            <label style="display: block; margin-bottom: 6px; font-size: 13px; opacity: 0.9;">Theme</label>
+            <input type="text" id="sb-season-theme" placeholder="E.g., '3 tribes + swaps + redemption island'" 
+              style="width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff;" />
+          </div>
+        </div>
+        
+        <!-- EPISODE SUMMARIES -->
+        <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h4 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+              <span>📚</span> Episode Summaries
+            </h4>
+            <button id="sb-toggle-episodes" class="btn" style="font-size: 12px; padding: 6px 12px;">
+              Show All Episodes
+            </button>
+          </div>
+          
+          <div id="sb-episodes-container">
+            <!-- Episode inputs will be dynamically generated by JavaScript -->
+          </div>
+          
+          <div style="margin-top: 16px; padding: 12px; background: rgba(255,179,71,0.1); border: 1px solid rgba(255,179,71,0.3); border-radius: 8px;">
+            <p style="margin: 0; font-size: 12px; opacity: 0.85;">
+              💡 <strong>Tip:</strong> Episode 1 must include the cast list in format:<br/>
+              <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px;">=== CAST (ALL) ===</code>
+            </p>
+          </div>
+        </div>
+        
+        <!-- FINALE & AWARDS -->
+        <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+          <h4 style="margin: 0 0 16px 0; display: flex; align-items: center; gap: 8px;">
+            <span>🏆</span> Finale Results & Awards
+          </h4>
+          
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 16px;">
+            <div>
+              <label style="display: block; margin-bottom: 6px; font-size: 13px; opacity: 0.9;">Winner</label>
+              <input type="text" id="sb-finale-winner" placeholder="Winner name" 
+                style="width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff;" />
+            </div>
+            
+            <div>
+              <label style="display: block; margin-bottom: 6px; font-size: 13px; opacity: 0.9;">Runner-Up(s)</label>
+              <input type="text" id="sb-finale-runnerup" placeholder="Name1, Name2" 
+                style="width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff;" />
+            </div>
+            
+            <div>
+              <label style="display: block; margin-bottom: 6px; font-size: 13px; opacity: 0.9;">Final Vote</label>
+              <input type="text" id="sb-finale-vote" placeholder="5-4 or 4-3-2" 
+                style="width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff;" />
+            </div>
+          </div>
+          
+          <div>
+            <label style="display: block; margin-bottom: 6px; font-size: 13px; opacity: 0.9;">Jury Votes (one per line: Juror voted for Finalist)</label>
+            <textarea id="sb-jury-votes" rows="6" placeholder="Scarlett voted for Mickey
+Sugar voted for Sky
+Dave voted for Mickey
+..."
+              style="width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-family: monospace; font-size: 12px;"></textarea>
+          </div>
+          
+          <h5 style="margin: 20px 0 12px 0; opacity: 0.9;">Season Awards</h5>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+            <div>
+              <label style="display: block; margin-bottom: 6px; font-size: 13px; opacity: 0.9;">Fan Favorite</label>
+              <input type="text" id="sb-award-fan" placeholder="Player name" 
+                style="width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff;" />
+            </div>
+            
+            <div>
+              <label style="display: block; margin-bottom: 6px; font-size: 13px; opacity: 0.9;">Best Strategic</label>
+              <input type="text" id="sb-award-strategic" placeholder="Player name" 
+                style="width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff;" />
+            </div>
+            
+            <div>
+              <label style="display: block; margin-bottom: 6px; font-size: 13px; opacity: 0.9;">Most Challenge Wins</label>
+              <input type="text" id="sb-award-challenges" placeholder="Player name" 
+                style="width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff;" />
+            </div>
+          </div>
+        </div>
+        
+        <!-- GENERATE BUTTON -->
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+          <button id="sb-generate-all" class="btn btn-primary" style="flex: 1; font-size: 16px; padding: 14px; background: linear-gradient(135deg, #9b6dff, #4cffb3); font-weight: 700;">
+            ⚡ Generate Complete Season Database
+          </button>
+          
+          <button id="sb-preview-data" class="btn" style="padding: 14px 20px;">
+            👁️ Preview Data
+          </button>
+        </div>
+        
+        <!-- PROGRESS/RESULTS -->
+        <div id="sb-progress" style="margin-top: 20px; display: none;">
+          <!-- Progress updates will appear here -->
+        </div>
+      </div>
+      
+      <div class="glass-card" style="padding: 24px;">
+        <h3 style="margin-top: 0;">📊 Season Progress Tracking</h3>
+        <p style="opacity: 0.8; font-size: 14px; margin-bottom: 16px;">
+          Track eliminations throughout the season. Placement data updates automatically when you generate analytics.
+        </p>
+        
+        <div id="season-progress-info" style="padding: 16px; background: rgba(255,179,71,0.1); border: 1px solid rgba(255,179,71,0.3); border-radius: 12px;">
+          <p style="margin: 0; opacity: 0.7;">No season data loaded. Create profiles first.</p>
+        </div>
+      </div>
+      
+      <div class="glass-card" style="padding: 24px; margin-top: 20px;">
+        <h3 style="margin-top: 0;">🏆 End-of-Season Finalization</h3>
+        <p style="opacity: 0.8; font-size: 14px; margin-bottom: 16px;">
+          After the finale, manually edit the player database JSON to add:
+        </p>
+        <ul style="opacity: 0.8; font-size: 14px; line-height: 1.8;">
+          <li><strong>Challenge wins</strong> - Individual immunity/reward wins</li>
+          <li><strong>Strategic rank</strong> - Your assessment of their gameplay</li>
+          <li><strong>Alliance history</strong> - Key alliances they were part of</li>
+          <li><strong>Bonds & rivalries</strong> - Important relationships</li>
+          <li><strong>Jury votes</strong> - How many jury votes they received (finalists only)</li>
+          <li><strong>Tier ranking</strong> - Calculate based on performance</li>
+          <li><strong>Badges</strong> - Awards like "Challenge Beast", "Strategic Mastermind"</li>
+        </ul>
+        
+        <div style="margin-top: 16px; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+          <p style="margin: 0; font-size: 13px; opacity: 0.7;">
+            💡 <strong>Tip:</strong> The system auto-creates profiles and tracks eliminations. 
+            You focus on the rich gameplay data at season's end!
+          </p>
+        </div>
+      </div>
+      
+      <div class="glass-card" style="padding: 24px; margin-top: 20px;">
+        <h3 style="margin-top: 0;">💾 Database Management</h3>
+        <p style="opacity: 0.8; font-size: 14px; margin-bottom: 16px;">
+          Export, import, or sync your player database.
+        </p>
+        
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <button id="export-database-btn" class="btn" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
+            📥 Export Database to JSON
+          </button>
+          
+          <button id="import-database-btn" class="btn" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
+            📤 Import Database from JSON
+          </button>
+          
+          <button id="sync-devotees-btn" class="btn" style="background: linear-gradient(135deg, #a855f7, #9333ea);">
+            🔄 Sync to devotees.html
+          </button>
+        </div>
+        
+        <input type="file" id="import-file-input" accept=".json" style="display: none;">
+        
+        <div id="database-status" style="margin-top: 16px; padding: 12px; background: rgba(125,76,255,0.1); border: 1px solid rgba(125,76,255,0.3); border-radius: 8px; display: none;">
+          <!-- Status messages appear here -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCRIPT: AI + RENDERING -->
+  <script>
+
+  (function() {
+    const $ = (id) => document.getElementById(id);
+
+    const els = {
+      workerUrl: $("aiWorkerUrl"),
+      saveUrl: $("aiSaveUrl"),
+      season: $("aiSeason"),
+      episode: $("aiEpisode"),
+      generate: $("aiGenerate"),
+      loadCached: $("aiLoadCached"),
+      autoLoad: $("aiAutoLoad"),
+      summary: $("aiSummary"),
+      status: $("aiStatus"),
+
+      uiEpNum: $("uiEpisodeNum"),
+      uiEpName: $("uiEpisodeName"),
+      uiRemain: $("uiPlayersRemaining"),
+      syncFromSummary: $("btnSyncFromSummary"),
+      playersGrid: $("currentPlayersGrid"),
+
+      tabOverview: $("tabOverview"),
+      tabGameplay: $("tabGameplay"),
+      tabEpisode: $("tabEpisode"),
+      tabSeasonSetup: $("tabSeasonSetup"),
+      viewOverview: $("viewOverview"),
+      viewGameplay: $("viewGameplay"),
+      viewEpisode: $("viewEpisode"),
+      viewSeasonSetup: $("viewSeasonSetup"),
+
+      cardBestMove: $("cardBestMove"),
+      cardBiggestRisk: $("cardBiggestRisk"),
+      cardEpisodeSummary: $("cardEpisodeSummary"),
+      cardAllianceOverview: $("cardAllianceOverview"),
+      cardBootOdds: $("cardBootOdds"),
+      cardPowerRankings: $("cardPowerRankings"),
+      cardAllianceStability: $("cardAllianceStability"),
+      cardTitles: $("cardTitles"),
+      cardSocialNetwork: $("cardSocialNetwork"),
+      cardJuryManagement: $("cardJuryManagement"),
+      cardThreatBreakdown: $("cardThreatBreakdown"),
+      cardPathToVictory: $("cardPathToVictory"),
+
+      compassPoints: $("compassPoints"),
+      gpTableBody: $("gpTableBody"),
+    };
+
+    // ----------------------------
+    // Helpers
+    // ----------------------------
+    function normalizeWorkerUrl(raw) {
+      let url = (raw || "").trim();
+      if (!url) return "";
+      if (!/^https?:\/\//i.test(url)) url = "https://" + url;
+      return url.replace(/\/+$/, "");
+    }
+
+    function slugify(name) {
+      return (name || "")
+        .toLowerCase()
+        .trim()
+        .replace(/['".]/g, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "");
+    }
+
+    function escapeHtml(s) {
+      return String(s || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function setStatus(msg) {
+      if (els.status) els.status.textContent = msg;
+    }
+
+    function cacheKey(season, episode) {
+      return `AI_ANALYTICS_s${season}_e${episode}`;
+    }
+
+    function saveLastSelection(season, episode) {
+      localStorage.setItem("AI_LAST_SELECTION", JSON.stringify({ season, episode }));
+    }
+
+    function loadLastSelection() {
+      try { return JSON.parse(localStorage.getItem("AI_LAST_SELECTION") || "null"); } catch { return null; }
+    }
+
+    // Extract cast list from summary (best effort)
+        function parseBlock(text, headerRegex) {
+      const lines = (text || "").split(/\r?\n/);
+      let start = -1;
+      for (let i = 0; i < lines.length; i++) {
+        if (headerRegex.test(lines[i].trim())) { start = i; break; }
+      }
+      if (start === -1) return [];
+      const out = [];
+      for (let i = start + 1; i < lines.length; i++) {
+        const raw = lines[i];
+        const l = (raw || "").trim();
+        if (!l) continue;
+        if (/^===\s*/.test(l)) break;
+        // stop if next major section starts (fallback)
+        if (/^(PRE-CHALLENGE|CHALLENGES|POST-CHALLENGE|TRIBAL|VOTING|CURRENT GAME STATUS|NEXT EPISODE QUESTIONS)\b/i.test(l)) break;
+        out.push(l);
+      }
+      return out;
+    }
+
+    function cleanNameLine(l) {
+      let s = (l || "").trim();
+      if (!s) return "";
+      s = s.replace(/^[-•]\s*/, "");
+      // strip numbering like "18. Leonard" or "18th Leonard"
+      s = s.replace(/^\d+\s*(?:[.)]|(?:st|nd|rd|th)\b)\s*/i, "");
+      // strip "Name:18th" or "Name - 18th"
+      s = s.replace(/:\s*\d+(?:st|nd|rd|th)\b.*$/i, "").trim();
+      s = s.replace(/[—–].*$/, "").trim();
+      return s;
+    }
+
+    function isProbablyName(s) {
+      return /^[A-Za-z][A-Za-z0-9' -]*$/.test(s) && s.length <= 30;
+    }
+
+    function parseCastFromSummary(text) {
+      const lines = (text || "").split(/\r?\n/).map(l => l.trim());
+      let names = [];
+
+      // META block: === CAST (ALL) ===
+      const castBlock = parseBlock(text, /^===\s*CAST\b/i);
+      if (castBlock.length) {
+        castBlock.forEach(l => {
+          const n = cleanNameLine(l);
+          if (isProbablyName(n)) names.push(n);
+        });
+      }
+
+      // TRIBES block: === TRIBES (ACTIVE) === with # Tribe headings
+      const tribesBlock = parseBlock(text, /^===\s*TRIBES\b/i);
+      if (tribesBlock.length) {
+        tribesBlock.forEach(l => {
+          if (/^#\s*/.test(l)) return; // header
+          const n = cleanNameLine(l);
+          if (isProbablyName(n)) names.push(n);
+        });
+      }
+
+      // Pattern 1: after "The Cast arrives"
+      const idx = lines.findIndex(l => /the\s+cast\s+arrives/i.test(l));
+      if (idx !== -1) {
+        for (let i = idx + 1; i < lines.length; i++) {
+          const l = lines[i];
+          if (!l) break;
+          if (/^(PRE-CHALLENGE|CHALLENGES|POST-CHALLENGE|VOTING|TRIBAL|CURRENT GAME STATUS|NEXT EPISODE QUESTIONS)\b/i.test(l)) break;
+          const n = cleanNameLine(l);
+          if (isProbablyName(n)) names.push(n);
+        }
+      }
+
+      // Pattern 2: Active Players lines like "Belo Tribe (6): Amy, Rodney..."
+      const tribeLines = lines.filter(l => /tribe\s*\(\d+\)\s*:/i.test(l));
+      for (const tl of tribeLines) {
+        const after = tl.split(":")[1] || "";
+        after.split(",").map(x => x.trim()).filter(Boolean).forEach(n => {
+          const cn = cleanNameLine(n);
+          if (isProbablyName(cn)) names.push(cn);
+        });
+      }
+
+      // De-dup while preserving order
+      const seen = new Set();
+      names = names
+        .map(n => n.trim())
+        .filter(Boolean)
+        .filter(n => {
+          const k = n.toLowerCase();
+          if (seen.has(k)) return false;
+          seen.add(k);
+          return true;
+        });
+
+      return names;
+    }
+
+    function parseEpisodeTitle(text) {
+      // Episode 2: "Shadows of Doubt"
+      const m = (text || "").match(/Episode\s+(\d+)\s*[:\-]\s*["“]?([^"\n”]+)["”]?/i);
+      if (m) return { num: parseInt(m[1], 10), title: m[2].trim() };
+      // EPISODE 1 SUMMARY (no title)
+      const m2 = (text || "").match(/EPISODE\s+(\d+)/i);
+      if (m2) return { num: parseInt(m2[1], 10), title: "" };
+      return null;
+    }
+
+        function parseEliminated(text) {
+      const rawLines = (text || "").split(/\r?\n/);
+      const lines = rawLines.map(l => (l || "").trim());
+
+      const out = [];
+      const pushName = (l) => {
+        const n = cleanNameLine(l);
+        if (isProbablyName(n)) out.push(n);
+      };
+
+      // META block: === ELIMINATED ===
+      const elimBlock = parseBlock(text, /^===\s*ELIMINATED\b/i);
+      if (elimBlock.length) {
+        elimBlock.forEach(pushName);
+      }
+
+      // Traditional "ELIMINATED" section(s)
+      for (let i = 0; i < lines.length; i++) {
+        if (!/^ELIMINATED\b/i.test(lines[i])) continue;
+        for (let j = i + 1; j < lines.length; j++) {
+          const l = lines[j];
+          if (!l) break;
+          if (/^===\s*/.test(l)) break;
+          if (/^(Vote count|Reason|Edge of Extinction|Not applicable|TRIBAL|MAJOR STRATEGIC|CURRENT GAME STATUS|NEXT EPISODE QUESTIONS)\b/i.test(l)) break;
+          pushName(l);
+        }
+      }
+
+      // Footer style: "Eliminated:" list
+      for (let i = 0; i < lines.length; i++) {
+        if (!/^Eliminated\s*:/i.test(lines[i])) continue;
+        for (let j = i + 1; j < lines.length; j++) {
+          const l = lines[j];
+          if (!l) break;
+          if (/^===\s*/.test(l)) break;
+          if (/^(NEXT EPISODE QUESTIONS|CURRENT GAME STATUS|TRIBAL|MAJOR STRATEGIC)\b/i.test(l)) break;
+          pushName(l);
+        }
+      }
+
+      // De-dup
+      const seen = new Set();
+      return out.filter(n => {
+        const k = n.toLowerCase();
+        if (seen.has(k)) return false;
+        seen.add(k);
+        return true;
+      });
+    }
+
+    function getProbForPlayer(bootPredictions, player) {
+      if (!Array.isArray(bootPredictions)) return 0;
+      const found = bootPredictions.find(x => (x?.player || "").toLowerCase() === (player || "").toLowerCase());
+      return found ? Number(found.prob) || 0 : 0;
+    }
+
+    // ----------------------------
+    // Rendering: Current Players grid
+    // ----------------------------
+    function renderPlayersGrid(castNames, eliminatedNames, titlesMap) {
+      const eliminated = new Set((eliminatedNames || []).map(n => n.toLowerCase()));
+      const cast = (castNames || []).slice(0, 60);
+
+      if (!cast.length) {
+        els.playersGrid.innerHTML = `<div class="muted">No cast detected yet. Click “Sync title/players from summary”.</div>`;
+        els.uiRemain.textContent = "—";
+        return;
+      }
+
+      const remainingCount = cast.filter(n => !eliminated.has(n.toLowerCase())).length;
+      els.uiRemain.textContent = `${remainingCount} players`;
+
+      els.playersGrid.innerHTML = cast.map((name) => {
+        const id = slugify(name);
+        const isOut = eliminated.has(name.toLowerCase());
+        const title = titlesMap?.[name.toLowerCase()] || "";
+        const subtitle = title ? escapeHtml(title) : "—";
+        const classes = "player-card" + (isOut ? " eliminated" : "");
+        return `
+          <a class="${classes}" href="player.html?player=${id}" data-player="${id}">
+            <div class="pc-avatar">
+              <img src="assets/avatars/${id}.png" alt="${escapeHtml(name)}"
+                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                onload="this.style.display='block'; this.nextElementSibling.style.display='none';" />
+              <span class="pc-fallback">${escapeHtml((name||'?').slice(0,1).toUpperCase())}</span>
+            </div>
+            <div class="pc-name">${escapeHtml(name)}</div>
+            <div class="pc-title">${subtitle}</div>
+            ${isOut ? `<div class="pc-badge">ELIMINATED</div>` : ``}
+          </a>
+        `;
+      }).join("");
+    }
+
+    // ----------------------------
+    // Rendering: Overview cards
+    // ----------------------------
+    function renderMoveCard(targetEl, moveObj) {
+      if (!moveObj || !moveObj.player) { targetEl.textContent = "—"; return; }
+      const id = slugify(moveObj.player);
+      targetEl.innerHTML = `
+        <div class="rowline">
+          <div class="mini-avatar">
+            <img src="assets/avatars/${id}.png" alt="${escapeHtml(moveObj.player)}"
+              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+              onload="this.style.display='block'; this.nextElementSibling.style.display='none';" />
+            <span class="mini-fallback">${escapeHtml((moveObj.player||'?').slice(0,1).toUpperCase())}</span>
+          </div>
+          <div class="rowtext">
+            <a class="plink" href="player.html?player=${id}"><b>${escapeHtml(moveObj.player)}</b></a>
+            <div class="muted">${escapeHtml(moveObj.reason || "")}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderBootOdds(targetEl, bootPredictions) {
+      if (!Array.isArray(bootPredictions) || bootPredictions.length === 0) {
+        targetEl.textContent = "No boot predictions returned.";
+        return;
+      }
+      
+      // Sort by probability descending (highest risk first)
+      const sorted = [...bootPredictions].sort((a, b) => (Number(b.prob) || 0) - (Number(a.prob) || 0));
+      
+      targetEl.innerHTML = sorted
+        .map((p) => {
+          const name = p.player || "";
+          const id = slugify(name);
+          const pct = Math.round((Number(p.prob) || 0) * 100);
+          return `
+            <div class="bar-row">
+              <div class="bar-head">
+                <div class="bar-left">
+                  <span class="tiny-avatar">
+                    <img src="assets/avatars/${id}.png" alt="${escapeHtml(name)}"
+                      onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"
+                      onload="this.style.display='inline-flex'; this.nextElementSibling.style.display='none';" />
+                    <span class="tiny-fallback">${escapeHtml((name||'?').slice(0,1).toUpperCase())}</span>
+                  </span>
+                  <a class="plink" href="player.html?player=${id}"><b>${escapeHtml(name)}</b></a>
+                </div>
+                <div class="bar-pct">${pct}%</div>
+              </div>
+              <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+              <div class="bar-note">${escapeHtml(p.why || "")}</div>
+            </div>
+          `;
+        })
+        .join("");
+    }
+
+    function renderPowerRankings(targetEl, powerRankings) {
+      if (!Array.isArray(powerRankings) || powerRankings.length === 0) {
+        targetEl.textContent = "No power rankings returned.";
+        return;
+      }
+      targetEl.innerHTML = powerRankings
+        .map((r) => {
+          const name = r.player || "";
+          const id = slugify(name);
+          const score = Math.round(Number(r.score) || 0);
+          const tag = (r.tag || "Steady").toLowerCase();
+          const tagClass = tag === "rising" ? "tag tag-up" : tag === "falling" ? "tag tag-down" : "tag tag-steady";
+          return `
+            <div class="bar-row">
+              <div class="bar-head">
+                <div class="bar-left">
+                  <span class="tiny-avatar">
+                    <img src="assets/avatars/${id}.png" alt="${escapeHtml(name)}"
+                      onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"
+                      onload="this.style.display='inline-flex'; this.nextElementSibling.style.display='none';" />
+                    <span class="tiny-fallback">${escapeHtml((name||'?').slice(0,1).toUpperCase())}</span>
+                  </span>
+                  <a class="plink" href="player.html?player=${id}"><b>${escapeHtml(name)}</b></a>
+                  <span class="${tagClass}">${escapeHtml(r.tag || "Steady")}</span>
+                </div>
+                <div class="bar-pct">${score}/100</div>
+              </div>
+              <div class="bar-track"><div class="bar-fill" style="width:${score}%"></div></div>
+              <div class="bar-note">${escapeHtml(r.blurb || "")}</div>
+            </div>
+          `;
+        })
+        .join("");
+    }
+
+    function renderAllianceStability(targetEl, allianceStability) {
+      if (!Array.isArray(allianceStability) || allianceStability.length === 0) {
+        targetEl.textContent = "No alliances detected (or none provided).";
+        return;
+      }
+      targetEl.innerHTML = allianceStability.map((a) => {
+        const score = Math.max(0, Math.min(100, Math.round(Number(a.score) || 0)));
+        return `
+          <div class="bar-row">
+            <div class="bar-head">
+              <div class="bar-left"><b>${escapeHtml(a.name || "Alliance")}</b></div>
+              <div class="bar-pct">${score}/100</div>
+            </div>
+            <div class="bar-track"><div class="bar-fill" style="width:${score}%"></div></div>
+            <div class="bar-note">${escapeHtml(a.note || "")}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderTitles(targetEl, titles) {
+      if (!Array.isArray(titles) || titles.length === 0) {
+        targetEl.textContent = "No titles returned.";
+        return;
+      }
+      targetEl.innerHTML = titles.map((t) => {
+        const name = t.player || "";
+        const id = slugify(name);
+        return `
+          <div class="title-row">
+            <span class="tiny-avatar">
+              <img src="assets/avatars/${id}.png" alt="${escapeHtml(name)}"
+                onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"
+                onload="this.style.display='inline-flex'; this.nextElementSibling.style.display='none';" />
+              <span class="tiny-fallback">${escapeHtml((name||'?').slice(0,1).toUpperCase())}</span>
+            </span>
+            <a class="plink" href="player.html?player=${id}"><b>${escapeHtml(name)}</b></a>
+            <span class="muted">—</span>
+            <span>${escapeHtml(t.title || "")}</span>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderSocialNetwork(targetEl, socialNetwork) {
+      if (!Array.isArray(socialNetwork) || socialNetwork.length === 0) {
+        targetEl.textContent = "No social network data returned.";
+        return;
+      }
+      targetEl.innerHTML = socialNetwork.map((s) => {
+        const name = s.player || "";
+        const id = slugify(name);
+        const likes = s.strongLikes || [];
+        const dislikes = s.strongDislikes || [];
+        const centrality = Math.round(Number(s.centralityScore) || 0);
+        const isolated = s.isolated ? '🔴 Isolated' : '';
+        
+        return `
+          <div class="bar-row">
+            <div class="bar-head" style="flex-direction: column; align-items: flex-start; gap: 6px;">
+              <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
+                <span class="tiny-avatar">
+                  <img src="assets/avatars/${id}.png" alt="${escapeHtml(name)}"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"
+                    onload="this.style.display='inline-flex'; this.nextElementSibling.style.display='none';" />
+                  <span class="tiny-fallback">${escapeHtml((name||'?').slice(0,1).toUpperCase())}</span>
+                </span>
+                <a class="plink" href="player.html?player=${id}"><b>${escapeHtml(name)}</b></a>
+                <span class="muted" style="margin-left: auto; font-size: 11px;">Centrality: ${centrality}/100 ${isolated}</span>
+              </div>
+              <div style="font-size: 12px; opacity: 0.8;">
+                ${likes.length > 0 ? `💚 Likes: ${escapeHtml(likes.join(', '))}` : ''}
+                ${likes.length > 0 && dislikes.length > 0 ? '<br/>' : ''}
+                ${dislikes.length > 0 ? `❤️‍🔥 Dislikes: ${escapeHtml(dislikes.join(', '))}` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderJuryManagement(targetEl, juryManagement) {
+      if (!Array.isArray(juryManagement) || juryManagement.length === 0) {
+        targetEl.textContent = "No jury management data returned.";
+        return;
+      }
+      
+      const sorted = [...juryManagement].sort((a, b) => (Number(b.score) || 0) - (Number(a.score) || 0));
+      
+      targetEl.innerHTML = sorted.map((j) => {
+        const name = j.player || "";
+        const id = slugify(name);
+        const score = Math.round(Number(j.score) || 0);
+        const note = j.note || "";
+        
+        return `
+          <div class="bar-row">
+            <div class="bar-head">
+              <div class="bar-left">
+                <span class="tiny-avatar">
+                  <img src="assets/avatars/${id}.png" alt="${escapeHtml(name)}"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"
+                    onload="this.style.display='inline-flex'; this.nextElementSibling.style.display='none';" />
+                  <span class="tiny-fallback">${escapeHtml((name||'?').slice(0,1).toUpperCase())}</span>
+                </span>
+                <a class="plink" href="player.html?player=${id}"><b>${escapeHtml(name)}</b></a>
+              </div>
+              <div class="bar-pct">${score}/100</div>
+            </div>
+            <div class="bar-track"><div class="bar-fill" style="width:${score}%"></div></div>
+            <div class="bar-note">${escapeHtml(note)}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderThreatBreakdown(targetEl, threatBreakdown) {
+      if (!Array.isArray(threatBreakdown) || threatBreakdown.length === 0) {
+        targetEl.textContent = "No threat breakdown data returned.";
+        return;
+      }
+      
+      // Calculate totals and sort by total threat (highest to lowest)
+      const withTotals = threatBreakdown.map((t) => {
+        const physical = Math.round(Number(t.physical) || 0);
+        const strategic = Math.round(Number(t.strategic) || 0);
+        const social = Math.round(Number(t.social) || 0);
+        const advantage = Math.round(Number(t.advantage) || 0);
+        const total = Math.round((physical + strategic + social + advantage) / 4);
+        return { ...t, physical, strategic, social, advantage, total };
+      });
+      
+      const sorted = withTotals.sort((a, b) => b.total - a.total);
+      
+      targetEl.innerHTML = sorted.map((t) => {
+        const name = t.player || "";
+        const id = slugify(name);
+        
+        return `
+          <div class="bar-row">
+            <div class="bar-head" style="flex-direction: column; align-items: flex-start; gap: 8px;">
+              <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
+                <span class="tiny-avatar">
+                  <img src="assets/avatars/${id}.png" alt="${escapeHtml(name)}"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"
+                    onload="this.style.display='inline-flex'; this.nextElementSibling.style.display='none';" />
+                  <span class="tiny-fallback">${escapeHtml((name||'?').slice(0,1).toUpperCase())}</span>
+                </span>
+                <a class="plink" href="player.html?player=${id}"><b>${escapeHtml(name)}</b></a>
+                <span class="muted" style="margin-left: auto;">Total: ${t.total}/100</span>
+              </div>
+              <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: 100%; font-size: 11px;">
+                <div>💪 Phys: ${t.physical}</div>
+                <div>🧠 Strat: ${t.strategic}</div>
+                <div>🤝 Social: ${t.social}</div>
+                <div>🎁 Adv: ${t.advantage}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderPathToVictory(targetEl, pathToVictory) {
+      if (!Array.isArray(pathToVictory) || pathToVictory.length === 0) {
+        targetEl.textContent = "No path to victory data returned.";
+        return;
+      }
+      
+      const viabilityOrder = { 'High': 1, 'Medium': 2, 'Low': 3, 'None': 4 };
+      const sorted = [...pathToVictory].sort((a, b) => 
+        (viabilityOrder[a.viability] || 99) - (viabilityOrder[b.viability] || 99)
+      );
+      
+      targetEl.innerHTML = sorted.map((p) => {
+        const name = p.player || "";
+        const id = slugify(name);
+        const viability = p.viability || "Unknown";
+        const winCondition = p.winCondition || "";
+        const obstacles = p.obstacles || "";
+        
+        const viabilityColor = {
+          'High': '#4ade80',
+          'Medium': '#fbbf24',
+          'Low': '#fb923c',
+          'None': '#ef4444'
+        }[viability] || '#9ca3af';
+        
+        return `
+          <div class="bar-row">
+            <div class="bar-head" style="flex-direction: column; align-items: flex-start; gap: 8px;">
+              <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
+                <span class="tiny-avatar">
+                  <img src="assets/avatars/${id}.png" alt="${escapeHtml(name)}"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"
+                    onload="this.style.display='inline-flex'; this.nextElementSibling.style.display='none';" />
+                  <span class="tiny-fallback">${escapeHtml((name||'?').slice(0,1).toUpperCase())}</span>
+                </span>
+                <a class="plink" href="player.html?player=${id}"><b>${escapeHtml(name)}</b></a>
+                <span style="margin-left: auto; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; background: ${viabilityColor}22; color: ${viabilityColor}; border: 1px solid ${viabilityColor};">
+                  ${escapeHtml(viability)}
+                </span>
+              </div>
+              <div style="font-size: 12px; opacity: 0.9;">
+                <div><b>Win Condition:</b> ${escapeHtml(winCondition)}</div>
+                <div style="margin-top: 4px;"><b>Obstacles:</b> ${escapeHtml(obstacles)}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderAllianceOverview(targetEl, analytics, summaryText) {
+      // Lightweight: show top alliance stability + any named alliances in summary (best effort)
+      const st = Array.isArray(analytics?.allianceStability) ? analytics.allianceStability : [];
+      const top = st.slice(0, 2).map(a => `${a.name} (${Math.round(Number(a.score)||0)}/100)`).join(", ");
+      const has = top ? `<b>Detected:</b> ${escapeHtml(top)}<br/>` : "";
+
+      // Try to detect any explicit "Alliance Status" block names
+      const m = (summaryText||"").match(/Alliance Status[\s\S]*?(CHALLENGES|POST-CHALLENGE|VOTING|TRIBAL)/i);
+      const snippet = m ? m[0].split("\n").slice(0, 18).join("\n") : "";
+      const lines = snippet.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+      const allianceNames = lines
+        .filter(l => /^[A-Za-z0-9][A-Za-z0-9_-]{2,}\s*\(/.test(l))
+        .map(l => l.split("(")[0].trim())
+        .slice(0, 4);
+
+      const extra = allianceNames.length ? `<div class="muted small">From summary: ${escapeHtml(allianceNames.join(", "))}</div>` : `<div class="muted small">No named alliances found yet.</div>`;
+      targetEl.innerHTML = has + extra;
+    }
+
+    // ----------------------------
+    // Rendering: Gameplay page
+    // ----------------------------
+    function renderCompass(analytics, castNames, eliminatedNames) {
+      const eliminated = new Set((eliminatedNames||[]).map(n=>n.toLowerCase()));
+
+      // Build a map of power scores
+      const pr = Array.isArray(analytics?.powerRankings) ? analytics.powerRankings : [];
+      const bm = new Map(pr.map(x => [(x.player||"").toLowerCase(), Math.max(0, Math.min(100, Number(x.score)||0))]));
+
+      const bp = Array.isArray(analytics?.bootPredictions) ? analytics.bootPredictions : [];
+      const probMap = new Map(bp.map(x => [(x.player||"").toLowerCase(), Math.max(0, Math.min(1, Number(x.prob)||0))]));
+
+      const active = (castNames||[]).filter(n => !eliminated.has(n.toLowerCase()));
+      const points = active.slice(0, 30).map((name) => {
+        const key = name.toLowerCase();
+        const power = bm.get(key) ?? 50;
+        
+        // Use boot prediction from AI if available
+        // Otherwise use a safe default based on power
+        let prob = probMap.get(key);
+        if (prob === undefined) {
+          // Fallback: If AI didn't include this player, assume moderate-low risk
+          // Power 100 = 10% risk, Power 50 = 20% risk, Power 0 = 40% risk
+          prob = Math.max(0.10, Math.min(0.40, 0.50 - (power / 100) * 0.40));
+        }
+        
+        // x: power (0..100)
+        // y: safety = 100 - prob*100
+        const x = power;
+        const y = 100 - prob*100;
+        return { name, x, y, prob, power };
+      });
+      
+      // Normalize to use full compass space
+      const xValues = points.map(p => p.x);
+      const yValues = points.map(p => p.y);
+      const xMin = Math.min(...xValues);
+      const xMax = Math.max(...xValues);
+      const yMin = Math.min(...yValues);
+      const yMax = Math.max(...yValues);
+      
+      // Scale to 10-90 range for better visualization (with 10% padding)
+      const normalizedPoints = points.map(p => {
+        const xRange = xMax - xMin || 1;
+        const yRange = yMax - yMin || 1;
+        const xNorm = 10 + ((p.x - xMin) / xRange) * 80;
+        const yNorm = 10 + ((p.y - yMin) / yRange) * 80;
+        return { name: p.name, x: xNorm, y: yNorm };
+      });
+
+      els.compassPoints.innerHTML = normalizedPoints.map((p) => {
+        const id = slugify(p.name);
+        // convert x,y (0..100) to %
+        const left = Math.max(3, Math.min(97, p.x));
+        const top = Math.max(3, Math.min(97, 100 - p.y)); // invert for CSS top
+        return `
+          <a class="dot" href="player.html?player=${id}" style="left:${left}%;top:${top}%;">
+            <span class="dot-circle">
+              <img src="assets/avatars/${id}.png" alt="${escapeHtml(p.name)}"
+                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                onload="this.style.display='block'; this.nextElementSibling.style.display='none';" />
+              <span class="dot-fallback">${escapeHtml((p.name||'?').slice(0,1).toUpperCase())}</span>
+            </span>
+            <span class="dot-label">${escapeHtml(p.name)}</span>
+          </a>
+        `;
+      }).join("");
+    }
+
+    function renderGameplayTable(analytics, castNames, eliminatedNames, titlesMap) {
+      const eliminated = new Set((eliminatedNames||[]).map(n=>n.toLowerCase()));
+      const pr = Array.isArray(analytics?.powerRankings) ? analytics.powerRankings : [];
+      const bp = Array.isArray(analytics?.bootPredictions) ? analytics.bootPredictions : [];
+      const rolesArr = Array.isArray(analytics?.roles) ? analytics.roles : [];
+
+      const powerMap = new Map(pr.map(x => [(x.player||"").toLowerCase(), x]));
+      const probMap = new Map(bp.map(x => [(x.player||"").toLowerCase(), x]));
+      const rolesMap = new Map(rolesArr.map(x => [(x.player||"").toLowerCase(), x.role||""]));
+
+      const active = (castNames||[]).filter(n => !eliminated.has(n.toLowerCase()));
+      const rows = active.map((name) => {
+        const key = name.toLowerCase();
+        const r = powerMap.get(key) || { player: name, score: 50, tag: "Steady", blurb: "" };
+        const p = probMap.get(key) || { prob: 0.15, why: "" };
+        const score = Math.round(Number(r.score)||0);
+        const prob = Math.round((Number(p.prob)||0)*100);
+        const title = titlesMap?.[key] || "";
+        
+        // Use AI-generated role from analytics, fallback to calculated role
+        const role = rolesMap.get(key) || (
+          prob >= 35 ? "In Danger" :
+          score >= 80 ? "Power Player" :
+          score >= 65 ? "Well-Positioned" :
+          "Under the Radar"
+        );
+        
+        return { name, score, prob, tag: r.tag || "Steady", title, role };
+      }).sort((a,b)=>b.score-a.score);
+
+      els.gpTableBody.innerHTML = rows.map((row) => {
+        const id = slugify(row.name);
+        const tag = (row.tag||"Steady").toLowerCase();
+        const tagClass = tag==="rising" ? "tag tag-up" : tag==="falling" ? "tag tag-down" : "tag tag-steady";
+        return `
+          <tr>
+            <td>
+              <a class="plink row-player" href="player.html?player=${id}">
+                <span class="tiny-avatar">
+                  <img src="assets/avatars/${id}.png" alt="${escapeHtml(row.name)}"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"
+                    onload="this.style.display='inline-flex'; this.nextElementSibling.style.display='none';" />
+                  <span class="tiny-fallback">${escapeHtml((row.name||'?').slice(0,1).toUpperCase())}</span>
+                </span>
+                <b>${escapeHtml(row.name)}</b>
+              </a>
+            </td>
+            <td class="muted">${escapeHtml(row.title || "—")}</td>
+            <td><span class="${tagClass}">${escapeHtml(row.tag)}</span></td>
+            <td>${row.score}</td>
+            <td>${row.prob}%</td>
+            <td>${escapeHtml(row.role)}</td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    // ----------------------------
+    // Main render from analytics
+    // ----------------------------
+    function renderAll(analytics, summaryText) {
+      if (!analytics || typeof analytics !== "object") return;
+
+      // Titles map for quick lookups
+      const titlesArr = Array.isArray(analytics.titles) ? analytics.titles : [];
+      const titlesMap = {};
+      for (const t of titlesArr) {
+        if (t?.player) titlesMap[t.player.toLowerCase()] = t.title || "";
+      }
+
+      CURRENT.titlesMap = titlesMap;
+
+      // Detect cast + eliminated from current summary input (best effort)
+      const txt = (summaryText || els.summary.value || "").trim();
+
+      // Prefer parsing from summary; fall back to saved cast state if summary isn't present.
+      let cast = parseCastFromSummary(txt);
+      let eliminated = parseEliminated(txt);
+
+      const seasonNow = Number(els.season.value || 1);
+      const episodeNow = Number(els.episode.value || 1);
+
+      if ((!cast || cast.length === 0) || (eliminated && eliminated.size === 0 && !txt)) {
+        const saved = loadCastState(seasonNow, episodeNow);
+        if (saved) {
+          if (!cast || cast.length === 0) cast = Array.isArray(saved.cast) ? saved.cast : [];
+          if ((!eliminated || eliminated.size === 0) && Array.isArray(saved.eliminated)) {
+            eliminated = new Set(saved.eliminated.map(s => String(s).toLowerCase()));
+          }
+          if (!txt && saved.title && els.uiEpName) {
+            els.uiEpName.textContent = saved.title;
+          }
+        }
+      }
+
+      // Save for later use (tab switches, etc.)
+      CURRENT.analytics = analytics;
+      CURRENT.season = seasonNow;
+      CURRENT.episode = episodeNow;
+      CURRENT.summaryText = txt;
+      CURRENT.cast = cast || [];
+      CURRENT.eliminated = eliminated || new Set();
+
+      renderPlayersGrid(cast, eliminated, titlesMap);
+
+      // Overview cards
+      renderMoveCard(els.cardBestMove, analytics.bestMove);
+      renderMoveCard(els.cardBiggestRisk, analytics.biggestRisk);
+      els.cardEpisodeSummary.textContent = analytics.narrativeSummary || "—";
+      renderAllianceOverview(els.cardAllianceOverview, analytics, txt);
+      renderBootOdds(els.cardBootOdds, analytics.bootPredictions);
+      renderPowerRankings(els.cardPowerRankings, analytics.powerRankings);
+      renderAllianceStability(els.cardAllianceStability, analytics.allianceStability);
+      renderTitles(els.cardTitles, analytics.titles);
+      renderSocialNetwork(els.cardSocialNetwork, analytics.socialNetwork);
+      renderJuryManagement(els.cardJuryManagement, analytics.juryManagement);
+      renderThreatBreakdown(els.cardThreatBreakdown, analytics.threatBreakdown);
+      renderPathToVictory(els.cardPathToVictory, analytics.pathToVictory);
+
+      // Gameplay
+      renderCompass(analytics, cast, eliminated, titlesMap);
+      renderGameplayTable(analytics, cast, eliminated, titlesMap);
+    }
+
+    // ----------------------------
+    // Tabs
+    // ----------------------------
+    function showTab(which) {
+      const isOverview = which === "overview";
+      const isGameplay = which === "gameplay";
+      const isEpisode = which === "episode";
+      const isSeasonSetup = which === "seasonsetup";
+
+      els.viewOverview.classList.toggle("hidden", !isOverview);
+      els.viewGameplay.classList.toggle("hidden", !isGameplay);
+      els.viewEpisode.classList.toggle("hidden", !isEpisode);
+      els.viewSeasonSetup.classList.toggle("hidden", !isSeasonSetup);
+
+      els.tabOverview.classList.toggle("active", isOverview);
+      els.tabGameplay.classList.toggle("active", isGameplay);
+      els.tabEpisode.classList.toggle("active", isEpisode);
+      els.tabSeasonSetup.classList.toggle("active", isSeasonSetup);
+      
+      els.tabOverview.setAttribute("aria-selected", isOverview ? "true" : "false");
+      els.tabGameplay.setAttribute("aria-selected", isGameplay ? "true" : "false");
+      els.tabEpisode.setAttribute("aria-selected", isEpisode ? "true" : "false");
+      els.tabSeasonSetup.setAttribute("aria-selected", isSeasonSetup ? "true" : "false");
+
+      // Persist tab choice per episode
+      const s = Number(els.season.value || 1);
+      const e = Number(els.episode.value || 1);
+      try { localStorage.setItem(tabKey(s, e), which); } catch {}
+
+      // If switching to gameplay, ensure it's rendered (in case cast was synced later)
+      if (isGameplay && CURRENT.analytics) {
+        const cast = (CURRENT.cast && CURRENT.cast.length) ? CURRENT.cast : parseCastFromSummary(CURRENT.summaryText || "");
+        const eliminated = (CURRENT.eliminated && CURRENT.eliminated.size) ? CURRENT.eliminated : parseEliminated(CURRENT.summaryText || "");
+        renderCompass(CURRENT.analytics, cast, eliminated, CURRENT.titlesMap || {});
+        renderGameplayTable(CURRENT.analytics, cast, eliminated, CURRENT.titlesMap || {});
+      }
+    }
+
+    els.tabOverview.addEventListener("click", () => showTab("overview"));
+    els.tabGameplay.addEventListener("click", () => showTab("gameplay"));
+    els.tabEpisode.addEventListener("click", () => {
+      showTab("episode");
+      // Try to auto-load saved episode
+      if (typeof loadEpisode === 'function') loadEpisode();
+    });
+    els.tabSeasonSetup.addEventListener("click", () => showTab("seasonsetup"));
+
+    // ----------------------------
+    // Actions
+    // ----------------------------
+    els.saveUrl.addEventListener("click", () => {
+      const url = normalizeWorkerUrl(els.workerUrl.value);
+      if (!url) return setStatus("Enter a Worker URL first.");
+      els.workerUrl.value = url;
+      localStorage.setItem("AI_ENDPOINT_URL", url);
+      setStatus("Saved AI endpoint.");
+    });
+
+    els.syncFromSummary.addEventListener("click", () => {
+      const txt = els.summary.value || "";
+      const s = Number(els.season.value || 1);
+
+      const ep = parseEpisodeTitle(txt);
+      if (ep?.num) els.episode.value = ep.num;
+
+      const e = Number(els.episode.value || 1);
+      if (ep?.title) els.uiEpName.textContent = `“${ep.title}”`;
+      els.uiEpNum.textContent = `Episode ${e}`;
+
+      // Persist summary + cast for reloads
+      saveSummary(s, e, txt);
+
+      const cast = parseCastFromSummary(txt);
+      const eliminated = parseEliminated(txt);
+
+      // Save cast state even if empty (lets us show “no cast detected” consistently)
+      saveCastState(s, e, cast, eliminated, ep?.title ? `“${ep.title}”` : els.uiEpName.textContent);
+
+      // Update runtime state
+      CURRENT.season = s;
+      CURRENT.episode = e;
+      CURRENT.summaryText = (txt || "").trim();
+      CURRENT.cast = cast;
+      CURRENT.eliminated = eliminated;
+
+      renderPlayersGrid(cast, eliminated, {});
+      // If AI already loaded, refresh gameplay view too
+      if (CURRENT.analytics) {
+        renderCompass(CURRENT.analytics, cast, eliminated, CURRENT.titlesMap || {});
+        renderGameplayTable(CURRENT.analytics, cast, eliminated, CURRENT.titlesMap || {});
+      }
+
+      setStatus("Synced from summary (saved for reload).");
+    });
+
+    async function callAI(season, episode, summaryText) {
+      const url = normalizeWorkerUrl(els.workerUrl.value || localStorage.getItem("AI_ENDPOINT_URL") || "");
+      if (!url) throw new Error("Missing AI endpoint URL.");
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ season, episode, summaryText }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        // Try to surface OpenAI error nicely
+        const msg = data?.error?.message || data?.message || "Unknown error.";
+        throw new Error(msg);
+      }
+      
+      // VALIDATION: Auto-fill missing players
+      const cast = parseCastFromSummary(summaryText);
+      const eliminated = parseEliminated(summaryText);
+      const active = cast.filter(name => !eliminated.some(e => e.toLowerCase() === name.toLowerCase()));
+      
+      // Ensure all active players are in bootPredictions
+      if (Array.isArray(data.bootPredictions)) {
+        const bootMap = new Map(data.bootPredictions.map(x => [x.player.toLowerCase(), x]));
+        active.forEach(player => {
+          const key = player.toLowerCase();
+          if (!bootMap.has(key)) {
+            // Missing player - add with default low risk
+            console.warn(`Missing in bootPredictions: ${player} - auto-adding with 10% risk`);
+            data.bootPredictions.push({
+              player: player,
+              prob: 0.10,
+              why: "Not in AI's top predictions; assumed moderate safety."
+            });
+          }
+        });
+      }
+      
+      // Ensure all active players are in powerRankings
+      if (Array.isArray(data.powerRankings)) {
+        const powerMap = new Map(data.powerRankings.map(x => [x.player.toLowerCase(), x]));
+        active.forEach(player => {
+          const key = player.toLowerCase();
+          if (!powerMap.has(key)) {
+            // Missing player - add with default middle score
+            console.warn(`Missing in powerRankings: ${player} - auto-adding with score 50`);
+            data.powerRankings.push({
+              player: player,
+              score: 50,
+              tag: "Steady",
+              blurb: "Not in AI's detailed rankings; neutral position."
+            });
+          }
+        });
+      }
+      
+      return data;
+    }
+
+    function loadCached(season, episode) {
+      const key = cacheKey(season, episode);
+      const raw = localStorage.getItem(key);
+      if (!raw) return null;
+      try { return JSON.parse(raw); } catch { return null; }
+    }
+
+    function summaryKey(season, episode) {
+      return `AI_SUMMARY_s${season}_e${episode}`;
+    }
+    function castStateKey(season, episode) {
+      return `AI_CAST_s${season}_e${episode}`;
+    }
+    function tabKey(season, episode) {
+      return `AI_TAB_s${season}_e${episode}`;
+    }
+
+    function saveSummary(season, episode, text) {
+      try { localStorage.setItem(summaryKey(season, episode), text || ""); } catch {}
+    }
+    function loadSummary(season, episode) {
+      try { return localStorage.getItem(summaryKey(season, episode)) || ""; } catch { return ""; }
+    }
+
+    function saveCastState(season, episode, cast, eliminated, epTitle) {
+      const payload = { cast: cast || [], eliminated: Array.from(eliminated || []), title: epTitle || "" };
+      try { localStorage.setItem(castStateKey(season, episode), JSON.stringify(payload)); } catch {}
+    }
+    function loadCastState(season, episode) {
+      try {
+        const raw = localStorage.getItem(castStateKey(season, episode));
+        if (!raw) return null;
+        return JSON.parse(raw);
+      } catch { return null; }
+    }
+
+    // Runtime state
+    let CURRENT = {
+      analytics: null,
+      season: null,
+      episode: null,
+      summaryText: "",
+      cast: [],
+      eliminated: new Set(),
+      titlesMap: {}
+    };
+
+    function saveCached(season, episode, analytics) {
+      const key = cacheKey(season, episode);
+      localStorage.setItem(key, JSON.stringify(analytics));
+      saveLastSelection(season, episode);
+    }
+
+    function updateEpisodeHeaderFromInputs() {
+      const epNum = Number(els.episode.value || 1);
+      els.uiEpNum.textContent = `Episode ${epNum}`;
+      // Keep title as-is unless we can parse one
+      if (!els.uiEpName.textContent || els.uiEpName.textContent === "—") {
+        const parsed = parseEpisodeTitle(els.summary.value || "");
+        if (parsed?.title) els.uiEpName.textContent = `“${parsed.title}”`;
+      }
+    }
+
+    els.generate.addEventListener("click", async () => {
+      const season = Number(els.season.value || 1);
+      const episode = Number(els.episode.value || 1);
+      const summaryText = els.summary.value || "";
+      if (!summaryText.trim()) return setStatus("Paste an episode summary first.");
+
+      // Persist summary so reload keeps cast + gameplay
+      saveSummary(season, episode, summaryText);
+
+      updateEpisodeHeaderFromInputs();
+      setStatus("Generating analytics...");
+
+      try {
+        const analytics = await callAI(season, episode, summaryText);
+        saveCached(season, episode, analytics);
+
+        // Save cast/elims for reloads
+        const cast = parseCastFromSummary(summaryText);
+        const eliminated = parseEliminated(summaryText);
+        const ep = parseEpisodeTitle(summaryText);
+        const epTitle = ep?.title ? `“${ep.title}”` : els.uiEpName.textContent;
+        saveCastState(season, episode, cast, eliminated, epTitle);
+
+        // 🆕 AUTO-UPDATE PLAYER DATABASE WITH ELIMINATIONS
+        if (typeof updatePlayerEliminationsFromEpisode === 'function') {
+          updatePlayerEliminationsFromEpisode(season, episode, cast, eliminated);
+        }
+
+        renderAll(analytics, summaryText);
+
+        setStatus(`Done. Cached as ${cacheKey(season, episode)}.`);
+      } catch (e) {
+        setStatus("Error: " + (e?.message || String(e)));
+        console.error(e);
+      }
+    });
+
+    els.loadCached.addEventListener("click", () => {
+      const season = Number(els.season.value || 1);
+      const episode = Number(els.episode.value || 1);
+      updateEpisodeHeaderFromInputs();
+      const cached = loadCached(season, episode);
+      if (!cached) return setStatus("No cached analytics found for this season/episode.");
+      renderAll(cached, els.summary.value || "");
+      setStatus("Loaded cached analytics.");
+    });
+
+
+    // ----------------------------
+    // Season/Episode switching
+    // ----------------------------
+    function clearRenderedUI() {
+      // Overview placeholders
+      els.cardBestMove.innerHTML = "—";
+      els.cardBiggestRisk.innerHTML = "—";
+      els.cardEpisodeSummary.textContent = "—";
+      els.cardBootOdds.innerHTML = "<div class='muted'>No boot predictions yet.</div>";
+      els.cardPowerRankings.innerHTML = "<div class='muted'>No power rankings yet.</div>";
+      els.cardAllianceOverview.innerHTML = "<div class='muted'>No alliance info yet.</div>";
+      els.cardAllianceStability.innerHTML = "<div class='muted'>No alliance stability yet.</div>";
+      els.cardTitles.innerHTML = "<div class='muted'>No titles yet.</div>";
+      els.cardSocialNetwork.innerHTML = "<div class='muted'>No social network data yet.</div>";
+      els.cardJuryManagement.innerHTML = "<div class='muted'>No jury management data yet.</div>";
+      els.cardThreatBreakdown.innerHTML = "<div class='muted'>No threat breakdown yet.</div>";
+      els.cardPathToVictory.innerHTML = "<div class='muted'>No path to victory data yet.</div>";
+
+      // Gameplay placeholders
+      // els.gpSvg.innerHTML = ""; // REMOVED - element doesnt exist
+      els.gpTableBody.innerHTML = "";
+
+      // Players placeholder
+      els.playersGrid.innerHTML =
+        "<div class='muted'>No cast detected yet. Paste your summary and click “Sync title/players from summary”.</div>";
+
+      // Reset runtime
+      CURRENT.analytics = null;
+      CURRENT.summaryText = "";
+      CURRENT.cast = [];
+      CURRENT.eliminated = new Set();
+      CURRENT.titlesMap = {};
+    }
+
+    function applySelection(season, episode, opts = {}) {
+      const { quiet=false } = opts;
+
+      // Persist last selection (so reload returns here)
+      saveLastSelection(season, episode);
+
+      // Update inputs (normalize)
+      els.season.value = String(season);
+      els.episode.value = String(episode);
+
+      // Restore summary + cast state for this selection
+      const savedSummary = loadSummary(season, episode);
+      els.summary.value = savedSummary || "";
+
+      // Restore episode title (from saved cast state) if available
+      const savedCast = loadCastState(season, episode);
+      if (savedCast?.title) {
+        els.uiEpName.textContent = savedCast.title;
+      } else {
+        els.uiEpName.textContent = "—";
+      }
+      els.uiEpNum.textContent = `Episode ${episode}`;
+
+      // Restore last tab for this episode
+      let savedTab = "overview";
+      try { savedTab = localStorage.getItem(tabKey(season, episode)) || "overview"; } catch {}
+      showTab(savedTab === "gameplay" ? "gameplay" : "overview");
+
+      // If we have cached analytics for this selection, load it (if auto-load enabled)
+      const cached = loadCached(season, episode);
+
+      if (cached && els.autoLoad.checked) {
+        renderAll(cached, els.summary.value || "");
+        if (!quiet) setStatus("Loaded cached analytics for this season/episode.");
+        return;
+      }
+
+      // Otherwise, reset UI and show cast if we can infer it
+      clearRenderedUI();
+
+      const txt = els.summary.value || "";
+      const cast = parseCastFromSummary(txt);
+      const eliminated = parseEliminated(txt);
+
+      if (cast.length) {
+        renderPlayersGrid(cast, eliminated, {});
+      } else if (savedCast?.cast?.length) {
+        const elim = new Set((savedCast.eliminated || []).map(s => String(s).toLowerCase()));
+        renderPlayersGrid(savedCast.cast, elim, {});
+      }
+
+      if (!quiet) {
+        setStatus(cached ? "Cached analytics exists for this episode — click “Load Cached” (or enable auto-load)." : "No cached analytics for this season/episode yet.");
+      }
+    }
+
+    // Change handlers
+    function onSeasonEpisodeChange() {
+      const s = Number(els.season.value || 1);
+      const e = Number(els.episode.value || 1);
+      applySelection(s, e);
+    }
+    els.season.addEventListener("change", onSeasonEpisodeChange);
+    els.episode.addEventListener("change", onSeasonEpisodeChange);
+
+    // ----------------------------
+    // Init
+    // ----------------------------
+    (function init() {
+      // Load endpoint
+      const savedUrl = localStorage.getItem("AI_ENDPOINT_URL");
+      if (savedUrl) els.workerUrl.value = savedUrl;
+
+      // Restore last selection (so reload returns to the last viewed episode)
+      const last = loadLastSelection();
+      if (last?.season) els.season.value = last.season;
+      if (last?.episode) els.episode.value = last.episode;
+
+      const season = Number(els.season.value || 1);
+      const episode = Number(els.episode.value || 1);
+
+      // Apply selection: restores summary, cast, tab, and (optionally) cached analytics
+      applySelection(season, episode, { quiet: true });
+
+      // Friendly status
+      const cached = loadCached(season, episode);
+      if (cached && els.autoLoad.checked) setStatus("Auto-loaded cached analytics.");
+      else if (cached) setStatus("Cached analytics found — enable auto-load or click “Load Cached”.");
+      else setStatus("Ready — paste summary and generate analytics.");
+    })();
+  })();
+  
+  // ========================================
+  // EPISODE TAB FUNCTIONALITY (Global scope for onclick handlers)
+  // ========================================
+  
+  // Configuration
+  const EPISODE_WORKER_URL = 'https://dc-analytics.yannari19.workers.dev'; // Update with your worker URL
+  
+  // Character avatar mapping
+  const CHARACTER_AVATARS = {
+    'chris': '😏', 'chef': '👨‍🍳', 'owen': '🍔', 'gwen': '🎨', 'duncan': '💀',
+    'courtney': '📋', 'heather': '💅', 'lindsay': '💁', 'alejandro': '👑',
+    'sierra': '📱', 'noah': '📚', 'cody': '😬', 'izzy': '🤪', 'eva': '😠',
+    'tyler': '🏀', 'trent': '🎸', 'bridgette': '🏄', 'geoff': '🎉', 'beth': '🌸',
+    'justin': '😎', 'katie': '💖', 'sadie': '💖', 'ezekiel': '🏔️', 'leshawna': '💁',
+    'harold': '🤓', 'amy': '😈', 'samey': '😊', 'scarlett': '🧪', 'max': '🦹',
+    'ella': '🎶', 'topher': '📺', 'jasmine': '🌿', 'shawn': '🧟', 'dave': '😤',
+    'sky': '🥋', 'sugar': '🍭', 'rodney': '💘', 'beardo': '🎵', 'leonard': '🪄',
+    'josee': '⛷️', 'mickey': '🐭', 'ryan': '🏋️', 'blaineley': '🎤'
+  };
+  
+  // Storage key generator
+  function getEpisodeStorageKey() {
+    const seasonEl = document.getElementById('aiSeason');
+    const episodeEl = document.getElementById('aiEpisode');
+    const season = seasonEl ? seasonEl.value : '5';
+    const episode = episodeEl ? episodeEl.value : '1';
+    return `td_episode_s${season}_e${episode}`;
+  }
+  
+  // Save episode to localStorage
+  function saveEpisode() {
+    const transcript = document.getElementById('episode-input').value;
+    if (!transcript.trim()) {
+      alert('⚠️ Please paste or generate an episode transcript first!');
+      return;
+    }
+    
+    localStorage.setItem(getEpisodeStorageKey(), transcript);
+    alert('✅ Episode saved successfully!');
+    renderEpisode();
+  }
+  
+  // Load episode from localStorage
+  function loadEpisode() {
+    const saved = localStorage.getItem(getEpisodeStorageKey());
+    if (saved) {
+      document.getElementById('episode-input').value = saved;
+      renderEpisode();
+      return true;
+    }
+    return false;
+  }
+  
+  // Clear episode
+  function clearEpisode() {
+    if (confirm('⚠️ Clear the current episode? This cannot be undone.')) {
+      document.getElementById('episode-input').value = '';
+      document.getElementById('episode-rendered').innerHTML = '';
+      localStorage.removeItem(getEpisodeStorageKey());
+      alert('🗑️ Episode cleared!');
+    }
+  }
+  
+  // Generate episode using AI
+  async function generateEpisodeAI() {
+    // Safety check: ensure EPISODE_WORKER_URL is defined
+    if (typeof EPISODE_WORKER_URL === 'undefined') {
+      console.error('EPISODE_WORKER_URL not initialized yet. Please refresh the page.');
+      alert('⚠️ Page not fully loaded. Please refresh and try again.');
+      return;
+    }
+    
+    const summaryInput = document.getElementById('episode-summary-input');
+    const summary = summaryInput ? summaryInput.value.trim() : '';
+    
+    if (!summary) {
+      alert('⚠️ Please paste your BrantSteele episode summary first!');
+      return;
+    }
+    
+    const seasonEl = document.getElementById('aiSeason');
+    const episodeEl = document.getElementById('aiEpisode');
+    const season = seasonEl ? seasonEl.value : '5';
+    const episode = episodeEl ? episodeEl.value : '1';
+    
+    const generateBtn = document.getElementById('generate-episode-btn');
+    const originalText = generateBtn.innerHTML;
+    generateBtn.innerHTML = '⏳ Generating Episode...';
+    generateBtn.disabled = true;
+    
+    try {
+      const response = await fetch(EPISODE_WORKER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: 'episode',
+          season: season,
+          episode: episode,
+          summaryText: summary
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      const transcript = data.episodeTranscript || data.output_text || '';
+      
+      if (!transcript) {
+        throw new Error('No episode transcript returned from AI');
+      }
+      
+      document.getElementById('episode-input').value = transcript;
+      saveEpisode();
+      alert('✅ Episode generated successfully!');
+      
+    } catch (error) {
+      console.error('Error generating episode:', error);
+      alert('❌ Error generating episode: ' + error.message);
+    } finally {
+      generateBtn.innerHTML = originalText;
+      generateBtn.disabled = false;
+    }
+  }
+  
+  // Render episode from transcript
+  function renderEpisode() {
+    const transcript = document.getElementById('episode-input').value;
+    const container = document.getElementById('episode-rendered');
+    
+    if (!transcript.trim()) {
+      container.innerHTML = `
+        <div class="episode-empty">
+          <div class="episode-empty-icon">📺</div>
+          <div class="episode-empty-text">No episode to display.</div>
+          <div style="margin-top: 16px; opacity: 0.7; font-size: 14px;">
+            Paste a transcript and click "Render Episode" or generate one with AI!
+          </div>
+        </div>
+      `;
+      return;
+    }
+    
+    const html = parseTranscript(transcript);
+    container.innerHTML = html;
+    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  
+  // Parse transcript into beautiful HTML with animations
+  function parseTranscript(text) {
+    let html = '<div class="episode-content">';
+    const lines = text.split('\n');
+    let currentScene = '';
+    let inConfessional = false;
+    let inTribal = false;
+    let lineIndex = 0; // For staggered animations
+    
+    lines.forEach((line) => {
+      line = line.trim();
+      if (!line) return;
+      
+      // Scene headers: [Scene: ...] or [Location...]
+      if (line.match(/^\[.*\]$/)) {
+        const sceneText = line.replace(/[\[\]]/g, '');
+        
+        // Confessional detection
+        if (sceneText.toLowerCase().includes('confessional')) {
+          if (!inConfessional) {
+            html += '<div class="confessional" style="animation-delay: ' + (lineIndex * 0.05) + 's">';
+            html += '<div class="confessional-label">🎥 ' + escapeHtml(sceneText).toUpperCase() + '</div>';
+            inConfessional = true;
+            lineIndex++;
+          }
+          return;
+        }
+        
+        // Close confessional if we hit a new scene
+        if (inConfessional && !sceneText.toLowerCase().includes('confessional')) {
+          html += '</div>';
+          inConfessional = false;
+        }
+        
+        // Tribal Council detection with suspense
+        if (sceneText.toLowerCase().includes('tribal') || sceneText.toLowerCase().includes('campfire ceremony')) {
+          if (!inTribal) {
+            html += '<div class="tribal-council" style="animation-delay: ' + (lineIndex * 0.05) + 's">';
+            html += '<div class="tribal-header">🔥 ' + escapeHtml(sceneText).toUpperCase() + ' 🔥</div>';
+            html += '<div class="tribal-suspense">⏳ The tension is palpable...</div>';
+            inTribal = true;
+            lineIndex++;
+          }
+          return;
+        }
+        
+        // Close tribal if new scene
+        if (inTribal && !sceneText.toLowerCase().includes('tribal') && !sceneText.toLowerCase().includes('vote') && !sceneText.toLowerCase().includes('campfire')) {
+          html += '</div>';
+          inTribal = false;
+        }
+        
+        // Regular scene with sticky header
+        if (currentScene && !inConfessional) html += '</div>';
+        html += '<div class="scene">';
+        html += '<div class="scene-header scene-sticky" style="animation-delay: ' + (lineIndex * 0.05) + 's">📍 ' + escapeHtml(sceneText) + '</div>';
+        currentScene = sceneText;
+        lineIndex++;
+        return;
+      }
+      
+      // Dialogue: "Name: Text" - rendered as chat bubbles
+      const dialogueMatch = line.match(/^([A-Z][a-zA-Z\s']+):\s*(.+)$/);
+      if (dialogueMatch) {
+        let [, character, dialogue] = dialogueMatch;
+        character = character.trim();
+        const charKey = character.toLowerCase();
+        const avatar = getCharacterAvatar(charKey);
+        
+        html += '<div class="dialogue-line chat-bubble" style="animation-delay: ' + (lineIndex * 0.05) + 's">';
+        html += `<div class="character-avatar">${avatar}</div>`;
+        html += '<div class="dialogue-bubble">';
+        html += `<div class="character-name">${escapeHtml(character)}</div>`;
+        html += `<div class="dialogue-text">${escapeHtml(dialogue)}</div>`;
+        html += '</div>';
+        html += '</div>';
+        lineIndex++;
+        return;
+      }
+      
+      // Elimination announcement - special styling in Tribal
+      if (line.toLowerCase().includes('eliminated') || line.toLowerCase().includes('voted out')) {
+        html += `<div class="eliminated-player" style="animation-delay: ' + (lineIndex * 0.05) + 's">`;
+        html += `<div class="eliminated-message">${escapeHtml(line)}</div>`;
+        html += `</div>`;
+        lineIndex++;
+        return;
+      }
+      
+      // Vote reveals in Tribal Council with suspense animation
+      if (inTribal && (line.toLowerCase().includes('vote') || line.toLowerCase().includes('marshmallow'))) {
+        html += `<div class="vote-reveal suspense-reveal" style="animation-delay: ${lineIndex * 0.1}s">${escapeHtml(line)}</div>`;
+        lineIndex++;
+        return;
+      }
+      
+      // Stage directions or other text
+      html += `<div class="stage-direction" style="animation-delay: ${lineIndex * 0.05}s">${escapeHtml(line)}</div>`;
+      lineIndex++;
+    });
+    
+    // Close any open sections
+    if (currentScene) html += '</div>';
+    if (inConfessional) html += '</div>';
+    if (inTribal) html += '</div>';
+    
+    html += '</div>';
+    return html;
+  }
+  
+  // Get character avatar (image or emoji)
+  function getCharacterAvatar(characterName) {
+    const key = characterName.toLowerCase().replace(/\s+/g, '-');
+    const keySimple = characterName.toLowerCase().replace(/\s+/g, '');
+    
+    const paths = [
+      `assets/avatars/${key}.png`,
+      `assets/avatars/${keySimple}.png`,
+      `assets/avatars/${characterName.toLowerCase()}.png`
+    ];
+    
+    const emoji = CHARACTER_AVATARS[keySimple] || CHARACTER_AVATARS[key] || '👤';
+    
+    return `
+      <img src="${paths[0]}" alt="${escapeHtml(characterName)}" 
+        onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';">
+      <span class="character-avatar-fallback" style="display:none;">
+        ${emoji}
+      </span>
+    `;
+  }
+  
+  // Escape HTML to prevent XSS
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+  
+  // Clear episode when season/episode changes
+  let lastEpisodeKey = getEpisodeStorageKey();
+  setInterval(() => {
+    const currentKey = getEpisodeStorageKey();
+    if (currentKey !== lastEpisodeKey) {
+      const rendered = document.getElementById('episode-rendered');
+      const input = document.getElementById('episode-input');
+      if (rendered) rendered.innerHTML = '';
+      if (input) input.value = '';
+      lastEpisodeKey = currentKey;
+      loadEpisode();
+    }
+  }, 1000);
+
+// ========================================
+// SEASON SETUP FUNCTIONS - FIXED VERSION (STANDALONE)
+// Insert this code BEFORE the closing 
+// This version includes all necessary functions
+// ========================================
+
+console.log("🚀 Season Setup script tag reached!");
+
+// Auto-load database from JSON if localStorage is empty
+(function() {
+  const existingDB = localStorage.getItem('players_database');
+  if (!existingDB) {
+    console.log("📥 No database in localStorage, attempting to load from players_database.json...");
+    fetch('players_database.json')
+      .then(r => r.json())
+      .then(db => {
+        localStorage.setItem('players_database', JSON.stringify(db, null, 2));
+        console.log(`✅ Database auto-loaded! ${db.players.length} players, ${db.franchise.totalSeasons} seasons`);
+      })
+      .catch(e => {
+        console.warn("⚠️ Could not auto-load database:", e.message);
+        console.log("Database will be empty until you import it manually or create profiles");
+      });
+  } else {
+    const db = JSON.parse(existingDB);
+    console.log(`✅ Database already in localStorage (${db.players.length} players, ${db.franchise.totalSeasons} seasons)`);
+  }
+})();
+
+// Use setTimeout to ensure ALL DOM elements are fully rendered AND database is loaded
+setTimeout(function() {
+(function() {
+  console.log("🔧 Season Setup: Initializing...");
+  
+  // Get Season Setup elements
+  const seasonSetupSummary = document.getElementById("season-setup-summary");
+  const analyzeCastBtn = document.getElementById("analyze-cast-btn");
+  const castAnalysisResult = document.getElementById("cast-analysis-result");
+  const createProfilesSection = document.getElementById("create-profiles-section");
+  const createProfilesBtn = document.getElementById("create-profiles-btn");
+  const exportDatabaseBtn = document.getElementById("export-database-btn");
+  const importDatabaseBtn = document.getElementById("import-database-btn");
+  const syncDevoteesBtn = document.getElementById("sync-devotees-btn");
+  const importFileInput = document.getElementById("import-file-input");
+  const databaseStatus = document.getElementById("database-status");
+
+  console.log("🔧 Elements check:");
+  console.log("  - Button:", analyzeCastBtn ? "✅ Found" : "❌ NOT FOUND");
+  console.log("  - Textarea:", seasonSetupSummary ? "✅ Found" : "❌ NOT FOUND");
+
+  let analyzedCastData = null;
+
+  // ========================================
+  // HELPER FUNCTIONS (copied from main script)
+  // ========================================
+  
+  function slugify(name) {
+    return name.toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+  
+  function parseCastFromSummary(text) {
+    const castMatch = text.match(/===\s*CAST\s*\(ALL\)\s*===\s*([\s\S]*?)(?=\n===|$)/i);
+    if (!castMatch) return [];
+    
+    const lines = castMatch[1].split('\n');
+    const names = [];
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (trimmed && !trimmed.startsWith('===') && !trimmed.startsWith('---')) {
+        names.push(trimmed);
+      }
+    }
+    return names;
+  }
+
+  // ========================================
+  // FEATURE 0: COMPLETE SEASON BUILDER
+  // ========================================
+  
+  const sbEpisodesContainer = document.getElementById("sb-episodes-container");
+  const sbToggleEpisodesBtn = document.getElementById("sb-toggle-episodes");
+  const sbGenerateAllBtn = document.getElementById("sb-generate-all");
+  const sbPreviewDataBtn = document.getElementById("sb-preview-data");
+  const sbProgress = document.getElementById("sb-progress");
+  
+  let episodesExpanded = false;
+  
+  // Initialize episode textareas
+  function initializeEpisodeInputs() {
+    const episodeCount = parseInt(document.getElementById("sb-episode-count").value) || 14;
+    let html = '';
+    
+    for (let i = 1; i <= episodeCount; i++) {
+      const isFirst = i === 1;
+      const display = (isFirst || episodesExpanded) ? 'block' : 'none';
+      const rows = isFirst ? 10 : 6;
+      
+      html += `
+        <div class="sb-episode-input" data-episode="${i}" style="display: ${display}; margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <label style="font-weight: 600; font-size: 14px;">
+              Episode ${i}${isFirst ? ' (Must include CAST list)' : ''}
+            </label>
+            <span class="sb-episode-status" data-episode="${i}" style="font-size: 12px; opacity: 0.7;">
+              Empty
+            </span>
+          </div>
+          <textarea id="sb-ep${i}-summary" rows="${rows}" placeholder="Paste Episode ${i} summary here...${isFirst ? '\n\nMust include:\n=== CAST (ALL) ===\nName1\nName2\n...' : ''}"
+            style="width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-family: monospace; font-size: 12px;"></textarea>
+        </div>
+      `;
+    }
+    
+    if (sbEpisodesContainer) {
+      sbEpisodesContainer.innerHTML = html;
+      
+      // Add change listeners to update status
+      for (let i = 1; i <= episodeCount; i++) {
+        const textarea = document.getElementById(`sb-ep${i}-summary`);
+        const status = document.querySelector(`.sb-episode-status[data-episode="${i}"]`);
+        if (textarea && status) {
+          textarea.addEventListener('input', () => {
+            const charCount = textarea.value.trim().length;
+            if (charCount === 0) {
+              status.textContent = 'Empty';
+              status.style.color = '#ff6464';
+            } else if (charCount < 200) {
+              status.textContent = `${charCount} chars (needs more)`;
+              status.style.color = '#ffb347';
+            } else {
+              status.textContent = `✅ ${charCount} chars`;
+              status.style.color = '#4cffb3';
+            }
+          });
+        }
+      }
+    }
+  }
+  
+  // Toggle episodes visibility
+  if (sbToggleEpisodesBtn) {
+    sbToggleEpisodesBtn.addEventListener('click', () => {
+      episodesExpanded = !episodesExpanded;
+      const episodes = document.querySelectorAll('.sb-episode-input');
+      episodes.forEach((ep, i) => {
+        if (i === 0) return; // Always show Episode 1
+        ep.style.display = episodesExpanded ? 'block' : 'none';
+      });
+      sbToggleEpisodesBtn.textContent = episodesExpanded ? 'Hide Episodes 2-14' : 'Show All Episodes';
+    });
+  }
+  
+  // Episode count change handler
+  const episodeCountInput = document.getElementById("sb-episode-count");
+  if (episodeCountInput) {
+    episodeCountInput.addEventListener('change', initializeEpisodeInputs);
+  }
+  
+  // Initialize on load
+  initializeEpisodeInputs();
+  
+  // Preview Data Button
+  if (sbPreviewDataBtn) {
+    sbPreviewDataBtn.addEventListener('click', () => {
+      try {
+        const data = collectSeasonBuilderData();
+        const preview = JSON.stringify(data, null, 2);
+        
+        // Show in modal/alert
+        const previewWindow = window.open('', 'Season Data Preview', 'width=800,height=600');
+        previewWindow.document.write(`
+          <html>
+          <head>
+            <title>Season ${data.metadata.seasonNumber} Preview</title>
+            <style>
+              body { 
+                font-family: monospace; 
+                padding: 20px; 
+                background: #1a1a1a; 
+                color: #fff; 
+              }
+              pre { 
+                background: #000; 
+                padding: 20px; 
+                border-radius: 8px; 
+                overflow: auto; 
+                max-height: 80vh;
+              }
+              h2 { color: #4cffb3; }
+            </style>
+          </head>
+          <body>
+            <h2>Season ${data.metadata.seasonNumber} Data Preview</h2>
+            <p>Episodes collected: ${data.episodes.length}</p>
+            <p>Cast size: ${data.cast.length}</p>
+            <pre>${escapeHtml(preview)}</pre>
+          </body>
+          </html>
+        `);
+      } catch (error) {
+        alert(`❌ Preview error: ${error.message}`);
+      }
+    });
+  }
+  
+  // Generate All Button (Main function - will be implemented in next steps)
+  if (sbGenerateAllBtn) {
+    sbGenerateAllBtn.addEventListener('click', () => {
+      if (!confirm('Generate complete Season database?\n\nThis will:\n• Parse all episode summaries\n• Create season6-data.json\n• Update all databases\n• Generate voting analytics\n\nContinue?')) {
+        return;
+      }
+      
+      sbGenerateAllBtn.disabled = true;
+      sbGenerateAllBtn.innerHTML = '⏳ Generating...';
+      
+      setTimeout(() => {
+        try {
+          generateCompleteSeasonDatabase();
+        } catch (error) {
+          console.error('Generation error:', error);
+          showProgress(`
+            <div style="padding: 20px; background: rgba(255,100,100,0.2); border: 2px solid #ff6464; border-radius: 16px;">
+              <h3 style="color: #ff6464;">❌ Generation Failed</h3>
+              <p>${error.message}</p>
+            </div>
+          `);
+        } finally {
+          sbGenerateAllBtn.disabled = false;
+          sbGenerateAllBtn.innerHTML = '⚡ Generate Complete Season Database';
+        }
+      }, 100);
+    });
+  }
+  
+  // Helper: Collect all Season Builder data
+  function collectSeasonBuilderData() {
+    const seasonNumber = parseInt(document.getElementById("sb-season-number").value);
+    const episodeCount = parseInt(document.getElementById("sb-episode-count").value);
+    
+    // Collect metadata
+    const metadata = {
+      seasonNumber,
+      title: document.getElementById("sb-season-title").value.trim() || `Total Drama Season ${seasonNumber}`,
+      subtitle: document.getElementById("sb-season-subtitle").value.trim() || "",
+      theme: document.getElementById("sb-season-theme").value.trim() || "",
+      emoji: document.getElementById("sb-season-emoji").value.trim() || "🎯",
+      episodeCount,
+      castSize: 0, // Will be determined from Episode 1
+      jurySize: 0  // Will be calculated
+    };
+    
+    // Collect episode summaries
+    const episodes = [];
+    for (let i = 1; i <= episodeCount; i++) {
+      const textarea = document.getElementById(`sb-ep${i}-summary`);
+      if (!textarea) {
+        throw new Error(`Episode ${i} textarea not found`);
+      }
+      const summary = textarea.value.trim();
+      if (!summary) {
+        throw new Error(`Episode ${i} is empty! Please fill in all episodes.`);
+      }
+      episodes.push({
+        episode: i,
+        summary: summary
+      });
+    }
+    
+    // Get cast from Episode 1
+    const cast = parseCastFromSummary(episodes[0].summary);
+    if (cast.length === 0) {
+      throw new Error('No cast found in Episode 1! Make sure it has "=== CAST (ALL) ===" section.');
+    }
+    metadata.castSize = cast.length;
+    
+    // Collect finale data
+    const finale = {
+      winner: document.getElementById("sb-finale-winner").value.trim(),
+      runnerUp: document.getElementById("sb-finale-runnerup").value.trim(),
+      finalVote: document.getElementById("sb-finale-vote").value.trim(),
+      juryVotesText: document.getElementById("sb-jury-votes").value.trim()
+    };
+    
+    if (!finale.winner) throw new Error('Winner name is required!');
+    if (!finale.runnerUp) throw new Error('Runner-up name(s) required!');
+    if (!finale.finalVote) throw new Error('Final vote count is required!');
+    
+    // Parse jury votes
+    const juryVotes = [];
+    const juryLines = finale.juryVotesText.split('\n');
+    for (const line of juryLines) {
+      const match = line.match(/([A-Za-z]+)\s+voted\s+for\s+([A-Za-z]+)/i);
+      if (match) {
+        juryVotes.push({
+          juror: match[1].trim(),
+          votedFor: match[2].trim()
+        });
+      }
+    }
+    metadata.jurySize = juryVotes.length;
+    
+    // Collect awards
+    const awards = {
+      fanFavorite: document.getElementById("sb-award-fan").value.trim(),
+      bestStrategic: document.getElementById("sb-award-strategic").value.trim(),
+      mostChallengeWins: document.getElementById("sb-award-challenges").value.trim()
+    };
+    
+    return {
+      metadata,
+      cast,
+      episodes,
+      finale: {
+        ...finale,
+        juryVotes
+      },
+      awards
+    };
+  }
+  
+  // Helper: Show progress messages
+  function showProgress(html) {
+    if (sbProgress) {
+      sbProgress.style.display = 'block';
+      sbProgress.innerHTML = html;
+      sbProgress.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }
+  
+  // Main generation function (placeholder - will be fully implemented in next steps)
+  function generateCompleteSeasonDatabase() {
+    showProgress('<h3>⚡ Starting generation...</h3>');
+    
+    // Step 1: Collect data
+    showProgress('<h3>⚡ Starting generation...</h3><p>📝 Collecting data...</p>');
+    const data = collectSeasonBuilderData();
+    
+    // Step 2: Validation
+    showProgress('<h3>⚡ Starting generation...</h3><p>📝 Collecting data... ✅</p><p>✅ Validating...</p>');
+    console.log('Season Builder Data:', data);
+    
+    // TODO: Next steps will implement:
+    // - Parse episode data (eliminations, votes, challenges)
+    // - Generate season6-data.json
+    // - Update seasons_database.json
+    // - Update franchise_database.json
+    // - Update players_database.json
+    // - Update rankings_database.json
+    // - Generate voting-analytics HTML
+    
+    showProgress(`
+      <div style="padding: 30px; background: rgba(76,255,179,0.2); border: 2px solid #4cffb3; border-radius: 20px; text-align: center;">
+        <div style="font-size: 48px; margin-bottom: 16px;">🚧</div>
+        <h2 style="margin: 0 0 12px; color: #4cffb3;">Step 1 Complete!</h2>
+        <p>UI and data collection working. Next: implement parsers and database updates.</p>
+        <div style="margin-top: 20px; padding: 16px; background: rgba(0,0,0,0.2); border-radius: 12px; text-align: left;">
+          <strong>Collected Data:</strong><br/>
+          • Season ${data.metadata.seasonNumber}: ${data.metadata.title}<br/>
+          • ${data.episodes.length} episodes<br/>
+          • ${data.cast.length} players<br/>
+          • Winner: ${data.finale.winner}<br/>
+          • ${data.finale.juryVotes.length} jury votes<br/>
+          • Awards configured: ✅
+        </div>
+      </div>
+    `);
+  }
+  
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  // ========================================
+  // FEATURE 1: CAST ANALYSIS & PROFILE CREATION
+  // ========================================
+
+  if (analyzeCastBtn) {
+    analyzeCastBtn.addEventListener("click", () => {
+      const summary = seasonSetupSummary.value.trim();
+      if (!summary) {
+        alert("⚠️ Please paste Episode 1 summary first!");
+        return;
+      }
+      
+      // Show loading state
+      const originalText = analyzeCastBtn.innerHTML;
+      analyzeCastBtn.innerHTML = '⏳ Analyzing...';
+      analyzeCastBtn.disabled = true;
+      
+      // Hide previous results
+      castAnalysisResult.style.display = 'none';
+      createProfilesSection.style.display = 'none';
+      
+      setTimeout(() => {
+        try {
+          const seasonInput = document.getElementById("aiSeason");
+          const season = Number(seasonInput ? seasonInput.value : 1);
+          analyzedCastData = analyzeCast(summary, season);
+          
+          if (analyzedCastData) {
+            displayCastAnalysis(analyzedCastData);
+            castAnalysisResult.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+        } catch (error) {
+          console.error('Analysis error:', error);
+          alert(`❌ Analysis failed: ${error.message}`);
+        } finally {
+          analyzeCastBtn.innerHTML = originalText;
+          analyzeCastBtn.disabled = false;
+        }
+      }, 100);
+    });
+  }
+
+  if (createProfilesBtn) {
+    createProfilesBtn.addEventListener("click", () => {
+      if (!analyzedCastData) {
+        alert("⚠️ Please analyze cast first!");
+        return;
+      }
+      
+      if (!confirm(`Create/update profiles for ${analyzedCastData.total} players in Season ${analyzedCastData.season}?\n\nThis will:\n• Create ${analyzedCastData.newPlayers.length} new profiles\n• Update ${analyzedCastData.returningPlayers.length} returning players`)) {
+        return;
+      }
+      
+      createPlayerProfiles(analyzedCastData);
+    });
+  }
+
+  function analyzeCast(summaryText, season) {
+    const cast = parseCastFromSummary(summaryText);
+    
+    if (cast.length === 0) {
+      alert("⚠️ No cast detected! Make sure your summary has:\n\n=== CAST (ALL) ===\nAmy\nBeardo\n...");
+      return null;
+    }
+    
+    const db = loadPlayerDatabase();
+    const seasonExists = db.players.some(p => 
+      p.seasonDetails && p.seasonDetails.some(s => s.season === season)
+    );
+    
+    if (seasonExists) {
+      alert(`⚠️ Season ${season} already has player data!\n\nProfiles were already created.`);
+      return null;
+    }
+    
+    const newPlayers = [];
+    const returningPlayers = [];
+    
+    for (const name of cast) {
+      const id = slugify(name);
+      const existing = db.players.find(p => p.id === id);
+      
+      if (existing) {
+        returningPlayers.push({
+          name: name,
+          id: id,
+          previousSeasons: existing.seasons,
+          bestPlacement: existing.bestPlacement,
+          wins: existing.wins
+        });
+      } else {
+        newPlayers.push({ name: name, id: id });
+      }
+    }
+    
+    let seasonType;
+    if (newPlayers.length === cast.length) {
+      seasonType = "All Newbies";
+    } else if (returningPlayers.length === cast.length) {
+      seasonType = "All-Stars";
+    } else {
+      seasonType = `Mixed (${returningPlayers.length} returnees, ${newPlayers.length} newbies)`;
+    }
+    
+    return {
+      season,
+      total: cast.length,
+      newPlayers,
+      returningPlayers,
+      seasonType,
+      castNames: cast
+    };
+  }
+
+  function displayCastAnalysis(data) {
+    if (!data) return;
+    
+    let html = `
+      <div style="padding: 12px; background: linear-gradient(135deg, rgba(76,255,179,0.2), rgba(76,255,179,0.1)); border: 2px solid #4cffb3; border-radius: 12px; margin-bottom: 16px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 24px;">✅</span>
+          <div>
+            <div style="font-weight: 700; color: #4cffb3;">Analysis Complete!</div>
+            <div style="font-size: 13px; opacity: 0.9;">Found ${data.total} players for Season ${data.season}</div>
+          </div>
+        </div>
+      </div>
+      
+      <h4 style="margin-top: 0; color: var(--accent);">Season ${data.season} - Cast Analysis</h4>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 16px;">
+        <div style="padding: 12px; background: rgba(0,0,0,0.2); border-radius: 8px;">
+          <div style="font-size: 24px; font-weight: 700;">${data.total}</div>
+          <div style="opacity: 0.7; font-size: 13px;">Total Cast</div>
+        </div>
+        <div style="padding: 12px; background: rgba(76,255,179,0.15); border-radius: 8px;">
+          <div style="font-size: 24px; font-weight: 700; color: #4cffb3;">✨ ${data.newPlayers.length}</div>
+          <div style="opacity: 0.7; font-size: 13px;">New Players</div>
+        </div>
+        <div style="padding: 12px; background: rgba(255,179,71,0.15); border-radius: 8px;">
+          <div style="font-size: 24px; font-weight: 700; color: #ffb347;">🔄 ${data.returningPlayers.length}</div>
+          <div style="opacity: 0.7; font-size: 13px;">Returning Players</div>
+        </div>
+      </div>
+      <div style="padding: 12px; background: rgba(125,76,255,0.15); border-radius: 8px; margin-bottom: 16px;">
+        <strong>Season Type:</strong> ${data.seasonType}
+      </div>
+    `;
+    
+    if (data.returningPlayers.length > 0) {
+      html += `<details style="margin-top: 12px;">
+        <summary style="cursor: pointer; font-weight: 600; margin-bottom: 8px;">🔄 Returning Players (${data.returningPlayers.length})</summary>
+        <div style="display: grid; gap: 6px; margin-top: 8px; font-size: 13px;">`;
+      
+      for (const p of data.returningPlayers) {
+        const trophy = p.wins > 0 ? " 🏆".repeat(p.wins) : "";
+        html += `<div style="padding: 6px; background: rgba(0,0,0,0.2); border-radius: 4px;">
+          <strong>${p.name}</strong>${trophy} - Seasons: ${p.previousSeasons.join(", ")} | Best: ${p.bestPlacement}${p.bestPlacement === 1 ? "st" : p.bestPlacement === 2 ? "nd" : p.bestPlacement === 3 ? "rd" : "th"}
+        </div>`;
+      }
+      html += `</div></details>`;
+    }
+    
+    if (data.newPlayers.length > 0) {
+      html += `<details style="margin-top: 12px;" open>
+        <summary style="cursor: pointer; font-weight: 600; margin-bottom: 8px;">✨ New Players (${data.newPlayers.length})</summary>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; font-size: 13px;">`;
+      
+      for (const p of data.newPlayers) {
+        html += `<span style="padding: 4px 10px; background: rgba(76,255,179,0.2); border-radius: 6px;">${p.name}</span>`;
+      }
+      html += `</div></details>`;
+    }
+    
+    castAnalysisResult.innerHTML = html;
+    castAnalysisResult.style.display = "block";
+    createProfilesSection.style.display = "block";
+  }
+
+  function createPlayerProfiles(data) {
+    const db = loadPlayerDatabase();
+    const season = data.season;
+    
+    const originalText = createProfilesBtn.innerHTML;
+    createProfilesBtn.innerHTML = '⏳ Creating profiles...';
+    createProfilesBtn.disabled = true;
+    
+    setTimeout(() => {
+      try {
+        for (const name of data.castNames) {
+          const id = slugify(name);
+          let player = db.players.find(p => p.id === id);
+          
+          if (!player) {
+            player = {
+              id,
+              name,
+              seasons: [season],
+              totalSeasons: 1,
+              bestPlacement: 99,
+              wins: 0,
+              totalChallengeWins: 0,
+              totalImmunityWins: 0,
+              totalRewardWins: 0,
+              totalVotesAgainst: 0,
+              totalIdolsFound: 0,
+              totalJuryVotes: 0,
+              tier: "Unranked",
+              badges: [],
+              seasonDetails: []
+            };
+            db.players.push(player);
+          }
+          
+          if (!player.seasons.includes(season)) {
+            player.seasons.push(season);
+            player.totalSeasons++;
+          }
+          
+          const existingDetail = player.seasonDetails.find(s => s.season === season);
+          if (!existingDetail) {
+            player.seasonDetails.push({
+              season,
+              placement: 99,
+              status: "Active",
+              tribe: "TBD",
+              challengeWins: 0,
+              immunityWins: 0,
+              rewardWins: 0,
+              votesReceived: 0,
+              idolsFound: 0,
+              strategicRank: 0,
+              juryVotes: 0,
+              finalVote: "",
+              unbreakableBonds: [],
+              rivalries: [],
+              allianceHistory: []
+            });
+          }
+        }
+        
+        savePlayerDatabase(db);
+        
+        castAnalysisResult.innerHTML = `
+          <div style="padding: 20px; background: linear-gradient(135deg, rgba(76,255,179,0.2), rgba(76,255,179,0.1)); border: 2px solid #4cffb3; border-radius: 16px; text-align: center;">
+            <div style="font-size: 48px; margin-bottom: 12px;">🎉</div>
+            <h3 style="margin: 0 0 8px; color: #4cffb3;">Profiles Created!</h3>
+            <div style="font-size: 15px; opacity: 0.9; margin-bottom: 16px;">
+              Season ${season} is ready to track
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; max-width: 400px; margin: 0 auto;">
+              <div style="padding: 12px; background: rgba(0,0,0,0.2); border-radius: 8px;">
+                <div style="font-size: 24px; font-weight: 700; color: #4cffb3;">${data.newPlayers.length}</div>
+                <div style="font-size: 12px; opacity: 0.8;">New Profiles</div>
+              </div>
+              <div style="padding: 12px; background: rgba(0,0,0,0.2); border-radius: 8px;">
+                <div style="font-size: 24px; font-weight: 700; color: #ffb347;">${data.returningPlayers.length}</div>
+                <div style="font-size: 12px; opacity: 0.8;">Updated</div>
+              </div>
+            </div>
+            <div style="margin-top: 16px; font-size: 13px; opacity: 0.7;">
+              💾 Saved to localStorage as "players_database"
+            </div>
+          </div>
+        `;
+        
+        createProfilesSection.innerHTML = `
+          <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 20px;">
+            <button onclick="location.reload()" class="btn btn-primary">
+              ✨ Create Another Season
+            </button>
+            <button onclick="document.getElementById('tabOverview').click()" class="btn">
+              📊 Go to Analytics
+            </button>
+          </div>
+        `;
+        
+        seasonSetupSummary.value = "";
+        analyzedCastData = null;
+        castAnalysisResult.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+      } catch (error) {
+        console.error('Profile creation error:', error);
+        alert(`❌ Error creating profiles: ${error.message}`);
+      } finally {
+        createProfilesBtn.innerHTML = originalText;
+        createProfilesBtn.disabled = false;
+      }
+    }, 300);
+  }
+
+  // ========================================
+  // FEATURE 2: AUTO-UPDATE ELIMINATIONS (GLOBAL)
+  // ========================================
+  
+  window.updatePlayerEliminationsFromEpisode = function(season, episode, cast, eliminated) {
+    const db = loadPlayerDatabase();
+    let updated = 0;
+    
+    const activeCount = cast.length;
+    const eliminatedArray = Array.from(eliminated);
+    const eliminatedCount = eliminatedArray.length;
+    const remainingCount = activeCount - eliminatedCount;
+    
+    for (const eliminatedName of eliminatedArray) {
+      const player = db.players.find(p => 
+        p.name.toLowerCase() === eliminatedName.toLowerCase()
+      );
+      
+      if (player) {
+        const seasonDetail = player.seasonDetails.find(s => s.season === season);
+        if (seasonDetail && seasonDetail.status === "Active") {
+          const placement = remainingCount + 1;
+          seasonDetail.placement = placement;
+          seasonDetail.status = "Eliminated";
+          
+          if (placement < player.bestPlacement) {
+            player.bestPlacement = placement;
+          }
+          
+          updated++;
+          console.log(`✅ Updated ${player.name}: ${placement}${placement === 1 ? 'st' : placement === 2 ? 'nd' : placement === 3 ? 'rd' : 'th'} place`);
+        }
+      }
+    }
+    
+    if (updated > 0) {
+      savePlayerDatabase(db);
+      console.log(`📊 Auto-updated ${updated} elimination(s) for Season ${season} Episode ${episode}`);
+    }
+  };
+
+  // ========================================
+  // FEATURE 3: EXPORT/IMPORT/SYNC DATABASE
+  // ========================================
+
+  if (exportDatabaseBtn) {
+    exportDatabaseBtn.addEventListener("click", () => {
+      const db = loadPlayerDatabase();
+      
+      const json = JSON.stringify(db, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `players_database_${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      showDatabaseStatus(`✅ Database exported! (${db.players.length} players, ${db.franchise.totalSeasons} seasons)`);
+    });
+  }
+
+  if (importDatabaseBtn) {
+    importDatabaseBtn.addEventListener("click", () => {
+      importFileInput.click();
+    });
+  }
+
+  if (importFileInput) {
+    importFileInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const db = JSON.parse(event.target.result);
+          
+          if (!db.franchise || !Array.isArray(db.players)) {
+            throw new Error("Invalid database structure");
+          }
+          
+          if (!confirm(`Import database with ${db.players.length} players and ${db.franchise.totalSeasons} seasons?\n\nThis will REPLACE your current database!`)) {
+            return;
+          }
+          
+          localStorage.setItem('players_database', JSON.stringify(db, null, 2));
+          showDatabaseStatus(`✅ Database imported! (${db.players.length} players, ${db.franchise.totalSeasons} seasons)`);
+          
+        } catch (error) {
+          alert(`❌ Import failed: ${error.message}`);
+        }
+        
+        importFileInput.value = '';
+      };
+      
+      reader.readAsText(file);
+    });
+  }
+
+  if (syncDevoteesBtn) {
+    syncDevoteesBtn.addEventListener("click", () => {
+      const db = loadPlayerDatabase();
+      
+      if (db.players.length === 0) {
+        alert("⚠️ No players in database. Create profiles first!");
+        return;
+      }
+      
+      const json = JSON.stringify(db, null, 2);
+      navigator.clipboard.writeText(json).then(() => {
+        showDatabaseStatus(`✅ Database copied to clipboard!\n\nNow:\n1. Open devotees.html\n2. Paste into localStorage or JSON file`);
+      }).catch(() => {
+        alert(`✅ Copy this JSON:\n\n${json.substring(0, 200)}...\n\n(See console for full output)`);
+        console.log('Database JSON:', json);
+      });
+    });
+  }
+
+  function showDatabaseStatus(message) {
+    if (databaseStatus) {
+      databaseStatus.textContent = message;
+      databaseStatus.style.display = 'block';
+      setTimeout(() => {
+        databaseStatus.style.display = 'none';
+      }, 5000);
+    }
+  }
+
+  // ========================================
+  // DATABASE HELPERS
+  // ========================================
+
+  function loadPlayerDatabase() {
+    try {
+      const raw = localStorage.getItem("players_database");
+      if (raw) return JSON.parse(raw);
+    } catch (e) {
+      console.error("Error loading player database:", e);
+    }
+    
+    return {
+      franchise: {
+        name: "DC Franchise Database",
+        totalSeasons: 0,
+        totalPlayers: 0,
+        description: "Total Drama franchise player statistics and performance data"
+      },
+      players: []
+    };
+  }
+
+  function savePlayerDatabase(db) {
+    try {
+      db.franchise.totalPlayers = db.players.length;
+      const allSeasons = new Set();
+      db.players.forEach(p => p.seasons.forEach(s => allSeasons.add(s)));
+      db.franchise.totalSeasons = allSeasons.size;
+      
+      localStorage.setItem("players_database", JSON.stringify(db, null, 2));
+      console.log(`✅ Database saved: ${db.franchise.totalPlayers} players, ${db.franchise.totalSeasons} seasons`);
+    } catch (e) {
+      console.error("Error saving player database:", e);
+      alert("⚠️ Error saving database. Check console.");
+    }
+  }
+  
+})();
+}, 500); // Wait 500ms for DOM to fully render and database to load
+</script>
+</div><footer class="siteFooter">
+  <div class="footerInner">
+    <div class="footerTitle">DC Franchise Database</div>
+    <div class="footerSub">Static archive • 5 seasons • 58 players • Icons: name.png</div>
+  </div>
+</footer>
+<!-- SITE FOOTER END -->
+</body>
+</html>

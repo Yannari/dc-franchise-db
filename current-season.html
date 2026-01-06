@@ -2684,22 +2684,824 @@ setTimeout(function() {
     // - Update rankings_database.json
     // - Generate voting-analytics HTML
     
-    showProgress(`
-      <div style="padding: 30px; background: rgba(76,255,179,0.2); border: 2px solid #4cffb3; border-radius: 20px; text-align: center;">
-        <div style="font-size: 48px; margin-bottom: 16px;">🚧</div>
-        <h2 style="margin: 0 0 12px; color: #4cffb3;">Step 1 Complete!</h2>
-        <p>UI and data collection working. Next: implement parsers and database updates.</p>
-        <div style="margin-top: 20px; padding: 16px; background: rgba(0,0,0,0.2); border-radius: 12px; text-align: left;">
-          <strong>Collected Data:</strong><br/>
-          • Season ${data.metadata.seasonNumber}: ${data.metadata.title}<br/>
-          • ${data.episodes.length} episodes<br/>
-          • ${data.cast.length} players<br/>
-          • Winner: ${data.finale.winner}<br/>
-          • ${data.finale.juryVotes.length} jury votes<br/>
-          • Awards configured: ✅
+    // Call actual implementation
+    generateCompleteSeasonDatabaseFull(data);
+  }
+  
+  // FULL IMPLEMENTATION - Step 2
+  async function generateCompleteSeasonDatabaseFull(data) {
+    try {
+      // Step 1: Parse episodes
+      showProgress('<h3>⚡ Step 1/6: Parsing Episodes</h3><p>🔍 Extracting eliminations, votes, and challenges...</p>');
+      await sleep(500);
+      
+      const parsedEpisodes = parseAllEpisodes(data.episodes, data.cast);
+      console.log('Parsed Episodes:', parsedEpisodes);
+      
+      // Step 2: Generate season data
+      showProgress('<h3>⚡ Step 2/6: Generating Season Data File</h3><p>📄 Creating season' + data.metadata.seasonNumber + '-data.json...</p>');
+      await sleep(500);
+      
+      const seasonData = generateSeasonDataJSON(data, parsedEpisodes);
+      downloadJSON(seasonData, `season${data.metadata.seasonNumber}-data.json`);
+      
+      // Step 3: Update seasons_database
+      showProgress('<h3>⚡ Step 3/6: Updating Seasons Database</h3><p>📚 Adding Season ' + data.metadata.seasonNumber + ' to seasons_database.json...</p>');
+      await sleep(500);
+      
+      updateSeasonsDatabase(seasonData);
+      
+      // Step 4: Update franchise_database
+      showProgress('<h3>⚡ Step 4/6: Updating Franchise Database</h3><p>🏛️ Adding records, milestones, and trends...</p>');
+      await sleep(500);
+      
+      updateFranchiseDatabase(seasonData);
+      
+      // Step 5: Update players_database
+      showProgress('<h3>⚡ Step 5/6: Updating Players Database</h3><p>👥 Creating/updating player profiles...</p>');
+      await sleep(500);
+      
+      updatePlayersDatabase(seasonData);
+      
+      // Step 6: Update rankings
+      showProgress('<h3>⚡ Step 6/6: Recalculating Rankings</h3><p>🏆 Calculating scores for all ' + (loadPlayerDatabase().players.length) + ' players...</p>');
+      await sleep(500);
+      
+      updateRankingsDatabase();
+      
+      // Step 7: Generate voting analytics HTML
+      showProgress('<h3>⚡ Bonus: Generating Voting Analytics</h3><p>🗳️ Creating HTML table...</p>');
+      await sleep(500);
+      
+      const votingHTML = generateVotingAnalyticsHTML(seasonData);
+      downloadText(votingHTML, `season${data.metadata.seasonNumber}-voting-table.html`);
+      
+      // SUCCESS!
+      showProgress(`
+        <div style="padding: 30px; background: linear-gradient(135deg, rgba(76,255,179,0.3), rgba(76,255,179,0.1)); border: 3px solid #4cffb3; border-radius: 20px; text-align: center;">
+          <div style="font-size: 72px; margin-bottom: 16px;">🎉</div>
+          <h2 style="margin: 0 0 12px; color: #4cffb3;">Season ${data.metadata.seasonNumber} Complete!</h2>
+          <div style="font-size: 16px; opacity: 0.95; margin-bottom: 24px;">
+            All databases updated successfully
+          </div>
+          
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin: 24px 0;">
+            <div style="padding: 16px; background: rgba(0,0,0,0.2); border-radius: 12px;">
+              <div style="font-size: 32px; font-weight: 700; color: #4cffb3;">✅</div>
+              <div style="font-size: 14px; opacity: 0.9;">season${data.metadata.seasonNumber}-data.json</div>
+            </div>
+            <div style="padding: 16px; background: rgba(0,0,0,0.2); border-radius: 12px;">
+              <div style="font-size: 32px; font-weight: 700; color: #4cffb3;">✅</div>
+              <div style="font-size: 14px; opacity: 0.9;">seasons_database.json</div>
+            </div>
+            <div style="padding: 16px; background: rgba(0,0,0,0.2); border-radius: 12px;">
+              <div style="font-size: 32px; font-weight: 700; color: #4cffb3;">✅</div>
+              <div style="font-size: 14px; opacity: 0.9;">franchise_database.json</div>
+            </div>
+            <div style="padding: 16px; background: rgba(0,0,0,0.2); border-radius: 12px;">
+              <div style="font-size: 32px; font-weight: 700; color: #4cffb3;">✅</div>
+              <div style="font-size: 14px; opacity: 0.9;">players_database.json</div>
+            </div>
+            <div style="padding: 16px; background: rgba(0,0,0,0.2); border-radius: 12px;">
+              <div style="font-size: 32px; font-weight: 700; color: #4cffb3;">✅</div>
+              <div style="font-size: 14px; opacity: 0.9;">rankings_database.json</div>
+            </div>
+            <div style="padding: 16px; background: rgba(0,0,0,0.2); border-radius: 12px;">
+              <div style="font-size: 32px; font-weight: 700; color: #ffb347;">📋</div>
+              <div style="font-size: 14px; opacity: 0.9;">voting-analytics.html<br/>(downloaded)</div>
+            </div>
+          </div>
+          
+          <div style="padding: 16px; background: rgba(255,179,71,0.15); border-radius: 12px; margin-top: 24px; font-size: 14px;">
+            <strong>📋 Manual Step:</strong> Open <code>voting-analytics.html</code> and paste the downloaded HTML snippet before <code>&lt;/body&gt;</code>
+          </div>
+          
+          <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-top: 24px;">
+            <button onclick="location.reload()" class="btn btn-primary">
+              ✨ Start Season ${data.metadata.seasonNumber + 1}
+            </button>
+            <button onclick="window.open('franchise.html', '_blank')" class="btn">
+              🏛️ View Franchise
+            </button>
+            <button onclick="window.open('rankings.html', '_blank')" class="btn">
+              🏆 View Rankings
+            </button>
+          </div>
         </div>
-      </div>
-    `);
+      `);
+      
+    } catch (error) {
+      console.error('Generation error:', error);
+      showProgress(`
+        <div style="padding: 20px; background: rgba(255,100,100,0.2); border: 2px solid #ff6464; border-radius: 16px;">
+          <h3 style="color: #ff6464;">❌ Generation Failed</h3>
+          <p><strong>Error:</strong> ${error.message}</p>
+          <details style="margin-top: 12px;">
+            <summary style="cursor: pointer;">Show Stack Trace</summary>
+            <pre style="margin-top: 8px; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 8px; font-size: 11px; overflow: auto;">${error.stack}</pre>
+          </details>
+        </div>
+      `);
+    }
+  }
+  
+  // ========================================
+  // PARSERS
+  // ========================================
+  
+  function parseAllEpisodes(episodes, cast) {
+    const parsedEpisodes = [];
+    const activePlayers = new Set(cast);
+    
+    for (const ep of episodes) {
+      const parsed = parseEpisodeSummary(ep.summary, ep.episode, activePlayers);
+      parsedEpisodes.push(parsed);
+      
+      // Remove eliminated players from active set
+      if (parsed.eliminated) {
+        activePlayers.delete(parsed.eliminated);
+      }
+    }
+    
+    return parsedEpisodes;
+  }
+  
+  function parseEpisodeSummary(text, episodeNum, activePlayers) {
+    const result = {
+      episode: episodeNum,
+      eliminated: null,
+      eliminatedSlug: null,
+      votes: [],
+      challengeWinners: [],
+      immunityWinners: [],
+      idolPlays: []
+    };
+    
+    // Parse eliminated player
+    // Look for patterns like: "X was voted out", "X was eliminated", "Boot: X"
+    const bootPatterns = [
+      /(?:voted out|eliminated|boot):\s*([A-Z][a-z]+)/i,
+      /([A-Z][a-z]+)\s+(?:was voted out|was eliminated|got voted out)/i,
+      /Eliminated:\s*([A-Z][a-z]+)/i
+    ];
+    
+    for (const pattern of bootPatterns) {
+      const match = text.match(pattern);
+      if (match) {
+        result.eliminated = match[1].trim();
+        result.eliminatedSlug = slugify(match[1].trim());
+        break;
+      }
+    }
+    
+    // Parse voting chart
+    // Format: "Player1 voted Player2" or "Votes: Player1->Player2, ..."
+    const votePattern = /([A-Z][a-z]+)\s+voted\s+(?:for\s+)?([A-Z][a-z]+)/gi;
+    let voteMatch;
+    while ((voteMatch = votePattern.exec(text)) !== null) {
+      const voter = voteMatch[1].trim();
+      const target = voteMatch[2].trim();
+      
+      // Only add if both are active players or in cast
+      if (activePlayers.has(voter)) {
+        result.votes.push({
+          voter: voter,
+          voterSlug: slugify(voter),
+          target: target,
+          targetSlug: slugify(target)
+        });
+      }
+    }
+    
+    // Parse challenge winners
+    const challengePattern = /(?:Challenge Winner|won (?:the )?challenge):\s*([A-Z][a-z]+)/gi;
+    let challengeMatch;
+    while ((challengeMatch = challengePattern.exec(text)) !== null) {
+      result.challengeWinners.push(challengeMatch[1].trim());
+    }
+    
+    // Parse immunity winners
+    const immunityPattern = /(?:Immunity Winner|won (?:individual )?immunity):\s*([A-Z][a-z]+)/gi;
+    let immunityMatch;
+    while ((immunityMatch = immunityPattern.exec(text)) !== null) {
+      result.immunityWinners.push(immunityMatch[1].trim());
+    }
+    
+    // Parse idol plays
+    const idolPattern = /([A-Z][a-z]+)\s+played\s+(?:an?\s+)?(?:hidden\s+)?idol/gi;
+    let idolMatch;
+    while ((idolMatch = idolPattern.exec(text)) !== null) {
+      result.idolPlays.push(idolMatch[1].trim());
+    }
+    
+    return result;
+  }
+  
+  // ========================================
+  // SEASON DATA GENERATION
+  // ========================================
+  
+  function generateSeasonDataJSON(data, parsedEpisodes) {
+    const { metadata, cast, episodes, finale, awards } = data;
+    
+    // Calculate placements
+    const placements = calculatePlacements(cast, parsedEpisodes, finale);
+    
+    // Build finale finalists
+    const finalists = [];
+    const runnerUps = finale.runnerUp.split(',').map(s => s.trim());
+    const allFinalists = [finale.winner, ...runnerUps];
+    const voteCounts = finale.finalVote.split('-').map(Number);
+    
+    allFinalists.forEach((name, i) => {
+      finalists.push({
+        name: name,
+        playerSlug: slugify(name),
+        placement: i + 1,
+        votes: voteCounts[i] || 0
+      });
+    });
+    
+    // Build season data JSON
+    const seasonData = {
+      seasonNumber: metadata.seasonNumber,
+      title: metadata.title,
+      subtitle: metadata.subtitle,
+      castSize: metadata.castSize,
+      episodeCount: metadata.episodeCount,
+      jurySize: metadata.jurySize,
+      winner: {
+        name: finale.winner,
+        playerSlug: slugify(finale.winner),
+        vote: finale.finalVote,
+        runnerUp: runnerUps.join(' & '),
+        keyStats: `${voteCounts[0]} jury votes to win`,
+        strategy: "TBD - Update manually",
+        legacy: "TBD - Update manually"
+      },
+      finalists: finalists,
+      placements: placements,
+      votingHistory: parsedEpisodes.map(ep => ({
+        episode: ep.episode,
+        eliminated: ep.eliminated,
+        eliminatedSlug: ep.eliminatedSlug,
+        votes: ep.votes
+      })),
+      finalTribalCouncil: {
+        votes: finale.juryVotes.map(jv => ({
+          juror: jv.juror,
+          jurorSlug: slugify(jv.juror),
+          votedFor: jv.votedFor,
+          votedForSlug: slugify(jv.votedFor)
+        }))
+      },
+      awards: {
+        fanFavorite: {
+          name: awards.fanFavorite,
+          playerSlug: slugify(awards.fanFavorite)
+        },
+        bestStrategic: {
+          name: awards.bestStrategic,
+          playerSlug: slugify(awards.bestStrategic)
+        },
+        mostChallengeWins: {
+          name: awards.mostChallengeWins,
+          playerSlug: slugify(awards.mostChallengeWins),
+          detail: "TBD - count from episodes"
+        }
+      },
+      theme: metadata.theme,
+      status: "Complete",
+      castPhotoPath: `assets/cast/s${metadata.seasonNumber}-cast.png`,
+      emoji: metadata.emoji
+    };
+    
+    return seasonData;
+  }
+  
+  function calculatePlacements(cast, parsedEpisodes, finale) {
+    const placements = [];
+    const eliminated = [];
+    
+    // Track eliminations in order
+    parsedEpisodes.forEach((ep, i) => {
+      if (ep.eliminated) {
+        eliminated.push({
+          episode: ep.episode,
+          name: ep.eliminated,
+          placement: cast.length - eliminated.length
+        });
+      }
+    });
+    
+    // Add finalists
+    const runnerUps = finale.runnerUp.split(',').map(s => s.trim());
+    const allFinalists = [finale.winner, ...runnerUps];
+    const voteCounts = finale.finalVote.split('-').map(Number);
+    
+    allFinalists.forEach((name, i) => {
+      placements.push({
+        placement: i + 1,
+        name: name,
+        playerSlug: slugify(name),
+        phase: i === 0 ? "Winner" : "Finalist",
+        notes: `${i === 0 ? 'Winner' : 'Finalist'} - ${voteCounts[i] || 0} jury votes`
+      });
+    });
+    
+    // Add eliminated players (reverse order = highest placement first)
+    eliminated.reverse().forEach((elim, i) => {
+      const placement = allFinalists.length + i + 1;
+      placements.push({
+        placement: placement,
+        name: elim.name,
+        playerSlug: slugify(elim.name),
+        phase: placement <= cast.length / 2 ? "Juror" : "Pre-Merge",
+        notes: `Eliminated Episode ${elim.episode}`
+      });
+    });
+    
+    return placements;
+  }
+  
+  // ========================================
+  // DATABASE UPDATES
+  // ========================================
+  
+  function updateSeasonsDatabase(seasonData) {
+    let seasonsDB;
+    try {
+      const raw = localStorage.getItem('seasons_database');
+      seasonsDB = raw ? JSON.parse(raw) : { franchise: {}, seasons: [] };
+    } catch (e) {
+      seasonsDB = { franchise: {}, seasons: [] };
+    }
+    
+    // Add new season
+    seasonsDB.seasons.push({
+      seasonNumber: seasonData.seasonNumber,
+      title: seasonData.title,
+      subtitle: seasonData.subtitle,
+      castSize: seasonData.castSize,
+      episodeCount: seasonData.episodeCount,
+      winner: seasonData.winner,
+      awards: seasonData.awards,
+      theme: seasonData.theme,
+      status: seasonData.status,
+      castPhotoPath: seasonData.castPhotoPath,
+      emoji: seasonData.emoji
+    });
+    
+    // Update franchise metadata
+    seasonsDB.franchise.totalSeasons = seasonsDB.seasons.length;
+    seasonsDB.franchise.name = "DC Franchise Database";
+    seasonsDB.franchise.description = "Total Drama franchise statistics and season data";
+    
+    // Save
+    localStorage.setItem('seasons_database', JSON.stringify(seasonsDB, null, 2));
+    downloadJSON(seasonsDB, 'seasons_database.json');
+    
+    console.log('✅ seasons_database.json updated');
+  }
+  
+  function updateFranchiseDatabase(seasonData) {
+    let franchiseDB;
+    try {
+      const raw = localStorage.getItem('franchise_database');
+      franchiseDB = raw ? JSON.parse(raw) : createEmptyFranchiseDB();
+    } catch (e) {
+      franchiseDB = createEmptyFranchiseDB();
+    }
+    
+    // Update stats
+    franchiseDB.franchiseStats.totalSeasons++;
+    franchiseDB.franchiseStats.totalEpisodes += seasonData.episodeCount;
+    franchiseDB.franchiseStats.uniquePlayers += seasonData.castSize; // Simplified - doesn't account for returnees
+    
+    // Add champion
+    franchiseDB.champions.push({
+      season: seasonData.seasonNumber,
+      winner: seasonData.winner.name,
+      playerSlug: seasonData.winner.playerSlug,
+      strategy: seasonData.winner.strategy,
+      finalVote: seasonData.winner.vote,
+      runnerUp: seasonData.winner.runnerUp,
+      keyStats: seasonData.winner.keyStats,
+      legacy: seasonData.winner.legacy,
+      votesAgainst: 0 // Calculate manually later
+    });
+    
+    // Add to trends
+    franchiseDB.trends.winningStrategies.push({
+      season: seasonData.seasonNumber,
+      strategy: seasonData.winner.strategy,
+      winner: seasonData.winner.name
+    });
+    
+    franchiseDB.trends.castComposition.push({
+      season: seasonData.seasonNumber,
+      composition: `${seasonData.castSize} players`
+    });
+    
+    franchiseDB.trends.finaleVoteMargins.push({
+      season: seasonData.seasonNumber,
+      vote: seasonData.winner.vote,
+      winner: seasonData.winner.name
+    });
+    
+    franchiseDB.trends.majorTwists.push({
+      season: seasonData.seasonNumber,
+      twist: seasonData.theme || "TBD"
+    });
+    
+    // Add fan favorite
+    franchiseDB.fanFavorites.push({
+      season: seasonData.seasonNumber,
+      player: seasonData.awards.fanFavorite.name,
+      playerSlug: seasonData.awards.fanFavorite.playerSlug,
+      description: "Fan favorite"
+    });
+    
+    // Save
+    localStorage.setItem('franchise_database', JSON.stringify(franchiseDB, null, 2));
+    downloadJSON(franchiseDB, 'franchise_database.json');
+    
+    console.log('✅ franchise_database.json updated');
+  }
+  
+  function createEmptyFranchiseDB() {
+    return {
+      franchiseStats: { totalSeasons: 0, totalEpisodes: 0, uniquePlayers: 0, totalAppearances: 0 },
+      champions: [],
+      records: { challengeRecords: [], votingRecords: [], strategicRecords: [], socialRecords: [] },
+      fanFavorites: [],
+      multiSeasonPlayers: { threeSeasons: [], twoSeasons: [] },
+      trends: { winningStrategies: [], castComposition: [], finaleVoteMargins: [], majorTwists: [] },
+      milestones: [],
+      careerLeaders: { challengeDominance: [], socialGame: [], strategicImpact: {} },
+      evolution: {}
+    };
+  }
+  
+  function updatePlayersDatabase(seasonData) {
+    const db = loadPlayerDatabase();
+    const season = seasonData.seasonNumber;
+    
+    // Process each player in placements
+    seasonData.placements.forEach(placement => {
+      const name = placement.name;
+      const id = placement.playerSlug;
+      let player = db.players.find(p => p.id === id);
+      
+      if (!player) {
+        // Create new player
+        player = {
+          id,
+          name,
+          seasons: [season],
+          totalSeasons: 1,
+          bestPlacement: placement.placement,
+          wins: placement.placement === 1 ? 1 : 0,
+          totalChallengeWins: 0,
+          totalImmunityWins: 0,
+          totalRewardWins: 0,
+          totalVotesAgainst: 0,
+          totalIdolsFound: 0,
+          totalJuryVotes: placement.placement <= 3 ? (seasonData.finalists.find(f => f.name === name)?.votes || 0) : 0,
+          tier: "Unranked",
+          badges: placement.placement === 1 ? [`S${season} Winner`] : [],
+          seasonDetails: [],
+          story: `Competed in Season ${season}`
+        };
+        db.players.push(player);
+      } else {
+        // Update existing player
+        if (!player.seasons.includes(season)) {
+          player.seasons.push(season);
+          player.totalSeasons++;
+        }
+        if (placement.placement < player.bestPlacement) {
+          player.bestPlacement = placement.placement;
+        }
+        if (placement.placement === 1) {
+          player.wins++;
+          player.badges.push(`S${season} Winner`);
+        }
+      }
+      
+      // Add/update season details
+      const seasonDetail = {
+        season,
+        placement: placement.placement,
+        status: placement.phase,
+        tribe: "TBD",
+        challengeWins: 0,
+        immunityWins: 0,
+        rewardWins: 0,
+        votesReceived: countVotesAgainst(name, seasonData.votingHistory),
+        idolsFound: 0,
+        strategicRank: 0,
+        juryVotes: placement.placement <= 3 ? (seasonData.finalists.find(f => f.name === name)?.votes || 0) : 0,
+        finalVote: placement.placement === 1 ? seasonData.winner.vote : "",
+        advantages: [],
+        notes: [placement.notes]
+      };
+      
+      const existingDetailIndex = player.seasonDetails.findIndex(s => s.season === season);
+      if (existingDetailIndex >= 0) {
+        player.seasonDetails[existingDetailIndex] = seasonDetail;
+      } else {
+        player.seasonDetails.push(seasonDetail);
+      }
+    });
+    
+    savePlayerDatabase(db);
+    downloadJSON(db, 'players_database.json');
+    
+    console.log('✅ players_database.json updated');
+  }
+  
+  function countVotesAgainst(playerName, votingHistory) {
+    let count = 0;
+    votingHistory.forEach(ep => {
+      ep.votes.forEach(vote => {
+        if (vote.target === playerName) {
+          count++;
+        }
+      });
+    });
+    return count;
+  }
+  
+  function updateRankingsDatabase() {
+    const db = loadPlayerDatabase();
+    const rankings = [];
+    
+    // Calculate score for each player
+    db.players.forEach(player => {
+      const score = calculatePlayerScore(player);
+      const tier = calculateTier(score);
+      
+      rankings.push({
+        playerId: player.id,
+        tier: tier,
+        score: score,
+        rank: 0, // Will be set after sorting
+        title: generatePlayerTitle(player),
+        emoji: "⭐",
+        reasoning: generateReasoning(player),
+        strengths: [],
+        weaknesses: [],
+        avgPlacement: calculateAvgPlacement(player),
+        winRate: Math.round((player.wins / player.totalSeasons) * 100),
+        seasons: player.seasons,
+        placements: player.seasonDetails.map(s => s.placement),
+        challengeWins: player.totalChallengeWins,
+        votesAgainst: player.totalVotesAgainst,
+        juryVotes: player.totalJuryVotes,
+        idolsFound: player.totalIdolsFound,
+        status: `Competed in ${player.totalSeasons} season(s)`
+      });
+    });
+    
+    // Sort by score
+    rankings.sort((a, b) => b.score - a.score);
+    
+    // Assign ranks
+    rankings.forEach((r, i) => {
+      r.rank = i + 1;
+    });
+    
+    // Build rankings database
+    const rankingsDB = {
+      metadata: {
+        name: "DC Franchise Rankings Database",
+        version: `${db.franchise.totalSeasons}.0`,
+        lastUpdated: new Date().toISOString().split('T')[0],
+        description: `Complete player rankings after Season ${db.franchise.totalSeasons}`,
+        totalPlayers: db.players.length,
+        source: `Season ${db.franchise.totalSeasons} integration`
+      },
+      scoringSystem: {
+        placement: "40% - Average finish position across all seasons",
+        winRate: "20% - Championships won / appearances",
+        challengePerformance: "15% - Individual immunity + reward wins",
+        socialGame: "15% - Votes received (lower = better), jury votes earned",
+        strategicImpact: "10% - Idol plays, blindsides executed, game control"
+      },
+      tiers: {
+        "S+": { name: "TIER S+ – Elite Winners", description: "91+ • Franchise legends", scoreRange: [91, 100] },
+        "S": { name: "TIER S – Championship Caliber", description: "81-90 • Top-tier threats", scoreRange: [81, 90] },
+        "A": { name: "TIER A – Elite Threats", description: "72-80 • Deep runs", scoreRange: [72, 80] },
+        "B": { name: "TIER B – Above Average", description: "61-71 • Solid gameplay", scoreRange: [61, 71] },
+        "C": { name: "TIER C – Average", description: "51-60 • Mid-game players", scoreRange: [51, 60] },
+        "D": { name: "TIER D – Below Average", description: "36-50 • Early exits", scoreRange: [36, 50] }
+      },
+      rankings
+    };
+    
+    localStorage.setItem('rankings_database', JSON.stringify(rankingsDB, null, 2));
+    downloadJSON(rankingsDB, 'rankings_database.json');
+    
+    console.log('✅ rankings_database.json updated');
+  }
+  
+  // Scoring functions
+  function calculatePlayerScore(player) {
+    let score = 0;
+    
+    // Placement (40%)
+    const avgPlacement = calculateAvgPlacement(player);
+    const placementScore = Math.max(0, 100 - (avgPlacement * 4));
+    score += placementScore * 0.4;
+    
+    // Win Rate (20%)
+    const winRate = (player.wins / player.totalSeasons) * 100;
+    score += winRate * 0.2;
+    
+    // Challenge Performance (15%)
+    const challengeScore = Math.min(100, (player.totalChallengeWins / player.totalSeasons) * 20);
+    score += challengeScore * 0.15;
+    
+    // Social Game (15%)
+    const votesPerSeason = player.totalVotesAgainst / player.totalSeasons;
+    const socialScore = Math.max(0, 100 - (votesPerSeason * 5));
+    score += socialScore * 0.15;
+    
+    // Strategic Impact (10%)
+    const strategicScore = Math.min(100, (player.totalIdolsFound * 25));
+    score += strategicScore * 0.1;
+    
+    return Math.round(score);
+  }
+  
+  function calculateTier(score) {
+    if (score >= 91) return "S+";
+    if (score >= 81) return "S";
+    if (score >= 72) return "A";
+    if (score >= 61) return "B";
+    if (score >= 51) return "C";
+    return "D";
+  }
+  
+  function calculateAvgPlacement(player) {
+    if (player.seasonDetails.length === 0) return 99;
+    const total = player.seasonDetails.reduce((sum, s) => sum + s.placement, 0);
+    return parseFloat((total / player.seasonDetails.length).toFixed(1));
+  }
+  
+  function generatePlayerTitle(player) {
+    if (player.wins >= 2) return "The Legend";
+    if (player.wins === 1) return "The Champion";
+    if (player.bestPlacement === 2) return "The Runner-Up";
+    if (player.totalChallengeWins >= 10) return "The Competitor";
+    return "The Survivor";
+  }
+  
+  function generateReasoning(player) {
+    let text = `Competed in ${player.totalSeasons} season(s). `;
+    if (player.wins > 0) {
+      text += `WON ${player.wins} time(s). `;
+    }
+    text += `Best placement: ${player.bestPlacement}. `;
+    text += `${player.totalChallengeWins} total challenge wins.`;
+    return text;
+  }
+  
+  // ========================================
+  // VOTING ANALYTICS HTML GENERATION
+  // ========================================
+  
+  function generateVotingAnalyticsHTML(seasonData) {
+    const { seasonNumber, castSize, episodeCount, winner, votingHistory, finalTribalCouncil, finalists } = seasonData;
+    
+    // Generate episode headers
+    let episodeHeaders = '';
+    let eliminatedHeaders = '';
+    
+    votingHistory.forEach(ep => {
+      episodeHeaders += `<th>Episode ${ep.episode}</th>`;
+      eliminatedHeaders += `<th class="eliminated">${ep.eliminated || 'N/A'}</th>`;
+    });
+    
+    // Add finale columns
+    finalists.forEach(f => {
+      const className = f.placement === 1 ? 'winner-col' : 'finale-col';
+      const label = f.placement === 1 ? 'Winner' : `${f.placement === 2 ? '2nd' : '3rd'} Place`;
+      episodeHeaders += `<th class="${className}">${f.name}</th>`;
+      eliminatedHeaders += `<th class="${className}">${label}</th>`;
+    });
+    
+    // Generate player rows
+    let playerRows = '';
+    seasonData.placements.forEach(player => {
+      const isWinner = player.placement === 1;
+      const rowClass = isWinner ? 'winner-row' : '';
+      
+      let voteColumns = '';
+      
+      // Vote columns for each episode
+      votingHistory.forEach(ep => {
+        const playerVote = ep.votes.find(v => v.voter === player.name);
+        voteColumns += `<td>${playerVote ? playerVote.target : '—'}</td>`;
+      });
+      
+      // Finale vote columns
+      if (player.placement <= finalists.length) {
+        // This player is a finalist - they don't vote
+        finalists.forEach(() => {
+          voteColumns += `<td>—</td>`;
+        });
+      } else {
+        // This player is a juror
+        finalists.forEach(f => {
+          const juryVote = finalTribalCouncil.votes.find(v => v.juror === player.name);
+          const didVoteForThisFinalist = juryVote && juryVote.votedFor === f.name;
+          voteColumns += `<td>${didVoteForThisFinalist ? f.name : '—'}</td>`;
+        });
+      }
+      
+      playerRows += `
+        <tr class="${rowClass}">
+          <td class="rank-col">${player.placement}</td>
+          <td class="player-name">${player.name}</td>
+          ${voteColumns}
+        </tr>
+      `;
+    });
+    
+    // Generate complete HTML section
+    return `
+<!-- SEASON ${seasonNumber} -->
+<div id="season${seasonNumber}-table" class="voting-table">
+  <h2 style="text-align:center; margin: 20px 0;">📊 Season ${seasonNumber} Voting Chart</h2>
+  
+  <div class="callout">
+    ${castSize} players • ${episodeCount} episodes + finale • Winner: ${winner.name} (${winner.vote} jury vote)
+  </div>
+  
+  <div class="scroll-hint">
+    ⬅️ SCROLL RIGHT TO SEE ALL EPISODES + FINALE ➡️
+  </div>
+  
+  <div class="panel">
+    <div class="table-wrapper">
+      <table class="vote-table">
+        <thead>
+          <tr>
+            <th rowspan="2" class="rank-col">Rank</th>
+            <th rowspan="2" class="player-name">Castaway</th>
+            ${episodeHeaders}
+          </tr>
+          <tr>
+            ${eliminatedHeaders}
+          </tr>
+        </thead>
+        <tbody>
+          ${playerRows}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Don't forget to add the button to the season toggle:
+<button class="season-btn" onclick="showSeason(${seasonNumber})">Season ${seasonNumber}</button>
+-->
+`;
+  }
+  
+  // ========================================
+  // HELPER FUNCTIONS
+  // ========================================
+  
+  function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+  
+  function downloadJSON(data, filename) {
+    const json = JSON.stringify(data, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+  
+  function downloadText(text, filename) {
+    const blob = new Blob([text], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
   
   function escapeHtml(text) {

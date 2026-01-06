@@ -1,0 +1,306 @@
+{
+  "seasonNumber": 5,
+  "title": "Total Drama: Rescue Island",
+  "subtitle": "3 tribes, swaps, and ultimate chaos",
+  "castSize": 18,
+  "episodeCount": 14,
+  "jurySize": 8,
+  "winner": {
+    "name": "Mickey",
+    "playerSlug": "mickey",
+    "vote": "4-3-2 (tiebreak)",
+    "runnerUp": "Sky & Ryan",
+    "keyStats": "0 votes against all season",
+    "strategy": "Under-the-radar control",
+    "legacy": "Quiet threat who peaked at the end"
+  },
+  "finalists": [
+    {
+      "name": "Mickey",
+      "playerSlug": "mickey",
+      "placement": 1,
+      "votes": 4,
+      "note": "Won via Ryan's tiebreak vote"
+    },
+    {
+      "name": "Sky",
+      "playerSlug": "sky",
+      "placement": 2,
+      "votes": 3
+    },
+    {
+      "name": "Ryan",
+      "playerSlug": "ryan",
+      "placement": 3,
+      "votes": 2,
+      "note": "Cast deciding tiebreak vote"
+    }
+  ],
+  "placements": [
+    {
+      "placement": 1,
+      "name": "Mickey",
+      "playerSlug": "mickey",
+      "phase": "Winner",
+      "notes": "Won FTC via tiebreak (3–3–2 initial; Ryan breaks tie for Mickey) — 4 votes to win • 2 challenge wins • 2 immunity wins • 0 votes against • 0 votes against all season (perfect game)"
+    },
+    {
+      "placement": 2,
+      "name": "Sky",
+      "playerSlug": "sky",
+      "phase": "Finalist",
+      "notes": "3 votes to win • 4 challenge wins • 3 immunity wins • 1 votes against"
+    },
+    {
+      "placement": 3,
+      "name": "Ryan",
+      "playerSlug": "ryan",
+      "phase": "Finalist",
+      "notes": "2 votes to win + cast's deciding winner vote • 1 challenge wins • 1 immunity wins • 7 votes against • Fan Favorite"
+    },
+    {
+      "placement": 4,
+      "name": "Scarlett",
+      "playerSlug": "scarlett",
+      "phase": "Juror",
+      "notes": "Lost fire-making • 2 challenge wins • 2 immunity wins • 2 votes against"
+    },
+    {
+      "placement": 5,
+      "name": "Sugar",
+      "playerSlug": "sugar",
+      "phase": "Juror",
+      "notes": "4–1★ vote • 10 votes against"
+    },
+    {
+      "placement": 6,
+      "name": "Dave",
+      "playerSlug": "dave",
+      "phase": "Juror",
+      "notes": "3–3★ vote (idol play flipped outcome against him) • 2 challenge wins • 1 immunity wins • 5 votes against"
+    },
+    {
+      "placement": 7,
+      "name": "Amy",
+      "playerSlug": "amy",
+      "phase": "Juror",
+      "notes": "2–2★–1 vote • 3 votes against"
+    },
+    {
+      "placement": 8,
+      "name": "Blaineley",
+      "playerSlug": "blaineley",
+      "phase": "Juror",
+      "notes": "3★–2–1 vote • 8 votes against"
+    },
+    {
+      "placement": 9,
+      "name": "Shawn",
+      "playerSlug": "shawn",
+      "phase": "Juror",
+      "notes": "5–2 vote • 6 votes against"
+    },
+    {
+      "placement": 10,
+      "name": "Max",
+      "playerSlug": "max",
+      "phase": "Juror",
+      "notes": "5–3 vote • 5 votes against"
+    },
+    {
+      "placement": 11,
+      "name": "Topher",
+      "playerSlug": "topher",
+      "phase": "Juror",
+      "notes": "5–1 vote • 5 votes against"
+    },
+    {
+      "placement": 12,
+      "name": "Rodney",
+      "playerSlug": "rodney",
+      "phase": "Pre-Merge",
+      "notes": "3–1 vote • 9 votes against"
+    },
+    {
+      "placement": 13,
+      "name": "Josee",
+      "playerSlug": "josee",
+      "phase": "Pre-Merge",
+      "notes": "6★–5 vote (KIP theft + idol chaos round) • 5 votes against • KIP/advantage chaos round"
+    },
+    {
+      "placement": 14,
+      "name": "Jasmine",
+      "playerSlug": "jasmine",
+      "phase": "Pre-Merge",
+      "notes": "2–1 vote • 2 votes against"
+    },
+    {
+      "placement": 15,
+      "name": "Samey",
+      "playerSlug": "samey",
+      "phase": "Pre-Merge",
+      "notes": "4★–1 vote (idol negation) • 1 votes against"
+    },
+    {
+      "placement": 16,
+      "name": "Beardo",
+      "playerSlug": "beardo",
+      "phase": "Pre-Merge",
+      "notes": "2★–1 vote (idol negation / chaos) • 3 votes against"
+    },
+    {
+      "placement": 17,
+      "name": "Ella",
+      "playerSlug": "ella",
+      "phase": "Pre-Merge",
+      "notes": "2–1 vote • 2 votes against"
+    },
+    {
+      "placement": 18,
+      "name": "Leonard",
+      "playerSlug": "leonard",
+      "phase": "Pre-Merge",
+      "notes": "5–2 vote • 5 votes against"
+    }
+  ],
+  "awards": {
+    "winner": {
+      "name": "Mickey",
+      "playerSlug": "mickey",
+      "description": "Won with structure + threat management; 0 votes against all season and sealed a 3–3–2 FTC tie by earning Ryan’s deciding tiebreak vote."
+    },
+    "fanFavorite": {
+      "name": "Ryan",
+      "playerSlug": "ryan",
+      "description": "Most visible merge/endgame presence; made FTC and became the kingmaker in the 3–3–2 finale."
+    },
+    "bestStrategic": {
+      "name": "Scarlett",
+      "playerSlug": "scarlett",
+      "description": "Strongest long-game strategist; navigated swap/merge blocs and reached Final 4, only falling at fire-making."
+    },
+    "bestSocial": {
+      "name": "Mickey",
+      "playerSlug": "mickey",
+      "description": "Quietly decisive social game—overlap relationships kept votes from ever consolidating on him; Ryan chose him over Sky in the final tiebreak."
+    },
+    "bestPhysical": {
+      "name": "Sky",
+      "playerSlug": "sky",
+      "wins": 4,
+      "description": "Season’s top competitor: 4 total challenge wins and 3 immunity wins; dominated the late-game power window."
+    },
+    "mostClutch": {
+      "name": "Sky",
+      "playerSlug": "sky",
+      "description": "Closed hard late (F6–F4) with immunity streak + the season’s most outcome-changing idol play at Final 6."
+    },
+    "mostLoyal": {
+      "name": "Ryan",
+      "playerSlug": "ryan",
+      "description": "Stayed locked with Mickey through the crucial stretch and proved it when he cast the deciding winner vote."
+    },
+    "bestUnderdog": {
+      "name": "Sugar",
+      "playerSlug": "sugar",
+      "description": "Took the most heat (10 votes against) and still pushed to Final 5—survived as the default boot through constant plan rewrites."
+    },
+    "biggestVillain": {
+      "name": "Blaineley",
+      "playerSlug": "blaineley",
+      "description": "Weaponized chaos and advantages to stay alive from the bottom; her presence kept the game in paranoia mode."
+    },
+    "mostChaotic": {
+      "name": "Blaineley",
+      "playerSlug": "blaineley",
+      "description": "Major blowups, constant heat, and chaos math—forced the entire merge to adapt around her."
+    },
+    "quietestThreat": {
+      "name": "Mickey",
+      "playerSlug": "mickey",
+      "description": "Never had a real danger round; stayed positioned as a “safe ally” while quietly being the winning structure."
+    },
+    "seasonMVP": {
+      "name": "Sky",
+      "playerSlug": "sky",
+      "description": "The season’s biggest momentum swings ran through her immunity dominance and the Final 6 idol decision that reshaped the endgame."
+    },
+    "biggestMeltdown": {
+      "name": "Scarlett",
+      "playerSlug": "scarlett",
+      "description": "Final 4 meltdown right before the fire-making gate—worst timing when calm execution mattered most."
+    },
+    "mostTragic": {
+      "name": "Dave",
+      "playerSlug": "dave",
+      "description": "Had real win equity late, but Sky’s idol flipped the plan and made him the clean pivot boot at Final 6."
+    },
+    "mostUnlucky": {
+      "name": "Josee",
+      "playerSlug": "josee",
+      "description": "Had an idol, then Knowledge Is Power stripped it at the worst moment; followed by a failed Shot in the Dark."
+    },
+    "messiestFeud": {
+      "name": "Dave vs Sugar",
+      "players": [
+        "Dave",
+        "Sugar"
+      ],
+      "description": "Season-long strategic anchor feud; every merge vote had to account for whether they could coexist another round."
+    },
+    "biggestBetrayal": {
+      "betrayer": "Mickey",
+      "betrayed": "Dave",
+      "description": "Not a sudden backstab—Mickey slowly replaced the early Lulu core (Dave/Mickey) with the endgame axis (Mickey/Ryan)."
+    },
+    "ironPerson": {
+      "name": "Mickey",
+      "playerSlug": "mickey",
+      "description": "Never looked on the ropes—stable through swap, merge, and endgame without panic rounds or visible survival scrambles."
+    }
+  },
+  "statistics": {
+    "challengeWins": {
+      "mostTotal": {
+        "name": "Sky",
+        "playerSlug": "sky",
+        "wins": 5
+      }
+    },
+    "socialGame": {
+      "fewestVotes": {
+        "name": "Mickey",
+        "playerSlug": "mickey",
+        "votes": 0
+      },
+      "perfectGame": {
+        "name": "Mickey",
+        "playerSlug": "mickey",
+        "note": "0 votes against - entire season"
+      }
+    },
+    "extreme": {
+      "onlyTiebreakFinale": true,
+      "finalVote": "3-3-2"
+    }
+  },
+  "twists": [
+    "3 starting tribes",
+    "Tribe swap",
+    "Split-tribal merge round",
+    "Vote-loss twists",
+    "Final 4 fire-making"
+  ],
+  "legacy": {
+    "summary": "Introduced 18 new players (Gen 3) and a Survivor-style twist gauntlet (3 tribes, swap, split-tribal merge round, vote-loss twists, and Final 4 fire-making). Mickey won with 0 votes against and survived a 3-3-2 FTC tie thanks to Ryan's deciding tiebreak vote — proving that clean positioning and relationships can beat pure challenge dominance.",
+    "memorableMoments": [
+      "Only 3–3–2 Final Tribal tie in the franchise; Ryan breaks it",
+      "Mickey wins with 0 votes against (perfect game)",
+      "Josee’s 6–5 chaos tribal with KIP theft + idol madness",
+      "Sky leads the season in challenge wins (4) and immunities (3)",
+      "Final 4 fire-making decides Scarlett’s fate",
+      "Auction twist and journey vote-loss shake the merge"
+    ]
+  }
+}

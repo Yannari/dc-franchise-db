@@ -1,0 +1,3228 @@
+{
+  "franchise": {
+    "name": "DC Franchise Database",
+    "totalSeasons": 6,
+    "totalPlayers": 68,
+    "description": "Total Drama franchise player statistics and performance data"
+  },
+  "players": [
+    {
+      "id": "alejandro",
+      "name": "Alejandro",
+      "seasons": [
+        1,
+        2,
+        4
+      ],
+      "totalSeasons": 3,
+      "bestPlacement": 1,
+      "wins": 1,
+      "totalChallengeWins": 13,
+      "totalImmunityWins": 9,
+      "totalRewardWins": 2,
+      "totalVotesAgainst": 34,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 12,
+      "tier": "S+",
+      "badges": [
+        "S4 Winner",
+        "Tier S+ Player",
+        "Strategic Mastermind",
+        "3 Finals Appearances"
+      ],
+      "seasonDetails": [
+        {
+          "season": 4,
+          "placement": 1,
+          "status": "Winner",
+          "tribe": "Yellow → Red → Green → Campers",
+          "challengeWins": 4,
+          "immunityWins": 2,
+          "rewardWins": 2,
+          "votesReceived": 9,
+          "idolsFound": 0,
+          "strategicRank": 1,
+          "juryVotes": 7,
+          "finalVote": "7-6-1",
+          "unbreakableBonds": [
+            "Cameron",
+            "Noah"
+          ],
+          "notes": [
+            "Won fire-making vs Gwen",
+            "2 major meltdowns (Ep 10, 14)",
+            "Back-to-back immunities (Ep 7-8)"
+          ]
+        },
+        {
+          "season": 2,
+          "placement": 2,
+          "status": "Runner-up",
+          "tribe": "Screaming Gaffers",
+          "challengeWins": 5,
+          "immunityWins": 5,
+          "rewardWins": 0,
+          "votesReceived": 11,
+          "idolsFound": 0,
+          "strategicRank": 1,
+          "juryVotes": 1,
+          "finalVote": "1-5-1",
+          "notes": [
+            "Saved by Ezekiel's idol play (Ep 8)"
+          ]
+        },
+        {
+          "season": 1,
+          "placement": 2,
+          "status": "Runner-up",
+          "tribe": "Screaming Gophers",
+          "challengeWins": 4,
+          "immunityWins": 4,
+          "rewardWins": 0,
+          "votesReceived": 5,
+          "idolsFound": 0,
+          "strategicRank": "High",
+          "juryVotes": 4,
+          "finalVote": "4-5",
+          "unbreakableBonds": [
+            "Trent"
+          ],
+          "notes": [
+            "Lost to Lindsay"
+          ]
+        }
+      ],
+      "story": "Three finals, one crown. Strategic mastermind who finally won in Season 4 after two runner-up finishes. Known for alliance control, adaptability, and clutch fire-making performance."
+    },
+    {
+      "id": "amy",
+      "name": "Amy",
+      "seasons": [
+        5
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 7,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 3,
+      "totalIdolsFound": 0,
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 5,
+          "placement": 7,
+          "status": "Juror",
+          "tribe": "Belo",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 3,
+          "idolsFound": 0
+        }
+      ],
+      "story": "Season 5 contestant. Finished 7th."
+    },
+    {
+      "id": "anne-maria",
+      "name": "Anne Maria",
+      "seasons": [
+        3,
+        4
+      ],
+      "totalSeasons": 2,
+      "bestPlacement": 5,
+      "wins": 0,
+      "totalChallengeWins": 1,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 1,
+      "totalVotesAgainst": 21,
+      "totalIdolsFound": 1,
+      "badges": [
+        "Wasted Idol (Episode 1)",
+        "EoE Advantage Giver",
+        "Pre-Merge Boot"
+      ],
+      "seasonDetails": [
+        {
+          "season": 4,
+          "placement": 16,
+          "status": "Juror (EoE)",
+          "tribe": "Red",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 6,
+          "idolsFound": 1,
+          "strategicRank": "Low",
+          "notes": [
+            "WASTED idol on Zoey (0 votes!)",
+            "Episode 1 boot (Dakota eliminated)",
+            "Gave extra vote to Jo from EoE",
+            "Voted Alejandro at FTC"
+          ]
+        },
+        {
+          "season": 3,
+          "placement": 5,
+          "status": "6th Juror",
+          "tribe": "Mutant Maggots → Toxic Rats → Campers",
+          "challengeWins": 1,
+          "immunityWins": 0,
+          "rewardWins": 1,
+          "votesReceived": 15,
+          "idolsFound": 0,
+          "strategicRank": "Low",
+          "unbreakableBonds": [
+            "Cameron"
+          ],
+          "notes": [
+            "Most targeted in S3 (15 votes)",
+            "Voted Emma at FTC"
+          ]
+        }
+      ],
+      "story": "Betrayed by unbreakable partner Cameron in S3. Wasted idol on Zoey in S4 Episode 1, leading to early elimination."
+    },
+    {
+      "id": "b",
+      "name": "B",
+      "seasons": [
+        3
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 14,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 6,
+      "totalIdolsFound": 0,
+      "seasonDetails": [
+        {
+          "season": 3,
+          "placement": 14,
+          "status": "Pre-Jury",
+          "tribe": "Toxic Rats",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 6,
+          "idolsFound": 0,
+          "strategicRank": "Very Low",
+          "notes": [
+            "Unanimous target Episode 3",
+            "Socially isolated"
+          ]
+        }
+      ],
+      "story": "Socially isolated pre-merge boot. Never formed alliances or meaningful connections."
+    },
+    {
+      "id": "beardo",
+      "name": "Beardo",
+      "seasons": [
+        5
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 16,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 3,
+      "totalIdolsFound": 0,
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 5,
+          "placement": 16,
+          "status": "Pre-Juror",
+          "tribe": "Reba",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 3,
+          "idolsFound": 0
+        }
+      ],
+      "story": "Season 5 contestant. Finished 16th."
+    },
+    {
+      "id": "beth",
+      "name": "Beth",
+      "seasons": [
+        1,
+        2,
+        6
+      ],
+      "totalSeasons": 3,
+      "bestPlacement": 4,
+      "wins": 0,
+      "totalChallengeWins": 1,
+      "totalImmunityWins": 1,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 26,
+      "totalIdolsFound": 1,
+      "seasonDetails": [
+        {
+          "season": 2,
+          "placement": 4,
+          "status": "Juror",
+          "tribe": "Screaming Gaffers",
+          "challengeWins": 1,
+          "immunityWins": 1,
+          "rewardWins": 0,
+          "votesReceived": 4,
+          "idolsFound": 1,
+          "notes": [
+            "2-1-1 vote"
+          ]
+        },
+        {
+          "season": 1,
+          "placement": 5,
+          "status": "Final Juror",
+          "tribe": "Screaming Gophers",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 22,
+          "idolsFound": 0,
+          "notes": [
+            "Used Safety Without Power",
+            "Found Mystery Box key"
+          ]
+        },
+        {
+          "season": 6,
+          "placement": 19,
+          "status": "Eliminated",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ],
+      "story": "Strong alliance loyalty with Lindsay. Made Final 4 in both seasons but seen as too dangerous to take to the end."
+    },
+    {
+      "id": "blaineley",
+      "name": "Blaineley",
+      "seasons": [
+        5,
+        6
+      ],
+      "totalSeasons": 2,
+      "bestPlacement": 8,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 8,
+      "totalIdolsFound": 1,
+      "badges": [
+        "Strategic #2 (S5)",
+        "Most Chaotic Player"
+      ],
+      "seasonDetails": [
+        {
+          "season": 5,
+          "placement": 8,
+          "status": "Juror",
+          "tribe": "Reba",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 8,
+          "idolsFound": 1,
+          "strategicRank": "2"
+        },
+        {
+          "season": 6,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ],
+      "story": "Chaos engine of Season 5 with major advantage pressure; made jury but could not survive late-game consolidation."
+    },
+    {
+      "id": "brick",
+      "name": "Brick",
+      "seasons": [
+        3
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 9,
+      "wins": 0,
+      "totalChallengeWins": 1,
+      "totalImmunityWins": 1,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 5,
+      "totalIdolsFound": 0,
+      "seasonDetails": [
+        {
+          "season": 3,
+          "placement": 9,
+          "status": "2nd Juror",
+          "tribe": "Mutant Maggots",
+          "challengeWins": 1,
+          "immunityWins": 1,
+          "rewardWins": 0,
+          "votesReceived": 5,
+          "idolsFound": 0,
+          "strategicRank": "Low",
+          "unbreakableBonds": [
+            "Dwayne",
+            "Mike"
+          ],
+          "notes": [
+            "Won merge immunity (Episode 7)",
+            "Voted Scott at FTC"
+          ]
+        }
+      ],
+      "story": "Won first individual immunity at merge. Solid mid-merge player with strong bonds but no strategic control."
+    },
+    {
+      "id": "bridgette",
+      "name": "Bridgette",
+      "seasons": [
+        1,
+        2
+      ],
+      "totalSeasons": 2,
+      "bestPlacement": 3,
+      "wins": 0,
+      "totalChallengeWins": 5,
+      "totalImmunityWins": 4,
+      "totalRewardWins": 1,
+      "totalVotesAgainst": 24,
+      "totalIdolsFound": 1,
+      "seasonDetails": [
+        {
+          "season": 2,
+          "placement": 14,
+          "status": "Pre-Juror",
+          "tribe": "Killer Grips",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 4,
+          "idolsFound": 0,
+          "notes": [
+            "First boot - 4-3 vote"
+          ]
+        },
+        {
+          "season": 1,
+          "placement": 3,
+          "status": "Final Juror",
+          "tribe": "Screaming Gophers",
+          "challengeWins": 5,
+          "immunityWins": 4,
+          "rewardWins": 1,
+          "votesReceived": 20,
+          "idolsFound": 1,
+          "unbreakableBonds": [
+            "Trent",
+            "Alejandro"
+          ],
+          "notes": [
+            "Used Safety Without Power (Ep 22)"
+          ]
+        }
+      ],
+      "story": "Social heart of Season 1 with multiple immunities and idol. First boot in Season 2 due to tribe disagreements."
+    },
+    {
+      "id": "cameron",
+      "name": "Cameron",
+      "seasons": [
+        3,
+        4
+      ],
+      "totalSeasons": 2,
+      "bestPlacement": 3,
+      "wins": 0,
+      "totalChallengeWins": 6,
+      "totalImmunityWins": 2,
+      "totalRewardWins": 4,
+      "totalVotesAgainst": 6,
+      "totalIdolsFound": 1,
+      "totalJuryVotes": 1,
+      "badges": [
+        "Strategic #3",
+        "Unbreakable: Alejandro",
+        "Final 5"
+      ],
+      "seasonDetails": [
+        {
+          "season": 4,
+          "placement": 5,
+          "status": "5th Place Juror",
+          "tribe": "Red → Yellow → Red → Campers",
+          "challengeWins": 3,
+          "immunityWins": 1,
+          "rewardWins": 2,
+          "votesReceived": 2,
+          "idolsFound": 0,
+          "strategicRank": 3,
+          "unbreakableBonds": [
+            "Alejandro"
+          ],
+          "notes": [
+            "Core of Red Alliance #4",
+            "Voted Zoey at FTC"
+          ]
+        },
+        {
+          "season": 3,
+          "placement": 3,
+          "status": "Finalist",
+          "tribe": "Mutant Maggots → Toxic Rats → Campers",
+          "challengeWins": 3,
+          "immunityWins": 1,
+          "rewardWins": 2,
+          "votesReceived": 4,
+          "idolsFound": 1,
+          "strategicRank": 3,
+          "unbreakableBonds": [
+            "Anne Maria"
+          ],
+          "notes": [
+            "1 jury vote (Mike)",
+            "Cast tiebreaker for Emma"
+          ]
+        }
+      ],
+      "story": "Strategic mastermind who made brutal move voting out unbreakable partner Anne Maria in S3. Strong strategic player across both seasons."
+    },
+    {
+      "id": "cody",
+      "name": "Cody",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 19,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 6,
+      "totalIdolsFound": 0,
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 19,
+          "status": "Pre-Juror",
+          "tribe": "Screaming Gophers",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 6,
+          "idolsFound": 0,
+          "notes": [
+            "6-5 vote",
+            "Leshawna flipped"
+          ]
+        }
+      ],
+      "story": "First casualty of the Gophers' internal alliance war. Voted out 6-5 in Episode 6 when Leshawna unexpectedly flipped."
+    },
+    {
+      "id": "courtney",
+      "name": "Courtney",
+      "seasons": [
+        1,
+        2,
+        4
+      ],
+      "totalSeasons": 3,
+      "bestPlacement": 9,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 32,
+      "totalIdolsFound": 1,
+      "badges": [
+        "Wasted Extra Vote",
+        "Major Meltdown"
+      ],
+      "seasonDetails": [
+        {
+          "season": 4,
+          "placement": 14,
+          "status": "Juror",
+          "tribe": "Yellow → Red → Campers",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 13,
+          "idolsFound": 0,
+          "strategicRank": "Medium",
+          "notes": [
+            "4-2 on revote (Episode 5 Part 2)",
+            "Major meltdown",
+            "Wasted extra vote",
+            "Voted Alejandro at FTC"
+          ]
+        },
+        {
+          "season": 2,
+          "placement": 11,
+          "status": "Pre-Juror",
+          "tribe": "Screaming Gaffers",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 9,
+          "idolsFound": 1,
+          "notes": [
+            "3-2 vote"
+          ]
+        },
+        {
+          "season": 1,
+          "placement": 9,
+          "status": "Juror",
+          "tribe": "Screaming Gophers",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 10,
+          "idolsFound": 0,
+          "notes": [
+            "Multiple meltdowns"
+          ]
+        }
+      ],
+      "story": "Volatile gameplay across three seasons. Multiple meltdowns and catastrophic extra vote misplay in S4 led to elimination."
+    },
+    {
+      "id": "crimson",
+      "name": "Crimson",
+      "seasons": [
+        3,
+        6
+      ],
+      "totalSeasons": 2,
+      "bestPlacement": 16,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 7,
+      "totalIdolsFound": 0,
+      "seasonDetails": [
+        {
+          "season": 3,
+          "placement": 16,
+          "status": "First Boot",
+          "tribe": "Mutant Maggots",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 7,
+          "idolsFound": 0,
+          "strategicRank": "Very Low",
+          "notes": [
+            "First boot (Episode 1)",
+            "7-1 vote"
+          ]
+        },
+        {
+          "season": 6,
+          "placement": 20,
+          "status": "First Boot",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ],
+      "story": "First boot of Season 3. Rested at camp instead of bonding, targeted as challenge liability."
+    },
+    {
+      "id": "dakota",
+      "name": "Dakota",
+      "seasons": [
+        3,
+        4
+      ],
+      "totalSeasons": 2,
+      "bestPlacement": 12,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 19,
+      "totalIdolsFound": 0,
+      "badges": [
+        "First Boot",
+        "QUIT EoE (Only One!)",
+        "S3 Fan Favorite"
+      ],
+      "seasonDetails": [
+        {
+          "season": 4,
+          "placement": 18,
+          "status": "Pre-Juror (QUIT EoE)",
+          "tribe": "Red",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 9,
+          "idolsFound": 0,
+          "strategicRank": "Low",
+          "notes": [
+            "First boot Episode 1 (7-2)",
+            "QUIT EoE (first & only!)",
+            "Practice advantage exhausted"
+          ]
+        },
+        {
+          "season": 3,
+          "placement": 12,
+          "status": "Pre-Jury",
+          "tribe": "Toxic Rats → Mutant Maggots",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 10,
+          "idolsFound": 0,
+          "strategicRank": "Low",
+          "notes": [
+            "FAN FAVORITE winner!",
+            "Swap casualty"
+          ]
+        }
+      ],
+      "story": "Fan Favorite winner in S3 despite pre-merge exit. First boot in S4, became first and only person to quit Edge of Extinction."
+    },
+    {
+      "id": "dave",
+      "name": "Dave",
+      "seasons": [
+        5
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 6,
+      "wins": 0,
+      "totalChallengeWins": 2,
+      "totalImmunityWins": 1,
+      "totalRewardWins": 1,
+      "totalVotesAgainst": 5,
+      "totalIdolsFound": 0,
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 5,
+          "placement": 6,
+          "status": "Juror",
+          "tribe": "Lulu",
+          "challengeWins": 2,
+          "immunityWins": 1,
+          "rewardWins": 1,
+          "votesReceived": 5,
+          "idolsFound": 0
+        }
+      ],
+      "story": "Season 5 contestant. Finished 6th."
+    },
+    {
+      "id": "dawn",
+      "name": "Dawn",
+      "seasons": [
+        3
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 8,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 10,
+      "totalIdolsFound": 0,
+      "seasonDetails": [
+        {
+          "season": 3,
+          "placement": 8,
+          "status": "3rd Juror",
+          "tribe": "Toxic Rats → Mutant Maggots",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 10,
+          "idolsFound": 0,
+          "strategicRank": "Low",
+          "notes": [
+            "Consensus target Episode 9",
+            "Voted Scott at FTC"
+          ]
+        }
+      ],
+      "story": "Consensus target Episode 9. Even allies voted her out when she became the agreed-upon target."
+    },
+    {
+      "id": "dj",
+      "name": "DJ",
+      "seasons": [
+        1,
+        2
+      ],
+      "totalSeasons": 2,
+      "bestPlacement": 5,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 20,
+      "totalIdolsFound": 0,
+      "seasonDetails": [
+        {
+          "season": 2,
+          "placement": 5,
+          "status": "Juror",
+          "tribe": "Killer Grips",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 11,
+          "idolsFound": 0,
+          "notes": [
+            "4-1 vote at Final Five"
+          ]
+        },
+        {
+          "season": 1,
+          "placement": 22,
+          "status": "Pre-Juror",
+          "tribe": "Killer Bass",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 9,
+          "idolsFound": 0,
+          "notes": [
+            "9 votes in Episode 3"
+          ]
+        }
+      ],
+      "story": "Made merge and jury in S2 after early boot in S1. Social friction and conflicts prevented deeper runs."
+    },
+    {
+      "id": "duncan",
+      "name": "Duncan",
+      "seasons": [
+        1,
+        2,
+        4
+      ],
+      "totalSeasons": 3,
+      "bestPlacement": 1,
+      "wins": 1,
+      "totalChallengeWins": 2,
+      "totalImmunityWins": 1,
+      "totalRewardWins": 1,
+      "totalVotesAgainst": 17,
+      "totalIdolsFound": 1,
+      "totalJuryVotes": 5,
+      "badges": [
+        "S2 Winner",
+        "Unbreakable: Gwen",
+        "Final 6",
+        "Major Meltdown"
+      ],
+      "seasonDetails": [
+        {
+          "season": 4,
+          "placement": 7,
+          "status": "Juror",
+          "tribe": "Yellow → Green → Campers",
+          "challengeWins": 1,
+          "immunityWins": 0,
+          "rewardWins": 1,
+          "votesReceived": 10,
+          "idolsFound": 0,
+          "strategicRank": "Medium",
+          "unbreakableBonds": [
+            "Gwen"
+          ],
+          "notes": [
+            "Consensus target (3-2-1)",
+            "Voted Scott at FTC (only vote!)"
+          ]
+        },
+        {
+          "season": 2,
+          "placement": 1,
+          "status": "Winner",
+          "tribe": "Screaming Gaffers",
+          "challengeWins": 1,
+          "immunityWins": 1,
+          "rewardWins": 0,
+          "votesReceived": 2,
+          "idolsFound": 0,
+          "notes": [
+            "Won Final Tribal 5-1-1"
+          ]
+        },
+        {
+          "season": 1,
+          "placement": 14,
+          "status": "Juror",
+          "tribe": "Killer Bass",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 5,
+          "idolsFound": 1,
+          "notes": [
+            "5-3 vote"
+          ]
+        }
+      ],
+      "story": "Season 2 Winner. Survived constant targeting through clutch immunity wins. Previous winner eliminated at Final 6 in S4."
+    },
+    {
+      "id": "dwayne",
+      "name": "Dwayne",
+      "seasons": [
+        3,
+        6
+      ],
+      "totalSeasons": 2,
+      "bestPlacement": 10,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 6,
+      "totalIdolsFound": 0,
+      "seasonDetails": [
+        {
+          "season": 3,
+          "placement": 10,
+          "status": "1st Juror",
+          "tribe": "Mutant Maggots",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 6,
+          "idolsFound": 0,
+          "strategicRank": "Low-Medium",
+          "unbreakableBonds": [
+            "Brick"
+          ],
+          "notes": [
+            "First juror",
+            "Voted Emma at FTC"
+          ]
+        },
+        {
+          "season": 6,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ],
+      "story": "First juror of Season 3. Strong social game but blindsided 5-3-2 at merge by Campers Alliance."
+    },
+    {
+      "id": "ella",
+      "name": "Ella",
+      "seasons": [
+        5
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 17,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 2,
+      "totalIdolsFound": 0,
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 5,
+          "placement": 17,
+          "status": "Pre-Juror",
+          "tribe": "Reba",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 2,
+          "idolsFound": 0
+        }
+      ],
+      "story": "Season 5 contestant. Finished 17th."
+    },
+    {
+      "id": "emma",
+      "name": "Emma",
+      "seasons": [
+        3,
+        4,
+        6
+      ],
+      "totalSeasons": 3,
+      "bestPlacement": 1,
+      "wins": 1,
+      "totalChallengeWins": 4,
+      "totalImmunityWins": 1,
+      "totalRewardWins": 3,
+      "totalVotesAgainst": 5,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 4,
+      "badges": [
+        "S3 Winner",
+        "2nd Boot (Previous Winning Target)",
+        "Red Alliance Betrayed"
+      ],
+      "seasonDetails": [
+        {
+          "season": 4,
+          "placement": 17,
+          "status": "Juror (EoE)",
+          "tribe": "Red",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 5,
+          "idolsFound": 0,
+          "strategicRank": "Medium",
+          "notes": [
+            "Episode 2 boot (5-3)",
+            "Previous winner too dangerous",
+            "Voted Zoey at FTC",
+            "Re-entry penalty used on Anne Maria"
+          ]
+        },
+        {
+          "season": 3,
+          "placement": 1,
+          "status": "WINNER",
+          "tribe": "Toxic Rats → Campers",
+          "challengeWins": 4,
+          "immunityWins": 1,
+          "rewardWins": 3,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 2,
+          "notes": [
+            "4-3-1 tiebreaker victory",
+            "Zero votes until Final 4"
+          ]
+        },
+        {
+          "season": 6,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ],
+      "story": "Winner of Season 3 with perfect game (zero votes until F4). Second boot in S4 as previous winner threat."
+    },
+    {
+      "id": "eva",
+      "name": "Eva",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 21,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 6,
+      "totalIdolsFound": 0,
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 21,
+          "status": "Pre-Juror",
+          "tribe": "Killer Bass",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 6,
+          "idolsFound": 0,
+          "notes": [
+            "6-4 vote"
+          ]
+        }
+      ],
+      "story": "Voted out 6-4 in Episode 3 as challenge liability. Social friction prevented alliance formation."
+    },
+    {
+      "id": "ezekiel",
+      "name": "Ezekiel",
+      "seasons": [
+        1,
+        2
+      ],
+      "totalSeasons": 2,
+      "bestPlacement": 4,
+      "wins": 0,
+      "totalChallengeWins": 1,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 1,
+      "totalVotesAgainst": 12,
+      "totalIdolsFound": 3,
+      "seasonDetails": [
+        {
+          "season": 2,
+          "placement": 6,
+          "status": "Juror",
+          "tribe": "Killer Grips",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 4,
+          "idolsFound": 1,
+          "notes": [
+            "4-2 vote",
+            "Legendary idol play on Alejandro at merge"
+          ]
+        },
+        {
+          "season": 1,
+          "placement": 4,
+          "status": "Final Juror",
+          "tribe": "Screaming Gophers",
+          "challengeWins": 1,
+          "immunityWins": 0,
+          "rewardWins": 1,
+          "votesReceived": 8,
+          "idolsFound": 2,
+          "notes": [
+            "Lost fire-making to Alejandro at F4"
+          ]
+        }
+      ],
+      "story": "Finalist in S1 who lost fire-making. Made legendary idol play saving Alejandro in S2 but fell to social isolation."
+    },
+    {
+      "id": "geoff",
+      "name": "Geoff",
+      "seasons": [
+        1,
+        4,
+        6
+      ],
+      "totalSeasons": 3,
+      "bestPlacement": 6,
+      "wins": 0,
+      "totalChallengeWins": 2,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 1,
+      "totalVotesAgainst": 42,
+      "totalIdolsFound": 0,
+      "badges": [
+        "EoE Returnee",
+        "TRAGIC ARC",
+        "Voted Out TWICE by Zoey",
+        "Shortest Return Ever",
+        "29 Total Votes!"
+      ],
+      "seasonDetails": [
+        {
+          "season": 4,
+          "placement": 6,
+          "status": "Juror (double elimination!)",
+          "tribe": "Yellow → Green → Campers → EoE → Campers",
+          "challengeWins": 2,
+          "immunityWins": 0,
+          "rewardWins": 1,
+          "votesReceived": 29,
+          "idolsFound": 0,
+          "strategicRank": "Medium",
+          "unbreakableBonds": [
+            "Zoey"
+          ],
+          "notes": [
+            "Voted out by Zoey TWICE",
+            "Won EoE return Ep 13",
+            "Re-eliminated SAME EPISODE",
+            "Still voted Zoey at FTC!"
+          ]
+        },
+        {
+          "season": 1,
+          "placement": 20,
+          "status": "Pre-Juror",
+          "tribe": "Killer Bass",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 13,
+          "idolsFound": 0,
+          "notes": [
+            "7-2 vote"
+          ]
+        },
+        {
+          "season": 6,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ],
+      "story": "TRAGIC ARC: Voted out twice by unbreakable partner Zoey. Won EoE return only to be eliminated same episode - shortest return ever."
+    },
+    {
+      "id": "gwen",
+      "name": "Gwen",
+      "seasons": [
+        1,
+        2,
+        4
+      ],
+      "totalSeasons": 3,
+      "bestPlacement": 4,
+      "wins": 0,
+      "totalChallengeWins": 9,
+      "totalImmunityWins": 5,
+      "totalRewardWins": 1,
+      "totalVotesAgainst": 26,
+      "totalIdolsFound": 0,
+      "badges": [
+        "4 Consecutive Immunities!",
+        "Challenge Beast",
+        "Massive Improvement Arc"
+      ],
+      "seasonDetails": [
+        {
+          "season": 4,
+          "placement": 4,
+          "status": "Juror (lost fire-making)",
+          "tribe": "Yellow → Red → Campers",
+          "challengeWins": 4,
+          "immunityWins": 4,
+          "rewardWins": 0,
+          "votesReceived": 13,
+          "idolsFound": 0,
+          "strategicRank": "Medium",
+          "unbreakableBonds": [
+            "Duncan",
+            "Zoey"
+          ],
+          "notes": [
+            "4 CONSECUTIVE immunities (Ep 11-14) - FRANCHISE RECORD!",
+            "Lost fire-making to Alejandro"
+          ]
+        },
+        {
+          "season": 2,
+          "placement": 8,
+          "status": "First Juror",
+          "tribe": "Screaming Gaffers",
+          "challengeWins": 1,
+          "immunityWins": 1,
+          "rewardWins": 1,
+          "votesReceived": 9,
+          "idolsFound": 0,
+          "notes": [
+            "4-4 tie revote"
+          ]
+        },
+        {
+          "season": 1,
+          "placement": 16,
+          "status": "Pre-Juror",
+          "tribe": "Screaming Gophers",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 4,
+          "idolsFound": 0,
+          "notes": [
+            "5-4 tribe swap casualty"
+          ]
+        }
+      ],
+      "story": "Massive improvement arc: 16th → 8th → 4th. Set franchise record with 4 consecutive immunity wins. Lost when couldn't win fire-making."
+    },
+    {
+      "id": "harold",
+      "name": "Harold",
+      "seasons": [
+        1,
+        4
+      ],
+      "totalSeasons": 2,
+      "bestPlacement": 8,
+      "wins": 0,
+      "totalChallengeWins": 3,
+      "totalImmunityWins": 1,
+      "totalRewardWins": 2,
+      "totalVotesAgainst": 12,
+      "totalIdolsFound": 0,
+      "badges": [
+        "Strategic: Medium",
+        "Advantage Menu (Extra Vote)",
+        "Immunity Win Ep 10",
+        "Betrayed by Cameron"
+      ],
+      "seasonDetails": [
+        {
+          "season": 4,
+          "placement": 8,
+          "status": "Juror",
+          "tribe": "Yellow → Campers",
+          "challengeWins": 3,
+          "immunityWins": 1,
+          "rewardWins": 2,
+          "votesReceived": 6,
+          "idolsFound": 0,
+          "strategicRank": "Medium",
+          "advantages": [
+            "Advantage Menu: Extra vote (used Ep 3)"
+          ],
+          "notes": [
+            "Unbreakable with Gwen (dissolved)",
+            "3-2 revote at F8",
+            "Betrayed by Cameron",
+            "Voted Alejandro at FTC"
+          ]
+        },
+        {
+          "season": 1,
+          "placement": 17,
+          "status": "Pre-Juror",
+          "tribe": "Killer Bass",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 6,
+          "idolsFound": 0,
+          "notes": [
+            "4-3-2 vote",
+            "Held idol without playing it"
+          ]
+        }
+      ],
+      "story": "Found Advantage Menu in S4. Betrayed by Cameron (strong bond) at F8 revote. Won immunity Episode 10."
+    },
+    {
+      "id": "heather",
+      "name": "Heather",
+      "seasons": [
+        1,
+        2,
+        4
+      ],
+      "totalSeasons": 3,
+      "bestPlacement": 8,
+      "wins": 0,
+      "totalChallengeWins": 3,
+      "totalImmunityWins": 3,
+      "totalRewardWins": 1,
+      "totalVotesAgainst": 27,
+      "totalIdolsFound": 2,
+      "badges": [
+        "Strategic: Medium",
+        "Pre-Merge Boot",
+        "Multiple Fights",
+        "Voted Alejandro at FTC"
+      ],
+      "seasonDetails": [
+        {
+          "season": 4,
+          "placement": 15,
+          "status": "Juror (EoE)",
+          "tribe": "Yellow → Red → Campers",
+          "challengeWins": 1,
+          "immunityWins": 1,
+          "rewardWins": 0,
+          "votesReceived": 10,
+          "idolsFound": 0,
+          "strategicRank": "Medium",
+          "notes": [
+            "Yellow Alliance #1 (dissolved)",
+            "3-2 at Episode 5",
+            "Major fights with Noah & Courtney",
+            "Voted Alejandro at FTC"
+          ]
+        },
+        {
+          "season": 2,
+          "placement": 9,
+          "status": "Juror",
+          "tribe": "Killer Grips",
+          "challengeWins": 1,
+          "immunityWins": 1,
+          "rewardWins": 0,
+          "votesReceived": 7,
+          "idolsFound": 0,
+          "notes": [
+            "7-2 vote"
+          ]
+        },
+        {
+          "season": 1,
+          "placement": 8,
+          "status": "Juror",
+          "tribe": "Screaming Gophers",
+          "challengeWins": 1,
+          "immunityWins": 1,
+          "rewardWins": 1,
+          "votesReceived": 10,
+          "idolsFound": 2,
+          "notes": [
+            "Legendary save of Bridgette",
+            "Lost to Owen on Exile Beach"
+          ]
+        }
+      ],
+      "story": "Strategic player across three seasons. Found 2 idols in S1. Multiple major fights led to pre-merge exit in S4."
+    },
+    {
+      "id": "izzy",
+      "name": "Izzy",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 18,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 5,
+      "totalIdolsFound": 0,
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 18,
+          "status": "Pre-Juror",
+          "tribe": "Screaming Gophers",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 5,
+          "idolsFound": 0,
+          "notes": [
+            "5-4 vote",
+            "Tribe swap casualty"
+          ]
+        }
+      ],
+      "story": "Eliminated 5-4 in Episode 7 after tribe swap. Personal hatred with Beth led to elimination."
+    },
+    {
+      "id": "jasmine",
+      "name": "Jasmine",
+      "seasons": [
+        5
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 14,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 2,
+      "totalIdolsFound": 0,
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 5,
+          "placement": 14,
+          "status": "Pre-Juror",
+          "tribe": "Reba",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 2,
+          "idolsFound": 0
+        }
+      ],
+      "story": "Season 5 contestant. Finished 14th."
+    },
+    {
+      "id": "jo",
+      "name": "Jo",
+      "seasons": [
+        3,
+        4
+      ],
+      "totalSeasons": 2,
+      "bestPlacement": 7,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 1,
+      "totalVotesAgainst": 17,
+      "totalIdolsFound": 0,
+      "badges": [
+        "S4 FAN FAVORITE!",
+        "4 Extreme Hatreds",
+        "Chaotic Gameplay",
+        "Pre-Merge Exit"
+      ],
+      "seasonDetails": [
+        {
+          "season": 4,
+          "placement": 10,
+          "status": "Juror + FAN FAVORITE!",
+          "tribe": "Red → Yellow → Campers",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 1,
+          "votesReceived": 9,
+          "idolsFound": 0,
+          "strategicRank": "Low",
+          "advantages": [
+            "Extra vote from Anne Maria (EoE), used Ep 8"
+          ],
+          "notes": [
+            "4 EXTREME HATREDS (Mike, Cameron, Zoey, Harold)",
+            "5-3 revote at F9",
+            "Voted Alejandro at FTC"
+          ]
+        },
+        {
+          "season": 3,
+          "placement": 7,
+          "status": "4th Juror",
+          "tribe": "Mutant Maggots",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 8,
+          "idolsFound": 0,
+          "strategicRank": "Very Low",
+          "notes": [
+            "4 extreme hatreds (Cameron, Zoey, Mike, Scott)",
+            "Voted Emma at FTC"
+          ]
+        }
+      ],
+      "story": "Most hated player with 4 EXTREME HATRED relationships. FAN FAVORITE winner in S4 for chaotic entertainment value."
+    },
+    {
+      "id": "josee",
+      "name": "Josee",
+      "seasons": [
+        5,
+        6
+      ],
+      "totalSeasons": 2,
+      "bestPlacement": 13,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 5,
+      "totalIdolsFound": 1,
+      "badges": [
+        "Most Unlucky Player"
+      ],
+      "seasonDetails": [
+        {
+          "season": 5,
+          "placement": 13,
+          "status": "Pre-Juror",
+          "tribe": "Lulu",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 5,
+          "idolsFound": 1
+        },
+        {
+          "season": 6,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ],
+      "story": "Season 5 contestant. Finished 13th."
+    },
+    {
+      "id": "justin",
+      "name": "Justin",
+      "seasons": [
+        1,
+        2
+      ],
+      "totalSeasons": 2,
+      "bestPlacement": 10,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 16,
+      "totalIdolsFound": 1,
+      "seasonDetails": [
+        {
+          "season": 2,
+          "placement": 10,
+          "status": "Juror",
+          "tribe": "Killer Grips",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 4,
+          "idolsFound": 0,
+          "notes": [
+            "6-4* vote",
+            "First juror after Ezekiel's idol play"
+          ]
+        },
+        {
+          "season": 1,
+          "placement": 24,
+          "status": "First Boot",
+          "tribe": "Killer Bass",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 12,
+          "idolsFound": 1,
+          "notes": [
+            "Found idol early but didn't play it",
+            "Fan Favorite (S1)"
+          ]
+        }
+      ],
+      "story": "First boot in S1 despite finding idol. First juror in S2 after idol play chaos."
+    },
+    {
+      "id": "katie",
+      "name": "Katie",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 12,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 5,
+      "totalIdolsFound": 1,
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 12,
+          "status": "Pre-Juror",
+          "tribe": "Killer Bass",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 5,
+          "idolsFound": 1,
+          "notes": [
+            "5-3-3*-1 vote",
+            "Found Killer Bass HII",
+            "Part of MAPLV"
+          ]
+        }
+      ],
+      "story": "Played solid pre-merge game as part of MAPLV with Sadie. Found Hidden Immunity Idol."
+    },
+    {
+      "id": "leonard",
+      "name": "Leonard",
+      "seasons": [
+        5,
+        6
+      ],
+      "totalSeasons": 2,
+      "bestPlacement": 18,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 5,
+      "totalIdolsFound": 0,
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 5,
+          "placement": 18,
+          "status": "Pre-Juror",
+          "tribe": "Reba",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 5,
+          "idolsFound": 0
+        },
+        {
+          "season": 6,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ],
+      "story": "Season 5 contestant. Finished 18th."
+    },
+    {
+      "id": "leshawna",
+      "name": "Leshawna",
+      "seasons": [
+        1,
+        2
+      ],
+      "totalSeasons": 2,
+      "bestPlacement": 11,
+      "wins": 0,
+      "totalChallengeWins": 1,
+      "totalImmunityWins": 1,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 13,
+      "totalIdolsFound": 0,
+      "seasonDetails": [
+        {
+          "season": 2,
+          "placement": 13,
+          "status": "Pre-Juror",
+          "tribe": "Screaming Gaffers",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 6,
+          "idolsFound": 0,
+          "notes": [
+            "6-1 vote",
+            "Second boot"
+          ]
+        },
+        {
+          "season": 1,
+          "placement": 11,
+          "status": "First Juror",
+          "tribe": "Screaming Gophers",
+          "challengeWins": 1,
+          "immunityWins": 1,
+          "rewardWins": 0,
+          "votesReceived": 7,
+          "idolsFound": 0,
+          "unbreakableBonds": [
+            "Noah"
+          ],
+          "notes": [
+            "7-3-1-1 vote at F11"
+          ]
+        }
+      ],
+      "story": "First juror in S1. Second boot in S2 despite unbreakable bond with Noah in S1."
+    },
+    {
+      "id": "lightning",
+      "name": "Lightning",
+      "seasons": [
+        3,
+        4
+      ],
+      "totalSeasons": 2,
+      "bestPlacement": 11,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 25,
+      "totalIdolsFound": 2,
+      "badges": [
+        "Triple Idol Tribal",
+        "First Merge Boot",
+        "Consensus Target"
+      ],
+      "seasonDetails": [
+        {
+          "season": 4,
+          "placement": 13,
+          "status": "Juror (EoE)",
+          "tribe": "Red → Green → Campers",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 14,
+          "idolsFound": 1,
+          "strategicRank": "Low",
+          "notes": [
+            "TRIPLE IDOL TRIBAL (Ep 5 Part 2)",
+            "First merge boot (9-4)",
+            "Consensus target",
+            "Voted Alejandro at FTC"
+          ]
+        },
+        {
+          "season": 3,
+          "placement": 11,
+          "status": "Pre-Jury",
+          "tribe": "Toxic Rats",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 11,
+          "idolsFound": 1,
+          "strategicRank": "Very Low",
+          "notes": [
+            "WORST idol play ever (wasted on Emma)",
+            "Tied vote twice (Episode 6)"
+          ]
+        }
+      ],
+      "story": "Part of TRIPLE IDOL TRIBAL in S4. Worst idol play in S3 (wasted on Emma who got 0 votes)."
+    },
+    {
+      "id": "lindsay",
+      "name": "Lindsay",
+      "seasons": [
+        1,
+        2
+      ],
+      "totalSeasons": 2,
+      "bestPlacement": 1,
+      "wins": 1,
+      "totalChallengeWins": 1,
+      "totalImmunityWins": 1,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 2,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 6,
+      "badges": [
+        "S1 Winner"
+      ],
+      "seasonDetails": [
+        {
+          "season": 2,
+          "placement": 3,
+          "status": "Finalist",
+          "tribe": "Screaming Gaffers",
+          "challengeWins": 1,
+          "immunityWins": 1,
+          "rewardWins": 0,
+          "votesReceived": 1,
+          "idolsFound": 0,
+          "strategicRank": 2,
+          "juryVotes": 1,
+          "unbreakableBonds": [
+            "Beth",
+            "Duncan"
+          ],
+          "notes": [
+            "Lost 1-5-1 to Duncan"
+          ]
+        },
+        {
+          "season": 1,
+          "placement": 1,
+          "status": "WINNER",
+          "tribe": "Screaming Gophers",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 1,
+          "idolsFound": 0,
+          "juryVotes": 5,
+          "finalVote": "5-4",
+          "unbreakableBonds": [
+            "Leshawna",
+            "Trent",
+            "Alejandro"
+          ],
+          "notes": [
+            "Defeated Alejandro 5-4",
+            "Never needed immunity"
+          ]
+        }
+      ],
+      "story": "WINNER of Season 1. Social queen who maintained unbreakable bonds without burning bridges. Third place in S2."
+    },
+    {
+      "id": "max",
+      "name": "Max",
+      "seasons": [
+        5
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 10,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 5,
+      "totalIdolsFound": 0,
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 5,
+          "placement": 10,
+          "status": "Juror",
+          "tribe": "Lulu",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 5,
+          "idolsFound": 0
+        }
+      ],
+      "story": "Season 5 contestant. Finished 10th."
+    },
+    {
+      "id": "mickey",
+      "name": "Mickey",
+      "seasons": [
+        5,
+        6
+      ],
+      "totalSeasons": 2,
+      "bestPlacement": 1,
+      "wins": 1,
+      "totalChallengeWins": 2,
+      "totalImmunityWins": 2,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 1,
+      "totalJuryVotes": 4,
+      "badges": [
+        "S5 Winner",
+        "0 Votes Against",
+        "Strategic #3 (S5)",
+        "Best Social Game"
+      ],
+      "seasonDetails": [
+        {
+          "season": 5,
+          "placement": 1,
+          "status": "Winner",
+          "tribe": "Lulu",
+          "challengeWins": 2,
+          "immunityWins": 2,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 1,
+          "juryVotes": 4,
+          "finalVote": "4-3 (tiebreak)",
+          "strategicRank": "3"
+        },
+        {
+          "season": 6,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ],
+      "story": "Winner of Season 5 (Rescue Island). Quiet social core: received 0 votes against all season and won a 3–3–2 FTC tie via Ryan’s tiebreak vote."
+    },
+    {
+      "id": "mike",
+      "name": "Mike",
+      "seasons": [
+        3,
+        4
+      ],
+      "totalSeasons": 2,
+      "bestPlacement": 6,
+      "wins": 0,
+      "totalChallengeWins": 2,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 2,
+      "totalVotesAgainst": 8,
+      "totalIdolsFound": 0,
+      "badges": [
+        "Unbreakable: Zoey (Rebuilt)",
+        "Strategic: Medium",
+        "Perfect Idol Victim"
+      ],
+      "seasonDetails": [
+        {
+          "season": 4,
+          "placement": 12,
+          "status": "Juror (EoE)",
+          "tribe": "Red → Yellow → Campers",
+          "challengeWins": 1,
+          "immunityWins": 0,
+          "rewardWins": 1,
+          "votesReceived": 4,
+          "idolsFound": 0,
+          "strategicRank": "Medium",
+          "unbreakableBonds": [
+            "Zoey"
+          ],
+          "notes": [
+            "Eliminated 2-0 (Sierra's perfect idol)",
+            "Extreme hatred with Jo",
+            "Voted Zoey at FTC"
+          ]
+        },
+        {
+          "season": 3,
+          "placement": 6,
+          "status": "5th Juror",
+          "tribe": "Mutant Maggots",
+          "challengeWins": 1,
+          "immunityWins": 0,
+          "rewardWins": 1,
+          "votesReceived": 4,
+          "idolsFound": 0,
+          "strategicRank": "Medium",
+          "unbreakableBonds": [
+            "Zoey",
+            "Brick"
+          ],
+          "notes": [
+            "Blindsided while Zoey held immunity",
+            "Voted Cameron at FTC"
+          ]
+        }
+      ],
+      "story": "REBUILT unbreakable bond with Zoey in S4. Victim of Sierra's perfect idol play (10 votes cancelled)."
+    },
+    {
+      "id": "noah",
+      "name": "Noah",
+      "seasons": [
+        1,
+        4
+      ],
+      "totalSeasons": 2,
+      "bestPlacement": 9,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 20,
+      "totalIdolsFound": 1,
+      "badges": [
+        "Unbreakable: Alejandro",
+        "Strategic: High",
+        "Triple Idol Tribal",
+        "Betrayed by Partner"
+      ],
+      "seasonDetails": [
+        {
+          "season": 4,
+          "placement": 9,
+          "status": "Juror",
+          "tribe": "Yellow → Red → Campers",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 11,
+          "idolsFound": 1,
+          "strategicRank": "High",
+          "unbreakableBonds": [
+            "Alejandro"
+          ],
+          "notes": [
+            "TRIPLE IDOL TRIBAL (played idol)",
+            "Betrayed by Alejandro (unbreakable)",
+            "5-4 at F9",
+            "Voted Alejandro at FTC"
+          ]
+        },
+        {
+          "season": 1,
+          "placement": 15,
+          "status": "Pre-Juror",
+          "tribe": "Screaming Gophers",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 9,
+          "idolsFound": 0,
+          "notes": [
+            "4-3 vote"
+          ]
+        }
+      ],
+      "story": "Part of TRIPLE IDOL TRIBAL in S4. BETRAYED by unbreakable partner Alejandro at F9. Bitter jury vote."
+    },
+    {
+      "id": "owen",
+      "name": "Owen",
+      "seasons": [
+        1,
+        2
+      ],
+      "totalSeasons": 2,
+      "bestPlacement": 7,
+      "wins": 0,
+      "totalChallengeWins": 1,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 1,
+      "totalVotesAgainst": 7,
+      "totalIdolsFound": 0,
+      "seasonDetails": [
+        {
+          "season": 2,
+          "placement": 12,
+          "status": "Pre-Juror",
+          "tribe": "Screaming Gaffers",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 1,
+          "idolsFound": 0,
+          "notes": [
+            "5-1* vote",
+            "Third boot after idol play"
+          ]
+        },
+        {
+          "season": 1,
+          "placement": 7,
+          "status": "Exile Beach / Medivac",
+          "tribe": "Screaming Gophers",
+          "challengeWins": 1,
+          "immunityWins": 0,
+          "rewardWins": 1,
+          "votesReceived": 6,
+          "idolsFound": 0,
+          "notes": [
+            "Sent to Exile, won return",
+            "Medically evacuated Episode 20"
+          ]
+        }
+      ],
+      "story": "Sent to Exile Beach in S1, won return but medically evacuated. Third boot in S2 after idol chaos."
+    },
+    {
+      "id": "rodney",
+      "name": "Rodney",
+      "seasons": [
+        5
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 12,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 9,
+      "totalIdolsFound": 0,
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 5,
+          "placement": 12,
+          "status": "Pre-Juror",
+          "tribe": "Belo",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 9,
+          "idolsFound": 0
+        }
+      ],
+      "story": "Season 5 contestant. Finished 12th."
+    },
+    {
+      "id": "ryan",
+      "name": "Ryan",
+      "seasons": [
+        5,
+        6
+      ],
+      "totalSeasons": 2,
+      "bestPlacement": 3,
+      "wins": 0,
+      "totalChallengeWins": 1,
+      "totalImmunityWins": 1,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 7,
+      "totalIdolsFound": 0,
+      "badges": [
+        "S5 Finalist (2 votes)",
+        "Fan Favorite",
+        "Fire-Making Champion"
+      ],
+      "seasonDetails": [
+        {
+          "season": 5,
+          "placement": 3,
+          "status": "Finalist",
+          "tribe": "Reba",
+          "challengeWins": 1,
+          "immunityWins": 1,
+          "rewardWins": 0,
+          "votesReceived": 7,
+          "idolsFound": 0,
+          "juryVotes": 2,
+          "finalVote": "2 (kingmaker)"
+        },
+        {
+          "season": 6,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ],
+      "story": "Fan Favorite of Season 5. Loyal endgame partner who won fire-making, reached FTC, then became kingmaker by casting the deciding winner vote."
+    },
+    {
+      "id": "sadie",
+      "name": "Sadie",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 13,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 13,
+          "status": "Pre-Juror",
+          "tribe": "Killer Bass",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "notes": [
+            "Rock draw elimination",
+            "Never received a vote",
+            "Part of MAPLV"
+          ]
+        }
+      ],
+      "story": "Eliminated by rock draw despite never receiving a vote and voting correctly. Inseparable from Katie in MAPLV."
+    },
+    {
+      "id": "sam",
+      "name": "Sam",
+      "seasons": [
+        3
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 13,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "seasonDetails": [
+        {
+          "season": 3,
+          "placement": 13,
+          "status": "Pre-Jury",
+          "tribe": "Toxic Rats",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": "Very Low",
+          "notes": [
+            "NEVER voted for",
+            "Rock draw elimination",
+            "Part of Toxic Rats Alliance #1"
+          ]
+        }
+      ],
+      "story": "Most tragic exit - NEVER received a vote, voted correctly, eliminated by rock draw. Most unlucky player in franchise."
+    },
+    {
+      "id": "samey",
+      "name": "Samey",
+      "seasons": [
+        5
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 15,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 1,
+      "totalIdolsFound": 0,
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 5,
+          "placement": 15,
+          "status": "Pre-Juror",
+          "tribe": "Belo",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 1,
+          "idolsFound": 0
+        }
+      ],
+      "story": "Season 5 contestant. Finished 15th."
+    },
+    {
+      "id": "scarlett",
+      "name": "Scarlett",
+      "seasons": [
+        5
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 4,
+      "wins": 0,
+      "totalChallengeWins": 2,
+      "totalImmunityWins": 2,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 2,
+      "totalIdolsFound": 0,
+      "badges": [
+        "Strategic #1 (S5)"
+      ],
+      "seasonDetails": [
+        {
+          "season": 5,
+          "placement": 4,
+          "status": "Juror (lost fire-making)",
+          "tribe": "Belo",
+          "challengeWins": 2,
+          "immunityWins": 2,
+          "rewardWins": 0,
+          "votesReceived": 2,
+          "idolsFound": 0,
+          "strategicRank": "1"
+        }
+      ],
+      "story": "Top strategic rank of Season 5 and a late power player, but lost the Final 4 fire-making duel."
+    },
+    {
+      "id": "scott",
+      "name": "Scott",
+      "seasons": [
+        3,
+        4
+      ],
+      "totalSeasons": 2,
+      "bestPlacement": 2,
+      "wins": 0,
+      "totalChallengeWins": 6,
+      "totalImmunityWins": 3,
+      "totalRewardWins": 3,
+      "totalVotesAgainst": 4,
+      "totalIdolsFound": 1,
+      "totalJuryVotes": 4,
+      "badges": [
+        "S4 Third Place",
+        "Perfect Idol Play!",
+        "9 Tribals Patience"
+      ],
+      "seasonDetails": [
+        {
+          "season": 4,
+          "placement": 3,
+          "status": "Finalist",
+          "tribe": "Red → Yellow → Green → Campers",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 3,
+          "idolsFound": 1,
+          "strategicRank": 2,
+          "juryVotes": 1,
+          "unbreakableBonds": [
+            "Zoey"
+          ],
+          "notes": [
+            "FRANCHISE RECORD: Held idol 9 tribals!",
+            "Perfect idol play at F5 (3 votes cancelled)",
+            "Eliminated Cameron 2-0",
+            "Only Duncan voted for him at FTC"
+          ]
+        },
+        {
+          "season": 3,
+          "placement": 2,
+          "status": "Runner-up",
+          "tribe": "Toxic Rats → Campers",
+          "challengeWins": 6,
+          "immunityWins": 3,
+          "rewardWins": 3,
+          "votesReceived": 1,
+          "idolsFound": 0,
+          "strategicRank": 2,
+          "juryVotes": 3,
+          "finalVote": "3-4-1",
+          "unbreakableBonds": [
+            "Anne Maria",
+            "Zoey"
+          ],
+          "notes": [
+            "Most challenge wins in S3 (6)",
+            "Voted out Zoey (unbreakable)",
+            "Lost 3-4-1 to Emma"
+          ]
+        }
+      ],
+      "story": "Best player to never win. PERFECT IDOL PLAY after holding for 9 tribals (franchise record). Runner-up in S3, third place in S4."
+    },
+    {
+      "id": "shawn",
+      "name": "Shawn",
+      "seasons": [
+        5
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 9,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 6,
+      "totalIdolsFound": 1,
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 5,
+          "placement": 9,
+          "status": "Juror",
+          "tribe": "Belo",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 6,
+          "idolsFound": 1
+        }
+      ],
+      "story": "Season 5 contestant. Finished 9th."
+    },
+    {
+      "id": "sierra",
+      "name": "Sierra",
+      "seasons": [
+        1,
+        4
+      ],
+      "totalSeasons": 2,
+      "bestPlacement": 10,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 39,
+      "totalIdolsFound": 1,
+      "badges": [
+        "EoE Returnee",
+        "Perfect Idol Play",
+        "10 Votes Cancelled",
+        "4 Extreme Hatreds"
+      ],
+      "seasonDetails": [
+        {
+          "season": 4,
+          "placement": 11,
+          "status": "Juror (returnee)",
+          "tribe": "Yellow → Campers (EoE Return)",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 26,
+          "idolsFound": 0,
+          "strategicRank": "Very Low",
+          "advantages": [
+            "2 EoE idol halves (played)"
+          ],
+          "notes": [
+            "Won EoE return (Episode 6)",
+            "Perfect idol play (10 votes cancelled!)",
+            "4 extreme hatreds (Noah, Harold, Gwen, Duncan)",
+            "Voted Zoey at FTC"
+          ]
+        },
+        {
+          "season": 1,
+          "placement": 10,
+          "status": "Juror",
+          "tribe": "Killer Bass",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 13,
+          "idolsFound": 1,
+          "notes": [
+            "6-4 vote",
+            "Consensus safe cut"
+          ]
+        }
+      ],
+      "story": "Won EoE return in S4. Made PERFECT IDOL PLAY cancelling 10 votes - only 2 people didn't vote Sierra. Created 4 extreme hatreds."
+    },
+    {
+      "id": "sky",
+      "name": "Sky",
+      "seasons": [
+        5
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 2,
+      "wins": 0,
+      "totalChallengeWins": 4,
+      "totalImmunityWins": 3,
+      "totalRewardWins": 1,
+      "totalVotesAgainst": 1,
+      "totalIdolsFound": 2,
+      "totalJuryVotes": 3,
+      "badges": [
+        "S5 Runner-Up (3 votes)",
+        "Season MVP",
+        "Best Challenge Performer"
+      ],
+      "seasonDetails": [
+        {
+          "season": 5,
+          "placement": 2,
+          "status": "Runner-up",
+          "tribe": "Lulu",
+          "challengeWins": 4,
+          "immunityWins": 3,
+          "rewardWins": 1,
+          "votesReceived": 1,
+          "idolsFound": 2,
+          "juryVotes": 3,
+          "finalVote": "3 (lost tiebreak)"
+        }
+      ],
+      "story": "Season 5 challenge MVP with 4 total challenge wins and 3 immunities; forced the late-game tempo but fell short in a 3–3 FTC tie."
+    },
+    {
+      "id": "staci",
+      "name": "Staci",
+      "seasons": [
+        3
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 15,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 6,
+      "totalIdolsFound": 0,
+      "seasonDetails": [
+        {
+          "season": 3,
+          "placement": 15,
+          "status": "Pre-Jury",
+          "tribe": "Toxic Rats",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 6,
+          "idolsFound": 0,
+          "strategicRank": "Very Low",
+          "notes": [
+            "Second boot (Episode 2)",
+            "Multiple early conflicts",
+            "6-2 vote"
+          ]
+        }
+      ],
+      "story": "Second boot. Multiple early conflicts prevented alliance formation. Challenge liability with no social capital."
+    },
+    {
+      "id": "sugar",
+      "name": "Sugar",
+      "seasons": [
+        5
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 5,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 10,
+      "totalIdolsFound": 0,
+      "badges": [
+        "Most Votes Against (10)"
+      ],
+      "seasonDetails": [
+        {
+          "season": 5,
+          "placement": 5,
+          "status": "Juror",
+          "tribe": "Lulu",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 10,
+          "idolsFound": 0
+        }
+      ],
+      "story": "Season 5 contestant. Finished 5th."
+    },
+    {
+      "id": "topher",
+      "name": "Topher",
+      "seasons": [
+        5
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 11,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 5,
+      "totalIdolsFound": 0,
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 5,
+          "placement": 11,
+          "status": "Juror",
+          "tribe": "Belo",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 5,
+          "idolsFound": 0
+        }
+      ],
+      "story": "Season 5 contestant. Finished 11th."
+    },
+    {
+      "id": "trent",
+      "name": "Trent",
+      "seasons": [
+        1,
+        2
+      ],
+      "totalSeasons": 2,
+      "bestPlacement": 6,
+      "wins": 0,
+      "totalChallengeWins": 4,
+      "totalImmunityWins": 3,
+      "totalRewardWins": 1,
+      "totalVotesAgainst": 12,
+      "totalIdolsFound": 0,
+      "seasonDetails": [
+        {
+          "season": 2,
+          "placement": 7,
+          "status": "Juror",
+          "tribe": "Screaming Gaffers",
+          "challengeWins": 1,
+          "immunityWins": 1,
+          "rewardWins": 0,
+          "votesReceived": 7,
+          "idolsFound": 0,
+          "strategicRank": 3,
+          "notes": [
+            "5-2 vote",
+            "Double elimination (same night as Gwen)"
+          ]
+        },
+        {
+          "season": 1,
+          "placement": 6,
+          "status": "Juror",
+          "tribe": "Screaming Gophers",
+          "challengeWins": 3,
+          "immunityWins": 2,
+          "rewardWins": 1,
+          "votesReceived": 5,
+          "idolsFound": 0,
+          "unbreakableBonds": [
+            "Alejandro",
+            "Bridgette",
+            "Lindsay",
+            "Leshawna"
+          ],
+          "notes": [
+            "5-2 vote in double elimination",
+            "Extreme hatred with Heather"
+          ]
+        }
+      ],
+      "story": "Strong social player with multiple unbreakable bonds. Eliminated in double eliminations both seasons."
+    },
+    {
+      "id": "tyler",
+      "name": "Tyler",
+      "seasons": [
+        1
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 23,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 8,
+      "totalIdolsFound": 0,
+      "seasonDetails": [
+        {
+          "season": 1,
+          "placement": 23,
+          "status": "Pre-Juror",
+          "tribe": "Killer Bass",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 8,
+          "idolsFound": 0,
+          "notes": [
+            "8-4 vote",
+            "Challenge liability"
+          ]
+        }
+      ],
+      "story": "Challenge liability voted out 8-4 in Episode 2. Unable to build strong social connections."
+    },
+    {
+      "id": "zoey",
+      "name": "Zoey",
+      "seasons": [
+        3,
+        4
+      ],
+      "totalSeasons": 2,
+      "bestPlacement": 2,
+      "wins": 0,
+      "totalChallengeWins": 8,
+      "totalImmunityWins": 5,
+      "totalRewardWins": 3,
+      "totalVotesAgainst": 4,
+      "totalIdolsFound": 1,
+      "totalJuryVotes": 6,
+      "badges": [
+        "S4 Runner-Up (6 votes)",
+        "Social Queen",
+        "3 Unbreakable Bonds!"
+      ],
+      "seasonDetails": [
+        {
+          "season": 4,
+          "placement": 2,
+          "status": "Runner-up",
+          "tribe": "Red → Green → Campers",
+          "challengeWins": 4,
+          "immunityWins": 3,
+          "rewardWins": 1,
+          "votesReceived": 1,
+          "idolsFound": 1,
+          "strategicRank": "High Social, Medium Strategic",
+          "juryVotes": 6,
+          "finalVote": "6-7",
+          "unbreakableBonds": [
+            "Gwen",
+            "Scott",
+            "Geoff"
+          ],
+          "notes": [
+            "UNPRECEDENTED: 3 unbreakable bonds at once!",
+            "Perfect idol play saved Geoff (7 votes cancelled)",
+            "Voted out Geoff TWICE (Ep 10 & 13)",
+            "Made finals with zero votes against (1 cancelled)"
+          ]
+        },
+        {
+          "season": 3,
+          "placement": 4,
+          "status": "7th Juror",
+          "tribe": "Mutant Maggots → Campers",
+          "challengeWins": 4,
+          "immunityWins": 2,
+          "rewardWins": 2,
+          "votesReceived": 3,
+          "idolsFound": 0,
+          "strategicRank": "Medium-High",
+          "unbreakableBonds": [
+            "Mike",
+            "Scott"
+          ],
+          "notes": [
+            "Game-changing flip Episode 8",
+            "Back-to-back immunities (Ep 11-12)",
+            "Voted Scott at FTC"
+          ]
+        }
+      ],
+      "story": "UNPRECEDENTED social dominance with 3 unbreakable bonds at once in S4. Lost 6-7 to Alejandro in closest finale ever. Most socially connected player in franchise history."
+    },
+    {
+      "id": "brody",
+      "name": "Brody",
+      "seasons": [
+        6
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 6,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "ennui",
+      "name": "Ennui",
+      "seasons": [
+        6
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 6,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "jacques",
+      "name": "Jacques",
+      "seasons": [
+        6
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 6,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "jay",
+      "name": "Jay",
+      "seasons": [
+        6
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 6,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "junior",
+      "name": "Junior",
+      "seasons": [
+        6
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 6,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "kelly",
+      "name": "Kelly",
+      "seasons": [
+        6
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 6,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "kitty",
+      "name": "Kitty",
+      "seasons": [
+        6
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 6,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "mary",
+      "name": "Mary",
+      "seasons": [
+        6
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 6,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "stephanie",
+      "name": "Stephanie",
+      "seasons": [
+        6
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 6,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "tammy",
+      "name": "Tammy",
+      "seasons": [
+        6
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 6,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    }
+  ]
+}

@@ -2855,11 +2855,38 @@ setTimeout(function() {
   }
   
   // ========================================
+  // HELPER FUNCTIONS
+  // ========================================
+  
+  function normalizeWorkerUrl(raw) {
+    let url = (raw || "").trim();
+    if (!url) return "";
+    if (!/^https?:\/\//i.test(url)) url = "https://" + url;
+    return url.replace(/\/+$/, "");
+  }
+  
+  function getWorkerUrl() {
+    // Try to get from the analytics section
+    const workerUrlInput = document.getElementById("workerUrl");
+    if (workerUrlInput) {
+      return normalizeWorkerUrl(workerUrlInput.value.trim());
+    }
+    
+    // Try to get from localStorage
+    const stored = localStorage.getItem('workerUrl');
+    if (stored) {
+      return normalizeWorkerUrl(stored);
+    }
+    
+    return '';
+  }
+  
+  // ========================================
   // AI DATA EXTRACTION
   // ========================================
   
   async function getAISeasonData(data) {
-    const workerUrl = normalizeWorkerUrl(els.workerUrl.value.trim());
+    const workerUrl = getWorkerUrl();
     
     if (!workerUrl) {
       throw new Error('Worker URL not set! Please enter your Cloudflare Worker URL in the Overview tab.');
@@ -3700,148 +3727,6 @@ setTimeout(function() {
     div.textContent = text;
     return div.innerHTML;
   }
-
-  // ========================================
-  // AI ENHANCEMENT FUNCTIONS
-  // ========================================
-  
-  async function getAIEnhancements(data, seasonData) {
-    const workerUrl = normalizeWorkerUrl(els.workerUrl.value.trim());
-    
-    if (!workerUrl) {
-      console.warn('⚠️ Worker URL not set - skipping AI enhancement');
-      return null;
-    }
-    
-    try {
-      // Prepare full season summary for AI
-      const fullSeasonText = buildFullSeasonSummary(data, seasonData);
-      
-      // Call AI Worker with new "season-enhancement" mode
-      const response = await fetch(workerUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          mode: 'season-enhancement',
-          season: data.metadata.seasonNumber,
-          seasonTitle: data.metadata.title,
-          seasonText: fullSeasonText,
-          placements: seasonData.placements,
-          cast: data.cast,
-          winner: seasonData.winner,
-          episodeCount: data.metadata.episodeCount
-        })
-      });
-      
-      if (!response.ok) {
-        console.error('AI Worker response not OK:', response.status);
-        return null;
-      }
-      
-      const result = await response.json();
-      return result;
-      
-    } catch (error) {
-      console.error('AI enhancement error:', error);
-      return null;
-    }
-  }
-  
-  function buildFullSeasonSummary(data, seasonData) {
-    let summary = `=== SEASON ${data.metadata.seasonNumber}: ${data.metadata.title} ===\n\n`;
-    summary += `Theme: ${data.metadata.theme}\n`;
-    summary += `Cast Size: ${data.metadata.castSize}\n`;
-    summary += `Episodes: ${data.metadata.episodeCount}\n\n`;
-    
-    summary += `=== FINAL RESULTS ===\n`;
-    summary += `Winner: ${seasonData.winner.name} (${seasonData.winner.vote})\n`;
-    summary += `Runner-up: ${seasonData.winner.runnerUp}\n\n`;
-    
-    summary += `=== PLACEMENTS ===\n`;
-    seasonData.placements.forEach(p => {
-      summary += `${p.placement}. ${p.name} - ${p.phase}\n`;
-    });
-    summary += `\n`;
-    
-    summary += `=== EPISODE SUMMARIES ===\n`;
-    data.episodes.forEach(ep => {
-      summary += `\n--- EPISODE ${ep.episode} ---\n`;
-      summary += ep.summary.substring(0, 1000); // Limit to 1000 chars per episode
-      summary += '\n';
-    });
-    
-    return summary;
-  }
-  
-  function applyAIEnhancements(seasonData, aiEnhancements) {
-    if (!aiEnhancements || !aiEnhancements.playerEnhancements) {
-      console.warn('No AI enhancements to apply');
-      return;
-    }
-    
-    // Add AI-generated content to placements
-    seasonData.placements.forEach(player => {
-      const enhancement = aiEnhancements.playerEnhancements.find(
-        e => e.name.toLowerCase() === player.name.toLowerCase()
-      );
-      
-      if (enhancement) {
-        // Add strategic rank
-        player.strategicRank = enhancement.strategicRank || 0;
-        
-        // Add story/narrative
-        player.story = enhancement.story || player.notes;
-        
-        // Add key moments
-        if (enhancement.keyMoments && enhancement.keyMoments.length > 0) {
-          player.keyMoments = enhancement.keyMoments;
-        }
-        
-        // Add gameplay style
-        if (enhancement.gameplayStyle) {
-          player.gameplayStyle = enhancement.gameplayStyle;
-        }
-        
-        // Add challenge stats if provided
-        if (enhancement.challengeWins !== undefined) {
-          player.challengeWins = enhancement.challengeWins;
-        }
-        if (enhancement.immunityWins !== undefined) {
-          player.immunityWins = enhancement.immunityWins;
-        }
-        
-        // Add idol/advantage info
-        if (enhancement.idolsFound !== undefined) {
-          player.idolsFound = enhancement.idolsFound;
-        }
-        
-        // Add alliances
-        if (enhancement.alliances && enhancement.alliances.length > 0) {
-          player.alliances = enhancement.alliances;
-        }
-        
-        // Add rivalries
-        if (enhancement.rivalries && enhancement.rivalries.length > 0) {
-          player.rivalries = enhancement.rivalries;
-        }
-      }
-    });
-    
-    // Add AI-generated season narrative
-    if (aiEnhancements.seasonNarrative) {
-      seasonData.seasonNarrative = aiEnhancements.seasonNarrative;
-    }
-    
-    // Update winner strategy and legacy with AI content
-    if (aiEnhancements.winnerAnalysis) {
-      seasonData.winner.strategy = aiEnhancements.winnerAnalysis.strategy || seasonData.winner.strategy;
-      seasonData.winner.legacy = aiEnhancements.winnerAnalysis.legacy || seasonData.winner.legacy;
-      seasonData.winner.keyStats = aiEnhancements.winnerAnalysis.keyStats || seasonData.winner.keyStats;
-    }
-    
-    console.log('✅ AI enhancements applied to season data');
-  }
-
   // ========================================
   // FEATURE 1: CAST ANALYSIS & PROFILE CREATION
   // ========================================

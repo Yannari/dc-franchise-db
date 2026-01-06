@@ -19,205 +19,11 @@ export default {
 
     if (mode === "episode") {
       return await generateEpisode(summaryText, season, episode, env);
-    } else if (mode === "season-data-extraction") {
-      return await generateSeasonDataExtraction(body, env);
     } else {
       return await generateAnalytics(summaryText, season, episode, env);
     }
   },
 };
-
-async function generateSeasonDataExtraction(body, env) {
-  const { season, seasonTitle, episodes, finale, awards, metadata, brantsteeleStats } = body;
-  
-  if (!episodes || episodes.length === 0) {
-    return new Response(JSON.stringify({ error: "No episodes provided" }), {
-      status: 400,
-      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
-    });
-  }
-
-  const schema = {
-    type: "object",
-    additionalProperties: false,
-    properties: {
-      cast: {
-        type: "array",
-        items: { type: "string" },
-        description: "Full cast list (all player names)"
-      },
-      placements: {
-        type: "array",
-        items: {
-          type: "object",
-          additionalProperties: false,
-          properties: {
-            placement: { type: "number" },
-            name: { type: "string" },
-            phase: { 
-              type: "string",
-              enum: ["Winner", "Finalist", "Juror", "Pre-Juror", "Pre-Merge"]
-            },
-            notes: { type: "string" },
-            strategicRank: { type: "number", description: "1-10 scale" },
-            story: { type: "string", description: "1-2 sentence career summary" },
-            gameplayStyle: { type: "string" },
-            keyMoments: { type: "array", items: { type: "string" } },
-            challengeWins: { type: "number" },
-            immunityWins: { type: "number" },
-            idolsFound: { type: "number" },
-            votesReceived: { type: "number" },
-            alliances: { type: "array", items: { type: "string" } },
-            rivalries: { type: "array", items: { type: "string" } }
-          },
-          required: ["placement", "name", "phase", "notes", "strategicRank", "story", "gameplayStyle"]
-        }
-      },
-      finalists: {
-        type: "array",
-        items: {
-          type: "object",
-          additionalProperties: false,
-          properties: {
-            name: { type: "string" },
-            placement: { type: "number" },
-            juryVotes: { type: "number" }
-          },
-          required: ["name", "placement", "juryVotes"]
-        }
-      },
-      winner: {
-        type: "object",
-        additionalProperties: false,
-        properties: {
-          name: { type: "string" },
-          keyStats: { type: "string" },
-          strategy: { type: "string", description: "2-3 sentences on how they won" },
-          legacy: { type: "string", description: "1-2 sentences on their impact" }
-        },
-        required: ["name", "keyStats", "strategy", "legacy"]
-      },
-      jury: {
-        type: "array",
-        items: { type: "string" },
-        description: "List of jury members"
-      },
-      votingHistory: {
-        type: "array",
-        items: {
-          type: "object",
-          additionalProperties: false,
-          properties: {
-            episode: { type: "number" },
-            eliminated: { type: ["string", "null"] },
-            votes: {
-              type: "array",
-              items: {
-                type: "object",
-                additionalProperties: false,
-                properties: {
-                  voter: { type: "string" },
-                  target: { type: "string" }
-                },
-                required: ["voter", "target"]
-              }
-            }
-          },
-          required: ["episode", "eliminated", "votes"]
-        }
-      },
-      seasonNarrative: { 
-        type: "string",
-        description: "2-3 sentence overview of season story arc"
-      }
-    },
-    required: ["cast", "placements", "finalists", "winner", "jury", "votingHistory", "seasonNarrative"]
-  };
-
-  // Build comprehensive prompt with all episodes
-  let episodeSummaries = '';
-  episodes.forEach(ep => {
-    episodeSummaries += `\n\n=== EPISODE ${ep.episode} ===\n${ep.summary}`;
-  });
-
-  // Add Brantsteele stats if provided
-  let brantsteeleSection = '';
-  if (brantsteeleStats && brantsteeleStats.length > 100) {
-    brantsteeleSection = `\n\n=== BRANTSTEELE STATISTICS (USE THIS FOR ACCURATE NUMBERS) ===\n${brantsteeleStats}\n\n⚠️ IMPORTANT: Use Brantsteele stats for exact numbers (challenge wins, votes received, idol counts, placements). Episode summaries provide narrative context.`;
-  }
-
-  const instructions = `
-You are analyzing a complete Total Drama season to extract ALL data in structured format.
-
-${brantsteeleStats ? '🎯 BRANTSTEELE STATS PROVIDED: Use the Brantsteele statistics section for EXACT NUMBERS (placements, challenge wins, votes received, idol counts). Episode summaries provide story/narrative context.' : ''}
-
-CRITICAL TASKS:
-
-1. CAST LIST: Extract all ${metadata.castSize || 'player'} names from Episode 1 ${brantsteeleStats ? 'or Brantsteele stats' : ''}.
-
-2. PLACEMENTS (1-${metadata.castSize || 'N'}): List ALL players ranked by placement
-   ${brantsteeleStats ? '- GET EXACT PLACEMENTS FROM BRANTSTEELE STATS' : '- Use elimination order from episodes (last eliminated = highest placement)'}
-   - Finalists (top 3) get placements 1, 2, 3
-   - Winner is placement 1
-   - For each player provide:
-     * placement: Number (1-${metadata.castSize || 'N'})
-     * name: Player name
-     * phase: "Winner", "Finalist", "Juror", or "Pre-Juror"
-     * notes: Brief note (e.g., "Eliminated Episode 5" or "Winner - 7 jury votes")
-     * strategicRank: 1-10 scale (10 = masterful, 1 = poor)
-     * story: 1-2 sentence summary of their game
-     * gameplayStyle: One phrase (e.g., "Social butterfly", "Challenge beast")
-     * keyMoments: 0-3 major moments (idol finds, big moves, challenge wins)
-     * challengeWins: ${brantsteeleStats ? 'GET FROM BRANTSTEELE STATS' : 'Count from episodes'}
-     * immunityWins: ${brantsteeleStats ? 'GET FROM BRANTSTEELE STATS' : 'Count individual immunity wins'}
-     * idolsFound: ${brantsteeleStats ? 'GET FROM BRANTSTEELE STATS' : 'Count idols found'}
-     * votesReceived: ${brantsteeleStats ? 'GET FROM BRANTSTEELE STATS' : 'Total votes received across all episodes'}
-     * alliances: 2-4 key allies
-     * rivalries: 0-3 rivals
-
-3. FINALISTS: Top 3 players with jury votes received
-   - Winner gets placement 1
-   - Calculate jury votes from finale
-
-4. WINNER ANALYSIS:
-   - name: Winner's name
-   - keyStats: Notable stats (e.g., "2 votes against", "4 immunities", "1 idol")
-   - strategy: 2-3 sentences explaining how they won
-   - legacy: 1-2 sentences on their franchise impact
-
-5. JURY: List all jury members (players who voted at FTC)
-
-6. VOTING HISTORY: For EACH episode (1-${metadata.episodeCount}):
-   - episode: Number
-   - eliminated: Player eliminated (or null if none/redemption island)
-   - votes: Array of {voter, target} for each vote cast
-   - Parse voting charts carefully from episode summaries
-
-7. SEASON NARRATIVE: 2-3 sentence story arc of the season
-
-BASE PLACEMENTS/STATS ON BRANTSTEELE DATA IF PROVIDED.
-BASE NARRATIVES/STORIES ON EPISODE SUMMARIES.
-
-Season: ${season} - ${seasonTitle}
-Theme: ${metadata.theme}
-Episodes: ${metadata.episodeCount}
-Cast Size: ${metadata.castSize}
-
-${episodeSummaries}
-${brantsteeleSection}
-
-Return ONLY JSON matching the schema.
-`.trim();
-
-  const payload = {
-    model: "gpt-5",
-    instructions,
-    input: episodeSummaries + brantsteeleSection,
-    text: { format: { type: "json_schema", name: "season_data", strict: true, schema } },
-  };
-
-  return await callOpenAI(payload, env);
-}
 
 async function generateAnalytics(summaryText, season, episode, env) {
   if (!summaryText || typeof summaryText !== "string") {
@@ -357,6 +163,25 @@ CRITICAL RULES:
 1. Identify ALL players still in the game (including Redemption Island).
 2. For bootPredictions, powerRankings, titles, roles, socialNetwork, juryManagement, threatBreakdown, pathToVictory: Include EVERY player (active + RI).
 3. If there are 18 total players (15 active + 3 on RI), ALL arrays must have 18 entries.
+
+SCORING SCALES - USE FULL 0-100 RANGE (NOT 0-10):
+* powerRankings.score: MUST be 0-100 (examples: 92, 78, 65, 43, 21)
+  - Top tier: 85-100
+  - Strong: 70-84
+  - Middle: 50-69
+  - Weak: 30-49
+  - Bottom: 0-29
+  ❌ WRONG: 9 (this is only 9%)
+  ✅ CORRECT: 90 (this is 90%)
+
+* juryManagement.score: MUST be 0-100 (examples: 88, 72, 55, 34)
+* allianceStability.score: MUST be 0-100 (examples: 95, 80, 62, 45)
+* centralityScore: MUST be 0-100 (examples: 87, 71, 58, 32)
+* threatBreakdown (physical/strategic/social/advantage): Each MUST be 0-100 (examples: 85, 68, 52, 29)
+
+* bootPredictions.prob: MUST be 0.00-1.00 decimal (examples: 0.85, 0.42, 0.18, 0.03)
+
+CRITICAL: Never use single digits like 9, 8, 7 for scores. Always use full range like 90, 80, 70.
 
 ONLY use facts from the summary. Do not invent events.
 

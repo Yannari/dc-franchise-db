@@ -667,6 +667,44 @@ Blaineley
           </div>
         </div>
         
+        <!-- BRANTSTEELE STATS -->
+        <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+          <h4 style="margin: 0 0 16px 0; display: flex; align-items: center; gap: 8px;">
+            <span>📊</span> Brantsteele Stats (Optional but Recommended)
+          </h4>
+          
+          <div>
+            <label style="display: block; margin-bottom: 6px; font-size: 13px; opacity: 0.9;">
+              Paste Brantsteele Summary Stats
+              <span style="opacity: 0.6;">(Placements, Challenge Wins, Votes Received, Idols, etc.)</span>
+            </label>
+            <textarea id="sb-brantsteele-stats" rows="8" placeholder="Optional: Paste the full Brantsteele season summary here for accurate stats...
+
+Example format:
+Place | Player | Phase | Notes
+1 | Jacques | Winner | 7 votes to win
+2 | Mickey | Finalist | 1 vote
+...
+
+Challenge Performance:
+Jacques: 4 wins
+Mickey: 1 win
+...
+
+Votes Received:
+Brody: 26
+Kitty: 15
+..."
+              style="width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-family: monospace; font-size: 12px;"></textarea>
+          </div>
+          
+          <div style="margin-top: 12px; padding: 12px; background: rgba(76,255,179,0.1); border: 1px solid rgba(76,255,179,0.3); border-radius: 8px;">
+            <p style="margin: 0; font-size: 12px; opacity: 0.85;">
+              💡 <strong>Tip:</strong> Including Brantsteele stats ensures 100% accuracy for challenge wins, idol counts, and votes received. AI will merge this data with episode narratives.
+            </p>
+          </div>
+        </div>
+        
         <!-- EPISODE SUMMARIES -->
         <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
@@ -2581,9 +2619,12 @@ setTimeout(function() {
       theme: document.getElementById("sb-season-theme").value.trim() || "",
       emoji: document.getElementById("sb-season-emoji").value.trim() || "🎯",
       episodeCount,
-      castSize: 0, // Will be determined from Episode 1
+      castSize: 0, // Will be determined from Episode 1 or Brantsteele stats
       jurySize: 0  // Will be calculated
     };
+    
+    // Collect Brantsteele stats (optional)
+    const brantsteeleStats = document.getElementById("sb-brantsteele-stats").value.trim();
     
     // Collect episode summaries
     const episodes = [];
@@ -2604,10 +2645,12 @@ setTimeout(function() {
     
     // Get cast from Episode 1
     const cast = parseCastFromSummary(episodes[0].summary);
-    if (cast.length === 0) {
-      throw new Error('No cast found in Episode 1! Make sure it has "=== CAST (ALL) ===" section.');
+    if (cast.length === 0 && !brantsteeleStats) {
+      throw new Error('No cast found in Episode 1! Make sure it has "=== CAST (ALL) ===" section, or provide Brantsteele stats.');
     }
-    metadata.castSize = cast.length;
+    if (cast.length > 0) {
+      metadata.castSize = cast.length;
+    }
     
     // Collect finale data
     const finale = {
@@ -2650,7 +2693,8 @@ setTimeout(function() {
         ...finale,
         juryVotes
       },
-      awards
+      awards,
+      brantsteeleStats // Include Brantsteele stats
     };
   }
   
@@ -2684,47 +2728,52 @@ setTimeout(function() {
     // - Update rankings_database.json
     // - Generate voting-analytics HTML
     
-    // Call actual implementation
-    generateCompleteSeasonDatabaseFull(data);
+    // Call AI-first implementation
+    generateCompleteSeasonDatabaseAI(data);
   }
   
-  // FULL IMPLEMENTATION - Step 2
-  async function generateCompleteSeasonDatabaseFull(data) {
+  // AI-FIRST IMPLEMENTATION - Let AI do ALL the parsing
+  async function generateCompleteSeasonDatabaseAI(data) {
     try {
-      // Step 1: Parse episodes
-      showProgress('<h3>⚡ Step 1/6: Parsing Episodes</h3><p>🔍 Extracting eliminations, votes, and challenges...</p>');
+      // Step 1: AI extracts ALL data from episodes
+      showProgress('<h3>⚡ Step 1/5: AI Data Extraction</h3><p>🤖 Having AI analyze all episodes and extract structured data...</p>');
       await sleep(500);
       
-      const parsedEpisodes = parseAllEpisodes(data.episodes, data.cast);
-      console.log('Parsed Episodes:', parsedEpisodes);
+      const aiSeasonData = await getAISeasonData(data);
       
-      // Step 2: Generate season data
-      showProgress('<h3>⚡ Step 2/6: Generating Season Data File</h3><p>📄 Creating season' + data.metadata.seasonNumber + '-data.json...</p>');
+      if (!aiSeasonData) {
+        throw new Error('AI data extraction failed. Check worker URL and try again.');
+      }
+      
+      console.log('AI Extracted Data:', aiSeasonData);
+      
+      // Step 2: Generate season data file from AI output
+      showProgress('<h3>⚡ Step 2/5: Building Season File</h3><p>📄 Creating season' + data.metadata.seasonNumber + '-data.json from AI data...</p>');
       await sleep(500);
       
-      const seasonData = generateSeasonDataJSON(data, parsedEpisodes);
+      const seasonData = buildSeasonDataFromAI(data, aiSeasonData);
       downloadJSON(seasonData, `season${data.metadata.seasonNumber}-data.json`);
       
       // Step 3: Update seasons_database
-      showProgress('<h3>⚡ Step 3/6: Updating Seasons Database</h3><p>📚 Adding Season ' + data.metadata.seasonNumber + ' to seasons_database.json...</p>');
+      showProgress('<h3>⚡ Step 3/5: Updating Seasons Database</h3><p>📚 Adding Season ' + data.metadata.seasonNumber + ' to seasons_database.json...</p>');
       await sleep(500);
       
       updateSeasonsDatabase(seasonData);
       
       // Step 4: Update franchise_database
-      showProgress('<h3>⚡ Step 4/6: Updating Franchise Database</h3><p>🏛️ Adding records, milestones, and trends...</p>');
+      showProgress('<h3>⚡ Step 4/5: Updating Franchise Database</h3><p>🏛️ Adding records, milestones, and trends...</p>');
       await sleep(500);
       
       updateFranchiseDatabase(seasonData);
       
-      // Step 5: Update players_database
-      showProgress('<h3>⚡ Step 5/6: Updating Players Database</h3><p>👥 Creating/updating player profiles...</p>');
+      // Step 5: Update players_database with AI-enhanced data
+      showProgress('<h3>⚡ Step 5/5: Updating Players Database</h3><p>👥 Creating/updating player profiles with AI narratives...</p>');
       await sleep(500);
       
       updatePlayersDatabase(seasonData);
       
-      // Step 6: Update rankings
-      showProgress('<h3>⚡ Step 6/6: Recalculating Rankings</h3><p>🏆 Calculating scores for all ' + (loadPlayerDatabase().players.length) + ' players...</p>');
+      // Step 6: Recalculate rankings
+      showProgress('<h3>⚡ Bonus: Recalculating Rankings</h3><p>🏆 Calculating scores for all players...</p>');
       await sleep(500);
       
       updateRankingsDatabase();
@@ -2742,7 +2791,7 @@ setTimeout(function() {
           <div style="font-size: 72px; margin-bottom: 16px;">🎉</div>
           <h2 style="margin: 0 0 12px; color: #4cffb3;">Season ${data.metadata.seasonNumber} Complete!</h2>
           <div style="font-size: 16px; opacity: 0.95; margin-bottom: 24px;">
-            All databases updated successfully
+            All data extracted by AI and databases updated successfully
           </div>
           
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin: 24px 0;">
@@ -2772,8 +2821,8 @@ setTimeout(function() {
             </div>
           </div>
           
-          <div style="padding: 16px; background: rgba(255,179,71,0.15); border-radius: 12px; margin-top: 24px; font-size: 14px;">
-            <strong>📋 Manual Step:</strong> Open <code>voting-analytics.html</code> and paste the downloaded HTML snippet before <code>&lt;/body&gt;</code>
+          <div style="padding: 16px; background: rgba(76,255,179,0.15); border-radius: 12px; margin-top: 24px; font-size: 14px;">
+            <strong>🤖 AI-Generated:</strong> All player data, placements, votes, and narratives extracted by AI
           </div>
           
           <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-top: 24px;">
@@ -2803,6 +2852,148 @@ setTimeout(function() {
         </div>
       `);
     }
+  }
+  
+  // ========================================
+  // AI DATA EXTRACTION
+  // ========================================
+  
+  async function getAISeasonData(data) {
+    const workerUrl = normalizeWorkerUrl(els.workerUrl.value.trim());
+    
+    if (!workerUrl) {
+      throw new Error('Worker URL not set! Please enter your Cloudflare Worker URL in the Overview tab.');
+    }
+    
+    try {
+      // Build episode summaries
+      const episodeSummaries = data.episodes.map(ep => ({
+        episode: ep.episode,
+        summary: ep.summary
+      }));
+      
+      // Call AI Worker with full season data extraction mode
+      const response = await fetch(workerUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: 'season-data-extraction',
+          season: data.metadata.seasonNumber,
+          seasonTitle: data.metadata.title,
+          episodes: episodeSummaries,
+          finale: data.finale,
+          awards: data.awards,
+          metadata: data.metadata,
+          brantsteeleStats: data.brantsteeleStats || null // Include Brantsteele stats
+        })
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`AI Worker failed (${response.status}): ${errorText}`);
+      }
+      
+      const result = await response.json();
+      return result;
+      
+    } catch (error) {
+      console.error('AI data extraction error:', error);
+      throw error;
+    }
+  }
+  
+  function buildSeasonDataFromAI(inputData, aiData) {
+    const { metadata, finale } = inputData;
+    
+    // Use AI-extracted data to build complete season file
+    const seasonData = {
+      seasonNumber: metadata.seasonNumber,
+      title: metadata.title,
+      subtitle: metadata.subtitle,
+      castSize: aiData.cast.length,
+      episodeCount: metadata.episodeCount,
+      jurySize: aiData.jury.length,
+      
+      winner: {
+        name: aiData.winner.name,
+        playerSlug: slugify(aiData.winner.name),
+        vote: finale.finalVote,
+        runnerUp: aiData.finalists.filter(f => f.placement > 1).map(f => f.name).join(' & '),
+        keyStats: aiData.winner.keyStats,
+        strategy: aiData.winner.strategy,
+        legacy: aiData.winner.legacy
+      },
+      
+      finalists: aiData.finalists.map(f => ({
+        name: f.name,
+        playerSlug: slugify(f.name),
+        placement: f.placement,
+        votes: f.juryVotes
+      })),
+      
+      placements: aiData.placements.map(p => ({
+        placement: p.placement,
+        name: p.name,
+        playerSlug: slugify(p.name),
+        phase: p.phase,
+        notes: p.notes,
+        strategicRank: p.strategicRank,
+        story: p.story,
+        gameplayStyle: p.gameplayStyle,
+        keyMoments: p.keyMoments || [],
+        challengeWins: p.challengeWins || 0,
+        immunityWins: p.immunityWins || 0,
+        idolsFound: p.idolsFound || 0,
+        votesReceived: p.votesReceived || 0,
+        alliances: p.alliances || [],
+        rivalries: p.rivalries || []
+      })),
+      
+      votingHistory: aiData.votingHistory.map(vh => ({
+        episode: vh.episode,
+        eliminated: vh.eliminated,
+        eliminatedSlug: vh.eliminated ? slugify(vh.eliminated) : null,
+        votes: vh.votes.map(v => ({
+          voter: v.voter,
+          voterSlug: slugify(v.voter),
+          target: v.target,
+          targetSlug: slugify(v.target)
+        }))
+      })),
+      
+      finalTribalCouncil: {
+        votes: finale.juryVotes.map(jv => ({
+          juror: jv.juror,
+          jurorSlug: slugify(jv.juror),
+          votedFor: jv.votedFor,
+          votedForSlug: slugify(jv.votedFor)
+        }))
+      },
+      
+      awards: {
+        fanFavorite: {
+          name: inputData.awards.fanFavorite,
+          playerSlug: slugify(inputData.awards.fanFavorite)
+        },
+        bestStrategic: {
+          name: inputData.awards.bestStrategic,
+          playerSlug: slugify(inputData.awards.bestStrategic)
+        },
+        mostChallengeWins: {
+          name: inputData.awards.mostChallengeWins,
+          playerSlug: slugify(inputData.awards.mostChallengeWins),
+          detail: `${aiData.placements.find(p => p.name.toLowerCase() === inputData.awards.mostChallengeWins.toLowerCase())?.challengeWins || 0} total`
+        }
+      },
+      
+      seasonNarrative: aiData.seasonNarrative,
+      theme: metadata.theme,
+      status: "Complete",
+      castPhotoPath: `assets/cast/s${metadata.seasonNumber}-cast.png`,
+      emoji: metadata.emoji
+    };
+    
+    return seasonData;
   }
   
   // ========================================
@@ -3508,6 +3699,147 @@ setTimeout(function() {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+  }
+
+  // ========================================
+  // AI ENHANCEMENT FUNCTIONS
+  // ========================================
+  
+  async function getAIEnhancements(data, seasonData) {
+    const workerUrl = normalizeWorkerUrl(els.workerUrl.value.trim());
+    
+    if (!workerUrl) {
+      console.warn('⚠️ Worker URL not set - skipping AI enhancement');
+      return null;
+    }
+    
+    try {
+      // Prepare full season summary for AI
+      const fullSeasonText = buildFullSeasonSummary(data, seasonData);
+      
+      // Call AI Worker with new "season-enhancement" mode
+      const response = await fetch(workerUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: 'season-enhancement',
+          season: data.metadata.seasonNumber,
+          seasonTitle: data.metadata.title,
+          seasonText: fullSeasonText,
+          placements: seasonData.placements,
+          cast: data.cast,
+          winner: seasonData.winner,
+          episodeCount: data.metadata.episodeCount
+        })
+      });
+      
+      if (!response.ok) {
+        console.error('AI Worker response not OK:', response.status);
+        return null;
+      }
+      
+      const result = await response.json();
+      return result;
+      
+    } catch (error) {
+      console.error('AI enhancement error:', error);
+      return null;
+    }
+  }
+  
+  function buildFullSeasonSummary(data, seasonData) {
+    let summary = `=== SEASON ${data.metadata.seasonNumber}: ${data.metadata.title} ===\n\n`;
+    summary += `Theme: ${data.metadata.theme}\n`;
+    summary += `Cast Size: ${data.metadata.castSize}\n`;
+    summary += `Episodes: ${data.metadata.episodeCount}\n\n`;
+    
+    summary += `=== FINAL RESULTS ===\n`;
+    summary += `Winner: ${seasonData.winner.name} (${seasonData.winner.vote})\n`;
+    summary += `Runner-up: ${seasonData.winner.runnerUp}\n\n`;
+    
+    summary += `=== PLACEMENTS ===\n`;
+    seasonData.placements.forEach(p => {
+      summary += `${p.placement}. ${p.name} - ${p.phase}\n`;
+    });
+    summary += `\n`;
+    
+    summary += `=== EPISODE SUMMARIES ===\n`;
+    data.episodes.forEach(ep => {
+      summary += `\n--- EPISODE ${ep.episode} ---\n`;
+      summary += ep.summary.substring(0, 1000); // Limit to 1000 chars per episode
+      summary += '\n';
+    });
+    
+    return summary;
+  }
+  
+  function applyAIEnhancements(seasonData, aiEnhancements) {
+    if (!aiEnhancements || !aiEnhancements.playerEnhancements) {
+      console.warn('No AI enhancements to apply');
+      return;
+    }
+    
+    // Add AI-generated content to placements
+    seasonData.placements.forEach(player => {
+      const enhancement = aiEnhancements.playerEnhancements.find(
+        e => e.name.toLowerCase() === player.name.toLowerCase()
+      );
+      
+      if (enhancement) {
+        // Add strategic rank
+        player.strategicRank = enhancement.strategicRank || 0;
+        
+        // Add story/narrative
+        player.story = enhancement.story || player.notes;
+        
+        // Add key moments
+        if (enhancement.keyMoments && enhancement.keyMoments.length > 0) {
+          player.keyMoments = enhancement.keyMoments;
+        }
+        
+        // Add gameplay style
+        if (enhancement.gameplayStyle) {
+          player.gameplayStyle = enhancement.gameplayStyle;
+        }
+        
+        // Add challenge stats if provided
+        if (enhancement.challengeWins !== undefined) {
+          player.challengeWins = enhancement.challengeWins;
+        }
+        if (enhancement.immunityWins !== undefined) {
+          player.immunityWins = enhancement.immunityWins;
+        }
+        
+        // Add idol/advantage info
+        if (enhancement.idolsFound !== undefined) {
+          player.idolsFound = enhancement.idolsFound;
+        }
+        
+        // Add alliances
+        if (enhancement.alliances && enhancement.alliances.length > 0) {
+          player.alliances = enhancement.alliances;
+        }
+        
+        // Add rivalries
+        if (enhancement.rivalries && enhancement.rivalries.length > 0) {
+          player.rivalries = enhancement.rivalries;
+        }
+      }
+    });
+    
+    // Add AI-generated season narrative
+    if (aiEnhancements.seasonNarrative) {
+      seasonData.seasonNarrative = aiEnhancements.seasonNarrative;
+    }
+    
+    // Update winner strategy and legacy with AI content
+    if (aiEnhancements.winnerAnalysis) {
+      seasonData.winner.strategy = aiEnhancements.winnerAnalysis.strategy || seasonData.winner.strategy;
+      seasonData.winner.legacy = aiEnhancements.winnerAnalysis.legacy || seasonData.winner.legacy;
+      seasonData.winner.keyStats = aiEnhancements.winnerAnalysis.keyStats || seasonData.winner.keyStats;
+    }
+    
+    console.log('✅ AI enhancements applied to season data');
   }
 
   // ========================================

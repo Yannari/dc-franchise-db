@@ -2202,11 +2202,12 @@ console.log("🚀 Season Setup script tag reached!");
         console.log("Database will be empty until you import it manually or create profiles");
       });
   } else {
-    console.log("✅ Database already in localStorage");
+    const db = JSON.parse(existingDB);
+    console.log(`✅ Database already in localStorage (${db.players.length} players, ${db.franchise.totalSeasons} seasons)`);
   }
 })();
 
-// Use setTimeout to ensure ALL DOM elements are fully rendered
+// Use setTimeout to ensure ALL DOM elements are fully rendered AND database is loaded
 setTimeout(function() {
 (function() {
   console.log("🔧 Season Setup: Initializing...");
@@ -2715,7 +2716,7 @@ setTimeout(function() {
   }
   
 })();
-}, 100); // Wait 100ms for DOM to fully render
+}, 500); // Wait 500ms for DOM to fully render and database to load
 </script>
 </div><footer class="siteFooter">
   <div class="footerInner">

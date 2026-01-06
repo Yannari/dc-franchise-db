@@ -80,6 +80,8 @@
 .ai-label{display:block;font-size:12px;letter-spacing:.04em;text-transform:uppercase;opacity:.8;margin-bottom:8px}
 .ai-endpoint{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .ai-input{width:100%;min-width:260px;background:rgba(10,8,18,.55);border:1px solid rgba(255,255,255,.10);color:#fff;border-radius:12px;padding:10px 12px;outline:none}
+#season-builder-card .ai-input{min-width:0}
+#season-builder-card .ai-field{min-width:190px}
 .ai-textarea{width:100%;min-height:170px;background:rgba(10,8,18,.55);border:1px solid rgba(255,255,255,.10);color:#fff;border-radius:12px;padding:12px;outline:none;font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-size:12px;line-height:1.35}
 .ai-controls{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;align-items:flex-end}
 .ai-field{flex:1;min-width:160px}
@@ -709,6 +711,25 @@ Blaineley
           <div id="sb-parse-preview" style="display:none; margin-top: 12px; padding: 12px; background: rgba(125,76,255,0.10); border: 1px solid rgba(125,76,255,0.25); border-radius: 12px;">
             <!-- JS preview goes here -->
           </div>
+        </div>
+
+
+        <!-- BRANTSTEELE STATS (OPTIONAL) -->
+        <div style="padding: 16px; background: rgba(0,0,0,0.18); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; margin-bottom: 16px;">
+          <div style="display:flex; align-items:flex-end; justify-content:space-between; gap: 12px; flex-wrap:wrap;">
+            <div>
+              <h4 style="margin: 0 0 6px;">📊 BrantSteele Statistics (Recommended)</h4>
+              <div class="muted small">Paste the <b>Statistics</b> block from the end of the sim (Placements / Challenge Wins / Votes Received / Idols). This will auto-fill player stats + generate awards.</div>
+            </div>
+            <div style="display:flex; gap: 10px; flex-wrap:wrap;">
+              <button id="sb-parse-stats-btn" class="btn btn-primary">📈 Parse Stats</button>
+            </div>
+          </div>
+
+          <textarea id="sb-stats-text" class="ai-textarea" style="min-height: 180px; margin-top: 10px;" spellcheck="false"
+            placeholder="Paste BrantSteele Statistics here..."></textarea>
+
+          <div id="sb-stats-preview" style="display:none; margin-top: 12px; padding: 12px; background: rgba(76,255,179,0.08); border: 1px solid rgba(76,255,179,0.25); border-radius: 12px;"></div>
         </div>
 
         <!-- FINALE + AWARDS -->
@@ -2865,6 +2886,10 @@ setTimeout(function() {
     clearBtn: document.getElementById("sb-clear-episodes-btn"),
     preview: document.getElementById("sb-parse-preview"),
 
+    statsText: document.getElementById("sb-stats-text"),
+    statsBtn: document.getElementById("sb-parse-stats-btn"),
+    statsPreview: document.getElementById("sb-stats-preview"),
+
     winner: document.getElementById("sb-finale-winner"),
     runnerup: document.getElementById("sb-finale-runnerup"),
     finalVote: document.getElementById("sb-finale-vote"),
@@ -2881,6 +2906,7 @@ setTimeout(function() {
   };
 
   let sbLastParsed = null;
+  let sbStatsParsed = null;
 
   function setSBProgress(html, show = true) {
     if (!sb.progress) return;
@@ -3122,6 +3148,176 @@ setTimeout(function() {
     return out;
   }
 
+
+  function parseNameNumberTable(blockText) {
+    const out = {};
+    const lines = (blockText || "").split(/\r?\n/).map(l => (l || "").trim()).filter(Boolean);
+    for (const line of lines) {
+      // "Name 4" OR "Name    4"
+      const m = line.match(/^(?:[-•●\u2022]\s*)?([A-Za-z][A-Za-z0-9' -]{1,40})\s+(\d+)\b/);
+      if (!m) continue;
+      const name = normalizeName(m[1]);
+      const num = Number(m[2]);
+      if (!name || !Number.isFinite(num)) continue;
+      out[name.toLowerCase()] = num;
+    }
+    return out;
+  }
+
+  function extractBlock(text, startRe, endRes) {
+    const raw = text || "";
+    const mStart = raw.search(startRe);
+    if (mStart < 0) return "";
+    const sub = raw.slice(mStart);
+    let endIdx = sub.length;
+    for (const er of (endRes || [])) {
+      const i = sub.search(er);
+      if (i > 0 && i < endIdx) endIdx = i;
+    }
+    return sub.slice(0, endIdx);
+  }
+
+    function parsePlacementsBlock(blockText) {
+    const placements = [];
+    const rawLines = (blockText || "").split(/\r?\n/).map(l => (l || "").trim()).filter(Boolean);
+
+    // Join lines to survive PDF-style line breaks
+    const joined = rawLines.join(" ")
+      .replace(/[🥇🥈🥉]/g, " ")
+      .replace(/\s{2,}/g, " ")
+      .trim();
+
+    // Capture "1 Name Winner / Finalist ... (notes) ... 2 Name Finalist ..."
+    const rgx = /(?:^|\s)(\d{1,2})\s+([A-Za-z][A-Za-z0-9' -]{1,40})\s+([\s\S]*?)(?=(?:\s\d{1,2}\s+[A-Za-z])|$)/g;
+    let mm;
+    while ((mm = rgx.exec(joined)) !== null) {
+      const placement = Number(mm[1]);
+      const name = normalizeName(mm[2]);
+      const rest = (mm[3] || "").trim();
+      if (!Number.isFinite(placement) || !name) continue;
+
+      let phase = "Eliminated";
+      const restLow = rest.toLowerCase();
+      if (restLow.includes("winner")) phase = "Winner";
+      else if (restLow.includes("finalist")) phase = "Finalist";
+      else if (restLow.includes("juror") || restLow.includes("jury")) phase = "Juror";
+      else if (restLow.includes("pre-juror") || restLow.includes("pre jury") || restLow.includes("pre-jury") || restLow.includes("pre-merge")) phase = "Pre-Merge";
+
+      placements.push({
+        placement,
+        name,
+        playerSlug: slugify(name),
+        phase,
+        notes: rest
+      });
+    }
+
+    placements.sort((a, b) => a.placement - b.placement);
+    return placements;
+  }
+
+  function parseStrategicRankings(blockText) {
+    const ranks = [];
+    const lines = (blockText || "").split(/\r?\n/).map(l => (l || "").trim()).filter(Boolean);
+    for (const line of lines) {
+      // "1 Scarlett scarlett"
+      const m = line.match(/^(\d+)\s+([A-Za-z][A-Za-z0-9' -]{1,40})\b/);
+      if (!m) continue;
+      const rank = Number(m[1]);
+      const name = normalizeName(m[2]);
+      if (!Number.isFinite(rank) || !name) continue;
+      ranks.push({ rank, name, playerSlug: slugify(name) });
+    }
+    ranks.sort((a, b) => a.rank - b.rank);
+    return ranks;
+  }
+
+  function parseBrantSteeleStats(statsText) {
+    const text = (statsText || "").replace(/\uFE0F/g, ""); // remove emoji variation selectors
+    if (!text.trim()) return null;
+
+    const meta = {};
+    const getLine = (re) => {
+      const m = text.match(re);
+      return m ? normalizeName(m[1]) : "";
+    };
+
+    meta.seasonName = getLine(/Season Name:\s*(.+)$/im) || getLine(/TOTAL DRAMA:\s*([^\n]+)\s+—\s+SEASON/i);
+    const castSize = (text.match(/Cast Size:\s*(\d+)/i) || [])[1];
+    meta.castSize = castSize ? Number(castSize) : null;
+    meta.winner = getLine(/Winner:\s*(.+)$/im);
+    meta.finalistsRaw = getLine(/Finalists:\s*(.+)$/im);
+    meta.fanFavorite = getLine(/Fan Favorite:\s*(.+)$/im);
+
+    // Blocks
+    const placementsBlock = extractBlock(text, /PLACEMENTS/i, [/CHALLENGE PERFORMANCE/i, /VOTING DATA/i, /STRATEGIC RANKINGS/i, /IDOLS/i, /FINAL JURY/i, /SEASON HIGHLIGHTS/i]);
+    const challengeBlock = extractBlock(text, /CHALLENGE PERFORMANCE/i, [/VOTING DATA/i, /STRATEGIC RANKINGS/i, /IDOLS/i, /FINAL JURY/i, /SEASON AWARDS/i]);
+    const votingBlock = extractBlock(text, /VOTING DATA/i, [/STRATEGIC RANKINGS/i, /IDOLS/i, /FINAL JURY/i, /SEASON AWARDS/i, /SEASON HIGHLIGHTS/i]);
+    const strategicBlock = extractBlock(text, /STRATEGIC RANKINGS/i, [/IDOLS/i, /FINAL JURY/i, /SEASON AWARDS/i, /SEASON HIGHLIGHTS/i]);
+    const idolsBlock = extractBlock(text, /IDOLS/i, [/SEASON AWARDS/i, /FINAL JURY/i, /SEASON HIGHLIGHTS/i]);
+
+    const placements = parsePlacementsBlock(placementsBlock);
+
+    // Challenge sub-blocks
+    const totalWinsBlock = extractBlock(challengeBlock, /Total Challenge Wins/i, [/Immunity Wins/i, /Reward Wins/i, /VOTING DATA/i]);
+    const immunityBlock = extractBlock(challengeBlock, /Immunity Wins/i, [/Reward Wins/i, /VOTING DATA/i]);
+    const rewardBlock = extractBlock(challengeBlock, /Reward Wins/i, [/VOTING DATA/i]);
+
+    const totalChallengeWins = parseNameNumberTable(totalWinsBlock);
+    const immunityWins = parseNameNumberTable(immunityBlock);
+    const rewardWins = parseNameNumberTable(rewardBlock);
+
+    // Votes received
+    const votesBlock = extractBlock(votingBlock, /Votes Received/i, [/Key record note/i, /STRATEGIC RANKINGS/i, /IDOLS/i, /FINAL JURY/i, /SEASON HIGHLIGHTS/i]);
+    const votesAgainst = parseNameNumberTable(votesBlock);
+
+    // Idols found
+    const idolsFoundBlock = extractBlock(idolsBlock, /Hidden Immunity Idols Found/i, [/Major Non-Idol Advantages/i, /SEASON AWARDS/i, /FINAL JURY/i, /SEASON HIGHLIGHTS/i]);
+    const idolsFound = parseNameNumberTable(idolsFoundBlock);
+
+    // Strategic rankings
+    const strategicRankings = parseStrategicRankings(strategicBlock);
+    const strategicRankMap = {};
+    strategicRankings.forEach(r => { strategicRankMap[r.name.toLowerCase()] = r.rank; });
+
+    // finalists array from metadata (best-effort)
+    let finalists = [];
+    if (meta.finalistsRaw) {
+      finalists = meta.finalistsRaw.split(/[\/,]/).map(s => s.trim()).filter(Boolean);
+    }
+
+    // Auto award suggestions
+    const maxBy = (mapObj) => {
+      let bestName = "";
+      let bestVal = -Infinity;
+      for (const [k, v] of Object.entries(mapObj || {})) {
+        const val = Number(v);
+        if (Number.isFinite(val) && val > bestVal) { bestVal = val; bestName = k; }
+      }
+      return bestName ? { name: bestName, value: bestVal } : null;
+    };
+
+    const mostChallenges = maxBy(totalChallengeWins);
+
+    return {
+      meta,
+      placements,
+      totalChallengeWins,
+      immunityWins,
+      rewardWins,
+      votesAgainst,
+      idolsFound,
+      strategicRankings,
+      strategicRankMap,
+      finalists,
+      autoAwards: {
+        fanFavorite: meta.fanFavorite || "",
+        bestStrategic: strategicRankings[0]?.name || "",
+        mostChallengeWins: mostChallenges ? (mostChallenges.name ? (mostChallenges.name.charAt(0).toUpperCase() + mostChallenges.name.slice(1)) : "") : ""
+      }
+    };
+  }
+
   function parseFinaleInputs() {
     const winner = normalizeName(sb.winner.value);
     const runnerUpRaw = normalizeName(sb.runnerup.value);
@@ -3246,15 +3442,29 @@ setTimeout(function() {
     return null;
   }
 
-  function generateSeasonDataFile(metadata, episodeData, finaleData, awards) {
+  function generateSeasonDataFile(metadata, episodeData, finaleData, awards, statsParsed) {
     const cast = parseCastAllFromEpisode1(episodeData[0]?.summary || "");
-    const castSize = cast.length;
+    const castSize = (statsParsed && statsParsed.meta && Number(statsParsed.meta.castSize)) ? Number(statsParsed.meta.castSize) : cast.length;
     const episodeCount = Number(metadata.episodeCount || episodeData.length || 0);
     const jurySize = Number(metadata.jurySize || 0);
 
-    const { placements, elimUnique } = calculatePlacements(cast, episodeData, finaleData, jurySize);
+    let { placements, elimUnique } = calculatePlacements(cast, episodeData, finaleData, jurySize);
+
+    // If BrantSteele stats were provided, prefer its placements + stats maps
+    if (statsParsed && Array.isArray(statsParsed.placements) && statsParsed.placements.length) {
+      placements = statsParsed.placements.slice().sort((a,b)=>Number(a.placement)-Number(b.placement));
+    }
 
     const seasonData = {
+      stats: statsParsed ? {
+        totalChallengeWins: statsParsed.totalChallengeWins || {},
+        immunityWins: statsParsed.immunityWins || {},
+        rewardWins: statsParsed.rewardWins || {},
+        votesAgainst: statsParsed.votesAgainst || {},
+        idolsFound: statsParsed.idolsFound || {},
+        strategicRankMap: statsParsed.strategicRankMap || {},
+        source: "BrantSteele Statistics"
+      } : null,
       seasonNumber: Number(metadata.seasonNumber),
       title: metadata.title || `Season ${metadata.seasonNumber}`,
       subtitle: metadata.subtitle || "",
@@ -3352,6 +3562,7 @@ setTimeout(function() {
 
     const season = Number(seasonData.seasonNumber);
     const awards = seasonData.awards || {};
+    const stats = seasonData.stats || null;
 
     const awardBadges = new Map();
     if (awards.fanFavorite?.name) awardBadges.set(awards.fanFavorite.name.toLowerCase(), `S${season} Fan Favorite`);
@@ -3417,6 +3628,12 @@ setTimeout(function() {
         ? Number(player.seasonDetails[idx].juryVotes) || 0
         : 0;
 
+      const prevChallengeWins = (idx >= 0 && player.seasonDetails[idx]?.challengeWins != null) ? Number(player.seasonDetails[idx].challengeWins) || 0 : 0;
+      const prevImmunityWins = (idx >= 0 && player.seasonDetails[idx]?.immunityWins != null) ? Number(player.seasonDetails[idx].immunityWins) || 0 : 0;
+      const prevRewardWins = (idx >= 0 && player.seasonDetails[idx]?.rewardWins != null) ? Number(player.seasonDetails[idx].rewardWins) || 0 : 0;
+      const prevVotesRec = (idx >= 0 && player.seasonDetails[idx]?.votesReceived != null) ? Number(player.seasonDetails[idx].votesReceived) || 0 : 0;
+      const prevIdolsFound = (idx >= 0 && player.seasonDetails[idx]?.idolsFound != null) ? Number(player.seasonDetails[idx].idolsFound) || 0 : 0;
+
       const juryVotes = (seasonData.finalists || []).find(f => f.name.toLowerCase() === player.name.toLowerCase())?.votes || 0;
 
       const detail = {
@@ -3443,6 +3660,18 @@ setTimeout(function() {
       // totals that we can safely update (avoid double-counting if rerun)
       const nextJuryVotes = Number(juryVotes) || 0;
       player.totalJuryVotes = (Number(player.totalJuryVotes) || 0) - prevJuryVotes + nextJuryVotes;
+
+      // Update season totals (avoid double-counting when rerun)
+      const nextChallengeWins = Number(detail.challengeWins) || 0;
+      const nextImmunityWins = Number(detail.immunityWins) || 0;
+      const nextRewardWins = Number(detail.rewardWins) || 0;
+      const nextVotesRec = Number(detail.votesReceived) || 0;
+      const nextIdolsFound = Number(detail.idolsFound) || 0;
+      player.totalChallengeWins = (Number(player.totalChallengeWins) || 0) - prevChallengeWins + nextChallengeWins;
+      player.totalImmunityWins = (Number(player.totalImmunityWins) || 0) - prevImmunityWins + nextImmunityWins;
+      player.totalRewardWins = (Number(player.totalRewardWins) || 0) - prevRewardWins + nextRewardWins;
+      player.totalVotesAgainst = (Number(player.totalVotesAgainst) || 0) - prevVotesRec + nextVotesRec;
+      player.totalIdolsFound = (Number(player.totalIdolsFound) || 0) - prevIdolsFound + nextIdolsFound;
     }
 
     // franchise header
@@ -3493,7 +3722,7 @@ setTimeout(function() {
       runnerUp: seasonData.winner.runnerUp || "",
       keyStats: seasonData.winner.keyStats || "TBD",
       legacy: seasonData.winner.legacy || "TBD",
-      votesAgainst: 0
+      votesAgainst: (seasonData.stats && seasonData.winner?.name) ? (Number(seasonData.stats.votesAgainst?.[seasonData.winner.name.toLowerCase()]) || 0) : 0
     };
     if (i >= 0) franchiseDB.champions[i] = champ;
     else franchiseDB.champions.push(champ);
@@ -3811,11 +4040,21 @@ setTimeout(function() {
 
     appendSBProgress(`🏆 Parsing finale + awards...`);
     const finaleData = parseFinaleInputs();
+
+    const statsParsed = sbStatsParsed;
+
     const awards = {
       fanFavorite: normalizeName(sb.awardFan.value),
       bestStrategic: normalizeName(sb.awardStrategic.value),
       mostChallengeWins: normalizeName(sb.awardChallenges.value)
     };
+
+    // Auto-fill awards from BrantSteele stats if the user left them blank
+    if (statsParsed && statsParsed.autoAwards) {
+      if (!awards.fanFavorite && statsParsed.autoAwards.fanFavorite) awards.fanFavorite = statsParsed.autoAwards.fanFavorite;
+      if (!awards.bestStrategic && statsParsed.autoAwards.bestStrategic) awards.bestStrategic = statsParsed.autoAwards.bestStrategic;
+      if (!awards.mostChallengeWins && statsParsed.autoAwards.mostChallengeWins) awards.mostChallengeWins = statsParsed.autoAwards.mostChallengeWins;
+    }
 
     const metadata = {
       seasonNumber,
@@ -3828,7 +4067,7 @@ setTimeout(function() {
     };
 
     appendSBProgress(`📦 Building season${seasonNumber}-data.json...`);
-    const seasonData = generateSeasonDataFile(metadata, episodeData, finaleData, awards);
+    const seasonData = generateSeasonDataFile(metadata, episodeData, finaleData, awards, statsParsed);
 
     // Update databases in-memory
     appendSBProgress(`👤 Updating players_database...`);
@@ -3927,6 +4166,57 @@ setTimeout(function() {
         }
       });
     }
+
+
+    if (sb.statsBtn) {
+      sb.statsBtn.addEventListener("click", () => {
+        try {
+          const parsed = parseBrantSteeleStats(sb.statsText ? sb.statsText.value : "");
+          if (!parsed) {
+            alert("⚠️ No stats text detected.");
+            return;
+          }
+          sbStatsParsed = parsed;
+
+          // Auto-fill some fields if empty
+          if (parsed.meta?.seasonName && !sb.title.value) sb.title.value = parsed.meta.seasonName;
+          if (parsed.meta?.winner && !sb.winner.value) sb.winner.value = parsed.meta.winner;
+
+          if (parsed.finalists && parsed.finalists.length && !sb.runnerup.value) {
+            const ru = parsed.finalists.filter(n => n.toLowerCase() !== (sb.winner.value || "").toLowerCase());
+            if (ru.length) sb.runnerup.value = ru.join(", ");
+          }
+
+          // Auto-fill awards fields if empty
+          if (parsed.autoAwards) {
+            if (!sb.awardFan.value && parsed.autoAwards.fanFavorite) sb.awardFan.value = parsed.autoAwards.fanFavorite;
+            if (!sb.awardStrategic.value && parsed.autoAwards.bestStrategic) sb.awardStrategic.value = parsed.autoAwards.bestStrategic;
+            if (!sb.awardChallenges.value && parsed.autoAwards.mostChallengeWins) sb.awardChallenges.value = parsed.autoAwards.mostChallengeWins;
+          }
+
+          if (sb.statsPreview) {
+            sb.statsPreview.style.display = "block";
+            const cc = parsed.meta?.castSize ? `${parsed.meta.castSize}` : "—";
+            const ff = parsed.meta?.fanFavorite || parsed.autoAwards?.fanFavorite || "—";
+            const topStrat = parsed.strategicRankings?.[0]?.name || parsed.autoAwards?.bestStrategic || "—";
+            const placementsN = parsed.placements?.length || 0;
+            sb.statsPreview.innerHTML = `
+              <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                <div><b>Cast size:</b> ${escapeHtml(String(cc))}</div>
+                <div><b>Placements parsed:</b> ${placementsN}</div>
+                <div><b>Fan Favorite:</b> ${escapeHtml(ff)}</div>
+                <div><b>#1 Strategic:</b> ${escapeHtml(topStrat)}</div>
+              </div>
+              <div class="muted small" style="margin-top:8px;">Parsed stats will be used to fill challenge wins / votes received / idols found when generating databases.</div>
+            `;
+          }
+        } catch (e) {
+          console.error(e);
+          alert(`❌ Stats parse failed: ${e.message}`);
+        }
+      });
+    }
+
 
     if (sb.generateBtn) {
       sb.generateBtn.addEventListener("click", async () => {

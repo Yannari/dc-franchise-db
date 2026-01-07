@@ -2399,6 +2399,53 @@ console.log("🚀 Season Setup script tag reached!");
   }
 })();
 
+// Always load fresh DB from players_database.json, then cache into localStorage.
+// Fallback to existing localStorage (or an empty DB) if the JSON fetch fails.
+async function preloadPlayersDatabaseFromJSON() {
+  try {
+    const res = await fetch('players_database.json', { cache: 'no-store' });
+    if (!res.ok) throw new Error(`players_database.json HTTP ${res.status}`);
+    const db = await res.json();
+
+    // Normalize schema (prevents crashes if older saves are missing fields)
+    if (!db.franchise) {
+      db.franchise = {
+        name: "DC Franchise Database",
+        totalSeasons: 0,
+        totalPlayers: 0,
+        description: "Total Drama franchise player statistics and performance data"
+      };
+    }
+    if (!Array.isArray(db.players)) db.players = [];
+    db.players.forEach(p => {
+      if (!Array.isArray(p.seasons)) p.seasons = [];
+      if (!Array.isArray(p.seasonDetails)) p.seasonDetails = [];
+      if (!Array.isArray(p.badges)) p.badges = [];
+    });
+
+    localStorage.setItem("players_database", JSON.stringify(db, null, 2));
+    console.log("✅ Loaded fresh players_database.json → localStorage");
+    return db;
+  } catch (e) {
+    console.warn("⚠️ Failed to load players_database.json; using localStorage (if any).", e);
+
+    try {
+      const raw = localStorage.getItem("players_database");
+      if (raw) return JSON.parse(raw);
+    } catch (_) {}
+
+    return {
+      franchise: {
+        name: "DC Franchise Database",
+        totalSeasons: 0,
+        totalPlayers: 0,
+        description: "Total Drama franchise player statistics and performance data"
+      },
+      players: []
+    };
+  }
+}
+
 // Use setTimeout to ensure ALL DOM elements are fully rendered AND database is loaded
 setTimeout(async function() {
   await preloadPlayersDatabaseFromJSON();
@@ -4431,38 +4478,6 @@ setTimeout(async function() {
   // ========================================
 
 
-// Always load fresh DB from players_database.json, then cache into localStorage.
-// Fallback to localStorage if the JSON fetch fails.
-async function preloadPlayersDatabaseFromJSON() {
-  try {
-    const res = await fetch('players_database.json', { cache: 'no-store' });
-    if (!res.ok) throw new Error(`players_database.json HTTP ${res.status}`);
-    const db = await res.json();
-
-    // Normalize schema (prevents crashes if older saves are missing fields)
-    if (!db.franchise) {
-      db.franchise = {
-        name: "DC Franchise Database",
-        totalSeasons: 0,
-        totalPlayers: 0,
-        description: "Total Drama franchise player statistics and performance data"
-      };
-    }
-    if (!Array.isArray(db.players)) db.players = [];
-    db.players.forEach(p => {
-      if (!Array.isArray(p.seasons)) p.seasons = [];
-      if (!Array.isArray(p.seasonDetails)) p.seasonDetails = [];
-      if (!Array.isArray(p.badges)) p.badges = [];
-    });
-
-    localStorage.setItem("players_database", JSON.stringify(db, null, 2));
-    console.log("✅ Loaded fresh players_database.json → localStorage");
-    return db;
-  } catch (e) {
-    console.warn("⚠️ Failed to load players_database.json; falling back to localStorage if available", e);
-    return loadPlayerDatabase();
-  }
-}
 
   function loadPlayerDatabase() {
     try {

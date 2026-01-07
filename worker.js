@@ -27,6 +27,73 @@ export default {
   },
 };
 
+// --- Helpers ---------------------------------------------------------------
+// Extract canonical cast names from Episode 1 summary.
+// Expected format in your episode summaries:
+//   === CAST (ALL) ===
+//   Name 1
+//   Name 2
+//   ...
+//   === <NEXT SECTION> ===
+function extractCastFromEpisode1(episodes) {
+  try {
+    const ep1 = Array.isArray(episodes) ? episodes[0] : null;
+    const text = (ep1 && (ep1.summary || ep1.text || ep1.raw || '')) || '';
+    if (!text) return [];
+
+    // Find the CAST (ALL) block.
+    const startIdx = text.indexOf('=== CAST (ALL) ===');
+    if (startIdx === -1) return [];
+    const afterStart = text.slice(startIdx + '=== CAST (ALL) ==='.length);
+
+    // Stop at the next "===" heading, if present.
+    const nextHeadingIdx = afterStart.indexOf('===');
+    const block = (nextHeadingIdx === -1 ? afterStart : afterStart.slice(0, nextHeadingIdx))
+      .trim();
+    if (!block) return [];
+
+    // One name per line; strip bullets/numbers.
+    const lines = block
+      .split(/\r?\n/)
+      .map(l => l.trim())
+      .filter(Boolean)
+      .map(l => l.replace(/^[-*\d.)\s]+/, '').trim());
+
+    // Filter out obvious non-names / headings that sometimes appear in stats.
+    const banned = new Set([
+      'votes to win',
+      'votes received',
+      'jury votes',
+      'elimination order',
+      'placements',
+      'statistics',
+      'cast',
+    ]);
+    const cleaned = lines.filter(n => {
+      const lower = n.toLowerCase();
+      if (!n) return false;
+      if (banned.has(lower)) return false;
+      // Avoid accidentally grabbing column headers.
+      if (lower.includes('votes to win')) return false;
+      if (lower.includes('place') && lower.includes('player')) return false;
+      return true;
+    });
+
+    // De-dupe while preserving order.
+    const seen = new Set();
+    const unique = [];
+    for (const name of cleaned) {
+      if (!seen.has(name)) {
+        seen.add(name);
+        unique.push(name);
+      }
+    }
+    return unique;
+  } catch (_) {
+    return [];
+  }
+}
+
 async function generateSeasonDataExtraction(body, env) {
   const { season, seasonTitle, episodes, finale, awards, metadata, brantsteeleStats } = body;
   
@@ -37,23 +104,47 @@ async function generateSeasonDataExtraction(body, env) {
     });
   }
 
+  // --- Canonical name guardrails ------------------------------------------
+  // The ONLY valid player names are the ones listed in Episode 1 under:
+  //   === CAST (ALL) ===
+  // This prevents the model from accidentally inventing extra "players" from
+  // stat labels (e.g. "Votes to Win") or from notes (e.g. "Jacques Winner").
+  const canonicalCast = extractCastFromEpisode1(episodes);
+  const expectedCastSize = Number(metadata?.castSize) || (canonicalCast.length || undefined);
+  const expectedEpisodeCount = Number(metadata?.episodeCount) || (episodes?.length || undefined);
+
+  const playerNameSchema = canonicalCast.length
+    ? { type: "string", enum: canonicalCast }
+    : { type: "string" };
+
+  const boundedArray = (base, expected) =>
+    expected
+      ? { ...base, minItems: expected, maxItems: expected }
+      : base;
+
+  const castItemSchema = canonicalCast.length
+    ? { type: "string", enum: canonicalCast }
+    : { type: "string" };
+
   const schema = {
     type: "object",
     additionalProperties: false,
     properties: {
       cast: {
         type: "array",
-        items: { type: "string" },
-        description: "Full cast list (all player names)"
+        items: castItemSchema,
+        ...(expectedCastSize ? { minItems: expectedCastSize, maxItems: expectedCastSize } : {}),
+        description: "Full cast list (all player names). Must match Episode 1 CAST (ALL) exactly."
       },
       placements: {
         type: "array",
+        ...(expectedCastSize ? { minItems: expectedCastSize, maxItems: expectedCastSize } : {}),
         items: {
           type: "object",
           additionalProperties: false,
           properties: {
             placement: { type: "number" },
-            name: { type: "string" },
+            name: castItemSchema,
             phase: { 
               type: "string",
               enum: ["Winner", "Finalist", "Juror", "Pre-Juror", "Pre-Merge"]
@@ -67,19 +158,20 @@ async function generateSeasonDataExtraction(body, env) {
             immunityWins: { type: "number" },
             idolsFound: { type: "number" },
             votesReceived: { type: "number" },
-            alliances: { type: "array", items: { type: "string" } },
-            rivalries: { type: "array", items: { type: "string" } }
+            alliances: { type: "array", items: castItemSchema },
+            rivalries: { type: "array", items: castItemSchema }
           },
           required: ["placement", "name", "phase", "notes", "strategicRank", "story", "gameplayStyle", "keyMoments", "challengeWins", "immunityWins", "idolsFound", "votesReceived", "alliances", "rivalries"]
         }
       },
       finalists: {
         type: "array",
+        ...(expectedCastSize ? { maxItems: 3 } : {}),
         items: {
           type: "object",
           additionalProperties: false,
           properties: {
-            name: { type: "string" },
+            name: castItemSchema,
             placement: { type: "number" },
             juryVotes: { type: "number" }
           },
@@ -90,7 +182,7 @@ async function generateSeasonDataExtraction(body, env) {
         type: "object",
         additionalProperties: false,
         properties: {
-          name: { type: "string" },
+          name: castItemSchema,
           keyStats: { type: "string" },
           strategy: { type: "string", description: "2-3 sentences on how they won" },
           legacy: { type: "string", description: "1-2 sentences on their impact" }
@@ -99,7 +191,7 @@ async function generateSeasonDataExtraction(body, env) {
       },
       jury: {
         type: "array",
-        items: { type: "string" },
+        items: castItemSchema,
         description: "List of jury members"
       },
       votingHistory: {
@@ -109,15 +201,15 @@ async function generateSeasonDataExtraction(body, env) {
           additionalProperties: false,
           properties: {
             episode: { type: "number" },
-            eliminated: { type: ["string", "null"] },
+            eliminated: { anyOf: [castItemSchema, { type: "null" }] },
             votes: {
               type: "array",
               items: {
                 type: "object",
                 additionalProperties: false,
                 properties: {
-                  voter: { type: "string" },
-                  target: { type: "string" }
+                  voter: castItemSchema,
+                  target: castItemSchema
                 },
                 required: ["voter", "target"]
               }
@@ -146,6 +238,10 @@ async function generateSeasonDataExtraction(body, env) {
     brantsteeleSection = `\n\n=== BRANTSTEELE STATISTICS (USE THIS FOR ACCURATE NUMBERS) ===\n${brantsteeleStats}\n\n⚠️ IMPORTANT: Use Brantsteele stats for exact numbers (challenge wins, votes received, idol counts, placements). Episode summaries provide narrative context.`;
   }
 
+  const canonicalCastSection = canonicalCast.length
+    ? `\n\nCANONICAL_CAST (use EXACTLY these names; do NOT add suffixes like "Winner" / "Juror" / "Votes to Win"; do NOT invent new people):\n- ${canonicalCast.join('\n- ')}`
+    : '';
+
   const instructions = `
 You are analyzing a complete Total Drama season to extract ALL data in structured format.
 
@@ -153,7 +249,16 @@ ${brantsteeleStats ? '🎯 BRANTSTEELE STATS PROVIDED: Use the Brantsteele stati
 
 CRITICAL TASKS:
 
-1. CAST LIST: Extract all ${metadata.castSize || 'player'} names from Episode 1 ${brantsteeleStats ? 'or Brantsteele stats' : ''}.
+NAME RULES (non-negotiable):
+- Every field that refers to a person MUST use a name from CANONICAL_CAST (if present).
+- Do NOT create "new" players from headings/labels (e.g. "Votes to Win", "Jury Votes") or from notes.
+- Do NOT append descriptors to names (bad: "Jacques Winner", "Kelly Juror"). Use the separate fields (phase/notes) for that.
+
+${canonicalCastSection}
+
+1. CAST LIST:
+   - If CANONICAL_CAST is present above, output that exact list in "cast" (same order).
+   - Otherwise, extract all ${metadata.castSize || 'player'} names from Episode 1 ${brantsteeleStats ? 'or Brantsteele stats' : ''}.
 
 2. PLACEMENTS (1-${metadata.castSize || 'N'}): List ALL players ranked by placement
    ${brantsteeleStats ? '- GET EXACT PLACEMENTS FROM BRANTSTEELE STATS' : '- Use elimination order from episodes (last eliminated = highest placement)'}

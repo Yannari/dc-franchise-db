@@ -2787,25 +2787,41 @@ setTimeout(function() {
       updatePlayersDatabase(seasonData);
       
       // Step 6: Recalculate rankings
-      showProgress('<h3>⚡ Bonus: Recalculating Rankings</h3><p>🏆 Calculating scores for all players...</p>');
+      // Step 6: Recalculate rankings (WORKER)
+      showProgress('<h3>⚡ Bonus: Recalculating Rankings</h3><p>🏆 Updating rankings via Worker (deterministic scoring + AI narrative)...</p>');
       await sleep(500);
-      
-      // Load old rankings from project file
-      let oldRankingsData = null;
-      try {
-        console.log('📂 Attempting to load rankings_database.json from project...');
-        const rankingsResponse = await fetch('rankings_database.json');
-        if (rankingsResponse.ok) {
-          oldRankingsData = await rankingsResponse.json();
-          console.log(`✅ Loaded old rankings from project file`);
-        } else {
-          console.log('ℹ️ rankings_database.json not found in project - will calculate fresh rankings');
-        }
-      } catch (e) {
-        console.log('ℹ️ Could not load rankings file from project:', e.message);
+
+      // IMPORTANT: updatePlayersDatabase(seasonData) must have already run,
+      // so players_database in localStorage reflects the new season.
+      const playersDB = loadPlayerDatabase();
+
+      // Prefer your old baseline file from the folder
+      const oldRankingsUrl = 'rankings_database.json';
+
+      const rankingsResp = await fetch(WORKER_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mode: "rankings-update",
+          playersDB,
+          seasonData,
+          oldRankingsUrl
+        })
+      });
+
+      const rankingsDB = await rankingsResp.json();
+
+      if (!rankingsResp.ok || rankingsDB?.error) {
+        console.error("Rankings Worker error:", rankingsDB);
+        throw new Error(rankingsDB?.error || `Rankings update failed (HTTP ${rankingsResp.status})`);
       }
-      
-      await updateRankingsDatabase(seasonData, oldRankingsData);
+
+      // Save and download
+      localStorage.setItem("rankings_database", JSON.stringify(rankingsDB, null, 2));
+      downloadJSON(rankingsDB, "rankings_database.json");
+
+      console.log("✅ Rankings updated by Worker:", rankingsDB);
+
       
       // Step 7: Generate voting analytics HTML
       showProgress('<h3>⚡ Bonus: Generating Voting Analytics</h3><p>🗳️ Creating HTML table...</p>');

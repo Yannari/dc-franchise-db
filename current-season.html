@@ -2378,77 +2378,43 @@ Dave voted for Mickey
 
 console.log("🚀 Season Setup script tag reached!");
 
-// Auto-load database from JSON if localStorage is empty
+// Always load database from players_database.json first (fresh), then cache to localStorage.
+// Fallback to localStorage only if the fetch fails (e.g., offline).
 (function() {
-  const existingDB = localStorage.getItem('players_database');
-  if (!existingDB) {
-    console.log("📥 No database in localStorage, attempting to load from players_database.json...");
-    fetch('players_database.json')
-      .then(r => r.json())
-      .then(db => {
+  console.log("📁 Loading fresh data from players_database.json...");
+  fetch('players_database.json', { cache: 'no-store' })
+    .then(r => {
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      return r.json();
+    })
+    .then(db => {
+      try {
         localStorage.setItem('players_database', JSON.stringify(db, null, 2));
-        console.log(`✅ Database auto-loaded! ${db.players.length} players, ${db.franchise.totalSeasons} seasons`);
-      })
-      .catch(e => {
-        console.warn("⚠️ Could not auto-load database:", e.message);
-        console.log("Database will be empty until you import it manually or create profiles");
-      });
-  } else {
-    const db = JSON.parse(existingDB);
-    console.log(`✅ Database already in localStorage (${db.players.length} players, ${db.franchise.totalSeasons} seasons)`);
-  }
+        console.log(`✅ Loaded & cached players_database.json (${db.players?.length ?? 0} players, ${db.franchise?.totalSeasons ?? 0} seasons)`);
+      } catch (e) {
+        console.warn("⚠️ Could not cache to localStorage:", e.message);
+      }
+    })
+    .catch(e => {
+      console.warn("⚠️ Could not load players_database.json — falling back to localStorage:", e.message);
+      try {
+        const existingDB = localStorage.getItem('players_database');
+        if (existingDB) {
+          const db = JSON.parse(existingDB);
+          console.log(`✅ Using cached database from localStorage (${db.players?.length ?? 0} players, ${db.franchise?.totalSeasons ?? 0} seasons)`);
+        } else {
+          console.log("ℹ️ No cached database found. Import/create profiles to begin.");
+        }
+      } catch (err) {
+        console.warn("⚠️ Could not read cached database:", err.message);
+      }
+    });
 })();
 
-// Always load fresh DB from players_database.json, then cache into localStorage.
-// Fallback to existing localStorage (or an empty DB) if the JSON fetch fails.
-async function preloadPlayersDatabaseFromJSON() {
-  try {
-    const res = await fetch('players_database.json', { cache: 'no-store' });
-    if (!res.ok) throw new Error(`players_database.json HTTP ${res.status}`);
-    const db = await res.json();
 
-    // Normalize schema (prevents crashes if older saves are missing fields)
-    if (!db.franchise) {
-      db.franchise = {
-        name: "DC Franchise Database",
-        totalSeasons: 0,
-        totalPlayers: 0,
-        description: "Total Drama franchise player statistics and performance data"
-      };
-    }
-    if (!Array.isArray(db.players)) db.players = [];
-    db.players.forEach(p => {
-      if (!Array.isArray(p.seasons)) p.seasons = [];
-      if (!Array.isArray(p.seasonDetails)) p.seasonDetails = [];
-      if (!Array.isArray(p.badges)) p.badges = [];
-    });
-
-    localStorage.setItem("players_database", JSON.stringify(db, null, 2));
-    console.log("✅ Loaded fresh players_database.json → localStorage");
-    return db;
-  } catch (e) {
-    console.warn("⚠️ Failed to load players_database.json; using localStorage (if any).", e);
-
-    try {
-      const raw = localStorage.getItem("players_database");
-      if (raw) return JSON.parse(raw);
-    } catch (_) {}
-
-    return {
-      franchise: {
-        name: "DC Franchise Database",
-        totalSeasons: 0,
-        totalPlayers: 0,
-        description: "Total Drama franchise player statistics and performance data"
-      },
-      players: []
-    };
-  }
-}
 
 // Use setTimeout to ensure ALL DOM elements are fully rendered AND database is loaded
-setTimeout(async function() {
-  await preloadPlayersDatabaseFromJSON();
+setTimeout(function() {
 (function() {
   console.log("🔧 Season Setup: Initializing...");
   
@@ -2839,7 +2805,7 @@ setTimeout(async function() {
         console.log('ℹ️ Could not load rankings file from project:', e.message);
       }
       
-      updateRankingsDatabase(seasonData, oldRankingsData);
+      await updateRankingsDatabase(seasonData, oldRankingsData);
       
       // Step 7: Generate voting analytics HTML
       showProgress('<h3>⚡ Bonus: Generating Voting Analytics</h3><p>🗳️ Creating HTML table...</p>');
@@ -3463,15 +3429,16 @@ setTimeout(async function() {
   function updatePlayersDatabase(seasonData) {
     const db = loadPlayerDatabase();
     const season = seasonData.seasonNumber;
-    
-    // Track which players we've already processed to prevent duplicates
-    const processedThisSeason = new Set();
 
-    // IDs that indicate parsing/label artifacts rather than real players
+    // Fake/invalid IDs that sometimes leak in from parsing headings/labels
     const bannedIds = [
       'votes-to-win', 'jury-votes', 'elimination-order', 'everyone', 'eliminate',
       'winner', 'finalist', 'juror', 'pre-juror', 'voted-out', 'medevac'
     ];
+
+    
+    // Track which players we've already processed to prevent duplicates
+    const processedThisSeason = new Set();
     
     // Process each player in placements
     seasonData.placements.forEach(placement => {
@@ -3485,7 +3452,8 @@ setTimeout(async function() {
         console.warn(`⚠️ Skipping invalid player ID: "${id}" from name "${name}"`);
         return;
       }
-      const isFake = bannedIds.some(banned => id.includes(banned) && id !== name.toLowerCase());
+      // Skip fake players from parsing errors
+const isFake = bannedIds.some(banned => id.includes(banned) && id !== name.toLowerCase());
       if (isFake) {
         console.warn(`⚠️ Skipping fake player: "${name}" (ID: "${id}")`);
         return;
@@ -3565,8 +3533,7 @@ setTimeout(async function() {
           }
           
           // Remove duplicate win badges
-          player.badges = (Array.isArray(player.badges) ? player.badges : [])
-            .filter(b => b !== `S${season} Winner`);
+          player.badges = player.badges.filter(b => b !== `S${season} Winner`);
           if (player.wins > 0 && oldDetail.placement === 1) {
             player.wins--;
           }
@@ -3610,6 +3577,8 @@ setTimeout(async function() {
       // Add/update season details with AI-generated data
       const seasonDetail = {
         season,
+        castSize: seasonData.castSize || seasonData.placements?.length || null,
+        jurySize: seasonData.jurySize || (seasonData.finalTribalCouncil?.votes?.length || null),
         placement: placement.placement,
         status: placement.phase,
         tribe: "TBD", // Could extract from episodes if needed
@@ -3661,7 +3630,7 @@ setTimeout(async function() {
     return count;
   }
   
-  function updateRankingsDatabase(seasonData, oldRankingsData = null) {
+  async function updateRankingsDatabase(seasonData, oldRankingsData = null) {
     const db = loadPlayerDatabase();
     const currentSeason = seasonData.seasonNumber;
     
@@ -3676,23 +3645,45 @@ setTimeout(async function() {
       });
       console.log(`📋 Loaded ${Object.keys(oldRankings).length} existing rankings from project file`);
     } else {
-      // Fallback: Try localStorage
-      try {
-        const oldDB = JSON.parse(localStorage.getItem('rankings_database') || '{}');
-        if (oldDB.rankings && Array.isArray(oldDB.rankings)) {
-          oldDB.rankings.forEach(r => {
-            oldRankings[r.playerId] = r;
-          });
-          console.log(`📋 Loaded ${Object.keys(oldRankings).length} existing rankings from localStorage`);
-        } else {
-          console.log('ℹ️ No previous rankings - will calculate fresh for everyone');
+      // Default: load rankings from project JSON files (always fresh), then fallback to localStorage
+      const tryLoad = async (path) => {
+        try {
+          const resp = await fetch(path, { cache: 'no-store' });
+          if (!resp.ok) return null;
+          const json = await resp.json();
+          return (json && Array.isArray(json.rankings)) ? json : null;
+        } catch (_) {
+          return null;
         }
-      } catch (e) {
-        console.warn('⚠️ Could not load old rankings:', e.message);
-        console.log('ℹ️ Will calculate fresh rankings for all players');
+      };
+
+      const fromOld = await tryLoad('rankings_database.json');
+      const fromCurrent = fromOld || await tryLoad('rankings_database.json');
+
+      const loaded = fromCurrent;
+      if (loaded && loaded.rankings) {
+        loaded.rankings.forEach(r => { oldRankings[r.playerId] = r; });
+        console.log(`📋 Loaded ${Object.keys(oldRankings).length} existing rankings from JSON file`);
+      } else {
+        // Last resort: localStorage
+        try {
+          const oldDB = JSON.parse(localStorage.getItem('rankings_database') || '{}');
+          if (oldDB.rankings && Array.isArray(oldDB.rankings)) {
+            oldDB.rankings.forEach(r => { oldRankings[r.playerId] = r; });
+            console.log(`📋 Loaded ${Object.keys(oldRankings).length} existing rankings from localStorage`);
+          } else {
+            console.log('ℹ️ No previous rankings - will calculate fresh for everyone');
+          }
+        } catch (e) {
+          console.warn('⚠️ Could not load old rankings:', e.message);
+          console.log('ℹ️ Will calculate fresh rankings for all players');
+        }
       }
     }
-    
+
+    // Precompute per-season aggregates for normalization (cast size, max wins, etc.)
+    const seasonAgg = buildSeasonAggregates(db, seasonData);
+
     // Get list of players who competed in current season
     const currentSeasonPlayers = new Set(
       seasonData.placements.map(p => slugify(p.name))
@@ -3720,7 +3711,7 @@ setTimeout(async function() {
       
       if (playedThisSeason || !oldRankings[player.id]) {
         // RECALCULATE: New players or returnees who played this season
-        const score = calculatePlayerScore(player);
+        const score = calculatePlayerScore(player, seasonAgg);
         const tier = calculateTier(score);
         
         rankings.push({
@@ -3837,43 +3828,157 @@ setTimeout(async function() {
   }
   
   // Scoring functions - Proper formula matching rubric
-  function calculatePlayerScore(player) {
-    if (!player || !player.totalSeasons || player.totalSeasons === 0) {
-      return 0;
+  
+  // ------------------------------------------------------------
+  // Ranking helpers (rubric-based, normalized per season)
+  // ------------------------------------------------------------
+  function buildSeasonAggregates(db, currentSeasonData = null) {
+    const agg = {};
+    const ensure = (season) => {
+      if (!agg[season]) {
+        agg[season] = {
+          castSize: 0,
+          jurySize: 0,
+          maxChallengeWins: 0,
+          maxVotesAgainst: 0,
+          maxIdolsFound: 0,
+          maxStrategicRank: 0
+        };
+      }
+      return agg[season];
+    };
+
+    // Pass 1: scan all player seasonDetails
+    (db.players || []).forEach(p => {
+      (Array.isArray(p.seasonDetails) ? p.seasonDetails : []).forEach(s => {
+        const season = Number(s.season);
+        if (!season) return;
+        const a = ensure(season);
+        const placement = Number(s.placement || 0);
+        const castSize = Number(s.castSize || s.seasonCastSize || 0) || placement; // fallback: max placement seen
+        a.castSize = Math.max(a.castSize, castSize, placement);
+        a.jurySize = Math.max(a.jurySize, Number(s.jurySize || 0));
+        a.maxChallengeWins = Math.max(a.maxChallengeWins, Number(s.challengeWins || 0));
+        a.maxVotesAgainst = Math.max(a.maxVotesAgainst, Number(s.votesReceived || s.votesAgainst || 0));
+        a.maxIdolsFound = Math.max(a.maxIdolsFound, Number(s.idolsFound || 0));
+        a.maxStrategicRank = Math.max(a.maxStrategicRank, Number(s.strategicRank || 0));
+      });
+    });
+
+    // Pass 2: current season overrides (more reliable)
+    if (currentSeasonData && currentSeasonData.seasonNumber) {
+      const s = Number(currentSeasonData.seasonNumber);
+      const a = ensure(s);
+      a.castSize = Math.max(a.castSize, Number(currentSeasonData.castSize || 0) || (currentSeasonData.placements?.length || 0));
+      a.jurySize = Math.max(a.jurySize, Number(currentSeasonData.jurySize || 0) || (currentSeasonData.finalTribalCouncil?.votes?.length || 0));
+
+      // Use placements to compute maxima
+      (currentSeasonData.placements || []).forEach(p => {
+        a.maxChallengeWins = Math.max(a.maxChallengeWins, Number(p.challengeWins || 0));
+        a.maxVotesAgainst = Math.max(a.maxVotesAgainst, Number(p.votesReceived || 0));
+        a.maxIdolsFound = Math.max(a.maxIdolsFound, Number(p.idolsFound || 0));
+        a.maxStrategicRank = Math.max(a.maxStrategicRank, Number(p.strategicRank || 0));
+      });
     }
-    
-    let score = 0;
-    
-    // 1. Placement (40%) - Lower average placement = better score
-    const avgPlacement = calculateAvgPlacement(player);
-    const castSize = 20; // Approximate average cast size
-    const placementPercentile = Math.max(0, Math.min(100, ((castSize - avgPlacement) / castSize) * 100));
-    score += placementPercentile * 0.4;
-    
-    // 2. Win Rate (20%) - Wins / Seasons
-    const winRate = (player.wins / player.totalSeasons) * 100;
-    score += winRate * 0.2;
-    
-    // 3. Challenge Performance (15%) - Normalized per season
-    const challengesPerSeason = player.totalChallengeWins / player.totalSeasons;
-    const challengeScore = Math.min(100, challengesPerSeason * 20); // 5 wins/season = 100
-    score += challengeScore * 0.15;
-    
-    // 4. Social Game (15%) - Lower votes against = better, plus jury votes
-    const votesPerSeason = player.totalVotesAgainst / player.totalSeasons;
-    const votesScore = Math.max(0, 100 - (votesPerSeason * 3)); // 33 votes/season = 0
-    const juryScore = Math.min(100, (player.totalJuryVotes / player.totalSeasons) * 10); // 10 jury votes/season = 100
-    const socialScore = (votesScore * 0.7) + (juryScore * 0.3);
-    score += socialScore * 0.15;
-    
-    // 5. Strategic Impact (10%) - Idols, advantages
-    const idolsPerSeason = player.totalIdolsFound / player.totalSeasons;
-    const strategicScore = Math.min(100, idolsPerSeason * 50); // 2 idols/season = 100
-    score += strategicScore * 0.1;
-    
-    // Ensure score is between 0-100
-    return Math.round(Math.max(0, Math.min(100, score)));
+
+    // Fill missing jurySize with a reasonable default
+    Object.keys(agg).forEach(k => {
+      const a = agg[k];
+      if (!a.jurySize && a.castSize) a.jurySize = Math.max(0, a.castSize - 3);
+      if (!a.castSize) a.castSize = 20;
+    });
+
+    return agg;
   }
+
+
+  function calculatePlayerScore(player, seasonAgg = {}) {
+    if (!player) return 0;
+    const details = Array.isArray(player.seasonDetails) ? player.seasonDetails : [];
+    const totalSeasons = details.length || Number(player.totalSeasons || 0);
+    if (!totalSeasons) return 0;
+
+    // Recompute wins safely from seasonDetails (prevents accumulation bugs)
+    const wins = details.filter(s => Number(s.placement) === 1).length;
+
+    // --- Placement (40%): average placement percentile across seasons, minus volatility penalty
+    const placementPercentiles = details.map(s => {
+      const season = Number(s.season);
+      const castSize = Number(s.castSize || seasonAgg?.[season]?.castSize || 20);
+      const placement = Number(s.placement || castSize);
+      // 1st place => 1.0, last => ~1/castSize
+      const pct = (castSize - placement + 1) / castSize;
+      return Math.max(0, Math.min(1, pct));
+    });
+    const avgPlacementPct = placementPercentiles.reduce((a,b)=>a+b,0) / placementPercentiles.length;
+    const mean = avgPlacementPct;
+    const variance = placementPercentiles.reduce((acc, v) => acc + Math.pow(v - mean, 2), 0) / placementPercentiles.length;
+    const std = Math.sqrt(variance);
+
+    const placementBase = avgPlacementPct * 100;
+    const volatilityPenalty = (std * 100) * 0.35; // moderate penalty for inconsistency
+    const placementScore = Math.max(0, Math.min(100, placementBase - volatilityPenalty));
+
+    // --- Win Value (20%): championships / appearances, with small-sample cap for <=2 seasons
+    const rawWinRate = wins / totalSeasons; // 0..1
+    const smoothedWinRate = (wins + 0.5) / (totalSeasons + 1); // avoids 1/1 = 100 instantly
+    let winValue = Math.max(rawWinRate, smoothedWinRate);
+    if (totalSeasons <= 2) {
+      // cap very small samples so 1/1 doesn't auto-dominate
+      winValue = Math.min(winValue, wins > 0 ? 0.90 : 0.85);
+    }
+    const winScore = Math.max(0, Math.min(100, winValue * 100));
+
+    // --- Challenge (15%): immunity + reward wins, normalized per season
+    const challengeNorms = details.map(s => {
+      const season = Number(s.season);
+      const maxCh = Number(seasonAgg?.[season]?.maxChallengeWins || 0);
+      const ch = Number(s.challengeWins || 0);
+      return maxCh > 0 ? Math.max(0, Math.min(1, ch / maxCh)) : 0;
+    });
+    const challengeScore = (challengeNorms.reduce((a,b)=>a+b,0) / challengeNorms.length) * 100;
+
+    // --- Social (15%): votes received (lower = better) + jury votes earned
+    const socialNorms = details.map(s => {
+      const season = Number(s.season);
+      const maxVotes = Number(seasonAgg?.[season]?.maxVotesAgainst || 0);
+      const votes = Math.max(0, Number(s.votesReceived || s.votesAgainst || 0));
+      const votesNorm = (maxVotes > 0) ? (1 - Math.max(0, Math.min(1, votes / maxVotes))) : 1;
+
+      const jurySize = Number(s.jurySize || seasonAgg?.[season]?.jurySize || 0);
+      const juryVotes = Math.max(0, Number(s.juryVotes || 0));
+      const juryNorm = (jurySize > 0) ? Math.max(0, Math.min(1, juryVotes / jurySize)) : 0;
+
+      return (votesNorm * 0.7) + (juryNorm * 0.3);
+    });
+    const socialScore = (socialNorms.reduce((a,b)=>a+b,0) / socialNorms.length) * 100;
+
+    // --- Strategic (10%): idols/advantages, control moments, endgame leverage
+    // We only have idolsFound + strategicRank, so we approximate with those.
+    const strategicNorms = details.map(s => {
+      const season = Number(s.season);
+      const maxIdols = Number(seasonAgg?.[season]?.maxIdolsFound || 0);
+      const idols = Math.max(0, Number(s.idolsFound || 0));
+      const idolsNorm = maxIdols > 0 ? Math.max(0, Math.min(1, idols / maxIdols)) : (idols > 0 ? 1 : 0);
+
+      const stratRank = Math.max(0, Math.min(10, Number(s.strategicRank || 0)));
+      const stratNorm = stratRank / 10;
+
+      return (stratNorm * 0.6) + (idolsNorm * 0.4);
+    });
+    const strategicScore = (strategicNorms.reduce((a,b)=>a+b,0) / strategicNorms.length) * 100;
+
+    // Final weighted score
+    const final =
+      (placementScore * 0.40) +
+      (winScore * 0.20) +
+      (challengeScore * 0.15) +
+      (socialScore * 0.15) +
+      (strategicScore * 0.10);
+
+    return Math.round(Math.max(0, Math.min(100, final)));
+  }
+
   
   function calculateTier(score) {
     if (score >= 91) return "S+";
@@ -4476,8 +4581,6 @@ setTimeout(async function() {
   // ========================================
   // DATABASE HELPERS
   // ========================================
-
-
 
   function loadPlayerDatabase() {
     try {

@@ -2776,7 +2776,22 @@ setTimeout(function() {
       showProgress('<h3>⚡ Bonus: Recalculating Rankings</h3><p>🏆 Calculating scores for all players...</p>');
       await sleep(500);
       
-      updateRankingsDatabase();
+      // Load old rankings from project file
+      let oldRankingsData = null;
+      try {
+        console.log('📂 Attempting to load rankings_database.json from project...');
+        const rankingsResponse = await fetch('rankings_database.json');
+        if (rankingsResponse.ok) {
+          oldRankingsData = await rankingsResponse.json();
+          console.log(`✅ Loaded old rankings from project file`);
+        } else {
+          console.log('ℹ️ rankings_database.json not found in project - will calculate fresh rankings');
+        }
+      } catch (e) {
+        console.log('ℹ️ Could not load rankings file from project:', e.message);
+      }
+      
+      updateRankingsDatabase(seasonData, oldRankingsData);
       
       // Step 7: Generate voting analytics HTML
       showProgress('<h3>⚡ Bonus: Generating Voting Analytics</h3><p>🗳️ Creating HTML table...</p>');
@@ -3588,13 +3603,47 @@ setTimeout(function() {
     return count;
   }
   
-  function updateRankingsDatabase() {
+  function updateRankingsDatabase(seasonData, oldRankingsData = null) {
     const db = loadPlayerDatabase();
+    const currentSeason = seasonData.seasonNumber;
+    
+    // Load existing rankings
+    // oldRankingsData can be passed in from the main generation function
+    let oldRankings = {};
+    
+    if (oldRankingsData && oldRankingsData.rankings) {
+      // Use passed-in rankings (from project file)
+      oldRankingsData.rankings.forEach(r => {
+        oldRankings[r.playerId] = r;
+      });
+      console.log(`📋 Loaded ${Object.keys(oldRankings).length} existing rankings from project file`);
+    } else {
+      // Fallback: Try localStorage
+      try {
+        const oldDB = JSON.parse(localStorage.getItem('rankings_database') || '{}');
+        if (oldDB.rankings && Array.isArray(oldDB.rankings)) {
+          oldDB.rankings.forEach(r => {
+            oldRankings[r.playerId] = r;
+          });
+          console.log(`📋 Loaded ${Object.keys(oldRankings).length} existing rankings from localStorage`);
+        } else {
+          console.log('ℹ️ No previous rankings - will calculate fresh for everyone');
+        }
+      } catch (e) {
+        console.warn('⚠️ Could not load old rankings:', e.message);
+        console.log('ℹ️ Will calculate fresh rankings for all players');
+      }
+    }
+    
+    // Get list of players who competed in current season
+    const currentSeasonPlayers = new Set(
+      seasonData.placements.map(p => slugify(p.name))
+    );
+    
     const rankings = [];
     
     // Filter out duplicate/invalid players
     const validPlayers = db.players.filter(player => {
-      // Skip obvious fake players
       const id = player.id.toLowerCase();
       if (id.includes('votes-to-win') || 
           id.includes('juror-voted') ||
@@ -3607,31 +3656,47 @@ setTimeout(function() {
       return true;
     });
     
-    // Calculate score for each valid player
+    // Process each valid player
     validPlayers.forEach(player => {
-      const score = calculatePlayerScore(player);
-      const tier = calculateTier(score);
+      const playedThisSeason = currentSeasonPlayers.has(player.id);
       
-      rankings.push({
-        playerId: player.id,
-        tier: tier,
-        score: score,
-        rank: 0, // Will be set after sorting
-        title: generatePlayerTitle(player),
-        emoji: "⭐",
-        reasoning: generateReasoning(player),
-        strengths: [],
-        weaknesses: [],
-        avgPlacement: calculateAvgPlacement(player),
-        winRate: Math.round((player.wins / player.totalSeasons) * 100),
-        seasons: player.seasons,
-        placements: player.seasonDetails.map(s => s.placement),
-        challengeWins: player.totalChallengeWins,
-        votesAgainst: player.totalVotesAgainst,
-        juryVotes: player.totalJuryVotes,
-        idolsFound: player.totalIdolsFound,
-        status: `Competed in ${player.totalSeasons} season(s)`
-      });
+      if (playedThisSeason || !oldRankings[player.id]) {
+        // RECALCULATE: New players or returnees who played this season
+        const score = calculatePlayerScore(player);
+        const tier = calculateTier(score);
+        
+        rankings.push({
+          playerId: player.id,
+          tier: tier,
+          score: score,
+          rank: 0, // Will be set after sorting
+          title: generatePlayerTitle(player),
+          emoji: getPlayerEmoji(player),
+          reasoning: generateReasoning(player),
+          strengths: generateStrengths(player),
+          weaknesses: generateWeaknesses(player),
+          avgPlacement: calculateAvgPlacement(player),
+          winRate: Math.round((player.wins / player.totalSeasons) * 100),
+          seasons: player.seasons,
+          placements: player.seasonDetails.map(s => s.placement),
+          challengeWins: player.totalChallengeWins,
+          votesAgainst: player.totalVotesAgainst,
+          juryVotes: player.totalJuryVotes,
+          idolsFound: player.totalIdolsFound,
+          status: `Competed in ${player.totalSeasons} season(s)`
+        });
+        
+        console.log(`✅ Recalculated: ${player.name} (played S${currentSeason})`);
+      } else {
+        // PRESERVE: Players who didn't compete this season
+        const oldRank = oldRankings[player.id];
+        rankings.push({
+          ...oldRank,
+          rank: 0 // Will be reassigned based on score
+        });
+        
+        console.log(`📋 Preserved: ${player.name} (didn't play S${currentSeason})`);
+      }
     });
     
     // Sort by score (descending)
@@ -3641,7 +3706,7 @@ setTimeout(function() {
       return a.avgPlacement - b.avgPlacement;
     });
     
-    // Assign ranks
+    // Assign new ranks
     rankings.forEach((r, i) => {
       r.rank = i + 1;
     });
@@ -3650,11 +3715,11 @@ setTimeout(function() {
     const rankingsDB = {
       metadata: {
         name: "DC Franchise Rankings Database",
-        version: `${db.franchise?.totalSeasons || 6}.0`,
+        version: `${currentSeason}.0`,
         lastUpdated: new Date().toISOString().split('T')[0],
-        description: `Complete player rankings after Season ${db.franchise?.totalSeasons || 6}`,
+        description: `Complete player rankings after Season ${currentSeason}`,
         totalPlayers: rankings.length,
-        source: `Season ${db.franchise?.totalSeasons || 6} integration`
+        source: `Season ${currentSeason} integration`
       },
       scoringSystem: {
         placement: "40% - Average finish position across all seasons (lower placement = higher score)",
@@ -3678,6 +3743,39 @@ setTimeout(function() {
     downloadJSON(rankingsDB, 'rankings_database.json');
     
     console.log(`✅ rankings_database.json updated (${rankings.length} valid players)`);
+  }
+  
+  // Helper functions for enhanced rankings
+  function getPlayerEmoji(player) {
+    if (player.wins >= 2) return "👑";
+    if (player.wins === 1) return "⭐";
+    if (player.bestPlacement === 2) return "🥈";
+    if (player.bestPlacement === 3) return "🥉";
+    if (player.totalChallengeWins >= 10) return "💪";
+    return "⭐";
+  }
+  
+  function generateStrengths(player) {
+    const strengths = [];
+    
+    if (player.wins >= 1) strengths.push("Winner pedigree");
+    if (player.totalChallengeWins / player.totalSeasons >= 3) strengths.push("Challenge prowess");
+    if (player.totalVotesAgainst / player.totalSeasons < 5) strengths.push("Low target profile");
+    if (player.totalIdolsFound >= 2) strengths.push("Strategic gameplay");
+    if (calculateAvgPlacement(player) <= 3) strengths.push("Consistent deep runs");
+    
+    return strengths;
+  }
+  
+  function generateWeaknesses(player) {
+    const weaknesses = [];
+    
+    if (player.totalVotesAgainst / player.totalSeasons > 15) weaknesses.push("High threat perception");
+    if (player.totalSeasons >= 3 && player.wins === 0) weaknesses.push("Can't close");
+    if (player.totalChallengeWins / player.totalSeasons < 1) weaknesses.push("Challenge liability");
+    if (player.totalIdolsFound === 0 && player.totalSeasons >= 2) weaknesses.push("Limited strategic tools");
+    
+    return weaknesses;
   }
   
   // Scoring functions - Proper formula matching rubric

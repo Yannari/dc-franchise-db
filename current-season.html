@@ -3490,6 +3490,11 @@ setTimeout(function() {
       } else {
         // Update existing player
         
+        // Initialize arrays if they don't exist
+        if (!Array.isArray(player.seasons)) player.seasons = [];
+        if (!Array.isArray(player.seasonDetails)) player.seasonDetails = [];
+        if (!Array.isArray(player.badges)) player.badges = [];
+        
         // Check if this season is already in their record
         const seasonIndex = player.seasonDetails.findIndex(s => s.season === season);
         if (seasonIndex >= 0) {
@@ -3506,6 +3511,11 @@ setTimeout(function() {
           player.seasons = player.seasons.filter(s => s !== season);
           player.seasonDetails = player.seasonDetails.filter(s => s.season !== season);
           player.totalSeasons = player.seasons.length;
+          
+          // Initialize badges array if it doesn't exist
+          if (!Array.isArray(player.badges)) {
+            player.badges = [];
+          }
           
           // Remove duplicate win badges
           player.badges = player.badges.filter(b => b !== `S${season} Winner`);

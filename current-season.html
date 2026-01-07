@@ -2796,20 +2796,38 @@ setTimeout(function() {
       const playersDB = loadPlayerDatabase();
 
       // Prefer your old baseline file from the folder
-      const oldRankingsUrl = 'rankings_database.json';
+      // Rankings update uses the SAME worker URL field as season extraction
+      const workerUrl = getWorkerUrl();
+      if (!workerUrl) {
+        throw new Error('Worker URL not set! Please enter your Cloudflare Worker URL in the Overview tab.');
+      }
 
-      const rankingsResp = await fetch(WORKER_URL, {
+      // Load baseline rankings from the project folder (NOT localStorage), then fallback to localStorage if needed
+      let oldRankingsData = null;
+      try {
+        const r = await fetch('rankings_database.json', { cache: 'no-store' });
+        if (r.ok) oldRankingsData = await r.json();
+      } catch (_) {}
+
+      if (!oldRankingsData) {
+        try {
+          oldRankingsData = JSON.parse(localStorage.getItem('rankings_database') || 'null');
+        } catch (_) {}
+      }
+
+      const rankingsResp = await fetch(workerUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           mode: "rankings-update",
           playersDB,
           seasonData,
-          oldRankingsUrl
+          oldRankingsData
         })
       });
 
       const rankingsDB = await rankingsResp.json();
+
 
       if (!rankingsResp.ok || rankingsDB?.error) {
         console.error("Rankings Worker error:", rankingsDB);

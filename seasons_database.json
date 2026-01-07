@@ -168,32 +168,35 @@
     },
     {
       "seasonNumber": 6,
-      "title": "BLOOD vs. WATER",
+      "title": "Total Drama Blood VS Water",
       "subtitle": "Family or Strategy",
       "castSize": 20,
       "episodeCount": 17,
       "winner": {
-        "name": "jacques",
+        "name": "Jacques",
         "playerSlug": "jacques",
         "vote": "7-1-0",
-        "runnerUp": "mickey & jay"
+        "runnerUp": "Mickey & Jay",
+        "keyStats": "2 votes against, 4 immunity wins, 0 idols; dominated endgame control.",
+        "strategy": "Jacques kept threat perception low while holding unbreakable ties to multiple power players, then weaponized those bonds at key junctures. He forced advantage drains (Kitty’s idol), won when it mattered, and engineered the Final 4 path that removed Kelly.",
+        "legacy": "An archetypal ‘ice strategist’ win: precise, low-flash, high-impact. Cemented as one of the franchise’s best manipulation-and-endgame control victories."
       },
       "awards": {
         "fanFavorite": {
-          "name": "jacques",
+          "name": "Jacques",
           "playerSlug": "jacques"
         },
         "bestStrategic": {
-          "name": "jacques",
+          "name": "Jacques",
           "playerSlug": "jacques"
         },
         "mostChallengeWins": {
-          "name": "jacques",
+          "name": "Jacques",
           "playerSlug": "jacques",
-          "detail": "TBD"
+          "detail": "4 total"
         }
       },
-      "theme": "2 tribes (10 returnees,10 newbies)",
+      "theme": "2 tribes + redemption island",
       "status": "Complete",
       "castPhotoPath": "assets/cast/s6-cast.png",
       "emoji": "🩸"

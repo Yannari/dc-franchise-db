@@ -2,7 +2,7 @@
   "franchise": {
     "name": "DC Franchise Database",
     "totalSeasons": 6,
-    "totalPlayers": 90,
+    "totalPlayers": 68,
     "description": "Total Drama franchise player statistics and performance data"
   },
   "players": [
@@ -217,7 +217,8 @@
           ]
         }
       ],
-      "story": "Socially isolated pre-merge boot. Never formed alliances or meaningful connections."
+      "story": "Socially isolated pre-merge boot. Never formed alliances or meaningful connections.",
+      "badges": []
     },
     {
       "id": "beardo",
@@ -305,53 +306,29 @@
           "rewardWins": 0,
           "votesReceived": 2,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 4,
           "juryVotes": 0,
           "finalVote": "",
           "advantages": [],
           "notes": [
-            "Rock draw to RI (Ep1); eliminated on RI (Ep3)"
+            "Sent to RI on opening rocks; eliminated Episode 3 duel"
+          ],
+          "gameplayStyle": "Unlucky social player",
+          "keyMoments": [
+            "Opening rocks send to RI",
+            "Lost Domino Effect duel"
+          ],
+          "alliances": [
+            "Mary"
+          ],
+          "rivalries": [
+            "Dwayne"
           ]
         }
       ],
-      "story": "Strong alliance loyalty with Lindsay. Made Final 4 in both seasons but seen as too dangerous to take to the end."
-    },
-    {
-      "id": "beth-pre-juror-eliminated-opener",
-      "name": "Beth Pre-Juror Eliminated opener",
-      "seasons": [
-        6
-      ],
-      "totalSeasons": 1,
-      "bestPlacement": 19,
-      "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
-      "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
-      "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "story": "Unlucky casualty of Galang’s first chaotic rock draw. Lost the first active duel and exited early.",
       "badges": [],
-      "seasonDetails": [
-        {
-          "season": 6,
-          "placement": 19,
-          "status": "Eliminated",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
-          "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
-          "juryVotes": 0,
-          "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
-        }
-      ]
+      "totalJuryVotes": 0
     },
     {
       "id": "blaineley",
@@ -366,7 +343,7 @@
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 8,
+      "totalVotesAgainst": 9,
       "totalIdolsFound": 1,
       "badges": [
         "Strategic #2 (S5)",
@@ -393,55 +370,34 @@
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 6,
+          "votesReceived": 7,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 6,
           "juryVotes": 0,
           "finalVote": "",
           "advantages": [],
           "notes": [
-            "Voted out 4–1 at Final 5; eliminated on RI (Ep16)"
+            "Voted out Episode 15 (4–1)"
+          ],
+          "gameplayStyle": "Agent of chaos",
+          "keyMoments": [
+            "Rock-draw survival at merge",
+            "Socially rebounded via Geoff/Mickey",
+            "Final 5 consensus boot"
+          ],
+          "alliances": [
+            "Kelly",
+            "Mickey",
+            "Geoff"
+          ],
+          "rivalries": [
+            "Jay",
+            "Emma"
           ]
         }
       ],
-      "story": "Chaos engine of Season 5 with major advantage pressure; made jury but could not survive late-game consolidation."
-    },
-    {
-      "id": "blaineley-juror-voted-out",
-      "name": "Blaineley Juror Voted out",
-      "seasons": [
-        6
-      ],
-      "totalSeasons": 1,
-      "bestPlacement": 6,
-      "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
-      "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
-      "totalJuryVotes": 0,
-      "tier": "Unranked",
-      "badges": [],
-      "seasonDetails": [
-        {
-          "season": 6,
-          "placement": 6,
-          "status": "Eliminated",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
-          "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
-          "juryVotes": 0,
-          "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
-        }
-      ]
+      "story": "A chaos agent turned integrated number through bonds with Mickey and Geoff. Went to rocks at merge, survived deep, then fell as the safe Final 5 consensus.",
+      "totalJuryVotes": 0
     },
     {
       "id": "brick",
@@ -479,7 +435,8 @@
           ]
         }
       ],
-      "story": "Won first individual immunity at merge. Solid mid-merge player with strong bonds but no strategic control."
+      "story": "Won first individual immunity at merge. Solid mid-merge player with strong bonds but no strategic control.",
+      "badges": []
     },
     {
       "id": "bridgette",
@@ -530,7 +487,8 @@
           ]
         }
       ],
-      "story": "Social heart of Season 1 with multiple immunities and idol. First boot in Season 2 due to tribe disagreements."
+      "story": "Social heart of Season 1 with multiple immunities and idol. First boot in Season 2 due to tribe disagreements.",
+      "badges": []
     },
     {
       "id": "brody",
@@ -541,10 +499,10 @@
       "totalSeasons": 1,
       "bestPlacement": 5,
       "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
+      "totalChallengeWins": 1,
+      "totalImmunityWins": 1,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
+      "totalVotesAgainst": 7,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -555,57 +513,36 @@
           "placement": 7,
           "status": "Juror",
           "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
+          "challengeWins": 1,
+          "immunityWins": 1,
           "rewardWins": 0,
-          "votesReceived": 19,
+          "votesReceived": 26,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 7,
           "juryVotes": 0,
           "finalVote": "",
           "advantages": [],
           "notes": [
-            "Voted out 4–2 (Ep14); multiple RI runs"
+            "Voted out Episode 14 (4–2) after earlier swap boot to RI"
+          ],
+          "gameplayStyle": "Targeted comeback",
+          "keyMoments": [
+            "Returned from RI at merge with clue",
+            "Won ‘Wrist Assured’ immunity",
+            "Cut 4–2 as final push against Surfers momentum"
+          ],
+          "alliances": [
+            "Geoff",
+            "Jay",
+            "Kelly"
+          ],
+          "rivalries": [
+            "Ryan",
+            "Mickey"
           ]
         }
-      ]
-    },
-    {
-      "id": "brody-juror-voted-out",
-      "name": "Brody Juror Voted out",
-      "seasons": [
-        6
       ],
-      "totalSeasons": 1,
-      "bestPlacement": 7,
-      "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
-      "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
-      "totalJuryVotes": 0,
-      "tier": "Unranked",
-      "badges": [],
-      "seasonDetails": [
-        {
-          "season": 6,
-          "placement": 7,
-          "status": "Eliminated",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
-          "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
-          "juryVotes": 0,
-          "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
-        }
-      ]
+      "story": "Perennial target and comeback kid who returned at merge, won immunity, and influenced key votes. Eventually cut as a popularity and challenge threat after drawing 26 votes across the season."
     },
     {
       "id": "cameron",
@@ -701,7 +638,8 @@
           ]
         }
       ],
-      "story": "First casualty of the Gophers' internal alliance war. Voted out 6-5 in Episode 6 when Leshawna unexpectedly flipped."
+      "story": "First casualty of the Gophers' internal alliance war. Voted out 6-5 in Episode 6 when Leshawna unexpectedly flipped.",
+      "badges": []
     },
     {
       "id": "courtney",
@@ -786,7 +724,7 @@
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 7,
+      "totalVotesAgainst": 8,
       "totalIdolsFound": 0,
       "seasonDetails": [
         {
@@ -813,55 +751,28 @@
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 1,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 3,
           "juryVotes": 0,
           "finalVote": "",
           "advantages": [],
           "notes": [
-            "Medical evacuation (Ep1)"
-          ]
+            "Medically evacuated Episode 1"
+          ],
+          "gameplayStyle": "Medevac casualty",
+          "keyMoments": [
+            "Medevac in Episode 1"
+          ],
+          "alliances": [
+            "Ennui"
+          ],
+          "rivalries": []
         }
       ],
-      "story": "First boot of Season 3. Rested at camp instead of bonding, targeted as challenge liability."
-    },
-    {
-      "id": "crimson-pre-juror-medevac",
-      "name": "Crimson Pre-Juror Medevac",
-      "seasons": [
-        6
-      ],
-      "totalSeasons": 1,
-      "bestPlacement": 20,
-      "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
-      "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
-      "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "story": "Half of the Gothic Hearts duo whose medevac reshaped early dynamics and left Ennui unanchored.",
       "badges": [],
-      "seasonDetails": [
-        {
-          "season": 6,
-          "placement": 20,
-          "status": "Eliminated",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
-          "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
-          "juryVotes": 0,
-          "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
-        }
-      ]
+      "totalJuryVotes": 0
     },
     {
       "id": "dakota",
@@ -982,7 +893,8 @@
           ]
         }
       ],
-      "story": "Consensus target Episode 9. Even allies voted her out when she became the agreed-upon target."
+      "story": "Consensus target Episode 9. Even allies voted her out when she became the agreed-upon target.",
+      "badges": []
     },
     {
       "id": "dj",
@@ -1029,7 +941,8 @@
           ]
         }
       ],
-      "story": "Made merge and jury in S2 after early boot in S1. Social friction and conflicts prevented deeper runs."
+      "story": "Made merge and jury in S2 after early boot in S1. Social friction and conflicts prevented deeper runs.",
+      "badges": []
     },
     {
       "id": "duncan",
@@ -1150,53 +1063,32 @@
           "rewardWins": 0,
           "votesReceived": 6,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 5,
           "juryVotes": 0,
           "finalVote": "",
           "advantages": [],
           "notes": [
-            "Cut in merge chaos 4–3–3–1 (Ep9) — direct elimination"
+            "Directly eliminated at merge (4–3–3–1)"
+          ],
+          "gameplayStyle": "Tribal glue",
+          "keyMoments": [
+            "Early stability bonds with Geoff/Mickey",
+            "Cut as the merge overlap boot"
+          ],
+          "alliances": [
+            "Junior",
+            "Geoff",
+            "Mickey"
+          ],
+          "rivalries": [
+            "Josee",
+            "Blaineley"
           ]
         }
       ],
-      "story": "First juror of Season 3. Strong social game but blindsided 5-3-2 at merge by Campers Alliance."
-    },
-    {
-      "id": "dwayne-juror-voted-out",
-      "name": "Dwayne Juror Voted out",
-      "seasons": [
-        6
-      ],
-      "totalSeasons": 1,
-      "bestPlacement": 11,
-      "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
-      "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
-      "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "story": "Steady ‘dad glue’ who bridged pairs on Galang. Became the overlap boot at merge when factions needed a justifiable target.",
       "badges": [],
-      "seasonDetails": [
-        {
-          "season": 6,
-          "placement": 11,
-          "status": "Eliminated",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
-          "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
-          "juryVotes": 0,
-          "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
-        }
-      ]
+      "totalJuryVotes": 0
     },
     {
       "id": "ella",
@@ -1239,8 +1131,8 @@
       "totalSeasons": 3,
       "bestPlacement": 1,
       "wins": 1,
-      "totalChallengeWins": 4,
-      "totalImmunityWins": 1,
+      "totalChallengeWins": 5,
+      "totalImmunityWins": 2,
       "totalRewardWins": 3,
       "totalVotesAgainst": 5,
       "totalIdolsFound": 0,
@@ -1290,58 +1182,36 @@
           "placement": 10,
           "status": "Juror",
           "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
+          "challengeWins": 1,
+          "immunityWins": 1,
           "rewardWins": 0,
           "votesReceived": 1,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 7,
           "juryVotes": 0,
           "finalVote": "",
           "advantages": [],
           "notes": [
-            "Eliminated by rock draw at merge (Ep10)"
+            "Rock-draw casualty Episode 10; later eliminated on RI"
+          ],
+          "gameplayStyle": "Calm strategist",
+          "keyMoments": [
+            "Won first merge immunity",
+            "Feud with Ryan shaped mid-merge",
+            "Lost via rocks in a deadlock"
+          ],
+          "alliances": [
+            "Kitty",
+            "Geoff",
+            "Jay"
+          ],
+          "rivalries": [
+            "Ryan",
+            "Blaineley"
           ]
         }
       ],
-      "story": "Winner of Season 3 with perfect game (zero votes until F4). Second boot in S4 as previous winner threat."
-    },
-    {
-      "id": "emma-juror-voted-out",
-      "name": "Emma Juror Voted out",
-      "seasons": [
-        6
-      ],
-      "totalSeasons": 1,
-      "bestPlacement": 10,
-      "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
-      "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
-      "totalJuryVotes": 0,
-      "tier": "Unranked",
-      "badges": [],
-      "seasonDetails": [
-        {
-          "season": 6,
-          "placement": 10,
-          "status": "Eliminated",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
-          "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
-          "juryVotes": 0,
-          "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
-        }
-      ]
+      "story": "Composed strategist who won the first merge immunity and waged a season-long feud with Ryan. Lost to rocks in the merge deadlock and couldn’t fight back from RI."
     },
     {
       "id": "ennui",
@@ -1371,52 +1241,28 @@
           "rewardWins": 0,
           "votesReceived": 7,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 5,
           "juryVotes": 0,
           "finalVote": "",
           "advantages": [],
           "notes": [
-            "Voted out 6–3 (Ep3) to RI; eliminated (Ep6)"
+            "Voted out Episode 3 (6–3) to RI; later eliminated"
+          ],
+          "gameplayStyle": "Focused loner",
+          "keyMoments": [
+            "Feuded with Jay pre-tribal",
+            "Voted out 6–3"
+          ],
+          "alliances": [
+            "Brody",
+            "Kelly"
+          ],
+          "rivalries": [
+            "Jay"
           ]
         }
-      ]
-    },
-    {
-      "id": "ennui-pre-juror-voted-out",
-      "name": "Ennui Pre-Juror Voted out",
-      "seasons": [
-        6
       ],
-      "totalSeasons": 1,
-      "bestPlacement": 16,
-      "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
-      "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
-      "totalJuryVotes": 0,
-      "tier": "Unranked",
-      "badges": [],
-      "seasonDetails": [
-        {
-          "season": 6,
-          "placement": 16,
-          "status": "Eliminated",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
-          "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
-          "juryVotes": 0,
-          "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
-        }
-      ]
+      "story": "Goth outsider who became a focus-and-duels threat on RI. His pre-merge boot broke Brody’s social leverage."
     },
     {
       "id": "eva",
@@ -1448,7 +1294,8 @@
           ]
         }
       ],
-      "story": "Voted out 6-4 in Episode 3 as challenge liability. Social friction prevented alliance formation."
+      "story": "Voted out 6-4 in Episode 3 as challenge liability. Social friction prevented alliance formation.",
+      "badges": []
     },
     {
       "id": "ezekiel",
@@ -1496,7 +1343,8 @@
           ]
         }
       ],
-      "story": "Finalist in S1 who lost fire-making. Made legendary idol play saving Alejandro in S2 but fell to social isolation."
+      "story": "Finalist in S1 who lost fire-making. Made legendary idol play saving Alejandro in S2 but fell to social isolation.",
+      "badges": []
     },
     {
       "id": "geoff",
@@ -1509,10 +1357,10 @@
       "totalSeasons": 3,
       "bestPlacement": 5,
       "wins": 0,
-      "totalChallengeWins": 2,
-      "totalImmunityWins": 0,
+      "totalChallengeWins": 3,
+      "totalImmunityWins": 1,
       "totalRewardWins": 1,
-      "totalVotesAgainst": 42,
+      "totalVotesAgainst": 43,
       "totalIdolsFound": 0,
       "badges": [
         "EoE Returnee",
@@ -1562,58 +1410,38 @@
           "placement": 5,
           "status": "Juror",
           "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
+          "challengeWins": 1,
+          "immunityWins": 1,
           "rewardWins": 0,
-          "votesReceived": 11,
+          "votesReceived": 12,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 6,
           "juryVotes": 0,
           "finalVote": "",
           "advantages": [],
           "notes": [
-            "Returned from RI (Ep16) then voted out 4–1"
+            "Voted out Episode 16 (4–1) after returning from RI"
+          ],
+          "gameplayStyle": "Social hub",
+          "keyMoments": [
+            "Anchored early Galang core with Mickey/Ryan",
+            "Returned from RI at Final 5",
+            "Cut 4–1 as the late jury threat"
+          ],
+          "alliances": [
+            "Brody",
+            "Mickey",
+            "Emma",
+            "Blaineley"
+          ],
+          "rivalries": [
+            "Jay",
+            "Jacques"
           ]
         }
       ],
-      "story": "TRAGIC ARC: Voted out twice by unbreakable partner Zoey. Won EoE return only to be eliminated same episode - shortest return ever."
-    },
-    {
-      "id": "geoff-juror-voted-out-late",
-      "name": "Geoff Juror Voted out late",
-      "seasons": [
-        6
-      ],
-      "totalSeasons": 1,
-      "bestPlacement": 5,
-      "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
-      "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
-      "totalJuryVotes": 0,
-      "tier": "Unranked",
-      "badges": [],
-      "seasonDetails": [
-        {
-          "season": 6,
-          "placement": 5,
-          "status": "Eliminated",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
-          "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
-          "juryVotes": 0,
-          "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
-        }
-      ]
+      "story": "Charismatic social hub of Surfers Bros who bridged factions early and mid-game. Returned from Redemption late but was cut as a jury threat once idols and loyalties converged.",
+      "totalJuryVotes": 0
     },
     {
       "id": "gwen",
@@ -1853,7 +1681,8 @@
           ]
         }
       ],
-      "story": "Eliminated 5-4 in Episode 7 after tribe swap. Personal hatred with Beth led to elimination."
+      "story": "Eliminated 5-4 in Episode 7 after tribe swap. Personal hatred with Beth led to elimination.",
+      "badges": []
     },
     {
       "id": "jacques",
@@ -1864,17 +1693,14 @@
       "totalSeasons": 1,
       "bestPlacement": 1,
       "wins": 4,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
+      "totalChallengeWins": 4,
+      "totalImmunityWins": 4,
       "totalRewardWins": 0,
       "totalVotesAgainst": 0,
       "totalIdolsFound": 0,
-      "totalJuryVotes": 0,
+      "totalJuryVotes": -7,
       "tier": "Unranked",
       "badges": [
-        "S6 Winner",
-        "S6 Winner",
-        "S6 Winner",
         "S6 Winner"
       ],
       "seasonDetails": [
@@ -1883,59 +1709,37 @@
           "placement": 1,
           "status": "Winner",
           "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
+          "challengeWins": 4,
+          "immunityWins": 4,
           "rewardWins": 0,
           "votesReceived": 2,
           "idolsFound": 0,
-          "strategicRank": 0,
-          "juryVotes": 7,
+          "strategicRank": 10,
+          "juryVotes": 0,
           "finalVote": "7-1-0",
           "advantages": [],
           "notes": [
-            "Winner — 7–1–0 jury vote"
+            "Winner - 7 jury votes (7-1-0)"
+          ],
+          "gameplayStyle": "Ice-cold strategist",
+          "keyMoments": [
+            "Engineered Kitty’s idol burn at merge",
+            "Won 4 immunities to steer late votes",
+            "Chose the Final 4 tie path that sent Kelly out"
+          ],
+          "alliances": [
+            "Jay",
+            "Mickey",
+            "Kelly",
+            "Kitty"
+          ],
+          "rivalries": [
+            "Geoff",
+            "Brody"
           ]
         }
-      ]
-    },
-    {
-      "id": "jacques-winner",
-      "name": "Jacques Winner",
-      "seasons": [
-        6
       ],
-      "totalSeasons": 1,
-      "bestPlacement": 1,
-      "wins": 1,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
-      "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
-      "totalJuryVotes": 0,
-      "tier": "Unranked",
-      "badges": [
-        "S6 Winner"
-      ],
-      "seasonDetails": [
-        {
-          "season": 6,
-          "placement": 1,
-          "status": "Finalist",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
-          "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
-          "juryVotes": 0,
-          "finalVote": "7-1-0",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
-        }
-      ]
+      "story": "Played a low-target, high-control game, bridging rival blocs and weaponizing relationships while taking only 2 votes all season. He clinched control with 4 immunity wins and a masterful endgame that set the Final 4 tie in his favor."
     },
     {
       "id": "jasmine",
@@ -1995,15 +1799,31 @@
           "rewardWins": 0,
           "votesReceived": 4,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 7,
           "juryVotes": 0,
           "finalVote": "",
           "advantages": [],
           "notes": [
-            "Finalist — 0 jury votes"
+            "Finalist - 0 jury votes"
+          ],
+          "gameplayStyle": "Loyal lieutenant",
+          "keyMoments": [
+            "Unbreakable duo with Mickey",
+            "Navigated the merge rock draw",
+            "Sat in the Final 4 tie that booted Kelly"
+          ],
+          "alliances": [
+            "Mickey",
+            "Jacques",
+            "Emma"
+          ],
+          "rivalries": [
+            "Geoff",
+            "Blaineley"
           ]
         }
-      ]
+      ],
+      "story": "Rode or died with Mickey while building cross-tribe bridges, surviving chaotic votes and a rock-draw episode. Reached the end as the loyal lieutenant with fewer signature moves than his allies."
     },
     {
       "id": "jo",
@@ -2079,7 +1899,7 @@
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 5,
+      "totalVotesAgainst": 6,
       "totalIdolsFound": 1,
       "badges": [
         "Most Unlucky Player"
@@ -2104,55 +1924,33 @@
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 9,
+          "votesReceived": 10,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 5,
           "juryVotes": 0,
           "finalVote": "",
           "advantages": [],
           "notes": [
-            "Voted out 6–1 (Ep5) to RI; eliminated at merge duel (Ep9)"
+            "Voted out Episode 5 (6–1) to RI"
+          ],
+          "gameplayStyle": "Volatile competitor",
+          "keyMoments": [
+            "Multiple meltdowns on Galang",
+            "Booted 6–1 as a consensus"
+          ],
+          "alliances": [
+            "Jacques",
+            "Mickey"
+          ],
+          "rivalries": [
+            "Dwayne",
+            "Geoff",
+            "Ryan"
           ]
         }
       ],
-      "story": "Season 5 contestant. Finished 13th."
-    },
-    {
-      "id": "josee-pre-juror-voted-out",
-      "name": "Josee Pre-Juror Voted out",
-      "seasons": [
-        6
-      ],
-      "totalSeasons": 1,
-      "bestPlacement": 12,
-      "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
-      "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
-      "totalJuryVotes": 0,
-      "tier": "Unranked",
-      "badges": [],
-      "seasonDetails": [
-        {
-          "season": 6,
-          "placement": 12,
-          "status": "Eliminated",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
-          "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
-          "juryVotes": 0,
-          "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
-        }
-      ]
+      "story": "Hyper-competitive firebrand whose meltdowns isolated her on Galang. Voted out cleanly despite challenge value.",
+      "totalJuryVotes": 0
     },
     {
       "id": "junior",
@@ -2182,52 +1980,28 @@
           "rewardWins": 0,
           "votesReceived": 9,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 4,
           "juryVotes": 0,
           "finalVote": "",
           "advantages": [],
           "notes": [
-            "Voted out 6–2 (Ep4); eliminated at RI (Ep7)"
+            "Voted out Episode 4 (6–2) to RI; later eliminated on RI"
+          ],
+          "gameplayStyle": "Young underdog",
+          "keyMoments": [
+            "Survived early RI duels",
+            "Initial 6–2 vote amid liability framing"
+          ],
+          "alliances": [
+            "Dwayne",
+            "Jay"
+          ],
+          "rivalries": [
+            "Jacques"
           ]
         }
-      ]
-    },
-    {
-      "id": "junior-pre-juror-voted-out",
-      "name": "Junior Pre-Juror Voted out",
-      "seasons": [
-        6
       ],
-      "totalSeasons": 1,
-      "bestPlacement": 15,
-      "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
-      "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
-      "totalJuryVotes": 0,
-      "tier": "Unranked",
-      "badges": [],
-      "seasonDetails": [
-        {
-          "season": 6,
-          "placement": 15,
-          "status": "Eliminated",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
-          "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
-          "juryVotes": 0,
-          "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
-        }
-      ]
+      "story": "Eager underdog who battled through RI duels but couldn’t escape the ‘liability’ label. His exit weakened Dwayne’s leverage."
     },
     {
       "id": "justin",
@@ -2276,7 +2050,8 @@
           ]
         }
       ],
-      "story": "First boot in S1 despite finding idol. First juror in S2 after idol play chaos."
+      "story": "First boot in S1 despite finding idol. First juror in S2 after idol play chaos.",
+      "badges": []
     },
     {
       "id": "katie",
@@ -2310,7 +2085,8 @@
           ]
         }
       ],
-      "story": "Played solid pre-merge game as part of MAPLV with Sadie. Found Hidden Immunity Idol."
+      "story": "Played solid pre-merge game as part of MAPLV with Sadie. Found Hidden Immunity Idol.",
+      "badges": []
     },
     {
       "id": "kelly",
@@ -2324,8 +2100,8 @@
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
+      "totalVotesAgainst": 1,
+      "totalIdolsFound": 1,
       "totalJuryVotes": 0,
       "tier": "Unranked",
       "badges": [],
@@ -2338,17 +2114,33 @@
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 10,
-          "idolsFound": 0,
-          "strategicRank": 0,
+          "votesReceived": 11,
+          "idolsFound": 1,
+          "strategicRank": 8,
           "juryVotes": 0,
           "finalVote": "",
           "advantages": [],
           "notes": [
-            "Eliminated Final 4 — 2–2 tie, 1–1 revote, lost fire-making"
+            "Eliminated Final 4 (2–2 tie, 1–1 revote, lost fire-making)"
+          ],
+          "gameplayStyle": "Idol-wielding controller",
+          "keyMoments": [
+            "Found and correctly played Tadhana idol at swap",
+            "Drove the Ryan boot coalition",
+            "Lost Final 4 fire-making"
+          ],
+          "alliances": [
+            "Blaineley",
+            "Jacques",
+            "Ryan"
+          ],
+          "rivalries": [
+            "Brody",
+            "Mickey"
           ]
         }
-      ]
+      ],
+      "story": "Sponsor strategist who found the Tadhana idol, nuked a swap vote to save herself, and rebuilt into a late-game power. Fell at fire-making after clashing with Mickey and threading multiple alliances."
     },
     {
       "id": "kitty",
@@ -2362,8 +2154,8 @@
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
+      "totalVotesAgainst": 7,
+      "totalIdolsFound": 1,
       "totalJuryVotes": 0,
       "tier": "Unranked",
       "badges": [],
@@ -2376,54 +2168,33 @@
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 8,
-          "idolsFound": 0,
-          "strategicRank": 0,
+          "votesReceived": 15,
+          "idolsFound": 1,
+          "strategicRank": 5,
           "juryVotes": 0,
           "finalVote": "",
           "advantages": [],
           "notes": [
-            "Voted out (Ep11) to RI; eliminated on RI (Ep14)"
+            "Voted out Episode 11 (3–2–2–1–1) to RI (idol previously burned on Jacques)"
+          ],
+          "gameplayStyle": "Volatile social spark",
+          "keyMoments": [
+            "Found merge idol",
+            "Played idol on Jacques at merge",
+            "Sent to RI in a 5-way split vote"
+          ],
+          "alliances": [
+            "Emma",
+            "Jacques",
+            "Jay"
+          ],
+          "rivalries": [
+            "Mickey",
+            "Ryan"
           ]
         }
-      ]
-    },
-    {
-      "id": "kitty-juror-voted-out",
-      "name": "Kitty Juror Voted out",
-      "seasons": [
-        6
       ],
-      "totalSeasons": 1,
-      "bestPlacement": 9,
-      "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
-      "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
-      "totalJuryVotes": 0,
-      "tier": "Unranked",
-      "badges": [],
-      "seasonDetails": [
-        {
-          "season": 6,
-          "placement": 9,
-          "status": "Eliminated",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
-          "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
-          "juryVotes": 0,
-          "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
-        }
-      ]
+      "story": "Social spark of Sis4ever who found the merge idol but burned it on Jacques. Became a split-vote magnet and was sent to RI in a chaotic round."
     },
     {
       "id": "leonard",
@@ -2438,7 +2209,7 @@
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 5,
+      "totalVotesAgainst": 6,
       "totalIdolsFound": 0,
       "badges": [],
       "seasonDetails": [
@@ -2461,55 +2232,31 @@
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 5,
+          "votesReceived": 6,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 2,
           "juryVotes": 0,
           "finalVote": "",
           "advantages": [],
           "notes": [
-            "Voted out 5–3 (Ep2) to RI; eliminated (Ep4)"
+            "Voted out Episode 2 (5–3) to RI; eliminated Episode 4"
+          ],
+          "gameplayStyle": "Well-meaning liability",
+          "keyMoments": [
+            "Volunteered swap to RI",
+            "Voted out 5–3 on Galang"
+          ],
+          "alliances": [
+            "Tammy",
+            "Blaineley"
+          ],
+          "rivalries": [
+            "Geoff"
           ]
         }
       ],
-      "story": "Season 5 contestant. Finished 18th."
-    },
-    {
-      "id": "leonard-pre-juror-voted-out",
-      "name": "Leonard Pre-Juror Voted out",
-      "seasons": [
-        6
-      ],
-      "totalSeasons": 1,
-      "bestPlacement": 18,
-      "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
-      "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
-      "totalJuryVotes": 0,
-      "tier": "Unranked",
-      "badges": [],
-      "seasonDetails": [
-        {
-          "season": 6,
-          "placement": 18,
-          "status": "Eliminated",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
-          "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
-          "juryVotes": 0,
-          "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
-        }
-      ]
+      "story": "Self-sacrificing partner who swapped to RI for Tammy, then became the easy ‘liability’ cut and lost the duel later.",
+      "totalJuryVotes": 0
     },
     {
       "id": "leshawna",
@@ -2560,7 +2307,8 @@
           ]
         }
       ],
-      "story": "First juror in S1. Second boot in S2 despite unbreakable bond with Noah in S1."
+      "story": "First juror in S1. Second boot in S2 despite unbreakable bond with Noah in S1.",
+      "badges": []
     },
     {
       "id": "lightning",
@@ -2713,52 +2461,30 @@
           "rewardWins": 0,
           "votesReceived": 2,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 6,
           "juryVotes": 0,
           "finalVote": "",
           "advantages": [],
           "notes": [
-            "Idol casualty at swap (Ep7) — 4 votes voided, 2–0"
+            "Idol casualty Episode 7 (Kelly’s idol negated majority)"
+          ],
+          "gameplayStyle": "Calculating planner",
+          "keyMoments": [
+            "Declined swap for Beth",
+            "Idoled out at swap vote"
+          ],
+          "alliances": [
+            "Jacques",
+            "Kelly",
+            "Brody"
+          ],
+          "rivalries": [
+            "Junior",
+            "Kelly"
           ]
         }
-      ]
-    },
-    {
-      "id": "mary-pre-juror-voted-out",
-      "name": "Mary Pre-Juror Voted out",
-      "seasons": [
-        6
       ],
-      "totalSeasons": 1,
-      "bestPlacement": 14,
-      "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
-      "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
-      "totalJuryVotes": 0,
-      "tier": "Unranked",
-      "badges": [],
-      "seasonDetails": [
-        {
-          "season": 6,
-          "placement": 14,
-          "status": "Eliminated",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
-          "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
-          "juryVotes": 0,
-          "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
-        }
-      ]
+      "story": "Cold planner who refused to swap for Beth, then pushed liability cuts. Was idoled out at the swap."
     },
     {
       "id": "max",
@@ -2800,12 +2526,12 @@
       "totalSeasons": 2,
       "bestPlacement": 1,
       "wins": 1,
-      "totalChallengeWins": 2,
-      "totalImmunityWins": 2,
+      "totalChallengeWins": 3,
+      "totalImmunityWins": 3,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 1,
-      "totalJuryVotes": 4,
+      "totalVotesAgainst": 2,
+      "totalIdolsFound": 2,
+      "totalJuryVotes": 3,
       "badges": [
         "S5 Winner",
         "0 Votes Against",
@@ -2832,58 +2558,36 @@
           "placement": 2,
           "status": "Finalist",
           "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
+          "challengeWins": 1,
+          "immunityWins": 1,
           "rewardWins": 0,
-          "votesReceived": 6,
-          "idolsFound": 0,
-          "strategicRank": 0,
-          "juryVotes": 1,
+          "votesReceived": 8,
+          "idolsFound": 1,
+          "strategicRank": 8,
+          "juryVotes": 0,
           "finalVote": "",
           "advantages": [],
           "notes": [
-            "Runner-up — 1 jury vote"
+            "Finalist - 1 jury vote"
+          ],
+          "gameplayStyle": "Loyal power core",
+          "keyMoments": [
+            "Found Galang idol",
+            "Played idol on Jay at Final 5",
+            "Survived the rock-draw chaos round"
+          ],
+          "alliances": [
+            "Jay",
+            "Ryan",
+            "Jacques"
+          ],
+          "rivalries": [
+            "Kitty",
+            "Kelly"
           ]
         }
       ],
-      "story": "Winner of Season 5 (Rescue Island). Quiet social core: received 0 votes against all season and won a 3–3–2 FTC tie via Ryan’s tiebreak vote."
-    },
-    {
-      "id": "mickey-finalist-1-vote-to-win-3-jay",
-      "name": "Mickey Finalist 1 vote to win 3 Jay",
-      "seasons": [
-        6
-      ],
-      "totalSeasons": 1,
-      "bestPlacement": 2,
-      "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
-      "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
-      "totalJuryVotes": 0,
-      "tier": "Unranked",
-      "badges": [],
-      "seasonDetails": [
-        {
-          "season": 6,
-          "placement": 2,
-          "status": "Finalist",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
-          "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
-          "juryVotes": 0,
-          "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
-        }
-      ]
+      "story": "The loyal core of AnxietyBro, he paired tight social bonds with steady challenge value and deep protection. An endgame idol on Jay and consistent positioning brought him to the end."
     },
     {
       "id": "mike",
@@ -3056,7 +2760,8 @@
           ]
         }
       ],
-      "story": "Sent to Exile Beach in S1, won return but medically evacuated. Third boot in S2 after idol chaos."
+      "story": "Sent to Exile Beach in S1, won return but medically evacuated. Third boot in S2 after idol chaos.",
+      "badges": []
     },
     {
       "id": "rodney",
@@ -3098,11 +2803,11 @@
       "totalSeasons": 2,
       "bestPlacement": 3,
       "wins": 0,
-      "totalChallengeWins": 1,
-      "totalImmunityWins": 1,
+      "totalChallengeWins": 2,
+      "totalImmunityWins": 2,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 7,
-      "totalIdolsFound": 0,
+      "totalVotesAgainst": 8,
+      "totalIdolsFound": 1,
       "badges": [
         "S5 Finalist (2 votes)",
         "Fan Favorite",
@@ -3127,58 +2832,37 @@
           "placement": 8,
           "status": "Juror",
           "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
+          "challengeWins": 1,
+          "immunityWins": 1,
           "rewardWins": 0,
-          "votesReceived": 10,
-          "idolsFound": 0,
-          "strategicRank": 0,
+          "votesReceived": 11,
+          "idolsFound": 1,
+          "strategicRank": 8,
           "juryVotes": 0,
           "finalVote": "",
           "advantages": [],
           "notes": [
-            "Voted out 5–2–1 (Ep12); eliminated on RI (Ep15)"
+            "Voted out Episode 12 (5–2–1) to Redemption; later eliminated on RI"
+          ],
+          "gameplayStyle": "Aggressive swing",
+          "keyMoments": [
+            "Found and misplayed Galang idol",
+            "Won Pesky Palate immunity",
+            "Booted 5–2–1 as the merge connector"
+          ],
+          "alliances": [
+            "Mickey",
+            "Geoff",
+            "Kelly"
+          ],
+          "rivalries": [
+            "Emma",
+            "Kitty"
           ]
         }
       ],
-      "story": "Fan Favorite of Season 5. Loyal endgame partner who won fire-making, reached FTC, then became kingmaker by casting the deciding winner vote."
-    },
-    {
-      "id": "ryan-juror-voted-out",
-      "name": "Ryan Juror Voted out",
-      "seasons": [
-        6
-      ],
-      "totalSeasons": 1,
-      "bestPlacement": 8,
-      "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
-      "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
-      "totalJuryVotes": 0,
-      "tier": "Unranked",
-      "badges": [],
-      "seasonDetails": [
-        {
-          "season": 6,
-          "placement": 8,
-          "status": "Eliminated",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
-          "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
-          "juryVotes": 0,
-          "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
-        }
-      ]
+      "story": "Aggressive swing player who found an idol (burned it), won immunity, and steered pivotal mid-game votes before being consensused out for being too connected.",
+      "totalJuryVotes": 0
     },
     {
       "id": "sadie",
@@ -3212,7 +2896,8 @@
           ]
         }
       ],
-      "story": "Eliminated by rock draw despite never receiving a vote and voting correctly. Inseparable from Katie in MAPLV."
+      "story": "Eliminated by rock draw despite never receiving a vote and voting correctly. Inseparable from Katie in MAPLV.",
+      "badges": []
     },
     {
       "id": "sam",
@@ -3247,7 +2932,8 @@
           ]
         }
       ],
-      "story": "Most tragic exit - NEVER received a vote, voted correctly, eliminated by rock draw. Most unlucky player in franchise."
+      "story": "Most tragic exit - NEVER received a vote, voted correctly, eliminated by rock draw. Most unlucky player in franchise.",
+      "badges": []
     },
     {
       "id": "samey",
@@ -3543,7 +3229,8 @@
           ]
         }
       ],
-      "story": "Second boot. Multiple early conflicts prevented alliance formation. Challenge liability with no social capital."
+      "story": "Second boot. Multiple early conflicts prevented alliance formation. Challenge liability with no social capital.",
+      "badges": []
     },
     {
       "id": "stephanie",
@@ -3573,52 +3260,29 @@
           "rewardWins": 0,
           "votesReceived": 8,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 5,
           "juryVotes": 0,
           "finalVote": "",
           "advantages": [],
           "notes": [
-            "Voted out 6–1 (Ep6) to RI; eliminated at RI (Ep9)"
+            "Voted out Episode 6 (6–1); threw an idol clue into the fire on RI"
+          ],
+          "gameplayStyle": "Fiery competitor",
+          "keyMoments": [
+            "Burned an idol clue on RI",
+            "Voted out 6–1 after conflict with Jacques"
+          ],
+          "alliances": [
+            "Ryan",
+            "Brody"
+          ],
+          "rivalries": [
+            "Jacques",
+            "Jay"
           ]
         }
-      ]
-    },
-    {
-      "id": "stephanie-pre-juror-voted-out",
-      "name": "Stephanie Pre-Juror Voted out",
-      "seasons": [
-        6
       ],
-      "totalSeasons": 1,
-      "bestPlacement": 13,
-      "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
-      "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
-      "totalJuryVotes": 0,
-      "tier": "Unranked",
-      "badges": [],
-      "seasonDetails": [
-        {
-          "season": 6,
-          "placement": 13,
-          "status": "Eliminated",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
-          "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
-          "juryVotes": 0,
-          "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
-        }
-      ]
+      "story": "Fierce competitor who clashed with Jacques and became a control vote casualty. Leaned into independence on RI to no avail."
     },
     {
       "id": "sugar",
@@ -3680,52 +3344,29 @@
           "rewardWins": 0,
           "votesReceived": 4,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 3,
           "juryVotes": 0,
           "finalVote": "",
           "advantages": [],
           "notes": [
-            "Swapped to RI (Ep2); eliminated on RI (Ep5)"
+            "Swap to RI in Ep2; eliminated on RI in Episode 5"
+          ],
+          "gameplayStyle": "Swap casualty",
+          "keyMoments": [
+            "Voted in twist to RI Day 1",
+            "Swapped with Leonard",
+            "Eliminated on RI"
+          ],
+          "alliances": [
+            "Leonard",
+            "Blaineley"
+          ],
+          "rivalries": [
+            "Emma"
           ]
         }
-      ]
-    },
-    {
-      "id": "tammy-pre-juror-swapped-out",
-      "name": "Tammy Pre-Juror Swapped out",
-      "seasons": [
-        6
       ],
-      "totalSeasons": 1,
-      "bestPlacement": 17,
-      "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
-      "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
-      "totalJuryVotes": 0,
-      "tier": "Unranked",
-      "badges": [],
-      "seasonDetails": [
-        {
-          "season": 6,
-          "placement": 17,
-          "status": "Eliminated",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
-          "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
-          "juryVotes": 0,
-          "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
-        }
-      ]
+      "story": "Twist casualty who pinballed between camp and RI through pair swaps. Couldn’t convert survival into a return."
     },
     {
       "id": "topher",
@@ -3811,7 +3452,8 @@
           ]
         }
       ],
-      "story": "Strong social player with multiple unbreakable bonds. Eliminated in double eliminations both seasons."
+      "story": "Strong social player with multiple unbreakable bonds. Eliminated in double eliminations both seasons.",
+      "badges": []
     },
     {
       "id": "tyler",
@@ -3844,81 +3486,8 @@
           ]
         }
       ],
-      "story": "Challenge liability voted out 8-4 in Episode 2. Unable to build strong social connections."
-    },
-    {
-      "id": "votes-to-win",
-      "name": "votes to win",
-      "seasons": [
-        6
-      ],
-      "totalSeasons": 1,
-      "bestPlacement": 7,
-      "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
-      "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
-      "totalJuryVotes": 0,
-      "tier": "Unranked",
-      "badges": [],
-      "seasonDetails": [
-        {
-          "season": 6,
-          "placement": 7,
-          "status": "Eliminated",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
-          "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
-          "juryVotes": 0,
-          "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
-        }
-      ]
-    },
-    {
-      "id": "votes-to-win-4-kelly-juror",
-      "name": "votes to win 4 Kelly Juror",
-      "seasons": [
-        6
-      ],
-      "totalSeasons": 1,
-      "bestPlacement": 0,
-      "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
-      "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
-      "totalJuryVotes": 0,
-      "tier": "Unranked",
-      "badges": [],
-      "seasonDetails": [
-        {
-          "season": 6,
-          "placement": 0,
-          "status": "Eliminated",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
-          "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
-          "juryVotes": 0,
-          "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
-        }
-      ]
+      "story": "Challenge liability voted out 8-4 in Episode 2. Unable to build strong social connections.",
+      "badges": []
     },
     {
       "id": "zoey",
@@ -3990,84 +3559,6 @@
         }
       ],
       "story": "UNPRECEDENTED social dominance with 3 unbreakable bonds at once in S4. Lost 6-7 to Alejandro in closest finale ever. Most socially connected player in franchise history."
-    },
-    {
-      "id": "everyone",
-      "name": "everyone",
-      "seasons": [
-        6
-      ],
-      "totalSeasons": 1,
-      "bestPlacement": 4,
-      "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
-      "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
-      "totalJuryVotes": 0,
-      "tier": "Unranked",
-      "badges": [],
-      "seasonDetails": [
-        {
-          "season": 6,
-          "placement": 4,
-          "status": "Juror",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
-          "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
-          "juryVotes": 0,
-          "finalVote": "",
-          "advantages": [],
-          "notes": [
-            "Eliminated Episode 5"
-          ]
-        }
-      ],
-      "story": "Competed in Season 6"
-    },
-    {
-      "id": "eliminate",
-      "name": "eliminate",
-      "seasons": [
-        6
-      ],
-      "totalSeasons": 1,
-      "bestPlacement": 5,
-      "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
-      "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
-      "totalJuryVotes": 0,
-      "tier": "Unranked",
-      "badges": [],
-      "seasonDetails": [
-        {
-          "season": 6,
-          "placement": 5,
-          "status": "Juror",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
-          "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
-          "juryVotes": 0,
-          "finalVote": "",
-          "advantages": [],
-          "notes": [
-            "Eliminated Episode 3"
-          ]
-        }
-      ],
-      "story": "Competed in Season 6"
     }
   ]
 }

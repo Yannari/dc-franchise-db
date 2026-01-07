@@ -1,6 +1,6 @@
 {
   "franchiseStats": {
-    "totalSeasons": 9,
+    "totalSeasons": 6,
     "totalEpisodes": 130,
     "uniquePlayers": 148,
     "totalAppearances": 130
@@ -63,46 +63,13 @@
     },
     {
       "season": 6,
-      "winner": "jacques",
-      "playerSlug": "jacques",
-      "strategy": "TBD",
-      "finalVote": "7-1-0",
-      "runnerUp": "mickey & jay",
-      "keyStats": "TBD",
-      "legacy": "TBD",
-      "votesAgainst": 0
-    },
-    {
-      "season": 6,
-      "winner": "jacques",
-      "playerSlug": "jacques",
-      "strategy": "TBD - Update manually",
-      "finalVote": "7-1-0",
-      "runnerUp": "mickey & jay",
-      "keyStats": "7 jury votes to win",
-      "legacy": "TBD - Update manually",
-      "votesAgainst": 0
-    },
-    {
-      "season": 6,
       "winner": "Jacques",
       "playerSlug": "jacques",
-      "strategy": "Jacques kept his target profile tiny while controlling tempo through relationships and timely challenge wins. He leveraged pair dynamics without being beholden to them, isolating threats and guiding splits so others took the heat. At FTC, his résumé and poise made the choice easy for the jury.",
+      "strategy": "Jacques kept threat perception low while holding unbreakable ties to multiple power players, then weaponized those bonds at key junctures. He forced advantage drains (Kitty’s idol), won when it mattered, and engineered the Final 4 path that removed Kelly.",
       "finalVote": "7-1-0",
       "runnerUp": "Mickey & Jay",
-      "keyStats": "2 votes against, 4 individual immunities (4 total challenge wins), 0 idols found, 7–1–0 jury win",
-      "legacy": "A classic low-target power winner: surgical, efficient, and respected. His blowout 7–1–0 marks him as one of the franchise’s cleanest domination wins.",
-      "votesAgainst": 0
-    },
-    {
-      "season": 6,
-      "winner": "Jacques",
-      "playerSlug": "jacques",
-      "strategy": "Jacques built overlapping ‘unbreakable’ bonds (Jay, Kelly, Mickey, Kitty) and used them as levers rather than promises. He timed strikes through others, induced an idol burn on himself at merge, and won the pivotal Final 4 immunity to shape the endgame.",
-      "finalVote": "7-1-0",
-      "runnerUp": "Mickey & Jay",
-      "keyStats": "2 votes against, 4 immunities, 0 idols, never sent to Redemption Island",
-      "legacy": "Defines the ‘low-target, high-control’ archetype: ruthless but respected. His 7–1–0 win cements him as one of the franchise’s cleanest surgeon-style victors.",
+      "keyStats": "2 votes against, 4 immunity wins, 0 idols; dominated endgame control.",
+      "legacy": "An archetypal ‘ice strategist’ win: precise, low-flash, high-impact. Cemented as one of the franchise’s best manipulation-and-endgame control victories.",
       "votesAgainst": 0
     }
   ],
@@ -242,25 +209,7 @@
     },
     {
       "season": 6,
-      "player": "jacques",
-      "playerSlug": "jacques",
-      "description": "Fan favorite"
-    },
-    {
-      "season": 6,
-      "player": "jacques",
-      "playerSlug": "jacques",
-      "description": "Fan favorite"
-    },
-    {
-      "season": 6,
-      "player": "jacques",
-      "playerSlug": "jacques",
-      "description": "Fan favorite"
-    },
-    {
-      "season": 6,
-      "player": "jacques",
+      "player": "Jacques",
       "playerSlug": "jacques",
       "description": "Fan favorite"
     }
@@ -340,22 +289,7 @@
       },
       {
         "season": 6,
-        "strategy": "TBD",
-        "winner": "jacques"
-      },
-      {
-        "season": 6,
-        "strategy": "TBD - Update manually",
-        "winner": "jacques"
-      },
-      {
-        "season": 6,
-        "strategy": "Jacques kept his target profile tiny while controlling tempo through relationships and timely challenge wins. He leveraged pair dynamics without being beholden to them, isolating threats and guiding splits so others took the heat. At FTC, his résumé and poise made the choice easy for the jury.",
-        "winner": "Jacques"
-      },
-      {
-        "season": 6,
-        "strategy": "Jacques built overlapping ‘unbreakable’ bonds (Jay, Kelly, Mickey, Kitty) and used them as levers rather than promises. He timed strikes through others, induced an idol burn on himself at merge, and won the pivotal Final 4 immunity to shape the endgame.",
+        "strategy": "Jacques kept threat perception low while holding unbreakable ties to multiple power players, then weaponized those bonds at key junctures. He forced advantage drains (Kitty’s idol), won when it mattered, and engineered the Final 4 path that removed Kelly.",
         "winner": "Jacques"
       }
     ],
@@ -379,18 +313,6 @@
       {
         "season": 5,
         "composition": "18 new players (Gen 3)"
-      },
-      {
-        "season": 6,
-        "composition": "20 players"
-      },
-      {
-        "season": 6,
-        "composition": "20 players"
-      },
-      {
-        "season": 6,
-        "composition": "20 players"
       },
       {
         "season": 6,
@@ -426,21 +348,6 @@
       {
         "season": 6,
         "vote": "7-1-0",
-        "winner": "jacques"
-      },
-      {
-        "season": 6,
-        "vote": "7-1-0",
-        "winner": "jacques"
-      },
-      {
-        "season": 6,
-        "vote": "7-1-0",
-        "winner": "Jacques"
-      },
-      {
-        "season": 6,
-        "vote": "7-1-0",
         "winner": "Jacques"
       }
     ],
@@ -464,18 +371,6 @@
       {
         "season": 5,
         "twist": "3 tribes + swap + split-tribal merge + vote-loss twists + fire-making"
-      },
-      {
-        "season": 6,
-        "twist": "2 tribes (10 returnees,10 newbies)"
-      },
-      {
-        "season": 6,
-        "twist": "2 tribes + redemption island"
-      },
-      {
-        "season": 6,
-        "twist": "2 tribes + redemption island"
       },
       {
         "season": 6,

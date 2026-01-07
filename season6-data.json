@@ -10,9 +10,9 @@
     "playerSlug": "jacques",
     "vote": "7-1-0",
     "runnerUp": "Mickey & Jay",
-    "keyStats": "2 votes against, 4 immunities, 0 idols, never sent to Redemption Island",
-    "strategy": "Jacques built overlapping ‘unbreakable’ bonds (Jay, Kelly, Mickey, Kitty) and used them as levers rather than promises. He timed strikes through others, induced an idol burn on himself at merge, and won the pivotal Final 4 immunity to shape the endgame.",
-    "legacy": "Defines the ‘low-target, high-control’ archetype: ruthless but respected. His 7–1–0 win cements him as one of the franchise’s cleanest surgeon-style victors."
+    "keyStats": "2 votes against, 4 immunity wins, 0 idols; dominated endgame control.",
+    "strategy": "Jacques kept threat perception low while holding unbreakable ties to multiple power players, then weaponized those bonds at key junctures. He forced advantage drains (Kitty’s idol), won when it mattered, and engineered the Final 4 path that removed Kelly.",
+    "legacy": "An archetypal ‘ice strategist’ win: precise, low-flash, high-impact. Cemented as one of the franchise’s best manipulation-and-endgame control victories."
   },
   "finalists": [
     {
@@ -40,14 +40,14 @@
       "name": "Jacques",
       "playerSlug": "jacques",
       "phase": "Winner",
-      "notes": "Winner — 7–1–0 jury vote",
+      "notes": "Winner - 7 jury votes (7-1-0)",
       "strategicRank": 10,
-      "story": "Played a near-flawless cold-precision game, building overlapping ‘unbreakable’ bonds and cashing them only when needed. Controlled endgame tempo with immunity wins and social leverage while avoiding being a target.",
+      "story": "Played a low-target, high-control game, bridging rival blocs and weaponizing relationships while taking only 2 votes all season. He clinched control with 4 immunity wins and a masterful endgame that set the Final 4 tie in his favor.",
       "gameplayStyle": "Ice-cold strategist",
       "keyMoments": [
-        "Guided early Tadhana structure with Kelly",
-        "Induced Kitty’s merge idol burn on him (Ep9)",
-        "Won F4 immunity to lock his ideal finals"
+        "Engineered Kitty’s idol burn at merge",
+        "Won 4 immunities to steer late votes",
+        "Chose the Final 4 tie path that sent Kelly out"
       ],
       "challengeWins": 4,
       "immunityWins": 4,
@@ -55,8 +55,8 @@
       "votesReceived": 2,
       "alliances": [
         "Jay",
-        "Kelly",
         "Mickey",
+        "Kelly",
         "Kitty"
       ],
       "rivalries": [
@@ -69,14 +69,14 @@
       "name": "Mickey",
       "playerSlug": "mickey",
       "phase": "Finalist",
-      "notes": "Runner-up — 1 jury vote",
+      "notes": "Finalist - 1 jury vote",
       "strategicRank": 8,
-      "story": "Anchor of AnxietyBro with Jay; found and held the Galang idol deep, then protected Jay with it at 5. Weathered chaotic merges as a protected hub and reached the finals via loyalty and timing.",
-      "gameplayStyle": "Shielded power core",
+      "story": "The loyal core of AnxietyBro, he paired tight social bonds with steady challenge value and deep protection. An endgame idol on Jay and consistent positioning brought him to the end.",
+      "gameplayStyle": "Loyal power core",
       "keyMoments": [
-        "Found Galang idol (Ep8)",
-        "Chose not to play idol in the rock vote (Ep10)",
-        "Idoled Jay at F5 (Ep16)"
+        "Found Galang idol",
+        "Played idol on Jay at Final 5",
+        "Survived the rock-draw chaos round"
       ],
       "challengeWins": 1,
       "immunityWins": 1,
@@ -85,7 +85,7 @@
       "alliances": [
         "Jay",
         "Ryan",
-        "Geoff"
+        "Jacques"
       ],
       "rivalries": [
         "Kitty",
@@ -97,14 +97,14 @@
       "name": "Jay",
       "playerSlug": "jay",
       "phase": "Finalist",
-      "notes": "Finalist — 0 jury votes",
-      "strategicRank": 6,
-      "story": "Stayed fiercely loyal to Mickey while building side trust with Jacques. Survived multiple split votes, occasionally going rogue, and leaned on social bonds to reach the end.",
+      "notes": "Finalist - 0 jury votes",
+      "strategicRank": 7,
+      "story": "Rode or died with Mickey while building cross-tribe bridges, surviving chaotic votes and a rock-draw episode. Reached the end as the loyal lieutenant with fewer signature moves than his allies.",
       "gameplayStyle": "Loyal lieutenant",
       "keyMoments": [
-        "Bonded strongly with Emma at merge (Ep9)",
-        "Rogue vote on Geoff in rock episode (Ep10)",
-        "Protected by Mickey’s idol at F5 (Ep16)"
+        "Unbreakable duo with Mickey",
+        "Navigated the merge rock draw",
+        "Sat in the Final 4 tie that booted Kelly"
       ],
       "challengeWins": 0,
       "immunityWins": 0,
@@ -112,7 +112,8 @@
       "votesReceived": 4,
       "alliances": [
         "Mickey",
-        "Jacques"
+        "Jacques",
+        "Emma"
       ],
       "rivalries": [
         "Geoff",
@@ -124,14 +125,14 @@
       "name": "Kelly",
       "playerSlug": "kelly",
       "phase": "Juror",
-      "notes": "Eliminated Final 4 — 2–2 tie, 1–1 revote, lost fire-making",
-      "strategicRank": 9,
-      "story": "Idol-wielding ‘momager’ who helped steer pre-merge Tadhana, nuked a swap vote to save herself, then rebuilt power with Ryan and Jacques. Fell at F4 after a showdown with Mickey.",
-      "gameplayStyle": "Idol-backed controller",
+      "notes": "Eliminated Final 4 (2–2 tie, 1–1 revote, lost fire-making)",
+      "strategicRank": 8,
+      "story": "Sponsor strategist who found the Tadhana idol, nuked a swap vote to save herself, and rebuilt into a late-game power. Fell at fire-making after clashing with Mickey and threading multiple alliances.",
+      "gameplayStyle": "Idol-wielding controller",
       "keyMoments": [
-        "Found and played Tadhana idol to bounce vote (Ep7)",
-        "Drove Ryan boot coalition (Ep12)",
-        "Lost F4 fire-making after 2–2 tie (Ep17)"
+        "Found and correctly played Tadhana idol at swap",
+        "Drove the Ryan boot coalition",
+        "Lost Final 4 fire-making"
       ],
       "challengeWins": 0,
       "immunityWins": 0,
@@ -152,14 +153,14 @@
       "name": "Geoff",
       "playerSlug": "geoff",
       "phase": "Juror",
-      "notes": "Returned from RI (Ep16) then voted out 4–1",
-      "strategicRank": 7,
-      "story": "The social mayor of Galang and half of Surfers Bros. Lost Brody, returned late from RI with an idol clue, but became the consensus jury-threat cut at 5.",
+      "notes": "Voted out Episode 16 (4–1) after returning from RI",
+      "strategicRank": 6,
+      "story": "Charismatic social hub of Surfers Bros who bridged factions early and mid-game. Returned from Redemption late but was cut as a jury threat once idols and loyalties converged.",
       "gameplayStyle": "Social hub",
       "keyMoments": [
-        "Formed Galang core with Mickey/Ryan",
-        "Misfired vote on Kitty in merge chaos (Ep9)",
-        "Returned from RI then cut at F5 (Ep16)"
+        "Anchored early Galang core with Mickey/Ryan",
+        "Returned from RI at Final 5",
+        "Cut 4–1 as the late jury threat"
       ],
       "challengeWins": 1,
       "immunityWins": 1,
@@ -168,11 +169,12 @@
       "alliances": [
         "Brody",
         "Mickey",
+        "Emma",
         "Blaineley"
       ],
       "rivalries": [
-        "Jacques",
-        "Jay"
+        "Jay",
+        "Jacques"
       ]
     },
     {
@@ -180,14 +182,14 @@
       "name": "Blaineley",
       "playerSlug": "blaineley",
       "phase": "Juror",
-      "notes": "Voted out 4–1 at Final 5; eliminated on RI (Ep16)",
+      "notes": "Voted out Episode 15 (4–1)",
       "strategicRank": 6,
-      "story": "Chaotic social influencer tied to Kelly, later integrated with Geoff/Mickey. Her reputation made her the safe late-game boot despite short-term impressions.",
-      "gameplayStyle": "Social provocateur",
+      "story": "A chaos agent turned integrated number through bonds with Mickey and Geoff. Went to rocks at merge, survived deep, then fell as the safe Final 5 consensus.",
+      "gameplayStyle": "Agent of chaos",
       "keyMoments": [
-        "Early feud with Emma (Ep1)",
-        "Bonded into Galang majority via Mickey/Geoff",
-        "Boot at F5 as consensus name (Ep15)"
+        "Rock-draw survival at merge",
+        "Socially rebounded via Geoff/Mickey",
+        "Final 5 consensus boot"
       ],
       "challengeWins": 0,
       "immunityWins": 0,
@@ -195,13 +197,12 @@
       "votesReceived": 7,
       "alliances": [
         "Kelly",
-        "Geoff",
-        "Mickey"
+        "Mickey",
+        "Geoff"
       ],
       "rivalries": [
         "Jay",
-        "Emma",
-        "Dwayne"
+        "Emma"
       ]
     },
     {
@@ -209,14 +210,14 @@
       "name": "Brody",
       "playerSlug": "brody",
       "phase": "Juror",
-      "notes": "Voted out 4–2 (Ep14); multiple RI runs",
+      "notes": "Voted out Episode 14 (4–2) after earlier swap boot to RI",
       "strategicRank": 7,
-      "story": "Endurance story of the season: returned at merge, won immunity, but drew heavy fire as a likable threat. Received a season-high 26 votes and still made jury.",
-      "gameplayStyle": "Popular competitor",
+      "story": "Perennial target and comeback kid who returned at merge, won immunity, and influenced key votes. Eventually cut as a popularity and challenge threat after drawing 26 votes across the season.",
+      "gameplayStyle": "Targeted comeback",
       "keyMoments": [
-        "Targeted at swap; survived idol fallout (Ep7)",
-        "Returned from RI at merge (Ep9)",
-        "Voted out again 4–2 (Ep14)"
+        "Returned from RI at merge with clue",
+        "Won ‘Wrist Assured’ immunity",
+        "Cut 4–2 as final push against Surfers momentum"
       ],
       "challengeWins": 1,
       "immunityWins": 1,
@@ -225,10 +226,10 @@
       "alliances": [
         "Geoff",
         "Jay",
-        "Ryan"
+        "Kelly"
       ],
       "rivalries": [
-        "Kelly",
+        "Ryan",
         "Mickey"
       ]
     },
@@ -237,14 +238,14 @@
       "name": "Ryan",
       "playerSlug": "ryan",
       "phase": "Juror",
-      "notes": "Voted out 5–2–1 (Ep12); eliminated on RI (Ep15)",
+      "notes": "Voted out Episode 12 (5–2–1) to Redemption; later eliminated on RI",
       "strategicRank": 8,
-      "story": "Power connector who bonded tightly with Mickey, fought publicly with Emma, and swung key votes. Found and later burned Galang’s idol early, then became the consensus merge boss to cut.",
-      "gameplayStyle": "Aggressive connector",
+      "story": "Aggressive swing player who found an idol (burned it), won immunity, and steered pivotal mid-game votes before being consensused out for being too connected.",
+      "gameplayStyle": "Aggressive swing",
       "keyMoments": [
-        "Found Galang idol (Ep4) and misplayed it (Ep5)",
-        "Helped boot Brody at swap (Ep8)",
-        "Sent to RI 5–2–1 (Ep12)"
+        "Found and misplayed Galang idol",
+        "Won Pesky Palate immunity",
+        "Booted 5–2–1 as the merge connector"
       ],
       "challengeWins": 1,
       "immunityWins": 1,
@@ -257,7 +258,6 @@
       ],
       "rivalries": [
         "Emma",
-        "Brody",
         "Kitty"
       ]
     },
@@ -266,14 +266,14 @@
       "name": "Kitty",
       "playerSlug": "kitty",
       "phase": "Juror",
-      "notes": "Voted out (Ep11) to RI; eliminated on RI (Ep14)",
+      "notes": "Voted out Episode 11 (3–2–2–1–1) to RI (idol previously burned on Jacques)",
       "strategicRank": 5,
-      "story": "Social spark of Sis4ever; found the merge idol but misplayed it on Jacques. Became the post-rock ‘safe boot’ amid a bitter feud with Mickey.",
-      "gameplayStyle": "Social wildcard",
+      "story": "Social spark of Sis4ever who found the merge idol but burned it on Jacques. Became a split-vote magnet and was sent to RI in a chaotic round.",
+      "gameplayStyle": "Volatile social spark",
       "keyMoments": [
-        "Found Campers idol (Ep9)",
-        "Misplayed idol on Jacques (Ep9)",
-        "Voted out 3–2–2–1–1 chaos (Ep11)"
+        "Found merge idol",
+        "Played idol on Jacques at merge",
+        "Sent to RI in a 5-way split vote"
       ],
       "challengeWins": 0,
       "immunityWins": 0,
@@ -294,14 +294,14 @@
       "name": "Emma",
       "playerSlug": "emma",
       "phase": "Juror",
-      "notes": "Eliminated by rock draw at merge (Ep10)",
+      "notes": "Rock-draw casualty Episode 10; later eliminated on RI",
       "strategicRank": 7,
-      "story": "Calm strategist who won the first merge immunity and led the anti-Ryan push. Became the season’s unluckiest exit when rocks sent her out despite not being the target.",
-      "gameplayStyle": "Composed strategist",
+      "story": "Composed strategist who won the first merge immunity and waged a season-long feud with Ryan. Lost to rocks in the merge deadlock and couldn’t fight back from RI.",
+      "gameplayStyle": "Calm strategist",
       "keyMoments": [
-        "Won merge immunity (Ep9)",
-        "Targeted Ryan at merge",
-        "Lost rock draw (Ep10)"
+        "Won first merge immunity",
+        "Feud with Ryan shaped mid-merge",
+        "Lost via rocks in a deadlock"
       ],
       "challengeWins": 1,
       "immunityWins": 1,
@@ -310,7 +310,7 @@
       "alliances": [
         "Kitty",
         "Geoff",
-        "Dwayne"
+        "Jay"
       ],
       "rivalries": [
         "Ryan",
@@ -322,23 +322,22 @@
       "name": "Dwayne",
       "playerSlug": "dwayne",
       "phase": "Juror",
-      "notes": "Cut in merge chaos 4–3–3–1 (Ep9) — direct elimination",
-      "strategicRank": 6,
-      "story": "Tribe glue and steady worker who became the ‘overlap’ boot at merge when factions couldn’t agree. His exit removed a key stabilizer.",
-      "gameplayStyle": "Tribe dad glue",
+      "notes": "Directly eliminated at merge (4–3–3–1)",
+      "strategicRank": 5,
+      "story": "Steady ‘dad glue’ who bridged pairs on Galang. Became the overlap boot at merge when factions needed a justifiable target.",
+      "gameplayStyle": "Tribal glue",
       "keyMoments": [
-        "Rocks spared him in Ep1 twist",
-        "Bridged pairs pre-merge on Galang",
-        "Merge overlap boot (Ep9)"
+        "Early stability bonds with Geoff/Mickey",
+        "Cut as the merge overlap boot"
       ],
       "challengeWins": 0,
       "immunityWins": 0,
       "idolsFound": 0,
       "votesReceived": 6,
       "alliances": [
+        "Junior",
         "Geoff",
-        "Mickey",
-        "Emma"
+        "Mickey"
       ],
       "rivalries": [
         "Josee",
@@ -350,14 +349,13 @@
       "name": "Josee",
       "playerSlug": "josee",
       "phase": "Pre-Juror",
-      "notes": "Voted out 6–1 (Ep5) to RI; eliminated at merge duel (Ep9)",
+      "notes": "Voted out Episode 5 (6–1) to RI",
       "strategicRank": 5,
-      "story": "Hyper-competitive Ice Partner who melted down on Galang and was exiled. Fought hard on RI but fell just short of re-entering at merge.",
+      "story": "Hyper-competitive firebrand whose meltdowns isolated her on Galang. Voted out cleanly despite challenge value.",
       "gameplayStyle": "Volatile competitor",
       "keyMoments": [
-        "Major meltdowns on Galang (Eps2–3)",
-        "Sent to RI 6–1 (Ep5)",
-        "Eliminated at merge duel (Ep9)"
+        "Multiple meltdowns on Galang",
+        "Booted 6–1 as a consensus"
       ],
       "challengeWins": 0,
       "immunityWins": 0,
@@ -370,7 +368,7 @@
       "rivalries": [
         "Dwayne",
         "Geoff",
-        "Emma"
+        "Ryan"
       ]
     },
     {
@@ -378,22 +376,21 @@
       "name": "Stephanie",
       "playerSlug": "stephanie",
       "phase": "Pre-Juror",
-      "notes": "Voted out 6–1 (Ep6) to RI; eliminated at RI (Ep9)",
+      "notes": "Voted out Episode 6 (6–1); threw an idol clue into the fire on RI",
       "strategicRank": 5,
-      "story": "Fiery competitor who clashed with Jacques and became the controllable boot when Tadhana finally lost. Survived duels until merge return, then fell.",
-      "gameplayStyle": "Combative competitor",
+      "story": "Fierce competitor who clashed with Jacques and became a control vote casualty. Leaned into independence on RI to no avail.",
+      "gameplayStyle": "Fiery competitor",
       "keyMoments": [
-        "Targeted by Jacques (Ep6)",
-        "Won RI duel then burned a clue (Ep7)",
-        "Eliminated at merge duel (Ep9)"
+        "Burned an idol clue on RI",
+        "Voted out 6–1 after conflict with Jacques"
       ],
       "challengeWins": 0,
       "immunityWins": 0,
       "idolsFound": 0,
       "votesReceived": 8,
       "alliances": [
-        "Brody",
-        "Kelly"
+        "Ryan",
+        "Brody"
       ],
       "rivalries": [
         "Jacques",
@@ -405,25 +402,26 @@
       "name": "Mary",
       "playerSlug": "mary",
       "phase": "Pre-Juror",
-      "notes": "Idol casualty at swap (Ep7) — 4 votes voided, 2–0",
+      "notes": "Idol casualty Episode 7 (Kelly’s idol negated majority)",
       "strategicRank": 6,
-      "story": "Brainiacs planner who kept agency over optics early and pushed liability cuts. Became collateral when Kelly’s idol detonated the swap vote.",
-      "gameplayStyle": "Rational planner",
+      "story": "Cold planner who refused to swap for Beth, then pushed liability cuts. Was idoled out at the swap.",
+      "gameplayStyle": "Calculating planner",
       "keyMoments": [
-        "Refused to swap for Beth (Ep1)",
-        "Joined Jacques/Kelly alliance (Ep4)",
-        "Idol-casualty boot (Ep7)"
+        "Declined swap for Beth",
+        "Idoled out at swap vote"
       ],
       "challengeWins": 0,
       "immunityWins": 0,
       "idolsFound": 0,
       "votesReceived": 2,
       "alliances": [
+        "Jacques",
         "Kelly",
-        "Jacques"
+        "Brody"
       ],
       "rivalries": [
-        "Junior"
+        "Junior",
+        "Kelly"
       ]
     },
     {
@@ -431,14 +429,13 @@
       "name": "Junior",
       "playerSlug": "junior",
       "phase": "Pre-Juror",
-      "notes": "Voted out 6–2 (Ep4); eliminated at RI (Ep7)",
-      "strategicRank": 3,
-      "story": "Fought to prove independence from Dwayne, surviving several RI duels, but fell short before the swap carnage.",
-      "gameplayStyle": "Earnest underdog",
+      "notes": "Voted out Episode 4 (6–2) to RI; later eliminated on RI",
+      "strategicRank": 4,
+      "story": "Eager underdog who battled through RI duels but couldn’t escape the ‘liability’ label. His exit weakened Dwayne’s leverage.",
+      "gameplayStyle": "Young underdog",
       "keyMoments": [
-        "Early RI survival streak",
-        "Booted 6–2 (Ep4)",
-        "Eliminated in RI numbers duel (Ep7)"
+        "Survived early RI duels",
+        "Initial 6–2 vote amid liability framing"
       ],
       "challengeWins": 0,
       "immunityWins": 0,
@@ -449,7 +446,6 @@
         "Jay"
       ],
       "rivalries": [
-        "Mary",
         "Jacques"
       ]
     },
@@ -458,14 +454,13 @@
       "name": "Ennui",
       "playerSlug": "ennui",
       "phase": "Pre-Juror",
-      "notes": "Voted out 6–3 (Ep3) to RI; eliminated (Ep6)",
+      "notes": "Voted out Episode 3 (6–3) to RI; later eliminated",
       "strategicRank": 5,
-      "story": "Outsider who bonded with Brody and became the first true Tadhana target. Performed well on RI before bowing out to Josee/Junior.",
-      "gameplayStyle": "Quiet competitor",
+      "story": "Goth outsider who became a focus-and-duels threat on RI. His pre-merge boot broke Brody’s social leverage.",
+      "gameplayStyle": "Focused loner",
       "keyMoments": [
-        "Feud with Jay sets target (Ep3)",
-        "Won early RI duel (Ep4)",
-        "Eliminated on RI (Ep6)"
+        "Feuded with Jay pre-tribal",
+        "Voted out 6–3"
       ],
       "challengeWins": 0,
       "immunityWins": 0,
@@ -484,14 +479,14 @@
       "name": "Tammy",
       "playerSlug": "tammy",
       "phase": "Pre-Juror",
-      "notes": "Swapped to RI (Ep2); eliminated on RI (Ep5)",
-      "strategicRank": 2,
-      "story": "Early twist casualty who yo-yoed with Leonard on RI. Couldn’t keep pace in the duel gauntlet.",
+      "notes": "Swap to RI in Ep2; eliminated on RI in Episode 5",
+      "strategicRank": 3,
+      "story": "Twist casualty who pinballed between camp and RI through pair swaps. Couldn’t convert survival into a return.",
       "gameplayStyle": "Swap casualty",
       "keyMoments": [
-        "Instant-vote to RI (Ep1)",
-        "Leonard swapped for her (Ep1)",
-        "Eliminated on RI (Ep5)"
+        "Voted in twist to RI Day 1",
+        "Swapped with Leonard",
+        "Eliminated on RI"
       ],
       "challengeWins": 0,
       "immunityWins": 0,
@@ -510,21 +505,21 @@
       "name": "Leonard",
       "playerSlug": "leonard",
       "phase": "Pre-Juror",
-      "notes": "Voted out 5–3 (Ep2) to RI; eliminated (Ep4)",
+      "notes": "Voted out Episode 2 (5–3) to RI; eliminated Episode 4",
       "strategicRank": 2,
-      "story": "Lovable ‘wizard’ volunteered to RI early and became the easy liability cut when Galang needed stability. Lost the duel later.",
-      "gameplayStyle": "Lovable liability",
+      "story": "Self-sacrificing partner who swapped to RI for Tammy, then became the easy ‘liability’ cut and lost the duel later.",
+      "gameplayStyle": "Well-meaning liability",
       "keyMoments": [
-        "Swapped to save Tammy (Ep1)",
-        "Booted 5–3 (Ep2)",
-        "Eliminated on RI (Ep4)"
+        "Volunteered swap to RI",
+        "Voted out 5–3 on Galang"
       ],
       "challengeWins": 0,
       "immunityWins": 0,
       "idolsFound": 0,
       "votesReceived": 6,
       "alliances": [
-        "Tammy"
+        "Tammy",
+        "Blaineley"
       ],
       "rivalries": [
         "Geoff"
@@ -535,13 +530,13 @@
       "name": "Beth",
       "playerSlug": "beth",
       "phase": "Pre-Juror",
-      "notes": "Rock draw to RI (Ep1); eliminated on RI (Ep3)",
-      "strategicRank": 3,
-      "story": "Early twist victim from Galang’s disorganization. Couldn’t recover at the first duel.",
-      "gameplayStyle": "Early-game casualty",
+      "notes": "Sent to RI on opening rocks; eliminated Episode 3 duel",
+      "strategicRank": 4,
+      "story": "Unlucky casualty of Galang’s first chaotic rock draw. Lost the first active duel and exited early.",
+      "gameplayStyle": "Unlucky social player",
       "keyMoments": [
-        "Lost rocks at instant tribal (Ep1)",
-        "Eliminated in domino duel (Ep3)"
+        "Opening rocks send to RI",
+        "Lost Domino Effect duel"
       ],
       "challengeWins": 0,
       "immunityWins": 0,
@@ -559,12 +554,12 @@
       "name": "Crimson",
       "playerSlug": "crimson",
       "phase": "Pre-Juror",
-      "notes": "Medical evacuation (Ep1)",
-      "strategicRank": 1,
-      "story": "Gothic Hearts half removed by medevac before strategy took hold, destabilizing Ennui’s social footing.",
-      "gameplayStyle": "Medevac",
+      "notes": "Medically evacuated Episode 1",
+      "strategicRank": 3,
+      "story": "Half of the Gothic Hearts duo whose medevac reshaped early dynamics and left Ennui unanchored.",
+      "gameplayStyle": "Medevac casualty",
       "keyMoments": [
-        "Medevac in premiere"
+        "Medevac in Episode 1"
       ],
       "challengeWins": 0,
       "immunityWins": 0,
@@ -641,30 +636,6 @@
           "voterSlug": "kitty",
           "target": "Ennui",
           "targetSlug": "ennui"
-        },
-        {
-          "voter": "Beth",
-          "voterSlug": "beth",
-          "target": "Dwayne",
-          "targetSlug": "dwayne"
-        },
-        {
-          "voter": "Dwayne",
-          "voterSlug": "dwayne",
-          "target": "Beth",
-          "targetSlug": "beth"
-        },
-        {
-          "voter": "Emma",
-          "voterSlug": "emma",
-          "target": "Dwayne",
-          "targetSlug": "dwayne"
-        },
-        {
-          "voter": "Geoff",
-          "voterSlug": "geoff",
-          "target": "Beth",
-          "targetSlug": "beth"
         }
       ]
     },
@@ -1092,8 +1063,8 @@
     },
     {
       "episode": 10,
-      "eliminated": "Emma",
-      "eliminatedSlug": "emma",
+      "eliminated": null,
+      "eliminatedSlug": null,
       "votes": [
         {
           "voter": "Blaineley",
@@ -1159,8 +1130,8 @@
     },
     {
       "episode": 11,
-      "eliminated": null,
-      "eliminatedSlug": null,
+      "eliminated": "Ryan",
+      "eliminatedSlug": "ryan",
       "votes": [
         {
           "voter": "Geoff",
@@ -1220,8 +1191,8 @@
     },
     {
       "episode": 12,
-      "eliminated": null,
-      "eliminatedSlug": null,
+      "eliminated": "Dwayne",
+      "eliminatedSlug": "dwayne",
       "votes": [
         {
           "voter": "Blaineley",
@@ -1383,14 +1354,14 @@
           "targetSlug": "blaineley"
         },
         {
-          "voter": "Kelly",
-          "voterSlug": "kelly",
+          "voter": "Mickey",
+          "voterSlug": "mickey",
           "target": "Blaineley",
           "targetSlug": "blaineley"
         },
         {
-          "voter": "Mickey",
-          "voterSlug": "mickey",
+          "voter": "Kelly",
+          "voterSlug": "kelly",
           "target": "Blaineley",
           "targetSlug": "blaineley"
         },
@@ -1420,14 +1391,14 @@
           "targetSlug": "geoff"
         },
         {
-          "voter": "Kelly",
-          "voterSlug": "kelly",
+          "voter": "Mickey",
+          "voterSlug": "mickey",
           "target": "Geoff",
           "targetSlug": "geoff"
         },
         {
-          "voter": "Mickey",
-          "voterSlug": "mickey",
+          "voter": "Kelly",
+          "voterSlug": "kelly",
           "target": "Geoff",
           "targetSlug": "geoff"
         },
@@ -1525,20 +1496,20 @@
   },
   "awards": {
     "fanFavorite": {
-      "name": "jacques",
+      "name": "Jacques",
       "playerSlug": "jacques"
     },
     "bestStrategic": {
-      "name": "jacques",
+      "name": "Jacques",
       "playerSlug": "jacques"
     },
     "mostChallengeWins": {
-      "name": "jacques",
+      "name": "Jacques",
       "playerSlug": "jacques",
       "detail": "4 total"
     }
   },
-  "seasonNarrative": "Pairs and Redemption Island warped early loyalty, but by the swap and merge, numbers-first play eclipsed pair-first instincts. Idol detonations (Kelly’s swap bomb, Kitty’s merge misfire) and a rock draw removed stabilizers, while Jacques quietly accumulated power and immunities. In the end, AnxietyBro reached finals, but Jacques’ precision social web and endgame control earned a dominant 7–1–0 win.",
+  "seasonNarrative": "Blood vs. Water fractured loyalty all season as pairs clashed with emerging power webs. Early chaos, a critical swap idol play by Kelly, and a rock-draw merge shaped a volatile midgame where Mickey’s loyal core and Jacques’ surgical precision battled for control. In the end, Jacques combined low threat with perfect endgame execution, winning 7–1–0 after orchestrating advantages, immunities, and the Final 4 tie that sealed his path.",
   "theme": "2 tribes + redemption island",
   "status": "Complete",
   "castPhotoPath": "assets/cast/s6-cast.png",

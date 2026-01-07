@@ -2400,7 +2400,8 @@ console.log("🚀 Season Setup script tag reached!");
 })();
 
 // Use setTimeout to ensure ALL DOM elements are fully rendered AND database is loaded
-setTimeout(function() {
+setTimeout(async function() {
+  await preloadPlayersDatabaseFromJSON();
 (function() {
   console.log("🔧 Season Setup: Initializing...");
   
@@ -3418,6 +3419,12 @@ setTimeout(function() {
     
     // Track which players we've already processed to prevent duplicates
     const processedThisSeason = new Set();
+
+    // IDs that indicate parsing/label artifacts rather than real players
+    const bannedIds = [
+      'votes-to-win', 'jury-votes', 'elimination-order', 'everyone', 'eliminate',
+      'winner', 'finalist', 'juror', 'pre-juror', 'voted-out', 'medevac'
+    ];
     
     // Process each player in placements
     seasonData.placements.forEach(placement => {
@@ -3431,13 +3438,6 @@ setTimeout(function() {
         console.warn(`⚠️ Skipping invalid player ID: "${id}" from name "${name}"`);
         return;
       }
-      
-      // Skip fake players from parsing errors
-      const bannedIds = [
-        'votes-to-win', 'jury-votes', 'elimination-order', 'everyone', 'eliminate',
-        'winner', 'finalist', 'juror', 'pre-juror', 'voted-out', 'medevac'
-      ];
-      
       const isFake = bannedIds.some(banned => id.includes(banned) && id !== name.toLowerCase());
       if (isFake) {
         console.warn(`⚠️ Skipping fake player: "${name}" (ID: "${id}")`);
@@ -3518,7 +3518,8 @@ setTimeout(function() {
           }
           
           // Remove duplicate win badges
-          player.badges = player.badges.filter(b => b !== `S${season} Winner`);
+          player.badges = (Array.isArray(player.badges) ? player.badges : [])
+            .filter(b => b !== `S${season} Winner`);
           if (player.wins > 0 && oldDetail.placement === 1) {
             player.wins--;
           }
@@ -4428,6 +4429,40 @@ setTimeout(function() {
   // ========================================
   // DATABASE HELPERS
   // ========================================
+
+
+// Always load fresh DB from players_database.json, then cache into localStorage.
+// Fallback to localStorage if the JSON fetch fails.
+async function preloadPlayersDatabaseFromJSON() {
+  try {
+    const res = await fetch('players_database.json', { cache: 'no-store' });
+    if (!res.ok) throw new Error(`players_database.json HTTP ${res.status}`);
+    const db = await res.json();
+
+    // Normalize schema (prevents crashes if older saves are missing fields)
+    if (!db.franchise) {
+      db.franchise = {
+        name: "DC Franchise Database",
+        totalSeasons: 0,
+        totalPlayers: 0,
+        description: "Total Drama franchise player statistics and performance data"
+      };
+    }
+    if (!Array.isArray(db.players)) db.players = [];
+    db.players.forEach(p => {
+      if (!Array.isArray(p.seasons)) p.seasons = [];
+      if (!Array.isArray(p.seasonDetails)) p.seasonDetails = [];
+      if (!Array.isArray(p.badges)) p.badges = [];
+    });
+
+    localStorage.setItem("players_database", JSON.stringify(db, null, 2));
+    console.log("✅ Loaded fresh players_database.json → localStorage");
+    return db;
+  } catch (e) {
+    console.warn("⚠️ Failed to load players_database.json; falling back to localStorage if available", e);
+    return loadPlayerDatabase();
+  }
+}
 
   function loadPlayerDatabase() {
     try {

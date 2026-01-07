@@ -171,132 +171,27 @@
       "title": "Total Drama Blood VS Water",
       "subtitle": "Family or Strategy",
       "castSize": 20,
-      "episodeCount": 17,
-      "winner": {
-        "name": "Jacques",
-        "playerSlug": "jacques",
-        "vote": "7-1-0",
-        "runnerUp": "Mickey & Jay",
-        "keyStats": "2 votes against, 4 immunity wins, 0 idols; dominated endgame control.",
-        "strategy": "Jacques kept threat perception low while holding unbreakable ties to multiple power players, then weaponized those bonds at key junctures. He forced advantage drains (Kitty’s idol), won when it mattered, and engineered the Final 4 path that removed Kelly.",
-        "legacy": "An archetypal ‘ice strategist’ win: precise, low-flash, high-impact. Cemented as one of the franchise’s best manipulation-and-endgame control victories."
-      },
-      "awards": {
-        "fanFavorite": {
-          "name": "Jacques",
-          "playerSlug": "jacques"
-        },
-        "bestStrategic": {
-          "name": "Jacques",
-          "playerSlug": "jacques"
-        },
-        "mostChallengeWins": {
-          "name": "Jacques",
-          "playerSlug": "jacques",
-          "detail": "4 total"
-        }
-      },
-      "theme": "2 tribes + redemption island",
-      "status": "Complete",
-      "castPhotoPath": "assets/cast/s6-cast.png",
-      "emoji": "🩸"
-    },
-    {
-      "seasonNumber": 6,
-      "title": "Total Drama Blood VS Water",
-      "subtitle": "Family or Strategy",
-      "castSize": 20,
-      "episodeCount": 17,
-      "winner": {
-        "name": "jacques",
-        "playerSlug": "jacques",
-        "vote": "7-1-0",
-        "runnerUp": "mickey & jay",
-        "keyStats": "7 jury votes to win",
-        "strategy": "TBD - Update manually",
-        "legacy": "TBD - Update manually"
-      },
-      "awards": {
-        "fanFavorite": {
-          "name": "jacques",
-          "playerSlug": "jacques"
-        },
-        "bestStrategic": {
-          "name": "jacques",
-          "playerSlug": "jacques"
-        },
-        "mostChallengeWins": {
-          "name": "jacques",
-          "playerSlug": "jacques",
-          "detail": "TBD - count from episodes"
-        }
-      },
-      "theme": "2 tribes + redemption island",
-      "status": "Complete",
-      "castPhotoPath": "assets/cast/s6-cast.png",
-      "emoji": "🎯"
-    },
-    {
-      "seasonNumber": 6,
-      "title": "Total Drama Blood VS Water",
-      "subtitle": "Family or Strategy",
-      "castSize": 20,
       "episodeCount": 1,
       "winner": {
         "name": "Jacques",
         "playerSlug": "jacques",
         "vote": "7-1-0",
         "runnerUp": "Mickey & Jay",
-        "keyStats": "2 votes against, 4 individual immunities (4 total challenge wins), 0 idols found, 7–1–0 jury win",
-        "strategy": "Jacques kept his target profile tiny while controlling tempo through relationships and timely challenge wins. He leveraged pair dynamics without being beholden to them, isolating threats and guiding splits so others took the heat. At FTC, his résumé and poise made the choice easy for the jury.",
-        "legacy": "A classic low-target power winner: surgical, efficient, and respected. His blowout 7–1–0 marks him as one of the franchise’s cleanest domination wins."
+        "keyStats": "7–1–0 jury win; 4 individual immunities; 4 total challenge wins; only 2 votes against.",
+        "strategy": "Kept target low while steering vote flows, exploiting pair cover and timely immunity wins to consolidate control.",
+        "legacy": "A crowned villain: precise, low-agro control culminating in a blowout FTC. Benchmarks a ‘low-target, high-control’ masterclass for this format."
       },
       "awards": {
         "fanFavorite": {
-          "name": "jacques",
+          "name": "Jacques",
           "playerSlug": "jacques"
         },
         "bestStrategic": {
-          "name": "jacques",
+          "name": "Jacques",
           "playerSlug": "jacques"
         },
         "mostChallengeWins": {
-          "name": "jacques",
-          "playerSlug": "jacques",
-          "detail": "4 total"
-        }
-      },
-      "theme": "2 tribes + redemption island",
-      "status": "Complete",
-      "castPhotoPath": "assets/cast/s6-cast.png",
-      "emoji": "🩸"
-    },
-    {
-      "seasonNumber": 6,
-      "title": "Total Drama Blood VS Water",
-      "subtitle": "Family or Strategy",
-      "castSize": 20,
-      "episodeCount": 17,
-      "winner": {
-        "name": "Jacques",
-        "playerSlug": "jacques",
-        "vote": "7-1-0",
-        "runnerUp": "Mickey & Jay",
-        "keyStats": "2 votes against, 4 immunities, 0 idols, never sent to Redemption Island",
-        "strategy": "Jacques built overlapping ‘unbreakable’ bonds (Jay, Kelly, Mickey, Kitty) and used them as levers rather than promises. He timed strikes through others, induced an idol burn on himself at merge, and won the pivotal Final 4 immunity to shape the endgame.",
-        "legacy": "Defines the ‘low-target, high-control’ archetype: ruthless but respected. His 7–1–0 win cements him as one of the franchise’s cleanest surgeon-style victors."
-      },
-      "awards": {
-        "fanFavorite": {
-          "name": "jacques",
-          "playerSlug": "jacques"
-        },
-        "bestStrategic": {
-          "name": "jacques",
-          "playerSlug": "jacques"
-        },
-        "mostChallengeWins": {
-          "name": "jacques",
+          "name": "Jacques",
           "playerSlug": "jacques",
           "detail": "4 total"
         }

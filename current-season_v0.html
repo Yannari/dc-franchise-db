@@ -3255,10 +3255,8 @@ setTimeout(function() {
       seasonsDB = { franchise: {}, seasons: [] };
     }
     
-    // Check if season already exists
-    const existingIndex = seasonsDB.seasons.findIndex(s => s.seasonNumber === seasonData.seasonNumber);
-    
-    const newSeasonEntry = {
+    // Add new season
+    seasonsDB.seasons.push({
       seasonNumber: seasonData.seasonNumber,
       title: seasonData.title,
       subtitle: seasonData.subtitle,
@@ -3270,17 +3268,7 @@ setTimeout(function() {
       status: seasonData.status,
       castPhotoPath: seasonData.castPhotoPath,
       emoji: seasonData.emoji
-    };
-    
-    if (existingIndex >= 0) {
-      // Update existing season
-      seasonsDB.seasons[existingIndex] = newSeasonEntry;
-      console.log(`✅ Updated existing Season ${seasonData.seasonNumber}`);
-    } else {
-      // Add new season
-      seasonsDB.seasons.push(newSeasonEntry);
-      console.log(`✅ Added new Season ${seasonData.seasonNumber}`);
-    }
+    });
     
     // Update franchise metadata
     seasonsDB.franchise.totalSeasons = seasonsDB.seasons.length;
@@ -3303,25 +3291,10 @@ setTimeout(function() {
       franchiseDB = createEmptyFranchiseDB();
     }
     
-    // Check if this season already exists in the database
-    const seasonExists = franchiseDB.champions.some(c => c.season === seasonData.seasonNumber);
-    
-    if (seasonExists) {
-      // Remove existing entries for this season
-      franchiseDB.champions = franchiseDB.champions.filter(c => c.season !== seasonData.seasonNumber);
-      franchiseDB.trends.winningStrategies = franchiseDB.trends.winningStrategies.filter(s => s.season !== seasonData.seasonNumber);
-      franchiseDB.trends.castComposition = franchiseDB.trends.castComposition.filter(s => s.season !== seasonData.seasonNumber);
-      franchiseDB.trends.finaleVoteMargins = franchiseDB.trends.finaleVoteMargins.filter(s => s.season !== seasonData.seasonNumber);
-      franchiseDB.trends.majorTwists = franchiseDB.trends.majorTwists.filter(s => s.season !== seasonData.seasonNumber);
-      franchiseDB.fanFavorites = franchiseDB.fanFavorites.filter(s => s.season !== seasonData.seasonNumber);
-      
-      console.log(`🔄 Replacing existing Season ${seasonData.seasonNumber} data in franchise database`);
-    }
-    
-    // Update stats (recalculate from scratch)
-    const uniqueSeasons = new Set(franchiseDB.champions.map(c => c.season));
-    uniqueSeasons.add(seasonData.seasonNumber);
-    franchiseDB.franchiseStats.totalSeasons = uniqueSeasons.size;
+    // Update stats
+    franchiseDB.franchiseStats.totalSeasons++;
+    franchiseDB.franchiseStats.totalEpisodes += seasonData.episodeCount;
+    franchiseDB.franchiseStats.uniquePlayers += seasonData.castSize; // Simplified - doesn't account for returnees
     
     // Add champion
     franchiseDB.champions.push({

@@ -3665,6 +3665,12 @@ setTimeout(function() {
     const db = loadPlayerDatabase();
     const season = seasonData.seasonNumber;
     
+    // Banned IDs for fake players
+    const bannedIds = [
+      'votes-to-win', 'jury-votes', 'elimination-order', 'everyone', 'eliminate',
+      'winner', 'finalist', 'juror', 'pre-juror', 'voted-out', 'medevac'
+    ];
+    
     // Track which players we've already processed to prevent duplicates
     const processedThisSeason = new Set();
     
@@ -3682,11 +3688,6 @@ setTimeout(function() {
       }
       
       // Skip fake players from parsing errors
-      const bannedIds = [
-        'votes-to-win', 'jury-votes', 'elimination-order', 'everyone', 'eliminate',
-        'winner', 'finalist', 'juror', 'pre-juror', 'voted-out', 'medevac'
-      ];
-      
       const isFake = bannedIds.some(banned => id.includes(banned) && id !== name.toLowerCase());
       if (isFake) {
         console.warn(`⚠️ Skipping fake player: "${name}" (ID: "${id}")`);

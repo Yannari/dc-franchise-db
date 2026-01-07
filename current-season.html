@@ -2881,6 +2881,15 @@ setTimeout(function() {
     return '';
   }
   
+  function slugify(name) {
+    return (name || "")
+      .toLowerCase()
+      .trim()
+      .replace(/['".]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+  }
+  
   // ========================================
   // AI DATA EXTRACTION
   // ========================================
@@ -3392,11 +3401,54 @@ setTimeout(function() {
     const db = loadPlayerDatabase();
     const season = seasonData.seasonNumber;
     
+    // Track which players we've already processed to prevent duplicates
+    const processedThisSeason = new Set();
+    
     // Process each player in placements
     seasonData.placements.forEach(placement => {
       const name = placement.name;
-      const id = placement.playerSlug;
+      
+      // Generate clean slug from name
+      const id = slugify(name);
+      
+      // Validate player ID - skip obvious fakes
+      if (!id || id.length < 2) {
+        console.warn(`⚠️ Skipping invalid player ID: "${id}" from name "${name}"`);
+        return;
+      }
+      
+      // Skip fake players from parsing errors
+      const bannedIds = [
+        'votes-to-win', 'jury-votes', 'elimination-order', 'everyone', 'eliminate',
+        'winner', 'finalist', 'juror', 'pre-juror', 'voted-out', 'medevac'
+      ];
+      
+      const isFake = bannedIds.some(banned => id.includes(banned) && id !== name.toLowerCase());
+      if (isFake) {
+        console.warn(`⚠️ Skipping fake player: "${name}" (ID: "${id}")`);
+        return;
+      }
+      
+      // Prevent duplicate processing in same season
+      if (processedThisSeason.has(id)) {
+        console.warn(`⚠️ Player "${name}" already processed for Season ${season}, skipping duplicate`);
+        return;
+      }
+      processedThisSeason.add(id);
+      
       let player = db.players.find(p => p.id === id);
+      
+      // Get AI-generated stats from placement
+      const challengeWins = placement.challengeWins || 0;
+      const immunityWins = placement.immunityWins || 0;
+      const idolsFound = placement.idolsFound || 0;
+      const votesReceived = placement.votesReceived || 0;
+      const strategicRank = placement.strategicRank || 0;
+      
+      // Get jury votes if finalist
+      const juryVotes = placement.placement <= 3 
+        ? (seasonData.finalists?.find(f => slugify(f.name) === id)?.juryVotes || 0) 
+        : 0;
       
       if (!player) {
         // Create new player
@@ -3407,63 +3459,121 @@ setTimeout(function() {
           totalSeasons: 1,
           bestPlacement: placement.placement,
           wins: placement.placement === 1 ? 1 : 0,
-          totalChallengeWins: 0,
-          totalImmunityWins: 0,
-          totalRewardWins: 0,
-          totalVotesAgainst: 0,
-          totalIdolsFound: 0,
-          totalJuryVotes: placement.placement <= 3 ? (seasonData.finalists.find(f => f.name === name)?.votes || 0) : 0,
+          totalChallengeWins: challengeWins,
+          totalImmunityWins: immunityWins,
+          totalRewardWins: 0, // Not tracked yet
+          totalVotesAgainst: votesReceived,
+          totalIdolsFound: idolsFound,
+          totalJuryVotes: juryVotes,
           tier: "Unranked",
           badges: placement.placement === 1 ? [`S${season} Winner`] : [],
           seasonDetails: [],
-          story: `Competed in Season ${season}`
+          story: placement.story || `Competed in Season ${season}`
         };
         db.players.push(player);
+        console.log(`✅ Created new player: ${name} (ID: ${id})`);
       } else {
         // Update existing player
+        
+        // Check if this season is already in their record
+        const seasonIndex = player.seasonDetails.findIndex(s => s.season === season);
+        if (seasonIndex >= 0) {
+          console.log(`🔄 Updating existing Season ${season} data for ${name}`);
+          // Remove old season data to prevent accumulation
+          const oldDetail = player.seasonDetails[seasonIndex];
+          player.totalChallengeWins -= (oldDetail.challengeWins || 0);
+          player.totalImmunityWins -= (oldDetail.immunityWins || 0);
+          player.totalVotesAgainst -= (oldDetail.votesReceived || 0);
+          player.totalIdolsFound -= (oldDetail.idolsFound || 0);
+          player.totalJuryVotes -= (oldDetail.juryVotes || 0);
+          
+          // Remove season from list if it's there
+          player.seasons = player.seasons.filter(s => s !== season);
+          player.seasonDetails = player.seasonDetails.filter(s => s.season !== season);
+          player.totalSeasons = player.seasons.length;
+          
+          // Remove duplicate win badges
+          player.badges = player.badges.filter(b => b !== `S${season} Winner`);
+          if (player.wins > 0 && oldDetail.placement === 1) {
+            player.wins--;
+          }
+        }
+        
+        // Add season
         if (!player.seasons.includes(season)) {
           player.seasons.push(season);
           player.totalSeasons++;
         }
+        
+        // Update best placement
         if (placement.placement < player.bestPlacement) {
           player.bestPlacement = placement.placement;
         }
+        
+        // Add win if applicable
         if (placement.placement === 1) {
           player.wins++;
-          player.badges.push(`S${season} Winner`);
+          const badgeText = `S${season} Winner`;
+          if (!player.badges.includes(badgeText)) {
+            player.badges.push(badgeText);
+          }
         }
+        
+        // Add this season's stats
+        player.totalChallengeWins += challengeWins;
+        player.totalImmunityWins += immunityWins;
+        player.totalVotesAgainst += votesReceived;
+        player.totalIdolsFound += idolsFound;
+        player.totalJuryVotes += juryVotes;
+        
+        // Update story if AI provided one
+        if (placement.story) {
+          player.story = placement.story;
+        }
+        
+        console.log(`✅ Updated player: ${name} - Now ${player.totalSeasons} season(s), ${player.wins} win(s)`);
       }
       
-      // Add/update season details
+      // Add/update season details with AI-generated data
       const seasonDetail = {
         season,
         placement: placement.placement,
         status: placement.phase,
-        tribe: "TBD",
-        challengeWins: 0,
-        immunityWins: 0,
-        rewardWins: 0,
-        votesReceived: countVotesAgainst(name, seasonData.votingHistory),
-        idolsFound: 0,
-        strategicRank: 0,
-        juryVotes: placement.placement <= 3 ? (seasonData.finalists.find(f => f.name === name)?.votes || 0) : 0,
+        tribe: "TBD", // Could extract from episodes if needed
+        challengeWins: challengeWins,
+        immunityWins: immunityWins,
+        rewardWins: 0, // Not tracked yet
+        votesReceived: votesReceived,
+        idolsFound: idolsFound,
+        strategicRank: strategicRank,
+        juryVotes: juryVotes,
         finalVote: placement.placement === 1 ? seasonData.winner.vote : "",
         advantages: [],
-        notes: [placement.notes]
+        notes: [placement.notes],
+        // Add AI-generated narrative data
+        gameplayStyle: placement.gameplayStyle || "",
+        keyMoments: placement.keyMoments || [],
+        alliances: placement.alliances || [],
+        rivalries: placement.rivalries || []
       };
       
-      const existingDetailIndex = player.seasonDetails.findIndex(s => s.season === season);
-      if (existingDetailIndex >= 0) {
-        player.seasonDetails[existingDetailIndex] = seasonDetail;
-      } else {
-        player.seasonDetails.push(seasonDetail);
+      player.seasonDetails.push(seasonDetail);
+    });
+    
+    // Remove any duplicate/fake players that slipped through
+    db.players = db.players.filter(player => {
+      const isFake = bannedIds.some(banned => player.id.includes(banned));
+      if (isFake) {
+        console.warn(`🗑️ Removing fake player from database: ${player.id}`);
+        return false;
       }
+      return true;
     });
     
     savePlayerDatabase(db);
     downloadJSON(db, 'players_database.json');
     
-    console.log('✅ players_database.json updated');
+    console.log(`✅ players_database.json updated (${db.players.length} total players)`);
   }
   
   function countVotesAgainst(playerName, votingHistory) {
@@ -3482,8 +3592,23 @@ setTimeout(function() {
     const db = loadPlayerDatabase();
     const rankings = [];
     
-    // Calculate score for each player
-    db.players.forEach(player => {
+    // Filter out duplicate/invalid players
+    const validPlayers = db.players.filter(player => {
+      // Skip obvious fake players
+      const id = player.id.toLowerCase();
+      if (id.includes('votes-to-win') || 
+          id.includes('juror-voted') ||
+          id.includes('finalist-') ||
+          id === 'everyone' ||
+          id === 'eliminate') {
+        console.warn(`Skipping invalid player: ${player.id}`);
+        return false;
+      }
+      return true;
+    });
+    
+    // Calculate score for each valid player
+    validPlayers.forEach(player => {
       const score = calculatePlayerScore(player);
       const tier = calculateTier(score);
       
@@ -3509,8 +3634,12 @@ setTimeout(function() {
       });
     });
     
-    // Sort by score
-    rankings.sort((a, b) => b.score - a.score);
+    // Sort by score (descending)
+    rankings.sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      // Tiebreaker: better avg placement
+      return a.avgPlacement - b.avgPlacement;
+    });
     
     // Assign ranks
     rankings.forEach((r, i) => {
@@ -3521,16 +3650,16 @@ setTimeout(function() {
     const rankingsDB = {
       metadata: {
         name: "DC Franchise Rankings Database",
-        version: `${db.franchise.totalSeasons}.0`,
+        version: `${db.franchise?.totalSeasons || 6}.0`,
         lastUpdated: new Date().toISOString().split('T')[0],
-        description: `Complete player rankings after Season ${db.franchise.totalSeasons}`,
-        totalPlayers: db.players.length,
-        source: `Season ${db.franchise.totalSeasons} integration`
+        description: `Complete player rankings after Season ${db.franchise?.totalSeasons || 6}`,
+        totalPlayers: rankings.length,
+        source: `Season ${db.franchise?.totalSeasons || 6} integration`
       },
       scoringSystem: {
-        placement: "40% - Average finish position across all seasons",
+        placement: "40% - Average finish position across all seasons (lower placement = higher score)",
         winRate: "20% - Championships won / appearances",
-        challengePerformance: "15% - Individual immunity + reward wins",
+        challengePerformance: "15% - Individual immunity + reward wins (normalized per season)",
         socialGame: "15% - Votes received (lower = better), jury votes earned",
         strategicImpact: "10% - Idol plays, blindsides executed, game control"
       },
@@ -3548,36 +3677,46 @@ setTimeout(function() {
     localStorage.setItem('rankings_database', JSON.stringify(rankingsDB, null, 2));
     downloadJSON(rankingsDB, 'rankings_database.json');
     
-    console.log('✅ rankings_database.json updated');
+    console.log(`✅ rankings_database.json updated (${rankings.length} valid players)`);
   }
   
-  // Scoring functions
+  // Scoring functions - Proper formula matching rubric
   function calculatePlayerScore(player) {
+    if (!player || !player.totalSeasons || player.totalSeasons === 0) {
+      return 0;
+    }
+    
     let score = 0;
     
-    // Placement (40%)
+    // 1. Placement (40%) - Lower average placement = better score
     const avgPlacement = calculateAvgPlacement(player);
-    const placementScore = Math.max(0, 100 - (avgPlacement * 4));
-    score += placementScore * 0.4;
+    const castSize = 20; // Approximate average cast size
+    const placementPercentile = Math.max(0, Math.min(100, ((castSize - avgPlacement) / castSize) * 100));
+    score += placementPercentile * 0.4;
     
-    // Win Rate (20%)
+    // 2. Win Rate (20%) - Wins / Seasons
     const winRate = (player.wins / player.totalSeasons) * 100;
     score += winRate * 0.2;
     
-    // Challenge Performance (15%)
-    const challengeScore = Math.min(100, (player.totalChallengeWins / player.totalSeasons) * 20);
+    // 3. Challenge Performance (15%) - Normalized per season
+    const challengesPerSeason = player.totalChallengeWins / player.totalSeasons;
+    const challengeScore = Math.min(100, challengesPerSeason * 20); // 5 wins/season = 100
     score += challengeScore * 0.15;
     
-    // Social Game (15%)
+    // 4. Social Game (15%) - Lower votes against = better, plus jury votes
     const votesPerSeason = player.totalVotesAgainst / player.totalSeasons;
-    const socialScore = Math.max(0, 100 - (votesPerSeason * 5));
+    const votesScore = Math.max(0, 100 - (votesPerSeason * 3)); // 33 votes/season = 0
+    const juryScore = Math.min(100, (player.totalJuryVotes / player.totalSeasons) * 10); // 10 jury votes/season = 100
+    const socialScore = (votesScore * 0.7) + (juryScore * 0.3);
     score += socialScore * 0.15;
     
-    // Strategic Impact (10%)
-    const strategicScore = Math.min(100, (player.totalIdolsFound * 25));
+    // 5. Strategic Impact (10%) - Idols, advantages
+    const idolsPerSeason = player.totalIdolsFound / player.totalSeasons;
+    const strategicScore = Math.min(100, idolsPerSeason * 50); // 2 idols/season = 100
     score += strategicScore * 0.1;
     
-    return Math.round(score);
+    // Ensure score is between 0-100
+    return Math.round(Math.max(0, Math.min(100, score)));
   }
   
   function calculateTier(score) {
@@ -3586,12 +3725,13 @@ setTimeout(function() {
     if (score >= 72) return "A";
     if (score >= 61) return "B";
     if (score >= 51) return "C";
-    return "D";
+    if (score >= 36) return "D";
+    return "F";
   }
   
   function calculateAvgPlacement(player) {
-    if (player.seasonDetails.length === 0) return 99;
-    const total = player.seasonDetails.reduce((sum, s) => sum + s.placement, 0);
+    if (!player.seasonDetails || player.seasonDetails.length === 0) return 99;
+    const total = player.seasonDetails.reduce((sum, s) => sum + (s.placement || 99), 0);
     return parseFloat((total / player.seasonDetails.length).toFixed(1));
   }
   
@@ -3600,16 +3740,17 @@ setTimeout(function() {
     if (player.wins === 1) return "The Champion";
     if (player.bestPlacement === 2) return "The Runner-Up";
     if (player.totalChallengeWins >= 10) return "The Competitor";
+    if (player.bestPlacement <= 5) return "The Threat";
     return "The Survivor";
   }
   
   function generateReasoning(player) {
     let text = `Competed in ${player.totalSeasons} season(s). `;
     if (player.wins > 0) {
-      text += `WON ${player.wins} time(s). `;
+      text += `Won ${player.wins} time(s). `;
     }
     text += `Best placement: ${player.bestPlacement}. `;
-    text += `${player.totalChallengeWins} total challenge wins.`;
+    text += `${player.totalChallengeWins} challenge wins, ${player.totalVotesAgainst} votes against.`;
     return text;
   }
   

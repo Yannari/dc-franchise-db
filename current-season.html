@@ -612,13 +612,25 @@ Blaineley
       
       <!-- COMPLETE SEASON BUILDER -->
       <div class="glass-card" style="padding: 24px; margin-top: 20px; background: linear-gradient(135deg, rgba(155,109,255,0.15), rgba(76,255,179,0.05)); border: 2px solid rgba(155,109,255,0.3);">
-        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
-          <span style="font-size: 32px;">⚡</span>
-          <div>
-            <h3 style="margin: 0;">Complete Season Builder</h3>
-            <p style="margin: 4px 0 0; opacity: 0.8; font-size: 13px;">
-              Build entire season database from episode summaries (generates all JSON files)
-            </p>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="font-size: 32px;">⚡</span>
+            <div>
+              <h3 style="margin: 0;">Complete Season Builder</h3>
+              <p style="margin: 4px 0 0; opacity: 0.8; font-size: 13px;">
+                Build entire season database from episode summaries (generates all JSON files)
+              </p>
+            </div>
+          </div>
+          
+          <!-- Save Indicator & Clear Button -->
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div id="sb-save-indicator" style="display: none; padding: 8px 12px; background: rgba(76,255,179,0.2); border: 1px solid rgba(76,255,179,0.4); border-radius: 8px; font-size: 13px;">
+              ✅ Auto-saved
+            </div>
+            <button onclick="clearCurrentSeasonData()" style="padding: 8px 16px; background: rgba(255,76,76,0.2); border: 1px solid rgba(255,76,76,0.4); border-radius: 8px; color: #fff; cursor: pointer; font-size: 13px;">
+              🗑️ Clear Season
+            </button>
           </div>
         </div>
         
@@ -853,6 +865,10 @@ Dave voted for Mickey
           
           <button id="sync-devotees-btn" class="btn" style="background: linear-gradient(135deg, #a855f7, #9333ea);">
             🔄 Sync to devotees.html
+          </button>
+          
+          <button id="rebuild-rankings-btn" class="btn" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+            🔄 Rebuild All Rankings
           </button>
         </div>
         
@@ -2073,8 +2089,7 @@ Dave voted for Mickey
   // ========================================
   
   // Configuration
-  const EPISODE_WORKER_URL = 'https://dc-analytics.yannari19.workers.dev';
-  const WORKER_URL = EPISODE_WORKER_URL; // Update with your worker URL
+  const EPISODE_WORKER_URL = 'https://dc-analytics.yannari19.workers.dev'; // Update with your worker URL
   
   // Character avatar mapping
   const CHARACTER_AVATARS = {
@@ -2379,40 +2394,26 @@ Dave voted for Mickey
 
 console.log("🚀 Season Setup script tag reached!");
 
-// Always load database from players_database.json first (fresh), then cache to localStorage.
-// Fallback to localStorage only if the fetch fails (e.g., offline).
+// Auto-load database from JSON if localStorage is empty
 (function() {
-  console.log("📁 Loading fresh data from players_database.json...");
-  fetch('players_database.json', { cache: 'no-store' })
-    .then(r => {
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      return r.json();
-    })
-    .then(db => {
-      try {
+  const existingDB = localStorage.getItem('players_database');
+  if (!existingDB) {
+    console.log("📥 No database in localStorage, attempting to load from players_database.json...");
+    fetch('players_database.json')
+      .then(r => r.json())
+      .then(db => {
         localStorage.setItem('players_database', JSON.stringify(db, null, 2));
-        console.log(`✅ Loaded & cached players_database.json (${db.players?.length ?? 0} players, ${db.franchise?.totalSeasons ?? 0} seasons)`);
-      } catch (e) {
-        console.warn("⚠️ Could not cache to localStorage:", e.message);
-      }
-    })
-    .catch(e => {
-      console.warn("⚠️ Could not load players_database.json — falling back to localStorage:", e.message);
-      try {
-        const existingDB = localStorage.getItem('players_database');
-        if (existingDB) {
-          const db = JSON.parse(existingDB);
-          console.log(`✅ Using cached database from localStorage (${db.players?.length ?? 0} players, ${db.franchise?.totalSeasons ?? 0} seasons)`);
-        } else {
-          console.log("ℹ️ No cached database found. Import/create profiles to begin.");
-        }
-      } catch (err) {
-        console.warn("⚠️ Could not read cached database:", err.message);
-      }
-    });
+        console.log(`✅ Database auto-loaded! ${db.players.length} players, ${db.franchise.totalSeasons} seasons`);
+      })
+      .catch(e => {
+        console.warn("⚠️ Could not auto-load database:", e.message);
+        console.log("Database will be empty until you import it manually or create profiles");
+      });
+  } else {
+    const db = JSON.parse(existingDB);
+    console.log(`✅ Database already in localStorage (${db.players.length} players, ${db.franchise.totalSeasons} seasons)`);
+  }
 })();
-
-
 
 // Use setTimeout to ensure ALL DOM elements are fully rendered AND database is loaded
 setTimeout(function() {
@@ -2428,6 +2429,7 @@ setTimeout(function() {
   const exportDatabaseBtn = document.getElementById("export-database-btn");
   const importDatabaseBtn = document.getElementById("import-database-btn");
   const syncDevoteesBtn = document.getElementById("sync-devotees-btn");
+  const rebuildRankingsBtn = document.getElementById("rebuild-rankings-btn");
   const importFileInput = document.getElementById("import-file-input");
   const databaseStatus = document.getElementById("database-status");
 
@@ -2460,6 +2462,226 @@ setTimeout(function() {
       }
     }
     return names;
+  }
+
+  // ========================================
+  // AUTO-SAVE / AUTO-LOAD FOR SEASON BUILDER
+  // ========================================
+  
+  let autoSaveTimeout = null;
+  
+  function getSeasonStorageKey(seasonNumber) {
+    return `season_builder_s${seasonNumber}`;
+  }
+  
+  function autoSaveSeasonBuilder() {
+    clearTimeout(autoSaveTimeout);
+    autoSaveTimeout = setTimeout(() => {
+      try {
+        const seasonNumber = parseInt(document.getElementById("sb-season-number").value) || 0;
+        if (!seasonNumber) return;
+        
+        const data = {
+          metadata: {
+            title: document.getElementById("sb-season-title").value.trim(),
+            subtitle: document.getElementById("sb-season-subtitle").value.trim(),
+            theme: document.getElementById("sb-season-theme").value.trim(),
+            emoji: document.getElementById("sb-season-emoji").value.trim(),
+            episodeCount: parseInt(document.getElementById("sb-episode-count").value) || 17,
+          },
+          brantsteeleStats: document.getElementById("sb-brantsteele-stats").value.trim(),
+          episodes: {},
+          finale: {
+            winner: document.getElementById("sb-finale-winner").value.trim(),
+            runnerUp: document.getElementById("sb-finale-runnerup").value.trim(),
+            finalVote: document.getElementById("sb-finale-vote").value.trim(),
+            juryVotesText: document.getElementById("sb-jury-votes").value.trim(),
+          },
+          awards: {
+            fanFavorite: document.getElementById("sb-award-fan").value.trim(),
+            bestStrategic: document.getElementById("sb-award-strategic").value.trim(),
+            mostChallengeWins: document.getElementById("sb-award-challenges").value.trim(),
+          },
+          savedAt: new Date().toISOString()
+        };
+        
+        // Save episode summaries
+        const episodeCount = data.metadata.episodeCount;
+        for (let i = 1; i <= episodeCount; i++) {
+          const textarea = document.getElementById(`sb-ep${i}-summary`);
+          if (textarea) {
+            data.episodes[i] = textarea.value.trim();
+          }
+        }
+        
+        const storageKey = getSeasonStorageKey(seasonNumber);
+        localStorage.setItem(storageKey, JSON.stringify(data));
+        
+        // Show save indicator
+        const indicator = document.getElementById("sb-save-indicator");
+        if (indicator) {
+          const savedDate = new Date().toLocaleTimeString();
+          indicator.textContent = `✅ Saved ${savedDate}`;
+          indicator.style.display = 'block';
+          setTimeout(() => {
+            indicator.style.display = 'none';
+          }, 2000);
+        }
+        
+        console.log(`✅ Auto-saved Season ${seasonNumber}`);
+      } catch (e) {
+        console.error('Auto-save error:', e);
+      }
+    }, 1000); // Debounce: save 1 second after last change
+  }
+  
+  function loadSeasonBuilderData(seasonNumber) {
+    try {
+      const storageKey = getSeasonStorageKey(seasonNumber);
+      const saved = localStorage.getItem(storageKey);
+      
+      if (!saved) {
+        console.log(`No saved data for Season ${seasonNumber}`);
+        return false;
+      }
+      
+      const data = JSON.parse(saved);
+      
+      // Load metadata
+      document.getElementById("sb-season-title").value = data.metadata.title || '';
+      document.getElementById("sb-season-subtitle").value = data.metadata.subtitle || '';
+      document.getElementById("sb-season-theme").value = data.metadata.theme || '';
+      document.getElementById("sb-season-emoji").value = data.metadata.emoji || '🎯';
+      document.getElementById("sb-episode-count").value = data.metadata.episodeCount || 17;
+      
+      // Load Brantsteele stats
+      document.getElementById("sb-brantsteele-stats").value = data.brantsteeleStats || '';
+      
+      // Regenerate episode textareas if count changed
+      const currentCount = parseInt(document.getElementById("sb-episode-count").value);
+      generateSeasonBuilderEpisodeTextareas(currentCount);
+      
+      // Load episode summaries (use setTimeout to ensure textareas are rendered)
+      setTimeout(() => {
+        for (let i = 1; i <= currentCount; i++) {
+          const textarea = document.getElementById(`sb-ep${i}-summary`);
+          if (textarea && data.episodes[i]) {
+            textarea.value = data.episodes[i];
+          }
+        }
+      }, 100);
+      
+      // Load finale
+      document.getElementById("sb-finale-winner").value = data.finale?.winner || '';
+      document.getElementById("sb-finale-runnerup").value = data.finale?.runnerUp || '';
+      document.getElementById("sb-finale-vote").value = data.finale?.finalVote || '';
+      document.getElementById("sb-jury-votes").value = data.finale?.juryVotesText || '';
+      
+      // Load awards
+      document.getElementById("sb-award-fan").value = data.awards?.fanFavorite || '';
+      document.getElementById("sb-award-strategic").value = data.awards?.bestStrategic || '';
+      document.getElementById("sb-award-challenges").value = data.awards?.mostChallengeWins || '';
+      
+      console.log(`✅ Loaded Season ${seasonNumber} (saved ${data.savedAt})`);
+      
+      // Show load indicator
+      const indicator = document.getElementById("sb-save-indicator");
+      if (indicator) {
+        indicator.textContent = `✅ Loaded Season ${seasonNumber}`;
+        indicator.style.display = 'block';
+        setTimeout(() => {
+          indicator.style.display = 'none';
+        }, 3000);
+      }
+      
+      return true;
+    } catch (e) {
+      console.error('Load error:', e);
+      return false;
+    }
+  }
+  
+  function clearCurrentSeasonData() {
+    const seasonNumber = parseInt(document.getElementById("sb-season-number").value) || 0;
+    if (!seasonNumber) {
+      alert('Please enter a season number first');
+      return;
+    }
+    
+    if (!confirm(`Clear ALL saved data for Season ${seasonNumber}?\n\nThis will delete all episode summaries, metadata, and finale data.`)) {
+      return;
+    }
+    
+    const storageKey = getSeasonStorageKey(seasonNumber);
+    localStorage.removeItem(storageKey);
+    
+    // Clear all fields
+    document.getElementById("sb-season-title").value = '';
+    document.getElementById("sb-season-subtitle").value = '';
+    document.getElementById("sb-season-theme").value = '';
+    document.getElementById("sb-season-emoji").value = '🎯';
+    document.getElementById("sb-brantsteele-stats").value = '';
+    document.getElementById("sb-finale-winner").value = '';
+    document.getElementById("sb-finale-runnerup").value = '';
+    document.getElementById("sb-finale-vote").value = '';
+    document.getElementById("sb-jury-votes").value = '';
+    document.getElementById("sb-award-fan").value = '';
+    document.getElementById("sb-award-strategic").value = '';
+    document.getElementById("sb-award-challenges").value = '';
+    
+    const episodeCount = parseInt(document.getElementById("sb-episode-count").value) || 17;
+    for (let i = 1; i <= episodeCount; i++) {
+      const textarea = document.getElementById(`sb-ep${i}-summary`);
+      if (textarea) {
+        textarea.value = '';
+      }
+    }
+    
+    alert(`✅ Cleared Season ${seasonNumber} data`);
+  }
+  
+  // Setup auto-save listeners
+  function setupSeasonBuilderAutoSave() {
+    const fields = [
+      'sb-season-title', 'sb-season-subtitle', 'sb-season-theme', 'sb-season-emoji',
+      'sb-brantsteele-stats', 'sb-finale-winner', 'sb-finale-runnerup', 
+      'sb-finale-vote', 'sb-jury-votes', 'sb-award-fan', 'sb-award-strategic', 
+      'sb-award-challenges'
+    ];
+    
+    fields.forEach(id => {
+      const field = document.getElementById(id);
+      if (field) {
+        field.addEventListener('input', autoSaveSeasonBuilder);
+        field.addEventListener('change', autoSaveSeasonBuilder);
+      }
+    });
+    
+    // Episode textareas are added dynamically, so use event delegation
+    document.addEventListener('input', (e) => {
+      if (e.target.id && e.target.id.startsWith('sb-ep') && e.target.id.endsWith('-summary')) {
+        autoSaveSeasonBuilder();
+      }
+    });
+    
+    // Load data when season number changes
+    const seasonNumberField = document.getElementById('sb-season-number');
+    if (seasonNumberField) {
+      seasonNumberField.addEventListener('change', (e) => {
+        const seasonNumber = parseInt(e.target.value);
+        if (seasonNumber) {
+          loadSeasonBuilderData(seasonNumber);
+        }
+      });
+    }
+    
+    // Try to load current season on page load
+    const currentSeason = parseInt(seasonNumberField?.value);
+    if (currentSeason) {
+      setTimeout(() => {
+        loadSeasonBuilderData(currentSeason);
+      }, 500);
+    }
   }
 
   // ========================================
@@ -2547,6 +2769,7 @@ setTimeout(function() {
   
   // Initialize on load
   initializeEpisodeInputs();
+  setupSeasonBuilderAutoSave(); // Enable auto-save
   
   // Preview Data Button
   if (sbPreviewDataBtn) {
@@ -2788,59 +3011,36 @@ setTimeout(function() {
       updatePlayersDatabase(seasonData);
       
       // Step 6: Recalculate rankings
-      // Step 6: Recalculate rankings (WORKER)
-      showProgress('<h3>⚡ Bonus: Recalculating Rankings</h3><p>🏆 Updating rankings via Worker (deterministic scoring + AI narrative)...</p>');
+      showProgress('<h3>⚡ Bonus: Recalculating Rankings</h3><p>🏆 Calculating scores for all players...</p>');
       await sleep(500);
-
-      // IMPORTANT: updatePlayersDatabase(seasonData) must have already run,
-      // so players_database in localStorage reflects the new season.
-      const playersDB = loadPlayerDatabase();
-
-      // Prefer your old baseline file from the folder
-      // Rankings update uses the SAME worker URL field as season extraction
-      const workerUrl = getWorkerUrl();
-      if (!workerUrl) {
-        throw new Error('Worker URL not set! Please enter your Cloudflare Worker URL in the Overview tab.');
-      }
-
-      // Load baseline rankings from the project folder (NOT localStorage), then fallback to localStorage if needed
+      
+      // Load old rankings from project file
       let oldRankingsData = null;
       try {
-        const r = await fetch('rankings_database.json', { cache: 'no-store' });
-        if (r.ok) oldRankingsData = await r.json();
-      } catch (_) {}
-
-      if (!oldRankingsData) {
-        try {
-          oldRankingsData = JSON.parse(localStorage.getItem('rankings_database') || 'null');
-        } catch (_) {}
+        console.log('📂 Attempting to load rankings_database.json from project...');
+        const rankingsResponse = await fetch('rankings_database.json');
+        if (rankingsResponse.ok) {
+          oldRankingsData = await rankingsResponse.json();
+          console.log(`✅ Loaded old rankings from project file`);
+        } else {
+          console.log('ℹ️ rankings_database.json not found in project - will calculate fresh rankings');
+        }
+      } catch (e) {
+        console.log('ℹ️ Could not load rankings file from project:', e.message);
       }
-
+      
+      // IMPORTANT: Use 'rankings-update' to preserve non-returnees
+      // Use 'rankings-rebuild' once to recalculate everyone from scratch
       const rankingsResp = await fetch(workerUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          mode: "rankings-update",
+          mode: "rankings-update",  // Preserves non-returnees
           playersDB,
           seasonData,
-          oldRankingsDB: oldRankingsData  // Worker expects oldRankingsDB
+          oldRankingsDB: oldRankingsData
         })
       });
-
-      const rankingsDB = await rankingsResp.json();
-
-
-      if (!rankingsResp.ok || rankingsDB?.error) {
-        console.error("Rankings Worker error:", rankingsDB);
-        throw new Error(rankingsDB?.error || `Rankings update failed (HTTP ${rankingsResp.status})`);
-      }
-
-      // Save and download
-      localStorage.setItem("rankings_database", JSON.stringify(rankingsDB, null, 2));
-      downloadJSON(rankingsDB, "rankings_database.json");
-
-      console.log("✅ Rankings updated by Worker:", rankingsDB);
-
       
       // Step 7: Generate voting analytics HTML
       showProgress('<h3>⚡ Bonus: Generating Voting Analytics</h3><p>🗳️ Creating HTML table...</p>');
@@ -3464,13 +3664,6 @@ setTimeout(function() {
   function updatePlayersDatabase(seasonData) {
     const db = loadPlayerDatabase();
     const season = seasonData.seasonNumber;
-
-    // Fake/invalid IDs that sometimes leak in from parsing headings/labels
-    const bannedIds = [
-      'votes-to-win', 'jury-votes', 'elimination-order', 'everyone', 'eliminate',
-      'winner', 'finalist', 'juror', 'pre-juror', 'voted-out', 'medevac'
-    ];
-
     
     // Track which players we've already processed to prevent duplicates
     const processedThisSeason = new Set();
@@ -3487,8 +3680,14 @@ setTimeout(function() {
         console.warn(`⚠️ Skipping invalid player ID: "${id}" from name "${name}"`);
         return;
       }
+      
       // Skip fake players from parsing errors
-const isFake = bannedIds.some(banned => id.includes(banned) && id !== name.toLowerCase());
+      const bannedIds = [
+        'votes-to-win', 'jury-votes', 'elimination-order', 'everyone', 'eliminate',
+        'winner', 'finalist', 'juror', 'pre-juror', 'voted-out', 'medevac'
+      ];
+      
+      const isFake = bannedIds.some(banned => id.includes(banned) && id !== name.toLowerCase());
       if (isFake) {
         console.warn(`⚠️ Skipping fake player: "${name}" (ID: "${id}")`);
         return;
@@ -3612,8 +3811,6 @@ const isFake = bannedIds.some(banned => id.includes(banned) && id !== name.toLow
       // Add/update season details with AI-generated data
       const seasonDetail = {
         season,
-        castSize: seasonData.castSize || seasonData.placements?.length || null,
-        jurySize: seasonData.jurySize || (seasonData.finalTribalCouncil?.votes?.length || null),
         placement: placement.placement,
         status: placement.phase,
         tribe: "TBD", // Could extract from episodes if needed
@@ -3665,7 +3862,7 @@ const isFake = bannedIds.some(banned => id.includes(banned) && id !== name.toLow
     return count;
   }
   
-  async function updateRankingsDatabase(seasonData, oldRankingsData = null) {
+  function updateRankingsDatabase(seasonData, oldRankingsData = null) {
     const db = loadPlayerDatabase();
     const currentSeason = seasonData.seasonNumber;
     
@@ -3680,45 +3877,23 @@ const isFake = bannedIds.some(banned => id.includes(banned) && id !== name.toLow
       });
       console.log(`📋 Loaded ${Object.keys(oldRankings).length} existing rankings from project file`);
     } else {
-      // Default: load rankings from project JSON files (always fresh), then fallback to localStorage
-      const tryLoad = async (path) => {
-        try {
-          const resp = await fetch(path, { cache: 'no-store' });
-          if (!resp.ok) return null;
-          const json = await resp.json();
-          return (json && Array.isArray(json.rankings)) ? json : null;
-        } catch (_) {
-          return null;
+      // Fallback: Try localStorage
+      try {
+        const oldDB = JSON.parse(localStorage.getItem('rankings_database') || '{}');
+        if (oldDB.rankings && Array.isArray(oldDB.rankings)) {
+          oldDB.rankings.forEach(r => {
+            oldRankings[r.playerId] = r;
+          });
+          console.log(`📋 Loaded ${Object.keys(oldRankings).length} existing rankings from localStorage`);
+        } else {
+          console.log('ℹ️ No previous rankings - will calculate fresh for everyone');
         }
-      };
-
-      const fromOld = await tryLoad('rankings_database.json');
-      const fromCurrent = fromOld || await tryLoad('rankings_database.json');
-
-      const loaded = fromCurrent;
-      if (loaded && loaded.rankings) {
-        loaded.rankings.forEach(r => { oldRankings[r.playerId] = r; });
-        console.log(`📋 Loaded ${Object.keys(oldRankings).length} existing rankings from JSON file`);
-      } else {
-        // Last resort: localStorage
-        try {
-          const oldDB = JSON.parse(localStorage.getItem('rankings_database') || '{}');
-          if (oldDB.rankings && Array.isArray(oldDB.rankings)) {
-            oldDB.rankings.forEach(r => { oldRankings[r.playerId] = r; });
-            console.log(`📋 Loaded ${Object.keys(oldRankings).length} existing rankings from localStorage`);
-          } else {
-            console.log('ℹ️ No previous rankings - will calculate fresh for everyone');
-          }
-        } catch (e) {
-          console.warn('⚠️ Could not load old rankings:', e.message);
-          console.log('ℹ️ Will calculate fresh rankings for all players');
-        }
+      } catch (e) {
+        console.warn('⚠️ Could not load old rankings:', e.message);
+        console.log('ℹ️ Will calculate fresh rankings for all players');
       }
     }
-
-    // Precompute per-season aggregates for normalization (cast size, max wins, etc.)
-    const seasonAgg = buildSeasonAggregates(db, seasonData);
-
+    
     // Get list of players who competed in current season
     const currentSeasonPlayers = new Set(
       seasonData.placements.map(p => slugify(p.name))
@@ -3746,7 +3921,7 @@ const isFake = bannedIds.some(banned => id.includes(banned) && id !== name.toLow
       
       if (playedThisSeason || !oldRankings[player.id]) {
         // RECALCULATE: New players or returnees who played this season
-        const score = calculatePlayerScore(player, seasonAgg);
+        const score = calculatePlayerScore(player);
         const tier = calculateTier(score);
         
         rankings.push({
@@ -3863,157 +4038,43 @@ const isFake = bannedIds.some(banned => id.includes(banned) && id !== name.toLow
   }
   
   // Scoring functions - Proper formula matching rubric
-  
-  // ------------------------------------------------------------
-  // Ranking helpers (rubric-based, normalized per season)
-  // ------------------------------------------------------------
-  function buildSeasonAggregates(db, currentSeasonData = null) {
-    const agg = {};
-    const ensure = (season) => {
-      if (!agg[season]) {
-        agg[season] = {
-          castSize: 0,
-          jurySize: 0,
-          maxChallengeWins: 0,
-          maxVotesAgainst: 0,
-          maxIdolsFound: 0,
-          maxStrategicRank: 0
-        };
-      }
-      return agg[season];
-    };
-
-    // Pass 1: scan all player seasonDetails
-    (db.players || []).forEach(p => {
-      (Array.isArray(p.seasonDetails) ? p.seasonDetails : []).forEach(s => {
-        const season = Number(s.season);
-        if (!season) return;
-        const a = ensure(season);
-        const placement = Number(s.placement || 0);
-        const castSize = Number(s.castSize || s.seasonCastSize || 0) || placement; // fallback: max placement seen
-        a.castSize = Math.max(a.castSize, castSize, placement);
-        a.jurySize = Math.max(a.jurySize, Number(s.jurySize || 0));
-        a.maxChallengeWins = Math.max(a.maxChallengeWins, Number(s.challengeWins || 0));
-        a.maxVotesAgainst = Math.max(a.maxVotesAgainst, Number(s.votesReceived || s.votesAgainst || 0));
-        a.maxIdolsFound = Math.max(a.maxIdolsFound, Number(s.idolsFound || 0));
-        a.maxStrategicRank = Math.max(a.maxStrategicRank, Number(s.strategicRank || 0));
-      });
-    });
-
-    // Pass 2: current season overrides (more reliable)
-    if (currentSeasonData && currentSeasonData.seasonNumber) {
-      const s = Number(currentSeasonData.seasonNumber);
-      const a = ensure(s);
-      a.castSize = Math.max(a.castSize, Number(currentSeasonData.castSize || 0) || (currentSeasonData.placements?.length || 0));
-      a.jurySize = Math.max(a.jurySize, Number(currentSeasonData.jurySize || 0) || (currentSeasonData.finalTribalCouncil?.votes?.length || 0));
-
-      // Use placements to compute maxima
-      (currentSeasonData.placements || []).forEach(p => {
-        a.maxChallengeWins = Math.max(a.maxChallengeWins, Number(p.challengeWins || 0));
-        a.maxVotesAgainst = Math.max(a.maxVotesAgainst, Number(p.votesReceived || 0));
-        a.maxIdolsFound = Math.max(a.maxIdolsFound, Number(p.idolsFound || 0));
-        a.maxStrategicRank = Math.max(a.maxStrategicRank, Number(p.strategicRank || 0));
-      });
+  function calculatePlayerScore(player) {
+    if (!player || !player.totalSeasons || player.totalSeasons === 0) {
+      return 0;
     }
-
-    // Fill missing jurySize with a reasonable default
-    Object.keys(agg).forEach(k => {
-      const a = agg[k];
-      if (!a.jurySize && a.castSize) a.jurySize = Math.max(0, a.castSize - 3);
-      if (!a.castSize) a.castSize = 20;
-    });
-
-    return agg;
+    
+    let score = 0;
+    
+    // 1. Placement (40%) - Lower average placement = better score
+    const avgPlacement = calculateAvgPlacement(player);
+    const castSize = 20; // Approximate average cast size
+    const placementPercentile = Math.max(0, Math.min(100, ((castSize - avgPlacement) / castSize) * 100));
+    score += placementPercentile * 0.4;
+    
+    // 2. Win Rate (20%) - Wins / Seasons
+    const winRate = (player.wins / player.totalSeasons) * 100;
+    score += winRate * 0.2;
+    
+    // 3. Challenge Performance (15%) - Normalized per season
+    const challengesPerSeason = player.totalChallengeWins / player.totalSeasons;
+    const challengeScore = Math.min(100, challengesPerSeason * 20); // 5 wins/season = 100
+    score += challengeScore * 0.15;
+    
+    // 4. Social Game (15%) - Lower votes against = better, plus jury votes
+    const votesPerSeason = player.totalVotesAgainst / player.totalSeasons;
+    const votesScore = Math.max(0, 100 - (votesPerSeason * 3)); // 33 votes/season = 0
+    const juryScore = Math.min(100, (player.totalJuryVotes / player.totalSeasons) * 10); // 10 jury votes/season = 100
+    const socialScore = (votesScore * 0.7) + (juryScore * 0.3);
+    score += socialScore * 0.15;
+    
+    // 5. Strategic Impact (10%) - Idols, advantages
+    const idolsPerSeason = player.totalIdolsFound / player.totalSeasons;
+    const strategicScore = Math.min(100, idolsPerSeason * 50); // 2 idols/season = 100
+    score += strategicScore * 0.1;
+    
+    // Ensure score is between 0-100
+    return Math.round(Math.max(0, Math.min(100, score)));
   }
-
-
-  function calculatePlayerScore(player, seasonAgg = {}) {
-    if (!player) return 0;
-    const details = Array.isArray(player.seasonDetails) ? player.seasonDetails : [];
-    const totalSeasons = details.length || Number(player.totalSeasons || 0);
-    if (!totalSeasons) return 0;
-
-    // Recompute wins safely from seasonDetails (prevents accumulation bugs)
-    const wins = details.filter(s => Number(s.placement) === 1).length;
-
-    // --- Placement (40%): average placement percentile across seasons, minus volatility penalty
-    const placementPercentiles = details.map(s => {
-      const season = Number(s.season);
-      const castSize = Number(s.castSize || seasonAgg?.[season]?.castSize || 20);
-      const placement = Number(s.placement || castSize);
-      // 1st place => 1.0, last => ~1/castSize
-      const pct = (castSize - placement + 1) / castSize;
-      return Math.max(0, Math.min(1, pct));
-    });
-    const avgPlacementPct = placementPercentiles.reduce((a,b)=>a+b,0) / placementPercentiles.length;
-    const mean = avgPlacementPct;
-    const variance = placementPercentiles.reduce((acc, v) => acc + Math.pow(v - mean, 2), 0) / placementPercentiles.length;
-    const std = Math.sqrt(variance);
-
-    const placementBase = avgPlacementPct * 100;
-    const volatilityPenalty = (std * 100) * 0.35; // moderate penalty for inconsistency
-    const placementScore = Math.max(0, Math.min(100, placementBase - volatilityPenalty));
-
-    // --- Win Value (20%): championships / appearances, with small-sample cap for <=2 seasons
-    const rawWinRate = wins / totalSeasons; // 0..1
-    const smoothedWinRate = (wins + 0.5) / (totalSeasons + 1); // avoids 1/1 = 100 instantly
-    let winValue = Math.max(rawWinRate, smoothedWinRate);
-    if (totalSeasons <= 2) {
-      // cap very small samples so 1/1 doesn't auto-dominate
-      winValue = Math.min(winValue, wins > 0 ? 0.90 : 0.85);
-    }
-    const winScore = Math.max(0, Math.min(100, winValue * 100));
-
-    // --- Challenge (15%): immunity + reward wins, normalized per season
-    const challengeNorms = details.map(s => {
-      const season = Number(s.season);
-      const maxCh = Number(seasonAgg?.[season]?.maxChallengeWins || 0);
-      const ch = Number(s.challengeWins || 0);
-      return maxCh > 0 ? Math.max(0, Math.min(1, ch / maxCh)) : 0;
-    });
-    const challengeScore = (challengeNorms.reduce((a,b)=>a+b,0) / challengeNorms.length) * 100;
-
-    // --- Social (15%): votes received (lower = better) + jury votes earned
-    const socialNorms = details.map(s => {
-      const season = Number(s.season);
-      const maxVotes = Number(seasonAgg?.[season]?.maxVotesAgainst || 0);
-      const votes = Math.max(0, Number(s.votesReceived || s.votesAgainst || 0));
-      const votesNorm = (maxVotes > 0) ? (1 - Math.max(0, Math.min(1, votes / maxVotes))) : 1;
-
-      const jurySize = Number(s.jurySize || seasonAgg?.[season]?.jurySize || 0);
-      const juryVotes = Math.max(0, Number(s.juryVotes || 0));
-      const juryNorm = (jurySize > 0) ? Math.max(0, Math.min(1, juryVotes / jurySize)) : 0;
-
-      return (votesNorm * 0.7) + (juryNorm * 0.3);
-    });
-    const socialScore = (socialNorms.reduce((a,b)=>a+b,0) / socialNorms.length) * 100;
-
-    // --- Strategic (10%): idols/advantages, control moments, endgame leverage
-    // We only have idolsFound + strategicRank, so we approximate with those.
-    const strategicNorms = details.map(s => {
-      const season = Number(s.season);
-      const maxIdols = Number(seasonAgg?.[season]?.maxIdolsFound || 0);
-      const idols = Math.max(0, Number(s.idolsFound || 0));
-      const idolsNorm = maxIdols > 0 ? Math.max(0, Math.min(1, idols / maxIdols)) : (idols > 0 ? 1 : 0);
-
-      const stratRank = Math.max(0, Math.min(10, Number(s.strategicRank || 0)));
-      const stratNorm = stratRank / 10;
-
-      return (stratNorm * 0.6) + (idolsNorm * 0.4);
-    });
-    const strategicScore = (strategicNorms.reduce((a,b)=>a+b,0) / strategicNorms.length) * 100;
-
-    // Final weighted score
-    const final =
-      (placementScore * 0.40) +
-      (winScore * 0.20) +
-      (challengeScore * 0.15) +
-      (socialScore * 0.15) +
-      (strategicScore * 0.10);
-
-    return Math.round(Math.max(0, Math.min(100, final)));
-  }
-
   
   function calculateTier(score) {
     if (score >= 91) return "S+";
@@ -4601,6 +4662,72 @@ const isFake = bannedIds.some(banned => id.includes(banned) && id !== name.toLow
         console.log('Database JSON:', json);
       });
     });
+    
+    // Rebuild Rankings Button
+    if (rebuildRankingsBtn) {
+      rebuildRankingsBtn.addEventListener("click", async () => {
+        if (!confirm("⚠️ Rebuild ALL Rankings?\n\nThis will recalculate scores for ALL players using percentile-based relative scoring.\n\nUse this ONCE to establish new baseline rankings.\n\nContinue?")) {
+          return;
+        }
+        
+        rebuildRankingsBtn.disabled = true;
+        rebuildRankingsBtn.textContent = "⏳ Rebuilding...";
+        
+        try {
+          const db = loadPlayerDatabase();
+          
+          if (db.players.length === 0) {
+            alert("⚠️ No players in database!");
+            return;
+          }
+          
+          // Get worker URL
+          const workerUrl = getWorkerUrl();
+          if (!workerUrl) {
+            alert("⚠️ Please set AI Worker URL in Settings first!");
+            return;
+          }
+          
+          console.log("🔄 Rebuilding rankings for all players...");
+          
+          const response = await fetch(workerUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              mode: "rankings-rebuild",
+              playersDB: db,
+              currentSeason: db.franchise?.totalSeasons || 6
+            })
+          });
+          
+          if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Worker failed (${response.status}): ${errorText}`);
+          }
+          
+          const rankingsDB = await response.json();
+          
+          if (rankingsDB.error) {
+            throw new Error(rankingsDB.error);
+          }
+          
+          // Save to localStorage and download
+          localStorage.setItem('rankings_database', JSON.stringify(rankingsDB, null, 2));
+          downloadJSON(rankingsDB, 'rankings_database.json');
+          
+          showDatabaseStatus(`✅ Rankings rebuilt!\n\n${rankingsDB.rankings.length} players ranked with percentile-based scoring.\n\nDownloaded: rankings_database.json`);
+          
+          console.log("✅ Rankings rebuilt:", rankingsDB);
+          
+        } catch (error) {
+          console.error("Rebuild error:", error);
+          alert(`❌ Rebuild failed:\n\n${error.message}`);
+        } finally {
+          rebuildRankingsBtn.disabled = false;
+          rebuildRankingsBtn.textContent = "🔄 Rebuild All Rankings";
+        }
+      });
+    }
   }
 
   function showDatabaseStatus(message) {

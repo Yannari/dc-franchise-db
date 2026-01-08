@@ -817,6 +817,13 @@ function renderRankings(rankingsData, playersMap) {
   const container = document.getElementById('rankings-container');
 
   const tierGroups = {};
+  // Auto-sort rankings by score (descending)
+  rankingsData.rankings.sort((a, b) => {
+    const scoreA = Number(a.score || 0);
+    const scoreB = Number(b.score || 0);
+    return scoreB - scoreA;
+  });
+
   rankingsData.rankings.forEach(function(ranking) {
     if (!tierGroups[ranking.tier]) tierGroups[ranking.tier] = [];
     tierGroups[ranking.tier].push(ranking);
@@ -1003,9 +1010,9 @@ function renderPlayerCard(ranking, player) {
   html +=     '</div>';
 
   html +=     '<div>';
-  html +=       '<div class="score-display">' + ranking.score + '/100</div>';
+  html +=       '<div class="score-display">' + Math.round(ranking.score) + '/100</div>';
   html +=       '<div class="score-bar-wrapper">';
-  html +=         '<div class="score-bar" style="width: ' + ranking.score + '%;"></div>';
+  html +=         '<div class="score-bar" style="width: ' + Math.round(ranking.score) + '%;"></div>';
   html +=       '</div>';
   html +=     '</div>';
 
@@ -1082,7 +1089,7 @@ function renderMiniCard(ranking, player) {
   html +=       '<span class="fallback">' + (ranking.emoji || '👤') + '</span>';
   html +=     '</div>';
   html +=     '<div class="mini-name">' + (ranking.emoji || '') + ' ' + player.name + '</div>';
-  html +=     '<div class="mini-score">' + ranking.score + '/100</div>';
+  html +=     '<div class="mini-score">' + Math.round(ranking.score) + '/100</div>';
   html +=   '</div>';
 
   html +=   '<div class="mini-subtitle">' + title + (title ? ' • ' : '') + seasonsLabel + '</div>';

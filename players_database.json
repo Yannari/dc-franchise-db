@@ -1696,9 +1696,9 @@
       "totalChallengeWins": 4,
       "totalImmunityWins": 4,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
+      "totalVotesAgainst": 2,
       "totalIdolsFound": 0,
-      "totalJuryVotes": -7,
+      "totalJuryVotes": 7,
       "tier": "Unranked",
       "badges": [
         "S6 Winner"

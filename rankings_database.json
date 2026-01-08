@@ -16,34 +16,46 @@
   },
   "tiers": {
     "S+": {
-      "name": "TIER S+ — Elite Winners",
-      "description": "91+ • Franchise legends",
-      "scoreRange": [91, 100]
+      "range": [
+        93,
+        100
+      ],
+      "desc": "Legends - 3 players"
     },
     "S": {
-      "name": "TIER S — Championship Caliber",
-      "description": "81-88 • Top-tier threats",
-      "scoreRange": [81, 90]
+      "range": [
+        85,
+        92
+      ],
+      "desc": "Elite - 6 players"
     },
     "A": {
-      "name": "TIER A — Elite Threats",
-      "description": "72-79 • Deep runs",
-      "scoreRange": [72, 80]
+      "range": [
+        73,
+        84
+      ],
+      "desc": "Great - 9 players"
     },
     "B": {
-      "name": "TIER B — Above Average",
-      "description": "61-70 • Solid gameplay",
-      "scoreRange": [61, 71]
+      "range": [
+        61,
+        72
+      ],
+      "desc": "Solid - 10 players"
     },
     "C": {
-      "name": "TIER C — Average",
-      "description": "51-60 • Mid-game players",
-      "scoreRange": [51, 60]
+      "range": [
+        48,
+        60
+      ],
+      "desc": "Average - 14 players"
     },
     "D": {
-      "name": "TIER D — Below Average",
-      "description": "36-50 • Early exits",
-      "scoreRange": [36, 50]
+      "range": [
+        0,
+        47
+      ],
+      "desc": "Struggling - 26 players"
     }
   },
   "rankings": [
@@ -67,7 +79,7 @@
         "Needed 3 tries to win"
       ],
       "avgPlacement": 1.67,
-      "winRate": 33,
+      "winRate": 0.333,
       "wins": 1,
       "seasonsPlayed": 3,
       "placements": [
@@ -76,7 +88,7 @@
         2
       ],
       "challengeWins": 13,
-      "votesAgainst": 25,
+      "votesAgainst": 34,
       "juryVotes": 12,
       "idolsFound": 0,
       "placementPercentile": 97.01,
@@ -105,7 +117,7 @@
         "S6: only 1 jury vote"
       ],
       "avgPlacement": 1.5,
-      "winRate": 50,
+      "winRate": 0.5,
       "wins": 1,
       "seasonsPlayed": 2,
       "placements": [
@@ -142,7 +154,7 @@
         "No idol finds"
       ],
       "avgPlacement": 1.0,
-      "winRate": 100,
+      "winRate": 1.0,
       "wins": 1,
       "seasonsPlayed": 1,
       "placements": [
@@ -162,7 +174,7 @@
       "playerId": "lindsay",
       "name": "Lindsay",
       "rank": 4,
-      "tier": "S+",
+      "tier": "S",
       "score": 92.1,
       "title": "The Glow-Up Queen",
       "emoji": "👑",
@@ -178,7 +190,7 @@
         "S2: only 3rd"
       ],
       "avgPlacement": 2.0,
-      "winRate": 50,
+      "winRate": 0.5,
       "wins": 1,
       "seasonsPlayed": 2,
       "placements": [
@@ -287,7 +299,7 @@
         "17 votes total"
       ],
       "avgPlacement": 7.33,
-      "winRate": 33,
+      "winRate": 0.333,
       "wins": 1,
       "seasonsPlayed": 3,
       "placements": [
@@ -324,7 +336,7 @@
         "S2: early boot"
       ],
       "avgPlacement": 9.33,
-      "winRate": 33,
+      "winRate": 0.333,
       "wins": 1,
       "seasonsPlayed": 3,
       "placements": [
@@ -1882,7 +1894,7 @@
       "playerId": "dj",
       "name": "DJ",
       "rank": 54,
-      "tier": "D",
+      "tier": "C",
       "score": 36.0,
       "title": "The Big Softie",
       "emoji": "🐻",
@@ -2260,7 +2272,7 @@
       "playerId": "anne-maria",
       "name": "Anne Maria",
       "rank": 65,
-      "tier": "D",
+      "tier": "C",
       "score": 25.0,
       "title": "The Workhorse",
       "emoji": "💅",

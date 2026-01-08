@@ -1758,3 +1758,162 @@ body.hasSiteHeader .hero .meta{
   opacity: 0;
   animation: fadeSlideIn 0.4s ease-out 0.1s both;
 }
+/* ============================================
+   PLAYER STORY FORMATTER - CSS STYLES
+   Add this to your existing CSS
+   ============================================ */
+
+.player-story-container {
+  background: rgba(30, 30, 46, 0.95);
+  border-radius: 16px;
+  padding: 32px;
+  margin: 24px 0;
+  border: 1px solid rgba(155, 109, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.player-story-header {
+  font-size: 24px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid rgba(155, 109, 255, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.season-section {
+  margin-bottom: 32px;
+  position: relative;
+  animation: fadeInUp 0.6s ease-out backwards;
+}
+
+.season-section:last-child {
+  margin-bottom: 0;
+}
+
+.season-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid rgba(155, 109, 255, 0.2);
+}
+
+.season-number {
+  background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%);
+  color: white;
+  padding: 6px 16px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 14px;
+  min-width: 90px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(147, 51, 234, 0.3);
+}
+
+.season-theme {
+  font-size: 18px;
+  font-weight: 600;
+  color: #c4b5fd;
+  flex: 1;
+}
+
+.season-body {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 20px;
+  border-radius: 12px;
+  border-left: 4px solid #9333ea;
+  position: relative;
+}
+
+.season-body p {
+  color: #d1d5db;
+  font-size: 15px;
+  line-height: 1.7;
+  margin-bottom: 12px;
+}
+
+.season-body p:last-child {
+  margin-bottom: 0;
+}
+
+.result-badge {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 16px;
+  font-weight: 600;
+  font-size: 12px;
+  margin-top: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.result-winner {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  color: #78350f;
+  box-shadow: 0 3px 10px rgba(251, 191, 36, 0.4);
+}
+
+.result-runnerup {
+  background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%);
+  color: #1e293b;
+  box-shadow: 0 3px 10px rgba(148, 163, 184, 0.4);
+}
+
+.result-eliminated {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: #fef2f2;
+  box-shadow: 0 3px 10px rgba(239, 68, 68, 0.4);
+}
+
+.stats-highlight {
+  background: rgba(147, 51, 234, 0.15);
+  border: 1px solid rgba(147, 51, 234, 0.3);
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+  color: #c4b5fd;
+  white-space: nowrap;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.season-section:nth-child(1) { animation-delay: 0.1s; }
+.season-section:nth-child(2) { animation-delay: 0.2s; }
+.season-section:nth-child(3) { animation-delay: 0.3s; }
+.season-section:nth-child(4) { animation-delay: 0.4s; }
+.season-section:nth-child(5) { animation-delay: 0.5s; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .player-story-container {
+    padding: 20px;
+  }
+  
+  .season-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .season-number {
+    width: 100%;
+  }
+  
+  .season-body {
+    padding: 16px;
+  }
+}

@@ -184,6 +184,28 @@ function formatPlayerStory(storyText) {
     return '<p style="color: #94a3b8; text-align: center; padding: 40px;">No story available</p>';
   }
   
+  // Check if story has season separators
+  const hasSeparators = storyText.includes('────────') || storyText.match(/SEASON\s+\d+\s+[—\-–]/);
+  
+  // If no separators, render as simple formatted text
+  if (!hasSeparators) {
+    const paragraphs = storyText.split(/\n\n+/).filter(p => p.trim());
+    
+    const formattedParagraphs = paragraphs.map(p => {
+      let formatted = p
+        .replace(/(\d+)\s+(immunity wins?|challenge wins?|total wins?|votes?|idols?)/gi, 
+          '<span class="stats-highlight">$1 $2</span>')
+        .replace(/(Final Tribal Council?|merge|finale|endgame|jury|fire-making)/gi, 
+          '<span class="stats-highlight">$1</span>')
+        .replace(/(\d+)[–\-](\d+)(?:[–\-](\d+))?/g, 
+          '<span class="stats-highlight">$&</span>');
+      
+      return '<p>' + formatted + '</p>';
+    }).join('');
+    
+    return '<div class="season-body" style="border-left: none;">' + formattedParagraphs + '</div>';
+  }
+  
   // Split by season sections (divided by ────────)
   const sections = storyText.split(/────────+/);
   
@@ -248,7 +270,7 @@ function formatPlayerStory(storyText) {
         resultBadge = '<span class="result-badge result-winner">🏆 Winner</span>';
       } else if (lastPara.match(/runner-up|2nd/i)) {
         resultBadge = '<span class="result-badge result-runnerup">🥈 Runner-Up</span>';
-      } else if (lastPara.match(/eliminated|placed \d+th|finished \d+th/i)) {
+      } else if (lastPara.match(/eliminated|placed \d+th|finished \d+th|Final \d+/i)) {
         const placement = lastPara.match(/(\d+)(?:st|nd|rd|th)/);
         if (placement) {
           resultBadge = '<span class="result-badge result-eliminated">Eliminated ' + placement[0] + '</span>';

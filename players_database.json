@@ -35,7 +35,7 @@
           "season": 4,
           "placement": 1,
           "status": "Winner",
-          "tribe": "Yellow \u2192 Red \u2192 Green \u2192 Campers",
+          "tribe": "Yellow → Red → Green → Campers",
           "challengeWins": 2,
           "immunityWins": 2,
           "rewardWins": 2,
@@ -124,7 +124,7 @@
           "idolsFound": 0
         }
       ],
-      "story": "Season 5 contestant. Finished 7th.",
+      "story": "Introduced on Rescue Island (Season 5), Amy weaponized the Amy/Samey feud to keep the tribe polarized, often becoming the swing point whenever the vote turned into chaos. She survived into the late game despite regular blowback (3 votes against) and even burned her Shot in the Dark at a key Tribal. Her run ended in Episode 11 when advantage/idol dynamics voided key votes and the numbers finally converged on her (Result: Amy eliminated, 2–1 (with 2 Dave votes voided)).",
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
       "avgPlacement": 7.0
@@ -172,7 +172,7 @@
           "season": 3,
           "placement": 5,
           "status": "Juror",
-          "tribe": "Mutant Maggots \u2192 Toxic Rats \u2192 Campers",
+          "tribe": "Mutant Maggots → Toxic Rats → Campers",
           "challengeWins": 1,
           "immunityWins": 0,
           "rewardWins": 1,
@@ -259,7 +259,7 @@
           "idolsFound": 0
         }
       ],
-      "story": "Season 5 contestant. Finished 16th.",
+      "story": "On Season 5’s pre-merge chaos, Beardo leaned into a low-profile social game and tried to stabilize early bonds, but never shook the perception of being expendable in a numbers crunch. With limited challenge impact and the tribe constantly scrambling around twists, he became the path-of-least-resistance boot. He was eliminated in Episode 3 in a vote where very few ballots actually counted (Beardo eliminated, 1–0 (effective)).",
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
       "avgPlacement": 16.0
@@ -340,7 +340,7 @@
           ]
         }
       ],
-      "story": "Unlucky casualty of Galang\u2019s first chaotic rock draw. Lost the first active duel and exited early.",
+      "story": "Unlucky casualty of Galang’s first chaotic rock draw. Lost the first active duel and exited early.",
       "badges": [],
       "totalJuryVotes": 0,
       "seasonsPlayed": 3,
@@ -393,7 +393,7 @@
           "finalVote": "",
           "advantages": [],
           "notes": [
-            "Voted out Episode 15 (4\u20131)"
+            "Voted out Episode 15 (4–1)"
           ],
           "gameplayStyle": "Agent of chaos",
           "keyMoments": [
@@ -547,13 +547,13 @@
           "finalVote": "",
           "advantages": [],
           "notes": [
-            "Voted out Episode 14 (4\u20132) after earlier swap boot to RI"
+            "Voted out Episode 14 (4–2) after earlier swap boot to RI"
           ],
           "gameplayStyle": "Targeted comeback",
           "keyMoments": [
             "Returned from RI at merge with clue",
-            "Won \u2018Wrist Assured\u2019 immunity",
-            "Cut 4\u20132 as final push against Surfers momentum"
+            "Won ‘Wrist Assured’ immunity",
+            "Cut 4–2 as final push against Surfers momentum"
           ],
           "alliances": [
             "Geoff",
@@ -596,7 +596,7 @@
           "season": 4,
           "placement": 5,
           "status": "Juror",
-          "tribe": "Red \u2192 Yellow \u2192 Red \u2192 Campers",
+          "tribe": "Red → Yellow → Red → Campers",
           "challengeWins": 3,
           "immunityWins": 1,
           "rewardWins": 2,
@@ -615,7 +615,7 @@
           "season": 3,
           "placement": 3,
           "status": "Finalist",
-          "tribe": "Mutant Maggots \u2192 Toxic Rats \u2192 Campers",
+          "tribe": "Mutant Maggots → Toxic Rats → Campers",
           "challengeWins": 3,
           "immunityWins": 1,
           "rewardWins": 2,
@@ -699,7 +699,7 @@
           "season": 4,
           "placement": 14,
           "status": "Juror",
-          "tribe": "Yellow \u2192 Red \u2192 Campers",
+          "tribe": "Yellow → Red → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
@@ -855,7 +855,7 @@
           "season": 3,
           "placement": 12,
           "status": "Pre-Juror",
-          "tribe": "Toxic Rats \u2192 Mutant Maggots",
+          "tribe": "Toxic Rats → Mutant Maggots",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
@@ -901,7 +901,7 @@
           "idolsFound": 0
         }
       ],
-      "story": "Season 5 contestant. Finished 6th.",
+      "story": "Dave was a central strategic connector for the Lulu side of Season 5, mixing steady positioning with real challenge value (2 wins, including 1 immunity). In the late game he survived a critical Tribal by playing Shot in the Dark successfully, but the next wave of idol chaos flipped the math against him. He was eliminated in Episode 12 when a 3–3 vote became a clean boot after idol cancellation (Result: Dave eliminated, 3–0 effective (3–3 on paper with idol cancellation)).",
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
       "avgPlacement": 6.0
@@ -925,7 +925,7 @@
           "season": 3,
           "placement": 8,
           "status": "Juror",
-          "tribe": "Toxic Rats \u2192 Mutant Maggots",
+          "tribe": "Toxic Rats → Mutant Maggots",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
@@ -1023,7 +1023,7 @@
           "season": 4,
           "placement": 7,
           "status": "Juror",
-          "tribe": "Yellow \u2192 Green \u2192 Campers",
+          "tribe": "Yellow → Green → Campers",
           "challengeWins": 1,
           "immunityWins": 0,
           "rewardWins": 1,
@@ -1123,7 +1123,7 @@
           "finalVote": "",
           "advantages": [],
           "notes": [
-            "Directly eliminated at merge (4\u20133\u20133\u20131)"
+            "Directly eliminated at merge (4–3–3–1)"
           ],
           "gameplayStyle": "Tribal glue",
           "keyMoments": [
@@ -1141,7 +1141,7 @@
           ]
         }
       ],
-      "story": "Steady \u2018dad glue\u2019 who bridged pairs on Galang. Became the overlap boot at merge when factions needed a justifiable target.",
+      "story": "Steady ‘dad glue’ who bridged pairs on Galang. Became the overlap boot at merge when factions needed a justifiable target.",
       "badges": [],
       "totalJuryVotes": 0,
       "seasonsPlayed": 2,
@@ -1175,7 +1175,7 @@
           "idolsFound": 0
         }
       ],
-      "story": "Season 5 contestant. Finished 17th.",
+      "story": "Ella’s Rescue Island run was defined by pure social warmth and early connection-building, but that visibility made her an easy name when the tribe needed a clean vote. With the game already drifting toward advantage paranoia, she couldn’t find a shield in time. She was eliminated in Episode 2 on a tight pre-merge vote (Ella eliminated, 2–1).",
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
       "avgPlacement": 17.0
@@ -1225,7 +1225,7 @@
           "season": 3,
           "placement": 1,
           "status": "WINNER",
-          "tribe": "Toxic Rats \u2192 Campers",
+          "tribe": "Toxic Rats → Campers",
           "challengeWins": 4,
           "immunityWins": 1,
           "rewardWins": 3,
@@ -1271,7 +1271,7 @@
           ]
         }
       ],
-      "story": "Composed strategist who won the first merge immunity and waged a season-long feud with Ryan. Lost to rocks in the merge deadlock and couldn\u2019t fight back from RI.",
+      "story": "Composed strategist who won the first merge immunity and waged a season-long feud with Ryan. Lost to rocks in the merge deadlock and couldn’t fight back from RI.",
       "seasonsPlayed": 3,
       "avgPlacement": 9.33
     },
@@ -1308,12 +1308,12 @@
           "finalVote": "",
           "advantages": [],
           "notes": [
-            "Voted out Episode 3 (6\u20133) to RI; later eliminated"
+            "Voted out Episode 3 (6–3) to RI; later eliminated"
           ],
           "gameplayStyle": "Focused loner",
           "keyMoments": [
             "Feuded with Jay pre-tribal",
-            "Voted out 6\u20133"
+            "Voted out 6–3"
           ],
           "alliances": [
             "Brody",
@@ -1324,7 +1324,7 @@
           ]
         }
       ],
-      "story": "Goth outsider who became a focus-and-duels threat on RI. His pre-merge boot broke Brody\u2019s social leverage.",
+      "story": "Goth outsider who became a focus-and-duels threat on RI. His pre-merge boot broke Brody’s social leverage.",
       "seasonsPlayed": 1,
       "avgPlacement": 16.0
     },
@@ -1444,7 +1444,7 @@
           "season": 4,
           "placement": 6,
           "status": "Juror",
-          "tribe": "Yellow \u2192 Green \u2192 Campers \u2192 EoE \u2192 Campers",
+          "tribe": "Yellow → Green → Campers → EoE → Campers",
           "challengeWins": 2,
           "immunityWins": 0,
           "rewardWins": 1,
@@ -1490,13 +1490,13 @@
           "finalVote": "",
           "advantages": [],
           "notes": [
-            "Voted out Episode 16 (4\u20131) after returning from RI"
+            "Voted out Episode 16 (4–1) after returning from RI"
           ],
           "gameplayStyle": "Social hub",
           "keyMoments": [
             "Anchored early Galang core with Mickey/Ryan",
             "Returned from RI at Final 5",
-            "Cut 4\u20131 as the late jury threat"
+            "Cut 4–1 as the late jury threat"
           ],
           "alliances": [
             "Brody",
@@ -1541,7 +1541,7 @@
           "season": 4,
           "placement": 4,
           "status": "Juror",
-          "tribe": "Yellow \u2192 Red \u2192 Campers",
+          "tribe": "Yellow → Red → Campers",
           "challengeWins": 4,
           "immunityWins": 4,
           "rewardWins": 0,
@@ -1586,7 +1586,7 @@
           ]
         }
       ],
-      "story": "Massive improvement arc: 16th \u2192 8th \u2192 4th. Set franchise record with 4 consecutive immunity wins. Lost when couldn't win fire-making.",
+      "story": "Massive improvement arc: 16th → 8th → 4th. Set franchise record with 4 consecutive immunity wins. Lost when couldn't win fire-making.",
       "seasonsPlayed": 3,
       "totalJuryVotes": 0,
       "avgPlacement": 9.33
@@ -1617,7 +1617,7 @@
           "season": 4,
           "placement": 8,
           "status": "Juror",
-          "tribe": "Yellow \u2192 Campers",
+          "tribe": "Yellow → Campers",
           "challengeWins": 3,
           "immunityWins": 1,
           "rewardWins": 2,
@@ -1682,7 +1682,7 @@
           "season": 4,
           "placement": 15,
           "status": "Juror",
-          "tribe": "Yellow \u2192 Red \u2192 Campers",
+          "tribe": "Yellow → Red → Campers",
           "challengeWins": 1,
           "immunityWins": 1,
           "rewardWins": 0,
@@ -1808,7 +1808,7 @@
           ],
           "gameplayStyle": "Ice-cold strategist",
           "keyMoments": [
-            "Engineered Kitty\u2019s idol burn at merge",
+            "Engineered Kitty’s idol burn at merge",
             "Won 4 immunities to steer late votes",
             "Chose the Final 4 tie path that sent Kelly out"
           ],
@@ -1856,7 +1856,7 @@
           "idolsFound": 0
         }
       ],
-      "story": "Season 5 contestant. Finished 14th.",
+      "story": "Jasmine brought a steady, survival-first presence to the early Belo/Reba chaos, attempting to keep the tribe focused while smaller rivalries pulled votes in different directions. Without advantages or a dominant alliance to lock her in, she became a convenient compromise boot once numbers got messy. She exited in Episode 5 (Jasmine eliminated, 2–1).",
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
       "avgPlacement": 14.0
@@ -1943,7 +1943,7 @@
           "season": 4,
           "placement": 10,
           "status": "Juror",
-          "tribe": "Red \u2192 Yellow \u2192 Campers",
+          "tribe": "Red → Yellow → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 1,
@@ -2026,12 +2026,12 @@
           "finalVote": "",
           "advantages": [],
           "notes": [
-            "Voted out Episode 5 (6\u20131) to RI"
+            "Voted out Episode 5 (6–1) to RI"
           ],
           "gameplayStyle": "Volatile competitor",
           "keyMoments": [
             "Multiple meltdowns on Galang",
-            "Booted 6\u20131 as a consensus"
+            "Booted 6–1 as a consensus"
           ],
           "alliances": [
             "Jacques",
@@ -2082,12 +2082,12 @@
           "finalVote": "",
           "advantages": [],
           "notes": [
-            "Voted out Episode 4 (6\u20132) to RI; later eliminated on RI"
+            "Voted out Episode 4 (6–2) to RI; later eliminated on RI"
           ],
           "gameplayStyle": "Young underdog",
           "keyMoments": [
             "Survived early RI duels",
-            "Initial 6\u20132 vote amid liability framing"
+            "Initial 6–2 vote amid liability framing"
           ],
           "alliances": [
             "Dwayne",
@@ -2098,7 +2098,7 @@
           ]
         }
       ],
-      "story": "Eager underdog who battled through RI duels but couldn\u2019t escape the \u2018liability\u2019 label. His exit weakened Dwayne\u2019s leverage.",
+      "story": "Eager underdog who battled through RI duels but couldn’t escape the ‘liability’ label. His exit weakened Dwayne’s leverage.",
       "seasonsPlayed": 1,
       "avgPlacement": 15.0
     },
@@ -2226,7 +2226,7 @@
           "finalVote": "",
           "advantages": [],
           "notes": [
-            "Eliminated Final 4 (2\u20132 tie, 1\u20131 revote, lost fire-making)"
+            "Eliminated Final 4 (2–2 tie, 1–1 revote, lost fire-making)"
           ],
           "gameplayStyle": "Idol-wielding controller",
           "keyMoments": [
@@ -2282,7 +2282,7 @@
           "finalVote": "",
           "advantages": [],
           "notes": [
-            "Voted out Episode 11 (3\u20132\u20132\u20131\u20131) to RI (idol previously burned on Jacques)"
+            "Voted out Episode 11 (3–2–2–1–1) to RI (idol previously burned on Jacques)"
           ],
           "gameplayStyle": "Volatile social spark",
           "keyMoments": [
@@ -2348,12 +2348,12 @@
           "finalVote": "",
           "advantages": [],
           "notes": [
-            "Voted out Episode 2 (5\u20133) to RI; eliminated Episode 4"
+            "Voted out Episode 2 (5–3) to RI; eliminated Episode 4"
           ],
           "gameplayStyle": "Well-meaning liability",
           "keyMoments": [
             "Volunteered swap to RI",
-            "Voted out 5\u20133 on Galang"
+            "Voted out 5–3 on Galang"
           ],
           "alliances": [
             "Tammy",
@@ -2364,7 +2364,7 @@
           ]
         }
       ],
-      "story": "Self-sacrificing partner who swapped to RI for Tammy, then became the easy \u2018liability\u2019 cut and lost the duel later.",
+      "story": "Self-sacrificing partner who swapped to RI for Tammy, then became the easy ‘liability’ cut and lost the duel later.",
       "totalJuryVotes": 0,
       "seasonsPlayed": 2,
       "avgPlacement": 18.0
@@ -2449,7 +2449,7 @@
           "season": 4,
           "placement": 13,
           "status": "Juror",
-          "tribe": "Red \u2192 Green \u2192 Campers",
+          "tribe": "Red → Green → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
@@ -2586,7 +2586,7 @@
           "finalVote": "",
           "advantages": [],
           "notes": [
-            "Idol casualty Episode 7 (Kelly\u2019s idol negated majority)"
+            "Idol casualty Episode 7 (Kelly’s idol negated majority)"
           ],
           "gameplayStyle": "Calculating planner",
           "keyMoments": [
@@ -2636,7 +2636,7 @@
           "idolsFound": 0
         }
       ],
-      "story": "Season 5 contestant. Finished 10th.",
+      "story": "Max leaned into a disruptive, chaos-friendly game on Season 5, frequently pulling attention and forcing others to account for worst-case twists. He gained Safety Without Power, which shaped vote calculus even when he couldn’t fully cash it in for long-term security. Eventually the table got tired of the volatility and he was voted out in Episode 8 (Max eliminated, 5–3).",
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
       "avgPlacement": 10.0
@@ -2741,7 +2741,7 @@
           "season": 4,
           "placement": 12,
           "status": "Juror",
-          "tribe": "Red \u2192 Yellow \u2192 Campers",
+          "tribe": "Red → Yellow → Campers",
           "challengeWins": 1,
           "immunityWins": 0,
           "rewardWins": 1,
@@ -2809,7 +2809,7 @@
           "season": 4,
           "placement": 9,
           "status": "Juror",
-          "tribe": "Yellow \u2192 Red \u2192 Campers",
+          "tribe": "Yellow → Red → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
@@ -2927,7 +2927,7 @@
           "idolsFound": 0
         }
       ],
-      "story": "Season 5 contestant. Finished 12th.",
+      "story": "Rodney played Season 5 like a classic mid-game grinder: visible, socially active, and constantly trying to grab tools that could flip a vote. He notably secured Knowledge Is Power from a Journey, instantly spiking his threat level even without challenge dominance. Once the tribe decided he was too dangerous to keep around, he was voted out in Episode 7 (Rodney eliminated, 3–1).",
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
       "avgPlacement": 12.0
@@ -2981,13 +2981,13 @@
           "finalVote": "",
           "advantages": [],
           "notes": [
-            "Voted out Episode 12 (5\u20132\u20131) to Redemption; later eliminated on RI"
+            "Voted out Episode 12 (5–2–1) to Redemption; later eliminated on RI"
           ],
           "gameplayStyle": "Aggressive swing",
           "keyMoments": [
             "Found and misplayed Galang idol",
             "Won Pesky Palate immunity",
-            "Booted 5\u20132\u20131 as the merge connector"
+            "Booted 5–2–1 as the merge connector"
           ],
           "alliances": [
             "Mickey",
@@ -3110,7 +3110,7 @@
           "idolsFound": 0
         }
       ],
-      "story": "Season 5 contestant. Finished 15th.",
+      "story": "Samey’s Season 5 story is the underdog attempt to play her own game while the Amy rivalry kept dragging her into the spotlight. She picked up a Goodwill-style social leverage moment and tried to build safer bonds, but advantage chaos punished anyone without hard protection. In Episode 4, an idol cancelled multiple votes and she was eliminated on an ultra-thin effective count (Result: Samey eliminated 1–0 (effective) after idol cancels 4 votes).",
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
       "avgPlacement": 15.0
@@ -3177,7 +3177,7 @@
           "season": 4,
           "placement": 3,
           "status": "Finalist",
-          "tribe": "Red \u2192 Yellow \u2192 Green \u2192 Campers",
+          "tribe": "Red → Yellow → Green → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
@@ -3200,7 +3200,7 @@
           "season": 3,
           "placement": 2,
           "status": "Runner-up",
-          "tribe": "Toxic Rats \u2192 Campers",
+          "tribe": "Toxic Rats → Campers",
           "challengeWins": 6,
           "immunityWins": 3,
           "rewardWins": 3,
@@ -3252,7 +3252,7 @@
           "idolsFound": 1
         }
       ],
-      "story": "Season 5 contestant. Finished 9th.",
+      "story": "Shawn navigated Season 5 with a paranoid-but-prepared mindset, finding a Beware Idol on Belo and briefly holding real leverage at the merge. His risk-taking peaked when he used Shot in the Dark and lost his vote, putting him on the wrong side of the numbers. He was eliminated in Episode 9 (Shawn eliminated, 5–2), but not before becoming a real factor in the season’s advantage economy.",
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
       "avgPlacement": 9.0
@@ -3283,7 +3283,7 @@
           "season": 4,
           "placement": 11,
           "status": "Juror",
-          "tribe": "Yellow \u2192 Campers (EoE Return)",
+          "tribe": "Yellow → Campers (EoE Return)",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
@@ -3356,7 +3356,7 @@
           "finalVote": "3 (lost tiebreak)"
         }
       ],
-      "story": "Season 5 challenge MVP with 4 total challenge wins and 3 immunities; forced the late-game tempo but fell short in a 3\u20133 FTC tie.",
+      "story": "Season 5 challenge MVP with 4 total challenge wins and 3 immunities; forced the late-game tempo but fell short in a 3–3 FTC tie.",
       "seasonsPlayed": 1,
       "avgPlacement": 2.0
     },
@@ -3432,12 +3432,12 @@
           "finalVote": "",
           "advantages": [],
           "notes": [
-            "Voted out Episode 6 (6\u20131); threw an idol clue into the fire on RI"
+            "Voted out Episode 6 (6–1); threw an idol clue into the fire on RI"
           ],
           "gameplayStyle": "Fiery competitor",
           "keyMoments": [
             "Burned an idol clue on RI",
-            "Voted out 6\u20131 after conflict with Jacques"
+            "Voted out 6–1 after conflict with Jacques"
           ],
           "alliances": [
             "Ryan",
@@ -3483,7 +3483,7 @@
           "idolsFound": 0
         }
       ],
-      "story": "Season 5 contestant. Finished 5th.",
+      "story": "Sugar made one of the deepest runs of Season 5 by surviving constant heat (10 votes against) and leaning into a loud, chaos-driven social style that kept targets rotating. With the endgame dominated by idol-threat management, she repeatedly found herself in the crosshairs as players tried to simplify the board. She was eliminated in Episode 13 in a near-unanimous vote with a cancelled ballot (Sugar eliminated, 4–0 (with 1 Sky vote cancelled)).",
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
       "avgPlacement": 5.0
@@ -3538,7 +3538,7 @@
           ]
         }
       ],
-      "story": "Twist casualty who pinballed between camp and RI through pair swaps. Couldn\u2019t convert survival into a return.",
+      "story": "Twist casualty who pinballed between camp and RI through pair swaps. Couldn’t convert survival into a return.",
       "seasonsPlayed": 1,
       "avgPlacement": 17.0
     },
@@ -3570,7 +3570,7 @@
           "idolsFound": 0
         }
       ],
-      "story": "Season 5 contestant. Finished 11th.",
+      "story": "Topher’s Rescue Island run revolved around risk-reward mechanics: he took on a Beware-style disadvantage, forcing him to manage social fallout while dealing with limited voting power. Without immunity wins or an idol safety net, he became the merge’s stability target. He was eliminated in Episode 7 and became the season’s first juror (Topher eliminated, 5–1 (and becomes 1st juror due to being eliminated from).",
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
       "avgPlacement": 11.0
@@ -3698,7 +3698,7 @@
           "season": 4,
           "placement": 2,
           "status": "Finalist",
-          "tribe": "Red \u2192 Green \u2192 Campers",
+          "tribe": "Red → Green → Campers",
           "challengeWins": 4,
           "immunityWins": 3,
           "rewardWins": 1,
@@ -3723,7 +3723,7 @@
           "season": 3,
           "placement": 4,
           "status": "Juror",
-          "tribe": "Mutant Maggots \u2192 Campers",
+          "tribe": "Mutant Maggots → Campers",
           "challengeWins": 4,
           "immunityWins": 2,
           "rewardWins": 2,

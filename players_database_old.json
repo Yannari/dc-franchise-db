@@ -10,18 +10,18 @@
       "id": "alejandro",
       "name": "Alejandro",
       "seasons": [
-        1,
+        4,
         2,
-        4
+        1
       ],
       "totalSeasons": 3,
       "bestPlacement": 1,
       "wins": 1,
-      "totalChallengeWins": 13,
-      "totalImmunityWins": 9,
-      "totalRewardWins": 2,
-      "totalVotesAgainst": 34,
-      "totalIdolsFound": 0,
+      "totalChallengeWins": 11,
+      "totalImmunityWins": 10,
+      "totalRewardWins": 3,
+      "totalVotesAgainst": 25,
+      "totalIdolsFound": 1,
       "totalJuryVotes": 12,
       "tier": "S+",
       "badges": [
@@ -35,8 +35,8 @@
           "season": 4,
           "placement": 1,
           "status": "Winner",
-          "tribe": "Yellow → Red → Green → Campers",
-          "challengeWins": 4,
+          "tribe": "Yellow \u2192 Red \u2192 Green \u2192 Campers",
+          "challengeWins": 2,
           "immunityWins": 2,
           "rewardWins": 2,
           "votesReceived": 9,
@@ -57,16 +57,16 @@
         {
           "season": 2,
           "placement": 2,
-          "status": "Runner-up",
+          "status": "Finalist",
           "tribe": "Screaming Gaffers",
           "challengeWins": 5,
           "immunityWins": 5,
           "rewardWins": 0,
           "votesReceived": 11,
           "idolsFound": 0,
-          "strategicRank": 1,
+          "strategicRank": "High",
           "juryVotes": 1,
-          "finalVote": "1-5-1",
+          "finalVote": "5-1-1",
           "notes": [
             "Saved by Ezekiel's idol play (Ep 8)"
           ]
@@ -74,16 +74,16 @@
         {
           "season": 1,
           "placement": 2,
-          "status": "Runner-up",
+          "status": "Finalist",
           "tribe": "Screaming Gophers",
           "challengeWins": 4,
-          "immunityWins": 4,
-          "rewardWins": 0,
+          "immunityWins": 3,
+          "rewardWins": 1,
           "votesReceived": 5,
-          "idolsFound": 0,
+          "idolsFound": 1,
           "strategicRank": "High",
           "juryVotes": 4,
-          "finalVote": "4-5",
+          "finalVote": "5-4",
           "unbreakableBonds": [
             "Trent"
           ],
@@ -92,7 +92,9 @@
           ]
         }
       ],
-      "story": "Three finals, one crown. Strategic mastermind who finally won in Season 4 after two runner-up finishes. Known for alliance control, adaptability, and clutch fire-making performance."
+      "story": "Three finals, one crown. Strategic mastermind who finally won in Season 4 after two runner-up finishes. Known for alliance control, adaptability, and clutch fire-making performance.",
+      "seasonsPlayed": 3,
+      "avgPlacement": 1.67
     },
     {
       "id": "amy",
@@ -122,14 +124,17 @@
           "idolsFound": 0
         }
       ],
-      "story": "Season 5 contestant. Finished 7th."
+      "story": "Season 5 contestant. Finished 7th.",
+      "seasonsPlayed": 1,
+      "totalJuryVotes": 0,
+      "avgPlacement": 7.0
     },
     {
       "id": "anne-maria",
       "name": "Anne Maria",
       "seasons": [
-        3,
-        4
+        4,
+        3
       ],
       "totalSeasons": 2,
       "bestPlacement": 5,
@@ -148,7 +153,7 @@
         {
           "season": 4,
           "placement": 16,
-          "status": "Juror (EoE)",
+          "status": "Juror",
           "tribe": "Red",
           "challengeWins": 0,
           "immunityWins": 0,
@@ -166,8 +171,8 @@
         {
           "season": 3,
           "placement": 5,
-          "status": "6th Juror",
-          "tribe": "Mutant Maggots → Toxic Rats → Campers",
+          "status": "Juror",
+          "tribe": "Mutant Maggots \u2192 Toxic Rats \u2192 Campers",
           "challengeWins": 1,
           "immunityWins": 0,
           "rewardWins": 1,
@@ -183,7 +188,10 @@
           ]
         }
       ],
-      "story": "Betrayed by unbreakable partner Cameron in S3. Wasted idol on Zoey in S4 Episode 1, leading to early elimination."
+      "story": "Betrayed by unbreakable partner Cameron in S3. Wasted idol on Zoey in S4 Episode 1, leading to early elimination.",
+      "seasonsPlayed": 2,
+      "totalJuryVotes": 0,
+      "avgPlacement": 10.5
     },
     {
       "id": "b",
@@ -218,7 +226,10 @@
         }
       ],
       "story": "Socially isolated pre-merge boot. Never formed alliances or meaningful connections.",
-      "badges": []
+      "badges": [],
+      "seasonsPlayed": 1,
+      "totalJuryVotes": 0,
+      "avgPlacement": 14.0
     },
     {
       "id": "beardo",
@@ -248,14 +259,17 @@
           "idolsFound": 0
         }
       ],
-      "story": "Season 5 contestant. Finished 16th."
+      "story": "Season 5 contestant. Finished 16th.",
+      "seasonsPlayed": 1,
+      "totalJuryVotes": 0,
+      "avgPlacement": 16.0
     },
     {
       "id": "beth",
       "name": "Beth",
       "seasons": [
-        1,
         2,
+        1,
         6
       ],
       "totalSeasons": 3,
@@ -264,7 +278,7 @@
       "totalChallengeWins": 1,
       "totalImmunityWins": 1,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 26,
+      "totalVotesAgainst": 28,
       "totalIdolsFound": 1,
       "seasonDetails": [
         {
@@ -284,7 +298,7 @@
         {
           "season": 1,
           "placement": 5,
-          "status": "Final Juror",
+          "status": "Juror",
           "tribe": "Screaming Gophers",
           "challengeWins": 0,
           "immunityWins": 0,
@@ -326,9 +340,11 @@
           ]
         }
       ],
-      "story": "Unlucky casualty of Galang’s first chaotic rock draw. Lost the first active duel and exited early.",
+      "story": "Unlucky casualty of Galang\u2019s first chaotic rock draw. Lost the first active duel and exited early.",
       "badges": [],
-      "totalJuryVotes": 0
+      "totalJuryVotes": 0,
+      "seasonsPlayed": 3,
+      "avgPlacement": 9.33
     },
     {
       "id": "blaineley",
@@ -338,12 +354,12 @@
         6
       ],
       "totalSeasons": 2,
-      "bestPlacement": 5,
+      "bestPlacement": 6,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 9,
+      "totalVotesAgainst": 15,
       "totalIdolsFound": 1,
       "badges": [
         "Strategic #2 (S5)",
@@ -377,7 +393,7 @@
           "finalVote": "",
           "advantages": [],
           "notes": [
-            "Voted out Episode 15 (4–1)"
+            "Voted out Episode 15 (4\u20131)"
           ],
           "gameplayStyle": "Agent of chaos",
           "keyMoments": [
@@ -397,7 +413,9 @@
         }
       ],
       "story": "A chaos agent turned integrated number through bonds with Mickey and Geoff. Went to rocks at merge, survived deep, then fell as the safe Final 5 consensus.",
-      "totalJuryVotes": 0
+      "totalJuryVotes": 0,
+      "seasonsPlayed": 2,
+      "avgPlacement": 7.0
     },
     {
       "id": "brick",
@@ -417,7 +435,7 @@
         {
           "season": 3,
           "placement": 9,
-          "status": "2nd Juror",
+          "status": "Juror",
           "tribe": "Mutant Maggots",
           "challengeWins": 1,
           "immunityWins": 1,
@@ -436,14 +454,17 @@
         }
       ],
       "story": "Won first individual immunity at merge. Solid mid-merge player with strong bonds but no strategic control.",
-      "badges": []
+      "badges": [],
+      "seasonsPlayed": 1,
+      "totalJuryVotes": 0,
+      "avgPlacement": 9.0
     },
     {
       "id": "bridgette",
       "name": "Bridgette",
       "seasons": [
-        1,
-        2
+        2,
+        1
       ],
       "totalSeasons": 2,
       "bestPlacement": 3,
@@ -471,7 +492,7 @@
         {
           "season": 1,
           "placement": 3,
-          "status": "Final Juror",
+          "status": "Juror",
           "tribe": "Screaming Gophers",
           "challengeWins": 5,
           "immunityWins": 4,
@@ -488,7 +509,10 @@
         }
       ],
       "story": "Social heart of Season 1 with multiple immunities and idol. First boot in Season 2 due to tribe disagreements.",
-      "badges": []
+      "badges": [],
+      "seasonsPlayed": 2,
+      "totalJuryVotes": 0,
+      "avgPlacement": 8.5
     },
     {
       "id": "brody",
@@ -497,12 +521,12 @@
         6
       ],
       "totalSeasons": 1,
-      "bestPlacement": 5,
+      "bestPlacement": 7,
       "wins": 0,
       "totalChallengeWins": 1,
       "totalImmunityWins": 1,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 7,
+      "totalVotesAgainst": 26,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -523,13 +547,13 @@
           "finalVote": "",
           "advantages": [],
           "notes": [
-            "Voted out Episode 14 (4–2) after earlier swap boot to RI"
+            "Voted out Episode 14 (4\u20132) after earlier swap boot to RI"
           ],
           "gameplayStyle": "Targeted comeback",
           "keyMoments": [
             "Returned from RI at merge with clue",
-            "Won ‘Wrist Assured’ immunity",
-            "Cut 4–2 as final push against Surfers momentum"
+            "Won \u2018Wrist Assured\u2019 immunity",
+            "Cut 4\u20132 as final push against Surfers momentum"
           ],
           "alliances": [
             "Geoff",
@@ -542,14 +566,16 @@
           ]
         }
       ],
-      "story": "Perennial target and comeback kid who returned at merge, won immunity, and influenced key votes. Eventually cut as a popularity and challenge threat after drawing 26 votes across the season."
+      "story": "Perennial target and comeback kid who returned at merge, won immunity, and influenced key votes. Eventually cut as a popularity and challenge threat after drawing 26 votes across the season.",
+      "seasonsPlayed": 1,
+      "avgPlacement": 7.0
     },
     {
       "id": "cameron",
       "name": "Cameron",
       "seasons": [
-        3,
-        4
+        4,
+        3
       ],
       "totalSeasons": 2,
       "bestPlacement": 3,
@@ -569,8 +595,8 @@
         {
           "season": 4,
           "placement": 5,
-          "status": "5th Place Juror",
-          "tribe": "Red → Yellow → Red → Campers",
+          "status": "Juror",
+          "tribe": "Red \u2192 Yellow \u2192 Red \u2192 Campers",
           "challengeWins": 3,
           "immunityWins": 1,
           "rewardWins": 2,
@@ -589,23 +615,27 @@
           "season": 3,
           "placement": 3,
           "status": "Finalist",
-          "tribe": "Mutant Maggots → Toxic Rats → Campers",
+          "tribe": "Mutant Maggots \u2192 Toxic Rats \u2192 Campers",
           "challengeWins": 3,
           "immunityWins": 1,
           "rewardWins": 2,
           "votesReceived": 4,
           "idolsFound": 1,
-          "strategicRank": 3,
+          "strategicRank": "High",
           "unbreakableBonds": [
             "Anne Maria"
           ],
           "notes": [
             "1 jury vote (Mike)",
             "Cast tiebreaker for Emma"
-          ]
+          ],
+          "juryVotes": 1,
+          "finalVote": "1"
         }
       ],
-      "story": "Strategic mastermind who made brutal move voting out unbreakable partner Anne Maria in S3. Strong strategic player across both seasons."
+      "story": "Strategic mastermind who made brutal move voting out unbreakable partner Anne Maria in S3. Strong strategic player across both seasons.",
+      "seasonsPlayed": 2,
+      "avgPlacement": 4.0
     },
     {
       "id": "cody",
@@ -639,15 +669,18 @@
         }
       ],
       "story": "First casualty of the Gophers' internal alliance war. Voted out 6-5 in Episode 6 when Leshawna unexpectedly flipped.",
-      "badges": []
+      "badges": [],
+      "seasonsPlayed": 1,
+      "totalJuryVotes": 0,
+      "avgPlacement": 19.0
     },
     {
       "id": "courtney",
       "name": "Courtney",
       "seasons": [
-        1,
+        4,
         2,
-        4
+        1
       ],
       "totalSeasons": 3,
       "bestPlacement": 9,
@@ -666,7 +699,7 @@
           "season": 4,
           "placement": 14,
           "status": "Juror",
-          "tribe": "Yellow → Red → Campers",
+          "tribe": "Yellow \u2192 Red \u2192 Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
@@ -706,10 +739,14 @@
           "idolsFound": 0,
           "notes": [
             "Multiple meltdowns"
-          ]
+          ],
+          "strategicRank": "High"
         }
       ],
-      "story": "Volatile gameplay across three seasons. Multiple meltdowns and catastrophic extra vote misplay in S4 led to elimination."
+      "story": "Volatile gameplay across three seasons. Multiple meltdowns and catastrophic extra vote misplay in S4 led to elimination.",
+      "seasonsPlayed": 3,
+      "totalJuryVotes": 0,
+      "avgPlacement": 11.33
     },
     {
       "id": "crimson",
@@ -730,7 +767,7 @@
         {
           "season": 3,
           "placement": 16,
-          "status": "First Boot",
+          "status": "Pre-Juror",
           "tribe": "Mutant Maggots",
           "challengeWins": 0,
           "immunityWins": 0,
@@ -772,14 +809,16 @@
       ],
       "story": "Half of the Gothic Hearts duo whose medevac reshaped early dynamics and left Ennui unanchored.",
       "badges": [],
-      "totalJuryVotes": 0
+      "totalJuryVotes": 0,
+      "seasonsPlayed": 2,
+      "avgPlacement": 18.0
     },
     {
       "id": "dakota",
       "name": "Dakota",
       "seasons": [
-        3,
-        4
+        4,
+        3
       ],
       "totalSeasons": 2,
       "bestPlacement": 12,
@@ -798,7 +837,7 @@
         {
           "season": 4,
           "placement": 18,
-          "status": "Pre-Juror (QUIT EoE)",
+          "status": "Pre-Juror",
           "tribe": "Red",
           "challengeWins": 0,
           "immunityWins": 0,
@@ -815,8 +854,8 @@
         {
           "season": 3,
           "placement": 12,
-          "status": "Pre-Jury",
-          "tribe": "Toxic Rats → Mutant Maggots",
+          "status": "Pre-Juror",
+          "tribe": "Toxic Rats \u2192 Mutant Maggots",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
@@ -829,7 +868,10 @@
           ]
         }
       ],
-      "story": "Fan Favorite winner in S3 despite pre-merge exit. First boot in S4, became first and only person to quit Edge of Extinction."
+      "story": "Fan Favorite winner in S3 despite pre-merge exit. First boot in S4, became first and only person to quit Edge of Extinction.",
+      "seasonsPlayed": 2,
+      "totalJuryVotes": 0,
+      "avgPlacement": 15.0
     },
     {
       "id": "dave",
@@ -859,7 +901,10 @@
           "idolsFound": 0
         }
       ],
-      "story": "Season 5 contestant. Finished 6th."
+      "story": "Season 5 contestant. Finished 6th.",
+      "seasonsPlayed": 1,
+      "totalJuryVotes": 0,
+      "avgPlacement": 6.0
     },
     {
       "id": "dawn",
@@ -879,8 +924,8 @@
         {
           "season": 3,
           "placement": 8,
-          "status": "3rd Juror",
-          "tribe": "Toxic Rats → Mutant Maggots",
+          "status": "Juror",
+          "tribe": "Toxic Rats \u2192 Mutant Maggots",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
@@ -894,14 +939,17 @@
         }
       ],
       "story": "Consensus target Episode 9. Even allies voted her out when she became the agreed-upon target.",
-      "badges": []
+      "badges": [],
+      "seasonsPlayed": 1,
+      "totalJuryVotes": 0,
+      "avgPlacement": 8.0
     },
     {
       "id": "dj",
       "name": "DJ",
       "seasons": [
-        1,
-        2
+        2,
+        1
       ],
       "totalSeasons": 2,
       "bestPlacement": 5,
@@ -942,15 +990,18 @@
         }
       ],
       "story": "Made merge and jury in S2 after early boot in S1. Social friction and conflicts prevented deeper runs.",
-      "badges": []
+      "badges": [],
+      "seasonsPlayed": 2,
+      "totalJuryVotes": 0,
+      "avgPlacement": 13.5
     },
     {
       "id": "duncan",
       "name": "Duncan",
       "seasons": [
-        1,
+        4,
         2,
-        4
+        1
       ],
       "totalSeasons": 3,
       "bestPlacement": 1,
@@ -972,7 +1023,7 @@
           "season": 4,
           "placement": 7,
           "status": "Juror",
-          "tribe": "Yellow → Green → Campers",
+          "tribe": "Yellow \u2192 Green \u2192 Campers",
           "challengeWins": 1,
           "immunityWins": 0,
           "rewardWins": 1,
@@ -999,7 +1050,9 @@
           "idolsFound": 0,
           "notes": [
             "Won Final Tribal 5-1-1"
-          ]
+          ],
+          "juryVotes": 5,
+          "finalVote": "5-1-1"
         },
         {
           "season": 1,
@@ -1016,7 +1069,9 @@
           ]
         }
       ],
-      "story": "Season 2 Winner. Survived constant targeting through clutch immunity wins. Previous winner eliminated at Final 6 in S4."
+      "story": "Season 2 Winner. Survived constant targeting through clutch immunity wins. Previous winner eliminated at Final 6 in S4.",
+      "seasonsPlayed": 3,
+      "avgPlacement": 7.33
     },
     {
       "id": "dwayne",
@@ -1031,13 +1086,13 @@
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 6,
+      "totalVotesAgainst": 12,
       "totalIdolsFound": 0,
       "seasonDetails": [
         {
           "season": 3,
           "placement": 10,
-          "status": "1st Juror",
+          "status": "Juror",
           "tribe": "Mutant Maggots",
           "challengeWins": 0,
           "immunityWins": 0,
@@ -1068,7 +1123,7 @@
           "finalVote": "",
           "advantages": [],
           "notes": [
-            "Directly eliminated at merge (4–3–3–1)"
+            "Directly eliminated at merge (4\u20133\u20133\u20131)"
           ],
           "gameplayStyle": "Tribal glue",
           "keyMoments": [
@@ -1086,9 +1141,11 @@
           ]
         }
       ],
-      "story": "Steady ‘dad glue’ who bridged pairs on Galang. Became the overlap boot at merge when factions needed a justifiable target.",
+      "story": "Steady \u2018dad glue\u2019 who bridged pairs on Galang. Became the overlap boot at merge when factions needed a justifiable target.",
       "badges": [],
-      "totalJuryVotes": 0
+      "totalJuryVotes": 0,
+      "seasonsPlayed": 2,
+      "avgPlacement": 10.5
     },
     {
       "id": "ella",
@@ -1118,25 +1175,28 @@
           "idolsFound": 0
         }
       ],
-      "story": "Season 5 contestant. Finished 17th."
+      "story": "Season 5 contestant. Finished 17th.",
+      "seasonsPlayed": 1,
+      "totalJuryVotes": 0,
+      "avgPlacement": 17.0
     },
     {
       "id": "emma",
       "name": "Emma",
       "seasons": [
-        3,
         4,
+        3,
         6
       ],
       "totalSeasons": 3,
       "bestPlacement": 1,
-      "wins": 1,
+      "wins": 0,
       "totalChallengeWins": 5,
       "totalImmunityWins": 2,
       "totalRewardWins": 3,
-      "totalVotesAgainst": 5,
+      "totalVotesAgainst": 6,
       "totalIdolsFound": 0,
-      "totalJuryVotes": 4,
+      "totalJuryVotes": 0,
       "badges": [
         "S3 Winner",
         "2nd Boot (Previous Winning Target)",
@@ -1146,7 +1206,7 @@
         {
           "season": 4,
           "placement": 17,
-          "status": "Juror (EoE)",
+          "status": "Juror",
           "tribe": "Red",
           "challengeWins": 0,
           "immunityWins": 0,
@@ -1165,13 +1225,13 @@
           "season": 3,
           "placement": 1,
           "status": "WINNER",
-          "tribe": "Toxic Rats → Campers",
+          "tribe": "Toxic Rats \u2192 Campers",
           "challengeWins": 4,
           "immunityWins": 1,
           "rewardWins": 3,
           "votesReceived": 0,
           "idolsFound": 0,
-          "strategicRank": 2,
+          "strategicRank": "High",
           "notes": [
             "4-3-1 tiebreaker victory",
             "Zero votes until Final 4"
@@ -1211,7 +1271,9 @@
           ]
         }
       ],
-      "story": "Composed strategist who won the first merge immunity and waged a season-long feud with Ryan. Lost to rocks in the merge deadlock and couldn’t fight back from RI."
+      "story": "Composed strategist who won the first merge immunity and waged a season-long feud with Ryan. Lost to rocks in the merge deadlock and couldn\u2019t fight back from RI.",
+      "seasonsPlayed": 3,
+      "avgPlacement": 9.33
     },
     {
       "id": "ennui",
@@ -1225,7 +1287,7 @@
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
+      "totalVotesAgainst": 7,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -1246,12 +1308,12 @@
           "finalVote": "",
           "advantages": [],
           "notes": [
-            "Voted out Episode 3 (6–3) to RI; later eliminated"
+            "Voted out Episode 3 (6\u20133) to RI; later eliminated"
           ],
           "gameplayStyle": "Focused loner",
           "keyMoments": [
             "Feuded with Jay pre-tribal",
-            "Voted out 6–3"
+            "Voted out 6\u20133"
           ],
           "alliances": [
             "Brody",
@@ -1262,7 +1324,9 @@
           ]
         }
       ],
-      "story": "Goth outsider who became a focus-and-duels threat on RI. His pre-merge boot broke Brody’s social leverage."
+      "story": "Goth outsider who became a focus-and-duels threat on RI. His pre-merge boot broke Brody\u2019s social leverage.",
+      "seasonsPlayed": 1,
+      "avgPlacement": 16.0
     },
     {
       "id": "eva",
@@ -1295,14 +1359,17 @@
         }
       ],
       "story": "Voted out 6-4 in Episode 3 as challenge liability. Social friction prevented alliance formation.",
-      "badges": []
+      "badges": [],
+      "seasonsPlayed": 1,
+      "totalJuryVotes": 0,
+      "avgPlacement": 21.0
     },
     {
       "id": "ezekiel",
       "name": "Ezekiel",
       "seasons": [
-        1,
-        2
+        2,
+        1
       ],
       "totalSeasons": 2,
       "bestPlacement": 4,
@@ -1331,7 +1398,7 @@
         {
           "season": 1,
           "placement": 4,
-          "status": "Final Juror",
+          "status": "Juror",
           "tribe": "Screaming Gophers",
           "challengeWins": 1,
           "immunityWins": 0,
@@ -1344,14 +1411,17 @@
         }
       ],
       "story": "Finalist in S1 who lost fire-making. Made legendary idol play saving Alejandro in S2 but fell to social isolation.",
-      "badges": []
+      "badges": [],
+      "seasonsPlayed": 2,
+      "totalJuryVotes": 0,
+      "avgPlacement": 5.0
     },
     {
       "id": "geoff",
       "name": "Geoff",
       "seasons": [
-        1,
         4,
+        1,
         6
       ],
       "totalSeasons": 3,
@@ -1360,7 +1430,7 @@
       "totalChallengeWins": 3,
       "totalImmunityWins": 1,
       "totalRewardWins": 1,
-      "totalVotesAgainst": 43,
+      "totalVotesAgainst": 54,
       "totalIdolsFound": 0,
       "badges": [
         "EoE Returnee",
@@ -1373,8 +1443,8 @@
         {
           "season": 4,
           "placement": 6,
-          "status": "Juror (double elimination!)",
-          "tribe": "Yellow → Green → Campers → EoE → Campers",
+          "status": "Juror",
+          "tribe": "Yellow \u2192 Green \u2192 Campers \u2192 EoE \u2192 Campers",
           "challengeWins": 2,
           "immunityWins": 0,
           "rewardWins": 1,
@@ -1420,13 +1490,13 @@
           "finalVote": "",
           "advantages": [],
           "notes": [
-            "Voted out Episode 16 (4–1) after returning from RI"
+            "Voted out Episode 16 (4\u20131) after returning from RI"
           ],
           "gameplayStyle": "Social hub",
           "keyMoments": [
             "Anchored early Galang core with Mickey/Ryan",
             "Returned from RI at Final 5",
-            "Cut 4–1 as the late jury threat"
+            "Cut 4\u20131 as the late jury threat"
           ],
           "alliances": [
             "Brody",
@@ -1441,20 +1511,22 @@
         }
       ],
       "story": "Charismatic social hub of Surfers Bros who bridged factions early and mid-game. Returned from Redemption late but was cut as a jury threat once idols and loyalties converged.",
-      "totalJuryVotes": 0
+      "totalJuryVotes": 0,
+      "seasonsPlayed": 3,
+      "avgPlacement": 10.33
     },
     {
       "id": "gwen",
       "name": "Gwen",
       "seasons": [
-        1,
+        4,
         2,
-        4
+        1
       ],
       "totalSeasons": 3,
       "bestPlacement": 4,
       "wins": 0,
-      "totalChallengeWins": 9,
+      "totalChallengeWins": 5,
       "totalImmunityWins": 5,
       "totalRewardWins": 1,
       "totalVotesAgainst": 26,
@@ -1468,8 +1540,8 @@
         {
           "season": 4,
           "placement": 4,
-          "status": "Juror (lost fire-making)",
-          "tribe": "Yellow → Red → Campers",
+          "status": "Juror",
+          "tribe": "Yellow \u2192 Red \u2192 Campers",
           "challengeWins": 4,
           "immunityWins": 4,
           "rewardWins": 0,
@@ -1488,7 +1560,7 @@
         {
           "season": 2,
           "placement": 8,
-          "status": "First Juror",
+          "status": "Juror",
           "tribe": "Screaming Gaffers",
           "challengeWins": 1,
           "immunityWins": 1,
@@ -1514,14 +1586,17 @@
           ]
         }
       ],
-      "story": "Massive improvement arc: 16th → 8th → 4th. Set franchise record with 4 consecutive immunity wins. Lost when couldn't win fire-making."
+      "story": "Massive improvement arc: 16th \u2192 8th \u2192 4th. Set franchise record with 4 consecutive immunity wins. Lost when couldn't win fire-making.",
+      "seasonsPlayed": 3,
+      "totalJuryVotes": 0,
+      "avgPlacement": 9.33
     },
     {
       "id": "harold",
       "name": "Harold",
       "seasons": [
-        1,
-        4
+        4,
+        1
       ],
       "totalSeasons": 2,
       "bestPlacement": 8,
@@ -1542,7 +1617,7 @@
           "season": 4,
           "placement": 8,
           "status": "Juror",
-          "tribe": "Yellow → Campers",
+          "tribe": "Yellow \u2192 Campers",
           "challengeWins": 3,
           "immunityWins": 1,
           "rewardWins": 2,
@@ -1575,20 +1650,23 @@
           ]
         }
       ],
-      "story": "Found Advantage Menu in S4. Betrayed by Cameron (strong bond) at F8 revote. Won immunity Episode 10."
+      "story": "Found Advantage Menu in S4. Betrayed by Cameron (strong bond) at F8 revote. Won immunity Episode 10.",
+      "seasonsPlayed": 2,
+      "totalJuryVotes": 0,
+      "avgPlacement": 12.5
     },
     {
       "id": "heather",
       "name": "Heather",
       "seasons": [
-        1,
+        4,
         2,
-        4
+        1
       ],
       "totalSeasons": 3,
       "bestPlacement": 8,
       "wins": 0,
-      "totalChallengeWins": 3,
+      "totalChallengeWins": 4,
       "totalImmunityWins": 3,
       "totalRewardWins": 1,
       "totalVotesAgainst": 27,
@@ -1603,8 +1681,8 @@
         {
           "season": 4,
           "placement": 15,
-          "status": "Juror (EoE)",
-          "tribe": "Yellow → Red → Campers",
+          "status": "Juror",
+          "tribe": "Yellow \u2192 Red \u2192 Campers",
           "challengeWins": 1,
           "immunityWins": 1,
           "rewardWins": 0,
@@ -1637,7 +1715,7 @@
           "placement": 8,
           "status": "Juror",
           "tribe": "Screaming Gophers",
-          "challengeWins": 1,
+          "challengeWins": 2,
           "immunityWins": 1,
           "rewardWins": 1,
           "votesReceived": 10,
@@ -1645,10 +1723,14 @@
           "notes": [
             "Legendary save of Bridgette",
             "Lost to Owen on Exile Beach"
-          ]
+          ],
+          "strategicRank": "High"
         }
       ],
-      "story": "Strategic player across three seasons. Found 2 idols in S1. Multiple major fights led to pre-merge exit in S4."
+      "story": "Strategic player across three seasons. Found 2 idols in S1. Multiple major fights led to pre-merge exit in S4.",
+      "seasonsPlayed": 3,
+      "totalJuryVotes": 0,
+      "avgPlacement": 10.67
     },
     {
       "id": "izzy",
@@ -1682,7 +1764,10 @@
         }
       ],
       "story": "Eliminated 5-4 in Episode 7 after tribe swap. Personal hatred with Beth led to elimination.",
-      "badges": []
+      "badges": [],
+      "seasonsPlayed": 1,
+      "totalJuryVotes": 0,
+      "avgPlacement": 18.0
     },
     {
       "id": "jacques",
@@ -1692,13 +1777,13 @@
       ],
       "totalSeasons": 1,
       "bestPlacement": 1,
-      "wins": 4,
+      "wins": 1,
       "totalChallengeWins": 4,
       "totalImmunityWins": 4,
       "totalRewardWins": 0,
       "totalVotesAgainst": 2,
       "totalIdolsFound": 0,
-      "totalJuryVotes": 7,
+      "totalJuryVotes": 0,
       "tier": "Unranked",
       "badges": [
         "S6 Winner"
@@ -1723,7 +1808,7 @@
           ],
           "gameplayStyle": "Ice-cold strategist",
           "keyMoments": [
-            "Engineered Kitty’s idol burn at merge",
+            "Engineered Kitty\u2019s idol burn at merge",
             "Won 4 immunities to steer late votes",
             "Chose the Final 4 tie path that sent Kelly out"
           ],
@@ -1739,7 +1824,9 @@
           ]
         }
       ],
-      "story": "Played a low-target, high-control game, bridging rival blocs and weaponizing relationships while taking only 2 votes all season. He clinched control with 4 immunity wins and a masterful endgame that set the Final 4 tie in his favor."
+      "story": "Played a low-target, high-control game, bridging rival blocs and weaponizing relationships while taking only 2 votes all season. He clinched control with 4 immunity wins and a masterful endgame that set the Final 4 tie in his favor.",
+      "seasonsPlayed": 1,
+      "avgPlacement": 1.0
     },
     {
       "id": "jasmine",
@@ -1769,7 +1856,10 @@
           "idolsFound": 0
         }
       ],
-      "story": "Season 5 contestant. Finished 14th."
+      "story": "Season 5 contestant. Finished 14th.",
+      "seasonsPlayed": 1,
+      "totalJuryVotes": 0,
+      "avgPlacement": 14.0
     },
     {
       "id": "jay",
@@ -1783,7 +1873,7 @@
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
+      "totalVotesAgainst": 4,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -1823,14 +1913,16 @@
           ]
         }
       ],
-      "story": "Rode or died with Mickey while building cross-tribe bridges, surviving chaotic votes and a rock-draw episode. Reached the end as the loyal lieutenant with fewer signature moves than his allies."
+      "story": "Rode or died with Mickey while building cross-tribe bridges, surviving chaotic votes and a rock-draw episode. Reached the end as the loyal lieutenant with fewer signature moves than his allies.",
+      "seasonsPlayed": 1,
+      "avgPlacement": 3.0
     },
     {
       "id": "jo",
       "name": "Jo",
       "seasons": [
-        3,
-        4
+        4,
+        3
       ],
       "totalSeasons": 2,
       "bestPlacement": 7,
@@ -1850,8 +1942,8 @@
         {
           "season": 4,
           "placement": 10,
-          "status": "Juror + FAN FAVORITE!",
-          "tribe": "Red → Yellow → Campers",
+          "status": "Juror",
+          "tribe": "Red \u2192 Yellow \u2192 Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 1,
@@ -1870,7 +1962,7 @@
         {
           "season": 3,
           "placement": 7,
-          "status": "4th Juror",
+          "status": "Juror",
           "tribe": "Mutant Maggots",
           "challengeWins": 0,
           "immunityWins": 0,
@@ -1884,7 +1976,10 @@
           ]
         }
       ],
-      "story": "Most hated player with 4 EXTREME HATRED relationships. FAN FAVORITE winner in S4 for chaotic entertainment value."
+      "story": "Most hated player with 4 EXTREME HATRED relationships. FAN FAVORITE winner in S4 for chaotic entertainment value.",
+      "seasonsPlayed": 2,
+      "totalJuryVotes": 0,
+      "avgPlacement": 8.5
     },
     {
       "id": "josee",
@@ -1899,7 +1994,7 @@
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 6,
+      "totalVotesAgainst": 15,
       "totalIdolsFound": 1,
       "badges": [
         "Most Unlucky Player"
@@ -1931,12 +2026,12 @@
           "finalVote": "",
           "advantages": [],
           "notes": [
-            "Voted out Episode 5 (6–1) to RI"
+            "Voted out Episode 5 (6\u20131) to RI"
           ],
           "gameplayStyle": "Volatile competitor",
           "keyMoments": [
             "Multiple meltdowns on Galang",
-            "Booted 6–1 as a consensus"
+            "Booted 6\u20131 as a consensus"
           ],
           "alliances": [
             "Jacques",
@@ -1950,7 +2045,9 @@
         }
       ],
       "story": "Hyper-competitive firebrand whose meltdowns isolated her on Galang. Voted out cleanly despite challenge value.",
-      "totalJuryVotes": 0
+      "totalJuryVotes": 0,
+      "seasonsPlayed": 2,
+      "avgPlacement": 12.5
     },
     {
       "id": "junior",
@@ -1964,7 +2061,7 @@
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
+      "totalVotesAgainst": 9,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -1985,12 +2082,12 @@
           "finalVote": "",
           "advantages": [],
           "notes": [
-            "Voted out Episode 4 (6–2) to RI; later eliminated on RI"
+            "Voted out Episode 4 (6\u20132) to RI; later eliminated on RI"
           ],
           "gameplayStyle": "Young underdog",
           "keyMoments": [
             "Survived early RI duels",
-            "Initial 6–2 vote amid liability framing"
+            "Initial 6\u20132 vote amid liability framing"
           ],
           "alliances": [
             "Dwayne",
@@ -2001,14 +2098,16 @@
           ]
         }
       ],
-      "story": "Eager underdog who battled through RI duels but couldn’t escape the ‘liability’ label. His exit weakened Dwayne’s leverage."
+      "story": "Eager underdog who battled through RI duels but couldn\u2019t escape the \u2018liability\u2019 label. His exit weakened Dwayne\u2019s leverage.",
+      "seasonsPlayed": 1,
+      "avgPlacement": 15.0
     },
     {
       "id": "justin",
       "name": "Justin",
       "seasons": [
-        1,
-        2
+        2,
+        1
       ],
       "totalSeasons": 2,
       "bestPlacement": 10,
@@ -2051,7 +2150,10 @@
         }
       ],
       "story": "First boot in S1 despite finding idol. First juror in S2 after idol play chaos.",
-      "badges": []
+      "badges": [],
+      "seasonsPlayed": 2,
+      "totalJuryVotes": 0,
+      "avgPlacement": 17.0
     },
     {
       "id": "katie",
@@ -2086,7 +2188,10 @@
         }
       ],
       "story": "Played solid pre-merge game as part of MAPLV with Sadie. Found Hidden Immunity Idol.",
-      "badges": []
+      "badges": [],
+      "seasonsPlayed": 1,
+      "totalJuryVotes": 0,
+      "avgPlacement": 12.0
     },
     {
       "id": "kelly",
@@ -2100,7 +2205,7 @@
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 1,
+      "totalVotesAgainst": 11,
       "totalIdolsFound": 1,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -2121,7 +2226,7 @@
           "finalVote": "",
           "advantages": [],
           "notes": [
-            "Eliminated Final 4 (2–2 tie, 1–1 revote, lost fire-making)"
+            "Eliminated Final 4 (2\u20132 tie, 1\u20131 revote, lost fire-making)"
           ],
           "gameplayStyle": "Idol-wielding controller",
           "keyMoments": [
@@ -2140,7 +2245,9 @@
           ]
         }
       ],
-      "story": "Sponsor strategist who found the Tadhana idol, nuked a swap vote to save herself, and rebuilt into a late-game power. Fell at fire-making after clashing with Mickey and threading multiple alliances."
+      "story": "Sponsor strategist who found the Tadhana idol, nuked a swap vote to save herself, and rebuilt into a late-game power. Fell at fire-making after clashing with Mickey and threading multiple alliances.",
+      "seasonsPlayed": 1,
+      "avgPlacement": 4.0
     },
     {
       "id": "kitty",
@@ -2154,7 +2261,7 @@
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 7,
+      "totalVotesAgainst": 15,
       "totalIdolsFound": 1,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -2175,7 +2282,7 @@
           "finalVote": "",
           "advantages": [],
           "notes": [
-            "Voted out Episode 11 (3–2–2–1–1) to RI (idol previously burned on Jacques)"
+            "Voted out Episode 11 (3\u20132\u20132\u20131\u20131) to RI (idol previously burned on Jacques)"
           ],
           "gameplayStyle": "Volatile social spark",
           "keyMoments": [
@@ -2194,7 +2301,9 @@
           ]
         }
       ],
-      "story": "Social spark of Sis4ever who found the merge idol but burned it on Jacques. Became a split-vote magnet and was sent to RI in a chaotic round."
+      "story": "Social spark of Sis4ever who found the merge idol but burned it on Jacques. Became a split-vote magnet and was sent to RI in a chaotic round.",
+      "seasonsPlayed": 1,
+      "avgPlacement": 9.0
     },
     {
       "id": "leonard",
@@ -2204,12 +2313,12 @@
         6
       ],
       "totalSeasons": 2,
-      "bestPlacement": 16,
+      "bestPlacement": 18,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 6,
+      "totalVotesAgainst": 11,
       "totalIdolsFound": 0,
       "badges": [],
       "seasonDetails": [
@@ -2239,12 +2348,12 @@
           "finalVote": "",
           "advantages": [],
           "notes": [
-            "Voted out Episode 2 (5–3) to RI; eliminated Episode 4"
+            "Voted out Episode 2 (5\u20133) to RI; eliminated Episode 4"
           ],
           "gameplayStyle": "Well-meaning liability",
           "keyMoments": [
             "Volunteered swap to RI",
-            "Voted out 5–3 on Galang"
+            "Voted out 5\u20133 on Galang"
           ],
           "alliances": [
             "Tammy",
@@ -2255,15 +2364,17 @@
           ]
         }
       ],
-      "story": "Self-sacrificing partner who swapped to RI for Tammy, then became the easy ‘liability’ cut and lost the duel later.",
-      "totalJuryVotes": 0
+      "story": "Self-sacrificing partner who swapped to RI for Tammy, then became the easy \u2018liability\u2019 cut and lost the duel later.",
+      "totalJuryVotes": 0,
+      "seasonsPlayed": 2,
+      "avgPlacement": 18.0
     },
     {
       "id": "leshawna",
       "name": "Leshawna",
       "seasons": [
-        1,
-        2
+        2,
+        1
       ],
       "totalSeasons": 2,
       "bestPlacement": 11,
@@ -2292,7 +2403,7 @@
         {
           "season": 1,
           "placement": 11,
-          "status": "First Juror",
+          "status": "Juror",
           "tribe": "Screaming Gophers",
           "challengeWins": 1,
           "immunityWins": 1,
@@ -2308,14 +2419,17 @@
         }
       ],
       "story": "First juror in S1. Second boot in S2 despite unbreakable bond with Noah in S1.",
-      "badges": []
+      "badges": [],
+      "seasonsPlayed": 2,
+      "totalJuryVotes": 0,
+      "avgPlacement": 12.0
     },
     {
       "id": "lightning",
       "name": "Lightning",
       "seasons": [
-        3,
-        4
+        4,
+        3
       ],
       "totalSeasons": 2,
       "bestPlacement": 11,
@@ -2334,8 +2448,8 @@
         {
           "season": 4,
           "placement": 13,
-          "status": "Juror (EoE)",
-          "tribe": "Red → Green → Campers",
+          "status": "Juror",
+          "tribe": "Red \u2192 Green \u2192 Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
@@ -2352,7 +2466,7 @@
         {
           "season": 3,
           "placement": 11,
-          "status": "Pre-Jury",
+          "status": "Pre-Juror",
           "tribe": "Toxic Rats",
           "challengeWins": 0,
           "immunityWins": 0,
@@ -2366,14 +2480,17 @@
           ]
         }
       ],
-      "story": "Part of TRIPLE IDOL TRIBAL in S4. Worst idol play in S3 (wasted on Emma who got 0 votes)."
+      "story": "Part of TRIPLE IDOL TRIBAL in S4. Worst idol play in S3 (wasted on Emma who got 0 votes).",
+      "seasonsPlayed": 2,
+      "totalJuryVotes": 0,
+      "avgPlacement": 12.0
     },
     {
       "id": "lindsay",
       "name": "Lindsay",
       "seasons": [
-        1,
-        2
+        2,
+        1
       ],
       "totalSeasons": 2,
       "bestPlacement": 1,
@@ -2398,7 +2515,7 @@
           "rewardWins": 0,
           "votesReceived": 1,
           "idolsFound": 0,
-          "strategicRank": 2,
+          "strategicRank": "High",
           "juryVotes": 1,
           "unbreakableBonds": [
             "Beth",
@@ -2406,12 +2523,13 @@
           ],
           "notes": [
             "Lost 1-5-1 to Duncan"
-          ]
+          ],
+          "finalVote": "5-1-1"
         },
         {
           "season": 1,
           "placement": 1,
-          "status": "WINNER",
+          "status": "Winner",
           "tribe": "Screaming Gophers",
           "challengeWins": 0,
           "immunityWins": 0,
@@ -2431,7 +2549,9 @@
           ]
         }
       ],
-      "story": "WINNER of Season 1. Social queen who maintained unbreakable bonds without burning bridges. Third place in S2."
+      "story": "WINNER of Season 1. Social queen who maintained unbreakable bonds without burning bridges. Third place in S2.",
+      "seasonsPlayed": 2,
+      "avgPlacement": 2.0
     },
     {
       "id": "mary",
@@ -2445,7 +2565,7 @@
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
+      "totalVotesAgainst": 2,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -2466,7 +2586,7 @@
           "finalVote": "",
           "advantages": [],
           "notes": [
-            "Idol casualty Episode 7 (Kelly’s idol negated majority)"
+            "Idol casualty Episode 7 (Kelly\u2019s idol negated majority)"
           ],
           "gameplayStyle": "Calculating planner",
           "keyMoments": [
@@ -2484,7 +2604,9 @@
           ]
         }
       ],
-      "story": "Cold planner who refused to swap for Beth, then pushed liability cuts. Was idoled out at the swap."
+      "story": "Cold planner who refused to swap for Beth, then pushed liability cuts. Was idoled out at the swap.",
+      "seasonsPlayed": 1,
+      "avgPlacement": 14.0
     },
     {
       "id": "max",
@@ -2514,7 +2636,10 @@
           "idolsFound": 0
         }
       ],
-      "story": "Season 5 contestant. Finished 10th."
+      "story": "Season 5 contestant. Finished 10th.",
+      "seasonsPlayed": 1,
+      "totalJuryVotes": 0,
+      "avgPlacement": 10.0
     },
     {
       "id": "mickey",
@@ -2529,9 +2654,9 @@
       "totalChallengeWins": 3,
       "totalImmunityWins": 3,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 2,
+      "totalVotesAgainst": 8,
       "totalIdolsFound": 2,
-      "totalJuryVotes": 3,
+      "totalJuryVotes": 4,
       "badges": [
         "S5 Winner",
         "0 Votes Against",
@@ -2550,7 +2675,7 @@
           "votesReceived": 0,
           "idolsFound": 1,
           "juryVotes": 4,
-          "finalVote": "4-3 (tiebreak)",
+          "finalVote": "4-2",
           "strategicRank": "3"
         },
         {
@@ -2587,14 +2712,16 @@
           ]
         }
       ],
-      "story": "The loyal core of AnxietyBro, he paired tight social bonds with steady challenge value and deep protection. An endgame idol on Jay and consistent positioning brought him to the end."
+      "story": "The loyal core of AnxietyBro, he paired tight social bonds with steady challenge value and deep protection. An endgame idol on Jay and consistent positioning brought him to the end.",
+      "seasonsPlayed": 2,
+      "avgPlacement": 1.5
     },
     {
       "id": "mike",
       "name": "Mike",
       "seasons": [
-        3,
-        4
+        4,
+        3
       ],
       "totalSeasons": 2,
       "bestPlacement": 6,
@@ -2613,8 +2740,8 @@
         {
           "season": 4,
           "placement": 12,
-          "status": "Juror (EoE)",
-          "tribe": "Red → Yellow → Campers",
+          "status": "Juror",
+          "tribe": "Red \u2192 Yellow \u2192 Campers",
           "challengeWins": 1,
           "immunityWins": 0,
           "rewardWins": 1,
@@ -2633,7 +2760,7 @@
         {
           "season": 3,
           "placement": 6,
-          "status": "5th Juror",
+          "status": "Juror",
           "tribe": "Mutant Maggots",
           "challengeWins": 1,
           "immunityWins": 0,
@@ -2651,14 +2778,17 @@
           ]
         }
       ],
-      "story": "REBUILT unbreakable bond with Zoey in S4. Victim of Sierra's perfect idol play (10 votes cancelled)."
+      "story": "REBUILT unbreakable bond with Zoey in S4. Victim of Sierra's perfect idol play (10 votes cancelled).",
+      "seasonsPlayed": 2,
+      "totalJuryVotes": 0,
+      "avgPlacement": 9.0
     },
     {
       "id": "noah",
       "name": "Noah",
       "seasons": [
-        1,
-        4
+        4,
+        1
       ],
       "totalSeasons": 2,
       "bestPlacement": 9,
@@ -2679,7 +2809,7 @@
           "season": 4,
           "placement": 9,
           "status": "Juror",
-          "tribe": "Yellow → Red → Campers",
+          "tribe": "Yellow \u2192 Red \u2192 Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
@@ -2711,14 +2841,17 @@
           ]
         }
       ],
-      "story": "Part of TRIPLE IDOL TRIBAL in S4. BETRAYED by unbreakable partner Alejandro at F9. Bitter jury vote."
+      "story": "Part of TRIPLE IDOL TRIBAL in S4. BETRAYED by unbreakable partner Alejandro at F9. Bitter jury vote.",
+      "seasonsPlayed": 2,
+      "totalJuryVotes": 0,
+      "avgPlacement": 12.0
     },
     {
       "id": "owen",
       "name": "Owen",
       "seasons": [
-        1,
-        2
+        2,
+        1
       ],
       "totalSeasons": 2,
       "bestPlacement": 7,
@@ -2747,7 +2880,7 @@
         {
           "season": 1,
           "placement": 7,
-          "status": "Exile Beach / Medivac",
+          "status": "Juror",
           "tribe": "Screaming Gophers",
           "challengeWins": 1,
           "immunityWins": 0,
@@ -2761,7 +2894,10 @@
         }
       ],
       "story": "Sent to Exile Beach in S1, won return but medically evacuated. Third boot in S2 after idol chaos.",
-      "badges": []
+      "badges": [],
+      "seasonsPlayed": 2,
+      "totalJuryVotes": 0,
+      "avgPlacement": 9.5
     },
     {
       "id": "rodney",
@@ -2791,7 +2927,10 @@
           "idolsFound": 0
         }
       ],
-      "story": "Season 5 contestant. Finished 12th."
+      "story": "Season 5 contestant. Finished 12th.",
+      "seasonsPlayed": 1,
+      "totalJuryVotes": 0,
+      "avgPlacement": 12.0
     },
     {
       "id": "ryan",
@@ -2806,7 +2945,7 @@
       "totalChallengeWins": 2,
       "totalImmunityWins": 2,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 8,
+      "totalVotesAgainst": 18,
       "totalIdolsFound": 1,
       "badges": [
         "S5 Finalist (2 votes)",
@@ -2825,7 +2964,7 @@
           "votesReceived": 7,
           "idolsFound": 0,
           "juryVotes": 2,
-          "finalVote": "2 (kingmaker)"
+          "finalVote": "4-2"
         },
         {
           "season": 6,
@@ -2842,13 +2981,13 @@
           "finalVote": "",
           "advantages": [],
           "notes": [
-            "Voted out Episode 12 (5–2–1) to Redemption; later eliminated on RI"
+            "Voted out Episode 12 (5\u20132\u20131) to Redemption; later eliminated on RI"
           ],
           "gameplayStyle": "Aggressive swing",
           "keyMoments": [
             "Found and misplayed Galang idol",
             "Won Pesky Palate immunity",
-            "Booted 5–2–1 as the merge connector"
+            "Booted 5\u20132\u20131 as the merge connector"
           ],
           "alliances": [
             "Mickey",
@@ -2862,7 +3001,9 @@
         }
       ],
       "story": "Aggressive swing player who found an idol (burned it), won immunity, and steered pivotal mid-game votes before being consensused out for being too connected.",
-      "totalJuryVotes": 0
+      "totalJuryVotes": 2,
+      "seasonsPlayed": 2,
+      "avgPlacement": 5.5
     },
     {
       "id": "sadie",
@@ -2897,7 +3038,10 @@
         }
       ],
       "story": "Eliminated by rock draw despite never receiving a vote and voting correctly. Inseparable from Katie in MAPLV.",
-      "badges": []
+      "badges": [],
+      "seasonsPlayed": 1,
+      "totalJuryVotes": 0,
+      "avgPlacement": 13.0
     },
     {
       "id": "sam",
@@ -2917,7 +3061,7 @@
         {
           "season": 3,
           "placement": 13,
-          "status": "Pre-Jury",
+          "status": "Pre-Juror",
           "tribe": "Toxic Rats",
           "challengeWins": 0,
           "immunityWins": 0,
@@ -2933,7 +3077,10 @@
         }
       ],
       "story": "Most tragic exit - NEVER received a vote, voted correctly, eliminated by rock draw. Most unlucky player in franchise.",
-      "badges": []
+      "badges": [],
+      "seasonsPlayed": 1,
+      "totalJuryVotes": 0,
+      "avgPlacement": 13.0
     },
     {
       "id": "samey",
@@ -2963,7 +3110,10 @@
           "idolsFound": 0
         }
       ],
-      "story": "Season 5 contestant. Finished 15th."
+      "story": "Season 5 contestant. Finished 15th.",
+      "seasonsPlayed": 1,
+      "totalJuryVotes": 0,
+      "avgPlacement": 15.0
     },
     {
       "id": "scarlett",
@@ -2996,14 +3146,17 @@
           "strategicRank": "1"
         }
       ],
-      "story": "Top strategic rank of Season 5 and a late power player, but lost the Final 4 fire-making duel."
+      "story": "Top strategic rank of Season 5 and a late power player, but lost the Final 4 fire-making duel.",
+      "seasonsPlayed": 1,
+      "totalJuryVotes": 0,
+      "avgPlacement": 4.0
     },
     {
       "id": "scott",
       "name": "Scott",
       "seasons": [
-        3,
-        4
+        4,
+        3
       ],
       "totalSeasons": 2,
       "bestPlacement": 2,
@@ -3024,7 +3177,7 @@
           "season": 4,
           "placement": 3,
           "status": "Finalist",
-          "tribe": "Red → Yellow → Green → Campers",
+          "tribe": "Red \u2192 Yellow \u2192 Green \u2192 Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
@@ -3040,19 +3193,20 @@
             "Perfect idol play at F5 (3 votes cancelled)",
             "Eliminated Cameron 2-0",
             "Only Duncan voted for him at FTC"
-          ]
+          ],
+          "finalVote": "7-6-1"
         },
         {
           "season": 3,
           "placement": 2,
           "status": "Runner-up",
-          "tribe": "Toxic Rats → Campers",
+          "tribe": "Toxic Rats \u2192 Campers",
           "challengeWins": 6,
           "immunityWins": 3,
           "rewardWins": 3,
           "votesReceived": 1,
           "idolsFound": 0,
-          "strategicRank": 2,
+          "strategicRank": "High",
           "juryVotes": 3,
           "finalVote": "3-4-1",
           "unbreakableBonds": [
@@ -3066,7 +3220,9 @@
           ]
         }
       ],
-      "story": "Best player to never win. PERFECT IDOL PLAY after holding for 9 tribals (franchise record). Runner-up in S3, third place in S4."
+      "story": "Best player to never win. PERFECT IDOL PLAY after holding for 9 tribals (franchise record). Runner-up in S3, third place in S4.",
+      "seasonsPlayed": 2,
+      "avgPlacement": 2.5
     },
     {
       "id": "shawn",
@@ -3096,14 +3252,17 @@
           "idolsFound": 1
         }
       ],
-      "story": "Season 5 contestant. Finished 9th."
+      "story": "Season 5 contestant. Finished 9th.",
+      "seasonsPlayed": 1,
+      "totalJuryVotes": 0,
+      "avgPlacement": 9.0
     },
     {
       "id": "sierra",
       "name": "Sierra",
       "seasons": [
-        1,
-        4
+        4,
+        1
       ],
       "totalSeasons": 2,
       "bestPlacement": 10,
@@ -3112,7 +3271,7 @@
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
       "totalVotesAgainst": 39,
-      "totalIdolsFound": 1,
+      "totalIdolsFound": 2,
       "badges": [
         "EoE Returnee",
         "Perfect Idol Play",
@@ -3123,13 +3282,13 @@
         {
           "season": 4,
           "placement": 11,
-          "status": "Juror (returnee)",
-          "tribe": "Yellow → Campers (EoE Return)",
+          "status": "Juror",
+          "tribe": "Yellow \u2192 Campers (EoE Return)",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
           "votesReceived": 26,
-          "idolsFound": 0,
+          "idolsFound": 1,
           "strategicRank": "Very Low",
           "advantages": [
             "2 EoE idol halves (played)"
@@ -3157,7 +3316,10 @@
           ]
         }
       ],
-      "story": "Won EoE return in S4. Made PERFECT IDOL PLAY cancelling 10 votes - only 2 people didn't vote Sierra. Created 4 extreme hatreds."
+      "story": "Won EoE return in S4. Made PERFECT IDOL PLAY cancelling 10 votes - only 2 people didn't vote Sierra. Created 4 extreme hatreds.",
+      "seasonsPlayed": 2,
+      "totalJuryVotes": 0,
+      "avgPlacement": 10.5
     },
     {
       "id": "sky",
@@ -3194,7 +3356,9 @@
           "finalVote": "3 (lost tiebreak)"
         }
       ],
-      "story": "Season 5 challenge MVP with 4 total challenge wins and 3 immunities; forced the late-game tempo but fell short in a 3–3 FTC tie."
+      "story": "Season 5 challenge MVP with 4 total challenge wins and 3 immunities; forced the late-game tempo but fell short in a 3\u20133 FTC tie.",
+      "seasonsPlayed": 1,
+      "avgPlacement": 2.0
     },
     {
       "id": "staci",
@@ -3214,7 +3378,7 @@
         {
           "season": 3,
           "placement": 15,
-          "status": "Pre-Jury",
+          "status": "Pre-Juror",
           "tribe": "Toxic Rats",
           "challengeWins": 0,
           "immunityWins": 0,
@@ -3230,7 +3394,10 @@
         }
       ],
       "story": "Second boot. Multiple early conflicts prevented alliance formation. Challenge liability with no social capital.",
-      "badges": []
+      "badges": [],
+      "seasonsPlayed": 1,
+      "totalJuryVotes": 0,
+      "avgPlacement": 15.0
     },
     {
       "id": "stephanie",
@@ -3239,12 +3406,12 @@
         6
       ],
       "totalSeasons": 1,
-      "bestPlacement": 12,
+      "bestPlacement": 13,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
+      "totalVotesAgainst": 8,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -3265,12 +3432,12 @@
           "finalVote": "",
           "advantages": [],
           "notes": [
-            "Voted out Episode 6 (6–1); threw an idol clue into the fire on RI"
+            "Voted out Episode 6 (6\u20131); threw an idol clue into the fire on RI"
           ],
           "gameplayStyle": "Fiery competitor",
           "keyMoments": [
             "Burned an idol clue on RI",
-            "Voted out 6–1 after conflict with Jacques"
+            "Voted out 6\u20131 after conflict with Jacques"
           ],
           "alliances": [
             "Ryan",
@@ -3282,7 +3449,9 @@
           ]
         }
       ],
-      "story": "Fierce competitor who clashed with Jacques and became a control vote casualty. Leaned into independence on RI to no avail."
+      "story": "Fierce competitor who clashed with Jacques and became a control vote casualty. Leaned into independence on RI to no avail.",
+      "seasonsPlayed": 1,
+      "avgPlacement": 13.0
     },
     {
       "id": "sugar",
@@ -3314,7 +3483,10 @@
           "idolsFound": 0
         }
       ],
-      "story": "Season 5 contestant. Finished 5th."
+      "story": "Season 5 contestant. Finished 5th.",
+      "seasonsPlayed": 1,
+      "totalJuryVotes": 0,
+      "avgPlacement": 5.0
     },
     {
       "id": "tammy",
@@ -3323,12 +3495,12 @@
         6
       ],
       "totalSeasons": 1,
-      "bestPlacement": 16,
+      "bestPlacement": 17,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
+      "totalVotesAgainst": 4,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -3366,7 +3538,9 @@
           ]
         }
       ],
-      "story": "Twist casualty who pinballed between camp and RI through pair swaps. Couldn’t convert survival into a return."
+      "story": "Twist casualty who pinballed between camp and RI through pair swaps. Couldn\u2019t convert survival into a return.",
+      "seasonsPlayed": 1,
+      "avgPlacement": 17.0
     },
     {
       "id": "topher",
@@ -3396,14 +3570,17 @@
           "idolsFound": 0
         }
       ],
-      "story": "Season 5 contestant. Finished 11th."
+      "story": "Season 5 contestant. Finished 11th.",
+      "seasonsPlayed": 1,
+      "totalJuryVotes": 0,
+      "avgPlacement": 11.0
     },
     {
       "id": "trent",
       "name": "Trent",
       "seasons": [
-        1,
-        2
+        2,
+        1
       ],
       "totalSeasons": 2,
       "bestPlacement": 6,
@@ -3424,7 +3601,7 @@
           "rewardWins": 0,
           "votesReceived": 7,
           "idolsFound": 0,
-          "strategicRank": 3,
+          "strategicRank": "High",
           "notes": [
             "5-2 vote",
             "Double elimination (same night as Gwen)"
@@ -3453,7 +3630,10 @@
         }
       ],
       "story": "Strong social player with multiple unbreakable bonds. Eliminated in double eliminations both seasons.",
-      "badges": []
+      "badges": [],
+      "seasonsPlayed": 2,
+      "totalJuryVotes": 0,
+      "avgPlacement": 6.5
     },
     {
       "id": "tyler",
@@ -3487,14 +3667,17 @@
         }
       ],
       "story": "Challenge liability voted out 8-4 in Episode 2. Unable to build strong social connections.",
-      "badges": []
+      "badges": [],
+      "seasonsPlayed": 1,
+      "totalJuryVotes": 0,
+      "avgPlacement": 23.0
     },
     {
       "id": "zoey",
       "name": "Zoey",
       "seasons": [
-        3,
-        4
+        4,
+        3
       ],
       "totalSeasons": 2,
       "bestPlacement": 2,
@@ -3514,8 +3697,8 @@
         {
           "season": 4,
           "placement": 2,
-          "status": "Runner-up",
-          "tribe": "Red → Green → Campers",
+          "status": "Finalist",
+          "tribe": "Red \u2192 Green \u2192 Campers",
           "challengeWins": 4,
           "immunityWins": 3,
           "rewardWins": 1,
@@ -3523,7 +3706,7 @@
           "idolsFound": 1,
           "strategicRank": "High Social, Medium Strategic",
           "juryVotes": 6,
-          "finalVote": "6-7",
+          "finalVote": "7-6-1",
           "unbreakableBonds": [
             "Gwen",
             "Scott",
@@ -3539,8 +3722,8 @@
         {
           "season": 3,
           "placement": 4,
-          "status": "7th Juror",
-          "tribe": "Mutant Maggots → Campers",
+          "status": "Juror",
+          "tribe": "Mutant Maggots \u2192 Campers",
           "challengeWins": 4,
           "immunityWins": 2,
           "rewardWins": 2,
@@ -3558,7 +3741,9 @@
           ]
         }
       ],
-      "story": "UNPRECEDENTED social dominance with 3 unbreakable bonds at once in S4. Lost 6-7 to Alejandro in closest finale ever. Most socially connected player in franchise history."
+      "story": "UNPRECEDENTED social dominance with 3 unbreakable bonds at once in S4. Lost 6-7 to Alejandro in closest finale ever. Most socially connected player in franchise history.",
+      "seasonsPlayed": 2,
+      "avgPlacement": 3.0
     }
   ]
 }

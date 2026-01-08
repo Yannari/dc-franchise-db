@@ -16,46 +16,34 @@
   },
   "tiers": {
     "S+": {
-      "range": [
-        93,
-        100
-      ],
-      "desc": "Legends - 3 players"
+      "name": "TIER S+ — Elite Winners",
+      "description": "91+ • Franchise legends",
+      "scoreRange": [91, 100]
     },
     "S": {
-      "range": [
-        85,
-        92
-      ],
-      "desc": "Elite - 6 players"
+      "name": "TIER S — Championship Caliber",
+      "description": "81-88 • Top-tier threats",
+      "scoreRange": [81, 90]
     },
     "A": {
-      "range": [
-        73,
-        84
-      ],
-      "desc": "Great - 9 players"
+      "name": "TIER A — Elite Threats",
+      "description": "72-79 • Deep runs",
+      "scoreRange": [72, 80]
     },
     "B": {
-      "range": [
-        61,
-        72
-      ],
-      "desc": "Solid - 10 players"
+      "name": "TIER B — Above Average",
+      "description": "61-70 • Solid gameplay",
+      "scoreRange": [61, 71]
     },
     "C": {
-      "range": [
-        48,
-        60
-      ],
-      "desc": "Average - 14 players"
+      "name": "TIER C — Average",
+      "description": "51-60 • Mid-game players",
+      "scoreRange": [51, 60]
     },
     "D": {
-      "range": [
-        0,
-        47
-      ],
-      "desc": "Struggling - 26 players"
+      "name": "TIER D — Below Average",
+      "description": "36-50 • Early exits",
+      "scoreRange": [36, 50]
     }
   },
   "rankings": [

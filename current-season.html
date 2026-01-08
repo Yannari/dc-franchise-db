@@ -2817,6 +2817,7 @@ setTimeout(function() {
   
   // Initialize episode textareas
   function initializeEpisodeInputs() {
+    const seasonNumber = parseInt(document.getElementById("sb-season-number").value) || 0;
     const episodeCount = parseInt(document.getElementById("sb-episode-count").value) || 14;
     let html = '';
     
@@ -2844,6 +2845,30 @@ setTimeout(function() {
     if (sbEpisodesContainer) {
       sbEpisodesContainer.innerHTML = html;
       
+      // Load saved data if exists
+      if (seasonNumber) {
+        const storageKey = getSeasonStorageKey(seasonNumber);
+        const saved = localStorage.getItem(storageKey);
+        if (saved) {
+          try {
+            const data = JSON.parse(saved);
+            // Populate episode textareas with saved content
+            if (data.episodes) {
+              for (let i = 1; i <= episodeCount; i++) {
+                const textarea = document.getElementById(`sb-ep${i}-summary`);
+                if (textarea && data.episodes[i]) {
+                  textarea.value = data.episodes[i];
+                  // Trigger status update
+                  textarea.dispatchEvent(new Event('input'));
+                }
+              }
+            }
+          } catch (e) {
+            console.error('Error loading saved episodes:', e);
+          }
+        }
+      }
+      
       // Add change listeners to update status
       for (let i = 1; i <= episodeCount; i++) {
         const textarea = document.getElementById(`sb-ep${i}-summary`);
@@ -2862,6 +2887,9 @@ setTimeout(function() {
               status.style.color = '#4cffb3';
             }
           });
+          
+          // Trigger initial status update
+          textarea.dispatchEvent(new Event('input'));
         }
       }
     }

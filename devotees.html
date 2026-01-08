@@ -434,7 +434,7 @@
     </div>
 
     <div class="controls">
-      <div style="display:grid; grid-template-columns:2fr 1fr; gap:16px;">
+      <div style="display:grid; grid-template-columns:2fr 1fr 1fr; gap:16px;">
         <input 
           type="search" 
           id="search" 
@@ -455,6 +455,18 @@
           <option value="votes-asc">🗳️ Votes Against (Fewest → Most)</option>
           <option value="chwins-desc">🏅 Challenge Wins (Most → Fewest)</option>
           <option value="chwins-asc">🏅 Challenge Wins (Fewest → Most)</option>
+        </select>
+        <select 
+          id="seasonFilter" 
+          style="padding:14px 20px; border-radius:14px; font-size:15px; color:var(--text);"
+        >
+          <option value="all">🎬 All Seasons</option>
+          <option value="1">Season 1</option>
+          <option value="2">Season 2</option>
+          <option value="3">Season 3</option>
+          <option value="4">Season 4</option>
+          <option value="5">Season 5</option>
+          <option value="6">Season 6</option>
         </select>
       </div>
     </div>

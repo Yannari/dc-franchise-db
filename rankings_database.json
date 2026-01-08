@@ -67,7 +67,7 @@
         "Needed 3 tries to win"
       ],
       "avgPlacement": 1.67,
-      "winRate": 0.333,
+      "winRate": 33,
       "wins": 1,
       "seasonsPlayed": 3,
       "placements": [
@@ -105,7 +105,7 @@
         "S6: only 1 jury vote"
       ],
       "avgPlacement": 1.5,
-      "winRate": 0.5,
+      "winRate": 50,
       "wins": 1,
       "seasonsPlayed": 2,
       "placements": [
@@ -178,7 +178,7 @@
         "S2: only 3rd"
       ],
       "avgPlacement": 2.0,
-      "winRate": 0.5,
+      "winRate": 50,
       "wins": 1,
       "seasonsPlayed": 2,
       "placements": [
@@ -287,7 +287,7 @@
         "17 votes total"
       ],
       "avgPlacement": 7.33,
-      "winRate": 0.333,
+      "winRate": 33,
       "wins": 1,
       "seasonsPlayed": 3,
       "placements": [
@@ -324,7 +324,7 @@
         "S2: early boot"
       ],
       "avgPlacement": 9.33,
-      "winRate": 0.333,
+      "winRate": 33,
       "wins": 1,
       "seasonsPlayed": 3,
       "placements": [

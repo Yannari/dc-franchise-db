@@ -1,933 +1,2389 @@
 {
   "metadata": {
     "name": "DC Franchise Rankings Database",
-    "version": "2.0",
-    "lastUpdated": "2026-01-05",
-    "description": "Complete player rankings for all 68 players across all seasons",
-    "totalPlayers": 68
+    "version": "8",
+    "lastUpdated": "2026-01-07",
+    "totalPlayers": 68,
+    "source": "Percentile-based relative scoring + AI narratives (full 6-season cast)"
+  },
+  "scoringSystem": {
+    "overview": "Aligné sur la grille DC (S5) + ajustement S6 quand applicable.",
+    "weights": {
+      "placement": 0.4,
+      "wins": 0.2,
+      "challenges": 0.15,
+      "social": 0.15,
+      "strategic": 0.1
+    },
+    "notes": [
+      "Percentiles calculated across the entire database (all 68 players).",
+      "Social = combo of low votes against + high jury votes (implemented as juryRate - votesRate).",
+      "Strategic = proxy via idols/advantages and any available strategic ranks (when a complete strategic ranking isn't available).",
+      "If a DC score exists in PDFs for a player, it can be stored as a reference field (dcScoreS5) but the final ordering here is driven by the weighted percentiles."
+    ]
   },
   "tiers": {
     "S+": {
-      "name": "TIER S+ — Elite Winners",
-      "description": "91+ • Franchise legends",
-      "scoreRange": [91, 100],
-      "color": "#FFB347"
+      "scoreRange": [
+        91,
+        100
+      ],
+      "description": "Top 5-10% of all players"
     },
     "S": {
-      "name": "TIER S — Exceptional Players",
-      "description": "81-90 • Top performers",
-      "scoreRange": [81, 90],
-      "color": "#A55FFF"
+      "scoreRange": [
+        81,
+        90
+      ],
+      "description": "Top 10-20%"
     },
     "A": {
-      "name": "TIER A — Strong Competitors",
-      "description": "71-80 • Solid gameplay",
-      "scoreRange": [71, 80],
-      "color": "#4CFFB3"
+      "scoreRange": [
+        71,
+        80
+      ],
+      "description": "Top 20-35%"
     },
     "B": {
-      "name": "TIER B — Above Average",
-      "description": "61-70 • Respectable performances",
-      "scoreRange": [61, 70],
-      "color": "#7D9FFF"
+      "scoreRange": [
+        61,
+        70
+      ],
+      "description": "Top 35-55%"
     },
     "C": {
-      "name": "TIER C — Average Players",
-      "description": "51-60 • Mid-tier gameplay",
-      "scoreRange": [51, 60],
-      "color": "#FFA07A"
+      "scoreRange": [
+        51,
+        60
+      ],
+      "description": "Top 55-80%"
     },
     "D": {
-      "name": "TIER D — Below Average",
-      "description": "0-50 • Early boots or limited impact",
-      "scoreRange": [0, 50],
-      "color": "#999999"
+      "scoreRange": [
+        0,
+        50
+      ],
+      "description": "Bottom 20%"
     }
   },
   "rankings": [
     {
-      "playerId": "alejandro",
-      "tier": "S+",
-      "score": 95,
+      "playerId": "jacques",
+      "name": "Jacques",
       "rank": 1,
-      "title": "The Strategist",
-      "emoji": "👑",
-      "reasoning": "THREE finals appearances (unprecedented). WINNER of Season 4 (7-6-1 closest finale ever). Most challenge wins in franchise (13 total). Fire-making champion (beat Gwen at F4). Strategic mastermind across all three seasons. Runner-up twice before finally winning his crown.",
-      "strengths": ["Strategic dominance", "Challenge prowess", "Clutch performances", "Alliance control"],
-      "weaknesses": ["Emotional meltdowns", "Jury management", "Overplaying at times"],
-      "avgPlacement": 1.7,
-      "winRate": 33
+      "tier": "S+",
+      "score": 97.65,
+      "title": "The Ice Dancer",
+      "emoji": "🧊",
+      "reasoning": "Jacques grades out as a S+ overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 1 season, their average placement is 1.00, with 1 win and 4 total challenge wins. Socially, they received 0 total votes against and earned 0 jury votes at finals; they found 0 idols. Their biggest edges come from Placement, Wins, Strategic. The main gaps are in Social, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Strong average placement across seasons (deep runs).",
+        "High win conversion rate when they play.",
+        "Above-average strategic impact and positioning."
+      ],
+      "weaknesses": [
+        "Takes too many votes / limited jury support."
+      ],
+      "avgPlacement": 1.0,
+      "winRate": 1.0,
+      "wins": 1,
+      "seasonsPlayed": 1,
+      "placements": [
+        1
+      ],
+      "challengeWins": 4,
+      "votesAgainst": 0,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 100.0,
+      "winPercentile": 100.0,
+      "challengePercentile": 97.01,
+      "socialPercentile": 87.31,
+      "strategicPercentile": 100.0
     },
     {
       "playerId": "mickey",
-      "tier": "S+",
-      "score": 92,
+      "name": "Mickey",
       "rank": 2,
-      "title": "The Quiet Threat",
-      "emoji": "🐭",
-      "reasoning": "PERFECT GAME (zero votes all season). Elite challenge performance (5 immunity wins). Dominated from start to finish in Season 5. Unbreakable bond with Jay. Unanimous jury vote (8-0-0). Proved that being underestimated is the ultimate strategy.",
-      "strengths": ["Perfect social game", "Challenge dominance", "Zero threat level", "Strategic subtlety"],
-      "weaknesses": ["Untested in adversity", "Single season sample", "Unknown against veterans"],
-      "avgPlacement": 1.0,
-      "winRate": 100
-    },
-    {
-      "playerId": "emma",
-      "tier": "S",
-      "score": 84,
-      "rank": 7,
-      "title": "The Perfectionist",
-      "emoji": "📋",
-      "reasoning": "Winner-level upside: a championship season with a near‑perfect voting record (no votes against until late) plus strong competitive chops. Even with a rougher follow‑up season, her peak game is absolutely S‑tier.",
-      "strengths": ["Strategic excellence", "Social mastery", "Consistency", "Planning"],
-      "weaknesses": ["Limited adversity testing", "Only 2 seasons played"],
-      "avgPlacement": 9.0,
-      "winRate": 50
-    },
-    {
-      "playerId": "gwen",
-      "tier": "S",
-      "score": 88,
-      "rank": 4,
-      "title": "The Competitor",
-      "emoji": "⚡",
-      "reasoning": "Most challenge wins by a female (9 total). THREE seasons of consistent performance. F4 across all appearances. Back-to-back-back-back immunities (S4 Ep 11-14 consecutive). Clutch fire-making loser but elite competitor. Never won but always a threat.",
-      "strengths": ["Challenge beast", "Longevity", "Clutch immunity runs", "Consistency"],
-      "weaknesses": ["Never won", "Fire-making loss", "Social game gaps"],
-      "avgPlacement": 3.3,
-      "winRate": 0
+      "tier": "S+",
+      "score": 93.99,
+      "title": "The Fragile Fighter",
+      "emoji": "🩹",
+      "reasoning": "Mickey grades out as a S+ overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 2 seasons, their average placement is 1.50, with 1 win and 3 total challenge wins. Socially, they received 2 total votes against and earned 3 jury votes at finals; they found 2 idols. Their biggest edges come from Placement, Wins, Social. The main gaps are in Challenges, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Strong average placement across seasons (deep runs).",
+        "High win conversion rate when they play.",
+        "Low target profile and/or strong jury appeal."
+      ],
+      "weaknesses": [
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 1.5,
+      "winRate": 0.5,
+      "wins": 1,
+      "seasonsPlayed": 2,
+      "placements": [
+        1,
+        2
+      ],
+      "challengeWins": 3,
+      "votesAgainst": 2,
+      "juryVotes": 3,
+      "idolsFound": 2,
+      "placementPercentile": 98.51,
+      "winPercentile": 97.76,
+      "challengePercentile": 81.34,
+      "socialPercentile": 95.52,
+      "strategicPercentile": 85.07
     },
     {
       "playerId": "lindsay",
-      "tier": "S+",
-      "score": 91,
+      "name": "Lindsay",
       "rank": 3,
-      "title": "The Social Queen",
-      "emoji": "👸",
-      "reasoning": "Most consistent player across seasons. Survived to Day 39 in BOTH appearances. Elite social protection (only 2 votes in 2 full seasons). Central to multiple alliances without burning bridges. One of cleanest games in franchise history.",
-      "strengths": ["Social mastery", "Loyalty", "Clean gameplay", "Likeability"],
-      "weaknesses": ["Strategic blind spots", "Challenge weakness", "Easily manipulated"],
-      "avgPlacement": 1.5,
-      "winRate": 50
+      "tier": "S+",
+      "score": 91.23,
+      "title": "The Glow-Up Queen",
+      "emoji": "👑",
+      "reasoning": "Lindsay grades out as a S+ overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 2 seasons, their average placement is 2.00, with 1 win and 1 total challenge win. Socially, they received 2 total votes against and earned 6 jury votes at finals; they found 0 idols. Their biggest edges come from Social, Wins, Placement. The main gaps are in Challenges, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Low target profile and/or strong jury appeal.",
+        "High win conversion rate when they play.",
+        "Strong average placement across seasons (deep runs)."
+      ],
+      "weaknesses": [
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 2.0,
+      "winRate": 0.5,
+      "wins": 1,
+      "seasonsPlayed": 2,
+      "placements": [
+        3,
+        1
+      ],
+      "challengeWins": 1,
+      "votesAgainst": 2,
+      "juryVotes": 6,
+      "idolsFound": 0,
+      "placementPercentile": 94.78,
+      "winPercentile": 97.76,
+      "challengePercentile": 65.67,
+      "socialPercentile": 99.25,
+      "strategicPercentile": 90.3
+    },
+    {
+      "playerId": "alejandro",
+      "name": "Alejandro",
+      "rank": 4,
+      "tier": "S",
+      "score": 86.34,
+      "title": "The Snake Charmer",
+      "emoji": "🐍",
+      "reasoning": "Alejandro grades out as a S overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 3 seasons, their average placement is 1.67, with 1 win and 13 total challenge wins. Socially, they received 34 total votes against and earned 12 jury votes at finals; they found 0 idols. Their biggest edges come from Challenges, Placement, Strategic. The main gaps are in Social, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Consistent challenge output (wins/season).",
+        "Strong average placement across seasons (deep runs).",
+        "Above-average strategic impact and positioning."
+      ],
+      "weaknesses": [
+        "Takes too many votes / limited jury support."
+      ],
+      "avgPlacement": 1.67,
+      "winRate": 0.333,
+      "wins": 1,
+      "seasonsPlayed": 3,
+      "placements": [
+        1,
+        2,
+        2
+      ],
+      "challengeWins": 13,
+      "votesAgainst": 34,
+      "juryVotes": 12,
+      "idolsFound": 0,
+      "placementPercentile": 97.01,
+      "winPercentile": 94.03,
+      "challengePercentile": 100.0,
+      "socialPercentile": 26.87,
+      "strategicPercentile": 97.01
     },
     {
       "playerId": "scott",
-      "tier": "S",
-      "score": 86,
-      "rank": 6,
-      "title": "The Survivor",
-      "emoji": "🔥",
-      "reasoning": "TWO finals appearances (S3 runner-up, S4 third). PERFECT IDOL PLAY S4: Held 9 tribals, played at Final 5. Most patient idol holder in franchise history. Most challenge wins in single season (6 in S3). Unbreakable bond with Zoey protected him both seasons.",
-      "strengths": ["Challenge dominance", "Idol play", "Strategic depth", "Physical game"],
-      "weaknesses": ["Never won", "Betrayal victim", "Jury perception"],
-      "avgPlacement": 2.5,
-      "winRate": 0
-    },
-    {
-      "playerId": "duncan",
-      "tier": "S",
-      "score": 83,
-      "rank": 8,
-      "title": "The Underdog",
-      "emoji": "⚔️",
-      "reasoning": "Season 2 WINNER (dominant 5-1-1 victory). Proved 'survival under pressure' wins games. Previous winners curse S4 - eliminated Episode 12. Unbreakable bond with Gwen (S4) - power couple. Survived constant targeting across all seasons.",
-      "strengths": ["Resilience", "Jury respect", "Clutch wins", "Survival instincts"],
-      "weaknesses": ["Constant target", "Low control", "Social game limitations"],
-      "avgPlacement": 10.3,
-      "winRate": 33
-    },
-    {
-      "playerId": "zoey",
-      "tier": "S",
-      "score": 87,
+      "name": "Scott",
       "rank": 5,
-      "title": "The Loyalist",
-      "emoji": "💖",
-      "reasoning": "UNPRECEDENTED 3 unbreakable bonds simultaneously (S4). Only 1 vote against all season (cancelled). Perfect idol plays. Lost closest finale ever (6 jury votes). Elite social bonds. Loyalty specialist.",
-      "strengths": ["Unbreakable bonds", "Social gameplay", "Loyalty", "Idol play"],
-      "weaknesses": ["Lost closest finale", "Strategic limitations", "Too trusting"],
-      "avgPlacement": 3.0,
-      "winRate": 0
-    },
-    {
-      "playerId": "cameron",
-      "tier": "A",
-      "score": 75,
-      "rank": 9,
-      "title": "The Underestimated",
-      "emoji": "🧠",
-      "reasoning": "TWO finals appearances. Strategic rank #1 (S3). Controlled merge phase S3. Unbreakable bond specialist. Consistent F3 finishes. Brain over brawn strategy.",
-      "strengths": ["Strategic control", "Social bonds", "Consistency", "Intelligence"],
-      "weaknesses": ["Never won", "Jury perception", "Physical weakness"],
+      "tier": "S",
+      "score": 82.13,
+      "title": "The Saboteur",
+      "emoji": "🦊",
+      "reasoning": "Scott grades out as a S overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 2 seasons, their average placement is 2.50, with 0 wins and 6 total challenge wins. Socially, they received 4 total votes against and earned 4 jury votes at finals; they found 1 idol. Their biggest edges come from Placement, Challenges, Strategic. The main gaps are in Wins, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Strong average placement across seasons (deep runs).",
+        "Consistent challenge output (wins/season).",
+        "Above-average strategic impact and positioning."
+      ],
+      "weaknesses": [
+        "Hasn’t converted strong runs into season wins."
+      ],
       "avgPlacement": 2.5,
-      "winRate": 0
-    },
-    {
-      "playerId": "heather",
-      "tier": "A",
-      "score": 73,
-      "rank": 10,
-      "title": "The Villain",
-      "emoji": "👿",
-      "reasoning": "THREE seasons (elite longevity). Strategic gameplay across all appearances. Villain archetype. Merge maker in all seasons. 27 votes against (target status). Never won but always memorable.",
-      "strengths": ["Strategic mind", "Longevity", "Villain role", "Merge making"],
-      "weaknesses": ["High threat level", "Never won", "Jury hatred"],
-      "avgPlacement": 5.0,
-      "winRate": 0
-    },
-    {
-      "playerId": "noah",
-      "tier": "A",
-      "score": 72,
-      "rank": 11,
-      "title": "The Analyst",
-      "emoji": "📚",
-      "reasoning": "Strategic partner to Alejandro (S4). Unbreakable bond. Elite strategic mind. Made jury. Strong social reads. Underrated strategic player.",
-      "strengths": ["Strategic analysis", "Social bonds", "Intelligence", "Reads"],
-      "weaknesses": ["Physical game", "Limited sample", "Risk aversion"],
-      "avgPlacement": 5.0,
-      "winRate": 0
-    },
-    {
-      "playerId": "bridgette",
-      "tier": "B",
-      "score": 68,
-      "rank": 12,
-      "title": "The Challenge Beast",
-      "emoji": "🏅",
-      "reasoning": "5 challenge wins Season 1 (4 immunity + 1 reward). F3 finish. Physical threat. Tiebreaker juror. Strong early-merge player. Athletic prowess.",
-      "strengths": ["Challenge dominance", "Physical game", "Social standing", "Athleticism"],
-      "weaknesses": ["Strategic limitations", "Early merge exit", "Jury perception"],
-      "avgPlacement": 3.0,
-      "winRate": 0
-    },
-    {
-      "playerId": "courtney",
-      "tier": "B",
-      "score": 65,
-      "rank": 13,
-      "title": "The Fighter",
-      "emoji": "⚖️",
-      "reasoning": "TWO seasons. Most votes against across career (32 total). Survived adversity. Made jury both times. Fighter mentality. High threat but resilient.",
-      "strengths": ["Resilience", "Fighting spirit", "Longevity", "Determination"],
-      "weaknesses": ["High threat", "Jury target", "Abrasive personality"],
-      "avgPlacement": 5.5,
-      "winRate": 0
-    },
-    {
-      "playerId": "mike",
-      "tier": "B",
-      "score": 64,
-      "rank": 14,
-      "title": "The Multi-Faceted",
-      "emoji": "🎭",
-      "reasoning": "TWO seasons. Strong social player. Made merge both times. Challenge competitor. Likeable personality. Solid mid-tier player.",
-      "strengths": ["Social game", "Likeability", "Versatility", "Challenge competence"],
-      "weaknesses": ["Strategic depth", "Jury perception", "Inconsistency"],
-      "avgPlacement": 6.5,
-      "winRate": 0
-    },
-    {
-      "playerId": "jasmine",
-      "tier": "B",
-      "score": 63,
-      "rank": 15,
-      "title": "The Powerhouse",
-      "emoji": "💪",
-      "reasoning": "Physical threat. Strong competitor in Season 5. Challenge performance. Leadership qualities. Made jury.",
-      "strengths": ["Physical game", "Leadership", "Challenge wins", "Presence"],
-      "weaknesses": ["Strategic game", "Jury management", "Single season"],
-      "avgPlacement": 6.0,
-      "winRate": 0
-    },
-    {
-      "playerId": "shawn",
-      "tier": "B",
-      "score": 62,
-      "rank": 16,
-      "title": "The Survivalist",
-      "emoji": "🏕️",
-      "reasoning": "Season 5 finalist (2nd place). Strong strategic game. Challenge competitor. Made it to the end. Solid gameplay.",
-      "strengths": ["Strategic play", "Challenge competence", "Finale reach", "Survival skills"],
-      "weaknesses": ["Lost finale", "Jury votes", "Social gaps"],
-      "avgPlacement": 2.0,
-      "winRate": 0
-    },
-    {
-      "playerId": "beth",
-      "tier": "C",
-      "score": 58,
-      "rank": 17,
-      "title": "The Loyal Friend",
-      "emoji": "🤝",
-      "reasoning": "Most loyal player S2. Made jury. 22 votes against (2nd most S1). Loyalty over strategy. Cast only Lindsay jury vote. Heart over head.",
-      "strengths": ["Loyalty", "Social bonds", "Jury maker", "Heart"],
-      "weaknesses": ["Strategic blind spots", "High votes", "Easily influenced"],
-      "avgPlacement": 5.0,
-      "winRate": 0
-    },
-    {
-      "playerId": "trent",
-      "tier": "C",
-      "score": 56,
-      "rank": 18,
-      "title": "The Follower",
-      "emoji": "🎸",
-      "reasoning": "TWO seasons. Alejandro's target (S2 meltdown). Made jury S1. Unbreakable bond partner. Mid-merge player. Musician archetype.",
-      "strengths": ["Social bonds", "Loyalty", "Jury maker", "Likeability"],
-      "weaknesses": ["Strategic passivity", "Meltdown victim", "Weak gameplay"],
-      "avgPlacement": 7.0,
-      "winRate": 0
-    },
-    {
-      "playerId": "ezekiel",
-      "tier": "C",
-      "score": 55,
-      "rank": 19,
-      "title": "The Chaos Agent",
-      "emoji": "💣",
-      "reasoning": "THREE idols found (career record tied). Most chaotic player. Feud specialist (DJ). Tiebreaker vote caster. Wild card. Unpredictable gameplay.",
-      "strengths": ["Idol finding", "Chaos creation", "Entertainment", "Unpredictability"],
-      "weaknesses": ["Strategic inconsistency", "Feud maker", "Poor social game"],
-      "avgPlacement": 10.5,
-      "winRate": 0
-    },
-    {
-      "playerId": "owen",
-      "tier": "C",
-      "score": 54,
-      "rank": 20,
-      "title": "The Heart",
-      "emoji": "🍔",
-      "reasoning": "TWO seasons. Fan favorite personality. Made pre-merge both times. Loveable character. Social player but early exit.",
-      "strengths": ["Likeability", "Social bonds", "Fan favorite", "Humor"],
-      "weaknesses": ["Strategic game", "Challenge performance", "Early boots"],
-      "avgPlacement": 12.0,
-      "winRate": 0
-    },
-    {
-      "playerId": "dj",
-      "tier": "C",
-      "score": 53,
-      "rank": 21,
-      "title": "The Gentle Giant",
-      "emoji": "🏋️",
-      "reasoning": "TWO seasons. Physical presence. Made pre-merge. Feud with Ezekiel. Kind personality despite size.",
-      "strengths": ["Physical presence", "Kindness", "Loyalty", "Strength"],
-      "weaknesses": ["Strategic depth", "Feud participation", "Early exits"],
-      "avgPlacement": 10.0,
-      "winRate": 0
-    },
-    {
-      "playerId": "sierra",
-      "tier": "C",
-      "score": 52,
-      "rank": 22,
-      "title": "The Super Fan",
-      "emoji": "🌟",
-      "reasoning": "Season 4 player. Most votes cancelled by idols (10). Perfect idol plays. Fan of the game. Made jury.",
-      "strengths": ["Idol play", "Game knowledge", "Vote cancellation", "Strategic awareness"],
-      "weaknesses": ["Social overplay", "Jury perception", "Single season"],
-      "avgPlacement": 7.0,
-      "winRate": 0
-    },
-    {
-      "playerId": "geoff",
-      "tier": "C",
-      "score": 51,
-      "rank": 23,
-      "title": "The Party Guy",
-      "emoji": "🎉",
-      "reasoning": "Most votes against (29 total S4). Ultimate target. Made jury despite constant votes. Party personality. Social player.",
-      "strengths": ["Social bonds", "Resilience", "Likeability", "Party energy"],
-      "weaknesses": ["Huge threat", "Strategic game", "Constant targeting"],
-      "avgPlacement": 8.0,
-      "winRate": 0
-    },
-    {
-      "playerId": "tyler",
-      "tier": "D",
-      "score": 48,
-      "rank": 24,
-      "title": "The Athlete",
-      "emoji": "⚽",
-      "reasoning": "Season 2 juror. Athletic but uncoordinated. Made jury. Lindsay's partner. Social bonds.",
-      "strengths": ["Athleticism", "Social bonds", "Loyalty", "Heart"],
-      "weaknesses": ["Challenge execution", "Strategic game", "Coordination"],
-      "avgPlacement": 4.0,
-      "winRate": 0
-    },
-    {
-      "playerId": "jay",
-      "tier": "D",
-      "score": 47,
-      "rank": 25,
-      "title": "The Partner",
-      "emoji": "👬",
-      "reasoning": "Season 5. Unbreakable bond with Mickey. Made merge. Loyal partner. Good social game.",
-      "strengths": ["Loyalty", "Social bonds", "Partnership", "Teamwork"],
-      "weaknesses": ["Independent game", "Strategic depth", "Merge exit"],
-      "avgPlacement": 7.0,
-      "winRate": 0
-    },
-    {
-      "playerId": "anne-maria",
-      "tier": "D",
-      "score": 46,
-      "rank": 26,
-      "title": "The Diva",
-      "emoji": "💅",
-      "reasoning": "Most votes against in Season 4 pre-merge (15). Betrayed by Cameron. Unbreakable bond broken. Early merge.",
-      "strengths": ["Personality", "Social presence", "Entertainment", "Bonds"],
-      "weaknesses": ["Strategic game", "Betrayal victim", "Early exit"],
-      "avgPlacement": 5.0,
-      "winRate": 0
-    },
-    {
-      "playerId": "cody",
-      "tier": "D",
-      "score": 45,
-      "rank": 27,
-      "title": "The Nice Guy",
-      "emoji": "😊",
-      "reasoning": "Season 1. Made pre-merge. Nice personality. Social player. Early boot.",
-      "strengths": ["Likeability", "Social game", "Kindness", "Heart"],
-      "weaknesses": ["Strategic depth", "Challenge game", "Early exit"],
-      "avgPlacement": 15.0,
-      "winRate": 0
-    },
-    {
-      "playerId": "harold",
-      "tier": "D",
-      "score": 44,
-      "rank": 28,
-      "title": "The Nerd",
-      "emoji": "🤓",
-      "reasoning": "Season 1. Pre-merge boot. Smart but socially awkward. Early elimination.",
-      "strengths": ["Intelligence", "Strategy potential", "Knowledge", "Skills"],
-      "weaknesses": ["Social game", "Physical game", "Early boot"],
-      "avgPlacement": 16.0,
-      "winRate": 0
-    },
-    {
-      "playerId": "leshawna",
-      "tier": "D",
-      "score": 43,
-      "rank": 29,
-      "title": "The Straight Shooter",
-      "emoji": "💁",
-      "reasoning": "Season 1. Strong personality. Pre-merge. Honest player. Memorable character.",
-      "strengths": ["Honesty", "Personality", "Social awareness", "Strength"],
-      "weaknesses": ["Strategic game", "Early exit", "Bluntness"],
-      "avgPlacement": 17.0,
-      "winRate": 0
-    },
-    {
-      "playerId": "izzy",
-      "tier": "D",
-      "score": 42,
-      "rank": 30,
-      "title": "The Wild Card",
-      "emoji": "🤪",
-      "reasoning": "Season 1. Chaotic energy. Pre-merge boot. Unpredictable. Entertainment value.",
-      "strengths": ["Unpredictability", "Entertainment", "Energy", "Uniqueness"],
-      "weaknesses": ["Strategic consistency", "Social game", "Early boot"],
-      "avgPlacement": 18.0,
-      "winRate": 0
-    },
-    {
-      "playerId": "justin",
-      "tier": "D",
-      "score": 42,
-      "rank": 31,
-      "title": "The First Boot",
-      "emoji": "💎",
-      "reasoning": "Fan Favorite despite first boot. Found idol but didn't play it. What could have been. Elite physical appearance. Wasted potential.",
-      "strengths": ["Fan favorite", "Idol finder", "Physical threat", "Potential"],
-      "weaknesses": ["First boot", "Didn't play idol", "No game shown"],
-      "avgPlacement": 24.0,
-      "winRate": 0
-    },
-    {
-      "playerId": "eva",
-      "tier": "D",
-      "score": 41,
-      "rank": 32,
-      "title": "The Hothead",
-      "emoji": "😡",
-      "reasoning": "Season 1. Anger issues. Early boot. Physical strength. Emotional volatility.",
-      "strengths": ["Physical strength", "Intensity", "Passion", "Power"],
-      "weaknesses": ["Anger management", "Social game", "First boot"],
-      "avgPlacement": 19.0,
-      "winRate": 0
-    },
-    {
-      "playerId": "katie",
-      "tier": "D",
-      "score": 40,
-      "rank": 33,
-      "title": "The BFF",
-      "emoji": "👯",
-      "reasoning": "Season 1. Inseparable from Sadie. Early boot. Social player. Partnership gameplay.",
-      "strengths": ["Friendship", "Loyalty", "Social bonds", "Partnership"],
-      "weaknesses": ["Independent game", "Strategic depth", "Early exit"],
-      "avgPlacement": 20.0,
-      "winRate": 0
-    },
-    {
-      "playerId": "sadie",
-      "tier": "D",
-      "score": 40,
-      "rank": 34,
-      "title": "The Best Friend",
-      "emoji": "👯",
-      "reasoning": "Season 1. Katie's other half. Early boot. Partnership dependent. Social player.",
-      "strengths": ["Friendship", "Loyalty", "Social game", "Heart"],
-      "weaknesses": ["Independent play", "Strategy", "Early boot"],
-      "avgPlacement": 21.0,
-      "winRate": 0
-    },
-    {
-      "playerId": "staci",
-      "tier": "D",
-      "score": 38,
-      "rank": 35,
-      "title": "The Storyteller",
-      "emoji": "📖",
-      "reasoning": "Season 1. Earliest boot. Liar archetype. No game shown. Memorable for wrong reasons.",
-      "strengths": ["Storytelling", "Entertainment", "Personality", "Creativity"],
-      "weaknesses": ["Lying", "First boot", "Social game"],
-      "avgPlacement": 22.0,
-      "winRate": 0
-    },
-    {
-      "playerId": "b",
-      "tier": "D",
-      "score": 37,
-      "rank": 36,
-      "title": "The Silent",
-      "emoji": "🤐",
-      "reasoning": "Season 1. Silent player. Early boot. No verbal strategy. Unique archetype.",
-      "strengths": ["Mystery", "Physical skills", "Uniqueness", "Intelligence"],
-      "weaknesses": ["No communication", "Early boot", "Social game"],
-      "avgPlacement": 23.0,
-      "winRate": 0
-    },
-    {
-      "playerId": "lightning",
-      "tier": "D",
-      "score": 48,
-      "rank": 37,
-      "title": "The Jock",
-      "emoji": "⚡",
-      "reasoning": "Athletic prowess. Challenge threat. Made merge in appearances. Physical game strong but strategic game weak.",
-      "strengths": ["Athletic ability", "Challenge wins", "Physical dominance", "Confidence"],
-      "weaknesses": ["Strategic game", "Social awareness", "Ego"],
-      "avgPlacement": 8.0,
-      "winRate": 0
-    },
-    {
-      "playerId": "jo",
-      "tier": "D",
-      "score": 47,
-      "rank": 38,
-      "title": "The Competitor",
-      "emoji": "🏃",
-      "reasoning": "Competitive spirit. Challenge performer. Made merge. Athletic threat but abrasive.",
-      "strengths": ["Competitiveness", "Athletics", "Drive", "Physical game"],
-      "weaknesses": ["Social game", "Abrasiveness", "Strategic depth"],
-      "avgPlacement": 9.0,
-      "winRate": 0
-    },
-    {
-      "playerId": "dawn",
-      "tier": "D",
-      "score": 45,
-      "rank": 39,
-      "title": "The Mystic",
-      "emoji": "🔮",
-      "reasoning": "Unique archetype. Social reads. Pre-merge player. Spiritual gameplay.",
-      "strengths": ["Social reads", "Intuition", "Uniqueness", "Spiritual awareness"],
-      "weaknesses": ["Strategic execution", "Physical game", "Early exit"],
-      "avgPlacement": 12.0,
-      "winRate": 0
-    },
-    {
-      "playerId": "sam",
-      "tier": "D",
-      "score": 44,
-      "rank": 40,
-      "title": "The Gamer",
-      "emoji": "🎮",
-      "reasoning": "Gamer personality. Pre-merge boot. Strategic mind but poor execution.",
-      "strengths": ["Strategic thinking", "Game knowledge", "Creativity", "Intelligence"],
-      "weaknesses": ["Physical game", "Social game", "Execution"],
-      "avgPlacement": 13.0,
-      "winRate": 0
-    },
-    {
-      "playerId": "dakota",
-      "tier": "D",
-      "score": 43,
-      "rank": 41,
-      "title": "The Princess",
-      "emoji": "👑",
-      "reasoning": "Rich girl archetype. Pre-merge. Social presence. Early elimination.",
-      "strengths": ["Personality", "Social presence", "Charisma", "Entertainment"],
-      "weaknesses": ["Strategic game", "Work ethic", "Adaptability"],
-      "avgPlacement": 14.0,
-      "winRate": 0
-    },
-    {
-      "playerId": "brick",
-      "tier": "D",
-      "score": 42,
-      "rank": 42,
-      "title": "The Cadet",
-      "emoji": "🎖️",
-      "reasoning": "Military discipline. Honor code. Pre-merge. Loyal player but early boot.",
-      "strengths": ["Discipline", "Honor", "Loyalty", "Physical fitness"],
-      "weaknesses": ["Rigid thinking", "Strategic flexibility", "Early exit"],
-      "avgPlacement": 15.0,
-      "winRate": 0
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 2,
+      "placements": [
+        3,
+        2
+      ],
+      "challengeWins": 6,
+      "votesAgainst": 4,
+      "juryVotes": 4,
+      "idolsFound": 1,
+      "placementPercentile": 92.54,
+      "winPercentile": 45.52,
+      "challengePercentile": 92.54,
+      "socialPercentile": 87.31,
+      "strategicPercentile": 90.3
     },
     {
       "playerId": "sky",
+      "name": "Sky",
+      "rank": 6,
       "tier": "S",
-      "score": 88,
-      "rank": 4,
-      "title": "The Olympian",
-      "emoji": "🤸",
-      "reasoning": "Season 5’s most dominant competitor: four challenge wins, only one vote against, and two high‑leverage idol plays that shaped the endgame. She was a single jury vote away from the win—S‑tier résumé on pure performance.",
-      "strengths": ["Athletics", "Challenge performance", "Determination", "Physical game"],
-      "weaknesses": ["Strategic depth", "Social complexities", "Jury management"],
-      "avgPlacement": 10.0,
-      "winRate": 0
+      "score": 81.46,
+      "title": "The Athlete",
+      "emoji": "🏃‍♀️",
+      "reasoning": "Sky grades out as a S overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 1 season, their average placement is 2.00, with 0 wins and 4 total challenge wins. Socially, they received 1 total vote against and earned 3 jury votes at finals; they found 2 idols. Their biggest edges come from Social, Challenges, Placement. The main gaps are in Wins, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Low target profile and/or strong jury appeal.",
+        "Consistent challenge output (wins/season).",
+        "Strong average placement across seasons (deep runs)."
+      ],
+      "weaknesses": [
+        "Hasn’t converted strong runs into season wins."
+      ],
+      "avgPlacement": 2.0,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        2
+      ],
+      "challengeWins": 4,
+      "votesAgainst": 1,
+      "juryVotes": 3,
+      "idolsFound": 2,
+      "placementPercentile": 94.78,
+      "winPercentile": 45.52,
+      "challengePercentile": 97.01,
+      "socialPercentile": 99.25,
+      "strategicPercentile": 50.0
     },
     {
-      "playerId": "sugar",
-      "tier": "D",
-      "score": 45,
-      "rank": 44,
-      "title": "The Pageant Queen",
-      "emoji": "👸",
-      "reasoning": "Strategic player. Made merge. Chaotic energy. Manipulative gameplay.",
-      "strengths": ["Manipulation", "Strategic mind", "Social maneuvering", "Chaos"],
-      "weaknesses": ["Jury perception", "Overplaying", "Likability"],
-      "avgPlacement": 11.0,
-      "winRate": 0
-    },
-    {
-      "playerId": "max",
-      "tier": "D",
-      "score": 40,
-      "rank": 45,
-      "title": "The Evil Genius",
-      "emoji": "😈",
-      "reasoning": "Villain wannabe. Pre-merge boot. Comedic evil. No real threat.",
-      "strengths": ["Entertainment", "Personality", "Commitment", "Uniqueness"],
-      "weaknesses": ["Strategic ability", "Social game", "Physical game"],
-      "avgPlacement": 16.0,
-      "winRate": 0
+      "playerId": "zoey",
+      "name": "Zoey",
+      "rank": 7,
+      "tier": "A",
+      "score": 79.33,
+      "title": "The Powerhouse",
+      "emoji": "💪",
+      "reasoning": "Zoey grades out as a A overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 2 seasons, their average placement is 3.00, with 0 wins and 8 total challenge wins. Socially, they received 4 total votes against and earned 6 jury votes at finals; they found 1 idol. Their biggest edges come from Challenges, Social, Placement. The main gaps are in Wins, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Consistent challenge output (wins/season).",
+        "Low target profile and/or strong jury appeal.",
+        "Strong average placement across seasons (deep runs)."
+      ],
+      "weaknesses": [
+        "Hasn’t converted strong runs into season wins."
+      ],
+      "avgPlacement": 3.0,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 2,
+      "placements": [
+        2,
+        4
+      ],
+      "challengeWins": 8,
+      "votesAgainst": 4,
+      "juryVotes": 6,
+      "idolsFound": 1,
+      "placementPercentile": 90.3,
+      "winPercentile": 45.52,
+      "challengePercentile": 97.01,
+      "socialPercentile": 97.01,
+      "strategicPercentile": 50.0
     },
     {
       "playerId": "scarlett",
-      "tier": "S",
-      "score": 82,
-      "rank": 9,
-      "title": "The Puppetmaster",
-      "emoji": "🧪",
-      "reasoning": "Season 5’s top strategist with real win equity: controlled key votes, won two immunities, and only missed the finale at fire-making. High impact per season played—exactly what an elite threat looks like.",
-      "strengths": ["Intelligence", "Strategic thinking", "Planning", "Manipulation"],
-      "weaknesses": ["Social bonds", "Trust", "Overambition"],
+      "name": "Scarlett",
+      "rank": 8,
+      "tier": "A",
+      "score": 77.54,
+      "title": "The Mastermind",
+      "emoji": "🧠",
+      "reasoning": "Scarlett grades out as a A overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 1 season, their average placement is 4.00, with 0 wins and 2 total challenge wins. Socially, they received 2 total votes against and earned 0 jury votes at finals; they found 0 idols. Their biggest edges come from Strategic, Placement, Challenges. The main gaps are in Wins, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Above-average strategic impact and positioning.",
+        "Strong average placement across seasons (deep runs).",
+        "Consistent challenge output (wins/season)."
+      ],
+      "weaknesses": [
+        "Hasn’t converted strong runs into season wins."
+      ],
       "avgPlacement": 4.0,
-      "winRate": 0
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        4
+      ],
+      "challengeWins": 2,
+      "votesAgainst": 2,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 86.57,
+      "winPercentile": 45.52,
+      "challengePercentile": 86.57,
+      "socialPercentile": 73.13,
+      "strategicPercentile": 98.51
     },
     {
-      "playerId": "ella",
-      "tier": "D",
-      "score": 41,
-      "rank": 47,
-      "title": "The Princess",
-      "emoji": "🎵",
-      "reasoning": "Disney princess archetype. Early boot. Musical talent. Kind personality.",
-      "strengths": ["Kindness", "Positivity", "Social bonds", "Uniqueness"],
-      "weaknesses": ["Strategic game", "Naivety", "Early exit"],
-      "avgPlacement": 15.0,
-      "winRate": 0
+      "playerId": "emma",
+      "name": "Emma",
+      "rank": 9,
+      "tier": "A",
+      "score": 75.3,
+      "title": "The Comeback Kid",
+      "emoji": "🔥",
+      "reasoning": "Emma grades out as a A overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 3 seasons, their average placement is 9.33, with 1 win and 5 total challenge wins. Socially, they received 5 total votes against and earned 4 jury votes at finals; they found 0 idols. Their biggest edges come from Wins, Strategic, Challenges. The main gaps are in Placement, which is what keeps them from the very top tier.",
+      "strengths": [
+        "High win conversion rate when they play.",
+        "Above-average strategic impact and positioning.",
+        "Consistent challenge output (wins/season)."
+      ],
+      "weaknesses": [
+        "Inconsistent results / early exits drag down average placement."
+      ],
+      "avgPlacement": 9.33,
+      "winRate": 0.333,
+      "wins": 1,
+      "seasonsPlayed": 3,
+      "placements": [
+        17,
+        1,
+        10
+      ],
+      "challengeWins": 5,
+      "votesAgainst": 5,
+      "juryVotes": 4,
+      "idolsFound": 0,
+      "placementPercentile": 58.21,
+      "winPercentile": 94.03,
+      "challengePercentile": 83.58,
+      "socialPercentile": 79.1,
+      "strategicPercentile": 88.06
     },
     {
-      "playerId": "topher",
-      "tier": "D",
-      "score": 42,
-      "rank": 48,
-      "title": "The Host Wannabe",
-      "emoji": "🎤",
-      "reasoning": "Chris McLean copycat. Pre-merge. Strategic attempt. Backstabber.",
-      "strengths": ["Confidence", "Strategic attempt", "Entertainment", "Charisma"],
-      "weaknesses": ["Execution", "Trust", "Early exit"],
-      "avgPlacement": 14.0,
-      "winRate": 0
+      "playerId": "duncan",
+      "name": "Duncan",
+      "rank": 10,
+      "tier": "A",
+      "score": 74.37,
+      "title": "The Delinquent",
+      "emoji": "🗡️",
+      "reasoning": "Duncan grades out as a A overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 3 seasons, their average placement is 7.33, with 1 win and 2 total challenge wins. Socially, they received 17 total votes against and earned 5 jury votes at finals; they found 1 idol. Their biggest edges come from Wins, Strategic, Placement. The main gaps are in Social, which is what keeps them from the very top tier.",
+      "strengths": [
+        "High win conversion rate when they play.",
+        "Above-average strategic impact and positioning.",
+        "Strong average placement across seasons (deep runs)."
+      ],
+      "weaknesses": [
+        "Takes too many votes / limited jury support."
+      ],
+      "avgPlacement": 7.33,
+      "winRate": 0.333,
+      "wins": 1,
+      "seasonsPlayed": 3,
+      "placements": [
+        7,
+        1,
+        14
+      ],
+      "challengeWins": 2,
+      "votesAgainst": 17,
+      "juryVotes": 5,
+      "idolsFound": 1,
+      "placementPercentile": 71.64,
+      "winPercentile": 94.03,
+      "challengePercentile": 70.15,
+      "socialPercentile": 57.46,
+      "strategicPercentile": 77.61
     },
     {
-      "playerId": "dave",
-      "tier": "D",
-      "score": 43,
-      "rank": 49,
-      "title": "The Normal Guy",
-      "emoji": "😐",
-      "reasoning": "Normal archetype. Made merge. Showmance victim. Decent player.",
-      "strengths": ["Normalcy", "Relatability", "Social game", "Merge making"],
-      "weaknesses": ["Strategic depth", "Showmance distraction", "Emotional"],
-      "avgPlacement": 12.0,
-      "winRate": 0
+      "playerId": "cameron",
+      "name": "Cameron",
+      "rank": 11,
+      "tier": "A",
+      "score": 73.13,
+      "title": "The Underdog",
+      "emoji": "🧪",
+      "reasoning": "Cameron grades out as a A overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 2 seasons, their average placement is 4.00, with 0 wins and 6 total challenge wins. Socially, they received 6 total votes against and earned 1 jury vote at finals; they found 1 idol. Their biggest edges come from Challenges, Placement, Social. The main gaps are in Wins, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Consistent challenge output (wins/season).",
+        "Strong average placement across seasons (deep runs).",
+        "Low target profile and/or strong jury appeal."
+      ],
+      "weaknesses": [
+        "Hasn’t converted strong runs into season wins."
+      ],
+      "avgPlacement": 4.0,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 2,
+      "placements": [
+        5,
+        3
+      ],
+      "challengeWins": 6,
+      "votesAgainst": 6,
+      "juryVotes": 1,
+      "idolsFound": 1,
+      "placementPercentile": 86.57,
+      "winPercentile": 45.52,
+      "challengePercentile": 92.54,
+      "socialPercentile": 70.15,
+      "strategicPercentile": 50.0
     },
     {
-      "playerId": "samey",
-      "tier": "D",
-      "score": 40,
-      "rank": 50,
-      "title": "The Twin",
-      "emoji": "👭",
-      "reasoning": "Twin dynamics. Amy's victim. Pre-merge. Underdog story.",
-      "strengths": ["Kindness", "Strategy attempt", "Underdog appeal", "Heart"],
-      "weaknesses": ["Confidence", "Amy domination", "Early boot"],
-      "avgPlacement": 16.0,
-      "winRate": 0
-    },
-    {
-      "playerId": "amy",
-      "tier": "D",
-      "score": 40,
-      "rank": 51,
-      "title": "The Evil Twin",
-      "emoji": "👿",
-      "reasoning": "Evil twin. Samey's tormentor. Pre-merge. Mean girl archetype.",
-      "strengths": ["Manipulation", "Dominance", "Strategic attempt", "Boldness"],
-      "weaknesses": ["Social bonds", "Likability", "Early boot"],
-      "avgPlacement": 16.0,
-      "winRate": 0
-    },
-    {
-      "playerId": "rodney",
-      "tier": "D",
-      "score": 39,
-      "rank": 52,
-      "title": "The Country Boy",
-      "emoji": "🤠",
-      "reasoning": "Attraction to multiple girls. Early boot. Social awkwardness.",
-      "strengths": ["Kindness", "Heart", "Physical strength", "Loyalty"],
-      "weaknesses": ["Social game", "Strategic depth", "Attraction issues"],
-      "avgPlacement": 17.0,
-      "winRate": 0
-    },
-    {
-      "playerId": "leonard",
-      "tier": "D",
-      "score": 38,
-      "rank": 53,
-      "title": "The Wizard",
-      "emoji": "🧙",
-      "reasoning": "LARPer. Early boot both times. Delusional gameplay. No strategy.",
-      "strengths": ["Entertainment", "Commitment", "Uniqueness", "Personality"],
-      "weaknesses": ["Reality disconnect", "Strategic game", "Social game"],
-      "avgPlacement": 18.0,
-      "winRate": 0
-    },
-    {
-      "playerId": "beardo",
-      "tier": "D",
-      "score": 37,
-      "rank": 54,
-      "title": "The Beatboxer",
-      "emoji": "🎵",
-      "reasoning": "Sound effects player. First boot. No strategy shown. Unique gimmick.",
-      "strengths": ["Uniqueness", "Entertainment", "Sound effects", "Creativity"],
-      "weaknesses": ["Communication", "Social game", "First boot"],
-      "avgPlacement": 19.0,
-      "winRate": 0
-    },
-    {
-      "playerId": "blaineley",
-      "tier": "D",
-      "score": 36,
-      "rank": 55,
-      "title": "The Celebrity",
-      "emoji": "📺",
-      "reasoning": "Late addition. Celebrity status. Limited gameplay. Early exit.",
-      "strengths": ["Fame", "Personality", "Entertainment", "Confidence"],
-      "weaknesses": ["Late start", "Strategic game", "Social bonds"],
-      "avgPlacement": 20.0,
-      "winRate": 0
+      "playerId": "jay",
+      "name": "Jay",
+      "rank": 12,
+      "tier": "A",
+      "score": 71.31,
+      "title": "The Cautious Twin",
+      "emoji": "👯‍♂️",
+      "reasoning": "Jay grades out as a A overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 1 season, their average placement is 3.00, with 0 wins and 0 total challenge wins. Socially, they received 0 total votes against and earned 0 jury votes at finals; they found 0 idols. Their biggest edges come from Placement, Social, Strategic. The main gaps are in Challenges, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Strong average placement across seasons (deep runs).",
+        "Low target profile and/or strong jury appeal.",
+        "Above-average strategic impact and positioning."
+      ],
+      "weaknesses": [
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 3.0,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        3
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 0,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 90.3,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 87.31,
+      "strategicPercentile": 85.07
     },
     {
       "playerId": "ryan",
-      "tier": "S",
-      "score": 81,
-      "rank": 10,
-      "title": "The Kingmaker",
-      "emoji": "🌟",
-      "reasoning": "Massive social capital (Fan Favorite), a fire-making win, and the ultimate kingmaker moment in the final tiebreak decision. He converts loyalty and relationships into power—elite endgame influence for a one-season player.",
-      "strengths": ["Competition", "Partnership", "Athletic ability", "Determination"],
-      "weaknesses": ["Stephanie conflict", "Strategic depth", "Social game"],
-      "avgPlacement": 3.0,
-      "winRate": 0
-    },
-    {
-      "playerId": "stephanie",
+      "name": "Ryan",
+      "rank": 13,
       "tier": "D",
-      "score": 44,
-      "rank": 57,
-      "title": "The Aggressive One",
-      "emoji": "😤",
-      "reasoning": "Ridonculous Race. Ryan's partner. Aggressive gameplay. Competitive.",
-      "strengths": ["Competitiveness", "Drive", "Athletic ability", "Determination"],
-      "weaknesses": ["Anger issues", "Partnership strain", "Social game"],
-      "avgPlacement": 12.0,
-      "winRate": 0
-    },
-    {
-      "playerId": "dwayne",
-      "tier": "D",
-      "score": 43,
-      "rank": 58,
-      "title": "The Dad",
-      "emoji": "👨",
-      "reasoning": "Father-son team. Junior's dad. Parenting in competition. Family bonds.",
-      "strengths": ["Parenting", "Family bonds", "Heart", "Determination"],
-      "weaknesses": ["Strategic game", "Physical limitations", "Distraction"],
-      "avgPlacement": 13.0,
-      "winRate": 0
-    },
-    {
-      "playerId": "junior",
-      "tier": "D",
-      "score": 43,
-      "rank": 59,
-      "title": "The Son",
-      "emoji": "🧒",
-      "reasoning": "Dwayne's son. Young competitor. Family dynamic. Learning experience.",
-      "strengths": ["Youth", "Energy", "Family bonds", "Growth"],
-      "weaknesses": ["Age", "Experience", "Strategic depth"],
-      "avgPlacement": 13.0,
-      "winRate": 0
+      "score": 70.67,
+      "title": "The Gentle Giant",
+      "emoji": "🏅",
+      "reasoning": "Ryan grades out as a D overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 2 seasons, their average placement is 5.50, with 0 wins and 2 total challenge wins. Socially, they received 8 total votes against and earned 0 jury votes at finals; they found 1 idol. Their biggest edges come from Strategic, Placement, Challenges. The main gaps are in Wins, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Above-average strategic impact and positioning.",
+        "Strong average placement across seasons (deep runs).",
+        "Consistent challenge output (wins/season)."
+      ],
+      "weaknesses": [
+        "Hasn’t converted strong runs into season wins."
+      ],
+      "avgPlacement": 5.5,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 2,
+      "placements": [
+        3,
+        8
+      ],
+      "challengeWins": 2,
+      "votesAgainst": 8,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "placementPercentile": 80.6,
+      "winPercentile": 45.52,
+      "challengePercentile": 75.37,
+      "socialPercentile": 57.46,
+      "strategicPercentile": 94.03
     },
     {
       "playerId": "kelly",
-      "tier": "D",
-      "score": 42,
-      "rank": 60,
-      "title": "The Mom",
-      "emoji": "👜",
-      "reasoning": "Mother-daughter team. Tammy's mom. Parenting challenges. Family dynamics.",
-      "strengths": ["Parenting", "Family bonds", "Experience", "Determination"],
-      "weaknesses": ["Physical game", "Strategic depth", "Parent-child conflict"],
-      "avgPlacement": 14.0,
-      "winRate": 0
+      "name": "Kelly",
+      "rank": 14,
+      "tier": "B",
+      "score": 69.14,
+      "title": "The Tough Mom",
+      "emoji": "👩‍👧",
+      "reasoning": "Kelly grades out as a B overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 1 season, their average placement is 4.00, with 0 wins and 0 total challenge wins. Socially, they received 1 total vote against and earned 0 jury votes at finals; they found 1 idol. Their biggest edges come from Strategic, Placement, Social. The main gaps are in Challenges, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Above-average strategic impact and positioning.",
+        "Strong average placement across seasons (deep runs).",
+        "Low target profile and/or strong jury appeal."
+      ],
+      "weaknesses": [
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 4.0,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        4
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 1,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "placementPercentile": 86.57,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 76.87,
+      "strategicPercentile": 94.03
     },
     {
-      "playerId": "tammy",
-      "tier": "D",
-      "score": 42,
-      "rank": 61,
-      "title": "The Daughter",
-      "emoji": "🪄",
-      "reasoning": "Kelly's daughter. Young competitor. Family team. Growing up on TV.",
-      "strengths": ["Youth", "Energy", "Family bonds", "Potential"],
-      "weaknesses": ["Age", "Parent conflict", "Experience"],
-      "avgPlacement": 14.0,
-      "winRate": 0
+      "playerId": "dave",
+      "name": "Dave",
+      "rank": 15,
+      "tier": "B",
+      "score": 66.01,
+      "title": "The Germaphobe",
+      "emoji": "🧼",
+      "reasoning": "Dave grades out as a B overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 1 season, their average placement is 6.00, with 0 wins and 2 total challenge wins. Socially, they received 5 total votes against and earned 0 jury votes at finals; they found 0 idols. Their biggest edges come from Challenges, Placement. The main gaps are in Wins, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Consistent challenge output (wins/season).",
+        "Strong average placement across seasons (deep runs)."
+      ],
+      "weaknesses": [
+        "Hasn’t converted strong runs into season wins."
+      ],
+      "avgPlacement": 6.0,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        6
+      ],
+      "challengeWins": 2,
+      "votesAgainst": 5,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 79.1,
+      "winPercentile": 45.52,
+      "challengePercentile": 86.57,
+      "socialPercentile": 48.51,
+      "strategicPercentile": 50.0
     },
     {
-      "playerId": "kitty",
-      "tier": "D",
-      "score": 46,
-      "rank": 62,
-      "title": "The Younger Sister",
-      "emoji": "📸",
-      "reasoning": "Emma's sister. Sisters team. Social player. Supportive sister.",
-      "strengths": ["Social game", "Sister bonds", "Positivity", "Support"],
-      "weaknesses": ["Strategic independence", "Emma's shadow", "Own game"],
-      "avgPlacement": 10.0,
-      "winRate": 0
+      "playerId": "trent",
+      "name": "Trent",
+      "rank": 16,
+      "tier": "B",
+      "score": 63.84,
+      "title": "The Guitar Guy",
+      "emoji": "🎸",
+      "reasoning": "Trent grades out as a B overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 2 seasons, their average placement is 6.50, with 0 wins and 4 total challenge wins. Socially, they received 12 total votes against and earned 0 jury votes at finals; they found 0 idols. Their biggest edges come from Challenges, Placement. The main gaps are in Social, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Consistent challenge output (wins/season).",
+        "Strong average placement across seasons (deep runs)."
+      ],
+      "weaknesses": [
+        "Takes too many votes / limited jury support."
+      ],
+      "avgPlacement": 6.5,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 2,
+      "placements": [
+        7,
+        6
+      ],
+      "challengeWins": 4,
+      "votesAgainst": 12,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 77.61,
+      "winPercentile": 45.52,
+      "challengePercentile": 86.57,
+      "socialPercentile": 38.06,
+      "strategicPercentile": 50.0
     },
     {
       "playerId": "brody",
+      "name": "Brody",
+      "rank": 17,
+      "tier": "B",
+      "score": 63.13,
+      "title": "The Surfer Bro",
+      "emoji": "🏄‍♂️",
+      "reasoning": "Brody grades out as a B overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 1 season, their average placement is 7.00, with 0 wins and 1 total challenge win. Socially, they received 7 total votes against and earned 0 jury votes at finals; they found 0 idols. Their biggest edges come from Strategic, Challenges, Placement. The main gaps are in Social, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Above-average strategic impact and positioning.",
+        "Consistent challenge output (wins/season).",
+        "Strong average placement across seasons (deep runs)."
+      ],
+      "weaknesses": [
+        "Takes too many votes / limited jury support."
+      ],
+      "avgPlacement": 7.0,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        7
+      ],
+      "challengeWins": 1,
+      "votesAgainst": 7,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 74.63,
+      "winPercentile": 45.52,
+      "challengePercentile": 75.37,
+      "socialPercentile": 29.1,
+      "strategicPercentile": 85.07
+    },
+    {
+      "playerId": "ezekiel",
+      "name": "Ezekiel",
+      "rank": 18,
+      "tier": "B",
+      "score": 62.8,
+      "title": "The Farm Kid",
+      "emoji": "🚜",
+      "reasoning": "Ezekiel grades out as a B overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 2 seasons, their average placement is 5.00, with 0 wins and 1 total challenge win. Socially, they received 12 total votes against and earned 0 jury votes at finals; they found 3 idols. Their biggest edges come from Placement. The main gaps are in Social, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Strong average placement across seasons (deep runs)."
+      ],
+      "weaknesses": [
+        "Takes too many votes / limited jury support."
+      ],
+      "avgPlacement": 5.0,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 2,
+      "placements": [
+        6,
+        4
+      ],
+      "challengeWins": 1,
+      "votesAgainst": 12,
+      "juryVotes": 0,
+      "idolsFound": 3,
+      "placementPercentile": 82.84,
+      "winPercentile": 45.52,
+      "challengePercentile": 65.67,
+      "socialPercentile": 38.06,
+      "strategicPercentile": 50.0
+    },
+    {
+      "playerId": "mike",
+      "name": "Mike",
+      "rank": 19,
+      "tier": "B",
+      "score": 62.16,
+      "title": "The Split Persona",
+      "emoji": "🎭",
+      "reasoning": "Mike grades out as a B overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 2 seasons, their average placement is 9.00, with 0 wins and 2 total challenge wins. Socially, they received 8 total votes against and earned 0 jury votes at finals; they found 0 idols. Their biggest edges come from Strategic, Challenges. The main gaps are in Wins, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Above-average strategic impact and positioning.",
+        "Consistent challenge output (wins/season)."
+      ],
+      "weaknesses": [
+        "Hasn’t converted strong runs into season wins."
+      ],
+      "avgPlacement": 9.0,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 2,
+      "placements": [
+        12,
+        6
+      ],
+      "challengeWins": 2,
+      "votesAgainst": 8,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 63.43,
+      "winPercentile": 45.52,
+      "challengePercentile": 75.37,
+      "socialPercentile": 57.46,
+      "strategicPercentile": 77.61
+    },
+    {
+      "playerId": "blaineley",
+      "name": "Blaineley",
+      "rank": 20,
+      "tier": "C",
+      "score": 59.25,
+      "title": "The Media Maven",
+      "emoji": "🎤",
+      "reasoning": "Blaineley grades out as a C overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 2 seasons, their average placement is 7.00, with 0 wins and 0 total challenge wins. Socially, they received 9 total votes against and earned 0 jury votes at finals; they found 1 idol. Their biggest edges come from Strategic, Placement. The main gaps are in Challenges, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Above-average strategic impact and positioning.",
+        "Strong average placement across seasons (deep runs)."
+      ],
+      "weaknesses": [
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 7.0,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 2,
+      "placements": [
+        8,
+        6
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 9,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "placementPercentile": 74.63,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 53.73,
+      "strategicPercentile": 77.61
+    },
+    {
+      "playerId": "amy",
+      "name": "Amy",
+      "rank": 21,
+      "tier": "C",
+      "score": 58.28,
+      "title": "The Mean Twin",
+      "emoji": "😈",
+      "reasoning": "Amy grades out as a C overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 1 season, their average placement is 7.00, with 0 wins and 0 total challenge wins. Socially, they received 3 total votes against and earned 0 jury votes at finals; they found 0 idols. Their biggest edges come from Placement. The main gaps are in Challenges, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Strong average placement across seasons (deep runs)."
+      ],
+      "weaknesses": [
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 7.0,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        7
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 3,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 74.63,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 65.67,
+      "strategicPercentile": 50.0
+    },
+    {
+      "playerId": "gwen",
+      "name": "Gwen",
+      "rank": 22,
+      "tier": "C",
+      "score": 57.05,
+      "title": "The Juggernaut",
+      "emoji": "💪",
+      "reasoning": "Gwen grades out as a C overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 3 seasons, their average placement is 9.33, with 0 wins and 9 total challenge wins. Socially, they received 26 total votes against and earned 0 jury votes at finals; they found 0 idols. Their biggest edges come from Challenges, Strategic. The main gaps are in Social, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Consistent challenge output (wins/season).",
+        "Above-average strategic impact and positioning."
+      ],
+      "weaknesses": [
+        "Takes too many votes / limited jury support."
+      ],
+      "avgPlacement": 9.33,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 3,
+      "placements": [
+        4,
+        8,
+        16
+      ],
+      "challengeWins": 9,
+      "votesAgainst": 26,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 58.21,
+      "winPercentile": 45.52,
+      "challengePercentile": 92.54,
+      "socialPercentile": 20.15,
+      "strategicPercentile": 77.61
+    },
+    {
+      "playerId": "bridgette",
+      "name": "Bridgette",
+      "rank": 23,
+      "tier": "C",
+      "score": 55.37,
+      "title": "The Surfer Sweetheart",
+      "emoji": "🏄‍♀️",
+      "reasoning": "Bridgette grades out as a C overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 2 seasons, their average placement is 8.50, with 0 wins and 5 total challenge wins. Socially, they received 24 total votes against and earned 0 jury votes at finals; they found 1 idol. Their biggest edges come from Challenges. The main gaps are in Social, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Consistent challenge output (wins/season)."
+      ],
+      "weaknesses": [
+        "Takes too many votes / limited jury support."
+      ],
+      "avgPlacement": 8.5,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 2,
+      "placements": [
+        14,
+        3
+      ],
+      "challengeWins": 5,
+      "votesAgainst": 24,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "placementPercentile": 67.91,
+      "winPercentile": 45.52,
+      "challengePercentile": 89.55,
+      "socialPercentile": 4.48,
+      "strategicPercentile": 50.0
+    },
+    {
+      "playerId": "owen",
+      "name": "Owen",
+      "rank": 24,
+      "tier": "C",
+      "score": 55.22,
+      "title": "The Snack King",
+      "emoji": "🍰",
+      "reasoning": "Owen grades out as a C overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 2 seasons, their average placement is 9.50, with 0 wins and 1 total challenge win. Socially, they received 7 total votes against and earned 0 jury votes at finals; they found 0 idols. Their biggest edges come from Challenges. The main gaps are in Wins, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Consistent challenge output (wins/season)."
+      ],
+      "weaknesses": [
+        "Hasn’t converted strong runs into season wins."
+      ],
+      "avgPlacement": 9.5,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 2,
+      "placements": [
+        12,
+        7
+      ],
+      "challengeWins": 1,
+      "votesAgainst": 7,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 55.22,
+      "winPercentile": 45.52,
+      "challengePercentile": 65.67,
+      "socialPercentile": 61.19,
+      "strategicPercentile": 50.0
+    },
+    {
+      "playerId": "brick",
+      "name": "Brick",
+      "rank": 25,
+      "tier": "C",
+      "score": 54.93,
+      "title": "The Cadet",
+      "emoji": "🪖",
+      "reasoning": "Brick grades out as a C overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 1 season, their average placement is 9.00, with 0 wins and 1 total challenge win. Socially, they received 5 total votes against and earned 0 jury votes at finals; they found 0 idols. Their biggest edges come from Challenges. The main gaps are in Strategic, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Consistent challenge output (wins/season)."
+      ],
+      "weaknesses": [
+        "Little evidence of consistent strategic control."
+      ],
+      "avgPlacement": 9.0,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        9
+      ],
+      "challengeWins": 1,
+      "votesAgainst": 5,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 63.43,
+      "winPercentile": 45.52,
+      "challengePercentile": 75.37,
+      "socialPercentile": 48.51,
+      "strategicPercentile": 18.66
+    },
+    {
+      "playerId": "sugar",
+      "name": "Sugar",
+      "rank": 26,
+      "tier": "C",
+      "score": 53.4,
+      "title": "The Pageant Diva",
+      "emoji": "🍭",
+      "reasoning": "Sugar grades out as a C overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 1 season, their average placement is 5.00, with 0 wins and 0 total challenge wins. Socially, they received 10 total votes against and earned 0 jury votes at finals; they found 0 idols. Their biggest edges come from Placement. The main gaps are in Social, Challenges, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Strong average placement across seasons (deep runs)."
+      ],
+      "weaknesses": [
+        "Takes too many votes / limited jury support.",
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 5.0,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        5
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 10,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 82.84,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 11.19,
+      "strategicPercentile": 50.0
+    },
+    {
+      "playerId": "shawn",
+      "name": "Shawn",
+      "rank": 27,
       "tier": "D",
-      "score": 45,
-      "rank": 63,
-      "title": "The Surfer",
-      "emoji": "🏄",
-      "reasoning": "Geoff's partner. Surfer bros. Laid back. Social player.",
-      "strengths": ["Social bonds", "Partnership", "Laid back", "Likeability"],
-      "weaknesses": ["Strategic game", "Independence", "Competitiveness"],
+      "score": 49.66,
+      "title": "The Zombie Prepper",
+      "emoji": "🧟",
+      "reasoning": "Shawn grades out as a D overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 1 season, their average placement is 9.00, with 0 wins and 0 total challenge wins. Socially, they received 6 total votes against and earned 0 jury votes at finals; they found 1 idol. Their biggest edges come from Placement. The main gaps are in Challenges, Social, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Strong average placement across seasons (deep runs)."
+      ],
+      "weaknesses": [
+        "Limited challenge contribution compared to the field.",
+        "Takes too many votes / limited jury support."
+      ],
+      "avgPlacement": 9.0,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        9
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 6,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "placementPercentile": 63.43,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 38.06,
+      "strategicPercentile": 50.0
+    },
+    {
+      "playerId": "heather",
+      "name": "Heather",
+      "rank": 28,
+      "tier": "D",
+      "score": 49.25,
+      "title": "The Queen Bee",
+      "emoji": "👑",
+      "reasoning": "Heather grades out as a D overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 3 seasons, their average placement is 10.67, with 0 wins and 3 total challenge wins. Socially, they received 27 total votes against and earned 0 jury votes at finals; they found 2 idols. Their biggest edges come from Strategic, Challenges. The main gaps are in Social, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Above-average strategic impact and positioning.",
+        "Consistent challenge output (wins/season)."
+      ],
+      "weaknesses": [
+        "Takes too many votes / limited jury support."
+      ],
+      "avgPlacement": 10.67,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 3,
+      "placements": [
+        15,
+        9,
+        8
+      ],
+      "challengeWins": 3,
+      "votesAgainst": 27,
+      "juryVotes": 0,
+      "idolsFound": 2,
+      "placementPercentile": 46.27,
+      "winPercentile": 45.52,
+      "challengePercentile": 75.37,
+      "socialPercentile": 17.16,
+      "strategicPercentile": 77.61
+    },
+    {
+      "playerId": "geoff",
+      "name": "Geoff",
+      "rank": 29,
+      "tier": "D",
+      "score": 48.69,
+      "title": "The Party Animal",
+      "emoji": "🎉",
+      "reasoning": "Geoff grades out as a D overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 3 seasons, their average placement is 10.33, with 0 wins and 3 total challenge wins. Socially, they received 43 total votes against and earned 0 jury votes at finals; they found 0 idols. Their biggest edges come from Challenges, Strategic. The main gaps are in Social, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Consistent challenge output (wins/season).",
+        "Above-average strategic impact and positioning."
+      ],
+      "weaknesses": [
+        "Takes too many votes / limited jury support."
+      ],
+      "avgPlacement": 10.33,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 3,
+      "placements": [
+        6,
+        20,
+        5
+      ],
+      "challengeWins": 3,
+      "votesAgainst": 43,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 52.24,
+      "winPercentile": 45.52,
+      "challengePercentile": 75.37,
+      "socialPercentile": 1.49,
+      "strategicPercentile": 71.64
+    },
+    {
+      "playerId": "harold",
+      "name": "Harold",
+      "rank": 30,
+      "tier": "D",
+      "score": 48.21,
+      "title": "The Dorky Ninja",
+      "emoji": "🥋",
+      "reasoning": "Harold grades out as a D overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 2 seasons, their average placement is 12.50, with 0 wins and 3 total challenge wins. Socially, they received 12 total votes against and earned 0 jury votes at finals; they found 0 idols. Their biggest edges come from Challenges, Strategic. The main gaps are in Placement, Social, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Consistent challenge output (wins/season).",
+        "Above-average strategic impact and positioning."
+      ],
+      "weaknesses": [
+        "Inconsistent results / early exits drag down average placement.",
+        "Takes too many votes / limited jury support."
+      ],
+      "avgPlacement": 12.5,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 2,
+      "placements": [
+        8,
+        17
+      ],
+      "challengeWins": 3,
+      "votesAgainst": 12,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 33.58,
+      "winPercentile": 45.52,
+      "challengePercentile": 81.34,
+      "socialPercentile": 38.06,
+      "strategicPercentile": 77.61
+    },
+    {
+      "playerId": "max",
+      "name": "Max",
+      "rank": 31,
+      "tier": "D",
+      "score": 47.35,
+      "title": "The ‘Evil’ Genius",
+      "emoji": "🦹‍♂️",
+      "reasoning": "Max grades out as a D overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 1 season, their average placement is 10.00, with 0 wins and 0 total challenge wins. Socially, they received 5 total votes against and earned 0 jury votes at finals; they found 0 idols. Their biggest edges come from Placement. The main gaps are in Challenges, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Strong average placement across seasons (deep runs)."
+      ],
+      "weaknesses": [
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 10.0,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        10
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 5,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 53.73,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 48.51,
+      "strategicPercentile": 50.0
+    },
+    {
+      "playerId": "beth",
+      "name": "Beth",
+      "rank": 32,
+      "tier": "D",
+      "score": 46.01,
+      "title": "The Sweetheart",
+      "emoji": "🌸",
+      "reasoning": "Beth grades out as a D overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 3 seasons, their average placement is 9.33, with 0 wins and 1 total challenge win. Socially, they received 26 total votes against and earned 0 jury votes at finals; they found 1 idol. Their biggest edges come from Challenges. The main gaps are in Strategic, Social, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Consistent challenge output (wins/season)."
+      ],
+      "weaknesses": [
+        "Little evidence of consistent strategic control.",
+        "Takes too many votes / limited jury support."
+      ],
+      "avgPlacement": 9.33,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 3,
+      "placements": [
+        4,
+        5,
+        19
+      ],
+      "challengeWins": 1,
+      "votesAgainst": 26,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "placementPercentile": 58.21,
+      "winPercentile": 45.52,
+      "challengePercentile": 61.19,
+      "socialPercentile": 20.15,
+      "strategicPercentile": 14.18
+    },
+    {
+      "playerId": "dwayne",
+      "name": "Dwayne",
+      "rank": 33,
+      "tier": "D",
+      "score": 45.97,
+      "title": "The Dad",
+      "emoji": "👨‍👦",
+      "reasoning": "Dwayne grades out as a D overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 2 seasons, their average placement is 10.50, with 0 wins and 0 total challenge wins. Socially, they received 6 total votes against and earned 0 jury votes at finals; they found 0 idols. Their biggest edges come from Social. The main gaps are in Strategic, Challenges, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Low target profile and/or strong jury appeal."
+      ],
+      "weaknesses": [
+        "Little evidence of consistent strategic control.",
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 10.5,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 2,
+      "placements": [
+        10,
+        11
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 6,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 49.25,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 65.67,
+      "strategicPercentile": 28.36
+    },
+    {
+      "playerId": "kitty",
+      "name": "Kitty",
+      "rank": 34,
+      "tier": "D",
+      "score": 45.78,
+      "title": "The Little Sis",
+      "emoji": "😺",
+      "reasoning": "Kitty grades out as a D overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 1 season, their average placement is 9.00, with 0 wins and 0 total challenge wins. Socially, they received 7 total votes against and earned 0 jury votes at finals; they found 1 idol. Their biggest edges come from Placement. The main gaps are in Strategic, Social, Challenges, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Strong average placement across seasons (deep runs)."
+      ],
+      "weaknesses": [
+        "Little evidence of consistent strategic control.",
+        "Takes too many votes / limited jury support.",
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 9.0,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        9
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 7,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "placementPercentile": 63.43,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 29.1,
+      "strategicPercentile": 24.63
+    },
+    {
+      "playerId": "jo",
+      "name": "Jo",
+      "rank": 35,
+      "tier": "D",
+      "score": 45.22,
+      "title": "The Enforcer",
+      "emoji": "🥊",
+      "reasoning": "Jo grades out as a D overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 2 seasons, their average placement is 8.50, with 0 wins and 0 total challenge wins. Socially, they received 17 total votes against and earned 0 jury votes at finals; they found 0 idols. Their biggest edges come from Placement. The main gaps are in Strategic, Social, Challenges, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Strong average placement across seasons (deep runs)."
+      ],
+      "weaknesses": [
+        "Little evidence of consistent strategic control.",
+        "Takes too many votes / limited jury support.",
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 8.5,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 2,
+      "placements": [
+        10,
+        7
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 17,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 67.91,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 22.39,
+      "strategicPercentile": 11.19
+    },
+    {
+      "playerId": "dawn",
+      "name": "Dawn",
+      "rank": 36,
+      "tier": "D",
+      "score": 45.19,
+      "title": "The Mystic",
+      "emoji": "🔮",
+      "reasoning": "Dawn grades out as a D overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 1 season, their average placement is 8.00, with 0 wins and 0 total challenge wins. Socially, they received 10 total votes against and earned 0 jury votes at finals; they found 0 idols. Their biggest edges come from Placement. The main gaps are in Social, Strategic, Challenges, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Strong average placement across seasons (deep runs)."
+      ],
+      "weaknesses": [
+        "Takes too many votes / limited jury support.",
+        "Little evidence of consistent strategic control.",
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 8.0,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        8
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 10,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 70.15,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 11.19,
+      "strategicPercentile": 18.66
+    },
+    {
+      "playerId": "leshawna",
+      "name": "Leshawna",
+      "rank": 37,
+      "tier": "D",
+      "score": 44.18,
+      "title": "The Real One",
+      "emoji": "💃",
+      "reasoning": "Leshawna grades out as a D overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 2 seasons, their average placement is 12.00, with 0 wins and 1 total challenge win. Socially, they received 13 total votes against and earned 0 jury votes at finals; they found 0 idols. Their biggest edges come from Challenges. The main gaps are in Social, Placement, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Consistent challenge output (wins/season)."
+      ],
+      "weaknesses": [
+        "Takes too many votes / limited jury support.",
+        "Inconsistent results / early exits drag down average placement."
+      ],
+      "avgPlacement": 12.0,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 2,
+      "placements": [
+        13,
+        11
+      ],
+      "challengeWins": 1,
+      "votesAgainst": 13,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 38.81,
+      "winPercentile": 45.52,
+      "challengePercentile": 65.67,
+      "socialPercentile": 31.34,
+      "strategicPercentile": 50.0
+    },
+    {
+      "playerId": "topher",
+      "name": "Topher",
+      "rank": 38,
+      "tier": "D",
+      "score": 43.77,
+      "title": "The Host Wannabe",
+      "emoji": "🎙️",
+      "reasoning": "Topher grades out as a D overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 1 season, their average placement is 11.00, with 0 wins and 0 total challenge wins. Socially, they received 5 total votes against and earned 0 jury votes at finals; they found 0 idols. Their biggest edges come from Strategic. The main gaps are in Challenges, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Above-average strategic impact and positioning."
+      ],
+      "weaknesses": [
+        "Limited challenge contribution compared to the field."
+      ],
       "avgPlacement": 11.0,
-      "winRate": 0
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        11
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 5,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 44.78,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 48.51,
+      "strategicPercentile": 50.0
     },
     {
-      "playerId": "crimson",
+      "playerId": "sadie",
+      "name": "Sadie",
+      "rank": 39,
       "tier": "D",
-      "score": 44,
-      "rank": 64,
-      "title": "The Goth",
-      "emoji": "🖤",
-      "reasoning": "Ennui's partner. Gothic couple. Alternative archetype. Partnership gameplay.",
-      "strengths": ["Partnership", "Uniqueness", "Loyalty", "Commitment"],
-      "weaknesses": ["Strategic game", "Social bonds", "Independence"],
-      "avgPlacement": 12.0,
-      "winRate": 0
-    },
-    {
-      "playerId": "ennui",
-      "tier": "D",
-      "score": 44,
-      "rank": 65,
-      "title": "The Gothic",
-      "emoji": "🫥",
-      "reasoning": "Crimson's partner. Gothic couple. Apathetic archetype. Partnership focused.",
-      "strengths": ["Partnership", "Loyalty", "Uniqueness", "Calm"],
-      "weaknesses": ["Strategic game", "Social game", "Motivation"],
-      "avgPlacement": 12.0,
-      "winRate": 0
-    },
-    {
-      "playerId": "jacques",
-      "tier": "D",
-      "score": 43,
-      "rank": 66,
-      "title": "The Ice Dancer",
-      "emoji": "🕺",
-      "reasoning": "Josee's partner. Ice dancers. Competitive team. Athletic duo.",
-      "strengths": ["Athletics", "Partnership", "Competition", "Skill"],
-      "weaknesses": ["Social game", "Strategic depth", "Arrogance"],
+      "score": 43.62,
+      "title": "The BFF",
+      "emoji": "💞",
+      "reasoning": "Sadie grades out as a D overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 1 season, their average placement is 13.00, with 0 wins and 0 total challenge wins. Socially, they received 0 total votes against and earned 0 jury votes at finals; they found 0 idols. Their biggest edges come from Social. The main gaps are in Placement, Challenges, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Low target profile and/or strong jury appeal."
+      ],
+      "weaknesses": [
+        "Inconsistent results / early exits drag down average placement.",
+        "Limited challenge contribution compared to the field."
+      ],
       "avgPlacement": 13.0,
-      "winRate": 0
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        13
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 0,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 29.85,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 87.31,
+      "strategicPercentile": 50.0
     },
     {
-      "playerId": "josee",
+      "playerId": "anne-maria",
+      "name": "Anne Maria",
+      "rank": 40,
       "tier": "D",
-      "score": 43,
-      "rank": 67,
-      "title": "The Ice Queen",
-      "emoji": "❄️",
-      "reasoning": "Jacques' partner. Ice dancers. Ruthless competitor. Villain archetype.",
-      "strengths": ["Competition", "Ruthlessness", "Athletics", "Drive"],
-      "weaknesses": ["Social game", "Likability", "Sportsmanship"],
-      "avgPlacement": 13.0,
-      "winRate": 0
+      "score": 41.64,
+      "title": "The Workhorse",
+      "emoji": "🦾",
+      "reasoning": "Anne Maria grades out as a D overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 2 seasons, their average placement is 10.50, with 0 wins and 1 total challenge win. Socially, they received 21 total votes against and earned 0 jury votes at finals; they found 1 idol. Their biggest edges come from Challenges. The main gaps are in Social, Strategic, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Consistent challenge output (wins/season)."
+      ],
+      "weaknesses": [
+        "Takes too many votes / limited jury support.",
+        "Little evidence of consistent strategic control."
+      ],
+      "avgPlacement": 10.5,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 2,
+      "placements": [
+        16,
+        5
+      ],
+      "challengeWins": 1,
+      "votesAgainst": 21,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "placementPercentile": 49.25,
+      "winPercentile": 45.52,
+      "challengePercentile": 65.67,
+      "socialPercentile": 7.46,
+      "strategicPercentile": 18.66
+    },
+    {
+      "playerId": "katie",
+      "name": "Katie",
+      "rank": 41,
+      "tier": "D",
+      "score": 41.38,
+      "title": "The BFF",
+      "emoji": "💖",
+      "reasoning": "Katie grades out as a D overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 1 season, their average placement is 12.00, with 0 wins and 0 total challenge wins. Socially, they received 5 total votes against and earned 0 jury votes at finals; they found 1 idol. Their biggest edges come from Strategic. The main gaps are in Challenges, Placement, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Above-average strategic impact and positioning."
+      ],
+      "weaknesses": [
+        "Limited challenge contribution compared to the field.",
+        "Inconsistent results / early exits drag down average placement."
+      ],
+      "avgPlacement": 12.0,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        12
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 5,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "placementPercentile": 38.81,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 48.51,
+      "strategicPercentile": 50.0
     },
     {
       "playerId": "mary",
+      "name": "Mary",
+      "rank": 42,
       "tier": "D",
-      "score": 41,
-      "rank": 68,
-      "title": "The Quiet One",
-      "emoji": "🤫",
-      "reasoning": "Best friends team. Quiet personality. Early elimination. Limited gameplay shown.",
-      "strengths": ["Friendship", "Loyalty", "Kindness", "Partnership"],
-      "weaknesses": ["Visibility", "Strategic game", "Early exit"],
+      "score": 41.23,
+      "title": "The Brainiac",
+      "emoji": "🔬",
+      "reasoning": "Mary grades out as a D overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 1 season, their average placement is 14.00, with 0 wins and 0 total challenge wins. Socially, they received 0 total votes against and earned 0 jury votes at finals; they found 0 idols. Their biggest edges come from Social. The main gaps are in Placement, Challenges, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Low target profile and/or strong jury appeal."
+      ],
+      "weaknesses": [
+        "Inconsistent results / early exits drag down average placement.",
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 14.0,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        14
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 0,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 23.88,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 87.31,
+      "strategicPercentile": 50.0
+    },
+    {
+      "playerId": "stephanie",
+      "name": "Stephanie",
+      "rank": 43,
+      "tier": "D",
+      "score": 41.08,
+      "title": "The Type-A",
+      "emoji": "📈",
+      "reasoning": "Stephanie grades out as a D overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 1 season, their average placement is 13.00, with 0 wins and 0 total challenge wins. Socially, they received 0 total votes against and earned 0 jury votes at finals; they found 0 idols. Their biggest edges come from Social. The main gaps are in Strategic, Placement, Challenges, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Low target profile and/or strong jury appeal."
+      ],
+      "weaknesses": [
+        "Little evidence of consistent strategic control.",
+        "Inconsistent results / early exits drag down average placement.",
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 13.0,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        13
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 0,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 29.85,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 87.31,
+      "strategicPercentile": 24.63
+    },
+    {
+      "playerId": "noah",
+      "name": "Noah",
+      "rank": 44,
+      "tier": "D",
+      "score": 40.19,
+      "title": "The Sarcastic",
+      "emoji": "😏",
+      "reasoning": "Noah grades out as a D overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 2 seasons, their average placement is 12.00, with 0 wins and 0 total challenge wins. Socially, they received 20 total votes against and earned 0 jury votes at finals; they found 1 idol. Their biggest edges come from Strategic. The main gaps are in Social, Challenges, Placement, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Above-average strategic impact and positioning."
+      ],
+      "weaknesses": [
+        "Takes too many votes / limited jury support.",
+        "Limited challenge contribution compared to the field.",
+        "Inconsistent results / early exits drag down average placement."
+      ],
+      "avgPlacement": 12.0,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 2,
+      "placements": [
+        9,
+        15
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 20,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "placementPercentile": 38.81,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 11.19,
+      "strategicPercentile": 94.03
+    },
+    {
+      "playerId": "courtney",
+      "name": "Courtney",
+      "rank": 45,
+      "tier": "D",
+      "score": 39.55,
+      "title": "The Overachiever",
+      "emoji": "📚",
+      "reasoning": "Courtney grades out as a D overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 3 seasons, their average placement is 11.33, with 0 wins and 0 total challenge wins. Socially, they received 32 total votes against and earned 0 jury votes at finals; they found 1 idol. Their biggest edges come from Strategic. The main gaps are in Social, Challenges, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Above-average strategic impact and positioning."
+      ],
+      "weaknesses": [
+        "Takes too many votes / limited jury support.",
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 11.33,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 3,
+      "placements": [
+        14,
+        11,
+        9
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 32,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "placementPercentile": 43.28,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 5.97,
+      "strategicPercentile": 77.61
+    },
+    {
+      "playerId": "josee",
+      "name": "Josee",
+      "rank": 46,
+      "tier": "D",
+      "score": 39.33,
+      "title": "The Ice Queen",
+      "emoji": "❄️",
+      "reasoning": "Josee grades out as a D overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 2 seasons, their average placement is 12.50, with 0 wins and 0 total challenge wins. Socially, they received 6 total votes against and earned 0 jury votes at finals; they found 1 idol. Their biggest edges come from Social. The main gaps are in Strategic, Challenges, Placement, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Low target profile and/or strong jury appeal."
+      ],
+      "weaknesses": [
+        "Little evidence of consistent strategic control.",
+        "Limited challenge contribution compared to the field.",
+        "Inconsistent results / early exits drag down average placement."
+      ],
+      "avgPlacement": 12.5,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 2,
+      "placements": [
+        13,
+        12
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 6,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "placementPercentile": 33.58,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 65.67,
+      "strategicPercentile": 24.63
+    },
+    {
+      "playerId": "sam",
+      "name": "Sam",
+      "rank": 47,
+      "tier": "D",
+      "score": 39.29,
+      "title": "The Social Butterfly",
+      "emoji": "🎭",
+      "reasoning": "Sam grades out as a D overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 1 season, their average placement is 13.00, with 0 wins and 0 total challenge wins. Socially, they received 0 total votes against and earned 0 jury votes at finals; they found 0 idols. Their biggest edges come from Social. The main gaps are in Strategic, Placement, Challenges, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Low target profile and/or strong jury appeal."
+      ],
+      "weaknesses": [
+        "Little evidence of consistent strategic control.",
+        "Inconsistent results / early exits drag down average placement.",
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 13.0,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        13
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 0,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 29.85,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 87.31,
+      "strategicPercentile": 6.72
+    },
+    {
+      "playerId": "jasmine",
+      "name": "Jasmine",
+      "rank": 48,
+      "tier": "D",
+      "score": 39.1,
+      "title": "The Survivalist",
+      "emoji": "🪃",
+      "reasoning": "Jasmine grades out as a D overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 1 season, their average placement is 14.00, with 0 wins and 0 total challenge wins. Socially, they received 2 total votes against and earned 0 jury votes at finals; they found 0 idols. Their biggest edges come from Social. The main gaps are in Placement, Challenges, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Low target profile and/or strong jury appeal."
+      ],
+      "weaknesses": [
+        "Inconsistent results / early exits drag down average placement.",
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 14.0,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        14
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 2,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 23.88,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 73.13,
+      "strategicPercentile": 50.0
+    },
+    {
+      "playerId": "samey",
+      "name": "Samey",
+      "rank": 49,
+      "tier": "D",
+      "score": 37.57,
+      "title": "The Sweet Twin",
+      "emoji": "🌼",
+      "reasoning": "Samey grades out as a D overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 1 season, their average placement is 15.00, with 0 wins and 0 total challenge wins. Socially, they received 1 total vote against and earned 0 jury votes at finals; they found 0 idols. Their biggest edges come from Social. The main gaps are in Placement, Challenges, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Low target profile and/or strong jury appeal."
+      ],
+      "weaknesses": [
+        "Inconsistent results / early exits drag down average placement.",
+        "Limited challenge contribution compared to the field."
+      ],
       "avgPlacement": 15.0,
-      "winRate": 0
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        15
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 1,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 18.66,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 76.87,
+      "strategicPercentile": 50.0
+    },
+    {
+      "playerId": "rodney",
+      "name": "Rodney",
+      "rank": 50,
+      "tier": "D",
+      "score": 36.68,
+      "title": "The Hopeless Romantic",
+      "emoji": "💘",
+      "reasoning": "Rodney grades out as a D overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 1 season, their average placement is 12.00, with 0 wins and 0 total challenge wins. Socially, they received 9 total votes against and earned 0 jury votes at finals; they found 0 idols. Their biggest edges come from Strategic. The main gaps are in Social, Challenges, Placement, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Above-average strategic impact and positioning."
+      ],
+      "weaknesses": [
+        "Takes too many votes / limited jury support.",
+        "Limited challenge contribution compared to the field.",
+        "Inconsistent results / early exits drag down average placement."
+      ],
+      "avgPlacement": 12.0,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        12
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 9,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 38.81,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 17.16,
+      "strategicPercentile": 50.0
+    },
+    {
+      "playerId": "junior",
+      "name": "Junior",
+      "rank": 51,
+      "tier": "D",
+      "score": 35.56,
+      "title": "The Kid",
+      "emoji": "🧒",
+      "reasoning": "Junior grades out as a D overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 1 season, their average placement is 15.00, with 0 wins and 0 total challenge wins. Socially, they received 0 total votes against and earned 0 jury votes at finals; they found 0 idols. Their biggest edges come from Social. The main gaps are in Strategic, Placement, Challenges, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Low target profile and/or strong jury appeal."
+      ],
+      "weaknesses": [
+        "Little evidence of consistent strategic control.",
+        "Inconsistent results / early exits drag down average placement.",
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 15.0,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        15
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 0,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 18.66,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 87.31,
+      "strategicPercentile": 14.18
+    },
+    {
+      "playerId": "ennui",
+      "name": "Ennui",
+      "rank": 52,
+      "tier": "D",
+      "score": 34.81,
+      "title": "The Deadpan Goth",
+      "emoji": "😐",
+      "reasoning": "Ennui grades out as a D overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 1 season, their average placement is 16.00, with 0 wins and 0 total challenge wins. Socially, they received 0 total votes against and earned 0 jury votes at finals; they found 0 idols. Their biggest edges come from Social. The main gaps are in Placement, Strategic, Challenges, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Low target profile and/or strong jury appeal."
+      ],
+      "weaknesses": [
+        "Inconsistent results / early exits drag down average placement.",
+        "Little evidence of consistent strategic control.",
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 16.0,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        16
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 0,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 14.18,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 87.31,
+      "strategicPercentile": 24.63
+    },
+    {
+      "playerId": "beardo",
+      "name": "Beardo",
+      "rank": 53,
+      "tier": "D",
+      "score": 34.1,
+      "title": "The Beatboxer",
+      "emoji": "🔊",
+      "reasoning": "Beardo grades out as a D overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 1 season, their average placement is 16.00, with 0 wins and 0 total challenge wins. Socially, they received 3 total votes against and earned 0 jury votes at finals; they found 0 idols. Their biggest edges come from Social. The main gaps are in Placement, Challenges, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Low target profile and/or strong jury appeal."
+      ],
+      "weaknesses": [
+        "Inconsistent results / early exits drag down average placement.",
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 16.0,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        16
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 3,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 14.18,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 65.67,
+      "strategicPercentile": 50.0
+    },
+    {
+      "playerId": "sierra",
+      "name": "Sierra",
+      "rank": 54,
+      "tier": "D",
+      "score": 33.96,
+      "title": "The Superfan",
+      "emoji": "📱",
+      "reasoning": "Sierra grades out as a D overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 2 seasons, their average placement is 10.50, with 0 wins and 0 total challenge wins. Socially, they received 39 total votes against and earned 0 jury votes at finals; they found 1 idol. Their biggest edges come from Placement. The main gaps are in Social, Strategic, Challenges, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Strong average placement across seasons (deep runs)."
+      ],
+      "weaknesses": [
+        "Takes too many votes / limited jury support.",
+        "Little evidence of consistent strategic control.",
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 10.5,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 2,
+      "placements": [
+        11,
+        10
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 39,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "placementPercentile": 49.25,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 0.0,
+      "strategicPercentile": 6.72
+    },
+    {
+      "playerId": "ella",
+      "name": "Ella",
+      "rank": 55,
+      "tier": "D",
+      "score": 33.73,
+      "title": "The Disney Princess",
+      "emoji": "🎶",
+      "reasoning": "Ella grades out as a D overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 1 season, their average placement is 17.00, with 0 wins and 0 total challenge wins. Socially, they received 2 total votes against and earned 0 jury votes at finals; they found 0 idols. Their biggest edges come from Social. The main gaps are in Placement, Challenges, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Low target profile and/or strong jury appeal."
+      ],
+      "weaknesses": [
+        "Inconsistent results / early exits drag down average placement.",
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 17.0,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        17
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 2,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 10.45,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 73.13,
+      "strategicPercentile": 50.0
+    },
+    {
+      "playerId": "tammy",
+      "name": "Tammy",
+      "rank": 56,
+      "tier": "D",
+      "score": 31.01,
+      "title": "The LARP Sidekick",
+      "emoji": "🪄",
+      "reasoning": "Tammy grades out as a D overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 1 season, their average placement is 17.00, with 0 wins and 0 total challenge wins. Socially, they received 0 total votes against and earned 0 jury votes at finals; they found 0 idols. Their biggest edges come from Social. The main gaps are in Strategic, Placement, Challenges, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Low target profile and/or strong jury appeal."
+      ],
+      "weaknesses": [
+        "Little evidence of consistent strategic control.",
+        "Inconsistent results / early exits drag down average placement.",
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 17.0,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        17
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 0,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 10.45,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 87.31,
+      "strategicPercentile": 1.49
+    },
+    {
+      "playerId": "dj",
+      "name": "DJ",
+      "rank": 57,
+      "tier": "D",
+      "score": 31.01,
+      "title": "The Big Softie",
+      "emoji": "🐻",
+      "reasoning": "DJ grades out as a D overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 2 seasons, their average placement is 13.50, with 0 wins and 0 total challenge wins. Socially, they received 20 total votes against and earned 0 jury votes at finals; they found 0 idols. Their biggest edges come from Strategic. The main gaps are in Social, Placement, Challenges, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Above-average strategic impact and positioning."
+      ],
+      "weaknesses": [
+        "Takes too many votes / limited jury support.",
+        "Inconsistent results / early exits drag down average placement.",
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 13.5,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 2,
+      "placements": [
+        5,
+        22
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 20,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 26.87,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 11.19,
+      "strategicPercentile": 50.0
+    },
+    {
+      "playerId": "lightning",
+      "name": "Lightning",
+      "rank": 58,
+      "tier": "D",
+      "score": 30.67,
+      "title": "The Jock",
+      "emoji": "⚡️",
+      "reasoning": "Lightning grades out as a D overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 2 seasons, their average placement is 12.00, with 0 wins and 0 total challenge wins. Socially, they received 25 total votes against and earned 0 jury votes at finals; they found 2 idols. Their biggest edges come from Wins. The main gaps are in Social, Strategic, Challenges, which is what keeps them from the very top tier.",
+      "strengths": [
+        "High win conversion rate when they play."
+      ],
+      "weaknesses": [
+        "Takes too many votes / limited jury support.",
+        "Little evidence of consistent strategic control.",
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 12.0,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 2,
+      "placements": [
+        13,
+        11
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 25,
+      "juryVotes": 0,
+      "idolsFound": 2,
+      "placementPercentile": 38.81,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 2.99,
+      "strategicPercentile": 11.19
+    },
+    {
+      "playerId": "b",
+      "name": "B",
+      "rank": 59,
+      "tier": "D",
+      "score": 29.51,
+      "title": "The Silent Genius",
+      "emoji": "🤐",
+      "reasoning": "B grades out as a D overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 1 season, their average placement is 14.00, with 0 wins and 0 total challenge wins. Socially, they received 6 total votes against and earned 0 jury votes at finals; they found 0 idols. Their biggest edges come from Wins. The main gaps are in Strategic, Placement, Challenges, which is what keeps them from the very top tier.",
+      "strengths": [
+        "High win conversion rate when they play."
+      ],
+      "weaknesses": [
+        "Little evidence of consistent strategic control.",
+        "Inconsistent results / early exits drag down average placement.",
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 14.0,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        14
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 6,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 23.88,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 38.06,
+      "strategicPercentile": 6.72
+    },
+    {
+      "playerId": "izzy",
+      "name": "Izzy",
+      "rank": 60,
+      "tier": "D",
+      "score": 28.25,
+      "title": "The Chaos Gremlin",
+      "emoji": "🤪",
+      "reasoning": "Izzy grades out as a D overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 1 season, their average placement is 18.00, with 0 wins and 0 total challenge wins. Socially, they received 5 total votes against and earned 0 jury votes at finals; they found 0 idols. Their biggest edges come from Strategic. The main gaps are in Placement, Challenges, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Above-average strategic impact and positioning."
+      ],
+      "weaknesses": [
+        "Inconsistent results / early exits drag down average placement.",
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 18.0,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        18
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 5,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 5.97,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 48.51,
+      "strategicPercentile": 50.0
+    },
+    {
+      "playerId": "staci",
+      "name": "Staci",
+      "rank": 61,
+      "tier": "D",
+      "score": 27.43,
+      "title": "The Tall-Tale Teller",
+      "emoji": "🤥",
+      "reasoning": "Staci grades out as a D overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 1 season, their average placement is 15.00, with 0 wins and 0 total challenge wins. Socially, they received 6 total votes against and earned 0 jury votes at finals; they found 0 idols. Their biggest edges come from Wins. The main gaps are in Strategic, Placement, Challenges, which is what keeps them from the very top tier.",
+      "strengths": [
+        "High win conversion rate when they play."
+      ],
+      "weaknesses": [
+        "Little evidence of consistent strategic control.",
+        "Inconsistent results / early exits drag down average placement.",
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 15.0,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        15
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 6,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 18.66,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 38.06,
+      "strategicPercentile": 6.72
+    },
+    {
+      "playerId": "justin",
+      "name": "Justin",
+      "rank": 62,
+      "tier": "D",
+      "score": 26.46,
+      "title": "The Heartthrob",
+      "emoji": "😎",
+      "reasoning": "Justin grades out as a D overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 2 seasons, their average placement is 17.00, with 0 wins and 0 total challenge wins. Socially, they received 16 total votes against and earned 0 jury votes at finals; they found 1 idol. Their biggest edges come from Strategic. The main gaps are in Placement, Social, Challenges, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Above-average strategic impact and positioning."
+      ],
+      "weaknesses": [
+        "Inconsistent results / early exits drag down average placement.",
+        "Takes too many votes / limited jury support.",
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 17.0,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 2,
+      "placements": [
+        10,
+        24
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 16,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "placementPercentile": 10.45,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 24.63,
+      "strategicPercentile": 50.0
+    },
+    {
+      "playerId": "leonard",
+      "name": "Leonard",
+      "rank": 63,
+      "tier": "D",
+      "score": 25.82,
+      "title": "The LARPer Wizard",
+      "emoji": "🧙",
+      "reasoning": "Leonard grades out as a D overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 2 seasons, their average placement is 18.00, with 0 wins and 0 total challenge wins. Socially, they received 6 total votes against and earned 0 jury votes at finals; they found 0 idols. Their biggest edges come from Social. The main gaps are in Strategic, Placement, Challenges, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Low target profile and/or strong jury appeal."
+      ],
+      "weaknesses": [
+        "Little evidence of consistent strategic control.",
+        "Inconsistent results / early exits drag down average placement.",
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 18.0,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 2,
+      "placements": [
+        18,
+        18
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 6,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 5.97,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 65.67,
+      "strategicPercentile": 0.0
+    },
+    {
+      "playerId": "cody",
+      "name": "Cody",
+      "rank": 64,
+      "tier": "D",
+      "score": 25.49,
+      "title": "The Geek",
+      "emoji": "🤓",
+      "reasoning": "Cody grades out as a D overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 1 season, their average placement is 19.00, with 0 wins and 0 total challenge wins. Socially, they received 6 total votes against and earned 0 jury votes at finals; they found 0 idols. Their biggest edges come from Strategic. The main gaps are in Placement, Challenges, Social, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Above-average strategic impact and positioning."
+      ],
+      "weaknesses": [
+        "Inconsistent results / early exits drag down average placement.",
+        "Limited challenge contribution compared to the field.",
+        "Takes too many votes / limited jury support."
+      ],
+      "avgPlacement": 19.0,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        19
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 6,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 2.99,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 38.06,
+      "strategicPercentile": 50.0
+    },
+    {
+      "playerId": "dakota",
+      "name": "Dakota",
+      "rank": 65,
+      "tier": "D",
+      "score": 25.15,
+      "title": "The Fame Seeker",
+      "emoji": "📸",
+      "reasoning": "Dakota grades out as a D overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 2 seasons, their average placement is 15.00, with 0 wins and 0 total challenge wins. Socially, they received 19 total votes against and earned 0 jury votes at finals; they found 0 idols. Their biggest edges come from Wins. The main gaps are in Social, Placement, Strategic, which is what keeps them from the very top tier.",
+      "strengths": [
+        "High win conversion rate when they play."
+      ],
+      "weaknesses": [
+        "Takes too many votes / limited jury support.",
+        "Inconsistent results / early exits drag down average placement.",
+        "Little evidence of consistent strategic control."
+      ],
+      "avgPlacement": 15.0,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 2,
+      "placements": [
+        18,
+        12
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 19,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 18.66,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 14.93,
+      "strategicPercentile": 18.66
+    },
+    {
+      "playerId": "crimson",
+      "name": "Crimson",
+      "rank": 66,
+      "tier": "D",
+      "score": 24.89,
+      "title": "The Goth",
+      "emoji": "🦇",
+      "reasoning": "Crimson grades out as a D overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 2 seasons, their average placement is 18.00, with 0 wins and 0 total challenge wins. Socially, they received 8 total votes against and earned 0 jury votes at finals; they found 0 idols. Their biggest edges come from Social. The main gaps are in Strategic, Placement, Challenges, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Low target profile and/or strong jury appeal."
+      ],
+      "weaknesses": [
+        "Little evidence of consistent strategic control.",
+        "Inconsistent results / early exits drag down average placement.",
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 18.0,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 2,
+      "placements": [
+        16,
+        20
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 8,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 5.97,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 57.46,
+      "strategicPercentile": 2.99
+    },
+    {
+      "playerId": "eva",
+      "name": "Eva",
+      "rank": 67,
+      "tier": "D",
+      "score": 24.89,
+      "title": "The Hothead",
+      "emoji": "😡",
+      "reasoning": "Eva grades out as a D overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 1 season, their average placement is 21.00, with 0 wins and 0 total challenge wins. Socially, they received 6 total votes against and earned 0 jury votes at finals; they found 0 idols. Their biggest edges come from Strategic. The main gaps are in Placement, Challenges, Social, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Above-average strategic impact and positioning."
+      ],
+      "weaknesses": [
+        "Inconsistent results / early exits drag down average placement.",
+        "Limited challenge contribution compared to the field.",
+        "Takes too many votes / limited jury support."
+      ],
+      "avgPlacement": 21.0,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        21
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 6,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 1.49,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 38.06,
+      "strategicPercentile": 50.0
+    },
+    {
+      "playerId": "tyler",
+      "name": "Tyler",
+      "rank": 68,
+      "tier": "D",
+      "score": 22.28,
+      "title": "The Clumsy Jock",
+      "emoji": "🏈",
+      "reasoning": "Tyler grades out as a D overall based on a weighted mix of placement (40%), wins (20%), challenges (15%), social (15%), and strategic impact (10%). Across 1 season, their average placement is 23.00, with 0 wins and 0 total challenge wins. Socially, they received 8 total votes against and earned 0 jury votes at finals; they found 0 idols. Their biggest edges come from Strategic. The main gaps are in Placement, Social, Challenges, which is what keeps them from the very top tier.",
+      "strengths": [
+        "Above-average strategic impact and positioning."
+      ],
+      "weaknesses": [
+        "Inconsistent results / early exits drag down average placement.",
+        "Takes too many votes / limited jury support.",
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 23.0,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        23
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 8,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 0.0,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 24.63,
+      "strategicPercentile": 50.0
     }
   ]
 }

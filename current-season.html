@@ -733,9 +733,14 @@ Kitty: 15
           </div>
           
           <div style="margin-top: 16px; padding: 12px; background: rgba(255,179,71,0.1); border: 1px solid rgba(255,179,71,0.3); border-radius: 8px;">
-            <p style="margin: 0; font-size: 12px; opacity: 0.85;">
-              💡 <strong>Tip:</strong> Episode 1 must include the cast list in format:<br/>
+            <p style="margin: 0 0 8px 0; font-size: 12px; opacity: 0.85;">
+              💡 <strong>Required:</strong> Episode 1 must include the cast list in format:<br/>
               <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px;">=== CAST (ALL) ===</code>
+            </p>
+            <p style="margin: 0; font-size: 12px; opacity: 0.85;">
+              💡 <strong>Optional:</strong> Include tribe assignments for tribe tracking:<br/>
+              <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px;">=== TRIBE: Galang ===</code><br/>
+              <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px;">Mickey, Jacques, Ryan...</code>
             </p>
           </div>
         </div>
@@ -2440,6 +2445,78 @@ setTimeout(function() {
   let analyzedCastData = null;
 
   // ========================================
+  // HELPER: EXTRACT TRIBE INFORMATION
+  // ========================================
+  
+  function extractPlayerTribes(episodes) {
+    const playerTribes = {};
+    
+    if (!episodes || episodes.length === 0) return playerTribes;
+    
+    // Look for tribe assignments in early episodes (usually Episode 1)
+    for (const ep of episodes.slice(0, 3)) { // Check first 3 episodes
+      const summary = ep.summary || '';
+      
+      // Pattern 1: "=== TRIBE: TribeName ===" followed by player names
+      const tribeMatches = summary.matchAll(/===\s*TRIBE[:\s]+([A-Za-z]+)\s*===\s*([\s\S]*?)(?=\n===|$)/gi);
+      
+      for (const match of tribeMatches) {
+        const tribeName = match[1].trim();
+        const memberBlock = match[2];
+        
+        // Extract player names from the block
+        const lines = memberBlock.split('\n')
+          .map(l => l.trim())
+          .filter(l => l && !l.startsWith('===') && !l.startsWith('---'));
+        
+        for (const line of lines) {
+          // Remove bullets, numbers, etc
+          const cleanName = line.replace(/^[-*\d.)\s]+/, '').trim();
+          if (cleanName.length > 2) {
+            const playerId = slugify(cleanName);
+            playerTribes[playerId] = tribeName;
+          }
+        }
+      }
+      
+      // Pattern 2: Look for tribe mentions like "Galang members:", "Tadhana tribe:"
+      const tribeLineMatches = summary.matchAll(/([A-Za-z]+)\s+(?:tribe|members?):\s*([^\n]+)/gi);
+      
+      for (const match of tribeLineMatches) {
+        const tribeName = match[1].trim();
+        const members = match[2];
+        
+        // Split by commas or "and"
+        const names = members.split(/,|\sand\s/i).map(n => n.trim());
+        
+        for (const name of names) {
+          const cleanName = name.replace(/^[-*\d.)\s]+/, '').trim();
+          if (cleanName.length > 2 && !cleanName.toLowerCase().includes('member')) {
+            const playerId = slugify(cleanName);
+            playerTribes[playerId] = tribeName;
+          }
+        }
+      }
+      
+      // Pattern 3: Inline mentions like "Mickey (Galang)" or "Ryan from Tadhana"
+      const inlineMatches = summary.matchAll(/([A-Z][a-z]+)\s+(?:\(([A-Z][a-z]+)\)|from\s+([A-Z][a-z]+))/g);
+      
+      for (const match of inlineMatches) {
+        const playerName = match[1];
+        const tribeName = match[2] || match[3];
+        
+        if (playerName && tribeName) {
+          const playerId = slugify(playerName);
+          playerTribes[playerId] = tribeName;
+        }
+      }
+    }
+    
+    console.log('📋 Extracted tribe assignments:', playerTribes);
+    return playerTribes;
+  }
+
+  // ========================================
   // HELPER FUNCTIONS (copied from main script)
   // ========================================
   
@@ -3671,6 +3748,9 @@ setTimeout(function() {
       'winner', 'finalist', 'juror', 'pre-juror', 'voted-out', 'medevac'
     ];
     
+    // Extract tribe assignments from episodes
+    const playerTribes = extractPlayerTribes(seasonData.episodes || []);
+    
     // Track which players we've already processed to prevent duplicates
     const processedThisSeason = new Set();
     
@@ -3814,7 +3894,7 @@ setTimeout(function() {
         season,
         placement: placement.placement,
         status: placement.phase,
-        tribe: "TBD", // Could extract from episodes if needed
+        tribe: playerTribes[id] || "Unknown", // Use extracted tribe
         challengeWins: challengeWins,
         immunityWins: immunityWins,
         rewardWins: 0, // Not tracked yet

@@ -1495,20 +1495,45 @@
     ]
   },
   "awards": {
-    "fanFavorite": {
-      "name": "Jacques",
-      "playerSlug": "jacques"
-    },
-    "bestStrategic": {
-      "name": "Jacques",
-      "playerSlug": "jacques"
-    },
-    "mostChallengeWins": {
-      "name": "Jacques",
-      "playerSlug": "jacques",
-      "detail": "4 total"
-    }
+  "winner": { "name": "Jacques", "playerSlug": "jacques", "note": "7–1–0 jury vote" },
+  "fanFavorite": { "name": "Jacques", "playerSlug": "jacques" },
+  "bestStrategic": { "name": "Jacques", "playerSlug": "jacques" },
+
+  "bestPhysical": { "name": "Jacques", "playerSlug": "jacques", "note": "4 immunities + 4 total wins" },
+  "bestMental": { "name": "Emma", "playerSlug": "emma", "note": "Won merge immunity (memory-sequence)" },
+  "mostClutch": { "name": "Ryan", "playerSlug": "ryan", "note": "RI return + leverage plays" },
+  "bestDefensive": { "name": "Mickey", "playerSlug": "mickey", "note": "Idol holder + bonds through chaos" },
+  "mostLoyal": { "name": "Jay", "playerSlug": "jay", "note": "Low votes against (4) + FTC seat" },
+  "bestUnderdog": { "name": "Brody", "playerSlug": "brody", "note": "26 votes against and made jury" },
+
+  "biggestVillain": { "name": "Jacques", "playerSlug": "jacques" },
+  "mostChaotic": { "name": "Kitty", "playerSlug": "kitty", "note": "Idol volatility + split-vote magnet" },
+  "quietestThreat": { "name": "Mickey", "playerSlug": "mickey" },
+  "seasonMVP": { "name": "Jacques", "playerSlug": "jacques" },
+
+  "biggestMeltdown": { "name": "Kelly", "playerSlug": "kelly", "note": "Multiple meltdown flags late game" },
+  "mostUnlucky": { "name": "Emma", "playerSlug": "emma", "note": "Rock-draw elimination" },
+  "mostTragic": { "name": "Kelly", "playerSlug": "kelly", "note": "Tie → revote → fire-making loss" },
+
+  "biggestBetrayal": {
+    "betrayer": "Kitty",
+    "betrayed": "Herself / her game",
+    "description": "Idol misfire arc during merge window"
   },
+  "secondBiggestBetrayal": {
+    "betrayer": "Ryan",
+    "betrayed": "Emma",
+    "description": "Vote-war fallout fractures coalitions"
+  },
+
+  "ironPerson": { "name": "Brody", "playerSlug": "brody", "note": "Most votes against (26) and made jury" },
+
+  "bestJuryWin": { "name": "Jacques", "playerSlug": "jacques", "note": "7–1–0 blowout" },
+  "bestNarrativeMoment": { "name": "Emma", "playerSlug": "emma", "note": "Rock elimination (season-defining moment)" },
+
+  "mostChallengeWins": { "name": "Jacques", "playerSlug": "jacques", "detail": "4 total" }
+}
+,
   "seasonNarrative": "Blood vs. Water fractured loyalty all season as pairs clashed with emerging power webs. Early chaos, a critical swap idol play by Kelly, and a rock-draw merge shaped a volatile midgame where Mickey’s loyal core and Jacques’ surgical precision battled for control. In the end, Jacques combined low threat with perfect endgame execution, winning 7–1–0 after orchestrating advantages, immunities, and the Final 4 tie that sealed his path.",
   "theme": "2 tribes + redemption island",
   "status": "Complete",

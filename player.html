@@ -187,72 +187,101 @@ function formatPlayerStory(storyText) {
   // Split by season sections (divided by ────────)
   const sections = storyText.split(/────────+/);
   
-  let html = '';
+  // Group sections by season number to merge duplicates
+  const seasonMap = new Map();
   
   for (const section of sections) {
     const trimmed = section.trim();
     if (!trimmed) continue;
     
     // Extract season header (e.g., "SEASON 1 — Cullhouse")
-    const headerMatch = trimmed.match(/^SEASON\s+(\d+)\s+—\s+(.+?)$/m);
+    const headerMatch = trimmed.match(/^SEASON\s+(\d+)\s+[—\-–]\s+(.+?)$/m);
     
     if (headerMatch) {
       const seasonNum = headerMatch[1];
-      const seasonTheme = headerMatch[2];
+      const seasonTheme = headerMatch[2].trim();
       
-      // Remove ALL occurrences of the season header from content
+      // Remove ALL occurrences of ANY season header for this season number
       let content = trimmed;
-      const headerPattern = new RegExp(`SEASON\\s+${seasonNum}\\s+—\\s+${seasonTheme.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'gi');
-      content = content.replace(headerPattern, '').trim();
+      // Remove all variations of "SEASON X — Theme"
+      const genericPattern = new RegExp(`SEASON\\s+${seasonNum}\\s+[—\\-–]\\s+[^\\n]+`, 'gi');
+      content = content.replace(genericPattern, '').trim();
       
-      // Split into paragraphs
-      const paragraphs = content.split(/\n\n+/).filter(p => p.trim());
+      // Skip if content is empty after removing headers
+      if (!content) continue;
       
-      // Extract result from last paragraph
-      let resultBadge = '';
-      
-      const lastPara = paragraphs[paragraphs.length - 1];
-      if (lastPara) {
-        // Check for result indicators
-        if (lastPara.includes('won Season') || lastPara.match(/Result:.*win/i)) {
-          resultBadge = '<span class="result-badge result-winner">🏆 Winner</span>';
-        } else if (lastPara.match(/runner-up|2nd/i)) {
-          resultBadge = '<span class="result-badge result-runnerup">🥈 Runner-Up</span>';
-        } else if (lastPara.match(/eliminated|placed \d+th/i)) {
-          const placement = lastPara.match(/(\d+)(?:st|nd|rd|th)/);
-          if (placement) {
-            resultBadge = '<span class="result-badge result-eliminated">Eliminated ' + placement[0] + '</span>';
-          }
+      // If this season already exists, merge the content
+      if (seasonMap.has(seasonNum)) {
+        const existing = seasonMap.get(seasonNum);
+        existing.content += '\n\n' + content;
+      } else {
+        seasonMap.set(seasonNum, {
+          seasonNum,
+          seasonTheme,
+          content
+        });
+      }
+    }
+  }
+  
+  // Now render each unique season (sorted by season number)
+  let html = '';
+  
+  const sortedSeasons = Array.from(seasonMap.entries()).sort((a, b) => parseInt(a[0]) - parseInt(b[0]));
+  
+  for (const [seasonNum, seasonData] of sortedSeasons) {
+    const { seasonTheme, content } = seasonData;
+    
+    // Split into paragraphs
+    const paragraphs = content.split(/\n\n+/).filter(p => p.trim());
+    
+    // Skip if no paragraphs
+    if (paragraphs.length === 0) continue;
+    
+    // Extract result from last paragraph
+    let resultBadge = '';
+    
+    const lastPara = paragraphs[paragraphs.length - 1];
+    if (lastPara) {
+      // Check for result indicators
+      if (lastPara.includes('won Season') || lastPara.match(/Result:.*(?:win|champion|1st)/i)) {
+        resultBadge = '<span class="result-badge result-winner">🏆 Winner</span>';
+      } else if (lastPara.match(/runner-up|2nd/i)) {
+        resultBadge = '<span class="result-badge result-runnerup">🥈 Runner-Up</span>';
+      } else if (lastPara.match(/eliminated|placed \d+th|finished \d+th/i)) {
+        const placement = lastPara.match(/(\d+)(?:st|nd|rd|th)/);
+        if (placement) {
+          resultBadge = '<span class="result-badge result-eliminated">Eliminated ' + placement[0] + '</span>';
         }
       }
-      
-      // Highlight stats (numbers + keywords)
-      const formattedParagraphs = paragraphs.map(p => {
-        let formatted = p
-          // Highlight numbers followed by important keywords
-          .replace(/(\d+)\s+(immunity wins?|challenge wins?|total wins?|votes?|idols?)/gi, 
-            '<span class="stats-highlight">$1 $2</span>')
-          // Highlight important game terms
-          .replace(/(Final Tribal Council?|merge|finale|endgame|jury|fire-making)/gi, 
-            '<span class="stats-highlight">$1</span>')
-          // Highlight vote counts
-          .replace(/(\d+)–(\d+)(?:–(\d+))?/g, 
-            '<span class="stats-highlight">$&</span>');
-        
-        return '<p>' + formatted + '</p>';
-      }).join('');
-      
-      html += '<div class="season-section">' +
-        '<div class="season-header">' +
-          '<div class="season-number">Season ' + seasonNum + '</div>' +
-          '<div class="season-theme">' + seasonTheme + '</div>' +
-        '</div>' +
-        '<div class="season-body">' +
-          formattedParagraphs +
-          resultBadge +
-        '</div>' +
-      '</div>';
     }
+    
+    // Highlight stats (numbers + keywords)
+    const formattedParagraphs = paragraphs.map(p => {
+      let formatted = p
+        // Highlight numbers followed by important keywords
+        .replace(/(\d+)\s+(immunity wins?|challenge wins?|total wins?|votes?|idols?)/gi, 
+          '<span class="stats-highlight">$1 $2</span>')
+        // Highlight important game terms
+        .replace(/(Final Tribal Council?|merge|finale|endgame|jury|fire-making)/gi, 
+          '<span class="stats-highlight">$1</span>')
+        // Highlight vote counts
+        .replace(/(\d+)[–\-](\d+)(?:[–\-](\d+))?/g, 
+          '<span class="stats-highlight">$&</span>');
+      
+      return '<p>' + formatted + '</p>';
+    }).join('');
+    
+    html += '<div class="season-section">' +
+      '<div class="season-header">' +
+        '<div class="season-number">Season ' + seasonNum + '</div>' +
+        '<div class="season-theme">' + seasonTheme + '</div>' +
+      '</div>' +
+      '<div class="season-body">' +
+        formattedParagraphs +
+        resultBadge +
+      '</div>' +
+    '</div>';
   }
   
   return html || '<p style="color: #94a3b8; text-align: center; padding: 40px;">Could not parse story</p>';

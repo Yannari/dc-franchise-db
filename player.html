@@ -200,8 +200,10 @@ function formatPlayerStory(storyText) {
       const seasonNum = headerMatch[1];
       const seasonTheme = headerMatch[2];
       
-      // Remove the header from the content
-      const content = trimmed.replace(headerMatch[0], '').trim();
+      // Remove ALL occurrences of the season header from content
+      let content = trimmed;
+      const headerPattern = new RegExp(`SEASON\\s+${seasonNum}\\s+—\\s+${seasonTheme.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'gi');
+      content = content.replace(headerPattern, '').trim();
       
       // Split into paragraphs
       const paragraphs = content.split(/\n\n+/).filter(p => p.trim());

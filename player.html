@@ -175,6 +175,87 @@
 <!-- SITE FOOTER END -->
 
 <script>
+/* ============================================
+   PLAYER STORY FORMATTER
+   ============================================ */
+
+function formatPlayerStory(storyText) {
+  if (!storyText) {
+    return '<p style="color: #94a3b8; text-align: center; padding: 40px;">No story available</p>';
+  }
+  
+  // Split by season sections (divided by ────────)
+  const sections = storyText.split(/────────+/);
+  
+  let html = '';
+  
+  for (const section of sections) {
+    const trimmed = section.trim();
+    if (!trimmed) continue;
+    
+    // Extract season header (e.g., "SEASON 1 — Cullhouse")
+    const headerMatch = trimmed.match(/^SEASON\s+(\d+)\s+—\s+(.+?)$/m);
+    
+    if (headerMatch) {
+      const seasonNum = headerMatch[1];
+      const seasonTheme = headerMatch[2];
+      
+      // Remove the header from the content
+      const content = trimmed.replace(headerMatch[0], '').trim();
+      
+      // Split into paragraphs
+      const paragraphs = content.split(/\n\n+/).filter(p => p.trim());
+      
+      // Extract result from last paragraph
+      let resultBadge = '';
+      
+      const lastPara = paragraphs[paragraphs.length - 1];
+      if (lastPara) {
+        // Check for result indicators
+        if (lastPara.includes('won Season') || lastPara.match(/Result:.*win/i)) {
+          resultBadge = '<span class="result-badge result-winner">🏆 Winner</span>';
+        } else if (lastPara.match(/runner-up|2nd/i)) {
+          resultBadge = '<span class="result-badge result-runnerup">🥈 Runner-Up</span>';
+        } else if (lastPara.match(/eliminated|placed \d+th/i)) {
+          const placement = lastPara.match(/(\d+)(?:st|nd|rd|th)/);
+          if (placement) {
+            resultBadge = '<span class="result-badge result-eliminated">Eliminated ' + placement[0] + '</span>';
+          }
+        }
+      }
+      
+      // Highlight stats (numbers + keywords)
+      const formattedParagraphs = paragraphs.map(p => {
+        let formatted = p
+          // Highlight numbers followed by important keywords
+          .replace(/(\d+)\s+(immunity wins?|challenge wins?|total wins?|votes?|idols?)/gi, 
+            '<span class="stats-highlight">$1 $2</span>')
+          // Highlight important game terms
+          .replace(/(Final Tribal Council?|merge|finale|endgame|jury|fire-making)/gi, 
+            '<span class="stats-highlight">$1</span>')
+          // Highlight vote counts
+          .replace(/(\d+)–(\d+)(?:–(\d+))?/g, 
+            '<span class="stats-highlight">$&</span>');
+        
+        return '<p>' + formatted + '</p>';
+      }).join('');
+      
+      html += '<div class="season-section">' +
+        '<div class="season-header">' +
+          '<div class="season-number">Season ' + seasonNum + '</div>' +
+          '<div class="season-theme">' + seasonTheme + '</div>' +
+        '</div>' +
+        '<div class="season-body">' +
+          formattedParagraphs +
+          resultBadge +
+        '</div>' +
+      '</div>';
+    }
+  }
+  
+  return html || '<p style="color: #94a3b8; text-align: center; padding: 40px;">Could not parse story</p>';
+}
+
 // Get player ID from URL parameter
 const urlParams = new URLSearchParams(window.location.search);
 const playerId = urlParams.get('player');
@@ -306,8 +387,8 @@ function renderPlayerProfile(player) {
 
   // Player Story
   if (player.story) {
-    heroHtml += '<div class="section-title" style="margin-top:26px"><h2>Player Story</h2></div>';
-    heroHtml += '<div class="panel"><p>' + player.story + '</p></div>';
+    heroHtml += '<div class="section-title" style="margin-top:26px"><h2>📖 Player Story</h2></div>';
+    heroHtml += '<div class="player-story-container">' + formatPlayerStory(player.story) + '</div>';
   }
 
   // Career Totals

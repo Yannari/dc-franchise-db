@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Story Format Converter</title>
+<style>
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  color: #e0e0e0;
+  padding: 40px 20px;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.card {
+  background: rgba(30, 30, 46, 0.95);
+  border-radius: 16px;
+  padding: 32px;
+  margin-bottom: 24px;
+  border: 1px solid rgba(155, 109, 255, 0.2);
+}
+
+h1 {
+  color: #ffffff;
+  margin-bottom: 16px;
+}
+
+.btn {
+  background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%);
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-right: 12px;
+}
+
+.btn:hover {
+  opacity: 0.9;
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+}
+
+textarea {
+  width: 100%;
+  min-height: 400px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(155, 109, 255, 0.3);
+  border-radius: 8px;
+  color: #e0e0e0;
+  padding: 16px;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+.status {
+  padding: 12px;
+  border-radius: 8px;
+  margin-top: 16px;
+  display: none;
+}
+
+.status.success {
+  background: rgba(34, 197, 94, 0.2);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  color: #86efac;
+  display: block;
+}
+
+.status.error {
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+  display: block;
+}
+
+pre {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 12px;
+  border-radius: 6px;
+  overflow-x: auto;
+  font-size: 12px;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="card">
+    <h1>📖 Story Format Converter</h1>
+    <p style="opacity: 0.85;">Convert existing player stories to the new format (simple for 1-season, structured for multi-season)</p>
+    
+    <div style="margin-top: 24px;">
+      <input type="file" id="fileInput" accept=".json" style="margin-bottom: 16px;">
+      <div>
+        <button class="btn" onclick="processFile()">Convert Stories</button>
+        <button class="btn btn-secondary" onclick="downloadConverted()">Download Converted</button>
+      </div>
+    </div>
+    
+    <div id="status" class="status"></div>
+  </div>
+  
+  <div class="card">
+    <h2>Preview</h2>
+    <textarea id="preview" readonly placeholder="Converted data will appear here..."></textarea>
+  </div>
+  
+  <div class="card">
+    <h2>ℹ️ How It Works</h2>
+    <ul style="line-height: 1.8;">
+      <li><strong>Single-season players:</strong> Story stays as simple paragraph</li>
+      <li><strong>Multi-season players:</strong> Converts to structured format with season headers</li>
+      <li><strong>Already structured stories:</strong> Left unchanged</li>
+    </ul>
+    
+    <h3 style="margin-top: 24px;">Format Examples:</h3>
+    
+    <p><strong>Single Season (Kelly):</strong></p>
+    <pre>On Blood vs. Water (Season 6), Kelly played the 'tough mom'...</pre>
+    
+    <p><strong>Multi-Season (Duncan):</strong></p>
+    <pre>SEASON 1 — Cullhouse
+────────
+
+SEASON 1 — Cullhouse
+Introduced on Killer Bass...
+
+────────
+
+SEASON 2 — Action
+────────
+
+SEASON 2 — Action
+Duncan's Season 2 championship...</pre>
+  </div>
+</div>
+
+<script>
+let convertedData = null;
+
+// Season themes mapping
+const seasonThemes = {
+  1: "Cullhouse",
+  2: "Action",
+  3: "Revenge of the Island",
+  4: "Edge of Extinction",
+  5: "Winners at War",
+  6: "Blood vs. Water"
+};
+
+function convertPlayerStory(player) {
+  const story = player.story;
+  const seasons = player.seasonDetails || [];
+  
+  // If no story, skip
+  if (!story) return player;
+  
+  // If already structured, skip
+  if (story.includes('────────') || story.match(/SEASON\s+\d+\s+[—\-–]/)) {
+    console.log(`✓ Player ${player.id} already has structured story`);
+    return player;
+  }
+  
+  // If only 1 season, keep simple format
+  if (seasons.length <= 1) {
+    console.log(`✓ Player ${player.id} has 1 season - keeping simple format`);
+    return player;
+  }
+  
+  // Multi-season player: create structured story
+  console.log(`→ Converting ${player.id} (${seasons.length} seasons)`);
+  
+  // Try to split existing story by seasons (look for season mentions)
+  const seasonSections = [];
+  
+  // Attempt to parse existing story
+  // This is basic - assumes story mentions seasons in order
+  const storyText = story;
+  
+  // Simple heuristic: if story is short (<300 chars), it's probably incomplete
+  // Just create a structured format with the full text as Season X content
+  if (storyText.length < 300) {
+    const firstSeason = seasons[0].season;
+    const theme = seasonThemes[firstSeason] || `Season ${firstSeason}`;
+    
+    player.story = `SEASON ${firstSeason} — ${theme}\n────────\n\nSEASON ${firstSeason} — ${theme}\n${storyText}`;
+    console.log(`  → Created simple structured story for season ${firstSeason}`);
+    return player;
+  }
+  
+  // For longer stories, try to parse by season mentions
+  let structuredStory = '';
+  
+  for (const detail of seasons) {
+    const seasonNum = detail.season;
+    const theme = seasonThemes[seasonNum] || `Season ${seasonNum}`;
+    
+    // Look for this season's content in the story
+    const seasonRegex = new RegExp(`(?:Season ${seasonNum}|S${seasonNum})[^]*?(?=(?:Season \\d+|$))`, 'i');
+    const match = storyText.match(seasonRegex);
+    
+    const content = match ? match[0].trim() : `Competed in Season ${seasonNum}.`;
+    
+    if (structuredStory) {
+      structuredStory += '\n\n────────\n\n';
+    }
+    
+    structuredStory += `SEASON ${seasonNum} — ${theme}\n────────\n\nSEASON ${seasonNum} — ${theme}\n${content}`;
+  }
+  
+  player.story = structuredStory || storyText;
+  console.log(`  ✓ Converted to structured format`);
+  
+  return player;
+}
+
+function processFile() {
+  const fileInput = document.getElementById('fileInput');
+  const file = fileInput.files[0];
+  
+  if (!file) {
+    showStatus('Please select a file first', 'error');
+    return;
+  }
+  
+  const reader = new FileReader();
+  
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      
+      if (!data.players || !Array.isArray(data.players)) {
+        showStatus('Invalid JSON format - missing players array', 'error');
+        return;
+      }
+      
+      console.log(`Processing ${data.players.length} players...`);
+      
+      let converted = 0;
+      let skipped = 0;
+      
+      data.players = data.players.map(player => {
+        const result = convertPlayerStory(player);
+        if (result.story !== player.story) {
+          converted++;
+        } else {
+          skipped++;
+        }
+        return result;
+      });
+      
+      convertedData = data;
+      document.getElementById('preview').value = JSON.stringify(data, null, 2);
+      
+      showStatus(`✅ Converted ${converted} players, skipped ${skipped}`, 'success');
+      
+    } catch (error) {
+      showStatus('Error parsing JSON: ' + error.message, 'error');
+      console.error(error);
+    }
+  };
+  
+  reader.readAsText(file);
+}
+
+function downloadConverted() {
+  if (!convertedData) {
+    showStatus('Please convert a file first', 'error');
+    return;
+  }
+  
+  const dataStr = JSON.stringify(convertedData, null, 2);
+  const blob = new Blob([dataStr], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'players_database_converted.json';
+  a.click();
+  
+  URL.revokeObjectURL(url);
+  showStatus('✅ Downloaded players_database_converted.json', 'success');
+}
+
+function showStatus(message, type) {
+  const status = document.getElementById('status');
+  status.textContent = message;
+  status.className = 'status ' + type;
+  
+  setTimeout(() => {
+    status.className = 'status';
+  }, 5000);
+}
+</script>
+
+</body>
+</html>

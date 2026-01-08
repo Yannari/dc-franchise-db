@@ -2445,6 +2445,48 @@ setTimeout(function() {
   let analyzedCastData = null;
 
   // ========================================
+  // HELPER: FORMAT PLAYER STORY
+  // ========================================
+  
+  function formatPlayerStory(player, newSeasonStory, seasonNumber, seasonTheme) {
+    // Count total seasons INCLUDING the current one being added
+    const seasonDetails = player.seasonDetails || [];
+    const isReturning = player.seasons && player.seasons.length > 0;
+    const totalSeasons = isReturning ? seasonDetails.length + 1 : 1;
+    
+    // If player only has 1 season total (first time playing), use simple format
+    if (totalSeasons === 1) {
+      return newSeasonStory;
+    }
+    
+    // Multi-season player: use structured format
+    const existingStory = player.story || '';
+    
+    // Build new season section with proper formatting
+    const newSection = `SEASON ${seasonNumber} — ${seasonTheme}\n────────\n\nSEASON ${seasonNumber} — ${seasonTheme}\n${newSeasonStory}`;
+    
+    // If no existing story, start fresh with structured format
+    if (!existingStory) {
+      return newSection;
+    }
+    
+    // Check if this season already exists in the story (regeneration case)
+    const seasonPattern = new RegExp(`SEASON\\s+${seasonNumber}\\s+[—\\-–]`, 'i');
+    
+    if (seasonPattern.test(existingStory)) {
+      // Replace existing season section
+      const sectionRegex = new RegExp(
+        `SEASON\\s+${seasonNumber}\\s+[—\\-–][^\\n]*\\n────────\\n\\n[\\s\\S]*?(?=(?:\\n────────\\n\\nSEASON|$))`,
+        'gi'
+      );
+      return existingStory.replace(sectionRegex, newSection);
+    } else {
+      // Append new season
+      return existingStory + '\n\n────────\n\n' + newSection;
+    }
+  }
+
+  // ========================================
   // HELPER: EXTRACT TRIBE INFORMATION
   // ========================================
   
@@ -3881,9 +3923,10 @@ setTimeout(function() {
         player.totalIdolsFound += idolsFound;
         player.totalJuryVotes += juryVotes;
         
-        // Update story if AI provided one
+        // Update story with proper formatting (multi-season vs single-season)
         if (placement.story) {
-          player.story = placement.story;
+          const seasonTheme = seasonData.metadata?.theme || seasonData.metadata?.title || 'Unknown';
+          player.story = formatPlayerStory(player, placement.story, season, seasonTheme);
         }
         
         console.log(`✅ Updated player: ${name} - Now ${player.totalSeasons} season(s), ${player.wins} win(s)`);

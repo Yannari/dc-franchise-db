@@ -921,7 +921,7 @@ function getWinnerKeys(player){
 
 function renderPlayerCard(ranking, player) {
   const winRate = ranking.winRate || Math.round((player.wins / player.totalSeasons) * 100);
-  const avgPlacement = ranking.avgPlacement || calculateAvgPlacement(player);
+  const avgPlacement = calculateAvgPlacement(player);
 
   const winnerKeys = getWinnerKeys(player); // ["S1","S3"] etc.
   const isWinner = winnerKeys.length > 0;

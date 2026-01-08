@@ -17,23 +17,23 @@
   "tiers": {
     "S+": {
       "name": "TIER S+ — Elite Winners",
-      "description": "91+ • Franchise legends",
-      "scoreRange": [91, 100]
+      "description": "90+ • Franchise legends",
+      "scoreRange": [90, 100]
     },
     "S": {
       "name": "TIER S — Championship Caliber",
-      "description": "81-88 • Top-tier threats",
-      "scoreRange": [81, 90]
+      "description": "80-89 • Top-tier threats",
+      "scoreRange": [80, 89]
     },
     "A": {
       "name": "TIER A — Elite Threats",
-      "description": "72-79 • Deep runs",
-      "scoreRange": [72, 80]
+      "description": "71-79 • Deep runs",
+      "scoreRange": [71, 79]
     },
     "B": {
       "name": "TIER B — Above Average",
       "description": "61-70 • Solid gameplay",
-      "scoreRange": [61, 71]
+      "scoreRange": [61, 70]
     },
     "C": {
       "name": "TIER C — Average",
@@ -42,8 +42,8 @@
     },
     "D": {
       "name": "TIER D — Below Average",
-      "description": "36-50 • Early exits",
-      "scoreRange": [36, 50]
+      "description": "0-50 • Early exits",
+      "scoreRange": [0, 50]
     }
   },
   "rankings": [
@@ -52,7 +52,7 @@
       "name": "Alejandro",
       "rank": 1,
       "tier": "S+",
-      "score": 97.5,
+      "score": 97,
       "title": "The Snake Charmer",
       "emoji": "♟️",
       "reasoning": "3 FINALS APPEARANCES (franchise rarity). WINNER of S4 (7-6-1). MOST challenge wins in the franchise (13). Constant heat all game (25 votes against). Top jury pull in the database (12 finalist votes). Strategic mastermind (ranked #1). Saved by Ezekiel's idol play (Ep 8). (S2).",
@@ -90,7 +90,7 @@
       "name": "Mickey",
       "rank": 2,
       "tier": "S+",
-      "score": 96.8,
+      "score": 96,
       "title": "The Fragile Fighter",
       "emoji": "🏆",
       "reasoning": "TWO deep runs with real endgame equity. WINNER of S5 (4-3 (tiebreak)). Strong advantage game (2 idols/advantages found). Found Galang idol. (S6). Played idol on Jay at Final 5. (S6). Across 2 season(s): avg placement 1.50.",
@@ -127,7 +127,7 @@
       "name": "Jacques",
       "rank": 3,
       "tier": "S+",
-      "score": 95.5,
+      "score": 95,
       "title": "The Ice Dancer",
       "emoji": "🥇",
       "reasoning": "CHAMPION season on the résumé. WINNER of S6 (7-1-0). Reliable challenge contributor (4 total wins). Elite social insulation (only 2 votes against). Legit jury respect (7 finalist votes). Engineered Kitty’s idol burn at merge. (S6). Won 4 immunities to steer late votes. (S6).",
@@ -163,7 +163,7 @@
       "name": "Lindsay",
       "rank": 4,
       "tier": "S+",
-      "score": 92.1,
+      "score": 92,
       "title": "The Glow-Up Queen",
       "emoji": "👑",
       "reasoning": "TWO deep runs with real endgame equity. WINNER of S1 (5-4). Elite social insulation (only 2 votes against). Legit jury respect (5 finalist votes). High-end strategist (best rank: #2). Never needed immunity. (S1). Lost 1-5-1 to Duncan. (S2).",
@@ -200,7 +200,7 @@
       "name": "Scott",
       "rank": 5,
       "tier": "S",
-      "score": 89.6,
+      "score": 89,
       "title": "The Saboteur",
       "emoji": "🦊",
       "reasoning": "TWO deep runs with real endgame equity. RUNNER-UP in S3 (3-4-1). Reliable challenge contributor (6 total wins). Strong advantage game (2 idols/advantages found). High-end strategist (best rank: #2). FRANCHISE RECORD: Held idol 9 tribals!. (S4). Perfect idol play at F5 (3 votes cancelled). (S4).",
@@ -273,7 +273,7 @@
       "name": "Duncan",
       "rank": 7,
       "tier": "S",
-      "score": 87.7,
+      "score": 83,
       "title": "The Delinquent",
       "emoji": "🗡️",
       "reasoning": "CHAMPION season on the résumé. WINNER of S2. Legit jury respect (5 finalist votes). 5-3 vote. (S1). Won Final Tribal 5-1-1. (S2). Across 3 season(s): avg placement 7.33.",
@@ -310,7 +310,7 @@
       "name": "Emma",
       "rank": 8,
       "tier": "S",
-      "score": 86.9,
+      "score": 81,
       "title": "The Comeback Kid",
       "emoji": "🔁",
       "reasoning": "CHAMPION season on the résumé. WINNER of S3. Reliable challenge contributor (5 total wins). High-end strategist (best rank: #2). 4-3-1 tiebreaker victory. (S3). Lost via rocks in a deadlock. (S6). Across 3 season(s): avg placement 9.33.",
@@ -347,7 +347,7 @@
       "name": "Zoey",
       "rank": 9,
       "tier": "S",
-      "score": 86.1,
+      "score": 86,
       "title": "The Powerhouse",
       "emoji": "💪",
       "reasoning": "Finalist who came within reach of the crown. RUNNER-UP in S4 (6-7). Elite challenge engine (8 total wins). Legit jury respect (6 finalist votes). Perfect idol play saved Geoff (7 votes cancelled). (S4). UNPRECEDENTED: 3 unbreakable bonds at once!. (S4). Across 2 season(s): avg placement 3.00.",
@@ -735,7 +735,7 @@
       "name": "Mike",
       "rank": 20,
       "tier": "B",
-      "score": 69.6,
+      "score": 69,
       "title": "The Split Persona",
       "emoji": "🎭",
       "reasoning": "Eliminated 2-0 (Sierra's perfect idol). (S4). Blindsided while Zoey held immunity. (S3). Across 2 season(s): avg placement 9.00.",

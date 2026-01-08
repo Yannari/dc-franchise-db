@@ -666,11 +666,23 @@ function renderPlayers(players) {
 function updateDisplay() {
   const query = (search.value || '').toLowerCase().trim();
   const sortValue = sortSelect.value;
+  const seasonFilterValue = document.getElementById('seasonFilter')?.value || 'all';
 
   // ✅ Always filter from the original data (not from DOM cards)
-  let filteredPlayers = allPlayers.filter(p =>
-    (p.name || '').toLowerCase().includes(query)
-  );
+  let filteredPlayers = allPlayers.filter(p => {
+    // Name search filter
+    const matchesName = (p.name || '').toLowerCase().includes(query);
+    
+    // Season filter
+    let matchesSeason = true;
+    if (seasonFilterValue !== 'all') {
+      const seasonNum = Number(seasonFilterValue);
+      const playerSeasons = p.seasons || [];
+      matchesSeason = playerSeasons.includes(seasonNum);
+    }
+    
+    return matchesName && matchesSeason;
+  });
 
   filteredPlayers.sort((a, b) => {
     const aPlace = Number(a.bestPlacement ?? 9999);
@@ -704,6 +716,12 @@ function updateDisplay() {
 search.addEventListener('input', updateDisplay);
 search.addEventListener('search', updateDisplay);
 sortSelect.addEventListener('change', updateDisplay);
+
+// Season filter event listener
+const seasonFilter = document.getElementById('seasonFilter');
+if (seasonFilter) {
+  seasonFilter.addEventListener('change', updateDisplay);
+}
 </script>
 
 </body>

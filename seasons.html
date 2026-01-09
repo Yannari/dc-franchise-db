@@ -116,7 +116,7 @@
     
     // Update stats
     document.getElementById('topbar-stats').textContent = 
-      `Season count: ${data.franchise.totalSeasons} • Player count: 58`;
+      `Season count: ${data.franchise.totalSeasons} • Player count: 68`;
     document.getElementById('footer-seasons').textContent = data.franchise.totalSeasons;
     
     // Sort by season number descending (most recent first)
@@ -136,7 +136,7 @@
     <div class="avatar">S${season.seasonNumber}</div>
     <div>
       <div class="name">Season ${season.seasonNumber}</div>
-      <div class="sub">${season.status} • Winner: ${season.winner.name}</div>
+      
     </div>
   </div>
   <div class="badges">

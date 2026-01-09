@@ -157,7 +157,7 @@ async function generateAnalytics(summaryText, season, episode, env) {
   };
 
   const instructions = `
-You generate Survivor-style analytics for a Total Drama simulation with Redemption Island.
+You generate Survivor-style analytics for a Total Drama simulation with or without Redemption Island.
 
 CRITICAL RULES:
 1. Identify ALL players still in the game (including Redemption Island).

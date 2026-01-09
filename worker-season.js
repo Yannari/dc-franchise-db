@@ -24,7 +24,7 @@ export default {
         return await generateRankingsUpdate(body, env);
       } else {
         return new Response(JSON.stringify({ 
-          error: "Invalid mode. Use: 'season-data-extraction', 'rankings-rebuild', or 'rankings-update'" 
+          error: "Invalid mode. Use: 'audition-generation', 'season-data-extraction', 'rankings-rebuild', or 'rankings-update'" 
         }), {
           status: 400,
           headers: { ...cors, "Content-Type": "application/json" },

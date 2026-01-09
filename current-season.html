@@ -654,6 +654,12 @@ Blaineley
             </div>
             
             <div>
+              <label style="display: block; margin-bottom: 6px; font-size: 13px; opacity: 0.9;">Cast Size</label>
+              <input type="number" id="sb-cast-size" value="16" min="10" max="30"
+                style="width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff;" />
+            </div>
+            
+            <div>
               <label style="display: block; margin-bottom: 6px; font-size: 13px; opacity: 0.9;">Emoji</label>
               <input type="text" id="sb-season-emoji" value="🎯" maxlength="4"
                 style="width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-size: 24px; text-align: center;" />
@@ -2661,6 +2667,7 @@ setTimeout(function() {
             theme: document.getElementById("sb-season-theme").value.trim(),
             emoji: document.getElementById("sb-season-emoji").value.trim(),
             episodeCount: parseInt(document.getElementById("sb-episode-count").value) || 17,
+            castSize: parseInt(document.getElementById("sb-cast-size").value) || 16,
           },
           brantsteeleStats: document.getElementById("sb-brantsteele-stats").value.trim(),
           auditionsInput: document.getElementById("sb-auditions-input")?.value.trim() || "",  // ← Raw input
@@ -2737,6 +2744,7 @@ setTimeout(function() {
       document.getElementById("sb-season-theme").value = data.metadata.theme || '';
       document.getElementById("sb-season-emoji").value = data.metadata.emoji || '🎯';
       document.getElementById("sb-episode-count").value = data.metadata.episodeCount || 17;
+      document.getElementById("sb-cast-size").value = data.metadata.castSize || 16;
       
       // Load Brantsteele stats
       document.getElementById("sb-brantsteele-stats").value = data.brantsteeleStats || '';
@@ -2834,9 +2842,9 @@ setTimeout(function() {
   function setupSeasonBuilderAutoSave() {
     const fields = [
       'sb-season-title', 'sb-season-subtitle', 'sb-season-theme', 'sb-season-emoji',
-      'sb-brantsteele-stats', 'sb-auditions-input', 'sb-finale-winner', 'sb-finale-runnerup', 
-      'sb-finale-vote', 'sb-jury-votes', 'sb-award-fan', 'sb-award-strategic', 
-      'sb-award-challenges'
+      'sb-episode-count', 'sb-cast-size', 'sb-brantsteele-stats', 'sb-auditions-input', 
+      'sb-finale-winner', 'sb-finale-runnerup', 'sb-finale-vote', 'sb-jury-votes', 
+      'sb-award-fan', 'sb-award-strategic', 'sb-award-challenges'
     ];
     
     fields.forEach(id => {

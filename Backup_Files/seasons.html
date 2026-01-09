@@ -116,7 +116,7 @@
     
     // Update stats
     document.getElementById('topbar-stats').textContent = 
-      `Season count: ${data.franchise.totalSeasons} • Player count: 58`;
+      `Season count: ${data.franchise.totalSeasons} • Player count: 68`;
     document.getElementById('footer-seasons').textContent = data.franchise.totalSeasons;
     
     // Sort by season number descending (most recent first)
@@ -128,7 +128,7 @@
     // Generate season cards
     const cardsHTML = seasons.map(season => {
       const isMostRecent = season.seasonNumber === mostRecentSeason;
-      const isFirstSeason = season.seasonNumber === 1;
+      const isFirstSeason = season.seasonNumber === mostRecentSeason;
       
       return `
 <a class="card ${isFirstSeason ? 'winner' : ''}" href="season_ref.html?season=${season.seasonNumber}">

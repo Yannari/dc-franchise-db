@@ -107,6 +107,10 @@
     const response = await fetch('seasons_database.json');
     const data = await response.json();
     
+    // Load franchise stats
+    const franchiseResponse = await fetch('franchise_database.json');
+    const franchiseData = await franchiseResponse.json();
+    
     const grid = document.getElementById('seasons-grid');
     
     if (!data.seasons || data.seasons.length === 0) {
@@ -114,10 +118,15 @@
       return;
     }
     
+    // Get actual counts
+    const totalSeasons = data.seasons.length;
+    const totalPlayers = franchiseData.franchiseStats?.uniquePlayers || 68;
+    
     // Update stats
     document.getElementById('topbar-stats').textContent = 
-      `Season count: ${data.franchise.totalSeasons} • Player count: 68`;
-    document.getElementById('footer-seasons').textContent = data.franchise.totalSeasons;
+      `Season count: ${totalSeasons} • Player count: ${totalPlayers}`;
+    document.getElementById('footer-seasons').textContent = totalSeasons;
+    document.getElementById('footer-players').textContent = totalPlayers;
     
     // Sort by season number descending (most recent first)
     const seasons = [...data.seasons].sort((a, b) => b.seasonNumber - a.seasonNumber);

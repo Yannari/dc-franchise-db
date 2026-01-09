@@ -58,10 +58,10 @@ function safeLowerId(x) {
 // ===== AUDITION GENERATION =====
 async function generateAuditions(body, env) {
   const cors = corsHeaders();
-  const { cast, seasonTheme, seasonNumber } = body;
+  const { auditionsText, seasonTheme, seasonNumber, castSize } = body;
 
-  if (!cast || !Array.isArray(cast) || cast.length === 0) {
-    return new Response(JSON.stringify({ error: "No cast provided" }), {
+  if (!auditionsText || !auditionsText.trim()) {
+    return new Response(JSON.stringify({ error: "No auditions text provided" }), {
       status: 400,
       headers: { ...cors, "Content-Type": "application/json" },
     });
@@ -94,51 +94,54 @@ async function generateAuditions(body, env) {
   };
 
   const instructions = `
-Generate audition tapes for Total Drama / Disventure Camp style reality competition.
+Parse and structure audition tapes from the provided text.
 
-CRITICAL TONE: These are PRE-SHOW character introductions. They should feel like audition tapes where contestants introduce themselves with personality, confidence, and sometimes delusion about how they'll play.
+INPUT: Raw text containing audition summaries (one per contestant)
+OUTPUT: Structured JSON with each audition formatted consistently
 
-STYLE GUIDELINES:
-- Write in FIRST PERSON (the character is speaking to camera)
-- 2-4 paragraphs per audition
-- Mix confidence with vulnerability
-- Include specific details (hobbies, background, quirks)
-- End with a memorable hook or promise
-- Characters should be DISTINCT and memorable
+YOUR TASK:
+1. Parse each audition from the text
+2. Extract: name, archetype (from parentheses), main audition text
+3. Infer: personality traits (3-5 adjectives), strategy summary, memorable quote, hook
+4. Return structured JSON
 
-ARCHETYPE EXAMPLES:
-- The Hopeless Romantic, The Schemer, The Jock, The Nerd, The Party Girl, The Strategist, The Underdog, The Villain, The Hero, The Comic Relief, The Drama Queen, The Ice Queen, The Golden Boy, The Hot-Head, The Sweetheart
+EXTRACTION RULES:
+- **Name**: Extract from "Audition X/Y — Name (Archetype)" format
+- **Archetype**: Extract from parentheses after name
+- **Audition Text**: The main 2-4 paragraph audition tape (clean it up, maintain voice)
+- **Personality Traits**: Infer 3-5 adjectives from the text (e.g., "bubbly", "nervous", "strategic")
+- **Strategy**: Summarize their stated or implied game plan in 1 sentence
+- **Memorable Quote**: Extract the most quotable line from their audition
+- **Hook**: The "end beat" or final promise/statement
 
-STRUCTURE FOR EACH AUDITION:
-1. **Opening Hook** - Who they are, why they're here (1-2 sentences)
-2. **Personality Showcase** - Quirks, background, what makes them unique (2-3 sentences)
-3. **Strategy Tease** - How they plan to play (or delusion about their plan) (1-2 sentences)
-4. **Memorable Quote** - A line that captures their essence
-5. **End Beat** - Final promise or statement that hooks you
+STYLE PRESERVATION:
+- Keep the first-person voice (character speaking to camera)
+- Maintain their personality and quirks
+- Clean up formatting but preserve essence
 
-GOOD EXAMPLE TONE:
-"Carrie comes in bubbly and nervous, clutching a notebook filled with handwritten 'dream alliances.' She admits she watches every season like it's a rom-com, rooting for couples and underdogs. She says she wants to play 'with her heart,' but immediately worries that means she'll get blindsided. She promises she won't fall in love this time… then instantly admits she probably will. Hook: Wants to prove she can play strategically, not just emotionally. End beat: 'If I get voted out for trusting people… at least it'll be poetic.'"
+EXAMPLE INPUT:
+"Audition 1/16 — Carrie (Hopeless Romantic Superfan)
+Carrie comes in bubbly and nervous, clutching a notebook filled with handwritten 'dream alliances.' She admits she watches every season like it's a rom-com, rooting for couples and underdogs. She says she wants to play 'with her heart,' but immediately worries that means she'll get blindsided. She promises she won't fall in love this time… then instantly admits she probably will."
 
-ANOTHER EXAMPLE (Confident/Villain):
-"Ara Kwon, 21-year-old business student, and the show's next and most beautiful winner. I'm used to doing whatever it takes to get what I want… well, unless physical injury is involved. Unlike other people who've competed on this show, I have standards. Fighting tooth and nail to succeed in a world that doesn't want me to is my hobby, and I have so much fun doing it. Yes, please keep telling me, 'No Ara, you can't win the presidential race.' And to that I say, it's not my fault Stacy's dad was having an affair with the head of the school board, and I just had to expose them. Take it from me, it's so much more fun to just dive in and have fun than worry about what's correct. Oh, don't believe me? Perfect. Keep your eyes on me, and you'll see how correct I am."
-
-KEY REQUIREMENTS:
-- Each character must be DISTINCT (different personalities, backgrounds, strategies)
-- Mix of confident/nervous, strategic/emotional, heroic/villainous
-- Include specific details (jobs, hobbies, past experiences)
-- Natural dialogue feel (like they're talking to camera)
-- Memorable quotes that capture their essence
+EXAMPLE OUTPUT:
+{
+  "name": "Carrie",
+  "auditionNumber": 1,
+  "archetype": "Hopeless Romantic Superfan",
+  "personalityTraits": ["bubbly", "nervous", "emotional", "romantic", "self-aware"],
+  "auditionText": "Carrie comes in bubbly and nervous, clutching a notebook filled with handwritten 'dream alliances.' She admits she watches every season like it's a rom-com, rooting for couples and underdogs. She says she wants to play 'with her heart,' but immediately worries that means she'll get blindsided. She promises she won't fall in love this time… then instantly admits she probably will.",
+  "strategy": "Play with heart but try to think strategically",
+  "memorableQuote": "If I get voted out for trusting people… at least it'll be poetic.",
+  "hook": "Wants to prove she can play strategically, not just emotionally"
+}
 
 Return ONLY JSON with the auditions array.
 `.trim();
-
-  const castList = cast.map((name, i) => `${i + 1}. ${name}`).join('\n');
-  const themeContext = seasonTheme ? `\n\nSeason Theme: ${seasonTheme}` : '';
   
   const payload = {
     model: "gpt-5",
     instructions,
-    input: `Generate audition tapes for these ${cast.length} contestants:\n\n${castList}${themeContext}\n\nCreate ${cast.length} unique, memorable audition tapes.`,
+    input: `Parse these audition summaries into structured JSON:\n\n${auditionsText}`,
     text: { format: { type: "json_schema", name: "auditions", strict: true, schema } },
   };
 
@@ -414,11 +417,11 @@ function calculateScore(player) {
 }
 
 function assignTier(score) {
-  if (score >= 91) return "S+";
-  if (score >= 81) return "S";
-  if (score >= 71) return "A";
-  if (score >= 61) return "B";
-  if (score >= 51) return "C";
+  if (score >= 85) return "S+";
+  if (score >= 80) return "S";
+  if (score >= 70) return "A";
+  if (score >= 60.5) return "B";
+  if (score >= 50.5) return "C";
   return "D";
 }
 
@@ -595,7 +598,16 @@ TITLE PATTERNS (2-4 words):
 - Personality-based: "The Rebel Champ", "The Underdog", "The Snake Charmer"
 
 EMOJI PATTERNS:
-Based on what matched the most the character for example:
+🏆 = Multi-season winner (50%+ win rate)
+🥇 = 1-season perfect winner (100% win rate)
+👑 = Winner with strong legacy
+🧠 = Strategic mastermind
+💪 = Challenge powerhouse
+🥈 = Runner-up
+🏅 = Strong competitor
+🦊 = Schemer/manipulator
+🖤 = Iconic/memorable
+♟️ = Chess master / Strategic genius
 🎸🎭🎮🎉 = Personality-based
 
 REASONING (2-4 sentences) - MUST reference actual gameplay from their story:

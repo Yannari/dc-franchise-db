@@ -728,12 +728,31 @@ Kitty: 15
             </button>
           </div>
           
+          <!-- Audition Summary Input (like episodes) -->
+          <div style="margin-bottom: 16px;">
+            <label style="font-weight: 600; font-size: 14px; color: #c4b5fd; display: block; margin-bottom: 8px;">
+              📝 Paste Audition Summaries Here
+            </label>
+            <textarea id="sb-auditions-input" rows="8" 
+              placeholder="Paste all audition summaries here (one per contestant)...
+
+Example format:
+Audition 1/16 — Carrie (Hopeless Romantic Superfan)
+Carrie comes in bubbly and nervous, clutching a notebook filled with handwritten 'dream alliances.' She admits she watches every season like it's a rom-com...
+
+Audition 2/16 — Devin (The Jock)
+Devin walks in confidently...
+
+(AI will parse and generate structured auditions from this)"
+              style="width: 100%; padding: 12px; background: rgba(147,51,234,0.1); border: 1px solid rgba(147,51,234,0.3); border-radius: 8px; color: #fff; font-family: monospace; font-size: 12px;"></textarea>
+          </div>
+          
           <div style="margin-bottom: 16px; padding: 12px; background: rgba(147,51,234,0.1); border: 1px solid rgba(147,51,234,0.3); border-radius: 8px;">
             <p style="margin: 0 0 12px 0; font-size: 13px; opacity: 0.95;">
-              ✨ <strong>Audition Tapes:</strong> These are character introductions shown before Episode 1. AI will generate unique audition tapes for each contestant.
+              ✨ <strong>How it works:</strong> Paste your audition summaries above, then click the button below. AI will parse each audition and fill the individual textareas.
             </p>
             <button id="sb-generate-auditions" class="btn" style="background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%); font-size: 13px; padding: 8px 16px;">
-              🤖 Generate Auditions with AI
+              🤖 Parse & Generate Auditions
             </button>
           </div>
           
@@ -2644,8 +2663,9 @@ setTimeout(function() {
             episodeCount: parseInt(document.getElementById("sb-episode-count").value) || 17,
           },
           brantsteeleStats: document.getElementById("sb-brantsteele-stats").value.trim(),
+          auditionsInput: document.getElementById("sb-auditions-input")?.value.trim() || "",  // ← Raw input
           episodes: {},
-          auditions: {},  // ← NEW: Store auditions
+          auditions: {},  // ← Parsed auditions
           finale: {
             winner: document.getElementById("sb-finale-winner").value.trim(),
             runnerUp: document.getElementById("sb-finale-runnerup").value.trim(),
@@ -2720,6 +2740,12 @@ setTimeout(function() {
       
       // Load Brantsteele stats
       document.getElementById("sb-brantsteele-stats").value = data.brantsteeleStats || '';
+      
+      // Load auditions input
+      const auditionsInput = document.getElementById("sb-auditions-input");
+      if (auditionsInput) {
+        auditionsInput.value = data.auditionsInput || '';
+      }
       
       // Regenerate episode textareas if count changed
       const currentCount = parseInt(document.getElementById("sb-episode-count").value);
@@ -2808,7 +2834,7 @@ setTimeout(function() {
   function setupSeasonBuilderAutoSave() {
     const fields = [
       'sb-season-title', 'sb-season-subtitle', 'sb-season-theme', 'sb-season-emoji',
-      'sb-brantsteele-stats', 'sb-finale-winner', 'sb-finale-runnerup', 
+      'sb-brantsteele-stats', 'sb-auditions-input', 'sb-finale-winner', 'sb-finale-runnerup', 
       'sb-finale-vote', 'sb-jury-votes', 'sb-award-fan', 'sb-award-strategic', 
       'sb-award-challenges'
     ];
@@ -3075,30 +3101,16 @@ setTimeout(function() {
   const sbGenerateAuditionsBtn = document.getElementById('sb-generate-auditions');
   if (sbGenerateAuditionsBtn) {
     sbGenerateAuditionsBtn.addEventListener('click', async () => {
+      const auditionsInput = document.getElementById("sb-auditions-input")?.value.trim();
+      
+      if (!auditionsInput) {
+        alert("⚠️ Please paste audition summaries in the text area first!\n\nExample:\nAudition 1/16 — Carrie (Hopeless Romantic)\nCarrie comes in bubbly and nervous...");
+        return;
+      }
+      
       const seasonNumber = parseInt(document.getElementById("sb-season-number").value) || 0;
       const seasonTheme = document.getElementById("sb-season-theme").value.trim();
       const castSize = parseInt(document.getElementById("sb-cast-size").value) || 16;
-      
-      // Extract cast from Episode 1
-      const ep1Text = document.getElementById("sb-ep1-summary")?.value || "";
-      const castMatch = ep1Text.match(/===\s*CAST\s*\(ALL\)\s*===\s*([\s\S]*?)(?===|$)/i);
-      
-      if (!castMatch) {
-        alert("⚠️ Please fill Episode 1 with cast list first!\n\nMust include:\n=== CAST (ALL) ===\nName1\nName2\n...");
-        return;
-      }
-      
-      // Parse cast names
-      const castBlock = castMatch[1].trim();
-      const castLines = castBlock.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-      const cast = castLines
-        .map(l => l.replace(/^[-*\d.)\s]+/, "").trim())
-        .filter(name => name && !name.toLowerCase().includes('tribe'));
-      
-      if (cast.length === 0) {
-        alert("⚠️ No cast members found in Episode 1!");
-        return;
-      }
       
       const workerUrl = getWorkerUrl();
       if (!workerUrl) {
@@ -3107,7 +3119,7 @@ setTimeout(function() {
       }
       
       sbGenerateAuditionsBtn.disabled = true;
-      sbGenerateAuditionsBtn.textContent = "⏳ Generating Auditions...";
+      sbGenerateAuditionsBtn.textContent = "⏳ Parsing Auditions...";
       
       try {
         const response = await fetch(workerUrl, {
@@ -3115,9 +3127,10 @@ setTimeout(function() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             mode: "audition-generation",
-            cast: cast,
+            auditionsText: auditionsInput,  // Send raw pasted text
             seasonTheme: seasonTheme,
-            seasonNumber: seasonNumber
+            seasonNumber: seasonNumber,
+            castSize: castSize
           })
         });
         
@@ -3138,7 +3151,7 @@ setTimeout(function() {
           
           if (textarea) {
             // Format audition text
-            const formattedText = `Audition ${auditionNum}/${cast.length} — ${audition.name} (${audition.archetype})
+            const formattedText = `Audition ${auditionNum}/${data.auditions.length} — ${audition.name} (${audition.archetype})
 
 ${audition.auditionText}
 
@@ -3154,14 +3167,14 @@ Hook: ${audition.hook}`;
         sbGenerateAuditionsBtn.textContent = "✅ Auditions Generated!";
         setTimeout(() => {
           sbGenerateAuditionsBtn.disabled = false;
-          sbGenerateAuditionsBtn.textContent = "🤖 Generate Auditions with AI";
+          sbGenerateAuditionsBtn.textContent = "🤖 Parse & Generate Auditions";
         }, 2000);
         
       } catch (error) {
         console.error("Audition generation error:", error);
         alert(`❌ Error generating auditions: ${error.message}`);
         sbGenerateAuditionsBtn.disabled = false;
-        sbGenerateAuditionsBtn.textContent = "🤖 Generate Auditions with AI";
+        sbGenerateAuditionsBtn.textContent = "🤖 Parse & Generate Auditions";
       }
     });
   }

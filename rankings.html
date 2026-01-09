@@ -725,7 +725,7 @@ background: rgba(0, 0, 0, 0.2);
 <label for="sortBy">Sort</label>
 <select id="sortBy">
 <option value="default">Default (your tiers)</option>
-<option value="scoreDesc" selected>Score ↓</option>
+<option value="scoreDesc">Score ↓</option>
 <option value="scoreAsc">Score ↑</option>
 <option value="nameAsc">Name A→Z</option>
 <option value="nameDesc">Name Z→A</option>
@@ -837,18 +837,18 @@ function renderRankings(rankingsData, playersMap) {
 
     const tierInfo = rankingsData.tiers[tierKey];
     const players = (tierGroups[tierKey] || []).slice().sort(function(a, b) {
-    // Prefer explicit rank if present (lower rank = higher), otherwise sort by score (higher first)
-    const ra = Number.isFinite(Number(a.rank)) ? Number(a.rank) : Number.POSITIVE_INFINITY;
-    const rb = Number.isFinite(Number(b.rank)) ? Number(b.rank) : Number.POSITIVE_INFINITY;
-    if (ra !== rb) return ra - rb;
-
     const sa = Number(a.score || 0);
     const sb = Number(b.score || 0);
     if (sb !== sa) return sb - sa;
 
-    // stable-ish tie-breaker
+    // tie-breaker: rank if you want, otherwise name/id
+    const ra = Number.isFinite(Number(a.rank)) ? Number(a.rank) : Number.POSITIVE_INFINITY;
+    const rb = Number.isFinite(Number(b.rank)) ? Number(b.rank) : Number.POSITIVE_INFINITY;
+    if (ra !== rb) return ra - rb;
+
     return String(a.playerId || '').localeCompare(String(b.playerId || ''));
   });
+
 
     // IDs must match your controls/anchors: tier-splus, tier-s, tier-a, ...
     const tierId = tierKey.toLowerCase().replace('+', 'plus');
@@ -1296,6 +1296,7 @@ function initRankControls(){
   sortScope?.addEventListener('change', () => { restoreLayout(); applyFilters(); applySort(); });
 
   applyFilters();
+  applySort(); 
 }
 
 

@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ranking Override Manager</title>
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  color: #e0e0e0;
+  padding: 40px 20px;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.header {
+  background: rgba(30, 30, 46, 0.95);
+  border-radius: 16px;
+  padding: 32px;
+  margin-bottom: 24px;
+  border: 1px solid rgba(155, 109, 255, 0.2);
+}
+
+h1 {
+  color: #ffffff;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.subtitle {
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.toolbar {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%);
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 14px;
+  transition: opacity 0.2s;
+}
+
+.btn:hover {
+  opacity: 0.9;
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+.btn-info {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 1024px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card {
+  background: rgba(30, 30, 46, 0.95);
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid rgba(155, 109, 255, 0.2);
+}
+
+.card h2 {
+  color: #ffffff;
+  margin-bottom: 16px;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.player-list {
+  max-height: 600px;
+  overflow-y: auto;
+  margin-top: 16px;
+}
+
+.player-item {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 16px;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  border: 1px solid rgba(155, 109, 255, 0.1);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.player-item:hover {
+  background: rgba(147, 51, 234, 0.15);
+  border-color: rgba(155, 109, 255, 0.3);
+}
+
+.player-item.selected {
+  background: rgba(147, 51, 234, 0.25);
+  border-color: rgba(155, 109, 255, 0.5);
+}
+
+.player-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.player-name {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.player-stats {
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+.tier-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.tier-s-plus { background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); color: #78350f; }
+.tier-s { background: linear-gradient(135deg, #f87171 0%, #ef4444 100%); color: #fef2f2; }
+.tier-a { background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%); color: #eff6ff; }
+.tier-b { background: linear-gradient(135deg, #34d399 0%, #10b981 100%); color: #064e3b; }
+.tier-c { background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%); color: #f5f3ff; }
+.tier-d { background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%); color: #1e293b; }
+
+.override-badge {
+  background: rgba(34, 197, 94, 0.2);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  color: #86efac;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+.editor {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 24px;
+  border-radius: 10px;
+  margin-top: 16px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  color: #c4b5fd;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(155, 109, 255, 0.3);
+  border-radius: 8px;
+  color: #e0e0e0;
+  font-size: 14px;
+}
+
+.form-group textarea {
+  min-height: 80px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.status {
+  padding: 12px;
+  border-radius: 8px;
+  margin-top: 16px;
+  display: none;
+}
+
+.status.success {
+  background: rgba(34, 197, 94, 0.2);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  color: #86efac;
+  display: block;
+}
+
+.status.error {
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+  display: block;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #94a3b8;
+}
+
+.empty-state-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>⚙️ Ranking Override Manager</h1>
+    <p class="subtitle">Manually adjust player scores and tiers. Overrides take precedence over AI calculations.</p>
+    
+    <div class="toolbar">
+      <input type="file" id="uploadPlayers" accept=".json" style="display: none;">
+      <input type="file" id="uploadRankings" accept=".json" style="display: none;">
+      <input type="file" id="uploadOverrides" accept=".json" style="display: none;">
+      
+      <button class="btn btn-info" onclick="document.getElementById('uploadPlayers').click()">
+        📥 Load Players Database
+      </button>
+      <button class="btn btn-info" onclick="document.getElementById('uploadRankings').click()">
+        🤖 Load AI Rankings
+      </button>
+      <button class="btn btn-info" onclick="document.getElementById('uploadOverrides').click()">
+        📤 Load Overrides
+      </button>
+      <button class="btn btn-secondary" onclick="downloadOverrides()">
+        💾 Download Overrides
+      </button>
+      <button class="btn btn-danger" onclick="clearAllOverrides()">
+        🗑️ Clear All Overrides
+      </button>
+    </div>
+  </div>
+  
+  <div id="status" class="status"></div>
+  
+  <div class="grid">
+    <!-- Player List -->
+    <div class="card">
+      <h2>📋 Players</h2>
+      <div style="margin-bottom: 12px;">
+        <input type="text" id="searchPlayer" placeholder="Search players..." 
+          style="width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(155,109,255,0.3); border-radius: 8px; color: #e0e0e0;">
+      </div>
+      <div id="playerList" class="player-list">
+        <div class="empty-state">
+          <div class="empty-state-icon">📁</div>
+          <p>Load players_database.json to begin</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Override Editor -->
+    <div class="card">
+      <h2>✏️ Override Editor</h2>
+      <div id="editor" class="editor">
+        <div class="empty-state">
+          <div class="empty-state-icon">👈</div>
+          <p>Select a player to set override</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let playersData = [];
+let aiRankings = [];
+let overrides = {};
+let selectedPlayer = null;
+
+// File uploads
+document.getElementById('uploadPlayers').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    try {
+      const data = JSON.parse(event.target.result);
+      if (!data.players) throw new Error('Invalid format');
+      
+      playersData = data.players;
+      renderPlayerList();
+      showStatus(`✅ Loaded ${playersData.length} players`, 'success');
+    } catch (error) {
+      showStatus('❌ Error loading players: ' + error.message, 'error');
+    }
+  };
+  reader.readAsText(file);
+});
+
+document.getElementById('uploadRankings').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    try {
+      const data = JSON.parse(event.target.result);
+      if (!data.rankings) throw new Error('Invalid format - missing rankings array');
+      
+      aiRankings = data.rankings;
+      
+      // Auto-populate overrides with AI scores
+      let imported = 0;
+      aiRankings.forEach(ranking => {
+        // Only import if not already overridden
+        if (!overrides[ranking.playerId]) {
+          overrides[ranking.playerId] = {
+            score: ranking.score,
+            tier: ranking.tier,
+            reason: `AI calculated: ${ranking.reasoning || 'Auto-imported from AI rankings'}`
+          };
+          imported++;
+        }
+      });
+      
+      renderPlayerList();
+      showStatus(`✅ Loaded ${aiRankings.length} AI rankings, imported ${imported} as overrides`, 'success');
+    } catch (error) {
+      showStatus('❌ Error loading rankings: ' + error.message, 'error');
+    }
+  };
+  reader.readAsText(file);
+});
+
+document.getElementById('uploadOverrides').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    try {
+      const data = JSON.parse(event.target.result);
+      overrides = data.overrides || {};
+      renderPlayerList();
+      showStatus(`✅ Loaded ${Object.keys(overrides).length} overrides`, 'success');
+    } catch (error) {
+      showStatus('❌ Error loading overrides: ' + error.message, 'error');
+    }
+  };
+  reader.readAsText(file);
+});
+
+// Search
+document.getElementById('searchPlayer').addEventListener('input', (e) => {
+  renderPlayerList(e.target.value.toLowerCase());
+});
+
+// Render player list
+function renderPlayerList(searchTerm = '') {
+  const listEl = document.getElementById('playerList');
+  
+  if (playersData.length === 0) {
+    listEl.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">📁</div>
+        <p>Load players_database.json to begin</p>
+      </div>
+    `;
+    return;
+  }
+  
+  const filtered = playersData.filter(p => 
+    !searchTerm || p.name.toLowerCase().includes(searchTerm) || p.id.toLowerCase().includes(searchTerm)
+  );
+  
+  listEl.innerHTML = filtered.map(player => {
+    const hasOverride = overrides[player.id];
+    const seasons = player.seasonDetails?.length || 0;
+    const wins = player.wins || 0;
+    const avg = player.avgPlacement || (seasons > 0 ? 
+      player.seasonDetails.reduce((sum, s) => sum + s.placement, 0) / seasons : 0);
+    
+    const tier = hasOverride ? hasOverride.tier : player.tier || '?';
+    const score = hasOverride ? hasOverride.score : 0;
+    
+    return `
+      <div class="player-item ${selectedPlayer?.id === player.id ? 'selected' : ''}" 
+           onclick='selectPlayer(${JSON.stringify(player)})'>
+        <div class="player-header">
+          <div>
+            <span class="player-name">${player.name}</span>
+            ${hasOverride ? '<span class="override-badge">OVERRIDE</span>' : ''}
+          </div>
+          <span class="tier-badge tier-${tier.toLowerCase().replace('+', '-plus')}">${tier}</span>
+        </div>
+        <div class="player-stats">
+          ${seasons} seasons • ${wins} wins • Avg: ${avg.toFixed(2)}
+          ${hasOverride ? ` • Override Score: ${score}` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// Select player
+function selectPlayer(player) {
+  selectedPlayer = player;
+  renderPlayerList();
+  renderEditor();
+}
+
+// Render editor
+function renderEditor() {
+  const editorEl = document.getElementById('editor');
+  
+  if (!selectedPlayer) {
+    editorEl.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">👈</div>
+        <p>Select a player to set override</p>
+      </div>
+    `;
+    return;
+  }
+  
+  const override = overrides[selectedPlayer.id] || {};
+  const hasOverride = !!overrides[selectedPlayer.id];
+  
+  // Check if we have AI ranking data
+  const aiRanking = aiRankings.find(r => r.playerId === selectedPlayer.id);
+  const aiScore = aiRanking?.aiScore || aiRanking?.score;
+  const aiTier = aiRanking?.aiTier || aiRanking?.tier;
+  
+  let aiInfoHtml = '';
+  if (aiRanking) {
+    aiInfoHtml = `
+      <div style="background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); padding: 16px; border-radius: 10px; margin-bottom: 20px;">
+        <div style="font-weight: 600; margin-bottom: 8px; color: #60a5fa;">🤖 AI Calculated:</div>
+        <div style="display: flex; gap: 16px; font-size: 14px;">
+          <div><strong>Score:</strong> ${aiScore}</div>
+          <div><strong>Tier:</strong> ${aiTier}</div>
+          <div><strong>Rank:</strong> #${aiRanking.rank}</div>
+        </div>
+        ${aiRanking.reasoning ? `<div style="margin-top: 8px; font-size: 13px; opacity: 0.9;">"${aiRanking.reasoning}"</div>` : ''}
+      </div>
+    `;
+  }
+  
+  editorEl.innerHTML = `
+    <h3 style="margin-bottom: 20px; color: #ffffff;">${selectedPlayer.name}</h3>
+    
+    ${aiInfoHtml}
+    
+    <div class="form-group">
+      <label>Score (0-100)</label>
+      <input type="number" id="overrideScore" min="0" max="100" step="0.1" 
+             value="${override.score || aiScore || ''}" 
+             placeholder="${aiScore ? 'AI: ' + aiScore : 'Leave empty for AI calculation'}">
+      ${aiScore && override.score ? `<div style="font-size: 12px; margin-top: 4px; color: #94a3b8;">Change: ${aiScore} → ${override.score} (${override.score > aiScore ? '+' : ''}${(override.score - aiScore).toFixed(1)})</div>` : ''}
+    </div>
+    
+    <div class="form-group">
+      <label>Tier</label>
+      <select id="overrideTier">
+        <option value="">Auto (from score)</option>
+        <option value="S+" ${override.tier === 'S+' ? 'selected' : ''}>S+</option>
+        <option value="S" ${override.tier === 'S' ? 'selected' : ''}>S</option>
+        <option value="A" ${override.tier === 'A' ? 'selected' : ''}>A</option>
+        <option value="B" ${override.tier === 'B' ? 'selected' : ''}>B</option>
+        <option value="C" ${override.tier === 'C' ? 'selected' : ''}>C</option>
+        <option value="D" ${override.tier === 'D' ? 'selected' : ''}>D</option>
+      </select>
+      ${aiTier ? `<div style="font-size: 12px; margin-top: 4px; color: #94a3b8;">AI suggested: ${aiTier}</div>` : ''}
+    </div>
+    
+    <div class="form-group">
+      <label>Reason (optional)</label>
+      <textarea id="overrideReason" placeholder="Why are you overriding this score?">${override.reason || ''}</textarea>
+    </div>
+    
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="saveOverride()">💾 Save Override</button>
+      ${hasOverride ? '<button class="btn btn-danger" onclick="removeOverride()">🗑️ Remove Override</button>' : ''}
+      ${aiScore && !hasOverride ? '<button class="btn" onclick="useAIScore()">✨ Use AI Score</button>' : ''}
+    </div>
+  `;
+}
+
+// Save override
+function saveOverride() {
+  const score = parseFloat(document.getElementById('overrideScore').value);
+  const tier = document.getElementById('overrideTier').value;
+  const reason = document.getElementById('overrideReason').value.trim();
+  
+  if (!score) {
+    showStatus('❌ Score is required', 'error');
+    return;
+  }
+  
+  overrides[selectedPlayer.id] = {
+    score,
+    tier: tier || autoAssignTier(score),
+    reason: reason || `Manual override for ${selectedPlayer.name}`
+  };
+  
+  renderPlayerList();
+  renderEditor();
+  showStatus(`✅ Override saved for ${selectedPlayer.name}`, 'success');
+}
+
+// Use AI score as override
+function useAIScore() {
+  const aiRanking = aiRankings.find(r => r.playerId === selectedPlayer.id);
+  if (!aiRanking) {
+    showStatus('❌ No AI ranking found', 'error');
+    return;
+  }
+  
+  const aiScore = aiRanking.aiScore || aiRanking.score;
+  const aiTier = aiRanking.aiTier || aiRanking.tier;
+  
+  overrides[selectedPlayer.id] = {
+    score: aiScore,
+    tier: aiTier,
+    reason: `Accepted AI suggestion: ${aiRanking.reasoning || 'AI calculated score'}`
+  };
+  
+  renderPlayerList();
+  renderEditor();
+  showStatus(`✅ Used AI score (${aiScore}) for ${selectedPlayer.name}`, 'success');
+}
+
+// Remove override
+function removeOverride() {
+  if (confirm(`Remove override for ${selectedPlayer.name}?`)) {
+    delete overrides[selectedPlayer.id];
+    renderPlayerList();
+    renderEditor();
+    showStatus(`✅ Override removed for ${selectedPlayer.name}`, 'success');
+  }
+}
+
+// Auto assign tier from score
+function autoAssignTier(score) {
+  if (score >= 92) return 'S+';
+  if (score >= 81) return 'S';
+  if (score >= 70) return 'A';
+  if (score >= 60) return 'B';
+  if (score >= 50) return 'C';
+  return 'D';
+}
+
+// Download overrides
+function downloadOverrides() {
+  const data = {
+    version: "1.0",
+    lastUpdated: new Date().toISOString().split('T')[0],
+    description: "Manual score overrides for specific players. These take precedence over AI-calculated scores.",
+    overrides: overrides,
+    notes: [
+      "Add entries here to override AI-calculated scores",
+      "Format: 'playerId': { score, tier, reason }",
+      "Leave empty for players you want AI to rank automatically",
+      "Overrides persist across season generations"
+    ]
+  };
+  
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'ranking-overrides.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  
+  showStatus('✅ Downloaded ranking-overrides.json', 'success');
+}
+
+// Clear all overrides
+function clearAllOverrides() {
+  if (confirm('Clear all overrides? This cannot be undone!')) {
+    overrides = {};
+    renderPlayerList();
+    renderEditor();
+    showStatus('✅ All overrides cleared', 'success');
+  }
+}
+
+// Show status
+function showStatus(message, type) {
+  const statusEl = document.getElementById('status');
+  statusEl.textContent = message;
+  statusEl.className = 'status ' + type;
+  
+  setTimeout(() => {
+    statusEl.className = 'status';
+  }, 5000);
+}
+</script>
+
+</body>
+</html>

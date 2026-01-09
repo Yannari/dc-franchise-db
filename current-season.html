@@ -3176,6 +3176,18 @@ setTimeout(function() {
         console.log('ℹ️ Could not load rankings file from project:', e.message);
       }
       
+      // Load ranking overrides (if available)
+      let overrides = null;
+      try {
+        const overridesResp = await fetch('ranking-overrides.json');
+        if (overridesResp.ok) {
+          overrides = await overridesResp.json();
+          console.log(`✓ Loaded ${Object.keys(overrides.overrides || {}).length} ranking overrides`);
+        }
+      } catch (e) {
+        console.log('ℹ️ No ranking overrides found, using AI scores only');
+      }
+      
       // IMPORTANT: Use 'rankings-update' to preserve non-returnees
       // Use 'rankings-rebuild' once to recalculate everyone from scratch
       const rankingsResp = await fetch(workerUrl, {
@@ -3185,7 +3197,8 @@ setTimeout(function() {
           mode: "rankings-update",  // Preserves non-returnees
           playersDB,
           seasonData,
-          oldRankingsDB: oldRankingsData
+          oldRankingsDB: oldRankingsData,
+          overrides: overrides  // ← Pass overrides here
         })
       });
       
@@ -4842,13 +4855,26 @@ setTimeout(function() {
           
           console.log("🔄 Rebuilding rankings for all players...");
           
+          // Load ranking overrides (if available)
+          let overrides = null;
+          try {
+            const overridesResp = await fetch('ranking-overrides.json');
+            if (overridesResp.ok) {
+              overrides = await overridesResp.json();
+              console.log(`✓ Loaded ${Object.keys(overrides.overrides || {}).length} ranking overrides`);
+            }
+          } catch (e) {
+            console.log('ℹ️ No ranking overrides found, using AI scores only');
+          }
+          
           const response = await fetch(workerUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               mode: "rankings-rebuild",
               playersDB: db,
-              currentSeason: db.franchise?.totalSeasons || 6
+              currentSeason: db.franchise?.totalSeasons || 6,
+              overrides: overrides  // ← Pass overrides here
             })
           });
           

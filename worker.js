@@ -365,7 +365,12 @@ async function generateAnalytics(summaryText, season, episode, env) {
         items: {
           type: "object",
           additionalProperties: false,
-          properties: { player: { type: "string" }, score: { type: "number" }, tag: { type: "string" }, blurb: { type: "string" } },
+          properties: {
+            player: { type: "string" },
+            score: { type: "number", minimum: 0, maximum: 100 }, // ✅ (1) schema bound
+            tag: { type: "string" },
+            blurb: { type: "string" }
+          },
           required: ["player", "score", "tag", "blurb"],
         },
       },
@@ -374,7 +379,11 @@ async function generateAnalytics(summaryText, season, episode, env) {
         items: {
           type: "object",
           additionalProperties: false,
-          properties: { name: { type: "string" }, score: { type: "number" }, note: { type: "string" } },
+          properties: {
+            name: { type: "string" },
+            score: { type: "number", minimum: 0, maximum: 100 }, // ✅ (1)
+            note: { type: "string" }
+          },
           required: ["name", "score", "note"],
         },
       },
@@ -406,7 +415,7 @@ async function generateAnalytics(summaryText, season, episode, env) {
             strongLikes: { type: "array", items: { type: "string" } },
             strongDislikes: { type: "array", items: { type: "string" } },
             isolated: { type: "boolean" },
-            centralityScore: { type: "number" },
+            centralityScore: { type: "number", minimum: 0, maximum: 100 }, // ✅ (1)
           },
           required: ["player", "strongLikes", "strongDislikes", "isolated", "centralityScore"],
         },
@@ -416,7 +425,11 @@ async function generateAnalytics(summaryText, season, episode, env) {
         items: {
           type: "object",
           additionalProperties: false,
-          properties: { player: { type: "string" }, score: { type: "number" }, note: { type: "string" } },
+          properties: {
+            player: { type: "string" },
+            score: { type: "number", minimum: 0, maximum: 100 }, // ✅ (1)
+            note: { type: "string" }
+          },
           required: ["player", "score", "note"],
         },
       },
@@ -464,6 +477,11 @@ CRITICAL RULES:
 1. Identify ALL players still in the game (including Redemption Island).
 2. For bootPredictions, powerRankings, titles, roles, socialNetwork, juryManagement, threatBreakdown, pathToVictory: Include EVERY player (active + RI).
 3. If there are 18 total players (15 active + 3 on RI), ALL arrays must have 18 entries.
+
+SCORING RULES (non-negotiable):
+- All fields named "score" are on a 0-100 scale (integers preferred).
+- centralityScore is also 0-100.
+- 0 = worst, 100 = best. Do NOT use 1-10.
 
 ONLY use facts from the summary. Do not invent events.
 
@@ -565,6 +583,55 @@ Return the complete episode transcript.
   return await callOpenAI(payload, env);
 }
 
+// ✅ (3) normalization + clamp helpers (only affects episode analytics JSON)
+function normalizeScore01to100(value, assumeTenScale = false) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return 0;
+  let x = n;
+
+  // If it looks like a 0-10 score, convert to 0-100.
+  if (assumeTenScale) x = x * 10;
+
+  // Clamp
+  if (x < 0) x = 0;
+  if (x > 100) x = 100;
+
+  // Round to integer (optional but matches your UI "/100" cleanly)
+  return Math.round(x);
+}
+
+function normalizeAnalyticsScores(obj) {
+  if (!obj || typeof obj !== "object") return obj;
+
+  const pr = Array.isArray(obj.powerRankings) ? obj.powerRankings : [];
+  const maxPR = pr.reduce((m, it) => Math.max(m, Number(it?.score) || 0), 0);
+  const looksTenScale = maxPR > 0 && maxPR <= 10;
+
+  const mapArr = (arr, fn) => Array.isArray(arr) ? arr.map(fn) : arr;
+
+  obj.powerRankings = mapArr(obj.powerRankings, it => ({
+    ...it,
+    score: normalizeScore01to100(it?.score, looksTenScale),
+  }));
+
+  obj.allianceStability = mapArr(obj.allianceStability, it => ({
+    ...it,
+    score: normalizeScore01to100(it?.score, looksTenScale),
+  }));
+
+  obj.juryManagement = mapArr(obj.juryManagement, it => ({
+    ...it,
+    score: normalizeScore01to100(it?.score, looksTenScale),
+  }));
+
+  obj.socialNetwork = mapArr(obj.socialNetwork, it => ({
+    ...it,
+    centralityScore: normalizeScore01to100(it?.centralityScore, looksTenScale),
+  }));
+
+  return obj;
+}
+
 async function callOpenAI(payload, env) {
   let resp;
   try {
@@ -612,6 +679,18 @@ async function callOpenAI(payload, env) {
         outJson = { episodeTranscript: joined };
       }
     }
+  }
+
+  // ✅ (3) normalize only when this looks like episode analytics output
+  if (
+    outJson &&
+    typeof outJson === "object" &&
+    Array.isArray(outJson.powerRankings) &&
+    Array.isArray(outJson.allianceStability) &&
+    Array.isArray(outJson.socialNetwork) &&
+    Array.isArray(outJson.juryManagement)
+  ) {
+    outJson = normalizeAnalyticsScores(outJson);
   }
 
   const finalOut = outJson || data;

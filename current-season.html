@@ -1562,22 +1562,21 @@ Dave voted for Mickey
         const power = bm.get(key) ?? 50;
         
         // Use boot prediction from AI if available
-        // Otherwise use a safe default based on power
         let prob = probMap.get(key);
         if (prob === undefined) {
           // Fallback: If AI didn't include this player, assume moderate-low risk
-          // Power 100 = 10% risk, Power 50 = 20% risk, Power 0 = 40% risk
           prob = Math.max(0.10, Math.min(0.40, 0.50 - (power / 100) * 0.40));
         }
         
-        // x: power (0..100)
-        // y: safety = 100 - prob*100
+        // x: power (0..100) - use actual power score
+        // y: safety = 100 - prob*100 (convert probability to safety percentage)
         const x = power;
         const y = 100 - prob*100;
         return { name, x, y, prob, power };
       });
       
-      // Normalize to use full compass space
+      // Use actual data ranges with minimal normalization
+      // Only apply a gentle spread if data is too clustered (within 20 points)
       const xValues = points.map(p => p.x);
       const yValues = points.map(p => p.y);
       const xMin = Math.min(...xValues);
@@ -1585,12 +1584,30 @@ Dave voted for Mickey
       const yMin = Math.min(...yValues);
       const yMax = Math.max(...yValues);
       
-      // Scale to 10-90 range for better visualization (with 10% padding)
+      const xRange = xMax - xMin;
+      const yRange = yMax - yMin;
+      
+      // If data is very clustered (range < 20), apply gentle spread
+      // Otherwise use actual positions with slight padding
       const normalizedPoints = points.map(p => {
-        const xRange = xMax - xMin || 1;
-        const yRange = yMax - yMin || 1;
-        const xNorm = 10 + ((p.x - xMin) / xRange) * 80;
-        const yNorm = 10 + ((p.y - yMin) / yRange) * 80;
+        let xNorm, yNorm;
+        
+        if (xRange < 20) {
+          // Gentle spread for clustered data (30-70 range)
+          xNorm = 30 + ((p.x - xMin) / (xRange || 1)) * 40;
+        } else {
+          // Use actual position (with 15% padding on edges)
+          xNorm = 15 + (p.x / 100) * 70;
+        }
+        
+        if (yRange < 20) {
+          // Gentle spread for clustered data (30-70 range)
+          yNorm = 30 + ((p.y - yMin) / (yRange || 1)) * 40;
+        } else {
+          // Use actual position (with 15% padding on edges)
+          yNorm = 15 + (p.y / 100) * 70;
+        }
+        
         return { name: p.name, x: xNorm, y: yNorm };
       });
 

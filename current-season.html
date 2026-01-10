@@ -4885,10 +4885,20 @@ setTimeout(function() {
     const db = loadPlayerDatabase();
     let updated = 0;
     
-    const activeCount = cast.length;
+    // Get the ORIGINAL cast size from database (not current active count)
+    const allPlayersThisSeason = db.players.filter(p => 
+      p.seasons.includes(season)
+    );
+    const originalCastSize = allPlayersThisSeason.length;
+    
+    // Count how many players have ALREADY been eliminated before this episode
+    const alreadyEliminatedCount = allPlayersThisSeason.filter(p => {
+      const sd = p.seasonDetails.find(s => s.season === season);
+      return sd && sd.status === "Eliminated";
+    }).length;
+    
+    // New eliminations this episode
     const eliminatedArray = Array.from(eliminated);
-    const eliminatedCount = eliminatedArray.length;
-    const remainingCount = activeCount - eliminatedCount;
     
     for (const eliminatedName of eliminatedArray) {
       const player = db.players.find(p => 
@@ -4898,7 +4908,10 @@ setTimeout(function() {
       if (player) {
         const seasonDetail = player.seasonDetails.find(s => s.season === season);
         if (seasonDetail && seasonDetail.status === "Active") {
-          const placement = remainingCount + 1;
+          // Calculate placement: original cast size - how many were already out
+          // First boot: 20 - 0 = 20th place
+          // Second boot: 20 - 1 = 19th place
+          const placement = originalCastSize - alreadyEliminatedCount - updated;
           seasonDetail.placement = placement;
           seasonDetail.status = "Eliminated";
           

@@ -317,32 +317,55 @@ if (!playerId) {
   document.getElementById('loading').style.display = 'none';
   document.getElementById('error').style.display = 'block';
 } else {
-  // Load player data from JSON
-  fetch('players_database.json')
-    .then(response => response.json())
-    .then(data => {
-      const player = data.players.find(p => p.id === playerId);
-      
-      if (!player) {
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('error').style.display = 'block';
-        return;
-      }
-      
-      // Update page title
-      document.title = player.name + ' – Profile';
-      
-      // Render player profile
-      renderPlayerProfile(player);
-      
-      document.getElementById('loading').style.display = 'none';
-      document.getElementById('player-content').style.display = 'block';
-    })
-    .catch(error => {
-      console.error('Error loading player data:', error);
+  // Load player database with localStorage priority
+  loadPlayerDatabase().then(data => {
+    const player = data.players.find(p => p.id === playerId);
+    
+    if (!player) {
       document.getElementById('loading').style.display = 'none';
       document.getElementById('error').style.display = 'block';
-    });
+      return;
+    }
+    
+    // Update page title
+    document.title = player.name + ' – Profile';
+    
+    // Render player profile
+    renderPlayerProfile(player);
+    
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('player-content').style.display = 'block';
+  }).catch(error => {
+    console.error('Error loading player data:', error);
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('error').style.display = 'block';
+  });
+}
+
+// Load database: try localStorage first, then project file
+async function loadPlayerDatabase() {
+  try {
+    // Try localStorage first
+    const raw = localStorage.getItem("players_database");
+    if (raw) {
+      console.log("✅ Loaded database from localStorage");
+      return JSON.parse(raw);
+    }
+    
+    // Fall back to project file
+    console.log("⚠️ localStorage empty, loading from project file...");
+    const response = await fetch('players_database.json');
+    const data = await response.json();
+    
+    // Save to localStorage for next time
+    localStorage.setItem("players_database", JSON.stringify(data, null, 2));
+    console.log("✅ Loaded from project file and saved to localStorage");
+    
+    return data;
+  } catch (error) {
+    console.error("❌ Error loading database:", error);
+    throw error;
+  }
 }
 
 function renderPlayerProfile(player) {

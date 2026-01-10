@@ -15,10 +15,10 @@ export default {
     }
 
     const body = await request.json().catch(() => ({}));
-    const { season, episode, summaryText, mode } = body;
+    const { season, episode, summaryText, auditionsText, mode } = body;
 
     if (mode === "episode") {
-      return await generateEpisode(summaryText, season, episode, env);
+      return await generateEpisode(summaryText, auditionsText, season, episode, env);
     } else if (mode === "season-data-extraction") {
       return await generateSeasonDataExtraction(body, env);
     } else {
@@ -499,12 +499,64 @@ Season: ${season ?? "?"}, Episode: ${episode ?? "?"}.
   return await callOpenAI(payload, env);
 }
 
-async function generateEpisode(summaryText, season, episode, env) {
+async function generateEpisode(summaryText, auditionsText, season, episode, env) {
   if (!summaryText || typeof summaryText !== "string") {
     return new Response(JSON.stringify({ error: "Missing summaryText" }), {
       status: 400,
       headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
     });
+  }
+  
+  // Check if this is Episode 1 and auditions are provided
+  const isEpisode1 = Number(episode) === 1;
+  const hasAuditions = auditionsText && auditionsText.trim().length > 0;
+  
+  // Build audition context if Episode 1
+  let auditionInstructions = "";
+  let auditionContext = "";
+  
+  if (isEpisode1 && hasAuditions) {
+    auditionInstructions = `
+
+EPISODE 1 SPECIAL - AUDITION TAPES:
+This episode starts with audition tape montage before the main episode.
+
+Structure:
+1. COLD OPEN: Quick-cut audition tape montage (see audition summaries below)
+2. Then transition to Chris McLean intro
+3. Continue with normal episode structure
+
+AUDITION TAPE FORMAT IN YOUR TRANSCRIPT:
+- Transform the provided audition summaries into quick video clips
+- Each person gets 2-4 dialogue lines maximum in the cold open
+- Format: [Audition Tape: Name] followed by their best quote/moment
+- Pull the MOST character-revealing line or moment from each summary
+- Keep it punchy - this is a montage, not full interviews
+- After showing ALL contestants' auditions, cut to Chris McLean's intro
+
+Example transformation:
+Summary says: "Carrie enters clutching a scrapbook... She admits she doesn't just watch your sim — she feels it..."
+You write:
+[Audition Tape: Carrie]
+Carrie: [holding scrapbook] I don't just watch this show. I feel it. Every blindside, every alliance... this time I'm not just watching—I'm playing.
+
+Summary says: "Devin nervously jokes... admits he's terrified... bad at conflict"
+You write:
+[Audition Tape: Devin]
+Devin: I'm bad at conflict. Like... REALLY bad. But I'll betray someone. Once. Probably. Eventually.
+
+DO NOT copy the full summary - extract the most iconic moments and transform them into short dialogue.
+`;
+
+    auditionContext = `
+
+=== AUDITION TAPE SUMMARIES PROVIDED ===
+${auditionsText}
+=== END AUDITION SUMMARIES ===
+
+IMPORTANT: The above are summaries. Transform them into a fast-paced montage cold open.
+Extract the best 1-2 lines from each person. Make it visual and punchy.
+`;
   }
 
   const instructions = `
@@ -512,7 +564,7 @@ You are writing a full episode transcript of a Total Drama season based on a Bra
 
 CORE GOAL:
 Transform the BrantSteele episode summary into a fully written Total Drama episode.
-This is a scene-by-scene animated TV episode transcript.
+This is a scene-by-scene animated TV episode transcript.${auditionInstructions}
 
 CRITICAL LOGIC RULES:
 1. READ THE ENTIRE SUMMARY FIRST before writing anything
@@ -579,7 +631,11 @@ Season: ${season ?? "?"}, Episode: ${episode ?? "?"}.
 Return the complete episode transcript.
 `.trim();
 
-  const payload = { model: "gpt-5", instructions, input: summaryText };
+  const payload = { 
+    model: "gpt-5", 
+    instructions, 
+    input: auditionContext + summaryText  // Prepend auditions if Episode 1
+  };
   return await callOpenAI(payload, env);
 }
 

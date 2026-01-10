@@ -632,6 +632,10 @@ Blaineley
           🔍 Analyze Cast
         </button>
         
+        <button onclick="document.getElementById('download-players-db').click()" class="btn" style="background: rgba(76,255,179,0.2); border: 1px solid #4cffb3;">
+          💾 Download Database
+        </button>
+        
         <div id="cast-analysis-result" style="margin-top: 20px; padding: 16px; background: rgba(125,76,255,0.1); border: 1px solid rgba(125,76,255,0.3); border-radius: 12px; display: none;">
           <!-- Analysis results will appear here -->
         </div>
@@ -4797,6 +4801,15 @@ setTimeout(function() {
         
         savePlayerDatabase(db);
         
+        // Auto-download database after 1 second
+        setTimeout(() => {
+          const downloadLink = document.getElementById('download-players-db');
+          if (downloadLink) {
+            console.log('📥 Auto-downloading players_database.json...');
+            downloadLink.click();
+          }
+        }, 1000);
+        
         castAnalysisResult.innerHTML = `
           <div style="padding: 20px; background: linear-gradient(135deg, rgba(76,255,179,0.2), rgba(76,255,179,0.1)); border: 2px solid #4cffb3; border-radius: 16px; text-align: center;">
             <div style="font-size: 48px; margin-bottom: 12px;">🎉</div>
@@ -4814,8 +4827,19 @@ setTimeout(function() {
                 <div style="font-size: 12px; opacity: 0.8;">Updated</div>
               </div>
             </div>
-            <div style="margin-top: 16px; font-size: 13px; opacity: 0.7;">
-              💾 Saved to localStorage as "players_database"
+            <div style="margin-top: 16px; padding: 16px; background: rgba(255,179,71,0.15); border: 1px solid rgba(255,179,71,0.4); border-radius: 8px;">
+              <div style="font-size: 13px; font-weight: 600; margin-bottom: 8px; color: #ffb347;">⚠️ Important: Update Your Project File</div>
+              <div style="font-size: 12px; opacity: 0.9; margin-bottom: 12px; line-height: 1.5;">
+                1. Download started automatically (check downloads)<br/>
+                2. Replace <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px;">players_database.json</code> in your project folder<br/>
+                3. Refresh this page to load the updated database
+              </div>
+              <button onclick="document.getElementById('download-players-db').click()" class="btn" style="background: linear-gradient(135deg, #4cffb3, #3dd99d); color: #000; font-weight: 600; font-size: 13px;">
+                💾 Download Again
+              </button>
+            </div>
+            <div style="margin-top: 12px; font-size: 11px; opacity: 0.6;">
+              Also saved to localStorage (temporary - lost on browser clear)
             </div>
           </div>
         `;
@@ -5086,8 +5110,31 @@ setTimeout(function() {
       db.players.forEach(p => p.seasons.forEach(s => allSeasons.add(s)));
       db.franchise.totalSeasons = allSeasons.size;
       
-      localStorage.setItem("players_database", JSON.stringify(db, null, 2));
+      const jsonString = JSON.stringify(db, null, 2);
+      
+      // Save to localStorage (for live updates)
+      localStorage.setItem("players_database", jsonString);
+      
+      // Also create downloadable file blob
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      
+      // Create/update download link
+      let downloadLink = document.getElementById('download-players-db');
+      if (!downloadLink) {
+        downloadLink = document.createElement('a');
+        downloadLink.id = 'download-players-db';
+        downloadLink.style.display = 'none';
+        document.body.appendChild(downloadLink);
+      }
+      
+      downloadLink.href = url;
+      downloadLink.download = 'players_database.json';
+      
       console.log(`✅ Database saved: ${db.franchise.totalPlayers} players, ${db.franchise.totalSeasons} seasons`);
+      console.log(`💾 Download available - use document.getElementById('download-players-db').click() to download`);
+      
+      return url; // Return URL in case caller wants to use it
     } catch (e) {
       console.error("Error saving player database:", e);
       alert("⚠️ Error saving database. Check console.");

@@ -1,8 +1,8 @@
 {
   "franchise": {
     "name": "DC Franchise Database",
-    "totalSeasons": 6,
-    "totalPlayers": 68,
+    "totalSeasons": 7,
+    "totalPlayers": 78,
     "description": "Total Drama franchise player statistics and performance data"
   },
   "players": [
@@ -127,7 +127,7 @@
       "story": "Introduced on Rescue Island (Season 5), Amy weaponized the Amy/Samey feud to keep the tribe polarized, often becoming the swing point whenever the vote turned into chaos. She survived into the late game despite regular blowback (3 votes against) and even burned her Shot in the Dark at a key Tribal. Her run ended in Episode 11 when advantage/idol dynamics voided key votes and the numbers finally converged on her (Result: Amy eliminated, 2–1 (with 2 Dave votes voided)).",
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
-      "avgPlacement": 7.0
+      "avgPlacement": 7
     },
     {
       "id": "anne-maria",
@@ -229,7 +229,7 @@
       "badges": [],
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
-      "avgPlacement": 14.0
+      "avgPlacement": 14
     },
     {
       "id": "beardo",
@@ -262,7 +262,7 @@
       "story": "On Season 5’s pre-merge chaos, Beardo leaned into a low-profile social game and tried to stabilize early bonds, but never shook the perception of being expendable in a numbers crunch. With limited challenge impact and the tribe constantly scrambling around twists, he became the path-of-least-resistance boot. He was eliminated in Episode 3 in a vote where very few ballots actually counted (Beardo eliminated, 1–0 (effective)).",
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
-      "avgPlacement": 16.0
+      "avgPlacement": 16
     },
     {
       "id": "beth",
@@ -415,7 +415,7 @@
       "story": "SEASON 5 — Rescue Island\nSEASON 6 — Blood vs. Water\nPreviously seen in S5, Blaineley’s best finish before Blood vs. Water was 8th.\n\n────────\n\nSEASON 6 — Blood vs. Water\nOn Blood vs. Water (Season 6), Blaineley approached the game like a producer running a set—paired with Kelly, she managed alliances as brands and treated the merge like damage control. That posture carried her deep, but it also made her the obvious cut once the endgame needed pliable numbers instead of ‘managers.’ In Episode 15, she was voted out 4–1, ending a surprisingly strong late-game run. (Result: voted out Episode 15, 4–1; 6th.)",
       "totalJuryVotes": 0,
       "seasonsPlayed": 2,
-      "avgPlacement": 7.0
+      "avgPlacement": 7
     },
     {
       "id": "brick",
@@ -457,7 +457,7 @@
       "badges": [],
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
-      "avgPlacement": 9.0
+      "avgPlacement": 9
     },
     {
       "id": "bridgette",
@@ -518,9 +518,10 @@
       "id": "brody",
       "name": "Brody",
       "seasons": [
-        6
+        6,
+        7
       ],
-      "totalSeasons": 1,
+      "totalSeasons": 2,
       "bestPlacement": 7,
       "wins": 0,
       "totalChallengeWins": 1,
@@ -564,11 +565,28 @@
             "Ryan",
             "Mickey"
           ]
+        },
+        {
+          "season": 7,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "On Blood vs. Water (Season 6), Brody was the season’s endurance monster—paired with Geoff, he absorbed heat and still kept moving forward. He even survived an earlier trip through the swap/Redemption machinery, returning to the game with a target that never truly faded. By Episode 14, the merge needed a clean break from the ‘can’t kill him’ narrative and Brody was voted out 4–2. (Result: voted out Episode 14, 4–2; 7th.)",
       "seasonsPlayed": 1,
-      "avgPlacement": 7.0
+      "avgPlacement": 7
     },
     {
       "id": "cameron",
@@ -635,15 +653,16 @@
       ],
       "story": "SEASON 3 — Revenge of the Island\nSEASON 3 — Revenge of the Island\nOn Revenge of the Island (Season 3), Cameron operated as the season’s cerebral pivot—building structure early, keeping options open as tribes shifted, and saving power for the exact moment it would matter. Their signature move came with the clock at zero: in Episode 12, Cameron played the last-possible idol on themself, cancelled the only vote against them, and then voted out Anne Maria—breaking an unbreakable bond on purpose to lock in the finale. At Final Tribal, Cameron earned None and finished 3rd, but their vote became the swing factor in a historic 3–3–1 split before the cast tiebreaker crowned Emma.\n\nStrategic mastermind who made brutal move voting out unbreakable partner Anne Maria in S3. Strong strategic player across both seasons.\n\n────────\n\nSEASON 4 — Edge of Extinction\n────────\n\nSEASON 4 — Edge of Extinction\nIn Edge of Extinction (Season 4), Cameron played the classic “quiet glue” game—rarely the loudest voice, but constantly in the numbers. He began on Red → Yellow → Red → Campers and repeatedly re‑integrated after swaps, anchoring what became the core of the Red alliance. At Final 5, Scott’s endgame squeeze snapped shut and Cameron was cut 2–0 before he could argue his case at the end. Result: Cameron finished 5th.",
       "seasonsPlayed": 2,
-      "avgPlacement": 4.0
+      "avgPlacement": 4
     },
     {
       "id": "cody",
       "name": "Cody",
       "seasons": [
-        1
+        1,
+        7
       ],
-      "totalSeasons": 1,
+      "totalSeasons": 2,
       "bestPlacement": 19,
       "wins": 0,
       "totalChallengeWins": 0,
@@ -666,13 +685,30 @@
             "6-5 vote",
             "Leshawna flipped"
           ]
+        },
+        {
+          "season": 7,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "Introduced on Screaming Gophers (Season 1), Cody spent the pre-merge trying to stay useful without becoming a target—a tough balance on a tribe full of big personalities. He nearly survived the squeeze, but the vote that ended him was decided by a single flip: Leshawna changed sides, turning a close night into a 6–5 send-off. It’s the kind of elimination that haunts a season—because one relationship, one conversation, one minute earlier could’ve rewritten everything (Result: eliminated 6–5; 19th).",
       "badges": [],
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
-      "avgPlacement": 19.0
+      "avgPlacement": 19
     },
     {
       "id": "courtney",
@@ -811,7 +847,7 @@
       "badges": [],
       "totalJuryVotes": 0,
       "seasonsPlayed": 2,
-      "avgPlacement": 18.0
+      "avgPlacement": 18
     },
     {
       "id": "dakota",
@@ -871,7 +907,7 @@
       "story": "SEASON 3 — Revenge of the Island\nSEASON 3 — Revenge of the Island\nIntroduced on Revenge of the Island (Season 3), Dakota became instant television on the Toxic Rats—flashy, emotional, and always one scene away from being the episode’s headline. But fandom doesn’t protect you at Tribal. When the vote fractured into a messy pile-up, Dakota caught the stray numbers and became the casualty of a 3–1–1 vote (Fan Favorite) in Episode 5 (Result: voted out; 12th, Fan Favorite).\n\nFan Favorite winner in S3 despite pre-merge exit. First boot in S4, became first and only person to quit Edge of Extinction.\n\n────────\n\nSEASON 4 — Edge of Extinction\n────────\n\nSEASON 4 — Edge of Extinction\nDakota’s Edge of Extinction (Season 4) stint was the fastest—and the strangest. She became the first boot in Episode 1 (7–2), landed on the Edge, and then made franchise history as the only player to quit the twist outright. Result: Dakota placed 18th after leaving the Edge at Episode 6.",
       "seasonsPlayed": 2,
       "totalJuryVotes": 0,
-      "avgPlacement": 15.0
+      "avgPlacement": 15
     },
     {
       "id": "dave",
@@ -904,7 +940,7 @@
       "story": "Dave was a central strategic connector for the Lulu side of Season 5, mixing steady positioning with real challenge value (2 wins, including 1 immunity). In the late game he survived a critical Tribal by playing Shot in the Dark successfully, but the next wave of idol chaos flipped the math against him. He was eliminated in Episode 12 when a 3–3 vote became a clean boot after idol cancellation (Result: Dave eliminated, 3–0 effective (3–3 on paper with idol cancellation)).",
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
-      "avgPlacement": 6.0
+      "avgPlacement": 6
     },
     {
       "id": "dawn",
@@ -942,7 +978,7 @@
       "badges": [],
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
-      "avgPlacement": 8.0
+      "avgPlacement": 8
     },
     {
       "id": "dj",
@@ -1178,7 +1214,7 @@
       "story": "Ella’s Rescue Island run was defined by pure social warmth and early connection-building, but that visibility made her an easy name when the tribe needed a clean vote. With the game already drifting toward advantage paranoia, she couldn’t find a shield in time. She was eliminated in Episode 2 on a tight pre-merge vote (Ella eliminated, 2–1).",
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
-      "avgPlacement": 17.0
+      "avgPlacement": 17
     },
     {
       "id": "emma",
@@ -1326,7 +1362,7 @@
       ],
       "story": "On Blood vs. Water (Season 6), Ennui started tethered to Crimson—and then had to play alone the moment Crimson was pulled from the game. With the pair advantage gone, Ennui became an easy consensus name once the tribes needed “safe” targets, taking the fall in Episode 3 on a 6–3 vote and being sent to Redemption. The comeback never materialized, and he was eliminated on the island soon after. (Result: voted out to RI, 16th.)",
       "seasonsPlayed": 1,
-      "avgPlacement": 16.0
+      "avgPlacement": 16
     },
     {
       "id": "eva",
@@ -1362,7 +1398,7 @@
       "badges": [],
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
-      "avgPlacement": 21.0
+      "avgPlacement": 21
     },
     {
       "id": "ezekiel",
@@ -1414,7 +1450,7 @@
       "badges": [],
       "seasonsPlayed": 2,
       "totalJuryVotes": 0,
-      "avgPlacement": 5.0
+      "avgPlacement": 5
     },
     {
       "id": "geoff",
@@ -1767,15 +1803,16 @@
       "badges": [],
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
-      "avgPlacement": 18.0
+      "avgPlacement": 18
     },
     {
       "id": "jacques",
       "name": "Jacques",
       "seasons": [
-        6
+        6,
+        7
       ],
-      "totalSeasons": 1,
+      "totalSeasons": 2,
       "bestPlacement": 1,
       "wins": 1,
       "totalChallengeWins": 4,
@@ -1822,19 +1859,37 @@
             "Geoff",
             "Brody"
           ]
+        },
+        {
+          "season": 7,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "On Blood vs. Water (Season 6), Jacques turned the Ice Dancers pairing with Josee into a masterclass in controlled threat management. While louder duos burned trust and idols, he stayed ‘useful’—competent in challenges, calm in camp, and quietly steering the merge vote map by weaponizing other people’s feuds. He survived the season’s chaos points (tribe re-draw, Redemption returns, rock-draw fallout) and arrived at the end with the cleanest résumé left. In the finale, the jury didn’t debate—they crowned him in a 7–1–0 landslide. (Result: Season 6 champion, 1st.)",
       "seasonsPlayed": 1,
-      "avgPlacement": 1.0
+      "avgPlacement": 1
     },
     {
       "id": "jasmine",
       "name": "Jasmine",
       "seasons": [
-        5
+        5,
+        7
       ],
-      "totalSeasons": 1,
+      "totalSeasons": 2,
       "bestPlacement": 14,
       "wins": 0,
       "totalChallengeWins": 0,
@@ -1854,12 +1909,29 @@
           "rewardWins": 0,
           "votesReceived": 2,
           "idolsFound": 0
+        },
+        {
+          "season": 7,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "Jasmine brought a steady, survival-first presence to the early Belo/Reba chaos, attempting to keep the tribe focused while smaller rivalries pulled votes in different directions. Without advantages or a dominant alliance to lock her in, she became a convenient compromise boot once numbers got messy. She exited in Episode 5 (Jasmine eliminated, 2–1).",
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
-      "avgPlacement": 14.0
+      "avgPlacement": 14
     },
     {
       "id": "jay",
@@ -1915,7 +1987,7 @@
       ],
       "story": "On Blood vs. Water (Season 6), Jay was the loyal half of the Jay–Mickey duo, surviving by staying attached to the strongest protection available and never panicking when the vote map shifted. He rode through tribe re-draws, merge chaos, and the rock-round without becoming the primary target, then slipped into the endgame as the safest option to sit next to. He reached Final Tribal—but with zero jury votes, his story became the classic ‘made it there, didn’t own it’ finish. (Result: finalist, 3rd.)",
       "seasonsPlayed": 1,
-      "avgPlacement": 3.0
+      "avgPlacement": 3
     },
     {
       "id": "jo",
@@ -2100,7 +2172,7 @@
       ],
       "story": "On Blood vs. Water (Season 6), Junior was the vulnerable half of the father–son duo with Dwayne, forcing the pair to play from a defensive posture all pre-merge. When the tribe wanted a ‘safe’ vote that wouldn’t trigger immediate retaliation, Junior was the compromise: he was voted out in Episode 4 (6–2) and shipped to Redemption. He fought to stay alive on the island, but couldn’t convert it into a return. (Result: voted out 6–2 → RI; 15th.)",
       "seasonsPlayed": 1,
-      "avgPlacement": 15.0
+      "avgPlacement": 15
     },
     {
       "id": "justin",
@@ -2153,7 +2225,7 @@
       "badges": [],
       "seasonsPlayed": 2,
       "totalJuryVotes": 0,
-      "avgPlacement": 17.0
+      "avgPlacement": 17
     },
     {
       "id": "katie",
@@ -2191,7 +2263,7 @@
       "badges": [],
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
-      "avgPlacement": 12.0
+      "avgPlacement": 12
     },
     {
       "id": "kelly",
@@ -2247,15 +2319,16 @@
       ],
       "story": "On Blood vs. Water (Season 6), Kelly played the ‘tough mom’ half of her duo with Blaineley—steady, protective, and far more strategic than people wanted to admit. Her idol timing helped shape the midgame (including the Episode 7 swing that took out Mary), and she navigated all the way to the Final 4. There, the season’s chaos returned one last time: a 2–2 tie, a 1–1 revote, and then fire-making—where she fell just short of the finale. (Result: Final 4 fire-making loss; 4th.)",
       "seasonsPlayed": 1,
-      "avgPlacement": 4.0
+      "avgPlacement": 4
     },
     {
       "id": "kitty",
       "name": "Kitty",
       "seasons": [
-        6
+        6,
+        7
       ],
-      "totalSeasons": 1,
+      "totalSeasons": 2,
       "bestPlacement": 9,
       "wins": 0,
       "totalChallengeWins": 0,
@@ -2299,11 +2372,28 @@
             "Mickey",
             "Ryan"
           ]
+        },
+        {
+          "season": 7,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "On Blood vs. Water (Season 6), Kitty played heart-first beside Emma, using social warmth to keep their duo insulated while bigger pairs self-destructed. But loyalty came with a price: she burned her idol earlier trying to protect/shape the power structure, and once the merge chaos hit, she was left exposed. In Episode 11, a messy multi-target Tribal finally converged and Kitty was voted out 3–2–2–1–1, sent to Redemption before her eventual elimination. (Result: voted out 3–2–2–1–1 → RI; 9th.)",
       "seasonsPlayed": 1,
-      "avgPlacement": 9.0
+      "avgPlacement": 9
     },
     {
       "id": "leonard",
@@ -2367,7 +2457,7 @@
       "story": "SEASON 5 — Rescue Island\nSEASON 6 — Blood vs. Water\nPreviously seen in S5, Leonard’s best finish before Blood vs. Water was 18th.\n\n────────\n\nSEASON 6 — Blood vs. Water\nOn Blood vs. Water (Season 6), Leonard tried to turn wizard energy into strategic cover with Tammy, pitching himself as ‘harmless chaos’ while bigger pairs went to war. But in a format where pairs punish weakness fast, the tribe chose stability over spectacle: Leonard was voted out in Episode 2 (5–3) and sent to Redemption. He couldn’t win his way back, and his run ended with an island elimination in Episode 4. (Result: voted out 5–3 → RI; eliminated Episode 4; 18th.)",
       "totalJuryVotes": 0,
       "seasonsPlayed": 2,
-      "avgPlacement": 18.0
+      "avgPlacement": 18
     },
     {
       "id": "leshawna",
@@ -2422,7 +2512,7 @@
       "badges": [],
       "seasonsPlayed": 2,
       "totalJuryVotes": 0,
-      "avgPlacement": 12.0
+      "avgPlacement": 12
     },
     {
       "id": "lightning",
@@ -2483,16 +2573,17 @@
       "story": "SEASON 3 — Revenge of the Island\nSEASON 3 — Revenge of the Island\nOn Revenge of the Island (Season 3), Lightning hit the beach as raw momentum—an athletic engine on the Toxic Rats who assumed wins would equal safety. Instead, the season answered with chaos. A tied Tribal dragged Lightning into a do-or-die revote, and when relationships shifted at the worst possible moment, the numbers finally turned. Lightning fell in Episode 6 after the 2–2 tie fi 2–2 revote sequence flipped against them (Result: voted out; 11th).\n\n────────\n\nSEASON 4 — Edge of Extinction\n────────\n\nSEASON 4 — Edge of Extinction\nPart of TRIPLE IDOL TRIBAL in S4. Worst idol play in S3 (wasted on Emma who got 0 votes).\n\nLightning hit Edge of Extinction (Season 4) with a physical‑threat reputation, but the cast never let him build real momentum. He was caught in the triple‑idol Tribal (Episode 5 Part 2) and became the first merge boot, leaving on a 9–4 vote before challenges could save him. Result: Lightning finished 13th.",
       "seasonsPlayed": 2,
       "totalJuryVotes": 0,
-      "avgPlacement": 12.0
+      "avgPlacement": 12
     },
     {
       "id": "lindsay",
       "name": "Lindsay",
       "seasons": [
         2,
-        1
+        1,
+        7
       ],
-      "totalSeasons": 2,
+      "totalSeasons": 3,
       "bestPlacement": 1,
       "wins": 1,
       "totalChallengeWins": 1,
@@ -2547,11 +2638,28 @@
             "Defeated Alejandro 5-4",
             "Never needed immunity"
           ]
+        },
+        {
+          "season": 7,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "SEASON 1 — Cullhouse\nSEASON 1 — Cullhouse\nIntroduced on Screaming Gophers (Season 1), Lindsay won by doing the simplest thing in the hardest way: staying universally liked while keeping the target off her back. She never needed an immunity run—her game was relationships and timing, not fireworks—yet she still reached the finale with only 1 vote against. The endgame was built around unbreakable ties with Leshawna, Trent and Alejandro. In the finale, she edged out Alejandro in a 5–4 vote to claim the crown (Result: champion; 1st).\n\n────────\n\nSEASON 2 — Action\n────────\n\nSEASON 2 — Action\nLindsay’s Season 2 was a social masterclass: she kept multiple relationships alive at once, avoided being the easy consensus name, and rode the Beth partnership without being trapped by it. When chaos hit — idols, revotes, and shifting numbers — she consistently landed on her feet. She reached Final Tribal but lost to Duncan when the jury rewarded endurance over charm (Lindsay loses, 1–5–1).",
       "seasonsPlayed": 2,
-      "avgPlacement": 2.0
+      "avgPlacement": 2
     },
     {
       "id": "mary",
@@ -2606,7 +2714,7 @@
       ],
       "story": "On Blood vs. Water (Season 6), Mary played the season like a chess player trapped in a hurricane—always trying to keep information and angles. Paired with Beth, she refused an early swap-to-Redemption option that would have looked loyal but left her powerless, choosing instead to stay in the tribe mix and build a quiet ‘Brainiacs’ lane. That patience bought time… until Episode 7, when an idol/advantage swing (Kelly’s idol) flipped the numbers and Mary became the casualty of a vote that should have gone the other way. (Result: idol-negated majority; Mary voted out, 14th.)",
       "seasonsPlayed": 1,
-      "avgPlacement": 14.0
+      "avgPlacement": 14
     },
     {
       "id": "max",
@@ -2639,7 +2747,7 @@
       "story": "Max leaned into a disruptive, chaos-friendly game on Season 5, frequently pulling attention and forcing others to account for worst-case twists. He gained Safety Without Power, which shaped vote calculus even when he couldn’t fully cash it in for long-term security. Eventually the table got tired of the volatility and he was voted out in Episode 8 (Max eliminated, 5–3).",
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
-      "avgPlacement": 10.0
+      "avgPlacement": 10
     },
     {
       "id": "mickey",
@@ -2781,7 +2889,7 @@
       "story": "SEASON 3 — Revenge of the Island\nSEASON 3 — Revenge of the Island\nOn Revenge of the Island (Season 3), Mike started on the Mutant Maggots but quickly became the center of the season’s messiest feud: Mike vs Anne Maria. While others used that chaos as cover, the rivalry kept repainting targets every round. Once the game needed a decisive cut before the endgame, the numbers converged—Mike was voted out in Episode 11 (Result: voted out 4–2 vote; 6th, 5th juror).\n\n────────\n\nSEASON 4 — Edge of Extinction\n────────\n\nSEASON 4 — Edge of Extinction\nREBUILT unbreakable bond with Zoey in S4. Victim of Sierra's perfect idol play (10 votes cancelled).\n\nIn Edge of Extinction (Season 4), Mike became the lightning rod for chaos—nine votes against and a constant target the moment the tribe wanted an easy name. His exit was shaped by advantage dynamics: Sierra’s perfect idol play voided the main plan, and Mike was the only clean option left, leaving 2–0. Result: Mike placed 12th.",
       "seasonsPlayed": 2,
       "totalJuryVotes": 0,
-      "avgPlacement": 9.0
+      "avgPlacement": 9
     },
     {
       "id": "noah",
@@ -2844,7 +2952,7 @@
       "story": "SEASON 1 — Cullhouse\nSEASON 1 — Cullhouse\nIntroduced on Screaming Gophers (Season 1), Noah tried to weaponize sarcasm into strategy—sharp reads, sharp tongue, and just enough allies to be dangerous. It worked for a while, but his game lived on a knife-edge: 9 votes against and a constant sense that one conversation could flip the room. That’s exactly how he went out—4–3, a one-vote swing that turned ‘clever asset’ into ‘too clever to keep’ overnight (Result: eliminated; 15th).\n\n────────\n\nSEASON 4 — Edge of Extinction\n────────\n\nSEASON 4 — Edge of Extinction\nNoah’s Edge of Extinction (Season 4) ended in the season’s messiest flashpoint: the infamous triple‑idol Tribal. He burned his own idol in the chaos, only to see the numbers shift anyway—punished for a late‑game betrayal and sent out 5–4 at Final 9. Result: Noah became a jury voice at 9th place.",
       "seasonsPlayed": 2,
       "totalJuryVotes": 0,
-      "avgPlacement": 12.0
+      "avgPlacement": 12
     },
     {
       "id": "owen",
@@ -2930,7 +3038,7 @@
       "story": "Rodney played Season 5 like a classic mid-game grinder: visible, socially active, and constantly trying to grab tools that could flip a vote. He notably secured Knowledge Is Power from a Journey, instantly spiking his threat level even without challenge dominance. Once the tribe decided he was too dangerous to keep around, he was voted out in Episode 7 (Rodney eliminated, 3–1).",
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
-      "avgPlacement": 12.0
+      "avgPlacement": 12
     },
     {
       "id": "ryan",
@@ -3041,7 +3149,7 @@
       "badges": [],
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
-      "avgPlacement": 13.0
+      "avgPlacement": 13
     },
     {
       "id": "sam",
@@ -3080,7 +3188,7 @@
       "badges": [],
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
-      "avgPlacement": 13.0
+      "avgPlacement": 13
     },
     {
       "id": "samey",
@@ -3113,7 +3221,7 @@
       "story": "Samey’s Season 5 story is the underdog attempt to play her own game while the Amy rivalry kept dragging her into the spotlight. She picked up a Goodwill-style social leverage moment and tried to build safer bonds, but advantage chaos punished anyone without hard protection. In Episode 4, an idol cancelled multiple votes and she was eliminated on an ultra-thin effective count (Result: Samey eliminated 1–0 (effective) after idol cancels 4 votes).",
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
-      "avgPlacement": 15.0
+      "avgPlacement": 15
     },
     {
       "id": "scarlett",
@@ -3149,16 +3257,17 @@
       "story": "Top strategic rank of Season 5 and a late power player, but lost the Final 4 fire-making duel.",
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
-      "avgPlacement": 4.0
+      "avgPlacement": 4
     },
     {
       "id": "scott",
       "name": "Scott",
       "seasons": [
         4,
-        3
+        3,
+        7
       ],
-      "totalSeasons": 2,
+      "totalSeasons": 3,
       "bestPlacement": 2,
       "wins": 0,
       "totalChallengeWins": 6,
@@ -3218,6 +3327,23 @@
             "Voted out Zoey (unbreakable)",
             "Lost 3-4-1 to Emma"
           ]
+        },
+        {
+          "season": 7,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "SEASON 3 — Revenge of the Island\nSEASON 3 — Revenge of the Island\nIntroduced on Revenge of the Island (Season 3), Scott was the season’s challenge engine—stacking the most wins and setting the pace whenever immunity mattered. They paired that dominance with ruthless timing, including the endgame betrayal of Zoey after an unbreakable bond carried them to the brink. Scott reached Final Tribal with a ‘challenge beast’ résumé, but the jury rewarded loyalty and relationships instead. (Result: Scott lost 3–4–1; runner-up.)\n\nBest player to never win. PERFECT IDOL PLAY after holding for 9 tribals (franchise record). Runner-up in S3, third place in S4.\n\n────────\n\nSEASON 4 — Edge of Extinction\n────────\n\nSEASON 4 — Edge of Extinction\nScott came into Edge of Extinction (Season 4) as the franchise’s cleanest “toolbox” player—and proved it. He held an idol through nine consecutive Tribal Councils (a franchise record), then timed a perfect Final 5 play that cancelled three votes and kept his endgame intact. He even knocked out Cameron in a 2–0 decision, but at Final Tribal Council only Duncan rewarded the résumé. Result: Scott placed 3rd.",
@@ -3228,9 +3354,10 @@
       "id": "shawn",
       "name": "Shawn",
       "seasons": [
-        5
+        5,
+        7
       ],
-      "totalSeasons": 1,
+      "totalSeasons": 2,
       "bestPlacement": 9,
       "wins": 0,
       "totalChallengeWins": 0,
@@ -3250,12 +3377,29 @@
           "rewardWins": 0,
           "votesReceived": 6,
           "idolsFound": 1
+        },
+        {
+          "season": 7,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "Shawn navigated Season 5 with a paranoid-but-prepared mindset, finding a Beware Idol on Belo and briefly holding real leverage at the merge. His risk-taking peaked when he used Shot in the Dark and lost his vote, putting him on the wrong side of the numbers. He was eliminated in Episode 9 (Shawn eliminated, 5–2), but not before becoming a real factor in the season’s advantage economy.",
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
-      "avgPlacement": 9.0
+      "avgPlacement": 9
     },
     {
       "id": "sierra",
@@ -3325,9 +3469,10 @@
       "id": "sky",
       "name": "Sky",
       "seasons": [
-        5
+        5,
+        7
       ],
-      "totalSeasons": 1,
+      "totalSeasons": 2,
       "bestPlacement": 2,
       "wins": 0,
       "totalChallengeWins": 4,
@@ -3354,11 +3499,28 @@
           "idolsFound": 2,
           "juryVotes": 3,
           "finalVote": "3 (lost tiebreak)"
+        },
+        {
+          "season": 7,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "Season 5 challenge MVP with 4 total challenge wins and 3 immunities; forced the late-game tempo but fell short in a 3–3 FTC tie.",
       "seasonsPlayed": 1,
-      "avgPlacement": 2.0
+      "avgPlacement": 2
     },
     {
       "id": "staci",
@@ -3397,7 +3559,7 @@
       "badges": [],
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
-      "avgPlacement": 15.0
+      "avgPlacement": 15
     },
     {
       "id": "stephanie",
@@ -3451,7 +3613,7 @@
       ],
       "story": "On Blood vs. Water (Season 6), Stephanie came in with Ryan as pure intensity—competitive, confrontational, and always one argument away from a blow-up. That edge kept her relevant early, but in a pairs season it also makes you radioactive: once the tribe needed an easy reset vote, she was cut in Episode 6 on a 6–1. Even on Redemption she stayed on-brand, famously throwing an idol clue into the fire—burning information the way she burned bridges. (Result: voted out 6–1 → RI; 13th.)",
       "seasonsPlayed": 1,
-      "avgPlacement": 13.0
+      "avgPlacement": 13
     },
     {
       "id": "sugar",
@@ -3486,7 +3648,7 @@
       "story": "Sugar made one of the deepest runs of Season 5 by surviving constant heat (10 votes against) and leaning into a loud, chaos-driven social style that kept targets rotating. With the endgame dominated by idol-threat management, she repeatedly found herself in the crosshairs as players tried to simplify the board. She was eliminated in Episode 13 in a near-unanimous vote with a cancelled ballot (Sugar eliminated, 4–0 (with 1 Sky vote cancelled)).",
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
-      "avgPlacement": 5.0
+      "avgPlacement": 5
     },
     {
       "id": "tammy",
@@ -3540,7 +3702,7 @@
       ],
       "story": "On Blood vs. Water (Season 6), Tammy entered with Leonard as the season’s most openly ‘out-there’ pair—fun, but rarely trusted. She got hit early by the swap-to-Redemption mechanic in Episode 2, which stranded her away from the main vote map and turned her game into pure survival. Without numbers or protection, she was eliminated on Redemption in Episode 5. (Result: swap → RI, eliminated Episode 5; 17th.)",
       "seasonsPlayed": 1,
-      "avgPlacement": 17.0
+      "avgPlacement": 17
     },
     {
       "id": "topher",
@@ -3573,7 +3735,7 @@
       "story": "Topher’s Rescue Island run revolved around risk-reward mechanics: he took on a Beware-style disadvantage, forcing him to manage social fallout while dealing with limited voting power. Without immunity wins or an idol safety net, he became the merge’s stability target. He was eliminated in Episode 7 and became the season’s first juror (Topher eliminated, 5–1 (and becomes 1st juror due to being eliminated from).",
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
-      "avgPlacement": 11.0
+      "avgPlacement": 11
     },
     {
       "id": "trent",
@@ -3670,16 +3832,17 @@
       "badges": [],
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
-      "avgPlacement": 23.0
+      "avgPlacement": 23
     },
     {
       "id": "zoey",
       "name": "Zoey",
       "seasons": [
         4,
-        3
+        3,
+        7
       ],
-      "totalSeasons": 2,
+      "totalSeasons": 3,
       "bestPlacement": 2,
       "wins": 0,
       "totalChallengeWins": 8,
@@ -3739,11 +3902,398 @@
             "Back-to-back immunities (Ep 11-12)",
             "Voted Scott at FTC"
           ]
+        },
+        {
+          "season": 7,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "SEASON 3 — Revenge of the Island\nSEASON 3 — Revenge of the Island\nDebuting on Revenge of the Island (Season 3), Zoey was the social connector on the Mutant Maggots—liked by most, tied into multiple groups, and strong enough in challenges to stay relevant. Their run became defined by trust: the unbreakable bond with Scott carried them deep, even as the endgame turned into betrayal roulette. At the final vote before the Final Tribal Council, Scott pulled the trigger and Zoey was cut in Episode 13 (Result: voted out 3–1; 4th, final juror).\n\n────────\n\nSEASON 4 — Edge of Extinction\n────────\n\nSEASON 4 — Edge of Extinction\nUNPRECEDENTED social dominance with 3 unbreakable bonds at once in S4. Lost 6-7 to Alejandro in closest finale ever. Most socially connected player in franchise history.\n\nOn Edge of Extinction (Season 4), Zoey delivered a near‑perfect social game. She built an unprecedented web of three “unbreakable bonds” at once, kept her name off the parchment all season (the only vote against her was cancelled), and capped the midgame with a perfect idol play that erased seven votes and saved Geoff. After a key Episode 8 flip and back‑to‑back immunities late (Episodes 11–12), she reached Final Tribal Council—but fell just short. Result: Zoey finished runner‑up.",
       "seasonsPlayed": 2,
-      "avgPlacement": 3.0
+      "avgPlacement": 3
+    },
+    {
+      "id": "carrie",
+      "name": "Carrie",
+      "seasons": [
+        7
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 7,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "devin",
+      "name": "Devin",
+      "seasons": [
+        7
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 7,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "ellody",
+      "name": "Ellody",
+      "seasons": [
+        7
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 7,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "laurie",
+      "name": "Laurie",
+      "seasons": [
+        7
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 7,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "lorenzo",
+      "name": "Lorenzo",
+      "seasons": [
+        7
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 7,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "macarthur",
+      "name": "MacArthur",
+      "seasons": [
+        7
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 7,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "pete",
+      "name": "Pete",
+      "seasons": [
+        7
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 7,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "spud",
+      "name": "Spud",
+      "seasons": [
+        7
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 7,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "taylor",
+      "name": "Taylor",
+      "seasons": [
+        7
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 7,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "tom",
+      "name": "Tom",
+      "seasons": [
+        7
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 7,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
     }
   ]
 }

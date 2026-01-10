@@ -632,9 +632,19 @@ Blaineley
           🔍 Analyze Cast
         </button>
         
-        <button onclick="document.getElementById('download-players-db').click()" class="btn" style="background: rgba(76,255,179,0.2); border: 1px solid #4cffb3;">
+        <button onclick="document.getElementById('download-players-db').click()" class="btn" style="background: rgba(76,255,179,0.2); border: 1px solid #4cffb3; margin-right: 10px;">
           💾 Download Database
         </button>
+        
+        <button onclick="document.getElementById('upload-players-db').click()" class="btn" style="background: rgba(255,179,71,0.2); border: 1px solid #ffb347; margin-right: 10px;">
+          📤 Upload Database
+        </button>
+        
+        <button onclick="manageDatabaseSync()" class="btn" style="background: rgba(147,51,234,0.2); border: 1px solid rgba(147,51,234,0.5);">
+          🔄 Manage Sync
+        </button>
+        
+        <input type="file" id="upload-players-db" accept=".json" style="display: none;" />
         
         <div id="cast-analysis-result" style="margin-top: 20px; padding: 16px; background: rgba(125,76,255,0.1); border: 1px solid rgba(125,76,255,0.3); border-radius: 12px; display: none;">
           <!-- Analysis results will appear here -->
@@ -5086,12 +5096,34 @@ setTimeout(function() {
 
   function loadPlayerDatabase() {
     try {
+      // Try localStorage first (for live updates)
       const raw = localStorage.getItem("players_database");
-      if (raw) return JSON.parse(raw);
+      if (raw) {
+        console.log("✅ Loaded database from localStorage");
+        return JSON.parse(raw);
+      }
+      
+      // If localStorage is empty, try to load from project file
+      console.log("⚠️ localStorage empty, attempting to load from project file...");
+      fetch('/mnt/project/players_database.json')
+        .then(res => res.json())
+        .then(data => {
+          console.log("✅ Loaded database from project file, saving to localStorage");
+          localStorage.setItem("players_database", JSON.stringify(data, null, 2));
+          // Reload page to use the localStorage version
+          if (confirm("Database loaded from project file. Reload page to start using it?")) {
+            location.reload();
+          }
+        })
+        .catch(err => {
+          console.log("ℹ️ No project file found, starting fresh");
+        });
+      
     } catch (e) {
       console.error("Error loading player database:", e);
     }
     
+    // Return empty database for now
     return {
       franchise: {
         name: "DC Franchise Database",
@@ -5156,6 +5188,88 @@ setTimeout(function() {
     episodeInput.addEventListener('change', toggleAuditions);
     toggleAuditions(); // Initial check on page load
   }
+  
+  // ========================================
+  // DATABASE SYNC MANAGEMENT
+  // ========================================
+  
+  // Upload database to localStorage
+  const uploadInput = document.getElementById('upload-players-db');
+  if (uploadInput) {
+    uploadInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      try {
+        const text = await file.text();
+        const db = JSON.parse(text);
+        
+        // Validate structure
+        if (!db.franchise || !Array.isArray(db.players)) {
+          throw new Error("Invalid database format");
+        }
+        
+        // Save to localStorage
+        localStorage.setItem("players_database", JSON.stringify(db, null, 2));
+        
+        alert(`✅ Database uploaded!\n\n${db.players.length} players\n${db.franchise.totalSeasons} seasons\n\nReload page to see changes.`);
+        
+        if (confirm("Reload page now?")) {
+          location.reload();
+        }
+      } catch (err) {
+        alert(`❌ Error uploading database:\n${err.message}`);
+      }
+      
+      // Reset input
+      e.target.value = '';
+    });
+  }
+  
+  // Manage database sync
+  window.manageDatabaseSync = function() {
+    const hasLocalStorage = !!localStorage.getItem("players_database");
+    const localStorageSize = hasLocalStorage ? (localStorage.getItem("players_database").length / 1024).toFixed(2) : 0;
+    
+    let db = null;
+    try {
+      db = loadPlayerDatabase();
+    } catch (e) {}
+    
+    const message = `
+📊 Database Sync Status
+
+${hasLocalStorage ? '✅' : '❌'} localStorage: ${hasLocalStorage ? `${localStorageSize} KB` : 'Empty'}
+${db?.players?.length || 0} players loaded
+${db?.franchise?.totalSeasons || 0} seasons
+
+🔄 How Sync Works:
+1. Live updates save to localStorage (automatic)
+2. Download button exports localStorage to file
+3. Upload button imports file back to localStorage
+4. Changes in localStorage update immediately
+
+💡 Workflow:
+• Work → Auto-saves to localStorage ✅
+• Download → Get latest version as .json ✅
+• Edit externally → Make changes ✅
+• Upload → Import back to localStorage ✅
+• Refresh → See changes ✅
+
+Would you like to:
+[OK] Close
+[Clear localStorage] Start fresh (WARNING: Deletes data)
+    `.trim();
+    
+    if (confirm(message + "\n\nClick OK to close, Cancel to CLEAR localStorage")) {
+      // User clicked Cancel = wants to clear
+      if (confirm("⚠️ Are you SURE? This will delete all player data from localStorage!")) {
+        localStorage.removeItem("players_database");
+        alert("✅ localStorage cleared. Reload page to start fresh.");
+        location.reload();
+      }
+    }
+  };
   
 })();
 }, 500); // Wait 500ms for DOM to fully render and database to load

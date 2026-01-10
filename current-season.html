@@ -3622,6 +3622,7 @@ setTimeout(function() {
   function parseEpisodeSummary(text, episodeNum, activePlayers) {
     const result = {
       episode: episodeNum,
+      title: null,
       eliminated: null,
       eliminatedSlug: null,
       votes: [],
@@ -3629,6 +3630,13 @@ setTimeout(function() {
       immunityWinners: [],
       idolPlays: []
     };
+    
+    // Parse episode title from META block
+    // Format: "EPISODE 2-Serpent Turf" or "EPISODE: 2-Serpent Turf"
+    const titleMatch = text.match(/EPISODE[\s:]*\d+[-–—]\s*(.+?)(?:\n|$)/i);
+    if (titleMatch) {
+      result.title = titleMatch[1].trim();
+    }
     
     // Parse eliminated player
     // Look for patterns like: "X was voted out", "X was eliminated", "Boot: X"

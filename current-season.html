@@ -430,8 +430,9 @@
         </div>
 
         <div class="mini-panel">
-          <div class="mini-title">ALLIANCE OVERVIEW</div>
-          <div class="mini-body" id="cardAllianceOverview">—</div>
+          <div class="mini-title">VOTING BLOCS</div>
+          <div class="mini-subtitle">Detected: Active voting coalitions</div>
+          <div class="mini-body" id="cardVotingBlocs">—</div>
         </div>
       </div>
 
@@ -959,7 +960,7 @@ Dave voted for Mickey
       cardBestMove: $("cardBestMove"),
       cardBiggestRisk: $("cardBiggestRisk"),
       cardEpisodeSummary: $("cardEpisodeSummary"),
-      cardAllianceOverview: $("cardAllianceOverview"),
+      cardVotingBlocs: $("cardVotingBlocs"),
       cardBootOdds: $("cardBootOdds"),
       cardPowerRankings: $("cardPowerRankings"),
       cardAllianceStability: $("cardAllianceStability"),
@@ -1524,23 +1525,31 @@ Dave voted for Mickey
       }).join("");
     }
 
-    function renderAllianceOverview(targetEl, analytics, summaryText) {
-      // Lightweight: show top alliance stability + any named alliances in summary (best effort)
-      const st = Array.isArray(analytics?.allianceStability) ? analytics.allianceStability : [];
-      const top = st.slice(0, 2).map(a => `${a.name} (${Math.round(Number(a.score)||0)}/100)`).join(", ");
-      const has = top ? `<b>Detected:</b> ${escapeHtml(top)}<br/>` : "";
-
-      // Try to detect any explicit "Alliance Status" block names
-      const m = (summaryText||"").match(/Alliance Status[\s\S]*?(CHALLENGES|POST-CHALLENGE|VOTING|TRIBAL)/i);
-      const snippet = m ? m[0].split("\n").slice(0, 18).join("\n") : "";
-      const lines = snippet.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
-      const allianceNames = lines
-        .filter(l => /^[A-Za-z0-9][A-Za-z0-9_-]{2,}\s*\(/.test(l))
-        .map(l => l.split("(")[0].trim())
-        .slice(0, 4);
-
-      const extra = allianceNames.length ? `<div class="muted small">From summary: ${escapeHtml(allianceNames.join(", "))}</div>` : `<div class="muted small">No named alliances found yet.</div>`;
-      targetEl.innerHTML = has + extra;
+    function renderVotingBlocs(targetEl, analytics) {
+      const blocs = Array.isArray(analytics?.votingBlocs) ? analytics.votingBlocs : [];
+      
+      if (blocs.length === 0) {
+        targetEl.innerHTML = `<div class="muted">No voting blocs detected yet.</div>`;
+        return;
+      }
+      
+      const html = blocs.slice(0, 4).map(bloc => {
+        const members = (bloc.members || []).join(", ");
+        const strength = Math.round(Number(bloc.strength) || 0);
+        const strengthBar = `<div style="background: rgba(76,255,179,0.2); border-radius: 4px; height: 6px; margin: 4px 0;"><div style="background: #4cffb3; width: ${strength}%; height: 100%; border-radius: 4px;"></div></div>`;
+        
+        return `
+          <div style="margin-bottom: 12px; padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px;">
+            <div style="font-weight: 600; margin-bottom: 4px;">${escapeHtml(bloc.name || "Unnamed Bloc")}</div>
+            <div style="font-size: 11px; opacity: 0.7; margin-bottom: 2px;">Members: ${escapeHtml(members)}</div>
+            <div style="font-size: 11px; opacity: 0.7; margin-bottom: 4px;">Target: ${escapeHtml(bloc.target || "Unknown")}</div>
+            ${strengthBar}
+            <div style="font-size: 11px; opacity: 0.8; margin-top: 4px;">${escapeHtml(bloc.notes || "")}</div>
+          </div>
+        `;
+      }).join('');
+      
+      targetEl.innerHTML = html;
     }
 
     // ----------------------------
@@ -1739,7 +1748,7 @@ Dave voted for Mickey
       renderMoveCard(els.cardBestMove, analytics.bestMove);
       renderMoveCard(els.cardBiggestRisk, analytics.biggestRisk);
       els.cardEpisodeSummary.textContent = analytics.narrativeSummary || "—";
-      renderAllianceOverview(els.cardAllianceOverview, analytics, txt);
+      renderVotingBlocs(els.cardVotingBlocs, analytics);
       renderBootOdds(els.cardBootOdds, analytics.bootPredictions);
       renderPowerRankings(els.cardPowerRankings, analytics.powerRankings);
       renderAllianceStability(els.cardAllianceStability, analytics.allianceStability);
@@ -2045,7 +2054,7 @@ Dave voted for Mickey
       els.cardEpisodeSummary.textContent = "—";
       els.cardBootOdds.innerHTML = "<div class='muted'>No boot predictions yet.</div>";
       els.cardPowerRankings.innerHTML = "<div class='muted'>No power rankings yet.</div>";
-      els.cardAllianceOverview.innerHTML = "<div class='muted'>No alliance info yet.</div>";
+      els.cardVotingBlocs.innerHTML = "<div class='muted'>No voting blocs detected yet.</div>";
       els.cardAllianceStability.innerHTML = "<div class='muted'>No alliance stability yet.</div>";
       els.cardTitles.innerHTML = "<div class='muted'>No titles yet.</div>";
       els.cardSocialNetwork.innerHTML = "<div class='muted'>No social network data yet.</div>";

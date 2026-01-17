@@ -1599,10 +1599,13 @@ Dave voted for Mickey
           prob = Math.max(0.10, Math.min(0.40, 0.50 - (power / 100) * 0.40));
         }
         
+        // CAP boot risk at 70% maximum to spread players more vertically
+        const cappedProb = Math.min(prob * 100, 70); // Convert to percentage and cap at 70
+        
         // x: power (0..100) - use actual power score
-        // y: safety = 100 - prob*100 (convert probability to safety percentage)
+        // y: safety = 100 - cappedProb (now ranges from 30-90 instead of 0-100)
         const x = power;
-        const y = 100 - prob*100;
+        const y = 100 - cappedProb;
         return { name, x, y, prob, power };
       });
       

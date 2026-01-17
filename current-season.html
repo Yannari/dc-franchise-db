@@ -2289,77 +2289,94 @@ Dave voted for Mickey
   }
   
   // Generate episode using AI
-  async function generateEpisodeAI() {
-    // Safety check: ensure EPISODE_WORKER_URL is defined
-    if (typeof EPISODE_WORKER_URL === 'undefined') {
-      console.error('EPISODE_WORKER_URL not initialized yet. Please refresh the page.');
-      alert('⚠️ Page not fully loaded. Please refresh and try again.');
-      return;
-    }
-    
-    const summaryInput = document.getElementById('episode-summary-input');
-    const summary = summaryInput ? summaryInput.value.trim() : '';
-    
-    if (!summary) {
-      alert('⚠️ Please paste your BrantSteele episode summary first!');
-      return;
-    }
-    
-    const seasonEl = document.getElementById('aiSeason');
-    const episodeEl = document.getElementById('aiEpisode');
-    const season = seasonEl ? seasonEl.value : '5';
-    const episode = episodeEl ? episodeEl.value : '1';
-    
-    // Get auditions if Episode 1
-    let auditionsText = '';
-    if (episode === '1' || episode === 1) {
-      const auditionsInput = document.getElementById('episode-auditions-input');
-      if (auditionsInput) {
-        auditionsText = auditionsInput.value.trim();
-      }
-    }
-    
-    const generateBtn = document.getElementById('generate-episode-btn');
-    const originalText = generateBtn.innerHTML;
-    generateBtn.innerHTML = '⏳ Generating Episode...';
-    generateBtn.disabled = true;
-    
-    try {
-      const response = await fetch(EPISODE_WORKER_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          mode: 'episode',
-          season: season,
-          episode: episode,
-          summaryText: summary,
-          auditionsText: auditionsText  // Include auditions for Episode 1
-        })
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      const transcript = data.episodeTranscript || data.output_text || '';
-      
-      if (!transcript) {
-        throw new Error('No episode transcript returned from AI');
-      }
-      
-      document.getElementById('episode-input').value = transcript;
-      saveEpisode();
-      alert('✅ Episode generated successfully!');
-      
-    } catch (error) {
-      console.error('Error generating episode:', error);
-      alert('❌ Error generating episode: ' + error.message);
-    } finally {
-      generateBtn.innerHTML = originalText;
-      generateBtn.disabled = false;
+// Replace the existing generateEpisodeAI function with this updated version:
+
+async function generateEpisodeAI() {
+  // Safety check: ensure EPISODE_WORKER_URL is defined
+  if (typeof EPISODE_WORKER_URL === 'undefined') {
+    console.error('EPISODE_WORKER_URL not initialized yet. Please refresh the page.');
+    alert('⚠️ Page not fully loaded. Please refresh and try again.');
+    return;
+  }
+  
+  const summaryInput = document.getElementById('episode-summary-input');
+  const summary = summaryInput ? summaryInput.value.trim() : '';
+  
+  if (!summary) {
+    alert('⚠️ Please paste your BrantSteele episode summary first!');
+    return;
+  }
+  
+  const seasonEl = document.getElementById('aiSeason');
+  const episodeEl = document.getElementById('aiEpisode');
+  const season = seasonEl ? seasonEl.value : '5';
+  const episode = episodeEl ? episodeEl.value : '1';
+  const episodeNum = parseInt(episode);
+  
+  // Get auditions if Episode 1
+  let auditionsText = '';
+  if (episode === '1' || episode === 1) {
+    const auditionsInput = document.getElementById('episode-auditions-input');
+    if (auditionsInput) {
+      auditionsText = auditionsInput.value.trim();
     }
   }
+  
+  // 🆕 GATHER PREVIOUS EPISODES FOR CONTEXT
+  const previousEpisodes = [];
+  for (let i = 1; i < episodeNum; i++) {
+    const key = `td_episode_s${season}_e${i}`;
+    const savedEpisode = localStorage.getItem(key);
+    if (savedEpisode) {
+      previousEpisodes.push({
+        episode: i,
+        transcript: savedEpisode
+      });
+    }
+  }
+  
+  const generateBtn = document.getElementById('generate-episode-btn');
+  const originalText = generateBtn.innerHTML;
+  generateBtn.innerHTML = '⏳ Generating Episode...';
+  generateBtn.disabled = true;
+  
+  try {
+    const response = await fetch(EPISODE_WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        mode: 'episode',
+        season: season,
+        episode: episode,
+        summaryText: summary,
+        auditionsText: auditionsText,
+        previousEpisodes: previousEpisodes  // 🆕 Include previous episodes
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    const transcript = data.episodeTranscript || data.output_text || '';
+    
+    if (!transcript) {
+      throw new Error('No episode transcript returned from AI');
+    }
+    
+    document.getElementById('episode-input').value = transcript;
+    saveEpisode();
+    alert('✅ Episode generated successfully!');
+    
+  } catch (error) {
+    console.error('Error generating episode:', error);
+    alert('❌ Error generating episode: ' + error.message);
+  } finally {
+    generateBtn.innerHTML = originalText;
+    generateBtn.disabled = false;
+  }
+}
   
   // Render episode from transcript
   function renderEpisode() {

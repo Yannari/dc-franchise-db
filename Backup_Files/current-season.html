@@ -628,12 +628,8 @@ Blaineley
 ..."></textarea>
         </div>
         
-        <button id="analyze-cast-btn" class="btn btn-primary" style="margin-right: 10px;">
+        <button id="analyze-cast-btn" class="btn btn-primary">
           🔍 Analyze Cast
-        </button>
-        
-        <button onclick="document.getElementById('download-players-db').click()" class="btn" style="background: rgba(76,255,179,0.2); border: 1px solid #4cffb3;">
-          💾 Download Database
         </button>
         
         <div id="cast-analysis-result" style="margin-top: 20px; padding: 16px; background: rgba(125,76,255,0.1); border: 1px solid rgba(125,76,255,0.3); border-radius: 12px; display: none;">
@@ -909,6 +905,10 @@ Dave voted for Mickey
           
           <button id="import-database-btn" class="btn" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
             📤 Import Database from JSON
+          </button>
+          
+          <button onclick="manageDatabaseSync()" class="btn" style="background: linear-gradient(135deg, #ec4899, #db2777);">
+            🔄 Manage Sync
           </button>
           
           <button id="sync-devotees-btn" class="btn" style="background: linear-gradient(135deg, #a855f7, #9333ea);">
@@ -3622,6 +3622,7 @@ setTimeout(function() {
   function parseEpisodeSummary(text, episodeNum, activePlayers) {
     const result = {
       episode: episodeNum,
+      title: null,
       eliminated: null,
       eliminatedSlug: null,
       votes: [],
@@ -3629,6 +3630,13 @@ setTimeout(function() {
       immunityWinners: [],
       idolPlays: []
     };
+    
+    // Parse episode title from META block
+    // Format: "EPISODE 2-Serpent Turf" or "EPISODE: 2-Serpent Turf"
+    const titleMatch = text.match(/EPISODE[\s:]*\d+[-–—]\s*(.+?)(?:\n|$)/i);
+    if (titleMatch) {
+      result.title = titleMatch[1].trim();
+    }
     
     // Parse eliminated player
     // Look for patterns like: "X was voted out", "X was eliminated", "Boot: X"
@@ -4877,10 +4885,20 @@ setTimeout(function() {
     const db = loadPlayerDatabase();
     let updated = 0;
     
-    const activeCount = cast.length;
+    // Get the ORIGINAL cast size from database (not current active count)
+    const allPlayersThisSeason = db.players.filter(p => 
+      p.seasons.includes(season)
+    );
+    const originalCastSize = allPlayersThisSeason.length;
+    
+    // Count how many players have ALREADY been eliminated before this episode
+    const alreadyEliminatedCount = allPlayersThisSeason.filter(p => {
+      const sd = p.seasonDetails.find(s => s.season === season);
+      return sd && sd.status === "Eliminated";
+    }).length;
+    
+    // New eliminations this episode
     const eliminatedArray = Array.from(eliminated);
-    const eliminatedCount = eliminatedArray.length;
-    const remainingCount = activeCount - eliminatedCount;
     
     for (const eliminatedName of eliminatedArray) {
       const player = db.players.find(p => 
@@ -4890,7 +4908,10 @@ setTimeout(function() {
       if (player) {
         const seasonDetail = player.seasonDetails.find(s => s.season === season);
         if (seasonDetail && seasonDetail.status === "Active") {
-          const placement = remainingCount + 1;
+          // Calculate placement: original cast size - how many were already out
+          // First boot: 20 - 0 = 20th place
+          // Second boot: 20 - 1 = 19th place
+          const placement = originalCastSize - alreadyEliminatedCount - updated;
           seasonDetail.placement = placement;
           seasonDetail.status = "Eliminated";
           
@@ -5086,12 +5107,34 @@ setTimeout(function() {
 
   function loadPlayerDatabase() {
     try {
+      // Try localStorage first (for live updates)
       const raw = localStorage.getItem("players_database");
-      if (raw) return JSON.parse(raw);
+      if (raw) {
+        console.log("✅ Loaded database from localStorage");
+        return JSON.parse(raw);
+      }
+      
+      // If localStorage is empty, try to load from project file
+      console.log("⚠️ localStorage empty, attempting to load from project file...");
+      fetch('/mnt/project/players_database.json')
+        .then(res => res.json())
+        .then(data => {
+          console.log("✅ Loaded database from project file, saving to localStorage");
+          localStorage.setItem("players_database", JSON.stringify(data, null, 2));
+          // Reload page to use the localStorage version
+          if (confirm("Database loaded from project file. Reload page to start using it?")) {
+            location.reload();
+          }
+        })
+        .catch(err => {
+          console.log("ℹ️ No project file found, starting fresh");
+        });
+      
     } catch (e) {
       console.error("Error loading player database:", e);
     }
     
+    // Return empty database for now
     return {
       franchise: {
         name: "DC Franchise Database",
@@ -5156,6 +5199,57 @@ setTimeout(function() {
     episodeInput.addEventListener('change', toggleAuditions);
     toggleAuditions(); // Initial check on page load
   }
+  
+  // ========================================
+  // DATABASE SYNC MANAGEMENT
+  // ========================================
+  // Manage database sync
+  window.manageDatabaseSync = function() {
+    const hasLocalStorage = !!localStorage.getItem("players_database");
+    const localStorageSize = hasLocalStorage ? (localStorage.getItem("players_database").length / 1024).toFixed(2) : 0;
+    
+    let db = null;
+    try {
+      db = loadPlayerDatabase();
+    } catch (e) {}
+    
+    const message = `
+📊 Database Sync Status
+
+${hasLocalStorage ? '✅' : '❌'} localStorage: ${hasLocalStorage ? `${localStorageSize} KB` : 'Empty'}
+${db?.players?.length || 0} players loaded
+${db?.franchise?.totalSeasons || 0} seasons
+
+🔄 How Sync Works:
+1. All changes save to localStorage automatically ✅
+2. Use "Export Database" to download .json file
+3. Edit file externally if needed
+4. Use "Import Database" to upload changes back
+5. Changes sync immediately!
+
+💡 Workflow:
+• Play episodes → Auto-saves to localStorage ✅
+• Generate season → Updates profiles ✅
+• Export → Download latest version ✅
+• Import → Upload edited version ✅
+
+📍 Find buttons in:
+Database Management tab (bottom of page)
+
+Would you like to:
+[OK] Close
+[Clear localStorage] Start fresh (WARNING: Deletes data)
+    `.trim();
+    
+    if (confirm(message + "\n\nClick OK to close, Cancel to CLEAR localStorage")) {
+      // User clicked Cancel = wants to clear
+      if (confirm("⚠️ Are you SURE? This will delete all player data from localStorage!")) {
+        localStorage.removeItem("players_database");
+        alert("✅ localStorage cleared. Reload page to start fresh.");
+        location.reload();
+      }
+    }
+  };
   
 })();
 }, 500); // Wait 500ms for DOM to fully render and database to load

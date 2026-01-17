@@ -176,15 +176,11 @@
 .axis-label.top{top:10px;left:50%;transform:translateX(-50%)}
 .axis-label.bottom{bottom:10px;left:50%;transform:translateX(-50%)}
 .compass-points{position:absolute;inset:0}
-.dot{position:absolute;transform:translate(-50%,-50%);text-decoration:none;color:#fff;transition:all .2s ease}
-.dot-circle{border-radius:999px;background:rgba(255,255,255,.12);border:2px solid rgba(155,109,255,.40);display:flex;align-items:center;justify-content:center;overflow:hidden;transition:all .2s ease}
+.dot{position:absolute;transform:translate(-50%,-50%);text-decoration:none;color:#fff}
+.dot-circle{width:30px;height:30px;border-radius:999px;background:rgba(255,255,255,.10);border:1px solid rgba(155,109,255,.40);display:flex;align-items:center;justify-content:center;overflow:hidden}
 .dot-circle img{width:100%;height:100%;object-fit:cover;display:none}
-.dot-fallback{display:flex;width:100%;height:100%;align-items:center;justify-content:center;font-weight:800;opacity:.8}
-.dot-label{display:block;margin-top:4px;font-size:10px;opacity:0;text-shadow:0 2px 10px rgba(0,0,0,.8);max-width:90px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none;transition:opacity .2s ease}
-.dot.show-label .dot-label{opacity:.9}
-.dot:hover{z-index:10;transform:translate(-50%,-50%) scale(1.2)}
-.dot:hover .dot-label{opacity:1}
-.dot:hover .dot-circle{border-color:rgba(155,109,255,.8);background:rgba(155,109,255,.25)}
+.dot-fallback{display:flex;width:100%;height:100%;align-items:center;justify-content:center;font-weight:800;font-size:12px;opacity:.8}
+.dot-label{display:block;margin-top:4px;font-size:10px;opacity:.85;text-shadow:0 2px 10px rgba(0,0,0,.6);max-width:90px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .table-wrap{overflow:auto;border-radius:16px;border:1px solid rgba(255,255,255,.10)}
 .gp-table{width:100%;border-collapse:collapse}
 .gp-table th,.gp-table td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.08);font-size:13px;text-align:left}
@@ -1639,38 +1635,18 @@ Dave voted for Mickey
         return { name: p.name, x: xNorm, y: yNorm };
       });
 
-      els.compassPoints.innerHTML = normalizedPoints.map((p, index) => {
+      els.compassPoints.innerHTML = normalizedPoints.map((p) => {
         const id = slugify(p.name);
         // convert x,y (0..100) to %
         const left = Math.max(3, Math.min(97, p.x));
         const top = Math.max(3, Math.min(97, 100 - p.y)); // invert for CSS top
-        
-        // Get power score and boot risk from analytics
-        const playerData = analytics?.powerRankings?.find(pr => 
-          pr.player.toLowerCase() === p.name.toLowerCase()
-        );
-        const bootData = analytics?.bootPredictions?.find(bp => 
-          bp.player.toLowerCase() === p.name.toLowerCase()
-        );
-        
-        const power = playerData?.score || 50;
-        const risk = bootData?.prob || 15;
-        
-        // Calculate dot size based on combined threat (power + inverse risk)
-        const threat = (power + (100 - risk)) / 2;
-        const size = 25 + (threat / 100) * 20; // 25-45px range
-        const fontSize = Math.round(size * 0.4); // Scale font with size
-        
-        // Show label for top 5 players or high-power players
-        const showLabel = index < 5 || power >= 75;
-        
         return `
-          <a class="dot ${showLabel ? 'show-label' : ''}" href="player.html?player=${id}" style="left:${left}%;top:${top}%;">
-            <span class="dot-circle" style="width:${size}px;height:${size}px;">
+          <a class="dot" href="player.html?player=${id}" style="left:${left}%;top:${top}%;">
+            <span class="dot-circle">
               <img src="assets/avatars/${id}.png" alt="${escapeHtml(p.name)}"
                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
                 onload="this.style.display='block'; this.nextElementSibling.style.display='none';" />
-              <span class="dot-fallback" style="font-size:${fontSize}px;">${escapeHtml((p.name||'?').slice(0,1).toUpperCase())}</span>
+              <span class="dot-fallback">${escapeHtml((p.name||'?').slice(0,1).toUpperCase())}</span>
             </span>
             <span class="dot-label">${escapeHtml(p.name)}</span>
           </a>

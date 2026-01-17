@@ -1636,17 +1636,18 @@ Dave voted for Mickey
           xNorm = 5 + (p.x / 100) * 90;
         }
         
-        if (yRange < 20) {
-          // Stronger spread for clustered data (10-90 range)
-          yNorm = 10 + ((p.y - yMin) / (yRange || 1)) * 80;
+        if (yRange < 30) {
+          // VERY aggressive spread for clustered y-axis (5-95 range, full compass)
+          yNorm = 5 + ((p.y - yMin) / (yRange || 1)) * 90;
         } else {
           // Use actual position with minimal padding
           yNorm = 5 + (p.y / 100) * 90;
         }
         
-        // Add slight jitter to prevent exact overlaps (varies by index)
-        const jitterX = (idx % 3 - 1) * 2; // -2, 0, or 2
-        const jitterY = (Math.floor(idx / 3) % 3 - 1) * 2; // -2, 0, or 2
+        // Add larger jitter to prevent overlaps - scale with player count
+        const jitterScale = Math.min(5, sortedPoints.length / 3);
+        const jitterX = ((idx % 5) - 2) * jitterScale; // -10 to +10
+        const jitterY = (Math.floor(idx / 5) % 5 - 2) * jitterScale; // -10 to +10
         
         return { 
           name: p.name, 

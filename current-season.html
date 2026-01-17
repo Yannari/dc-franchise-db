@@ -1621,40 +1621,35 @@ Dave voted for Mickey
       const xRange = xMax - xMin;
       const yRange = yMax - yMin;
       
-      // Sort by power score to prioritize positioning
-      const sortedPoints = points.sort((a, b) => b.x - a.x);
-      
-      // Apply stronger spreading and add jitter to prevent exact overlaps
-      const normalizedPoints = sortedPoints.map((p, idx) => {
-        let xNorm, yNorm;
+      // Don't sort - keep original order to maintain data accuracy
+      // Apply minimal normalization - use actual values with just padding
+      const normalizedPoints = points.map((p, idx) => {
+        // Use actual power score directly (0-100 maps to 5-95%)
+        const xNorm = 5 + (p.x / 100) * 90;
         
-        if (xRange < 20) {
-          // Stronger spread for clustered data (10-90 range instead of 30-70)
-          xNorm = 10 + ((p.x - xMin) / (xRange || 1)) * 80;
-        } else {
-          // Use actual position with minimal padding
-          xNorm = 5 + (p.x / 100) * 90;
-        }
+        // Use actual safety score directly (30-100 after capping maps to 5-95%)
+        // But remap from 30-100 range to 5-95% range for better use of space
+        const yMin = 30; // Minimum y after 70% risk cap
+        const yMax = 100; // Maximum y (0% risk)
+        const yNormalized = ((p.y - yMin) / (yMax - yMin)); // 0-1 range
+        const yNorm = 5 + yNormalized * 90; // 5-95% range
         
-        if (yRange < 30) {
-          // VERY aggressive spread for clustered y-axis (5-95 range, full compass)
-          yNorm = 5 + ((p.y - yMin) / (yRange || 1)) * 90;
-        } else {
-          // Use actual position with minimal padding
-          yNorm = 5 + (p.y / 100) * 90;
-        }
-        
-        // Add larger jitter to prevent overlaps - scale with player count
-        const jitterScale = Math.min(5, sortedPoints.length / 3);
-        const jitterX = ((idx % 5) - 2) * jitterScale; // -10 to +10
-        const jitterY = (Math.floor(idx / 5) % 5 - 2) * jitterScale; // -10 to +10
+        // Add small jitter only to prevent exact pixel overlaps (not for spreading)
+        const jitterScale = 3; // Small fixed jitter
+        const jitterX = ((idx % 5) - 2) * jitterScale; // -6 to +6
+        const jitterY = (Math.floor(idx / 5) % 5 - 2) * jitterScale; // -6 to +6
         
         return { 
-          name: p.name, 
+          name: p.name,
+          power: p.power, // Keep for label logic
           x: Math.max(5, Math.min(95, xNorm + jitterX)), 
           y: Math.max(5, Math.min(95, yNorm + jitterY))
         };
       });
+
+      // Sort by power to identify top players for labels
+      const sortedByPower = [...normalizedPoints].sort((a, b) => (b.power || 0) - (a.power || 0));
+      const top3Names = new Set(sortedByPower.slice(0, 3).map(p => p.name.toLowerCase()));
 
       els.compassPoints.innerHTML = normalizedPoints.map((p, index) => {
         const id = slugify(p.name);
@@ -1678,8 +1673,8 @@ Dave voted for Mickey
         const size = 20 + (threat / 100) * 15; // 20-35px range (smaller)
         const fontSize = Math.round(size * 0.4); // Scale font with size
         
-        // Show label ONLY for top 3 players by power score
-        const showLabel = index < 3;
+        // Show label for top 3 players by power score
+        const showLabel = top3Names.has(p.name.toLowerCase());
         
         return `
           <a class="dot ${showLabel ? 'show-label' : ''}" href="player.html?player=${id}" style="left:${left}%;top:${top}%;">

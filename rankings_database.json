@@ -1,49 +1,66 @@
 {
   "metadata": {
-    "name": "🏆 Disventure Camp Franchise Rankings — Complete Cast (68)",
-    "version": "10.1_REASONING+EMOJI_REFRESH",
-    "lastUpdated": "2026-01-08",
-    "totalPlayers": 68,
-    "seasons": 6,
+    "name": "🏆 Total Drama Franchise Rankings - Complete Cast",
+    "version": "11.0_ASCII_SAFE_TITLE_EMOJI_REFRESH",
+    "lastUpdated": "2026-01-18",
+    "totalPlayers": 78,
+    "seasons": 7,
     "improvements": [
-      "All 68 players verified against season transcripts",
-      "Jacques fixed: 2 votes, 7 jury votes",
-      "Proper tier distribution (not 43 in D!)",
-      "Story-driven reasoning",
-      "Alejandro #1, Mickey #2, Jacques #3",
-      "Emoji + highlight-reel reasoning refreshed for all 68 players"
+      "All strings ASCII-safe (no em-dash/smart quotes)",
+      "Titles + emojis refreshed to match character archetypes",
+      "Metadata updated for Season 7",
+      "Kept full reasoning blocks + stats fields for every player"
     ]
   },
+  "scoringSystem": {},
   "tiers": {
     "S+": {
-      "name": "TIER S+ — Elite Winners",
+      "name": "TIER S+ - Elite Winners",
       "description": "90+ • Franchise legends",
-      "scoreRange": [90, 100]
+      "scoreRange": [
+        90,
+        100
+      ]
     },
     "S": {
-      "name": "TIER S — Championship Caliber",
+      "name": "TIER S - Championship Caliber",
       "description": "80-89 • Top-tier threats",
-      "scoreRange": [80, 89]
+      "scoreRange": [
+        80,
+        89
+      ]
     },
     "A": {
-      "name": "TIER A — Elite Threats",
+      "name": "TIER A - Elite Threats",
       "description": "71-79 • Deep runs",
-      "scoreRange": [71, 79]
+      "scoreRange": [
+        71,
+        79
+      ]
     },
     "B": {
-      "name": "TIER B — Above Average",
+      "name": "TIER B - Above Average",
       "description": "61-70 • Solid gameplay",
-      "scoreRange": [61, 70]
+      "scoreRange": [
+        61,
+        70
+      ]
     },
     "C": {
-      "name": "TIER C — Average",
+      "name": "TIER C - Average",
       "description": "51-60 • Mid-game players",
-      "scoreRange": [51, 60]
+      "scoreRange": [
+        51,
+        60
+      ]
     },
     "D": {
-      "name": "TIER D — Below Average",
+      "name": "TIER D - Below Average",
       "description": "0-50 • Early exits",
-      "scoreRange": [0, 50]
+      "scoreRange": [
+        0,
+        50
+      ]
     }
   },
   "rankings": [
@@ -54,7 +71,7 @@
       "tier": "S+",
       "score": 97,
       "title": "The Snake Charmer",
-      "emoji": "♟️",
+      "emoji": "🐍",
       "reasoning": "3 FINALS APPEARANCES (franchise rarity). WINNER of S4 (7-6-1). MOST challenge wins in the franchise (13). Constant heat all game (25 votes against). Top jury pull in the database (12 finalist votes). Strategic mastermind (ranked #1). Saved by Ezekiel's idol play (Ep 8). (S2).",
       "strengths": [
         "Three-time finalist (ONLY ever)",
@@ -67,7 +84,7 @@
         "Needed 3 tries to win"
       ],
       "avgPlacement": 1.67,
-      "winRate": 33,
+      "winRate": 33.33,
       "wins": 1,
       "seasonsPlayed": 3,
       "placements": [
@@ -81,7 +98,7 @@
       "idolsFound": 0,
       "placementPercentile": 97.01,
       "winPercentile": 94.03,
-      "challengePercentile": 100.0,
+      "challengePercentile": 100,
       "socialPercentile": 26.87,
       "strategicPercentile": 97.01
     },
@@ -91,8 +108,8 @@
       "rank": 2,
       "tier": "S+",
       "score": 96,
-      "title": "The Fragile Fighter",
-      "emoji": "🏆",
+      "title": "The Anxious Ace",
+      "emoji": "🩹",
       "reasoning": "TWO deep runs with real endgame equity. WINNER of S5 (4-3 (tiebreak)). Strong advantage game (2 idols/advantages found). Found Galang idol. (S6). Played idol on Jay at Final 5. (S6). Across 2 season(s): avg placement 1.50.",
       "strengths": [
         "Perfect game S5 (0 votes)",
@@ -105,7 +122,7 @@
         "S6: only 1 jury vote"
       ],
       "avgPlacement": 1.5,
-      "winRate": 50,
+      "winRate": 50.0,
       "wins": 1,
       "seasonsPlayed": 2,
       "placements": [
@@ -123,155 +140,81 @@
       "strategicPercentile": 85.07
     },
     {
-      "playerId": "jacques",
-      "name": "Jacques",
-      "rank": 3,
+      "playerId": "macarthur",
       "tier": "S+",
-      "score": 95,
-      "title": "The Ice Dancer",
-      "emoji": "🥇",
-      "reasoning": "CHAMPION season on the résumé. WINNER of S6 (7-1-0). Reliable challenge contributor (4 total wins). Elite social insulation (only 2 votes against). Legit jury respect (7 finalist votes). Engineered Kitty’s idol burn at merge. (S6). Won 4 immunities to steer late votes. (S6).",
-      "strengths": [
-        "7-1-0 jury blowout",
-        "Manipulated Kitty's idol",
-        "4 immunities",
-        "Near-perfect game"
-      ],
-      "weaknesses": [
-        "Only one season",
-        "No idol finds"
-      ],
-      "avgPlacement": 1.0,
-      "winRate": 100,
-      "wins": 1,
-      "seasonsPlayed": 1,
+      "score": 90,
+      "rank": 4,
+      "avgPlacement": 1,
+      "winRate": 100.0,
       "placements": [
         1
       ],
       "challengeWins": 4,
-      "votesAgainst": 2,
-      "juryVotes": 7,
-      "idolsFound": 0,
-      "placementPercentile": 100.0,
-      "winPercentile": 100.0,
-      "challengePercentile": 97.01,
-      "socialPercentile": 87.31,
-      "strategicPercentile": 100.0
+      "votesAgainst": 5,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "status": "Competed in Season 7 only",
+      "title": "The Enforcer",
+      "emoji": "👮‍♀️",
+      "reasoning": "MacArthur's S7 was a power-social showcase: she found the Mauhu idol, bridged across blocs, steered key boots, and won the jury with controlled force. She kept her idol holstered correctly through joint tribals and late storms, then locked the endgame with Cody and Carrie. With 4 challenge wins, 1 idol found, and only 5 votes against, her run was efficient and respected. A fiery rivalry with Sky never derailed her path to the crown.",
+      "strengths": [
+        "Cross-tribe relationship building that scales to merge",
+        "Excellent idol discipline and timing (pocketing under pressure)",
+        "Independent agency on votes that juries reward",
+        "Endgame coordination without overexposure"
+      ],
+      "weaknesses": [
+        "Direct style risks conflicts with strong-willed allies",
+        "High visibility makes her an immediate returnee target"
+      ],
+      "name": "MacArthur",
+      "seasonsList": [
+        7
+      ],
+      "seasonsPlayed": 1,
+      "wins": 1
     },
     {
-      "playerId": "lindsay",
-      "name": "Lindsay",
-      "rank": 4,
+      "playerId": "jacques",
       "tier": "S+",
       "score": 92,
-      "title": "The Glow-Up Queen",
-      "emoji": "👑",
-      "reasoning": "TWO deep runs with real endgame equity. WINNER of S1 (5-4). Elite social insulation (only 2 votes against). Legit jury respect (5 finalist votes). High-end strategist (best rank: #2). Never needed immunity. (S1). Lost 1-5-1 to Duncan. (S2).",
-      "strengths": [
-        "S1 winner",
-        "2 votes/2 seasons",
-        "Social perfection",
-        "Beat Alejandro"
-      ],
-      "weaknesses": [
-        "0 challenge wins",
-        "S2: only 3rd"
-      ],
-      "avgPlacement": 2.0,
-      "winRate": 50,
-      "wins": 1,
-      "seasonsPlayed": 2,
+      "rank": 3,
+      "avgPlacement": 2.5,
+      "winRate": 50.0,
       "placements": [
         1,
-        3
+        4
       ],
-      "challengeWins": 1,
+      "challengeWins": 10,
       "votesAgainst": 2,
-      "juryVotes": 5,
+      "juryVotes": 0,
       "idolsFound": 0,
-      "placementPercentile": 94.78,
-      "winPercentile": 97.76,
-      "challengePercentile": 65.67,
-      "socialPercentile": 99.25,
-      "strategicPercentile": 90.3
-    },
-    {
-      "playerId": "scott",
-      "name": "Scott",
-      "rank": 5,
-      "tier": "S",
-      "score": 89,
-      "title": "The Saboteur",
-      "emoji": "🦊",
-      "reasoning": "TWO deep runs with real endgame equity. RUNNER-UP in S3 (3-4-1). Reliable challenge contributor (6 total wins). Strong advantage game (2 idols/advantages found). High-end strategist (best rank: #2). FRANCHISE RECORD: Held idol 9 tribals!. (S4). Perfect idol play at F5 (3 votes cancelled). (S4).",
+      "status": "Competed in 2/7 seasons",
+      "title": "The Ice Prince",
+      "emoji": "🧊",
+      "reasoning": "S6 was a clinic: calm threat management, 4 late immunities, and a 7-1-0 crowning. In S7 he stacked 6 total wins (5 immunities), ran the board with Taylor, then combusted at F4 and quit-turning a near-lock into collapse. With a 50% win rate, 10 challenge wins, and only 2 votes against over two seasons, he's a proven closer when composed. His feud with Carrie and the season's pressure exposed a volatile side that cost him the end.",
       "strengths": [
-        "Two-time finalist",
-        "6 immunities S3 (record)",
-        "Idol specialist",
-        "9-tribal hold S4"
+        "Elite challenge streaks to dictate late votes",
+        "Ice-cold strategic steering without overexposure",
+        "Builds durable duos (Taylor) to anchor coalitions"
       ],
       "weaknesses": [
-        "Never won (0-2)",
-        "Idol hoarding looked passive"
+        "Emotional volatility under endgame pressure",
+        "High threat profile invites coalition shots",
+        "Personal feuds (Carrie) distract strategic focus"
       ],
-      "avgPlacement": 2.5,
-      "winRate": 0.0,
-      "wins": 0,
+      "name": "Jacques",
+      "seasonsList": [
+        6,
+        7
+      ],
       "seasonsPlayed": 2,
-      "placements": [
-        3,
-        2
-      ],
-      "challengeWins": 6,
-      "votesAgainst": 8,
-      "juryVotes": 4,
-      "idolsFound": 2,
-      "placementPercentile": 92.54,
-      "winPercentile": 45.52,
-      "challengePercentile": 92.54,
-      "socialPercentile": 87.31,
-      "strategicPercentile": 90.3
-    },
-    {
-      "playerId": "sky",
-      "name": "Sky",
-      "rank": 6,
-      "tier": "S",
-      "score": 88.3,
-      "title": "The Athlete",
-      "emoji": "🥈",
-      "reasoning": "Finalist who came within reach of the crown. RUNNER-UP in S5 (3 (lost tiebreak)). Reliable challenge contributor (4 total wins). Strong advantage game (2 idols/advantages found). Across 1 season(s): avg placement 2.00.",
-      "strengths": [
-        "4 challenge wins",
-        "2 idols found",
-        "Perfect F6 play",
-        "Controlled endgame"
-      ],
-      "weaknesses": [
-        "Lost tiebreak despite dominance",
-        "Too visible"
-      ],
-      "avgPlacement": 2.0,
-      "winRate": 0.0,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "placements": [
-        2
-      ],
-      "challengeWins": 4,
-      "votesAgainst": 1,
-      "juryVotes": 3,
-      "idolsFound": 2,
-      "placementPercentile": 94.78,
-      "winPercentile": 45.52,
-      "challengePercentile": 97.01,
-      "socialPercentile": 99.25,
-      "strategicPercentile": 50.0
+      "wins": 1
     },
     {
       "playerId": "duncan",
       "name": "Duncan",
-      "rank": 8,
+      "rank": 5,
       "tier": "S",
       "score": 83,
       "title": "The Delinquent",
@@ -287,7 +230,7 @@
         "17 votes total"
       ],
       "avgPlacement": 7.33,
-      "winRate": 33,
+      "winRate": 33.33,
       "wins": 1,
       "seasonsPlayed": 3,
       "placements": [
@@ -308,7 +251,7 @@
     {
       "playerId": "emma",
       "name": "Emma",
-      "rank": 9,
+      "rank": 6,
       "tier": "S",
       "score": 81,
       "title": "The Comeback Kid",
@@ -324,7 +267,7 @@
         "S2: early boot"
       ],
       "avgPlacement": 9.33,
-      "winRate": 33,
+      "winRate": 33.33,
       "wins": 1,
       "seasonsPlayed": 3,
       "placements": [
@@ -343,48 +286,12 @@
       "strategicPercentile": 88.06
     },
     {
-      "playerId": "zoey",
-      "name": "Zoey",
-      "rank": 7,
-      "tier": "S",
-      "score": 86,
-      "title": "The Powerhouse",
-      "emoji": "💪",
-      "reasoning": "Finalist who came within reach of the crown. RUNNER-UP in S4 (6-7). Elite challenge engine (8 total wins). Legit jury respect (6 finalist votes). Perfect idol play saved Geoff (7 votes cancelled). (S4). UNPRECEDENTED: 3 unbreakable bonds at once!. (S4). Across 2 season(s): avg placement 3.00.",
-      "strengths": [
-        "Two-time finalist",
-        "3 unbreakable bonds",
-        "6 jury votes S4"
-      ],
-      "weaknesses": [
-        "Lost by 1 vote S4",
-        "Social couldn't beat strategy"
-      ],
-      "avgPlacement": 3.0,
-      "winRate": 0.0,
-      "wins": 0,
-      "seasonsPlayed": 2,
-      "placements": [
-        2,
-        4
-      ],
-      "challengeWins": 8,
-      "votesAgainst": 4,
-      "juryVotes": 6,
-      "idolsFound": 1,
-      "placementPercentile": 90.3,
-      "winPercentile": 45.52,
-      "challengePercentile": 97.01,
-      "socialPercentile": 97.01,
-      "strategicPercentile": 50.0
-    },
-    {
       "playerId": "cameron",
       "name": "Cameron",
-      "rank": 10,
+      "rank": 7,
       "tier": "A",
       "score": 79.2,
-      "title": "The Underdog",
+      "title": "The Brainiac",
       "emoji": "🧪",
       "reasoning": "Reliable challenge contributor (6 total wins). Strong advantage game (2 idols/advantages found). High-end strategist (best rank: #3). Cast tiebreaker for Emma. (S3). Voted Zoey at FTC. (S4). Across 2 season(s): avg placement 4.00.",
       "strengths": [
@@ -396,7 +303,7 @@
         "Only 1 jury vote career",
         "Can't close at FTC"
       ],
-      "avgPlacement": 4.0,
+      "avgPlacement": 4,
       "winRate": 0.0,
       "wins": 0,
       "seasonsPlayed": 2,
@@ -412,16 +319,16 @@
       "winPercentile": 45.52,
       "challengePercentile": 92.54,
       "socialPercentile": 70.15,
-      "strategicPercentile": 50.0
+      "strategicPercentile": 50
     },
     {
       "playerId": "scarlett",
       "name": "Scarlett",
-      "rank": 11,
+      "rank": 8,
       "tier": "A",
       "score": 77.9,
-      "title": "The Mastermind",
-      "emoji": "🧩",
+      "title": "The Puppetmaster",
+      "emoji": "🧠",
       "reasoning": "Across 1 season(s): avg placement 4.00.",
       "strengths": [
         "#1 strategic rank S5",
@@ -432,7 +339,7 @@
         "Lost fire-making",
         "Only one season"
       ],
-      "avgPlacement": 4.0,
+      "avgPlacement": 4,
       "winRate": 0.0,
       "wins": 0,
       "seasonsPlayed": 1,
@@ -452,11 +359,11 @@
     {
       "playerId": "jay",
       "name": "Jay",
-      "rank": 12,
+      "rank": 9,
       "tier": "A",
       "score": 76.7,
-      "title": "The Cautious Twin",
-      "emoji": "👯‍♂️",
+      "title": "The Loyal Heart",
+      "emoji": "❤️",
       "reasoning": "Navigated the merge rock draw. (S6). Finalist - 0 jury votes. (S6). Across 1 season(s): avg placement 3.00.",
       "strengths": [
         "Made F3",
@@ -468,7 +375,7 @@
         "No authorship",
         "Passenger"
       ],
-      "avgPlacement": 3.0,
+      "avgPlacement": 3,
       "winRate": 0.0,
       "wins": 0,
       "seasonsPlayed": 1,
@@ -488,7 +395,7 @@
     {
       "playerId": "ryan",
       "name": "Ryan",
-      "rank": 13,
+      "rank": 10,
       "tier": "A",
       "score": 75.5,
       "title": "The Gentle Giant",
@@ -525,11 +432,11 @@
     {
       "playerId": "kelly",
       "name": "Kelly",
-      "rank": 14,
+      "rank": 11,
       "tier": "A",
       "score": 74.3,
-      "title": "The Tough Mom",
-      "emoji": "👩‍👧",
+      "title": "The Protective Mom",
+      "emoji": "🧡",
       "reasoning": "Lost Final 4 fire-making. (S6). Found and correctly played Tadhana idol at swap. (S6). Across 1 season(s): avg placement 4.00.",
       "strengths": [
         "Perfect idol play",
@@ -540,7 +447,7 @@
         "Lost fire-making",
         "Multiple meltdowns"
       ],
-      "avgPlacement": 4.0,
+      "avgPlacement": 4,
       "winRate": 0.0,
       "wins": 0,
       "seasonsPlayed": 1,
@@ -560,7 +467,7 @@
     {
       "playerId": "trent",
       "name": "Trent",
-      "rank": 15,
+      "rank": 12,
       "tier": "A",
       "score": 73.1,
       "title": "The Guitar Guy",
@@ -589,51 +496,16 @@
       "winPercentile": 45.52,
       "challengePercentile": 86.57,
       "socialPercentile": 38.06,
-      "strategicPercentile": 50.0
-    },
-    {
-      "playerId": "brody",
-      "name": "Brody",
-      "rank": 16,
-      "tier": "A",
-      "score": 71.9,
-      "title": "The Surfer Bro",
-      "emoji": "🏄‍♂️",
-      "reasoning": "Constant heat all game (26 votes against). Won ‘Wrist Assured’ immunity. (S6). Returned from RI at merge with clue. (S6). Across 1 season(s): avg placement 7.00.",
-      "strengths": [
-        "26 votes, still survived to F7",
-        "RI return",
-        "Unkillable"
-      ],
-      "weaknesses": [
-        "Always targeted",
-        "Cut at F7"
-      ],
-      "avgPlacement": 7.0,
-      "winRate": 0.0,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "placements": [
-        7
-      ],
-      "challengeWins": 1,
-      "votesAgainst": 26,
-      "juryVotes": 0,
-      "idolsFound": 0,
-      "placementPercentile": 74.63,
-      "winPercentile": 45.52,
-      "challengePercentile": 75.37,
-      "socialPercentile": 29.1,
-      "strategicPercentile": 85.07
+      "strategicPercentile": 50
     },
     {
       "playerId": "dave",
       "name": "Dave",
-      "rank": 17,
+      "rank": 13,
       "tier": "A",
       "score": 73,
-      "title": "The Germaphobe",
-      "emoji": "🎲",
+      "title": "The Neurotic Strategist",
+      "emoji": "😬",
       "reasoning": "Across 1 season(s): avg placement 6.00.",
       "strengths": [
         "Made F6",
@@ -643,7 +515,7 @@
         "Sugar feud",
         "Idol victim"
       ],
-      "avgPlacement": 6.0,
+      "avgPlacement": 6,
       "winRate": 0.0,
       "wins": 0,
       "seasonsPlayed": 1,
@@ -658,49 +530,52 @@
       "winPercentile": 45.52,
       "challengePercentile": 86.57,
       "socialPercentile": 48.51,
-      "strategicPercentile": 50.0
+      "strategicPercentile": 50
     },
     {
-      "playerId": "ezekiel",
-      "name": "Ezekiel",
-      "rank": 18,
+      "playerId": "cody",
       "tier": "A",
-      "score": 70.5,
-      "title": "The Farm Kid",
-      "emoji": "🧢",
-      "reasoning": "Advantage king/queen (3 idols/advantages found). Lost fire-making to Alejandro at F4. (S1). Legendary idol play on Alejandro at merge. (S2). Across 2 season(s): avg placement 5.00.",
+      "score": 72.6,
+      "rank": 14,
+      "avgPlacement": 10.5,
+      "winRate": 0.0,
+      "placements": [
+        19,
+        2
+      ],
+      "challengeWins": 4,
+      "votesAgainst": 9,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "status": "Competed in 2/7 seasons",
+      "title": "The Geek",
+      "emoji": "💻",
+      "reasoning": "Cody's S7 was a connector masterclass: he stabilized under fire with Carrie, helped form Lawa #3, and timed the Legacy at F6 and an idol at F5 to reach FTC (2 votes). His S1 showed early social chops before a razor-thin 6-5 exit. Across 2 seasons he tallied 4 challenge wins and 1 idol found with only 9 votes against, but lost to MacArthur's résumé. Rivalries with Laurie and Pete tested him, yet his bonds with Carrie and MacArthur kept him alive.",
       "strengths": [
-        "S4: 4th place",
-        "Improved across seasons"
+        "Cross-tribe bridging and coalition maintenance",
+        "Advantage timing under endgame pressure (Legacy + idol)",
+        "Reads that convert scattered votes into a stable majority"
       ],
       "weaknesses": [
-        "Never reached F3"
+        "Jury comparison problem versus dominant allies",
+        "Can attract early-game heat before relationships stick",
+        "Public feuds (e.g., Laurie) bleed social capital"
       ],
-      "avgPlacement": 5.0,
-      "winRate": 0.0,
-      "wins": 0,
+      "name": "Cody",
+      "seasonsList": [
+        1,
+        7
+      ],
       "seasonsPlayed": 2,
-      "placements": [
-        6,
-        4
-      ],
-      "challengeWins": 1,
-      "votesAgainst": 12,
-      "juryVotes": 0,
-      "idolsFound": 3,
-      "placementPercentile": 82.84,
-      "winPercentile": 45.52,
-      "challengePercentile": 65.67,
-      "socialPercentile": 38.06,
-      "strategicPercentile": 50.0
+      "wins": 0
     },
     {
       "playerId": "geoff",
       "name": "Geoff",
-      "rank": 19,
+      "rank": 15,
       "tier": "A",
       "score": 71,
-      "title": "The Party Animal",
+      "title": "The Party Surfer",
       "emoji": "🎉",
       "reasoning": "7-2 vote. (S1). Won EoE return Ep 13. (S4). Across 3 season(s): avg placement 10.33.",
       "strengths": [
@@ -731,44 +606,77 @@
       "strategicPercentile": 71.64
     },
     {
-      "playerId": "mike",
-      "name": "Mike",
-      "rank": 20,
+      "playerId": "bridgette",
+      "name": "Bridgette",
+      "rank": 16,
       "tier": "B",
-      "score": 69,
-      "title": "The Split Persona",
-      "emoji": "🎭",
-      "reasoning": "Eliminated 2-0 (Sierra's perfect idol). (S4). Blindsided while Zoey held immunity. (S3). Across 2 season(s): avg placement 9.00.",
+      "score": 70.8,
+      "title": "The Surfer Sweetheart",
+      "emoji": "🏄‍♀️",
+      "reasoning": "Reliable challenge contributor (5 total wins). First boot - 4-3 vote. (S2). Used Safety Without Power (Ep 22). (S1). Across 2 season(s): avg placement 8.50.",
       "strengths": [
-        "Improved S4",
-        "Two seasons"
+        "Consistent challenge output (wins/season)."
       ],
       "weaknesses": [
-        "Voted out by Zoey S4"
+        "Takes too many votes / limited jury support."
       ],
-      "avgPlacement": 9.0,
+      "avgPlacement": 8.5,
       "winRate": 0.0,
       "wins": 0,
       "seasonsPlayed": 2,
       "placements": [
-        12,
-        6
+        14,
+        3
       ],
-      "challengeWins": 2,
-      "votesAgainst": 8,
+      "challengeWins": 5,
+      "votesAgainst": 24,
       "juryVotes": 0,
-      "idolsFound": 0,
-      "placementPercentile": 63.43,
+      "idolsFound": 1,
+      "placementPercentile": 67.91,
       "winPercentile": 45.52,
-      "challengePercentile": 75.37,
-      "socialPercentile": 57.46,
-      "strategicPercentile": 77.61
+      "challengePercentile": 89.55,
+      "socialPercentile": 4.48,
+      "strategicPercentile": 50
+    },
+    {
+      "playerId": "ezekiel",
+      "name": "Ezekiel",
+      "rank": 17,
+      "tier": "B",
+      "score": 70.5,
+      "title": "The Farm Kid",
+      "emoji": "🌾",
+      "reasoning": "Advantage king/queen (3 idols/advantages found). Lost fire-making to Alejandro at F4. (S1). Legendary idol play on Alejandro at merge. (S2). Across 2 season(s): avg placement 5.00.",
+      "strengths": [
+        "S4: 4th place",
+        "Improved across seasons"
+      ],
+      "weaknesses": [
+        "Never reached F3"
+      ],
+      "avgPlacement": 5,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 2,
+      "placements": [
+        6,
+        4
+      ],
+      "challengeWins": 1,
+      "votesAgainst": 12,
+      "juryVotes": 0,
+      "idolsFound": 3,
+      "placementPercentile": 82.84,
+      "winPercentile": 45.52,
+      "challengePercentile": 65.67,
+      "socialPercentile": 38.06,
+      "strategicPercentile": 50
     },
     {
       "playerId": "blaineley",
       "name": "Blaineley",
-      "rank": 21,
-      "tier": "A",
+      "rank": 18,
+      "tier": "B",
       "score": 70.4,
       "title": "The Media Maven",
       "emoji": "🎤",
@@ -781,7 +689,7 @@
         "Voted out by Kelly",
         "Chaos volatility"
       ],
-      "avgPlacement": 7.0,
+      "avgPlacement": 7,
       "winRate": 0.0,
       "wins": 0,
       "seasonsPlayed": 2,
@@ -802,10 +710,10 @@
     {
       "playerId": "gwen",
       "name": "Gwen",
-      "rank": 22,
-      "tier": "A",
+      "rank": 19,
+      "tier": "B",
       "score": 70.2,
-      "title": "The Juggernaut",
+      "title": "The Goth Icon",
       "emoji": "🖤",
       "reasoning": "Elite challenge engine (9 total wins). Constant heat all game (26 votes against). 4 CONSECUTIVE immunities (Ep 11-14) - FRANCHISE RECORD!. (S4). Lost fire-making to Alejandro. (S4). Across 3 season(s): avg placement 9.33.",
       "strengths": [
@@ -836,76 +744,111 @@
       "strategicPercentile": 77.61
     },
     {
-      "playerId": "shawn",
-      "name": "Shawn",
-      "rank": 23,
+      "playerId": "mike",
+      "name": "Mike",
+      "rank": 20,
       "tier": "B",
-      "score": 65.0,
-      "title": "The Zombie Prepper",
-      "emoji": "🧟",
-      "reasoning": "Across 1 season(s): avg placement 9.00.",
+      "score": 69,
+      "title": "The Many Faces",
+      "emoji": "🎭",
+      "reasoning": "Eliminated 2-0 (Sierra's perfect idol). (S4). Blindsided while Zoey held immunity. (S3). Across 2 season(s): avg placement 9.00.",
       "strengths": [
-        "Found idol",
-        "Consistent jury"
+        "Improved S4",
+        "Two seasons"
       ],
       "weaknesses": [
-        "Never broke through to endgame"
+        "Voted out by Zoey S4"
       ],
-      "avgPlacement": 9.0,
+      "avgPlacement": 9,
       "winRate": 0.0,
       "wins": 0,
-      "seasonsPlayed": 1,
+      "seasonsPlayed": 2,
       "placements": [
-        9
+        12,
+        6
       ],
-      "challengeWins": 0,
-      "votesAgainst": 6,
+      "challengeWins": 2,
+      "votesAgainst": 8,
       "juryVotes": 0,
-      "idolsFound": 1,
+      "idolsFound": 0,
       "placementPercentile": 63.43,
       "winPercentile": 45.52,
-      "challengePercentile": 29.85,
-      "socialPercentile": 38.06,
-      "strategicPercentile": 50.0
+      "challengePercentile": 75.37,
+      "socialPercentile": 57.46,
+      "strategicPercentile": 77.61
     },
     {
-      "playerId": "kitty",
-      "name": "Kitty",
-      "rank": 24,
+      "playerId": "beth",
+      "name": "Beth",
+      "rank": 21,
       "tier": "B",
-      "score": 64.8,
-      "title": "The Little Sis",
-      "emoji": "😺",
-      "reasoning": "Found merge idol. (S6). Played idol on Jacques at merge. (S6). Across 1 season(s): avg placement 9.00.",
+      "score": 68.4,
+      "title": "The Sweetheart",
+      "emoji": "🧁",
+      "reasoning": "Constant heat all game (26 votes against). Opening rocks send to RI. (S6). Sent to RI on opening rocks; eliminated Episode 3 duel. (S6). Across 3 season(s): avg placement 9.33.",
       "strengths": [
-        "Found merge idol",
-        "Sis4ever loyalty"
+        "Consistent challenge output (wins/season)."
       ],
       "weaknesses": [
-        "Wasted idol on Jacques",
-        "Manipulated"
+        "Little evidence of consistent strategic control.",
+        "Takes too many votes / limited jury support."
       ],
-      "avgPlacement": 9.0,
+      "avgPlacement": 9.33,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 3,
+      "placements": [
+        4,
+        5,
+        19
+      ],
+      "challengeWins": 1,
+      "votesAgainst": 26,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "placementPercentile": 58.21,
+      "winPercentile": 45.52,
+      "challengePercentile": 61.19,
+      "socialPercentile": 20.15,
+      "strategicPercentile": 14.18
+    },
+    {
+      "playerId": "sugar",
+      "name": "Sugar",
+      "rank": 22,
+      "tier": "B",
+      "score": 68.2,
+      "title": "The Pageant Menace",
+      "emoji": "👸",
+      "reasoning": "Across 1 season(s): avg placement 5.00.",
+      "strengths": [
+        "Made F5 despite 10 votes"
+      ],
+      "weaknesses": [
+        "Dave feud",
+        "Most targeted"
+      ],
+      "avgPlacement": 5,
       "winRate": 0.0,
       "wins": 0,
       "seasonsPlayed": 1,
       "placements": [
-        9
+        5
       ],
       "challengeWins": 0,
-      "votesAgainst": 15,
+      "votesAgainst": 10,
       "juryVotes": 0,
-      "idolsFound": 1,
-      "placementPercentile": 63.43,
+      "idolsFound": 0,
+      "placementPercentile": 82.84,
       "winPercentile": 45.52,
       "challengePercentile": 29.85,
-      "socialPercentile": 29.1,
-      "strategicPercentile": 24.63
+      "socialPercentile": 11.19,
+      "strategicPercentile": 50
     },
     {
       "playerId": "dwayne",
       "name": "Dwayne",
-      "rank": 25,
+      "rank": 23,
       "tier": "B",
       "score": 67.6,
       "title": "The Dad",
@@ -938,13 +881,48 @@
       "strategicPercentile": 28.36
     },
     {
+      "playerId": "carrie",
+      "tier": "A",
+      "score": 77,
+      "rank": 24,
+      "avgPlacement": 3,
+      "winRate": 0.0,
+      "placements": [
+        3
+      ],
+      "challengeWins": 3,
+      "votesAgainst": 6,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "status": "Competed in Season 7 only",
+      "title": "The Hopeless Romantic",
+      "emoji": "💘",
+      "reasoning": "Carrie was the S7 hub: she built Lawa #3, balanced Cody/MacArthur, and used a Vote Steal at F5 to engineer Tom's exit en route to FTC (1 vote). She managed early heat as a decoy, navigated Zoey and Pete feuds, and won 3 challenges with just 6 votes against. Her game emphasized shields, connectors, and timing over flash. The jury respected her control but favored MacArthur's power-social blend.",
+      "strengths": [
+        "Alliance architecture and cross-lane brokerage",
+        "Endgame leverage with precise advantage usage",
+        "Threat assessment that sets up safe, repeatable votes"
+      ],
+      "weaknesses": [
+        "Perceived as manipulative by some opponents",
+        "Feud management (Zoey, Pete) can polarize jurors",
+        "Lower challenge intimidation than top-tier beasts"
+      ],
+      "name": "Carrie",
+      "seasonsList": [
+        7
+      ],
+      "seasonsPlayed": 1,
+      "wins": 0
+    },
+    {
       "playerId": "amy",
       "name": "Amy",
-      "rank": 26,
+      "rank": 25,
       "tier": "B",
       "score": 66.4,
       "title": "The Mean Twin",
-      "emoji": "❄️",
+      "emoji": "😈",
       "reasoning": "Across 1 season(s): avg placement 7.00.",
       "strengths": [
         "Made F7"
@@ -952,7 +930,7 @@
       "weaknesses": [
         "Sisters rivalry"
       ],
-      "avgPlacement": 7.0,
+      "avgPlacement": 7,
       "winRate": 0.0,
       "wins": 0,
       "seasonsPlayed": 1,
@@ -967,49 +945,53 @@
       "winPercentile": 45.52,
       "challengePercentile": 29.85,
       "socialPercentile": 65.67,
-      "strategicPercentile": 50.0
+      "strategicPercentile": 50
     },
     {
-      "playerId": "sugar",
-      "name": "Sugar",
-      "rank": 27,
-      "tier": "B",
-      "score": 68.2,
-      "title": "The Pageant Diva",
-      "emoji": "🍭",
-      "reasoning": "Across 1 season(s): avg placement 5.00.",
+      "playerId": "sky",
+      "tier": "S",
+      "score": 80,
+      "rank": 26,
+      "avgPlacement": 4,
+      "winRate": 0.0,
+      "placements": [
+        2,
+        6
+      ],
+      "challengeWins": 4,
+      "votesAgainst": 6,
+      "juryVotes": 3,
+      "idolsFound": 2,
+      "status": "Competed in 2/7 seasons",
+      "title": "The Athlete",
+      "emoji": "🏃‍♀️",
+      "reasoning": "Sky's S5 was a challenge-forward run to a tied FTC loss, and in S7 she co-piloted with MacArthur before a late split and a 6th-place cut. She owns 4 total challenge wins and 2 idols across her career, with only 6 votes against. Her Mauhu backbone role helped shape merge plans like targeting Pete and Kitty. The late fracture with MacArthur and muted jury sway kept her off the podium in S7.",
       "strengths": [
-        "Made F5 despite 10 votes"
+        "Clutch immunity wins under pressure",
+        "Stable alliance play with power players (MacArthur, Tom)",
+        "Composed midgame targeting and vote splits"
       ],
       "weaknesses": [
-        "Dave feud",
-        "Most targeted"
+        "Endgame fractures with close allies",
+        "Can be overshadowed by louder résumés",
+        "Limited control of final jury narratives"
       ],
-      "avgPlacement": 5.0,
-      "winRate": 0.0,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "placements": [
-        5
+      "name": "Sky",
+      "seasonsList": [
+        5,
+        7
       ],
-      "challengeWins": 0,
-      "votesAgainst": 10,
-      "juryVotes": 0,
-      "idolsFound": 0,
-      "placementPercentile": 82.84,
-      "winPercentile": 45.52,
-      "challengePercentile": 29.85,
-      "socialPercentile": 11.19,
-      "strategicPercentile": 50.0
+      "seasonsPlayed": 2,
+      "wins": 0
     },
     {
       "playerId": "jo",
       "name": "Jo",
-      "rank": 28,
+      "rank": 27,
       "tier": "B",
-      "score": 64.0,
-      "title": "The Enforcer",
-      "emoji": "🥊",
+      "score": 64,
+      "title": "The Alpha Athlete",
+      "emoji": "💪",
       "reasoning": "5-3 revote at F9. (S4). Voted Emma at FTC. (S3). Across 2 season(s): avg placement 8.50.",
       "strengths": [
         "Fan Favorite",
@@ -1039,7 +1021,7 @@
     {
       "playerId": "heather",
       "name": "Heather",
-      "rank": 29,
+      "rank": 28,
       "tier": "B",
       "score": 63.8,
       "title": "The Queen Bee",
@@ -1072,70 +1054,106 @@
       "strategicPercentile": 77.61
     },
     {
-      "playerId": "bridgette",
-      "name": "Bridgette",
+      "playerId": "taylor",
+      "tier": "B",
+      "score": 71,
+      "rank": 29,
+      "avgPlacement": 7,
+      "winRate": 0.0,
+      "placements": [
+        7
+      ],
+      "challengeWins": 3,
+      "votesAgainst": 11,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "status": "Competed in Season 7 only",
+      "title": "The Spoiled Princess",
+      "emoji": "💅",
+      "reasoning": "Taylor ran S7 social lanes with Jacques and Carrie, flipped to form Lawa #3, and survived repeated shots from Scott/Shawn. She won two immunities and still got idol'd out at F7 despite the majority. With 3 challenge wins and 11 votes against, her threat level was obvious. Rivalries with Tom and the enforcer duo kept her in the crosshairs all merge.",
+      "strengths": [
+        "Cross-lane brokerage and majority formation (Lawa #3)",
+        "Shield management while keeping personal threat poised",
+        "Clutch immunities at critical counts"
+      ],
+      "weaknesses": [
+        "High visibility as a social hub draws idols and counters",
+        "Persistent rivalries limit endgame options",
+        "Reliance on tight duos invites targeted strikes"
+      ],
+      "name": "Taylor",
+      "seasonsList": [
+        7
+      ],
+      "seasonsPlayed": 1,
+      "wins": 0
+    },
+    {
+      "playerId": "owen",
+      "name": "Owen",
       "rank": 30,
-      "tier": "A",
-      "score": 70.8,
-      "title": "The Surfer Sweetheart",
-      "emoji": "🏄‍♀️",
-      "reasoning": "Reliable challenge contributor (5 total wins). First boot - 4-3 vote. (S2). Used Safety Without Power (Ep 22). (S1). Across 2 season(s): avg placement 8.50.",
+      "tier": "B",
+      "score": 60,
+      "title": "The Big Buddy",
+      "emoji": "🍗",
+      "reasoning": "Third boot after idol play. (S2). 5-1* vote. (S2). Across 2 season(s): avg placement 9.50.",
       "strengths": [
         "Consistent challenge output (wins/season)."
       ],
       "weaknesses": [
-        "Takes too many votes / limited jury support."
+        "Hasn't converted strong runs into season wins."
       ],
-      "avgPlacement": 8.5,
+      "avgPlacement": 9.5,
       "winRate": 0.0,
       "wins": 0,
       "seasonsPlayed": 2,
       "placements": [
-        14,
-        3
+        12,
+        7
       ],
-      "challengeWins": 5,
-      "votesAgainst": 24,
+      "challengeWins": 1,
+      "votesAgainst": 7,
       "juryVotes": 0,
-      "idolsFound": 1,
-      "placementPercentile": 67.91,
+      "idolsFound": 0,
+      "placementPercentile": 55.22,
       "winPercentile": 45.52,
-      "challengePercentile": 89.55,
-      "socialPercentile": 4.48,
-      "strategicPercentile": 50.0
+      "challengePercentile": 65.67,
+      "socialPercentile": 61.19,
+      "strategicPercentile": 50
     },
     {
-      "playerId": "izzy",
-      "name": "Izzy",
+      "playerId": "dawn",
+      "name": "Dawn",
       "rank": 31,
-      "tier": "D",
-      "score": 47.4,
-      "title": "The Chaos Gremlin",
-      "emoji": "🤪",
-      "reasoning": "5-4 vote. (S1). Tribe swap casualty. (S1). Across 1 season(s): avg placement 18.00.",
+      "tier": "C",
+      "score": 60,
+      "title": "The Mystic",
+      "emoji": "🔮",
+      "reasoning": "Voted Scott at FTC. (S3). Consensus target Episode 9. (S3). Across 1 season(s): avg placement 8.00.",
       "strengths": [
-        "Above-average strategic impact and positioning."
+        "Strong average placement across seasons (deep runs)."
       ],
       "weaknesses": [
-        "Inconsistent results / early exits drag down average placement.",
+        "Takes too many votes / limited jury support.",
+        "Little evidence of consistent strategic control.",
         "Limited challenge contribution compared to the field."
       ],
-      "avgPlacement": 18.0,
+      "avgPlacement": 8,
       "winRate": 0.0,
       "wins": 0,
       "seasonsPlayed": 1,
       "placements": [
-        18
+        8
       ],
       "challengeWins": 0,
-      "votesAgainst": 5,
+      "votesAgainst": 10,
       "juryVotes": 0,
       "idolsFound": 0,
-      "placementPercentile": 5.97,
+      "placementPercentile": 70.15,
       "winPercentile": 45.52,
       "challengePercentile": 29.85,
-      "socialPercentile": 48.51,
-      "strategicPercentile": 50.0
+      "socialPercentile": 11.19,
+      "strategicPercentile": 18.66
     },
     {
       "playerId": "courtney",
@@ -1143,8 +1161,8 @@
       "rank": 32,
       "tier": "C",
       "score": 59.2,
-      "title": "The Overachiever",
-      "emoji": "📚",
+      "title": "The Type-A Captain",
+      "emoji": "📋",
       "reasoning": "Constant heat all game (32 votes against). 3-2 vote. (S2). Major meltdown. (S4). Across 3 season(s): avg placement 11.33.",
       "strengths": [
         "Above-average strategic impact and positioning."
@@ -1173,47 +1191,13 @@
       "strategicPercentile": 77.61
     },
     {
-      "playerId": "leshawna",
-      "name": "Leshawna",
-      "rank": 33,
-      "tier": "C",
-      "score": 54.2,
-      "title": "The Real One",
-      "emoji": "🔥",
-      "reasoning": "6-1 vote. (S2). Second boot. (S2). Across 2 season(s): avg placement 12.00.",
-      "strengths": [
-        "Consistent challenge output (wins/season)."
-      ],
-      "weaknesses": [
-        "Takes too many votes / limited jury support.",
-        "Inconsistent results / early exits drag down average placement."
-      ],
-      "avgPlacement": 12.0,
-      "winRate": 0.0,
-      "wins": 0,
-      "seasonsPlayed": 2,
-      "placements": [
-        13,
-        11
-      ],
-      "challengeWins": 1,
-      "votesAgainst": 13,
-      "juryVotes": 0,
-      "idolsFound": 0,
-      "placementPercentile": 38.81,
-      "winPercentile": 45.52,
-      "challengePercentile": 65.67,
-      "socialPercentile": 31.34,
-      "strategicPercentile": 50.0
-    },
-    {
       "playerId": "max",
       "name": "Max",
-      "rank": 34,
+      "rank": 33,
       "tier": "C",
       "score": 57.8,
-      "title": "The ‘Evil’ Genius",
-      "emoji": "🦹‍♂️",
+      "title": "The Evil Genius",
+      "emoji": "🧪",
       "reasoning": "Across 1 season(s): avg placement 10.00.",
       "strengths": [
         "Strong average placement across seasons (deep runs)."
@@ -1221,7 +1205,7 @@
       "weaknesses": [
         "Limited challenge contribution compared to the field."
       ],
-      "avgPlacement": 10.0,
+      "avgPlacement": 10,
       "winRate": 0.0,
       "wins": 0,
       "seasonsPlayed": 1,
@@ -1236,7 +1220,42 @@
       "winPercentile": 45.52,
       "challengePercentile": 29.85,
       "socialPercentile": 48.51,
-      "strategicPercentile": 50.0
+      "strategicPercentile": 50
+    },
+    {
+      "playerId": "tom",
+      "tier": "A",
+      "score": 72,
+      "rank": 34,
+      "avgPlacement": 5,
+      "winRate": 0.0,
+      "placements": [
+        5
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 13,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "status": "Competed in Season 7 only",
+      "title": "The Spy",
+      "emoji": "🕵️",
+      "reasoning": "Tom played low-visibility until it mattered: he found the merge idol and fired it at F7 to cancel five votes and bounce Taylor, then was boxed out at F5 by a vote-steal plus double-idol wall. With 0 challenge wins, 1 idol found, and 13 votes against, his résumé hinged on timing, not volume. His bridges with Sky and MacArthur bought space even when he was out of step. The jury-facing story just wasn't big enough by F5.",
+      "strengths": [
+        "Patience and precision with idol timing",
+        "Under-the-radar positioning alongside power players",
+        "Social links that reduce early and midgame exposure"
+      ],
+      "weaknesses": [
+        "Reactive gameplay limits jury résumé breadth",
+        "Becomes an easy consensus when shields are gone",
+        "Few marquee moves beyond the F7 idol shot"
+      ],
+      "name": "Tom",
+      "seasonsList": [
+        7
+      ],
+      "seasonsPlayed": 1,
+      "wins": 0
     },
     {
       "playerId": "topher",
@@ -1245,7 +1264,7 @@
       "tier": "C",
       "score": 56.6,
       "title": "The Host Wannabe",
-      "emoji": "🎙️",
+      "emoji": "🎬",
       "reasoning": "Across 1 season(s): avg placement 11.00.",
       "strengths": [
         "Above-average strategic impact and positioning."
@@ -1253,7 +1272,7 @@
       "weaknesses": [
         "Limited challenge contribution compared to the field."
       ],
-      "avgPlacement": 11.0,
+      "avgPlacement": 11,
       "winRate": 0.0,
       "wins": 0,
       "seasonsPlayed": 1,
@@ -1268,50 +1287,17 @@
       "winPercentile": 45.52,
       "challengePercentile": 29.85,
       "socialPercentile": 48.51,
-      "strategicPercentile": 50.0
-    },
-    {
-      "playerId": "owen",
-      "name": "Owen",
-      "rank": 36,
-      "tier": "B",
-      "score": 60.4,
-      "title": "The Snack King",
-      "emoji": "🍰",
-      "reasoning": "Third boot after idol play. (S2). 5-1* vote. (S2). Across 2 season(s): avg placement 9.50.",
-      "strengths": [
-        "Consistent challenge output (wins/season)."
-      ],
-      "weaknesses": [
-        "Hasn’t converted strong runs into season wins."
-      ],
-      "avgPlacement": 9.5,
-      "winRate": 0.0,
-      "wins": 0,
-      "seasonsPlayed": 2,
-      "placements": [
-        12,
-        7
-      ],
-      "challengeWins": 1,
-      "votesAgainst": 7,
-      "juryVotes": 0,
-      "idolsFound": 0,
-      "placementPercentile": 55.22,
-      "winPercentile": 45.52,
-      "challengePercentile": 65.67,
-      "socialPercentile": 61.19,
-      "strategicPercentile": 50.0
+      "strategicPercentile": 50
     },
     {
       "playerId": "josee",
       "name": "Josee",
-      "rank": 37,
+      "rank": 36,
       "tier": "C",
       "score": 55.2,
       "title": "The Ice Queen",
-      "emoji": "❄️",
-      "reasoning": "Booted 6–1 as a consensus. (S6). Multiple meltdowns on Galang. (S6). Across 2 season(s): avg placement 12.50.",
+      "emoji": "⛸️",
+      "reasoning": "Booted 6-1 as a consensus. (S6). Multiple meltdowns on Galang. (S6). Across 2 season(s): avg placement 12.50.",
       "strengths": [
         "Low target profile and/or strong jury appeal."
       ],
@@ -1339,13 +1325,117 @@
       "strategicPercentile": 24.63
     },
     {
-      "playerId": "harold",
-      "name": "Harold",
+      "playerId": "noah",
+      "name": "Noah",
+      "rank": 37,
+      "tier": "C",
+      "score": 54.6,
+      "title": "The Snark King",
+      "emoji": "🙃",
+      "reasoning": "TRIPLE IDOL TRIBAL (played idol). (S4). 4-3 vote. (S1). Across 2 season(s): avg placement 12.00.",
+      "strengths": [
+        "Above-average strategic impact and positioning."
+      ],
+      "weaknesses": [
+        "Takes too many votes / limited jury support.",
+        "Limited challenge contribution compared to the field.",
+        "Inconsistent results / early exits drag down average placement."
+      ],
+      "avgPlacement": 12,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 2,
+      "placements": [
+        9,
+        15
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 20,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "placementPercentile": 38.81,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 11.19,
+      "strategicPercentile": 94.03
+    },
+    {
+      "playerId": "leshawna",
+      "name": "Leshawna",
       "rank": 38,
       "tier": "C",
-      "score": 54.0,
-      "title": "The Dorky Ninja",
-      "emoji": "🧮",
+      "score": 54.2,
+      "title": "The Real One",
+      "emoji": "✨",
+      "reasoning": "6-1 vote. (S2). Second boot. (S2). Across 2 season(s): avg placement 12.00.",
+      "strengths": [
+        "Consistent challenge output (wins/season)."
+      ],
+      "weaknesses": [
+        "Takes too many votes / limited jury support.",
+        "Inconsistent results / early exits drag down average placement."
+      ],
+      "avgPlacement": 12,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 2,
+      "placements": [
+        13,
+        11
+      ],
+      "challengeWins": 1,
+      "votesAgainst": 13,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 38.81,
+      "winPercentile": 45.52,
+      "challengePercentile": 65.67,
+      "socialPercentile": 31.34,
+      "strategicPercentile": 50
+    },
+    {
+      "playerId": "dj",
+      "name": "DJ",
+      "rank": 39,
+      "tier": "C",
+      "score": 54,
+      "title": "The Gentle Giant",
+      "emoji": "🐻",
+      "reasoning": "9 votes in Episode 3. (S1). 4-1 vote at Final Five. (S2). Across 2 season(s): avg placement 13.50.",
+      "strengths": [
+        "Above-average strategic impact and positioning."
+      ],
+      "weaknesses": [
+        "Takes too many votes / limited jury support.",
+        "Inconsistent results / early exits drag down average placement.",
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 13.5,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 2,
+      "placements": [
+        5,
+        22
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 20,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 26.87,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 11.19,
+      "strategicPercentile": 50
+    },
+    {
+      "playerId": "harold",
+      "name": "Harold",
+      "rank": 40,
+      "tier": "C",
+      "score": 54,
+      "title": "The Ninja Nerd",
+      "emoji": "🥷",
       "reasoning": "Held idol without playing it. (S1). 4-3-2 vote. (S1). Across 2 season(s): avg placement 12.50.",
       "strengths": [
         "Consistent challenge output (wins/season).",
@@ -1376,11 +1466,11 @@
     {
       "playerId": "katie",
       "name": "Katie",
-      "rank": 39,
+      "rank": 41,
       "tier": "C",
       "score": 52.8,
       "title": "The BFF",
-      "emoji": "💞",
+      "emoji": "👭",
       "reasoning": "5-3-3*-1 vote. (S1). Part of MAPLV. (S1). Across 1 season(s): avg placement 12.00.",
       "strengths": [
         "Above-average strategic impact and positioning."
@@ -1389,7 +1479,7 @@
         "Limited challenge contribution compared to the field.",
         "Inconsistent results / early exits drag down average placement."
       ],
-      "avgPlacement": 12.0,
+      "avgPlacement": 12,
       "winRate": 0.0,
       "wins": 0,
       "seasonsPlayed": 1,
@@ -1404,77 +1494,7 @@
       "winPercentile": 45.52,
       "challengePercentile": 29.85,
       "socialPercentile": 48.51,
-      "strategicPercentile": 50.0
-    },
-    {
-      "playerId": "noah",
-      "name": "Noah",
-      "rank": 40,
-      "tier": "C",
-      "score": 54.6,
-      "title": "The Sarcastic",
-      "emoji": "😏",
-      "reasoning": "TRIPLE IDOL TRIBAL (played idol). (S4). 4-3 vote. (S1). Across 2 season(s): avg placement 12.00.",
-      "strengths": [
-        "Above-average strategic impact and positioning."
-      ],
-      "weaknesses": [
-        "Takes too many votes / limited jury support.",
-        "Limited challenge contribution compared to the field.",
-        "Inconsistent results / early exits drag down average placement."
-      ],
-      "avgPlacement": 12.0,
-      "winRate": 0.0,
-      "wins": 0,
-      "seasonsPlayed": 2,
-      "placements": [
-        9,
-        15
-      ],
-      "challengeWins": 0,
-      "votesAgainst": 20,
-      "juryVotes": 0,
-      "idolsFound": 1,
-      "placementPercentile": 38.81,
-      "winPercentile": 45.52,
-      "challengePercentile": 29.85,
-      "socialPercentile": 11.19,
-      "strategicPercentile": 94.03
-    },
-    {
-      "playerId": "beth",
-      "name": "Beth",
-      "rank": 41,
-      "tier": "B",
-      "score": 68.4,
-      "title": "The Sweetheart",
-      "emoji": "🌸",
-      "reasoning": "Constant heat all game (26 votes against). Opening rocks send to RI. (S6). Sent to RI on opening rocks; eliminated Episode 3 duel. (S6). Across 3 season(s): avg placement 9.33.",
-      "strengths": [
-        "Consistent challenge output (wins/season)."
-      ],
-      "weaknesses": [
-        "Little evidence of consistent strategic control.",
-        "Takes too many votes / limited jury support."
-      ],
-      "avgPlacement": 9.33,
-      "winRate": 0.0,
-      "wins": 0,
-      "seasonsPlayed": 3,
-      "placements": [
-        4,
-        5,
-        19
-      ],
-      "challengeWins": 1,
-      "votesAgainst": 26,
-      "juryVotes": 0,
-      "idolsFound": 1,
-      "placementPercentile": 58.21,
-      "winPercentile": 45.52,
-      "challengePercentile": 61.19,
-      "socialPercentile": 20.15,
-      "strategicPercentile": 14.18
+      "strategicPercentile": 50
     },
     {
       "playerId": "sadie",
@@ -1483,7 +1503,7 @@
       "tier": "C",
       "score": 52.2,
       "title": "The BFF",
-      "emoji": "👯",
+      "emoji": "💗",
       "reasoning": "PERFECT GAME: ZERO votes against. Rock draw elimination. (S1). Part of MAPLV. (S1). Across 1 season(s): avg placement 13.00.",
       "strengths": [
         "Low target profile and/or strong jury appeal."
@@ -1492,7 +1512,7 @@
         "Inconsistent results / early exits drag down average placement.",
         "Limited challenge contribution compared to the field."
       ],
-      "avgPlacement": 13.0,
+      "avgPlacement": 13,
       "winRate": 0.0,
       "wins": 0,
       "seasonsPlayed": 1,
@@ -1507,117 +1527,16 @@
       "winPercentile": 45.52,
       "challengePercentile": 29.85,
       "socialPercentile": 87.31,
-      "strategicPercentile": 50.0
-    },
-    {
-      "playerId": "mary",
-      "name": "Mary",
-      "rank": 48,
-      "tier": "D",
-      "score": 47.0,
-      "title": "The Brainiac",
-      "emoji": "🔬",
-      "reasoning": "ZERO votes against across appearances. Idoled out at swap vote. (S6). Idol casualty Episode 7 (Kelly’s idol negated majority). (S6). Across 1 season(s): avg placement 14.00.",
-      "strengths": [
-        "Low target profile and/or strong jury appeal."
-      ],
-      "weaknesses": [
-        "Inconsistent results / early exits drag down average placement.",
-        "Limited challenge contribution compared to the field."
-      ],
-      "avgPlacement": 14.0,
-      "winRate": 0.0,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "placements": [
-        14
-      ],
-      "challengeWins": 0,
-      "votesAgainst": 0,
-      "juryVotes": 0,
-      "idolsFound": 0,
-      "placementPercentile": 23.88,
-      "winPercentile": 45.52,
-      "challengePercentile": 29.85,
-      "socialPercentile": 87.31,
-      "strategicPercentile": 50.0
-    },
-    {
-      "playerId": "stephanie",
-      "name": "Stephanie",
-      "rank": 50,
-      "tier": "D",
-      "score": 49.0,
-      "title": "The Type-A",
-      "emoji": "📈",
-      "reasoning": "ZERO votes against across appearances. Voted out Episode 6 (6–1); threw an idol clue into the fire on RI. (S6). Burned an idol clue on RI. (S6). Across 1 season(s): avg placement 13.00.",
-      "strengths": [
-        "Low target profile and/or strong jury appeal."
-      ],
-      "weaknesses": [
-        "Little evidence of consistent strategic control.",
-        "Inconsistent results / early exits drag down average placement.",
-        "Limited challenge contribution compared to the field."
-      ],
-      "avgPlacement": 13.0,
-      "winRate": 0.0,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "placements": [
-        13
-      ],
-      "challengeWins": 0,
-      "votesAgainst": 0,
-      "juryVotes": 0,
-      "idolsFound": 0,
-      "placementPercentile": 29.85,
-      "winPercentile": 45.52,
-      "challengePercentile": 29.85,
-      "socialPercentile": 87.31,
-      "strategicPercentile": 24.63
-    },
-    {
-      "playerId": "sam",
-      "name": "Sam",
-      "rank": 49,
-      "tier": "D",
-      "score": 45.0,
-      "title": "The Social Butterfly",
-      "emoji": "🎮",
-      "reasoning": "PERFECT GAME: ZERO votes against. Rock draw elimination. (S3). NEVER voted for. (S3). Across 1 season(s): avg placement 13.00.",
-      "strengths": [
-        "Low target profile and/or strong jury appeal."
-      ],
-      "weaknesses": [
-        "Little evidence of consistent strategic control.",
-        "Inconsistent results / early exits drag down average placement.",
-        "Limited challenge contribution compared to the field."
-      ],
-      "avgPlacement": 13.0,
-      "winRate": 0.0,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "placements": [
-        13
-      ],
-      "challengeWins": 0,
-      "votesAgainst": 0,
-      "juryVotes": 0,
-      "idolsFound": 0,
-      "placementPercentile": 29.85,
-      "winPercentile": 45.52,
-      "challengePercentile": 29.85,
-      "socialPercentile": 87.31,
-      "strategicPercentile": 6.72
+      "strategicPercentile": 50
     },
     {
       "playerId": "rodney",
       "name": "Rodney",
-      "rank": 51,
+      "rank": 43,
       "tier": "C",
-      "score": 51.0,
-      "title": "The Hopeless Romantic",
-      "emoji": "💘",
+      "score": 51,
+      "title": "The Loverboy",
+      "emoji": "💞",
       "reasoning": "Across 1 season(s): avg placement 12.00.",
       "strengths": [
         "Above-average strategic impact and positioning."
@@ -1627,7 +1546,7 @@
         "Limited challenge contribution compared to the field.",
         "Inconsistent results / early exits drag down average placement."
       ],
-      "avgPlacement": 12.0,
+      "avgPlacement": 12,
       "winRate": 0.0,
       "wins": 0,
       "seasonsPlayed": 1,
@@ -1642,320 +1561,16 @@
       "winPercentile": 45.52,
       "challengePercentile": 29.85,
       "socialPercentile": 17.16,
-      "strategicPercentile": 50.0
-    },
-    {
-      "playerId": "jasmine",
-      "name": "Jasmine",
-      "rank": 51,
-      "tier": "D",
-      "score": 43.0,
-      "title": "The Survivalist",
-      "emoji": "🏕️",
-      "reasoning": "Across 1 season(s): avg placement 14.00.",
-      "strengths": [
-        "Low target profile and/or strong jury appeal."
-      ],
-      "weaknesses": [
-        "Inconsistent results / early exits drag down average placement.",
-        "Limited challenge contribution compared to the field."
-      ],
-      "avgPlacement": 14.0,
-      "winRate": 0.0,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "placements": [
-        14
-      ],
-      "challengeWins": 0,
-      "votesAgainst": 2,
-      "juryVotes": 0,
-      "idolsFound": 0,
-      "placementPercentile": 23.88,
-      "winPercentile": 45.52,
-      "challengePercentile": 29.85,
-      "socialPercentile": 73.13,
-      "strategicPercentile": 50.0
-    },
-    {
-      "playerId": "samey",
-      "name": "Samey",
-      "rank": 49,
-      "tier": "D",
-      "score": 42.0,
-      "title": "The Sweet Twin",
-      "emoji": "🌼",
-      "reasoning": "Across 1 season(s): avg placement 15.00.",
-      "strengths": [
-        "Low target profile and/or strong jury appeal."
-      ],
-      "weaknesses": [
-        "Inconsistent results / early exits drag down average placement.",
-        "Limited challenge contribution compared to the field."
-      ],
-      "avgPlacement": 15.0,
-      "winRate": 0.0,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "placements": [
-        15
-      ],
-      "challengeWins": 0,
-      "votesAgainst": 1,
-      "juryVotes": 0,
-      "idolsFound": 0,
-      "placementPercentile": 18.66,
-      "winPercentile": 45.52,
-      "challengePercentile": 29.85,
-      "socialPercentile": 76.87,
-      "strategicPercentile": 50.0
-    },
-    {
-      "playerId": "junior",
-      "name": "Junior",
-      "rank": 49,
-      "tier": "D",
-      "score": 41.0,
-      "title": "The Kid",
-      "emoji": "🧒",
-      "reasoning": "ZERO votes against across appearances. Survived early RI duels. (S6). Initial 6–2 vote amid liability framing. (S6). Across 1 season(s): avg placement 15.00.",
-      "strengths": [
-        "Low target profile and/or strong jury appeal."
-      ],
-      "weaknesses": [
-        "Little evidence of consistent strategic control.",
-        "Inconsistent results / early exits drag down average placement.",
-        "Limited challenge contribution compared to the field."
-      ],
-      "avgPlacement": 15.0,
-      "winRate": 0.0,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "placements": [
-        15
-      ],
-      "challengeWins": 0,
-      "votesAgainst": 0,
-      "juryVotes": 0,
-      "idolsFound": 0,
-      "placementPercentile": 18.66,
-      "winPercentile": 45.52,
-      "challengePercentile": 29.85,
-      "socialPercentile": 87.31,
-      "strategicPercentile": 14.18
-    },
-    {
-      "playerId": "ennui",
-      "name": "Ennui",
-      "rank": 50,
-      "tier": "D",
-      "score": 40.0,
-      "title": "The Deadpan Goth",
-      "emoji": "😑",
-      "reasoning": "ZERO votes against across appearances. Voted out 6–3. (S6). Feuded with Jay pre-tribal. (S6). Across 1 season(s): avg placement 16.00.",
-      "strengths": [
-        "Low target profile and/or strong jury appeal."
-      ],
-      "weaknesses": [
-        "Inconsistent results / early exits drag down average placement.",
-        "Little evidence of consistent strategic control.",
-        "Limited challenge contribution compared to the field."
-      ],
-      "avgPlacement": 16.0,
-      "winRate": 0.0,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "placements": [
-        16
-      ],
-      "challengeWins": 0,
-      "votesAgainst": 0,
-      "juryVotes": 0,
-      "idolsFound": 0,
-      "placementPercentile": 14.18,
-      "winPercentile": 45.52,
-      "challengePercentile": 29.85,
-      "socialPercentile": 87.31,
-      "strategicPercentile": 24.63
-    },
-    {
-      "playerId": "beardo",
-      "name": "Beardo",
-      "rank": 51,
-      "tier": "D",
-      "score": 39.0,
-      "title": "The Beatboxer",
-      "emoji": "🎧",
-      "reasoning": "Across 1 season(s): avg placement 16.00.",
-      "strengths": [
-        "Low target profile and/or strong jury appeal."
-      ],
-      "weaknesses": [
-        "Inconsistent results / early exits drag down average placement.",
-        "Limited challenge contribution compared to the field."
-      ],
-      "avgPlacement": 16.0,
-      "winRate": 0.0,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "placements": [
-        16
-      ],
-      "challengeWins": 0,
-      "votesAgainst": 3,
-      "juryVotes": 0,
-      "idolsFound": 0,
-      "placementPercentile": 14.18,
-      "winPercentile": 45.52,
-      "challengePercentile": 29.85,
-      "socialPercentile": 65.67,
-      "strategicPercentile": 50.0
-    },
-    {
-      "playerId": "ella",
-      "name": "Ella",
-      "rank": 42,
-      "tier": "D",
-      "score": 38.0,
-      "title": "The Disney Princess",
-      "emoji": "🐦",
-      "reasoning": "Across 1 season(s): avg placement 17.00.",
-      "strengths": [
-        "Low target profile and/or strong jury appeal."
-      ],
-      "weaknesses": [
-        "Inconsistent results / early exits drag down average placement.",
-        "Limited challenge contribution compared to the field."
-      ],
-      "avgPlacement": 17.0,
-      "winRate": 0.0,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "placements": [
-        17
-      ],
-      "challengeWins": 0,
-      "votesAgainst": 2,
-      "juryVotes": 0,
-      "idolsFound": 0,
-      "placementPercentile": 10.45,
-      "winPercentile": 45.52,
-      "challengePercentile": 29.85,
-      "socialPercentile": 73.13,
-      "strategicPercentile": 50.0
-    },
-    {
-      "playerId": "tammy",
-      "name": "Tammy",
-      "rank": 43,
-      "tier": "D",
-      "score": 37.0,
-      "title": "The LARP Sidekick",
-      "emoji": "🛡️",
-      "reasoning": "ZERO votes against across appearances. High-end strategist (best rank: #3). Eliminated on RI. (S6). Swapped with Leonard. (S6). Across 1 season(s): avg placement 17.00.",
-      "strengths": [
-        "Low target profile and/or strong jury appeal."
-      ],
-      "weaknesses": [
-        "Little evidence of consistent strategic control.",
-        "Inconsistent results / early exits drag down average placement.",
-        "Limited challenge contribution compared to the field."
-      ],
-      "avgPlacement": 17.0,
-      "winRate": 0.0,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "placements": [
-        17
-      ],
-      "challengeWins": 0,
-      "votesAgainst": 0,
-      "juryVotes": 0,
-      "idolsFound": 0,
-      "placementPercentile": 10.45,
-      "winPercentile": 45.52,
-      "challengePercentile": 29.85,
-      "socialPercentile": 87.31,
-      "strategicPercentile": 1.49
-    },
-    {
-      "playerId": "dj",
-      "name": "DJ",
-      "rank": 54,
-      "tier": "C",
-      "score": 54.0,
-      "title": "The Big Softie",
-      "emoji": "🐻",
-      "reasoning": "9 votes in Episode 3. (S1). 4-1 vote at Final Five. (S2). Across 2 season(s): avg placement 13.50.",
-      "strengths": [
-        "Above-average strategic impact and positioning."
-      ],
-      "weaknesses": [
-        "Takes too many votes / limited jury support.",
-        "Inconsistent results / early exits drag down average placement.",
-        "Limited challenge contribution compared to the field."
-      ],
-      "avgPlacement": 13.5,
-      "winRate": 0.0,
-      "wins": 0,
-      "seasonsPlayed": 2,
-      "placements": [
-        5,
-        22
-      ],
-      "challengeWins": 0,
-      "votesAgainst": 20,
-      "juryVotes": 0,
-      "idolsFound": 0,
-      "placementPercentile": 26.87,
-      "winPercentile": 45.52,
-      "challengePercentile": 29.85,
-      "socialPercentile": 11.19,
-      "strategicPercentile": 50.0
-    },
-    {
-      "playerId": "lightning",
-      "name": "Lightning",
-      "rank": 55,
-      "tier": "C",
-      "score": 50.0,
-      "title": "The Jock",
-      "emoji": "⚡️",
-      "reasoning": "Constant heat all game (25 votes against). Strong advantage game (2 idols/advantages found). TRIPLE IDOL TRIBAL (Ep 5 Part 2). (S4). WORST idol play ever (wasted on Emma). (S3). Across 2 season(s): avg placement 12.00.",
-      "strengths": [
-        "High win conversion rate when they play."
-      ],
-      "weaknesses": [
-        "Takes too many votes / limited jury support.",
-        "Little evidence of consistent strategic control.",
-        "Limited challenge contribution compared to the field."
-      ],
-      "avgPlacement": 12.0,
-      "winRate": 0.0,
-      "wins": 0,
-      "seasonsPlayed": 2,
-      "placements": [
-        13,
-        11
-      ],
-      "challengeWins": 0,
-      "votesAgainst": 25,
-      "juryVotes": 0,
-      "idolsFound": 2,
-      "placementPercentile": 38.81,
-      "winPercentile": 45.52,
-      "challengePercentile": 29.85,
-      "socialPercentile": 2.99,
-      "strategicPercentile": 11.19
+      "strategicPercentile": 50
     },
     {
       "playerId": "sierra",
       "name": "Sierra",
-      "rank": 56,
-      "tier": "C",
+      "rank": 44,
+      "tier": "D",
       "score": 50.1,
       "title": "The Superfan",
-      "emoji": "📱",
+      "emoji": "📣",
       "reasoning": "BIGGEST target profile in the cast (39 votes against). Perfect idol play (10 votes cancelled!). (S4). 6-4 vote. (S1). Across 2 season(s): avg placement 10.50.",
       "strengths": [
         "Strong average placement across seasons (deep runs)."
@@ -1980,290 +1595,17 @@
       "placementPercentile": 49.25,
       "winPercentile": 45.52,
       "challengePercentile": 29.85,
-      "socialPercentile": 0.0,
+      "socialPercentile": 0,
       "strategicPercentile": 6.72
-    },
-    {
-      "playerId": "b",
-      "name": "B",
-      "rank": 57,
-      "tier": "D",
-      "score": 33.0,
-      "title": "The Silent Genius",
-      "emoji": "🤫",
-      "reasoning": "Unanimous target Episode 3. (S3). Socially isolated. (S3). Across 1 season(s): avg placement 14.00.",
-      "strengths": [
-        "High win conversion rate when they play."
-      ],
-      "weaknesses": [
-        "Little evidence of consistent strategic control.",
-        "Inconsistent results / early exits drag down average placement.",
-        "Limited challenge contribution compared to the field."
-      ],
-      "avgPlacement": 14.0,
-      "winRate": 0.0,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "placements": [
-        14
-      ],
-      "challengeWins": 0,
-      "votesAgainst": 6,
-      "juryVotes": 0,
-      "idolsFound": 0,
-      "placementPercentile": 23.88,
-      "winPercentile": 45.52,
-      "challengePercentile": 29.85,
-      "socialPercentile": 38.06,
-      "strategicPercentile": 6.72
-    },
-    {
-      "playerId": "staci",
-      "name": "Staci",
-      "rank": 58,
-      "tier": "D",
-      "score": 32.0,
-      "title": "The Tall-Tale Teller",
-      "emoji": "📜",
-      "reasoning": "6-2 vote. (S3). Second boot (Episode 2). (S3). Across 1 season(s): avg placement 15.00.",
-      "strengths": [
-        "High win conversion rate when they play."
-      ],
-      "weaknesses": [
-        "Little evidence of consistent strategic control.",
-        "Inconsistent results / early exits drag down average placement.",
-        "Limited challenge contribution compared to the field."
-      ],
-      "avgPlacement": 15.0,
-      "winRate": 0.0,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "placements": [
-        15
-      ],
-      "challengeWins": 0,
-      "votesAgainst": 6,
-      "juryVotes": 0,
-      "idolsFound": 0,
-      "placementPercentile": 18.66,
-      "winPercentile": 45.52,
-      "challengePercentile": 29.85,
-      "socialPercentile": 38.06,
-      "strategicPercentile": 6.72
-    },
-    {
-      "playerId": "justin",
-      "name": "Justin",
-      "rank": 59,
-      "tier": "D",
-      "score": 38.0,
-      "title": "The Heartthrob",
-      "emoji": "🤝",
-      "reasoning": "Found idol early but didn't play it. (S1). First juror after Ezekiel's idol play. (S2). Across 2 season(s): avg placement 17.00.",
-      "strengths": [
-        "Above-average strategic impact and positioning."
-      ],
-      "weaknesses": [
-        "Inconsistent results / early exits drag down average placement.",
-        "Takes too many votes / limited jury support.",
-        "Limited challenge contribution compared to the field."
-      ],
-      "avgPlacement": 17.0,
-      "winRate": 0.0,
-      "wins": 0,
-      "seasonsPlayed": 2,
-      "placements": [
-        10,
-        24
-      ],
-      "challengeWins": 0,
-      "votesAgainst": 16,
-      "juryVotes": 0,
-      "idolsFound": 1,
-      "placementPercentile": 10.45,
-      "winPercentile": 45.52,
-      "challengePercentile": 29.85,
-      "socialPercentile": 24.63,
-      "strategicPercentile": 50.0
-    },
-    {
-      "playerId": "dawn",
-      "name": "Dawn",
-      "rank": 60,
-      "tier": "B",
-      "score": 60,
-      "title": "The Mystic",
-      "emoji": "🌿",
-      "reasoning": "Voted Scott at FTC. (S3). Consensus target Episode 9. (S3). Across 1 season(s): avg placement 8.00.",
-      "strengths": [
-        "Strong average placement across seasons (deep runs)."
-      ],
-      "weaknesses": [
-        "Takes too many votes / limited jury support.",
-        "Little evidence of consistent strategic control.",
-        "Limited challenge contribution compared to the field."
-      ],
-      "avgPlacement": 8.0,
-      "winRate": 0.0,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "placements": [
-        8
-      ],
-      "challengeWins": 0,
-      "votesAgainst": 10,
-      "juryVotes": 0,
-      "idolsFound": 0,
-      "placementPercentile": 70.15,
-      "winPercentile": 45.52,
-      "challengePercentile": 29.85,
-      "socialPercentile": 11.19,
-      "strategicPercentile": 18.66
-    },
-    {
-      "playerId": "brick",
-      "name": "Brick",
-      "rank": 61,
-      "tier": "D",
-      "score": 29.0,
-      "title": "The Cadet",
-      "emoji": "🪖",
-      "reasoning": "Won merge immunity (Episode 7). (S3). Voted Scott at FTC. (S3). Across 1 season(s): avg placement 9.00.",
-      "strengths": [
-        "Consistent challenge output (wins/season)."
-      ],
-      "weaknesses": [
-        "Little evidence of consistent strategic control."
-      ],
-      "avgPlacement": 9.0,
-      "winRate": 0.0,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "placements": [
-        9
-      ],
-      "challengeWins": 1,
-      "votesAgainst": 5,
-      "juryVotes": 0,
-      "idolsFound": 0,
-      "placementPercentile": 63.43,
-      "winPercentile": 45.52,
-      "challengePercentile": 75.37,
-      "socialPercentile": 48.51,
-      "strategicPercentile": 18.66
-    },
-    {
-      "playerId": "leonard",
-      "name": "Leonard",
-      "rank": 62,
-      "tier": "D",
-      "score": 28.0,
-      "title": "The LARPer Wizard",
-      "emoji": "🧙‍♂️",
-      "reasoning": "High-end strategist (best rank: #2). Volunteered swap to RI. (S6). Voted out 5–3 on Galang. (S6). Across 2 season(s): avg placement 18.00.",
-      "strengths": [
-        "Low target profile and/or strong jury appeal."
-      ],
-      "weaknesses": [
-        "Little evidence of consistent strategic control.",
-        "Inconsistent results / early exits drag down average placement.",
-        "Limited challenge contribution compared to the field."
-      ],
-      "avgPlacement": 18.0,
-      "winRate": 0.0,
-      "wins": 0,
-      "seasonsPlayed": 2,
-      "placements": [
-        18,
-        18
-      ],
-      "challengeWins": 0,
-      "votesAgainst": 6,
-      "juryVotes": 0,
-      "idolsFound": 0,
-      "placementPercentile": 5.97,
-      "winPercentile": 45.52,
-      "challengePercentile": 29.85,
-      "socialPercentile": 65.67,
-      "strategicPercentile": 0.0
-    },
-    {
-      "playerId": "cody",
-      "name": "Cody",
-      "rank": 63,
-      "tier": "D",
-      "score": 27.0,
-      "title": "The Geek",
-      "emoji": "🤓",
-      "reasoning": "Leshawna flipped. (S1). 6-5 vote. (S1). Across 1 season(s): avg placement 19.00.",
-      "strengths": [
-        "Above-average strategic impact and positioning."
-      ],
-      "weaknesses": [
-        "Inconsistent results / early exits drag down average placement.",
-        "Limited challenge contribution compared to the field.",
-        "Takes too many votes / limited jury support."
-      ],
-      "avgPlacement": 19.0,
-      "winRate": 0.0,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "placements": [
-        19
-      ],
-      "challengeWins": 0,
-      "votesAgainst": 6,
-      "juryVotes": 0,
-      "idolsFound": 0,
-      "placementPercentile": 2.99,
-      "winPercentile": 45.52,
-      "challengePercentile": 29.85,
-      "socialPercentile": 38.06,
-      "strategicPercentile": 50.0
-    },
-    {
-      "playerId": "dakota",
-      "name": "Dakota",
-      "rank": 64,
-      "tier": "D",
-      "score": 26.0,
-      "title": "The Fame Seeker",
-      "emoji": "📸",
-      "reasoning": "Swap casualty. (S3). FAN FAVORITE winner!. (S3). Across 2 season(s): avg placement 15.00.",
-      "strengths": [
-        "High win conversion rate when they play."
-      ],
-      "weaknesses": [
-        "Takes too many votes / limited jury support.",
-        "Inconsistent results / early exits drag down average placement.",
-        "Little evidence of consistent strategic control."
-      ],
-      "avgPlacement": 15.0,
-      "winRate": 0.0,
-      "wins": 0,
-      "seasonsPlayed": 2,
-      "placements": [
-        18,
-        12
-      ],
-      "challengeWins": 0,
-      "votesAgainst": 19,
-      "juryVotes": 0,
-      "idolsFound": 0,
-      "placementPercentile": 18.66,
-      "winPercentile": 45.52,
-      "challengePercentile": 29.85,
-      "socialPercentile": 14.93,
-      "strategicPercentile": 18.66
     },
     {
       "playerId": "anne-maria",
       "name": "Anne Maria",
-      "rank": 65,
-      "tier": "C",
-      "score": 50.0,
-      "title": "The Workhorse",
-      "emoji": "💅",
+      "rank": 45,
+      "tier": "D",
+      "score": 50,
+      "title": "The Jersey Diva",
+      "emoji": "💄",
       "reasoning": "WASTED idol on Zoey (0 votes!). (S4). Voted Emma at FTC. (S3). Across 2 season(s): avg placement 10.50.",
       "strengths": [
         "Consistent challenge output (wins/season)."
@@ -2291,12 +1633,873 @@
       "strategicPercentile": 18.66
     },
     {
-      "playerId": "crimson",
-      "name": "Crimson",
+      "playerId": "lightning",
+      "name": "Lightning",
+      "rank": 46,
+      "tier": "D",
+      "score": 50,
+      "title": "The Jock",
+      "emoji": "⚡",
+      "reasoning": "Constant heat all game (25 votes against). Strong advantage game (2 idols/advantages found). TRIPLE IDOL TRIBAL (Ep 5 Part 2). (S4). WORST idol play ever (wasted on Emma). (S3). Across 2 season(s): avg placement 12.00.",
+      "strengths": [
+        "High win conversion rate when they play."
+      ],
+      "weaknesses": [
+        "Takes too many votes / limited jury support.",
+        "Little evidence of consistent strategic control.",
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 12,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 2,
+      "placements": [
+        13,
+        11
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 25,
+      "juryVotes": 0,
+      "idolsFound": 2,
+      "placementPercentile": 38.81,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 2.99,
+      "strategicPercentile": 11.19
+    },
+    {
+      "playerId": "stephanie",
+      "name": "Stephanie",
+      "rank": 47,
+      "tier": "D",
+      "score": 49,
+      "title": "The Control Freak",
+      "emoji": "💢",
+      "reasoning": "ZERO votes against across appearances. Voted out Episode 6 (6-1); threw an idol clue into the fire on RI. (S6). Burned an idol clue on RI. (S6). Across 1 season(s): avg placement 13.00.",
+      "strengths": [
+        "Low target profile and/or strong jury appeal."
+      ],
+      "weaknesses": [
+        "Little evidence of consistent strategic control.",
+        "Inconsistent results / early exits drag down average placement.",
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 13,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        13
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 0,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 29.85,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 87.31,
+      "strategicPercentile": 24.63
+    },
+    {
+      "playerId": "izzy",
+      "name": "Izzy",
+      "rank": 48,
+      "tier": "D",
+      "score": 47.4,
+      "title": "The Chaos Gremlin",
+      "emoji": "🤪",
+      "reasoning": "5-4 vote. (S1). Tribe swap casualty. (S1). Across 1 season(s): avg placement 18.00.",
+      "strengths": [
+        "Above-average strategic impact and positioning."
+      ],
+      "weaknesses": [
+        "Inconsistent results / early exits drag down average placement.",
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 18,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        18
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 5,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 5.97,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 48.51,
+      "strategicPercentile": 50
+    },
+    {
+      "playerId": "mary",
+      "name": "Mary",
+      "rank": 49,
+      "tier": "D",
+      "score": 47,
+      "title": "The Brain",
+      "emoji": "📚",
+      "reasoning": "ZERO votes against across appearances. Idoled out at swap vote. (S6). Idol casualty Episode 7 (Kelly's idol negated majority). (S6). Across 1 season(s): avg placement 14.00.",
+      "strengths": [
+        "Low target profile and/or strong jury appeal."
+      ],
+      "weaknesses": [
+        "Inconsistent results / early exits drag down average placement.",
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 14,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        14
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 0,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 23.88,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 87.31,
+      "strategicPercentile": 50
+    },
+    {
+      "playerId": "sam",
+      "name": "Sam",
+      "rank": 50,
+      "tier": "D",
+      "score": 45,
+      "title": "The Gamer",
+      "emoji": "🎮",
+      "reasoning": "PERFECT GAME: ZERO votes against. Rock draw elimination. (S3). NEVER voted for. (S3). Across 1 season(s): avg placement 13.00.",
+      "strengths": [
+        "Low target profile and/or strong jury appeal."
+      ],
+      "weaknesses": [
+        "Little evidence of consistent strategic control.",
+        "Inconsistent results / early exits drag down average placement.",
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 13,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        13
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 0,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 29.85,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 87.31,
+      "strategicPercentile": 6.72
+    },
+    {
+      "playerId": "samey",
+      "name": "Samey",
+      "rank": 51,
+      "tier": "D",
+      "score": 42,
+      "title": "The Sweet Twin",
+      "emoji": "😇",
+      "reasoning": "Across 1 season(s): avg placement 15.00.",
+      "strengths": [
+        "Low target profile and/or strong jury appeal."
+      ],
+      "weaknesses": [
+        "Inconsistent results / early exits drag down average placement.",
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 15,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        15
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 1,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 18.66,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 76.87,
+      "strategicPercentile": 50
+    },
+    {
+      "playerId": "junior",
+      "name": "Junior",
+      "rank": 52,
+      "tier": "D",
+      "score": 41,
+      "title": "The Kid",
+      "emoji": "🧒",
+      "reasoning": "ZERO votes against across appearances. Survived early RI duels. (S6). Initial 6-2 vote amid liability framing. (S6). Across 1 season(s): avg placement 15.00.",
+      "strengths": [
+        "Low target profile and/or strong jury appeal."
+      ],
+      "weaknesses": [
+        "Little evidence of consistent strategic control.",
+        "Inconsistent results / early exits drag down average placement.",
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 15,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        15
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 0,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 18.66,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 87.31,
+      "strategicPercentile": 14.18
+    },
+    {
+      "playerId": "ennui",
+      "name": "Ennui",
+      "rank": 53,
+      "tier": "D",
+      "score": 40,
+      "title": "The Deadpan Goth",
+      "emoji": "😑",
+      "reasoning": "ZERO votes against across appearances. Voted out 6-3. (S6). Feuded with Jay pre-tribal. (S6). Across 1 season(s): avg placement 16.00.",
+      "strengths": [
+        "Low target profile and/or strong jury appeal."
+      ],
+      "weaknesses": [
+        "Inconsistent results / early exits drag down average placement.",
+        "Little evidence of consistent strategic control.",
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 16,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        16
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 0,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 14.18,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 87.31,
+      "strategicPercentile": 24.63
+    },
+    {
+      "playerId": "beardo",
+      "name": "Beardo",
+      "rank": 54,
+      "tier": "D",
+      "score": 39,
+      "title": "The Soundboard",
+      "emoji": "🔊",
+      "reasoning": "Across 1 season(s): avg placement 16.00.",
+      "strengths": [
+        "Low target profile and/or strong jury appeal."
+      ],
+      "weaknesses": [
+        "Inconsistent results / early exits drag down average placement.",
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 16,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        16
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 3,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 14.18,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 65.67,
+      "strategicPercentile": 50
+    },
+    {
+      "playerId": "justin",
+      "name": "Justin",
+      "rank": 55,
+      "tier": "D",
+      "score": 38,
+      "title": "The Model",
+      "emoji": "😎",
+      "reasoning": "Found idol early but didn't play it. (S1). First juror after Ezekiel's idol play. (S2). Across 2 season(s): avg placement 17.00.",
+      "strengths": [
+        "Above-average strategic impact and positioning."
+      ],
+      "weaknesses": [
+        "Inconsistent results / early exits drag down average placement.",
+        "Takes too many votes / limited jury support.",
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 17,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 2,
+      "placements": [
+        10,
+        24
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 16,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "placementPercentile": 10.45,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 24.63,
+      "strategicPercentile": 50
+    },
+    {
+      "playerId": "ella",
+      "name": "Ella",
+      "rank": 56,
+      "tier": "D",
+      "score": 38,
+      "title": "The Disney Princess",
+      "emoji": "🐦",
+      "reasoning": "Across 1 season(s): avg placement 17.00.",
+      "strengths": [
+        "Low target profile and/or strong jury appeal."
+      ],
+      "weaknesses": [
+        "Inconsistent results / early exits drag down average placement.",
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 17,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        17
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 2,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 10.45,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 73.13,
+      "strategicPercentile": 50
+    },
+    {
+      "playerId": "tammy",
+      "name": "Tammy",
+      "rank": 57,
+      "tier": "D",
+      "score": 37,
+      "title": "The Cosplayer",
+      "emoji": "🎲",
+      "reasoning": "ZERO votes against across appearances. High-end strategist (best rank: #3). Eliminated on RI. (S6). Swapped with Leonard. (S6). Across 1 season(s): avg placement 17.00.",
+      "strengths": [
+        "Low target profile and/or strong jury appeal."
+      ],
+      "weaknesses": [
+        "Little evidence of consistent strategic control.",
+        "Inconsistent results / early exits drag down average placement.",
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 17,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        17
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 0,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 10.45,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 87.31,
+      "strategicPercentile": 1.49
+    },
+    {
+      "playerId": "kitty",
+      "tier": "C",
+      "score": 59,
+      "rank": 58,
+      "avgPlacement": 10,
+      "winRate": 0.0,
+      "placements": [
+        9,
+        11
+      ],
+      "challengeWins": 2,
+      "votesAgainst": 28,
+      "juryVotes": 0,
+      "idolsFound": 3,
+      "status": "Competed in 2/7 seasons",
+      "title": "The Sunshine",
+      "emoji": "😺",
+      "reasoning": "Kitty thrives in chaos: 3 idols found across seasons and the S7 double-idol masterstroke that erased eight votes and boomeranged Pete out. In S6 she burned protection trying to shape power and got split-voted out; in S7 her feud with Shawn made every round volatile before she was cut at 11th. With 2 challenge wins and 28 votes against, she weaponizes fear and timing more than safety. She can be a loyal spark, but the blowback is immediate once the smoke clears.",
+      "strengths": [
+        "Top-tier idol hunting and high-pressure reads",
+        "Creates chaos to reset vote maps in her favor",
+        "Protects allies at the exact moment stakes spike"
+      ],
+      "weaknesses": [
+        "Feuds (Shawn) escalate and narrow options",
+        "Idol fireworks invite instant follow-up boots",
+        "Social blowback after big plays limits longevity"
+      ],
+      "name": "Kitty",
+      "seasonsList": [
+        6,
+        7
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0
+    },
+    {
+      "playerId": "laurie",
+      "tier": "C",
+      "score": 59,
+      "rank": 59,
+      "avgPlacement": 10,
+      "winRate": 0.0,
+      "placements": [
+        10
+      ],
+      "challengeWins": 3,
+      "votesAgainst": 8,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "status": "Competed in Season 7 only",
+      "title": "The Nature Girl",
+      "emoji": "🌿",
+      "reasoning": "Laurie lived in conflict and chaos in S7, feuding with Cody and drifting as a minority vote before serving as a merge number. She was finally cut 5-3-2 at 10th when the tribe wanted the heat to cool. With 3 challenge wins and 8 votes against, her presence was loud but rarely central. Ties to Taylor helped, but the Cody war defined her arc.",
+      "strengths": [
+        "Fearless confrontation that can force clarity",
+        "Utility as a swing number in messy rounds",
+        "Loyalty to specific allies even from the bottom"
+      ],
+      "weaknesses": [
+        "Volatile social game alienates potential allies",
+        "Becomes a distraction voters tire of carrying",
+        "Thin jury equity after noisy midgame"
+      ],
+      "name": "Laurie",
+      "seasonsList": [
+        7
+      ],
+      "seasonsPlayed": 1,
+      "wins": 0
+    },
+    {
+      "playerId": "shawn",
+      "tier": "B",
+      "score": 67,
+      "rank": 60,
+      "avgPlacement": 9,
+      "winRate": 0.0,
+      "placements": [
+        9,
+        9
+      ],
+      "challengeWins": 2,
+      "votesAgainst": 17,
+      "juryVotes": 0,
+      "idolsFound": 1,
+      "status": "Competed in 2/7 seasons",
+      "title": "The Zombie Guy",
+      "emoji": "🧟",
+      "reasoning": "Shawn plays intense: S5's Beware Idol/Shot in the Dark gamble backfired, and S7 centered on a feared duo with Scott and a loud feud with Kitty. He exited 9th both times, including a 5-4 knife-edge in S7. With 2 challenge wins, 1 idol found, and 17 votes against, he's a force in motion more than a long-term manager. His rivalry heat made him a message boot once the board stabilized.",
+      "strengths": [
+        "Drives targets and momentum alongside a loyal partner",
+        "Physical asset in team and individual phases",
+        "Unshaken under pressure in contentious votes"
+      ],
+      "weaknesses": [
+        "Paranoid gambles that cost votes and leverage",
+        "Public feuds (Kitty) that dominate agendas",
+        "Struggles to re-stabilize after shields leave"
+      ],
+      "name": "Shawn",
+      "seasonsList": [
+        5,
+        7
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0
+    },
+    {
+      "playerId": "b",
+      "name": "B",
+      "rank": 61,
+      "tier": "D",
+      "score": 33,
+      "title": "The Silent Genius",
+      "emoji": "🤫",
+      "reasoning": "Unanimous target Episode 3. (S3). Socially isolated. (S3). Across 1 season(s): avg placement 14.00.",
+      "strengths": [
+        "High win conversion rate when they play."
+      ],
+      "weaknesses": [
+        "Little evidence of consistent strategic control.",
+        "Inconsistent results / early exits drag down average placement.",
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 14,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        14
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 6,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 23.88,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 38.06,
+      "strategicPercentile": 6.72
+    },
+    {
+      "playerId": "staci",
+      "name": "Staci",
+      "rank": 62,
+      "tier": "D",
+      "score": 32,
+      "title": "The Storyteller",
+      "emoji": "🤥",
+      "reasoning": "6-2 vote. (S3). Second boot (Episode 2). (S3). Across 1 season(s): avg placement 15.00.",
+      "strengths": [
+        "High win conversion rate when they play."
+      ],
+      "weaknesses": [
+        "Little evidence of consistent strategic control.",
+        "Inconsistent results / early exits drag down average placement.",
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 15,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        15
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 6,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 18.66,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 38.06,
+      "strategicPercentile": 6.72
+    },
+    {
+      "playerId": "brick",
+      "name": "Brick",
+      "rank": 63,
+      "tier": "D",
+      "score": 29,
+      "title": "The Cadet",
+      "emoji": "🪖",
+      "reasoning": "Won merge immunity (Episode 7). (S3). Voted Scott at FTC. (S3). Across 1 season(s): avg placement 9.00.",
+      "strengths": [
+        "Consistent challenge output (wins/season)."
+      ],
+      "weaknesses": [
+        "Little evidence of consistent strategic control."
+      ],
+      "avgPlacement": 9,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        9
+      ],
+      "challengeWins": 1,
+      "votesAgainst": 5,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 63.43,
+      "winPercentile": 45.52,
+      "challengePercentile": 75.37,
+      "socialPercentile": 48.51,
+      "strategicPercentile": 18.66
+    },
+    {
+      "playerId": "leonard",
+      "name": "Leonard",
+      "rank": 64,
+      "tier": "D",
+      "score": 28,
+      "title": "The Wizard",
+      "emoji": "🧙",
+      "reasoning": "High-end strategist (best rank: #2). Volunteered swap to RI. (S6). Voted out 5-3 on Galang. (S6). Across 2 season(s): avg placement 18.00.",
+      "strengths": [
+        "Low target profile and/or strong jury appeal."
+      ],
+      "weaknesses": [
+        "Little evidence of consistent strategic control.",
+        "Inconsistent results / early exits drag down average placement.",
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 18,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 2,
+      "placements": [
+        18,
+        18
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 6,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 5.97,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 65.67,
+      "strategicPercentile": 0
+    },
+    {
+      "playerId": "pete",
+      "tier": "B",
+      "score": 57,
+      "rank": 65,
+      "avgPlacement": 12,
+      "winRate": 0.0,
+      "placements": [
+        12
+      ],
+      "challengeWins": 1,
+      "votesAgainst": 5,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "status": "Competed in Season 7 only",
+      "title": "The Old-School Coach",
+      "emoji": "🧓",
+      "reasoning": "Pete played the S7 middle with an Exile extra vote, clashed with Carrie/Kitty, and took a swing at Kitty on Idol Night-only to be the fallback when her double-idol detonated. He left at 12th despite 1 challenge win and 5 votes against. His reads were bold; the board just broke perfectly against him. Links with Taylor and Tom couldn't overcome the post-firewall pivot.",
+      "strengths": [
+        "Grabs and uses advantages to press edges",
+        "Aggressive targeting of perceived power players",
+        "Solid midgame coalition negotiating"
+      ],
+      "weaknesses": [
+        "Miscalibrated timing versus idol stockpiles",
+        "Feuds painted him as an acceptable casualty",
+        "Insufficient shields once plans went public"
+      ],
+      "name": "Pete",
+      "seasonsList": [
+        7
+      ],
+      "seasonsPlayed": 1,
+      "wins": 0
+    },
+    {
+      "playerId": "dakota",
+      "name": "Dakota",
       "rank": 66,
       "tier": "D",
-      "score": 21.0,
-      "title": "The Goth",
+      "score": 26,
+      "title": "The Celebrity",
+      "emoji": "📸",
+      "reasoning": "Swap casualty. (S3). FAN FAVORITE winner!. (S3). Across 2 season(s): avg placement 15.00.",
+      "strengths": [
+        "High win conversion rate when they play."
+      ],
+      "weaknesses": [
+        "Takes too many votes / limited jury support.",
+        "Inconsistent results / early exits drag down average placement.",
+        "Little evidence of consistent strategic control."
+      ],
+      "avgPlacement": 15,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 2,
+      "placements": [
+        18,
+        12
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 19,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 18.66,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 14.93,
+      "strategicPercentile": 18.66
+    },
+    {
+      "playerId": "brody",
+      "tier": "D",
+      "score": 24.7,
+      "rank": 67,
+      "avgPlacement": 12.5,
+      "winRate": 0.0,
+      "placements": [
+        7,
+        18
+      ],
+      "challengeWins": 1,
+      "votesAgainst": 33,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "status": "Competed in 2/7 seasons",
+      "title": "The Hunky Helper",
+      "emoji": "🏋️‍♂️",
+      "reasoning": "Brody's game leaned on grit: in S6 he outlasted heat, returned from Redemption, and even snagged an immunity before getting cut 4-2 at 7th. In S7 he never found structure and became the easy consensus boot at 18th. With 1 challenge win, 33 votes against, and zero idols, his threat came from endurance more than position. Loyal to Geoff and the Surfers vibe, he struggled to shake rival heat from Ryan and Mickey and later MacArthur.",
+      "strengths": [
+        "Endurance-based performance under harsh conditions",
+        "Loyal duo play with Geoff to secure short-term safety",
+        "Can absorb being a decoy target without panicking"
+      ],
+      "weaknesses": [
+        "Limited numbers and weak majority pathways",
+        "Target magnet post-merge once redemption narrative formed",
+        "No advantage game to counter coordinated strikes"
+      ],
+      "name": "Brody",
+      "seasonsList": [
+        6,
+        7
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0
+    },
+    {
+      "playerId": "eva",
+      "name": "Eva",
+      "rank": 68,
+      "tier": "D",
+      "score": 23,
+      "title": "The Rage Machine",
+      "emoji": "💥",
+      "reasoning": "6-4 vote. (S1). Across 1 season(s): avg placement 21.00.",
+      "strengths": [
+        "Above-average strategic impact and positioning."
+      ],
+      "weaknesses": [
+        "Inconsistent results / early exits drag down average placement.",
+        "Limited challenge contribution compared to the field.",
+        "Takes too many votes / limited jury support."
+      ],
+      "avgPlacement": 21,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        21
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 6,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 1.49,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 38.06,
+      "strategicPercentile": 50
+    },
+    {
+      "playerId": "tyler",
+      "name": "Tyler",
+      "rank": 69,
+      "tier": "D",
+      "score": 22,
+      "title": "The Himbo Athlete",
+      "emoji": "🏈",
+      "reasoning": "8-4 vote. (S1). Challenge liability. (S1). Across 1 season(s): avg placement 23.00.",
+      "strengths": [
+        "Above-average strategic impact and positioning."
+      ],
+      "weaknesses": [
+        "Inconsistent results / early exits drag down average placement.",
+        "Takes too many votes / limited jury support.",
+        "Limited challenge contribution compared to the field."
+      ],
+      "avgPlacement": 23,
+      "winRate": 0.0,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        23
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 8,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "placementPercentile": 0,
+      "winPercentile": 45.52,
+      "challengePercentile": 29.85,
+      "socialPercentile": 24.63,
+      "strategicPercentile": 50
+    },
+    {
+      "playerId": "jasmine",
+      "tier": "D",
+      "score": 47,
+      "rank": 70,
+      "avgPlacement": 13.5,
+      "winRate": 0.0,
+      "placements": [
+        14,
+        13
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 11,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "status": "Competed in 2/7 seasons",
+      "title": "The Jungle Queen",
+      "emoji": "🐊",
+      "reasoning": "Jasmine played steady and respected, but twice got clipped as the easy compromise: a mid-early exit in S5 and the first juror in S7 (7-4-2). She entered S7 merge looking like a stable finalist type, which made her the safest 'unity' boot. With 0 challenge wins, no idols, and 11 votes against, her capital was social, not flashy. Bonds with Cody/Brody helped, but a simmering dislike with Lindsay and split boards made her expendable.",
+      "strengths": [
+        "Calm campsite leadership that lowers tribe friction",
+        "Respected presence that earns middle-position trust",
+        "Consistent reads without overplaying advantages"
+      ],
+      "weaknesses": [
+        "Early-merge 'safe boot' aura in fractured votes",
+        "No advantages or immunity runs to deter consensus",
+        "Limited late-game leverage against strong blocs"
+      ],
+      "name": "Jasmine",
+      "seasonsList": [
+        5,
+        7
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0
+    },
+    {
+      "playerId": "crimson",
+      "name": "Crimson",
+      "rank": 71,
+      "tier": "D",
+      "score": 21,
+      "title": "The Goth Twin",
       "emoji": "🦇",
       "reasoning": "High-end strategist (best rank: #3). 7-1 vote. (S3). Medevac in Episode 1. (S6). Across 2 season(s): avg placement 18.00.",
       "strengths": [
@@ -2307,7 +2510,7 @@
         "Inconsistent results / early exits drag down average placement.",
         "Limited challenge contribution compared to the field."
       ],
-      "avgPlacement": 18.0,
+      "avgPlacement": 18,
       "winRate": 0.0,
       "wins": 0,
       "seasonsPlayed": 2,
@@ -2326,72 +2529,261 @@
       "strategicPercentile": 2.99
     },
     {
-      "playerId": "eva",
-      "name": "Eva",
-      "rank": 67,
+      "playerId": "devin",
       "tier": "D",
-      "score": 23.0,
-      "title": "The Hothead",
-      "emoji": "🥊",
-      "reasoning": "6-4 vote. (S1). Across 1 season(s): avg placement 21.00.",
-      "strengths": [
-        "Above-average strategic impact and positioning."
-      ],
-      "weaknesses": [
-        "Inconsistent results / early exits drag down average placement.",
-        "Limited challenge contribution compared to the field.",
-        "Takes too many votes / limited jury support."
-      ],
-      "avgPlacement": 21.0,
+      "score": 45,
+      "rank": 72,
+      "avgPlacement": 14,
       "winRate": 0.0,
-      "wins": 0,
-      "seasonsPlayed": 1,
       "placements": [
-        21
+        14
       ],
       "challengeWins": 0,
-      "votesAgainst": 6,
+      "votesAgainst": 4,
       "juryVotes": 0,
       "idolsFound": 0,
-      "placementPercentile": 1.49,
-      "winPercentile": 45.52,
-      "challengePercentile": 29.85,
-      "socialPercentile": 38.06,
-      "strategicPercentile": 50.0
+      "status": "Competed in Season 7 only",
+      "title": "The Loyal Boyfriend",
+      "emoji": "💍",
+      "reasoning": "Devin's S7 started with real social traction among the Fans (Carrie, Taylor), but swap attitudes from Favorites hardened and he fell 4-3. With 0 challenge wins, no idols, and 4 votes against, he lacked the shield or advantage to survive Scott/Shawn's push and Jacques' flip. His instincts to connect were sound; the cover wasn't. Once the board framed him as expendable, the window shut fast.",
+      "strengths": [
+        "Quick to build early trust and soft alliances",
+        "Comfort playing the middle to keep options open",
+        "Solid social reads on Fan dynamics"
+      ],
+      "weaknesses": [
+        "No protection when cross-tribe heat rises",
+        "Couldn't lock a stable majority post-swap",
+        "Viewed as expendable by Favorites' core"
+      ],
+      "name": "Devin",
+      "seasonsList": [
+        7
+      ],
+      "seasonsPlayed": 1,
+      "wins": 0
     },
     {
-      "playerId": "tyler",
-      "name": "Tyler",
-      "rank": 68,
+      "playerId": "lorenzo",
       "tier": "D",
-      "score": 22.0,
-      "title": "The Clumsy Jock",
-      "emoji": "🏈",
-      "reasoning": "8-4 vote. (S1). Challenge liability. (S1). Across 1 season(s): avg placement 23.00.",
-      "strengths": [
-        "Above-average strategic impact and positioning."
-      ],
-      "weaknesses": [
-        "Inconsistent results / early exits drag down average placement.",
-        "Takes too many votes / limited jury support.",
-        "Limited challenge contribution compared to the field."
-      ],
-      "avgPlacement": 23.0,
+      "score": 42,
+      "rank": 73,
+      "avgPlacement": 16,
       "winRate": 0.0,
-      "wins": 0,
-      "seasonsPlayed": 1,
       "placements": [
-        23
+        16
       ],
       "challengeWins": 0,
-      "votesAgainst": 8,
+      "votesAgainst": 4,
       "juryVotes": 0,
       "idolsFound": 0,
-      "placementPercentile": 0.0,
-      "winPercentile": 45.52,
-      "challengePercentile": 29.85,
-      "socialPercentile": 24.63,
-      "strategicPercentile": 50.0
+      "status": "Competed in Season 7 only",
+      "title": "The Hothead",
+      "emoji": "🥊",
+      "reasoning": "Lorenzo survived the S7 swap by flipping to help boot Brody, but the disciplined Mauhu trio (MacArthur/Sky/Tom) snuffed him 3-2 next. With 0 challenge wins, no idols, and 4 votes against, his opportunism bought only a brief extension. Bonding with Pete was real, but not enough to break structure. Once the majority solidified, he had no wedge.",
+      "strengths": [
+        "Willingness to flip early for survival",
+        "Decent read on immediate majority safety",
+        "Useful pair dynamics (with Pete) to negotiate"
+      ],
+      "weaknesses": [
+        "Struggles to convert flips into long-term security",
+        "No advantage or immunity cover post-swap",
+        "Outside disciplined cores without a counter-plan"
+      ],
+      "name": "Lorenzo",
+      "seasonsList": [
+        7
+      ],
+      "seasonsPlayed": 1,
+      "wins": 0
+    },
+    {
+      "playerId": "spud",
+      "tier": "D",
+      "score": 37,
+      "rank": 74,
+      "avgPlacement": 17,
+      "winRate": 0.0,
+      "placements": [
+        17
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 5,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "status": "Competed in Season 7 only",
+      "title": "The Sleepy One",
+      "emoji": "😴",
+      "reasoning": "Spud's S7 ended in joint-tribal crossfire where overlapping groups converged and he became the cleanest consensus (5-3-3). He had early bonds with Devin and light ties to MacArthur, but no protection or leverage. With 0 challenge wins, no idols, and 5 votes against, he couldn't rise above the chaos. His game was more vibes than vectors.",
+      "strengths": [
+        "Generally likable and low-conflict presence",
+        "Willing to mesh with majority plans early",
+        "Flexible enough to avoid being a lightning rod"
+      ],
+      "weaknesses": [
+        "Low agency and minimal strategic imprint",
+        "No advantages to survive joint-tribal chaos",
+        "Few tight shields when names start circulating"
+      ],
+      "name": "Spud",
+      "seasonsList": [
+        7
+      ],
+      "seasonsPlayed": 1,
+      "wins": 0
+    },
+    {
+      "playerId": "ellody",
+      "tier": "D",
+      "score": 32,
+      "rank": 75,
+      "avgPlacement": 19,
+      "winRate": 0.0,
+      "placements": [
+        19
+      ],
+      "challengeWins": 0,
+      "votesAgainst": 7,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "status": "Competed in Season 7 only",
+      "title": "The Puzzle Nerd",
+      "emoji": "🧩",
+      "reasoning": "Ellody's S7 read was right but late; the newly formed Lawa majority targeted her as the cleaner outsider and sent her out 7-3 over Carrie. With 0 challenge wins, no idols, and 7 votes against, she never got the numbers to test her ideas. Bonds with Carrie formed under fire but couldn't flip Taylor/Spud/Tom. Her analytical game needed earlier social roots.",
+      "strengths": [
+        "Analytical approach to early vote paths",
+        "Composure as an outsider under tribal pressure",
+        "Potential to pair with other tacticians (Carrie)"
+      ],
+      "weaknesses": [
+        "Slow early integration into the majority",
+        "No advantages to counter a clean consensus",
+        "Limited shields against targeted narratives"
+      ],
+      "name": "Ellody",
+      "seasonsList": [
+        7
+      ],
+      "seasonsPlayed": 1,
+      "wins": 0
+    },
+    {
+      "playerId": "lindsay",
+      "tier": "S",
+      "score": 80,
+      "rank": 76,
+      "avgPlacement": 8,
+      "winRate": 33.33,
+      "placements": [
+        3,
+        1,
+        20
+      ],
+      "challengeWins": 1,
+      "votesAgainst": 8,
+      "juryVotes": 6,
+      "idolsFound": 0,
+      "status": "Competed in 3/7 seasons",
+      "title": "The Glow-Up Queen",
+      "emoji": "💖",
+      "reasoning": "Lindsay won S1 with pure social grace and timing, beating Alejandro 5-4 while taking only 1 vote all season. She returned to reach the S2 Finale (lost 1-5-1 to Duncan) and then suffered a brutal S7 first boot (6-2-2). With a 33.3% win rate and 6 lifetime jury votes, her résumé is built on likability and trust webs. Rivalries with Jasmine/Shawn in S7 and minimal advantage play left her exposed in fast starts.",
+      "strengths": [
+        "Universal likability and low-parchment gameplay",
+        "Durable alliance webs that scale to the endgame",
+        "Threat calibration without needing challenge runs"
+      ],
+      "weaknesses": [
+        "Vulnerable to early consensus boots in new casts",
+        "Light advantage usage and low challenge reliance",
+        "Can be labeled expendable when tribes seek calm"
+      ],
+      "name": "Lindsay",
+      "seasonsList": [
+        2,
+        1,
+        7
+      ],
+      "seasonsPlayed": 3,
+      "wins": 1
+    },
+    {
+      "playerId": "scott",
+      "tier": "A",
+      "score": 77,
+      "rank": 77,
+      "avgPlacement": 4.33,
+      "winRate": 0.0,
+      "placements": [
+        3,
+        2,
+        8
+      ],
+      "challengeWins": 7,
+      "votesAgainst": 15,
+      "juryVotes": 4,
+      "idolsFound": 1,
+      "status": "Competed in 3/7 seasons",
+      "title": "The Saboteur",
+      "emoji": "🦊",
+      "reasoning": "Scott is a perennial endgamer: S3 runner-up after a challenge-heavy run and S4 third with a record-setting idol hold and perfect F5 play. In S7 he rode an unbreakable duo with Shawn and even got covered by Kitty's idol before a consensus at 8th took him down. Across 3 seasons he tallied 7 challenge wins, 1 idol, and 4 jury votes. His power is obvious-and that's both his weapon and his curse.",
+      "strengths": [
+        "Elite challenge output to steer tempo",
+        "Patience with idols, timing them for maximum swing",
+        "Ride-or-die partnerships that serve as shields"
+      ],
+      "weaknesses": [
+        "High visibility invites broad consensus votes",
+        "Duo tunnel-vision narrows endgame options",
+        "Jury warmth fluctuates after ruthless moves"
+      ],
+      "name": "Scott",
+      "seasonsList": [
+        4,
+        3,
+        7
+      ],
+      "seasonsPlayed": 3,
+      "wins": 0
+    },
+    {
+      "playerId": "zoey",
+      "tier": "A",
+      "score": 77,
+      "rank": 78,
+      "avgPlacement": 7,
+      "winRate": 0.0,
+      "placements": [
+        2,
+        4,
+        15
+      ],
+      "challengeWins": 8,
+      "votesAgainst": 9,
+      "juryVotes": 6,
+      "idolsFound": 1,
+      "status": "Competed in 3/7 seasons",
+      "title": "The Indie Girl",
+      "emoji": "🌸",
+      "reasoning": "Zoey nearly perfected social play in S4, losing the closest finale 6-7 after building multiple 'unbreakable' bonds and nailing a massive idol save. In S3 she connected her way to 4th before Scott's betrayal, and in S7 a feud with Carrie led to a 5-2 pre-merge exit. With 8 challenge wins, 1 idol, and 6 jury votes, her ceiling is championship-level. Feud entanglements and late-game trust breaks have been her undoing.",
+      "strengths": [
+        "Unrivaled multi-bond social networks",
+        "Spot-on protection timing (idol saves, midgame flips)",
+        "Consistent challenge value without overexposure"
+      ],
+      "weaknesses": [
+        "Vulnerable to betrayal by close allies",
+        "Feuds (Carrie) create tunnel-vision targets",
+        "Can be targeted as a 'perfect finalist' archetype"
+      ],
+      "name": "Zoey",
+      "seasonsList": [
+        4,
+        3,
+        7
+      ],
+      "seasonsPlayed": 3,
+      "wins": 0
     }
   ]
 }

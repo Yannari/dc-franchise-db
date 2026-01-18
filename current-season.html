@@ -3335,6 +3335,16 @@ setTimeout(function() {
       showProgress('<h3>⚡ Bonus: Recalculating Rankings</h3><p>🏆 Calculating scores for all players...</p>');
       await sleep(500);
       
+      // Load current players database
+      const playersDB = loadPlayerDatabase();
+      
+      if (!playersDB || !playersDB.players || playersDB.players.length === 0) {
+        console.log('⚠️ No players in database, skipping rankings');
+        showProgress('<h3>⚠️ Rankings Skipped</h3><p>No players in database</p>');
+      } else {
+        console.log(`✓ Loaded ${playersDB.players.length} players for rankings`);
+      }
+      
       // Load old rankings from project file
       let oldRankingsData = null;
       try {
@@ -3368,6 +3378,9 @@ setTimeout(function() {
       if (!workerUrl) {
         console.log('⚠️ Worker URL not set, skipping rankings update');
         showProgress('<h3>⚠️ Rankings Skipped</h3><p>Worker URL not set in settings. Rankings database not updated.</p>');
+      } else if (!playersDB || !playersDB.players || playersDB.players.length === 0) {
+        console.log('⚠️ No players in database, skipping rankings');
+        showProgress('<h3>⚠️ Rankings Skipped</h3><p>No players in database</p>');
       } else {
         try {
           // IMPORTANT: Use 'rankings-update' to preserve non-returnees
@@ -3394,11 +3407,17 @@ setTimeout(function() {
             throw new Error(rankingsDB.error);
           }
           
+          console.log('✅ Rankings response received:', rankingsDB);
+          console.log(`   - Total players ranked: ${rankingsDB.rankings?.length || 0}`);
+          
           // Save rankings to localStorage and download
           localStorage.setItem('rankings_database', JSON.stringify(rankingsDB, null, 2));
-          downloadJSON(rankingsDB, 'rankings_database.json');
+          console.log('✅ Saved to localStorage');
           
-          console.log('✅ Rankings updated:', rankingsDB);
+          downloadJSON(rankingsDB, 'rankings_database.json');
+          console.log('✅ Download triggered for rankings_database.json');
+          
+          console.log('✅ Rankings updated successfully');
         } catch (rankingsError) {
           console.error('Rankings update error:', rankingsError);
           showProgress('<h3>⚠️ Rankings Update Failed</h3><p>' + rankingsError.message + '</p>');

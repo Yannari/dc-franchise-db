@@ -3383,6 +3383,20 @@ setTimeout(function() {
         showProgress('<h3>⚠️ Rankings Skipped</h3><p>No players in database</p>');
       } else {
         try {
+          console.log('📤 Sending rankings update request...');
+          console.log('   - Mode: rankings-update');
+          console.log('   - Players:', playersDB.players.length);
+          console.log('   - Season:', seasonData.metadata?.seasonNumber);
+          console.log('   - Old rankings:', oldRankingsData ? 'Found' : 'Not found');
+          console.log('   - Placements:', aiSeasonData.placements?.length || 0);
+          
+          // Build proper season data structure for rankings
+          const rankingsSeasonData = {
+            seasonNumber: data.metadata.seasonNumber,
+            seasonTitle: data.metadata.seasonTitle,
+            placements: aiSeasonData.placements || []
+          };
+          
           // IMPORTANT: Use 'rankings-update' to preserve non-returnees
           // Use 'rankings-rebuild' once to recalculate everyone from scratch
           const rankingsResp = await fetch(workerUrl, {
@@ -3391,14 +3405,26 @@ setTimeout(function() {
             body: JSON.stringify({
               mode: "rankings-update",  // Preserves non-returnees
               playersDB,
-              seasonData,
+              seasonData: rankingsSeasonData,  // Use properly structured data
               oldRankingsDB: oldRankingsData,
               overrides: overrides  // ← Pass overrides here
             })
           });
           
+          console.log('📥 Rankings response status:', rankingsResp.status);
+          
           if (!rankingsResp.ok) {
-            throw new Error(`Rankings update failed (${rankingsResp.status})`);
+            // Try to get error details
+            let errorDetails = '';
+            try {
+              const errorData = await rankingsResp.json();
+              errorDetails = errorData.error || errorData.details || JSON.stringify(errorData);
+              console.error('Rankings error details:', errorData);
+            } catch (e) {
+              errorDetails = await rankingsResp.text();
+              console.error('Rankings error text:', errorDetails);
+            }
+            throw new Error(`Rankings update failed (${rankingsResp.status}): ${errorDetails}`);
           }
           
           const rankingsDB = await rankingsResp.json();

@@ -848,8 +848,35 @@ Dave voted for Mickey
           </div>
         </div>
         
+        <!-- BRANTSTEELE STATS INPUT -->
+        <div style="margin-top: 20px;">
+          <label for="brantsteele-stats-input" style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px;">
+            📊 BrantSteele Statistics (Optional)
+          </label>
+          <p style="opacity: 0.7; font-size: 13px; margin-bottom: 8px;">
+            Paste your BrantSteele stats here for more accurate strategic rankings and gameplay analysis.
+          </p>
+          <textarea 
+            id="brantsteele-stats-input" 
+            class="ai-textarea" 
+            style="min-height: 120px; font-family: monospace; font-size: 12px; line-height: 1.4;"
+            placeholder="Example:
+💪 CHALLENGE PERFORMANCE
+Total Challenge Wins: 6 — Jacques, 4 — Cody, 4 — MacArthur
+
+🗳️ VOTING DATA
+Votes Received: 13 — Kitty, 13 — Tom, 11 — Scott
+
+🧠 STRATEGIC RANKINGS
+Most Strategic: Tom, Sky, Jacques
+
+🗿 IDOLS & ADVANTAGES
+2 — Kitty (Naale + Lawa), 1 — Cody, 1 — MacArthur, 1 — Tom"
+          ></textarea>
+        </div>
+        
         <!-- GENERATE BUTTON -->
-        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+        <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px;">
           <button id="sb-generate-all" class="btn btn-primary" style="flex: 1; font-size: 16px; padding: 14px; background: linear-gradient(135deg, #9b6dff, #4cffb3); font-weight: 700;">
             ⚡ Generate Complete Season Database
           </button>
@@ -924,6 +951,10 @@ Dave voted for Mickey
           
           <button id="rebuild-rankings-btn" class="btn" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
             🔄 Rebuild All Rankings
+          </button>
+          
+          <button id="update-season-rankings-btn" class="btn" style="background: linear-gradient(135deg, #10b981, #059669);">
+            📊 Update Rankings from Current Season
           </button>
         </div>
         
@@ -5137,6 +5168,157 @@ setTimeout(function() {
         }
       });
     }
+    
+    // Update Rankings from Current Season Button
+    const updateSeasonRankingsBtn = document.getElementById("update-season-rankings-btn");
+    
+    if (updateSeasonRankingsBtn) {
+      updateSeasonRankingsBtn.addEventListener("click", async () => {
+        if (!confirm("📊 Update Rankings from Current Season?\n\nThis will:\n1. Use episode summaries + BrantSteele stats\n2. Update ONLY players who competed this season\n3. Preserve rankings for non-returnees\n\nContinue?")) {
+          return;
+        }
+        
+        updateSeasonRankingsBtn.disabled = true;
+        updateSeasonRankingsBtn.textContent = "⏳ Updating...";
+        
+        try {
+          // Load databases
+          const playersDB = loadPlayerDatabase();
+          const episodesDB = loadEpisodeDatabase();
+          
+          if (!playersDB || !playersDB.players || playersDB.players.length === 0) {
+            alert("⚠️ No player database found!");
+            return;
+          }
+          
+          if (!episodesDB || !episodesDB.episodes || episodesDB.episodes.length === 0) {
+            alert("⚠️ No episodes found! Generate season data first.");
+            return;
+          }
+          
+          // Get season metadata
+          const seasonNumber = playersDB.franchise?.totalSeasons || 7;
+          const seasonTitle = playersDB.franchise?.lastSeasonTitle || "Current Season";
+          
+          // Get worker URL
+          const workerUrl = getSeasonBuilderWorkerUrl();
+          if (!workerUrl) {
+            alert("⚠️ Please set Season Builder Worker URL in Settings first!");
+            return;
+          }
+          
+          console.log(`📊 Updating rankings from Season ${seasonNumber}...`);
+          
+          // Prepare episode summaries
+          const episodes = episodesDB.episodes.map(ep => ({
+            episode: ep.episode,
+            summary: ep.summary || ep.text || ""
+          }));
+          
+          // Get BrantSteele stats if available
+          let brantsteeleStats = "";
+          const brantsteeleStatsTextarea = document.getElementById("brantsteele-stats-input");
+          if (brantsteeleStatsTextarea && brantsteeleStatsTextarea.value.trim()) {
+            brantsteeleStats = brantsteeleStatsTextarea.value.trim();
+          }
+          
+          // Load old rankings
+          let oldRankings = null;
+          try {
+            const rankingsRaw = localStorage.getItem('rankings_database');
+            if (rankingsRaw) {
+              oldRankings = JSON.parse(rankingsRaw);
+              console.log(`✓ Loaded ${oldRankings.rankings?.length || 0} existing rankings`);
+            }
+          } catch (e) {
+            console.log('ℹ️ No existing rankings found, will create new');
+          }
+          
+          // First, generate season data to get placements
+          console.log("Step 1: Extracting season data...");
+          const seasonDataResponse = await fetch(workerUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              mode: "season-data-extraction",
+              season: seasonNumber,
+              seasonTitle: seasonTitle,
+              episodes: episodes,
+              brantsteeleStats: brantsteeleStats,
+              metadata: {
+                castSize: playersDB.players.filter(p => 
+                  p.seasons && p.seasons.includes(seasonNumber)
+                ).length
+              }
+            })
+          });
+          
+          if (!seasonDataResponse.ok) {
+            throw new Error(`Season data extraction failed: ${seasonDataResponse.status}`);
+          }
+          
+          const seasonData = await seasonDataResponse.json();
+          
+          if (seasonData.error) {
+            throw new Error(seasonData.error);
+          }
+          
+          console.log("✓ Season data extracted:", seasonData);
+          
+          // Now update rankings
+          console.log("Step 2: Updating rankings...");
+          
+          // Load ranking overrides (if available)
+          let overrides = null;
+          try {
+            const overridesResp = await fetch('ranking-overrides.json');
+            if (overridesResp.ok) {
+              overrides = await overridesResp.json();
+              console.log(`✓ Loaded ${Object.keys(overrides.overrides || {}).length} ranking overrides`);
+            }
+          } catch (e) {
+            console.log('ℹ️ No ranking overrides found');
+          }
+          
+          const rankingsResponse = await fetch(workerUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              mode: "rankings-update",
+              playersDB: playersDB,
+              seasonData: seasonData,
+              oldRankingsDB: oldRankings,
+              overrides: overrides
+            })
+          });
+          
+          if (!rankingsResponse.ok) {
+            throw new Error(`Rankings update failed: ${rankingsResponse.status}`);
+          }
+          
+          const rankingsDB = await rankingsResponse.json();
+          
+          if (rankingsDB.error) {
+            throw new Error(rankingsDB.error);
+          }
+          
+          // Save to localStorage and download
+          localStorage.setItem('rankings_database', JSON.stringify(rankingsDB, null, 2));
+          downloadJSON(rankingsDB, 'rankings_database.json');
+          
+          showDatabaseStatus(`✅ Rankings updated from Season ${seasonNumber}!\n\n${rankingsDB.rankings.length} players ranked.\n${seasonData.placements?.length || 0} updated from this season.\n\nDownloaded: rankings_database.json`);
+          
+          console.log("✅ Rankings updated:", rankingsDB);
+          
+        } catch (error) {
+          console.error("Update error:", error);
+          alert(`❌ Update failed:\n\n${error.message}`);
+        } finally {
+          updateSeasonRankingsBtn.disabled = false;
+          updateSeasonRankingsBtn.textContent = "📊 Update Rankings from Current Season";
+        }
+      });
+    }
   }
 
   function showDatabaseStatus(message) {
@@ -5192,6 +5374,18 @@ setTimeout(function() {
       },
       players: []
     };
+  }
+
+  function loadEpisodeDatabase() {
+    try {
+      const raw = localStorage.getItem("episodes_database");
+      if (raw) {
+        return JSON.parse(raw);
+      }
+    } catch (e) {
+      console.error("Failed to load episodes:", e);
+    }
+    return null;
   }
 
   function savePlayerDatabase(db) {

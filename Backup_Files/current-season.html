@@ -176,11 +176,18 @@
 .axis-label.top{top:10px;left:50%;transform:translateX(-50%)}
 .axis-label.bottom{bottom:10px;left:50%;transform:translateX(-50%)}
 .compass-points{position:absolute;inset:0}
-.dot{position:absolute;transform:translate(-50%,-50%);text-decoration:none;color:#fff}
-.dot-circle{width:30px;height:30px;border-radius:999px;background:rgba(255,255,255,.10);border:1px solid rgba(155,109,255,.40);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.dot{position:absolute;transform:translate(-50%,-50%);text-decoration:none;color:#fff;transition:all .2s ease;opacity:.6}
+.dot-circle{border-radius:999px;background:rgba(255,255,255,.08);border:2px solid rgba(155,109,255,.30);display:flex;align-items:center;justify-content:center;overflow:hidden;transition:all .2s ease}
 .dot-circle img{width:100%;height:100%;object-fit:cover;display:none}
-.dot-fallback{display:flex;width:100%;height:100%;align-items:center;justify-content:center;font-weight:800;font-size:12px;opacity:.8}
-.dot-label{display:block;margin-top:4px;font-size:10px;opacity:.85;text-shadow:0 2px 10px rgba(0,0,0,.6);max-width:90px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dot-fallback{display:flex;width:100%;height:100%;align-items:center;justify-content:center;font-weight:800;opacity:.7}
+.dot-label{display:block;margin-top:4px;font-size:10px;opacity:0;text-shadow:0 2px 10px rgba(0,0,0,.8);max-width:90px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none;transition:opacity .2s ease}
+.dot.show-label{opacity:1}
+.dot.show-label .dot-label{opacity:.95}
+.dot.show-label .dot-circle{background:rgba(155,109,255,.2);border-color:rgba(155,109,255,.6)}
+.dot:hover{z-index:10;transform:translate(-50%,-50%) scale(1.3);opacity:1}
+.dot:hover .dot-label{opacity:1}
+.dot:hover .dot-circle{border-color:rgba(155,109,255,.9);background:rgba(155,109,255,.35);box-shadow:0 0 20px rgba(155,109,255,.4)}
+.dot:hover .dot-fallback{opacity:1}
 .table-wrap{overflow:auto;border-radius:16px;border:1px solid rgba(255,255,255,.10)}
 .gp-table{width:100%;border-collapse:collapse}
 .gp-table th,.gp-table td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.08);font-size:13px;text-align:left}
@@ -1129,55 +1136,49 @@ Dave voted for Mickey
       return null;
     }
 
-        function parseEliminated(text) {
-      const rawLines = (text || "").split(/\r?\n/);
-      const lines = rawLines.map(l => (l || "").trim());
+     function parseEliminated(text) {
+  const rawLines = (text || "").split(/\r?\n/);
+  const lines = rawLines.map(l => (l || "").trim());
 
-      const out = [];
-      const pushName = (l) => {
-        const n = cleanNameLine(l);
-        if (isProbablyName(n)) out.push(n);
-      };
+  const out = [];
+  const pushName = (l) => {
+    const n = cleanNameLine(l);
+    if (isProbablyName(n)) out.push(n);
+  };
 
-      // META block: === ELIMINATED ===
-      const elimBlock = parseBlock(text, /^===\s*ELIMINATED\b/i);
-      if (elimBlock.length) {
-        elimBlock.forEach(pushName);
-      }
-
-      // Traditional "ELIMINATED" section(s)
-      for (let i = 0; i < lines.length; i++) {
-        if (!/^ELIMINATED\b/i.test(lines[i])) continue;
-        for (let j = i + 1; j < lines.length; j++) {
-          const l = lines[j];
-          if (!l) break;
-          if (/^===\s*/.test(l)) break;
-          if (/^(Vote count|Reason|Edge of Extinction|Not applicable|TRIBAL|MAJOR STRATEGIC|CURRENT GAME STATUS|NEXT EPISODE QUESTIONS)\b/i.test(l)) break;
-          pushName(l);
-        }
-      }
-
-      // Footer style: "Eliminated:" list
-      for (let i = 0; i < lines.length; i++) {
-        if (!/^Eliminated\s*:/i.test(lines[i])) continue;
-        for (let j = i + 1; j < lines.length; j++) {
-          const l = lines[j];
-          if (!l) break;
-          if (/^===\s*/.test(l)) break;
-          if (/^(NEXT EPISODE QUESTIONS|CURRENT GAME STATUS|TRIBAL|MAJOR STRATEGIC)\b/i.test(l)) break;
-          pushName(l);
-        }
-      }
-
-      // De-dup
-      const seen = new Set();
-      return out.filter(n => {
-        const k = n.toLowerCase();
-        if (seen.has(k)) return false;
-        seen.add(k);
-        return true;
-      });
+  // META block: === ELIMINATED === (ONLY this specific block, not CAST)
+  const elimRegex = /^===\s*ELIMINATED\s*===/i;
+  let inElimBlock = false;
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    
+    // Start of ELIMINATED block
+    if (elimRegex.test(line)) {
+      inElimBlock = true;
+      continue;
     }
+    
+    // End of block (hit another === header or ----)
+    if (inElimBlock && (/^===/.test(line) || /^---/.test(line))) {
+      break;
+    }
+    
+    // Collect names while in ELIMINATED block
+    if (inElimBlock) {
+      pushName(line);
+    }
+  }
+
+  // De-dup
+  const seen = new Set();
+  return out.filter(n => {
+    const k = n.toLowerCase();
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
+}
 
     function getProbForPlayer(bootPredictions, player) {
       if (!Array.isArray(bootPredictions)) return 0;
@@ -1592,10 +1593,13 @@ Dave voted for Mickey
           prob = Math.max(0.10, Math.min(0.40, 0.50 - (power / 100) * 0.40));
         }
         
+        // CAP boot risk at 70% maximum to spread players more vertically
+        const cappedProb = Math.min(prob * 100, 70); // Convert to percentage and cap at 70
+        
         // x: power (0..100) - use actual power score
-        // y: safety = 100 - prob*100 (convert probability to safety percentage)
+        // y: safety = 100 - cappedProb (now ranges from 30-90 instead of 0-100)
         const x = power;
-        const y = 100 - prob*100;
+        const y = 100 - cappedProb;
         return { name, x, y, prob, power };
       });
       
@@ -1611,42 +1615,68 @@ Dave voted for Mickey
       const xRange = xMax - xMin;
       const yRange = yMax - yMin;
       
-      // If data is very clustered (range < 20), apply gentle spread
-      // Otherwise use actual positions with slight padding
-      const normalizedPoints = points.map(p => {
-        let xNorm, yNorm;
+      // Don't sort - keep original order to maintain data accuracy
+      // Apply minimal normalization - use actual values with just padding
+      const normalizedPoints = points.map((p, idx) => {
+        // Use actual power score directly (0-100 maps to 5-95%)
+        const xNorm = 5 + (p.x / 100) * 90;
         
-        if (xRange < 20) {
-          // Gentle spread for clustered data (30-70 range)
-          xNorm = 30 + ((p.x - xMin) / (xRange || 1)) * 40;
-        } else {
-          // Use actual position (with 15% padding on edges)
-          xNorm = 15 + (p.x / 100) * 70;
-        }
+        // Use actual safety score directly (30-100 after capping maps to 5-95%)
+        // But remap from 30-100 range to 5-95% range for better use of space
+        const yMin = 30; // Minimum y after 70% risk cap
+        const yMax = 100; // Maximum y (0% risk)
+        const yNormalized = ((p.y - yMin) / (yMax - yMin)); // 0-1 range
+        const yNorm = 5 + yNormalized * 90; // 5-95% range
         
-        if (yRange < 20) {
-          // Gentle spread for clustered data (30-70 range)
-          yNorm = 30 + ((p.y - yMin) / (yRange || 1)) * 40;
-        } else {
-          // Use actual position (with 15% padding on edges)
-          yNorm = 15 + (p.y / 100) * 70;
-        }
+        // Add small jitter only to prevent exact pixel overlaps (not for spreading)
+        const jitterScale = 3; // Small fixed jitter
+        const jitterX = ((idx % 5) - 2) * jitterScale; // -6 to +6
+        const jitterY = (Math.floor(idx / 5) % 5 - 2) * jitterScale; // -6 to +6
         
-        return { name: p.name, x: xNorm, y: yNorm };
+        return { 
+          name: p.name,
+          power: p.power, // Keep for label logic
+          x: Math.max(5, Math.min(95, xNorm + jitterX)), 
+          y: Math.max(5, Math.min(95, yNorm + jitterY))
+        };
       });
 
-      els.compassPoints.innerHTML = normalizedPoints.map((p) => {
+      // Sort by power to identify top players for labels
+      const sortedByPower = [...normalizedPoints].sort((a, b) => (b.power || 0) - (a.power || 0));
+      const top3Names = new Set(sortedByPower.slice(0, 3).map(p => p.name.toLowerCase()));
+
+      els.compassPoints.innerHTML = normalizedPoints.map((p, index) => {
         const id = slugify(p.name);
         // convert x,y (0..100) to %
         const left = Math.max(3, Math.min(97, p.x));
         const top = Math.max(3, Math.min(97, 100 - p.y)); // invert for CSS top
+        
+        // Get power score and boot risk from analytics
+        const playerData = analytics?.powerRankings?.find(pr => 
+          pr.player.toLowerCase() === p.name.toLowerCase()
+        );
+        const bootData = analytics?.bootPredictions?.find(bp => 
+          bp.player.toLowerCase() === p.name.toLowerCase()
+        );
+        
+        const power = playerData?.score || 50;
+        const risk = bootData?.prob || 15;
+        
+        // Calculate dot size based on combined threat (power + inverse risk)
+        const threat = (power + (100 - risk)) / 2;
+        const size = 20 + (threat / 100) * 15; // 20-35px range (smaller)
+        const fontSize = Math.round(size * 0.4); // Scale font with size
+        
+        // Show label for top 3 players by power score
+        const showLabel = top3Names.has(p.name.toLowerCase());
+        
         return `
-          <a class="dot" href="player.html?player=${id}" style="left:${left}%;top:${top}%;">
-            <span class="dot-circle">
+          <a class="dot ${showLabel ? 'show-label' : ''}" href="player.html?player=${id}" style="left:${left}%;top:${top}%;">
+            <span class="dot-circle" style="width:${size}px;height:${size}px;">
               <img src="assets/avatars/${id}.png" alt="${escapeHtml(p.name)}"
                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
                 onload="this.style.display='block'; this.nextElementSibling.style.display='none';" />
-              <span class="dot-fallback">${escapeHtml((p.name||'?').slice(0,1).toUpperCase())}</span>
+              <span class="dot-fallback" style="font-size:${fontSize}px;">${escapeHtml((p.name||'?').slice(0,1).toUpperCase())}</span>
             </span>
             <span class="dot-label">${escapeHtml(p.name)}</span>
           </a>
@@ -2253,77 +2283,94 @@ Dave voted for Mickey
   }
   
   // Generate episode using AI
-  async function generateEpisodeAI() {
-    // Safety check: ensure EPISODE_WORKER_URL is defined
-    if (typeof EPISODE_WORKER_URL === 'undefined') {
-      console.error('EPISODE_WORKER_URL not initialized yet. Please refresh the page.');
-      alert('⚠️ Page not fully loaded. Please refresh and try again.');
-      return;
-    }
-    
-    const summaryInput = document.getElementById('episode-summary-input');
-    const summary = summaryInput ? summaryInput.value.trim() : '';
-    
-    if (!summary) {
-      alert('⚠️ Please paste your BrantSteele episode summary first!');
-      return;
-    }
-    
-    const seasonEl = document.getElementById('aiSeason');
-    const episodeEl = document.getElementById('aiEpisode');
-    const season = seasonEl ? seasonEl.value : '5';
-    const episode = episodeEl ? episodeEl.value : '1';
-    
-    // Get auditions if Episode 1
-    let auditionsText = '';
-    if (episode === '1' || episode === 1) {
-      const auditionsInput = document.getElementById('episode-auditions-input');
-      if (auditionsInput) {
-        auditionsText = auditionsInput.value.trim();
-      }
-    }
-    
-    const generateBtn = document.getElementById('generate-episode-btn');
-    const originalText = generateBtn.innerHTML;
-    generateBtn.innerHTML = '⏳ Generating Episode...';
-    generateBtn.disabled = true;
-    
-    try {
-      const response = await fetch(EPISODE_WORKER_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          mode: 'episode',
-          season: season,
-          episode: episode,
-          summaryText: summary,
-          auditionsText: auditionsText  // Include auditions for Episode 1
-        })
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      const transcript = data.episodeTranscript || data.output_text || '';
-      
-      if (!transcript) {
-        throw new Error('No episode transcript returned from AI');
-      }
-      
-      document.getElementById('episode-input').value = transcript;
-      saveEpisode();
-      alert('✅ Episode generated successfully!');
-      
-    } catch (error) {
-      console.error('Error generating episode:', error);
-      alert('❌ Error generating episode: ' + error.message);
-    } finally {
-      generateBtn.innerHTML = originalText;
-      generateBtn.disabled = false;
+// Replace the existing generateEpisodeAI function with this updated version:
+
+async function generateEpisodeAI() {
+  // Safety check: ensure EPISODE_WORKER_URL is defined
+  if (typeof EPISODE_WORKER_URL === 'undefined') {
+    console.error('EPISODE_WORKER_URL not initialized yet. Please refresh the page.');
+    alert('⚠️ Page not fully loaded. Please refresh and try again.');
+    return;
+  }
+  
+  const summaryInput = document.getElementById('episode-summary-input');
+  const summary = summaryInput ? summaryInput.value.trim() : '';
+  
+  if (!summary) {
+    alert('⚠️ Please paste your BrantSteele episode summary first!');
+    return;
+  }
+  
+  const seasonEl = document.getElementById('aiSeason');
+  const episodeEl = document.getElementById('aiEpisode');
+  const season = seasonEl ? seasonEl.value : '5';
+  const episode = episodeEl ? episodeEl.value : '1';
+  const episodeNum = parseInt(episode);
+  
+  // Get auditions if Episode 1
+  let auditionsText = '';
+  if (episode === '1' || episode === 1) {
+    const auditionsInput = document.getElementById('episode-auditions-input');
+    if (auditionsInput) {
+      auditionsText = auditionsInput.value.trim();
     }
   }
+  
+  // 🆕 GATHER PREVIOUS EPISODES FOR CONTEXT
+  const previousEpisodes = [];
+  for (let i = 1; i < episodeNum; i++) {
+    const key = `td_episode_s${season}_e${i}`;
+    const savedEpisode = localStorage.getItem(key);
+    if (savedEpisode) {
+      previousEpisodes.push({
+        episode: i,
+        transcript: savedEpisode
+      });
+    }
+  }
+  
+  const generateBtn = document.getElementById('generate-episode-btn');
+  const originalText = generateBtn.innerHTML;
+  generateBtn.innerHTML = '⏳ Generating Episode...';
+  generateBtn.disabled = true;
+  
+  try {
+    const response = await fetch(EPISODE_WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        mode: 'episode',
+        season: season,
+        episode: episode,
+        summaryText: summary,
+        auditionsText: auditionsText,
+        previousEpisodes: previousEpisodes  // 🆕 Include previous episodes
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    const transcript = data.episodeTranscript || data.output_text || '';
+    
+    if (!transcript) {
+      throw new Error('No episode transcript returned from AI');
+    }
+    
+    document.getElementById('episode-input').value = transcript;
+    saveEpisode();
+    alert('✅ Episode generated successfully!');
+    
+  } catch (error) {
+    console.error('Error generating episode:', error);
+    alert('❌ Error generating episode: ' + error.message);
+  } finally {
+    generateBtn.innerHTML = originalText;
+    generateBtn.disabled = false;
+  }
+}
   
   // Render episode from transcript
   function renderEpisode() {
@@ -2365,21 +2412,22 @@ Dave voted for Mickey
       if (line.match(/^\[.*\]$/)) {
         const sceneText = line.replace(/[\[\]]/g, '');
         
-        // Confessional detection
-        if (sceneText.toLowerCase().includes('confessional')) {
-          if (!inConfessional) {
-            html += '<div class="confessional" style="animation-delay: ' + (lineIndex * 0.05) + 's">';
-            html += '<div class="confessional-label">🎥 ' + escapeHtml(sceneText).toUpperCase() + '</div>';
-            inConfessional = true;
-            lineIndex++;
-          }
-          return;
-        }
+        // Check if this is a confessional
+        const isConfessional = sceneText.toLowerCase().includes('confessional');
         
-        // Close confessional if we hit a new scene
-        if (inConfessional && !sceneText.toLowerCase().includes('confessional')) {
+        // Close previous confessional if we're starting a new scene (confessional or not)
+        if (inConfessional && (isConfessional || !sceneText.toLowerCase().includes('confessional'))) {
           html += '</div>';
           inConfessional = false;
+        }
+        
+        // Start new confessional
+        if (isConfessional) {
+          html += '<div class="confessional" style="animation-delay: ' + (lineIndex * 0.05) + 's">';
+          html += '<div class="confessional-label">🎥 ' + escapeHtml(sceneText).toUpperCase() + '</div>';
+          inConfessional = true;
+          lineIndex++;
+          return;
         }
         
         // Tribal Council detection with suspense
@@ -2401,7 +2449,7 @@ Dave voted for Mickey
         }
         
         // Regular scene with sticky header
-        if (currentScene && !inConfessional) html += '</div>';
+        if (currentScene) html += '</div>';
         html += '<div class="scene">';
         html += '<div class="scene-header scene-sticky" style="animation-delay: ' + (lineIndex * 0.05) + 's">📍 ' + escapeHtml(sceneText) + '</div>';
         currentScene = sceneText;

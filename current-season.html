@@ -1136,55 +1136,49 @@ Dave voted for Mickey
       return null;
     }
 
-        function parseEliminated(text) {
-      const rawLines = (text || "").split(/\r?\n/);
-      const lines = rawLines.map(l => (l || "").trim());
+     function parseEliminated(text) {
+  const rawLines = (text || "").split(/\r?\n/);
+  const lines = rawLines.map(l => (l || "").trim());
 
-      const out = [];
-      const pushName = (l) => {
-        const n = cleanNameLine(l);
-        if (isProbablyName(n)) out.push(n);
-      };
+  const out = [];
+  const pushName = (l) => {
+    const n = cleanNameLine(l);
+    if (isProbablyName(n)) out.push(n);
+  };
 
-      // META block: === ELIMINATED ===
-      const elimBlock = parseBlock(text, /^===\s*ELIMINATED\b/i);
-      if (elimBlock.length) {
-        elimBlock.forEach(pushName);
-      }
-
-      // Traditional "ELIMINATED" section(s)
-      for (let i = 0; i < lines.length; i++) {
-        if (!/^ELIMINATED\b/i.test(lines[i])) continue;
-        for (let j = i + 1; j < lines.length; j++) {
-          const l = lines[j];
-          if (!l) break;
-          if (/^===\s*/.test(l)) break;
-          if (/^(Vote count|Reason|Edge of Extinction|Not applicable|TRIBAL|MAJOR STRATEGIC|CURRENT GAME STATUS|NEXT EPISODE QUESTIONS)\b/i.test(l)) break;
-          pushName(l);
-        }
-      }
-
-      // Footer style: "Eliminated:" list
-      for (let i = 0; i < lines.length; i++) {
-        if (!/^Eliminated\s*:/i.test(lines[i])) continue;
-        for (let j = i + 1; j < lines.length; j++) {
-          const l = lines[j];
-          if (!l) break;
-          if (/^===\s*/.test(l)) break;
-          if (/^(NEXT EPISODE QUESTIONS|CURRENT GAME STATUS|TRIBAL|MAJOR STRATEGIC)\b/i.test(l)) break;
-          pushName(l);
-        }
-      }
-
-      // De-dup
-      const seen = new Set();
-      return out.filter(n => {
-        const k = n.toLowerCase();
-        if (seen.has(k)) return false;
-        seen.add(k);
-        return true;
-      });
+  // META block: === ELIMINATED === (ONLY this specific block, not CAST)
+  const elimRegex = /^===\s*ELIMINATED\s*===/i;
+  let inElimBlock = false;
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    
+    // Start of ELIMINATED block
+    if (elimRegex.test(line)) {
+      inElimBlock = true;
+      continue;
     }
+    
+    // End of block (hit another === header or ----)
+    if (inElimBlock && (/^===/.test(line) || /^---/.test(line))) {
+      break;
+    }
+    
+    // Collect names while in ELIMINATED block
+    if (inElimBlock) {
+      pushName(line);
+    }
+  }
+
+  // De-dup
+  const seen = new Set();
+  return out.filter(n => {
+    const k = n.toLowerCase();
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
+}
 
     function getProbForPlayer(bootPredictions, player) {
       if (!Array.isArray(bootPredictions)) return 0;

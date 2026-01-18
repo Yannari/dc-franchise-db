@@ -1917,3 +1917,17 @@ body.hasSiteHeader .hero .meta{
     padding: 16px;
   }
 }
+/* Key Moments section */
+.kpi h3:has(🔑) {
+  color: #fbbf24; /* Gold color for key moments */
+}
+
+/* Alliances section */
+.kpi h3:has(🤝) {
+  color: #34d399; /* Green color for alliances */
+}
+
+/* Rivalries section */
+.kpi h3:has(⚔️) {
+  color: #f87171; /* Red color for rivalries */
+}

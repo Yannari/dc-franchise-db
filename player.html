@@ -505,6 +505,8 @@ function getSeasonTitle(seasonNum) {
   return titles[seasonNum] || '';
 }
 
+// Replace the renderSeasonDetails function in your player.html with this updated version:
+
 function renderSeasonDetails(season, isMostRecent) {
   let html = '<div class="kpi-grid">\n  <div class="kpi">\n    <h3>Placement</h3>\n    <ul>\n';
   
@@ -526,6 +528,12 @@ function renderSeasonDetails(season, isMostRecent) {
   html += '      <li><b>Immunity wins:</b> ' + season.immunityWins + '</li>\n';
   if (season.rewardWins !== undefined) html += '      <li><b>Reward wins:</b> ' + season.rewardWins + '</li>\n';
   if (season.strategicRank) html += '      <li><b>Strategic rank:</b> ' + season.strategicRank + '</li>\n';
+  
+  // 🆕 ADD GAMEPLAY STYLE if present
+  if (season.gameplayStyle) {
+    html += '      <li><b>Gameplay Style:</b> ' + season.gameplayStyle + '</li>\n';
+  }
+  
   html += '    </ul>\n  </div>\n';
   
   // Advantages & Threat
@@ -540,7 +548,34 @@ function renderSeasonDetails(season, isMostRecent) {
   if (isMostRecent && season.strategicRank) html += '      <li><b>Strategic rank:</b> ' + season.strategicRank + '</li>\n';
   html += '    </ul>\n  </div>\n';
   
-  // Notes
+  // 🆕 KEY MOMENTS (only if present and not empty)
+  if (season.keyMoments && season.keyMoments.length > 0) {
+    html += '  <div class="kpi">\n    <h3>🔑 Key Moments</h3>\n    <ul>\n';
+    season.keyMoments.forEach(function(moment) {
+      html += '      <li>' + moment + '</li>\n';
+    });
+    html += '    </ul>\n  </div>\n';
+  }
+  
+  // 🆕 ALLIANCES (only if present and not empty)
+  if (season.alliances && season.alliances.length > 0) {
+    html += '  <div class="kpi">\n    <h3>🤝 Key Alliances</h3>\n    <ul>\n';
+    season.alliances.forEach(function(ally) {
+      html += '      <li>' + ally + '</li>\n';
+    });
+    html += '    </ul>\n  </div>\n';
+  }
+  
+  // 🆕 RIVALRIES (only if present and not empty)
+  if (season.rivalries && season.rivalries.length > 0) {
+    html += '  <div class="kpi">\n    <h3>⚔️ Rivalries</h3>\n    <ul>\n';
+    season.rivalries.forEach(function(rival) {
+      html += '      <li>' + rival + '</li>\n';
+    });
+    html += '    </ul>\n  </div>\n';
+  }
+  
+  // Notes (original)
   if (season.notes && season.notes.length > 0) {
     html += '  <div class="kpi">\n    <h3>Notes</h3>\n    <ul>\n';
     season.notes.forEach(function(note) {

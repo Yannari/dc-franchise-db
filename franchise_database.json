@@ -1,9 +1,9 @@
 {
   "franchiseStats": {
-    "totalSeasons": 6,
-    "totalEpisodes": 86,
-    "uniquePlayers": 68,
-    "totalAppearances": 110
+    "totalSeasons": 7,
+    "totalEpisodes": 130,
+    "uniquePlayers": 148,
+    "totalAppearances": 130
   },
   "champions": [
     {
@@ -65,12 +65,23 @@
       "season": 6,
       "winner": "Jacques",
       "playerSlug": "jacques",
-      "strategy": "Threat management + endgame precision",
+      "strategy": "Maintain overlapping ‘unbreakables’ (Jay, Kelly, Mickey), drain others’ advantages (Kitty’s idol), remove social routers (Geoff, Brody) on schedule, and lock endgame control with immunity.",
       "finalVote": "7-1-0",
       "runnerUp": "Mickey & Jay",
-      "keyStats": "Only 2 votes against; 4 immunity wins; no idols needed; controlled the last stretch and won 7–1–0.",
-      "legacy": "A clinical Blood vs. Water win: minimized heat early, peaked late, and turned the finale into a formality.",
-      "votesAgainst": 2
+      "keyStats": "4 Immunity wins, 2 votes against all season; received 7 of 8 jury votes.",
+      "legacy": "Textbook low-target, high-control BvW winner; weaponized loyalty optics while keeping hands clean. One of the most decisive FTC wins in the format.",
+      "votesAgainst": 0
+    },
+    {
+      "season": 7,
+      "winner": "MacArthur",
+      "playerSlug": "macarthur",
+      "strategy": "Operate as the merge switchboard and shield-enforcer: hold an idol, build unbreakables with Carrie and Cody, maintain bridges to Jacques and Sky, disagree publicly when needed to preserve agency, and close with perfect F5 advantage management.",
+      "finalVote": "6-2-1",
+      "runnerUp": "Cody & Carrie",
+      "keyStats": "4 total challenge wins, 1 immunity, 1 idol found and timed perfectly, broad cross-tribe relationships; only 5 votes against all season.",
+      "legacy": "One of the most respected power-social winners of the series: balanced menace and loyalty, rode chaos without being consumed by it, and delivered a decisive FTC performance.",
+      "votesAgainst": 0
     }
   ],
   "records": {
@@ -211,7 +222,13 @@
       "season": 6,
       "player": "Jacques",
       "playerSlug": "jacques",
-      "description": "Season 6’s breakout favorite—icy, efficient, and consistently entertaining."
+      "description": "Fan favorite"
+    },
+    {
+      "season": 7,
+      "player": "Spud",
+      "playerSlug": "spud",
+      "description": "Fan favorite"
     }
   ],
   "multiSeasonPlayers": {
@@ -289,8 +306,13 @@
       },
       {
         "season": 6,
-        "strategy": "Threat management + endgame control in a pairs/RI meta",
+        "strategy": "Maintain overlapping ‘unbreakables’ (Jay, Kelly, Mickey), drain others’ advantages (Kitty’s idol), remove social routers (Geoff, Brody) on schedule, and lock endgame control with immunity.",
         "winner": "Jacques"
+      },
+      {
+        "season": 7,
+        "strategy": "Operate as the merge switchboard and shield-enforcer: hold an idol, build unbreakables with Carrie and Cody, maintain bridges to Jacques and Sky, disagree publicly when needed to preserve agency, and close with perfect F5 advantage management.",
+        "winner": "MacArthur"
       }
     ],
     "castComposition": [
@@ -316,7 +338,11 @@
       },
       {
         "season": 6,
-        "composition": "20 players (10 Newbies 10 Returnees)"
+        "composition": "20 players"
+      },
+      {
+        "season": 7,
+        "composition": "20 players"
       }
     ],
     "finaleVoteMargins": [
@@ -349,6 +375,11 @@
         "season": 6,
         "vote": "7-1-0",
         "winner": "Jacques"
+      },
+      {
+        "season": 7,
+        "vote": "6-2-1",
+        "winner": "MacArthur"
       }
     ],
     "majorTwists": [
@@ -374,7 +405,11 @@
       },
       {
         "season": 6,
-        "twist": "Blood vs. Water pairs + Redemption Island; tribe re-draw (Ep7), merge to Campers (Ep9) with a direct elim, late RI return (Ep16), and a Final 4 tie → fire-making."
+        "twist": "2 tribes + redemption island"
+      },
+      {
+        "season": 7,
+        "twist": "2 Tribes (10 Favorites and 10 Fans)"
       }
     ]
   },
@@ -485,24 +520,6 @@
       "holder": "S4",
       "stat": "12 players",
       "season": "66% of cast"
-    },
-    {
-      "category": "First Blood vs. Water Season",
-      "holder": "S6",
-      "stat": "Pairs format + loyalty networks shaped every vote",
-      "season": "Blood vs. Water"
-    },
-    {
-      "category": "Latest Redemption Return",
-      "holder": "S6",
-      "stat": "Late-game RI return in Episode 16 (Geoff)",
-      "season": "Blood vs. Water"
-    },
-    {
-      "category": "Final 4 Tie → Fire-Making",
-      "holder": "S6",
-      "stat": "Tie at Final 4 forced a revote and fire-making",
-      "season": "Blood vs. Water"
     }
   ],
   "careerLeaders": {
@@ -638,11 +655,6 @@
     "season3": "Introduced Gen 2 with 16 new players. Emma's perfect game (0 votes until F4) won in a tiebreaker. Scott's 6 challenge wins couldn't overcome Emma's loyalty strategy.",
     "season4": "Combined All-Stars (9 Gen 1, 9 Gen 2) with Edge of Extinction. Alejandro FINALLY won his crown on his 3rd finals appearance, defeating Zoey's unprecedented 3 unbreakable bonds with strategic mastery. The closest finale ever (7-6-1) proved that in modern gameplay, strategy defeats pure social bonds.",
     "season5": "Introduced 18 new players and a Survivor-style twist gauntlet (3 tribes, swap, split-tribal merge round, vote-loss twists, and Final 4 fire-making). Mickey won with 0 votes against and survived a 3–3–2 FTC tie thanks to Ryan's deciding tiebreak vote — proving that clean positioning and relationships can beat pure challenge dominance.",
-    "season6": "10 Returnees and 10 newbies formed Pairs where loyalty warped voting blocs; Redemption Island kept threats in circulation and rewarded timing over purity.In a pairs/RI season, the best path is to stay ‘useful but not urgent’ pre-merge, then convert late-game control into a clean jury win Jacques executed it flawlessly and completely dominate the Jury 7-1-0",
     "message": "The message across 5 seasons: Different strategies can win, but adaptability and respect from the jury are essential. Alejandro needed 3 tries to learn this lesson."
-  },
-  "metadata": {
-    "lastUpdated": "2026-01-08",
-    "source": "Computed from players_database + Season 6 stats/summary PDFs"
   }
 }

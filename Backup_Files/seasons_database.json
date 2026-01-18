@@ -1,7 +1,7 @@
 {
   "franchise": {
     "name": "DC Franchise Database",
-    "totalSeasons": 5,
+    "totalSeasons": 9,
     "totalPlayers": 58,
     "description": "Total Drama franchise statistics and season data"
   },
@@ -165,6 +165,41 @@
       "status": "Complete",
       "castPhotoPath": "assets/cast/s5-cast.png",
       "emoji": "🛟"
+    },
+    {
+      "seasonNumber": 6,
+      "title": "Total Drama Blood VS Water",
+      "subtitle": "Family or Strategy",
+      "castSize": 20,
+      "episodeCount": 17,
+      "winner": {
+        "name": "Jacques",
+        "playerSlug": "jacques",
+        "vote": "7-1-0",
+        "runnerUp": "Mickey & Jay",
+        "keyStats": "7–1–0 jury win; 4 individual immunities; 4 total challenge wins; only 2 votes against.",
+        "strategy": "Kept target low while steering vote flows, exploiting pair cover and timely immunity wins to consolidate control.",
+        "legacy": "A crowned villain: precise, low-agro control culminating in a blowout FTC. Benchmarks a ‘low-target, high-control’ masterclass for this format."
+      },
+      "awards": {
+        "fanFavorite": {
+          "name": "Jacques",
+          "playerSlug": "jacques"
+        },
+        "bestStrategic": {
+          "name": "Jacques",
+          "playerSlug": "jacques"
+        },
+        "mostChallengeWins": {
+          "name": "Jacques",
+          "playerSlug": "jacques",
+          "detail": "4 total"
+        }
+      },
+      "theme": "2 tribes + redemption island",
+      "status": "Complete",
+      "castPhotoPath": "assets/cast/s6-cast.png",
+      "emoji": "🩸"
     }
   ]
 }

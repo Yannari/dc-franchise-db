@@ -1,0 +1,1589 @@
+{
+  "seasonNumber": 7,
+  "title": "Total Drama Fans VS Favorites",
+  "subtitle": "Same game. Different side of the screen",
+  "castSize": 20,
+  "episodeCount": 17,
+  "jurySize": 9,
+  "winner": {
+    "name": "MacArthur",
+    "playerSlug": "macarthur",
+    "vote": "6-2-1",
+    "runnerUp": "Cody & Carrie",
+    "keyStats": "4 total challenge wins, 1 immunity, 1 idol found and timed perfectly, broad cross-tribe relationships; only 5 votes against all season.",
+    "strategy": "Operate as the merge switchboard and shield-enforcer: hold an idol, build unbreakables with Carrie and Cody, maintain bridges to Jacques and Sky, disagree publicly when needed to preserve agency, and close with perfect F5 advantage management.",
+    "legacy": "One of the most respected power-social winners of the series: balanced menace and loyalty, rode chaos without being consumed by it, and delivered a decisive FTC performance."
+  },
+  "finalists": [
+    {
+      "name": "MacArthur",
+      "playerSlug": "macarthur",
+      "placement": 1,
+      "votes": 6
+    },
+    {
+      "name": "Cody",
+      "playerSlug": "cody",
+      "placement": 2,
+      "votes": 2
+    },
+    {
+      "name": "Carrie",
+      "playerSlug": "carrie",
+      "placement": 3,
+      "votes": 1
+    }
+  ],
+  "placements": [
+    {
+      "placement": 1,
+      "name": "MacArthur",
+      "playerSlug": "macarthur",
+      "phase": "Winner",
+      "notes": "Wins 6–2–1 at Final Tribal Council.",
+      "strategicRank": 9,
+      "story": "Idol-holding enforcer who bridged factions across swaps and merge. Weathered public fights, steered multiple votes, and arrived at FTC with broad respect.",
+      "gameplayStyle": "Power-social hybrid; alliance switchboard with intimidation and restraint",
+      "keyMoments": [
+        "Finds Mauhu idol pre-merge and holds it deep",
+        "Anchors Mauhu trio and later Lawa #3 with Carrie/Cody",
+        "Refuses to pile on Kitty in Ep10, signaling independent agency",
+        "Wins merge immunity (Ep12), stabilizes lane targeting Shawn",
+        "Burns idol perfectly at F5 advantage dump",
+        "Beats Cody and Carrie 6–2–1 at FTC"
+      ],
+      "challengeWins": 4,
+      "immunityWins": 1,
+      "idolsFound": 1,
+      "votesReceived": 5,
+      "alliances": [
+        "Carrie",
+        "Cody",
+        "Sky",
+        "Tom",
+        "Jacques"
+      ],
+      "rivalries": [
+        "Sky",
+        "Pete"
+      ]
+    },
+    {
+      "placement": 2,
+      "name": "Cody",
+      "playerSlug": "cody",
+      "phase": "Finalist",
+      "notes": "Runner-up with 2 jury votes.",
+      "strategicRank": 8,
+      "story": "Connected, low-agro operator who survived early heat with Legacy Advantage gravity; found a late idol and timed protections at F5.",
+      "gameplayStyle": "Social connector with clutch advantage timing",
+      "keyMoments": [
+        "Finds Legacy Advantage in Ep1; becomes early ‘value holder’",
+        "Dodges joint-tribal strike (Ep4) via numbers",
+        "Reinforces with Carrie/MacArthur at merge",
+        "Finds Campers idol late and plays it in F5 advantage dump"
+      ],
+      "challengeWins": 4,
+      "immunityWins": 0,
+      "idolsFound": 1,
+      "votesReceived": 3,
+      "alliances": [
+        "Carrie",
+        "MacArthur",
+        "Jacques"
+      ],
+      "rivalries": [
+        "Laurie"
+      ]
+    },
+    {
+      "placement": 3,
+      "name": "Carrie",
+      "playerSlug": "carrie",
+      "phase": "Finalist",
+      "notes": "Third place with 1 jury vote.",
+      "strategicRank": 8,
+      "story": "Social hub protected by tight bonds; wielded a Vote Steal at F5 to lock path to the finals.",
+      "gameplayStyle": "Social core and vote director",
+      "keyMoments": [
+        "Survives early Lawa turbulence and integrates",
+        "Co-founds Lawa #3 (with Cody/MacArthur) and drives Zoey boot at swap",
+        "Wins merge immunity (Ep11) and guides calm boot on Laurie",
+        "Uses Vote Steal at F5 to delete Tom’s outs"
+      ],
+      "challengeWins": 3,
+      "immunityWins": 1,
+      "idolsFound": 0,
+      "votesReceived": 6,
+      "alliances": [
+        "Cody",
+        "MacArthur",
+        "Taylor"
+      ],
+      "rivalries": [
+        "Pete",
+        "Jacques",
+        "Tom"
+      ]
+    },
+    {
+      "placement": 4,
+      "name": "Jacques",
+      "playerSlug": "jacques",
+      "phase": "Pre-Juror(Due to Quit)",
+      "notes": "Quit at Final 4 after winning immunity; meltdown ends game.",
+      "strategicRank": 9,
+      "story": "Hyper-competent strategist and challenge beast who built cross-tribe ties; zero votes all season but exits via quit at F4.",
+      "gameplayStyle": "Strategic hub and immunity workhorse",
+      "keyMoments": [
+        "Builds Naale core, then bonds with Shawn to flip Devin (Ep7)",
+        "Pushes anti-MacArthur lane at merge (Ep8)",
+        "Wins 5 immunities; safe through late merge",
+        "F4 immunity win followed by quit"
+      ],
+      "challengeWins": 6,
+      "immunityWins": 5,
+      "idolsFound": 0,
+      "votesReceived": 0,
+      "alliances": [
+        "Taylor",
+        "Cody",
+        "MacArthur"
+      ],
+      "rivalries": [
+        "Carrie"
+      ]
+    },
+    {
+      "placement": 5,
+      "name": "Tom",
+      "playerSlug": "tom",
+      "phase": "Juror",
+      "notes": "Idol ricochet architect at F7; booted at F5 via unanimous pile-on after Vote Steal.",
+      "strategicRank": 10,
+      "story": "Stealth endgamer who found merge idol, timed a perfect play to bounce Taylor at F7, then got steamrolled by advantage dump at F5.",
+      "gameplayStyle": "Under-the-radar opportunist with clutch idol",
+      "keyMoments": [
+        "Helps execute Brody at swap (Ep3)",
+        "Hangs around as swing through merge",
+        "F7 idol play cancels 5 votes and knocks out Taylor",
+        "F5 eliminated after Carrie steals his vote"
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "idolsFound": 1,
+      "votesReceived": 13,
+      "alliances": [
+        "MacArthur",
+        "Sky",
+        "Cody",
+        "Jacques"
+      ],
+      "rivalries": [
+        "Taylor",
+        "Carrie"
+      ]
+    },
+    {
+      "placement": 6,
+      "name": "Sky",
+      "playerSlug": "sky",
+      "phase": "Juror",
+      "notes": "Cut at F6 as a threat tethered to Jacques.",
+      "strategicRank": 8,
+      "story": "Bridge between power lanes pre-merge; later feuded with MacArthur and got clipped as a connected endgame threat.",
+      "gameplayStyle": "Connector and steady voter",
+      "keyMoments": [
+        "Swap survival and integration on Mauhu",
+        "Votes on key merge swings (Jasmine, Shawn)",
+        "Public feud with MacArthur",
+        "F6 booted 3–1–1–1"
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "idolsFound": 0,
+      "votesReceived": 5,
+      "alliances": [
+        "MacArthur",
+        "Tom",
+        "Jacques"
+      ],
+      "rivalries": [
+        "MacArthur"
+      ]
+    },
+    {
+      "placement": 7,
+      "name": "Taylor",
+      "playerSlug": "taylor",
+      "phase": "Juror",
+      "notes": "Idol ricochet casualty at F7 after Tom’s play.",
+      "strategicRank": 9,
+      "story": "Merge super-connector with unbreakable bonds to Jacques and Carrie; near-constant target of the Scott/Shawn duo; eliminated by redirected votes.",
+      "gameplayStyle": "Strategic-social hub and comp threat",
+      "keyMoments": [
+        "Becomes central hub on Naale pre-merge",
+        "Wins two immunities",
+        "Takes out Shawn 5–4 (survives being targeted)",
+        "F7 bounced by Tom’s idol"
+      ],
+      "challengeWins": 3,
+      "immunityWins": 2,
+      "idolsFound": 0,
+      "votesReceived": 11,
+      "alliances": [
+        "Jacques",
+        "Carrie"
+      ],
+      "rivalries": [
+        "Scott",
+        "Tom"
+      ]
+    },
+    {
+      "placement": 8,
+      "name": "Scott",
+      "playerSlug": "scott",
+      "phase": "Juror",
+      "notes": "Executed at F8 as dangerous swing after duo split.",
+      "strategicRank": 7,
+      "story": "Half of the season’s tightest duo with Shawn; targeted repeatedly, saved by Kitty’s idol once, then removed as a swing threat.",
+      "gameplayStyle": "Aggressive duo generalist",
+      "keyMoments": [
+        "Forms controlling Naale duo with Shawn",
+        "Receives Kitty’s protective idol shield at Ep9",
+        "Targeted and removed 6–2 at F8"
+      ],
+      "challengeWins": 1,
+      "immunityWins": 0,
+      "idolsFound": 0,
+      "votesReceived": 11,
+      "alliances": [
+        "Shawn"
+      ],
+      "rivalries": [
+        "Kitty",
+        "Taylor"
+      ]
+    },
+    {
+      "placement": 9,
+      "name": "Shawn",
+      "playerSlug": "shawn",
+      "phase": "Juror",
+      "notes": "Duo with Scott finally cracked 5–4 at F9.",
+      "strategicRank": 7,
+      "story": "Early Naale swing with bonds to Devin; later the merge lightning rod and long-running feud with Kitty.",
+      "gameplayStyle": "Duo-centric competitor",
+      "keyMoments": [
+        "Drives Devin boot 4–3 (Ep7)",
+        "Open war with Kitty across merge",
+        "Voted out 5–4"
+      ],
+      "challengeWins": 2,
+      "immunityWins": 0,
+      "idolsFound": 0,
+      "votesReceived": 11,
+      "alliances": [
+        "Scott"
+      ],
+      "rivalries": [
+        "Kitty"
+      ]
+    },
+    {
+      "placement": 10,
+      "name": "Laurie",
+      "playerSlug": "laurie",
+      "phase": "Juror",
+      "notes": "Merge ‘pressure release’ boot 5–3–2.",
+      "strategicRank": 5,
+      "story": "Early friction with multiple Lawa members; long-running hostility with Cody; removed at merge to calm tensions.",
+      "gameplayStyle": "Volatile outsider",
+      "keyMoments": [
+        "Extreme conflict with Cody at swap",
+        "Wrong side of key pre-merge votes",
+        "Merge boot 5–3–2"
+      ],
+      "challengeWins": 3,
+      "immunityWins": 0,
+      "idolsFound": 0,
+      "votesReceived": 8,
+      "alliances": [],
+      "rivalries": [
+        "Cody"
+      ]
+    },
+    {
+      "placement": 11,
+      "name": "Kitty",
+      "playerSlug": "kitty",
+      "phase": "Juror",
+      "notes": "Post-idol execution 5–3–3 after legendary double-idol firewall.",
+      "strategicRank": 8,
+      "story": "Season’s early hidden boss: held two idols at once, built webs across tribes; saved herself and Scott in a single tribal before being finished the next round.",
+      "gameplayStyle": "Advantage queen and social weaver",
+      "keyMoments": [
+        "Finds Naale idol then Lawa idol",
+        "Ep9 ‘idol firewall’: cancels 8 votes on herself and shields Scott; Pete goes",
+        "Voted out 5–3–3 next tribal"
+      ],
+      "challengeWins": 2,
+      "immunityWins": 1,
+      "idolsFound": 2,
+      "votesReceived": 13,
+      "alliances": [
+        "Scott",
+        "Shawn",
+        "Cody"
+      ],
+      "rivalries": [
+        "Shawn",
+        "Spud"
+      ]
+    },
+    {
+      "placement": 12,
+      "name": "Pete",
+      "playerSlug": "pete",
+      "phase": "Juror",
+      "notes": "Extra Vote from Exile; spent it trying to boot Kitty but got bounced instead.",
+      "strategicRank": 7,
+      "story": "Exile gainer turned mid-merge swing; lines up the anti-Kitty push but gets nuked by her idol firewall.",
+      "gameplayStyle": "Middle-player with a twist",
+      "keyMoments": [
+        "Chooses Extra Vote on Exile",
+        "Pushes anti-Kitty merge vote; uses extra vote",
+        "Eliminated 5–0 effective after idols"
+      ],
+      "challengeWins": 1,
+      "immunityWins": 0,
+      "idolsFound": 0,
+      "votesReceived": 5,
+      "alliances": [
+        "Taylor"
+      ],
+      "rivalries": [
+        "MacArthur",
+        "Carrie"
+      ]
+    },
+    {
+      "placement": 13,
+      "name": "Jasmine",
+      "playerSlug": "jasmine",
+      "phase": "Juror",
+      "notes": "First juror; merge leader cut 7–4–2.",
+      "strategicRank": 6,
+      "story": "Respected voice and steady competitor; became the merge peace-offering boot.",
+      "gameplayStyle": "Respected leader",
+      "keyMoments": [
+        "Named early but avoided pre-merge danger",
+        "Merge boot as ‘consensus’ leader"
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "idolsFound": 0,
+      "votesReceived": 9,
+      "alliances": [
+        "Taylor",
+        "Cody"
+      ],
+      "rivalries": []
+    },
+    {
+      "placement": 14,
+      "name": "Devin",
+      "playerSlug": "devin",
+      "phase": "Pre-Merge",
+      "notes": "Taken out 4–3 by Scott/Shawn lane with Jacques flipping.",
+      "strategicRank": 6,
+      "story": "Early Lawa glue with Carrie and Spud; swap/Naale tensions and dislikes cost him.",
+      "gameplayStyle": "Social connector pre-merge",
+      "keyMoments": [
+        "Forms early bonds with Carrie, Spud",
+        "Becomes target of Jacques/Shawn lane",
+        "Voted out 4–3"
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "idolsFound": 0,
+      "votesReceived": 4,
+      "alliances": [
+        "Carrie",
+        "Spud",
+        "Taylor"
+      ],
+      "rivalries": [
+        "Zoey",
+        "Jasmine"
+      ]
+    },
+    {
+      "placement": 15,
+      "name": "Zoey",
+      "playerSlug": "zoey",
+      "phase": "Pre-Merge",
+      "notes": "Swap-war casualty once Lawa #3 formed; 5–2.",
+      "strategicRank": 5,
+      "story": "Returnee social stabilizer targeted in a numbers lock after a volatile swap.",
+      "gameplayStyle": "Social steady hand",
+      "keyMoments": [
+        "Early bonds with Brody",
+        "Lasting fight with Carrie at swap",
+        "Voted out 5–2"
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "idolsFound": 0,
+      "votesReceived": 5,
+      "alliances": [
+        "Brody"
+      ],
+      "rivalries": [
+        "Carrie"
+      ]
+    },
+    {
+      "placement": 16,
+      "name": "Lorenzo",
+      "playerSlug": "lorenzo",
+      "phase": "Pre-Merge",
+      "notes": "Outnumbered by Mauhu trio; 3–2.",
+      "strategicRank": 4,
+      "story": "Survived one swap vote via social bridge to Pete, then fell to the MacArthur/Sky/Tom majority.",
+      "gameplayStyle": "Social scrambler",
+      "keyMoments": [
+        "Bonds with Pete post-swap",
+        "Loses 3–2 to Mauhu core"
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "idolsFound": 0,
+      "votesReceived": 4,
+      "alliances": [
+        "Pete"
+      ],
+      "rivalries": [
+        "MacArthur"
+      ]
+    },
+    {
+      "placement": 17,
+      "name": "Spud",
+      "playerSlug": "spud",
+      "phase": "Pre-Merge",
+      "notes": "Joint-tribal casualty; 5–3–3.",
+      "strategicRank": 5,
+      "story": "Early chaos archetype who formed real ties (Devin) but got targeted as the ‘easy’ cross-tribe vote.",
+      "gameplayStyle": "Chaotic social player",
+      "keyMoments": [
+        "Strong bond with Devin",
+        "Argues with Kitty before joint Tribal",
+        "Voted out 5–3–3"
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "idolsFound": 0,
+      "votesReceived": 5,
+      "alliances": [
+        "Devin"
+      ],
+      "rivalries": [
+        "Kitty"
+      ]
+    },
+    {
+      "placement": 18,
+      "name": "Brody",
+      "playerSlug": "brody",
+      "phase": "Pre-Merge",
+      "notes": "Swap-tribe meltdown; 5–1.",
+      "strategicRank": 4,
+      "story": "Physically useful but targeted for a meltdown on a sacrifice tribe.",
+      "gameplayStyle": "Physical contributor; swap casualty",
+      "keyMoments": [
+        "Takes 2 votes in Ep1 as early threat ping",
+        "Meltdown after swap leads to 5–1 boot"
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "idolsFound": 0,
+      "votesReceived": 7,
+      "alliances": [],
+      "rivalries": []
+    },
+    {
+      "placement": 19,
+      "name": "Ellody",
+      "playerSlug": "ellody",
+      "phase": "Pre-Merge",
+      "notes": "Clean majority boot 7–3 once Lawa formed structure.",
+      "strategicRank": 3,
+      "story": "Never found solid footing on Lawa; removed as the safe consensus over louder targets.",
+      "gameplayStyle": "Isolated planner",
+      "keyMoments": [
+        "Targeted over Carrie to keep a shield",
+        "Leaves 7–3"
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "idolsFound": 0,
+      "votesReceived": 7,
+      "alliances": [],
+      "rivalries": [
+        "Taylor",
+        "Spud"
+      ]
+    },
+    {
+      "placement": 20,
+      "name": "Lindsay",
+      "playerSlug": "lindsay",
+      "phase": "Pre-Merge",
+      "notes": "First boot 6–2–2 on Naale; winner threat + fight with Shawn.",
+      "strategicRank": 3,
+      "story": "Episode 1 casualty after a lasting fight; quiet winner-threat undertone expedited her exit.",
+      "gameplayStyle": "Social-light, early spark target",
+      "keyMoments": [
+        "Fight with Shawn becomes consensus fuel",
+        "Goes 6–2–2 in premiere"
+      ],
+      "challengeWins": 0,
+      "immunityWins": 0,
+      "idolsFound": 0,
+      "votesReceived": 6,
+      "alliances": [],
+      "rivalries": [
+        "Jasmine",
+        "Shawn"
+      ]
+    }
+  ],
+  "votingHistory": [
+    {
+      "episode": 1,
+      "eliminated": "Lindsay",
+      "eliminatedSlug": "lindsay",
+      "votes": [
+        {
+          "voter": "Brody",
+          "voterSlug": "brody",
+          "target": "Lindsay",
+          "targetSlug": "lindsay"
+        },
+        {
+          "voter": "Jacques",
+          "voterSlug": "jacques",
+          "target": "Lindsay",
+          "targetSlug": "lindsay"
+        },
+        {
+          "voter": "Jasmine",
+          "voterSlug": "jasmine",
+          "target": "Lindsay",
+          "targetSlug": "lindsay"
+        },
+        {
+          "voter": "Kitty",
+          "voterSlug": "kitty",
+          "target": "Lindsay",
+          "targetSlug": "lindsay"
+        },
+        {
+          "voter": "Shawn",
+          "voterSlug": "shawn",
+          "target": "Lindsay",
+          "targetSlug": "lindsay"
+        },
+        {
+          "voter": "Sky",
+          "voterSlug": "sky",
+          "target": "Lindsay",
+          "targetSlug": "lindsay"
+        },
+        {
+          "voter": "Cody",
+          "voterSlug": "cody",
+          "target": "Brody",
+          "targetSlug": "brody"
+        },
+        {
+          "voter": "Scott",
+          "voterSlug": "scott",
+          "target": "Brody",
+          "targetSlug": "brody"
+        },
+        {
+          "voter": "Lindsay",
+          "voterSlug": "lindsay",
+          "target": "Jasmine",
+          "targetSlug": "jasmine"
+        },
+        {
+          "voter": "Zoey",
+          "voterSlug": "zoey",
+          "target": "Jasmine",
+          "targetSlug": "jasmine"
+        }
+      ]
+    },
+    {
+      "episode": 2,
+      "eliminated": "Ellody",
+      "eliminatedSlug": "ellody",
+      "votes": [
+        {
+          "voter": "Carrie",
+          "voterSlug": "carrie",
+          "target": "Ellody",
+          "targetSlug": "ellody"
+        },
+        {
+          "voter": "Devin",
+          "voterSlug": "devin",
+          "target": "Ellody",
+          "targetSlug": "ellody"
+        },
+        {
+          "voter": "MacArthur",
+          "voterSlug": "macarthur",
+          "target": "Ellody",
+          "targetSlug": "ellody"
+        },
+        {
+          "voter": "Pete",
+          "voterSlug": "pete",
+          "target": "Ellody",
+          "targetSlug": "ellody"
+        },
+        {
+          "voter": "Spud",
+          "voterSlug": "spud",
+          "target": "Ellody",
+          "targetSlug": "ellody"
+        },
+        {
+          "voter": "Taylor",
+          "voterSlug": "taylor",
+          "target": "Ellody",
+          "targetSlug": "ellody"
+        },
+        {
+          "voter": "Tom",
+          "voterSlug": "tom",
+          "target": "Ellody",
+          "targetSlug": "ellody"
+        },
+        {
+          "voter": "Ellody",
+          "voterSlug": "ellody",
+          "target": "Carrie",
+          "targetSlug": "carrie"
+        },
+        {
+          "voter": "Laurie",
+          "voterSlug": "laurie",
+          "target": "Carrie",
+          "targetSlug": "carrie"
+        },
+        {
+          "voter": "Lorenzo",
+          "voterSlug": "lorenzo",
+          "target": "Carrie",
+          "targetSlug": "carrie"
+        }
+      ]
+    },
+    {
+      "episode": 3,
+      "eliminated": "Brody",
+      "eliminatedSlug": "brody",
+      "votes": [
+        {
+          "voter": "Lorenzo",
+          "voterSlug": "lorenzo",
+          "target": "Brody",
+          "targetSlug": "brody"
+        },
+        {
+          "voter": "MacArthur",
+          "voterSlug": "macarthur",
+          "target": "Brody",
+          "targetSlug": "brody"
+        },
+        {
+          "voter": "Pete",
+          "voterSlug": "pete",
+          "target": "Brody",
+          "targetSlug": "brody"
+        },
+        {
+          "voter": "Sky",
+          "voterSlug": "sky",
+          "target": "Brody",
+          "targetSlug": "brody"
+        },
+        {
+          "voter": "Tom",
+          "voterSlug": "tom",
+          "target": "Brody",
+          "targetSlug": "brody"
+        },
+        {
+          "voter": "Brody",
+          "voterSlug": "brody",
+          "target": "Lorenzo",
+          "targetSlug": "lorenzo"
+        }
+      ]
+    },
+    {
+      "episode": 4,
+      "eliminated": "Spud",
+      "eliminatedSlug": "spud",
+      "votes": [
+        {
+          "voter": "Cody",
+          "voterSlug": "cody",
+          "target": "Spud",
+          "targetSlug": "spud"
+        },
+        {
+          "voter": "Kitty",
+          "voterSlug": "kitty",
+          "target": "Spud",
+          "targetSlug": "spud"
+        },
+        {
+          "voter": "Lorenzo",
+          "voterSlug": "lorenzo",
+          "target": "Spud",
+          "targetSlug": "spud"
+        },
+        {
+          "voter": "Scott",
+          "voterSlug": "scott",
+          "target": "Spud",
+          "targetSlug": "spud"
+        },
+        {
+          "voter": "Shawn",
+          "voterSlug": "shawn",
+          "target": "Spud",
+          "targetSlug": "spud"
+        },
+        {
+          "voter": "Laurie",
+          "voterSlug": "laurie",
+          "target": "Cody",
+          "targetSlug": "cody"
+        },
+        {
+          "voter": "Pete",
+          "voterSlug": "pete",
+          "target": "Cody",
+          "targetSlug": "cody"
+        },
+        {
+          "voter": "Spud",
+          "voterSlug": "spud",
+          "target": "Cody",
+          "targetSlug": "cody"
+        },
+        {
+          "voter": "MacArthur",
+          "voterSlug": "macarthur",
+          "target": "Scott",
+          "targetSlug": "scott"
+        },
+        {
+          "voter": "Sky",
+          "voterSlug": "sky",
+          "target": "Scott",
+          "targetSlug": "scott"
+        },
+        {
+          "voter": "Tom",
+          "voterSlug": "tom",
+          "target": "Scott",
+          "targetSlug": "scott"
+        }
+      ]
+    },
+    {
+      "episode": 5,
+      "eliminated": "Lorenzo",
+      "eliminatedSlug": "lorenzo",
+      "votes": [
+        {
+          "voter": "MacArthur",
+          "voterSlug": "macarthur",
+          "target": "Lorenzo",
+          "targetSlug": "lorenzo"
+        },
+        {
+          "voter": "Sky",
+          "voterSlug": "sky",
+          "target": "Lorenzo",
+          "targetSlug": "lorenzo"
+        },
+        {
+          "voter": "Tom",
+          "voterSlug": "tom",
+          "target": "Lorenzo",
+          "targetSlug": "lorenzo"
+        },
+        {
+          "voter": "Lorenzo",
+          "voterSlug": "lorenzo",
+          "target": "Sky",
+          "targetSlug": "sky"
+        },
+        {
+          "voter": "Pete",
+          "voterSlug": "pete",
+          "target": "Sky",
+          "targetSlug": "sky"
+        }
+      ]
+    },
+    {
+      "episode": 6,
+      "eliminated": "Zoey",
+      "eliminatedSlug": "zoey",
+      "votes": [
+        {
+          "voter": "Carrie",
+          "voterSlug": "carrie",
+          "target": "Zoey",
+          "targetSlug": "zoey"
+        },
+        {
+          "voter": "Cody",
+          "voterSlug": "cody",
+          "target": "Zoey",
+          "targetSlug": "zoey"
+        },
+        {
+          "voter": "Kitty",
+          "voterSlug": "kitty",
+          "target": "Zoey",
+          "targetSlug": "zoey"
+        },
+        {
+          "voter": "MacArthur",
+          "voterSlug": "macarthur",
+          "target": "Zoey",
+          "targetSlug": "zoey"
+        },
+        {
+          "voter": "Taylor",
+          "voterSlug": "taylor",
+          "target": "Zoey",
+          "targetSlug": "zoey"
+        },
+        {
+          "voter": "Jasmine",
+          "voterSlug": "jasmine",
+          "target": "Carrie",
+          "targetSlug": "carrie"
+        },
+        {
+          "voter": "Zoey",
+          "voterSlug": "zoey",
+          "target": "Carrie",
+          "targetSlug": "carrie"
+        }
+      ]
+    },
+    {
+      "episode": 7,
+      "eliminated": "Devin",
+      "eliminatedSlug": "devin",
+      "votes": [
+        {
+          "voter": "Jacques",
+          "voterSlug": "jacques",
+          "target": "Devin",
+          "targetSlug": "devin"
+        },
+        {
+          "voter": "Laurie",
+          "voterSlug": "laurie",
+          "target": "Devin",
+          "targetSlug": "devin"
+        },
+        {
+          "voter": "Scott",
+          "voterSlug": "scott",
+          "target": "Devin",
+          "targetSlug": "devin"
+        },
+        {
+          "voter": "Shawn",
+          "voterSlug": "shawn",
+          "target": "Devin",
+          "targetSlug": "devin"
+        },
+        {
+          "voter": "Devin",
+          "voterSlug": "devin",
+          "target": "Shawn",
+          "targetSlug": "shawn"
+        },
+        {
+          "voter": "Sky",
+          "voterSlug": "sky",
+          "target": "Shawn",
+          "targetSlug": "shawn"
+        },
+        {
+          "voter": "Tom",
+          "voterSlug": "tom",
+          "target": "Shawn",
+          "targetSlug": "shawn"
+        }
+      ]
+    },
+    {
+      "episode": 8,
+      "eliminated": "Jasmine",
+      "eliminatedSlug": "jasmine",
+      "votes": [
+        {
+          "voter": "Carrie",
+          "voterSlug": "carrie",
+          "target": "Jasmine",
+          "targetSlug": "jasmine"
+        },
+        {
+          "voter": "Cody",
+          "voterSlug": "cody",
+          "target": "Jasmine",
+          "targetSlug": "jasmine"
+        },
+        {
+          "voter": "Laurie",
+          "voterSlug": "laurie",
+          "target": "Jasmine",
+          "targetSlug": "jasmine"
+        },
+        {
+          "voter": "MacArthur",
+          "voterSlug": "macarthur",
+          "target": "Jasmine",
+          "targetSlug": "jasmine"
+        },
+        {
+          "voter": "Pete",
+          "voterSlug": "pete",
+          "target": "Jasmine",
+          "targetSlug": "jasmine"
+        },
+        {
+          "voter": "Sky",
+          "voterSlug": "sky",
+          "target": "Jasmine",
+          "targetSlug": "jasmine"
+        },
+        {
+          "voter": "Tom",
+          "voterSlug": "tom",
+          "target": "Jasmine",
+          "targetSlug": "jasmine"
+        },
+        {
+          "voter": "Jacques",
+          "voterSlug": "jacques",
+          "target": "MacArthur",
+          "targetSlug": "macarthur"
+        },
+        {
+          "voter": "Jasmine",
+          "voterSlug": "jasmine",
+          "target": "MacArthur",
+          "targetSlug": "macarthur"
+        },
+        {
+          "voter": "Kitty",
+          "voterSlug": "kitty",
+          "target": "MacArthur",
+          "targetSlug": "macarthur"
+        },
+        {
+          "voter": "Taylor",
+          "voterSlug": "taylor",
+          "target": "MacArthur",
+          "targetSlug": "macarthur"
+        },
+        {
+          "voter": "Scott",
+          "voterSlug": "scott",
+          "target": "Taylor",
+          "targetSlug": "taylor"
+        },
+        {
+          "voter": "Shawn",
+          "voterSlug": "shawn",
+          "target": "Taylor",
+          "targetSlug": "taylor"
+        }
+      ]
+    },
+    {
+      "episode": 9,
+      "eliminated": "Pete",
+      "eliminatedSlug": "pete",
+      "votes": [
+        {
+          "voter": "Jacques",
+          "voterSlug": "jacques",
+          "target": "Kitty",
+          "targetSlug": "kitty"
+        },
+        {
+          "voter": "Laurie",
+          "voterSlug": "laurie",
+          "target": "Kitty",
+          "targetSlug": "kitty"
+        },
+        {
+          "voter": "Pete",
+          "voterSlug": "pete",
+          "target": "Kitty",
+          "targetSlug": "kitty"
+        },
+        {
+          "voter": "Pete",
+          "voterSlug": "pete",
+          "target": "Kitty",
+          "targetSlug": "kitty"
+        },
+        {
+          "voter": "Scott",
+          "voterSlug": "scott",
+          "target": "Kitty",
+          "targetSlug": "kitty"
+        },
+        {
+          "voter": "Shawn",
+          "voterSlug": "shawn",
+          "target": "Kitty",
+          "targetSlug": "kitty"
+        },
+        {
+          "voter": "Taylor",
+          "voterSlug": "taylor",
+          "target": "Kitty",
+          "targetSlug": "kitty"
+        },
+        {
+          "voter": "Tom",
+          "voterSlug": "tom",
+          "target": "Kitty",
+          "targetSlug": "kitty"
+        },
+        {
+          "voter": "Carrie",
+          "voterSlug": "carrie",
+          "target": "Pete",
+          "targetSlug": "pete"
+        },
+        {
+          "voter": "Cody",
+          "voterSlug": "cody",
+          "target": "Pete",
+          "targetSlug": "pete"
+        },
+        {
+          "voter": "Kitty",
+          "voterSlug": "kitty",
+          "target": "Pete",
+          "targetSlug": "pete"
+        },
+        {
+          "voter": "MacArthur",
+          "voterSlug": "macarthur",
+          "target": "Pete",
+          "targetSlug": "pete"
+        },
+        {
+          "voter": "Sky",
+          "voterSlug": "sky",
+          "target": "Pete",
+          "targetSlug": "pete"
+        }
+      ]
+    },
+    {
+      "episode": 10,
+      "eliminated": "Kitty",
+      "eliminatedSlug": "kitty",
+      "votes": [
+        {
+          "voter": "Laurie",
+          "voterSlug": "laurie",
+          "target": "Kitty",
+          "targetSlug": "kitty"
+        },
+        {
+          "voter": "Scott",
+          "voterSlug": "scott",
+          "target": "Kitty",
+          "targetSlug": "kitty"
+        },
+        {
+          "voter": "Shawn",
+          "voterSlug": "shawn",
+          "target": "Kitty",
+          "targetSlug": "kitty"
+        },
+        {
+          "voter": "Sky",
+          "voterSlug": "sky",
+          "target": "Kitty",
+          "targetSlug": "kitty"
+        },
+        {
+          "voter": "Tom",
+          "voterSlug": "tom",
+          "target": "Kitty",
+          "targetSlug": "kitty"
+        },
+        {
+          "voter": "Carrie",
+          "voterSlug": "carrie",
+          "target": "Laurie",
+          "targetSlug": "laurie"
+        },
+        {
+          "voter": "Cody",
+          "voterSlug": "cody",
+          "target": "Laurie",
+          "targetSlug": "laurie"
+        },
+        {
+          "voter": "MacArthur",
+          "voterSlug": "macarthur",
+          "target": "Laurie",
+          "targetSlug": "laurie"
+        },
+        {
+          "voter": "Jacques",
+          "voterSlug": "jacques",
+          "target": "Shawn",
+          "targetSlug": "shawn"
+        },
+        {
+          "voter": "Kitty",
+          "voterSlug": "kitty",
+          "target": "Shawn",
+          "targetSlug": "shawn"
+        },
+        {
+          "voter": "Taylor",
+          "voterSlug": "taylor",
+          "target": "Shawn",
+          "targetSlug": "shawn"
+        }
+      ]
+    },
+    {
+      "episode": 11,
+      "eliminated": "Laurie",
+      "eliminatedSlug": "laurie",
+      "votes": [
+        {
+          "voter": "Carrie",
+          "voterSlug": "carrie",
+          "target": "Laurie",
+          "targetSlug": "laurie"
+        },
+        {
+          "voter": "Cody",
+          "voterSlug": "cody",
+          "target": "Laurie",
+          "targetSlug": "laurie"
+        },
+        {
+          "voter": "MacArthur",
+          "voterSlug": "macarthur",
+          "target": "Laurie",
+          "targetSlug": "laurie"
+        },
+        {
+          "voter": "Sky",
+          "voterSlug": "sky",
+          "target": "Laurie",
+          "targetSlug": "laurie"
+        },
+        {
+          "voter": "Tom",
+          "voterSlug": "tom",
+          "target": "Laurie",
+          "targetSlug": "laurie"
+        },
+        {
+          "voter": "Laurie",
+          "voterSlug": "laurie",
+          "target": "Taylor",
+          "targetSlug": "taylor"
+        },
+        {
+          "voter": "Scott",
+          "voterSlug": "scott",
+          "target": "Taylor",
+          "targetSlug": "taylor"
+        },
+        {
+          "voter": "Shawn",
+          "voterSlug": "shawn",
+          "target": "Taylor",
+          "targetSlug": "taylor"
+        },
+        {
+          "voter": "Jacques",
+          "voterSlug": "jacques",
+          "target": "Scott",
+          "targetSlug": "scott"
+        },
+        {
+          "voter": "Taylor",
+          "voterSlug": "taylor",
+          "target": "Scott",
+          "targetSlug": "scott"
+        }
+      ]
+    },
+    {
+      "episode": 12,
+      "eliminated": "Shawn",
+      "eliminatedSlug": "shawn",
+      "votes": [
+        {
+          "voter": "Carrie",
+          "voterSlug": "carrie",
+          "target": "Shawn",
+          "targetSlug": "shawn"
+        },
+        {
+          "voter": "Cody",
+          "voterSlug": "cody",
+          "target": "Shawn",
+          "targetSlug": "shawn"
+        },
+        {
+          "voter": "Jacques",
+          "voterSlug": "jacques",
+          "target": "Shawn",
+          "targetSlug": "shawn"
+        },
+        {
+          "voter": "Sky",
+          "voterSlug": "sky",
+          "target": "Shawn",
+          "targetSlug": "shawn"
+        },
+        {
+          "voter": "Taylor",
+          "voterSlug": "taylor",
+          "target": "Shawn",
+          "targetSlug": "shawn"
+        },
+        {
+          "voter": "MacArthur",
+          "voterSlug": "macarthur",
+          "target": "Taylor",
+          "targetSlug": "taylor"
+        },
+        {
+          "voter": "Scott",
+          "voterSlug": "scott",
+          "target": "Taylor",
+          "targetSlug": "taylor"
+        },
+        {
+          "voter": "Shawn",
+          "voterSlug": "shawn",
+          "target": "Taylor",
+          "targetSlug": "taylor"
+        },
+        {
+          "voter": "Tom",
+          "voterSlug": "tom",
+          "target": "Taylor",
+          "targetSlug": "taylor"
+        }
+      ]
+    },
+    {
+      "episode": 13,
+      "eliminated": "Scott",
+      "eliminatedSlug": "scott",
+      "votes": [
+        {
+          "voter": "Carrie",
+          "voterSlug": "carrie",
+          "target": "Scott",
+          "targetSlug": "scott"
+        },
+        {
+          "voter": "Cody",
+          "voterSlug": "cody",
+          "target": "Scott",
+          "targetSlug": "scott"
+        },
+        {
+          "voter": "Jacques",
+          "voterSlug": "jacques",
+          "target": "Scott",
+          "targetSlug": "scott"
+        },
+        {
+          "voter": "Sky",
+          "voterSlug": "sky",
+          "target": "Scott",
+          "targetSlug": "scott"
+        },
+        {
+          "voter": "Taylor",
+          "voterSlug": "taylor",
+          "target": "Scott",
+          "targetSlug": "scott"
+        },
+        {
+          "voter": "Tom",
+          "voterSlug": "tom",
+          "target": "Scott",
+          "targetSlug": "scott"
+        },
+        {
+          "voter": "MacArthur",
+          "voterSlug": "macarthur",
+          "target": "Tom",
+          "targetSlug": "tom"
+        },
+        {
+          "voter": "Scott",
+          "voterSlug": "scott",
+          "target": "Tom",
+          "targetSlug": "tom"
+        }
+      ]
+    },
+    {
+      "episode": 14,
+      "eliminated": "Taylor",
+      "eliminatedSlug": "taylor",
+      "votes": [
+        {
+          "voter": "Carrie",
+          "voterSlug": "carrie",
+          "target": "Tom",
+          "targetSlug": "tom"
+        },
+        {
+          "voter": "Cody",
+          "voterSlug": "cody",
+          "target": "Tom",
+          "targetSlug": "tom"
+        },
+        {
+          "voter": "Jacques",
+          "voterSlug": "jacques",
+          "target": "Tom",
+          "targetSlug": "tom"
+        },
+        {
+          "voter": "MacArthur",
+          "voterSlug": "macarthur",
+          "target": "Tom",
+          "targetSlug": "tom"
+        },
+        {
+          "voter": "Taylor",
+          "voterSlug": "taylor",
+          "target": "Tom",
+          "targetSlug": "tom"
+        },
+        {
+          "voter": "Tom",
+          "voterSlug": "tom",
+          "target": "Taylor",
+          "targetSlug": "taylor"
+        },
+        {
+          "voter": "Sky",
+          "voterSlug": "sky",
+          "target": "Taylor",
+          "targetSlug": "taylor"
+        }
+      ]
+    },
+    {
+      "episode": 15,
+      "eliminated": "Sky",
+      "eliminatedSlug": "sky",
+      "votes": [
+        {
+          "voter": "Carrie",
+          "voterSlug": "carrie",
+          "target": "Sky",
+          "targetSlug": "sky"
+        },
+        {
+          "voter": "Cody",
+          "voterSlug": "cody",
+          "target": "Sky",
+          "targetSlug": "sky"
+        },
+        {
+          "voter": "MacArthur",
+          "voterSlug": "macarthur",
+          "target": "Sky",
+          "targetSlug": "sky"
+        },
+        {
+          "voter": "Jacques",
+          "voterSlug": "jacques",
+          "target": "Tom",
+          "targetSlug": "tom"
+        },
+        {
+          "voter": "Tom",
+          "voterSlug": "tom",
+          "target": "Carrie",
+          "targetSlug": "carrie"
+        },
+        {
+          "voter": "Sky",
+          "voterSlug": "sky",
+          "target": "MacArthur",
+          "targetSlug": "macarthur"
+        }
+      ]
+    },
+    {
+      "episode": 16,
+      "eliminated": "Tom",
+      "eliminatedSlug": "tom",
+      "votes": [
+        {
+          "voter": "Carrie",
+          "voterSlug": "carrie",
+          "target": "Tom",
+          "targetSlug": "tom"
+        },
+        {
+          "voter": "Carrie",
+          "voterSlug": "carrie",
+          "target": "Tom",
+          "targetSlug": "tom"
+        },
+        {
+          "voter": "Cody",
+          "voterSlug": "cody",
+          "target": "Tom",
+          "targetSlug": "tom"
+        },
+        {
+          "voter": "Jacques",
+          "voterSlug": "jacques",
+          "target": "Tom",
+          "targetSlug": "tom"
+        },
+        {
+          "voter": "MacArthur",
+          "voterSlug": "macarthur",
+          "target": "Tom",
+          "targetSlug": "tom"
+        }
+      ]
+    },
+    {
+      "episode": 17,
+      "eliminated": "Jacques",
+      "eliminatedSlug": "jacques",
+      "votes": []
+    }
+  ],
+  "finalTribalCouncil": {
+    "votes": [
+      {
+        "juror": "Jasmine",
+        "jurorSlug": "jasmine",
+        "votedFor": "MacArthur",
+        "votedForSlug": "macarthur"
+      },
+      {
+        "juror": "Kitty",
+        "jurorSlug": "kitty",
+        "votedFor": "MacArthur",
+        "votedForSlug": "macarthur"
+      },
+      {
+        "juror": "Laurie",
+        "jurorSlug": "laurie",
+        "votedFor": "MacArthur",
+        "votedForSlug": "macarthur"
+      },
+      {
+        "juror": "Pete",
+        "jurorSlug": "pete",
+        "votedFor": "Cody",
+        "votedForSlug": "cody"
+      },
+      {
+        "juror": "Scott",
+        "jurorSlug": "scott",
+        "votedFor": "MacArthur",
+        "votedForSlug": "macarthur"
+      },
+      {
+        "juror": "Shawn",
+        "jurorSlug": "shawn",
+        "votedFor": "MacArthur",
+        "votedForSlug": "macarthur"
+      },
+      {
+        "juror": "Sky",
+        "jurorSlug": "sky",
+        "votedFor": "Cody",
+        "votedForSlug": "cody"
+      },
+      {
+        "juror": "Taylor",
+        "jurorSlug": "taylor",
+        "votedFor": "Carrie",
+        "votedForSlug": "carrie"
+      },
+      {
+        "juror": "Tom",
+        "jurorSlug": "tom",
+        "votedFor": "MacArthur",
+        "votedForSlug": "macarthur"
+      }
+    ]
+  },
+  "awards": {
+    "fanFavorite": {
+      "name": "Spud",
+      "playerSlug": "spud"
+    },
+    "bestStrategic": {
+      "name": "Tom",
+      "playerSlug": "tom"
+    },
+    "mostChallengeWins": {
+      "name": "Jacques",
+      "playerSlug": "jacques",
+      "detail": "6 total"
+    }
+  },
+  "seasonNarrative": "Total Drama: Fans vs Favorites (Season 7) opened with a tone-setting winner first boot (Lindsay) and a pre-merge defined by swaps, an Exile extra vote (Pete), and Kitty quietly amassing two idols while Cody pocketed a Legacy Advantage. Lawa stabilized around a functional majority; Naale congealed late behind the Scott/Shawn duo. The 3-tribe swap and a joint Tribal produced chaos boots (Brody, Spud), while MacArthur found an idol and emerged as a stabilizing enforcer. At merge, Jasmine became the ‘peace offering’ leader cut. The season’s centerpiece was the Kitty arc: an all-time ‘idol firewall’ that erased eight votes on her and shielded Scott, sending Pete out instead—only for the tribe to finish Kitty the next round. From there, the game shifted into duo extermination: Shawn fell 5–4, then Scott 6–2, while Taylor’s hub power ended on a ricochet from Tom’s perfectly timed idol at seven. Sky’s removal at six confirmed a Carrie/Cody/MacArthur endgame machine. The F5 ‘advantage dump’ (Carrie’s Vote Steal + Cody/MacArthur idols) obliterated Tom. In the finale, Jacques won F4 immunity but imploded and quit, creating a Carrie–Cody–MacArthur Final 3. MacArthur’s cross-tribe bridges, idol discipline, and independent voting record earned a decisive 6–2–1 win over Cody and Carrie.",
+  "theme": "2 Tribes (10 Favorites and 10 Fans)",
+  "status": "Complete",
+  "castPhotoPath": "assets/cast/s7-cast.png",
+  "emoji": "🤩"
+}

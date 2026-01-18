@@ -1092,7 +1092,7 @@
       "playerId": "owen",
       "name": "Owen",
       "rank": 30,
-      "tier": "B",
+      "tier": "C",
       "score": 60,
       "title": "The Big Buddy",
       "emoji": "🍗",
@@ -2283,7 +2283,7 @@
     },
     {
       "playerId": "pete",
-      "tier": "B",
+      "tier": "C",
       "score": 57,
       "rank": 65,
       "avgPlacement": 12,

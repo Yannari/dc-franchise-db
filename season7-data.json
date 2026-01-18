@@ -1567,20 +1567,140 @@
     ]
   },
   "awards": {
-    "fanFavorite": {
-      "name": "Spud",
-      "playerSlug": "spud"
-    },
-    "bestStrategic": {
-      "name": "Tom",
-      "playerSlug": "tom"
-    },
-    "mostChallengeWins": {
-      "name": "Jacques",
-      "playerSlug": "jacques",
-      "detail": "6 total"
-    }
+  "winner": {
+    "name": "MacArthur",
+    "playerSlug": "macarthur",
+    "note": "Won 6–2–1. The jury rewarded the most consistent power-holder: she maintained cross-alliance control (Mauhu core + Lawa lane), survived the merge vote wars, and showed endgame authority without needing last-second scrambling."
   },
+
+  "fanFavorite": {
+    "name": "Spud",
+    "playerSlug": "spud",
+    "note": "Official Fan Favorite. Even as an early boot, he had the most memorable presence and stayed lovable enough to win the popularity lane over deeper runners."
+  },
+
+  "bestStrategic": {
+    "name": "Tom",
+    "playerSlug": "tom",
+    "note": "Your Most Strategic #1. Even while being socially prickly, he kept shaping vote logic across phases (Mauhu structure, post-merge positioning) and survived long enough to weaponize an idol into a forced outcome."
+  },
+
+  "bestPhysical": {
+    "name": "Jacques",
+    "playerSlug": "jacques",
+    "note": "Season’s challenge machine: 6 total challenge wins and 5 immunity wins. Even with a volatile social game late, he repeatedly protected himself and dictated pace until the quit."
+  },
+
+  "bestMental": {
+    "name": "Jacques",
+    "playerSlug": "jacques",
+    "note": "Puzzle/precision dominance shows up directly in his immunity count. He was the season’s clearest ‘win-or-die’ performer in focus-heavy challenges."
+  },
+
+  "mostClutch": {
+    "name": "Kitty",
+    "playerSlug": "kitty",
+    "note": "Episode 9 was a clutch masterpiece: she played TWO idols (one on herself + one on Scott), cancelled 8 votes, and flipped the boot onto Pete. The biggest single-round swing of the season."
+  },
+
+  "bestDefensive": {
+    "name": "Tom",
+    "playerSlug": "tom",
+    "note": "Defense = surviving the inevitable. He took 13 votes against, found an idol at Final 7, and used it perfectly to survive when literally everyone aimed at him."
+  },
+
+  "mostLoyal": {
+    "name": "Scott",
+    "playerSlug": "scott",
+    "note": "The Scott/Shawn duo was unbreakable for most of the game, and Scott stayed glued to his core loyalties even when merge chaos made it dangerous. Loyalty wasn’t just vibe, it was his survival plan."
+  },
+
+  "bestUnderdog": {
+    "name": "Tom",
+    "playerSlug": "tom",
+    "note": "He was constantly a target (13 votes against) and still clawed to 5th. Idol timing + stubborn survival made him the clearest underdog run."
+  },
+
+  "biggestVillain": {
+    "name": "Tom",
+    "playerSlug": "tom",
+    "note": "Your villain strategist archetype: abrasive relationships, constant targeting, and survival through power plays. He wasn’t loved, but he was feared and respected."
+  },
+
+  "mostChaotic": {
+    "name": "Kitty",
+    "playerSlug": "kitty",
+    "note": "Idol queen + personal wars (especially with Shawn) + massive merge blowups. She turned every round into paranoia, then detonated the most chaotic Tribal of the season."
+  },
+
+  "quietestThreat": {
+    "name": "Carrie",
+    "playerSlug": "carrie",
+    "note": "She looked like a relationship-driven player, but she was quietly loaded with tools (Vote Steal) and consistent social reach. Even when the game got ugly, she stayed positioned for FTC."
+  },
+
+  "seasonMVP": {
+    "name": "MacArthur",
+    "playerSlug": "macarthur",
+    "note": "Winner + 4 challenge wins + idol-holder + central alliance glue. She had the most influence over the endgame shape, and the jury result confirms they saw her as the season’s core force."
+  },
+
+  "biggestMeltdown": {
+    "name": "Jacques",
+    "playerSlug": "jacques",
+    "note": "Finale collapse: major fight, major meltdown, then quits at Final 4. The biggest narrative crash of the season because he had win-equity and simply combusted."
+  },
+
+  "mostUnlucky": {
+    "name": "Pete",
+    "playerSlug": "pete",
+    "note": "Got exiled, gained the Extra Vote… then ran into the worst possible timing: Kitty’s double-idol play erased his entire plan and sent him out with zero chance to recover."
+  },
+
+  "mostTragic": {
+    "name": "Jacques",
+    "playerSlug": "jacques",
+    "note": "He had the stats to win (top immunity count, zero votes received all season) but self-destructed emotionally at the finish line and quit before the final vote."
+  },
+
+  "biggestBetrayal": {
+    "betrayer": "Kitty",
+    "betrayed": "Pete",
+    "description": "Pete played his Extra Vote to take her out… and Kitty responded by cancelling every vote against her and redirecting the boot onto him. It’s the season’s defining ‘you tried me’ reversal."
+  },
+
+  "secondBiggestBetrayal": {
+    "betrayer": "Tom",
+    "betrayed": "Taylor",
+    "description": "At Final 7, Tom’s idol voided the unanimous Tom boot and instantly flipped the elimination onto Taylor. It was a clean execution that ended her run on the spot."
+  },
+
+  "ironPerson": {
+    "name": "Kitty",
+    "playerSlug": "kitty",
+    "note": "Took 13 votes against (tied highest) and still made jury. Even when the whole game tried to delete her, she kept surviving long enough to pull off the season’s biggest play."
+  },
+
+  "bestJuryWin": {
+    "name": "MacArthur",
+    "playerSlug": "macarthur",
+    "note": "6–2–1 is a real win, not a split fluke. Multiple jurors independently saw her as the most complete player, especially compared to Cody/Carrie’s more relationship-based paths."
+  },
+
+  "bestNarrativeMoment": {
+    "name": "Kitty",
+    "playerSlug": "kitty",
+    "note": "Episode 9: double idol, 8 votes cancelled, Pete eliminated. It’s the kind of Tribal that turns a season from ‘good’ to ‘iconic.’"
+  },
+
+  "mostChallengeWins": {
+    "name": "Jacques",
+    "playerSlug": "jacques",
+    "detail": "6 total",
+    "note": "Highest overall challenge wins. Even though he quit, he was the season’s most dominant competitor on paper."
+  }
+}
+,
   "seasonNarrative": "Total Drama: Fans vs Favorites (Season 7) opened with a tone-setting winner first boot (Lindsay) and a pre-merge defined by swaps, an Exile extra vote (Pete), and Kitty quietly amassing two idols while Cody pocketed a Legacy Advantage. Lawa stabilized around a functional majority; Naale congealed late behind the Scott/Shawn duo. The 3-tribe swap and a joint Tribal produced chaos boots (Brody, Spud), while MacArthur found an idol and emerged as a stabilizing enforcer. At merge, Jasmine became the ‘peace offering’ leader cut. The season’s centerpiece was the Kitty arc: an all-time ‘idol firewall’ that erased eight votes on her and shielded Scott, sending Pete out instead—only for the tribe to finish Kitty the next round. From there, the game shifted into duo extermination: Shawn fell 5–4, then Scott 6–2, while Taylor’s hub power ended on a ricochet from Tom’s perfectly timed idol at seven. Sky’s removal at six confirmed a Carrie/Cody/MacArthur endgame machine. The F5 ‘advantage dump’ (Carrie’s Vote Steal + Cody/MacArthur idols) obliterated Tom. In the finale, Jacques won F4 immunity but imploded and quit, creating a Carrie–Cody–MacArthur Final 3. MacArthur’s cross-tribe bridges, idol discipline, and independent voting record earned a decisive 6–2–1 win over Cody and Carrie.",
   "theme": "2 Tribes (10 Favorites and 10 Fans)",
   "status": "Complete",

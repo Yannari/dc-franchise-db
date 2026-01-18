@@ -527,7 +527,7 @@
       "totalChallengeWins": 1,
       "totalImmunityWins": 1,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 26,
+      "totalVotesAgainst": 33,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -568,23 +568,31 @@
         },
         {
           "season": 7,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 18,
+          "status": "Pre-Merge",
+          "tribe": "Naale → Mauhu",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 7,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 4,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Swap-tribe meltdown; 5–1."
+          ],
+          "gameplayStyle": "Physical contributor; swap casualty",
+          "keyMoments": [
+            "Takes 2 votes in Ep1 as early threat ping",
+            "Meltdown after swap leads to 5–1 boot"
+          ],
+          "alliances": [],
+          "rivalries": []
         }
       ],
-      "story": "On Blood vs. Water (Season 6), Brody was the season’s endurance monster—paired with Geoff, he absorbed heat and still kept moving forward. He even survived an earlier trip through the swap/Redemption machinery, returning to the game with a target that never truly faded. By Episode 14, the merge needed a clean break from the ‘can’t kill him’ narrative and Brody was voted out 4–2. (Result: voted out Episode 14, 4–2; 7th.)",
+      "story": "On Blood vs. Water (Season 6), Brody was the season’s endurance monster—paired with Geoff, he absorbed heat and still kept moving forward. He even survived an earlier trip through the swap/Redemption machinery, returning to the game with a target that never truly faded. By Episode 14, the merge needed a clean break from the ‘can’t kill him’ narrative and Brody was voted out 4–2. (Result: voted out Episode 14, 4–2; 7th.)\n\n────────\n\nSEASON 7 — Fan vs Favorites\n────────\n\nSEASON 7 — Fan vs Favorites\nPhysically useful but targeted for a meltdown on a sacrifice tribe.",
       "seasonsPlayed": 1,
       "avgPlacement": 7
     },
@@ -663,13 +671,13 @@
         7
       ],
       "totalSeasons": 2,
-      "bestPlacement": 19,
+      "bestPlacement": 2,
       "wins": 0,
-      "totalChallengeWins": 0,
+      "totalChallengeWins": 4,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 6,
-      "totalIdolsFound": 0,
+      "totalVotesAgainst": 9,
+      "totalIdolsFound": 1,
       "seasonDetails": [
         {
           "season": 1,
@@ -688,23 +696,39 @@
         },
         {
           "season": 7,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
-          "challengeWins": 0,
+          "placement": 2,
+          "status": "Finalist",
+          "tribe": "Naale → Lawa → Lawa → Campers",
+          "challengeWins": 4,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
+          "votesReceived": 3,
+          "idolsFound": 1,
+          "strategicRank": 8,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Runner-up with 2 jury votes."
+          ],
+          "gameplayStyle": "Social connector with clutch advantage timing",
+          "keyMoments": [
+            "Finds Legacy Advantage in Ep1; becomes early ‘value holder’",
+            "Dodges joint-tribal strike (Ep4) via numbers",
+            "Reinforces with Carrie/MacArthur at merge",
+            "Finds Campers idol late and plays it in F5 advantage dump"
+          ],
+          "alliances": [
+            "Carrie",
+            "MacArthur",
+            "Jacques"
+          ],
+          "rivalries": [
+            "Laurie"
+          ]
         }
       ],
-      "story": "Introduced on Screaming Gophers (Season 1), Cody spent the pre-merge trying to stay useful without becoming a target—a tough balance on a tribe full of big personalities. He nearly survived the squeeze, but the vote that ended him was decided by a single flip: Leshawna changed sides, turning a close night into a 6–5 send-off. It’s the kind of elimination that haunts a season—because one relationship, one conversation, one minute earlier could’ve rewritten everything (Result: eliminated 6–5; 19th).",
+      "story": "Introduced on Screaming Gophers (Season 1), Cody spent the pre-merge trying to stay useful without becoming a target—a tough balance on a tribe full of big personalities. He nearly survived the squeeze, but the vote that ended him was decided by a single flip: Leshawna changed sides, turning a close night into a 6–5 send-off. It’s the kind of elimination that haunts a season—because one relationship, one conversation, one minute earlier could’ve rewritten everything (Result: eliminated 6–5; 19th).\n\n────────\n\nSEASON 7 — Fan vs Favorites\n────────\n\nSEASON 7 — Fan vs Favorites\nConnected, low-agro operator who survived early heat with Legacy Advantage gravity; found a late idol and timed protections at F5.",
       "badges": [],
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
@@ -1815,8 +1839,8 @@
       "totalSeasons": 2,
       "bestPlacement": 1,
       "wins": 1,
-      "totalChallengeWins": 4,
-      "totalImmunityWins": 4,
+      "totalChallengeWins": 10,
+      "totalImmunityWins": 9,
       "totalRewardWins": 0,
       "totalVotesAgainst": 2,
       "totalIdolsFound": 0,
@@ -1862,23 +1886,39 @@
         },
         {
           "season": 7,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
+          "placement": 4,
+          "status": "Pre-Juror",
+          "tribe": "Naale → Naale → Naale → Campers",
+          "challengeWins": 6,
+          "immunityWins": 5,
           "rewardWins": 0,
           "votesReceived": 0,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 9,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Quit at Final 4 after winning immunity; meltdown ends game."
+          ],
+          "gameplayStyle": "Strategic hub and immunity workhorse",
+          "keyMoments": [
+            "Builds Naale core, then bonds with Shawn to flip Devin (Ep7)",
+            "Pushes anti-MacArthur lane at merge (Ep8)",
+            "Wins 5 immunities; safe through late merge",
+            "F4 immunity win followed by quit"
+          ],
+          "alliances": [
+            "Taylor",
+            "Cody",
+            "MacArthur"
+          ],
+          "rivalries": [
+            "Carrie"
+          ]
         }
       ],
-      "story": "On Blood vs. Water (Season 6), Jacques turned the Ice Dancers pairing with Josee into a masterclass in controlled threat management. While louder duos burned trust and idols, he stayed ‘useful’—competent in challenges, calm in camp, and quietly steering the merge vote map by weaponizing other people’s feuds. He survived the season’s chaos points (tribe re-draw, Redemption returns, rock-draw fallout) and arrived at the end with the cleanest résumé left. In the finale, the jury didn’t debate—they crowned him in a 7–1–0 landslide. (Result: Season 6 champion, 1st.)",
+      "story": "On Blood vs. Water (Season 6), Jacques turned the Ice Dancers pairing with Josee into a masterclass in controlled threat management. While louder duos burned trust and idols, he stayed ‘useful’—competent in challenges, calm in camp, and quietly steering the merge vote map by weaponizing other people’s feuds. He survived the season’s chaos points (tribe re-draw, Redemption returns, rock-draw fallout) and arrived at the end with the cleanest résumé left. In the finale, the jury didn’t debate—they crowned him in a 7–1–0 landslide. (Result: Season 6 champion, 1st.)\n\n────────\n\nSEASON 7 — Fan vs Favorites\n────────\n\nSEASON 7 — Fan vs Favorites\nHyper-competent strategist and challenge beast who built cross-tribe ties; zero votes all season but exits via quit at F4.",
       "seasonsPlayed": 1,
       "avgPlacement": 1
     },
@@ -1890,12 +1930,12 @@
         7
       ],
       "totalSeasons": 2,
-      "bestPlacement": 14,
+      "bestPlacement": 13,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 2,
+      "totalVotesAgainst": 11,
       "totalIdolsFound": 0,
       "badges": [],
       "seasonDetails": [
@@ -1912,23 +1952,34 @@
         },
         {
           "season": 7,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 13,
+          "status": "Juror",
+          "tribe": "Naale → Naale → Lawa → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 9,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 6,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "First juror; merge leader cut 7–4–2."
+          ],
+          "gameplayStyle": "Respected leader",
+          "keyMoments": [
+            "Named early but avoided pre-merge danger",
+            "Merge boot as ‘consensus’ leader"
+          ],
+          "alliances": [
+            "Taylor",
+            "Cody"
+          ],
+          "rivalries": []
         }
       ],
-      "story": "Jasmine brought a steady, survival-first presence to the early Belo/Reba chaos, attempting to keep the tribe focused while smaller rivalries pulled votes in different directions. Without advantages or a dominant alliance to lock her in, she became a convenient compromise boot once numbers got messy. She exited in Episode 5 (Jasmine eliminated, 2–1).",
+      "story": "Jasmine brought a steady, survival-first presence to the early Belo/Reba chaos, attempting to keep the tribe focused while smaller rivalries pulled votes in different directions. Without advantages or a dominant alliance to lock her in, she became a convenient compromise boot once numbers got messy. She exited in Episode 5 (Jasmine eliminated, 2–1).\n\n────────\n\nSEASON 7 — Fan vs Favorites\n────────\n\nSEASON 7 — Fan vs Favorites\nRespected voice and steady competitor; became the merge peace-offering boot.",
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
       "avgPlacement": 14
@@ -2331,11 +2382,11 @@
       "totalSeasons": 2,
       "bestPlacement": 9,
       "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
+      "totalChallengeWins": 2,
+      "totalImmunityWins": 1,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 15,
-      "totalIdolsFound": 1,
+      "totalVotesAgainst": 28,
+      "totalIdolsFound": 3,
       "totalJuryVotes": 0,
       "tier": "Unranked",
       "badges": [],
@@ -2375,23 +2426,39 @@
         },
         {
           "season": 7,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
+          "placement": 11,
+          "status": "Juror",
+          "tribe": "Naale → Lawa → Lawa → Campers",
+          "challengeWins": 2,
+          "immunityWins": 1,
           "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
+          "votesReceived": 13,
+          "idolsFound": 2,
+          "strategicRank": 8,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Post-idol execution 5–3–3 after legendary double-idol firewall."
+          ],
+          "gameplayStyle": "Advantage queen and social weaver",
+          "keyMoments": [
+            "Finds Naale idol then Lawa idol",
+            "Ep9 ‘idol firewall’: cancels 8 votes on herself and shields Scott; Pete goes",
+            "Voted out 5–3–3 next tribal"
+          ],
+          "alliances": [
+            "Scott",
+            "Shawn",
+            "Cody"
+          ],
+          "rivalries": [
+            "Shawn",
+            "Spud"
+          ]
         }
       ],
-      "story": "On Blood vs. Water (Season 6), Kitty played heart-first beside Emma, using social warmth to keep their duo insulated while bigger pairs self-destructed. But loyalty came with a price: she burned her idol earlier trying to protect/shape the power structure, and once the merge chaos hit, she was left exposed. In Episode 11, a messy multi-target Tribal finally converged and Kitty was voted out 3–2–2–1–1, sent to Redemption before her eventual elimination. (Result: voted out 3–2–2–1–1 → RI; 9th.)",
+      "story": "On Blood vs. Water (Season 6), Kitty played heart-first beside Emma, using social warmth to keep their duo insulated while bigger pairs self-destructed. But loyalty came with a price: she burned her idol earlier trying to protect/shape the power structure, and once the merge chaos hit, she was left exposed. In Episode 11, a messy multi-target Tribal finally converged and Kitty was voted out 3–2–2–1–1, sent to Redemption before her eventual elimination. (Result: voted out 3–2–2–1–1 → RI; 9th.)\n\n────────\n\nSEASON 7 — Fan vs Favorites\n────────\n\nSEASON 7 — Fan vs Favorites\nSeason’s early hidden boss: held two idols at once, built webs across tribes; saved herself and Scott in a single tribal before being finished the next round.",
       "seasonsPlayed": 1,
       "avgPlacement": 9
     },
@@ -2589,7 +2656,7 @@
       "totalChallengeWins": 1,
       "totalImmunityWins": 1,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 2,
+      "totalVotesAgainst": 8,
       "totalIdolsFound": 0,
       "totalJuryVotes": 6,
       "badges": [
@@ -2641,23 +2708,34 @@
         },
         {
           "season": 7,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 20,
+          "status": "Pre-Merge",
+          "tribe": "Naale",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 6,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 3,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "First boot 6–2–2 on Naale; winner threat + fight with Shawn."
+          ],
+          "gameplayStyle": "Social-light, early spark target",
+          "keyMoments": [
+            "Fight with Shawn becomes consensus fuel",
+            "Goes 6–2–2 in premiere"
+          ],
+          "alliances": [],
+          "rivalries": [
+            "Jasmine",
+            "Shawn"
+          ]
         }
       ],
-      "story": "SEASON 1 — Cullhouse\nSEASON 1 — Cullhouse\nIntroduced on Screaming Gophers (Season 1), Lindsay won by doing the simplest thing in the hardest way: staying universally liked while keeping the target off her back. She never needed an immunity run—her game was relationships and timing, not fireworks—yet she still reached the finale with only 1 vote against. The endgame was built around unbreakable ties with Leshawna, Trent and Alejandro. In the finale, she edged out Alejandro in a 5–4 vote to claim the crown (Result: champion; 1st).\n\n────────\n\nSEASON 2 — Action\n────────\n\nSEASON 2 — Action\nLindsay’s Season 2 was a social masterclass: she kept multiple relationships alive at once, avoided being the easy consensus name, and rode the Beth partnership without being trapped by it. When chaos hit — idols, revotes, and shifting numbers — she consistently landed on her feet. She reached Final Tribal but lost to Duncan when the jury rewarded endurance over charm (Lindsay loses, 1–5–1).",
+      "story": "SEASON 1 — Cullhouse\nSEASON 1 — Cullhouse\nIntroduced on Screaming Gophers (Season 1), Lindsay won by doing the simplest thing in the hardest way: staying universally liked while keeping the target off her back. She never needed an immunity run—her game was relationships and timing, not fireworks—yet she still reached the finale with only 1 vote against. The endgame was built around unbreakable ties with Leshawna, Trent and Alejandro. In the finale, she edged out Alejandro in a 5–4 vote to claim the crown (Result: champion; 1st).\n\n────────\n\nSEASON 2 — Action\n────────\n\nSEASON 2 — Action\nLindsay’s Season 2 was a social masterclass: she kept multiple relationships alive at once, avoided being the easy consensus name, and rode the Beth partnership without being trapped by it. When chaos hit — idols, revotes, and shifting numbers — she consistently landed on her feet. She reached Final Tribal but lost to Duncan when the jury rewarded endurance over charm (Lindsay loses, 1–5–1).\n\n────────\n\nSEASON 7 — Fan vs Favorites\n────────\n\nSEASON 7 — Fan vs Favorites\nEpisode 1 casualty after a lasting fight; quiet winner-threat undertone expedited her exit.",
       "seasonsPlayed": 2,
       "avgPlacement": 2
     },
@@ -3270,10 +3348,10 @@
       "totalSeasons": 3,
       "bestPlacement": 2,
       "wins": 0,
-      "totalChallengeWins": 6,
+      "totalChallengeWins": 7,
       "totalImmunityWins": 3,
       "totalRewardWins": 3,
-      "totalVotesAgainst": 4,
+      "totalVotesAgainst": 15,
       "totalIdolsFound": 1,
       "totalJuryVotes": 4,
       "badges": [
@@ -3330,23 +3408,37 @@
         },
         {
           "season": 7,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
-          "challengeWins": 0,
+          "placement": 8,
+          "status": "Juror",
+          "tribe": "Naale → Lawa → Naale → Campers",
+          "challengeWins": 1,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 11,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 7,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Executed at F8 as dangerous swing after duo split."
+          ],
+          "gameplayStyle": "Aggressive duo generalist",
+          "keyMoments": [
+            "Forms controlling Naale duo with Shawn",
+            "Receives Kitty’s protective idol shield at Ep9",
+            "Targeted and removed 6–2 at F8"
+          ],
+          "alliances": [
+            "Shawn"
+          ],
+          "rivalries": [
+            "Kitty",
+            "Taylor"
+          ]
         }
       ],
-      "story": "SEASON 3 — Revenge of the Island\nSEASON 3 — Revenge of the Island\nIntroduced on Revenge of the Island (Season 3), Scott was the season’s challenge engine—stacking the most wins and setting the pace whenever immunity mattered. They paired that dominance with ruthless timing, including the endgame betrayal of Zoey after an unbreakable bond carried them to the brink. Scott reached Final Tribal with a ‘challenge beast’ résumé, but the jury rewarded loyalty and relationships instead. (Result: Scott lost 3–4–1; runner-up.)\n\nBest player to never win. PERFECT IDOL PLAY after holding for 9 tribals (franchise record). Runner-up in S3, third place in S4.\n\n────────\n\nSEASON 4 — Edge of Extinction\n────────\n\nSEASON 4 — Edge of Extinction\nScott came into Edge of Extinction (Season 4) as the franchise’s cleanest “toolbox” player—and proved it. He held an idol through nine consecutive Tribal Councils (a franchise record), then timed a perfect Final 5 play that cancelled three votes and kept his endgame intact. He even knocked out Cameron in a 2–0 decision, but at Final Tribal Council only Duncan rewarded the résumé. Result: Scott placed 3rd.",
+      "story": "SEASON 3 — Revenge of the Island\nSEASON 3 — Revenge of the Island\nIntroduced on Revenge of the Island (Season 3), Scott was the season’s challenge engine—stacking the most wins and setting the pace whenever immunity mattered. They paired that dominance with ruthless timing, including the endgame betrayal of Zoey after an unbreakable bond carried them to the brink. Scott reached Final Tribal with a ‘challenge beast’ résumé, but the jury rewarded loyalty and relationships instead. (Result: Scott lost 3–4–1; runner-up.)\n\nBest player to never win. PERFECT IDOL PLAY after holding for 9 tribals (franchise record). Runner-up in S3, third place in S4.\n\n────────\n\nSEASON 4 — Edge of Extinction\n────────\n\nSEASON 4 — Edge of Extinction\nScott came into Edge of Extinction (Season 4) as the franchise’s cleanest “toolbox” player—and proved it. He held an idol through nine consecutive Tribal Councils (a franchise record), then timed a perfect Final 5 play that cancelled three votes and kept his endgame intact. He even knocked out Cameron in a 2–0 decision, but at Final Tribal Council only Duncan rewarded the résumé. Result: Scott placed 3rd.\n\n────────\n\nSEASON 7 — Fan vs Favorites\n────────\n\nSEASON 7 — Fan vs Favorites\nHalf of the season’s tightest duo with Shawn; targeted repeatedly, saved by Kitty’s idol once, then removed as a swing threat.",
       "seasonsPlayed": 2,
       "avgPlacement": 2.5
     },
@@ -3360,10 +3452,10 @@
       "totalSeasons": 2,
       "bestPlacement": 9,
       "wins": 0,
-      "totalChallengeWins": 0,
+      "totalChallengeWins": 2,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 6,
+      "totalVotesAgainst": 17,
       "totalIdolsFound": 1,
       "badges": [],
       "seasonDetails": [
@@ -3380,23 +3472,36 @@
         },
         {
           "season": 7,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
-          "challengeWins": 0,
+          "placement": 9,
+          "status": "Juror",
+          "tribe": "Naale → Lawa → Naale → Campers",
+          "challengeWins": 2,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 11,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 7,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Duo with Scott finally cracked 5–4 at F9."
+          ],
+          "gameplayStyle": "Duo-centric competitor",
+          "keyMoments": [
+            "Drives Devin boot 4–3 (Ep7)",
+            "Open war with Kitty across merge",
+            "Voted out 5–4"
+          ],
+          "alliances": [
+            "Scott"
+          ],
+          "rivalries": [
+            "Kitty"
+          ]
         }
       ],
-      "story": "Shawn navigated Season 5 with a paranoid-but-prepared mindset, finding a Beware Idol on Belo and briefly holding real leverage at the merge. His risk-taking peaked when he used Shot in the Dark and lost his vote, putting him on the wrong side of the numbers. He was eliminated in Episode 9 (Shawn eliminated, 5–2), but not before becoming a real factor in the season’s advantage economy.",
+      "story": "Shawn navigated Season 5 with a paranoid-but-prepared mindset, finding a Beware Idol on Belo and briefly holding real leverage at the merge. His risk-taking peaked when he used Shot in the Dark and lost his vote, putting him on the wrong side of the numbers. He was eliminated in Episode 9 (Shawn eliminated, 5–2), but not before becoming a real factor in the season’s advantage economy.\n\n────────\n\nSEASON 7 — Fan vs Favorites\n────────\n\nSEASON 7 — Fan vs Favorites\nEarly Naale swing with bonds to Devin; later the merge lightning rod and long-running feud with Kitty.",
       "seasonsPlayed": 1,
       "totalJuryVotes": 0,
       "avgPlacement": 9
@@ -3478,7 +3583,7 @@
       "totalChallengeWins": 4,
       "totalImmunityWins": 3,
       "totalRewardWins": 1,
-      "totalVotesAgainst": 1,
+      "totalVotesAgainst": 6,
       "totalIdolsFound": 2,
       "totalJuryVotes": 3,
       "badges": [
@@ -3502,23 +3607,39 @@
         },
         {
           "season": 7,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 6,
+          "status": "Juror",
+          "tribe": "Naale → Mauhu → Naale → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 5,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 8,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Cut at F6 as a threat tethered to Jacques."
+          ],
+          "gameplayStyle": "Connector and steady voter",
+          "keyMoments": [
+            "Swap survival and integration on Mauhu",
+            "Votes on key merge swings (Jasmine, Shawn)",
+            "Public feud with MacArthur",
+            "F6 booted 3–1–1–1"
+          ],
+          "alliances": [
+            "MacArthur",
+            "Tom",
+            "Jacques"
+          ],
+          "rivalries": [
+            "MacArthur"
+          ]
         }
       ],
-      "story": "Season 5 challenge MVP with 4 total challenge wins and 3 immunities; forced the late-game tempo but fell short in a 3–3 FTC tie.",
+      "story": "Season 5 challenge MVP with 4 total challenge wins and 3 immunities; forced the late-game tempo but fell short in a 3–3 FTC tie.\n\n────────\n\nSEASON 7 — Fan vs Favorites\n────────\n\nSEASON 7 — Fan vs Favorites\nBridge between power lanes pre-merge; later feuded with MacArthur and got clipped as a connected endgame threat.",
       "seasonsPlayed": 1,
       "avgPlacement": 2
     },
@@ -3848,7 +3969,7 @@
       "totalChallengeWins": 8,
       "totalImmunityWins": 5,
       "totalRewardWins": 3,
-      "totalVotesAgainst": 4,
+      "totalVotesAgainst": 9,
       "totalIdolsFound": 1,
       "totalJuryVotes": 6,
       "badges": [
@@ -3905,23 +4026,36 @@
         },
         {
           "season": 7,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 15,
+          "status": "Pre-Merge",
+          "tribe": "Naale",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 5,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 5,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Swap-war casualty once Lawa #3 formed; 5–2."
+          ],
+          "gameplayStyle": "Social steady hand",
+          "keyMoments": [
+            "Early bonds with Brody",
+            "Lasting fight with Carrie at swap",
+            "Voted out 5–2"
+          ],
+          "alliances": [
+            "Brody"
+          ],
+          "rivalries": [
+            "Carrie"
+          ]
         }
       ],
-      "story": "SEASON 3 — Revenge of the Island\nSEASON 3 — Revenge of the Island\nDebuting on Revenge of the Island (Season 3), Zoey was the social connector on the Mutant Maggots—liked by most, tied into multiple groups, and strong enough in challenges to stay relevant. Their run became defined by trust: the unbreakable bond with Scott carried them deep, even as the endgame turned into betrayal roulette. At the final vote before the Final Tribal Council, Scott pulled the trigger and Zoey was cut in Episode 13 (Result: voted out 3–1; 4th, final juror).\n\n────────\n\nSEASON 4 — Edge of Extinction\n────────\n\nSEASON 4 — Edge of Extinction\nUNPRECEDENTED social dominance with 3 unbreakable bonds at once in S4. Lost 6-7 to Alejandro in closest finale ever. Most socially connected player in franchise history.\n\nOn Edge of Extinction (Season 4), Zoey delivered a near‑perfect social game. She built an unprecedented web of three “unbreakable bonds” at once, kept her name off the parchment all season (the only vote against her was cancelled), and capped the midgame with a perfect idol play that erased seven votes and saved Geoff. After a key Episode 8 flip and back‑to‑back immunities late (Episodes 11–12), she reached Final Tribal Council—but fell just short. Result: Zoey finished runner‑up.",
+      "story": "SEASON 3 — Revenge of the Island\nSEASON 3 — Revenge of the Island\nDebuting on Revenge of the Island (Season 3), Zoey was the social connector on the Mutant Maggots—liked by most, tied into multiple groups, and strong enough in challenges to stay relevant. Their run became defined by trust: the unbreakable bond with Scott carried them deep, even as the endgame turned into betrayal roulette. At the final vote before the Final Tribal Council, Scott pulled the trigger and Zoey was cut in Episode 13 (Result: voted out 3–1; 4th, final juror).\n\n────────\n\nSEASON 4 — Edge of Extinction\n────────\n\nSEASON 4 — Edge of Extinction\nUNPRECEDENTED social dominance with 3 unbreakable bonds at once in S4. Lost 6-7 to Alejandro in closest finale ever. Most socially connected player in franchise history.\n\nOn Edge of Extinction (Season 4), Zoey delivered a near‑perfect social game. She built an unprecedented web of three “unbreakable bonds” at once, kept her name off the parchment all season (the only vote against her was cancelled), and capped the midgame with a perfect idol play that erased seven votes and saved Geoff. After a key Episode 8 flip and back‑to‑back immunities late (Episodes 11–12), she reached Final Tribal Council—but fell just short. Result: Zoey finished runner‑up.\n\n────────\n\nSEASON 7 — Fan vs Favorites\n────────\n\nSEASON 7 — Fan vs Favorites\nReturnee social stabilizer targeted in a numbers lock after a volatile swap.",
       "seasonsPlayed": 2,
       "avgPlacement": 3
     },
@@ -3932,12 +4066,12 @@
         7
       ],
       "totalSeasons": 1,
-      "bestPlacement": 99,
+      "bestPlacement": 3,
       "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
+      "totalChallengeWins": 3,
+      "totalImmunityWins": 1,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
+      "totalVotesAgainst": 6,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -3945,22 +4079,41 @@
       "seasonDetails": [
         {
           "season": 7,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
+          "placement": 3,
+          "status": "Finalist",
+          "tribe": "Lawa → Naale → Lawa → Campers",
+          "challengeWins": 3,
+          "immunityWins": 1,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 6,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 8,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Third place with 1 jury vote."
+          ],
+          "gameplayStyle": "Social core and vote director",
+          "keyMoments": [
+            "Survives early Lawa turbulence and integrates",
+            "Co-founds Lawa #3 (with Cody/MacArthur) and drives Zoey boot at swap",
+            "Wins merge immunity (Ep11) and guides calm boot on Laurie",
+            "Uses Vote Steal at F5 to delete Tom’s outs"
+          ],
+          "alliances": [
+            "Cody",
+            "MacArthur",
+            "Taylor"
+          ],
+          "rivalries": [
+            "Pete",
+            "Jacques",
+            "Tom"
+          ]
         }
-      ]
+      ],
+      "story": "Social hub protected by tight bonds; wielded a Vote Steal at F5 to lock path to the finals."
     },
     {
       "id": "devin",
@@ -3969,12 +4122,12 @@
         7
       ],
       "totalSeasons": 1,
-      "bestPlacement": 99,
+      "bestPlacement": 14,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
+      "totalVotesAgainst": 4,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -3982,22 +4135,39 @@
       "seasonDetails": [
         {
           "season": 7,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 14,
+          "status": "Pre-Merge",
+          "tribe": "Lawa → Naale",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 4,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 6,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Taken out 4–3 by Scott/Shawn lane with Jacques flipping."
+          ],
+          "gameplayStyle": "Social connector pre-merge",
+          "keyMoments": [
+            "Forms early bonds with Carrie, Spud",
+            "Becomes target of Jacques/Shawn lane",
+            "Voted out 4–3"
+          ],
+          "alliances": [
+            "Carrie",
+            "Spud",
+            "Taylor"
+          ],
+          "rivalries": [
+            "Zoey",
+            "Jasmine"
+          ]
         }
-      ]
+      ],
+      "story": "Early Lawa glue with Carrie and Spud; swap/Naale tensions and dislikes cost him."
     },
     {
       "id": "ellody",
@@ -4006,12 +4176,12 @@
         7
       ],
       "totalSeasons": 1,
-      "bestPlacement": 99,
+      "bestPlacement": 19,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
+      "totalVotesAgainst": 7,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -4019,22 +4189,34 @@
       "seasonDetails": [
         {
           "season": 7,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 19,
+          "status": "Pre-Merge",
+          "tribe": "Lawa",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 7,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 3,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Clean majority boot 7–3 once Lawa formed structure."
+          ],
+          "gameplayStyle": "Isolated planner",
+          "keyMoments": [
+            "Targeted over Carrie to keep a shield",
+            "Leaves 7–3"
+          ],
+          "alliances": [],
+          "rivalries": [
+            "Taylor",
+            "Spud"
+          ]
         }
-      ]
+      ],
+      "story": "Never found solid footing on Lawa; removed as the safe consensus over louder targets."
     },
     {
       "id": "laurie",
@@ -4043,12 +4225,12 @@
         7
       ],
       "totalSeasons": 1,
-      "bestPlacement": 99,
+      "bestPlacement": 10,
       "wins": 0,
-      "totalChallengeWins": 0,
+      "totalChallengeWins": 3,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
+      "totalVotesAgainst": 8,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -4056,22 +4238,34 @@
       "seasonDetails": [
         {
           "season": 7,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
-          "challengeWins": 0,
+          "placement": 10,
+          "status": "Juror",
+          "tribe": "Lawa → Lawa → Naale → Campers",
+          "challengeWins": 3,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 8,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 5,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Merge ‘pressure release’ boot 5–3–2."
+          ],
+          "gameplayStyle": "Volatile outsider",
+          "keyMoments": [
+            "Extreme conflict with Cody at swap",
+            "Wrong side of key pre-merge votes",
+            "Merge boot 5–3–2"
+          ],
+          "alliances": [],
+          "rivalries": [
+            "Cody"
+          ]
         }
-      ]
+      ],
+      "story": "Early friction with multiple Lawa members; long-running hostility with Cody; removed at merge to calm tensions."
     },
     {
       "id": "lorenzo",
@@ -4080,12 +4274,12 @@
         7
       ],
       "totalSeasons": 1,
-      "bestPlacement": 99,
+      "bestPlacement": 16,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
+      "totalVotesAgainst": 4,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -4093,22 +4287,35 @@
       "seasonDetails": [
         {
           "season": 7,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 16,
+          "status": "Pre-Merge",
+          "tribe": "Lawa → Mauhu",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 4,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 4,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Outnumbered by Mauhu trio; 3–2."
+          ],
+          "gameplayStyle": "Social scrambler",
+          "keyMoments": [
+            "Bonds with Pete post-swap",
+            "Loses 3–2 to Mauhu core"
+          ],
+          "alliances": [
+            "Pete"
+          ],
+          "rivalries": [
+            "MacArthur"
+          ]
         }
-      ]
+      ],
+      "story": "Survived one swap vote via social bridge to Pete, then fell to the MacArthur/Sky/Tom majority."
     },
     {
       "id": "macarthur",
@@ -4117,35 +4324,59 @@
         7
       ],
       "totalSeasons": 1,
-      "bestPlacement": 99,
-      "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
+      "bestPlacement": 1,
+      "wins": 1,
+      "totalChallengeWins": 4,
+      "totalImmunityWins": 1,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
+      "totalVotesAgainst": 5,
+      "totalIdolsFound": 1,
       "totalJuryVotes": 0,
       "tier": "Unranked",
-      "badges": [],
+      "badges": [
+        "S7 Winner"
+      ],
       "seasonDetails": [
         {
           "season": 7,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
+          "placement": 1,
+          "status": "Winner",
+          "tribe": "Lawa → Mauhu → Lawa → Campers",
+          "challengeWins": 4,
+          "immunityWins": 1,
           "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
+          "votesReceived": 5,
+          "idolsFound": 1,
+          "strategicRank": 9,
           "juryVotes": 0,
-          "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "finalVote": "6-2-1",
+          "advantages": [],
+          "notes": [
+            "Wins 6–2–1 at Final Tribal Council."
+          ],
+          "gameplayStyle": "Power-social hybrid; alliance switchboard with intimidation and restraint",
+          "keyMoments": [
+            "Finds Mauhu idol pre-merge and holds it deep",
+            "Anchors Mauhu trio and later Lawa #3 with Carrie/Cody",
+            "Refuses to pile on Kitty in Ep10, signaling independent agency",
+            "Wins merge immunity (Ep12), stabilizes lane targeting Shawn",
+            "Burns idol perfectly at F5 advantage dump",
+            "Beats Cody and Carrie 6–2–1 at FTC"
+          ],
+          "alliances": [
+            "Carrie",
+            "Cody",
+            "Sky",
+            "Tom",
+            "Jacques"
+          ],
+          "rivalries": [
+            "Sky",
+            "Pete"
+          ]
         }
-      ]
+      ],
+      "story": "Idol-holding enforcer who bridged factions across swaps and merge. Weathered public fights, steered multiple votes, and arrived at FTC with broad respect."
     },
     {
       "id": "pete",
@@ -4154,12 +4385,12 @@
         7
       ],
       "totalSeasons": 1,
-      "bestPlacement": 99,
+      "bestPlacement": 12,
       "wins": 0,
-      "totalChallengeWins": 0,
+      "totalChallengeWins": 1,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
+      "totalVotesAgainst": 5,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -4167,22 +4398,37 @@
       "seasonDetails": [
         {
           "season": 7,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
-          "challengeWins": 0,
+          "placement": 12,
+          "status": "Juror",
+          "tribe": "Lawa → Mauhu → Lawa → Campers",
+          "challengeWins": 1,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 5,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 7,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Extra Vote from Exile; spent it trying to boot Kitty but got bounced instead."
+          ],
+          "gameplayStyle": "Middle-player with a twist",
+          "keyMoments": [
+            "Chooses Extra Vote on Exile",
+            "Pushes anti-Kitty merge vote; uses extra vote",
+            "Eliminated 5–0 effective after idols"
+          ],
+          "alliances": [
+            "Taylor"
+          ],
+          "rivalries": [
+            "MacArthur",
+            "Carrie"
+          ]
         }
-      ]
+      ],
+      "story": "Exile gainer turned mid-merge swing; lines up the anti-Kitty push but gets nuked by her idol firewall."
     },
     {
       "id": "spud",
@@ -4191,12 +4437,12 @@
         7
       ],
       "totalSeasons": 1,
-      "bestPlacement": 99,
+      "bestPlacement": 17,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
+      "totalVotesAgainst": 5,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -4204,22 +4450,36 @@
       "seasonDetails": [
         {
           "season": 7,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 17,
+          "status": "Pre-Merge",
+          "tribe": "Lawa",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 5,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 5,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Joint-tribal casualty; 5–3–3."
+          ],
+          "gameplayStyle": "Chaotic social player",
+          "keyMoments": [
+            "Strong bond with Devin",
+            "Argues with Kitty before joint Tribal",
+            "Voted out 5–3–3"
+          ],
+          "alliances": [
+            "Devin"
+          ],
+          "rivalries": [
+            "Kitty"
+          ]
         }
-      ]
+      ],
+      "story": "Early chaos archetype who formed real ties (Devin) but got targeted as the ‘easy’ cross-tribe vote."
     },
     {
       "id": "taylor",
@@ -4228,12 +4488,12 @@
         7
       ],
       "totalSeasons": 1,
-      "bestPlacement": 99,
+      "bestPlacement": 7,
       "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
+      "totalChallengeWins": 3,
+      "totalImmunityWins": 2,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
+      "totalVotesAgainst": 11,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -4241,22 +4501,39 @@
       "seasonDetails": [
         {
           "season": 7,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
+          "placement": 7,
+          "status": "Juror",
+          "tribe": "Lawa → Naale → Lawa → Campers",
+          "challengeWins": 3,
+          "immunityWins": 2,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 11,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 9,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Idol ricochet casualty at F7 after Tom’s play."
+          ],
+          "gameplayStyle": "Strategic-social hub and comp threat",
+          "keyMoments": [
+            "Becomes central hub on Naale pre-merge",
+            "Wins two immunities",
+            "Takes out Shawn 5–4 (survives being targeted)",
+            "F7 bounced by Tom’s idol"
+          ],
+          "alliances": [
+            "Jacques",
+            "Carrie"
+          ],
+          "rivalries": [
+            "Scott",
+            "Tom"
+          ]
         }
-      ]
+      ],
+      "story": "Merge super-connector with unbreakable bonds to Jacques and Carrie; near-constant target of the Scott/Shawn duo; eliminated by redirected votes."
     },
     {
       "id": "tom",
@@ -4265,35 +4542,54 @@
         7
       ],
       "totalSeasons": 1,
-      "bestPlacement": 99,
+      "bestPlacement": 1,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
+      "totalVotesAgainst": 13,
+      "totalIdolsFound": 1,
       "totalJuryVotes": 0,
       "tier": "Unranked",
       "badges": [],
       "seasonDetails": [
         {
           "season": 7,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 5,
+          "status": "Juror",
+          "tribe": "Lawa → Mauhu → Naale → Campers",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
+          "votesReceived": 13,
+          "idolsFound": 1,
+          "strategicRank": 10,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Idol ricochet architect at F7; booted at F5 via unanimous pile-on after Vote Steal."
+          ],
+          "gameplayStyle": "Under-the-radar opportunist with clutch idol",
+          "keyMoments": [
+            "Helps execute Brody at swap (Ep3)",
+            "Hangs around as swing through merge",
+            "F7 idol play cancels 5 votes and knocks out Taylor",
+            "F5 eliminated after Carrie steals his vote"
+          ],
+          "alliances": [
+            "MacArthur",
+            "Sky",
+            "Cody",
+            "Jacques"
+          ],
+          "rivalries": [
+            "Taylor",
+            "Carrie"
+          ]
         }
-      ]
+      ],
+      "story": "Stealth endgamer who found merge idol, timed a perfect play to bounce Taylor at F7, then got steamrolled by advantage dump at F5."
     }
   ]
 }

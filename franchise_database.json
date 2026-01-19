@@ -15,7 +15,7 @@
     {
       "season": 1,
       "seasonTitle": "Total Drama",
-      "emoji": "🏝️",
+      "emoji": "\ud83c\udfdd\ufe0f",
       "winner": "Lindsay",
       "playerSlug": "lindsay",
       "finalVote": "5-4",
@@ -24,7 +24,7 @@
     {
       "season": 2,
       "seasonTitle": "Total Drama 2",
-      "emoji": "🔁",
+      "emoji": "\ud83d\udd01",
       "winner": "Duncan",
       "playerSlug": "duncan",
       "finalVote": "5-3-1",
@@ -33,7 +33,7 @@
     {
       "season": 3,
       "seasonTitle": "Total Drama Revenge of the Island",
-      "emoji": "🌋",
+      "emoji": "\ud83c\udf0b",
       "winner": "Emma",
       "playerSlug": "emma",
       "finalVote": "4-3-1",
@@ -42,7 +42,7 @@
     {
       "season": 4,
       "seasonTitle": "Total Drama All-Stars",
-      "emoji": "⭐",
+      "emoji": "\u2b50",
       "winner": "Alejandro",
       "playerSlug": "alejandro",
       "finalVote": "7-6-1",
@@ -51,7 +51,7 @@
     {
       "season": 5,
       "seasonTitle": "Total Drama Rescue Island",
-      "emoji": "🛟",
+      "emoji": "\ud83d\udedf",
       "winner": "Mickey",
       "playerSlug": "mickey",
       "finalVote": "3-3-2 (tiebreak)",
@@ -60,7 +60,7 @@
     {
       "season": 6,
       "seasonTitle": "Total Drama Blood VS Water",
-      "emoji": "🩸",
+      "emoji": "\ud83e\ude78",
       "winner": "Jacques",
       "playerSlug": "jacques",
       "finalVote": "7-1-0",
@@ -72,7 +72,7 @@
     {
       "season": 7,
       "seasonTitle": "Total Drama Fans VS Favorites",
-      "emoji": "🤩",
+      "emoji": "\ud83e\udd29",
       "winner": "MacArthur",
       "playerSlug": "macarthur",
       "finalVote": "6-2-1",
@@ -488,7 +488,7 @@
       "rankScore": 83,
       "tier": "S",
       "title": "The Snake Charmer",
-      "emoji": "🐍"
+      "emoji": "\ud83d\udc0d"
     },
     {
       "playerSlug": "scott",
@@ -504,7 +504,7 @@
       "rankScore": 7,
       "tier": "F",
       "title": "The Saboteur",
-      "emoji": "🦊"
+      "emoji": "\ud83e\udd8a"
     },
     {
       "playerSlug": "zoey",
@@ -520,7 +520,7 @@
       "rankScore": 7,
       "tier": "F",
       "title": "The Indie Girl",
-      "emoji": "🌸"
+      "emoji": "\ud83c\udf38"
     },
     {
       "playerSlug": "duncan",
@@ -536,7 +536,7 @@
       "rankScore": 76,
       "tier": "A",
       "title": "The Delinquent",
-      "emoji": "🗡️"
+      "emoji": "\ud83d\udde1\ufe0f"
     },
     {
       "playerSlug": "lindsay",
@@ -552,7 +552,7 @@
       "rankScore": 5,
       "tier": "F",
       "title": "The Glow-Up Queen",
-      "emoji": "💖"
+      "emoji": "\ud83d\udc96"
     },
     {
       "playerSlug": "beth",
@@ -568,7 +568,7 @@
       "rankScore": 38,
       "tier": "F",
       "title": "The Sweetheart",
-      "emoji": "🧁"
+      "emoji": "\ud83e\uddc1"
     },
     {
       "playerSlug": "emma",
@@ -584,7 +584,7 @@
       "rankScore": 80,
       "tier": "S",
       "title": "The Comeback Kid",
-      "emoji": "🔁"
+      "emoji": "\ud83d\udd01"
     },
     {
       "playerSlug": "gwen",
@@ -600,7 +600,7 @@
       "rankScore": 60,
       "tier": "C",
       "title": "The Goth Icon",
-      "emoji": "🖤"
+      "emoji": "\ud83d\udda4"
     },
     {
       "playerSlug": "geoff",
@@ -616,7 +616,7 @@
       "rankScore": 50,
       "tier": "D",
       "title": "The Party Surfer",
-      "emoji": "🎉"
+      "emoji": "\ud83c\udf89"
     },
     {
       "playerSlug": "heather",
@@ -632,7 +632,7 @@
       "rankScore": 58,
       "tier": "C",
       "title": "The Queen Bee",
-      "emoji": "👑"
+      "emoji": "\ud83d\udc51"
     },
     {
       "playerSlug": "courtney",
@@ -648,7 +648,7 @@
       "rankScore": 46,
       "tier": "D",
       "title": "The Type-A Captain",
-      "emoji": "📋"
+      "emoji": "\ud83d\udccb"
     },
     {
       "playerSlug": "mickey",
@@ -663,7 +663,7 @@
       "rankScore": 95,
       "tier": "S+",
       "title": "The Anxious Ace",
-      "emoji": "🩹"
+      "emoji": "\ud83e\ude79"
     },
     {
       "playerSlug": "jacques",
@@ -678,7 +678,7 @@
       "rankScore": 2,
       "tier": "F",
       "title": "The Ice Prince",
-      "emoji": "🧊"
+      "emoji": "\ud83e\uddca"
     },
     {
       "playerSlug": "cameron",
@@ -693,7 +693,7 @@
       "rankScore": 73,
       "tier": "A",
       "title": "The Brainiac",
-      "emoji": "🧪"
+      "emoji": "\ud83e\uddea"
     },
     {
       "playerSlug": "sky",
@@ -708,7 +708,7 @@
       "rankScore": 9,
       "tier": "F",
       "title": "The Athlete",
-      "emoji": "🏃‍♀️"
+      "emoji": "\ud83c\udfc3\u200d\u2640\ufe0f"
     },
     {
       "playerSlug": "ezekiel",
@@ -723,7 +723,7 @@
       "rankScore": 62,
       "tier": "B",
       "title": "The Farm Kid",
-      "emoji": "🌾"
+      "emoji": "\ud83c\udf3e"
     },
     {
       "playerSlug": "ryan",
@@ -738,7 +738,7 @@
       "rankScore": 76,
       "tier": "A",
       "title": "The Gentle Giant",
-      "emoji": "🏅"
+      "emoji": "\ud83c\udfc5"
     },
     {
       "playerSlug": "trent",
@@ -753,7 +753,7 @@
       "rankScore": 58,
       "tier": "C",
       "title": "The Guitar Guy",
-      "emoji": "🎸"
+      "emoji": "\ud83c\udfb8"
     },
     {
       "playerSlug": "blaineley",
@@ -768,7 +768,7 @@
       "rankScore": 62,
       "tier": "B",
       "title": "The Media Maven",
-      "emoji": "🎤"
+      "emoji": "\ud83c\udfa4"
     },
     {
       "playerSlug": "bridgette",
@@ -783,7 +783,7 @@
       "rankScore": 52,
       "tier": "C",
       "title": "The Surfer Sweetheart",
-      "emoji": "🏄‍♀️"
+      "emoji": "\ud83c\udfc4\u200d\u2640\ufe0f"
     },
     {
       "playerSlug": "jo",
@@ -798,7 +798,7 @@
       "rankScore": 33,
       "tier": "F",
       "title": "The Alpha Athlete",
-      "emoji": "💪"
+      "emoji": "\ud83d\udcaa"
     },
     {
       "playerSlug": "mike",
@@ -813,7 +813,7 @@
       "rankScore": 66,
       "tier": "B",
       "title": "The Many Faces",
-      "emoji": "🎭"
+      "emoji": "\ud83c\udfad"
     },
     {
       "playerSlug": "shawn",
@@ -828,7 +828,7 @@
       "rankScore": 4,
       "tier": "F",
       "title": "The Zombie Guy",
-      "emoji": "🧟"
+      "emoji": "\ud83e\udddf"
     },
     {
       "playerSlug": "owen",
@@ -843,7 +843,7 @@
       "rankScore": 55,
       "tier": "C",
       "title": "The Big Buddy",
-      "emoji": "🍗"
+      "emoji": "\ud83c\udf57"
     },
     {
       "playerSlug": "kitty",
@@ -858,7 +858,7 @@
       "rankScore": 8,
       "tier": "F",
       "title": "The Sunshine",
-      "emoji": "😺"
+      "emoji": "\ud83d\ude3a"
     },
     {
       "playerSlug": "anne-maria",
@@ -873,7 +873,7 @@
       "rankScore": 36,
       "tier": "F",
       "title": "The Jersey Diva",
-      "emoji": "💄"
+      "emoji": "\ud83d\udc84"
     },
     {
       "playerSlug": "cody",
@@ -888,7 +888,7 @@
       "rankScore": 4,
       "tier": "F",
       "title": "The Geek",
-      "emoji": "💻"
+      "emoji": "\ud83d\udcbb"
     },
     {
       "playerSlug": "dwayne",
@@ -903,7 +903,7 @@
       "rankScore": 43,
       "tier": "D",
       "title": "The Dad",
-      "emoji": "👨‍👦"
+      "emoji": "\ud83d\udc68\u200d\ud83d\udc66"
     },
     {
       "playerSlug": "sierra",
@@ -918,7 +918,7 @@
       "rankScore": 25,
       "tier": "F",
       "title": "The Superfan",
-      "emoji": "📣"
+      "emoji": "\ud83d\udce3"
     },
     {
       "playerSlug": "leshawna",
@@ -933,7 +933,7 @@
       "rankScore": 46,
       "tier": "D",
       "title": "The Real One",
-      "emoji": "✨"
+      "emoji": "\u2728"
     },
     {
       "playerSlug": "lightning",
@@ -948,7 +948,7 @@
       "rankScore": 27,
       "tier": "F",
       "title": "The Jock",
-      "emoji": "⚡"
+      "emoji": "\u26a1"
     },
     {
       "playerSlug": "noah",
@@ -963,7 +963,7 @@
       "rankScore": 51,
       "tier": "C",
       "title": "The Snark King",
-      "emoji": "🙃"
+      "emoji": "\ud83d\ude43"
     },
     {
       "playerSlug": "brody",
@@ -978,7 +978,7 @@
       "rankScore": 2,
       "tier": "F",
       "title": "The Hunky Helper",
-      "emoji": "🏋️‍♂️"
+      "emoji": "\ud83c\udfcb\ufe0f\u200d\u2642\ufe0f"
     },
     {
       "playerSlug": "harold",
@@ -993,7 +993,7 @@
       "rankScore": 57,
       "tier": "C",
       "title": "The Ninja Nerd",
-      "emoji": "🥷"
+      "emoji": "\ud83e\udd77"
     },
     {
       "playerSlug": "josee",
@@ -1008,7 +1008,7 @@
       "rankScore": 40,
       "tier": "F",
       "title": "The Ice Queen",
-      "emoji": "⛸️"
+      "emoji": "\u26f8\ufe0f"
     },
     {
       "playerSlug": "dj",
@@ -1023,7 +1023,7 @@
       "rankScore": 34,
       "tier": "F",
       "title": "The Gentle Giant",
-      "emoji": "🐻"
+      "emoji": "\ud83d\udc3b"
     },
     {
       "playerSlug": "jasmine",
@@ -1038,7 +1038,7 @@
       "rankScore": 2,
       "tier": "F",
       "title": "The Jungle Queen",
-      "emoji": "🐊"
+      "emoji": "\ud83d\udc0a"
     },
     {
       "playerSlug": "dakota",
@@ -1053,7 +1053,7 @@
       "rankScore": 24,
       "tier": "F",
       "title": "The Celebrity",
-      "emoji": "📸"
+      "emoji": "\ud83d\udcf8"
     },
     {
       "playerSlug": "justin",
@@ -1068,7 +1068,7 @@
       "rankScore": 35,
       "tier": "F",
       "title": "The Model",
-      "emoji": "😎"
+      "emoji": "\ud83d\ude0e"
     },
     {
       "playerSlug": "crimson",
@@ -1083,7 +1083,7 @@
       "rankScore": 25,
       "tier": "F",
       "title": "The Goth Twin",
-      "emoji": "🦇"
+      "emoji": "\ud83e\udd87"
     },
     {
       "playerSlug": "leonard",
@@ -1098,7 +1098,7 @@
       "rankScore": 26,
       "tier": "F",
       "title": "The Wizard",
-      "emoji": "🧙"
+      "emoji": "\ud83e\uddd9"
     }
   ],
   "trends": {
@@ -1466,34 +1466,16 @@
           "seasons": 2
         },
         {
-          "playerSlug": "cameron",
-          "name": "Cameron",
-          "totalVotesAgainst": 6,
-          "seasons": 2
+          "playerSlug": "macarthur",
+          "name": "MacArthur",
+          "totalVotesAgainst": 5,
+          "seasons": 1
         },
         {
           "playerSlug": "emma",
           "name": "Emma",
           "totalVotesAgainst": 6,
           "seasons": 3
-        },
-        {
-          "playerSlug": "sky",
-          "name": "Sky",
-          "totalVotesAgainst": 6,
-          "seasons": 2
-        },
-        {
-          "playerSlug": "owen",
-          "name": "Owen",
-          "totalVotesAgainst": 7,
-          "seasons": 2
-        },
-        {
-          "playerSlug": "crimson",
-          "name": "Crimson",
-          "totalVotesAgainst": 8,
-          "seasons": 2
         },
         {
           "playerSlug": "lindsay",
@@ -1508,16 +1490,16 @@
           "seasons": 2
         },
         {
-          "playerSlug": "mike",
-          "name": "Mike",
-          "totalVotesAgainst": 8,
-          "seasons": 2
+          "playerSlug": "duncan",
+          "name": "Duncan",
+          "totalVotesAgainst": 17,
+          "seasons": 3
         },
         {
-          "playerSlug": "cody",
-          "name": "Cody",
-          "totalVotesAgainst": 9,
-          "seasons": 2
+          "playerSlug": "alejandro",
+          "name": "Alejandro",
+          "totalVotesAgainst": 25,
+          "seasons": 3
         }
       ]
     },
@@ -1529,7 +1511,7 @@
           "score": 95,
           "tier": "S+",
           "title": "The Anxious Ace",
-          "emoji": "🩹"
+          "emoji": "\ud83e\ude79"
         },
         {
           "playerSlug": "alejandro",
@@ -1537,7 +1519,7 @@
           "score": 83,
           "tier": "S",
           "title": "The Snake Charmer",
-          "emoji": "🐍"
+          "emoji": "\ud83d\udc0d"
         },
         {
           "playerSlug": "scarlett",
@@ -1545,7 +1527,7 @@
           "score": 81,
           "tier": "S",
           "title": "The Puppetmaster",
-          "emoji": "🧠"
+          "emoji": "\ud83e\udde0"
         },
         {
           "playerSlug": "emma",
@@ -1553,7 +1535,7 @@
           "score": 80,
           "tier": "S",
           "title": "The Comeback Kid",
-          "emoji": "🔁"
+          "emoji": "\ud83d\udd01"
         },
         {
           "playerSlug": "duncan",
@@ -1561,7 +1543,7 @@
           "score": 76,
           "tier": "A",
           "title": "The Delinquent",
-          "emoji": "🗡️"
+          "emoji": "\ud83d\udde1\ufe0f"
         },
         {
           "playerSlug": "ryan",
@@ -1569,7 +1551,7 @@
           "score": 76,
           "tier": "A",
           "title": "The Gentle Giant",
-          "emoji": "🏅"
+          "emoji": "\ud83c\udfc5"
         },
         {
           "playerSlug": "kelly",
@@ -1577,7 +1559,7 @@
           "score": 74,
           "tier": "A",
           "title": "The Protective Mom",
-          "emoji": "🧡"
+          "emoji": "\ud83e\udde1"
         },
         {
           "playerSlug": "cameron",
@@ -1585,7 +1567,7 @@
           "score": 73,
           "tier": "A",
           "title": "The Brainiac",
-          "emoji": "🧪"
+          "emoji": "\ud83e\uddea"
         },
         {
           "playerSlug": "jay",
@@ -1593,7 +1575,7 @@
           "score": 72,
           "tier": "A",
           "title": "The Loyal Heart",
-          "emoji": "❤️"
+          "emoji": "\u2764\ufe0f"
         },
         {
           "playerSlug": "mike",
@@ -1601,7 +1583,7 @@
           "score": 66,
           "tier": "B",
           "title": "The Many Faces",
-          "emoji": "🎭"
+          "emoji": "\ud83c\udfad"
         },
         {
           "playerSlug": "ezekiel",
@@ -1609,7 +1591,7 @@
           "score": 62,
           "tier": "B",
           "title": "The Farm Kid",
-          "emoji": "🌾"
+          "emoji": "\ud83c\udf3e"
         },
         {
           "playerSlug": "blaineley",
@@ -1617,7 +1599,7 @@
           "score": 62,
           "tier": "B",
           "title": "The Media Maven",
-          "emoji": "🎤"
+          "emoji": "\ud83c\udfa4"
         },
         {
           "playerSlug": "gwen",
@@ -1625,7 +1607,7 @@
           "score": 60,
           "tier": "C",
           "title": "The Goth Icon",
-          "emoji": "🖤"
+          "emoji": "\ud83d\udda4"
         },
         {
           "playerSlug": "dave",
@@ -1633,7 +1615,7 @@
           "score": 60,
           "tier": "C",
           "title": "The Neurotic Strategist",
-          "emoji": "😬"
+          "emoji": "\ud83d\ude2c"
         },
         {
           "playerSlug": "trent",
@@ -1641,7 +1623,7 @@
           "score": 58,
           "tier": "C",
           "title": "The Guitar Guy",
-          "emoji": "🎸"
+          "emoji": "\ud83c\udfb8"
         }
       ],
       "topStrategicPercentile": [
@@ -1650,105 +1632,105 @@
           "name": "Scarlett",
           "strategicPercentile": 98.51,
           "title": "The Puppetmaster",
-          "emoji": "🧠"
+          "emoji": "\ud83e\udde0"
         },
         {
           "playerSlug": "alejandro",
           "name": "Alejandro",
           "strategicPercentile": 97.01,
           "title": "The Snake Charmer",
-          "emoji": "🐍"
+          "emoji": "\ud83d\udc0d"
         },
         {
           "playerSlug": "ryan",
           "name": "Ryan",
           "strategicPercentile": 94.03,
           "title": "The Gentle Giant",
-          "emoji": "🏅"
+          "emoji": "\ud83c\udfc5"
         },
         {
           "playerSlug": "kelly",
           "name": "Kelly",
           "strategicPercentile": 94.03,
           "title": "The Protective Mom",
-          "emoji": "🧡"
+          "emoji": "\ud83e\udde1"
         },
         {
           "playerSlug": "noah",
           "name": "Noah",
           "strategicPercentile": 94.03,
           "title": "The Snark King",
-          "emoji": "🙃"
+          "emoji": "\ud83d\ude43"
         },
         {
           "playerSlug": "emma",
           "name": "Emma",
           "strategicPercentile": 88.06,
           "title": "The Comeback Kid",
-          "emoji": "🔁"
+          "emoji": "\ud83d\udd01"
         },
         {
           "playerSlug": "mickey",
           "name": "Mickey",
           "strategicPercentile": 85.07,
           "title": "The Anxious Ace",
-          "emoji": "🩹"
+          "emoji": "\ud83e\ude79"
         },
         {
           "playerSlug": "jay",
           "name": "Jay",
           "strategicPercentile": 85.07,
           "title": "The Loyal Heart",
-          "emoji": "❤️"
+          "emoji": "\u2764\ufe0f"
         },
         {
           "playerSlug": "duncan",
           "name": "Duncan",
           "strategicPercentile": 77.61,
           "title": "The Delinquent",
-          "emoji": "🗡️"
+          "emoji": "\ud83d\udde1\ufe0f"
         },
         {
           "playerSlug": "mike",
           "name": "Mike",
           "strategicPercentile": 77.61,
           "title": "The Many Faces",
-          "emoji": "🎭"
+          "emoji": "\ud83c\udfad"
         },
         {
           "playerSlug": "blaineley",
           "name": "Blaineley",
           "strategicPercentile": 77.61,
           "title": "The Media Maven",
-          "emoji": "🎤"
+          "emoji": "\ud83c\udfa4"
         },
         {
           "playerSlug": "gwen",
           "name": "Gwen",
           "strategicPercentile": 77.61,
           "title": "The Goth Icon",
-          "emoji": "🖤"
+          "emoji": "\ud83d\udda4"
         },
         {
           "playerSlug": "heather",
           "name": "Heather",
           "strategicPercentile": 77.61,
           "title": "The Queen Bee",
-          "emoji": "👑"
+          "emoji": "\ud83d\udc51"
         },
         {
           "playerSlug": "harold",
           "name": "Harold",
           "strategicPercentile": 77.61,
           "title": "The Ninja Nerd",
-          "emoji": "🥷"
+          "emoji": "\ud83e\udd77"
         },
         {
           "playerSlug": "courtney",
           "name": "Courtney",
           "strategicPercentile": 77.61,
           "title": "The Type-A Captain",
-          "emoji": "📋"
+          "emoji": "\ud83d\udccb"
         }
       ]
     }
@@ -1760,7 +1742,7 @@
     "season4": "Combined All-Stars (9 Gen 1, 9 Gen 2) with Edge of Extinction. Alejandro FINALLY won his crown on his 3rd finals appearance, defeating Zoey's unprecedented 3 unbreakable bonds with strategic mastery. The closest finale ever (7-6-1) proved that in modern gameplay, strategy defeats pure social bonds.",
     "season5": "Introduced 18 new players and a Survivor-style twist gauntlet (3 tribes, swap, split-tribal merge round, vote-loss twists, and Final 4 fire-making). Mickey won with 0 votes against and survived a 3-3-2 FTC tie thanks to Ryan's deciding tiebreak vote - proving that clean positioning and relationships can beat pure challenge dominance.",
     "season6": "Introduced Blood vs Water with 20 players paired as loved ones. Jacques' ice-cold strategic mastery won (7-1-0) through low-target positioning, 4 immunity wins, and surgical vote control. He forced Kitty's idol burn at merge and engineered the Final 4 tie that eliminated Kelly. The season proved that precision and endgame control can triumph over pure social bonds.",
-    "season7": "Fans vs Favorites brought back 10 returnees to face 10 superfans. MacArthur's power-social hybrid game won (6-2-1) by operating as the merge switchboard - holding an idol, building cross-faction bonds, and managing public disagreements to preserve agency. Cody's redemption arc (19th → 2nd) showed massive growth. The season demonstrated that balanced menace and loyalty, combined with decisive FTC performance, can defeat both challenge dominance and pure social gameplay.",
+    "season7": "Fans vs Favorites brought back 10 returnees to face 10 superfans. MacArthur's power-social hybrid game won (6-2-1) by operating as the merge switchboard - holding an idol, building cross-faction bonds, and managing public disagreements to preserve agency. Cody's redemption arc (19th \u2192 2nd) showed massive growth. The season demonstrated that balanced menace and loyalty, combined with decisive FTC performance, can defeat both challenge dominance and pure social gameplay.",
     "message": "The message across 7 seasons: Different strategies can win - social mastery (Lindsay S1), survival story (Duncan S2), perfect game (Emma S3), strategic evolution (Alejandro S4), clean positioning (Mickey S5), ice-cold control (Jacques S6), and power-social balance (MacArthur S7). But adaptability, jury respect, and understanding when to strike remain essential. Some legends needed multiple tries to learn this lesson."
   }
 }

@@ -340,20 +340,23 @@
     
     // 5. FAN FAVORITES
     const favoritesHTML = franchise.fanFavorites.map(f => 
-      `<li><b>Season ${f.season}:</b> ${playerLink(f.player, f.playerSlug)} - ${f.description}</li>`
+      `<li><b>Season ${f.season}:</b> ${playerLink(f.name, f.playerSlug)}</li>`
     ).join('');
     document.getElementById('fan-favorites-panel').innerHTML = `<ul>${favoritesHTML}</ul>`;
     
     // 6. MULTI-SEASON PLAYERS
-    const threeSeasonsHTML = franchise.multiSeasonPlayers.threeSeasons.map(p => 
-      `<li><b>${playerLink(p.player, p.playerSlug)}:</b> ${p.record}</li>`
+    const threeSeasonsPlayers = franchise.multiSeasonPlayers.filter(p => p.seasonsPlayed >= 3);
+    const twoSeasonsPlayers = franchise.multiSeasonPlayers.filter(p => p.seasonsPlayed === 2);
+    
+    const threeSeasonsHTML = threeSeasonsPlayers.map(p => 
+      `<li><b>${playerLink(p.name, p.playerSlug)}:</b> S${p.seasons.join(', S')} (${p.avgPlacement.toFixed(2)} avg placement, ${p.wins} win${p.wins !== 1 ? 's' : ''})</li>`
     ).join('');
     document.getElementById('multi-season-3').innerHTML = `<h3>3-Season Players</h3><ul>${threeSeasonsHTML}</ul>`;
     
-    const twoSeasonsHTML = franchise.multiSeasonPlayers.twoSeasons.map(p => 
-      `<li><b>${playerLink(p.player, p.playerSlug)}:</b> ${p.record}</li>`
+    const twoSeasonsHTML = twoSeasonsPlayers.slice(0, 10).map(p => 
+      `<li><b>${playerLink(p.name, p.playerSlug)}:</b> S${p.seasons.join(', S')} (${p.avgPlacement.toFixed(2)} avg placement)</li>`
     ).join('');
-    const twoSeasonsList = twoSeasonsHTML + '<li><b>Plus 9 more two-season players</b></li>';
+    const twoSeasonsList = twoSeasonsHTML + (twoSeasonsPlayers.length > 10 ? `<li><b>Plus ${twoSeasonsPlayers.length - 10} more two-season players</b></li>` : '');
     document.getElementById('multi-season-2').innerHTML = `<h3>2-Season Players</h3><ul>${twoSeasonsList}</ul>`;
     
     // 7. FRANCHISE TRENDS
@@ -427,12 +430,14 @@
     
     // 10. FRANCHISE EVOLUTION
     const evolutionHTML = `
-      <p><b>Season 1</b> ${franchise.evolution.season1}</p>
-      <p><b>Season 2</b> ${franchise.evolution.season2}</p>
-      <p><b>Season 3</b> ${franchise.evolution.season3}</p>
-      <p><b>Season 4</b> ${franchise.evolution.season4}</p>
-      <p><b>Season 5</b> ${franchise.evolution.season5}</p>
-      <p class="small" style="margin-top:12px; font-style:italic;">${franchise.evolution.message}</p>
+      <p><b>Season 1:</b> ${franchise.evolution.season1}</p>
+      <p><b>Season 2:</b> ${franchise.evolution.season2}</p>
+      <p><b>Season 3:</b> ${franchise.evolution.season3}</p>
+      <p><b>Season 4:</b> ${franchise.evolution.season4}</p>
+      <p><b>Season 5:</b> ${franchise.evolution.season5}</p>
+      ${franchise.evolution.season6 ? `<p><b>Season 6:</b> ${franchise.evolution.season6}</p>` : ''}
+      ${franchise.evolution.season7 ? `<p><b>Season 7:</b> ${franchise.evolution.season7}</p>` : ''}
+      ${franchise.evolution.message ? `<p class="small" style="margin-top:12px; font-style:italic;">${franchise.evolution.message}</p>` : ''}
     `;
     document.getElementById('evolution-panel').innerHTML = evolutionHTML;
     

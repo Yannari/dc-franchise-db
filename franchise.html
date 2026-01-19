@@ -413,7 +413,7 @@
     ).join('');
     document.getElementById('challenge-leaders').innerHTML = `<h3>Challenge Dominance (Career)</h3><ol>${challengeLeadersHTML}</ol>`;
     
-    const socialLeadersHTML = franchise.careerLeaders.socialGame.fewestVotesAgainst.slice(0, 5).map((p, i) => 
+    const socialLeadersHTML = franchise.careerLeaders.socialGame.lowestVotesAgainstCareer_min10Votes.slice(0, 5).map((p, i) => 
       `<li><b>${playerLink(p.name, p.playerSlug)}:</b> ${p.total} votes against</li>`
     ).join('');
     document.getElementById('social-leaders').innerHTML = `<h3>Social Game (Fewest Votes Against Winners)</h3><ol>${socialLeadersHTML}</ol>`;

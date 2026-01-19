@@ -297,37 +297,42 @@
     document.getElementById('champions-grid').innerHTML = championsHTML;
     
     // 4. FRANCHISE RECORDS
+    const cr = franchise.records.challengeRecords.overall;
+    const vr = franchise.records.votingRecords.overall;
+    const sr = franchise.records.strategicRecords.overall;
+    const socr = franchise.records.socialRecords.overall;
+    
     const recordsHTML = `
       <div class="kpi">
         <h3>Challenge Records</h3>
         <ul>
-          ${franchise.records.challengeRecords.map(r => 
-            `<li><b>${r.category}:</b> ${playerLink(r.holder, r.playerSlug)} (${r.stat})</li>`
-          ).join('')}
+          <li><b>Most Challenge Wins:</b> ${playerLink(cr.mostChallengeWins.name, cr.mostChallengeWins.playerSlug)} (${cr.mostChallengeWins.total})</li>
+          <li><b>Most Immunity Wins:</b> ${playerLink(cr.mostImmunityWins.name, cr.mostImmunityWins.playerSlug)} (${cr.mostImmunityWins.total})</li>
+          <li><b>Most Reward Wins:</b> ${playerLink(cr.mostRewardWins.name, cr.mostRewardWins.playerSlug)} (${cr.mostRewardWins.total})</li>
         </ul>
       </div>
       <div class="kpi">
         <h3>Voting Records</h3>
         <ul>
-          ${franchise.records.votingRecords.map(r => 
-            `<li><b>${r.category}:</b> ${playerLink(r.holder, r.playerSlug)} (${r.stat})</li>`
-          ).join('')}
+          <li><b>Most Votes Against (Career):</b> ${playerLink(vr.mostVotesAgainst.name, vr.mostVotesAgainst.playerSlug)} (${vr.mostVotesAgainst.total})</li>
+          <li><b>Fewest Votes Against (Winners):</b> ${playerLink(vr.fewestVotesAgainstWinners.name, vr.fewestVotesAgainstWinners.playerSlug)} (${vr.fewestVotesAgainstWinners.total})</li>
+          <li><b>Most Jury Votes:</b> ${playerLink(vr.mostJuryVotes.name, vr.mostJuryVotes.playerSlug)} (${vr.mostJuryVotes.total})</li>
         </ul>
       </div>
       <div class="kpi">
         <h3>Strategic Records</h3>
         <ul>
-          ${franchise.records.strategicRecords.map(r => 
-            `<li><b>${r.category}:</b> ${r.playerSlug ? playerLink(r.holder, r.playerSlug) : r.holder} (${r.stat})</li>`
-          ).join('')}
+          <li><b>Most Idols Found:</b> ${playerLink(sr.mostIdolsFound.name, sr.mostIdolsFound.playerSlug)} (${sr.mostIdolsFound.total})</li>
+          <li><b>Most Advantages:</b> ${playerLink(sr.mostAdvantages.name, sr.mostAdvantages.playerSlug)} (${sr.mostAdvantages.total})</li>
+          <li><b>Highest Strategic Rank:</b> ${playerLink(sr.highestStrategicRank.name, sr.highestStrategicRank.playerSlug)} (${sr.highestStrategicRank.rank}/10)</li>
         </ul>
       </div>
       <div class="kpi">
         <h3>Social Records</h3>
         <ul>
-          ${franchise.records.socialRecords.map(r => 
-            `<li><b>${r.category}:</b> ${r.playerSlug ? playerLink(r.holder, r.playerSlug) : r.holder} (${r.stat})</li>`
-          ).join('')}
+          <li><b>Most Alliances:</b> ${playerLink(socr.mostAlliances.name, socr.mostAlliances.playerSlug)} (${socr.mostAlliances.total})</li>
+          <li><b>Best Social Shield:</b> ${playerLink(socr.bestSocialShield.name, socr.bestSocialShield.playerSlug)} (${socr.bestSocialShield.stat})</li>
+          <li><b>Longest Winning Streak:</b> ${playerLink(socr.longestWinningStreak.name, socr.longestWinningStreak.playerSlug)} (${socr.longestWinningStreak.streak})</li>
         </ul>
       </div>
     `;
@@ -400,32 +405,22 @@
     document.getElementById('milestones-tbody').innerHTML = milestonesHTML;
     
     // 9. STATISTICAL LEADERS
-    const challengeLeadersHTML = franchise.careerLeaders.challengeDominance.map(p => 
-      `<li><b>${playerLink(p.player, p.playerSlug)}:</b> ${p.wins} wins (${p.breakdown})</li>`
+    const challengeLeadersHTML = franchise.careerLeaders.challengeDominance.mostChallengeWins.slice(0, 5).map((p, i) => 
+      `<li><b>${playerLink(p.name, p.playerSlug)}:</b> ${p.total} wins</li>`
     ).join('');
     document.getElementById('challenge-leaders').innerHTML = `<h3>Challenge Dominance (Career)</h3><ol>${challengeLeadersHTML}</ol>`;
     
-    const socialLeadersHTML = franchise.careerLeaders.socialGame.map(p => 
-      `<li><b>${playerLink(p.player, p.playerSlug)}:</b> ${p.votes} votes (${p.note})</li>`
+    const socialLeadersHTML = franchise.careerLeaders.socialGame.fewestVotesAgainst.slice(0, 5).map((p, i) => 
+      `<li><b>${playerLink(p.name, p.playerSlug)}:</b> ${p.total} votes against</li>`
     ).join('');
     document.getElementById('social-leaders').innerHTML = `<h3>Social Game (Fewest Votes Against Winners)</h3><ol>${socialLeadersHTML}</ol>`;
     
     const strategicHTML = `
-      <h3>Strategic Impact (Idols & Advantages)</h3>
+      <h3>Strategic Impact (Top Rankings)</h3>
       <ul>
-        <li><b>Most Idols Found:</b> ${franchise.careerLeaders.strategicImpact.mostIdolsFound.map(p => 
-          `${playerLink(p.player, p.playerSlug)} (${p.count})`
-        ).join(', ')}</li>
-        <li><b>Perfect Idol Plays:</b> ${franchise.careerLeaders.strategicImpact.perfectIdolPlays.map(p => 
-          `${playerLink(p.player, p.playerSlug)} (${p.season})`
-        ).join(', ')}</li>
-        <li><b>Longest Hold:</b> ${playerLink(
-          franchise.careerLeaders.strategicImpact.longestHold.player, 
-          franchise.careerLeaders.strategicImpact.longestHold.playerSlug
-        )} (${franchise.careerLeaders.strategicImpact.longestHold.tribals} tribals, ${franchise.careerLeaders.strategicImpact.longestHold.season})</li>
-        <li><b>Most Votes Cancelled:</b> ${franchise.careerLeaders.strategicImpact.mostVotesCancelled.map(p => 
-          `${playerLink(p.player, p.playerSlug)} (${p.votes}, ${p.season})`
-        ).join(', ')}</li>
+        ${franchise.careerLeaders.strategicImpact.topOverallScore.slice(0, 5).map((p, i) => 
+          `<li><b>${playerLink(p.name, p.playerSlug)}:</b> ${p.score} (${p.tier} - ${p.title})</li>`
+        ).join('')}
       </ul>
     `;
     document.getElementById('strategic-leaders').innerHTML = strategicHTML;

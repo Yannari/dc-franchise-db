@@ -1831,23 +1831,26 @@ Dave voted for Mickey
 
       renderPlayersGrid(cast, eliminated, titlesMap);
 
-      // Overview cards
-      renderMoveCard(els.cardBestMove, analytics.bestMove);
-      renderMoveCard(els.cardBiggestRisk, analytics.biggestRisk);
-      els.cardEpisodeSummary.textContent = analytics.narrativeSummary || "—";
-      renderVotingBlocs(els.cardVotingBlocs, analytics);
-      renderBootOdds(els.cardBootOdds, analytics.bootPredictions);
-      renderPowerRankings(els.cardPowerRankings, analytics.powerRankings);
-      renderAllianceStability(els.cardAllianceStability, analytics.allianceStability);
-      renderTitles(els.cardTitles, analytics.titles);
-      renderSocialNetwork(els.cardSocialNetwork, analytics.socialNetwork);
-      renderJuryManagement(els.cardJuryManagement, analytics.juryManagement);
-      renderThreatBreakdown(els.cardThreatBreakdown, analytics.threatBreakdown);
-      renderPathToVictory(els.cardPathToVictory, analytics.pathToVictory);
+      // OLD Overview cards - only render if elements still exist (backwards compatibility)
+      if (els.cardBestMove) renderMoveCard(els.cardBestMove, analytics.bestMove);
+      if (els.cardBiggestRisk) renderMoveCard(els.cardBiggestRisk, analytics.biggestRisk);
+      if (els.cardEpisodeSummary) els.cardEpisodeSummary.textContent = analytics.narrativeSummary || "—";
+      if (els.cardVotingBlocs) renderVotingBlocs(els.cardVotingBlocs, analytics);
+      if (els.cardBootOdds) renderBootOdds(els.cardBootOdds, analytics.bootPredictions);
+      if (els.cardPowerRankings) renderPowerRankings(els.cardPowerRankings, analytics.powerRankings);
+      if (els.cardAllianceStability) renderAllianceStability(els.cardAllianceStability, analytics.allianceStability);
+      if (els.cardTitles) renderTitles(els.cardTitles, analytics.titles);
+      if (els.cardSocialNetwork) renderSocialNetwork(els.cardSocialNetwork, analytics.socialNetwork);
+      if (els.cardJuryManagement) renderJuryManagement(els.cardJuryManagement, analytics.juryManagement);
+      if (els.cardThreatBreakdown) renderThreatBreakdown(els.cardThreatBreakdown, analytics.threatBreakdown);
+      if (els.cardPathToVictory) renderPathToVictory(els.cardPathToVictory, analytics.pathToVictory);
 
-      // Gameplay
-      renderCompass(analytics, cast, eliminated, titlesMap);
-      renderGameplayTable(analytics, cast, eliminated, titlesMap);
+      // OLD Gameplay compass/table - only render if elements still exist
+      if (els.compassPoints) renderCompass(analytics, cast, eliminated, titlesMap);
+      if (els.gpTableBody) renderGameplayTable(analytics, cast, eliminated, titlesMap);
+      
+      // NEW Analytics tabs - render all 7 new tabs
+      renderAllAnalyticsTabs(analytics);
     }
 
     // ----------------------------

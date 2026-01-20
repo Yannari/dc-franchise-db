@@ -1850,7 +1850,7 @@ Dave voted for Mickey
       if (els.gpTableBody) renderGameplayTable(analytics, cast, eliminated, titlesMap);
       
       // NEW Analytics tabs - render all 7 new tabs
-      if (window.renderAllAnalyticsTabs) window.renderAllAnalyticsTabs(analytics);
+      renderAllAnalyticsTabs(analytics);
     }
 
     // ----------------------------
@@ -1890,19 +1890,19 @@ Dave voted for Mickey
 
       // Render tab-specific content when switching
       if (which === "rankings" && CURRENT.analytics) {
-        if (window.renderRankingsTab) window.renderRankingsTab(CURRENT.analytics);
+        renderRankingsTab(CURRENT.analytics);
       } else if (which === "relationships" && CURRENT.analytics) {
-        if (window.renderRelationshipsTab) window.renderRelationshipsTab(CURRENT.analytics);
+        renderRelationshipsTab(CURRENT.analytics);
       } else if (which === "compass" && CURRENT.analytics) {
-        if (window.renderCompassTab) window.renderCompassTab(CURRENT.analytics);
+        renderCompassTab(CURRENT.analytics);
       } else if (which === "resumes" && CURRENT.analytics) {
-        if (window.renderResumesTab) window.renderResumesTab(CURRENT.analytics);
+        renderResumesTab(CURRENT.analytics);
       } else if (which === "trends" && CURRENT.analytics) {
-        if (window.renderTrendsTab) window.renderTrendsTab(CURRENT.analytics);
+        renderTrendsTab(CURRENT.analytics);
       } else if (which === "votes" && CURRENT.analytics) {
-        if (window.renderVotesTab) window.renderVotesTab(CURRENT.analytics);
+        renderVotesTab(CURRENT.analytics);
       } else if (which === "edgic" && CURRENT.analytics) {
-        if (window.renderEdgicTab) window.renderEdgicTab(CURRENT.analytics);
+        renderEdgicTab(CURRENT.analytics);
       }
 
       // Persist tab choice per episode
@@ -2889,6 +2889,21 @@ setTimeout(function() {
     }, 1000); // Debounce: save 1 second after last change
   }
   
+  // Some older builds referenced this helper but didn't include it.
+  // It (re)generates the episode textarea inputs used by the Season Builder.
+  function generateSeasonBuilderEpisodeTextareas(count) {
+    const countEl = document.getElementById('sb-episode-count');
+    if (countEl && Number.isFinite(parseInt(count))) {
+      countEl.value = String(parseInt(count));
+    }
+
+    // initializeEpisodeInputs() is the canonical implementation in this file.
+    // It's a function declaration, so it's hoisted even if defined later.
+    if (typeof initializeEpisodeInputs === 'function') {
+      initializeEpisodeInputs();
+    }
+  }
+
   function loadSeasonBuilderData(seasonNumber) {
     try {
       const storageKey = getSeasonStorageKey(seasonNumber);
@@ -5895,21 +5910,7 @@ Would you like to:
       renderEdgicTab(analytics);
 }
 
-  
-
-    // ----------------------------
-    // Expose tab renderers (safety)
-    // ----------------------------
-    if (typeof renderAllAnalyticsTabs === "function") window.renderAllAnalyticsTabs = renderAllAnalyticsTabs;
-    if (typeof renderRankingsTab === "function") window.renderRankingsTab = renderRankingsTab;
-    if (typeof renderRelationshipsTab === "function") window.renderRelationshipsTab = renderRelationshipsTab;
-    if (typeof renderCompassTab === "function") window.renderCompassTab = renderCompassTab;
-    if (typeof renderResumesTab === "function") window.renderResumesTab = renderResumesTab;
-    if (typeof renderTrendsTab === "function") window.renderTrendsTab = renderTrendsTab;
-    if (typeof renderVotesTab === "function") window.renderVotesTab = renderVotesTab;
-    if (typeof renderEdgicTab === "function") window.renderEdgicTab = renderEdgicTab;
-
-})(); // Close the main IIFE
+  })(); // Close the main IIFE
 }, 500); // Close setTimeout - Wait for DOM to fully render
 
 </script>

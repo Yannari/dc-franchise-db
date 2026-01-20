@@ -1850,7 +1850,7 @@ Dave voted for Mickey
       if (els.gpTableBody) renderGameplayTable(analytics, cast, eliminated, titlesMap);
       
       // NEW Analytics tabs - render all 7 new tabs
-      renderAllAnalyticsTabs(analytics);
+      if (window.renderAllAnalyticsTabs) window.renderAllAnalyticsTabs(analytics);
     }
 
     // ----------------------------
@@ -1890,19 +1890,19 @@ Dave voted for Mickey
 
       // Render tab-specific content when switching
       if (which === "rankings" && CURRENT.analytics) {
-        renderRankingsTab(CURRENT.analytics);
+        if (window.renderRankingsTab) window.renderRankingsTab(CURRENT.analytics);
       } else if (which === "relationships" && CURRENT.analytics) {
-        renderRelationshipsTab(CURRENT.analytics);
+        if (window.renderRelationshipsTab) window.renderRelationshipsTab(CURRENT.analytics);
       } else if (which === "compass" && CURRENT.analytics) {
-        renderCompassTab(CURRENT.analytics);
+        if (window.renderCompassTab) window.renderCompassTab(CURRENT.analytics);
       } else if (which === "resumes" && CURRENT.analytics) {
-        renderResumesTab(CURRENT.analytics);
+        if (window.renderResumesTab) window.renderResumesTab(CURRENT.analytics);
       } else if (which === "trends" && CURRENT.analytics) {
-        renderTrendsTab(CURRENT.analytics);
+        if (window.renderTrendsTab) window.renderTrendsTab(CURRENT.analytics);
       } else if (which === "votes" && CURRENT.analytics) {
-        renderVotesTab(CURRENT.analytics);
+        if (window.renderVotesTab) window.renderVotesTab(CURRENT.analytics);
       } else if (which === "edgic" && CURRENT.analytics) {
-        renderEdgicTab(CURRENT.analytics);
+        if (window.renderEdgicTab) window.renderEdgicTab(CURRENT.analytics);
       }
 
       // Persist tab choice per episode
@@ -5895,7 +5895,21 @@ Would you like to:
       renderEdgicTab(analytics);
 }
 
-  })(); // Close the main IIFE
+  
+
+    // ----------------------------
+    // Expose tab renderers (safety)
+    // ----------------------------
+    if (typeof renderAllAnalyticsTabs === "function") window.renderAllAnalyticsTabs = renderAllAnalyticsTabs;
+    if (typeof renderRankingsTab === "function") window.renderRankingsTab = renderRankingsTab;
+    if (typeof renderRelationshipsTab === "function") window.renderRelationshipsTab = renderRelationshipsTab;
+    if (typeof renderCompassTab === "function") window.renderCompassTab = renderCompassTab;
+    if (typeof renderResumesTab === "function") window.renderResumesTab = renderResumesTab;
+    if (typeof renderTrendsTab === "function") window.renderTrendsTab = renderTrendsTab;
+    if (typeof renderVotesTab === "function") window.renderVotesTab = renderVotesTab;
+    if (typeof renderEdgicTab === "function") window.renderEdgicTab = renderEdgicTab;
+
+})(); // Close the main IIFE
 }, 500); // Close setTimeout - Wait for DOM to fully render
 
 </script>

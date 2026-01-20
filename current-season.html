@@ -1786,6 +1786,458 @@ Dave voted for Mickey
     // ----------------------------
     // Main render from analytics
     // ----------------------------
+    function renderRankingsTab(analytics) {
+      if (!analytics || !analytics.rankings) {
+        document.getElementById("audiencePopularityList").innerHTML = 
+          '<p class="muted">No rankings data available yet.</p>';
+        document.getElementById("islandInfluenceList").innerHTML = 
+          '<p class="muted">No influence data available yet.</p>';
+        document.getElementById("allianceNetworkList").innerHTML = 
+          '<p class="muted">No active alliances detected yet.</p>';
+        return;
+      }
+    
+      // Render Audience Popularity
+      const popList = document.getElementById("audiencePopularityList");
+      if (analytics.rankings.audiencePopularity && analytics.rankings.audiencePopularity.length > 0) {
+        popList.innerHTML = analytics.rankings.audiencePopularity.map((player, idx) => {
+          const trendIcon = player.change > 0 ? '⬆️' : player.change < 0 ? '⬇️' : '➡️';
+          const trendClass = player.change > 0 ? 'trend-up' : player.change < 0 ? 'trend-down' : 'trend-neutral';
+          return `
+            <div class="ranking-item">
+              <div class="ranking-rank">${idx + 1}.</div>
+              <div class="ranking-player">
+                <div class="ranking-player-name">${player.name}</div>
+                <div class="ranking-stat ${trendClass}">
+                  ${trendIcon} ${player.percentage}% (${player.change > 0 ? '+' : ''}${player.change})
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } else {
+        popList.innerHTML = '<p class="muted">No popularity data yet.</p>';
+      }
+    
+      // Render Island Influence
+      const influenceList = document.getElementById("islandInfluenceList");
+      if (analytics.rankings.islandInfluence && analytics.rankings.islandInfluence.length > 0) {
+        influenceList.innerHTML = analytics.rankings.islandInfluence.map((player, idx) => `
+          <div class="ranking-item">
+            <div class="ranking-rank">${idx + 1}.</div>
+            <div class="ranking-player">
+              <div class="ranking-player-name">${player.name}</div>
+              <div class="ranking-stat">${player.score} points</div>
+            </div>
+          </div>
+        `).join('');
+      } else {
+        influenceList.innerHTML = '<p class="muted">No influence data yet.</p>';
+      }
+    
+      // Render Alliance Network
+      const allianceList = document.getElementById("allianceNetworkList");
+      if (analytics.rankings.alliances && analytics.rankings.alliances.length > 0) {
+        allianceList.innerHTML = analytics.rankings.alliances.map(alliance => `
+          <div class="alliance-item">
+            <div class="alliance-name">${alliance.name}</div>
+            <div class="alliance-members">
+              ${alliance.members.map(m => `<span class="alliance-member">${m}</span>`).join('')}
+            </div>
+          </div>
+        `).join('');
+      } else {
+        allianceList.innerHTML = '<p class="muted">No active alliances detected yet.</p>';
+      }
+    }
+    
+    // ========== TAB 2: RELATIONSHIPS ==========
+    
+    function renderRelationshipsTab(analytics) {
+      const container = document.getElementById("relationshipHeatmapContainer");
+      
+      if (!analytics || !analytics.relationships) {
+        container.innerHTML = '<p class="muted">No relationship data available yet.</p>';
+        return;
+      }
+    
+      const relationships = analytics.relationships;
+      const players = Object.keys(relationships);
+    
+      if (players.length === 0) {
+        container.innerHTML = '<p class="muted">No relationship data available yet.</p>';
+        return;
+      }
+    
+      // Build heat map table
+      let html = '<table class="heatmap-table"><thead><tr><th>👥 PLAYERS</th>';
+      players.forEach(p => {
+        html += `<th><span class="ai-player"><span class="ai-avatar"><span>👤</span></span><span class="ai-name">${p}</span></span></th>`;
+      });
+      html += '</tr></thead><tbody>';
+    
+      players.forEach(player1 => {
+        html += `<tr><th>${player1}</th>`;
+        players.forEach(player2 => {
+          if (player1 === player2) {
+            html += '<td>—</td>';
+          } else {
+            const value = relationships[player1]?.[player2] || 0;
+            const relClass = 
+              value >= 7 ? 'rel-alliance' :
+              value >= 3 ? 'rel-friends' :
+              value <= -7 ? 'rel-enemies' :
+              value <= -3 ? 'rel-tension' :
+              'rel-neutral';
+            const label = 
+              value >= 7 ? 'Alliance' :
+              value >= 3 ? 'Friends' :
+              value <= -7 ? 'Enemies' :
+              value <= -3 ? 'Tension' :
+              'Neutral';
+            html += `<td class="${relClass}">
+              ${value > 0 ? '+' : ''}${value}<br>
+              <small style="opacity:0.7">${label}</small>
+            </td>`;
+          }
+        });
+        html += '</tr>';
+      });
+    
+      html += '</tbody></table>';
+      container.innerHTML = html;
+    }
+    
+    // ========== TAB 3: COMPASS ==========
+    
+    function renderCompassTab(analytics) {
+      const canvas = document.getElementById("compassCanvas");
+      const analysis = document.getElementById("compassAnalysis");
+    
+      if (!analytics || !analytics.compass) {
+        canvas.innerHTML = '<p class="muted" style="text-align: center; padding-top: 230px;">No compass data available yet.</p>';
+        analysis.innerHTML = '';
+        return;
+      }
+    
+      const compass = analytics.compass;
+    
+      // Clear and render compass dots
+      canvas.innerHTML = '';
+      canvas.style.position = 'relative';
+    
+      compass.forEach(player => {
+        // Convert -1 to 1 coordinates to pixel positions
+        const x = ((player.x + 1) / 2) * 100; // Convert to percentage
+        const y = ((1 - player.y) / 2) * 100; // Invert Y axis
+    
+        const dot = document.createElement('div');
+        dot.className = 'compass-player-dot';
+        dot.innerHTML = player.icon || player.name[0];
+        dot.style.left = `${x}%`;
+        dot.style.top = `${y}%`;
+        dot.style.transform = 'translate(-50%, -50%)';
+        dot.title = `${player.name}: ${player.archetype}`;
+        canvas.appendChild(dot);
+      });
+    
+      // Render analysis table
+      analysis.innerHTML = `
+        <h4 style="margin-bottom: 16px;">📊 Individual Gameplay Analysis</h4>
+        ${compass.map(player => `
+          <div class="compass-player-row">
+            <div class="compass-player-icon">${player.icon || player.name[0]}</div>
+            <div>
+              <div style="font-weight: 700;">${player.name}</div>
+              <div style="font-size: 13px; color: var(--muted);">${player.archetype}</div>
+            </div>
+            <div style="font-size: 13px; color: var(--muted);">${player.gameplayStyle}</div>
+            <div style="font-size: 12px; opacity: 0.7;">(${player.x.toFixed(2)}, ${player.y.toFixed(2)})</div>
+          </div>
+        `).join('')}
+      `;
+    }
+    
+    // ========== TAB 4: RESUMES ==========
+    
+    function renderResumesTab(analytics) {
+      const grid = document.getElementById("resumeGrid");
+    
+      if (!analytics || !analytics.resumes) {
+        grid.innerHTML = '<p class="muted">No resume data available yet.</p>';
+        return;
+      }
+    
+      const resumes = analytics.resumes;
+      const players = Object.keys(resumes);
+    
+      if (players.length === 0) {
+        grid.innerHTML = '<p class="muted">No resume data available yet.</p>';
+        return;
+      }
+    
+      grid.innerHTML = players.map(playerName => {
+        const resume = resumes[playerName];
+        return `
+          <div class="resume-card">
+            <div class="resume-header">
+              <div class="resume-player-info">
+                <h3>${playerName}</h3>
+                <div class="resume-status">⚡ Active</div>
+              </div>
+              <div class="resume-win-equity">
+                <div class="win-equity-percent">${resume.winEquity || 50}%</div>
+                <div class="win-equity-label">Win Equity</div>
+              </div>
+            </div>
+    
+            <div class="resume-stats">
+              <div class="resume-stat">
+                <span class="resume-stat-value">${resume.majorityVotes || 0}/${resume.totalVotes || 0}</span>
+                <span class="resume-stat-label">🗳️ Majority</span>
+              </div>
+              <div class="resume-stat">
+                <span class="resume-stat-value">${resume.immunities || 0}</span>
+                <span class="resume-stat-label">🏆 Immunities</span>
+              </div>
+              <div class="resume-stat">
+                <span class="resume-stat-value">${resume.votesAgainst || 0}</span>
+                <span class="resume-stat-label">🎯 Votes</span>
+              </div>
+              <div class="resume-stat">
+                <span class="resume-stat-value">${resume.votesNullified || 0}</span>
+                <span class="resume-stat-label">🩸 Nullified</span>
+              </div>
+              <div class="resume-stat">
+                <span class="resume-stat-value">${resume.socialScore || 0}</span>
+                <span class="resume-stat-label">💫 Social</span>
+              </div>
+            </div>
+    
+            ${resume.keyMoves && resume.keyMoves.length > 0 ? `
+              <div class="resume-moves">
+                <div class="resume-moves-title">🎯 Key Moves (${resume.keyMoves.length})</div>
+                ${resume.keyMoves.map(move => `
+                  <div class="resume-move">
+                    <div class="resume-move-episode">Episode ${move.episode || '?'}</div>
+                    <div class="resume-move-desc">${move.description}</div>
+                  </div>
+                `).join('')}
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+    
+    // ========== TAB 5: TRENDS ==========
+    
+    function renderTrendsTab(analytics) {
+      const select = document.getElementById("trendPlayerSelect");
+      const grid = document.getElementById("trendsGrid");
+    
+      if (!analytics || !analytics.relationshipHistory) {
+        select.innerHTML = '<option value="">-- No data available --</option>';
+        grid.innerHTML = '<p class="muted">No relationship history available yet.</p>';
+        return;
+      }
+    
+      const history = analytics.relationshipHistory;
+      const players = Object.keys(history);
+    
+      if (players.length === 0) {
+        select.innerHTML = '<option value="">-- No data available --</option>';
+        grid.innerHTML = '<p class="muted">No relationship history available yet.</p>';
+        return;
+      }
+    
+      // Populate player select
+      select.innerHTML = '<option value="">-- Select a player --</option>' +
+        players.map(p => `<option value="${p}">${p}</option>`).join('');
+    
+      // Handle player selection
+      select.onchange = function() {
+        const selectedPlayer = this.value;
+        if (!selectedPlayer) {
+          grid.innerHTML = '<p class="muted">Select a player to see their relationship trends.</p>';
+          return;
+        }
+    
+        const playerHistory = history[selectedPlayer];
+        const relationships = Object.keys(playerHistory);
+    
+        grid.innerHTML = relationships.map(otherPlayer => {
+          const rel = playerHistory[otherPlayer];
+          const trendIcon = rel.trend === 'rising' ? '↗' : rel.trend === 'falling' ? '↘' : '→';
+          const trendClass = rel.trend === 'rising' ? 'trend-up' : rel.trend === 'falling' ? 'trend-down' : 'trend-neutral';
+          
+          return `
+            <div class="trend-item">
+              <div class="trend-player-name">${otherPlayer}</div>
+              <div class="trend-value ${trendClass}">
+                <span class="trend-arrow">${trendIcon}</span>
+                <span>${rel.weightedAvg.toFixed(1)} avg</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+      };
+    }
+    
+    // ========== TAB 6: VOTES ==========
+    
+    function renderVotesTab(analytics) {
+      const select = document.getElementById("voteEpisodeSelect");
+      const container = document.getElementById("voteAnalysisContainer");
+    
+      if (!analytics || !analytics.votes) {
+        select.innerHTML = '<option value="">-- No data available --</option>';
+        container.innerHTML = '<p class="muted">No vote data available yet.</p>';
+        return;
+      }
+    
+      const votes = analytics.votes;
+      const episodes = Object.keys(votes);
+    
+      if (episodes.length === 0) {
+        select.innerHTML = '<option value="">-- No data available --</option>';
+        container.innerHTML = '<p class="muted">No vote data available yet.</p>';
+        return;
+      }
+    
+      // Populate episode select
+      select.innerHTML = '<option value="">-- Select episode --</option>' +
+        episodes.map(ep => `<option value="${ep}">Episode ${ep.replace('episode', '')}</option>`).join('');
+    
+      // Handle episode selection
+      select.onchange = function() {
+        const selectedEp = this.value;
+        if (!selectedEp) {
+          container.innerHTML = '<p class="muted">Select an episode to see vote analysis.</p>';
+          return;
+        }
+    
+        const epData = votes[selectedEp];
+        
+        let html = `
+          <div class="vote-eliminated">
+            <div class="vote-eliminated-label">🔥 ELIMINATED</div>
+            <div class="vote-eliminated-name">${epData.eliminated}</div>
+          </div>
+    
+          <div class="vote-blocs">
+            <h4 class="vote-blocs-title">👥 Voting Blocs</h4>
+            ${epData.blocs.map(bloc => `
+              <div class="vote-bloc">
+                <div class="vote-bloc-header">
+                  <div class="vote-bloc-name">${bloc.name}</div>
+                  <div class="vote-bloc-meta">
+                    <span>🎯 Target: ${bloc.target}</span>
+                    <span>💡 ${bloc.motivation}</span>
+                  </div>
+                </div>
+                ${bloc.spearheader ? `
+                  <div class="vote-bloc-spearheader">
+                    <strong>👑 ${bloc.spearheader} (Spearheader)</strong>
+                    <div class="vote-bloc-quote">"${bloc.quote}"</div>
+                  </div>
+                ` : ''}
+                <div class="vote-bloc-members">
+                  ${bloc.members.map(m => `<span class="alliance-member">${m}</span>`).join('')}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+    
+          <h4 class="vote-individual-title">🗳️ Individual Vote Breakdown</h4>
+          <div class="vote-individual-grid">
+            ${epData.votes.map(vote => `
+              <div class="vote-individual-item">
+                <div>
+                  <span class="vote-individual-voter">${vote.voter}</span>
+                  <span class="vote-individual-arrow">→</span>
+                  <span class="vote-individual-target">${vote.target}</span>
+                  <span class="vote-individual-type vote-type-${vote.type}">${vote.type}</span>
+                </div>
+                <div class="vote-individual-reasoning">${vote.reasoning}</div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+    
+        container.innerHTML = html;
+      };
+    }
+    
+    // ========== TAB 7: EDGIC ==========
+    
+    function renderEdgicTab(analytics) {
+      const tableContainer = document.getElementById("edgicTableContainer");
+      const contendersGrid = document.getElementById("edgicContenders");
+    
+      if (!analytics || !analytics.edgic) {
+        tableContainer.innerHTML = '<p class="muted">No edgic data available yet.</p>';
+        contendersGrid.innerHTML = '<p class="muted">No contender data available yet.</p>';
+        return;
+      }
+    
+      const edgic = analytics.edgic;
+      const players = Object.keys(edgic.ratings || {});
+      const episodes = Object.keys((edgic.ratings[players[0]] || {})).filter(k => k.startsWith('episode'));
+    
+      if (players.length === 0) {
+        tableContainer.innerHTML = '<p class="muted">No edgic data available yet.</p>';
+        contendersGrid.innerHTML = '<p class="muted">No contender data available yet.</p>';
+        return;
+      }
+    
+      // Build edgic table
+      let html = '<table class="edgic-table"><thead><tr><th>Contestant</th>';
+      episodes.forEach((ep, idx) => {
+        html += `<th>${idx + 1}</th>`;
+      });
+      html += '<th>AVG</th></tr></thead><tbody>';
+    
+      players.forEach(player => {
+        const ratings = edgic.ratings[player];
+        html += `<tr><th>${player}</th>`;
+        episodes.forEach(ep => {
+          const rating = ratings[ep]?.rating || 'MOR';
+          const ratingClass = rating.substring(0, 3).toLowerCase();
+          html += `<td class="edgic-${ratingClass}">${rating}</td>`;
+        });
+        html += `<td class="edgic-${ratings.average?.substring(0,3).toLowerCase() || 'mor'}">${ratings.average || 'MOR'}</td>`;
+        html += '</tr>';
+      });
+    
+      html += '</tbody></table>';
+      tableContainer.innerHTML = html;
+    
+      // Render contenders
+      if (edgic.contenders && edgic.contenders.length > 0) {
+        contendersGrid.innerHTML = edgic.contenders.map(contender => `
+          <div class="edgic-contender">
+            <div class="edgic-contender-rank">${contender.rank}</div>
+            <div class="edgic-contender-name">${contender.playerName}</div>
+          </div>
+        `).join('');
+      } else {
+        contendersGrid.innerHTML = '<p class="muted">No contender data available yet.</p>';
+      }
+    }
+    
+    // ========== RENDER ALL TABS AFTER ANALYTICS GENERATION ==========
+    
+    function renderAllAnalyticsTabs(analytics) {
+      if (!analytics) return;
+      
+      renderRankingsTab(analytics);
+      renderRelationshipsTab(analytics);
+      renderCompassTab(analytics);
+      renderResumesTab(analytics);
+      renderTrendsTab(analytics);
+      renderVotesTab(analytics);
+      renderEdgicTab(analytics);
     function renderAll(analytics, summaryText) {
       if (!analytics || typeof analytics !== "object") return;
 
@@ -5456,460 +5908,6 @@ Would you like to:
     }
   };
   
-    function renderRankingsTab(analytics) {
-      if (!analytics || !analytics.rankings) {
-        document.getElementById("audiencePopularityList").innerHTML = 
-          '<p class="muted">No rankings data available yet.</p>';
-        document.getElementById("islandInfluenceList").innerHTML = 
-          '<p class="muted">No influence data available yet.</p>';
-        document.getElementById("allianceNetworkList").innerHTML = 
-          '<p class="muted">No active alliances detected yet.</p>';
-        return;
-      }
-    
-      // Render Audience Popularity
-      const popList = document.getElementById("audiencePopularityList");
-      if (analytics.rankings.audiencePopularity && analytics.rankings.audiencePopularity.length > 0) {
-        popList.innerHTML = analytics.rankings.audiencePopularity.map((player, idx) => {
-          const trendIcon = player.change > 0 ? '⬆️' : player.change < 0 ? '⬇️' : '➡️';
-          const trendClass = player.change > 0 ? 'trend-up' : player.change < 0 ? 'trend-down' : 'trend-neutral';
-          return `
-            <div class="ranking-item">
-              <div class="ranking-rank">${idx + 1}.</div>
-              <div class="ranking-player">
-                <div class="ranking-player-name">${player.name}</div>
-                <div class="ranking-stat ${trendClass}">
-                  ${trendIcon} ${player.percentage}% (${player.change > 0 ? '+' : ''}${player.change})
-                </div>
-              </div>
-            </div>
-          `;
-        }).join('');
-      } else {
-        popList.innerHTML = '<p class="muted">No popularity data yet.</p>';
-      }
-    
-      // Render Island Influence
-      const influenceList = document.getElementById("islandInfluenceList");
-      if (analytics.rankings.islandInfluence && analytics.rankings.islandInfluence.length > 0) {
-        influenceList.innerHTML = analytics.rankings.islandInfluence.map((player, idx) => `
-          <div class="ranking-item">
-            <div class="ranking-rank">${idx + 1}.</div>
-            <div class="ranking-player">
-              <div class="ranking-player-name">${player.name}</div>
-              <div class="ranking-stat">${player.score} points</div>
-            </div>
-          </div>
-        `).join('');
-      } else {
-        influenceList.innerHTML = '<p class="muted">No influence data yet.</p>';
-      }
-    
-      // Render Alliance Network
-      const allianceList = document.getElementById("allianceNetworkList");
-      if (analytics.rankings.alliances && analytics.rankings.alliances.length > 0) {
-        allianceList.innerHTML = analytics.rankings.alliances.map(alliance => `
-          <div class="alliance-item">
-            <div class="alliance-name">${alliance.name}</div>
-            <div class="alliance-members">
-              ${alliance.members.map(m => `<span class="alliance-member">${m}</span>`).join('')}
-            </div>
-          </div>
-        `).join('');
-      } else {
-        allianceList.innerHTML = '<p class="muted">No active alliances detected yet.</p>';
-      }
-    }
-    
-    // ========== TAB 2: RELATIONSHIPS ==========
-    
-    function renderRelationshipsTab(analytics) {
-      const container = document.getElementById("relationshipHeatmapContainer");
-      
-      if (!analytics || !analytics.relationships) {
-        container.innerHTML = '<p class="muted">No relationship data available yet.</p>';
-        return;
-      }
-    
-      const relationships = analytics.relationships;
-      const players = Object.keys(relationships);
-    
-      if (players.length === 0) {
-        container.innerHTML = '<p class="muted">No relationship data available yet.</p>';
-        return;
-      }
-    
-      // Build heat map table
-      let html = '<table class="heatmap-table"><thead><tr><th>👥 PLAYERS</th>';
-      players.forEach(p => {
-        html += `<th><span class="ai-player"><span class="ai-avatar"><span>👤</span></span><span class="ai-name">${p}</span></span></th>`;
-      });
-      html += '</tr></thead><tbody>';
-    
-      players.forEach(player1 => {
-        html += `<tr><th>${player1}</th>`;
-        players.forEach(player2 => {
-          if (player1 === player2) {
-            html += '<td>—</td>';
-          } else {
-            const value = relationships[player1]?.[player2] || 0;
-            const relClass = 
-              value >= 7 ? 'rel-alliance' :
-              value >= 3 ? 'rel-friends' :
-              value <= -7 ? 'rel-enemies' :
-              value <= -3 ? 'rel-tension' :
-              'rel-neutral';
-            const label = 
-              value >= 7 ? 'Alliance' :
-              value >= 3 ? 'Friends' :
-              value <= -7 ? 'Enemies' :
-              value <= -3 ? 'Tension' :
-              'Neutral';
-            html += `<td class="${relClass}">
-              ${value > 0 ? '+' : ''}${value}<br>
-              <small style="opacity:0.7">${label}</small>
-            </td>`;
-          }
-        });
-        html += '</tr>';
-      });
-    
-      html += '</tbody></table>';
-      container.innerHTML = html;
-    }
-    
-    // ========== TAB 3: COMPASS ==========
-    
-    function renderCompassTab(analytics) {
-      const canvas = document.getElementById("compassCanvas");
-      const analysis = document.getElementById("compassAnalysis");
-    
-      if (!analytics || !analytics.compass) {
-        canvas.innerHTML = '<p class="muted" style="text-align: center; padding-top: 230px;">No compass data available yet.</p>';
-        analysis.innerHTML = '';
-        return;
-      }
-    
-      const compass = analytics.compass;
-    
-      // Clear and render compass dots
-      canvas.innerHTML = '';
-      canvas.style.position = 'relative';
-    
-      compass.forEach(player => {
-        // Convert -1 to 1 coordinates to pixel positions
-        const x = ((player.x + 1) / 2) * 100; // Convert to percentage
-        const y = ((1 - player.y) / 2) * 100; // Invert Y axis
-    
-        const dot = document.createElement('div');
-        dot.className = 'compass-player-dot';
-        dot.innerHTML = player.icon || player.name[0];
-        dot.style.left = `${x}%`;
-        dot.style.top = `${y}%`;
-        dot.style.transform = 'translate(-50%, -50%)';
-        dot.title = `${player.name}: ${player.archetype}`;
-        canvas.appendChild(dot);
-      });
-    
-      // Render analysis table
-      analysis.innerHTML = `
-        <h4 style="margin-bottom: 16px;">📊 Individual Gameplay Analysis</h4>
-        ${compass.map(player => `
-          <div class="compass-player-row">
-            <div class="compass-player-icon">${player.icon || player.name[0]}</div>
-            <div>
-              <div style="font-weight: 700;">${player.name}</div>
-              <div style="font-size: 13px; color: var(--muted);">${player.archetype}</div>
-            </div>
-            <div style="font-size: 13px; color: var(--muted);">${player.gameplayStyle}</div>
-            <div style="font-size: 12px; opacity: 0.7;">(${player.x.toFixed(2)}, ${player.y.toFixed(2)})</div>
-          </div>
-        `).join('')}
-      `;
-    }
-    
-    // ========== TAB 4: RESUMES ==========
-    
-    function renderResumesTab(analytics) {
-      const grid = document.getElementById("resumeGrid");
-    
-      if (!analytics || !analytics.resumes) {
-        grid.innerHTML = '<p class="muted">No resume data available yet.</p>';
-        return;
-      }
-    
-      const resumes = analytics.resumes;
-      const players = Object.keys(resumes);
-    
-      if (players.length === 0) {
-        grid.innerHTML = '<p class="muted">No resume data available yet.</p>';
-        return;
-      }
-    
-      grid.innerHTML = players.map(playerName => {
-        const resume = resumes[playerName];
-        return `
-          <div class="resume-card">
-            <div class="resume-header">
-              <div class="resume-player-info">
-                <h3>${playerName}</h3>
-                <div class="resume-status">⚡ Active</div>
-              </div>
-              <div class="resume-win-equity">
-                <div class="win-equity-percent">${resume.winEquity || 50}%</div>
-                <div class="win-equity-label">Win Equity</div>
-              </div>
-            </div>
-    
-            <div class="resume-stats">
-              <div class="resume-stat">
-                <span class="resume-stat-value">${resume.majorityVotes || 0}/${resume.totalVotes || 0}</span>
-                <span class="resume-stat-label">🗳️ Majority</span>
-              </div>
-              <div class="resume-stat">
-                <span class="resume-stat-value">${resume.immunities || 0}</span>
-                <span class="resume-stat-label">🏆 Immunities</span>
-              </div>
-              <div class="resume-stat">
-                <span class="resume-stat-value">${resume.votesAgainst || 0}</span>
-                <span class="resume-stat-label">🎯 Votes</span>
-              </div>
-              <div class="resume-stat">
-                <span class="resume-stat-value">${resume.votesNullified || 0}</span>
-                <span class="resume-stat-label">🩸 Nullified</span>
-              </div>
-              <div class="resume-stat">
-                <span class="resume-stat-value">${resume.socialScore || 0}</span>
-                <span class="resume-stat-label">💫 Social</span>
-              </div>
-            </div>
-    
-            ${resume.keyMoves && resume.keyMoves.length > 0 ? `
-              <div class="resume-moves">
-                <div class="resume-moves-title">🎯 Key Moves (${resume.keyMoves.length})</div>
-                ${resume.keyMoves.map(move => `
-                  <div class="resume-move">
-                    <div class="resume-move-episode">Episode ${move.episode || '?'}</div>
-                    <div class="resume-move-desc">${move.description}</div>
-                  </div>
-                `).join('')}
-              </div>
-            ` : ''}
-          </div>
-        `;
-      }).join('');
-    }
-    
-    // ========== TAB 5: TRENDS ==========
-    
-    function renderTrendsTab(analytics) {
-      const select = document.getElementById("trendPlayerSelect");
-      const grid = document.getElementById("trendsGrid");
-    
-      if (!analytics || !analytics.relationshipHistory) {
-        select.innerHTML = '<option value="">-- No data available --</option>';
-        grid.innerHTML = '<p class="muted">No relationship history available yet.</p>';
-        return;
-      }
-    
-      const history = analytics.relationshipHistory;
-      const players = Object.keys(history);
-    
-      if (players.length === 0) {
-        select.innerHTML = '<option value="">-- No data available --</option>';
-        grid.innerHTML = '<p class="muted">No relationship history available yet.</p>';
-        return;
-      }
-    
-      // Populate player select
-      select.innerHTML = '<option value="">-- Select a player --</option>' +
-        players.map(p => `<option value="${p}">${p}</option>`).join('');
-    
-      // Handle player selection
-      select.onchange = function() {
-        const selectedPlayer = this.value;
-        if (!selectedPlayer) {
-          grid.innerHTML = '<p class="muted">Select a player to see their relationship trends.</p>';
-          return;
-        }
-    
-        const playerHistory = history[selectedPlayer];
-        const relationships = Object.keys(playerHistory);
-    
-        grid.innerHTML = relationships.map(otherPlayer => {
-          const rel = playerHistory[otherPlayer];
-          const trendIcon = rel.trend === 'rising' ? '↗' : rel.trend === 'falling' ? '↘' : '→';
-          const trendClass = rel.trend === 'rising' ? 'trend-up' : rel.trend === 'falling' ? 'trend-down' : 'trend-neutral';
-          
-          return `
-            <div class="trend-item">
-              <div class="trend-player-name">${otherPlayer}</div>
-              <div class="trend-value ${trendClass}">
-                <span class="trend-arrow">${trendIcon}</span>
-                <span>${rel.weightedAvg.toFixed(1)} avg</span>
-              </div>
-            </div>
-          `;
-        }).join('');
-      };
-    }
-    
-    // ========== TAB 6: VOTES ==========
-    
-    function renderVotesTab(analytics) {
-      const select = document.getElementById("voteEpisodeSelect");
-      const container = document.getElementById("voteAnalysisContainer");
-    
-      if (!analytics || !analytics.votes) {
-        select.innerHTML = '<option value="">-- No data available --</option>';
-        container.innerHTML = '<p class="muted">No vote data available yet.</p>';
-        return;
-      }
-    
-      const votes = analytics.votes;
-      const episodes = Object.keys(votes);
-    
-      if (episodes.length === 0) {
-        select.innerHTML = '<option value="">-- No data available --</option>';
-        container.innerHTML = '<p class="muted">No vote data available yet.</p>';
-        return;
-      }
-    
-      // Populate episode select
-      select.innerHTML = '<option value="">-- Select episode --</option>' +
-        episodes.map(ep => `<option value="${ep}">Episode ${ep.replace('episode', '')}</option>`).join('');
-    
-      // Handle episode selection
-      select.onchange = function() {
-        const selectedEp = this.value;
-        if (!selectedEp) {
-          container.innerHTML = '<p class="muted">Select an episode to see vote analysis.</p>';
-          return;
-        }
-    
-        const epData = votes[selectedEp];
-        
-        let html = `
-          <div class="vote-eliminated">
-            <div class="vote-eliminated-label">🔥 ELIMINATED</div>
-            <div class="vote-eliminated-name">${epData.eliminated}</div>
-          </div>
-    
-          <div class="vote-blocs">
-            <h4 class="vote-blocs-title">👥 Voting Blocs</h4>
-            ${epData.blocs.map(bloc => `
-              <div class="vote-bloc">
-                <div class="vote-bloc-header">
-                  <div class="vote-bloc-name">${bloc.name}</div>
-                  <div class="vote-bloc-meta">
-                    <span>🎯 Target: ${bloc.target}</span>
-                    <span>💡 ${bloc.motivation}</span>
-                  </div>
-                </div>
-                ${bloc.spearheader ? `
-                  <div class="vote-bloc-spearheader">
-                    <strong>👑 ${bloc.spearheader} (Spearheader)</strong>
-                    <div class="vote-bloc-quote">"${bloc.quote}"</div>
-                  </div>
-                ` : ''}
-                <div class="vote-bloc-members">
-                  ${bloc.members.map(m => `<span class="alliance-member">${m}</span>`).join('')}
-                </div>
-              </div>
-            `).join('')}
-          </div>
-    
-          <h4 class="vote-individual-title">🗳️ Individual Vote Breakdown</h4>
-          <div class="vote-individual-grid">
-            ${epData.votes.map(vote => `
-              <div class="vote-individual-item">
-                <div>
-                  <span class="vote-individual-voter">${vote.voter}</span>
-                  <span class="vote-individual-arrow">→</span>
-                  <span class="vote-individual-target">${vote.target}</span>
-                  <span class="vote-individual-type vote-type-${vote.type}">${vote.type}</span>
-                </div>
-                <div class="vote-individual-reasoning">${vote.reasoning}</div>
-              </div>
-            `).join('')}
-          </div>
-        `;
-    
-        container.innerHTML = html;
-      };
-    }
-    
-    // ========== TAB 7: EDGIC ==========
-    
-    function renderEdgicTab(analytics) {
-      const tableContainer = document.getElementById("edgicTableContainer");
-      const contendersGrid = document.getElementById("edgicContenders");
-    
-      if (!analytics || !analytics.edgic) {
-        tableContainer.innerHTML = '<p class="muted">No edgic data available yet.</p>';
-        contendersGrid.innerHTML = '<p class="muted">No contender data available yet.</p>';
-        return;
-      }
-    
-      const edgic = analytics.edgic;
-      const players = Object.keys(edgic.ratings || {});
-      const episodes = Object.keys((edgic.ratings[players[0]] || {})).filter(k => k.startsWith('episode'));
-    
-      if (players.length === 0) {
-        tableContainer.innerHTML = '<p class="muted">No edgic data available yet.</p>';
-        contendersGrid.innerHTML = '<p class="muted">No contender data available yet.</p>';
-        return;
-      }
-    
-      // Build edgic table
-      let html = '<table class="edgic-table"><thead><tr><th>Contestant</th>';
-      episodes.forEach((ep, idx) => {
-        html += `<th>${idx + 1}</th>`;
-      });
-      html += '<th>AVG</th></tr></thead><tbody>';
-    
-      players.forEach(player => {
-        const ratings = edgic.ratings[player];
-        html += `<tr><th>${player}</th>`;
-        episodes.forEach(ep => {
-          const rating = ratings[ep]?.rating || 'MOR';
-          const ratingClass = rating.substring(0, 3).toLowerCase();
-          html += `<td class="edgic-${ratingClass}">${rating}</td>`;
-        });
-        html += `<td class="edgic-${ratings.average?.substring(0,3).toLowerCase() || 'mor'}">${ratings.average || 'MOR'}</td>`;
-        html += '</tr>';
-      });
-    
-      html += '</tbody></table>';
-      tableContainer.innerHTML = html;
-    
-      // Render contenders
-      if (edgic.contenders && edgic.contenders.length > 0) {
-        contendersGrid.innerHTML = edgic.contenders.map(contender => `
-          <div class="edgic-contender">
-            <div class="edgic-contender-rank">${contender.rank}</div>
-            <div class="edgic-contender-name">${contender.playerName}</div>
-          </div>
-        `).join('');
-      } else {
-        contendersGrid.innerHTML = '<p class="muted">No contender data available yet.</p>';
-      }
-    }
-    
-    // ========== RENDER ALL TABS AFTER ANALYTICS GENERATION ==========
-    
-    function renderAllAnalyticsTabs(analytics) {
-      if (!analytics) return;
-      
-      renderRankingsTab(analytics);
-      renderRelationshipsTab(analytics);
-      renderCompassTab(analytics);
-      renderResumesTab(analytics);
-      renderTrendsTab(analytics);
-      renderVotesTab(analytics);
-      renderEdgicTab(analytics);
-}
-
   })(); // Close the main IIFE
 }, 500); // Close setTimeout - Wait for DOM to fully render
 

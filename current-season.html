@@ -304,6 +304,22 @@ function renderEdgicTab(analytics){
   window.__queueTabRender("renderEdgicTab", analytics);
 }
 
+function renderResumesTab(analytics){
+  if (typeof window.__realRenderResumesTab === "function") return window.__realRenderResumesTab(analytics);
+  window.__queueTabRender("renderResumesTab", analytics);
+}
+
+function renderTrendsTab(analytics){
+  if (typeof window.__realRenderTrendsTab === "function") return window.__realRenderTrendsTab(analytics);
+  window.__queueTabRender("renderTrendsTab", analytics);
+}
+
+function renderVotesTab(analytics){
+  if (typeof window.__realRenderVotesTab === "function") return window.__realRenderVotesTab(analytics);
+  window.__queueTabRender("renderVotesTab", analytics);
+}
+
+
 window.__flushTabRenderQueue = window.__flushTabRenderQueue || function(){
   const q = window.__tabRenderQueue || [];
   window.__tabRenderQueue = [];
@@ -5958,6 +5974,11 @@ window.__realRenderRankingsTab = renderRankingsTab;
 window.__realRenderRelationshipsTab = renderRelationshipsTab;
 window.__realRenderCompassTab = renderCompassTab;
 window.__realRenderEdgicTab = renderEdgicTab;
+
+window.__realRenderResumesTab = renderResumesTab;
+window.__realRenderTrendsTab = renderTrendsTab;
+window.__realRenderVotesTab = renderVotesTab;
+
 
 window.renderAllAnalyticsTabs = renderAllAnalyticsTabs;
 window.renderRankingsTab = renderRankingsTab;

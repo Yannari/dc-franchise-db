@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Current Season — Season 5</title>
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="live-season-tracker-styles.css">
 
   <style>
     .muted{opacity:.78}
@@ -409,10 +410,15 @@
   <!-- 3) SWITCHABLE ANALYTICS WINDOW -->
   <section class="window glass-card" id="analyticsWindow">
     <div class="window-head">
-      <h2 class="section-title">📊 Cullhouse Analytics</h2>
+      <h2 class="section-title">📊 Season Analytics</h2>
       <div class="window-tabs" role="tablist" aria-label="Analytics tabs">
-        <button class="tab-btn active" id="tabOverview" role="tab" aria-selected="true">📘 Overview</button>
-        <button class="tab-btn" id="tabGameplay" role="tab" aria-selected="false">🧭 Gameplay</button>
+        <button class="tab-btn active" id="tabRankings" role="tab" aria-selected="true">📊 Rankings</button>
+        <button class="tab-btn" id="tabRelationships" role="tab" aria-selected="false">💕 Relationships</button>
+        <button class="tab-btn" id="tabCompass" role="tab" aria-selected="false">🧭 Compass</button>
+        <button class="tab-btn" id="tabResumes" role="tab" aria-selected="false">📄 Resumes</button>
+        <button class="tab-btn" id="tabTrends" role="tab" aria-selected="false">📈 Trends</button>
+        <button class="tab-btn" id="tabVotes" role="tab" aria-selected="false">🗳️ Votes</button>
+        <button class="tab-btn" id="tabEdgic" role="tab" aria-selected="false">📋 Edgic</button>
         <button class="tab-btn" id="tabEpisode" role="tab" aria-selected="false">📺 Episode</button>
         <button class="tab-btn" id="tabSeasonSetup" role="tab" aria-selected="false">⭐ Season Setup</button>
       </div>

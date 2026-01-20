@@ -15,10 +15,10 @@ export default {
     }
 
     const body = await request.json().catch(() => ({}));
-    const { season, episode, summaryText, auditionsText, mode } = body;
+    const { season, episode, summaryText, mode, previousEpisodes } = body;
 
     if (mode === "episode") {
-      return await generateEpisode(summaryText, auditionsText, season, episode, env);
+      return await generateEpisode(summaryText, season, episode, env, previousEpisodes);
     } else if (mode === "season-data-extraction") {
       return await generateSeasonDataExtraction(body, env);
     } else {
@@ -27,39 +27,26 @@ export default {
   },
 };
 
-// --- Helpers ---------------------------------------------------------------
-// Extract canonical cast names from Episode 1 summary.
-// Expected format in your episode summaries:
-//   === CAST (ALL) ===
-//   Name 1
-//   Name 2
-//   ...
-//   === <NEXT SECTION> ===
 function extractCastFromEpisode1(episodes) {
   try {
     const ep1 = Array.isArray(episodes) ? episodes[0] : null;
     const text = (ep1 && (ep1.summary || ep1.text || ep1.raw || '')) || '';
     if (!text) return [];
 
-    // Find the CAST (ALL) block.
     const startIdx = text.indexOf('=== CAST (ALL) ===');
     if (startIdx === -1) return [];
     const afterStart = text.slice(startIdx + '=== CAST (ALL) ==='.length);
 
-    // Stop at the next "===" heading, if present.
     const nextHeadingIdx = afterStart.indexOf('===');
-    const block = (nextHeadingIdx === -1 ? afterStart : afterStart.slice(0, nextHeadingIdx))
-      .trim();
+    const block = (nextHeadingIdx === -1 ? afterStart : afterStart.slice(0, nextHeadingIdx)).trim();
     if (!block) return [];
 
-    // One name per line; strip bullets/numbers.
     const lines = block
       .split(/\r?\n/)
       .map(l => l.trim())
       .filter(Boolean)
       .map(l => l.replace(/^[-*\d.)\s]+/, '').trim());
 
-    // Filter out obvious non-names / headings that sometimes appear in stats.
     const banned = new Set([
       'votes to win',
       'votes received',
@@ -73,13 +60,11 @@ function extractCastFromEpisode1(episodes) {
       const lower = n.toLowerCase();
       if (!n) return false;
       if (banned.has(lower)) return false;
-      // Avoid accidentally grabbing column headers.
       if (lower.includes('votes to win')) return false;
       if (lower.includes('place') && lower.includes('player')) return false;
       return true;
     });
 
-    // De-dupe while preserving order.
     const seen = new Set();
     const unique = [];
     for (const name of cleaned) {
@@ -104,23 +89,9 @@ async function generateSeasonDataExtraction(body, env) {
     });
   }
 
-  // --- Canonical name guardrails ------------------------------------------
-  // The ONLY valid player names are the ones listed in Episode 1 under:
-  //   === CAST (ALL) ===
-  // This prevents the model from accidentally inventing extra "players" from
-  // stat labels (e.g. "Votes to Win") or from notes (e.g. "Jacques Winner").
   const canonicalCast = extractCastFromEpisode1(episodes);
   const expectedCastSize = Number(metadata?.castSize) || (canonicalCast.length || undefined);
   const expectedEpisodeCount = Number(metadata?.episodeCount) || (episodes?.length || undefined);
-
-  const playerNameSchema = canonicalCast.length
-    ? { type: "string", enum: canonicalCast }
-    : { type: "string" };
-
-  const boundedArray = (base, expected) =>
-    expected
-      ? { ...base, minItems: expected, maxItems: expected }
-      : base;
 
   const castItemSchema = canonicalCast.length
     ? { type: "string", enum: canonicalCast }
@@ -226,13 +197,11 @@ async function generateSeasonDataExtraction(body, env) {
     required: ["cast", "placements", "finalists", "winner", "jury", "votingHistory", "seasonNarrative"]
   };
 
-  // Build comprehensive prompt with all episodes
   let episodeSummaries = '';
   episodes.forEach(ep => {
     episodeSummaries += `\n\n=== EPISODE ${ep.episode} ===\n${ep.summary}`;
   });
 
-  // Add Brantsteele stats if provided
   let brantsteeleSection = '';
   if (brantsteeleStats && brantsteeleStats.length > 100) {
     brantsteeleSection = `\n\n=== BRANTSTEELE STATISTICS (USE THIS FOR ACCURATE NUMBERS) ===\n${brantsteeleStats}\n\n⚠️ IMPORTANT: Use Brantsteele stats for exact numbers (challenge wins, votes received, idol counts, placements). Episode summaries provide narrative context.`;
@@ -264,46 +233,19 @@ ${canonicalCastSection}
    ${brantsteeleStats ? '- GET EXACT PLACEMENTS FROM BRANTSTEELE STATS' : '- Use elimination order from episodes (last eliminated = highest placement)'}
    - Finalists (top 3) get placements 1, 2, 3
    - Winner is placement 1
-   - For each player provide ALL fields (use empty arrays [] if no data):
-     * placement: Number (1-${metadata.castSize || 'N'})
-     * name: Player name (string)
-     * phase: "Winner", "Finalist", "Juror", or "Pre-Juror" (string)
-     * notes: Brief note like "Eliminated Episode 5" or "Winner - 7 jury votes" (string)
-     * strategicRank: 1-10 scale where 10=masterful, 1=poor (number)
-     * story: 1-2 sentence summary of their game (string)
-     * gameplayStyle: One phrase like "Social butterfly" or "Challenge beast" (string)
-     * keyMoments: Array of 0-3 major moments like ["Found idol Episode 3", "Won immunity"] (array, use [] if none)
-     * challengeWins: ${brantsteeleStats ? 'GET FROM BRANTSTEELE STATS' : 'Count from episodes'} (number, use 0 if none)
-     * immunityWins: ${brantsteeleStats ? 'GET FROM BRANTSTEELE STATS' : 'Count individual immunity wins'} (number, use 0 if none)
-     * idolsFound: ${brantsteeleStats ? 'GET FROM BRANTSTEELE STATS' : 'Count idols found'} (number, use 0 if none)
-     * votesReceived: ${brantsteeleStats ? 'GET FROM BRANTSTEELE STATS' : 'Total votes received across all episodes'} (number)
-     * alliances: Array of 2-4 key allies like ["Dave", "Emma"] (array, use [] if none)
-     * rivalries: Array of 0-3 rivals like ["Kelly"] (array, use [] if none)
+   - For each player provide ALL fields (use empty arrays [] if no data)
 
 3. FINALISTS: Top 3 players with jury votes received
-   - Winner gets placement 1
-   - Calculate jury votes from finale
 
-4. WINNER ANALYSIS:
-   - name: Winner's name (string)
-   - keyStats: Notable stats like "2 votes against, 4 immunities, 1 idol" (string)
-   - strategy: 2-3 sentences explaining how they won (string)
-   - legacy: 1-2 sentences on their franchise impact (string)
+4. WINNER ANALYSIS: name, keyStats, strategy, legacy
 
-5. JURY: List all jury members (players who voted at FTC) - array of strings
+5. JURY: List all jury members
 
-6. VOTING HISTORY: For EACH episode (1-${metadata.episodeCount}):
-   - episode: Number
-   - eliminated: Player eliminated as string, or null if none/redemption island
-   - votes: Array of {voter, target} for each vote cast (use [] if no votes shown)
-   - Parse voting charts carefully from episode summaries
+6. VOTING HISTORY: For EACH episode
 
-7. SEASON NARRATIVE: 2-3 sentence story arc of the season (string)
+7. SEASON NARRATIVE: 2-3 sentence story arc
 
 IMPORTANT: Provide ALL fields for EVERY player. Use empty arrays [] for keyMoments/alliances/rivalries if no data. Use 0 for numeric fields if no data.
-
-BASE PLACEMENTS/STATS ON BRANTSTEELE DATA IF PROVIDED.
-BASE NARRATIVES/STORIES ON EPISODE SUMMARIES.
 
 Season: ${season} - ${seasonTitle}
 Theme: ${metadata.theme}
@@ -356,7 +298,11 @@ async function generateAnalytics(summaryText, season, episode, env) {
         items: {
           type: "object",
           additionalProperties: false,
-          properties: { player: { type: "string" }, prob: { type: "number" }, why: { type: "string" } },
+          properties: { 
+            player: { type: "string" }, 
+            prob: { type: "number", minimum: 0, maximum: 100 }, 
+            why: { type: "string" } 
+          },
           required: ["player", "prob", "why"],
         },
       },
@@ -365,11 +311,11 @@ async function generateAnalytics(summaryText, season, episode, env) {
         items: {
           type: "object",
           additionalProperties: false,
-          properties: {
-            player: { type: "string" },
-            score: { type: "number", minimum: 0, maximum: 100 }, // ✅ (1) schema bound
-            tag: { type: "string" },
-            blurb: { type: "string" }
+          properties: { 
+            player: { type: "string" }, 
+            score: { type: "number", minimum: 0, maximum: 100 }, 
+            tag: { type: "string" }, 
+            blurb: { type: "string" } 
           },
           required: ["player", "score", "tag", "blurb"],
         },
@@ -379,13 +325,29 @@ async function generateAnalytics(summaryText, season, episode, env) {
         items: {
           type: "object",
           additionalProperties: false,
-          properties: {
-            name: { type: "string" },
-            score: { type: "number", minimum: 0, maximum: 100 }, // ✅ (1)
-            note: { type: "string" }
+          properties: { 
+            name: { type: "string" }, 
+            score: { type: "number", minimum: 0, maximum: 100 }, 
+            note: { type: "string" } 
           },
           required: ["name", "score", "note"],
         },
+      },
+      votingBlocs: {
+        type: "array",
+        items: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            name: { type: "string" },
+            members: { type: "array", items: { type: "string" } },
+            strength: { type: "number", minimum: 0, maximum: 100 },
+            target: { type: "string" },
+            notes: { type: "string" }
+          },
+          required: ["name", "members", "strength", "target", "notes"],
+        },
+        description: "Active voting coalitions targeting specific players"
       },
       titles: {
         type: "array",
@@ -415,7 +377,7 @@ async function generateAnalytics(summaryText, season, episode, env) {
             strongLikes: { type: "array", items: { type: "string" } },
             strongDislikes: { type: "array", items: { type: "string" } },
             isolated: { type: "boolean" },
-            centralityScore: { type: "number", minimum: 0, maximum: 100 }, // ✅ (1)
+            centralityScore: { type: "number", minimum: 0, maximum: 100 },
           },
           required: ["player", "strongLikes", "strongDislikes", "isolated", "centralityScore"],
         },
@@ -425,10 +387,10 @@ async function generateAnalytics(summaryText, season, episode, env) {
         items: {
           type: "object",
           additionalProperties: false,
-          properties: {
-            player: { type: "string" },
-            score: { type: "number", minimum: 0, maximum: 100 }, // ✅ (1)
-            note: { type: "string" }
+          properties: { 
+            player: { type: "string" }, 
+            score: { type: "number", minimum: 0, maximum: 100 }, 
+            note: { type: "string" } 
           },
           required: ["player", "score", "note"],
         },
@@ -440,10 +402,10 @@ async function generateAnalytics(summaryText, season, episode, env) {
           additionalProperties: false,
           properties: {
             player: { type: "string" },
-            physical: { type: "number" },
-            strategic: { type: "number" },
-            social: { type: "number" },
-            advantage: { type: "number" },
+            physical: { type: "number", minimum: 0, maximum: 100 },
+            strategic: { type: "number", minimum: 0, maximum: 100 },
+            social: { type: "number", minimum: 0, maximum: 100 },
+            advantage: { type: "number", minimum: 0, maximum: 100 },
           },
           required: ["player", "physical", "strategic", "social", "advantage"],
         },
@@ -465,23 +427,25 @@ async function generateAnalytics(summaryText, season, episode, env) {
     },
     required: [
       "narrativeSummary", "bestMove", "biggestRisk", "bootPredictions", "powerRankings",
-      "allianceStability", "titles", "roles", "socialNetwork", "juryManagement",
+      "allianceStability", "votingBlocs", "titles", "roles", "socialNetwork", "juryManagement",
       "threatBreakdown", "pathToVictory",
     ],
   };
 
   const instructions = `
-You generate Survivor-style analytics for a Total Drama simulation with or without Redemption Island.
+You generate Survivor-style analytics for a Total Drama simulation with Redemption Island.
 
 CRITICAL RULES:
 1. Identify ALL players still in the game (including Redemption Island).
-2. For bootPredictions, powerRankings, titles, roles, socialNetwork, juryManagement, threatBreakdown, pathToVictory: Include EVERY player (active + RI).
-3. If there are 18 total players (15 active + 3 on RI), ALL arrays must have 18 entries.
+2. For bootPredictions, powerRankings, votingBlocs, titles, roles, socialNetwork, juryManagement, threatBreakdown, pathToVictory: Include relevant entries for active players.
+3. If there are 18 total players (15 active + 3 on RI), ALL arrays must have 18 entries where applicable.
 
-SCORING RULES (non-negotiable):
-- All fields named "score" are on a 0-100 scale (integers preferred).
-- centralityScore is also 0-100.
-- 0 = worst, 100 = best. Do NOT use 1-10.
+VOTING BLOCS (CRITICAL):
+- Identify 2-4 active voting coalitions (temporary groups targeting specific players)
+- Different from alliances: votingBlocs are TEMPORARY coalitions for specific votes, not permanent alliances
+- Each bloc needs: name (descriptive), members (array of player names), strength (0-100), target (who they're voting for), notes (why they formed)
+- Example: {"name": "Anti-Carrie Coalition", "members": ["Zoey", "Taylor", "Jasmine"], "strength": 70, "target": "Carrie", "notes": "Formed after merge to take out social threat"}
+- If no clear voting blocs exist, create at least 1-2 based on the vote patterns in the summary
 
 ONLY use facts from the summary. Do not invent events.
 
@@ -499,193 +463,382 @@ Season: ${season ?? "?"}, Episode: ${episode ?? "?"}.
   return await callOpenAI(payload, env);
 }
 
-async function generateEpisode(summaryText, auditionsText, season, episode, env) {
+async function generateEpisode(summaryText, season, episode, env, previousEpisodes = []) {
   if (!summaryText || typeof summaryText !== "string") {
     return new Response(JSON.stringify({ error: "Missing summaryText" }), {
       status: 400,
       headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
     });
   }
-  
-  // Check if this is Episode 1 and auditions are provided
-  const isEpisode1 = Number(episode) === 1;
-  const hasAuditions = auditionsText && auditionsText.trim().length > 0;
-  
-  // Build audition context if Episode 1
-  let auditionInstructions = "";
-  let auditionContext = "";
-  
-  if (isEpisode1 && hasAuditions) {
-    auditionInstructions = `
 
-EPISODE 1 SPECIAL - AUDITION TAPES:
-This episode starts with audition tape montage before the main episode.
-
-Structure:
-1. COLD OPEN: Quick-cut audition tape montage (see audition summaries below)
-2. Then transition to Chris McLean intro
-3. Continue with normal episode structure
-
-AUDITION TAPE FORMAT IN YOUR TRANSCRIPT:
-- Transform the provided audition summaries into quick video clips
-- Each person gets 2-4 dialogue lines maximum in the cold open
-- Format: [Audition Tape: Name] followed by their best quote/moment
-- Pull the MOST character-revealing line or moment from each summary
-- Keep it punchy - this is a montage, not full interviews
-- After showing ALL contestants' auditions, cut to Chris McLean's intro
-
-Example transformation:
-Summary says: "Carrie enters clutching a scrapbook... She admits she doesn't just watch your sim — she feels it..."
-You write:
-[Audition Tape: Carrie]
-Carrie: [holding scrapbook] I don't just watch this show. I feel it. Every blindside, every alliance... this time I'm not just watching—I'm playing.
-
-Summary says: "Devin nervously jokes... admits he's terrified... bad at conflict"
-You write:
-[Audition Tape: Devin]
-Devin: I'm bad at conflict. Like... REALLY bad. But I'll betray someone. Once. Probably. Eventually.
-
-DO NOT copy the full summary - extract the most iconic moments and transform them into short dialogue.
-`;
-
-    auditionContext = `
-
-=== AUDITION TAPE SUMMARIES PROVIDED ===
-${auditionsText}
-=== END AUDITION SUMMARIES ===
-
-IMPORTANT: The above are summaries. Transform them into a fast-paced montage cold open.
-Extract the best 1-2 lines from each person. Make it visual and punchy.
-`;
+  // Build previous episodes context
+  let previousContext = '';
+  if (previousEpisodes && previousEpisodes.length > 0) {
+    previousContext = '\n\n═══════════════════════════════════════════════════════════\nPREVIOUS EPISODES CONTEXT\n═══════════════════════════════════════════════════════════\n\n';
+    previousContext += 'Use these previous episodes to maintain continuity:\n\n';
+    
+    previousEpisodes.forEach(ep => {
+      // Extract key information from previous episode (adjust character limit as needed)
+      // Recommended: 3000-5000 chars per episode to balance context vs token usage
+      const CHAR_LIMIT = 3000; // 👈 CHANGE THIS NUMBER
+      const snippet = (ep.transcript || '').substring(0, CHAR_LIMIT);
+      previousContext += `--- Episode ${ep.episode} ---\n${snippet}\n...(truncated)\n\n`;
+    });
+    
+    previousContext += '\n⚠️ CRITICAL: Maintain character consistency, ongoing relationships, alliance dynamics, and story arcs from these previous episodes.\n\n';
   }
 
   const instructions = `
-You are writing a full episode transcript of a Total Drama season based on a BrantSteele simulation.
+You are writing a full episode transcript of a Total Drama season.
 
-CORE GOAL:
-Transform the BrantSteele episode summary into a fully written Total Drama episode.
-This is a scene-by-scene animated TV episode transcript.${auditionInstructions}
+${previousContext}
 
-CRITICAL LOGIC RULES:
-1. READ THE ENTIRE SUMMARY FIRST before writing anything
-2. Understand: who is on which tribe, what happens in what order, who gets voted out
-3. Every scene must logically follow from the previous scene
-4. Characters can only know information they would realistically know at that point
-5. If the summary says "Galang loses", then Galang tribe members know they lost - show their reaction
-6. If someone finds an idol privately, other players DON'T know unless the summary says they told someone
+CORE MISSION:
+Transform the BrantSteele summary into a COMPLETE TV EPISODE like Disventure Camp Episodes 2-3.
+Not a summary - a full dramatic script with character arcs, relationships, strategy, comedy, and emotion.
 
-TRIBE SEPARATION (PRE-MERGE):
-* Before merge, tribes are separated
-* Galang players can ONLY interact with Galang members at camp
-* Tadhana players can ONLY interact with Tadhana members at camp
-* NO cross-tribe camp conversations (Ryan from Galang can't chat with Kelly from Tadhana at camp)
-* Cross-tribe interaction ONLY happens at: challenges, tribal councils, Redemption Island duels
-* After the challenge, show BOTH tribes reacting if that's in the summary, but in SEPARATE scenes
+${previousContext ? '🔗 CONTINUITY IS CRITICAL: This is NOT a standalone episode. Reference and build upon events, relationships, alliances, and character development from previous episodes.' : ''}
 
-WRITING STYLE:
-* Total Drama Island tone: fast-paced, sarcastic, funny
-* Chris McLean: cruel, gleeful host who enjoys chaos
-* Chef Hatchet: intimidating, loud, absurd
-* Confessionals: short (1-3 lines), character-revealing
-* Dialogue must outnumber stage directions by at least 3:1
-* Characters constantly interrupt each other
-* No moral speeches, no overexplaining emotions
+═══════════════════════════════════════════════════════════
+EPISODE STRUCTURE (CRITICAL)
+═══════════════════════════════════════════════════════════
 
-STRUCTURE:
-1. Cold open (Chris intro OR immediate chaos)
-2. Morning / Camp life scene  
-3. Challenge announcement
-4. Challenge sequence
-5. Confessionals throughout (short, 1-3 lines)
-6. Pre-elimination tension
-7. Campfire Ceremony
-8. Elimination exit scene
-9. Tag / teaser
+1. **COLD OPEN (30-50 lines)**
+   - "Previously on..." recap with Chris McLean
+   - Immediate character drama OR strategic conversation
+   - Sets up episode's emotional/strategic arc
 
-FORMAT:
-Write in script/transcript format with scene headers.
+2. **MORNING CAMP LIFE (100-150 lines)**
+   - Multiple camp scenes showing different relationships
+   - Characters bonding over personal topics (family, background, fears)
+   - Strategic conversations forming alliances
+   - Personality clashes and arguments
+   - Confessionals revealing backstories and motivations
+   - Chef Hatchet may occasionally appear (especially early episodes) for meals or camp activities
+   
+   EXAMPLES:
+   - Ted and Lynda bond over being parents
+   - Zaid shares culinary school story with Ivy
+   - Hannah gives life advice to Amelie
+   - Logan tries to understand Alessio's art obsession
+   - (Early episodes only) Chef serves disgusting breakfast and complainers react
 
-[SCENE: Galang Camp - Morning]
+3. **CHALLENGE SEQUENCE (150-200 lines)**
+   - Host intro with personality (Chris McLean: sarcastic, sadistic, loves drama)
+   - Chef Hatchet may assist with physical challenges or judging
+   - Clear challenge explanation with visual details
+   - Individual matchups with play-by-play commentary
+   - Character reactions during action: [gasps], [groans], [screams]
+   - Confessionals between rounds showing strategy/emotion
+   - Victory celebration OR defeat aftermath
 
-Ryan: [to Mickey] Josee's losing it.
+4. **POST-CHALLENGE SCRAMBLING (100-150 lines)**
+   - Losing tribe returns to camp
+   - Alliance meetings with actual strategy discussion
+   - Players approaching others for votes
+   - Paranoia and suspicion building
+   - Side conversations revealing different plans
+   - Confessionals showing true intentions vs. public statements
 
-Mickey: She's still good at challenges though.
+5. **PRE-TRIBAL TENSION (50-100 lines)**
+   - Final conversations before vote
+   - Last-minute flip attempts
+   - Emotional moments (fear of going home)
+   - Strategic positioning
 
-[Confessional: Ryan]
-Ryan: Josee is a ticking time bomb.
+6. **TRIBAL COUNCIL (50-80 lines)**
+   - Chris asks questions that reveal dynamics (with sarcasm and glee)
+   - Players defending themselves
+   - Voting sequence
+   - Vote reveals with reactions
+   - Elimination exit (can be gracious, bitter, or revealing)
+   - Chris makes sarcastic comments throughout
 
-HARD NOs:
-* No summaries or "the tension grows" narration
-* No novel-style prose  
-* No explaining the BrantSteele logic
-* No rewriting outcomes
-* NO cross-tribe camp scenes before merge
-* NO illogical character knowledge (if they weren't there, they don't know)
-* NO random nonsense dialogue - everything must serve the story
+7. **EXIT CONFESSIONAL & TAG (10-20 lines)**
+   - Eliminated player's final thoughts
+   - Preview of next episode drama
 
-The BrantSteele summary is law. Your job is to dramatize it, not fix it.
-Make sure scenes flow logically and characters act like they would actually act.
+═══════════════════════════════════════════════════════════
+CHARACTER DEPTH (NON-NEGOTIABLE)
+═══════════════════════════════════════════════════════════
+
+**CONFESSIONALS MUST REVEAL:**
+- Backstory (family, job, life circumstances)
+- Motivation for being here
+- Personal struggles or insecurities  
+- Strategic thinking
+- Emotional reactions
+
+**GOOD CONFESSIONAL:**
+\`\`\`
+Ted (confessional): My story is one of proving folks wrong. Poker players are notorious for either being stupid for choosing this path... or having huge payouts. I fall into the latter. High risk, high reward is a dumb way to live... unless you know what you're doing. I've mastered telling when someone's lying simply by their tone and facial changes. Saved me thousands at the table. Hope it'll save me a million out here too.
+\`\`\`
+
+**BAD CONFESSIONAL:**
+\`\`\`
+Ted (confessional): I'm good at poker. I can read people.
+\`\`\`
+
+**BONDING SCENES MUST INCLUDE:**
+- Personal questions about each other's lives
+- Shared experiences or values
+- Confessionals explaining why they connect (or don't)
+
+**EXAMPLE:**
+\`\`\`
+Ted: Uh, yeah, g-got a kid too. He's going into high school next year.
+
+Lynda: Get outta town! My oldest son just graduated!
+
+Ted: Oh, what? No kidding? Wait, where's he headed?
+
+Lynda: Well, 'ya know, I want him to go to college, but he's got his dream set on riding off into the sunset with his girlfriend, "happily ever after", 'ya know.
+
+Ted: Ugh, kids right? Y-y-you raise 'em your whole life, but they'll choose some, like, random pimpled flunkie over you!
+
+Lynda: [chuckles] Too true.
+\`\`\`
+
+═══════════════════════════════════════════════════════════
+DIALOGUE RULES
+═══════════════════════════════════════════════════════════
+
+**NATURAL SPEECH:**
+✅ "Ugh, kids right?" 
+✅ "Get outta town!"
+✅ "Y'all just got lucky."
+✅ "What the hell is that?"
+✅ "Bitch, I'm a bartender!"
+
+❌ "I concur with your assessment."
+❌ "That is quite distressing."
+❌ "I am experiencing discomfort."
+
+**INTERRUPTIONS & CUTOFFS:**
+- Use "—" for cutoffs
+- Characters talk over each other
+- Incomplete thoughts
+
+**REACTIONS:**
+- [gasps], [groans], [laughs], [screams], [sighs]
+- [chuckles lightly], [scoffs], [grunts]
+- Physical actions: [high fives], [fist bumps], [hugs]
+
+**HOST:**
+- Chris McLean: Sarcastic, sadistic, gleeful about suffering, makes fun of contestants, loves drama and danger, occasionally breaks the fourth wall
+- Personality traits: Narcissistic, loves his own voice, enjoys watching contestants struggle, makes inappropriate jokes, dramatic announcer voice
+- Catchphrases: "Not quite!", "That's gonna leave a mark!", "And the winner is...", "See you next time on Total Drama!"
+- Often references the cameras, production budget, or ratings
+- Takes pleasure in revealing twists and watching reactions
+- Sometimes pretends to care but immediately shows he doesn't
+
+**CHEF HATCHET (SUPPORTING CHARACTER - USE OCCASIONALLY):**
+- Role: Chris's co-host/assistant, runs challenges, serves meals, occasionally judges
+- Personality: Gruff, intimidating, tough-love attitude, military background shows
+- Appears when contextually appropriate: early episode meals, physical challenges, camp discipline
+- NOT in every episode - by mid/late game, focus shifts to strategy over camp life
+- Relationship with Chris: Reluctant partnership, often annoyed by Chris, does the dirty work
+- Voice: Deep, gruff, shouts orders
+- Catchphrases: "Drop and give me twenty!", "You call that effort?!", grunts and growls
+- Can show rare moments of caring beneath the tough exterior
+
+═══════════════════════════════════════════════════════════
+CHALLENGE WRITING
+═══════════════════════════════════════════════════════════
+
+**STRUCTURE:**
+1. Host explains with visual details
+2. Individual matchups announced
+3. Play-by-play commentary with reactions
+4. Score updates throughout
+5. Final dramatic moments
+6. Victory/defeat reactions
+
+**GOOD CHALLENGE:**
+\`\`\`
+Chris: Alright, we have Isabel for Blue Team taking on Hannah for Red.
+
+Natalia: Go off, Isa!
+
+Chris: And... Go!
+
+Isabel: [grunts] What's up? [mimicking an old lady] Scared of a sweet ol' nun?
+
+[Hannah and Isabel grunt]
+
+Hannah: Grrr... Wait, what the hell is that?
+
+Isabel: What? [Hannah hits Isabel]
+
+[Isabel grunts and screams]
+
+Chris: Ooh! Hannah wins the first point for the Red Team! That's gotta hurt!
+\`\`\`
+
+**CONFESSIONALS DURING CHALLENGES:**
+\`\`\`
+Logan (confessional): Going off on your own like that? Not a good look, nuh-uh! [gasps] What if he's looking for the totem?
+\`\`\`
+
+**CHEF HATCHET EXAMPLE (USE SPARINGLY - mainly early episodes or when contextually appropriate):**
+\`\`\`
+[SCENE: Mess Hall - Morning, Early Episode]
+
+Chef: [slams tray down] Breakfast is served!
+
+Spencer: [looks at gray mush] What... is this?
+
+Chef: It's oatmeal! What's it look like?!
+
+Hannah: It's moving...
+
+Chef: That means it's fresh! Now eat up or I'll make you do push-ups until lunch!
+
+Ted (confessional): [grimacing] I've had some questionable meals at poker tables at 3 AM, but Chef's cooking might actually kill us before the competition does.
+\`\`\`
+
+NOTE: Chef scenes work best in early episodes when food is still a novelty. By mid/late game, contestants are used to it - focus on strategy instead.
+═══════════════════════════════════════════════════════════
+STRATEGIC GAMEPLAY
+═══════════════════════════════════════════════════════════
+
+**ALLIANCE FORMATION:**
+Show the actual conversation where they agree:
+\`\`\`
+Spencer: I think it's time we take over this team... and lock in a core 5.
+
+Jade: Who were you thinking?
+
+Spencer: Diego seems trustworthy. Tristan as well.
+
+Jade: Tristan comes with two more since Zaid and Ivy are already tight with them.
+
+Spencer: Hmm... Good point, partner.
+\`\`\`
+
+**VOTE SPLITTING:**
+Show both sides campaigning:
+\`\`\`
+Hannah: Perfect! You have to vote with me and Amelie. We're taking out Spencer.
+
+Benji: Why him?
+
+Hannah: He lost us the challenge; plus, he's been throwing out my ally's name to everyone.
+\`\`\`
+
+**LAST-MINUTE FLIPS:**
+\`\`\`
+Lynda: [whispering to Isabel] Okay, girls, here's what I think we should do...
+
+[unintelligible whispering]
+
+Chris: What is this game of telephone going on here? [chuckles] I love it!
+\`\`\`
+
+═══════════════════════════════════════════════════════════
+EMOTIONAL BEATS
+═══════════════════════════════════════════════════════════
+
+**PERSONAL VULNERABILITY:**
+\`\`\`
+Zaid: OK, OK! [sighs] I cooked... Koala tacos.
+
+Diego: I think I'm gonna puke.
+
+Ivy: Why the koala, Zaid?
+
+Zaid: I was hired... to! I didn't know beforehand, and I-- I needed the money! I-- [sighs] I'm sorry...
+\`\`\`
+
+**MORAL DILEMMAS:**
+\`\`\`
+Tristan: [mumbling] I don't want to hurt anybody. Can't someone just punch me instead?
+
+Zaid: I volunteer to be hit.
+
+Tristan: Um, Zaid, w-why?
+
+Zaid: Well, you seemed pretty pissed about the koala, so... I thought it's a good time to get even.
+\`\`\`
+
+**FRIENDSHIP MOMENTS:**
+\`\`\`
+Alessio: It's OK, Logan. I arrived here with a hollow facsimile of what I was. But... due to your persistence and kinship... I found my dormant inspiration... anew. Thank you, my friend.
+
+Logan: [sniffling] Yeah, man! Any time, bro!
+\`\`\`
+
+═══════════════════════════════════════════════════════════
+SCENE PACING
+═══════════════════════════════════════════════════════════
+
+**CAMP SCENES:** 20-40 lines each
+- Multiple scenes showing different groups
+- Mix of strategy, bonding, and conflict
+
+**CHALLENGE:** 150-200 lines total
+- Detailed play-by-play
+- Multiple confessionals throughout
+- Character reactions to every moment
+
+**SCRAMBLING:** 100-150 lines
+- Show both alliances meeting
+- Individual approaches for votes
+- Paranoia and suspicion
+
+**TRIBAL:** 50-80 lines
+- Host questions
+- Vote reveals with reaction shots
+- Dramatic elimination
+
+═══════════════════════════════════════════════════════════
+CRITICAL REMINDERS
+═══════════════════════════════════════════════════════════
+
+1. **CONTINUITY FIRST** - This is part of an ongoing season, not standalone. Reference previous events, relationships, and character development
+2. **Every character needs backstory** - reveal in confessionals
+3. **Show, don't tell** - dramatize every summary beat into scenes
+4. **Natural dialogue** - contractions, slang, interruptions
+5. **Relationships develop** - bonding through conversation, building on previous interactions
+6. **Strategy evolves** - show alliance meetings building on previous trust/betrayal
+7. **Challenges are exciting** - play-by-play with personality, not dry description
+8. **Confessionals are frequent** - after every major moment, referencing past events when relevant
+9. **Tribal has stakes** - fear, desperation, strategy revealed
+10. **Chris McLean hosts everything** - challenges, tribal council, recaps (he's the star)
+11. **Chef Hatchet is OPTIONAL** - use sparingly, mainly in early episodes or specific contexts (physical challenges, not every meal scene)
+12. **Chris and Chef dynamic** - when Chef appears: Chris bosses him around, Chef reluctantly helps, occasional banter
+13. **Mid/late game focus** - less camp life comedy, more strategic gameplay and social dynamics
+14. **Character arcs continue** - players grow, change strategies, form/break alliances based on experiences
+
+═══════════════════════════════════════════════════════════
+FORMAT
+═══════════════════════════════════════════════════════════
+
+Use script format:
+
+[SCENE: Location]
+
+Character: Dialogue here.
+
+[Action in brackets]
+
+[Confessional: Character]
+Character: Confessional here.
+
+═══════════════════════════════════════════════════════════
+
+The BrantSteele summary tells you WHAT happens.
+Your job is to dramatize HOW it happens - with depth, emotion, and entertainment.
+
+Make this episode feel like watching Disventure Camp Episodes 2-3.
 
 Season: ${season ?? "?"}, Episode: ${episode ?? "?"}.
 
-Return the complete episode transcript.
+Return complete episode transcript.
 `.trim();
 
-  const payload = { 
-    model: "gpt-5", 
-    instructions, 
-    input: auditionContext + summaryText  // Prepend auditions if Episode 1
-  };
+  const payload = { model: "gpt-5", instructions, input: summaryText };
   return await callOpenAI(payload, env);
-}
-
-// ✅ (3) normalization + clamp helpers (only affects episode analytics JSON)
-function normalizeScore01to100(value, assumeTenScale = false) {
-  const n = Number(value);
-  if (!Number.isFinite(n)) return 0;
-  let x = n;
-
-  // If it looks like a 0-10 score, convert to 0-100.
-  if (assumeTenScale) x = x * 10;
-
-  // Clamp
-  if (x < 0) x = 0;
-  if (x > 100) x = 100;
-
-  // Round to integer (optional but matches your UI "/100" cleanly)
-  return Math.round(x);
-}
-
-function normalizeAnalyticsScores(obj) {
-  if (!obj || typeof obj !== "object") return obj;
-
-  const pr = Array.isArray(obj.powerRankings) ? obj.powerRankings : [];
-  const maxPR = pr.reduce((m, it) => Math.max(m, Number(it?.score) || 0), 0);
-  const looksTenScale = maxPR > 0 && maxPR <= 10;
-
-  const mapArr = (arr, fn) => Array.isArray(arr) ? arr.map(fn) : arr;
-
-  obj.powerRankings = mapArr(obj.powerRankings, it => ({
-    ...it,
-    score: normalizeScore01to100(it?.score, looksTenScale),
-  }));
-
-  obj.allianceStability = mapArr(obj.allianceStability, it => ({
-    ...it,
-    score: normalizeScore01to100(it?.score, looksTenScale),
-  }));
-
-  obj.juryManagement = mapArr(obj.juryManagement, it => ({
-    ...it,
-    score: normalizeScore01to100(it?.score, looksTenScale),
-  }));
-
-  obj.socialNetwork = mapArr(obj.socialNetwork, it => ({
-    ...it,
-    centralityScore: normalizeScore01to100(it?.centralityScore, looksTenScale),
-  }));
-
-  return obj;
 }
 
 async function callOpenAI(payload, env) {
@@ -735,18 +888,6 @@ async function callOpenAI(payload, env) {
         outJson = { episodeTranscript: joined };
       }
     }
-  }
-
-  // ✅ (3) normalize only when this looks like episode analytics output
-  if (
-    outJson &&
-    typeof outJson === "object" &&
-    Array.isArray(outJson.powerRankings) &&
-    Array.isArray(outJson.allianceStability) &&
-    Array.isArray(outJson.socialNetwork) &&
-    Array.isArray(outJson.juryManagement)
-  ) {
-    outJson = normalizeAnalyticsScores(outJson);
   }
 
   const finalOut = outJson || data;

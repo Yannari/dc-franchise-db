@@ -304,7 +304,81 @@ async function generateSeasonDataExtraction(body, env) {
     ? `\n\nCANONICAL_CAST:\n- ${canonicalCast.join("\n- ")}`
     : "";
 
-  const instructions = `Extract Total Drama season data. Use CANONICAL_CAST names only.${canonicalCastSection}\nReturn ONLY JSON.`;
+const instructions = `
+Extract Total Drama season data from episode summaries.
+
+CRITICAL: Use CANONICAL_CAST names exactly as provided. Do not invent new names.
+
+=== STRATEGIC RANK DEFINITION (1-10 scale) ===
+
+Strategic Rank measures a player's STRATEGIC IMPACT and GAME CONTROL, NOT their placement.
+
+**Rating Scale (1-10):**
+
+**10 - Strategic Mastermind**
+- Controlled multiple votes across the season
+- Orchestrated major blindsides or flips
+- Found/played idols with perfect timing
+- Held multiple alliances together
+- Made game-defining moves
+Example: Winner who controlled entire merge, idol plays that changed the game
+
+**8-9 - Strategic Powerhouse**
+- Controlled their alliance's votes consistently
+- Executed successful blindsides or strategic moves
+- Found advantages and used them well
+- Shaped the endgame structure
+Example: Finalists who ran voting blocs, players who controlled pre-merge
+
+**6-7 - Strategic Player**
+- Made some strategic moves that mattered
+- Positioned well within alliances
+- Occasional vote control or successful targeting
+- Found advantages but didn't always maximize them
+Example: Jury members who made key moves, alliance lieutenants
+
+**4-5 - Average Strategy**
+- Followed alliance plans without leading
+- Made basic strategic decisions
+- Survived by being in the right alliance
+- No major strategic impact
+Example: Mid-merge boots who played safely, floaters
+
+**2-3 - Minimal Strategy**
+- Mostly reactive, not proactive
+- Followed others' plans
+- No strategic moves of note
+Example: Early jury members with no big moves, pre-merge boots
+
+**1 - No Strategic Impact**
+- First boot or quit with no gameplay
+- Made no strategic decisions
+- Pure social/physical game or early exit
+Example: Episode 1-2 boots, quits
+
+**HOW TO ASSIGN:**
+1. Read the full season summary
+2. Identify who CONTROLLED votes, not who survived longest
+3. Note idol plays, blindsides, alliance formations
+4. Winners get 8-10 IF they strategically dominated (not just won comps)
+5. Early boots can have high scores IF they made big moves before elimination
+6. Late-game floaters can have low scores IF they never controlled anything
+
+**Examples from Season 7:**
+- MacArthur (Winner, held idol, alliance switchboard, controlled endgame) = 9-10
+- Cody (Runner-up, advantage master, key alliances) = 8-9
+- Taylor (7th, ultimate connector, kingmaker) = 8-9
+- Jacques (4th quit, comp beast but strategic before meltdown) = 6-7
+- Tom (5th, one huge idol play) = 5-6
+- Scott (8th, duo player, consistent) = 6-7
+- Carrie (3rd, social queen, protected by bonds) = 7-8
+- Lindsay (1st boot, winner threat) = 2-3
+- Spud (17th, no strategic moves) = 1-2
+
+${canonicalCastSection}
+
+Return ONLY valid JSON matching the schema.
+`.trim();
 
   const payload = {
     model: "gpt-5",
@@ -368,61 +442,172 @@ function applyRankingOverrides(rankings, overridesData) {
   return rankings;
 }
 
-// ===== SCORING FORMULA (MIMICS USER'S SYSTEM) =====
+// ===== SCORING FORMULA - COMPLETE FIXED VERSION =====
 
 function calculateScore(player) {
   const details = Array.isArray(player.seasonDetails) ? player.seasonDetails : [];
   const seasons = details.length || 1;
   
-  if (details.length === 0) return 25; // Default for no data
+  if (details.length === 0) return 25;
   
-  const avgPlacement = details.reduce((sum, s) => sum + Number(s.placement || 99), 0) / details.length;
-  const wins = Number(player.wins || 0);
-  const challengeWins = Number(player.totalChallengeWins || 0);
-  const votesAgainst = Number(player.totalVotesAgainst || 0);
-  const juryVotes = Number(player.totalJuryVotes || 0);
-  const idolsFound = Number(player.totalIdolsFound || 0);
+  const sortedDetails = [...details].sort((a, b) => a.season - b.season);
   
-  // PLACEMENT COMPONENT (0-100, most important)
-  // Lower avg = higher score
-  // Mickey (1.5 avg) ≈ 92.5, Jacques (1.0) = 95, Ryan (5.5) ≈ 72.5, Bridgette (8.5) ≈ 57.5
-  const placementScore = Math.max(0, Math.min(100, ((20 - avgPlacement) / 20) * 100));
+  // Calculate weighted placement
+  let weightedPlacement = 0;
+  let improvement = 0;
   
-  // WIN BONUS (0-20 points)
-  // Jacques (1 win, 1 season) = +20, Mickey (1 win, 2 seasons) = +10, Alejandro (1 win, 3 seasons) = +6.7
-  const winBonus = (wins / seasons) * 20;
-  
-  // CHALLENGE BONUS (0-15 points)
-  // Alejandro (13 wins, 3 seasons) = +14.4, Jacques (4 wins, 1 season) = +13.3
-  const challengeBonus = Math.min(15, (challengeWins / seasons) * 3.33);
-  
-  // SOCIAL COMPONENT (-10 to +10)
-  // High jury votes = positive, high votes against = negative
-  const votesPerSeason = votesAgainst / seasons;
-  const juryPerSeason = juryVotes / seasons;
-  const socialBonus = Math.min(10, juryPerSeason * 2) - Math.min(10, votesPerSeason * 0.8);
-  
-  // STRATEGIC BONUS (0-5 points)
-  const strategicBonus = Math.min(5, (idolsFound / seasons) * 2.5);
-  
-  // TOTAL SCORE
-  let total = placementScore + winBonus + challengeBonus + socialBonus + strategicBonus;
-  
-  // Small sample penalty (1-season players capped at ~90)
-  if (seasons === 1 && wins === 0) {
-    total = Math.min(total, 88);
+  if (seasons === 1) {
+    weightedPlacement = sortedDetails[0].placement;
+  } else {
+    const mostRecent = sortedDetails[sortedDetails.length - 1];
+    const older = sortedDetails.slice(0, -1);
+    const firstPlacement = sortedDetails[0].placement;
+    improvement = firstPlacement - mostRecent.placement;
+    
+    if (improvement >= 10) {
+      const olderAvg = older.reduce((sum, s) => sum + s.placement, 0) / older.length;
+      weightedPlacement = (mostRecent.placement * 0.7) + (olderAvg * 0.3);
+    } else {
+      const olderAvg = older.reduce((sum, s) => sum + s.placement, 0) / older.length;
+      weightedPlacement = (mostRecent.placement * 0.5) + (olderAvg * 0.5);
+    }
   }
   
-  return Math.round(Math.min(100, Math.max(0, total)) * 10) / 10; // Round to 1 decimal
+  // BASE COMPONENTS
+  const placementScore = Math.max(0, Math.min(45, 45 * (1 - (weightedPlacement - 1) / 19)));
+  
+  const wins = Number(player.wins || 0);
+  const winScore = (wins / seasons) * 20;
+  
+  const challengeWins = Number(player.totalChallengeWins || 0);
+  const immunityWins = Number(player.totalImmunityWins || 0);
+  const totalChallengeValue = (immunityWins * 1.3) + challengeWins;
+  const challengePerSeason = totalChallengeValue / seasons;
+  const challengeScore = Math.min(15, challengePerSeason * 3);
+  
+  const votesAgainst = Number(player.totalVotesAgainst || 0);
+  const juryVotes = Number(player.totalJuryVotes || 0);
+  const totalAlliances = details.reduce(
+    (sum, s) => sum + (Array.isArray(s.alliances) ? s.alliances.length : 0),
+    0
+  );
+  const totalRivalries = details.reduce(
+    (sum, s) => sum + (Array.isArray(s.rivalries) ? s.rivalries.length : 0),
+    0
+  );
+  
+  const juryPerSeason = juryVotes / seasons;
+  const juryBonus = Math.min(6, juryPerSeason * 0.6);
+  const votesPerSeason = votesAgainst / seasons;
+  const votesBonus = Math.max(0, 3 - (votesPerSeason * 0.2));
+  const alliancesPerSeason = totalAlliances / seasons;
+  const allianceBonus = Math.min(2, alliancesPerSeason * 0.4);
+  const rivalriesPerSeason = totalRivalries / seasons;
+  const rivalryPenalty = Math.min(2, rivalriesPerSeason * 0.3);
+  
+  const socialScore = Math.max(0, Math.min(12, 
+    juryBonus + votesBonus + allianceBonus - rivalryPenalty
+  ));
+  
+  const idolsFound = Number(player.totalIdolsFound || 0);
+  const avgStrategicRank = details.reduce((sum, s) => 
+    sum + Number(s.strategicRank || 5), 0
+  ) / details.length;
+  
+  const strategicRankScore = Math.min(8, (avgStrategicRank - 1) * 0.89);
+  const idolScore = Math.min(3, (idolsFound / seasons) * 1.5);
+  const strategicScore = Math.min(11, strategicRankScore + idolScore);
+  
+  let total = placementScore + winScore + challengeScore + socialScore + strategicScore;
+  
+  // BONUSES
+  if (seasons >= 3 && weightedPlacement <= 5) total += 6;
+  else if (seasons >= 2 && weightedPlacement <= 3) total += 4;
+  
+  // ✅ IMPROVED IMPROVEMENT BONUSES
+  if (improvement >= 15) total += 12;      // Massive redemption (was +5)
+  else if (improvement >= 10) total += 8;  // Major improvement (was +5)
+  else if (improvement >= 5) total += 4;   // Significant improvement (was +3)
+  
+  // ✅ FINALIST BONUSES - MORE GENEROUS
+  const hasRunnerUp = details.some(s => s.placement === 2);
+  const hasThirdPlace = details.some(s => s.placement === 3);
+  
+  if (hasRunnerUp && wins === 0) {
+    total += 8;  // ✅ Increased from 4
+    
+    // ✅ REDEMPTION ARC SUPER BONUS
+    if (improvement >= 15) {
+      total += 8;  // Bottom to finals = incredible
+    } else if (improvement >= 10) {
+      total += 5;  // Major comeback
+    }
+  } else if (hasThirdPlace && wins === 0) {
+    total += 6;  // ✅ Increased from 2
+  }
+  
+  const finalistCount = details.filter(s => s.placement <= 3).length;
+  if (finalistCount >= 2 && wins === 0) total += 4;
+  
+  if (votesAgainst === 0 && seasons >= 2) total += 6;
+  if (challengePerSeason >= 5) total += 3;
+  
+  // Strategic mid-merge bonus
+  if (weightedPlacement >= 4 && weightedPlacement <= 10 && avgStrategicRank >= 8) {
+    total += 8;
+  }
+  
+  // F5 idol play bonus
+  if (weightedPlacement === 5 && idolsFound > 0) {
+    total += 15;
+  }
+  
+  // ✅ PENALTIES - TYPE SAFE
+  const hasQuit = details.some((s) => {
+    const notes = typeof s.notes === "string" ? s.notes :
+                  Array.isArray(s.notes) ? s.notes.join(" ") : "";
+    const status = typeof s.status === "string" ? s.status : "";
+    return notes.toLowerCase().includes("quit") || 
+           status.toLowerCase().includes("quit");
+  });
+  
+  const isWinner = wins > 0;
+  
+  if (hasQuit) {
+    if (isWinner) {
+      total -= 3;  // ✅ Winners get lighter quit penalty (was -4)
+    } else {
+      total -= (weightedPlacement <= 5 ? 4 : 7);
+    }
+  }
+  
+  // ✅ ONE-SEASON CAP - ONLY FOR NON-FINALISTS
+  if (seasons === 1 && wins === 0 && weightedPlacement > 3) {
+    total = Math.min(total, 85);  // ✅ Cap doesn't apply to finalists
+  }
+  
+  // ✅ WINNER PROTECTION - CRITICAL FIX
+  if (isWinner) {
+    const winRate = wins / seasons;
+    if (winRate >= 0.5) {
+      // 50%+ win rate (1/2, 2/3, etc.) = S+ minimum
+      total = Math.max(total, 90);
+    } else {
+      // <50% win rate = S minimum
+      total = Math.max(total, 82);
+    }
+  }
+  
+  return Math.round(Math.min(100, Math.max(0, total)) * 10) / 10;
 }
 
 function assignTier(score) {
-  if (score >= 85) return "S+";
-  if (score >= 80) return "S";
-  if (score >= 70) return "A";
-  if (score >= 60.5) return "B";
-  if (score >= 50.5) return "C";
-  return "D";
+  if (score >= 90) return "S+";  // 90-100: Elite Winners
+  if (score >= 80) return "S";   // 80-89: Championship Caliber
+  if (score >= 71) return "A";   // 71-79: Elite Threats
+  if (score >= 61) return "B";   // 61-70: Above Average
+  if (score >= 51) return "C";   // 51-60: Average
+  return "D";                     // 0-50: Below Average
 }
 
 function generateStatus(player, currentSeason) {
@@ -644,7 +829,7 @@ Return ONLY JSON.
     const payload = {
       model: "gpt-5",
       instructions,
-      input: JSON.stringify({ rankings: playersWithContext }, null, 2),  // Send rich context
+      input: JSON.stringify({ rankings: playersWithContext }, null, 2),
       text: { format: { type: "json_schema", name: "rankings_narrative", strict: true, schema } },
     };
 
@@ -680,17 +865,17 @@ Return ONLY JSON.
       source: "User-mimicking scoring formula + AI narratives + Manual overrides",
     },
     scoringSystem: {
-      overview: "Mimics user's manual ranking logic",
-      formula: "Placement(base 0-100) + WinBonus(0-20) + ChallengeBonus(0-15) + SocialBonus(-10 to +10) + StrategicBonus(0-5)",
-      details: "Placement = (20 - avgPlacement)/20 * 100. Win = wins/seasons * 20. Challenge = wins/season * 3.33 (cap 15). Social = juryVotes*2 - votesAgainst*0.8. Strategic = idols/season * 2.5 (cap 5)."
+      overview: "Balanced scoring with winner protection and redemption arc bonuses",
+      formula: "Placement(45) + Win(20) + Challenge(15) + Social(12) + Strategic(11) + Bonuses - Penalties",
+      details: "Winners protected at 82+ (90+ for 50%+ win rate). Finalist bonuses: R-up +8, 3rd +6. Redemption arcs: 15+ improvement = +12 base + up to +8 for finalist."
     },
     tiers: {
-      "S+": { scoreRange: [85, 100], description: "Elite players" },
-      "S": { scoreRange: [80, 84.9], description: "Top performers" },
-      "A": { scoreRange: [70, 79.9], description: "Strong competitors" },
-      "B": { scoreRange: [60.5, 69.9], description: "Above average" },
-      "C": { scoreRange: [50.5, 60.4], description: "Average" },
-      "D": { scoreRange: [0, 50.4], description: "Below average" },
+      "S+": { scoreRange: [90, 100], description: "Elite Winners" },
+      "S": { scoreRange: [80, 89], description: "Championship Caliber" },
+      "A": { scoreRange: [71, 79], description: "Elite Threats" },
+      "B": { scoreRange: [61, 70], description: "Above Average" },
+      "C": { scoreRange: [51, 60], description: "Average" },
+      "D": { scoreRange: [0, 50], description: "Below Average" },
     },
     rankings: finalRankings,
   };
@@ -783,14 +968,108 @@ async function generateRankingsUpdate(body, env) {
     });
   }
 
-  // TODO: Call AI for narratives on recomputed players only
-  // For now, use placeholders
-  for (const r of recomputed) {
-    r.title = "—";
-    r.emoji = "—";
-    r.reasoning = "Updated after new season";
-    r.strengths = [];
-    r.weaknesses = [];
+  // ✅ GENERATE AI NARRATIVES FOR UPDATED PLAYERS
+  if (recomputed.length > 0) {
+    const playersWithContext = recomputed.map(ranking => {
+      const player = allPlayers.find(p => safeLowerId(p.id || p.playerId) === ranking.playerId);
+      
+      return {
+        playerId: ranking.playerId,
+        name: player?.name || ranking.playerId,
+        score: ranking.score,
+        tier: ranking.tier,
+        rank: 0,
+        avgPlacement: ranking.avgPlacement,
+        winRate: ranking.winRate,
+        seasons: ranking.seasons,
+        placements: ranking.placements,
+        challengeWins: ranking.challengeWins,
+        votesAgainst: ranking.votesAgainst,
+        juryVotes: ranking.juryVotes,
+        idolsFound: ranking.idolsFound,
+        story: player?.story || "",
+        seasonDetails: (player?.seasonDetails || []).map(s => ({
+          season: s.season,
+          placement: s.placement,
+          gameplayStyle: s.gameplayStyle || "",
+          keyMoments: s.keyMoments || [],
+          alliances: s.alliances || [],
+          rivalries: s.rivalries || []
+        }))
+      };
+    });
+    
+    const schema = {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        rankings: {
+          type: "array",
+          items: {
+            type: "object",
+            additionalProperties: false,
+            properties: {
+              playerId: { type: "string" },
+              title: { type: "string" },
+              emoji: { type: "string" },
+              reasoning: { type: "string" },
+              strengths: { type: "array", items: { type: "string" } },
+              weaknesses: { type: "array", items: { type: "string" } },
+            },
+            required: ["playerId", "title", "emoji", "reasoning", "strengths", "weaknesses"],
+          },
+        },
+      },
+      required: ["rankings"],
+    };
+    
+    const instructions = `
+Generate narrative fields for Total Drama franchise rankings.
+
+TITLE PATTERNS (2-4 words):
+- Winners: "The Champion", "The Unbeaten"
+- Finalists: "The Contender", "The Social Queen"
+- Strategic: "The Schemer", "The Mastermind"
+- Physical: "The Competitor", "The Beast"
+
+EMOJI PATTERNS:
+🏆 = Winner, 🥇 = Perfect winner, 👑 = Dominant, 🧠 = Strategic
+💪 = Physical, 🥈 = Runner-up, 🥉 = Third place, 🏅 = Strong
+
+REASONING (2-4 sentences):
+- Reference specific moments from their story
+- Mention alliances/rivalries
+- Include placement and key stats
+- Make it personal to their gameplay
+
+STRENGTHS (2-4 items): Be specific
+WEAKNESSES (1-3 items): Be honest
+
+Return ONLY JSON.
+`.trim();
+    
+    const payload = {
+      model: "gpt-5",
+      instructions,
+      input: JSON.stringify({ rankings: playersWithContext }, null, 2),
+      text: { format: { type: "json_schema", name: "rankings_narrative", strict: true, schema } },
+    };
+    
+    const aiResp = await callOpenAI(payload, env);
+    const aiJson = await aiResp.json().catch(() => null);
+    
+    if (aiJson?.rankings) {
+      for (const aiRank of aiJson.rankings) {
+        const original = recomputed.find(r => r.playerId === aiRank.playerId);
+        if (original) {
+          original.title = aiRank.title;
+          original.emoji = aiRank.emoji;
+          original.reasoning = aiRank.reasoning;
+          original.strengths = aiRank.strengths;
+          original.weaknesses = aiRank.weaknesses;
+        }
+      }
+    }
   }
 
   const merged = [...recomputed, ...preserved];

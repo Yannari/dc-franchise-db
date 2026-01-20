@@ -1854,38 +1854,58 @@ Dave voted for Mickey
     // Tabs
     // ----------------------------
     function showTab(which) {
-      const isOverview = which === "overview";
-      const isGameplay = which === "gameplay";
-      const isEpisode = which === "episode";
-      const isSeasonSetup = which === "seasonsetup";
+      const tabs = {
+        rankings: { btn: els.tabRankings, view: els.viewRankings },
+        relationships: { btn: els.tabRelationships, view: els.viewRelationships },
+        compass: { btn: els.tabCompass, view: els.viewCompass },
+        resumes: { btn: els.tabResumes, view: els.viewResumes },
+        trends: { btn: els.tabTrends, view: els.viewTrends },
+        votes: { btn: els.tabVotes, view: els.viewVotes },
+        edgic: { btn: els.tabEdgic, view: els.viewEdgic },
+        episode: { btn: els.tabEpisode, view: els.viewEpisode },
+        seasonsetup: { btn: els.tabSeasonSetup, view: els.viewSeasonSetup },
+      };
 
-      els.viewOverview.classList.toggle("hidden", !isOverview);
-      els.viewGameplay.classList.toggle("hidden", !isGameplay);
-      els.viewEpisode.classList.toggle("hidden", !isEpisode);
-      els.viewSeasonSetup.classList.toggle("hidden", !isSeasonSetup);
+      // Hide all views and deactivate all buttons
+      Object.values(tabs).forEach(tab => {
+        if (tab.view) tab.view.classList.add("hidden");
+        if (tab.btn) {
+          tab.btn.classList.remove("active");
+          tab.btn.setAttribute("aria-selected", "false");
+        }
+      });
 
-      els.tabOverview.classList.toggle("active", isOverview);
-      els.tabGameplay.classList.toggle("active", isGameplay);
-      els.tabEpisode.classList.toggle("active", isEpisode);
-      els.tabSeasonSetup.classList.toggle("active", isSeasonSetup);
-      
-      els.tabOverview.setAttribute("aria-selected", isOverview ? "true" : "false");
-      els.tabGameplay.setAttribute("aria-selected", isGameplay ? "true" : "false");
-      els.tabEpisode.setAttribute("aria-selected", isEpisode ? "true" : "false");
-      els.tabSeasonSetup.setAttribute("aria-selected", isSeasonSetup ? "true" : "false");
+      // Show selected tab
+      const selected = tabs[which];
+      if (selected) {
+        if (selected.view) selected.view.classList.remove("hidden");
+        if (selected.btn) {
+          selected.btn.classList.add("active");
+          selected.btn.setAttribute("aria-selected", "true");
+        }
+      }
+
+      // Render tab-specific content when switching
+      if (which === "rankings" && CURRENT.analytics) {
+        renderRankingsTab(CURRENT.analytics);
+      } else if (which === "relationships" && CURRENT.analytics) {
+        renderRelationshipsTab(CURRENT.analytics);
+      } else if (which === "compass" && CURRENT.analytics) {
+        renderCompassTab(CURRENT.analytics);
+      } else if (which === "resumes" && CURRENT.analytics) {
+        renderResumesTab(CURRENT.analytics);
+      } else if (which === "trends" && CURRENT.analytics) {
+        renderTrendsTab(CURRENT.analytics);
+      } else if (which === "votes" && CURRENT.analytics) {
+        renderVotesTab(CURRENT.analytics);
+      } else if (which === "edgic" && CURRENT.analytics) {
+        renderEdgicTab(CURRENT.analytics);
+      }
 
       // Persist tab choice per episode
       const s = Number(els.season.value || 1);
       const e = Number(els.episode.value || 1);
       try { localStorage.setItem(tabKey(s, e), which); } catch {}
-
-      // If switching to gameplay, ensure it's rendered (in case cast was synced later)
-      if (isGameplay && CURRENT.analytics) {
-        const cast = (CURRENT.cast && CURRENT.cast.length) ? CURRENT.cast : parseCastFromSummary(CURRENT.summaryText || "");
-        const eliminated = (CURRENT.eliminated && CURRENT.eliminated.size) ? CURRENT.eliminated : parseEliminated(CURRENT.summaryText || "");
-        renderCompass(CURRENT.analytics, cast, eliminated, CURRENT.titlesMap || {});
-        renderGameplayTable(CURRENT.analytics, cast, eliminated, CURRENT.titlesMap || {});
-      }
     }
 
 
@@ -2195,9 +2215,9 @@ Dave voted for Mickey
       els.uiEpNum.textContent = `Episode ${episode}`;
 
       // Restore last tab for this episode
-      let savedTab = "overview";
-      try { savedTab = localStorage.getItem(tabKey(season, episode)) || "overview"; } catch {}
-      showTab(savedTab === "gameplay" ? "gameplay" : "overview");
+      let savedTab = "rankings";
+      try { savedTab = localStorage.getItem(tabKey(season, episode)) || "rankings"; } catch {}
+      showTab(savedTab);
 
       // If we have cached analytics for this selection, load it (if auto-load enabled)
       const cached = loadCached(season, episode);

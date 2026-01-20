@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Current Season — Season 5</title>
   <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="live-season-tracker-styles.css">
+  <link rel="stylesheet" href="live-season-tracker.css">
 
   <style>
     .muted{opacity:.78}
@@ -5441,107 +5441,6 @@ Would you like to:
     }
   };
   
-})();
-}, 500); // Wait 500ms for DOM to fully render and database to load
-
-
-/* ========================================
-   LIVE SEASON TRACKER - JAVASCRIPT
-   Add this to your current-season.html <script> section
-   ======================================== */
-
-// ========== TAB SWITCHING LOGIC ==========
-
-// Update els object to include new tab references
-const els = {
-  // ... existing els ...
-  
-  // New tab buttons
-  tabRankings: document.getElementById("tabRankings"),
-  tabRelationships: document.getElementById("tabRelationships"),
-  tabCompass: document.getElementById("tabCompass"),
-  tabResumes: document.getElementById("tabResumes"),
-  tabTrends: document.getElementById("tabTrends"),
-  tabVotes: document.getElementById("tabVotes"),
-  tabEdgic: document.getElementById("tabEdgic"),
-  
-  // New tab views
-  viewRankings: document.getElementById("viewRankings"),
-  viewRelationships: document.getElementById("viewRelationships"),
-  viewCompass: document.getElementById("viewCompass"),
-  viewResumes: document.getElementById("viewResumes"),
-  viewTrends: document.getElementById("viewTrends"),
-  viewVotes: document.getElementById("viewVotes"),
-  viewEdgic: document.getElementById("viewEdgic"),
-};
-
-// Update showTab function
-function showTab(which) {
-  const tabs = {
-    rankings: { btn: els.tabRankings, view: els.viewRankings },
-    relationships: { btn: els.tabRelationships, view: els.viewRelationships },
-    compass: { btn: els.tabCompass, view: els.viewCompass },
-    resumes: { btn: els.tabResumes, view: els.viewResumes },
-    trends: { btn: els.tabTrends, view: els.viewTrends },
-    votes: { btn: els.tabVotes, view: els.viewVotes },
-    edgic: { btn: els.tabEdgic, view: els.viewEdgic },
-    episode: { btn: els.tabEpisode, view: els.viewEpisode },
-    seasonsetup: { btn: els.tabSeasonSetup, view: els.viewSeasonSetup },
-  };
-
-  // Hide all views and deactivate all buttons
-  Object.values(tabs).forEach(tab => {
-    if (tab.view) tab.view.classList.add("hidden");
-    if (tab.btn) {
-      tab.btn.classList.remove("active");
-      tab.btn.setAttribute("aria-selected", "false");
-    }
-  });
-
-  // Show selected tab
-  const selected = tabs[which];
-  if (selected) {
-    if (selected.view) selected.view.classList.remove("hidden");
-    if (selected.btn) {
-      selected.btn.classList.add("active");
-      selected.btn.setAttribute("aria-selected", "true");
-    }
-  }
-
-  // Render tab-specific content when switching
-  if (which === "rankings" && CURRENT.analytics) {
-    renderRankingsTab(CURRENT.analytics);
-  } else if (which === "relationships" && CURRENT.analytics) {
-    renderRelationshipsTab(CURRENT.analytics);
-  } else if (which === "compass" && CURRENT.analytics) {
-    renderCompassTab(CURRENT.analytics);
-  } else if (which === "resumes" && CURRENT.analytics) {
-    renderResumesTab(CURRENT.analytics);
-  } else if (which === "trends" && CURRENT.analytics) {
-    renderTrendsTab(CURRENT.analytics);
-  } else if (which === "votes" && CURRENT.analytics) {
-    renderVotesTab(CURRENT.analytics);
-  } else if (which === "edgic" && CURRENT.analytics) {
-    renderEdgicTab(CURRENT.analytics);
-  }
-
-  // Persist tab choice
-  const s = Number(els.season.value || 1);
-  const e = Number(els.episode.value || 1);
-  try { localStorage.setItem(`tab_s${s}_e${e}`, which); } catch {}
-}
-
-// Add event listeners for new tabs
-els.tabRankings.addEventListener("click", () => showTab("rankings"));
-els.tabRelationships.addEventListener("click", () => showTab("relationships"));
-els.tabCompass.addEventListener("click", () => showTab("compass"));
-els.tabResumes.addEventListener("click", () => showTab("resumes"));
-els.tabTrends.addEventListener("click", () => showTab("trends"));
-els.tabVotes.addEventListener("click", () => showTab("votes"));
-els.tabEdgic.addEventListener("click", () => showTab("edgic"));
-
-// ========== TAB 1: RANKINGS ==========
-
 function renderRankingsTab(analytics) {
   if (!analytics || !analytics.rankings) {
     document.getElementById("audiencePopularityList").innerHTML = 
@@ -5996,10 +5895,8 @@ function renderAllAnalyticsTabs(analytics) {
   renderEdgicTab(analytics);
 }
 
-// Call this after your existing generateEpisodeAI() completes
-// Add this line at the end of your generateEpisodeAI function:
-// renderAllAnalyticsTabs(CURRENT.analytics);
-
+  })(); // Close the main IIFE
+}, 500); // Close setTimeout - Wait for DOM to fully render
 
 </script>
 </div><footer class="siteFooter">

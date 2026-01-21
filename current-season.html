@@ -1991,11 +1991,11 @@ Dave voted for Mickey
           const key = player.toLowerCase();
           if (!bootMap.has(key)) {
             // Missing player - add with default low risk
-            console.warn(`Missing in bootPredictions: ${player} - auto-adding with 10% risk`);
+            console.info(`Auto-adding ${player} to bootPredictions with 10% risk (was not in AI response)`);
             data.bootPredictions.push({
               player: player,
-              prob: 0.10,
-              why: "Not in AI's top predictions; assumed moderate safety."
+              prob: 10,
+              why: "Not in AI predictions; assumed moderate safety."
             });
           }
         });

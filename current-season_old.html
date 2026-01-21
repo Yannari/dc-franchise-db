@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Current Season — Season 5</title>
   <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="live-season-tracker.css">
 
   <style>
     .muted{opacity:.78}
@@ -410,153 +409,150 @@
   <!-- 3) SWITCHABLE ANALYTICS WINDOW -->
   <section class="window glass-card" id="analyticsWindow">
     <div class="window-head">
-      <h2 class="section-title">📊 Season Analytics</h2>
+      <h2 class="section-title">📊 Cullhouse Analytics</h2>
       <div class="window-tabs" role="tablist" aria-label="Analytics tabs">
-        <button class="tab-btn active" id="tabRankings" role="tab" aria-selected="true">📊 Rankings</button>
-        <button class="tab-btn" id="tabRelationships" role="tab" aria-selected="false">💕 Relationships</button>
-        <button class="tab-btn" id="tabCompass" role="tab" aria-selected="false">🧭 Compass</button>
-        <button class="tab-btn" id="tabResumes" role="tab" aria-selected="false">📄 Resumes</button>
-        <button class="tab-btn" id="tabTrends" role="tab" aria-selected="false">📈 Trends</button>
-        <button class="tab-btn" id="tabVotes" role="tab" aria-selected="false">🗳️ Votes</button>
-        <button class="tab-btn" id="tabEdgic" role="tab" aria-selected="false">📋 Edgic</button>
+        <button class="tab-btn active" id="tabOverview" role="tab" aria-selected="true">📘 Overview</button>
+        <button class="tab-btn" id="tabGameplay" role="tab" aria-selected="false">🧭 Gameplay</button>
+        <button class="tab-btn" id="tabResumes" role="tab" aria-selected="false">📋 Resumes</button>
+        <button class="tab-btn" id="tabRelationships" role="tab" aria-selected="false">💞 Relationships</button>
         <button class="tab-btn" id="tabEpisode" role="tab" aria-selected="false">📺 Episode</button>
         <button class="tab-btn" id="tabSeasonSetup" role="tab" aria-selected="false">⭐ Season Setup</button>
       </div>
     </div>
 
-    <!-- ========================================
-     LIVE SEASON TRACKER - 7 NEW TAB VIEWS
-     Replace viewOverview and viewGameplay with these
-     ======================================== -->
+    <!-- OVERVIEW PAGE -->
+    <div class="window-body" id="viewOverview">
+      <div class="cards-grid">
+        <div class="mini-panel">
+          <div class="mini-title">BEST MOVE</div>
+          <div class="mini-body" id="cardBestMove">—</div>
+        </div>
 
-<!-- RANKINGS TAB -->
-<div class="window-body" id="viewRankings">
-  <div class="rankings-grid">
-    <!-- Audience Popularity -->
-    <div class="ranking-section">
-      <h3 class="ranking-title">🔥 Audience Popularity</h3>
-      <div class="ranking-list" id="audiencePopularityList">
-        <p class="muted">Generate analytics to see audience popularity rankings.</p>
+        <div class="mini-panel">
+          <div class="mini-title">BIGGEST RISK</div>
+          <div class="mini-body" id="cardBiggestRisk">—</div>
+        </div>
+
+        <div class="mini-panel">
+          <div class="mini-title">EPISODE SUMMARY</div>
+          <div class="mini-body" id="cardEpisodeSummary">—</div>
+        </div>
+
+        <div class="mini-panel">
+          <div class="mini-title">VOTING BLOCS</div>
+          <div class="mini-subtitle">Detected: Active voting coalitions</div>
+          <div class="mini-body" id="cardVotingBlocs">—</div>
+        </div>
+      </div>
+
+      <div class="cards-grid two">
+        <div class="mini-panel">
+          <div class="mini-title">BOOT ODDS (NEXT)</div>
+          <div class="mini-body" id="cardBootOdds">No boot predictions yet.</div>
+        </div>
+
+        <div class="mini-panel">
+          <div class="mini-title">POWER RANKINGS</div>
+          <div class="mini-body" id="cardPowerRankings">No power rankings yet.</div>
+        </div>
+
+        <div class="mini-panel">
+          <div class="mini-title">ALLIANCE STABILITY</div>
+          <div class="mini-body" id="cardAllianceStability">No alliance stability yet.</div>
+        </div>
+
+        <div class="mini-panel">
+          <div class="mini-title">TITLES</div>
+          <div class="mini-body" id="cardTitles">No titles yet.</div>
+        </div>
       </div>
     </div>
 
-    <!-- Island Influence -->
-    <div class="ranking-section">
-      <h3 class="ranking-title">⛰️ Island Influence</h3>
-      <div class="ranking-list" id="islandInfluenceList">
-        <p class="muted">Generate analytics to see island influence rankings.</p>
+    <!-- GAMEPLAY PAGE -->
+    <div class="window-body hidden" id="viewGameplay">
+      <div class="gameplay-grid">
+        <div class="mini-panel gameplay-panel">
+          <div class="mini-title">GAMEPLAY COMPASS</div>
+          <div class="mini-subtitle">AI-derived placement from your overview stats (Power vs Safety)</div>
+          <div class="compass-wrap">
+            <div class="compass" id="compass">
+              <div class="axis axis-x"></div>
+              <div class="axis axis-y"></div>
+              <div class="axis-label left">Low Power</div>
+              <div class="axis-label right">High Power</div>
+              <div class="axis-label top">Safe</div>
+              <div class="axis-label bottom">At Risk</div>
+              <div class="compass-points" id="compassPoints"></div>
+            </div>
+          </div>
+          <div class="muted small">If you want true “Social vs Competition”, I can upgrade your Worker to output compass coordinates directly.</div>
+        </div>
+
+        <div class="mini-panel gameplay-panel">
+          <div class="mini-title">INDIVIDUAL GAMEPLAY ANALYSIS</div>
+          <div class="mini-subtitle">Auto-built from AI output (tag + score + risk)</div>
+
+          <div class="table-wrap">
+            <table class="gp-table">
+              <thead>
+                <tr>
+                  <th>Player</th>
+                  <th>Title</th>
+                  <th>Trend</th>
+                  <th>Power</th>
+                  <th>Boot Risk</th>
+                  <th>Role</th>
+                </tr>
+              </thead>
+              <tbody id="gpTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      
+      <!-- NEW ANALYTICS PANELS -->
+      <div class="cards-grid two" style="margin-top: 20px;">
+        <div class="mini-panel">
+          <div class="mini-title">SOCIAL NETWORK</div>
+          <div class="mini-body" id="cardSocialNetwork">No social network data yet.</div>
+        </div>
+        
+        <div class="mini-panel">
+          <div class="mini-title">JURY MANAGEMENT</div>
+          <div class="mini-body" id="cardJuryManagement">No jury management data yet.</div>
+        </div>
+        
+        <div class="mini-panel">
+          <div class="mini-title">THREAT BREAKDOWN</div>
+          <div class="mini-body" id="cardThreatBreakdown">No threat breakdown yet.</div>
+        </div>
+        
+        <div class="mini-panel">
+          <div class="mini-title">PATH TO VICTORY</div>
+          <div class="mini-body" id="cardPathToVictory">No path to victory data yet.</div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Alliance Network -->
-  <div class="ranking-section" style="margin-top: 20px;">
-    <h3 class="ranking-title">🤝 Alliance Network</h3>
-    <div class="alliance-list" id="allianceNetworkList">
-      <p class="muted">No active alliances detected yet.</p>
-    </div>
-  </div>
-</div>
-
-<!-- RELATIONSHIPS TAB -->
-<div class="window-body hidden" id="viewRelationships">
-  <h3 style="margin-bottom: 16px;">💕 Relationship Heat Map</h3>
-  <p class="muted" style="margin-bottom: 20px;">Live relationship values from -10 (enemies) to +10 (alliance)</p>
-  
-  <div class="heatmap-container" id="relationshipHeatmapContainer">
-    <p class="muted">Generate analytics to see relationship heat map.</p>
-  </div>
-</div>
-
-<!-- COMPASS TAB -->
-<div class="window-body hidden" id="viewCompass">
-  <h3 style="margin-bottom: 16px;">🧭 Gameplay Compass</h3>
-  <p class="muted" style="margin-bottom: 20px;">Players positioned by their actual in-game performance and strategic positioning</p>
-  
-  <div class="compass-container">
-    <div class="compass-canvas" id="compassCanvas">
-      <p class="muted" style="text-align: center; padding-top: 230px;">Generate analytics to see compass positioning.</p>
-    </div>
-  </div>
-
-  <!-- Individual Analysis -->
-  <div class="compass-analysis" id="compassAnalysis">
-    <!-- Populated by JS -->
-  </div>
-</div>
-
-<!-- RESUMES TAB -->
-<div class="window-body hidden" id="viewResumes">
-  <h3 style="margin-bottom: 16px;">📄 Player Resumes</h3>
-  <p class="muted" style="margin-bottom: 20px;">Track strategic moves, voting patterns, and gameplay metrics</p>
-  
-  <div class="resume-grid" id="resumeGrid">
-    <p class="muted">Generate analytics to see player resumes.</p>
-  </div>
-</div>
-
-<!-- TRENDS TAB -->
-<div class="window-body hidden" id="viewTrends">
-  <h3 style="margin-bottom: 16px;">📈 Relationship Trends</h3>
-  <p class="muted" style="margin-bottom: 20px;">Click a player to view all their relationships over time</p>
-  
-  <div class="trends-selector">
-    <label for="trendPlayerSelect" style="display: block; margin-bottom: 8px; font-weight: 600;">Select Player:</label>
-    <select id="trendPlayerSelect">
-      <option value="">-- Select a player --</option>
-    </select>
-  </div>
-
-  <div class="trends-grid" id="trendsGrid">
-    <p class="muted">Select a player to see their relationship trends.</p>
-  </div>
-</div>
-
-<!-- VOTES TAB -->
-<div class="window-body hidden" id="viewVotes">
-  <h3 style="margin-bottom: 16px;">🗳️ Vote Analysis</h3>
-  <p class="muted" style="margin-bottom: 20px;">Understand voting blocs and individual vote reasoning</p>
-  
-  <div class="vote-episode-selector">
-    <label for="voteEpisodeSelect" style="display: block; margin-bottom: 8px; font-weight: 600;">Episode:</label>
-    <select id="voteEpisodeSelect">
-      <option value="">-- Select episode --</option>
-    </select>
-  </div>
-
-  <div id="voteAnalysisContainer">
-    <p class="muted">Select an episode to see vote analysis.</p>
-  </div>
-</div>
-
-<!-- EDGIC TAB -->
-<div class="window-body hidden" id="viewEdgic">
-  <div class="edgic-header">
-    <h3>📋 Edgic Chart</h3>
-    <details class="edgic-explainer">
-      <summary>▶ How Edgic Works</summary>
-      <div class="edgic-explainer-content">
-        <p><strong>Edgic (Editor + Logic)</strong> rates each contestant's visibility and tone per episode based on actual game events.</p>
-        <p><strong>Visibility:</strong> INV (Invisible) → UTR (Under the Radar) → MOR (Middle of Road) → CP (Complex) → OTT (Over the Top)</p>
-        <p><strong>Tone:</strong> P (Positive) | N (Negative) | M (Mixed) | None (Neutral)</p>
-        <p>Ratings are generated from confessionals, tribal councils, challenges, and vote outcomes.</p>
+    <!-- RESUMES TAB -->
+    <div class="window-body hidden" id="viewResumes">
+      <div id="resumesContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 20px;">
+        <p style="grid-column: 1 / -1; color: #94a3b8; text-align: center;">No resume data available yet.</p>
       </div>
-    </details>
-  </div>
-
-  <div class="edgic-table-container" id="edgicTableContainer">
-    <p class="muted">Generate analytics to see Edgic ratings.</p>
-  </div>
-
-  <!-- Winner Contenders -->
-  <div class="edgic-contenders">
-    <h4 class="edgic-contenders-title">🏆 Winner Contenders</h4>
-    <div class="edgic-contenders-grid" id="edgicContenders">
-      <p class="muted">Generate analytics to see contenders.</p>
     </div>
-  </div>
-</div>
 
+    <!-- RELATIONSHIPS TAB -->
+    <div class="window-body hidden" id="viewRelationships">
+      <div style="padding: 20px;">
+        <div style="margin-bottom: 20px;">
+          <h3 style="color: #e879f9; margin-bottom: 8px;">💞 Relationship Heat Map</h3>
+          <p style="color: #94a3b8; font-size: 14px;">Live relationship values from -10 (enemies) to +10 (alliance)</p>
+        </div>
+        <div id="relationshipsContainer">
+          <p style="color: #94a3b8; text-align: center;">No relationship data available yet.</p>
+        </div>
+      </div>
+    </div>
 
     <!-- EPISODE TAB -->
     <div class="window-body hidden" id="viewEpisode">
@@ -985,24 +981,16 @@ Dave voted for Mickey
       syncFromSummary: $("btnSyncFromSummary"),
       playersGrid: $("currentPlayersGrid"),
 
-      tabRankings: $("tabRankings"),
-      tabRelationships: $("tabRelationships"),
-      tabCompass: $("tabCompass"),
+      tabOverview: $("tabOverview"),
+      tabGameplay: $("tabGameplay"),
       tabResumes: $("tabResumes"),
-      tabTrends: $("tabTrends"),
-      tabVotes: $("tabVotes"),
-      tabEdgic: $("tabEdgic"),
-
+      tabRelationships: $("tabRelationships"),
       tabEpisode: $("tabEpisode"),
       tabSeasonSetup: $("tabSeasonSetup"),
-      
-      viewRankings: $("viewRankings"),
-      viewRelationships: $("viewRelationships"),
-      viewCompass: $("viewCompass"),
+      viewOverview: $("viewOverview"),
+      viewGameplay: $("viewGameplay"),
       viewResumes: $("viewResumes"),
-      viewTrends: $("viewTrends"),
-      viewVotes: $("viewVotes"),
-      viewEdgic: $("viewEdgic"),
+      viewRelationships: $("viewRelationships"),
       viewEpisode: $("viewEpisode"),
       viewSeasonSetup: $("viewSeasonSetup"),
 
@@ -1831,94 +1819,79 @@ Dave voted for Mickey
 
       renderPlayersGrid(cast, eliminated, titlesMap);
 
-      // OLD Overview cards - only render if elements still exist (backwards compatibility)
-      if (els.cardBestMove) renderMoveCard(els.cardBestMove, analytics.bestMove);
-      if (els.cardBiggestRisk) renderMoveCard(els.cardBiggestRisk, analytics.biggestRisk);
-      if (els.cardEpisodeSummary) els.cardEpisodeSummary.textContent = analytics.narrativeSummary || "—";
-      if (els.cardVotingBlocs) renderVotingBlocs(els.cardVotingBlocs, analytics);
-      if (els.cardBootOdds) renderBootOdds(els.cardBootOdds, analytics.bootPredictions);
-      if (els.cardPowerRankings) renderPowerRankings(els.cardPowerRankings, analytics.powerRankings);
-      if (els.cardAllianceStability) renderAllianceStability(els.cardAllianceStability, analytics.allianceStability);
-      if (els.cardTitles) renderTitles(els.cardTitles, analytics.titles);
-      if (els.cardSocialNetwork) renderSocialNetwork(els.cardSocialNetwork, analytics.socialNetwork);
-      if (els.cardJuryManagement) renderJuryManagement(els.cardJuryManagement, analytics.juryManagement);
-      if (els.cardThreatBreakdown) renderThreatBreakdown(els.cardThreatBreakdown, analytics.threatBreakdown);
-      if (els.cardPathToVictory) renderPathToVictory(els.cardPathToVictory, analytics.pathToVictory);
+      // Overview cards
+      renderMoveCard(els.cardBestMove, analytics.bestMove);
+      renderMoveCard(els.cardBiggestRisk, analytics.biggestRisk);
+      els.cardEpisodeSummary.textContent = analytics.narrativeSummary || "—";
+      renderVotingBlocs(els.cardVotingBlocs, analytics);
+      renderBootOdds(els.cardBootOdds, analytics.bootPredictions);
+      renderPowerRankings(els.cardPowerRankings, analytics.powerRankings);
+      renderAllianceStability(els.cardAllianceStability, analytics.allianceStability);
+      renderTitles(els.cardTitles, analytics.titles);
+      renderSocialNetwork(els.cardSocialNetwork, analytics.socialNetwork);
+      renderJuryManagement(els.cardJuryManagement, analytics.juryManagement);
+      renderThreatBreakdown(els.cardThreatBreakdown, analytics.threatBreakdown);
+      renderPathToVictory(els.cardPathToVictory, analytics.pathToVictory);
 
-      // OLD Gameplay compass/table - only render if elements still exist
-      if (els.compassPoints) renderCompass(analytics, cast, eliminated, titlesMap);
-      if (els.gpTableBody) renderGameplayTable(analytics, cast, eliminated, titlesMap);
-      
-      // NEW Analytics tabs - render all 7 new tabs
-      if (window.renderAllAnalyticsTabs) window.renderAllAnalyticsTabs(analytics);
+      // Gameplay
+      renderCompass(analytics, cast, eliminated, titlesMap);
+      renderGameplayTable(analytics, cast, eliminated, titlesMap);
     }
 
     // ----------------------------
     // Tabs
     // ----------------------------
     function showTab(which) {
-      const tabs = {
-        rankings: { btn: els.tabRankings, view: els.viewRankings },
-        relationships: { btn: els.tabRelationships, view: els.viewRelationships },
-        compass: { btn: els.tabCompass, view: els.viewCompass },
-        resumes: { btn: els.tabResumes, view: els.viewResumes },
-        trends: { btn: els.tabTrends, view: els.viewTrends },
-        votes: { btn: els.tabVotes, view: els.viewVotes },
-        edgic: { btn: els.tabEdgic, view: els.viewEdgic },
-        episode: { btn: els.tabEpisode, view: els.viewEpisode },
-        seasonsetup: { btn: els.tabSeasonSetup, view: els.viewSeasonSetup },
-      };
+      const isOverview = which === "overview";
+      const isGameplay = which === "gameplay";
+      const isResumes = which === "resumes";
+      const isRelationships = which === "relationships";
+      const isEpisode = which === "episode";
+      const isSeasonSetup = which === "seasonsetup";
 
-      // Hide all views and deactivate all buttons
-      Object.values(tabs).forEach(tab => {
-        if (tab.view) tab.view.classList.add("hidden");
-        if (tab.btn) {
-          tab.btn.classList.remove("active");
-          tab.btn.setAttribute("aria-selected", "false");
-        }
-      });
+      els.viewOverview.classList.toggle("hidden", !isOverview);
+      els.viewGameplay.classList.toggle("hidden", !isGameplay);
+      els.viewResumes.classList.toggle("hidden", !isResumes);
+      els.viewRelationships.classList.toggle("hidden", !isRelationships);
+      els.viewEpisode.classList.toggle("hidden", !isEpisode);
+      els.viewSeasonSetup.classList.toggle("hidden", !isSeasonSetup);
 
-      // Show selected tab
-      const selected = tabs[which];
-      if (selected) {
-        if (selected.view) selected.view.classList.remove("hidden");
-        if (selected.btn) {
-          selected.btn.classList.add("active");
-          selected.btn.setAttribute("aria-selected", "true");
-        }
-      }
-
-      // Render tab-specific content when switching
-      if (which === "rankings" && CURRENT.analytics) {
-        if (window.renderRankingsTab) window.renderRankingsTab(CURRENT.analytics);
-      } else if (which === "relationships" && CURRENT.analytics) {
-        if (window.renderRelationshipsTab) window.renderRelationshipsTab(CURRENT.analytics);
-      } else if (which === "compass" && CURRENT.analytics) {
-        if (window.renderCompassTab) window.renderCompassTab(CURRENT.analytics);
-      } else if (which === "resumes" && CURRENT.analytics) {
-        if (window.renderResumesTab) window.renderResumesTab(CURRENT.analytics);
-      } else if (which === "trends" && CURRENT.analytics) {
-        if (window.renderTrendsTab) window.renderTrendsTab(CURRENT.analytics);
-      } else if (which === "votes" && CURRENT.analytics) {
-        if (window.renderVotesTab) window.renderVotesTab(CURRENT.analytics);
-      } else if (which === "edgic" && CURRENT.analytics) {
-        if (window.renderEdgicTab) window.renderEdgicTab(CURRENT.analytics);
-      }
+      els.tabOverview.classList.toggle("active", isOverview);
+      els.tabGameplay.classList.toggle("active", isGameplay);
+      els.tabResumes.classList.toggle("active", isResumes);
+      els.tabRelationships.classList.toggle("active", isRelationships);
+      els.tabEpisode.classList.toggle("active", isEpisode);
+      els.tabSeasonSetup.classList.toggle("active", isSeasonSetup);
+      
+      els.tabOverview.setAttribute("aria-selected", isOverview ? "true" : "false");
+      els.tabGameplay.setAttribute("aria-selected", isGameplay ? "true" : "false");
+      els.tabResumes.setAttribute("aria-selected", isResumes ? "true" : "false");
+      els.tabRelationships.setAttribute("aria-selected", isRelationships ? "true" : "false");
+      els.tabEpisode.setAttribute("aria-selected", isEpisode ? "true" : "false");
+      els.tabSeasonSetup.setAttribute("aria-selected", isSeasonSetup ? "true" : "false");
+      
+      // Render data when switching to new tabs
+      if (isResumes && CURRENT.analytics) renderResumes(CURRENT.analytics);
+      if (isRelationships && CURRENT.analytics) renderRelationships(CURRENT.analytics);
 
       // Persist tab choice per episode
       const s = Number(els.season.value || 1);
       const e = Number(els.episode.value || 1);
       try { localStorage.setItem(tabKey(s, e), which); } catch {}
+
+      // If switching to gameplay, ensure it's rendered (in case cast was synced later)
+      if (isGameplay && CURRENT.analytics) {
+        const cast = (CURRENT.cast && CURRENT.cast.length) ? CURRENT.cast : parseCastFromSummary(CURRENT.summaryText || "");
+        const eliminated = (CURRENT.eliminated && CURRENT.eliminated.size) ? CURRENT.eliminated : parseEliminated(CURRENT.summaryText || "");
+        renderCompass(CURRENT.analytics, cast, eliminated, CURRENT.titlesMap || {});
+        renderGameplayTable(CURRENT.analytics, cast, eliminated, CURRENT.titlesMap || {});
+      }
     }
 
-
-    els.tabRankings.addEventListener("click", () => showTab("rankings"));
-    els.tabRelationships.addEventListener("click", () => showTab("relationships"));
-    els.tabCompass.addEventListener("click", () => showTab("compass"));
+    els.tabOverview.addEventListener("click", () => showTab("overview"));
+    els.tabGameplay.addEventListener("click", () => showTab("gameplay"));
     els.tabResumes.addEventListener("click", () => showTab("resumes"));
-    els.tabTrends.addEventListener("click", () => showTab("trends"));
-    els.tabVotes.addEventListener("click", () => showTab("votes"));
-    els.tabEdgic.addEventListener("click", () => showTab("edgic"));
+    els.tabRelationships.addEventListener("click", () => showTab("relationships"));
     els.tabEpisode.addEventListener("click", () => {
       showTab("episode");
       // Try to auto-load saved episode
@@ -2218,9 +2191,9 @@ Dave voted for Mickey
       els.uiEpNum.textContent = `Episode ${episode}`;
 
       // Restore last tab for this episode
-      let savedTab = "rankings";
-      try { savedTab = localStorage.getItem(tabKey(season, episode)) || "rankings"; } catch {}
-      showTab(savedTab);
+      let savedTab = "overview";
+      try { savedTab = localStorage.getItem(tabKey(season, episode)) || "overview"; } catch {}
+      showTab(savedTab === "gameplay" ? "gameplay" : "overview");
 
       // If we have cached analytics for this selection, load it (if auto-load enabled)
       const cached = loadCached(season, episode);
@@ -2284,6 +2257,138 @@ Dave voted for Mickey
       else if (cached) setStatus("Cached analytics found — enable auto-load or click “Load Cached”.");
       else setStatus("Ready — paste summary and generate analytics.");
     })();
+    
+    // ========== RENDER FUNCTIONS FOR NEW TABS ==========
+    
+    function renderResumes(analytics) {
+      const container = document.getElementById('resumesContainer');
+      if (!analytics || !analytics.resumes) {
+        container.innerHTML = '<p style="grid-column: 1 / -1; color: #94a3b8; text-align: center;">No resume data available yet.</p>';
+        return;
+      }
+      
+      const resumes = analytics.resumes;
+      const players = Object.keys(resumes);
+      
+      if (players.length === 0) {
+        container.innerHTML = '<p style="grid-column: 1 / -1; color: #94a3b8; text-align: center;">No resume data available yet.</p>';
+        return;
+      }
+      
+      container.innerHTML = players.map(playerName => {
+        const resume = resumes[playerName];
+        const slug = resume.playerSlug || playerName.toLowerCase().replace(/\s+/g, '');
+        
+        return `
+          <div style="background: rgba(15,23,42,0.6); border: 1px solid rgba(125,76,255,0.3); border-radius: 12px; padding: 16px;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+              <img src="assets/avatars/${slug}.png" 
+                   onerror="this.src='assets/avatars/all.png'" 
+                   style="width: 48px; height: 48px; border-radius: 50%; border: 2px solid #7d4cff;">
+              <div>
+                <div style="font-weight: bold; font-size: 16px; color: #fff;">${playerName}</div>
+                <div style="font-size: 24px; font-weight: bold; color: #22c55e;">${resume.winEquity}%</div>
+              </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 13px; margin-bottom: 12px;">
+              <div><span style="color: #94a3b8;">Majority Votes:</span> <span style="color: #fff;">${resume.majorityVotes}/${resume.totalVotes}</span></div>
+              <div><span style="color: #94a3b8;">Immunities:</span> <span style="color: #fff;">${resume.immunities}</span></div>
+              <div><span style="color: #94a3b8;">Votes Against:</span> <span style="color: #fff;">${resume.votesAgainst}</span></div>
+              <div><span style="color: #94a3b8;">Social Score:</span> <span style="color: #fff;">${resume.socialScore}/10</span></div>
+            </div>
+            
+            ${resume.keyMoves && resume.keyMoves.length > 0 ? `
+              <div style="border-top: 1px solid rgba(125,76,255,0.2); padding-top: 12px;">
+                <div style="font-size: 12px; font-weight: bold; color: #7d4cff; margin-bottom: 8px;">KEY MOVES</div>
+                ${resume.keyMoves.map(move => `
+                  <div style="font-size: 12px; color: #cbd5e1; margin-bottom: 4px;">
+                    <span style="color: #7d4cff;">Ep${move.episode}:</span> ${move.description}
+                  </div>
+                `).join('')}
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+    
+    function renderRelationships(analytics) {
+      const container = document.getElementById('relationshipsContainer');
+      if (!analytics || !analytics.relationships) {
+        container.innerHTML = '<p style="color: #94a3b8; text-align: center;">No relationship data available yet.</p>';
+        return;
+      }
+      
+      const relationships = analytics.relationships;
+      const players = Object.keys(relationships);
+      
+      if (players.length === 0) {
+        container.innerHTML = '<p style="color: #94a3b8; text-align: center;">No relationship data available yet.</p>';
+        return;
+      }
+      
+      // Create heat map table
+      let html = '<div style="overflow-x: auto;"><table style="width: 100%; border-collapse: collapse; font-size: 13px;">';
+      
+      // Header row
+      html += '<tr><th style="padding: 8px; border: 1px solid rgba(125,76,255,0.2);"></th>';
+      players.forEach(player2 => {
+        const slug2 = relationships[player2]?.slug || player2.toLowerCase().replace(/\s+/g, '');
+        html += `<th style="padding: 8px; border: 1px solid rgba(125,76,255,0.2);">
+          <img src="assets/avatars/${slug2}.png" onerror="this.src='assets/avatars/all.png'" 
+               style="width: 32px; height: 32px; border-radius: 50%;" title="${player2}">
+        </th>`;
+      });
+      html += '</tr>';
+      
+      // Data rows
+      players.forEach(player1 => {
+        const slug1 = relationships[player1]?.slug || player1.toLowerCase().replace(/\s+/g, '');
+        html += `<tr><td style="padding: 8px; border: 1px solid rgba(125,76,255,0.2); font-weight: bold;">
+          <img src="assets/avatars/${slug1}.png" onerror="this.src='assets/avatars/all.png'" 
+               style="width: 32px; height: 32px; border-radius: 50%; margin-right: 8px;" title="${player1}">
+          ${player1}
+        </td>`;
+        
+        players.forEach(player2 => {
+          if (player1 === player2) {
+            html += '<td style="padding: 8px; border: 1px solid rgba(125,76,255,0.2); background: rgba(100,100,100,0.3); text-align: center;">—</td>';
+          } else {
+            const rel = relationships[player1]?.relationships?.[player2];
+            const value = rel?.value || 0;
+            
+            // Color based on value
+            let bgColor;
+            if (value >= 7) bgColor = 'rgba(34,197,94,0.3)'; // Green - alliance
+            else if (value >= 3) bgColor = 'rgba(59,130,246,0.3)'; // Blue - friends
+            else if (value >= 0) bgColor = 'rgba(100,100,100,0.2)'; // Gray - neutral
+            else if (value >= -6) bgColor = 'rgba(251,146,60,0.3)'; // Orange - tension
+            else bgColor = 'rgba(239,68,68,0.3)'; // Red - enemies
+            
+            html += `<td style="padding: 8px; border: 1px solid rgba(125,76,255,0.2); background: ${bgColor}; text-align: center; font-weight: bold; color: #fff;">${value}</td>`;
+          }
+        });
+        
+        html += '</tr>';
+      });
+      
+      html += '</table></div>';
+      
+      // Legend
+      html += `
+        <div style="margin-top: 20px; display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px;">
+          <div><span style="display: inline-block; width: 16px; height: 16px; background: rgba(34,197,94,0.5); border-radius: 3px; margin-right: 4px;"></span> 7-10: Alliance</div>
+          <div><span style="display: inline-block; width: 16px; height: 16px; background: rgba(59,130,246,0.5); border-radius: 3px; margin-right: 4px;"></span> 3-6: Friends</div>
+          <div><span style="display: inline-block; width: 16px; height: 16px; background: rgba(100,100,100,0.5); border-radius: 3px; margin-right: 4px;"></span> 0-2: Neutral</div>
+          <div><span style="display: inline-block; width: 16px; height: 16px; background: rgba(251,146,60,0.5); border-radius: 3px; margin-right: 4px;"></span> -3 to -6: Tension</div>
+          <div><span style="display: inline-block; width: 16px; height: 16px; background: rgba(239,68,68,0.5); border-radius: 3px; margin-right: 4px;"></span> -7 to -10: Enemies</div>
+        </div>
+      `;
+      
+      container.innerHTML = html;
+    }
+    
   })();
   
   // ========================================
@@ -2887,6 +2992,27 @@ setTimeout(function() {
         console.error('Auto-save error:', e);
       }
     }, 1000); // Debounce: save 1 second after last change
+  }
+  
+  
+  function generateSeasonBuilderEpisodeTextareas(count) {
+    const container = document.getElementById("sb-episode-summaries");
+    if (!container) return;
+    
+    container.innerHTML = '';
+    for (let i = 1; i <= count; i++) {
+      const div = document.createElement('div');
+      div.style.marginBottom = '16px';
+      div.innerHTML = `
+        <label style="display: block; margin-bottom: 8px; color: #94a3b8; font-weight: bold;">
+          Episode ${i}
+        </label>
+        <textarea id="sb-episode-${i}" 
+                  style="width: 100%; min-height: 100px; background: rgba(15,23,42,0.6); border: 1px solid rgba(125,76,255,0.3); border-radius: 8px; padding: 12px; color: #fff; font-family: monospace; font-size: 13px;"
+                  placeholder="Paste episode ${i} summary..."></textarea>
+      `;
+      container.appendChild(div);
+    }
   }
   
   function loadSeasonBuilderData(seasonNumber) {
@@ -5441,477 +5567,8 @@ Would you like to:
     }
   };
   
-    function renderRankingsTab(analytics) {
-      if (!analytics || !analytics.rankings) {
-        document.getElementById("audiencePopularityList").innerHTML = 
-          '<p class="muted">No rankings data available yet.</p>';
-        document.getElementById("islandInfluenceList").innerHTML = 
-          '<p class="muted">No influence data available yet.</p>';
-        document.getElementById("allianceNetworkList").innerHTML = 
-          '<p class="muted">No active alliances detected yet.</p>';
-        return;
-      }
-    
-      // Render Audience Popularity
-      const popList = document.getElementById("audiencePopularityList");
-      if (analytics.rankings.audiencePopularity && analytics.rankings.audiencePopularity.length > 0) {
-        popList.innerHTML = analytics.rankings.audiencePopularity.map((player, idx) => {
-          const trendIcon = player.change > 0 ? '⬆️' : player.change < 0 ? '⬇️' : '➡️';
-          const trendClass = player.change > 0 ? 'trend-up' : player.change < 0 ? 'trend-down' : 'trend-neutral';
-          return `
-            <div class="ranking-item">
-              <div class="ranking-rank">${idx + 1}.</div>
-              <div class="ranking-player">
-                <div class="ranking-player-name">${player.name}</div>
-                <div class="ranking-stat ${trendClass}">
-                  ${trendIcon} ${player.percentage}% (${player.change > 0 ? '+' : ''}${player.change})
-                </div>
-              </div>
-            </div>
-          `;
-        }).join('');
-      } else {
-        popList.innerHTML = '<p class="muted">No popularity data yet.</p>';
-      }
-    
-      // Render Island Influence
-      const influenceList = document.getElementById("islandInfluenceList");
-      if (analytics.rankings.islandInfluence && analytics.rankings.islandInfluence.length > 0) {
-        influenceList.innerHTML = analytics.rankings.islandInfluence.map((player, idx) => `
-          <div class="ranking-item">
-            <div class="ranking-rank">${idx + 1}.</div>
-            <div class="ranking-player">
-              <div class="ranking-player-name">${player.name}</div>
-              <div class="ranking-stat">${player.score} points</div>
-            </div>
-          </div>
-        `).join('');
-      } else {
-        influenceList.innerHTML = '<p class="muted">No influence data yet.</p>';
-      }
-    
-      // Render Alliance Network
-      const allianceList = document.getElementById("allianceNetworkList");
-      if (analytics.rankings.alliances && analytics.rankings.alliances.length > 0) {
-        allianceList.innerHTML = analytics.rankings.alliances.map(alliance => `
-          <div class="alliance-item">
-            <div class="alliance-name">${alliance.name}</div>
-            <div class="alliance-members">
-              ${alliance.members.map(m => `<span class="alliance-member">${m}</span>`).join('')}
-            </div>
-          </div>
-        `).join('');
-      } else {
-        allianceList.innerHTML = '<p class="muted">No active alliances detected yet.</p>';
-      }
-    }
-    
-    // ========== TAB 2: RELATIONSHIPS ==========
-    
-    function renderRelationshipsTab(analytics) {
-      const container = document.getElementById("relationshipHeatmapContainer");
-      
-      if (!analytics || !analytics.relationships) {
-        container.innerHTML = '<p class="muted">No relationship data available yet.</p>';
-        return;
-      }
-    
-      const relationships = analytics.relationships;
-      const players = Object.keys(relationships);
-    
-      if (players.length === 0) {
-        container.innerHTML = '<p class="muted">No relationship data available yet.</p>';
-        return;
-      }
-    
-      // Build heat map table
-      let html = '<table class="heatmap-table"><thead><tr><th>👥 PLAYERS</th>';
-      players.forEach(p => {
-        html += `<th><span class="ai-player"><span class="ai-avatar"><span>👤</span></span><span class="ai-name">${p}</span></span></th>`;
-      });
-      html += '</tr></thead><tbody>';
-    
-      players.forEach(player1 => {
-        html += `<tr><th>${player1}</th>`;
-        players.forEach(player2 => {
-          if (player1 === player2) {
-            html += '<td>—</td>';
-          } else {
-            const value = relationships[player1]?.[player2] || 0;
-            const relClass = 
-              value >= 7 ? 'rel-alliance' :
-              value >= 3 ? 'rel-friends' :
-              value <= -7 ? 'rel-enemies' :
-              value <= -3 ? 'rel-tension' :
-              'rel-neutral';
-            const label = 
-              value >= 7 ? 'Alliance' :
-              value >= 3 ? 'Friends' :
-              value <= -7 ? 'Enemies' :
-              value <= -3 ? 'Tension' :
-              'Neutral';
-            html += `<td class="${relClass}">
-              ${value > 0 ? '+' : ''}${value}<br>
-              <small style="opacity:0.7">${label}</small>
-            </td>`;
-          }
-        });
-        html += '</tr>';
-      });
-    
-      html += '</tbody></table>';
-      container.innerHTML = html;
-    }
-    
-    // ========== TAB 3: COMPASS ==========
-    
-    function renderCompassTab(analytics) {
-      const canvas = document.getElementById("compassCanvas");
-      const analysis = document.getElementById("compassAnalysis");
-    
-      if (!analytics || !analytics.compass) {
-        canvas.innerHTML = '<p class="muted" style="text-align: center; padding-top: 230px;">No compass data available yet.</p>';
-        analysis.innerHTML = '';
-        return;
-      }
-    
-      const compass = analytics.compass;
-    
-      // Clear and render compass dots
-      canvas.innerHTML = '';
-      canvas.style.position = 'relative';
-    
-      compass.forEach(player => {
-        // Convert -1 to 1 coordinates to pixel positions
-        const x = ((player.x + 1) / 2) * 100; // Convert to percentage
-        const y = ((1 - player.y) / 2) * 100; // Invert Y axis
-    
-        const dot = document.createElement('div');
-        dot.className = 'compass-player-dot';
-        dot.innerHTML = player.icon || player.name[0];
-        dot.style.left = `${x}%`;
-        dot.style.top = `${y}%`;
-        dot.style.transform = 'translate(-50%, -50%)';
-        dot.title = `${player.name}: ${player.archetype}`;
-        canvas.appendChild(dot);
-      });
-    
-      // Render analysis table
-      analysis.innerHTML = `
-        <h4 style="margin-bottom: 16px;">📊 Individual Gameplay Analysis</h4>
-        ${compass.map(player => `
-          <div class="compass-player-row">
-            <div class="compass-player-icon">${player.icon || player.name[0]}</div>
-            <div>
-              <div style="font-weight: 700;">${player.name}</div>
-              <div style="font-size: 13px; color: var(--muted);">${player.archetype}</div>
-            </div>
-            <div style="font-size: 13px; color: var(--muted);">${player.gameplayStyle}</div>
-            <div style="font-size: 12px; opacity: 0.7;">(${player.x.toFixed(2)}, ${player.y.toFixed(2)})</div>
-          </div>
-        `).join('')}
-      `;
-    }
-    
-    // ========== TAB 4: RESUMES ==========
-    
-    function renderResumesTab(analytics) {
-      const grid = document.getElementById("resumeGrid");
-    
-      if (!analytics || !analytics.resumes) {
-        grid.innerHTML = '<p class="muted">No resume data available yet.</p>';
-        return;
-      }
-    
-      const resumes = analytics.resumes;
-      const players = Object.keys(resumes);
-    
-      if (players.length === 0) {
-        grid.innerHTML = '<p class="muted">No resume data available yet.</p>';
-        return;
-      }
-    
-      grid.innerHTML = players.map(playerName => {
-        const resume = resumes[playerName];
-        return `
-          <div class="resume-card">
-            <div class="resume-header">
-              <div class="resume-player-info">
-                <h3>${playerName}</h3>
-                <div class="resume-status">⚡ Active</div>
-              </div>
-              <div class="resume-win-equity">
-                <div class="win-equity-percent">${resume.winEquity || 50}%</div>
-                <div class="win-equity-label">Win Equity</div>
-              </div>
-            </div>
-    
-            <div class="resume-stats">
-              <div class="resume-stat">
-                <span class="resume-stat-value">${resume.majorityVotes || 0}/${resume.totalVotes || 0}</span>
-                <span class="resume-stat-label">🗳️ Majority</span>
-              </div>
-              <div class="resume-stat">
-                <span class="resume-stat-value">${resume.immunities || 0}</span>
-                <span class="resume-stat-label">🏆 Immunities</span>
-              </div>
-              <div class="resume-stat">
-                <span class="resume-stat-value">${resume.votesAgainst || 0}</span>
-                <span class="resume-stat-label">🎯 Votes</span>
-              </div>
-              <div class="resume-stat">
-                <span class="resume-stat-value">${resume.votesNullified || 0}</span>
-                <span class="resume-stat-label">🩸 Nullified</span>
-              </div>
-              <div class="resume-stat">
-                <span class="resume-stat-value">${resume.socialScore || 0}</span>
-                <span class="resume-stat-label">💫 Social</span>
-              </div>
-            </div>
-    
-            ${resume.keyMoves && resume.keyMoves.length > 0 ? `
-              <div class="resume-moves">
-                <div class="resume-moves-title">🎯 Key Moves (${resume.keyMoves.length})</div>
-                ${resume.keyMoves.map(move => `
-                  <div class="resume-move">
-                    <div class="resume-move-episode">Episode ${move.episode || '?'}</div>
-                    <div class="resume-move-desc">${move.description}</div>
-                  </div>
-                `).join('')}
-              </div>
-            ` : ''}
-          </div>
-        `;
-      }).join('');
-    }
-    
-    // ========== TAB 5: TRENDS ==========
-    
-    function renderTrendsTab(analytics) {
-      const select = document.getElementById("trendPlayerSelect");
-      const grid = document.getElementById("trendsGrid");
-    
-      if (!analytics || !analytics.relationshipHistory) {
-        select.innerHTML = '<option value="">-- No data available --</option>';
-        grid.innerHTML = '<p class="muted">No relationship history available yet.</p>';
-        return;
-      }
-    
-      const history = analytics.relationshipHistory;
-      const players = Object.keys(history);
-    
-      if (players.length === 0) {
-        select.innerHTML = '<option value="">-- No data available --</option>';
-        grid.innerHTML = '<p class="muted">No relationship history available yet.</p>';
-        return;
-      }
-    
-      // Populate player select
-      select.innerHTML = '<option value="">-- Select a player --</option>' +
-        players.map(p => `<option value="${p}">${p}</option>`).join('');
-    
-      // Handle player selection
-      select.onchange = function() {
-        const selectedPlayer = this.value;
-        if (!selectedPlayer) {
-          grid.innerHTML = '<p class="muted">Select a player to see their relationship trends.</p>';
-          return;
-        }
-    
-        const playerHistory = history[selectedPlayer];
-        const relationships = Object.keys(playerHistory);
-    
-        grid.innerHTML = relationships.map(otherPlayer => {
-          const rel = playerHistory[otherPlayer];
-          const trendIcon = rel.trend === 'rising' ? '↗' : rel.trend === 'falling' ? '↘' : '→';
-          const trendClass = rel.trend === 'rising' ? 'trend-up' : rel.trend === 'falling' ? 'trend-down' : 'trend-neutral';
-          
-          return `
-            <div class="trend-item">
-              <div class="trend-player-name">${otherPlayer}</div>
-              <div class="trend-value ${trendClass}">
-                <span class="trend-arrow">${trendIcon}</span>
-                <span>${rel.weightedAvg.toFixed(1)} avg</span>
-              </div>
-            </div>
-          `;
-        }).join('');
-      };
-    }
-    
-    // ========== TAB 6: VOTES ==========
-    
-    function renderVotesTab(analytics) {
-      const select = document.getElementById("voteEpisodeSelect");
-      const container = document.getElementById("voteAnalysisContainer");
-    
-      if (!analytics || !analytics.votes) {
-        select.innerHTML = '<option value="">-- No data available --</option>';
-        container.innerHTML = '<p class="muted">No vote data available yet.</p>';
-        return;
-      }
-    
-      const votes = analytics.votes;
-      const episodes = Object.keys(votes);
-    
-      if (episodes.length === 0) {
-        select.innerHTML = '<option value="">-- No data available --</option>';
-        container.innerHTML = '<p class="muted">No vote data available yet.</p>';
-        return;
-      }
-    
-      // Populate episode select
-      select.innerHTML = '<option value="">-- Select episode --</option>' +
-        episodes.map(ep => `<option value="${ep}">Episode ${ep.replace('episode', '')}</option>`).join('');
-    
-      // Handle episode selection
-      select.onchange = function() {
-        const selectedEp = this.value;
-        if (!selectedEp) {
-          container.innerHTML = '<p class="muted">Select an episode to see vote analysis.</p>';
-          return;
-        }
-    
-        const epData = votes[selectedEp];
-        
-        let html = `
-          <div class="vote-eliminated">
-            <div class="vote-eliminated-label">🔥 ELIMINATED</div>
-            <div class="vote-eliminated-name">${epData.eliminated}</div>
-          </div>
-    
-          <div class="vote-blocs">
-            <h4 class="vote-blocs-title">👥 Voting Blocs</h4>
-            ${epData.blocs.map(bloc => `
-              <div class="vote-bloc">
-                <div class="vote-bloc-header">
-                  <div class="vote-bloc-name">${bloc.name}</div>
-                  <div class="vote-bloc-meta">
-                    <span>🎯 Target: ${bloc.target}</span>
-                    <span>💡 ${bloc.motivation}</span>
-                  </div>
-                </div>
-                ${bloc.spearheader ? `
-                  <div class="vote-bloc-spearheader">
-                    <strong>👑 ${bloc.spearheader} (Spearheader)</strong>
-                    <div class="vote-bloc-quote">"${bloc.quote}"</div>
-                  </div>
-                ` : ''}
-                <div class="vote-bloc-members">
-                  ${bloc.members.map(m => `<span class="alliance-member">${m}</span>`).join('')}
-                </div>
-              </div>
-            `).join('')}
-          </div>
-    
-          <h4 class="vote-individual-title">🗳️ Individual Vote Breakdown</h4>
-          <div class="vote-individual-grid">
-            ${epData.votes.map(vote => `
-              <div class="vote-individual-item">
-                <div>
-                  <span class="vote-individual-voter">${vote.voter}</span>
-                  <span class="vote-individual-arrow">→</span>
-                  <span class="vote-individual-target">${vote.target}</span>
-                  <span class="vote-individual-type vote-type-${vote.type}">${vote.type}</span>
-                </div>
-                <div class="vote-individual-reasoning">${vote.reasoning}</div>
-              </div>
-            `).join('')}
-          </div>
-        `;
-    
-        container.innerHTML = html;
-      };
-    }
-    
-    // ========== TAB 7: EDGIC ==========
-    
-    function renderEdgicTab(analytics) {
-      const tableContainer = document.getElementById("edgicTableContainer");
-      const contendersGrid = document.getElementById("edgicContenders");
-    
-      if (!analytics || !analytics.edgic) {
-        tableContainer.innerHTML = '<p class="muted">No edgic data available yet.</p>';
-        contendersGrid.innerHTML = '<p class="muted">No contender data available yet.</p>';
-        return;
-      }
-    
-      const edgic = analytics.edgic;
-      const players = Object.keys(edgic.ratings || {});
-      const episodes = Object.keys((edgic.ratings[players[0]] || {})).filter(k => k.startsWith('episode'));
-    
-      if (players.length === 0) {
-        tableContainer.innerHTML = '<p class="muted">No edgic data available yet.</p>';
-        contendersGrid.innerHTML = '<p class="muted">No contender data available yet.</p>';
-        return;
-      }
-    
-      // Build edgic table
-      let html = '<table class="edgic-table"><thead><tr><th>Contestant</th>';
-      episodes.forEach((ep, idx) => {
-        html += `<th>${idx + 1}</th>`;
-      });
-      html += '<th>AVG</th></tr></thead><tbody>';
-    
-      players.forEach(player => {
-        const ratings = edgic.ratings[player];
-        html += `<tr><th>${player}</th>`;
-        episodes.forEach(ep => {
-          const rating = ratings[ep]?.rating || 'MOR';
-          const ratingClass = rating.substring(0, 3).toLowerCase();
-          html += `<td class="edgic-${ratingClass}">${rating}</td>`;
-        });
-        html += `<td class="edgic-${ratings.average?.substring(0,3).toLowerCase() || 'mor'}">${ratings.average || 'MOR'}</td>`;
-        html += '</tr>';
-      });
-    
-      html += '</tbody></table>';
-      tableContainer.innerHTML = html;
-    
-      // Render contenders
-      if (edgic.contenders && edgic.contenders.length > 0) {
-        contendersGrid.innerHTML = edgic.contenders.map(contender => `
-          <div class="edgic-contender">
-            <div class="edgic-contender-rank">${contender.rank}</div>
-            <div class="edgic-contender-name">${contender.playerName}</div>
-          </div>
-        `).join('');
-      } else {
-        contendersGrid.innerHTML = '<p class="muted">No contender data available yet.</p>';
-      }
-    }
-    
-    // ========== RENDER ALL TABS AFTER ANALYTICS GENERATION ==========
-    
-    function renderAllAnalyticsTabs(analytics) {
-      if (!analytics) return;
-      
-      renderRankingsTab(analytics);
-      renderRelationshipsTab(analytics);
-      renderCompassTab(analytics);
-      renderResumesTab(analytics);
-      renderTrendsTab(analytics);
-      renderVotesTab(analytics);
-      renderEdgicTab(analytics);
-}
-
-  
-
-    // ----------------------------
-    // Expose tab renderers (safety)
-    // ----------------------------
-    if (typeof renderAllAnalyticsTabs === "function") window.renderAllAnalyticsTabs = renderAllAnalyticsTabs;
-    if (typeof renderRankingsTab === "function") window.renderRankingsTab = renderRankingsTab;
-    if (typeof renderRelationshipsTab === "function") window.renderRelationshipsTab = renderRelationshipsTab;
-    if (typeof renderCompassTab === "function") window.renderCompassTab = renderCompassTab;
-    if (typeof renderResumesTab === "function") window.renderResumesTab = renderResumesTab;
-    if (typeof renderTrendsTab === "function") window.renderTrendsTab = renderTrendsTab;
-    if (typeof renderVotesTab === "function") window.renderVotesTab = renderVotesTab;
-    if (typeof renderEdgicTab === "function") window.renderEdgicTab = renderEdgicTab;
-
-})(); // Close the main IIFE
-}, 500); // Close setTimeout - Wait for DOM to fully render
-
+})();
+}, 500); // Wait 500ms for DOM to fully render and database to load
 </script>
 </div><footer class="siteFooter">
   <div class="footerInner">

@@ -1,7 +1,7 @@
 {
   "franchise": {
     "name": "DC Franchise Database",
-    "totalSeasons": 7,
+    "totalSeasons": 8,
     "totalPlayers": 78,
     "description": "Total Drama franchise player statistics and performance data"
   },
@@ -12,9 +12,10 @@
       "seasons": [
         4,
         2,
-        1
+        1,
+        8
       ],
-      "totalSeasons": 3,
+      "totalSeasons": 4,
       "bestPlacement": 1,
       "wins": 1,
       "totalChallengeWins": 11,
@@ -90,6 +91,23 @@
           "notes": [
             "Lost to Lindsay"
           ]
+        },
+        {
+          "season": 8,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "SEASON 1 — Cullhouse\nSEASON 1 — Cullhouse\nIntroduced on Screaming Gophers (Season 1), Alejandro played the season like a slow squeeze: build trust, collect options, then tighten the numbers.  He found an early idol and used it as leverage, not a crutch. With 3 immunity wins and 4 total challenge wins, he always had a second path to safety when votes got messy, and he reached the end as the most complete résumé on paper.  The backbone of the run was an unbreakable link with Trent.In the finale, he fell just short—losing to Lindsay 5–4 after a season of control that never quite turned into a title (Result: runner-up; 2nd).\n\n────────\n\nSEASON 2 — Action\n────────\n\nSEASON 2 — Action\nAlejandro treated Season 2 on the Screaming Gaffers like a control puzzle: read the room, win when necessary, and keep danger pointed elsewhere. Ezekiel’s merge idol play protected him at the perfect moment and opened a runway into the endgame. He reached Final Tribal as the season’s most strategically-feared finalist, but finished runner-up to Duncan.\n\n────────\n\nSEASON 4 — Edge of Extinction\n────────\n\nSEASON 4 — Edge of Extinction\nReturning for Edge of Extinction (Season 4), Alejandro finally cashed in the crown after two straight runner-up finishes. Starting on Yellow → Red → Green → Campers, he navigated the swaps without losing his grip, then hit the endgame with back‑to‑back immunity wins (Episodes 7–8). His résumé was sealed at Final 4 with a fire‑making win over Gwen, and he survived the chaos of two public meltdowns (Episodes 10 and 14) long enough to reach Final Tribal Council. Result: Alejandro won Season 4.",
@@ -421,9 +439,10 @@
       "id": "brick",
       "name": "Brick",
       "seasons": [
-        3
+        3,
+        8
       ],
-      "totalSeasons": 1,
+      "totalSeasons": 2,
       "bestPlacement": 9,
       "wins": 0,
       "totalChallengeWins": 1,
@@ -451,6 +470,23 @@
             "Won merge immunity (Episode 7)",
             "Voted Scott at FTC"
           ]
+        },
+        {
+          "season": 8,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "Debuting on Revenge of the Island (Season 3), Brick played the loyal-soldier archetype on the Mutant Maggots—strong in challenges, reliable in alliances, and usually voting with the ‘right’ side. But this season punished predictability. A fractured Tribal turned into a multi-way tally, and Brick was the one the minority could actually land on. The blindside hit in Episode 8 (Result: voted out 5–2–2 vote; 9th, 2nd juror).",
@@ -519,9 +555,10 @@
       "name": "Brody",
       "seasons": [
         6,
-        7
+        7,
+        8
       ],
-      "totalSeasons": 2,
+      "totalSeasons": 3,
       "bestPlacement": 7,
       "wins": 0,
       "totalChallengeWins": 1,
@@ -590,6 +627,23 @@
           ],
           "alliances": [],
           "rivalries": []
+        },
+        {
+          "season": 8,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "On Blood vs. Water (Season 6), Brody was the season’s endurance monster—paired with Geoff, he absorbed heat and still kept moving forward. He even survived an earlier trip through the swap/Redemption machinery, returning to the game with a target that never truly faded. By Episode 14, the merge needed a clean break from the ‘can’t kill him’ narrative and Brody was voted out 4–2. (Result: voted out Episode 14, 4–2; 7th.)\n\n────────\n\nSEASON 7 — Fan vs Favorites\n────────\nBrody’s Fan vs Favorites run ended early as soon as the tribe needed a clean, low-risk boot. He never found the numbers to lock a majority lane, and his name became the easiest one to write down without starting a war. In a near-unanimous 5–1 vote, Brody was sent home before the season’s swap chaos even began.",
@@ -601,9 +655,10 @@
       "name": "Cameron",
       "seasons": [
         4,
-        3
+        3,
+        8
       ],
-      "totalSeasons": 2,
+      "totalSeasons": 3,
       "bestPlacement": 3,
       "wins": 0,
       "totalChallengeWins": 6,
@@ -657,6 +712,23 @@
           ],
           "juryVotes": 1,
           "finalVote": "1"
+        },
+        {
+          "season": 8,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "SEASON 3 — Revenge of the Island\nSEASON 3 — Revenge of the Island\nOn Revenge of the Island (Season 3), Cameron operated as the season’s cerebral pivot—building structure early, keeping options open as tribes shifted, and saving power for the exact moment it would matter. Their signature move came with the clock at zero: in Episode 12, Cameron played the last-possible idol on themself, cancelled the only vote against them, and then voted out Anne Maria—breaking an unbreakable bond on purpose to lock in the finale. At Final Tribal, Cameron earned None and finished 3rd, but their vote became the swing factor in a historic 3–3–1 split before the cast tiebreaker crowned Emma.\n\nStrategic mastermind who made brutal move voting out unbreakable partner Anne Maria in S3. Strong strategic player across both seasons.\n\n────────\n\nSEASON 4 — Edge of Extinction\n────────\n\nSEASON 4 — Edge of Extinction\nIn Edge of Extinction (Season 4), Cameron played the classic “quiet glue” game—rarely the loudest voice, but constantly in the numbers. He began on Red → Yellow → Red → Campers and repeatedly re‑integrated after swaps, anchoring what became the core of the Red alliance. At Final 5, Scott’s endgame squeeze snapped shut and Cameron was cut 2–0 before he could argue his case at the end. Result: Cameron finished 5th.",
@@ -937,9 +1009,10 @@
       "id": "dave",
       "name": "Dave",
       "seasons": [
-        5
+        5,
+        8
       ],
-      "totalSeasons": 1,
+      "totalSeasons": 2,
       "bestPlacement": 6,
       "wins": 0,
       "totalChallengeWins": 2,
@@ -959,6 +1032,23 @@
           "rewardWins": 1,
           "votesReceived": 5,
           "idolsFound": 0
+        },
+        {
+          "season": 8,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "Dave was a central strategic connector for the Lulu side of Season 5, mixing steady positioning with real challenge value (2 wins, including 1 immunity). In the late game he survived a critical Tribal by playing Shot in the Dark successfully, but the next wave of idol chaos flipped the math against him. He was eliminated in Episode 12 when a 3–3 vote became a clean boot after idol cancellation (Result: Dave eliminated, 3–0 effective (3–3 on paper with idol cancellation)).",
@@ -1581,9 +1671,10 @@
       "seasons": [
         4,
         2,
-        1
+        1,
+        8
       ],
-      "totalSeasons": 3,
+      "totalSeasons": 4,
       "bestPlacement": 4,
       "wins": 0,
       "totalChallengeWins": 5,
@@ -1644,6 +1735,23 @@
           "notes": [
             "5-4 tribe swap casualty"
           ]
+        },
+        {
+          "season": 8,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "SEASON 1 — Cullhouse\nSEASON 1 — Cullhouse\nIntroduced on Screaming Gophers (Season 1), Gwen survived the early chaos by keeping her circle small and her threat level lower than her talent. But Season 1’s tribe swap punished solitary games: a 5–4 vote where one new connection mattered more than everything she’d built before. She didn’t get outplayed in a duel—she got caught in the first real math problem of the season, and the numbers chose her (Result: tribe-swap casualty; 16th).\n\n────────\n\nSEASON 2 — Action\n────────\n\nSEASON 2 — Action\nGwen’s Season 2 on the Screaming Gaffers was played from the edges: selective trust, sharp reads, and constant threat-management. A deadlocked Tribal forced a re-vote around her, showing how evenly the power split had become. She ultimately went out in the season’s double-elimination sequence (Gwen finishes 8th), where tempo beat nuance.\n\n────────\n\nSEASON 4 — Edge of Extinction\n────────\n\nSEASON 4 — Edge of Extinction\nEdge of Extinction (Season 4) turned Gwen into an endgame machine. After surviving the Yellow → Red → Campers shuffle, she caught fire late with four straight immunity wins (Episodes 11–14), a franchise record that forced everyone to plan around her. With the finale in sight, the run ended at the final hurdle when Alejandro beat her at fire‑making. Result: Gwen was eliminated at Final 4.",
@@ -1721,9 +1829,10 @@
       "seasons": [
         4,
         2,
-        1
+        1,
+        8
       ],
-      "totalSeasons": 3,
+      "totalSeasons": 4,
       "bestPlacement": 8,
       "wins": 0,
       "totalChallengeWins": 4,
@@ -1785,6 +1894,23 @@
             "Lost to Owen on Exile Beach"
           ],
           "strategicRank": "High"
+        },
+        {
+          "season": 8,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "SEASON 1 — Cullhouse\nSEASON 1 — Cullhouse\nIntroduced on Screaming Gophers (Season 1), Heather treated the game like a knife fight with a smile. She found 2 idols and used them to keep the tribe guessing, then pulled off the season’s most talked-about rescue—saving Bridgette when the vote was ready to bury her. Even with 10 votes against, she kept landing on her feet until the game forced her into Exile Beach. There, Owen beat her in the return battle and the villain finally ran out of exits (Result: Exile loss; 8th).\n\n────────\n\nSEASON 4 — Edge of Extinction\n────────\n\nSEASON 4 — Edge of Extinction\nHeather returned on Killer Grips doing what she does best: driving targets, steering conversations, and keeping bigger flames lit elsewhere. But her influence was too visible, and once the cast had a clear opening they removed the proven manipulator before she could pivot again. She was voted out decisively in the midgame (Heather eliminated, 7–2).\n\nHeather tried to rebuild her old‑school control in Edge of Extinction (Season 4), but the season punished anyone who looked comfortable. Her early Yellow structure dissolved, fights erupted, and the target snapped back onto her. Result: Heather was eliminated 3–2 in Episode 5 (15th place).",
@@ -2045,9 +2171,10 @@
       "name": "Jo",
       "seasons": [
         4,
-        3
+        3,
+        8
       ],
-      "totalSeasons": 2,
+      "totalSeasons": 3,
       "bestPlacement": 7,
       "wins": 0,
       "totalChallengeWins": 0,
@@ -2097,6 +2224,23 @@
             "4 extreme hatreds (Cameron, Zoey, Mike, Scott)",
             "Voted Emma at FTC"
           ]
+        },
+        {
+          "season": 8,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "SEASON 3 — Revenge of the Island\nSEASON 3 — Revenge of the Island\nIntroduced on Revenge of the Island (Season 3), Jo tried to run the Mutant Maggots through intimidation and control—pushing the tribe to win while collecting enemies at the same time. It worked until it didn’t. By the merge, the social bill came due: four extreme hatred relationships and zero safe landing spots. The pile-on finally happened in Episode 10 (Result: voted out 4–3 vote; 7th, 4th juror).\n\n────────\n\nSEASON 4 — Edge of Extinction\n────────\n\nSEASON 4 — Edge of Extinction\nMost hated player with 4 EXTREME HATRED relationships. FAN FAVORITE winner in S4 for chaotic entertainment value.\n\nEdge of Extinction (Season 4) was pure friction for Jo: she collected rivals like trophies and never stopped pushing the game into confrontation.  She even received an extra vote from the Edge and cashed it at Episode 8. At Final 9, the blowback finally landed—after a 5–3 revote, the season’s most combustible personality hit the jury. Result: Jo placed 10th.",
@@ -2531,9 +2675,10 @@
       "name": "Leshawna",
       "seasons": [
         2,
-        1
+        1,
+        8
       ],
-      "totalSeasons": 2,
+      "totalSeasons": 3,
       "bestPlacement": 11,
       "wins": 0,
       "totalChallengeWins": 1,
@@ -2573,6 +2718,23 @@
           "notes": [
             "7-3-1-1 vote at F11"
           ]
+        },
+        {
+          "season": 8,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "SEASON 1 — Cullhouse\nSEASON 1 — Cullhouse\nIntroduced on Screaming Gophers (Season 1), Leshawna was the kind of player who makes everybody feel protected—until they realize she’s the one holding the room together. She won key moments (1 total challenge wins) and built a tight bond with Noah, which kept her insulated while the tribe cannibalized itself. At Final 11, the fear finally caught up: a chaotic 7–3–1–1 split that shows how many people *wanted* her out, even if they couldn’t agree on anything else (Result: eliminated; 11th).\n\n────────\n\nSEASON 2 — Action\n────────\n\nSEASON 2 — Action\nLeshawna’s Season 2 on the Screaming Gaffers never had time to ignite. Early clashes and a lack of reliable protection left her exposed once the tribe wanted a clean, low-drama boot. She was sent out as the second elimination in a landslide (Result: Leshawna eliminated, 6–1).",
@@ -2586,9 +2748,10 @@
       "name": "Lightning",
       "seasons": [
         4,
-        3
+        3,
+        8
       ],
-      "totalSeasons": 2,
+      "totalSeasons": 3,
       "bestPlacement": 11,
       "wins": 0,
       "totalChallengeWins": 0,
@@ -2635,6 +2798,23 @@
             "WORST idol play ever (wasted on Emma)",
             "Tied vote twice (Episode 6)"
           ]
+        },
+        {
+          "season": 8,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "SEASON 3 — Revenge of the Island\nSEASON 3 — Revenge of the Island\nOn Revenge of the Island (Season 3), Lightning hit the beach as raw momentum—an athletic engine on the Toxic Rats who assumed wins would equal safety. Instead, the season answered with chaos. A tied Tribal dragged Lightning into a do-or-die revote, and when relationships shifted at the worst possible moment, the numbers finally turned. Lightning fell in Episode 6 after the 2–2 tie fi 2–2 revote sequence flipped against them (Result: voted out; 11th).\n\n────────\n\nSEASON 4 — Edge of Extinction\n────────\n\nSEASON 4 — Edge of Extinction\nPart of TRIPLE IDOL TRIBAL in S4. Worst idol play in S3 (wasted on Emma who got 0 votes).\n\nLightning hit Edge of Extinction (Season 4) with a physical‑threat reputation, but the cast never let him build real momentum. He was caught in the triple‑idol Tribal (Episode 5 Part 2) and became the first merge boot, leaving on a 9–4 vote before challenges could save him. Result: Lightning finished 13th.",
@@ -2832,9 +3012,10 @@
       "name": "Mickey",
       "seasons": [
         5,
-        6
+        6,
+        8
       ],
-      "totalSeasons": 2,
+      "totalSeasons": 3,
       "bestPlacement": 1,
       "wins": 1,
       "totalChallengeWins": 3,
@@ -2896,6 +3077,23 @@
             "Kitty",
             "Kelly"
           ]
+        },
+        {
+          "season": 8,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "SEASON 5 — Rescue Island\nSEASON 5 — Rescue Island\nIntroduced on Rescue Island (Season 5), Mickey didn’t win by being the loudest—he won by being the safest place for everyone else to stand. He played the season like a pressure valve: never the obvious target, always the option people could live with, and he turned that low-heat positioning into a championship when the endgame punished the bigger egos. (Result: winner; 1st.)\n\n────────\n\nSEASON 6 — Blood vs. Water\n────────\n\nSEASON 6 — Blood vs. Water\nOn Blood vs. Water (Season 6), Mickey came in with a champion’s target but flipped it into camouflage by attaching himself to the cleanest partnership in the game: Mickey + Jay. While the tribe dynamics swung around duos and feuds, Mickey stayed measured—letting other names absorb the damage while he quietly stacked tools. He secured the Galang idol and used it the way winners do: not for fireworks, but for timing. The season’s defining moment was Final 5—when Mickey played his idol on Jay to erase the only path that breaks their duo. That single decision forced the game to reroute around them, bought Mickey the finale, and proved he was still playing one step ahead when it mattered most. At Final Tribal, though, Jacques’ résumé was too sharp to deny: the jury locked in a 7–1–0 vote and Mickey walked away with second place and one jury vote—close enough to touch the crown, but not enough to take it. (Result: finalist, 2nd; lost 7–1–0.)",
@@ -3037,9 +3235,10 @@
       "name": "Owen",
       "seasons": [
         2,
-        1
+        1,
+        8
       ],
-      "totalSeasons": 2,
+      "totalSeasons": 3,
       "bestPlacement": 7,
       "wins": 0,
       "totalChallengeWins": 1,
@@ -3077,6 +3276,23 @@
             "Sent to Exile, won return",
             "Medically evacuated Episode 20"
           ]
+        },
+        {
+          "season": 8,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "SEASON 1 — Cullhouse\nSEASON 1 — Cullhouse\nIntroduced on Screaming Gophers (Season 1), Owen was the season’s emotional center—and the season kept testing it. He was sent to Exile, fought his way back into the game, and instantly became a problem again because people *liked* having him around. That goodwill carried him deep even with 6 votes against, but his story ended in the harshest non-vote exit: a medical evacuation in Episode 20, right after proving he could survive the twist stack (Result: med-evac; 7th).\n\n────────\n\nSEASON 2 — Action\n────────\n\nSEASON 2 — Action\nOwen entered Season 2 on the Screaming Gaffers as social glue — connected to everyone and rarely anyone’s first target. Then Courtney detonated the season’s first big idol moment, voiding a stack of votes and forcing the tribe to improvise on the spot. When the plan collapsed, Owen became the easiest fallback and was voted out third (Owen eliminated, 3rd out).",
@@ -3305,9 +3521,10 @@
       "id": "scarlett",
       "name": "Scarlett",
       "seasons": [
-        5
+        5,
+        8
       ],
-      "totalSeasons": 1,
+      "totalSeasons": 2,
       "bestPlacement": 4,
       "wins": 0,
       "totalChallengeWins": 2,
@@ -3330,6 +3547,23 @@
           "votesReceived": 2,
           "idolsFound": 0,
           "strategicRank": "1"
+        },
+        {
+          "season": 8,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "Top strategic rank of Season 5 and a late power player, but lost the Final 4 fire-making duel.",
@@ -3575,9 +3809,10 @@
       "name": "Sky",
       "seasons": [
         5,
-        7
+        7,
+        8
       ],
-      "totalSeasons": 2,
+      "totalSeasons": 3,
       "bestPlacement": 2,
       "wins": 0,
       "totalChallengeWins": 4,
@@ -3637,6 +3872,23 @@
           "rivalries": [
             "MacArthur"
           ]
+        },
+        {
+          "season": 8,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "Season 5 challenge MVP with 4 total challenge wins and 3 immunities; forced the late-game tempo but fell short in a 3–3 FTC tie.\n\n────────\n\nSEASON 7 — Fan vs Favorites\n────────\nSky’s Fan vs Favorites run was a classic tight-partner game that turned into a bitter split at the worst time. She began in the Mauhu power lane with MacArthur, forming a durable duo that held together through the merge and helped dictate targets like Pete and later Kitty. As the numbers shrank, loyalty cracked: Sky and MacArthur shifted from strong bond to strong dislike, turning their alliance into a ticking time bomb. When the endgame arrived, Sky tried to redirect the vote onto Tom, but the dominant Lawa Alliance #3 held firm and cut her instead. She hit jury at 6th place as a respected competitor with real influence, but her late-game fracture kept her from reaching the Finals.",
@@ -3686,9 +3938,10 @@
       "id": "stephanie",
       "name": "Stephanie",
       "seasons": [
-        6
+        6,
+        8
       ],
-      "totalSeasons": 1,
+      "totalSeasons": 2,
       "bestPlacement": 13,
       "wins": 0,
       "totalChallengeWins": 0,
@@ -3730,6 +3983,23 @@
             "Jacques",
             "Jay"
           ]
+        },
+        {
+          "season": 8,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "On Blood vs. Water (Season 6), Stephanie came in with Ryan as pure intensity—competitive, confrontational, and always one argument away from a blow-up. That edge kept her relevant early, but in a pairs season it also makes you radioactive: once the tribe needed an easy reset vote, she was cut in Episode 6 on a 6–1. Even on Redemption she stayed on-brand, famously throwing an idol clue into the fire—burning information the way she burned bridges. (Result: voted out 6–1 → RI; 13th.)",
@@ -3740,9 +4010,10 @@
       "id": "sugar",
       "name": "Sugar",
       "seasons": [
-        5
+        5,
+        8
       ],
-      "totalSeasons": 1,
+      "totalSeasons": 2,
       "bestPlacement": 5,
       "wins": 0,
       "totalChallengeWins": 0,
@@ -3764,6 +4035,23 @@
           "rewardWins": 0,
           "votesReceived": 10,
           "idolsFound": 0
+        },
+        {
+          "season": 8,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "Sugar made one of the deepest runs of Season 5 by surviving constant heat (10 votes against) and leaning into a loud, chaos-driven social style that kept targets rotating. With the endgame dominated by idol-threat management, she repeatedly found herself in the crosshairs as players tried to simplify the board. She was eliminated in Episode 13 in a near-unanimous vote with a cancelled ballot (Sugar eliminated, 4–0 (with 1 Sky vote cancelled)).",
@@ -4120,9 +4408,10 @@
       "id": "devin",
       "name": "Devin",
       "seasons": [
-        7
+        7,
+        8
       ],
-      "totalSeasons": 1,
+      "totalSeasons": 2,
       "bestPlacement": 14,
       "wins": 0,
       "totalChallengeWins": 0,
@@ -4166,6 +4455,23 @@
             "Zoey",
             "Jasmine"
           ]
+        },
+        {
+          "season": 8,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "Early Lawa glue with Carrie and Spud; swap/Naale tensions and dislikes cost him.\n\nSEASON 7 — Fan vs Favorites\n────────\nDevin’s Fan vs Favorites run ended the moment the tribe swap gave him nowhere to hide. He landed on the wrong side of a tight Naale vote where the Scott–Shawn unit pushed hard, and Jacques’ dislike sealed the deal. Even with cracks forming against Shawn, Devin couldn’t build a counter-majority fast enough. He lost 4–3 and became the last pre-jury boot before the merge storm hit.",
@@ -4326,9 +4632,10 @@
       "id": "macarthur",
       "name": "MacArthur",
       "seasons": [
-        7
+        7,
+        8
       ],
-      "totalSeasons": 1,
+      "totalSeasons": 2,
       "bestPlacement": 1,
       "wins": 1,
       "totalChallengeWins": 4,
@@ -4379,6 +4686,23 @@
             "Sky",
             "Pete"
           ]
+        },
+        {
+          "season": 8,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "Idol-holding enforcer who bridged factions across swaps and merge. Weathered public fights, steered multiple votes, and arrived at FTC with broad respect.\n\nSEASON 7 — Fan vs Favorites\n────────\nMacArthur hit Fan vs Favorites like a wrecking ball with a safety net: she locked down the Mauhu Hidden Immunity Idol early and instantly became the player everyone had to negotiate with. After the tribe swap, she fused into Carrie and Cody’s core (Lawa Alliance #3), giving her a second power lane while still keeping her old Mauhu connections alive. At the merge, she took fire from multiple directions (Episode 8’s multi-target vote) but survived the chaos as Jasmine became the first juror instead. Her game turned into a tug-of-war with Sky and later a loud endgame presence, yet she kept landing on the right side of the vote when it mattered most. By Finale night, she played the ‘final-round armor’ perfectly, then closed with a decisive 6–2–1 jury win that rewarded her mix of challenge credibility, alliance reach, and pure intimidation.",
@@ -4388,9 +4712,10 @@
       "id": "pete",
       "name": "Pete",
       "seasons": [
-        7
+        7,
+        8
       ],
-      "totalSeasons": 1,
+      "totalSeasons": 2,
       "bestPlacement": 12,
       "wins": 0,
       "totalChallengeWins": 1,
@@ -4432,6 +4757,23 @@
             "MacArthur",
             "Carrie"
           ]
+        },
+        {
+          "season": 8,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "Exile gainer turned mid-merge swing; lines up the anti-Kitty push but gets nuked by her idol firewall.\n\nSEASON 7 — Fan vs Favorites\n────────\nPete’s Fan vs Favorites run was the definition of ‘had tools, but never had the room to use them safely.’ The tribe swap twist sent him to exile, where he grabbed an Extra Vote—then returned to a game that immediately pulled him into fights with Kitty and Carrie. At the merge he tried to leverage alliances with Taylor and the old Lawa lane, but too many players saw him as the swing vote they couldn’t trust. He finally pulled the trigger on his Extra Vote in Episode 9… and still lost, because Kitty’s double-idol play wiped out the entire anti-Kitty plan. Pete became the casualty of someone else’s highlight reel, leaving as the 12th-place juror after an advantage-filled but unlucky run.",
@@ -4493,9 +4835,10 @@
       "id": "taylor",
       "name": "Taylor",
       "seasons": [
-        7
+        7,
+        8
       ],
-      "totalSeasons": 1,
+      "totalSeasons": 2,
       "bestPlacement": 7,
       "wins": 0,
       "totalChallengeWins": 3,
@@ -4539,6 +4882,23 @@
             "Scott",
             "Tom"
           ]
+        },
+        {
+          "season": 8,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
         }
       ],
       "story": "Merge super-connector with unbreakable bonds to Jacques and Carrie; near-constant target of the Scott/Shawn duo; eliminated by redirected votes.\n\nSEASON 7 — Fan vs Favorites\n────────\nTaylor played Fan vs Favorites as the season’s social keycard: everybody had her number, and that was the point. Her unbreakable bonds with Carrie and Jacques made her the bridge between two power lanes, letting her survive even when Scott/Shawn’s duo openly targeted her. She backed it up in challenges too, taking two immunities and constantly keeping herself off the ‘easy vote’ list. But her entire game was always going to end on one coin flip: if an idol hit the board at the wrong time, she was the perfect collateral boot. That’s exactly what happened when Tom played his idol and Taylor became the default target, leaving in 7th with a huge strategic footprint and a brutal exit.",

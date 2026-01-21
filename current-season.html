@@ -2260,6 +2260,58 @@ Dave voted for Mickey
     
     // ========== RENDER FUNCTIONS FOR NEW TABS ==========
     
+    // Accumulate resume stats across episodes
+    function accumulateResumes(currentEpisodeResumes, season, episode) {
+      const seasonKey = `season${season}_resumes`;
+      
+      // Load previous data
+      const previousData = JSON.parse(localStorage.getItem(seasonKey) || '{}');
+      
+      const accumulated = {};
+      
+      for (const playerName in currentEpisodeResumes) {
+        const current = currentEpisodeResumes[playerName];
+        const previous = previousData[playerName] || {
+          majorityVotes: 0,
+          totalVotes: 0,
+          immunities: 0,
+          votesAgainst: 0,
+          votesNullified: 0,
+          keyMoves: []
+        };
+        
+        // Accumulate stats
+        accumulated[playerName] = {
+          ...current,
+          majorityVotes: previous.majorityVotes + (current.majorityVotes || 0),
+          totalVotes: previous.totalVotes + (current.totalVotes || 0),
+          immunities: previous.immunities + (current.immunities || 0),
+          votesAgainst: previous.votesAgainst + (current.votesAgainst || 0),
+          votesNullified: previous.votesNullified + (current.votesNullified || 0),
+          keyMoves: [
+            ...previous.keyMoves,
+            ...(current.keyMoves || [])
+          ].slice(-5) // Keep only last 5 key moves to avoid clutter
+        };
+        
+        // Recalculate win equity based on accumulated stats
+        let equity = 50;
+        equity += accumulated[playerName].immunities * 3;
+        equity += accumulated[playerName].majorityVotes * 2;
+        equity += accumulated[playerName].keyMoves.length * 5;
+        equity -= accumulated[playerName].votesAgainst * 2;
+        equity += (current.socialScore || 5) * 1;
+        equity = Math.max(5, Math.min(95, equity));
+        
+        accumulated[playerName].winEquity = Math.round(equity);
+      }
+      
+      // Save for next episode
+      localStorage.setItem(seasonKey, JSON.stringify(accumulated));
+      
+      return accumulated;
+    }
+    
     function renderResumes(analytics) {
       const container = document.getElementById('resumesContainer');
       if (!analytics || !analytics.resumes) {
@@ -2267,7 +2319,11 @@ Dave voted for Mickey
         return;
       }
       
-      const resumes = analytics.resumes;
+      const season = Number(els.season.value || 7);
+      const episode = Number(els.episode.value || 1);
+      
+      // Accumulate stats across episodes
+      const resumes = accumulateResumes(analytics.resumes, season, episode);
       const players = Object.keys(resumes);
       
       if (players.length === 0) {
@@ -2285,9 +2341,13 @@ Dave voted for Mickey
               <img src="assets/avatars/${slug}.png" 
                    onerror="this.src='assets/avatars/all.png'" 
                    style="width: 48px; height: 48px; border-radius: 50%; border: 2px solid #7d4cff;">
-              <div>
+              <div style="flex: 1;">
                 <div style="font-weight: bold; font-size: 16px; color: #fff;">${playerName}</div>
-                <div style="font-size: 24px; font-weight: bold; color: #22c55e;">${resume.winEquity}%</div>
+                <div style="font-size: 24px; font-weight: bold; color: #22c55e;" 
+                     title="Win Equity: Estimated win probability based on cumulative performance&#10;Base: 50% + Immunities(+3%) + Majority Votes(+2%) + Key Moves(+5%) - Votes Against(-2%) + Social(+1%)">
+                  ${resume.winEquity}%
+                  <span style="font-size: 12px; color: #94a3b8; font-weight: normal;">win equity</span>
+                </div>
               </div>
             </div>
             

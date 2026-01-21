@@ -413,6 +413,8 @@
       <div class="window-tabs" role="tablist" aria-label="Analytics tabs">
         <button class="tab-btn active" id="tabOverview" role="tab" aria-selected="true">📘 Overview</button>
         <button class="tab-btn" id="tabGameplay" role="tab" aria-selected="false">🧭 Gameplay</button>
+        <button class="tab-btn" id="tabResumes" role="tab" aria-selected="false">📋 Resumes</button>
+        <button class="tab-btn" id="tabRelationships" role="tab" aria-selected="false">💞 Relationships</button>
         <button class="tab-btn" id="tabEpisode" role="tab" aria-selected="false">📺 Episode</button>
         <button class="tab-btn" id="tabSeasonSetup" role="tab" aria-selected="false">⭐ Season Setup</button>
       </div>
@@ -528,6 +530,26 @@
         <div class="mini-panel">
           <div class="mini-title">PATH TO VICTORY</div>
           <div class="mini-body" id="cardPathToVictory">No path to victory data yet.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESUMES TAB -->
+    <div class="window-body hidden" id="viewResumes">
+      <div id="resumesContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 20px;">
+        <p style="grid-column: 1 / -1; color: #94a3b8; text-align: center;">No resume data available yet.</p>
+      </div>
+    </div>
+
+    <!-- RELATIONSHIPS TAB -->
+    <div class="window-body hidden" id="viewRelationships">
+      <div style="padding: 20px;">
+        <div style="margin-bottom: 20px;">
+          <h3 style="color: #e879f9; margin-bottom: 8px;">💞 Relationship Heat Map</h3>
+          <p style="color: #94a3b8; font-size: 14px;">Live relationship values from -10 (enemies) to +10 (alliance)</p>
+        </div>
+        <div id="relationshipsContainer">
+          <p style="color: #94a3b8; text-align: center;">No relationship data available yet.</p>
         </div>
       </div>
     </div>
@@ -961,10 +983,14 @@ Dave voted for Mickey
 
       tabOverview: $("tabOverview"),
       tabGameplay: $("tabGameplay"),
+      tabResumes: $("tabResumes"),
+      tabRelationships: $("tabRelationships"),
       tabEpisode: $("tabEpisode"),
       tabSeasonSetup: $("tabSeasonSetup"),
       viewOverview: $("viewOverview"),
       viewGameplay: $("viewGameplay"),
+      viewResumes: $("viewResumes"),
+      viewRelationships: $("viewRelationships"),
       viewEpisode: $("viewEpisode"),
       viewSeasonSetup: $("viewSeasonSetup"),
 
@@ -1818,23 +1844,35 @@ Dave voted for Mickey
     function showTab(which) {
       const isOverview = which === "overview";
       const isGameplay = which === "gameplay";
+      const isResumes = which === "resumes";
+      const isRelationships = which === "relationships";
       const isEpisode = which === "episode";
       const isSeasonSetup = which === "seasonsetup";
 
       els.viewOverview.classList.toggle("hidden", !isOverview);
       els.viewGameplay.classList.toggle("hidden", !isGameplay);
+      els.viewResumes.classList.toggle("hidden", !isResumes);
+      els.viewRelationships.classList.toggle("hidden", !isRelationships);
       els.viewEpisode.classList.toggle("hidden", !isEpisode);
       els.viewSeasonSetup.classList.toggle("hidden", !isSeasonSetup);
 
       els.tabOverview.classList.toggle("active", isOverview);
       els.tabGameplay.classList.toggle("active", isGameplay);
+      els.tabResumes.classList.toggle("active", isResumes);
+      els.tabRelationships.classList.toggle("active", isRelationships);
       els.tabEpisode.classList.toggle("active", isEpisode);
       els.tabSeasonSetup.classList.toggle("active", isSeasonSetup);
       
       els.tabOverview.setAttribute("aria-selected", isOverview ? "true" : "false");
       els.tabGameplay.setAttribute("aria-selected", isGameplay ? "true" : "false");
+      els.tabResumes.setAttribute("aria-selected", isResumes ? "true" : "false");
+      els.tabRelationships.setAttribute("aria-selected", isRelationships ? "true" : "false");
       els.tabEpisode.setAttribute("aria-selected", isEpisode ? "true" : "false");
       els.tabSeasonSetup.setAttribute("aria-selected", isSeasonSetup ? "true" : "false");
+      
+      // Render data when switching to new tabs
+      if (isResumes && CURRENT.analytics) renderResumes(CURRENT.analytics);
+      if (isRelationships && CURRENT.analytics) renderRelationships(CURRENT.analytics);
 
       // Persist tab choice per episode
       const s = Number(els.season.value || 1);
@@ -1852,6 +1890,8 @@ Dave voted for Mickey
 
     els.tabOverview.addEventListener("click", () => showTab("overview"));
     els.tabGameplay.addEventListener("click", () => showTab("gameplay"));
+    els.tabResumes.addEventListener("click", () => showTab("resumes"));
+    els.tabRelationships.addEventListener("click", () => showTab("relationships"));
     els.tabEpisode.addEventListener("click", () => {
       showTab("episode");
       // Try to auto-load saved episode
@@ -2217,6 +2257,138 @@ Dave voted for Mickey
       else if (cached) setStatus("Cached analytics found — enable auto-load or click “Load Cached”.");
       else setStatus("Ready — paste summary and generate analytics.");
     })();
+    
+    // ========== RENDER FUNCTIONS FOR NEW TABS ==========
+    
+    function renderResumes(analytics) {
+      const container = document.getElementById('resumesContainer');
+      if (!analytics || !analytics.resumes) {
+        container.innerHTML = '<p style="grid-column: 1 / -1; color: #94a3b8; text-align: center;">No resume data available yet.</p>';
+        return;
+      }
+      
+      const resumes = analytics.resumes;
+      const players = Object.keys(resumes);
+      
+      if (players.length === 0) {
+        container.innerHTML = '<p style="grid-column: 1 / -1; color: #94a3b8; text-align: center;">No resume data available yet.</p>';
+        return;
+      }
+      
+      container.innerHTML = players.map(playerName => {
+        const resume = resumes[playerName];
+        const slug = resume.playerSlug || playerName.toLowerCase().replace(/\s+/g, '');
+        
+        return `
+          <div style="background: rgba(15,23,42,0.6); border: 1px solid rgba(125,76,255,0.3); border-radius: 12px; padding: 16px;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+              <img src="assets/avatars/${slug}.png" 
+                   onerror="this.src='assets/avatars/all.png'" 
+                   style="width: 48px; height: 48px; border-radius: 50%; border: 2px solid #7d4cff;">
+              <div>
+                <div style="font-weight: bold; font-size: 16px; color: #fff;">${playerName}</div>
+                <div style="font-size: 24px; font-weight: bold; color: #22c55e;">${resume.winEquity}%</div>
+              </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 13px; margin-bottom: 12px;">
+              <div><span style="color: #94a3b8;">Majority Votes:</span> <span style="color: #fff;">${resume.majorityVotes}/${resume.totalVotes}</span></div>
+              <div><span style="color: #94a3b8;">Immunities:</span> <span style="color: #fff;">${resume.immunities}</span></div>
+              <div><span style="color: #94a3b8;">Votes Against:</span> <span style="color: #fff;">${resume.votesAgainst}</span></div>
+              <div><span style="color: #94a3b8;">Social Score:</span> <span style="color: #fff;">${resume.socialScore}/10</span></div>
+            </div>
+            
+            ${resume.keyMoves && resume.keyMoves.length > 0 ? `
+              <div style="border-top: 1px solid rgba(125,76,255,0.2); padding-top: 12px;">
+                <div style="font-size: 12px; font-weight: bold; color: #7d4cff; margin-bottom: 8px;">KEY MOVES</div>
+                ${resume.keyMoves.map(move => `
+                  <div style="font-size: 12px; color: #cbd5e1; margin-bottom: 4px;">
+                    <span style="color: #7d4cff;">Ep${move.episode}:</span> ${move.description}
+                  </div>
+                `).join('')}
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+    
+    function renderRelationships(analytics) {
+      const container = document.getElementById('relationshipsContainer');
+      if (!analytics || !analytics.relationships) {
+        container.innerHTML = '<p style="color: #94a3b8; text-align: center;">No relationship data available yet.</p>';
+        return;
+      }
+      
+      const relationships = analytics.relationships;
+      const players = Object.keys(relationships);
+      
+      if (players.length === 0) {
+        container.innerHTML = '<p style="color: #94a3b8; text-align: center;">No relationship data available yet.</p>';
+        return;
+      }
+      
+      // Create heat map table
+      let html = '<div style="overflow-x: auto;"><table style="width: 100%; border-collapse: collapse; font-size: 13px;">';
+      
+      // Header row
+      html += '<tr><th style="padding: 8px; border: 1px solid rgba(125,76,255,0.2);"></th>';
+      players.forEach(player2 => {
+        const slug2 = relationships[player2]?.slug || player2.toLowerCase().replace(/\s+/g, '');
+        html += `<th style="padding: 8px; border: 1px solid rgba(125,76,255,0.2);">
+          <img src="assets/avatars/${slug2}.png" onerror="this.src='assets/avatars/all.png'" 
+               style="width: 32px; height: 32px; border-radius: 50%;" title="${player2}">
+        </th>`;
+      });
+      html += '</tr>';
+      
+      // Data rows
+      players.forEach(player1 => {
+        const slug1 = relationships[player1]?.slug || player1.toLowerCase().replace(/\s+/g, '');
+        html += `<tr><td style="padding: 8px; border: 1px solid rgba(125,76,255,0.2); font-weight: bold;">
+          <img src="assets/avatars/${slug1}.png" onerror="this.src='assets/avatars/all.png'" 
+               style="width: 32px; height: 32px; border-radius: 50%; margin-right: 8px;" title="${player1}">
+          ${player1}
+        </td>`;
+        
+        players.forEach(player2 => {
+          if (player1 === player2) {
+            html += '<td style="padding: 8px; border: 1px solid rgba(125,76,255,0.2); background: rgba(100,100,100,0.3); text-align: center;">—</td>';
+          } else {
+            const rel = relationships[player1]?.relationships?.[player2];
+            const value = rel?.value || 0;
+            
+            // Color based on value
+            let bgColor;
+            if (value >= 7) bgColor = 'rgba(34,197,94,0.3)'; // Green - alliance
+            else if (value >= 3) bgColor = 'rgba(59,130,246,0.3)'; // Blue - friends
+            else if (value >= 0) bgColor = 'rgba(100,100,100,0.2)'; // Gray - neutral
+            else if (value >= -6) bgColor = 'rgba(251,146,60,0.3)'; // Orange - tension
+            else bgColor = 'rgba(239,68,68,0.3)'; // Red - enemies
+            
+            html += `<td style="padding: 8px; border: 1px solid rgba(125,76,255,0.2); background: ${bgColor}; text-align: center; font-weight: bold; color: #fff;">${value}</td>`;
+          }
+        });
+        
+        html += '</tr>';
+      });
+      
+      html += '</table></div>';
+      
+      // Legend
+      html += `
+        <div style="margin-top: 20px; display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px;">
+          <div><span style="display: inline-block; width: 16px; height: 16px; background: rgba(34,197,94,0.5); border-radius: 3px; margin-right: 4px;"></span> 7-10: Alliance</div>
+          <div><span style="display: inline-block; width: 16px; height: 16px; background: rgba(59,130,246,0.5); border-radius: 3px; margin-right: 4px;"></span> 3-6: Friends</div>
+          <div><span style="display: inline-block; width: 16px; height: 16px; background: rgba(100,100,100,0.5); border-radius: 3px; margin-right: 4px;"></span> 0-2: Neutral</div>
+          <div><span style="display: inline-block; width: 16px; height: 16px; background: rgba(251,146,60,0.5); border-radius: 3px; margin-right: 4px;"></span> -3 to -6: Tension</div>
+          <div><span style="display: inline-block; width: 16px; height: 16px; background: rgba(239,68,68,0.5); border-radius: 3px; margin-right: 4px;"></span> -7 to -10: Enemies</div>
+        </div>
+      `;
+      
+      container.innerHTML = html;
+    }
+    
   })();
   
   // ========================================

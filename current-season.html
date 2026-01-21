@@ -2994,6 +2994,27 @@ setTimeout(function() {
     }, 1000); // Debounce: save 1 second after last change
   }
   
+  
+  function generateSeasonBuilderEpisodeTextareas(count) {
+    const container = document.getElementById("sb-episode-summaries");
+    if (!container) return;
+    
+    container.innerHTML = '';
+    for (let i = 1; i <= count; i++) {
+      const div = document.createElement('div');
+      div.style.marginBottom = '16px';
+      div.innerHTML = `
+        <label style="display: block; margin-bottom: 8px; color: #94a3b8; font-weight: bold;">
+          Episode ${i}
+        </label>
+        <textarea id="sb-episode-${i}" 
+                  style="width: 100%; min-height: 100px; background: rgba(15,23,42,0.6); border: 1px solid rgba(125,76,255,0.3); border-radius: 8px; padding: 12px; color: #fff; font-family: monospace; font-size: 13px;"
+                  placeholder="Paste episode ${i} summary..."></textarea>
+      `;
+      container.appendChild(div);
+    }
+  }
+  
   function loadSeasonBuilderData(seasonNumber) {
     try {
       const storageKey = getSeasonStorageKey(seasonNumber);

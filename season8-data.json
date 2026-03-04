@@ -6,15 +6,13 @@
   "episodeCount": 16,
   "jurySize": 8,
   "winner": {
-    "name": "Alejandro & Cameron",
+    "name": "Alejandro",
     "playerSlug": "alejandro",
-    "coWinnerSlug": "cameron",
     "vote": "4-4",
-    "isDualWin": true,
     "runnerUp": "Sanders",
-    "keyStats": "First dual winners in franchise history — 4-4 jury tie. Alejandro: 4 individual immunities, 7 total challenge wins, 2 votes against. Cameron: survived extreme hatred from MacArthur, 7 votes against.",
-    "strategy": "Alejandro managed shields (Pete → Leshawna → Sanders) and dominated challenges. Cameron survived as the indispensable brain no one could cut. Together they outlasted the Civilian Hegemony.",
-    "legacy": "First co-winners in franchise history. Alejandro becomes the franchise's only two-time champion."
+    "keyStats": "Co-winner with 4 jury votes; 4 individual immunities; 7 total challenge wins; only 2 votes against.",
+    "strategy": "Built cross-tribe power with Pete and later a tight bond with Cameron, steering critical blindsides while avoiding exposure. When shields fell, he won out in challenges, cut Sanders at Final 3, and forced a legacy Final 2 that split the jury.",
+    "legacy": "Becomes the franchise’s first two-time champion (shared). Cemented as the definitive 'Villain King' who can both orchestrate and out-muscle in endgame."
   },
   "finalists": [
     {
@@ -1229,18 +1227,236 @@
     ]
   },
   "awards": {
+    "winner": {
+      "name": "Alejandro & Cameron",
+      "playerSlug": "alejandro",
+      "coWinnerSlug": "cameron",
+      "isDualWin": true,
+      "description": "First co-winners in franchise history via 4-4 jury deadlock. Alejandro ran shields and dominated challenges (4 immunities, 7 total wins); Cameron survived as the indispensable brain no one could cut. Together they outlasted the Civilian Hegemony from the bottom of the merge."
+    },
     "fanFavorite": {
       "name": "MacArthur",
-      "playerSlug": "macarthur"
+      "playerSlug": "macarthur",
+      "placement": 7,
+      "description": "Reigning S7 champion who returned and built a new shield with Sanders, won two critical immunities, and was saved by a stunning 5-vote idol negation — the crowd's favourite even in defeat."
     },
     "bestStrategic": {
       "name": "Heather",
-      "playerSlug": "heather"
+      "playerSlug": "heather",
+      "description": "Played the most sophisticated advantage game: found and held the Super Idol, swung the critical Pete blindside as the deciding 5th vote, and kept zero alliances while staying off every radar — undone only by Gerry's psychological warfare, not by any player's strategy."
     },
-    "mostChallengeWins": {
+    "bestSocial": {
+      "name": "Jen",
+      "playerSlug": "jen",
+      "description": "Ran three simultaneous Unbreakable Relationships (Gerry, Sanders, Heather) while holding a Strong Bond with Alejandro. She was the only player every faction wanted to keep — a social monopoly that controlled 75% of the merge before Sanders' double-cross ended it."
+    },
+    "bestPhysical": {
       "name": "Alejandro",
       "playerSlug": "alejandro",
-      "detail": "7 total"
+      "wins": 7,
+      "description": "4 individual immunities and 7 total challenge wins — including three consecutive immunities at Eps 12, 13, and 16. Tied the all-time single-season immunity record and won the decisive finale challenge to cut Sanders at Final 3."
+    },
+    "mostClutch": {
+      "name": "Sanders",
+      "playerSlug": "sanders",
+      "description": "The Double Shield at Final 5 (Ep 14): won immunity, found a second idol, then played it on her biggest threat (Alejandro) to negate four votes and force a revote that eliminated the Social Queen Jen — the most complex single-Tribal maneuver in franchise history."
+    },
+    "mostLoyal": {
+      "name": "Pete",
+      "playerSlug": "pete",
+      "description": "Held an Unbreakable bond with Alejandro from Ep 1 to Ep 11, shared his idol information, voted in lockstep across every tribal, and went home with that idol in his pocket rather than save himself. The definition of loyalty at personal cost."
+    },
+    "bestUnderdog": {
+      "name": "Cameron",
+      "playerSlug": "cameron",
+      "description": "Entered the merge as the weakest member of a 3-person minority, survived extreme hatred from MacArthur across four straight episodes, never won a challenge, and somehow reached the Final 2 by being the one player nobody could justify cutting."
+    },
+    "biggestVillain": {
+      "name": "Gerry",
+      "playerSlug": "gerry",
+      "description": "Engineered the most ruthless exit in franchise history: psychologically dismantled Heather episode by episode until she quit mid-game while holding the Super Idol — the most powerful advantage ever seen — unused. Also drove Chet out via a Civilian feud war and held the merged idol."
+    },
+    "mostChaotic": {
+      "name": "Heather",
+      "playerSlug": "heather",
+      "description": "Multiple Major Meltdowns across the merge, voted with every faction at different points, quit the game while holding the Super Idol — the most powerful item in franchise history — leaving it permanently unused. The most chaotic legacy exit ever."
+    },
+    "quietestThreat": {
+      "name": "Cameron",
+      "playerSlug": "cameron",
+      "description": "Only 7 votes against across 16 episodes, zero challenge wins, no idol — yet reached the Final 2. The jury noticed too late that removing Cameron was never urgent, and by then Alejandro had already protected him."
+    },
+    "seasonMVP": {
+      "name": "Sanders",
+      "playerSlug": "sanders",
+      "description": "The only player to find two idols, play both successfully, win two immunities, hold an Unbreakable bond with the season's social queen, and then coldly dismantle her to avenge MacArthur. She played the most complete non-winner game in franchise history."
+    },
+    "biggestMeltdown": {
+      "name": "Heather",
+      "playerSlug": "heather",
+      "episode": 13,
+      "description": "Two consecutive Major Meltdowns in Ep 13 triggered by Gerry's psychological warfare — culminating in quitting the game while holding the Super Idol. A full collapse of a four-season veteran who had never once quit anything."
+    },
+    "mostTragic": {
+      "name": "Heather",
+      "playerSlug": "heather",
+      "description": "Spent four seasons as the franchise's greatest villain-strategist. Found the Super Idol — the most powerful item ever introduced — held it perfectly, and then was psychologically broken into quitting before she could use it. The ultimate 'what if' exit."
+    },
+    "mostUnlucky": {
+      "name": "MacArthur",
+      "playerSlug": "macarthur",
+      "description": "Received 15 votes against in a single season — a new record — yet survived the merge thanks to an idol save. Won two immunities. Then fell on a 3-2 revote in Ep 12 orchestrated by the very player (Jen) she had shielded for 12 episodes."
+    },
+    "ironPerson": {
+      "name": "Sanders",
+      "playerSlug": "sanders",
+      "description": "Attended every Tribal Council from Episode 1 through the finale, voted on the right side every time, held an idol for the entire pre-merge and into the post-merge — and still never needed to play it defensively for herself."
+    },
+    "messiestFeud": {
+      "players": [
+        "Gerry",
+        "Chet"
+      ],
+      "description": "A pre-merge blood feud that consumed three consecutive tribals and split the entire Civilians tribe. Both players voted for each other every round, forced two ties, and were so consumed by mutual hatred that Jen and Sanders manipulated both as pawns."
+    },
+    "biggestBetrayal": {
+      "betrayer": "Sanders",
+      "betrayed": "Jen",
+      "episode": 14,
+      "description": "They were Unbreakable. Sanders used her idol to save Alejandro — her biggest rival — specifically to force a revote that eliminated Jen, avenging MacArthur's exit. The coldest betrayal in franchise history: a perfect Double Shield with an Unbreakable partner as the victim."
+    },
+    "secondBiggestBetrayal": {
+      "betrayer": "Jen",
+      "betrayed": "Gerry",
+      "episode": 12,
+      "description": "Cast a 'decoy vote' on her own Unbreakable partner Gerry during the MacArthur Tribal, revealing she prioritised her endgame over their bond. He never found out — and still voted for her at FTC."
+    },
+    "playerOfSeason": {
+      "gold": {
+        "name": "Sanders",
+        "playerSlug": "sanders",
+        "description": "2 idols found, 2 idols played, 2 immunities won, controlled both the Civilian majority and the legacy minority — the deepest individual résumé of the season."
+      },
+      "silver": {
+        "name": "Alejandro",
+        "playerSlug": "alejandro",
+        "description": "4 immunities, 7 total wins, rebuilt from the merge's 3-person minority to co-win in a 4-4 historic deadlock."
+      }
+    },
+    "heroOfSeason": {
+      "gold": {
+        "name": "Cameron",
+        "playerSlug": "cameron",
+        "description": "Survived extreme hatred, never had a shield, never won a challenge, reached the Final 2 through pure social survival and trusted alliances."
+      },
+      "silver": {
+        "name": "Sanders",
+        "playerSlug": "sanders",
+        "description": "Played a principled revenge game — holding power quietly, protecting allies, and avenging MacArthur rather than accepting an easy path."
+      }
+    },
+    "villainOfSeason": {
+      "gold": {
+        "name": "Gerry",
+        "playerSlug": "gerry",
+        "description": "Drove Heather to quit via psychological warfare, forced ties and chaos pre-merge, was the 'Necessary Evil' the majority couldn't cut — and weaponised every relationship."
+      },
+      "silver": {
+        "name": "Alejandro",
+        "playerSlug": "alejandro",
+        "description": "Ran the Villains from the shadows, engineered idol traps, eliminated rivals through other people's hands, and cut his closest ally Sanders at the last possible moment."
+      }
+    },
+    "compBeast": {
+      "gold": {
+        "name": "Alejandro",
+        "playerSlug": "alejandro",
+        "description": "4 individual immunities and 7 total challenge wins across 16 episodes — the most dominant physical performance in the franchise's post-S4 era."
+      },
+      "silver": {
+        "name": "MacArthur",
+        "playerSlug": "macarthur",
+        "description": "2 individual immunity wins, both at critical moments when she was the primary target — her physical game kept her alive two tribals longer than the majority intended."
+      }
+    },
+    "socialQueenKing": {
+      "gold": {
+        "name": "Jen",
+        "playerSlug": "jen",
+        "description": "Held three simultaneous Unbreakable Relationships and a Strong Bond with Alejandro — the most bonds ever maintained at one time. Controlled every vote she participated in until Sanders' betrayal."
+      },
+      "silver": {
+        "name": "Sanders",
+        "playerSlug": "sanders",
+        "description": "Only 1 jury vote against all season, navigated from a decimated 3-person tribe to the Final 3 with no one willing to target her until the very end."
+      }
+    },
+    "masterStrategist": {
+      "gold": {
+        "name": "Sanders",
+        "playerSlug": "sanders",
+        "description": "Double idol play, MacArthur save, Jen betrayal, endgame immunity — every move was deliberate, timed, and unrepeatable. The most complete strategic résumé of any non-winner in franchise history."
+      },
+      "silver": {
+        "name": "Alejandro",
+        "playerSlug": "alejandro",
+        "description": "Rebuilt majority alliances three separate times (pre-merge, swap, post-merge), ran the Sky idol trap, and identified Sanders as the only threat worth cutting at Final 3."
+      }
+    },
+    "mostRobbedPlayer": {
+      "gold": {
+        "name": "Sanders",
+        "playerSlug": "sanders",
+        "description": "The strongest individual résumé of the season — most idols, most critical plays, key immunity wins — yet lost to a physical challenge at the final hurdle and was cut by the winners' pact she helped build."
+      }
+    },
+    "mostBrutalExit": {
+      "gold": {
+        "name": "Pete",
+        "playerSlug": "pete",
+        "description": "Blindsided 5-3 with a usable Villains idol in his pocket, having genuinely believed his Unbreakable bond with Alejandro made him safe. The most overconfident idol-in-pocket exit since the franchise began."
+      },
+      "silver": {
+        "name": "Heather",
+        "playerSlug": "heather",
+        "description": "Quit the game mid-meltdown with the Super Idol — a post-vote play advantage — unused in her pocket. The most powerful item in franchise history left permanently on the table."
+      }
+    },
+    "advantageKing": {
+      "gold": {
+        "name": "Sanders",
+        "playerSlug": "sanders",
+        "description": "Found the Civilians idol pre-merge and held it through the decimation of her tribe; found a second idol at Final 5 after winning immunity; played both in back-to-back decisive Tribal Councils."
+      },
+      "silver": {
+        "name": "Gerry",
+        "playerSlug": "gerry",
+        "description": "Found the Merged idol at Ep 11, used it correctly on himself at Final 5 to survive the Double Shield Tribal — the one piece of his game that was perfectly timed."
+      }
+    },
+    "ftcGame": {
+      "gold": {
+        "name": "Cameron",
+        "playerSlug": "cameron",
+        "description": "Split the jury 4-4 against a two-time winner with 4 immunities — by convincing Gerry, Jen, Sanders, and Sugar that the 'Silent Architect' résumé outweighed physical dominance. Earned the franchise's first co-win."
+      }
+    },
+    "mostRobbedFinalist": {
+      "gold": {
+        "name": "Sanders",
+        "playerSlug": "sanders",
+        "description": "Received only 1 jury vote despite the strongest individual résumé of the season. The jury — largely composed of players she outplayed — couldn't bring themselves to reward the person who eliminated them."
+      }
+    },
+    "civilianMVP": {
+      "name": "Sanders",
+      "playerSlug": "sanders",
+      "description": "The last Civilian standing, and the one who proved the brand had real teeth. Navigated from 18th-place tribe to Final 3 while being the power behind 75% of the merge's key votes."
+    },
+    "legacyMoment": {
+      "name": "The Double Shield",
+      "episode": 14,
+      "description": "Sanders wins immunity → finds idol → plays it on Alejandro to negate four votes → forces revote → Jen eliminated. A four-step sequence of perfect reads executed in a single Tribal Council — the most elaborate single-episode move in franchise history."
     }
   },
   "seasonNarrative": "A three-brand war quickly gave way to a power race: Civilians controlled the midgame behind Jen and Gerry while Villain king Alejandro rebuilt from the bottom and Sanders amassed idols. The merge exploded with idols, blindsides, and even Heather’s quit, culminating in Sanders’ Double Shield at five before Alejandro’s clutch immunity streak set up a historic co-winner finale with Cameron.",

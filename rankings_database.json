@@ -808,9 +808,31 @@
       "wins": 0
     },
     {
+      "playerId": "jen",
+      "name": "Jen",
+      "rank": 22,
+      "tier": "A",
+      "score": 71.7,
+      "wins": 0,
+      "seasonsPlayed": 1,
+      "placements": [
+        5
+      ],
+      "avgPlacement": 5,
+      "challengeWins": 2,
+      "votesAgainst": 7,
+      "juryVotes": 0,
+      "idolsFound": 0,
+      "title": "",
+      "emoji": "⭐",
+      "reasoning": "S8 P5. Override +4: Balance. Imm:+0.8 │ Rew:+0.3 │ Allies:+2.4 │ VotesVs:−0.2 │ Override:+4.0 (Balance)",
+      "strengths": [],
+      "weaknesses": []
+    },
+    {
       "playerId": "geoff",
       "name": "Geoff",
-      "rank": 22,
+      "rank": 23,
       "tier": "A",
       "score": 71,
       "title": "The Party Surfer",
@@ -846,7 +868,7 @@
     {
       "playerId": "bridgette",
       "name": "Bridgette",
-      "rank": 23,
+      "rank": 24,
       "tier": "A",
       "score": 70.8,
       "title": "The Surfer Sweetheart",
@@ -875,28 +897,6 @@
       "challengePercentile": 89.55,
       "socialPercentile": 4.48,
       "strategicPercentile": 50
-    },
-    {
-      "playerId": "jen",
-      "name": "Jen",
-      "rank": 24,
-      "tier": "B",
-      "score": 70.7,
-      "wins": 0,
-      "seasonsPlayed": 1,
-      "placements": [
-        5
-      ],
-      "avgPlacement": 5,
-      "challengeWins": 2,
-      "votesAgainst": 7,
-      "juryVotes": 0,
-      "idolsFound": 0,
-      "title": "",
-      "emoji": "⭐",
-      "reasoning": "S8 P5. Override +3: Balance. Imm:+0.8 │ Rew:+0.3 │ Allies:+2.4 │ VotesVs:−0.2 │ Override:+3.0 (Balance)",
-      "strengths": [],
-      "weaknesses": []
     },
     {
       "playerId": "ezekiel",

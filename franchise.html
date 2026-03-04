@@ -262,7 +262,7 @@
           <td>${s.episodeCount}</td>
           <td>${playerLink(s.winner.name, s.winner.playerSlug)}</td>
           <td>${s.winner.vote}</td>
-          <td>${fanFav ? playerLink(fanFav.player, fanFav.playerSlug) : 'TBD'}</td>
+          <td>${fanFav ? playerLink(fanFav.name, fanFav.playerSlug) : 'TBD'}</td>
           <td>${theme}</td>
         </tr>
       `;
@@ -437,6 +437,7 @@
       <p><b>Season 5:</b> ${franchise.evolution.season5}</p>
       ${franchise.evolution.season6 ? `<p><b>Season 6:</b> ${franchise.evolution.season6}</p>` : ''}
       ${franchise.evolution.season7 ? `<p><b>Season 7:</b> ${franchise.evolution.season7}</p>` : ''}
+      ${franchise.evolution.season8 ? `<p><b>Season 8:</b> ${franchise.evolution.season8}</p>` : ''}
       ${franchise.evolution.message ? `<p class="small" style="margin-top:12px; font-style:italic;">${franchise.evolution.message}</p>` : ''}
     `;
     document.getElementById('evolution-panel').innerHTML = evolutionHTML;

@@ -72,7 +72,7 @@
       "score": 100,
       "title": "The Snake Charmer",
       "emoji": "\ud83d\udc0d",
-      "reasoning": "3 FINALS APPEARANCES (franchise rarity). WINNER of S4 (7-6-1). MOST challenge wins in the franchise (13). Constant heat all game (25 votes against). Top jury pull in the database (12 finalist votes). Strategic mastermind (ranked #1). Saved by Ezekiel's idol play (Ep 8). (S2).",
+      "reasoning": "The franchise's undisputed greatest player. Alejandro has appeared in 4 seasons and reached the finale 3 times \u2014 a feat unmatched in franchise history. Won S4 in dominant fashion (7-6-1 jury) and returned in S8 to win again, becoming the only two-time champion in the database. Leads the franchise in challenge wins (18 total), jury votes (12), and was voted against 27 times across his career \u2014 surviving constant targeting through a combination of physical dominance, surgical strategy, and unmatched social manipulation. The Snake Charmer earns a perfect 100 not by accident but by doing it twice.",
       "strengths": [
         "Three-time finalist (ONLY ever)",
         "13 challenge wins (record)",
@@ -84,7 +84,7 @@
         "Needed 3 tries to win"
       ],
       "avgPlacement": 1.5,
-      "winRate": 50,
+      "winRate": 33.33,
       "wins": 2,
       "seasonsPlayed": 4,
       "placements": [
@@ -221,7 +221,7 @@
       "score": 90.2,
       "title": "The Brainiac",
       "emoji": "\ud83e\uddea",
-      "reasoning": "Reliable challenge contributor (6 total wins). Strong advantage game (2 idols/advantages found). High-end strategist (best rank: #3). Cast tiebreaker for Emma. (S3). Voted Zoey at FTC. (S4). Across 2 season(s): avg placement 4.00.",
+      "reasoning": "One of the most surprising career arcs in the franchise. Written off as a cerebral underdog in his early appearances, Cameron returned for S8 and co-won in a historic 4-4 jury tie with Alejandro \u2014 becoming only the second player ever to lift the trophy. His game in S8 was a masterclass in quiet positioning: minimal votes against, consistent challenge contributions, and a social read that earned exactly half the jury. The shared nature of the win keeps him just below Alejandro on the all-time list, but a co-winner across 3 seasons with a Finals appearance is an elite franchise r\u00e9sum\u00e9 by any measure.",
       "strengths": [
         "Consistent deep runs",
         "2 idols found",
@@ -268,7 +268,7 @@
       "idolsFound": 2,
       "title": "",
       "emoji": "\u2b50",
-      "reasoning": "The most complete non-winner game in franchise history. Sanders arrived in S8 as an unknown and immediately ran the post-merge \u2014 orchestrating the Double Shield at F5 to simultaneously protect herself and eliminate the biggest threat. Found and played 2 idols with surgical precision, won 2 individual immunities, and was voted against only once all season. Her read on the game was flawless from start to finish; she lost a 4-4 jury tie by the narrowest possible margin. The franchise's most dangerous first-time player and a near-certain legend if she ever returns.",
+      "reasoning": "S8 P3. Override +3: Balance. Imm:+1.6 \u2502 Rew:+0.9 \u2502 Idol\u25b6:+4.0 \u2502 Allies:+1.6 \u2502 VotesVs:+0.8 \u2502 Override:+3.0 (Balance)",
       "strengths": [],
       "weaknesses": []
     },

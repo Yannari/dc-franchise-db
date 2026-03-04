@@ -1011,7 +1011,7 @@ Dave voted for Mickey
           <p style="font-size: 12px; opacity: 0.6; margin: 0 0 8px 0;">Name must match exactly as in rankings_database.json. All stat fields are optional — leave blank to skip. Hover column headers for scoring details.</p>
 
           <div style="display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 12px; padding: 10px 12px; background: rgba(255,255,255,0.03); border-radius: 8px; font-size: 11px; opacity: 0.75; line-height: 1.9;">
-            <span style="color:#e2e8f0;">📍 <b>PLACEMENT</b> — spine of the formula · base = 30 + (placementPercentile × 0.37) · P1 in cast 18 → base 67 · P18 → base 30 · all other stats add on top</span>
+            <span style="color:#e2e8f0;">📍 <b>PLACEMENT</b> — spine of the formula · base = 30 + (placementPercentile × 0.45) · P1 in cast 18 → base 75 · P18 → base 30 · all other stats add on top</span>
             <span style="display:block;width:100%;height:1px;background:rgba(255,255,255,0.07);margin:2px 0;"></span>
             <span style="color:#60a5fa;">⚡ <b>PHYSICAL</b></span>
             <span>🏆 Imm +0.8</span>
@@ -5599,7 +5599,7 @@ setTimeout(function() {
     function computeScore(p) {
       const cp   = careerPct(p.allPcts);
       // Tightened base: makes 100 genuinely hard, creates room at the top
-      const base = 30 + (cp / 100) * 37;
+      const base = 30 + (cp / 100) * 45; // Option B: P1=75, P18=30
 
       // Win bonus — co-winner gets ×0.75 (jury tie ≠ outright win)
       const winVals = [14, 7, 4, 2];

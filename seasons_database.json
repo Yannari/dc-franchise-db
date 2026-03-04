@@ -251,7 +251,15 @@
         "strategy": "Built cross-tribe power with Pete and later a tight bond with Cameron, steering critical blindsides while avoiding exposure. When shields fell, he won out in challenges, cut Sanders at Final 3, and forced a legacy Final 2 that split the jury.",
         "legacy": "Becomes the franchise’s first two-time champion (shared). Cemented as the definitive 'Villain King' who can both orchestrate and out-muscle in endgame."
       },
-      
+      "winner": {
+        "name": "Cameron",
+        "playerSlug": "cameron",
+        "vote": "4-4",
+        "runnerUp": "Sanders",
+        "keyStats": "Co-winner with 4 jury votes; 4 individual immunities; 7 total challenge wins; only 2 votes against.",
+        "strategy": "Built cross-tribe power with Pete and later a tight bond with Cameron, steering critical blindsides while avoiding exposure. When shields fell, he won out in challenges, cut Sanders at Final 3, and forced a legacy Final 2 that split the jury.",
+        "legacy": "Becomes the franchise’s first two-time champion (shared). Cemented as the definitive 'Villain King' who can both orchestrate and out-muscle in endgame."
+      },
       "awards": {
         "fanFavorite": {
           "name": "macarthur",

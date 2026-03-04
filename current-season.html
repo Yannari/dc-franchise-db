@@ -996,39 +996,53 @@ Dave voted for Mickey
           </div>
         </div>
 
+        <!-- Step 2b: optional season JSON loader -->
+        <div style="margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.05); border-radius: 12px;">
+          <h4 style="margin: 0 0 6px 0; font-size: 14px; opacity: 0.9;">② Auto-fill from Season JSON <span style="font-size:11px;opacity:0.5;font-weight:400;">(optional but faster)</span></h4>
+          <p style="font-size: 12px; opacity: 0.6; margin: 0 0 10px 0;">Load your season8-data.json (or any seasonX-data.json) to auto-fill player names, placements, and alliance counts. Then just fill in the challenge/idol stats manually.</p>
+          <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <button id="ru-load-season-btn" class="btn" style="background: linear-gradient(135deg, #f59e0b, #d97706);">⚡ Load Season Data JSON</button>
+            <input type="file" id="ru-season-file-input" accept=".json" style="display:none;">
+            <span id="ru-season-load-status" style="font-size: 13px; opacity: 0.7;">No season file loaded</span>
+          </div>
+        </div>
+
         <div style="margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.05); border-radius: 12px;">
           <h4 style="margin: 0 0 4px 0; font-size: 14px; opacity: 0.9;">③ Final Placements &amp; Stats</h4>
-          <p style="font-size: 12px; opacity: 0.6; margin: 0 0 8px 0;">Name must match exactly as in rankings_database.json. All stat fields are optional — leave blank to skip. Hover column headers for scoring details.</p>
+          <p style="font-size: 12px; opacity: 0.6; margin: 0 0 8px 0;">All stat fields optional — leave blank to skip. Name must match rankings_database.json exactly.</p>
 
-          <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; padding: 10px 12px; background: rgba(255,255,255,0.03); border-radius: 8px; font-size: 11px; opacity: 0.75; line-height: 1.8;">
-            <span>🏆 <b>Imm. Wins</b> +0.8 each</span>
-            <span>🎁 <b>Rew. Wins</b> +0.3 each</span>
-            <span>🗿 <b>Idol Played</b> +2.0 each</span>
-            <span>🔍 <b>Idol Found</b> +1.0 (if not played)</span>
-            <span>💀 <b>Idol Wasted</b> −3.0 (found but kept at elim)</span>
-            <span>⭐ <b>Jury Votes</b> +1.5 each (finalists)</span>
-            <span>🤝 <b>Bonds</b> +1.0 each (held to jury)</span>
-            <span>❤️ <b>Fan Fav</b> +2.0</span>
-            <span>🗳️ <b>Votes Against</b> −0.2 per vote above cast avg</span>
-            <span>🚪 <b>Quit</b> −6.0</span>
+          <div style="display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 12px; padding: 10px 12px; background: rgba(255,255,255,0.03); border-radius: 8px; font-size: 11px; opacity: 0.75; line-height: 1.9;">
+            <span style="color:#60a5fa;">⚡ <b>PHYSICAL</b></span>
+            <span>🏆 Imm +0.8</span>
+            <span>🎁 Rew +0.3</span>
+            <span style="color:#a78bfa; margin-left:8px;">🧠 <b>STRATEGIC</b></span>
+            <span>🗿 Idol Played +2.0</span>
+            <span>🔍 Idol Found +1.0</span>
+            <span>💀 Idol Wasted −3.0</span>
+            <span>🤝 Alliances +0.8 (cap 4)</span>
+            <span style="color:#34d399; margin-left:8px;">💞 <b>SOCIAL</b></span>
+            <span>⭐ Jury Votes +1.5</span>
+            <span>❤️ Fan Fav +2.0</span>
+            <span>🗳️ Votes vs −0.2 above avg</span>
+            <span style="color:#f87171; margin-left:8px;">🚪 Quit −6.0</span>
           </div>
 
           <div style="overflow: auto;">
             <table style="width: 100%; border-collapse: collapse; font-size: 12px;" id="ru-placements-table">
               <thead>
                 <tr style="opacity: 0.65; border-bottom: 1px solid rgba(255,255,255,0.12); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; background: rgba(255,255,255,0.03);">
-                  <th style="padding: 6px 6px; text-align: left; min-width: 130px;">Player</th>
-                  <th style="padding: 6px 5px; text-align: center; width: 55px;" title="Final placement (1 = winner)">Place</th>
-                  <th style="padding: 6px 5px; text-align: center; width: 45px;" title="+0.8 per immunity win">Imm</th>
-                  <th style="padding: 6px 5px; text-align: center; width: 45px;" title="+0.3 per reward win">Rew</th>
-                  <th style="padding: 6px 5px; text-align: center; width: 45px;" title="+2.0 per idol played successfully">Idols Played</th>
-                  <th style="padding: 6px 5px; text-align: center; width: 45px;" title="+1.0 if found but did not play (wasted = −3 instead)">Found Only</th>
-                  <th style="padding: 6px 5px; text-align: center; width: 55px;" title="+1.5 per jury vote received (finalists only)">Jury Votes</th>
-                  <th style="padding: 6px 5px; text-align: center; width: 50px;" title="Unbreakable/strong bonds still intact at jury phase: +1.0 each">Bonds</th>
-                  <th style="padding: 6px 5px; text-align: center; width: 55px;" title="Total votes received against this player all season: −0.2 per vote above cast average">Votes vs</th>
-                  <th style="padding: 6px 5px; text-align: center; width: 45px;" title="Won Fan Favorite award: +2.0">FanFav</th>
-                  <th style="padding: 6px 5px; text-align: center; width: 45px;" title="Player quit voluntarily: −6.0">Quit</th>
-                  <th style="padding: 6px 5px; text-align: center; width: 40px;">Del</th>
+                  <th style="padding: 6px 6px; text-align: left; min-width: 120px;">Player</th>
+                  <th style="padding: 6px 5px; text-align: center; width: 50px;" title="Final placement (1 = winner)">Place</th>
+                  <th style="padding: 6px 5px; text-align: center; width: 40px; color:#60a5fa;" title="Individual immunity wins · +0.8 each">Imm</th>
+                  <th style="padding: 6px 5px; text-align: center; width: 40px; color:#60a5fa;" title="Reward wins · +0.3 each">Rew</th>
+                  <th style="padding: 6px 5px; text-align: center; width: 48px; color:#a78bfa;" title="Idols successfully played at tribal · +2.0 each">Idols ▶</th>
+                  <th style="padding: 6px 5px; text-align: center; width: 48px; color:#a78bfa;" title="Idols found but NOT played · +1.0 if survived, −3.0 if eliminated holding it">Found</th>
+                  <th style="padding: 6px 5px; text-align: center; width: 48px; color:#a78bfa;" title="Alliances formed this season · +0.8 each, max 4 counted">Allies</th>
+                  <th style="padding: 6px 5px; text-align: center; width: 52px; color:#34d399;" title="Jury votes received · +1.5 each (finalists only)">Jury ⭐</th>
+                  <th style="padding: 6px 5px; text-align: center; width: 52px; color:#34d399;" title="Total votes cast against this player · −0.2 per vote above cast average">Votes vs</th>
+                  <th style="padding: 6px 5px; text-align: center; width: 42px; color:#f59e0b;" title="Won Fan Favorite award · +2.0">FanFav</th>
+                  <th style="padding: 6px 5px; text-align: center; width: 40px; color:#f87171;" title="Quit voluntarily · −6.0">Quit</th>
+                  <th style="padding: 6px 5px; text-align: center; width: 38px;">Del</th>
                 </tr>
               </thead>
               <tbody id="ru-placements-body"></tbody>
@@ -5559,12 +5573,13 @@ setTimeout(function() {
 
   // ═══════════════════════════════════════════════════════════
   // ═══════════════════════════════════════════════════════════
-  // END-OF-SEASON RANKINGS UPDATE ENGINE
+  // ═══════════════════════════════════════════════════════════
+  // END-OF-SEASON RANKINGS UPDATE ENGINE  (v3 — 3-pillar scoring)
   // ═══════════════════════════════════════════════════════════
   (function() {
-    let rankingsDB = null;
+    let rankingsDB  = null;
     let pendingUpdated = null;
-    let rowCount = 0;
+    let rowCount    = 0;
 
     // ── Scoring formula ──────────────────────────────────────
     function placementPct(placement, castSize) {
@@ -5578,119 +5593,123 @@ setTimeout(function() {
       return sorted.reduce((sum, pct, i) => sum + pct * (w[i] || 0), 0);
     }
 
-    function computeScore({ allPcts, wins, nonWinFinals, numSeasons, quit, coWin,
-                            immWins, rewWins, idolsPlayed, idolsFoundOnly, idolWasted,
-                            juryVotes, bondsHeld, votesAgainst, fanFav, castSize }) {
-      const cp = careerPct(allPcts);
-      const base = 35 + (cp / 100) * 40;
+    function computeScore(p) {
+      // p = { allPcts, wins, nonWinFinals, numSeasons, coWin,
+      //        immWins, rewWins, idolsPlayed, idolsFound, alliances,
+      //        juryVotes, votesAgainst, fanFav, quit, castSize, isFinalist }
+      const cp   = careerPct(p.allPcts);
+      const base = 30 + (cp / 100) * 37; // tightened: makes 100 harder to reach, creates room for co-win separation
 
-      // Win bonus
-      const winValues = [14, 7, 4, 2];
-      let winBonus = Array.from({ length: Math.min(wins, 4) }, (_, i) => winValues[i]).reduce((a, b) => a + b, 0);
-      if (coWin) winBonus = Math.round(winBonus * 0.9);
+      // Win bonus (14 first, 7 second, 4 third)
+      // Co-winner penalty ×0.75 — a jury tie is a meaningful distinction from an outright win
+      const winVals = [14, 7, 4, 2];
+      let winBonus = Array.from({length: Math.min(p.wins, 4)}, (_, i) => winVals[i]).reduce((a,b) => a+b, 0);
+      if (p.coWin) winBonus = Math.round(winBonus * 0.75);
 
       // Non-win finalist bonus
-      const finCap = Math.min(nonWinFinals, 2);
-      const finBonus = wins > 0 ? finCap * 2.5 : finCap * 4.5;
+      const finCap   = Math.min(p.nonWinFinals, 2);
+      const finBonus = p.wins > 0 ? finCap * 2.5 : finCap * 4.5;
 
       // Multi-season bonus
-      const multiBonus = (numSeasons - 1) * 4;
+      const multiBonus = (p.numSeasons - 1) * 4;
 
-      // ── CHALLENGE ──────────────────────────────────────────
-      const challengeBonus = (immWins * 0.8) + (rewWins * 0.3);
+      // PHYSICAL
+      const physBonus = (p.immWins * 0.8) + (p.rewWins * 0.3);
 
-      // ── STRATEGIC ─────────────────────────────────────────
-      const strategicBonus = (idolsPlayed * 2.0) + (idolsFoundOnly * 1.0) - (idolWasted * 3.0);
+      // STRATEGIC
+      // idol found but not played: +1.0 if survived, −3.0 if eliminated holding it
+      const idolFoundBonus  = p.isFinalist ? p.idolsFound * 1.0 : 0;
+      const idolWastedPen   = p.isFinalist ? 0 : p.idolsFound * 3.0;
+      const stratBonus = (p.idolsPlayed * 2.0) + idolFoundBonus - idolWastedPen
+                       + (Math.min(p.alliances, 4) * 0.8);
 
-      // ── SOCIAL ────────────────────────────────────────────
-      // Jury votes: +1.5 each (meaningful only for finalists)
-      const juryBonus = juryVotes * 1.5;
-      // Bonds held to jury phase: +1.0 each (max 4 to avoid inflation)
-      const bondsBonus = Math.min(bondsHeld, 4) * 1.0;
-      // Fan favorite award
-      const fanFavBonus = fanFav ? 2.0 : 0;
-      // Votes against: penalize being targeted above average
-      // Cast avg = episodeCount * ~0.5 votes per tribal (rough): use castSize/3 as avg
-      const castAvgVotes = Math.round(castSize / 3);
-      const votePenalty = Math.max(0, votesAgainst - castAvgVotes) * 0.2;
+      // SOCIAL
+      // Co-winner jury votes ×0.75 — a 4-4 tie doesn't carry the same weight as 4 decisive votes
+      const castAvgVotes = Math.round(p.castSize / 3);
+      const votePenalty  = Math.max(0, p.votesAgainst - castAvgVotes) * 0.2;
+      const rawJuryBonus = p.isFinalist ? p.juryVotes * 1.5 : 0;
+      const juryBonus    = p.coWin ? rawJuryBonus * 0.75 : rawJuryBonus;
+      const fanFavBonus  = p.fanFav ? 2.0 : 0;
+      const socialBonus  = juryBonus + fanFavBonus - votePenalty;
 
-      const socialBonus = juryBonus + bondsBonus + fanFavBonus - votePenalty;
+      // PENALTY
+      const quitAdj = p.quit ? -6 : 0;
 
-      // ── PENALTIES ─────────────────────────────────────────
-      const quitAdj = quit ? -6 : 0;
-
-      const raw = base + winBonus + finBonus + multiBonus + challengeBonus + strategicBonus + socialBonus + quitAdj;
+      const raw = base + winBonus + finBonus + multiBonus + physBonus + stratBonus + socialBonus + quitAdj;
       return Math.round(Math.min(Math.max(raw, 0), 100) * 10) / 10;
     }
 
-    function scoreTier(score) {
-      if (score >= 90) return 'S+';
-      if (score >= 80) return 'S';
-      if (score >= 71) return 'A';
-      if (score >= 61) return 'B';
-      if (score >= 51) return 'C';
+    function scoreTier(s) {
+      if (s >= 90) return 'S+';
+      if (s >= 80) return 'S';
+      if (s >= 71) return 'A';
+      if (s >= 61) return 'B';
+      if (s >= 51) return 'C';
       return 'D';
     }
 
-    function tierColor(tier) {
-      return { 'S+': '#f59e0b', 'S': '#a78bfa', 'A': '#60a5fa', 'B': '#34d399', 'C': '#fbbf24', 'D': '#9ca3af' }[tier] || '#fff';
+    function tierColor(t) {
+      return {'S+':'#f59e0b','S':'#a78bfa','A':'#60a5fa','B':'#34d399','C':'#fbbf24','D':'#9ca3af'}[t] || '#fff';
     }
 
-    // ── Row management ───────────────────────────────────────
-    function cellInput(type, val, w, placeholder) {
-      const extra = type === 'number' ? 'min="0" ' : '';
-      const ph = placeholder ? 'placeholder="' + placeholder + '" ' : '';
-      return '<input type="' + type + '" ' + extra + ph + 'value="' + val + '" style="width:' + w + ';padding:4px 5px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:5px;color:#fff;font-size:12px;text-align:center;">';
+    // ── Row builder ──────────────────────────────────────────
+    function numCell(val, w) {
+      return '<input type="number" min="0" value="' + (val||'') + '" style="width:' + w + ';padding:4px 4px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.11);border-radius:5px;color:#fff;font-size:12px;text-align:center;">';
+    }
+    function chkCell(checked, color) {
+      return '<input type="checkbox" ' + (checked ? 'checked' : '') + ' style="width:15px;height:15px;cursor:pointer;accent-color:' + color + ';">';
     }
 
     function addRow(name, placement, stats) {
       rowCount++;
-      name = name || '';
-      placement = placement || '';
-      stats = stats || {};
+      name      = name || '';
+      placement = placement !== undefined ? placement : '';
+      stats     = stats || {};
       const tbody = document.getElementById('ru-placements-body');
-      const tr = document.createElement('tr');
+      const tr    = document.createElement('tr');
       tr.dataset.row = rowCount;
       tr.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
       tr.innerHTML =
-        '<td style="padding:5px 6px;">' +
-          '<input type="text" value="' + name + '" placeholder="e.g. Alejandro" style="width:120px;padding:5px 7px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:5px;color:#fff;font-size:12px;">' +
+        '<td style="padding:5px 5px;">' +
+          '<input type="text" value="' + name + '" placeholder="e.g. Alejandro" style="width:115px;padding:5px 7px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:5px;color:#fff;font-size:12px;">' +
         '</td>' +
-        '<td style="padding:5px 4px;text-align:center;">' + cellInput('number', placement, '48px', '#') + '</td>' +
-        '<td style="padding:5px 4px;text-align:center;">' + cellInput('number', stats.imm||'', '38px') + '</td>' +
-        '<td style="padding:5px 4px;text-align:center;">' + cellInput('number', stats.rew||'', '38px') + '</td>' +
-        '<td style="padding:5px 4px;text-align:center;">' + cellInput('number', stats.idolsPlayed||'', '38px') + '</td>' +
-        '<td style="padding:5px 4px;text-align:center;">' + cellInput('number', stats.idolsFoundOnly||'', '38px') + '</td>' +
-        '<td style="padding:5px 4px;text-align:center;">' + cellInput('number', stats.juryVotes||'', '44px') + '</td>' +
-        '<td style="padding:5px 4px;text-align:center;">' + cellInput('number', stats.bonds||'', '38px') + '</td>' +
-        '<td style="padding:5px 4px;text-align:center;">' + cellInput('number', stats.votesVs||'', '44px') + '</td>' +
-        '<td style="padding:5px 4px;text-align:center;"><input type="checkbox" ' + (stats.fanFav ? 'checked' : '') + ' style="width:15px;height:15px;cursor:pointer;accent-color:#f59e0b;"></td>' +
-        '<td style="padding:5px 4px;text-align:center;"><input type="checkbox" ' + (stats.quit ? 'checked' : '') + ' style="width:15px;height:15px;cursor:pointer;accent-color:#f87171;"></td>' +
-        '<td style="padding:5px 4px;text-align:center;"><<button onclick="this.closest(\'tr\').remove()" style="background:rgba(239,68,68,0.18);border:1px solid rgba(239,68,68,0.3);border-radius:5px;color:#f87171;cursor:pointer;padding:3px 7px;font-size:11px;">✕</button></td>';
+        '<td style="padding:5px 4px;text-align:center;">' + numCell(placement, '44px') + '</td>' +
+        '<td style="padding:5px 4px;text-align:center;">' + numCell(stats.imm,       '36px') + '</td>' +
+        '<td style="padding:5px 4px;text-align:center;">' + numCell(stats.rew,       '36px') + '</td>' +
+        '<td style="padding:5px 4px;text-align:center;">' + numCell(stats.idolsPlayed,'40px') + '</td>' +
+        '<td style="padding:5px 4px;text-align:center;">' + numCell(stats.idolsFound, '40px') + '</td>' +
+        '<td style="padding:5px 4px;text-align:center;">' + numCell(stats.alliances,  '40px') + '</td>' +
+        '<td style="padding:5px 4px;text-align:center;">' + numCell(stats.juryVotes,  '44px') + '</td>' +
+        '<td style="padding:5px 4px;text-align:center;">' + numCell(stats.votesVs,    '44px') + '</td>' +
+        '<td style="padding:5px 4px;text-align:center;">' + chkCell(stats.fanFav,  '#f59e0b') + '</td>' +
+        '<td style="padding:5px 4px;text-align:center;">' + chkCell(stats.quit,    '#f87171') + '</td>' +
+        '<td style="padding:5px 4px;text-align:center;">' +
+          '<button onclick="this.closest(\'tr\').remove()" style="background:rgba(239,68,68,0.18);border:1px solid rgba(239,68,68,0.3);border-radius:5px;color:#f87171;cursor:pointer;padding:3px 7px;font-size:11px;">✕</button>' +
+        '</td>';
       tbody.appendChild(tr);
     }
 
     function getRows() {
       const rows = [];
       document.querySelectorAll('#ru-placements-body tr').forEach(tr => {
-        const texts = tr.querySelectorAll('input[type=text]');
-        const nums  = tr.querySelectorAll('input[type=number]');
-        const checks = tr.querySelectorAll('input[type=checkbox]');
-        const name = texts[0] ? texts[0].value.trim() : '';
+        const txt  = tr.querySelectorAll('input[type=text]');
+        const nums = tr.querySelectorAll('input[type=number]');
+        const chks = tr.querySelectorAll('input[type=checkbox]');
+        const name      = txt[0]  ? txt[0].value.trim() : '';
         const placement = parseInt(nums[0] ? nums[0].value : '');
         if (!name || isNaN(placement)) return;
         rows.push({
           name,
           placement,
-          immWins:        parseInt(nums[1] ? nums[1].value : '') || 0,
-          rewWins:        parseInt(nums[2] ? nums[2].value : '') || 0,
-          idolsPlayed:    parseInt(nums[3] ? nums[3].value : '') || 0,
-          idolsFoundOnly: parseInt(nums[4] ? nums[4].value : '') || 0,
-          juryVotes:      parseInt(nums[5] ? nums[5].value : '') || 0,
-          bondsHeld:      parseInt(nums[6] ? nums[6].value : '') || 0,
-          votesAgainst:   parseInt(nums[7] ? nums[7].value : '') || 0,
-          fanFav:  checks[0] ? checks[0].checked : false,
-          quit:    checks[1] ? checks[1].checked : false,
+          immWins:     parseInt(nums[1] ? nums[1].value : '') || 0,
+          rewWins:     parseInt(nums[2] ? nums[2].value : '') || 0,
+          idolsPlayed: parseInt(nums[3] ? nums[3].value : '') || 0,
+          idolsFound:  parseInt(nums[4] ? nums[4].value : '') || 0,
+          alliances:   parseInt(nums[5] ? nums[5].value : '') || 0,
+          juryVotes:   parseInt(nums[6] ? nums[6].value : '') || 0,
+          votesAgainst:parseInt(nums[7] ? nums[7].value : '') || 0,
+          fanFav: chks[0] ? chks[0].checked : false,
+          quit:   chks[1] ? chks[1].checked : false,
         });
       });
       return rows;
@@ -5698,146 +5717,141 @@ setTimeout(function() {
 
     // ── Preview ───────────────────────────────────────────────
     function buildPreview() {
-      if (!rankingsDB) { alert('⚠️ Load rankings_database.json first (Step ①)'); return; }
+      if (!rankingsDB) { alert('Load rankings_database.json first (Step \u2460)'); return; }
       const seasonNum = parseInt(document.getElementById('ru-season-num').value);
       const castSize  = parseInt(document.getElementById('ru-cast-size').value);
       const coWinMode = document.getElementById('ru-co-winner').value === 'yes';
-      const rows = getRows();
-      if (!rows.length)               { alert('⚠️ Add at least one player in Step ③'); return; }
-      if (isNaN(seasonNum) || isNaN(castSize)) { alert('⚠️ Fill Season Number and Cast Size'); return; }
+      const rows      = getRows();
+      if (!rows.length)                    { alert('Add at least one player in Step \u2462'); return; }
+      if (isNaN(seasonNum)||isNaN(castSize)){ alert('Fill Season Number and Cast Size'); return; }
 
-      const winnerNames   = new Set((coWinMode ? rows.filter(r => r.placement === 1) : rows.filter(r => r.placement === 1).slice(0,1)).map(r => r.name));
-      const finalistNames = new Set(rows.filter(r => r.placement <= 3).map(r => r.name));
-      const knownCasts = {1:24,2:14,3:16,4:18,5:18,6:20,7:20,8:18};
-      const results = [];
+      const winnerNames   = new Set((coWinMode ? rows.filter(r=>r.placement===1) : rows.filter(r=>r.placement===1).slice(0,1)).map(r=>r.name));
+      const finalistNames = new Set(rows.filter(r=>r.placement<=3).map(r=>r.name));
+      const knownCasts    = {1:24,2:14,3:16,4:18,5:18,6:20,7:20,8:18};
+      const results       = [];
 
       rows.forEach(row => {
-        const { name, placement, quit, immWins, rewWins, idolsPlayed, idolsFoundOnly,
-                juryVotes, bondsHeld, votesAgainst, fanFav } = row;
-
         const existing = rankingsDB.rankings.find(p =>
-          (p.name || '').toLowerCase() === name.toLowerCase() ||
-          (p.playerId || '').toLowerCase() === name.toLowerCase()
+          (p.name||'').toLowerCase() === row.name.toLowerCase() ||
+          (p.playerId||'').toLowerCase() === row.name.toLowerCase()
         );
 
-        const isWinner   = winnerNames.has(name);
+        const isWinner   = winnerNames.has(row.name);
         const isCoWin    = isWinner && coWinMode;
-        const isFinalist = finalistNames.has(name);
+        const isFinalist = finalistNames.has(row.name);
 
         let prevPcts = [], prevWins = 0, prevNonWinFinals = 0, prevSeasons = 0, wasNew = false;
-
         if (existing) {
           prevSeasons = existing.seasonsPlayed || 1;
           prevWins    = existing.wins || 0;
           const pls   = existing.placements || [];
-          if (pls.length) {
-            prevPcts = pls.map((p, i) => placementPct(p, knownCasts[i + 1] || 19));
-          } else {
-            const approxWinB  = prevWins > 0 ? (prevWins >= 2 ? 21 : 14) : 0;
-            const approxMulti = (prevSeasons - 1) * 4;
-            const approxBase  = (existing.score || 50) - approxWinB - approxMulti;
-            const approxCp    = Math.max(0, Math.min(100, (approxBase - 35) / 40 * 100));
-            prevPcts = [approxCp];
-          }
-          if (existing.placements) {
-            prevNonWinFinals = existing.placements.filter(p => p === 2 || p === 3).length;
-          }
+          prevPcts    = pls.length
+            ? pls.map((p, i) => placementPct(p, knownCasts[i+1] || 19))
+            : [Math.max(0, Math.min(100, ((existing.score||50) - 35 - (prevWins>0?14:0) - (prevSeasons-1)*4) / 40 * 100))];
+          if (pls.length) prevNonWinFinals = pls.filter(p => p===2||p===3).length;
         } else {
           wasNew = true;
         }
 
-        const thisSeasonPct = placementPct(placement, castSize);
-        const allPcts       = [...prevPcts, thisSeasonPct];
-        const totalWins     = prevWins + (isWinner ? 1 : 0);
-        const nonWinFinals  = prevNonWinFinals + (!isWinner && isFinalist ? 1 : 0);
-        const numSeasons    = prevSeasons + 1;
-
-        // Idol wasted = found an idol (foundOnly > 0) but got eliminated (not finalist)
-        const idolWasted = (idolsFoundOnly > 0 && !isFinalist) ? idolsFoundOnly : 0;
-        // foundOnly that weren't wasted
-        const idolsFoundOnlyClean = idolsFoundOnly - idolWasted;
+        // Co-winners get P1.5 effective placement for career percentile
+        // (jury tie = halfway between winning and runner-up — not full credit)
+        const effectivePlacement = (isWinner && coWinMode) ? 1.5 : row.placement;
+        const allPcts      = [...prevPcts, placementPct(effectivePlacement, castSize)];
+        const totalWins    = prevWins + (isWinner ? 1 : 0);
+        const nonWinFinals = prevNonWinFinals + (!isWinner && isFinalist ? 1 : 0);
+        const numSeasons   = prevSeasons + 1;
 
         const newScore = computeScore({
-          allPcts, wins: totalWins, nonWinFinals, numSeasons, quit, coWin: isCoWin,
-          immWins, rewWins, idolsPlayed, idolsFoundOnly: idolsFoundOnlyClean, idolWasted,
-          juryVotes: isFinalist ? juryVotes : 0,
-          bondsHeld, votesAgainst, fanFav, castSize
+          allPcts, wins: totalWins, nonWinFinals, numSeasons, coWin: isCoWin,
+          immWins:     row.immWins,
+          rewWins:     row.rewWins,
+          idolsPlayed: row.idolsPlayed,
+          idolsFound:  row.idolsFound,
+          alliances:   row.alliances,
+          juryVotes:   row.juryVotes,
+          votesAgainst:row.votesAgainst,
+          fanFav:      row.fanFav,
+          quit:        row.quit,
+          castSize,
+          isFinalist
         });
 
-        // Build score breakdown string
-        const cp = careerPct(allPcts);
-        const breakdownParts = [];
-        if (immWins)         breakdownParts.push('Imm:+' + (immWins*0.8).toFixed(1));
-        if (rewWins)         breakdownParts.push('Rew:+' + (rewWins*0.3).toFixed(1));
-        if (idolsPlayed)     breakdownParts.push('IdolPlay:+' + (idolsPlayed*2).toFixed(1));
-        if (idolsFoundOnlyClean) breakdownParts.push('IdolFound:+' + (idolsFoundOnlyClean*1).toFixed(1));
-        if (idolWasted)      breakdownParts.push('IdolWasted:-' + (idolWasted*3).toFixed(1));
-        if (isFinalist && juryVotes) breakdownParts.push('Jury:+' + (juryVotes*1.5).toFixed(1));
-        if (bondsHeld)       breakdownParts.push('Bonds:+' + (Math.min(bondsHeld,4)*1).toFixed(1));
-        if (fanFav)          breakdownParts.push('FanFav:+2.0');
-        if (votesAgainst > Math.round(castSize/3)) breakdownParts.push('VotesVs:-' + (Math.max(0,votesAgainst-Math.round(castSize/3))*0.2).toFixed(1));
-        if (quit)            breakdownParts.push('Quit:-6.0');
+        // Build readable breakdown
+        const parts = [];
+        const castAvg = Math.round(castSize / 3);
+        if (row.immWins)      parts.push('Imm:+' + (row.immWins*0.8).toFixed(1));
+        if (row.rewWins)      parts.push('Rew:+' + (row.rewWins*0.3).toFixed(1));
+        if (row.idolsPlayed)  parts.push('Idol\u25b6:+' + (row.idolsPlayed*2).toFixed(1));
+        if (row.idolsFound) {
+          if (isFinalist)     parts.push('Found:+' + (row.idolsFound*1).toFixed(1));
+          else                parts.push('Wasted:\u2212' + (row.idolsFound*3).toFixed(1));
+        }
+        if (row.alliances)    parts.push('Allies:+' + (Math.min(row.alliances,4)*0.8).toFixed(1));
+        if (isFinalist && row.juryVotes) parts.push('Jury:+' + (row.juryVotes*1.5).toFixed(1));
+        if (row.fanFav)       parts.push('FanFav:+2.0');
+        if (row.votesAgainst > castAvg) parts.push('VotesVs:\u2212' + (Math.max(0,row.votesAgainst-castAvg)*0.2).toFixed(1));
+        if (row.quit)         parts.push('Quit:\u22126.0');
 
         const oldScore = existing ? (existing.score || 0) : null;
         const oldTier  = existing ? existing.tier : null;
         const newTier  = scoreTier(newScore);
 
         results.push({
-          name, placement, quit, isWinner, isNew: wasNew,
+          name: row.name, placement: row.placement,
+          isWinner, isNew: wasNew, isFinalist,
           oldScore, newScore, oldTier, newTier,
           tierChanged: oldTier !== newTier,
           delta: oldScore !== null ? newScore - oldScore : null,
-          breakdown: breakdownParts.join(' │ '),
+          breakdown: parts.join(' \u2502 '),
           existingRef: existing,
-          // store stats for applyUpdates
-          immWins, rewWins, idolsPlayed, idolsFoundOnly, juryVotes, bondsHeld, votesAgainst, fanFav
+          row
         });
       });
 
       pendingUpdated = results;
-      renderPreview(results, seasonNum, castSize, coWinMode);
+      renderPreview(results, seasonNum, castSize);
     }
 
-    function renderPreview(results, seasonNum, castSize, coWinMode) {
+    function renderPreview(results, seasonNum, castSize) {
       const out = document.getElementById('ru-preview-output');
       out.style.display = 'block';
 
       const newPlayers  = results.filter(r => r.isNew);
       const tierChanges = results.filter(r => r.tierChanged && !r.isNew);
-      const risers      = results.filter(r => r.delta !== null && r.delta > 2).sort((a,b) => b.delta - a.delta);
-      const fallers     = results.filter(r => r.delta !== null && r.delta < -1).sort((a,b) => a.delta - b.delta);
+      const risers      = results.filter(r => r.delta !== null && r.delta > 2);
+      const fallers     = results.filter(r => r.delta !== null && r.delta < -1);
 
-      const ds = d => d === null ? 'NEW' : (d > 0 ? '+' : '') + d.toFixed(1);
-      const dc = d => d === null ? '#a78bfa' : d > 0 ? '#34d399' : d < 0 ? '#f87171' : '#9ca3af';
+      const ds = d => d === null ? 'NEW' : (d>=0?'+':'') + d.toFixed(1);
+      const dc = d => d === null ? '#a78bfa' : d>0 ? '#34d399' : d<0 ? '#f87171' : '#9ca3af';
 
       const rowHtml = r =>
         '<tr style="border-bottom:1px solid rgba(255,255,255,0.05);">' +
         '<td style="padding:7px 10px;">' + r.placement + '</td>' +
         '<td style="padding:7px 10px;font-weight:600;">' + r.name +
-          (r.quit ? ' <span style="font-size:11px;opacity:0.5;">(quit)</span>' : '') +
-          (r.isWinner ? ' 👑' : '') +
+          (r.row.quit  ? ' <span style="font-size:11px;opacity:0.5;">(quit)</span>' : '') +
+          (r.isWinner  ? ' \ud83d\udc51' : '') +
         '</td>' +
-        '<td style="padding:7px 10px;text-align:center;opacity:0.55;">' + (r.oldScore !== null ? r.oldScore : '—') + '</td>' +
+        '<td style="padding:7px 10px;text-align:center;opacity:0.55;">' + (r.oldScore!==null?r.oldScore:'\u2014') + '</td>' +
         '<td style="padding:7px 10px;text-align:center;font-weight:700;color:' + tierColor(r.newTier) + ';">' + r.newScore + '</td>' +
         '<td style="padding:7px 10px;text-align:center;font-weight:600;color:' + dc(r.delta) + ';">' + ds(r.delta) + '</td>' +
         '<td style="padding:7px 10px;text-align:center;">' +
-          (r.oldTier && r.oldTier !== r.newTier
-            ? '<span style="opacity:0.4;text-decoration:line-through;font-size:11px;">' + r.oldTier + '</span> → <span style="color:' + tierColor(r.newTier) + ';font-weight:700;">' + r.newTier + '</span>'
+          (r.oldTier && r.oldTier!==r.newTier
+            ? '<span style="opacity:0.4;text-decoration:line-through;font-size:11px;">' + r.oldTier + '</span> \u2192 <span style="color:' + tierColor(r.newTier) + ';font-weight:700;">' + r.newTier + '</span>'
             : '<span style="color:' + tierColor(r.newTier) + ';font-weight:700;">' + r.newTier + '</span>') +
         '</td>' +
-        '<td style="padding:7px 10px;font-size:11px;opacity:0.55;">' + (r.breakdown || '—') + '</td>' +
+        '<td style="padding:7px 10px;font-size:11px;opacity:0.55;min-width:200px;">' + (r.breakdown||'\u2014') + '</td>' +
         '</tr>';
 
       let html =
         '<div style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.3);border-radius:12px;padding:14px 16px;margin-bottom:14px;font-size:13px;">' +
           '<div style="display:flex;gap:20px;flex-wrap:wrap;">' +
-            '<span>📅 S' + seasonNum + '</span>' +
-            '<span>👥 Cast ' + castSize + '</span>' +
-            '<span>🏆 ' + results.filter(r=>r.isWinner).map(r=>r.name).join(' & ') + '</span>' +
-            '<span style="color:#34d399;">⬆ ' + risers.length + ' risers</span>' +
-            '<span style="color:#f87171;">⬇ ' + fallers.length + ' drops</span>' +
-            '<span style="color:#a78bfa;">✨ ' + newPlayers.length + ' new</span>' +
-            '<span style="color:#fbbf24;">🔀 ' + tierChanges.length + ' tier changes</span>' +
+            '<span>\ud83d\udcc5 S' + seasonNum + '</span>' +
+            '<span>\ud83d\udc65 Cast ' + castSize + '</span>' +
+            '<span>\ud83c\udfc6 ' + (results.filter(r=>r.isWinner).map(r=>r.name).join(' &amp; ')||'?') + '</span>' +
+            '<span style="color:#34d399;">\u2b06 ' + risers.length + ' risers</span>' +
+            '<span style="color:#f87171;">\u2b07 ' + fallers.length + ' drops</span>' +
+            '<span style="color:#a78bfa;">\u2728 ' + newPlayers.length + ' new</span>' +
+            '<span style="color:#fbbf24;">\ud83d\udd00 ' + tierChanges.length + ' tier changes</span>' +
           '</div>' +
         '</div>' +
         '<div style="overflow:auto;border-radius:12px;border:1px solid rgba(255,255,255,0.1);">' +
@@ -5847,18 +5861,18 @@ setTimeout(function() {
               '<th style="padding:8px 10px;text-align:left;">Player</th>' +
               '<th style="padding:8px 10px;text-align:center;">Old</th>' +
               '<th style="padding:8px 10px;text-align:center;">New</th>' +
-              '<th style="padding:8px 10px;text-align:center;">Δ</th>' +
+              '<th style="padding:8px 10px;text-align:center;">\u0394</th>' +
               '<th style="padding:8px 10px;text-align:center;">Tier</th>' +
-              '<th style="padding:8px 10px;text-align:left;">Stat Modifiers</th>' +
+              '<th style="padding:8px 10px;text-align:left;">Modifiers</th>' +
             '</tr></thead>' +
-            '<tbody>' + results.slice().sort((a,b) => a.placement - b.placement).map(rowHtml).join('') + '</tbody>' +
+            '<tbody>' + results.slice().sort((a,b)=>a.placement-b.placement).map(rowHtml).join('') + '</tbody>' +
           '</table>' +
         '</div>';
 
       if (tierChanges.length) {
         html += '<div style="margin-top:12px;padding:10px 14px;background:rgba(251,191,36,0.07);border:1px solid rgba(251,191,36,0.2);border-radius:9px;font-size:12px;">' +
-          '<strong>🔀 Tier Changes:</strong> ' +
-          tierChanges.map(r => r.name + ' ' + r.oldTier + '→<span style="color:' + tierColor(r.newTier) + '">' + r.newTier + '</span>').join(' &nbsp;·&nbsp; ') +
+          '<strong>\ud83d\udd00 Tier Changes:</strong> ' +
+          tierChanges.map(r => r.name + ' ' + r.oldTier + '\u2192<span style="color:' + tierColor(r.newTier) + '">' + r.newTier + '</span>').join(' &nbsp;\u00b7&nbsp; ') +
         '</div>';
       }
 
@@ -5866,55 +5880,48 @@ setTimeout(function() {
       document.getElementById('ru-apply-btn').style.display = 'inline-flex';
     }
 
+    // ── Apply ─────────────────────────────────────────────────
     function applyUpdates() {
       if (!pendingUpdated || !rankingsDB) return;
       const seasonNum = parseInt(document.getElementById('ru-season-num').value);
 
       pendingUpdated.forEach(r => {
+        const row = r.row;
         if (r.isNew) {
           const maxRank = Math.max(...rankingsDB.rankings.map(p => p.rank || 0));
           rankingsDB.rankings.push({
             playerId: r.name.toLowerCase().replace(/[^a-z0-9]/g, '-'),
-            name: r.name,
-            rank: maxRank + 1,
-            tier: r.newTier,
-            score: r.newScore,
-            wins: r.isWinner ? 1 : 0,
-            seasonsPlayed: 1,
-            placements: [r.placement],
-            avgPlacement: r.placement,
-            challengeWins: r.immWins + r.rewWins,
-            votesAgainst: r.votesAgainst,
-            juryVotes: r.juryVotes,
-            idolsFound: r.idolsPlayed + r.idolsFoundOnly,
-            title: '',
-            emoji: r.isWinner ? '👑' : '⭐',
-            reasoning: 'Season ' + seasonNum + ' — placement ' + r.placement + (r.breakdown ? '. Modifiers: ' + r.breakdown : '') + '.',
-            strengths: [],
-            weaknesses: []
+            name: r.name, rank: maxRank+1, tier: r.newTier, score: r.newScore,
+            wins: r.isWinner ? 1 : 0, seasonsPlayed: 1,
+            placements: [r.placement], avgPlacement: r.placement,
+            challengeWins: row.immWins + row.rewWins,
+            votesAgainst: row.votesAgainst, juryVotes: row.juryVotes,
+            idolsFound: row.idolsPlayed + row.idolsFound,
+            alliances: row.alliances,
+            title:'', emoji: r.isWinner ? '\ud83d\udc51' : '\u2b50',
+            reasoning: 'S' + seasonNum + ' P' + r.placement + (r.breakdown ? '. ' + r.breakdown : '') + '.',
+            strengths:[], weaknesses:[]
           });
         } else {
           const e = r.existingRef;
-          e.score        = r.newScore;
-          e.tier         = r.newTier;
-          e.wins         = (e.wins || 0) + (r.isWinner ? 1 : 0);
-          e.seasonsPlayed = (e.seasonsPlayed || 1) + 1;
+          e.score = r.newScore; e.tier = r.newTier;
+          e.wins  = (e.wins||0) + (r.isWinner ? 1 : 0);
+          e.seasonsPlayed = (e.seasonsPlayed||1) + 1;
           if (!e.placements) e.placements = [];
           e.placements.push(r.placement);
-          e.avgPlacement = e.placements.reduce((a,b) => a+b,0) / e.placements.length;
-          // Accumulate career stats
-          e.challengeWins  = (e.challengeWins  || 0) + r.immWins + r.rewWins;
-          e.votesAgainst   = (e.votesAgainst   || 0) + r.votesAgainst;
-          e.juryVotes      = (e.juryVotes      || 0) + r.juryVotes;
-          e.idolsFound     = (e.idolsFound     || 0) + r.idolsPlayed + r.idolsFoundOnly;
+          e.avgPlacement  = e.placements.reduce((a,b)=>a+b,0) / e.placements.length;
+          e.challengeWins = (e.challengeWins||0) + row.immWins + row.rewWins;
+          e.votesAgainst  = (e.votesAgainst||0)  + row.votesAgainst;
+          e.juryVotes     = (e.juryVotes||0)     + row.juryVotes;
+          e.idolsFound    = (e.idolsFound||0)    + row.idolsPlayed + row.idolsFound;
         }
       });
 
-      rankingsDB.rankings.sort((a, b) => b.score - a.score);
-      rankingsDB.rankings.forEach((p, i) => { p.rank = i + 1; });
+      rankingsDB.rankings.sort((a,b) => b.score - a.score);
+      rankingsDB.rankings.forEach((p, i) => { p.rank = i+1; });
       if (rankingsDB.metadata) rankingsDB.metadata.lastUpdated = new Date().toISOString().split('T')[0];
 
-      const blob = new Blob([JSON.stringify(rankingsDB, null, 2)], { type: 'application/json' });
+      const blob = new Blob([JSON.stringify(rankingsDB, null, 2)], {type:'application/json'});
       const url  = URL.createObjectURL(blob);
       const a    = document.createElement('a');
       a.href = url; a.download = 'rankings_database.json'; a.click();
@@ -5922,13 +5929,52 @@ setTimeout(function() {
 
       document.getElementById('ru-preview-output').insertAdjacentHTML('beforeend',
         '<div style="margin-top:12px;padding:12px 16px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:10px;font-size:13px;color:#4ade80;">' +
-        '✅ rankings_database.json downloaded — replace your existing file with this one.</div>'
+        '\u2705 rankings_database.json downloaded \u2014 replace your existing file with this one.</div>'
       );
+    }
+
+    // ── Season JSON auto-fill ─────────────────────────────────
+    function loadSeasonData(json) {
+      const placements = json.placements || json.players || [];
+      if (!placements.length) { alert('No placements array found in season JSON'); return; }
+
+      // Clear existing rows
+      document.getElementById('ru-placements-body').innerHTML = '';
+      rowCount = 0;
+
+      // Sort by placement
+      const sorted = [...placements].sort((a,b) => (a.placement||99) - (b.placement||99));
+
+      sorted.forEach(p => {
+        const name      = p.name || p.playerName || '';
+        const placement = p.placement || p.finalPlacement || '';
+        const alliances = Array.isArray(p.alliances) ? p.alliances.length : (p.allianceCount || 0);
+        const stats = {
+          alliances,
+          juryVotes:   p.juryVotes   || p.jury_votes   || 0,
+          votesVs:     p.votesAgainst|| p.votes_against|| 0,
+          idolsFound:  p.idolsFound  || p.idols_found  || 0,
+          idolsPlayed: p.idolsPlayed || p.idols_played || 0,
+          imm:         p.challengeWins || p.immunityWins || 0,
+          quit:        p.eliminated === 'quit' || p.quit || false,
+        };
+        addRow(name, placement, stats);
+      });
+
+      // Try to auto-set cast size
+      if (sorted.length) {
+        document.getElementById('ru-cast-size').value = sorted.length;
+      }
+
+      document.getElementById('ru-season-load-status').textContent = '\u2705 Loaded ' + sorted.length + ' players — add challenge/idol stats manually';
+      document.getElementById('ru-season-load-status').style.color = '#4ade80';
     }
 
     // ── Init ─────────────────────────────────────────────────
     function ruInit() {
       addRow();
+
+      // Rankings DB file
       document.getElementById('ru-load-file-btn').addEventListener('click', () => {
         document.getElementById('ru-file-input').click();
       });
@@ -5940,15 +5986,36 @@ setTimeout(function() {
           try {
             rankingsDB = JSON.parse(ev.target.result);
             const count = rankingsDB.rankings?.length || 0;
-            document.getElementById('ru-load-status').textContent = '✅ Loaded — ' + count + ' players';
+            document.getElementById('ru-load-status').textContent = '\u2705 Loaded \u2014 ' + count + ' players';
             document.getElementById('ru-load-status').style.color = '#4ade80';
           } catch {
-            document.getElementById('ru-load-status').textContent = '❌ Invalid JSON';
+            document.getElementById('ru-load-status').textContent = '\u274c Invalid JSON';
             document.getElementById('ru-load-status').style.color = '#f87171';
           }
         };
         reader.readAsText(file);
       });
+
+      // Season data file (auto-fill)
+      document.getElementById('ru-load-season-btn').addEventListener('click', () => {
+        document.getElementById('ru-season-file-input').click();
+      });
+      document.getElementById('ru-season-file-input').addEventListener('change', e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = ev => {
+          try {
+            const json = JSON.parse(ev.target.result);
+            loadSeasonData(json);
+          } catch {
+            document.getElementById('ru-season-load-status').textContent = '\u274c Invalid JSON';
+            document.getElementById('ru-season-load-status').style.color = '#f87171';
+          }
+        };
+        reader.readAsText(file);
+      });
+
       document.getElementById('ru-add-row-btn').addEventListener('click', () => addRow());
       document.getElementById('ru-preview-btn').addEventListener('click', buildPreview);
       document.getElementById('ru-apply-btn').addEventListener('click', applyUpdates);

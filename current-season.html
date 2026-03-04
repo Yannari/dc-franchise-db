@@ -976,7 +976,17 @@ Dave voted for Mickey
         </div>
 
         <div style="margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.05); border-radius: 12px;">
-          <h4 style="margin: 0 0 12px 0; font-size: 14px; opacity: 0.9;">② Season Info</h4>
+          <h4 style="margin: 0 0 6px 0; font-size: 14px; opacity: 0.9;">② Auto-fill from Season JSON <span style="font-size:11px;opacity:0.5;font-weight:400;">(optional but faster)</span></h4>
+          <p style="font-size: 12px; opacity: 0.6; margin: 0 0 10px 0;">Load your seasonX-data.json to auto-fill player names, placements, jury votes and votes against. Then just add challenge/idol stats manually for the few players who had them.</p>
+          <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <button id="ru-load-season-btn" class="btn" style="background: linear-gradient(135deg, #f59e0b, #d97706);">⚡ Load Season Data JSON</button>
+            <input type="file" id="ru-season-file-input" accept=".json" style="display:none;">
+            <span id="ru-season-load-status" style="font-size: 13px; opacity: 0.7;">No season file loaded</span>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.05); border-radius: 12px;">
+          <h4 style="margin: 0 0 12px 0; font-size: 14px; opacity: 0.9;">③ Season Info</h4>
           <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
             <div>
               <label style="font-size: 12px; opacity: 0.7; display: block; margin-bottom: 4px;">Season Number</label>

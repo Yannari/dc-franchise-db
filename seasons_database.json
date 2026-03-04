@@ -1,276 +1,38 @@
 {
   "franchise": {
+    "totalSeasons": 1,
     "name": "DC Franchise Database",
-    "totalSeasons": 9,
-    "totalPlayers": 58,
     "description": "Total Drama franchise statistics and season data"
   },
   "seasons": [
     {
-      "seasonNumber": 1,
-      "title": "Total Drama",
-      "subtitle": "Where it all began",
-      "castSize": 24,
-      "episodeCount": 24,
-      "winner": {
-        "name": "Lindsay",
-        "playerSlug": "lindsay",
-        "vote": "5-4",
-        "runnerUp": "Alejandro"
-      },
-      "awards": {
-        "fanFavorite": {
-          "name": "Justin",
-          "playerSlug": "justin"
-        },
-        "bestStrategic": {
-          "name": "Alejandro",
-          "playerSlug": "alejandro"
-        },
-        "mostChallengeWins": {
-          "name": "Bridgette",
-          "playerSlug": "bridgette",
-          "detail": "5 total (4 immunities)"
-        }
-      },
-      "theme": "Classic island survival",
-      "status": "Complete",
-      "castPhotoPath": "assets/cast/s1-cast.png",
-      "emoji": "🏝️"
-    },
-    {
-      "seasonNumber": 2,
-      "title": "Total Drama 2",
-      "subtitle": "The sequel that raised the stakes",
-      "castSize": 14,
-      "episodeCount": 13,
-      "winner": {
-        "name": "Duncan",
-        "playerSlug": "duncan",
-        "vote": "5-3-1",
-        "runnerUp": "Alejandro & Lindsay"
-      },
-      "awards": {
-        "fanFavorite": {
-          "name": "Alejandro",
-          "playerSlug": "alejandro"
-        },
-        "bestStrategic": {
-          "name": "Alejandro",
-          "playerSlug": "alejandro"
-        },
-        "mostChallengeWins": {
-          "name": "Alejandro",
-          "playerSlug": "alejandro",
-          "detail": "5 immunity"
-        }
-      },
-      "theme": "Only Returnees",
-      "status": "Complete",
-      "castPhotoPath": "assets/cast/s2-cast.png",
-      "emoji": "🔁"
-    },
-    {
-      "seasonNumber": 3,
-      "title": "Total Drama Revenge of the Island",
-      "subtitle": "The season where loyalty was tested—and broken",
-      "castSize": 16,
-      "episodeCount": 13,
-      "winner": {
-        "name": "Emma",
-        "playerSlug": "emma",
-        "vote": "4-3-1",
-        "runnerUp": "Scott & Cameron"
-      },
-      "awards": {
-        "fanFavorite": {
-          "name": "Dakota",
-          "playerSlug": "dakota"
-        },
-        "bestStrategic": {
-          "name": "Scott",
-          "playerSlug": "scott"
-        },
-        "mostChallengeWins": {
-          "name": "Scott",
-          "playerSlug": "scott",
-          "detail": "6 total"
-        }
-      },
-      "theme": "New generation rises",
-      "status": "Complete",
-      "castPhotoPath": "assets/cast/s3-cast.png",
-      "emoji": "🌋"
-    },
-    {
-      "seasonNumber": 4,
-      "title": "Total Drama All-Stars",
-      "subtitle": "All-Stars collide",
-      "castSize": 18,
-      "episodeCount": 14,
-      "winner": {
-        "name": "Alejandro",
-        "playerSlug": "alejandro",
-        "vote": "7-6-1",
-        "runnerUp": "Zoey & Scott"
-      },
-      "awards": {
-        "fanFavorite": {
-          "name": "Jo",
-          "playerSlug": "jo"
-        },
-        "bestStrategic": {
-          "name": "Alejandro",
-          "playerSlug": "alejandro"
-        },
-        "mostChallengeWins": {
-          "name": "Gwen",
-          "playerSlug": "gwen",
-          "detail": "4 total (tied with Zoey)"
-        }
-      },
-      "theme": "All-Stars season",
-      "status": "Complete",
-      "castPhotoPath": "assets/cast/s4-cast.png",
-      "emoji": "⭐"
-    },
-    {
-      "seasonNumber": 5,
-      "title": "Total Drama Rescue Island",
-      "subtitle": "3 tribes, swaps, and ultimate chaos",
-      "castSize": 18,
-      "episodeCount": 14,
-      "winner": {
-        "name": "Mickey",
-        "playerSlug": "mickey",
-        "vote": "3-3-2 (tiebreak)",
-        "runnerUp": "Sky & Ryan"
-      },
-      "awards": {
-        "fanFavorite": {
-          "name": "Ryan",
-          "playerSlug": "ryan"
-        },
-        "bestStrategic": {
-          "name": "Scarlett",
-          "playerSlug": "scarlett"
-        },
-        "mostChallengeWins": {
-          "name": "Sky",
-          "playerSlug": "sky",
-          "detail": "4 total (3 immunities)"
-        }
-      },
-      "theme": "Rescue Island with 3 tribes",
-      "status": "Complete",
-      "castPhotoPath": "assets/cast/s5-cast.png",
-      "emoji": "🛟"
-    },
-    {
-      "seasonNumber": 6,
-      "title": "Total Drama Blood VS Water",
-      "subtitle": "Family or Strategy",
-      "castSize": 20,
-      "episodeCount": 17,
-      "winner": {
-        "name": "Jacques",
-        "playerSlug": "jacques",
-        "vote": "7-1-0",
-        "runnerUp": "Mickey & Jay",
-        "keyStats": "7–1–0 jury win; 4 individual immunities; 4 total challenge wins; only 2 votes against.",
-        "strategy": "Kept target low while steering vote flows, exploiting pair cover and timely immunity wins to consolidate control.",
-        "legacy": "A crowned villain: precise, low-agro control culminating in a blowout FTC. Benchmarks a ‘low-target, high-control’ masterclass for this format."
-      },
-      "awards": {
-        "fanFavorite": {
-          "name": "Jacques",
-          "playerSlug": "jacques"
-        },
-        "bestStrategic": {
-          "name": "Jacques",
-          "playerSlug": "jacques"
-        },
-        "mostChallengeWins": {
-          "name": "Jacques",
-          "playerSlug": "jacques",
-          "detail": "4 total"
-        }
-      },
-      "theme": "2 tribes + redemption island",
-      "status": "Complete",
-      "castPhotoPath": "assets/cast/s6-cast.png",
-      "emoji": "🩸"
-    },
-    {
-      "seasonNumber": 7,
-      "title": "Total Drama Fans VS Favorites",
-      "subtitle": "Same game. Different side of the screen",
-      "castSize": 20,
-      "episodeCount": 17,
-      "winner": {
-        "name": "MacArthur",
-        "playerSlug": "macarthur",
-        "vote": "6-2-1",
-        "runnerUp": "Cody & Carrie",
-        "keyStats": "4 total challenge wins, 1 immunity, 1 idol found and timed perfectly, broad cross-tribe relationships; only 5 votes against all season.",
-        "strategy": "Operate as the merge switchboard and shield-enforcer: hold an idol, build unbreakables with Carrie and Cody, maintain bridges to Jacques and Sky, disagree publicly when needed to preserve agency, and close with perfect F5 advantage management.",
-        "legacy": "One of the most respected power-social winners of the series: balanced menace and loyalty, rode chaos without being consumed by it, and delivered a decisive FTC performance."
-      },
-      "awards": {
-        "fanFavorite": {
-          "name": "Spud",
-          "playerSlug": "spud"
-        },
-        "bestStrategic": {
-          "name": "Tom",
-          "playerSlug": "tom"
-        },
-        "mostChallengeWins": {
-          "name": "Jacques",
-          "playerSlug": "jacques",
-          "detail": "6 total"
-        }
-      },
-      "theme": "2 Tribes (10 Favorites and 10 Fans)",
-      "status": "Complete",
-      "castPhotoPath": "assets/cast/s7-cast.png",
-      "emoji": "🤩"
-    },
-    {
       "seasonNumber": 8,
-      "title": "Total Drama Heroes VS Villains VS Civilians",
+      "title": "Total Drama:Heroes VS Villains VS Civilians",
       "subtitle": "Good VS Evil VS Civilians",
       "castSize": 18,
       "episodeCount": 16,
       "winner": {
-        "name": "Alejandro",
+        "name": "Alejandro & Cameron",
         "playerSlug": "alejandro",
+        "coWinnerSlug": "cameron",
         "vote": "4-4",
+        "isDualWin": true,
         "runnerUp": "Sanders",
-        "keyStats": "Co-winner with 4 jury votes; 4 individual immunities; 7 total challenge wins; only 2 votes against.",
-        "strategy": "Built cross-tribe power with Pete and later a tight bond with Cameron, steering critical blindsides while avoiding exposure. When shields fell, he won out in challenges, cut Sanders at Final 3, and forced a legacy Final 2 that split the jury.",
-        "legacy": "Becomes the franchise’s first two-time champion (shared). Cemented as the definitive 'Villain King' who can both orchestrate and out-muscle in endgame."
-      },
-      "winner": {
-        "name": "Cameron",
-        "playerSlug": "cameron",
-        "vote": "4-4",
-        "runnerUp": "Sanders",
-        "keyStats": "Co-winner with 4 jury votes; 4 individual immunities; 7 total challenge wins; only 2 votes against.",
-        "strategy": "Built cross-tribe power with Pete and later a tight bond with Cameron, steering critical blindsides while avoiding exposure. When shields fell, he won out in challenges, cut Sanders at Final 3, and forced a legacy Final 2 that split the jury.",
-        "legacy": "Becomes the franchise’s first two-time champion (shared). Cemented as the definitive 'Villain King' who can both orchestrate and out-muscle in endgame."
+        "keyStats": "First dual winners in franchise history — 4-4 jury tie. Alejandro: 4 individual immunities, 7 total challenge wins, 2 votes against. Cameron: survived extreme hatred from MacArthur, 7 votes against.",
+        "strategy": "Alejandro managed shields (Pete → Leshawna → Sanders) and dominated challenges. Cameron survived as the indispensable brain no one could cut. Together they outlasted the Civilian Hegemony.",
+        "legacy": "First co-winners in franchise history. Alejandro becomes the franchise's only two-time champion."
       },
       "awards": {
         "fanFavorite": {
-          "name": "macarthur",
+          "name": "MacArthur",
           "playerSlug": "macarthur"
         },
         "bestStrategic": {
-          "name": "heather",
+          "name": "Heather",
           "playerSlug": "heather"
         },
         "mostChallengeWins": {
-          "name": "alejandro",
+          "name": "Alejandro",
           "playerSlug": "alejandro",
           "detail": "7 total"
         }

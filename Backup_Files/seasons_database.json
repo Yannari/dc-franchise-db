@@ -200,6 +200,85 @@
       "status": "Complete",
       "castPhotoPath": "assets/cast/s6-cast.png",
       "emoji": "🩸"
+    },
+    {
+      "seasonNumber": 7,
+      "title": "Total Drama Fans VS Favorites",
+      "subtitle": "Same game. Different side of the screen",
+      "castSize": 20,
+      "episodeCount": 17,
+      "winner": {
+        "name": "MacArthur",
+        "playerSlug": "macarthur",
+        "vote": "6-2-1",
+        "runnerUp": "Cody & Carrie",
+        "keyStats": "4 total challenge wins, 1 immunity, 1 idol found and timed perfectly, broad cross-tribe relationships; only 5 votes against all season.",
+        "strategy": "Operate as the merge switchboard and shield-enforcer: hold an idol, build unbreakables with Carrie and Cody, maintain bridges to Jacques and Sky, disagree publicly when needed to preserve agency, and close with perfect F5 advantage management.",
+        "legacy": "One of the most respected power-social winners of the series: balanced menace and loyalty, rode chaos without being consumed by it, and delivered a decisive FTC performance."
+      },
+      "awards": {
+        "fanFavorite": {
+          "name": "Spud",
+          "playerSlug": "spud"
+        },
+        "bestStrategic": {
+          "name": "Tom",
+          "playerSlug": "tom"
+        },
+        "mostChallengeWins": {
+          "name": "Jacques",
+          "playerSlug": "jacques",
+          "detail": "6 total"
+        }
+      },
+      "theme": "2 Tribes (10 Favorites and 10 Fans)",
+      "status": "Complete",
+      "castPhotoPath": "assets/cast/s7-cast.png",
+      "emoji": "🤩"
+    },
+    {
+      "seasonNumber": 8,
+      "title": "Total Drama Heroes VS Villains VS Civilians",
+      "subtitle": "Good VS Evil VS Civilians",
+      "castSize": 18,
+      "episodeCount": 16,
+      "winner": {
+        "name": "Alejandro",
+        "playerSlug": "alejandro",
+        "vote": "4-4",
+        "runnerUp": "Sanders",
+        "keyStats": "Co-winner with 4 jury votes; 4 individual immunities; 7 total challenge wins; only 2 votes against.",
+        "strategy": "Built cross-tribe power with Pete and later a tight bond with Cameron, steering critical blindsides while avoiding exposure. When shields fell, he won out in challenges, cut Sanders at Final 3, and forced a legacy Final 2 that split the jury.",
+        "legacy": "Becomes the franchise’s first two-time champion (shared). Cemented as the definitive 'Villain King' who can both orchestrate and out-muscle in endgame."
+      },
+      "winner": {
+        "name": "Cameron",
+        "playerSlug": "cameron",
+        "vote": "4-4",
+        "runnerUp": "Sanders",
+        "keyStats": "Co-winner with 4 jury votes; 4 individual immunities; 7 total challenge wins; only 2 votes against.",
+        "strategy": "Built cross-tribe power with Pete and later a tight bond with Cameron, steering critical blindsides while avoiding exposure. When shields fell, he won out in challenges, cut Sanders at Final 3, and forced a legacy Final 2 that split the jury.",
+        "legacy": "Becomes the franchise’s first two-time champion (shared). Cemented as the definitive 'Villain King' who can both orchestrate and out-muscle in endgame."
+      },
+      "awards": {
+        "fanFavorite": {
+          "name": "macarthur",
+          "playerSlug": "macarthur"
+        },
+        "bestStrategic": {
+          "name": "heather",
+          "playerSlug": "heather"
+        },
+        "mostChallengeWins": {
+          "name": "alejandro",
+          "playerSlug": "alejandro",
+          "detail": "7 total"
+        }
+      },
+      "theme": "The Best Heroes The Worst Villains and the Newbies",
+      "status": "Complete",
+      "castPhotoPath": "assets/cast/s8-cast.png",
+      "emoji": "♦️"
     }
   ]
 }

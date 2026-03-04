@@ -426,9 +426,12 @@
       <div class="award-item">
         <div class="award-icon">👑</div>
         <div class="award-content">
-          <div class="award-label">Winner</div>
+          <div class="award-label">Winner${season.winner.isDualWin ? 's' : ''}</div>
           <div class="award-value">
-            ${season.winner.name} ${season.winner.vote !== 'TBD' ? `<span class="highlight">(${season.winner.vote})</span>` : ''}
+            ${season.winner.isDualWin
+              ? `${season.winner.name} <span class="highlight">(${season.winner.vote})</span>`
+              : `${season.winner.name} ${season.winner.vote !== 'TBD' ? `<span class="highlight">(${season.winner.vote})</span>` : ''}`
+            }
           </div>
         </div>
       </div>
@@ -437,7 +440,7 @@
     <div class="award-item">
       <div class="award-icon">👑</div>
       <div class="award-content">
-        <div class="award-label">Winner</div>
+        <div class="award-label">Winner${season.winner.isDualWin ? 's' : ''}</div>
         <div class="award-value">${season.winner.name}</div>
       </div>
     </div>

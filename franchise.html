@@ -147,6 +147,10 @@
 <div class="section-title">
 <h2>Multi-Season Players</h2>
 </div>
+<div class="panel" id="multi-season-4">
+<h3>4-Season Players</h3>
+<ul><li style="opacity: 0.5;">Loading...</li></ul>
+</div>
 <div class="panel" id="multi-season-3">
 <h3>3-Season Players</h3>
 <ul><li style="opacity: 0.5;">Loading...</li></ul>
@@ -345,8 +349,14 @@
     document.getElementById('fan-favorites-panel').innerHTML = `<ul>${favoritesHTML}</ul>`;
     
     // 6. MULTI-SEASON PLAYERS
-    const threeSeasonsPlayers = franchise.multiSeasonPlayers.filter(p => p.seasonsPlayed >= 3);
+    const fourSeasonsPlayers = franchise.multiSeasonPlayers.filter(p => p.seasonsPlayed >= 4);
+    const threeSeasonsPlayers = franchise.multiSeasonPlayers.filter(p => p.seasonsPlayed === 3);
     const twoSeasonsPlayers = franchise.multiSeasonPlayers.filter(p => p.seasonsPlayed === 2);
+    
+    const fourSeasonsHTML = fourSeasonsPlayers.map(p => 
+      `<li><b>${playerLink(p.name, p.playerSlug)}:</b> S${p.seasons.join(', S')} (${p.avgPlacement.toFixed(2)} avg placement, ${p.wins} win${p.wins !== 1 ? 's' : ''})</li>`
+    ).join('');
+    document.getElementById('multi-season-4').innerHTML = `<h3>4-Season Players</h3><ul>${fourSeasonsHTML}</ul>`;
     
     const threeSeasonsHTML = threeSeasonsPlayers.map(p => 
       `<li><b>${playerLink(p.name, p.playerSlug)}:</b> S${p.seasons.join(', S')} (${p.avgPlacement.toFixed(2)} avg placement, ${p.wins} win${p.wins !== 1 ? 's' : ''})</li>`

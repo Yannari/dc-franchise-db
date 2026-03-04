@@ -5968,10 +5968,12 @@ setTimeout(function() {
         const placement=p.placement||p.finalPlacement||'';
         const stats={
           juryVotes:   p.juryVotes||p.jury_votes||0,
-          votesVs:     p.votesAgainst||p.votes_against||0,
+          votesVs:     p.votesAgainst||p.votes_against||p.votesReceived||0,
           idolsFound:  p.idolsFound||p.idols_found||0,
           idolsPlayed: p.idolsPlayed||p.idols_played||0,
-          imm:         p.challengeWins||p.immunityWins||0,
+          imm:         p.immunityWins||p.imm||0,
+          rew:         p.rewardWins||p.rew||(p.challengeWins&&p.immunityWins ? Math.max(0,(p.challengeWins||0)-(p.immunityWins||0)) : 0),
+          alliances:   Array.isArray(p.alliances) ? p.alliances.length : (p.allianceCount||p.alliances||0),
           quit:        p.eliminated==='quit'||p.quit||false,
         };
         addRow(name, placement, stats);

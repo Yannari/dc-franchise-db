@@ -5972,7 +5972,7 @@ setTimeout(function() {
           idolsFound:  p.idolsFound||p.idols_found||0,
           idolsPlayed: p.idolsPlayed||p.idols_played||0,
           imm:         p.immunityWins||p.imm||0,
-          rew:         p.rewardWins||p.rew||(p.challengeWins&&p.immunityWins ? Math.max(0,(p.challengeWins||0)-(p.immunityWins||0)) : 0),
+          rew:         p.rewardWins||p.rew||(p.challengeWins!=null ? Math.max(0,(p.challengeWins||0)-(p.immunityWins||0)) : 0),
           alliances:   Array.isArray(p.alliances) ? p.alliances.length : (p.allianceCount||p.alliances||0),
           quit:        p.eliminated==='quit'||p.quit||false,
         };

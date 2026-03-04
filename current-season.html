@@ -1023,7 +1023,7 @@ Dave voted for Mickey
             <span style="color:#34d399; margin-left:8px;">💞 <b>SOCIAL</b></span>
             <span>⭐ Jury Votes +1.5</span>
             <span>❤️ Fan Fav +2.0</span>
-            <span>🗳️ Votes vs −0.2 above avg</span>
+            <span>🗳️ Votes vs −0.2 per vote above avg · +0.15 per vote below avg</span>
             <span style="color:#fbbf24; margin-left:8px;">✍️ <b>Override</b> ±5 max</span>
             <span style="color:#f87171; margin-left:8px;">🚪 Quit −6.0</span>
           </div>
@@ -1040,7 +1040,7 @@ Dave voted for Mickey
                   <th style="padding: 6px 5px; text-align: center; width: 46px; color:#a78bfa;" title="Idols found but NOT played · 0 if survived · −3.0 if eliminated holding it">Found</th>
                   <th style="padding: 6px 5px; text-align: center; width: 46px; color:#a78bfa;" title="Alliances formed this season · +0.8 each, max 4 counted">Allies</th>
                   <th style="padding: 6px 5px; text-align: center; width: 50px; color:#34d399;" title="+1.5 per jury vote received · finalists only">Jury ⭐</th>
-                  <th style="padding: 6px 5px; text-align: center; width: 50px; color:#34d399;" title="Total votes cast against this player · −0.2 per vote above cast average">Votes vs</th>
+                  <th style="padding: 6px 5px; text-align: center; width: 50px; color:#34d399;" title="Votes cast against this player · −0.2 per vote above cast avg · +0.15 per vote below cast avg">Votes vs</th>
                   <th style="padding: 6px 5px; text-align: center; width: 42px; color:#f59e0b;" title="Won Fan Favorite · +2.0">FanFav</th>
                   <th style="padding: 6px 5px; text-align: center; width: 38px; color:#f87171;" title="Quit voluntarily · −6.0">Quit</th>
                   <th style="padding: 6px 5px; text-align: center; width: 58px; color:#fbbf24;" title="Narrative override · −5 to +5 · add a reason in the note field">±Override</th>
@@ -5622,11 +5622,13 @@ setTimeout(function() {
 
       // SOCIAL — co-winner jury votes ×0.75 (4-4 tie ≠ 4 decisive votes)
       const castAvgVotes = Math.round(p.castSize / 3);
-      const votePenalty  = Math.max(0, p.votesAgainst - castAvgVotes) * 0.2;
+      // Two-sided votes curve: above avg = penalty, below avg = bonus
+      const voteDiff     = p.votesAgainst - castAvgVotes;
+      const voteAdj      = voteDiff > 0 ? -(voteDiff * 0.2) : -(voteDiff * 0.15); // negative diff * negative rate = positive bonus
       const rawJuryBonus = p.isFinalist ? p.juryVotes * 1.5 : 0;
       const juryBonus    = p.coWin ? rawJuryBonus * 0.75 : rawJuryBonus;
       const fanFavBonus  = p.fanFav ? 2.0 : 0;
-      const socialBonus  = juryBonus + fanFavBonus - votePenalty;
+      const socialBonus  = juryBonus + fanFavBonus + voteAdj;
 
       const quitAdj = p.quit ? -6 : 0;
 
@@ -5798,7 +5800,9 @@ setTimeout(function() {
         }
         if (row.alliances)   parts.push('Allies:+' + (Math.min(row.alliances,4)*0.8).toFixed(1));
         if (row.fanFav)     parts.push('FanFav:+2.0');
-        if (row.votesAgainst>castAvg) parts.push('VotesVs:\u2212'+(Math.max(0,row.votesAgainst-castAvg)*0.2).toFixed(1));
+        const vDiff = row.votesAgainst - castAvg;
+        if (vDiff > 0)  parts.push('VotesVs:\u2212'+(vDiff*0.2).toFixed(1));
+        else if (vDiff < 0) parts.push('VotesVs:+'+(Math.abs(vDiff)*0.15).toFixed(1));
         if (row.quit)       parts.push('Quit:\u22126.0');
         if (row.override)   parts.push('Override:' + (row.override>0?'+':'') + row.override.toFixed(1) + (row.overrideReason?' ('+row.overrideReason+')':''));
 
@@ -5972,7 +5976,7 @@ setTimeout(function() {
           idolsFound:  p.idolsFound||p.idols_found||0,
           idolsPlayed: p.idolsPlayed||p.idols_played||0,
           imm:         p.immunityWins||p.imm||0,
-          rew:         p.rewardWins||p.rew||(p.challengeWins!=null ? Math.max(0,(p.challengeWins||0)-(p.immunityWins||0)) : 0),
+          rew:         p.rewardWins!=null ? p.rewardWins : (p.rew!=null ? p.rew : Math.max(0, (p.challengeWins||0)-(p.immunityWins||0))),
           alliances:   Array.isArray(p.alliances) ? p.alliances.length : (p.allianceCount||p.alliances||0),
           quit:        p.eliminated==='quit'||p.quit||false,
         };

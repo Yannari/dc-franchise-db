@@ -238,39 +238,32 @@
     },
     {
       "seasonNumber": 8,
-      "title": "Total Drama Heroes VS Villains VS Civilians",
+      "title": "Total Drama:Heroes VS Villains VS Civilians",
       "subtitle": "Good VS Evil VS Civilians",
       "castSize": 18,
       "episodeCount": 16,
       "winner": {
-        "name": "Alejandro",
+        "name": "Alejandro & Cameron",
         "playerSlug": "alejandro",
+        "coWinnerSlug": "cameron",
         "vote": "4-4",
+        "isDualWin": true,
         "runnerUp": "Sanders",
-        "keyStats": "Co-winner with 4 jury votes; 4 individual immunities; 7 total challenge wins; only 2 votes against.",
-        "strategy": "Built cross-tribe power with Pete and later a tight bond with Cameron, steering critical blindsides while avoiding exposure. When shields fell, he won out in challenges, cut Sanders at Final 3, and forced a legacy Final 2 that split the jury.",
-        "legacy": "Becomes the franchise’s first two-time champion (shared). Cemented as the definitive 'Villain King' who can both orchestrate and out-muscle in endgame."
-      },
-      "winner": {
-        "name": "Cameron",
-        "playerSlug": "cameron",
-        "vote": "4-4",
-        "runnerUp": "Sanders",
-        "keyStats": "Co-winner with 4 jury votes; 4 individual immunities; 7 total challenge wins; only 2 votes against.",
-        "strategy": "Built cross-tribe power with Pete and later a tight bond with Cameron, steering critical blindsides while avoiding exposure. When shields fell, he won out in challenges, cut Sanders at Final 3, and forced a legacy Final 2 that split the jury.",
-        "legacy": "Becomes the franchise’s first two-time champion (shared). Cemented as the definitive 'Villain King' who can both orchestrate and out-muscle in endgame."
+        "keyStats": "First dual winners in franchise history — 4-4 jury tie. Alejandro: 4 individual immunities, 7 total challenge wins, 2 votes against. Cameron: survived extreme hatred from MacArthur, 7 votes against.",
+        "strategy": "Alejandro managed shields (Pete → Leshawna → Sanders) and dominated challenges. Cameron survived as the indispensable brain no one could cut. Together they outlasted the Civilian Hegemony.",
+        "legacy": "First co-winners in franchise history. Alejandro becomes the franchise's only two-time champion."
       },
       "awards": {
         "fanFavorite": {
-          "name": "macarthur",
+          "name": "MacArthur",
           "playerSlug": "macarthur"
         },
         "bestStrategic": {
-          "name": "heather",
+          "name": "Heather",
           "playerSlug": "heather"
         },
         "mostChallengeWins": {
-          "name": "alejandro",
+          "name": "Alejandro",
           "playerSlug": "alejandro",
           "detail": "7 total"
         }

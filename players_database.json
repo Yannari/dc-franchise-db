@@ -1,8 +1,8 @@
 {
   "franchise": {
     "name": "DC Franchise Database",
-    "totalSeasons": 8,
-    "totalPlayers": 84,
+    "totalSeasons": 9,
+    "totalPlayers": 102,
     "description": "Total Drama franchise player statistics and performance data"
   },
   "players": [
@@ -5315,6 +5315,672 @@
         }
       ],
       "story": "She arrived as one of six Civilians — the season's sacrificial lambs, assembled to be picked off by legends. Her tribe was decimated in three straight tribals. Her closest ally MacArthur was on the other tribe. By the merge she had one idol, zero allies in the majority, and every reason to accept an honorable early jury exit. Instead she ran the post-merge. She built simultaneous Unbreakable bonds with Jen and MacArthur while quietly accumulating influence over Alejandro and Cameron. When the majority came for MacArthur with five votes, she negated every single one. When Jen — her closest ally, her strategic partner, her shield — became the biggest threat to her endgame, she won immunity, found a second idol, played it on her biggest rival, and watched Jen go home on the revote. She called it avenging MacArthur. It was also just brilliant. Won F4 immunity, dictated Gerry's exit, then lost the finale challenge by a thread to the man she'd saved twice. The most complete non-winner game in franchise history."
+    },
+    {
+      "id": "axel",
+      "name": "Axel",
+      "seasons": [
+        9
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 9,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "bowie",
+      "name": "Bowie",
+      "seasons": [
+        9
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 9,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "brightly",
+      "name": "Brightly",
+      "seasons": [
+        9
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 9,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "caleb",
+      "name": "Caleb",
+      "seasons": [
+        9
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 9,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "chase",
+      "name": "Chase",
+      "seasons": [
+        9
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 9,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "damien",
+      "name": "Damien",
+      "seasons": [
+        9
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 9,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "emmah",
+      "name": "Emmah",
+      "seasons": [
+        9
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 9,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "hicks",
+      "name": "Hicks",
+      "seasons": [
+        9
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 9,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "julia",
+      "name": "Julia",
+      "seasons": [
+        9
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 9,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "mk",
+      "name": "MK",
+      "seasons": [
+        9
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 9,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "millie",
+      "name": "Millie",
+      "seasons": [
+        9
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 9,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "nichelle",
+      "name": "Nichelle",
+      "seasons": [
+        9
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 9,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "priya",
+      "name": "Priya",
+      "seasons": [
+        9
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 9,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "raj",
+      "name": "Raj",
+      "seasons": [
+        9
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 9,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "ripper",
+      "name": "Ripper",
+      "seasons": [
+        9
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 9,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "scary-girl",
+      "name": "Scary Girl",
+      "seasons": [
+        9
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 9,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "wayne",
+      "name": "Wayne",
+      "seasons": [
+        9
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 9,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
+    },
+    {
+      "id": "zee",
+      "name": "Zee",
+      "seasons": [
+        9
+      ],
+      "totalSeasons": 1,
+      "bestPlacement": 99,
+      "wins": 0,
+      "totalChallengeWins": 0,
+      "totalImmunityWins": 0,
+      "totalRewardWins": 0,
+      "totalVotesAgainst": 0,
+      "totalIdolsFound": 0,
+      "totalJuryVotes": 0,
+      "tier": "Unranked",
+      "badges": [],
+      "seasonDetails": [
+        {
+          "season": 9,
+          "placement": 99,
+          "status": "Active",
+          "tribe": "TBD",
+          "challengeWins": 0,
+          "immunityWins": 0,
+          "rewardWins": 0,
+          "votesReceived": 0,
+          "idolsFound": 0,
+          "strategicRank": 0,
+          "juryVotes": 0,
+          "finalVote": "",
+          "unbreakableBonds": [],
+          "rivalries": [],
+          "allianceHistory": []
+        }
+      ]
     }
   ]
 }

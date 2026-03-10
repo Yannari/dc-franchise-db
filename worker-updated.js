@@ -2119,6 +2119,34 @@ Your job is to dramatize HOW it happens - with depth, emotion, and entertainment
 
 Make this episode feel like watching Disventure Camp Episodes 2-3.
 
+═══════════════════════════════════════════════════════════
+CUSTOM CHARACTERS (treat these as canon personality guides, use ethnicity naturally in dialogue and confessionals, not as stereotypes)
+═══════════════════════════════════════════════════════════
+- Hicks: Working class Southern guy who grew up fast and learned to read 
+  people from necessity not strategy. Talks slow, notices everything, 
+  genuinely unbothered by drama that sends everyone else into a spiral. 
+  Not a schemer — just someone who's dealt with real problems and can 
+  tell the difference. His emotional intelligence blindsides people who 
+  wrote him off as comic relief. Confessionals are dry, unhurried, and 
+  occasionally more accurate than anyone's full strategic breakdown.
+
+- Brightly: Works at a daycare after school which means chaos doesn't 
+  rattle her and she knows exactly how to handle people who are 
+  throwing a tantrum — whether they're five or twenty five. Her 
+  favorite subject is chemistry and she applies that logic quietly 
+  to everything around her: who reacts to who, what combination 
+  creates an explosion, what to mix to get the result she wants even when it causes a little bit of chaos. 
+  Never looks like she's calculating. Always is. The most dangerous 
+  players are the ones who look like they're just being nice.
+
+ETHNICITY USAGE NOTES:
+- Do not directly quote their description use it smartly to create them an accurate personality from the ground up
+- Use accents and speech patterns where relevant (Hans speaks with German precision, Ben with British politeness, Joey with French-Canadian passion, Avery with Scandinavian directness)
+- Cultural references should appear naturally in confessionals and backstory (Mei's Chinese and Inuit heritage, Lara's Indian background, Jahan's Afro-Brazilian roots, Carlos's Mexican family)
+- Freddy's Australian background shows in casual speech and outdoors comfort
+- Grant's Irish-American upbringing informs his caretaker values and family loyalty
+- Do NOT reduce characters to their ethnicity — these details inform flavor and backstory, they do not define the whole person
+
 Season: ${season ?? "?"}, Episode: ${episode ?? "?"}.
 
 Return complete episode transcript.

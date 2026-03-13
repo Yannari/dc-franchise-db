@@ -272,6 +272,41 @@
       "status": "Complete",
       "castPhotoPath": "assets/cast/s8-cast.png",
       "emoji": "♦️"
+    },
+        {
+      "seasonNumber": 9,
+      "title": "Total Drama:Land of Powers",
+      "subtitle": "In a land of Advantage only one we get the Crown",
+      "castSize": 18,
+      "episodeCount": 16,
+      "winner": {
+        "name": "Bowie",
+        "playerSlug": "bowie",
+        "vote": "5-3-0",
+        "runnerUp": "Millie & Chase",
+        "keyStats": "Winner 5-3-0 vote; 1 individual immunity; 2 votes received; stole 1 idol; executed Inheritance to acquire Knowledge is Power and an Extra Vote; won F4 fire-making.",
+        "strategy": "Controlled resource flow while staying insulated by larger shields, then weaponized advantages at precise inflection points (Inheritance, KIP theft, late extra vote). Broke the Priya stronghold, won when it mattered, and argued his ruthlessness as optimized gameplay to a split jury.",
+        "legacy": "Sets the franchise standard for advantage monopoly without burning social capital. A top-tier mastermind win defined by timing, theft, and endgame execution."
+      },
+      "awards": {
+        "fanFavorite": {
+          "name": "Brightly",
+          "playerSlug": "brightly"
+        },
+        "bestStrategic": {
+          "name": "Bowie",
+          "playerSlug": "bowie"
+        },
+        "mostChallengeWins": {
+          "name": "Damien",
+          "playerSlug": "damien",
+          "detail": "5 total"
+        }
+      },
+      "theme": "18 newbies fight for the title of King of Power",
+      "status": "Complete",
+      "castPhotoPath": "assets/cast/s9-cast.png",
+      "emoji": "🪬"
     }
   ]
 }

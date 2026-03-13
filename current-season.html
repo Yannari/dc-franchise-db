@@ -753,7 +753,7 @@ Blaineley
             <span>📂</span> Load Existing Databases
             <span style="font-size: 11px; opacity: 0.5; font-weight: normal;">(Required to preserve your existing data)</span>
           </h4>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
             <div>
               <label style="display: block; margin-bottom: 6px; font-size: 12px; opacity: 0.8;">franchise_database.json</label>
               <div style="display: flex; gap: 8px; align-items: center;">
@@ -768,6 +768,14 @@ Blaineley
                 <input type="file" id="sb-load-players-file" accept=".json" style="display:none" />
                 <button onclick="document.getElementById('sb-load-players-file').click()" class="btn" style="font-size: 12px; padding: 6px 12px; background: rgba(59,130,246,0.3); border: 1px solid rgba(59,130,246,0.5);">📂 Load File</button>
                 <span id="sb-players-load-status" style="font-size: 11px; opacity: 0.7;">Not loaded — will start fresh</span>
+              </div>
+            </div>
+            <div>
+              <label style="display: block; margin-bottom: 6px; font-size: 12px; opacity: 0.8;">seasons_database.json</label>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <input type="file" id="sb-load-seasons-file" accept=".json" style="display:none" />
+                <button onclick="document.getElementById('sb-load-seasons-file').click()" class="btn" style="font-size: 12px; padding: 6px 12px; background: rgba(59,130,246,0.3); border: 1px solid rgba(59,130,246,0.5);">📂 Load File</button>
+                <span id="sb-seasons-load-status" style="font-size: 11px; opacity: 0.7;">Not loaded — will start fresh</span>
               </div>
             </div>
           </div>
@@ -4274,10 +4282,10 @@ setTimeout(function() {
     const chalPlayer = pl.find(p => p.name?.toLowerCase() === chalName?.toLowerCase()) || bestChallenger;
     if (chalName) {
       awards.mostChallengeWins = {
+        ...(awards.mostChallengeWins || {}),  // preserve any AI description
         name: chalName,
         playerSlug: slugify(chalName),
-        detail: `${cw(chalPlayer||{})} total`,
-        ...(awards.mostChallengeWins || {})  // preserve any AI description
+        detail: `${cw(chalPlayer||{})} total`  // computed last — always wins
       };
     }
 
@@ -4292,7 +4300,7 @@ setTimeout(function() {
     return awards;
   }
 
-  function buildSeasonDataFromAI(inputData, aiData) {
+  function buildSeasonDataFromAI  function buildSeasonDataFromAI(inputData, aiData) {
     const { metadata, finale } = inputData;
     
     // Use AI-extracted data to build complete season file
@@ -4688,6 +4696,30 @@ setTimeout(function() {
           } catch(err) {
             document.getElementById('sb-players-load-status').textContent = '❌ Invalid JSON';
             document.getElementById('sb-players-load-status').style.color = '#f87171';
+          }
+        };
+        reader.readAsText(file);
+        e.target.value = '';
+      });
+    }
+
+    // Seasons DB loader
+    const seasonsInput = document.getElementById('sb-load-seasons-file');
+    if (seasonsInput) {
+      seasonsInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+          try {
+            const parsed = JSON.parse(ev.target.result);
+            localStorage.setItem('seasons_database', JSON.stringify(parsed));
+            document.getElementById('sb-seasons-load-status').textContent = '✅ Loaded (' + (parsed.seasons?.length || 0) + ' seasons)';
+            document.getElementById('sb-seasons-load-status').style.color = '#4ade80';
+            console.log('✅ seasons_database loaded into localStorage:', parsed.seasons?.length, 'seasons');
+          } catch(err) {
+            document.getElementById('sb-seasons-load-status').textContent = '❌ Invalid JSON';
+            document.getElementById('sb-seasons-load-status').style.color = '#f87171';
           }
         };
         reader.readAsText(file);

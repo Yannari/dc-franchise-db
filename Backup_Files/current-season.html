@@ -1055,7 +1055,7 @@ Dave voted for Mickey
             <span>💀 Idol Found + Eliminated −3.0 · Survived = 0</span>
             <span>🤝 Allies +0.8 each (cap 4) · Unbreakable/named alliances only — not auto-filled</span>
             <span style="color:#34d399; margin-left:8px;">💞 <b>SOCIAL</b></span>
-            <span>⭐ Jury Votes +1.5</span>
+            <span></span>
             <span>❤️ Fan Fav +2.0</span>
             <span>🗳️ Votes vs −0.2 per vote above avg · +0.15 per vote below avg</span>
             <span style="color:#fbbf24; margin-left:8px;">✍️ <b>Override</b> ±5 max</span>
@@ -1073,7 +1073,7 @@ Dave voted for Mickey
                   <th style="padding: 6px 5px; text-align: center; width: 46px; color:#a78bfa;" title="Idols successfully played at tribal · +2.0 each">Idol ▶</th>
                   <th style="padding: 6px 5px; text-align: center; width: 46px; color:#a78bfa;" title="Idols found but NOT played · 0 if survived · −3.0 if eliminated holding it">Found</th>
                   <th style="padding: 6px 5px; text-align: center; width: 46px; color:#a78bfa;" title="Real alliances only — Unbreakable bonds or named alliances · +0.8 each, max 4 · do NOT include casual relationships">Allies</th>
-                  <th style="padding: 6px 5px; text-align: center; width: 50px; color:#34d399;" title="+1.5 per jury vote received · finalists only">Jury ⭐</th>
+                  <th style="padding: 6px 5px; text-align: center; width: 50px; color:#34d399;" title="not counted in score">Jury ⭐</th>
                   <th style="padding: 6px 5px; text-align: center; width: 50px; color:#34d399;" title="Votes cast against this player · −0.2 per vote above cast avg · +0.15 per vote below cast avg">Votes vs</th>
                   <th style="padding: 6px 5px; text-align: center; width: 42px; color:#f59e0b;" title="Won Fan Favorite · +2.0">FanFav</th>
                   <th style="padding: 6px 5px; text-align: center; width: 38px; color:#f87171;" title="Quit voluntarily · −6.0">Quit</th>
@@ -6253,10 +6253,8 @@ setTimeout(function() {
       // Two-sided votes curve: above avg = penalty, below avg = bonus
       const voteDiff     = p.votesAgainst - castAvgVotes;
       const voteAdj      = voteDiff > 0 ? -(voteDiff * 0.2) : -(voteDiff * 0.15); // negative diff * negative rate = positive bonus
-      const rawJuryBonus = p.isFinalist ? p.juryVotes * 1.5 : 0;
-      const juryBonus    = p.coWin ? rawJuryBonus * 0.75 : rawJuryBonus;
       const fanFavBonus  = p.fanFav ? 2.0 : 0;
-      const socialBonus  = juryBonus + fanFavBonus + voteAdj;
+      const socialBonus  = fanFavBonus + voteAdj;
 
       const quitAdj = p.quit ? -6 : 0;
 
@@ -6423,7 +6421,7 @@ setTimeout(function() {
           // survived with unplayed idol = 0, no entry shown
         }
         if (isFinalist&&row.juryVotes) {
-          const jb = isCoWin ? row.juryVotes*1.5*0.75 : row.juryVotes*1.5;
+          const jb = isCoWin ? 0 : 0;
           parts.push('Jury:+'+jb.toFixed(1));
         }
         if (row.alliances)   parts.push('Allies:+' + (Math.min(row.alliances,4)*0.8).toFixed(1));

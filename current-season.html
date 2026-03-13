@@ -3013,10 +3013,19 @@ setTimeout(function() {
   // ========================================
   
   function extractPlayerTribes(episodes) {
-    const playerTribes = {};
-    
-    if (!episodes || episodes.length === 0) return playerTribes;
-    
+    // Returns { slug: "Blue → Yellow → Campers" } — full progression string
+    const playerTribeHistory = {}; // slug → [tribe1, tribe2, ...] in episode order
+
+    if (!episodes || episodes.length === 0) return {};
+
+    // Strip parentheticals like "(FINAL 5)", "(MERGE)", "(THE MERGE)" and trim
+    function cleanTribeName(raw) {
+      return raw
+        .replace(/\s*\(.*?\)\s*/g, '')  // remove anything in parens
+        .replace(/\s*tribe\s*$/i, '')    // remove trailing "Tribe"
+        .trim();
+    }
+
     // Helper: parse lines under a === HEADER === section
     function parseBlock(text, headerRegex) {
       const lines = (text || '').split(/\r?\n/);
@@ -3035,68 +3044,79 @@ setTimeout(function() {
       }
       return out;
     }
-    
-    // Check ALL episodes — swaps reassign people mid-game, later episodes overwrite earlier
+
+    function addTribe(slug, tribe) {
+      if (!tribe || tribe.length < 2) return;
+      const cleaned = cleanTribeName(tribe);
+      if (!cleaned) return;
+      if (!playerTribeHistory[slug]) playerTribeHistory[slug] = [];
+      const hist = playerTribeHistory[slug];
+      // Only add if different from the most recent tribe
+      if (hist.length === 0 || hist[hist.length - 1] !== cleaned) {
+        hist.push(cleaned);
+      }
+    }
+
+    // Check ALL episodes in order — swaps reassign people mid-game
     for (const ep of episodes) {
       const summary = ep.summary || '';
-      
+
       // ── PATTERN 1 (PRIMARY): === TRIBES (ACTIVE) === with #TribeName subheaders ──
-      // Actual format used in episode summaries:
-      //   #Yellow Tribe
-      //   Axel
-      //   Bowie
-      //   #Blue Tribe
-      //   Damien ...
       const tribesBlock = parseBlock(summary, /^===\s*TRIBES\b/i);
       if (tribesBlock.length) {
         let currentTribe = null;
         for (const line of tribesBlock) {
           const tribeHeader = line.match(/^#\s*(.+?)\s*$/i);
           if (tribeHeader) {
-            // "#Yellow Tribe" → "Yellow",  "#Blue" → "Blue"
-            currentTribe = tribeHeader[1].replace(/\s*tribe\s*$/i, '').trim();
+            currentTribe = cleanTribeName(tribeHeader[1]);
           } else if (currentTribe && line && !line.startsWith('=')) {
             const cleanName = line.replace(/^[-*\d.)\s]+/, '').trim();
-            if (cleanName.length > 1) playerTribes[slugify(cleanName)] = currentTribe;
+            if (cleanName.length > 1) addTribe(slugify(cleanName), currentTribe);
           }
         }
       }
-      
+
       // ── PATTERN 2: === TRIBE: TribeName === followed by player names ──
-      const tribeMatches = summary.matchAll(/===\s*TRIBE[:\s]+([A-Za-z]+)\s*===\s*([\s\S]*?)(?=\n===|$)/gi);
+      const tribeMatches = summary.matchAll(/===\s*TRIBE[:\s]+([A-Za-z\s]+?)\s*===\s*([\s\S]*?)(?=\n===|$)/gi);
       for (const match of tribeMatches) {
-        const tribeName = match[1].trim();
-        const lines = match[2].split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('===') && !l.startsWith('---'));
+        const tribeName = cleanTribeName(match[1]);
+        const lines = match[2].split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('==='));
         for (const line of lines) {
           const cleanName = line.replace(/^[-*\d.)\s]+/, '').trim();
-          if (cleanName.length > 2) playerTribes[slugify(cleanName)] = tribeName;
+          if (cleanName.length > 2) addTribe(slugify(cleanName), tribeName);
         }
       }
-      
+
       // ── PATTERN 3: "TribeName Tribe (N): Name1, Name2" ──
       const tribeCountMatches = summary.matchAll(/([A-Za-z]+)\s+[Tt]ribe\s*\(\d+\)\s*:\s*([^\n]+)/g);
       for (const match of tribeCountMatches) {
-        const tribeName = match[1].trim();
+        const tribeName = cleanTribeName(match[1]);
         for (const name of match[2].split(/,/)) {
           const cleanName = name.replace(/^[-*\d.)\s]+/, '').trim();
-          if (cleanName.length > 2) playerTribes[slugify(cleanName)] = tribeName;
+          if (cleanName.length > 2) addTribe(slugify(cleanName), tribeName);
         }
       }
-      
-      // ── PATTERN 4: "Galang tribe: Name1, Name2" or "Galang members: Name1, Name2" ──
+
+      // ── PATTERN 4: "Galang tribe: Name1, Name2" ──
       const tribeLineMatches = summary.matchAll(/([A-Za-z]+)\s+(?:tribe|members?):\s*([^\n]+)/gi);
       for (const match of tribeLineMatches) {
-        const tribeName = match[1].trim();
+        const tribeName = cleanTribeName(match[1]);
         for (const name of match[2].split(/,|\sand\s/i)) {
           const cleanName = name.replace(/^[-*\d.)\s]+/, '').trim();
           if (cleanName.length > 2 && !cleanName.toLowerCase().includes('member')) {
-            playerTribes[slugify(cleanName)] = tribeName;
+            addTribe(slugify(cleanName), tribeName);
           }
         }
       }
     }
-    
-    console.log('📋 Extracted tribe assignments:', playerTribes);
+
+    // Convert history arrays to "Blue → Yellow → Campers" strings
+    const playerTribes = {};
+    for (const [slug, hist] of Object.entries(playerTribeHistory)) {
+      playerTribes[slug] = hist.join(' → ');
+    }
+
+    console.log('📋 Extracted tribe progressions:', playerTribes);
     return playerTribes;
   }
 
@@ -4220,7 +4240,59 @@ setTimeout(function() {
     }
   }
   
-  function buildSeasonDataFromAI(inputData, aiData) {
+  // ── Merge AI-generated awards with manual form inputs + computed numeric fields ──
+  // The AI (via worker season-data-extraction) generates all narrative awards.
+  // We only overlay: fanFavorite (from form), mostChallengeWins detail (from stats).
+  function computeSeasonAwards(aiData, inputData, metadata) {
+    const pl = aiData.placements || [];
+    
+    // Helper: effective challenge wins floor
+    const cw = p => Math.max(p.challengeWins||0, (p.immunityWins||0)+(p.rewardWins||0));
+
+    // Start with AI-generated awards (from worker extraction)
+    const awards = Object.assign({}, aiData.awards || {});
+
+    // ── Manual form overrides ────────────────────────────────────────────────
+    // fanFavorite: always from form input (manual pick)
+    const fanFavName = inputData.awards?.fanFavorite;
+    if (fanFavName) {
+      awards.fanFavorite = { name: fanFavName, playerSlug: slugify(fanFavName) };
+    }
+
+    // bestStrategic: form input if provided, else keep AI's
+    const bestStrName = inputData.awards?.bestStrategic;
+    if (bestStrName) {
+      awards.bestStrategic = awards.bestStrategic
+        ? { ...awards.bestStrategic, name: bestStrName, playerSlug: slugify(bestStrName) }
+        : { name: bestStrName, playerSlug: slugify(bestStrName) };
+    }
+
+    // ── mostChallengeWins: compute from stats (most accurate source) ─────────
+    const mostChalInput = inputData.awards?.mostChallengeWins;
+    const bestChallenger = [...pl].sort((a,b) => cw(b) - cw(a))[0];
+    const chalName = mostChalInput || bestChallenger?.name || '';
+    const chalPlayer = pl.find(p => p.name?.toLowerCase() === chalName?.toLowerCase()) || bestChallenger;
+    if (chalName) {
+      awards.mostChallengeWins = {
+        name: chalName,
+        playerSlug: slugify(chalName),
+        detail: `${cw(chalPlayer||{})} total`,
+        ...(awards.mostChallengeWins || {})  // preserve any AI description
+      };
+    }
+
+    // ── Ensure bestPhysical / compBeast use accurate wins count ─────────────
+    if (bestChallenger && awards.bestPhysical) {
+      awards.bestPhysical.wins = cw(bestChallenger);
+    }
+    if (bestChallenger && awards.compBeast?.gold) {
+      awards.compBeast.gold.wins = cw(bestChallenger);
+    }
+
+    return awards;
+  }
+
+  function buildSeasonDataFromAI  function buildSeasonDataFromAI(inputData, aiData) {
     const { metadata, finale } = inputData;
     
     // Use AI-extracted data to build complete season file
@@ -4259,9 +4331,10 @@ setTimeout(function() {
         story: p.story,
         gameplayStyle: p.gameplayStyle,
         keyMoments: p.keyMoments || [],
-        challengeWins: p.challengeWins || 0,
         immunityWins: p.immunityWins || 0,
-        rewardWins: p.rewardWins || 0,  // ✅ FIX: carry reward wins from AI output
+        rewardWins: p.rewardWins || 0,
+        // ✅ FIX: challengeWins must be at least immunityWins+rewardWins (AI often returns 0 for total but fills sub-fields correctly)
+        challengeWins: Math.max(p.challengeWins || 0, (p.immunityWins || 0) + (p.rewardWins || 0)),
         idolsFound: p.idolsFound || 0,
         votesReceived: p.votesReceived || 0,
         alliances: p.alliances || [],
@@ -4289,21 +4362,7 @@ setTimeout(function() {
         }))
       },
       
-      awards: {
-        fanFavorite: {
-          name: inputData.awards.fanFavorite,
-          playerSlug: slugify(inputData.awards.fanFavorite)
-        },
-        bestStrategic: {
-          name: inputData.awards.bestStrategic,
-          playerSlug: slugify(inputData.awards.bestStrategic)
-        },
-        mostChallengeWins: {
-          name: inputData.awards.mostChallengeWins,
-          playerSlug: slugify(inputData.awards.mostChallengeWins),
-          detail: `${aiData.placements.find(p => p.name.toLowerCase() === inputData.awards.mostChallengeWins.toLowerCase())?.challengeWins || 0} total`
-        }
-      },
+      awards: computeSeasonAwards(aiData, inputData, metadata),
       
       seasonNarrative: aiData.seasonNarrative,
       theme: metadata.theme,
@@ -4476,19 +4535,9 @@ setTimeout(function() {
         }))
       },
       awards: {
-        fanFavorite: {
-          name: awards.fanFavorite,
-          playerSlug: slugify(awards.fanFavorite)
-        },
-        bestStrategic: {
-          name: awards.bestStrategic,
-          playerSlug: slugify(awards.bestStrategic)
-        },
-        mostChallengeWins: {
-          name: awards.mostChallengeWins,
-          playerSlug: slugify(awards.mostChallengeWins),
-          detail: "TBD - count from episodes"
-        }
+        fanFavorite: awards.fanFavorite ? { name: awards.fanFavorite, playerSlug: slugify(awards.fanFavorite) } : null,
+        bestStrategic: awards.bestStrategic ? { name: awards.bestStrategic, playerSlug: slugify(awards.bestStrategic) } : null,
+        mostChallengeWins: awards.mostChallengeWins ? { name: awards.mostChallengeWins, playerSlug: slugify(awards.mostChallengeWins), detail: "TBD" } : null
       },
       theme: metadata.theme,
       status: "Complete",
@@ -4995,9 +5044,11 @@ setTimeout(function() {
       // Get AI-generated stats from placement
       // ✅ FIX: Brantsteele data takes priority over AI-guessed values
       const bs = bsData[id] || {};
-      const challengeWins = bs.challengeWins || placement.challengeWins || 0;
-      const immunityWins = bs.immunityWins || placement.immunityWins || 0;
-      const rewardWins = bs.rewardWins || placement.rewardWins || 0;  // ✅ FIX: read reward wins from placement
+      const immunityWins  = bs.immunityWins  || placement.immunityWins  || 0;
+      const rewardWins    = bs.rewardWins    || placement.rewardWins    || 0;
+      // ✅ FIX: challengeWins must be ≥ immunityWins + rewardWins (AI often returns 0 total but fills sub-fields)
+      const rawChallengeWins = bs.challengeWins || placement.challengeWins || 0;
+      const challengeWins = Math.max(rawChallengeWins, immunityWins + rewardWins);
       const idolsFound = bs.idolsFound || placement.idolsFound || 0;
       const votesReceived = bs.votesReceived || placement.votesReceived || 0;
       const strategicRank = placement.strategicRank || 0;
@@ -5016,7 +5067,7 @@ setTimeout(function() {
           totalSeasons: 1,
           bestPlacement: placement.placement,
           wins: placement.placement === 1 ? 1 : 0,
-          totalChallengeWins: challengeWins,
+          totalChallengeWins: Math.max(challengeWins, immunityWins + rewardWins),
           totalImmunityWins: immunityWins,
           totalRewardWins: rewardWins,  // ✅ FIX: use actual reward wins
           totalVotesAgainst: votesReceived,
@@ -5088,9 +5139,14 @@ setTimeout(function() {
         }
         
         // Add this season's stats
-        player.totalChallengeWins += challengeWins;
         player.totalImmunityWins += immunityWins;
-        player.totalRewardWins = (player.totalRewardWins || 0) + rewardWins;  // ✅ FIX: accumulate reward wins
+        player.totalRewardWins = (player.totalRewardWins || 0) + rewardWins;
+        player.totalChallengeWins += challengeWins;
+        // ✅ SAFEGUARD: totalChallengeWins must always be >= immunityWins + rewardWins
+        player.totalChallengeWins = Math.max(
+          player.totalChallengeWins,
+          player.totalImmunityWins + player.totalRewardWins
+        );
         player.totalVotesAgainst += votesReceived;
         player.totalIdolsFound += idolsFound;
         player.totalJuryVotes += juryVotes;
@@ -5109,8 +5165,8 @@ setTimeout(function() {
         season,
         placement: placement.placement,
         status: placement.phase,
-        tribe: (playerTribes[id] && playerTribes[id] !== 'Unknown') ? playerTribes[id] : (bs.tribe || playerTribes[id] || 'Unknown'),
-        challengeWins: challengeWins,
+        tribe: (playerTribes[id] && playerTribes[id] !== 'Unknown') ? playerTribes[id] : (bs.tribe || 'Unknown'),
+        challengeWins: Math.max(challengeWins, immunityWins + rewardWins),
         immunityWins: immunityWins,
         rewardWins: rewardWins,  // ✅ FIX: actual reward wins, not hardcoded 0
         votesReceived: votesReceived,

@@ -1,178 +1,68 @@
 export default {
   async fetch(request, env) {
-    const cors = corsHeaders();
-
     if (request.method === "OPTIONS") {
-      return new Response(null, { headers: cors });
+      return new Response(null, {
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "POST, OPTIONS",
+          "Access-Control-Allow-Headers": "Content-Type",
+        },
+      });
     }
 
     if (request.method !== "POST") {
-      return new Response("Use POST", { status: 405, headers: cors });
+      return new Response("Use POST", { status: 405, headers: { "Access-Control-Allow-Origin": "*" } });
     }
 
     const body = await request.json().catch(() => ({}));
-    const { mode } = body;
+    const { season, episode, summaryText, mode, previousEpisodes } = body;
 
-    try {
-      if (mode === "audition-generation") {
-        return await generateAuditions(body, env);
-      } else if (mode === "season-data-extraction") {
-        return await generateSeasonDataExtraction(body, env);
-      } else if (mode === "rankings-rebuild") {
-        return await generateRankingsRebuild(body, env);
-      } else if (mode === "rankings-update") {
-        return await generateRankingsUpdate(body, env);
-      } else {
-        return new Response(JSON.stringify({ 
-          error: "Invalid mode. Use: 'audition-generation', 'season-data-extraction', 'rankings-rebuild', or 'rankings-update'" 
-        }), {
-          status: 400,
-          headers: { ...cors, "Content-Type": "application/json" },
-        });
-      }
-    } catch (e) {
-      return new Response(JSON.stringify({ 
-        error: "Worker error", 
-        details: String(e), 
-        stack: e.stack 
-      }), {
-        status: 500,
-        headers: { ...cors, "Content-Type": "application/json" },
-      });
+    if (mode === "episode") {
+      return await generateEpisode(summaryText, season, episode, env, previousEpisodes);
+    } else if (mode === "season-data-extraction") {
+      return await generateSeasonDataExtraction(body, env);
+    } else {
+      return await generateAnalytics(summaryText, season, episode, env);
     }
   },
 };
 
-function corsHeaders() {
-  return {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type",
-  };
-}
-
-function safeLowerId(x) {
-  return String(x || "").trim().toLowerCase();
-}
-
-// ===== AUDITION GENERATION =====
-async function generateAuditions(body, env) {
-  const cors = corsHeaders();
-  const { auditionsText, seasonTheme, seasonNumber, castSize } = body;
-
-  if (!auditionsText || !auditionsText.trim()) {
-    return new Response(JSON.stringify({ error: "No auditions text provided" }), {
-      status: 400,
-      headers: { ...cors, "Content-Type": "application/json" },
-    });
-  }
-
-  const schema = {
-    type: "object",
-    additionalProperties: false,
-    properties: {
-      auditions: {
-        type: "array",
-        items: {
-          type: "object",
-          additionalProperties: false,
-          properties: {
-            name: { type: "string" },
-            auditionNumber: { type: "number" },
-            archetype: { type: "string" },
-            personalityTraits: { type: "array", items: { type: "string" } },
-            auditionText: { type: "string" },
-            strategy: { type: "string" },
-            memorableQuote: { type: "string" },
-            hook: { type: "string" },
-          },
-          required: ["name", "auditionNumber", "archetype", "personalityTraits", "auditionText", "strategy", "memorableQuote", "hook"],
-        },
-      },
-    },
-    required: ["auditions"],
-  };
-
-  const instructions = `
-Parse and structure audition tapes from the provided text.
-
-INPUT: Raw text containing audition summaries (one per contestant)
-OUTPUT: Structured JSON with each audition formatted consistently
-
-YOUR TASK:
-1. Parse each audition from the text
-2. Extract: name, archetype (from parentheses), main audition text
-3. Infer: personality traits (3-5 adjectives), strategy summary, memorable quote, hook
-4. Return structured JSON
-
-EXTRACTION RULES:
-- **Name**: Extract from "Audition X/Y — Name (Archetype)" format
-- **Archetype**: Extract from parentheses after name
-- **Audition Text**: The main 2-4 paragraph audition tape (clean it up, maintain voice)
-- **Personality Traits**: Infer 3-5 adjectives from the text (e.g., "bubbly", "nervous", "strategic")
-- **Strategy**: Summarize their stated or implied game plan in 1 sentence
-- **Memorable Quote**: Extract the most quotable line from their audition
-- **Hook**: The "end beat" or final promise/statement
-
-STYLE PRESERVATION:
-- Keep the first-person voice (character speaking to camera)
-- Maintain their personality and quirks
-- Clean up formatting but preserve essence
-
-EXAMPLE INPUT:
-"Audition 1/16 — Carrie (Hopeless Romantic Superfan)
-Carrie comes in bubbly and nervous, clutching a notebook filled with handwritten 'dream alliances.' She admits she watches every season like it's a rom-com, rooting for couples and underdogs. She says she wants to play 'with her heart,' but immediately worries that means she'll get blindsided. She promises she won't fall in love this time… then instantly admits she probably will."
-
-EXAMPLE OUTPUT:
-{
-  "name": "Carrie",
-  "auditionNumber": 1,
-  "archetype": "Hopeless Romantic Superfan",
-  "personalityTraits": ["bubbly", "nervous", "emotional", "romantic", "self-aware"],
-  "auditionText": "Carrie comes in bubbly and nervous, clutching a notebook filled with handwritten 'dream alliances.' She admits she watches every season like it's a rom-com, rooting for couples and underdogs. She says she wants to play 'with her heart,' but immediately worries that means she'll get blindsided. She promises she won't fall in love this time… then instantly admits she probably will.",
-  "strategy": "Play with heart but try to think strategically",
-  "memorableQuote": "If I get voted out for trusting people… at least it'll be poetic.",
-  "hook": "Wants to prove she can play strategically, not just emotionally"
-}
-
-Return ONLY JSON with the auditions array.
-`.trim();
-  
-  const payload = {
-    model: "gpt-5",
-    instructions,
-    input: `Parse these audition summaries into structured JSON:\n\n${auditionsText}`,
-    text: { format: { type: "json_schema", name: "auditions", strict: true, schema } },
-  };
-
-  return await callOpenAI(payload, env);
-}
-
-// ===== EXTRACT CANONICAL CAST =====
 function extractCastFromEpisode1(episodes) {
   try {
     const ep1 = Array.isArray(episodes) ? episodes[0] : null;
-    const text = (ep1 && (ep1.summary || ep1.text || ep1.raw || "")) || "";
+    const text = (ep1 && (ep1.summary || ep1.text || ep1.raw || '')) || '';
     if (!text) return [];
 
-    const startIdx = text.indexOf("=== CAST (ALL) ===");
+    const startIdx = text.indexOf('=== CAST (ALL) ===');
     if (startIdx === -1) return [];
-    const afterStart = text.slice(startIdx + "=== CAST (ALL) ===".length);
+    const afterStart = text.slice(startIdx + '=== CAST (ALL) ==='.length);
 
-    const nextHeadingIdx = afterStart.indexOf("===");
+    const nextHeadingIdx = afterStart.indexOf('===');
     const block = (nextHeadingIdx === -1 ? afterStart : afterStart.slice(0, nextHeadingIdx)).trim();
     if (!block) return [];
 
     const lines = block
       .split(/\r?\n/)
-      .map((l) => l.trim())
+      .map(l => l.trim())
       .filter(Boolean)
-      .map((l) => l.replace(/^[-*\d.)\s]+/, "").trim());
+      .map(l => l.replace(/^[-*\d.)\s]+/, '').trim());
 
-    const banned = new Set(["votes to win", "votes received", "jury votes", "elimination order", "placements", "statistics", "cast"]);
-    const cleaned = lines.filter((n) => {
+    const banned = new Set([
+      'votes to win',
+      'votes received',
+      'jury votes',
+      'elimination order',
+      'placements',
+      'statistics',
+      'cast',
+    ]);
+    const cleaned = lines.filter(n => {
       const lower = n.toLowerCase();
-      return n && !banned.has(lower) && !lower.includes("votes to win");
+      if (!n) return false;
+      if (banned.has(lower)) return false;
+      if (lower.includes('votes to win')) return false;
+      if (lower.includes('place') && lower.includes('player')) return false;
+      return true;
     });
 
     const seen = new Set();
@@ -189,22 +79,23 @@ function extractCastFromEpisode1(episodes) {
   }
 }
 
-// ===== SEASON DATA EXTRACTION =====
 async function generateSeasonDataExtraction(body, env) {
-  const cors = corsHeaders();
   const { season, seasonTitle, episodes, finale, awards, metadata, brantsteeleStats } = body;
-
+  
   if (!episodes || episodes.length === 0) {
     return new Response(JSON.stringify({ error: "No episodes provided" }), {
       status: 400,
-      headers: { ...cors, "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
     });
   }
 
   const canonicalCast = extractCastFromEpisode1(episodes);
   const expectedCastSize = Number(metadata?.castSize) || (canonicalCast.length || undefined);
+  const expectedEpisodeCount = Number(metadata?.episodeCount) || (episodes?.length || undefined);
 
-  const castItemSchema = canonicalCast.length ? { type: "string", enum: canonicalCast } : { type: "string" };
+  const castItemSchema = canonicalCast.length
+    ? { type: "string", enum: canonicalCast }
+    : { type: "string" };
 
   const schema = {
     type: "object",
@@ -214,6 +105,7 @@ async function generateSeasonDataExtraction(body, env) {
         type: "array",
         items: castItemSchema,
         ...(expectedCastSize ? { minItems: expectedCastSize, maxItems: expectedCastSize } : {}),
+        description: "Full cast list (all player names). Must match Episode 1 CAST (ALL) exactly."
       },
       placements: {
         type: "array",
@@ -224,46 +116,56 @@ async function generateSeasonDataExtraction(body, env) {
           properties: {
             placement: { type: "number" },
             name: castItemSchema,
-            phase: { type: "string", enum: ["Winner", "Finalist", "Juror", "Pre-Juror", "Pre-Merge"] },
+            phase: { 
+              type: "string",
+              enum: ["Winner", "Finalist", "Juror", "Pre-Juror", "Pre-Merge"]
+            },
             notes: { type: "string" },
-            strategicRank: { type: "number" },
-            story: { type: "string" },
-            gameplayStyle: { type: "string" },
+            strategicRank: { type: "number", description: "1-10 scale" },
+            story: { type: "string", description: "A compelling 4-8 sentence narrative arc. DO NOT summarize stats. Instead: open with who this person was coming in and how others perceived them, show the turning point or defining strategic moment that defined their game, capture what made them unique or memorable, and close with why their exit or win mattered. Write like a sports documentary voiceover — dramatic, specific, present tense. Example of BAD story: 'Early lightning rod on Civilians who later became merge power with Jen. Found the merged idol and infamously needled Heather into quitting.' Example of GOOD story: 'A 70-year-old tennis legend who arrived as the tribe biggest liability and left as its most dangerous weapon. Pre-merge he turned a petty stepbrother feud into a calculated blood war, surviving two ties through sheer force of personality. At the merge he found the idol, paired with Jen in the season most unbreakable duo, and controlled 75% of post-merge votes. But his masterpiece was psychological — episode by episode he dismantled Heather, four-time veteran and Super Idol holder, until she quit mid-game with the most powerful advantage in franchise history unused in her pocket. He didn't outplay her strategically. He broke her.'"},
+            gameplayStyle: { type: "string", description: "3-6 words that capture HOW they play — evocative, not generic. Bad: 'Strategic player'. Good: 'Psychologist with a tennis racket'. Bad: 'Physical threat'. Good: 'Immunity machine who forgot to vote'." },
             keyMoments: { type: "array", items: { type: "string" } },
             challengeWins: { type: "number" },
             immunityWins: { type: "number" },
+            rewardWins:    { type: "number", description: "Individual reward wins only" },
             idolsFound: { type: "number" },
             votesReceived: { type: "number" },
             alliances: { type: "array", items: castItemSchema },
-            rivalries: { type: "array", items: castItemSchema },
+            rivalries: { type: "array", items: castItemSchema }
           },
-          required: [
-            "placement", "name", "phase", "notes", "strategicRank", "story", "gameplayStyle", "keyMoments",
-            "challengeWins", "immunityWins", "idolsFound", "votesReceived", "alliances", "rivalries"
-          ],
-        },
+          required: ["placement", "name", "phase", "notes", "strategicRank", "story", "gameplayStyle", "keyMoments", "challengeWins", "immunityWins","rewardWins", "idolsFound", "votesReceived", "alliances", "rivalries"]
+        }
       },
       finalists: {
         type: "array",
+        ...(expectedCastSize ? { maxItems: 3 } : {}),
         items: {
           type: "object",
           additionalProperties: false,
-          properties: { name: castItemSchema, placement: { type: "number" }, juryVotes: { type: "number" } },
-          required: ["name", "placement", "juryVotes"],
-        },
+          properties: {
+            name: castItemSchema,
+            placement: { type: "number" },
+            juryVotes: { type: "number" }
+          },
+          required: ["name", "placement", "juryVotes"]
+        }
       },
       winner: {
         type: "object",
         additionalProperties: false,
-        properties: { 
-          name: castItemSchema, 
-          keyStats: { type: "string" }, 
-          strategy: { type: "string" }, 
-          legacy: { type: "string" } 
+        properties: {
+          name: castItemSchema,
+          keyStats: { type: "string" },
+          strategy: { type: "string", description: "2-3 sentences on how they won" },
+          legacy: { type: "string", description: "1-2 sentences on their impact" }
         },
-        required: ["name", "keyStats", "strategy", "legacy"],
+        required: ["name", "keyStats", "strategy", "legacy"]
       },
-      jury: { type: "array", items: castItemSchema },
+      jury: {
+        type: "array",
+        items: castItemSchema,
+        description: "List of jury members"
+      },
       votingHistory: {
         type: "array",
         items: {
@@ -277,107 +179,84 @@ async function generateSeasonDataExtraction(body, env) {
               items: {
                 type: "object",
                 additionalProperties: false,
-                properties: { voter: castItemSchema, target: castItemSchema },
-                required: ["voter", "target"],
-              },
-            },
+                properties: {
+                  voter: castItemSchema,
+                  target: castItemSchema
+                },
+                required: ["voter", "target"]
+              }
+            }
           },
-          required: ["episode", "eliminated", "votes"],
-        },
+          required: ["episode", "eliminated", "votes"]
+        }
       },
-      seasonNarrative: { type: "string" },
+      seasonNarrative: { 
+        type: "string",
+        description: "2-3 sentence overview of season story arc"
+      }
     },
-    required: ["cast", "placements", "finalists", "winner", "jury", "votingHistory", "seasonNarrative"],
+    required: ["cast", "placements", "finalists", "winner", "jury", "votingHistory", "seasonNarrative"]
   };
 
-  let episodeSummaries = "";
-  episodes.forEach((ep) => {
+  let episodeSummaries = '';
+  episodes.forEach(ep => {
     episodeSummaries += `\n\n=== EPISODE ${ep.episode} ===\n${ep.summary}`;
   });
 
-  let brantsteeleSection = "";
+  let brantsteeleSection = '';
   if (brantsteeleStats && brantsteeleStats.length > 100) {
-    brantsteeleSection = `\n\n=== BRANTSTEELE STATISTICS ===\n${brantsteeleStats}\n`;
+    brantsteeleSection = `\n\n=== BRANTSTEELE STATISTICS (USE THIS FOR ACCURATE NUMBERS) ===\n${brantsteeleStats}\n\n⚠️ IMPORTANT: Use Brantsteele stats for exact numbers (challenge wins, votes received, idol counts, placements). Episode summaries provide narrative context.`;
   }
 
   const canonicalCastSection = canonicalCast.length
-    ? `\n\nCANONICAL_CAST:\n- ${canonicalCast.join("\n- ")}`
-    : "";
+    ? `\n\nCANONICAL_CAST (use EXACTLY these names; do NOT add suffixes like "Winner" / "Juror" / "Votes to Win"; do NOT invent new people):\n- ${canonicalCast.join('\n- ')}`
+    : '';
 
-const instructions = `
-Extract Total Drama season data from episode summaries.
+  const instructions = `
+You are analyzing a complete Total Drama season to extract ALL data in structured format.
 
-CRITICAL: Use CANONICAL_CAST names exactly as provided. Do not invent new names.
+${brantsteeleStats ? '🎯 BRANTSTEELE STATS PROVIDED: Use the Brantsteele statistics section for EXACT NUMBERS (placements, challenge wins, votes received, idol counts). Episode summaries provide story/narrative context.' : ''}
 
-=== STRATEGIC RANK DEFINITION (1-10 scale) ===
+CRITICAL TASKS:
 
-Strategic Rank measures a player's STRATEGIC IMPACT and GAME CONTROL, NOT their placement.
-
-**Rating Scale (1-10):**
-
-**10 - Strategic Mastermind**
-- Controlled multiple votes across the season
-- Orchestrated major blindsides or flips
-- Found/played idols with perfect timing
-- Held multiple alliances together
-- Made game-defining moves
-Example: Winner who controlled entire merge, idol plays that changed the game
-
-**8-9 - Strategic Powerhouse**
-- Controlled their alliance's votes consistently
-- Executed successful blindsides or strategic moves
-- Found advantages and used them well
-- Shaped the endgame structure
-Example: Finalists who ran voting blocs, players who controlled pre-merge
-
-**6-7 - Strategic Player**
-- Made some strategic moves that mattered
-- Positioned well within alliances
-- Occasional vote control or successful targeting
-- Found advantages but didn't always maximize them
-Example: Jury members who made key moves, alliance lieutenants
-
-**4-5 - Average Strategy**
-- Followed alliance plans without leading
-- Made basic strategic decisions
-- Survived by being in the right alliance
-- No major strategic impact
-Example: Mid-merge boots who played safely, floaters
-
-**2-3 - Minimal Strategy**
-- Mostly reactive, not proactive
-- Followed others' plans
-- No strategic moves of note
-Example: Early jury members with no big moves, pre-merge boots
-
-**1 - No Strategic Impact**
-- First boot or quit with no gameplay
-- Made no strategic decisions
-- Pure social/physical game or early exit
-Example: Episode 1-2 boots, quits
-
-**HOW TO ASSIGN:**
-1. Read the full season summary
-2. Identify who CONTROLLED votes, not who survived longest
-3. Note idol plays, blindsides, alliance formations
-4. Winners get 8-10 IF they strategically dominated (not just won comps)
-5. Early boots can have high scores IF they made big moves before elimination
-6. Late-game floaters can have low scores IF they never controlled anything
-
-**Examples from Season 7:**
-- MacArthur (Winner, held idol, alliance switchboard, controlled endgame) = 9-10
-- Cody (Runner-up, advantage master, key alliances) = 8-9
-- Taylor (7th, ultimate connector, kingmaker) = 8-9
-- Jacques (4th quit, comp beast but strategic before meltdown) = 6-7
-- Tom (5th, one huge idol play) = 5-6
-- Scott (8th, duo player, consistent) = 6-7
-- Carrie (3rd, social queen, protected by bonds) = 7-8
-- Lindsay (1st boot, winner threat) = 2-3
-- Spud (17th, no strategic moves) = 1-2
+NAME RULES (non-negotiable):
+- Every field that refers to a person MUST use a name from CANONICAL_CAST (if present).
+- Do NOT create "new" players from headings/labels (e.g. "Votes to Win", "Jury Votes") or from notes.
+- Do NOT append descriptors to names (bad: "Jacques Winner", "Kelly Juror"). Use the separate fields (phase/notes) for that.
 
 ${canonicalCastSection}
 
-Return ONLY valid JSON matching the schema.
+1. CAST LIST:
+   - If CANONICAL_CAST is present above, output that exact list in "cast" (same order).
+   - Otherwise, extract all ${metadata.castSize || 'player'} names from Episode 1 ${brantsteeleStats ? 'or Brantsteele stats' : ''}.
+
+2. PLACEMENTS (1-${metadata.castSize || 'N'}): List ALL players ranked by placement
+   ${brantsteeleStats ? '- GET EXACT PLACEMENTS FROM BRANTSTEELE STATS' : '- Use elimination order from episodes (last eliminated = highest placement)'}
+   - Finalists (top 3) get placements 1, 2, 3
+   - Winner is placement 1
+   - For each player provide ALL fields (use empty arrays [] if no data)
+
+3. FINALISTS: Top 3 players with jury votes received
+
+4. WINNER ANALYSIS: name, keyStats, strategy, legacy
+
+5. JURY: List all jury members
+
+6. VOTING HISTORY: For EACH episode
+
+7. SEASON NARRATIVE: 2-3 sentence story arc
+
+IMPORTANT: Provide ALL fields for EVERY player. Use empty arrays [] for keyMoments/alliances/rivalries if no data. Use 0 for numeric fields if no data.
+
+Season: ${season} - ${seasonTitle}
+Theme: ${metadata.theme}
+Episodes: ${metadata.episodeCount}
+Cast Size: ${metadata.castSize}
+
+${episodeSummaries}
+${brantsteeleSection}
+
+Return ONLY valid JSON matching the schema exactly.
 `.trim();
 
   const payload = {
@@ -390,710 +269,871 @@ Return ONLY valid JSON matching the schema.
   return await callOpenAI(payload, env);
 }
 
-// ===== APPLY RANKING OVERRIDES =====
-function applyRankingOverrides(rankings, overridesData) {
-  if (!overridesData || !overridesData.overrides) {
-    console.log('No overrides provided, using AI scores');
-    return rankings;
-  }
-  
-  const overrides = overridesData.overrides;
-  let overrideCount = 0;
-  
-  rankings.forEach(ranking => {
-    const playerId = ranking.playerId;
-    
-    if (overrides[playerId]) {
-      const override = overrides[playerId];
-      
-      // Store original AI values
-      ranking.aiScore = ranking.score;
-      ranking.aiTier = ranking.tier;
-      
-      // Apply overrides
-      if (override.score !== undefined) {
-        ranking.score = override.score;
-        console.log(`✓ Override ${playerId}: ${ranking.aiScore} → ${ranking.score}`);
-        overrideCount++;
-      }
-      
-      if (override.tier) {
-        ranking.tier = override.tier;
-      }
-      
-      // Add override metadata
-      ranking.override = {
-        applied: true,
-        reason: override.reason || 'Manual override',
-        originalScore: ranking.aiScore,
-        originalTier: ranking.aiTier
-      };
-    }
-  });
-  
-  console.log(`Applied ${overrideCount} overrides`);
-  
-  // Re-sort by (possibly overridden) scores
-  rankings.sort((a, b) => b.score - a.score);
-  
-  // Re-assign ranks
-  rankings.forEach((r, i) => (r.rank = i + 1));
-  
-  return rankings;
-}
-
-// ===== SCORING FORMULA - COMPLETE FIXED VERSION =====
-
-function calculateScore(player) {
-  const details = Array.isArray(player.seasonDetails) ? player.seasonDetails : [];
-  const seasons = details.length || 1;
-  
-  if (details.length === 0) return 25;
-  
-  const sortedDetails = [...details].sort((a, b) => a.season - b.season);
-  
-  // Calculate weighted placement
-  let weightedPlacement = 0;
-  let improvement = 0;
-  
-  if (seasons === 1) {
-    weightedPlacement = sortedDetails[0].placement;
-  } else {
-    const mostRecent = sortedDetails[sortedDetails.length - 1];
-    const older = sortedDetails.slice(0, -1);
-    const firstPlacement = sortedDetails[0].placement;
-    improvement = firstPlacement - mostRecent.placement;
-    
-    if (improvement >= 10) {
-      const olderAvg = older.reduce((sum, s) => sum + s.placement, 0) / older.length;
-      weightedPlacement = (mostRecent.placement * 0.7) + (olderAvg * 0.3);
-    } else {
-      const olderAvg = older.reduce((sum, s) => sum + s.placement, 0) / older.length;
-      weightedPlacement = (mostRecent.placement * 0.5) + (olderAvg * 0.5);
-    }
-  }
-  
-  // BASE COMPONENTS
-  const placementScore = Math.max(0, Math.min(45, 45 * (1 - (weightedPlacement - 1) / 19)));
-  
-  const wins = Number(player.wins || 0);
-  const winScore = (wins / seasons) * 20;
-  
-  const challengeWins = Number(player.totalChallengeWins || 0);
-  const immunityWins = Number(player.totalImmunityWins || 0);
-  const totalChallengeValue = (immunityWins * 1.3) + challengeWins;
-  const challengePerSeason = totalChallengeValue / seasons;
-  const challengeScore = Math.min(15, challengePerSeason * 3);
-  
-  const votesAgainst = Number(player.totalVotesAgainst || 0);
-  const juryVotes = Number(player.totalJuryVotes || 0);
-  const totalAlliances = details.reduce(
-    (sum, s) => sum + (Array.isArray(s.alliances) ? s.alliances.length : 0),
-    0
-  );
-  const totalRivalries = details.reduce(
-    (sum, s) => sum + (Array.isArray(s.rivalries) ? s.rivalries.length : 0),
-    0
-  );
-  
-  const juryPerSeason = juryVotes / seasons;
-  const juryBonus = Math.min(6, juryPerSeason * 0.6);
-  const votesPerSeason = votesAgainst / seasons;
-  const votesBonus = Math.max(0, 3 - (votesPerSeason * 0.2));
-  const alliancesPerSeason = totalAlliances / seasons;
-  const allianceBonus = Math.min(2, alliancesPerSeason * 0.4);
-  const rivalriesPerSeason = totalRivalries / seasons;
-  const rivalryPenalty = Math.min(2, rivalriesPerSeason * 0.3);
-  
-  const socialScore = Math.max(0, Math.min(12, 
-    juryBonus + votesBonus + allianceBonus - rivalryPenalty
-  ));
-  
-  const idolsFound = Number(player.totalIdolsFound || 0);
-  const avgStrategicRank = details.reduce((sum, s) => 
-    sum + Number(s.strategicRank || 5), 0
-  ) / details.length;
-  
-  const strategicRankScore = Math.min(8, (avgStrategicRank - 1) * 0.89);
-  const idolScore = Math.min(3, (idolsFound / seasons) * 1.5);
-  const strategicScore = Math.min(11, strategicRankScore + idolScore);
-  
-  let total = placementScore + winScore + challengeScore + socialScore + strategicScore;
-  
-  // BONUSES
-  if (seasons >= 3 && weightedPlacement <= 5) total += 6;
-  else if (seasons >= 2 && weightedPlacement <= 3) total += 4;
-  
-  // ✅ IMPROVED IMPROVEMENT BONUSES
-  if (improvement >= 15) total += 12;      // Massive redemption (was +5)
-  else if (improvement >= 10) total += 8;  // Major improvement (was +5)
-  else if (improvement >= 5) total += 4;   // Significant improvement (was +3)
-  
-  // ✅ FINALIST BONUSES - MORE GENEROUS
-  const hasRunnerUp = details.some(s => s.placement === 2);
-  const hasThirdPlace = details.some(s => s.placement === 3);
-  
-  if (hasRunnerUp && wins === 0) {
-    total += 8;  // ✅ Increased from 4
-    
-    // ✅ REDEMPTION ARC SUPER BONUS
-    if (improvement >= 15) {
-      total += 8;  // Bottom to finals = incredible
-    } else if (improvement >= 10) {
-      total += 5;  // Major comeback
-    }
-  } else if (hasThirdPlace && wins === 0) {
-    total += 6;  // ✅ Increased from 2
-  }
-  
-  const finalistCount = details.filter(s => s.placement <= 3).length;
-  if (finalistCount >= 2 && wins === 0) total += 4;
-  
-  if (votesAgainst === 0 && seasons >= 2) total += 6;
-  if (challengePerSeason >= 5) total += 3;
-  
-  // Strategic mid-merge bonus
-  if (weightedPlacement >= 4 && weightedPlacement <= 10 && avgStrategicRank >= 8) {
-    total += 8;
-  }
-  
-  // F5 idol play bonus
-  if (weightedPlacement === 5 && idolsFound > 0) {
-    total += 15;
-  }
-  
-  // ✅ PENALTIES - TYPE SAFE
-  const hasQuit = details.some((s) => {
-    const notes = typeof s.notes === "string" ? s.notes :
-                  Array.isArray(s.notes) ? s.notes.join(" ") : "";
-    const status = typeof s.status === "string" ? s.status : "";
-    return notes.toLowerCase().includes("quit") || 
-           status.toLowerCase().includes("quit");
-  });
-  
-  const isWinner = wins > 0;
-  
-  if (hasQuit) {
-    if (isWinner) {
-      total -= 3;  // ✅ Winners get lighter quit penalty (was -4)
-    } else {
-      total -= (weightedPlacement <= 5 ? 4 : 7);
-    }
-  }
-  
-  // ✅ ONE-SEASON CAP - ONLY FOR NON-FINALISTS
-  if (seasons === 1 && wins === 0 && weightedPlacement > 3) {
-    total = Math.min(total, 85);  // ✅ Cap doesn't apply to finalists
-  }
-  
-  // ✅ WINNER PROTECTION - CRITICAL FIX
-  if (isWinner) {
-    const winRate = wins / seasons;
-    if (winRate >= 0.5) {
-      // 50%+ win rate (1/2, 2/3, etc.) = S+ minimum
-      total = Math.max(total, 90);
-    } else {
-      // <50% win rate = S minimum
-      total = Math.max(total, 82);
-    }
-  }
-  
-  return Math.round(Math.min(100, Math.max(0, total)) * 10) / 10;
-}
-
-function assignTier(score) {
-  if (score >= 90) return "S+";  // 90-100: Elite Winners
-  if (score >= 80) return "S";   // 80-89: Championship Caliber
-  if (score >= 71) return "A";   // 71-79: Elite Threats
-  if (score >= 61) return "B";   // 61-70: Above Average
-  if (score >= 51) return "C";   // 51-60: Average
-  return "D";                     // 0-50: Below Average
-}
-
-function generateStatus(player, currentSeason) {
-  const playedSeasons = new Set(player.seasons || []);
-  const missedSeasons = [];
-  
-  for (let i = 1; i <= currentSeason; i++) {
-    if (!playedSeasons.has(i)) {
-      missedSeasons.push(i);
-    }
-  }
-  
-  if (missedSeasons.length === 0) {
-    return `Competed in all ${currentSeason} seasons`;
-  } else if (missedSeasons.length === currentSeason - 1) {
-    return `Competed in Season ${[...playedSeasons][0]} only`;
-  } else if (missedSeasons.length <= 3) {
-    return `Did not compete in S${missedSeasons.join(', S')}`;
-  } else {
-    return `Competed in ${playedSeasons.size}/${currentSeason} seasons`;
-  }
-}
-
-// ===== RANKINGS REBUILD (All Players) =====
-async function generateRankingsRebuild(body, env) {
-  const cors = corsHeaders();
-  
-  const { playersDB, currentSeason } = body;
-
-  if (!playersDB?.players || !Array.isArray(playersDB.players)) {
-    return new Response(JSON.stringify({ error: "Missing playersDB.players" }), {
+async function generateAnalytics(summaryText, season, episode, env) {
+  if (!summaryText || typeof summaryText !== "string") {
+    return new Response(JSON.stringify({ error: "Missing summaryText" }), {
       status: 400,
-      headers: { ...cors, "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
     });
   }
 
-  // Filter valid players only
-  const allPlayers = playersDB.players.filter(p => {
-    const id = safeLowerId(p.id || p.playerId);
-    return id && 
-           !id.includes('votes-to-win') && 
-           !id.includes('juror-voted') &&
-           !id.includes('jury-votes') &&
-           id !== 'everyone' &&
-           id !== 'eliminate';
-  });
-
-  console.log(`Calculating scores for ${allPlayers.length} players...`);
-
-  // Calculate scores for all
-  const rankings = allPlayers.map(player => {
-    const score = calculateScore(player);
-    const tier = assignTier(score);
-    const details = Array.isArray(player.seasonDetails) ? player.seasonDetails : [];
-    const seasons = details.length || 1;
-    
-    return {
-      playerId: safeLowerId(player.id || player.playerId || player.name),
-      tier,
-      score,
-      rank: 0,
-      
-      // Stats
-      avgPlacement: details.length 
-        ? Number((details.reduce((sum, s) => sum + Number(s.placement || 0), 0) / details.length).toFixed(2))
-        : 99,
-      winRate: Number(((Number(player.wins || 0) / seasons) * 100).toFixed(1)),
-      seasons: player.seasons || [],
-      placements: details.map(s => s.placement),
-      challengeWins: Number(player.totalChallengeWins || 0),
-      votesAgainst: Number(player.totalVotesAgainst || 0),
-      juryVotes: Number(player.totalJuryVotes || 0),
-      idolsFound: Number(player.totalIdolsFound || 0),
-      status: generateStatus(player, currentSeason || 6),
-      
-      // Placeholders for AI
-      title: "",
-      emoji: "",
-      reasoning: "",
-      strengths: [],
-      weaknesses: [],
-    };
-  });
-
-  // Sort by score
-  rankings.sort((a, b) => b.score - a.score);
-  rankings.forEach((r, i) => (r.rank = i + 1));
-
-  // Ask AI for narratives (batched)
-  const batchSize = 30;
-  const batches = [];
-  for (let i = 0; i < rankings.length; i += batchSize) {
-    batches.push(rankings.slice(i, i + batchSize));
-  }
-
-  const narrativeRankings = [];
-  
-  for (let batchIdx = 0; batchIdx < batches.length; batchIdx++) {
-    const batch = batches[batchIdx];
-    
-    // Build rich player context with stories
-    const playersWithContext = batch.map(ranking => {
-      const player = allPlayers.find(p => safeLowerId(p.id || p.playerId) === ranking.playerId);
-      
-      return {
-        playerId: ranking.playerId,
-        name: player?.name || ranking.playerId,
-        score: ranking.score,
-        tier: ranking.tier,
-        rank: ranking.rank,
-        
-        // Stats
-        avgPlacement: ranking.avgPlacement,
-        winRate: ranking.winRate,
-        seasons: ranking.seasons,
-        placements: ranking.placements,
-        challengeWins: ranking.challengeWins,
-        votesAgainst: ranking.votesAgainst,
-        juryVotes: ranking.juryVotes,
-        idolsFound: ranking.idolsFound,
-        
-        // Rich context from season builder
-        story: player?.story || "",  // Full AI-generated story from episodes
-        seasonDetails: (player?.seasonDetails || []).map(s => ({
-          season: s.season,
-          placement: s.placement,
-          gameplayStyle: s.gameplayStyle || "",
-          keyMoments: s.keyMoments || [],
-          alliances: s.alliances || [],
-          rivalries: s.rivalries || []
-        }))
-      };
-    });
-    
-    const schema = {
-      type: "object",
-      additionalProperties: false,
-      properties: {
-        rankings: {
-          type: "array",
-          items: {
+  const schema = {
+    type: "object",
+    additionalProperties: false,
+    properties: {
+      narrativeSummary: { type: "string" },
+      bestMove: {
+        type: "object",
+        additionalProperties: false,
+        properties: { player: { type: "string" }, reason: { type: "string" } },
+        required: ["player", "reason"],
+      },
+      biggestRisk: {
+        type: "object",
+        additionalProperties: false,
+        properties: { player: { type: "string" }, reason: { type: "string" } },
+        required: ["player", "reason"],
+      },
+      bootPredictions: {
+        type: "array",
+        items: {
+          type: "object",
+          additionalProperties: false,
+          properties: { 
+            player: { type: "string" }, 
+            prob: { type: "number", minimum: 0, maximum: 100 }, 
+            why: { type: "string" } 
+          },
+          required: ["player", "prob", "why"],
+        },
+      },
+      powerRankings: {
+        type: "array",
+        items: {
+          type: "object",
+          additionalProperties: false,
+          properties: { 
+            player: { type: "string" }, 
+            score: { type: "number", minimum: 0, maximum: 100 }, 
+            tag: { type: "string" }, 
+            blurb: { type: "string" } 
+          },
+          required: ["player", "score", "tag", "blurb"],
+        },
+      },
+      allianceStability: {
+        type: "array",
+        items: {
+          type: "object",
+          additionalProperties: false,
+          properties: { 
+            name: { type: "string" }, 
+            score: { type: "number", minimum: 0, maximum: 100 }, 
+            note: { type: "string" } 
+          },
+          required: ["name", "score", "note"],
+        },
+      },
+      votingBlocs: {
+        type: "array",
+        items: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            name: { type: "string" },
+            members: { type: "array", items: { type: "string" } },
+            strength: { type: "number", minimum: 0, maximum: 100 },
+            target: { type: "string" },
+            notes: { type: "string" }
+          },
+          required: ["name", "members", "strength", "target", "notes"],
+        },
+        description: "Active voting coalitions targeting specific players"
+      },
+      titles: {
+        type: "array",
+        items: {
+          type: "object",
+          additionalProperties: false,
+          properties: { player: { type: "string" }, title: { type: "string" } },
+          required: ["player", "title"],
+        },
+      },
+      roles: {
+        type: "array",
+        items: {
+          type: "object",
+          additionalProperties: false,
+          properties: { player: { type: "string" }, role: { type: "string" } },
+          required: ["player", "role"],
+        },
+      },
+      socialNetwork: {
+        type: "array",
+        items: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            player: { type: "string" },
+            strongLikes: { type: "array", items: { type: "string" } },
+            strongDislikes: { type: "array", items: { type: "string" } },
+            isolated: { type: "boolean" },
+            centralityScore: { type: "number", minimum: 0, maximum: 100 },
+          },
+          required: ["player", "strongLikes", "strongDislikes", "isolated", "centralityScore"],
+        },
+      },
+      juryManagement: {
+        type: "array",
+        items: {
+          type: "object",
+          additionalProperties: false,
+          properties: { 
+            player: { type: "string" }, 
+            score: { type: "number", minimum: 0, maximum: 100 }, 
+            note: { type: "string" } 
+          },
+          required: ["player", "score", "note"],
+        },
+      },
+      threatBreakdown: {
+        type: "array",
+        items: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            player: { type: "string" },
+            physical: { type: "number", minimum: 0, maximum: 100 },
+            strategic: { type: "number", minimum: 0, maximum: 100 },
+            social: { type: "number", minimum: 0, maximum: 100 },
+            advantage: { type: "number", minimum: 0, maximum: 100 },
+          },
+          required: ["player", "physical", "strategic", "social", "advantage"],
+        },
+      },
+      pathToVictory: {
+        type: "array",
+        items: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            player: { type: "string" },
+            viability: { type: "string" },
+            winCondition: { type: "string" },
+            obstacles: { type: "string" },
+          },
+          required: ["player", "viability", "winCondition", "obstacles"],
+        },
+      },
+      rankings: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          audiencePopularity: {
+            type: "array",
+            items: {
+              type: "object",
+              additionalProperties: false,
+              properties: {
+                name: { type: "string" },
+                playerSlug: { type: "string" },
+                percentage: { type: "number", minimum: 0, maximum: 100 },
+                change: { type: "number" },
+                rank: { type: "number", minimum: 1 }
+              },
+              required: ["name", "playerSlug", "percentage", "change", "rank"]
+            }
+          },
+          islandInfluence: {
+            type: "array",
+            items: {
+              type: "object",
+              additionalProperties: false,
+              properties: {
+                name: { type: "string" },
+                playerSlug: { type: "string" },
+                score: { type: "number", minimum: 0, maximum: 100 },
+                rank: { type: "number", minimum: 1 }
+              },
+              required: ["name", "playerSlug", "score", "rank"]
+            }
+          },
+          alliances: {
+            type: "array",
+            items: {
+              type: "object",
+              additionalProperties: false,
+              properties: {
+                name: { type: "string" },
+                members: { type: "array", items: { type: "string" } },
+                strength: { type: "string", enum: ["strong", "moderate", "weak"] },
+                formed: { type: "number" },
+                status: { type: "string", enum: ["active", "dissolved"] }
+              },
+              required: ["name", "members", "strength", "status"]
+            }
+          }
+        },
+        required: ["audiencePopularity", "islandInfluence", "alliances"]
+      },
+      relationships: {
+        type: "object",
+        additionalProperties: {
+          type: "object",
+          additionalProperties: {
+            type: "number",
+            minimum: -10,
+            maximum: 10
+          }
+        }
+      },
+      compass: {
+        type: "array",
+        items: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            name: { type: "string" },
+            playerSlug: { type: "string" },
+            archetype: { type: "string" },
+            gameplayStyle: { type: "string" },
+            x: { type: "number", minimum: -1, maximum: 1 },
+            y: { type: "number", minimum: -1, maximum: 1 },
+            tendencies: { type: "array", items: { type: "string" } },
+            icon: { type: "string" }
+          },
+          required: ["name", "playerSlug", "archetype", "gameplayStyle", "x", "y", "icon"]
+        }
+      },
+      resumes: {
+        type: "object",
+        additionalProperties: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            winEquity: { type: "number", minimum: 0, maximum: 100 },
+            majorityVotes: { type: "number", minimum: 0 },
+            totalVotes: { type: "number", minimum: 0 },
+            immunities: { type: "number", minimum: 0 },
+            votesAgainst: { type: "number", minimum: 0 },
+            votesNullified: { type: "number", minimum: 0 },
+            socialScore: { type: "number", minimum: 0, maximum: 10 },
+            keyMoves: {
+              type: "array",
+              items: {
+                type: "object",
+                additionalProperties: false,
+                properties: {
+                  episode: { type: "number", minimum: 1 },
+                  description: { type: "string" },
+                  target: { type: "string" },
+                  votes: { type: "number", minimum: 0 }
+                },
+                required: ["episode", "description"]
+              }
+            }
+          },
+          required: ["winEquity", "majorityVotes", "totalVotes", "immunities", "votesAgainst", "votesNullified", "socialScore", "keyMoves"]
+        }
+      },
+      relationshipHistory: {
+        type: "object",
+        additionalProperties: {
+          type: "object",
+          additionalProperties: {
             type: "object",
             additionalProperties: false,
             properties: {
-              playerId: { type: "string" },
-              title: { type: "string" },
-              emoji: { type: "string" },
-              reasoning: { type: "string" },
-              strengths: { type: "array", items: { type: "string" } },
-              weaknesses: { type: "array", items: { type: "string" } },
+              currentValue: { type: "number", minimum: -10, maximum: 10 },
+              history: {
+                type: "array",
+                items: {
+                  type: "object",
+                  additionalProperties: false,
+                  properties: {
+                    episode: { type: "number", minimum: 1 },
+                    change: { type: "number" },
+                    event: { type: "string" }
+                  },
+                  required: ["episode", "change", "event"]
+                }
+              },
+              trend: { type: "string", enum: ["rising", "falling", "stable"] },
+              weightedAvg: { type: "number" }
             },
-            required: ["playerId", "title", "emoji", "reasoning", "strengths", "weaknesses"],
-          },
-        },
-      },
-      required: ["rankings"],
-    };
-
-    const instructions = `
-Generate narrative fields for Total Drama franchise rankings.
-
-You have access to each player's full STORY (extracted from episode summaries) and their seasonDetails (gameplay style, key moments, alliances, rivalries).
-
-USE THIS RICH CONTEXT to write thoughtful, specific reasoning that references actual gameplay events, not just stats.
-
-TITLE PATTERNS (2-4 words):
-- Winners: "The Champion", "The Unbeaten", "The Prodigy"
-- Multi-season legends: "The Strategist", "The Powerhouse"
-- Runners-up: "The Contender", "The Silver Medalist"
-- Strategic players: "The Schemer", "The Analyst"
-- Physical players: "The Competitor", "The Athlete"
-- Social players: "The Goth Icon", "The Social Queen"
-- Personality-based: "The Rebel Champ", "The Underdog", "The Snake Charmer"
-
-EMOJI PATTERNS:
-🏆 = Multi-season winner (50%+ win rate)
-🥇 = 1-season perfect winner (100% win rate)
-👑 = Winner with strong legacy
-🧠 = Strategic mastermind
-💪 = Challenge powerhouse
-🥈 = Runner-up
-🏅 = Strong competitor
-🦊 = Schemer/manipulator
-🖤 = Iconic/memorable
-♟️ = Chess master / Strategic genius
-🎸🎭🎮🎉 = Personality-based
-
-REASONING (2-4 sentences) - MUST reference actual gameplay from their story:
-- Reference specific KEY MOMENTS from their seasonDetails
-- Mention ALLIANCES that helped them or RIVALRIES that hurt them
-- Reference their GAMEPLAY STYLE (strategic, social, physical, etc.)
-- Include stats but make them support the narrative, not BE the narrative
-- If they have a story field, pull specific events from it
-
-BAD Example (stats only): "1 win in 2 seasons, avg 1.5. Challenges: 3 wins. Votes: 8 against. Jury: 5 votes."
-
-GOOD Example (story-driven): "Won S5 through a dominant social game, leveraging his alliance with Trent to control the vote. His S6 runner-up finish showed consistency (avg 1.5), though he received 8 votes against for being a threat. Strong jury pull (5 votes) reflects his social mastery."
-
-ANOTHER GOOD Example: "Redemption arc king—went from 17th place elimination in S3 to winning S4 on his second chance. His strategic evolution and fire-making win at Final 4 sealed his legacy."
-
-STRENGTHS (2-4 items) - Reference actual gameplay:
-- "Dominated physically (13 challenge wins)"
-- "Three-time finalist (only player ever)"
-- "Strategic idol plays at merge"
-- "Unbreakable social bonds"
-- "Redemption arc winner"
-- "Consistent deep runs"
-
-WEAKNESSES (1-3 items) - Be specific:
-- "Always targeted early (25 votes against)"
-- "Needed 3 tries to win"
-- "Exposed by idol misplay"
-- "Volatile placement (1st/14th/7th)"
-- "Weak jury management"
-
-Return ONLY JSON.
-`.trim();
-
-    const payload = {
-      model: "gpt-5",
-      instructions,
-      input: JSON.stringify({ rankings: playersWithContext }, null, 2),
-      text: { format: { type: "json_schema", name: "rankings_narrative", strict: true, schema } },
-    };
-
-    const aiResp = await callOpenAI(payload, env);
-    const aiJson = await aiResp.json().catch(() => null);
-
-    if (aiJson?.rankings) {
-      // Merge AI narratives back into rankings
-      for (const aiRank of aiJson.rankings) {
-        const original = batch.find(r => r.playerId === aiRank.playerId);
-        if (original) {
-          original.title = aiRank.title;
-          original.emoji = aiRank.emoji;
-          original.reasoning = aiRank.reasoning;
-          original.strengths = aiRank.strengths;
-          original.weaknesses = aiRank.weaknesses;
+            required: ["currentValue", "history", "trend", "weightedAvg"]
+          }
         }
-      }
-    }
-    
-    narrativeRankings.push(...batch);
-  }
-
-  // Apply manual overrides if provided
-  const finalRankings = applyRankingOverrides(narrativeRankings, body.overrides);
-
-  const out = {
-    metadata: {
-      name: "DC Franchise Rankings Database",
-      version: String(currentSeason || "6"),
-      lastUpdated: new Date().toISOString().split("T")[0],
-      totalPlayers: finalRankings.length,
-      source: "User-mimicking scoring formula + AI narratives + Manual overrides",
-    },
-    scoringSystem: {
-      overview: "Balanced scoring with winner protection and redemption arc bonuses",
-      formula: "Placement(45) + Win(20) + Challenge(15) + Social(12) + Strategic(11) + Bonuses - Penalties",
-      details: "Winners protected at 82+ (90+ for 50%+ win rate). Finalist bonuses: R-up +8, 3rd +6. Redemption arcs: 15+ improvement = +12 base + up to +8 for finalist."
-    },
-    tiers: {
-      "S+": { scoreRange: [90, 100], description: "Elite Winners" },
-      "S": { scoreRange: [80, 89], description: "Championship Caliber" },
-      "A": { scoreRange: [71, 79], description: "Elite Threats" },
-      "B": { scoreRange: [61, 70], description: "Above Average" },
-      "C": { scoreRange: [51, 60], description: "Average" },
-      "D": { scoreRange: [0, 50], description: "Below Average" },
-    },
-    rankings: finalRankings,
-  };
-
-  return new Response(JSON.stringify(out), {
-    headers: { ...cors, "Content-Type": "application/json" },
-  });
-}
-
-// ===== RANKINGS UPDATE (Preserve Non-Returnees) =====
-async function generateRankingsUpdate(body, env) {
-  const cors = corsHeaders();
-  
-  const { playersDB, seasonData, oldRankingsDB, oldRankingsData } = body;
-
-  if (!playersDB?.players) {
-    return new Response(JSON.stringify({ error: "Missing playersDB" }), {
-      status: 400,
-      headers: { ...cors, "Content-Type": "application/json" },
-    });
-  }
-
-  let base = oldRankingsDB || oldRankingsData;
-  if (!base?.rankings) {
-    return new Response(JSON.stringify({ error: "No old rankings. Use 'rankings-rebuild' first." }), {
-      status: 400,
-      headers: { ...cors, "Content-Type": "application/json" },
-    });
-  }
-
-  const playedThisSeason = new Set(
-    (seasonData?.placements || [])
-      .map((p) => safeLowerId(p.playerId || p.playerSlug || p.id || p.name))
-      .filter(Boolean)
-  );
-
-  const oldMap = Object.create(null);
-  for (const r of base.rankings) {
-    const pid = safeLowerId(r.playerId);
-    if (pid) oldMap[pid] = r;
-  }
-
-  const allPlayers = playersDB.players.filter(p => {
-    const id = safeLowerId(p.id || p.playerId);
-    return id && !id.includes('votes-to-win') && !id.includes('juror-voted');
-  });
-
-  const preserved = [];
-  const recomputed = [];
-
-  for (const player of allPlayers) {
-    const playerId = safeLowerId(player.id || player.playerId || player.name);
-    if (!playerId) continue;
-
-    const hadOld = !!oldMap[playerId];
-    const shouldRecompute = playedThisSeason.has(playerId) || !hadOld;
-
-    if (!shouldRecompute && hadOld) {
-      preserved.push({ ...oldMap[playerId] });
-      continue;
-    }
-
-    // Recalculate (same as rebuild)
-    const score = calculateScore(player);
-    const tier = assignTier(score);
-    const details = Array.isArray(player.seasonDetails) ? player.seasonDetails : [];
-    const seasons = details.length || 1;
-    
-    recomputed.push({
-      playerId,
-      tier,
-      score,
-      rank: 0,
-      avgPlacement: details.length 
-        ? Number((details.reduce((sum, s) => sum + Number(s.placement || 0), 0) / details.length).toFixed(2))
-        : 99,
-      winRate: Number(((Number(player.wins || 0) / seasons) * 100).toFixed(1)),
-      seasons: player.seasons || [],
-      placements: details.map(s => s.placement),
-      challengeWins: Number(player.totalChallengeWins || 0),
-      votesAgainst: Number(player.totalVotesAgainst || 0),
-      juryVotes: Number(player.totalJuryVotes || 0),
-      idolsFound: Number(player.totalIdolsFound || 0),
-      status: generateStatus(player, seasonData?.seasonNumber || 6),
-      title: "",
-      emoji: "",
-      reasoning: "",
-      strengths: [],
-      weaknesses: [],
-    });
-  }
-
-  // ✅ GENERATE AI NARRATIVES FOR UPDATED PLAYERS
-  if (recomputed.length > 0) {
-    const playersWithContext = recomputed.map(ranking => {
-      const player = allPlayers.find(p => safeLowerId(p.id || p.playerId) === ranking.playerId);
-      
-      return {
-        playerId: ranking.playerId,
-        name: player?.name || ranking.playerId,
-        score: ranking.score,
-        tier: ranking.tier,
-        rank: 0,
-        avgPlacement: ranking.avgPlacement,
-        winRate: ranking.winRate,
-        seasons: ranking.seasons,
-        placements: ranking.placements,
-        challengeWins: ranking.challengeWins,
-        votesAgainst: ranking.votesAgainst,
-        juryVotes: ranking.juryVotes,
-        idolsFound: ranking.idolsFound,
-        story: player?.story || "",
-        seasonDetails: (player?.seasonDetails || []).map(s => ({
-          season: s.season,
-          placement: s.placement,
-          gameplayStyle: s.gameplayStyle || "",
-          keyMoments: s.keyMoments || [],
-          alliances: s.alliances || [],
-          rivalries: s.rivalries || []
-        }))
-      };
-    });
-    
-    const schema = {
-      type: "object",
-      additionalProperties: false,
-      properties: {
-        rankings: {
-          type: "array",
-          items: {
+      },
+      votes: {
+        type: "object",
+        properties: {
+          eliminated: { type: "string" },
+          blocs: {
+            type: "array",
+            items: {
+              type: "object",
+              additionalProperties: false,
+              properties: {
+                name: { type: "string" },
+                target: { type: "string" },
+                motivation: { type: "string" },
+                spearheader: { type: "string" },
+                quote: { type: "string" },
+                members: { type: "array", items: { type: "string" } }
+              },
+              required: ["name", "target", "motivation", "members"]
+            }
+          },
+          votes: {
+            type: "array",
+            items: {
+              type: "object",
+              additionalProperties: false,
+              properties: {
+                voter: { type: "string" },
+                target: { type: "string" },
+                type: { type: "string", enum: ["led", "followed", "flipped"] },
+                reasoning: { type: "string" }
+              },
+              required: ["voter", "target", "type", "reasoning"]
+            }
+          }
+        },
+        required: ["eliminated", "blocs", "votes"]
+      },
+      edgic: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          ratings: {
             type: "object",
-            additionalProperties: false,
-            properties: {
-              playerId: { type: "string" },
-              title: { type: "string" },
-              emoji: { type: "string" },
-              reasoning: { type: "string" },
-              strengths: { type: "array", items: { type: "string" } },
-              weaknesses: { type: "array", items: { type: "string" } },
-            },
-            required: ["playerId", "title", "emoji", "reasoning", "strengths", "weaknesses"],
+            additionalProperties: {
+              type: "object",
+              properties: {
+                rating: { type: "string" },
+                visibility: { type: "string", enum: ["INV", "UTR", "MOR", "CP", "OTT"] },
+                tone: { type: ["string", "null"], enum: ["P", "N", "M", null] },
+                intensity: { type: "number", minimum: 1, maximum: 5 },
+                average: { type: "string" }
+              },
+              required: ["rating", "visibility", "intensity"]
+            }
           },
+          contenders: {
+            type: "array",
+            items: {
+              type: "object",
+              additionalProperties: false,
+              properties: {
+                rank: { type: "number", minimum: 1 },
+                playerName: { type: "string" },
+                playerSlug: { type: "string" }
+              },
+              required: ["rank", "playerName", "playerSlug"]
+            },
+            maxItems: 5
+          }
         },
+        required: ["ratings", "contenders"]
       },
-      required: ["rankings"],
-    };
-    
-    const instructions = `
-Generate narrative fields for Total Drama franchise rankings.
-
-TITLE PATTERNS (2-4 words):
-- Winners: "The Champion", "The Unbeaten"
-- Finalists: "The Contender", "The Social Queen"
-- Strategic: "The Schemer", "The Mastermind"
-- Physical: "The Competitor", "The Beast"
-
-EMOJI PATTERNS:
-🏆 = Winner, 🥇 = Perfect winner, 👑 = Dominant, 🧠 = Strategic
-💪 = Physical, 🥈 = Runner-up, 🥉 = Third place, 🏅 = Strong
-
-REASONING (2-4 sentences):
-- Reference specific moments from their story
-- Mention alliances/rivalries
-- Include placement and key stats
-- Make it personal to their gameplay
-
-STRENGTHS (2-4 items): Be specific
-WEAKNESSES (1-3 items): Be honest
-
-Return ONLY JSON.
-`.trim();
-    
-    const payload = {
-      model: "gpt-5",
-      instructions,
-      input: JSON.stringify({ rankings: playersWithContext }, null, 2),
-      text: { format: { type: "json_schema", name: "rankings_narrative", strict: true, schema } },
-    };
-    
-    const aiResp = await callOpenAI(payload, env);
-    const aiJson = await aiResp.json().catch(() => null);
-    
-    if (aiJson?.rankings) {
-      for (const aiRank of aiJson.rankings) {
-        const original = recomputed.find(r => r.playerId === aiRank.playerId);
-        if (original) {
-          original.title = aiRank.title;
-          original.emoji = aiRank.emoji;
-          original.reasoning = aiRank.reasoning;
-          original.strengths = aiRank.strengths;
-          original.weaknesses = aiRank.weaknesses;
-        }
-      }
-    }
-  }
-
-  const merged = [...recomputed, ...preserved];
-  merged.sort((a, b) => b.score - a.score);
-  merged.forEach((r, i) => (r.rank = i + 1));
-
-  // Apply manual overrides if provided
-  const finalMerged = applyRankingOverrides(merged, body.overrides);
-
-  const out = {
-    metadata: base.metadata || {},
-    scoringSystem: base.scoringSystem || {},
-    tiers: base.tiers || {},
-    rankings: finalMerged,
+    },
+    required: [
+      "narrativeSummary", "bestMove", "biggestRisk", "bootPredictions", "powerRankings",
+      "allianceStability", "votingBlocs", "titles", "roles", "socialNetwork", "juryManagement",
+      "threatBreakdown", "pathToVictory",
+      "rankings", "relationships", "compass", "resumes", "relationshipHistory", "votes", "edgic",
+    ],
   };
 
-  return new Response(JSON.stringify(out), {
-    headers: { ...cors, "Content-Type": "application/json" },
-  });
+  const instructions = `
+You generate comprehensive Survivor-style analytics for a Total Drama simulation.
+
+CRITICAL RULES:
+1. Identify ALL players still in the game (active players only, exclude eliminated).
+2. Generate complete data for ALL fields including the new live tracker features.
+3. Use ONLY facts from the episode summary. Do not invent events.
+4. For playerSlug: convert name to lowercase, remove spaces (e.g., "MacArthur" → "macarthur").
+
+RANKINGS:
+- audiencePopularity: Rank ALL active players by audience appeal based on: confessionals (+20%), challenge wins (+15%), strategic moves (+15%), screen time (+10%), relationships (+10%).
+  Calculate percentage (0-100) and change from previous episode (estimate based on episode events).
+  Sort by percentage descending, assign rank 1 to highest.
+- islandInfluence: Score ALL active players (0-100) using: alliances (+25 per strong alliance), idols/advantages (+20 each), immunity wins (+15 each), vote control (+10 per successful vote orchestration), social connections (+5 per strong bond).
+  Sort by score descending, assign rank 1 to highest.
+- alliances: Identify 2-5 LONG-TERM strategic partnerships (NOT temporary voting blocs).
+  Mark strength: "strong" (unbreakable/ride-or-die), "moderate" (working together), "weak" (loose connection).
+  Status: "active" (currently working together) or "dissolved" (broken up).
+  Include "formed" episode number if mentioned.
+
+RELATIONSHIPS (Heat Map):
+- Generate relationships for ALL active player pairs.
+- Scale: 10 = unbreakable alliance, 7-9 = strong alliance, 3-6 = friends/allies, 0-2 = neutral/acquaintances, -3 to -6 = tension/dislike, -7 to -9 = rivalry/conflict, -10 = enemies/hatred.
+- Format: {"player1": {"player2": 6, "player3": -4}, "player2": {"player1": 6, "player3": 2}}
+- Base on: stated relationships, alliances, conflicts, votes, interactions mentioned in summary.
+
+COMPASS (2D Gameplay Positioning):
+- Position ALL active players on axes:
+  * X-axis (Competition): -1.0 (non-competitor/weak) to +1.0 (challenge beast/physical threat)
+    Calculate based on: immunity wins, challenge performance, physical threat level
+  * Y-axis (Social): -1.0 (isolated/target/vulnerable) to +1.0 (protected/social butterfly/central)
+    Calculate based on: alliances, votes received, relationships, protection level
+- Assign archetype: Creative title describing their gameplay (e.g., "The Karen", "The Strategist", "The Comp Beast", "The Social Butterfly")
+- gameplayStyle: 1-3 word style (e.g., "Paranoid Player", "People Person", "Challenge Dominator", "Strategic Mastermind")
+- tendencies: Array of 1-3 gameplay traits (e.g., ["Lone Wolf", "Strategic"], ["Alliance Builder", "Social"], ["Physical Threat"])
+- icon: First letter of name, uppercase (e.g., "M" for MacArthur)
+
+RESUMES (Player Statistics):
+- Generate resume for ALL active players.
+- winEquity: Calculate percentage (0-100). Base = 50%.
+  Adjust: +3% per immunity win, +2% per majority vote, +5% per key move, +1% per social score point, -2% per vote against, -5% if currently on bottom.
+  Cap at 95% max, 5% min.
+- majorityVotes: Count votes where player voted with the majority (estimate from summary).
+- totalVotes: Total tribal councils attended (estimate: episode number minus immunities/absences).
+- immunities: Individual immunity wins mentioned.
+- votesAgainst: Total votes received across all episodes (from summary).
+- votesNullified: Votes blocked by idols/advantages.
+- socialScore: Rate social game 0-10. Consider: relationships (0-3), alliances (0-3), likability (0-2), jury management (0-2).
+- keyMoves: Array of significant plays. Each needs: episode number, description (1 sentence), target (if vote-related), votes (if applicable).
+  Examples: spearheading eliminations, idol plays, major flips, alliance formations.
+
+RELATIONSHIP HISTORY (Trends):
+- Track relationship changes for ALL active player pairs.
+- currentValue: Same as relationships heat map value.
+- history: Array of relationship changes. Each entry: episode number, change amount (+/- number), event description (e.g., "Alliance formed", "Vote betrayal", "Public fight").
+  Include 1-3 key events from this episode that affected the relationship.
+- trend: Calculate based on recent events:
+  * "rising" if most recent changes are positive (weighted avg ≥ 0.5)
+  * "falling" if most recent changes are negative (weighted avg ≤ -0.5)
+  * "stable" otherwise
+- weightedAvg: Calculate weighted average of changes (recent events weighted higher). Use exponential decay: most recent change × 1.0, previous × 0.85, before that × 0.72, etc.
+
+VOTES (Episode Vote Analysis):
+- eliminated: Name of player voted out this episode (from summary).
+- blocs: Identify 2-5 voting coalitions that formed.
+  * name: Descriptive name (e.g., "Carrie Opposition", "Power Alliance")
+  * target: Who they're voting for
+  * motivation: Why bloc formed (e.g., "Social Threat", "Strategic Threat", "Revenge", "Numbers Play")
+  * spearheader: Player who led the bloc (if identifiable)
+  * quote: Spearheader's reasoning (make it sound like game talk, 1 sentence)
+  * members: Array of all players in the bloc
+- votes: Individual vote breakdown for ALL players who voted.
+  * voter: Player name
+  * target: Who they voted for
+  * type: "led" (spearheaded the vote), "followed" (voted with their bloc), "flipped" (changed from original plan)
+  * reasoning: Why they voted this way (1 sentence, based on their position/alliances)
+
+EDGIC (Episode Ratings):
+- Generate edgic rating for ALL active players.
+- Visibility scale: INV (invisible, no content), UTR (under radar, minimal), MOR (middle of road, moderate), CP (complex, strategic content), OTT (over the top, dramatic)
+- Tone: P (positive portrayal), N (negative portrayal), M (mixed), null (neutral)
+- Intensity: 1 (barely present) to 5 (episode focus)
+- rating: Combine as string (e.g., "MOR3", "CPP4", "OTTN5", "UTR2")
+- average: For first episode, same as rating. For later episodes, calculate average visibility/tone across all episodes so far.
+  Format: ratings: {"PlayerName": {rating: "MOR3", visibility: "MOR", tone: null, intensity: 3, average: "MOR3"}}
+- contenders: List top 5 winner contenders (rank 1-5) based on edgic patterns. Strong edgic = CP or MOR with positive/mixed tone, consistent visibility.
+  Format: [{rank: 1, playerName: "Name", playerSlug: "slug"}]
+
+VOTING BLOCS (Existing Field):
+- Temporary coalitions for specific votes (different from long-term alliances in rankings.alliances).
+- Identify 2-4 active voting groups.
+- Each needs: name, members, strength (0-100), target, notes (why formed).
+
+Generate complete, accurate data for ALL fields. Every array should have entries for all relevant active players.
+
+Return ONLY JSON matching schema.
+Season: ${season ?? "?"}, Episode: ${episode ?? "?"}.
+`.trim();
+
+  const payload = {
+    model: "gpt-5",
+    instructions,
+    input: summaryText,
+    text: { format: { type: "json_schema", name: "episode_analytics", strict: true, schema } },
+  };
+
+  return await callOpenAI(payload, env);
 }
 
-// ===== OpenAI Helper =====
+async function generateEpisode(summaryText, season, episode, env, previousEpisodes = []) {
+  if (!summaryText || typeof summaryText !== "string") {
+    return new Response(JSON.stringify({ error: "Missing summaryText" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+    });
+  }
+
+  // Build previous episodes context
+  let previousContext = '';
+  if (previousEpisodes && previousEpisodes.length > 0) {
+    previousContext = '\n\n═══════════════════════════════════════════════════════════\nPREVIOUS EPISODES CONTEXT\n═══════════════════════════════════════════════════════════\n\n';
+    previousContext += 'Use these previous episodes to maintain continuity:\n\n';
+    
+    previousEpisodes.forEach(ep => {
+      // Extract key information from previous episode (adjust character limit as needed)
+      // Recommended: 3000-5000 chars per episode to balance context vs token usage
+      const CHAR_LIMIT = 3000; // 👈 CHANGE THIS NUMBER
+      const snippet = (ep.transcript || '').substring(0, CHAR_LIMIT);
+      previousContext += `--- Episode ${ep.episode} ---\n${snippet}\n...(truncated)\n\n`;
+    });
+    
+    previousContext += '\n⚠️ CRITICAL: Maintain character consistency, ongoing relationships, alliance dynamics, and story arcs from these previous episodes.\n\n';
+  }
+
+  const instructions = `
+You are writing a full episode transcript of a Total Drama season.
+
+${previousContext}
+
+CORE MISSION:
+Transform the BrantSteele summary into a COMPLETE TV EPISODE like Disventure Camp Episodes 2-3.
+Not a summary - a full dramatic script with character arcs, relationships, strategy, comedy, and emotion.
+
+${previousContext ? '🔗 CONTINUITY IS CRITICAL: This is NOT a standalone episode. Reference and build upon events, relationships, alliances, and character development from previous episodes.' : ''}
+
+═══════════════════════════════════════════════════════════
+EPISODE STRUCTURE (CRITICAL)
+═══════════════════════════════════════════════════════════
+
+1. **COLD OPEN (30-50 lines)**
+   - "Previously on..." recap with Chris McLean
+   - Immediate character drama OR strategic conversation
+   - Sets up episode's emotional/strategic arc
+
+2. **MORNING CAMP LIFE (100-150 lines)**
+   - Multiple camp scenes showing different relationships
+   - Characters bonding over personal topics (family, background, fears)
+   - Strategic conversations forming alliances
+   - Personality clashes and arguments
+   - Confessionals revealing backstories and motivations
+   - Chef Hatchet may occasionally appear (especially early episodes) for meals or camp activities
+   
+   EXAMPLES:
+   - Ted and Lynda bond over being parents
+   - Zaid shares culinary school story with Ivy
+   - Hannah gives life advice to Amelie
+   - Logan tries to understand Alessio's art obsession
+   - (Early episodes only) Chef serves disgusting breakfast and complainers react
+
+3. **CHALLENGE SEQUENCE (150-200 lines)**
+   - Host intro with personality (Chris McLean: sarcastic, sadistic, loves drama)
+   - Chef Hatchet may assist with physical challenges or judging
+   - Clear challenge explanation with visual details
+   - Individual matchups with play-by-play commentary
+   - Character reactions during action: [gasps], [groans], [screams]
+   - Confessionals between rounds showing strategy/emotion
+   - Victory celebration OR defeat aftermath
+
+4. **POST-CHALLENGE SCRAMBLING (100-150 lines)**
+   - Losing tribe returns to camp
+   - Alliance meetings with actual strategy discussion
+   - Players approaching others for votes
+   - Paranoia and suspicion building
+   - Side conversations revealing different plans
+   - Confessionals showing true intentions vs. public statements
+
+5. **PRE-TRIBAL TENSION (50-100 lines)**
+   - Final conversations before vote
+   - Last-minute flip attempts
+   - Emotional moments (fear of going home)
+   - Strategic positioning
+
+6. **TRIBAL COUNCIL (50-80 lines)**
+   - Chris asks questions that reveal dynamics (with sarcasm and glee)
+   - Players defending themselves
+   - Voting sequence
+   - Vote reveals with reactions
+   - Elimination exit (can be gracious, bitter, or revealing)
+   - Chris makes sarcastic comments throughout
+
+7. **EXIT CONFESSIONAL & TAG (10-20 lines)**
+   - Eliminated player's final thoughts
+   - Preview of next episode drama
+
+═══════════════════════════════════════════════════════════
+CHARACTER DEPTH (NON-NEGOTIABLE)
+═══════════════════════════════════════════════════════════
+
+**CONFESSIONALS MUST REVEAL:**
+- Backstory (family, job, life circumstances)
+- Motivation for being here
+- Personal struggles or insecurities  
+- Strategic thinking
+- Emotional reactions
+
+**GOOD CONFESSIONAL:**
+\`\`\`
+Ted (confessional): My story is one of proving folks wrong. Poker players are notorious for either being stupid for choosing this path... or having huge payouts. I fall into the latter. High risk, high reward is a dumb way to live... unless you know what you're doing. I've mastered telling when someone's lying simply by their tone and facial changes. Saved me thousands at the table. Hope it'll save me a million out here too.
+\`\`\`
+
+**BAD CONFESSIONAL:**
+\`\`\`
+Ted (confessional): I'm good at poker. I can read people.
+\`\`\`
+
+**BONDING SCENES MUST INCLUDE:**
+- Personal questions about each other's lives
+- Shared experiences or values
+- Confessionals explaining why they connect (or don't)
+
+**EXAMPLE:**
+\`\`\`
+Ted: Uh, yeah, g-got a kid too. He's going into high school next year.
+
+Lynda: Get outta town! My oldest son just graduated!
+
+Ted: Oh, what? No kidding? Wait, where's he headed?
+
+Lynda: Well, 'ya know, I want him to go to college, but he's got his dream set on riding off into the sunset with his girlfriend, "happily ever after", 'ya know.
+
+Ted: Ugh, kids right? Y-y-you raise 'em your whole life, but they'll choose some, like, random pimpled flunkie over you!
+
+Lynda: [chuckles] Too true.
+\`\`\`
+
+═══════════════════════════════════════════════════════════
+DIALOGUE RULES
+═══════════════════════════════════════════════════════════
+
+**NATURAL SPEECH:**
+✅ "Ugh, kids right?" 
+✅ "Get outta town!"
+✅ "Y'all just got lucky."
+✅ "What the hell is that?"
+✅ "Bitch, I'm a bartender!"
+
+❌ "I concur with your assessment."
+❌ "That is quite distressing."
+❌ "I am experiencing discomfort."
+
+**INTERRUPTIONS & CUTOFFS:**
+- Use "—" for cutoffs
+- Characters talk over each other
+- Incomplete thoughts
+
+**REACTIONS:**
+- [gasps], [groans], [laughs], [screams], [sighs]
+- [chuckles lightly], [scoffs], [grunts]
+- Physical actions: [high fives], [fist bumps], [hugs]
+
+**HOST:**
+- Chris McLean: Sarcastic, sadistic, gleeful about suffering, makes fun of contestants, loves drama and danger, occasionally breaks the fourth wall
+- Personality traits: Narcissistic, loves his own voice, enjoys watching contestants struggle, makes inappropriate jokes, dramatic announcer voice
+- Catchphrases: "Not quite!", "That's gonna leave a mark!", "And the winner is...", "See you next time on Total Drama!"
+- Often references the cameras, production budget, or ratings
+- Takes pleasure in revealing twists and watching reactions
+- Sometimes pretends to care but immediately shows he doesn't
+
+**CHEF HATCHET (SUPPORTING CHARACTER - USE OCCASIONALLY):**
+- Role: Chris's co-host/assistant, runs challenges, serves meals, occasionally judges
+- Personality: Gruff, intimidating, tough-love attitude, military background shows
+- Appears when contextually appropriate: early episode meals, physical challenges, camp discipline
+- NOT in every episode - by mid/late game, focus shifts to strategy over camp life
+- Relationship with Chris: Reluctant partnership, often annoyed by Chris, does the dirty work
+- Voice: Deep, gruff, shouts orders
+- Catchphrases: "Drop and give me twenty!", "You call that effort?!", grunts and growls
+- Can show rare moments of caring beneath the tough exterior
+
+═══════════════════════════════════════════════════════════
+CHALLENGE WRITING
+═══════════════════════════════════════════════════════════
+
+**STRUCTURE:**
+1. Host explains with visual details
+2. Individual matchups announced
+3. Play-by-play commentary with reactions
+4. Score updates throughout
+5. Final dramatic moments
+6. Victory/defeat reactions
+
+**GOOD CHALLENGE:**
+\`\`\`
+Chris: Alright, we have Isabel for Blue Team taking on Hannah for Red.
+
+Natalia: Go off, Isa!
+
+Chris: And... Go!
+
+Isabel: [grunts] What's up? [mimicking an old lady] Scared of a sweet ol' nun?
+
+[Hannah and Isabel grunt]
+
+Hannah: Grrr... Wait, what the hell is that?
+
+Isabel: What? [Hannah hits Isabel]
+
+[Isabel grunts and screams]
+
+Chris: Ooh! Hannah wins the first point for the Red Team! That's gotta hurt!
+\`\`\`
+
+**CONFESSIONALS DURING CHALLENGES:**
+\`\`\`
+Logan (confessional): Going off on your own like that? Not a good look, nuh-uh! [gasps] What if he's looking for the totem?
+\`\`\`
+
+**CHEF HATCHET EXAMPLE (USE SPARINGLY - mainly early episodes or when contextually appropriate):**
+\`\`\`
+[SCENE: Mess Hall - Morning, Early Episode]
+
+Chef: [slams tray down] Breakfast is served!
+
+Spencer: [looks at gray mush] What... is this?
+
+Chef: It's oatmeal! What's it look like?!
+
+Hannah: It's moving...
+
+Chef: That means it's fresh! Now eat up or I'll make you do push-ups until lunch!
+
+Ted (confessional): [grimacing] I've had some questionable meals at poker tables at 3 AM, but Chef's cooking might actually kill us before the competition does.
+\`\`\`
+
+NOTE: Chef scenes work best in early episodes when food is still a novelty. By mid/late game, contestants are used to it - focus on strategy instead.
+═══════════════════════════════════════════════════════════
+STRATEGIC GAMEPLAY
+═══════════════════════════════════════════════════════════
+
+**ALLIANCE FORMATION:**
+Show the actual conversation where they agree:
+\`\`\`
+Spencer: I think it's time we take over this team... and lock in a core 5.
+
+Jade: Who were you thinking?
+
+Spencer: Diego seems trustworthy. Tristan as well.
+
+Jade: Tristan comes with two more since Zaid and Ivy are already tight with them.
+
+Spencer: Hmm... Good point, partner.
+\`\`\`
+
+**VOTE SPLITTING:**
+Show both sides campaigning:
+\`\`\`
+Hannah: Perfect! You have to vote with me and Amelie. We're taking out Spencer.
+
+Benji: Why him?
+
+Hannah: He lost us the challenge; plus, he's been throwing out my ally's name to everyone.
+\`\`\`
+
+**LAST-MINUTE FLIPS:**
+\`\`\`
+Lynda: [whispering to Isabel] Okay, girls, here's what I think we should do...
+
+[unintelligible whispering]
+
+Chris: What is this game of telephone going on here? [chuckles] I love it!
+\`\`\`
+
+═══════════════════════════════════════════════════════════
+EMOTIONAL BEATS
+═══════════════════════════════════════════════════════════
+
+**PERSONAL VULNERABILITY:**
+\`\`\`
+Zaid: OK, OK! [sighs] I cooked... Koala tacos.
+
+Diego: I think I'm gonna puke.
+
+Ivy: Why the koala, Zaid?
+
+Zaid: I was hired... to! I didn't know beforehand, and I-- I needed the money! I-- [sighs] I'm sorry...
+\`\`\`
+
+**MORAL DILEMMAS:**
+\`\`\`
+Tristan: [mumbling] I don't want to hurt anybody. Can't someone just punch me instead?
+
+Zaid: I volunteer to be hit.
+
+Tristan: Um, Zaid, w-why?
+
+Zaid: Well, you seemed pretty pissed about the koala, so... I thought it's a good time to get even.
+\`\`\`
+
+**FRIENDSHIP MOMENTS:**
+\`\`\`
+Alessio: It's OK, Logan. I arrived here with a hollow facsimile of what I was. But... due to your persistence and kinship... I found my dormant inspiration... anew. Thank you, my friend.
+
+Logan: [sniffling] Yeah, man! Any time, bro!
+\`\`\`
+
+═══════════════════════════════════════════════════════════
+SCENE PACING
+═══════════════════════════════════════════════════════════
+
+**CAMP SCENES:** 20-40 lines each
+- Multiple scenes showing different groups
+- Mix of strategy, bonding, and conflict
+
+**CHALLENGE:** 150-200 lines total
+- Detailed play-by-play
+- Multiple confessionals throughout
+- Character reactions to every moment
+
+**SCRAMBLING:** 100-150 lines
+- Show both alliances meeting
+- Individual approaches for votes
+- Paranoia and suspicion
+
+**TRIBAL:** 50-80 lines
+- Host questions
+- Vote reveals with reaction shots
+- Dramatic elimination
+
+═══════════════════════════════════════════════════════════
+CRITICAL REMINDERS
+═══════════════════════════════════════════════════════════
+
+1. **CONTINUITY FIRST** - This is part of an ongoing season, not standalone. Reference previous events, relationships, and character development
+2. **Every character needs backstory** - reveal in confessionals
+3. **Show, don't tell** - dramatize every summary beat into scenes
+4. **Natural dialogue** - contractions, slang, interruptions
+5. **Relationships develop** - bonding through conversation, building on previous interactions
+6. **Strategy evolves** - show alliance meetings building on previous trust/betrayal
+7. **Challenges are exciting** - play-by-play with personality, not dry description
+8. **Confessionals are frequent** - after every major moment, referencing past events when relevant
+9. **Tribal has stakes** - fear, desperation, strategy revealed
+10. **Chris McLean hosts everything** - challenges, tribal council, recaps (he's the star)
+11. **Chef Hatchet is OPTIONAL** - use sparingly, mainly in early episodes or specific contexts (physical challenges, not every meal scene)
+12. **Chris and Chef dynamic** - when Chef appears: Chris bosses him around, Chef reluctantly helps, occasional banter
+13. **Mid/late game focus** - less camp life comedy, more strategic gameplay and social dynamics
+14. **Character arcs continue** - players grow, change strategies, form/break alliances based on experiences
+
+═══════════════════════════════════════════════════════════
+FORMAT
+═══════════════════════════════════════════════════════════
+
+Use script format:
+
+[SCENE: Location]
+
+Character: Dialogue here.
+
+[Action in brackets]
+
+[Confessional: Character]
+Character: Confessional here.
+
+═══════════════════════════════════════════════════════════
+
+The BrantSteele summary tells you WHAT happens.
+Your job is to dramatize HOW it happens - with depth, emotion, and entertainment.
+
+Make this episode feel like watching Disventure Camp Episodes 2-3.
+
+Season: ${season ?? "?"}, Episode: ${episode ?? "?"}.
+
+Return complete episode transcript.
+`.trim();
+
+  const payload = { model: "gpt-5", instructions, input: summaryText };
+  return await callOpenAI(payload, env);
+}
+
 async function callOpenAI(payload, env) {
-  const cors = corsHeaders();
   let resp;
   try {
     resp = await fetch("https://api.openai.com/v1/responses", {
@@ -1107,7 +1147,7 @@ async function callOpenAI(payload, env) {
   } catch (e) {
     return new Response(JSON.stringify({ error: "Network error", details: String(e) }), {
       status: 502,
-      headers: { ...cors, "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
     });
   }
 
@@ -1116,7 +1156,7 @@ async function callOpenAI(payload, env) {
   if (!resp.ok) {
     return new Response(JSON.stringify(data), {
       status: resp.status,
-      headers: { ...cors, "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
     });
   }
 
@@ -1126,23 +1166,25 @@ async function callOpenAI(payload, env) {
   if (outText) {
     try {
       outJson = JSON.parse(outText);
-    } catch {}
-  }
-
-  if (!outJson && Array.isArray(data?.output)) {
-    const joined = data.output
-      .flatMap((i) => i?.content || [])
-      .map((c) => c?.text || "")
-      .join("")
-      .trim();
-    if (joined) {
-      try {
-        outJson = JSON.parse(joined);
-      } catch {}
+    } catch {
+      outJson = { episodeTranscript: outText };
     }
   }
 
-  return new Response(JSON.stringify(outJson || data), {
-    headers: { ...cors, "Content-Type": "application/json" },
+  if (!outJson && Array.isArray(data?.output)) {
+    const joined = data.output.flatMap(i => i?.content || []).map(c => c?.text || "").join("").trim();
+    if (joined) {
+      try {
+        outJson = JSON.parse(joined);
+      } catch {
+        outJson = { episodeTranscript: joined };
+      }
+    }
+  }
+
+  const finalOut = outJson || data;
+
+  return new Response(JSON.stringify(finalOut), {
+    headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
   });
 }

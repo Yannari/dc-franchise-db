@@ -304,7 +304,7 @@
       </a>
 
       <div class="stats-badge">
-        <div class="stats-main"><span id="totalSeasons">5</span> Seasons • <span id="totalPlayers">58</span> Players</div>
+        <div class="stats-main"><span id="totalSeasons">6</span> Seasons • <span id="totalPlayers">68</span> Players</div>
         <div class="stats-sub">Icons: <span id="iconFormat">name.png</span></div>
       </div>
     </div>
@@ -434,7 +434,7 @@
     </div>
 
     <div class="controls">
-      <div style="display:grid; grid-template-columns:2fr 1fr; gap:16px;">
+      <div style="display:grid; grid-template-columns:2fr 1fr 1fr; gap:16px;">
         <input 
           type="search" 
           id="search" 
@@ -456,6 +456,20 @@
           <option value="chwins-desc">🏅 Challenge Wins (Most → Fewest)</option>
           <option value="chwins-asc">🏅 Challenge Wins (Fewest → Most)</option>
         </select>
+        <select 
+          id="seasonFilter" 
+          style="padding:14px 20px; border-radius:14px; font-size:15px; color:var(--text);"
+        >
+          <option value="all">🎬 All Seasons</option>
+          <option value="1">Season 1</option>
+          <option value="2">Season 2</option>
+          <option value="3">Season 3</option>
+          <option value="4">Season 4</option>
+          <option value="5">Season 5</option>
+          <option value="6">Season 6</option>
+          <option value="7">Season 7</option>
+          <option value="8">Season 8</option>
+        </select>
       </div>
     </div>
 
@@ -467,7 +481,7 @@
       <!-- Player cards will be inserted here by JavaScript -->
     </div>
 
-    <div class="footer">40 total players across 4 seasons • 68 total appearances</div>
+    <div class="footer">84 total players across 8 seasons • 68 total appearances</div>
   </div>
 </main>
 
@@ -475,7 +489,7 @@
 <footer class="siteFooter">
   <div class="footerInner">
     <div class="footerTitle">DC Franchise Database</div>
-    <div class="footerSub">Static archive • 5 seasons • 58 players • Icons: name.png</div>
+    <div class="footerSub">Static archive • 8 seasons • 84 players • Icons: name.png</div>
   </div>
 </footer>
 <!-- SITE FOOTER END -->
@@ -511,8 +525,25 @@ const emojiMap = {
   'jay': '🧢',
   'stephanie': '😤',
   'kelly': '👜',
-  'tammy': '🪄'
+  'tammy': '🪄',
+  'carrie': '💘',
+  'devin': '🤝',
+  'laurie': '🧘',
+  'lorenzo': '🍝',
+  'macarthur': '🚓',
+  'pete': '🧓',
+  'spud': '🥔',
+  'taylor': '💅',
+  'tom': '🎭',
+  'ellody': '🧠',
+  'sanders': '👮',
+  'gerry': '🎾',
+  'jen': '👗',
+  'chet': '🧑‍🤝‍🧑',
+  'rock': '🤘',
+  'miles': '🌱'
 };
+
 
 
 // ========================================
@@ -654,11 +685,23 @@ function renderPlayers(players) {
 function updateDisplay() {
   const query = (search.value || '').toLowerCase().trim();
   const sortValue = sortSelect.value;
+  const seasonFilterValue = document.getElementById('seasonFilter')?.value || 'all';
 
   // ✅ Always filter from the original data (not from DOM cards)
-  let filteredPlayers = allPlayers.filter(p =>
-    (p.name || '').toLowerCase().includes(query)
-  );
+  let filteredPlayers = allPlayers.filter(p => {
+    // Name search filter
+    const matchesName = (p.name || '').toLowerCase().includes(query);
+    
+    // Season filter
+    let matchesSeason = true;
+    if (seasonFilterValue !== 'all') {
+      const seasonNum = Number(seasonFilterValue);
+      const playerSeasons = p.seasons || [];
+      matchesSeason = playerSeasons.includes(seasonNum);
+    }
+    
+    return matchesName && matchesSeason;
+  });
 
   filteredPlayers.sort((a, b) => {
     const aPlace = Number(a.bestPlacement ?? 9999);
@@ -692,6 +735,12 @@ function updateDisplay() {
 search.addEventListener('input', updateDisplay);
 search.addEventListener('search', updateDisplay);
 sortSelect.addEventListener('change', updateDisplay);
+
+// Season filter event listener
+const seasonFilter = document.getElementById('seasonFilter');
+if (seasonFilter) {
+  seasonFilter.addEventListener('change', updateDisplay);
+}
 </script>
 
 </body>

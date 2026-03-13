@@ -747,6 +747,40 @@ Blaineley
           </div>
         </div>
         
+        <!-- EXISTING DATABASE LOADER -->
+        <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+          <h4 style="margin: 0 0 12px 0; display: flex; align-items: center; gap: 8px;">
+            <span>📂</span> Load Existing Databases
+            <span style="font-size: 11px; opacity: 0.5; font-weight: normal;">(Required to preserve your existing data)</span>
+          </h4>
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+            <div>
+              <label style="display: block; margin-bottom: 6px; font-size: 12px; opacity: 0.8;">franchise_database.json</label>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <input type="file" id="sb-load-franchise-file" accept=".json" style="display:none" />
+                <button onclick="document.getElementById('sb-load-franchise-file').click()" class="btn" style="font-size: 12px; padding: 6px 12px; background: rgba(59,130,246,0.3); border: 1px solid rgba(59,130,246,0.5);">📂 Load File</button>
+                <span id="sb-franchise-load-status" style="font-size: 11px; opacity: 0.7;">Not loaded — will start fresh</span>
+              </div>
+            </div>
+            <div>
+              <label style="display: block; margin-bottom: 6px; font-size: 12px; opacity: 0.8;">players_database.json</label>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <input type="file" id="sb-load-players-file" accept=".json" style="display:none" />
+                <button onclick="document.getElementById('sb-load-players-file').click()" class="btn" style="font-size: 12px; padding: 6px 12px; background: rgba(59,130,246,0.3); border: 1px solid rgba(59,130,246,0.5);">📂 Load File</button>
+                <span id="sb-players-load-status" style="font-size: 11px; opacity: 0.7;">Not loaded — will start fresh</span>
+              </div>
+            </div>
+            <div>
+              <label style="display: block; margin-bottom: 6px; font-size: 12px; opacity: 0.8;">seasons_database.json</label>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <input type="file" id="sb-load-seasons-file" accept=".json" style="display:none" />
+                <button onclick="document.getElementById('sb-load-seasons-file').click()" class="btn" style="font-size: 12px; padding: 6px 12px; background: rgba(59,130,246,0.3); border: 1px solid rgba(59,130,246,0.5);">📂 Load File</button>
+                <span id="sb-seasons-load-status" style="font-size: 11px; opacity: 0.7;">Not loaded — will start fresh</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
         <!-- BRANTSTEELE STATS -->
         <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
           <h4 style="margin: 0 0 16px 0; display: flex; align-items: center; gap: 8px;">
@@ -2987,76 +3021,304 @@ setTimeout(function() {
   // ========================================
   
   function extractPlayerTribes(episodes) {
-    const playerTribes = {};
-    
-    if (!episodes || episodes.length === 0) return playerTribes;
-    
-    // Look for tribe assignments in early episodes (usually Episode 1)
-    for (const ep of episodes.slice(0, 3)) { // Check first 3 episodes
+    // Returns { slug: "Blue → Yellow → Campers" } — full progression string
+    const playerTribeHistory = {}; // slug → [tribe1, tribe2, ...] in episode order
+
+    if (!episodes || episodes.length === 0) return {};
+
+    // Strip parentheticals like "(FINAL 5)", "(MERGE)", "(THE MERGE)" and trim
+    function cleanTribeName(raw) {
+      return raw
+        .replace(/\s*\(.*?\)\s*/g, '')  // remove anything in parens
+        .replace(/\s*tribe\s*$/i, '')    // remove trailing "Tribe"
+        .trim();
+    }
+
+    // Helper: parse lines under a === HEADER === section
+    function parseBlock(text, headerRegex) {
+      const lines = (text || '').split(/\r?\n/);
+      let start = -1;
+      for (let i = 0; i < lines.length; i++) {
+        if (headerRegex.test(lines[i].trim())) { start = i; break; }
+      }
+      if (start === -1) return [];
+      const out = [];
+      for (let i = start + 1; i < lines.length; i++) {
+        const l = (lines[i] || '').trim();
+        if (!l) continue;
+        if (/^===\s*/.test(l)) break;
+        if (/^(PRE-CHALLENGE|CHALLENGES|POST-CHALLENGE|TRIBAL|VOTING|CURRENT GAME STATUS|NEXT EPISODE QUESTIONS)\b/i.test(l)) break;
+        out.push(l);
+      }
+      return out;
+    }
+
+    function addTribe(slug, tribe) {
+      if (!tribe || tribe.length < 2) return;
+      const cleaned = cleanTribeName(tribe);
+      if (!cleaned) return;
+      if (!playerTribeHistory[slug]) playerTribeHistory[slug] = [];
+      const hist = playerTribeHistory[slug];
+      // Only add if different from the most recent tribe
+      if (hist.length === 0 || hist[hist.length - 1] !== cleaned) {
+        hist.push(cleaned);
+      }
+    }
+
+    // Check ALL episodes in order — swaps reassign people mid-game
+    for (const ep of episodes) {
       const summary = ep.summary || '';
-      
-      // Pattern 1: "=== TRIBE: TribeName ===" followed by player names
-      const tribeMatches = summary.matchAll(/===\s*TRIBE[:\s]+([A-Za-z]+)\s*===\s*([\s\S]*?)(?=\n===|$)/gi);
-      
-      for (const match of tribeMatches) {
-        const tribeName = match[1].trim();
-        const memberBlock = match[2];
-        
-        // Extract player names from the block
-        const lines = memberBlock.split('\n')
-          .map(l => l.trim())
-          .filter(l => l && !l.startsWith('===') && !l.startsWith('---'));
-        
-        for (const line of lines) {
-          // Remove bullets, numbers, etc
-          const cleanName = line.replace(/^[-*\d.)\s]+/, '').trim();
-          if (cleanName.length > 2) {
-            const playerId = slugify(cleanName);
-            playerTribes[playerId] = tribeName;
+
+      // ── PATTERN 1 (PRIMARY): === TRIBES (ACTIVE) === with #TribeName subheaders ──
+      const tribesBlock = parseBlock(summary, /^===\s*TRIBES\b/i);
+      if (tribesBlock.length) {
+        let currentTribe = null;
+        for (const line of tribesBlock) {
+          const tribeHeader = line.match(/^#\s*(.+?)\s*$/i);
+          if (tribeHeader) {
+            currentTribe = cleanTribeName(tribeHeader[1]);
+          } else if (currentTribe && line && !line.startsWith('=')) {
+            const cleanName = line.replace(/^[-*\d.)\s]+/, '').trim();
+            if (cleanName.length > 1) addTribe(slugify(cleanName), currentTribe);
           }
         }
       }
-      
-      // Pattern 2: Look for tribe mentions like "Galang members:", "Tadhana tribe:"
+
+      // ── PATTERN 2: === TRIBE: TribeName === followed by player names ──
+      const tribeMatches = summary.matchAll(/===\s*TRIBE[:\s]+([A-Za-z\s]+?)\s*===\s*([\s\S]*?)(?=\n===|$)/gi);
+      for (const match of tribeMatches) {
+        const tribeName = cleanTribeName(match[1]);
+        const lines = match[2].split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('==='));
+        for (const line of lines) {
+          const cleanName = line.replace(/^[-*\d.)\s]+/, '').trim();
+          if (cleanName.length > 2) addTribe(slugify(cleanName), tribeName);
+        }
+      }
+
+      // ── PATTERN 3: "TribeName Tribe (N): Name1, Name2" ──
+      const tribeCountMatches = summary.matchAll(/([A-Za-z]+)\s+[Tt]ribe\s*\(\d+\)\s*:\s*([^\n]+)/g);
+      for (const match of tribeCountMatches) {
+        const tribeName = cleanTribeName(match[1]);
+        for (const name of match[2].split(/,/)) {
+          const cleanName = name.replace(/^[-*\d.)\s]+/, '').trim();
+          if (cleanName.length > 2) addTribe(slugify(cleanName), tribeName);
+        }
+      }
+
+      // ── PATTERN 4: "Galang tribe: Name1, Name2" ──
       const tribeLineMatches = summary.matchAll(/([A-Za-z]+)\s+(?:tribe|members?):\s*([^\n]+)/gi);
-      
       for (const match of tribeLineMatches) {
-        const tribeName = match[1].trim();
-        const members = match[2];
-        
-        // Split by commas or "and"
-        const names = members.split(/,|\sand\s/i).map(n => n.trim());
-        
-        for (const name of names) {
+        const tribeName = cleanTribeName(match[1]);
+        for (const name of match[2].split(/,|\sand\s/i)) {
           const cleanName = name.replace(/^[-*\d.)\s]+/, '').trim();
           if (cleanName.length > 2 && !cleanName.toLowerCase().includes('member')) {
-            const playerId = slugify(cleanName);
-            playerTribes[playerId] = tribeName;
+            addTribe(slugify(cleanName), tribeName);
           }
-        }
-      }
-      
-      // Pattern 3: Inline mentions like "Mickey (Galang)" or "Ryan from Tadhana"
-      const inlineMatches = summary.matchAll(/([A-Z][a-z]+)\s+(?:\(([A-Z][a-z]+)\)|from\s+([A-Z][a-z]+))/g);
-      
-      for (const match of inlineMatches) {
-        const playerName = match[1];
-        const tribeName = match[2] || match[3];
-        
-        if (playerName && tribeName) {
-          const playerId = slugify(playerName);
-          playerTribes[playerId] = tribeName;
         }
       }
     }
-    
-    console.log('📋 Extracted tribe assignments:', playerTribes);
+
+    // Convert history arrays to "Blue → Yellow → Campers" strings
+    const playerTribes = {};
+    for (const [slug, hist] of Object.entries(playerTribeHistory)) {
+      playerTribes[slug] = hist.join(' → ');
+    }
+
+    console.log('📋 Extracted tribe progressions:', playerTribes);
     return playerTribes;
   }
 
   // ========================================
-  // HELPER FUNCTIONS (copied from main script)
+  // BRANTSTEELE STATS PARSER (client-side)
+  // Parses raw stats text so wins/votes are exact, not AI-guessed
   // ========================================
+  function parseBrantsteeleStats(text, placements) {
+    if (!text || !text.trim()) return {};
+    
+    const result = {}; // { slug: { immunityWins, rewardWins, challengeWins, votesReceived, idolsFound, tribe } }
+    
+    // Build a name→slug lookup from the known placement list
+    const nameMap = {};
+    if (placements && placements.length) {
+      for (const p of placements) {
+        const slug = slugify(p.name);
+        const lower = p.name.toLowerCase();
+        nameMap[lower] = slug;
+        nameMap[slug] = slug;
+        // First name only (e.g. "Alejandro" → same slug)
+        const firstName = p.name.split(/[\s\-]+/)[0].toLowerCase();
+        if (!nameMap[firstName]) nameMap[firstName] = slug;
+        // Initials (e.g. "Mary-Kate" → "mk")
+        const words = p.name.split(/[\s\-]+/);
+        if (words.length > 1) {
+          const initials = words.map(w => w[0] || '').join('').toLowerCase();
+          if (initials.length > 1 && !nameMap[initials]) nameMap[initials] = slug;
+        }
+      }
+    }
+    
+    function resolveSlug(rawName) {
+      const clean = rawName.trim().replace(/\s+/g, ' ');
+      const lower = clean.toLowerCase();
+      const slug = slugify(clean);
+      const noSpace = lower.replace(/\s+/g, '');
+      return nameMap[lower] || nameMap[slug] || nameMap[noSpace] || slug;
+    }
+    
+    function ensurePlayer(slug) {
+      if (!result[slug]) result[slug] = { immunityWins: 0, rewardWins: 0, challengeWins: 0, votesReceived: 0, idolsFound: 0, tribe: null };
+    }
+    
+    // Parse "Name1/Name2 (N)" or "Name (N)" entries from a comma-separated string
+    function parseWinEntries(str, field) {
+      // Allow multi-line continuation: collect until next section
+      const entries = str.split(/,/);
+      for (const entry of entries) {
+        const m = entry.trim().match(/^([A-Za-z][A-Za-z\s\-\/]*?)\s*\((\d+)\)/);
+        if (!m) continue;
+        const count = parseInt(m[2]);
+        const names = m[1].split('/').map(n => n.trim()).filter(n => n && n.toLowerCase() !== 'others');
+        for (const name of names) {
+          const slug = resolveSlug(name);
+          ensurePlayer(slug);
+          result[slug][field] = count;
+        }
+      }
+    }
+    
+    // Collect the full text block for a section (handles line wrapping)
+    function collectSection(lines, startIdx) {
+      let collected = lines[startIdx].replace(/^[^:]+:\s*/, ''); // text after first colon
+      let j = startIdx + 1;
+      while (j < lines.length) {
+        const next = lines[j].trim();
+        if (!next) break;
+        // Stop at === headers or new section headers (allows parentheticals like "(Ind.)", "(Merge)")
+        if (/^===/.test(next) || /^[A-Z][A-Za-z\s\(\)\.]+:\s*/.test(next)) break;
+        collected += ',' + next;
+        j++;
+      }
+      return { text: collected, nextIdx: j };
+    }
+    
+    const lines = text.split(/\n/).map(l => l.trim());
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (!line) continue;
+      
+      // ── Immunity Wins ──────────────────────────────────────────
+      if (/^immunity\s+wins?/i.test(line)) {
+        const { text: block, nextIdx } = collectSection(lines, i);
+        parseWinEntries(block, 'immunityWins');
+        i = nextIdx - 1;
+      }
+      
+      // ── Reward Wins ────────────────────────────────────────────
+      else if (/^reward\s+wins?/i.test(line)) {
+        const { text: block, nextIdx } = collectSection(lines, i);
+        parseWinEntries(block, 'rewardWins');
+        i = nextIdx - 1;
+      }
+      
+      // ── Challenge Wins (total) ─────────────────────────────────
+      else if (/^challenge\s+wins?/i.test(line)) {
+        const { text: block, nextIdx } = collectSection(lines, i);
+        parseWinEntries(block, 'challengeWins');
+        i = nextIdx - 1;
+      }
+      
+      // ── Votes Received ─────────────────────────────────────────
+      // Format A: "Votes Received: Name (N), Name2 (N2), ..."
+      // Format B: "Votes Received Against:\nName: N  Name2: N2\n..."
+      else if (/^votes?\s+received/i.test(line)) {
+        const afterColon = line.replace(/^[^:]+:\s*/, '');
+        
+        if (/\(\d+\)/.test(afterColon) || /\(\d+\)/.test(lines[i + 1] || '')) {
+          // Format A — "Name (N)" style, may wrap to next lines
+          const { text: block, nextIdx } = collectSection(lines, i);
+          const entries = block.split(/,/);
+          for (const entry of entries) {
+            const m = entry.trim().match(/^([A-Za-z][A-Za-z\s\-]+?)\s*\((\d+)\)/);
+            if (m) {
+              const slug = resolveSlug(m[1]);
+              ensurePlayer(slug);
+              result[slug].votesReceived = parseInt(m[2]);
+            }
+          }
+          i = nextIdx - 1;
+        } else {
+          // Format B — "Name: N" style on continuation lines
+          let j = i + 1;
+          while (j < lines.length && lines[j].trim()) {
+            if (/^===/.test(lines[j].trim())) break;
+            // New section header — stop
+            if (/^[A-Z][A-Za-z\s]+:\s*$/.test(lines[j].trim())) break;
+            // Parse all "Name: N" pairs on this line
+            const pairs = [...lines[j].matchAll(/([A-Z][a-zA-Z\-]+(?:\s[A-Z][a-zA-Z\-]+)?)\s*:\s*(\d+)/g)];
+            for (const vm of pairs) {
+              const slug = resolveSlug(vm[1]);
+              ensurePlayer(slug);
+              result[slug].votesReceived = parseInt(vm[2]);
+            }
+            j++;
+          }
+          i = j - 1;
+        }
+      }
+      
+      // ── Idols Found ────────────────────────────────────────────
+      // Format A: "Idols Found: Name (N), Name2 (N2)"   — with counts
+      // Format B: "Idols Found: Name, Name2, Name3 (note)" — 1 each
+      else if (/^idols?\s+found/i.test(line)) {
+        const afterColon = line.replace(/^[^:]+:\s*/, '');
+        const entries = afterColon.split(/,/);
+        for (const entry of entries) {
+          const withCount = entry.trim().match(/^([A-Za-z][A-Za-z\s\-]+?)\s*\((\d+)\)/);
+          if (withCount) {
+            const slug = resolveSlug(withCount[1]);
+            ensurePlayer(slug);
+            result[slug].idolsFound = parseInt(withCount[2]);
+          } else {
+            // Strip parenthetical notes like "(Stolen)", then treat as 1 idol
+            const clean = entry.trim().replace(/\([^)]*\)/g, '').trim();
+            if (clean.length > 1 && !/^(and|the|a)$/i.test(clean)) {
+              const slug = resolveSlug(clean);
+              ensurePlayer(slug);
+              result[slug].idolsFound = (result[slug]?.idolsFound || 0) + 1;
+            }
+          }
+        }
+      }
+      
+      // ── Tribe assignments in stats (e.g. "Belo Tribe: Amy, Rodney") ──
+      else if (/^[A-Za-z]+\s+[Tt]ribe\s*:/.test(line)) {
+        const tm = line.match(/^([A-Za-z]+)\s+[Tt]ribe\s*:\s*(.+)/);
+        if (tm) {
+          const tribeName = tm[1];
+          const members = tm[2].split(/,/).map(n => n.trim());
+          for (const member of members) {
+            if (member.length > 1) {
+              const slug = resolveSlug(member);
+              ensurePlayer(slug);
+              result[slug].tribe = tribeName;
+            }
+          }
+        }
+      }
+    }
+    
+    // Auto-fill challengeWins = immunityWins + rewardWins when not explicitly given
+    for (const slug of Object.keys(result)) {
+      const p = result[slug];
+      if (!p.challengeWins && (p.immunityWins || p.rewardWins)) {
+        p.challengeWins = (p.immunityWins || 0) + (p.rewardWins || 0);
+      }
+    }
+    
+    console.log('📊 Parsed Brantsteele Stats (client-side):', result);
+    return result;
+  }
   
   function slugify(name) {
     return name.toLowerCase()
@@ -3678,17 +3940,17 @@ setTimeout(function() {
       
       updateSeasonsDatabase(seasonData);
       
-      // Step 4: Update franchise_database
-      showProgress('<h3>⚡ Step 4/5: Updating Franchise Database</h3><p>🏛️ Adding records, milestones, and trends...</p>');
-      await sleep(500);
-      
-      updateFranchiseDatabase(seasonData);
-      
-      // Step 5: Update players_database with AI-enhanced data
-      showProgress('<h3>⚡ Step 5/5: Updating Players Database</h3><p>👥 Creating/updating player profiles with AI narratives...</p>');
+      // Step 4: Update players_database FIRST so franchise recompute has fresh data
+      showProgress('<h3>⚡ Step 4/5: Updating Players Database</h3><p>👥 Creating/updating player profiles with AI narratives...</p>');
       await sleep(500);
       
       updatePlayersDatabase(seasonData);
+      
+      // Step 5: Update franchise_database — recomputes ALL stats from fresh players_database
+      showProgress('<h3>⚡ Step 5/5: Updating Franchise Database</h3><p>🏛️ Computing records, milestones, careerLeaders, evolution & trends...</p>');
+      await sleep(500);
+      
+      updateFranchiseDatabase(seasonData);
       
       // Step 6: Recalculate rankings
       showProgress('<h3>⚡ Bonus: Recalculating Rankings</h3><p>🏆 Calculating scores for all players...</p>');
@@ -3986,6 +4248,58 @@ setTimeout(function() {
     }
   }
   
+  // ── Merge AI-generated awards with manual form inputs + computed numeric fields ──
+  // The AI (via worker season-data-extraction) generates all narrative awards.
+  // We only overlay: fanFavorite (from form), mostChallengeWins detail (from stats).
+  function computeSeasonAwards(aiData, inputData, metadata) {
+    const pl = aiData.placements || [];
+    
+    // Helper: effective challenge wins floor
+    const cw = p => Math.max(p.challengeWins||0, (p.immunityWins||0)+(p.rewardWins||0));
+
+    // Start with AI-generated awards (from worker extraction)
+    const awards = Object.assign({}, aiData.awards || {});
+
+    // ── Manual form overrides ────────────────────────────────────────────────
+    // fanFavorite: always from form input (manual pick)
+    const fanFavName = inputData.awards?.fanFavorite;
+    if (fanFavName) {
+      awards.fanFavorite = { name: fanFavName, playerSlug: slugify(fanFavName) };
+    }
+
+    // bestStrategic: form input if provided, else keep AI's
+    const bestStrName = inputData.awards?.bestStrategic;
+    if (bestStrName) {
+      awards.bestStrategic = awards.bestStrategic
+        ? { ...awards.bestStrategic, name: bestStrName, playerSlug: slugify(bestStrName) }
+        : { name: bestStrName, playerSlug: slugify(bestStrName) };
+    }
+
+    // ── mostChallengeWins: compute from stats (most accurate source) ─────────
+    const mostChalInput = inputData.awards?.mostChallengeWins;
+    const bestChallenger = [...pl].sort((a,b) => cw(b) - cw(a))[0];
+    const chalName = mostChalInput || bestChallenger?.name || '';
+    const chalPlayer = pl.find(p => p.name?.toLowerCase() === chalName?.toLowerCase()) || bestChallenger;
+    if (chalName) {
+      awards.mostChallengeWins = {
+        ...(awards.mostChallengeWins || {}),  // preserve any AI description
+        name: chalName,
+        playerSlug: slugify(chalName),
+        detail: `${cw(chalPlayer||{})} total`  // computed last — always wins
+      };
+    }
+
+    // ── Ensure bestPhysical / compBeast use accurate wins count ─────────────
+    if (bestChallenger && awards.bestPhysical) {
+      awards.bestPhysical.wins = cw(bestChallenger);
+    }
+    if (bestChallenger && awards.compBeast?.gold) {
+      awards.compBeast.gold.wins = cw(bestChallenger);
+    }
+
+    return awards;
+  }
+
   function buildSeasonDataFromAI(inputData, aiData) {
     const { metadata, finale } = inputData;
     
@@ -4025,8 +4339,10 @@ setTimeout(function() {
         story: p.story,
         gameplayStyle: p.gameplayStyle,
         keyMoments: p.keyMoments || [],
-        challengeWins: p.challengeWins || 0,
         immunityWins: p.immunityWins || 0,
+        rewardWins: p.rewardWins || 0,
+        // ✅ FIX: challengeWins must be at least immunityWins+rewardWins (AI often returns 0 for total but fills sub-fields correctly)
+        challengeWins: Math.max(p.challengeWins || 0, (p.immunityWins || 0) + (p.rewardWins || 0)),
         idolsFound: p.idolsFound || 0,
         votesReceived: p.votesReceived || 0,
         alliances: p.alliances || [],
@@ -4054,27 +4370,15 @@ setTimeout(function() {
         }))
       },
       
-      awards: {
-        fanFavorite: {
-          name: inputData.awards.fanFavorite,
-          playerSlug: slugify(inputData.awards.fanFavorite)
-        },
-        bestStrategic: {
-          name: inputData.awards.bestStrategic,
-          playerSlug: slugify(inputData.awards.bestStrategic)
-        },
-        mostChallengeWins: {
-          name: inputData.awards.mostChallengeWins,
-          playerSlug: slugify(inputData.awards.mostChallengeWins),
-          detail: `${aiData.placements.find(p => p.name.toLowerCase() === inputData.awards.mostChallengeWins.toLowerCase())?.challengeWins || 0} total`
-        }
-      },
+      awards: computeSeasonAwards(aiData, inputData, metadata),
       
       seasonNarrative: aiData.seasonNarrative,
       theme: metadata.theme,
       status: "Complete",
       castPhotoPath: `assets/cast/s${metadata.seasonNumber}-cast.png`,
-      emoji: metadata.emoji
+      emoji: metadata.emoji,
+      episodes: inputData.episodes,           // ✅ FIX: needed by extractPlayerTribes
+      brantsteeleStats: inputData.brantsteeleStats || '' // ✅ FIX: needed by parseBrantsteeleStats
     };
     
     return seasonData;
@@ -4239,19 +4543,9 @@ setTimeout(function() {
         }))
       },
       awards: {
-        fanFavorite: {
-          name: awards.fanFavorite,
-          playerSlug: slugify(awards.fanFavorite)
-        },
-        bestStrategic: {
-          name: awards.bestStrategic,
-          playerSlug: slugify(awards.bestStrategic)
-        },
-        mostChallengeWins: {
-          name: awards.mostChallengeWins,
-          playerSlug: slugify(awards.mostChallengeWins),
-          detail: "TBD - count from episodes"
-        }
+        fanFavorite: awards.fanFavorite ? { name: awards.fanFavorite, playerSlug: slugify(awards.fanFavorite) } : null,
+        bestStrategic: awards.bestStrategic ? { name: awards.bestStrategic, playerSlug: slugify(awards.bestStrategic) } : null,
+        mostChallengeWins: awards.mostChallengeWins ? { name: awards.mostChallengeWins, playerSlug: slugify(awards.mostChallengeWins), detail: "TBD" } : null
       },
       theme: metadata.theme,
       status: "Complete",
@@ -4322,15 +4616,26 @@ setTimeout(function() {
     
     // Check if season already exists
     const existingIndex = seasonsDB.seasons.findIndex(s => s.seasonNumber === seasonData.seasonNumber);
-    
+
+    // Only write the 3 short award fields to seasons_database (full awards live in season-data.json)
+    const shortAwards = {
+      fanFavorite:      seasonData.awards?.fanFavorite      ? { name: seasonData.awards.fanFavorite.name,      playerSlug: seasonData.awards.fanFavorite.playerSlug }      : undefined,
+      bestStrategic:    seasonData.awards?.bestStrategic    ? { name: seasonData.awards.bestStrategic.name,    playerSlug: seasonData.awards.bestStrategic.playerSlug }    : undefined,
+      mostChallengeWins: seasonData.awards?.mostChallengeWins ? { name: seasonData.awards.mostChallengeWins.name, playerSlug: seasonData.awards.mostChallengeWins.playerSlug, detail: seasonData.awards.mostChallengeWins.detail } : undefined,
+    };
+    // Remove undefined keys
+    Object.keys(shortAwards).forEach(k => shortAwards[k] === undefined && delete shortAwards[k]);
+
     const newSeasonEntry = {
+      // Preserve any existing fields (emoji, castPhotoPath, etc.) that may have been set manually
+      ...(existingIndex >= 0 ? seasonsDB.seasons[existingIndex] : {}),
       seasonNumber: seasonData.seasonNumber,
       title: seasonData.title,
       subtitle: seasonData.subtitle,
       castSize: seasonData.castSize,
       episodeCount: seasonData.episodeCount,
       winner: seasonData.winner,
-      awards: seasonData.awards,
+      awards: shortAwards,
       theme: seasonData.theme,
       status: seasonData.status,
       castPhotoPath: seasonData.castPhotoPath,
@@ -4359,7 +4664,89 @@ setTimeout(function() {
     console.log('✅ seasons_database.json updated');
   }
   
+  // ── Franchise DB file loader (called from UI buttons) ──────────────────────
+  function setupDatabaseFileLoaders() {
+    // Franchise DB loader
+    const franchiseInput = document.getElementById('sb-load-franchise-file');
+    if (franchiseInput) {
+      franchiseInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+          try {
+            const parsed = JSON.parse(ev.target.result);
+            localStorage.setItem('franchise_database', JSON.stringify(parsed));
+            document.getElementById('sb-franchise-load-status').textContent = '✅ Loaded (' + (parsed.champions?.length || 0) + ' seasons)';
+            document.getElementById('sb-franchise-load-status').style.color = '#4ade80';
+            console.log('✅ franchise_database loaded into localStorage:', parsed.champions?.length, 'seasons');
+          } catch(err) {
+            document.getElementById('sb-franchise-load-status').textContent = '❌ Invalid JSON';
+            document.getElementById('sb-franchise-load-status').style.color = '#f87171';
+          }
+        };
+        reader.readAsText(file);
+        e.target.value = '';
+      });
+    }
+    
+    // Players DB loader
+    const playersInput = document.getElementById('sb-load-players-file');
+    if (playersInput) {
+      playersInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+          try {
+            const parsed = JSON.parse(ev.target.result);
+            localStorage.setItem('players_database', JSON.stringify(parsed));
+            document.getElementById('sb-players-load-status').textContent = '✅ Loaded (' + (parsed.players?.length || 0) + ' players)';
+            document.getElementById('sb-players-load-status').style.color = '#4ade80';
+            console.log('✅ players_database loaded into localStorage:', parsed.players?.length, 'players');
+          } catch(err) {
+            document.getElementById('sb-players-load-status').textContent = '❌ Invalid JSON';
+            document.getElementById('sb-players-load-status').style.color = '#f87171';
+          }
+        };
+        reader.readAsText(file);
+        e.target.value = '';
+      });
+    }
+
+    // Seasons DB loader
+    const seasonsInput = document.getElementById('sb-load-seasons-file');
+    if (seasonsInput) {
+      seasonsInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+          try {
+            const parsed = JSON.parse(ev.target.result);
+            localStorage.setItem('seasons_database', JSON.stringify(parsed));
+            document.getElementById('sb-seasons-load-status').textContent = '✅ Loaded (' + (parsed.seasons?.length || 0) + ' seasons)';
+            document.getElementById('sb-seasons-load-status').style.color = '#4ade80';
+            console.log('✅ seasons_database loaded into localStorage:', parsed.seasons?.length, 'seasons');
+          } catch(err) {
+            document.getElementById('sb-seasons-load-status').textContent = '❌ Invalid JSON';
+            document.getElementById('sb-seasons-load-status').style.color = '#f87171';
+          }
+        };
+        reader.readAsText(file);
+        e.target.value = '';
+      });
+    }
+  }
+  
+  // Call setup once DOM is ready
+  document.addEventListener('DOMContentLoaded', setupDatabaseFileLoaders);
+  // Also call immediately in case DOM is already ready
+  if (document.readyState !== 'loading') setupDatabaseFileLoaders();
+
   function updateFranchiseDatabase(seasonData) {
+    // ✅ FIX: Load from localStorage (which may have been populated by the file loader above)
+    // Falls back to createEmptyFranchiseDB only if truly nothing is loaded
     let franchiseDB;
     try {
       const raw = localStorage.getItem('franchise_database');
@@ -4367,92 +4754,288 @@ setTimeout(function() {
     } catch (e) {
       franchiseDB = createEmptyFranchiseDB();
     }
-    
-    // Check if this season already exists in the database
-    const seasonExists = franchiseDB.champions.some(c => c.season === seasonData.seasonNumber);
-    
-    if (seasonExists) {
-      // Remove existing entries for this season
-      franchiseDB.champions = franchiseDB.champions.filter(c => c.season !== seasonData.seasonNumber);
-      franchiseDB.trends.winningStrategies = franchiseDB.trends.winningStrategies.filter(s => s.season !== seasonData.seasonNumber);
-      franchiseDB.trends.castComposition = franchiseDB.trends.castComposition.filter(s => s.season !== seasonData.seasonNumber);
-      franchiseDB.trends.finaleVoteMargins = franchiseDB.trends.finaleVoteMargins.filter(s => s.season !== seasonData.seasonNumber);
-      franchiseDB.trends.majorTwists = franchiseDB.trends.majorTwists.filter(s => s.season !== seasonData.seasonNumber);
-      franchiseDB.fanFavorites = franchiseDB.fanFavorites.filter(s => s.season !== seasonData.seasonNumber);
-      
-      console.log(`🔄 Replacing existing Season ${seasonData.seasonNumber} data in franchise database`);
+
+    // ✅ FIX: Deep-merge to preserve ALL existing fields (records, milestones, careerLeaders,
+    // multiSeasonPlayers, evolution, accolades, etc.) that the generate step doesn't overwrite
+    const empty = createEmptyFranchiseDB();
+    for (const key of Object.keys(empty)) {
+      if (!(key in franchiseDB)) franchiseDB[key] = empty[key];
     }
+    // Ensure nested array fields exist
+    franchiseDB.records         = franchiseDB.records         || empty.records;
+    franchiseDB.trends          = franchiseDB.trends          || empty.trends;
+    franchiseDB.milestones      = franchiseDB.milestones      || [];
+    franchiseDB.multiSeasonPlayers = franchiseDB.multiSeasonPlayers || empty.multiSeasonPlayers;
+    franchiseDB.careerLeaders   = franchiseDB.careerLeaders   || empty.careerLeaders;
+    franchiseDB.evolution       = franchiseDB.evolution       || {};
+    franchiseDB.champions       = franchiseDB.champions       || [];
+    franchiseDB.fanFavorites    = franchiseDB.fanFavorites    || [];
+    franchiseDB.trends.winningStrategies  = franchiseDB.trends.winningStrategies  || [];
+    franchiseDB.trends.castComposition    = franchiseDB.trends.castComposition    || [];
+    franchiseDB.trends.finaleVoteMargins  = franchiseDB.trends.finaleVoteMargins  || [];
+    franchiseDB.trends.majorTwists        = franchiseDB.trends.majorTwists        || [];
     
-    // Update stats (recalculate from scratch)
-    const uniqueSeasons = new Set(franchiseDB.champions.map(c => c.season));
-    uniqueSeasons.add(seasonData.seasonNumber);
-    franchiseDB.franchiseStats.totalSeasons = uniqueSeasons.size;
+    const sn = seasonData.seasonNumber;
     
-    // Add champion
+    // Remove any stale entries for this season before re-adding
+    franchiseDB.champions              = franchiseDB.champions.filter(c => c.season !== sn);
+    franchiseDB.fanFavorites           = franchiseDB.fanFavorites.filter(f => f.season !== sn);
+    franchiseDB.trends.winningStrategies = franchiseDB.trends.winningStrategies.filter(s => s.season !== sn);
+    franchiseDB.trends.castComposition   = franchiseDB.trends.castComposition.filter(s => s.season !== sn);
+    franchiseDB.trends.finaleVoteMargins = franchiseDB.trends.finaleVoteMargins.filter(s => s.season !== sn);
+    franchiseDB.trends.majorTwists       = franchiseDB.trends.majorTwists.filter(s => s.season !== sn);
+    
+    // ── Add champion ──────────────────────────────────────────────────────────
+    // Calculate winner's votes against from placements
+    const winnerPlacement = seasonData.placements?.find(p => p.placement === 1);
+    const winnerVotesAgainst = winnerPlacement?.votesReceived || 0;
+    
     franchiseDB.champions.push({
-      season: seasonData.seasonNumber,
+      season: sn,
       winner: seasonData.winner.name,
       playerSlug: seasonData.winner.playerSlug,
-      strategy: seasonData.winner.strategy,
+      strategy: seasonData.winner.strategy || 'TBD',
       finalVote: seasonData.winner.vote,
       runnerUp: seasonData.winner.runnerUp,
-      keyStats: seasonData.winner.keyStats,
-      legacy: seasonData.winner.legacy,
-      votesAgainst: 0 // Calculate manually later
+      keyStats: seasonData.winner.keyStats || '',
+      legacy: seasonData.winner.legacy || '',
+      votesAgainst: winnerVotesAgainst
     });
     
-    // Add to trends
+    // ── Add trends ────────────────────────────────────────────────────────────
     franchiseDB.trends.winningStrategies.push({
-      season: seasonData.seasonNumber,
-      strategy: seasonData.winner.strategy,
+      season: sn,
+      strategy: seasonData.winner.strategy || 'TBD',
       winner: seasonData.winner.name
     });
-    
     franchiseDB.trends.castComposition.push({
-      season: seasonData.seasonNumber,
-      composition: `${seasonData.castSize} players`
+      season: sn,
+      composition: `${seasonData.castSize} players`,
+      theme: seasonData.theme || ''
     });
-    
     franchiseDB.trends.finaleVoteMargins.push({
-      season: seasonData.seasonNumber,
+      season: sn,
       vote: seasonData.winner.vote,
-      winner: seasonData.winner.name
+      winner: seasonData.winner.name,
+      finalists: seasonData.finalists?.map(f => f.name) || []
     });
-    
     franchiseDB.trends.majorTwists.push({
-      season: seasonData.seasonNumber,
-      twist: seasonData.theme || "TBD"
+      season: sn,
+      twist: seasonData.theme || 'TBD'
     });
     
-    // Add fan favorite
-    franchiseDB.fanFavorites.push({
-      season: seasonData.seasonNumber,
-      player: seasonData.awards.fanFavorite.name,
-      playerSlug: seasonData.awards.fanFavorite.playerSlug,
-      description: "Fan favorite"
-    });
+    // ── Add fan favorite ──────────────────────────────────────────────────────
+    if (seasonData.awards?.fanFavorite?.name) {
+      franchiseDB.fanFavorites.push({
+        season: sn,
+        name: seasonData.awards.fanFavorite.name,        // ✅ FIX: was 'player', franchise.html reads 'name'
+        playerSlug: seasonData.awards.fanFavorite.playerSlug,
+        description: 'Fan favorite'
+      });
+    }
     
-    // Save
+    // ── Recalculate franchise stats ───────────────────────────────────────────
+    const uniqueSeasons = new Set(franchiseDB.champions.map(c => c.season));
+    franchiseDB.franchiseStats.totalSeasons = uniqueSeasons.size;
+    // Note: uniquePlayers and totalAppearances stay as-is (managed by players_database update)
+    
+    // ── Recalculate ALL derived stats from players_database ──────────────────
+    // Must run AFTER updatePlayersDatabase so localStorage has fresh player data
+    // We call it here too for the franchise-only path; updatePlayersDatabase will
+    // have been called just before this in the pipeline (Step 5 before Step 4... 
+    // actually Step 4 runs before Step 5 in the pipeline, so we re-run after Step 5)
+    franchiseDB = recomputeFranchiseStats(franchiseDB, seasonData);
+    
+    // ── Sort all arrays by season for clean output ────────────────────────────
+    const bySeason = (a, b) => (a.season || 0) - (b.season || 0);
+    franchiseDB.champions.sort(bySeason);
+    franchiseDB.fanFavorites.sort(bySeason);
+    franchiseDB.trends.winningStrategies.sort(bySeason);
+    franchiseDB.trends.castComposition.sort(bySeason);
+    franchiseDB.trends.finaleVoteMargins.sort(bySeason);
+    franchiseDB.trends.majorTwists.sort(bySeason);
+    
+    // Strip internal _key helper before saving
+    franchiseDB.milestones = franchiseDB.milestones.map(({_key, ...m}) => m);
+    
+    // Save back to localStorage so next run builds on this
     localStorage.setItem('franchise_database', JSON.stringify(franchiseDB, null, 2));
     downloadJSON(franchiseDB, 'franchise_database.json');
     
-    console.log('✅ franchise_database.json updated');
+    console.log('✅ franchise_database.json updated — Season ' + sn + ' added/updated. Total seasons: ' + franchiseDB.franchiseStats.totalSeasons);
   }
   
   function createEmptyFranchiseDB() {
     return {
       franchiseStats: { totalSeasons: 0, totalEpisodes: 0, uniquePlayers: 0, totalAppearances: 0 },
       champions: [],
-      records: { challengeRecords: [], votingRecords: [], strategicRecords: [], socialRecords: [] },
+      records: {
+        challengeRecords: { overall: { mostChallengeWins: {name:'',playerSlug:'',total:0}, mostImmunityWins: {name:'',playerSlug:'',total:0}, mostRewardWins: {name:'',playerSlug:'',total:0} } },
+        votingRecords: { mostVotesAgainstCareer: {name:'',playerSlug:'',total:0}, perfectGames: [] },
+        strategicRecords: { topStrategicPercentile: [] },
+        socialRecords: { mostJuryVotesCareer: {name:'',playerSlug:'',total:0}, topSocialPercentile: [] }
+      },
       fanFavorites: [],
-      multiSeasonPlayers: { threeSeasons: [], twoSeasons: [] },
+      multiSeasonPlayers: [],
       trends: { winningStrategies: [], castComposition: [], finaleVoteMargins: [], majorTwists: [] },
       milestones: [],
-      careerLeaders: { challengeDominance: [], socialGame: [], strategicImpact: {} },
+      careerLeaders: {
+        challengeDominance: { mostChallengeWins: [], mostImmunityWins: [], mostRewardWins: [] },
+        socialGame: { lowestVotesAgainstCareer_min10Votes: [], mostJuryVotes: [] },
+        strategicImpact: { topOverallScore: [] }
+      },
       evolution: {}
     };
   }
-  
+
+  // ── Recompute all derived franchise stats from players_database ──────────────
+  // Called after updatePlayersDatabase so player data is fresh in localStorage
+  function recomputeFranchiseStats(franchiseDB, seasonData) {
+    // Load latest players_database from localStorage
+    let playersDB;
+    try {
+      const raw = localStorage.getItem('players_database');
+      playersDB = raw ? JSON.parse(raw) : null;
+    } catch(e) { playersDB = null; }
+    
+    const players = (playersDB && playersDB.players) ? playersDB.players : [];
+    if (!players.length) {
+      console.warn('⚠️ recomputeFranchiseStats: no players found in localStorage');
+      return franchiseDB;
+    }
+
+    // ── franchiseStats ────────────────────────────────────────────────────────
+    const allSeasons = new Set();
+    let totalAppearances = 0;
+    players.forEach(p => {
+      (p.seasons || []).forEach(s => allSeasons.add(s));
+      totalAppearances += (p.totalSeasons || 0);
+    });
+    franchiseDB.franchiseStats.uniquePlayers    = players.length;
+    franchiseDB.franchiseStats.totalAppearances = totalAppearances;
+    // totalEpisodes: sum episodeCount from champions data we have
+    franchiseDB.franchiseStats.totalSeasons     = allSeasons.size;
+
+    // ── records.challengeRecords ──────────────────────────────────────────────
+    const byChallenge = [...players].sort((a,b) => (b.totalChallengeWins||0) - (a.totalChallengeWins||0));
+    const byImmunity  = [...players].sort((a,b) => (b.totalImmunityWins||0)  - (a.totalImmunityWins||0));
+    const byReward    = [...players].sort((a,b) => (b.totalRewardWins||0)    - (a.totalRewardWins||0));
+
+    const pRef = p => ({ name: p.name, playerSlug: p.id });
+    franchiseDB.records.challengeRecords = {
+      overall: {
+        mostChallengeWins: { ...pRef(byChallenge[0]||{}), total: byChallenge[0]?.totalChallengeWins||0 },
+        mostImmunityWins:  { ...pRef(byImmunity[0]||{}),  total: byImmunity[0]?.totalImmunityWins||0  },
+        mostRewardWins:    { ...pRef(byReward[0]||{}),     total: byReward[0]?.totalRewardWins||0      }
+      }
+    };
+
+    // ── records.votingRecords ────────────────────────────────────────────────
+    const byVotesAgainst = [...players].sort((a,b) => (b.totalVotesAgainst||0) - (a.totalVotesAgainst||0));
+    const perfectGames   = players.filter(p => (p.totalVotesAgainst||0) === 0 && (p.totalSeasons||0) >= 1)
+                                   .map(p => ({ name: p.name, playerSlug: p.id }));
+    franchiseDB.records.votingRecords = {
+      mostVotesAgainstCareer: { ...pRef(byVotesAgainst[0]||{}), total: byVotesAgainst[0]?.totalVotesAgainst||0 },
+      perfectGames
+    };
+
+    // ── records.strategicRecords ──────────────────────────────────────────────
+    // avgStrategicRank from seasonDetails
+    const strategicPlayers = players
+      .map(p => {
+        const details = p.seasonDetails || [];
+        const ranked  = details.filter(d => d.strategicRank > 0);
+        const avg     = ranked.length ? (ranked.reduce((s,d) => s + d.strategicRank, 0) / ranked.length) : 0;
+        return { name: p.name, playerSlug: p.id, avgStrategicRank: Math.round(avg * 10) / 10 };
+      })
+      .filter(p => p.avgStrategicRank > 0)
+      .sort((a,b) => b.avgStrategicRank - a.avgStrategicRank);
+    franchiseDB.records.strategicRecords = { topStrategicPercentile: strategicPlayers.slice(0, 10) };
+
+    // ── records.socialRecords ────────────────────────────────────────────────
+    const byJuryVotes = [...players].sort((a,b) => (b.totalJuryVotes||0) - (a.totalJuryVotes||0));
+    // "low votes against" — only multi-season or jury-reaching players
+    const lowVotes = players
+      .filter(p => (p.totalSeasons||0) >= 1 && (p.totalVotesAgainst||0) >= 0)
+      .sort((a,b) => (a.totalVotesAgainst||0) - (b.totalVotesAgainst||0))
+      .slice(0, 10)
+      .map(p => ({ name: p.name, playerSlug: p.id, votesAgainst: p.totalVotesAgainst||0 }));
+    franchiseDB.records.socialRecords = {
+      mostJuryVotesCareer: { ...pRef(byJuryVotes[0]||{}), total: byJuryVotes[0]?.totalJuryVotes||0 },
+      topSocialPercentile: lowVotes
+    };
+
+    // ── multiSeasonPlayers (flat array) ───────────────────────────────────────
+    franchiseDB.multiSeasonPlayers = players
+      .filter(p => (p.totalSeasons||0) >= 2)
+      .map(p => {
+        const placements = (p.seasonDetails||[]).map(d => d.placement).filter(Boolean);
+        const avg = placements.length ? placements.reduce((s,x)=>s+x,0)/placements.length : 99;
+        return {
+          name:         p.name,
+          playerSlug:   p.id,
+          seasons:      p.seasons || [],
+          seasonsPlayed: p.totalSeasons || 0,
+          wins:         p.wins || 0,
+          avgPlacement: Math.round(avg * 100) / 100,
+          bestPlacement: p.bestPlacement || 99
+        };
+      })
+      .sort((a,b) => b.seasonsPlayed - a.seasonsPlayed || a.avgPlacement - b.avgPlacement);
+
+    // ── careerLeaders ─────────────────────────────────────────────────────────
+    franchiseDB.careerLeaders.challengeDominance = {
+      mostChallengeWins: byChallenge.slice(0,10).map(p=>({name:p.name,playerSlug:p.id,total:p.totalChallengeWins||0})),
+      mostImmunityWins:  byImmunity.slice(0,10).map(p=>({name:p.name,playerSlug:p.id,total:p.totalImmunityWins||0})),
+      mostRewardWins:    byReward.slice(0,10).map(p=>({name:p.name,playerSlug:p.id,total:p.totalRewardWins||0}))
+    };
+    franchiseDB.careerLeaders.socialGame = {
+      lowestVotesAgainstCareer_min10Votes: lowVotes,
+      mostJuryVotes: byJuryVotes.slice(0,10).map(p=>({name:p.name,playerSlug:p.id,total:p.totalJuryVotes||0}))
+    };
+    // topOverallScore — load from rankings_database if available
+    let rankingsDB;
+    try {
+      const rr = localStorage.getItem('rankings_database');
+      rankingsDB = rr ? JSON.parse(rr) : null;
+    } catch(e) { rankingsDB = null; }
+    if (rankingsDB && rankingsDB.rankings) {
+      franchiseDB.careerLeaders.strategicImpact = {
+        topOverallScore: rankingsDB.rankings
+          .sort((a,b) => (b.score||0) - (a.score||0))
+          .slice(0,10)
+          .map(p => ({ name: p.name, playerSlug: p.playerId||p.id, score: Math.round(p.score||0), tier: p.tier||'', title: p.title||'' }))
+      };
+    }
+
+    // ── milestones (auto-derive top records) ─────────────────────────────────
+    // Preserve any manually-written milestones, then add/update auto ones
+    const autoMilestoneKeys = new Set(['most-challenge-wins','most-immunity-wins','most-reward-wins','most-votes-against','most-jury-votes','first-winner']);
+    franchiseDB.milestones = (franchiseDB.milestones||[]).filter(m => !autoMilestoneKeys.has(m._key));
+    
+    const addMilestone = (key, category, holder, playerSlug, stat, season) => {
+      franchiseDB.milestones.push({ _key: key, category, holder, playerSlug, stat, season });
+    };
+    if (byChallenge[0])  addMilestone('most-challenge-wins','Most Challenge Wins',byChallenge[0].name,byChallenge[0].id,`${byChallenge[0].totalChallengeWins||0} wins`,'Career');
+    if (byImmunity[0])   addMilestone('most-immunity-wins','Most Immunity Wins',byImmunity[0].name,byImmunity[0].id,`${byImmunity[0].totalImmunityWins||0} wins`,'Career');
+    if (byReward[0])     addMilestone('most-reward-wins','Most Reward Wins',byReward[0].name,byReward[0].id,`${byReward[0].totalRewardWins||0} wins`,'Career');
+    if (byVotesAgainst[0]) addMilestone('most-votes-against','Most Votes Against',byVotesAgainst[0].name,byVotesAgainst[0].id,`${byVotesAgainst[0].totalVotesAgainst||0} votes`,'Career');
+    if (byJuryVotes[0])  addMilestone('most-jury-votes','Most Jury Votes (Career)',byJuryVotes[0].name,byJuryVotes[0].id,`${byJuryVotes[0].totalJuryVotes||0} votes`,'Career');
+
+    // ── evolution — add new season entry ─────────────────────────────────────
+    const sn = seasonData.seasonNumber;
+    const winner = seasonData.winner?.name || 'Unknown';
+    const theme  = seasonData.theme || seasonData.title || '';
+    // Build a summary sentence from season data
+    const castSize   = seasonData.castSize || '?';
+    const finalists  = (seasonData.finalists||[]).map(f=>f.name).join(' & ') || 'Unknown';
+    const evolutionText = `${theme ? theme + ' — ' : ''}${castSize} players, won by ${winner} over ${finalists}. ${seasonData.winner?.legacy || ''}`.trim();
+    franchiseDB.evolution[`season${sn}`] = evolutionText;
+
+    console.log('✅ recomputeFranchiseStats complete — ' + players.length + ' players, ' + allSeasons.size + ' seasons');
+    return franchiseDB;
+  }
+
   function updatePlayersDatabase(seasonData) {
     const db = loadPlayerDatabase();
     const season = seasonData.seasonNumber;
@@ -4465,6 +5048,9 @@ setTimeout(function() {
     
     // Extract tribe assignments from episodes
     const playerTribes = extractPlayerTribes(seasonData.episodes || []);
+    
+    // ✅ FIX: Parse brantsteele stats client-side for exact immunity/reward/vote data
+    const bsData = parseBrantsteeleStats(seasonData.brantsteeleStats || '', seasonData.placements);
     
     // Track which players we've already processed to prevent duplicates
     const processedThisSeason = new Set();
@@ -4499,10 +5085,15 @@ setTimeout(function() {
       let player = db.players.find(p => p.id === id);
       
       // Get AI-generated stats from placement
-      const challengeWins = placement.challengeWins || 0;
-      const immunityWins = placement.immunityWins || 0;
-      const idolsFound = placement.idolsFound || 0;
-      const votesReceived = placement.votesReceived || 0;
+      // ✅ FIX: Brantsteele data takes priority over AI-guessed values
+      const bs = bsData[id] || {};
+      const immunityWins  = bs.immunityWins  || placement.immunityWins  || 0;
+      const rewardWins    = bs.rewardWins    || placement.rewardWins    || 0;
+      // ✅ FIX: challengeWins must be ≥ immunityWins + rewardWins (AI often returns 0 total but fills sub-fields)
+      const rawChallengeWins = bs.challengeWins || placement.challengeWins || 0;
+      const challengeWins = Math.max(rawChallengeWins, immunityWins + rewardWins);
+      const idolsFound = bs.idolsFound || placement.idolsFound || 0;
+      const votesReceived = bs.votesReceived || placement.votesReceived || 0;
       const strategicRank = placement.strategicRank || 0;
       
       // Get jury votes if finalist
@@ -4519,9 +5110,9 @@ setTimeout(function() {
           totalSeasons: 1,
           bestPlacement: placement.placement,
           wins: placement.placement === 1 ? 1 : 0,
-          totalChallengeWins: challengeWins,
+          totalChallengeWins: Math.max(challengeWins, immunityWins + rewardWins),
           totalImmunityWins: immunityWins,
-          totalRewardWins: 0, // Not tracked yet
+          totalRewardWins: rewardWins,  // ✅ FIX: use actual reward wins
           totalVotesAgainst: votesReceived,
           totalIdolsFound: idolsFound,
           totalJuryVotes: juryVotes,
@@ -4548,6 +5139,7 @@ setTimeout(function() {
           const oldDetail = player.seasonDetails[seasonIndex];
           player.totalChallengeWins -= (oldDetail.challengeWins || 0);
           player.totalImmunityWins -= (oldDetail.immunityWins || 0);
+          player.totalRewardWins = (player.totalRewardWins || 0) - (oldDetail.rewardWins || 0);  // ✅ FIX: subtract old reward wins
           player.totalVotesAgainst -= (oldDetail.votesReceived || 0);
           player.totalIdolsFound -= (oldDetail.idolsFound || 0);
           player.totalJuryVotes -= (oldDetail.juryVotes || 0);
@@ -4590,8 +5182,14 @@ setTimeout(function() {
         }
         
         // Add this season's stats
-        player.totalChallengeWins += challengeWins;
         player.totalImmunityWins += immunityWins;
+        player.totalRewardWins = (player.totalRewardWins || 0) + rewardWins;
+        player.totalChallengeWins += challengeWins;
+        // ✅ SAFEGUARD: totalChallengeWins must always be >= immunityWins + rewardWins
+        player.totalChallengeWins = Math.max(
+          player.totalChallengeWins,
+          player.totalImmunityWins + player.totalRewardWins
+        );
         player.totalVotesAgainst += votesReceived;
         player.totalIdolsFound += idolsFound;
         player.totalJuryVotes += juryVotes;
@@ -4610,10 +5208,10 @@ setTimeout(function() {
         season,
         placement: placement.placement,
         status: placement.phase,
-        tribe: playerTribes[id] || "Unknown", // Use extracted tribe
-        challengeWins: challengeWins,
+        tribe: (playerTribes[id] && playerTribes[id] !== 'Unknown') ? playerTribes[id] : (bs.tribe || 'Unknown'),
+        challengeWins: Math.max(challengeWins, immunityWins + rewardWins),
         immunityWins: immunityWins,
-        rewardWins: 0, // Not tracked yet
+        rewardWins: rewardWins,  // ✅ FIX: actual reward wins, not hardcoded 0
         votesReceived: votesReceived,
         idolsFound: idolsFound,
         strategicRank: strategicRank,

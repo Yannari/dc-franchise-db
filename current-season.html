@@ -4300,7 +4300,7 @@ setTimeout(function() {
     return awards;
   }
 
-  function buildSeasonDataFromAI(inputData, aiData) {
+  function buildSeasonDataFromAI  function buildSeasonDataFromAI(inputData, aiData) {
     const { metadata, finale } = inputData;
     
     // Use AI-extracted data to build complete season file
@@ -5400,13 +5400,43 @@ setTimeout(function() {
   }
   
   // Helper functions for enhanced rankings
+  // ── Character emoji map (keep in sync with devotees.html emojiMap) ──────────
+  const CHARACTER_EMOJI_MAP = {
+    'alejandro': '👑', 'lindsay': '💁', 'duncan': '💀', 'emma': '🎯', 'cameron': '🧠',
+    'bridgette': '🏄', 'trent': '🎸', 'owen': '🍔', 'heather': '💅', 'beth': '🌸',
+    'gwen': '🎨', 'courtney': '📋', 'noah': '📚', 'ezekiel': '🏔️', 'geoff': '🎉',
+    'zoey': '❤️', 'scott': '🚜', 'mike': '🎭', 'anne maria': '💄', 'brick': '🎖️',
+    'dwayne': '👨‍👦', 'jo': '💪', 'dakota': '✨', 'dawn': '🌿', 'b': '🔧',
+    'sam': '🎮', 'lightning': '⚡', 'staci': '💬', 'crimson': '🖤', 'harold': '🤓',
+    'leshawna': '💁', 'justin': '😎', 'katie': '💖', 'sadie': '💖', 'izzy': '🤪',
+    'cody': '😬', 'eva': '😠', 'tyler': '🏀', 'sierra': '📱',
+    'amy': '😈', 'samey': '😊', 'scarlett': '🧪', 'shawn': '🧟', 'topher': '📺',
+    'rodney': '💘', 'dave': '😤', 'josee': '⛷️', 'max': '🦹', 'mickey': '🐭',
+    'sky': '🥋', 'sugar': '🍭', 'beardo': '🎵', 'blaineley': '🎤', 'ella': '🎶',
+    'jasmine': '🌿', 'leonard': '🪄', 'ryan': '🏋️', 'mary': '🧩', 'brody': '🏄',
+    'kitty': '📸', 'junior': '🧒', 'ennui': '🫥', 'jacques': '🕺', 'jay': '🧢',
+    'stephanie': '😤', 'kelly': '👜', 'tammy': '🪄', 'carrie': '💘', 'devin': '🤝',
+    'laurie': '🧘', 'lorenzo': '🍝', 'macarthur': '🚓', 'pete': '🧓', 'spud': '🥔',
+    'taylor': '💅', 'tom': '🎭', 'ellody': '🧠', 'sanders': '👮', 'gerry': '🎾',
+    'jen': '👗', 'chet': '🧑‍🤝‍🧑', 'rock': '🤘', 'miles': '🌱',
+    // Season 9 — Land of Power
+    'axel': '🪖', 'bowie': '🕸️', 'brightly': '🧪', 'caleb': '🏋️',
+    'chase': '🦊', 'damien': '🎲', 'emmah': '🃏', 'hicks': '🤠',
+    'julia': '🧊', 'mk': '💻', 'millie': '📖', 'nichelle': '🌟',
+    'priya': '🌺', 'raj': '🏒', 'ripper': '🪲', 'scary girl': '🩸',
+    'wayne': '🏒', 'zee': '😴'
+  };
+
   function getPlayerEmoji(player) {
-    if (player.wins >= 2) return "👑";
-    if (player.wins === 1) return "⭐";
-    if (player.bestPlacement === 2) return "🥈";
-    if (player.bestPlacement === 3) return "🥉";
-    if (player.totalChallengeWins >= 10) return "💪";
-    return "⭐";
+    if (!player?.name) return '👤';
+    const key = player.name.toLowerCase();
+    if (CHARACTER_EMOJI_MAP[key]) return CHARACTER_EMOJI_MAP[key];
+    // Fallback: stat-based for unknown characters
+    if (player.wins >= 2) return '👑';
+    if (player.wins === 1) return '⭐';
+    if (player.bestPlacement === 2) return '🥈';
+    if (player.bestPlacement === 3) return '🥉';
+    return '🎮';
   }
   
   function generateStrengths(player) {

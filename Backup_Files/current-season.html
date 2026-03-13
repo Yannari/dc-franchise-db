@@ -5930,6 +5930,7 @@ setTimeout(function() {
           e.score=r.newScore; e.tier=r.newTier;
           e.wins=(e.wins||0)+(r.isWinner?1:0);
           e.seasonsPlayed=(e.seasonsPlayed||1)+1;
+          e.winRate=Math.round((e.wins/e.seasonsPlayed)*100*100)/100;
           if (!e.placements) e.placements=[];
           e.placements.push(r.placement);
           e.avgPlacement=e.placements.reduce((a,b)=>a+b,0)/e.placements.length;

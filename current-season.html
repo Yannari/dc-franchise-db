@@ -4027,6 +4027,7 @@ setTimeout(function() {
         keyMoments: p.keyMoments || [],
         challengeWins: p.challengeWins || 0,
         immunityWins: p.immunityWins || 0,
+        rewardWins: p.rewardWins || 0,  // ✅ FIX: carry reward wins from AI output
         idolsFound: p.idolsFound || 0,
         votesReceived: p.votesReceived || 0,
         alliances: p.alliances || [],
@@ -4501,6 +4502,7 @@ setTimeout(function() {
       // Get AI-generated stats from placement
       const challengeWins = placement.challengeWins || 0;
       const immunityWins = placement.immunityWins || 0;
+      const rewardWins = placement.rewardWins || 0;  // ✅ FIX: read reward wins from placement
       const idolsFound = placement.idolsFound || 0;
       const votesReceived = placement.votesReceived || 0;
       const strategicRank = placement.strategicRank || 0;
@@ -4521,7 +4523,7 @@ setTimeout(function() {
           wins: placement.placement === 1 ? 1 : 0,
           totalChallengeWins: challengeWins,
           totalImmunityWins: immunityWins,
-          totalRewardWins: 0, // Not tracked yet
+          totalRewardWins: rewardWins,  // ✅ FIX: use actual reward wins
           totalVotesAgainst: votesReceived,
           totalIdolsFound: idolsFound,
           totalJuryVotes: juryVotes,
@@ -4548,6 +4550,7 @@ setTimeout(function() {
           const oldDetail = player.seasonDetails[seasonIndex];
           player.totalChallengeWins -= (oldDetail.challengeWins || 0);
           player.totalImmunityWins -= (oldDetail.immunityWins || 0);
+          player.totalRewardWins = (player.totalRewardWins || 0) - (oldDetail.rewardWins || 0);  // ✅ FIX: subtract old reward wins
           player.totalVotesAgainst -= (oldDetail.votesReceived || 0);
           player.totalIdolsFound -= (oldDetail.idolsFound || 0);
           player.totalJuryVotes -= (oldDetail.juryVotes || 0);
@@ -4592,6 +4595,7 @@ setTimeout(function() {
         // Add this season's stats
         player.totalChallengeWins += challengeWins;
         player.totalImmunityWins += immunityWins;
+        player.totalRewardWins = (player.totalRewardWins || 0) + rewardWins;  // ✅ FIX: accumulate reward wins
         player.totalVotesAgainst += votesReceived;
         player.totalIdolsFound += idolsFound;
         player.totalJuryVotes += juryVotes;
@@ -4613,7 +4617,7 @@ setTimeout(function() {
         tribe: playerTribes[id] || "Unknown", // Use extracted tribe
         challengeWins: challengeWins,
         immunityWins: immunityWins,
-        rewardWins: 0, // Not tracked yet
+        rewardWins: rewardWins,  // ✅ FIX: actual reward wins, not hardcoded 0
         votesReceived: votesReceived,
         idolsFound: idolsFound,
         strategicRank: strategicRank,

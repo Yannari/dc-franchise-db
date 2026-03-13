@@ -5323,12 +5323,12 @@
         9
       ],
       "totalSeasons": 1,
-      "bestPlacement": 99,
+      "bestPlacement": 10,
       "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
+      "totalChallengeWins": 2,
+      "totalImmunityWins": 1,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
+      "totalVotesAgainst": 5,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -5336,22 +5336,39 @@
       "seasonDetails": [
         {
           "season": 9,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
+          "placement": 10,
+          "status": "Juror",
+          "tribe": "Unknown",
+          "challengeWins": 2,
+          "immunityWins": 1,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 5,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 5,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "4-1 Vote / Physical Threat"
+          ],
+          "gameplayStyle": "Survivalist enforcer tank",
+          "keyMoments": [
+            "Guides early Yellow after idol chaos (Ep2-3)",
+            "Wins first merge immunity (Ep8)",
+            "Booted in split 4-1 (Ep9)"
+          ],
+          "alliances": [
+            "Bowie",
+            "Chase",
+            "Ripper"
+          ],
+          "rivalries": [
+            "Julia",
+            "Emmah"
+          ]
         }
-      ]
+      ],
+      "story": "Yellow’s drill sergeant tries to impose order on chaos and ends up steering early votes with Bowie. The merge necklace paints a target he can’t hide, and without Ripper his physical profile spikes. In the split tribal, Misfits flip the switch and send her home 4-1 while she fires a lone shot at Wayne. A threat in motion without the social belt to hold it up, Axel exits as the last titan before the knives come out."
     },
     {
       "id": "bowie",
@@ -5360,35 +5377,57 @@
         9
       ],
       "totalSeasons": 1,
-      "bestPlacement": 99,
-      "wins": 0,
+      "bestPlacement": 1,
+      "wins": 1,
       "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
+      "totalImmunityWins": 1,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
+      "totalVotesAgainst": 2,
+      "totalIdolsFound": 1,
       "totalJuryVotes": 0,
       "tier": "Unranked",
-      "badges": [],
+      "badges": [
+        "S9 Winner"
+      ],
       "seasonDetails": [
         {
           "season": 9,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 1,
+          "status": "Winner",
+          "tribe": "Unknown",
           "challengeWins": 0,
-          "immunityWins": 0,
+          "immunityWins": 1,
           "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
+          "votesReceived": 2,
+          "idolsFound": 1,
+          "strategicRank": 10,
           "juryVotes": 0,
-          "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "finalVote": "5-3-0",
+          "advantages": [],
+          "notes": [
+            "5 Votes To Win / Adv. Master"
+          ],
+          "gameplayStyle": "Advantage hoarder, social spider",
+          "keyMoments": [
+            "Finds Inheritance and banks KIP + Extra Vote (Ep8)",
+            "Declines to play power as Wayne leaves, preserving threat equity (Ep10)",
+            "Steals Julia’s idol with KIP (Ep11)",
+            "Backstabs Priya at 7 (Ep12)",
+            "Wins F6 immunity and the F4 fire-making vs. Damien (Ep13 & Ep15)"
+          ],
+          "alliances": [
+            "Chase",
+            "Damien",
+            "Emmah",
+            "Axel"
+          ],
+          "rivalries": [
+            "Julia",
+            "Priya"
+          ]
         }
-      ]
+      ],
+      "story": "He arrives as a social charmer and quickly becomes the web’s center, bonding with Yellow while earning an unbreakable tie to Damien. At the merge he turns a silent night into a heist, using Inheritance to scoop up Knowledge is Power and an Extra Vote. He later robs Julia’s idol in full view of the jury, then saves his own skin with clutch immunity and a fire-making win over Damien. When the Priya train threatens to run the table, he breaks an unbreakable and topples the season’s biggest shield. By the finale he sells the jury on ruthless resource control as strategy, not spite. Bowie doesn’t just play with advantages; he monopolizes them."
     },
     {
       "id": "brightly",
@@ -5397,12 +5436,12 @@
         9
       ],
       "totalSeasons": 1,
-      "bestPlacement": 99,
+      "bestPlacement": 13,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
+      "totalVotesAgainst": 7,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -5410,22 +5449,38 @@
       "seasonDetails": [
         {
           "season": 9,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 13,
+          "status": "Pre-Juror",
+          "tribe": "Unknown",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 7,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 6,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "4-1 Vote / The Isolated Chemist"
+          ],
+          "gameplayStyle": "Daycare chemist manager",
+          "keyMoments": [
+            "Drives Zee boot with Hicks (Ep1)",
+            "Clashes with Emmah; targets her (Ep4)",
+            "Left isolated; voted out 4-1 (Ep6)"
+          ],
+          "alliances": [
+            "Hicks",
+            "Emmah"
+          ],
+          "rivalries": [
+            "Millie",
+            "Ripper"
+          ]
         }
-      ]
+      ],
+      "story": "She starts as the daycare chemist, pairing with Hicks to set Red’s tone and boot Zee on pure camp logic. When the game reshuffles, her lab explodes—Hicks is cut by a rebel five, and she becomes the obvious next reaction to neutralize. With no shield and a reputation for management, she’s voted out 4-1 despite fighting to re-mix the tribe. A breakout character whose equations couldn’t account for hunger and idols."
     },
     {
       "id": "caleb",
@@ -5434,12 +5489,12 @@
         9
       ],
       "totalSeasons": 1,
-      "bestPlacement": 99,
+      "bestPlacement": 15,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
+      "totalVotesAgainst": 3,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -5447,22 +5502,33 @@
       "seasonDetails": [
         {
           "season": 9,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 15,
+          "status": "Pre-Juror",
+          "tribe": "Unknown",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 3,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 3,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "2-1 Vote / Strategic Pivot Victim"
+          ],
+          "gameplayStyle": "Athletic pawn misread",
+          "keyMoments": [
+            "Targeted after Red stumbles (Ep4)",
+            "Plays SID but goes 2-1 (Ep4)"
+          ],
+          "alliances": [],
+          "rivalries": [
+            "Hicks"
+          ]
         }
-      ]
+      ],
+      "story": "A physical pillar on Red, he finds himself on the wrong end of Hicks’ calculus when paranoia spikes. He gambles on a Shot in the Dark to dodge Brightly’s push but misses, and Hicks flips to keep Emmah as a pawn. In a tribe torn between EQ and chemistry, he becomes the casualty of subtle power. His threat level never meets its moment."
     },
     {
       "id": "chase",
@@ -5471,35 +5537,53 @@
         9
       ],
       "totalSeasons": 1,
-      "bestPlacement": 99,
+      "bestPlacement": 3,
       "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
+      "totalChallengeWins": 3,
+      "totalImmunityWins": 2,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
+      "totalVotesAgainst": 7,
+      "totalIdolsFound": 1,
       "totalJuryVotes": 0,
       "tier": "Unranked",
       "badges": [],
       "seasonDetails": [
         {
           "season": 9,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
+          "placement": 3,
+          "status": "Finalist",
+          "tribe": "Unknown",
+          "challengeWins": 3,
+          "immunityWins": 2,
           "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
+          "votesReceived": 7,
+          "idolsFound": 1,
+          "strategicRank": 6,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "0 Votes To Win / 3 Cons. Wins"
+          ],
+          "gameplayStyle": "Late-game challenge closer",
+          "keyMoments": [
+            "Burns SID on Yellow (Ep2)",
+            "Plays Yellow idol at swap to crack Hicks/Brightly (Ep5)",
+            "Wins F5 immunity and feasts with Bowie (Ep14)",
+            "Silences Julia with Vote Stopper; overkill extra votes land (Ep13)",
+            "Chooses Millie for Final 3; sends Bowie vs. Damien to fire (Ep15)"
+          ],
+          "alliances": [
+            "Bowie",
+            "Emmah"
+          ],
+          "rivalries": [
+            "Nichelle",
+            "Ripper"
+          ]
         }
-      ]
+      ],
+      "story": "He begins as Bowie’s moldable partner on a starving Yellow, even burning a Shot in the Dark in panic. The swap and merge unlock a late-game gear—he idols out danger at Red, wins immunity at five, and snags a Vote Stopper at seven. Partnering with Bowie, he helps topple Priya and then racks up the final immunity to choose his ideal Final 3. He sends Damien to fire, then lets Bowie and Damien duel for the last seat. An impressive closer, but the jury sees him as a finisher, not a driver, and his resume can’t outshine Bowie’s control."
     },
     {
       "id": "damien",
@@ -5508,35 +5592,53 @@
         9
       ],
       "totalSeasons": 1,
-      "bestPlacement": 99,
+      "bestPlacement": 4,
       "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
+      "totalChallengeWins": 5,
+      "totalImmunityWins": 1,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
+      "totalVotesAgainst": 2,
+      "totalIdolsFound": 1,
       "totalJuryVotes": 0,
       "tier": "Unranked",
       "badges": [],
       "seasonDetails": [
         {
           "season": 9,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
+          "placement": 4,
+          "status": "Juror",
+          "tribe": "Unknown",
+          "challengeWins": 5,
+          "immunityWins": 1,
           "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
+          "votesReceived": 2,
+          "idolsFound": 1,
+          "strategicRank": 8,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Lost Fire-Making / 5 Total Wins"
+          ],
+          "gameplayStyle": "Loyal workhorse strategist",
+          "keyMoments": [
+            "Wins multiple challenges to anchor Blue (pre-merge)",
+            "Finds Campers idol (Ep11)",
+            "Targets Wayne and survives the KIP chaos (Ep10)",
+            "Shares sanctuary with Millie and Chase (Ep13)",
+            "Falls to Bowie in F4 fire (Ep15)"
+          ],
+          "alliances": [
+            "Priya",
+            "Bowie",
+            "Millie"
+          ],
+          "rivalries": [
+            "Emmah"
+          ]
         }
-      ]
+      ],
+      "story": "Blue’s calm engine arrives with social gravity, pairing tightly with Priya and later Bowie to form the season’s strategic core. He stacks challenge wins while quietly collecting the merge idol, shielding his side when the numbers wobble. Even after Priya’s blindside, he threads loyalty and pragmatism—saving Bowie at five and keeping options open with Millie. At six he wins sanctuary and rallies a trio without overexposing himself. His story ends in the fire-making arena, a heartbreak that cements him as the merge’s moral compass who just missed the final pitch."
     },
     {
       "id": "emmah",
@@ -5545,12 +5647,12 @@
         9
       ],
       "totalSeasons": 1,
-      "bestPlacement": 99,
+      "bestPlacement": 5,
       "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
+      "totalChallengeWins": 2,
+      "totalImmunityWins": 1,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
+      "totalVotesAgainst": 4,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -5558,22 +5660,41 @@
       "seasonDetails": [
         {
           "season": 9,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
+          "placement": 5,
+          "status": "Juror",
+          "tribe": "Unknown",
+          "challengeWins": 2,
+          "immunityWins": 1,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 4,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 7,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "2-2*-1 Vote / Advantage Robbery"
+          ],
+          "gameplayStyle": "Public thief and chaos",
+          "keyMoments": [
+            "Saved by Hicks over Caleb (Ep4)",
+            "Uses Knowledge is Power on Wayne (Ep8)",
+            "Double-votes Ripper out (Ep8)",
+            "Helps blindside Priya (Ep12)",
+            "Falls in double-idol crossfire at five (Ep14)"
+          ],
+          "alliances": [
+            "Bowie",
+            "Chase",
+            "Julia"
+          ],
+          "rivalries": [
+            "Wayne",
+            "Axel"
+          ]
         }
-      ]
+      ],
+      "story": "Written off early as Red’s volatile piece, she flips the script at the merge with a public raid—using Knowledge is Power to strip Wayne’s extra vote and double-tap Ripper. She rides the Misfit coalition, then links with Bowie when the board reshuffles, carving a chaotic lane that always keeps her relevant. When Priya looks invincible, she helps pull the trigger on the queen. But at five, the idol armageddon leaves her unarmored while Bowie and Damien cancel the board, and the swing becomes the sacrifice. She exits as the season’s most audacious thief—loud, fearless, unforgettable."
     },
     {
       "id": "hicks",
@@ -5582,12 +5703,12 @@
         9
       ],
       "totalSeasons": 1,
-      "bestPlacement": 99,
+      "bestPlacement": 14,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
+      "totalVotesAgainst": 6,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -5595,22 +5716,37 @@
       "seasonDetails": [
         {
           "season": 9,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 14,
+          "status": "Pre-Juror",
+          "tribe": "Unknown",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 6,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 7,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "4-1 Revote / The Decapitated King"
+          ],
+          "gameplayStyle": "Southern observer kingmaker",
+          "keyMoments": [
+            "Boots Zee on day one read (Ep1)",
+            "Saves Emmah over Caleb (Ep4)",
+            "Falls on a revote after Chase’s idol (Ep5)"
+          ],
+          "alliances": [
+            "Brightly",
+            "Millie"
+          ],
+          "rivalries": [
+            "Caleb"
+          ]
         }
-      ]
+      ],
+      "story": "The Southern observer reads everything and says little, shepherding Red through early turbulence and cutting Caleb over loyalty. The swap puts him across from a united Yellow bloc with Priya as the bridge, and Chase’s idol erases his leverage. On the revote, the outsiders finish the job and separate him from Brightly. A leader without a quorum, he exits as the move everyone else needed to make."
     },
     {
       "id": "julia",
@@ -5619,35 +5755,55 @@
         9
       ],
       "totalSeasons": 1,
-      "bestPlacement": 99,
+      "bestPlacement": 6,
       "wins": 0,
-      "totalChallengeWins": 0,
+      "totalChallengeWins": 2,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
+      "totalVotesAgainst": 10,
+      "totalIdolsFound": 1,
       "totalJuryVotes": 0,
       "tier": "Unranked",
       "badges": [],
       "seasonDetails": [
         {
           "season": 9,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
-          "challengeWins": 0,
+          "placement": 6,
+          "status": "Juror",
+          "tribe": "Unknown",
+          "challengeWins": 2,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
+          "votesReceived": 10,
+          "idolsFound": 1,
+          "strategicRank": 8,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "6 Vote / Ice Queen Strategist"
+          ],
+          "gameplayStyle": "Ice queen puppeteer",
+          "keyMoments": [
+            "Manipulates Raj into idol-in-pocket exit (Ep7)",
+            "Pushes Ripper boot with Misfits (Ep8)",
+            "Clashes with MK throughout merge",
+            "Idol stolen by Bowie with KIP (Ep11)",
+            "Voted out 6-0 after Vote Stopper (Ep13)"
+          ],
+          "alliances": [
+            "Emmah",
+            "Wayne",
+            "Millie"
+          ],
+          "rivalries": [
+            "MK",
+            "Bowie",
+            "Axel"
+          ]
         }
-      ]
+      ],
+      "story": "The Ice Queen weaponizes hostility into leverage on Blue, then takes scalps with precision—most notably luring Raj into a 2-1 blindside while he clutched an idol. At merge she nests inside the Misfit six and helps dismantle the muscle by pushing Ripper. Her rivalry with MK defines the midgame, but Bowie’s KIP theft strips her armor at eight, forcing her to skate with venom and charm. She survives a round as chaos fodder, only to be silenced by Chase’s Vote Stopper and swept out 6-0. Love her or loathe her, she dictates tempo until the muzzle drops."
     },
     {
       "id": "mk",
@@ -5656,12 +5812,12 @@
         9
       ],
       "totalSeasons": 1,
-      "bestPlacement": 99,
+      "bestPlacement": 8,
       "wins": 0,
-      "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
+      "totalChallengeWins": 4,
+      "totalImmunityWins": 1,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
+      "totalVotesAgainst": 4,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -5669,22 +5825,37 @@
       "seasonDetails": [
         {
           "season": 9,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
-          "challengeWins": 0,
-          "immunityWins": 0,
+          "placement": 8,
+          "status": "Juror",
+          "tribe": "Unknown",
+          "challengeWins": 4,
+          "immunityWins": 1,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 4,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 6,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "4-2 Vote / Stealth Scientist"
+          ],
+          "gameplayStyle": "Stealthy scientist observer",
+          "keyMoments": [
+            "Fights with Julia but survives (pre-merge)",
+            "Bonds with Damien (Ep6)",
+            "Wins horror immunity (Ep10)",
+            "Goes out 4-2 after KIP drama (Ep11)"
+          ],
+          "alliances": [
+            "Damien"
+          ],
+          "rivalries": [
+            "Julia"
+          ]
         }
-      ]
+      ],
+      "story": "On Blue she butts heads with Julia but earns respect as a quiet problem-solver. Post-swap she links with Damien as the stealth half of a brain trust that keeps options alive. She wins the horror immunity, forcing power players to pick sides as numbers tighten. Bowie spares Julia to keep a lightning rod, and MK—out of shields and votes after a failed Shot in the Dark—takes the hit. The undercurrent of logic in a season of spectacle, she almost threads the needle."
     },
     {
       "id": "millie",
@@ -5693,35 +5864,53 @@
         9
       ],
       "totalSeasons": 1,
-      "bestPlacement": 99,
+      "bestPlacement": 2,
       "wins": 0,
       "totalChallengeWins": 0,
-      "totalImmunityWins": 0,
+      "totalImmunityWins": 1,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
+      "totalVotesAgainst": 1,
+      "totalIdolsFound": 1,
       "totalJuryVotes": 0,
       "tier": "Unranked",
       "badges": [],
       "seasonDetails": [
         {
           "season": 9,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 2,
+          "status": "Finalist",
+          "tribe": "Unknown",
           "challengeWins": 0,
-          "immunityWins": 0,
+          "immunityWins": 1,
           "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
+          "votesReceived": 1,
+          "idolsFound": 1,
+          "strategicRank": 8,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "3 Votes To Win / Unbreakable Partner"
+          ],
+          "gameplayStyle": "Quiet author with knives",
+          "keyMoments": [
+            "Converts Red Beware into idol (Ep4)",
+            "Votes Brightly at Red’s purge (Ep6)",
+            "Plays idol on Priya to thwart 5-vote strike (Ep10)",
+            "Wins Revolver immunity at 7 (Ep12)",
+            "Rides to Final 3 after F4 fire (Ep15)"
+          ],
+          "alliances": [
+            "Priya",
+            "Damien",
+            "Julia"
+          ],
+          "rivalries": [
+            "Brightly"
+          ]
         }
-      ]
+      ],
+      "story": "The quiet author starts as Red’s steady pair of hands, finding the Beware and converting it into the tribe idol. Through swaps and chaos she becomes the bridge—tight with Priya, later unbreakable with Julia, and always close to Damien. She saves Priya with a perfectly timed idol at the Wayne vote and then, grieving Priya’s blindside, steadies her game with clutch immunity at seven. As the last woman standing, she outlasts louder players by choosing positioning over fireworks. In the end, the jury sees her endurance and key shields as worthy of votes—even if she falls short to Bowie’s fireworks."
     },
     {
       "id": "nichelle",
@@ -5730,12 +5919,12 @@
         9
       ],
       "totalSeasons": 1,
-      "bestPlacement": 99,
+      "bestPlacement": 16,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
+      "totalVotesAgainst": 7,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -5743,22 +5932,35 @@
       "seasonDetails": [
         {
           "season": 9,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 16,
+          "status": "Pre-Juror",
+          "tribe": "Unknown",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 7,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 3,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "3 Vote / SID Gamble Victim"
+          ],
+          "gameplayStyle": "Beloved but exposed",
+          "keyMoments": [
+            "Major fights with Ripper (Ep2-3)",
+            "Plays SID; loses vote; blindsided 3-0 (Ep3)"
+          ],
+          "alliances": [
+            "Chase"
+          ],
+          "rivalries": [
+            "Ripper"
+          ]
         }
-      ]
+      ],
+      "story": "Yellow’s heart collides with its chaos as she feuds with Ripper while trusting a growing bond with Chase. The tribe’s fear triggers a historic double Shot in the Dark, stripping agency from both sides. Bowie and Axel seize the window and write her name as the cleanest consensus. She leaves without a vote, the right move for them and a bitter pill for her."
     },
     {
       "id": "priya",
@@ -5767,12 +5969,12 @@
         9
       ],
       "totalSeasons": 1,
-      "bestPlacement": 99,
+      "bestPlacement": 7,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
+      "totalVotesAgainst": 9,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -5780,22 +5982,39 @@
       "seasonDetails": [
         {
           "season": 9,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 7,
+          "status": "Juror",
+          "tribe": "Unknown",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 9,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 9,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "4-2-1 Vote / Banked Vote Strategist"
+          ],
+          "gameplayStyle": "Calculated captain with shields",
+          "keyMoments": [
+            "Forms Blue core with Damien (pre-merge)",
+            "Banks vote in split (Ep9)",
+            "Extra Vote + Millie idol protect her vs. 5 votes (Ep10)",
+            "Falls in 4-2-1 blindside (Ep12)"
+          ],
+          "alliances": [
+            "Damien",
+            "Millie",
+            "Bowie"
+          ],
+          "rivalries": [
+            "Bowie"
+          ]
         }
-      ]
+      ],
+      "story": "She starts as Blue’s brains, bonding tightly with Damien and later Millie to form the game’s safest core. She banks her vote in the split episode and dictates who lives while preserving future leverage, then pairs with Millie’s idol to vaporize a five-vote strike on her name. For weeks she is the final boss everyone fears to face. Bowie’s cold read of the endgame finally snaps an unbreakable and, despite social insulation, she never sees the 4-2-1 coming. Even in defeat, her defenses and bonds define the standard everyone else measures against."
     },
     {
       "id": "raj",
@@ -5804,35 +6023,48 @@
         9
       ],
       "totalSeasons": 1,
-      "bestPlacement": 99,
+      "bestPlacement": 12,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
+      "totalVotesAgainst": 2,
+      "totalIdolsFound": 1,
       "totalJuryVotes": 0,
       "tier": "Unranked",
       "badges": [],
       "seasonDetails": [
         {
           "season": 9,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 12,
+          "status": "Pre-Juror",
+          "tribe": "Unknown",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
+          "votesReceived": 2,
+          "idolsFound": 1,
+          "strategicRank": 4,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "2-1 Vote / Blindsided with Idol"
+          ],
+          "gameplayStyle": "Social powerhouse with idol",
+          "keyMoments": [
+            "Grabs Blue Beware (pre-merge)",
+            "Blindsided 2-1 with idol in pocket (Ep7)"
+          ],
+          "alliances": [
+            "Wayne"
+          ],
+          "rivalries": [
+            "Julia"
+          ]
         }
-      ]
+      ],
+      "story": "Wayne’s other half plays with heart and humor, picking up a Beware that turns into real power. The three-tribe twist strands him with Julia, who spins a tale he wants to believe—Axel is the target, idols can wait. He pockets safety for the merge and pays for it with his life in a 2-1. A tragic, humane exit that becomes the season’s emotional hinge."
     },
     {
       "id": "ripper",
@@ -5841,35 +6073,53 @@
         9
       ],
       "totalSeasons": 1,
-      "bestPlacement": 99,
+      "bestPlacement": 11,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
-      "totalIdolsFound": 0,
+      "totalVotesAgainst": 10,
+      "totalIdolsFound": 1,
       "totalJuryVotes": 0,
       "tier": "Unranked",
       "badges": [],
       "seasonDetails": [
         {
           "season": 9,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 11,
+          "status": "Juror",
+          "tribe": "Unknown",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
-          "idolsFound": 0,
-          "strategicRank": 0,
+          "votesReceived": 10,
+          "idolsFound": 1,
+          "strategicRank": 4,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "5-3-2 Vote / The Cockroach"
+          ],
+          "gameplayStyle": "Chaos shield who lingers",
+          "keyMoments": [
+            "Plays idol to null 4 votes (Ep2)",
+            "Survives rocks and SID chaos (Ep2-3)",
+            "Helps vote out Hicks and Brightly (Ep5-6)",
+            "Eliminated 5-3-2 after KIP double-vote (Ep8)"
+          ],
+          "alliances": [
+            "Axel",
+            "Bowie"
+          ],
+          "rivalries": [
+            "Scary Girl",
+            "Nichelle",
+            "Chase"
+          ]
         }
-      ]
+      ],
+      "story": "He arrives loud, abrasive, and somehow immortal—surviving an idol blowup, a rock draw, and a Shot in the Dark fiasco. Post-swap he joins the Red rebellion to decapitate Hicks and Brightly, leaning into chaos as cover. At merge he becomes the muscle target once Axel snags immunity, and Emmah’s stolen vote seals his fate. The man who wouldn’t die finally meets the math. He leaves as the season’s most durable shield."
     },
     {
       "id": "scary-girl",
@@ -5878,7 +6128,7 @@
         9
       ],
       "totalSeasons": 1,
-      "bestPlacement": 99,
+      "bestPlacement": 17,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
@@ -5891,22 +6141,33 @@
       "seasonDetails": [
         {
           "season": 9,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 17,
+          "status": "Pre-Juror",
+          "tribe": "Unknown",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
           "votesReceived": 0,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 4,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "Rocks Drawn / Chaos Outcast"
+          ],
+          "gameplayStyle": "Rock-draw chaos agent",
+          "keyMoments": [
+            "Yellow’s 0-0 idol wipeout (Ep2)",
+            "Eliminated by rocks with no votes (Ep2)"
+          ],
+          "alliances": [],
+          "rivalries": [
+            "Ripper"
+          ]
         }
-      ]
+      ],
+      "story": "She thrives in mayhem until Yellow’s powder keg detonates into a 0-0 vote. With Ripper idoled and Chase shooting in the dark, she refuses to compromise in the revote standoff. The rocks choose her, a zero-vote elimination that cements her as the season’s most chaotic pre-merge story. She doesn’t get outplayed; she gets outlucked."
     },
     {
       "id": "wayne",
@@ -5915,12 +6176,12 @@
         9
       ],
       "totalSeasons": 1,
-      "bestPlacement": 99,
+      "bestPlacement": 9,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
+      "totalVotesAgainst": 9,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -5928,22 +6189,37 @@
       "seasonDetails": [
         {
           "season": 9,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 9,
+          "status": "Juror",
+          "tribe": "Unknown",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 9,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 5,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "5-5* Vote / Extra Vote Victim"
+          ],
+          "gameplayStyle": "Big-hearted physical anchor",
+          "keyMoments": [
+            "Wins summit powers; steals Ripper’s vote (Ep2)",
+            "Loses Raj and spirals (Ep7)",
+            "Targeted while Priya protected by idol (Ep10)"
+          ],
+          "alliances": [
+            "Raj",
+            "Julia"
+          ],
+          "rivalries": [
+            "Emmah"
+          ]
         }
-      ]
+      ],
+      "story": "Half of the season’s heart, he storms early challenges with Raj and pockets both a stolen and extra vote at a summit. Raj’s blindside cracks him, and Emmah’s public theft of his extra vote at merge leaves him exposed. He claws on with Julia’s bond but becomes the perfect consensus boot when Millie shields Priya with an idol and Priya fires her Extra Vote. The hero dies by the spreadsheet, undone by numbers, not nerve. His fall fuels the jury’s hunger for blood at the end."
     },
     {
       "id": "zee",
@@ -5952,12 +6228,12 @@
         9
       ],
       "totalSeasons": 1,
-      "bestPlacement": 99,
+      "bestPlacement": 18,
       "wins": 0,
       "totalChallengeWins": 0,
       "totalImmunityWins": 0,
       "totalRewardWins": 0,
-      "totalVotesAgainst": 0,
+      "totalVotesAgainst": 5,
       "totalIdolsFound": 0,
       "totalJuryVotes": 0,
       "tier": "Unranked",
@@ -5965,22 +6241,34 @@
       "seasonDetails": [
         {
           "season": 9,
-          "placement": 99,
-          "status": "Active",
-          "tribe": "TBD",
+          "placement": 18,
+          "status": "Pre-Juror",
+          "tribe": "Unknown",
           "challengeWins": 0,
           "immunityWins": 0,
           "rewardWins": 0,
-          "votesReceived": 0,
+          "votesReceived": 5,
           "idolsFound": 0,
-          "strategicRank": 0,
+          "strategicRank": 2,
           "juryVotes": 0,
           "finalVote": "",
-          "unbreakableBonds": [],
-          "rivalries": [],
-          "allianceHistory": []
+          "advantages": [],
+          "notes": [
+            "5-1 Vote / Challenge Liability"
+          ],
+          "gameplayStyle": "Chill liability under fire",
+          "keyMoments": [
+            "Only tribe to lose; becomes target (Ep1)",
+            "Voted out 5-1 (Ep1)"
+          ],
+          "alliances": [],
+          "rivalries": [
+            "Hicks",
+            "Brightly"
+          ]
         }
-      ]
+      ],
+      "story": "Red’s opening loss exposes his laid-back camp game, and Hicks and Brightly seize on urgency as the deciding metric. With fire gone and coordination shaky, they paint his chill as fatal to the tribe’s survival. The vote is straightforward and clinical, a chemistry cleanup on Day 3. Zee leaves as the season’s first warning: vibes don’t beat flint."
     }
   ]
 }

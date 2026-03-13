@@ -1,9 +1,9 @@
 {
   "franchiseStats": {
-    "totalSeasons": 8,
+    "totalSeasons": 9,
     "totalEpisodes": 128,
-    "uniquePlayers": 84,
-    "totalAppearances": 148,
+    "uniquePlayers": 102,
+    "totalAppearances": 166,
     "lastUpdated": "2026-03-03",
     "dataSources": [
       "players_database.json",
@@ -93,375 +93,172 @@
       "keyStats": "First dual winners in franchise history. Alejandro: 4 individual immunities, 7 total challenge wins, 4 jury votes. Cameron: 4 jury votes, survived MacArthur extreme hatred, lowest votes against of finalists.",
       "strategy": "Alejandro used shield management (Pete → Leshawna → Sanders) and physical dominance to reach the Final 2. Cameron survived as the indispensable 'useful brain' no one could afford to cut. Together they outlasted the Civilian Hegemony (Gerry/Jen/Sanders) that controlled 75% of the merge.",
       "legacy": "The first co-winners in franchise history, produced by a historic 4-4 jury deadlock. Alejandro becomes the franchise's only two-time winner. Cameron wins his first title after reaching the finale in S3 as runner-up. MacArthur wins Fan Favorite."
+    },
+    {
+      "season": 9,
+      "winner": "Bowie",
+      "playerSlug": "bowie",
+      "strategy": "He built dense social cover, then stockpiled and perfectly timed advantages to control pivotal votes. By weaponizing Inheritance, stealing Julia’s idol, and cutting Priya at peak threat, he removed every rival path while maintaining enough bonds to reach the fire-making tiebreak and win it.",
+      "finalVote": "5-3-0",
+      "runnerUp": "Millie & Chase",
+      "keyStats": "5–3–0 jury win; 1 individual immunity; 2 votes received; possessed 1 stolen idol, Knowledge is Power, and an Extra Vote; executed the Inheritance Heist.",
+      "legacy": "Sets the franchise gold standard for advantage mastery at the merge. Proves that ruthless timing plus airtight social insurance can still earn a largely respectful jury win.",
+      "votesAgainst": 2
     }
   ],
   "records": {
     "challengeRecords": {
       "overall": {
         "mostChallengeWins": {
-          "playerSlug": "alejandro",
           "name": "Alejandro",
+          "playerSlug": "alejandro",
           "total": 18
         },
         "mostImmunityWins": {
-          "playerSlug": "alejandro",
           "name": "Alejandro",
+          "playerSlug": "alejandro",
           "total": 14
         },
         "mostRewardWins": {
-          "playerSlug": "zoey",
-          "name": "Zoey",
-          "total": 8
-        }
-      },
-      "bySeason": {
-        "1": {
-          "mostChallengeWins": {
-            "playerSlug": "bridgette",
-            "total": 5
-          },
-          "mostImmunityWins": {
-            "playerSlug": "bridgette",
-            "total": 4
-          }
-        },
-        "2": {
-          "mostChallengeWins": {
-            "playerSlug": "alejandro",
-            "total": 5
-          },
-          "mostImmunityWins": {
-            "playerSlug": "alejandro",
-            "total": 5
-          }
-        },
-        "3": {
-          "mostChallengeWins": {
-            "playerSlug": "scott",
-            "total": 6
-          },
-          "mostImmunityWins": {
-            "playerSlug": "scott",
-            "total": 3
-          }
-        },
-        "4": {
-          "mostChallengeWins": {
-            "playerSlug": "gwen",
-            "total": 4
-          },
-          "mostImmunityWins": {
-            "playerSlug": "gwen",
-            "total": 4
-          }
-        },
-        "5": {
-          "mostChallengeWins": {
-            "playerSlug": "sky",
-            "total": 4
-          },
-          "mostImmunityWins": {
-            "playerSlug": "sky",
-            "total": 3
-          }
-        },
-        "6": {
-          "mostChallengeWins": {
-            "playerSlug": "jacques",
-            "total": 4
-          },
-          "mostImmunityWins": {
-            "playerSlug": "jacques",
-            "total": 4
-          }
-        },
-        "7": {
-          "mostChallengeWins": {
-            "playerSlug": "jacques",
-            "total": 6
-          },
-          "mostImmunityWins": {
-            "playerSlug": "jacques",
-            "total": 5
-          }
-        },
-        "8": {
-          "mostChallengeWins": {
-            "playerSlug": "alejandro",
-            "total": 7
-          },
-          "mostImmunityWins": {
-            "playerSlug": "alejandro",
-            "total": 4
-          }
+          "name": "Cameron",
+          "playerSlug": "cameron",
+          "total": 4
         }
       }
     },
     "votingRecords": {
       "mostVotesAgainstCareer": {
-        "playerSlug": "geoff",
         "name": "Geoff",
+        "playerSlug": "geoff",
         "total": 54
       },
-      "mostVotesAgainstSingleSeason": [
-        {
-          "season": 1,
-          "playerSlug": "beth",
-          "total": 22
-        },
-        {
-          "season": 2,
-          "playerSlug": "alejandro",
-          "total": 11
-        },
-        {
-          "season": 3,
-          "playerSlug": "anne-maria",
-          "total": 15
-        },
-        {
-          "season": 4,
-          "playerSlug": "geoff",
-          "total": 29
-        },
-        {
-          "season": 5,
-          "playerSlug": "sugar",
-          "total": 10
-        },
-        {
-          "season": 6,
-          "playerSlug": "brody",
-          "total": 26
-        },
-        {
-          "season": 7,
-          "playerSlug": "kitty",
-          "total": 13
-        },
-        {
-          "season": 8,
-          "playerSlug": "macarthur",
-          "total": 15
-        }
-      ],
       "perfectGames": [
         {
-          "playerSlug": "emma",
-          "name": "Emma",
-          "season": 3
+          "name": "Sadie",
+          "playerSlug": "sadie"
         },
         {
-          "playerSlug": "mickey",
-          "name": "Mickey",
-          "season": 5
+          "name": "Sam",
+          "playerSlug": "sam"
+        },
+        {
+          "name": "Scary Girl",
+          "playerSlug": "scary-girl"
         }
       ]
     },
     "strategicRecords": {
       "topStrategicPercentile": [
         {
-          "playerSlug": "scarlett",
-          "name": "Scarlett",
-          "strategicPercentile": 98.51,
-          "score": 81
-        },
-        {
-          "playerSlug": "alejandro",
-          "name": "Alejandro",
-          "strategicPercentile": 97.01,
-          "score": 83
-        },
-        {
-          "playerSlug": "ryan",
-          "name": "Ryan",
-          "strategicPercentile": 94.03,
-          "score": 76
-        },
-        {
-          "playerSlug": "kelly",
-          "name": "Kelly",
-          "strategicPercentile": 94.03,
-          "score": 74
-        },
-        {
-          "playerSlug": "noah",
-          "name": "Noah",
-          "strategicPercentile": 94.03,
-          "score": 51
-        },
-        {
-          "playerSlug": "emma",
-          "name": "Emma",
-          "strategicPercentile": 88.06,
-          "score": 80
-        },
-        {
-          "playerSlug": "mickey",
           "name": "Mickey",
-          "strategicPercentile": 85.07,
-          "score": 95
-        },
-        {
-          "playerSlug": "jay",
-          "name": "Jay",
-          "strategicPercentile": 85.07,
-          "score": 72
-        },
-        {
-          "playerSlug": "duncan",
-          "name": "Duncan",
-          "strategicPercentile": 77.61,
-          "score": 76
-        },
-        {
-          "playerSlug": "mike",
-          "name": "Mike",
-          "strategicPercentile": 77.61,
-          "score": 66
-        }
-      ],
-      "topOverallScore": [
-        {
           "playerSlug": "mickey",
-          "name": "Mickey",
-          "score": 95,
-          "rank": 1,
-          "tier": "S+"
+          "avgStrategicRank": 19
         },
         {
-          "playerSlug": "alejandro",
-          "name": "Alejandro",
-          "score": 83,
-          "rank": 2,
-          "tier": "S"
+          "name": "Blaineley",
+          "playerSlug": "blaineley",
+          "avgStrategicRank": 13
         },
         {
-          "playerSlug": "scarlett",
-          "name": "Scarlett",
-          "score": 81,
-          "rank": 3,
-          "tier": "S"
+          "name": "Tom",
+          "playerSlug": "tom",
+          "avgStrategicRank": 10
         },
         {
-          "playerSlug": "emma",
-          "name": "Emma",
-          "score": 80,
-          "rank": 4,
-          "tier": "S"
+          "name": "Bowie",
+          "playerSlug": "bowie",
+          "avgStrategicRank": 10
         },
         {
-          "playerSlug": "duncan",
-          "name": "Duncan",
-          "score": 76,
-          "rank": 5,
-          "tier": "A"
+          "name": "Jacques",
+          "playerSlug": "jacques",
+          "avgStrategicRank": 9.5
         },
         {
-          "playerSlug": "ryan",
-          "name": "Ryan",
-          "score": 76,
-          "rank": 6,
-          "tier": "A"
+          "name": "Heather",
+          "playerSlug": "heather",
+          "avgStrategicRank": 9
         },
         {
-          "playerSlug": "kelly",
-          "name": "Kelly",
-          "score": 74,
-          "rank": 7,
-          "tier": "A"
+          "name": "Taylor",
+          "playerSlug": "taylor",
+          "avgStrategicRank": 9
         },
         {
-          "playerSlug": "cameron",
-          "name": "Cameron",
-          "score": 73,
-          "rank": 8,
-          "tier": "A"
+          "name": "Sanders",
+          "playerSlug": "sanders",
+          "avgStrategicRank": 9
         },
         {
-          "playerSlug": "jay",
-          "name": "Jay",
-          "score": 72,
-          "rank": 9,
-          "tier": "A"
+          "name": "Julia",
+          "playerSlug": "julia",
+          "avgStrategicRank": 9
         },
         {
-          "playerSlug": "mike",
-          "name": "Mike",
-          "score": 66,
-          "rank": 10,
-          "tier": "B"
+          "name": "Priya",
+          "playerSlug": "priya",
+          "avgStrategicRank": 9
         }
       ]
     },
     "socialRecords": {
+      "mostJuryVotesCareer": {
+        "name": "Alejandro",
+        "playerSlug": "alejandro",
+        "total": 12
+      },
       "topSocialPercentile": [
         {
-          "playerSlug": "mickey",
-          "name": "Mickey",
-          "socialPercentile": 95.52,
-          "score": 95
-        },
-        {
-          "playerSlug": "jay",
-          "name": "Jay",
-          "socialPercentile": 87.31,
-          "score": 72
-        },
-        {
-          "playerSlug": "sadie",
           "name": "Sadie",
-          "socialPercentile": 87.31,
-          "score": 50
+          "playerSlug": "sadie",
+          "votesAgainst": 0
         },
         {
-          "playerSlug": "mary",
-          "name": "Mary",
-          "socialPercentile": 87.31,
-          "score": 48
-        },
-        {
-          "playerSlug": "stephanie",
-          "name": "Stephanie",
-          "socialPercentile": 87.31,
-          "score": 42
-        },
-        {
-          "playerSlug": "ennui",
-          "name": "Ennui",
-          "socialPercentile": 87.31,
-          "score": 39
-        },
-        {
-          "playerSlug": "junior",
-          "name": "Junior",
-          "socialPercentile": 87.31,
-          "score": 37
-        },
-        {
-          "playerSlug": "sam",
           "name": "Sam",
-          "socialPercentile": 87.31,
-          "score": 37
+          "playerSlug": "sam",
+          "votesAgainst": 0
         },
         {
-          "playerSlug": "tammy",
-          "name": "Tammy",
-          "socialPercentile": 87.31,
-          "score": 31
+          "name": "Scary Girl",
+          "playerSlug": "scary-girl",
+          "votesAgainst": 0
         },
         {
-          "playerSlug": "emma",
-          "name": "Emma",
-          "socialPercentile": 79.1,
-          "score": 80
+          "name": "Samey",
+          "playerSlug": "samey",
+          "votesAgainst": 1
+        },
+        {
+          "name": "Sanders",
+          "playerSlug": "sanders",
+          "votesAgainst": 1
+        },
+        {
+          "name": "Millie",
+          "playerSlug": "millie",
+          "votesAgainst": 1
+        },
+        {
+          "name": "Ella",
+          "playerSlug": "ella",
+          "votesAgainst": 2
+        },
+        {
+          "name": "Jacques",
+          "playerSlug": "jacques",
+          "votesAgainst": 2
+        },
+        {
+          "name": "Mary",
+          "playerSlug": "mary",
+          "votesAgainst": 2
+        },
+        {
+          "name": "Scarlett",
+          "playerSlug": "scarlett",
+          "votesAgainst": 2
         }
-      ],
-      "mostJuryVotesCareer": {
-        "playerSlug": "alejandro",
-        "name": "Alejandro",
-        "total": 16
-      }
+      ]
     }
   },
   "fanFavorites": [
@@ -504,657 +301,573 @@
       "season": 8,
       "name": "MacArthur",
       "playerSlug": "macarthur"
+    },
+    {
+      "season": 9,
+      "name": "Brightly",
+      "playerSlug": "brightly",
+      "description": "Fan favorite"
     }
   ],
   "multiSeasonPlayers": [
     {
-      "playerSlug": "macarthur",
-      "name": "MacArthur",
-      "seasonsPlayed": 2,
-      "seasons": [
-        7,
-        8
-      ],
-      "wins": 1,
-      "avgPlacement": 4.0,
-      "rankScore": 88,
-      "tier": "S",
-      "title": "The Titanium Shield",
-      "emoji": "🚓"
-    },
-    {
-      "playerSlug": "alejandro",
       "name": "Alejandro",
-      "seasonsPlayed": 4,
+      "playerSlug": "alejandro",
       "seasons": [
-        1,
-        2,
         4,
+        2,
+        1,
         8
       ],
+      "seasonsPlayed": 4,
       "wins": 2,
       "avgPlacement": 1.5,
-      "rankScore": 83,
-      "tier": "S",
-      "title": "The Snake Charmer",
-      "emoji": "🐍"
+      "bestPlacement": 1
     },
     {
-      "playerSlug": "scott",
-      "name": "Scott",
-      "seasonsPlayed": 3,
-      "seasons": [
-        3,
-        4,
-        7
-      ],
-      "wins": 0,
-      "avgPlacement": 4.33,
-      "rankScore": 7,
-      "tier": "F",
-      "title": "The Saboteur",
-      "emoji": "🦊"
-    },
-    {
-      "playerSlug": "zoey",
-      "name": "Zoey",
-      "seasonsPlayed": 3,
-      "seasons": [
-        3,
-        4,
-        7
-      ],
-      "wins": 0,
-      "avgPlacement": 7,
-      "rankScore": 7,
-      "tier": "F",
-      "title": "The Indie Girl",
-      "emoji": "🌸"
-    },
-    {
-      "playerSlug": "duncan",
-      "name": "Duncan",
-      "seasonsPlayed": 3,
-      "seasons": [
-        1,
-        2,
-        4
-      ],
-      "wins": 1,
-      "avgPlacement": 7.33,
-      "rankScore": 76,
-      "tier": "A",
-      "title": "The Delinquent",
-      "emoji": "🗡️"
-    },
-    {
-      "playerSlug": "lindsay",
-      "name": "Lindsay",
-      "seasonsPlayed": 3,
-      "seasons": [
-        1,
-        2,
-        7
-      ],
-      "wins": 1,
-      "avgPlacement": 8,
-      "rankScore": 5,
-      "tier": "F",
-      "title": "The Glow-Up Queen",
-      "emoji": "💖"
-    },
-    {
-      "playerSlug": "beth",
-      "name": "Beth",
-      "seasonsPlayed": 3,
-      "seasons": [
-        1,
-        2,
-        6
-      ],
-      "wins": 0,
-      "avgPlacement": 9.33,
-      "rankScore": 38,
-      "tier": "F",
-      "title": "The Sweetheart",
-      "emoji": "🧁"
-    },
-    {
-      "playerSlug": "emma",
-      "name": "Emma",
-      "seasonsPlayed": 3,
-      "seasons": [
-        3,
-        4,
-        6
-      ],
-      "wins": 1,
-      "avgPlacement": 9.33,
-      "rankScore": 80,
-      "tier": "S",
-      "title": "The Comeback Kid",
-      "emoji": "🔁"
-    },
-    {
-      "playerSlug": "gwen",
-      "name": "Gwen",
-      "seasonsPlayed": 3,
-      "seasons": [
-        1,
-        2,
-        4
-      ],
-      "wins": 0,
-      "avgPlacement": 9.33,
-      "rankScore": 60,
-      "tier": "C",
-      "title": "The Goth Icon",
-      "emoji": "🖤"
-    },
-    {
-      "playerSlug": "geoff",
-      "name": "Geoff",
-      "seasonsPlayed": 3,
-      "seasons": [
-        1,
-        4,
-        6
-      ],
-      "wins": 0,
-      "avgPlacement": 10.33,
-      "rankScore": 50,
-      "tier": "D",
-      "title": "The Party Surfer",
-      "emoji": "🎉"
-    },
-    {
-      "playerSlug": "heather",
       "name": "Heather",
-      "seasonsPlayed": 4,
+      "playerSlug": "heather",
       "seasons": [
-        1,
-        2,
         4,
+        2,
+        1,
         8
       ],
+      "seasonsPlayed": 4,
       "wins": 0,
       "avgPlacement": 9.5,
-      "rankScore": 58,
-      "tier": "C",
-      "title": "The Queen Bee",
-      "emoji": "👑"
+      "bestPlacement": 6
     },
     {
-      "playerSlug": "courtney",
-      "name": "Courtney",
-      "seasonsPlayed": 3,
-      "seasons": [
-        1,
-        2,
-        4
-      ],
-      "wins": 0,
-      "avgPlacement": 11.33,
-      "rankScore": 46,
-      "tier": "D",
-      "title": "The Type-A Captain",
-      "emoji": "📋"
-    },
-    {
-      "playerSlug": "mickey",
-      "name": "Mickey",
-      "seasonsPlayed": 2,
-      "seasons": [
-        5,
-        6
-      ],
-      "wins": 1,
-      "avgPlacement": 1.5,
-      "rankScore": 95,
-      "tier": "S+",
-      "title": "The Anxious Ace",
-      "emoji": "🩹"
-    },
-    {
-      "playerSlug": "jacques",
-      "name": "Jacques",
-      "seasonsPlayed": 2,
-      "seasons": [
-        6,
-        7
-      ],
-      "wins": 1,
-      "avgPlacement": 2.5,
-      "rankScore": 2,
-      "tier": "F",
-      "title": "The Ice Prince",
-      "emoji": "🧊"
-    },
-    {
-      "playerSlug": "cameron",
       "name": "Cameron",
-      "seasonsPlayed": 3,
+      "playerSlug": "cameron",
       "seasons": [
-        3,
         4,
+        3,
         8
       ],
+      "seasonsPlayed": 3,
       "wins": 1,
-      "avgPlacement": 3.0,
-      "rankScore": 73,
-      "tier": "A",
-      "title": "The Brainiac",
-      "emoji": "🧪"
+      "avgPlacement": 3,
+      "bestPlacement": 1
     },
     {
-      "playerSlug": "sky",
-      "name": "Sky",
+      "name": "Scott",
+      "playerSlug": "scott",
+      "seasons": [
+        4,
+        3,
+        7
+      ],
       "seasonsPlayed": 3,
+      "wins": 0,
+      "avgPlacement": 4.33,
+      "bestPlacement": 2
+    },
+    {
+      "name": "Sky",
+      "playerSlug": "sky",
       "seasons": [
         5,
         7,
         8
       ],
-      "wins": 0,
-      "avgPlacement": 7.0,
-      "rankScore": 9,
-      "tier": "F",
-      "title": "The Athlete",
-      "emoji": "🏃‍♀️"
-    },
-    {
-      "playerSlug": "ezekiel",
-      "name": "Ezekiel",
-      "seasonsPlayed": 2,
-      "seasons": [
-        1,
-        2
-      ],
-      "wins": 0,
-      "avgPlacement": 5,
-      "rankScore": 62,
-      "tier": "B",
-      "title": "The Farm Kid",
-      "emoji": "🌾"
-    },
-    {
-      "playerSlug": "ryan",
-      "name": "Ryan",
-      "seasonsPlayed": 2,
-      "seasons": [
-        5,
-        6
-      ],
-      "wins": 0,
-      "avgPlacement": 5.5,
-      "rankScore": 76,
-      "tier": "A",
-      "title": "The Gentle Giant",
-      "emoji": "🏅"
-    },
-    {
-      "playerSlug": "trent",
-      "name": "Trent",
-      "seasonsPlayed": 2,
-      "seasons": [
-        1,
-        2
-      ],
-      "wins": 0,
-      "avgPlacement": 6.5,
-      "rankScore": 58,
-      "tier": "C",
-      "title": "The Guitar Guy",
-      "emoji": "🎸"
-    },
-    {
-      "playerSlug": "blaineley",
-      "name": "Blaineley",
-      "seasonsPlayed": 2,
-      "seasons": [
-        5,
-        6
-      ],
+      "seasonsPlayed": 3,
       "wins": 0,
       "avgPlacement": 7,
-      "rankScore": 62,
-      "tier": "B",
-      "title": "The Media Maven",
-      "emoji": "🎤"
+      "bestPlacement": 2
     },
     {
-      "playerSlug": "bridgette",
-      "name": "Bridgette",
-      "seasonsPlayed": 2,
+      "name": "Zoey",
+      "playerSlug": "zoey",
       "seasons": [
-        1,
-        2
-      ],
-      "wins": 0,
-      "avgPlacement": 8.5,
-      "rankScore": 52,
-      "tier": "C",
-      "title": "The Surfer Sweetheart",
-      "emoji": "🏄‍♀️"
-    },
-    {
-      "playerSlug": "jo",
-      "name": "Jo",
-      "seasonsPlayed": 3,
-      "seasons": [
-        3,
         4,
+        3,
+        7
+      ],
+      "seasonsPlayed": 3,
+      "wins": 0,
+      "avgPlacement": 7,
+      "bestPlacement": 2
+    },
+    {
+      "name": "Duncan",
+      "playerSlug": "duncan",
+      "seasons": [
+        4,
+        2,
+        1
+      ],
+      "seasonsPlayed": 3,
+      "wins": 1,
+      "avgPlacement": 7.33,
+      "bestPlacement": 1
+    },
+    {
+      "name": "Lindsay",
+      "playerSlug": "lindsay",
+      "seasons": [
+        2,
+        1,
+        7
+      ],
+      "seasonsPlayed": 3,
+      "wins": 1,
+      "avgPlacement": 8,
+      "bestPlacement": 1
+    },
+    {
+      "name": "Jo",
+      "playerSlug": "jo",
+      "seasons": [
+        4,
+        3,
         8
       ],
+      "seasonsPlayed": 3,
       "wins": 0,
       "avgPlacement": 8.67,
-      "rankScore": 33,
-      "tier": "F",
-      "title": "The Alpha Athlete",
-      "emoji": "💪"
+      "bestPlacement": 7
     },
     {
-      "playerSlug": "mike",
-      "name": "Mike",
-      "seasonsPlayed": 2,
+      "name": "Beth",
+      "playerSlug": "beth",
       "seasons": [
-        3,
-        4
-      ],
-      "wins": 0,
-      "avgPlacement": 9,
-      "rankScore": 66,
-      "tier": "B",
-      "title": "The Many Faces",
-      "emoji": "🎭"
-    },
-    {
-      "playerSlug": "shawn",
-      "name": "Shawn",
-      "seasonsPlayed": 2,
-      "seasons": [
-        5,
-        7
-      ],
-      "wins": 0,
-      "avgPlacement": 9,
-      "rankScore": 4,
-      "tier": "F",
-      "title": "The Zombie Guy",
-      "emoji": "🧟"
-    },
-    {
-      "playerSlug": "owen",
-      "name": "Owen",
-      "seasonsPlayed": 3,
-      "seasons": [
-        1,
         2,
-        8
-      ],
-      "wins": 0,
-      "avgPlacement": 11.0,
-      "rankScore": 55,
-      "tier": "C",
-      "title": "The Big Buddy",
-      "emoji": "🍗"
-    },
-    {
-      "playerSlug": "kitty",
-      "name": "Kitty",
-      "seasonsPlayed": 2,
-      "seasons": [
-        6,
-        7
-      ],
-      "wins": 0,
-      "avgPlacement": 10,
-      "rankScore": 8,
-      "tier": "F",
-      "title": "The Sunshine",
-      "emoji": "😺"
-    },
-    {
-      "playerSlug": "anne-maria",
-      "name": "Anne Maria",
-      "seasonsPlayed": 2,
-      "seasons": [
-        3,
-        4
-      ],
-      "wins": 0,
-      "avgPlacement": 10.5,
-      "rankScore": 36,
-      "tier": "F",
-      "title": "The Jersey Diva",
-      "emoji": "💄"
-    },
-    {
-      "playerSlug": "cody",
-      "name": "Cody",
-      "seasonsPlayed": 2,
-      "seasons": [
         1,
-        7
+        6
       ],
+      "seasonsPlayed": 3,
       "wins": 0,
-      "avgPlacement": 10.5,
-      "rankScore": 4,
-      "tier": "F",
-      "title": "The Geek",
-      "emoji": "💻"
+      "avgPlacement": 9.33,
+      "bestPlacement": 4
     },
     {
-      "playerSlug": "dwayne",
-      "name": "Dwayne",
-      "seasonsPlayed": 2,
+      "name": "Emma",
+      "playerSlug": "emma",
       "seasons": [
+        4,
         3,
         6
       ],
-      "wins": 0,
-      "avgPlacement": 10.5,
-      "rankScore": 43,
-      "tier": "D",
-      "title": "The Dad",
-      "emoji": "👨‍👦"
-    },
-    {
-      "playerSlug": "sierra",
-      "name": "Sierra",
-      "seasonsPlayed": 2,
-      "seasons": [
-        1,
-        4
-      ],
-      "wins": 0,
-      "avgPlacement": 10.5,
-      "rankScore": 25,
-      "tier": "F",
-      "title": "The Superfan",
-      "emoji": "📣"
-    },
-    {
-      "playerSlug": "leshawna",
-      "name": "Leshawna",
       "seasonsPlayed": 3,
+      "wins": 1,
+      "avgPlacement": 9.33,
+      "bestPlacement": 1
+    },
+    {
+      "name": "Gwen",
+      "playerSlug": "gwen",
       "seasons": [
-        1,
+        4,
         2,
+        1
+      ],
+      "seasonsPlayed": 3,
+      "wins": 0,
+      "avgPlacement": 9.33,
+      "bestPlacement": 4
+    },
+    {
+      "name": "Geoff",
+      "playerSlug": "geoff",
+      "seasons": [
+        4,
+        1,
+        6
+      ],
+      "seasonsPlayed": 3,
+      "wins": 0,
+      "avgPlacement": 10.33,
+      "bestPlacement": 5
+    },
+    {
+      "name": "Owen",
+      "playerSlug": "owen",
+      "seasons": [
+        2,
+        1,
         8
       ],
+      "seasonsPlayed": 3,
+      "wins": 0,
+      "avgPlacement": 11,
+      "bestPlacement": 7
+    },
+    {
+      "name": "Courtney",
+      "playerSlug": "courtney",
+      "seasons": [
+        4,
+        2,
+        1
+      ],
+      "seasonsPlayed": 3,
+      "wins": 0,
+      "avgPlacement": 11.33,
+      "bestPlacement": 9
+    },
+    {
+      "name": "Leshawna",
+      "playerSlug": "leshawna",
+      "seasons": [
+        2,
+        1,
+        8
+      ],
+      "seasonsPlayed": 3,
       "wins": 0,
       "avgPlacement": 11.67,
-      "rankScore": 46,
-      "tier": "D",
-      "title": "The Real One",
-      "emoji": "✨"
+      "bestPlacement": 11
     },
     {
-      "playerSlug": "lightning",
-      "name": "Lightning",
-      "seasonsPlayed": 2,
-      "seasons": [
-        3,
-        4
-      ],
-      "wins": 0,
-      "avgPlacement": 12,
-      "rankScore": 27,
-      "tier": "F",
-      "title": "The Jock",
-      "emoji": "⚡"
-    },
-    {
-      "playerSlug": "noah",
-      "name": "Noah",
-      "seasonsPlayed": 2,
-      "seasons": [
-        1,
-        4
-      ],
-      "wins": 0,
-      "avgPlacement": 12,
-      "rankScore": 51,
-      "tier": "C",
-      "title": "The Snark King",
-      "emoji": "🙃"
-    },
-    {
-      "playerSlug": "brody",
       "name": "Brody",
-      "seasonsPlayed": 3,
+      "playerSlug": "brody",
       "seasons": [
         6,
         7,
         8
       ],
+      "seasonsPlayed": 3,
       "wins": 0,
       "avgPlacement": 13.67,
-      "rankScore": 2,
-      "tier": "F",
-      "title": "The Hunky Helper",
-      "emoji": "🏋️‍♂️"
+      "bestPlacement": 7
     },
     {
-      "playerSlug": "harold",
-      "name": "Harold",
-      "seasonsPlayed": 2,
-      "seasons": [
-        1,
-        4
-      ],
-      "wins": 0,
-      "avgPlacement": 12.5,
-      "rankScore": 57,
-      "tier": "C",
-      "title": "The Ninja Nerd",
-      "emoji": "🥷"
-    },
-    {
-      "playerSlug": "josee",
-      "name": "Josee",
-      "seasonsPlayed": 2,
+      "name": "Mickey",
+      "playerSlug": "mickey",
       "seasons": [
         5,
         6
       ],
-      "wins": 0,
-      "avgPlacement": 12.5,
-      "rankScore": 40,
-      "tier": "F",
-      "title": "The Ice Queen",
-      "emoji": "⛸️"
+      "seasonsPlayed": 2,
+      "wins": 1,
+      "avgPlacement": 1.5,
+      "bestPlacement": 1
     },
     {
-      "playerSlug": "dj",
-      "name": "DJ",
-      "seasonsPlayed": 2,
+      "name": "Jacques",
+      "playerSlug": "jacques",
       "seasons": [
-        1,
-        2
+        6,
+        7
       ],
-      "wins": 0,
-      "avgPlacement": 13.5,
-      "rankScore": 34,
-      "tier": "F",
-      "title": "The Gentle Giant",
-      "emoji": "🐻"
+      "seasonsPlayed": 2,
+      "wins": 1,
+      "avgPlacement": 2.5,
+      "bestPlacement": 1
     },
     {
-      "playerSlug": "jasmine",
-      "name": "Jasmine",
+      "name": "MacArthur",
+      "playerSlug": "macarthur",
+      "seasons": [
+        7,
+        8
+      ],
       "seasonsPlayed": 2,
+      "wins": 1,
+      "avgPlacement": 4,
+      "bestPlacement": 1
+    },
+    {
+      "name": "Ezekiel",
+      "playerSlug": "ezekiel",
+      "seasons": [
+        2,
+        1
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 5,
+      "bestPlacement": 4
+    },
+    {
+      "name": "Ryan",
+      "playerSlug": "ryan",
+      "seasons": [
+        5,
+        6
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 5.5,
+      "bestPlacement": 3
+    },
+    {
+      "name": "Trent",
+      "playerSlug": "trent",
+      "seasons": [
+        2,
+        1
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 6.5,
+      "bestPlacement": 6
+    },
+    {
+      "name": "Blaineley",
+      "playerSlug": "blaineley",
+      "seasons": [
+        5,
+        6
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 7,
+      "bestPlacement": 6
+    },
+    {
+      "name": "Sugar",
+      "playerSlug": "sugar",
+      "seasons": [
+        5,
+        8
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 7.5,
+      "bestPlacement": 5
+    },
+    {
+      "name": "Bridgette",
+      "playerSlug": "bridgette",
+      "seasons": [
+        2,
+        1
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 8.5,
+      "bestPlacement": 3
+    },
+    {
+      "name": "Dave",
+      "playerSlug": "dave",
+      "seasons": [
+        5,
+        8
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 9,
+      "bestPlacement": 6
+    },
+    {
+      "name": "Mike",
+      "playerSlug": "mike",
+      "seasons": [
+        4,
+        3
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 9,
+      "bestPlacement": 6
+    },
+    {
+      "name": "Shawn",
+      "playerSlug": "shawn",
       "seasons": [
         5,
         7
       ],
+      "seasonsPlayed": 2,
       "wins": 0,
-      "avgPlacement": 13.5,
-      "rankScore": 2,
-      "tier": "F",
-      "title": "The Jungle Queen",
-      "emoji": "🐊"
+      "avgPlacement": 9,
+      "bestPlacement": 9
     },
     {
-      "playerSlug": "dakota",
-      "name": "Dakota",
-      "seasonsPlayed": 2,
+      "name": "Kitty",
+      "playerSlug": "kitty",
       "seasons": [
-        3,
-        4
+        6,
+        7
       ],
+      "seasonsPlayed": 2,
       "wins": 0,
-      "avgPlacement": 15,
-      "rankScore": 24,
-      "tier": "F",
-      "title": "The Celebrity",
-      "emoji": "📸"
+      "avgPlacement": 10,
+      "bestPlacement": 9
     },
     {
-      "playerSlug": "justin",
-      "name": "Justin",
+      "name": "Pete",
+      "playerSlug": "pete",
+      "seasons": [
+        7,
+        8
+      ],
       "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 10,
+      "bestPlacement": 8
+    },
+    {
+      "name": "Anne Maria",
+      "playerSlug": "anne-maria",
+      "seasons": [
+        4,
+        3
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 10.5,
+      "bestPlacement": 5
+    },
+    {
+      "name": "Cody",
+      "playerSlug": "cody",
       "seasons": [
         1,
-        2
+        7
       ],
+      "seasonsPlayed": 2,
       "wins": 0,
-      "avgPlacement": 17,
-      "rankScore": 35,
-      "tier": "F",
-      "title": "The Model",
-      "emoji": "😎"
+      "avgPlacement": 10.5,
+      "bestPlacement": 2
     },
     {
-      "playerSlug": "crimson",
-      "name": "Crimson",
-      "seasonsPlayed": 2,
+      "name": "Dwayne",
+      "playerSlug": "dwayne",
       "seasons": [
         3,
         6
       ],
+      "seasonsPlayed": 2,
       "wins": 0,
-      "avgPlacement": 18,
-      "rankScore": 25,
-      "tier": "F",
-      "title": "The Goth Twin",
-      "emoji": "🦇"
+      "avgPlacement": 10.5,
+      "bestPlacement": 10
     },
     {
-      "playerSlug": "leonard",
-      "name": "Leonard",
+      "name": "Sierra",
+      "playerSlug": "sierra",
+      "seasons": [
+        4,
+        1
+      ],
       "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 10.5,
+      "bestPlacement": 10
+    },
+    {
+      "name": "Lightning",
+      "playerSlug": "lightning",
+      "seasons": [
+        4,
+        3
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 12,
+      "bestPlacement": 11
+    },
+    {
+      "name": "Noah",
+      "playerSlug": "noah",
+      "seasons": [
+        4,
+        1
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 12,
+      "bestPlacement": 9
+    },
+    {
+      "name": "Harold",
+      "playerSlug": "harold",
+      "seasons": [
+        4,
+        1
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 12.5,
+      "bestPlacement": 8
+    },
+    {
+      "name": "Josee",
+      "playerSlug": "josee",
       "seasons": [
         5,
         6
       ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 12.5,
+      "bestPlacement": 12
+    },
+    {
+      "name": "DJ",
+      "playerSlug": "dj",
+      "seasons": [
+        2,
+        1
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 13.5,
+      "bestPlacement": 5
+    },
+    {
+      "name": "Jasmine",
+      "playerSlug": "jasmine",
+      "seasons": [
+        5,
+        7
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 13.5,
+      "bestPlacement": 13
+    },
+    {
+      "name": "Dakota",
+      "playerSlug": "dakota",
+      "seasons": [
+        4,
+        3
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 15,
+      "bestPlacement": 12
+    },
+    {
+      "name": "Justin",
+      "playerSlug": "justin",
+      "seasons": [
+        2,
+        1
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 17,
+      "bestPlacement": 10
+    },
+    {
+      "name": "Crimson",
+      "playerSlug": "crimson",
+      "seasons": [
+        3,
+        6
+      ],
+      "seasonsPlayed": 2,
       "wins": 0,
       "avgPlacement": 18,
-      "rankScore": 26,
-      "tier": "F",
-      "title": "The Wizard",
-      "emoji": "🧙"
+      "bestPlacement": 16
+    },
+    {
+      "name": "Leonard",
+      "playerSlug": "leonard",
+      "seasons": [
+        5,
+        6
+      ],
+      "seasonsPlayed": 2,
+      "wins": 0,
+      "avgPlacement": 18,
+      "bestPlacement": 18
     }
   ],
   "trends": {
@@ -1198,6 +911,11 @@
         "season": 8,
         "strategy": "Shield management + physical immunity dominance (Alejandro) / silent survival as indispensable brain (Cameron)",
         "winner": "Alejandro & Cameron (Dual Win)"
+      },
+      {
+        "season": 9,
+        "strategy": "He built dense social cover, then stockpiled and perfectly timed advantages to control pivotal votes. By weaponizing Inheritance, stealing Julia’s idol, and cutting Priya at peak threat, he removed every rival path while maintaining enough bonds to reach the fire-making tiebreak and win it.",
+        "winner": "Bowie"
       }
     ],
     "castComposition": [
@@ -1232,6 +950,11 @@
       {
         "season": 8,
         "composition": "18 returnees (Heroes: 6, Villains: 6, Civilians: 6 — 6 original new players)"
+      },
+      {
+        "season": 9,
+        "composition": "18 players",
+        "theme": "18 newbies fight for the title of King of Power"
       }
     ],
     "finaleVoteMargins": [
@@ -1274,6 +997,16 @@
         "season": 8,
         "vote": "4-4 (Dual Win — first ever)",
         "winner": "Alejandro & Cameron"
+      },
+      {
+        "season": 9,
+        "vote": "5-3-0",
+        "winner": "Bowie",
+        "finalists": [
+          "Bowie",
+          "Millie",
+          "Chase"
+        ]
       }
     ],
     "majorTwists": [
@@ -1308,6 +1041,10 @@
       {
         "season": 8,
         "twist": "3 tribes (Heroes/Villains/Civilians) + tribe dissolution + Super Idol (post-vote play) + Dual Winner finale"
+      },
+      {
+        "season": 9,
+        "twist": "18 newbies fight for the title of King of Power"
       }
     ]
   },
@@ -1446,162 +1183,305 @@
       "stat": "Quit Ep 13 with Super Idol in pocket",
       "season": "S8",
       "playerSlug": "heather"
+    },
+    {
+      "category": "Most Challenge Wins",
+      "holder": "Alejandro",
+      "playerSlug": "alejandro",
+      "stat": "18 wins",
+      "season": "Career"
+    },
+    {
+      "category": "Most Immunity Wins",
+      "holder": "Alejandro",
+      "playerSlug": "alejandro",
+      "stat": "14 wins",
+      "season": "Career"
+    },
+    {
+      "category": "Most Reward Wins",
+      "holder": "Cameron",
+      "playerSlug": "cameron",
+      "stat": "4 wins",
+      "season": "Career"
+    },
+    {
+      "category": "Most Votes Against",
+      "holder": "Geoff",
+      "playerSlug": "geoff",
+      "stat": "54 votes",
+      "season": "Career"
+    },
+    {
+      "category": "Most Jury Votes (Career)",
+      "holder": "Alejandro",
+      "playerSlug": "alejandro",
+      "stat": "12 votes",
+      "season": "Career"
     }
   ],
   "careerLeaders": {
     "challengeDominance": {
       "mostChallengeWins": [
         {
-          "playerSlug": "alejandro",
           "name": "Alejandro",
+          "playerSlug": "alejandro",
           "total": 18
         },
         {
-          "playerSlug": "jacques",
           "name": "Jacques",
+          "playerSlug": "jacques",
           "total": 10
         },
         {
-          "playerSlug": "zoey",
           "name": "Zoey",
+          "playerSlug": "zoey",
           "total": 8
         },
         {
-          "playerSlug": "scott",
           "name": "Scott",
+          "playerSlug": "scott",
           "total": 7
         },
         {
-          "playerSlug": "cameron",
+          "name": "MacArthur",
+          "playerSlug": "macarthur",
+          "total": 7
+        },
+        {
           "name": "Cameron",
+          "playerSlug": "cameron",
           "total": 6
+        },
+        {
+          "name": "Heather",
+          "playerSlug": "heather",
+          "total": 6
+        },
+        {
+          "name": "Bridgette",
+          "playerSlug": "bridgette",
+          "total": 5
+        },
+        {
+          "name": "Emma",
+          "playerSlug": "emma",
+          "total": 5
+        },
+        {
+          "name": "Gwen",
+          "playerSlug": "gwen",
+          "total": 5
         }
       ],
       "mostImmunityWins": [
         {
-          "playerSlug": "alejandro",
           "name": "Alejandro",
+          "playerSlug": "alejandro",
           "total": 14
         },
         {
-          "playerSlug": "jacques",
           "name": "Jacques",
+          "playerSlug": "jacques",
           "total": 9
         },
         {
-          "playerSlug": "gwen",
           "name": "Gwen",
+          "playerSlug": "gwen",
           "total": 5
         },
         {
-          "playerSlug": "zoey",
           "name": "Zoey",
+          "playerSlug": "zoey",
           "total": 5
         },
         {
-          "playerSlug": "bridgette",
           "name": "Bridgette",
+          "playerSlug": "bridgette",
           "total": 4
+        },
+        {
+          "name": "Heather",
+          "playerSlug": "heather",
+          "total": 3
+        },
+        {
+          "name": "Mickey",
+          "playerSlug": "mickey",
+          "total": 3
+        },
+        {
+          "name": "Scott",
+          "playerSlug": "scott",
+          "total": 3
+        },
+        {
+          "name": "Sky",
+          "playerSlug": "sky",
+          "total": 3
+        },
+        {
+          "name": "Trent",
+          "playerSlug": "trent",
+          "total": 3
         }
       ],
       "mostRewardWins": [
         {
-          "playerSlug": "cameron",
           "name": "Cameron",
+          "playerSlug": "cameron",
           "total": 4
         },
         {
-          "playerSlug": "alejandro",
+          "name": "Damien",
+          "playerSlug": "damien",
+          "total": 4
+        },
+        {
           "name": "Alejandro",
-          "total": 6
+          "playerSlug": "alejandro",
+          "total": 3
         },
         {
-          "playerSlug": "emma",
           "name": "Emma",
+          "playerSlug": "emma",
           "total": 3
         },
         {
-          "playerSlug": "scott",
           "name": "Scott",
+          "playerSlug": "scott",
           "total": 3
         },
         {
-          "playerSlug": "zoey",
           "name": "Zoey",
+          "playerSlug": "zoey",
           "total": 3
+        },
+        {
+          "name": "Sanders",
+          "playerSlug": "sanders",
+          "total": 3
+        },
+        {
+          "name": "MK",
+          "playerSlug": "mk",
+          "total": 3
+        },
+        {
+          "name": "Harold",
+          "playerSlug": "harold",
+          "total": 2
+        },
+        {
+          "name": "Mike",
+          "playerSlug": "mike",
+          "total": 2
         }
       ]
     },
     "socialGame": {
+      "lowestVotesAgainstCareer_min10Votes": [
+        {
+          "name": "Sadie",
+          "playerSlug": "sadie",
+          "votesAgainst": 0
+        },
+        {
+          "name": "Sam",
+          "playerSlug": "sam",
+          "votesAgainst": 0
+        },
+        {
+          "name": "Scary Girl",
+          "playerSlug": "scary-girl",
+          "votesAgainst": 0
+        },
+        {
+          "name": "Samey",
+          "playerSlug": "samey",
+          "votesAgainst": 1
+        },
+        {
+          "name": "Sanders",
+          "playerSlug": "sanders",
+          "votesAgainst": 1
+        },
+        {
+          "name": "Millie",
+          "playerSlug": "millie",
+          "votesAgainst": 1
+        },
+        {
+          "name": "Ella",
+          "playerSlug": "ella",
+          "votesAgainst": 2
+        },
+        {
+          "name": "Jacques",
+          "playerSlug": "jacques",
+          "votesAgainst": 2
+        },
+        {
+          "name": "Mary",
+          "playerSlug": "mary",
+          "votesAgainst": 2
+        },
+        {
+          "name": "Scarlett",
+          "playerSlug": "scarlett",
+          "votesAgainst": 2
+        }
+      ],
       "mostJuryVotes": [
         {
-          "playerSlug": "alejandro",
           "name": "Alejandro",
-          "total": 16
+          "playerSlug": "alejandro",
+          "total": 12
         },
         {
-          "playerSlug": "lindsay",
           "name": "Lindsay",
+          "playerSlug": "lindsay",
           "total": 6
         },
         {
-          "playerSlug": "zoey",
           "name": "Zoey",
+          "playerSlug": "zoey",
           "total": 6
         },
         {
-          "playerSlug": "duncan",
           "name": "Duncan",
+          "playerSlug": "duncan",
           "total": 5
         },
         {
-          "playerSlug": "mickey",
           "name": "Mickey",
+          "playerSlug": "mickey",
           "total": 4
-        }
-      ],
-      "lowestVotesAgainstCareer_min10Votes": [
-        {
-          "playerSlug": "jacques",
-          "name": "Jacques",
-          "totalVotesAgainst": 2,
-          "seasons": 2
         },
         {
-          "playerSlug": "macarthur",
-          "name": "MacArthur",
-          "totalVotesAgainst": 20,
-          "seasons": 2
+          "name": "Scott",
+          "playerSlug": "scott",
+          "total": 4
         },
         {
-          "playerSlug": "emma",
-          "name": "Emma",
-          "totalVotesAgainst": 6,
-          "seasons": 3
+          "name": "Sky",
+          "playerSlug": "sky",
+          "total": 3
         },
         {
-          "playerSlug": "lindsay",
-          "name": "Lindsay",
-          "totalVotesAgainst": 8,
-          "seasons": 3
+          "name": "Ryan",
+          "playerSlug": "ryan",
+          "total": 2
         },
         {
-          "playerSlug": "mickey",
-          "name": "Mickey",
-          "totalVotesAgainst": 8,
-          "seasons": 2
+          "name": "Cameron",
+          "playerSlug": "cameron",
+          "total": 1
         },
         {
-          "playerSlug": "duncan",
-          "name": "Duncan",
-          "totalVotesAgainst": 17,
-          "seasons": 3
-        },
-        {
-          "playerSlug": "alejandro",
-          "name": "Alejandro",
-          "totalVotesAgainst": 25,
-          "seasons": 3
+          "name": "Amy",
+          "playerSlug": "amy",
+          "total": 0
         }
       ]
     },
@@ -1846,6 +1726,7 @@
     "season6": "Introduced Blood vs Water with 20 players paired as loved ones. Jacques' ice-cold strategic mastery won (7-1-0) through low-target positioning, 4 immunity wins, and surgical vote control. He forced Kitty's idol burn at merge and engineered the Final 4 tie that eliminated Kelly. The season proved that precision and endgame control can triumph over pure social bonds.",
     "season7": "Fans vs Favorites brought back 10 returnees to face 10 superfans. MacArthur's power-social hybrid game won (6-2-1) by operating as the merge switchboard - holding an idol, building cross-faction bonds, and managing public disagreements to preserve agency. Cody's redemption arc (19th → 2nd) showed massive growth. The season demonstrated that balanced menace and loyalty, combined with decisive FTC performance, can defeat both challenge dominance and pure social gameplay.",
     "message": "The message across 8 seasons: Different strategies can win — social mastery (Lindsay S1), survival story (Duncan S2), perfect game (Emma S3), strategic evolution (Alejandro S4), clean positioning (Mickey S5), ice-cold control (Jacques S6), power-social balance (MacArthur S7), and shield management + physical dominance (Alejandro/Cameron S8). But adaptability, jury respect, and understanding when to strike remain essential. S8 proved that even a 'Civilian' with no prior wins can control the entire post-merge — and that the greatest legends still needed each other to survive.",
-    "season8": "Heroes vs. Villains vs. Civilians brought 18 returnees into the franchise's most complex tribal format. The Civilian bloc (Gerry/Jen/Sanders) dominated the merge through Unbreakable Relationships, controlling 75% of post-merge votes and systematically eliminating legends Owen, Leshawna, and MacArthur. Alejandro's physical resurrection (4 individual immunities) combined with Cameron's tactical survival produced a historic 4-4 jury deadlock — the franchise's first Dual Win. Sanders played the most decorated non-winner game in history (2 idols found, 2 played, final immunity). Gerry's psychological destruction of Heather — forcing her to quit while holding the Super Idol — stands as the most stunning advantage waste in Total Drama history."
+    "season8": "Heroes vs. Villains vs. Civilians brought 18 returnees into the franchise's most complex tribal format. The Civilian bloc (Gerry/Jen/Sanders) dominated the merge through Unbreakable Relationships, controlling 75% of post-merge votes and systematically eliminating legends Owen, Leshawna, and MacArthur. Alejandro's physical resurrection (4 individual immunities) combined with Cameron's tactical survival produced a historic 4-4 jury deadlock — the franchise's first Dual Win. Sanders played the most decorated non-winner game in history (2 idols found, 2 played, final immunity). Gerry's psychological destruction of Heather — forcing her to quit while holding the Super Idol — stands as the most stunning advantage waste in Total Drama history.",
+    "season9": "18 newbies fight for the title of King of Power — 18 players, won by Bowie over Bowie & Millie & Chase. Sets the franchise gold standard for advantage mastery at the merge. Proves that ruthless timing plus airtight social insurance can still earn a largely respectful jury win."
   }
 }

@@ -10,9 +10,9 @@
     "playerSlug": "bowie",
     "vote": "5-3-0",
     "runnerUp": "Millie & Chase",
-    "keyStats": "Winner 5-3-0 vote; 1 individual immunity; 2 votes received; stole 1 idol; executed Inheritance to acquire Knowledge is Power and an Extra Vote; won F4 fire-making.",
-    "strategy": "Controlled resource flow while staying insulated by larger shields, then weaponized advantages at precise inflection points (Inheritance, KIP theft, late extra vote). Broke the Priya stronghold, won when it mattered, and argued his ruthlessness as optimized gameplay to a split jury.",
-    "legacy": "Sets the franchise standard for advantage monopoly without burning social capital. A top-tier mastermind win defined by timing, theft, and endgame execution."
+    "keyStats": "Final vote 5-3-0; 1 individual immunity; 1 idol possessed (stolen); Inheritance play captured KIP and Extra Vote; votes received: 2.",
+    "strategy": "He centralized relationships, surrounded himself with larger shields, and monopolized advantages. The Inheritance Heist and later KIP theft flipped power cycles, while precise timing (Priya blindside, F6 immunity, F4 fire) closed the door on rivals.",
+    "legacy": "Sets the franchise gold standard for advantage mastery and public thefts. His win redefines how openly ruthless you can be and still earn respect votes."
   },
   "finalists": [
     {
@@ -40,31 +40,35 @@
       "name": "Bowie",
       "playerSlug": "bowie",
       "phase": "Winner",
-      "notes": "5 Votes To Win / Adv. Master",
+      "notes": "5-3-0 jury win; Advantage Master; stole Julia's idol; won F4 fire-making",
       "strategicRank": 10,
-      "story": "He arrives as a social charmer and quickly becomes the web’s center, bonding with Yellow while earning an unbreakable tie to Damien. At the merge he turns a silent night into a heist, using Inheritance to scoop up Knowledge is Power and an Extra Vote. He later robs Julia’s idol in full view of the jury, then saves his own skin with clutch immunity and a fire-making win over Damien. When the Priya train threatens to run the table, he breaks an unbreakable and topples the season’s biggest shield. By the finale he sells the jury on ruthless resource control as strategy, not spite. Bowie doesn’t just play with advantages; he monopolizes them.",
-      "gameplayStyle": "Advantage hoarder, social spider",
+      "story": "He arrives with a smile and a scalpel — a social architect who makes everyone feel like the plan was their idea. Pre-merge he steadies a chaotic Yellow, bonding the shield (Ripper) to protect the sword (himself) while keeping Chase close. At the merge he executes the Inheritance Heist, converting Emmah’s stolen power surge into his own arsenal, then later robs Julia’s idol in public. When the Priya machine looks unstoppable, he cuts his ‘unbreakable’ to seize control of the endgame. He wins immunity when he most needs safety, muzzles opponents with votes and advantages, and outlasts his closest ally in fire. By Final Tribal he sells ruthless precision as inevitability — and the jury buys it.",
+      "gameplayStyle": "Advantage hoarder, velvet knife",
       "keyMoments": [
-        "Finds Inheritance and banks KIP + Extra Vote (Ep8)",
-        "Declines to play power as Wayne leaves, preserving threat equity (Ep10)",
-        "Steals Julia’s idol with KIP (Ep11)",
-        "Backstabs Priya at 7 (Ep12)",
-        "Wins F6 immunity and the F4 fire-making vs. Damien (Ep13 & Ep15)"
+        "Forms Yellow duo with Chase and bonds with Ripper as shield (Ep3)",
+        "Plays Inheritance and pockets Knowledge is Power + Extra Vote (Ep8)",
+        "Holds fire as Wayne is idoled/extra-voted out (Ep10)",
+        "Steals Julia’s idol with KIP at Tribal (Ep11)",
+        "Betrays Priya at 7 to flip the game (Ep12)",
+        "Wins F6 immunity and uses Extra Vote; unanimous Julia boot (Ep13)",
+        "Plays idol at F5; survives double-flush, pushes Emmah out (Ep14)",
+        "Beats Damien at F4 fire to reach Final 3 (Ep15)"
       ],
-      "challengeWins": 0,
       "immunityWins": 1,
       "rewardWins": 0,
+      "challengeWins": 1,
       "idolsFound": 1,
       "votesReceived": 2,
       "alliances": [
         "Chase",
         "Damien",
-        "Emmah",
-        "Axel"
+        "Ripper",
+        "Axel",
+        "Millie"
       ],
       "rivalries": [
-        "Julia",
-        "Priya"
+        "Priya",
+        "Julia"
       ]
     },
     {
@@ -72,29 +76,34 @@
       "name": "Millie",
       "playerSlug": "millie",
       "phase": "Finalist",
-      "notes": "3 Votes To Win / Unbreakable Partner",
+      "notes": "3 jury votes; Unbreakable partner to Priya then Julia; found Red idol",
       "strategicRank": 8,
-      "story": "The quiet author starts as Red’s steady pair of hands, finding the Beware and converting it into the tribe idol. Through swaps and chaos she becomes the bridge—tight with Priya, later unbreakable with Julia, and always close to Damien. She saves Priya with a perfectly timed idol at the Wayne vote and then, grieving Priya’s blindside, steadies her game with clutch immunity at seven. As the last woman standing, she outlasts louder players by choosing positioning over fireworks. In the end, the jury sees her endurance and key shields as worthy of votes—even if she falls short to Bowie’s fireworks.",
-      "gameplayStyle": "Quiet author with knives",
+      "story": "She starts as the quiet author on Red, cataloging chaos while bonding with Hicks and Brightly. When her Beware quest pays off, she converts it into the Red Idol and later fires it perfectly on Priya to repel a merge strike. As bigger egos collide, she becomes the bridge — first to Priya, then improbably to Julia — surviving as the last woman standing. Her Revolver immunity win and steady social stitching keep her name off the parchment when storms hit. At the end she rides composure, loyalty, and key reads to the Final 3. The jury sees the conscience of the season, rewarding resilience over flash.",
+      "gameplayStyle": "Quiet author, surgical shields",
       "keyMoments": [
-        "Converts Red Beware into idol (Ep4)",
-        "Votes Brightly at Red’s purge (Ep6)",
-        "Plays idol on Priya to thwart 5-vote strike (Ep10)",
+        "Finds and completes Red Beware to get the idol (Ep4)",
+        "Stands apart on Red while Hicks blindsides Caleb (Ep4)",
+        "Reluctantly votes Brightly as regime falls (Ep6)",
+        "Wins Chimney Sweeps and banks a vote with Priya (Ep9)",
+        "Plays Red Idol on Priya to negate a 5-vote blindside (Ep10)",
         "Wins Revolver immunity at 7 (Ep12)",
-        "Rides to Final 3 after F4 fire (Ep15)"
+        "Stays on unanimous Julia boot, keeps options (Ep13)",
+        "Reaches Final 3 via Chase’s pick (Ep15)"
       ],
-      "challengeWins": 0,
       "immunityWins": 1,
       "rewardWins": 0,
+      "challengeWins": 1,
       "idolsFound": 1,
       "votesReceived": 1,
       "alliances": [
         "Priya",
+        "Julia",
         "Damien",
-        "Julia"
+        "Bowie",
+        "Chase"
       ],
       "rivalries": [
-        "Brightly"
+        "Emmah"
       ]
     },
     {
@@ -102,28 +111,31 @@
       "name": "Chase",
       "playerSlug": "chase",
       "phase": "Finalist",
-      "notes": "0 Votes To Win / 3 Cons. Wins",
+      "notes": "0 jury votes; late surge with 3 straight wins; used Vote Stopper",
       "strategicRank": 6,
-      "story": "He begins as Bowie’s moldable partner on a starving Yellow, even burning a Shot in the Dark in panic. The swap and merge unlock a late-game gear—he idols out danger at Red, wins immunity at five, and snags a Vote Stopper at seven. Partnering with Bowie, he helps topple Priya and then racks up the final immunity to choose his ideal Final 3. He sends Damien to fire, then lets Bowie and Damien duel for the last seat. An impressive closer, but the jury sees him as a finisher, not a driver, and his resume can’t outshine Bowie’s control.",
-      "gameplayStyle": "Late-game challenge closer",
+      "story": "Initially the loyal soldier to Bowie on a starving Yellow, he flips on Nichelle and learns the value of sharp edges. A pre-merge idol saves his swap life, then at merge he rides the middle while collecting a secret Vote Stopper. Down the stretch he turns into a closer — advantage win into obstacle-course immunity into the wild Triple Dog Dare final necklace. He silences Julia with the Vote Stopper and chooses Millie for the end, forcing Bowie and Damien to settle it by fire. His case is grit over guile; the jury respects the run but wants the driver’s seat, not the passenger. Still, his final week is the season’s best sprint.",
+      "gameplayStyle": "Closer with late turbo",
       "keyMoments": [
-        "Burns SID on Yellow (Ep2)",
-        "Plays Yellow idol at swap to crack Hicks/Brightly (Ep5)",
-        "Wins F5 immunity and feasts with Bowie (Ep14)",
-        "Silences Julia with Vote Stopper; overkill extra votes land (Ep13)",
-        "Chooses Millie for Final 3; sends Bowie vs. Damien to fire (Ep15)"
+        "Joins Bowie to blindside Nichelle (Ep3)",
+        "Plays Yellow idol at swap to force Hicks boot (Ep5)",
+        "Helps finish Brightly’s fall (Ep6)",
+        "Wins F5 obstacle-course immunity and shares feast with Bowie (Ep14)",
+        "Uses Vote Stopper to muzzle Julia (Ep13)",
+        "Wins chaotic F4 Triple Dog Dare, choosing Millie (Ep15)"
       ],
-      "challengeWins": 3,
       "immunityWins": 2,
-      "rewardWins": 0,
+      "rewardWins": 1,
+      "challengeWins": 3,
       "idolsFound": 1,
       "votesReceived": 7,
       "alliances": [
         "Bowie",
-        "Emmah"
+        "Emmah",
+        "Damien",
+        "Millie"
       ],
       "rivalries": [
-        "Nichelle",
+        "Julia",
         "Ripper"
       ]
     },
@@ -132,28 +144,31 @@
       "name": "Damien",
       "playerSlug": "damien",
       "phase": "Juror",
-      "notes": "Lost Fire-Making / 5 Total Wins",
+      "notes": "Lost F4 fire-making to Bowie; 5 total wins; found Campers idol",
       "strategicRank": 8,
-      "story": "Blue’s calm engine arrives with social gravity, pairing tightly with Priya and later Bowie to form the season’s strategic core. He stacks challenge wins while quietly collecting the merge idol, shielding his side when the numbers wobble. Even after Priya’s blindside, he threads loyalty and pragmatism—saving Bowie at five and keeping options open with Millie. At six he wins sanctuary and rallies a trio without overexposing himself. His story ends in the fire-making arena, a heartbreak that cements him as the merge’s moral compass who just missed the final pitch.",
-      "gameplayStyle": "Loyal workhorse strategist",
+      "story": "From Blue’s steady core to merge power, he becomes the tribe’s beating heart — winning, feeding, and calming. He bonds unbreakably with Priya and Bowie, then finds the last merge idol to anchor the fortress. When Priya falls, he swallows the betrayal and re-centers, winning sanctuary and aligning with Millie and Chase to squeeze Julia. At five he and Bowie both flash idols, executing a surgical Emmah ouster. Fire decides what votes could not; he falls to Bowie’s spark in a final duel between titans. The jury sees the season’s conscience and a near-perfect social game singed by a single flame.",
+      "gameplayStyle": "Shielded strategist with heart",
       "keyMoments": [
-        "Wins multiple challenges to anchor Blue (pre-merge)",
+        "Wins early duels and leads Blue to streaks (Pre-merge)",
+        "Strong-bonds with Priya; forms merge Misfit counter (Ep8-9)",
         "Finds Campers idol (Ep11)",
-        "Targets Wayne and survives the KIP chaos (Ep10)",
-        "Shares sanctuary with Millie and Chase (Ep13)",
-        "Falls to Bowie in F4 fire (Ep15)"
+        "Wins Horror immunity (Ep10) and later Sanctuary reward (Ep13)",
+        "Double-idol Armageddon with Bowie to boot Emmah (Ep14)",
+        "Loses fire-making to Bowie at F4 (Ep15)"
       ],
-      "challengeWins": 5,
       "immunityWins": 1,
-      "rewardWins": 0,
+      "rewardWins": 4,
+      "challengeWins": 5,
       "idolsFound": 1,
       "votesReceived": 2,
       "alliances": [
         "Priya",
         "Bowie",
-        "Millie"
+        "Millie",
+        "Chase"
       ],
       "rivalries": [
+        "Axel",
         "Emmah"
       ]
     },
@@ -162,30 +177,33 @@
       "name": "Emmah",
       "playerSlug": "emmah",
       "phase": "Juror",
-      "notes": "2-2*-1 Vote / Advantage Robbery",
+      "notes": "2-2*-1 vote at F5; public Knowledge is Power robberies",
       "strategicRank": 7,
-      "story": "Written off early as Red’s volatile piece, she flips the script at the merge with a public raid—using Knowledge is Power to strip Wayne’s extra vote and double-tap Ripper. She rides the Misfit coalition, then links with Bowie when the board reshuffles, carving a chaotic lane that always keeps her relevant. When Priya looks invincible, she helps pull the trigger on the queen. But at five, the idol armageddon leaves her unarmored while Bowie and Damien cancel the board, and the swing becomes the sacrifice. She exits as the season’s most audacious thief—loud, fearless, unforgettable.",
-      "gameplayStyle": "Public thief and chaos",
+      "story": "Written off as a pawn on Red, she survives Hicks and Brightly’s power struggle and repays a save with fierce loyalty. The swap drops her into Yellow chaos, and at the merge she flips the season — publicly ripping Wayne’s Extra Vote with Knowledge is Power and helping topple Ripper. Her aggressiveness paints a target, but she wins immunity and keeps swinging, later siding with Bowie to cut Priya. In the Idol Armageddon she’s the only unarmored piece on the board and is cleanly removed. The jury calls her a villain; the season remembers her as the spark that proved power can be stolen in daylight.",
+      "gameplayStyle": "Outright thief, chaos driver",
       "keyMoments": [
-        "Saved by Hicks over Caleb (Ep4)",
-        "Uses Knowledge is Power on Wayne (Ep8)",
-        "Double-votes Ripper out (Ep8)",
-        "Helps blindside Priya (Ep12)",
-        "Falls in double-idol crossfire at five (Ep14)"
+        "Saved by Hicks as Caleb goes (Ep4)",
+        "Finds Knowledge is Power (Ep7)",
+        "Steals Wayne’s Extra Vote at merge Tribal (Ep8)",
+        "Votes twice to finish Ripper (Ep8)",
+        "Wins Teetering on the Edge immunity (Ep11)",
+        "Targets Priya with Bowie/Chase (Ep12)",
+        "Falls in double-idol crossfire at F5 (Ep14)"
       ],
-      "challengeWins": 2,
       "immunityWins": 1,
-      "rewardWins": 0,
+      "rewardWins": 1,
+      "challengeWins": 2,
       "idolsFound": 0,
       "votesReceived": 4,
       "alliances": [
         "Bowie",
         "Chase",
-        "Julia"
+        "Hicks"
       ],
       "rivalries": [
         "Wayne",
-        "Axel"
+        "Julia",
+        "Millie"
       ]
     },
     {
@@ -193,26 +211,26 @@
       "name": "Julia",
       "playerSlug": "julia",
       "phase": "Juror",
-      "notes": "6 Vote / Ice Queen Strategist",
-      "strategicRank": 8,
-      "story": "The Ice Queen weaponizes hostility into leverage on Blue, then takes scalps with precision—most notably luring Raj into a 2-1 blindside while he clutched an idol. At merge she nests inside the Misfit six and helps dismantle the muscle by pushing Ripper. Her rivalry with MK defines the midgame, but Bowie’s KIP theft strips her armor at eight, forcing her to skate with venom and charm. She survives a round as chaos fodder, only to be silenced by Chase’s Vote Stopper and swept out 6-0. Love her or loathe her, she dictates tempo until the muzzle drops.",
-      "gameplayStyle": "Ice queen puppeteer",
+      "notes": "6 votes received; Ice Queen strategist; held and lost Yellow idol to KIP",
+      "strategicRank": 9,
+      "story": "Blue’s polarizing queenpin weaponizes scorn, turning loathing into leverage. She masterminds Raj’s blindside with an idol in his pocket, then walks into the merge as the season’s sharpest knife. Her war with MK simmers until Bowie strips her idol on live TV, yet she still directs shots and survives as a lightning rod. When power concentrates, the island finally unites to silence her in a 6-0 shutout after Chase mutes her vote. She exits seething, but her fingerprints are on the season’s messiest moves — the villain the story needed to sharpen everyone else.",
+      "gameplayStyle": "Ice Queen assassin",
       "keyMoments": [
-        "Manipulates Raj into idol-in-pocket exit (Ep7)",
-        "Pushes Ripper boot with Misfits (Ep8)",
-        "Clashes with MK throughout merge",
-        "Idol stolen by Bowie with KIP (Ep11)",
-        "Voted out 6-0 after Vote Stopper (Ep13)"
+        "Pushes Raj’s 2-1 idol-in-pocket blindside (Ep7)",
+        "Joins Misfit six to target Ripper (Ep8)",
+        "Keeps idol…until Bowie steals it with KIP (Ep11)",
+        "Defects to vote Priya, burning bridges (Ep10-12)",
+        "Silenced by Vote Stopper; unanimous boot (Ep13)"
       ],
-      "challengeWins": 2,
       "immunityWins": 0,
-      "rewardWins": 0,
+      "rewardWins": 2,
+      "challengeWins": 2,
       "idolsFound": 1,
       "votesReceived": 10,
       "alliances": [
         "Emmah",
-        "Wayne",
-        "Millie"
+        "Millie",
+        "Wayne"
       ],
       "rivalries": [
         "MK",
@@ -225,19 +243,21 @@
       "name": "Priya",
       "playerSlug": "priya",
       "phase": "Juror",
-      "notes": "4-2-1 Vote / Banked Vote Strategist",
+      "notes": "4-2-1 blindside; banked vote to gain extra vote; core merge force",
       "strategicRank": 9,
-      "story": "She starts as Blue’s brains, bonding tightly with Damien and later Millie to form the game’s safest core. She banks her vote in the split episode and dictates who lives while preserving future leverage, then pairs with Millie’s idol to vaporize a five-vote strike on her name. For weeks she is the final boss everyone fears to face. Bowie’s cold read of the endgame finally snaps an unbreakable and, despite social insulation, she never sees the 4-2-1 coming. Even in defeat, her defenses and bonds define the standard everyone else measures against.",
-      "gameplayStyle": "Calculated captain with shields",
+      "story": "She forges Blue’s brain trust, then at the swap stitches cross-tribal bonds until she and Millie become an unbreakable axis. At the merge she snags a pre-challenge key, wins split immunity, and banks her vote into raw leverage. When Bowie, Emmah, and Julia mount the season’s boldest strike, Millie’s idol and her own extra vote brick-wall the attack to bounce Wayne. Comfort becomes a blind spot; at seven she’s so central that Bowie must betray her to win. As she walks out stunned, the beach loses its metronome — and the endgame loses its favorite.",
+      "gameplayStyle": "Social engineer, vote banker",
       "keyMoments": [
-        "Forms Blue core with Damien (pre-merge)",
-        "Banks vote in split (Ep9)",
-        "Extra Vote + Millie idol protect her vs. 5 votes (Ep10)",
-        "Falls in 4-2-1 blindside (Ep12)"
+        "Forms Blue Alliance #1 with Damien (Ep4)",
+        "Anchors New Red 5 after swap (Ep5)",
+        "Finds key and takes merge challenge spot (Ep8)",
+        "Wins Chimney Sweeps immunity, banks vote (Ep9)",
+        "Millie idols her; Priya plays Extra Vote to 5-0 Wayne (Ep10)",
+        "Blindsided 4-2-1 at seven (Ep12)"
       ],
-      "challengeWins": 0,
-      "immunityWins": 0,
+      "immunityWins": 1,
       "rewardWins": 0,
+      "challengeWins": 1,
       "idolsFound": 0,
       "votesReceived": 9,
       "alliances": [
@@ -246,7 +266,8 @@
         "Bowie"
       ],
       "rivalries": [
-        "Bowie"
+        "Bowie",
+        "Emmah"
       ]
     },
     {
@@ -254,23 +275,25 @@
       "name": "MK",
       "playerSlug": "mk",
       "phase": "Juror",
-      "notes": "4-2 Vote / Stealth Scientist",
-      "strategicRank": 6,
-      "story": "On Blue she butts heads with Julia but earns respect as a quiet problem-solver. Post-swap she links with Damien as the stealth half of a brain trust that keeps options alive. She wins the horror immunity, forcing power players to pick sides as numbers tighten. Bowie spares Julia to keep a lightning rod, and MK—out of shields and votes after a failed Shot in the Dark—takes the hit. The undercurrent of logic in a season of spectacle, she almost threads the needle.",
-      "gameplayStyle": "Stealthy scientist observer",
+      "notes": "4-2 vote; stealth scientist; won Female in Horror",
+      "strategicRank": 7,
+      "story": "Blue’s prickly analyst fights with Julia but keeps winning when it counts. She’s a brainy grinder, bonding with Damien and peeking through cracks as bigger egos draw fire. At merge she helps dismantle Ripper, then grabs the Horror necklace to force the majority to show its cards. Bowie strips Julia’s idol and chooses to keep the spectacle, sending MK out as the subtler threat. She leaves as the one who never grabbed the spotlight — and that’s precisely why the spotlight turned on her.",
+      "gameplayStyle": "Stealth analyst, low profile",
       "keyMoments": [
-        "Fights with Julia but survives (pre-merge)",
-        "Bonds with Damien (Ep6)",
-        "Wins horror immunity (Ep10)",
-        "Goes out 4-2 after KIP drama (Ep11)"
+        "Major fights with Julia define Blue (Ep3, Ep7)",
+        "Strong bond with Damien (Ep6)",
+        "Votes to finish Ripper (Ep8)",
+        "Wins Horror immunity (Ep10)",
+        "Becomes target over Julia; 4-2 boot (Ep11)"
       ],
-      "challengeWins": 4,
       "immunityWins": 1,
-      "rewardWins": 0,
+      "rewardWins": 3,
+      "challengeWins": 4,
       "idolsFound": 0,
       "votesReceived": 4,
       "alliances": [
-        "Damien"
+        "Damien",
+        "Bowie"
       ],
       "rivalries": [
         "Julia"
@@ -281,23 +304,25 @@
       "name": "Wayne",
       "playerSlug": "wayne",
       "phase": "Juror",
-      "notes": "5-5* Vote / Extra Vote Victim",
+      "notes": "5-5 vote with Extra Vote play; lost after idol saved Priya",
       "strategicRank": 5,
-      "story": "Half of the season’s heart, he storms early challenges with Raj and pockets both a stolen and extra vote at a summit. Raj’s blindside cracks him, and Emmah’s public theft of his extra vote at merge leaves him exposed. He claws on with Julia’s bond but becomes the perfect consensus boot when Millie shields Priya with an idol and Priya fires her Extra Vote. The hero dies by the spreadsheet, undone by numbers, not nerve. His fall fuels the jury’s hunger for blood at the end.",
-      "gameplayStyle": "Big-hearted physical anchor",
+      "story": "Half of the Hockey Bros, he starts as Blue’s heartbeat and returns from the Summit wielding both a stolen vote and an extra. Raj’s death shatters him, and Emmah’s public theft humiliates him at the merge. He scrapes forward on grit and relationships, aligning with Julia while Bowie hesitates to unleash his arsenal. When the strike on Priya finally comes, Millie’s idol and Priya’s extra vote erase him in a 5-0 shutout. He exits a bruised hero — unlucky, outgunned, but never out of fight.",
+      "gameplayStyle": "Blunt-force social brawler",
       "keyMoments": [
-        "Wins summit powers; steals Ripper’s vote (Ep2)",
-        "Loses Raj and spirals (Ep7)",
-        "Targeted while Priya protected by idol (Ep10)"
+        "Summit win: steals Ripper’s vote and gains Extra Vote (Ep2)",
+        "Survives Emmah’s KIP theft and SID miss (Ep8)",
+        "Bonds with Julia post-Raj (Ep9-10)",
+        "Eliminated 5-0 after Millie idols Priya and Priya double-votes (Ep10)"
       ],
-      "challengeWins": 0,
       "immunityWins": 0,
-      "rewardWins": 0,
+      "rewardWins": 1,
+      "challengeWins": 1,
       "idolsFound": 0,
       "votesReceived": 9,
       "alliances": [
         "Raj",
-        "Julia"
+        "Julia",
+        "Bowie"
       ],
       "rivalries": [
         "Emmah"
@@ -308,23 +333,23 @@
       "name": "Axel",
       "playerSlug": "axel",
       "phase": "Juror",
-      "notes": "4-1 Vote / Physical Threat",
-      "strategicRank": 5,
-      "story": "Yellow’s drill sergeant tries to impose order on chaos and ends up steering early votes with Bowie. The merge necklace paints a target he can’t hide, and without Ripper his physical profile spikes. In the split tribal, Misfits flip the switch and send her home 4-1 while she fires a lone shot at Wayne. A threat in motion without the social belt to hold it up, Axel exits as the last titan before the knives come out.",
-      "gameplayStyle": "Survivalist enforcer tank",
+      "notes": "4-1 split-group loss; early Yellow backbone; won first merge immunity",
+      "strategicRank": 6,
+      "story": "Yellow’s taskmaster tries to tame a camp on tilt, yoking with Bowie while surviving the Ripper/Scary Girl civil war. She helps stabilize through starvation and later nabs the first merge necklace to force a different target. But in a split vote without numbers, her lone-wolf posture becomes the tell that sinks her. It’s a strong season of muscle without a late-game net, and the last stand of the Yellow titan ends on slippery footholds.",
+      "gameplayStyle": "Disciplinarian bruiser",
       "keyMoments": [
-        "Guides early Yellow after idol chaos (Ep2-3)",
+        "Leads starving Yellow through chaos (Ep1-3)",
+        "Bonds with Bowie; keeps Ripper as shield (Ep3)",
         "Wins first merge immunity (Ep8)",
-        "Booted in split 4-1 (Ep9)"
+        "Falls 4-1 in Chimney Sweeps split (Ep9)"
       ],
-      "challengeWins": 2,
       "immunityWins": 1,
-      "rewardWins": 0,
+      "rewardWins": 1,
+      "challengeWins": 2,
       "idolsFound": 0,
       "votesReceived": 5,
       "alliances": [
         "Bowie",
-        "Chase",
         "Ripper"
       ],
       "rivalries": [
@@ -337,29 +362,31 @@
       "name": "Ripper",
       "playerSlug": "ripper",
       "phase": "Juror",
-      "notes": "5-3-2 Vote / The Cockroach",
-      "strategicRank": 4,
-      "story": "He arrives loud, abrasive, and somehow immortal—surviving an idol blowup, a rock draw, and a Shot in the Dark fiasco. Post-swap he joins the Red rebellion to decapitate Hicks and Brightly, leaning into chaos as cover. At merge he becomes the muscle target once Axel snags immunity, and Emmah’s stolen vote seals his fate. The man who wouldn’t die finally meets the math. He leaves as the season’s most durable shield.",
-      "gameplayStyle": "Chaos shield who lingers",
+      "notes": "5-3-2 at merge; cockroach arc; found Yellow idol Day 4",
+      "strategicRank": 5,
+      "story": "From hour one he’s Yellow’s chaos engine — abrasive, loud, and somehow always still there. He idols himself through a 0-0 deadlock, survives a rock draw that kills Scary Girl, and watches Bowie weaponize him as a shield. After the swap he helps decapitate Hicks and completes the purge of Brightly. The merge coalition finally identifies the common enemy and snuffs him under a hail of votes supercharged by Emmah’s stolen ballot. He goes out swinging, the cockroach who made every vote an adventure.",
+      "gameplayStyle": "Chaos shield, survivalist",
       "keyMoments": [
-        "Plays idol to null 4 votes (Ep2)",
-        "Survives rocks and SID chaos (Ep2-3)",
-        "Helps vote out Hicks and Brightly (Ep5-6)",
-        "Eliminated 5-3-2 after KIP double-vote (Ep8)"
+        "Plays Yellow idol to erase all votes (Ep2)",
+        "Rock-draw saves him as Scary Girl leaves (Ep2)",
+        "Helps idol/revote to boot Hicks (Ep5)",
+        "Votes Brightly out (Ep6)",
+        "Falls 5-3-2 to Misfit six (Ep8)"
       ],
-      "challengeWins": 0,
       "immunityWins": 0,
-      "rewardWins": 0,
+      "rewardWins": 1,
+      "challengeWins": 1,
       "idolsFound": 1,
       "votesReceived": 10,
       "alliances": [
+        "Bowie",
         "Axel",
-        "Bowie"
+        "Priya"
       ],
       "rivalries": [
-        "Scary Girl",
         "Nichelle",
-        "Chase"
+        "Chase",
+        "Brightly"
       ]
     },
     {
@@ -367,21 +394,23 @@
       "name": "Raj",
       "playerSlug": "raj",
       "phase": "Pre-Juror",
-      "notes": "2-1 Vote / Blindsided with Idol",
-      "strategicRank": 4,
-      "story": "Wayne’s other half plays with heart and humor, picking up a Beware that turns into real power. The three-tribe twist strands him with Julia, who spins a tale he wants to believe—Axel is the target, idols can wait. He pockets safety for the merge and pays for it with his life in a 2-1. A tragic, humane exit that becomes the season’s emotional hinge.",
-      "gameplayStyle": "Social powerhouse with idol",
+      "notes": "Blindsided 2-1 with idol in pocket; Beware completed",
+      "strategicRank": 5,
+      "story": "The heart of Blue and Wayne’s other half, he hunts a Beware and finishes the quest, dreaming of a merge reunion. A late swap strands him with Julia and Emmah, where Julia plays therapist and executioner at once. He trusts the wrong promise, pockets his idol for Wayne, and gets cut in a clean 2-1. It’s the season’s tear-jerker — a social lion felled not by force, but by finesse.",
+      "gameplayStyle": "Big-hearted brawler",
       "keyMoments": [
-        "Grabs Blue Beware (pre-merge)",
-        "Blindsided 2-1 with idol in pocket (Ep7)"
+        "Finds Blue Beware; completes quest (Ep7)",
+        "Eats loss on Yellow in Disgustingness (Ep7)",
+        "Blindsided 2-1 by Julia/Emmah with idol unplayed (Ep7)"
       ],
-      "challengeWins": 0,
       "immunityWins": 0,
-      "rewardWins": 0,
+      "rewardWins": 1,
+      "challengeWins": 1,
       "idolsFound": 1,
       "votesReceived": 2,
       "alliances": [
-        "Wayne"
+        "Wayne",
+        "Bowie"
       ],
       "rivalries": [
         "Julia"
@@ -392,18 +421,19 @@
       "name": "Brightly",
       "playerSlug": "brightly",
       "phase": "Pre-Juror",
-      "notes": "4-1 Vote / The Isolated Chemist",
-      "strategicRank": 6,
-      "story": "She starts as the daycare chemist, pairing with Hicks to set Red’s tone and boot Zee on pure camp logic. When the game reshuffles, her lab explodes—Hicks is cut by a rebel five, and she becomes the obvious next reaction to neutralize. With no shield and a reputation for management, she’s voted out 4-1 despite fighting to re-mix the tribe. A breakout character whose equations couldn’t account for hunger and idols.",
-      "gameplayStyle": "Daycare chemist manager",
+      "notes": "4-1 boot; isolated after Hicks’ fall; fan favorite",
+      "strategicRank": 7,
+      "story": "On Red she’s the Daycare Chemist, soothing tempers while quietly setting targets. She and Hicks run the lab until his independent streak saves Emmah and detonates their control. The swap strands her against a unified New Red, and the anti-Brightly rebellion completes the purge. She exits early but leaves a season quotebook and a blueprint for crowd control under chaos.",
+      "gameplayStyle": "Daycare chemist conductor",
       "keyMoments": [
-        "Drives Zee boot with Hicks (Ep1)",
-        "Clashes with Emmah; targets her (Ep4)",
-        "Left isolated; voted out 4-1 (Ep6)"
+        "Leads Zee vote with Hicks (Ep1)",
+        "Targets Emmah as tribe frays (Ep4)",
+        "Loses power when Hicks blindsides Caleb (Ep4)",
+        "New Red finishes her 4-1 (Ep6)"
       ],
-      "challengeWins": 0,
       "immunityWins": 0,
       "rewardWins": 0,
+      "challengeWins": 0,
       "idolsFound": 0,
       "votesReceived": 7,
       "alliances": [
@@ -411,8 +441,8 @@
         "Emmah"
       ],
       "rivalries": [
-        "Millie",
-        "Ripper"
+        "Ripper",
+        "Axel"
       ]
     },
     {
@@ -420,18 +450,18 @@
       "name": "Hicks",
       "playerSlug": "hicks",
       "phase": "Pre-Juror",
-      "notes": "4-1 Revote / The Decapitated King",
-      "strategicRank": 7,
-      "story": "The Southern observer reads everything and says little, shepherding Red through early turbulence and cutting Caleb over loyalty. The swap puts him across from a united Yellow bloc with Priya as the bridge, and Chase’s idol erases his leverage. On the revote, the outsiders finish the job and separate him from Brightly. A leader without a quorum, he exits as the move everyone else needed to make.",
-      "gameplayStyle": "Southern observer kingmaker",
+      "notes": "4-1 revote; decapitated king after swap",
+      "strategicRank": 8,
+      "story": "The Southern Observer watches everything, then proves it by saving Emmah over Caleb and seizing command. The reshuffle flips the script; his ‘unbreakable’ with Brightly is surrounded by a Yellow bloc and Priya’s bridge. Chase’s idol erases the strike, the room splits, and the revote guillotines the king. He leaves respected, betrayed by numbers, not by nerves.",
+      "gameplayStyle": "EQ sniper, soft power",
       "keyMoments": [
-        "Boots Zee on day one read (Ep1)",
-        "Saves Emmah over Caleb (Ep4)",
-        "Falls on a revote after Chase’s idol (Ep5)"
+        "Orchestrates Zee boot with Brightly (Ep1)",
+        "Saves Emmah; blindsides Caleb (Ep4)",
+        "Falls to idol-sparked 4-1 revote (Ep5)"
       ],
-      "challengeWins": 0,
       "immunityWins": 0,
       "rewardWins": 0,
+      "challengeWins": 0,
       "idolsFound": 0,
       "votesReceived": 6,
       "alliances": [
@@ -439,7 +469,8 @@
         "Millie"
       ],
       "rivalries": [
-        "Caleb"
+        "Caleb",
+        "Axel"
       ]
     },
     {
@@ -447,20 +478,24 @@
       "name": "Caleb",
       "playerSlug": "caleb",
       "phase": "Pre-Juror",
-      "notes": "2-1 Vote / Strategic Pivot Victim",
-      "strategicRank": 3,
-      "story": "A physical pillar on Red, he finds himself on the wrong end of Hicks’ calculus when paranoia spikes. He gambles on a Shot in the Dark to dodge Brightly’s push but misses, and Hicks flips to keep Emmah as a pawn. In a tribe torn between EQ and chemistry, he becomes the casualty of subtle power. His threat level never meets its moment.",
-      "gameplayStyle": "Athletic pawn misread",
+      "notes": "2-1 after Millie’s SID safe; physical threat trimmed",
+      "strategicRank": 5,
+      "story": "Red’s workhorse powers challenges while side-eying Hicks’ velvet rule. When fear factor turns to fear itself, he takes a SID gamble and loses as Hicks chooses to keep a volatile but loyal Emmah. It’s a precision cut — a threat removed before merge math gets hard. He leaves with fire still in his hands and a rueful nod to the man who saw further.",
+      "gameplayStyle": "Challenge mule, blunt force",
       "keyMoments": [
-        "Targeted after Red stumbles (Ep4)",
-        "Plays SID but goes 2-1 (Ep4)"
+        "Helps Red dominate early (Ep3)",
+        "Becomes target after Emmah meltdown (Ep4)",
+        "Plays SID (Not Safe) and is voted out 2-1 (Ep4)"
       ],
-      "challengeWins": 0,
       "immunityWins": 0,
       "rewardWins": 0,
+      "challengeWins": 0,
       "idolsFound": 0,
       "votesReceived": 3,
-      "alliances": [],
+      "alliances": [
+        "Brightly",
+        "Millie"
+      ],
       "rivalries": [
         "Hicks"
       ]
@@ -470,24 +505,27 @@
       "name": "Nichelle",
       "playerSlug": "nichelle",
       "phase": "Pre-Juror",
-      "notes": "3 Vote / SID Gamble Victim",
-      "strategicRank": 3,
-      "story": "Yellow’s heart collides with its chaos as she feuds with Ripper while trusting a growing bond with Chase. The tribe’s fear triggers a historic double Shot in the Dark, stripping agency from both sides. Bowie and Axel seize the window and write her name as the cleanest consensus. She leaves without a vote, the right move for them and a bitter pill for her.",
-      "gameplayStyle": "Beloved but exposed",
+      "notes": "3-0 after double SID with Ripper; early Yellow heart cut",
+      "strategicRank": 4,
+      "story": "Yellow’s social center bonds with Chase while clashing with Ripper as the tribe starves. After a rock-draw miracle she and Ripper both shoot the SID, trusting luck over people. Bowie corrals the only three votes that night, and her torch goes out clean. It’s the first sign that charm won’t beat cold calculus this season.",
+      "gameplayStyle": "Social heart, low leverage",
       "keyMoments": [
         "Major fights with Ripper (Ep2-3)",
-        "Plays SID; loses vote; blindsided 3-0 (Ep3)"
+        "Survives rock draw (Ep2)",
+        "Plays SID (Not Safe); loses 3-0 (Ep3)"
       ],
-      "challengeWins": 0,
       "immunityWins": 0,
       "rewardWins": 0,
+      "challengeWins": 0,
       "idolsFound": 0,
       "votesReceived": 7,
       "alliances": [
-        "Chase"
+        "Chase",
+        "Axel"
       ],
       "rivalries": [
-        "Ripper"
+        "Ripper",
+        "Bowie"
       ]
     },
     {
@@ -495,20 +533,23 @@
       "name": "Scary Girl",
       "playerSlug": "scary-girl",
       "phase": "Pre-Juror",
-      "notes": "Rocks Drawn / Chaos Outcast",
-      "strategicRank": 4,
-      "story": "She thrives in mayhem until Yellow’s powder keg detonates into a 0-0 vote. With Ripper idoled and Chase shooting in the dark, she refuses to compromise in the revote standoff. The rocks choose her, a zero-vote elimination that cements her as the season’s most chaotic pre-merge story. She doesn’t get outplayed; she gets outlucked.",
-      "gameplayStyle": "Rock-draw chaos agent",
+      "notes": "Rocks drawn at 0-0; pure chaos casualty",
+      "strategicRank": 5,
+      "story": "Yellow’s chaos gremlin turns every hour into a dare, feuding with Ripper while Axel tries to keep order. At the season’s wildest council she refuses to blink, and fate answers with a rock. She leaves without a single valid vote against her — a victim of stubborn symmetry. The game gets quieter, but never quite as fun.",
+      "gameplayStyle": "Agent of entropy",
       "keyMoments": [
-        "Yellow’s 0-0 idol wipeout (Ep2)",
-        "Eliminated by rocks with no votes (Ep2)"
+        "Major fight with Ripper (Ep1-2)",
+        "0-0 Idol wipeout leads to rocks (Ep2)",
+        "Eliminated by rock draw (Ep2)"
       ],
-      "challengeWins": 0,
       "immunityWins": 0,
       "rewardWins": 0,
+      "challengeWins": 0,
       "idolsFound": 0,
       "votesReceived": 0,
-      "alliances": [],
+      "alliances": [
+        "Bowie"
+      ],
       "rivalries": [
         "Ripper"
       ]
@@ -518,23 +559,22 @@
       "name": "Zee",
       "playerSlug": "zee",
       "phase": "Pre-Juror",
-      "notes": "5-1 Vote / Challenge Liability",
-      "strategicRank": 2,
-      "story": "Red’s opening loss exposes his laid-back camp game, and Hicks and Brightly seize on urgency as the deciding metric. With fire gone and coordination shaky, they paint his chill as fatal to the tribe’s survival. The vote is straightforward and clinical, a chemistry cleanup on Day 3. Zee leaves as the season’s first warning: vibes don’t beat flint.",
-      "gameplayStyle": "Chill liability under fire",
+      "notes": "5-1 first boot; Red judged his chill a liability",
+      "strategicRank": 3,
+      "story": "He vibes through Day 1 while Red scrambles, and that’s the problem. Hicks reads the lack of urgency, Brightly frames the chemistry, and the tribe chooses sweat over sunshine. He fires a lone vote at Caleb and fades out first — the cost of staying too cool when the flint goes out.",
+      "gameplayStyle": "Laid-back drifter",
       "keyMoments": [
-        "Only tribe to lose; becomes target (Ep1)",
-        "Voted out 5-1 (Ep1)"
+        "Underperforms camp urgency (Ep1)",
+        "Voted out 5-1 by Red (Ep1)"
       ],
-      "challengeWins": 0,
       "immunityWins": 0,
       "rewardWins": 0,
+      "challengeWins": 0,
       "idolsFound": 0,
       "votesReceived": 5,
       "alliances": [],
       "rivalries": [
-        "Hicks",
-        "Brightly"
+        "Hicks"
       ]
     }
   ],
@@ -872,36 +912,6 @@
       "eliminatedSlug": "wayne",
       "votes": [
         {
-          "voter": "Damien",
-          "voterSlug": "damien",
-          "target": "Wayne",
-          "targetSlug": "wayne"
-        },
-        {
-          "voter": "MK",
-          "voterSlug": "mk",
-          "target": "Wayne",
-          "targetSlug": "wayne"
-        },
-        {
-          "voter": "Millie",
-          "voterSlug": "millie",
-          "target": "Wayne",
-          "targetSlug": "wayne"
-        },
-        {
-          "voter": "Priya",
-          "voterSlug": "priya",
-          "target": "Wayne",
-          "targetSlug": "wayne"
-        },
-        {
-          "voter": "Priya",
-          "voterSlug": "priya",
-          "target": "Wayne",
-          "targetSlug": "wayne"
-        },
-        {
           "voter": "Bowie",
           "voterSlug": "bowie",
           "target": "Priya",
@@ -930,6 +940,36 @@
           "voterSlug": "wayne",
           "target": "Priya",
           "targetSlug": "priya"
+        },
+        {
+          "voter": "Damien",
+          "voterSlug": "damien",
+          "target": "Wayne",
+          "targetSlug": "wayne"
+        },
+        {
+          "voter": "MK",
+          "voterSlug": "mk",
+          "target": "Wayne",
+          "targetSlug": "wayne"
+        },
+        {
+          "voter": "Millie",
+          "voterSlug": "millie",
+          "target": "Wayne",
+          "targetSlug": "wayne"
+        },
+        {
+          "voter": "Priya",
+          "voterSlug": "priya",
+          "target": "Wayne",
+          "targetSlug": "wayne"
+        },
+        {
+          "voter": "Priya",
+          "voterSlug": "priya",
+          "target": "Wayne",
+          "targetSlug": "wayne"
         }
       ]
     },
@@ -1171,13 +1211,223 @@
     ]
   },
   "awards": {
+    "bestStrategic": {
+      "name": "Bowie",
+      "playerSlug": "bowie",
+      "description": "Engineered the Inheritance Heist, stole Julia’s idol with KIP, and timed Priya’s blindside to seize endgame control."
+    },
+    "bestSocial": {
+      "name": "Damien",
+      "playerSlug": "damien",
+      "description": "Bridged factions from Blue to merge, maintained multiple unbreakables, and softened blowback after Priya’s exit."
+    },
+    "bestPhysical": {
+      "name": "Chase",
+      "playerSlug": "chase",
+      "wins": 5,
+      "description": "Closed the season with back-to-back must-win immunities and dominated the F4 Triple Dog Dare."
+    },
+    "mostClutch": {
+      "name": "Bowie",
+      "playerSlug": "bowie",
+      "description": "Wins F6 immunity to block a blindside and then defeats Damien at F4 fire-making to reach the FTC."
+    },
+    "mostLoyal": {
+      "name": "Damien",
+      "playerSlug": "damien",
+      "description": "Refused to turn on Priya until the torch, and protected Millie through to the finale sprint."
+    },
+    "bestUnderdog": {
+      "name": "Wayne",
+      "playerSlug": "wayne",
+      "description": "After Raj’s blindside and a public power theft, he still scraped to the jury on grit and bonds."
+    },
+    "biggestVillain": {
+      "name": "Emmah",
+      "playerSlug": "emmah",
+      "description": "Publicly robbed Wayne’s vote and helped engineer showy takedowns, embracing chaos as strategy."
+    },
+    "mostChaotic": {
+      "name": "Scary Girl",
+      "playerSlug": "scary-girl",
+      "description": "Sparked the season’s rock draw and turned early Yellow into a social minefield."
+    },
+    "quietestThreat": {
+      "name": "Millie",
+      "playerSlug": "millie",
+      "description": "Low-volume navigator who found an idol, made the clutch save on Priya, and outlasted to second."
+    },
+    "seasonMVP": {
+      "name": "Bowie",
+      "playerSlug": "bowie",
+      "description": "Central hub, advantage monopolist, and the closer who converted advantages into power and votes."
+    },
+    "mostTragic": {
+      "name": "Raj",
+      "playerSlug": "raj",
+      "description": "Eliminated with a playable idol while trying to save it for Wayne’s merge protection."
+    },
+    "mostUnlucky": {
+      "name": "Wayne",
+      "playerSlug": "wayne",
+      "description": "Lost Raj, then his vote to KIP, then his lifeline to an idol-and-extra-vote crossfire."
+    },
+    "ironPerson": {
+      "name": "Damien",
+      "playerSlug": "damien",
+      "description": "Carried challenges, hauled rewards, and still had fuel left to battle at fire-making distance."
+    },
+    "biggestMeltdown": {
+      "name": "MK",
+      "playerSlug": "mk",
+      "episode": 5,
+      "description": "Sleep-deprived collapse during Awake-A-Thon foreshadowed her teetering social footing."
+    },
+    "playerOfSeason": {
+      "gold": {
+        "name": "Bowie",
+        "playerSlug": "bowie",
+        "description": "Defined the merge through thefts, betrayals, and perfectly timed protection."
+      },
+      "silver": {
+        "name": "Priya",
+        "playerSlug": "priya",
+        "description": "The season’s golden center — banked votes, social shields, and near-inevitable finalist until the blindside."
+      }
+    },
+    "heroOfSeason": {
+      "gold": {
+        "name": "Priya",
+        "playerSlug": "priya",
+        "description": "Played clean, defended allies, and still smiled while the knives came out."
+      },
+      "silver": {
+        "name": "Damien",
+        "playerSlug": "damien",
+        "description": "Kept spirits and structures intact; the camp’s moral compass."
+      }
+    },
+    "villainOfSeason": {
+      "gold": {
+        "name": "Julia",
+        "playerSlug": "julia",
+        "description": "Manipulated Raj into pocketing an idol and weaponized scorn as strategy."
+      },
+      "silver": {
+        "name": "Emmah",
+        "playerSlug": "emmah",
+        "description": "Stage-lit thefts and taunts that drew all eyes to the chaos she caused."
+      }
+    },
+    "compBeast": {
+      "gold": {
+        "name": "Damien",
+        "playerSlug": "damien",
+        "description": "Led the season with five total wins and clutch endgame stamina.",
+        "wins": 5
+      },
+      "silver": {
+        "name": "MK",
+        "playerSlug": "mk",
+        "description": "Four wins including a merge immunity that flipped the target board."
+      }
+    },
+    "socialQueenKing": {
+      "gold": {
+        "name": "Damien",
+        "playerSlug": "damien",
+        "description": "Threaded bonds across tribes and phases without overexposure."
+      },
+      "silver": {
+        "name": "Millie",
+        "playerSlug": "millie",
+        "description": "Trusted by rivals and allies alike; a bridge when bridges were burning."
+      }
+    },
+    "masterStrategist": {
+      "gold": {
+        "name": "Bowie",
+        "playerSlug": "bowie",
+        "description": "Knew when to hoard, when to strike, and whom to betray to unlock the path."
+      },
+      "silver": {
+        "name": "Julia",
+        "playerSlug": "julia",
+        "description": "Ran traps pre-merge and read fear better than most read maps."
+      }
+    },
+    "mostBrutalExit": {
+      "gold": {
+        "name": "Wayne",
+        "playerSlug": "wayne",
+        "description": "Eliminated 5-0 as Millie’s idol and Priya’s extra vote deleted a full blindside."
+      },
+      "silver": {
+        "name": "Raj",
+        "playerSlug": "raj",
+        "description": "Walked out with an idol, believing he’d need it at reunion with Wayne."
+      }
+    },
+    "advantageKing": {
+      "gold": {
+        "name": "Bowie",
+        "playerSlug": "bowie",
+        "description": "Inheritance + KIP + Extra Vote + stolen idol; the full toolkit used to maximum leverage."
+      },
+      "silver": {
+        "name": "Emmah",
+        "playerSlug": "emmah",
+        "description": "Knowledge is Power high-wire act that reset the merge hierarchy."
+      }
+    },
+    "mostRobbedPlayer": {
+      "gold": {
+        "name": "Priya",
+        "playerSlug": "priya",
+        "description": "Too good to be allowed at seven; betrayed precisely because she was the favorite."
+      }
+    },
+    "ftcGame": {
+      "gold": {
+        "name": "Bowie",
+        "playerSlug": "bowie",
+        "description": "Owned the ruthlessness, framed betrayals as inevitabilities, and answered heat with receipts."
+      }
+    },
+    "mostRobbedFinalist": {
+      "gold": {
+        "name": "Millie",
+        "playerSlug": "millie",
+        "description": "Three votes but a stronger claim than perceived; her saves and social threading were undervalued."
+      }
+    },
+    "messiestFeud": {
+      "players": [
+        "Julia",
+        "MK"
+      ],
+      "description": "From Blue beach brawls to merge potshots, their hate-fueled arms race shaped multiple votes."
+    },
+    "biggestBetrayal": {
+      "betrayer": "Bowie",
+      "betrayed": "Priya",
+      "episode": 12,
+      "description": "Shattered an ‘unbreakable’ to remove the season’s final boss and seize the driver’s seat."
+    },
+    "secondBiggestBetrayal": {
+      "betrayer": "Julia",
+      "betrayed": "Raj",
+      "episode": 7,
+      "description": "Convinced him he was safe so he’d save his idol for Wayne — then cut him 2-1."
+    },
+    "legacyMoment": {
+      "name": "The Inheritance Heist",
+      "episode": 8,
+      "description": "Bowie absorbs every advantage played at merge Tribal, walking out with KIP and an Extra Vote and flipping the season’s power map."
+    },
     "fanFavorite": {
       "name": "Brightly",
       "playerSlug": "brightly"
-    },
-    "bestStrategic": {
-      "name": "Bowie",
-      "playerSlug": "bowie"
     },
     "mostChallengeWins": {
       "name": "Damien",
@@ -1185,9 +1435,76 @@
       "detail": "5 total"
     }
   },
-  "seasonNarrative": "Yellow’s chaos, Red’s chemistry, and Blue’s precision collide in a merge flooded with advantages—idols, extra votes, Knowledge is Power, and the Inheritance heist that hands Bowie the keys. The midgame becomes an advantage cold war: Priya’s fortress and Millie’s idol repel a coup, Julia springs traps, and Emmah robs in public, before Bowie and Chase shatter Priya at seven. From there Bowie wins when it matters—necklace at six, fire at four—and closes a 5-3-0 verdict that crowns advantage control over brute force.",
+  "seasonNarrative": "A starving Yellow, a stable Red, and a cruising Blue collide into a merge ruled by idols and thefts. Bowie’s Inheritance Heist and later KIP robbery flip the board, while Priya/Millie’s fortress counters with perfect defense until Bowie’s betrayal shatters it. The endgame becomes a duel of fire and philosophy — ruthless advantage play versus unbreakable bonds — and Bowie’s spark wins the million.",
   "theme": "18 newbies fight for the title of King of Power",
   "status": "Complete",
   "castPhotoPath": "assets/cast/s9-cast.png",
-  "emoji": "🪬"
+  "emoji": "🪬",
+  "episodes": [
+    {
+      "episode": 1,
+      "summary": "=== META ===\nSEASON: Total Drama 9: Land of Power\nEPISODE 1 - Snakes and Shifting Gears\n=== CAST (ALL) ===\nAxel\nBowie\nBrightly\nCaleb\nChase\nDamien\nEmmah\nHicks\nJulia\nMK\nMillie\nNichelle\nPriya\nRaj\nRipper\nScary Girl\nWayne\nZee\n=== TRIBES (ACTIVE) ===\n#Yellow Tribe\nAxel\nBowie\nChase\nNichelle\nRipper\nScary Girl\n#Blue Tribe\nDamien\nJulia\nMK\nPriya\nRaj\nWayne\n#Red Tribe\nBrightly\nCaleb\nEmmah\nHicks\nMillie\nZee\n=== ELIMINATED ===\nZee\n\nPRE-CHALLENGE STATUS\nThe Power Landscape\nThe castaways arrived at the \"Land of Power,\" and the social hierarchy began to form before the first crate was moved. On the Blue Tribe, the hockey duo of Wayne and Raj displayed an Unbreakable Relationship, their shared energy providing an immediate, impenetrable core. On the Yellow Tribe, the atmosphere was instantly toxic; Ripper spent his first hour alienating Nichelle and Scary Girl, whose unsettling presence already had the \"Alpha\" of the tribe looking for an exit strategy.\nThe Red Tribe presented a more cerebral front. Hicks, the unhurried Southerner, stood back and watched the chaos with a dry, knowing gaze. Beside him, Brightly was already treating the tribe like a chemistry experiment. She noted Emmah, Caleb, and Millie as stable elements, while identifying Zee as a volatile compound that might cause an unwanted reaction later.\n\nREWARD CHALLENGE: Cube Bert-Sea\nChallenge: Retrieving heavy crates through an obstacle course or from the sea to build an elevated platform.\nWinner: Red Tribe\nReward: Pot, machete, and flint.\nStrategic Narrative: The Hunger Gap\nThe Red Tribe functioned with surprising efficiency, securing their survival essentials immediately. This left Yellow and Blue to scramble in the \"Fight for Supplies.\" Damien (Blue) proved his worth by out-navigating Nichelle (Yellow) in the coconut puzzle gauntlet. Damien’s victory gave the Blue Tribe fire and tools, while the Yellow Tribe—already fractured by Ripper’s ego—was left to face the first night with no supplies, no fire, and no morale.\n\nANALYZE BEFORE IMMUNITY\nThe supply disparity created two very different camps. Yellow was a disaster; Axel tried to instill military discipline, but Scary Girl’s eccentricities and Ripper's complaints made for a volatile mix. On the Blue Tribe, the victory high was short-lived as Priya and Julia began circling one another, both recognizing the other as a high-tier threat. On the Red Tribe, the focus turned to long-term utility. While they had fire, Hicks quietly observed that Zee’s relaxed attitude was starting to slow down the camp's productivity.\n\nIMMUNITY CHALLENGE: Baby Snakes\nChallenge: Pairs retrieve giant snakes from the jungle to find a ball for a table maze.\nWinners: Blue Tribe & Yellow Tribe\nSent to Tribal: Red Tribe\nStrategic meaning:\nThe Blue Tribe cruised to victory, fueled by the Wayne/Raj synergy. The Yellow Tribe, driven by the sheer desperation of being supply-less, pushed themselves to a second-place finish. The Red Tribe faltered at the snake maze. Despite having the best camp conditions, their lack of coordination led to a loss that cost them their flint—stripping away their early advantage in a single night.\n\nPOST-CHALLENGE STATUS\n1. The Red Tribe Hierarchy: The Daycare Logic\nBack at camp, the \"Chemistry\" began. Brightly applied her daycare experience to the tribal tantrum, calming the group while quietly pointing the finger. She joined Hicks and Emmah to form Red Tribe Alliance #1.\nThe Logic: Hicks, using his sharp emotional intelligence, noted that Zee wasn't bothered by the loss of the flint. To Hicks, that was a dangerous lack of urgency.\nThe Strike: Brightly agreed, viewing Zee as a variable that didn't fit her \"clean\" logic for the tribe's survival. They pulled in Emmah to secure a voting majority.\n2. Chaos on the Other Beaches\nOn the Yellow Tribe, the lack of fire led to a Major Fight between Scary Girl and Ripper. Ripper's abrasive nature met Scary Girl's chaotic energy, leaving the tribe in a state of social paralysis. On the Blue Tribe, MK and Raj had a minor spat that spiraled into a Major Meltdown for Raj, proving that even the most unbreakable bonds have friction points.\n\nTRIBAL COUNCIL / VOTE ANALYSIS\nThe Vote: 5-1 (Zee Eliminated)\nThe Red Tribe surrendered their flint before the vote. Despite the Shot in the Dark being available, the group relied on social consensus rather than gambling.\nVotes for Zee (5): Brightly, Caleb, Emmah, Hicks, Millie.\nVotes for Caleb (1): Zee.\nThe Real Read:\nHicks didn't need a complex strategic breakdown; he simply told the tribe that Zee's \"chill\" was a liability they couldn't afford without fire. Brightly facilitated the conversation, ensuring the \"reaction\" stayed focused on Zee and away from the stronger physical threats like Caleb. Millie and Caleb, sensing the direction of the wind, joined the majority to avoid being on the wrong side of the first count.\n\nWHY THIS VOTE HAPPENED\nThe Chemistry of Survival:\nZee was eliminated because he was the most \"unstable\" element in a tribe that just lost its lifeline (flint). Hicks saw through the \"vibes\" to realize Zee wouldn't help them win the next challenge. Brightly treated the vote like a classroom management task—removing the distraction so the rest of the \"kids\" could focus on the work. Zee’s lone vote for Caleb suggests he was the only one who didn't see the Hicks/Brightly alliance forming right in front of him.\n\nELIMINATED\nZee\n\nSTRATEGIC ANALYSIS\n1. The Southern Observer\nHicks is the most dangerous player on Red. By \"impressing\" the team with his calm, he has become the unofficial leader without anyone feeling threatened by his power. He notices everything and schemed nothing, yet he got exactly what he wanted.\n2. Brightly’s Experiment\nBrightly is the architect in the background. Her ability to handle people like a daycare class means she can manipulate the \"tantrums\" of others to her advantage. Her alliance with Hicks is a perfect blend of high IQ and high EQ.\n3. The Yellow Powder Keg\nYellow has no flint and two people (Ripper and Scary Girl) who actively want to destroy each other. If they don't win the next challenge, the vote will be an ugly choice between an abrasive bully and an unpredictable wildcard.\n4. Blue Tribe’s Hidden Fissures\nMK and Julia are both playing for themselves. While the hockey bros (Wayne/Raj) provide the numbers, the girls are the ones who will eventually decide which bro is the \"leader\" and which is the \"shield.\"\n\nNEXT EPISODE QUESTIONS\nRed's Fire: Can Hicks and Brightly lead the Red Tribe to win their flint back?\nScary Girl vs. Ripper: Does the Yellow Tribe finally pick a side in the camp's biggest war?\nThe Beware Advantage: With the advantages hidden on all three beaches, who will be the first to risk their vote?\nMK's Move: Does MK use Raj’s recent meltdown to paint a target on the hockey duo?\nEmmah's Position: Does she stick with the Hicks/Brightly core, or is she just a third wheel in their \"Chemistry\" lab?"
+    },
+    {
+      "episode": 2,
+      "summary": "=== META ===\nSEASON: Total Drama 9: Land of Power\nEPISODE 2 - \"Mona Lisas and Mad Ladders\"\n=== CAST (ALL) ===\nAxel\nBowie\nBrightly\nCaleb\nChase\nDamien\nEmmah\nHicks\nJulia\nMK\nMillie\nNichelle\nPriya\nRaj\nRipper\nScary Girl\nWayne\nZee\n=== TRIBES (ACTIVE) ===\n#Yellow Tribe\nAxel\nBowie\nChase\nNichelle\nRipper\n#Blue Tribe\nDamien\nJulia\nMK\nPriya\nRaj\nWayne\n#Red Tribe\nBrightly\nCaleb\nEmmah\nHicks\nMillie\n=== ELIMINATED ===\nZee\nScary Girl\n\nPRE-CHALLENGE STATUS\nThe Hunger of the Yellow Tribe\nThe Yellow Tribe woke up on Day 4 to the sound of stomach growls and the sight of a still-smoldering resentment between Ripper and Scary Girl. The camp was a social minefield; Ripper’s discovery of the Yellow Tribe Beware Advantage didn't bring him comfort—it brought the weight of a quest. He needed to lose to gain, but he was already losing the social game. Across the water, Raj (Blue) secured his own Beware Advantage, but the power seemed to intoxicate him. He developed a Strong Dislike for MK, a friction point that threatened the \"Hockey Bro\" peace.\nThe Red Chemical Spill\nOn the Red Tribe, the \"Chemistry Lab\" of Hicks and Brightly suffered a significant reaction. Emmah, who had been a stable element in the core alliance, officially walked away. This fracture left Hicks (Loyalty 7) and Brightly (Loyalty 5) scrambling to recalibrate. Caleb and Millie engaged in a \"Small Fight,\" adding to the instability of a tribe that was still recovering from the psychological blow of losing their flint in the first round.\n\nTHE JOURNEY: The Summit of Shadows\nRepresentatives: Ripper (Yellow), Wayne (Blue), Emma (Red).\nThe three tribe delegates met at a private summit where the thin veneer of \"adventure\" quickly wore off.\nThe Conflict: Ripper’s abrasive entitlement immediately clashed with Emma’s high-strung focus. Wayne, fueled by a desire to protect Raj, outplayed them both in a grueling coconut-toss endurance challenge.\nThe Power of the Captain: Wayne didn't just win; he chose violence. He stole Ripper’s vote and claimed an Extra Vote for himself. Ripper returned to the Yellow beach not just hated, but effectively silenced.\n\nANALYZE BEFORE IMMUNITY\nThe Yellow Tribe's desperation was palpable. Nichelle and Ripper engaged in a \"Major Fight\" that effectively drew a line in the sand: it was him or her. Scary Girl, sensing the chaotic energy she usually thrives in was turning against her, suffered a Major Meltdown. On Blue, Julia followed suit with her own emotional collapse, proving that even the tribes with fire were melting under the pressure of the Land of Power.\n\nIMMUNITY CHALLENGE: Mona Lisas and Mad Ladders\nChallenge: Pairs retrieve giant snakes, find hidden balls, and navigate a snake-shaped table maze.\nWinners: Red Tribe & Blue Tribe\nSent to Tribal: Yellow Tribe\nStrategic Narrative:\nThe Red Tribe achieved the impossible: redemption. They maneuvered the maze with surgical precision, earning back their flint and a fishing kit. Blue remained the juggernaut of the season, further insulating the Wayne/Raj/Damien core. The Yellow Tribe faltered at the maze, a direct result of the toxic communication between Ripper and the rest of his team. They were forced to surrender their flint—a symbolic loss for a tribe that was already mentally extinguished.\n\nPOST-CHALLENGE STATUS\n1. Ripper’s Desperate Hunt\nWith no vote and a tribe full of enemies, Ripper followed his Beware Advantage clue into the heart of the jungle. In a feat of pure survivalist willpower, he found the idol just hours before Tribal Council. He knew he was the target; the \"Major Fight\" with Nichelle had made his elimination the tribe’s only priority.\n2. The Chase Paranoia\nChase, seeing the volatile nature of the camp, didn't trust the consensus. Despite bonding with Nichelle, he decided to burn his vote on a Shot in the Dark. It was a move that suggested he feared a blindside more than he trusted his allies.\n\nTRIBAL COUNCIL / VOTE ANALYSIS\nThe Vote: The 0-0 Deadlock\nYellow’s Tribal Council was a masterpiece of tactical chaos.\nThe Idol Revelation: Ripper played his Hidden Immunity Idol.\nThe Erasure: 4 votes (Axel, Bowie, Nichelle, Scary Girl) were cast against Ripper. All were negated.\nThe Failed Gamble: Chase sacrificed his vote for a Shot in the Dark that revealed a \"Not Safe\" scroll.\nThe Tie-Break Cycle:\nWith 0 valid votes, the tribe was forced into a revote between the vulnerable members: Chase, Nichelle, Axel, Bowie, and Scary Girl.\nRevote #1: A 2-2 tie between Chase (Axel/Nichelle) and Nichelle (Bowie/Scary Girl).\nRevote #2: The stalemate held. Neither side was willing to blink. Under the rules of the Land of Power, Axel, Bowie, and Scary Girl were given a final chance to reach a consensus to save themselves from the rocks. They refused.\n\nWHY THIS VOTE HAPPENED\nThe Mathematical Sacrifice:\nScary Girl is gone because of a refusal to compromise. In a game of social chemistry, she was the \"impurity\" that the system eventually purged. Axel and Nichelle were determined to protect Chase (who had bonded with Nichelle), while Bowie and Scary Girl were locked into an \"Anti-Nichelle\" crusade. Because the social bonds weren't strong enough to force a flip, the game transitioned from strategy to fate.\n\nELIMINATED\nScary Girl\nReason label: \"The Victim of the Rocks.\" She was eliminated without a single vote ever being cast against her name in the initial count. She died by the sword of her own stubbornness during the rock draw.\n\nSTRATEGIC ANALYSIS\n1. The Daycare Chemist\nBrightly's influence on the Red Tribe remains invisible but absolute. She has successfully recalibrated the tribe of five after Emmah’s departure. Her ability to handle the \"tantrums\" of her teammates like a daycare class ensures that Hicks remains her shield while she controls the mixture.\n2. The Silent Observer\nHicks's emotional intelligence was his greatest asset this episode. He \"impressed\" the team by staying calm while Emmah fractured the alliance. He is the only person on Red who everyone feels safe with, a position that allows him to filter all information through his unhurried Southern logic.\n3. Wayne’s Iron Fist\nWayne has emerged as the most powerful individual in the game. He holds an Extra Vote and a Stolen Vote. His decision to silence Ripper at the summit was a declaration of war. Even though the idol negated his influence this round, Wayne proved he is willing to play ruthlessly to protect the Blue Tribe’s interests.\n4. The Yellow Aftermath\nYellow is a broken tribe. Ripper is safe but idol-less and hated. Nichelle and Chase survived the rocks, but their trust in Axel and Bowie is shattered. The \"Anti-Ripper\" coalition has been decapitated by the loss of Scary Girl, leaving the tribe in a state of strategic paralysis.\n\nNEXT EPISODE QUESTIONS\nThe Idol Rebirth: Does a new idol appear on the Yellow beach now that Ripper has burned his?\nRaj's Beware Adventure: With Raj holding the Blue Beware Advantage, how long can he hide his quest from the observant MK?\nEmmah’s Flip: Why did Emmah walk away from Hicks and Brightly, and does she attempt to form a \"Red Rebellion\" with Caleb and Millie?\nBowie’s Recovery: As the most seasoned strategist on Yellow, how does Bowie pivot after losing his rock-draw partner, Scary Girl?\nJulia’s Mask: After her major meltdown, does Julia reclaim her \"Mean Girl\" throne, or is her social game permanently stained?"
+    },
+    {
+      "episode": 3,
+      "summary": "=== META ===\nSEASON: Total Drama 9: Land of Power\nEPISODE 3 - \"Dodgeball Deadlocks\"\n=== CAST (ALL) ===\nAxel\nBowie\nBrightly\nCaleb\nChase\nDamien\nEmmah\nHicks\nJulia\nMK\nMillie\nNichelle\nPriya\nRaj\nRipper\nScary Girl\nWayne\nZee\n=== TRIBES (ACTIVE) ===\n#Yellow Tribe\nAxel\nBowie\nChase\nNichelle\nRipper\n#Blue Tribe\nDamien\nJulia\nMK\nPriya\nRaj\nWayne\n#Red Tribe\nBrightly\nCaleb\nEmmah\nHicks\nMillie\n=== ELIMINATED ===\nZee\nScary Girl\nNichelle\n\nPRE-CHALLENGE STATUS\nThe Starving Yellows\nThe Yellow Tribe entered Day 7 in a state of absolute physical exhaustion. Having failed to secure flint since the start of the game, the group was surviving on sheer willpower and coconut water. Ripper and Nichelle reached a peak of Mutual Medium Dislike, their arguments echoing through the trees. Ripper, still riding the high of his successful idol play that sent Scary Girl home, was becoming increasingly insufferable, while Nichelle's morale was at an all-time low despite her Medium Bond with Chase.\nThe Blue Fissure\nOn the Blue beach, the \"Hockey Bro\" peace was officially shattered. Julia had successfully alienated the entire tribe, with MK, Raj, and Priya all sharing a Strong Dislike for her. However, Julia’s \"Mean Girl\" persona was proving to be a useful shield; while everyone hated her, they were also terrified of her strategic reach. MK and Julia's relationship, specifically, was a powder keg of mutual loathing.\nThe Red Consolidation\nThe Red Tribe, led by the \"Southern Observer\" Hicks and the \"Daycare Chemist\" Brightly, remained the most stable unit. Their Mutual Medium Bond acted as the tribe's anchor. Millie and Hicks also grew closer, further insulating the core alliance from Caleb, who remained the athletic outsider of the group.\n\nIMMUNITY CHALLENGE: Dodgeball\nThe Challenge: A brutal three-way dodgeball tournament. The goal is to reach 3 points; the last tribe left at the end loses their flint and their safety.\nWinners: Red Tribe & Blue Tribe\nSent to Tribal: Yellow Tribe\nStrategic Narrative:\nThe Red Tribe played with a military-like efficiency, with Caleb’s raw power and Hicks’s calm direction securing their safety early. The Blue Tribe followed suit, largely due to the athletic synergy of Wayne and Raj, despite the palpable tension between MK and Julia on the sidelines. The Yellow Tribe faltered once again. The lack of fire and nutrition finally caught up to them; they were sluggish, disjointed, and ultimately outmatched. They remain the only tribe in the \"Land of Power\" without the ability to make fire.\n\nANALYZE BEFORE TRIBAL\nThe atmosphere on the Yellow beach was one of quiet resignation. Bowie, recognizing that the tribe's physical and social structure was collapsing, began \"impressing\" his teammates with his work ethic and strategic clarity. In a move that shocked the camp, Bowie and Ripper found common ground, forming a Lasting Bond. Bowie realized that as long as Ripper was the \"shield\" of the tribe, Bowie himself was safe to maneuver.\nThe Formation of Yellow Alliance #1:\nBowie and Chase officially formed a duo (Strength 7). With Ripper acting as a chaotic free agent and Nichelle being viewed as the emotional heart of the tribe, Bowie decided to strike. His target: Nichelle.\n\nPOST-CHALLENGE STATUS\n1. Millie’s Gamble\nOn the Red Tribe, Millie found the Red Tribe Beware Advantage. Following in the footsteps of Ripper and Raj, she now holds a quest that requires her to lose an immunity challenge to gain an idol. Given Red's current dominance, this advantage is a ticking time bomb for her social game.\n2. The Blue War\nThe Blue Tribe’s camp life hit a new low when Julia and MK had a Major Fight. The two strategists stopped pretending to coexist, leading to a loud, public spat. Surprisingly, Julia began impressing the team afterward—likely by channeling her anger into camp chores or physical dominance—proving she isn't going down without a fight.\n3. The Nichelle Target\nBack on Yellow, Ripper and Nichelle were both targeting each other as \"challenge liabilities.\" Ripper, aware he had no idol and a target on his back, became increasingly paranoid, while Nichelle felt her bond with Chase would protect her. She didn't realize that Bowie had already flipped Chase into a new alliance.\n\nTRIBAL COUNCIL / VOTE ANALYSIS\nThe Vote: 3-0 (Nichelle Eliminated)\nThe Yellow Tribe entered their third Tribal Council in a state of total panic.\nThe Double Shot in the Dark: In a historic moment of desperation, both Ripper and Nichelle played their Shot in the Dark. Both felt they were the primary target and were unwilling to trust the social consensus.\nThe Result: Both scrolls revealed \"Not Safe.\" Both lost their ability to vote and were still eligible to be eliminated.\nThe Execution:\nWith Ripper and Nichelle silenced, the power rested solely with Bowie, Chase, and Axel.\nThe Vote: Nichelle.\nWHY THIS VOTE HAPPENED:\nBowie is the puppet master of the Yellow Tribe. He recognized that Nichelle was better liked than Ripper, making her a more dangerous threat in the long run. By convincing Chase to turn on his closest ally and pulling in Axel (who viewed Nichelle as a liability), Bowie successfully removed a social threat while keeping the \"hated\" Ripper as a shield for himself.\nNichelle’s decision to play her Shot in the Dark effectively sealed her fate; even if she had an inkling of the flip, she had no way to counter it.\n\nELIMINATED\nNichelle\nReason label: \"The Blindside Victim.\" She relied too heavily on a bond with Chase that was easily broken by Bowie’s superior social manipulation. She leaves after a chaotic Tribal where she gambled her vote and lost.\n\nSTRATEGIC ANALYSIS\n1. Bowie’s Reign Begins\nBowie has officially taken control of the Yellow Tribe. By forming a bond with the pariah (Ripper) and an alliance with the loyalist (Chase), he has created a structure where he is the undisputed decision-maker. He is playing a game of \"Shield and Sword,\" and it’s working perfectly.\n2. The Red \"Hicks/Brightly\" Wall\nHicks and Brightly continue to be the strongest duo in the game. Their ability to bond slightly even after the chaos of a challenge shows a level of social maturity the other tribes lack. However, Millie’s Beware Advantage introduces a new variable that might force Hicks to make his first difficult decision.\n3. Blue Tribe: The Julia Paradox\nJulia is the most hated person in the game, yet she is \"impressing\" her tribe. This is a classic \"Ice Queen\" strategy; she is making herself too valuable to vote out, despite the Major Fight with MK. If Blue ever loses, the choice between the abrasive Julia and the quiet, disliked MK will be the most dramatic moment of the pre-merge.\n4. Ripper’s Nine Lives\nRipper has now survived three Tribal Councils—one by an idol, one by a rock draw, and one by a Shot in the Dark gamble. He is the ultimate \"Cockroach\" of the Land of Power. While he has no allies, his survival is a testament to the chaotic nature of the Yellow Tribe.\n\nNEXT EPISODE QUESTIONS\nYellow's Fire: After 10 days, will the Yellow Tribe finally win their flint, or will they starve into a total collapse?\nMillie’s Choice: Will Millie intentionally throw a challenge to activate her Beware Advantage, or will she prioritize the Red Tribe’s win streak?\nThe Blue Implosion: After their major fight, do Julia or MK find the Blue Tribe Hidden Idol to use against each other?\nHicks’s EQ: Does Hicks notice the shift in Millie’s behavior as she hunts for her idol clue?\nChase’s Regret: Does Chase feel remorse for voting out Nichelle, or is he fully committed to Bowie’s \"Yellow Alliance #1\"?"
+    },
+    {
+      "episode": 4,
+      "summary": "=== META ===\nSEASON: Total Drama 9: Land of Power\nEPISODE 4 - \"Fear Factor\"\n=== CAST (ALL) ===\nAxel\nBowie\nBrightly\nCaleb\nChase\nDamien\nEmmah\nHicks\nJulia\nMK\nMillie\nPriya\nRaj\nRipper\nScary Girl\nWayne\n=== TRIBES (ACTIVE) ===\n#Yellow Tribe\nAxel\nBowie\nChase\nRipper\n#Blue Tribe\nDamien\nJulia\nMK\nPriya\nRaj\nWayne\n#Red Tribe\nBrightly\nCaleb\nEmmah\nHicks\nMillie\n=== ELIMINATED ===\nZee\nScary Girl\nNichelle\nCaleb\n\nPRE-CHALLENGE STATUS\nThe Red Fortress\nThe Red Tribe entered the day with a deceptive sense of stability. Hicks and Brightly reached a milestone in their partnership, solidifying an Unbreakable Relationship. Hicks, the unhurried observer, and Brightly, the daycare chemist, have successfully positioned themselves as the absolute axis of the tribe. However, the friction between Millie and Brightly remained a minor \"impurity\" in the camp's social chemistry.\nThe Blue Bond\nOn the Blue beach, the social hierarchy shifted as Damien and Priya formed a Strong Bond, leading to the birth of Blue Tribe Alliance #1. While the hockey duo of Wayne and Raj remains the physical core, the Damien/Priya pairing has created a secondary strategic engine. Meanwhile, the Extreme Hatred between MK and Julia continued to pollute the camp atmosphere.\n\nIMMUNITY CHALLENGE: Fear Factor\nThe Challenge: Each castaway faced a personalized psychological fear. Success earned a point for the tribe.\nDescription of the challenge: \"Face your worst fear, specific to each camper. each member to face his fear win 1 points (when there's inequality in teams member fear could be doubled to match the other teams example team A has 6 members team B has 4 facing your fears get you 1 points for team A but for team B 2 members will receive 2 points for facing their fear so their max is also 6 same with a team of 5 members 1 member will receive 2 points the teams with the most points win\"\n\n\nWinners: Blue Tribe & Yellow Tribe\nSent to Tribal: Red Tribe\nStrategic Narrative:\nThe Blue Tribe maintained their perfect record, securing a tarp and keeping their fire. The Yellow Tribe—now fueled by actual nutrition after finally earning their flint—showed a renewed spirit to take second place. The Red Tribe faltered under the psychological weight of the challenge and Millie secretly throwing it to match the condition of her advantage didn't help obviously. Their loss forced them to surrender their flint, plunging the most stable tribe back into the dark ages of the savanna.\n\nPOST-CHALLENGE STATUS\n1. Millie’s Treasure Hunt\nFacing the loss of flint and successfully reaching the condition, Millie threw herself into her Beware Advantage quest. She successfully deciphered the clues and converted the advantage into the Red Tribe Hidden Immunity Idol. She now holds a \"Nuclear\" option, though she entered the night deeply paranoid about her standing with Brightly.\n2. The Emmah Meltdown\nThe pressure of the loss and the looming Tribal Council caused Emmah to suffer a Major Meltdown. This emotional volatility was exactly what Brightly feared. Brightly, applying her daycare logic, decided that Emmah was a \"tantrum\" the tribe could no longer afford to manage. She designated Emmah as the target.\n3. Yellow’s Hidden Power\nOn the Yellow beach, Chase found the Yellow Tribe Hidden Immunity Idol. Though safe for now, the idol gives Chase a massive leverage point over Bowie, who has been running the tribe's narrative. Simultaneously, Yellow Tribe Alliance #2 formed between Axel, Bowie, and Ripper, effectively isolating Chase despite his new defensive weapon.\n\nTRIBAL COUNCIL / VOTE ANALYSIS\nThe Vote: The Double Shot in the Dark Chaos\nRed's Tribal Council was a disaster of paranoia and misread intentions.\nThe Gamble: Both Caleb and Millie played their Shot in the Dark.\nThe Result: Millie drew the Safe scroll, effectively becoming immune. Caleb drew the Not Safe scroll, leaving him vulnerable to the vote.\nThe Irony: Millie played her Shot in the Dark despite already having a real idol in her pocket, a sign of total lack of trust in her alliance.\nThe Execution:\nVotes for Caleb (2): Emmah, Hicks.\nVotes for Emmah (1): Brightly.\nWHY THIS VOTE HAPPENED:\nThis was the first major crack in the \"Unbreakable\" wall. Brightly stayed the course, voting for Emmah because she viewed her as a challenge liability and a social disaster. However, Hicks—the man who \"notices everything\"—made a executive decision.\nHicks realized that while Emmah is volatile, she is a loyal vote for him. Caleb, conversely, was a physical threat who shared a Mutual Dislike with Hicks. In a cold-blooded blindside, Hicks betrayed Brightly’s plan to save Emmah, sending Caleb home. Caleb, sensing the heat, played his Shot in the Dark specifically because he knew he was in trouble, but he failed to account for the fact that Hicks would use the chaos to protect a useful pawn like Emmah.\n\nELIMINATED\nCaleb\nReason label: \"The Collateral Damage of a Kingmaker.\" He was the victim of a failed Shot in the Dark and a strategic pivot by Hicks. Hicks chose emotional loyalty over Brightly’s \"Chemistry\" logic, proving that even an unbreakable duo can have two different agendas.\n\nSTRATEGIC ANALYSIS\n1. Hicks: The Southern Kingmaker\nHicks has officially stepped out of the shadows. By saving Emmah against Brightly’s wishes, he has demonstrated that he is the one holding the actual power on the Red Tribe. He prioritized his own \"Notice Everything\" logic over the daycare management style of his partner.\n2. Brightly’s First Failure\nFor the first time, Brightly’s chemistry resulted in an explosion she didn't predict. Her inability to keep Hicks on her target shows that her \"Unbreakable\" bond might be more one-sided than she thought. She now has to live in a tribe with Emmah, a person she just tried to vote out.\n3. Millie’s Paranoia\nMillie is safe, but her social standing is in tatters. Playing a Shot in the Dark when you have a real idol shows a complete lack of game awareness or an extreme fear of a blindside. She has an idol, but no allies who trust her.\n4. Blue’s New Power Couple\nDamien and Priya are the new players to watch. With the Blue Tribe consistently winning, they are building a massive resume of safety and social bonds that will be terrifying at the merge.\n\nNEXT EPISODE QUESTIONS\nThe Fallout: How does Brightly react to Hicks' betrayal at Tribal Council?\nThe Idol Secret: Does Millie reveal her idol to Hicks to regain his trust, or keep it as a shield against Brightly?\nYellow's New Structure: Does Chase use his idol to break the Axel/Bowie/Ripper trio?\nMK vs. Julia: Does their \"Extreme Hatred\" finally force a confrontation that the Blue Tribe can't ignore?\nEmmah’s Debt: Now that Hicks has saved her, does Emmah become his permanent enforcer, or does her volatility cause another meltdown?"
+    },
+    {
+      "episode": 5,
+      "summary": "=== META ===\nSEASON: Total Drama 9: Land of Power\nEPISODE 5 - \"Awake-A-Thon and Broken Bonds\"\n=== CAST (ALL) ===\nAxel\nBowie\nBrightly\nCaleb\nChase\nDamien\nEmmah\nHicks\nJulia\nMK\nMillie\nPriya\nRaj\nRipper\nScary Girl\nWayne\nZee\n=== TRIBES (ACTIVE) ===\n#Yellow Tribe\nBowie\nDamien\nEmmah\nJulia\nMK\nRaj\nWayne\n#Red Tribe\nAxel\nBrightly\nChase\nHicks\nMillie\nPriya\nRipper\n=== ELIMINATED ===\nZee\nScary Girl\nNichelle\nCaleb\nHicks\n\nTHE TWIST: The Great Reshuffle\nJust as the three tribes began to find their rhythm, Chris McLean upended the board. The three tribes were dissolved and randomly reassigned into two super-tribes.\nThe most significant casualty of the swap was the Red Tribe’s Core Three. While Hicks and Brightly remained together on the new Red Tribe, their \"pawn,\" Emmah, was shipped off to Yellow. Conversely, the remnants of the Yellow Tribe (Axel, Chase, and Ripper) found themselves reunited on the Red beach, carrying with them a deep-seated resentment and a hidden idol.\n\nPRE-CHALLENGE STATUS\nThe New Red Power Struggle\nThe Red beach became a battlefield of ideologies. Hicks and Brightly entered with an Unbreakable Relationship, assuming their \"Land of Power\" dominance would continue. However, they were met by a unified front of former Yellows. Axel and Ripper maintained their bond, and Chase—still holding the Yellow Tribe Hidden Immunity Idol—became the wild card.\nThe bridge between these two factions was Millie. While she held a Strong Bond with Hicks, she spent the afternoon bonding with Priya (formerly of Blue). This \"strong\" connection between Millie and Priya created the foundation for Red Tribe Alliance #3, a massive five-person coalition (Axel, Chase, Millie, Priya, Ripper) designed to decapitate the Hicks/Brightly leadership.\nThe Yellow Melting Pot\nThe new Yellow Tribe became a social pressure cooker. The \"Hockey Bros\" (Wayne and Raj) were reunited with their Blue teammate Damien, but they were now forced to live with their \"Extreme Enemies,\" MK and Julia. Bowie, ever the opportunist, immediately began working on Damien, finding common ground that would allow him to navigate between the warring Blue factions.\n\nIMMUNITY CHALLENGE: Awake-A-Thon\nThe Challenge: After a 20km run and a massive feast, the tribes must simply stay awake. The last person standing wins safety for their entire team.\nWinner: Yellow Tribe\nSent to Tribal: Red Tribe\nStrategic Narrative:\nThe Yellow Tribe proved their endurance, with Bowie and Damien pushing through the exhaustion. Despite MK suffering a Major Meltdown due to sleep deprivation, the Yellows secured safety and fruit. The Red Tribe faltered, their lack of fire (still!) contributing to a physical lethargy they couldn't overcome. For the second time in five episodes, Hicks and Brightly found themselves heading to Tribal Council after a devastating loss.\n\nPOST-CHALLENGE STATUS: THE REBELLION\n1. The Chemist vs. The Strategist\nBrightly, sensing the shift in the \"chemistry\" of the camp, targeted Millie. She viewed Millie as a weak link who was getting too close to Priya. Meanwhile, Hicks focused on Chase, still viewing him as a challenge liability. They assumed their unbreakable bond would be enough to sway the votes.\n2. The Five-Point Strike\nRed Tribe Alliance #3 (Axel, Chase, Millie, Priya, Ripper) finalized their plan. They recognized Hicks as the \"notice everything\" threat who had orchestrated the previous two votes. They decided to target Hicks, but the group was also considering a split-vote strategy between Hicks and Brightly to account for any hidden idols.\n\nTRIBAL COUNCIL / VOTE ANALYSIS\nThe Vote: The Fall of the Kingmaker\nRed's Tribal Council was a masterclass in modern Total Drama strategy.\nThe Idol Play: Chase played his Yellow Tribe Hidden Immunity Idol.\nThe Erasure: 3 votes (Brightly, Hicks, Millie) were cast against Chase. All were negated.\nThe Initial Tie: The remaining valid votes resulted in a 2-2 tie between Brightly (Chase, Priya) and Hicks (Axel, Ripper).\nThe Revote: The Ultimate Betrayal\nBecause of the tie, the tribe moved to a revote where only Brightly and Hicks were eligible to leave.\nVotes for Hicks (4): Axel, Chase, Priya, Ripper.\nVotes for Brightly (1): Millie.\nWHY THIS VOTE HAPPENED:\nHicks is gone because he was too good at noticing things—and everyone noticed him back. The former Yellows (Axel, Ripper, Chase) and the former Blue (Priya) recognized that Hicks and Brightly were an inseparable unit that would eventually pick them off one by one.\nThe most dramatic moment came from Millie. In the initial vote, Millie stayed \"loyal\" to Hicks, but she was the only one who didn't vote for him. On the revote, she betrayed the majority plan to vote for Brightly instead of Hicks. Millie tried to save her \"Strong Bond\" (Hicks), but she was shouting into a hurricane. The \"New Red\" majority was committed to removing the head of the snake.\n\nELIMINATED\nHicks\nReason label: \"The Decapitated King.\" His unhurried logic and emotional intelligence made him the biggest threat on the board. He was the victim of a perfectly executed \"Idol-and-Revote\" strike by a coalition of outsiders who refused to play the role of pawns.\n\nSTRATEGIC ANALYSIS\n1. Brightly’s Isolation\nFor the first time since Day 1, Brightly is alone. Her \"Unbreakable\" shield is gone, and she is living in a tribe where the five-person majority (Alliance #3) just tried to vote her out. She is a chemist without a lab, forced to find a new \"mixture\" or face the same fate as Hicks.\n2. The Rise of the \"New Red\" 5\nAxel, Chase, Priya, and Ripper are now in total control of the Red Tribe. By pulling in Millie (even though she is a reluctant ally), they have created a \"Borg\" alliance that can steamroll the rest of the game. Priya, specifically, has demonstrated her ability to form bonds across tribe lines.\n3. The Bowie/Damien Connection\nOn the Yellow Tribe, Bowie and Damien have formed a \"Lasting Connection.\" This is a terrifying prospect for the hockey bros. Bowie now has a bridge to the Blue core, allowing him to play Julia, MK, and the bros against each other while he remains the swing vote.\n4. MK’s Stability\nMK's major meltdown during the Awake-A-Thon has made her a social target. While she is safe for now, her hatred of Julia is becoming a liability for the Yellow Tribe's harmony.\n\nNEXT EPISODE QUESTIONS\nThe Chemist’s Revenge: Does Brightly attempt to flip Millie and Priya against the \"Yellow\" trio (Axel/Chase/Ripper)?\nThe Extra Vote: Now that they are on a new tribe, does Wayne use his Extra Vote to finally settle the score with Julia or MK?\nRaj’s Secret: With the Beware Advantage still in his pocket, does Raj intentionally lose to find his idol?\nThe Hidden Idol: A new Red Tribe Hidden Idol is now hidden. Does Brightly find it before the majority can finish her off?\nEmmah’s New Life: How does Emmah adjust to the \"Yellow Chaos\" without Hicks there to guide her?"
+    },
+    {
+      "episode": 6,
+      "summary": "=== META ===\nSEASON: Total Drama 9: Land of Power\nEPISODE 6 - \"The Portages of Power\"\n=== CAST (ALL) ===\nAxel\nBowie\nBrightly\nCaleb\nChase\nDamien\nEmmah\nHicks\nJulia\nMK\nMillie\nPriya\nRaj\nRipper\nScary Girl\nWayne\nZee\n=== TRIBES (ACTIVE) ===\n#Yellow Tribe\nBowie\nDamien\nEmmah\nJulia\nMK\nRaj\nWayne\n#Red Tribe\nAxel\nBrightly\nChase\nMillie\nPriya\nRipper\n=== ELIMINATED ===\nZee\nScary Girl\nNichelle\nCaleb\nHicks\nBrightly\n\nTHE JOURNEY: Greed and Grunt Work\nRepresentatives: Bowie (Yellow) and Priya (Red).\nThe two representatives met at a summit that quickly transitioned from social bonding to a test of character.\nThe Bond: Bowie and Priya shared a moment of strategic mutual respect, recognizing each other as the \"brains\" of their respective tribes.\nThe Temptation: Tasked with moving a massive pile of sandbags to protect their votes, they were distracted by the lure of a hidden advantage beneath a rock.\nThe Failure: By prioritizing the hunt for power over the completion of the task, the timer expired.\nThe Penalty: Both Bowie and Priya returned to their camps without a vote for their next Tribal Council.\n\nPRE-CHALLENGE STATUS\nThe Red Starvation\nThe Red Tribe entered Day 12 in a state of physical crisis. Still without fire, they were cold, hungry, and socially volatile. Brightly, now the lone survivor of the \"Red Alliance #1,\" attempted to manage the camp like a chaotic classroom, but her authority was nonexistent. She targeted Ripper as a challenge liability, but her \"Daycare Logic\" failed to account for the deep bonds forming among the former Yellow members.\nThe Yellow Renaissance\nYellow is a tribe of high morale and deep interpersonal intrigue. The hockey duo of Wayne and Raj remains the strongest core, but the \"Social King\" Bowie has begun weaving new webs. Most notably, Bowie and Raj shared a moment of connection that suggests the game's strongest bond (Wayne/Raj) might finally have a competitor: romance.\n\nIMMUNITY CHALLENGE: Road to Boney Island\nThe Challenge: Rowing a canoe to Boney Island, portaging across land, lighting a bonfire, and racing back.\nWinner: Yellow Tribe\nSent to Tribal: Red Tribe\nStrategic Narrative:\nThe Yellow Tribe functioned as a singular unit, their nutrition and fire giving them the explosive energy needed for the portage. They secured immunity and chickens, ensuring their dominance continued. The Red Tribe, predictably, faltered. Without fire to practice with or the calories to sustain the row, they collapsed on the return leg. For the third time, the Red beach prepared for a vote while their campfire remained cold.\n\nPOST-CHALLENGE STATUS: THE REBELLION COMPLETE\n1. The Death of the Chemistry Lab\nBrightly was officially isolated. Yellow Alliance #2 (Axel, Ripper) and Red Alliance #3 (Axel, Chase, Millie, Priya, Ripper) converged on a single goal: removing the last vestige of the Hicks/Brightly era. They viewed Brightly as a high-tier intellectual threat who would eventually manipulate the \"muscle\" if left alive.\n2. The Internal Fracture\nDespite their majority, the former Yellows were not a happy family. Chase and Ripper engaged in a Major Fight (Lasting). Chase’s paranoia and Ripper’s abrasive arrogance finally clashed, threatening to destabilize the \"Anti-Brightly\" vote. However, the shared hatred for Brightly's \"Daycare\" management style proved stronger than their internal spat.\n3. Yellow’s Intellectual Shift\nOn the Yellow beach, Damien and MK formed a Strong Bond. These two high-IQ players are starting to realize that the \"Hockey Bros\" and the \"Bowie\" factions will eventually collide, and they are positioning themselves to be the \"Brain-Trust\" that survives the fallout.\n\nTRIBAL COUNCIL / VOTE ANALYSIS\nThe Vote: The End of the Daycare\nRed's Tribal Council was the final step in a total regime change.\nThe Lost Votes: Priya had no vote due to the journey failure.\nThe Hidden Power: Millie held the Red Tribe Hidden Immunity Idol but correctly sensed she didn't need to use it.\nThe Shot in the Dark: Axel and Brightly both held their Shot in the Dark, but the consensus was too clear for Brightly to feel she had a chance.\nVote Breakdown: 4-1 (Brightly Eliminated)\nVotes for Brightly (4): Axel, Chase, Millie, Ripper.\nVotes for Ripper (1): Brightly.\nWHY THIS VOTE HAPPENED:\nBrightly is gone because her \"Chemistry\" required a partner (Hicks) to stabilize the reaction. Alone, her calculations were seen as cold and manipulative. The five-person majority (Axel, Chase, Millie, Priya, Ripper) recognized that Brightly was the only person left who could potentially flip the game at a merge. By eliminating her now, they ensured that the \"New Red\" tribe is composed entirely of physical players and one \"Social Wildcard\" in Millie.\n\nELIMINATED\nBrightly\nReason label: \"The Isolated Catalyst.\" Her ability to analyze the tribe as a chemical equation was her greatest strength, but it ultimately made her the most obvious target once her \"Unbreakable\" shield was gone.\n\nSTRATEGIC ANALYSIS\n1. Millie: The Secret Queen of Red\nMillie is now the most powerful person on the Red Tribe. She has a Strong Bond with Priya, a Medium Bond with Hicks (Jury/Pre-merge memory), and she holds a Hidden Immunity Idol. She successfully navigated the Hicks/Brightly collapse and has emerged as the \"bridge\" between the factions.\n2. The Bowie/Raj Variable\nBowie is playing a dangerous but brilliant game. By bonding with Raj, he is creating a potential rift in the Wayne/Raj duo. If Wayne (who has a Stolen Vote and an Extra Vote) feels his \"unbreakable\" bond is being threatened by Bowie, the Yellow Tribe will see its first major civil war.\n3. The Julia/MK War\nJulia officially left the Yellow Alliance #3, signaling her intent to play as a lone wolf. With MK and Damien bonding, Julia is increasingly isolated. However, Julia has a habit of \"impressing\" the team when her back is against the wall.\n4. The Ripper/Chase Fallout\nThe Major Fight between Ripper and Chase is the first crack in the New Red majority. While they voted together tonight, their \"Lasting Impact\" disagreement means the Red Tribe is now a 2-vs-2-vs-1-vs-1 social mess, held together only by the fact that they have no other options.\n\nNEXT EPISODE QUESTIONS\nThe Love Triangle: How does Wayne react to the budding connection between Bowie and Raj?\nThe Fire Quest: After 12 days, will the Red Tribe finally win a challenge to earn their flint, or will they starve before the merge?\nMillie’s Idol: Does Millie use her idol to protect Priya, or does she save it for herself as the physical threats (Ripper/Axel) start looking for targets?\nMK and Damien: Does this new \"Brain-Trust\" duo attempt to take out Wayne or Julia next?\nThe Stolen Vote: With the merge looming, will Wayne finally use his stolen power to settle the Yellow Tribe's internal score?"
+    },
+    {
+      "episode": 7,
+      "summary": "=== META ===\nSEASON: Total Drama 9: Land of Power\nEPISODE 7 - \"Disgustingness and Deception\"\n=== CAST (ALL) ===\nAxel\nBowie\nBrightly\nCaleb\nChase\nDamien\nEmmah\nHicks\nJulia\nMK\nMillie\nNichelle\nPriya\nRaj\nRipper\nScary Girl\nWayne\nZee\n=== TRIBES (ACTIVE) ===\n#Yellow Tribe\nAxel\nEmmah\nJulia\nRaj\n#Blue Tribe\nChase\nDamien\nMillie\nWayne\n#Red Tribe\nBowie\nMK\nPriya\nRipper\n=== ELIMINATED ===\nZee\nScary Girl\nNichelle\nCaleb\nHicks\nBrightly\nRaj\n\nTHE TWIST: The False Dawn\nThe castaways arrived expecting a reward, but Chris McLean’s \"Land of Power\" had one more cruelty in store. The two super-tribes were dissolved and randomly split into three lean teams of four. This reshuffle shattered the dominant \"New Red\" five-person alliance and separated the most iconic duo in the game: Wayne and Raj.\n\nPRE-CHALLENGE STATUS\nThe Yellow Powder Keg\nThe Yellow Tribe inherited a volatile mix. Julia and Emmah formed a surprising Small Bond, but the camp was immediately poisoned by a Major Fight (Lasting) between Axel and Emmah. Raj, isolated from Wayne for the first time, felt the weight of his Blue Beware Advantage—which he desperately needed to activate to survive the new environment.\nThe Blue Brain-Trust\nThe Blue Tribe saw Damien and Millie solidify their position, finding \"something in common\" that created a Lasting Impact. Chase, feeling the pressure of being the odd man out, officially left Red Tribe Alliance #3, effectively becoming a free agent.\nThe Red Conflict\nOn Red, Bowie struck gold by finding the Inheritance Advantage. However, the social high was short-lived. Bowie and Priya—who previously shared a moment of mutual respect—suffered a Major Fight. This explosion, combined with a Minor Disagreement between MK and Priya, left the Red Tribe as a collection of four individuals rather than a team.\n\nREWARD CHALLENGE: Panic at the Disc Throw\nThe Challenge: Pushing a heavy cart to collect sandbags and knocking over bamboo targets with wooden discs.\nWinners: Yellow Tribe & Blue Tribe\nReward: A massive feast of grilled cheese, brownies, and iced tea.\nStrategic Narrative: The Last Supper\nYellow and Blue secured much-needed calories. For the Yellow Tribe, the victory temporarily masked the hatred between Axel and Emmah. For the Blue Tribe, the meal allowed Wayne to process his separation from Raj, though his Extra Vote remained a secret weapon he held close to his chest.\n\nIMMUNITY CHALLENGE: The Brunch of Disgustingness\nThe Challenge: A nine-course meal of Chef's most revolting delicacies. The two winning teams earn a secure spot at the Merge. For each course, all members of a team must eat the disgusting food to win the round. The team that finishes first receives one point. The team with the most points at the end of nine rounds wins.\nWinners: Red Tribe & Blue Tribe\nSent to Tribal: Yellow Tribe\nStrategic Narrative:\nThe Red Tribe showed incredible stomach-strength, with Ripper \"impressing\" the team by inhaling the courses to earn their first fire of the season. The Blue Tribe secured the second spot, meaning Chase, Damien, Millie, and Wayne have officially reached the Merge. The Yellow Tribe faltered, their internal toxicity making the \"group eat\" impossible and its not without the help of julia throwing a little bit cause she has a plan or emmah reluctance to eat anything weird. They surrendered their flint and prepared for a high-stakes elimination.\n\nPOST-CHALLENGE STATUS: THE TREASURE HUNT\nThe afternoon on the Yellow beach was the most productive in the game history. Three separate advantages were unearthed in the span of a few hours:\nJulia found the Yellow Tribe Hidden Immunity Idol.\nEmmah found the Knowledge is Power advantage.\nRaj successfully completed his Beware quest, converting his advantage into the Blue Tribe Hidden Immunity Idol.\nThe Targets:\nJulia set her sights on Raj. She viewed him as a triple threat: a physical powerhouse, a social magnet (with Wayne and Bowie waiting at the merge), and a liability to her own control.\nRaj viewed Emmah as the weak link and the reason they lost the challenge, though he remained wary of Axel.\n\nTRIBAL COUNCIL / VOTE ANALYSIS\nThe Vote: The Master Manipulator’s Strike\nYellow's Tribal Council was a graveyard of potential power.\nThe Gamble: Axel used her Shot in the Dark (Not Safe), sacrificing her vote out of fear.\nThe Silence of the Idols: Despite Julia and Raj both holding idols, and Emmah holding the Knowledge is Power, no advantages were played.\nVote Breakdown: 2-1 (Raj Eliminated)\nVotes for Raj (2): Emmah, Julia.\nVotes for Axel (1): Raj.\nWHY THIS VOTE HAPPENED:\nRaj is gone because he was outplayed by the \"Ice Queen.\" Julia performed a social masterclass, convincing Raj that the vote was unanimously going on Axel. Raj, believing he was safe and wanting to save his idol for the Merge to protect Wayne, fell for the trap.\nJulia and Emmah stayed unified. By eliminating Raj, Julia removed the strongest physical competitor and the biggest social threat before he could reunite with the \"Hockey Bro\" majority. The tragedy of the \"Land of Power\" is that Raj—the heart of the season—was eliminated with a hidden idol in his pocket, never getting to say goodbye to Wayne or Bowie.\n\nELIMINATED\nRaj\nReason label: \"The Blindsided Heart.\" He fell victim to Julia's superior manipulation, leaving the game with a usable idol and a broken connection to his two closest allies.\n\nSTRATEGIC ANALYSIS\n1. Julia: The Queen of the Yellow Beach\nJulia has officially cemented herself as a top-tier villain. She orchestrated a 2-1-1 blindside, held onto her own idol, and managed to keep Emmah as a loyal lieutenant. She enters the Merge as the most dangerous individual threat.\n2. The Bowie/Priya Fallout\nOn the Red Tribe, the Major Fight between Bowie and Priya has created a massive rift between two of the game's best strategists. With Bowie holding the Inheritance Advantage, he is a ticking time bomb. If Priya tries to strike at him, he has the power to absorb her resources.\n3. The Wayne Factor\nWayne has reached the Merge, but he is entering it \"alone.\" The loss of Raj will either break Wayne or turn him into a vengeful force. He still holds a Stolen Vote and an Extra Vote, making him the ultimate \"Chaos Variable\" in the next round.\n4. Emmah’s Power\nEmmah now holds Knowledge is Power. In a Merge filled with idols (Julia and Millie), Emmah is the only person who can legally \"rob\" the other players. She has transformed from Hicks’s pawn into a sovereign power player.\n\nNEXT EPISODE QUESTIONS\nTHE MERGE: As the three tribes become one, who is the first target of the newly formed \"Camper\" tribe?\nWayne’s Grief: How does Wayne react when he finds out Julia was the one who sent Raj home?\nThe Inheritance Advantage: Does Bowie use his power to collect the idols of his enemies, or does he become the first victim of the merge?\nEmmah’s Theft: Who does Emmah target with her Knowledge is Power? Will she steal Julia’s idol or Millie’s?\nJulia’s Target: Now that Raj is gone, does Julia set her sights on Bowie to finish the \"Social Liquidation\"?"
+    },
+    {
+      "episode": 8,
+      "summary": "=== META ===\nSEASON: Total Drama 9: Land of Power\nEPISODE 8 - \"The Inheritance of Chaos\" (THE MERGE)\n=== CAST (ALL) ===\nAxel\nBowie\nBrightly\nCaleb\nChase\nDamien\nEmmah\nHicks\nJulia\nMK\nMillie\nNichelle\nPriya\nRaj\nRipper\nScary Girl\nWayne\nZee\n=== TRIBES (ACTIVE) ===\n#Campers (THE MERGE)\nAxel\nBowie\nChase\nDamien\nEmmah\nJulia\nMK\nMillie\nPriya\nRipper\nWayne\n=== ELIMINATED ===\nZee\nScary Girl\nNichelle\nCaleb\nHicks\nBrightly\nRaj\nRipper\n\nTHE MERGE: The Singular Battlefield\nThe three tribes are no more. Eleven castaways converged on the new \"Campers\" beach, and the atmosphere was instantly thick with paranoia. The \"Land of Power\" has truly lived up to its name, entering the merge with a staggering array of hidden weapons: two idols, a stolen vote, a Knowledge is Power, and the mysterious Inheritance Advantage.\nThe Power Map\nThe Hockey Bro’s Grief: Wayne entered the merge a broken man. Without Raj, his \"unbreakable\" foundation was gone, leaving him exposed despite holding a secret weapon.\nThe Social Nexus: Bowie established himself as the center of the web, holding strong bonds with almost every major player: Axel, Ripper, Chase, and Damien.\nThe Misfit Coalition: In the shadows, a massive new structure formed: Campers Alliance #1. This 6-person bloc (Chase, Damien, Emmah, Julia, MK, and Millie) united the strategic outliers to counteract the physical threats of the \"Alpha\" players.\n\nTHE TWIST: Priya’s Early Strike\nBefore the first merge challenge, the hunt was on. Priya successfully navigated the jungle to find a hidden key, unlocking a chest that granted her an automatic pass into the Immunity Challenge. This early advantage essentially placed Priya in the \"Top 6\" before a single stone was rolled.\n\nTHE CHALLENGE: Rolling Stones & Hard to Handle\nReward: A feast and eligibility for the Immunity Challenge.\nWinners: Group #1 (Axel, Damien, MK, Ripper, Wayne).\nImmunity Winner: Axel\nAxel proved her survivalist grit in a grueling balance challenge. By winning the first individual immunity, she secured her safety and forced the tribe to look elsewhere for a target.\n\nPRE-TRIBAL: The Heist of the Extra Vote\nBack at camp, the \"Daycare Logic\" was replaced by \"Total War.\" Emmah—holding the Knowledge is Power—knew exactly where the power was. She had watched Wayne's performance at the summit and knew he held a secret.\nMeanwhile, the \"Alpha\" bloc of the old Red Tribe (Axel and Ripper) targeted Damien, viewing him as too smart and too connected to Bowie. Conversely, the newly formed Campers Alliance #1 set their sights on Ripper, identifying him as the ultimate physical shield that needed to be dismantled.\n\nTRIBAL COUNCIL: The Ultimate Power Siphon\nTribal Council was a masterclass in tactical destruction.\n1. The Robbery\nEmmah stood before the tribe and used her Knowledge is Power on Wayne. In a move that left the former hockey star speechless, she correctly identified his Extra Vote and claimed it for herself. Wayne, already demoralized by Raj’s absence, was now stripped of his only defense.\n2. The Gamble & The Absorption\nIn a state of total panic, Wayne used his Shot in the Dark (Not Safe), sacrificing his vote for a 1-in-6 chance at safety that failed to materialize.\nBut the real move was Bowie. Despite having no vote, Bowie played his Inheritance Advantage. This meant any power used during this Tribal Council would belong to him if he survived the night.\n3. The Vote: 5-3-2 (Ripper Eliminated)\nVotes for Ripper (5): Emmah (x2), Julia, MK, Millie.\nVotes for Wayne (3): Chase, Damien, Priya.\nVotes for Damien (2): Axel, Ripper.\nWHY THIS VOTE HAPPENED:\nRipper is gone because he was the perfect common enemy. The \"Misfit\" alliance (Emmah, Julia, MK, Millie) realized that with Axel immune, Ripper was the next best physical threat to remove. Emmah used her newly stolen power to cast two votes against him, ensuring he couldn't survive a split.\nWayne survived only because the majority viewed Ripper as a larger challenge threat, though the Chase/Damien/Priya trio tried to put him out of his misery.\n\nELIMINATED\nRipper\nReason label: \"The Muscle Liquidation.\" He was the victim of a 6-person super-alliance that prioritized strategic control over physical strength. He leaves after surviving more Tribal Councils than almost anyone in the cast.\n\nSTRATEGIC ANALYSIS\n1. Bowie: The Silent King of Advantages\nBowie is now the most dangerous man in the game. By playing the Inheritance Advantage, he has successfully pocketed the Knowledge is Power and the Extra Vote. He entered Tribal with no power and left with two of the most powerful weapons in the \"Land of Power.\" He is the undisputed winner of the night.\n2. Emmah’s \"Chaos Era\"\nEmmah has transitioned from a pawn to a queen. Her robbery of Wayne’s vote was a ruthless, public display of power. However, by being the one to pull the trigger, she has now painted a massive target on her back as the tribe’s most aggressive strategist.\n3. Wayne’s Rock Bottom\nWayne has lost his best friend, his vote, and his secret advantage in the span of two episodes. He is a man with nothing left to lose, making him either the easiest next target or a dangerous free agent for someone like Julia to manipulate.\n4. The Julia/MK Armistice\nDespite their \"Extreme Hatred,\" Julia and MK voted together to take out Ripper. This suggests that the Campers Alliance #1 is currently the most disciplined group in the game, though with Julia’s loyalty at a low \"4,\" the betrayal is likely only one immunity win away.\n\nNEXT EPISODE QUESTIONS\nThe Extra Vote: How does Bowie use his newly inherited powers to protect his \"Strong Bonds\" with Axel and Damien?\nWayne’s Revenge: Does Wayne attempt to sabotage Emmah after she humiliated him at Tribal?\nThe Idol War: With Julia and Millie still holding hidden idols, who will be the first to blink as the alliance of six starts to fracture?\nAxel’s New Target: With Ripper gone, does Axel attempt to pull Priya and Bowie into a new \"Physicality\" bloc?\nThe Misfit Fracture: How long can Julia and MK stay in the same alliance before the \"Extreme Hatred\" causes an explosion?"
+    },
+    {
+      "episode": 9,
+      "summary": "=== META ===\nSEASON: Total Drama 9: Land of Power\nEPISODE 9 - \"The Chimney Sweep Split\"\n=== CAST (ALL) ===\nAxel\nBowie\nBrightly\nCaleb\nChase\nDamien\nEmmah\nHicks\nJulia\nMK\nMillie\nNichelle\nPriya\nRaj\nRipper\nScary Girl\nWayne\nZee\n=== TRIBES (ACTIVE) ===\n#Campers\nAxel\nBowie\nChase\nDamien\nEmmah\nJulia\nMK\nMillie\nPriya\nWayne\n=== ELIMINATED ===\nZee\nScary Girl\nNichelle\nCaleb\nHicks\nBrightly\nRaj\nRipper\nAxel\n\nPRE-CHALLENGE STATUS\nThe Advantage Cold War\nFollowing the total deconstruction of Wayne’s power in the previous episode, the merge beach was a landscape of extreme caution. Bowie sat atop a mountain of inherited treasures—the Extra Vote and the Knowledge is Power—while maintaining his Unbreakable Relationship with Damien. Across the beach, the \"Misfit\" coalition (Campers Alliance #1) remained the numerical majority, though internal loyalties were beginning to fray.\nWayne, now the sole \"Hockey Bro,\" found an unexpected anchor in Julia. Their Strong Bond suggested that Wayne was pivoting from \"Hero\" to \"Survivor,\" aligning with the person most likely to help him enact revenge on Emmah. Meanwhile, Priya and Millie maintained their own Strong Bond, acting as a silent, well-armed pocket of the old Red Tribe.\n\nREWARD CHALLENGE: Deli Delights\nThe reward was integrated into the immunity challenge results. The winning team of the \"Chimney Sweeps\" competition would not only earn safety but also a feast of deli sandwiches, a vital injection of protein for a group that has spent nearly two weeks on the savanna.\n\nANALYZE BEFORE IMMUNITY\nThe \"Chimney Sweeps\" format was a dangerous variable. By splitting the ten remaining players into two teams of five, the game forced alliances to potentially turn on their own. Priya entered the challenge with a high level of focus, knowing that her Strong Bonds with Millie and Damien would only matter if she could secure their safety as a group.\n\nIMMUNITY CHALLENGE: Chimney Sweeps\nThe Challenge: Castaways braced themselves between two walls, standing on narrow footholds. Every 15 minutes, the footholds decreased in size.\nTeam #1 (Losing Group): Axel, Chase, Emmah, Julia, Wayne.\nTeam #2 (Winning Group): Bowie, Damien, MK, Millie, Priya.\nIndividual Winner: Priya\nPriya demonstrated elite endurance, outlasting every other competitor to win immunity for Team #2. For winning the final stage, she also received a unique Bank Your Vote advantage and the right to strategize with the losing group before Tribal Council.\n\nPOST-CHALLENGE STATUS\n1. The Fragmentation of the Alliances\nThe loss for Team #1 triggered a massive social shift. Axel, realizing she was the most vulnerable physical threat on her team, officially left Red Tribe Alliance #3. On the other side, MK—despite being safe—left Campers Alliance #1, choosing to prioritize her growing Medium Bond with Damien over the erratic Julia and Emmah.\n2. The Julia-Axel Friction\nTensions boiled over between the two dominant women of the losing team. Axel and Julia engaged in a Small Fight (Lasting). Julia’s \"Mean Girl\" persona clashed with Axel’s survivalist discipline, making it impossible for the two to work together to save the losing group.\n3. Priya’s Strategic Bank\nPriya faced a massive decision: help the losers or help herself. She chose the latter. She decided to use her advantage to Bank Her Vote, sacrificing her influence at this Tribal Council to receive an Extra Vote for the future.\n4. The Final Targets\nAxel: Targeted by the \"Misfit\" core (Chase, Emmah, Julia) who viewed her as too dangerous to keep now that Ripper was gone.\nWayne: Targeted by Axel, who viewed him as the only other person the tribe might be willing to cut due to his lack of allies.\n\nTRIBAL COUNCIL / VOTE ANALYSIS\nThe Vote: The Surgical Strike\nTeam #1 entered Tribal Council under the watchful (and safe) eyes of the rest of the merge tribe.\nThe Bank: As promised, Priya officially banked her vote, leaving only five people to decide the outcome.\nThe Hoarding: Julia held onto her Yellow Tribe Hidden Immunity Idol, correctly reading that the numbers were moving against Axel rather than herself.\nThe Fatigue: Wayne, exhausted from camp chores and the physical toll of the game, sat quietly, simply hoping the \"Misfit\" alliance would stay true to their word.\nVote Breakdown: 4-1 (Axel Eliminated)\nVotes for Axel (4): Chase, Emmah, Julia, Wayne.\nVotes for Wayne (1): Axel.\n\nWHY THIS VOTE HAPPENED\nThe Elimination of the Last Titan:\nAxel is gone because she was the last high-tier physical threat who lacked a deep social safety net. By leaving her alliance earlier in the day, she inadvertently signaled to the rest of the tribe that she was a \"Lone Wolf.\" Emmah, Julia, and Chase recognized that with Axel's immunity streak a constant threat, she had to be removed while she was vulnerable. Wayne, having no other moves left, voted with the majority to ensure his own survival for at least one more round.\n\nELIMINATED\nAxel\nReason label: \"The Vulnerable Amazon.\" She outlasted her rivals in the pre-merge, but her inability to maintain her social structures made her the most logical consensus target once her physical dominance was no longer protected by the necklace.\n\nSTRATEGIC ANALYSIS\n1. Priya’s Growing Armory\nBy banking her vote, Priya has moved into a tier of power previously only occupied by Bowie. She now holds a Strong Bond with Damien, safety with Millie, and an Extra Vote in her pocket. She is the most well-rounded player in the game.\n2. Bowie’s \"Golden Bench\"\nBowie watched from the safety of the bleachers as a major physical competitor was removed. He still holds the Knowledge is Power and his own Extra Vote. As the numbers dwindle, Bowie's ability to \"rob\" someone of their power becomes more lethal with every passing day.\n3. The Misfit Core\nEmmah, Chase, and Julia are the current engines of the vote. Despite the friction and Julia's low loyalty (4), they are effectively picking off the threats one by one. However, with MK leaving the group, their majority is shrinking, and the Damien/Bowie/Priya bloc is starting to loom large.\n4. Wayne’s \"Borrowed Time\"\nWayne survived another night, but he is now a man without a tribe and without a vote of his own. His Strong Bond with Julia is his only lifeline. If he cannot find a way to navigate back into the majority, he is merely a placeholder until the bigger threats are dealt with.\n\nNEXT EPISODE QUESTIONS\nThe Advantage War: With Bowie and Priya both holding Extra Votes, who will be the first to pull the trigger?\nJulia’s Target: Does Julia use her idol to take out Emmah after the \"Knowledge is Power\" robbery in Episode 8, or does she set her sights on MK?\nThe Last Idol: The \"Campers Hidden Idol\" is still in the jungle. Who will find the final piece of the Land of Power puzzle?\nMillie’s Loyalty: Does Millie stick with Priya, or does the chaos caused by Emmah draw her back into the \"Misfit\" coalition?\nBowie’s Knowledge: Who does Bowie target with his Knowledge is Power? Will he wait for Julia to play her idol, or strike first?"
+    },
+    {
+      "episode": 10,
+      "summary": "=== META ===\nSEASON: Total Drama 9: Land of Power\nEPISODE 10 - \"The Horror and the Heist\"\n=== CAST (ALL) ===\nAxel\nBowie\nBrightly\nCaleb\nChase\nDamien\nEmmah\nHicks\nJulia\nMK\nMillie\nNichelle\nPriya\nRaj\nRipper\nScary Girl\nWayne\nZee\n=== TRIBES (ACTIVE) ===\n#Campers\nBowie\nChase\nDamien\nEmmah\nJulia\nMK\nMillie\nPriya\nWayne\n=== ELIMINATED ===\nZee\nScary Girl\nNichelle\nCaleb\nHicks\nBrightly\nRaj\nRipper\nAxel\nWayne\n\nPRE-CHALLENGE STATUS\nThe Web of Unbreakables\nThe merge has reached a state of \"Unbreakable\" social stagnation. The Campers beach is dominated by three powerful duos that seem impossible to crack:\nThe Blue/Red Axis: Priya and Damien (Blue) and Priya and Millie (Red) all share Unbreakable Relationships. Priya has positioned herself as the absolute center of the game's loyalty.\nThe Social Anchor: Bowie maintains an Unbreakable Relationship with both Damien and Wayne, acting as a bridge between the physical and strategic threats.\nThe Misfit Super-Alliance: Campers Alliance #1 (Chase, Damien, Emmah, Julia, Millie) remains the numerical engine, though its loyalty is being tested by new external bonds.\n\nREWARD CHALLENGE: Talent Show\nThe Challenge: A four-on-four musical talent show.\nThe Guess: Priya chose not to participate, instead betting her reward on Group #2 (Bowie, Chase, Millie, Wayne).\nWinners: Group #1 (Damien, Emmah, Julia, MK).\nStrategic Narrative: Priya’s rare miscalculation cost her a meal. Group #1 enjoyed fried chicken and cheesecake, while the safe and hungry Julia and MK were forced to endure a \"Strategic Armistice\" over soft drinks. This win provided a vital morale boost for MK, who has been operating on the fringes since the merge.\n\nANALYZE BEFORE IMMUNITY\nThe stakes for the Horror Challenge were massive. With Bowie holding the Knowledge is Power and the Extra Vote, and Emmah having already proven her willingness to rob the \"Kings,\" the power players were looking for a shield. Wayne, the last remaining \"Hockey Bro,\" felt the target growing on his back as the majority sought to dissolve the remaining physical threats.\n\nIMMUNITY CHALLENGE: Horror Challenge\nThe Challenge: Watch a horror movie and then outrun a \"psycho killer\" in the dark. The last standing man and woman win.\nMale Winner: Damien\nFemale Winner: MK\nStrategic Narrative:\nThe underdogs triumphed. Damien secured his second win of the merge, cementing his \"Physical Shield\" status for Priya. MK’s victory was a disaster for the majority; by winning immunity, the \"Mean Girl\" outlier neutralized herself as an easy target, forcing the tribe to turn their blades elsewhere.\n\nPOST-CAMPER STATUS: THE TRENCHES ARE DUG\n1. The Birth of Alliance #2\nSensing the walls closing in, Bowie formed Campers Alliance #2 with Emmah and Wayne. This was a desperate pivot to protect Wayne. They identified Priya as the season’s \"Final Boss\" and finalized a plan to strike her.\n2. The Strike on the Heart\nThe Blue/Red core (Priya, Damien, Millie) combined with the remnants of the Misfit Alliance to target Wayne. To them, Wayne was the last social magnet that could pull Bowie and the free agents together.\n3. The Target Consolidation\nThe Majority: (Damien, MK, Millie, Priya) locked in on Wayne.\nThe Resistance: (Bowie, Chase, Emmah, Wayne, and a defecting Julia) locked in on Priya.\n\nTRIBAL COUNCIL / VOTE ANALYSIS\nThe Vote: The Red Shield\nTribal Council was a masterclass in defensive coordination and offensive failure.\nThe Double Down: Priya activated her Extra Vote, casting two ballots to ensure Wayne’s departure.\nThe Hidden Protector: Just before the reveal, Millie played the Red Tribe Hidden Immunity Idol on Priya. It was a move born of their \"Unbreakable\" bond, designed to absorb any potential blindside.\nThe Silence of the King: Bowie, witnessing the idol play, chose to hold his Knowledge is Power and Extra Vote. Whether out of fear or a calculation that he was safe, he watched his \"Unbreakable\" ally, Wayne, face the fire alone.\nThe Reveal: 5-0 (Wayne Eliminated)\nVotes for Priya (5): Bowie, Chase, Emmah, Julia, Wayne. (NEGATED)\nVotes for Wayne (5): Damien, MK, Millie, Priya (x2).\nWHY THIS VOTE HAPPENED:\nWayne is gone because he was the casualty of a perfectly timed defensive masterpiece. Bowie and the former Yellows attempted a 5-vote strike on Priya, assuming they had the numbers. However, Millie’s idol negated the entire offensive. Because Priya used her Extra Vote, her side matched the total, and with the \"Priya\" votes deleted, Wayne was eliminated in a shutout. Julia defecting from the \"Misfit\" majority to vote with Bowie suggests she values the \"Mean Girl/Bro\" bond over her alliance, but it wasn't enough to save him.\n\nELIMINATED\nWayne\nReason label: \"The Last Hero.\" He outlasted his best friend Raj and fought through three robberies, but he was ultimately silenced by the \"Unbreakable\" wall of Millie and Priya. He leaves as the 3rd member of the jury, ending the era of the \"Hockey Bros.\"\n\nSTRATEGIC ANALYSIS\n1. Millie and Priya: The Untouchable Duo\nBy playing the idol correctly, Millie has elevated her partnership with Priya to a level of dominance rarely seen. They control the narrative, the numbers, and the shields. Priya’s use of the Extra Vote proves she is playing to win, not just survive.\n2. Bowie’s Tactical Hoarding\nBowie’s decision to keep his Knowledge is Power while his closest ally was eliminated is baffling or brilliant. He is now the most armed player left (KIP + Extra Vote), but he has lost his most loyal shield. He is now a king without an army.\n3. Julia’s Betrayal\nJulia officially turned on her alliance to vote for Priya. While she still holds a Yellow Tribe Hidden Immunity Idol, she is now a pariah to the Emmah/Millie/Priya bloc. Her only path forward is to cling to Bowie and Chase.\n4. MK’s Stealth\nMK won immunity and stayed on the right side of the numbers. She is the only person playing a \"clean\" game without advantages, using her social leverage to stay afloat while the titans destroy each other.\n\nNEXT EPISODE QUESTIONS\nBowie’s Strike: With Wayne gone, does Bowie finally use his Knowledge is Power to steal Julia’s idol?\nThe Emmah Fracture: How does Emmah react to Julia’s betrayal at Tribal?\nThe Damien/Bowie Bond: Will their \"Unbreakable Relationship\" survive the fact that Damien just voted out Bowie's other best friend?\nThe Last Idol: The Campers Hidden Idol is still in the jungle. Who will find the final weapon?\nPriya’s Momentum: Can anyone stop the Priya/Millie/Damien train now that they have total control of the jury votes?"
+    },
+    {
+      "episode": 11,
+      "summary": "=== META ===\nSEASON: Total Drama 9: Land of Power\nEPISODE 11 - \"Teetering on the Edge\"\n=== CAST (ALL) ===\nAxel\nBowie\nBrightly\nCaleb\nChase\nDamien\nEmmah\nHicks\nJulia\nMK\nMillie\nNichelle\nPriya\nRaj\nRipper\nScary Girl\nWayne\nZee\n=== TRIBES (ACTIVE) ===\n#Campers\nBowie\nChase\nDamien\nEmmah\nJulia\nMK\nMillie\nPriya\n=== ELIMINATED ===\nZee\nScary Girl\nNichelle\nCaleb\nHicks\nBrightly\nRaj\nRipper\nAxel\nWayne\nMK\n\nPRE-CHALLENGE STATUS\nThe Web of Unbreakables\nThe \"Land of Power\" reached a social stalemate as the final eight entered Day 21. The beach was dominated by a complex network of Unbreakable Relationships: Priya/Damien, Damien/Bowie, and Priya/Millie. This \"Golden Core\" effectively controlled the numbers, leaving Julia, MK, and Chase to operate on the fringes.\nThe most visceral dynamic remained the Extreme Hatred between MK and Julia. While the core alliance was content to let the two women destroy each other, Bowie began recalibrating his strategy. Holding the Knowledge is Power and an Extra Vote, he positioned himself as the ultimate broker of power, maintaining a strong bond with his \"Misfit\" ally Chase while keeping his unbreakable ties to the physical threats.\n\nREWARD CHALLENGE: Swing Dings\nThe Challenge: Retrieving items from an underwater rope at increasing depths.\nWinners: Group #1 (Chase, Damien, Julia, MK).\nReward: Hamburgers, hotdogs, and chocolate cake.\nStrategic Narrative:\nThe \"Outcasts\" and Damien secured a massive caloric win. This meal was particularly vital for MK, who had been struggling with the psychological toll of the merge. For Julia, the win provided a temporary reprieve from her social isolation, allowing her to gloat over the hungry Bowie and Priya.\n\nANALYZE BEFORE IMMUNITY\nThe \"Teetering on the Edge\" challenge introduced a moral dilemma: individual safety or tribe-wide sustainment. Chase, Damien, and Julia—the strongest physical players remaining—agreed to forfeit their chance at immunity in exchange for additional rice for the camp. This act of \"altruism\" was actually a calculated risk; Julia felt safe with her hidden idol, and Damien was confident in his social insulation.\n\nIMMUNITY CHALLENGE: Teetering on the Edge\nThe Challenge: Building a bike from scratch and racing it, followed by a sudden-death finish line sprint.\nParticipants: Bowie, Emmah, MK, Millie, Priya.\nImmunity Winner: Emmah\nStrategic Narrative:\nWith the three biggest threats sitting out, Emmah seized her moment. She out-engineered the rest of the field to secure her first individual immunity necklace. This win was a disaster for the majority’s \"Easy Target\" list, as Emmah’s volatility had made her a prime candidate for a consensus vote.\n\nPOST-CHALLENGE STATUS: THE IDOL WAR\n1. Damien’s Discovery\nWhile the camp celebrated the rice, Damien found the Campers Hidden Immunity Idol. This gave the Blue/Red core (Priya/Damien/Millie) a secondary layer of protection, even though they already controlled the majority of the social bonds.\n2. The Final Fracture\nJulia officially left Campers Alliance #1, choosing to fully embrace her \"Lone Wolf\" status. She realized the \"Misfits\" (Chase/Emmah) were moving closer to the Bowie/Priya core.\n3. The Targets\nThe lines were drawn in the sand. Julia and MK spent the afternoon campaigning for each other's heads.\nThe Majority Plan: Bowie, Chase, Emmah, and Millie locked in on MK. They viewed her as a social \"ghost\" who was harder to predict than the abrasive Julia.\nThe Blue Plan: Damien and Priya targeted Julia, wanting to flush her idol and remove the most dangerous individual competitor left.\n\nTRIBAL COUNCIL / VOTE ANALYSIS\nThe Vote: The Robbery and the Gamble\nTribal Council was a masterclass in tactical humiliation orchestrated by Bowie.\nThe Robbery: Before the vote, Bowie used Knowledge is Power on Julia. He correctly identified her Yellow Tribe Hidden Immunity Idol and claimed it for himself. Julia, stripped of her defense, was left exposed for the first time in the merge.\nThe Double Gamble: Sensing their total isolation, both Julia and MK played their Shot in the Dark.\nThe Result: Both scrolls revealed \"Not Safe.\" Both women lost their votes, and neither received immunity.\nVote Breakdown: 4-2 (MK Eliminated)\nVotes for MK (4): Bowie, Chase, Emmah, Millie.\nVotes for Julia (2): Damien, Priya.\nWHY THIS VOTE HAPPENED:\nMK is gone because she lacked the \"Shield\" that Julia provided. Bowie and the \"Misfit\" remnants (Chase/Emmah) chose to keep Julia in the game as a high-profile target for the next round, whereas MK’s quiet, observant game was starting to make the majority nervous. Damien and Priya stayed unified in their attempt to take out Julia, but Bowie’s control over the \"Middle\" players ensured MK was the one sent to the jury.\n\nELIMINATED\nMK\nReason label: \"The Observant Outcast.\" She played a brilliant game of staying under the radar, but once her nemesis (Julia) was stripped of power, the tribe decided that MK’s quiet intelligence was more dangerous than Julia’s loud antagonism.\n\nSTRATEGIC ANALYSIS\n1. Bowie: The Ultimate Hoarder\nBowie has achieved the \"God-Tier\" of Total Drama strategy. He now holds:\nAn Extra Vote.\nThe Knowledge is Power (which he has successfully used twice).\nThe Yellow Tribe Hidden Immunity Idol (stolen from Julia).\nHe has effectively monopolized the game's tactical resources.\n2. Julia’s Rock Bottom\nJulia survived, but she is a social and strategic wreck. She lost her nemesis, her idol, and her vote in a single night. She is now the most vulnerable she has ever been, existing only as long as Bowie finds her useful as a distraction.\n3. The Priya/Damien Fortress\nDespite being on the wrong side of the MK/Julia split, Priya and Damien remain perfectly insulated. They have an Unbreakable Relationship, an Extra Vote (Priya), and a Hidden Idol (Damien). They are the only force capable of challenging Bowie's dominance.\n4. Emmah’s Safety\nEmmah won immunity and stayed on the right side of the vote. She has successfully navigated the fallout of her \"Knowledge is Power\" robbery and is now a trusted part of Bowie's \"Alliance #2.\"\n\nNEXT EPISODE QUESTIONS\nBowie’s Strike: With two idols (Damien’s and Bowie’s) and two extra votes in the game, who launches the first offensive?\nJulia’s Revenge: Does Julia attempt to manipulate Chase to turn on Bowie after the idol theft?\nThe Unbreakable Rift: Does the Damien/Bowie unbreakable bond hold up when Priya starts targeting Bowie’s hoard of advantages?\nEmmah’s Volatility: Now that she no longer has the necklace, does Emmah’s \"Strong Dislike\" for Wayne (Jury) come back to haunt her?\nMillie’s Bridge: Does Millie act as the peacemaker between the Priya/Damien and Bowie/Chase factions?"
+    },
+    {
+      "episode": 12,
+      "summary": "=== META ===\nSEASON: Total Drama 9: Land of Power\nEPISODE 12 - \"The Revolver Revolution\"\n=== CAST (ALL) ===\nAxel\nBowie\nBrightly\nCaleb\nChase\nDamien\nEmmah\nHicks\nJulia\nMK\nMillie\nNichelle\nPriya\nRaj\nRipper\nScary Girl\nWayne\nZee\n=== TRIBES (ACTIVE) ===\n#Campers\nBowie\nChase\nDamien\nEmmah\nJulia\nMillie\nPriya\n=== ELIMINATED ===\nZee\nScary Girl\nNichelle\nCaleb\nHicks\nBrightly\nRaj\nRipper\nAxel\nWayne\nMK\nPriya\n\nPRE-CHALLENGE STATUS\nThe Gridlock of Love\nThe final seven entered Day 24 trapped in a psychological cage of their own making. The \"Web of Unbreakables\" had reached its peak: Priya was the center of everything, holding unbreakable bonds with Damien, Millie, and Bowie. However, a new, dark horse duo had emerged: Millie and Julia. The \"Quiet Author\" and the \"Mean Girl\" had solidified an Unbreakable Relationship, creating a bizarre bridge between the game's moral compass and its primary villain.\nBowie, the social architect, found himself in a dangerous position. While he felt an unbreakable loyalty toward Priya, he also shared a Strong Bond with Chase. The question hanging over the camp wasn't who was the biggest threat—everyone knew it was Priya—but who would be the first to break a \"Sacred Bond\" to win the million.\n\nTHE JOURNEY: The Shoreline Scramble\nThe Campers nominated Chase to undergo a grueling solo mission.\nThe Task: Chase had to navigate the jagged shoreline searching for hidden numbers to solve a lock combination before the tide rose and drowned his vote.\nThe Victory: Displaying unexpected focus, Chase cracked the code.\nThe Prize: He won a Vote Stopper. This allows him to secretly silence one player at Tribal Council, a terrifying tool in a tribe of only seven people.\n\nANALYZE BEFORE IMMUNITY\nThe camp atmosphere was deceptively peaceful. Millie and Priya spent the morning bonding, reinforcing their status as the \"Sisters of the Red Tribe.\" Julia, however, was already whispering in ears. She identified Priya as the absolute endgame boss. Julia’s strategy was simple: remind everyone that if they take Priya to the Final 3, they are playing for second place.\n\nIMMUNITY CHALLENGE: Revolver\nThe Challenge: Stacking blocks on a rotating platform while moving back and forth. A test of balance, patience, and steady hands.\nImmunity Winner: Millie\nStrategic Narrative:\nMillie achieved her most impressive win to date, securing the necklace and a reward of spaghetti and tiramisu. In a tactical move, she chose to share her feast with Priya (to maintain her bond) and Chase (to potentially pull him away from Bowie). While they ate, the four left at camp—Bowie, Damien, Julia, and Emmah—began the real work of counting the votes.\n\nPOST-CAMPER STATUS: THE CRACK IN THE FOUNDATION\n1. The Targets\nJulia's Strike: Julia didn't care about \"Unbreakable\" bonds. She targeted Priya directly, labeling her the biggest threat in the history of the game.\nPriya's Miscalculation: Feeling safe due to her many bonds, Priya targeted Emmah, simply because Emmah was the person she was \"least aligned\" with.\nDamien's Defensive Play: Damien, trying to protect Priya, targeted Julia, hoping to finally remove the \"Chaos Queen.\"\n2. Bowie's Betrayal\nThe pivot point was Bowie. He was forced to choose between his unbreakable bond with Priya and his path to victory. Along with Chase and Emmah, Bowie realized that if they didn't take out Priya now—while Millie was immune—they might never get another chance.\n\nTRIBAL COUNCIL / VOTE ANALYSIS\nThe Vote: The Fall of the Golden Girl\nTribal Council was a somber affair. Despite the massive arsenal of advantages available—Bowie’s Yellow Idol, Damien’s Campers Idol, and Chase’s new Vote Stopper—no one played anything. The air was thick with the scent of a blindside that Priya never saw coming.\nVote Breakdown: 4-2-1 (Priya Eliminated)\nVotes for Priya (4): Bowie, Chase, Emmah, Julia.\nVotes for Julia (2): Damien, Priya.\nVotes for Emmah (1): Millie.\nWHY THIS VOTE HAPPENED:\nPriya is gone because she was too good. Her social game was so perfect that it became a threat. Bowie committed the ultimate strategic sin: he broke an Unbreakable Relationship. By siding with Julia and his closer allies Chase and Emmah, Bowie cut the head off the \"Red/Blue\" dragon. Millie, trying to stay \"Red Strong,\" threw a lone vote at Emmah, while Damien remained loyal to Priya until the end. Priya leaves the game shocked, her \"Golden Path\" to the finale shattered by the one man she thought would never turn on her.\n\nELIMINATED\nPriya\nReason label: \"The Threat of Perfection.\" She was the casualty of her own success. Her numerous unbreakable bonds made her the most feared player on the beach, leading to a rare moment where the \"Villain\" (Julia) and the \"Strategist\" (Bowie) united to take down a \"Hero.\"\n\nSTRATEGIC ANALYSIS\n1. Bowie: The Cold-Blooded Architect\nBowie has proven he will do whatever it takes to win. By voting out Priya, he has destroyed his \"Unbreakable\" safety net but removed his biggest competitor. He still holds a Hidden Idol and an Extra Vote, making him the most powerful—and most untrustworthy—player left.\n2. The Julia/Millie Bridge\nWith Priya gone, the Julia and Millie unbreakable bond is now the most fascinating dynamic in the game. Millie has lost her best friend but is now tied to the most ruthless player remaining. Will Julia use Millie as a social shield, or will Millie’s \"Quiet Author\" persona finally start to influence Julia’s chaos?\n3. Damien’s Isolation\nDamien is now a man alone. His unbreakable partner (Priya) is gone, and his other unbreakable partner (Bowie) just betrayed her. While he still has a Hidden Immunity Idol, he is no longer part of the social majority.\n4. Chase’s Pocket Power\nChase successfully kept his Vote Stopper secret. In a Final 6, stopping one vote is effectively 20% of the tribe's power. If he uses it correctly in the next round, he and Bowie can dictate exactly who goes to the Final 5.\n\nNEXT EPISODE QUESTIONS\nThe Aftermath: How does Damien react to Bowie's betrayal of Priya? Does their \"Unbreakable\" bond survive the night?\nThe Vote Stopper: Who does Chase target with his secret power? Will he use it to silence the \"Chaos Queen\" Julia?\nMillie’s Grief: Does Millie blame Bowie for the blindside, or does she retreat further into her bond with Julia?\nEmmah’s Swing: As the \"third wheel\" in the Bowie/Chase duo, does Emmah attempt to make a move of her own to build a resume?\nThe Last Idol: With only six players left, will Bowie or Damien blink and play their idols, or will they hold them until it's too late?"
+    },
+    {
+      "episode": 13,
+      "summary": "=== META ===\nSEASON: Total Drama 9: Land of Power\nEPISODE 13 - \"The Ball and the Beam\"\n=== CAST (ALL) ===\nAxel\nBowie\nBrightly\nCaleb\nChase\nDamien\nEmmah\nHicks\nJulia\nMK\nMillie\nNichelle\nPriya\nRaj\nRipper\nScary Girl\nWayne\nZee\n=== TRIBES (ACTIVE) ===\n#Campers (FINAL 6)\nBowie\nChase\nDamien\nEmmah\nMillie\nJulia\n=== ELIMINATED ===\nZee\nScary Girl\nNichelle\nCaleb\nHicks\nBrightly\nRaj\nRipper\nAxel\nWayne\nMK\nPriya\nJulia\n\nPRE-CHALLENGE STATUS\nThe Sanctuary of Secrets\nEntering Day 27, the \"Land of Power\" had become a tactical stalemate. Bowie remained the most heavily armed player in the history of the game, holding a stolen idol and an Extra Vote that expired tonight. However, his social standing was precarious; his \"Unbreakable Relationship\" with Damien was strained by the ghost of Priya’s blindside.\nMeanwhile, a quiet revolution had taken place between the most unlikely pairing: Millie and Julia. Their Unbreakable Relationship served as a bizarre shield for the \"Mean Girl,\" while Chase sat on a secret Vote Stopper that acted as a silent guillotine over the camp.\n\nREWARD CHALLENGE: Get Barreled\nThe Challenge: A grueling obstacle course ending in a high-precision sandbag toss.\nWinner: Damien\nReward: An overnight stay at the \"Survivor Sanctuary\" with tacos, desserts, and letters from home.\nStrategic Narrative:\nDamien’s win was more than a meal; it was an emotional lifeline. In a tactical move, he chose to share the experience with Millie and Chase. While they enjoyed tacos and wept over letters from home, the three of them solidified Campers Alliance #1. Notably, Damien left Bowie behind—a silent protest against Bowie's cutthroat gameplay in the previous rounds.\n\nANALYZE BEFORE IMMUNITY\nThe \"Power Trio\" at the sanctuary returned to find a camp divided. Bowie and Emmah had formed Campers Alliance #2, a fallback plan to counter the Damien/Millie/Chase bloc. Julia, despite her bond with Millie, was \"impressing\" the team with her physical focus, sensing that without the necklace, her \"Mean Girl\" history would finally catch up to her.\n\nIMMUNITY CHALLENGE: A Leg Up\nThe Challenge: Balancing a ball on a beam while standing on one leg. A test of pure agony and concentration.\nImmunity Winner: Bowie\nStrategic Narrative:\nThe \"King of Advantages\" finally became the \"King of Challenges.\" Bowie secured the immunity necklace, effectively ending any plans for a \"Bowie Blindside.\" With the most powerful player safe, the tribe was forced to cannibalize.\n\nPOST-CHALLENGE STATUS\n1. The Death of the Villain\nWith Bowie safe, the target landed squarely on Julia. Despite her Unbreakable Relationship with Millie and her growing bond with Emmah, the tribe viewed her as the ultimate endgame threat.\n2. The Advantage Graveyard\nTonight was the expiration date for the season's remaining tactical weapons.\nChase prepared his Vote Stopper.\nBowie prepared his Extra Vote.\nDamien and Bowie both held Hidden Idols, creating a \"Nuclear Standpoint\" where any move could be countered by a flash of gold.\n\nTRIBAL COUNCIL / VOTE ANALYSIS\nThe Vote: The 6-0 Shutout\nTribal Council was a display of absolute dominance by the Bowie-led coalition.\nThe Muzzle: Chase used his Vote Stopper on Julia. The \"Mean Girl\" was silenced before the votes were even cast, unable to even record a parting shot at her enemies.\nThe Overkill: Bowie used his Extra Vote to cast two ballots against Julia. It was a redundant display of power, but it served as a warning to the remaining five.\nThe Hoarding: In a shocking display of confidence, both Bowie and Damien kept their Hidden Idols in their pockets. They gambled that the Julia vote was unanimous—and they were right.\nVote Breakdown: 6-0 (Julia Eliminated)\nVotes for Julia (6): Bowie (x2), Chase, Damien, Emmah, Millie.\nWHY THIS VOTE HAPPENED:\nJulia is gone because she reached the limit of her social capital. Even her \"Unbreakable\" partner, Millie, realized that sitting next to Julia at the end was a losing proposition. The entire tribe—from her enemies like Chase to her allies like Emmah—recognized that this was the last chance to remove the season's most erratic strategist. Julia was \"Triple-Locked\" by a stolen idol, a silenced vote, and a unanimous tribe.\n\nELIMINATED\nJulia\nReason label: \"The Silenced Queen.\" She played a high-octane game of meltdowns and blindsides, but her inability to turn her \"Unbreakable\" bond with Millie into a defensive shield resulted in her being the only person in the merge to be sent home in a complete shutout.\n\nSTRATEGIC ANALYSIS\n1. The Final Five \"Nuclear\" State\nWe are entering the Final 5 with the highest concentration of power in Total Drama history.\nBowie has a Hidden Idol.\nDamien has a Hidden Idol.\nWith two idols and only five players, the math for the next vote is terrifying.\n2. The Bowie/Damien Resurgence\nDespite the friction at the sanctuary, their Unbreakable Relationship held through the vote. They are now the \"Power Couple\" of the endgame. If they stay together, they can use their two idols to guaranteed a spot in the Final 3.\n3. Millie’s \"Lonely Heart\"\nMillie has lost both of her \"Unbreakable\" partners (Priya and Julia) in consecutive episodes. She is now a free agent with Strong Bonds to everyone but no definitive #1. Her \"Quiet Author\" resume is growing, but she lacks the \"Shield\" she had all season.\n4. Emmah’s \"Loyalty Shift\"\nEmmah has successfully navigated the \"Knowledge is Power\" fallout to become a key vote in both Bowie’s and Damien’s plans. She is the ultimate \"swing\" player, but in a world of idols, being a swing player is a dangerous place to be.\n\nNEXT EPISODE QUESTIONS\nThe Idol Stand-Off: With two idols and five players, does the next vote become a \"Rock Draw\" if Bowie and Damien both play their gold?\nDamien’s Revenge: Does Damien finally turn on Bowie for the \"Survivor Sanctuary\" snub, or does the letters-from-home clarity make him more loyal?\nMillie’s Pivot: Does Millie attempt to pull Chase and Emmah into an \"Underdog Bloc\" to take out the idol-holders?\nChase’s Resume: Now that he used his Vote Stopper, does Chase have enough of a case to win the jury’s vote against Bowie?\nThe Last Hero: Who among the final five can claim to have played the \"Cleanest\" game in the Land of Power?"
+    },
+    {
+      "episode": 14,
+      "summary": "=== META ===\nSEASON: Total Drama 9: Land of Power\nEPISODE 14 - \"The Idol Armageddon\"\n=== CAST (ALL) ===\nAxel\nBowie\nBrightly\nCaleb\nChase\nDamien\nEmmah\nHicks\nJulia\nMK\nMillie\nNichelle\nPriya\nRaj\nRipper\nScary Girl\nWayne\nZee\n=== TRIBES (ACTIVE) ===\n#Campers (FINAL 5)\nBowie\nChase\nDamien\nEmmah\nMillie\n=== ELIMINATED ===\nZee\nScary Girl\nNichelle\nCaleb\nHicks\nBrightly\nRaj\nRipper\nAxel\nWayne\nMK\nPriya\nJulia\nEmmah\n\nPRE-CHALLENGE STATUS\nThe Penthouse of Power\nThe final five arrived at Day 30 with the most concentrated amount of defensive power in the show's history. The \"Web of Unbreakables\" remained the dominant social architecture: Millie and Damien were a lock, as were Damien and Bowie. However, the secondary bonds were beginning to fray.\nBowie entered the round as the ultimate target, but he was also the ultimate survivor, holding the stolen Yellow Tribe Idol. Damien, the quiet strategist, held the Campers Idol. Between them, they effectively controlled who would reach the Final 4, provided they didn't misplay their gold.\n\nTHE TWIST: The Jungle Scramble\nBefore the immunity challenge, the five were sent into the brush to find scattered puzzle pieces and follow a map.\nThe Winner: Chase outpaced the group, displaying a level of focus that had been missing earlier in the season.\nThe Reward: Chase claimed a Challenge Advantage, providing him with superior navigation supplies for the upcoming obstacle course.\n\nANALYZE BEFORE IMMUNITY\nThe camp was a pressure cooker of \"Least Aligned\" logic.\nBowie identified Millie as his target. Despite their strong bond, he viewed her as the social glue that could unite the others against him.\nMillie and Emmah remained a strong pair, but Damien was beginning to distance himself from Emmah, finding her erratic gameplay a liability to his long-term stability.\n\nIMMUNITY CHALLENGE: The Obstacle Course\nThe Challenge: A grueling race through the woods back to camp with only a bag of supplies. The goal: tag the totem pole before anyone else.\nWinner: Chase\nReward: Steak, red wine, and carrot cake.\nStrategic Narrative:\nFueled by his advantage supplies, Chase dominated the woods. He secured his safety and chose to share his victory feast with Bowie. Over steak and wine, the \"Yellow Tribe\" veterans solidified their plan to target Millie, but the real movement was happening back at the main camp.\n\nPOST-CHALLENGE STATUS: THE SOCIAL FRACTURE\n1. The Death of Campers Alliance #1\nThe majority coalition finally imploded. Damien and Emmah engaged in a Small Fight (Lasting). This argument was the spark that burned down the alliance. Damien, who previously shared a medium bond with Emmah, decided that she was no longer worth the emotional or strategic effort.\n2. The Final Target Shift\nYellow Tribe Alliance #1 (Bowie/Chase): Locked in on Millie.\nCampers Alliance #1 (Millie/Emmah): Locked in on Bowie.\nThe Damien Variable: Damien, safe behind his idol, found himself in the position of kingmaker.\n\nTRIBAL COUNCIL / VOTE ANALYSIS\nThe Vote: The Zero-Sum Game\nTribal Council was a display of peak paranoia. Both idol-holders realized that with only five people left, there was no room for error.\nThe Double Flush: Bowie played the Yellow Tribe Hidden Immunity Idol. Damien played the Campers Hidden Immunity Idol.\nThe Result: Both men were immune. The votes cast against them would be deleted, leaving only the votes cast against Emmah and Millie to count.\nVote Breakdown: 2-1-0 (Emmah Eliminated)\nVotes for Bowie (2): Emmah, Millie. (NEGATED)\nVotes for Emmah (2): Chase, Damien.\nVotes for Millie (1): Bowie.\nWHY THIS VOTE HAPPENED:\nEmmah is gone because the \"Unbreakable\" core of the tribe decided she was too volatile. In a shocking move, Damien and Chase both \"disagreed\" with their respective alliance plans. Damien refused to vote for his unbreakable ally Bowie, and Chase refused to vote for Millie. Instead, they both pivoted to Emmah.\nBecause Bowie’s two votes were negated by his idol, the 2-1-0 count fell on Emmah. She was the only person who didn't have a \"Nuclear\" shield or a physical necklace, and she paid the price for her recent friction with Damien.\n\nELIMINATED\nEmmah\nReason label: \"The Robber’s End.\" She was the most aggressive player of the merge, famously robbing Bowie and Julia of their power, but she could not rob the final five of their common sense. When the idols came out, she was the only target left standing without armor.\n\nSTRATEGIC ANALYSIS\n1. The Final Four: The Clean Slate\nAll idols are gone. All advantages are burned. The Final 4 (Bowie, Chase, Damien, Millie) are now entering the endgame on equal footing for the first time since the merge began.\n2. Bowie and Chase: The Yellow Resurgence\nAgainst all odds, the two original Yellow Tribe members have reached the Final 4 together. They have a Strong Bond and a history of working together. If they can stick together, they only need one more person to guarantee a spot in the Final 3.\n3. Damien: The Moral Compass\nDamien is the only person left with an Unbreakable Relationship with two different people (Millie and Bowie). He is the absolute pivot point of the season. He chose to save Bowie tonight by voting for Emmah, but he also remains fiercely loyal to Millie.\n4. Millie: The Last Woman Standing\nMillie has lost her entire support system. Her bonds with Priya, Julia, and now Emmah have all been severed by the vote. She is the ultimate underdog, but her Unbreakable Relationship with Damien is the strongest insurance policy in the game.\n\nNEXT EPISODE QUESTIONS\nThe Finale Sprint: With no idols left, who wins the final and most important immunity challenge?\nThe Damien Dilemma: Does Damien choose his \"Brother-in-Arms\" Bowie or his \"Soul-Bond\" Millie for the Final 3?\nChase’s Resume: Does Chase’s late-game physical dominance (Advantage + Immunity) give him enough of a case to beat the social masters in front of the jury?\nBowie’s Final Act: After a season of robbing idols and betraying unbreakables, can Bowie convince the jury that his \"Land of Power\" dominance was a masterclass rather than a villainous spree?\nThe Final 3: Who will be the final casualty before the walk to the winner's podium?"
+    },
+    {
+      "episode": 15,
+      "summary": "=== META ===\nSEASON: Total Drama 9: Land of Power\nEPISODE 15 - \"Triple Dog Dare You\" (THE FINALE)\n=== CAST (ALL) ===\nAxel\nBowie\nBrightly\nCaleb\nChase\nDamien\nEmmah\nHicks\nJulia\nMK\nMillie\nNichelle\nPriya\nRaj\nRipper\nScary Girl\nWayne\nZee\n=== ACTIVE (FINAL 3) ===\nBowie\nChase\nMillie\n=== ELIMINATED ===\nZee\nScary Girl\nNichelle\nCaleb\nHicks\nBrightly\nRaj\nRipper\nAxel\nWayne\nMK\nPriya\nJulia\nEmmah\nDamien\n\nPRE-CHALLENGE STATUS\nThe Triangle of Unbreakables\nThe Final 4 arrived at the ultimate crossroads of the season. The social landscape was a perfect, locked triangle of Unbreakable Relationships:\nDamien and Bowie (The Strategic Core)\nChase and Bowie (The Yellow Tribe Originals)\nMillie and Damien (The Red/Blue Survivors)\nEvery single player had a deep, emotional reason to take any of the others to the end. However, with the Final 3 in sight, \"Unbreakable\" bonds were about to be tested by the most chaotic challenge in Total Drama history.\n\nIMMUNITY CHALLENGE: Triple Dog Dare You\nThe Challenge: A high-stakes game of dares submitted by the eliminated campers. Spin the bottle, perform the dare for a \"freebie,\" or pass it to a rival. Refusal without a freebie results in instant elimination.\nWinner: Chase\nStrategic Narrative:\nIn a display of sheer desperation and iron stomach, Chase outlasted the others. Whether it was the remnants of his \"Challenge Advantage\" luck or simply a higher tolerance for the absurd dares of the jury, Chase secured the final and most important Immunity Necklace of the season.\n\nTHE DECISION: The Kingmaker’s Choice\nAs the individual immunity winner, Chase was granted a unique power: he had to choose one person to bring with him to the Final 3, leaving the other two to fight for their lives.\nThe Logic: Chase analyzed the jury. He viewed Millie as the \"easiest to beat\"—the quiet author who had spent much of the game under the wing of others.\nThe Choice: Chase granted safety to Millie.\nThis left the season's two most dominant social and strategic forces—Bowie and Damien—to face the ultimate tie-breaker.\n\nTHE FIRE-MAKING CHALLENGE: The Strategic Spark\nParticipants: Bowie vs. Damien\nThe Conflict: These two had been \"Unbreakable\" since the merge. They had protected each other with idols, shared information, and navigated the \"Misfit\" chaos as a unit. Now, they had to build a fire to burn through a rope.\nThe Result: Bowie Wins!\nStrategic Narrative:\nBowie’s \"Land of Power\" journey culminated in this single flame. While Damien was arguably the heart of the merge, Bowie’s clinical focus under pressure allowed him to strike the spark first. Bowie’s rope snapped as Damien’s fire was just beginning to catch, securing Bowie’s place in the Final 3.\n\nELIMINATED\nDamien\nReason label: \"The Final Heartbreak.\" He was the only player to maintain an unbreakable bond with nearly everyone in the Final 4. His elimination by fire, at the hands of his closest ally, is the tragic end to a nearly perfect social game. He leaves as the final member of the jury.\n\nSTRATEGIC ANALYSIS: THE FINAL THREE\n1. Bowie: The Master of the Board\nBowie enters the final jury questioning with a massive resume. He inherited the most advantages, successfully robbed the \"Mean Girl\" Julia, and won the final fire-making challenge. He has played a ruthless, high-visiblity game. His challenge is convincing the jury that his betrayals (Priya, Wayne) were necessary moves rather than personal slights.\n2. Chase: The Late-Game Titan\nChase began the season as a secondary character but ended as a challenge beast. With three consecutive wins (Advantage, Obstacle Course, Triple Dog Dare), he can claim he earned his way to the end through sheer grit. By choosing Millie for the Final 3, he has already made his first \"Winner's Move,\" but he risks looking like he’s hiding from the bigger threats.\n3. Millie: The Ultimate Survivor\nMillie is the \"Last Woman Standing.\" She outlasted her unbreakable partners Priya and Julia, and her strategist partners Hicks and Emmah. While she lacks the flashy advantages of Bowie or the immunity wins of Chase, her social survival is a feat in itself. If the jury is bitter toward Bowie's cutthroat style, Millie is the \"Moral\" alternative.\n\nTHE FINAL VOTE\nThe jury (Ripper, Axel, Wayne, MK, Priya, Julia, Emmah, Damien) must now decide who wins the million-dollar prize.\nWill the jury reward Bowie's tactical dominance?\nWill they reward Chase's physical endgame?\nOr will they reward Millie's quiet, enduring survival?"
+    },
+    {
+      "episode": 16,
+      "summary": "=== META ===\nSEASON: Total Drama 9: Land of Power\nEPISODE 16 - \"The Reunion of Power\" (FINALE)\n=== CAST (ALL) ===\nAxel\nBowie\nBrightly\nCaleb\nChase\nDamien\nEmmah\nHicks\nJulia\nMK\nMillie\nNichelle\nPriya\nRaj\nRipper\nScary Girl\nWayne\nZee\n=== ACTIVE (FINAL 3) ===\nBowie\nChase\nMillie\n=== ELIMINATED ===\nZee\nScary Girl\nNichelle\nCaleb\nHicks\nBrightly\nRaj\nRipper\nAxel\nWayne\nMK\nPriya\nJulia\nEmmah\nDamien\n=== THE FINAL THREE ===\nBowie (The Mastermind)\nChase (The Physical Titan)\nMillie (The Quiet Survivor)\n\nTHE FINAL TRIBAL COUNCIL: The Jury's Grilling\nThe atmosphere in the studios was electric as the three finalists faced the eight-member jury. The \"Land of Power\" had been a season defined by cutthroat strategy, and the jury was not about to let the finalists off easy.\nThe Speeches\nBowie leaned into his \"Advantage King\" persona. He argued that he controlled the game's resources from the first day to the last, and that his betrayal of Priya and Wayne was a testament to his commitment to winning.\nChase focused on his physical dominance. He pointed to his late-game immunity run and his \"Vote Stopper\" play, arguing that he literally fought his way to the Final Three.\nMillie delivered an emotional plea, highlighting her social endurance. She survived being isolated after losing every single one of her \"Unbreakable\" allies, proving that quiet strength can outlast loud power.\nKey Jury Questions\nWayne asked Bowie if their \"Unbreakable Relationship\" meant anything, or if he was just a human shield.\nPriya questioned Chase on why he brought Millie to the end, asking if it was out of respect or purely because he thought she was weak.\nJulia (true to form) spent her time mocking Millie's lack of a strategic \"killer instinct.\"\n\nTHE REUNION: Settling the Beefs\nBefore the winner was revealed, the entire cast of 18 reunited on stage. The \"Land of Power\" was a season of massive egos and deep fractures, and the reunion didn't disappoint:\nThe Hockey Bro Closure: Wayne and the ghost of Raj shared a tearful moment, but the tension with Julia remained palpable.\nThe Emmah Robbery: Bowie and Julia both confronted Emmah about her aggressive \"Knowledge is Power\" spree. Emmah, unrepentant, simply called it \"playing the game better than they did.\"\nThe Southern Wisdom: Hicks, the season's early narrator, provided the most grounded analysis, noting that while the \"Chemistry\" (Brightly) and the \"Strategy\" (Julia) were fun, the \"Emotional Intelligence\" (Bowie) was what actually won the game.\n\nTHE WINNER REVEAL\nThe tension peaked as Chris McLean pulled the final votes from the urn.\nVote 1: Millie\nVote 2: Bowie\nVote 3: Millie\nVote 4: Millie (Millie leads 3-1)\nVote 5: Bowie\nVote 6: Bowie\nVote 7: Bowie (Bowie leads 4-3)\nVote 8: BOWIE\nThe Final Count: 5-3-0\nCONGRATULATIONS, BOWIE!\nWinner of Total Drama 9: Land of Power\n\nTHE JURY VOTE ANALYSIS\nThe jury was clearly split between the high-octane gameplay of the strategist and the social survival of the underdog.\nJuror\nVoted For\nReason Label\nAxel\nBowie\nRespect for tactical aggression.\nDamien\nBowie\nHonoring their \"Unbreakable\" bond despite the fire-making loss.\nMK\nBowie\nChoosing the most efficient strategist.\nRipper\nBowie\nRespecting the man who outplayed everyone.\nWayne\nBowie\nLoyalty to their \"Unbreakable\" connection over the betrayal.\nEmmah\nMillie\nRewarding the player who outlasted her own \"Misfit\" alliance.\nJulia\nMillie\nA \"Spite Vote\" against Bowie for stealing her idol.\nPriya\nMillie\nRewarding her \"Unbreakable\" sister from the Red Tribe.\n\nChase received zero votes, a harsh reminder that physical wins rarely outweigh social and strategic maneuvering in the eyes of a \"Land of Power\" jury.\n\nFAN FAVORITE AWARD\nDespite her early exit, the viewers were captivated by the \"Daycare Chemist.\"\nWINNER: Brightly\nHer analytical approach and unique personality made her a breakout star of the season, even if she couldn't find the right \"mixture\" to survive the Hicks/Bowie dominance.\n\nFINAL STRATEGIC REFLECTION\nBowie’s victory is a masterclass in the \"Shield\" strategy. He spent the season surrounding himself with larger targets (Ripper, Axel, Julia) and used them to absorb the heat while he hoarded advantages. By the time the tribe realized he was the real threat, he was already safe behind a fire-making win and an arsenal of stolen power.\nMillie’s second-place finish proves that being the \"Moral Anchor\" is a valid path to the end, but her inability to claim credit for a major blindside ultimately cost her the win.\nChase’s run was a reminder that you can win all the challenges you want, but if you don't build a resume of social trust, the jury will view you as a \"passenger\" rather than a \"driver.\"\n\nTHANK YOU FOR WATCHING TOTAL DRAMA 9: LAND OF POWER!\nIt's been a ride of idols, robberies, and rock draws. Bowie takes home the million, but the \"Land of Power\" has changed all 18 campers forever."
+    }
+  ],
+  "brantsteeleStats": "TOTAL DRAMA: LAND OF POWER - SEASON 9 STATISTICS\nSeason Metadata\nSeason Name: Total Drama: Land of Power (Season 9)\nWinner: Bowie\nFinal Jury Vote: 5-3-0\nFan Favorite: Brightly\nPlacements\nPlace Player Phase Notes\n1 Bowie Winner 5 Votes To Win / Adv. Master\n2 Millie Finalist 3 Votes To Win / Unbreakable Partner\n3 Chase Finalist 0 Votes To Win / 3 Cons. Wins\n4 Damien Juror Lost Fire-Making / 5 Total Wins\n5 Emma Juror 2-2*-1 Vote / Advantage Robbery\n6 Julia Juror 6 Vote / Ice Queen Strategist\n7 Priya Juror 4-2-1 Vote / Banked Vote Strategist\n8 Mary-Kate Juror 4-2 Vote / Stealth Scientist\n9 Wayne Juror 5-5* Vote / Extra Vote Victim\n10 Axel Juror 4-1 Vote / Physical Threat\n11 Ripper Juror 5-3-2 Vote / The Cockroach\n12 Raj Pre-Juror 2-1 Vote / Blindsided with Idol\n13 Brightly Pre-Juror 4-1 Vote / The Isolated Chemist\n14 Hicks Pre-Juror 4-1 Revote / The Decapitated King\n15 Caleb Pre-Juror 2-1 Vote / Strategic Pivot Victim\n16 Nichelle Pre-Juror 3 Vote / SID Gamble Victim\n17 Lauren Pre-Juror Rocks Drawn / Chaos Outcast\n18 Zee Pre-Juror 5-1 Vote / Challenge Liability\nChallenge Performance & Voting\nChallenge Wins: Damien (5), MK (4), Chase (3), Axel (2), Emma (2), Julia (2)\nImmunity Wins: Chase (2), Others (1)\nReward Wins: Damien (4), MK (3), Julia (2), Others (1)\nVotes Received: Julia (10), Ripper (10), Priya (9), Wayne (9), Brightly (7), Chase (7), Nichelle (7), Hicks (6), Axel (5),\nZee (5), Emma (4), MK (4), Caleb (3), Bowie (2), Damien (2), Raj (2), Millie (1), Lauren (0)\nAdvantages & Awards\nMost Strategic: 1. Bowie, 2. Julia, 3. Priya\nIdols Found: Chase, Damien, Julia, Bowie (Stolen), Millie, Raj, Ripper\nTOTAL DRAMA: LAND OF POWER - SEASON 9 STATISTICS\nDetailed Accolades\nBest Physical: Chase (3 late-game wins / Elite navigation)\nBest Mental: Julia (Manipulated Raj to leave with an idol)\nMost Strategic: Bowie (Inheritance play / Stole Julia's Idol)\nBest Defensive: Priya (Banked vote / Constant social shields)\nBiggest Villain: Emmah (The public robbery of Wayne & Julia)\nMost Chaotic: Lauren (Scary Girl) - Triggered the rock draw\nMost Unlucky: Wayne (Robbed of Raj, his vote, and his power)\nTragic Exit: Raj (Blindsided with a usable idol)\nKey Narrative Moments\n1. THE INHERITANCE HEIST (Ep 8): Bowie used the Inheritance Advantage to pocket Emma's stolen Extra Vote and\nKIP.\n2. THE ICE QUEEN'S TRAP (Ep 7): Julia manipulated Raj into feeling safe, leading to him being eliminated with an idol\nin his pocket.\n3. THE IDOL ARMAGEDDON (Ep 14): Bowie and Damien both played idols at Final 5, resulting in Emma's surgical\n2-1-0 elimination.\n4. THE UNBREAKABLE BREAK (Ep 12): Bowie betrayed his unbreakable bond with Priya to remove the season's\nbiggest threat."
 }

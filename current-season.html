@@ -4616,15 +4616,26 @@ setTimeout(function() {
     
     // Check if season already exists
     const existingIndex = seasonsDB.seasons.findIndex(s => s.seasonNumber === seasonData.seasonNumber);
-    
+
+    // Only write the 3 short award fields to seasons_database (full awards live in season-data.json)
+    const shortAwards = {
+      fanFavorite:      seasonData.awards?.fanFavorite      ? { name: seasonData.awards.fanFavorite.name,      playerSlug: seasonData.awards.fanFavorite.playerSlug }      : undefined,
+      bestStrategic:    seasonData.awards?.bestStrategic    ? { name: seasonData.awards.bestStrategic.name,    playerSlug: seasonData.awards.bestStrategic.playerSlug }    : undefined,
+      mostChallengeWins: seasonData.awards?.mostChallengeWins ? { name: seasonData.awards.mostChallengeWins.name, playerSlug: seasonData.awards.mostChallengeWins.playerSlug, detail: seasonData.awards.mostChallengeWins.detail } : undefined,
+    };
+    // Remove undefined keys
+    Object.keys(shortAwards).forEach(k => shortAwards[k] === undefined && delete shortAwards[k]);
+
     const newSeasonEntry = {
+      // Preserve any existing fields (emoji, castPhotoPath, etc.) that may have been set manually
+      ...(existingIndex >= 0 ? seasonsDB.seasons[existingIndex] : {}),
       seasonNumber: seasonData.seasonNumber,
       title: seasonData.title,
       subtitle: seasonData.subtitle,
       castSize: seasonData.castSize,
       episodeCount: seasonData.episodeCount,
       winner: seasonData.winner,
-      awards: seasonData.awards,
+      awards: shortAwards,
       theme: seasonData.theme,
       status: seasonData.status,
       castPhotoPath: seasonData.castPhotoPath,

@@ -362,7 +362,7 @@ if (!playerId) {
   document.getElementById('loading').style.display = 'none';
   document.getElementById('error').style.display = 'block';
 } else {
-  // Load both databases in parallel
+  // Load player DB + rankings in parallel, then fetch season data for keyMoments
   Promise.all([
     loadPlayerDatabase(),
     loadRankingsDatabase()
@@ -389,14 +389,38 @@ if (!playerId) {
       }
     }
     
-    // Update page title
-    document.title = player.name + ' – Profile';
+    // Fetch season data files for any season missing keyMoments
+    const seasonFetches = (player.seasonDetails || []).map(sd => {
+      if (sd.keyMoments && sd.keyMoments.length) return Promise.resolve(null);
+      return fetch('season' + sd.season + '-data.json')
+        .then(r => r.ok ? r.json() : null)
+        .then(sData => {
+          if (!sData || !sData.placements) return;
+          const match = sData.placements.find(p =>
+            p.playerSlug === playerId ||
+            (p.name && player.name && p.name.toLowerCase() === player.name.toLowerCase())
+          );
+          if (!match) return;
+          if (match.keyMoments && match.keyMoments.length) sd.keyMoments = match.keyMoments;
+          if (match.story && !sd.story) sd.story = match.story;
+          if (match.gameplayStyle && !sd.gameplayStyle) sd.gameplayStyle = match.gameplayStyle;
+          if (match.alliances && match.alliances.length && (!sd.alliances || !sd.alliances.length)) sd.alliances = match.alliances;
+          if (match.rivalries && match.rivalries.length && (!sd.rivalries || !sd.rivalries.length)) sd.rivalries = match.rivalries;
+          if (match.strategicRank && !sd.strategicRank) sd.strategicRank = match.strategicRank;
+        })
+        .catch(() => null);
+    });
     
-    // Render player profile
-    renderPlayerProfile(player);
-    
-    document.getElementById('loading').style.display = 'none';
-    document.getElementById('player-content').style.display = 'block';
+    return Promise.all(seasonFetches).then(() => {
+      // Update page title
+      document.title = player.name + ' – Profile';
+      
+      // Render player profile
+      renderPlayerProfile(player);
+      
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('player-content').style.display = 'block';
+    });
   }).catch(error => {
     console.error('Error loading player data:', error);
     document.getElementById('loading').style.display = 'none';

@@ -682,6 +682,52 @@ function renderPlayerProfile(player) {
   container.innerHTML = html;
 }
 
+function buildMomentsFromStats(season) {
+  const facts = [];
+  const p = season.placement;
+  const isWin  = p === 1;
+  const isRU   = p === 2;
+  const isF3   = p === 3;
+
+  // Phase / departure
+  if (isWin)  facts.push('Won the season' + (season.finalVote ? ' with a ' + season.finalVote + ' jury vote' : ''));
+  else if (isRU)  facts.push('Reached the Final Tribal Council as runner-up' + (season.finalVote ? ' (' + season.finalVote + ')' : ''));
+  else if (isF3)  facts.push('Reached Final Tribal Council in third place');
+  else if (season.status) facts.push(season.status);
+
+  // Challenge run
+  if (season.immunityWins > 1) facts.push('Won ' + season.immunityWins + ' individual immunity challenges');
+  else if (season.immunityWins === 1) facts.push('Won individual immunity at a critical moment');
+  if (season.rewardWins > 1) facts.push('Earned ' + season.rewardWins + ' reward wins');
+  if (season.challengeWins && season.challengeWins > (season.immunityWins||0) + (season.rewardWins||0))
+    facts.push(season.challengeWins + ' total challenge wins across the season');
+
+  // Idol / advantages
+  if (season.idolsFound > 1) facts.push('Found ' + season.idolsFound + ' hidden immunity idols');
+  else if (season.idolsFound === 1) facts.push('Found a hidden immunity idol');
+
+  // Votes / heat
+  if (season.votesReceived > 6) facts.push('Absorbed ' + season.votesReceived + ' votes against — one of the season's biggest targets');
+  else if (season.votesReceived === 0 && p <= 5) facts.push('Received zero votes against — one of the cleanest games of the season');
+  else if (season.votesReceived > 0 && season.votesReceived <= 2 && p <= 5) facts.push('Received only ' + season.votesReceived + ' vote' + (season.votesReceived>1?'s':'') + ' against across the entire season');
+
+  // Jury votes
+  if (season.juryVotes > 4) facts.push('Earned ' + season.juryVotes + ' jury votes — commanded strong respect from the jury');
+  else if (season.juryVotes > 0 && !isWin) facts.push('Received ' + season.juryVotes + ' jury vote' + (season.juryVotes>1?'s':''));
+
+  // Notes as extra moments
+  const rawNotes = Array.isArray(season.notes) ? season.notes : (season.notes ? [season.notes] : []);
+  rawNotes.forEach(n => { if(n && n.length > 3) facts.push(n); });
+
+  // Story fallback
+  if (facts.length < 2 && season.story) {
+    const sentences = season.story.split(/\.(?=\s+[A-Z])/).map(s => s.trim()).filter(s => s.length > 20);
+    sentences.slice(0,3).forEach(s => facts.push(s.replace(/\.$/, '')));
+  }
+
+  return facts.slice(0, 6);
+}
+
 function renderSeasonDetails(season) {
   const isWin = season.placement===1;
   const isRU  = season.placement===2;
@@ -711,13 +757,15 @@ function renderSeasonDetails(season) {
   if(chips.length) html += `<div class="pp-pcard"><h3>Performance</h3><div class="pp-pchips">${chips.join('')}</div></div>`;
 
   // Key moments timeline
-  if(season.keyMoments&&season.keyMoments.length) {
+  // Key Moments — use real ones if available, else build from stats
+  const _moments = (season.keyMoments && season.keyMoments.length) ? season.keyMoments : buildMomentsFromStats(season);
+  if(_moments.length) {
     html += `<div class="pp-pcard"><h3>Key Moments</h3><div class="pp-tl">`;
-    season.keyMoments.forEach((m,i) => {
-      const ep = m.match(/^Ep(\d+)[:\.]/i);
-      const dot = ep ? ep[1] : (i+1);
-      const txt = ep ? m.replace(/^Ep\d+[:\.]\s*/i,'') : m;
-      html += `<div class="pp-tl-row"><div class="pp-tl-dot">${dot}</div><div class="pp-tl-txt">${txt}</div></div>`;
+    _moments.forEach((m,i) => {
+      const _ep = m.match(/^Ep(\d+)[:\.]/i);
+      const _dot = _ep ? _ep[1] : (i+1);
+      const _txt = _ep ? m.replace(/^Ep\d+[:\.\s]*/i,'') : m;
+      html += `<div class="pp-tl-row"><div class="pp-tl-dot">${_dot}</div><div class="pp-tl-txt">${_txt}</div></div>`;
     });
     html += `</div></div>`;
   }

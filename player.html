@@ -707,7 +707,7 @@ function buildMomentsFromStats(season) {
   else if (season.idolsFound === 1) facts.push('Found a hidden immunity idol');
 
   // Votes / heat
-  if (season.votesReceived > 6) facts.push('Absorbed ' + season.votesReceived + ' votes against — one of the season's biggest targets');
+  if (season.votesReceived > 6) facts.push('Absorbed ' + season.votesReceived + ' votes against — one of the season biggest targets');
   else if (season.votesReceived === 0 && p <= 5) facts.push('Received zero votes against — one of the cleanest games of the season');
   else if (season.votesReceived > 0 && season.votesReceived <= 2 && p <= 5) facts.push('Received only ' + season.votesReceived + ' vote' + (season.votesReceived>1?'s':'') + ' against across the entire season');
 

@@ -362,14 +362,31 @@ if (!playerId) {
   document.getElementById('loading').style.display = 'none';
   document.getElementById('error').style.display = 'block';
 } else {
-  // Load player database with localStorage priority
-  loadPlayerDatabase().then(data => {
+  // Load both databases in parallel
+  Promise.all([
+    loadPlayerDatabase(),
+    loadRankingsDatabase()
+  ]).then(([data, rankingsData]) => {
     const player = data.players.find(p => p.id === playerId);
     
     if (!player) {
       document.getElementById('loading').style.display = 'none';
       document.getElementById('error').style.display = 'block';
       return;
+    }
+    
+    // Merge rankings data into player object
+    if (rankingsData && rankingsData.rankings) {
+      const rankEntry = rankingsData.rankings.find(r => 
+        r.playerId === playerId || r.name === player.name
+      );
+      if (rankEntry) {
+        player.tier      = rankEntry.tier;
+        player.score     = rankEntry.score;
+        player.rank      = rankEntry.rank;
+        player.reasoning = rankEntry.reasoning;
+        player.totalRanked = rankingsData.rankings.length;
+      }
     }
     
     // Update page title
@@ -390,26 +407,27 @@ if (!playerId) {
 // Load database: try localStorage first, then project file
 async function loadPlayerDatabase() {
   try {
-    // Try localStorage first
     const raw = localStorage.getItem("players_database");
-    if (raw) {
-      console.log("✅ Loaded database from localStorage");
-      return JSON.parse(raw);
-    }
-    
-    // Fall back to project file
-    console.log("⚠️ localStorage empty, loading from project file...");
+    if (raw) return JSON.parse(raw);
     const response = await fetch('players_database.json');
     const data = await response.json();
-    
-    // Save to localStorage for next time
     localStorage.setItem("players_database", JSON.stringify(data, null, 2));
-    console.log("✅ Loaded from project file and saved to localStorage");
-    
     return data;
   } catch (error) {
-    console.error("❌ Error loading database:", error);
+    console.error("❌ Error loading players database:", error);
     throw error;
+  }
+}
+
+async function loadRankingsDatabase() {
+  try {
+    // Always fetch fresh — rankings update more often
+    const response = await fetch('rankings_database.json');
+    if (!response.ok) return null;
+    return await response.json();
+  } catch (error) {
+    console.warn("⚠️ Could not load rankings_database.json:", error);
+    return null;
   }
 }
 
@@ -422,458 +440,291 @@ const TIER_CFG = {
   'C':  { color:'#fbbf24', glow:'rgba(251,191,36,0.28)',  label:'C Tier',  icon:'🟡' },
   'D':  { color:'#9ca3af', glow:'rgba(156,163,175,0.20)', label:'D Tier',  icon:'⚪' },
 };
+function getTierInfo(t) { return TIER_CFG[t] || TIER_CFG['D']; }
 
-function getTierInfo(tier) {
-  return TIER_CFG[tier] || TIER_CFG['D'];
+function getSeasonTitle(n) {
+  const t = {1:'Cullhouse',2:'Return',3:'Revenge of the Island',4:'Edge of Extinction',
+    5:'Season 5',6:'Season 6',7:'Season 7',8:'Heroes vs Villains vs Civilians',9:'Land of Power'};
+  return t[n] || ('Season ' + n);
 }
 
 function renderPlayerProfile(player) {
   const container = document.getElementById('player-content');
-  const sortedSeasons = player.seasonDetails.slice().sort((a,b) => b.season - a.season);
-  const mostRecentSeason = sortedSeasons[0];
-  const olderSeasons = sortedSeasons.slice(1);
-
-  let winnerSeasonNum = '';
-  if (player.wins > 0) {
-    const ws = player.seasonDetails.find(sd => sd.placement === 1);
-    if (ws) winnerSeasonNum = ws.season;
-  }
-
+  const sorted = player.seasonDetails.slice().sort((a,b) => b.season - a.season);
+  const isWinner = player.wins > 0;
+  const winSeason = isWinner ? (player.seasonDetails.find(s => s.placement===1)||{}).season : null;
   const tier = player.tier || 'D';
   const tc = getTierInfo(tier);
-  const isWinner = player.wins > 0;
+  const score = player.score != null ? player.score : '—';
+  const rankStr = player.rank ? `#${player.rank} / ${player.totalRanked||'?'}` : '';
 
-  // ── HERO ──────────────────────────────────────────────────
-  let html = `
-  <style>
-    .pp-hero {
-      position: relative;
-      border-radius: 20px;
-      overflow: hidden;
-      margin-bottom: 32px;
-      background: linear-gradient(135deg, rgba(30,15,50,0.95) 0%, rgba(15,8,30,0.98) 100%);
-      border: 1px solid ${tc.color}44;
-      box-shadow: 0 0 60px ${tc.glow}, 0 0 0 1px ${tc.color}22;
-    }
-    .pp-hero-glow {
-      position: absolute; inset: 0; pointer-events: none;
-      background: radial-gradient(ellipse at 20% 50%, ${tc.glow} 0%, transparent 60%);
-    }
-    .pp-hero-inner {
-      position: relative; z-index: 1;
-      display: flex; align-items: center; gap: 28px;
-      padding: 36px 40px;
-      flex-wrap: wrap;
-    }
-    .pp-avatar-wrap {
-      position: relative; flex-shrink: 0;
-      width: 110px; height: 110px;
-    }
-    .pp-avatar-wrap img, .pp-avatar-wrap .pp-av-fallback {
-      width: 110px; height: 110px; border-radius: 50%;
-      object-fit: cover;
-      border: 3px solid ${tc.color};
-      box-shadow: 0 0 24px ${tc.glow};
-    }
-    .pp-av-fallback { display:none; background:rgba(255,255,255,0.05);
-      font-size:48px; align-items:center; justify-content:center; }
-    .pp-avatar-ring {
-      position:absolute; inset:-5px; border-radius:50%;
-      border: 2px solid ${tc.color}66;
-      animation: pp-ring-pulse 3s ease-in-out infinite;
-    }
-    @keyframes pp-ring-pulse {
-      0%,100%{ opacity:0.4; transform:scale(1); }
-      50%{ opacity:1; transform:scale(1.04); }
-    }
-    .pp-hero-info { flex: 1; min-width: 200px; }
-    .pp-name {
-      font-family: var(--font-samdan, 'Samdan', sans-serif);
-      font-size: clamp(2rem, 5vw, 3.2rem);
-      font-weight: 700; color: #fff; margin: 0 0 8px;
-      letter-spacing: 0.04em; line-height: 1.1;
-      text-shadow: 0 0 30px ${tc.color}88;
-    }
-    .pp-tier-badge {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 4px 14px; border-radius: 20px; font-size: 13px; font-weight: 700;
-      background: ${tc.color}22; border: 1px solid ${tc.color}66; color: ${tc.color};
-      margin-bottom: 10px; letter-spacing: 0.08em;
-    }
-    .pp-meta { color: var(--muted); font-size: 14px; margin-bottom: 12px; }
-    .pp-badges-hero { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-    .pp-badge-pill {
-      padding: 3px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;
-      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15); color: #ddd;
-    }
-    .pp-badge-pill.gold { background:rgba(245,158,11,.15); border-color:rgba(245,158,11,.4); color:#f59e0b; }
-    .pp-badge-pill.purple { background:rgba(167,139,250,.15); border-color:rgba(167,139,250,.4); color:#a78bfa; }
-    .pp-badge-pill.green { background:rgba(52,211,153,.12); border-color:rgba(52,211,153,.35); color:#34d399; }
-    .pp-hero-score {
-      flex-shrink: 0; text-align: center;
-    }
-    .pp-score-num {
-      font-family: var(--font-samdan, 'Samdan', sans-serif);
-      font-size: clamp(2.4rem, 6vw, 4rem); font-weight: 700; line-height: 1;
-      color: ${tc.color}; text-shadow: 0 0 24px ${tc.glow};
-    }
-    .pp-score-label { font-size: 12px; color: var(--muted); margin-top: 4px; letter-spacing: 0.1em; }
-    .pp-back-link {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 8px 16px; border-radius: 10px; font-size: 13px;
-      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
-      color: var(--muted); text-decoration: none; margin-top: 12px;
-      transition: all 0.2s;
-    }
-    .pp-back-link:hover { background: rgba(255,255,255,0.1); color: #fff; }
-
-    /* ── CAREER STAT CHIPS ── */
-    .pp-stat-row {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-      gap: 12px; margin-bottom: 28px;
-    }
-    .pp-stat-chip {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 14px; padding: 18px 16px; text-align: center;
-      transition: border-color 0.2s, transform 0.2s;
-    }
-    .pp-stat-chip:hover { border-color: ${tc.color}66; transform: translateY(-2px); }
-    .pp-stat-chip .val {
-      font-family: var(--font-samdan,'Samdan',sans-serif);
-      font-size: 2rem; font-weight: 700; color: ${tc.color}; line-height: 1;
-    }
-    .pp-stat-chip .lbl { font-size: 11px; color: var(--muted); margin-top: 5px; letter-spacing: 0.06em; text-transform: uppercase; }
-
-    /* ── SECTION HEADERS ── */
-    .pp-section-hd {
-      display: flex; align-items: center; gap: 10px;
-      margin: 32px 0 16px; padding-bottom: 10px;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-    }
-    .pp-section-hd h2 {
-      margin: 0; font-size: 1.1rem; font-weight: 700; color: #fff;
-      font-family: var(--font-samdan,'Samdan',sans-serif); letter-spacing: 0.05em;
-    }
-    .pp-section-pill {
-      padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;
-      background: ${tc.color}1a; border: 1px solid ${tc.color}44; color: ${tc.color};
-    }
-
-    /* ── SEASON TABS ── */
-    .pp-season-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
-    .pp-stab {
-      padding: 7px 18px; border-radius: 10px; font-size: 13px; font-weight: 600;
-      border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.05);
-      color: var(--muted); cursor: pointer; transition: all 0.2s;
-    }
-    .pp-stab.active, .pp-stab:hover {
-      background: ${tc.color}22; border-color: ${tc.color}66; color: ${tc.color};
-    }
-    .pp-season-panel { display: none; }
-    .pp-season-panel.active { display: block; }
-
-    /* ── SEASON CARD GRID ── */
-    .pp-season-card {
-      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 16px; padding: 20px 22px; margin-bottom: 14px;
-    }
-    .pp-season-card h3 {
-      margin: 0 0 14px; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
-      color: var(--muted); font-weight: 700; font-family: inherit;
-    }
-    .pp-perf-chips { display: flex; flex-wrap: wrap; gap: 8px; }
-    .pp-chip {
-      display: inline-flex; align-items: center; gap: 5px;
-      padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;
-      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #ddd;
-    }
-    .pp-chip.imm { background:rgba(96,165,250,.12); border-color:rgba(96,165,250,.35); color:#60a5fa; }
-    .pp-chip.rew { background:rgba(251,191,36,.10); border-color:rgba(251,191,36,.30); color:#fbbf24; }
-    .pp-chip.idol { background:rgba(167,139,250,.12); border-color:rgba(167,139,250,.35); color:#a78bfa; }
-    .pp-chip.votes { background:rgba(255,92,122,.10); border-color:rgba(255,92,122,.30); color:#ff7a96; }
-    .pp-chip.rank { background:rgba(52,211,153,.10); border-color:rgba(52,211,153,.30); color:#34d399; }
-    .pp-chip.style { background:rgba(245,158,11,.10); border-color:rgba(245,158,11,.30); color:#f59e0b; }
-
-    /* ── PLACEMENT BANNER ── */
-    .pp-placement-banner {
-      display: flex; align-items: center; gap: 14px;
-      padding: 14px 18px; border-radius: 12px; margin-bottom: 16px;
-      background: linear-gradient(90deg, ${tc.color}18 0%, transparent 100%);
-      border: 1px solid ${tc.color}33;
-    }
-    .pp-place-num {
-      font-family: var(--font-samdan,'Samdan',sans-serif);
-      font-size: 2.2rem; font-weight: 700; color: ${tc.color}; line-height: 1;
-    }
-    .pp-place-label { font-size: 13px; color: var(--muted); }
-    .pp-place-status { font-size: 15px; color: #fff; font-weight: 600; }
-
-    /* ── KEY MOMENTS TIMELINE ── */
-    .pp-timeline { padding: 4px 0; }
-    .pp-tl-item {
-      display: flex; gap: 14px; padding: 10px 0;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-    }
-    .pp-tl-item:last-child { border-bottom: none; }
-    .pp-tl-dot {
-      flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%;
-      background: ${tc.color}22; border: 2px solid ${tc.color}66;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 11px; font-weight: 700; color: ${tc.color}; margin-top: 2px;
-    }
-    .pp-tl-text { font-size: 13px; color: #ccc; line-height: 1.5; }
-
-    /* ── ALLIANCE / RIVALRY CHIPS ── */
-    .pp-people-chips { display: flex; flex-wrap: wrap; gap: 8px; }
-    .pp-person-chip {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;
-      text-decoration: none; transition: all 0.18s;
-    }
-    .pp-person-chip.ally {
-      background: rgba(52,211,153,.1); border: 1px solid rgba(52,211,153,.35); color:#34d399;
-    }
-    .pp-person-chip.ally:hover { background: rgba(52,211,153,.2); }
-    .pp-person-chip.rival {
-      background: rgba(255,92,122,.1); border: 1px solid rgba(255,92,122,.3); color:#ff7a96;
-    }
-    .pp-person-chip.rival:hover { background: rgba(255,92,122,.2); }
-
-    /* ── STORY SECTION ── */
-    .pp-story-card {
-      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
-      border-left: 4px solid ${tc.color}; border-radius: 0 16px 16px 0;
-      padding: 28px 30px; line-height: 1.8; font-size: 15px; color: #d0c8e0;
-    }
-    .pp-story-card .stats-highlight {
-      color: ${tc.color}; font-weight: 600;
-      background: ${tc.color}14; padding: 1px 5px; border-radius: 4px;
-    }
-
-    /* ── REASONING CARD ── */
-    .pp-reasoning {
-      background: linear-gradient(135deg, rgba(30,15,50,0.6), rgba(15,8,30,0.8));
-      border: 1px solid ${tc.color}33;
-      border-radius: 14px; padding: 20px 24px;
-      font-size: 14px; color: #c8bedd; line-height: 1.7;
-      margin-bottom: 28px;
-    }
-    .pp-reasoning-label {
-      font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
-      color: ${tc.color}; font-weight: 700; margin-bottom: 8px;
-    }
-
-    /* ── ENTRANCE ANIMATIONS ── */
-    @keyframes pp-fadein { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:none; } }
-    #player-content > * { animation: pp-fadein 0.4s ease both; }
-    #player-content > *:nth-child(2) { animation-delay: 0.05s; }
-    #player-content > *:nth-child(3) { animation-delay: 0.10s; }
-    #player-content > *:nth-child(4) { animation-delay: 0.15s; }
-    #player-content > *:nth-child(5) { animation-delay: 0.20s; }
+  let html = `<style>
+  .pp-hero{position:relative;border-radius:20px;overflow:hidden;margin-bottom:28px;
+    background:linear-gradient(135deg,rgba(30,15,50,.95),rgba(15,8,30,.98));
+    border:1px solid ${tc.color}44;box-shadow:0 0 60px ${tc.glow},0 0 0 1px ${tc.color}22;}
+  .pp-hero-glow{position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(ellipse at 20% 50%,${tc.glow} 0%,transparent 60%);}
+  .pp-hero-inner{position:relative;z-index:1;display:flex;align-items:center;gap:24px;
+    padding:32px 36px;flex-wrap:wrap;}
+  .pp-av-wrap{position:relative;flex-shrink:0;width:100px;height:100px;}
+  .pp-av-wrap img,.pp-av-fb{width:100px;height:100px;border-radius:50%;object-fit:cover;
+    border:3px solid ${tc.color};box-shadow:0 0 20px ${tc.glow};}
+  .pp-av-fb{display:none;background:rgba(255,255,255,.06);font-size:44px;
+    align-items:center;justify-content:center;}
+  .pp-av-ring{position:absolute;inset:-5px;border-radius:50%;border:2px solid ${tc.color}55;
+    animation:ring-pulse 3s ease-in-out infinite;}
+  @keyframes ring-pulse{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:1;transform:scale(1.04)}}
+  .pp-info{flex:1;min-width:200px;}
+  .pp-tier-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 12px;border-radius:20px;
+    font-size:12px;font-weight:700;background:${tc.color}1a;border:1px solid ${tc.color}55;
+    color:${tc.color};margin-bottom:8px;letter-spacing:.07em;}
+  .pp-name{font-family:var(--font-samdan,'Samdan',sans-serif);
+    font-size:clamp(1.8rem,5vw,3rem);font-weight:700;color:#fff;margin:0 0 6px;
+    letter-spacing:.04em;line-height:1.1;text-shadow:0 0 28px ${tc.color}77;}
+  .pp-meta{color:var(--muted);font-size:13px;margin-bottom:10px;}
+  .pp-badges{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+  .pp-badge{padding:3px 11px;border-radius:20px;font-size:11px;font-weight:600;
+    background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);color:#ccc;}
+  .pp-badge.gold{background:rgba(245,158,11,.14);border-color:rgba(245,158,11,.4);color:#f59e0b;}
+  .pp-badge.purple{background:rgba(167,139,250,.14);border-color:rgba(167,139,250,.4);color:#a78bfa;}
+  .pp-badge.green{background:rgba(52,211,153,.12);border-color:rgba(52,211,153,.35);color:#34d399;}
+  .pp-back{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:10px;
+    font-size:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.11);
+    color:var(--muted);text-decoration:none;transition:all .2s;}
+  .pp-back:hover{background:rgba(255,255,255,.1);color:#fff;}
+  .pp-score-block{flex-shrink:0;text-align:center;padding:12px 18px;border-radius:14px;
+    background:${tc.color}0d;border:1px solid ${tc.color}33;}
+  .pp-score-num{font-family:var(--font-samdan,'Samdan',sans-serif);
+    font-size:clamp(2.2rem,5vw,3.4rem);font-weight:700;color:${tc.color};
+    text-shadow:0 0 20px ${tc.glow};line-height:1;}
+  .pp-score-sub{font-size:11px;color:var(--muted);margin-top:3px;letter-spacing:.07em;}
+  .pp-rank-badge{margin-top:8px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;
+    background:${tc.color}18;border:1px solid ${tc.color}44;color:${tc.color};letter-spacing:.06em;}
+  .pp-section{display:flex;align-items:center;gap:10px;margin:28px 0 14px;padding-bottom:10px;
+    border-bottom:1px solid rgba(255,255,255,.08);}
+  .pp-section h2{margin:0;font-size:1.05rem;font-weight:700;color:#fff;
+    font-family:var(--font-samdan,'Samdan',sans-serif);letter-spacing:.05em;}
+  .pp-pill{padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600;
+    background:${tc.color}18;border:1px solid ${tc.color}44;color:${tc.color};}
+  .pp-chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:24px;}
+  .pp-chip{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:13px;
+    padding:16px 14px;text-align:center;transition:border-color .2s,transform .2s;cursor:default;}
+  .pp-chip:hover{border-color:${tc.color}55;transform:translateY(-2px);}
+  .pp-chip .v{font-family:var(--font-samdan,'Samdan',sans-serif);
+    font-size:1.9rem;font-weight:700;color:${tc.color};line-height:1;}
+  .pp-chip .l{font-size:10px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.06em;}
+  .pp-season-nav{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+  .pp-tabs{display:flex;gap:7px;flex-wrap:wrap;}
+  .pp-tab{padding:7px 16px;border-radius:10px;font-size:13px;font-weight:600;
+    border:1px solid rgba(255,255,255,.11);background:rgba(255,255,255,.04);
+    color:var(--muted);cursor:pointer;transition:all .2s;}
+  .pp-tab.on,.pp-tab:hover{background:${tc.color}1f;border-color:${tc.color}55;color:${tc.color};}
+  .pp-season-links{display:flex;gap:6px;flex-wrap:wrap;}
+  .pp-slink{padding:6px 13px;border-radius:10px;font-size:12px;font-weight:600;
+    background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);
+    color:var(--muted);text-decoration:none;transition:all .2s;}
+  .pp-slink:hover{background:rgba(255,255,255,.1);color:#fff;}
+  .pp-panel{display:none;} .pp-panel.on{display:block;}
+  .pp-pcard{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);
+    border-radius:14px;padding:18px 20px;margin-bottom:12px;}
+  .pp-pcard h3{margin:0 0 12px;font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+    color:var(--muted);font-weight:700;font-family:inherit;}
+  .pp-pchips{display:flex;flex-wrap:wrap;gap:7px;}
+  .pc{display:inline-flex;align-items:center;gap:4px;padding:5px 11px;border-radius:20px;
+    font-size:12px;font-weight:600;background:rgba(255,255,255,.05);
+    border:1px solid rgba(255,255,255,.11);color:#ccc;}
+  .pc.imm{background:rgba(96,165,250,.11);border-color:rgba(96,165,250,.33);color:#60a5fa;}
+  .pc.rew{background:rgba(251,191,36,.09);border-color:rgba(251,191,36,.28);color:#fbbf24;}
+  .pc.idol{background:rgba(167,139,250,.11);border-color:rgba(167,139,250,.33);color:#a78bfa;}
+  .pc.votes{background:rgba(255,92,122,.09);border-color:rgba(255,92,122,.28);color:#ff7a96;}
+  .pc.rank{background:rgba(52,211,153,.09);border-color:rgba(52,211,153,.28);color:#34d399;}
+  .pc.style{background:rgba(245,158,11,.09);border-color:rgba(245,158,11,.28);color:#f59e0b;}
+  .pp-banner{display:flex;align-items:center;gap:14px;padding:14px 18px;border-radius:12px;
+    margin-bottom:14px;background:linear-gradient(90deg,${tc.color}16 0%,transparent 100%);
+    border:1px solid ${tc.color}30;}
+  .pp-place-n{font-family:var(--font-samdan,'Samdan',sans-serif);
+    font-size:2.1rem;font-weight:700;color:${tc.color};line-height:1;}
+  .pp-tl{padding:4px 0;}
+  .pp-tl-row{display:flex;gap:13px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05);}
+  .pp-tl-row:last-child{border-bottom:none;}
+  .pp-tl-dot{flex-shrink:0;width:26px;height:26px;border-radius:50%;
+    background:${tc.color}1a;border:2px solid ${tc.color}55;display:flex;
+    align-items:center;justify-content:center;font-size:10px;font-weight:700;
+    color:${tc.color};margin-top:2px;}
+  .pp-tl-txt{font-size:13px;color:#ccc;line-height:1.5;}
+  .pp-ppl{display:flex;flex-wrap:wrap;gap:7px;}
+  .pp-ally,.pp-rival{display:inline-flex;align-items:center;gap:5px;
+    padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;
+    text-decoration:none;transition:all .18s;}
+  .pp-ally{background:rgba(52,211,153,.09);border:1px solid rgba(52,211,153,.3);color:#34d399;}
+  .pp-ally:hover{background:rgba(52,211,153,.18);}
+  .pp-rival{background:rgba(255,92,122,.09);border:1px solid rgba(255,92,122,.28);color:#ff7a96;}
+  .pp-rival:hover{background:rgba(255,92,122,.18);}
+  .pp-story{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);
+    border-left:4px solid ${tc.color};border-radius:0 14px 14px 0;
+    padding:24px 28px;line-height:1.85;font-size:15px;color:#d0c8e0;}
+  .pp-story .stats-highlight{color:${tc.color};font-weight:600;
+    background:${tc.color}12;padding:1px 4px;border-radius:4px;}
+  .pp-why{background:linear-gradient(135deg,rgba(30,15,50,.6),rgba(15,8,30,.8));
+    border:1px solid ${tc.color}30;border-radius:13px;padding:18px 22px;
+    font-size:14px;color:#c8bedd;line-height:1.7;margin-bottom:24px;}
+  .pp-why-lbl{font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+    color:${tc.color};font-weight:700;margin-bottom:7px;}
+  .pp-grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  @media(max-width:600px){.pp-grid2{grid-template-columns:1fr;}}
+  @keyframes pp-in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  #player-content>*{animation:pp-in .35s ease both;}
+  #player-content>*:nth-child(2){animation-delay:.05s;}
+  #player-content>*:nth-child(3){animation-delay:.1s;}
+  #player-content>*:nth-child(4){animation-delay:.15s;}
+  #player-content>*:nth-child(5){animation-delay:.2s;}
   </style>`;
 
-  // ── HERO SECTION ─────────────────────────────────────────
-  const scoreVal = player.score != null ? player.score : '—';
-  html += `
-  <div class="pp-hero">
-    <div class="pp-hero-glow"></div>
-    <div class="pp-hero-inner">
-      <div class="pp-avatar-wrap">
-        <img src="assets/avatars/${player.id}.png" alt="${player.name}" id="pp-img-${player.id}"
-          onerror="this.style.display='none';document.getElementById('pp-fb-${player.id}').style.display='flex'"/>
-        <div class="pp-av-fallback" id="pp-fb-${player.id}">👤</div>
-        <div class="pp-avatar-ring"></div>
-      </div>
-      <div class="pp-hero-info">
-        <div class="pp-tier-badge">${tc.icon} ${tc.label}</div>
-        <div class="pp-name">${player.name}${isWinner ? ' 👑' : ''}</div>
-        <div class="pp-meta">${player.totalSeasons} season${player.totalSeasons>1?'s':''} &nbsp;•&nbsp; ${player.wins} win${player.wins!==1?'s':''} &nbsp;•&nbsp; Best: #${player.bestPlacement}${winnerSeasonNum ? ' (S' + winnerSeasonNum + ' Winner)' : ''}</div>
-        <div class="pp-badges-hero">`;
-  if (player.badges && player.badges.length) {
-    player.badges.forEach(b => {
-      let cls = '';
-      if (b.includes('Winner') || b.includes('WINNER')) cls = 'gold';
-      else if (b.includes('Strategic') || b.includes('Social')) cls = 'purple';
-      else if (b.includes('Unbreakable') || b.includes('Tier')) cls = 'green';
-      html += `<span class="pp-badge-pill ${cls}">${b}</span>`;
-    });
-  }
-  html += `
-        </div>
-        <a class="pp-back-link" href="devotees.html">← All Players</a>
-      </div>
-      <div class="pp-hero-score">
-        <div class="pp-score-num">${scoreVal}</div>
-        <div class="pp-score-label">/ 100</div>
-      </div>
-    </div>
-  </div>`;
+  // ── HERO ─────────────────────────────────────────────────
+  html += `<div class="pp-hero"><div class="pp-hero-glow"></div><div class="pp-hero-inner">
+  <div class="pp-av-wrap">
+    <img src="assets/avatars/${player.id}.png" alt="${player.name}"
+      onerror="this.style.display='none';document.getElementById('ppfb').style.display='flex'"/>
+    <div class="pp-av-fb" id="ppfb">👤</div>
+    <div class="pp-av-ring"></div>
+  </div>
+  <div class="pp-info">
+    <div class="pp-tier-pill">${tc.icon} ${tc.label}</div>
+    <div class="pp-name">${player.name}${isWinner?' 👑':''}</div>
+    <div class="pp-meta">${player.totalSeasons} season${player.totalSeasons>1?'s':''} &nbsp;•&nbsp; ${player.wins} win${player.wins!==1?'s':''} &nbsp;•&nbsp; Best: #${player.bestPlacement}${winSeason?' (S'+winSeason+' Winner)':''}</div>
+    <div class="pp-badges">`;
+  (player.badges||[]).forEach(b => {
+    let c = b.includes('Winner')||b.includes('WINNER') ? 'gold'
+          : b.includes('Strategic')||b.includes('Social') ? 'purple'
+          : b.includes('Tier')||b.includes('Unbreakable') ? 'green' : '';
+    html += `<span class="pp-badge ${c}">${b}</span>`;
+  });
+  html += `</div><a class="pp-back" href="devotees.html">← All Players</a></div>
+  <div class="pp-score-block">
+    <div class="pp-score-num">${score}</div>
+    <div class="pp-score-sub">/ 100</div>
+    ${rankStr ? `<div class="pp-rank-badge">${rankStr}</div>` : ''}
+  </div>
+  </div></div>`;
 
-  // ── REASONING (if available from rankings_database) ───────
+  // ── WHY TIER ─────────────────────────────────────────────
   if (player.reasoning) {
-    html += `
-  <div class="pp-reasoning">
-    <div class="pp-reasoning-label">Why ${tier} Tier</div>
-    ${player.reasoning}
-  </div>`;
+    html += `<div class="pp-why"><div class="pp-why-lbl">Why ${tier} Tier</div>${player.reasoning}</div>`;
   }
 
   // ── CAREER STATS ─────────────────────────────────────────
-  html += `
-  <div class="pp-section-hd">
-    <h2>Career at a Glance</h2>
-    <span class="pp-section-pill">${player.totalSeasons} season${player.totalSeasons>1?'s':''}</span>
-  </div>
-  <div class="pp-stat-row">
-    <div class="pp-stat-chip"><div class="val">${player.totalSeasons}</div><div class="lbl">Seasons</div></div>
-    <div class="pp-stat-chip"><div class="val">${player.wins}</div><div class="lbl">Wins</div></div>
-    <div class="pp-stat-chip"><div class="val">#${player.bestPlacement}</div><div class="lbl">Best Placement</div></div>
-    <div class="pp-stat-chip"><div class="val">${player.totalChallengeWins||0}</div><div class="lbl">Challenge Wins</div></div>
-    <div class="pp-stat-chip"><div class="val">${player.totalImmunityWins||0}</div><div class="lbl">Immunity Wins</div></div>
-    <div class="pp-stat-chip"><div class="val">${player.totalVotesAgainst||0}</div><div class="lbl">Votes Against</div></div>
-    ${player.totalJuryVotes !== undefined ? `<div class="pp-stat-chip"><div class="val">${player.totalJuryVotes}</div><div class="lbl">Jury Votes</div></div>` : ''}
-    ${player.totalIdolsFound ? `<div class="pp-stat-chip"><div class="val">${player.totalIdolsFound}</div><div class="lbl">Idols Found</div></div>` : ''}
+  html += `<div class="pp-section"><h2>Career at a Glance</h2><span class="pp-pill">${player.totalSeasons} season${player.totalSeasons>1?'s':''}</span></div>`;
+  html += `<div class="pp-chips">
+    <div class="pp-chip"><div class="v">${player.totalSeasons}</div><div class="l">Seasons</div></div>
+    <div class="pp-chip"><div class="v">${player.wins}</div><div class="l">Wins</div></div>
+    <div class="pp-chip"><div class="v">#${player.bestPlacement}</div><div class="l">Best Finish</div></div>
+    <div class="pp-chip"><div class="v">${player.totalChallengeWins||0}</div><div class="l">Challenge Wins</div></div>
+    <div class="pp-chip"><div class="v">${player.totalImmunityWins||0}</div><div class="l">Immunity Wins</div></div>
+    <div class="pp-chip"><div class="v">${player.totalVotesAgainst||0}</div><div class="l">Votes Against</div></div>
+    ${player.totalJuryVotes!=null?`<div class="pp-chip"><div class="v">${player.totalJuryVotes}</div><div class="l">Jury Votes</div></div>`:''}
+    ${player.totalIdolsFound?`<div class="pp-chip"><div class="v">${player.totalIdolsFound}</div><div class="l">Idols Found</div></div>`:''}
+    ${player.winRate!=null?`<div class="pp-chip"><div class="v">${player.winRate}%</div><div class="l">Win Rate</div></div>`:''}
   </div>`;
 
-  // ── SEASON TABS ───────────────────────────────────────────
-  html += `
-  <div class="pp-section-hd">
-    <h2>Season History</h2>
-  </div>`;
+  // ── SEASON HISTORY ────────────────────────────────────────
+  html += `<div class="pp-section"><h2>Season History</h2></div>`;
+  html += `<div class="pp-season-nav">
+    <div class="pp-tabs">`;
+  sorted.forEach((s,i) => {
+    const win = s.placement===1;
+    html += `<div class="pp-tab${i===0?' on':''}" onclick="ppTab(${s.season})" id="ppt-${s.season}">${win?'🏆 ':''}S${s.season}</div>`;
+  });
+  html += `</div>
+    <div class="pp-season-links">`;
+  sorted.forEach(s => {
+    html += `<a class="pp-slink" href="season_ref.html?season=${s.season}">S${s.season} Page →</a>`;
+  });
+  html += `</div></div>`;
 
-  if (sortedSeasons.length > 1) {
-    html += '<div class="pp-season-tabs">';
-    sortedSeasons.forEach((s, i) => {
-      const label = getSeasonTitle(s.season);
-      html += `<div class="pp-stab${i===0?' active':''}" onclick="ppSwitchTab(${s.season})" id="pptab-${s.season}">S${s.season}${label.replace(/–.*/, '').trim()}</div>`;
-    });
-    html += '</div>';
-  }
-
-  sortedSeasons.forEach((s, i) => {
-    html += `<div class="pp-season-panel${i===0?' active':''}" id="pppanel-${s.season}">`;
-    html += renderSeasonDetails(s, i===0);
+  sorted.forEach((s,i) => {
+    html += `<div class="pp-panel${i===0?' on':''}" id="ppp-${s.season}">`;
+    html += renderSeasonDetails(s);
     html += `</div>`;
   });
 
-  // ── PLAYER STORY ─────────────────────────────────────────
+  // ── STORY ────────────────────────────────────────────────
   if (player.story) {
-    html += `
-  <div class="pp-section-hd" style="margin-top:32px">
-    <h2>Player Story</h2>
-  </div>
-  <div class="pp-story-card">${formatPlayerStory(player.story)}</div>`;
+    html += `<div class="pp-section" style="margin-top:28px"><h2>Player Story</h2></div>
+    <div class="pp-story">${formatPlayerStory(player.story)}</div>`;
   }
 
-  html += `
-  <script>
-  function ppSwitchTab(seasonNum) {
-    document.querySelectorAll('.pp-stab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.pp-season-panel').forEach(p => p.classList.remove('active'));
-    const tab = document.getElementById('pptab-' + seasonNum);
-    const panel = document.getElementById('pppanel-' + seasonNum);
-    if(tab) tab.classList.add('active');
-    if(panel) panel.classList.add('active');
+  html += `<script>
+  function ppTab(n) {
+    document.querySelectorAll('.pp-tab').forEach(t=>t.classList.remove('on'));
+    document.querySelectorAll('.pp-panel').forEach(p=>p.classList.remove('on'));
+    const t=document.getElementById('ppt-'+n);
+    const p=document.getElementById('ppp-'+n);
+    if(t)t.classList.add('on');
+    if(p)p.classList.add('on');
   }
   <\/script>`;
 
   container.innerHTML = html;
 }
 
-function getSeasonTitle(seasonNum) {
-  const titles = {
-    1: ' – Total Drama: Cullhouse',
-    2: ' – Total Drama 2',
-    3: ' – Revenge of the Island',
-    4: ' – Edge of Extinction',
-    5: ' – Season 5'
-  };
-  return titles[seasonNum] || '';
-}
+function renderSeasonDetails(season) {
+  const isWin = season.placement===1;
+  const isRU  = season.placement===2;
+  let placeLabel = isWin?'🏆 #1' : isRU?'🥈 #2' : '#'+season.placement;
+  let statusTxt  = season.status || (isWin?'WINNER':isRU?'Runner-Up':'');
 
-function renderSeasonDetails(season, isMostRecent) {
-  const placement = season.placement;
-  const isWinner = placement === 1;
-  const isRunnerUp = placement === 2;
-
-  // Placement banner
-  let placeLabel = '#' + placement;
-  let statusText = season.status || '';
-  if (isWinner) { placeLabel = '🏆 #1'; statusText = 'WINNER'; }
-  else if (isRunnerUp) { placeLabel = '🥈 #2'; statusText = 'Runner-Up'; }
-
-  let html = `
-  <div class="pp-placement-banner">
-    <div class="pp-place-num">${placeLabel}</div>
+  let html = `<div class="pp-banner">
+    <div class="pp-place-n">${placeLabel}</div>
     <div>
-      <div class="pp-place-status">${statusText}</div>
-      ${season.tribe ? `<div class="pp-place-label">Tribe: ${season.tribe}</div>` : ''}
-      ${season.finalVote ? `<div class="pp-place-label">Final vote: ${season.finalVote}</div>` : ''}
-      ${season.juryVotes !== undefined ? `<div class="pp-place-label">${season.juryVotes} jury vote${season.juryVotes!==1?'s':''}</div>` : ''}
+      <div style="font-size:15px;font-weight:600;color:#fff">${statusTxt}</div>
+      ${season.tribe?`<div style="font-size:12px;color:var(--muted)">Tribe: ${season.tribe}</div>`:''}
+      ${season.finalVote?`<div style="font-size:12px;color:var(--muted)">Final vote: ${season.finalVote}</div>`:''}
+      ${season.juryVotes!=null?`<div style="font-size:12px;color:var(--muted)">${season.juryVotes} jury vote${season.juryVotes!==1?'s':''}</div>`:''}
     </div>
   </div>`;
 
   // Performance chips
-  const chips = [];
-  if (season.immunityWins) chips.push(`<span class="pp-chip imm">🛡️ ${season.immunityWins} Immunity</span>`);
-  if (season.rewardWins)   chips.push(`<span class="pp-chip rew">🎁 ${season.rewardWins} Reward</span>`);
-  if (season.idolsFound)   chips.push(`<span class="pp-chip idol">💎 ${season.idolsFound} Idol${season.idolsFound>1?'s':''}</span>`);
-  if (season.votesReceived) chips.push(`<span class="pp-chip votes">🎯 ${season.votesReceived} Votes Against</span>`);
-  if (season.strategicRank) chips.push(`<span class="pp-chip rank">📐 Strategic Rank #${season.strategicRank}</span>`);
-  if (season.gameplayStyle) chips.push(`<span class="pp-chip style">🎭 ${season.gameplayStyle}</span>`);
+  const chips=[];
+  if(season.immunityWins)  chips.push(`<span class="pc imm">🛡️ ${season.immunityWins} Immunity${season.immunityWins>1?' Wins':' Win'}</span>`);
+  if(season.rewardWins)    chips.push(`<span class="pc rew">🎁 ${season.rewardWins} Reward${season.rewardWins>1?' Wins':' Win'}</span>`);
+  if(season.idolsFound)    chips.push(`<span class="pc idol">💎 ${season.idolsFound} Idol${season.idolsFound>1?'s':''} Found</span>`);
+  if(season.votesReceived) chips.push(`<span class="pc votes">🎯 ${season.votesReceived} Votes Against</span>`);
+  if(season.challengeWins) chips.push(`<span class="pc">⚡ ${season.challengeWins} Challenge${season.challengeWins>1?' Wins':' Win'}</span>`);
+  if(season.strategicRank) chips.push(`<span class="pc rank">📐 Strategic Rank #${season.strategicRank}</span>`);
+  if(season.gameplayStyle) chips.push(`<span class="pc style">🎭 ${season.gameplayStyle}</span>`);
 
-  if (chips.length) {
-    html += `
-  <div class="pp-season-card">
-    <h3>Performance</h3>
-    <div class="pp-perf-chips">${chips.join('')}</div>
-  </div>`;
-  }
+  if(chips.length) html += `<div class="pp-pcard"><h3>Performance</h3><div class="pp-pchips">${chips.join('')}</div></div>`;
 
   // Key moments timeline
-  if (season.keyMoments && season.keyMoments.length) {
-    html += `
-  <div class="pp-season-card">
-    <h3>Key Moments</h3>
-    <div class="pp-timeline">`;
-    season.keyMoments.forEach((m, i) => {
-      // Extract episode number if present (e.g. "Ep5: ...")
-      const epMatch = m.match(/^Ep(\d+)[:\.]/i);
-      const dotLabel = epMatch ? epMatch[1] : (i+1);
-      const text = epMatch ? m.replace(/^Ep\d+[:\.]\s*/i, '') : m;
-      html += `
-      <div class="pp-tl-item">
-        <div class="pp-tl-dot">${dotLabel}</div>
-        <div class="pp-tl-text">${text}</div>
-      </div>`;
+  if(season.keyMoments&&season.keyMoments.length) {
+    html += `<div class="pp-pcard"><h3>Key Moments</h3><div class="pp-tl">`;
+    season.keyMoments.forEach((m,i) => {
+      const ep = m.match(/^Ep(\d+)[:\.]/i);
+      const dot = ep ? ep[1] : (i+1);
+      const txt = ep ? m.replace(/^Ep\d+[:\.]\s*/i,'') : m;
+      html += `<div class="pp-tl-row"><div class="pp-tl-dot">${dot}</div><div class="pp-tl-txt">${txt}</div></div>`;
     });
     html += `</div></div>`;
   }
 
-  // Alliances + Rivalries side by side
-  if ((season.alliances && season.alliances.length) || (season.rivalries && season.rivalries.length)) {
-    html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">`;
-    if (season.alliances && season.alliances.length) {
-      html += `
-  <div class="pp-season-card">
-    <h3>🤝 Alliances</h3>
-    <div class="pp-people-chips">`;
+  // Alliances + Rivalries
+  const hasA = season.alliances&&season.alliances.length;
+  const hasR = season.rivalries&&season.rivalries.length;
+  if(hasA||hasR) {
+    html += `<div class="pp-grid2">`;
+    if(hasA) {
+      html += `<div class="pp-pcard"><h3>🤝 Alliances</h3><div class="pp-ppl">`;
       season.alliances.forEach(a => {
         const slug = a.toLowerCase().replace(/[^a-z0-9]/g,'-');
-        html += `<a class="pp-person-chip ally" href="player.html?player=${slug}">👤 ${a}</a>`;
+        html += `<a class="pp-ally" href="player.html?player=${slug}">👤 ${a}</a>`;
       });
       html += `</div></div>`;
     }
-    if (season.rivalries && season.rivalries.length) {
-      html += `
-  <div class="pp-season-card">
-    <h3>⚔️ Rivalries</h3>
-    <div class="pp-people-chips">`;
+    if(hasR) {
+      html += `<div class="pp-pcard"><h3>⚔️ Rivalries</h3><div class="pp-ppl">`;
       season.rivalries.forEach(r => {
         const slug = r.toLowerCase().replace(/[^a-z0-9]/g,'-');
-        html += `<a class="pp-person-chip rival" href="player.html?player=${slug}">⚔️ ${r}</a>`;
+        html += `<a class="pp-rival" href="player.html?player=${slug}">⚔️ ${r}</a>`;
       });
       html += `</div></div>`;
     }
@@ -881,22 +732,16 @@ function renderSeasonDetails(season, isMostRecent) {
   }
 
   // Notes
-  if (season.notes) {
-    const notesArr = Array.isArray(season.notes) ? season.notes : [season.notes];
-    if (notesArr.length) {
-      html += `
-  <div class="pp-season-card">
-    <h3>Notes</h3>
-    <div class="pp-perf-chips">`;
-      notesArr.forEach(n => {
-        html += `<span class="pp-chip">📝 ${n}</span>`;
-      });
-      html += `</div></div>`;
-    }
+  const notes = season.notes ? (Array.isArray(season.notes)?season.notes:[season.notes]) : [];
+  if(notes.length) {
+    html += `<div class="pp-pcard"><h3>Notes</h3><div class="pp-pchips">`;
+    notes.forEach(n => html += `<span class="pc">📝 ${n}</span>`);
+    html += `</div></div>`;
   }
 
   return html;
 }
+
 </script>
 
 </body>

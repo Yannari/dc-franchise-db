@@ -1,0 +1,820 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Player Profile</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+<!-- SITE HEADER START -->
+<header class="modern-header" id="modernHeader">
+  <div class="header-container">
+    <!-- Top Bar -->
+    <div class="header-top">
+      <a href="index.html" class="brand-section" aria-label="Go to home">
+        <div class="brand-icon">
+          <span class="brand-logo-text">⚡</span>
+        </div>
+        <div class="brand-content">
+          <h1>DC <span class="brand-gradient">Franchise</span> Database</h1>
+          <p class="brand-subtitle">Season <span id="currentSeasonNum">5</span> Live • Click to Explore</p>
+        </div>
+      </a>
+
+      <div class="stats-badge">
+        <div class="stats-main"><span id="totalSeasons">5</span> Seasons • <span id="totalPlayers">58</span> Players</div>
+        <div class="stats-sub">Icons: <span id="iconFormat">name.png</span></div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="header-nav" aria-label="Primary navigation">
+      <ul class="nav-list">
+        <li class="nav-item">
+          <a href="index.html" class="nav-link" data-page="index">
+            <span class="nav-icon">🏠</span>
+            <span>Home</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="current-season.html" class="nav-link" data-page="current-season">
+            <span class="nav-icon">📊</span>
+            <span>Current Season</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="voting-analytics.html" class="nav-link" data-page="voting-analytics">
+            <span class="nav-icon">🧾</span>
+            <span>Voting Analytics</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="franchise.html" class="nav-link" data-page="franchise">
+            <span class="nav-icon">🏛️</span>
+            <span>Franchise</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="rankings.html" class="nav-link" data-page="rankings">
+            <span class="nav-icon">🏆</span>
+            <span>Rankings</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="seasons.html" class="nav-link" data-page="seasons">
+            <span class="nav-icon">🗂️</span>
+            <span>Seasons</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="devotees.html" class="nav-link" data-page="devotees">
+            <span class="nav-icon">👥</span>
+            <span>Players</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="awards.html" class="nav-link" data-page="awards">
+            <span class="nav-icon">🏅</span>
+            <span>Awards</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<script>
+(function() {
+  // Load site config and update header stats
+  if (window.SITE_CONFIG) {
+    document.getElementById('totalSeasons').textContent = window.SITE_CONFIG.seasons;
+    document.getElementById('totalPlayers').textContent = window.SITE_CONFIG.players;
+    document.getElementById('currentSeasonNum').textContent = window.SITE_CONFIG.currentSeason;
+    document.getElementById('iconFormat').textContent = window.SITE_CONFIG.iconFormat;
+  }
+
+  // Scroll behavior
+  const header = document.getElementById('modernHeader');
+  if (!header) return;
+  
+  window.addEventListener('scroll', () => {
+    const currentScroll = window.pageYOffset;
+    if (currentScroll > 20) {
+      header.classList.add('scrolled');
+    } else {
+      header.classList.remove('scrolled');
+    }
+  }, { passive: true });
+
+  // Active page highlighting
+  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+  const navLinks = document.querySelectorAll('.nav-link');
+  
+  navLinks.forEach(link => {
+    const linkPage = link.getAttribute('href');
+    if (linkPage === currentPage || (currentPage === '' && linkPage === 'index.html')) {
+      link.classList.add('active');
+    }
+  });
+
+  // Path resolution for nested folders
+  const root = (document.documentElement.dataset.root || document.body.dataset.root || ".").replace(/\/+$/, "");
+  
+  if (root !== ".") {
+    const allLinks = header.querySelectorAll('a[href]');
+    allLinks.forEach(link => {
+      const href = link.getAttribute('href');
+      if (href && !href.startsWith('http') && !href.startsWith('#')) {
+        link.setAttribute('href', root + '/' + href);
+      }
+    });
+  }
+})();
+</script>
+<!-- SITE HEADER END -->
+
+<div class="container">
+  <div class="topbar">
+    <div>
+      <div class="brand">DC <span>Franchise</span> Database</div>
+      <div class="meta">Local static website • Click seasons + player profiles • Search + sort included</div>
+    </div>
+    <div class="meta">Season count: 5 • Player count: 58</div>
+  </div>
+
+  
+  <!-- Loading state -->
+  <div id="loading" style="text-align:center; padding:60px 0;">
+    <p style="font-size:18px; color:#666;">Loading player data...</p>
+  </div>
+  
+  <!-- Error state -->
+  <div id="error" style="display:none; text-align:center; padding:60px 0;">
+    <h2 style="color:#e53e3e;">Player Not Found</h2>
+    <p style="color:#666; margin:20px 0;">The requested player could not be found.</p>
+    <a class="tab" href="devotees.html">← Back to Players</a>
+  </div>
+  
+  <!-- Player profile content -->
+  <div id="player-content" style="display:none;">
+    <!-- Content will be inserted here by JavaScript -->
+  </div>
+
+  <div class="footer">5 seasons complete • 58 unique players</div>
+</div>
+
+<!-- SITE FOOTER START -->
+<footer class="siteFooter">
+  <div class="footerInner">
+    <div class="footerTitle">DC Franchise Database</div>
+    <div class="footerSub">Static archive • 5 seasons • 58 players • Icons: name.png</div>
+  </div>
+</footer>
+<!-- SITE FOOTER END -->
+
+<script>
+/* ============================================
+   PLAYER STORY FORMATTER
+   ============================================ */
+
+// Replace the formatPlayerStory function in player.html with this fixed version:
+
+function formatPlayerStory(storyText) {
+  if (!storyText) {
+    return '<p style="color: #94a3b8; text-align: center; padding: 40px;">No story available</p>';
+  }
+  
+  // Check if story has season separators
+  const hasSeparators = storyText.includes('────────') || storyText.match(/SEASON\s+\d+\s+[—\-–]/);
+  
+  // If no separators, render as simple formatted text
+  if (!hasSeparators) {
+    const paragraphs = storyText.split(/\n\n+/).filter(p => p.trim());
+    
+    const formattedParagraphs = paragraphs.map(p => {
+      let formatted = p
+        .replace(/(\d+)\s+(immunity wins?|challenge wins?|total wins?|votes?|idols?)/gi, 
+          '<span class="stats-highlight">$1 $2</span>')
+        .replace(/(Final Tribal Council?|merge|finale|endgame|jury|fire-making)/gi, 
+          '<span class="stats-highlight">$1</span>')
+        .replace(/(\d+)[–\-](\d+)(?:[–\-](\d+))?/g, 
+          '<span class="stats-highlight">$&</span>');
+      
+      return '<p>' + formatted + '</p>';
+    }).join('');
+    
+    return '<div class="season-body" style="border-left: none;">' + formattedParagraphs + '</div>';
+  }
+  
+  // 🆕 IMPROVED PARSING: Handle different story formats
+  // First, try to extract all SEASON headers with their content
+  const seasonPattern = /SEASON\s+(\d+)\s+[—\-–]\s+([^\n]+)/g;
+  const seasonHeaders = [];
+  let match;
+  
+  while ((match = seasonPattern.exec(storyText)) !== null) {
+    seasonHeaders.push({
+      index: match.index,
+      seasonNum: match[1],
+      seasonTheme: match[2].trim(),
+      fullMatch: match[0]
+    });
+  }
+  
+  // If we found season headers, use them to split the content
+  if (seasonHeaders.length > 0) {
+    const seasonMap = new Map();
+    
+    for (let i = 0; i < seasonHeaders.length; i++) {
+      const header = seasonHeaders[i];
+      const nextHeader = seasonHeaders[i + 1];
+      
+      // Get content from after this header to before the next header (or end of string)
+      const startPos = header.index + header.fullMatch.length;
+      const endPos = nextHeader ? nextHeader.index : storyText.length;
+      let content = storyText.substring(startPos, endPos);
+      
+      // Remove separator lines (────────)
+      content = content.replace(/────────+/g, '').trim();
+      
+      // Skip if empty
+      if (!content) continue;
+      
+      // If this season already exists, merge content
+      if (seasonMap.has(header.seasonNum)) {
+        const existing = seasonMap.get(header.seasonNum);
+        existing.content += '\n\n' + content;
+      } else {
+        seasonMap.set(header.seasonNum, {
+          seasonNum: header.seasonNum,
+          seasonTheme: header.seasonTheme,
+          content: content
+        });
+      }
+    }
+    
+    // Handle content BEFORE the first season header (for returnees)
+    if (seasonHeaders[0].index > 0) {
+      const beforeContent = storyText.substring(0, seasonHeaders[0].index).trim();
+      // Remove separators
+      const cleanContent = beforeContent.replace(/────────+/g, '').trim();
+      
+      if (cleanContent) {
+        // Try to detect which season this is from context
+        // Look for "Season X" mentions in the content
+        const seasonMention = cleanContent.match(/(?:Season|S)\s*(\d+)/i);
+        if (seasonMention) {
+          const detectedSeason = seasonMention[1];
+          // Try to get theme from the content itself or use "Unknown"
+          const themeMatch = cleanContent.match(/(?:Season\s*\d+\s+[—\-–]\s+([^.,\n]+)|on\s+([^(,\n]+)\s*\(Season)/i);
+          const theme = themeMatch ? (themeMatch[1] || themeMatch[2] || '').trim() : 'Previous Season';
+          
+          seasonMap.set(detectedSeason, {
+            seasonNum: detectedSeason,
+            seasonTheme: theme,
+            content: cleanContent
+          });
+        }
+      }
+    }
+    
+    // Render seasons
+    let html = '';
+    const sortedSeasons = Array.from(seasonMap.entries()).sort((a, b) => parseInt(a[0]) - parseInt(b[0]));
+    
+    for (const [seasonNum, seasonData] of sortedSeasons) {
+      const { seasonTheme, content } = seasonData;
+      
+      // Split into paragraphs
+      const paragraphs = content.split(/\n\n+/).filter(p => p.trim());
+      
+      // Skip if no paragraphs
+      if (paragraphs.length === 0) continue;
+      
+      // Extract result from last paragraph
+      let resultBadge = '';
+      const lastPara = paragraphs[paragraphs.length - 1];
+      if (lastPara) {
+        if (lastPara.includes('won Season') || lastPara.match(/Result:.*(?:win|champion|1st)/i)) {
+          resultBadge = '<span class="result-badge result-winner">🏆 Winner</span>';
+        } else if (lastPara.match(/runner-up|2nd/i)) {
+          resultBadge = '<span class="result-badge result-runnerup">🥈 Runner-Up</span>';
+        } else if (lastPara.match(/eliminated|placed \d+th|finished \d+th|Final \d+/i)) {
+          const placement = lastPara.match(/(\d+)(?:st|nd|rd|th)/);
+          if (placement) {
+            resultBadge = '<span class="result-badge result-eliminated">Eliminated ' + placement[0] + '</span>';
+          }
+        }
+      }
+      
+      // Highlight stats
+      const formattedParagraphs = paragraphs.map(p => {
+        let formatted = p
+          .replace(/(\d+)\s+(immunity wins?|challenge wins?|total wins?|votes?|idols?)/gi, 
+            '<span class="stats-highlight">$1 $2</span>')
+          .replace(/(Final Tribal Council?|merge|finale|endgame|jury|fire-making)/gi, 
+            '<span class="stats-highlight">$1</span>')
+          .replace(/(\d+)[–\-](\d+)(?:[–\-](\d+))?/g, 
+            '<span class="stats-highlight">$&</span>');
+        
+        return '<p>' + formatted + '</p>';
+      }).join('');
+      
+      html += '<div class="season-section">' +
+        '<div class="season-header">' +
+          '<div class="season-number">Season ' + seasonNum + '</div>' +
+          '<div class="season-theme">' + seasonTheme + '</div>' +
+        '</div>' +
+        '<div class="season-body">' +
+          formattedParagraphs +
+          resultBadge +
+        '</div>' +
+      '</div>';
+    }
+    
+    return html || '<p style="color: #94a3b8; text-align: center; padding: 40px;">Could not parse story</p>';
+  }
+  
+  // Fallback: No season headers found, just render as formatted text
+  const paragraphs = storyText.split(/\n\n+/).filter(p => p.trim());
+  const formattedParagraphs = paragraphs.map(p => {
+    let formatted = p
+      .replace(/(\d+)\s+(immunity wins?|challenge wins?|total wins?|votes?|idols?)/gi, 
+        '<span class="stats-highlight">$1 $2</span>')
+      .replace(/(Final Tribal Council?|merge|finale|endgame|jury|fire-making)/gi, 
+        '<span class="stats-highlight">$1</span>')
+      .replace(/(\d+)[–\-](\d+)(?:[–\-](\d+))?/g, 
+        '<span class="stats-highlight">$&</span>');
+    
+    return '<p>' + formatted + '</p>';
+  }).join('');
+  
+  return '<div class="season-body" style="border-left: none;">' + formattedParagraphs + '</div>';
+}
+
+// Get player ID from URL parameter
+const urlParams = new URLSearchParams(window.location.search);
+const playerId = urlParams.get('player');
+
+if (!playerId) {
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('error').style.display = 'block';
+} else {
+  // Load player DB + rankings in parallel, then fetch season data for keyMoments
+  Promise.all([
+    loadPlayerDatabase(),
+    loadRankingsDatabase()
+  ]).then(([data, rankingsData]) => {
+    const player = data.players.find(p => p.id === playerId);
+    
+    if (!player) {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('error').style.display = 'block';
+      return;
+    }
+    
+    // Merge rankings data into player object
+    if (rankingsData && rankingsData.rankings) {
+      const rankEntry = rankingsData.rankings.find(r => 
+        r.playerId === playerId || r.name === player.name
+      );
+      if (rankEntry) {
+        player.tier      = rankEntry.tier;
+        player.score     = rankEntry.score;
+        player.rank      = rankEntry.rank;
+        player.reasoning = rankEntry.reasoning;
+        player.totalRanked = rankingsData.rankings.length;
+      }
+    }
+    
+    // Fetch season data files for any season missing keyMoments
+    const seasonFetches = (player.seasonDetails || []).map(sd => {
+      if (sd.keyMoments && sd.keyMoments.length) return Promise.resolve(null);
+      return fetch('season' + sd.season + '-data.json')
+        .then(r => r.ok ? r.json() : null)
+        .then(sData => {
+          if (!sData || !sData.placements) return;
+          const match = sData.placements.find(p =>
+            p.playerSlug === playerId ||
+            (p.name && player.name && p.name.toLowerCase() === player.name.toLowerCase())
+          );
+          if (!match) return;
+          if (match.keyMoments && match.keyMoments.length) sd.keyMoments = match.keyMoments;
+          if (match.story && !sd.story) sd.story = match.story;
+          if (match.gameplayStyle && !sd.gameplayStyle) sd.gameplayStyle = match.gameplayStyle;
+          if (match.alliances && match.alliances.length && (!sd.alliances || !sd.alliances.length)) sd.alliances = match.alliances;
+          if (match.rivalries && match.rivalries.length && (!sd.rivalries || !sd.rivalries.length)) sd.rivalries = match.rivalries;
+          if (match.strategicRank && !sd.strategicRank) sd.strategicRank = match.strategicRank;
+        })
+        .catch(() => null);
+    });
+    
+    return Promise.all(seasonFetches).then(() => {
+      // Update page title
+      document.title = player.name + ' – Profile';
+      
+      // Render player profile
+      renderPlayerProfile(player);
+      
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('player-content').style.display = 'block';
+    });
+  }).catch(error => {
+    console.error('Error loading player data:', error);
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('error').style.display = 'block';
+  });
+}
+
+// Load database: try localStorage first, then project file
+async function loadPlayerDatabase() {
+  try {
+    const raw = localStorage.getItem("players_database");
+    if (raw) return JSON.parse(raw);
+    const response = await fetch('players_database.json');
+    const data = await response.json();
+    localStorage.setItem("players_database", JSON.stringify(data, null, 2));
+    return data;
+  } catch (error) {
+    console.error("❌ Error loading players database:", error);
+    throw error;
+  }
+}
+
+async function loadRankingsDatabase() {
+  try {
+    // Always fetch fresh — rankings update more often
+    const response = await fetch('rankings_database.json');
+    if (!response.ok) return null;
+    return await response.json();
+  } catch (error) {
+    console.warn("⚠️ Could not load rankings_database.json:", error);
+    return null;
+  }
+}
+
+// ── Tier config ─────────────────────────────────────────────
+const TIER_CFG = {
+  'S+': { color:'#f59e0b', glow:'rgba(245,158,11,0.35)', label:'S+ Tier', icon:'👑' },
+  'S':  { color:'#a78bfa', glow:'rgba(167,139,250,0.35)', label:'S Tier',  icon:'⭐' },
+  'A':  { color:'#60a5fa', glow:'rgba(96,165,250,0.30)',  label:'A Tier',  icon:'🔵' },
+  'B':  { color:'#34d399', glow:'rgba(52,211,153,0.30)',  label:'B Tier',  icon:'🟢' },
+  'C':  { color:'#fbbf24', glow:'rgba(251,191,36,0.28)',  label:'C Tier',  icon:'🟡' },
+  'D':  { color:'#9ca3af', glow:'rgba(156,163,175,0.20)', label:'D Tier',  icon:'⚪' },
+};
+function getTierInfo(t) { return TIER_CFG[t] || TIER_CFG['D']; }
+
+function getSeasonTitle(n) {
+  const t = {1:'Cullhouse',2:'Return',3:'Revenge of the Island',4:'Edge of Extinction',
+    5:'Season 5',6:'Season 6',7:'Season 7',8:'Heroes vs Villains vs Civilians',9:'Land of Power'};
+  return t[n] || ('Season ' + n);
+}
+
+function renderPlayerProfile(player) {
+  const container = document.getElementById('player-content');
+  const sorted = player.seasonDetails.slice().sort((a,b) => b.season - a.season);
+  const isWinner = player.wins > 0;
+  const winSeason = isWinner ? (player.seasonDetails.find(s => s.placement===1)||{}).season : null;
+  const tier = player.tier || 'D';
+  const tc = getTierInfo(tier);
+  const score = player.score != null ? player.score : '—';
+  const rankStr = player.rank ? `#${player.rank} / ${player.totalRanked||'?'}` : '';
+
+  let html = `<style>
+  .pp-hero{position:relative;border-radius:20px;overflow:hidden;margin-bottom:28px;
+    background:linear-gradient(135deg,rgba(30,15,50,.95),rgba(15,8,30,.98));
+    border:1px solid ${tc.color}44;box-shadow:0 0 60px ${tc.glow},0 0 0 1px ${tc.color}22;}
+  .pp-hero-glow{position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(ellipse at 20% 50%,${tc.glow} 0%,transparent 60%);}
+  .pp-hero-inner{position:relative;z-index:1;display:flex;align-items:center;gap:24px;
+    padding:32px 36px;flex-wrap:wrap;}
+  .pp-av-wrap{position:relative;flex-shrink:0;width:100px;height:100px;}
+  .pp-av-wrap img,.pp-av-fb{width:100px;height:100px;border-radius:50%;object-fit:cover;
+    border:3px solid ${tc.color};box-shadow:0 0 20px ${tc.glow};}
+  .pp-av-fb{display:none;background:rgba(255,255,255,.06);font-size:44px;
+    align-items:center;justify-content:center;}
+  .pp-av-ring{position:absolute;inset:-5px;border-radius:50%;border:2px solid ${tc.color}55;
+    animation:ring-pulse 3s ease-in-out infinite;}
+  @keyframes ring-pulse{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:1;transform:scale(1.04)}}
+  .pp-info{flex:1;min-width:200px;}
+  .pp-tier-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 12px;border-radius:20px;
+    font-size:12px;font-weight:700;background:${tc.color}1a;border:1px solid ${tc.color}55;
+    color:${tc.color};margin-bottom:8px;letter-spacing:.07em;}
+  .pp-name{font-family:var(--font-samdan,'Samdan',sans-serif);
+    font-size:clamp(1.8rem,5vw,3rem);font-weight:700;color:#fff;margin:0 0 6px;
+    letter-spacing:.04em;line-height:1.1;text-shadow:0 0 28px ${tc.color}77;}
+  .pp-meta{color:var(--muted);font-size:13px;margin-bottom:10px;}
+  .pp-badges{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+  .pp-badge{padding:3px 11px;border-radius:20px;font-size:11px;font-weight:600;
+    background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);color:#ccc;}
+  .pp-badge.gold{background:rgba(245,158,11,.14);border-color:rgba(245,158,11,.4);color:#f59e0b;}
+  .pp-badge.purple{background:rgba(167,139,250,.14);border-color:rgba(167,139,250,.4);color:#a78bfa;}
+  .pp-badge.green{background:rgba(52,211,153,.12);border-color:rgba(52,211,153,.35);color:#34d399;}
+  .pp-back{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:10px;
+    font-size:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.11);
+    color:var(--muted);text-decoration:none;transition:all .2s;}
+  .pp-back:hover{background:rgba(255,255,255,.1);color:#fff;}
+  .pp-score-block{flex-shrink:0;text-align:center;padding:12px 18px;border-radius:14px;
+    background:${tc.color}0d;border:1px solid ${tc.color}33;}
+  .pp-score-num{font-family:var(--font-samdan,'Samdan',sans-serif);
+    font-size:clamp(2.2rem,5vw,3.4rem);font-weight:700;color:${tc.color};
+    text-shadow:0 0 20px ${tc.glow};line-height:1;}
+  .pp-score-sub{font-size:11px;color:var(--muted);margin-top:3px;letter-spacing:.07em;}
+  .pp-rank-badge{margin-top:8px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;
+    background:${tc.color}18;border:1px solid ${tc.color}44;color:${tc.color};letter-spacing:.06em;}
+  .pp-section{display:flex;align-items:center;gap:10px;margin:28px 0 14px;padding-bottom:10px;
+    border-bottom:1px solid rgba(255,255,255,.08);}
+  .pp-section h2{margin:0;font-size:1.05rem;font-weight:700;color:#fff;
+    font-family:var(--font-samdan,'Samdan',sans-serif);letter-spacing:.05em;}
+  .pp-pill{padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600;
+    background:${tc.color}18;border:1px solid ${tc.color}44;color:${tc.color};}
+  .pp-chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:24px;}
+  .pp-chip{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:13px;
+    padding:16px 14px;text-align:center;transition:border-color .2s,transform .2s;cursor:default;}
+  .pp-chip:hover{border-color:${tc.color}55;transform:translateY(-2px);}
+  .pp-chip .v{font-family:var(--font-samdan,'Samdan',sans-serif);
+    font-size:1.9rem;font-weight:700;color:${tc.color};line-height:1;}
+  .pp-chip .l{font-size:10px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.06em;}
+  .pp-season-nav{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+  .pp-tabs{display:flex;gap:7px;flex-wrap:wrap;}
+  .pp-tab{padding:7px 16px;border-radius:10px;font-size:13px;font-weight:600;
+    border:1px solid rgba(255,255,255,.11);background:rgba(255,255,255,.04);
+    color:var(--muted);cursor:pointer;transition:all .2s;}
+  .pp-tab.on,.pp-tab:hover{background:${tc.color}1f;border-color:${tc.color}55;color:${tc.color};}
+  .pp-season-links{display:flex;gap:6px;flex-wrap:wrap;}
+  .pp-slink{padding:6px 13px;border-radius:10px;font-size:12px;font-weight:600;
+    background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);
+    color:var(--muted);text-decoration:none;transition:all .2s;}
+  .pp-slink:hover{background:rgba(255,255,255,.1);color:#fff;}
+  .pp-panel{display:none;} .pp-panel.on{display:block;}
+  .pp-pcard{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);
+    border-radius:14px;padding:18px 20px;margin-bottom:12px;}
+  .pp-pcard h3{margin:0 0 12px;font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+    color:var(--muted);font-weight:700;font-family:inherit;}
+  .pp-pchips{display:flex;flex-wrap:wrap;gap:7px;}
+  .pc{display:inline-flex;align-items:center;gap:4px;padding:5px 11px;border-radius:20px;
+    font-size:12px;font-weight:600;background:rgba(255,255,255,.05);
+    border:1px solid rgba(255,255,255,.11);color:#ccc;}
+  .pc.imm{background:rgba(96,165,250,.11);border-color:rgba(96,165,250,.33);color:#60a5fa;}
+  .pc.rew{background:rgba(251,191,36,.09);border-color:rgba(251,191,36,.28);color:#fbbf24;}
+  .pc.idol{background:rgba(167,139,250,.11);border-color:rgba(167,139,250,.33);color:#a78bfa;}
+  .pc.votes{background:rgba(255,92,122,.09);border-color:rgba(255,92,122,.28);color:#ff7a96;}
+  .pc.rank{background:rgba(52,211,153,.09);border-color:rgba(52,211,153,.28);color:#34d399;}
+  .pc.style{background:rgba(245,158,11,.09);border-color:rgba(245,158,11,.28);color:#f59e0b;}
+  .pp-banner{display:flex;align-items:center;gap:14px;padding:14px 18px;border-radius:12px;
+    margin-bottom:14px;background:linear-gradient(90deg,${tc.color}16 0%,transparent 100%);
+    border:1px solid ${tc.color}30;}
+  .pp-place-n{font-family:var(--font-samdan,'Samdan',sans-serif);
+    font-size:2.1rem;font-weight:700;color:${tc.color};line-height:1;}
+  .pp-tl{padding:4px 0;}
+  .pp-tl-row{display:flex;gap:13px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05);}
+  .pp-tl-row:last-child{border-bottom:none;}
+  .pp-tl-dot{flex-shrink:0;width:26px;height:26px;border-radius:50%;
+    background:${tc.color}1a;border:2px solid ${tc.color}55;display:flex;
+    align-items:center;justify-content:center;font-size:10px;font-weight:700;
+    color:${tc.color};margin-top:2px;}
+  .pp-tl-txt{font-size:13px;color:#ccc;line-height:1.5;}
+  .pp-ppl{display:flex;flex-wrap:wrap;gap:7px;}
+  .pp-ally,.pp-rival{display:inline-flex;align-items:center;gap:5px;
+    padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;
+    text-decoration:none;transition:all .18s;}
+  .pp-ally{background:rgba(52,211,153,.09);border:1px solid rgba(52,211,153,.3);color:#34d399;}
+  .pp-ally:hover{background:rgba(52,211,153,.18);}
+  .pp-rival{background:rgba(255,92,122,.09);border:1px solid rgba(255,92,122,.28);color:#ff7a96;}
+  .pp-rival:hover{background:rgba(255,92,122,.18);}
+  .pp-story{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);
+    border-left:4px solid ${tc.color};border-radius:0 14px 14px 0;
+    padding:24px 28px;line-height:1.85;font-size:15px;color:#d0c8e0;}
+  .pp-story .stats-highlight{color:${tc.color};font-weight:600;
+    background:${tc.color}12;padding:1px 4px;border-radius:4px;}
+  .pp-why{background:linear-gradient(135deg,rgba(30,15,50,.6),rgba(15,8,30,.8));
+    border:1px solid ${tc.color}30;border-radius:13px;padding:18px 22px;
+    font-size:14px;color:#c8bedd;line-height:1.7;margin-bottom:24px;}
+  .pp-why-lbl{font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+    color:${tc.color};font-weight:700;margin-bottom:7px;}
+  .pp-grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  @media(max-width:600px){.pp-grid2{grid-template-columns:1fr;}}
+  @keyframes pp-in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  #player-content>*{animation:pp-in .35s ease both;}
+  #player-content>*:nth-child(2){animation-delay:.05s;}
+  #player-content>*:nth-child(3){animation-delay:.1s;}
+  #player-content>*:nth-child(4){animation-delay:.15s;}
+  #player-content>*:nth-child(5){animation-delay:.2s;}
+  </style>`;
+
+  // ── HERO ─────────────────────────────────────────────────
+  html += `<div class="pp-hero"><div class="pp-hero-glow"></div><div class="pp-hero-inner">
+  <div class="pp-av-wrap">
+    <img src="assets/avatars/${player.id}.png" alt="${player.name}"
+      onerror="this.style.display='none';document.getElementById('ppfb').style.display='flex'"/>
+    <div class="pp-av-fb" id="ppfb">👤</div>
+    <div class="pp-av-ring"></div>
+  </div>
+  <div class="pp-info">
+    <div class="pp-tier-pill">${tc.icon} ${tc.label}</div>
+    <div class="pp-name">${player.name}${isWinner?' 👑':''}</div>
+    <div class="pp-meta">${player.totalSeasons} season${player.totalSeasons>1?'s':''} &nbsp;•&nbsp; ${player.wins} win${player.wins!==1?'s':''} &nbsp;•&nbsp; Best: #${player.bestPlacement}${winSeason?' (S'+winSeason+' Winner)':''}</div>
+    <div class="pp-badges">`;
+  (player.badges||[]).forEach(b => {
+    let c = b.includes('Winner')||b.includes('WINNER') ? 'gold'
+          : b.includes('Strategic')||b.includes('Social') ? 'purple'
+          : b.includes('Tier')||b.includes('Unbreakable') ? 'green' : '';
+    html += `<span class="pp-badge ${c}">${b}</span>`;
+  });
+  html += `</div><a class="pp-back" href="devotees.html">← All Players</a></div>
+  <div class="pp-score-block">
+    <div class="pp-score-num">${score}</div>
+    <div class="pp-score-sub">/ 100</div>
+    ${rankStr ? `<div class="pp-rank-badge">${rankStr}</div>` : ''}
+  </div>
+  </div></div>`;
+
+  // ── WHY TIER ─────────────────────────────────────────────
+  if (player.reasoning) {
+    html += `<div class="pp-why"><div class="pp-why-lbl">Why ${tier} Tier</div>${player.reasoning}</div>`;
+  }
+
+  // ── CAREER STATS ─────────────────────────────────────────
+  html += `<div class="pp-section"><h2>Career at a Glance</h2><span class="pp-pill">${player.totalSeasons} season${player.totalSeasons>1?'s':''}</span></div>`;
+  html += `<div class="pp-chips">
+    <div class="pp-chip"><div class="v">${player.totalSeasons}</div><div class="l">Seasons</div></div>
+    <div class="pp-chip"><div class="v">${player.wins}</div><div class="l">Wins</div></div>
+    <div class="pp-chip"><div class="v">#${player.bestPlacement}</div><div class="l">Best Finish</div></div>
+    <div class="pp-chip"><div class="v">${player.totalChallengeWins||0}</div><div class="l">Challenge Wins</div></div>
+    <div class="pp-chip"><div class="v">${player.totalImmunityWins||0}</div><div class="l">Immunity Wins</div></div>
+    <div class="pp-chip"><div class="v">${player.totalVotesAgainst||0}</div><div class="l">Votes Against</div></div>
+    ${player.totalJuryVotes!=null?`<div class="pp-chip"><div class="v">${player.totalJuryVotes}</div><div class="l">Jury Votes</div></div>`:''}
+    ${player.totalIdolsFound?`<div class="pp-chip"><div class="v">${player.totalIdolsFound}</div><div class="l">Idols Found</div></div>`:''}
+    ${player.winRate!=null?`<div class="pp-chip"><div class="v">${player.winRate}%</div><div class="l">Win Rate</div></div>`:''}
+  </div>`;
+
+  // ── SEASON HISTORY ────────────────────────────────────────
+  html += `<div class="pp-section"><h2>Season History</h2></div>`;
+  html += `<div class="pp-season-nav">
+    <div class="pp-tabs">`;
+  sorted.forEach((s,i) => {
+    const win = s.placement===1;
+    html += `<div class="pp-tab${i===0?' on':''}" onclick="ppTab(${s.season})" id="ppt-${s.season}">${win?'🏆 ':''}S${s.season}</div>`;
+  });
+  html += `</div>
+    <div class="pp-season-links">`;
+  sorted.forEach(s => {
+    html += `<a class="pp-slink" href="season_ref.html?season=${s.season}">S${s.season} Page →</a>`;
+  });
+  html += `</div></div>`;
+
+  sorted.forEach((s,i) => {
+    html += `<div class="pp-panel${i===0?' on':''}" id="ppp-${s.season}">`;
+    html += renderSeasonDetails(s);
+    html += `</div>`;
+  });
+
+  // ── STORY ────────────────────────────────────────────────
+  if (player.story) {
+    html += `<div class="pp-section" style="margin-top:28px"><h2>Player Story</h2></div>
+    <div class="pp-story">${formatPlayerStory(player.story)}</div>`;
+  }
+
+  // ppTab defined in outer scope below
+
+  container.innerHTML = html;
+}
+
+function buildMomentsFromStats(season) {
+  const facts = [];
+  const p = season.placement;
+  const isWin  = p === 1;
+  const isRU   = p === 2;
+  const isF3   = p === 3;
+
+  // Phase / departure
+  if (isWin)  facts.push('Won the season' + (season.finalVote ? ' with a ' + season.finalVote + ' jury vote' : ''));
+  else if (isRU)  facts.push('Reached the Final Tribal Council as runner-up' + (season.finalVote ? ' (' + season.finalVote + ')' : ''));
+  else if (isF3)  facts.push('Reached Final Tribal Council in third place');
+  else if (season.status) facts.push(season.status);
+
+  // Challenge run
+  if (season.immunityWins > 1) facts.push('Won ' + season.immunityWins + ' individual immunity challenges');
+  else if (season.immunityWins === 1) facts.push('Won individual immunity at a critical moment');
+  if (season.rewardWins > 1) facts.push('Earned ' + season.rewardWins + ' reward wins');
+  if (season.challengeWins && season.challengeWins > (season.immunityWins||0) + (season.rewardWins||0))
+    facts.push(season.challengeWins + ' total challenge wins across the season');
+
+  // Idol / advantages
+  if (season.idolsFound > 1) facts.push('Found ' + season.idolsFound + ' hidden immunity idols');
+  else if (season.idolsFound === 1) facts.push('Found a hidden immunity idol');
+
+  // Votes / heat
+  if (season.votesReceived > 6) facts.push('Absorbed ' + season.votesReceived + ' votes against — one of the season's biggest targets');
+  else if (season.votesReceived === 0 && p <= 5) facts.push('Received zero votes against — one of the cleanest games of the season');
+  else if (season.votesReceived > 0 && season.votesReceived <= 2 && p <= 5) facts.push('Received only ' + season.votesReceived + ' vote' + (season.votesReceived>1?'s':'') + ' against across the entire season');
+
+  // Jury votes
+  if (season.juryVotes > 4) facts.push('Earned ' + season.juryVotes + ' jury votes — commanded strong respect from the jury');
+  else if (season.juryVotes > 0 && !isWin) facts.push('Received ' + season.juryVotes + ' jury vote' + (season.juryVotes>1?'s':''));
+
+  // Notes as extra moments
+  const rawNotes = Array.isArray(season.notes) ? season.notes : (season.notes ? [season.notes] : []);
+  rawNotes.forEach(n => { if(n && n.length > 3) facts.push(n); });
+
+  // Story fallback
+  if (facts.length < 2 && season.story) {
+    const sentences = season.story.split(/\.(?=\s+[A-Z])/).map(s => s.trim()).filter(s => s.length > 20);
+    sentences.slice(0,3).forEach(s => facts.push(s.replace(/\.$/, '')));
+  }
+
+  return facts.slice(0, 6);
+}
+
+function renderSeasonDetails(season) {
+  const isWin = season.placement===1;
+  const isRU  = season.placement===2;
+  let placeLabel = isWin?'🏆 #1' : isRU?'🥈 #2' : '#'+season.placement;
+  let statusTxt  = season.status || (isWin?'WINNER':isRU?'Runner-Up':'');
+
+  let html = `<div class="pp-banner">
+    <div class="pp-place-n">${placeLabel}</div>
+    <div>
+      <div style="font-size:15px;font-weight:600;color:#fff">${statusTxt}</div>
+      ${season.tribe?`<div style="font-size:12px;color:var(--muted)">Tribe: ${season.tribe}</div>`:''}
+      ${season.finalVote?`<div style="font-size:12px;color:var(--muted)">Final vote: ${season.finalVote}</div>`:''}
+      ${season.juryVotes!=null?`<div style="font-size:12px;color:var(--muted)">${season.juryVotes} jury vote${season.juryVotes!==1?'s':''}</div>`:''}
+    </div>
+  </div>`;
+
+  // Performance chips
+  const chips=[];
+  if(season.immunityWins)  chips.push(`<span class="pc imm">🛡️ ${season.immunityWins} Immunity${season.immunityWins>1?' Wins':' Win'}</span>`);
+  if(season.rewardWins)    chips.push(`<span class="pc rew">🎁 ${season.rewardWins} Reward${season.rewardWins>1?' Wins':' Win'}</span>`);
+  if(season.idolsFound)    chips.push(`<span class="pc idol">💎 ${season.idolsFound} Idol${season.idolsFound>1?'s':''} Found</span>`);
+  if(season.votesReceived) chips.push(`<span class="pc votes">🎯 ${season.votesReceived} Votes Against</span>`);
+  if(season.challengeWins) chips.push(`<span class="pc">⚡ ${season.challengeWins} Challenge${season.challengeWins>1?' Wins':' Win'}</span>`);
+  if(season.strategicRank) chips.push(`<span class="pc rank">📐 Strategic Rank #${season.strategicRank}</span>`);
+  if(season.gameplayStyle) chips.push(`<span class="pc style">🎭 ${season.gameplayStyle}</span>`);
+
+  if(chips.length) html += `<div class="pp-pcard"><h3>Performance</h3><div class="pp-pchips">${chips.join('')}</div></div>`;
+
+  // Key moments timeline
+  // Key Moments — use real ones if available, else build from stats
+  const _moments = (season.keyMoments && season.keyMoments.length) ? season.keyMoments : buildMomentsFromStats(season);
+  if(_moments.length) {
+    html += `<div class="pp-pcard"><h3>Key Moments</h3><div class="pp-tl">`;
+    _moments.forEach((m,i) => {
+      const _ep = m.match(/^Ep(\d+)[:\.]/i);
+      const _dot = _ep ? _ep[1] : (i+1);
+      const _txt = _ep ? m.replace(/^Ep\d+[:\.\s]*/i,'') : m;
+      html += `<div class="pp-tl-row"><div class="pp-tl-dot">${_dot}</div><div class="pp-tl-txt">${_txt}</div></div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  // Alliances + Rivalries
+  const hasA = season.alliances&&season.alliances.length;
+  const hasR = season.rivalries&&season.rivalries.length;
+  if(hasA||hasR) {
+    html += `<div class="pp-grid2">`;
+    if(hasA) {
+      html += `<div class="pp-pcard"><h3>🤝 Alliances</h3><div class="pp-ppl">`;
+      season.alliances.forEach(a => {
+        const slug = a.toLowerCase().replace(/[^a-z0-9]/g,'-');
+        html += `<a class="pp-ally" href="player.html?player=${slug}">👤 ${a}</a>`;
+      });
+      html += `</div></div>`;
+    }
+    if(hasR) {
+      html += `<div class="pp-pcard"><h3>⚔️ Rivalries</h3><div class="pp-ppl">`;
+      season.rivalries.forEach(r => {
+        const slug = r.toLowerCase().replace(/[^a-z0-9]/g,'-');
+        html += `<a class="pp-rival" href="player.html?player=${slug}">⚔️ ${r}</a>`;
+      });
+      html += `</div></div>`;
+    }
+    html += `</div>`;
+  }
+
+  // Notes
+  const notes = season.notes ? (Array.isArray(season.notes)?season.notes:[season.notes]) : [];
+  if(notes.length) {
+    html += `<div class="pp-pcard"><h3>Notes</h3><div class="pp-pchips">`;
+    notes.forEach(n => html += `<span class="pc">📝 ${n}</span>`);
+    html += `</div></div>`;
+  }
+
+  return html;
+}
+
+// Tab switcher — must live in outer scope so onclick can reach it
+function ppTab(n) {
+  document.querySelectorAll('.pp-tab').forEach(t => t.classList.remove('on'));
+  document.querySelectorAll('.pp-panel').forEach(p => p.classList.remove('on'));
+  const tab   = document.getElementById('ppt-' + n);
+  const panel = document.getElementById('ppp-' + n);
+  if (tab)   tab.classList.add('on');
+  if (panel) panel.classList.add('on');
+}
+</script>
+
+</body>
+</html>

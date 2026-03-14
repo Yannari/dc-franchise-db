@@ -653,16 +653,7 @@ function renderPlayerProfile(player) {
     <div class="pp-story">${formatPlayerStory(player.story)}</div>`;
   }
 
-  html += `<script>
-  function ppTab(n) {
-    document.querySelectorAll('.pp-tab').forEach(t=>t.classList.remove('on'));
-    document.querySelectorAll('.pp-panel').forEach(p=>p.classList.remove('on'));
-    const t=document.getElementById('ppt-'+n);
-    const p=document.getElementById('ppp-'+n);
-    if(t)t.classList.add('on');
-    if(p)p.classList.add('on');
-  }
-  <\/script>`;
+  // ppTab defined in outer scope below
 
   container.innerHTML = html;
 }
@@ -742,6 +733,15 @@ function renderSeasonDetails(season) {
   return html;
 }
 
+// Tab switcher — must live in outer scope so onclick can reach it
+function ppTab(n) {
+  document.querySelectorAll('.pp-tab').forEach(t => t.classList.remove('on'));
+  document.querySelectorAll('.pp-panel').forEach(p => p.classList.remove('on'));
+  const tab   = document.getElementById('ppt-' + n);
+  const panel = document.getElementById('ppp-' + n);
+  if (tab)   tab.classList.add('on');
+  if (panel) panel.classList.add('on');
+}
 </script>
 
 </body>

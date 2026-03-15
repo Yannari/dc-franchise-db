@@ -602,6 +602,53 @@ function renderPlayerProfile(player) {
   #player-content>*:nth-child(3){animation-delay:.1s;}
   #player-content>*:nth-child(4){animation-delay:.15s;}
   #player-content>*:nth-child(5){animation-delay:.2s;}
+
+  /* ── Stat counter animation ── */
+  .pp-chip .v{transition:color .3s;}
+  @keyframes countUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .pp-chip{animation:countUp .4s ease both;}
+  .pp-chip:nth-child(1){animation-delay:.05s} .pp-chip:nth-child(2){animation-delay:.1s}
+  .pp-chip:nth-child(3){animation-delay:.15s} .pp-chip:nth-child(4){animation-delay:.2s}
+  .pp-chip:nth-child(5){animation-delay:.25s} .pp-chip:nth-child(6){animation-delay:.3s}
+
+  /* ── Radar chart ── */
+  .pp-radar-wrap{display:flex;justify-content:center;padding:10px 0 20px;position:relative;}
+  .pp-radar-svg{overflow:visible;}
+  .pp-radar-label{font-size:11px;fill:var(--muted,#888);font-family:inherit;font-weight:600;letter-spacing:.04em;}
+  .pp-radar-value{font-size:10px;fill:${tc.color};font-weight:700;font-family:inherit;}
+
+  /* ── Gallery ── */
+  .pp-gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:24px;}
+  .pp-gitem{position:relative;aspect-ratio:3/4;border-radius:14px;overflow:hidden;
+    border:1px solid rgba(255,255,255,.08);cursor:pointer;
+    background:rgba(255,255,255,.03);transition:transform .2s,border-color .2s;}
+  .pp-gitem:hover{transform:translateY(-4px) scale(1.02);border-color:${tc.color}55;}
+  .pp-gitem img{width:100%;height:100%;object-fit:cover;display:block;transition:filter .3s;}
+  .pp-gitem:hover img{filter:brightness(1.1);}
+  .pp-gitem-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.6) 0%,transparent 50%);
+    opacity:0;transition:opacity .2s;display:flex;align-items:flex-end;padding:10px;}
+  .pp-gitem:hover .pp-gitem-overlay{opacity:1;}
+  .pp-gitem-num{font-size:11px;font-weight:700;color:rgba(255,255,255,.8);letter-spacing:.05em;}
+  .pp-gallery-empty{text-align:center;padding:32px;color:var(--muted,#888);font-size:13px;
+    border:1px dashed rgba(255,255,255,.1);border-radius:14px;}
+  .pp-gallery-hint{font-size:11px;opacity:.5;margin-top:6px;}
+  /* Lightbox */
+  #pp-lightbox{display:none;position:fixed;inset:0;z-index:9999;
+    background:rgba(0,0,0,.92);backdrop-filter:blur(10px);
+    align-items:center;justify-content:center;}
+  #pp-lightbox.open{display:flex;}
+  #pp-lightbox img{max-width:90vw;max-height:88vh;border-radius:12px;
+    box-shadow:0 0 60px rgba(0,0,0,.8);object-fit:contain;}
+  #pp-lb-close{position:absolute;top:20px;right:24px;font-size:28px;color:#fff;
+    cursor:pointer;opacity:.7;transition:opacity .2s;line-height:1;background:none;border:none;}
+  #pp-lb-close:hover{opacity:1;}
+  #pp-lb-prev,#pp-lb-next{position:absolute;top:50%;transform:translateY(-50%);
+    font-size:32px;color:#fff;cursor:pointer;opacity:.6;transition:opacity .2s;
+    background:none;border:none;padding:10px 16px;z-index:1;}
+  #pp-lb-prev{left:12px;} #pp-lb-next{right:12px;}
+  #pp-lb-prev:hover,#pp-lb-next:hover{opacity:1;}
+  #pp-lb-counter{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);
+    font-size:12px;color:rgba(255,255,255,.5);letter-spacing:.1em;}
   </style>`;
 
   // ── HERO ─────────────────────────────────────────────────
@@ -671,6 +718,87 @@ function renderPlayerProfile(player) {
     html += `</div>`;
   });
 
+  // ── RADAR CHART ──────────────────────────────────────────
+  {
+    const maxChal = 15, maxVotes = 30, maxIdols = 5, maxScore = 100, maxSeasons = 6;
+    const vals = [
+      Math.min((player.totalChallengeWins||0) / maxChal, 1),
+      Math.min(1 - (player.totalVotesAgainst||0) / maxVotes, 1),
+      Math.min((player.totalIdolsFound||0) / maxIdols, 1),
+      Math.min((score||0) / maxScore, 1),
+      Math.min((player.wins||0) / 3, 1),
+      Math.min((player.totalSeasons||0) / maxSeasons, 1),
+    ];
+    const labels = ['Challenges','Low Target','Idols','Score','Wins','Experience'];
+    const cx=130, cy=120, r=80, n=6;
+    const pts = vals.map((v,i) => {
+      const a = (i * 2 * Math.PI / n) - Math.PI/2;
+      return [cx + Math.cos(a)*r*v, cy + Math.sin(a)*r*v];
+    });
+    const webPts = Array.from({length:n},(_,i)=>{
+      const a=(i*2*Math.PI/n)-Math.PI/2;
+      return [cx+Math.cos(a)*r, cy+Math.sin(a)*r];
+    });
+    const labelPts = Array.from({length:n},(_,i)=>{
+      const a=(i*2*Math.PI/n)-Math.PI/2;
+      return [cx+Math.cos(a)*(r+22), cy+Math.sin(a)*(r+22)];
+    });
+    const polyPts = pts.map(p=>p.join(',')).join(' ');
+
+    let svgLines = '';
+    // Web rings
+    [0.25,0.5,0.75,1].forEach(f => {
+      const rp = webPts.map(([x,y])=>{
+        const dx=x-cx, dy=y-cy;
+        return [cx+dx*f, cy+dy*f].join(',');
+      }).join(' ');
+      svgLines += `<polygon points="${rp}" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="1"/>`;
+    });
+    // Spokes
+    webPts.forEach(([x,y]) => {
+      svgLines += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="rgba(255,255,255,.07)" stroke-width="1"/>`;
+    });
+    // Value polygon
+    svgLines += `<polygon points="${polyPts}" fill="${tc.color}22" stroke="${tc.color}" stroke-width="1.5" stroke-linejoin="round"/>`;
+    // Dots
+    pts.forEach(([x,y]) => {
+      svgLines += `<circle cx="${x}" cy="${y}" r="3" fill="${tc.color}" opacity=".9"/>`;
+    });
+    // Labels
+    labels.forEach((lbl,i) => {
+      const [x,y] = labelPts[i];
+      const anchor = x < cx-5 ? 'end' : x > cx+5 ? 'start' : 'middle';
+      svgLines += `<text x="${x}" y="${y+4}" text-anchor="${anchor}" class="pp-radar-label">${lbl}</text>`;
+    });
+
+    html += `<div class="pp-section" style="margin-top:28px"><h2>Skill Radar</h2></div>
+    <div class="pp-radar-wrap">
+      <svg class="pp-radar-svg" width="260" height="240" viewBox="0 0 260 240">${svgLines}</svg>
+    </div>`;
+  }
+
+  // ── GALLERY ───────────────────────────────────────────────
+  {
+    const slug = player.id || player.name.toLowerCase().replace(/[^a-z0-9]/g,'-');
+    const MAX_SLOTS = 12;
+    let galleryItems = '';
+    for (let i = 1; i <= MAX_SLOTS; i++) {
+      galleryItems += `<div class="pp-gitem" id="ppg-${i}" style="display:none" onclick="ppLightbox(${i})">
+        <img id="ppgi-${i}" src="assets/gallery/${slug}/${i}.png" alt="Gallery ${i}"
+          onload="ppGalleryLoaded(${i},this)"
+          onerror="ppGalleryTryNext(${i},this,'${slug}')"/>
+        <div class="pp-gitem-overlay"><span class="pp-gitem-num">#${i}</span></div>
+      </div>`;
+    }
+    html += `<div class="pp-section" style="margin-top:28px"><h2>Character Gallery</h2>
+      <span class="pp-pill">assets/gallery/${slug}/</span></div>
+    <div class="pp-gallery-grid" id="pp-gallery-grid">${galleryItems}</div>
+    <div class="pp-gallery-empty" id="pp-gallery-empty">
+      No images yet — drop files into <code>assets/gallery/${slug}/1.png</code>, <code>2.jpg</code>, <code>3.webp</code>…
+      <div class="pp-gallery-hint">Supports png, jpg, jpeg, webp — up to 12 images per character</div>
+    </div>`;
+  }
+
   // ── STORY ────────────────────────────────────────────────
   if (player.story) {
     html += `<div class="pp-section" style="margin-top:28px"><h2>Player Story</h2></div>
@@ -680,6 +808,36 @@ function renderPlayerProfile(player) {
   // ppTab defined in outer scope below
 
   container.innerHTML = html;
+
+  // ── Post-render: animated counters ───────────────────────
+  container.querySelectorAll('.pp-chip .v').forEach(el => {
+    const raw = el.textContent.trim();
+    const num = parseFloat(raw.replace(/[^0-9.]/g,''));
+    if (!isNaN(num) && num > 0 && !raw.includes('#')) {
+      const prefix = raw.match(/^[^0-9]*/)[0];
+      const suffix = raw.match(/[^0-9.]*$/)[0];
+      let start = null;
+      const dur = 600;
+      const step = ts => {
+        if (!start) start = ts;
+        const p = Math.min((ts-start)/dur, 1);
+        const ease = 1 - Math.pow(1-p, 3);
+        const cur = Math.round(num * ease * 10) / 10;
+        el.textContent = prefix + (Number.isInteger(num) ? Math.round(cur) : cur.toFixed(1)) + suffix;
+        if (p < 1) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    }
+  });
+
+  // ── Post-render: gallery empty state ─────────────────────
+  setTimeout(() => {
+    const grid = document.getElementById('pp-gallery-grid');
+    const empty = document.getElementById('pp-gallery-empty');
+    if (!grid || !empty) return;
+    const visible = [...grid.querySelectorAll('.pp-gitem')].filter(el => el.style.display !== 'none');
+    empty.style.display = visible.length ? 'none' : '';
+  }, 800);
 }
 
 function buildMomentsFromStats(season) {
@@ -814,7 +972,88 @@ function ppTab(n) {
   if (tab)   tab.classList.add('on');
   if (panel) panel.classList.add('on');
 }
+
+// ── Gallery multi-format helpers ────────────────────────────
+const _galleryExts = ['png','jpg','jpeg','webp'];
+function ppGalleryLoaded(i, img) {
+  document.getElementById('ppg-' + i).style.display = '';
+}
+function ppGalleryTryNext(i, img, slug) {
+  // Find which extension we just tried and move to the next one
+  const cur = img.src.split('.').pop().split('?')[0].toLowerCase();
+  const idx = _galleryExts.indexOf(cur);
+  if (idx >= 0 && idx < _galleryExts.length - 1) {
+    // Try next extension
+    const next = _galleryExts[idx + 1];
+    img.src = `assets/gallery/${slug}/${i}.${next}`;
+  } else {
+    // All extensions exhausted — hide slot
+    document.getElementById('ppg-' + i).style.display = 'none';
+  }
+}
+
+// ── Lightbox ────────────────────────────────────────────────
+let _lbSlug = '', _lbCur = 1, _lbMax = 12, _lbLoaded = [];
+
+function ppLightbox(idx) {
+  // Collect which slots actually loaded
+  const grid = document.getElementById('pp-gallery-grid');
+  if (!grid) return;
+  _lbLoaded = [...grid.querySelectorAll('.pp-gitem')]
+    .filter(el => el.style.display !== 'none')
+    .map(el => parseInt(el.id.replace('ppg-','')));
+  if (!_lbLoaded.length) return;
+
+  // Grab slug from the hint pill text
+  const pill = document.querySelector('.pp-pill');
+  _lbSlug = pill ? pill.textContent.replace('assets/gallery/','').replace('/','') : '';
+
+  _lbCur = _lbLoaded.indexOf(idx) >= 0 ? idx : _lbLoaded[0];
+  _lbRender();
+  document.getElementById('pp-lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function _lbRender() {
+  const lb = document.getElementById('pp-lb-img');
+  if (!lb) return;
+  // Read the resolved src from the gallery img (already has correct extension)
+  const srcEl = document.getElementById('ppgi-' + _lbCur);
+  lb.src = srcEl ? srcEl.src : '';
+  const counter = document.getElementById('pp-lb-counter');
+  const pos = _lbLoaded.indexOf(_lbCur) + 1;
+  if (counter) counter.textContent = `${pos} / ${_lbLoaded.length}`;
+}
+
+function _lbStep(dir) {
+  const pos = _lbLoaded.indexOf(_lbCur);
+  const next = (pos + dir + _lbLoaded.length) % _lbLoaded.length;
+  _lbCur = _lbLoaded[next];
+  _lbRender();
+}
+
+function _lbClose() {
+  document.getElementById('pp-lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', e => {
+  const lb = document.getElementById('pp-lightbox');
+  if (!lb || !lb.classList.contains('open')) return;
+  if (e.key === 'Escape') _lbClose();
+  if (e.key === 'ArrowRight') _lbStep(1);
+  if (e.key === 'ArrowLeft')  _lbStep(-1);
+});
 </script>
+
+<!-- Lightbox markup (single instance, reused) -->
+<div id="pp-lightbox" onclick="if(event.target===this)_lbClose()">
+  <button id="pp-lb-close" onclick="_lbClose()">✕</button>
+  <button id="pp-lb-prev" onclick="_lbStep(-1)">‹</button>
+  <img id="pp-lb-img" src="" alt="Gallery image"/>
+  <button id="pp-lb-next" onclick="_lbStep(1)">›</button>
+  <div id="pp-lb-counter"></div>
+</div>
 
 </body>
 </html>

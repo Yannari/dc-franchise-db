@@ -6,283 +6,271 @@
   <title>DC Franchise — Players</title>
   <link rel="stylesheet" href="styles.css">
   <style>
-    /* Advanced Modern Design for Devotees */
-    
+    /* ── Variables ─────────────────────────────────────── */
+    :root {
+      --tier-splus: #f59e0b;
+      --tier-s:     #a78bfa;
+      --tier-a:     #34d399;
+      --tier-b:     #60a5fa;
+      --tier-c:     #fb923c;
+      --tier-d:     #94a3b8;
+    }
+
+    /* ── Hero ───────────────────────────────────────────── */
     .devotees-hero {
-      text-align: center;
-      padding: 50px 20px;
-      background: linear-gradient(135deg, rgba(125,76,255,.2), rgba(255,179,71,.15), rgba(76,255,179,.1));
-      border-radius: 28px;
-      border: 1px solid rgba(125,76,255,.35);
-      margin-bottom: 32px;
+      padding: 44px 32px 40px;
+      background: linear-gradient(135deg, rgba(125,76,255,.18) 0%, rgba(15,8,30,0) 60%);
+      border-radius: 24px;
+      border: 1px solid rgba(125,76,255,.25);
+      margin-bottom: 28px;
       position: relative;
       overflow: hidden;
     }
-    
-    .devotees-hero::before {
+    .devotees-hero::after {
       content: '';
       position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(circle, rgba(125,76,255,.1) 0%, transparent 70%);
-      animation: rotate 20s linear infinite;
+      right: -60px; top: -60px;
+      width: 280px; height: 280px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(125,76,255,.12) 0%, transparent 70%);
+      pointer-events: none;
     }
-    
-    @keyframes rotate {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-    
     .devotees-hero h1 {
       position: relative;
-      font-size: 48px;
-      margin: 0 0 16px;
-      background: linear-gradient(135deg, #fff, var(--accent2), var(--accent));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      text-shadow: 0 0 40px rgba(125,76,255,.5);
+      font-size: clamp(28px, 5vw, 44px);
+      margin: 0 0 8px;
+      font-family: var(--font-samdan, 'Samdan', sans-serif);
+      letter-spacing: .04em;
+      color: #fff;
     }
-    
     .devotees-hero p {
       position: relative;
       color: var(--muted);
-      font-size: 16px;
+      font-size: 14px;
       margin: 0;
     }
-    
-    .controls {
-      background: linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
-      border: 1px solid rgba(255,255,255,.15);
+    .hero-live-count {
+      display: inline-flex; align-items: center; gap: 6px;
+      margin-top: 14px;
+      padding: 5px 14px;
+      background: rgba(125,76,255,.15);
+      border: 1px solid rgba(125,76,255,.3);
       border-radius: 20px;
-      padding: 20px;
-      margin: 24px 0;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 8px 32px rgba(0,0,0,.2);
+      font-size: 13px; font-weight: 700; color: var(--accent);
     }
-    
-    input[type="search"] {
-      background: rgba(0,0,0,.3);
-      border: 2px solid rgba(125,76,255,.3);
-      transition: all 0.3s ease;
+
+    /* ── Controls ───────────────────────────────────────── */
+    .controls {
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 18px;
+      padding: 16px 18px;
+      margin-bottom: 16px;
     }
-    
-    input[type="search"]:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 4px rgba(125,76,255,.15);
-      transform: scale(1.02);
+    .controls-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 12px;
     }
-    
-    select {
-      background: rgba(0,0,0,.3);
-      border: 2px solid rgba(255,179,71,.3);
-      transition: all 0.3s ease;
-      cursor: pointer;
-    }
-    
-    select:hover {
-      border-color: var(--accent2);
-      transform: scale(1.02);
-    }
-    
-    #count {
-      text-align: center;
-      padding: 12px;
-      background: linear-gradient(90deg, transparent, rgba(125,76,255,.15), transparent);
+    .controls input, .controls select {
+      padding: 11px 16px;
       border-radius: 12px;
-      font-weight: 700;
-      color: var(--accent2);
-      margin-bottom: 20px !important;
+      font-size: 14px;
+      color: var(--text);
+      background: rgba(0,0,0,.3);
+      border: 1px solid rgba(255,255,255,.1);
+      transition: border-color .2s, box-shadow .2s;
+      width: 100%;
     }
-    
+    .controls input:focus, .controls select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(125,76,255,.15);
+    }
+
+    /* ── Tier filter pills ──────────────────────────────── */
+    .tier-filters {
+      display: flex; gap: 7px; flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    .tier-pill {
+      padding: 5px 14px;
+      border-radius: 20px;
+      font-size: 12px; font-weight: 700;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+      color: var(--muted);
+      cursor: pointer;
+      transition: all .18s;
+      letter-spacing: .04em;
+    }
+    .tier-pill:hover, .tier-pill.on {
+      color: #fff;
+    }
+    .tier-pill[data-tier="all"].on   { background: rgba(125,76,255,.25); border-color: var(--accent); color: var(--accent); }
+    .tier-pill[data-tier="S+"].on    { background: rgba(245,158,11,.2);  border-color: var(--tier-splus); color: var(--tier-splus); }
+    .tier-pill[data-tier="S"].on     { background: rgba(167,139,250,.2); border-color: var(--tier-s);    color: var(--tier-s); }
+    .tier-pill[data-tier="A"].on     { background: rgba(52,211,153,.15); border-color: var(--tier-a);    color: var(--tier-a); }
+    .tier-pill[data-tier="B"].on     { background: rgba(96,165,250,.15); border-color: var(--tier-b);    color: var(--tier-b); }
+    .tier-pill[data-tier="C"].on     { background: rgba(251,146,60,.15); border-color: var(--tier-c);    color: var(--tier-c); }
+    .tier-pill[data-tier="D"].on     { background: rgba(148,163,184,.1); border-color: var(--tier-d);    color: var(--tier-d); }
+
+    /* ── Count bar ──────────────────────────────────────── */
+    #count {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 4px;
+      font-size: 13px; font-weight: 600; color: var(--muted);
+      margin-bottom: 16px;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    #count strong { color: var(--accent2); }
+
+    /* ── Grid ───────────────────────────────────────────── */
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 14px;
     }
-    
+
+    /* ── Card ───────────────────────────────────────────── */
     .card {
       position: relative;
-      background: linear-gradient(135deg, rgba(255,255,255,.1), rgba(255,255,255,.05));
-      border: 1px solid rgba(255,255,255,.15);
-      border-radius: 20px;
-      padding: 20px;
-      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      cursor: pointer;
-      overflow: hidden;
-      text-decoration: none;
-      color: inherit;
-      display: block;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.09);
+      border-radius: 18px;
+      padding: 18px 18px 14px;
+      transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+      cursor: pointer; overflow: hidden;
+      text-decoration: none; color: inherit; display: block;
+      /* entrance animation */
+      opacity: 0; transform: translateY(14px);
+      animation: cardIn .35s ease forwards;
     }
-    
+    @keyframes cardIn {
+      to { opacity: 1; transform: none; }
+    }
+    /* tier accent stripe */
     .card::before {
       content: '';
       position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,.1), transparent);
-      transition: left 0.5s ease;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      border-radius: 18px 0 0 18px;
+      background: var(--tc, rgba(255,255,255,.15));
     }
-    
-    .card:hover::before {
-      left: 100%;
-    }
-    
     .card:hover {
-      transform: translateY(-12px) scale(1.03);
-      border-color: var(--accent);
-      box-shadow: 
-        0 20px 60px rgba(125,76,255,.4),
-        0 0 0 1px rgba(125,76,255,.3),
-        inset 0 1px 0 rgba(255,255,255,.2);
-      background: linear-gradient(135deg, rgba(125,76,255,.15), rgba(255,179,71,.1));
+      transform: translateY(-5px);
+      border-color: var(--tc, rgba(255,255,255,.2));
+      box-shadow: 0 12px 40px rgba(0,0,0,.35), 0 0 0 1px var(--tc, transparent);
     }
-    
     .card.winner {
-      border: 2px solid var(--accent2);
-      background: linear-gradient(135deg, rgba(255,179,71,.15), rgba(125,76,255,.1));
-      position: relative;
+      border-color: rgba(245,158,11,.25);
+      background: linear-gradient(135deg, rgba(245,158,11,.07), rgba(255,255,255,.03));
     }
-    
-    .card.winner::after {
-      content: '👑';
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      font-size: 32px;
-      opacity: 0.3;
-      transition: all 0.3s ease;
-    }
-    
-    .card.winner:hover::after {
-      opacity: 1;
-      transform: scale(1.2) rotate(15deg);
-    }
-    
     .card.winner:hover {
-      border-color: var(--accent2);
-      box-shadow: 
-        0 20px 60px rgba(255,179,71,.5),
-        0 0 0 2px rgba(255,179,71,.4),
-        inset 0 1px 0 rgba(255,255,255,.3);
+      border-color: rgba(245,158,11,.5);
+      box-shadow: 0 12px 40px rgba(245,158,11,.2), 0 0 0 1px rgba(245,158,11,.3);
     }
-    
+
+    /* ── Card top row ──────────────────────────────────── */
+    .card-top {
+      display: flex; align-items: center; gap: 14px; margin-bottom: 13px;
+    }
     .player-avatar {
-      width: 80px;
-      height: 80px;
+      width: 58px; height: 58px; flex-shrink: 0;
       border-radius: 50%;
-      background: linear-gradient(135deg, rgba(125,76,255,.3), rgba(255,179,71,.2));
-      border: 3px solid var(--accent);
+      border: 2px solid var(--tc, rgba(255,255,255,.2));
       overflow: hidden;
-      position: relative;
-      flex: 0 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 
-        0 8px 16px rgba(0,0,0,.3),
-        inset 0 2px 4px rgba(255,255,255,.2);
-      transition: all 0.3s ease;
+      background: rgba(255,255,255,.05);
+      display: flex; align-items: center; justify-content: center;
+      transition: transform .2s, box-shadow .2s;
+      box-shadow: 0 0 0 0 var(--tc, transparent);
     }
-    
     .card:hover .player-avatar {
-      transform: scale(1.1) rotate(5deg);
-      border-color: var(--accent2);
-      box-shadow: 
-        0 12px 24px rgba(125,76,255,.5),
-        inset 0 2px 4px rgba(255,255,255,.3);
+      transform: scale(1.07);
+      box-shadow: 0 0 14px var(--tc, transparent);
     }
-    
-    .player-avatar img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform 0.3s ease;
+    .player-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .player-avatar .fallback { font-size: 26px; display: none; }
+
+    .card-meta { flex: 1; min-width: 0; }
+    .card-tier-label {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 10px; font-weight: 700; letter-spacing: .07em;
+      color: var(--tc, var(--muted));
+      margin-bottom: 4px;
+      text-transform: uppercase;
     }
-    
-    .card:hover .player-avatar img {
-      transform: scale(1.1);
-    }
-    
-    .player-avatar .fallback {
-      font-weight: 800;
-      font-size: 32px;
-      position: absolute;
-      display: none;
-    }
-    
-    .row {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 16px;
-    }
-    
     .name {
-      font-weight: 900;
-      font-size: 20px;
+      font-weight: 800;
+      font-size: 17px;
       color: var(--text);
-      margin-bottom: 6px;
-      transition: all 0.3s ease;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      transition: color .2s;
     }
-    
-    .card:hover .name {
-      color: var(--accent2);
-      transform: translateX(4px);
-    }
-    
+    .card:hover .name { color: var(--accent2); }
     .sub {
       color: var(--muted);
-      font-size: 13px;
-      font-weight: 500;
+      font-size: 11px;
+      margin-top: 3px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    
+
+    /* winner crown badge top-right */
+    .card-crown {
+      position: absolute; top: 14px; right: 14px;
+      font-size: 18px; opacity: .35;
+      transition: opacity .2s, transform .2s;
+    }
+    .card.winner:hover .card-crown { opacity: 1; transform: rotate(12deg) scale(1.2); }
+
+    /* ── Badges row ────────────────────────────────────── */
     .badges {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-top: 12px;
+      display: flex; gap: 6px; flex-wrap: wrap;
+      margin-bottom: 13px;
     }
-    
     .badge {
-      background: rgba(0,0,0,.4);
-      border: 1px solid rgba(255,255,255,.15);
-      padding: 6px 12px;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: 700;
+      padding: 3px 9px; border-radius: 10px;
+      font-size: 11px; font-weight: 600;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.1);
       color: var(--muted);
-      transition: all 0.3s ease;
+      white-space: nowrap;
     }
-    
-    .card:hover .badge {
-      transform: translateY(-2px);
-      border-color: rgba(255,255,255,.3);
+    .badge.gold   { background: rgba(245,158,11,.14); border-color: rgba(245,158,11,.4); color: #f59e0b; }
+    .badge.purple { background: rgba(125,76,255,.14);  border-color: rgba(125,76,255,.4); color: #a78bfa; }
+    .badge.good   { background: rgba(52,211,153,.12);  border-color: rgba(52,211,153,.35); color: #34d399; }
+
+    /* ── Stat strip ─────────────────────────────────────── */
+    .card-stats {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: rgba(255,255,255,.06);
+      border-radius: 10px; overflow: hidden;
+      margin-top: 2px;
     }
-    
-    .badge.gold {
-      background: linear-gradient(135deg, rgba(255,179,71,.3), rgba(255,179,71,.15));
-      border-color: var(--accent2);
-      color: var(--accent2);
-      box-shadow: 0 4px 12px rgba(255,179,71,.3);
+    .card-stat {
+      background: rgba(255,255,255,.03);
+      padding: 7px 6px; text-align: center;
     }
-    
-    .badge.purple {
-      background: linear-gradient(135deg, rgba(125,76,255,.3), rgba(125,76,255,.15));
-      border-color: var(--accent);
-      color: var(--accent);
-      box-shadow: 0 4px 12px rgba(125,76,255,.3);
+    .card-stat-v {
+      font-family: var(--font-samdan, 'Samdan', sans-serif);
+      font-size: 1rem; font-weight: 700;
+      color: var(--tc, var(--accent));
+      line-height: 1;
     }
-    
-    .badge.good {
-      background: linear-gradient(135deg, rgba(76,255,179,.3), rgba(76,255,179,.15));
-      border-color: rgba(76,255,179,.7);
-      color: rgba(76,255,179,.9);
-      box-shadow: 0 4px 12px rgba(76,255,179,.3);
+    .card-stat-l {
+      font-size: 9px; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .05em;
+      margin-top: 2px;
+    }
+
+    /* search highlight */
+    mark { background: rgba(255,179,71,.3); color: #fff; border-radius: 2px; padding: 0 1px; }
+
+    @media (max-width: 600px) {
+      .controls-row { grid-template-columns: 1fr; }
+      .grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -429,37 +417,29 @@
    
 
     <div class="devotees-hero">
-      <h1>👥 All Players</h1>
-      <p>Browse the complete roster of Total Drama contestants</p>
+      <div style="position:relative;">
+        <h1>👥 All Players</h1>
+        <p>Browse the complete roster of Total Drama contestants</p>
+        <div class="hero-live-count" id="heroCount">— players</div>
+      </div>
     </div>
 
     <div class="controls">
-      <div style="display:grid; grid-template-columns:2fr 1fr 1fr; gap:16px;">
-        <input 
-          type="search" 
-          id="search" 
-          placeholder="🔍 Search players by name..." 
-          style="padding:14px 20px; border-radius:14px; font-size:15px; width:100%; color:var(--text);"
-        />
-        <select 
-          id="sort" 
-          style="padding:14px 20px; border-radius:14px; font-size:15px; color:var(--text);"
-        >
-          <option value="place-asc">📈 Best Placement (1st → Last)</option>
-          <option value="place-desc">📉 Worst Placement (Last → 1st)</option>
-          <option value="name-asc">🔤 Name (A → Z)</option>
-          <option value="name-desc">🔤 Name (Z → A)</option>
-          <option value="seasons-desc">📅 Seasons (Most → Fewest)</option>
-          <option value="seasons-asc">📅 Seasons (Fewest → Most)</option>
-          <option value="votes-desc">🗳️ Votes Against (Most → Fewest)</option>
-          <option value="votes-asc">🗳️ Votes Against (Fewest → Most)</option>
-          <option value="chwins-desc">🏅 Challenge Wins (Most → Fewest)</option>
-          <option value="chwins-asc">🏅 Challenge Wins (Fewest → Most)</option>
+      <div class="controls-row">
+        <input type="search" id="search" placeholder="🔍 Search players by name..." autocomplete="off"/>
+        <select id="sort">
+          <option value="place-asc">📈 Best Placement</option>
+          <option value="place-desc">📉 Worst Placement</option>
+          <option value="name-asc">🔤 Name A → Z</option>
+          <option value="name-desc">🔤 Name Z → A</option>
+          <option value="seasons-desc">📅 Most Seasons</option>
+          <option value="seasons-asc">📅 Fewest Seasons</option>
+          <option value="votes-desc">🗳️ Most Votes Against</option>
+          <option value="votes-asc">🗳️ Fewest Votes Against</option>
+          <option value="chwins-desc">🏅 Most Challenge Wins</option>
+          <option value="chwins-asc">🏅 Fewest Challenge Wins</option>
         </select>
-        <select 
-          id="seasonFilter" 
-          style="padding:14px 20px; border-radius:14px; font-size:15px; color:var(--text);"
-        >
+        <select id="seasonFilter">
           <option value="all">🎬 All Seasons</option>
           <option value="1">Season 1</option>
           <option value="2">Season 2</option>
@@ -472,10 +452,19 @@
           <option value="9">Season 9</option>
         </select>
       </div>
+      <div class="tier-filters">
+        <button class="tier-pill on" data-tier="all">All</button>
+        <button class="tier-pill" data-tier="S+">S+ Elite</button>
+        <button class="tier-pill" data-tier="S">S Tier</button>
+        <button class="tier-pill" data-tier="A">A Tier</button>
+        <button class="tier-pill" data-tier="B">B Tier</button>
+        <button class="tier-pill" data-tier="C">C Tier</button>
+        <button class="tier-pill" data-tier="D">D Tier</button>
+      </div>
     </div>
 
-    <div id="count" style="margin:20px 0; font-size:14px; color:var(--muted);">
-      Loading players...
+    <div id="count">
+      <span>Loading players…</span>
     </div>
 
     <div class="grid" id="grid">
@@ -612,81 +601,99 @@ loadPlayerData()
   });
 
 
-function renderPlayers(players) {
+function getTierColor(tier) {
+  const map = { 'S+':'#f59e0b', 'S':'#a78bfa', 'A':'#34d399', 'B':'#60a5fa', 'C':'#fb923c', 'D':'#94a3b8' };
+  return map[tier] || 'rgba(255,255,255,.2)';
+}
+
+function highlight(text, query) {
+  if (!query) return text;
+  const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return text.replace(new RegExp(`(${escaped})`, 'gi'), '<mark>$1</mark>');
+}
+
+function renderPlayers(players, query) {
   grid.innerHTML = '';
+  const q = (query || '').toLowerCase().trim();
 
-  players.forEach(player => {
+  players.forEach((player, idx) => {
     const card = document.createElement('a');
-    card.className = 'card' + (Number(player.wins || 0) > 0 ? ' winner' : '');
-    card.href = `player.html?player=${player.id}`;
-    card.setAttribute('data-name', (player.name || '').toLowerCase());
-    card.setAttribute('data-place', Number(player.bestPlacement ?? 9999));
-    card.setAttribute('data-seasons', Number(player.totalSeasons ?? 0));
-    card.setAttribute('data-votes', Number(player.totalVotesAgainst ?? 0));
-    card.setAttribute('data-chwins', Number(player.totalChallengeWins ?? 0));
+    const isWinner = Number(player.wins || 0) > 0;
+    const tier = player.tier || 'D';
+    const tc = getTierColor(tier);
 
-    // Build season summary (safe if seasonDetails missing)
+    card.className = 'card' + (isWinner ? ' winner' : '');
+    card.href = `player.html?player=${player.id}`;
+    card.style.setProperty('--tc', tc);
+    card.style.animationDelay = `${Math.min(idx * 28, 400)}ms`;
+
+    // Season summary
     const details = Array.isArray(player.seasonDetails) ? [...player.seasonDetails] : [];
     const seasonSummary = details.length
-      ? details
-          .sort((a, b) => Number(a.season ?? 0) - Number(b.season ?? 0))
-          .map(s => `S${s.season}: #${s.placement}`)
-          .join(' • ')
+      ? details.sort((a,b) => Number(a.season)-Number(b.season))
+               .map(s => `S${s.season}: #${s.placement}`).join(' • ')
       : 'No season data';
 
-    // Build badges
+    // Badges
     let badgesHtml = '';
-
-    // Add special badges (safe if winner season missing)
-    if (Number(player.wins || 0) > 0) {
+    if (isWinner) {
       const winSeason = details.find(s => Number(s.placement) === 1);
-      if (winSeason && winSeason.season != null) {
-        badgesHtml += `<span class="badge gold">🏆 Season ${winSeason.season} Winner</span>`;
-      } else {
-        badgesHtml += `<span class="badge gold">🏆 Season Winner</span>`;
-      }
+      badgesHtml += `<span class="badge gold">🏆 ${winSeason ? `S${winSeason.season} Winner` : 'Winner'}</span>`;
     }
-
-    // Add key badges from player.badges array
-    if (Array.isArray(player.badges) && player.badges.length > 0) {
-      player.badges.slice(0, 2).forEach(badge => {
-        const label = String(badge);
-        let badgeClass = 'badge';
-        if (label.includes('Strategic') || label.includes('Social')) badgeClass += ' purple';
-        else if (label.includes('Fan Favorite') || label.includes('FAN FAVORITE')) badgeClass += ' purple';
-        else if (label.includes('Perfect') || label.includes('Unbreakable')) badgeClass += ' good';
-        badgesHtml += `<span class="${badgeClass}">${label}</span>`;
+    if (Array.isArray(player.badges)) {
+      player.badges.slice(0, 2).forEach(b => {
+        const label = String(b);
+        let cls = 'badge';
+        if (label.includes('Strategic') || label.includes('Social') || label.includes('Fan Favorite') || label.includes('FAN FAVORITE')) cls += ' purple';
+        else if (label.includes('Perfect') || label.includes('Unbreakable')) cls += ' good';
+        badgesHtml += `<span class="${cls}">${label}</span>`;
       });
     }
 
-    // Add basic badges (safe defaults)
-    const bestPlacement = (player.bestPlacement != null ? player.bestPlacement : '—');
-    const totalSeasons = Number(player.totalSeasons ?? 0);
-    badgesHtml += `<span class="badge">Best: #${bestPlacement}</span>`;
-    badgesHtml += `<span class="badge">${totalSeasons} season${totalSeasons === 1 ? '' : 's'}</span>`;
-
     const emoji = player.emoji || '👤';
     const name = player.name || 'Unknown';
+    const displayName = highlight(name, q);
+
+    const chWins   = player.totalChallengeWins || 0;
+    const seasons  = player.totalSeasons || 0;
+    const bestPlace = player.bestPlacement != null ? `#${player.bestPlacement}` : '—';
 
     card.innerHTML = `
-      <div class="row">
+      ${isWinner ? '<div class="card-crown">👑</div>' : ''}
+      <div class="card-top">
         <div class="player-avatar">
-          <img src="assets/avatars/${player.id}.png" alt="${name}" onload="this.style.display='block';" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"/>
+          <img src="assets/avatars/${player.id}.png" alt="${name}"
+            onload="this.style.display='block'"
+            onerror="this.style.display='none';this.nextElementSibling.style.display='block'"/>
           <div class="fallback">${emoji}</div>
         </div>
-        <div>
-          <div class="name">${emoji} ${name}</div>
+        <div class="card-meta">
+          <div class="card-tier-label">${tier} Tier</div>
+          <div class="name">${emoji} ${displayName}</div>
           <div class="sub">${seasonSummary}</div>
         </div>
       </div>
-      <div class="badges">
-        ${badgesHtml}
+      ${badgesHtml ? `<div class="badges">${badgesHtml}</div>` : ''}
+      <div class="card-stats">
+        <div class="card-stat">
+          <div class="card-stat-v">${bestPlace}</div>
+          <div class="card-stat-l">Best Finish</div>
+        </div>
+        <div class="card-stat">
+          <div class="card-stat-v">${seasons}</div>
+          <div class="card-stat-l">Seasons</div>
+        </div>
+        <div class="card-stat">
+          <div class="card-stat-v">${chWins}</div>
+          <div class="card-stat-l">Ch. Wins</div>
+        </div>
       </div>
     `;
 
     grid.appendChild(card);
   });
 }
+
 
 
 function updateDisplay() {
@@ -708,6 +715,23 @@ function updateDisplay() {
     }
     
     return matchesName && matchesSeason;
+  });
+
+function updateDisplay() {
+  const query = (search.value || '').toLowerCase().trim();
+  const sortValue = sortSelect.value;
+  const seasonFilterValue = document.getElementById('seasonFilter')?.value || 'all';
+  const activeTier = document.querySelector('.tier-pill.on')?.dataset.tier || 'all';
+
+  let filteredPlayers = allPlayers.filter(p => {
+    const matchesName = (p.name || '').toLowerCase().includes(query);
+    let matchesSeason = true;
+    if (seasonFilterValue !== 'all') {
+      const seasonNum = Number(seasonFilterValue);
+      matchesSeason = (p.seasons || []).includes(seasonNum);
+    }
+    const matchesTier = activeTier === 'all' || (p.tier || 'D') === activeTier;
+    return matchesName && matchesSeason && matchesTier;
   });
 
   filteredPlayers.sort((a, b) => {
@@ -735,19 +759,27 @@ function updateDisplay() {
     return 0;
   });
 
-  renderPlayers(filteredPlayers);
-  countDiv.textContent = `Showing ${filteredPlayers.length} of ${allPlayers.length} players`;
+  renderPlayers(filteredPlayers, query);
+  countDiv.innerHTML = `<span>Showing <strong>${filteredPlayers.length}</strong> of ${allPlayers.length} players</span>`;
+  const heroCount = document.getElementById('heroCount');
+  if (heroCount) heroCount.textContent = `${allPlayers.length} players`;
 }
 
 search.addEventListener('input', updateDisplay);
 search.addEventListener('search', updateDisplay);
 sortSelect.addEventListener('change', updateDisplay);
 
-// Season filter event listener
 const seasonFilter = document.getElementById('seasonFilter');
-if (seasonFilter) {
-  seasonFilter.addEventListener('change', updateDisplay);
-}
+if (seasonFilter) seasonFilter.addEventListener('change', updateDisplay);
+
+// Tier pill filter
+document.querySelectorAll('.tier-pill').forEach(pill => {
+  pill.addEventListener('click', () => {
+    document.querySelectorAll('.tier-pill').forEach(p => p.classList.remove('on'));
+    pill.classList.add('on');
+    updateDisplay();
+  });
+});
 </script>
 
 </body>

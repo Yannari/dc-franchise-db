@@ -700,27 +700,6 @@ function updateDisplay() {
   const query = (search.value || '').toLowerCase().trim();
   const sortValue = sortSelect.value;
   const seasonFilterValue = document.getElementById('seasonFilter')?.value || 'all';
-
-  // ✅ Always filter from the original data (not from DOM cards)
-  let filteredPlayers = allPlayers.filter(p => {
-    // Name search filter
-    const matchesName = (p.name || '').toLowerCase().includes(query);
-    
-    // Season filter
-    let matchesSeason = true;
-    if (seasonFilterValue !== 'all') {
-      const seasonNum = Number(seasonFilterValue);
-      const playerSeasons = p.seasons || [];
-      matchesSeason = playerSeasons.includes(seasonNum);
-    }
-    
-    return matchesName && matchesSeason;
-  });
-
-function updateDisplay() {
-  const query = (search.value || '').toLowerCase().trim();
-  const sortValue = sortSelect.value;
-  const seasonFilterValue = document.getElementById('seasonFilter')?.value || 'all';
   const activeTier = document.querySelector('.tier-pill.on')?.dataset.tier || 'all';
 
   let filteredPlayers = allPlayers.filter(p => {

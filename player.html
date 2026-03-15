@@ -690,8 +690,6 @@ function renderPlayerProfile(player) {
 
   html += `<div class="pp-hero" id="pp-hero">
   <div class="pp-hero-glow"></div>
-  <div id="pp-hero-banner" style="position:absolute;inset:0;background-size:cover;background-position:center top;opacity:0;transition:opacity 1s ease;pointer-events:none;"></div>
-  <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(10,5,20,.97) 0%,rgba(10,5,20,.75) 60%,rgba(10,5,20,.4) 100%);pointer-events:none;"></div>
   <div class="pp-hero-inner">
   <div class="pp-av-wrap">
     <img src="assets/avatars/${player.id}.png" alt="${player.name}"
@@ -916,24 +914,6 @@ function renderPlayerProfile(player) {
       });
     }, { threshold: 0.1 });
     container.querySelectorAll('.pp-reveal').forEach(el => io.observe(el));
-  }
-
-  // ── 4. Hero banner from gallery ──────────────────────────
-  {
-    const _exts = ['png','jpg','jpeg','webp'];
-    const _banner = document.getElementById('pp-hero-banner');
-    const _gslug = player.id || player.name.toLowerCase().replace(/[^a-z0-9]/g,'-');
-    const tryExt = idx => {
-      if (idx >= _exts.length || !_banner) return;
-      const probe = new Image();
-      probe.onload = () => {
-        _banner.style.backgroundImage = `url('assets/gallery/${_gslug}/1.${_exts[idx]}')`;
-        setTimeout(() => { _banner.style.opacity = '1'; }, 50);
-      };
-      probe.onerror = () => tryExt(idx + 1);
-      probe.src = `assets/gallery/${_gslug}/1.${_exts[idx]}`;
-    };
-    tryExt(0);
   }
 
   // ── 5. Mini chip counter animation ───────────────────────

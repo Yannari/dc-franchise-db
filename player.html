@@ -784,9 +784,9 @@ function renderPlayerProfile(player) {
     let galleryItems = '';
     for (let i = 1; i <= MAX_SLOTS; i++) {
       galleryItems += `<div class="pp-gitem" id="ppg-${i}" style="display:none" onclick="ppLightbox(${i})">
-        <img src="assets/gallery/${slug}/${i}.png" alt="Gallery ${i}"
-          onload="document.getElementById('ppg-${i}').style.display=''"
-          onerror="document.getElementById('ppg-${i}').style.display='none'"/>
+        <img id="ppgi-${i}" src="assets/gallery/${slug}/${i}.png" alt="Gallery ${i}"
+          onload="ppGalleryLoaded(${i},this)"
+          onerror="ppGalleryTryNext(${i},this,'${slug}')"/>
         <div class="pp-gitem-overlay"><span class="pp-gitem-num">#${i}</span></div>
       </div>`;
     }
@@ -794,8 +794,8 @@ function renderPlayerProfile(player) {
       <span class="pp-pill">assets/gallery/${slug}/</span></div>
     <div class="pp-gallery-grid" id="pp-gallery-grid">${galleryItems}</div>
     <div class="pp-gallery-empty" id="pp-gallery-empty">
-      No images yet — drop files into <code>assets/gallery/${slug}/1.png</code>, <code>2.png</code>…
-      <div class="pp-gallery-hint">Supports up to 12 images per character</div>
+      No images yet — drop files into <code>assets/gallery/${slug}/1.png</code>, <code>2.jpg</code>, <code>3.webp</code>…
+      <div class="pp-gallery-hint">Supports png, jpg, jpeg, webp — up to 12 images per character</div>
     </div>`;
   }
 
@@ -973,6 +973,25 @@ function ppTab(n) {
   if (panel) panel.classList.add('on');
 }
 
+// ── Gallery multi-format helpers ────────────────────────────
+const _galleryExts = ['png','jpg','jpeg','webp'];
+function ppGalleryLoaded(i, img) {
+  document.getElementById('ppg-' + i).style.display = '';
+}
+function ppGalleryTryNext(i, img, slug) {
+  // Find which extension we just tried and move to the next one
+  const cur = img.src.split('.').pop().split('?')[0].toLowerCase();
+  const idx = _galleryExts.indexOf(cur);
+  if (idx >= 0 && idx < _galleryExts.length - 1) {
+    // Try next extension
+    const next = _galleryExts[idx + 1];
+    img.src = `assets/gallery/${slug}/${i}.${next}`;
+  } else {
+    // All extensions exhausted — hide slot
+    document.getElementById('ppg-' + i).style.display = 'none';
+  }
+}
+
 // ── Lightbox ────────────────────────────────────────────────
 let _lbSlug = '', _lbCur = 1, _lbMax = 12, _lbLoaded = [];
 
@@ -996,8 +1015,11 @@ function ppLightbox(idx) {
 }
 
 function _lbRender() {
-  const img = document.getElementById('pp-lb-img');
-  if (img) img.src = `assets/gallery/${_lbSlug}/${_lbCur}.png`;
+  const lb = document.getElementById('pp-lb-img');
+  if (!lb) return;
+  // Read the resolved src from the gallery img (already has correct extension)
+  const srcEl = document.getElementById('ppgi-' + _lbCur);
+  lb.src = srcEl ? srcEl.src : '';
   const counter = document.getElementById('pp-lb-counter');
   const pos = _lbLoaded.indexOf(_lbCur) + 1;
   if (counter) counter.textContent = `${pos} / ${_lbLoaded.length}`;

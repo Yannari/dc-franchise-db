@@ -10,12 +10,40 @@
     .tier-header {
       background: linear-gradient(135deg, rgba(165, 95, 255, 0.2), rgba(165, 95, 255, 0.05));
       border-left: 4px solid rgba(165, 95, 255, 0.8);
-      padding: 12px 20px;
+      padding: 14px 20px;
       margin-bottom: 20px;
-      border-radius: 8px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: space-between;
     }
     .tier-header h2 { margin: 0; display: inline-block; }
     .tier-desc { opacity: 0.85; font-size: 14px; margin-left: 15px; }
+    .tier-count {
+      font-size: 12px; font-weight: 700; letter-spacing: .06em;
+      padding: 3px 10px; border-radius: 20px;
+      background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12);
+      color: rgba(255,255,255,.5);
+    }
+
+    /* Per-tier header colors */
+    .tier-section[data-tier="S+"] .tier-header { border-left-color: #f59e0b; background: linear-gradient(135deg, rgba(245,158,11,.15), rgba(245,158,11,.03)); }
+    .tier-section[data-tier="S+"] .tier-header h2 { color: #f59e0b; }
+    .tier-section[data-tier="S+"] .tier-count { border-color: rgba(245,158,11,.3); color: #f59e0b; background: rgba(245,158,11,.1); }
+    .tier-section[data-tier="S"]  .tier-header { border-left-color: #a78bfa; background: linear-gradient(135deg, rgba(167,139,250,.15), rgba(167,139,250,.03)); }
+    .tier-section[data-tier="S"]  .tier-header h2 { color: #a78bfa; }
+    .tier-section[data-tier="S"]  .tier-count { border-color: rgba(167,139,250,.3); color: #a78bfa; background: rgba(167,139,250,.1); }
+    .tier-section[data-tier="A"]  .tier-header { border-left-color: #34d399; background: linear-gradient(135deg, rgba(52,211,153,.12), rgba(52,211,153,.02)); }
+    .tier-section[data-tier="A"]  .tier-header h2 { color: #34d399; }
+    .tier-section[data-tier="A"]  .tier-count { border-color: rgba(52,211,153,.3); color: #34d399; background: rgba(52,211,153,.1); }
+    .tier-section[data-tier="B"]  .tier-header { border-left-color: #60a5fa; background: linear-gradient(135deg, rgba(96,165,250,.12), rgba(96,165,250,.02)); }
+    .tier-section[data-tier="B"]  .tier-header h2 { color: #60a5fa; }
+    .tier-section[data-tier="B"]  .tier-count { border-color: rgba(96,165,250,.3); color: #60a5fa; background: rgba(96,165,250,.1); }
+    .tier-section[data-tier="C"]  .tier-header { border-left-color: #fb923c; background: linear-gradient(135deg, rgba(251,146,60,.12), rgba(251,146,60,.02)); }
+    .tier-section[data-tier="C"]  .tier-header h2 { color: #fb923c; }
+    .tier-section[data-tier="C"]  .tier-count { border-color: rgba(251,146,60,.3); color: #fb923c; background: rgba(251,146,60,.1); }
+    .tier-section[data-tier="D"]  .tier-header { border-left-color: #94a3b8; background: linear-gradient(135deg, rgba(148,163,184,.1), rgba(148,163,184,.02)); }
+    .tier-section[data-tier="D"]  .tier-header h2 { color: #94a3b8; }
+    .tier-section[data-tier="D"]  .tier-count { border-color: rgba(148,163,184,.3); color: #94a3b8; background: rgba(148,163,184,.1); }
+
     
     .player-card {
       background: rgba(0, 0, 0, 0.25);
@@ -99,7 +127,59 @@
     .score-bar {
       height: 100%;
       background: linear-gradient(90deg, rgba(165, 95, 255, 0.8), rgba(165, 95, 255, 0.4));
-      transition: width 0.3s ease;
+      transition: width 1s cubic-bezier(.22,.61,.36,1);
+      width: 0% !important; /* always start at 0, animated by JS */
+    }
+
+    /* ── Score ring (replaces score-display on full cards) ── */
+    .score-ring-wrap {
+      position: relative; flex-shrink: 0;
+      width: 100px; height: 100px;
+    }
+    .score-ring-svg { transform: rotate(-90deg); width: 100px; height: 100px; overflow: visible; }
+    .score-ring-track { fill: none; stroke: rgba(255,255,255,.07); stroke-width: 7; }
+    .score-ring-fill {
+      fill: none; stroke-width: 7; stroke-linecap: round;
+      transition: stroke-dashoffset 1.1s cubic-bezier(.22,.61,.36,1);
+    }
+    .score-ring-inner {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+    }
+    .score-ring-num {
+      font-family: var(--font-samdan,'Samdan',sans-serif);
+      font-size: 1.7rem; font-weight: 700; line-height: 1;
+    }
+    .score-ring-sub { font-size: 10px; color: var(--muted); letter-spacing: .05em; }
+    .score-ring-rank {
+      margin-top: 5px; padding: 2px 8px; border-radius: 20px;
+      font-size: 10px; font-weight: 700; letter-spacing: .05em;
+      border: 1px solid; white-space: nowrap;
+    }
+
+    /* ── Rank watermark on full cards ── */
+    .rank-watermark {
+      position: absolute; bottom: 20px; right: 22px;
+      font-family: var(--font-samdan,'Samdan',sans-serif);
+      font-size: clamp(3rem,6vw,5rem); font-weight: 900;
+      line-height: 1; pointer-events: none; user-select: none;
+      opacity: .06; color: #fff;
+    }
+
+    /* ── Mini rank pill ── */
+    .mini-rank {
+      margin-left: auto;
+      display: flex; flex-direction: column; align-items: flex-end; gap: 2px;
+    }
+    .mini-score-num {
+      font-family: var(--font-samdan,'Samdan',sans-serif);
+      font-size: 1.3rem; font-weight: 700; line-height: 1;
+    }
+    .mini-rank-pill {
+      font-size: 10px; font-weight: 700; letter-spacing: .05em;
+      padding: 1px 7px; border-radius: 10px; border: 1px solid rgba(255,255,255,.12);
+      color: rgba(255,255,255,.4);
     }
     
     .stat-grid {
@@ -813,6 +893,11 @@ background: rgba(0, 0, 0, 0.2);
   }
 })();
 
+const TIER_COLORS = {
+  'S+': '#f59e0b', 'S': '#a78bfa', 'A': '#34d399',
+  'B': '#60a5fa', 'C': '#fb923c', 'D': '#94a3b8'
+};
+
 function renderRankings(rankingsData, playersMap) {
   const container = document.getElementById('rankings-container');
 
@@ -855,8 +940,9 @@ function renderRankings(rankingsData, playersMap) {
 
     html += '<div class="tier-section" id="tier-' + tierId + '" data-tier="' + tierKey + '">';
     html +=   '<div class="tier-header">';
-    html +=     '<h2>🏅 ' + tierInfo.name + '</h2>';
-    html +=     '<span class="tier-desc">' + tierInfo.description + '</span>';
+    html +=     '<div><h2>' + (tierInfo.icon || '🏅') + ' ' + tierInfo.name + '</h2>';
+    html +=     '<span class="tier-desc">' + tierInfo.description + '</span></div>';
+    html +=     '<span class="tier-count">' + players.length + ' player' + (players.length !== 1 ? 's' : '') + '</span>';
     html +=   '</div>';
 
     // ✅ Tier A uses the compact mini-grid layout (like your screenshot)
@@ -929,10 +1015,8 @@ function getWinnerKeys(player){
 function renderPlayerCard(ranking, player) {
   const winRate = ranking.winRate || Math.round((player.wins / player.totalSeasons) * 100);
   const avgPlacement = calculateAvgPlacement(player);
-
-  const winnerKeys = getWinnerKeys(player); // ["S1","S3"] etc.
+  const winnerKeys = getWinnerKeys(player);
   const isWinner = winnerKeys.length > 0;
-  // Best finish badge (e.g., S4: #4)
   let best = null;
   if (Array.isArray(player.seasonDetails)) {
     player.seasonDetails.forEach(function(s) {
@@ -940,9 +1024,12 @@ function renderPlayerCard(ranking, player) {
       if (!best || s.placement < best.placement) best = s;
     });
   }
-  const bestLabel = best
-    ? ((best.season ? 'S'+best.season + ': ' : '') + '#' + best.placement)
-    : '—';
+  const bestLabel = best ? ((best.season ? 'S'+best.season+': ' : '')+'#'+best.placement) : '—';
+
+  // Tier color + ring
+  const tc = TIER_COLORS[ranking.tier] || '#a78bfa';
+  const ringR = 36, ringC = +(2 * Math.PI * ringR).toFixed(2);
+  const dashTarget = +(ringC * (1 - ranking.score / 100)).toFixed(2);
 
   let html = '';
   const href = 'player.html?player=' + player.id;
@@ -953,11 +1040,14 @@ function renderPlayerCard(ranking, player) {
           'data-name="' + player.name + '" ' +
           'data-score="' + ranking.score + '" ' +
           'data-tier="' + ranking.tier + '" ' +
+          'style="--tc:' + tc + '" ' +
           'role="link" tabindex="0">';
 
-  html +=   '<div class="player-header">';
+  // Rank watermark
+  if (ranking.rank) html += '<div class="rank-watermark">#' + ranking.rank + '</div>';
 
-  html +=     '<div class="player-avatar">';
+  html +=   '<div class="player-header">';
+  html +=     '<div class="player-avatar" style="border-color:' + tc + '44;box-shadow:0 0 14px ' + tc + '33">';
   html +=       '<img src="assets/avatars/' + player.id + '.png" alt="' + player.name + '" ';
   html +=            'onload="this.style.display=\'block\';" ';
   html +=            'onerror="this.style.display=\'none\';">';
@@ -966,53 +1056,42 @@ function renderPlayerCard(ranking, player) {
 
   html +=     '<div class="player-title">';
   html +=       '<div class="player-name-row">';
-  html +=         '<a class="player-name" href="player.html?player=' + player.id + '">';
+  html +=         '<a class="player-name" href="player.html?player=' + player.id + '" style="color:' + tc + '">';
   html +=           (ranking.emoji || '') + ' ' + player.name;
   html +=         '</a>';
   html +=       '</div>';
   html +=       '<div class="player-subtitle">' + ranking.title + ' • ' + player.totalSeasons + ' season' + (player.totalSeasons > 1 ? 's' : '') + ' • ' + player.wins + ' win' + (player.wins !== 1 ? 's' : '') + '</div>';
   html +=       '<div class="player-badges">';
 
-  // ✅ Winner badges — ONLY once per season (S1, S2...) but allow multiple seasons (S1 + S3)
   winnerKeys.forEach(function(k){
-    if (k === 'WINNER') {
-      html += '<span class="badge badge-winner">🏆 Winner</span>';
-    } else {
-      html += '<span class="badge badge-winner">🏆 ' + k + ' Winner</span>';
-    }
+    if (k === 'WINNER') html += '<span class="badge badge-winner">🏆 Winner</span>';
+    else html += '<span class="badge badge-winner">🏆 ' + k + ' Winner</span>';
   });
-
-  // Seasons badge (once)
-  if (player.totalSeasons > 0) {
-    html += '<span class="badge badge-season">' + player.totalSeasons + ' Season' + (player.totalSeasons > 1 ? 's' : '') + '</span>';
-  }
-
-  // Other badges (skip tier badges if desired, and skip ALL winner badges since we render them above)
+  if (player.totalSeasons > 0) html += '<span class="badge badge-season">' + player.totalSeasons + ' Season' + (player.totalSeasons > 1 ? 's' : '') + '</span>';
   if (player.badges && player.badges.length > 0) {
     player.badges.forEach(function(badge) {
-      const b = String(badge || "").trim();
+      const b = String(badge || '').trim();
       if (!b) return;
-
-      // Skip tier badges (your existing logic)
-      if (['A','B','C','D','S','S+'].includes(ranking.tier)) {
-        if (b.toLowerCase().includes('tier')) return;
-      }
-
-      // Skip any "winner" badge here to avoid duplicates
+      if (['A','B','C','D','S','S+'].includes(ranking.tier) && b.toLowerCase().includes('tier')) return;
       if (b.toLowerCase().includes('winner')) return;
-
-      // Normal badge
       html += '<span class="badge badge-season">' + b + '</span>';
     });
   }
-
   html +=       '</div>';
   html +=     '</div>';
 
-  html +=     '<div>';
-  html +=       '<div class="score-display">' + Math.round(ranking.score) + '/100</div>';
-  html +=       '<div class="score-bar-wrapper">';
-  html +=         '<div class="score-bar" style="width: ' + Math.round(ranking.score) + '%;"></div>';
+  // Score ring
+  html +=     '<div class="score-ring-wrap">';
+  html +=       '<svg class="score-ring-svg" viewBox="0 0 90 90">';
+  html +=         '<circle class="score-ring-track" cx="45" cy="45" r="' + ringR + '"/>';
+  html +=         '<circle class="score-ring-fill" cx="45" cy="45" r="' + ringR + '"';
+  html +=           ' stroke="' + tc + '" stroke-dasharray="' + ringC + '" stroke-dashoffset="' + ringC + '"';
+  html +=           ' data-target="' + dashTarget + '" style="filter:drop-shadow(0 0 5px ' + tc + '88)"/>';
+  html +=       '</svg>';
+  html +=       '<div class="score-ring-inner">';
+  html +=         '<div class="score-ring-num" style="color:' + tc + '" data-score="' + Math.round(ranking.score) + '">0</div>';
+  html +=         '<div class="score-ring-sub">/100</div>';
+  if (ranking.rank) html += '<div class="score-ring-rank" style="color:' + tc + ';border-color:' + tc + '44;background:' + tc + '12">#' + ranking.rank + '</div>';
   html +=       '</div>';
   html +=     '</div>';
 
@@ -1078,18 +1157,22 @@ function renderMiniCard(ranking, player) {
   const isWinner = winnerKeys.length > 0;
 
   const href = 'player.html?player=' + player.id;
+  const tc = TIER_COLORS[ranking.tier] || '#60a5fa';
 
   let html = '';
-  html += '<a class="mini-card" data-winner="' + (isWinner ? 'true' : 'false') + '" data-href="' + href + '" data-name="' + (player.name || '').toLowerCase() + '" data-score="' + ranking.score + '" href="' + href + '">';
+  html += '<a class="mini-card" data-winner="' + (isWinner ? 'true' : 'false') + '" data-href="' + href + '" data-name="' + (player.name || '').toLowerCase() + '" data-score="' + ranking.score + '" href="' + href + '" style="--tc:' + tc + ';border-color:' + tc + '22">';
   html +=   '<div class="mini-header">';
-  html +=     '<div class="mini-avatar">';
+  html +=     '<div class="mini-avatar" style="border-color:' + tc + '55;box-shadow:0 0 10px ' + tc + '22">';
   html +=       '<img src="assets/avatars/' + player.id + '.png" alt="' + player.name + '" ' +
                 'onload="this.style.display=\'block\'; this.nextElementSibling.style.display=\'none\';" ' +
                 'onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'block\';">';
   html +=       '<span class="fallback">' + (ranking.emoji || '👤') + '</span>';
   html +=     '</div>';
-  html +=     '<div class="mini-name">' + (ranking.emoji || '') + ' ' + player.name + '</div>';
-  html +=     '<div class="mini-score">' + Math.round(ranking.score) + '/100</div>';
+  html +=     '<div class="mini-name" style="color:' + tc + '">' + (ranking.emoji || '') + ' ' + player.name + '</div>';
+  html +=     '<div class="mini-rank">';
+  html +=       '<div class="mini-score-num" style="color:' + tc + '" data-score="' + Math.round(ranking.score) + '">0</div>';
+  if (ranking.rank) html +=  '<div class="mini-rank-pill">#' + ranking.rank + '</div>';
+  html +=     '</div>';
   html +=   '</div>';
 
   html +=   '<div class="mini-subtitle">' + title + (title ? ' • ' : '') + seasonsLabel + '</div>';
@@ -1366,11 +1449,41 @@ function initCardEffects(){
     }, { passive: true });
   });
 
-  // Fade-in on scroll
+  // Fade-in on scroll + animate rings + counters
   const io = new IntersectionObserver((entries)=>{
     entries.forEach(e=>{
       if(e.isIntersecting){
         e.target.classList.add('in');
+
+        // Animate score ring (full cards)
+        const ring = e.target.querySelector('.score-ring-fill');
+        if (ring) {
+          setTimeout(() => { ring.style.strokeDashoffset = ring.dataset.target; }, 80);
+        }
+
+        // Animate score-bar (if present — compact fallback)
+        const bar = e.target.querySelector('.score-bar');
+        if (bar) {
+          const score = e.target.dataset.score || '0';
+          setTimeout(() => { bar.style.width = score + '%'; }, 80);
+        }
+
+        // Animate score number counter (ring-num or mini-score-num)
+        const numEl = e.target.querySelector('.score-ring-num, .mini-score-num');
+        if (numEl && numEl.dataset.score) {
+          const target = parseInt(numEl.dataset.score, 10);
+          let start = null;
+          const dur = 1100;
+          const step = ts => {
+            if (!start) start = ts;
+            const p = Math.min((ts - start) / dur, 1);
+            const ease = 1 - Math.pow(1 - p, 3);
+            numEl.textContent = Math.round(target * ease);
+            if (p < 1) requestAnimationFrame(step);
+          };
+          requestAnimationFrame(step);
+        }
+
         io.unobserve(e.target);
       }
     });

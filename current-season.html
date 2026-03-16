@@ -2688,16 +2688,51 @@ async function generateEpisodeAI() {
     }
   }
   
-  // 🆕 GATHER PREVIOUS EPISODES FOR CONTEXT
+  // GATHER PREVIOUS EPISODES FOR CONTEXT
+  // Recent episodes (last 2): full transcript — AI needs exact voice + tone continuity
+  // All older episodes: BrantSteele summary — compact, covers everything that matters
   const previousEpisodes = [];
+  const RECENT_COUNT = 2;
+
   for (let i = 1; i < episodeNum; i++) {
-    const key = `td_episode_s${season}_e${i}`;
-    const savedEpisode = localStorage.getItem(key);
-    if (savedEpisode) {
-      previousEpisodes.push({
-        episode: i,
-        transcript: savedEpisode
-      });
+    const isRecent = i >= episodeNum - RECENT_COUNT;
+
+    if (isRecent) {
+      // Full transcript for recent episodes
+      const transcriptKey = `td_episode_s${season}_e${i}`;
+      const savedTranscript = localStorage.getItem(transcriptKey);
+      if (savedTranscript) {
+        previousEpisodes.push({
+          episode: i,
+          transcript: savedTranscript,
+          charLimit: 10000,
+          type: 'transcript'
+        });
+      }
+    } else {
+      // BrantSteele summary for older episodes — already saved when user pasted it
+      const summaryKey = `AI_SUMMARY_s${season}_e${i}`;
+      const savedSummary = localStorage.getItem(summaryKey);
+      if (savedSummary) {
+        previousEpisodes.push({
+          episode: i,
+          transcript: savedSummary,   // worker reads from .transcript field
+          charLimit: savedSummary.length, // send the full summary, no truncation
+          type: 'summary'
+        });
+      } else {
+        // Fallback: no summary saved, try transcript at reduced length
+        const transcriptKey = `td_episode_s${season}_e${i}`;
+        const savedTranscript = localStorage.getItem(transcriptKey);
+        if (savedTranscript) {
+          previousEpisodes.push({
+            episode: i,
+            transcript: savedTranscript,
+            charLimit: 1500,
+            type: 'transcript-compressed'
+          });
+        }
+      }
     }
   }
   

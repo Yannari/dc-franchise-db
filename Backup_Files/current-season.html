@@ -5535,6 +5535,35 @@ setTimeout(function() {
     text += `${player.totalChallengeWins} challenge wins, ${player.totalVotesAgainst} votes against.`;
     return text;
   }
+
+  function buildSeasonReasoning(name, seasonNum, placement, row, isWinner, isNew, existingReasoning) {
+    // Build a structured summary sentence for this season's performance
+    const highlights = [];
+    if (row.immWins > 0) highlights.push(`${row.immWins} immunity win${row.immWins>1?'s':''}`);
+    if (row.rewWins > 0) highlights.push(`${row.rewWins} reward win${row.rewWins>1?'s':''}`);
+    if (row.idolsPlayed > 0) highlights.push(`played ${row.idolsPlayed} idol${row.idolsPlayed>1?'s':''}`);
+    if (row.idolsFound > 0 && !row.idolsPlayed) highlights.push(`found ${row.idolsFound} idol${row.idolsFound>1?'s':''} (unused)`);
+    if (row.alliances > 0) highlights.push(`${row.alliances} alliance${row.alliances>1?'s':''}`);
+    if (row.fanFav) highlights.push('fan favorite');
+    if (row.votesAgainst === 0) highlights.push('never received a vote');
+    else if (row.votesAgainst === 1) highlights.push('voted against once');
+
+    const suffix = highlights.length ? ` ${highlights.join(', ')}.` : '.';
+    const winLabel = isWinner ? 'Winner' : `P${placement}`;
+    const overridePart = row.override ? ` Narrative override ${row.override>0?'+':''}${row.override}: ${row.overrideReason}.` : '';
+
+    const thisSeasonLine = `S${seasonNum} ${winLabel}.${overridePart}${suffix}`;
+
+    if (isNew) {
+      // Brand new player — start fresh
+      return thisSeasonLine;
+    } else {
+      // Returning player — append this season to existing reasoning
+      // Strip any previous "S{num} P{placement}" auto-line for this same season if it exists
+      const stripped = (existingReasoning || '').replace(new RegExp(`S${seasonNum}\s+(?:Winner|P\d+)[^]*$`), '').trim();
+      return (stripped ? stripped + ' ' : '') + thisSeasonLine;
+    }
+  }
   
   // ========================================
   // VOTING ANALYTICS HTML GENERATION
@@ -6530,16 +6559,77 @@ setTimeout(function() {
     }
 
     // ── Apply ─────────────────────────────────────────────────
-    function applyUpdates() {
+    // ── AI reasoning via Claude API ──────────────────────────
+    async function generateAIReasoning(name, seasonNum, placement, row, isWinner, isNew, existingReasoning, totalSeasons, totalWins) {
+      const winLabel   = isWinner ? 'Winner' : `P${placement}`;
+      const statParts  = [];
+      if (row.immWins)    statParts.push(`${row.immWins} immunity win${row.immWins>1?'s':''}`);
+      if (row.rewWins)    statParts.push(`${row.rewWins} reward win${row.rewWins>1?'s':''}`);
+      if (row.idolsPlayed) statParts.push(`played ${row.idolsPlayed} idol${row.idolsPlayed>1?'s':''}`);
+      if (row.idolsFound && !row.idolsPlayed) statParts.push(`found ${row.idolsFound} idol${row.idolsFound>1?'s':''} (unused)`);
+      if (row.alliances)  statParts.push(`${row.alliances} real alliance${row.alliances>1?'s':''}`);
+      if (row.votesAgainst===0) statParts.push('never received a vote');
+      else if (row.votesAgainst===1) statParts.push('voted against once');
+      else statParts.push(`${row.votesAgainst} votes against`);
+      if (row.fanFav)     statParts.push('fan favorite');
+      if (row.quit)       statParts.push('quit the game');
+      if (row.override)   statParts.push(`narrative note: ${row.overrideReason}`);
+
+      const context = isNew
+        ? `This is ${name}'s first season (Season ${seasonNum}). They placed ${winLabel}. Stats: ${statParts.join(', ')}.`
+        : `${name} has now played ${totalSeasons} seasons with ${totalWins} win${totalWins!==1?'s':''}. This season (Season ${seasonNum}) they placed ${winLabel}. Stats: ${statParts.join(', ')}. Their existing career summary: "${existingReasoning}"`;
+
+      const prompt = `You write the "Why ${isWinner?'S+':totalWins>0?'S':'tier'}" reasoning for a Total Drama franchise rankings page.
+
+${context}
+
+Write 2-4 sentences that read like a thoughtful analyst describing this player's legacy — not a stat sheet. Be specific about what made their game notable or what their placement means in context. If they're a returning player, weave their career arc together rather than listing seasons separately. If they played poorly or left early, be honest but fair. Match the tone of these examples:
+
+Good example (winner): "S9's dominant winner and the franchise's most advantage-literate player. Bowie played a social spider game from day one, allying quietly while hoarding power. He stripped Julia's idol at Tribal with Knowledge is Power, broke his Unbreakable Bond to blindside Priya, and beat Damien at fire to seal a flawless endgame."
+
+Good example (non-winner): "S9's most complete non-winner. Millie converted a Beware package into the Red Idol, used it at F8 to nullify a five-vote strike, and held her alliances together through one of the season's messiest post-merges. Her game had everything a winning résumé needs — she just ran into Bowie."
+
+Good example (early boot): "S9's unluckiest exit. Nichelle was on the wrong end of the Ep2 rock draw through no fault of her own, then burned Shot in the Dark in Ep3 and lost — going 3-0 as both she and Ripper burned their advantages simultaneously."
+
+Write ONLY the reasoning text, no labels or quotes.`;
+
+      try {
+        const resp = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'claude-sonnet-4-6',
+            max_tokens: 300,
+            messages: [{ role: 'user', content: prompt }]
+          })
+        });
+        const data = await resp.json();
+        const text = data?.content?.[0]?.text?.trim();
+        if (text) return text;
+      } catch(e) {
+        console.warn('AI reasoning failed, using fallback', e);
+      }
+      // Fallback to structured text
+      return buildSeasonReasoning(name, seasonNum, placement, row, isWinner, isNew, existingReasoning);
+    }
+
+    async function applyUpdates() {
       if (!pendingUpdated||!rankingsDB) return;
       const seasonNum = parseInt(document.getElementById('ru-season-num').value);
 
+      // Show loading state
+      const applyBtn = document.getElementById('ru-apply-btn');
+      const origText = applyBtn.textContent;
+      applyBtn.textContent = '⏳ Generating AI reasoning...';
+      applyBtn.disabled = true;
+
+      // First pass — update all stats without reasoning
+      const needsReasoning = [];
       pendingUpdated.forEach(r => {
         const row = r.row;
-        const overrideNote = row.override ? ('Override '+(row.override>0?'+':'')+row.override+': '+row.overrideReason+'. ') : '';
         if (r.isNew) {
           const maxRank = Math.max(...rankingsDB.rankings.map(p=>p.rank||0));
-          rankingsDB.rankings.push({
+          const newEntry = {
             playerId: r.name.toLowerCase().replace(/[^a-z0-9]/g,'-'),
             name:r.name, rank:maxRank+1, tier:r.newTier, score:r.newScore,
             wins:r.isWinner?1:0, seasonsPlayed:1,
@@ -6548,9 +6638,11 @@ setTimeout(function() {
             votesAgainst:row.votesAgainst, juryVotes:row.juryVotes,
             idolsFound:row.idolsPlayed+row.idolsFound,
             title:'', emoji:r.isWinner?'\ud83d\udc51':'\u2b50',
-            reasoning:'S'+seasonNum+' P'+r.placement+'. '+overrideNote+(r.breakdown||''),
+            reasoning: buildSeasonReasoning(r.name, seasonNum, r.placement, row, r.isWinner, true, ''),
             strengths:[], weaknesses:[]
-          });
+          };
+          rankingsDB.rankings.push(newEntry);
+          needsReasoning.push({ entry: newEntry, r, row, isNew: true, totalSeasons: 1, totalWins: r.isWinner?1:0 });
         } else {
           const e = r.existingRef;
           e.score=r.newScore; e.tier=r.newTier;
@@ -6568,8 +6660,18 @@ setTimeout(function() {
             if (!e.overrides) e.overrides=[];
             e.overrides.push({season:seasonNum, value:row.override, reason:row.overrideReason});
           }
+          needsReasoning.push({ entry: e, r, row, isNew: false, totalSeasons: e.seasonsPlayed, totalWins: e.wins, prevReasoning: e.reasoning });
         }
       });
+
+      // Second pass — generate AI reasoning for all players in parallel
+      applyBtn.textContent = `⏳ Writing ${needsReasoning.length} player summaries...`;
+      await Promise.all(needsReasoning.map(async ({entry, r, row, isNew, totalSeasons, totalWins, prevReasoning}) => {
+        entry.reasoning = await generateAIReasoning(
+          r.name, seasonNum, r.placement, row, r.isWinner,
+          isNew, prevReasoning||'', totalSeasons, totalWins
+        );
+      }));
 
       rankingsDB.rankings.sort((a,b)=>b.score-a.score);
       rankingsDB.rankings.forEach((p,i)=>{p.rank=i+1;});
@@ -6581,9 +6683,12 @@ setTimeout(function() {
       a.href=url; a.download='rankings_database.json'; a.click();
       URL.revokeObjectURL(url);
 
+      applyBtn.textContent = origText;
+      applyBtn.disabled = false;
+
       document.getElementById('ru-preview-output').insertAdjacentHTML('beforeend',
         '<div style="margin-top:12px;padding:12px 16px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:10px;font-size:13px;color:#4ade80;">' +
-        '\u2705 rankings_database.json downloaded \u2014 replace your existing file with this one.</div>'
+        '\u2705 rankings_database.json downloaded with AI-written reasoning \u2014 replace your existing file with this one.</div>'
       );
     }
 

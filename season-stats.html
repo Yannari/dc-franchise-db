@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Season Stats Explorer — DC Franchise</title>
+<link rel="stylesheet" href="styles.css"/>
+<style>
+.ss-hero {
+  text-align: center;
+  padding: 36px 0 24px;
+}
+.ss-hero h1 {
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  font-family: var(--font-samdan,'Samdan',sans-serif);
+  background: linear-gradient(135deg, #60a5fa, #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0 0 8px;
+}
+.ss-hero p { color: var(--muted); font-size: 14px; margin: 0; }
+
+/* ── Season selector ─────────────────────────────────── */
+.ss-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 28px;
+  justify-content: center;
+}
+.ss-btn {
+  padding: 7px 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.05);
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all .2s;
+}
+.ss-btn:hover { border-color: var(--accent); color: #fff; }
+.ss-btn.active {
+  background: rgba(125,76,255,.2);
+  border-color: rgba(125,76,255,.5);
+  color: #fff;
+}
+
+/* ── Season info bar ─────────────────────────────────── */
+.ss-info-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 14px 18px;
+  background: rgba(0,0,0,.2);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 12px;
+}
+.ss-season-title {
+  font-family: var(--font-samdan,'Samdan',sans-serif);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fff;
+}
+.ss-chip {
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(125,76,255,.15);
+  border: 1px solid rgba(125,76,255,.3);
+  color: #a78bfa;
+}
+.ss-winner-badge {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* ── Controls ────────────────────────────────────────── */
+.ss-controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 14px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.ss-search {
+  flex: 1;
+  min-width: 180px;
+  padding: 8px 12px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 13px;
+  outline: none;
+}
+.ss-search:focus { border-color: var(--accent); }
+.ss-search::placeholder { color: var(--muted); }
+
+/* ── Table ───────────────────────────────────────────── */
+.ss-table-wrap { overflow-x: auto; margin-bottom: 32px; }
+.ss-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  min-width: 600px;
+}
+.ss-table th {
+  padding: 10px 12px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--muted);
+  border-bottom: 1px solid rgba(255,255,255,.1);
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  transition: color .15s;
+}
+.ss-table th:hover { color: #fff; }
+.ss-table th.sorted { color: var(--accent); }
+.ss-table th.left { text-align: left; }
+.ss-table td {
+  padding: 9px 12px;
+  text-align: center;
+  border-bottom: 1px solid rgba(255,255,255,.04);
+  vertical-align: middle;
+}
+.ss-table td.left { text-align: left; }
+.ss-table tr:hover td { background: rgba(255,255,255,.025); }
+
+/* Placement col */
+.place-num {
+  font-family: var(--font-samdan,'Samdan',sans-serif);
+  font-size: 1rem;
+  font-weight: 700;
+}
+.phase-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
+}
+.phase-winner   { background:rgba(245,158,11,.2);  border:1px solid rgba(245,158,11,.4);  color:#f59e0b; }
+.phase-finalist { background:rgba(167,139,250,.2); border:1px solid rgba(167,139,250,.4); color:#a78bfa; }
+.phase-juror    { background:rgba(96,165,250,.15); border:1px solid rgba(96,165,250,.3);  color:#93c5fd; }
+.phase-out      { background:rgba(148,163,184,.08);border:1px solid rgba(148,163,184,.2); color:#94a3b8; }
+
+.player-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.player-cell img {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.player-cell a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+}
+.player-cell a:hover { color: var(--accent); }
+
+/* Sort arrows */
+th .sort-arrow { font-size: 9px; margin-left: 3px; opacity: .5; }
+th.sorted .sort-arrow { opacity: 1; color: var(--accent); }
+
+/* Strategic rank cell */
+.strat-val {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
+}
+</style>
+</head>
+<body>
+
+<!-- SITE HEADER START -->
+<header class="modern-header" id="modernHeader">
+  <div class="header-container">
+    <div class="header-top">
+      <a href="index.html" class="brand-section" aria-label="Go to home">
+        <div class="brand-icon"><span class="brand-logo-text">⚡</span></div>
+        <div class="brand-content">
+          <h1>DC <span class="brand-gradient">Franchise</span> Database</h1>
+          <p class="brand-subtitle">Season <span id="currentSeasonNum">9</span> Live • Click to Explore</p>
+        </div>
+      </a>
+      <div class="stats-badge">
+        <div class="stats-main"><span id="totalSeasons">9</span> Seasons • <span id="totalPlayers">102</span> Players</div>
+        <div class="stats-sub">Icons: <span id="iconFormat">name.png</span></div>
+      </div>
+    </div>
+    <nav class="header-nav" aria-label="Primary navigation">
+      <ul class="nav-list">
+        <li class="nav-item"><a href="index.html" class="nav-link" data-page="index"><span class="nav-icon">🏠</span><span>Home</span></a></li>
+        <li class="nav-item"><a href="current-season.html" class="nav-link" data-page="current-season"><span class="nav-icon">📊</span><span>Current Season</span></a></li>
+        <li class="nav-item"><a href="voting-analytics.html" class="nav-link" data-page="voting-analytics"><span class="nav-icon">🧾</span><span>Voting Analytics</span></a></li>
+        <li class="nav-item"><a href="franchise.html" class="nav-link" data-page="franchise"><span class="nav-icon">🏛️</span><span>Franchise</span></a></li>
+        <li class="nav-item"><a href="rankings.html" class="nav-link" data-page="rankings"><span class="nav-icon">🏆</span><span>Rankings</span></a></li>
+        <li class="nav-item"><a href="seasons.html" class="nav-link" data-page="seasons"><span class="nav-icon">🗂️</span><span>Seasons</span></a></li>
+        <li class="nav-item"><a href="devotees.html" class="nav-link" data-page="devotees"><span class="nav-icon">👥</span><span>Players</span></a></li>
+        <li class="nav-item"><a href="awards.html" class="nav-link" data-page="awards"><span class="nav-icon">🏅</span><span>Awards</span></a></li>
+        <li class="nav-item"><a href="compare.html" class="nav-link" data-page="compare"><span class="nav-icon">⚔️</span><span>Compare</span></a></li>
+        <li class="nav-item"><a href="records.html" class="nav-link" data-page="records"><span class="nav-icon">📋</span><span>Records</span></a></li>
+        <li class="nav-item"><a href="season-stats.html" class="nav-link active" data-page="season-stats"><span class="nav-icon">📊</span><span>Season Stats</span></a></li>
+        <li class="nav-item"><a href="timeline.html" class="nav-link" data-page="timeline"><span class="nav-icon">🗓️</span><span>Timeline</span></a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<script>
+(function() {
+  function applySiteConfig(cfg) {
+    document.getElementById('totalSeasons').textContent = cfg.seasons;
+    document.getElementById('totalPlayers').textContent = cfg.players;
+    document.getElementById('currentSeasonNum').textContent = cfg.currentSeason;
+    document.getElementById('iconFormat').textContent = cfg.iconFormat;
+    var fs = document.getElementById('footer-seasons');
+    var fp = document.getElementById('footer-players');
+    if (fs) fs.textContent = cfg.seasons;
+    if (fp) fp.textContent = cfg.players;
+  }
+  if (window.SITE_CONFIG) applySiteConfig(window.SITE_CONFIG);
+  document.addEventListener('siteConfigReady', function(e) { applySiteConfig(e.detail); });
+  const header = document.getElementById('modernHeader');
+  window.addEventListener('scroll', () => {
+    header.classList.toggle('scrolled', window.pageYOffset > 20);
+  }, { passive: true });
+})();
+</script>
+<!-- SITE HEADER END -->
+
+<div class="container">
+  <div class="ss-hero">
+    <h1>Season Stats Explorer</h1>
+    <p>Sortable per-season breakdown — click any column header to sort</p>
+  </div>
+
+  <!-- Season buttons -->
+  <div class="ss-selector" id="ssBtns"></div>
+
+  <!-- Season info bar -->
+  <div class="ss-info-bar" id="ssInfoBar" style="display:none;"></div>
+
+  <!-- Search -->
+  <div class="ss-controls" style="display:none;" id="ssControls">
+    <input type="text" class="ss-search" id="ssSearch" placeholder="Filter by player name…"/>
+  </div>
+
+  <!-- Table -->
+  <div class="ss-table-wrap">
+    <table class="ss-table" id="ssTable">
+      <tbody><tr><td colspan="10" style="text-align:center;padding:40px;color:var(--muted);">Select a season above.</td></tr></tbody>
+    </table>
+  </div>
+
+  <div class="footer"><span id="footer-seasons">9</span> seasons complete • <span id="footer-players">102</span> unique players</div>
+</div>
+
+<footer class="siteFooter">
+  <div class="footerInner">
+    <div class="footerTitle">DC Franchise Database</div>
+    <div class="footerSub">Static archive • <span id="footer-seasons-sub">9</span> seasons • <span id="footer-players-sub">102</span> players</div>
+  </div>
+</footer>
+
+<script>
+// ── State ──────────────────────────────────────────────────────
+let currentData = null;   // loaded season-data.json
+let sortCol = 'placement';
+let sortAsc = true;
+let filterText = '';
+
+const COLS = [
+  { key: 'placement',    label: 'Place',        type: 'num', asc: true  },
+  { key: 'name',         label: 'Player',       type: 'str', asc: true  },
+  { key: 'phase',        label: 'Phase',        type: 'str', asc: true  },
+  { key: 'challengeWins',label: 'CW',           type: 'num', asc: false, title: 'Challenge Wins' },
+  { key: 'immunityWins', label: 'IW',           type: 'num', asc: false, title: 'Immunity Wins'  },
+  { key: 'rewardWins',   label: 'RW',           type: 'num', asc: false, title: 'Reward Wins'    },
+  { key: 'votesReceived',label: 'Votes Against',type: 'num', asc: true  },
+  { key: 'idolsFound',   label: 'Idols',        type: 'num', asc: false },
+  { key: 'strategicRank',label: 'Strat',        type: 'num', asc: false, title: 'Strategic Rank' },
+];
+
+// ── Season buttons ────────────────────────────────────────────
+async function loadSeasonList() {
+  // Use seasons_database to get list
+  const r = await fetch('seasons_database.json');
+  const sdb = await r.json();
+  const btns = document.getElementById('ssBtns');
+  btns.innerHTML = sdb.seasons.map(s =>
+    `<button class="ss-btn" data-sn="${s.seasonNumber}" onclick="loadSeason(${s.seasonNumber})">S${s.seasonNumber}</button>`
+  ).join('');
+
+  // Auto-load from URL param
+  const params = new URLSearchParams(window.location.search);
+  const sn = parseInt(params.get('season'));
+  if (sn) loadSeason(sn);
+}
+
+async function loadSeason(sn) {
+  // Update buttons
+  document.querySelectorAll('.ss-btn').forEach(b => {
+    b.classList.toggle('active', parseInt(b.dataset.sn) === sn);
+  });
+
+  // Update URL
+  const url = new URL(window.location.href);
+  url.searchParams.set('season', sn);
+  window.history.replaceState({}, '', url.toString());
+
+  try {
+    const r = await fetch(`season${sn}-data.json`);
+    if (!r.ok) throw new Error('Not found');
+    currentData = await r.json();
+    filterText = '';
+    document.getElementById('ssSearch').value = '';
+    sortCol = 'placement';
+    sortAsc = true;
+    renderInfoBar(currentData);
+    renderTable();
+    document.getElementById('ssControls').style.display = 'flex';
+  } catch (e) {
+    document.getElementById('ssInfoBar').style.display = 'none';
+    document.getElementById('ssControls').style.display = 'none';
+    document.getElementById('ssTable').innerHTML =
+      `<tbody><tr><td colspan="10" style="text-align:center;padding:40px;color:var(--muted);">Season ${sn} data not available.</td></tr></tbody>`;
+  }
+}
+
+function renderInfoBar(data) {
+  const bar = document.getElementById('ssInfoBar');
+  const w = data.winner || {};
+  bar.innerHTML = `
+    <div>
+      <div class="ss-season-title">Season ${data.seasonNumber} — ${data.title}</div>
+      ${data.subtitle ? `<div style="font-size:12px;color:var(--muted);">${data.subtitle}</div>` : ''}
+    </div>
+    <span class="ss-chip">${data.castSize} players</span>
+    <span class="ss-chip">${data.episodeCount} episodes</span>
+    ${data.jurySize ? `<span class="ss-chip">${data.jurySize}-person jury</span>` : ''}
+    <div class="ss-winner-badge">
+      <img src="assets/avatars/${w.playerSlug || ''}.png" alt=""
+           style="width:24px;height:24px;border-radius:50%;object-fit:cover;" onerror="this.style.display='none'">
+      <span>🏆 ${w.name || '?'} (${w.vote || '?'})</span>
+    </div>`;
+  bar.style.display = 'flex';
+}
+
+// ── Table render ──────────────────────────────────────────────
+function phaseClass(phase) {
+  if (!phase) return 'phase-out';
+  const p = phase.toLowerCase();
+  if (p.includes('winner') || p.includes('co-winner')) return 'phase-winner';
+  if (p.includes('finalist')) return 'phase-finalist';
+  if (p.includes('juror')) return 'phase-juror';
+  return 'phase-out';
+}
+
+function numVal(v) {
+  if (v == null || v === '') return -1;
+  const n = parseFloat(v);
+  return isNaN(n) ? -1 : n;
+}
+
+function renderTable() {
+  if (!currentData) return;
+
+  let rows = (currentData.placements || []).slice();
+
+  // Filter
+  if (filterText) {
+    const q = filterText.toLowerCase();
+    rows = rows.filter(r => (r.name || '').toLowerCase().includes(q));
+  }
+
+  // Sort
+  rows.sort((a, b) => {
+    const col = COLS.find(c => c.key === sortCol) || COLS[0];
+    let va = a[sortCol], vb = b[sortCol];
+    if (col.type === 'num') {
+      va = numVal(va); vb = numVal(vb);
+      // Treat -1 (no data) as worst
+      if (va === -1 && vb !== -1) return 1;
+      if (vb === -1 && va !== -1) return -1;
+    } else {
+      va = (va || '').toString().toLowerCase();
+      vb = (vb || '').toString().toLowerCase();
+    }
+    if (va < vb) return sortAsc ? -1 : 1;
+    if (va > vb) return sortAsc ? 1 : -1;
+    return 0;
+  });
+
+  // Header
+  const headerCells = COLS.map(c => {
+    const isSorted = c.key === sortCol;
+    const arrow = isSorted ? (sortAsc ? '▲' : '▼') : '⇅';
+    return `<th class="${c.key === 'name' ? 'left ' : ''}${isSorted ? 'sorted' : ''}"
+              title="${c.title || c.label}"
+              onclick="onSort('${c.key}')">
+      ${c.label} <span class="sort-arrow">${arrow}</span>
+    </th>`;
+  }).join('');
+
+  // Data rows
+  const dataRows = rows.map(row => {
+    const slug = row.playerSlug || '';
+    const placeLabel = `${row.placement}${row.placement===1?'st':row.placement===2?'nd':row.placement===3?'rd':'th'}`;
+    const pc = phaseClass(row.phase);
+    const stratV = row.strategicRank;
+    const stratNum = parseFloat(stratV);
+    const stratDisplay = !isNaN(stratNum)
+      ? (() => {
+          const pct = Math.min(stratNum / 10, 1);
+          const hue = Math.round(pct * 120);
+          return `<span class="strat-val" style="background:hsla(${hue},60%,45%,.25);color:hsl(${hue},70%,65%)">${stratNum}</span>`;
+        })()
+      : (stratV ? `<span style="font-size:11px;color:var(--muted)">${stratV}</span>` : '<span style="color:rgba(255,255,255,.2)">—</span>');
+
+    const cellVal = v => v != null && v !== '' && v !== 0
+      ? `<span style="font-weight:600">${v}</span>`
+      : `<span style="color:rgba(255,255,255,.2)">—</span>`;
+
+    return `<tr>
+      <td><span class="place-num">${placeLabel}</span></td>
+      <td class="left">
+        <div class="player-cell">
+          <img src="assets/avatars/${slug}.png" alt="" onerror="this.style.display='none'">
+          <a href="player.html?player=${slug}">${row.name}</a>
+        </div>
+      </td>
+      <td><span class="phase-badge ${pc}">${row.phase || '—'}</span></td>
+      <td>${cellVal(row.challengeWins)}</td>
+      <td>${cellVal(row.immunityWins)}</td>
+      <td>${cellVal(row.rewardWins)}</td>
+      <td>${cellVal(row.votesReceived)}</td>
+      <td>${cellVal(row.idolsFound)}</td>
+      <td>${stratDisplay}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('ssTable').innerHTML =
+    `<thead><tr>${headerCells}</tr></thead><tbody>${dataRows}</tbody>`;
+}
+
+function onSort(key) {
+  if (sortCol === key) {
+    sortAsc = !sortAsc;
+  } else {
+    sortCol = key;
+    const col = COLS.find(c => c.key === key);
+    sortAsc = col ? col.asc : true;
+  }
+  renderTable();
+}
+
+// ── Search ────────────────────────────────────────────────────
+document.getElementById('ssSearch').addEventListener('input', function() {
+  filterText = this.value.trim();
+  renderTable();
+});
+
+// ── Init ──────────────────────────────────────────────────────
+loadSeasonList();
+</script>
+</body>
+</html>

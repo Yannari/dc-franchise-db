@@ -221,21 +221,23 @@
     
     // Emoji map
     const emojiMap = {
-      1: '🏝️',
-      2: '🔁',
-      3: '🌋',
-      4: '⭐',
-      5: '🛟'
+      1: '🏝️', 2: '🔁', 3: '🌋', 4: '⭐', 5: '🛟',
+      6: '🎡', 7: '🗺️', 8: '⚔️', 9: '⚡'
     };
     const emoji = emojiMap[seasonNum] || '📺';
     
-    // Generate highlights
+    // Generate highlights — check multiple possible locations
     let highlightsHTML = '';
-    if (season.legacy && season.legacy.memorableMoments) {
-      const moments = season.legacy.memorableMoments.slice(0, 6);
-      for (let i = 0; i < moments.length; i++) {
-        highlightsHTML += '<div class="highlight-box"><b>' + moments[i] + '</b></div>';
-      }
+    const momentsArr = (season.legacy && season.legacy.memorableMoments)
+      || (season.awards && season.awards.legacyMoment && [season.awards.legacyMoment.description])
+      || season.highlights || [];
+    const moments = momentsArr.slice(0, 6);
+    for (let i = 0; i < moments.length; i++) {
+      highlightsHTML += '<div class="highlight-box"><b>' + moments[i] + '</b></div>';
+    }
+    // Also pull from season narrative if no highlights
+    if (!highlightsHTML && season.seasonNarrative) {
+      highlightsHTML = '<div class="highlight-box"><b>' + season.seasonNarrative + '</b></div>';
     }
     
     // Get physical award
@@ -298,7 +300,7 @@
     statsHTML += '<div class="stat-row"><span class="stat-label">Cast Size</span><span class="stat-value">' + season.castSize + ' players</span></div>';
     statsHTML += '<div class="stat-row"><span class="stat-label">Episodes</span><span class="stat-value">' + season.episodeCount + '</span></div>';
     statsHTML += '<div class="stat-row"><span class="stat-label">Winner</span><span class="stat-value">' + season.winner.name + '</span></div>';
-    statsHTML += '<div class="stat-row"><span class="stat-label">Runner-Up</span><span class="stat-value">' + season.winner.runnerUp + '</span></div>';
+    if (season.winner.runnerUp) statsHTML += '<div class="stat-row"><span class="stat-label">Runner-Up</span><span class="stat-value">' + season.winner.runnerUp + '</span></div>';
     statsHTML += '<div class="stat-row"><span class="stat-label">Final Vote</span><span class="stat-value">' + season.winner.vote + '</span></div>';
     statsHTML += '</div>';
     
@@ -354,10 +356,13 @@
     
     // Callout
     pageHTML += '<div class="callout">';
-    pageHTML +=   '<h3>🏆 Winner: ' + season.winner.name + ' (' + season.winner.vote + ' over ' + season.winner.runnerUp + ')</h3>';
-    pageHTML +=   '<p><b>Strategy:</b> ' + season.winner.strategy + ' — ' + season.winner.keyStats + '</p>';
-    pageHTML +=   '<p><b>Legacy:</b> ' + season.winner.legacy + '</p>';
-    if (season.awards.fanFavorite) {
+    const winVote = season.winner.vote || season.winner.finalVote || '';
+    const winRU = season.winner.runnerUp || '';
+    const winHeader = season.winner.name + (winVote ? ' (' + winVote + (winRU ? ' over ' + winRU : '') + ')' : '');
+    pageHTML +=   '<h3>🏆 Winner: ' + winHeader + '</h3>';
+    if (season.winner.strategy) pageHTML +=   '<p><b>Strategy:</b> ' + season.winner.strategy + (season.winner.keyStats ? ' — ' + season.winner.keyStats : '') + '</p>';
+    if (season.winner.legacy) pageHTML +=   '<p><b>Legacy:</b> ' + season.winner.legacy + '</p>';
+    if (season.awards && season.awards.fanFavorite) {
       pageHTML += '<p><b>Fan Favorite:</b> ' + season.awards.fanFavorite.name + '</p>';
     }
     pageHTML += '</div>';

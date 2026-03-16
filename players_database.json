@@ -767,7 +767,7 @@
       "totalRewardWins": 4,
       "totalVotesAgainst": 13,
       "totalIdolsFound": 1,
-      "totalJuryVotes": 1,
+      "totalJuryVotes": 5,
       "badges": [
         "Strategic #3",
         "Unbreakable: Alejandro",
@@ -913,7 +913,7 @@
           "votesReceived": 3,
           "idolsFound": 1,
           "strategicRank": 8,
-          "juryVotes": 0,
+          "juryVotes": 2,
           "finalVote": "",
           "advantages": [],
           "notes": [
@@ -939,7 +939,7 @@
       "story": "Introduced on Screaming Gophers (Season 1), Cody spent the pre-merge trying to stay useful without becoming a target\u2014a tough balance on a tribe full of big personalities. He nearly survived the squeeze, but the vote that ended him was decided by a single flip: Leshawna changed sides, turning a close night into a 6\u20135 send-off. It\u2019s the kind of elimination that haunts a season\u2014because one relationship, one conversation, one minute earlier could\u2019ve rewritten everything (Result: eliminated 6\u20135; 19th).\n\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\nSEASON 7 \u2014 Fan vs Favorites\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nCody\u2019s Fan vs Favorites run was the ultimate \u2018survive the war, then weaponize the bonds\u2019 arc. He started the season carrying the Legacy Advantage and a growing list of enemies, but he also built the season\u2019s most important lifeline: an unbreakable partnership with Carrie that stayed intact through swaps, merge pressure, and vote splits. Once he linked up with MacArthur inside Lawa Alliance #3, he stopped being a lone target and became the backbone of a majority path that kept snapping other coalitions first. He managed his endgame timing well enough to burn his Legacy Advantage at Final 6 and later find and play the Campers idol in the Finale stretch, keeping himself immune when every vote mattered. Cody reached Final Tribal as the \u2018social connector\u2019 finalist, but he couldn\u2019t outshine MacArthur\u2019s r\u00e9sum\u00e9 and jury aura, finishing second in a 6\u20132\u20131 decision.",
       "badges": [],
       "seasonsPlayed": 1,
-      "totalJuryVotes": 0,
+      "totalJuryVotes": 2,
       "avgPlacement": 10.5
     },
     {
@@ -1583,7 +1583,7 @@
       "totalRewardWins": 3,
       "totalVotesAgainst": 6,
       "totalIdolsFound": 0,
-      "totalJuryVotes": 0,
+      "totalJuryVotes": 3,
       "badges": [
         "S3 Winner",
         "2nd Boot (Previous Winning Target)",
@@ -2299,7 +2299,7 @@
       "totalRewardWins": 0,
       "totalVotesAgainst": 2,
       "totalIdolsFound": 0,
-      "totalJuryVotes": 0,
+      "totalJuryVotes": 7,
       "tier": "Unranked",
       "badges": [
         "S6 Winner"
@@ -2316,7 +2316,7 @@
           "votesReceived": 2,
           "idolsFound": 0,
           "strategicRank": 10,
-          "juryVotes": 0,
+          "juryVotes": 7,
           "finalVote": "7-1-0",
           "advantages": [],
           "notes": [
@@ -4941,7 +4941,7 @@
       "totalRewardWins": 0,
       "totalVotesAgainst": 6,
       "totalIdolsFound": 0,
-      "totalJuryVotes": 0,
+      "totalJuryVotes": 1,
       "tier": "Unranked",
       "badges": [],
       "seasonDetails": [
@@ -5205,7 +5205,7 @@
       "totalRewardWins": 0,
       "totalVotesAgainst": 20,
       "totalIdolsFound": 1,
-      "totalJuryVotes": 0,
+      "totalJuryVotes": 6,
       "tier": "Unranked",
       "badges": [
         "S7 Winner"
@@ -5222,7 +5222,7 @@
           "votesReceived": 5,
           "idolsFound": 1,
           "strategicRank": 9,
-          "juryVotes": 0,
+          "juryVotes": 6,
           "finalVote": "6-2-1",
           "advantages": [],
           "notes": [
@@ -6415,8 +6415,8 @@
       "totalRewardWins": 0,
       "totalVotesAgainst": 1,
       "totalIdolsFound": 1,
-      "totalJuryVotes": 0,
-      "tier": "Unranked",
+      "totalJuryVotes": 3,
+      "tier": "S",
       "badges": [],
       "seasonDetails": [
         {
@@ -6430,7 +6430,7 @@
           "votesReceived": 1,
           "idolsFound": 1,
           "strategicRank": 7,
-          "juryVotes": 0,
+          "juryVotes": 3,
           "finalVote": "",
           "advantages": [],
           "notes": [

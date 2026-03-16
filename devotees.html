@@ -299,12 +299,12 @@
         </div>
         <div class="brand-content">
           <h1>DC <span class="brand-gradient">Franchise</span> Database</h1>
-          <p class="brand-subtitle">Season <span id="currentSeasonNum">5</span> Live • Click to Explore</p>
+          <p class="brand-subtitle">Season <span id="currentSeasonNum">9</span> Live • Click to Explore</p>
         </div>
       </a>
 
       <div class="stats-badge">
-        <div class="stats-main"><span id="totalSeasons">6</span> Seasons • <span id="totalPlayers">68</span> Players</div>
+        <div class="stats-main"><span id="totalSeasons">9</span> Seasons • <span id="totalPlayers">102</span> Players</div>
         <div class="stats-sub">Icons: <span id="iconFormat">name.png</span></div>
       </div>
     </div>
@@ -368,12 +368,18 @@
 <script>
 (function() {
   // Load site config and update header stats
-  if (window.SITE_CONFIG) {
-    document.getElementById('totalSeasons').textContent = window.SITE_CONFIG.seasons;
-    document.getElementById('totalPlayers').textContent = window.SITE_CONFIG.players;
-    document.getElementById('currentSeasonNum').textContent = window.SITE_CONFIG.currentSeason;
-    document.getElementById('iconFormat').textContent = window.SITE_CONFIG.iconFormat;
+  function applySiteConfig(cfg) {
+    document.getElementById('totalSeasons').textContent = cfg.seasons;
+    document.getElementById('totalPlayers').textContent = cfg.players;
+    document.getElementById('currentSeasonNum').textContent = cfg.currentSeason;
+    document.getElementById('iconFormat').textContent = cfg.iconFormat;
+    var fs = document.getElementById('footer-seasons');
+    var fp = document.getElementById('footer-players');
+    if (fs) fs.textContent = cfg.seasons;
+    if (fp) fp.textContent = cfg.players;
   }
+  if (window.SITE_CONFIG) applySiteConfig(window.SITE_CONFIG);
+  document.addEventListener('siteConfigReady', function(e) { applySiteConfig(e.detail); });
 
   // Scroll behavior
   const header = document.getElementById('modernHeader');
@@ -490,7 +496,7 @@
 <footer class="siteFooter">
   <div class="footerInner">
     <div class="footerTitle">DC Franchise Database</div>
-    <div class="footerSub">Static archive • 8 seasons • 84 players • Icons: name.png</div>
+    <div class="footerSub">Static archive • <span id="footer-seasons">9</span> seasons • <span id="footer-players">102</span> players • Icons: name.png</div>
   </div>
 </footer>
 <!-- SITE FOOTER END -->

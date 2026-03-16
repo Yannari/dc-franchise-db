@@ -733,11 +733,11 @@ background: rgba(0, 0, 0, 0.2);
         </div>
         <div class="brand-content">
           <h1>DC <span class="brand-gradient">Franchise</span> Database</h1>
-          <p class="brand-subtitle">Season 5 Live</p>
+          <p class="brand-subtitle">Season <span id="currentSeasonNum">9</span> Live</p>
         </div>
       </a>
       <div class="stats-badge">
-        <div class="stats-main">5 Seasons • 58 Players</div>
+        <div class="stats-main"><span id="totalSeasons">9</span> Seasons • <span id="totalPlayers">102</span> Players</div>
         <div class="stats-sub">Rankings Updated</div>
       </div>
     </div>
@@ -762,13 +762,13 @@ background: rgba(0, 0, 0, 0.2);
       <div class="brand">DC <span>Franchise</span> Database</div>
       <div class="meta">Power Rankings across all Seasons</div>
     </div>
-    <div class="meta">Updated through Season 5</div>
+    <div class="meta">Updated through Season <span id="rankings-season">9</span></div>
   </div>
 
 
   <div class="hero">
     <h1>🏆 Player Rankings</h1>
-    <p>Comprehensive tier rankings across all seasons • Updated through S5</p>
+    <p>Comprehensive tier rankings across all seasons • Updated through S<span id="rankings-season-hero">9</span></p>
   </div>
 
 <div class="callout">
@@ -840,9 +840,29 @@ background: rgba(0, 0, 0, 0.2);
 <footer class="siteFooter">
   <div class="footerInner">
     <div class="footerTitle">DC Franchise Database</div>
-    <div class="footerSub">Player rankings • Updated through Season 5</div>
+    <div class="footerSub">Player rankings • Updated through Season <span id="footer-season">9</span></div>
   </div>
 </footer>
+
+<script>
+(function() {
+  function applySiteConfig(cfg) {
+    var els = {
+      'currentSeasonNum': cfg.currentSeason,
+      'totalSeasons': cfg.seasons,
+      'totalPlayers': cfg.players,
+      'rankings-season': cfg.currentSeason,
+      'rankings-season-hero': cfg.currentSeason,
+      'footer-season': cfg.currentSeason
+    };
+    Object.keys(els).forEach(function(id) {
+      var el = document.getElementById(id); if (el) el.textContent = els[id];
+    });
+  }
+  if (window.SITE_CONFIG) applySiteConfig(window.SITE_CONFIG);
+  document.addEventListener('siteConfigReady', function(e) { applySiteConfig(e.detail); });
+})();
+</script>
 
 <script>
 (async function() {

@@ -103,38 +103,6 @@
     .sr-ep-novote { font-size:12px; color:var(--muted); font-style:italic; }
 
     .sr-narrative { background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.08); border-left:4px solid var(--sc); border-radius:0 14px 14px 0; padding:20px 24px; font-size:14px; color:rgba(255,255,255,.85); line-height:1.8; margin-bottom:24px; }
-    /* Top finishers strip */
-    .sr-top-strip { display:grid; grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); gap:10px; margin-bottom:16px; }
-    .sr-top-card { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:14px 10px; text-align:center; text-decoration:none; color:inherit; transition:transform .2s,border-color .2s; display:flex; flex-direction:column; align-items:center; gap:7px; }
-    .sr-top-card:hover { transform:translateY(-4px); border-color:var(--sc); }
-    .sr-top-num { font-family:var(--font-samdan,'Samdan',sans-serif); font-size:.95rem; font-weight:700; color:var(--sc); }
-    .sr-top-av { width:48px; height:48px; border-radius:50%; border:2px solid var(--sc); overflow:hidden; background:rgba(255,255,255,.05); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:800; box-shadow:0 0 10px var(--sc-glow); }
-    .sr-top-av img { width:100%; height:100%; object-fit:cover; display:block; }
-    .sr-top-name { font-size:12px; font-weight:700; color:#fff; }
-    .sr-top-phase { font-size:10px; font-weight:600; padding:2px 7px; border-radius:8px; }
-    .sr-top-phase.winner { background:rgba(245,158,11,.18); color:#f59e0b; }
-    .sr-top-phase.finalist { background:rgba(167,139,250,.15); color:#a78bfa; }
-    .sr-top-phase.juror { background:rgba(52,211,153,.1); color:#34d399; }
-    .sr-top-phase.pre-merge { background:rgba(255,255,255,.05); color:var(--muted); }
-
-    /* Award highlights */
-    .sr-highlights-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:10px; margin-bottom:24px; }
-    .sr-hl-card { background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.08); border-left:3px solid var(--sc); border-radius:12px; padding:14px 16px; transition:border-color .2s; }
-    .sr-hl-card:hover { border-color:var(--sc); background:rgba(255,255,255,.05); }
-    .sr-hl-label { font-size:10px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--sc); margin-bottom:9px; }
-    .sr-hl-row { display:flex; align-items:flex-start; gap:10px; }
-    .sr-hl-av { width:36px; height:36px; border-radius:50%; flex-shrink:0; border:2px solid var(--sc); overflow:hidden; background:rgba(255,255,255,.05); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; }
-    .sr-hl-av img { width:100%; height:100%; object-fit:cover; display:block; }
-    .sr-hl-name { font-size:13px; font-weight:800; margin-bottom:3px; }
-    .sr-hl-desc { font-size:11px; color:var(--muted); line-height:1.5; }
-
-    /* Nav footer */
-    .sr-nav-footer { display:flex; gap:10px; flex-wrap:wrap; margin-top:24px; padding-top:20px; border-top:1px solid rgba(255,255,255,.08); }
-    .sr-nav-btn { padding:10px 18px; border-radius:12px; font-size:13px; font-weight:700; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1); color:rgba(255,255,255,.7); text-decoration:none; transition:all .2s; }
-    .sr-nav-btn:hover { background:rgba(255,255,255,.1); color:#fff; }
-    .sr-nav-btn.accent { background:var(--sc-glow); border-color:var(--sc); color:var(--sc); }
-    .sr-nav-btn.accent:hover { background:var(--sc); color:#000; }
-
     .sr-reveal { opacity:0; transform:translateY(16px); transition:opacity .45s ease,transform .45s ease; }
     .sr-reveal.visible { opacity:1; transform:none; }
     @media(max-width:700px){ .sr-hero-body{padding:24px 20px} .sr-awards-grid{grid-template-columns:1fr} }
@@ -209,39 +177,6 @@ function slugify(n){return(n||'').toLowerCase().replace(/[^a-z0-9]/g,'-');}
 function plink(name,ps){const s=ps||slugify(name);return `<a href="player.html?player=${s}" style="color:var(--sc);font-weight:700">${name}</a>`;}
 function phaseClass(p){if(!p)return'pre-merge';const lp=p.toLowerCase();if(lp==='winner')return'winner';if(lp==='finalist')return'finalist';if(lp.includes('juror'))return'juror';return'pre-merge';}
 
-
-function buildAwardHighlights(awards){
-  if(!awards)return'';
-  const PICKS=[
-    {key:'fanFavorite',    label:'⭐ Fan Favorite'},
-    {key:'bestStrategic',  label:'🧠 Best Strategic'},
-    {key:'seasonMVP',      label:'👑 Season MVP'},
-    {key:'bestPhysical',   label:'💪 Best Physical'},
-    {key:'biggestVillain', label:'😈 Biggest Villain'},
-    {key:'bestUnderdog',   label:'🔥 Best Underdog'},
-    {key:'mostChaotic',    label:'🌀 Most Chaotic'},
-    {key:'ironPerson',     label:'🛡️ Iron Person'},
-  ];
-  return PICKS.map(({key,label})=>{
-    const a=awards[key];if(!a)return'';
-    const name=a.name||'';if(!name)return'';
-    const ps=a.playerSlug||slugify(name);
-    const desc=a.description||a.desc||'';
-    return`<div class="sr-hl-card">
-      <div class="sr-hl-label">${label}</div>
-      <div class="sr-hl-row">
-        <div class="sr-hl-av">
-          <img src="assets/avatars/${ps}.png" onload="this.style.display='block';this.parentElement.querySelector('span').style.display='none'" onerror="this.style.display='none'"/>
-          <span>${name.substring(0,2).toUpperCase()}</span>
-        </div>
-        <div>
-          <div class="sr-hl-name">${plink(name,ps)}</div>
-          ${desc?`<div class="sr-hl-desc">${desc}</div>`:''}
-        </div>
-      </div>
-    </div>`;
-  }).filter(Boolean).join('');
-}
 
 function buildRecords(season){
   const st=season.statistics;if(!st)return'';
@@ -393,44 +328,12 @@ function buildRecords(season){
       <div id="sr-panel-overview" class="sr-panel on">
         ${winnerHTML}
         ${narrative?`<div class="sr-sh sr-reveal"><h2>Season Narrative</h2></div><div class="sr-narrative sr-reveal">${narrative}</div>`:''}
-
-        <!-- Top Finishers strip -->
-        ${(s.placements||[]).length?`<div class="sr-sh sr-reveal"><h2>Top Finishers</h2><span class="sr-sh-pill">${(s.placements||[]).length} players</span></div>
-        <div class="sr-top-strip sr-reveal">
-          ${(s.placements||[]).slice(0,8).map((p,i)=>{
-            const pnum=p.placement===1?'🥇':p.placement===2?'🥈':p.placement===3?'🥉':'#'+p.placement;
-            const pc=phaseClass(p.phase);
-            return`<a class="sr-top-card" href="player.html?player=${p.playerSlug}">
-              <div class="sr-top-num">${pnum}</div>
-              <div class="sr-top-av">
-                <img src="assets/avatars/${p.playerSlug}.png" onload="this.style.display='block';this.parentElement.querySelector('span').style.display='none'" onerror="this.style.display='none'"/>
-                <span>${(p.name||'').substring(0,2).toUpperCase()}</span>
-              </div>
-              <div class="sr-top-name">${p.name}</div>
-              <div class="sr-top-phase ${pc}">${p.phase||'—'}</div>
-            </a>`;
-          }).join('')}
-        </div>
-        <div style="margin-bottom:20px">
-          <button class="sr-tab" style="font-size:12px;padding:6px 14px" onclick="srTab('placements',document.querySelectorAll('.sr-tab')[1])">View all ${(s.placements||[]).length} placements →</button>
-        </div>`:''}
-
-        <!-- Award highlights -->
-        ${s.awards?`<div class="sr-sh sr-reveal"><h2>Season Highlights</h2></div>
-        <div class="sr-highlights-grid sr-reveal">
-          ${buildAwardHighlights(s.awards)}
-        </div>`:''}
-
         ${moments.length?`<div class="sr-sh sr-reveal"><h2>Memorable Moments</h2><span class="sr-sh-pill">${moments.length}</span></div>
         <div class="sr-moments">${moments.map((m,i)=>`<div class="sr-moment" style="animation-delay:${i*60}ms"><div class="sr-moment-num">${i+1}</div><div>${m}</div></div>`).join('')}</div>`:''}
-
         ${buildRecords(s)}
-
-        <!-- Nav footer -->
-        <div class="sr-nav-footer">
-          <a href="seasons.html" class="sr-nav-btn">← All Seasons</a>
-          <a href="season-awards_ref.html?season=${sn}" class="sr-nav-btn accent">🏅 Season Awards →</a>
-          <a href="devotees.html" class="sr-nav-btn">👥 All Players →</a>
+        <div style="margin-top:20px;padding:16px;background:rgba(255,255,255,.03);border-radius:12px;border:1px solid rgba(255,255,255,.08);display:flex;gap:16px;flex-wrap:wrap">
+          <a href="season-awards_ref.html?season=${sn}" style="color:var(--sc);font-weight:700">🏅 Full Awards Page →</a>
+          <a href="seasons.html" style="color:var(--muted)">← All Seasons</a>
         </div>
       </div>
 

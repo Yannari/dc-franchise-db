@@ -543,6 +543,8 @@ function awardCard(icon, label, award) {
 
 function statLbCard(title, rows) {
   if (!rows || !rows.length) return '';
+  rows = rows.filter(Boolean);
+  if (!rows.length) return '';
   const rowsHTML = rows.map((r, i) => `<div class="stat-lb-row">
     <span class="stat-lb-rank">${rankIcon(i)}</span>
     ${av(r.playerSlug||r.slug,'stat-lb-av',28)}
@@ -684,7 +686,7 @@ function statLbCard(title, rows) {
     const strategicStats = stats.strategic || {};
 
     const immRankings = chalStats.immunityWins?.rankings || [];
-    const totalRankings = chalStats.totalChallengeWins?.rankings || chalStats.mostTotal ? [chalStats.mostTotal] : [];
+    const totalRankings = (chalStats.totalChallengeWins?.rankings) || (chalStats.mostTotal ? [chalStats.mostTotal] : []);
     const idolFindings = strategicStats.idolFindings || [];
     const strRanking = strategicStats.strategicRanking || [];
 

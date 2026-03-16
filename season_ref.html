@@ -315,7 +315,11 @@ function buildRecords(season){
       <div class="sr-winner-lbl">👑 Season Winner</div>
       <div class="sr-winner-row">
         <div class="sr-winner-av">
-          <img src="assets/avatars/${w.playerSlug}.png" onload="this.style.display='block';this.parentElement.textContent=''" onerror="this.style.display='none'"/>👑
+          <img src="assets/avatars/${w.playerSlug}.png"
+            style="display:none"
+            onload="this.style.display='block';this.nextElementSibling.style.display='none'"
+            onerror="this.style.display='none'"/>
+          <span>👑</span>
         </div>
         <div class="sr-winner-info">
           <div class="sr-winner-name">${w.name}</div>
@@ -367,17 +371,52 @@ function buildRecords(season){
     }).join('');
 
     // Voting history
-    const voteHasData=s.votingHistory&&s.votingHistory.length;
-    const historyHTML=voteHasData?s.votingHistory.map(ep=>{
-      const el=ep.eliminated;const es=slugify(el||'');
-      const vc={};(ep.votes||[]).forEach(v=>{vc[v.target]=(vc[v.target]||0)+1;});
-      const vd=Object.entries(vc).sort((a,b)=>b[1]-a[1]).map(([n,c])=>`<span class="sr-ep-vote">${n} ×${c}</span>`).join('');
-      return`<div class="sr-ep">
-        <div class="sr-ep-num">Ep ${ep.episode}</div>
-        ${el?`<div class="sr-ep-boot"><div class="sr-ep-boot-av"><img src="assets/avatars/${es}.png" onload="this.style.display='block';this.parentElement.querySelector('span').style.display='none'" onerror="this.style.display='none'"/><span>${el.substring(0,2).toUpperCase()}</span></div><div class="sr-ep-boot-name">☠️ ${el}</div></div>`:`<div class="sr-ep-boot"><span class="sr-ep-novote">No elimination</span></div>`}
-        <div class="sr-ep-votes">${vd||'<span class="sr-ep-novote">No vote data</span>'}</div>
+    // Voting history — use structured data if available, else build from placements
+    let historyHTML = '';
+    if (s.votingHistory && s.votingHistory.length) {
+      historyHTML = s.votingHistory.map(ep => {
+        const el = ep.eliminated; const es = slugify(el||'');
+        const vc = {}; (ep.votes||[]).forEach(v => { vc[v.target] = (vc[v.target]||0)+1; });
+        const vd = Object.entries(vc).sort((a,b)=>b[1]-a[1])
+          .map(([n,c]) => `<span class="sr-ep-vote">${n} ×${c}</span>`).join('');
+        return `<div class="sr-ep">
+          <div class="sr-ep-num">Ep ${ep.episode}</div>
+          ${el ? `<div class="sr-ep-boot">
+            <div class="sr-ep-boot-av">
+              <img src="assets/avatars/${es}.png" onload="this.style.display='block';this.nextElementSibling.style.display='none'" onerror="this.style.display='none'"/>
+              <span>${el.substring(0,2).toUpperCase()}</span>
+            </div>
+            <div class="sr-ep-boot-name">☠️ ${el}</div>
+          </div>` : `<div class="sr-ep-boot"><span class="sr-ep-novote">No elimination</span></div>`}
+          <div class="sr-ep-votes">${vd || '<span class="sr-ep-novote">No vote detail</span>'}</div>
+        </div>`;
+      }).join('');
+    } else if (s.placements && s.placements.length) {
+      // Build elimination order from placements (reverse order = elimination order)
+      const ordered = [...s.placements].sort((a,b) => b.placement - a.placement);
+      historyHTML = `<div style="font-size:12px;color:var(--muted);margin-bottom:16px;padding:10px 14px;background:rgba(255,255,255,.03);border-radius:10px;border:1px solid rgba(255,255,255,.07)">
+        ℹ️ Full episode vote breakdown not available for this season — showing elimination order from placements.
       </div>`;
-    }).join(''):`<div style="text-align:center;padding:40px;opacity:.5">Voting history not available for this season.</div>`;
+      historyHTML += ordered.map((p, idx) => {
+        const epNum = s.episodeCount - idx;
+        const voteMatch = (p.notes || '').match(/^([\d–\-★*]+(?:\s*[→→]\s*[\d–\-]+)?)\s*vote/i);
+        const voteStr = voteMatch ? voteMatch[1].trim() : '';
+        return `<div class="sr-ep">
+          <div class="sr-ep-num">${p.placement === 1 ? 'WIN' : p.placement <= 3 ? 'FTC' : `Ep ~${Math.max(1,epNum)}`}</div>
+          <div class="sr-ep-boot">
+            <div class="sr-ep-boot-av" style="${p.placement <= 3 ? 'border-color:rgba(245,158,11,.5)' : ''}">
+              <img src="assets/avatars/${p.playerSlug}.png" onload="this.style.display='block';this.nextElementSibling.style.display='none'" onerror="this.style.display='none'"/>
+              <span>${(p.name||'').substring(0,2).toUpperCase()}</span>
+            </div>
+            <div class="sr-ep-boot-name" style="${p.placement <= 3 ? 'color:#f59e0b' : ''}">${p.placement===1?'🏆':p.placement<=3?'🥈':'☠️'} ${p.name}</div>
+          </div>
+          <div class="sr-ep-votes">
+            ${voteStr ? `<span class="sr-ep-vote">${voteStr}</span>` : ''}
+            <span class="sr-ep-vote" style="color:var(--muted)">${p.phase}</span>
+          </div>
+        </div>`;
+      }).join('');
+    }
 
     const moments=s.legacy?.memorableMoments||s.highlights||[];
     const narrative=s.legacy?.summary||s.seasonNarrative||'';
@@ -387,7 +426,7 @@ function buildRecords(season){
       <div class="sr-tabs">
         <button class="sr-tab on" onclick="srTab('overview',this)">📊 Overview</button>
         <button class="sr-tab" onclick="srTab('placements',this)">🏆 Placements</button>
-        ${voteHasData?`<button class="sr-tab" onclick="srTab('history',this)">📜 Vote History</button>`:''}
+        <button class="sr-tab" onclick="srTab('history',this)">📜 Vote History</button>
       </div>
 
       <div id="sr-panel-overview" class="sr-panel on">
@@ -440,10 +479,10 @@ function buildRecords(season){
         ${placementsHTML||'<p style="color:var(--muted)">No placement data.</p>'}
       </div>
 
-      ${voteHasData?`<div id="sr-panel-history" class="sr-panel">
-        <div class="sr-sh"><h2>Vote History</h2><span class="sr-sh-pill">${s.votingHistory.length} episodes</span></div>
+      <div id="sr-panel-history" class="sr-panel">
+        <div class="sr-sh"><h2>Vote History</h2>${s.votingHistory?`<span class="sr-sh-pill">${s.votingHistory.length} episodes</span>`:''}</div>
         <div class="sr-timeline">${historyHTML}</div>
-      </div>`:''}
+      </div>
     `;
 
     // Post-render: cast photo

@@ -212,8 +212,8 @@
         <li class="nav-item"><a href="devotees.html" class="nav-link" data-page="devotees"><span class="nav-icon">👥</span><span>Players</span></a></li>
         <li class="nav-item"><a href="awards.html" class="nav-link" data-page="awards"><span class="nav-icon">🏅</span><span>Awards</span></a></li>
         <li class="nav-item"><a href="compare.html" class="nav-link" data-page="compare"><span class="nav-icon">⚔️</span><span>Compare</span></a></li>
-        <li class="nav-item"><a href="records.html" class="nav-link" data-page="records"><span class="nav-icon">📋</span><span>Records</span></a></li>
-        <li class="nav-item"><a href="season-stats.html" class="nav-link" data-page="season-stats"><span class="nav-icon">📊</span><span>Season Stats</span></a></li>
+
+
         <li class="nav-item"><a href="timeline.html" class="nav-link active" data-page="timeline"><span class="nav-icon">🗓️</span><span>Timeline</span></a></li>
       </ul>
     </nav>
@@ -335,7 +335,11 @@ async function loadData() {
   // Merge ranking data
   const rankMap = {};
   allRankings.forEach(r => { if (r.playerId) rankMap[r.playerId] = r; });
-  allPlayers.forEach(p => { p._rank = rankMap[p.id] || null; });
+  allPlayers.forEach(p => {
+    p._rank = rankMap[p.id] || null;
+    // Use rankings_database tier as canonical (players_database tiers are not reliably set)
+    p._tier = p._rank ? p._rank.tier : null;
+  });
 
   // Collect all season numbers
   const sns = new Set();
@@ -363,7 +367,7 @@ function buildLookup(players) {
 function sortPlayers(players) {
   return players.slice().sort((a, b) => {
     if (sortMode === 'tier') {
-      const ta = TIER_ORDER[a.tier], tb = TIER_ORDER[b.tier];
+      const ta = TIER_ORDER[a._tier], tb = TIER_ORDER[b._tier];
       if (ta !== tb) return ta - tb;
       // Within tier: sort by rank score desc
       const sa = a._rank ? a._rank.score : 0;
@@ -409,9 +413,9 @@ function renderGrid() {
   }
   if (filterMode === 'returnees') players = players.filter(p => (p.totalSeasons || p.seasons.length) > 1);
   if (filterMode === 'winners')   players = players.filter(p => p.wins > 0);
-  if (filterMode === 'sp') players = players.filter(p => p.tier === 'S+');
-  if (filterMode === 's')  players = players.filter(p => p.tier === 'S');
-  if (filterMode === 'a')  players = players.filter(p => p.tier === 'A');
+  if (filterMode === 'sp') players = players.filter(p => p._tier === 'S+');
+  if (filterMode === 's')  players = players.filter(p => p._tier === 'S');
+  if (filterMode === 'a')  players = players.filter(p => p._tier === 'A');
 
   players = sortPlayers(players);
   const lookup = buildLookup(players);
@@ -423,8 +427,8 @@ function renderGrid() {
 
   // Rows
   const rows = players.map(p => {
-    const tierColor = TIER_COLORS[p.tier] || '#94a3b8';
-    const tierLabel = p.tier || '?';
+    const tierColor = TIER_COLORS[p._tier] || '#94a3b8';
+    const tierLabel = p._tier || '—';
     const cells = allSeasonNums.map(sn => {
       const placement = lookup[p.id] ? lookup[p.id][sn] : undefined;
       if (placement === undefined) {

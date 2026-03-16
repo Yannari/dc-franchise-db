@@ -91,6 +91,25 @@
     .sr-p-moment-item:last-child { border-bottom:none; }
 
 
+    /* Stats table view */
+    .sr-view-toggle { display:flex; gap:6px; margin-bottom:14px; }
+    .sr-view-btn { padding:5px 14px; border-radius:20px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.04); color:var(--muted); cursor:pointer; font-size:12px; font-weight:600; transition:all .15s; }
+    .sr-view-btn.on { background:rgba(125,76,255,.2); border-color:rgba(125,76,255,.45); color:#fff; }
+    .sr-stats-wrap { overflow-x:auto; margin-bottom:16px; }
+    .sr-stats-table { width:100%; border-collapse:collapse; font-size:12px; min-width:500px; }
+    .sr-stats-table th { padding:8px 10px; text-align:center; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); border-bottom:1px solid rgba(255,255,255,.1); cursor:pointer; user-select:none; white-space:nowrap; }
+    .sr-stats-table th:hover { color:#fff; }
+    .sr-stats-table th.sorted { color:var(--sc,var(--accent)); }
+    .sr-stats-table th.left { text-align:left; }
+    .sr-stats-table td { padding:7px 10px; text-align:center; border-bottom:1px solid rgba(255,255,255,.04); vertical-align:middle; }
+    .sr-stats-table td.left { text-align:left; }
+    .sr-stats-table tr:hover td { background:rgba(255,255,255,.025); }
+    .sr-st-player { display:flex; align-items:center; gap:7px; }
+    .sr-st-av { width:26px; height:26px; border-radius:50%; object-fit:cover; flex-shrink:0; }
+    .sr-st-name { font-weight:600; color:#fff; text-decoration:none; }
+    .sr-st-name:hover { color:var(--sc,var(--accent)); }
+    .sr-strat-dot { display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:50%; font-size:11px; font-weight:700; }
+
     .sr-timeline { display:flex; flex-direction:column; gap:8px; }
     .sr-ep { background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.07); border-radius:12px; padding:12px 16px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
     .sr-ep-num { font-family:var(--font-samdan,'Samdan',sans-serif); font-size:.85rem; font-weight:700; color:var(--sc); width:48px; flex-shrink:0; text-align:center; }
@@ -169,8 +188,8 @@
         <li class="nav-item"><a href="devotees.html" class="nav-link"><span class="nav-icon">👥</span><span>Players</span></a></li>
         <li class="nav-item"><a href="awards.html" class="nav-link"><span class="nav-icon">🏅</span><span>Awards</span></a></li>
         <li class="nav-item"><a href="compare.html" class="nav-link"><span class="nav-icon">⚔️</span><span>Compare</span></a></li>
-        <li class="nav-item"><a href="records.html" class="nav-link" data-page="records"><span class="nav-icon">📋</span><span>Records</span></a></li>
-        <li class="nav-item"><a href="season-stats.html" class="nav-link" data-page="season-stats"><span class="nav-icon">📊</span><span>Season Stats</span></a></li>
+
+
         <li class="nav-item"><a href="timeline.html" class="nav-link" data-page="timeline"><span class="nav-icon">🗓️</span><span>Timeline</span></a></li>
       </ul>
     </nav>
@@ -479,8 +498,17 @@ function buildRecords(season){
 
       <div id="sr-panel-placements" class="sr-panel">
         <div class="sr-sh"><h2>Placements</h2><span class="sr-sh-pill">${(s.placements||[]).length}</span></div>
-        <div style="font-size:12px;color:var(--muted);margin-bottom:14px">Click a row to expand details ${s.placements?.[0]?.story?'• Full player stories available':''} • Click name to open profile</div>
-        ${placementsHTML||'<p style="color:var(--muted)">No placement data.</p>'}
+        <div class="sr-view-toggle">
+          <button class="sr-view-btn on" onclick="srView('cards',this)">🃏 Cards</button>
+          <button class="sr-view-btn" onclick="srView('table',this)">📊 Stats Table</button>
+        </div>
+        <div id="sr-cards-view">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:14px">Click a row to expand details ${s.placements?.[0]?.story?'• Full player stories available':''} • Click name to open profile</div>
+          ${placementsHTML||'<p style="color:var(--muted)">No placement data.</p>'}
+        </div>
+        <div id="sr-table-view" style="display:none;">
+          ${buildStatsTable(s.placements||[])}
+        </div>
       </div>
 
       <div id="sr-panel-history" class="sr-panel">
@@ -523,6 +551,93 @@ function srTab(id,btn){
 function srToggle(header){
   const row=header.closest('.sr-placement-row');
   if(row)row.classList.toggle('open');
+}
+
+// ── Stats table view ──────────────────────────────────────────
+function buildStatsTable(placements){
+  if(!placements.length) return '<p style="color:var(--muted)">No data.</p>';
+  const COLS=[
+    {key:'placement',label:'Place',asc:true},
+    {key:'name',label:'Player',asc:true,left:true},
+    {key:'phase',label:'Phase',asc:true},
+    {key:'challengeWins',label:'CW',title:'Challenge Wins',asc:false},
+    {key:'immunityWins',label:'IW',title:'Immunity Wins',asc:false},
+    {key:'rewardWins',label:'RW',title:'Reward Wins',asc:false},
+    {key:'votesReceived',label:'Votes',title:'Votes Against',asc:true},
+    {key:'idolsFound',label:'Idols',asc:false},
+    {key:'strategicRank',label:'Strat',title:'Strategic Rank',asc:false},
+  ];
+  const headCells=COLS.map(c=>
+    `<th class="${c.left?'left ':''}sortable" data-key="${c.key}" title="${c.title||c.label}"
+       onclick="srSortTable(this,'${c.key}',${c.asc})">${c.label} <span class="sr-sort-arrow">⇅</span></th>`
+  ).join('');
+  const rows=placements.map(p=>{
+    const pc=phaseClass(p.phase);
+    const sv=p.strategicRank;
+    const sn=parseFloat(sv);
+    const stratCell=!isNaN(sn)?
+      (()=>{const pct=Math.min(sn/10,1);const hue=Math.round(pct*120);return`<span class="sr-strat-dot" style="background:hsla(${hue},60%,45%,.25);color:hsl(${hue},70%,65%)">${sn}</span>`})()
+      :(sv?`<span style="font-size:11px;color:var(--muted)">${sv}</span>`:'<span style="color:rgba(255,255,255,.15)">—</span>');
+    const num=v=>(v!=null&&v!==''&&v!==0)?`<strong>${v}</strong>`:`<span style="color:rgba(255,255,255,.15)">—</span>`;
+    return`<tr>
+      <td><strong>${p.placement}</strong></td>
+      <td class="left"><div class="sr-st-player">
+        <img class="sr-st-av" src="assets/avatars/${p.playerSlug}.png" alt="" onerror="this.style.display='none'">
+        <a class="sr-st-name" href="player.html?player=${p.playerSlug}">${p.name}</a>
+      </div></td>
+      <td><span class="sr-p-phase ${pc}" style="font-size:10px;padding:2px 7px">${p.phase||'—'}</span></td>
+      <td>${num(p.challengeWins)}</td>
+      <td>${num(p.immunityWins)}</td>
+      <td>${num(p.rewardWins)}</td>
+      <td>${num(p.votesReceived)}</td>
+      <td>${num(p.idolsFound)}</td>
+      <td>${stratCell}</td>
+    </tr>`;
+  }).join('');
+  return`<div class="sr-stats-wrap"><table class="sr-stats-table" id="srStatsTable">
+    <thead><tr>${headCells}</tr></thead>
+    <tbody>${rows}</tbody>
+  </table></div>`;
+}
+
+let _srSortAsc=true;
+function srSortTable(th,key,defaultAsc){
+  const table=document.getElementById('srStatsTable');
+  if(!table)return;
+  const sorted=th.classList.contains('sorted');
+  _srSortAsc=sorted?!_srSortAsc:defaultAsc;
+  table.querySelectorAll('th').forEach(h=>{
+    h.classList.remove('sorted');
+    const arr=h.querySelector('.sr-sort-arrow');
+    if(arr)arr.textContent='⇅';
+  });
+  th.classList.add('sorted');
+  const arr=th.querySelector('.sr-sort-arrow');
+  if(arr)arr.textContent=_srSortAsc?'▲':'▼';
+  const tbody=table.querySelector('tbody');
+  const rows=Array.from(tbody.querySelectorAll('tr'));
+  rows.sort((a,b)=>{
+    const ai=Array.from(a.parentElement.children).indexOf(a.closest('tr'));
+    // get cell index matching th
+    const thIdx=Array.from(th.parentElement.children).indexOf(th);
+    const av=a.cells[thIdx]?.textContent.trim()||'';
+    const bv=b.cells[thIdx]?.textContent.trim()||'';
+    const an=parseFloat(av),bn=parseFloat(bv);
+    const numericCol=['Place','CW','IW','RW','Votes','Idols','Strat'].includes(th.textContent.replace('⇅','').replace('▲','').replace('▼','').trim());
+    if(numericCol){
+      const aa=isNaN(an)?Infinity:an,bb=isNaN(bn)?Infinity:bn;
+      return _srSortAsc?aa-bb:bb-aa;
+    }
+    return _srSortAsc?av.localeCompare(bv):bv.localeCompare(av);
+  });
+  rows.forEach(r=>tbody.appendChild(r));
+}
+
+function srView(mode,btn){
+  document.querySelectorAll('.sr-view-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('sr-cards-view').style.display=mode==='cards'?'block':'none';
+  document.getElementById('sr-table-view').style.display=mode==='table'?'block':'none';
 }
 </script>
 </body>

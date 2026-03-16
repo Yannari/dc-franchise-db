@@ -86,8 +86,8 @@
             <span>Compare</span>
           </a>
         </li>
-        <li class="nav-item"><a href="records.html" class="nav-link" data-page="records"><span class="nav-icon">📋</span><span>Records</span></a></li>
-        <li class="nav-item"><a href="season-stats.html" class="nav-link" data-page="season-stats"><span class="nav-icon">📊</span><span>Season Stats</span></a></li>
+
+
         <li class="nav-item"><a href="timeline.html" class="nav-link" data-page="timeline"><span class="nav-icon">🗓️</span><span>Timeline</span></a></li>
       </ul>
     </nav>
@@ -778,33 +778,6 @@ function renderPlayerProfile(player) {
   html += `<div class="pp-chip"><div class="v">#${player.bestPlacement}</div><div class="l">Best Finish</div></div>`;
   if (player.winRate != null) html += `<div class="pp-chip"><div class="v">${player.winRate}%</div><div class="l">Win Rate</div></div>`;
   html += `</div>`;
-
-  // ── VOTING HEATMAP ────────────────────────────────────────
-  if (player.seasonDetails && player.seasonDetails.length > 0) {
-    const voteSeasons = player.seasonDetails
-      .filter(s => s.votesReceived != null)
-      .slice().sort((a, b) => a.season - b.season);
-    if (voteSeasons.length > 0) {
-      const maxVotes = Math.max(...voteSeasons.map(s => s.votesReceived), 1);
-      html += `<div class="pp-section pp-reveal"><h2>Votes Received</h2><span class="pp-pill">per season</span></div>
-      <div class="pp-reveal" style="display:flex;flex-direction:column;gap:8px;margin-bottom:24px;">`;
-      voteSeasons.forEach(s => {
-        const pct = Math.round((s.votesReceived / maxVotes) * 100);
-        // Color: low = green, mid = orange, high = red
-        const hue = Math.round(120 - (pct / 100) * 120);
-        const barColor = `hsl(${hue},70%,50%)`;
-        const placeLabel = s.placement === 1 ? '🏆' : `#${s.placement}`;
-        html += `<div style="display:grid;grid-template-columns:50px 1fr 32px;align-items:center;gap:10px;">
-          <span style="font-size:11px;color:var(--muted);text-align:right;letter-spacing:.04em;">S${s.season} ${placeLabel}</span>
-          <div style="height:6px;border-radius:20px;background:rgba(255,255,255,.06);overflow:hidden;">
-            <div style="height:100%;width:${pct}%;background:${barColor};border-radius:20px;transition:width .8s cubic-bezier(.22,.61,.36,1);"></div>
-          </div>
-          <span style="font-family:var(--font-samdan,'Samdan',sans-serif);font-size:.9rem;font-weight:700;color:${barColor};">${s.votesReceived}</span>
-        </div>`;
-      });
-      html += `</div>`;
-    }
-  }
 
   // ── SEASON HISTORY ────────────────────────────────────────
   html += `<div class="pp-section pp-reveal"><h2>Season History</h2></div>`;

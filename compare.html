@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Player Comparison — DC Franchise</title>
+<link rel="stylesheet" href="styles.css"/>
+<style>
+/* ── Page layout ─────────────────────────────────────── */
+.cmp-hero {
+  text-align: center;
+  padding: 40px 0 28px;
+}
+.cmp-hero h1 {
+  font-size: clamp(1.8rem, 5vw, 2.8rem);
+  font-family: var(--font-samdan, 'Samdan', sans-serif);
+  background: linear-gradient(135deg, #a78bfa, #f59e0b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0 0 8px;
+}
+.cmp-hero p { color: var(--muted); font-size: 14px; margin: 0; }
+
+/* ── Selector panel ──────────────────────────────────── */
+.selector-panel {
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 32px;
+}
+.selector-panel h2 {
+  margin: 0 0 16px;
+  font-size: .9rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--muted);
+}
+.selector-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+.search-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 220px;
+}
+.search-wrap input {
+  width: 100%;
+  padding: 10px 14px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 10px;
+  color: #fff;
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+}
+.search-wrap input:focus { border-color: var(--accent); }
+.search-wrap input::placeholder { color: var(--muted); }
+.autocomplete-list {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0; right: 0;
+  background: rgba(20,12,35,.97);
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 10px;
+  overflow-y: auto;
+  max-height: 240px;
+  z-index: 100;
+  display: none;
+}
+.autocomplete-list.open { display: block; }
+.ac-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background .15s;
+}
+.ac-item:hover, .ac-item.focused { background: rgba(125,76,255,.25); }
+.ac-avatar {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: rgba(255,255,255,.06);
+}
+.ac-name { font-weight: 600; color: #fff; }
+.ac-meta { font-size: 11px; color: var(--muted); }
+.ac-tier {
+  margin-left: auto;
+  font-size: 10px; font-weight: 700;
+  padding: 1px 7px; border-radius: 20px;
+}
+
+/* ── Selected player chips ───────────────────────────── */
+.selected-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+  min-height: 36px;
+}
+.chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px 5px 6px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  background: rgba(125,76,255,.18);
+  border: 1px solid rgba(125,76,255,.4);
+  color: #fff;
+  cursor: default;
+}
+.chip img {
+  width: 22px; height: 22px;
+  border-radius: 50%; object-fit: cover;
+  background: rgba(255,255,255,.06);
+}
+.chip-remove {
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.12);
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  font-size: 10px;
+  line-height: 16px;
+  text-align: center;
+  padding: 0;
+  flex-shrink: 0;
+  transition: background .15s;
+}
+.chip-remove:hover { background: rgba(255,92,122,.6); }
+.selector-hint {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* ── Comparison section ──────────────────────────────── */
+#cmp-section { display: none; }
+#cmp-section.visible { display: block; }
+
+/* Player header cards */
+.cmp-players-row {
+  display: grid;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+.cmp-player-card {
+  background: rgba(0,0,0,.3);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 16px;
+  padding: 20px;
+  text-align: center;
+  position: relative;
+}
+.cmp-player-card.p0 { border-color: rgba(125,76,255,.4); }
+.cmp-player-card.p1 { border-color: rgba(245,158,11,.4); }
+.cmp-player-card.p2 { border-color: rgba(52,211,153,.4); }
+.cmp-player-card.p3 { border-color: rgba(251,146,60,.4); }
+.cmp-av {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin: 0 auto 10px;
+  display: block;
+  background: rgba(255,255,255,.06);
+}
+.cmp-pname {
+  font-family: var(--font-samdan,'Samdan',sans-serif);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 6px;
+}
+.cmp-tier-pill {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 11px; font-weight: 700;
+  margin-bottom: 4px;
+}
+.cmp-rank { font-size: 11px; color: var(--muted); }
+
+/* Stats table */
+.cmp-section-title {
+  font-size: .85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--muted);
+  margin: 0 0 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.stats-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 32px;
+  font-size: 13px;
+}
+.stats-table th {
+  padding: 10px 12px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--muted);
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.stats-table th.stat-label-col { text-align: left; width: 150px; }
+.stats-table td {
+  padding: 10px 12px;
+  text-align: center;
+  border-bottom: 1px solid rgba(255,255,255,.05);
+  vertical-align: middle;
+}
+.stats-table td.stat-label-col {
+  text-align: left;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.stats-table tr:hover td { background: rgba(255,255,255,.02); }
+
+.stat-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.stat-val {
+  font-family: var(--font-samdan,'Samdan',sans-serif);
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+.stat-bar-wrap {
+  width: 80px;
+  height: 4px;
+  background: rgba(255,255,255,.08);
+  border-radius: 20px;
+  overflow: hidden;
+}
+.stat-bar {
+  height: 100%;
+  border-radius: 20px;
+  transition: width .8s cubic-bezier(.22,.61,.36,1);
+}
+.stat-best .stat-val { text-shadow: 0 0 12px currentColor; }
+.stat-best .stat-bar-wrap { background: rgba(255,255,255,.12); }
+.stat-crown::after {
+  content: ' ★';
+  font-size: 10px;
+  opacity: .7;
+}
+
+/* Color per player column */
+.col-p0 .stat-val { color: #a78bfa; }
+.col-p0 .stat-bar { background: #a78bfa; }
+.col-p1 .stat-val { color: #f59e0b; }
+.col-p1 .stat-bar { background: #f59e0b; }
+.col-p2 .stat-val { color: #34d399; }
+.col-p2 .stat-bar { background: #34d399; }
+.col-p3 .stat-val { color: #fb923c; }
+.col-p3 .stat-bar { background: #fb923c; }
+
+/* Season breakdown */
+.season-grid-wrap { overflow-x: auto; margin-bottom: 32px; }
+.season-grid {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  min-width: 400px;
+}
+.season-grid th {
+  padding: 10px 14px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--muted);
+  border-bottom: 1px solid rgba(255,255,255,.1);
+}
+.season-grid th.season-col { text-align: left; min-width: 160px; }
+.season-grid td {
+  padding: 9px 14px;
+  text-align: center;
+  border-bottom: 1px solid rgba(255,255,255,.05);
+}
+.season-grid td.season-col {
+  text-align: left;
+  font-size: 12px;
+}
+.season-grid .season-num {
+  font-weight: 700;
+  color: var(--accent);
+  font-family: var(--font-samdan,'Samdan',sans-serif);
+}
+.season-grid .season-name { color: var(--muted); font-size: 11px; }
+.season-grid tr:hover td { background: rgba(255,255,255,.02); }
+
+.place-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.1);
+}
+.place-badge.winner { background: rgba(245,158,11,.2); border-color: rgba(245,158,11,.5); color: #f59e0b; }
+.place-badge.finalist { background: rgba(167,139,250,.2); border-color: rgba(167,139,250,.5); color: #a78bfa; }
+.place-badge.juror { background: rgba(96,165,250,.15); border-color: rgba(96,165,250,.3); color: #93c5fd; }
+.place-badge.out { background: rgba(148,163,184,.08); border-color: rgba(148,163,184,.2); color: #94a3b8; }
+.place-dash { color: rgba(255,255,255,.2); font-size: 18px; }
+
+/* Empty state */
+.empty-hint {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--muted);
+}
+.empty-hint .big { font-size: 3rem; margin-bottom: 12px; }
+.empty-hint p { margin: 0; font-size: 14px; }
+
+/* Share URL button */
+.share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  background: rgba(125,76,255,.15);
+  border: 1px solid rgba(125,76,255,.35);
+  color: #a78bfa;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s;
+}
+.share-btn:hover { background: rgba(125,76,255,.25); }
+.share-btn.copied { background: rgba(52,211,153,.15); border-color: rgba(52,211,153,.35); color: #34d399; }
+</style>
+</head>
+<body>
+
+<!-- SITE HEADER START -->
+<header class="modern-header" id="modernHeader">
+  <div class="header-container">
+    <div class="header-top">
+      <a href="index.html" class="brand-section" aria-label="Go to home">
+        <div class="brand-icon">
+          <span class="brand-logo-text">⚡</span>
+        </div>
+        <div class="brand-content">
+          <h1>DC <span class="brand-gradient">Franchise</span> Database</h1>
+          <p class="brand-subtitle">Season <span id="currentSeasonNum">9</span> Live • Click to Explore</p>
+        </div>
+      </a>
+      <div class="stats-badge">
+        <div class="stats-main"><span id="totalSeasons">9</span> Seasons • <span id="totalPlayers">102</span> Players</div>
+        <div class="stats-sub">Icons: <span id="iconFormat">name.png</span></div>
+      </div>
+    </div>
+    <nav class="header-nav" aria-label="Primary navigation">
+      <ul class="nav-list">
+        <li class="nav-item"><a href="index.html" class="nav-link" data-page="index"><span class="nav-icon">🏠</span><span>Home</span></a></li>
+        <li class="nav-item"><a href="current-season.html" class="nav-link" data-page="current-season"><span class="nav-icon">📊</span><span>Current Season</span></a></li>
+        <li class="nav-item"><a href="voting-analytics.html" class="nav-link" data-page="voting-analytics"><span class="nav-icon">🧾</span><span>Voting Analytics</span></a></li>
+        <li class="nav-item"><a href="franchise.html" class="nav-link" data-page="franchise"><span class="nav-icon">🏛️</span><span>Franchise</span></a></li>
+        <li class="nav-item"><a href="rankings.html" class="nav-link" data-page="rankings"><span class="nav-icon">🏆</span><span>Rankings</span></a></li>
+        <li class="nav-item"><a href="seasons.html" class="nav-link" data-page="seasons"><span class="nav-icon">🗂️</span><span>Seasons</span></a></li>
+        <li class="nav-item"><a href="devotees.html" class="nav-link" data-page="devotees"><span class="nav-icon">👥</span><span>Players</span></a></li>
+        <li class="nav-item"><a href="awards.html" class="nav-link" data-page="awards"><span class="nav-icon">🏅</span><span>Awards</span></a></li>
+        <li class="nav-item"><a href="compare.html" class="nav-link active" data-page="compare"><span class="nav-icon">⚔️</span><span>Compare</span></a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<script>
+(function() {
+  function applySiteConfig(cfg) {
+    document.getElementById('totalSeasons').textContent = cfg.seasons;
+    document.getElementById('totalPlayers').textContent = cfg.players;
+    document.getElementById('currentSeasonNum').textContent = cfg.currentSeason;
+    document.getElementById('iconFormat').textContent = cfg.iconFormat;
+    var fs = document.getElementById('footer-seasons');
+    var fp = document.getElementById('footer-players');
+    if (fs) fs.textContent = cfg.seasons;
+    if (fp) fp.textContent = cfg.players;
+  }
+  if (window.SITE_CONFIG) applySiteConfig(window.SITE_CONFIG);
+  document.addEventListener('siteConfigReady', function(e) { applySiteConfig(e.detail); });
+
+  const header = document.getElementById('modernHeader');
+  window.addEventListener('scroll', () => {
+    header.classList.toggle('scrolled', window.pageYOffset > 20);
+  }, { passive: true });
+})();
+</script>
+<!-- SITE HEADER END -->
+
+<div class="container">
+
+  <div class="cmp-hero">
+    <h1>Player Comparison</h1>
+    <p>Select up to 4 players for a side-by-side stat breakdown</p>
+  </div>
+
+  <!-- Selector panel -->
+  <div class="selector-panel">
+    <h2>Add Players</h2>
+    <div class="selector-row">
+      <div class="search-wrap">
+        <input type="text" id="playerSearch" placeholder="Search by name…" autocomplete="off"/>
+        <div class="autocomplete-list" id="acList"></div>
+      </div>
+      <button class="share-btn" id="shareBtn" style="display:none;">🔗 Copy Link</button>
+    </div>
+    <div class="selected-chips" id="selectedChips"></div>
+    <div class="selector-hint" id="selectorHint">Add at least 2 players to compare.</div>
+  </div>
+
+  <!-- Comparison section -->
+  <div id="cmp-section">
+    <!-- Player cards row -->
+    <div class="cmp-section-title">Players</div>
+    <div class="cmp-players-row" id="cmpPlayersRow"></div>
+
+    <!-- Stats table -->
+    <div class="cmp-section-title">Career Stats</div>
+    <div style="overflow-x:auto; margin-bottom: 32px;">
+      <table class="stats-table" id="statsTable"></table>
+    </div>
+
+    <!-- Season breakdown -->
+    <div class="cmp-section-title">Season-by-Season</div>
+    <div class="season-grid-wrap">
+      <table class="season-grid" id="seasonGrid"></table>
+    </div>
+  </div>
+
+  <!-- Empty state (hidden once comparing) -->
+  <div class="empty-hint" id="emptyHint">
+    <div class="big">⚔️</div>
+    <p>Search for players above to start comparing.</p>
+  </div>
+
+  <div class="footer"><span id="footer-seasons">9</span> seasons complete • <span id="footer-players">102</span> unique players</div>
+</div>
+
+<!-- SITE FOOTER START -->
+<footer class="siteFooter">
+  <div class="footerInner">
+    <div class="footerTitle">DC Franchise Database</div>
+    <div class="footerSub">Static archive • <span id="footer-seasons-sub">9</span> seasons • <span id="footer-players-sub">102</span> players • Icons: name.png</div>
+  </div>
+</footer>
+<!-- SITE FOOTER END -->
+
+<script>
+// ── Tier config ────────────────────────────────────────────────
+const TIER_CFG = {
+  'S+': { color:'#f59e0b', bg:'rgba(245,158,11,.15)', border:'rgba(245,158,11,.4)' },
+  'S':  { color:'#a78bfa', bg:'rgba(167,139,250,.15)', border:'rgba(167,139,250,.4)' },
+  'A':  { color:'#34d399', bg:'rgba(52,211,153,.12)',  border:'rgba(52,211,153,.35)' },
+  'B':  { color:'#60a5fa', bg:'rgba(96,165,250,.12)',  border:'rgba(96,165,250,.3)'  },
+  'C':  { color:'#fbbf24', bg:'rgba(251,191,36,.12)',  border:'rgba(251,191,36,.3)'  },
+  'D':  { color:'#94a3b8', bg:'rgba(148,163,184,.1)',  border:'rgba(148,163,184,.2)' },
+};
+function tierStyle(t) { return TIER_CFG[t] || TIER_CFG['D']; }
+
+const PLAYER_COLORS = ['#a78bfa','#f59e0b','#34d399','#fb923c'];
+const SEASON_TITLES = {
+  1:'Cullhouse', 2:'Return', 3:'Revenge of the Island',
+  4:'Edge of Extinction', 5:'Season 5', 6:'Season 6',
+  7:'Season 7', 8:'Heroes vs Villains vs Civilians', 9:'Land of Power'
+};
+function seasonTitle(n) { return SEASON_TITLES[n] || ('Season ' + n); }
+
+// ── State ──────────────────────────────────────────────────────
+let allPlayers = [];      // full players_database players array
+let allRankings = [];     // rankings_database rankings array
+let selectedSlugs = [];   // ordered list of selected player IDs (max 4)
+const MAX_PLAYERS = 4;
+
+// ── Data loading ──────────────────────────────────────────────
+async function loadData() {
+  try {
+    let dbRaw = localStorage.getItem('players_database');
+    let db = dbRaw ? JSON.parse(dbRaw) : null;
+    if (!db) {
+      const r = await fetch('players_database.json');
+      db = await r.json();
+      localStorage.setItem('players_database', JSON.stringify(db));
+    }
+    allPlayers = db.players || [];
+
+    const rr = await fetch('rankings_database.json').catch(() => null);
+    if (rr && rr.ok) {
+      const rd = await rr.json();
+      allRankings = rd.rankings || [];
+    }
+  } catch (e) {
+    console.error('Failed to load player data', e);
+  }
+}
+
+function getPlayer(slug) {
+  return allPlayers.find(p => p.id === slug) || null;
+}
+
+function getRanking(slug, name) {
+  return allRankings.find(r => r.playerId === slug || r.name === name) || null;
+}
+
+// ── Autocomplete ──────────────────────────────────────────────
+const searchInput = document.getElementById('playerSearch');
+const acList = document.getElementById('acList');
+let acFocusIdx = -1;
+
+searchInput.addEventListener('input', onSearchInput);
+searchInput.addEventListener('keydown', onSearchKeydown);
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.search-wrap')) closeAc();
+});
+
+function onSearchInput() {
+  const q = searchInput.value.trim().toLowerCase();
+  acFocusIdx = -1;
+  if (!q) { closeAc(); return; }
+  const results = allPlayers
+    .filter(p => !selectedSlugs.includes(p.id) && p.name.toLowerCase().includes(q))
+    .slice(0, 12);
+  renderAc(results);
+}
+
+function onSearchKeydown(e) {
+  const items = acList.querySelectorAll('.ac-item');
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    acFocusIdx = Math.min(acFocusIdx + 1, items.length - 1);
+    updateAcFocus(items);
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    acFocusIdx = Math.max(acFocusIdx - 1, 0);
+    updateAcFocus(items);
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    if (acFocusIdx >= 0 && items[acFocusIdx]) {
+      items[acFocusIdx].click();
+    } else if (items.length === 1) {
+      items[0].click();
+    }
+  } else if (e.key === 'Escape') {
+    closeAc();
+  }
+}
+
+function updateAcFocus(items) {
+  items.forEach((el, i) => el.classList.toggle('focused', i === acFocusIdx));
+  if (items[acFocusIdx]) items[acFocusIdx].scrollIntoView({ block: 'nearest' });
+}
+
+function renderAc(players) {
+  if (!players.length) { closeAc(); return; }
+  acList.innerHTML = players.map(p => {
+    const t = tierStyle(p.tier || 'D');
+    return `<div class="ac-item" data-slug="${p.id}">
+      <img class="ac-avatar" src="assets/avatars/${p.id}.png" alt=""
+           onerror="this.style.display='none'">
+      <div>
+        <div class="ac-name">${p.name}</div>
+        <div class="ac-meta">${p.totalSeasons || p.seasons.length} season(s) • ${p.wins} win(s)</div>
+      </div>
+      ${p.tier ? `<span class="ac-tier" style="color:${t.color};background:${t.bg};border:1px solid ${t.border}">${p.tier}</span>` : ''}
+    </div>`;
+  }).join('');
+  acList.classList.add('open');
+  acList.querySelectorAll('.ac-item').forEach(el => {
+    el.addEventListener('click', () => selectPlayer(el.dataset.slug));
+  });
+}
+
+function closeAc() {
+  acList.classList.remove('open');
+  acList.innerHTML = '';
+  acFocusIdx = -1;
+}
+
+// ── Player selection ─────────────────────────────────────────
+function selectPlayer(slug) {
+  if (selectedSlugs.includes(slug)) { closeAc(); return; }
+  if (selectedSlugs.length >= MAX_PLAYERS) {
+    alert('Maximum 4 players can be compared at once.');
+    return;
+  }
+  selectedSlugs.push(slug);
+  searchInput.value = '';
+  closeAc();
+  renderChips();
+  renderComparison();
+  updateURL();
+}
+
+function removePlayer(slug) {
+  selectedSlugs = selectedSlugs.filter(s => s !== slug);
+  renderChips();
+  renderComparison();
+  updateURL();
+}
+
+function renderChips() {
+  const container = document.getElementById('selectedChips');
+  const hint = document.getElementById('selectorHint');
+  const shareBtn = document.getElementById('shareBtn');
+
+  container.innerHTML = selectedSlugs.map(slug => {
+    const p = getPlayer(slug);
+    if (!p) return '';
+    return `<div class="chip">
+      <img src="assets/avatars/${slug}.png" alt="" onerror="this.style.display='none'">
+      <span>${p.name}</span>
+      <button class="chip-remove" data-slug="${slug}" title="Remove">✕</button>
+    </div>`;
+  }).join('');
+
+  container.querySelectorAll('.chip-remove').forEach(btn => {
+    btn.addEventListener('click', () => removePlayer(btn.dataset.slug));
+  });
+
+  hint.textContent = selectedSlugs.length === 0
+    ? 'Add at least 2 players to compare.'
+    : selectedSlugs.length === 1
+    ? 'Add one more player to start comparing.'
+    : `Comparing ${selectedSlugs.length} player${selectedSlugs.length > 1 ? 's' : ''} — add up to ${MAX_PLAYERS - selectedSlugs.length} more.`;
+
+  shareBtn.style.display = selectedSlugs.length >= 2 ? 'inline-flex' : 'none';
+}
+
+// ── URL sync ──────────────────────────────────────────────────
+function updateURL() {
+  const url = new URL(window.location.href);
+  if (selectedSlugs.length) {
+    url.searchParams.set('players', selectedSlugs.join(','));
+  } else {
+    url.searchParams.delete('players');
+  }
+  window.history.replaceState({}, '', url.toString());
+}
+
+document.getElementById('shareBtn').addEventListener('click', function() {
+  navigator.clipboard.writeText(window.location.href).then(() => {
+    this.textContent = '✓ Copied!';
+    this.classList.add('copied');
+    setTimeout(() => {
+      this.textContent = '🔗 Copy Link';
+      this.classList.remove('copied');
+    }, 2000);
+  }).catch(() => {
+    prompt('Copy this link:', window.location.href);
+  });
+});
+
+// ── Comparison rendering ──────────────────────────────────────
+function renderComparison() {
+  const section = document.getElementById('cmp-section');
+  const empty = document.getElementById('emptyHint');
+
+  if (selectedSlugs.length < 2) {
+    section.classList.remove('visible');
+    empty.style.display = 'block';
+    return;
+  }
+
+  empty.style.display = 'none';
+  section.classList.add('visible');
+
+  const players = selectedSlugs.map(s => {
+    const p = getPlayer(s);
+    if (!p) return null;
+    const r = getRanking(s, p.name);
+    return { ...p, rankEntry: r };
+  }).filter(Boolean);
+
+  const n = players.length;
+
+  // Update grid columns
+  document.getElementById('cmpPlayersRow').style.gridTemplateColumns =
+    `repeat(${n}, 1fr)`;
+
+  renderPlayerCards(players);
+  renderStatsTable(players);
+  renderSeasonGrid(players);
+}
+
+function renderPlayerCards(players) {
+  const row = document.getElementById('cmpPlayersRow');
+  row.innerHTML = players.map((p, i) => {
+    const t = tierStyle(p.tier || 'D');
+    const r = p.rankEntry;
+    const score = r ? r.score : null;
+    const rankStr = r ? `#${r.rank || '?'} • Score ${score}` : '';
+    return `<div class="cmp-player-card p${i}">
+      <img class="cmp-av" src="assets/avatars/${p.id}.png" alt="${p.name}"
+           onerror="this.src=''; this.style.background='rgba(255,255,255,.06)'">
+      <div class="cmp-pname">${p.name}</div>
+      ${p.tier ? `<div class="cmp-tier-pill" style="color:${t.color};background:${t.bg};border:1px solid ${t.border}">${p.tier} Tier</div>` : ''}
+      ${rankStr ? `<div class="cmp-rank">${rankStr}</div>` : ''}
+      <a href="player.html?player=${p.id}" style="font-size:11px;color:var(--muted);margin-top:8px;display:inline-block;text-decoration:none;">View Profile →</a>
+    </div>`;
+  }).join('');
+}
+
+// ── Stats table ───────────────────────────────────────────────
+const STATS_DEF = [
+  { key:'wins',               label:'Wins',             higher:true  },
+  { key:'bestPlacement',      label:'Best Placement',   higher:false },
+  { key:'avgPlacement',       label:'Avg Placement',    higher:false },
+  { key:'totalSeasons',       label:'Seasons Played',   higher:true  },
+  { key:'totalChallengeWins', label:'Challenge Wins',   higher:true  },
+  { key:'totalImmunityWins',  label:'Immunity Wins',    higher:true  },
+  { key:'totalVotesAgainst',  label:'Votes Against',    higher:false, noHighlight:true },
+  { key:'totalJuryVotes',     label:'Jury Votes',       higher:true  },
+  { key:'totalIdolsFound',    label:'Idols Found',      higher:true  },
+];
+
+function renderStatsTable(players) {
+  const n = players.length;
+  const colClass = i => `col-p${i}`;
+
+  let headerCols = `<th class="stat-label-col">Stat</th>`;
+  players.forEach(p => {
+    headerCols += `<th>${p.name}</th>`;
+  });
+
+  let rows = '';
+  STATS_DEF.forEach(def => {
+    const vals = players.map(p => {
+      let v = p[def.key];
+      if (v == null) {
+        // Try computing from seasonDetails
+        if (def.key === 'totalSeasons') v = (p.seasons || []).length;
+        else v = 0;
+      }
+      return typeof v === 'number' ? v : parseFloat(v) || 0;
+    });
+
+    // Find best value
+    const bestVal = def.higher ? Math.max(...vals) : Math.min(...vals);
+    const maxVal  = Math.max(...vals) || 1;
+    const minVal  = Math.min(...vals);
+    const range   = (maxVal - minVal) || 1;
+
+    const cells = vals.map((v, i) => {
+      const isBest = !def.noHighlight && v === bestVal && vals.filter(x => x === bestVal).length < n;
+      // Bar width: for higher=better, proportion of max. For lower=better, invert.
+      const barPct = def.higher
+        ? Math.round((v / (maxVal || 1)) * 100)
+        : Math.round(((maxVal - v) / range) * 100);
+      const displayVal = def.key === 'avgPlacement'
+        ? (v > 0 ? v.toFixed(1) : '—')
+        : (v != null && v !== '' ? v : '—');
+      return `<td class="${colClass(i)}">
+        <div class="stat-cell${isBest ? ' stat-best' : ''}">
+          <span class="stat-val${isBest ? ' stat-crown' : ''}">${displayVal}</span>
+          <div class="stat-bar-wrap"><div class="stat-bar" style="width:${barPct}%"></div></div>
+        </div>
+      </td>`;
+    }).join('');
+
+    rows += `<tr><td class="stat-label-col">${def.label}</td>${cells}</tr>`;
+  });
+
+  // Rankings score row (from rankEntry)
+  const scoreVals = players.map(p => p.rankEntry ? (p.rankEntry.score || 0) : null);
+  if (scoreVals.some(v => v !== null)) {
+    const defined = scoreVals.filter(v => v !== null);
+    const bestScore = defined.length ? Math.max(...defined) : 0;
+    const maxScore = bestScore || 1;
+    const scoreCells = scoreVals.map((v, i) => {
+      const isBest = v !== null && v === bestScore && defined.length < n;
+      const barPct = v !== null ? Math.round((v / maxScore) * 100) : 0;
+      return `<td class="${colClass(i)}">
+        <div class="stat-cell${isBest ? ' stat-best' : ''}">
+          <span class="stat-val${isBest ? ' stat-crown' : ''}">${v !== null ? v : '—'}</span>
+          <div class="stat-bar-wrap"><div class="stat-bar" style="width:${barPct}%"></div></div>
+        </div>
+      </td>`;
+    }).join('');
+    rows += `<tr><td class="stat-label-col">Ranking Score</td>${scoreCells}</tr>`;
+  }
+
+  document.getElementById('statsTable').innerHTML =
+    `<thead><tr>${headerCols}</tr></thead><tbody>${rows}</tbody>`;
+}
+
+// ── Season-by-season grid ─────────────────────────────────────
+function phaseClass(phase) {
+  if (!phase) return 'out';
+  const p = phase.toLowerCase();
+  if (p.includes('winner') || p.includes('co-winner')) return 'winner';
+  if (p.includes('finalist')) return 'finalist';
+  if (p.includes('juror')) return 'juror';
+  return 'out';
+}
+
+function phaseIcon(phase) {
+  if (!phase) return '';
+  const p = phase.toLowerCase();
+  if (p.includes('winner')) return '🏆';
+  if (p.includes('co-winner')) return '🏆';
+  if (p.includes('finalist')) return '🥈';
+  if (p.includes('juror')) return '';
+  if (p.includes('medevac')) return '🏥';
+  if (p.includes('quit')) return '🚪';
+  return '';
+}
+
+function renderSeasonGrid(players) {
+  // Gather all seasons any player participated in
+  const allSeasonNums = new Set();
+  players.forEach(p => (p.seasons || []).forEach(s => allSeasonNums.add(s)));
+  const sortedSeasons = Array.from(allSeasonNums).sort((a, b) => a - b);
+
+  // Build lookup: playerSlug -> season -> {placement, phase/status}
+  const lookup = {};
+  players.forEach(p => {
+    lookup[p.id] = {};
+    (p.seasonDetails || []).forEach(sd => {
+      lookup[p.id][sd.season] = sd;
+    });
+  });
+
+  // Header
+  let header = `<tr><th class="season-col">Season</th>`;
+  players.forEach(p => { header += `<th>${p.name}</th>`; });
+  header += '</tr>';
+
+  // Rows
+  const rows = sortedSeasons.map(sn => {
+    let row = `<tr>
+      <td class="season-col">
+        <div class="season-num">S${sn}</div>
+        <div class="season-name">${seasonTitle(sn)}</div>
+      </td>`;
+    players.forEach(p => {
+      const sd = lookup[p.id] ? lookup[p.id][sn] : null;
+      if (!sd) {
+        row += `<td><span class="place-dash">—</span></td>`;
+      } else {
+        const cls = phaseClass(sd.status || sd.phase);
+        const icon = phaseIcon(sd.status || sd.phase);
+        const place = sd.placement;
+        const suffix = place === 1 ? 'st' : place === 2 ? 'nd' : place === 3 ? 'rd' : 'th';
+        row += `<td><span class="place-badge ${cls}">${icon ? icon + ' ' : ''}${place}${suffix}</span></td>`;
+      }
+    });
+    row += '</tr>';
+    return row;
+  }).join('');
+
+  document.getElementById('seasonGrid').innerHTML =
+    `<thead>${header}</thead><tbody>${rows}</tbody>`;
+}
+
+// ── Init ──────────────────────────────────────────────────────
+(async function init() {
+  await loadData();
+
+  // Read URL params
+  const params = new URLSearchParams(window.location.search);
+  const slugsParam = params.get('players');
+  if (slugsParam) {
+    const slugs = slugsParam.split(',').map(s => s.trim()).filter(Boolean);
+    slugs.slice(0, MAX_PLAYERS).forEach(slug => {
+      if (allPlayers.some(p => p.id === slug)) {
+        selectedSlugs.push(slug);
+      }
+    });
+  }
+
+  renderChips();
+  renderComparison();
+})();
+</script>
+
+</body>
+</html>

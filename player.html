@@ -80,6 +80,12 @@
             <span>Awards</span>
           </a>
         </li>
+        <li class="nav-item">
+          <a href="compare.html" class="nav-link" data-page="compare">
+            <span class="nav-icon">⚔️</span>
+            <span>Compare</span>
+          </a>
+        </li>
       </ul>
     </nav>
   </div>
@@ -716,7 +722,7 @@ function renderPlayerProfile(player) {
           : b.includes('Tier')||b.includes('Unbreakable') ? 'green' : '';
     html += `<span class="pp-badge ${c}">${b}</span>`;
   });
-  html += `</div><a class="pp-back" href="devotees.html">← All Players</a></div>
+  html += `</div><a class="pp-back" href="devotees.html">← All Players</a> <a class="pp-back" href="compare.html?players=${player.id}" style="margin-left:6px;">⚔️ Compare</a></div>
   <div class="pp-ring-wrap" style="margin-left:auto;">
     <svg class="pp-ring-svg" viewBox="0 0 110 110">
       <circle class="pp-ring-track" cx="55" cy="55" r="${_ringR}"/>

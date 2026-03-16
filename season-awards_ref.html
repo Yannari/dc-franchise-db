@@ -1,20 +1,399 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="en" data-root=".">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Season Awards</title>
-  <link rel="stylesheet" href="styles.css">
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Season Awards — DC Franchise</title>
+<link rel="stylesheet" href="styles.css"/>
+<style>
+/* ── Page wrapper ──────────────────────────────────── */
+.page-wrap {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 clamp(16px,3vw,32px) 72px;
+}
+
+/* ── Season Hero ───────────────────────────────────── */
+.sa-hero {
+  position: relative;
+  border-radius: 24px;
+  overflow: hidden;
+  margin: 28px 0 28px;
+  border: 1px solid rgba(255,179,71,.2);
+  background: linear-gradient(135deg, rgba(125,76,255,.1), rgba(255,179,71,.06));
+}
+.sa-hero-body {
+  padding: 36px 40px 32px;
+  position: relative;
+  z-index: 1;
+}
+.sa-season-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--accent2);
+  margin-bottom: 12px;
+}
+.sa-hero-title {
+  font-family: var(--font-samdan);
+  font-size: clamp(1.8rem,4.5vw,3rem);
+  margin: 0 0 8px;
+  background: linear-gradient(135deg,#f59e0b,#a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.sa-hero-sub { font-size: 14px; color: var(--muted); margin: 0 0 20px; }
+.sa-hero-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+.sa-pill {
+  padding: 5px 13px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.12);
+  color: rgba(255,255,255,.75);
+}
+.sa-pill.gold {
+  background: rgba(255,179,71,.1);
+  border-color: rgba(255,179,71,.35);
+  color: var(--accent2);
+}
+
+/* ── Winner spotlight ──────────────────────────────── */
+.sa-winner {
+  background: linear-gradient(135deg,rgba(245,158,11,.1),rgba(255,255,255,.02));
+  border: 1px solid rgba(245,158,11,.3);
+  border-radius: 20px;
+  padding: 26px 28px;
+  margin-bottom: 32px;
+  position: relative;
+  overflow: hidden;
+}
+.sa-winner::before {
+  content: '';
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 140px; height: 140px;
+  border-radius: 50%;
+  background: radial-gradient(circle,rgba(245,158,11,.12),transparent 70%);
+  pointer-events: none;
+}
+.sa-winner-lbl {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: #f59e0b;
+  margin-bottom: 14px;
+}
+.sa-winner-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.sa-winner-av {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 3px solid rgba(245,158,11,.6);
+  box-shadow: 0 0 24px rgba(245,158,11,.3);
+  overflow: hidden;
+  background: rgba(255,255,255,.06);
+}
+.sa-winner-av img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.sa-winner-info { flex: 1; min-width: 180px; }
+.sa-winner-name {
+  font-family: var(--font-samdan);
+  font-size: 1.6rem;
+  color: #f59e0b;
+  margin: 0 0 4px;
+}
+.sa-winner-name a { color: inherit; text-decoration: none; }
+.sa-winner-name a:hover { color: #fff; }
+.sa-winner-vote { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+.sa-winner-desc { font-size: 13px; color: var(--muted); line-height: 1.5; }
+.sa-winner-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.sa-winner-pill {
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(245,158,11,.1);
+  border: 1px solid rgba(245,158,11,.3);
+  color: #f59e0b;
+}
+
+/* ── Section heading ───────────────────────────────── */
+.sa-section-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 36px 0 16px;
+  font-family: var(--font-samdan);
+  font-size: 1.15rem;
+  color: var(--text);
+}
+.sa-section-heading::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right,rgba(125,76,255,.3),transparent);
+}
+
+/* ── Award grid ────────────────────────────────────── */
+.award-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px,1fr));
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+/* ── Award card ────────────────────────────────────── */
+.aw-card {
+  background: rgba(0,0,0,.25);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 16px;
+  padding: 18px 18px 16px;
+  transition: all .22s;
+}
+.aw-card:hover {
+  border-color: rgba(125,76,255,.45);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(125,76,255,.2);
+}
+.aw-card-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .09em;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+.aw-card-label .aw-icon {
+  font-size: 18px;
+  background: linear-gradient(135deg,rgba(125,76,255,.2),rgba(255,179,71,.15));
+  border-radius: 8px;
+  padding: 4px 6px;
+  border: 1px solid rgba(255,179,71,.2);
+}
+.aw-player {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.aw-avatar {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: rgba(125,76,255,.2);
+  border: 2px solid rgba(125,76,255,.3);
+  flex-shrink: 0;
+}
+.aw-name {
+  font-family: var(--font-samdan);
+  font-size: 1rem;
+  font-weight: 700;
+}
+.aw-name a { color: var(--text); text-decoration: none; }
+.aw-name a:hover { color: var(--accent2); }
+.aw-desc {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.aw-sub {
+  font-size: 11px;
+  color: rgba(255,179,71,.8);
+  margin-top: 4px;
+}
+
+/* Gold/silver tier inside card */
+.aw-tier-gold { border-left: 3px solid #f59e0b; padding-left: 12px; margin-bottom: 10px; }
+.aw-tier-silver { border-left: 3px solid #94a3b8; padding-left: 12px; }
+.aw-tier-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; }
+.aw-tier-gold .aw-tier-label { color: #f59e0b; }
+.aw-tier-silver .aw-tier-label { color: #94a3b8; }
+
+/* ── Betrayal card ─────────────────────────────────── */
+.betrayal-card {
+  background: rgba(255,92,122,.05);
+  border: 1px solid rgba(255,92,122,.25);
+  border-radius: 16px;
+  padding: 18px;
+  transition: all .2s;
+}
+.betrayal-card:hover { border-color: rgba(255,92,122,.5); transform: translateY(-3px); }
+.betrayal-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .09em;
+  color: #ff5c7a;
+  margin-bottom: 10px;
+  display: flex; align-items: center; gap: 6px;
+}
+.betrayal-players {
+  font-family: var(--font-samdan);
+  font-size: 1rem;
+  margin-bottom: 6px;
+}
+.betrayal-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+.betrayal-ep { font-size: 11px; color: rgba(255,92,122,.7); margin-top: 4px; }
+
+/* ── Stat leaderboard ──────────────────────────────── */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px,1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.stat-lb {
+  background: rgba(0,0,0,.25);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.stat-lb-head {
+  padding: 12px 16px;
+  background: rgba(125,76,255,.12);
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: #a78bfa;
+}
+.stat-lb-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
+  border-bottom: 1px solid rgba(255,255,255,.04);
+  font-size: 13px;
+}
+.stat-lb-row:last-child { border-bottom: none; }
+.stat-lb-rank { font-size: 15px; width: 20px; flex-shrink: 0; }
+.stat-lb-av {
+  width: 28px; height: 28px;
+  border-radius: 50%; object-fit: cover;
+  background: rgba(125,76,255,.2);
+  border: 1px solid rgba(255,255,255,.12);
+  flex-shrink: 0;
+}
+.stat-lb-name { flex: 1; font-weight: 600; }
+.stat-lb-name a { color: var(--text); text-decoration: none; }
+.stat-lb-name a:hover { color: var(--accent2); }
+.stat-lb-val { font-weight: 800; color: var(--accent2); white-space: nowrap; }
+
+/* ── Legacy section ────────────────────────────────── */
+.legacy-card {
+  background: rgba(0,0,0,.25);
+  border: 1px solid rgba(125,76,255,.2);
+  border-radius: 18px;
+  padding: 28px 30px;
+  margin-bottom: 20px;
+}
+.legacy-summary { font-size: 15px; line-height: 1.7; color: var(--muted); margin-bottom: 20px; }
+.legacy-moments { list-style: none; padding: 0; margin: 0; }
+.legacy-moment {
+  display: flex;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.legacy-moment:last-child { border-bottom: none; }
+.legacy-moment::before { content: '→'; color: var(--accent); flex-shrink: 0; margin-top: 1px; }
+
+/* ── Season nav ────────────────────────────────────── */
+.season-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 0 0;
+  flex-wrap: wrap;
+}
+.snav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 20px;
+  border-radius: 12px;
+  background: rgba(0,0,0,.3);
+  border: 1px solid rgba(255,255,255,.12);
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all .2s;
+}
+.snav-btn:hover {
+  background: rgba(125,76,255,.2);
+  border-color: rgba(125,76,255,.5);
+  color: #fff;
+}
+.snav-btn.primary {
+  background: linear-gradient(135deg,rgba(125,76,255,.3),rgba(255,179,71,.2));
+  border-color: rgba(125,76,255,.5);
+  color: #fff;
+}
+.snav-center { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+
+/* ── Error/no season ───────────────────────────────── */
+.no-season {
+  text-align: center;
+  padding: 80px 20px;
+  background: rgba(0,0,0,.25);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 20px;
+  margin: 40px 0;
+}
+.no-season h2 {
+  font-family: var(--font-samdan);
+  font-size: 1.8rem;
+  margin: 0 0 12px;
+  color: var(--accent2);
+}
+.no-season p { color: var(--muted); font-size: 14px; }
+.no-season a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 20px;
+  padding: 10px 22px;
+  border-radius: 12px;
+  background: rgba(125,76,255,.2);
+  border: 1px solid rgba(125,76,255,.4);
+  color: #a78bfa;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 13px;
+  transition: all .2s;
+}
+.no-season a:hover { background: rgba(125,76,255,.35); color: #fff; }
+</style>
 </head>
 <body>
-<!-- SITE HEADER START -->
+
+<!-- MODERN SITE HEADER -->
 <header class="modern-header" id="modernHeader">
   <div class="header-container">
     <div class="header-top">
       <a href="index.html" class="brand-section" aria-label="Go to home">
-        <div class="brand-icon">
-          <span class="brand-logo-text">⚡</span>
-        </div>
+        <div class="brand-icon"><span class="brand-logo-text">⚡</span></div>
         <div class="brand-content">
           <h1>DC <span class="brand-gradient">Franchise</span> Database</h1>
           <p class="brand-subtitle">Season <span id="currentSeasonNum">9</span> Live • Click to Explore</p>
@@ -27,297 +406,344 @@
     </div>
     <nav class="header-nav" aria-label="Primary navigation">
       <ul class="nav-list">
-        <li class="nav-item"><a href="index.html" class="nav-link"><span class="nav-icon">🏠</span><span>Home</span></a></li>
-        <li class="nav-item"><a href="current-season.html" class="nav-link"><span class="nav-icon">📊</span><span>Current Season</span></a></li>
-        <li class="nav-item"><a href="voting-analytics.html" class="nav-link"><span class="nav-icon">🧾</span><span>Voting Analytics</span></a></li>
-        <li class="nav-item"><a href="franchise.html" class="nav-link"><span class="nav-icon">🏛️</span><span>Franchise</span></a></li>
-        <li class="nav-item"><a href="rankings.html" class="nav-link"><span class="nav-icon">🏆</span><span>Rankings</span></a></li>
-        <li class="nav-item"><a href="seasons.html" class="nav-link"><span class="nav-icon">🗂️</span><span>Seasons</span></a></li>
-        <li class="nav-item"><a href="devotees.html" class="nav-link"><span class="nav-icon">👥</span><span>Players</span></a></li>
-        <li class="nav-item"><a href="awards.html" class="nav-link active"><span class="nav-icon">🏅</span><span>Awards</span></a></li>
-        <li class="nav-item"><a href="compare.html" class="nav-link"><span class="nav-icon">⚔️</span><span>Compare</span></a></li>
-
-
+        <li class="nav-item"><a href="index.html" class="nav-link" data-page="index"><span class="nav-icon">🏠</span><span>Home</span></a></li>
+        <li class="nav-item"><a href="current-season.html" class="nav-link" data-page="current-season"><span class="nav-icon">📊</span><span>Current Season</span></a></li>
+        <li class="nav-item"><a href="voting-analytics.html" class="nav-link" data-page="voting-analytics"><span class="nav-icon">🧾</span><span>Voting Analytics</span></a></li>
+        <li class="nav-item"><a href="franchise.html" class="nav-link" data-page="franchise"><span class="nav-icon">🏛️</span><span>Franchise</span></a></li>
+        <li class="nav-item"><a href="rankings.html" class="nav-link" data-page="rankings"><span class="nav-icon">🏆</span><span>Rankings</span></a></li>
+        <li class="nav-item"><a href="seasons.html" class="nav-link" data-page="seasons"><span class="nav-icon">🗂️</span><span>Seasons</span></a></li>
+        <li class="nav-item"><a href="devotees.html" class="nav-link" data-page="devotees"><span class="nav-icon">👥</span><span>Players</span></a></li>
+        <li class="nav-item"><a href="awards.html" class="nav-link active" data-page="awards"><span class="nav-icon">🏅</span><span>Awards</span></a></li>
+        <li class="nav-item"><a href="compare.html" class="nav-link" data-page="compare"><span class="nav-icon">⚔️</span><span>Compare</span></a></li>
         <li class="nav-item"><a href="timeline.html" class="nav-link" data-page="timeline"><span class="nav-icon">🗓️</span><span>Timeline</span></a></li>
       </ul>
     </nav>
   </div>
 </header>
-
 <script>
 (function() {
-  if (window.SITE_CONFIG) {
-    document.getElementById('totalSeasons').textContent = window.SITE_CONFIG.seasons;
-    document.getElementById('totalPlayers').textContent = window.SITE_CONFIG.players;
-    document.getElementById('currentSeasonNum').textContent = window.SITE_CONFIG.currentSeason;
-    document.getElementById('iconFormat').textContent = window.SITE_CONFIG.iconFormat;
+  function applySiteConfig(cfg) {
+    document.getElementById('totalSeasons').textContent = cfg.seasons;
+    document.getElementById('totalPlayers').textContent = cfg.players;
+    document.getElementById('currentSeasonNum').textContent = cfg.currentSeason;
+    document.getElementById('iconFormat').textContent = cfg.iconFormat;
+    var fs = document.getElementById('footer-seasons');
+    var fp = document.getElementById('footer-players');
+    if (fs) fs.textContent = cfg.seasons;
+    if (fp) fp.textContent = cfg.players;
   }
+  if (window.SITE_CONFIG) applySiteConfig(window.SITE_CONFIG);
+  document.addEventListener('siteConfigReady', function(e) { applySiteConfig(e.detail); });
   const header = document.getElementById('modernHeader');
-  if (!header) return;
-  window.addEventListener('scroll', () => {
-    if (window.pageYOffset > 20) {
-      header.classList.add('scrolled');
-    } else {
-      header.classList.remove('scrolled');
-    }
-  }, { passive: true });
+  window.addEventListener('scroll', () => { header.classList.toggle('scrolled', window.pageYOffset > 20); }, { passive: true });
 })();
 </script>
-<!-- SITE HEADER END -->
 
-<div class="container">
-  <div class="topbar">
-    <div>
-      <div class="brand">DC <span>Franchise</span> Database</div>
-      <div class="meta">Season Awards</div>
-    </div>
-    <div class="meta">Season count: 5 • Player count: 58</div>
-  </div>
+<main class="page-wrap" id="main-content">
+  <!-- Content injected by JS -->
+  <div style="text-align:center;padding:80px 20px;opacity:.5">Loading season awards…</div>
+</main>
 
-
-
-  <!-- DYNAMIC CONTENT AREA -->
-  <div id="awards-content">
-    <div class="hero">
-      <h1>Loading...</h1>
-      <p>Please wait...</p>
-    </div>
-  </div>
-
-</div>
-
-<!-- SITE FOOTER -->
 <footer class="siteFooter">
   <div class="footerInner">
     <div class="footerTitle">DC Franchise Database</div>
-    <div class="footerSub">Static archive • <span id="footer-seasons">9</span> seasons • <span id="footer-players">102</span> players • Icons: name.png</div>
+    <div class="footerSub">Static archive • <span id="footer-seasons">9</span> seasons • <span id="footer-players">102</span> players</div>
   </div>
 </footer>
 
 <script>
+// ── Helpers ────────────────────────────────────────────────
+function pLink(name, slug) {
+  if (!name) return '—';
+  return slug ? `<a href="player.html?player=${slug}" style="color:inherit;text-decoration:none;">${name}</a>` : name;
+}
+function av(slug, cls, size) {
+  if (!slug) return '';
+  const s = size || 40;
+  return `<img class="${cls||'aw-avatar'}" style="width:${s}px;height:${s}px" src="assets/avatars/${slug}.png" alt="" onerror="this.style.display='none'">`;
+}
+function rankIcon(i) {
+  return i===0?'🥇':i===1?'🥈':i===2?'🥉':`<span style="font-size:12px;color:var(--muted);font-weight:700">${i+1}</span>`;
+}
+
+// Simple award card (gold/silver tier object)
+function tieredAwardCard(icon, label, award) {
+  if (!award) return '';
+  const gold = award.gold;
+  const silver = award.silver;
+  if (!gold && !award.name) return '';
+
+  // Legacy flat structure (award has .name directly)
+  if (award.name !== undefined && !gold) {
+    return simpleAwardCard(icon, label, award);
+  }
+
+  let html = `<div class="aw-card">
+    <div class="aw-card-label"><span class="aw-icon">${icon}</span>${label}</div>`;
+  if (gold) {
+    html += `<div class="aw-tier-gold">
+      <div class="aw-tier-label">Gold</div>
+      <div class="aw-player">${av(gold.playerSlug)}<div class="aw-name">${pLink(gold.name, gold.playerSlug)}</div></div>
+      ${gold.description ? `<div class="aw-desc">${gold.description}</div>` : ''}
+    </div>`;
+  }
+  if (silver) {
+    html += `<div class="aw-tier-silver" style="margin-top:10px">
+      <div class="aw-tier-label">Silver</div>
+      <div class="aw-player">${av(silver.playerSlug)}<div class="aw-name">${pLink(silver.name, silver.playerSlug)}</div></div>
+      ${silver.description ? `<div class="aw-desc">${silver.description}</div>` : ''}
+    </div>`;
+  }
+  html += '</div>';
+  return html;
+}
+
+function simpleAwardCard(icon, label, award) {
+  if (!award || !award.name) return '';
+  return `<div class="aw-card">
+    <div class="aw-card-label"><span class="aw-icon">${icon}</span>${label}</div>
+    <div class="aw-player">${av(award.playerSlug)}<div class="aw-name">${pLink(award.name, award.playerSlug)}</div></div>
+    ${award.placement ? `<div class="aw-sub">${award.placement}th Place</div>` : ''}
+    ${award.description ? `<div class="aw-desc">${award.description}</div>` : ''}
+    ${award.episode ? `<div class="aw-sub">Episode ${award.episode}</div>` : ''}
+    ${award.note ? `<div class="aw-desc" style="margin-top:4px">${award.note}</div>` : ''}
+    ${award.wins ? `<div class="aw-sub">${award.wins} total wins</div>` : ''}
+  </div>`;
+}
+
+function betrayalCard(icon, label, award) {
+  if (!award || !award.betrayer) return '';
+  return `<div class="betrayal-card">
+    <div class="betrayal-title"><span>${icon}</span>${label}</div>
+    <div class="betrayal-players">${award.betrayer} <span style="color:var(--muted)">→</span> ${award.betrayed}</div>
+    ${award.description ? `<div class="betrayal-desc">${award.description}</div>` : ''}
+    ${award.episode ? `<div class="betrayal-ep">Episode ${award.episode}</div>` : ''}
+  </div>`;
+}
+
+function feudCard(icon, label, award) {
+  if (!award) return '';
+  const names = award.players ? award.players.join(' vs ') : (award.name || '');
+  return `<div class="aw-card">
+    <div class="aw-card-label"><span class="aw-icon">${icon}</span>${label}</div>
+    <div class="aw-name" style="margin-bottom:6px">${names}</div>
+    ${award.description ? `<div class="aw-desc">${award.description}</div>` : ''}
+    ${award.episode ? `<div class="aw-sub">Episode ${award.episode}</div>` : ''}
+  </div>`;
+}
+
+function awardCard(icon, label, award) {
+  if (!award) return '';
+  // Detect tiered vs flat
+  if (award.gold || award.silver) return tieredAwardCard(icon, label, award);
+  if (award.betrayer) return betrayalCard(icon, label, award);
+  if (award.players) return feudCard(icon, label, award);
+  return simpleAwardCard(icon, label, award);
+}
+
+function statLbCard(title, rows) {
+  if (!rows || !rows.length) return '';
+  const rowsHTML = rows.map((r, i) => `<div class="stat-lb-row">
+    <span class="stat-lb-rank">${rankIcon(i)}</span>
+    ${av(r.playerSlug||r.slug,'stat-lb-av',28)}
+    <div class="stat-lb-name">${pLink(r.name,r.playerSlug||r.slug)}</div>
+    <div class="stat-lb-val">${r.wins!==undefined?r.wins:r.count!==undefined?r.count:r.votes!==undefined?r.votes:r.value||'—'}</div>
+  </div>`).join('');
+  return `<div class="stat-lb"><div class="stat-lb-head">${title}</div>${rowsHTML}</div>`;
+}
+
+// ── Main load ──────────────────────────────────────────────
 (async function() {
+  const main = document.getElementById('main-content');
+  const urlParams = new URLSearchParams(window.location.search);
+  const seasonNum = parseInt(urlParams.get('season'), 10);
+  const TOTAL_SEASONS = 9;
+
+  if (!seasonNum) {
+    main.innerHTML = `<div class="no-season">
+      <h2>⚠️ No Season Specified</h2>
+      <p>Please provide a season number in the URL: <code>season-awards_ref.html?season=1</code></p>
+      <a href="awards.html">← Back to All Awards</a>
+    </div>`;
+    return;
+  }
+
   try {
-    // Get season number from URL parameter
-    const urlParams = new URLSearchParams(window.location.search);
-    const seasonNum = urlParams.get('season');
-    
-    if (!seasonNum) {
-      document.getElementById('awards-content').innerHTML = `
-        <div class="hero">
-          <h1>⚠️ No Season Specified</h1>
-          <p>Please provide a season number in the URL</p>
+    const res = await fetch(`season${seasonNum}-data.json`);
+    if (!res.ok) throw new Error(`Season ${seasonNum} data not found (HTTP ${res.status})`);
+    const season = await res.json();
+
+    document.title = `Season ${seasonNum} Awards — ${season.title} — DC Franchise`;
+
+    const awards = season.awards || {};
+    const w = season.winner || {};
+    const stats = season.statistics || {};
+    const legacy = season.legacy || {};
+
+    // Prev/Next nav helper
+    function navBtn(dir, num) {
+      if (num < 1 || num > TOTAL_SEASONS) return '';
+      const arrow = dir === 'prev' ? '←' : '→';
+      const label = dir === 'prev' ? `S${num} Awards` : `S${num} Awards`;
+      return `<a class="snav-btn" href="season-awards_ref.html?season=${num}">${dir==='prev'?arrow+' ':''} ${label} ${dir==='next'?arrow:''}</a>`;
+    }
+
+    let html = `
+    <!-- HERO -->
+    <div class="sa-hero">
+      <div class="sa-hero-body">
+        <div class="sa-season-badge">🏅 Season ${seasonNum}</div>
+        <div class="sa-hero-title">${season.title} Awards</div>
+        ${season.subtitle ? `<div class="sa-hero-sub">${season.subtitle}</div>` : ''}
+        <div class="sa-hero-pills">
+          ${season.castSize ? `<span class="sa-pill">${season.castSize} Players</span>` : ''}
+          ${season.episodeCount ? `<span class="sa-pill">${season.episodeCount} Episodes</span>` : ''}
+          ${w.vote ? `<span class="sa-pill gold">Final Vote: ${w.vote}</span>` : ''}
         </div>
-        <div class="panel">
-          <p>Example: <code>season-awards.html?season=1</code></p>
-          <p><a href="awards.html" class="tab">← Back to All Awards</a></p>
-        </div>
-      `;
-      return;
-    }
-    
-    // Load season data from JSON
-    const response = await fetch(`season${seasonNum}-data.json`);
-    if (!response.ok) {
-      throw new Error(`Season ${seasonNum} data not found`);
-    }
-    const season = await response.json();
-    
-    // Update page title
-    document.title = `Season ${seasonNum} Awards - ${season.title}`;
-    
-    // Helper function to create player link
-    function playerLink(name, slug) {
-      return slug ? `<a href="player.html?player=${slug}" style="color: var(--accent);">${name}</a>` : name;
-    }
-    
-    // Helper function to create award card
-    function awardCard(icon, title, award) {
-      if (!award || !award.name) return '';
-      
-      // Handle array of players (like feud)
-      if (award.players) {
-        return `
-          <div class="kpi">
-            <h3>${icon} ${title}</h3>
-            <ul>
-              <li><b>${award.players.join(' vs ')}</b></li>
-              ${award.description ? `<li class="small">${award.description}</li>` : ''}
-            </ul>
+      </div>
+    </div>
+
+    <!-- WINNER SPOTLIGHT -->
+    <div class="sa-winner">
+      <div class="sa-winner-lbl">👑 Season Winner</div>
+      <div class="sa-winner-row">
+        <div class="sa-winner-av">${w.playerSlug ? `<img src="assets/avatars/${w.playerSlug}.png" alt="${w.name}" onerror="this.style.display='none'">` : ''}</div>
+        <div class="sa-winner-info">
+          <div class="sa-winner-name">${pLink(w.name, w.playerSlug)}</div>
+          ${w.vote ? `<div class="sa-winner-vote">Final Tribal Vote: ${w.vote}${w.runnerUp ? ` over ${w.runnerUp}` : ''}</div>` : ''}
+          ${w.strategy ? `<div class="sa-winner-desc">${w.strategy}</div>` : ''}
+          <div class="sa-winner-meta">
+            ${w.legacy ? w.legacy.split('•').map(l => `<span class="sa-winner-pill">${l.trim()}</span>`).join('') : ''}
+            ${w.keyStats ? `<span class="sa-winner-pill" style="border-color:rgba(125,76,255,.4);color:#a78bfa;background:rgba(125,76,255,.1)">${w.keyStats}</span>` : ''}
           </div>
-        `;
+        </div>
+      </div>
+    </div>
+
+    <!-- MAJOR AWARDS -->
+    <div class="sa-section-heading">🏆 Major Awards</div>
+    <div class="award-grid">
+      ${awardCard('🏆','Winner', awards.winner || awards.playerOfSeason)}
+      ${awardCard('🌟','Fan Favorite', awards.fanFavorite)}
+      ${awardCard('🧠','Best Strategic', awards.bestStrategic || awards.masterStrategist)}
+      ${awardCard('🤝','Best Social', awards.bestSocial || awards.socialQueenKing)}
+      ${awardCard('⭐','Season MVP', awards.seasonMVP)}
+      ${awardCard('🦸','Hero of Season', awards.heroOfSeason)}
+    </div>
+
+    <!-- PERFORMANCE AWARDS -->
+    <div class="sa-section-heading">🎯 Performance Awards</div>
+    <div class="award-grid">
+      ${awardCard('💪','Best Physical', awards.bestPhysical || awards.compBeast)}
+      ${awardCard('🔥','Most Clutch', awards.mostClutch)}
+      ${awardCard('🤝','Most Loyal', awards.mostLoyal)}
+      ${awardCard('📊','Best Underdog', awards.bestUnderdog)}
+      ${awardCard('🏁','FTC Performance', awards.ftcGame)}
+      ${awardCard('🎯','Quietest Threat', awards.quietestThreat)}
+    </div>
+
+    <!-- CHARACTER AWARDS -->
+    <div class="sa-section-heading">🎭 Character Awards</div>
+    <div class="award-grid">
+      ${awardCard('😈','Biggest Villain', awards.biggestVillain || awards.villainOfSeason)}
+      ${awardCard('🌀','Most Chaotic', awards.mostChaotic)}
+      ${awardCard('🎲','Most Unlucky', awards.mostUnlucky)}
+      ${awardCard('💎','Advantage King', awards.advantageKing)}
+      ${awardCard('🎯','Biggest Target', awards.biggestTarget || awards['biggest Target'])}
+      ${awardCard('😢','Most Robbed', awards.mostRobbedPreJuror)}
+    </div>`;
+
+    // Unfortunate awards
+    const unfortunate = [
+      awardCard('💥','Biggest Meltdown', awards.biggestMeltdown),
+      awardCard('😢','Most Tragic Exit', awards.mostTragic),
+      awardCard('🔥','Messiest Feud', awards.messiestFeud)
+    ].filter(Boolean).join('');
+    if (unfortunate) {
+      html += `<div class="sa-section-heading">💔 Unfortunate Awards</div><div class="award-grid">${unfortunate}</div>`;
+    }
+
+    // Betrayal awards
+    const betrayals = [
+      betrayalCard('💔','Biggest Betrayal', awards.biggestBetrayal),
+      betrayalCard('💔','Second Biggest Betrayal', awards.secondBiggestBetrayal)
+    ].filter(Boolean).join('');
+    if (betrayals) {
+      html += `<div class="sa-section-heading">🗡️ Betrayal Awards</div><div class="award-grid">${betrayals}</div>`;
+    }
+
+    // Special awards
+    const special = [awardCard('🛡️','Iron Person', awards.ironPerson)].filter(Boolean).join('');
+    if (special) {
+      html += `<div class="sa-section-heading">🏅 Special Awards</div><div class="award-grid">${special}</div>`;
+    }
+
+    // Statistical leaders
+    const chalStats = stats.challengeStats || stats.challengeWins || {};
+    const socialStats = stats.socialGame || {};
+    const strategicStats = stats.strategic || {};
+
+    const immRankings = chalStats.immunityWins?.rankings || [];
+    const totalRankings = chalStats.totalChallengeWins?.rankings || chalStats.mostTotal ? [chalStats.mostTotal] : [];
+    const idolFindings = strategicStats.idolFindings || [];
+    const strRanking = strategicStats.strategicRanking || [];
+
+    if (immRankings.length || totalRankings.length || idolFindings.length || socialStats.fewestVotes || socialStats.mostVotes) {
+      html += `<div class="sa-section-heading">📊 Statistical Leaders</div><div class="stat-grid">`;
+      if (immRankings.length) html += statLbCard('🛡️ Immunity Wins', immRankings.slice(0,5));
+      if (totalRankings.length) html += statLbCard('💪 Total Challenge Wins', totalRankings.slice(0,5));
+      // Social game
+      if (socialStats.fewestVotes || socialStats.mostVotes) {
+        const socialRows = [];
+        if (socialStats.fewestVotes) {
+          if (Array.isArray(socialStats.fewestVotes)) socialRows.push(...socialStats.fewestVotes.map(p => ({...p, value: `${p.votes} VA`})));
+          else socialRows.push({...socialStats.fewestVotes, value: `${socialStats.fewestVotes.votes} votes`});
+        }
+        if (socialStats.mostVotes) socialRows.push({...socialStats.mostVotes, value: `${socialStats.mostVotes.votes} VA`});
+        html += statLbCard('🗳️ Vote Stats', socialRows.slice(0,5));
       }
-      
-      return `
-        <div class="kpi">
-          <h3>${icon} ${title}</h3>
-          <ul>
-            <li><b>${playerLink(award.name, award.playerSlug)}</b></li>
-            ${award.placement ? `<li class="small">${award.placement}th Place</li>` : ''}
-            ${award.description ? `<li class="small">${award.description}</li>` : ''}
-            ${award.wins ? `<li class="small">${award.wins} total wins</li>` : ''}
-            ${award.episode ? `<li class="small">Episode ${award.episode}</li>` : ''}
-            ${award.note ? `<li class="small">${award.note}</li>` : ''}
-          </ul>
-        </div>
-      `;
+      if (idolFindings.length) html += statLbCard('💎 Idols Found', idolFindings.slice(0,5));
+      if (strRanking.length) {
+        const strRows = strRanking.map(r => ({...r, value: `#${r.rank}`}));
+        html += statLbCard('🧠 Strategic Ranking', strRows.slice(0,5));
+      }
+      html += '</div>';
     }
-    
-    // Helper for betrayal cards (has betrayer/betrayed)
-    function betrayalCard(icon, title, award) {
-      if (!award || !award.betrayer) return '';
-      return `
-        <div class="kpi">
-          <h3>${icon} ${title}</h3>
-          <ul>
-            <li><b>${award.betrayer} vs ${award.betrayed}</b></li>
-            ${award.description ? `<li class="small">${award.description}</li>` : ''}
-            ${award.episode ? `<li class="small">Episode ${award.episode}</li>` : ''}
-          </ul>
-        </div>
-      `;
+
+    // Season Legacy
+    if (legacy.summary || legacy.memorableMoments?.length) {
+      html += `<div class="sa-section-heading">🎬 Season Legacy</div>
+      <div class="legacy-card">
+        ${legacy.summary ? `<div class="legacy-summary">${legacy.summary}</div>` : ''}
+        ${legacy.memorableMoments?.length ? `
+        <ul class="legacy-moments">
+          ${legacy.memorableMoments.map(m => `<li class="legacy-moment">${m}</li>`).join('')}
+        </ul>` : ''}
+      </div>`;
     }
-    
-    const awards = season.awards;
-    
-    // Build awards page
-    document.getElementById('awards-content').innerHTML = `
-      <div class="hero">
-        <h1>🥇 Season ${seasonNum} Awards</h1>
-        <p>Celebrating the standout players and moments from ${season.title}</p>
-      </div>
 
-      <div class="callout">
-        <b>Winner:</b> ${season.winner.name} (${season.winner.vote}) | 
-        <b>Fan Favorite:</b> ${awards.fanFavorite.name}
+    // Season navigation
+    html += `<div class="season-nav">
+      ${navBtn('prev', seasonNum - 1)}
+      <div class="snav-center">
+        <a class="snav-btn primary" href="awards.html">🏅 All Awards</a>
+        <a class="snav-btn" href="season_ref.html?season=${seasonNum}">📋 Season Overview</a>
       </div>
+      ${navBtn('next', seasonNum + 1)}
+    </div>`;
 
-      <h2>🏆 Major Awards</h2>
-      <div class="kpi-grid">
-        ${awardCard('🏆', 'Winner', awards.winner)}
-        ${awardCard('🌟', 'Fan Favorite', awards.fanFavorite)}
-        ${awardCard('🧠', 'Best Strategic', awards.bestStrategic)}
-        ${awardCard('🤝', 'Best Social', awards.bestSocial)}
-      </div>
+    main.innerHTML = html;
 
-      <h2>🎯 Performance Awards</h2>
-      <div class="kpi-grid">
-        ${awardCard('💪', 'Best Physical', awards.bestPhysical)}
-        ${awardCard('🔥', 'Most Clutch', awards.mostClutch)}
-        ${awardCard('🤝', 'Most Loyal', awards.mostLoyal)}
-        ${awardCard('📊', 'Best Underdog', awards.bestUnderdog)}
-      </div>
-
-      <h2>🎭 Character Awards</h2>
-      <div class="kpi-grid">
-        ${awardCard('😈', 'Biggest Villain', awards.biggestVillain)}
-        ${awardCard('🌀', 'Most Chaotic', awards.mostChaotic)}
-        ${awardCard('🤫', 'Quietest Threat', awards.quietestThreat)}
-        ${awardCard('⭐', 'Season MVP', awards.seasonMVP)}
-      </div>
-
-      ${awards.biggestMeltdown || awards.mostTragic || awards.mostUnlucky || awards.messiestFeud ? `
-      <h2>💔 Unfortunate Awards</h2>
-      <div class="kpi-grid">
-        ${awardCard('💥', 'Biggest Meltdown', awards.biggestMeltdown)}
-        ${awardCard('😢', 'Most Tragic Exit', awards.mostTragic)}
-        ${awardCard('🎲', 'Most Unlucky', awards.mostUnlucky)}
-        ${awardCard('🔥', 'Messiest Feud', awards.messiestFeud)}
-      </div>
-      ` : ''}
-
-      ${awards.biggestBetrayal || awards.secondBiggestBetrayal ? `
-      <h2>💔 Betrayal Awards</h2>
-      <div class="kpi-grid">
-        ${betrayalCard('💔', 'Biggest Betrayal', awards.biggestBetrayal)}
-        ${betrayalCard('💔', 'Second Biggest Betrayal', awards.secondBiggestBetrayal)}
-      </div>
-      ` : ''}
-
-      ${awards.ironPerson ? `
-      <h2>🏅 Special Awards</h2>
-      <div class="kpi-grid">
-        ${awardCard('🛡️', 'Iron Person', awards.ironPerson)}
-      </div>
-      ` : ''}
-
-      ${season.statistics ? `
-      <h2>📊 Statistical Leaders</h2>
-      
-      ${season.statistics.challengeWins ? `
-      <div class="panel">
-        <h3>Challenge Dominance</h3>
-        <ul>
-          ${season.statistics.challengeWins.mostTotal ? `<li><b>Most Total Wins:</b> ${playerLink(season.statistics.challengeWins.mostTotal.name, season.statistics.challengeWins.mostTotal.playerSlug)} (${season.statistics.challengeWins.mostTotal.wins})</li>` : ''}
-          ${season.statistics.challengeWins.mostImmunity ? `<li><b>Most Immunity Wins:</b> ${playerLink(season.statistics.challengeWins.mostImmunity.name, season.statistics.challengeWins.mostImmunity.playerSlug)} (${season.statistics.challengeWins.mostImmunity.wins})</li>` : ''}
-          ${season.statistics.challengeWins.longestStreak ? `<li><b>Longest Streak:</b> ${playerLink(season.statistics.challengeWins.longestStreak.name, season.statistics.challengeWins.longestStreak.playerSlug)} (${season.statistics.challengeWins.longestStreak.wins} consecutive)</li>` : ''}
-        </ul>
-      </div>
-      ` : ''}
-
-      ${season.statistics.socialGame ? `
-      <div class="panel">
-        <h3>Social Game</h3>
-        <ul>
-          ${season.statistics.socialGame.fewestVotes ? 
-            (Array.isArray(season.statistics.socialGame.fewestVotes) ? 
-              `<li><b>Fewest Votes Against:</b> ${season.statistics.socialGame.fewestVotes.map(p => `${playerLink(p.name, p.playerSlug)} (${p.votes})`).join(', ')}</li>` :
-              `<li><b>Fewest Votes Against:</b> ${playerLink(season.statistics.socialGame.fewestVotes.name, season.statistics.socialGame.fewestVotes.playerSlug)} (${season.statistics.socialGame.fewestVotes.votes})</li>`
-            ) : ''}
-          ${season.statistics.socialGame.mostVotes ? `<li><b>Most Votes Against:</b> ${playerLink(season.statistics.socialGame.mostVotes.name, season.statistics.socialGame.mostVotes.playerSlug)} (${season.statistics.socialGame.mostVotes.votes})</li>` : ''}
-          ${season.statistics.socialGame.mostJuryVotes ? `<li><b>Most Jury Votes:</b> ${playerLink(season.statistics.socialGame.mostJuryVotes.name, season.statistics.socialGame.mostJuryVotes.playerSlug)} (${season.statistics.socialGame.mostJuryVotes.votes})</li>` : ''}
-        </ul>
-      </div>
-      ` : ''}
-
-      ${season.statistics.strategic ? `
-      <div class="panel">
-        <h3>Strategic Game</h3>
-        <ul>
-          ${season.statistics.strategic.idolsFound ? `<li><b>Idols Found:</b> ${season.statistics.strategic.idolsFound.map ? season.statistics.strategic.idolsFound.map(p => `${playerLink(p.name, p.playerSlug)} (${p.count})`).join(', ') : season.statistics.strategic.idolsFound}</li>` : ''}
-          ${season.statistics.strategic.idolsPlayedSuccessfully ? `<li><b>Perfect Idol Plays:</b> ${season.statistics.strategic.idolsPlayedSuccessfully.map ? season.statistics.strategic.idolsPlayedSuccessfully.map(p => `${playerLink(p.name || p, p.playerSlug)}`).join(', ') : season.statistics.strategic.idolsPlayedSuccessfully}</li>` : ''}
-          ${season.statistics.strategic.longestIdolHold ? `<li><b>Longest Idol Hold:</b> ${playerLink(season.statistics.strategic.longestIdolHold.name, season.statistics.strategic.longestIdolHold.playerSlug)} (${season.statistics.strategic.longestIdolHold.tribals} tribals)</li>` : ''}
-          ${season.statistics.strategic.mostVotesCancelled ? `<li><b>Most Votes Cancelled:</b> ${season.statistics.strategic.mostVotesCancelled.map ? season.statistics.strategic.mostVotesCancelled.map(p => `${playerLink(p.name, p.playerSlug)} (${p.votes})`).join(', ') : ''}</li>` : ''}
-        </ul>
-      </div>
-      ` : ''}
-      ` : ''}
-
-      ${season.legacy ? `
-      <h2>🎬 Season Legacy</h2>
-      <div class="callout">
-        <h3>${season.title}</h3>
-        <p>${season.legacy.summary}</p>
-        ${season.legacy.memorableMoments ? `
-        <p><b>Memorable Moments:</b></p>
-        <ul>
-          ${season.legacy.memorableMoments.map(m => `<li>${m}</li>`).join('')}
-        </ul>
-        ` : ''}
-      </div>
-      ` : ''}
-
-      <div class="footer">
-        <a href="awards.html">← All Season Awards</a> | 
-        <a href="season_ref.html?season=${seasonNum}">Season ${seasonNum} Overview →</a>
-      </div>
-    `;
-    
-  } catch (error) {
-    console.error('Error loading season awards:', error);
-    document.getElementById('awards-content').innerHTML = `
-      <div class="hero">
-        <h1>⚠️ Awards Not Found</h1>
-        <p>Could not load awards for this season</p>
-      </div>
-      <div class="panel">
-        <p><b>Error:</b> ${error.message}</p>
-        <p>Make sure <code>season${urlParams.get('season')}-data.json</code> exists in the root folder.</p>
-        <p><a href="awards.html" class="tab">← Back to All Awards</a></p>
-      </div>
-    `;
+  } catch (err) {
+    console.error('Season awards error:', err);
+    main.innerHTML = `<div class="no-season">
+      <h2>⚠️ Awards Not Found</h2>
+      <p>Could not load awards for Season ${seasonNum}.</p>
+      <p style="margin-top:8px;font-size:12px;opacity:.6">${err.message}</p>
+      <a href="awards.html">← Back to All Awards</a>
+    </div>`;
   }
 })();
 </script>
-
 </body>
 </html>

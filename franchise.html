@@ -1,21 +1,501 @@
 <!DOCTYPE html>
-<html data-root="." lang="en">
+<html lang="en" data-root=".">
 <head>
 <meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>Franchise Analytics</title>
-<link href="styles.css" rel="stylesheet"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Franchise Analytics — DC Franchise</title>
+<link rel="stylesheet" href="styles.css"/>
+<style>
+/* ── Page wrapper ──────────────────────────────────── */
+.page-wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 clamp(16px,3vw,32px) 60px;
+}
+
+/* ── Hero ──────────────────────────────────────────── */
+.fran-hero {
+  text-align: center;
+  padding: 44px 20px 32px;
+}
+.fran-hero h1 {
+  font-family: var(--font-samdan);
+  font-size: clamp(2rem,5vw,3.2rem);
+  margin: 0 0 10px;
+  background: linear-gradient(135deg,#a78bfa,#f59e0b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.fran-hero p { color: var(--muted); font-size: 15px; margin: 0; }
+
+/* ── Stat counters row ─────────────────────────────── */
+.stat-counters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px,1fr));
+  gap: 16px;
+  margin: 0 0 36px;
+}
+.stat-counter {
+  background: rgba(0,0,0,.25);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 16px;
+  padding: 24px 16px;
+  text-align: center;
+}
+.stat-counter .val {
+  font-family: var(--font-samdan);
+  font-size: 2.4rem;
+  font-weight: 800;
+  background: linear-gradient(135deg,#a78bfa,#f59e0b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.stat-counter .lbl {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--muted);
+}
+
+/* ── Tabs ──────────────────────────────────────────── */
+.tab-nav {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 32px;
+  background: rgba(0,0,0,.3);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 14px;
+  padding: 8px;
+}
+.tab-btn {
+  flex: 1 1 auto;
+  min-width: 110px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .2s;
+  white-space: nowrap;
+}
+.tab-btn:hover { background: rgba(125,76,255,.15); color: #fff; }
+.tab-btn.active {
+  background: linear-gradient(135deg,rgba(125,76,255,.4),rgba(255,179,71,.25));
+  color: #fff;
+  border: 1px solid rgba(125,76,255,.5);
+}
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ── Section label ─────────────────────────────────── */
+.section-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--accent);
+  margin: 32px 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(125,76,255,.25);
+}
+
+/* ── Season breakdown table ────────────────────────── */
+.modern-table-wrap {
+  overflow-x: auto;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.1);
+  margin-bottom: 24px;
+}
+.modern-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.modern-table thead tr {
+  background: rgba(125,76,255,.15);
+}
+.modern-table th {
+  padding: 12px 14px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--muted);
+  white-space: nowrap;
+  border-bottom: 1px solid rgba(255,255,255,.1);
+}
+.modern-table td {
+  padding: 11px 14px;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  vertical-align: middle;
+}
+.modern-table tbody tr:last-child td { border-bottom: none; }
+.modern-table tbody tr:hover { background: rgba(125,76,255,.08); }
+.modern-table tbody tr { background: rgba(0,0,0,.18); }
+.modern-table tbody tr:nth-child(even) { background: rgba(0,0,0,.08); }
+
+.season-emoji-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+.s-num-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: rgba(125,76,255,.2);
+  border: 1px solid rgba(125,76,255,.4);
+  color: #a78bfa;
+}
+.winner-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mini-avatar {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: rgba(125,76,255,.2);
+  border: 1px solid rgba(255,255,255,.15);
+  flex-shrink: 0;
+}
+.vote-pill {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: rgba(255,179,71,.12);
+  border: 1px solid rgba(255,179,71,.3);
+  color: var(--accent2);
+}
+.player-link { color: var(--accent2); text-decoration: none; }
+.player-link:hover { color: #fff; text-decoration: underline; }
+
+/* ── Champion cards ────────────────────────────────── */
+.champion-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px,1fr));
+  gap: 20px;
+  margin-bottom: 24px;
+}
+.champ-card {
+  background: rgba(0,0,0,.25);
+  border: 1px solid rgba(255,179,71,.2);
+  border-radius: 20px;
+  padding: 24px;
+  transition: all .25s;
+  position: relative;
+  overflow: hidden;
+}
+.champ-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg,#f59e0b,#a78bfa);
+}
+.champ-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(255,179,71,.5);
+  box-shadow: 0 16px 40px rgba(255,179,71,.15);
+}
+.champ-season-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(255,179,71,.1);
+  border: 1px solid rgba(255,179,71,.3);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent2);
+  margin-bottom: 16px;
+}
+.champ-avatar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+.champ-avatar {
+  width: 60px; height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: linear-gradient(135deg,rgba(125,76,255,.3),rgba(255,179,71,.2));
+  border: 2px solid rgba(255,179,71,.4);
+  flex-shrink: 0;
+}
+.champ-name {
+  font-family: var(--font-samdan);
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+.champ-name a { color: inherit; text-decoration: none; }
+.champ-name a:hover { color: var(--accent2); }
+.champ-title {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.champ-meta {
+  font-size: 12px;
+  color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.champ-meta-pill {
+  padding: 3px 9px;
+  border-radius: 20px;
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.1);
+  white-space: nowrap;
+}
+
+/* ── Records leaderboard ───────────────────────────── */
+.records-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px,1fr));
+  gap: 20px;
+  margin-bottom: 24px;
+}
+.lb-card {
+  background: rgba(0,0,0,.25);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.lb-header {
+  padding: 14px 18px;
+  background: rgba(125,76,255,.12);
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  font-size: 13px;
+  font-weight: 700;
+  color: #a78bfa;
+}
+.lb-entry {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid rgba(255,255,255,.05);
+  transition: background .15s;
+}
+.lb-entry:last-child { border-bottom: none; }
+.lb-entry:hover { background: rgba(125,76,255,.1); }
+.lb-rank {
+  font-size: 16px;
+  width: 24px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.lb-avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: rgba(125,76,255,.2);
+  border: 1px solid rgba(255,255,255,.15);
+  flex-shrink: 0;
+}
+.lb-name { flex: 1; font-size: 13px; font-weight: 600; }
+.lb-name a { color: var(--text); text-decoration: none; }
+.lb-name a:hover { color: var(--accent2); }
+.lb-sub { font-size: 11px; color: var(--muted); }
+.lb-val {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--accent2);
+  white-space: nowrap;
+}
+
+/* ── Milestones table ──────────────────────────────── */
+.milestone-cat {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--accent);
+}
+
+/* ── Returnees ─────────────────────────────────────── */
+.group-label {
+  font-family: var(--font-samdan);
+  font-size: 1.1rem;
+  margin: 28px 0 14px;
+  color: var(--accent2);
+}
+.returnee-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px,1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.returnee-card {
+  background: rgba(0,0,0,.25);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  transition: all .2s;
+}
+.returnee-card:hover {
+  border-color: rgba(125,76,255,.5);
+  transform: translateY(-4px);
+}
+.ret-avatar {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: linear-gradient(135deg,rgba(125,76,255,.25),rgba(255,179,71,.15));
+  border: 2px solid rgba(125,76,255,.4);
+}
+.ret-name { font-size: 13px; font-weight: 700; }
+.ret-name a { color: var(--text); text-decoration: none; }
+.ret-name a:hover { color: var(--accent2); }
+.ret-seasons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: center;
+}
+.s-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 8px;
+  background: rgba(125,76,255,.2);
+  border: 1px solid rgba(125,76,255,.3);
+  color: #a78bfa;
+}
+.ret-meta { font-size: 11px; color: var(--muted); }
+.wins-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: rgba(255,179,71,.15);
+  border: 1px solid rgba(255,179,71,.4);
+  color: var(--accent2);
+}
+
+/* ── History/Evolution ─────────────────────────────── */
+.timeline-list {
+  position: relative;
+  padding-left: 28px;
+  margin-bottom: 32px;
+}
+.timeline-list::before {
+  content: '';
+  position: absolute;
+  left: 8px; top: 8px; bottom: 8px;
+  width: 2px;
+  background: linear-gradient(to bottom,#a78bfa,#f59e0b44);
+}
+.tl-entry {
+  position: relative;
+  margin-bottom: 24px;
+}
+.tl-entry::before {
+  content: '';
+  position: absolute;
+  left: -24px; top: 6px;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: #a78bfa;
+  border: 2px solid #0e0613;
+}
+.tl-season-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--accent2);
+  margin-bottom: 4px;
+}
+.tl-text {
+  background: rgba(0,0,0,.25);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.trends-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill,minmax(260px,1fr));
+  gap: 18px;
+  margin-bottom: 28px;
+}
+.trend-card {
+  background: rgba(0,0,0,.25);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.trend-header {
+  padding: 12px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  background: rgba(125,76,255,.12);
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  color: #a78bfa;
+}
+.trend-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 14px;
+  border-bottom: 1px solid rgba(255,255,255,.04);
+  font-size: 12px;
+}
+.trend-row:last-child { border-bottom: none; }
+.trend-s {
+  font-weight: 700;
+  color: var(--accent2);
+  white-space: nowrap;
+  min-width: 24px;
+}
+.trend-val { color: var(--muted); line-height: 1.4; }
+</style>
 </head>
 <body>
 
-<!-- MODERN SITE HEADER START -->
+<!-- MODERN SITE HEADER -->
 <header class="modern-header" id="modernHeader">
   <div class="header-container">
     <div class="header-top">
       <a href="index.html" class="brand-section" aria-label="Go to home">
-        <div class="brand-icon">
-          <span class="brand-logo-text">⚡</span>
-        </div>
+        <div class="brand-icon"><span class="brand-logo-text">⚡</span></div>
         <div class="brand-content">
           <h1>DC <span class="brand-gradient">Franchise</span> Database</h1>
           <p class="brand-subtitle">Season <span id="currentSeasonNum">9</span> Live • Click to Explore</p>
@@ -28,445 +508,326 @@
     </div>
     <nav class="header-nav" aria-label="Primary navigation">
       <ul class="nav-list">
-        <li class="nav-item"><a href="index.html" class="nav-link"><span class="nav-icon">🏠</span><span>Home</span></a></li>
-        <li class="nav-item"><a href="current-season.html" class="nav-link"><span class="nav-icon">📊</span><span>Current Season</span></a></li>
-        <li class="nav-item"><a href="voting-analytics.html" class="nav-link"><span class="nav-icon">🧾</span><span>Voting Analytics</span></a></li>
-        <li class="nav-item"><a href="franchise.html" class="nav-link active"><span class="nav-icon">🏛️</span><span>Franchise</span></a></li>
-        <li class="nav-item"><a href="rankings.html" class="nav-link"><span class="nav-icon">🏆</span><span>Rankings</span></a></li>
-        <li class="nav-item"><a href="seasons.html" class="nav-link"><span class="nav-icon">🗂️</span><span>Seasons</span></a></li>
-        <li class="nav-item"><a href="devotees.html" class="nav-link"><span class="nav-icon">👥</span><span>Players</span></a></li>
-        <li class="nav-item"><a href="awards.html" class="nav-link"><span class="nav-icon">🏅</span><span>Awards</span></a></li>
-        <li class="nav-item"><a href="compare.html" class="nav-link"><span class="nav-icon">⚔️</span><span>Compare</span></a></li>
-
-
+        <li class="nav-item"><a href="index.html" class="nav-link" data-page="index"><span class="nav-icon">🏠</span><span>Home</span></a></li>
+        <li class="nav-item"><a href="current-season.html" class="nav-link" data-page="current-season"><span class="nav-icon">📊</span><span>Current Season</span></a></li>
+        <li class="nav-item"><a href="voting-analytics.html" class="nav-link" data-page="voting-analytics"><span class="nav-icon">🧾</span><span>Voting Analytics</span></a></li>
+        <li class="nav-item"><a href="franchise.html" class="nav-link active" data-page="franchise"><span class="nav-icon">🏛️</span><span>Franchise</span></a></li>
+        <li class="nav-item"><a href="rankings.html" class="nav-link" data-page="rankings"><span class="nav-icon">🏆</span><span>Rankings</span></a></li>
+        <li class="nav-item"><a href="seasons.html" class="nav-link" data-page="seasons"><span class="nav-icon">🗂️</span><span>Seasons</span></a></li>
+        <li class="nav-item"><a href="devotees.html" class="nav-link" data-page="devotees"><span class="nav-icon">👥</span><span>Players</span></a></li>
+        <li class="nav-item"><a href="awards.html" class="nav-link" data-page="awards"><span class="nav-icon">🏅</span><span>Awards</span></a></li>
+        <li class="nav-item"><a href="compare.html" class="nav-link" data-page="compare"><span class="nav-icon">⚔️</span><span>Compare</span></a></li>
         <li class="nav-item"><a href="timeline.html" class="nav-link" data-page="timeline"><span class="nav-icon">🗓️</span><span>Timeline</span></a></li>
       </ul>
     </nav>
   </div>
 </header>
-
 <script>
 (function() {
-  if (window.SITE_CONFIG) {
-    document.getElementById('totalSeasons').textContent = window.SITE_CONFIG.seasons;
-    document.getElementById('totalPlayers').textContent = window.SITE_CONFIG.players;
-    document.getElementById('currentSeasonNum').textContent = window.SITE_CONFIG.currentSeason;
-    document.getElementById('iconFormat').textContent = window.SITE_CONFIG.iconFormat;
+  function applySiteConfig(cfg) {
+    document.getElementById('totalSeasons').textContent = cfg.seasons;
+    document.getElementById('totalPlayers').textContent = cfg.players;
+    document.getElementById('currentSeasonNum').textContent = cfg.currentSeason;
+    document.getElementById('iconFormat').textContent = cfg.iconFormat;
+    var fs = document.getElementById('footer-seasons');
+    var fp = document.getElementById('footer-players');
+    if (fs) fs.textContent = cfg.seasons;
+    if (fp) fp.textContent = cfg.players;
   }
+  if (window.SITE_CONFIG) applySiteConfig(window.SITE_CONFIG);
+  document.addEventListener('siteConfigReady', function(e) { applySiteConfig(e.detail); });
   const header = document.getElementById('modernHeader');
-  if (!header) return;
-  window.addEventListener('scroll', () => {
-    if (window.pageYOffset > 20) {
-      header.classList.add('scrolled');
-    } else {
-      header.classList.remove('scrolled');
-    }
-  }, { passive: true });
-  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
-  document.querySelectorAll('.nav-link').forEach(link => {
-    const linkPage = link.getAttribute('href');
-    if (linkPage === currentPage || (currentPage === '' && linkPage === 'index.html')) {
-      link.classList.add('active');
-    }
-  });
+  window.addEventListener('scroll', () => { header.classList.toggle('scrolled', window.pageYOffset > 20); }, { passive: true });
 })();
 </script>
-<!-- MODERN SITE HEADER END -->
 
-<main class="homeWrap">
-<div class="container">
+<main class="page-wrap">
+  <div class="fran-hero">
+    <h1>🏛️ Franchise Analytics</h1>
+    <p>Cross-season statistics and trends across <span id="hero-seasons">9</span> complete seasons</p>
+  </div>
 
-<div class="topbar">
-<div>
-<div class="brand">DC <span>Franchise</span> Database</div>
-<div class="meta">Cross-season statistics and franchise records</div>
-</div>
-<div class="meta" id="topbar-meta">Season count: 5 • Player count: 58</div>
-</div>
+  <!-- STAT COUNTERS -->
+  <div class="stat-counters">
+    <div class="stat-counter"><div class="val" id="sc-seasons">—</div><div class="lbl">Seasons</div></div>
+    <div class="stat-counter"><div class="val" id="sc-episodes">—</div><div class="lbl">Episodes</div></div>
+    <div class="stat-counter"><div class="val" id="sc-players">—</div><div class="lbl">Unique Players</div></div>
+    <div class="stat-counter"><div class="val" id="sc-appearances">—</div><div class="lbl">Appearances</div></div>
+  </div>
 
+  <!-- TABS -->
+  <nav class="tab-nav" role="tablist">
+    <button class="tab-btn active" data-tab="overview" role="tab">📊 Overview</button>
+    <button class="tab-btn" data-tab="champions" role="tab">👑 Champions</button>
+    <button class="tab-btn" data-tab="records" role="tab">📋 Records</button>
+    <button class="tab-btn" data-tab="returnees" role="tab">🔄 Returnees</button>
+    <button class="tab-btn" data-tab="history" role="tab">📈 History</button>
+  </nav>
 
+  <!-- TAB: OVERVIEW -->
+  <section class="tab-panel active" id="tab-overview">
+    <div class="section-label">Season Breakdown</div>
+    <div class="modern-table-wrap">
+      <table class="modern-table">
+        <thead>
+          <tr>
+            <th>Season</th>
+            <th>Title</th>
+            <th>Cast</th>
+            <th>Eps</th>
+            <th>Winner</th>
+            <th>Final Vote</th>
+            <th>Fan Favorite</th>
+          </tr>
+        </thead>
+        <tbody id="overview-tbody">
+          <tr><td colspan="7" style="text-align:center;padding:32px;opacity:.5;">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
 
-<div class="hero">
-<h1>🏛️ Franchise Analytics</h1>
-<p>Cross-season statistics and trends across <span id="hero-seasons">5</span> complete seasons</p>
-</div>
+  <!-- TAB: CHAMPIONS -->
+  <section class="tab-panel" id="tab-champions">
+    <div class="section-label">All-Time Champions</div>
+    <div class="champion-grid" id="champions-grid">
+      <div style="opacity:.5;padding:32px;">Loading...</div>
+    </div>
+  </section>
 
-<!-- FRANCHISE OVERVIEW -->
-<div class="section-title">
-<h2>Franchise Overview</h2>
-</div>
-<div class="statsbar" id="franchise-stats">
-<div class="stat"><div class="num">-</div><div class="label">Seasons</div></div>
-<div class="stat"><div class="num">-</div><div class="label">Episodes</div></div>
-<div class="stat"><div class="num">-</div><div class="label">Unique Players</div></div>
-<div class="stat"><div class="num">-</div><div class="label">Total Appearances</div></div>
-</div>
+  <!-- TAB: RECORDS -->
+  <section class="tab-panel" id="tab-records">
+    <div class="section-label">Career Leaderboards</div>
+    <div class="records-grid" id="records-grid">
+      <div style="opacity:.5;padding:32px;">Loading...</div>
+    </div>
+    <div class="section-label">Franchise Milestones</div>
+    <div class="modern-table-wrap">
+      <table class="modern-table">
+        <thead>
+          <tr><th>Category</th><th>Record Holder</th><th>Stat</th><th>Season</th></tr>
+        </thead>
+        <tbody id="milestones-tbody">
+          <tr><td colspan="4" style="text-align:center;padding:24px;opacity:.5;">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
 
-<!-- SEASON BREAKDOWN -->
-<div class="section-title">
-<h2>Season Breakdown</h2>
-</div>
-<table class="table">
-<thead>
-<tr>
-<th>Season</th>
-<th>Cast</th>
-<th>Episodes</th>
-<th>Winner</th>
-<th>Final Vote</th>
-<th>Fan Favorite</th>
-<th>Theme</th>
-</tr>
-</thead>
-<tbody id="season-breakdown-tbody">
-<tr><td colspan="7" style="text-align: center; opacity: 0.5;">Loading...</td></tr>
-</tbody>
-</table>
+  <!-- TAB: RETURNEES -->
+  <section class="tab-panel" id="tab-returnees">
+    <div id="returnees-content"><div style="opacity:.5;padding:32px;">Loading...</div></div>
+  </section>
 
-<!-- CHAMPIONS -->
-<div class="section-title">
-<h2>Champions</h2>
-</div>
-<div class="kpi-grid" id="champions-grid">
-<div class="kpi" style="opacity: 0.5;">Loading champions...</div>
-</div>
-
-<!-- FRANCHISE RECORDS -->
-<div class="section-title">
-<h2>Franchise Records</h2>
-</div>
-<div class="kpi-grid" id="records-grid">
-<div class="kpi" style="opacity: 0.5;">Loading records...</div>
-</div>
-
-<!-- FAN FAVORITES -->
-<div class="section-title">
-<h2>Fan Favorites</h2>
-</div>
-<div class="panel" id="fan-favorites-panel">
-<ul><li style="opacity: 0.5;">Loading...</li></ul>
-</div>
-
-<!-- MULTI-SEASON PLAYERS -->
-<div class="section-title">
-<h2>Multi-Season Players</h2>
-</div>
-<div class="panel" id="multi-season-4">
-<h3>4-Season Players</h3>
-<ul><li style="opacity: 0.5;">Loading...</li></ul>
-</div>
-<div class="panel" id="multi-season-3">
-<h3>3-Season Players</h3>
-<ul><li style="opacity: 0.5;">Loading...</li></ul>
-</div>
-<div class="panel" id="multi-season-2">
-<h3>2-Season Players</h3>
-<ul><li style="opacity: 0.5;">Loading...</li></ul>
-</div>
-
-<!-- FRANCHISE TRENDS -->
-<div class="section-title">
-<h2>Franchise Trends</h2>
-</div>
-<div class="kpi-grid" id="trends-grid">
-<div class="kpi" style="opacity: 0.5;">Loading trends...</div>
-</div>
-
-<!-- FRANCHISE MILESTONES -->
-<div class="section-title">
-<h2>Franchise Milestones</h2>
-</div>
-<table class="table">
-<thead>
-<tr>
-<th>Category</th>
-<th>Record Holder</th>
-<th>Stat</th>
-<th>Season</th>
-</tr>
-</thead>
-<tbody id="milestones-tbody">
-<tr><td colspan="4" style="text-align: center; opacity: 0.5;">Loading...</td></tr>
-</tbody>
-</table>
-
-<!-- STATISTICAL LEADERS -->
-<div class="section-title">
-<h2>Statistical Leaders</h2>
-</div>
-<div class="panel" id="challenge-leaders">
-<h3>Challenge Dominance (Career)</h3>
-<ol><li style="opacity: 0.5;">Loading...</li></ol>
-</div>
-<div class="panel" id="social-leaders">
-<h3>Social Game (Fewest Votes Against Winners)</h3>
-<ol><li style="opacity: 0.5;">Loading...</li></ol>
-</div>
-<div class="panel" id="strategic-leaders">
-<h3>Strategic Impact (Idols & Advantages)</h3>
-<ul><li style="opacity: 0.5;">Loading...</li></ul>
-</div>
-
-<!-- FRANCHISE EVOLUTION -->
-<div class="section-title">
-<h2>Franchise Evolution</h2>
-</div>
-<div class="panel" id="evolution-panel">
-<p style="opacity: 0.5;">Loading franchise evolution...</p>
-</div>
-
-<div class="footer" id="bottom-footer">5 seasons complete • 58 unique players • 86 total appearances</div>
-
-</div>
+  <!-- TAB: HISTORY -->
+  <section class="tab-panel" id="tab-history">
+    <div class="section-label">Franchise Evolution</div>
+    <div class="timeline-list" id="evolution-list">
+      <div style="opacity:.5;padding:32px;">Loading...</div>
+    </div>
+    <div class="section-label">Trends</div>
+    <div class="trends-grid" id="trends-grid">
+      <div style="opacity:.5;padding:32px;">Loading...</div>
+    </div>
+  </section>
 </main>
 
-<!-- SITE FOOTER -->
 <footer class="siteFooter">
   <div class="footerInner">
     <div class="footerTitle">DC Franchise Database</div>
-    <div class="footerSub">Static archive • <span id="footer-seasons">5</span> seasons • <span id="footer-players">58</span> players • Icons: name.png</div>
+    <div class="footerSub">Static archive • <span id="footer-seasons">9</span> seasons • <span id="footer-players">102</span> players</div>
   </div>
 </footer>
 
 <script>
+// ── Tab switching ──────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+// ── Helpers ────────────────────────────────────────────────
+function pLink(name, slug) {
+  return slug ? `<a class="player-link" href="player.html?player=${slug}">${name}</a>` : (name || '—');
+}
+function avatar(slug, size) {
+  const s = size || 28;
+  return slug
+    ? `<img class="mini-avatar" style="width:${s}px;height:${s}px" src="assets/avatars/${slug}.png" alt="" onerror="this.style.display='none'">`
+    : '';
+}
+function rankIcon(i) {
+  return i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `<span style="font-size:13px;color:var(--muted)">${i+1}</span>`;
+}
+
+// ── Load data ──────────────────────────────────────────────
 (async function() {
   try {
-    // Load both databases
-    const [franchise, seasons] = await Promise.all([
+    const [franchise, seasonsDb, playersDb] = await Promise.all([
       fetch('franchise_database.json').then(r => r.json()),
-      fetch('seasons_database.json').then(r => r.json())
+      fetch('seasons_database.json').then(r => r.json()),
+      fetch('players_database.json').then(r => r.json())
     ]);
-    
+
     const fs = franchise.franchiseStats;
-    
-    // Helper function to create player link
-    function playerLink(name, slug) {
-      return slug ? `<a href="player.html?player=${slug}" style="color: var(--accent);">${name}</a>` : name;
-    }
-    
-    // 1. UPDATE TOP STATS
-    const statNums = document.querySelectorAll('#franchise-stats .num');
-    statNums[0].textContent = fs.totalSeasons;
-    statNums[1].textContent = fs.totalEpisodes;
-    statNums[2].textContent = fs.uniquePlayers;
-    statNums[3].textContent = fs.totalAppearances;
-    
+    const players = playersDb.players || [];
+    const seasons = (seasonsDb.seasons || []).slice().sort((a,b) => a.seasonNumber - b.seasonNumber);
+
+    // ── Stat counters ────────────────────────────────────
+    document.getElementById('sc-seasons').textContent = fs.totalSeasons;
+    document.getElementById('sc-episodes').textContent = fs.totalEpisodes;
+    document.getElementById('sc-players').textContent = fs.uniquePlayers;
+    document.getElementById('sc-appearances').textContent = fs.totalAppearances;
     document.getElementById('hero-seasons').textContent = fs.totalSeasons;
-    document.getElementById('topbar-meta').textContent = `Season count: ${fs.totalSeasons} • Player count: ${fs.uniquePlayers}`;
-    document.getElementById('footer-seasons').textContent = fs.totalSeasons;
-    document.getElementById('footer-players').textContent = fs.uniquePlayers;
-    document.getElementById('bottom-footer').textContent = `${fs.totalSeasons} seasons complete • ${fs.uniquePlayers} unique players • ${fs.totalAppearances} total appearances`;
-    
-    // 2. SEASON BREAKDOWN TABLE
-    const seasonTable = seasons.seasons.map((s, i) => {
-      const fanFav = franchise.fanFavorites.find(f => f.season === s.seasonNumber);
-      const comp = franchise.trends.castComposition[i];
-      const theme = comp ? comp.composition.split(' ').slice(-2).join(' ') : s.theme;
-      
-      return `
-        <tr>
-          <td>Season ${s.seasonNumber}</td>
-          <td>${s.castSize}</td>
-          <td>${s.episodeCount}</td>
-          <td>${playerLink(s.winner.name, s.winner.playerSlug)}</td>
-          <td>${s.winner.vote}</td>
-          <td>${fanFav ? playerLink(fanFav.name, fanFav.playerSlug) : 'TBD'}</td>
-          <td>${theme}</td>
-        </tr>
-      `;
+
+    // ── Overview: season breakdown ───────────────────────
+    const tbody = document.getElementById('overview-tbody');
+    tbody.innerHTML = seasons.map(s => {
+      const fanFav = (franchise.fanFavorites || []).find(f => f.season === s.seasonNumber);
+      const w = s.winner || {};
+      return `<tr>
+        <td><div class="season-emoji-cell">${s.emoji||'🏝️'} <span class="s-num-badge">S${s.seasonNumber}</span></div></td>
+        <td style="font-weight:600">${s.title}</td>
+        <td>${s.castSize}</td>
+        <td>${s.episodeCount}</td>
+        <td><div class="winner-cell">${avatar(w.playerSlug,28)}${pLink(w.name,w.playerSlug)}</div></td>
+        <td><span class="vote-pill">${w.vote||'—'}</span></td>
+        <td>${fanFav ? `<div class="winner-cell">${avatar(fanFav.playerSlug,24)}${pLink(fanFav.name,fanFav.playerSlug)}</div>` : '<span style="opacity:.4">TBD</span>'}</td>
+      </tr>`;
     }).join('');
-    
-    const totalRow = `
-      <tr class="highlight">
-        <td><b>Total</b></td>
-        <td>${fs.uniquePlayers} unique</td>
-        <td>${fs.totalEpisodes}</td>
-        <td>${fs.totalSeasons} winners</td>
-        <td>—</td>
-        <td>${fs.totalSeasons} favorites</td>
-        <td>${fs.totalAppearances} appearances</td>
-      </tr>
-    `;
-    
-    document.getElementById('season-breakdown-tbody').innerHTML = seasonTable + totalRow;
-    
-    // 3. CHAMPIONS
-    const championsHTML = franchise.champions.map(c => `
-      <div class="kpi">
-        <h3>${playerLink(c.winner, c.playerSlug)} (Season ${c.season})</h3>
-        <ul>
-          <li><b>Strategy:</b> ${c.strategy}</li>
-          <li><b>Vote:</b> ${c.finalVote} over ${c.runnerUp}</li>
-          <li><b>Key Stat:</b> ${c.keyStats}</li>
-          <li><b>Legacy:</b> ${c.legacy}</li>
-        </ul>
-      </div>
-    `).join('');
-    document.getElementById('champions-grid').innerHTML = championsHTML;
-    
-    // 4. FRANCHISE RECORDS
-    const cr = franchise.records.challengeRecords.overall;
-    const vr = franchise.records.votingRecords;
-    const sr = franchise.records.strategicRecords;
-    const socr = franchise.records.socialRecords;
-    
-    const recordsHTML = `
-      <div class="kpi">
-        <h3>Challenge Records</h3>
-        <ul>
-          <li><b>Most Challenge Wins:</b> ${playerLink(cr.mostChallengeWins.name, cr.mostChallengeWins.playerSlug)} (${cr.mostChallengeWins.total})</li>
-          <li><b>Most Immunity Wins:</b> ${playerLink(cr.mostImmunityWins.name, cr.mostImmunityWins.playerSlug)} (${cr.mostImmunityWins.total})</li>
-          <li><b>Most Reward Wins:</b> ${playerLink(cr.mostRewardWins.name, cr.mostRewardWins.playerSlug)} (${cr.mostRewardWins.total})</li>
-        </ul>
-      </div>
-      <div class="kpi">
-        <h3>Voting Records</h3>
-        <ul>
-          <li><b>Most Votes Against (Career):</b> ${playerLink(vr.mostVotesAgainstCareer.name, vr.mostVotesAgainstCareer.playerSlug)} (${vr.mostVotesAgainstCareer.total})</li>
-          <li><b>Perfect Games:</b> ${vr.perfectGames.slice(0, 3).map(p => playerLink(p.name, p.playerSlug)).join(', ')}</li>
-        </ul>
-      </div>
-      <div class="kpi">
-        <h3>Strategic Records</h3>
-        <ul>
-          ${sr.topStrategicPercentile.slice(0, 3).map(p => 
-            `<li><b>${playerLink(p.name, p.playerSlug)}:</b> ${p.avgStrategicRank}/10 strategic avg</li>`
-          ).join('')}
-        </ul>
-      </div>
-      <div class="kpi">
-        <h3>Social Records</h3>
-        <ul>
-          <li><b>Most Jury Votes (Career):</b> ${playerLink(socr.mostJuryVotesCareer.name, socr.mostJuryVotesCareer.playerSlug)} (${socr.mostJuryVotesCareer.total})</li>
-          ${socr.topSocialPercentile.slice(0, 2).map(p => 
-            `<li><b>${playerLink(p.name, p.playerSlug)}:</b> Only ${p.votesAgainst} votes against</li>`
-          ).join('')}
-        </ul>
-      </div>
-    `;
-    document.getElementById('records-grid').innerHTML = recordsHTML;
-    
-    // 5. FAN FAVORITES
-    const favoritesHTML = franchise.fanFavorites.map(f => 
-      `<li><b>Season ${f.season}:</b> ${playerLink(f.name, f.playerSlug)}</li>`
-    ).join('');
-    document.getElementById('fan-favorites-panel').innerHTML = `<ul>${favoritesHTML}</ul>`;
-    
-    // 6. MULTI-SEASON PLAYERS
-    const fourSeasonsPlayers = franchise.multiSeasonPlayers.filter(p => p.seasonsPlayed >= 4);
-    const threeSeasonsPlayers = franchise.multiSeasonPlayers.filter(p => p.seasonsPlayed === 3);
-    const twoSeasonsPlayers = franchise.multiSeasonPlayers.filter(p => p.seasonsPlayed === 2);
-    
-    const fourSeasonsHTML = fourSeasonsPlayers.map(p => 
-      `<li><b>${playerLink(p.name, p.playerSlug)}:</b> S${p.seasons.join(', S')} (${p.avgPlacement.toFixed(2)} avg placement, ${p.wins} win${p.wins !== 1 ? 's' : ''})</li>`
-    ).join('');
-    document.getElementById('multi-season-4').innerHTML = `<h3>4-Season Players</h3><ul>${fourSeasonsHTML}</ul>`;
-    
-    const threeSeasonsHTML = threeSeasonsPlayers.map(p => 
-      `<li><b>${playerLink(p.name, p.playerSlug)}:</b> S${p.seasons.join(', S')} (${p.avgPlacement.toFixed(2)} avg placement, ${p.wins} win${p.wins !== 1 ? 's' : ''})</li>`
-    ).join('');
-    document.getElementById('multi-season-3').innerHTML = `<h3>3-Season Players</h3><ul>${threeSeasonsHTML}</ul>`;
-    
-    const twoSeasonsHTML = twoSeasonsPlayers.slice(0, 10).map(p => 
-      `<li><b>${playerLink(p.name, p.playerSlug)}:</b> S${p.seasons.join(', S')} (${p.avgPlacement.toFixed(2)} avg placement)</li>`
-    ).join('');
-    const twoSeasonsList = twoSeasonsHTML + (twoSeasonsPlayers.length > 10 ? `<li><b>Plus ${twoSeasonsPlayers.length - 10} more two-season players</b></li>` : '');
-    document.getElementById('multi-season-2').innerHTML = `<h3>2-Season Players</h3><ul>${twoSeasonsList}</ul>`;
-    
-    // 7. FRANCHISE TRENDS
-    const trendsHTML = `
-      <div class="kpi">
-        <h3>Winning Strategies Evolution</h3>
-        <ul>
-          ${franchise.trends.winningStrategies.map(t => 
-            `<li><b>S${t.season}:</b> ${t.strategy} (${t.winner})</li>`
-          ).join('')}
-        </ul>
-      </div>
-      <div class="kpi">
-        <h3>Cast Composition</h3>
-        <ul>
-          ${franchise.trends.castComposition.map(t => 
-            `<li><b>S${t.season}:</b> ${t.composition}</li>`
-          ).join('')}
-        </ul>
-      </div>
-      <div class="kpi">
-        <h3>Finale Vote Margins</h3>
-        <ul>
-          ${franchise.trends.finaleVoteMargins.map(t => 
-            `<li><b>S${t.season}:</b> ${t.vote} (${t.winner})</li>`
-          ).join('')}
-        </ul>
-      </div>
-      <div class="kpi">
-        <h3>Major Twists</h3>
-        <ul>
-          ${franchise.trends.majorTwists.map(t => 
-            `<li><b>S${t.season}:</b> ${t.twist}</li>`
-          ).join('')}
-        </ul>
-      </div>
-    `;
-    document.getElementById('trends-grid').innerHTML = trendsHTML;
-    
-    // 8. FRANCHISE MILESTONES
-    const milestonesHTML = franchise.milestones.map(m => `
-      <tr>
-        <td>${m.category}</td>
-        <td>${m.playerSlug ? playerLink(m.holder, m.playerSlug) : m.holder}</td>
-        <td>${m.stat}</td>
-        <td>${m.season}</td>
-      </tr>
-    `).join('');
-    document.getElementById('milestones-tbody').innerHTML = milestonesHTML;
-    
-    // 9. STATISTICAL LEADERS
-    const challengeLeadersHTML = franchise.careerLeaders.challengeDominance.mostChallengeWins.slice(0, 5).map((p, i) => 
-      `<li><b>${playerLink(p.name, p.playerSlug)}:</b> ${p.total} wins</li>`
-    ).join('');
-    document.getElementById('challenge-leaders').innerHTML = `<h3>Challenge Dominance (Career)</h3><ol>${challengeLeadersHTML}</ol>`;
-    
-    const socialLeadersHTML = franchise.careerLeaders.socialGame.lowestVotesAgainstCareer_min10Votes.slice(0, 5).map((p, i) => 
-      `<li><b>${playerLink(p.name, p.playerSlug)}:</b> ${p.totalVotesAgainst} votes against</li>`
-    ).join('');
-    document.getElementById('social-leaders').innerHTML = `<h3>Social Game (Fewest Votes Against Winners)</h3><ol>${socialLeadersHTML}</ol>`;
-    
-    const strategicHTML = `
-      <h3>Strategic Impact (Top Rankings)</h3>
-      <ul>
-        ${franchise.careerLeaders.strategicImpact.topOverallScore.slice(0, 5).map((p, i) => 
-          `<li><b>${playerLink(p.name, p.playerSlug)}:</b> ${p.score} (${p.tier} - ${p.title})</li>`
-        ).join('')}
-      </ul>
-    `;
-    document.getElementById('strategic-leaders').innerHTML = strategicHTML;
-    
-    // 10. FRANCHISE EVOLUTION
-    const evolutionHTML = `
-      <p><b>Season 1:</b> ${franchise.evolution.season1}</p>
-      <p><b>Season 2:</b> ${franchise.evolution.season2}</p>
-      <p><b>Season 3:</b> ${franchise.evolution.season3}</p>
-      <p><b>Season 4:</b> ${franchise.evolution.season4}</p>
-      <p><b>Season 5:</b> ${franchise.evolution.season5}</p>
-      ${franchise.evolution.season6 ? `<p><b>Season 6:</b> ${franchise.evolution.season6}</p>` : ''}
-      ${franchise.evolution.season7 ? `<p><b>Season 7:</b> ${franchise.evolution.season7}</p>` : ''}
-      ${franchise.evolution.season8 ? `<p><b>Season 8:</b> ${franchise.evolution.season8}</p>` : ''}
-      ${franchise.evolution.message ? `<p class="small" style="margin-top:12px; font-style:italic;">${franchise.evolution.message}</p>` : ''}
-    `;
-    document.getElementById('evolution-panel').innerHTML = evolutionHTML;
-    
-  } catch (error) {
-    console.error('Error loading franchise data:', error);
-    document.querySelector('.container').innerHTML += `
-      <div style="text-align: center; padding: 40px; color: #ff6b6b;">
-        ⚠️ Error loading franchise data<br>
-        <small style="opacity: 0.7;">Make sure franchise_database.json and seasons_database.json exist</small>
-      </div>
-    `;
+
+    // ── Champions ────────────────────────────────────────
+    const champGrid = document.getElementById('champions-grid');
+    champGrid.innerHTML = (franchise.champions || []).map(c => {
+      const s = seasons.find(x => x.seasonNumber === c.season) || {};
+      return `<div class="champ-card">
+        <div class="champ-season-badge">${c.emoji||s.emoji||'🏝️'} Season ${c.season}</div>
+        <div class="champ-avatar-wrap">
+          <img class="champ-avatar" src="assets/avatars/${c.playerSlug||''}.png" alt="" onerror="this.style.display='none'">
+          <div>
+            <div class="champ-name"><a href="player.html?player=${c.playerSlug||''}">${c.winner}</a></div>
+            <div class="champ-title">${c.seasonTitle}</div>
+          </div>
+        </div>
+        <div class="champ-meta">
+          <span class="champ-meta-pill">🗳️ ${c.finalVote}</span>
+          ${c.runnerUp ? `<span class="champ-meta-pill">vs ${c.runnerUp}</span>` : ''}
+        </div>
+        ${c.keyStats ? `<p style="font-size:12px;color:var(--muted);margin:10px 0 0;line-height:1.5">${c.keyStats}</p>` : ''}
+      </div>`;
+    }).join('');
+
+    // ── Records: compute from players_database ───────────
+    function buildLB(title, sorted, valFn, subFn) {
+      const top5 = sorted.slice(0,5);
+      const rows = top5.map((p,i) => {
+        const slug = p.id || p.playerSlug || '';
+        return `<div class="lb-entry">
+          <div class="lb-rank">${rankIcon(i)}</div>
+          ${avatar(slug,32).replace('mini-avatar','lb-avatar')}
+          <div class="lb-name"><a href="player.html?player=${slug}">${p.name}</a><div class="lb-sub">${subFn(p)}</div></div>
+          <div class="lb-val">${valFn(p)}</div>
+        </div>`;
+      }).join('');
+      return `<div class="lb-card"><div class="lb-header">${title}</div>${rows}</div>`;
+    }
+
+    const sorted = {
+      wins: [...players].sort((a,b) => (b.wins||0)-(a.wins||0)),
+      seasons: [...players].sort((a,b) => (b.seasons||0)-(a.seasons||0)),
+      chalWins: [...players].sort((a,b) => (b.totalChallengeWins||0)-(a.totalChallengeWins||0)),
+      immWins: [...players].sort((a,b) => (b.totalImmunityWins||0)-(a.totalImmunityWins||0)),
+      juryVotes: [...players].sort((a,b) => (b.totalJuryVotes||0)-(a.totalJuryVotes||0)),
+      votes: [...players].sort((a,b) => (b.totalVotesAgainst||0)-(a.totalVotesAgainst||0)),
+      idols: [...players].sort((a,b) => (b.totalIdolsFound||0)-(a.totalIdolsFound||0)),
+      avgPlace: [...players].filter(p => (p.seasons||0) >= 2).sort((a,b) => (a.avgPlacement||99)-(b.avgPlacement||99))
+    };
+
+    const recordsGrid = document.getElementById('records-grid');
+    recordsGrid.innerHTML = [
+      buildLB('🏆 Most Wins', sorted.wins, p=>`${p.wins||0} wins`, p=>`${p.seasons||0} seasons`),
+      buildLB('🔄 Most Seasons', sorted.seasons, p=>`${p.seasons||0}`, p=>`${p.wins||0} wins`),
+      buildLB('💪 Most Challenge Wins', sorted.chalWins, p=>`${p.totalChallengeWins||0}`, p=>`${p.totalImmunityWins||0} immunity`),
+      buildLB('🛡️ Most Immunity Wins', sorted.immWins, p=>`${p.totalImmunityWins||0}`, p=>`${p.totalChallengeWins||0} total`),
+      buildLB('🗳️ Most Jury Votes', sorted.juryVotes, p=>`${p.totalJuryVotes||0}`, p=>`${p.seasons||0} seasons`),
+      buildLB('🎯 Most Votes Against', sorted.votes, p=>`${p.totalVotesAgainst||0}`, p=>`${p.seasons||0} seasons`),
+      buildLB('💎 Most Idols Found', sorted.idols, p=>`${p.totalIdolsFound||0}`, p=>`${p.seasons||0} seasons`),
+      buildLB('📊 Best Avg Placement (2+ seasons)', sorted.avgPlace, p=>`${(p.avgPlacement||0).toFixed(2)}`, p=>`${p.seasons||0} seasons`)
+    ].join('');
+
+    // ── Milestones ───────────────────────────────────────
+    const mTbody = document.getElementById('milestones-tbody');
+    mTbody.innerHTML = (franchise.milestones || []).map(m => `<tr>
+      <td><span class="milestone-cat">${m.category}</span></td>
+      <td><div class="winner-cell">${avatar(m.playerSlug,28)}${pLink(m.holder, m.playerSlug)}</div></td>
+      <td style="font-size:13px;color:var(--muted)">${m.stat}</td>
+      <td><span class="s-num-badge">S${m.season}</span></td>
+    </tr>`).join('') || '<tr><td colspan="4" style="text-align:center;opacity:.4;padding:24px;">No milestones data</td></tr>';
+
+    // ── Returnees ────────────────────────────────────────
+    const multiPlayers = franchise.multiSeasonPlayers || [];
+    const groups = [
+      { label: '4+ Seasons', min: 4, players: multiPlayers.filter(p => p.seasonsPlayed >= 4) },
+      { label: '3 Seasons', min: 3, players: multiPlayers.filter(p => p.seasonsPlayed === 3) },
+      { label: '2 Seasons', min: 2, players: multiPlayers.filter(p => p.seasonsPlayed === 2) }
+    ];
+    let retHTML = '';
+    groups.forEach(g => {
+      if (!g.players.length) return;
+      retHTML += `<div class="group-label">${g.label} <span style="font-size:13px;font-weight:400;color:var(--muted)">(${g.players.length})</span></div>
+      <div class="returnee-grid">`;
+      g.players.forEach(p => {
+        const seasonBadges = (p.seasons||[]).map(s=>`<span class="s-badge">S${s}</span>`).join('');
+        retHTML += `<div class="returnee-card">
+          <img class="ret-avatar" src="assets/avatars/${p.playerSlug||''}.png" alt="" onerror="this.style.display='none'">
+          <div class="ret-name"><a href="player.html?player=${p.playerSlug||''}">${p.name}</a></div>
+          <div class="ret-seasons">${seasonBadges}</div>
+          ${p.wins ? `<span class="wins-badge">👑 ${p.wins} win${p.wins!==1?'s':''}</span>` : ''}
+          <div class="ret-meta">Avg: ${(p.avgPlacement||0).toFixed(2)}</div>
+        </div>`;
+      });
+      retHTML += '</div>';
+    });
+    document.getElementById('returnees-content').innerHTML = retHTML || '<p style="opacity:.5">No multi-season player data.</p>';
+
+    // ── History: Evolution ───────────────────────────────
+    const evo = franchise.evolution || {};
+    const evoList = document.getElementById('evolution-list');
+    evoList.innerHTML = Object.keys(evo)
+      .filter(k => k.startsWith('season'))
+      .map(k => {
+        const num = k.replace('season','');
+        const s = seasons.find(x => x.seasonNumber == num) || {};
+        return `<div class="tl-entry">
+          <div class="tl-season-label">Season ${num} ${s.emoji||''} — ${s.title||''}</div>
+          <div class="tl-text">${evo[k]}</div>
+        </div>`;
+      }).join('') + (evo.message ? `<div class="tl-entry"><div class="tl-text" style="font-style:italic;color:#a78bfa">${evo.message}</div></div>` : '');
+
+    // ── History: Trends ──────────────────────────────────
+    const trends = franchise.trends || {};
+    const trendsGrid = document.getElementById('trends-grid');
+    function trendCard(title, arr, keyFn, valFn) {
+      if (!arr || !arr.length) return '';
+      const rows = arr.map(t => `<div class="trend-row"><span class="trend-s">S${t.season}</span><span class="trend-val">${valFn(t)}</span></div>`).join('');
+      return `<div class="trend-card"><div class="trend-header">${title}</div>${rows}</div>`;
+    }
+    trendsGrid.innerHTML = [
+      trendCard('🧠 Winning Strategies', trends.winningStrategies, null, t=>`${t.strategy} — ${t.winner}`),
+      trendCard('🗳️ Finale Vote Margins', trends.finaleVoteMargins, null, t=>`${t.vote} (${t.winner})`),
+      trendCard('🌀 Major Twists', trends.majorTwists, null, t=>t.twist),
+      trendCard('👥 Cast Composition', trends.castComposition, null, t=>t.composition)
+    ].join('') || '<div style="opacity:.4">No trend data.</div>';
+
+  } catch(err) {
+    console.error('Franchise data error:', err);
+    document.querySelector('.page-wrap').innerHTML += `<div style="text-align:center;padding:40px;color:#ff5c7a">⚠️ Error loading data<br><small>${err.message}</small></div>`;
   }
 })();
 </script>
-
 </body>
 </html>

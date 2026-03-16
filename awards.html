@@ -1,543 +1,415 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en" data-root=".">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Season Awards</title>
-  <link rel="stylesheet" href="styles.css">
-  <style>
-    .awards-hero {
-      text-align: center;
-      padding: 40px 20px;
-      background: linear-gradient(135deg, rgba(125,76,255,.15), rgba(255,179,71,.12));
-      border-radius: 24px;
-      border: 1px solid rgba(125,76,255,.3);
-      margin-bottom: 32px;
-    }
-    
-    .awards-hero h1 {
-      font-size: 42px;
-      margin: 0 0 12px;
-      background: linear-gradient(135deg, var(--accent2), var(--accent));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    
-    .awards-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 24px;
-      margin-top: 32px;
-    }
-    
-    .award-card {
-      position: relative;
-      background: var(--panel);
-      border: 1px solid var(--stroke);
-      border-radius: 20px;
-      padding: 0;
-      overflow: hidden;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      cursor: pointer;
-    }
-    
-    .award-card:hover {
-      transform: translateY(-8px) scale(1.02);
-      border-color: var(--accent);
-      box-shadow: 0 20px 40px rgba(125,76,255,.4), 0 0 80px rgba(125,76,255,.2);
-    }
-    
-    .award-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 4px;
-      background: linear-gradient(90deg, var(--accent), var(--accent2));
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-    
-    .award-card:hover::before {
-      opacity: 1;
-    }
-    
-    .award-header {
-      padding: 24px;
-      background: linear-gradient(135deg, rgba(125,76,255,.12), rgba(255,179,71,.08));
-      border-bottom: 1px solid var(--stroke);
-    }
-    
-    .season-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 16px;
-      background: rgba(0,0,0,.3);
-      border: 1px solid rgba(255,179,71,.4);
-      border-radius: 999px;
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--accent2);
-      margin-bottom: 12px;
-    }
-    
-    .award-header h3 {
-      margin: 0;
-      font-size: 24px;
-      font-weight: 900;
-      color: var(--text);
-    }
-    
-    .award-header h3 a {
-      background: linear-gradient(135deg, var(--text), var(--muted));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      transition: all 0.3s ease;
-    }
-    
-    .award-card:hover .award-header h3 a {
-      background: linear-gradient(135deg, var(--accent2), var(--accent));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    
-    .award-body {
-      padding: 24px;
-    }
-    
-    .award-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px;
-      margin: 8px 0;
-      background: rgba(255,255,255,.04);
-      border: 1px solid rgba(255,255,255,.08);
-      border-radius: 12px;
-      transition: all 0.2s ease;
-    }
-    
-    .award-item:hover {
-      background: rgba(125,76,255,.15);
-      border-color: var(--accent);
-      transform: translateX(4px);
-    }
-    
-    .award-icon {
-      font-size: 24px;
-      width: 40px;
-      height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg, rgba(125,76,255,.2), rgba(255,179,71,.2));
-      border-radius: 10px;
-      border: 1px solid rgba(255,179,71,.3);
-      flex-shrink: 0;
-    }
-    
-    .award-content {
-      flex: 1;
-    }
-    
-    .award-label {
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 4px;
-    }
-    
-    .award-value {
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--text);
-    }
-    
-    .award-value .highlight {
-      color: var(--accent2);
-    }
-    
-    .award-footer {
-      padding: 16px 24px;
-      background: rgba(0,0,0,.2);
-      border-top: 1px solid var(--stroke);
-      text-align: center;
-    }
-    
-    .view-details {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 20px;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      border: none;
-      border-radius: 999px;
-      color: white;
-      font-weight: 700;
-      font-size: 13px;
-      transition: all 0.3s ease;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    
-    .view-details:hover {
-      transform: scale(1.05);
-      box-shadow: 0 8px 20px rgba(125,76,255,.5);
-    }
-    
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(30px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-    
-    .award-card {
-      animation: fadeInUp 0.6s ease forwards;
-    }
-    
-    .award-card:nth-child(1) { animation-delay: 0.1s; opacity: 0; }
-    .award-card:nth-child(2) { animation-delay: 0.2s; opacity: 0; }
-    .award-card:nth-child(3) { animation-delay: 0.3s; opacity: 0; }
-    .award-card:nth-child(4) { animation-delay: 0.4s; opacity: 0; }
-    .award-card:nth-child(5) { animation-delay: 0.5s; opacity: 0; }
-  </style>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Season Awards — DC Franchise</title>
+<link rel="stylesheet" href="styles.css"/>
+<style>
+/* ── Page wrapper ──────────────────────────────────── */
+.page-wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 clamp(16px,3vw,32px) 60px;
+}
+
+/* ── Hero ──────────────────────────────────────────── */
+.awards-page-hero {
+  text-align: center;
+  padding: 44px 24px 36px;
+  background: linear-gradient(135deg, rgba(125,76,255,.12), rgba(255,179,71,.08));
+  border: 1px solid rgba(125,76,255,.25);
+  border-radius: 24px;
+  margin-bottom: 32px;
+}
+.awards-page-hero h1 {
+  font-family: var(--font-samdan);
+  font-size: clamp(2rem,5vw,3.2rem);
+  margin: 0 0 12px;
+  background: linear-gradient(135deg,#f59e0b,#a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.awards-page-hero p { color: var(--muted); font-size: 15px; margin: 0 0 20px; }
+.hero-stat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 20px;
+  border-radius: 999px;
+  background: rgba(255,179,71,.1);
+  border: 1px solid rgba(255,179,71,.3);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent2);
+}
+
+/* ── Season filter bar ─────────────────────────────── */
+.season-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 32px;
+  padding: 12px 16px;
+  background: rgba(0,0,0,.25);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 14px;
+  align-items: center;
+}
+.filter-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--muted);
+  white-space: nowrap;
+  margin-right: 4px;
+}
+.filter-btn {
+  padding: 6px 14px;
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 999px;
+  background: rgba(255,255,255,.05);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .18s;
+}
+.filter-btn:hover {
+  background: rgba(125,76,255,.2);
+  border-color: rgba(125,76,255,.5);
+  color: #fff;
+}
+.filter-btn.active {
+  background: linear-gradient(135deg,rgba(125,76,255,.35),rgba(255,179,71,.2));
+  border-color: rgba(125,76,255,.6);
+  color: #fff;
+}
+
+/* ── Awards grid ───────────────────────────────────── */
+.awards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px,1fr));
+  gap: 24px;
+}
+
+/* ── Award card ────────────────────────────────────── */
+.award-card {
+  position: relative;
+  background: rgba(0,0,0,.25);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 20px;
+  overflow: hidden;
+  transition: all .3s cubic-bezier(.4,0,.2,1);
+  cursor: pointer;
+  opacity: 0;
+  animation: fadeUp .55s ease forwards;
+}
+.award-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg,var(--accent),var(--accent2));
+  opacity: 0;
+  transition: opacity .3s;
+}
+.award-card:hover { transform: translateY(-8px) scale(1.015); border-color: rgba(125,76,255,.5); box-shadow: 0 20px 40px rgba(125,76,255,.3); }
+.award-card:hover::before { opacity: 1; }
+
+.award-header {
+  padding: 22px 22px 18px;
+  background: linear-gradient(135deg,rgba(125,76,255,.1),rgba(255,179,71,.06));
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.season-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 14px;
+  background: rgba(0,0,0,.3);
+  border: 1px solid rgba(255,179,71,.35);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent2);
+  margin-bottom: 10px;
+}
+.award-header h3 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-family: var(--font-samdan);
+  font-weight: 700;
+}
+.award-header h3 a { color: var(--text); text-decoration: none; transition: color .2s; }
+.award-card:hover .award-header h3 a { color: var(--accent2); }
+
+.award-body { padding: 18px 20px 14px; }
+
+.award-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  margin: 6px 0;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 12px;
+  text-decoration: none;
+  transition: all .18s;
+}
+.award-item:hover, a.award-item:hover {
+  background: rgba(125,76,255,.14);
+  border-color: rgba(125,76,255,.4);
+  transform: translateX(3px);
+}
+.award-icon {
+  font-size: 18px;
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg,rgba(125,76,255,.2),rgba(255,179,71,.15));
+  border-radius: 10px;
+  border: 1px solid rgba(255,179,71,.25);
+  flex-shrink: 0;
+}
+.award-player-avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: rgba(125,76,255,.2);
+  border: 1px solid rgba(255,255,255,.15);
+  flex-shrink: 0;
+}
+.award-content { flex: 1; min-width: 0; }
+.award-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+.award-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.award-value .hl { color: var(--accent2); }
+
+.award-footer {
+  padding: 14px 20px;
+  background: rgba(0,0,0,.2);
+  border-top: 1px solid rgba(255,255,255,.06);
+  text-align: center;
+}
+.view-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 20px;
+  background: linear-gradient(135deg,var(--accent),var(--accent2));
+  border: none;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  transition: all .2s;
+}
+.view-btn:hover { transform: scale(1.05); box-shadow: 0 8px 20px rgba(125,76,255,.45); }
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(24px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+</style>
 </head>
 <body>
-<!-- SITE HEADER START -->
-<!-- MODERN SITE HEADER START -->
 
-
+<!-- MODERN SITE HEADER -->
 <header class="modern-header" id="modernHeader">
   <div class="header-container">
-    <!-- Top Bar -->
     <div class="header-top">
       <a href="index.html" class="brand-section" aria-label="Go to home">
-        <div class="brand-icon">
-          <span class="brand-logo-text">⚡</span>
-        </div>
+        <div class="brand-icon"><span class="brand-logo-text">⚡</span></div>
         <div class="brand-content">
           <h1>DC <span class="brand-gradient">Franchise</span> Database</h1>
           <p class="brand-subtitle">Season <span id="currentSeasonNum">9</span> Live • Click to Explore</p>
         </div>
       </a>
-
       <div class="stats-badge">
         <div class="stats-main"><span id="totalSeasons">9</span> Seasons • <span id="totalPlayers">102</span> Players</div>
         <div class="stats-sub">Icons: <span id="iconFormat">name.png</span></div>
       </div>
     </div>
-
-    <!-- Navigation -->
     <nav class="header-nav" aria-label="Primary navigation">
       <ul class="nav-list">
-        <li class="nav-item">
-          <a href="index.html" class="nav-link" data-page="index">
-            <span class="nav-icon">🏠</span>
-            <span>Home</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="current-season.html" class="nav-link" data-page="current-season">
-            <span class="nav-icon">📊</span>
-            <span>Current Season</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="voting-analytics.html" class="nav-link" data-page="voting-analytics">
-            <span class="nav-icon">🧾</span>
-            <span>Voting Analytics</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="franchise.html" class="nav-link" data-page="franchise">
-            <span class="nav-icon">🏛️</span>
-            <span>Franchise</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="rankings.html" class="nav-link" data-page="rankings">
-            <span class="nav-icon">🏆</span>
-            <span>Rankings</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="seasons.html" class="nav-link" data-page="seasons">
-            <span class="nav-icon">🗂️</span>
-            <span>Seasons</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="devotees.html" class="nav-link" data-page="devotees">
-            <span class="nav-icon">👥</span>
-            <span>Players</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="awards.html" class="nav-link" data-page="awards">
-            <span class="nav-icon">🏅</span>
-            <span>Awards</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="compare.html" class="nav-link" data-page="compare">
-            <span class="nav-icon">⚔️</span>
-            <span>Compare</span>
-          </a>
-        </li>
-
-
+        <li class="nav-item"><a href="index.html" class="nav-link" data-page="index"><span class="nav-icon">🏠</span><span>Home</span></a></li>
+        <li class="nav-item"><a href="current-season.html" class="nav-link" data-page="current-season"><span class="nav-icon">📊</span><span>Current Season</span></a></li>
+        <li class="nav-item"><a href="voting-analytics.html" class="nav-link" data-page="voting-analytics"><span class="nav-icon">🧾</span><span>Voting Analytics</span></a></li>
+        <li class="nav-item"><a href="franchise.html" class="nav-link" data-page="franchise"><span class="nav-icon">🏛️</span><span>Franchise</span></a></li>
+        <li class="nav-item"><a href="rankings.html" class="nav-link" data-page="rankings"><span class="nav-icon">🏆</span><span>Rankings</span></a></li>
+        <li class="nav-item"><a href="seasons.html" class="nav-link" data-page="seasons"><span class="nav-icon">🗂️</span><span>Seasons</span></a></li>
+        <li class="nav-item"><a href="devotees.html" class="nav-link" data-page="devotees"><span class="nav-icon">👥</span><span>Players</span></a></li>
+        <li class="nav-item"><a href="awards.html" class="nav-link active" data-page="awards"><span class="nav-icon">🏅</span><span>Awards</span></a></li>
+        <li class="nav-item"><a href="compare.html" class="nav-link" data-page="compare"><span class="nav-icon">⚔️</span><span>Compare</span></a></li>
         <li class="nav-item"><a href="timeline.html" class="nav-link" data-page="timeline"><span class="nav-icon">🗓️</span><span>Timeline</span></a></li>
       </ul>
     </nav>
   </div>
 </header>
-
 <script>
 (function() {
-  // Load site config and update header stats
-  if (window.SITE_CONFIG) {
-    document.getElementById('totalSeasons').textContent = window.SITE_CONFIG.seasons;
-    document.getElementById('totalPlayers').textContent = window.SITE_CONFIG.players;
-    document.getElementById('currentSeasonNum').textContent = window.SITE_CONFIG.currentSeason;
-    document.getElementById('iconFormat').textContent = window.SITE_CONFIG.iconFormat;
+  function applySiteConfig(cfg) {
+    document.getElementById('totalSeasons').textContent = cfg.seasons;
+    document.getElementById('totalPlayers').textContent = cfg.players;
+    document.getElementById('currentSeasonNum').textContent = cfg.currentSeason;
+    document.getElementById('iconFormat').textContent = cfg.iconFormat;
+    var fs = document.getElementById('footer-seasons');
+    var fp = document.getElementById('footer-players');
+    if (fs) fs.textContent = cfg.seasons;
+    if (fp) fp.textContent = cfg.players;
   }
-
-  // Scroll behavior
+  if (window.SITE_CONFIG) applySiteConfig(window.SITE_CONFIG);
+  document.addEventListener('siteConfigReady', function(e) { applySiteConfig(e.detail); });
   const header = document.getElementById('modernHeader');
-  if (!header) return;
-  
-  window.addEventListener('scroll', () => {
-    const currentScroll = window.pageYOffset;
-    if (currentScroll > 20) {
-      header.classList.add('scrolled');
-    } else {
-      header.classList.remove('scrolled');
-    }
-  }, { passive: true });
-
-  // Active page highlighting
-  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
-  const navLinks = document.querySelectorAll('.nav-link');
-  
-  navLinks.forEach(link => {
-    const linkPage = link.getAttribute('href');
-    if (linkPage === currentPage || (currentPage === '' && linkPage === 'index.html')) {
-      link.classList.add('active');
-    }
-  });
-
-  // Path resolution for nested folders
-  const root = (document.documentElement.dataset.root || document.body.dataset.root || ".").replace(/\/+$/, "");
-  
-  if (root !== ".") {
-    const allLinks = header.querySelectorAll('a[href]');
-    allLinks.forEach(link => {
-      const href = link.getAttribute('href');
-      if (href && !href.startsWith('http') && !href.startsWith('#')) {
-        link.setAttribute('href', root + '/' + href);
-      }
-    });
-  }
+  window.addEventListener('scroll', () => { header.classList.toggle('scrolled', window.pageYOffset > 20); }, { passive: true });
 })();
 </script>
-<!-- MODERN SITE HEADER END -->
 
-<!-- SITE HEADER END -->
+<main class="page-wrap">
 
-  <div class="container">
-    
-    <div class="topbar">
-      <div>
-        <div class="brand">DC <span>Franchise</span> Database</div>
-        <div class="meta">All Season Awards</div>
-      </div>
-      <div class="meta">Season count: 5 • Player count: 58</div>
-    </div>
-
-    
-    <div class="awards-hero">
-      
-    
-    <div class="awards-hero">
-      <h1>🏆 Season Awards</h1>
-      <p style="color: var(--muted); font-size: 16px; margin: 0;">Celebrating the best players, moments, and records from all <span id="total-seasons-count">5</span> seasons</p>
-    </div>
-
-    <div class="awards-grid" id="awards-grid">
-      <div style="text-align: center; padding: 40px; opacity: 0.6; grid-column: 1 / -1;">
-        Loading season awards...
-      </div>
-    </div>
-
+  <!-- HERO -->
+  <div class="awards-page-hero">
+    <h1>🏆 Season Awards</h1>
+    <p>Celebrating the best players, moments, and records from every season</p>
+    <span class="hero-stat-pill">🏅 <span id="total-seasons-count">9</span> Seasons of Awards</span>
   </div>
 
-<!-- SITE FOOTER START -->
+  <!-- SEASON FILTER -->
+  <div class="season-filter" id="season-filter">
+    <span class="filter-label">Jump to:</span>
+    <button class="filter-btn active" data-filter="all">All</button>
+    <!-- Season buttons injected by JS -->
+  </div>
+
+  <!-- AWARDS GRID -->
+  <div class="awards-grid" id="awards-grid">
+    <div style="text-align:center;padding:48px;opacity:.5;grid-column:1/-1;">Loading season awards...</div>
+  </div>
+
+</main>
+
 <footer class="siteFooter">
   <div class="footerInner">
     <div class="footerTitle">DC Franchise Database</div>
-    <div class="footerSub">Static archive • <span id="footer-seasons">5</span> seasons • <span id="footer-players">58</span> players • Icons: name.png</div>
+    <div class="footerSub">Static archive • <span id="footer-seasons">9</span> seasons • <span id="footer-players">102</span> players</div>
   </div>
 </footer>
-<!-- SITE FOOTER END -->
 
 <script>
+function avatar(slug, size) {
+  if (!slug) return '';
+  const s = size || 32;
+  return `<img class="award-player-avatar" style="width:${s}px;height:${s}px" src="assets/avatars/${slug}.png" alt="" onerror="this.style.display='none'">`;
+}
+
+function awardItem(icon, label, name, slug, detail) {
+  if (!name) return '';
+  const content = `
+    <div class="award-icon">${icon}</div>
+    ${avatar(slug, 32)}
+    <div class="award-content">
+      <div class="award-label">${label}</div>
+      <div class="award-value">${name}${detail ? ` <span class="hl">(${detail})</span>` : ''}</div>
+    </div>`;
+  if (slug) {
+    return `<a class="award-item" href="player.html?player=${slug}">${content}</a>`;
+  }
+  return `<div class="award-item">${content}</div>`;
+}
+
 (async function() {
   try {
-    // Load seasons from JSON database
-    const response = await fetch('seasons_database.json');
-    const data = await response.json();
-    
-    const grid = document.getElementById('awards-grid');
-    
-    if (!data.seasons || data.seasons.length === 0) {
-      grid.innerHTML = '<div style="text-align: center; padding: 40px; opacity: 0.6; grid-column: 1 / -1;">No season awards found</div>';
+    const data = await fetch('seasons_database.json').then(r => r.json());
+    if (!data.seasons || !data.seasons.length) {
+      document.getElementById('awards-grid').innerHTML = '<div style="text-align:center;padding:48px;opacity:.5;grid-column:1/-1;">No season data found.</div>';
       return;
     }
-    
-    // Update counts
-    document.getElementById('total-seasons-count').textContent = data.franchise.totalSeasons;
-    document.getElementById('footer-seasons').textContent = data.franchise.totalSeasons;
-    document.getElementById('footer-players').textContent = data.franchise.totalPlayers;
-    
-    // Sort by season number ascending (S1, S2, S3...)
-    const seasons = [...data.seasons].sort((a, b) => a.seasonNumber - b.seasonNumber);
-    
-    // Generate award cards
-    const cardsHTML = seasons.map((season, index) => {
+
+    const totalS = data.franchise?.totalSeasons || data.seasons.length;
+    document.getElementById('total-seasons-count').textContent = totalS;
+
+    const seasons = [...data.seasons].sort((a,b) => a.seasonNumber - b.seasonNumber);
+
+    // Build season filter buttons
+    const filterBar = document.getElementById('season-filter');
+    seasons.forEach(s => {
+      const btn = document.createElement('button');
+      btn.className = 'filter-btn';
+      btn.dataset.filter = 's' + s.seasonNumber;
+      btn.textContent = `${s.emoji || '🏝️'} S${s.seasonNumber}`;
+      filterBar.appendChild(btn);
+    });
+
+    // Filter logic
+    filterBar.addEventListener('click', e => {
+      const btn = e.target.closest('.filter-btn');
+      if (!btn) return;
+      filterBar.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const filter = btn.dataset.filter;
+      document.querySelectorAll('.award-card').forEach(card => {
+        if (filter === 'all' || card.dataset.season === filter) {
+          card.style.display = '';
+          card.scrollIntoView && filter !== 'all' && card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } else {
+          card.style.display = 'none';
+        }
+      });
+      if (filter !== 'all') {
+        const firstVisible = document.querySelector(`.award-card[data-season="${filter}"]`);
+        if (firstVisible) firstVisible.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    });
+
+    // Build cards
+    const grid = document.getElementById('awards-grid');
+    grid.innerHTML = seasons.map((season, idx) => {
       const awards = season.awards || {};
-      
-      return `
-<!-- Season ${season.seasonNumber} -->
-<div class="award-card" onclick="window.location.href='season-awards_ref.html?season=${season.seasonNumber}'" style="animation-delay: ${index * 0.1}s; opacity: 0;">
-  <div class="award-header">
-    <div class="season-badge">
-      <span>${season.emoji || '🏝️'}</span>
-      <span>Season ${season.seasonNumber}</span>
-    </div>
-    <h3><a href="season-awards_ref.html?season=${season.seasonNumber}">${season.title}</a></h3>
-  </div>
-  
-  <div class="award-body">
-    ${season.winner.playerSlug ? `
-    <a href="player.html?player=${season.winner.playerSlug}" class="award-link">
-      <div class="award-item">
-        <div class="award-icon">👑</div>
-        <div class="award-content">
-          <div class="award-label">Winner${season.winner.isDualWin ? 's' : ''}</div>
-          <div class="award-value">
-            ${season.winner.isDualWin
-              ? `${season.winner.name} <span class="highlight">(${season.winner.vote})</span>`
-              : `${season.winner.name} ${season.winner.vote !== 'TBD' ? `<span class="highlight">(${season.winner.vote})</span>` : ''}`
-            }
-          </div>
-        </div>
-      </div>
-    </a>
-    ` : `
-    <div class="award-item">
-      <div class="award-icon">👑</div>
-      <div class="award-content">
-        <div class="award-label">Winner${season.winner.isDualWin ? 's' : ''}</div>
-        <div class="award-value">${season.winner.name}</div>
-      </div>
-    </div>
-    `}
+      const w = season.winner || {};
+      const delay = (idx * 0.08).toFixed(2);
 
-    ${awards.fanFavorite && awards.fanFavorite.playerSlug ? `
-    <a href="player.html?player=${awards.fanFavorite.playerSlug}" class="award-link">
-      <div class="award-item">
-        <div class="award-icon">⭐</div>
-        <div class="award-content">
-          <div class="award-label">Fan Favorite</div>
-          <div class="award-value">${awards.fanFavorite.name}</div>
+      return `<div class="award-card" data-season="s${season.seasonNumber}" style="animation-delay:${delay}s" onclick="window.location.href='season-awards_ref.html?season=${season.seasonNumber}'">
+        <div class="award-header">
+          <div class="season-badge">${season.emoji||'🏝️'} Season ${season.seasonNumber}</div>
+          <h3><a href="season-awards_ref.html?season=${season.seasonNumber}">${season.title}</a></h3>
+          ${season.subtitle ? `<p style="margin:6px 0 0;font-size:12px;color:var(--muted)">${season.subtitle}</p>` : ''}
         </div>
-      </div>
-    </a>
-    ` : `
-    <div class="award-item">
-      <div class="award-icon">⭐</div>
-      <div class="award-content">
-        <div class="award-label">Fan Favorite</div>
-        <div class="award-value">${awards.fanFavorite?.name || 'TBD'}</div>
-      </div>
-    </div>
-    `}
-    
-    ${awards.bestStrategic && awards.bestStrategic.playerSlug ? `
-    <a href="player.html?player=${awards.bestStrategic.playerSlug}" class="award-link">
-      <div class="award-item">
-        <div class="award-icon">🧠</div>
-        <div class="award-content">
-          <div class="award-label">Best Strategic</div>
-          <div class="award-value">${awards.bestStrategic.name}</div>
+        <div class="award-body">
+          ${awardItem('👑', w.isDualWin ? 'Winners' : 'Winner', w.name, w.playerSlug, w.vote !== 'TBD' ? w.vote : null)}
+          ${awardItem('⭐', 'Fan Favorite', awards.fanFavorite?.name, awards.fanFavorite?.playerSlug, null)}
+          ${awardItem('🧠', 'Best Strategic', awards.bestStrategic?.name, awards.bestStrategic?.playerSlug, null)}
+          ${awardItem('💪', 'Most Challenge Wins', awards.mostChallengeWins?.name, awards.mostChallengeWins?.playerSlug, awards.mostChallengeWins?.detail)}
         </div>
-      </div>
-    </a>
-    ` : `
-    <div class="award-item">
-      <div class="award-icon">🧠</div>
-      <div class="award-content">
-        <div class="award-label">Best Strategic</div>
-        <div class="award-value">${awards.bestStrategic?.name || 'TBD'}</div>
-      </div>
-    </div>
-    `}
-
-    ${awards.mostChallengeWins && awards.mostChallengeWins.playerSlug ? `
-    <a href="player.html?player=${awards.mostChallengeWins.playerSlug}" class="award-link">
-      <div class="award-item">
-        <div class="award-icon">💪</div>
-        <div class="award-content">
-          <div class="award-label">Most Challenge Wins</div>
-          <div class="award-value">
-            ${awards.mostChallengeWins.name} 
-            ${awards.mostChallengeWins.detail ? `<span class="highlight">(${awards.mostChallengeWins.detail})</span>` : ''}
-          </div>
+        <div class="award-footer">
+          <a class="view-btn" href="season-awards_ref.html?season=${season.seasonNumber}">View All Awards →</a>
         </div>
-      </div>
-    </a>
-    ` : `
-    <div class="award-item">
-      <div class="award-icon">💪</div>
-      <div class="award-content">
-        <div class="award-label">Most Challenge Wins</div>
-        <div class="award-value">${awards.mostChallengeWins?.name || 'TBD'}</div>
-      </div>
-    </div>
-    `}
-  </div>
-  
-  <div class="award-footer">
-    <a href="season-awards_ref.html?season=${season.seasonNumber}" class="view-details">
-      <span>View All Awards</span>
-      <span>→</span>
-    </a>
-  </div>
-</div>
-`;
+      </div>`;
     }).join('');
-    
-    grid.innerHTML = cardsHTML;
-    
-  } catch (error) {
-    console.error('Error loading season awards:', error);
-    document.getElementById('awards-grid').innerHTML = 
-      '<div style="text-align: center; padding: 40px; color: #ff6b6b; grid-column: 1 / -1;">⚠️ Error loading season awards<br><small style="opacity: 0.7;">Make sure seasons_database.json exists</small></div>';
+
+  } catch (err) {
+    console.error('Awards load error:', err);
+    document.getElementById('awards-grid').innerHTML = `<div style="text-align:center;padding:48px;color:#ff5c7a;grid-column:1/-1;">⚠️ Error loading awards<br><small style="opacity:.7">${err.message}</small></div>`;
   }
 })();
 </script>
-
 </body>
 </html>

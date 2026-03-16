@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(grep:*)",
-      "Bash(ls -lh /c/Users/yanna/OneDrive/Documents/GitHub/dc-franchise-db/*.json)"
+      "Bash(ls -lh /c/Users/yanna/OneDrive/Documents/GitHub/dc-franchise-db/*.json)",
+      "Bash(cd:*)"
     ]
   }
 }

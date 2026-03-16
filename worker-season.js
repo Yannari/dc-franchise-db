@@ -193,9 +193,74 @@ async function generateSeasonDataExtraction(body, env) {
       seasonNarrative: { 
         type: "string",
         description: "2-3 sentence overview of season story arc"
+      },
+
+      awards: {
+        type: "object",
+        additionalProperties: false,
+        description: "All narrative-driven season awards. Every field required. Base picks on story, drama, and episode moments — not just numbers.",
+        properties: {
+          bestStrategic:   { type: "object", additionalProperties: false, properties: { name: castItemSchema, playerSlug: { type: "string" }, description: { type: "string" } }, required: ["name", "playerSlug", "description"] },
+          bestSocial:      { type: "object", additionalProperties: false, properties: { name: castItemSchema, playerSlug: { type: "string" }, description: { type: "string" } }, required: ["name", "playerSlug", "description"] },
+          bestPhysical:    { type: "object", additionalProperties: false, properties: { name: castItemSchema, playerSlug: { type: "string" }, wins: { type: "number" }, description: { type: "string" } }, required: ["name", "playerSlug", "wins", "description"] },
+          mostClutch:      { type: "object", additionalProperties: false, properties: { name: castItemSchema, playerSlug: { type: "string" }, description: { type: "string" } }, required: ["name", "playerSlug", "description"] },
+          mostLoyal:       { type: "object", additionalProperties: false, properties: { name: castItemSchema, playerSlug: { type: "string" }, description: { type: "string" } }, required: ["name", "playerSlug", "description"] },
+          bestUnderdog:    { type: "object", additionalProperties: false, properties: { name: castItemSchema, playerSlug: { type: "string" }, description: { type: "string" } }, required: ["name", "playerSlug", "description"] },
+          biggestVillain:  { type: "object", additionalProperties: false, properties: { name: castItemSchema, playerSlug: { type: "string" }, description: { type: "string" } }, required: ["name", "playerSlug", "description"] },
+          mostChaotic:     { type: "object", additionalProperties: false, properties: { name: castItemSchema, playerSlug: { type: "string" }, description: { type: "string" } }, required: ["name", "playerSlug", "description"] },
+          quietestThreat:  { type: "object", additionalProperties: false, properties: { name: castItemSchema, playerSlug: { type: "string" }, description: { type: "string" } }, required: ["name", "playerSlug", "description"] },
+          seasonMVP:       { type: "object", additionalProperties: false, properties: { name: castItemSchema, playerSlug: { type: "string" }, description: { type: "string" } }, required: ["name", "playerSlug", "description"] },
+          mostTragic:      { type: "object", additionalProperties: false, properties: { name: castItemSchema, playerSlug: { type: "string" }, description: { type: "string" } }, required: ["name", "playerSlug", "description"] },
+          mostUnlucky:     { type: "object", additionalProperties: false, properties: { name: castItemSchema, playerSlug: { type: "string" }, description: { type: "string" } }, required: ["name", "playerSlug", "description"] },
+          ironPerson:      { type: "object", additionalProperties: false, properties: { name: castItemSchema, playerSlug: { type: "string" }, description: { type: "string" } }, required: ["name", "playerSlug", "description"] },
+          biggestMeltdown: { type: "object", additionalProperties: false, properties: { name: castItemSchema, playerSlug: { type: "string" }, episode: { type: "number" }, description: { type: "string" } }, required: ["name", "playerSlug", "episode", "description"] },
+          playerOfSeason:     { type: "object", additionalProperties: false, properties: { gold: { type: "object", additionalProperties: false, properties: { name: castItemSchema, playerSlug: { type: "string" }, description: { type: "string" } }, required: ["name", "playerSlug", "description"] }, silver: { type: "object", additionalProperties: false, properties: { name: castItemSchema, playerSlug: { type: "string" }, description: { type: "string" } }, required: ["name", "playerSlug", "description"] } }, required: ["gold", "silver"] },
+          heroOfSeason:       { type: "object", additionalProperties: false, properties: { gold: { type: "object", additionalProperties: false, properties: { name: castItemSchema, playerSlug: { type: "string" }, description: { type: "string" } }, required: ["name", "playerSlug", "description"] }, silver: { type: "object", additionalProperties: false, properties: { name: castItemSchema, playerSlug: { type: "string" }, description: { type: "string" } }, required: ["name", "playerSlug", "description"] } }, required: ["gold", "silver"] },
+          villainOfSeason:    { type: "object", additionalProperties: false, properties: { gold: { type: "object", additionalProperties: false, properties: { name: castItemSchema, playerSlug: { type: "string" }, description: { type: "string" } }, required: ["name", "playerSlug", "description"] }, silver: { type: "object", additionalProperties: false, properties: { name: castItemSchema, playerSlug: { type: "string" }, description: { type: "string" } }, required: ["name", "playerSlug", "description"] } }, required: ["gold", "silver"] },
+          compBeast:          { type: "object", additionalProperties: false, properties: { gold: { type: "object", additionalProperties: false, properties: { name: castItemSchema, playerSlug: { type: "string" }, description: { type: "string" } }, required: ["name", "playerSlug", "description"] }, silver: { type: "object", additionalProperties: false, properties: { name: castItemSchema, playerSlug: { type: "string" }, description: { type: "string" } }, required: ["name", "playerSlug", "description"] } }, required: ["gold", "silver"] },
+          socialQueenKing:    { type: "object", additionalProperties: false, properties: { gold: { type: "object", additionalProperties: false, properties: { name: castItemSchema, playerSlug: { type: "string" }, description: { type: "string" } }, required: ["name", "playerSlug", "description"] }, silver: { type: "object", additionalProperties: false, properties: { name: castItemSchema, playerSlug: { type: "string" }, description: { type: "string" } }, required: ["name", "playerSlug", "description"] } }, required: ["gold", "silver"] },
+          masterStrategist:   { type: "object", additionalProperties: false, properties: { gold: { type: "object", additionalProperties: false, properties: { name: castItemSchema, playerSlug: { type: "string" }, description: { type: "string" } }, required: ["name", "playerSlug", "description"] }, silver: { type: "object", additionalProperties: false, properties: { name: castItemSchema, playerSlug: { type: "string" }, description: { type: "string" } }, required: ["name", "playerSlug", "description"] } }, required: ["gold", "silver"] },
+          mostBrutalExit:     { type: "object", additionalProperties: false, properties: { gold: { type: "object", additionalProperties: false, properties: { name: castItemSchema, playerSlug: { type: "string" }, description: { type: "string" } }, required: ["name", "playerSlug", "description"] }, silver: { type: "object", additionalProperties: false, properties: { name: castItemSchema, playerSlug: { type: "string" }, description: { type: "string" } }, required: ["name", "playerSlug", "description"] } }, required: ["gold", "silver"] },
+          advantageKing:      { type: "object", additionalProperties: false, properties: { gold: { type: "object", additionalProperties: false, properties: { name: castItemSchema, playerSlug: { type: "string" }, description: { type: "string" } }, required: ["name", "playerSlug", "description"] }, silver: { type: "object", additionalProperties: false, properties: { name: castItemSchema, playerSlug: { type: "string" }, description: { type: "string" } }, required: ["name", "playerSlug", "description"] } }, required: ["gold", "silver"] },
+          mostRobbedPlayer:   { type: "object", additionalProperties: false, properties: { gold: { type: "object", additionalProperties: false, properties: { name: castItemSchema, playerSlug: { type: "string" }, description: { type: "string" } }, required: ["name", "playerSlug", "description"] } }, required: ["gold"] },
+          ftcGame:            { type: "object", additionalProperties: false, properties: { gold: { type: "object", additionalProperties: false, properties: { name: castItemSchema, playerSlug: { type: "string" }, description: { type: "string" } }, required: ["name", "playerSlug", "description"] } }, required: ["gold"] },
+          mostRobbedFinalist: { type: "object", additionalProperties: false, properties: { gold: { type: "object", additionalProperties: false, properties: { name: castItemSchema, playerSlug: { type: "string" }, description: { type: "string" } }, required: ["name", "playerSlug", "description"] } }, required: ["gold"] },
+          messiestFeud: {
+            type: "object", additionalProperties: false,
+            properties: {
+              players: { type: "array", items: castItemSchema, minItems: 2, maxItems: 4 },
+              description: { type: "string" }
+            },
+            required: ["players", "description"]
+          },
+          biggestBetrayal: {
+            type: "object", additionalProperties: false,
+            properties: { betrayer: castItemSchema, betrayed: castItemSchema, episode: { type: "number" }, description: { type: "string" } },
+            required: ["betrayer", "betrayed", "episode", "description"]
+          },
+          secondBiggestBetrayal: {
+            type: "object", additionalProperties: false,
+            properties: { betrayer: castItemSchema, betrayed: castItemSchema, episode: { type: "number" }, description: { type: "string" } },
+            required: ["betrayer", "betrayed", "episode", "description"]
+          },
+          legacyMoment: {
+            type: "object", additionalProperties: false,
+            properties: { name: { type: "string" }, episode: { type: "number" }, description: { type: "string" } },
+            required: ["name", "episode", "description"]
+          }
+        },
+        required: [
+          "bestStrategic", "bestSocial", "bestPhysical", "mostClutch", "mostLoyal",
+          "bestUnderdog", "biggestVillain", "mostChaotic", "quietestThreat", "seasonMVP",
+          "mostTragic", "mostUnlucky", "ironPerson", "biggestMeltdown",
+          "playerOfSeason", "heroOfSeason", "villainOfSeason", "compBeast",
+          "socialQueenKing", "masterStrategist", "mostBrutalExit", "advantageKing",
+          "mostRobbedPlayer", "ftcGame", "mostRobbedFinalist",
+          "messiestFeud", "biggestBetrayal", "secondBiggestBetrayal", "legacyMoment"
+        ]
       }
     },
-    required: ["cast", "placements", "finalists", "winner", "jury", "votingHistory", "seasonNarrative"]
+    required: ["cast", "placements", "finalists", "winner", "jury", "votingHistory", "seasonNarrative", "awards"]
   };
 
   let episodeSummaries = '';

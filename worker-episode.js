@@ -664,11 +664,16 @@ async function generateEpisode(summaryText, season, episode, env, previousEpisod
     previousContext += 'Use these previous episodes to maintain continuity:\n\n';
     
     previousEpisodes.forEach(ep => {
-      // Extract key information from previous episode (adjust character limit as needed)
-      // Recommended: 3000-5000 chars per episode to balance context vs token usage
-      const CHAR_LIMIT = 3000; // 👈 CHANGE THIS NUMBER
-      const snippet = (ep.transcript || '').substring(0, CHAR_LIMIT);
-      previousContext += `--- Episode ${ep.episode} ---\n${snippet}\n...(truncated)\n\n`;
+      const limit = ep.charLimit || 3000;
+      const transcript = ep.transcript || '';
+      const snippet = transcript.substring(0, limit);
+      const truncated = transcript.length > limit;
+      const label = ep.type === 'summary'
+        ? `--- Episode ${ep.episode} [BRANTSTEELE SUMMARY] ---`
+        : ep.type === 'transcript-compressed'
+          ? `--- Episode ${ep.episode} [TRANSCRIPT - PARTIAL] ---`
+          : `--- Episode ${ep.episode} [FULL TRANSCRIPT] ---`;
+      previousContext += `${label}\n${snippet}${truncated ? '\n...(truncated)' : ''}\n\n`;
     });
     
     previousContext += '\n⚠️ CRITICAL: Maintain character consistency, ongoing relationships, alliance dynamics, and story arcs from these previous episodes.\n\n';
@@ -678,6 +683,52 @@ async function generateEpisode(summaryText, season, episode, env, previousEpisod
 You are writing a full episode transcript of a Total Drama season.
 
 ${previousContext}
+
+═══════════════════════════════════════════════════════════
+THIS IS WHAT THE SHOW SOUNDS LIKE. MATCH THIS EXACTLY.
+═══════════════════════════════════════════════════════════
+
+These are real lines from Disventure Camp. Read these before writing anything. Every scene you write should feel like it belongs here.
+
+SCENE — Morning awkwardness:
+  James: Are you going to get breakfast? I can go with--
+  Aiden: No.
+  James: [sighs] So, uh… you're still mad?
+  Aiden: [grumbles]
+  [Confessional: James] Yup… He's still mad.
+
+SCENE — Two people talking about real life:
+  Connor: Hey, whatcha doin'?
+  Riya: [sighs] Reminiscing.
+  Connor: What about?
+  Riya: When my sister and I went to the beach a year ago. We played in the water for hours like children. [giggles] It was ridiculous! But also the best birthday I've had.
+  Connor: Is it ridiculous? There's no such thing as being too old to have fun.
+  Riya: Funny, coming from you.
+
+SCENE — Someone getting shut down:
+  Hunter: I wonder why people are avoiding us. Hehe!
+  Tess: Whatever. Nothing new for me.
+  Hunter: Uh… same! But socializing is overrated, right? Gotta spend time on more important things, like--
+  Tess: It's overrated.
+  Hunter: Yeah… but since I'm here, I guess we might as well-- And she's gone.
+  [Confessional: Hunter] Great start, Hunter. [sighs] At this rate, everyone's gonna know how much I suck at socializing.
+
+SCENE — Strategy, no theatrics:
+  Aiden: Vote Oliver with us.
+  James: Uh, why?
+  Aiden: It's a good strategy. Trust me. And you already agreed.
+  James: [sighs] Fine.
+
+SCENE — Conflict that stays grounded:
+  Jade: That is not how we operate. You left us in the dark.
+  Marissa: Come on, guys! Better to beg for forgiveness than ask for permission?
+  Isabel: I don't see any begging!
+  Hannah: Y'all, this ain't new! You did the same with the Benji vote!
+
+WHAT THESE HAVE IN COMMON:
+- Lines are SHORT. "No." is a complete answer. Nobody monologues.
+- Nobody is trying to be clever. Humor comes from character collision, not wordplay.
+- CHARACTERS DON'T HAVE "BITS". Personalities show through what they choose to say, not through quotable individual lines. Tess doesn't have a catchphrase. She's just tired and private. That is her whole character.
 
 CORE MISSION:
 Transform the BrantSteele summary into a COMPLETE TV EPISODE like Disventure Camp Episodes 2-3.
@@ -1562,6 +1613,16 @@ DIALOGUE RULES (CRITICAL - AI KEEPS SCREWING THIS UP)
 ═══════════════════════════════════════════════════════════
 
 🚫 **STOP BEING "CLEVER" - WRITE LIKE ACTUAL HUMANS**
+1. COMPOUND-NOUN WORDPLAY — This is the #1 slop tell. Never do this.
+   ❌ "coffee-that-doesn't-exist"
+   ❌ "The only thing boiling for you is our patience" (turning a word into a pun)
+   ❌ "air burgers" / "breakfast-that-isn't"
+   ❌ "I’m jealous of silence. Try it sometime."
+   ❌ "I would, but your existence keeps shrieking at me."
+   ❌ "Cute. You jealous because even my bad angles trend?"
+   → If someone complains there's no coffee, they say "there's no coffee." That's it.
+   → Real people don't turn object names into wordplay mid-conversation.
+   I’m watching for when you trip over your own ego and face-plant.
 
 The AI keeps writing dialogue that sounds like someone TRYING to be witty instead of actual human speech.
 This is TERRIBLE. Stop it.
@@ -1999,6 +2060,22 @@ NOT:
 ❌ Bragging about it for no reason
 ❌ Revealing when you're NOT in danger
 
+═══════════════════════════════════════════════════════════
+ELIMINATED PLAYERS DO NOT SPEAK
+═══════════════════════════════════════════════════════════
+
+Once a player is voted out, they are GONE. They do not speak, react, or appear in any scene.
+
+❌ Eliminated player commenting from the jury bench mid-episode
+❌ Eliminated player giving opinions during camp scenes
+❌ Eliminated player appearing in any confessional after their exit episode
+❌ Jury members whispering to each other or reacting visibly during Tribal
+
+The ONLY exception: a reunion/finale where the jury votes for the winner.
+At that moment and only that moment, jury members speak to cast their vote and may ask finalist questions.
+
+If you are unsure whether a player has been eliminated — check the summary. If they were voted out in a previous episode, they do not exist in this one.
+
 **IDOL PLAYS AT TRIBAL:**
 \`\`\`
 Chris: If anyone has a hidden immunity idol and would like to play it, now would be the time.
@@ -2081,6 +2158,20 @@ SCENE PACING
 ═══════════════════════════════════════════════════════════
 CRITICAL REMINDERS
 ═══════════════════════════════════════════════════════════
+
+0. **NO FUTURE KNOWLEDGE** - Characters only know what has happened SO FAR in the episode's timeline. The summary is given to YOU as the writer. The characters have not read it.
+
+❌ A player joking about immunity before the challenge has happened
+❌ A character referencing who won the challenge during a pre-challenge camp scene
+❌ Anyone hinting at the vote result before Tribal has occurred
+❌ "I'm immune… at challenges we haven't had yet." — this means a character referenced immunity before the challenge existed in the episode timeline
+
+The episode moves in ORDER:
+Camp scenes → Challenge(Reward if exsit) → Scramble(Aft.Reward if exist) → Challenge(Immunity) → Scramble → Tribal
+
+A character in a camp scene knows NOTHING about the challenge outcome.
+A character in the scramble knows NOTHING about how Tribal will go.
+Write each section as if the characters are living it for the first time.
 
 1. **CONTINUITY FIRST** - This is part of an ongoing season, not standalone. Reference previous events, relationships, and character development
 2. **Every character needs backstory** - reveal in confessionals

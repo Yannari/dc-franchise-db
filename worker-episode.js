@@ -837,6 +837,39 @@ You are writing a full episode transcript of a Total Drama season.
 ${previousContext}
 
 ═══════════════════════════════════════════════════════════
+⚠️ THESE ARE REAL TOTAL DRAMA CHARACTERS — USE YOUR KNOWLEDGE
+═══════════════════════════════════════════════════════════
+
+The players in this episode are canonical Total Drama / Ridonculous Race characters. You already know exactly who they are — their voices, personalities, quirks, and canon behavior. USE THAT KNOWLEDGE. Do NOT treat them as nameless generic contestants.
+
+Write each character the way they actually sound and act in the show:
+
+- **Courtney** — controlling, type-A, ex-CIT, speaks in sharp commands, furious when ignored or underestimated
+- **Mickey** — anxious, physically clumsy, breathes fast when stressed, always waiting for something to go wrong
+- **Josee** — Olympic-level competitive, full tantrum mode when she loses, surface sweetness that cracks under pressure
+- **Lorenzo** — lazy, sarcastic, genuinely unbothered by almost everything, drops things on purpose
+- **Cody** — tries too hard socially, self-aware about his own failures but still goes for it
+- **Scott** — scheming farm boy who plays dumb, likes stirring chaos from a distance
+- **Zoey** — steady, perceptive, hates conflict, cautious player who rarely shows her hand
+- **Carrie** — kind and warm but indecisive, still emotionally tangled up in Devin-adjacent feelings
+- **Jasmine** — blunt Australian outdoorswoman, no-nonsense, protective of people she trusts
+- **Ryan** — athletic and loyal, confident physically, lost without his partner, not a subtle player
+- **Priya** — studious and methodical, perfectionist, quietly frustrated by carelessness around her
+- **Sanders** — rule-following police cadet, professional, genuinely uncomfortable with grey areas
+- **Bowie** — laid-back, cheerful, non-confrontational, builds social bonds without trying
+- **MacArthur** — loud, aggressive, cop energy, bluntly funny, takes up space everywhere she goes
+- **Alejandro** — smooth, charming, calculated, always three steps ahead and never lets you see it
+- **Heather** — sharp-tongued queen bee, openly strategic, respects competence and nothing else
+- **Gwen** — deadpan, sarcastic, tired of everything, genuine loyalty to the few she trusts
+- **Jo** — aggressive competitor, military-drill-instructor energy, treats everything as a challenge to dominate
+- **Lightning** — talks in third person, convinced he's the best athlete alive, genuinely is pretty good
+
+For any canon character not listed: use your knowledge of how they sound in the show.
+For **custom characters** (listed at the bottom of this prompt with full profiles): follow those profiles.
+
+Their canon voices are the foundation. Build the episode on top of them.
+
+═══════════════════════════════════════════════════════════
 THIS IS WHAT THE SHOW SOUNDS LIKE. MATCH THIS EXACTLY.
 ═══════════════════════════════════════════════════════════
 
@@ -961,11 +994,15 @@ Summary says: "Alejandro had a meltdown to appear less threatening"
 - NO ONE talks like a news anchor or essay
 
 **CONFESSIONALS REVEAL CHARACTER:**
-- Backstory (family, job, life)
-- Motivation for playing
-- Strategic thinking
-- Emotional reactions
-- Personal voice (not generic)
+The best confessionals sound like a specific person, not a generic player. A quick game thought is fine. A one-liner is fine. What they can't be is a personality report on other contestants.
+
+These all work:
+- A quick strategic read: "Priya's gonna be a problem. Not yet. But eventually."
+- A reaction to what just happened: "He dropped it. He actually dropped it. I watched him drop it."
+- A one-liner that's pure character: "I hate this game. I love this game. I hate this game."
+- A moment of doubt: "I made the right call. I think. Probably."
+
+What doesn't work is listing other people's traits in sequence. (See the section below.)
 
 ═══════════════════════════════════════════════════════════
 🚫 STOP WRITING "TRAIT LISTS" IN CONFESSIONALS
@@ -1001,9 +1038,10 @@ That's like reciting a contact list. It tells us nothing about what HAPPENED.
 "I made a deal I can't keep. I don't know what to do about that."
 
 **CONFESSIONAL RULE:**
-Every confessional must reference something SPECIFIC that happened in this episode or a specific ongoing tension.
-No abstract trait lists. No one-adjective descriptions of other players.
-React. Don't report.
+No trait lists. No personality reports. That's the whole rule.
+A confessional can be long or short, personal or strategic, funny or serious — any of those work.
+What it cannot be is: "X is [adjective]. Y is [adjective]. I don't trust Z."
+That's a contact list, not a person talking.
 
 **SCENE DESCRIPTIONS ARE VISUAL:**
 Bad: "They had a fight"
@@ -1011,6 +1049,42 @@ Good: "Jo shoves Mickey. Mickey stumbles, eyes wild, fists clenched"
 
 Bad: "Scarlett was upset"
 Good: "Scarlett's hands shake as she stares at the fire, jaw tight, breathing shallow"
+
+═══════════════════════════════════════════════════════════
+😂 COMEDY — MINIMUM 2 BEATS PER ACT
+═══════════════════════════════════════════════════════════
+
+Total Drama is a COMEDY show. Even dramatic episodes have jokes. If you read back the episode and there are no laughs in 100 lines, something is wrong.
+
+Comedy in Total Drama comes from FOUR places — use all of them:
+
+**1. CHARACTER COLLISION**
+Put two incompatible people in a mundane situation and let them react differently.
+> Lorenzo drops a log on Bowie's foot. Bowie winces. Lorenzo: "My bad." Bowie: "You okay?" Lorenzo: "I'm bored."
+That exchange is funny because Bowie asks if *Lorenzo* is okay after Lorenzo hurt *him*.
+
+**2. THE OBLIVIOUS REACTION**
+Someone completely misreads the room. Not mean — just genuinely doesn't get it.
+> Benji, after Spencer plays his idol and eliminates Tristan: "My idol looked better."
+He's not evil. He's just focused on the wrong thing.
+
+**3. CHRIS BEING DELIGHTED BY SUFFERING**
+Chris sees someone fail and his face lights up. He doesn't comment sarcastically — he's just *happy*.
+> "Oh, hate to see that happen." *(does not look like he hates it)*
+> *(after Owen loses his swimsuit)* Chris just... doesn't say anything. That's funnier.
+
+**4. THE WRONG PRIORITY**
+A character cares intensely about something completely irrelevant to what's happening.
+> Courtney, during a physical challenge where someone is about to fall: "Are you angling that plank or not?!"
+> Taylor, covered in mud: "I need a smoothie. Yacht first, then smoothie."
+
+**WHAT COMEDY IS NOT:**
+- ❌ Characters making puns or wordplay ("I'm giving you the cold *shoulder* — and it's broken!")
+- ❌ Sarcasm that sounds like a tweet ("Can't relate, bestie")
+- ❌ Confessionals that are self-aware about being funny
+- ❌ Chris stopping to explain the joke
+
+Comedy works because the character is being sincere. The funny part is the gap between what they think they're doing and what's actually happening.
 
 ═══════════════════════════════════════════════════════════
 💬 NATURAL DIALOGUE & SCENE CONSTRUCTION (CRITICAL)
@@ -1699,6 +1773,37 @@ mickey: [exhales, relieved he didn't need the idol]
 \`\`\`
 
 ═══════════════════════════════════════════════════════════
+📺 THE THREE-THREAD RULE — NON-NEGOTIABLE
+═══════════════════════════════════════════════════════════
+
+Every episode must run AT LEAST THREE simultaneous storylines that converge at tribal council. Not one main plot with filler around it — three real threads that each have stakes.
+
+**THREAD 1 — THE CHALLENGE THREAD**
+Physical stakes. Who wins, who chokes, how it happens. This drives the episode forward.
+
+**THREAD 2 — THE RELATIONSHIP THREAD**
+Two (or more) characters building something, breaking something, or testing something between them. A bond forming. A tension spilling over. Something personal that has nothing to do with who goes home tonight — except that it quietly shapes everything.
+
+**THREAD 3 — THE SECRET THREAD**
+Someone knows something nobody else knows. An idol. A plan. A conversation they overheard. A lie they told. This thread simmers in the background and pays off at tribal.
+
+**WHY THIS MATTERS:**
+A single-thread episode looks like this:
+→ Ryan and Jasmine argue → Green loses → Ryan gets voted out. THE END.
+We knew the whole time. There was nothing to discover.
+
+A three-thread episode looks like this:
+→ THREAD 1: Green loses because Ryan takes the maze and bombs it
+→ THREAD 2: Carrie and Jasmine work together and quietly form a bond
+→ THREAD 3: Scott has an idol but tells no one. Zoey finds out Ryan has a nullifier.
+→ At tribal: all three threads collide in a single vote that could go multiple ways.
+
+**THE RULE:**
+Before writing, identify your three threads. Make sure all three are visible in the episode. Make sure they connect at the end.
+
+The winning tribe also has story. Give them at least one thread — a relationship scene, a secret, a brewing conflict. The episode doesn't pause just because they're safe.
+
+═══════════════════════════════════════════════════════════
 EPISODE STRUCTURE (CRITICAL)
 ═══════════════════════════════════════════════════════════
 
@@ -1989,13 +2094,45 @@ Gwen (sarcastic, tired):
 - [chuckles lightly], [scoffs], [grunts]
 - Physical actions: [high fives], [fist bumps], [hugs]
 
-**HOST:**
-- Chris McLean: Sarcastic, sadistic, gleeful about suffering, makes fun of contestants, loves drama and danger, occasionally breaks the fourth wall
-- Personality traits: Narcissistic, loves his own voice, enjoys watching contestants struggle, makes inappropriate jokes, dramatic announcer voice
-- Catchphrases: "Not quite!", "That's gonna leave a mark!", "And the winner is...", "See you next time on Total Drama!"
-- Often references the cameras, production budget, or ratings
-- Takes pleasure in revealing twists and watching reactions
-- Sometimes pretends to care but immediately shows he doesn't
+**HOST — CHRIS McLEAN (READ THIS CAREFULLY):**
+
+Chris is not a "sadistic game show host" in a generic sense. He has very specific qualities that make him Chris:
+
+**LAZY** — He makes contestants do everything. He doesn't explain rules clearly on purpose. He acts like your confusion is your fault.
+> "First team to finish wins. The rest? Figure it out."
+
+**VAIN** — Every challenge is secretly about making him look good. He loves his own ideas even when they're terrible.
+> "I came up with that one. Pretty great, right?"
+
+**SHORT ATTENTION SPAN** — He will interrupt contestants mid-sentence the moment something more interesting happens. He doesn't finish thoughts. He moves on immediately.
+> Chris: "So Cameron, how are you—[a shark hits someone]—oh WOW, did you see that?! Anyway, votes!"
+
+**GENUINELY CRUEL, NOT PERFORMATIVELY** — He doesn't *act* mean for the cameras. He actually finds your suffering funny. There's no wink. He means it.
+> "Can't say I'm shocked. I saw you picking your nose, dude."
+
+**CASUALLY DISMISSIVE OF DANGER** — Someone could be dying and he'd shrug.
+> "Well, that seems safe enough." *(right after Chef gets attacked by a shark)*
+
+**HIS ELIMINATION SPEECHES ARE SHORT AND SPECIFIC** — He doesn't give monologues. He says one specific, slightly mean thing and moves on.
+> ✅ "Dock of Shame is that way, bro."
+> ✅ "Torch snuffed. Go home."
+> ✅ "Brutal. Anyway—"
+> ❌ "Tonight we witnessed the downfall of a true competitor who gave their all..."
+
+**HE DOES NOT EXPLAIN HIS OWN CRUELTY.** He doesn't say "I love making people suffer." He just does it. The audience can tell.
+
+**CATCHPHRASES TO USE NATURALLY (not every episode):**
+- "That's gonna leave a mark!"
+- "And they're out!"
+- "Total! Drama! [Season Name]!"
+- "See you next time — if you make it that far."
+
+**Chris NEVER:**
+- Gives life advice
+- Has a tender moment with contestants (unless it's immediately undercut)
+- Explains the theme of the episode
+- Thanks contestants for their effort
+- Takes more than 2 sentences to eliminate someone
 
 **CHEF HATCHET (SUPPORTING CHARACTER - USE OCCASIONALLY):**
 - Role: Chris's co-host/assistant, runs challenges, serves meals, occasionally judges

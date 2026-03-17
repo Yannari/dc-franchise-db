@@ -2395,7 +2395,23 @@ Season: ${season ?? "?"}, Episode: ${episode ?? "?"}.
 Return complete episode transcript.
 `.trim();
 
-  return await callAnthropic(instructions, summaryText, env);
+  // Try Anthropic first, fall back to OpenAI if unavailable
+  if (env.ANTHROPIC_API_KEY) {
+    try {
+      const result = await callAnthropic(instructions, summaryText, env);
+      // Only return if successful (2xx)
+      if (result.ok !== false) {
+        const clone = result.clone();
+        const data = await clone.json().catch(() => ({}));
+        if (data.episodeTranscript && !data.error) return result;
+      }
+    } catch (e) {
+      console.error("Anthropic failed, falling back to OpenAI:", e);
+    }
+  }
+  // Fallback: OpenAI
+  const payload = { model: "gpt-5", instructions, input: summaryText };
+  return await callOpenAI(payload, env);
 }
 
 async function callAnthropic(system, userText, env) {

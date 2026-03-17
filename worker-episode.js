@@ -2403,22 +2403,123 @@ Make this episode feel like watching Disventure Camp Episodes 2-3.
 ═══════════════════════════════════════════════════════════
 CUSTOM CHARACTERS (treat these as canon personality guides, use ethnicity naturally in dialogue and confessionals, not as stereotypes)
 ═══════════════════════════════════════════════════════════
-- Hicks: Working class Southern guy who grew up fast and learned to read 
-  people from necessity not strategy. Talks slow, notices everything, 
-  genuinely unbothered by drama that sends everyone else into a spiral. 
-  Not a schemer — just someone who's dealt with real problems and can 
-  tell the difference. His emotional intelligence blindsides people who 
-  wrote him off as comic relief. Confessionals are dry, unhurried, and 
-  occasionally more accurate than anyone's full strategic breakdown.
+HICKS (White Southern American) — RETURNEE
 
-- Brightly: Works at a daycare after school which means chaos doesn't 
-  rattle her and she knows exactly how to handle people who are 
-  throwing a tantrum — whether they're five or twenty five. Her 
-  favorite subject is chemistry and she applies that logic quietly 
-  to everything around her: who reacts to who, what combination 
-  creates an explosion, what to mix to get the result she wants even when it causes a little bit of chaos. 
-  Never looks like she's calculating. Always is. The most dangerous 
-  players are the ones who look like they're just being nice.
+Previous Season: Total Drama 9: Land of Power
+Placement: 13th. Eliminated Episode 5 via 
+idol-and-revote coalition strike. Jury: No.
+
+What Happened Last Time:
+Hicks came in and did exactly what he does 
+naturally — noticed everything, said little, 
+and became the unofficial axis of the Red 
+Tribe without anyone feeling threatened. 
+He and Brightly were the most effective 
+pre-merge duo of the season. He betrayed 
+her plan once — saving Emmah over Caleb 
+because he trusted loyalty over logic — 
+and that was the only crack he showed. 
+It didn't cost him. What cost him was 
+being too good at reading people in a 
+cast that eventually read him back. The 
+former Yellows didn't dismantle his game 
+because he made a mistake. They dismantled 
+it because he hadn't made enough of them 
+to look safe.
+
+He left respected. Hicks gave the most 
+grounded jury analysis of the reunion. 
+He called Bowie's win a masterclass in 
+emotional intelligence and meant it 
+without bitterness. That's the kind of 
+person he is — and that's also exactly 
+what makes him dangerous the second 
+time around.
+
+Core Personality:
+Working class Southern guy who grew up 
+fast and learned to read people from 
+necessity not strategy. That part hasn't 
+changed. What has changed is that he 
+knows his own tell now. He came in quiet 
+and observant and got labeled the 
+kingmaker before the merge. This time 
+he's not hiding the intelligence — he 
+can't, it's too visible — but he's 
+thinking harder about when to use it 
+and when to let someone else look like 
+the one with the answers.
+
+Behavioral Patterns:
+— Still the most emotionally intelligent 
+  person in any room he enters. He reads 
+  people's real motivations before they 
+  finish their first sentence. This is 
+  not a skill he turns off.
+— Has added one new tool: deliberate 
+  misdirection. Last season he was 
+  honest in his reads. This time he'll 
+  occasionally let someone believe he 
+  missed something he absolutely didn't 
+  miss, just to see what they do next.
+— More patient about alliances this time. 
+  Last season he attached to Brightly 
+  early and became known as a duo threat. 
+  He's in less of a rush to find a 
+  permanent partner.
+— The Emmah decision — saving a loyal 
+  pawn over a strategic partner's plan — 
+  still defines how he plays. He trusts 
+  emotional loyalty over logical 
+  calculation when forced to choose. 
+  He knows this about himself and hasn't 
+  decided yet if it's a flaw or a feature.
+— When he finds someone worth trusting 
+  he goes all in quietly. The commitment 
+  is real, it just doesn't announce itself.
+— His reputation precedes him. People 
+  who watched Season 9 know about the 
+  "Southern Observer." He has to live 
+  in that label and decide whether to 
+  lean into it or undercut it.
+
+Relationships:
+— With new players: Genuine curiosity. 
+  He doesn't arrive with a plan for 
+  anyone he hasn't met yet. He watches 
+  first.
+— With returnees who know his game: 
+  Aware that they're watching him the 
+  same way he's watching them. This 
+  creates a mutual, unspoken respect 
+  or a mutual, unspoken arms race 
+  depending on the person.
+— With people who remind him of Brightly: 
+  Drawn to high-IQ players who approach 
+  people analytically. He works well 
+  with them. He also knows exactly how 
+  that pairing gets perceived and is 
+  wary of replicating it too visibly.
+— With chaos players: The same 
+  unhurried calm as always. Chaos 
+  doesn't rattle him. It just gives 
+  him more data.
+
+Confessional Voice: Slower and more 
+deliberate than before. He chooses 
+words like he's paying for them. 
+Occasionally what he says is less 
+interesting than the pause before 
+he says it.
+Sample: "Last time I got sent home 
+because I noticed too much and too 
+many people noticed me noticing. 
+So this time I'm still noticing. 
+I'm just a little more careful 
+about letting it show on my face. 
+[pause] 
+The jury's gonna be different this 
+time. I plan on being on it longer."
 
 ETHNICITY USAGE NOTES:
 - Do not directly quote their description use it smartly to create them an accurate personality from the ground up

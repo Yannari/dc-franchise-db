@@ -1308,28 +1308,22 @@ body.hasSiteHeader .hero .meta{
 
 
 /* ========================================
-   EPISODE TAB STYLES
+   EPISODE TAB STYLES — SCRIPT READER v2
    ======================================== */
 
-/* Episode Viewer Container */
-.episode-viewer {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px 0;
-}
+.episode-viewer { padding: 0; }
 
-/* Episode Controls */
+/* Input / generation area */
 .episode-controls {
   display: flex;
-  gap: 12px;
-  margin-bottom: 20px;
+  gap: 10px;
+  margin-bottom: 16px;
   flex-wrap: wrap;
 }
 
 .episode-input {
-  flex: 1;
-  min-width: 300px;
-  min-height: 200px;
+  width: 100%;
+  min-height: 160px;
   background: rgba(10, 8, 18, 0.55);
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: #fff;
@@ -1337,426 +1331,300 @@ body.hasSiteHeader .hero .meta{
   padding: 12px 16px;
   font-size: 13px;
   resize: vertical;
-  font-family: 'Courier New', monospace;
+  font-family: ui-monospace, 'Courier New', monospace;
   line-height: 1.5;
+  box-sizing: border-box;
 }
+.episode-input::placeholder { color: rgba(255,255,255,0.35); }
 
-.episode-input::placeholder {
-  color: rgba(255, 255, 255, 0.4);
-}
-
-/* Episode Content Container */
-.episode-content {
-  background: linear-gradient(135deg, rgba(24, 16, 34, 0.6), rgba(16, 12, 24, 0.4));
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
-  padding: 40px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-}
-
-/* Scene */
-.scene {
-  margin: 40px 0;
-  padding: 30px;
-  background: rgba(0, 0, 0, 0.2);
-  border-left: 4px solid rgba(125, 76, 255, 0.5);
-  border-radius: 12px;
-  animation: fadeInUp 0.6s ease-out;
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.scene-header {
-  font-size: 18px;
-  font-weight: 800;
-  color: rgba(255, 179, 71, 0.9);
-  margin-bottom: 20px;
-  padding: 12px 20px;
-  background: rgba(255, 179, 71, 0.1);
-  border-radius: 10px;
-  border-left: 3px solid rgba(255, 179, 71, 0.6);
-}
-
-/* Dialogue */
-.dialogue-line {
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  margin: 16px 0;
-  padding: 12px;
-  border-radius: 12px;
-  transition: all 0.3s ease;
-}
-
-.dialogue-line:hover {
-  background: rgba(255, 255, 255, 0.03);
-  transform: translateX(4px);
-}
-
-.character-avatar {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  overflow: hidden;
-  flex-shrink: 0;
-  border: 2px solid rgba(125, 76, 255, 0.4);
-  background: rgba(125, 76, 255, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 12px rgba(125, 76, 255, 0.3);
-  transition: transform 0.3s ease;
-}
-
-.dialogue-line:hover .character-avatar {
-  transform: scale(1.1) rotate(5deg);
-}
-
-.character-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.character-avatar-fallback {
-  font-size: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.dialogue-content {
-  flex: 1;
-  min-width: 0;
-}
-
-.character-name {
-  font-weight: 900;
-  font-size: 14px;
-  color: rgba(255, 179, 71, 1);
-  margin-bottom: 6px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.dialogue-text {
-  color: rgba(255, 255, 255, 0.9);
-  line-height: 1.6;
-  font-size: 15px;
-}
-
-.stage-direction {
-  font-style: italic;
-  color: rgba(255, 255, 255, 0.5);
-  margin: 12px 0;
-  padding-left: 66px;
-  font-size: 14px;
-}
-
-/* Confessional */
-.confessional {
-  background: linear-gradient(135deg, rgba(125, 76, 255, 0.15), rgba(255, 76, 230, 0.1));
-  border: 2px solid rgba(125, 76, 255, 0.3);
-  border-radius: 16px;
-  padding: 20px;
-  margin: 24px 0;
-  position: relative;
-  overflow: hidden;
-}
-
-.confessional::before {
-  content: '🎥';
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  font-size: 30px;
-  opacity: 0.2;
-}
-
-.confessional-label {
-  font-size: 12px;
-  font-weight: 700;
-  color: rgba(125, 76, 255, 1);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 12px;
-}
-
-/* Tribal Council */
-.tribal-council {
-  background: linear-gradient(135deg, rgba(139, 0, 0, 0.2), rgba(0, 0, 0, 0.4));
-  border: 2px solid rgba(255, 0, 0, 0.3);
-  border-radius: 20px;
-  padding: 40px;
-  margin: 50px 0;
-  position: relative;
-  box-shadow: 0 0 40px rgba(255, 0, 0, 0.2);
-}
-
-.tribal-council::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, 
-    rgba(255, 0, 0, 0.5), 
-    rgba(255, 69, 0, 0.5), 
-    rgba(255, 140, 0, 0.5)
-  );
-}
-
-.tribal-header {
-  font-size: 24px;
-  font-weight: 900;
-  color: rgba(255, 69, 0, 1);
-  text-align: center;
-  margin-bottom: 30px;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  text-shadow: 0 0 20px rgba(255, 69, 0, 0.5);
-}
-
-.vote-reveal {
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 20px;
-  margin: 16px 0;
-  animation: suspenseReveal 1.5s ease-out;
-}
-
-@keyframes suspenseReveal {
-  0% {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  50% {
-    opacity: 0.5;
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.eliminated-player {
-  background: linear-gradient(135deg, rgba(139, 0, 0, 0.3), rgba(0, 0, 0, 0.2));
-  border: 2px solid rgba(255, 0, 0, 0.5);
-  border-radius: 16px;
-  padding: 24px;
-  margin: 24px 0;
-  text-align: center;
-}
-
-.eliminated-name {
-  font-size: 28px;
-  font-weight: 900;
-  color: rgba(255, 69, 0, 1);
-  margin-bottom: 12px;
-}
-
-.eliminated-message {
-  font-size: 16px;
-  color: rgba(255, 255, 255, 0.8);
-  font-style: italic;
-}
-
-/* Empty State */
+/* ─── Empty state ─── */
 .episode-empty {
   text-align: center;
   padding: 60px 20px;
-  opacity: 0.6;
+  opacity: 0.55;
+}
+.episode-empty-icon { font-size: 56px; margin-bottom: 16px; }
+.episode-empty-text { font-size: 16px; color: rgba(255,255,255,0.65); }
+
+/* ─── Script reader shell ─── */
+.ep-view {
+  margin-top: 20px;
+  font-family: inherit;
 }
 
-.episode-empty-icon {
-  font-size: 64px;
-  margin-bottom: 20px;
+/* Reading progress bar */
+.ep-progress {
+  height: 3px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 0;
+}
+.ep-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, rgba(155,109,255,1), rgba(255,76,230,0.8));
+  transition: width 0.15s linear;
+  border-radius: 999px;
 }
 
-.episode-empty-text {
-  font-size: 18px;
-  color: rgba(255, 255, 255, 0.7);
+/* Scene jump bar */
+.ep-toc {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 10px 0 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
   margin-bottom: 8px;
 }
-
-/* ========================================
-   ENHANCED EPISODE FEATURES
-   ======================================== */
-
-/* Sticky scene headers */
-.scene-sticky {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background: rgba(24, 16, 34, 0.95);
-  backdrop-filter: blur(10px);
-  margin: -30px -30px 20px -30px;
-  padding: 12px 30px !important;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+.ep-toc-btn {
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04);
+  color: rgba(255,255,255,0.55);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.ep-toc-btn:hover, .ep-toc-btn.active {
+  background: rgba(155,109,255,0.15);
+  border-color: rgba(155,109,255,0.4);
+  color: #fff;
 }
 
-/* Chat bubble style for dialogue */
-.chat-bubble {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  margin: 16px 0;
-  animation: fadeSlideIn 0.4s ease-out both;
+/* Script body */
+.ep-body {
+  max-width: 740px;
+  margin: 0 auto;
+  padding: 0 8px 80px;
 }
 
-.dialogue-bubble {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  padding: 12px 16px;
-  max-width: 80%;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  transition: all 0.3s ease;
+/* Previously On block */
+.ep-previously {
+  background: rgba(0,0,0,0.3);
+  border-left: 3px solid rgba(155,109,255,0.45);
+  border-radius: 0 10px 10px 0;
+  padding: 16px 20px;
+  margin-bottom: 36px;
 }
-
-.chat-bubble:hover .dialogue-bubble {
-  background: rgba(255, 255, 255, 0.08);
-  transform: translateX(4px);
-  box-shadow: 0 4px 12px rgba(125, 76, 255, 0.2);
+.ep-previously-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: rgba(155,109,255,0.7);
+  margin-bottom: 8px;
 }
-
-/* Tribal Council suspense subtitle */
-.tribal-suspense {
-  text-align: center;
-  font-size: 16px;
+.ep-previously-text {
+  font-size: 13px;
+  color: rgba(255,255,255,0.65);
+  line-height: 1.6;
   font-style: italic;
-  color: rgba(255, 140, 0, 0.8);
-  margin-top: 12px;
+}
+
+/* Episode title card */
+.ep-title-card {
+  text-align: center;
+  padding: 40px 0 32px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.ep-title-eyebrow {
+  font-size: 10px;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  opacity: .45;
+  margin-bottom: 10px;
+}
+.ep-title-main {
+  font-size: 28px;
+  font-weight: 900;
+  line-height: 1.15;
+}
+.ep-title-ep { color: rgba(255,255,255,0.9); }
+.ep-title-name { color: rgba(155,109,255,0.9); }
+
+/* ─── Scene ─── */
+.ep-scene {
+  margin-top: 52px;
+  padding-top: 0;
+  animation: epFadeIn 0.4s ease-out both;
+}
+.ep-slug {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: rgba(255,179,71,0.75);
   margin-bottom: 20px;
-  animation: pulse 2s ease-in-out infinite;
+}
+.ep-slug::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255,179,71,0.12);
 }
 
-@keyframes pulse {
-  0%, 100% {
-    opacity: 0.6;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.05);
-  }
+/* ─── Dialogue ─── */
+.ep-line {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 14px;
+  align-items: baseline;
+  margin: 12px 0;
+  padding: 4px 0;
+  transition: background 0.15s;
+  border-radius: 6px;
+}
+.ep-line:hover { background: rgba(255,255,255,0.025); }
+.ep-speaker {
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: rgba(255,179,71,0.85);
+  text-align: right;
+  line-height: 1.65;
+}
+.ep-speech {
+  font-size: 15px;
+  line-height: 1.7;
+  color: rgba(255,255,255,0.88);
 }
 
-/* Suspense reveal animation for votes */
-.suspense-reveal {
-  animation: suspenseReveal 1.5s ease-out both !important;
+/* Stage direction */
+.ep-action {
+  font-size: 13px;
+  font-style: italic;
+  color: rgba(255,255,255,0.38);
+  margin: 6px 0;
+  padding-left: 134px;
+  line-height: 1.5;
+}
+
+/* ─── Confessional ─── */
+.ep-confessional {
+  background: rgba(8,5,14,0.75);
+  border: 1px solid rgba(220,50,50,0.18);
+  border-radius: 10px;
+  padding: 18px 22px 18px 20px;
+  margin: 28px 0;
   position: relative;
-  overflow: hidden;
+  animation: epFadeIn 0.4s ease-out both;
 }
+.ep-rec {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  color: rgba(220,60,60,0.65);
+  animation: recBlink 1.5s ease-in-out infinite;
+  user-select: none;
+}
+@keyframes recBlink {
+  0%,100% { opacity:.65 } 50% { opacity:.15 }
+}
+.ep-confessional-who {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: rgba(220,60,60,0.7);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ep-confessional-who::before { content: '⏺'; font-size: 8px; }
 
-.suspense-reveal::before {
+/* ─── Tribal Council ─── */
+.ep-tribal {
+  background: rgba(50,0,0,0.35);
+  border: 1px solid rgba(255,80,0,0.18);
+  border-radius: 14px;
+  padding: 32px 28px;
+  margin: 52px 0;
+  position: relative;
+  animation: epFadeIn 0.5s ease-out both;
+}
+.ep-tribal::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, 
-    transparent, 
-    rgba(255, 140, 0, 0.3), 
-    transparent
-  );
-  animation: shimmer 1.5s ease-out;
+  inset: 0;
+  border-radius: 14px;
+  background: radial-gradient(ellipse at 50% 0%, rgba(255,80,0,0.07) 0%, transparent 65%);
+  pointer-events: none;
+}
+.ep-tribal-header {
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: rgba(255,120,0,0.85);
+  text-align: center;
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(255,80,0,0.12);
 }
 
-@keyframes shimmer {
-  0% {
-    left: -100%;
-  }
-  100% {
-    left: 100%;
-  }
+/* Vote line */
+.ep-vote {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-size: 14px;
+}
+.ep-vote:last-child { border-bottom: none; }
+
+/* Elimination reveal */
+.ep-elimination {
+  text-align: center;
+  padding: 28px 20px;
+  background: rgba(80,0,0,0.3);
+  border: 1px solid rgba(255,60,60,0.25);
+  border-radius: 10px;
+  margin: 24px 0 8px;
+  animation: epReveal 0.7s ease-out both;
+}
+.ep-elimination-name {
+  font-size: 20px;
+  font-weight: 900;
+  color: rgba(255,90,60,0.9);
+  margin-bottom: 6px;
+}
+.ep-elimination-msg {
+  font-size: 13px;
+  color: rgba(255,255,255,0.65);
+  font-style: italic;
 }
 
-/* Smooth fade-in for all elements */
-@keyframes fadeSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* Animations */
+@keyframes epFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes epReveal {
+  0%   { opacity: 0; transform: scale(0.9); }
+  60%  { transform: scale(1.03); }
+  100% { opacity: 1; transform: scale(1); }
 }
 
-.scene, .confessional, .tribal-council, .dialogue-line, 
-.stage-direction, .vote-reveal, .eliminated-player {
-  animation: fadeSlideIn 0.5s ease-out both;
+/* Tribal council glow pulse */
+.ep-tribal {
+  animation: epFadeIn 0.5s ease-out both, tribalPulse 4s ease-in-out 0.5s infinite;
 }
-
-/* Enhanced tribal council glow effect */
-.tribal-council {
-  position: relative;
-  animation: fadeSlideIn 0.6s ease-out both, tribalGlow 3s ease-in-out infinite;
-}
-
-@keyframes tribalGlow {
-  0%, 100% {
-    box-shadow: 0 0 40px rgba(255, 0, 0, 0.2);
-  }
-  50% {
-    box-shadow: 0 0 60px rgba(255, 69, 0, 0.4);
-  }
-}
-
-/* Confessional camera effect */
-.confessional {
-  animation: fadeSlideIn 0.5s ease-out both;
-}
-
-.confessional::before {
-  animation: cameraBlink 2s ease-in-out infinite;
-}
-
-@keyframes cameraBlink {
-  0%, 90%, 100% {
-    opacity: 0.2;
-  }
-  95% {
-    opacity: 0.4;
-  }
-}
-
-/* Eliminated player dramatic entrance */
-.eliminated-player {
-  animation: dramaticReveal 1s ease-out both !important;
-}
-
-@keyframes dramaticReveal {
-  0% {
-    opacity: 0;
-    transform: scale(0.8) translateY(20px);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-/* Stage directions subtle fade */
-.stage-direction {
-  opacity: 0;
-  animation: fadeSlideIn 0.4s ease-out 0.1s both;
+@keyframes tribalPulse {
+  0%,100% { box-shadow: 0 0 0 rgba(255,80,0,0); }
+  50%     { box-shadow: 0 0 30px rgba(255,80,0,0.12); }
 }
 /* ============================================
    PLAYER STORY FORMATTER - CSS STYLES

@@ -967,6 +967,44 @@ Summary says: "Alejandro had a meltdown to appear less threatening"
 - Emotional reactions
 - Personal voice (not generic)
 
+═══════════════════════════════════════════════════════════
+🚫 STOP WRITING "TRAIT LISTS" IN CONFESSIONALS
+═══════════════════════════════════════════════════════════
+
+**THE WORST PATTERN IN AI-GENERATED CONFESSIONALS:**
+
+❌ "Ryan's not here. It's weird not having… that. Bowie's cool. Courtney's… loud. I don't trust Mickey."
+❌ "Priya's smart. Ryan's intense. Cody's unpredictable. I gotta watch all of them."
+❌ "Mickey's aggressive. Sanders is shady. I like Carrie though."
+
+→ This is a CHARACTER TRAIT RESUME. Nobody talks like this out loud.
+→ Why does it happen: the AI has no event to react to, so it just lists adjectives.
+→ It sounds robotic and AI-generated IMMEDIATELY.
+
+**WHY THIS IS SO BAD:**
+Real people don't walk into a confessional and say:
+"Bowie's cool. Courtney's loud. I don't trust Mickey."
+That's like reciting a contact list. It tells us nothing about what HAPPENED.
+
+**THE FIX: Confessionals are REACTIONS to EVENTS, not PERSONALITY REPORTS.**
+
+✅ GOOD — Reacting to something that happened:
+"Did you see Ryan's face when they announced the challenge? He went completely still. That scared me more than anything loud."
+"Courtney pulled me aside three times. THREE. I get it, she's nervous, but—come on. You're gonna make us both look sketchy."
+"I said yes to Bowie's plan without thinking. Now I'm in it and I don't know if that was dumb or brilliant."
+"The vote was supposed to be simple. It wasn't."
+"Mickey just... looked at me. He didn't say anything. He didn't have to."
+
+✅ GOOD — Reacting to the confessional speaker's OWN situation:
+"I am absolutely not okay with this. Not even a little."
+"I've been smiling for six days straight. My face hurts."
+"I made a deal I can't keep. I don't know what to do about that."
+
+**CONFESSIONAL RULE:**
+Every confessional must reference something SPECIFIC that happened in this episode or a specific ongoing tension.
+No abstract trait lists. No one-adjective descriptions of other players.
+React. Don't report.
+
 **SCENE DESCRIPTIONS ARE VISUAL:**
 Bad: "They had a fight"
 Good: "Jo shoves Mickey. Mickey stumbles, eyes wild, fists clenched"

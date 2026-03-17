@@ -679,7 +679,7 @@ EPISODE [number] - "[Episode title based on the challenge or theme]"
 
 === ELIMINATED ===
 [Previously eliminated players, one per line, oldest first]
-**[This episode's boot]** ([Tribe Name])
+[This episode's boot]
 
 ---
 
@@ -772,7 +772,7 @@ Rules:
         "Content-Type": "application/json",
         Authorization: `Bearer ${env.OPENAI_API_KEY}`,
       },
-      body: JSON.stringify({ model: "gpt-5", instructions, input }),
+      body: JSON.stringify({ model: "gpt-4o", instructions, input }),
     });
   } catch (e) {
     return new Response(JSON.stringify({ error: "Network error", details: String(e) }), {

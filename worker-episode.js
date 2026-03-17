@@ -666,7 +666,7 @@ SEASON: [Season name]
 EPISODE [number] - "[Episode title based on the challenge or theme]"
 
 === CAST (ALL) ===
-[Every player still alive including current boot, alphabetical, one per line]
+[EVERY player who started this season — active, eliminated, and current boot — alphabetical, one per line. This list NEVER changes between episodes. If the previous summary has this section, copy it exactly.]
 
 === TRIBES (ACTIVE) ===
 #[Tribe Name]

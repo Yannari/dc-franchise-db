@@ -20,7 +20,7 @@ export default {
     if (mode === "episode") {
       return await generateEpisode(summaryText, season, episode, env, previousEpisodes);
     } else if (mode === "summarize") {
-      return await generateSummary(body.rawText, season, episode, env);
+      return await generateSummary(body.rawText, season, episode, env, body.prevSummary || "");
     } else if (mode === "season-data-extraction") {
       return await generateSeasonDataExtraction(body, env);
     } else {
@@ -651,7 +651,7 @@ Season: ${season ?? "?"}, Episode: ${episode ?? "?"}.
   });
 }
 
-async function generateSummary(rawText, season, episode, env) {
+async function generateSummary(rawText, season, episode, env, prevSummary = "") {
   if (!rawText || typeof rawText !== "string") {
     return new Response(JSON.stringify({ error: "Missing rawText" }), {
       status: 400,
@@ -758,6 +758,12 @@ Rules:
 - Never invent votes or events not in the raw data.
 - Keep formatting exact — the downstream system depends on the headers.`;
 
+  // Build input: inject previous summary so the AI knows full elimination history
+  const prevContext = prevSummary
+    ? `═══ PREVIOUS EPISODE SUMMARY (for elimination history reference) ═══\n${prevSummary}\n═══ END PREVIOUS SUMMARY ═══\n\n`
+    : "";
+  const input = `${prevContext}═══ CURRENT EPISODE RAW DATA ═══\n${rawText}`;
+
   let resp;
   try {
     resp = await fetch("https://api.openai.com/v1/responses", {
@@ -766,7 +772,7 @@ Rules:
         "Content-Type": "application/json",
         Authorization: `Bearer ${env.OPENAI_API_KEY}`,
       },
-      body: JSON.stringify({ model: "gpt-5", instructions, input: rawText }),
+      body: JSON.stringify({ model: "gpt-5", instructions, input }),
     });
   } catch (e) {
     return new Response(JSON.stringify({ error: "Network error", details: String(e) }), {

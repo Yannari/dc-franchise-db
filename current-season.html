@@ -2690,10 +2690,12 @@ Dave voted for Mickey
 
   async function autoSummarize(season, episode, rawText, workerUrl) {
     const url = workerUrl || EPISODE_WORKER_URL;
+    // Pass previous episode's summary so the AI knows the full elimination history
+    const prevSummary = episode > 1 ? (localStorage.getItem(`AI_SUMMARY_s${season}_e${episode - 1}`) || '') : '';
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ mode: 'summarize', season, episode, rawText })
+      body: JSON.stringify({ mode: 'summarize', season, episode, rawText, prevSummary })
     });
     if (!response.ok) throw new Error(`Summary generation failed (HTTP ${response.status})`);
     const data = await response.json();

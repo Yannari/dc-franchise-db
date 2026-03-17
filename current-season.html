@@ -2965,12 +2965,19 @@ async function generateEpisodeAI() {
           return;
         }
 
-        // Regular scene
-        close();
-        sceneIdx++;
-        const id = 'ep-scene-' + sceneIdx;
-        body += `<div class="ep-scene" id="${id}"><div class="ep-slug">${escapeHtml(tag)}</div>`;
-        state = 'scene';
+        // Regular scene — only if tag looks like a scene header
+        if (/^(scene[:\s]|int\.|ext\.|int\/ext\.)/i.test(tag)) {
+          close();
+          sceneIdx++;
+          const id = 'ep-scene-' + sceneIdx;
+          const slug = tag.replace(/^scene\s*:\s*/i, '');
+          body += `<div class="ep-scene" id="${id}"><div class="ep-slug">${escapeHtml(slug)}</div>`;
+          state = 'scene';
+          return;
+        }
+
+        // Anything else in brackets is a stage direction
+        body += `<div class="ep-action">${escapeHtml(tag)}</div>`;
         return;
       }
 
@@ -2999,7 +3006,7 @@ async function generateEpisodeAI() {
       }
 
       // ── Stage direction / narration
-      const indent = (state === 'confessional') ? '' : ' style="padding-left:8px;"';
+      const indent = (state === 'confessional') ? ' style="padding-left:0"' : '';
       body += `<div class="ep-action"${indent}>${escapeHtml(line)}</div>`;
     });
 

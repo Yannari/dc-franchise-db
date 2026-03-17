@@ -2243,14 +2243,28 @@ Dave voted for Mickey
     els.generate.addEventListener("click", async () => {
       const season = Number(els.season.value || 1);
       const episode = Number(els.episode.value || 1);
-      const summaryText = els.summary.value || "";
-      if (!summaryText.trim()) return setStatus("Paste an episode summary first.");
+      let summaryText = els.summary.value || "";
+      if (!summaryText.trim()) return setStatus("Paste an episode summary or raw BrantSteele output first.");
+
+      // Auto-convert raw BrantSteele output → structured summary if needed
+      if (!isStructuredSummary(summaryText)) {
+        setStatus("Step 1/2: Converting raw to structured summary…");
+        try {
+          const workerUrl = normalizeWorkerUrl(els.workerUrl.value || localStorage.getItem("AI_ENDPOINT_URL") || "");
+          summaryText = await autoSummarize(season, episode, summaryText, workerUrl);
+          els.summary.value = summaryText; // show the generated summary in the textarea
+        } catch (e) {
+          return setStatus("Error generating summary: " + (e?.message || String(e)));
+        }
+        setStatus("Step 2/2: Generating analytics…");
+      } else {
+        setStatus("Generating analytics…");
+      }
 
       // Persist summary so reload keeps cast + gameplay
       saveSummary(season, episode, summaryText);
 
       updateEpisodeHeaderFromInputs();
-      setStatus("Generating analytics...");
 
       try {
         const analytics = await callAI(season, episode, summaryText);
@@ -2669,6 +2683,25 @@ Dave voted for Mickey
     }
   }
   
+  // ── Auto-summarize helpers ──────────────────────────────────────────────────
+  function isStructuredSummary(text) {
+    return text.includes('=== META ===') || text.includes('=== CAST (ALL) ===');
+  }
+
+  async function autoSummarize(season, episode, rawText, workerUrl) {
+    const url = workerUrl || EPISODE_WORKER_URL;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mode: 'summarize', season, episode, rawText })
+    });
+    if (!response.ok) throw new Error(`Summary generation failed (HTTP ${response.status})`);
+    const data = await response.json();
+    if (!data.summary) throw new Error('No summary returned from AI');
+    return data.summary;
+  }
+  // ────────────────────────────────────────────────────────────────────────────
+
   // Generate episode using AI
 // Replace the existing generateEpisodeAI function with this updated version:
 
@@ -2681,10 +2714,10 @@ async function generateEpisodeAI() {
   }
   
   const summaryInput = document.getElementById('episode-summary-input');
-  const summary = summaryInput ? summaryInput.value.trim() : '';
-  
-  if (!summary) {
-    alert('⚠️ Please paste your BrantSteele episode summary first!');
+  const rawInput = summaryInput ? summaryInput.value.trim() : '';
+
+  if (!rawInput) {
+    alert('⚠️ Please paste your BrantSteele episode raw first!');
     return;
   }
   
@@ -2694,6 +2727,37 @@ async function generateEpisodeAI() {
   const episode = episodeEl ? episodeEl.value : '1';
   const episodeNum = parseInt(episode);
   
+  // ── Step 1: Ensure structured summary exists ────────────────────────────────
+  const cachedSummaryKey = `AI_SUMMARY_s${season}_e${episodeNum}`;
+  let summary = localStorage.getItem(cachedSummaryKey);
+
+  const generateBtn = document.getElementById('generate-episode-btn');
+  const originalText = generateBtn.innerHTML;
+
+  if (!summary) {
+    if (isStructuredSummary(rawInput)) {
+      // Input is already a structured summary — save and use it
+      summary = rawInput;
+      localStorage.setItem(cachedSummaryKey, summary);
+    } else {
+      // Input is raw BrantSteele — auto-summarize first
+      generateBtn.innerHTML = '⏳ Step 1/2: Summarizing raw…';
+      generateBtn.disabled = true;
+      try {
+        summary = await autoSummarize(season, episodeNum, rawInput);
+        localStorage.setItem(cachedSummaryKey, summary);
+      } catch (error) {
+        generateBtn.innerHTML = originalText;
+        generateBtn.disabled = false;
+        alert('❌ Error generating summary: ' + error.message);
+        return;
+      }
+    }
+  }
+  generateBtn.innerHTML = '⏳ Step 2/2: Generating Episode…';
+  generateBtn.disabled = true;
+  // ────────────────────────────────────────────────────────────────────────────
+
   // Get auditions if Episode 1
   let auditionsText = '';
   if (episode === '1' || episode === 1) {
@@ -2702,7 +2766,7 @@ async function generateEpisodeAI() {
       auditionsText = auditionsInput.value.trim();
     }
   }
-  
+
   // GATHER PREVIOUS EPISODES FOR CONTEXT
   // Recent episodes (last 2): full transcript — AI needs exact voice + tone continuity
   // All older episodes: BrantSteele summary — compact, covers everything that matters
@@ -2750,11 +2814,6 @@ async function generateEpisodeAI() {
       }
     }
   }
-  
-  const generateBtn = document.getElementById('generate-episode-btn');
-  const originalText = generateBtn.innerHTML;
-  generateBtn.innerHTML = '⏳ Generating Episode...';
-  generateBtn.disabled = true;
   
   try {
     const response = await fetch(EPISODE_WORKER_URL, {

@@ -19,6 +19,8 @@ export default {
 
     if (mode === "episode") {
       return await generateEpisode(summaryText, season, episode, env, previousEpisodes);
+    } else if (mode === "summarize") {
+      return await generateSummary(body.rawText, season, episode, env);
     } else if (mode === "season-data-extraction") {
       return await generateSeasonDataExtraction(body, env);
     } else {
@@ -646,6 +648,150 @@ Season: ${season ?? "?"}, Episode: ${episode ?? "?"}.
       "Content-Type": "application/json",
       "Access-Control-Allow-Origin": "*"
     }
+  });
+}
+
+async function generateSummary(rawText, season, episode, env) {
+  if (!rawText || typeof rawText !== "string") {
+    return new Response(JSON.stringify({ error: "Missing rawText" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+    });
+  }
+
+  const instructions = `You are a Total Drama franchise analyst. Convert the raw BrantSteele simulation output into a structured episode summary using EXACTLY this format (no deviations):
+
+=== META ===
+SEASON: [Season name]
+EPISODE [number] - "[Episode title based on the challenge or theme]"
+
+=== CAST (ALL) ===
+[Every player still alive including current boot, alphabetical, one per line]
+
+=== TRIBES (ACTIVE) ===
+#[Tribe Name]
+[member]
+[member]
+
+#[Tribe Name]
+[member]
+[member]
+
+=== ELIMINATED ===
+[Previously eliminated players, one per line, oldest first]
+**[This episode's boot]** ([Tribe Name])
+
+---
+
+## PRE-CHALLENGE STATUS
+
+### [Descriptive subheading for Tribe 1]
+[Narrative analysis of pre-challenge dynamics — alliances, relationships, idol holders, power structure]
+
+### [Descriptive subheading for Tribe 2]
+[Same for tribe 2, and any other tribes]
+
+---
+
+## ANALYZE BEFORE IMMUNITY
+[Strategic overview of who is at risk, who holds power, what is at stake heading into the challenge]
+
+---
+
+## IMMUNITY CHALLENGE: [Challenge Title]
+
+**The Challenge:** [Description from the raw]
+**Winner:** [Tribe or player name]
+**Reward:** Safety.
+
+**Strategic Narrative:** [How the challenge played out, who performed well/poorly, strategic implications of the result]
+
+---
+
+## POST-CHALLENGE STATUS
+
+### [Subheading for losing tribe's scramble / winning tribe's drama]
+[Post-challenge events: fights, alliance formations/fractures, idol plays discussed, targeting]
+
+---
+
+## TRIBAL COUNCIL / VOTE ANALYSIS
+
+**The Vote: [Dramatic Title]**
+[Pre-tribal maneuvering — who pushed for what, did anyone consider flipping, were idols discussed]
+
+**Vote Breakdown: [X-Y (Boot Name Eliminated)]**
+* **Votes for [Boot] ([X]):** [comma-separated list of voters]
+* **Votes for [Other] ([Y]):** [comma-separated list of voters]
+
+**WHY THIS VOTE HAPPENED:**
+[Deep analysis of the strategic, social, and personal reasons this person was eliminated over others]
+
+---
+
+## ELIMINATED
+[Boot name]
+
+Reason label: **"[Creative nickname/archetype]"** [One sentence on why they were the one to go]
+
+---
+
+## STRATEGIC ANALYSIS
+
+### [Player 1 Name]: [Subheading]
+[3–5 sentence analysis of their position, game moves, threats, trajectory]
+
+### [Player 2 Name]: [Subheading]
+[Same for 3–5 key players this episode]
+
+---
+
+## NEXT EPISODE QUESTIONS
+1. [Unresolved tension or upcoming threat]
+2. [Question]
+3. [Question]
+4. [Question]
+5. [Question]
+
+Rules:
+- Be analytical and dramatic. Reference player histories from previous seasons if they are returnees.
+- Never invent votes or events not in the raw data.
+- Keep formatting exact — the downstream system depends on the headers.`;
+
+  let resp;
+  try {
+    resp = await fetch("https://api.openai.com/v1/responses", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${env.OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({ model: "gpt-5", instructions, input: rawText }),
+    });
+  } catch (e) {
+    return new Response(JSON.stringify({ error: "Network error", details: String(e) }), {
+      status: 502,
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+    });
+  }
+
+  const data = await resp.json().catch(() => ({}));
+  if (!resp.ok) {
+    return new Response(JSON.stringify(data), {
+      status: resp.status,
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+    });
+  }
+
+  let summary = "";
+  if (typeof data?.output_text === "string") {
+    summary = data.output_text.trim();
+  } else if (Array.isArray(data?.output)) {
+    summary = data.output.flatMap(i => i?.content || []).map(c => c?.text || "").join("").trim();
+  }
+
+  return new Response(JSON.stringify({ summary }), {
+    headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
   });
 }
 

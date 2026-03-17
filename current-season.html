@@ -2878,8 +2878,102 @@ async function generateEpisodeAI() {
     container.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
   
-  // Parse transcript into script-reader HTML
+  // Parse transcript into beautiful HTML with animations
   function parseTranscript(text) {
+    let html = '<div class="episode-content">';
+    const lines = text.split('\n');
+    let currentScene = '';
+    let inConfessional = false;
+    let inTribal = false;
+    let lineIndex = 0;
+
+    lines.forEach((line) => {
+      line = line.trim();
+      if (!line) return;
+
+      if (line.match(/^\[.*\]$/)) {
+        const sceneText = line.replace(/[\[\]]/g, '');
+        const isConfessional = sceneText.toLowerCase().includes('confessional');
+
+        if (inConfessional && (isConfessional || !sceneText.toLowerCase().includes('confessional'))) {
+          html += '</div>';
+          inConfessional = false;
+        }
+
+        if (isConfessional) {
+          html += '<div class="confessional" style="animation-delay: ' + (lineIndex * 0.05) + 's">';
+          html += '<div class="confessional-label">🎥 ' + escapeHtml(sceneText).toUpperCase() + '</div>';
+          inConfessional = true;
+          lineIndex++;
+          return;
+        }
+
+        if (sceneText.toLowerCase().includes('tribal') || sceneText.toLowerCase().includes('campfire ceremony')) {
+          if (!inTribal) {
+            html += '<div class="tribal-council" style="animation-delay: ' + (lineIndex * 0.05) + 's">';
+            html += '<div class="tribal-header">🔥 ' + escapeHtml(sceneText).toUpperCase() + ' 🔥</div>';
+            html += '<div class="tribal-suspense">⏳ The tension is palpable...</div>';
+            inTribal = true;
+            lineIndex++;
+          }
+          return;
+        }
+
+        if (inTribal && !sceneText.toLowerCase().includes('tribal') && !sceneText.toLowerCase().includes('vote') && !sceneText.toLowerCase().includes('campfire')) {
+          html += '</div>';
+          inTribal = false;
+        }
+
+        if (currentScene) html += '</div>';
+        html += '<div class="scene">';
+        html += '<div class="scene-header scene-sticky" style="animation-delay: ' + (lineIndex * 0.05) + 's">📍 ' + escapeHtml(sceneText) + '</div>';
+        currentScene = sceneText;
+        lineIndex++;
+        return;
+      }
+
+      const dialogueMatch = line.match(/^([A-Z][a-zA-Z\s']+):\s*(.+)$/);
+      if (dialogueMatch) {
+        let [, character, dialogue] = dialogueMatch;
+        character = character.trim();
+        const avatar = getCharacterAvatar(character.toLowerCase());
+        html += '<div class="dialogue-line chat-bubble" style="animation-delay: ' + (lineIndex * 0.05) + 's">';
+        html += `<div class="character-avatar">${avatar}</div>`;
+        html += '<div class="dialogue-bubble">';
+        html += `<div class="character-name">${escapeHtml(character)}</div>`;
+        html += `<div class="dialogue-text">${escapeHtml(dialogue)}</div>`;
+        html += '</div></div>';
+        lineIndex++;
+        return;
+      }
+
+      if (line.toLowerCase().includes('eliminated') || line.toLowerCase().includes('voted out')) {
+        html += `<div class="eliminated-player" style="animation-delay: ${lineIndex * 0.05}s">`;
+        html += `<div class="eliminated-message">${escapeHtml(line)}</div>`;
+        html += '</div>';
+        lineIndex++;
+        return;
+      }
+
+      if (inTribal && (line.toLowerCase().includes('vote') || line.toLowerCase().includes('marshmallow'))) {
+        html += `<div class="vote-reveal suspense-reveal" style="animation-delay: ${lineIndex * 0.1}s">${escapeHtml(line)}</div>`;
+        lineIndex++;
+        return;
+      }
+
+      html += `<div class="stage-direction" style="animation-delay: ${lineIndex * 0.05}s">${escapeHtml(line)}</div>`;
+      lineIndex++;
+    });
+
+    if (currentScene) html += '</div>';
+    if (inConfessional) html += '</div>';
+    if (inTribal) html += '</div>';
+    html += '</div>';
+    return html;
+  }
+
+  // ORIGINAL parseTranscript (script-reader) — kept for reference, not called
+  function _parseTranscript_scriptReader(text) {
     const lines = text.split('\n');
     const scenes = []; // { id, label } for TOC
     let sceneCount = 0;
@@ -3017,34 +3111,9 @@ async function generateEpisodeAI() {
       body = `<div class="ep-previously"><div class="ep-previously-label">Previously on Total Drama</div><div class="ep-previously-text">${prevParagraph}</div></div>` + body;
     }
 
-    return `<div class="ep-view">
-      <div class="ep-progress"><div class="ep-progress-fill" id="epProgressFill"></div></div>
-      ${tocHtml}
-      <div class="ep-body" id="epBody">${body}</div>
-    </div>`;
+    return `<div class="ep-view"><div class="ep-body">${body}</div></div>`;
   }
 
-  // Reading progress bar
-  (function() {
-    let ticking = false;
-    document.addEventListener('scroll', function() {
-      if (!ticking) {
-        requestAnimationFrame(function() {
-          const fill = document.getElementById('epProgressFill');
-          const body = document.getElementById('epBody');
-          if (fill && body) {
-            const rect = body.getBoundingClientRect();
-            const total = body.offsetHeight - window.innerHeight;
-            const scrolled = Math.max(0, -rect.top);
-            fill.style.width = Math.min(100, total > 0 ? (scrolled / total * 100) : 0) + '%';
-          }
-          ticking = false;
-        });
-        ticking = true;
-      }
-    }, { passive: true });
-  })();
-  
   // Get character avatar (image or emoji)
   function getCharacterAvatar(characterName) {
     const key = characterName.toLowerCase().replace(/\s+/g, '-');

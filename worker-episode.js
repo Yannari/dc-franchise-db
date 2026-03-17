@@ -2395,8 +2395,46 @@ Season: ${season ?? "?"}, Episode: ${episode ?? "?"}.
 Return complete episode transcript.
 `.trim();
 
-  const payload = { model: "gpt-5", instructions, input: summaryText };
-  return await callOpenAI(payload, env);
+  return await callAnthropic(instructions, summaryText, env);
+}
+
+async function callAnthropic(system, userText, env) {
+  let resp;
+  try {
+    resp = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": env.ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 16000,
+        system,
+        messages: [{ role: "user", content: userText }],
+      }),
+    });
+  } catch (e) {
+    return new Response(JSON.stringify({ error: "Network error", details: String(e) }), {
+      status: 502,
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+    });
+  }
+
+  const data = await resp.json().catch(() => ({}));
+
+  if (!resp.ok) {
+    return new Response(JSON.stringify(data), {
+      status: resp.status,
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+    });
+  }
+
+  const text = data?.content?.[0]?.text?.trim() || "";
+  return new Response(JSON.stringify({ episodeTranscript: text }), {
+    headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+  });
 }
 
 async function callOpenAI(payload, env) {

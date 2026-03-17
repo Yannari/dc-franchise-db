@@ -804,6 +804,14 @@ background: rgba(0, 0, 0, 0.2);
 <option value="scoreAsc">Score ↑</option>
 <option value="nameAsc">Name A→Z</option>
 <option value="nameDesc">Name Z→A</option>
+<option value="chwinsDesc">🏅 Challenge Wins (Most → Fewest)</option>
+<option value="chwinsAsc">🏅 Challenge Wins (Fewest → Most)</option>
+<option value="votesDesc">🗳️ Votes Against (Most → Fewest)</option>
+<option value="votesAsc">🗳️ Votes Against (Fewest → Most)</option>
+<option value="avpAsc">🎯 Avg Placement (Best → Worst)</option>
+<option value="avpDesc">🎯 Avg Placement (Worst → Best)</option>
+<option value="seasonsDesc">📅 Seasons (Most → Fewest)</option>
+<option value="juryDesc">⚖️ Jury Votes (Most → Fewest)</option>
 </select>
 </div>
 <div class="control">
@@ -1055,6 +1063,11 @@ function renderPlayerCard(ranking, player) {
           'data-name="' + player.name + '" ' +
           'data-score="' + ranking.score + '" ' +
           'data-tier="' + ranking.tier + '" ' +
+          'data-chwins="' + (ranking.challengeWins || 0) + '" ' +
+          'data-votes="' + (ranking.votesAgainst || 0) + '" ' +
+          'data-seasons="' + (ranking.seasonsPlayed || 0) + '" ' +
+          'data-avp="' + (ranking.avgPlacement || 99) + '" ' +
+          'data-jury="' + (ranking.juryVotes || 0) + '" ' +
           'style="--tc:' + tc + '" ' +
           'role="link" tabindex="0">';
 
@@ -1172,7 +1185,7 @@ function renderMiniCard(ranking, player) {
   const tc = TIER_COLORS[ranking.tier] || '#60a5fa';
 
   let html = '';
-  html += '<a class="mini-card" data-winner="' + (isWinner ? 'true' : 'false') + '" data-href="' + href + '" data-name="' + (player.name || '').toLowerCase() + '" data-score="' + ranking.score + '" href="' + href + '" style="--tc:' + tc + ';border-color:' + tc + '22">';
+  html += '<a class="mini-card" data-winner="' + (isWinner ? 'true' : 'false') + '" data-href="' + href + '" data-name="' + (player.name || '').toLowerCase() + '" data-score="' + ranking.score + '" data-chwins="' + (ranking.challengeWins || 0) + '" data-votes="' + (ranking.votesAgainst || 0) + '" data-seasons="' + (ranking.seasonsPlayed || 0) + '" data-avp="' + (ranking.avgPlacement || 99) + '" data-jury="' + (ranking.juryVotes || 0) + '" href="' + href + '" style="--tc:' + tc + ';border-color:' + tc + '22">';
   html +=   '<div class="mini-header">';
   html +=     '<div class="mini-avatar" style="border-color:' + tc + '55;box-shadow:0 0 10px ' + tc + '22">';
   html +=       '<img src="assets/avatars/' + player.id + '.png" alt="' + player.name + '" ' +
@@ -1297,11 +1310,20 @@ function initRankControls(){
     const nb = b.dataset.name || '';
     const sa = getScore(a);
     const sb = getScore(b);
+    const n = (node, key, fallback) => { const v = parseFloat(node.dataset[key]); return isNaN(v) ? fallback : v; };
 
-    if (mode === 'nameAsc')  return na.localeCompare(nb);
-    if (mode === 'nameDesc') return nb.localeCompare(na);
-    if (mode === 'scoreAsc') return (isNaN(sa)?999:sa) - (isNaN(sb)?999:sb);
-    if (mode === 'scoreDesc')return (isNaN(sb)?-999:sb) - (isNaN(sa)?-999:sa);
+    if (mode === 'nameAsc')    return na.localeCompare(nb);
+    if (mode === 'nameDesc')   return nb.localeCompare(na);
+    if (mode === 'scoreAsc')   return (isNaN(sa)?999:sa) - (isNaN(sb)?999:sb);
+    if (mode === 'scoreDesc')  return (isNaN(sb)?-999:sb) - (isNaN(sa)?-999:sa);
+    if (mode === 'chwinsDesc') return n(b,'chwins',0) - n(a,'chwins',0) || na.localeCompare(nb);
+    if (mode === 'chwinsAsc')  return n(a,'chwins',0) - n(b,'chwins',0) || na.localeCompare(nb);
+    if (mode === 'votesDesc')  return n(b,'votes',0) - n(a,'votes',0) || na.localeCompare(nb);
+    if (mode === 'votesAsc')   return n(a,'votes',0) - n(b,'votes',0) || na.localeCompare(nb);
+    if (mode === 'avpAsc')     return n(a,'avp',99) - n(b,'avp',99) || na.localeCompare(nb);
+    if (mode === 'avpDesc')    return n(b,'avp',99) - n(a,'avp',99) || na.localeCompare(nb);
+    if (mode === 'seasonsDesc')return n(b,'seasons',0) - n(a,'seasons',0) || na.localeCompare(nb);
+    if (mode === 'juryDesc')   return n(b,'jury',0) - n(a,'jury',0) || na.localeCompare(nb);
     return parseInt(a.dataset.order,10) - parseInt(b.dataset.order,10);
   }
 

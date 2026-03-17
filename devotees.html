@@ -470,6 +470,14 @@
           <option value="votes-asc">🗳️ Votes Against (Fewest → Most)</option>
           <option value="chwins-desc">🏅 Challenge Wins (Most → Fewest)</option>
           <option value="chwins-asc">🏅 Challenge Wins (Fewest → Most)</option>
+          <option value="immwins-desc">🛡️ Immunity Wins (Most → Fewest)</option>
+          <option value="immwins-asc">🛡️ Immunity Wins (Fewest → Most)</option>
+          <option value="avgplace-asc">🎯 Avg Placement (Best → Worst)</option>
+          <option value="avgplace-desc">🎯 Avg Placement (Worst → Best)</option>
+          <option value="juryvotes-desc">⚖️ Jury Votes (Most → Fewest)</option>
+          <option value="juryvotes-asc">⚖️ Jury Votes (Fewest → Most)</option>
+          <option value="idols-desc">💎 Idols Found (Most → Fewest)</option>
+          <option value="idols-asc">💎 Idols Found (Fewest → Most)</option>
         </select>
         <select 
           id="seasonFilter" 
@@ -736,6 +744,14 @@ function updateDisplay() {
     const bVotes = Number(b.totalVotesAgainst ?? 0);
     const aChWins = Number(a.totalChallengeWins ?? 0);
     const bChWins = Number(b.totalChallengeWins ?? 0);
+    const aImmWins = Number(a.totalImmunityWins ?? 0);
+    const bImmWins = Number(b.totalImmunityWins ?? 0);
+    const aAvgPlace = Number(a.avgPlacement ?? 9999);
+    const bAvgPlace = Number(b.avgPlacement ?? 9999);
+    const aJuryVotes = Number(a.totalJuryVotes ?? 0);
+    const bJuryVotes = Number(b.totalJuryVotes ?? 0);
+    const aIdols = Number(a.totalIdolsFound ?? 0);
+    const bIdols = Number(b.totalIdolsFound ?? 0);
 
     if (sortValue === 'place-asc') return aPlace - bPlace || aName.localeCompare(bName);
     if (sortValue === 'place-desc') return bPlace - aPlace || aName.localeCompare(bName);
@@ -747,6 +763,14 @@ function updateDisplay() {
     if (sortValue === 'votes-asc') return (aVotes - bVotes) || aName.localeCompare(bName);
     if (sortValue === 'chwins-desc') return (bChWins - aChWins) || aName.localeCompare(bName);
     if (sortValue === 'chwins-asc') return (aChWins - bChWins) || aName.localeCompare(bName);
+    if (sortValue === 'immwins-desc') return (bImmWins - aImmWins) || aName.localeCompare(bName);
+    if (sortValue === 'immwins-asc') return (aImmWins - bImmWins) || aName.localeCompare(bName);
+    if (sortValue === 'avgplace-asc') return aAvgPlace - bAvgPlace || aName.localeCompare(bName);
+    if (sortValue === 'avgplace-desc') return bAvgPlace - aAvgPlace || aName.localeCompare(bName);
+    if (sortValue === 'juryvotes-desc') return (bJuryVotes - aJuryVotes) || aName.localeCompare(bName);
+    if (sortValue === 'juryvotes-asc') return (aJuryVotes - bJuryVotes) || aName.localeCompare(bName);
+    if (sortValue === 'idols-desc') return (bIdols - aIdols) || aName.localeCompare(bName);
+    if (sortValue === 'idols-asc') return (aIdols - bIdols) || aName.localeCompare(bName);
     return 0;
   });
 

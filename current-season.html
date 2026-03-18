@@ -2880,238 +2880,174 @@ async function generateEpisodeAI() {
   
   // Parse transcript into beautiful HTML with animations
   function parseTranscript(text) {
-    let html = '<div class="episode-content">';
-    const lines = text.split('\n');
+    const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+
+    // ── First pass: stats ─────────────────────────────────────────────
+    let totalScenes = 0;
+    let episodeTitle = '';
+    const dialogueCounts = {};
+
+    lines.forEach(line => {
+      if (/^\[.*\]$/.test(line)) {
+        const tag = line.replace(/[\[\]]/g, '').trim();
+        const low = tag.toLowerCase();
+        if (low.includes('title card') || low.startsWith('title:')) {
+          episodeTitle = tag.replace(/^title\s*card\s*(slams\s*)?[:\-—]?\s*/i, '').trim();
+        }
+        if (!low.includes('confessional') && !low.includes('tribal') && !low.includes('campfire') && !low.includes('previously') && !low.includes('title')) {
+          totalScenes++;
+        }
+      } else {
+        const dlg = line.match(/^([A-Z][a-zA-Z\s']+):\s*(.+)$/);
+        if (dlg) dialogueCounts[dlg[1].trim()] = (dialogueCounts[dlg[1].trim()] || 0) + 1;
+      }
+    });
+
+    const topSpeakers = Object.entries(dialogueCounts).sort((a, b) => b[1] - a[1]).slice(0, 7);
+    const totalLines = Object.values(dialogueCounts).reduce((a, b) => a + b, 0);
+    const confCount = lines.filter(l => /^\[.*confessional.*\]$/i.test(l)).length;
+
+    // ── Build header HTML ─────────────────────────────────────────────
+    const progressHtml = '<div class="ep-reading-progress"><div class="ep-reading-fill" id="epReadingFill"></div></div>';
+
+    let titleHtml = '';
+    if (episodeTitle) {
+      titleHtml = `<div class="ep-title-card">
+        <div class="ep-title-eyebrow">Total Drama</div>
+        <div class="ep-title-name">${escapeHtml(episodeTitle)}</div>
+        <div class="ep-title-meta">
+          <span>📍 ${totalScenes} scenes</span>
+          <span>🎥 ${confCount} confessionals</span>
+          <span>💬 ${totalLines} lines</span>
+        </div>
+      </div>`;
+    }
+
+    let statsHtml = '';
+    if (topSpeakers.length > 0) {
+      const maxCount = topSpeakers[0][1];
+      statsHtml = '<div class="ep-stats"><div class="ep-stats-label">Top Speakers This Episode</div><div class="ep-stats-chars">';
+      topSpeakers.forEach(([name, count]) => {
+        const color = getCharacterColor(name);
+        const avatar = getCharacterAvatar(name.toLowerCase());
+        const pct = Math.round((count / maxCount) * 100);
+        statsHtml += `<div class="ep-stats-char">
+          <div class="ep-stats-avatar" style="border-color:${color}">${avatar}</div>
+          <div class="ep-stats-char-name" style="color:${color}">${escapeHtml(name)}</div>
+          <div class="ep-stats-bar-wrap"><div class="ep-stats-bar" style="width:${pct}%;background:${color}"></div></div>
+          <div class="ep-stats-count">${count}</div>
+        </div>`;
+      });
+      statsHtml += '</div></div>';
+    }
+
+    // ── Second pass: render body ──────────────────────────────────────
+    let body = '';
     let currentScene = '';
     let inConfessional = false;
     let inTribal = false;
-    let lineIndex = 0;
-
-    lines.forEach((line) => {
-      line = line.trim();
-      if (!line) return;
-
-      if (line.match(/^\[.*\]$/)) {
-        const sceneText = line.replace(/[\[\]]/g, '');
-        const isConfessional = sceneText.toLowerCase().includes('confessional');
-
-        if (inConfessional && (isConfessional || !sceneText.toLowerCase().includes('confessional'))) {
-          html += '</div>';
-          inConfessional = false;
-        }
-
-        if (isConfessional) {
-          html += '<div class="confessional" style="animation-delay: ' + (lineIndex * 0.05) + 's">';
-          html += '<div class="confessional-label">🎥 ' + escapeHtml(sceneText).toUpperCase() + '</div>';
-          inConfessional = true;
-          lineIndex++;
-          return;
-        }
-
-        if (sceneText.toLowerCase().includes('tribal') || sceneText.toLowerCase().includes('campfire ceremony')) {
-          if (!inTribal) {
-            html += '<div class="tribal-council" style="animation-delay: ' + (lineIndex * 0.05) + 's">';
-            html += '<div class="tribal-header">🔥 ' + escapeHtml(sceneText).toUpperCase() + ' 🔥</div>';
-            html += '<div class="tribal-suspense">⏳ The tension is palpable...</div>';
-            inTribal = true;
-            lineIndex++;
-          }
-          return;
-        }
-
-        if (inTribal && !sceneText.toLowerCase().includes('tribal') && !sceneText.toLowerCase().includes('vote') && !sceneText.toLowerCase().includes('campfire')) {
-          html += '</div>';
-          inTribal = false;
-        }
-
-        if (currentScene) html += '</div>';
-        html += '<div class="scene">';
-        html += '<div class="scene-header scene-sticky" style="animation-delay: ' + (lineIndex * 0.05) + 's">📍 ' + escapeHtml(sceneText) + '</div>';
-        currentScene = sceneText;
-        lineIndex++;
-        return;
-      }
-
-      const dialogueMatch = line.match(/^([A-Z][a-zA-Z\s']+):\s*(.+)$/);
-      if (dialogueMatch) {
-        let [, character, dialogue] = dialogueMatch;
-        character = character.trim();
-        const avatar = getCharacterAvatar(character.toLowerCase());
-        html += '<div class="dialogue-line chat-bubble" style="animation-delay: ' + (lineIndex * 0.05) + 's">';
-        html += `<div class="character-avatar">${avatar}</div>`;
-        html += '<div class="dialogue-bubble">';
-        html += `<div class="character-name">${escapeHtml(character)}</div>`;
-        html += `<div class="dialogue-text">${escapeHtml(dialogue)}</div>`;
-        html += '</div></div>';
-        lineIndex++;
-        return;
-      }
-
-      if (line.toLowerCase().includes('eliminated') || line.toLowerCase().includes('voted out')) {
-        html += `<div class="eliminated-player" style="animation-delay: ${lineIndex * 0.05}s">`;
-        html += `<div class="eliminated-message">${escapeHtml(line)}</div>`;
-        html += '</div>';
-        lineIndex++;
-        return;
-      }
-
-      if (inTribal && (line.toLowerCase().includes('vote') || line.toLowerCase().includes('marshmallow'))) {
-        html += `<div class="vote-reveal suspense-reveal" style="animation-delay: ${lineIndex * 0.1}s">${escapeHtml(line)}</div>`;
-        lineIndex++;
-        return;
-      }
-
-      html += `<div class="stage-direction" style="animation-delay: ${lineIndex * 0.05}s">${escapeHtml(line)}</div>`;
-      lineIndex++;
-    });
-
-    if (currentScene) html += '</div>';
-    if (inConfessional) html += '</div>';
-    if (inTribal) html += '</div>';
-    html += '</div>';
-    return html;
-  }
-
-  // ORIGINAL parseTranscript (script-reader) — kept for reference, not called
-  function _parseTranscript_scriptReader(text) {
-    const lines = text.split('\n');
-    const scenes = []; // { id, label } for TOC
-    let sceneCount = 0;
-
-    // First pass: collect scene labels for TOC
-    lines.forEach(raw => {
-      const line = raw.trim();
-      if (!line) return;
-      if (/^\[.*\]$/.test(line)) {
-        const tag = line.replace(/[\[\]]/g, '').trim();
-        const low = tag.toLowerCase();
-        if (low.includes('previously on')) return; // skip in TOC
-        sceneCount++;
-        const id = 'ep-scene-' + sceneCount;
-        const isTribal = low.includes('tribal') || low.includes('campfire ceremony');
-        const isConf = low.includes('confessional');
-        scenes.push({ id, label: isTribal ? '🔥 ' + tag : isConf ? '🎥 ' + tag : tag });
-      }
-    });
-
-    // Build TOC
-    let tocHtml = '';
-    if (scenes.length) {
-      tocHtml = '<div class="ep-toc">';
-      scenes.forEach(s => {
-        tocHtml += `<button class="ep-toc-btn" onclick="document.getElementById('${s.id}')?.scrollIntoView({behavior:'smooth',block:'start'})">${escapeHtml(s.label)}</button>`;
-      });
-      tocHtml += '</div>';
-    }
-
-    // Second pass: render body
-    let body = '';
-    let state = 'default'; // 'default' | 'scene' | 'confessional' | 'tribal'
     let sceneIdx = 0;
-    let prevParagraph = ''; // accumulate "Previously On" lines
+    let confIdx = 0;
+    let delay = 0;
 
-    const close = () => {
-      if (state === 'scene')       { body += '</div>'; }
-      if (state === 'confessional') { body += '</div>'; }
-      if (state === 'tribal')      { body += '</div>'; }
-      state = 'default';
-    };
-
-    lines.forEach(raw => {
-      const line = raw.trim();
-      if (!line) {
-        // Empty line: if in previously block, close it
-        if (prevParagraph) {
-          body += `<div class="ep-previously"><div class="ep-previously-label">Previously on Total Drama</div><div class="ep-previously-text">${prevParagraph}</div></div>`;
-          prevParagraph = '';
-        }
-        return;
-      }
-
-      // ── Bracket tags [...]
+    lines.forEach(line => {
       if (/^\[.*\]$/.test(line)) {
         const tag = line.replace(/[\[\]]/g, '').trim();
         const low = tag.toLowerCase();
 
-        if (low.startsWith('previously on') || low.startsWith('previously,')) {
-          close();
-          // The host recap text will follow as normal lines — flag state
-          state = 'previously';
-          return;
-        }
+        if (low.includes('title card') || low.startsWith('title:')) return;
 
-        if (low.includes('confessional')) {
-          close();
-          sceneIdx++;
-          const id = 'ep-scene-' + sceneIdx;
+        const isConf = low.includes('confessional');
+        if (inConfessional) { body += '</div>'; inConfessional = false; }
+
+        if (isConf) {
+          confIdx++;
           const who = tag.replace(/confessional\s*[:\-]?\s*/i, '').replace(/[:\-]\s*confessional\s*/i, '').trim() || 'Confessional';
-          body += `<div class="ep-confessional" id="${id}"><div class="ep-rec">REC</div><div class="ep-confessional-who">${escapeHtml(who)}</div>`;
-          state = 'confessional';
+          body += `<div class="confessional" style="animation-delay:${delay * 0.04}s">`;
+          body += `<div class="conf-header"><span class="conf-rec">⏺ REC</span><span class="conf-num">Confessional #${confIdx}</span></div>`;
+          body += `<div class="confessional-label">🎥 ${escapeHtml(who.toUpperCase())}</div>`;
+          inConfessional = true;
+          delay++;
           return;
         }
 
         if (low.includes('tribal') || low.includes('campfire ceremony')) {
-          close();
-          sceneIdx++;
-          const id = 'ep-scene-' + sceneIdx;
-          body += `<div class="ep-tribal" id="${id}"><div class="ep-tribal-header">🔥 ${escapeHtml(tag)} 🔥</div>`;
-          state = 'tribal';
+          if (inTribal) return;
+          if (currentScene) { body += '</div>'; currentScene = ''; }
+          body += `<div class="tribal-council" style="animation-delay:${delay * 0.04}s">`;
+          body += `<div class="tribal-header">🔥 ${escapeHtml(tag)} 🔥</div>`;
+          body += `<div class="tribal-suspense">⏳ The tension is palpable...</div>`;
+          inTribal = true;
+          delay++;
           return;
         }
 
-        // Regular scene — only if tag looks like a scene header
-        if (/^(scene[:\s]|int\.|ext\.|int\/ext\.)/i.test(tag)) {
-          close();
-          sceneIdx++;
-          const id = 'ep-scene-' + sceneIdx;
-          const slug = tag.replace(/^scene\s*:\s*/i, '');
-          body += `<div class="ep-scene" id="${id}"><div class="ep-slug">${escapeHtml(slug)}</div>`;
-          state = 'scene';
-          return;
-        }
-
-        // Anything else in brackets is a stage direction
-        body += `<div class="ep-action">${escapeHtml(tag)}</div>`;
+        if (inTribal) { body += '</div>'; inTribal = false; }
+        if (currentScene) body += '</div>';
+        sceneIdx++;
+        const badge = totalScenes > 0 ? `<span class="scene-badge">Scene ${sceneIdx} / ${totalScenes}</span>` : '';
+        body += '<div class="scene">';
+        body += `<div class="scene-header scene-sticky" style="animation-delay:${delay * 0.04}s"><span>📍 ${escapeHtml(tag)}</span>${badge}</div>`;
+        currentScene = tag;
+        delay++;
         return;
       }
 
-      // ── Flush "Previously On" host recap text
-      if (state === 'previously') {
-        prevParagraph += (prevParagraph ? ' ' : '') + line;
-        return;
-      }
-
-      // ── Dialogue: "Name: text" or "Name (note): text"
-      const dlg = line.match(/^([A-ZÀ-Ö][a-zA-ZÀ-ÿ' \-]+?)(?:\s*\([^)]*\))?:\s*(.+)$/);
+      const dlg = line.match(/^([A-Z][a-zA-Z\s']+):\s*(.+)$/);
       if (dlg) {
-        const [, speaker, speech] = dlg;
-        if (state === 'tribal' && (speech.toLowerCase().includes('vote') || speech.toLowerCase().includes('marshmallow'))) {
-          body += `<div class="ep-vote"><span class="ep-speaker" style="min-width:90px;text-align:right;">${escapeHtml(speaker.trim())}</span><span class="ep-speech">${escapeHtml(speech)}</span></div>`;
-        } else {
-          body += `<div class="ep-line"><span class="ep-speaker">${escapeHtml(speaker.trim())}</span><span class="ep-speech">${escapeHtml(speech)}</span></div>`;
-        }
+        let [, character, speech] = dlg;
+        character = character.trim();
+        const color = getCharacterColor(character);
+        const avatar = getCharacterAvatar(character.toLowerCase());
+        body += `<div class="dialogue-line chat-bubble" style="animation-delay:${delay * 0.04}s">`;
+        body += `<div class="character-avatar" style="border-color:${color};box-shadow:0 0 10px ${color}33">${avatar}</div>`;
+        body += `<div class="dialogue-bubble" style="border-color:${color}28">`;
+        body += `<div class="character-name" style="color:${color}">${escapeHtml(character)}</div>`;
+        body += `<div class="dialogue-text">${escapeHtml(speech)}</div>`;
+        body += '</div></div>';
+        delay++;
         return;
       }
 
-      // ── Elimination lines
-      if (line.toLowerCase().includes('has been eliminated') || line.toLowerCase().includes('voted out') || line.toLowerCase().includes('tribe has spoken') || line.toLowerCase().match(/^the \d+(st|nd|rd|th) person/i)) {
-        body += `<div class="ep-elimination"><div class="ep-elimination-name">🚫 ${escapeHtml(line)}</div></div>`;
+      if (line.toLowerCase().includes('eliminated') || line.toLowerCase().includes('voted out') || line.toLowerCase().includes('tribe has spoken')) {
+        body += `<div class="eliminated-player" style="animation-delay:${delay * 0.1}s">`;
+        body += `<div class="eliminated-message">🚫 ${escapeHtml(line)}</div>`;
+        body += '</div>';
+        delay++;
         return;
       }
 
-      // ── Stage direction / narration
-      const indent = (state === 'confessional') ? ' style="padding-left:0"' : '';
-      body += `<div class="ep-action"${indent}>${escapeHtml(line)}</div>`;
+      if (inTribal && (line.toLowerCase().includes('vote') || line.toLowerCase().includes('marshmallow'))) {
+        body += `<div class="vote-reveal suspense-reveal" style="animation-delay:${delay * 0.14}s">${escapeHtml(line)}</div>`;
+        delay++;
+        return;
+      }
+
+      body += `<div class="stage-direction" style="animation-delay:${delay * 0.04}s">${escapeHtml(line)}</div>`;
+      delay++;
     });
 
-    // Close any open block
-    close();
-    // Flush any leftover Previously On
-    if (prevParagraph) {
-      body = `<div class="ep-previously"><div class="ep-previously-label">Previously on Total Drama</div><div class="ep-previously-text">${prevParagraph}</div></div>` + body;
-    }
+    if (currentScene) body += '</div>';
+    if (inConfessional) body += '</div>';
+    if (inTribal) body += '</div>';
 
-    return `<div class="ep-view"><div class="ep-body">${body}</div></div>`;
+    return `<div class="episode-wrapper">
+      ${progressHtml}
+      ${titleHtml}
+      ${statsHtml}
+      <div class="episode-content" id="epContent">${body}</div>
+    </div>`;
+  }
+
+  // Deterministic per-character color (avoids red, reserved for tribal/elimination)
+  function getCharacterColor(name) {
+    let hash = 5381;
+    for (let i = 0; i < name.length; i++) {
+      hash = ((hash << 5) + hash) + name.charCodeAt(i);
+      hash |= 0;
+    }
+    const h = ((Math.abs(hash) % 280) + 40); // range 40–320°
+    return `hsl(${h}, 68%, 68%)`;
   }
 
   // Get character avatar (image or emoji)
@@ -3143,6 +3079,27 @@ async function generateEpisodeAI() {
     return div.innerHTML;
   }
   
+  // Reading progress bar
+  (function() {
+    let ticking = false;
+    document.addEventListener('scroll', function() {
+      if (!ticking) {
+        requestAnimationFrame(function() {
+          const fill = document.getElementById('epReadingFill');
+          const content = document.getElementById('epContent');
+          if (fill && content) {
+            const rect = content.getBoundingClientRect();
+            const total = content.offsetHeight - window.innerHeight;
+            const scrolled = Math.max(0, -rect.top);
+            fill.style.width = Math.min(100, total > 0 ? (scrolled / total * 100) : 0) + '%';
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    }, { passive: true });
+  })();
+
   // Clear episode when season/episode changes
   let lastEpisodeKey = getEpisodeStorageKey();
   setInterval(() => {

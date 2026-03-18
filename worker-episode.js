@@ -976,6 +976,17 @@ async function generateEpisode(summaryText, season, episode, env, previousEpisod
       previousContext += `${label}\n${snippet}${truncated ? '\n...(truncated)' : ''}\n\n`;
     });
     
+    // Extract challenge names from previous episodes to prevent repeats
+    const usedChallenges = [];
+    previousEpisodes.forEach(ep => {
+      const t = ep.transcript || '';
+      const m = t.match(/##\s*IMMUNITY CHALLENGE[:\s]+([^\n]+)/i) || t.match(/\*\*Challenge Title:\*\*\s*([^\n]+)/i);
+      if (m && m[1]) usedChallenges.push(`Episode ${ep.episode}: "${m[1].trim()}"`);
+    });
+    if (usedChallenges.length > 0) {
+      previousContext += `\n🚫 CHALLENGES ALREADY USED THIS SEASON — DO NOT REPEAT ANY OF THESE:\n${usedChallenges.join('\n')}\n\n`;
+    }
+
     previousContext += '\n⚠️ CRITICAL: Maintain character consistency, ongoing relationships, alliance dynamics, and story arcs from these previous episodes.\n\n';
   }
 
@@ -1073,6 +1084,9 @@ Not a summary - a full dramatic script with character arcs, relationships, strat
 
 The summary contains a line: "## EPISODE TYPE — PRE-MERGE" or "## EPISODE TYPE — MERGED"
 
+**EPISODE TYPE is episode-specific. Previous episodes being PRE-MERGE does NOT mean this one is.**
+If this episode's summary says MERGED, you are in the individual game — full stop. Do not carry over tribal structure from previous episodes. Do not create teams. Do not split people into groups for the challenge. The merge is a permanent transition.
+
 **If PRE-MERGE:**
 - Players are on separate tribes
 - Immunity is tribal (a whole tribe wins, a whole tribe loses)
@@ -1084,11 +1098,22 @@ The summary contains a line: "## EPISODE TYPE — PRE-MERGE" or "## EPISODE TYPE
 - There are NO tribes. Everyone is playing individually.
 - ONE person wins immunity. ALL others are vulnerable.
 - EVERYONE votes at ONE tribal council together
-- Do NOT write tribe vs tribe challenge. Write an INDIVIDUAL challenge.
+- Do NOT write tribe vs tribe challenge. Write an INDIVIDUAL challenge — one person competes, one person wins
 - Camp scenes show cross-tribe alliance building, old loyalties fracturing, new bonds forming
 - The strategic complexity is much higher — every player is a potential target and a potential ally
+- Do NOT invent a twist that turns it back into a tribal competition. It's individual. It stays individual.
 
 Getting this wrong ruins the whole episode. Check ## EPISODE TYPE first.
+
+═══════════════════════════════════════════════════════════
+⚠️ DO NOT REPEAT PREVIOUSLY USED CHALLENGES
+═══════════════════════════════════════════════════════════
+
+Before inventing a challenge, scan ALL previous episodes in your context. Look for lines matching "## IMMUNITY CHALLENGE" or "**Challenge Title:**" and collect the names. DO NOT reuse any challenge that has already appeared in this season.
+
+Each episode needs a DIFFERENT challenge. If you see "Truth or Nuke" was used in Episode 5, you cannot write "Truth or Nuke" in Episode 8. If you see an endurance challenge was used last episode, vary the format — don't do another endurance challenge.
+
+Make a mental list of used challenges from the context, then pick something new.
 
 ═══════════════════════════════════════════════════════════
 ⚠️ THE "KEY EVENTS" SECTION — MANDATORY SCENES

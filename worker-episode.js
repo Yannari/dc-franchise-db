@@ -668,11 +668,18 @@ HOW TO READ BRANTSTEELE OUTPUT — CRITICAL
 BrantSteele output uses specific section headers. You MUST detect and handle each one correctly:
 
 **DETECTING THE MERGE:**
-If the raw data contains the header "The Merge" or players are listed under "Campers" instead of tribe names, this is a MERGE EPISODE. After the merge:
+There are two distinct merge states — distinguish them carefully:
+
+1. **THE MERGE EPISODE (first time)**: The raw data explicitly contains the header "The Merge" AND the previous summary shows tribes still active. This is the episode WHERE the merge happens. It is a major story event.
+   - In === TRIBES (ACTIVE) ===, write "MERGED THIS EPISODE — Individual Game begins"
+
+2. **POST-MERGE EPISODE (already merged)**: Players are listed under "Campers" but the previous summary already showed the game as merged. The merge already happened in an earlier episode.
+   - In === TRIBES (ACTIVE) ===, write "MERGED — Individual Game (ongoing)"
+
+In both cases:
 - There are NO tribes. Everyone is an individual player.
 - Immunity is INDIVIDUAL (one person wins, everyone else is vulnerable)
 - Everyone votes together at one Tribal Council
-- In === TRIBES (ACTIVE) ===, write "MERGED — Individual Game" and list all remaining players
 - In the challenge section, write "INDIVIDUAL IMMUNITY" not a tribe challenge
 - NEVER write that a tribe won immunity in a merged episode
 
@@ -724,16 +731,21 @@ EPISODE [number] - "[Episode title based on the challenge or theme]"
 
 === TRIBES (ACTIVE) ===
 [IF PRE-MERGE: List each tribe with a # header and its members]
-[IF MERGED: Write "MERGED — Individual Game" then list all remaining players alphabetically]
+[IF MERGE HAPPENS THIS EPISODE: Write "MERGED THIS EPISODE — Individual Game begins" then list all remaining players]
+[IF ALREADY MERGED: Write "MERGED — Individual Game (ongoing)" then list all remaining players]
 
 Example pre-merge:
 #Orange Tribe
 Bowie
 Courtney
 
-Example merged:
-MERGED — Individual Game
+Example first merge episode:
+MERGED THIS EPISODE — Individual Game begins
 Bowie, Cody, Courtney, Hicks, Jasmine, Josee, Mary, Mickey, Priya, Sanders, Scott, Zoey
+
+Example post-merge (already merged):
+MERGED — Individual Game (ongoing)
+Bowie, Cody, Courtney, Hicks, Josee, Mary, Mickey, Priya, Sanders, Scott, Zoey
 
 === ELIMINATED ===
 [Previously eliminated players, one per line, oldest first — copy from previous summary if available]
@@ -742,8 +754,10 @@ Bowie, Cody, Courtney, Hicks, Jasmine, Josee, Mary, Mickey, Priya, Sanders, Scot
 ---
 
 ## EPISODE TYPE
-[Write either: "PRE-MERGE — Tribal Immunity" or "MERGED — Individual Immunity"]
-[This tells the episode writer whether to write a team challenge or an individual challenge]
+[Write ONE of these three exactly:]
+- "PRE-MERGE — Tribal Immunity" (tribes still exist, tribe wins immunity)
+- "MERGE EPISODE — Individual Immunity" (this is the episode the merge happens — write the announcement scene)
+- "POST-MERGE — Individual Immunity" (merge already happened in a previous episode — no announcement, continue individual game)
 
 ---
 
@@ -2105,8 +2119,9 @@ EPISODE STRUCTURE (CRITICAL)
    - Immediate character drama OR strategic conversation
    - Sets up episode's emotional/strategic arc
 
-1b. **MERGE ANNOUNCEMENT — MANDATORY if this is a merge episode**
-   If ## EPISODE TYPE is MERGED, the episode MUST contain a formal merge announcement scene BEFORE the game continues. This is a major TV moment — do not skip it or have it happen offscreen.
+1b. **MERGE ANNOUNCEMENT — MANDATORY only on the episode where the merge HAPPENS**
+   If === TRIBES (ACTIVE) === says "MERGED THIS EPISODE", the episode MUST contain a formal merge announcement scene. This only happens ONCE per season — the first time the merge occurs. If the tribes section says "MERGED — Individual Game (ongoing)", the merge already happened in a previous episode — do NOT write an announcement scene, just continue the individual game.
+   This is a major TV moment — do not skip it or have it happen offscreen.
    - Chris gathers ALL players (they arrive from different directions, old tribemates together for the last time)
    - Chris announces the merge dramatically — new tribe name, new buffs, merge feast revealed
    - Players REACT in real-time: some are relieved, some are calculating, some are scared, rivals are suddenly standing next to each other

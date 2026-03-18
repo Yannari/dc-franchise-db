@@ -1317,6 +1317,19 @@ body.hasSiteHeader .hero .meta{
   padding: 20px 0;
 }
 
+.episode-input {
+  background: rgba(10, 8, 18, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  color: #fff;
+  border-radius: 12px;
+  padding: 12px;
+  outline: none;
+  resize: vertical;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
 .episode-input::placeholder {
   color: rgba(255, 255, 255, 0.4);
 }

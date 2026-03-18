@@ -1878,6 +1878,7 @@ EPISODE STRUCTURE (CRITICAL)
    - Character reactions during action: [gasps], [groans], [screams]
    - Confessionals between rounds showing strategy/emotion
    - Victory celebration OR defeat aftermath
+   - ⚠️ SEE "CHALLENGE INVENTION" SECTION BELOW — you create the challenge, the summary only tells you who won
 
 4. **POST-CHALLENGE SCRAMBLING (100-150 lines)**
    - Losing tribe returns to camp
@@ -1902,8 +1903,96 @@ EPISODE STRUCTURE (CRITICAL)
    - Chris makes sarcastic comments throughout
 
 7. **EXIT CONFESSIONAL & TAG (10-20 lines)**
-   - Eliminated player's final thoughts
-   - Preview of next episode drama
+   - Eliminated player's final thoughts on the walk out (bitter, gracious, threatening, sad — pick one)
+   - A short end scene back at camp OR a teaser of what's coming — funny moment, someone finding something, a quiet threat. Keep it under 10 lines. Leave the audience wanting more.
+
+═══════════════════════════════════════════════════════════
+🏆 CHALLENGE INVENTION — THIS IS YOUR JOB
+═══════════════════════════════════════════════════════════
+
+The summary tells you WHO wins. YOU invent WHAT they're doing and HOW it unfolds.
+
+If the user writes "Immunity Challenge: Orange wins immunity" — that's all the constraint you have. Create a complete, specific, named Total Drama-style challenge from scratch. The result is fixed. Everything else is yours.
+
+**TOTAL DRAMA CHALLENGE TYPES (draw from these, mix and match):**
+- Physical endurance: hold on longest, stand on a pole, stay awake, balance something
+- Race with obstacles: collect items, run a course, carry something awkward
+- Skill/craft: cook a meal judged by Chef, build something that has to survive a test, create a performance
+- Fear/disgust based: eat disgusting food, face a phobia, survive something horrible
+- Head-to-head bracket: one-on-one matchups, team picks their fighter each round
+- Puzzle/strategy: assemble something, trivia about other players, decipher clues
+- Multi-phase: starts one way, then changes — the comeback is built into phase 2 or 3
+- Water/height/danger: cliff dives, swimming, bridges over gross things, heights
+
+**CHALLENGE INVENTION RULES:**
+1. Give it a fun, specific name Chris would use ("The Bonfire of the Vanities", "McLean's Magnificent Misery Marathon", "The Sausage Grinder of Doom")
+2. Make it 2-3 phases so the lead can change and we get multiple dramatic moments
+3. Connect it to the episode's themes or location — if they're at a beach, use water; if it's late season, maybe it's more individual-skill based
+4. Chris explains it with sadistic glee — he loves this challenge specifically because it will hurt someone
+5. The winner wins because of something specific, not just "they were faster"
+6. The loser's failure should connect to why they become the vote target afterward
+
+**THE CHALLENGE MUST SERVE THE STORY — MANDATORY BEATS:**
+
+Every challenge must contain:
+
+① **ONE CHARACTER WHO SHINES** — someone performs unexpectedly well or clutch. This becomes their moment. Give them a confessional after where they process it.
+
+② **ONE CHARACTER WHO COSTS THEIR TEAM** — someone drops something, chokes in the clutch, makes a mistake, panics. This is what gets them targeted. It shouldn't be random — it should fit who they are (Mickey panics → drops the puzzle piece. Jo tries to dominate → ignores her team's call and goes the wrong way.)
+
+③ **ONE INTERPERSONAL MOMENT DURING THE CHALLENGE** — a conflict, a funny exchange, a moment of unexpected cooperation, or a betrayal that happens IN the middle of the action. Examples:
+- Heather uses Beth as a human shield → Beth is furious (TD S1 paintball)
+- Lindsay accidentally shoots her own teammate → comic disaster
+- Two rivals end up head-to-head and trash talk while competing
+- Someone from the other tribe says something to a competitor that plants a seed of doubt
+
+④ **CHRIS MCLEAN IS ALIVE DURING THE CHALLENGE** — he commentates, he cheers for suffering, he makes it worse, he has a specific reaction to the funniest/worst moment. He's not just announcing, he's participating in the drama.
+
+**EXAMPLE (how to turn "Orange wins immunity" into a scene):**
+
+Bad: "The teams competed in a race. Orange won."
+
+Good:
+- Challenge: "The Plunge and Haul" — teams race to dive into a muddy lake, grab weighted bags from the bottom, and haul them back to shore. First team to collect all six bags wins.
+- Phase 1: Jasmine dives deep immediately, no hesitation. Scott watches her go and doesn't move. "Ladies first," he says. She glares at him underwater.
+- Phase 2: Mickey slips on the dock entering the water. Gets a bag anyway, barely. Confessional: "I thought my lungs were leaving my body."
+- Phase 3: Green is tied with Orange on last bag. Courtney and Ryan both surface at the same moment. Courtney SHOVES the bag toward her tribe's rope. Orange wins by four seconds.
+- Aftermath: Scott didn't dive once. His tribe knows it.
+
+═══════════════════════════════════════════════════════════
+📺 TOTAL DRAMA ELEMENTS YOU MUST USE
+═══════════════════════════════════════════════════════════
+
+**REWARD CHALLENGES:**
+If the summary mentions a reward challenge (separate from immunity), treat it as its own scene:
+- What do the winners get? Make it matter — food when everyone is starving hits different than comfort items
+- Show the winners enjoying the reward while the losers watch/suffer — jealousy, resentment, hunger
+- The reward can be a storyline: someone bonds over the meal, or someone is bitter they didn't win and takes it out on a tribemate
+
+**CHEF HATCHET IS A CHARACTER:**
+- He runs challenges with aggressive, military energy
+- He judges food with open disgust and zero diplomacy
+- He and Chris have a dynamic — Chef rolls his eyes at Chris's antics, occasionally mutters under his breath
+- He is not warm. He does not comfort. He is not neutral. He participates.
+- Give Chef at least one real moment per episode — a line, a reaction, a judging decision
+
+**CHRIS MCLEAN IS SADISTIC:**
+- He designed the challenge specifically to cause the most possible suffering and drama
+- When something goes wrong for a contestant, his face lights up
+- He does not say "oh that's too bad" — he says "OHHH and there it is!"
+- He has favorites to torture and favorites to protect (briefly)
+- His commentary is the show's voice. It should make the audience laugh AT the contestants with him
+
+**INTER-TRIBE INTERACTIONS DURING CHALLENGES:**
+- When tribes compete in the same space, players from opposing tribes CAN talk
+- This is a social game opportunity: trash talk, cross-tribe alliances, planting seeds of doubt
+- A rival can say something to someone from the other tribe during the challenge that carries into future episodes
+- Someone from the winning tribe might quietly acknowledge a good effort from the losing side — that's a relationship forming
+
+**THE LOSS MUST EXPLAIN THE VOTE:**
+- The reason someone gets voted out should be visibly set up DURING the challenge
+- If Scott didn't dive, he becomes the obvious vote. If Mickey panicked and cost them a round, he's on the block.
+- The connection between "what happened in the challenge" and "who goes home" should feel inevitable in retrospect but not obvious in the moment
 
 ═══════════════════════════════════════════════════════════
 CHARACTER DEPTH (NON-NEGOTIABLE)

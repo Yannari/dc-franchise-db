@@ -773,15 +773,35 @@ Examples of good event translation:
 Write this like a TV show's "previously on" writer notes — specific events, not abstract analysis.
 Describe: What specific conflict happened? Who said what to whom? What alliance formed or cracked? What personal moment occurred?
 
-### [Group/Tribe Name]: [One-line dramatic subtitle]
-[3–5 sentences of SPECIFIC story beats. Name names. Describe actions. "Lorenzo refused to help with camp and openly mocked Scott in front of the group" is useful. "Lorenzo's friction destabilizes the group" is not.]
+### [Group/Player Cluster/Storyline]: [One-line dramatic subtitle]
+[4–6 sentences of SPECIFIC story beats. Name names. Describe what actually happened — not what it means, what it looked like. Pull directly from the KEY EVENTS section and RELATIONSHIPS data. Every section here must contain at least one MOMENT — a specific conversation, confrontation, discovery, or decision.]
 
-[For merged episodes, focus on cross-tribe alliance building, old tribal loyalties vs new bonds, and who is vulnerable without a tribal shield]
+Good example:
+"Lorenzo has been coasting openly — not just lazy, but performatively unbothered — and Courtney has had enough. She pulled Mary aside by the fire and named him. Mary agreed without hesitation. Mickey looked uncomfortable but didn't push back. Lorenzo knows he's being discussed; he just doesn't seem to care enough to do anything about it."
+
+Bad example:
+"Lorenzo's friction with Courtney makes him vulnerable. Alliances are forming."
+
+[For merged episodes: organize by storyline cluster, not old tribe. Example clusters: "The Josee Problem," "Scott's Aftermath," "Mickey's Spiral," "The Quiet Alliance (Zoey + Bowie + Jasmine)." Each cluster is a thread the episode will follow.]
 
 ---
 
 ## ANALYZE BEFORE IMMUNITY
-[Who is the most vulnerable and WHY — specific reasons, not abstractions. Who holds power. What threat does the immunity result create. If merged: who does NOT having immunity tonight make most exposed, and what do the key events suggest about the vote.]
+⚠️ WRITE THIS SECTION AS IF THE CHALLENGE HAS NOT HAPPENED YET. You do not know the immunity result. You are a TV writer building suspense before the challenge. Use ONLY the relationships, alliances, and events you know happened BEFORE the challenge.
+
+Answer these questions with specific player names and reasons:
+
+**Who is in danger going into this challenge and why?**
+[Name 2–3 players. For each: what specific thing makes them a target — a fight they had, an alliance that turned on them, a meltdown others witnessed, being on the wrong side of the numbers. One sentence minimum per player. NOT "X has few allies" — WHY do they have few allies, what happened.]
+
+**Who holds power right now and how did they get it?**
+[Name 1–2 players. Specific: what alliance are they running, what information do they have, what relationship gave them leverage.]
+
+**What are the two most likely vote outcomes if the challenge goes badly for each side?**
+[For each scenario, name the likely target and why — based on the alliances and individual targets in the raw data.]
+
+**What is the dramatic question of this episode?**
+[One sentence. The thing the audience is wondering going into the challenge. "Can Lorenzo survive when his own tribemates hate him and he's too lazy to fight back?" is good. "Who will go home?" is not.]
 
 ---
 
@@ -881,36 +901,47 @@ Rules:
     : "";
   const input = `${prevContext}═══ CURRENT EPISODE RAW DATA ═══\n${rawText}`;
 
-  let resp;
-  try {
-    resp = await fetch("https://api.openai.com/v1/responses", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${env.OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({ model: "gpt-4o", instructions, input }),
-    });
-  } catch (e) {
-    return new Response(JSON.stringify({ error: "Network error", details: String(e) }), {
+  // Try GPT-5 first, fall back to Anthropic
+  let summary = "";
+  let gptOk = false;
+
+  if (env.OPENAI_API_KEY) {
+    try {
+      const resp = await fetch("https://api.openai.com/v1/responses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${env.OPENAI_API_KEY}` },
+        body: JSON.stringify({ model: "gpt-5", instructions, input }),
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (resp.ok) {
+        if (typeof data?.output_text === "string") summary = data.output_text.trim();
+        else if (Array.isArray(data?.output)) summary = data.output.flatMap(i => i?.content || []).map(c => c?.text || "").join("").trim();
+        if (summary) gptOk = true;
+      }
+    } catch (e) {
+      console.error("GPT-5 summary failed:", e);
+    }
+  }
+
+  if (!gptOk && env.ANTHROPIC_API_KEY) {
+    try {
+      const resp = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01" },
+        body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: 8000, system: instructions, messages: [{ role: "user", content: input }] }),
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (resp.ok && data?.content?.[0]?.text) summary = data.content[0].text.trim();
+    } catch (e) {
+      console.error("Anthropic summary fallback failed:", e);
+    }
+  }
+
+  if (!summary) {
+    return new Response(JSON.stringify({ error: "Both GPT-5 and Anthropic failed to generate summary" }), {
       status: 502,
       headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
     });
-  }
-
-  const data = await resp.json().catch(() => ({}));
-  if (!resp.ok) {
-    return new Response(JSON.stringify(data), {
-      status: resp.status,
-      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
-    });
-  }
-
-  let summary = "";
-  if (typeof data?.output_text === "string") {
-    summary = data.output_text.trim();
-  } else if (Array.isArray(data?.output)) {
-    summary = data.output.flatMap(i => i?.content || []).map(c => c?.text || "").join("").trim();
   }
 
   return new Response(JSON.stringify({ summary }), {

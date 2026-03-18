@@ -4,7 +4,7 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Current Season — Season 5</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=2">
 
   <style>
     .muted{opacity:.78}
@@ -2243,14 +2243,28 @@ Dave voted for Mickey
     els.generate.addEventListener("click", async () => {
       const season = Number(els.season.value || 1);
       const episode = Number(els.episode.value || 1);
-      const summaryText = els.summary.value || "";
-      if (!summaryText.trim()) return setStatus("Paste an episode summary first.");
+      let summaryText = els.summary.value || "";
+      if (!summaryText.trim()) return setStatus("Paste an episode summary or raw BrantSteele output first.");
+
+      // Auto-convert raw BrantSteele output → structured summary if needed
+      if (!isStructuredSummary(summaryText)) {
+        setStatus("Step 1/2: Converting raw to structured summary…");
+        try {
+          const workerUrl = normalizeWorkerUrl(els.workerUrl.value || localStorage.getItem("AI_ENDPOINT_URL") || "");
+          summaryText = await autoSummarize(season, episode, summaryText, workerUrl);
+          els.summary.value = summaryText; // show the generated summary in the textarea
+        } catch (e) {
+          return setStatus("Error generating summary: " + (e?.message || String(e)));
+        }
+        setStatus("Step 2/2: Generating analytics…");
+      } else {
+        setStatus("Generating analytics…");
+      }
 
       // Persist summary so reload keeps cast + gameplay
       saveSummary(season, episode, summaryText);
 
       updateEpisodeHeaderFromInputs();
-      setStatus("Generating analytics...");
 
       try {
         const analytics = await callAI(season, episode, summaryText);
@@ -2669,6 +2683,27 @@ Dave voted for Mickey
     }
   }
   
+  // ── Auto-summarize helpers ──────────────────────────────────────────────────
+  function isStructuredSummary(text) {
+    return text.includes('=== META ===') || text.includes('=== CAST (ALL) ===');
+  }
+
+  async function autoSummarize(season, episode, rawText, workerUrl) {
+    const url = workerUrl || EPISODE_WORKER_URL;
+    // Pass previous episode's summary so the AI knows the full elimination history
+    const prevSummary = episode > 1 ? (localStorage.getItem(`AI_SUMMARY_s${season}_e${episode - 1}`) || '') : '';
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mode: 'summarize', season, episode, rawText, prevSummary })
+    });
+    if (!response.ok) throw new Error(`Summary generation failed (HTTP ${response.status})`);
+    const data = await response.json();
+    if (!data.summary) throw new Error('No summary returned from AI');
+    return data.summary;
+  }
+  // ────────────────────────────────────────────────────────────────────────────
+
   // Generate episode using AI
 // Replace the existing generateEpisodeAI function with this updated version:
 
@@ -2681,10 +2716,10 @@ async function generateEpisodeAI() {
   }
   
   const summaryInput = document.getElementById('episode-summary-input');
-  const summary = summaryInput ? summaryInput.value.trim() : '';
-  
-  if (!summary) {
-    alert('⚠️ Please paste your BrantSteele episode summary first!');
+  const rawInput = summaryInput ? summaryInput.value.trim() : '';
+
+  if (!rawInput) {
+    alert('⚠️ Please paste your BrantSteele episode raw first!');
     return;
   }
   
@@ -2694,6 +2729,37 @@ async function generateEpisodeAI() {
   const episode = episodeEl ? episodeEl.value : '1';
   const episodeNum = parseInt(episode);
   
+  // ── Step 1: Ensure structured summary exists ────────────────────────────────
+  const cachedSummaryKey = `AI_SUMMARY_s${season}_e${episodeNum}`;
+  let summary = localStorage.getItem(cachedSummaryKey);
+
+  const generateBtn = document.getElementById('generate-episode-btn');
+  const originalText = generateBtn.innerHTML;
+
+  if (!summary) {
+    if (isStructuredSummary(rawInput)) {
+      // Input is already a structured summary — save and use it
+      summary = rawInput;
+      localStorage.setItem(cachedSummaryKey, summary);
+    } else {
+      // Input is raw BrantSteele — auto-summarize first
+      generateBtn.innerHTML = '⏳ Step 1/2: Summarizing raw…';
+      generateBtn.disabled = true;
+      try {
+        summary = await autoSummarize(season, episodeNum, rawInput);
+        localStorage.setItem(cachedSummaryKey, summary);
+      } catch (error) {
+        generateBtn.innerHTML = originalText;
+        generateBtn.disabled = false;
+        alert('❌ Error generating summary: ' + error.message);
+        return;
+      }
+    }
+  }
+  generateBtn.innerHTML = '⏳ Step 2/2: Generating Episode…';
+  generateBtn.disabled = true;
+  // ────────────────────────────────────────────────────────────────────────────
+
   // Get auditions if Episode 1
   let auditionsText = '';
   if (episode === '1' || episode === 1) {
@@ -2702,7 +2768,7 @@ async function generateEpisodeAI() {
       auditionsText = auditionsInput.value.trim();
     }
   }
-  
+
   // GATHER PREVIOUS EPISODES FOR CONTEXT
   // Recent episodes (last 2): full transcript — AI needs exact voice + tone continuity
   // All older episodes: BrantSteele summary — compact, covers everything that matters
@@ -2750,11 +2816,6 @@ async function generateEpisodeAI() {
       }
     }
   }
-  
-  const generateBtn = document.getElementById('generate-episode-btn');
-  const originalText = generateBtn.innerHTML;
-  generateBtn.innerHTML = '⏳ Generating Episode...';
-  generateBtn.disabled = true;
   
   try {
     const response = await fetch(EPISODE_WORKER_URL, {
@@ -2824,26 +2885,21 @@ async function generateEpisodeAI() {
     let currentScene = '';
     let inConfessional = false;
     let inTribal = false;
-    let lineIndex = 0; // For staggered animations
-    
+    let lineIndex = 0;
+
     lines.forEach((line) => {
       line = line.trim();
       if (!line) return;
-      
-      // Scene headers: [Scene: ...] or [Location...]
+
       if (line.match(/^\[.*\]$/)) {
         const sceneText = line.replace(/[\[\]]/g, '');
-        
-        // Check if this is a confessional
         const isConfessional = sceneText.toLowerCase().includes('confessional');
-        
-        // Close previous confessional if we're starting a new scene (confessional or not)
+
         if (inConfessional && (isConfessional || !sceneText.toLowerCase().includes('confessional'))) {
           html += '</div>';
           inConfessional = false;
         }
-        
-        // Start new confessional
+
         if (isConfessional) {
           html += '<div class="confessional" style="animation-delay: ' + (lineIndex * 0.05) + 's">';
           html += '<div class="confessional-label">🎥 ' + escapeHtml(sceneText).toUpperCase() + '</div>';
@@ -2851,8 +2907,7 @@ async function generateEpisodeAI() {
           lineIndex++;
           return;
         }
-        
-        // Tribal Council detection with suspense
+
         if (sceneText.toLowerCase().includes('tribal') || sceneText.toLowerCase().includes('campfire ceremony')) {
           if (!inTribal) {
             html += '<div class="tribal-council" style="animation-delay: ' + (lineIndex * 0.05) + 's">';
@@ -2863,14 +2918,12 @@ async function generateEpisodeAI() {
           }
           return;
         }
-        
-        // Close tribal if new scene
+
         if (inTribal && !sceneText.toLowerCase().includes('tribal') && !sceneText.toLowerCase().includes('vote') && !sceneText.toLowerCase().includes('campfire')) {
           html += '</div>';
           inTribal = false;
         }
-        
-        // Regular scene with sticky header
+
         if (currentScene) html += '</div>';
         html += '<div class="scene">';
         html += '<div class="scene-header scene-sticky" style="animation-delay: ' + (lineIndex * 0.05) + 's">📍 ' + escapeHtml(sceneText) + '</div>';
@@ -2878,56 +2931,189 @@ async function generateEpisodeAI() {
         lineIndex++;
         return;
       }
-      
-      // Dialogue: "Name: Text" - rendered as chat bubbles
+
       const dialogueMatch = line.match(/^([A-Z][a-zA-Z\s']+):\s*(.+)$/);
       if (dialogueMatch) {
         let [, character, dialogue] = dialogueMatch;
         character = character.trim();
-        const charKey = character.toLowerCase();
-        const avatar = getCharacterAvatar(charKey);
-        
+        const avatar = getCharacterAvatar(character.toLowerCase());
         html += '<div class="dialogue-line chat-bubble" style="animation-delay: ' + (lineIndex * 0.05) + 's">';
         html += `<div class="character-avatar">${avatar}</div>`;
         html += '<div class="dialogue-bubble">';
         html += `<div class="character-name">${escapeHtml(character)}</div>`;
         html += `<div class="dialogue-text">${escapeHtml(dialogue)}</div>`;
-        html += '</div>';
-        html += '</div>';
+        html += '</div></div>';
         lineIndex++;
         return;
       }
-      
-      // Elimination announcement - special styling in Tribal
+
       if (line.toLowerCase().includes('eliminated') || line.toLowerCase().includes('voted out')) {
-        html += `<div class="eliminated-player" style="animation-delay: ' + (lineIndex * 0.05) + 's">`;
+        html += `<div class="eliminated-player" style="animation-delay: ${lineIndex * 0.05}s">`;
         html += `<div class="eliminated-message">${escapeHtml(line)}</div>`;
-        html += `</div>`;
+        html += '</div>';
         lineIndex++;
         return;
       }
-      
-      // Vote reveals in Tribal Council with suspense animation
+
       if (inTribal && (line.toLowerCase().includes('vote') || line.toLowerCase().includes('marshmallow'))) {
         html += `<div class="vote-reveal suspense-reveal" style="animation-delay: ${lineIndex * 0.1}s">${escapeHtml(line)}</div>`;
         lineIndex++;
         return;
       }
-      
-      // Stage directions or other text
+
       html += `<div class="stage-direction" style="animation-delay: ${lineIndex * 0.05}s">${escapeHtml(line)}</div>`;
       lineIndex++;
     });
-    
-    // Close any open sections
+
     if (currentScene) html += '</div>';
     if (inConfessional) html += '</div>';
     if (inTribal) html += '</div>';
-    
     html += '</div>';
     return html;
   }
-  
+
+  // ORIGINAL parseTranscript (script-reader) — kept for reference, not called
+  function _parseTranscript_scriptReader(text) {
+    const lines = text.split('\n');
+    const scenes = []; // { id, label } for TOC
+    let sceneCount = 0;
+
+    // First pass: collect scene labels for TOC
+    lines.forEach(raw => {
+      const line = raw.trim();
+      if (!line) return;
+      if (/^\[.*\]$/.test(line)) {
+        const tag = line.replace(/[\[\]]/g, '').trim();
+        const low = tag.toLowerCase();
+        if (low.includes('previously on')) return; // skip in TOC
+        sceneCount++;
+        const id = 'ep-scene-' + sceneCount;
+        const isTribal = low.includes('tribal') || low.includes('campfire ceremony');
+        const isConf = low.includes('confessional');
+        scenes.push({ id, label: isTribal ? '🔥 ' + tag : isConf ? '🎥 ' + tag : tag });
+      }
+    });
+
+    // Build TOC
+    let tocHtml = '';
+    if (scenes.length) {
+      tocHtml = '<div class="ep-toc">';
+      scenes.forEach(s => {
+        tocHtml += `<button class="ep-toc-btn" onclick="document.getElementById('${s.id}')?.scrollIntoView({behavior:'smooth',block:'start'})">${escapeHtml(s.label)}</button>`;
+      });
+      tocHtml += '</div>';
+    }
+
+    // Second pass: render body
+    let body = '';
+    let state = 'default'; // 'default' | 'scene' | 'confessional' | 'tribal'
+    let sceneIdx = 0;
+    let prevParagraph = ''; // accumulate "Previously On" lines
+
+    const close = () => {
+      if (state === 'scene')       { body += '</div>'; }
+      if (state === 'confessional') { body += '</div>'; }
+      if (state === 'tribal')      { body += '</div>'; }
+      state = 'default';
+    };
+
+    lines.forEach(raw => {
+      const line = raw.trim();
+      if (!line) {
+        // Empty line: if in previously block, close it
+        if (prevParagraph) {
+          body += `<div class="ep-previously"><div class="ep-previously-label">Previously on Total Drama</div><div class="ep-previously-text">${prevParagraph}</div></div>`;
+          prevParagraph = '';
+        }
+        return;
+      }
+
+      // ── Bracket tags [...]
+      if (/^\[.*\]$/.test(line)) {
+        const tag = line.replace(/[\[\]]/g, '').trim();
+        const low = tag.toLowerCase();
+
+        if (low.startsWith('previously on') || low.startsWith('previously,')) {
+          close();
+          // The host recap text will follow as normal lines — flag state
+          state = 'previously';
+          return;
+        }
+
+        if (low.includes('confessional')) {
+          close();
+          sceneIdx++;
+          const id = 'ep-scene-' + sceneIdx;
+          const who = tag.replace(/confessional\s*[:\-]?\s*/i, '').replace(/[:\-]\s*confessional\s*/i, '').trim() || 'Confessional';
+          body += `<div class="ep-confessional" id="${id}"><div class="ep-rec">REC</div><div class="ep-confessional-who">${escapeHtml(who)}</div>`;
+          state = 'confessional';
+          return;
+        }
+
+        if (low.includes('tribal') || low.includes('campfire ceremony')) {
+          close();
+          sceneIdx++;
+          const id = 'ep-scene-' + sceneIdx;
+          body += `<div class="ep-tribal" id="${id}"><div class="ep-tribal-header">🔥 ${escapeHtml(tag)} 🔥</div>`;
+          state = 'tribal';
+          return;
+        }
+
+        // Regular scene — only if tag looks like a scene header
+        if (/^(scene[:\s]|int\.|ext\.|int\/ext\.)/i.test(tag)) {
+          close();
+          sceneIdx++;
+          const id = 'ep-scene-' + sceneIdx;
+          const slug = tag.replace(/^scene\s*:\s*/i, '');
+          body += `<div class="ep-scene" id="${id}"><div class="ep-slug">${escapeHtml(slug)}</div>`;
+          state = 'scene';
+          return;
+        }
+
+        // Anything else in brackets is a stage direction
+        body += `<div class="ep-action">${escapeHtml(tag)}</div>`;
+        return;
+      }
+
+      // ── Flush "Previously On" host recap text
+      if (state === 'previously') {
+        prevParagraph += (prevParagraph ? ' ' : '') + line;
+        return;
+      }
+
+      // ── Dialogue: "Name: text" or "Name (note): text"
+      const dlg = line.match(/^([A-ZÀ-Ö][a-zA-ZÀ-ÿ' \-]+?)(?:\s*\([^)]*\))?:\s*(.+)$/);
+      if (dlg) {
+        const [, speaker, speech] = dlg;
+        if (state === 'tribal' && (speech.toLowerCase().includes('vote') || speech.toLowerCase().includes('marshmallow'))) {
+          body += `<div class="ep-vote"><span class="ep-speaker" style="min-width:90px;text-align:right;">${escapeHtml(speaker.trim())}</span><span class="ep-speech">${escapeHtml(speech)}</span></div>`;
+        } else {
+          body += `<div class="ep-line"><span class="ep-speaker">${escapeHtml(speaker.trim())}</span><span class="ep-speech">${escapeHtml(speech)}</span></div>`;
+        }
+        return;
+      }
+
+      // ── Elimination lines
+      if (line.toLowerCase().includes('has been eliminated') || line.toLowerCase().includes('voted out') || line.toLowerCase().includes('tribe has spoken') || line.toLowerCase().match(/^the \d+(st|nd|rd|th) person/i)) {
+        body += `<div class="ep-elimination"><div class="ep-elimination-name">🚫 ${escapeHtml(line)}</div></div>`;
+        return;
+      }
+
+      // ── Stage direction / narration
+      const indent = (state === 'confessional') ? ' style="padding-left:0"' : '';
+      body += `<div class="ep-action"${indent}>${escapeHtml(line)}</div>`;
+    });
+
+    // Close any open block
+    close();
+    // Flush any leftover Previously On
+    if (prevParagraph) {
+      body = `<div class="ep-previously"><div class="ep-previously-label">Previously on Total Drama</div><div class="ep-previously-text">${prevParagraph}</div></div>` + body;
+    }
+
+    return `<div class="ep-view"><div class="ep-body">${body}</div></div>`;
+  }
+
   // Get character avatar (image or emoji)
   function getCharacterAvatar(characterName) {
     const key = characterName.toLowerCase().replace(/\s+/g, '-');

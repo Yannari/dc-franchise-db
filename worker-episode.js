@@ -1190,25 +1190,30 @@ Summary says: "Alejandro had a meltdown to appear less threatening"
 ═══════════════════════════════════════════════════════════
 
 **CHRIS MCLEAN'S "PREVIOUSLY ON" RECAP:**
-- Write like a sadistic game show host who LOVES drama
-- Use vivid, cinematic language with personality
-- NEVER use the summary's exact phrasing
-- Make it punchy, sarcastic, and entertaining
 
-**Examples of GOOD Chris recaps:**
-✅ "Gwen and Cameron became the brainy backbone of the new Villains" 
-   → Creative, visual, flows naturally
+Chris is MEAN and DELIGHTED. He picks 1-2 genuinely sharp moments and lands them hard. The rest is blunt and direct. He does NOT try to be clever on every single line — he's not writing a Twitter thread. He savors specific suffering. The humor comes from how much he enjoys what happened, not from chains of wordplay.
 
-✅ "Mickey stockpiled power and panic"
-   → Alliteration, concise, captures his character
+**THE CORE RULE:**
+Chris picks ONE thing that happened to each relevant player and says it plainly but cruelly. Short sentences. Active verbs. Specific moments. NOT six clever phrases in a row — that sounds like an AI trying to be witty.
 
-✅ "Stephanie sharpened her idol like a butter knife in a prison yard"
-   → VIVID metaphor, totally original
+**Real Chris energy:**
+✅ "Ryan decided being nice was a strategy. I fixed that."
+✅ "Mickey? Panic with legs." — short, specific, cruel. Done.
+✅ "Scott found something shiny and smiled about it all episode."
+✅ "Today we smash the tribes together and light the fuse. Who blows first?"
 
-**Examples of BAD Chris recaps (DON'T DO THIS):**
-❌ "Jo made enemies because cardio" → Makes no sense
-❌ "Scarlett's meltdown brewed" → Boring, copied from summary
-❌ "Alejandro tried the 'I'm totally chill' meltdown" → Confusing word salad
+**What NOT to do:**
+❌ "Ryan tried to bench-press the season and got benched." → Forced double wordplay. Chris doesn't do pun chains.
+❌ "Stephanie hugged an idol to the exit." → "Hugged an idol" is a weird verb construction that doesn't land.
+❌ "Zoey and Carrie went soft focus, then hard bye-bye." → Film terminology used awkwardly. Not how anyone talks.
+❌ "Swap chaos, truth bombs, and one very sad ice bath." → "Truth bombs" is internet slang. Not Chris.
+
+The pattern to avoid: *every phrase is a wordplay construction*. That's the AI's tell. Chris uses plain language and is funny because of WHAT he's saying (he's happy someone suffered), not HOW he's saying it.
+
+**FORMAT:**
+- 4-6 sentences total. Not every player needs a mention — pick the ones with the best moments.
+- End always with a tease for THIS episode: something that will happen today, said with sadistic anticipation.
+- "Find out right now on Total! Drama! [Season Name]!" is the correct closer.
 
 **DIALOGUE MUST SOUND HUMAN:**
 - People use contractions: "I'm", "don't", "can't", "y'all"
@@ -2099,6 +2104,16 @@ EPISODE STRUCTURE (CRITICAL)
    - "Previously on..." recap with Chris McLean
    - Immediate character drama OR strategic conversation
    - Sets up episode's emotional/strategic arc
+
+1b. **MERGE ANNOUNCEMENT — MANDATORY if this is a merge episode**
+   If ## EPISODE TYPE is MERGED, the episode MUST contain a formal merge announcement scene BEFORE the game continues. This is a major TV moment — do not skip it or have it happen offscreen.
+   - Chris gathers ALL players (they arrive from different directions, old tribemates together for the last time)
+   - Chris announces the merge dramatically — new tribe name, new buffs, merge feast revealed
+   - Players REACT in real-time: some are relieved, some are calculating, some are scared, rivals are suddenly standing next to each other
+   - Old alliances make eye contact across the group — silent acknowledgment of "now it's different"
+   - The feast is a scene: people eat, people talk, people strategize while pretending not to
+   - At least one confessional during or after the feast about what the merge means for that specific player's game
+   The merge announcement is one of the most dramatic moments of any Survivor-style season. Write it like it matters.
 
 2. **MORNING CAMP LIFE (100-150 lines)**
    - Multiple camp scenes showing different relationships

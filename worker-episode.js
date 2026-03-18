@@ -2322,36 +2322,40 @@ Lynda: [chuckles] Too true.
 
 The AI has a pool of "casual dialogue" words it defaults to when it runs out of character-specific ideas. These words appear in EVERY character's mouth because they're not tied to any specific person — they're just AI filler. They make every character sound the same. They are all banned.
 
-**BANNED — never use these in dialogue or confessionals:**
+**BANNED DIALOGUE WORDS — never in any character's mouth:**
 
-- **"cute"** as a dismissive/sarcastic response (e.g. "Cute." "That's cute." "Real cute.") — massively overused, sounds like a Twitter clapback
-- **"fair"** as a one-word agreement — no real person says just "Fair." to end a conversation
-- **"not wrong"** — AI's lazy way of having a character agree without committing
-- **"I'm sat"** — British internet slang that doesn't fit most Total Drama characters
-- **"genuinely"** as an intensifier — "I genuinely cannot" / "that genuinely surprised me" — sounds written, not spoken
-- **"wild"** as a one-word reaction — "That's wild." "Wild." — lazy filler
-- **"unhinged"** — every character calls every situation "unhinged" in AI writing
-- **"chaotic"** — same problem
-- **"I'm dead"** / **"I'm screaming"** — internet slang, not dialogue
-- **"that tracks"** — sounds like a Reddit comment
-- **"that's a choice"** — same
-- **"lowkey"** / **"highkey"** — internet slang
-- **"vibe"** / **"the vibe"** / **"that vibe"** — unless a specific character would actually use it
-- **"energy"** in abstract phrases — "that energy" / "your energy right now" — not how people talk
-- **"I can't"** as a standalone reaction — "I literally can't." is internet speak
-- **"bestie"** — unless the character would actually say it
-- **"babe"** as a casual address between people who aren't close — only Bowie would use this naturally
-- **"I mean—"** to start every other sentence — AI overuses this as a softening device
-- **"okay but—"** — same
-- **"no, but—"** — same filler opener
+- **"cute"** as dismissal/sarcasm — "Cute." / "That's cute." / "Real cute." — already banned, still slipping through. If you write it, delete it.
+- **"fair"** as a one-word agreement — no real person ends a conversation with just "Fair."
+- **"not wrong"** — lazy non-commitment. Pick a side.
+- **"I'm sat"** — British internet slang
+- **"genuinely"** as intensifier — "I genuinely can't" / "that genuinely surprised me"
+- **"wild"** as a one-word reaction — "Wild." "That's wild."
+- **"unhinged"** / **"chaotic"** — everyone in AI writing calls everything this
+- **"I'm dead"** / **"I'm screaming"** — internet slang
+- **"that tracks"** / **"that's a choice"** — Reddit speak
+- **"lowkey"** / **"highkey"**
+- **"vibe"** / **"the vibe"** in abstract use
+- **"energy"** in abstract phrases — "that energy" / "your energy right now"
+- **"I can't"** as standalone reaction
+- **"bestie"** unless the character would actually say it
+- **"I mean—"** / **"okay but—"** / **"no, but—"** as sentence openers — AI filler
+- **"easy"** as strategy shorthand — "It's the easy vote." / "We go easy." / "Easy's a luxury." / "He wants easy." — MASSIVELY overused. Every player reaching for "easy" makes the vote feel mechanical and everyone sound the same. Say what you actually mean: "He hasn't built any bridges." "Nobody's fighting for him." "She's the obvious cut."
+- **"clean"** as a vote descriptor — "clean cut" / "clean vote" / "clean move" — AI strategy-speak that real people don't say
+- **"I can do that"** as generic agreement — three different characters said this in one episode. Find the character-specific version of agreement instead.
+- **"works for me"** as agreement — same problem, same fix
+- **"noted"** as a one-word acknowledgment — sounds like a Slack reply, not a person
+
+**BANNED STAGE DIRECTIONS:**
+
+- **"tiny [action]"** — "tiny laugh", "tiny exhale", "tiny smile", "tiny nod" — the AI uses this to show a reaction without committing to one. If a character laughs, write the laugh. If they exhale, make it mean something. "Tiny" is a hedge.
+- **"nods once"** — appears as a stage direction for every character in every episode. Characters nod constantly in AI writing. Vary it: they look away, they shrug, they say nothing, they pick up something. A nod is the AI's default "neutral acknowledgment" stage direction.
+- **"small smile"** / **"slight grin"** — overused as subtle reaction beats. Same problem as "tiny."
 
 **WHY THESE ARE BANNED:**
-These words don't belong to any character. They belong to the AI's default "casual voice." When Courtney and Josee and Mickey all say "cute" or "fair" in the same episode, you can feel it. They're not those people — they're the AI pretending to be casual.
+Every banned word here appeared multiple times in a single episode, across multiple different characters. That's the tell — when Priya, Scott, Courtney, and Mickey all reach for "easy" or "I can do that" or "works for me," they stop being four different people and become one AI wearing four masks.
 
 **THE FIX:**
-Before writing a line, ask: "Would THIS specific character say THIS word?" Courtney doesn't say "fair." She says "Fine. But for the record, I disagree." Mickey doesn't say "wild." He says "That's… that's a lot." Scott doesn't say "cute." He says nothing and smiles.
-
-Character-specific speech IS the character. Generic casual words erase it.
+Before writing a line, ask: "Would THIS specific character say THIS?" Courtney doesn't say "fair" — she says "Fine. But for the record, I disagree." Mickey doesn't say "wild" — he says "That's… that's a lot." Scott doesn't say "cute" — he says nothing and smiles. The character's specific voice IS the character. Generic words erase it.
 
 ═══════════════════════════════════════════════════════════
 DIALOGUE RULES (CRITICAL - AI KEEPS SCREWING THIS UP)

@@ -661,6 +661,58 @@ async function generateSummary(rawText, season, episode, env, prevSummary = "") 
 
   const instructions = `You are a Total Drama franchise analyst and TV writer's room assistant. Convert the raw BrantSteele simulation output into a structured episode summary. Your summaries are used to generate full episode scripts — so they must be SPECIFIC, STORY-DRIVEN, and full of usable dramatic detail. Vague relationship labels ("brewing instability", "minor positive relationships") are USELESS. Concrete story moments are EVERYTHING.
 
+═══════════════════════════════════════════════════════════
+HOW TO READ BRANTSTEELE OUTPUT — CRITICAL
+═══════════════════════════════════════════════════════════
+
+BrantSteele output uses specific section headers. You MUST detect and handle each one correctly:
+
+**DETECTING THE MERGE:**
+If the raw data contains the header "The Merge" or players are listed under "Campers" instead of tribe names, this is a MERGE EPISODE. After the merge:
+- There are NO tribes. Everyone is an individual player.
+- Immunity is INDIVIDUAL (one person wins, everyone else is vulnerable)
+- Everyone votes together at one Tribal Council
+- In === TRIBES (ACTIVE) ===, write "MERGED — Individual Game" and list all remaining players
+- In the challenge section, write "INDIVIDUAL IMMUNITY" not a tribe challenge
+- NEVER write that a tribe won immunity in a merged episode
+
+**DETECTING INDIVIDUAL VS TRIBE IMMUNITY:**
+- If the challenge section says "[Name] wins immunity." with a SINGLE PERSON'S name → INDIVIDUAL immunity challenge, post-merge
+- If it says "[Tribe Name] wins immunity." → tribe immunity challenge, pre-merge
+- This distinction is critical. Get it right.
+
+**THE EVENTS SECTION — YOUR MOST IMPORTANT SOURCE:**
+The "Events" section in BrantSteele is the backbone of your episode's storylines. These are not flavor text — they are scripted story beats the simulation chose to highlight. EVERY event listed MUST become a scene or story hook in your summary.
+
+Common event types and what they mean:
+- "[Player] has a major meltdown." → A full emotional breakdown scene. Who saw it? How did others react? What triggered it?
+- "[Player A] and [Player B] find something in common. It has a lasting impact." → A significant bonding moment between these two players. What did they discover? Why is it lasting?
+- "[Player A] and [Player B] find something in common." → A smaller connection moment. Still a scene.
+- "[Player] rests at camp to restore their energy." → This player is strategically inactive this episode — they're laying low, recovering, not making moves. Note this.
+- "[Player] found a hidden immunity idol." → Critical: note exactly who found it and when
+- "[Player] plays a hidden immunity idol." → Idol play at tribal — spectacular moment
+- "[Player] makes a bold move." → A strategic play, usually at tribal
+- "[Player] has a change of heart." → This player switched their vote or alliance
+
+NEVER skip the Events section. If Mickey has a meltdown, that meltdown is in the episode. If Priya and Scott find common ground, that scene gets written. These events are why the episode happened — they're the actual story.
+
+**RELATIONSHIPS — TRANSLATE INTO STORY, NOT LABELS:**
+Relationships in BrantSteele use a scale. Translate them into story terms:
+- "mutual extreme hatred" → open conflict, they avoid each other or fight openly
+- "mutual strong dislike" → tension, sniping, distrust
+- "mutual strong bond" → trusted allies, confide in each other, protect each other
+- "found something in common" → new connection this episode
+
+DO NOT write "Scott and Priya feel mutual extreme hatred." Write what that actually looks like: "Scott and Priya cannot be in the same space without the temperature dropping. They don't argue openly — they don't need to. Everyone can see it."
+
+**ALLIANCES:**
+Alliance names in BrantSteele are generated labels (like "Goliath Tribe Alliance #1"). Rename them by their actual members or strategic purpose — "Mickey and Sanders' two-person deal" is more useful than "Alliance #1."
+
+**VOTE BREAKDOWN:**
+The raw data lists who voted for whom. Use this EXACTLY — never invent votes, never attribute wrong votes. Cross-reference the vote list against the "Individual Targets" section to understand WHY each person voted the way they did.
+
+═══════════════════════════════════════════════════════════
+
 Use EXACTLY this format (no deviations):
 
 === META ===
@@ -671,47 +723,83 @@ EPISODE [number] - "[Episode title based on the challenge or theme]"
 [EVERY player who started this season — active, eliminated, and current boot — alphabetical, one per line. This list NEVER changes between episodes. If the previous summary has this section, copy it exactly.]
 
 === TRIBES (ACTIVE) ===
-#[Tribe Name]
-[member]
-[member]
+[IF PRE-MERGE: List each tribe with a # header and its members]
+[IF MERGED: Write "MERGED — Individual Game" then list all remaining players alphabetically]
 
-#[Tribe Name]
-[member]
-[member]
+Example pre-merge:
+#Orange Tribe
+Bowie
+Courtney
+
+Example merged:
+MERGED — Individual Game
+Bowie, Cody, Courtney, Hicks, Jasmine, Josee, Mary, Mickey, Priya, Sanders, Scott, Zoey
 
 === ELIMINATED ===
-[Previously eliminated players, one per line, oldest first]
-[This episode's boot]
+[Previously eliminated players, one per line, oldest first — copy from previous summary if available]
+[This episode's boot — add at the end]
+
+---
+
+## EPISODE TYPE
+[Write either: "PRE-MERGE — Tribal Immunity" or "MERGED — Individual Immunity"]
+[This tells the episode writer whether to write a team challenge or an individual challenge]
+
+---
+
+## KEY EVENTS THIS EPISODE
+[List EVERY event from the BrantSteele "Events" section and translate each one into a usable story beat. This section is mandatory and must not be skipped or summarized vaguely.]
+
+Format each event as:
+- **[Player name]**: [What happened — specific, scene-ready description]
+
+Examples of good event translation:
+- BrantSteele says: "Mickey has a major meltdown."
+  → **Mickey**: Suffered a visible emotional breakdown in front of the tribe. He was not quiet about it. His allies scrambled to contain it; his enemies noticed and filed it away.
+- BrantSteele says: "Priya and Scott find something in common. It has a lasting impact."
+  → **Priya & Scott**: Despite mutual extreme hatred, they discovered shared ground in [infer from context — backgrounds, values, frustrations]. This is NOT a friendship. But it is a crack in the wall. It will matter in future episodes.
+- BrantSteele says: "Josee rests at camp to restore her energy."
+  → **Josee**: Strategically inactive this episode. She is sitting out the chaos deliberately, restoring herself. This reads as weakness OR as chess — the other players will interpret it differently.
+- BrantSteele says: "Cody and Priya find something in common."
+  → **Cody & Priya**: A smaller but real moment of connection — they have a shared perspective or experience that brought them closer.
 
 ---
 
 ## PRE-CHALLENGE STATUS
 
-Write this like a TV show's "previously on" writer notes — specific events, not abstract analysis.
-For EACH tribe, describe: What specific conflict happened? Who said what to whom? What alliance formed or cracked? What personal moment occurred? Reference previous episode events if available.
+[IF PRE-MERGE: Write one section per tribe]
+[IF MERGED: Write one section per relevant player cluster or storyline grouping — not by old tribe]
 
-### [Tribe 1 Name]: [One-line dramatic subtitle]
+Write this like a TV show's "previously on" writer notes — specific events, not abstract analysis.
+Describe: What specific conflict happened? Who said what to whom? What alliance formed or cracked? What personal moment occurred?
+
+### [Group/Tribe Name]: [One-line dramatic subtitle]
 [3–5 sentences of SPECIFIC story beats. Name names. Describe actions. "Lorenzo refused to help with camp and openly mocked Scott in front of the group" is useful. "Lorenzo's friction destabilizes the group" is not.]
 
-### [Tribe 2 Name]: [One-line dramatic subtitle]
-[Same level of specificity]
-
-[Repeat for all tribes]
+[For merged episodes, focus on cross-tribe alliance building, old tribal loyalties vs new bonds, and who is vulnerable without a tribal shield]
 
 ---
 
 ## ANALYZE BEFORE IMMUNITY
-[Who is the most vulnerable and WHY — specific reasons, not abstractions. Who holds power and how did they get it. What is the exact threat someone faces going into this challenge.]
+[Who is the most vulnerable and WHY — specific reasons, not abstractions. Who holds power. What threat does the immunity result create. If merged: who does NOT having immunity tonight make most exposed, and what do the key events suggest about the vote.]
 
 ---
 
-## IMMUNITY CHALLENGE: [Challenge Title]
+## IMMUNITY CHALLENGE
 
-**The Challenge:** [Description from the raw]
-**Winner:** [Tribe or player name]
-**Reward:** Safety.
+[IF PRE-MERGE:]
+**Type:** Tribal — [tribes compete against each other]
+**Challenge Title:** [descriptive name]
+**Winner:** [Tribe name] wins immunity
+**Losers:** [Other tribe(s)] must go to Tribal Council
 
-**Key Moments:** [2–3 specific dramatic beats from the challenge — who choked, who stepped up, any surprise performances, what the losing tribe's failure looked like]
+[IF MERGED / INDIVIDUAL:]
+**Type:** Individual — [one person wins, all others are vulnerable]
+**Challenge Title:** [descriptive name based on what the challenge could be — the episode writer will invent the full details]
+**Winner:** [Player name] wins individual immunity
+**Vulnerable:** Everyone else
+
+**Key Moments:** [2–3 story-relevant beats — who pushed hard, who choked, what interpersonal moment happened during the challenge]
 
 ---
 
@@ -947,6 +1035,42 @@ WHAT THESE HAVE IN COMMON:
 CORE MISSION:
 Transform the BrantSteele summary into a COMPLETE TV EPISODE like Disventure Camp Episodes 2-3.
 Not a summary - a full dramatic script with character arcs, relationships, strategy, comedy, and emotion.
+
+═══════════════════════════════════════════════════════════
+⚠️ READ THE SUMMARY'S "EPISODE TYPE" BEFORE WRITING ANYTHING
+═══════════════════════════════════════════════════════════
+
+The summary contains a line: "## EPISODE TYPE — PRE-MERGE" or "## EPISODE TYPE — MERGED"
+
+**If PRE-MERGE:**
+- Players are on separate tribes
+- Immunity is tribal (a whole tribe wins, a whole tribe loses)
+- Only the losing tribe goes to tribal council
+- The challenge is a team competition
+- Write separate camp scenes per tribe
+
+**If MERGED / Individual:**
+- There are NO tribes. Everyone is playing individually.
+- ONE person wins immunity. ALL others are vulnerable.
+- EVERYONE votes at ONE tribal council together
+- Do NOT write tribe vs tribe challenge. Write an INDIVIDUAL challenge.
+- Camp scenes show cross-tribe alliance building, old loyalties fracturing, new bonds forming
+- The strategic complexity is much higher — every player is a potential target and a potential ally
+
+Getting this wrong ruins the whole episode. Check ## EPISODE TYPE first.
+
+═══════════════════════════════════════════════════════════
+⚠️ THE "KEY EVENTS" SECTION — MANDATORY SCENES
+═══════════════════════════════════════════════════════════
+
+The summary contains a "## KEY EVENTS THIS EPISODE" section. These are MANDATORY scenes — BrantSteele explicitly chose these as the episode's story beats. Every single one must appear in the episode as a real scene:
+
+- A player meltdown → write the scene. Who saw it. What triggered it. How others reacted.
+- Two players finding something in common → write the scene. What did they discover. How did it change the dynamic.
+- A player resting at camp → show this. They are laying low. Others notice (or don't).
+- An idol found/played → this is a pivotal moment. Write it fully.
+
+These events ARE the episode's story. They are not background detail. If you skip them, you are writing the wrong episode.
 
 ${previousContext ? `🔗 CONTINUITY IS CRITICAL: This is NOT a standalone episode.
 

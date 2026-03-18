@@ -2178,6 +2178,8 @@ EPISODE STRUCTURE (CRITICAL)
    - Chris makes sarcastic comments throughout
 
 7. **EXIT CONFESSIONAL & TAG (15-25 lines)**
+   - ⚠️ THE ELIMINATED PLAYER MUST HAVE A FINAL CONFESSIONAL. This is non-negotiable. Every boot gets one last confessional — on the boat, at the dock, walking away, wherever. It is their last moment to speak directly to the audience. Do not skip it.
+   - The confessional should sound like THEM, not a generic exit speech. How do they actually feel? Bitter? Relieved? Proud? Unbothered? Blindsided? Let it be specific to who they are.
    - The eliminated player's walk to the Dock of Shame is a SCENE, not a goodbye wave
    - Give them a final act that is funny, painful, or consequential — something that makes their exit memorable
    - Someone escorts them out? That escort can reveal something. The boot can say something to one specific person. Something can go wrong at the dock (always more interesting than a clean exit)

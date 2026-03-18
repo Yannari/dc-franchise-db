@@ -2690,8 +2690,13 @@ Dave voted for Mickey
 
   async function autoSummarize(season, episode, rawText, workerUrl) {
     const url = workerUrl || EPISODE_WORKER_URL;
-    // Pass previous episode's summary so the AI knows the full elimination history
-    const prevSummary = episode > 1 ? (localStorage.getItem(`AI_SUMMARY_s${season}_e${episode - 1}`) || '') : '';
+    // Pass up to 3 previous summaries so ongoing storylines can chain properly
+    const prevSummaries = [];
+    for (let i = Math.max(1, episode - 3); i < episode; i++) {
+      const s = localStorage.getItem(`AI_SUMMARY_s${season}_e${i}`);
+      if (s) prevSummaries.push(`--- Episode ${i} Summary ---\n${s}`);
+    }
+    const prevSummary = prevSummaries.join('\n\n');
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

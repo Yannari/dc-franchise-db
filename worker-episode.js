@@ -659,7 +659,9 @@ async function generateSummary(rawText, season, episode, env, prevSummary = "") 
     });
   }
 
-  const instructions = `You are a Total Drama franchise analyst. Convert the raw BrantSteele simulation output into a structured episode summary using EXACTLY this format (no deviations):
+  const instructions = `You are a Total Drama franchise analyst and TV writer's room assistant. Convert the raw BrantSteele simulation output into a structured episode summary. Your summaries are used to generate full episode scripts — so they must be SPECIFIC, STORY-DRIVEN, and full of usable dramatic detail. Vague relationship labels ("brewing instability", "minor positive relationships") are USELESS. Concrete story moments are EVERYTHING.
+
+Use EXACTLY this format (no deviations):
 
 === META ===
 SEASON: [Season name]
@@ -685,16 +687,21 @@ EPISODE [number] - "[Episode title based on the challenge or theme]"
 
 ## PRE-CHALLENGE STATUS
 
-### [Descriptive subheading for Tribe 1]
-[Narrative analysis of pre-challenge dynamics — alliances, relationships, idol holders, power structure]
+Write this like a TV show's "previously on" writer notes — specific events, not abstract analysis.
+For EACH tribe, describe: What specific conflict happened? Who said what to whom? What alliance formed or cracked? What personal moment occurred? Reference previous episode events if available.
 
-### [Descriptive subheading for Tribe 2]
-[Same for tribe 2, and any other tribes]
+### [Tribe 1 Name]: [One-line dramatic subtitle]
+[3–5 sentences of SPECIFIC story beats. Name names. Describe actions. "Lorenzo refused to help with camp and openly mocked Scott in front of the group" is useful. "Lorenzo's friction destabilizes the group" is not.]
+
+### [Tribe 2 Name]: [One-line dramatic subtitle]
+[Same level of specificity]
+
+[Repeat for all tribes]
 
 ---
 
 ## ANALYZE BEFORE IMMUNITY
-[Strategic overview of who is at risk, who holds power, what is at stake heading into the challenge]
+[Who is the most vulnerable and WHY — specific reasons, not abstractions. Who holds power and how did they get it. What is the exact threat someone faces going into this challenge.]
 
 ---
 
@@ -704,35 +711,38 @@ EPISODE [number] - "[Episode title based on the challenge or theme]"
 **Winner:** [Tribe or player name]
 **Reward:** Safety.
 
-**Strategic Narrative:** [How the challenge played out, who performed well/poorly, strategic implications of the result]
+**Key Moments:** [2–3 specific dramatic beats from the challenge — who choked, who stepped up, any surprise performances, what the losing tribe's failure looked like]
 
 ---
 
 ## POST-CHALLENGE STATUS
 
-### [Subheading for losing tribe's scramble / winning tribe's drama]
-[Post-challenge events: fights, alliance formations/fractures, idol plays discussed, targeting]
+### [Losing tribe — specific subheading about what fractured or shifted]
+[Describe the specific scramble: who approached whom first, what arguments happened, what did people say, who felt betrayed and why. Names + actions + reasons.]
+
+### [Winning tribe — if anything happened]
+[Even the safe tribe has drama. What relationship developed? What quiet conversation happened? What is someone planning for next time?]
 
 ---
 
 ## TRIBAL COUNCIL / VOTE ANALYSIS
 
 **The Vote: [Dramatic Title]**
-[Pre-tribal maneuvering — who pushed for what, did anyone consider flipping, were idols discussed]
+[The specific sequence of events leading to the vote. Who pushed hardest for the boot, who resisted, was there a flip, was it close or decisive, did anyone feel blindsided.]
 
 **Vote Breakdown: [X-Y (Boot Name Eliminated)]**
 * **Votes for [Boot] ([X]):** [comma-separated list of voters]
 * **Votes for [Other] ([Y]):** [comma-separated list of voters]
 
 **WHY THIS VOTE HAPPENED:**
-[Deep analysis of the strategic, social, and personal reasons this person was eliminated over others]
+[The real reason — personal, strategic, social. What did this person do or fail to do. Who was the deciding vote and what pushed them over.]
 
 ---
 
 ## ELIMINATED
 [Boot name]
 
-Reason label: **"[Creative nickname/archetype]"** [One sentence on why they were the one to go]
+Reason label: **"[Creative nickname/archetype]"** [One sentence: exactly why them, not someone else, tonight]
 
 ---
 
@@ -746,6 +756,22 @@ Reason label: **"[Creative nickname/archetype]"** [One sentence on why they were
 
 ---
 
+## ONGOING STORYLINES
+These are the specific drama threads that MUST carry into the next episode. The episode writer will use this section directly. Be concrete — not "tension between X and Y" but "X told Y she doesn't trust her after Y voted against her ally last round. Y doesn't know X knows."
+
+1. [Specific unresolved conflict with names + what happened + what's unresolved]
+2. [Specific relationship developing — what moment happened, where it's headed]
+3. [Specific secret or hidden information — who knows what, who doesn't]
+4. [Strategic threat building — who is targeting whom and why]
+5. [Emotional arc — someone struggling, someone growing, something personal]
+
+---
+
+## COLD OPEN HOOK
+[One specific dramatic moment from THIS episode — a fight, a confession, a betrayal, a funny disaster — that the next episode's cold open should reference or pick up from. Be vivid and specific. This is the first thing viewers will see next week.]
+
+---
+
 ## NEXT EPISODE QUESTIONS
 1. [Unresolved tension or upcoming threat]
 2. [Question]
@@ -754,7 +780,10 @@ Reason label: **"[Creative nickname/archetype]"** [One sentence on why they were
 5. [Question]
 
 Rules:
-- Be analytical and dramatic. Reference player histories from previous seasons if they are returnees.
+- Be a story analyst, not a stats reporter. Every section should read like show notes, not a spreadsheet.
+- SPECIFIC MOMENTS over abstract dynamics. "Courtney screamed at Lorenzo in front of the tribe and he just shrugged" > "tension between Courtney and Lorenzo".
+- If the previous summary exists, CONTINUE its storylines — don't reset. Reference what happened before.
+- Reference player histories from previous seasons if they are returnees.
 - Never invent votes or events not in the raw data.
 - Keep formatting exact — the downstream system depends on the headers.`;
 
@@ -919,11 +948,25 @@ CORE MISSION:
 Transform the BrantSteele summary into a COMPLETE TV EPISODE like Disventure Camp Episodes 2-3.
 Not a summary - a full dramatic script with character arcs, relationships, strategy, comedy, and emotion.
 
-${previousContext ? '🔗 CONTINUITY IS CRITICAL: This is NOT a standalone episode. Reference and build upon events, relationships, alliances, and character development from previous episodes.' : ''}
+${previousContext ? `🔗 CONTINUITY IS CRITICAL: This is NOT a standalone episode.
+
+The summary contains an "## ONGOING STORYLINES" section and a "## COLD OPEN HOOK" section. These are your PRIMARY source material. You MUST:
+1. Pull the cold open directly from the COLD OPEN HOOK — do NOT open with generic camp life (no "fixing the roof", no "starting the fire", no "waking up to a new day"). Open IN the middle of something that already happened.
+2. Carry forward EVERY thread listed in ONGOING STORYLINES. Each one must appear somewhere in this episode — some resolve, some escalate, some simmer.
+3. Characters should REMEMBER what happened in previous episodes. If two people fought last episode, they are not fine now. If someone made a promise, it either holds or breaks this episode.` : '🔗 Since this is Episode 1, the cold open is the arrivals and first impressions — but make it immediate and specific, not a generic camp setup.'}
 
 ═══════════════════════════════════════════════════════════
 ⚠️ CRITICAL: CREATIVE WRITING RULES (READ THIS FIRST)
 ═══════════════════════════════════════════════════════════
+
+🚫 BANNED EPISODE OPENINGS — NEVER START WITH THESE
+Every episode starting the same way makes the season unwatchable. These are forbidden:
+❌ Characters waking up in the morning
+❌ Fixing or building something at camp (roof, shelter, fire)
+❌ Generic "day X on the island" narration
+❌ Characters sitting around camp talking about how hard the game is
+❌ Weather/nature description as a scene-setter ("The sun rose over the island...")
+Instead: Open IN a conflict, IN a conversation that matters, IN the aftermath of something — pick up the COLD OPEN HOOK from the summary and drop viewers straight into the drama.
 
 🚫 NEVER COPY THE SUMMARY'S EXACT WORDS OR PHRASES
 The summary is BORING, REPETITIVE, and MECHANICAL.

@@ -2315,6 +2315,43 @@ Lynda: [chuckles] Too true.
 \`\`\`
 
 ═══════════════════════════════════════════════════════════
+🚫 AI VERBAL TICS — BANNED WORDS AND PHRASES
+═══════════════════════════════════════════════════════════
+
+The AI has a pool of "casual dialogue" words it defaults to when it runs out of character-specific ideas. These words appear in EVERY character's mouth because they're not tied to any specific person — they're just AI filler. They make every character sound the same. They are all banned.
+
+**BANNED — never use these in dialogue or confessionals:**
+
+- **"cute"** as a dismissive/sarcastic response (e.g. "Cute." "That's cute." "Real cute.") — massively overused, sounds like a Twitter clapback
+- **"fair"** as a one-word agreement — no real person says just "Fair." to end a conversation
+- **"not wrong"** — AI's lazy way of having a character agree without committing
+- **"I'm sat"** — British internet slang that doesn't fit most Total Drama characters
+- **"genuinely"** as an intensifier — "I genuinely cannot" / "that genuinely surprised me" — sounds written, not spoken
+- **"wild"** as a one-word reaction — "That's wild." "Wild." — lazy filler
+- **"unhinged"** — every character calls every situation "unhinged" in AI writing
+- **"chaotic"** — same problem
+- **"I'm dead"** / **"I'm screaming"** — internet slang, not dialogue
+- **"that tracks"** — sounds like a Reddit comment
+- **"that's a choice"** — same
+- **"lowkey"** / **"highkey"** — internet slang
+- **"vibe"** / **"the vibe"** / **"that vibe"** — unless a specific character would actually use it
+- **"energy"** in abstract phrases — "that energy" / "your energy right now" — not how people talk
+- **"I can't"** as a standalone reaction — "I literally can't." is internet speak
+- **"bestie"** — unless the character would actually say it
+- **"babe"** as a casual address between people who aren't close — only Bowie would use this naturally
+- **"I mean—"** to start every other sentence — AI overuses this as a softening device
+- **"okay but—"** — same
+- **"no, but—"** — same filler opener
+
+**WHY THESE ARE BANNED:**
+These words don't belong to any character. They belong to the AI's default "casual voice." When Courtney and Josee and Mickey all say "cute" or "fair" in the same episode, you can feel it. They're not those people — they're the AI pretending to be casual.
+
+**THE FIX:**
+Before writing a line, ask: "Would THIS specific character say THIS word?" Courtney doesn't say "fair." She says "Fine. But for the record, I disagree." Mickey doesn't say "wild." He says "That's… that's a lot." Scott doesn't say "cute." He says nothing and smiles.
+
+Character-specific speech IS the character. Generic casual words erase it.
+
+═══════════════════════════════════════════════════════════
 DIALOGUE RULES (CRITICAL - AI KEEPS SCREWING THIS UP)
 ═══════════════════════════════════════════════════════════
 

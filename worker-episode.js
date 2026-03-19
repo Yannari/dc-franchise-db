@@ -671,10 +671,10 @@ BrantSteele output uses specific section headers. You MUST detect and handle eac
 There are two distinct merge states — distinguish them carefully:
 
 1. **THE MERGE EPISODE (first time)**: The raw data explicitly contains the header "The Merge" AND the previous summary shows tribes still active. This is the episode WHERE the merge happens. It is a major story event.
-   - In === TRIBES (ACTIVE) ===, write "MERGED THIS EPISODE — Individual Game begins"
+   - In === TRIBES (ACTIVE) ===, write "MERGED THIS EPISODE" on the first line, then list all remaining players one per line.
 
 2. **POST-MERGE EPISODE (already merged)**: Players are listed under "Campers" but the previous summary already showed the game as merged. The merge already happened in an earlier episode.
-   - In === TRIBES (ACTIVE) ===, write "MERGED — Individual Game (ongoing)"
+   - In === TRIBES (ACTIVE) ===, just list the remaining players one per line. Do NOT write any header text like "MERGED" — just the names.
 
 In both cases:
 - There are NO tribes. Everyone is an individual player.
@@ -731,8 +731,8 @@ EPISODE [number] - "[Episode title based on the challenge or theme]"
 
 === TRIBES (ACTIVE) ===
 [IF PRE-MERGE: List each tribe with a # header and its members]
-[IF MERGE HAPPENS THIS EPISODE: Write "MERGED THIS EPISODE — Individual Game begins" then list all remaining players]
-[IF ALREADY MERGED: Write "MERGED — Individual Game (ongoing)" then list all remaining players]
+[IF MERGE HAPPENS THIS EPISODE: Write "MERGED THIS EPISODE" on the first line, then list all remaining players one per line]
+[IF ALREADY MERGED: Just list all remaining players one per line — no header text]
 
 Example pre-merge:
 #Orange Tribe
@@ -740,12 +740,32 @@ Bowie
 Courtney
 
 Example first merge episode:
-MERGED THIS EPISODE — Individual Game begins
-Bowie, Cody, Courtney, Hicks, Jasmine, Josee, Mary, Mickey, Priya, Sanders, Scott, Zoey
+MERGED THIS EPISODE
+Bowie
+Cody
+Courtney
+Hicks
+Jasmine
+Josee
+Mary
+Mickey
+Priya
+Sanders
+Scott
+Zoey
 
 Example post-merge (already merged):
-MERGED — Individual Game (ongoing)
-Bowie, Cody, Courtney, Hicks, Josee, Mary, Mickey, Priya, Sanders, Scott, Zoey
+Bowie
+Cody
+Courtney
+Hicks
+Josee
+Mary
+Mickey
+Priya
+Sanders
+Scott
+Zoey
 
 === ELIMINATED ===
 [Previously eliminated players, one per line, oldest first — copy from previous summary if available]
@@ -2168,7 +2188,7 @@ EPISODE STRUCTURE (CRITICAL)
    - Sets up episode's emotional/strategic arc
 
 1b. **MERGE ANNOUNCEMENT — MANDATORY only on the episode where the merge HAPPENS**
-   If === TRIBES (ACTIVE) === says "MERGED THIS EPISODE", the episode MUST contain a formal merge announcement scene. This only happens ONCE per season — the first time the merge occurs. If the tribes section says "MERGED — Individual Game (ongoing)", the merge already happened in a previous episode — do NOT write an announcement scene, just continue the individual game.
+   If === TRIBES (ACTIVE) === says "MERGED THIS EPISODE", the episode MUST contain a formal merge announcement scene. This only happens ONCE per season — the first time the merge occurs. If the tribes section has no merge header and just lists players, the merge already happened in a previous episode — do NOT write an announcement scene, just continue the individual game.
    This is a major TV moment — do not skip it or have it happen offscreen.
    - Chris gathers ALL players (they arrive from different directions, old tribemates together for the last time)
    - Chris announces the merge dramatically — new tribe name, new buffs, merge feast revealed

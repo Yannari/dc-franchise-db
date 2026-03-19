@@ -1146,7 +1146,7 @@ ${previousContext ? `🔗 CONTINUITY IS CRITICAL: This is NOT a standalone episo
 
 The summary contains an "## ONGOING STORYLINES" section and a "## COLD OPEN HOOK" section. These are your PRIMARY source material. You MUST:
 1. Pull the cold open directly from the COLD OPEN HOOK — do NOT open with generic camp life (no "fixing the roof", no "starting the fire", no "waking up to a new day"). Open IN the middle of something that already happened.
-2. Carry forward EVERY thread listed in ONGOING STORYLINES. Each one must appear somewhere in this episode — some resolve, some escalate, some simmer.
+2. Carry forward the ONGOING STORYLINES — at least 3 of them must surface somewhere in this episode. The others can stay off-screen if the episode doesn't have room; not every thread needs to move every week. Pick the ones that feel most alive right now and let them breathe.
 3. Characters should REMEMBER what happened in previous episodes. If two people fought last episode, they are not fine now. If someone made a promise, it either holds or breaks this episode.` : '🔗 Since this is Episode 1, the cold open is the arrivals and first impressions — but make it immediate and specific, not a generic camp setup.'}
 
 ═══════════════════════════════════════════════════════════
@@ -1160,6 +1160,7 @@ Every episode starting the same way makes the season unwatchable. These are forb
 ❌ Generic "day X on the island" narration
 ❌ Characters sitting around camp talking about how hard the game is
 ❌ Weather/nature description as a scene-setter ("The sun rose over the island...")
+❌ FLASHFORWARD — Opening with a scene from LATER in the episode (Tribal Council, the elimination, an idol play, a dramatic confrontation) then cutting back with "X HOURS EARLIER", "EARLIER THAT DAY", or any equivalent. THIS IS COMPLETELY BANNED. The episode runs in strict chronological order: Chris recap → episode begins in order → challenge → Tribal → elimination. Never show the end before the beginning. Never jump forward then snap back.
 Instead: Open IN a conflict, IN a conversation that matters, IN the aftermath of something — pick up the COLD OPEN HOOK from the summary and drop viewers straight into the drama.
 
 🚫 NEVER COPY THE SUMMARY'S EXACT WORDS OR PHRASES
@@ -2213,21 +2214,13 @@ If the user writes "Immunity Challenge: Orange wins immunity" — that's all the
 5. The winner wins because of something specific, not just "they were faster"
 6. The loser's failure should connect to why they become the vote target afterward
 
-**THE CHALLENGE MUST SERVE THE STORY — MANDATORY BEATS:**
+**THE CHALLENGE MUST SERVE THE STORY:**
 
-Every challenge must contain:
+The challenge is not a sport. It's a stage. Use it to reveal who these people are under pressure — who rises, who cracks, who betrays, who surprises. The challenge should produce at least one moment that changes something: a relationship, a target, a self-perception. If the challenge ends and nothing has shifted, it failed regardless of who won.
 
-① **ONE CHARACTER WHO SHINES** — someone performs unexpectedly well or clutch. This becomes their moment. Give them a confessional after where they process it.
+Ask yourself: what is the most interesting version of THIS challenge with THESE specific people? Then write that. Not a checklist of beats — the specific scene that only makes sense with this cast at this moment in the season.
 
-② **ONE CHARACTER WHO COSTS THEIR TEAM** — someone drops something, chokes in the clutch, makes a mistake, panics. This is what gets them targeted. It shouldn't be random — it should fit who they are (Mickey panics → drops the puzzle piece. Jo tries to dominate → ignores her team's call and goes the wrong way.)
-
-③ **ONE INTERPERSONAL MOMENT DURING THE CHALLENGE** — a conflict, a funny exchange, a moment of unexpected cooperation, or a betrayal that happens IN the middle of the action. Examples:
-- Heather uses Beth as a human shield → Beth is furious (TD S1 paintball)
-- Lindsay accidentally shoots her own teammate → comic disaster
-- Two rivals end up head-to-head and trash talk while competing
-- Someone from the other tribe says something to a competitor that plants a seed of doubt
-
-④ **CHRIS MCLEAN IS ALIVE DURING THE CHALLENGE** — he commentates, he cheers for suffering, he makes it worse, he has a specific reaction to the funniest/worst moment. He's not just announcing, he's participating in the drama.
+Chris is alive during it. He commentates, he escalates, he loves when it hurts.
 
 **EXAMPLE (how to turn "Orange wins immunity" into a scene):**
 
@@ -2344,6 +2337,7 @@ The AI has a pool of "casual dialogue" words it defaults to when it runs out of 
 - **"I can do that"** as generic agreement — three different characters said this in one episode. Find the character-specific version of agreement instead.
 - **"works for me"** as agreement — same problem, same fix
 - **"noted"** as a one-word acknowledgment — sounds like a Slack reply, not a person
+- **"Mhm"** as a filler response — already banned, still appearing 4-5 times per episode. It's a noise, not a line. If a character is agreeing, show how they agree. If they're being noncommittal, show the discomfort. "Mhm" means nothing and sounds like placeholder text.
 
 **BANNED STAGE DIRECTIONS:**
 

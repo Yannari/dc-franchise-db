@@ -879,7 +879,9 @@ Reason label: **"[Creative nickname/archetype]"** [One sentence: exactly why the
 ---
 
 ## ONGOING STORYLINES
-These are the specific drama threads that MUST carry into the next episode. The episode writer will use this section directly. Be concrete — not "tension between X and Y" but "X told Y she doesn't trust her after Y voted against her ally last round. Y doesn't know X knows."
+These are the specific drama threads that carry into the next episode. The episode writer will use this section directly. Be concrete — not "tension between X and Y" but "X told Y she doesn't trust her after Y voted against her ally last round. Y doesn't know X knows."
+
+⚠️ CAMP MAINTENANCE IS NOT A STORYLINE. Never write "the tribe needs to fix the shelter" or "they're struggling to keep the fire going" as a thread. Nobody watches Total Drama for chores. Storylines are about people — their conflicts, secrets, alliances, and emotions. If nothing dramatic is happening in one of the slots below, find something smaller and personal instead of defaulting to camp logistics.
 
 1. [Specific unresolved conflict with names + what happened + what's unresolved]
 2. [Specific relationship developing — what moment happened, where it's headed]
@@ -890,7 +892,7 @@ These are the specific drama threads that MUST carry into the next episode. The 
 ---
 
 ## COLD OPEN HOOK
-[One specific dramatic moment from THIS episode — a fight, a confession, a betrayal, a funny disaster — that the next episode's cold open should reference or pick up from. Be vivid and specific. This is the first thing viewers will see next week.]
+[One specific dramatic moment from THIS episode — a fight, a confession, a betrayal, a funny disaster — that the next episode's cold open should reference or pick up from. Be vivid and specific. This is the first thing viewers will see next week. NEVER write a camp chore, morning routine, or maintenance task as the cold open hook. It must be a human moment — conflict, emotion, surprise, or comedy between specific named players.]
 
 ---
 
@@ -906,7 +908,8 @@ Rules:
 - SPECIFIC MOMENTS over abstract dynamics. "Courtney screamed at Lorenzo in front of the tribe and he just shrugged" > "tension between Courtney and Lorenzo".
 - If the previous summary exists, CONTINUE its storylines — don't reset. Reference what happened before.
 - Reference player histories from previous seasons if they are returnees.
-- Never invent votes or events not in the raw data.
+- **Facts are locked. Everything else is yours to invent.** The factual skeleton is: who won immunity, who was voted out, which events BrantSteele listed, who voted for whom. These cannot change. But WHY things happened, HOW scenes played out, what characters said, what they felt, what conversations happened between events — all of that is your creative space. BrantSteele does not write drama. You do. If the raw data says "X and Y had a conflict" and gives no detail, invent the detail. If the data says nothing about the hours between the challenge and Tribal, invent what happened. The simulation gives you outcomes. Your job is to invent the scenes that make those outcomes feel earned.
+- Never invent votes or change who was eliminated — the factual results are fixed.
 - Keep formatting exact — the downstream system depends on the headers.`;
 
   // Build input: inject previous summary so the AI knows full elimination history
@@ -1130,17 +1133,18 @@ Each episode needs a DIFFERENT challenge. If you see "Truth or Nuke" was used in
 Make a mental list of used challenges from the context, then pick something new.
 
 ═══════════════════════════════════════════════════════════
-⚠️ THE "KEY EVENTS" SECTION — MANDATORY SCENES
+⚠️ THE "KEY EVENTS" SECTION — FACTUAL ANCHORS + YOUR CREATIVE SPACE
 ═══════════════════════════════════════════════════════════
 
-The summary contains a "## KEY EVENTS THIS EPISODE" section. These are MANDATORY scenes — BrantSteele explicitly chose these as the episode's story beats. Every single one must appear in the episode as a real scene:
+The summary contains a "## KEY EVENTS THIS EPISODE" section. These events are factual anchors — they happened, and they must appear in the episode. But BrantSteele only gave you the outcome, not the scene. Your job is to INVENT the scene.
 
-- A player meltdown → write the scene. Who saw it. What triggered it. How others reacted.
-- Two players finding something in common → write the scene. What did they discover. How did it change the dynamic.
-- A player resting at camp → show this. They are laying low. Others notice (or don't).
-- An idol found/played → this is a pivotal moment. Write it fully.
+"Mickey had a meltdown" → BrantSteele told you it happened. You decide: what triggered it? What did he say? Who was there? Did anyone try to stop it or did they let it burn? What changed because of it?
 
-These events ARE the episode's story. They are not background detail. If you skip them, you are writing the wrong episode.
+"Priya and Scott found common ground" → You decide: what were they doing? What did one of them say that surprised the other? Was it awkward? Funny? Did either of them want to admit it mattered?
+
+The simulation gives you a list of facts. The episode is everything that happened BETWEEN those facts — the conversations, the looks, the confessionals, the small moments that make the big moments feel earned. Most of the episode is not in the summary at all. That space is yours. Fill it with the most interesting version of these characters you can imagine.
+
+The one thing you cannot change: who won immunity, who got voted out, and who voted for whom.
 
 ${previousContext ? `🔗 CONTINUITY IS CRITICAL: This is NOT a standalone episode.
 

@@ -2020,6 +2020,49 @@ mickey: [exhales, relieved he didn't need the idol]
 \`\`\`
 
 ═══════════════════════════════════════════════════════════
+🗳️ HOW CHRIS READS THE VOTES — SUSPENSE IS THE WHOLE POINT
+═══════════════════════════════════════════════════════════
+
+Chris reading votes is the most dramatic moment of the episode. He is a showman. He drags it out on purpose because he enjoys watching people sweat.
+
+- Read votes ONE AT A TIME. Each vote gets its own line and a reaction — a glance, a breath, someone grabbing someone's arm, a jaw tightening.
+- After the first vote lands on someone, pause. Let the player react before Chris reads the next one.
+- When it's tied, Chris stops. He holds the next parchment. He looks at the players. Maybe says one thing. Then reads it.
+- Chris's commentary between votes: short, cruel, gleeful. "Oh." / "Hm." / "Interesting." / "That's gotta sting." — one or two words that twist the knife. Not a monologue.
+- The final parchment is held longer than the others. Chris looks at it. Then reads it.
+- The person going home gets one line of reaction before they grab their torch — shock, anger, grace, or silence.
+
+**BAD:**
+\`\`\`
+Chris: [reads votes] Jo. Jo. Taylor. Taylor. Taylor. Taylor is eliminated.
+\`\`\`
+
+**GOOD:**
+\`\`\`
+Chris: [picks up first parchment]
+Chris: Jo.
+[Jo stares forward. Doesn't react.]
+
+Chris: [second parchment]
+Chris: Jo.
+[Jo's eyes cut sideways. Doesn't look at Mickey.]
+
+Chris: [third — longer pause before opening it]
+Chris: Taylor.
+[Taylor blinks. Once.]
+
+Chris: [fourth]
+Chris: Taylor.
+[Tied. Mickey exhales through his nose.]
+Chris: Two and two. [looks up, smiling] Who's nervous?
+
+Chris: [holds the last parchment. Looks at both of them. Opens it slowly.]
+Chris: ...Taylor.
+
+taylor: [quiet] Wow. Okay.
+\`\`\`
+
+═══════════════════════════════════════════════════════════
 📺 THE THREE-THREAD RULE — NON-NEGOTIABLE
 ═══════════════════════════════════════════════════════════
 

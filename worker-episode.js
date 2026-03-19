@@ -3186,7 +3186,19 @@ Season: ${season ?? "?"}, Episode: ${episode ?? "?"}.
 Return complete episode transcript.
 `.trim();
 
-  // Try OpenAI first, fall back to Anthropic if unavailable
+  // Try Gemini first, fall back to OpenAI, then Anthropic
+  if (env.GEMINI_API_KEY) {
+    try {
+      const result = await callGemini(instructions, summaryText, env);
+      if (result.ok !== false) {
+        const clone = result.clone();
+        const data = await clone.json().catch(() => ({}));
+        if (data.episodeTranscript && !data.error) return result;
+      }
+    } catch (e) {
+      console.error("Gemini failed, falling back to OpenAI:", e);
+    }
+  }
   if (env.OPENAI_API_KEY) {
     try {
       const payload = { model: "gpt-5", instructions, input: summaryText };
@@ -3202,6 +3214,43 @@ Return complete episode transcript.
   }
   // Fallback: Anthropic
   return await callAnthropic(instructions, summaryText, env);
+}
+
+async function callGemini(system, userText, env) {
+  let resp;
+  try {
+    resp = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${env.GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: system }] },
+          contents: [{ role: "user", parts: [{ text: userText }] }],
+          generationConfig: { maxOutputTokens: 65536 },
+        }),
+      }
+    );
+  } catch (e) {
+    return new Response(JSON.stringify({ error: "Network error", details: String(e) }), {
+      status: 502,
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+    });
+  }
+
+  const data = await resp.json().catch(() => ({}));
+
+  if (!resp.ok) {
+    return new Response(JSON.stringify(data), {
+      status: resp.status,
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+    });
+  }
+
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
+  return new Response(JSON.stringify({ episodeTranscript: text }), {
+    headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+  });
 }
 
 async function callAnthropic(system, userText, env) {

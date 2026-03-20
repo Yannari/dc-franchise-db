@@ -781,37 +781,21 @@ Zoey
 
 ---
 
-## KEY EVENTS THIS EPISODE
-[List EVERY event from the BrantSteele "Events" section and translate each one into a usable story beat. This section is mandatory and must not be skipped or summarized vaguely.]
-
-Format each event as:
-- **[Player name]**: [What happened — specific, scene-ready description]
-
-Examples of good event translation:
-- BrantSteele says: "Mickey has a major meltdown."
-  → **Mickey**: Suffered a visible emotional breakdown in front of the tribe. He was not quiet about it. His allies scrambled to contain it; his enemies noticed and filed it away.
-- BrantSteele says: "Priya and Scott find something in common. It has a lasting impact."
-  → **Priya & Scott**: Despite mutual extreme hatred, they discovered shared ground in [infer from context — backgrounds, values, frustrations]. This is NOT a friendship. But it is a crack in the wall. It will matter in future episodes.
-- BrantSteele says: "Josee rests at camp to restore her energy."
-  → **Josee**: Strategically inactive this episode. She is sitting out the chaos deliberately, restoring herself. This reads as weakness OR as chess — the other players will interpret it differently.
-- BrantSteele says: "Cody and Priya find something in common."
-  → **Cody & Priya**: A smaller but real moment of connection — they have a shared perspective or experience that brought them closer.
-
----
-
 ## PRE-CHALLENGE STATUS
 
 [IF PRE-MERGE: Write one section per tribe]
 [IF MERGED: Write one section per relevant player cluster or storyline grouping — not by old tribe]
 
 Write this like a TV show's "previously on" writer notes — specific events, not abstract analysis.
-Describe: What specific conflict happened? Who said what to whom? What alliance formed or cracked? What personal moment occurred?
+Weave EVERY event from the BrantSteele "Events" section naturally into this section — do not list them separately, incorporate them as the moments that anchor each story cluster. If Mickey is impressing the tribe, that becomes a scene in the Mickey cluster. If Courtney and Scott have a minor disagreement, that becomes the Courtney/Scott cluster.
+
+For each cluster, answer TWO things: (1) what specifically happened — the action, the moment, the conversation; (2) what each person in this cluster is FEELING right now — not their game position, their emotional state. Fear. Anger. Relief. Guilt. Longing. Pride. Desperation. These feelings are what the episode writer will use to write real scenes.
 
 ### [Group/Player Cluster/Storyline]: [One-line dramatic subtitle]
-[4–6 sentences of SPECIFIC story beats. Name names. Describe what actually happened — not what it means, what it looked like. Pull directly from the KEY EVENTS section and RELATIONSHIPS data. Every section here must contain at least one MOMENT — a specific conversation, confrontation, discovery, or decision.]
+[4–6 sentences of SPECIFIC story beats. Name names. Describe what actually happened AND what it felt like. Pull from BrantSteele Events and RELATIONSHIPS data. Every section here must contain at least one MOMENT — a specific conversation, confrontation, discovery, or decision — AND at least one emotional beat: what someone is carrying that they haven't said out loud.]
 
 Good example:
-"Lorenzo has been coasting openly — not just lazy, but performatively unbothered — and Courtney has had enough. She pulled Mary aside by the fire and named him. Mary agreed without hesitation. Mickey looked uncomfortable but didn't push back. Lorenzo knows he's being discussed; he just doesn't seem to care enough to do anything about it."
+"Lorenzo has been coasting openly — not just lazy, but performatively unbothered — and Courtney has had enough. She pulled Mary aside by the fire and named him. Mary agreed without hesitation. Mickey looked uncomfortable but didn't push back. Lorenzo knows he's being discussed; he just doesn't seem to care enough to do anything about it. But underneath the shrug, there's something else — he's been here before, and he knows what 'people are talking' actually means."
 
 Bad example:
 "Lorenzo's friction with Courtney makes him vulnerable. Alliances are forming."
@@ -820,10 +804,33 @@ Bad example:
 
 ---
 
-## ANALYZE BEFORE IMMUNITY
-⚠️ WRITE THIS SECTION AS IF THE CHALLENGE HAS NOT HAPPENED YET. You do not know the immunity result. You are a TV writer building suspense before the challenge. Use ONLY the relationships, alliances, and events you know happened BEFORE the challenge.
+## TRIBE/FACTION RELATIONSHIPS
 
-Answer these questions with specific player names and reasons:
+Map the key relationships this episode for EVERY active group — tribes if pre-merge, alliances/factions if merged. For each group write:
+
+**Positive ties:** List the meaningful bonds using [Player A] ↔ [Player B] — [one-line description of what holds them together]
+**Friction points:** List the tensions using [Player A] ↔ [Player B] — [one-line description of what's between them]
+**Strategic impact:** 2–3 sentences. What does this relationship map actually mean for the game right now? Who is the hub, who is the outlier, who is sitting on a fault line? Use the BrantSteele relationship labels (unbreakable bond, extreme hatred, strong bond, medium bond, etc.) as the temperature — but describe them in terms of behavior, not labels.
+
+[IF PRE-MERGE: Write one block per tribe with a ### tribe header]
+[IF MERGED: Write one block per active alliance or faction with a ### faction header. Include a "Wildcards" block for players who don't clearly belong to one faction.]
+
+---
+
+## REWARD CHALLENGE
+[Only include this section if BrantSteele shows a reward challenge. If there is no reward challenge this episode, omit this section entirely.]
+
+**Challenge Title:** [Name from BrantSteele or a descriptive invented title]
+**Teams:** [How players were divided — list each group]
+**Winner:** [Who won]
+**Reward:** [What they won]
+
+**Story impact:** [2–3 sentences. Who went on reward together and what does that mean strategically or emotionally? What happened at the reward that matters for the game — a conversation, a bond that formed or cracked, information shared? If the losers stayed at camp, what happened there while the winners were gone?]
+
+---
+
+## ANALYZE BEFORE IMMUNITY
+⚠️ WRITE THIS SECTION AS IF THE IMMUNITY CHALLENGE HAS NOT HAPPENED YET. You do not know the immunity result. You are a TV writer building suspense before the challenge. Use ONLY the relationships, alliances, and events you know happened BEFORE immunity.
 
 **Who is in danger going into this challenge and why?**
 [Name 2–3 players. For each: what specific thing makes them a target — a fight they had, an alliance that turned on them, a meltdown others witnessed, being on the wrong side of the numbers. One sentence minimum per player. NOT "X has few allies" — WHY do they have few allies, what happened.]
@@ -831,7 +838,7 @@ Answer these questions with specific player names and reasons:
 **Who holds power right now and how did they get it?**
 [Name 1–2 players. Specific: what alliance are they running, what information do they have, what relationship gave them leverage.]
 
-**What are the two most likely vote outcomes if the challenge goes badly for each side?**
+**What are the two most likely vote outcomes?**
 [For each scenario, name the likely target and why — based on the alliances and individual targets in the raw data.]
 
 **What is the dramatic question of this episode?**
@@ -849,7 +856,7 @@ Answer these questions with specific player names and reasons:
 
 [IF MERGED / INDIVIDUAL:]
 **Type:** Individual — [one person wins, all others are vulnerable]
-**Challenge Title:** [descriptive name based on what the challenge could be — the episode writer will invent the full details]
+**Challenge Title:** [descriptive name]
 **Winner:** [Player name] wins individual immunity
 **Vulnerable:** Everyone else
 
@@ -859,25 +866,40 @@ Answer these questions with specific player names and reasons:
 
 ## POST-CHALLENGE STATUS
 
+[IF PRE-MERGE:]
 ### [Losing tribe — specific subheading about what fractured or shifted]
 [Describe the specific scramble: who approached whom first, what arguments happened, what did people say, who felt betrayed and why. Names + actions + reasons.]
 
 ### [Winning tribe — if anything happened]
 [Even the safe tribe has drama. What relationship developed? What quiet conversation happened? What is someone planning for next time?]
 
+[IF MERGED:]
+### [Subheading about what the vote scramble looks like]
+[Who is running the vote, who is being told what, who is being kept in the dark. Describe the specific conversations — who approached whom, what they said, what was left unsaid. Who is feeling confident and who is starting to panic. Name the moment where the vote locked in.]
+
+### [Second cluster if there's a counter-move or split]
+[If someone is fighting back, pushing a counter-target, or trying to flip someone — describe that scene specifically. Who did they approach, what did they say, did it work?]
+
 ---
 
 ## TRIBAL COUNCIL / VOTE ANALYSIS
 
 **The Vote: [Dramatic Title]**
-[The specific sequence of events leading to the vote. Who pushed hardest for the boot, who resisted, was there a flip, was it close or decisive, did anyone feel blindsided.]
+[The atmosphere at tribal — who sits where, what the body language says, what Jeff picks at. The specific sequence of events leading to the vote. Who pushed hardest for the boot, who resisted, was there a flip, was it close or decisive, did anyone feel blindsided. No idols played? Say so. Advantage used? Describe it.]
 
 **Vote Breakdown: [X-Y (Boot Name Eliminated)]**
 * **Votes for [Boot] ([X]):** [comma-separated list of voters]
 * **Votes for [Other] ([Y]):** [comma-separated list of voters]
 
-**WHY THIS VOTE HAPPENED:**
-[The real reason — personal, strategic, social. What did this person do or fail to do. Who was the deciding vote and what pushed them over.]
+---
+
+## WHY THIS VOTE HAPPENED
+
+**Surface story:** [1–2 sentences. The narrative everyone saw — the public reason, the stated justification, what was said at tribal. This is the version the boot probably tells themselves.]
+
+**Real structure:** [3–5 bullet points. The actual mechanics underneath. Who was the deciding vote and what specifically pushed them? What alliance math drove this? Was there a relationship, a secret, a fear, or a prior episode moment that made this person the one and not someone else? Name the players who were the engine of this vote, not just the ones who went along. If there was a smoke screen, name it and explain what it covered for.]
+
+**What would have changed it:** [1 sentence. The one thing that — if different — would have produced a different boot tonight.]
 
 ---
 
@@ -890,24 +912,49 @@ Reason label: **"[Creative nickname/archetype]"** [One sentence: exactly why the
 
 ## STRATEGIC ANALYSIS
 
-### [Player 1 Name]: [Subheading]
-[3–5 sentence analysis of their position, game moves, threats, trajectory]
+Write this for 4–6 players who had the most meaningful episode. This is NOT a game recap — it is a CHARACTER PORTRAIT for this episode. For each player, answer all four of these:
+1. What did they DO this episode — one specific action or decision
+2. What are they FEELING right now — their emotional state underneath the game face
+3. What do they WANT that they can't say out loud — the thing they'd never admit at tribal
+4. What is BUILDING for them — the thing that will either pay off or blow up in coming episodes
 
-### [Player 2 Name]: [Subheading]
-[Same for 3–5 key players this episode]
+### [Player Name]: [Subheading — their arc in 4 words]
+[4–5 sentences. One sentence per question above, in order. The last sentence should feel like a ticking clock or an open wound — something that has not resolved yet.]
+
+---
+
+## CURRENT GAME STATUS
+
+A compact power snapshot at the end of this episode. Write one bullet block per tribe (pre-merge) or per faction (merged). Each block should name the players in that group and tag each one with their current role:
+
+Format per player: **[Name]** — [role tag]: [1-sentence explanation of where they stand right now]
+
+Role tags to use (pick the one that fits):
+- **Hub** — the social center, everyone comes to them
+- **Shield** — protected by others, used as a number
+- **Operator** — quietly running the vote without being the face of it
+- **Threat** — identified as dangerous, clock is ticking
+- **Outlier** — not clearly attached to the dominant group
+- **Wildcard** — unpredictable, could move either way
+- **Wounded** — took a hit this episode, recovering
+- **Hidden Asset** — has an advantage nobody knows about
+- **Dead Man Walking** — next obvious target if they don't win immunity
+
+[IF PRE-MERGE: one block per tribe with tribe name as header]
+[IF MERGED: one block per faction, plus a "Loose Players" block for anyone not clearly aligned]
 
 ---
 
 ## ONGOING STORYLINES
-These are the specific drama threads that carry into the next episode. The episode writer will use this section directly. Be concrete — not "tension between X and Y" but "X told Y she doesn't trust her after Y voted against her ally last round. Y doesn't know X knows."
+These are the specific drama threads that carry into the next episode. The episode writer will use this section directly. Each storyline must have: (a) the specific situation — who, what, when; (b) what each person involved FEELS about it; (c) what would need to happen for it to explode or resolve. Not "tension between X and Y" but "X watched Y vote out her ally and smiled about it. X hasn't said anything. Y thinks they're fine. The next time they're alone together, something is going to crack."
 
-⚠️ CAMP MAINTENANCE IS NOT A STORYLINE. Never write "the tribe needs to fix the shelter" or "they're struggling to keep the fire going" as a thread. Nobody watches Total Drama for chores. Storylines are about people — their conflicts, secrets, alliances, and emotions. If nothing dramatic is happening in one of the slots below, find something smaller and personal instead of defaulting to camp logistics.
+⚠️ CAMP MAINTENANCE IS NOT A STORYLINE. Never write "the tribe needs to fix the shelter" or "they're struggling to keep the fire going" as a thread. Nobody watches Total Drama for chores. If nothing dramatic is happening in one of the slots below, find something smaller and personal — a quiet resentment, an unspoken thing, a secret someone is sitting on.
 
-1. [Specific unresolved conflict with names + what happened + what's unresolved]
-2. [Specific relationship developing — what moment happened, where it's headed]
-3. [Specific secret or hidden information — who knows what, who doesn't]
-4. [Strategic threat building — who is targeting whom and why]
-5. [Emotional arc — someone struggling, someone growing, something personal]
+1. [Unresolved conflict: what happened, what each person is feeling, what the trigger for the next confrontation will be]
+2. [Relationship developing or fracturing: the specific moment that moved it, where it is now, where it's heading]
+3. [Hidden information or secret advantage: who has it, who doesn't know, what happens when it surfaces]
+4. [Strategic threat building: who is building toward a move, who is the target, what is the obstacle]
+5. [Personal/emotional arc: what someone is carrying that has nothing to do with strategy — a fear, a wound, a shift in how they see themselves in this game]
 
 ---
 
@@ -929,6 +976,7 @@ Rules:
 - If the previous summary exists, CONTINUE its storylines — don't reset. Reference what happened before.
 - Reference player histories from previous seasons if they are returnees.
 - **Facts are locked. Everything else is yours to invent.** The factual skeleton is: who won immunity, who was voted out, which events BrantSteele listed, who voted for whom. These cannot change. But WHY things happened, HOW scenes played out, what characters said, what they felt, what conversations happened between events — all of that is your creative space. BrantSteele does not write drama. You do. If the raw data says "X and Y had a conflict" and gives no detail, invent the detail. If the data says nothing about the hours between the challenge and Tribal, invent what happened. The simulation gives you outcomes. Your job is to invent the scenes that make those outcomes feel earned.
+- **HOW TO INVENT FROM RELATIONSHIP LABELS:** BrantSteele gives you labels like "mutual extreme hatred" or "mutual unbreakable bond." These are a canvas, not a story. Translate them into specific human behavior: What does their hatred look like at the breakfast fire? Do they go quiet or do they snipe? What does one say to a third person that they'd never say to the other's face? What do they refuse to do because the other is involved? What does their bond look like under pressure — do they check on each other, do they hold eye contact during votes, do they lie for each other? Invent the behavior. The label just tells you the temperature.
 - Never invent votes or change who was eliminated — the factual results are fixed.
 - Keep formatting exact — the downstream system depends on the headers.`;
 
@@ -1168,10 +1216,21 @@ The one thing you cannot change: who won immunity, who got voted out, and who vo
 
 ${previousContext ? `🔗 CONTINUITY IS CRITICAL: This is NOT a standalone episode.
 
-The summary contains an "## ONGOING STORYLINES" section and a "## COLD OPEN HOOK" section. These are your PRIMARY source material. You MUST:
-1. Pull the cold open directly from the COLD OPEN HOOK — do NOT open with generic camp life (no "fixing the roof", no "starting the fire", no "waking up to a new day"). Open IN the middle of something that already happened.
-2. Carry forward the ONGOING STORYLINES — at least 3 of them must surface somewhere in this episode. The others can stay off-screen if the episode doesn't have room; not every thread needs to move every week. Pick the ones that feel most alive right now and let them breathe.
-3. Characters should REMEMBER what happened in previous episodes. If two people fought last episode, they are not fine now. If someone made a promise, it either holds or breaks this episode.` : '🔗 Since this is Episode 1, the cold open is the arrivals and first impressions — but make it immediate and specific, not a generic camp setup.'}
+The current summary contains "## ONGOING STORYLINES" and a "## COLD OPEN HOOK" section. Read them carefully — but understand what each one is for:
+
+⚠️ COLD OPEN HOOK — CRITICAL MISUSE WARNING:
+The "## COLD OPEN HOOK" in the current summary is NOT the opening of this episode. It is a late-episode scene — something that happens near the END of this episode, just before or during tribal council. It belongs at the end of the script, in its correct chronological position. Do NOT pull it to the front. Do NOT use it as the cold open.
+
+If you open the episode with the cold open hook, you are showing the END of the episode first. That is a flashforward. Flashforwards are BANNED (see rules above).
+
+For the cold open of THIS episode: pick up from wherever the previous episode left off. Look in your PREVIOUS EPISODES CONTEXT for the most recent episode's "## ONGOING STORYLINES" or "## COLD OPEN HOOK" — those threads are what carry into this episode's opening. Open IN something already in motion.
+
+You MUST:
+1. Open with a moment that picks up from the previous episode — NOT a scene from later in this episode
+2. Write the episode in strict chronological order: camp → challenge → post-challenge → tribal → elimination
+3. The COLD OPEN HOOK scene from the current summary belongs near the END — write it there, in its natural place
+4. Carry forward the ONGOING STORYLINES — at least 3 must surface somewhere in this episode
+5. Characters should REMEMBER what happened in previous episodes. Fights don't disappear. Promises don't reset.` : '🔗 Since this is Episode 1, the cold open is the arrivals and first impressions — but make it immediate and specific, not a generic camp setup.'}
 
 ═══════════════════════════════════════════════════════════
 ⚠️ CRITICAL: CREATIVE WRITING RULES (READ THIS FIRST)

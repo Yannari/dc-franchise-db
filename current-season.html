@@ -588,6 +588,29 @@ Example:
 Episode 2: Tribal swap! Belo won immunity. At Reba, Ella was voted out 2-1..."
             style="width: 100%; min-height: 150px; margin-bottom: 12px;"></textarea>
           
+          <!-- Season Setting (Episode 1 only) -->
+          <div id="episode-1-season-setting" style="margin-top: 16px; padding: 12px; background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.25); border-radius: 8px; display: none;">
+            <h4 style="margin: 0 0 4px 0; color: #6ee7b7; font-size: 14px;">🎬 Season Setting (Episode 1 only)</h4>
+            <p style="opacity: 0.7; font-size: 12px; margin: 0 0 8px 0;">
+              Pick a preset or write your own. Saved automatically — used for every episode this season.
+            </p>
+            <select id="season-setting-preset" style="width:100%;padding:8px 10px;border-radius:10px;border:1px solid rgba(16,185,129,0.35);background:rgba(10,8,18,.65);color:#fff;font-size:13px;margin-bottom:8px;cursor:pointer;outline:none;">
+              <option value="">— Select a preset —</option>
+              <option value="td-island">Total Drama Island</option>
+              <option value="td-action">Total Drama Action</option>
+              <option value="td-worldtour">Total Drama World Tour</option>
+              <option value="td-revenge">Total Drama: Revenge of the Island</option>
+              <option value="survivor">Survivor</option>
+              <option value="bigbrother">Big Brother</option>
+              <option value="custom">Custom / Write your own</option>
+            </select>
+            <textarea
+              id="season-setting-input"
+              class="episode-input"
+              placeholder="Select a preset above, or describe your own setting here."
+              style="width: 100%; min-height: 100px; background: rgba(16,185,129,0.05); font-size: 12px;"></textarea>
+          </div>
+
           <!-- Franchise Context (All-Stars / returning players) -->
           <div id="episode-1-franchise-context" style="margin-top: 16px; padding: 12px; background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.25); border-radius: 8px; display: none;">
             <h4 style="margin: 0 0 4px 0; color: #93c5fd; font-size: 14px;">🏆 Franchise Context (Optional — All-Stars / Returning Players)</h4>
@@ -2811,6 +2834,18 @@ async function generateEpisodeAI() {
     franchiseContext = localStorage.getItem(`franchise_context_s${season}`) || '';
   }
 
+  // Get season setting — shown only on ep1; silently reused for all episodes
+  let seasonSetting = '';
+  if (episodeNum === 1) {
+    const seasonSettingInput = document.getElementById('season-setting-input');
+    seasonSetting = seasonSettingInput ? seasonSettingInput.value.trim() : '';
+    if (seasonSetting) {
+      localStorage.setItem(`season_setting_s${season}`, seasonSetting);
+    }
+  } else {
+    seasonSetting = localStorage.getItem(`season_setting_s${season}`) || '';
+  }
+
   // GATHER PREVIOUS EPISODES FOR CONTEXT
   // Recent episodes (last 2): full transcript — AI needs exact voice + tone continuity
   // All older episodes: BrantSteele summary — compact, covers everything that matters
@@ -2870,6 +2905,7 @@ async function generateEpisodeAI() {
         summaryText: summary,
         auditionsText: auditionsText,
         franchiseContext: franchiseContext,
+        seasonSetting: seasonSetting,
         previousEpisodes: previousEpisodes
       })
     });
@@ -7098,12 +7134,44 @@ Write ONLY the reasoning text, no labels or quotes.`;
   const episodeInput = document.getElementById('aiEpisode');
   const auditionsSection = document.getElementById('episode-1-auditions');
   
+  // Season setting presets
+  const SEASON_SETTING_PRESETS = {
+    'td-island': `Total Drama Island. A remote summer camp island. Two tribal camps on opposite sides of the island, each with wooden cabins, a fire pit, and a communal eating area. The confessional is a cramped outhouse with a single stool and a camera duct-taped to the wall — contestants have to hold their breath. Challenges happen on the beach, in the forest, or off the dock. Eliminations happen at the Dock of Shame: Chris hands out marshmallows to the safe players, and the eliminated contestant boards the Boat of Losers into the dark water. Chris watches them go with a wave and a grin.`,
+
+    'td-action': `Total Drama Action. An abandoned movie studio backlot. The cast lives in trailers parked on the lot — one per team, cramped and uncomfortable. Each episode, challenges are based on a different film genre (western, horror, sci-fi, period drama, action blockbuster). The confessional is a director's chair in front of a camera on a movie-set stand — contestants address the camera like they're doing a DVD commentary. Challenges frequently involve fake explosions, stunt gear, and props that break at the worst moment. Eliminations: Chris calls "That's a wrap!" and fires the eliminated player out of a giant prop cannon into a limo that drives off set. Chef Hatchet runs craft services and takes the food very seriously.`,
+
+    'td-worldtour': `Total Drama World Tour. A jumbo jet (the "Total Drama Jumbo Jet") flies the cast around the world. Each episode lands in a different real-world location for the challenge — anywhere from Egypt to the Amazon to a Tokyo game show studio. Between destinations, the cast lives on the plane in economy class seats (losers) or a first-class cabin (challenge winners). The confessional is a tiny airplane bathroom — contestants squeeze in, the mirror is cracked, and there's a "do not flush while seated" sign behind them. Eliminations happen mid-flight: the eliminated player is handed a parachute and a goodbye wave from Chris, then jumps — or is pushed — out of the plane door from 30,000 feet. Chris always watches from the door with a cup of coffee.`,
+
+    'td-revenge': `Total Drama: Revenge of the Island. A mutated, contaminated version of the original camp island. Toxic waste barrels are visible everywhere. The wildlife is wrong — things glow, have extra eyes, or are just quietly menacing. The cabins are rotting. The dock is half-sunk. The confessional outhouse is barely standing and occasionally tips over mid-confession. Challenges frequently involve the toxic environment in some way (handling glowing goo, outrunning mutated animals, swimming in water that probably shouldn't be swum in). Eliminations: the Hurl of Shame — a giant catapult on the dock. Chris straps the eliminated player in personally. Chef operates the launch lever. The player disappears into the horizon screaming.`,
+
+    'survivor': `Survivor-style (Total Drama tone). A tropical island, no infrastructure provided. Two tribal camps built from scratch — the cast has to make fire, find water, and sleep on whatever they can build. Immunity idols are hidden in the jungle with clues. Tribal Council happens at night around a ring of torches in an open-air pavilion — but Chris runs it like a game show host, not a ceremony. He asks questions because he wants to watch people squirm on camera, not because he cares about their journey. He reads the votes slowly for maximum drama. Eliminations: Chris snuffs the torch and says "the tribe has spoken" with the same energy as a punchline delivery. The eliminated player takes the torch walk alone into the dark.`,
+
+    'bigbrother': `Big Brother. A fully sealed, luxury house — no outside access, no news from the world, cameras in every room. The house has a living room, kitchen, bedrooms, and a backyard with the competition area. Players cannot leave. There is no tribal structure — everyone lives together from day one. The confessional is the Diary Room: a soundproofed room with a single red chair and a giant lens. Contestants talk directly to production. Challenges happen in the backyard: Head of Household (immunity), Power of Veto (individual save), and occasional luxury competitions. Eliminations: the house votes live. The evicted houseguest walks out the front door to cheers or boos from a studio audience. Chris hosts from the studio, not the house — he appears on a screen inside. Chef is the "house handler" who replenishes groceries and absolutely reads the messages in the private chat logs.`,
+  };
+
+  const settingPresetEl = document.getElementById('season-setting-preset');
+  const settingTextareaEl = document.getElementById('season-setting-input');
+  if (settingPresetEl && settingTextareaEl) {
+    settingPresetEl.addEventListener('change', function() {
+      const val = this.value;
+      if (val && val !== 'custom' && SEASON_SETTING_PRESETS[val]) {
+        settingTextareaEl.value = SEASON_SETTING_PRESETS[val];
+      } else if (val === 'custom') {
+        settingTextareaEl.value = '';
+        settingTextareaEl.focus();
+      }
+    });
+  }
+
   const franchiseContextSection = document.getElementById('episode-1-franchise-context');
+  const seasonSettingSection = document.getElementById('episode-1-season-setting');
   function toggleAuditions() {
     if (!episodeInput || !auditionsSection) return;
     const episodeNum = parseInt(episodeInput.value) || 1;
-    auditionsSection.style.display = (episodeNum === 1) ? 'block' : 'none';
-    if (franchiseContextSection) franchiseContextSection.style.display = (episodeNum === 1) ? 'block' : 'none';
+    const isEp1 = episodeNum === 1;
+    auditionsSection.style.display = isEp1 ? 'block' : 'none';
+    if (franchiseContextSection) franchiseContextSection.style.display = isEp1 ? 'block' : 'none';
+    if (seasonSettingSection) seasonSettingSection.style.display = isEp1 ? 'block' : 'none';
   }
   
   if (episodeInput && auditionsSection) {
@@ -7112,20 +7180,21 @@ Write ONLY the reasoning text, no labels or quotes.`;
     toggleAuditions(); // Initial check on page load
   }
 
-  // Restore franchise context from localStorage when season input changes
-  function restoreFranchiseContext() {
+  // Restore franchise context and season setting from localStorage when season input changes
+  function restoreEp1Fields() {
     const seasonEl = document.getElementById('aiSeason');
+    if (!seasonEl) return;
+    const s = seasonEl.value;
     const ctxEl = document.getElementById('franchise-context-input');
-    if (!seasonEl || !ctxEl) return;
-    const saved = localStorage.getItem(`franchise_context_s${seasonEl.value}`);
-    if (saved) ctxEl.value = saved;
-    else ctxEl.value = '';
+    const settingEl = document.getElementById('season-setting-input');
+    if (ctxEl) ctxEl.value = localStorage.getItem(`franchise_context_s${s}`) || '';
+    if (settingEl) settingEl.value = localStorage.getItem(`season_setting_s${s}`) || '';
   }
   const seasonInput = document.getElementById('aiSeason');
   if (seasonInput) {
-    seasonInput.addEventListener('input', restoreFranchiseContext);
-    seasonInput.addEventListener('change', restoreFranchiseContext);
-    restoreFranchiseContext();
+    seasonInput.addEventListener('input', restoreEp1Fields);
+    seasonInput.addEventListener('change', restoreEp1Fields);
+    restoreEp1Fields();
   }
   
   // ========================================

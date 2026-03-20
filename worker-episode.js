@@ -15,10 +15,10 @@ export default {
     }
 
     const body = await request.json().catch(() => ({}));
-    const { season, episode, summaryText, mode, previousEpisodes, franchiseContext } = body;
+    const { season, episode, summaryText, mode, previousEpisodes, franchiseContext, seasonSetting } = body;
 
     if (mode === "episode") {
-      return await generateEpisode(summaryText, season, episode, env, previousEpisodes, franchiseContext);
+      return await generateEpisode(summaryText, season, episode, env, previousEpisodes, franchiseContext, seasonSetting);
     } else if (mode === "summarize") {
       return await generateSummary(body.rawText, season, episode, env, body.prevSummary || "");
     } else if (mode === "season-data-extraction") {
@@ -1186,7 +1186,7 @@ Rules:
   });
 }
 
-async function generateEpisode(summaryText, season, episode, env, previousEpisodes = [], franchiseContext = '') {
+async function generateEpisode(summaryText, season, episode, env, previousEpisodes = [], franchiseContext = '', seasonSetting = '') {
   if (!summaryText || typeof summaryText !== "string") {
     return new Response(JSON.stringify({ error: "Missing summaryText" }), {
       status: 400,
@@ -1227,14 +1227,33 @@ async function generateEpisode(summaryText, season, episode, env, previousEpisod
     previousContext += '\n⚠️ CRITICAL: Maintain character consistency, ongoing relationships, alliance dynamics, and story arcs from these previous episodes.\n\n';
   }
 
+  const settingBlock = seasonSetting && seasonSetting.trim()
+    ? `═══════════════════════════════════════════════════════════
+SEASON SETTING — READ THIS BEFORE WRITING ANYTHING
+═══════════════════════════════════════════════════════════
+
+${seasonSetting.trim()}
+
+Every scene, every challenge, every confessional, and every elimination takes place inside this world. The physical environment shapes everything: where people sleep, where the confessional is shot, what the challenges look like, how eliminations happen.
+
+⚠️ THIS IS TOTAL DRAMA — NOT SURVIVOR. KEY DIFFERENCES:
+- The HOST is Chris McLean: sadistic, entertained by suffering, runs the show like a game show not a ceremony. He is NOT Jeff Probst. He does NOT ask probing questions at Tribal — he reads votes and enjoys the chaos.
+- CONFESSIONALS match the setting (outhouse on island, director's chair in movie studio, airplane bathroom on World Tour, diary room in a house). They are punchy, funny, and personal — not strategic monologues.
+- CHALLENGES are absurd, dangerous, or humiliating — they fit the setting and often go wrong in spectacular ways. They are NOT pure willpower/endurance Survivor-style challenges.
+- TRIBAL COUNCIL is not a solemn ceremony. Chris is actively having fun. The elimination method (Boat of Losers, parachute jump, flush of shame, catapult, etc.) fits the setting. There are no torches. There is no "the tribe has spoken" solemnity.
+- THE TONE is cartoon drama: big personalities, exaggerated reactions, physical comedy embedded in real game strategy. If it reads like a serious Survivor episode with no laughs, you've written the wrong show.
+
+`
+    : '';
+
   const franchiseContextBlock = franchiseContext && franchiseContext.trim()
-    ? `\n\n═══════════════════════════════════════════════════════════\nRETURNING PLAYER HISTORIES (PRIOR SEASONS)\n═══════════════════════════════════════════════════════════\n\nThese players are returning from previous seasons. Reference their history naturally in confessionals, rivalries, and reactions. Do NOT ignore this context.\n\n${franchiseContext.trim()}\n\n`
+    ? `═══════════════════════════════════════════════════════════\nRETURNING PLAYER HISTORIES (PRIOR SEASONS)\n═══════════════════════════════════════════════════════════\n\nThese players are returning from previous seasons. Reference their history naturally in confessionals, rivalries, and reactions. Do NOT ignore this context.\n\n${franchiseContext.trim()}\n\n`
     : '';
 
   const instructions = `
 You are writing a full episode transcript of a Total Drama season.
 
-${franchiseContextBlock}${previousContext}
+${settingBlock}${franchiseContextBlock}${previousContext}
 
 ═══════════════════════════════════════════════════════════
 ⚠️ THESE ARE REAL TOTAL DRAMA CHARACTERS — USE YOUR KNOWLEDGE

@@ -730,9 +730,9 @@ EPISODE [number] - "[Episode title based on the challenge or theme]"
 [EVERY player who started this season — active, eliminated, and current boot — alphabetical, one per line. This list NEVER changes between episodes. If the previous summary has this section, copy it exactly.]
 
 === TRIBES (ACTIVE) ===
-[IF PRE-MERGE: List each tribe with a # header and its members]
+[IF PRE-MERGE: List each tribe with a # header and its members, one per line]
 [IF MERGE HAPPENS THIS EPISODE: Write "MERGED THIS EPISODE" on the first line, then list all remaining players one per line]
-[IF ALREADY MERGED: Just list all remaining players one per line — no header text]
+[IF ALREADY MERGED: List remaining players one per line — NO header, NO label, NO note, NO comma-separated list. Player names only, one per line, nothing else.]
 
 Example pre-merge:
 #Orange Tribe
@@ -754,7 +754,7 @@ Sanders
 Scott
 Zoey
 
-Example post-merge (already merged):
+Example post-merge (already merged) — COPY THIS EXACTLY, no extra text:
 Bowie
 Cody
 Courtney

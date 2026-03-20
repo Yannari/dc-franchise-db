@@ -214,6 +214,37 @@
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    /* ── TWIST SCHEDULER ── */
+    .twist-row { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--border); }
+    .twist-row:last-child { border-bottom: none; }
+    .twist-ep-input { width: 52px; padding: 5px 7px; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-size: 12px; text-align: center; outline: none; }
+    .twist-ep-input:focus { border-color: var(--accent); }
+    .twist-type-select { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 5px 7px; color: var(--text); font-size: 12px; outline: none; }
+    .twist-type-select:focus { border-color: var(--accent); }
+    .twist-list-empty { text-align: center; padding: 18px; color: var(--muted); font-size: 12px; }
+
+    /* ── RESULTS TAB ── */
+    .results-main { flex: 1; overflow-y: auto; padding: 18px 20px; display: flex; flex-direction: column; gap: 16px; }
+    .results-winner-card { background: linear-gradient(135deg, rgba(16,185,129,0.12), rgba(16,185,129,0.04)); border: 1px solid var(--accent); border-radius: 12px; padding: 20px 24px; display: flex; align-items: center; gap: 16px; }
+    .results-crown { font-size: 36px; }
+    .results-winner-name { font-size: 24px; font-weight: 700; color: var(--accent); }
+    .results-jury-tally { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+    .results-jury-chip { font-size: 12px; padding: 3px 10px; border-radius: 8px; font-weight: 600; background: var(--surface2); color: var(--text); }
+    .placement-table { display: flex; flex-direction: column; gap: 4px; }
+    .placement-row { display: flex; align-items: center; gap: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; }
+    .placement-rank { width: 32px; font-size: 12px; font-weight: 700; color: var(--muted); text-align: center; flex-shrink: 0; }
+    .placement-name { flex: 1; font-size: 13px; font-weight: 600; }
+    .placement-ep-label { font-size: 11px; color: var(--muted); flex-shrink: 0; }
+    .placement-badge { font-size: 10px; padding: 2px 7px; border-radius: 6px; flex-shrink: 0; }
+    .jury-breakdown { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+    .jury-breakdown-header { background: var(--surface2); display: flex; gap: 12px; padding: 8px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); }
+    .jury-breakdown-row { display: flex; gap: 12px; padding: 8px 14px; border-top: 1px solid var(--border); font-size: 12px; }
+    .jb-juror { flex: 1; }
+    .jb-voted { font-weight: 600; color: var(--accent); }
+    .results-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; text-align: center; color: var(--muted); gap: 12px; padding: 60px 40px; }
+    .results-empty .empty-icon { font-size: 40px; }
+    .results-empty p { font-size: 13px; max-width: 360px; line-height: 1.6; }
   </style>
 </head>
 <body>
@@ -226,7 +257,7 @@
       <button class="tab-btn active"  onclick="showTab('cast')">Cast Builder</button>
       <button class="tab-btn"         onclick="showTab('setup')">Season Setup</button>
       <button class="tab-btn"         onclick="showTab('run')">Run Episode</button>
-      <button class="tab-btn" disabled>Results</button>
+      <button class="tab-btn" onclick="showTab('results')">Results</button>
     </nav>
   </header>
 
@@ -327,6 +358,14 @@
           <input type="number" id="cfg-ri-reentry" class="form-input" min="3" max="15" value="12" oninput="saveConfig()">
         </div>
         <div class="divider"></div>
+        <div class="form-group">
+          <label class="form-label">Journey <span class="hint">(pre-tribal advantage gamble)</span></label>
+          <div class="toggle-row">
+            <label class="toggle"><input type="checkbox" id="cfg-journey" onchange="saveConfig()"><span class="toggle-track"></span></label>
+            <span id="journey-label" class="toggle-label">Off</span>
+          </div>
+        </div>
+        <div class="divider"></div>
         <button class="btn btn-secondary" style="font-size:11px" onclick="loadS10Config()">Load S10 Defaults</button>
       </aside>
       <main class="setup-right">
@@ -335,6 +374,13 @@
         </div>
         <div class="ep-result" style="padding:12px 14px">
           <div id="adv-list"></div>
+        </div>
+        <div class="setup-header" style="margin-top:4px">
+          <h2>Scheduled Twists</h2>
+          <button class="btn btn-primary btn-sm" onclick="addTwist()" style="width:auto">+ Add</button>
+        </div>
+        <div class="ep-result" style="padding:12px 14px;min-height:58px">
+          <div id="twist-list"><div class="twist-list-empty">No twists scheduled.</div></div>
         </div>
         <div class="setup-header" style="margin-top:4px">
           <h2>Relationships <span style="font-size:12px;font-weight:400;color:var(--muted)">— pre-game bonds</span></h2>
@@ -408,6 +454,18 @@
             <div class="ep-history-grid" id="ep-history-grid"></div>
           </div>
         </div>
+      </main>
+    </div>
+
+    <!-- ═══════════════════════════════ RESULTS TAB -->
+    <div id="tab-results" class="tab-content">
+      <main class="results-main">
+        <div class="results-empty" id="results-empty">
+          <div class="empty-icon">&#127942;</div>
+          <p>Simulate your season through the finale to see the final standings and jury vote here.</p>
+          <button class="btn btn-secondary" style="width:auto;padding:8px 20px;margin-top:4px" onclick="renderResultsTab()">Refresh</button>
+        </div>
+        <div id="results-content" style="display:none;flex-direction:column;gap:16px"></div>
       </main>
     </div>
 
@@ -509,22 +567,10 @@ let viewingEpNum  = null;   // which episode is displayed in run tab
 
 function defaultConfig() {
   return {
-    name: '', mergeAt: 12, finaleSize: 3, ri: false, riReentryAt: 12,
+    name: '', mergeAt: 12, finaleSize: 3, ri: false, riReentryAt: 12, journey: false,
     advantages: Object.fromEntries(ADVANTAGES.map(a => [a.key, { enabled: a.default > 0, count: a.default }])),
+    twistSchedule: [],
   };
-}
-
-// ══════════════════════════════════════════════════════════════════════
-// INIT
-// ══════════════════════════════════════════════════════════════════════
-
-function init() {
-  buildStatSliders();
-  buildAdvantageList();
-  loadAll();
-  renderCast();
-  renderConfig();
-  renderRelList();
 }
 
 function loadAll() {
@@ -542,12 +588,13 @@ function showTab(name) {
   activeTab = name;
   document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
-  const tabs = ['cast', 'setup', 'run'];
+  const tabs = ['cast', 'setup', 'run', 'results'];
   document.querySelectorAll('.tab-btn').forEach((btn, i) => {
     if (i < tabs.length) btn.classList.toggle('active', tabs[i] === name);
   });
-  if (name === 'setup') populateRelDropdowns();
-  if (name === 'run')   initRunTab();
+  if (name === 'setup')   populateRelDropdowns();
+  if (name === 'run')     initRunTab();
+  if (name === 'results') renderResultsTab();
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -743,10 +790,12 @@ function saveConfig() {
     finaleSize:  parseInt(document.getElementById('cfg-finale').value)||3,
     ri:          document.getElementById('cfg-ri').checked,
     riReentryAt: parseInt(document.getElementById('cfg-ri-reentry').value)||12,
+    journey:     document.getElementById('cfg-journey').checked,
     advantages: Object.fromEntries(ADVANTAGES.map(a => [a.key, {
       enabled: document.getElementById('adv-'+a.key).checked,
       count:   parseInt(document.getElementById('adv-count-'+a.key).value)||0,
     }])),
+    twistSchedule: seasonConfig.twistSchedule || [],
   };
   localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
 }
@@ -758,6 +807,9 @@ function renderConfig() {
   document.getElementById('cfg-ri-reentry').value = seasonConfig.riReentryAt;
   document.getElementById('ri-label').textContent  = seasonConfig.ri?'On':'Off';
   document.getElementById('ri-settings').style.display = seasonConfig.ri?'flex':'none';
+  document.getElementById('cfg-journey').checked = seasonConfig.journey || false;
+  document.getElementById('journey-label').textContent = seasonConfig.journey ? 'On' : 'Off';
+  renderTwistList();
   ADVANTAGES.forEach(a => {
     const adv = seasonConfig.advantages?.[a.key]; if (!adv) return;
     document.getElementById('adv-'+a.key).checked        = adv.enabled;
@@ -766,8 +818,9 @@ function renderConfig() {
   });
 }
 function loadS10Config() {
-  seasonConfig = { name:'Champions vs Contenders', mergeAt:12, finaleSize:3, ri:true, riReentryAt:12,
-    advantages: { idol:{enabled:true,count:2}, voteSteal:{enabled:true,count:1}, extraVote:{enabled:true,count:1}, kip:{enabled:false,count:0}, legacy:{enabled:false,count:0}, amulet:{enabled:false,count:0} } };
+  seasonConfig = { name:'Champions vs Contenders', mergeAt:12, finaleSize:3, ri:true, riReentryAt:12, journey:true,
+    advantages: { idol:{enabled:true,count:2}, voteSteal:{enabled:true,count:1}, extraVote:{enabled:true,count:1}, kip:{enabled:false,count:0}, legacy:{enabled:false,count:0}, amulet:{enabled:false,count:0} },
+    twistSchedule: [{ id:'s10-swap', episode:5, type:'tribe-swap' }] };
   localStorage.setItem('simulator_config', JSON.stringify(seasonConfig)); renderConfig();
 }
 
@@ -939,34 +992,39 @@ function simulateIndividualChallenge(pool, immune) {
 // ENGINE: VOTING
 // ══════════════════════════════════════════════════════════════════════
 
-function simulateVotes(tribalPlayers, immuneName, alliances) {
+function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = []) {
   const votes = {}, log = [];
 
   tribalPlayers.forEach(voter => {
+    if (lostVotes.includes(voter)) return; // journey — lost their vote
+
     const s = pStats(voter);
     const myAlliance = alliances.find(a => a.members.includes(voter));
     const allianceTarget = myAlliance?.target;
-
-    // Loyalty check: probability of following alliance
     const loyaltyThreshold = s.loyalty / 11;
     const isLoyal = Math.random() < loyaltyThreshold;
 
-    let target;
+    let target, reason;
     if (isLoyal && allianceTarget && allianceTarget !== voter && allianceTarget !== immuneName) {
       target = allianceTarget;
+      reason = `followed ${myAlliance.label} vote`;
     } else {
-      // Personal vote: highest threat that isn't self or immune, weighted by dislike
       const candidates = tribalPlayers.filter(p => p!==voter && p!==immuneName);
       if (candidates.length) {
         target = wRandom(candidates, t => Math.max(0.1, threatScore(t) - getBond(voter,t)));
+        const bond = getBond(voter, target);
+        if (bond <= -3) reason = `personal — deeply dislikes ${target}`;
+        else if (bond <= -1) reason = `personal — distrust of ${target}`;
+        else reason = `personal read — ${target} is the biggest threat`;
       } else {
         target = allianceTarget;
+        reason = 'no other options';
       }
     }
 
     if (target && target !== voter) {
       votes[target] = (votes[target]||0)+1;
-      log.push({ voter, voted: target });
+      log.push({ voter, voted: target, reason: reason || 'strategic read' });
     }
   });
 
@@ -1050,6 +1108,138 @@ function updateBonds(votingLog, eliminated, alliances) {
 }
 
 // ══════════════════════════════════════════════════════════════════════
+// ENGINE: ADVANTAGES & IDOLS
+// ══════════════════════════════════════════════════════════════════════
+
+function findAdvantages(ep) {
+  const cfg = seasonConfig;
+  ep.idolFinds = ep.idolFinds || [];
+  if (!cfg.advantages?.idol?.enabled) return;
+
+  const tribeGroups = gs.isMerged
+    ? [{ name: '__merge__', members: [...gs.activePlayers] }]
+    : gs.tribes;
+
+  tribeGroups.forEach(tribe => {
+    const isMergeSlot = tribe.name === '__merge__';
+    const hasSlot = isMergeSlot ? gs.mergeIdolHidden : (gs.idolSlots[tribe.name] || false);
+    if (!hasSlot) return;
+
+    const currentIdolCount = gs.advantages.filter(a => a.type === 'idol').length;
+    const maxIdols = cfg.advantages.idol.count || 2;
+    if (currentIdolCount >= maxIdols) return;
+
+    const shuffled = [...tribe.members].sort(() => Math.random() - 0.5);
+    for (const name of shuffled) {
+      const s = pStats(name);
+      // ~2-4% individual chance (strategic-weighted). Tribe-level ~25% per ep = found roughly every 4 eps.
+      if (Math.random() < 0.02 + s.strategic * 0.002) {
+        gs.advantages.push({ holder: name, type: 'idol', foundEp: ep.num });
+        if (isMergeSlot) gs.mergeIdolHidden = false;
+        else gs.idolSlots[tribe.name] = false;
+        ep.idolFinds.push({ finder: name, tribe: isMergeSlot ? 'merge' : tribe.name });
+        break;
+      }
+    }
+  });
+}
+
+function checkIdolPlays(tribalPlayers, votesObj, ep) {
+  ep.idolPlays = ep.idolPlays || [];
+  ep.idolRehide = ep.idolRehide || false;
+  if (!seasonConfig.advantages?.idol?.enabled) return;
+
+  const sorted = Object.entries(votesObj).sort(([,a],[,b]) => b - a);
+  for (const [name, voteCount] of sorted) {
+    const idolIdx = gs.advantages.findIndex(a => a.holder === name && a.type === 'idol');
+    if (idolIdx === -1) continue;
+    const s = pStats(name);
+    const totalVoters = tribalPlayers.length;
+    const isInDanger = voteCount >= 3 || (voteCount / totalVoters >= 0.33);
+    if (!isInDanger) continue;
+    // s9 strategic → 94% play chance; s5 → 70%
+    if (Math.random() < 0.4 + s.strategic * 0.06) {
+      gs.advantages.splice(idolIdx, 1);
+      delete votesObj[name];
+      ep.idolPlays.push({ player: name, votesNegated: voteCount });
+      ep.idolRehide = true;
+    }
+  }
+
+  // KiP: steal an idol
+  const kip = gs.advantages.find(a => a.type === 'kip' && tribalPlayers.includes(a.holder));
+  if (kip) {
+    const targets = gs.advantages.filter(a => a.type === 'idol' && tribalPlayers.includes(a.holder) && a.holder !== kip.holder);
+    if (targets.length && Math.random() < pStats(kip.holder).strategic / 10) {
+      const kipIdx = gs.advantages.indexOf(kip);
+      gs.advantages.splice(kipIdx, 1);
+      targets[0].holder = kip.holder;
+      ep.idolPlays.push({ player: kip.holder, type: 'kip', stolenFrom: targets[0].holder });
+    }
+  }
+}
+
+function simulateJourney(ep) {
+  ep.journey = null;
+  if (!seasonConfig.journey || gs.phase === 'finale' || gs.activePlayers.length < 4) return;
+
+  const numTravelers = gs.activePlayers.length <= 6 ? 1 : 2;
+  const travelers = [];
+  const pool = [...gs.activePlayers];
+  for (let i = 0; i < numTravelers; i++) {
+    const picked = wRandom(pool.filter(p => !travelers.includes(p)), n => {
+      const s = pStats(n); return s.social + s.charisma;
+    });
+    if (picked) travelers.push(picked);
+  }
+
+  const results = travelers.map(name => {
+    const s = pStats(name);
+    const gambles = Math.random() < 0.55 + (s.strategic - 5) * 0.03;
+    if (gambles) {
+      const cfg = seasonConfig;
+      const advPool = [];
+      if (cfg.advantages?.extraVote?.enabled) {
+        if (gs.advantages.filter(a=>a.type==='extraVote').length < (cfg.advantages.extraVote.count||1)) advPool.push('extraVote');
+      }
+      if (cfg.advantages?.voteSteal?.enabled) {
+        if (gs.advantages.filter(a=>a.type==='voteSteal').length < (cfg.advantages.voteSteal.count||1)) advPool.push('voteSteal');
+      }
+      if (advPool.length) {
+        const type = advPool[Math.floor(Math.random() * advPool.length)];
+        gs.advantages.push({ holder: name, type, foundEp: ep.num });
+        return { name, result: 'advantage', type };
+      }
+      return { name, result: 'safe' };
+    } else {
+      gs.lostVotes.push(name);
+      return { name, result: 'lostVote' };
+    }
+  });
+
+  ep.journey = { travelers, results };
+  gs.journeyHistory.push({ ep: ep.num, travelers, results });
+}
+
+function applyTwist(ep, twist) {
+  ep.twist = { type: twist.type };
+  if (twist.type === 'tribe-swap') {
+    const allActive = [...gs.activePlayers].sort(() => Math.random() - 0.5);
+    const tribeNames = gs.tribes.map(t => t.name);
+    const perTribe = Math.floor(allActive.length / tribeNames.length);
+    gs.tribes = tribeNames.map((name, i) => ({
+      name,
+      members: allActive.slice(i * perTribe, i === tribeNames.length - 1 ? allActive.length : (i+1)*perTribe),
+    }));
+    if (seasonConfig.advantages?.idol?.enabled) tribeNames.forEach(n => { gs.idolSlots[n] = true; });
+    ep.twist.newTribes = gs.tribes.map(t => ({ name: t.name, members: [...t.members] }));
+  } else if (twist.type === 'double-elim') {
+    ep.isDoubleElim = true;
+  }
+  // 'no-tribal' is handled inside simulateEpisode
+}
+
+// ══════════════════════════════════════════════════════════════════════
 // ENGINE: MAIN EPISODE DRIVER
 // ══════════════════════════════════════════════════════════════════════
 
@@ -1057,7 +1247,15 @@ function simulateEpisode() {
   if (!gs?.initialized || !players.length) return null;
   const cfg = seasonConfig;
   const epNum = gs.episode + 1;
-  const ep = { num: epNum, bondChanges: [], riDuel: null, isRIReentry: false, isMerge: false };
+  const ep = { num: epNum, bondChanges: [], riDuel: null, isRIReentry: false, isMerge: false,
+                idolFinds: [], idolPlays: [], idolRehide: false, journey: null, twist: null };
+
+  // ── RESET EPISODE VOTE-LOSS ──
+  gs.lostVotes = [];
+
+  // ── TWIST CHECK ──
+  const scheduledTwist = (cfg.twistSchedule||[]).find(t => Number(t.episode) === epNum);
+  if (scheduledTwist) applyTwist(ep, scheduledTwist);
 
   // ── RI RE-ENTRY ──
   const isReentry = cfg.ri && gs.riPlayers.length > 0 && gs.activePlayers.length <= cfg.riReentryAt && !gs.isMerged;
@@ -1069,15 +1267,13 @@ function simulateEpisode() {
     gs.riPlayers = [];
     gs.eliminated.push(...losers);
     gs.activePlayers.push(winner);
-    // Add back to a tribe if pre-merge
     if (!gs.isMerged && gs.tribes.length) {
-      // Add to smallest tribe
       const smallest = [...gs.tribes].sort((a,b) => a.members.length-b.members.length)[0];
       smallest.members.push(winner);
     }
   }
 
-  // ── RI DUEL (not re-entry episode) ──
+  // ── RI DUEL ──
   if (!isReentry && cfg.ri && gs.riPlayers.length >= 2) {
     const duel = simulateRIDuel(gs.riPlayers);
     ep.riDuel = duel;
@@ -1089,7 +1285,23 @@ function simulateEpisode() {
   const isMerge = !gs.isMerged && gs.activePlayers.length <= cfg.mergeAt;
   if (isMerge) {
     ep.isMerge = true; gs.isMerged = true; gs.phase = 'post-merge'; gs.tribes = [];
+    if (cfg.advantages?.idol?.enabled) gs.mergeIdolHidden = true;
   }
+
+  // ── NO TRIBAL (twist) ──
+  if (ep.twist?.type === 'no-tribal') {
+    ep.noTribal = true;
+    simulateJourney(ep); findAdvantages(ep);
+    gs.episode = epNum;
+    gs.episodeHistory.push({ num: epNum, eliminated: null, riChoice: null, immunityWinner: null, challengeType: null, isMerge: ep.isMerge, votes: {}, alliances: [], summaryText: '' });
+    const st = generateSummaryText(ep);
+    gs.episodeHistory[gs.episodeHistory.length-1].summaryText = st; ep.summaryText = st;
+    saveGameState(); return ep;
+  }
+
+  // ── JOURNEY & IDOL FINDING ──
+  simulateJourney(ep);
+  findAdvantages(ep);
 
   // ── CHALLENGE ──
   if (gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
@@ -1103,12 +1315,10 @@ function simulateEpisode() {
     ep.tribalPlayers = [...gs.activePlayers];
   }
 
-  // ── ALLIANCES (for tribal group) ──
+  // ── ALLIANCES ──
   const tribeLabel = ep.challengeType === 'tribe' ? ep.loser.name : null;
   const alliances  = formAlliances(ep.tribalPlayers, tribeLabel);
   ep.alliances = alliances;
-
-  // Also update global alliances (whole game view)
   if (gs.phase === 'pre-merge') {
     gs.alliances = [];
     gs.tribes.forEach(t => gs.alliances.push(...formAlliances(t.members, t.name)));
@@ -1116,15 +1326,45 @@ function simulateEpisode() {
     gs.alliances = formAlliances(gs.activePlayers, null);
   }
 
-  // ── VOTE ──
-  const { votes, log } = simulateVotes(ep.tribalPlayers, ep.immunityWinner||null, alliances);
-  ep.votes = votes; ep.votingLog = log;
+  // Helper: run one full vote + idol + resolve for a set of players
+  function runTribal(tribalPlayers, immuneName, allianceSet) {
+    const { votes, log } = simulateVotes(tribalPlayers, immuneName, allianceSet, gs.lostVotes);
+    checkIdolPlays(tribalPlayers, votes, ep);
+    const res = resolveVotes(votes);
+    return { votes, log, ...res };
+  }
 
-  // ── RESOLVE ──
-  const resolution = resolveVotes(votes);
-  ep.eliminated = resolution.eliminated;
-  ep.isTie = resolution.isTie;
-  ep.tiedPlayers = resolution.tiedPlayers;
+  // ── VOTE ──
+  const r1 = runTribal(ep.tribalPlayers, ep.immunityWinner||null, alliances);
+  ep.votes = r1.votes; ep.votingLog = r1.log;
+  ep.isTie = r1.isTie; ep.tiedPlayers = r1.tiedPlayers;
+
+  // ── DOUBLE ELIM: second vote ──
+  if (ep.isDoubleElim && r1.eliminated) {
+    ep.firstEliminated = r1.eliminated;
+    ep.firstRIChoice = null;
+    if (cfg.ri) {
+      const c = simulateRIChoice(r1.eliminated);
+      ep.firstRIChoice = c;
+      if (c === 'REDEMPTION ISLAND') gs.riPlayers.push(r1.eliminated);
+      else { gs.eliminated.push(r1.eliminated); if (gs.isMerged) gs.jury.push(r1.eliminated); }
+    } else {
+      gs.eliminated.push(r1.eliminated);
+      if (gs.isMerged) gs.jury.push(r1.eliminated);
+    }
+    gs.activePlayers = gs.activePlayers.filter(p => p!==r1.eliminated);
+    gs.tribes = gs.tribes.map(t => ({...t, members: t.members.filter(p => p!==r1.eliminated)}));
+
+    const remaining = ep.tribalPlayers.filter(p => p !== r1.eliminated);
+    const immWinner2 = simulateIndividualChallenge(remaining, null);
+    ep.immunityWinner2 = immWinner2;
+    const alliances2 = formAlliances(remaining, tribeLabel);
+    const r2 = runTribal(remaining, immWinner2, alliances2);
+    ep.votes2 = r2.votes; ep.votingLog2 = r2.log;
+    ep.eliminated = r2.eliminated; ep.isTie = r2.isTie; ep.tiedPlayers = r2.tiedPlayers;
+  } else {
+    ep.eliminated = r1.eliminated;
+  }
 
   // ── RI CHOICE ──
   if (ep.eliminated) {
@@ -1132,17 +1372,23 @@ function simulateEpisode() {
       const choice = simulateRIChoice(ep.eliminated);
       ep.riChoice = choice;
       if (choice === 'REDEMPTION ISLAND') gs.riPlayers.push(ep.eliminated);
-      else gs.eliminated.push(ep.eliminated);
+      else { gs.eliminated.push(ep.eliminated); if (gs.isMerged) gs.jury.push(ep.eliminated); }
     } else {
-      gs.eliminated.push(ep.eliminated);
-      ep.riChoice = null;
+      gs.eliminated.push(ep.eliminated); ep.riChoice = null;
+      if (gs.isMerged) gs.jury.push(ep.eliminated);
     }
     gs.activePlayers = gs.activePlayers.filter(p => p!==ep.eliminated);
     gs.tribes = gs.tribes.map(t => ({...t, members: t.members.filter(p => p!==ep.eliminated)}));
   }
 
+  // ── REHIDE IDOL IF PLAYED ──
+  if (ep.idolRehide) {
+    if (gs.isMerged) gs.mergeIdolHidden = true;
+    else if (ep.loser) gs.idolSlots[ep.loser.name] = true;
+  }
+
   // ── BOND UPDATES ──
-  ep.bondChanges = updateBonds(log, ep.eliminated, alliances);
+  ep.bondChanges = updateBonds(ep.votingLog, ep.eliminated, alliances);
 
   // ── PHASE CHECK ──
   if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
@@ -1154,10 +1400,9 @@ function simulateEpisode() {
     immunityWinner: ep.immunityWinner || ep.winner?.name,
     challengeType: ep.challengeType, isMerge: ep.isMerge,
     votes: ep.votes, alliances: ep.alliances.map(a=>({...a})),
-    summaryText: '', // filled after generation
+    summaryText: '',
   });
 
-  // ── GENERATE OUTPUT ──
   const summaryText = generateSummaryText(ep);
   gs.episodeHistory[gs.episodeHistory.length-1].summaryText = summaryText;
   ep.summaryText = summaryText;
@@ -1256,6 +1501,43 @@ function generateSummaryText(ep) {
     notableBondChanges.slice(0,4).forEach(bc => ln(`- ${bc.a} + ${bc.b}: ${bc.delta>0?'+':''}${bc.delta.toFixed(1)} (${bc.reason})`));
   }
 
+  // TWIST
+  if (ep.twist) {
+    sec('TWIST');
+    if (ep.twist.type === 'tribe-swap') {
+      ln('TRIBE SWAP — all players redistributed into new tribes.');
+      if (ep.twist.newTribes) ep.twist.newTribes.forEach(t => ln(`${t.name.toUpperCase()}: ${t.members.join(', ')}`));
+      ln('New idols hidden for each tribe after the swap.');
+    } else if (ep.twist.type === 'double-elim') {
+      ln('DOUBLE ELIMINATION — two players will be voted out this episode.');
+    } else if (ep.twist.type === 'no-tribal') {
+      ln('NO TRIBAL COUNCIL this episode. No one is voted out.');
+    }
+  }
+
+  // ADVANTAGES IN PLAY
+  if (gs.advantages.length || ep.idolFinds?.length) {
+    sec('ADVANTAGES IN PLAY');
+    const typeLabel = { idol:'Hidden Immunity Idol', voteSteal:'Vote Steal', extraVote:'Extra Vote', kip:'Knowledge is Power', legacy:'Legacy Advantage', amulet:'Amulet Advantage' };
+    if (ep.idolFinds?.length) ep.idolFinds.forEach(f => ln(`NEW: ${f.finder} found a Hidden Immunity Idol${f.tribe !== 'merge' ? ` (${f.tribe} tribe)` : ' (merge idol)'}. ${f.finder}'s tribemates do not know.`));
+    gs.advantages.forEach(adv => {
+      if (!ep.idolFinds?.find(f=>f.finder===adv.holder)) // skip if just found (already shown above)
+        ln(`${adv.holder} holds: ${typeLabel[adv.type]||adv.type} (found ep.${adv.foundEp})`);
+    });
+  }
+
+  // JOURNEY
+  if (ep.journey) {
+    sec('JOURNEY');
+    ln(`Players sent: ${ep.journey.travelers.join(' and ')}`);
+    ep.journey.results.forEach(r => {
+      const advLabel = { extraVote:'Extra Vote', voteSteal:'Vote Steal' };
+      if (r.result === 'advantage') ln(`${r.name}: gambled — won a ${advLabel[r.type]||r.type}`);
+      else if (r.result === 'lostVote') ln(`${r.name}: gambled — LOST their vote. Cannot vote at tribal council this episode.`);
+      else ln(`${r.name}: chose not to gamble — vote is safe`);
+    });
+  }
+
   // IMMUNITY CHALLENGE
   sec('IMMUNITY CHALLENGE');
   if (ep.challengeType === 'tribe') {
@@ -1288,6 +1570,36 @@ function generateSummaryText(ep) {
   ln('VOTE COUNT: ' + voteSummary);
   if (ep.isTie) ln(`TIE between: ${ep.tiedPlayers?.join(', ')} \u2014 resolved by secondary tiebreaker`);
 
+  // Idol plays
+  if (ep.idolPlays?.length) {
+    ln('');
+    ep.idolPlays.forEach(p => {
+      if (p.type === 'kip') ln(`KiP PLAY: ${p.player} used Knowledge is Power — stole ${p.stolenFrom}'s idol.`);
+      else ln(`IDOL PLAY: ${p.player} played the Hidden Immunity Idol — ${p.votesNegated} votes against them were cancelled.`);
+    });
+  }
+
+  // Per-player reasoning
+  ln('');
+  ln('VOTE REASONING:');
+  ep.votingLog.forEach(({ voter, voted, reason }) => ln(`${voter} \u2192 ${voted} (${reason||'strategic read'})`));
+  if (gs.lostVotes?.length) {
+    gs.lostVotes.filter(p => ep.tribalPlayers?.includes(p)).forEach(p => ln(`${p} \u2192 [NO VOTE — lost vote on journey]`));
+  }
+
+  // Double elim second vote
+  if (ep.firstEliminated) {
+    ln('');
+    ln(`FIRST BOOT: ${ep.firstEliminated} — Chose: ${ep.firstRIChoice || 'N/A'}`);
+    ln('SECOND VOTE:');
+    if (ep.immunityWinner2) ln(`Second immunity: ${ep.immunityWinner2}`);
+    if (ep.votes2) {
+      const vs2 = Object.entries(ep.votes2).sort(([,a],[,b])=>b-a).map(([n,v])=>`${n} (${v})`).join(', ');
+      ln('Vote count: ' + vs2);
+    }
+    if (ep.votingLog2) ep.votingLog2.forEach(({ voter, voted, reason }) => ln(`${voter} \u2192 ${voted} (${reason||'strategic read'})`));
+  }
+
   // WHY THIS VOTE
   sec('WHY THIS VOTE HAPPENED');
   const elim = ep.eliminated;
@@ -1312,7 +1624,7 @@ function generateSummaryText(ep) {
   sec('VOTED OUT THIS TRIBAL');
   if (elim) {
     ln(elim);
-    ln(`**Chose:** ${ep.riChoice || 'N/A'}`);
+    ln(`Chose: ${ep.riChoice || 'N/A'}`);
   } else {
     ln('No elimination.');
     ln('**Chose:** N/A');
@@ -1435,11 +1747,21 @@ function initGameState() {
     }
   });
 
+  const tribeList = Object.entries(tribeMap).map(([name,members]) => ({name, members:[...members]}));
+  const idolSlots = {};
+  if (cfg.advantages?.idol?.enabled) tribeList.forEach(t => { idolSlots[t.name] = true; });
+
   gs = {
     initialized: true, episode: 0, phase: 'pre-merge', isMerged: false,
     activePlayers: players.map(p=>p.name),
-    tribes: Object.entries(tribeMap).map(([name,members]) => ({name, members:[...members]})),
+    tribes: tribeList,
     riPlayers: [], eliminated: [], bonds, alliances: [], episodeHistory: [],
+    advantages: [],      // [{ holder, type, foundEp }]
+    idolSlots,           // { tribeName: bool }
+    mergeIdolHidden: false,
+    lostVotes: [],       // players who cannot vote this episode
+    jury: [],            // players eliminated post-merge
+    journeyHistory: [],
   };
   saveGameState();
   return true;
@@ -1617,6 +1939,160 @@ function exportToEpisodePipeline() {
     localStorage.setItem(key, epRecord.summaryText);
     alert(`Saved! In current-season.html: select season + episode ${epRecord.num}, leave BrantSteele field empty, click Generate Episode.`);
   }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// TWIST SCHEDULER UI
+// ══════════════════════════════════════════════════════════════════════
+
+function renderTwistList() {
+  const el = document.getElementById('twist-list');
+  if (!el) return;
+  const schedule = seasonConfig.twistSchedule || [];
+  if (!schedule.length) {
+    el.innerHTML = '<div class="twist-list-empty">No twists scheduled. Click + Add to schedule an event.</div>';
+    return;
+  }
+  el.innerHTML = schedule.map(t => `
+    <div class="twist-row">
+      <span style="font-size:11px;color:var(--muted);flex-shrink:0">Ep.</span>
+      <input type="number" class="twist-ep-input" min="1" max="40" value="${t.episode}" onchange="updateTwist('${t.id}','episode',parseInt(this.value))">
+      <select class="twist-type-select" onchange="updateTwist('${t.id}','type',this.value)">
+        <option value="tribe-swap"  ${t.type==='tribe-swap' ?'selected':''}>Tribe Swap</option>
+        <option value="double-elim" ${t.type==='double-elim'?'selected':''}>Double Elimination</option>
+        <option value="no-tribal"   ${t.type==='no-tribal'  ?'selected':''}>No Tribal</option>
+      </select>
+      <button class="btn btn-danger btn-sm" style="flex-shrink:0;padding:4px 8px" onclick="removeTwist('${t.id}')">&#10005;</button>
+    </div>`).join('');
+}
+
+function addTwist() {
+  if (!seasonConfig.twistSchedule) seasonConfig.twistSchedule = [];
+  const nextEp = seasonConfig.twistSchedule.length
+    ? Math.max(...seasonConfig.twistSchedule.map(t => t.episode)) + 2 : 5;
+  seasonConfig.twistSchedule.push({ id: 'tw-' + Date.now(), episode: nextEp, type: 'tribe-swap' });
+  localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
+  renderTwistList();
+}
+
+function removeTwist(id) {
+  seasonConfig.twistSchedule = (seasonConfig.twistSchedule||[]).filter(t => t.id !== id);
+  localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
+  renderTwistList();
+}
+
+function updateTwist(id, field, value) {
+  const t = (seasonConfig.twistSchedule||[]).find(t => t.id === id);
+  if (t) { t[field] = value; localStorage.setItem('simulator_config', JSON.stringify(seasonConfig)); }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// RESULTS TAB
+// ══════════════════════════════════════════════════════════════════════
+
+function simulateJuryVote(finalists) {
+  const jury = gs.jury || [];
+  if (!jury.length || !finalists.length) return { votes: {}, reasoning: [], jury: [] };
+
+  const votes = Object.fromEntries(finalists.map(f => [f, 0]));
+  const reasoning = [];
+
+  jury.forEach(juror => {
+    const jS = pStats(juror);
+    const scores = finalists.map(f => {
+      const fS = pStats(f);
+      const bond = getBond(juror, f);
+      const gameplay = fS.strategic * 0.35 + fS.social * 0.25 + fS.physical * 0.1;
+      const personal = bond * 1.5;
+      // Strategic jurors weigh gameplay more; loyal jurors vote personal
+      const score = jS.strategic > 7
+        ? gameplay * 0.7 + personal * 0.3
+        : gameplay * 0.3 + personal * 0.7;
+      return { name: f, score: score + (Math.random() * 1.5) };
+    });
+    scores.sort((a, b) => b.score - a.score);
+    const pick = scores[0].name;
+    votes[pick]++;
+    reasoning.push({ juror, votedFor: pick });
+  });
+
+  return { votes, reasoning, jury };
+}
+
+function renderResultsTab() {
+  const empty   = document.getElementById('results-empty');
+  const content = document.getElementById('results-content');
+  if (!gs || !gs.episodeHistory.length) {
+    empty.style.display = 'flex'; content.style.display = 'none'; return;
+  }
+  empty.style.display = 'none';
+  content.style.display = 'flex'; content.style.flexDirection = 'column';
+
+  const finalists = [...gs.activePlayers];
+  const juryResult = (gs.phase === 'finale' || gs.isMerged) && finalists.length
+    ? simulateJuryVote(finalists) : null;
+
+  let html = '';
+
+  // Winner block (if finale)
+  if (juryResult && finalists.length <= seasonConfig.finaleSize && Object.values(juryResult.votes).some(v=>v>0)) {
+    const sorted = Object.entries(juryResult.votes).sort(([,a],[,b]) => b-a);
+    const winner = sorted[0][0];
+    const tally = sorted.map(([n,v]) => `<span class="results-jury-chip">${n}: ${v}</span>`).join('');
+    html += `<div class="results-winner-card">
+      <div class="results-crown">&#127942;</div>
+      <div>
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Projected Winner</div>
+        <div class="results-winner-name">${winner}</div>
+        <div class="results-jury-tally">${tally}</div>
+      </div></div>`;
+    html += `<div style="font-size:13px;font-weight:600;color:var(--muted);margin-top:4px">Jury Vote Breakdown</div>`;
+    html += `<div class="jury-breakdown">
+      <div class="jury-breakdown-header"><span class="jb-juror">Juror</span><span class="jb-voted">Votes For</span></div>
+      ${juryResult.reasoning.map(r => `<div class="jury-breakdown-row"><span class="jb-juror">${r.juror}</span><span class="jb-voted">${r.votedFor}</span></div>`).join('')}
+    </div>`;
+  }
+
+  // Placement list
+  html += `<div style="font-size:13px;font-weight:600;color:var(--muted);margin-top:4px">Boot Order</div>`;
+  html += `<div class="placement-table">`;
+
+  function ordinal(n) {
+    const s = ['th','st','nd','rd'], v = n%100;
+    return n + (s[(v-20)%10] || s[v] || s[0]);
+  }
+
+  // Finalists (top placements)
+  finalists.forEach((name, i) => {
+    html += `<div class="placement-row">
+      <span class="placement-rank">${ordinal(i+1)}</span>
+      <span class="placement-name">${name}</span>
+      <span class="placement-badge" style="background:rgba(16,185,129,0.15);color:#10b981">${gs.phase==='finale'?'Finalist':'Active'}</span>
+    </div>`;
+  });
+
+  // Eliminated (most recent = highest placement)
+  const juryList = [...(gs.jury||[])].reverse();
+  const nonJury  = gs.eliminated.filter(p => !(gs.jury||[]).includes(p));
+  const allElim  = [...juryList, ...(gs.riPlayers.length ? gs.riPlayers : []), ...[...nonJury].reverse()];
+
+  allElim.forEach((name, i) => {
+    const place = finalists.length + i + 1;
+    const epRec = gs.episodeHistory.slice().reverse().find(e => e.eliminated === name);
+    const epLabel = epRec ? `Ep. ${epRec.num}` : '';
+    const isJury = (gs.jury||[]).includes(name);
+    const isRI   = gs.riPlayers.includes(name);
+    html += `<div class="placement-row">
+      <span class="placement-rank">${ordinal(place)}</span>
+      <span class="placement-name">${name}</span>
+      <span class="placement-ep-label">${epLabel}</span>
+      ${isRI   ? '<span class="placement-badge" style="background:rgba(249,115,22,0.15);color:#f97316">On RI</span>' : ''}
+      ${isJury ? '<span class="placement-badge" style="background:rgba(99,102,241,0.15);color:#6366f1">Jury</span>' : ''}
+    </div>`;
+  });
+
+  html += `</div>`;
+  content.innerHTML = html;
 }
 
 // ══════════════════════════════════════════════════════════════════════

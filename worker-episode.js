@@ -783,11 +783,13 @@ Zoey
 
 ## PRE-CHALLENGE STATUS
 
+⚠️ STRICT BOUNDARY: This section covers ONLY events that occurred BEFORE the reward challenge (or before immunity if there is no reward challenge). Do NOT include anything that happened during or after the reward — letters, food, conversations at the reward picnic, camp reactions to winners being away — those belong exclusively in REWARD CHALLENGE → Story impact. If an event is part of the reward, leave it out here entirely.
+
 [IF PRE-MERGE: Write one section per tribe]
 [IF MERGED: Write one section per relevant player cluster or storyline grouping — not by old tribe]
 
 Write this like a TV show's "previously on" writer notes — specific events, not abstract analysis.
-Weave EVERY event from the BrantSteele "Events" section naturally into this section — do not list them separately, incorporate them as the moments that anchor each story cluster. If Mickey is impressing the tribe, that becomes a scene in the Mickey cluster. If Courtney and Scott have a minor disagreement, that becomes the Courtney/Scott cluster.
+Weave only the pre-challenge BrantSteele events naturally into this section — do not list them separately, incorporate them as the moments that anchor each story cluster. If Mickey is impressing the tribe before any challenge, that becomes a scene in the Mickey cluster. If Courtney and Scott have a minor disagreement before the reward challenge, that becomes the Courtney/Scott cluster.
 
 For each cluster, answer TWO things: (1) what specifically happened — the action, the moment, the conversation; (2) what each person in this cluster is FEELING right now — not their game position, their emotional state. Fear. Anger. Relief. Guilt. Longing. Pride. Desperation. These feelings are what the episode writer will use to write real scenes.
 
@@ -825,7 +827,7 @@ Map the key relationships this episode for EVERY active group — tribes if pre-
 **Winner:** [Who won]
 **Reward:** [What they won]
 
-**Story impact:** [2–3 sentences. Who went on reward together and what does that mean strategically or emotionally? What happened at the reward that matters for the game — a conversation, a bond that formed or cracked, information shared? If the losers stayed at camp, what happened there while the winners were gone?]
+**Story impact:** THIS is where all reward events belong — conversations at the reward picnic, bonds that formed or cracked over food, emotional moments with letters from home, what the losers did at camp while the winners were away. If letters from home were the reward, describe who read them and what it meant emotionally and strategically. Do not put any of this in PRE-CHALLENGE STATUS. [2–4 sentences minimum.]
 
 ---
 
@@ -3266,76 +3268,48 @@ Return complete episode transcript.
 }
 
 async function callAnthropicStreaming(system, userText, env) {
-  let resp;
-  try {
-    resp = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": env.ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-6",
-        max_tokens: 16000,
-        stream: true,
-        system,
-        messages: [{ role: "user", content: userText }],
-      }),
-    });
-  } catch (e) {
-    return new Response(JSON.stringify({ error: "Network error", details: String(e) }), {
-      status: 502,
-      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
-    });
-  }
-
-  if (!resp.ok) {
-    const errData = await resp.json().catch(() => ({}));
-    return new Response(JSON.stringify(errData), {
-      status: resp.status,
-      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
-    });
-  }
-
+  // Heartbeat approach: non-streaming Anthropic request + setInterval \n keep-alives.
+  // This avoids SSE parsing CPU overhead (which was hitting Cloudflare's CPU time limit)
+  // while still keeping the Cloudflare connection alive during long AI generation.
   const encoder = new TextEncoder();
   const readable = new ReadableStream({
     async start(controller) {
+      let heartbeat;
       try {
-        const reader = resp.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = "";
-        let fullText = "";
+        // Send \n every 5 seconds so Cloudflare sees data flowing (prevents 524)
+        heartbeat = setInterval(() => {
+          try { controller.enqueue(encoder.encode("\n")); } catch (_) {}
+        }, 5000);
 
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
+        const resp = await fetch("https://api.anthropic.com/v1/messages", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-api-key": env.ANTHROPIC_API_KEY,
+            "anthropic-version": "2023-06-01",
+          },
+          body: JSON.stringify({
+            model: "claude-sonnet-4-6",
+            max_tokens: 16000,
+            system,
+            messages: [{ role: "user", content: userText }],
+          }),
+        });
 
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split("\n");
-          buffer = lines.pop() || "";
+        const data = await resp.json().catch(() => ({}));
+        clearInterval(heartbeat);
 
-          for (const line of lines) {
-            if (line.startsWith("data: ")) {
-              const data = line.slice(6).trim();
-              if (data === "[DONE]") continue;
-              try {
-                const event = JSON.parse(data);
-                if (event.type === "content_block_delta" && event.delta?.text) {
-                  fullText += event.delta.text;
-                  // Send a newline keep-alive so Cloudflare sees data flowing
-                  controller.enqueue(encoder.encode("\n"));
-                }
-              } catch (_) {}
-            }
-          }
+        if (!resp.ok) {
+          controller.enqueue(encoder.encode(JSON.stringify(data)));
+        } else {
+          const text = data?.content?.[0]?.text?.trim() || "";
+          // JSON.parse ignores leading whitespace so client .json() works fine
+          controller.enqueue(encoder.encode(JSON.stringify({ episodeTranscript: text })));
         }
-
-        // Final JSON — JSON.parse ignores leading whitespace so client .json() works fine
-        controller.enqueue(encoder.encode(JSON.stringify({ episodeTranscript: fullText })));
-        controller.close();
       } catch (e) {
+        if (heartbeat) clearInterval(heartbeat);
         controller.enqueue(encoder.encode(JSON.stringify({ error: String(e) })));
+      } finally {
         controller.close();
       }
     },

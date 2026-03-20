@@ -1050,6 +1050,36 @@ These are the specific drama threads that carry into the next episode. The episo
 
 ---
 
+## COMEDY BEATS
+
+This section is for the episode writer. Identify 3–5 specific moments from this episode that should be played for laughs — not drama. The episode generator will use these as explicit comedy targets so the tone doesn't collapse into prestige drama.
+
+Each beat must be:
+- Tied to a SPECIFIC character and a SPECIFIC situation (not "Bowie is clumsy")
+- Written as a scene description the episode writer can use directly
+- A different TYPE of comedy each time — don't stack five "character falls down" beats
+
+Comedy types to draw from:
+- **Physical disaster**: someone fails spectacularly at something simple
+- **Wrong priority**: someone is intensely focused on the irrelevant thing while chaos happens around them
+- **Oblivious reaction**: someone completely misreads what just happened
+- **Character collision**: two incompatible people forced into a mundane situation together
+- **Chris/Chef**: Chris delights in someone's suffering; Chef grunts one word and walks away
+- **Confessional absurdity**: a character's confessional reveals they are thinking about something completely unhinged
+
+Format each beat like this:
+### [Character(s)]: [one-line label]
+[2–3 sentences. What specifically happens, why it's funny, how the writer should play it.]
+
+Example:
+### Bowie + Challenge: The Confident Disaster
+Bowie steps onto the rope bridge with complete confidence, announces "I've got this," immediately rotates sideways, and spends forty-five seconds dangling from the guide rope while everyone watches. He's not upset — he's genuinely surprised every time. Chris does not help. The comedy is that Bowie never loses his optimism even as the situation gets worse.
+
+### Chris + Tribal: The Delight
+When someone gives a particularly evasive answer at Tribal, Chris doesn't push back — he just smiles wider, like the evasion itself is the funniest thing he's heard all day. He lets the silence sit. Then moves on without comment. The joke is that he enjoyed it.
+
+---
+
 ## COLD OPEN HOOK
 [One specific dramatic moment from THIS episode — a fight, a confession, a betrayal, a funny disaster — that the next episode's cold open should reference or pick up from. Be vivid and specific. This is the first thing viewers will see next week. NEVER write a camp chore, morning routine, or maintenance task as the cold open hook. It must be a human moment — conflict, emotion, surprise, or comedy between specific named players.]
 
@@ -1352,6 +1382,7 @@ You MUST:
 2. Write the episode in strict chronological order: camp → challenge → post-challenge → tribal → elimination
 3. The COLD OPEN HOOK scene from the current summary belongs near the END — write it there, in its natural place
 4. Carry forward the ONGOING STORYLINES — at least 3 must surface somewhere in this episode
+5. Execute every beat in ## COMEDY BEATS — these are explicit comedy targets, not optional flavor. Each one must appear in the episode as a scene or moment.
 5. Characters should REMEMBER what happened in previous episodes. Fights don't disappear. Promises don't reset.` : '🔗 Since this is Episode 1, the cold open is the arrivals and first impressions — but make it immediate and specific, not a generic camp setup.'}
 
 ═══════════════════════════════════════════════════════════
@@ -1499,10 +1530,56 @@ Bad: "Scarlett was upset"
 Good: "Scarlett's hands shake as she stares at the fire, jaw tight, breathing shallow"
 
 ═══════════════════════════════════════════════════════════
-😂 COMEDY — MINIMUM 2 BEATS PER ACT
+😂 TOTAL DRAMA TONE — THIS IS NON-NEGOTIABLE
 ═══════════════════════════════════════════════════════════
 
-Total Drama is a COMEDY show. Even dramatic episodes have jokes. If you read back the episode and there are no laughs in 100 lines, something is wrong.
+⚠️ THIS IS A CARTOON COMPETITION SHOW, NOT A PRESTIGE DRAMA.
+
+Total Drama is goofy, over-the-top, and mean in a fun way. If you read back the episode and it sounds like a serious Survivor fan-fic with no jokes for five pages — you have failed. Every act needs comedy. No exceptions.
+
+**THE BALANCE YOU MUST HIT:**
+Real character drama (alliances, strategy, betrayal) embedded inside a comedy show. The drama lands HARDER because it's surrounded by absurdity. The episode you just read probably felt like 100% drama with occasional light moments. Flip it: 60% comedy and chaos, 40% genuine game drama.
+
+**CONFESSIONALS MUST HAVE PERSONALITY — MANDATORY RULE:**
+At least HALF of all confessionals must have a funny line, an absurd observation, or an unexpected reaction. NOT all confessionals are strategy monologues. Total Drama confessionals are where characters say the thing they'd never say to someone's face — and it's often hilarious.
+
+✅ Mickey confessional: "I am THRIVING. Like, I did not expect to still be here, but Cody's torch just went out and I could cry. Don't tell anyone I said that. Actually tell everyone, I don't care."
+✅ Bowie confessional: "Okay so the plan is working and also I accidentally agreed to two separate Final Threes today and I need everyone to calm down including me."
+✅ Courtney confessional: "I won immunity and I immediately thought about how to use this to make Mary's life harder. That's growth."
+✅ Scott confessional: "I've said twelve words today. Eight of them were 'yeah' and four were 'not tonight.' This is my peak performance."
+
+❌ WRONG: A confessional that is three paragraphs of strategic analysis with zero humor or personality. That is a Wikipedia plot summary, not a character speaking.
+
+**CHRIS IS ACTIVELY SADISTIC — NOT NEUTRAL:**
+Chris does not just announce things. He enjoys people's suffering out loud. He comments during challenges with visible delight when someone is struggling. He does NOT stay out of the drama.
+
+✅ Chris during a challenge: "Oh no. Oh that's — that's gonna leave a mark. Chef, are we filming this in slow motion? We need this in slow motion."
+✅ Chris watching someone fall: *[does not rush to help, pulls out phone instead]*
+✅ Chris at Tribal: "You look terrible. Have you been sleeping?" [does not wait for an answer] "Doesn't matter. Votes."
+
+**CHEF GRUNTS AND MUTTERS:**
+Chef has opinions. He expresses them in three words maximum. He's disgusted by everything except food and occasionally Mickey's competence.
+✅ Chef watching Bowie fall: "Amateur."
+✅ Chef serving the reward: "Eat it or don't." *[walks away immediately]*
+✅ Chef, when asked a question: *[looks at the camera like it personally offended him]*
+
+**PHYSICAL COMEDY IN CHALLENGES:**
+Challenges in Total Drama go wrong in spectacular, specific ways. Someone faceplants. Someone loses a shoe. Something explodes that shouldn't. Something smells terrible for no reason. Pick ONE per challenge and commit to it. Make it specific and visual.
+
+✅ "Bowie's entire body rotates sideways on the rope bridge and somehow that makes it worse."
+✅ "The ring bounces off the post, bounces off Mickey's head, and lands in the compost pit. Chris does not acknowledge this."
+✅ "Zoey crosses perfectly. She celebrates. She steps off the wrong side. She's fine."
+
+**CHARACTER EXAGGERATION — LEAN INTO THE CARTOON:**
+These are heightened versions of real people. Whatever their defining trait is — amplify it. Turn the dial up.
+- The control freak is MORE controlling than any real person would be
+- The schemer is VISIBLY scheming while pretending not to scheme
+- The laid-back one is so unbothered it becomes its own kind of aggression
+- The anxious one spirals over something tiny while a bigger crisis goes unnoticed
+- The competitor treats a rope toss like the Olympics
+- The strategist is running twelve calculations while answering a simple question about breakfast
+
+Look at each character's profile in this prompt. Their core trait is the dial. Crank it.
 
 Comedy in Total Drama comes from FOUR places — use all of them:
 

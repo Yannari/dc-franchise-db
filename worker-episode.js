@@ -3243,7 +3243,11 @@ Season: ${season ?? "?"}, Episode: ${episode ?? "?"}.
 Return complete episode transcript.
 `.trim();
 
-  // Try GPT-5 first, fall back to Gemini, then Anthropic
+  // Claude streaming first — keeps Cloudflare connection alive so no 524
+  if (env.ANTHROPIC_API_KEY) {
+    return await callAnthropicStreaming(instructions, summaryText, env);
+  }
+  // Fallback: GPT-5
   if (env.OPENAI_API_KEY) {
     try {
       const payload = { model: "gpt-5", instructions, input: summaryText };
@@ -3254,23 +3258,92 @@ Return complete episode transcript.
         if (data.episodeTranscript && !data.error) return result;
       }
     } catch (e) {
-      console.error("GPT-5 failed, falling back to Gemini:", e);
+      console.error("GPT-5 failed:", e);
     }
   }
-  if (env.GEMINI_API_KEY) {
-    try {
-      const result = await callGemini(instructions, summaryText, env);
-      if (result.ok !== false) {
-        const clone = result.clone();
-        const data = await clone.json().catch(() => ({}));
-        if (data.episodeTranscript && !data.error) return result;
+  // Last resort: Gemini
+  return await callGemini(instructions, summaryText, env);
+}
+
+async function callAnthropicStreaming(system, userText, env) {
+  let resp;
+  try {
+    resp = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": env.ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 16000,
+        stream: true,
+        system,
+        messages: [{ role: "user", content: userText }],
+      }),
+    });
+  } catch (e) {
+    return new Response(JSON.stringify({ error: "Network error", details: String(e) }), {
+      status: 502,
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+    });
+  }
+
+  if (!resp.ok) {
+    const errData = await resp.json().catch(() => ({}));
+    return new Response(JSON.stringify(errData), {
+      status: resp.status,
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+    });
+  }
+
+  const encoder = new TextEncoder();
+  const readable = new ReadableStream({
+    async start(controller) {
+      try {
+        const reader = resp.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        let fullText = "";
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
+
+          for (const line of lines) {
+            if (line.startsWith("data: ")) {
+              const data = line.slice(6).trim();
+              if (data === "[DONE]") continue;
+              try {
+                const event = JSON.parse(data);
+                if (event.type === "content_block_delta" && event.delta?.text) {
+                  fullText += event.delta.text;
+                  // Send a newline keep-alive so Cloudflare sees data flowing
+                  controller.enqueue(encoder.encode("\n"));
+                }
+              } catch (_) {}
+            }
+          }
+        }
+
+        // Final JSON — JSON.parse ignores leading whitespace so client .json() works fine
+        controller.enqueue(encoder.encode(JSON.stringify({ episodeTranscript: fullText })));
+        controller.close();
+      } catch (e) {
+        controller.enqueue(encoder.encode(JSON.stringify({ error: String(e) })));
+        controller.close();
       }
-    } catch (e) {
-      console.error("Gemini failed, falling back to Anthropic:", e);
-    }
-  }
-  // Fallback: Anthropic
-  return await callAnthropic(instructions, summaryText, env);
+    },
+  });
+
+  return new Response(readable, {
+    headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+  });
 }
 
 async function callGemini(system, userText, env) {

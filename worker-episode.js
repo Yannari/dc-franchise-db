@@ -15,10 +15,10 @@ export default {
     }
 
     const body = await request.json().catch(() => ({}));
-    const { season, episode, summaryText, mode, previousEpisodes } = body;
+    const { season, episode, summaryText, mode, previousEpisodes, franchiseContext } = body;
 
     if (mode === "episode") {
-      return await generateEpisode(summaryText, season, episode, env, previousEpisodes);
+      return await generateEpisode(summaryText, season, episode, env, previousEpisodes, franchiseContext);
     } else if (mode === "summarize") {
       return await generateSummary(body.rawText, season, episode, env, body.prevSummary || "");
     } else if (mode === "season-data-extraction") {
@@ -1186,7 +1186,7 @@ Rules:
   });
 }
 
-async function generateEpisode(summaryText, season, episode, env, previousEpisodes = []) {
+async function generateEpisode(summaryText, season, episode, env, previousEpisodes = [], franchiseContext = '') {
   if (!summaryText || typeof summaryText !== "string") {
     return new Response(JSON.stringify({ error: "Missing summaryText" }), {
       status: 400,
@@ -1227,10 +1227,14 @@ async function generateEpisode(summaryText, season, episode, env, previousEpisod
     previousContext += '\n⚠️ CRITICAL: Maintain character consistency, ongoing relationships, alliance dynamics, and story arcs from these previous episodes.\n\n';
   }
 
+  const franchiseContextBlock = franchiseContext && franchiseContext.trim()
+    ? `\n\n═══════════════════════════════════════════════════════════\nRETURNING PLAYER HISTORIES (PRIOR SEASONS)\n═══════════════════════════════════════════════════════════\n\nThese players are returning from previous seasons. Reference their history naturally in confessionals, rivalries, and reactions. Do NOT ignore this context.\n\n${franchiseContext.trim()}\n\n`
+    : '';
+
   const instructions = `
 You are writing a full episode transcript of a Total Drama season.
 
-${previousContext}
+${franchiseContextBlock}${previousContext}
 
 ═══════════════════════════════════════════════════════════
 ⚠️ THESE ARE REAL TOTAL DRAMA CHARACTERS — USE YOUR KNOWLEDGE

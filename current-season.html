@@ -588,6 +588,24 @@ Example:
 Episode 2: Tribal swap! Belo won immunity. At Reba, Ella was voted out 2-1..."
             style="width: 100%; min-height: 150px; margin-bottom: 12px;"></textarea>
           
+          <!-- Franchise Context (All-Stars / returning players) -->
+          <div id="episode-1-franchise-context" style="margin-top: 16px; padding: 12px; background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.25); border-radius: 8px; display: none;">
+            <h4 style="margin: 0 0 4px 0; color: #93c5fd; font-size: 14px;">🏆 Franchise Context (Optional — All-Stars / Returning Players)</h4>
+            <p style="opacity: 0.7; font-size: 12px; margin: 0 0 8px 0;">
+              Paste returning player histories here. The AI will use these to reference prior seasons in episodes. Saved automatically per season.
+            </p>
+            <textarea
+              id="franchise-context-input"
+              class="episode-input"
+              placeholder="Example:
+- Gwen (S3 winner): Won via fire-making against Duncan. Built a quiet midnight alliance with Alejandro. Jury respected her but called her cold.
+- Courtney (S7, 6th place): Dominated challenges but was too controlling. Was voted out by the alliance she herself created. Has a score to settle.
+- Duncan (S2, 5th place): Voted out as a physical threat. Known for chaos-stirring. History of rivalry with Courtney.
+
+Leave blank if this is a new-player season."
+              style="width: 100%; min-height: 100px; background: rgba(59,130,246,0.05); font-size: 12px;"></textarea>
+          </div>
+
           <!-- Auditions for Episode 1 Only -->
           <div id="episode-1-auditions" style="margin-top: 16px; padding: 12px; background: rgba(147,51,234,0.1); border: 1px solid rgba(147,51,234,0.3); border-radius: 8px; display: none;">
             <h4 style="margin: 0 0 8px 0; color: #c4b5fd; font-size: 14px;">🎬 Episode 1 Special: Audition Tapes (Optional)</h4>
@@ -2781,6 +2799,18 @@ async function generateEpisodeAI() {
     }
   }
 
+  // Get franchise context — shown only on ep1; for other episodes load silently from localStorage
+  let franchiseContext = '';
+  if (episodeNum === 1) {
+    const franchiseContextInput = document.getElementById('franchise-context-input');
+    franchiseContext = franchiseContextInput ? franchiseContextInput.value.trim() : '';
+    if (franchiseContext) {
+      localStorage.setItem(`franchise_context_s${season}`, franchiseContext);
+    }
+  } else {
+    franchiseContext = localStorage.getItem(`franchise_context_s${season}`) || '';
+  }
+
   // GATHER PREVIOUS EPISODES FOR CONTEXT
   // Recent episodes (last 2): full transcript — AI needs exact voice + tone continuity
   // All older episodes: BrantSteele summary — compact, covers everything that matters
@@ -2839,7 +2869,8 @@ async function generateEpisodeAI() {
         episode: episode,
         summaryText: summary,
         auditionsText: auditionsText,
-        previousEpisodes: previousEpisodes  // 🆕 Include previous episodes
+        franchiseContext: franchiseContext,
+        previousEpisodes: previousEpisodes
       })
     });
     
@@ -7067,16 +7098,34 @@ Write ONLY the reasoning text, no labels or quotes.`;
   const episodeInput = document.getElementById('aiEpisode');
   const auditionsSection = document.getElementById('episode-1-auditions');
   
+  const franchiseContextSection = document.getElementById('episode-1-franchise-context');
   function toggleAuditions() {
     if (!episodeInput || !auditionsSection) return;
     const episodeNum = parseInt(episodeInput.value) || 1;
     auditionsSection.style.display = (episodeNum === 1) ? 'block' : 'none';
+    if (franchiseContextSection) franchiseContextSection.style.display = (episodeNum === 1) ? 'block' : 'none';
   }
   
   if (episodeInput && auditionsSection) {
     episodeInput.addEventListener('input', toggleAuditions);
     episodeInput.addEventListener('change', toggleAuditions);
     toggleAuditions(); // Initial check on page load
+  }
+
+  // Restore franchise context from localStorage when season input changes
+  function restoreFranchiseContext() {
+    const seasonEl = document.getElementById('aiSeason');
+    const ctxEl = document.getElementById('franchise-context-input');
+    if (!seasonEl || !ctxEl) return;
+    const saved = localStorage.getItem(`franchise_context_s${seasonEl.value}`);
+    if (saved) ctxEl.value = saved;
+    else ctxEl.value = '';
+  }
+  const seasonInput = document.getElementById('aiSeason');
+  if (seasonInput) {
+    seasonInput.addEventListener('input', restoreFranchiseContext);
+    seasonInput.addEventListener('change', restoreFranchiseContext);
+    restoreFranchiseContext();
   }
   
   // ========================================

@@ -2741,26 +2741,33 @@ async function generateEpisodeAI() {
   const generateBtn = document.getElementById('generate-episode-btn');
   const originalText = generateBtn.innerHTML;
 
-  if (!summary) {
-    if (isStructuredSummary(rawInput)) {
-      // Input is already a structured summary — save and use it
-      summary = rawInput;
+  const hasRawInput = rawInput && rawInput.trim().length > 0;
+
+  if (hasRawInput && isStructuredSummary(rawInput)) {
+    // User pasted a structured summary directly — use it as-is
+    summary = rawInput;
+    localStorage.setItem(cachedSummaryKey, summary);
+  } else if (hasRawInput && !isStructuredSummary(rawInput)) {
+    // User pasted raw BrantSteele — always re-summarize, even if cache exists
+    generateBtn.innerHTML = '⏳ Step 1/2: Summarizing raw…';
+    generateBtn.disabled = true;
+    try {
+      summary = await autoSummarize(season, episodeNum, rawInput);
       localStorage.setItem(cachedSummaryKey, summary);
-    } else {
-      // Input is raw BrantSteele — auto-summarize first
-      generateBtn.innerHTML = '⏳ Step 1/2: Summarizing raw…';
-      generateBtn.disabled = true;
-      try {
-        summary = await autoSummarize(season, episodeNum, rawInput);
-        localStorage.setItem(cachedSummaryKey, summary);
-      } catch (error) {
-        generateBtn.innerHTML = originalText;
-        generateBtn.disabled = false;
-        alert('❌ Error generating summary: ' + error.message);
-        return;
-      }
+    } catch (error) {
+      generateBtn.innerHTML = originalText;
+      generateBtn.disabled = false;
+      alert('❌ Error generating summary: ' + error.message);
+      return;
     }
+  } else if (!summary) {
+    // Nothing pasted and no cache — can't proceed
+    generateBtn.innerHTML = originalText;
+    generateBtn.disabled = false;
+    alert('❌ Please paste BrantSteele data or a structured summary.');
+    return;
   }
+  // If nothing pasted but cache exists — use cached summary (re-generate episode only)
   generateBtn.innerHTML = '⏳ Step 2/2: Generating Episode…';
   generateBtn.disabled = true;
   // ────────────────────────────────────────────────────────────────────────────

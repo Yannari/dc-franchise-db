@@ -778,6 +778,15 @@ In both cases:
 - If it says "[Tribe Name] wins immunity." → tribe immunity challenge, pre-merge
 - This distinction is critical. Get it right.
 
+**DETECTING REDEMPTION ISLAND / EDGE OF EXTINCTION:**
+If the BrantSteele output contains a "Redemption Island" or "Duel" section, this is a RI season. Key rules:
+- A player voted out at Tribal does NOT go on the ELIMINATED list — they go to Redemption Island (or chose to go home)
+- The PERMANENT elimination this episode is the player who LOST the RI Duel, not the tribal boot
+- If BrantSteele shows a player "eliminated from Redemption Island" → that is the permanent boot; add to ELIMINATED
+- If BrantSteele shows a player "voted out" → they went to RI; track in ON REDEMPTION ISLAND
+- Track all RI residents in the === ON REDEMPTION ISLAND === block (see template below)
+- The RI duel happens at the START of the episode in the show — write the ## REDEMPTION ISLAND DUEL section
+
 **THE EVENTS SECTION — YOUR MOST IMPORTANT SOURCE:**
 The "Events" section in BrantSteele is the backbone of your episode's storylines. These are not flavor text — they are scripted story beats the simulation chose to highlight. EVERY event listed MUST become a scene or story hook in your summary.
 
@@ -857,9 +866,13 @@ Sanders
 Scott
 Zoey
 
-=== ELIMINATED ===
-[Previously eliminated players, one per line, oldest first — copy from previous summary if available]
-[This episode's boot — add at the end]
+=== ELIMINATED (PERMANENT) ===
+[Players permanently out of the game — lost a RI/EoE duel, chose to go home, or were eliminated in a standard season. One per line, oldest first.]
+[Add this episode's permanent boot at the end — the RI duel loser OR the tribal boot in a standard season]
+
+=== ON REDEMPTION ISLAND ===
+[Only for RI/EoE seasons. Players currently on RI who are still in the game. One per line.]
+[If this is a standard season with no RI mechanic, write: N/A]
 
 ---
 
@@ -868,6 +881,19 @@ Zoey
 - "PRE-MERGE — Tribal Immunity" (tribes still exist, tribe wins immunity)
 - "MERGE EPISODE — Individual Immunity" (this is the episode the merge happens — write the announcement scene)
 - "POST-MERGE — Individual Immunity" (merge already happened in a previous episode — no announcement, continue individual game)
+
+---
+
+## REDEMPTION ISLAND DUEL
+[Only include this section if this is a Redemption Island or Edge of Extinction season AND there are players on RI/Edge this episode. If no RI mechanic or RI is empty, omit entirely.]
+
+**Residents competing:** [Names of players on RI who dueled this episode]
+**Witnesses:** [Players sent from each tribe to observe — names]
+**Duel challenge:** [What the challenge was — physical, mental, endurance]
+**Winner:** [Who won and stays on RI]
+**Permanently eliminated:** [Who lost the duel and is now out for good]
+
+**Story:** [2–3 sentences. What was the emotional temperature of the duel? Was it a blowout or a near thing? What did the witnesses take back to camp? What did the loser say in their final moment? What does the winner's continued survival mean for the game?]
 
 ---
 
@@ -995,10 +1021,15 @@ Map the key relationships this episode for EVERY active group — tribes if pre-
 
 ---
 
-## ELIMINATED
+## VOTED OUT THIS TRIBAL
 [Boot name]
 
+**Chose:** [REDEMPTION ISLAND / WENT HOME / N/A — standard season]
+
 Reason label: **"[Creative nickname/archetype]"** [One sentence: exactly why them, not someone else, tonight]
+
+[If RI season: note whether they walked confidently, hesitated, looked back at the tribe, said anything before choosing their path. This feeds the episode writer's two-sign scene.]
+[If they chose to go home: add their name to ELIMINATED PERMANENT. If they chose RI: add to ON REDEMPTION ISLAND.]
 
 ---
 
@@ -1227,13 +1258,61 @@ async function generateEpisode(summaryText, season, episode, env, previousEpisod
     previousContext += '\n⚠️ CRITICAL: Maintain character consistency, ongoing relationships, alliance dynamics, and story arcs from these previous episodes.\n\n';
   }
 
+  const hasRI = seasonSetting && /redemption island/i.test(seasonSetting);
+  const hasEoE = seasonSetting && /edge of extinction/i.test(seasonSetting);
+
+  const riMechanicsBlock = (hasRI || hasEoE) ? `
+═══════════════════════════════════════════════════════════
+${hasRI ? 'REDEMPTION ISLAND' : 'EDGE OF EXTINCTION'} MECHANICS — MANDATORY
+═══════════════════════════════════════════════════════════
+
+This season uses a second-chance twist. The episode structure changes:
+
+**EPISODE ORDER:**
+1. Cold open / recap
+2. ${hasRI ? 'REDEMPTION ISLAND DUEL (if RI residents are present — this happens BEFORE tribal)' : 'EDGE CHECK-IN (brief scene at the Edge showing life there)'}
+3. Camp life / strategy
+4. Immunity challenge
+5. Tribal Council + THE TWO SIGNS
+
+**THE RI DUEL SCENE:**
+${hasRI ? `Write the RI duel as a full scene. Witnesses from each tribe attend — they cannot talk strategy but they observe and react. Chris referees from a platform. The duel is physical or mental — make it specific and visual. The loser is permanently eliminated: they get a final confessional and leave. Their torch is not snuffed — they just walk away. The winner stays on RI, alone, waiting.` : `Write brief Edge scenes showing the harsh conditions. Players on the Edge compete in brutal "advantage" challenges between episodes.`}
+
+**THE TWO SIGNS SCENE — MANDATORY EVERY TRIBAL BOOT:**
+After Chris reads the final vote and says the player's name, he steps back. Two wooden signs appear on posts at the edge of the Tribal Council clearing — one pointing toward REDEMPTION ISLAND, one pointing toward the dock and home.
+
+Write this scene every single time someone is voted out. It must include:
+- The player's reaction when they see the signs (match their character — defiance, exhaustion, relief, calculation)
+- A beat of silence or a look back at the tribe before they choose
+- The actual choice — they walk toward one sign
+- One thing they say to the tribe before they go (or don't — silence is also a choice)
+- Chris's response (never sympathetic — he's entertained either way)
+
+**If they choose REDEMPTION ISLAND:**
+- Their torch stays lit
+- Chris: "The game isn't over for you. Not yet."
+- They walk the RI path into the dark, torch in hand
+- Their final confessional is defiant: "I'm not done."
+
+**If they choose to GO HOME:**
+- Chris snuffs their torch. No ceremony, just the sound.
+- The player takes the dock walk. Permanent. No coming back.
+- Their final confessional is reflective — what they're taking with them, what they wish they'd done.
+
+**The choice should feel earned by the episode:** a player who fought all episode probably chooses RI. A player who looks exhausted or at peace might choose home. Match the emotional state the summary built for them. The tribe's reaction matters too — some are hoping they leave, some are secretly hoping they stay.
+
+**VOTED-OUT PLAYER BEFORE THE SIGNS:**
+Do NOT write "they were eliminated" at tribal. The tribal vote sends them to this moment — the signs scene IS the elimination. Make it dramatic.
+
+` : '';
+
   const settingBlock = seasonSetting && seasonSetting.trim()
     ? `═══════════════════════════════════════════════════════════
 SEASON SETTING — READ THIS BEFORE WRITING ANYTHING
 ═══════════════════════════════════════════════════════════
 
 ${seasonSetting.trim()}
-
+${riMechanicsBlock}
 Every scene, every challenge, every confessional, and every elimination takes place inside this world. The physical environment shapes everything: where people sleep, where the confessional is shot, what the challenges look like, how eliminations happen.
 
 ⚠️ THIS IS TOTAL DRAMA — NOT SURVIVOR. KEY DIFFERENCES:

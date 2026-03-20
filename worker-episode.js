@@ -988,48 +988,55 @@ Rules:
     : "";
   const input = `${prevContext}═══ CURRENT EPISODE RAW DATA ═══\n${rawText}`;
 
-  // Try GPT-5 first, fall back to Anthropic
-  let summary = "";
+  // Use heartbeat streaming (same pattern as episode generation) to avoid 524/502 timeouts.
+  // setInterval sends \n keep-alives while Claude generates; final JSON sent when done.
+  const encoder = new TextEncoder();
+  const readable = new ReadableStream({
+    async start(controller) {
+      let heartbeat;
+      try {
+        heartbeat = setInterval(() => {
+          try { controller.enqueue(encoder.encode("\n")); } catch (_) {}
+        }, 5000);
 
-  if (env.OPENAI_API_KEY) {
-    try {
-      const resp = await fetch("https://api.openai.com/v1/responses", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${env.OPENAI_API_KEY}` },
-        body: JSON.stringify({ model: "gpt-5", instructions, input }),
-      });
-      const data = await resp.json().catch(() => ({}));
-      if (resp.ok) {
-        if (typeof data?.output_text === "string") summary = data.output_text.trim();
-        else if (Array.isArray(data?.output)) summary = data.output.flatMap(i => i?.content || []).map(c => c?.text || "").join("").trim();
+        const resp = await fetch("https://api.anthropic.com/v1/messages", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-api-key": env.ANTHROPIC_API_KEY,
+            "anthropic-version": "2023-06-01",
+          },
+          body: JSON.stringify({
+            model: "claude-sonnet-4-6",
+            max_tokens: 16000,
+            system: instructions,
+            messages: [{ role: "user", content: input }],
+          }),
+        });
+
+        const data = await resp.json().catch(() => ({}));
+        clearInterval(heartbeat);
+
+        if (!resp.ok) {
+          controller.enqueue(encoder.encode(JSON.stringify({ error: "Anthropic error", details: data })));
+        } else {
+          const summary = data?.content?.[0]?.text?.trim() || "";
+          if (!summary) {
+            controller.enqueue(encoder.encode(JSON.stringify({ error: "Empty summary returned" })));
+          } else {
+            controller.enqueue(encoder.encode(JSON.stringify({ summary })));
+          }
+        }
+      } catch (e) {
+        if (heartbeat) clearInterval(heartbeat);
+        controller.enqueue(encoder.encode(JSON.stringify({ error: String(e) })));
+      } finally {
+        controller.close();
       }
-    } catch (e) {
-      console.error("GPT-5 summary failed:", e);
-    }
-  }
+    },
+  });
 
-  if (!summary && env.ANTHROPIC_API_KEY) {
-    try {
-      const resp = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01" },
-        body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: 8000, system: instructions, messages: [{ role: "user", content: input }] }),
-      });
-      const data = await resp.json().catch(() => ({}));
-      if (resp.ok && data?.content?.[0]?.text) summary = data.content[0].text.trim();
-    } catch (e) {
-      console.error("Anthropic summary fallback failed:", e);
-    }
-  }
-
-  if (!summary) {
-    return new Response(JSON.stringify({ error: "GPT-5 and Anthropic both failed to generate summary" }), {
-      status: 502,
-      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
-    });
-  }
-
-  return new Response(JSON.stringify({ summary }), {
+  return new Response(readable, {
     headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
   });
 }

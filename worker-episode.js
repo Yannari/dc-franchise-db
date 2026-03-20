@@ -3405,6 +3405,12 @@ Character: Dialogue here.
 [Confessional: Character]
 Character: Confessional here.
 
+CRITICAL FORMATTING RULES:
+- Character names are NEVER bold. Write "Ryan:" not "**Ryan:**"
+- Do NOT use markdown bold (**) anywhere in the episode — not on names, not on locations, not on anything
+- Do NOT use markdown headers (##) inside the episode text
+- Plain text only. The UI renders this directly and markdown symbols will appear as literal characters.
+
 ═══════════════════════════════════════════════════════════
 
 The BrantSteele summary tells you WHAT happens.

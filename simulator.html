@@ -14,49 +14,16 @@
       --muted:    #94a3b8;
       --accent:   #10b981;
       --accent-dim: rgba(16,185,129,0.12);
-      --c-phy: #f97316;
-      --c-soc: #3b82f6;
-      --c-str: #8b5cf6;
-      --c-loy: #10b981;
-      --c-cha: #ec4899;
     }
-
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Segoe UI', system-ui, sans-serif;
-      min-height: 100vh;
-      font-size: 14px;
-    }
+    body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; font-size: 14px; }
 
     /* ── HEADER ── */
-    .sim-header {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 12px 24px;
-      display: flex;
-      align-items: center;
-      gap: 28px;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
+    .sim-header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; align-items: center; gap: 28px; position: sticky; top: 0; z-index: 10; }
     .sim-title { font-size: 17px; font-weight: 700; color: var(--accent); white-space: nowrap; }
     .sim-title span { color: var(--muted); font-weight: 400; }
     .sim-tabs { display: flex; gap: 4px; }
-    .tab-btn {
-      padding: 6px 14px;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      background: transparent;
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
+    .tab-btn { padding: 6px 14px; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.15s; }
     .tab-btn.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
     .tab-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
@@ -66,64 +33,33 @@
     .tab-content.active { display: flex; }
 
     /* ── SHARED PANEL STYLES ── */
-    .form-panel, .setup-left {
-      width: 300px;
-      min-width: 300px;
-      background: var(--surface);
-      border-right: 1px solid var(--border);
-      overflow-y: auto;
-      padding: 18px 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
+    .form-panel, .setup-left, .run-sidebar {
+      width: 280px; min-width: 280px;
+      background: var(--surface); border-right: 1px solid var(--border);
+      overflow-y: auto; padding: 16px 14px;
+      display: flex; flex-direction: column; gap: 12px;
     }
-    .panel-title {
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: var(--muted);
-      padding-bottom: 10px;
-      border-bottom: 1px solid var(--border);
-    }
+    .panel-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); padding-bottom: 10px; border-bottom: 1px solid var(--border); }
     .form-group { display: flex; flex-direction: column; gap: 5px; }
     .form-label { font-size: 11px; color: var(--muted); font-weight: 600; }
     .form-label .hint { font-weight: 400; color: #475569; }
-    .form-input, .form-select {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 7px 10px;
-      color: var(--text);
-      font-size: 13px;
-      width: 100%;
-      outline: none;
-      transition: border-color 0.15s;
-    }
+    .form-input, .form-select { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 7px 10px; color: var(--text); font-size: 13px; width: 100%; outline: none; transition: border-color 0.15s; }
     .form-input:focus, .form-select:focus { border-color: var(--accent); }
     .form-select option { background: var(--bg); }
-    input[type="number"].form-input { width: 80px; }
 
     /* ── STAT SLIDERS ── */
     .stat-sliders { display: flex; flex-direction: column; gap: 9px; }
     .slider-row { display: flex; align-items: center; gap: 8px; }
     .slider-name { font-size: 11px; width: 66px; flex-shrink: 0; font-weight: 600; }
-    input[type="range"].stat-slider {
-      flex: 1; -webkit-appearance: none; height: 4px; border-radius: 2px; outline: none; cursor: pointer;
-    }
-    input[type="range"].stat-slider::-webkit-slider-thumb {
-      -webkit-appearance: none; width: 13px; height: 13px; border-radius: 50%;
-      background: #fff; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.6);
-    }
+    input[type="range"].stat-slider { flex: 1; -webkit-appearance: none; height: 4px; border-radius: 2px; outline: none; cursor: pointer; }
+    input[type="range"].stat-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 13px; height: 13px; border-radius: 50%; background: #fff; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.6); }
     .slider-val { width: 20px; text-align: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
 
     /* ── BUTTONS ── */
-    .btn {
-      padding: 8px 14px; border-radius: 6px; border: none;
-      font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s;
-    }
+    .btn { padding: 8px 14px; border-radius: 6px; border: none; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
     .btn-primary { background: var(--accent); color: #0f172a; width: 100%; }
     .btn-primary:hover { filter: brightness(1.1); }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; filter: none; }
     .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
     .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
     .btn-danger { background: rgba(239,68,68,0.1); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
@@ -142,32 +78,17 @@
     .cast-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
 
     /* ── PLAYER CARD ── */
-    .player-card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 10px; padding: 12px; position: relative; transition: border-color 0.15s;
-    }
+    .player-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px; position: relative; transition: border-color 0.15s; }
     .player-card:hover { border-color: #475569; }
     .player-card.editing { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-dim); }
     .card-tribe-bar { position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 10px 10px 0 0; }
     .card-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-    .card-avatar {
-      width: 38px; height: 38px; border-radius: 50%;
-      background: var(--surface2); border: 2px solid var(--border);
-      overflow: hidden; flex-shrink: 0; display: flex;
-      align-items: center; justify-content: center;
-      font-size: 15px; font-weight: 700; color: var(--muted); position: relative;
-    }
-    .card-avatar img {
-      position: absolute; top: 0; left: 0;
-      width: 100%; height: 100%; object-fit: cover; border-radius: 50%;
-    }
+    .card-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--surface2); border: 2px solid var(--border); overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; color: var(--muted); position: relative; }
+    .card-avatar img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
     .card-info { flex: 1; min-width: 0; }
     .card-name { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .card-badges { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; margin-top: 3px; }
-    .tribe-badge {
-      font-size: 9px; font-weight: 700; padding: 2px 6px;
-      border-radius: 10px; text-transform: uppercase; letter-spacing: 0.4px;
-    }
+    .tribe-badge { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 10px; text-transform: uppercase; letter-spacing: 0.4px; }
     .archetype-tag { font-size: 10px; color: var(--muted); }
     .overall-row { display: flex; align-items: center; gap: 6px; margin-bottom: 7px; }
     .overall-label-sm { font-size: 9px; color: var(--muted); width: 30px; }
@@ -188,99 +109,106 @@
     .empty-state p { font-size: 13px; margin-top: 6px; }
     .archetype-desc { font-size: 10px; color: #475569; margin-top: 2px; }
 
-    /* ── TOGGLE SWITCH ── */
+    /* ── TOGGLE ── */
     .toggle-row { display: flex; align-items: center; gap: 10px; }
     .toggle { position: relative; display: inline-block; width: 36px; height: 20px; flex-shrink: 0; }
     .toggle input { opacity: 0; width: 0; height: 0; }
-    .toggle-track {
-      position: absolute; cursor: pointer;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: var(--border); border-radius: 20px; transition: 0.2s;
-    }
-    .toggle-track::before {
-      content: ''; position: absolute;
-      width: 14px; height: 14px; left: 3px; bottom: 3px;
-      background: white; border-radius: 50%; transition: 0.2s;
-    }
+    .toggle-track { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: var(--border); border-radius: 20px; transition: 0.2s; }
+    .toggle-track::before { content: ''; position: absolute; width: 14px; height: 14px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.2s; }
     .toggle input:checked + .toggle-track { background: var(--accent); }
     .toggle input:checked + .toggle-track::before { transform: translateX(16px); }
     .toggle-label { font-size: 12px; color: var(--muted); }
 
-    /* ── ADVANTAGE ROWS ── */
-    .adv-row {
-      display: flex; align-items: center; gap: 8px;
-      padding: 6px 0; border-bottom: 1px solid var(--border);
-    }
+    /* ── ADVANTAGES ── */
+    .adv-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--border); }
     .adv-row:last-child { border-bottom: none; }
     .adv-check { width: 14px; height: 14px; cursor: pointer; accent-color: var(--accent); flex-shrink: 0; }
-    .adv-label { flex: 1; font-size: 12px; }
-    .adv-count {
-      width: 44px; padding: 4px 6px;
-      background: var(--bg); border: 1px solid var(--border);
-      border-radius: 4px; color: var(--text); font-size: 12px;
-      text-align: center; outline: none;
-    }
+    .adv-label { flex: 1; font-size: 12px; color: var(--text); }
+    .adv-count { width: 44px; padding: 4px 6px; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-size: 12px; text-align: center; outline: none; }
     .adv-count:focus { border-color: var(--accent); }
     .adv-count:disabled { opacity: 0.3; }
 
-    /* ── SEASON SETUP RIGHT PANEL ── */
+    /* ── SETUP RIGHT ── */
     .setup-right { flex: 1; overflow-y: auto; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; }
     .setup-header { display: flex; align-items: center; justify-content: space-between; }
     .setup-header h2 { font-size: 14px; font-weight: 600; }
     .setup-header-actions { display: flex; gap: 6px; }
-
-    /* ── RELATIONSHIP FORM ── */
-    .rel-form-box {
-      background: var(--surface);
-      border: 1px solid var(--accent);
-      border-radius: 10px;
-      padding: 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
+    .rel-form-box { background: var(--surface); border: 1px solid var(--accent); border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
     .rel-form-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); }
     .rel-player-row { display: flex; gap: 8px; align-items: center; }
     .rel-player-row .form-select { flex: 1; }
     .rel-vs { font-size: 11px; color: var(--muted); flex-shrink: 0; }
-
-    /* ── TYPE SELECTOR ── */
     .type-seg { display: flex; gap: 4px; flex-wrap: wrap; }
-    .type-btn {
-      padding: 5px 10px; border-radius: 6px;
-      border: 1px solid var(--border);
-      background: transparent; color: var(--muted);
-      font-size: 11px; font-weight: 600; cursor: pointer;
-      transition: all 0.15s;
-    }
+    .type-btn { padding: 5px 10px; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
     .type-btn.active { color: #0f172a; border-color: transparent; }
-
-    /* ── RELATIONSHIP CARDS ── */
     .rel-list { display: flex; flex-direction: column; gap: 8px; }
     .rel-empty { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 13px; }
-    .rel-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 12px 14px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
+    .rel-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; }
     .rel-card:hover { border-color: #475569; }
     .rel-players { flex: 1; min-width: 0; }
-    .rel-names {
-      font-size: 13px; font-weight: 600;
-      display: flex; align-items: center; gap: 6px;
-    }
+    .rel-names { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
     .rel-arrow { font-size: 10px; color: var(--muted); }
     .rel-note { font-size: 11px; color: var(--muted); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 340px; }
-    .rel-badge {
-      font-size: 10px; font-weight: 700;
-      padding: 3px 8px; border-radius: 10px;
-      white-space: nowrap; flex-shrink: 0;
-    }
+    .rel-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 10px; white-space: nowrap; flex-shrink: 0; }
     .rel-actions { display: flex; gap: 4px; flex-shrink: 0; }
+
+    /* ── RUN EPISODE TAB ── */
+    .run-main { flex: 1; overflow-y: auto; padding: 18px 20px; display: flex; flex-direction: column; gap: 16px; }
+
+    /* Game state sidebar */
+    .gs-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .gs-stat { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 7px 8px; text-align: center; }
+    .gs-stat label { display: block; font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+    .gs-stat strong { font-size: 16px; font-weight: 700; }
+    .gs-tribe { margin-bottom: 8px; }
+    .gs-tribe-name { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
+    .gs-tribe-members { font-size: 11px; color: var(--muted); line-height: 1.6; }
+    .gs-section { margin-top: 2px; }
+    .gs-section > label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); display: block; margin-bottom: 4px; }
+    .gs-alliance { padding: 5px 0; border-bottom: 1px solid var(--border); }
+    .gs-alliance:last-child { border-bottom: none; }
+    .gs-alliance-label { font-size: 10px; font-weight: 700; color: var(--accent); }
+    .gs-alliance-members { font-size: 11px; color: var(--text); display: block; }
+    .gs-alliance-target { font-size: 10px; color: #ef4444; display: block; }
+    .gs-ri-list { font-size: 12px; color: #f97316; }
+    .gs-elim-list { font-size: 11px; color: var(--muted); line-height: 1.6; }
+
+    /* Episode result */
+    .ep-result { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+    .ep-result-header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 14px; }
+    .ep-result-num { font-size: 20px; font-weight: 700; }
+    .ep-result-phase { font-size: 12px; color: var(--muted); }
+    .ep-facts { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin-bottom: 12px; }
+    .ep-fact { background: var(--bg); border-radius: 6px; padding: 8px 10px; }
+    .ep-fact label { display: block; font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
+    .ep-fact span { font-size: 13px; font-weight: 600; }
+    .ep-vote-list { display: flex; flex-wrap: wrap; gap: 6px; }
+    .ep-vote-chip { font-size: 11px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 3px 8px; }
+    .ep-vote-chip.top { border-color: #ef4444; color: #ef4444; }
+
+    /* Output section */
+    .output-section { display: flex; flex-direction: column; gap: 8px; }
+    .output-header { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .output-title { font-size: 13px; font-weight: 600; flex: 1; }
+    .output-note { font-size: 11px; color: var(--muted); }
+    .output-textarea { width: 100%; min-height: 280px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 12px; color: var(--text); font-size: 12px; font-family: 'Courier New', monospace; line-height: 1.6; resize: vertical; outline: none; }
+    .output-textarea:focus { border-color: var(--accent); }
+
+    /* Episode history */
+    .ep-history-wrap { display: flex; flex-direction: column; gap: 8px; }
+    .ep-history-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); }
+    .ep-history-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+    .ep-hist-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; cursor: pointer; transition: all 0.15s; min-width: 110px; }
+    .ep-hist-card:hover { border-color: #475569; }
+    .ep-hist-card.active { border-color: var(--accent); background: var(--accent-dim); }
+    .ep-hist-ep { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .ep-hist-elim { font-size: 12px; font-weight: 700; margin-top: 2px; }
+    .ep-hist-tag { font-size: 9px; padding: 1px 5px; border-radius: 4px; display: inline-block; margin-top: 3px; }
+
+    /* Run empty */
+    .run-empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; text-align: center; color: var(--muted); padding: 60px 40px; gap: 10px; }
+    .run-empty-state .empty-icon { font-size: 40px; }
+    .run-empty-state p { font-size: 13px; max-width: 360px; line-height: 1.6; }
 
     /* Scrollbar */
     ::-webkit-scrollbar { width: 6px; }
@@ -297,19 +225,17 @@
     <nav class="sim-tabs">
       <button class="tab-btn active"  onclick="showTab('cast')">Cast Builder</button>
       <button class="tab-btn"         onclick="showTab('setup')">Season Setup</button>
-      <button class="tab-btn" disabled>Run Episode</button>
+      <button class="tab-btn"         onclick="showTab('run')">Run Episode</button>
       <button class="tab-btn" disabled>Results</button>
     </nav>
   </header>
 
   <div class="sim-body">
 
-    <!-- ═══════════════════════════════════════ CAST TAB -->
+    <!-- ═══════════════════════════════ CAST TAB -->
     <div id="tab-cast" class="tab-content active">
-
       <aside class="form-panel">
         <div class="panel-title" id="form-title">Add Player</div>
-
         <div class="form-group">
           <label class="form-label">Name</label>
           <input type="text" id="f-name" class="form-input" placeholder="Player name">
@@ -337,24 +263,18 @@
           </select>
           <div class="archetype-desc" id="archetype-desc"></div>
         </div>
-
         <div class="divider"></div>
-
         <div class="form-group">
           <label class="form-label">Stats</label>
           <div class="stat-sliders" id="stat-sliders"></div>
         </div>
-
         <div class="divider"></div>
-
         <button class="btn btn-primary" id="submit-btn" onclick="submitPlayer()">Add Player</button>
         <div class="btn-row" id="edit-actions" style="display:none">
           <button class="btn btn-secondary" onclick="cancelEdit()">Cancel</button>
           <button class="btn btn-danger" onclick="deleteCurrentEdit()">Delete</button>
         </div>
-
         <div class="divider"></div>
-
         <div style="font-size:11px;color:var(--muted);margin-bottom:2px">Quick load</div>
         <div class="btn-row">
           <button class="btn btn-secondary" onclick="loadS10Preset()">S10 Cast</button>
@@ -366,7 +286,6 @@
         </div>
         <input type="file" id="import-file" accept=".json" style="display:none" onchange="importCast(event)">
       </aside>
-
       <main class="cast-panel">
         <div class="cast-header">
           <div class="cast-title">Cast</div>
@@ -374,16 +293,12 @@
         </div>
         <div class="cast-grid" id="cast-grid"></div>
       </main>
+    </div>
 
-    </div><!-- /tab-cast -->
-
-    <!-- ═══════════════════════════════════════ SETUP TAB -->
+    <!-- ═══════════════════════════════ SETUP TAB -->
     <div id="tab-setup" class="tab-content">
-
-      <!-- LEFT: Format + Advantages -->
       <aside class="setup-left">
         <div class="panel-title">Format</div>
-
         <div class="form-group">
           <label class="form-label">Season name</label>
           <input type="text" id="cfg-name" class="form-input" placeholder="e.g. Champions vs Contenders" oninput="saveConfig()">
@@ -399,16 +314,11 @@
             <option value="2">Final 2</option>
           </select>
         </div>
-
         <div class="divider"></div>
-
         <div class="form-group">
           <label class="form-label">Redemption Island</label>
           <div class="toggle-row">
-            <label class="toggle">
-              <input type="checkbox" id="cfg-ri" onchange="toggleRI()">
-              <span class="toggle-track"></span>
-            </label>
+            <label class="toggle"><input type="checkbox" id="cfg-ri" onchange="toggleRI()"><span class="toggle-track"></span></label>
             <span id="ri-label" class="toggle-label">Off</span>
           </div>
         </div>
@@ -416,28 +326,24 @@
           <label class="form-label">RI survivor re-enters at <span class="hint">(players remaining)</span></label>
           <input type="number" id="cfg-ri-reentry" class="form-input" min="3" max="15" value="12" oninput="saveConfig()">
         </div>
-
-        <div class="divider"></div>
-        <div class="panel-title" style="border-bottom:none;padding-bottom:0">Advantages in Play</div>
-
-        <div id="adv-list"></div>
-
         <div class="divider"></div>
         <button class="btn btn-secondary" style="font-size:11px" onclick="loadS10Config()">Load S10 Defaults</button>
       </aside>
-
-      <!-- RIGHT: Relationship matrix -->
       <main class="setup-right">
         <div class="setup-header">
-          <h2>Relationships <span style="font-size:12px;font-weight:400;color:var(--muted)">— pre-game bonds between players</span></h2>
+          <h2>Advantages</h2>
+        </div>
+        <div class="ep-result" style="padding:12px 14px">
+          <div id="adv-list"></div>
+        </div>
+        <div class="setup-header" style="margin-top:4px">
+          <h2>Relationships <span style="font-size:12px;font-weight:400;color:var(--muted)">— pre-game bonds</span></h2>
           <div class="setup-header-actions">
             <button class="btn btn-secondary btn-sm" onclick="loadS10Bonds()">S10 Bonds</button>
             <button class="btn btn-secondary btn-sm" onclick="clearRelationships()">Clear</button>
             <button class="btn btn-primary btn-sm" onclick="openRelForm(null)" style="width:auto">+ Add</button>
           </div>
         </div>
-
-        <!-- Add / Edit form -->
         <div id="rel-form" class="rel-form-box" style="display:none">
           <div class="rel-form-title" id="rel-form-title">Add Relationship</div>
           <div class="rel-player-row">
@@ -453,7 +359,7 @@
               <button class="type-btn active" data-type="neutral" onclick="setRelType('neutral')">Neutral</button>
               <button class="type-btn" data-type="ally"        onclick="setRelType('ally')">Ally</button>
               <button class="type-btn" data-type="friend"      onclick="setRelType('friend')">Friend</button>
-              <button class="type-btn" data-type="unbreakable" onclick="setRelType('unbreakable')">Unbreakable ★</button>
+              <button class="type-btn" data-type="unbreakable" onclick="setRelType('unbreakable')">Unbreakable &#9733;</button>
             </div>
           </div>
           <div class="form-group">
@@ -465,15 +371,48 @@
             <button class="btn btn-secondary" onclick="closeRelForm()">Cancel</button>
           </div>
         </div>
-
-        <!-- Relationship list -->
         <div class="rel-list" id="rel-list"></div>
       </main>
+    </div>
 
-    </div><!-- /tab-setup -->
+    <!-- ═══════════════════════════════ RUN EPISODE TAB -->
+    <div id="tab-run" class="tab-content">
+      <!-- LEFT: Game state -->
+      <aside class="run-sidebar">
+        <div class="panel-title">Game State</div>
+        <div id="gs-summary"></div>
+        <div class="divider"></div>
+        <button class="btn btn-primary" id="sim-btn" onclick="simulateNext()">Initialize Season</button>
+        <button class="btn btn-secondary btn-sm" onclick="resetSeason()" style="margin-top:4px">Reset Season</button>
+        <div style="font-size:10px;color:var(--muted);line-height:1.5;margin-top:4px">Reset clears all episode history but keeps your cast and setup intact.</div>
+      </aside>
+      <!-- RIGHT: Output -->
+      <main class="run-main" id="run-main">
+        <div class="run-empty-state" id="run-empty">
+          <div class="empty-icon">&#127916;</div>
+          <p>Configure your cast in <strong>Cast Builder</strong> and set up the season in <strong>Season Setup</strong>, then come back and click <strong>Initialize Season</strong>.</p>
+        </div>
+        <div id="run-content" style="display:none">
+          <div id="ep-result-card"></div>
+          <div class="output-section">
+            <div class="output-header">
+              <span class="output-title">Episode Summary Output</span>
+              <span class="output-note">Paste into current-season.html &#8594; skip BrantSteele field &#8594; Generate Episode</span>
+              <button class="btn btn-secondary btn-sm" onclick="copyOutput()">Copy</button>
+              <button class="btn btn-secondary btn-sm" onclick="exportToEpisodePipeline()">Export to Pipeline</button>
+            </div>
+            <textarea id="ep-output-text" class="output-textarea" readonly></textarea>
+          </div>
+          <div class="ep-history-wrap" id="ep-history-wrap" style="display:none">
+            <div class="ep-history-label">Episode History</div>
+            <div class="ep-history-grid" id="ep-history-grid"></div>
+          </div>
+        </div>
+      </main>
+    </div>
 
-  </div><!-- /sim-body -->
-</div><!-- /app -->
+  </div>
+</div>
 
 <script>
 // ══════════════════════════════════════════════════════════════════════
@@ -481,11 +420,11 @@
 // ══════════════════════════════════════════════════════════════════════
 
 const STATS = [
-  { key: 'physical',  label: 'PHY', name: 'Physical',  color: '#f97316', desc: 'Challenge win weight — higher = more likely to win immunity/reward' },
-  { key: 'social',    label: 'SOC', name: 'Social',    color: '#3b82f6', desc: 'Alliance formation speed, bond growth rate, jury management' },
-  { key: 'strategic', label: 'STR', name: 'Strategic', color: '#8b5cf6', desc: 'Threat reads, idol hunting success, decision quality under pressure' },
-  { key: 'loyalty',   label: 'LOY', name: 'Loyalty',   color: '#10b981', desc: 'Resistance to being flipped; how tightly they stick to their alliance' },
-  { key: 'charisma',  label: 'CHA', name: 'Charisma',  color: '#ec4899', desc: 'Persuasion at tribal, vote bloc recruitment, jury likability' },
+  { key: 'physical',  label: 'PHY', name: 'Physical',  color: '#f97316', desc: 'Challenge win weight' },
+  { key: 'social',    label: 'SOC', name: 'Social',    color: '#3b82f6', desc: 'Alliance formation, bond growth, jury management' },
+  { key: 'strategic', label: 'STR', name: 'Strategic', color: '#8b5cf6', desc: 'Threat reads, idol hunting, decision quality' },
+  { key: 'loyalty',   label: 'LOY', name: 'Loyalty',   color: '#10b981', desc: 'Alliance flip resistance' },
+  { key: 'charisma',  label: 'CHA', name: 'Charisma',  color: '#ec4899', desc: 'Persuasion, vote blocs, jury likability' },
 ];
 
 const ARCHETYPES = {
@@ -493,35 +432,30 @@ const ARCHETYPES = {
   'social-butterfly': { physical: 4, social: 9, strategic: 6, loyalty: 6, charisma: 8, desc: "Everyone's friend. Hard to vote out. Can lose for being too nice." },
   'mastermind':       { physical: 5, social: 7, strategic: 9, loyalty: 4, charisma: 6, desc: 'Runs the game from the shadows. Loyalty issues create enemies.' },
   'loyal-soldier':    { physical: 7, social: 6, strategic: 4, loyalty: 9, charisma: 5, desc: 'Never flips. Gets dragged to F3 and loses 8-0.' },
-  'wildcard':         { physical: 5, social: 5, strategic: 7, loyalty: 3, charisma: 7, desc: 'Unpredictable. Chaos engine. Blows up games — including their own.' },
+  'wildcard':         { physical: 5, social: 5, strategic: 7, loyalty: 3, charisma: 7, desc: 'Unpredictable. Chaos engine. Blows up games including their own.' },
   'underdog':         { physical: 4, social: 6, strategic: 5, loyalty: 8, charisma: 6, desc: 'Starts weak. Crowd favorite. Jury loves a comeback story.' },
   'villain':          { physical: 6, social: 4, strategic: 8, loyalty: 3, charisma: 6, desc: 'Smart and ruthless. Loses jury votes they should win.' },
   'narrator':         { physical: 5, social: 8, strategic: 5, loyalty: 7, charisma: 9, desc: 'Fan favorite. Likable. Wins if they find a goat at F3.' },
 };
-
 const ARCHETYPE_NAMES = {
   'challenge-beast': 'Challenge Beast', 'social-butterfly': 'Social Butterfly',
   'mastermind': 'Mastermind', 'loyal-soldier': 'Loyal Soldier',
-  'wildcard': 'Wildcard', 'underdog': 'Underdog',
-  'villain': 'Villain', 'narrator': 'Fan Favorite',
+  'wildcard': 'Wildcard', 'underdog': 'Underdog', 'villain': 'Villain', 'narrator': 'Fan Favorite',
 };
-
 const THREAT_TIERS = [
-  { max: 3.9, label: 'Low',     color: '#10b981' },
-  { max: 5.9, label: 'Medium',  color: '#f59e0b' },
-  { max: 7.4, label: 'High',    color: '#f97316' },
+  { max: 3.9, label: 'Low', color: '#10b981' },
+  { max: 5.9, label: 'Medium', color: '#f59e0b' },
+  { max: 7.4, label: 'High', color: '#f97316' },
   { max: 10,  label: 'Extreme', color: '#ef4444' },
 ];
-
 const REL_TYPES = {
-  enemy:       { label: 'Enemy',         color: '#ef4444', bond: -5, bg: 'rgba(239,68,68,0.12)' },
-  rival:       { label: 'Rival',         color: '#f97316', bond: -2, bg: 'rgba(249,115,22,0.12)' },
-  neutral:     { label: 'Neutral',       color: '#94a3b8', bond:  0, bg: 'rgba(148,163,184,0.12)' },
-  ally:        { label: 'Ally',          color: '#3b82f6', bond:  2, bg: 'rgba(59,130,246,0.12)' },
-  friend:      { label: 'Friend',        color: '#6366f1', bond:  4, bg: 'rgba(99,102,241,0.12)' },
+  enemy:       { label: 'Enemy',           color: '#ef4444', bond: -5, bg: 'rgba(239,68,68,0.12)' },
+  rival:       { label: 'Rival',           color: '#f97316', bond: -2, bg: 'rgba(249,115,22,0.12)' },
+  neutral:     { label: 'Neutral',         color: '#94a3b8', bond:  0, bg: 'rgba(148,163,184,0.12)' },
+  ally:        { label: 'Ally',            color: '#3b82f6', bond:  2, bg: 'rgba(59,130,246,0.12)' },
+  friend:      { label: 'Friend',          color: '#6366f1', bond:  4, bg: 'rgba(99,102,241,0.12)' },
   unbreakable: { label: 'Unbreakable \u2605', color: '#10b981', bond: 5, bg: 'rgba(16,185,129,0.12)' },
 };
-
 const ADVANTAGES = [
   { key: 'idol',      label: 'Hidden Immunity Idol', default: 2 },
   { key: 'voteSteal', label: 'Vote Steal',           default: 1 },
@@ -531,17 +465,17 @@ const ADVANTAGES = [
   { key: 'amulet',    label: 'Amulet Advantage',     default: 0 },
 ];
 
-// S10 preset cast
+// S10 preset data
 const S10_PRESET = [
-  { name: 'Bowie',    slug: 'bowie',    tribe: 'Champions', archetype: 'mastermind',       stats: { physical: 6,  social: 8,  strategic: 9, loyalty: 4, charisma: 7 } },
-  { name: 'Mickey',   slug: 'mickey',   tribe: 'Champions', archetype: 'social-butterfly', stats: { physical: 5,  social: 9,  strategic: 8, loyalty: 7, charisma: 8 } },
-  { name: 'Scott',    slug: 'scott',    tribe: 'Champions', archetype: 'mastermind',       stats: { physical: 7,  social: 6,  strategic: 7, loyalty: 6, charisma: 5 } },
-  { name: 'Zoey',     slug: 'zoey',     tribe: 'Champions', archetype: 'social-butterfly', stats: { physical: 6,  social: 10, strategic: 7, loyalty: 7, charisma: 9 } },
-  { name: 'Gwen',     slug: 'gwen',     tribe: 'Champions', archetype: 'challenge-beast',  stats: { physical: 9,  social: 5,  strategic: 5, loyalty: 7, charisma: 5 } },
-  { name: 'Cody',     slug: 'cody',     tribe: 'Champions', archetype: 'loyal-soldier',    stats: { physical: 6,  social: 7,  strategic: 7, loyalty: 8, charisma: 6 } },
-  { name: 'Carrie',   slug: 'carrie',   tribe: 'Champions', archetype: 'mastermind',       stats: { physical: 6,  social: 7,  strategic: 8, loyalty: 7, charisma: 7 } },
-  { name: 'Ryan',     slug: 'ryan',     tribe: 'Champions', archetype: 'narrator',         stats: { physical: 5,  social: 8,  strategic: 7, loyalty: 8, charisma: 8 } },
-  { name: 'Sanders',  slug: 'sanders',  tribe: 'Champions', archetype: 'mastermind',       stats: { physical: 7,  social: 7,  strategic: 9, loyalty: 8, charisma: 7 } },
+  { name: 'Bowie',    slug: 'bowie',    tribe: 'Champions', archetype: 'mastermind',       stats: { physical: 6, social: 8,  strategic: 9, loyalty: 4, charisma: 7 } },
+  { name: 'Mickey',   slug: 'mickey',   tribe: 'Champions', archetype: 'social-butterfly', stats: { physical: 5, social: 9,  strategic: 8, loyalty: 7, charisma: 8 } },
+  { name: 'Scott',    slug: 'scott',    tribe: 'Champions', archetype: 'mastermind',       stats: { physical: 7, social: 6,  strategic: 7, loyalty: 6, charisma: 5 } },
+  { name: 'Zoey',     slug: 'zoey',     tribe: 'Champions', archetype: 'social-butterfly', stats: { physical: 6, social: 10, strategic: 7, loyalty: 7, charisma: 9 } },
+  { name: 'Gwen',     slug: 'gwen',     tribe: 'Champions', archetype: 'challenge-beast',  stats: { physical: 9, social: 5,  strategic: 5, loyalty: 7, charisma: 5 } },
+  { name: 'Cody',     slug: 'cody',     tribe: 'Champions', archetype: 'loyal-soldier',    stats: { physical: 6, social: 7,  strategic: 7, loyalty: 8, charisma: 6 } },
+  { name: 'Carrie',   slug: 'carrie',   tribe: 'Champions', archetype: 'mastermind',       stats: { physical: 6, social: 7,  strategic: 8, loyalty: 7, charisma: 7 } },
+  { name: 'Ryan',     slug: 'ryan',     tribe: 'Champions', archetype: 'narrator',         stats: { physical: 5, social: 8,  strategic: 7, loyalty: 8, charisma: 8 } },
+  { name: 'Sanders',  slug: 'sanders',  tribe: 'Champions', archetype: 'mastermind',       stats: { physical: 7, social: 7,  strategic: 9, loyalty: 8, charisma: 7 } },
   { name: 'Priya',     slug: 'priya',     tribe: 'Contenders', archetype: 'mastermind',       stats: { physical: 7, social: 8,  strategic: 9, loyalty: 6, charisma: 8 } },
   { name: 'Hicks',     slug: 'hicks',     tribe: 'Contenders', archetype: 'mastermind',       stats: { physical: 5, social: 7,  strategic: 9, loyalty: 6, charisma: 6 } },
   { name: 'Jasmine',   slug: 'jasmine',   tribe: 'Contenders', archetype: 'social-butterfly', stats: { physical: 6, social: 8,  strategic: 7, loyalty: 7, charisma: 8 } },
@@ -552,13 +486,11 @@ const S10_PRESET = [
   { name: 'Courtney',  slug: 'courtney',  tribe: 'Contenders', archetype: 'wildcard',         stats: { physical: 5, social: 5,  strategic: 6, loyalty: 5, charisma: 5 } },
   { name: 'Tyler',     slug: 'tyler',     tribe: 'Contenders', archetype: 'underdog',         stats: { physical: 4, social: 6,  strategic: 5, loyalty: 8, charisma: 6 } },
 ];
-
-// S10 preset bonds
 const S10_BONDS_PRESET = [
-  { a: 'Cody',   b: 'Carrie', type: 'unbreakable', note: 'S7 duo — built Lawa together, reached F3 as a pair' },
-  { a: 'Bowie',  b: 'Priya',  type: 'rival',       note: 'Former Unbreakable Bond — Bowie betrayed Priya at F7 in S9 to secure his win' },
-  { a: 'Ryan',   b: 'Mickey', type: 'friend',      note: 'Ryan cast the S5 FTC tiebreaker vote that made Mickey champion. Mickey never repaid it.' },
-  { a: 'Scott',  b: 'Zoey',   type: 'rival',       note: 'Scott voted Zoey out in both S3 and S4. She voted FOR him at S3 FTC anyway.' },
+  { a: 'Cody',  b: 'Carrie', type: 'unbreakable', note: 'S7 duo — built Lawa together, reached F3 as a pair' },
+  { a: 'Bowie', b: 'Priya',  type: 'rival',       note: 'Former Unbreakable Bond — Bowie betrayed Priya at F7 in S9' },
+  { a: 'Ryan',  b: 'Mickey', type: 'friend',      note: 'Ryan cast the S5 FTC tiebreaker that made Mickey champion. Mickey never repaid it.' },
+  { a: 'Scott', b: 'Zoey',   type: 'rival',       note: 'Scott voted Zoey out in both S3 and S4. She voted FOR him at S3 FTC anyway.' },
 ];
 
 // ══════════════════════════════════════════════════════════════════════
@@ -572,14 +504,12 @@ let seasonConfig  = defaultConfig();
 let relationships = [];
 let editingRelId  = null;
 let activeRelType = 'neutral';
+let gs            = null;   // game state
+let viewingEpNum  = null;   // which episode is displayed in run tab
 
 function defaultConfig() {
   return {
-    name: '',
-    mergeAt: 12,
-    finaleSize: 3,
-    ri: false,
-    riReentryAt: 12,
+    name: '', mergeAt: 12, finaleSize: 3, ri: false, riReentryAt: 12,
     advantages: Object.fromEntries(ADVANTAGES.map(a => [a.key, { enabled: a.default > 0, count: a.default }])),
   };
 }
@@ -598,18 +528,10 @@ function init() {
 }
 
 function loadAll() {
-  try {
-    const c = localStorage.getItem('simulator_cast');
-    if (c) players = JSON.parse(c);
-  } catch(e) { players = []; }
-  try {
-    const cfg = localStorage.getItem('simulator_config');
-    if (cfg) seasonConfig = { ...defaultConfig(), ...JSON.parse(cfg) };
-  } catch(e) {}
-  try {
-    const r = localStorage.getItem('simulator_rels');
-    if (r) relationships = JSON.parse(r);
-  } catch(e) { relationships = []; }
+  try { const c = localStorage.getItem('simulator_cast'); if (c) players = JSON.parse(c); } catch(e) { players = []; }
+  try { const cfg = localStorage.getItem('simulator_config'); if (cfg) seasonConfig = { ...defaultConfig(), ...JSON.parse(cfg) }; } catch(e) {}
+  try { const r = localStorage.getItem('simulator_rels'); if (r) relationships = JSON.parse(r); } catch(e) { relationships = []; }
+  try { const g = localStorage.getItem('simulator_gs'); if (g) gs = JSON.parse(g); } catch(e) { gs = null; }
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -620,11 +542,12 @@ function showTab(name) {
   activeTab = name;
   document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
+  const tabs = ['cast', 'setup', 'run'];
   document.querySelectorAll('.tab-btn').forEach((btn, i) => {
-    const tabs = ['cast', 'setup'];
-    btn.classList.toggle('active', tabs[i] === name);
+    if (i < tabs.length) btn.classList.toggle('active', tabs[i] === name);
   });
   if (name === 'setup') populateRelDropdowns();
+  if (name === 'run')   initRunTab();
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -636,68 +559,45 @@ function buildStatSliders() {
   container.innerHTML = STATS.map(s => `
     <div class="slider-row">
       <span class="slider-name" style="color:${s.color}" title="${s.desc}">${s.name}</span>
-      <input type="range" min="1" max="10" value="5"
-        class="stat-slider" id="slider-${s.key}"
+      <input type="range" min="1" max="10" value="5" class="stat-slider" id="slider-${s.key}"
         oninput="setSlider('${s.key}', this.value, true)">
       <span class="slider-val" id="val-${s.key}" style="color:${s.color}">5</span>
-    </div>
-  `).join('');
+    </div>`).join('');
   STATS.forEach(s => setSlider(s.key, 5, false));
 }
 
 function setSlider(key, val, resetArchetype) {
-  const n    = parseInt(val);
-  const stat = STATS.find(s => s.key === key);
-  const pct  = ((n - 1) / 9 * 100).toFixed(1) + '%';
-  const el   = document.getElementById('slider-' + key);
-  if (el) {
-    el.value = n;
-    el.style.background = `linear-gradient(to right, ${stat.color} 0%, ${stat.color} ${pct}, #334155 ${pct})`;
-  }
-  const valEl = document.getElementById('val-' + key);
-  if (valEl) valEl.textContent = n;
+  const n = parseInt(val), stat = STATS.find(s => s.key === key);
+  const pct = ((n-1)/9*100).toFixed(1) + '%';
+  const el = document.getElementById('slider-' + key);
+  if (el) { el.value = n; el.style.background = `linear-gradient(to right,${stat.color} 0%,${stat.color} ${pct},#334155 ${pct})`; }
+  const vEl = document.getElementById('val-' + key);
+  if (vEl) vEl.textContent = n;
   if (resetArchetype) document.getElementById('f-archetype').value = '';
 }
-
 function applyArchetype(key) {
-  const a = ARCHETYPES[key];
-  if (!a) return;
+  const a = ARCHETYPES[key]; if (!a) return;
   STATS.forEach(s => setSlider(s.key, a[s.key], false));
   document.getElementById('archetype-desc').textContent = a.desc || '';
 }
-
-function getStats() {
-  const s = {};
-  STATS.forEach(st => { s[st.key] = parseInt(document.getElementById('slider-' + st.key).value); });
-  return s;
-}
-
-function putStats(stats) {
-  STATS.forEach(s => setSlider(s.key, stats[s.key] || 5, false));
-}
+function getStats() { const s = {}; STATS.forEach(st => { s[st.key] = parseInt(document.getElementById('slider-'+st.key).value); }); return s; }
+function putStats(stats) { STATS.forEach(s => setSlider(s.key, stats[s.key] || 5, false)); }
 
 // ══════════════════════════════════════════════════════════════════════
 // DERIVED
 // ══════════════════════════════════════════════════════════════════════
 
-function overall(stats) {
-  return (STATS.reduce((t, s) => t + (stats[s.key] || 0), 0) / STATS.length).toFixed(1);
-}
-function threat(stats) {
-  return ((stats.physical + stats.strategic + stats.social) / 3).toFixed(1);
-}
-function threatTier(score) {
-  return THREAT_TIERS.find(t => score <= t.max) || THREAT_TIERS[THREAT_TIERS.length - 1];
-}
+function overall(stats) { return (STATS.reduce((t,s) => t+(stats[s.key]||0),0)/STATS.length).toFixed(1); }
+function threat(stats)  { return ((stats.physical+stats.strategic+stats.social)/3).toFixed(1); }
+function threatTier(score) { return THREAT_TIERS.find(t => score <= t.max) || THREAT_TIERS[THREAT_TIERS.length-1]; }
 function tribeColor(tribe) {
   if (!tribe) return '#6366f1';
   const t = tribe.toLowerCase();
   if (t.includes('champion')) return '#f59e0b';
   if (t.includes('contender')) return '#ef4444';
-  const palette = ['#6366f1','#3b82f6','#0ea5e9','#8b5cf6','#ec4899','#10b981'];
-  let h = 0;
-  for (let i = 0; i < tribe.length; i++) h = tribe.charCodeAt(i) + ((h << 5) - h);
-  return palette[Math.abs(h) % palette.length];
+  const pal = ['#6366f1','#3b82f6','#0ea5e9','#8b5cf6','#ec4899','#10b981'];
+  let h = 0; for (let i=0;i<tribe.length;i++) h = tribe.charCodeAt(i)+((h<<5)-h);
+  return pal[Math.abs(h)%pal.length];
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -708,106 +608,64 @@ function submitPlayer() {
   const name = document.getElementById('f-name').value.trim();
   if (!name) { alert('Enter a player name.'); return; }
   const player = {
-    id:        editingId || Date.now().toString(36) + Math.random().toString(36).slice(2,5),
-    name,
-    slug:      document.getElementById('f-slug').value.trim() || name.toLowerCase().replace(/\s+/g, '-'),
-    tribe:     document.getElementById('f-tribe').value.trim(),
-    archetype: document.getElementById('f-archetype').value,
-    stats:     getStats(),
+    id: editingId || Date.now().toString(36)+Math.random().toString(36).slice(2,5),
+    name, slug: document.getElementById('f-slug').value.trim() || name.toLowerCase().replace(/\s+/g,'-'),
+    tribe: document.getElementById('f-tribe').value.trim(),
+    archetype: document.getElementById('f-archetype').value, stats: getStats(),
   };
-  if (editingId) {
-    const i = players.findIndex(p => p.id === editingId);
-    if (i !== -1) players[i] = player;
-    cancelEdit();
-  } else {
-    players.push(player);
-    resetForm();
-  }
+  if (editingId) { const i = players.findIndex(p=>p.id===editingId); if(i!==-1) players[i]=player; cancelEdit(); }
+  else { players.push(player); resetForm(); }
   saveCast(); renderCast();
 }
-
 function editPlayer(id) {
-  const p = players.find(p => p.id === id);
-  if (!p) return;
+  const p = players.find(p=>p.id===id); if (!p) return;
   editingId = id;
-  document.getElementById('f-name').value      = p.name;
-  document.getElementById('f-slug').value      = p.slug || '';
-  document.getElementById('f-tribe').value     = p.tribe || '';
-  document.getElementById('f-archetype').value = p.archetype || '';
-  document.getElementById('archetype-desc').textContent = ARCHETYPES[p.archetype]?.desc || '';
+  document.getElementById('f-name').value = p.name;
+  document.getElementById('f-slug').value = p.slug||'';
+  document.getElementById('f-tribe').value = p.tribe||'';
+  document.getElementById('f-archetype').value = p.archetype||'';
+  document.getElementById('archetype-desc').textContent = ARCHETYPES[p.archetype]?.desc||'';
   putStats(p.stats);
-  document.getElementById('form-title').textContent     = 'Edit \u2014 ' + p.name;
-  document.getElementById('submit-btn').textContent     = 'Update Player';
+  document.getElementById('form-title').textContent = 'Edit \u2014 '+p.name;
+  document.getElementById('submit-btn').textContent = 'Update Player';
   document.getElementById('edit-actions').style.display = 'flex';
-  renderCast();
-  document.querySelector('.form-panel').scrollTop = 0;
+  renderCast(); document.querySelector('.form-panel').scrollTop = 0;
 }
-
 function cancelEdit() {
-  editingId = null;
-  resetForm();
-  document.getElementById('form-title').textContent      = 'Add Player';
-  document.getElementById('submit-btn').textContent      = 'Add Player';
-  document.getElementById('edit-actions').style.display  = 'none';
-  document.getElementById('archetype-desc').textContent  = '';
+  editingId = null; resetForm();
+  document.getElementById('form-title').textContent = 'Add Player';
+  document.getElementById('submit-btn').textContent = 'Add Player';
+  document.getElementById('edit-actions').style.display = 'none';
+  document.getElementById('archetype-desc').textContent = '';
   renderCast();
 }
-
 function deleteCurrentEdit() {
   if (!editingId) return;
-  const p = players.find(p => p.id === editingId);
-  if (!confirm('Remove ' + (p?.name || 'this player') + '?')) return;
-  players = players.filter(p => p.id !== editingId);
-  saveCast(); cancelEdit();
+  const p = players.find(p=>p.id===editingId);
+  if (!confirm('Remove '+(p?.name||'this player')+'?')) return;
+  players = players.filter(p=>p.id!==editingId); saveCast(); cancelEdit();
 }
-
 function resetForm() {
-  document.getElementById('f-name').value      = '';
-  document.getElementById('f-slug').value      = '';
-  document.getElementById('f-tribe').value     = '';
-  document.getElementById('f-archetype').value = '';
-  document.getElementById('archetype-desc').textContent = '';
+  ['f-name','f-slug','f-tribe'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('f-archetype').value='';
+  document.getElementById('archetype-desc').textContent='';
   STATS.forEach(s => setSlider(s.key, 5, false));
 }
-
-// ══════════════════════════════════════════════════════════════════════
-// CAST PERSISTENCE
-// ══════════════════════════════════════════════════════════════════════
-
 function saveCast() { localStorage.setItem('simulator_cast', JSON.stringify(players)); }
-
-function clearCast() {
-  if (!confirm('Clear all players?')) return;
-  players = []; saveCast(); cancelEdit(); renderCast();
-}
-
+function clearCast() { if(!confirm('Clear all players?')) return; players=[]; saveCast(); cancelEdit(); renderCast(); }
 function loadS10Preset() {
-  if (players.length > 0 && !confirm('Replace cast with S10 Champions vs Contenders?')) return;
-  players = S10_PRESET.map((p, i) => ({ ...p, id: 's10-' + i }));
-  saveCast(); cancelEdit(); renderCast();
+  if (players.length>0 && !confirm('Replace cast with S10 Champions vs Contenders?')) return;
+  players = S10_PRESET.map((p,i) => ({...p, id:'s10-'+i})); saveCast(); cancelEdit(); renderCast();
 }
-
 function exportCast() {
-  const blob = new Blob([JSON.stringify(players, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'simulator-cast.json';
-  a.click();
+  const blob = new Blob([JSON.stringify(players,null,2)],{type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download='simulator-cast.json'; a.click();
 }
-
 function importCast(event) {
-  const file = event.target.files[0];
-  if (!file) return;
+  const file = event.target.files[0]; if(!file) return;
   const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const data = JSON.parse(e.target.result);
-      if (!Array.isArray(data)) throw new Error();
-      players = data; saveCast(); renderCast();
-    } catch { alert('Invalid JSON file.'); }
-  };
-  reader.readAsText(file);
-  event.target.value = '';
+  reader.onload = e => { try { const data=JSON.parse(e.target.result); if(!Array.isArray(data)) throw new Error(); players=data; saveCast(); renderCast(); } catch { alert('Invalid JSON file.'); } };
+  reader.readAsText(file); event.target.value='';
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -816,66 +674,41 @@ function importCast(event) {
 
 function renderCast() {
   const grid = document.getElementById('cast-grid');
-  if (players.length === 0) {
-    grid.innerHTML = `<div class="empty-state"><div class="empty-icon">&#128101;</div>
-      <p>No players yet. Add one using the form, or click <strong>S10 Cast</strong>.</p></div>`;
-    document.getElementById('cast-count').textContent = '0';
-    document.getElementById('cast-tribe-summary').textContent = '';
+  if (!players.length) {
+    grid.innerHTML = `<div class="empty-state"><div class="empty-icon">&#128101;</div><p>No players yet. Add one or click <strong>S10 Cast</strong>.</p></div>`;
+    document.getElementById('cast-count').textContent='0';
+    document.getElementById('cast-tribe-summary').textContent='';
     return;
   }
-  const sorted = [...players].sort((a, b) =>
-    (a.tribe||'').localeCompare(b.tribe||'') || a.name.localeCompare(b.name)
-  );
+  const sorted = [...players].sort((a,b) => (a.tribe||'').localeCompare(b.tribe||'')||a.name.localeCompare(b.name));
   grid.innerHTML = sorted.map(renderCard).join('');
   document.getElementById('cast-count').textContent = players.length;
-  const tribes = {};
-  players.forEach(p => { const t = p.tribe||'No Tribe'; tribes[t] = (tribes[t]||0) + 1; });
-  document.getElementById('cast-tribe-summary').textContent =
-    '\u2014 ' + Object.entries(tribes).map(([t,c]) => `${t} (${c})`).join(' \u00b7 ');
+  const tribes={};
+  players.forEach(p => { const t=p.tribe||'No Tribe'; tribes[t]=(tribes[t]||0)+1; });
+  document.getElementById('cast-tribe-summary').textContent = '\u2014 '+Object.entries(tribes).map(([t,c])=>`${t} (${c})`).join(' \u00b7 ');
 }
-
 function renderCard(p) {
-  const ov    = overall(p.stats);
-  const th    = parseFloat(threat(p.stats));
-  const tier  = threatTier(th);
-  const tc    = tribeColor(p.tribe);
-  const ovPct = ((ov - 1) / 9 * 100).toFixed(0);
-  const isEd  = editingId === p.id;
-  const initial = p.name[0].toUpperCase();
-  const avatar  = `<img src="assets/avatars/${p.slug}.png" alt="${p.name}" onerror="this.remove()">`;
-  const statBars = STATS.map(s => `
-    <div class="sbar-row">
-      <span class="sbar-key" style="color:${s.color}">${s.label}</span>
-      <div class="bar-bg"><div class="bar-fill" style="width:${p.stats[s.key]/10*100}%;background:${s.color}"></div></div>
-      <span class="sbar-val">${p.stats[s.key]}</span>
-    </div>`).join('');
-  return `
-    <div class="player-card ${isEd?'editing':''}" id="card-${p.id}">
-      <div class="card-tribe-bar" style="background:${tc}"></div>
-      <div class="card-top">
-        <div class="card-avatar">${initial}${avatar}</div>
-        <div class="card-info">
-          <div class="card-name" title="${p.name}">${p.name}</div>
-          <div class="card-badges">
-            ${p.tribe?`<span class="tribe-badge" style="background:${tc}22;color:${tc}">${p.tribe}</span>`:''}
-            <span class="archetype-tag">${ARCHETYPE_NAMES[p.archetype]||'Custom'}</span>
-          </div>
+  const ov=overall(p.stats), th=parseFloat(threat(p.stats)), tier=threatTier(th), tc=tribeColor(p.tribe);
+  const ovPct=((ov-1)/9*100).toFixed(0), isEd=editingId===p.id;
+  const avatar=`<img src="assets/avatars/${p.slug}.png" alt="${p.name}" onerror="this.remove()">`;
+  const statBars=STATS.map(s=>`<div class="sbar-row"><span class="sbar-key" style="color:${s.color}">${s.label}</span><div class="bar-bg"><div class="bar-fill" style="width:${p.stats[s.key]/10*100}%;background:${s.color}"></div></div><span class="sbar-val">${p.stats[s.key]}</span></div>`).join('');
+  return `<div class="player-card ${isEd?'editing':''}" id="card-${p.id}">
+    <div class="card-tribe-bar" style="background:${tc}"></div>
+    <div class="card-top">
+      <div class="card-avatar">${p.name[0].toUpperCase()}${avatar}</div>
+      <div class="card-info">
+        <div class="card-name" title="${p.name}">${p.name}</div>
+        <div class="card-badges">
+          ${p.tribe?`<span class="tribe-badge" style="background:${tc}22;color:${tc}">${p.tribe}</span>`:''}
+          <span class="archetype-tag">${ARCHETYPE_NAMES[p.archetype]||'Custom'}</span>
         </div>
       </div>
-      <div class="overall-row">
-        <span class="overall-label-sm">Overall</span>
-        <div class="bar-bg"><div class="bar-fill" style="width:${ovPct}%;background:linear-gradient(to right,#10b981,#3b82f6)"></div></div>
-        <span class="overall-val">${ov}</span>
-      </div>
-      <div class="stat-bars">${statBars}</div>
-      <div class="threat-row">
-        <div class="threat-dot" style="background:${tier.color}"></div>
-        <span class="threat-text">Threat: ${tier.label} (${th})</span>
-      </div>
-      <div class="card-actions">
-        <button class="btn btn-secondary" onclick="editPlayer('${p.id}')">Edit</button>
-      </div>
-    </div>`;
+    </div>
+    <div class="overall-row"><span class="overall-label-sm">Overall</span><div class="bar-bg"><div class="bar-fill" style="width:${ovPct}%;background:linear-gradient(to right,#10b981,#3b82f6)"></div></div><span class="overall-val">${ov}</span></div>
+    <div class="stat-bars">${statBars}</div>
+    <div class="threat-row"><div class="threat-dot" style="background:${tier.color}"></div><span class="threat-text">Threat: ${tier.label} (${th})</span></div>
+    <div class="card-actions"><button class="btn btn-secondary" onclick="editPlayer('${p.id}')">Edit</button></div>
+  </div>`;
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -885,85 +718,57 @@ function renderCard(p) {
 function buildAdvantageList() {
   document.getElementById('adv-list').innerHTML = ADVANTAGES.map(a => `
     <div class="adv-row">
-      <input type="checkbox" id="adv-${a.key}" class="adv-check"
-        ${a.default > 0 ? 'checked' : ''}
-        onchange="toggleAdv('${a.key}')">
-      <label class="adv-label" for="adv-${a.key}">${a.label}</label>
-      <input type="number" id="adv-count-${a.key}" class="adv-count"
-        min="0" max="9" value="${a.default}"
-        ${a.default === 0 ? 'disabled' : ''}
-        oninput="saveConfig()">
+      <input type="checkbox" id="adv-${a.key}" class="adv-check" ${a.default>0?'checked':''} onchange="toggleAdv('${a.key}')">
+      <span style="flex:1;font-size:13px;color:#e2e8f0;cursor:pointer" onclick="document.getElementById('adv-${a.key}').click()">${a.label}</span>
+      <input type="number" id="adv-count-${a.key}" class="adv-count" min="0" max="9" value="${a.default}" ${a.default===0?'disabled':''} oninput="saveConfig()">
     </div>`).join('');
 }
-
 function toggleAdv(key) {
-  const checked = document.getElementById('adv-' + key).checked;
-  const countEl = document.getElementById('adv-count-' + key);
+  const checked = document.getElementById('adv-'+key).checked;
+  const countEl = document.getElementById('adv-count-'+key);
   countEl.disabled = !checked;
-  if (!checked) countEl.value = 0;
-  else if (parseInt(countEl.value) === 0) countEl.value = 1;
+  if (!checked) countEl.value=0; else if (!parseInt(countEl.value)) countEl.value=1;
   saveConfig();
 }
-
 function toggleRI() {
   const on = document.getElementById('cfg-ri').checked;
-  document.getElementById('ri-label').textContent = on ? 'On' : 'Off';
-  document.getElementById('ri-settings').style.display = on ? 'flex' : 'none';
+  document.getElementById('ri-label').textContent = on?'On':'Off';
+  document.getElementById('ri-settings').style.display = on?'flex':'none';
   saveConfig();
 }
-
 function saveConfig() {
   seasonConfig = {
     name:        document.getElementById('cfg-name').value.trim(),
-    mergeAt:     parseInt(document.getElementById('cfg-merge').value) || 12,
-    finaleSize:  parseInt(document.getElementById('cfg-finale').value) || 3,
+    mergeAt:     parseInt(document.getElementById('cfg-merge').value)||12,
+    finaleSize:  parseInt(document.getElementById('cfg-finale').value)||3,
     ri:          document.getElementById('cfg-ri').checked,
-    riReentryAt: parseInt(document.getElementById('cfg-ri-reentry').value) || 12,
-    advantages: Object.fromEntries(ADVANTAGES.map(a => [
-      a.key, {
-        enabled: document.getElementById('adv-' + a.key).checked,
-        count:   parseInt(document.getElementById('adv-count-' + a.key).value) || 0,
-      }
-    ])),
+    riReentryAt: parseInt(document.getElementById('cfg-ri-reentry').value)||12,
+    advantages: Object.fromEntries(ADVANTAGES.map(a => [a.key, {
+      enabled: document.getElementById('adv-'+a.key).checked,
+      count:   parseInt(document.getElementById('adv-count-'+a.key).value)||0,
+    }])),
   };
   localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
 }
-
 function renderConfig() {
-  document.getElementById('cfg-name').value          = seasonConfig.name || '';
-  document.getElementById('cfg-merge').value         = seasonConfig.mergeAt;
-  document.getElementById('cfg-finale').value        = seasonConfig.finaleSize;
-  document.getElementById('cfg-ri').checked          = seasonConfig.ri;
-  document.getElementById('cfg-ri-reentry').value    = seasonConfig.riReentryAt;
-  document.getElementById('ri-label').textContent    = seasonConfig.ri ? 'On' : 'Off';
-  document.getElementById('ri-settings').style.display = seasonConfig.ri ? 'flex' : 'none';
+  document.getElementById('cfg-name').value   = seasonConfig.name||'';
+  document.getElementById('cfg-merge').value  = seasonConfig.mergeAt;
+  document.getElementById('cfg-finale').value = seasonConfig.finaleSize;
+  document.getElementById('cfg-ri').checked   = seasonConfig.ri;
+  document.getElementById('cfg-ri-reentry').value = seasonConfig.riReentryAt;
+  document.getElementById('ri-label').textContent  = seasonConfig.ri?'On':'Off';
+  document.getElementById('ri-settings').style.display = seasonConfig.ri?'flex':'none';
   ADVANTAGES.forEach(a => {
-    const adv = seasonConfig.advantages?.[a.key];
-    if (!adv) return;
-    document.getElementById('adv-' + a.key).checked         = adv.enabled;
-    document.getElementById('adv-count-' + a.key).value     = adv.count;
-    document.getElementById('adv-count-' + a.key).disabled  = !adv.enabled;
+    const adv = seasonConfig.advantages?.[a.key]; if (!adv) return;
+    document.getElementById('adv-'+a.key).checked        = adv.enabled;
+    document.getElementById('adv-count-'+a.key).value    = adv.count;
+    document.getElementById('adv-count-'+a.key).disabled = !adv.enabled;
   });
 }
-
 function loadS10Config() {
-  seasonConfig = {
-    name: 'Champions vs Contenders',
-    mergeAt: 12,
-    finaleSize: 3,
-    ri: true,
-    riReentryAt: 12,
-    advantages: {
-      idol:      { enabled: true,  count: 2 },
-      voteSteal: { enabled: true,  count: 1 },
-      extraVote: { enabled: true,  count: 1 },
-      kip:       { enabled: false, count: 0 },
-      legacy:    { enabled: false, count: 0 },
-      amulet:    { enabled: false, count: 0 },
-    },
-  };
-  localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
-  renderConfig();
+  seasonConfig = { name:'Champions vs Contenders', mergeAt:12, finaleSize:3, ri:true, riReentryAt:12,
+    advantages: { idol:{enabled:true,count:2}, voteSteal:{enabled:true,count:1}, extraVote:{enabled:true,count:1}, kip:{enabled:false,count:0}, legacy:{enabled:false,count:0}, amulet:{enabled:false,count:0} } };
+  localStorage.setItem('simulator_config', JSON.stringify(seasonConfig)); renderConfig();
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -971,142 +776,860 @@ function loadS10Config() {
 // ══════════════════════════════════════════════════════════════════════
 
 function saveRels() { localStorage.setItem('simulator_rels', JSON.stringify(relationships)); }
-
 function populateRelDropdowns() {
-  const names = players.map(p => p.name).sort();
-  const opts  = names.map(n => `<option value="${n}">${n}</option>`).join('');
+  const names = players.map(p=>p.name).sort();
+  const opts  = names.map(n=>`<option value="${n}">${n}</option>`).join('');
   document.getElementById('rel-a').innerHTML = opts;
   document.getElementById('rel-b').innerHTML = opts;
 }
-
 function openRelForm(id) {
-  editingRelId = id;
-  const form = document.getElementById('rel-form');
-  form.style.display = 'flex';
+  editingRelId = id; const form = document.getElementById('rel-form'); form.style.display='flex';
   populateRelDropdowns();
-
   if (id) {
-    const r = relationships.find(r => r.id === id);
-    if (!r) return;
-    document.getElementById('rel-a').value    = r.a;
-    document.getElementById('rel-b').value    = r.b;
-    document.getElementById('rel-note').value = r.note || '';
-    setRelType(r.type);
+    const r = relationships.find(r=>r.id===id); if(!r) return;
+    document.getElementById('rel-a').value = r.a; document.getElementById('rel-b').value = r.b;
+    document.getElementById('rel-note').value = r.note||''; setRelType(r.type);
     document.getElementById('rel-form-title').textContent = 'Edit Relationship';
     document.getElementById('rel-submit-btn').textContent = 'Update';
   } else {
-    document.getElementById('rel-note').value = '';
-    setRelType('neutral');
+    document.getElementById('rel-note').value=''; setRelType('neutral');
     document.getElementById('rel-form-title').textContent = 'Add Relationship';
     document.getElementById('rel-submit-btn').textContent = 'Add';
   }
-  form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  form.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
-
-function closeRelForm() {
-  editingRelId = null;
-  document.getElementById('rel-form').style.display = 'none';
-}
-
+function closeRelForm() { editingRelId=null; document.getElementById('rel-form').style.display='none'; }
 function setRelType(type) {
   activeRelType = type;
   document.querySelectorAll('.type-btn').forEach(btn => {
-    const t = btn.dataset.type;
-    const rt = REL_TYPES[t];
-    btn.classList.toggle('active', t === type);
-    if (t === type) {
-      btn.style.background = rt.color;
-      btn.style.borderColor = rt.color;
-    } else {
-      btn.style.background = '';
-      btn.style.borderColor = '';
-    }
+    const t=btn.dataset.type, rt=REL_TYPES[t];
+    btn.classList.toggle('active', t===type);
+    btn.style.background = t===type ? rt.color : '';
+    btn.style.borderColor = t===type ? rt.color : '';
   });
 }
-
 function submitRel() {
-  const a = document.getElementById('rel-a').value;
-  const b = document.getElementById('rel-b').value;
-  if (!a || !b) { alert('Select two players.'); return; }
-  if (a === b) { alert('Select two different players.'); return; }
-
-  // Check for duplicate (skip if editing same rel)
-  const key = [a, b].sort().join('|');
-  const dup = relationships.find(r => {
-    if (editingRelId && r.id === editingRelId) return false;
-    return [r.a, r.b].sort().join('|') === key;
-  });
+  const a=document.getElementById('rel-a').value, b=document.getElementById('rel-b').value;
+  if (!a||!b) { alert('Select two players.'); return; }
+  if (a===b) { alert('Select two different players.'); return; }
+  const key=[a,b].sort().join('|');
+  const dup = relationships.find(r => { if(editingRelId&&r.id===editingRelId) return false; return [r.a,r.b].sort().join('|')===key; });
   if (dup) { alert(`A relationship between ${a} and ${b} already exists.`); return; }
-
-  const rel = {
-    id:   editingRelId || Date.now().toString(36) + Math.random().toString(36).slice(2,4),
-    a, b,
-    type: activeRelType,
-    bond: REL_TYPES[activeRelType]?.bond ?? 0,
-    note: document.getElementById('rel-note').value.trim(),
-  };
-
-  if (editingRelId) {
-    const i = relationships.findIndex(r => r.id === editingRelId);
-    if (i !== -1) relationships[i] = rel;
-  } else {
-    relationships.push(rel);
-  }
+  const rel = { id: editingRelId||Date.now().toString(36)+Math.random().toString(36).slice(2,4), a, b, type: activeRelType, bond: REL_TYPES[activeRelType]?.bond??0, note: document.getElementById('rel-note').value.trim() };
+  if (editingRelId) { const i=relationships.findIndex(r=>r.id===editingRelId); if(i!==-1) relationships[i]=rel; }
+  else relationships.push(rel);
   saveRels(); closeRelForm(); renderRelList();
 }
-
-function deleteRel(id) {
-  relationships = relationships.filter(r => r.id !== id);
-  saveRels(); renderRelList();
-}
-
-function clearRelationships() {
-  if (!confirm('Clear all relationships?')) return;
-  relationships = []; saveRels(); closeRelForm(); renderRelList();
-}
-
+function deleteRel(id) { relationships=relationships.filter(r=>r.id!==id); saveRels(); renderRelList(); }
+function clearRelationships() { if(!confirm('Clear all relationships?')) return; relationships=[]; saveRels(); closeRelForm(); renderRelList(); }
 function loadS10Bonds() {
-  if (relationships.length > 0 && !confirm('Replace current relationships with S10 pre-game bonds?')) return;
-  relationships = S10_BONDS_PRESET.map((b, i) => ({
-    ...b, id: 's10-bond-' + i, bond: REL_TYPES[b.type]?.bond ?? 0,
-  }));
+  if (relationships.length>0&&!confirm('Replace current relationships with S10 pre-game bonds?')) return;
+  relationships = S10_BONDS_PRESET.map((b,i) => ({...b, id:'s10-bond-'+i, bond:REL_TYPES[b.type]?.bond??0}));
   saveRels(); renderRelList();
 }
-
 function renderRelList() {
   const list = document.getElementById('rel-list');
-  if (relationships.length === 0) {
-    list.innerHTML = `<div class="rel-empty">No relationships defined. All players start neutral.<br>
-      Click <strong>+ Add</strong> to define a bond, or <strong>S10 Bonds</strong> to load presets.</div>`;
-    return;
+  if (!relationships.length) { list.innerHTML=`<div class="rel-empty">No relationships defined.<br>Click <strong>+ Add</strong> or <strong>S10 Bonds</strong> to load presets.</div>`; return; }
+  const sorted = [...relationships].sort((a,b) => { if(a.type==='unbreakable'&&b.type!=='unbreakable') return -1; if(b.type==='unbreakable'&&a.type!=='unbreakable') return 1; return Math.abs(b.bond)-Math.abs(a.bond); });
+  list.innerHTML = sorted.map(r => { const rt=REL_TYPES[r.type]||REL_TYPES.neutral; return `<div class="rel-card"><div class="rel-players"><div class="rel-names"><span>${r.a}</span><span class="rel-arrow">\u2194</span><span>${r.b}</span></div>${r.note?`<div class="rel-note" title="${r.note}">${r.note}</div>`:''}</div><span class="rel-badge" style="background:${rt.bg};color:${rt.color}">${rt.label}</span><div class="rel-actions"><button class="btn btn-secondary btn-sm" onclick="openRelForm('${r.id}')">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteRel('${r.id}')">\u2715</button></div></div>`; }).join('');
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// ENGINE: UTILITIES
+// ══════════════════════════════════════════════════════════════════════
+
+function bKey(a, b)         { return [a,b].sort().join('||'); }
+function getBond(a, b)      { return gs?.bonds?.[bKey(a,b)] ?? 0; }
+function setBond(a, b, val) { if(gs) gs.bonds[bKey(a,b)] = Math.max(-10, Math.min(10, val)); }
+function addBond(a, b, d)   { setBond(a, b, getBond(a,b)+d); }
+
+function pStats(name) {
+  return players.find(p=>p.name===name)?.stats || { physical:5, social:5, strategic:5, loyalty:5, charisma:5 };
+}
+
+function threatScore(name) {
+  const s = pStats(name);
+  return (s.physical + s.strategic + s.social) / 3;
+}
+
+function wRandom(pool, weightFn) {
+  if (!pool.length) return null;
+  const weights = pool.map((item,i) => Math.max(0.01, weightFn(item,i)));
+  const total   = weights.reduce((a,b)=>a+b, 0);
+  let r = Math.random() * total;
+  for (let i=0; i<pool.length; i++) { r -= weights[i]; if (r<=0) return pool[i]; }
+  return pool[pool.length-1];
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// ENGINE: ALLIANCE FORMATION
+// ══════════════════════════════════════════════════════════════════════
+
+function formAlliances(members, tribeLabel) {
+  if (members.length <= 1) return [];
+  const alliances = [];
+
+  // Find the social hub: highest social + strategic
+  const hubScore = n => { const s=pStats(n); return s.social*0.5 + s.strategic*0.5 + Math.random()*0.5; };
+  const hub = [...members].sort((a,b) => hubScore(b)-hubScore(a))[0];
+
+  // Hub recruits allies by affinity: bond + social compatibility + loyalty
+  const affinityFor = other => {
+    const bond = getBond(hub, other);
+    const sh = pStats(hub), so = pStats(other);
+    const compat = (sh.social + so.social) / 20;
+    // Unbreakable bond gets huge bonus
+    const rel = relationships.find(r => [r.a,r.b].sort().join('|') === [hub,other].sort().join('|'));
+    const ubBonus = rel?.type === 'unbreakable' ? 5 : 0;
+    const rivalPenalty = (rel?.type === 'rival' || rel?.type === 'enemy') ? -4 : 0;
+    return bond + compat*2 + ubBonus + rivalPenalty + (Math.random()-0.5)*0.4;
+  };
+
+  const others  = members.filter(m => m!==hub).sort((a,b) => affinityFor(b)-affinityFor(a));
+  const majSize = Math.ceil(members.length/2);
+  const majority = [hub, ...others.slice(0, majSize-1)];
+  const minority = members.filter(m => !majority.includes(m));
+
+  majority.sort(); // consistent order for display
+
+  const majTarget = pickTarget(majority, minority);
+  alliances.push({ members: majority, target: majTarget, label: majority.length >= Math.ceil(members.length*0.6) ? 'Majority' : 'Alliance A', tribe: tribeLabel });
+
+  if (minority.length >= 2) {
+    const minTarget = pickTarget(minority, majority);
+    alliances.push({ members: minority, target: minTarget, label: 'Minority', tribe: tribeLabel });
+  } else if (minority.length === 1) {
+    alliances.push({ members: minority, target: pickTarget(minority, majority), label: 'Solo', tribe: tribeLabel });
   }
 
-  // Sort: unbreakable first, then by abs(bond) desc
-  const sorted = [...relationships].sort((a, b) => {
-    if (a.type === 'unbreakable' && b.type !== 'unbreakable') return -1;
-    if (b.type === 'unbreakable' && a.type !== 'unbreakable') return 1;
-    return Math.abs(b.bond) - Math.abs(a.bond);
+  return alliances;
+}
+
+function pickTarget(attackers, victims) {
+  if (!victims.length) return null;
+  // Score: threat level adjusted by average bond from attackers (negative bond = more targeted)
+  const score = v => {
+    const th = threatScore(v);
+    const avgBond = attackers.reduce((sum,a) => sum+getBond(a,v), 0) / attackers.length;
+    return th - avgBond;
+  };
+  return [...victims].sort((a,b) => score(b)-score(a))[0];
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// ENGINE: CHALLENGE
+// ══════════════════════════════════════════════════════════════════════
+
+function simulateTribeChallenge(tribes) {
+  const scored = tribes.map(tribe => {
+    const avg = tribe.members.reduce((s,m) => s+pStats(m).physical, 0) / tribe.members.length;
+    return { tribe, score: avg + (Math.random()*4-2) };
+  });
+  scored.sort((a,b) => b.score-a.score);
+  return { winner: scored[0].tribe, loser: scored[scored.length-1].tribe };
+}
+
+function simulateIndividualChallenge(pool, immune) {
+  const candidates = pool.filter(p => p!==immune);
+  if (!candidates.length) return null;
+  return wRandom(candidates, name => Math.max(1, pStats(name).physical + (Math.random()*2-1)));
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// ENGINE: VOTING
+// ══════════════════════════════════════════════════════════════════════
+
+function simulateVotes(tribalPlayers, immuneName, alliances) {
+  const votes = {}, log = [];
+
+  tribalPlayers.forEach(voter => {
+    const s = pStats(voter);
+    const myAlliance = alliances.find(a => a.members.includes(voter));
+    const allianceTarget = myAlliance?.target;
+
+    // Loyalty check: probability of following alliance
+    const loyaltyThreshold = s.loyalty / 11;
+    const isLoyal = Math.random() < loyaltyThreshold;
+
+    let target;
+    if (isLoyal && allianceTarget && allianceTarget !== voter && allianceTarget !== immuneName) {
+      target = allianceTarget;
+    } else {
+      // Personal vote: highest threat that isn't self or immune, weighted by dislike
+      const candidates = tribalPlayers.filter(p => p!==voter && p!==immuneName);
+      if (candidates.length) {
+        target = wRandom(candidates, t => Math.max(0.1, threatScore(t) - getBond(voter,t)));
+      } else {
+        target = allianceTarget;
+      }
+    }
+
+    if (target && target !== voter) {
+      votes[target] = (votes[target]||0)+1;
+      log.push({ voter, voted: target });
+    }
   });
 
-  list.innerHTML = sorted.map(r => {
-    const rt = REL_TYPES[r.type] || REL_TYPES.neutral;
-    return `
-      <div class="rel-card">
-        <div class="rel-players">
-          <div class="rel-names">
-            <span>${r.a}</span>
-            <span class="rel-arrow">\u2194</span>
-            <span>${r.b}</span>
-          </div>
-          ${r.note ? `<div class="rel-note" title="${r.note}">${r.note}</div>` : ''}
-        </div>
-        <span class="rel-badge" style="background:${rt.bg};color:${rt.color}">${rt.label}</span>
-        <div class="rel-actions">
-          <button class="btn btn-secondary btn-sm" onclick="openRelForm('${r.id}')">Edit</button>
-          <button class="btn btn-danger btn-sm" onclick="deleteRel('${r.id}')">&#x2715;</button>
-        </div>
-      </div>`;
+  return { votes, log };
+}
+
+function resolveVotes(votes) {
+  if (!Object.keys(votes).length) return { eliminated: null, isTie: false };
+  const sorted = Object.entries(votes).sort(([,a],[,b]) => b-a);
+  if (sorted.length >= 2 && sorted[0][1] === sorted[1][1]) {
+    const tied = sorted.filter(([,v]) => v===sorted[0][1]).map(([n]) => n);
+    // Tie: person with lower loyalty/social goes — random weighted by threat
+    const eliminated = wRandom(tied, n => { const s=pStats(n); return (s.physical+s.strategic)/2; });
+    return { eliminated, isTie: true, tiedPlayers: tied };
+  }
+  return { eliminated: sorted[0][0], isTie: false, tiedPlayers: null };
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// ENGINE: RI
+// ══════════════════════════════════════════════════════════════════════
+
+function simulateRIChoice(name) {
+  const s = pStats(name);
+  // Fighters (high physical + strategic) go to RI; quitters (low stats or very social) go home
+  const fightScore = s.physical*0.5 + s.strategic*0.3 + (Math.random()*3);
+  return fightScore > 4.2 ? 'REDEMPTION ISLAND' : 'WENT HOME';
+}
+
+function simulateRIDuel(riPlayers) {
+  const a = riPlayers[riPlayers.length-2], b = riPlayers[riPlayers.length-1];
+  const winner = wRandom([a,b], n => Math.max(0.1, pStats(n).physical + (Math.random()*2)));
+  const loser  = winner===a ? b : a;
+  return { winner, loser };
+}
+
+function simulateRIReentry(riPlayers) {
+  // All RI players compete — most physical wins
+  return wRandom(riPlayers, n => Math.max(0.1, pStats(n).physical + (Math.random()*3)));
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// ENGINE: BOND UPDATES
+// ══════════════════════════════════════════════════════════════════════
+
+function updateBonds(votingLog, eliminated, alliances) {
+  const changes = [];
+
+  votingLog.forEach(({ voter, voted }) => {
+    // People who voted the same way grow closer
+    const sameVoters = votingLog.filter(l => l.voted===voted && l.voter!==voter).map(l=>l.voter);
+    sameVoters.forEach(other => {
+      if (getBond(voter,other) < 8) {
+        addBond(voter, other, 0.3);
+        changes.push({ a:voter, b:other, delta:0.3, reason:'voted together' });
+      }
+    });
+
+    // Voted for someone still in the game: small negative
+    if (voted !== eliminated) {
+      addBond(voter, voted, -0.5);
+      changes.push({ a:voter, b:voted, delta:-0.5, reason:'voted against (missed)' });
+    }
+  });
+
+  // Betrayal: if eliminated player was in majority alliance and majority voted for them
+  if (eliminated) {
+    const eliminatedVoters = votingLog.filter(l=>l.voted===eliminated).map(l=>l.voter);
+    const allianceOfElim = alliances.find(a => a.members.includes(eliminated));
+    if (allianceOfElim) {
+      allianceOfElim.members.forEach(m => {
+        if (eliminatedVoters.includes(m)) {
+          addBond(m, eliminated, -2);
+          changes.push({ a:m, b:eliminated, delta:-2, reason:'betrayal (voted out ally)' });
+        }
+      });
+    }
+  }
+
+  return changes;
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// ENGINE: MAIN EPISODE DRIVER
+// ══════════════════════════════════════════════════════════════════════
+
+function simulateEpisode() {
+  if (!gs?.initialized || !players.length) return null;
+  const cfg = seasonConfig;
+  const epNum = gs.episode + 1;
+  const ep = { num: epNum, bondChanges: [], riDuel: null, isRIReentry: false, isMerge: false };
+
+  // ── RI RE-ENTRY ──
+  const isReentry = cfg.ri && gs.riPlayers.length > 0 && gs.activePlayers.length <= cfg.riReentryAt && !gs.isMerged;
+  if (isReentry) {
+    ep.isRIReentry = true;
+    const winner = simulateRIReentry(gs.riPlayers);
+    const losers = gs.riPlayers.filter(p => p!==winner);
+    ep.riReentrant = winner; ep.riReentryLosers = losers;
+    gs.riPlayers = [];
+    gs.eliminated.push(...losers);
+    gs.activePlayers.push(winner);
+    // Add back to a tribe if pre-merge
+    if (!gs.isMerged && gs.tribes.length) {
+      // Add to smallest tribe
+      const smallest = [...gs.tribes].sort((a,b) => a.members.length-b.members.length)[0];
+      smallest.members.push(winner);
+    }
+  }
+
+  // ── RI DUEL (not re-entry episode) ──
+  if (!isReentry && cfg.ri && gs.riPlayers.length >= 2) {
+    const duel = simulateRIDuel(gs.riPlayers);
+    ep.riDuel = duel;
+    gs.riPlayers = gs.riPlayers.filter(p => p!==duel.loser);
+    gs.eliminated.push(duel.loser);
+  }
+
+  // ── MERGE CHECK ──
+  const isMerge = !gs.isMerged && gs.activePlayers.length <= cfg.mergeAt;
+  if (isMerge) {
+    ep.isMerge = true; gs.isMerged = true; gs.phase = 'post-merge'; gs.tribes = [];
+  }
+
+  // ── CHALLENGE ──
+  if (gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
+    const result = simulateTribeChallenge(gs.tribes);
+    ep.challengeType = 'tribe';
+    ep.winner = result.winner; ep.loser = result.loser;
+    ep.tribalPlayers = [...result.loser.members];
+  } else {
+    const immWinner = simulateIndividualChallenge(gs.activePlayers, null);
+    ep.challengeType = 'individual'; ep.immunityWinner = immWinner;
+    ep.tribalPlayers = [...gs.activePlayers];
+  }
+
+  // ── ALLIANCES (for tribal group) ──
+  const tribeLabel = ep.challengeType === 'tribe' ? ep.loser.name : null;
+  const alliances  = formAlliances(ep.tribalPlayers, tribeLabel);
+  ep.alliances = alliances;
+
+  // Also update global alliances (whole game view)
+  if (gs.phase === 'pre-merge') {
+    gs.alliances = [];
+    gs.tribes.forEach(t => gs.alliances.push(...formAlliances(t.members, t.name)));
+  } else {
+    gs.alliances = formAlliances(gs.activePlayers, null);
+  }
+
+  // ── VOTE ──
+  const { votes, log } = simulateVotes(ep.tribalPlayers, ep.immunityWinner||null, alliances);
+  ep.votes = votes; ep.votingLog = log;
+
+  // ── RESOLVE ──
+  const resolution = resolveVotes(votes);
+  ep.eliminated = resolution.eliminated;
+  ep.isTie = resolution.isTie;
+  ep.tiedPlayers = resolution.tiedPlayers;
+
+  // ── RI CHOICE ──
+  if (ep.eliminated) {
+    if (cfg.ri) {
+      const choice = simulateRIChoice(ep.eliminated);
+      ep.riChoice = choice;
+      if (choice === 'REDEMPTION ISLAND') gs.riPlayers.push(ep.eliminated);
+      else gs.eliminated.push(ep.eliminated);
+    } else {
+      gs.eliminated.push(ep.eliminated);
+      ep.riChoice = null;
+    }
+    gs.activePlayers = gs.activePlayers.filter(p => p!==ep.eliminated);
+    gs.tribes = gs.tribes.map(t => ({...t, members: t.members.filter(p => p!==ep.eliminated)}));
+  }
+
+  // ── BOND UPDATES ──
+  ep.bondChanges = updateBonds(log, ep.eliminated, alliances);
+
+  // ── PHASE CHECK ──
+  if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
+
+  // ── INCREMENT & SAVE ──
+  gs.episode = epNum;
+  gs.episodeHistory.push({
+    num: epNum, eliminated: ep.eliminated, riChoice: ep.riChoice,
+    immunityWinner: ep.immunityWinner || ep.winner?.name,
+    challengeType: ep.challengeType, isMerge: ep.isMerge,
+    votes: ep.votes, alliances: ep.alliances.map(a=>({...a})),
+    summaryText: '', // filled after generation
+  });
+
+  // ── GENERATE OUTPUT ──
+  const summaryText = generateSummaryText(ep);
+  gs.episodeHistory[gs.episodeHistory.length-1].summaryText = summaryText;
+  ep.summaryText = summaryText;
+
+  saveGameState();
+  return ep;
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// ENGINE: OUTPUT GENERATION
+// ══════════════════════════════════════════════════════════════════════
+
+function generateSummaryText(ep) {
+  const cfg = seasonConfig;
+  const L = [];
+  const ln  = s => L.push(s);
+  const sec = t => { ln(''); ln(`=== ${t} ===`); };
+
+  // META
+  sec('META');
+  ln(`Season: ${cfg.name||'Unknown'} | Episode: ${ep.num} | Players Remaining: ${gs.activePlayers.length}`);
+  if (cfg.ri) ln('Format: Redemption Island — voted out players may fight back via RI duels');
+
+  // CAST
+  sec('CAST (ALL)');
+  ln(`STARTING CAST (${players.length}): ${players.map(p=>p.name).join(', ')}`);
+
+  // TRIBES
+  sec('TRIBES (ACTIVE)');
+  if (ep.isMerge) {
+    ln('MERGED THIS EPISODE');
+    ln(`Remaining (${gs.activePlayers.length}): ${gs.activePlayers.join(', ')}`);
+  } else if (gs.phase === 'pre-merge' && gs.tribes.length) {
+    gs.tribes.forEach(t => ln(`${t.name.toUpperCase()} (${t.members.length}): ${t.members.join(', ')}`));
+  } else {
+    ln(`MERGED (${gs.activePlayers.length}): ${gs.activePlayers.join(', ')}`);
+  }
+
+  // ELIMINATED / RI
+  sec('ELIMINATED (PERMANENT)');
+  ln(gs.eliminated.length ? gs.eliminated.join(', ') : 'None yet.');
+  if (cfg.ri) {
+    sec('ON REDEMPTION ISLAND');
+    ln(gs.riPlayers.length ? gs.riPlayers.join(', ') : 'None.');
+  }
+
+  // RI DUEL
+  if (ep.riDuel) {
+    sec('REDEMPTION ISLAND DUEL');
+    ln(`Contestants: ${ep.riDuel.winner} vs ${ep.riDuel.loser}`);
+    ln(`Result: ${ep.riDuel.winner} wins — remains on Redemption Island`);
+    ln(`${ep.riDuel.loser} loses — permanently eliminated`);
+  }
+
+  // RI RE-ENTRY
+  if (ep.isRIReentry && ep.riReentrant) {
+    sec('REDEMPTION ISLAND RE-ENTRY');
+    ln(`${ep.riReentrant} wins the re-entry challenge and rejoins the game.`);
+    if (ep.riReentryLosers?.length) ln(`Permanently eliminated: ${ep.riReentryLosers.join(', ')}`);
+  }
+
+  // EPISODE TYPE
+  sec('EPISODE TYPE');
+  if (ep.isMerge) ln('MERGE EPISODE — tribes dissolve. Individual immunity. Everyone votes.');
+  else if (ep.isRIReentry) ln(`RI re-entry episode. ${ep.riReentrant} rejoins the game. Tribe challenge follows.`);
+  else if (ep.challengeType === 'tribe') ln(`Standard pre-merge episode. ${ep.loser?.name} goes to tribal council.`);
+  else ln('Post-merge episode. Individual immunity challenge.');
+
+  // PRE-CHALLENGE STATUS
+  sec('PRE-CHALLENGE STATUS');
+  const allToDescribe = ep.alliances || gs.alliances || [];
+  if (ep.challengeType === 'tribe' && gs.tribes.length) {
+    gs.tribes.forEach(tribe => {
+      ln(`${tribe.name.toUpperCase()} tribe:`);
+      const ta = allToDescribe.filter(a => a.tribe===tribe.name);
+      if (ta.length) ta.forEach(a => ln(`  - ${a.label} (${a.members.length}): ${a.members.join(', ')}${a.target?' \u2014 targeting '+a.target:''}`));
+      else ln('  - Dynamics still forming');
+    });
+  } else {
+    if (allToDescribe.length) allToDescribe.forEach(a => ln(`- ${a.label} (${a.members.length}): ${a.members.join(', ')}${a.target?' \u2014 targeting '+a.target:''}`));
+    else ln('- Alliance dynamics in flux at the merge');
+  }
+
+  // TRIBE/FACTION RELATIONSHIPS
+  sec('TRIBE/FACTION RELATIONSHIPS');
+  ln('KEY BONDS THIS EPISODE:');
+  const activeRels = relationships.filter(r => gs.activePlayers.includes(r.a) && gs.activePlayers.includes(r.b) && r.type!=='neutral');
+  if (activeRels.length) {
+    activeRels.forEach(r => { const rt=REL_TYPES[r.type]; ln(`- ${r.a} + ${r.b}: ${rt.label}${r.note?' \u2014 '+r.note:''}`); });
+  } else {
+    ln('- No pre-defined notable bonds active. Alliances forming organically.');
+  }
+  const notableBondChanges = ep.bondChanges.filter(bc => Math.abs(bc.delta)>=1.5);
+  if (notableBondChanges.length) {
+    ln('BOND SHIFTS THIS EPISODE:');
+    notableBondChanges.slice(0,4).forEach(bc => ln(`- ${bc.a} + ${bc.b}: ${bc.delta>0?'+':''}${bc.delta.toFixed(1)} (${bc.reason})`));
+  }
+
+  // IMMUNITY CHALLENGE
+  sec('IMMUNITY CHALLENGE');
+  if (ep.challengeType === 'tribe') {
+    ln(`TRIBE IMMUNITY: ${ep.winner?.name} win.`);
+    ln(`RESULT: ${ep.loser?.name} go to tribal council.`);
+  } else {
+    ln(`INDIVIDUAL IMMUNITY: ${ep.immunityWinner} wins immunity.`);
+  }
+
+  // POST-CHALLENGE STATUS
+  sec('POST-CHALLENGE STATUS');
+  if (ep.challengeType === 'tribe') {
+    ln(`${ep.loser?.name} must vote someone out.`);
+    const majA = ep.alliances?.find(a => a.label==='Majority'||a.label==='Alliance A');
+    if (majA?.target) ln(`${majA.label} alliance (${majA.members.join(', ')}) is targeting ${majA.target}.`);
+    const minA = ep.alliances?.find(a => a.label==='Minority');
+    if (minA?.target) ln(`${minA.label} (${minA.members.join(', ')}) trying to vote ${minA.target}.`);
+  } else {
+    ln(`${ep.immunityWinner} is safe. Everyone else is vulnerable.`);
+    const topTarget = ep.alliances?.[0]?.target;
+    if (topTarget) ln(`Primary consensus target: ${topTarget}.`);
+  }
+
+  // TRIBAL COUNCIL
+  sec('TRIBAL COUNCIL / VOTE ANALYSIS');
+  ln('Votes cast:');
+  ep.votingLog.forEach(({ voter, voted }) => ln(`${voter} \u2192 ${voted}`));
+  ln('');
+  const voteSummary = Object.entries(ep.votes).sort(([,a],[,b])=>b-a).map(([n,v])=>`${n} (${v})`).join(', ');
+  ln('VOTE COUNT: ' + voteSummary);
+  if (ep.isTie) ln(`TIE between: ${ep.tiedPlayers?.join(', ')} \u2014 resolved by secondary tiebreaker`);
+
+  // WHY THIS VOTE
+  sec('WHY THIS VOTE HAPPENED');
+  const elim = ep.eliminated;
+  if (elim) {
+    const es = pStats(elim);
+    const th = ((es.physical+es.strategic+es.social)/3).toFixed(1);
+    ln(`${elim} was voted out because:`);
+    if (parseFloat(th) >= 7.5) ln(`- Extreme threat level (${th}/10) \u2014 too dangerous to keep at any stage`);
+    else if (parseFloat(th) >= 6) ln(`- High threat level (${th}/10) \u2014 the majority saw them as a long-term jury threat`);
+    else if (parseFloat(th) <= 3.5) ln(`- Perceived as the weakest link or least valuable in the tribe`);
+    else ln(`- Political liability more than a threat \u2014 became the consensus name`);
+    const majVoters = ep.votingLog.filter(l=>l.voted===elim).map(l=>l.voter);
+    if (majVoters.length >= 2) ln(`- ${majVoters.slice(0,-1).join(', ')} and ${majVoters[majVoters.length-1]} unified on this vote`);
+    const hadAlly = ep.alliances?.find(a=>a.members.includes(elim)&&a.label!=='Solo');
+    if (hadAlly && majVoters.some(v=>hadAlly.members.includes(v))) ln(`- Even members of their own alliance turned against them`);
+    else if (hadAlly) ln(`- ${elim}'s alliance of ${hadAlly.members.join(', ')} was outnumbered`);
+  } else {
+    ln('No elimination this episode.');
+  }
+
+  // VOTED OUT
+  sec('VOTED OUT THIS TRIBAL');
+  if (elim) {
+    ln(elim);
+    ln(`**Chose:** ${ep.riChoice || 'N/A'}`);
+  } else {
+    ln('No elimination.');
+    ln('**Chose:** N/A');
+  }
+
+  // STRATEGIC ANALYSIS
+  sec('STRATEGIC ANALYSIS');
+  if (elim) {
+    const totalVotes = Object.values(ep.votes).reduce((a,b)=>a+b, 0);
+    const topVotes   = Math.max(...Object.values(ep.votes));
+    if (topVotes === totalVotes) ln(`Unanimous vote (${topVotes}-0). ${elim} was completely exposed with no allies to scramble with.`);
+    else ln(`${elim} received ${topVotes} of ${totalVotes} votes.`);
+    const dominantAlliance = ep.alliances?.find(a=>a.label==='Majority'||a.members.length>=ep.tribalPlayers.length/2);
+    if (dominantAlliance) {
+      const leader = dominantAlliance.members[0];
+      const ls = pStats(leader);
+      if (ls.strategic >= 8) ln(`${leader} is orchestrating votes with precision. High strategic stat — a long-term threat nobody is naming yet.`);
+      else ln(`${dominantAlliance.members.join(', ')} held the numbers and didn't crack.`);
+    }
+  }
+
+  // CURRENT GAME STATUS
+  sec('CURRENT GAME STATUS');
+  if (gs.phase === 'pre-merge' && gs.tribes.length) {
+    gs.tribes.forEach(t => ln(`${t.name.toUpperCase()} (${t.members.length}): ${t.members.join(', ')}`));
+  } else {
+    ln(`Active (${gs.activePlayers.length}): ${gs.activePlayers.join(', ')}`);
+  }
+  if (gs.riPlayers.length) ln(`On RI: ${gs.riPlayers.join(', ')}`);
+  if (gs.eliminated.length) ln(`Permanently out: ${gs.eliminated.join(', ')}`);
+
+  // ONGOING STORYLINES
+  sec('ONGOING STORYLINES');
+  const stories = buildStorylines(ep);
+  stories.forEach(s => ln(`- ${s}`));
+
+  // COLD OPEN HOOK
+  sec('COLD OPEN HOOK');
+  ln(buildColdOpen(ep));
+
+  // NEXT EPISODE QUESTIONS
+  sec('NEXT EPISODE QUESTIONS');
+  buildNextEpQs(ep).forEach(q => ln(`- ${q}`));
+
+  return L.join('\n');
+}
+
+function buildStorylines(ep) {
+  const lines = [], cfg = seasonConfig;
+  const elim = ep.eliminated;
+
+  if (cfg.ri && ep.riChoice === 'REDEMPTION ISLAND' && elim) {
+    const s = pStats(elim);
+    lines.push(s.physical >= 7 ? `${elim} arrives at RI as a challenge threat. Can anyone beat them in a duel?` : `${elim} refuses to go quietly. The underdog arc begins on Redemption Island.`);
+  }
+
+  // Dominant player story
+  const dom = ep.alliances?.find(a=>a.label==='Majority')?.members?.[0];
+  if (dom) {
+    const ds = pStats(dom);
+    if (ds.strategic >= 8) lines.push(`${dom} controlled this vote cleanly. At what point do they become the biggest threat in the game?`);
+  }
+
+  // Notable relationships in play
+  const activeRels = relationships.filter(r => gs.activePlayers.includes(r.a) && gs.activePlayers.includes(r.b));
+  const ub = activeRels.find(r => r.type==='unbreakable');
+  if (ub) lines.push(`${ub.a} + ${ub.b}: Unbreakable Bond still intact. How long before the rest of the game breaks it up?`);
+  const rival = activeRels.find(r => r.type==='rival'||r.type==='enemy');
+  if (rival) lines.push(`${rival.a} vs ${rival.b}: ${rival.note||'History simmering beneath the surface.'}`);
+
+  // Phase approaching
+  if (!gs.isMerged && gs.activePlayers.length <= (cfg.mergeAt||12) + 2) lines.push('Merge is close. Who has cross-tribe bonds? Who is walking in blind?');
+  if (cfg.ri && gs.riPlayers.length) lines.push(`${gs.riPlayers.join(' and ')} on RI — waiting. Watching. Who joins them next?`);
+
+  if (!lines.length) lines.push('The game continues to develop.');
+  return lines.slice(0,5);
+}
+
+function buildColdOpen(ep) {
+  const elim = ep.eliminated;
+  if (!elim) return 'The tribe returns to camp in silence. Nobody is safe.';
+  if (ep.riChoice === 'REDEMPTION ISLAND') return `${elim} receives the map. They look at it for a long moment. Then they fold it and walk into the dark without looking back.`;
+  if (ep.riChoice === 'WENT HOME') return `${elim} stands at the fork. The sign points toward Redemption Island. They read it — and keep walking the other way.`;
+  return `${elim}'s torch is snuffed. The tribe walks back to camp without a word.`;
+}
+
+function buildNextEpQs(ep) {
+  const qs = [], cfg = seasonConfig, elim = ep.eliminated;
+  if (cfg.ri && ep.riChoice==='REDEMPTION ISLAND' && elim) qs.push(`Can ${elim} survive their first RI duel?`);
+  if (gs.riPlayers.length >= 2) qs.push(`${gs.riPlayers.join(' vs ')} — who wins the duel?`);
+  const dom = ep.alliances?.find(a=>a.label==='Majority')?.members?.[0];
+  if (dom) qs.push(`Is anyone going to challenge ${dom}'s control?`);
+  if (!gs.isMerged) {
+    const immuneTribeName = ep.winner?.name;
+    if (immuneTribeName) qs.push(`${immuneTribeName} dodged tribal again — but how long before they crack?`);
+  }
+  if (!gs.isMerged && gs.activePlayers.length <= (cfg.mergeAt||12)+2) qs.push('Is the merge next? Who has cross-tribe numbers?');
+  if (!qs.length) qs.push('Who will be voted out next?');
+  return qs.slice(0,4);
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// GAME STATE PERSISTENCE
+// ══════════════════════════════════════════════════════════════════════
+
+function saveGameState() { localStorage.setItem('simulator_gs', JSON.stringify(gs)); }
+
+function initGameState() {
+  if (!players.length) return false;
+
+  const bonds = {};
+  // Pre-game relationship bonds
+  relationships.forEach(r => { bonds[bKey(r.a,r.b)] = r.bond; });
+  // Small same-tribe bonus (+0.5)
+  const tribeMap = {};
+  players.forEach(p => { if(!p.tribe) return; if(!tribeMap[p.tribe]) tribeMap[p.tribe]=[]; tribeMap[p.tribe].push(p.name); });
+  Object.values(tribeMap).forEach(members => {
+    for (let i=0;i<members.length;i++) for (let j=i+1;j<members.length;j++) {
+      const k=bKey(members[i],members[j]); bonds[k]=(bonds[k]||0)+0.5;
+    }
+  });
+
+  gs = {
+    initialized: true, episode: 0, phase: 'pre-merge', isMerged: false,
+    activePlayers: players.map(p=>p.name),
+    tribes: Object.entries(tribeMap).map(([name,members]) => ({name, members:[...members]})),
+    riPlayers: [], eliminated: [], bonds, alliances: [], episodeHistory: [],
+  };
+  saveGameState();
+  return true;
+}
+
+function resetSeason() {
+  if (!confirm('Reset season? This clears all episode history. Your cast and setup are kept.')) return;
+  gs = null; localStorage.removeItem('simulator_gs');
+  viewingEpNum = null;
+  initGameState();
+  renderRunTab();
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// RUN EPISODE: UI
+// ══════════════════════════════════════════════════════════════════════
+
+function initRunTab() {
+  if (!gs) {
+    if (players.length > 0) initGameState();
+  }
+  renderRunTab();
+}
+
+function renderRunTab() {
+  renderGameState();
+  const empty   = document.getElementById('run-empty');
+  const content = document.getElementById('run-content');
+
+  if (!gs || !gs.initialized) {
+    empty.style.display = 'flex'; content.style.display = 'none'; return;
+  }
+  empty.style.display = 'none'; content.style.display = 'flex'; content.style.flexDirection = 'column';
+
+  // Show episode or placeholder
+  if (!gs.episodeHistory.length) {
+    document.getElementById('ep-result-card').innerHTML = '';
+    document.getElementById('ep-output-text').value = '';
+    document.getElementById('ep-history-wrap').style.display = 'none';
+  } else {
+    const epToShow = viewingEpNum ? gs.episodeHistory.find(e=>e.num===viewingEpNum) : gs.episodeHistory[gs.episodeHistory.length-1];
+    if (epToShow) renderEpisodeView(epToShow);
+    renderEpisodeHistory();
+    document.getElementById('ep-history-wrap').style.display = 'flex';
+  }
+}
+
+function renderGameState() {
+  const el = document.getElementById('gs-summary');
+  const btn = document.getElementById('sim-btn');
+  if (!gs || !gs.initialized) {
+    el.innerHTML = `<div style="font-size:12px;color:var(--muted);line-height:1.6">Add players in Cast Builder and configure the season in Season Setup first.</div>`;
+    btn.textContent = 'Initialize Season'; btn.disabled = false; return;
+  }
+
+  const phaseLabel = gs.phase==='pre-merge'?'Pre-Merge':gs.phase==='post-merge'?'Post-Merge':'Finale';
+  let html = `<div class="gs-stats">
+    <div class="gs-stat"><label>Episode</label><strong>${gs.episode}</strong></div>
+    <div class="gs-stat"><label>Phase</label><strong>${phaseLabel}</strong></div>
+    <div class="gs-stat"><label>Active</label><strong>${gs.activePlayers.length}</strong></div>
+    <div class="gs-stat"><label>On RI</label><strong style="color:${gs.riPlayers.length?'#f97316':'var(--muted)'}">${gs.riPlayers.length}</strong></div>
+  </div>`;
+
+  if (gs.phase === 'pre-merge' && gs.tribes.length) {
+    html += `<div style="margin-top:8px">`;
+    gs.tribes.forEach(t => {
+      const tc = tribeColor(t.name);
+      html += `<div class="gs-tribe"><div class="gs-tribe-name" style="color:${tc}">${t.name} (${t.members.length})</div><div class="gs-tribe-members">${t.members.join(' \u00b7 ')}</div></div>`;
+    });
+    html += `</div>`;
+  } else {
+    const tc = tribeColor('merged');
+    html += `<div class="gs-tribe" style="margin-top:8px"><div class="gs-tribe-name" style="color:var(--accent)">Active (${gs.activePlayers.length})</div><div class="gs-tribe-members">${gs.activePlayers.join(' \u00b7 ')}</div></div>`;
+  }
+
+  if (gs.riPlayers.length) {
+    html += `<div class="gs-section"><label>On RI</label><div class="gs-ri-list">${gs.riPlayers.join(', ')}</div></div>`;
+  }
+
+  const notableAlls = gs.alliances.filter(a => a.members.length >= 2);
+  if (notableAlls.length) {
+    html += `<div class="gs-section"><label>Alliances</label>`;
+    notableAlls.slice(0,4).forEach(a => {
+      html += `<div class="gs-alliance"><span class="gs-alliance-label">${a.tribe?a.tribe+' — ':''}${a.label}</span><span class="gs-alliance-members">${a.members.join(', ')}</span>${a.target?`<span class="gs-alliance-target">\u2192 targeting ${a.target}</span>`:''}</div>`;
+    });
+    html += `</div>`;
+  }
+
+  if (gs.eliminated.length) {
+    html += `<div class="gs-section"><label>Eliminated</label><div class="gs-elim-list">${gs.eliminated.join(', ')}</div></div>`;
+  }
+
+  el.innerHTML = html;
+
+  // Update button
+  if (gs.phase === 'finale' || gs.activePlayers.length <= 1) {
+    btn.textContent = 'Season Complete'; btn.disabled = true;
+  } else {
+    btn.textContent = `Simulate Episode ${gs.episode+1}`; btn.disabled = false;
+  }
+}
+
+function renderEpisodeView(epRecord) {
+  const card = document.getElementById('ep-result-card');
+  const tc = epRecord.isMerge ? '#10b981' : epRecord.challengeType==='tribe' ? tribeColor(epRecord.immunityWinner||'') : '#6366f1';
+  const phaseTag = epRecord.isMerge ? 'MERGE' : epRecord.challengeType==='tribe' ? 'Pre-merge' : 'Post-merge';
+  const riTag = epRecord.riChoice === 'REDEMPTION ISLAND' ? `<span class="ep-hist-tag" style="background:rgba(249,115,22,0.15);color:#f97316">RI</span>` : epRecord.riChoice === 'WENT HOME' ? `<span class="ep-hist-tag" style="background:rgba(148,163,184,0.1);color:var(--muted)">Home</span>` : '';
+
+  const voteEntries = Object.entries(epRecord.votes||{}).sort(([,a],[,b])=>b-a);
+  const topVotes = voteEntries[0]?.[1] || 0;
+  const chips = voteEntries.map(([n,v]) => `<span class="ep-vote-chip ${v===topVotes?'top':''}">${n}: ${v}</span>`).join('');
+
+  card.innerHTML = `<div class="ep-result">
+    <div class="ep-result-header">
+      <span class="ep-result-num">Episode ${epRecord.num}</span>
+      <span class="ep-result-phase" style="color:${tc}">${phaseTag}</span>
+      ${epRecord.isMerge?`<span class="ep-result-phase" style="color:#10b981;font-weight:700">MERGE!</span>`:''}
+    </div>
+    <div class="ep-facts">
+      <div class="ep-fact"><label>Immunity</label><span>${epRecord.immunityWinner||'—'}</span></div>
+      <div class="ep-fact"><label>Tribal</label><span>${epRecord.challengeType==='tribe'?(epRecord.immunityWinner?epRecord.immunityWinner+' wins':(voteEntries.length?'Vote follows':'—')):'All vote'}</span></div>
+      <div class="ep-fact ep-eliminated"><label>Eliminated</label><span>${epRecord.eliminated||'None'} ${riTag}</span></div>
+      <div class="ep-fact"><label>Votes</label><span>${Object.values(epRecord.votes||{}).reduce((a,b)=>a+b,0)} cast</span></div>
+    </div>
+    <div style="margin-top:4px;margin-bottom:0"><div style="font-size:10px;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px">Vote breakdown</div><div class="ep-vote-list">${chips}</div></div>
+  </div>`;
+
+  document.getElementById('ep-output-text').value = epRecord.summaryText || '';
+}
+
+function renderEpisodeHistory() {
+  const grid = document.getElementById('ep-history-grid');
+  const history = gs.episodeHistory;
+  if (!history.length) { grid.innerHTML=''; return; }
+
+  const currentNum = viewingEpNum || history[history.length-1].num;
+  grid.innerHTML = history.map(ep => {
+    const riTag = ep.riChoice==='REDEMPTION ISLAND' ? `<span class="ep-hist-tag" style="background:rgba(249,115,22,0.15);color:#f97316">RI</span>` : ep.riChoice==='WENT HOME' ? `<span class="ep-hist-tag" style="background:rgba(148,163,184,0.1);color:var(--muted)">Home</span>` : '';
+    const mergeTag = ep.isMerge ? `<span class="ep-hist-tag" style="background:rgba(16,185,129,0.15);color:var(--accent)">MERGE</span>` : '';
+    return `<div class="ep-hist-card ${ep.num===currentNum?'active':''}" onclick="viewEpisode(${ep.num})">
+      <div class="ep-hist-ep">Episode ${ep.num}</div>
+      <div class="ep-hist-elim">${ep.eliminated||'\u2014'}</div>
+      <div>${riTag}${mergeTag}</div>
+    </div>`;
   }).join('');
+}
+
+function viewEpisode(num) {
+  viewingEpNum = num;
+  const epRecord = gs.episodeHistory.find(e=>e.num===num);
+  if (epRecord) { renderEpisodeView(epRecord); renderEpisodeHistory(); }
+}
+
+function simulateNext() {
+  if (!gs) { if (!initGameState()) { alert('Add players to Cast Builder first.'); return; } }
+  const ep = simulateEpisode();
+  if (!ep) return;
+  viewingEpNum = ep.num;
+  renderRunTab();
+  document.getElementById('run-main').scrollTop = 0;
+}
+
+function copyOutput() {
+  const ta = document.getElementById('ep-output-text');
+  ta.select(); document.execCommand('copy');
+  const btn = event.target; btn.textContent = 'Copied!'; setTimeout(()=>btn.textContent='Copy', 1500);
+}
+
+function exportToEpisodePipeline() {
+  // Save to localStorage so current-season.html can pick it up as a cached summary
+  const epRecord = viewingEpNum ? gs.episodeHistory.find(e=>e.num===viewingEpNum) : gs.episodeHistory[gs.episodeHistory.length-1];
+  if (!epRecord) return;
+  const key = `AI_SUMMARY_s${prompt('Which season number are you using in current-season.html?','10')}_e${epRecord.num}`;
+  if (!key.includes('null')) {
+    localStorage.setItem(key, epRecord.summaryText);
+    alert(`Saved! In current-season.html: select season + episode ${epRecord.num}, leave BrantSteele field empty, click Generate Episode.`);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════════════
+
+function init() {
+  buildStatSliders();
+  buildAdvantageList();
+  loadAll();
+  renderCast();
+  renderConfig();
+  renderRelList();
 }
 
 init();

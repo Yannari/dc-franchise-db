@@ -988,7 +988,6 @@ Rules:
 
   // Try GPT-5 first, fall back to Anthropic
   let summary = "";
-  let gptOk = false;
 
   if (env.OPENAI_API_KEY) {
     try {
@@ -1001,14 +1000,13 @@ Rules:
       if (resp.ok) {
         if (typeof data?.output_text === "string") summary = data.output_text.trim();
         else if (Array.isArray(data?.output)) summary = data.output.flatMap(i => i?.content || []).map(c => c?.text || "").join("").trim();
-        if (summary) gptOk = true;
       }
     } catch (e) {
       console.error("GPT-5 summary failed:", e);
     }
   }
 
-  if (!gptOk && env.ANTHROPIC_API_KEY) {
+  if (!summary && env.ANTHROPIC_API_KEY) {
     try {
       const resp = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
@@ -1023,7 +1021,7 @@ Rules:
   }
 
   if (!summary) {
-    return new Response(JSON.stringify({ error: "Both GPT-5 and Anthropic failed to generate summary" }), {
+    return new Response(JSON.stringify({ error: "GPT-5 and Anthropic both failed to generate summary" }), {
       status: 502,
       headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
     });
@@ -3245,7 +3243,19 @@ Season: ${season ?? "?"}, Episode: ${episode ?? "?"}.
 Return complete episode transcript.
 `.trim();
 
-  // Try GPT-5 first, fall back to Gemini, then Anthropic
+  // Try Gemini first, fall back to GPT-5, then Anthropic
+  if (env.GEMINI_API_KEY) {
+    try {
+      const result = await callGemini(instructions, summaryText, env);
+      if (result.ok !== false) {
+        const clone = result.clone();
+        const data = await clone.json().catch(() => ({}));
+        if (data.episodeTranscript && !data.error) return result;
+      }
+    } catch (e) {
+      console.error("Gemini failed, falling back to GPT-5:", e);
+    }
+  }
   if (env.OPENAI_API_KEY) {
     try {
       const payload = { model: "gpt-5", instructions, input: summaryText };
@@ -3256,19 +3266,7 @@ Return complete episode transcript.
         if (data.episodeTranscript && !data.error) return result;
       }
     } catch (e) {
-      console.error("OpenAI failed, falling back to Gemini:", e);
-    }
-  }
-  if (env.GEMINI_API_KEY) {
-    try {
-      const result = await callGemini(instructions, summaryText, env);
-      if (result.ok !== false) {
-        const clone = result.clone();
-        const data = await clone.json().catch(() => ({}));
-        if (data.episodeTranscript && !data.error) return result;
-      }
-    } catch (e) {
-      console.error("Gemini failed, falling back to Anthropic:", e);
+      console.error("GPT-5 failed, falling back to Anthropic:", e);
     }
   }
   // Fallback: Anthropic

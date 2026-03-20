@@ -2704,7 +2704,7 @@ Dave voted for Mickey
     });
     if (!response.ok) throw new Error(`Summary generation failed (HTTP ${response.status})`);
     const data = await response.json();
-    if (!data.summary) throw new Error('No summary returned from AI');
+    if (!data.summary) throw new Error(data.error || 'No summary returned from AI');
     return data.summary;
   }
   // ────────────────────────────────────────────────────────────────────────────

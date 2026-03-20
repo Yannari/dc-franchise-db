@@ -988,8 +988,8 @@ Rules:
     : "";
   const input = `${prevContext}═══ CURRENT EPISODE RAW DATA ═══\n${rawText}`;
 
-  // Use heartbeat streaming (same pattern as episode generation) to avoid 524/502 timeouts.
-  // setInterval sends \n keep-alives while Claude generates; final JSON sent when done.
+  // Use heartbeat streaming with GPT-5 to avoid 524/502 timeouts.
+  // setInterval sends \n keep-alives while GPT generates; final JSON sent when done.
   const encoder = new TextEncoder();
   const readable = new ReadableStream({
     async start(controller) {
@@ -999,30 +999,26 @@ Rules:
           try { controller.enqueue(encoder.encode("\n")); } catch (_) {}
         }, 5000);
 
-        const resp = await fetch("https://api.anthropic.com/v1/messages", {
+        const resp = await fetch("https://api.openai.com/v1/responses", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "x-api-key": env.ANTHROPIC_API_KEY,
-            "anthropic-version": "2023-06-01",
+            Authorization: `Bearer ${env.OPENAI_API_KEY}`,
           },
-          body: JSON.stringify({
-            model: "claude-sonnet-4-6",
-            max_tokens: 16000,
-            system: instructions,
-            messages: [{ role: "user", content: input }],
-          }),
+          body: JSON.stringify({ model: "gpt-5", instructions, input }),
         });
 
         const data = await resp.json().catch(() => ({}));
         clearInterval(heartbeat);
 
         if (!resp.ok) {
-          controller.enqueue(encoder.encode(JSON.stringify({ error: "Anthropic error", details: data })));
+          const errMsg = data?.error?.message || JSON.stringify(data);
+          controller.enqueue(encoder.encode(JSON.stringify({ error: `GPT error ${resp.status}: ${errMsg}` })));
         } else {
-          const summary = data?.content?.[0]?.text?.trim() || "";
+          const summary = (typeof data?.output_text === "string" ? data.output_text :
+            Array.isArray(data?.output) ? data.output.flatMap(i => i?.content || []).map(c => c?.text || "").join("") : "").trim();
           if (!summary) {
-            controller.enqueue(encoder.encode(JSON.stringify({ error: "Empty summary returned" })));
+            controller.enqueue(encoder.encode(JSON.stringify({ error: "Empty summary returned from GPT" })));
           } else {
             controller.enqueue(encoder.encode(JSON.stringify({ summary })));
           }

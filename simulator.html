@@ -467,7 +467,7 @@
       </div>
       <div class="btn-row">
         <button class="btn btn-secondary" onclick="exportCast()">Export JSON</button>
-        <button class="btn btn-secondary" onclick="document.getElementById(\'import-file\').click()">Import JSON</button>
+        <button class="btn btn-secondary" onclick="document.getElementById('import-file').click()">Import JSON</button>
       </div>
       <input type="file" id="import-file" accept=".json" style="display:none" onchange="importCast(event)">
     </aside>
@@ -497,7 +497,7 @@ const STATS = [
 
 const ARCHETYPES = {
   'challenge-beast':  { physical: 9, social: 5, strategic: 5, loyalty: 7, charisma: 5, desc: 'Dominates challenges. Jury rarely respects the game.' },
-  'social-butterfly': { physical: 4, social: 9, strategic: 6, loyalty: 6, charisma: 8, desc: 'Everyone's friend. Hard to vote out. Can lose for being "too nice".' },
+  'social-butterfly': { physical: 4, social: 9, strategic: 6, loyalty: 6, charisma: 8, desc: "Everyone's friend. Hard to vote out. Can lose for being too nice." },
   'mastermind':       { physical: 5, social: 7, strategic: 9, loyalty: 4, charisma: 6, desc: 'Runs the game from the shadows. Loyalty issues create enemies.' },
   'loyal-soldier':    { physical: 7, social: 6, strategic: 4, loyalty: 9, charisma: 5, desc: 'Never flips. Gets dragged to F3 and loses 8-0.' },
   'wildcard':         { physical: 5, social: 5, strategic: 7, loyalty: 3, charisma: 7, desc: 'Unpredictable. Chaos engine. Blows up games — including their own.' },

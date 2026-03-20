@@ -43,17 +43,9 @@
       top: 0;
       z-index: 10;
     }
-
-    .sim-title {
-      font-size: 17px;
-      font-weight: 700;
-      color: var(--accent);
-      white-space: nowrap;
-    }
+    .sim-title { font-size: 17px; font-weight: 700; color: var(--accent); white-space: nowrap; }
     .sim-title span { color: var(--muted); font-weight: 400; }
-
     .sim-tabs { display: flex; gap: 4px; }
-
     .tab-btn {
       padding: 6px 14px;
       border-radius: 6px;
@@ -65,22 +57,16 @@
       cursor: pointer;
       transition: all 0.15s;
     }
-    .tab-btn.active {
-      background: var(--accent-dim);
-      border-color: var(--accent);
-      color: var(--accent);
-    }
+    .tab-btn.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
     .tab-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
-    /* ── LAYOUT ── */
-    .sim-body {
-      display: flex;
-      height: calc(100vh - 49px);
-      overflow: hidden;
-    }
+    /* ── TAB LAYOUT ── */
+    .sim-body { display: flex; height: calc(100vh - 49px); overflow: hidden; }
+    .tab-content { display: none; width: 100%; height: 100%; }
+    .tab-content.active { display: flex; }
 
-    /* ── FORM PANEL ── */
-    .form-panel {
+    /* ── SHARED PANEL STYLES ── */
+    .form-panel, .setup-left {
       width: 300px;
       min-width: 300px;
       background: var(--surface);
@@ -91,7 +77,6 @@
       flex-direction: column;
       gap: 14px;
     }
-
     .panel-title {
       font-size: 11px;
       font-weight: 700;
@@ -101,16 +86,9 @@
       padding-bottom: 10px;
       border-bottom: 1px solid var(--border);
     }
-
     .form-group { display: flex; flex-direction: column; gap: 5px; }
-
-    .form-label {
-      font-size: 11px;
-      color: var(--muted);
-      font-weight: 600;
-    }
+    .form-label { font-size: 11px; color: var(--muted); font-weight: 600; }
     .form-label .hint { font-weight: 400; color: #475569; }
-
     .form-input, .form-select {
       background: var(--bg);
       border: 1px solid var(--border);
@@ -124,265 +102,185 @@
     }
     .form-input:focus, .form-select:focus { border-color: var(--accent); }
     .form-select option { background: var(--bg); }
+    input[type="number"].form-input { width: 80px; }
 
     /* ── STAT SLIDERS ── */
     .stat-sliders { display: flex; flex-direction: column; gap: 9px; }
-
-    .slider-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .slider-name {
-      font-size: 11px;
-      width: 66px;
-      flex-shrink: 0;
-      font-weight: 600;
-    }
-
+    .slider-row { display: flex; align-items: center; gap: 8px; }
+    .slider-name { font-size: 11px; width: 66px; flex-shrink: 0; font-weight: 600; }
     input[type="range"].stat-slider {
-      flex: 1;
-      -webkit-appearance: none;
-      height: 4px;
-      border-radius: 2px;
-      outline: none;
-      cursor: pointer;
+      flex: 1; -webkit-appearance: none; height: 4px; border-radius: 2px; outline: none; cursor: pointer;
     }
     input[type="range"].stat-slider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 13px;
-      height: 13px;
-      border-radius: 50%;
-      background: #fff;
-      cursor: pointer;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.6);
+      -webkit-appearance: none; width: 13px; height: 13px; border-radius: 50%;
+      background: #fff; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.6);
     }
-
-    .slider-val {
-      width: 20px;
-      text-align: center;
-      font-size: 13px;
-      font-weight: 700;
-      flex-shrink: 0;
-    }
+    .slider-val { width: 20px; text-align: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
 
     /* ── BUTTONS ── */
     .btn {
-      padding: 8px 14px;
-      border-radius: 6px;
-      border: none;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.15s;
+      padding: 8px 14px; border-radius: 6px; border: none;
+      font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s;
     }
     .btn-primary { background: var(--accent); color: #0f172a; width: 100%; }
     .btn-primary:hover { filter: brightness(1.1); }
-    .btn-secondary {
-      background: var(--surface2);
-      color: var(--text);
-      border: 1px solid var(--border);
-    }
+    .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
     .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
-    .btn-danger {
-      background: rgba(239,68,68,0.1);
-      color: #ef4444;
-      border: 1px solid rgba(239,68,68,0.3);
-    }
+    .btn-danger { background: rgba(239,68,68,0.1); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
     .btn-danger:hover { background: rgba(239,68,68,0.2); }
+    .btn-sm { padding: 4px 10px; font-size: 11px; }
     .btn-row { display: flex; gap: 6px; }
     .btn-row .btn { flex: 1; }
-
-    .divider { height: 1px; background: var(--border); }
+    .divider { height: 1px; background: var(--border); flex-shrink: 0; }
 
     /* ── CAST PANEL ── */
-    .cast-panel {
-      flex: 1;
-      overflow-y: auto;
-      padding: 18px 20px;
-    }
-
-    .cast-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 14px;
-    }
-
+    .cast-panel { flex: 1; overflow-y: auto; padding: 18px 20px; }
+    .cast-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
     .cast-title { font-size: 14px; font-weight: 600; }
-
-    .cast-meta {
-      font-size: 12px;
-      color: var(--muted);
-    }
+    .cast-meta { font-size: 12px; color: var(--muted); }
     .cast-meta strong { color: var(--accent); }
-
-    .cast-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-      gap: 10px;
-    }
+    .cast-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
 
     /* ── PLAYER CARD ── */
     .player-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 12px; position: relative; transition: border-color 0.15s;
+    }
+    .player-card:hover { border-color: #475569; }
+    .player-card.editing { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-dim); }
+    .card-tribe-bar { position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 10px 10px 0 0; }
+    .card-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .card-avatar {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: var(--surface2); border: 2px solid var(--border);
+      overflow: hidden; flex-shrink: 0; display: flex;
+      align-items: center; justify-content: center;
+      font-size: 15px; font-weight: 700; color: var(--muted); position: relative;
+    }
+    .card-avatar img {
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 100%; object-fit: cover; border-radius: 50%;
+    }
+    .card-info { flex: 1; min-width: 0; }
+    .card-name { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .card-badges { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; margin-top: 3px; }
+    .tribe-badge {
+      font-size: 9px; font-weight: 700; padding: 2px 6px;
+      border-radius: 10px; text-transform: uppercase; letter-spacing: 0.4px;
+    }
+    .archetype-tag { font-size: 10px; color: var(--muted); }
+    .overall-row { display: flex; align-items: center; gap: 6px; margin-bottom: 7px; }
+    .overall-label-sm { font-size: 9px; color: var(--muted); width: 30px; }
+    .bar-bg { flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 2px; }
+    .overall-val { font-size: 10px; color: var(--muted); width: 22px; text-align: right; }
+    .stat-bars { display: flex; flex-direction: column; gap: 3px; margin-bottom: 7px; }
+    .sbar-row { display: flex; align-items: center; gap: 5px; }
+    .sbar-key { font-size: 9px; width: 12px; color: var(--muted); text-align: right; flex-shrink: 0; }
+    .sbar-val { font-size: 9px; width: 12px; text-align: right; color: var(--muted); flex-shrink: 0; }
+    .threat-row { display: flex; align-items: center; gap: 5px; margin-bottom: 9px; }
+    .threat-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .threat-text { font-size: 10px; color: var(--muted); }
+    .card-actions { display: flex; gap: 5px; padding-top: 9px; border-top: 1px solid var(--border); }
+    .card-actions .btn { flex: 1; padding: 5px 8px; font-size: 11px; }
+    .empty-state { grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: var(--muted); }
+    .empty-icon { font-size: 36px; margin-bottom: 10px; }
+    .empty-state p { font-size: 13px; margin-top: 6px; }
+    .archetype-desc { font-size: 10px; color: #475569; margin-top: 2px; }
+
+    /* ── TOGGLE SWITCH ── */
+    .toggle-row { display: flex; align-items: center; gap: 10px; }
+    .toggle { position: relative; display: inline-block; width: 36px; height: 20px; flex-shrink: 0; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-track {
+      position: absolute; cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: var(--border); border-radius: 20px; transition: 0.2s;
+    }
+    .toggle-track::before {
+      content: ''; position: absolute;
+      width: 14px; height: 14px; left: 3px; bottom: 3px;
+      background: white; border-radius: 50%; transition: 0.2s;
+    }
+    .toggle input:checked + .toggle-track { background: var(--accent); }
+    .toggle input:checked + .toggle-track::before { transform: translateX(16px); }
+    .toggle-label { font-size: 12px; color: var(--muted); }
+
+    /* ── ADVANTAGE ROWS ── */
+    .adv-row {
+      display: flex; align-items: center; gap: 8px;
+      padding: 6px 0; border-bottom: 1px solid var(--border);
+    }
+    .adv-row:last-child { border-bottom: none; }
+    .adv-check { width: 14px; height: 14px; cursor: pointer; accent-color: var(--accent); flex-shrink: 0; }
+    .adv-label { flex: 1; font-size: 12px; }
+    .adv-count {
+      width: 44px; padding: 4px 6px;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 4px; color: var(--text); font-size: 12px;
+      text-align: center; outline: none;
+    }
+    .adv-count:focus { border-color: var(--accent); }
+    .adv-count:disabled { opacity: 0.3; }
+
+    /* ── SEASON SETUP RIGHT PANEL ── */
+    .setup-right { flex: 1; overflow-y: auto; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; }
+    .setup-header { display: flex; align-items: center; justify-content: space-between; }
+    .setup-header h2 { font-size: 14px; font-weight: 600; }
+    .setup-header-actions { display: flex; gap: 6px; }
+
+    /* ── RELATIONSHIP FORM ── */
+    .rel-form-box {
+      background: var(--surface);
+      border: 1px solid var(--accent);
+      border-radius: 10px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .rel-form-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); }
+    .rel-player-row { display: flex; gap: 8px; align-items: center; }
+    .rel-player-row .form-select { flex: 1; }
+    .rel-vs { font-size: 11px; color: var(--muted); flex-shrink: 0; }
+
+    /* ── TYPE SELECTOR ── */
+    .type-seg { display: flex; gap: 4px; flex-wrap: wrap; }
+    .type-btn {
+      padding: 5px 10px; border-radius: 6px;
+      border: 1px solid var(--border);
+      background: transparent; color: var(--muted);
+      font-size: 11px; font-weight: 600; cursor: pointer;
+      transition: all 0.15s;
+    }
+    .type-btn.active { color: #0f172a; border-color: transparent; }
+
+    /* ── RELATIONSHIP CARDS ── */
+    .rel-list { display: flex; flex-direction: column; gap: 8px; }
+    .rel-empty { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 13px; }
+    .rel-card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 10px;
-      padding: 12px;
-      position: relative;
-      transition: border-color 0.15s;
-    }
-    .player-card:hover { border-color: #475569; }
-    .player-card.editing {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 2px var(--accent-dim);
-    }
-
-    .card-tribe-bar {
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 3px;
-      border-radius: 10px 10px 0 0;
-    }
-
-    .card-top {
+      padding: 12px 14px;
       display: flex;
       align-items: center;
-      gap: 10px;
-      margin-bottom: 10px;
+      gap: 12px;
     }
-
-    .card-avatar {
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      background: var(--surface2);
-      border: 2px solid var(--border);
-      overflow: hidden;
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--muted);
-      position: relative;
+    .rel-card:hover { border-color: #475569; }
+    .rel-players { flex: 1; min-width: 0; }
+    .rel-names {
+      font-size: 13px; font-weight: 600;
+      display: flex; align-items: center; gap: 6px;
     }
-    .card-avatar img {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      object-fit: cover;
-      border-radius: 50%;
+    .rel-arrow { font-size: 10px; color: var(--muted); }
+    .rel-note { font-size: 11px; color: var(--muted); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 340px; }
+    .rel-badge {
+      font-size: 10px; font-weight: 700;
+      padding: 3px 8px; border-radius: 10px;
+      white-space: nowrap; flex-shrink: 0;
     }
-
-    .card-info { flex: 1; min-width: 0; }
-
-    .card-name {
-      font-size: 14px;
-      font-weight: 700;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .card-badges {
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 4px;
-      margin-top: 3px;
-    }
-
-    .tribe-badge {
-      font-size: 9px;
-      font-weight: 700;
-      padding: 2px 6px;
-      border-radius: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
-    }
-
-    .archetype-tag {
-      font-size: 10px;
-      color: var(--muted);
-    }
-
-    /* Overall bar */
-    .overall-row {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-bottom: 7px;
-    }
-    .overall-label-sm { font-size: 9px; color: var(--muted); width: 30px; }
-    .bar-bg {
-      flex: 1;
-      height: 4px;
-      background: var(--border);
-      border-radius: 2px;
-      overflow: hidden;
-    }
-    .bar-fill {
-      height: 100%;
-      border-radius: 2px;
-    }
-    .overall-val { font-size: 10px; color: var(--muted); width: 22px; text-align: right; }
-
-    /* Mini stat bars */
-    .stat-bars { display: flex; flex-direction: column; gap: 3px; margin-bottom: 7px; }
-    .sbar-row { display: flex; align-items: center; gap: 5px; }
-    .sbar-key {
-      font-size: 9px;
-      width: 12px;
-      color: var(--muted);
-      text-align: right;
-      flex-shrink: 0;
-    }
-    .sbar-val {
-      font-size: 9px;
-      width: 12px;
-      text-align: right;
-      color: var(--muted);
-      flex-shrink: 0;
-    }
-
-    /* Threat */
-    .threat-row {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      margin-bottom: 9px;
-    }
-    .threat-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-    .threat-text { font-size: 10px; color: var(--muted); }
-
-    /* Card actions */
-    .card-actions {
-      display: flex;
-      gap: 5px;
-      padding-top: 9px;
-      border-top: 1px solid var(--border);
-    }
-    .card-actions .btn { flex: 1; padding: 5px 8px; font-size: 11px; }
-
-    /* Empty state */
-    .empty-state {
-      grid-column: 1 / -1;
-      text-align: center;
-      padding: 60px 20px;
-      color: var(--muted);
-    }
-    .empty-icon { font-size: 36px; margin-bottom: 10px; }
-    .empty-state p { font-size: 13px; margin-top: 6px; }
-
-    /* Archetype tooltip */
-    .archetype-desc {
-      font-size: 10px;
-      color: #475569;
-      margin-top: 2px;
-    }
+    .rel-actions { display: flex; gap: 4px; flex-shrink: 0; }
 
     /* Scrollbar */
     ::-webkit-scrollbar { width: 6px; }
@@ -391,101 +289,196 @@
   </style>
 </head>
 <body>
-
 <div id="app">
 
   <!-- HEADER -->
   <header class="sim-header">
     <div class="sim-title">DC Franchise <span>Simulator</span></div>
     <nav class="sim-tabs">
-      <button class="tab-btn active">Cast Builder</button>
-      <button class="tab-btn" disabled title="Coming soon">Season Setup</button>
-      <button class="tab-btn" disabled title="Coming soon">Run Episode</button>
-      <button class="tab-btn" disabled title="Coming soon">Results</button>
+      <button class="tab-btn active"  onclick="showTab('cast')">Cast Builder</button>
+      <button class="tab-btn"         onclick="showTab('setup')">Season Setup</button>
+      <button class="tab-btn" disabled>Run Episode</button>
+      <button class="tab-btn" disabled>Results</button>
     </nav>
   </header>
 
-  <!-- BODY -->
   <div class="sim-body">
 
-    <!-- FORM PANEL -->
-    <aside class="form-panel">
-      <div class="panel-title" id="form-title">Add Player</div>
+    <!-- ═══════════════════════════════════════ CAST TAB -->
+    <div id="tab-cast" class="tab-content active">
 
-      <div class="form-group">
-        <label class="form-label">Name</label>
-        <input type="text" id="f-name" class="form-input" placeholder="Player name">
-      </div>
+      <aside class="form-panel">
+        <div class="panel-title" id="form-title">Add Player</div>
 
-      <div class="form-group">
-        <label class="form-label">Avatar slug <span class="hint">(optional)</span></label>
-        <input type="text" id="f-slug" class="form-input" placeholder="e.g. bowie">
-      </div>
+        <div class="form-group">
+          <label class="form-label">Name</label>
+          <input type="text" id="f-name" class="form-input" placeholder="Player name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Avatar slug <span class="hint">(optional)</span></label>
+          <input type="text" id="f-slug" class="form-input" placeholder="e.g. bowie">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tribe</label>
+          <input type="text" id="f-tribe" class="form-input" placeholder="e.g. Champions">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Archetype preset</label>
+          <select id="f-archetype" class="form-select" onchange="applyArchetype(this.value)">
+            <option value="">— custom —</option>
+            <option value="challenge-beast">Challenge Beast</option>
+            <option value="social-butterfly">Social Butterfly</option>
+            <option value="mastermind">Mastermind</option>
+            <option value="loyal-soldier">Loyal Soldier</option>
+            <option value="wildcard">Wildcard</option>
+            <option value="underdog">Underdog</option>
+            <option value="villain">Villain</option>
+            <option value="narrator">Fan Favorite / Narrator</option>
+          </select>
+          <div class="archetype-desc" id="archetype-desc"></div>
+        </div>
 
-      <div class="form-group">
-        <label class="form-label">Tribe</label>
-        <input type="text" id="f-tribe" class="form-input" placeholder="e.g. Champions">
-      </div>
+        <div class="divider"></div>
 
-      <div class="form-group">
-        <label class="form-label">Archetype preset</label>
-        <select id="f-archetype" class="form-select" onchange="applyArchetype(this.value)">
-          <option value="">— custom —</option>
-          <option value="challenge-beast">Challenge Beast</option>
-          <option value="social-butterfly">Social Butterfly</option>
-          <option value="mastermind">Mastermind</option>
-          <option value="loyal-soldier">Loyal Soldier</option>
-          <option value="wildcard">Wildcard</option>
-          <option value="underdog">Underdog</option>
-          <option value="villain">Villain</option>
-          <option value="narrator">Fan Favorite / Narrator</option>
-        </select>
-        <div class="archetype-desc" id="archetype-desc"></div>
-      </div>
+        <div class="form-group">
+          <label class="form-label">Stats</label>
+          <div class="stat-sliders" id="stat-sliders"></div>
+        </div>
 
-      <div class="divider"></div>
+        <div class="divider"></div>
 
-      <div class="form-group">
-        <label class="form-label">Stats</label>
-        <div class="stat-sliders" id="stat-sliders"></div>
-      </div>
+        <button class="btn btn-primary" id="submit-btn" onclick="submitPlayer()">Add Player</button>
+        <div class="btn-row" id="edit-actions" style="display:none">
+          <button class="btn btn-secondary" onclick="cancelEdit()">Cancel</button>
+          <button class="btn btn-danger" onclick="deleteCurrentEdit()">Delete</button>
+        </div>
 
-      <div class="divider"></div>
+        <div class="divider"></div>
 
-      <button class="btn btn-primary" id="submit-btn" onclick="submitPlayer()">Add Player</button>
-      <div class="btn-row" id="edit-actions" style="display:none">
-        <button class="btn btn-secondary" onclick="cancelEdit()">Cancel</button>
-        <button class="btn btn-danger" onclick="deleteCurrentEdit()">Delete</button>
-      </div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:2px">Quick load</div>
+        <div class="btn-row">
+          <button class="btn btn-secondary" onclick="loadS10Preset()">S10 Cast</button>
+          <button class="btn btn-danger" onclick="clearCast()">Clear All</button>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-secondary" onclick="exportCast()">Export JSON</button>
+          <button class="btn btn-secondary" onclick="document.getElementById('import-file').click()">Import JSON</button>
+        </div>
+        <input type="file" id="import-file" accept=".json" style="display:none" onchange="importCast(event)">
+      </aside>
 
-      <div class="divider"></div>
+      <main class="cast-panel">
+        <div class="cast-header">
+          <div class="cast-title">Cast</div>
+          <div class="cast-meta"><strong id="cast-count">0</strong> players <span id="cast-tribe-summary"></span></div>
+        </div>
+        <div class="cast-grid" id="cast-grid"></div>
+      </main>
 
-      <div style="font-size:11px;color:var(--muted);margin-bottom:2px">Quick load</div>
-      <div class="btn-row">
-        <button class="btn btn-secondary" onclick="loadS10Preset()">S10 Cast</button>
-        <button class="btn btn-danger" onclick="clearCast()">Clear All</button>
-      </div>
-      <div class="btn-row">
-        <button class="btn btn-secondary" onclick="exportCast()">Export JSON</button>
-        <button class="btn btn-secondary" onclick="document.getElementById('import-file').click()">Import JSON</button>
-      </div>
-      <input type="file" id="import-file" accept=".json" style="display:none" onchange="importCast(event)">
-    </aside>
+    </div><!-- /tab-cast -->
 
-    <!-- CAST GRID -->
-    <main class="cast-panel">
-      <div class="cast-header">
-        <div class="cast-title">Cast</div>
-        <div class="cast-meta"><strong id="cast-count">0</strong> players <span id="cast-tribe-summary"></span></div>
-      </div>
-      <div class="cast-grid" id="cast-grid"></div>
-    </main>
+    <!-- ═══════════════════════════════════════ SETUP TAB -->
+    <div id="tab-setup" class="tab-content">
 
-  </div>
-</div>
+      <!-- LEFT: Format + Advantages -->
+      <aside class="setup-left">
+        <div class="panel-title">Format</div>
+
+        <div class="form-group">
+          <label class="form-label">Season name</label>
+          <input type="text" id="cfg-name" class="form-input" placeholder="e.g. Champions vs Contenders" oninput="saveConfig()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Merge at <span class="hint">(players remaining)</span></label>
+          <input type="number" id="cfg-merge" class="form-input" min="4" max="20" value="12" oninput="saveConfig()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Finale</label>
+          <select id="cfg-finale" class="form-select" onchange="saveConfig()">
+            <option value="3">Final 3</option>
+            <option value="2">Final 2</option>
+          </select>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="form-group">
+          <label class="form-label">Redemption Island</label>
+          <div class="toggle-row">
+            <label class="toggle">
+              <input type="checkbox" id="cfg-ri" onchange="toggleRI()">
+              <span class="toggle-track"></span>
+            </label>
+            <span id="ri-label" class="toggle-label">Off</span>
+          </div>
+        </div>
+        <div id="ri-settings" style="display:none" class="form-group">
+          <label class="form-label">RI survivor re-enters at <span class="hint">(players remaining)</span></label>
+          <input type="number" id="cfg-ri-reentry" class="form-input" min="3" max="15" value="12" oninput="saveConfig()">
+        </div>
+
+        <div class="divider"></div>
+        <div class="panel-title" style="border-bottom:none;padding-bottom:0">Advantages in Play</div>
+
+        <div id="adv-list"></div>
+
+        <div class="divider"></div>
+        <button class="btn btn-secondary" style="font-size:11px" onclick="loadS10Config()">Load S10 Defaults</button>
+      </aside>
+
+      <!-- RIGHT: Relationship matrix -->
+      <main class="setup-right">
+        <div class="setup-header">
+          <h2>Relationships <span style="font-size:12px;font-weight:400;color:var(--muted)">— pre-game bonds between players</span></h2>
+          <div class="setup-header-actions">
+            <button class="btn btn-secondary btn-sm" onclick="loadS10Bonds()">S10 Bonds</button>
+            <button class="btn btn-secondary btn-sm" onclick="clearRelationships()">Clear</button>
+            <button class="btn btn-primary btn-sm" onclick="openRelForm(null)" style="width:auto">+ Add</button>
+          </div>
+        </div>
+
+        <!-- Add / Edit form -->
+        <div id="rel-form" class="rel-form-box" style="display:none">
+          <div class="rel-form-title" id="rel-form-title">Add Relationship</div>
+          <div class="rel-player-row">
+            <select id="rel-a" class="form-select"></select>
+            <span class="rel-vs">and</span>
+            <select id="rel-b" class="form-select"></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Relationship type</label>
+            <div class="type-seg" id="type-seg">
+              <button class="type-btn" data-type="enemy"       onclick="setRelType('enemy')">Enemy</button>
+              <button class="type-btn" data-type="rival"       onclick="setRelType('rival')">Rival</button>
+              <button class="type-btn active" data-type="neutral" onclick="setRelType('neutral')">Neutral</button>
+              <button class="type-btn" data-type="ally"        onclick="setRelType('ally')">Ally</button>
+              <button class="type-btn" data-type="friend"      onclick="setRelType('friend')">Friend</button>
+              <button class="type-btn" data-type="unbreakable" onclick="setRelType('unbreakable')">Unbreakable ★</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Note <span class="hint">(optional — shown to AI)</span></label>
+            <input type="text" id="rel-note" class="form-input" placeholder="e.g. Bowie betrayed Priya at F7 in S9">
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="rel-submit-btn" onclick="submitRel()" style="width:auto;flex:1">Add</button>
+            <button class="btn btn-secondary" onclick="closeRelForm()">Cancel</button>
+          </div>
+        </div>
+
+        <!-- Relationship list -->
+        <div class="rel-list" id="rel-list"></div>
+      </main>
+
+    </div><!-- /tab-setup -->
+
+  </div><!-- /sim-body -->
+</div><!-- /app -->
 
 <script>
-// ── CONSTANTS ──────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════
+// CONSTANTS
+// ══════════════════════════════════════════════════════════════════════
 
 const STATS = [
   { key: 'physical',  label: 'PHY', name: 'Physical',  color: '#f97316', desc: 'Challenge win weight — higher = more likely to win immunity/reward' },
@@ -520,9 +513,26 @@ const THREAT_TIERS = [
   { max: 10,  label: 'Extreme', color: '#ef4444' },
 ];
 
-// S10 Champions vs Contenders preset
+const REL_TYPES = {
+  enemy:       { label: 'Enemy',         color: '#ef4444', bond: -5, bg: 'rgba(239,68,68,0.12)' },
+  rival:       { label: 'Rival',         color: '#f97316', bond: -2, bg: 'rgba(249,115,22,0.12)' },
+  neutral:     { label: 'Neutral',       color: '#94a3b8', bond:  0, bg: 'rgba(148,163,184,0.12)' },
+  ally:        { label: 'Ally',          color: '#3b82f6', bond:  2, bg: 'rgba(59,130,246,0.12)' },
+  friend:      { label: 'Friend',        color: '#6366f1', bond:  4, bg: 'rgba(99,102,241,0.12)' },
+  unbreakable: { label: 'Unbreakable \u2605', color: '#10b981', bond: 5, bg: 'rgba(16,185,129,0.12)' },
+};
+
+const ADVANTAGES = [
+  { key: 'idol',      label: 'Hidden Immunity Idol', default: 2 },
+  { key: 'voteSteal', label: 'Vote Steal',           default: 1 },
+  { key: 'extraVote', label: 'Extra Vote',            default: 1 },
+  { key: 'kip',       label: 'Knowledge is Power',   default: 0 },
+  { key: 'legacy',    label: 'Legacy Advantage',     default: 0 },
+  { key: 'amulet',    label: 'Amulet Advantage',     default: 0 },
+];
+
+// S10 preset cast
 const S10_PRESET = [
-  // CHAMPIONS
   { name: 'Bowie',    slug: 'bowie',    tribe: 'Champions', archetype: 'mastermind',       stats: { physical: 6,  social: 8,  strategic: 9, loyalty: 4, charisma: 7 } },
   { name: 'Mickey',   slug: 'mickey',   tribe: 'Champions', archetype: 'social-butterfly', stats: { physical: 5,  social: 9,  strategic: 8, loyalty: 7, charisma: 8 } },
   { name: 'Scott',    slug: 'scott',    tribe: 'Champions', archetype: 'mastermind',       stats: { physical: 7,  social: 6,  strategic: 7, loyalty: 6, charisma: 5 } },
@@ -532,7 +542,6 @@ const S10_PRESET = [
   { name: 'Carrie',   slug: 'carrie',   tribe: 'Champions', archetype: 'mastermind',       stats: { physical: 6,  social: 7,  strategic: 8, loyalty: 7, charisma: 7 } },
   { name: 'Ryan',     slug: 'ryan',     tribe: 'Champions', archetype: 'narrator',         stats: { physical: 5,  social: 8,  strategic: 7, loyalty: 8, charisma: 8 } },
   { name: 'Sanders',  slug: 'sanders',  tribe: 'Champions', archetype: 'mastermind',       stats: { physical: 7,  social: 7,  strategic: 9, loyalty: 8, charisma: 7 } },
-  // CONTENDERS
   { name: 'Priya',     slug: 'priya',     tribe: 'Contenders', archetype: 'mastermind',       stats: { physical: 7, social: 8,  strategic: 9, loyalty: 6, charisma: 8 } },
   { name: 'Hicks',     slug: 'hicks',     tribe: 'Contenders', archetype: 'mastermind',       stats: { physical: 5, social: 7,  strategic: 9, loyalty: 6, charisma: 6 } },
   { name: 'Jasmine',   slug: 'jasmine',   tribe: 'Contenders', archetype: 'social-butterfly', stats: { physical: 6, social: 8,  strategic: 7, loyalty: 7, charisma: 8 } },
@@ -544,20 +553,83 @@ const S10_PRESET = [
   { name: 'Tyler',     slug: 'tyler',     tribe: 'Contenders', archetype: 'underdog',         stats: { physical: 4, social: 6,  strategic: 5, loyalty: 8, charisma: 6 } },
 ];
 
-// ── STATE ──────────────────────────────────────────────────────────────────
+// S10 preset bonds
+const S10_BONDS_PRESET = [
+  { a: 'Cody',   b: 'Carrie', type: 'unbreakable', note: 'S7 duo — built Lawa together, reached F3 as a pair' },
+  { a: 'Bowie',  b: 'Priya',  type: 'rival',       note: 'Former Unbreakable Bond — Bowie betrayed Priya at F7 in S9 to secure his win' },
+  { a: 'Ryan',   b: 'Mickey', type: 'friend',      note: 'Ryan cast the S5 FTC tiebreaker vote that made Mickey champion. Mickey never repaid it.' },
+  { a: 'Scott',  b: 'Zoey',   type: 'rival',       note: 'Scott voted Zoey out in both S3 and S4. She voted FOR him at S3 FTC anyway.' },
+];
 
-let players  = [];
-let editingId = null;
+// ══════════════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════════════
 
-// ── INIT ───────────────────────────────────────────────────────────────────
+let players       = [];
+let editingId     = null;
+let activeTab     = 'cast';
+let seasonConfig  = defaultConfig();
+let relationships = [];
+let editingRelId  = null;
+let activeRelType = 'neutral';
+
+function defaultConfig() {
+  return {
+    name: '',
+    mergeAt: 12,
+    finaleSize: 3,
+    ri: false,
+    riReentryAt: 12,
+    advantages: Object.fromEntries(ADVANTAGES.map(a => [a.key, { enabled: a.default > 0, count: a.default }])),
+  };
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════════════
 
 function init() {
   buildStatSliders();
-  loadCast();
+  buildAdvantageList();
+  loadAll();
   renderCast();
+  renderConfig();
+  renderRelList();
 }
 
-// ── STAT SLIDERS ───────────────────────────────────────────────────────────
+function loadAll() {
+  try {
+    const c = localStorage.getItem('simulator_cast');
+    if (c) players = JSON.parse(c);
+  } catch(e) { players = []; }
+  try {
+    const cfg = localStorage.getItem('simulator_config');
+    if (cfg) seasonConfig = { ...defaultConfig(), ...JSON.parse(cfg) };
+  } catch(e) {}
+  try {
+    const r = localStorage.getItem('simulator_rels');
+    if (r) relationships = JSON.parse(r);
+  } catch(e) { relationships = []; }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// TAB SWITCHING
+// ══════════════════════════════════════════════════════════════════════
+
+function showTab(name) {
+  activeTab = name;
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+    const tabs = ['cast', 'setup'];
+    btn.classList.toggle('active', tabs[i] === name);
+  });
+  if (name === 'setup') populateRelDropdowns();
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// STAT SLIDERS
+// ══════════════════════════════════════════════════════════════════════
 
 function buildStatSliders() {
   const container = document.getElementById('stat-sliders');
@@ -574,7 +646,7 @@ function buildStatSliders() {
 }
 
 function setSlider(key, val, resetArchetype) {
-  const n = parseInt(val);
+  const n    = parseInt(val);
   const stat = STATS.find(s => s.key === key);
   const pct  = ((n - 1) / 9 * 100).toFixed(1) + '%';
   const el   = document.getElementById('slider-' + key);
@@ -604,20 +676,19 @@ function putStats(stats) {
   STATS.forEach(s => setSlider(s.key, stats[s.key] || 5, false));
 }
 
-// ── DERIVED ────────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════
+// DERIVED
+// ══════════════════════════════════════════════════════════════════════
 
 function overall(stats) {
   return (STATS.reduce((t, s) => t + (stats[s.key] || 0), 0) / STATS.length).toFixed(1);
 }
-
 function threat(stats) {
   return ((stats.physical + stats.strategic + stats.social) / 3).toFixed(1);
 }
-
 function threatTier(score) {
   return THREAT_TIERS.find(t => score <= t.max) || THREAT_TIERS[THREAT_TIERS.length - 1];
 }
-
 function tribeColor(tribe) {
   if (!tribe) return '#6366f1';
   const t = tribe.toLowerCase();
@@ -629,21 +700,21 @@ function tribeColor(tribe) {
   return palette[Math.abs(h) % palette.length];
 }
 
-// ── CRUD ───────────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════
+// CAST CRUD
+// ══════════════════════════════════════════════════════════════════════
 
 function submitPlayer() {
   const name = document.getElementById('f-name').value.trim();
   if (!name) { alert('Enter a player name.'); return; }
-
   const player = {
-    id:        editingId || Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+    id:        editingId || Date.now().toString(36) + Math.random().toString(36).slice(2,5),
     name,
     slug:      document.getElementById('f-slug').value.trim() || name.toLowerCase().replace(/\s+/g, '-'),
     tribe:     document.getElementById('f-tribe').value.trim(),
     archetype: document.getElementById('f-archetype').value,
     stats:     getStats(),
   };
-
   if (editingId) {
     const i = players.findIndex(p => p.id === editingId);
     if (i !== -1) players[i] = player;
@@ -652,27 +723,22 @@ function submitPlayer() {
     players.push(player);
     resetForm();
   }
-
-  saveCast();
-  renderCast();
+  saveCast(); renderCast();
 }
 
 function editPlayer(id) {
   const p = players.find(p => p.id === id);
   if (!p) return;
   editingId = id;
-
   document.getElementById('f-name').value      = p.name;
   document.getElementById('f-slug').value      = p.slug || '';
   document.getElementById('f-tribe').value     = p.tribe || '';
   document.getElementById('f-archetype').value = p.archetype || '';
   document.getElementById('archetype-desc').textContent = ARCHETYPES[p.archetype]?.desc || '';
   putStats(p.stats);
-
-  document.getElementById('form-title').textContent    = 'Edit — ' + p.name;
-  document.getElementById('submit-btn').textContent    = 'Update Player';
+  document.getElementById('form-title').textContent     = 'Edit \u2014 ' + p.name;
+  document.getElementById('submit-btn').textContent     = 'Update Player';
   document.getElementById('edit-actions').style.display = 'flex';
-
   renderCast();
   document.querySelector('.form-panel').scrollTop = 0;
 }
@@ -690,10 +756,9 @@ function cancelEdit() {
 function deleteCurrentEdit() {
   if (!editingId) return;
   const p = players.find(p => p.id === editingId);
-  if (!confirm('Remove ' + (p?.name || 'this player') + ' from the cast?')) return;
+  if (!confirm('Remove ' + (p?.name || 'this player') + '?')) return;
   players = players.filter(p => p.id !== editingId);
-  saveCast();
-  cancelEdit();
+  saveCast(); cancelEdit();
 }
 
 function resetForm() {
@@ -705,31 +770,21 @@ function resetForm() {
   STATS.forEach(s => setSlider(s.key, 5, false));
 }
 
-// ── PERSISTENCE ────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════
+// CAST PERSISTENCE
+// ══════════════════════════════════════════════════════════════════════
 
 function saveCast() { localStorage.setItem('simulator_cast', JSON.stringify(players)); }
 
-function loadCast() {
-  try {
-    const raw = localStorage.getItem('simulator_cast');
-    if (raw) players = JSON.parse(raw);
-  } catch (e) { players = []; }
-}
-
 function clearCast() {
-  if (!confirm('Clear all players from the cast?')) return;
-  players = [];
-  saveCast();
-  cancelEdit();
-  renderCast();
+  if (!confirm('Clear all players?')) return;
+  players = []; saveCast(); cancelEdit(); renderCast();
 }
 
 function loadS10Preset() {
-  if (players.length > 0 && !confirm('Replace current cast with the S10 Champions vs Contenders cast?')) return;
+  if (players.length > 0 && !confirm('Replace cast with S10 Champions vs Contenders?')) return;
   players = S10_PRESET.map((p, i) => ({ ...p, id: 's10-' + i }));
-  saveCast();
-  cancelEdit();
-  renderCast();
+  saveCast(); cancelEdit(); renderCast();
 }
 
 function exportCast() {
@@ -748,45 +803,35 @@ function importCast(event) {
     try {
       const data = JSON.parse(e.target.result);
       if (!Array.isArray(data)) throw new Error();
-      players = data;
-      saveCast();
-      renderCast();
+      players = data; saveCast(); renderCast();
     } catch { alert('Invalid JSON file.'); }
   };
   reader.readAsText(file);
   event.target.value = '';
 }
 
-// ── RENDER ─────────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════
+// CAST RENDER
+// ══════════════════════════════════════════════════════════════════════
 
 function renderCast() {
   const grid = document.getElementById('cast-grid');
-
   if (players.length === 0) {
-    grid.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-icon">&#128101;</div>
-        <p>No players yet. Add one using the form, or click <strong>S10 Cast</strong> to load the Champions vs Contenders cast.</p>
-      </div>`;
+    grid.innerHTML = `<div class="empty-state"><div class="empty-icon">&#128101;</div>
+      <p>No players yet. Add one using the form, or click <strong>S10 Cast</strong>.</p></div>`;
     document.getElementById('cast-count').textContent = '0';
     document.getElementById('cast-tribe-summary').textContent = '';
     return;
   }
-
-  // Sort by tribe then name
   const sorted = [...players].sort((a, b) =>
-    (a.tribe || '').localeCompare(b.tribe || '') || a.name.localeCompare(b.name)
+    (a.tribe||'').localeCompare(b.tribe||'') || a.name.localeCompare(b.name)
   );
-
   grid.innerHTML = sorted.map(renderCard).join('');
-
   document.getElementById('cast-count').textContent = players.length;
-
-  // Tribe summary
   const tribes = {};
-  players.forEach(p => { const t = p.tribe || 'No Tribe'; tribes[t] = (tribes[t] || 0) + 1; });
+  players.forEach(p => { const t = p.tribe||'No Tribe'; tribes[t] = (tribes[t]||0) + 1; });
   document.getElementById('cast-tribe-summary').textContent =
-    '— ' + Object.entries(tribes).map(([t, c]) => `${t} (${c})`).join(' · ');
+    '\u2014 ' + Object.entries(tribes).map(([t,c]) => `${t} (${c})`).join(' \u00b7 ');
 }
 
 function renderCard(p) {
@@ -796,38 +841,30 @@ function renderCard(p) {
   const tc    = tribeColor(p.tribe);
   const ovPct = ((ov - 1) / 9 * 100).toFixed(0);
   const isEd  = editingId === p.id;
-
   const initial = p.name[0].toUpperCase();
-  const avatarContent = `<img src="assets/avatars/${p.slug}.png" alt="${p.name}" onerror="this.remove()">`;
-
+  const avatar  = `<img src="assets/avatars/${p.slug}.png" alt="${p.name}" onerror="this.remove()">`;
   const statBars = STATS.map(s => `
     <div class="sbar-row">
       <span class="sbar-key" style="color:${s.color}">${s.label}</span>
-      <div class="bar-bg">
-        <div class="bar-fill" style="width:${p.stats[s.key] / 10 * 100}%;background:${s.color}"></div>
-      </div>
+      <div class="bar-bg"><div class="bar-fill" style="width:${p.stats[s.key]/10*100}%;background:${s.color}"></div></div>
       <span class="sbar-val">${p.stats[s.key]}</span>
-    </div>
-  `).join('');
-
+    </div>`).join('');
   return `
-    <div class="player-card ${isEd ? 'editing' : ''}" id="card-${p.id}">
+    <div class="player-card ${isEd?'editing':''}" id="card-${p.id}">
       <div class="card-tribe-bar" style="background:${tc}"></div>
       <div class="card-top">
-        <div class="card-avatar">${initial}${avatarContent}</div>
+        <div class="card-avatar">${initial}${avatar}</div>
         <div class="card-info">
           <div class="card-name" title="${p.name}">${p.name}</div>
           <div class="card-badges">
-            ${p.tribe ? `<span class="tribe-badge" style="background:${tc}22;color:${tc}">${p.tribe}</span>` : ''}
-            <span class="archetype-tag">${ARCHETYPE_NAMES[p.archetype] || 'Custom'}</span>
+            ${p.tribe?`<span class="tribe-badge" style="background:${tc}22;color:${tc}">${p.tribe}</span>`:''}
+            <span class="archetype-tag">${ARCHETYPE_NAMES[p.archetype]||'Custom'}</span>
           </div>
         </div>
       </div>
       <div class="overall-row">
         <span class="overall-label-sm">Overall</span>
-        <div class="bar-bg">
-          <div class="bar-fill" style="width:${ovPct}%;background:linear-gradient(to right,#10b981,#3b82f6)"></div>
-        </div>
+        <div class="bar-bg"><div class="bar-fill" style="width:${ovPct}%;background:linear-gradient(to right,#10b981,#3b82f6)"></div></div>
         <span class="overall-val">${ov}</span>
       </div>
       <div class="stat-bars">${statBars}</div>
@@ -838,8 +875,238 @@ function renderCard(p) {
       <div class="card-actions">
         <button class="btn btn-secondary" onclick="editPlayer('${p.id}')">Edit</button>
       </div>
-    </div>
-  `;
+    </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// SEASON CONFIG
+// ══════════════════════════════════════════════════════════════════════
+
+function buildAdvantageList() {
+  document.getElementById('adv-list').innerHTML = ADVANTAGES.map(a => `
+    <div class="adv-row">
+      <input type="checkbox" id="adv-${a.key}" class="adv-check"
+        ${a.default > 0 ? 'checked' : ''}
+        onchange="toggleAdv('${a.key}')">
+      <label class="adv-label" for="adv-${a.key}">${a.label}</label>
+      <input type="number" id="adv-count-${a.key}" class="adv-count"
+        min="0" max="9" value="${a.default}"
+        ${a.default === 0 ? 'disabled' : ''}
+        oninput="saveConfig()">
+    </div>`).join('');
+}
+
+function toggleAdv(key) {
+  const checked = document.getElementById('adv-' + key).checked;
+  const countEl = document.getElementById('adv-count-' + key);
+  countEl.disabled = !checked;
+  if (!checked) countEl.value = 0;
+  else if (parseInt(countEl.value) === 0) countEl.value = 1;
+  saveConfig();
+}
+
+function toggleRI() {
+  const on = document.getElementById('cfg-ri').checked;
+  document.getElementById('ri-label').textContent = on ? 'On' : 'Off';
+  document.getElementById('ri-settings').style.display = on ? 'flex' : 'none';
+  saveConfig();
+}
+
+function saveConfig() {
+  seasonConfig = {
+    name:        document.getElementById('cfg-name').value.trim(),
+    mergeAt:     parseInt(document.getElementById('cfg-merge').value) || 12,
+    finaleSize:  parseInt(document.getElementById('cfg-finale').value) || 3,
+    ri:          document.getElementById('cfg-ri').checked,
+    riReentryAt: parseInt(document.getElementById('cfg-ri-reentry').value) || 12,
+    advantages: Object.fromEntries(ADVANTAGES.map(a => [
+      a.key, {
+        enabled: document.getElementById('adv-' + a.key).checked,
+        count:   parseInt(document.getElementById('adv-count-' + a.key).value) || 0,
+      }
+    ])),
+  };
+  localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
+}
+
+function renderConfig() {
+  document.getElementById('cfg-name').value          = seasonConfig.name || '';
+  document.getElementById('cfg-merge').value         = seasonConfig.mergeAt;
+  document.getElementById('cfg-finale').value        = seasonConfig.finaleSize;
+  document.getElementById('cfg-ri').checked          = seasonConfig.ri;
+  document.getElementById('cfg-ri-reentry').value    = seasonConfig.riReentryAt;
+  document.getElementById('ri-label').textContent    = seasonConfig.ri ? 'On' : 'Off';
+  document.getElementById('ri-settings').style.display = seasonConfig.ri ? 'flex' : 'none';
+  ADVANTAGES.forEach(a => {
+    const adv = seasonConfig.advantages?.[a.key];
+    if (!adv) return;
+    document.getElementById('adv-' + a.key).checked         = adv.enabled;
+    document.getElementById('adv-count-' + a.key).value     = adv.count;
+    document.getElementById('adv-count-' + a.key).disabled  = !adv.enabled;
+  });
+}
+
+function loadS10Config() {
+  seasonConfig = {
+    name: 'Champions vs Contenders',
+    mergeAt: 12,
+    finaleSize: 3,
+    ri: true,
+    riReentryAt: 12,
+    advantages: {
+      idol:      { enabled: true,  count: 2 },
+      voteSteal: { enabled: true,  count: 1 },
+      extraVote: { enabled: true,  count: 1 },
+      kip:       { enabled: false, count: 0 },
+      legacy:    { enabled: false, count: 0 },
+      amulet:    { enabled: false, count: 0 },
+    },
+  };
+  localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
+  renderConfig();
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// RELATIONSHIPS
+// ══════════════════════════════════════════════════════════════════════
+
+function saveRels() { localStorage.setItem('simulator_rels', JSON.stringify(relationships)); }
+
+function populateRelDropdowns() {
+  const names = players.map(p => p.name).sort();
+  const opts  = names.map(n => `<option value="${n}">${n}</option>`).join('');
+  document.getElementById('rel-a').innerHTML = opts;
+  document.getElementById('rel-b').innerHTML = opts;
+}
+
+function openRelForm(id) {
+  editingRelId = id;
+  const form = document.getElementById('rel-form');
+  form.style.display = 'flex';
+  populateRelDropdowns();
+
+  if (id) {
+    const r = relationships.find(r => r.id === id);
+    if (!r) return;
+    document.getElementById('rel-a').value    = r.a;
+    document.getElementById('rel-b').value    = r.b;
+    document.getElementById('rel-note').value = r.note || '';
+    setRelType(r.type);
+    document.getElementById('rel-form-title').textContent = 'Edit Relationship';
+    document.getElementById('rel-submit-btn').textContent = 'Update';
+  } else {
+    document.getElementById('rel-note').value = '';
+    setRelType('neutral');
+    document.getElementById('rel-form-title').textContent = 'Add Relationship';
+    document.getElementById('rel-submit-btn').textContent = 'Add';
+  }
+  form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function closeRelForm() {
+  editingRelId = null;
+  document.getElementById('rel-form').style.display = 'none';
+}
+
+function setRelType(type) {
+  activeRelType = type;
+  document.querySelectorAll('.type-btn').forEach(btn => {
+    const t = btn.dataset.type;
+    const rt = REL_TYPES[t];
+    btn.classList.toggle('active', t === type);
+    if (t === type) {
+      btn.style.background = rt.color;
+      btn.style.borderColor = rt.color;
+    } else {
+      btn.style.background = '';
+      btn.style.borderColor = '';
+    }
+  });
+}
+
+function submitRel() {
+  const a = document.getElementById('rel-a').value;
+  const b = document.getElementById('rel-b').value;
+  if (!a || !b) { alert('Select two players.'); return; }
+  if (a === b) { alert('Select two different players.'); return; }
+
+  // Check for duplicate (skip if editing same rel)
+  const key = [a, b].sort().join('|');
+  const dup = relationships.find(r => {
+    if (editingRelId && r.id === editingRelId) return false;
+    return [r.a, r.b].sort().join('|') === key;
+  });
+  if (dup) { alert(`A relationship between ${a} and ${b} already exists.`); return; }
+
+  const rel = {
+    id:   editingRelId || Date.now().toString(36) + Math.random().toString(36).slice(2,4),
+    a, b,
+    type: activeRelType,
+    bond: REL_TYPES[activeRelType]?.bond ?? 0,
+    note: document.getElementById('rel-note').value.trim(),
+  };
+
+  if (editingRelId) {
+    const i = relationships.findIndex(r => r.id === editingRelId);
+    if (i !== -1) relationships[i] = rel;
+  } else {
+    relationships.push(rel);
+  }
+  saveRels(); closeRelForm(); renderRelList();
+}
+
+function deleteRel(id) {
+  relationships = relationships.filter(r => r.id !== id);
+  saveRels(); renderRelList();
+}
+
+function clearRelationships() {
+  if (!confirm('Clear all relationships?')) return;
+  relationships = []; saveRels(); closeRelForm(); renderRelList();
+}
+
+function loadS10Bonds() {
+  if (relationships.length > 0 && !confirm('Replace current relationships with S10 pre-game bonds?')) return;
+  relationships = S10_BONDS_PRESET.map((b, i) => ({
+    ...b, id: 's10-bond-' + i, bond: REL_TYPES[b.type]?.bond ?? 0,
+  }));
+  saveRels(); renderRelList();
+}
+
+function renderRelList() {
+  const list = document.getElementById('rel-list');
+  if (relationships.length === 0) {
+    list.innerHTML = `<div class="rel-empty">No relationships defined. All players start neutral.<br>
+      Click <strong>+ Add</strong> to define a bond, or <strong>S10 Bonds</strong> to load presets.</div>`;
+    return;
+  }
+
+  // Sort: unbreakable first, then by abs(bond) desc
+  const sorted = [...relationships].sort((a, b) => {
+    if (a.type === 'unbreakable' && b.type !== 'unbreakable') return -1;
+    if (b.type === 'unbreakable' && a.type !== 'unbreakable') return 1;
+    return Math.abs(b.bond) - Math.abs(a.bond);
+  });
+
+  list.innerHTML = sorted.map(r => {
+    const rt = REL_TYPES[r.type] || REL_TYPES.neutral;
+    return `
+      <div class="rel-card">
+        <div class="rel-players">
+          <div class="rel-names">
+            <span>${r.a}</span>
+            <span class="rel-arrow">\u2194</span>
+            <span>${r.b}</span>
+          </div>
+          ${r.note ? `<div class="rel-note" title="${r.note}">${r.note}</div>` : ''}
+        </div>
+        <span class="rel-badge" style="background:${rt.bg};color:${rt.color}">${rt.label}</span>
+        <div class="rel-actions">
+          <button class="btn btn-secondary btn-sm" onclick="openRelForm('${r.id}')">Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteRel('${r.id}')">&#x2715;</button>
+        </div>
+      </div>`;
+  }).join('');
 }
 
 init();

@@ -3243,19 +3243,7 @@ Season: ${season ?? "?"}, Episode: ${episode ?? "?"}.
 Return complete episode transcript.
 `.trim();
 
-  // Try Gemini first, fall back to GPT-5, then Anthropic
-  if (env.GEMINI_API_KEY) {
-    try {
-      const result = await callGemini(instructions, summaryText, env);
-      if (result.ok !== false) {
-        const clone = result.clone();
-        const data = await clone.json().catch(() => ({}));
-        if (data.episodeTranscript && !data.error) return result;
-      }
-    } catch (e) {
-      console.error("Gemini failed, falling back to GPT-5:", e);
-    }
-  }
+  // Try GPT-5 first, fall back to Gemini, then Anthropic
   if (env.OPENAI_API_KEY) {
     try {
       const payload = { model: "gpt-5", instructions, input: summaryText };
@@ -3266,7 +3254,19 @@ Return complete episode transcript.
         if (data.episodeTranscript && !data.error) return result;
       }
     } catch (e) {
-      console.error("GPT-5 failed, falling back to Anthropic:", e);
+      console.error("GPT-5 failed, falling back to Gemini:", e);
+    }
+  }
+  if (env.GEMINI_API_KEY) {
+    try {
+      const result = await callGemini(instructions, summaryText, env);
+      if (result.ok !== false) {
+        const clone = result.clone();
+        const data = await clone.json().catch(() => ({}));
+        if (data.episodeTranscript && !data.error) return result;
+      }
+    } catch (e) {
+      console.error("Gemini failed, falling back to Anthropic:", e);
     }
   }
   // Fallback: Anthropic
@@ -3277,14 +3277,14 @@ async function callGemini(system, userText, env) {
   let resp;
   try {
     resp = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${env.GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${env.GEMINI_API_KEY}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           system_instruction: { parts: [{ text: system }] },
           contents: [{ role: "user", parts: [{ text: userText }] }],
-          generationConfig: { maxOutputTokens: 65536 },
+          generationConfig: { maxOutputTokens: 16000 },
         }),
       }
     );

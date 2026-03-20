@@ -999,26 +999,32 @@ Rules:
           try { controller.enqueue(encoder.encode("\n")); } catch (_) {}
         }, 5000);
 
-        const resp = await fetch("https://api.openai.com/v1/responses", {
+        const resp = await fetch("https://api.anthropic.com/v1/messages", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${env.OPENAI_API_KEY}`,
+            "x-api-key": env.ANTHROPIC_API_KEY,
+            "anthropic-version": "2023-06-01",
+            "anthropic-beta": "max-tokens-3-5-sonnet-2024-07-15",
           },
-          body: JSON.stringify({ model: "gpt-5", instructions, input }),
+          body: JSON.stringify({
+            model: "claude-sonnet-4-6",
+            max_tokens: 16000,
+            system: instructions,
+            messages: [{ role: "user", content: input }],
+          }),
         });
 
         const data = await resp.json().catch(() => ({}));
         clearInterval(heartbeat);
 
         if (!resp.ok) {
-          const errMsg = data?.error?.message || JSON.stringify(data);
-          controller.enqueue(encoder.encode(JSON.stringify({ error: `GPT error ${resp.status}: ${errMsg}` })));
+          const errMsg = data?.error?.message || data?.error?.type || JSON.stringify(data);
+          controller.enqueue(encoder.encode(JSON.stringify({ error: `Anthropic error ${resp.status}: ${errMsg}` })));
         } else {
-          const summary = (typeof data?.output_text === "string" ? data.output_text :
-            Array.isArray(data?.output) ? data.output.flatMap(i => i?.content || []).map(c => c?.text || "").join("") : "").trim();
+          const summary = data?.content?.[0]?.text?.trim() || "";
           if (!summary) {
-            controller.enqueue(encoder.encode(JSON.stringify({ error: "Empty summary returned from GPT" })));
+            controller.enqueue(encoder.encode(JSON.stringify({ error: "Empty summary returned (stop_reason: " + data?.stop_reason + ")" })));
           } else {
             controller.enqueue(encoder.encode(JSON.stringify({ summary })));
           }

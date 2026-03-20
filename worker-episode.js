@@ -932,9 +932,9 @@ Rules:
 - Never invent votes or change who was eliminated — the factual results are fixed.
 - Keep formatting exact — the downstream system depends on the headers.`;
 
-  // Build input: inject previous summary so the AI knows full elimination history
+  // Build input: inject previous summaries for full story continuity
   const prevContext = prevSummary
-    ? `═══ PREVIOUS EPISODE SUMMARY (for elimination history reference) ═══\n${prevSummary}\n═══ END PREVIOUS SUMMARY ═══\n\n`
+    ? `═══ PREVIOUS EPISODE SUMMARIES — STORY CONTINUITY CONTEXT ═══\nThese are the summaries from the last few episodes. Use them to:\n- Continue every unresolved storyline, conflict, and relationship thread\n- Track who was eliminated and in what order\n- Know the current alliance structure and power dynamics\n- Pick up the ONGOING STORYLINES and COLD OPEN HOOK from the most recent summary\nDo NOT reset storylines between episodes. This season has a continuous narrative.\n\n${prevSummary}\n═══ END PREVIOUS SUMMARIES ═══\n\n`
     : "";
   const input = `${prevContext}═══ CURRENT EPISODE RAW DATA ═══\n${rawText}`;
 
@@ -3186,19 +3186,7 @@ Season: ${season ?? "?"}, Episode: ${episode ?? "?"}.
 Return complete episode transcript.
 `.trim();
 
-  // Try Gemini first, fall back to OpenAI, then Anthropic
-  if (env.GEMINI_API_KEY) {
-    try {
-      const result = await callGemini(instructions, summaryText, env);
-      if (result.ok !== false) {
-        const clone = result.clone();
-        const data = await clone.json().catch(() => ({}));
-        if (data.episodeTranscript && !data.error) return result;
-      }
-    } catch (e) {
-      console.error("Gemini failed, falling back to OpenAI:", e);
-    }
-  }
+  // Try GPT-5 first, fall back to Gemini, then Anthropic
   if (env.OPENAI_API_KEY) {
     try {
       const payload = { model: "gpt-5", instructions, input: summaryText };
@@ -3209,7 +3197,19 @@ Return complete episode transcript.
         if (data.episodeTranscript && !data.error) return result;
       }
     } catch (e) {
-      console.error("OpenAI failed, falling back to Anthropic:", e);
+      console.error("OpenAI failed, falling back to Gemini:", e);
+    }
+  }
+  if (env.GEMINI_API_KEY) {
+    try {
+      const result = await callGemini(instructions, summaryText, env);
+      if (result.ok !== false) {
+        const clone = result.clone();
+        const data = await clone.json().catch(() => ({}));
+        if (data.episodeTranscript && !data.error) return result;
+      }
+    } catch (e) {
+      console.error("Gemini failed, falling back to Anthropic:", e);
     }
   }
   // Fallback: Anthropic

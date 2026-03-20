@@ -607,47 +607,137 @@ Return ONLY JSON matching schema.
 Season: ${season ?? "?"}, Episode: ${episode ?? "?"}.
 `.trim();
 
-  const payload = {
-    model: "gpt-5",
-    instructions,
-    input: summaryText,
-    text: { format: { type: "json_schema", name: "episode_analytics", strict: true, schema } },
-  };
-
-  const response = await callOpenAI(payload, env);
-  const data = await response.json();
-  
-  // Convert resumesList to resumes object
-  if (data.resumesList) {
-    data.resumes = {};
-    for (const resume of data.resumesList) {
-      const playerName = resume.playerName;
-      delete resume.playerName;
-      data.resumes[playerName] = resume;
-    }
-    delete data.resumesList;
-  }
-  
-  // Convert relationshipsList to relationships object
-  if (data.relationshipsList) {
-    data.relationships = {};
-    for (const rel of data.relationshipsList) {
-      if (!data.relationships[rel.player1]) {
-        data.relationships[rel.player1] = { slug: rel.player1Slug, relationships: {} };
+  function convertAnalyticsData(data) {
+    if (data.resumesList) {
+      data.resumes = {};
+      for (const resume of data.resumesList) {
+        const playerName = resume.playerName;
+        delete resume.playerName;
+        data.resumes[playerName] = resume;
       }
-      data.relationships[rel.player1].relationships[rel.player2] = {
-        value: rel.value,
-        slug: rel.player2Slug
-      };
+      delete data.resumesList;
     }
-    delete data.relationshipsList;
+    if (data.relationshipsList) {
+      data.relationships = {};
+      for (const rel of data.relationshipsList) {
+        if (!data.relationships[rel.player1]) {
+          data.relationships[rel.player1] = { slug: rel.player1Slug, relationships: {} };
+        }
+        data.relationships[rel.player1].relationships[rel.player2] = {
+          value: rel.value,
+          slug: rel.player2Slug
+        };
+      }
+      delete data.relationshipsList;
+    }
+    return data;
   }
-  
-  return new Response(JSON.stringify(data), {
-    headers: {
-      "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*"
+
+  // Try GPT-5 first
+  if (env.OPENAI_API_KEY) {
+    const payload = {
+      model: "gpt-5",
+      instructions,
+      input: summaryText,
+      text: { format: { type: "json_schema", name: "episode_analytics", strict: true, schema } },
+    };
+    const response = await callOpenAI(payload, env);
+    if (response.ok) {
+      const data = await response.json();
+      if (!data.error) {
+        convertAnalyticsData(data);
+        return new Response(JSON.stringify(data), {
+          headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+        });
+      }
     }
+  }
+
+  // Fallback: Claude streaming (same pattern as summary/episode)
+  const schemaStr = JSON.stringify(schema, null, 2);
+  const claudeInstructions = `${instructions}\n\nReturn ONLY valid JSON matching this exact schema — no markdown, no explanation, no code block:\n${schemaStr}`;
+  const encoder = new TextEncoder();
+  const readable = new ReadableStream({
+    async start(controller) {
+      let heartbeat;
+      try {
+        heartbeat = setInterval(() => {
+          try { controller.enqueue(encoder.encode("\n")); } catch (_) {}
+        }, 5000);
+
+        const resp = await fetch("https://api.anthropic.com/v1/messages", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-api-key": env.ANTHROPIC_API_KEY,
+            "anthropic-version": "2023-06-01",
+            "anthropic-beta": "max-tokens-3-5-sonnet-2024-07-15",
+          },
+          body: JSON.stringify({
+            model: "claude-sonnet-4-6",
+            max_tokens: 16000,
+            stream: true,
+            system: claudeInstructions,
+            messages: [{ role: "user", content: summaryText }],
+          }),
+        });
+
+        if (!resp.ok) {
+          const errData = await resp.json().catch(() => ({}));
+          clearInterval(heartbeat);
+          controller.enqueue(encoder.encode(JSON.stringify({ error: `Anthropic ${resp.status}: ${errData?.error?.message || JSON.stringify(errData)}` })));
+          controller.close();
+          return;
+        }
+
+        const reader = resp.body.getReader();
+        const decoder = new TextDecoder();
+        let rawBuffer = "";
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          rawBuffer += decoder.decode(value, { stream: true });
+        }
+
+        clearInterval(heartbeat);
+
+        // Extract all text deltas
+        let fullText = "";
+        const regex = /"type":"text_delta","text":"((?:[^"\\]|\\.)*)"/g;
+        let m;
+        while ((m = regex.exec(rawBuffer)) !== null) fullText += m[1];
+        fullText = fullText
+          .replace(/\\n/g, "\n").replace(/\\"/g, '"')
+          .replace(/\\\\/g, "\\").replace(/\\t/g, "\t").replace(/\\r/g, "\r");
+
+        // Parse the JSON Claude returned
+        const jsonMatch = fullText.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) {
+          controller.enqueue(encoder.encode(JSON.stringify({ error: "Claude returned no valid JSON" })));
+          controller.close();
+          return;
+        }
+        let data;
+        try { data = JSON.parse(jsonMatch[0]); }
+        catch (e) {
+          controller.enqueue(encoder.encode(JSON.stringify({ error: "Claude JSON parse failed: " + e.message })));
+          controller.close();
+          return;
+        }
+
+        convertAnalyticsData(data);
+        controller.enqueue(encoder.encode(JSON.stringify(data)));
+      } catch (e) {
+        if (heartbeat) clearInterval(heartbeat);
+        controller.enqueue(encoder.encode(JSON.stringify({ error: String(e) })));
+      } finally {
+        controller.close();
+      }
+    },
+  });
+
+  return new Response(readable, {
+    headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
   });
 }
 
@@ -1010,24 +1100,47 @@ Rules:
           body: JSON.stringify({
             model: "claude-sonnet-4-6",
             max_tokens: 16000,
+            stream: true,
             system: instructions,
             messages: [{ role: "user", content: input }],
           }),
         });
 
-        const data = await resp.json().catch(() => ({}));
+        if (!resp.ok) {
+          const errData = await resp.json().catch(() => ({}));
+          clearInterval(heartbeat);
+          controller.enqueue(encoder.encode(JSON.stringify({ error: `Anthropic ${resp.status}: ${errData?.error?.message || JSON.stringify(errData)}` })));
+          controller.close();
+          return;
+        }
+
+        // Collect raw SSE bytes — no per-token parsing
+        const reader = resp.body.getReader();
+        const decoder = new TextDecoder();
+        let rawBuffer = "";
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          rawBuffer += decoder.decode(value, { stream: true });
+        }
+
         clearInterval(heartbeat);
 
-        if (!resp.ok) {
-          const errMsg = data?.error?.message || data?.error?.type || JSON.stringify(data);
-          controller.enqueue(encoder.encode(JSON.stringify({ error: `Anthropic error ${resp.status}: ${errMsg}` })));
+        // Single regex pass to extract all text deltas
+        let summary = "";
+        const regex = /"type":"text_delta","text":"((?:[^"\\]|\\.)*)"/g;
+        let m;
+        while ((m = regex.exec(rawBuffer)) !== null) {
+          summary += m[1];
+        }
+        summary = summary
+          .replace(/\\n/g, "\n").replace(/\\"/g, '"')
+          .replace(/\\\\/g, "\\").replace(/\\t/g, "\t").replace(/\\r/g, "\r");
+
+        if (!summary) {
+          controller.enqueue(encoder.encode(JSON.stringify({ error: "Empty summary from Anthropic streaming" })));
         } else {
-          const summary = data?.content?.[0]?.text?.trim() || "";
-          if (!summary) {
-            controller.enqueue(encoder.encode(JSON.stringify({ error: "Empty summary returned (stop_reason: " + data?.stop_reason + ")" })));
-          } else {
-            controller.enqueue(encoder.encode(JSON.stringify({ summary })));
-          }
+          controller.enqueue(encoder.encode(JSON.stringify({ summary })));
         }
       } catch (e) {
         if (heartbeat) clearInterval(heartbeat);
@@ -3277,15 +3390,15 @@ Return complete episode transcript.
 }
 
 async function callAnthropicStreaming(system, userText, env) {
-  // Heartbeat approach: non-streaming Anthropic request + setInterval \n keep-alives.
-  // This avoids SSE parsing CPU overhead (which was hitting Cloudflare's CPU time limit)
-  // while still keeping the Cloudflare connection alive during long AI generation.
+  // Dual approach:
+  // 1. Anthropic streaming (stream:true) — keeps the Worker→Anthropic subrequest alive (no 524)
+  // 2. setInterval heartbeat — keeps the browser→Worker connection alive (no 524)
+  // 3. Collect raw SSE bytes, parse all at once at the end — avoids per-token CPU limit hit
   const encoder = new TextEncoder();
   const readable = new ReadableStream({
     async start(controller) {
       let heartbeat;
       try {
-        // Send \n every 5 seconds so Cloudflare sees data flowing (prevents 524)
         heartbeat = setInterval(() => {
           try { controller.enqueue(encoder.encode("\n")); } catch (_) {}
         }, 5000);
@@ -3296,24 +3409,52 @@ async function callAnthropicStreaming(system, userText, env) {
             "Content-Type": "application/json",
             "x-api-key": env.ANTHROPIC_API_KEY,
             "anthropic-version": "2023-06-01",
+            "anthropic-beta": "max-tokens-3-5-sonnet-2024-07-15",
           },
           body: JSON.stringify({
             model: "claude-sonnet-4-6",
             max_tokens: 16000,
+            stream: true,
             system,
             messages: [{ role: "user", content: userText }],
           }),
         });
 
-        const data = await resp.json().catch(() => ({}));
+        if (!resp.ok) {
+          const errData = await resp.json().catch(() => ({}));
+          clearInterval(heartbeat);
+          controller.enqueue(encoder.encode(JSON.stringify({ error: `Anthropic ${resp.status}: ${errData?.error?.message || JSON.stringify(errData)}` })));
+          controller.close();
+          return;
+        }
+
+        // Collect raw SSE bytes — no per-token parsing
+        const reader = resp.body.getReader();
+        const decoder = new TextDecoder();
+        let rawBuffer = "";
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          rawBuffer += decoder.decode(value, { stream: true });
+        }
+
         clearInterval(heartbeat);
 
-        if (!resp.ok) {
-          controller.enqueue(encoder.encode(JSON.stringify(data)));
+        // Single regex pass over the full buffer to extract all text deltas
+        let fullText = "";
+        const regex = /"type":"text_delta","text":"((?:[^"\\]|\\.)*)"/g;
+        let m;
+        while ((m = regex.exec(rawBuffer)) !== null) {
+          fullText += m[1];
+        }
+        fullText = fullText
+          .replace(/\\n/g, "\n").replace(/\\"/g, '"')
+          .replace(/\\\\/g, "\\").replace(/\\t/g, "\t").replace(/\\r/g, "\r");
+
+        if (!fullText) {
+          controller.enqueue(encoder.encode(JSON.stringify({ error: "Empty response from Anthropic streaming" })));
         } else {
-          const text = data?.content?.[0]?.text?.trim() || "";
-          // JSON.parse ignores leading whitespace so client .json() works fine
-          controller.enqueue(encoder.encode(JSON.stringify({ episodeTranscript: text })));
+          controller.enqueue(encoder.encode(JSON.stringify({ episodeTranscript: fullText })));
         }
       } catch (e) {
         if (heartbeat) clearInterval(heartbeat);

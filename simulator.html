@@ -245,6 +245,173 @@
     .results-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; text-align: center; color: var(--muted); gap: 12px; padding: 60px 40px; }
     .results-empty .empty-icon { font-size: 40px; }
     .results-empty p { font-size: 13px; max-width: 360px; line-height: 1.6; }
+
+    /* ── VISUAL PLAYER ── */
+    #visual-player { position:fixed; inset:0; z-index:200; background:#0f172a; overflow-y:auto; }
+    .vp-nav { position:sticky; top:0; z-index:10; background:rgba(15,23,42,0.95); backdrop-filter:blur(8px); border-bottom:1px solid #1e293b; display:flex; align-items:center; justify-content:space-between; padding:10px 20px; }
+    .vp-nav-btn { padding:7px 16px; border-radius:6px; border:1px solid #334155; background:transparent; color:#94a3b8; font-size:12px; font-weight:600; cursor:pointer; transition:all 0.15s; }
+    .vp-nav-btn:hover:not(:disabled) { border-color:#10b981; color:#10b981; }
+    .vp-nav-btn:disabled { opacity:0.3; cursor:not-allowed; }
+    .vp-nav-btn.primary { background:#ef4444; border-color:#ef4444; color:#fff; }
+    .vp-nav-btn.primary:hover { background:#dc2626; }
+    .vp-progress { display:flex; gap:6px; align-items:center; }
+    .vp-dot { width:8px; height:8px; border-radius:50%; background:#334155; transition:all 0.2s; }
+    .vp-dot.active { background:#10b981; width:22px; border-radius:4px; }
+    .vp-dot.done { background:#1e3a2e; }
+    .vp-page { max-width:820px; margin:0 auto; padding:32px 20px 80px; }
+    .vp-ep-label { font-size:11px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:#ef4444; margin-bottom:8px; }
+    .vp-title { font-size:32px; font-weight:800; color:#e2e8f0; margin-bottom:6px; font-family:Georgia,serif; }
+    .vp-subtitle { font-size:13px; color:#64748b; margin-bottom:28px; }
+    .vp-divider { height:1px; background:linear-gradient(to right,#ef4444,transparent); margin:28px 0; }
+    .vp-section-label { font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#ef4444; margin-bottom:14px; }
+    .vp-card { background:#1e293b; border:1px solid #263246; border-radius:12px; padding:20px; margin-bottom:16px; }
+    /* Tribe overview */
+    .vp-tribe-bar { height:3px; border-radius:3px 3px 0 0; margin:-20px -20px 16px; }
+    .vp-player-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:10px; }
+    .vp-player-tile { background:#263246; border-radius:10px; padding:12px 8px; text-align:center; border:1px solid #334155; }
+    .vp-avatar-wrap { width:56px; height:56px; border-radius:50%; overflow:hidden; margin:0 auto 8px; border:2px solid #334155; background:#0f172a; display:flex; align-items:center; justify-content:center; position:relative; }
+    .vp-avatar-wrap img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+    .vp-avatar-wrap .vp-init { position:absolute; font-size:18px; font-weight:700; color:#64748b; }
+    .vp-player-name { font-size:12px; font-weight:700; color:#e2e8f0; margin-bottom:2px; }
+    .vp-player-arch { font-size:10px; color:#64748b; }
+    .vp-resource-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px; }
+    .vp-resource { }
+    .vp-res-label { font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:#64748b; margin-bottom:6px; }
+    .vp-res-bar-bg { height:6px; background:#263246; border-radius:3px; overflow:hidden; margin-bottom:4px; }
+    .vp-res-bar-fill { height:100%; border-radius:3px; }
+    .vp-res-val { font-size:12px; font-weight:700; }
+    /* Challenge */
+    .vp-challenge-tribe-row { display:flex; gap:12px; margin-bottom:20px; }
+    .vp-challenge-tribe { flex:1; background:#263246; border-radius:10px; padding:14px 12px; text-align:center; border:1px solid #334155; }
+    .vp-challenge-tribe.winner { border-color:#10b981; background:rgba(16,185,129,0.08); }
+    .vp-challenge-tribe.loser  { border-color:#ef4444; background:rgba(239,68,68,0.07); }
+    .vp-challenge-tribe.safe   { border-color:#6366f1; background:rgba(99,102,241,0.07); }
+    .vp-challenge-tribe-name { font-size:13px; font-weight:700; margin-bottom:10px; }
+    .vp-mini-avatars { display:flex; flex-wrap:wrap; gap:4px; justify-content:center; }
+    .vp-mini-avatar { width:32px; height:32px; border-radius:50%; overflow:hidden; border:2px solid #334155; background:#0f172a; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:#64748b; }
+    .vp-mini-avatar img { width:100%; height:100%; object-fit:cover; }
+    .vp-result-banner { border-radius:10px; padding:16px 20px; text-align:center; font-size:14px; font-weight:700; margin-top:16px; }
+    .vp-result-banner.win  { background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.3); color:#10b981; }
+    .vp-result-banner.lose { background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.25); color:#ef4444; }
+    /* Camp events */
+    .vp-camp-event { display:flex; gap:14px; padding:14px 0; border-bottom:1px solid #1e293b; align-items:flex-start; }
+    .vp-camp-event:last-child { border-bottom:none; }
+    .vp-camp-event-avatars { display:flex; gap:-4px; flex-shrink:0; }
+    .vp-camp-event-body { flex:1; }
+    .vp-camp-event-type { font-size:10px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; color:#94a3b8; margin-bottom:4px; }
+    .vp-camp-event-text { font-size:13px; color:#cbd5e1; line-height:1.55; }
+    .vp-rel-tag { display:inline-block; font-size:11px; font-weight:700; padding:1px 7px; border-radius:4px; margin-top:6px; }
+    .vp-rel-tag.pos { background:rgba(16,185,129,0.15); color:#10b981; }
+    .vp-rel-tag.neg { background:rgba(239,68,68,0.12); color:#ef4444; }
+    /* Confessionals */
+    .vp-conf-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:14px; }
+    .vp-conf-card { background:#1e293b; border-radius:10px; padding:16px; border:1px solid #263246; border-left:3px solid #334155; }
+    .vp-conf-header { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+    .vp-conf-mood { font-size:10px; font-weight:700; padding:2px 8px; border-radius:10px; }
+    .vp-conf-mood.confident { background:rgba(16,185,129,0.15); color:#10b981; }
+    .vp-conf-mood.worried   { background:rgba(239,68,68,0.12); color:#ef4444; }
+    .vp-conf-mood.strategic { background:rgba(99,102,241,0.15); color:#818cf8; }
+    .vp-conf-mood.bitter    { background:rgba(245,158,11,0.12); color:#f59e0b; }
+    .vp-conf-mood.neutral   { background:rgba(148,163,184,0.1); color:#94a3b8; }
+    .vp-conf-quote { font-size:13px; color:#cbd5e1; font-style:italic; line-height:1.6; }
+    .vp-conf-quote::before { content:'"'; } .vp-conf-quote::after { content:'"'; }
+    /* Voting Plans */
+    .vp-plans-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px; }
+    @media(max-width:640px) { .vp-plans-grid { grid-template-columns:1fr; } }
+    .vp-plan-card { background:#1e293b; border-radius:12px; border:2px solid #334155; overflow:hidden; }
+    .vp-plan-card.plan-a { border-color:#f59e0b; }
+    .vp-plan-card.plan-b { border-color:#6366f1; }
+    .vp-plan-header { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:#263246; }
+    .vp-plan-badge { font-size:9px; font-weight:800; letter-spacing:2px; padding:3px 8px; border-radius:4px; }
+    .vp-plan-badge.a { background:rgba(245,158,11,0.2); color:#f59e0b; }
+    .vp-plan-badge.b { background:rgba(99,102,241,0.2); color:#818cf8; }
+    .vp-spearheader { font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:#64748b; }
+    .vp-plan-body { padding:16px; }
+    .vp-spearhead-row { display:flex; align-items:center; gap:10px; padding:10px 12px; background:#263246; border-radius:8px; margin-bottom:14px; }
+    .vp-spearhead-name { font-size:14px; font-weight:700; color:#e2e8f0; }
+    .vp-vote-count { display:inline-block; padding:4px 14px; border-radius:20px; font-size:12px; font-weight:700; background:#263246; border:1px solid #334155; color:#e2e8f0; margin-bottom:14px; }
+    .vp-target-card { background:#263246; border-radius:10px; padding:14px; text-align:center; margin-bottom:14px; }
+    .vp-target-big-avatar { width:80px; height:80px; border-radius:50%; overflow:hidden; margin:0 auto 10px; border:3px solid #ef4444; background:#0f172a; display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:700; color:#475569; position:relative; }
+    .vp-target-big-avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+    .vp-target-name { font-size:16px; font-weight:700; color:#e2e8f0; margin-bottom:2px; }
+    .vp-target-arch { font-size:11px; color:#64748b; margin-bottom:8px; }
+    .vp-target-votes { font-size:11px; color:#10b981; margin-bottom:8px; }
+    .vp-reason-tag { display:inline-block; padding:4px 12px; border-radius:6px; font-size:11px; font-style:italic; font-weight:600; background:rgba(245,158,11,0.12); color:#f59e0b; border:1px solid rgba(245,158,11,0.2); }
+    .vp-support-row { }
+    .vp-support-label { font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:#475569; margin-bottom:8px; }
+    .vp-support-avatars { display:flex; gap:6px; flex-wrap:wrap; }
+    .vp-swing-section { background:#1e293b; border:1px solid #334155; border-radius:12px; padding:16px; margin-bottom:20px; }
+    .vp-swing-label { font-size:11px; font-weight:700; letter-spacing:1px; color:#f59e0b; text-transform:uppercase; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+    .vp-swing-count { background:rgba(245,158,11,0.15); color:#f59e0b; font-size:10px; padding:2px 8px; border-radius:10px; }
+    .vp-swing-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:10px; }
+    .vp-swing-card { background:#263246; border-radius:8px; padding:12px; display:flex; gap:10px; align-items:flex-start; }
+    .vp-swing-name { font-size:13px; font-weight:700; color:#e2e8f0; }
+    .vp-swing-tag { font-size:10px; font-weight:700; color:#ef4444; text-transform:uppercase; letter-spacing:0.5px; }
+    .vp-swing-detail { font-size:11px; color:#64748b; margin-top:2px; }
+    .vp-swing-loyalty { font-size:11px; color:#ef4444; margin-top:2px; }
+    /* Tribal targeting */
+    .vp-targets-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:20px; }
+    @media(max-width:600px) { .vp-targets-grid { grid-template-columns:1fr; } }
+    .vp-target-slot { background:#1e293b; border-radius:12px; border:1px solid #334155; overflow:hidden; }
+    .vp-target-slot.rank1 { border-color:#ef4444; }
+    .vp-target-slot.rank2 { border-color:#f59e0b; }
+    .vp-target-slot.rank3 { border-color:#6366f1; }
+    .vp-target-rank { font-size:10px; font-weight:800; letter-spacing:1px; text-align:center; padding:8px; }
+    .vp-target-rank.r1 { background:rgba(239,68,68,0.12); color:#ef4444; }
+    .vp-target-rank.r2 { background:rgba(245,158,11,0.1); color:#f59e0b; }
+    .vp-target-rank.r3 { background:rgba(99,102,241,0.1); color:#818cf8; }
+    .vp-target-body { padding:16px; text-align:center; }
+    .vp-danger-label { font-size:10px; font-weight:800; letter-spacing:1px; text-transform:uppercase; color:#ef4444; margin-bottom:4px; }
+    .vp-danger-desc { font-size:11px; color:#64748b; margin-bottom:6px; }
+    .vp-targeted-by { font-size:10px; color:#475569; margin-bottom:8px; }
+    /* Q&A */
+    .vp-qa-entry { margin-bottom:16px; }
+    .vp-qa-host { background:#1a1a2e; border-left:3px solid #ef4444; padding:10px 14px; border-radius:0 6px 6px 0; font-size:13px; color:#94a3b8; font-style:italic; margin-bottom:8px; }
+    .vp-qa-host::before { content:'HOST  '; font-weight:700; color:#ef4444; font-style:normal; font-size:10px; letter-spacing:1px; display:block; margin-bottom:4px; }
+    .vp-qa-response { background:#1e293b; border-radius:8px; padding:12px 14px; display:flex; gap:12px; align-items:flex-start; }
+    .vp-qa-resp-body { flex:1; }
+    .vp-qa-resp-name { font-size:13px; font-weight:700; margin-bottom:2px; }
+    .vp-qa-resp-arch { font-size:10px; color:#64748b; margin-bottom:8px; }
+    .vp-qa-resp-quote { font-size:13px; color:#cbd5e1; font-style:italic; line-height:1.55; }
+    .vp-qa-resp-quote::before { content:'"'; } .vp-qa-resp-quote::after { content:'"'; }
+    /* Vote reveal */
+    .vp-vote-layout { display:grid; grid-template-columns:1fr 320px; gap:16px; }
+    @media(max-width:700px) { .vp-vote-layout { grid-template-columns:1fr; } }
+    .vp-vote-reveals { background:#1e293b; border-radius:12px; overflow:hidden; }
+    .vp-vote-reveal-row { display:flex; align-items:center; gap:12px; padding:12px 16px; border-bottom:1px solid #263246; }
+    .vp-vote-reveal-row:last-child { border-bottom:none; }
+    .vp-vote-arrow { font-size:18px; color:#ef4444; margin:0 4px; }
+    .vp-vote-reveal-name { font-size:12px; font-weight:600; color:#94a3b8; text-align:center; }
+    .vp-vote-reveal-target { font-size:12px; font-weight:700; color:#ef4444; text-align:center; }
+    .vp-tally { background:#1e293b; border-radius:12px; overflow:hidden; }
+    .vp-tally-row { display:flex; align-items:center; gap:12px; padding:14px 16px; border-bottom:1px solid #263246; }
+    .vp-tally-row:last-child { border-bottom:none; }
+    .vp-tally-row.eliminated { background:rgba(239,68,68,0.08); }
+    .vp-tally-name { flex:1; font-size:14px; font-weight:700; color:#e2e8f0; }
+    .vp-tally-arch { font-size:11px; color:#64748b; }
+    .vp-tally-count { font-size:24px; font-weight:800; color:#ef4444; }
+    .vp-tally-label { font-size:10px; color:#64748b; text-transform:uppercase; }
+    .vp-elim-result { background:#1e293b; border-radius:12px; padding:20px; margin-top:16px; border:1px solid #263246; }
+    .vp-elim-result-row { display:flex; align-items:center; justify-content:space-between; padding:10px 14px; border-radius:8px; margin-bottom:8px; border:1px solid; }
+    .vp-elim-result-row.eliminated { background:rgba(239,68,68,0.08); border-color:rgba(239,68,68,0.3); }
+    .vp-elim-result-row.safe { background:#263246; border-color:#334155; }
+    .vp-elim-result-name { font-size:14px; font-weight:700; }
+    .vp-elim-result-name.eliminated { color:#ef4444; }
+    .vp-elim-result-meta { font-size:11px; color:#64748b; }
+    .vp-elim-result-votes { font-size:20px; font-weight:800; color:#ef4444; }
+    .vp-elim-result-pct { font-size:10px; color:#64748b; text-align:right; }
+    .vp-blindside-tag { padding:4px 10px; border-radius:4px; font-size:10px; font-weight:800; letter-spacing:1px; text-transform:uppercase; }
+    .vp-blindside-tag.blindside { background:rgba(245,158,11,0.2); color:#f59e0b; }
+    .vp-blindside-tag.expected  { background:rgba(16,185,129,0.1); color:#10b981; }
+    .vp-elim-card { background:#1e293b; border-radius:12px; padding:20px; margin-top:16px; display:flex; gap:16px; align-items:flex-start; border:1px solid #263246; }
+    .vp-elim-label { font-size:10px; font-weight:800; letter-spacing:2px; color:#ef4444; text-transform:uppercase; margin-bottom:6px; }
+    .vp-elim-name { font-size:22px; font-weight:800; color:#e2e8f0; margin-bottom:2px; }
+    .vp-elim-arch { font-size:12px; color:#64748b; margin-bottom:10px; }
+    .vp-elim-quote { font-size:13px; color:#94a3b8; font-style:italic; line-height:1.5; margin-bottom:10px; }
+    .vp-elim-quote::before { content:'"'; } .vp-elim-quote::after { content:'"'; }
+    .vp-elim-placement { font-size:11px; font-weight:700; letter-spacing:1px; color:#475569; text-transform:uppercase; }
+    .vp-play-btn { background:#ef4444; color:#fff; border:none; border-radius:6px; padding:6px 12px; font-size:11px; font-weight:700; cursor:pointer; letter-spacing:0.5px; }
+    .vp-play-btn:hover { background:#dc2626; }
   </style>
 </head>
 <body>
@@ -368,6 +535,13 @@
             <span id="journey-label" class="toggle-label">Off</span>
           </div>
         </div>
+        <div class="form-group">
+          <label class="form-label">Shot in the Dark <span class="hint">(any player, any tribal)</span></label>
+          <div class="toggle-row">
+            <label class="toggle"><input type="checkbox" id="cfg-sid" onchange="toggleSID()"><span class="toggle-track"></span></label>
+            <span id="sid-label" class="toggle-label">Off</span>
+          </div>
+        </div>
         <div class="divider"></div>
         <div class="btn-row">
           <button class="btn btn-secondary" style="font-size:11px" onclick="loadS9Config()">S9 Defaults</button>
@@ -385,7 +559,7 @@
           <h2>Scheduled Twists</h2>
           <button class="btn btn-primary btn-sm" onclick="addTwist()" style="width:auto">+ Add</button>
         </div>
-        <div style="font-size:11px;color:var(--muted);margin-bottom:6px;line-height:1.5">Set the episode number each twist fires on (Episode 1, 2, 3…). Tribe Swap reshuffles all players. Double Elimination boots two people. No Tribal skips the vote entirely.</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:6px;line-height:1.5">Set the episode number each twist fires on. Shot in the Dark is a season toggle above — not a per-episode twist.</div>
         <div class="ep-result" style="padding:12px 14px;min-height:58px">
           <div id="twist-list"><div class="twist-list-empty">No twists scheduled.</div></div>
         </div>
@@ -452,6 +626,7 @@
             <div class="output-header">
               <span class="output-title">Episode Summary Output</span>
               <span class="output-note">Paste into current-season.html &#8594; skip BrantSteele field &#8594; Generate Episode</span>
+              <button class="vp-play-btn" onclick="openVisualPlayer(viewingEpNum)">▶ Play Episode</button>
               <button class="btn btn-secondary btn-sm" onclick="copyOutput()">Copy</button>
               <button class="btn btn-secondary btn-sm" onclick="exportToEpisodePipeline()">Export to Pipeline</button>
             </div>
@@ -492,19 +667,20 @@ const STATS = [
   { key: 'social',    label: 'SOC', name: 'Social',    color: '#3b82f6', desc: 'Alliance formation, bonds, jury management' },
   { key: 'strategic', label: 'STR', name: 'Strategic', color: '#8b5cf6', desc: 'Game awareness, threat reads, vote decisions' },
   { key: 'loyalty',   label: 'LOY', name: 'Loyalty',   color: '#10b981', desc: 'Follows alliance votes, does not flip' },
-  { key: 'boldness',  label: 'BLD', name: 'Boldness',  color: '#ef4444', desc: 'Big moves, idol plays, deviating when it matters' },
-  { key: 'intuition', label: 'INT', name: 'Intuition', color: '#ec4899', desc: 'Reads the room, finds idols, sees votes coming' },
+  { key: 'boldness',    label: 'BLD', name: 'Boldness',    color: '#ef4444', desc: 'Big moves, idol plays, deviating when it matters' },
+  { key: 'intuition',  label: 'INT', name: 'Intuition',  color: '#ec4899', desc: 'Reads the room, finds idols, sees votes coming' },
+  { key: 'temperament',label: 'TMP', name: 'Temperament',color: '#06b6d4', desc: '1 = explosive & volatile. 10 = unshakeable calm. Drives who snaps, bonds, or melts down at camp.' },
 ];
 
 const ARCHETYPES = {
-  'challenge-beast':  { physical:9, endurance:8, mental:5, social:5, strategic:5, loyalty:7, boldness:5, intuition:5, desc:'Dominates challenges. Jury rarely respects the game.' },
-  'social-butterfly': { physical:4, endurance:5, mental:5, social:9, strategic:6, loyalty:6, boldness:5, intuition:6, desc:"Everyone's friend. Hard to vote out. Can lose for being too nice." },
-  'mastermind':       { physical:5, endurance:5, mental:8, social:7, strategic:9, loyalty:4, boldness:7, intuition:8, desc:'Runs the game from the shadows. Loyalty issues create enemies.' },
-  'loyal-soldier':    { physical:7, endurance:8, mental:5, social:6, strategic:4, loyalty:9, boldness:3, intuition:5, desc:'Never flips. Gets dragged to F3 and loses 8-0.' },
-  'wildcard':         { physical:5, endurance:5, mental:6, social:5, strategic:7, loyalty:3, boldness:9, intuition:6, desc:'Unpredictable. Chaos engine. Blows up games including their own.' },
-  'underdog':         { physical:4, endurance:6, mental:5, social:6, strategic:5, loyalty:8, boldness:5, intuition:6, desc:'Starts weak. Crowd favorite. Jury loves a comeback story.' },
-  'villain':          { physical:6, endurance:5, mental:7, social:4, strategic:8, loyalty:3, boldness:9, intuition:7, desc:'Smart and ruthless. Loses jury votes they should win.' },
-  'narrator':         { physical:5, endurance:5, mental:6, social:8, strategic:5, loyalty:7, boldness:4, intuition:9, desc:'Fan favorite. Reads everyone. Wins if they find a goat at F3.' },
+  'challenge-beast':  { physical:9, endurance:8, mental:5, social:5, strategic:5, loyalty:7, boldness:5, intuition:5, temperament:5, desc:'Dominates challenges. Jury rarely respects the game.' },
+  'social-butterfly': { physical:4, endurance:5, mental:5, social:9, strategic:6, loyalty:6, boldness:5, intuition:6, temperament:8, desc:"Everyone's friend. Hard to vote out. Can lose for being too nice." },
+  'mastermind':       { physical:5, endurance:5, mental:8, social:7, strategic:9, loyalty:4, boldness:7, intuition:8, temperament:6, desc:'Runs the game from the shadows. Loyalty issues create enemies.' },
+  'loyal-soldier':    { physical:7, endurance:8, mental:5, social:6, strategic:4, loyalty:9, boldness:3, intuition:5, temperament:7, desc:'Never flips. Gets dragged to F3 and loses 8-0.' },
+  'wildcard':         { physical:5, endurance:5, mental:6, social:5, strategic:7, loyalty:3, boldness:9, intuition:6, temperament:2, desc:'Unpredictable. Chaos engine. Blows up games including their own.' },
+  'underdog':         { physical:4, endurance:6, mental:5, social:6, strategic:5, loyalty:8, boldness:5, intuition:6, temperament:7, desc:'Starts weak. Crowd favorite. Jury loves a comeback story.' },
+  'villain':          { physical:6, endurance:5, mental:7, social:4, strategic:8, loyalty:3, boldness:9, intuition:7, temperament:3, desc:'Smart and ruthless. Loses jury votes they should win.' },
+  'narrator':         { physical:5, endurance:5, mental:6, social:8, strategic:5, loyalty:7, boldness:4, intuition:9, temperament:8, desc:'Fan favorite. Reads everyone. Wins if they find a goat at F3.' },
 };
 const ARCHETYPE_NAMES = {
   'challenge-beast': 'Challenge Beast', 'social-butterfly': 'Social Butterfly',
@@ -567,26 +743,26 @@ const S10_BONDS_PRESET = [
 // S9 preset data
 const S9_PRESET = [
   // YELLOW TRIBE
-  { name:'Bowie',      slug:'bowie',       tribe:'Yellow', archetype:'mastermind',       stats:{ physical:6, endurance:5, mental:7, social:9,  strategic:10, loyalty:3, boldness:9, intuition:8 } },
-  { name:'Chase',      slug:'chase',       tribe:'Yellow', archetype:'narrator',         stats:{ physical:5, endurance:6, mental:6, social:6,  strategic:6,  loyalty:7, boldness:5, intuition:7 } },
-  { name:'Ripper',     slug:'ripper',      tribe:'Yellow', archetype:'wildcard',         stats:{ physical:6, endurance:6, mental:4, social:4,  strategic:5,  loyalty:4, boldness:9, intuition:5 } },
-  { name:'Scary Girl', slug:'scary-girl',  tribe:'Yellow', archetype:'wildcard',         stats:{ physical:6, endurance:5, mental:4, social:3,  strategic:4,  loyalty:3, boldness:10,intuition:5 } },
-  { name:'Nichelle',   slug:'nichelle',    tribe:'Yellow', archetype:'social-butterfly', stats:{ physical:5, endurance:5, mental:5, social:8,  strategic:4,  loyalty:7, boldness:4, intuition:5 } },
-  { name:'Axel',       slug:'axel',        tribe:'Yellow', archetype:'challenge-beast',  stats:{ physical:9, endurance:8, mental:4, social:5,  strategic:4,  loyalty:7, boldness:6, intuition:4 } },
+  { name:'Bowie',      slug:'bowie',       tribe:'Yellow', archetype:'mastermind',       stats:{ physical:6, endurance:5, mental:7, social:9,  strategic:10, loyalty:3, boldness:9, intuition:8, temperament:4 } },
+  { name:'Chase',      slug:'chase',       tribe:'Yellow', archetype:'narrator',         stats:{ physical:5, endurance:6, mental:6, social:6,  strategic:6,  loyalty:7, boldness:5, intuition:7, temperament:7 } },
+  { name:'Ripper',     slug:'ripper',      tribe:'Yellow', archetype:'wildcard',         stats:{ physical:6, endurance:6, mental:4, social:4,  strategic:5,  loyalty:4, boldness:9, intuition:5, temperament:2 } },
+  { name:'Scary Girl', slug:'scary-girl',  tribe:'Yellow', archetype:'wildcard',         stats:{ physical:6, endurance:5, mental:4, social:3,  strategic:4,  loyalty:3, boldness:10,intuition:5, temperament:1 } },
+  { name:'Nichelle',   slug:'nichelle',    tribe:'Yellow', archetype:'social-butterfly', stats:{ physical:5, endurance:5, mental:5, social:8,  strategic:4,  loyalty:7, boldness:4, intuition:5, temperament:8 } },
+  { name:'Axel',       slug:'axel',        tribe:'Yellow', archetype:'challenge-beast',  stats:{ physical:9, endurance:8, mental:4, social:5,  strategic:4,  loyalty:7, boldness:6, intuition:4, temperament:5 } },
   // RED TRIBE
-  { name:'Zee',        slug:'zee',         tribe:'Red',    archetype:'narrator',         stats:{ physical:5, endurance:5, mental:5, social:6,  strategic:3,  loyalty:6, boldness:3, intuition:4 } },
-  { name:'Brightly',   slug:'brightly',    tribe:'Red',    archetype:'mastermind',       stats:{ physical:4, endurance:5, mental:7, social:7,  strategic:8,  loyalty:6, boldness:4, intuition:9 } },
-  { name:'Hicks',      slug:'hicks',       tribe:'Red',    archetype:'mastermind',       stats:{ physical:5, endurance:5, mental:8, social:7,  strategic:9,  loyalty:6, boldness:5, intuition:9 } },
-  { name:'Emmah',      slug:'emmah',       tribe:'Red',    archetype:'villain',          stats:{ physical:6, endurance:6, mental:6, social:5,  strategic:7,  loyalty:5, boldness:10,intuition:6 } },
-  { name:'Millie',     slug:'millie',      tribe:'Red',    archetype:'mastermind',       stats:{ physical:5, endurance:5, mental:7, social:7,  strategic:8,  loyalty:8, boldness:4, intuition:8 } },
-  { name:'Caleb',      slug:'caleb',       tribe:'Red',    archetype:'challenge-beast',  stats:{ physical:8, endurance:7, mental:4, social:5,  strategic:4,  loyalty:7, boldness:5, intuition:4 } },
+  { name:'Zee',        slug:'zee',         tribe:'Red',    archetype:'narrator',         stats:{ physical:5, endurance:5, mental:5, social:6,  strategic:3,  loyalty:6, boldness:3, intuition:4, temperament:8 } },
+  { name:'Brightly',   slug:'brightly',    tribe:'Red',    archetype:'mastermind',       stats:{ physical:4, endurance:5, mental:7, social:7,  strategic:8,  loyalty:6, boldness:4, intuition:9, temperament:7 } },
+  { name:'Hicks',      slug:'hicks',       tribe:'Red',    archetype:'mastermind',       stats:{ physical:5, endurance:5, mental:8, social:7,  strategic:9,  loyalty:6, boldness:5, intuition:9, temperament:7 } },
+  { name:'Emmah',      slug:'emmah',       tribe:'Red',    archetype:'villain',          stats:{ physical:6, endurance:6, mental:6, social:5,  strategic:7,  loyalty:5, boldness:10,intuition:6, temperament:2 } },
+  { name:'Millie',     slug:'millie',      tribe:'Red',    archetype:'mastermind',       stats:{ physical:5, endurance:5, mental:7, social:7,  strategic:8,  loyalty:8, boldness:4, intuition:8, temperament:9 } },
+  { name:'Caleb',      slug:'caleb',       tribe:'Red',    archetype:'challenge-beast',  stats:{ physical:8, endurance:7, mental:4, social:5,  strategic:4,  loyalty:7, boldness:5, intuition:4, temperament:5 } },
   // BLUE TRIBE
-  { name:'Wayne',      slug:'wayne',       tribe:'Blue',   archetype:'loyal-soldier',    stats:{ physical:8, endurance:7, mental:4, social:7,  strategic:5,  loyalty:7, boldness:6, intuition:4 } },
-  { name:'Raj',        slug:'raj',         tribe:'Blue',   archetype:'social-butterfly', stats:{ physical:7, endurance:6, mental:5, social:8,  strategic:4,  loyalty:9, boldness:5, intuition:3 } },
-  { name:'Julia',      slug:'julia',       tribe:'Blue',   archetype:'villain',          stats:{ physical:4, endurance:5, mental:9, social:5,  strategic:9,  loyalty:4, boldness:7, intuition:8 } },
-  { name:'Priya',      slug:'priya',       tribe:'Blue',   archetype:'mastermind',       stats:{ physical:6, endurance:6, mental:7, social:9,  strategic:9,  loyalty:7, boldness:7, intuition:8 } },
-  { name:'MK',         slug:'mk',          tribe:'Blue',   archetype:'mastermind',       stats:{ physical:5, endurance:7, mental:8, social:6,  strategic:7,  loyalty:6, boldness:4, intuition:7 } },
-  { name:'Damien',     slug:'damien',      tribe:'Blue',   archetype:'social-butterfly', stats:{ physical:7, endurance:8, mental:6, social:8,  strategic:8,  loyalty:7, boldness:6, intuition:6 } },
+  { name:'Wayne',      slug:'wayne',       tribe:'Blue',   archetype:'loyal-soldier',    stats:{ physical:8, endurance:7, mental:4, social:7,  strategic:5,  loyalty:7, boldness:6, intuition:4, temperament:6 } },
+  { name:'Raj',        slug:'raj',         tribe:'Blue',   archetype:'social-butterfly', stats:{ physical:7, endurance:6, mental:5, social:8,  strategic:4,  loyalty:9, boldness:5, intuition:3, temperament:9 } },
+  { name:'Julia',      slug:'julia',       tribe:'Blue',   archetype:'villain',          stats:{ physical:4, endurance:5, mental:9, social:5,  strategic:9,  loyalty:4, boldness:7, intuition:8, temperament:3 } },
+  { name:'Priya',      slug:'priya',       tribe:'Blue',   archetype:'mastermind',       stats:{ physical:6, endurance:6, mental:7, social:9,  strategic:9,  loyalty:7, boldness:7, intuition:8, temperament:6 } },
+  { name:'MK',         slug:'mk',          tribe:'Blue',   archetype:'mastermind',       stats:{ physical:5, endurance:7, mental:8, social:6,  strategic:7,  loyalty:6, boldness:4, intuition:7, temperament:7 } },
+  { name:'Damien',     slug:'damien',      tribe:'Blue',   archetype:'social-butterfly', stats:{ physical:7, endurance:8, mental:6, social:8,  strategic:8,  loyalty:7, boldness:6, intuition:6, temperament:8 } },
 ];
 // S9 is all newbies — no pre-game relationships
 const S9_BONDS_PRESET = [];
@@ -607,7 +783,7 @@ let viewingEpNum  = null;   // which episode is displayed in run tab
 
 function defaultConfig() {
   return {
-    name: '', mergeAt: 12, finaleSize: 3, ri: false, riReentryAt: 12, journey: false,
+    name: '', mergeAt: 12, finaleSize: 3, ri: false, riReentryAt: 12, journey: false, shotInDark: false,
     advantages: Object.fromEntries(ADVANTAGES.map(a => [a.key, { enabled: a.default > 0, count: a.default }])),
     twistSchedule: [],
   };
@@ -827,6 +1003,11 @@ function toggleRI() {
   document.getElementById('ri-settings').style.display = on?'flex':'none';
   saveConfig();
 }
+function toggleSID() {
+  const on = document.getElementById('cfg-sid').checked;
+  document.getElementById('sid-label').textContent = on?'On':'Off';
+  saveConfig();
+}
 function saveConfig() {
   seasonConfig = {
     name:        document.getElementById('cfg-name').value.trim(),
@@ -835,6 +1016,7 @@ function saveConfig() {
     ri:          document.getElementById('cfg-ri').checked,
     riReentryAt: parseInt(document.getElementById('cfg-ri-reentry').value)||12,
     journey:     document.getElementById('cfg-journey').checked,
+    shotInDark:  document.getElementById('cfg-sid').checked,
     advantages: Object.fromEntries(ADVANTAGES.map(a => [a.key, {
       enabled: document.getElementById('adv-'+a.key).checked,
       count:   parseInt(document.getElementById('adv-count-'+a.key).value)||0,
@@ -853,6 +1035,8 @@ function renderConfig() {
   document.getElementById('ri-settings').style.display = seasonConfig.ri?'flex':'none';
   document.getElementById('cfg-journey').checked = seasonConfig.journey || false;
   document.getElementById('journey-label').textContent = seasonConfig.journey ? 'On' : 'Off';
+  document.getElementById('cfg-sid').checked = seasonConfig.shotInDark || false;
+  document.getElementById('sid-label').textContent = seasonConfig.shotInDark ? 'On' : 'Off';
   renderTwistList();
   ADVANTAGES.forEach(a => {
     const adv = seasonConfig.advantages?.[a.key]; if (!adv) return;
@@ -874,14 +1058,11 @@ function loadS9Config() {
   // Ep4 — SID available (Caleb plays; not safe; out 2-1)
   // Ep5 — Tribe swap (Red/Yellow/Blue reshuffled; Chase idol play)
   // Ep15 — Fire making at F4 (Bowie beats Damien)
-  seasonConfig = { name:'Total Drama: Land of Powers', mergeAt:11, finaleSize:3, ri:false, riReentryAt:11, journey:true,
+  seasonConfig = { name:'Total Drama: Land of Powers', mergeAt:11, finaleSize:3, ri:false, riReentryAt:11, journey:true, shotInDark:true,
     advantages: { idol:{enabled:true,count:2}, voteSteal:{enabled:false,count:0}, extraVote:{enabled:true,count:1}, kip:{enabled:true,count:1}, legacy:{enabled:false,count:0}, amulet:{enabled:false,count:0} },
     twistSchedule: [
-      { id:'s9-sid-2',  episode:2,  type:'shot-in-dark' },
-      { id:'s9-sid-3',  episode:3,  type:'shot-in-dark' },
-      { id:'s9-sid-4',  episode:4,  type:'shot-in-dark' },
-      { id:'s9-swap',   episode:5,  type:'tribe-swap'   },
-      { id:'s9-fire',   episode:15, type:'fire-making'  },
+      { id:'s9-swap',   episode:5,  type:'tribe-swap'  },
+      { id:'s9-fire',   episode:15, type:'fire-making' },
     ] };
   localStorage.setItem('simulator_config', JSON.stringify(seasonConfig)); renderConfig();
 }
@@ -963,7 +1144,7 @@ function getBond(a, b)      { return gs?.bonds?.[bKey(a,b)] ?? 0; }
 function setBond(a, b, val) { if(gs) gs.bonds[bKey(a,b)] = Math.max(-10, Math.min(10, val)); }
 function addBond(a, b, d)   { setBond(a, b, getBond(a,b)+d); }
 
-const DEFAULT_STATS = { physical:5, endurance:5, mental:5, social:5, strategic:5, loyalty:5, boldness:5, intuition:5 };
+const DEFAULT_STATS = { physical:5, endurance:5, mental:5, social:5, strategic:5, loyalty:5, boldness:5, intuition:5, temperament:5 };
 
 function pStats(name) {
   const p = players.find(p=>p.name===name);
@@ -998,12 +1179,55 @@ function wRandom(pool, weightFn) {
 // ENGINE: ALLIANCE FORMATION
 // ══════════════════════════════════════════════════════════════════════
 
+// ══════════════════════════════════════════════════════════════════════
+// ENGINE: BETRAYAL DETECTION
+// ══════════════════════════════════════════════════════════════════════
+
+function detectBetrayals(ep) {
+  if (!gs.namedAlliances?.length || !ep.votingLog?.length || !ep.eliminated) return;
+  gs.namedAlliances.forEach(alliance => {
+    if (!alliance.active) return;
+    // Alliance members who cast a vote in this tribal (they were present)
+    const voters = alliance.members.filter(m => ep.votingLog.some(v => v.voter === m));
+    if (voters.length < 2) return;
+    // Find consensus (most voted-for target among alliance members)
+    const tally = {};
+    voters.forEach(member => {
+      const entry = ep.votingLog.find(l => l.voter === member);
+      if (entry) tally[entry.voted] = (tally[entry.voted] || 0) + 1;
+    });
+    const sorted = Object.entries(tally).sort(([,a],[,b]) => b-a);
+    if (sorted.length < 2) return; // unanimous — no betrayal
+    const consensusVote = sorted[0][0];
+    voters.forEach(voter => {
+      const entry = ep.votingLog.find(l => l.voter === voter);
+      if (!entry || entry.voted === consensusVote) return;
+      // This player voted against the alliance consensus — betrayal
+      alliance.betrayals.push({ player: voter, ep: ep.num, votedFor: entry.voted, consensusWas: consensusVote });
+      // Damage bonds with all other active alliance members
+      alliance.members.filter(m => m !== voter && gs.activePlayers.includes(m)).forEach(other => {
+        addBond(voter, other, -2);
+      });
+      entry.reason = (entry.reason ? entry.reason + ' — ' : '') + `broke ${alliance.name}`;
+    });
+  });
+  // Deactivate alliances whose membership is now too small (< 2 active)
+  gs.namedAlliances.forEach(alliance => {
+    const activeCount = alliance.members.filter(m => gs.activePlayers.includes(m)).length;
+    if (activeCount < 2) alliance.active = false;
+  });
+}
+
 function formAlliances(members, tribeLabel, challengeLabel) {
   if (members.length <= 1) return [];
   const alliances = [];
 
-  // Find the social hub: highest social + strategic
-  const hubScore = n => { const s=pStats(n); return s.social*0.5 + s.strategic*0.5 + Math.random()*0.5; };
+  // Find the social hub: highest social + strategic; bonus if already in a named alliance
+  const hubScore = n => {
+    const s = pStats(n);
+    const namedBonus = gs.namedAlliances?.some(a => a.active && a.members.includes(n)) ? 2 : 0;
+    return s.social * 0.5 + s.strategic * 0.5 + namedBonus + Math.random() * 0.5;
+  };
   const hub = [...members].sort((a,b) => hubScore(b)-hubScore(a))[0];
 
   // Hub recruits allies by affinity: bond + social compatibility + loyalty
@@ -1014,7 +1238,9 @@ function formAlliances(members, tribeLabel, challengeLabel) {
     const rel = relationships.find(r => [r.a,r.b].sort().join('|') === [hub,other].sort().join('|'));
     const ubBonus = rel?.type === 'unbreakable' ? 5 : 0;
     const rivalPenalty = (rel?.type === 'rival' || rel?.type === 'enemy') ? -4 : 0;
-    return bond + compat*2 + ubBonus + rivalPenalty + (Math.random()-0.5)*0.4;
+    // Named alliance members stick together
+    const allianceBonus = gs.namedAlliances?.some(a => a.active && a.members.includes(hub) && a.members.includes(other)) ? 4 : 0;
+    return bond + compat*2 + ubBonus + rivalPenalty + allianceBonus + (Math.random()-0.5)*0.4;
   };
 
   const others  = members.filter(m => m!==hub).sort((a,b) => affinityFor(b)-affinityFor(a));
@@ -1074,7 +1300,9 @@ function simulateTribeChallenge(tribes) {
     return { tribe, score: avg + (Math.random()*6-3) };  // ±3 variance for upsets
   });
   scored.sort((a,b) => b.score-a.score);
-  return { winner: scored[0].tribe, loser: scored[scored.length-1].tribe, challengeType: cType.label };
+  // safe = tribes that placed between 1st and last (immune but didn't win)
+  const safe = scored.slice(1, scored.length - 1).map(s => s.tribe);
+  return { winner: scored[0].tribe, loser: scored[scored.length-1].tribe, safe, placements: scored.map(s => s.tribe), challengeType: cType.label };
 }
 
 function simulateIndividualChallenge(pool, immune) {
@@ -1115,10 +1343,18 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = []) {
     } else {
       const candidates = tribalPlayers.filter(p => p!==voter && p!==immuneName);
       if (candidates.length) {
-        target = wRandom(candidates, t => Math.max(0.1, threatScore(t) - getBond(voter,t)));
+        const cLabel = myAlliance?.challengeLabel || null;
+        if (gs.phase === 'pre-merge') {
+          // Pre-merge: even rogue votes weight challenge weakness — tribes protect strong players
+          target = wRandom(candidates, t => Math.max(0.1,
+            challengeWeakness(t, cLabel) * 0.4 + (-getBond(voter, t)) * 0.35 + Math.random() * 0.3));
+        } else {
+          target = wRandom(candidates, t => Math.max(0.1, threatScore(t) - getBond(voter, t)));
+        }
         const bond = getBond(voter, target);
         if (bond <= -3) reason = `personal — deeply dislikes ${target}`;
         else if (bond <= -1) reason = `personal — distrust of ${target}`;
+        else if (gs.phase === 'pre-merge') reason = `challenge liability — ${target} is the weakest link`;
         else reason = `personal read — ${target} is the biggest threat`;
       } else {
         target = allianceTarget;
@@ -1145,7 +1381,7 @@ function resolveVotes(votes) {
   return { eliminated: sorted[0][0], isTie: false, tiedPlayers: null };
 }
 
-function checkShotInDark(tribalPlayers, votes, ep) {
+function checkShotInDark(tribalPlayers, votes, log, ep) {
   if (!gs.shotInDarkEnabledThisEp) return;
   const sorted = Object.entries(votes).sort(([,a],[,b]) => b - a);
   if (!sorted.length) return;
@@ -1157,6 +1393,14 @@ function checkShotInDark(tribalPlayers, votes, ep) {
   if (!willPlay) return;
   const safe = Math.random() < 1 / 6;
   ep.shotInDark = { player: target, safe, voteCount };
+  // SID player sacrifices their own vote — cancel it from the tally
+  const myVote = log?.find(v => v.voter === target);
+  if (myVote) {
+    votes[myVote.voted] = (votes[myVote.voted] || 0) - 1;
+    if (votes[myVote.voted] <= 0) delete votes[myVote.voted];
+    myVote.reason = 'played Shot in the Dark — vote sacrificed';
+    ep.shotInDark.ownVoteCancelled = myVote.voted;
+  }
   if (safe) {
     ep.shotInDark.votesNegated = votes[target];
     delete votes[target];
@@ -1248,30 +1492,62 @@ function updateBonds(votingLog, eliminated, alliances) {
 function findAdvantages(ep) {
   const cfg = seasonConfig;
   ep.idolFinds = ep.idolFinds || [];
-  if (!cfg.advantages?.idol?.enabled) return;
 
-  const tribeGroups = gs.isMerged
-    ? [{ name: '__merge__', members: [...gs.activePlayers] }]
-    : gs.tribes;
+  // ── IDOLS ──
+  if (cfg.advantages?.idol?.enabled) {
+    const tribeGroups = gs.isMerged
+      ? [{ name: '__merge__', members: [...gs.activePlayers] }]
+      : gs.tribes;
 
-  tribeGroups.forEach(tribe => {
-    const isMergeSlot = tribe.name === '__merge__';
-    const hasSlot = isMergeSlot ? gs.mergeIdolHidden : (gs.idolSlots[tribe.name] || false);
-    if (!hasSlot) return;
+    tribeGroups.forEach(tribe => {
+      const isMergeSlot = tribe.name === '__merge__';
+      const hasSlot = isMergeSlot ? gs.mergeIdolHidden : (gs.idolSlots[tribe.name] || false);
+      if (!hasSlot) return;
 
-    const currentIdolCount = gs.advantages.filter(a => a.type === 'idol').length;
-    const maxIdols = cfg.advantages.idol.count || 2;
-    if (currentIdolCount >= maxIdols) return;
+      const currentIdolCount = gs.advantages.filter(a => a.type === 'idol').length;
+      const maxIdols = cfg.advantages.idol.count || 2;
+      if (currentIdolCount >= maxIdols) return;
 
-    const shuffled = [...tribe.members].sort(() => Math.random() - 0.5);
-    for (const name of shuffled) {
+      const shuffled = [...tribe.members].sort(() => Math.random() - 0.5);
+      for (const name of shuffled) {
+        const s = pStats(name);
+        // ep1: ~0.6% per player → ~3.5% tribe (6p). ep5: ~1.4% → ~8%. Idols typically ep 4–7.
+        const epScale = Math.min(ep.num * 0.002, 0.02);
+        if (Math.random() < 0.004 + epScale + s.intuition * 0.001 + s.strategic * 0.0005) {
+          gs.advantages.push({ holder: name, type: 'idol', foundEp: ep.num });
+          if (isMergeSlot) gs.mergeIdolHidden = false;
+          else gs.idolSlots[tribe.name] = false;
+          ep.idolFinds.push({ finder: name, type: 'idol', tribe: isMergeSlot ? 'merge' : tribe.name });
+          break;
+        }
+      }
+    });
+  }
+
+  // ── NON-IDOL ADVANTAGES (found at camp via hidden notes/clues) ──
+  // Each type has its own rate and game-phase requirement.
+  const nonIdolTypes = [
+    { key: 'extraVote',  postMergeOnly: false, baseChance: 0.003, epScaleCap: 0.012 },
+    { key: 'voteSteal',  postMergeOnly: false, baseChance: 0.002, epScaleCap: 0.010 },
+    { key: 'legacy',     postMergeOnly: false, baseChance: 0.002, epScaleCap: 0.008 },
+    { key: 'kip',        postMergeOnly: true,  baseChance: 0.004, epScaleCap: 0.010 },
+    { key: 'amulet',     postMergeOnly: false, baseChance: 0.002, epScaleCap: 0.008 },
+  ];
+
+  nonIdolTypes.forEach(({ key, postMergeOnly, baseChance, epScaleCap }) => {
+    const typeCfg = cfg.advantages?.[key];
+    if (!typeCfg?.enabled) return;
+    if (postMergeOnly && !gs.isMerged) return;
+    const max = typeCfg.count || 1;
+    if (gs.advantages.filter(a => a.type === key).length >= max) return;
+
+    const pool = [...gs.activePlayers].sort(() => Math.random() - 0.5);
+    for (const name of pool) {
       const s = pStats(name);
-      // intuition + strategic weighted. Tribe-level ~25% per ep = found roughly every 4 eps.
-      if (Math.random() < 0.04 + s.intuition * 0.005 + s.strategic * 0.003) {
-        gs.advantages.push({ holder: name, type: 'idol', foundEp: ep.num });
-        if (isMergeSlot) gs.mergeIdolHidden = false;
-        else gs.idolSlots[tribe.name] = false;
-        ep.idolFinds.push({ finder: name, tribe: isMergeSlot ? 'merge' : tribe.name });
+      const epScale = Math.min(ep.num * 0.001, epScaleCap);
+      if (Math.random() < baseChance + epScale + s.intuition * 0.0008) {
+        gs.advantages.push({ holder: name, type: key, foundEp: ep.num });
+        ep.idolFinds.push({ finder: name, type: key, tribe: 'camp' });
         break;
       }
     }
@@ -1453,59 +1729,145 @@ function applyTwist(ep, twist) {
 const CAMP_EVENT_TYPES = [
   { id: 'fight',         twoPlayer: true,  weight: 14 },
   { id: 'bond',          twoPlayer: true,  weight: 20 },
+  { id: 'dispute',       twoPlayer: true,  weight: 12 },
   { id: 'meltdown',      twoPlayer: false, weight: 8  },
   { id: 'hardWork',      twoPlayer: false, weight: 14 },
   { id: 'strategicTalk', twoPlayer: true,  weight: 12 },
   { id: 'idolSearch',    twoPlayer: false, weight: 10 },
   { id: 'injury',        twoPlayer: false, weight: 6  },
+  { id: 'allianceForm',  twoPlayer: false, weight: 10 },
 ];
 
-function generateCampEventsForGroup(group, idolFinds) {
+function nameNewAlliance(size) {
+  const namesBySize = {
+    2: ['The Pact', 'The Deal', 'The Bond', 'The Two'],
+    3: ['The Core', 'The Unit', 'The Trinity', 'The Trio'],
+    4: ['The Four', 'The Bloc', 'The Circle', 'The Core Four'],
+  };
+  const pool = namesBySize[size] || ['The Coalition', 'The Power Bloc', 'The Alliance', 'The Majority'];
+  const used = new Set((gs.namedAlliances || []).map(a => a.name));
+  const available = pool.filter(n => !used.has(n));
+  return available[Math.floor(Math.random() * available.length)] || `Alliance ${(gs.namedAlliances?.length || 0) + 1}`;
+}
+
+function generateCampEventsForGroup(group, finds) {
   const events = [];
   if (group.length < 2) return events;
 
-  const numEvents = Math.floor(Math.random() * 3) + 1; // 1–3 per camp
+  const numEvents = Math.floor(Math.random() * 4) + 3; // 3–6 per camp
 
-  // If an idol was found in this group, always start with that as an event
-  const findsInGroup = idolFinds.filter(name => group.includes(name));
-  findsInGroup.forEach(name => {
-    events.push({ type: 'idolFound', text: `${name} finds a Hidden Immunity Idol. Their tribemates do not know.` });
+  // If any advantage was found by someone in this group, always open with that event
+  const findsInGroup = finds.filter(f => group.includes(f.finder));
+  findsInGroup.forEach(find => {
+    const name = find.finder;
+    const advType = find.type || 'idol';
+    const advTextMap = {
+      idol: [
+        `${name} slips away to search and comes back with more than they left with. Nobody else knows what they found.`,
+        `${name} finds a Hidden Immunity Idol buried near camp. Heart pounding, they pocket it and return to the group like nothing happened.`,
+        `${name} locates the idol during a quiet moment alone. They do not tell a single person.`,
+        `${name} finds the Hidden Immunity Idol. Their expression gives nothing away when they return to tribe.`,
+      ],
+      extraVote: [
+        `${name} finds a note tucked under a rock near camp. An Extra Vote. They read it twice, pocket it, and act like nothing happened.`,
+        `${name} discovers a hidden parchment while collecting water. Extra Vote. They tell nobody.`,
+      ],
+      voteSteal: [
+        `${name} uncovers a Vote Steal advantage hidden at camp. One vote, taken from someone else at tribal. They keep it quiet.`,
+        `${name} finds a note near the fire pit. Vote Steal. The power to take someone else's voice — theirs now.`,
+      ],
+      legacy: [
+        `${name} finds the Legacy Advantage buried at camp. It can only be used at a specific moment near the end. They tuck it away silently.`,
+        `${name} discovers the Legacy Advantage. It will only activate at the right moment — but that moment will come.`,
+      ],
+      kip: [
+        `${name} finds Knowledge is Power — the ability to steal any advantage from any player at tribal. Nobody sees them find it.`,
+        `${name} locates a hidden note near the water well. Knowledge is Power. They now know what everyone else is holding.`,
+      ],
+      amulet: [
+        `${name} finds an Amulet Advantage at camp. Its power grows as other holders are eliminated.`,
+        `${name} discovers the Amulet — it starts weak but gets stronger the longer it survives. They say nothing.`,
+      ],
+    };
+    const lines = advTextMap[advType] || advTextMap.idol;
+    events.push({ type: 'idolFound', text: lines[Math.floor(Math.random() * lines.length)] });
   });
 
   for (let i = 0; i < numEvents; i++) {
     const eventType = wRandom(CAMP_EVENT_TYPES, e => e.weight).id;
 
     if (eventType === 'fight') {
-      // Pick someone volatile (high boldness, low loyalty)
-      const a = wRandom(group, n => Math.max(0.1, pStats(n).boldness * 0.5 + (5 - pStats(n).loyalty) * 0.3 + 1));
+      // Low temperament = more likely to snap. Low loyalty = doesn't suppress it for the group.
+      const a = wRandom(group, n => Math.max(0.1, (10 - pStats(n).temperament) * 0.5 + pStats(n).boldness * 0.3 + 1));
       const others = group.filter(p => p !== a);
       if (!others.length) continue;
-      // Fight target: low bond + high boldness on other side
-      const b = wRandom(others, n => Math.max(0.1, (5 - getBond(a, n)) * 0.4 + pStats(n).boldness * 0.2 + 1));
+      const b = wRandom(others, n => Math.max(0.1, (5 - getBond(a, n)) * 0.4 + (10 - pStats(n).temperament) * 0.15 + 1));
       addBond(a, b, -1.5);
-      const intensity = Math.random() < 0.45 ? 'major' : 'minor';
-      events.push({ type: 'fight', text: `${a} and ${b} have a ${intensity} fight at camp.` });
+      const tmpA = pStats(a).temperament;
+      const fightLines = tmpA <= 2
+        ? [`${a} erupts at ${b} with zero warning. Nobody knows what triggered it. The tribe just watches.`,
+           `Something snaps in ${a} and ${b} is directly in the blast radius. Loud, raw, no filter.`]
+        : tmpA <= 4
+        ? [`${a} snaps at ${b} and doesn't apologize. The tribe goes quiet. Everyone notices.`,
+           `${a} gets in ${b}'s face over something that felt minor. It doesn't stay minor.`,
+           `${a} makes a comment that cuts. ${b} fires back. It escalates faster than anyone expected.`]
+        : tmpA <= 6
+        ? [`${a} and ${b} get into a tense back-and-forth. Neither raises their voice — but the edge is there.`,
+           `Frustration spills over between ${a} and ${b}. It stays controlled, barely.`]
+        : [`${a} pushes back on ${b} in a way that surprises everyone — they're usually so composed.`,
+           `Even ${a}, who rarely reacts, finally says something to ${b}. That's how you know it's bad.`];
+      events.push({ type: 'fight', text: fightLines[Math.floor(Math.random() * fightLines.length)] });
 
     } else if (eventType === 'bond') {
-      const a = wRandom(group, n => Math.max(0.1, pStats(n).social * 0.4 + 1));
+      // High social = initiates. High temperament = calm enough to open up genuinely.
+      const a = wRandom(group, n => Math.max(0.1, pStats(n).social * 0.4 + pStats(n).temperament * 0.15 + 1));
       const others = group.filter(p => p !== a);
       if (!others.length) continue;
       const b = wRandom(others, n => Math.max(0.1, getBond(a, n) * 0.3 + pStats(n).social * 0.3 + 2));
       const delta = Math.random() < 0.45 ? 1.0 : 0.5;
       addBond(a, b, delta);
-      const word = delta >= 1.0 ? 'bond' : 'bond slightly';
-      events.push({ type: 'bond', text: `${a} and ${b} ${word}.` });
+      const socA = pStats(a).social;
+      const tmpA = pStats(a).temperament;
+      const bondLines = (socA >= 8 && tmpA >= 7)
+        ? [`${a} gravitates toward ${b} effortlessly. By the end of the day it doesn't feel strategic — it feels real.`,
+           `${a} makes ${b} feel like the most important person on the tribe. Whether that's intentional doesn't matter.`]
+        : (tmpA >= 8)
+        ? [`${a} sits with ${b} and just listens. ${b} opens up more than they planned to. Something shifts.`,
+           `${a}'s calm energy draws ${b} in. They talk for hours. Neither wanted to stop.`]
+        : (socA >= 7)
+        ? [`${a} and ${b} find a rhythm together at camp. The comfort between them grows without much effort.`,
+           `${a} checks in on ${b} after a rough stretch. Small thing. ${b} remembers it.`]
+        : [`${a} and ${b} stay up talking long after everyone else is asleep.`,
+           `${a} and ${b} share a quiet moment. Something real is forming between them.`,
+           `${a} opens up to ${b} about something personal. The trust between them grows.`,
+           `${a} and ${b} spend the afternoon working together. By sunset they feel like a unit.`];
+      events.push({ type: 'bond', text: bondLines[Math.floor(Math.random() * bondLines.length)] });
 
     } else if (eventType === 'meltdown') {
-      const p = wRandom(group, n => Math.max(0.1, pStats(n).boldness - pStats(n).loyalty * 0.3 + 3));
+      // Very low temperament + high boldness = full breakdown. Low temperament alone = implosion.
+      const p = wRandom(group, n => Math.max(0.1, (10 - pStats(n).temperament) * 0.6 + pStats(n).boldness * 0.3 + 1));
       group.filter(x => x !== p).forEach(other => addBond(p, other, -0.3));
-      events.push({ type: 'meltdown', text: `${p} has a major meltdown at camp.` });
+      const tmpP = pStats(p).temperament;
+      const meltdownLines = tmpP <= 2
+        ? [`${p} goes completely off the rails. Full breakdown — loud, uncontrolled, impossible to ignore.`,
+           `${p} explodes at camp. No single trigger. Pure accumulated pressure finally breaking the seal.`]
+        : tmpP <= 4
+        ? [`${p} loses it at camp. The composure they've been holding slips — and the whole tribe sees it.`,
+           `The pressure finally gets to ${p}. They crack. Not quietly.`]
+        : [`${p}'s controlled exterior breaks down for a rare moment. The tribe takes a mental note.`,
+           `${p} usually keeps it together. Not today. The cracks are visible now.`];
+      events.push({ type: 'meltdown', text: meltdownLines[Math.floor(Math.random() * meltdownLines.length)] });
 
     } else if (eventType === 'hardWork') {
       const p = wRandom(group, n => Math.max(0.1, pStats(n).loyalty + pStats(n).endurance * 0.2 + 1));
       group.filter(x => x !== p).forEach(other => addBond(p, other, 0.15));
-      const suffix = Math.random() < 0.5 ? ' and becomes tired.' : '.';
-      events.push({ type: 'hardWork', text: `${p} works hard at camp${suffix}` });
+      const hwLines = [
+        `${p} is up before sunrise chopping wood and keeping the fire going. Nobody asked. Everyone noticed.`,
+        `${p} handles camp entirely while others rest. It earns quiet respect from the tribe.`,
+        `${p} refuses to sit still — fishing, fixing the shelter, hauling water. They are making themselves indispensable.`,
+        `${p} works harder than anyone else today. It does not go unnoticed.`,
+      ];
+      events.push({ type: 'hardWork', text: hwLines[Math.floor(Math.random() * hwLines.length)] });
 
     } else if (eventType === 'strategicTalk') {
       const a = wRandom(group, n => Math.max(0.1, pStats(n).strategic * 0.5 + 1));
@@ -1513,18 +1875,116 @@ function generateCampEventsForGroup(group, idolFinds) {
       if (!others.length) continue;
       const b = wRandom(others, n => Math.max(0.1, getBond(a, n) + pStats(n).social * 0.2 + 1));
       addBond(a, b, 0.5);
-      events.push({ type: 'strategicTalk', text: `${a} and ${b} have a long strategic conversation.` });
+      const strA = pStats(a).strategic;
+      const tmpA = pStats(a).temperament;
+      const socA = pStats(a).social;
+      const stalkLines = (strA >= 9 && tmpA <= 5)
+        ? [`${a} lays out the next three votes for ${b} like a chess match. ${b} realizes they're being recruited, not informed.`,
+           `${a} and ${b} spend an hour mapping out paths to the end. They leave with a shared plan and a shared secret.`]
+        : (strA >= 8 && socA <= 5)
+        ? [`${a} pulls ${b} in and tells them exactly what they need to hear. Whether all of it is true is another question.`,
+           `${a} makes ${b} feel indispensable. That's always been the move.`]
+        : (tmpA >= 7 && strA >= 6)
+        ? [`${a} reads the game out loud to ${b}. ${b} mostly listens. Both leave knowing more than they did.`,
+           `${a} and ${b} do a full check-in after camp duties. ${a} sees angles ${b} hasn't noticed yet.`]
+        : (socA >= 8)
+        ? [`${a} floats the conversation casually but walks away with everything they needed. ${b} barely noticed.`,
+           `${a} approaches ${b} as a check-in. An hour later they have a working understanding.`]
+        : [`${a} pulls ${b} aside for a long game conversation. Names are floated. A loose agreement is made.`,
+           `${a} approaches ${b} quietly. "We need to talk." They do. For a long time.`,
+           `${a} and ${b} find a spot away from camp. A check-in becomes a full strategic session.`];
+      events.push({ type: 'strategicTalk', text: stalkLines[Math.floor(Math.random() * stalkLines.length)] });
+
+    } else if (eventType === 'dispute') {
+      // Strategic + bold initiates disputes. Low temperament makes them escalate faster.
+      const a = wRandom(group, n => Math.max(0.1, pStats(n).strategic * 0.4 + pStats(n).boldness * 0.3 + 1));
+      const others = group.filter(p => p !== a);
+      if (!others.length) continue;
+      const b = wRandom(others, n => Math.max(0.1, (5 - getBond(a, n)) * 0.3 + pStats(n).strategic * 0.2 + 1));
+      addBond(a, b, -0.8);
+      const tmpA = pStats(a).temperament;
+      const strA = pStats(a).strategic;
+      const disputeLines = (tmpA <= 3 && strA >= 7)
+        ? [`${a} calls ${b} out directly — no diplomatic framing, just the accusation. ${b} didn't see it coming.`,
+           `${a} has had enough of ${b}'s game and says so. In front of people. Loudly.`]
+        : (tmpA <= 5 && strA >= 7)
+        ? [`${a} presses ${b} on who they're really voting for. ${b} deflects. ${a} doesn't accept the deflection.`,
+           `${a} pulls ${b} aside and challenges their read on the game. They leave with different plans.`]
+        : (strA >= 8)
+        ? [`${a} questions ${b}'s logic with quiet precision. ${b} knows it's a power move. Everyone does.`,
+           `${a} and ${b} have a measured disagreement about direction. Calm on the surface. Damaging underneath.`]
+        : [`${a} and ${b} disagree on the next vote. Neither backs down. The alliance is showing its first crack.`,
+           `${b} confronts ${a} about a name they heard floating. ${a} denies it. ${b} doesn't believe them.`,
+           `${a} and ${b} clash over who's actually in control. The argument is quiet — but the damage is real.`];
+      events.push({ type: 'dispute', text: disputeLines[Math.floor(Math.random() * disputeLines.length)] });
 
     } else if (eventType === 'idolSearch') {
-      // Only show for someone not already featured in an idol find event
-      const searchers = group.filter(n => !findsInGroup.includes(n));
+      const searchers = group.filter(n => !findsInGroup.some(f => f.finder === n));
       if (!searchers.length) continue;
       const p = wRandom(searchers, n => Math.max(0.1, pStats(n).intuition * 0.5 + 1));
-      events.push({ type: 'idolSearch', text: `${p} searches for a Hidden Immunity Idol.` });
+      const searchLines = [
+        `${p} slips away from camp while everyone else is distracted. They come back empty-handed — for now.`,
+        `${p} wanders far from camp, searching for a hidden advantage. No one notices they're gone.`,
+        `${p} is seen disappearing into the woods alone. Nobody follows. Nobody asks.`,
+        `${p} searches the entire shoreline methodically. They find nothing — but they are not done looking.`,
+      ];
+      events.push({ type: 'idolSearch', text: searchLines[Math.floor(Math.random() * searchLines.length)] });
 
     } else if (eventType === 'injury') {
       const p = wRandom(group, n => Math.max(0.1, (10 - pStats(n).endurance) * 0.5 + 1));
-      events.push({ type: 'injury', text: `${p} is injured at camp.` });
+      const injuryLines = [
+        `${p} rolls their ankle on the way back from the water well. They play it down, but they are clearly in pain.`,
+        `${p} cuts their hand badly at camp. Medical checks on them. The tribe watches nervously.`,
+        `${p} collapses briefly after a long day in the sun. The tribe rallies — but questions start.`,
+        `${p} wakes up sick. They push through the day, but their tribemates are keeping a close eye.`,
+      ];
+      events.push({ type: 'injury', text: injuryLines[Math.floor(Math.random() * injuryLines.length)] });
+
+    } else if (eventType === 'allianceForm') {
+      // Initiator: highest strategic in group
+      const initiator = wRandom(group, n => Math.max(0.1, pStats(n).strategic * 0.6 + pStats(n).social * 0.2 + 1));
+      // Recruit 1–3 others with positive bond and high social/loyalty
+      const recruits = group.filter(p => p !== initiator)
+        .map(p => ({ name: p, score: getBond(initiator, p) * 0.5 + pStats(p).social * 0.2 + pStats(p).loyalty * 0.15 + Math.random() * 0.5 }))
+        .sort((a, b) => b.score - a.score)
+        .slice(0, Math.min(2 + Math.floor(Math.random() * 2), group.length - 1))
+        .filter(r => r.score > -0.5)
+        .map(r => r.name);
+      if (!recruits.length) continue;
+      const allianceMembers = [initiator, ...recruits];
+      // Skip if ALL these players are already in the same named alliance
+      const alreadyAllied = gs.namedAlliances?.some(a =>
+        a.active && allianceMembers.every(m => a.members.includes(m))
+      );
+      if (alreadyAllied) continue;
+      // Create the new alliance
+      const allianceName = nameNewAlliance(allianceMembers.length);
+      const newAlliance = {
+        id: `alliance_${Date.now()}_${Math.floor(Math.random()*1000)}`,
+        name: allianceName,
+        members: [...allianceMembers],
+        formed: gs.episode + 1,
+        betrayals: [],
+        active: true,
+      };
+      gs.namedAlliances.push(newAlliance);
+      // Boost bonds between all members
+      for (let x = 0; x < allianceMembers.length; x++) {
+        for (let y = x + 1; y < allianceMembers.length; y++) {
+          addBond(allianceMembers[x], allianceMembers[y], 0.4);
+        }
+      }
+      const strI = pStats(initiator).strategic;
+      const tmpI = pStats(initiator).temperament;
+      const formLines = (strI >= 9 && tmpI <= 5)
+        ? [`${initiator} doesn't pitch the alliance — they describe the future like it's already decided. ${recruits.join(' and ')} realize they're agreeing before they meant to.`,
+           `${initiator} pulls ${recruits.join(' and ')} in one at a time. By the time they're all together, ${allianceName} is already a done deal.`]
+        : (strI >= 8)
+        ? [`${initiator} approaches ${recruits.join(' and ')} with a clear proposal. Names, targets, order. ${allianceName} is formed before the sun goes down.`,
+           `${initiator} maps it out for ${recruits.join(' and ')}. The logic is clean. Everyone nods. They have a name for it now: ${allianceName}.`]
+        : [`${initiator} pulls ${recruits.join(' and ')} aside. "It should be us." Nobody disagrees. That is how ${allianceName} begins.`,
+           `A quiet conversation between ${initiator} and ${recruits.join(' and ')} turns into something more. ${allianceName} is real now — at least for today.`];
+      events.push({ type: 'allianceForm', text: formLines[Math.floor(Math.random() * formLines.length)], alliance: allianceName, members: allianceMembers });
     }
   }
 
@@ -1532,7 +1992,7 @@ function generateCampEventsForGroup(group, idolFinds) {
 }
 
 function generateCampEvents(ep) {
-  const idolFinds = (ep.idolFinds || []).map(f => f.finder);
+  const idolFinds = ep.idolFinds || [];
 
   if (gs.phase === 'pre-merge' && gs.tribes.length > 0) {
     ep.campEvents = {};
@@ -1562,7 +2022,8 @@ function simulateEpisode() {
   gs.lostVotes = [];
   gs.exiledThisEp = null;
   gs.penaltyVoteThisEp = null;
-  gs.shotInDarkEnabledThisEp = false;
+  // SID is a season-wide rule if enabled in config; per-episode twist can also enable it
+  gs.shotInDarkEnabledThisEp = cfg.shotInDark || false;
 
   // ── TWIST CHECK ──
   const scheduledTwist = (cfg.twistSchedule||[]).find(t => Number(t.episode) === epNum);
@@ -1629,6 +2090,8 @@ function simulateEpisode() {
     const result = simulateTribeChallenge(gs.tribes);
     ep.challengeType = 'tribe';
     ep.winner = result.winner; ep.loser = result.loser;
+    ep.safeTribes = result.safe || [];
+    ep.challengePlacements = result.placements || [];
     ep.tribalPlayers = [...result.loser.members];
     ep.challengeLabel = result.challengeType || 'Mixed';
   } else {
@@ -1668,16 +2131,18 @@ function simulateEpisode() {
   function runTribal(tribalPlayers, immuneName, allianceSet) {
     const { votes, log } = simulateVotes(tribalPlayers, immuneName, allianceSet, gs.lostVotes);
     checkIdolPlays(tribalPlayers, votes, ep);
-    checkShotInDark(tribalPlayers, votes, ep);
+    checkShotInDark(tribalPlayers, votes, log, ep);
     const res = resolveVotes(votes);
     if (res.isTie && res.tiedPlayers) {
       const rv = simulateRevote(tribalPlayers, res.tiedPlayers, gs.lostVotes);
       ep.revoteVotes = rv.votes; ep.revoteLog = rv.log;
       const res2 = resolveVotes(rv.votes);
       if (res2.isTie) {
-        // Still tied → rock draw (random)
+        // Rock draw: tied players are SAFE — everyone else (no individual immunity) draws a rock
         ep.isRockDraw = true;
-        const rockElim = res2.tiedPlayers[Math.floor(Math.random() * res2.tiedPlayers.length)];
+        const rockPool = tribalPlayers.filter(p => !res.tiedPlayers.includes(p) && p !== immuneName);
+        const drawFrom = rockPool.length > 0 ? rockPool : res.tiedPlayers; // fallback if somehow empty
+        const rockElim = drawFrom[Math.floor(Math.random() * drawFrom.length)];
         return { votes, log, eliminated: rockElim, isTie: true, tiedPlayers: res.tiedPlayers };
       }
       return { votes, log, eliminated: res2.eliminated, isTie: true, tiedPlayers: res.tiedPlayers };
@@ -1726,6 +2191,7 @@ function simulateEpisode() {
       gs.advantages = gs.advantages.filter(a => a.holder !== ep.eliminated);
     }
     ep.bondChanges = updateBonds(ep.votingLog, ep.eliminated, alliances);
+    detectBetrayals(ep);
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
     gs.episode = epNum;
     gs.episodeHistory.push({ num: epNum, eliminated: ep.eliminated, riChoice: ep.riChoice,
@@ -1808,6 +2274,7 @@ function simulateEpisode() {
 
   // ── BOND UPDATES ──
   ep.bondChanges = updateBonds(ep.votingLog, ep.eliminated, alliances);
+  detectBetrayals(ep);
 
   // ── PHASE CHECK ──
   if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
@@ -1815,7 +2282,7 @@ function simulateEpisode() {
   // ── INCREMENT & SAVE ──
   gs.episode = epNum;
   gs.episodeHistory.push({
-    num: epNum, eliminated: ep.eliminated, riChoice: ep.riChoice,
+    num: epNum, eliminated: ep.eliminated, firstEliminated: ep.firstEliminated || null, riChoice: ep.riChoice,
     immunityWinner: ep.immunityWinner || ep.winner?.name,
     challengeType: ep.challengeType, isMerge: ep.isMerge,
     votes: ep.votes, alliances: ep.alliances.map(a=>({...a})),
@@ -1835,10 +2302,12 @@ function simulateEpisode() {
 // ══════════════════════════════════════════════════════════════════════
 
 function bondLabel(val) {
-  if (val >= 5) return 'strong bond';
-  if (val >= 3) return 'medium bond';
-  if (val >= 1) return 'slight bond';
+  if (val >= 8)  return 'unbreakable bond';
+  if (val >= 5)  return 'strong bond';
+  if (val >= 3)  return 'solid bond';
+  if (val >= 1)  return 'slight bond';
   if (val >= 0.5) return 'very slight bond';
+  if (val <= -7) return 'pure hatred';
   if (val <= -5) return 'deeply hostile';
   if (val <= -3) return 'strong dislike';
   if (val <= -1) return 'dislike';
@@ -1973,6 +2442,20 @@ function generateSummaryText(ep) {
   const ln  = s => L.push(s);
   const sec = t => { ln(''); ln(`=== ${t} ===`); };
 
+  // PREVIOUSLY (episode continuity)
+  if (gs.episodeHistory.length >= 1) {
+    const prev = gs.episodeHistory[gs.episodeHistory.length - 1];
+    sec('PREVIOUSLY');
+    if (prev.eliminated) {
+      ln(`Ep.${prev.num}: ${prev.immunityWinner ? prev.immunityWinner + ' won immunity. ' : ''}${prev.eliminated} was voted out${prev.riChoice === 'REDEMPTION ISLAND' ? ' and chose Redemption Island' : ''}.`);
+    }
+    const recentBetrayals = gs.namedAlliances?.flatMap(a => a.betrayals.filter(b => b.ep === prev.num)) || [];
+    recentBetrayals.forEach(b => {
+      const alliance = gs.namedAlliances.find(a => a.betrayals.includes(b));
+      ln(`${b.player} broke ${alliance?.name || 'their alliance'} — voted ${b.votedFor} instead of ${b.consensusWas}. The damage is unresolved.`);
+    });
+  }
+
   // META
   sec('META');
   ln(`Season: ${cfg.name||'Unknown'} | Episode: ${ep.num} | Players Remaining: ${gs.activePlayers.length}`);
@@ -2025,7 +2508,10 @@ function generateSummaryText(ep) {
   else if (ep.challengeType === 'double-tribal') ln('DOUBLE TRIBAL — both tribes attend tribal council. Two players voted out.');
   else if (ep.twist?.type === 'exile-island') ln(`EXILE ISLAND episode. ${ep.twist.exiled} sent to exile — misses tribal.`);
   else if (ep.isFireMaking) ln('FIRE MAKING episode — voted-out player may win their way back.');
-  else if (ep.challengeType === 'tribe') ln(`Standard pre-merge episode. ${ep.loser?.name} goes to tribal council.`);
+  else if (ep.challengeType === 'tribe') {
+    const safeStr = ep.safeTribes?.length ? ` ${ep.safeTribes.map(t=>t.name).join(', ')} safe.` : '';
+    ln(`Standard pre-merge episode.${safeStr} ${ep.loser?.name} goes to tribal council.`);
+  }
   else ln('Post-merge episode. Individual immunity challenge.');
 
   // TRIBE STATUS — per tribe (advantages + relationships)
@@ -2129,7 +2615,16 @@ function generateSummaryText(ep) {
   // IMMUNITY CHALLENGE
   sec('IMMUNITY CHALLENGE');
   if (ep.challengeType === 'tribe') {
-    ln(`TRIBE IMMUNITY (${ep.challengeLabel||'Mixed'} challenge): ${ep.winner?.name} win.`);
+    ln(`TRIBE IMMUNITY (${ep.challengeLabel||'Mixed'} challenge)`);
+    if (ep.challengePlacements?.length > 2) {
+      // Show full placement order when 3+ tribes
+      ep.challengePlacements.forEach((t, i) => {
+        const suffix = i === 0 ? '— WIN, immune' : i === ep.challengePlacements.length - 1 ? '— LAST, goes to tribal' : '— safe';
+        ln(`  ${i+1}. ${t.name} ${suffix}`);
+      });
+    } else {
+      ln(`${ep.winner?.name} win. ${ep.loser?.name} go to tribal council.`);
+    }
     ln(`RESULT: ${ep.loser?.name} go to tribal council.`);
   } else {
     ln(`INDIVIDUAL IMMUNITY (${ep.challengeLabel||'Mixed'} challenge): ${ep.immunityWinner} wins.`);
@@ -2203,7 +2698,8 @@ function generateSummaryText(ep) {
 
   // TRIBAL COUNCIL
   if (ep.votingLog?.length) {
-    sec('TRIBAL COUNCIL / VOTE ANALYSIS');
+    sec(ep.isFireMaking ? 'FIRE-MAKING VOTE — determining who faces fire' :
+        ep.firstEliminated ? 'VOTE 1 OF 2 — DOUBLE ELIMINATION' : 'TRIBAL COUNCIL / VOTE ANALYSIS');
 
     // Vote #1 — grouped by target
     const voteGroups = {};
@@ -2211,6 +2707,15 @@ function generateSummaryText(ep) {
       if (!voteGroups[voted]) voteGroups[voted] = [];
       voteGroups[voted].push(voter);
     });
+    // Shot in the Dark — played before votes are revealed
+    if (ep.shotInDark) {
+      const sid = ep.shotInDark;
+      ln(`SHOT IN THE DARK: ${sid.player} sacrificed their vote for a 1-in-6 chance of safety.`);
+      if (sid.ownVoteCancelled) ln(`${sid.player}'s vote for ${sid.ownVoteCancelled} does not count.`);
+      ln(sid.safe ? `Result: SAFE — ${sid.player} is immune. All ${sid.votesNegated} votes against them are cancelled.` : `Result: NOT SAFE — ${sid.player} remains vulnerable.`);
+      ln('');
+    }
+
     ln('VOTE #1:');
     Object.entries(voteGroups).sort(([,a],[,b]) => b.length-a.length)
       .forEach(([target, voters]) => ln(`${target} (${voters.length}): ${voters.join(', ')}`));
@@ -2228,23 +2733,13 @@ function generateSummaryText(ep) {
       });
     }
 
-    // Shot in the Dark
-    if (ep.shotInDark) {
-      ln('');
-      const sid = ep.shotInDark;
-      ln(`SHOT IN THE DARK: ${sid.player} sacrificed their vote for a 1-in-6 chance of safety.`);
-      ln(sid.safe ? `Result: SAFE — all ${sid.votesNegated} votes against ${sid.player} cancelled.` : `Result: NOT SAFE — ${sid.player} remains vulnerable.`);
-    }
-
-    // Revote
+    // Revote / rock draw
     if (ep.isTie && ep.tiedPlayers) {
       ln('');
-      if (ep.isRockDraw) {
-        ln(`TIE \u2014 rock draw between ${ep.tiedPlayers.join(' and ')}.`);
-      } else if (ep.revoteVotes) {
-        ln(`TIE \u2014 revote between ${ep.tiedPlayers.join(' and ')}. Tied players cannot vote.`);
+      ln(`TIE \u2014 ${ep.tiedPlayers.join(', ')} are deadlocked.`);
+      if (ep.revoteVotes) {
+        ln(`REVOTE: ${ep.tiedPlayers.join(', ')} cannot vote. Everyone else votes between them.`);
         ln('');
-        ln('REVOTE:');
         const rvGroups = {};
         (ep.revoteLog||[]).forEach(({ voter, voted }) => {
           if (!rvGroups[voted]) rvGroups[voted] = [];
@@ -2252,6 +2747,10 @@ function generateSummaryText(ep) {
         });
         Object.entries(rvGroups).sort(([,a],[,b]) => b.length-a.length)
           .forEach(([target, voters]) => ln(`${target} (${voters.length}): ${voters.join(', ')}`));
+        if (ep.isRockDraw) {
+          ln('');
+          ln(`STILL TIED \u2014 ROCK DRAW. Tied players are safe. Everyone else draws a rock.`);
+        }
       }
     }
 
@@ -2277,11 +2776,9 @@ function generateSummaryText(ep) {
 
   // Double elim second vote
   if (ep.firstEliminated) {
-    sec('SECOND VOTE (DOUBLE ELIMINATION)');
-    ln(`First boot: ${ep.firstEliminated} — Chose: ${ep.firstRIChoice || 'N/A'}`);
+    sec('VOTE 2 OF 2 — DOUBLE ELIMINATION');
     if (ep.immunityWinner2) ln(`Second immunity: ${ep.immunityWinner2}`);
     if (ep.votes2 && ep.votingLog2) {
-      ln('VOTE #2:');
       const vg2 = {};
       ep.votingLog2.forEach(({ voter, voted }) => {
         if (!vg2[voted]) vg2[voted] = []; vg2[voted].push(voter);
@@ -2289,19 +2786,21 @@ function generateSummaryText(ep) {
       Object.entries(vg2).sort(([,a],[,b]) => b.length-a.length)
         .forEach(([t, vs]) => ln(`${t} (${vs.length}): ${vs.join(', ')}`));
       ln('');
-      ln('THE VOTES (second tribal):');
+      ln('THE VOTES:');
       ep.votingLog2.forEach(({ voter, voted, reason }) => ln(`${voter} voted for ${voted} — ${reason||'strategic read'}`));
     }
   }
 
-  // WHY THIS VOTE HAPPENED
+  // WHY THIS VOTE HAPPENED — covers both boots in a double elim
   sec('WHY THIS VOTE HAPPENED');
   const elim = ep.eliminated;
-  if (elim) {
-    const es = pStats(elim);
-    ln(`${elim} was voted out because:`);
+
+  function explainBoot(name, votelog, alliances2) {
+    if (!name) return;
+    const es = pStats(name);
+    ln(`${name} was voted out because:`);
     if (gs.phase === 'pre-merge') {
-      const cw = challengeWeakness(elim);
+      const cw = challengeWeakness(name);
       if (cw >= 5.5) ln(`- Perceived as a challenge liability`);
     }
     const th = ((es.physical+es.strategic+es.social)/3).toFixed(1);
@@ -2309,20 +2808,45 @@ function generateSummaryText(ep) {
     else if (parseFloat(th) >= 6) ln(`- High threat (${th}/10) — seen as a long-term jury threat`);
     else if (parseFloat(th) <= 3.5) ln(`- Seen as the weakest link`);
     else ln(`- Became the consensus name — political liability`);
-    const majVoters = ep.votingLog?.filter(l=>l.voted===elim).map(l=>l.voter)||[];
+    const majVoters = (votelog||[]).filter(l=>l.voted===name).map(l=>l.voter);
     if (majVoters.length >= 2) ln(`- Unified vote by: ${majVoters.join(', ')}`);
-    const hadAlly = ep.alliances?.find(a=>a.members.includes(elim)&&a.label!=='Solo');
+    const hadAlly = (alliances2||ep.alliances||[]).find(a=>a.members.includes(name)&&a.label!=='Solo');
     if (hadAlly && majVoters.some(v=>hadAlly.members.includes(v))) ln(`- Even members of their own alliance voted against them`);
-    else if (hadAlly) ln(`- ${elim}'s ${hadAlly.label} (${hadAlly.members.join(', ')}) was outnumbered`);
-    if (ep.isTie) ln(`- Went to a ${ep.isRockDraw ? 'rock draw' : 'revote'}`);
+    else if (hadAlly) ln(`- ${name}'s ${hadAlly.label} (${hadAlly.members.join(', ')}) was outnumbered`);
+  }
+
+  if (ep.firstEliminated) {
+    explainBoot(ep.firstEliminated, ep.votingLog, ep.alliances);
+    ln('');
+    explainBoot(elim, ep.votingLog2, null);
+  } else if (ep.fireMaking) {
+    const fm = ep.fireMaking;
+    if (fm.winner === fm.player) {
+      ln(`${fm.player} received the most votes and was sent to fire-making — but beat ${fm.opponent} to stay in the game.`);
+      ln(`${fm.opponent} was the runner-up vote-getter and lost the fire-making challenge — eliminated.`);
+    } else {
+      explainBoot(fm.player, ep.votingLog, ep.alliances);
+      ln(`${fm.player} faced fire-making against ${fm.opponent} and lost — eliminated.`);
+    }
+  } else if (elim) {
+    explainBoot(elim, ep.votingLog, ep.alliances);
+    if (ep.isTie && ep.isRockDraw) ln(`- Eliminated by rock draw — was NOT in the tie, drew the unlucky rock`);
+    else if (ep.isTie) ln(`- Went to a revote`);
   } else {
     ln('No elimination this episode.');
   }
 
   // VOTED OUT
-  sec('VOTED OUT THIS TRIBAL');
-  if (elim) { ln(elim); ln(`Chose: ${ep.riChoice || 'N/A'}`); }
-  else { ln('No elimination.'); ln('Chose: N/A'); }
+  sec('VOTED OUT THIS EPISODE');
+  if (ep.firstEliminated) {
+    ln(`1. ${ep.firstEliminated}${cfg.ri && ep.firstRIChoice ? ` — ${ep.firstRIChoice}` : ''}`);
+    ln(`2. ${elim || '???'}${cfg.ri && ep.riChoice ? ` — ${ep.riChoice}` : ''}`);
+  } else if (elim) {
+    ln(elim);
+    if (cfg.ri) ln(`Chose: ${ep.riChoice || 'N/A'}`);
+  } else {
+    ln('No elimination.');
+  }
 
   // STRATEGIC ANALYSIS
   sec('STRATEGIC ANALYSIS');
@@ -2356,6 +2880,17 @@ function generateSummaryText(ep) {
     gs.advantages.forEach(adv => ln(`${adv.holder} holds: ${typeLabel[adv.type]||adv.type} (found ep.${adv.foundEp})`));
   }
 
+  // NAMED ALLIANCES
+  const activeAlliances = gs.namedAlliances?.filter(a => a.active && a.members.filter(m => gs.activePlayers.includes(m)).length >= 2) || [];
+  if (activeAlliances.length) {
+    sec('NAMED ALLIANCES');
+    activeAlliances.forEach(a => {
+      const active = a.members.filter(m => gs.activePlayers.includes(m));
+      const betrayalNote = a.betrayals.length ? ` [${a.betrayals.length} betrayal${a.betrayals.length > 1 ? 's' : ''}: ${a.betrayals.map(b => b.player).join(', ')}]` : '';
+      ln(`${a.name} (formed ep.${a.formed}): ${active.join(', ')}${betrayalNote}`);
+    });
+  }
+
   // ONGOING STORYLINES
   sec('ONGOING STORYLINES');
   buildStorylines(ep).forEach(s => ln(`- ${s}`));
@@ -2375,65 +2910,164 @@ function buildStorylines(ep) {
   const lines = [], cfg = seasonConfig;
   const elim = ep.eliminated;
 
+  // RI arc
   if (cfg.ri && ep.riChoice === 'REDEMPTION ISLAND' && elim) {
     const s = pStats(elim);
     lines.push(s.physical >= 7 ? `${elim} arrives at RI as a challenge threat. Can anyone beat them in a duel?` : `${elim} refuses to go quietly. The underdog arc begins on Redemption Island.`);
   }
 
-  // Dominant player story
-  const dom = ep.alliances?.find(a=>a.label==='Majority')?.members?.[0];
-  if (dom) {
-    const ds = pStats(dom);
-    if (ds.strategic >= 8) lines.push(`${dom} controlled this vote cleanly. At what point do they become the biggest threat in the game?`);
+  // Named alliance storylines
+  const namedActive = gs.namedAlliances?.filter(a => a.active && a.members.filter(m => gs.activePlayers.includes(m)).length >= 2) || [];
+  // Most recently formed alliance
+  const newestAlliance = namedActive[namedActive.length - 1];
+  if (newestAlliance && newestAlliance.formed === ep.num) {
+    const activeM = newestAlliance.members.filter(m => gs.activePlayers.includes(m));
+    lines.push(`${newestAlliance.name} just formed — ${activeM.join(', ')}. Whether it holds is another question.`);
+  } else if (newestAlliance) {
+    const activeM = newestAlliance.members.filter(m => gs.activePlayers.includes(m));
+    lines.push(`${newestAlliance.name} (${activeM.join(', ')}) is the most visible alliance in the game. Everyone not in it knows it.`);
+  }
+  // Recent betrayal storyline (this episode)
+  const recentBetrayal = gs.namedAlliances?.flatMap(a => a.betrayals.filter(b => b.ep === ep.num))?.[0];
+  if (recentBetrayal) {
+    const betrayedAlliance = gs.namedAlliances.find(a => a.betrayals.some(b => b === recentBetrayal));
+    lines.push(`${recentBetrayal.player} just broke ${betrayedAlliance?.name || 'their alliance'} — voted ${recentBetrayal.votedFor} while the rest went ${recentBetrayal.consensusWas}. That does not go unnoticed.`);
   }
 
-  // Notable relationships in play
+  // Dominant player story
+  const dom = ep.alliances?.find(a => a.label === 'Majority')?.members?.[0];
+  if (dom) {
+    const ds = pStats(dom);
+    if (ds.strategic >= 8) lines.push(`${dom} controlled this vote cleanly. At what point does the rest of the game turn on them?`);
+    else if (ds.social >= 7) lines.push(`${dom} is quietly liked by everyone. Nobody is naming them yet — but they should be.`);
+  }
+
+  // Dynamic bond storylines from gs.bonds
+  const seen = new Set();
+  const activePairs = [];
+  gs.activePlayers.forEach(a => {
+    gs.activePlayers.forEach(b => {
+      if (a >= b) return;
+      const k = bKey(a, b);
+      if (seen.has(k)) return;
+      seen.add(k);
+      const val = gs.bonds?.[k] || 0;
+      if (Math.abs(val) >= 2) activePairs.push({ a, b, val });
+    });
+  });
+  activePairs.sort((x, y) => Math.abs(y.val) - Math.abs(x.val));
+  const strongBond = activePairs.find(p => p.val >= 4);
+  if (strongBond) lines.push(`${strongBond.a} and ${strongBond.b} are becoming inseparable. Everyone else sees it. Nobody is ready to break it up yet.`);
+  const bigRival = activePairs.find(p => p.val <= -3);
+  if (bigRival) lines.push(`${bigRival.a} and ${bigRival.b} can barely be in the same space. That animosity will force a decision before the end.`);
+
+  // Pre-defined relationships (all-star seasons)
   const activeRels = relationships.filter(r => gs.activePlayers.includes(r.a) && gs.activePlayers.includes(r.b));
-  const ub = activeRels.find(r => r.type==='unbreakable');
-  if (ub) lines.push(`${ub.a} + ${ub.b}: Unbreakable Bond still intact. How long before the rest of the game breaks it up?`);
-  const rival = activeRels.find(r => r.type==='rival'||r.type==='enemy');
-  if (rival) lines.push(`${rival.a} vs ${rival.b}: ${rival.note||'History simmering beneath the surface.'}`);
+  const ub = activeRels.find(r => r.type === 'unbreakable');
+  if (ub) lines.push(`${ub.a} + ${ub.b}: Unbreakable Bond still intact. How long before the rest of the game forces a choice?`);
+  const rival = activeRels.find(r => r.type === 'rival' || r.type === 'enemy');
+  if (rival) lines.push(`${rival.a} vs ${rival.b}: ${rival.note || 'The tension between them is still there. It has not been resolved.'}`);
+
+  // Someone on the outs — low average bond with everyone
+  const outcast = gs.activePlayers.find(p => {
+    const others = gs.activePlayers.filter(q => q !== p);
+    const avg = others.reduce((sum, q) => sum + (gs.bonds?.[bKey(p, q)] || 0), 0) / Math.max(1, others.length);
+    return avg < -1;
+  });
+  if (outcast) {
+    const os = pStats(outcast);
+    lines.push(os.strategic >= 7
+      ? `${outcast} knows they are on the bottom. They are smart enough to know it. The question is whether that is enough.`
+      : `${outcast} has rubbed people the wrong way and does not seem to know it. They are one bad tribal away from going home.`);
+  }
+
+  // Advantage holder storyline
+  const adv = gs.advantages?.[0];
+  if (adv) {
+    const typeLabel = { idol: 'a Hidden Immunity Idol', voteSteal: 'a Vote Steal', extraVote: 'an Extra Vote', kip: 'Knowledge is Power', legacy: 'the Legacy Advantage', amulet: 'an Amulet Advantage' };
+    lines.push(`${adv.holder} is sitting on ${typeLabel[adv.type] || 'a secret advantage'}. The longer they hold it, the more dangerous it becomes — for them and for everyone else.`);
+  }
 
   // Phase approaching
-  if (!gs.isMerged && gs.activePlayers.length <= (cfg.mergeAt||12) + 2) lines.push('Merge is close. Who has cross-tribe bonds? Who is walking in blind?');
-  if (cfg.ri && gs.riPlayers.length) lines.push(`${gs.riPlayers.join(' and ')} on RI — waiting. Watching. Who joins them next?`);
+  if (!gs.isMerged && gs.activePlayers.length <= (cfg.mergeAt || 12) + 2) lines.push('Merge is two eliminations away at most. Cross-tribe bonds are currency right now. Who has them?');
+  if (cfg.ri && gs.riPlayers.length) lines.push(`${gs.riPlayers.join(' and ')} on RI — waiting. Watching. The door back into the game is still open.`);
 
-  if (!lines.length) lines.push('The game continues to develop.');
-  return lines.slice(0,5);
+  // Generic fallback only if truly nothing generated
+  if (!lines.length) lines.push('The alliances are still forming. The first vote set a precedent — who follows it, and who is already thinking differently?');
+  return lines.slice(0, 5);
 }
 
 function buildColdOpen(ep) {
+  // Cold open = NEXT episode's opening scene, set back at camp after this tribal
   const elim = ep.eliminated;
+  const majority = ep.alliances?.find(a => a.label === 'Majority');
+  const hub = majority?.members?.[0];
+  const hubS = hub ? pStats(hub) : null;
+
+  // Find someone who voted against the majority (a dissenter)
+  const dissenter = ep.votingLog?.find(v => v.voted !== elim && elim)?.voter;
+
+  // Find someone who might be shaken — had an ally go home or was on the wrong side
+  const wrongSide = ep.votingLog?.find(v => v.voted !== elim && elim && ep.alliances?.find(a => a.members.includes(v.voter) && a.label !== 'Majority'))?.voter;
+
+  // Active pre-game rivalry/bond for drama
+  const activeRels = relationships.filter(r => gs.activePlayers.includes(r.a) && gs.activePlayers.includes(r.b));
+  const rival = activeRels.find(r => r.type === 'enemy' || r.type === 'rival');
+  const bond = activeRels.find(r => r.type === 'unbreakable');
+
+  const pool = [];
+
+  // Dominant player consolidating power
+  if (hub && hubS?.strategic >= 8) {
+    pool.push(`Night. ${hub} is already awake, staring at the fire. The vote went exactly as planned. That's the problem — everyone noticed.`);
+    pool.push(`The tribe is asleep. ${hub} isn't. They're already thinking three votes ahead.`);
+  }
+
+  // Someone on the wrong side regrouping
+  if (wrongSide) {
+    pool.push(`${wrongSide} returns to camp and says nothing. They smile. They laugh at someone's joke. Inside, they're already calculating.`);
+    pool.push(`${wrongSide} lost the vote. They know it. But they're still here — and in this game, still here is everything.`);
+  }
+
+  // Dissenter trying to cover their tracks
+  if (dissenter && dissenter !== elim) {
+    pool.push(`${dissenter} was on the wrong side of the vote. Morning comes and nobody says anything. That silence is louder than any conversation.`);
+  }
+
+  // Rivalry simmering
+  if (rival) {
+    pool.push(`${rival.a} and ${rival.b} haven't spoken since tribal. They don't need to. The look across the fire says everything.`);
+  }
+
+  // Unbreakable bond under pressure
+  if (bond) {
+    pool.push(`${bond.a} pulls ${bond.b} aside before sunrise. "We're good," they say. Neither of them believes it.`);
+  }
+
+  // Merge approaching
+  if (!gs.isMerged && gs.activePlayers.length <= (seasonConfig.mergeAt || 12) + 2) {
+    pool.push(`The numbers are getting small. Somewhere on another beach, players they've never spoken to are planning for a world where the tribes no longer exist.`);
+    pool.push(`Merge is coming. Everyone can feel it. The question isn't if — it's who walks in with the numbers.`);
+  }
+
+  // RI tension
+  if (seasonConfig.ri && gs.riPlayers.length) {
+    pool.push(`On Redemption Island, ${gs.riPlayers[gs.riPlayers.length-1]} wakes up to the sound of the jungle. Alone. Waiting. Not done yet.`);
+  }
+
+  // No-elim fallback
   if (!elim) {
-    const noElimLines = [
-      'The tribe returns to camp in silence. Nobody is safe.',
-      'Night falls and nobody speaks. The game is shifting — everyone can feel it.',
-      'Back at camp, the alliance holds. But cracks are already forming.',
-    ];
-    return noElimLines[Math.floor(Math.random()*noElimLines.length)];
+    pool.push(`No one went home. The tribe returns to camp and acts like everything is fine. Nothing is fine.`);
+    pool.push(`The vote didn't happen. That doesn't mean the game stopped. Alliances shifted in the dark — they just haven't shown it yet.`);
   }
-  const s = pStats(elim);
-  if (ep.riChoice === 'REDEMPTION ISLAND') {
-    const riLines = [
-      `${elim} receives the map. They read it once, fold it carefully, and disappear into the dark without a word.`,
-      `${elim} doesn't look back. The tribe watches the torch fade. They all know — this isn't over.`,
-      `${elim} picks up the torch and walks alone toward Redemption Island. The game hasn't beaten them. Not yet.`,
-      `The path to Redemption Island is long. ${elim} walks it in silence. They have nothing to say — only something to prove.`,
-    ];
-    return riLines[Math.floor(Math.random()*riLines.length)];
+
+  // Generic fallback
+  if (!pool.length) {
+    pool.push(`The tribe wakes up one player smaller. The game doesn't pause to mourn. It never does.`);
+    pool.push(`New day. Same game. Different math.`);
   }
-  if (ep.riChoice === 'WENT HOME') {
-    return s.physical >= 7
-      ? `${elim} stands at the fork in the road. They look toward Redemption Island. Then they shake their head and walk away. Some battles aren't worth fighting.`
-      : `${elim} reads the map, sets it down, and walks home. No speech. No drama. Just the sound of footsteps disappearing into the night.`;
-  }
-  // Standard non-RI elimination
-  const stdLines = [
-    `${elim}'s torch is snuffed. The walk back to camp is quiet. Everyone is already thinking about next vote.`,
-    `The votes were read and ${elim} is gone. Back at camp, nobody wants to be the first to speak.`,
-    `${elim} leaves. The game adjusts. It always does.`,
-  ];
-  return stdLines[Math.floor(Math.random()*stdLines.length)];
+
+  return pool[Math.floor(Math.random() * pool.length)];
 }
 
 function buildNextEpQs(ep) {
@@ -2442,9 +3076,9 @@ function buildNextEpQs(ep) {
   if (gs.riPlayers.length >= 2) qs.push(`${gs.riPlayers.join(' vs ')} — who wins the duel?`);
   const dom = ep.alliances?.find(a=>a.label==='Majority')?.members?.[0];
   if (dom) qs.push(`Is anyone going to challenge ${dom}'s control?`);
-  if (!gs.isMerged) {
-    const immuneTribeName = ep.winner?.name;
-    if (immuneTribeName) qs.push(`${immuneTribeName} dodged tribal again — but how long before they crack?`);
+  if (!gs.isMerged && ep.challengeType === 'tribe') {
+    if (ep.winner?.name) qs.push(`${ep.winner.name} won immunity — but how long before they crack?`);
+    if (ep.safeTribes?.length) ep.safeTribes.forEach(t => qs.push(`${t.name} dodged tribal this week — who are they targeting next?`));
   }
   if (!gs.isMerged && gs.activePlayers.length <= (cfg.mergeAt||12)+2) qs.push('Is the merge next? Who has cross-tribe numbers?');
   if (!qs.length) qs.push('Who will be voted out next?');
@@ -2490,6 +3124,7 @@ function initGameState() {
     exiledThisEp: null,
     penaltyVoteThisEp: null,
     shotInDarkEnabledThisEp: false,
+    namedAlliances: [],  // [{ id, name, members, formed, betrayals, active }]
   };
   saveGameState();
   return true;
@@ -2585,8 +3220,10 @@ function renderGameState() {
   el.innerHTML = html;
 
   // Update button
-  if (gs.phase === 'finale' || gs.activePlayers.length <= 1) {
+  if (gs.phase === 'complete' || gs.activePlayers.length <= 1) {
     btn.textContent = 'Season Complete'; btn.disabled = true;
+  } else if (gs.phase === 'finale') {
+    btn.textContent = `Simulate Finale (Ep. ${gs.episode+1})`; btn.disabled = false;
   } else {
     btn.textContent = `Simulate Episode ${gs.episode+1}`; btn.disabled = false;
   }
@@ -2594,8 +3231,8 @@ function renderGameState() {
 
 function renderEpisodeView(epRecord) {
   const card = document.getElementById('ep-result-card');
-  const tc = epRecord.isMerge ? '#10b981' : epRecord.challengeType==='tribe' ? tribeColor(epRecord.immunityWinner||'') : '#6366f1';
-  const phaseTag = epRecord.isMerge ? 'MERGE' : epRecord.challengeType==='tribe' ? 'Pre-merge' : 'Post-merge';
+  const tc = epRecord.isFinale ? '#f59e0b' : epRecord.isMerge ? '#10b981' : epRecord.challengeType==='tribe' ? tribeColor(epRecord.immunityWinner||'') : '#6366f1';
+  const phaseTag = epRecord.isFinale ? 'FINALE' : epRecord.isMerge ? 'MERGE' : epRecord.challengeType==='tribe' ? 'Pre-merge' : 'Post-merge';
   const riTag = epRecord.riChoice === 'REDEMPTION ISLAND' ? `<span class="ep-hist-tag" style="background:rgba(249,115,22,0.15);color:#f97316">RI</span>` : epRecord.riChoice === 'WENT HOME' ? `<span class="ep-hist-tag" style="background:rgba(148,163,184,0.1);color:var(--muted)">Home</span>` : '';
 
   const voteEntries = Object.entries(epRecord.votes||{}).sort(([,a],[,b])=>b-a);
@@ -2611,7 +3248,7 @@ function renderEpisodeView(epRecord) {
     <div class="ep-facts">
       <div class="ep-fact"><label>Immunity</label><span>${epRecord.immunityWinner||'—'}</span></div>
       <div class="ep-fact"><label>Tribal</label><span>${epRecord.challengeType==='tribe'?(epRecord.immunityWinner?epRecord.immunityWinner+' wins':(voteEntries.length?'Vote follows':'—')):'All vote'}</span></div>
-      <div class="ep-fact ep-eliminated"><label>Eliminated</label><span>${epRecord.eliminated||'None'} ${riTag}</span></div>
+      <div class="ep-fact ep-eliminated"><label>Eliminated</label><span>${epRecord.firstEliminated ? `${epRecord.firstEliminated} + ${epRecord.eliminated||'?'}` : (epRecord.eliminated||'None')} ${riTag}</span></div>
       <div class="ep-fact"><label>Votes</label><span>${Object.values(epRecord.votes||{}).reduce((a,b)=>a+b,0)} cast</span></div>
     </div>
     <div style="margin-top:4px;margin-bottom:0"><div style="font-size:10px;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px">Vote breakdown</div><div class="ep-vote-list">${chips}</div></div>
@@ -2629,10 +3266,11 @@ function renderEpisodeHistory() {
   grid.innerHTML = history.map(ep => {
     const riTag = ep.riChoice==='REDEMPTION ISLAND' ? `<span class="ep-hist-tag" style="background:rgba(249,115,22,0.15);color:#f97316">RI</span>` : ep.riChoice==='WENT HOME' ? `<span class="ep-hist-tag" style="background:rgba(148,163,184,0.1);color:var(--muted)">Home</span>` : '';
     const mergeTag = ep.isMerge ? `<span class="ep-hist-tag" style="background:rgba(16,185,129,0.15);color:var(--accent)">MERGE</span>` : '';
+    const finaleTag = ep.isFinale ? `<span class="ep-hist-tag" style="background:rgba(245,158,11,0.15);color:#f59e0b">FINALE</span>` : '';
     return `<div class="ep-hist-card ${ep.num===currentNum?'active':''}" onclick="viewEpisode(${ep.num})">
       <div class="ep-hist-ep">Episode ${ep.num}</div>
-      <div class="ep-hist-elim">${ep.eliminated||'\u2014'}</div>
-      <div>${riTag}${mergeTag}</div>
+      <div class="ep-hist-elim">${ep.firstEliminated ? `${ep.firstEliminated} + ${ep.eliminated||'?'}` : (ep.eliminated || (ep.isFinale ? 'FTC' : '\u2014'))}</div>
+      <div>${riTag}${mergeTag}${finaleTag}</div>
     </div>`;
   }).join('');
 }
@@ -2645,7 +3283,7 @@ function viewEpisode(num) {
 
 function simulateNext() {
   if (!gs) { if (!initGameState()) { alert('Add players to Cast Builder first.'); return; } }
-  const ep = simulateEpisode();
+  const ep = gs.phase === 'finale' ? simulateFinale() : simulateEpisode();
   if (!ep) return;
   viewingEpNum = ep.num;
   renderRunTab();
@@ -2694,7 +3332,6 @@ function renderTwistList() {
         <option value="mutiny"            ${t.type==='mutiny'            ?'selected':''}>Mutiny</option>
         <option value="penalty-vote"      ${t.type==='penalty-vote'      ?'selected':''}>Penalty Vote</option>
         <option value="returning-player"  ${t.type==='returning-player'  ?'selected':''}>Returning Player</option>
-        <option value="shot-in-dark"      ${t.type==='shot-in-dark'      ?'selected':''}>Shot in the Dark</option>
         <option value="fire-making"       ${t.type==='fire-making'       ?'selected':''}>Fire Making</option>
       </select>
       <button class="btn btn-danger btn-sm" style="flex-shrink:0;padding:4px 8px" onclick="removeTwist('${t.id}')">&#10005;</button>
@@ -2724,6 +3361,184 @@ function updateTwist(id, field, value) {
 // ══════════════════════════════════════════════════════════════════════
 // RESULTS TAB
 // ══════════════════════════════════════════════════════════════════════
+
+function ordinal(n) {
+  const s = ['th','st','nd','rd'], v = n % 100;
+  return n + (s[(v-20)%10] || s[v] || s[0]);
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// ENGINE: FINALE
+// ══════════════════════════════════════════════════════════════════════
+
+function simulateFinale() {
+  const cfg = seasonConfig;
+  const epNum = gs.episode + 1;
+  const players = [...gs.activePlayers];
+
+  const ep = {
+    num: epNum, isFinale: true, challengeType: 'individual',
+    alliances: [], votingLog: [], votes: {},
+    idolFinds: [], idolPlays: [], idolRehide: false,
+    journey: null, twist: null, campEvents: {},
+  };
+
+  generateCampEvents(ep);
+
+  // Final immunity challenge
+  const immResult = simulateIndividualChallenge(players, null);
+  ep.immunityWinner = immResult?.name || players[0];
+  ep.challengeLabel = immResult?.challengeType || 'Mixed';
+
+  let finalists = [...players];
+
+  // If finaleSize === 2 and 3 remain: immunity winner cuts one player
+  if (cfg.finaleSize === 2 && players.length === 3) {
+    const others = players.filter(p => p !== ep.immunityWinner);
+    const taken = wRandom(others, p => Math.max(0.1, getBond(ep.immunityWinner, p) + pStats(p).loyalty * 0.3));
+    const cut = others.find(p => p !== taken);
+    ep.finalCut = { winner: ep.immunityWinner, brought: taken, cut };
+    ep.eliminated = cut;
+    gs.eliminated.push(cut);
+    gs.jury.push(cut);
+    gs.activePlayers = gs.activePlayers.filter(p => p !== cut);
+    finalists = [ep.immunityWinner, taken];
+  }
+
+  ep.finaleFinalists = finalists;
+
+  // Jury vote
+  const juryResult = simulateJuryVote(finalists);
+  ep.juryResult = juryResult;
+  const jSorted = Object.entries(juryResult.votes).sort(([,a],[,b]) => b-a);
+  ep.winner = jSorted[0]?.[0] || finalists[0];
+
+  // Store result for Results tab
+  gs.finaleResult = { winner: ep.winner, votes: juryResult.votes, reasoning: juryResult.reasoning, finalists };
+
+  const summaryText = generateFinaleSummaryText(ep);
+  ep.summaryText = summaryText;
+
+  gs.phase = 'complete';
+  gs.episode = epNum;
+  gs.episodeHistory.push({
+    num: epNum, eliminated: ep.eliminated || null, firstEliminated: null,
+    riChoice: null, immunityWinner: ep.immunityWinner, challengeType: 'individual',
+    isMerge: false, isFinale: true, votes: {}, alliances: [], summaryText,
+  });
+
+  saveGameState();
+  return ep;
+}
+
+function generateFinaleSummaryText(ep) {
+  const L = [], cfg = seasonConfig;
+  const finalists = ep.finaleFinalists || gs.activePlayers;
+  const jury = gs.jury || [];
+  const juryResult = ep.juryResult || {};
+  function sec(title) { L.push(''); L.push(`=== ${title} ===`); }
+  function ln(t) { L.push(t); }
+
+  sec('META');
+  ln(`Season: ${cfg.name || 'Untitled'}`);
+  ln(`Episode: ${ep.num} — FINALE`);
+  ln(`Finalists: ${finalists.join(', ')}`);
+  ln(`Jury (${jury.length}): ${jury.join(', ')}`);
+
+  // Camp events
+  if (ep.campEvents && Object.keys(ep.campEvents).length) {
+    sec('CAMP EVENTS');
+    Object.entries(ep.campEvents).forEach(([campName, events]) => {
+      if (!events?.length) return;
+      if (campName !== 'merge') ln(`${campName.toUpperCase()} CAMP:`);
+      events.forEach(e => ln(`- ${e.text}`));
+    });
+  }
+
+  sec('FINAL IMMUNITY CHALLENGE');
+  ln(`${ep.immunityWinner} wins the Final Immunity Challenge (${ep.challengeLabel||'Mixed'}).`);
+  const immS = pStats(ep.immunityWinner);
+  if (immS.physical >= 8 || immS.endurance >= 8) ln(`A dominant performance — ${ep.immunityWinner} wanted this one.`);
+  else ln(`${ep.immunityWinner} digs deep when it matters most.`);
+
+  if (ep.finalCut) {
+    sec('FINAL DECISION');
+    const fc = ep.finalCut;
+    const bond = getBond(fc.winner, fc.brought);
+    const bondReason = bond >= 3 ? `loyal ally throughout the game` : bond >= 1 ? `easier opponent at FTC` : `the safer choice`;
+    ln(`${fc.winner} holds the power. They must choose who sits beside them.`);
+    ln(`${fc.winner} brings ${fc.brought} to the Final Tribal Council (${bondReason}).`);
+    ln(`${fc.cut} is eliminated in ${ordinal(finalists.length + jury.length)} place.`);
+    ln('');
+    // Brief why
+    const cutS = pStats(fc.cut);
+    const cutBond = getBond(fc.winner, fc.cut);
+    if (cutBond <= -1) ln(`${fc.winner} never fully trusted ${fc.cut}. The finale was the first clean chance to act on it.`);
+    else if (cutS.social >= 7) ln(`${fc.cut} had too many jury friends. ${fc.winner} could not afford to let them into the finals.`);
+    else ln(`${fc.winner} calculated ${fc.brought} was the right seat-mate — and did not look back.`);
+  }
+
+  sec('FINAL TRIBAL COUNCIL');
+  ln(`The jury of ${jury.length} faces the finalists.`);
+  ln('');
+  finalists.forEach(f => {
+    const fs = pStats(f);
+    const idolPlays = gs.episodeHistory.filter(e => (e.alliances||[]).some(() => false)).length; // placeholder
+    const wins = gs.episodeHistory.filter(e => e.immunityWinner === f).length;
+    const votes = gs.episodeHistory.reduce((sum, e) => sum + (e.votes?.[f] || 0), 0);
+    ln(`${f}:`);
+    if (fs.strategic >= 8 && fs.social >= 7) ln(`  - Complete player. Dominated strategy and maintained relationships.`);
+    else if (fs.strategic >= 8) ln(`  - Ruthless strategist. Controlled the vote at every critical juncture.`);
+    else if (fs.social >= 8) ln(`  - Social anchor. Nobody wanted to vote against them — and nobody did.`);
+    else if (fs.physical >= 8 || wins >= 3) ln(`  - Challenge beast. Won immunity when it counted.`);
+    else ln(`  - Survived against the odds. The journey matters as much as the destination.`);
+    ln(`  - Individual immunities won: ${wins}`);
+    ln(`  - Votes against (total): ${votes}`);
+  });
+
+  sec('JURY VOTE');
+  juryResult.reasoning?.forEach(r => {
+    const js = pStats(r.juror);
+    const bond = getBond(r.juror, r.votedFor);
+    let reason;
+    if (bond >= 4) reason = `strong personal loyalty — felt closest to ${r.votedFor}`;
+    else if (bond >= 2) reason = `respected ${r.votedFor}'s game and felt a genuine connection`;
+    else if (js.strategic >= 8) reason = `pure gameplay — ${r.votedFor} made the best moves`;
+    else if (js.intuition >= 7) reason = `read the game correctly — ${r.votedFor} earned it`;
+    else if (bond >= 0) reason = `liked ${r.votedFor} the most of the remaining options`;
+    else reason = `voted against who they disliked more`;
+    ln(`${r.juror} → ${r.votedFor} — ${reason}`);
+  });
+
+  const sorted = Object.entries(juryResult.votes).sort(([,a],[,b]) => b-a);
+  const tally = sorted.map(([n,v]) => `${n}: ${v}`).join(' | ');
+
+  sec('FINAL TALLY');
+  ln(tally);
+
+  sec('WINNER');
+  const winner = ep.winner;
+  const ws = pStats(winner);
+  const winVotes = juryResult.votes[winner] || 0;
+  const totalJury = jury.length;
+  ln(`${winner} wins the season with a ${winVotes}-${totalJury - winVotes}${sorted.length > 2 ? `-${sorted[2]?.[1]||0}` : ''} jury vote!`);
+  ln('');
+  if (ws.strategic >= 8 && ws.social >= 7) ln(`${winner} played a complete game — controlling votes while keeping the jury's respect. A textbook win.`);
+  else if (ws.strategic >= 8) ln(`${winner} played a dominant strategic game. Not everyone on the jury loved the moves — but they could not argue with them.`);
+  else if (ws.social >= 8) ln(`${winner} won through sheer social mastery. Made everyone feel like they mattered. In the end, the jury voted for someone they actually liked.`);
+  else if (ws.physical >= 8) ln(`${winner} won the challenges when it counted. The jury respected someone who earned their safety.`);
+  else ln(`${winner} outlasted, outplayed, and outsurvivedeveryone. A won built on resilience.`);
+
+  // Runner-up note
+  if (sorted.length >= 2) {
+    const ru = sorted[1][0];
+    const ruVotes = sorted[1][1];
+    if (ruVotes >= Math.floor(totalJury / 2)) ln(`${ru} came agonizingly close — ${ruVotes} jury votes. A different night, a different result.`);
+    else ln(`${ru} finishes as runner-up with ${ruVotes} jury vote${ruVotes !== 1 ? 's' : ''}.`);
+  }
+
+  return L.join('\n');
+}
 
 function simulateJuryVote(finalists) {
   const jury = gs.jury || [];
@@ -2765,24 +3580,28 @@ function renderResultsTab() {
   content.style.display = 'flex'; content.style.flexDirection = 'column';
 
   const finalists = [...gs.activePlayers];
-  const juryResult = (gs.phase === 'finale' || gs.isMerged) && finalists.length
-    ? simulateJuryVote(finalists) : null;
+  const isComplete = gs.phase === 'complete';
+  const finaleResult = gs.finaleResult || null;
+  // Only project winner if merge has happened and not yet in finale; show actual if complete
+  const juryResult = finaleResult || ((gs.isMerged && !isComplete && finalists.length)
+    ? simulateJuryVote(finalists) : null);
+  const isProjected = !finaleResult && juryResult;
 
   let html = '';
 
-  // Winner block (if finale)
-  if (juryResult && finalists.length <= seasonConfig.finaleSize && Object.values(juryResult.votes).some(v=>v>0)) {
+  // Winner block
+  if (juryResult && Object.values(juryResult.votes).some(v => v > 0)) {
     const sorted = Object.entries(juryResult.votes).sort(([,a],[,b]) => b-a);
-    const winner = sorted[0][0];
+    const winner = finaleResult?.winner || sorted[0][0];
     const tally = sorted.map(([n,v]) => `<span class="results-jury-chip">${n}: ${v}</span>`).join('');
     html += `<div class="results-winner-card">
       <div class="results-crown">&#127942;</div>
       <div>
-        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Projected Winner</div>
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">${isProjected ? 'Projected Winner' : 'Season Winner'}</div>
         <div class="results-winner-name">${winner}</div>
         <div class="results-jury-tally">${tally}</div>
       </div></div>`;
-    html += `<div style="font-size:13px;font-weight:600;color:var(--muted);margin-top:4px">Jury Vote Breakdown</div>`;
+    html += `<div style="font-size:13px;font-weight:600;color:var(--muted);margin-top:4px">${isProjected ? 'Projected Jury Vote' : 'Final Jury Vote'}</div>`;
     html += `<div class="jury-breakdown">
       <div class="jury-breakdown-header"><span class="jb-juror">Juror</span><span class="jb-voted">Votes For</span></div>
       ${juryResult.reasoning.map(r => `<div class="jury-breakdown-row"><span class="jb-juror">${r.juror}</span><span class="jb-voted">${r.votedFor}</span></div>`).join('')}
@@ -2792,11 +3611,6 @@ function renderResultsTab() {
   // Placement list
   html += `<div style="font-size:13px;font-weight:600;color:var(--muted);margin-top:4px">Boot Order</div>`;
   html += `<div class="placement-table">`;
-
-  function ordinal(n) {
-    const s = ['th','st','nd','rd'], v = n%100;
-    return n + (s[(v-20)%10] || s[v] || s[0]);
-  }
 
   // Finalists (top placements)
   finalists.forEach((name, i) => {
@@ -2832,6 +3646,666 @@ function renderResultsTab() {
 }
 
 // ══════════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════
+// VISUAL EPISODE PLAYER
+// ══════════════════════════════════════════════════════════════════════
+
+let vpCurrentScreen = 0;
+let vpScreens = [];
+
+function vpAvatar(name, size=48, borderColor='') {
+  const p = players.find(x => x.name === name);
+  const slug = p?.slug || name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+  const tc = borderColor || (p?.tribe ? tribeColor(p.tribe) : '#475569');
+  const init = (name||'?')[0].toUpperCase();
+  return `<div class="vp-avatar-wrap" style="width:${size}px;height:${size}px;border-color:${tc}">
+    <img src="assets/avatars/${slug}.png" onerror="this.style.display='none'" />
+    <span class="vp-init">${init}</span>
+  </div>`;
+}
+
+function vpMiniAvatar(name) {
+  const p = players.find(x => x.name === name);
+  const slug = p?.slug || name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+  const init = (name||'?')[0].toUpperCase();
+  return `<div class="vp-mini-avatar" title="${name}">
+    <img src="assets/avatars/${slug}.png" onerror="this.style.display='none'" />
+    ${init}
+  </div>`;
+}
+
+function vpArchLabel(name) {
+  const p = players.find(x => x.name === name);
+  return ARCHETYPE_NAMES[p?.archetype] || p?.archetype || '';
+}
+
+function vpConfessionalMood(name, ep, role) {
+  const s = pStats(name);
+  if (role === 'immunity') return 'confident';
+  if (role === 'target') return s.boldness >= 7 ? 'strategic' : 'worried';
+  if (role === 'spearheader') return 'strategic';
+  if (role === 'swing') return 'bitter';
+  if (s.strategic >= 8) return 'strategic';
+  if (ep?.immunityWinner === name) return 'confident';
+  return 'neutral';
+}
+
+function vpGenerateQuote(name, ep, role) {
+  const s = pStats(name);
+  const arch = players.find(x => x.name === name)?.archetype || '';
+  const elim = ep?.eliminated;
+  const quotes = {
+    immunity: [
+      `Winning individual immunity feels incredible. I was definitely a target, but now I'm safe for at least one more round.`,
+      `I proved I can win when it matters. This should earn me some respect from the others.`,
+      `Safety feels good, but now I need to think about the next vote. Who goes home when it's not me?`,
+      `This immunity couldn't have come at a better time. Now I can orchestrate some moves without worrying about my own neck.`,
+    ],
+    spearheader: [
+      `I know exactly what needs to happen tonight. I've lined up the votes. Now I just need everyone to hold.`,
+      `Tonight is about making a move that the jury will remember. Calculated. Not emotional.`,
+      `I've been working on this for days. If my alliance stays together, it's going to be clean. If not — chaos.`,
+      `Everyone trusts me right now. That's exactly where I want to be. Tonight I put that trust to work.`,
+      s.strategic >= 8 ? `The game is chess. I've been thinking six moves ahead since day one. Tonight is just the next move.` : `This is my shot to take control. I'm not letting it slip.`,
+    ],
+    target: [
+      `I know my name is being thrown around. But I've survived worse. I'm not going anywhere without a fight.`,
+      `They think I don't see what's happening. I see everything. The question is whether I can do anything about it.`,
+      `I'm a potential target tonight. Emphasis on 'potential.' I still have time to get out of this.`,
+      `If they write my name down tonight, they'll regret it eventually. But hopefully it doesn't come to that.`,
+      `I'm not panicking. Not yet. But I'm watching every conversation very carefully.`,
+    ],
+    swing: [
+      `My alliance wants one name. My gut wants another. Whatever I do tonight, someone's going to be upset with me.`,
+      `I'm being pulled in two directions and I don't know which one I trust more. This is the hardest vote yet.`,
+      s.loyalty <= 4 ? `Loyalty only goes so far. I have to play for myself eventually. Maybe tonight is that night.` : `I want to stay loyal but the numbers aren't adding up. Something has to give.`,
+      `Both sides have made their case. I just have to decide which future I want to be part of.`,
+    ],
+    wrong_side: [
+      `I was on the wrong side tonight. That puts a target on my back. Time to recalibrate.`,
+      `My vote didn't matter in the end. Now I have to figure out how to make it matter next time.`,
+      `I read this wrong. I won't read it wrong twice.`,
+    ],
+    general: [
+      s.strategic >= 8 ? `Every vote is information. I'm cataloguing everything.` : `This game is exhausting. But I'm still here, and that's what matters.`,
+      s.social >= 8 ? `I just need to keep the relationships strong. Everything else follows from that.` : `Surviving another round. That's the goal. One vote at a time.`,
+      s.boldness >= 8 ? `Some people are playing not to lose. I'm playing to win. Big difference.` : `I don't want to rock the boat right now. Quiet is safe.`,
+      `I'm not going to panic. I'm going to trust the process and see what happens at tribal.`,
+    ],
+  };
+  const pool = quotes[role] || quotes.general;
+  // Use player name as seed for deterministic but varied picks
+  const idx = (name.charCodeAt(0) + (ep?.num || 0)) % pool.length;
+  return pool[idx];
+}
+
+function vpGetConfessionalRole(name, ep) {
+  if (!ep) return 'general';
+  if (ep.immunityWinner === name) return 'immunity';
+  if (ep.eliminated === name) return 'target';
+  const isSpear = ep.alliances?.some(a => a.members?.[0] === name && a.members.length >= 2 && a.target);
+  if (isSpear) return 'spearheader';
+  const s = pStats(name);
+  const onWrongSide = ep.votingLog?.some(v => v.voter === name && v.voted !== ep.eliminated);
+  if (onWrongSide) return 'wrong_side';
+  if (s.loyalty <= 5) return 'swing';
+  return 'general';
+}
+
+// ── SCREEN 1: Overview ──
+function vpBuildOverview(ep) {
+  const cfg = seasonConfig;
+  const phase = gs.phase;
+  const tribeGroups = (phase === 'pre-merge' && gs.tribes.length)
+    ? gs.tribes
+    : [{ name: 'Merged', members: [...gs.activePlayers] }];
+
+  let html = `<div class="vp-page">
+    <div class="vp-ep-label">Episode ${ep.num} · Day ${ep.num * 3 - 2}</div>
+    <div class="vp-title">${cfg.name || 'Season'}</div>
+    <div class="vp-subtitle">${gs.activePlayers.length} players remaining</div>`;
+
+  tribeGroups.forEach(tribe => {
+    const tc = tribeColor(tribe.name);
+    const food = Math.round(Math.random() * 200 + 200);
+    const water = Math.round(Math.random() * 250 + 250);
+    const foodMax = 500, waterMax = 600;
+    html += `<div class="vp-card" style="margin-bottom:20px">
+      <div class="vp-tribe-bar" style="background:${tc}"></div>
+      <div style="font-size:16px;font-weight:700;color:${tc};margin-bottom:14px">${tribe.name}</div>
+      <div class="vp-resource-row">
+        <div class="vp-resource">
+          <div class="vp-res-label">Food Supply</div>
+          <div class="vp-res-bar-bg"><div class="vp-res-bar-fill" style="width:${Math.round(food/foodMax*100)}%;background:#10b981"></div></div>
+          <div class="vp-res-val" style="color:#10b981">${food} / ${foodMax}</div>
+        </div>
+        <div class="vp-resource">
+          <div class="vp-res-label">Water Supply</div>
+          <div class="vp-res-bar-bg"><div class="vp-res-bar-fill" style="width:${Math.round(water/waterMax*100)}%;background:#3b82f6"></div></div>
+          <div class="vp-res-val" style="color:#3b82f6">${water} / ${waterMax}</div>
+        </div>
+      </div>
+      <div class="vp-player-grid">
+        ${tribe.members.map(name => `<div class="vp-player-tile">
+          ${vpAvatar(name, 48, tc)}
+          <div class="vp-player-name">${name}</div>
+          <div class="vp-player-arch">${vpArchLabel(name)}</div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  });
+
+  html += `</div>`;
+  return html;
+}
+
+// ── SCREEN 2: Challenge ──
+function vpBuildChallenge(ep) {
+  const winner = ep.winner?.name || ep.immunityWinner;
+  const loser  = ep.loser?.name;
+  const isTribe = ep.challengeType === 'tribe';
+  const chalLabel = ep.challengeLabel || 'Mixed';
+
+  let html = `<div class="vp-page">
+    <div class="vp-ep-label">Episode ${ep.num} · ${isTribe ? 'Tribe' : 'Individual'} Challenge</div>
+    <div class="vp-title">${chalLabel} Challenge</div>
+    <div class="vp-subtitle">Players push to their limits for immunity.</div>
+    <div class="vp-divider"></div>`;
+
+  if (isTribe && ep.challengePlacements?.length) {
+    html += `<div class="vp-challenge-tribe-row">`;
+    ep.challengePlacements.forEach((tribe, i) => {
+      const isW = i === 0;
+      const isL = i === ep.challengePlacements.length - 1;
+      const cls = isW ? 'winner' : isL ? 'loser' : 'safe';
+      const label = isW ? '🏆 WINNER — IMMUNE' : isL ? '❌ LAST — TRIBAL' : '✓ SAFE';
+      const labelColor = isW ? '#10b981' : isL ? '#ef4444' : '#6366f1';
+      html += `<div class="vp-challenge-tribe ${cls}">
+        <div class="vp-challenge-tribe-name" style="color:${tribeColor(tribe.name)}">${tribe.name}</div>
+        <div class="vp-mini-avatars">${tribe.members.map(vpMiniAvatar).join('')}</div>
+        <div style="font-size:11px;font-weight:700;color:${labelColor};margin-top:10px">${label}</div>
+      </div>`;
+    });
+    html += `</div>`;
+  } else if (winner) {
+    html += `<div class="vp-card" style="text-align:center;padding:28px">
+      ${vpAvatar(winner, 72, '#10b981')}
+      <div style="font-size:20px;font-weight:800;color:#10b981;margin:12px 0 4px">${winner}</div>
+      <div style="font-size:12px;color:#64748b">${vpArchLabel(winner)}</div>
+      <div style="font-size:11px;font-weight:700;color:#10b981;margin-top:10px">🏆 IMMUNITY WINNER</div>
+    </div>`;
+  }
+
+  if (loser || (!isTribe && ep.tribalPlayers?.length)) {
+    const tag = loser ? `${loser} goes to Tribal Council.` : `The tribe goes to Tribal Council.`;
+    html += `<div class="vp-result-banner lose">${tag}</div>`;
+  }
+
+  html += `</div>`;
+  return html;
+}
+
+// ── SCREEN 3: Camp ──
+function vpBuildCamp(ep) {
+  const eventTypeLabel = {
+    fight: 'Confrontation', bond: 'Bond', dispute: 'Dispute',
+    meltdown: 'Meltdown', hardWork: 'Hard Work',
+    strategicTalk: 'Strategic Talk', idolSearch: 'Idol Search',
+    injury: 'Injury', idolFound: 'Advantage Found',
+  };
+  const eventColor = {
+    fight:'#ef4444', bond:'#10b981', dispute:'#f59e0b',
+    meltdown:'#ef4444', hardWork:'#3b82f6', strategicTalk:'#8b5cf6',
+    idolSearch:'#ec4899', injury:'#f97316', idolFound:'#fbbf24',
+  };
+
+  let html = `<div class="vp-page">
+    <div class="vp-ep-label">Episode ${ep.num} · Camp</div>
+    <div class="vp-title">Strategy & Relationships</div>
+    <div class="vp-subtitle">Life between the challenges.</div>`;
+
+  const allEvents = [];
+  Object.entries(ep.campEvents || {}).forEach(([camp, events]) => {
+    (events || []).forEach(e => allEvents.push({ camp, ...e }));
+  });
+
+  if (allEvents.length) {
+    html += `<div class="vp-card">`;
+    allEvents.forEach(evt => {
+      // Try to extract player names for avatars
+      const words = evt.text.split(/\s+/);
+      const mentioned = players.filter(p => words.some(w => w.startsWith(p.name.split(' ')[0])));
+      const avatarHtml = mentioned.slice(0, 2).map(p => vpAvatar(p.name, 38)).join('');
+      const hasRelChange = evt.type === 'bond' || evt.type === 'fight' || evt.type === 'dispute';
+      const relDelta = evt.type === 'bond' ? '+1 relationship' : evt.type === 'fight' ? '-1.5 relationship' : evt.type === 'dispute' ? '-0.8 relationship' : '';
+      const relClass = evt.type === 'bond' ? 'pos' : 'neg';
+      const color = eventColor[evt.type] || '#475569';
+      html += `<div class="vp-camp-event">
+        <div class="vp-camp-event-avatars">${avatarHtml}</div>
+        <div class="vp-camp-event-body">
+          <div class="vp-camp-event-type" style="color:${color}">${eventTypeLabel[evt.type] || evt.type}</div>
+          <div class="vp-camp-event-text">${evt.text}</div>
+          ${hasRelChange && relDelta ? `<span class="vp-rel-tag ${relClass}">${relDelta}</span>` : ''}
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+  } else {
+    html += `<div class="vp-card"><div style="color:#475569;font-size:13px">A quiet day at camp. The real action is happening under the surface.</div></div>`;
+  }
+
+  html += `</div>`;
+  return html;
+}
+
+// ── SCREEN 4: Confessionals ──
+function vpBuildConfessionals(ep) {
+  const tribal = ep.tribalPlayers || gs.activePlayers;
+  const featured = [...new Set([
+    ep.immunityWinner,
+    ...(ep.alliances?.filter(a => a.target && a.members.length >= 2).slice(0,2).map(a => a.members[0]) || []),
+    ep.eliminated,
+    ...tribal.filter(p => pStats(p).boldness >= 7).slice(0,2),
+    ...tribal.slice(0, 4),
+  ].filter(Boolean))].slice(0, 8);
+
+  let html = `<div class="vp-page">
+    <div class="vp-ep-label">Episode ${ep.num} · Confessionals</div>
+    <div class="vp-title">Confessionals</div>
+    <div class="vp-subtitle">What are they really thinking?</div>
+    <div class="vp-conf-grid">`;
+
+  featured.forEach(name => {
+    const role = vpGetConfessionalRole(name, ep);
+    const mood = vpConfessionalMood(name, ep, role);
+    const quote = vpGenerateQuote(name, ep, role);
+    const moodLabels = { confident:'Confidence', worried:'Worried', strategic:'Strategic', bitter:'Conflicted', neutral:'Reflective' };
+    html += `<div class="vp-conf-card" style="border-left-color:${tribeColor(players.find(p=>p.name===name)?.tribe||'')||'#334155'}">
+      <div class="vp-conf-header">
+        ${vpAvatar(name, 40)}
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#e2e8f0">${name}</div>
+          <span class="vp-conf-mood ${mood}">${moodLabels[mood]||mood}</span>
+        </div>
+      </div>
+      <div class="vp-conf-quote">${quote}</div>
+    </div>`;
+  });
+
+  html += `</div></div>`;
+  return html;
+}
+
+// ── SCREEN 5: Voting Plans ──
+function vpBuildVotingPlans(ep) {
+  if (!ep.alliances?.some(a => a.target)) {
+    return `<div class="vp-page"><div class="vp-title">No tribal this episode.</div></div>`;
+  }
+
+  const plans = (ep.alliances || [])
+    .filter(a => a.target && a.members?.length >= 1 && a.label !== 'Solo')
+    .sort((a, b) => b.members.length - a.members.length)
+    .slice(0, 2);
+
+  // Swing voters: tribal players not in any plan, or low loyalty in a plan
+  const committed = new Set(plans.flatMap(p => p.members));
+  const tribal = ep.tribalPlayers || [];
+  const swings = tribal.filter(p => {
+    if (p === ep.immunityWinner) return false;
+    const s = pStats(p);
+    return !committed.has(p) || s.loyalty <= 4 || s.boldness >= 8;
+  }).slice(0, 4);
+
+  // Key confessionals: spearheaders + swings + target
+  const keyPlayers = [...new Set([
+    ...plans.map(p => p.members[0]),
+    ...swings,
+    ep.eliminated,
+  ].filter(Boolean))];
+
+  const planColors = ['plan-a', 'plan-b'];
+  const planBadges = ['a', 'b'];
+  const planLabels = ['PLAN A', 'PLAN B'];
+
+  let html = `<div class="vp-page">
+    <div class="vp-ep-label">Episode ${ep.num}</div>
+    <div class="vp-title">Voting Plans</div>
+    <div class="vp-subtitle">As Tribal Council approaches, alliances converge and targets emerge...</div>
+    <div class="vp-section-label">Competing Vote Plans</div>
+    <div class="vp-plans-grid">`;
+
+  plans.forEach((plan, idx) => {
+    const spear = plan.members[0];
+    const supporters = plan.members.slice(1);
+    const target = plan.target;
+    const tS = pStats(target);
+    const reasonTag = deriveTargetReason(spear, target, gs.phase, plan.members, ep.challengeLabel);
+    const shortReason = reasonTag.length > 30 ? reasonTag.slice(0, 28) + '...' : reasonTag;
+
+    html += `<div class="vp-plan-card ${planColors[idx]}">
+      <div class="vp-plan-header">
+        <span class="vp-spearheader">Spearheader</span>
+        <span class="vp-plan-badge ${planBadges[idx]}">${planLabels[idx]}</span>
+      </div>
+      <div class="vp-plan-body">
+        <div class="vp-spearhead-row">
+          ${vpAvatar(spear, 36)}
+          <div class="vp-spearhead-name">${spear}</div>
+        </div>
+        <div class="vp-vote-count">${plan.members.length} Vote${plan.members.length !== 1 ? 's' : ''}</div>
+        <div class="vp-target-card">
+          <div class="vp-target-big-avatar">${vpAvatar(target, 80, '#ef4444').replace('class="vp-avatar-wrap"','class="vp-avatar-wrap" style="margin:0 auto;border-color:#ef4444"')}</div>
+          <div class="vp-target-name">${target}</div>
+          <div class="vp-target-arch">${vpArchLabel(target)}</div>
+          <div class="vp-target-votes">All ${plan.members.length} vote${plan.members.length !== 1 ? 's' : ''}</div>
+          <div class="vp-reason-tag">"${shortReason}"</div>
+        </div>
+        ${supporters.length ? `<div class="vp-support-row">
+          <div class="vp-support-label">Supporting</div>
+          <div class="vp-support-avatars">${supporters.map(s => vpAvatar(s, 30)).join('')}</div>
+        </div>` : ''}
+      </div>
+    </div>`;
+  });
+
+  html += `</div>`;
+
+  // Swing votes
+  if (swings.length) {
+    html += `<div class="vp-swing-section">
+      <div class="vp-swing-label">Swing Votes <span class="vp-swing-count">${swings.length} player${swings.length !== 1 ? 's' : ''}</span></div>
+      <div class="vp-swing-grid">`;
+    swings.forEach(name => {
+      const s = pStats(name);
+      const inPlan = plans.find(p => p.members.includes(name));
+      const detail = inPlan ? `In bloc against: ${inPlan.target}` : 'Uncommitted — no clear bloc';
+      html += `<div class="vp-swing-card">
+        ${vpAvatar(name, 40)}
+        <div>
+          <div class="vp-swing-name">${name} <span class="vp-swing-tag">CONFLICTED</span></div>
+          <div class="vp-swing-detail">${detail}</div>
+          <div class="vp-swing-loyalty">Unreliable voter (loyalty: ${s.loyalty})</div>
+        </div>
+      </div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  // Key confessionals
+  if (keyPlayers.length) {
+    html += `<div class="vp-section-label" style="margin-top:8px">Key Confessionals</div>`;
+    keyPlayers.forEach(name => {
+      const role = plans[0]?.members[0] === name ? 'spearheader'
+        : plans[1]?.members[0] === name ? 'spearheader'
+        : swings.includes(name) ? 'swing'
+        : name === ep.eliminated ? 'target' : 'general';
+      const roleLabel = plans.some(p => p.members[0] === name) ? 'SPEARHEADER'
+        : swings.includes(name) ? ''
+        : name === ep.eliminated ? 'TARGETED' : '';
+      const quote = vpGenerateQuote(name, ep, role);
+      const tc = tribeColor(players.find(p => p.name === name)?.tribe || '');
+      html += `<div class="vp-card" style="display:flex;gap:14px;align-items:flex-start;border-left:3px solid ${tc||'#334155'}">
+        ${vpAvatar(name, 44)}
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:700;color:#e2e8f0;margin-bottom:2px">
+            ${name} ${roleLabel ? `<span style="font-size:9px;font-weight:800;letter-spacing:1.5px;padding:2px 7px;border-radius:4px;background:rgba(99,102,241,0.15);color:#818cf8;margin-left:6px">${roleLabel}</span>` : ''}
+          </div>
+          <div style="font-size:11px;color:#64748b;margin-bottom:8px">${vpArchLabel(name)}</div>
+          <div class="vp-conf-quote">${quote}</div>
+        </div>
+      </div>`;
+    });
+  }
+
+  html += `</div>`;
+  return html;
+}
+
+// ── SCREEN 6: Tribal / Bloodfire ──
+function vpBuildTribal(ep) {
+  const tribal = ep.tribalPlayers || [];
+  const votes = ep.votes || {};
+  const totalVotes = Object.values(votes).reduce((a, b) => a + b, 0);
+
+  // Top targets by vote count from pre-vote targeting data
+  const targetData = Object.entries(votes)
+    .sort(([,a],[,b]) => b-a)
+    .slice(0, 3)
+    .map(([name, v], i) => {
+      const allT = (ep.alliances || []).find(a => a.target === name);
+      const dangerPct = v / Math.max(1, totalVotes);
+      const danger = dangerPct >= 0.6 ? 'HIGH DANGER' : dangerPct >= 0.3 ? 'MODERATE DANGER' : 'SOME DANGER';
+      const dangerDesc = v >= 4 ? 'Coalition preparing to vote' : v >= 2 ? 'Coalition discussing their name' : 'Name being mentioned';
+      const targetedBy = allT?.label || 'Unknown alliance';
+      const reason = deriveTargetReason(allT?.members?.[0] || tribal[0], name, gs.phase, allT?.members || [], ep.challengeLabel);
+      const shortR = reason.length > 25 ? reason.slice(0,23)+'...' : reason;
+      return { name, v, danger, dangerDesc, targetedBy, reason: shortR, rank: i+1 };
+    });
+
+  const rankClass = ['rank1','rank2','rank3'];
+  const rankLabel = ['#1 TARGET','#2 TARGET','#3 TARGET'];
+  const rankRC = ['r1','r2','r3'];
+
+  let html = `<div class="vp-page">
+    <div class="vp-ep-label">Episode ${ep.num} · Tribal Council</div>
+    <div class="vp-title">Tribal Council</div>
+    <div class="vp-subtitle">Based on tonight's strategy discussions, these players are in the most danger.</div>
+    <div class="vp-divider"></div>
+    <div class="vp-section-label">Targeting — Top Targets</div>
+    <div class="vp-targets-grid">`;
+
+  targetData.forEach((t, i) => {
+    html += `<div class="vp-target-slot ${rankClass[i]}">
+      <div class="vp-target-rank ${rankRC[i]}">${rankLabel[i]}</div>
+      <div class="vp-target-body">
+        ${vpAvatar(t.name, 68, '#ef4444')}
+        <div style="font-size:15px;font-weight:700;color:#e2e8f0;margin:10px 0 2px">${t.name}</div>
+        <div style="font-size:11px;color:#64748b;margin-bottom:12px">${vpArchLabel(t.name)}</div>
+        <div class="vp-danger-label">${t.danger}</div>
+        <div class="vp-danger-desc">${t.dangerDesc}</div>
+        <div class="vp-targeted-by">Targeted by: ${t.targetedBy}</div>
+        <div class="vp-reason-tag">"${t.reason}"</div>
+      </div>
+    </div>`;
+  });
+
+  html += `</div>
+    <div style="background:#1e293b;border-radius:8px;padding:12px 16px;margin-bottom:24px;font-size:12px;font-style:italic;color:#64748b;text-align:center">
+      Of course, plans can always change at the vote — blindsides are always possible.
+    </div>
+    <div class="vp-section-label">The Q&A</div>
+    <div style="font-size:12px;color:#475569;margin-bottom:16px">The host questions the players before the vote.</div>`;
+
+  // Q&A: host asks 2-3 players
+  const qaPlayers = [...new Set([
+    ...targetData.slice(0,1).map(t => t.name),
+    ...(ep.alliances || []).filter(a => a.target).slice(0,1).map(a => a.members[0]),
+    ...(ep.alliances || []).filter(a => a.target).slice(1,2).map(a => a.members[0]),
+  ].filter(Boolean))].slice(0, 3);
+
+  const hostQs = {
+    [qaPlayers[0]]: `"${qaPlayers[0]}, your name has been in the conversations today. What do you have to say?"`,
+    [qaPlayers[1]]: `"${qaPlayers[1]}, you seem confident heading into this vote. Where is your head at?"`,
+    [qaPlayers[2]]: `"${qaPlayers[2]}, as we get ready to vote — what are you thinking tonight?"`,
+  };
+
+  qaPlayers.forEach((name, i) => {
+    const role = targetData.some(t => t.name === name) ? 'target' : 'spearheader';
+    const quote = vpGenerateQuote(name, ep, role === 'target' ? 'target' : 'spearheader');
+    const tc = tribeColor(players.find(p => p.name === name)?.tribe || '');
+    html += `<div class="vp-qa-entry">
+      <div class="vp-qa-host">${hostQs[name] || `"${name}, what can you tell us about tonight?"`}</div>
+      <div class="vp-qa-response">
+        ${vpAvatar(name, 44, tc)}
+        <div class="vp-qa-resp-body">
+          <div class="vp-qa-resp-name" style="color:${tc||'#e2e8f0'}">${name}</div>
+          <div class="vp-qa-resp-arch">${vpArchLabel(name)}</div>
+          <div class="vp-qa-resp-quote">${quote}</div>
+        </div>
+      </div>
+    </div>`;
+  });
+
+  html += `<div style="text-align:center;margin-top:20px;font-size:13px;color:#475569;font-style:italic">With the targets identified, it's time for the final vote.</div>`;
+  html += `</div>`;
+  return html;
+}
+
+// ── SCREEN 7: Vote Reveal + Results ──
+function vpBuildVoteReveal(ep) {
+  const vlog = ep.votingLog || [];
+  const votes = ep.votes || {};
+  const totalVotes = Object.values(votes).reduce((a,b)=>a+b,0);
+  const elim = ep.eliminated;
+  const elimVotes = votes[elim] || 0;
+  const sortedVotes = Object.entries(votes).sort(([,a],[,b]) => b-a);
+  const isBlindside = elim && pStats(elim).strategic >= 7;
+  const placement = (gs.eliminated?.length || 0) + (gs.riPlayers?.length || 0) + (gs.activePlayers?.length || 0);
+
+  const elimQuote = vpGenerateQuote(elim || '', ep, 'wrong_side');
+
+  let html = `<div class="vp-page">
+    <div class="vp-ep-label">Episode ${ep.num} · Bloodfire</div>
+    <div class="vp-title">The Vote</div>
+    <div class="vp-subtitle">When the votes speak, one must go.</div>
+    <div class="vp-vote-layout">
+      <div>
+        <div class="vp-section-label">Vote Reveals</div>
+        <div class="vp-vote-reveals">`;
+
+  vlog.forEach(({ voter, voted }) => {
+    html += `<div class="vp-vote-reveal-row">
+      <div>${vpMiniAvatar(voter)}<div class="vp-vote-reveal-name">${voter}</div></div>
+      <div class="vp-vote-arrow">→</div>
+      <div>${vpMiniAvatar(voted)}<div class="vp-vote-reveal-target">${voted}</div></div>
+    </div>`;
+  });
+
+  html += `</div></div>
+      <div>
+        <div class="vp-section-label">Live Tally</div>
+        <div class="vp-tally">`;
+
+  sortedVotes.forEach(([name, v]) => {
+    html += `<div class="vp-tally-row ${name === elim ? 'eliminated' : ''}">
+      ${vpMiniAvatar(name)}
+      <div style="flex:1"><div class="vp-tally-name">${name}</div><div class="vp-tally-arch">${vpArchLabel(name)}</div></div>
+      <div style="text-align:right"><div class="vp-tally-count">${v}</div><div class="vp-tally-label">${v === 1 ? 'vote' : 'votes'}</div></div>
+    </div>`;
+  });
+
+  html += `</div></div></div>`;
+
+  // Results block
+  html += `<div class="vp-section-label" style="margin-top:24px">Episode ${ep.num} Results</div>
+    <div style="font-size:12px;color:#475569;margin-bottom:12px">${totalVotes} votes cast</div>
+    <div class="vp-elim-result">`;
+
+  sortedVotes.forEach(([name, v]) => {
+    const pct = Math.round((v / Math.max(1, totalVotes)) * 100);
+    const tribe = players.find(p => p.name === name)?.tribe || '';
+    html += `<div class="vp-elim-result-row ${name === elim ? 'eliminated' : 'safe'}">
+      <div style="display:flex;align-items:center;gap:10px">
+        ${vpMiniAvatar(name)}
+        <div>
+          <div class="vp-elim-result-name ${name === elim ? 'eliminated' : ''}">${name}${name === elim ? ' — Eliminated' : ''}</div>
+          <div class="vp-elim-result-meta">${vpArchLabel(name)}${tribe ? ' · ' + tribe : ''}</div>
+        </div>
+      </div>
+      <div style="text-align:right">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="vp-elim-result-votes">${v}</div>
+          ${name === elim ? `<span class="vp-blindside-tag ${isBlindside ? 'blindside' : 'expected'}">${isBlindside ? 'BLINDSIDE' : 'EXPECTED'}</span>` : ''}
+        </div>
+        <div class="vp-elim-result-pct">${pct}%</div>
+      </div>
+    </div>`;
+  });
+
+  html += `</div>`;
+
+  // Elimination card
+  if (elim) {
+    const allElim = [...(gs.eliminated||[]), ...(gs.riPlayers||[])];
+    const place = gs.activePlayers.length + allElim.length;
+    html += `<div class="vp-elim-card">
+      ${vpAvatar(elim, 72, '#ef4444')}
+      <div style="flex:1">
+        <div class="vp-elim-label">Eliminated</div>
+        <div class="vp-elim-name">${elim}</div>
+        <div class="vp-elim-arch">${vpArchLabel(elim)}</div>
+        <div class="vp-elim-quote">${elimQuote}</div>
+        <div class="vp-elim-placement">Placement: ${ordinal(place)}</div>
+      </div>
+    </div>`;
+  }
+
+  html += `</div>`;
+  return html;
+}
+
+// ── CONTROLLER ──
+function buildVPScreens(epRecord) {
+  vpScreens = [];
+  const ep = epRecord;
+  const hasTribal = ep.alliances?.some(a => a.target) || ep.votingLog?.length;
+
+  vpScreens.push({ id:'overview',    html: vpBuildOverview(ep) });
+  if (ep.challengeType) {
+    vpScreens.push({ id:'challenge', html: vpBuildChallenge(ep) });
+  }
+  const hasEvents = ep.campEvents && Object.values(ep.campEvents).some(v => v?.length);
+  if (hasEvents) {
+    vpScreens.push({ id:'camp',      html: vpBuildCamp(ep) });
+  }
+  vpScreens.push({ id:'conf',        html: vpBuildConfessionals(ep) });
+  if (hasTribal) {
+    vpScreens.push({ id:'voting',    html: vpBuildVotingPlans(ep) });
+    vpScreens.push({ id:'tribal',    html: vpBuildTribal(ep) });
+    vpScreens.push({ id:'reveal',    html: vpBuildVoteReveal(ep) });
+  }
+}
+
+function renderVPScreen() {
+  const content = document.getElementById('vp-screen-content');
+  const prog = document.getElementById('vp-progress');
+  const prevBtn = document.getElementById('vp-prev-btn');
+  const nextBtn = document.getElementById('vp-next-btn');
+
+  prog.innerHTML = vpScreens.map((s, i) => `<div class="vp-dot ${i===vpCurrentScreen?'active':i<vpCurrentScreen?'done':''}"></div>`).join('');
+  prevBtn.disabled = vpCurrentScreen === 0;
+  const isLast = vpCurrentScreen === vpScreens.length - 1;
+  nextBtn.textContent = isLast ? '✕ Close' : 'Continue →';
+  nextBtn.className = 'vp-nav-btn' + (isLast ? ' primary' : '');
+  nextBtn.onclick = isLast ? closeVisualPlayer : vpNext;
+
+  content.innerHTML = vpScreens[vpCurrentScreen].html;
+  document.getElementById('visual-player').scrollTop = 0;
+}
+
+function openVisualPlayer(epNum) {
+  const epRecord = gs?.episodeHistory?.find(e => e.num === epNum);
+  if (!epRecord) { alert('No episode data. Simulate an episode first.'); return; }
+  vpCurrentScreen = 0;
+  buildVPScreens(epRecord);
+  document.getElementById('visual-player').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+  renderVPScreen();
+}
+
+function closeVisualPlayer() {
+  document.getElementById('visual-player').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function vpNext() {
+  if (vpCurrentScreen < vpScreens.length - 1) { vpCurrentScreen++; renderVPScreen(); }
+}
+function vpPrev() {
+  if (vpCurrentScreen > 0) { vpCurrentScreen--; renderVPScreen(); }
+}
+
+// ══════════════════════════════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════════════════════════════
 
@@ -2846,5 +4320,13 @@ function init() {
 
 init();
 </script>
+<div id="visual-player" style="display:none">
+  <div class="vp-nav">
+    <button class="vp-nav-btn" id="vp-prev-btn" onclick="vpPrev()">← Back</button>
+    <div class="vp-progress" id="vp-progress"></div>
+    <button class="vp-nav-btn" id="vp-next-btn" onclick="vpNext()">Continue →</button>
+  </div>
+  <div id="vp-screen-content"></div>
+</div>
 </body>
 </html>

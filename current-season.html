@@ -621,6 +621,7 @@ Episode 2: Tribal swap! Belo won immunity. At Reba, Ella was voted out 2-1..."
             <p style="opacity: 0.7; font-size: 12px; margin: 0 0 8px 0;">
               Paste returning player histories here. The AI will use these to reference prior seasons in episodes. Saved automatically per season.
               <button onclick="(function(){const s=document.getElementById('aiSeason')?.value||'1';localStorage.removeItem('franchise_context_s'+s);document.getElementById('franchise-context-input').value='';alert('Franchise context cleared for season '+s+'.');})()" style="margin-left:8px;padding:2px 8px;font-size:11px;background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.4);border-radius:4px;color:#fca5a5;cursor:pointer;">Clear Cache</button>
+              <button onclick="(function(){const s=document.getElementById('aiSeason')?.value||'1';const e=document.getElementById('aiEpisode')?.value||document.getElementById('aiEpisode')?.value||'1';localStorage.removeItem('AI_SUMMARY_s'+s+'_e'+e);const ep=document.getElementById('episode-summary-input');if(ep)ep.value='';const ai=document.getElementById('aiSummary');if(ai)ai.value='';alert('Summary cache cleared for S'+s+' E'+e+'. Re-paste your simulator output to re-enhance.');})();" style="margin-left:4px;padding:2px 8px;font-size:11px;background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.4);border-radius:4px;color:#fca5a5;cursor:pointer;">Clear Summary Cache</button>
             </p>
             <textarea
               id="franchise-context-input"

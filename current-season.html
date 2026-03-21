@@ -2180,6 +2180,11 @@ Dave voted for Mickey
         const msg = data?.error?.message || data?.message || "Unknown error.";
         throw new Error(msg);
       }
+      // Also check for error in body (streaming responses always return 200 even on AI errors)
+      if (data?.error) {
+        const msg = typeof data.error === "string" ? data.error : (data.error?.message || JSON.stringify(data.error));
+        throw new Error(msg);
+      }
       
       // VALIDATION: Auto-fill missing players
       const cast = parseCastFromSummary(summaryText);

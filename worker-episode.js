@@ -673,7 +673,6 @@ Season: ${season ?? "?"}, Episode: ${episode ?? "?"}.
             "Content-Type": "application/json",
             "x-api-key": env.ANTHROPIC_API_KEY,
             "anthropic-version": "2023-06-01",
-            "anthropic-beta": "max-tokens-3-5-sonnet-2024-07-15",
           },
           body: JSON.stringify({
             model: "claude-haiku-4-5-20251001",

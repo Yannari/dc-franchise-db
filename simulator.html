@@ -1593,6 +1593,111 @@ function challengeWeakness(name, challengeLabel) {
   return 10 - (s.physical + s.endurance + s.mental) / 3;
 }
 
+// ══════════════════════════════════════════════════════════════════════
+// ENGINE: PLAYER STATE — emotional state, intuition, desperation
+// ══════════════════════════════════════════════════════════════════════
+
+function getPlayerState(name) {
+  return gs.playerStates?.[name] || { emotional: 'comfortable', votesReceived: 0, lastVotedEp: null, bigMoves: 0 };
+}
+
+// True if this player has the weakest average bond within their alliance (bottom ~40%)
+function isAllianceBottom(name, allianceMembers) {
+  const active = allianceMembers.filter(m => gs.activePlayers.includes(m));
+  if (active.length < 3) return false;
+  const avgBondFor = m => {
+    const others = active.filter(o => o !== m);
+    return others.reduce((sum, o) => sum + getBond(m, o), 0) / (others.length || 1);
+  };
+  const myAvg = avgBondFor(name);
+  const sorted = active.map(avgBondFor).sort((a, b) => a - b);
+  return myAvg <= sorted[Math.floor(sorted.length * 0.4)];
+}
+
+// Estimated heat: how much are other players targeting this person right now?
+function computeHeat(name, tribalPlayers, alliances) {
+  let heat = 0;
+  tribalPlayers.filter(p => p !== name).forEach(voter => {
+    const a = alliances.find(al => al.members.includes(voter));
+    if (a?.target === name) heat += 1.5;
+    const bond = getBond(voter, name);
+    if (bond <= -2) heat += 0.8;
+    if (bond <= -4) heat += 0.5;
+  });
+  if (gs.phase === 'post-merge') {
+    const ts = threatScore(name);
+    if (ts >= 7) heat += 1;
+    if (ts >= 9) heat += 0.5;
+  }
+  return Math.min(10, heat);
+}
+
+// Update emotional states after each elimination episode
+function updatePlayerStates(ep) {
+  if (!gs.playerStates) gs.playerStates = {};
+  if (!gs.jurorHistory) gs.jurorHistory = {};
+  const epNum = ep.num;
+
+  // Record how the eliminated player was voted out (for jury bitterness later)
+  if (ep.eliminated && ep.votingLog?.length) {
+    const voters = ep.votingLog.filter(e => e.voted === ep.eliminated).map(e => e.voter);
+    const finalBonds = {};
+    gs.activePlayers.forEach(p => { finalBonds[p] = getBond(ep.eliminated, p); });
+    gs.jurorHistory[ep.eliminated] = { voters, ep: epNum, finalBonds };
+  }
+
+  gs.activePlayers.forEach(name => {
+    const state = gs.playerStates[name] || { emotional: 'comfortable', votesReceived: 0, lastVotedEp: null, bigMoves: 0 };
+    const s = pStats(name);
+    const votesThisEp = ep.votes?.[name] || 0;
+
+    if (votesThisEp > 0) {
+      state.votesReceived = (state.votesReceived || 0) + votesThisEp;
+      state.lastVotedEp = epNum;
+    }
+    // Big move: voted against alliance consensus
+    if (ep.votingLog?.some(e => e.voter === name && e.reason?.includes('broke '))) {
+      state.bigMoves = (state.bigMoves || 0) + 1;
+    }
+
+    const wasTargeted = votesThisEp >= 2;
+    const wasTargetedRecently = state.lastVotedEp && (epNum - state.lastVotedEp) <= 2;
+    const hasIdol = gs.advantages?.some(a => a.holder === name && a.type === 'idol');
+    const allianceForMe = (ep.alliances || []).find(a => a.type === 'alliance' && a.members.includes(name));
+    const atBottom = allianceForMe && isAllianceBottom(name, allianceForMe.members);
+    const longSafeStreak = (epNum - (state.lastVotedEp || 0)) >= 5 && epNum >= 5;
+
+    let emotional;
+    if (wasTargeted && (state.votesReceived || 0) >= 4)          emotional = 'desperate';
+    else if (wasTargeted || (wasTargetedRecently && atBottom))   emotional = 'paranoid';
+    else if (atBottom && !hasIdol && gs.isMerged)                emotional = 'paranoid';
+    else if (longSafeStreak && s.boldness < 5 && s.strategic < 6) emotional = 'comfortable'; // complacent — blind spot
+    else if (s.strategic >= 7 || s.boldness >= 7)               emotional = 'confident';
+    else                                                          emotional = 'comfortable';
+
+    state.emotional = emotional;
+    gs.playerStates[name] = state;
+  });
+}
+
+// Slow trust erosion: strategic players in old alliances start quietly questioning loyalty
+function decayAllianceTrust(epNum) {
+  if (!gs.namedAlliances?.length) return;
+  gs.namedAlliances.forEach(alliance => {
+    if (!alliance.active) return;
+    const age = epNum - alliance.formed;
+    if (age < 5) return;
+    const decay = Math.min(0.1, (age - 4) * 0.015);
+    alliance.members.filter(m => gs.activePlayers.includes(m)).forEach(m => {
+      const s = pStats(m);
+      if (s.strategic < 6) return;
+      alliance.members.filter(o => o !== m && gs.activePlayers.includes(o)).forEach(o => {
+        if (getBond(m, o) > 2.5) addBond(m, o, -(decay * (s.strategic - 5) * 0.25));
+      });
+    });
+  });
+}
+
 function wRandom(pool, weightFn) {
   if (!pool.length) return null;
   const weights = pool.map((item,i) => Math.max(0.01, weightFn(item,i)));
@@ -1708,14 +1813,24 @@ function formAlliances(members, tribeLabel, challengeLabel) {
   const hasUB = (grp) => grp.some(a => grp.some(b => a !== b &&
     relationships.find(r => [r.a,r.b].sort().join('|') === [a,b].sort().join('|'))?.type === 'unbreakable'
   ));
-  // Generate a descriptive label when no named alliance matches
-  const fallbackLabel = (grp, lead) => {
-    if (grp.length === 2) return `The ${grp[0]} & ${grp[1]} Pair`;
-    if (grp.length === 3) return `${lead}'s Three`;
-    return `${lead}'s Alliance`;
+  // Generate a creative label when no named alliance matches
+  const fallbackLabel = (grp, lead, target) => {
+    const duoNames = [`The ${grp[0]} & ${grp[1]} Pact`, `The ${grp[0]}-${grp[1]} Duo`];
+    if (grp.length === 2) return duoNames[Math.floor(Math.random() * duoNames.length)];
+    const options = [
+      `${lead}'s Bloc`,
+      `The ${lead} Core`,
+    ];
+    if (target) {
+      options.push(`Anti-${target} Bloc`, `Anti-${target} Front`, `The Anti-${target} Coalition`);
+    }
+    if (grp.length === 3) options.push(`${lead}'s Three`, `The ${lead} Trio`);
+    else if (grp.length === 4) options.push(`The ${lead} Four`, `${lead}'s Four`);
+    else options.push(`${lead}'s Alliance`, `The ${lead} Majority`);
+    return options[Math.floor(Math.random() * options.length)];
   };
   // Classify a voting group: find matching named alliance, else use bonds to distinguish
-  const classifyGroup = (grp, lead) => {
+  const classifyGroup = (grp, lead, target) => {
     // Mostly matches one named alliance?
     const match = activeNamed.find(a => {
       const presentAlly = a.members.filter(m => present.has(m));
@@ -1735,15 +1850,22 @@ function formAlliances(members, tribeLabel, challengeLabel) {
     const avgBond = groupBondStrength(grp);
     const avgLoyalty = grp.reduce((s, n) => s + pStats(n).loyalty, 0) / grp.length;
     const isRealAlliance = hasUB(grp) || avgBond >= 2 || (avgBond >= 0.8 && avgLoyalty >= 6);
-    return { label: fallbackLabel(grp, lead), type: isRealAlliance ? 'alliance' : 'consensus' };
+    return { label: fallbackLabel(grp, lead, target), type: isRealAlliance ? 'alliance' : 'consensus' };
   };
 
-  const { label: majLabel, type: majType } = classifyGroup(majority, hub);
-  alliances.push({ members: majority, target: pickTarget(majority, minority, challengeLabel), label: majLabel, type: majType, tribe: tribeLabel, challengeLabel });
+  const majTarget = pickTarget(majority, minority, challengeLabel);
+  const { label: majLabel, type: majType } = classifyGroup(majority, hub, majTarget);
+  alliances.push({ members: majority, target: majTarget, label: majLabel, type: majType, tribe: tribeLabel, challengeLabel });
 
   if (minority.length >= 2) {
-    const { label: minLabel, type: minType } = classifyGroup(minority, minority[0]);
-    alliances.push({ members: minority, target: pickTarget(minority, majority, challengeLabel), label: minLabel, type: minType, tribe: tribeLabel, challengeLabel });
+    const minAvgBond = groupBondStrength(minority);
+    if (minAvgBond > 0 || hasUB(minority)) {
+      const minLead = minority.slice().sort((a,b) => hubScore(b)-hubScore(a))[0];
+      const minTarget = pickTarget(minority, majority, challengeLabel);
+      const { label: minLabel, type: minType } = classifyGroup(minority, minLead, minTarget);
+      alliances.push({ members: minority, target: minTarget, label: minLabel, type: minType, tribe: tribeLabel, challengeLabel });
+    }
+    // No group if members have no positive bonds — they vote independently (simulateVotes will use defection logic)
   } else if (minority.length === 1) {
     alliances.push({ members: minority, target: pickTarget(minority, majority, challengeLabel), label: 'Solo', type: 'solo', tribe: tribeLabel, challengeLabel });
   }
@@ -1842,8 +1964,22 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
     const targetBond = allianceTarget ? getBond(voter, allianceTarget) : 0;
     const bondResistChance = targetBond >= 4 ? 0.55 : targetBond >= 2.5 ? 0.25 : 0;
 
+    // Emotional state + structural position modifiers
+    const state = getPlayerState(voter);
+    const emotional = state.emotional;
+    const emotionalMod = emotional === 'desperate' ? -0.18
+      : emotional === 'paranoid' ? -0.10
+      : emotional === 'confident' ? 0.05
+      : 0; // comfortable
+    const allianceForPos = alliances.find(a => a.type === 'alliance' && a.members.includes(voter));
+    const atBottomNow = allianceForPos && isAllianceBottom(voter, allianceForPos.members);
+    const bottomMod = atBottomNow ? -0.12 : 0;
+    // Late-game: strategic player who hasn't made a move yet gets restless
+    const isLateGame = gs.isMerged && gs.activePlayers.length <= 7;
+    const resumeMod = isLateGame && (state.bigMoves || 0) === 0 && s.strategic >= 7 ? -0.10 : 0;
+
     // Loyalty check — open vote adds social pressure to follow the group
-    const loyaltyThreshold = (s.loyalty - (s.boldness - 5) * 0.3) / 11 + (openVote ? 0.1 : 0);
+    const loyaltyThreshold = (s.loyalty - (s.boldness - 5) * 0.3) / 11 + (openVote ? 0.1 : 0) + emotionalMod + bottomMod + resumeMod;
     const isLoyal = Math.random() < Math.max(0.1, Math.min(0.95, loyaltyThreshold));
     const resistsBond = Math.random() < bondResistChance;
     // Conflicting alliance pull: bolder + less loyal players more likely to honor the other alliance
@@ -1861,26 +1997,40 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
       reason = openVote ? `public vote — aligned with ${myAlliance.label}` : `followed ${myAlliance.label} vote`;
     } else {
       isDefecting = true;
-      // Exclude the target they're protecting if bond resistance triggered
-      const candidates = tribalPlayers.filter(p => p !== voter && p !== immuneName && (!resistsBond || p !== allianceTarget));
-      if (candidates.length) {
-        const cLabel = myAlliance?.challengeLabel || null;
-        if (gs.phase === 'pre-merge') {
-          target = wRandom(candidates, t => Math.max(0.1,
-            challengeWeakness(t, cLabel) * 0.4 + (-getBond(voter, t)) * 0.35 + Math.random() * 0.3));
-        } else {
-          target = wRandom(candidates, t => Math.max(0.1, threatScore(t) - getBond(voter, t)));
+      // Intuition-based preemptive strike: paranoid/desperate player senses they're being targeted and strikes first
+      if ((emotional === 'paranoid' || emotional === 'desperate') && s.intuition >= 7) {
+        const heat = computeHeat(voter, tribalPlayers, alliances);
+        if (heat >= 2.5 && Math.random() < 0.18 + (s.intuition - 7) * 0.07) {
+          const orchestrators = tribalPlayers.filter(p => p !== voter && p !== immuneName
+            && alliances.some(a => a.members.includes(p) && a.target === voter));
+          if (orchestrators.length) {
+            target = wRandom(orchestrators, p => Math.max(0.1, threatScore(p) + Math.random() * 0.5));
+            reason = `preemptive — sensed danger, targeted the source`;
+          }
         }
-        const bond = getBond(voter, target);
-        if (resistsBond && allianceTarget) reason = `protected ${allianceTarget} — voted ${target} instead`;
-        else if (bond <= -3) reason = `personal — deeply dislikes ${target}`;
-        else if (bond <= -1) reason = `personal — distrust of ${target}`;
-        else if (gs.phase === 'pre-merge') reason = `challenge liability — ${target} is the weakest link`;
-        else reason = `personal read — ${target} is the biggest threat`;
-      } else {
-        target = allianceTarget;
-        reason = 'no other options';
-        isDefecting = false;
+      }
+      if (!target) {
+        // Exclude the target they're protecting if bond resistance triggered
+        const candidates = tribalPlayers.filter(p => p !== voter && p !== immuneName && (!resistsBond || p !== allianceTarget));
+        if (candidates.length) {
+          const cLabel = myAlliance?.challengeLabel || null;
+          if (gs.phase === 'pre-merge') {
+            target = wRandom(candidates, t => Math.max(0.1,
+              challengeWeakness(t, cLabel) * 0.4 + (-getBond(voter, t)) * 0.35 + Math.random() * 0.3));
+          } else {
+            target = wRandom(candidates, t => Math.max(0.1, threatScore(t) - getBond(voter, t)));
+          }
+          const bond = getBond(voter, target);
+          if (resistsBond && allianceTarget) reason = `protected ${allianceTarget} — voted ${target} instead`;
+          else if (bond <= -3) reason = `personal — deeply dislikes ${target}`;
+          else if (bond <= -1) reason = `personal — distrust of ${target}`;
+          else if (gs.phase === 'pre-merge') reason = `challenge liability — ${target} is the weakest link`;
+          else reason = `personal read — ${target} is the biggest threat`;
+        } else {
+          target = allianceTarget;
+          reason = 'no other options';
+          isDefecting = false;
+        }
       }
     }
 
@@ -1935,17 +2085,56 @@ function checkShotInDark(tribalPlayers, votes, log, ep) {
   }
 }
 
-function simulateRevote(tribalPlayers, tiedPlayers, lostVotes) {
+function simulateRevote(tribalPlayers, tiedPlayers, lostVotes, originalLog = []) {
   const votes = {}, log = [];
-  // Tied players cannot vote on revote
   const voters = tribalPlayers.filter(p => !tiedPlayers.includes(p) && !lostVotes.includes(p));
+
   voters.forEach(voter => {
-    const target = wRandom(tiedPlayers, t => {
-      return Math.max(0.1, (5 - getBond(voter, t)) * 0.6 + Math.random() * 2);
-    });
+    const s = pStats(voter);
+
+    // What did this player originally vote for?
+    const originalVote = originalLog.find(e => e.voter === voter)?.voted;
+    // Which tied player were they voting against (their original position)?
+    const originalTarget = tiedPlayers.includes(originalVote) ? originalVote : null;
+    // The other tied player(s) — flipping to one of these breaks the tie from their side
+    const otherTied = tiedPlayers.filter(p => p !== originalTarget);
+
+    // How much do they care about the person they're trying to protect (their ally in the tie)?
+    const allyInTie = tiedPlayers.find(p => p !== originalTarget && getBond(voter, p) >= 2.5);
+    const allyBond = allyInTie ? getBond(voter, allyInTie) : 0;
+    // How much do they hate the person they're currently targeting?
+    const hatredOfTarget = originalTarget ? -getBond(voter, originalTarget) : 0;
+
+    // Rock tolerance: base is LOW — most people want to avoid drawing rocks
+    // Raised by: loyalty to alliance, boldness, protecting a close ally, deep hatred of target
+    const rockTolerance =
+      0.08                               // base: ~8% willing to go to rocks
+      + (s.loyalty - 5) * 0.04          // very loyal players hold firm
+      + s.boldness * 0.03               // bold players risk rocks
+      + allyBond * 0.05                 // strong bond with the person they're protecting
+      + Math.min(hatredOfTarget, 5) * 0.04; // deep hatred of original target
+
+    const holdsPosition = originalTarget && Math.random() < Math.max(0.04, Math.min(0.75, rockTolerance));
+
+    let target, reason;
+    if (holdsPosition) {
+      // Sticking — willing to draw rocks for their position
+      target = originalTarget;
+      reason = allyBond >= 3 ? `held — protecting ${allyInTie}` : hatredOfTarget >= 3 ? `held — refuses to let ${originalTarget} stay` : `held position — willing to draw rocks`;
+    } else {
+      // Flips to avoid rocks — votes for whichever tied player they're less bonded to
+      // (or the most threatening one if bonds are neutral)
+      const flipCandidates = originalTarget ? otherTied : tiedPlayers;
+      target = wRandom(flipCandidates.length ? flipCandidates : tiedPlayers, t =>
+        Math.max(0.1, (5 - getBond(voter, t)) * 0.6 + Math.random() * 0.5)
+      );
+      reason = `flipped to avoid rocks`;
+    }
+
     votes[target] = (votes[target] || 0) + 1;
-    log.push({ voter, voted: target, reason: 'revote' });
+    log.push({ voter, voted: target, reason });
   });
+
   return { votes, log };
 }
 
@@ -2095,8 +2284,11 @@ function checkIdolPlays(tribalPlayers, votesObj, ep) {
     const totalVoters = tribalPlayers.length;
     const isInDanger = voteCount >= 3 || (voteCount / totalVoters >= 0.33);
     if (!isInDanger) continue;
-    // boldness drives willingness to make the move; strategic informs whether they read the danger
-    if (Math.random() < 0.25 + s.boldness * 0.05 + s.strategic * 0.025) {
+    // boldness + strategic drives willingness; intuition + paranoia/desperation raises readiness
+    const iState = getPlayerState(name);
+    const intuitionBonus = (iState.emotional === 'paranoid' || iState.emotional === 'desperate')
+      ? s.intuition * 0.04 : 0;
+    if (Math.random() < 0.25 + s.boldness * 0.05 + s.strategic * 0.025 + intuitionBonus) {
       gs.advantages.splice(idolIdx, 1);
       delete votesObj[name];
       ep.idolPlays.push({ player: name, votesNegated: voteCount });
@@ -2489,6 +2681,17 @@ const CAMP_EVENT_TYPES = [
   { id: 'confessional',        twoPlayer: false, weight: 13 },
   { id: 'doubt',               twoPlayer: false, weight: 9  },
   { id: 'weirdMoment',         twoPlayer: false, weight: 8  },
+  // ── player state & emotional events ──
+  { id: 'paranoia',            twoPlayer: false, weight: 8  },
+  { id: 'scramble',            twoPlayer: true,  weight: 9  },
+  { id: 'overconfidence',      twoPlayer: false, weight: 7  },
+  { id: 'readingRoom',         twoPlayer: false, weight: 8  },
+  { id: 'allianceCrack',       twoPlayer: true,  weight: 9  },
+  { id: 'sideDeal',            twoPlayer: true,  weight: 10 },
+  { id: 'bigMoveThoughts',     twoPlayer: false, weight: 7  },
+  { id: 'watchingYou',         twoPlayer: true,  weight: 8  },
+  { id: 'loneWolf',            twoPlayer: false, weight: 6  },
+  { id: 'tribeMood',           twoPlayer: false, weight: 7  },
 ];
 
 function nameNewAlliance(size) {
@@ -3115,6 +3318,180 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
         b ? `${p} challenges ${b} to a staring contest. It goes on for an uncomfortable length of time.` : `${p} does something so inexplicable at camp that the tribe just agrees not to address it.`,
       ];
       events.push({ type: 'weirdMoment', text: wmLines[Math.floor(Math.random() * wmLines.length)] });
+
+    } else if (eventType === 'paranoia') {
+      const p = wRandom(group, n => {
+        const st = getPlayerState(n);
+        return Math.max(0.1, (10 - pStats(n).temperament) * 0.3 + (st.emotional === 'paranoid' ? 3 : st.emotional === 'desperate' ? 2 : 0) + 1);
+      });
+      group.filter(x => x !== p).forEach(other => addBond(p, other, -0.2));
+      const paSt = getPlayerState(p);
+      const _paP = pronouns(p);
+      const paraLines = paSt.emotional === 'desperate'
+        ? [`${p} pulls three people aside in one hour. Nobody thinks that's normal.`,
+           `${p} is visibly unraveling. The tribe watches ${_paP.obj} scramble and quietly agrees this changes nothing.`,
+           `${p} cannot stop talking about the vote. Every conversation circles back. The tribe is exhausted by it.`]
+        : [`${p} has been watching everyone too carefully. The tribe notices the noticing.`,
+           `${p} reads a normal conversation as something threatening. ${_paP.Sub} spend${_paP.sub==='they'?'':'s'} the rest of the day quietly processing that.`,
+           `${p} is in ${_paP.posAdj} own head today. The tribe can feel the energy shift.`,
+           `Something has gotten to ${p}. ${_paP.Sub} ${_paP.sub==='they'?'are':'is'} still functional — but barely.`];
+      events.push({ type: 'paranoia', text: paraLines[Math.floor(Math.random() * paraLines.length)] });
+
+    } else if (eventType === 'scramble') {
+      const a = wRandom(group, n => {
+        const st = getPlayerState(n);
+        return Math.max(0.1, pStats(n).strategic * 0.3 + (st.emotional === 'desperate' ? 4 : st.emotional === 'paranoid' ? 2 : 0) + 1);
+      });
+      const scOthers = group.filter(p => p !== a);
+      if (!scOthers.length) continue;
+      const scB = wRandom(scOthers, n => Math.max(0.1, getBond(a, n) * 0.2 + pStats(n).social * 0.3 + 2));
+      addBond(a, scB, 0.3);
+      const scSt = getPlayerState(a);
+      const _scA = pronouns(a);
+      const scrambleLines = scSt.emotional === 'desperate'
+        ? [`${a} is doing everything to stay. ${scB} gets pulled in. So does everyone else. The tribe knows the energy.`,
+           `${a} works every angle before tonight. ${scB} hears a version that sounds controlled. It is not controlled.`,
+           `${a} approaches ${scB} with a plan that makes logical sense. The desperation underneath it is visible anyway.`]
+        : [`${a} is checking in with everyone — more than usual. ${scB} gets a longer conversation than expected.`,
+           `${a} pulls ${scB} aside and floats a plan. It feels slightly rushed. ${scB} files that away.`,
+           `${a} moves through camp with too much purpose today. ${scB} notices.`];
+      events.push({ type: 'scramble', text: scrambleLines[Math.floor(Math.random() * scrambleLines.length)] });
+
+    } else if (eventType === 'overconfidence') {
+      const p = wRandom(group, n => {
+        const st = getPlayerState(n);
+        return Math.max(0.1, (st.emotional === 'comfortable' || st.emotional === 'confident' ? 3 : 0) + pStats(n).boldness * 0.2 + 1);
+      });
+      group.filter(x => x !== p).forEach(other => addBond(p, other, -0.15));
+      const _ocP = pronouns(p);
+      const ocLines = [
+        `${p} is very relaxed today. Too relaxed. The tribe starts wondering if ${_ocP.sub} know${_ocP.sub==='they'?'':'s'} something they don't.`,
+        `${p} stops asking questions, stops checking in. ${_ocP.Sub} act${_ocP.sub==='they'?'':'s'} like the vote is settled. That energy makes people nervous.`,
+        `${p} laughs a lot today — the kind that only happens when someone feels completely safe. The tribe watches.`,
+        `${p} clearly thinks ${_ocP.sub} ${_ocP.sub==='they'?'are':'is'} fine. ${_ocP.Sub} might be. But assuming it out loud is how people get voted out.`,
+      ];
+      events.push({ type: 'overconfidence', text: ocLines[Math.floor(Math.random() * ocLines.length)] });
+
+    } else if (eventType === 'readingRoom') {
+      const p = wRandom(group, n => Math.max(0.1, pStats(n).intuition * 0.6 + pStats(n).strategic * 0.2 + 1));
+      const _rrP = pronouns(p);
+      const intP = pStats(p).intuition;
+      const rrLines = intP >= 8
+        ? [`${p} hasn't been in every conversation — but ${_rrP.sub} know${_rrP.sub==='they'?'':'s'} what was said in all of them.`,
+           `${p} puts together three separate conversations ${_rrP.sub} wasn't part of and reads the game with eerie accuracy.`,
+           `${p} in confessional: "I know exactly who's in trouble tonight. I didn't need anyone to tell me."`]
+        : [`${p} notices something the rest of the tribe missed. ${_rrP.Sub} don't${_rrP.sub==='they'?'':'es'} say it out loud. Not yet.`,
+           `${p} watches two people talk across camp and reads the whole dynamic from body language alone.`,
+           `${p} has been paying quiet attention. More than anyone realized. The picture ${_rrP.sub} ${_rrP.sub==='they'?'have':'has'} is fuller than everyone else's.`];
+      events.push({ type: 'readingRoom', text: rrLines[Math.floor(Math.random() * rrLines.length)] });
+
+    } else if (eventType === 'allianceCrack') {
+      const naMembers = group.filter(n => gs.namedAlliances?.some(a => a.active && a.members.includes(n) && a.members.some(m => group.includes(m) && m !== n)));
+      if (!naMembers.length) continue;
+      const acA = wRandom(naMembers, n => {
+        const na = gs.namedAlliances?.find(al => al.active && al.members.includes(n));
+        if (!na) return 0.1;
+        const allies = na.members.filter(m => group.includes(m) && m !== n);
+        const avgB = allies.reduce((s, o) => s + getBond(n, o), 0) / (allies.length || 1);
+        return Math.max(0.1, (5 - avgB) * 0.4 + (10 - pStats(n).loyalty) * 0.2 + 1);
+      });
+      const acNa = gs.namedAlliances?.find(al => al.active && al.members.includes(acA));
+      if (!acNa) continue;
+      const acAllies = acNa.members.filter(m => group.includes(m) && m !== acA);
+      if (!acAllies.length) continue;
+      const acB = wRandom(acAllies, n => Math.max(0.1, 5 - getBond(acA, n) + 1));
+      addBond(acA, acB, -0.4);
+      const _acA = pronouns(acA);
+      const crackLines = [
+        `${acA} questions internally whether ${acNa.name} can actually last. The doubt doesn't go away.`,
+        `${acA} watches ${acB} work the camp and wonders how much of it is real. A small crack opens.`,
+        `Something ${acB} said lands differently to ${acA} today. ${_acA.Sub} file${_acA.sub==='they'?'':'s'} it away and say nothing.`,
+        `${acA} starts wondering whether ${acB} is playing ${_acA.obj} or playing with ${_acA.obj}. The line is blurring.`,
+        `${acA} and ${acB} don't argue. They just stop talking for a stretch. In this game, that means something.`,
+      ];
+      events.push({ type: 'allianceCrack', text: crackLines[Math.floor(Math.random() * crackLines.length)] });
+
+    } else if (eventType === 'sideDeal') {
+      const sdCandidates = group.filter(n => {
+        const na = gs.namedAlliances?.find(a => a.active && a.members.includes(n));
+        if (!na) return true;
+        const allies = na.members.filter(m => group.includes(m) && m !== n);
+        return !allies.length || isAllianceBottom(n, na.members);
+      });
+      if (!sdCandidates.length) continue;
+      const sdA = wRandom(sdCandidates, n => Math.max(0.1, pStats(n).strategic * 0.4 + pStats(n).boldness * 0.2 + 1));
+      const sdOthers = group.filter(p => p !== sdA);
+      if (!sdOthers.length) continue;
+      const sdB = wRandom(sdOthers, n => Math.max(0.1, getBond(sdA, n) * 0.2 + pStats(n).social * 0.3 + 1));
+      addBond(sdA, sdB, 0.5);
+      const _sdA = pronouns(sdA);
+      const sdLines = [
+        `${sdA} finds a quiet moment with ${sdB}. What starts as small talk becomes something deliberate.`,
+        `${sdA} approaches ${sdB} away from the group. The conversation is short. The implications are not.`,
+        `${sdA} makes a quiet move toward ${sdB}. ${_sdA.Sub} don't${_sdA.sub==='they'?'':'es'} need permission from anyone. That's the point.`,
+        `${sdA} tests the waters with ${sdB}. Nothing committed. But the door is open now.`,
+        `${sdA} has been thinking about a different path. ${sdB} is the first person ${_sdA.sub} bring${_sdA.sub==='they'?'':'s'} it to.`,
+      ];
+      events.push({ type: 'sideDeal', text: sdLines[Math.floor(Math.random() * sdLines.length)] });
+
+    } else if (eventType === 'bigMoveThoughts') {
+      const p = wRandom(group, n => {
+        const st = getPlayerState(n);
+        return Math.max(0.1, pStats(n).strategic * 0.5 + pStats(n).boldness * 0.2 + ((st.bigMoves || 0) === 0 ? 2 : 0) + 1);
+      });
+      const _bmP = pronouns(p);
+      const strP = pStats(p).strategic;
+      const bmLines = strP >= 8
+        ? [`${p}: "I've been patient. Too patient. Something has to change — and I'm the one who changes it."`,
+           `${p} has been running the numbers on a move nobody else has considered. ${_bmP.Sub} might actually do it.`,
+           `${p} knows the jury is watching. ${_bmP.Sub} know${_bmP.sub==='they'?'':'s'} ${_bmP.sub} need${_bmP.sub==='they'?'':'s'} a moment ${_bmP.sub} can point to.`]
+        : [`${p} has been playing it safe for too long. ${_bmP.Sub} know${_bmP.sub==='they'?'':'s'} it. The game is moving past ${_bmP.obj}.`,
+           `${p} to the confessional: "I need to do something. I need them to know I was here."`,
+           `${p} contemplates a move that could flip everything. ${_bmP.Sub} run${_bmP.sub==='they'?'':'s'} it over and over.`];
+      events.push({ type: 'bigMoveThoughts', text: bmLines[Math.floor(Math.random() * bmLines.length)] });
+
+    } else if (eventType === 'watchingYou') {
+      const wyA = wRandom(group, n => Math.max(0.1, pStats(n).intuition * 0.5 + pStats(n).strategic * 0.2 + 1));
+      const wyOthers = group.filter(p => p !== wyA);
+      if (!wyOthers.length) continue;
+      const wyB = wRandom(wyOthers, n => Math.max(0.1, pStats(n).strategic * 0.3 + pStats(n).boldness * 0.2 + 1));
+      addBond(wyA, wyB, -0.5);
+      const intA = pStats(wyA).intuition;
+      const _wyA = pronouns(wyA);
+      const wyLines = intA >= 7
+        ? [`${wyA} catches ${wyB} watching ${_wyA.obj} from across camp. ${_wyA.Sub} smile${_wyA.sub==='they'?'':'s'} back and give${_wyA.sub==='they'?'':'s'} nothing away.`,
+           `${wyA} clocks that ${wyB} has been paying close attention and adjust${_wyA.sub==='they'?'':'s'} accordingly.`]
+        : [`${wyA} gets the feeling that ${wyB} is watching every move. ${_wyA.Sub} ${_wyA.sub==='they'?'are':'is'} not wrong.`,
+           `${wyA} notices ${wyB} tracking where ${_wyA.sub} go${_wyA.sub==='they'?'':'es'} and who ${_wyA.sub} talk${_wyA.sub==='they'?'':'s'} to. It makes ${_wyA.obj} uncomfortable.`,
+           `Something changes in how ${wyA} moves through camp after noticing ${wyB}'s attention. ${_wyA.Sub} ${_wyA.sub==='they'?'are':'is'} more careful now.`];
+      events.push({ type: 'watchingYou', text: wyLines[Math.floor(Math.random() * wyLines.length)] });
+
+    } else if (eventType === 'loneWolf') {
+      const p = wRandom(group, n => Math.max(0.1, (10 - pStats(n).loyalty) * 0.4 + pStats(n).boldness * 0.25 + 1));
+      const _lwP = pronouns(p);
+      group.filter(x => x !== p).forEach(other => addBond(p, other, -0.15));
+      const lwLines = [
+        `${p} declines an alliance approach today. Politely, but clearly. The tribe takes note.`,
+        `${p} handles camp alone — no check-ins, no alliances. ${_lwP.Sub} seem${_lwP.sub==='they'?'':'s'} fine with that.`,
+        `${p} makes it clear — quietly — that ${_lwP.sub} ${_lwP.sub==='they'?'are':'is'} not locking in right now. The tribe finds this suspicious.`,
+        `${p} pulls back from the social game entirely for a day. Confidence or detachment. The tribe hasn't decided which.`,
+      ];
+      events.push({ type: 'loneWolf', text: lwLines[Math.floor(Math.random() * lwLines.length)] });
+
+    } else if (eventType === 'tribeMood') {
+      const tmP = group[Math.floor(Math.random() * group.length)];
+      const tmOthers = group.filter(x => x !== tmP);
+      const tmB = tmOthers.length ? tmOthers[Math.floor(Math.random() * tmOthers.length)] : null;
+      const _tmP = pronouns(tmP);
+      const moodLines = [
+        `A quiet morning at camp. For one hour, nobody talks about the game.`,
+        tmB ? `The tribe reaches an unspoken agreement to just exist today. ${tmP} and ${tmB} fish. Nobody makes a move.` : `For once, camp feels like a place people are living — not just surviving.`,
+        `The collective exhaustion sets in. Everyone feels it. Nobody wants to be the first to say so.`,
+        tmB ? `${tmP} and ${tmB} exchange a look across camp that says everything the game won't let them say out loud.` : `${tmP} stands at the edge of camp watching the water for a long time. Nobody disturbs ${_tmP.obj}.`,
+        `There's a moment at sunset where the game disappears — for everyone, briefly. Then it comes back.`,
+        `The tribe laughs together at something dumb. For thirty seconds it doesn't feel like a competition.`,
+      ];
+      events.push({ type: 'tribeMood', text: moodLines[Math.floor(Math.random() * moodLines.length)] });
     }
   }
 
@@ -3273,6 +3650,18 @@ function generateCampEvents(ep, phase = 'both') {
     boost('homesick', 15); boost('comfort', 15);
     boost('weirdMoment', 10); // people are still processing the chaos
   }
+
+  // ── Emotional state boosts — driven by current player mental states ──
+  if (gs.playerStates) {
+    const paranoidN = gs.activePlayers.filter(p => getPlayerState(p).emotional === 'paranoid').length;
+    const desperateN = gs.activePlayers.filter(p => getPlayerState(p).emotional === 'desperate').length;
+    const comfortableN = gs.activePlayers.filter(p => getPlayerState(p).emotional === 'comfortable').length;
+    if (paranoidN >= 2) { boost('paranoia', paranoidN * 7); boost('scramble', paranoidN * 5); boost('watchingYou', paranoidN * 5); boost('readingRoom', paranoidN * 4); }
+    if (desperateN >= 1) { boost('scramble', desperateN * 10); boost('sideDeal', desperateN * 8); boost('bigMoveThoughts', desperateN * 7); boost('paranoia', desperateN * 5); }
+    if (comfortableN >= 3) boost('overconfidence', comfortableN * 5);
+  }
+  if (gs.namedAlliances?.some(a => a.active && (ep.num - a.formed) >= 5)) { boost('allianceCrack', 12); boost('sideDeal', 8); }
+  if (gs.isMerged && gs.activePlayers.length <= 8) { boost('bigMoveThoughts', 15); boost('allianceCrack', 12); boost('sideDeal', 10); }
 
   // ── Per-group event count: total split across pre and post ──
   const getGroupPresent = (tribe) => gs.exiledThisEp ? tribe.members.filter(m => m !== gs.exiledThisEp) : tribe.members;
@@ -3467,6 +3856,7 @@ function simulateEpisode() {
     simulateJourney(ep); findAdvantages(ep); generateCampEvents(ep, 'both');
     ep.bondChanges = updateBonds([], ep.eliminated, alliances);
     detectBetrayals(ep);
+    updatePlayerStates(ep); decayAllianceTrust(ep.num);
     gs.episode = epNum;
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
     gs.episodeHistory.push({ num: epNum, eliminated: ep.eliminated || null, riChoice: null, immunityWinner: null, challengeType: null, isMerge: ep.isMerge, votes: {}, alliances: [], summaryText: '', gsSnapshot: snapshotGameState() });
@@ -3593,7 +3983,7 @@ function simulateEpisode() {
         const rockElim = res.tiedPlayers[Math.floor(Math.random() * res.tiedPlayers.length)];
         return { votes, log, eliminated: rockElim, isTie: true, tiedPlayers: res.tiedPlayers };
       }
-      const rv = simulateRevote(tribalPlayers, res.tiedPlayers, gs.lostVotes);
+      const rv = simulateRevote(tribalPlayers, res.tiedPlayers, gs.lostVotes, log);
       ep.revoteVotes = rv.votes; ep.revoteLog = rv.log;
       const res2 = resolveVotes(rv.votes);
       if (res2.isTie) {
@@ -3650,6 +4040,7 @@ function simulateEpisode() {
     }
     ep.bondChanges = updateBonds(ep.votingLog, ep.eliminated, alliances);
     detectBetrayals(ep);
+    updatePlayerStates(ep); decayAllianceTrust(ep.num);
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
     gs.episode = epNum;
     gs.episodeHistory.push({ num: epNum, eliminated: ep.eliminated, riChoice: ep.riChoice,
@@ -3705,6 +4096,7 @@ function simulateEpisode() {
     gs.episode = epNum;
     ep.bondChanges = updateBonds([], ep.eliminated, alliances);
     detectBetrayals(ep);
+    updatePlayerStates(ep); decayAllianceTrust(ep.num);
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
     gs.episodeHistory.push({ num: epNum, eliminated: ep.eliminated || null, riChoice: null, immunityWinner: ep.immunityWinner, challengeType: 'individual', isMerge: ep.isMerge, votes: {}, alliances: [], summaryText: '', gsSnapshot: snapshotGameState() });
     const stJE = generateSummaryText(ep);
@@ -4270,19 +4662,37 @@ function generateSummaryText(ep) {
   const tribalAlliances = ep.alliances || [];
   if (ep.challengeType === 'tribe' && ep.loser) {
     sec(`POST-CHALLENGE STATUS \u2014 ${ep.loser.name.toUpperCase()}`);
-    const individualTargets = getIndividualTargets(ep.tribalPlayers, ep.immunityWinner||null, tribalAlliances, ep.challengeLabel);
+    const individualTargets = ep.votingLog?.filter(e => e.voter !== 'THE GAME').map(e => ({ voter: e.voter, target: e.voted, reason: e.reason }))
+      || getIndividualTargets(ep.tribalPlayers, ep.immunityWinner||null, tribalAlliances, ep.challengeLabel);
     if (individualTargets.length) {
       ln('INDIVIDUAL TARGETS:');
       individualTargets.forEach(it => ln(`- ${it.voter} is targeting ${it.target} \u2014 ${it.reason}.`));
     }
     ln('');
     ln('GROUP TARGETS:');
-    const groupTargets = tribalAlliances.filter(a => a.target && a.members.length >= 2);
+    const groupTargets = tribalAlliances.filter(a => {
+      if (!a.target || a.members.length < 2) return false;
+      if (!ep.votingLog) return true;
+      return ep.votingLog.filter(e => a.members.includes(e.voter) && e.voted === a.target).length >= 2;
+    });
     if (groupTargets.length) {
       groupTargets.forEach(a => {
-        const why = deriveTargetReason(a.members[0], a.target, gs.phase, a.members, ep.challengeLabel);
+        const actualVoters = ep.votingLog ? a.members.filter(m => ep.votingLog.some(e => e.voter === m && e.voted === a.target)) : a.members;
+        // Rebuild fallback label if the named lead isn't in the actual voters
+        let displayLabel = a.label;
+        if (a.type !== 'alliance' && ep.votingLog && actualVoters.length > 0) {
+          // Check if any player name in the label is no longer in the actual voters
+          const labeledPlayer = a.members.find(p => a.label.startsWith(p) || a.label.includes(`Anti-${p}`));
+          if (labeledPlayer && !actualVoters.includes(labeledPlayer)) {
+            const v = actualVoters;
+            displayLabel = v.length === 2 ? `The ${v[0]} & ${v[1]} Pact`
+              : v.length === 3 ? `Anti-${a.target} Bloc`
+              : `Anti-${a.target} Front`;
+          }
+        }
+        const why = deriveTargetReason(actualVoters[0] || a.members[0], a.target, gs.phase, actualVoters, ep.challengeLabel);
         const typeTag = a.type === 'alliance' ? '[Alliance]' : a.type === 'consensus' ? '[Consensus]' : '';
-        ln(`- ${a.label}${typeTag ? ' '+typeTag : ''} (${a.members.join(', ')}) targeting ${a.target} — ${why}`);
+        ln(`- ${displayLabel}${typeTag ? ' '+typeTag : ''} (${actualVoters.join(', ')}) targeting ${a.target} — ${why}`);
       });
     } else {
       ln('- No clear group target.');
@@ -4296,7 +4706,8 @@ function generateSummaryText(ep) {
   } else if (ep.challengeType === 'individual' && ep.tribalPlayers) {
     sec('POST-CHALLENGE STATUS');
     ln(`${ep.immunityWinner} is safe (${ep.challengeLabel||'Mixed'} challenge). Everyone else is vulnerable.`);
-    const individualTargets = getIndividualTargets(ep.tribalPlayers, ep.immunityWinner, tribalAlliances, ep.challengeLabel);
+    const individualTargets = ep.votingLog?.filter(e => e.voter !== 'THE GAME').map(e => ({ voter: e.voter, target: e.voted, reason: e.reason }))
+      || getIndividualTargets(ep.tribalPlayers, ep.immunityWinner, tribalAlliances, ep.challengeLabel);
     if (individualTargets.length) {
       ln('');
       ln('INDIVIDUAL TARGETS:');
@@ -4304,12 +4715,29 @@ function generateSummaryText(ep) {
     }
     ln('');
     ln('GROUP TARGETS:');
-    const groupTargets = tribalAlliances.filter(a => a.target && a.members.length >= 2);
-    if (groupTargets.length) {
-      groupTargets.forEach(a => {
-        const why = deriveTargetReason(a.members[0], a.target, gs.phase, a.members, ep.challengeLabel);
+    const groupTargets2 = tribalAlliances.filter(a => {
+      if (!a.target || a.members.length < 2) return false;
+      if (!ep.votingLog) return true;
+      return ep.votingLog.filter(e => a.members.includes(e.voter) && e.voted === a.target).length >= 2;
+    });
+    if (groupTargets2.length) {
+      groupTargets2.forEach(a => {
+        const actualVoters = ep.votingLog ? a.members.filter(m => ep.votingLog.some(e => e.voter === m && e.voted === a.target)) : a.members;
+        // Rebuild fallback label if the named lead isn't in the actual voters
+        let displayLabel = a.label;
+        if (a.type !== 'alliance' && ep.votingLog && actualVoters.length > 0) {
+          // Check if any player name in the label is no longer in the actual voters
+          const labeledPlayer = a.members.find(p => a.label.startsWith(p) || a.label.includes(`Anti-${p}`));
+          if (labeledPlayer && !actualVoters.includes(labeledPlayer)) {
+            const v = actualVoters;
+            displayLabel = v.length === 2 ? `The ${v[0]} & ${v[1]} Pact`
+              : v.length === 3 ? `Anti-${a.target} Bloc`
+              : `Anti-${a.target} Front`;
+          }
+        }
+        const why = deriveTargetReason(actualVoters[0] || a.members[0], a.target, gs.phase, actualVoters, ep.challengeLabel);
         const typeTag = a.type === 'alliance' ? '[Alliance]' : a.type === 'consensus' ? '[Consensus]' : '';
-        ln(`- ${a.label}${typeTag ? ' '+typeTag : ''} (${a.members.join(', ')}) targeting ${a.target} — ${why}`);
+        ln(`- ${displayLabel}${typeTag ? ' '+typeTag : ''} (${actualVoters.join(', ')}) targeting ${a.target} — ${why}`);
       });
     } else {
       ln('- No clear group target.');
@@ -4851,6 +5279,8 @@ function initGameState() {
     penaltyVoteThisEp: null,
     shotInDarkEnabledThisEp: false,
     namedAlliances: [],  // [{ id, name, members, formed, betrayals, active }]
+    playerStates: {},    // { [name]: { emotional, votesReceived, lastVotedEp, bigMoves } }
+    jurorHistory: {},    // { [name]: { voters, ep, finalBonds } } — tracks how each jury member was voted out
   };
   saveGameState();
   return true;
@@ -5545,8 +5975,14 @@ function generateFinaleSummaryText(ep) {
     juryResult.reasoning?.forEach(r => {
       const js = pStats(r.juror);
       const bond = getBond(r.juror, r.votedFor);
+      const history = gs.jurorHistory?.[r.juror];
+      const wasVotedOutBy = history?.voters.includes(r.votedFor);
+      const bondAtBoot = history?.finalBonds?.[r.votedFor] ?? bond;
       let reason;
-      if (bond >= 4) reason = `strong personal loyalty — felt closest to ${r.votedFor}`;
+      if (wasVotedOutBy && bondAtBoot >= 3) reason = `forgave the betrayal — ${r.votedFor} played the better game despite writing their name`;
+      else if (wasVotedOutBy && bondAtBoot < 0) reason = `expected it — no personal betrayal, just the game`;
+      else if (!wasVotedOutBy && bond >= 2) reason = `gratitude and respect — ${r.votedFor} never wrote their name`;
+      else if (bond >= 4) reason = `strong personal loyalty — felt closest to ${r.votedFor}`;
       else if (bond >= 2) reason = `respected ${r.votedFor}'s game and felt a genuine connection`;
       else if (js.strategic >= 8) reason = `pure gameplay — ${r.votedFor} made the best moves`;
       else if (js.intuition >= 7) reason = `read the game correctly — ${r.votedFor} earned it`;
@@ -5601,10 +6037,24 @@ function simulateJuryVote(finalists) {
       // Gameplay = strategic + boldness (big moves) + social (jury management)
       const gameplay = fS.strategic * 0.3 + fS.boldness * 0.2 + fS.social * 0.2 + (fS.physical + fS.endurance) / 2 * 0.1;
       const personal = bond * 1.5;
-      // Strategic/intuitive jurors weigh gameplay more; loyal jurors vote personal
+      // Bitterness/gratitude: was this finalist the one who voted me out?
+      const history = gs.jurorHistory?.[juror];
+      let bitterness = 0;
+      if (history) {
+        const bondAtBoot = history.finalBonds?.[f] ?? 0;
+        if (history.voters.includes(f)) {
+          // Higher bond at boot = bigger betrayal sting
+          bitterness = -(0.6 + Math.max(0, bondAtBoot) * 0.5);
+        } else {
+          // Didn't vote me out — small gratitude, more if we had a bond
+          bitterness = 0.25 + Math.max(0, bondAtBoot) * 0.15;
+        }
+      }
+      // Strategic/intuitive jurors weigh gameplay more and forgive gameplay betrayals better
+      // Loyal/emotional jurors weight bitterness more heavily
       const score = jS.strategic > 7 || jS.intuition > 7
-        ? gameplay * 0.7 + personal * 0.3
-        : gameplay * 0.3 + personal * 0.7;
+        ? gameplay * 0.7 + personal * 0.3 + bitterness * 0.3
+        : gameplay * 0.3 + personal * 0.7 + bitterness * 0.8;
       return { name: f, score: score + (Math.random() * 1.5) };
     });
     scores.sort((a, b) => b.score - a.score);

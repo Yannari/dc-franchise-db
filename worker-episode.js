@@ -791,8 +791,9 @@ SIMULATOR INPUT → OUTPUT DESTINATION:
   "PRE-MERGE — Tribal Immunity" or "MERGE EPISODE — Individual Immunity" or "POST-MERGE — Individual Immunity"
 
 === TRIBE STATUS — [Tribe] === SECRET ADVANTAGES → these feed === ADVANTAGES IN PLAY === (keep at end)
-=== TRIBE STATUS — [Tribe] === INDIVIDUAL TARGETS → these feed ## PRE-CHALLENGE STATUS (the vote intentions going in) AND ## POST-CHALLENGE STATUS (the scramble after the challenge result)
-=== TRIBE STATUS — [Tribe] === GROUP TARGETS → same
+=== TRIBE STATUS — [Tribe] === INDIVIDUAL TARGETS (pre-challenge): → what players were thinking BEFORE immunity. Feed ## PRE-CHALLENGE STATUS and ## ANALYZE BEFORE IMMUNITY. These are intentions, not final votes.
+=== POST-CHALLENGE STATUS — [Tribe] === INDIVIDUAL TARGETS: → actual targeting AFTER the challenge result. Feed ## POST-CHALLENGE STATUS — the real scramble.
+=== TRIBE STATUS — [Tribe] === GROUP TARGETS → feed ## PRE-CHALLENGE STATUS alongside pre-challenge individual targets
 
 === CAMP EVENTS === → TWO THINGS:
   (1) Copy ALL events verbatim into ## KEY EVENTS THIS EPISODE, separated into Before/After the challenge

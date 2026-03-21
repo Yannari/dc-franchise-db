@@ -2310,11 +2310,18 @@ Dave voted for Mickey
         const cached = localStorage.getItem(cachedKey);
         if (cached && !isSimulatorSummary(cached)) {
           summaryText = cached;
+          els.summary.value = summaryText;
           setStatus("Generating analytics…");
         } else {
           setStatus("Step 1/2: Enhancing summary…");
+          const fcEl = document.getElementById('franchise-context-input');
+          const ssEl = document.getElementById('season-setting-input');
+          const fc = (fcEl ? fcEl.value.trim() : '') || localStorage.getItem(`franchise_context_s${season}`) || '';
+          const ss = (ssEl ? ssEl.value.trim() : '') || localStorage.getItem(`season_setting_s${season}`) || '';
+          if (fc) localStorage.setItem(`franchise_context_s${season}`, fc);
+          if (ss) localStorage.setItem(`season_setting_s${season}`, ss);
           try {
-            summaryText = await autoEnhance(season, episode, summaryText);
+            summaryText = await autoEnhance(season, episode, summaryText, null, fc, ss);
             els.summary.value = summaryText;
             localStorage.setItem(cachedKey, summaryText);
           } catch (e) {
@@ -2758,6 +2765,7 @@ Dave voted for Mickey
   function isSimulatorSummary(text) {
     return isStructuredSummary(text) && (
       text.includes('INDIVIDUAL TARGETS:') ||
+      text.includes('INDIVIDUAL TARGETS (pre-challenge):') ||
       text.includes('GROUP TARGETS:') ||
       text.includes('=== TRIBE STATUS — ') ||
       text.includes('=== POST-CHALLENGE STATUS — ')

@@ -3983,7 +3983,7 @@ function generateSummaryText(ep) {
   }
   else ln('Post-merge episode. Individual immunity challenge.');
 
-  // TRIBE STATUS — per tribe (advantages only; relationships shown after camp events)
+  // TRIBE STATUS — per tribe (advantages + pre-challenge individual targets)
   const tribeGroups = gs.phase === 'pre-merge' && gs.tribes.length ? gs.tribes : [{ name: 'merged', members: [...gs.activePlayers] }];
   tribeGroups.forEach(tribe => {
     const isMerge = tribe.name === 'merged';
@@ -3991,6 +3991,13 @@ function generateSummaryText(ep) {
     ln('SECRET ADVANTAGES:');
     const advLines = getTribeAdvantageStatus(tribe.name, isMerge);
     advLines.length ? advLines.forEach(l => ln(`- ${l}`)) : ln('- No advantages active.');
+    // Pre-challenge: show what each player is thinking about targeting before immunity is decided
+    const preTargets = getIndividualTargets(tribe.members, null, ep.alliances || [], ep.challengeLabel || null);
+    if (preTargets.length) {
+      ln('');
+      ln('INDIVIDUAL TARGETS (pre-challenge):');
+      preTargets.forEach(it => ln(`- ${it.voter} is targeting ${it.target} — ${it.reason}.`));
+    }
   });
 
   // CAMP EVENTS

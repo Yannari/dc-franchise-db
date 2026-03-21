@@ -2312,6 +2312,8 @@ Dave voted for Mickey
         if (cached && !isSimulatorSummary(cached)) {
           summaryText = cached;
           els.summary.value = summaryText;
+          const epSummaryEl = document.getElementById('episode-summary-input');
+          if (epSummaryEl) epSummaryEl.value = summaryText;
           setStatus("Generating analytics…");
         } else {
           setStatus("Step 1/2: Enhancing summary…");
@@ -2324,6 +2326,8 @@ Dave voted for Mickey
           try {
             summaryText = await autoEnhance(season, episode, summaryText, null, fc, ss);
             els.summary.value = summaryText;
+            const epSummaryEl = document.getElementById('episode-summary-input');
+            if (epSummaryEl) epSummaryEl.value = summaryText;
             localStorage.setItem(cachedKey, summaryText);
           } catch (e) {
             return setStatus("Error enhancing summary: " + (e?.message || String(e)));
@@ -2869,13 +2873,20 @@ async function generateEpisodeAI() {
     seasonSettingEarly = localStorage.getItem(`season_setting_s${season}`) || '';
   }
 
+  // Sync summary to both textareas so analytics and episode panels stay in sync
+  const syncSummaryToAll = (text) => {
+    if (summaryInput) summaryInput.value = text;
+    const aiSummaryEl = document.getElementById('aiSummary');
+    if (aiSummaryEl) aiSummaryEl.value = text;
+  };
+
   if (hasRawInput && isSimulatorSummary(rawInput)) {
     // User pasted simulator output — enhance it into the rich narrative format first
     generateBtn.innerHTML = '⏳ Step 1/2: Enhancing summary…';
     generateBtn.disabled = true;
     try {
       summary = await autoEnhance(season, episodeNum, rawInput, null, franchiseContextEarly, seasonSettingEarly);
-      summaryInput.value = summary; // show the enhanced summary so user can see/edit it
+      syncSummaryToAll(summary);
       localStorage.setItem(cachedSummaryKey, summary);
     } catch (error) {
       generateBtn.innerHTML = originalText;
@@ -2886,6 +2897,7 @@ async function generateEpisodeAI() {
   } else if (hasRawInput && isStructuredSummary(rawInput)) {
     // User pasted an already-enhanced summary — use it as-is
     summary = rawInput;
+    syncSummaryToAll(summary);
     localStorage.setItem(cachedSummaryKey, summary);
   } else if (hasRawInput && !isStructuredSummary(rawInput)) {
     // User pasted raw BrantSteele — always re-summarize, even if cache exists
@@ -2893,6 +2905,7 @@ async function generateEpisodeAI() {
     generateBtn.disabled = true;
     try {
       summary = await autoSummarize(season, episodeNum, rawInput);
+      syncSummaryToAll(summary);
       localStorage.setItem(cachedSummaryKey, summary);
     } catch (error) {
       generateBtn.innerHTML = originalText;

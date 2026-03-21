@@ -1356,8 +1356,8 @@ Dave voted for Mickey
 
     function parseEpisodeTitle(text) {
       // Episode 2: "Shadows of Doubt"
-      const m = (text || "").match(/Episode\s+(\d+)\s*[:\-]\s*["“]?([^"\n”]+)["”]?/i);
-      if (m) return { num: parseInt(m[1], 10), title: m[2].trim() };
+      const m = (text || “”).match(/Episode\s+(\d+)\s*[:\-\u2013\u2014]\s*[“”]?([^”\n”]+)[“”]?/i);
+      if (m) return { num: parseInt(m[1], 10), title: m[2].trim().replace(/^["""]+|["""]+$/g, "").trim() };
       // EPISODE 1 SUMMARY (no title)
       const m2 = (text || "").match(/EPISODE\s+(\d+)/i);
       if (m2) return { num: parseInt(m2[1], 10), title: "" };
@@ -1374,19 +1374,24 @@ Dave voted for Mickey
     if (isProbablyName(n)) out.push(n);
   };
 
-  // META block: === ELIMINATED === (ONLY this specific block, not CAST)
-  const elimRegex = /^===\s*ELIMINATED\s*===/i;
+  // META block: === ELIMINATED === (handles plain, (PERMANENT), and two-line split)
+  // Matches: === ELIMINATED ===, === ELIMINATED (PERMANENT) ===,
+  //          === ELIMINATED        (no closing ===, next line is (PERMANENT) ===)
+  const elimStartRegex = /^===\s*ELIMINATED/i;
   let inElimBlock = false;
-  
+
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    
-    // Start of ELIMINATED block
-    if (elimRegex.test(line)) {
+
+    // Start of ELIMINATED block — match any line starting with === ELIMINATED
+    // Skip the following line if it's just (PERMANENT) === or similar continuation
+    if (elimStartRegex.test(line)) {
       inElimBlock = true;
+      // If the next line is a continuation like "(PERMANENT) ===" skip it
+      if (i + 1 < lines.length && /^\(PERMANENT\)/i.test(lines[i + 1].trim())) i++;
       continue;
     }
-    
+
     // End of block (hit another === header or ----)
     if (inElimBlock && (/^===/.test(line) || /^---/.test(line))) {
       break;

@@ -792,7 +792,7 @@ SIMULATOR INPUT → OUTPUT DESTINATION:
 === TRIBES (ACTIVE) === → reformat: each tribe gets a # header, players one per line
   (post-merge: list players one per line, no header)
 
-=== ELIMINATED (PERMANENT) === → copy, one per line
+=== ELIMINATED === → copy, one per line
 
 === EPISODE TYPE === → reformat as ## EPISODE TYPE, use exact language:
   "PRE-MERGE — Tribal Immunity" or "MERGE EPISODE — Individual Immunity" or "POST-MERGE — Individual Immunity"
@@ -868,7 +868,7 @@ EPISODE [num] - "[invented episode title]"
 === TRIBES (ACTIVE) ===
 [tribes with # headers, players one per line; or merged players one per line]
 
-=== ELIMINATED (PERMANENT) ===
+=== ELIMINATED ===
 [permanently eliminated players, one per line, oldest first]
 
 === ON REDEMPTION ISLAND ===
@@ -1257,7 +1257,7 @@ Sanders
 Scott
 Zoey
 
-=== ELIMINATED (PERMANENT) ===
+=== ELIMINATED ===
 [Players permanently out of the game — lost a RI/EoE duel, chose to go home, or were eliminated in a standard season. One per line, oldest first.]
 [Add this episode's permanent boot at the end — the RI duel loser OR the tribal boot in a standard season]
 
@@ -1420,7 +1420,7 @@ Map the key relationships this episode for EVERY active group — tribes if pre-
 Reason label: **"[Creative nickname/archetype]"** [One sentence: exactly why them, not someone else, tonight]
 
 [If RI season: note whether they walked confidently, hesitated, looked back at the tribe, said anything before choosing their path. This feeds the episode writer's two-sign scene.]
-[If they chose to go home: add their name to ELIMINATED PERMANENT. If they chose RI: add to ON REDEMPTION ISLAND.]
+[If they chose to go home: add their name to ELIMINATED. If they chose RI: add to ON REDEMPTION ISLAND.]
 
 ---
 

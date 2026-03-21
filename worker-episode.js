@@ -1650,6 +1650,7 @@ async function generateEpisode(summaryText, season, episode, env, previousEpisod
 
   const hasRI = seasonSetting && /redemption island/i.test(seasonSetting);
   const hasEoE = seasonSetting && /edge of extinction/i.test(seasonSetting);
+  const isSurvivorStyle = seasonSetting && /survivor/i.test(seasonSetting);
 
   const riMechanicsBlock = (hasRI || hasEoE) ? `
 ═══════════════════════════════════════════════════════════
@@ -1696,6 +1697,25 @@ Do NOT write "they were eliminated" at tribal. The tribal vote sends them to thi
 
 ` : '';
 
+  const tdCoreRules = isSurvivorStyle
+    ? `⚠️ THIS IS TOTAL DRAMA WITH A SURVIVOR FORMAT. KEY RULES:
+- The HOST is Chris McLean: sadistic, entertained by suffering, game show host energy — NOT solemn like Jeff Probst. He asks questions because he wants to watch people squirm, not because he cares about their journey.
+- CONFESSIONALS are punchy, funny, and personal — not long strategic monologues.
+- CHALLENGES can include Survivor-style endurance/puzzle/physical formats but should still go wrong or get chaotic in ways that fit Total Drama's tone.
+- TRIBAL COUNCIL uses torches, fire, and "the tribe has spoken" as described in the season setting — but Chris delivers it all with game show energy, not ceremony.
+- THE TONE still has Total Drama personality: big reactions, exaggerated moments, comedy mixed into strategy. It is not a straight Survivor episode.
+`
+    : `⚠️ THIS IS TOTAL DRAMA — NOT SURVIVOR. KEY DIFFERENCES:
+- The HOST is Chris McLean: sadistic, entertained by suffering, runs the show like a game show not a ceremony. He is NOT Jeff Probst. He does NOT ask probing questions at eliminations — he reads votes and enjoys the chaos.
+- CONFESSIONALS match the setting (outhouse on island, director's chair in movie studio, airplane bathroom on World Tour, diary room in a house). They are punchy, funny, and personal — not strategic monologues.
+- CHALLENGES are absurd, dangerous, or humiliating — they fit the setting and often go wrong in spectacular ways. They are NOT pure willpower/endurance Survivor-style challenges.
+- ELIMINATION CEREMONY is NOT a solemn Survivor tribal council. Chris is actively having fun. Use the format appropriate to the setting:
+  * Total Drama Island style → campfire ceremony, Chris throws marshmallows to safe players, the loser takes the Boat of Losers. NO torches. NO "the tribe has spoken."
+  * Other settings → elimination method fits the theme (parachute jump, flush of shame, catapult, etc.)
+- THERE ARE NO TORCHES, NO FIRE-MAKING, NO "THE TRIBE HAS SPOKEN." Those are Survivor. This is Total Drama.
+- THE TONE is cartoon drama: big personalities, exaggerated reactions, physical comedy embedded in real game strategy. If it reads like a serious Survivor episode with no laughs, you've written the wrong show.
+`;
+
   const settingBlock = seasonSetting && seasonSetting.trim()
     ? `═══════════════════════════════════════════════════════════
 SEASON SETTING — READ THIS BEFORE WRITING ANYTHING
@@ -1705,15 +1725,14 @@ ${seasonSetting.trim()}
 ${riMechanicsBlock}
 Every scene, every challenge, every confessional, and every elimination takes place inside this world. The physical environment shapes everything: where people sleep, where the confessional is shot, what the challenges look like, how eliminations happen.
 
-⚠️ THIS IS TOTAL DRAMA — NOT SURVIVOR. KEY DIFFERENCES:
-- The HOST is Chris McLean: sadistic, entertained by suffering, runs the show like a game show not a ceremony. He is NOT Jeff Probst. He does NOT ask probing questions at Tribal — he reads votes and enjoys the chaos.
-- CONFESSIONALS match the setting (outhouse on island, director's chair in movie studio, airplane bathroom on World Tour, diary room in a house). They are punchy, funny, and personal — not strategic monologues.
-- CHALLENGES are absurd, dangerous, or humiliating — they fit the setting and often go wrong in spectacular ways. They are NOT pure willpower/endurance Survivor-style challenges.
-- TRIBAL COUNCIL is not a solemn ceremony. Chris is actively having fun. The elimination method (Boat of Losers, parachute jump, flush of shame, catapult, etc.) fits the setting. There are no torches. There is no "the tribe has spoken" solemnity.
-- THE TONE is cartoon drama: big personalities, exaggerated reactions, physical comedy embedded in real game strategy. If it reads like a serious Survivor episode with no laughs, you've written the wrong show.
-
+${tdCoreRules}
 `
-    : '';
+    : `═══════════════════════════════════════════════════════════
+SHOW FORMAT
+═══════════════════════════════════════════════════════════
+
+${tdCoreRules}
+`;
 
   const franchiseContextBlock = franchiseContext && franchiseContext.trim()
     ? `═══════════════════════════════════════════════════════════\nRETURNING PLAYER HISTORIES (PRIOR SEASONS)\n═══════════════════════════════════════════════════════════\n\nThese players are returning from previous seasons. Reference their history naturally in confessionals, rivalries, and reactions. Do NOT ignore this context.\n\n${franchiseContext.trim()}\n\n`
@@ -3835,14 +3854,12 @@ because he made a mistake. They dismantled
 it because he hadn't made enough of them 
 to look safe.
 
-He left respected. Hicks gave the most 
-grounded jury analysis of the reunion. 
-He called Bowie's win a masterclass in 
-emotional intelligence and meant it 
-without bitterness. That's the kind of 
-person he is — and that's also exactly 
-what makes him dangerous the second 
-time around.
+He left respected. Hicks gave the most
+grounded jury analysis of the reunion —
+clear-eyed, no bitterness, credit where
+it was due. That's the kind of person
+he is — and that's also exactly what
+makes him dangerous the second time around.
 
 Core Personality:
 Working class Southern guy who grew up 

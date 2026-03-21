@@ -4451,23 +4451,21 @@ function generateSummaryText(ep) {
     advLines.length ? advLines.forEach(l => ln(`- ${l}`)) : ln('- No advantages active.');
   });
 
-  // CAMP EVENTS
+  // CAMP EVENTS (pre-challenge only)
   if (ep.campEvents && Object.keys(ep.campEvents).length) {
-    sec('CAMP EVENTS');
-    Object.entries(ep.campEvents).forEach(([campName, phaseData]) => {
-      const preEvs  = Array.isArray(phaseData) ? phaseData : (phaseData?.pre  || []);
-      const postEvs = Array.isArray(phaseData) ? []         : (phaseData?.post || []);
-      if (!preEvs.length && !postEvs.length) return;
-      if (campName !== 'merge') ln(`${campName.toUpperCase()} CAMP:`);
-      if (preEvs.length) {
-        ln('Before the challenge:');
-        preEvs.forEach(e => ln(`- ${e.text}`));
-      }
-      if (postEvs.length) {
-        ln('After the challenge:');
-        postEvs.forEach(e => ln(`- ${e.text}`));
-      }
+    const hasPreEvs = Object.values(ep.campEvents).some(phaseData => {
+      const evs = Array.isArray(phaseData) ? phaseData : (phaseData?.pre || []);
+      return evs.length > 0;
     });
+    if (hasPreEvs) {
+      sec('CAMP EVENTS');
+      Object.entries(ep.campEvents).forEach(([campName, phaseData]) => {
+        const preEvs = Array.isArray(phaseData) ? phaseData : (phaseData?.pre || []);
+        if (!preEvs.length) return;
+        if (campName !== 'merge') ln(`${campName.toUpperCase()} CAMP:`);
+        preEvs.forEach(e => ln(`- ${e.text}`));
+      });
+    }
   }
 
   // RELATIONSHIP HIGHLIGHTS — shown after camp events so bonds reflect what just happened
@@ -4746,6 +4744,24 @@ function generateSummaryText(ep) {
       const ftSorted = Object.entries(ep.votes).sort(([,a],[,b]) => b-a);
       const finalT = ftSorted.slice(0, 2).map(([n]) => n);
       if (finalT.length) { ln(''); ln(`FINAL TARGETS: ${finalT.join(', ')}`); }
+    }
+  }
+
+  // CAMP EVENTS — AFTER CHALLENGE (post-challenge only)
+  if (ep.campEvents && Object.keys(ep.campEvents).length) {
+    const hasPostEvs = Object.values(ep.campEvents).some(phaseData => {
+      if (Array.isArray(phaseData)) return false;
+      return (phaseData?.post || []).length > 0;
+    });
+    if (hasPostEvs) {
+      sec('CAMP — AFTER CHALLENGE');
+      Object.entries(ep.campEvents).forEach(([campName, phaseData]) => {
+        if (Array.isArray(phaseData)) return;
+        const postEvs = phaseData?.post || [];
+        if (!postEvs.length) return;
+        if (campName !== 'merge') ln(`${campName.toUpperCase()} CAMP:`);
+        postEvs.forEach(e => ln(`- ${e.text}`));
+      });
     }
   }
 

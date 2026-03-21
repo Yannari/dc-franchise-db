@@ -2169,7 +2169,11 @@ function applyTwist(ep, twist, isPrimary = true) {
   // ── TEAM DYNAMICS ──────────────────────────────────────────────────
   if (engineType === 'tribe-swap') {
     if (gs.phase !== 'pre-merge' || gs.tribes.length < 2) return;
-    const allActive  = [...gs.activePlayers].sort(() => Math.random() - 0.5);
+    const allActive = [...gs.activePlayers];
+    for (let i = allActive.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [allActive[i], allActive[j]] = [allActive[j], allActive[i]];
+    }
     const tribeNames = gs.tribes.map(t => t.name);
     const perTribe   = Math.floor(allActive.length / tribeNames.length);
     gs.tribes = tribeNames.map((name, i) => ({
@@ -2182,7 +2186,11 @@ function applyTwist(ep, twist, isPrimary = true) {
   } else if (engineType === 'tribe-expansion') {
     // Add one new tribe — take ~2 players from each existing tribe to form it
     if (gs.phase !== 'pre-merge' || gs.tribes.length < 2 || gs.activePlayers.length < gs.tribes.length + 3) return;
-    const allActive = [...gs.activePlayers].sort(() => Math.random() - 0.5);
+    const allActive = [...gs.activePlayers];
+    for (let i = allActive.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [allActive[i], allActive[j]] = [allActive[j], allActive[i]];
+    }
     const numTribes  = gs.tribes.length + 1;
     const perTribe   = Math.floor(allActive.length / numTribes);
     const newName    = 'New Tribe';

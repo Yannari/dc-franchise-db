@@ -2733,6 +2733,44 @@ Dave voted for Mickey
     return text.includes('=== META ===') || text.includes('=== CAST (ALL) ===');
   }
 
+  // Detects simulator output specifically (needs enhance step before episode generation)
+  // Rich/enhanced summaries have narrative sections like ## PRE-CHALLENGE STATUS
+  function isSimulatorSummary(text) {
+    return isStructuredSummary(text) && (
+      text.includes('INDIVIDUAL TARGETS:') ||
+      text.includes('GROUP TARGETS:') ||
+      text.includes('=== TRIBE STATUS — ') ||
+      text.includes('=== POST-CHALLENGE STATUS — ')
+    ) && !text.includes('## PRE-CHALLENGE STATUS') && !text.includes('## ANALYZE BEFORE IMMUNITY');
+  }
+
+  async function autoEnhance(season, episode, simulatorSummary, workerUrl, franchiseContext, seasonSetting) {
+    const url = workerUrl || EPISODE_WORKER_URL;
+    const prevSummaries = [];
+    for (let i = Math.max(1, episode - 3); i < episode; i++) {
+      const s = localStorage.getItem(`AI_SUMMARY_s${season}_e${i}`);
+      if (s) prevSummaries.push({ episode: i, summary: s });
+    }
+    if (franchiseContext === undefined) franchiseContext = localStorage.getItem(`franchise_context_s${season}`) || '';
+    if (seasonSetting === undefined) seasonSetting = localStorage.getItem(`season_setting_s${season}`) || '';
+    const resp = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        mode: 'enhance',
+        season, episode,
+        summaryText: simulatorSummary,
+        prevSummary: prevSummaries.map(p => `Episode ${p.episode}:\n${p.summary}`).join('\n\n---\n\n'),
+        franchiseContext,
+        seasonSetting,
+      }),
+    });
+    if (!resp.ok) throw new Error(`Enhance failed: ${resp.status}`);
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error);
+    return data.summary;
+  }
+
   async function autoSummarize(season, episode, rawText, workerUrl) {
     const url = workerUrl || EPISODE_WORKER_URL;
     // Pass up to 3 previous summaries so ongoing storylines can chain properly
@@ -2788,8 +2826,37 @@ async function generateEpisodeAI() {
 
   const hasRawInput = rawInput && rawInput.trim().length > 0;
 
-  if (hasRawInput && isStructuredSummary(rawInput)) {
-    // User pasted a structured summary directly — use it as-is
+  // Load franchise context + season setting early so enhance step can use them
+  let franchiseContextEarly = '';
+  let seasonSettingEarly = '';
+  if (episodeNum === 1) {
+    const fcEl = document.getElementById('franchise-context-input');
+    franchiseContextEarly = fcEl ? fcEl.value.trim() : '';
+    if (franchiseContextEarly) localStorage.setItem(`franchise_context_s${season}`, franchiseContextEarly);
+    const ssEl = document.getElementById('season-setting-input');
+    seasonSettingEarly = ssEl ? ssEl.value.trim() : '';
+    if (seasonSettingEarly) localStorage.setItem(`season_setting_s${season}`, seasonSettingEarly);
+  } else {
+    franchiseContextEarly = localStorage.getItem(`franchise_context_s${season}`) || '';
+    seasonSettingEarly = localStorage.getItem(`season_setting_s${season}`) || '';
+  }
+
+  if (hasRawInput && isSimulatorSummary(rawInput)) {
+    // User pasted simulator output — enhance it into the rich narrative format first
+    generateBtn.innerHTML = '⏳ Step 1/2: Enhancing summary…';
+    generateBtn.disabled = true;
+    try {
+      summary = await autoEnhance(season, episodeNum, rawInput, null, franchiseContextEarly, seasonSettingEarly);
+      summaryInput.value = summary; // show the enhanced summary so user can see/edit it
+      localStorage.setItem(cachedSummaryKey, summary);
+    } catch (error) {
+      generateBtn.innerHTML = originalText;
+      generateBtn.disabled = false;
+      alert('❌ Error enhancing summary: ' + error.message);
+      return;
+    }
+  } else if (hasRawInput && isStructuredSummary(rawInput)) {
+    // User pasted an already-enhanced summary — use it as-is
     summary = rawInput;
     localStorage.setItem(cachedSummaryKey, summary);
   } else if (hasRawInput && !isStructuredSummary(rawInput)) {

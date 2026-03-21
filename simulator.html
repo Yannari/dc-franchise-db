@@ -2488,12 +2488,19 @@ function nameNewAlliance(size) {
   return available[Math.floor(Math.random() * available.length)] || `Alliance ${(gs.namedAlliances?.length || 0) + 1}`;
 }
 
-function generateCampEventsForGroup(group, finds) {
+// Flatten campEvents for code that just needs all events (handles both old array and new {pre,post} format)
+function allCampEvents(ep) {
+  return Object.values(ep.campEvents || {}).flatMap(v =>
+    Array.isArray(v) ? v : [...(v.pre || []), ...(v.post || [])]
+  );
+}
+
+function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = null) {
   const events = [];
   if (group.length < 2) return events;
 
-  // Scale event count with group size; no-impact flavor events justify higher ceiling
-  const numEvents = Math.floor(Math.random() * 4) + Math.max(5, Math.floor(group.length * 0.9)); // 5-9 base, more for larger groups
+  const numEvents = maxEvents ?? (Math.floor(Math.random() * 4) + Math.max(5, Math.floor(group.length * 0.9)));
+  const boosts = twistBoosts || {};
 
   // If any advantage was found by someone in this group, always open with that event
   const findsInGroup = finds.filter(f => group.includes(f.finder));
@@ -2535,7 +2542,7 @@ function generateCampEventsForGroup(group, finds) {
   });
 
   for (let i = 0; i < numEvents; i++) {
-    const eventType = wRandom(CAMP_EVENT_TYPES, e => e.weight).id;
+    const eventType = wRandom(CAMP_EVENT_TYPES, e => e.weight + (boosts[e.id] || 0)).id;
 
     if (eventType === 'fight') {
       // Low temperament = more likely to snap. Low loyalty = doesn't suppress it for the group.
@@ -3147,20 +3154,223 @@ function checkAllianceQuitting(ep) {
   });
 }
 
-function generateCampEvents(ep) {
+// phase: 'pre' (before challenge), 'post' (after challenge result known), 'both' (no-tribal/finale)
+function generateCampEvents(ep, phase = 'both') {
   const idolFinds = ep.idolFinds || [];
+  const allTwists = ep.twists?.length ? ep.twists : (ep.twist ? [ep.twist] : []);
 
-  if (gs.phase === 'pre-merge' && gs.tribes.length > 0) {
-    ep.campEvents = {};
-    gs.tribes.forEach(tribe => {
-      // Exiled player is off-island — exclude from camp events
-      const present = gs.exiledThisEp ? tribe.members.filter(m => m !== gs.exiledThisEp) : tribe.members;
-      ep.campEvents[tribe.name] = generateCampEventsForGroup(present, idolFinds);
-    });
-  } else {
-    ep.campEvents = { merge: generateCampEventsForGroup(gs.activePlayers, idolFinds) };
+  // ── Build twist-driven event weight boosts ──
+  const boosts = {};
+  const boost = (id, amount) => { boosts[id] = (boosts[id] || 0) + amount; };
+
+  allTwists.forEach(tw => {
+    if (!tw?.type) return;
+    switch (tw.type) {
+      case 'tribe-swap':
+      case 'tribe-expansion':
+      case 'abduction':
+      case 'swapvote':
+        // New faces, new pecking order — bonding + power struggle
+        boost('tdBond', 30); boost('bond', 20);
+        boost('leadershipClash', 25); boost('dispute', 15);
+        boost('eavesdrop', 15); boost('doubt', 15);
+        boost('idolSearch', 15); // new camps = new idol locations
+        break;
+      case 'mutiny':
+        // Someone left — those who stayed are rattled
+        boost('fight', 25); boost('dispute', 20);
+        boost('leadershipClash', 20); boost('confessional', 15);
+        boost('rumor', 15);
+        break;
+      case 'journey':
+        // Players came back changed — strategy shifts, others paranoid
+        boost('tdStrategy', 25); boost('doubt', 20);
+        boost('confessional', 20); boost('eavesdrop', 15);
+        boost('rumor', 15); // those who didn't go want to know what happened
+        break;
+      case 'exile-island':
+        // Exiled player missed everything — isolation and paranoia on return
+        boost('doubt', 25); boost('confessional', 20);
+        boost('rumor', 20); boost('eavesdrop', 15);
+        break;
+      case 'loved-ones':
+        // Emotional episode — homesick guaranteed, comfort and bonding up
+        boost('homesick', 80); boost('comfort', 40);
+        boost('tdBond', 30); boost('confessional', 25);
+        boost('doubt', 15); // seeing family can crack your resolve
+        break;
+      case 'the-feast':
+      case 'merge-reward':
+        // Shared food, cross-tribe bonding — alliances form across lines
+        boost('tdBond', 35); boost('bond', 25);
+        boost('flirtation', 20); boost('tdStrategy', 20);
+        boost('foodConflict', -20); // plenty to eat — no scarcity conflict
+        break;
+      case 'reward-challenge':
+        // Winners bond on reward; those left behind stew
+        boost('tdBond', 20); boost('dispute', 15);
+        boost('rumor', 10); boost('doubt', 10);
+        break;
+      case 'double-elim':
+      case 'double-tribal':
+        // Chaos — everyone is stressed, paranoia is high
+        boost('doubt', 30); boost('confessional', 25);
+        boost('comfort', 20); boost('tdStrategy', 20);
+        boost('fight', 15);
+        break;
+      case 'returning-player':
+        // Disruption — existing alliances rattled, scheming to handle returner
+        boost('tdStrategy', 30); boost('dispute', 25);
+        boost('eavesdrop', 20); boost('leadershipClash', 15);
+        boost('rumor', 15);
+        break;
+      case 'cultural-reset':
+        // Everything is exposed — alliances public, people scrambling
+        boost('dispute', 30); boost('leadershipClash', 25);
+        boost('tdStrategy', 25); boost('fight', 20);
+        boost('doubt', 20); boost('confessional', 20);
+        break;
+      case 'slasher-night':
+        // Someone was eliminated in the night — camp is shaken
+        boost('doubt', 35); boost('confessional', 30);
+        boost('rumor', 25); boost('homesick', 15);
+        boost('weirdMoment', 15); // paranoia makes people act strange
+        break;
+      case 'no-tribal':
+        // Relaxed episode — more flavor, less strategy stress
+        boost('tdBond', 25); boost('flirtation', 20);
+        boost('prank', 20); boost('weirdMoment', 20);
+        boost('confessional', 15);
+        boost('fight', -15); boost('dispute', -10); // lower tension
+        break;
+      case 'rock-draw':
+        // Rock draw means chaos next tribal — paranoia up in advance
+        boost('doubt', 25); boost('confessional', 20);
+        boost('rumor', 15);
+        break;
+    }
+  });
+
+  // ── Rock draw AFTERMATH (previous episode was a rock draw) ──
+  const prevEp = gs.episodeHistory.find(e => e.num === ep.num - 1);
+  if (prevEp?.isRockDraw) {
+    boost('doubt', 25); boost('confessional', 20);
+    boost('homesick', 15); boost('comfort', 15);
+    boost('weirdMoment', 10); // people are still processing the chaos
   }
-  checkAllianceQuitting(ep);
+
+  // ── Per-group event count: total split across pre and post ──
+  const getGroupPresent = (tribe) => gs.exiledThisEp ? tribe.members.filter(m => m !== gs.exiledThisEp) : tribe.members;
+  const totalForGroup = (present) => Math.floor(Math.random() * 4) + Math.max(5, Math.floor(present.length * 0.9));
+
+  // ── PRE-CHALLENGE phase: initialize structure, fill pre events ──
+  if (phase === 'pre' || phase === 'both') {
+    if (gs.phase === 'pre-merge' && gs.tribes.length > 0) {
+      ep.campEvents = {};
+      gs.tribes.forEach(tribe => {
+        const present = getGroupPresent(tribe);
+        const total = totalForGroup(present);
+        const preCount = phase === 'both' ? total : Math.ceil(total / 2);
+        ep.campEvents[tribe.name] = { pre: generateCampEventsForGroup(present, idolFinds, boosts, preCount), post: [] };
+      });
+    } else {
+      const total = totalForGroup(gs.activePlayers);
+      const preCount = phase === 'both' ? total : Math.ceil(total / 2);
+      ep.campEvents = { merge: { pre: generateCampEventsForGroup(gs.activePlayers, idolFinds, boosts, preCount), post: [] } };
+    }
+  }
+
+  // ── POST-CHALLENGE phase: fill post events with outcome-aware boosts ──
+  if (phase === 'post') {
+    const postBoosts = { ...boosts };
+    const pb = (id, amt) => { postBoosts[id] = (postBoosts[id] || 0) + amt; };
+
+    if (gs.phase === 'pre-merge') {
+      // Different boosts per tribe based on win/loss
+      gs.tribes.forEach(tribe => {
+        const present = getGroupPresent(tribe);
+        const isLoser = ep.loser?.name === tribe.name;
+        const isWinner = ep.winner?.name === tribe.name;
+        const tribeBoosts = { ...boosts };
+        const tb = (id, amt) => { tribeBoosts[id] = (tribeBoosts[id] || 0) + amt; };
+
+        if (isLoser) {
+          // Going to tribal — scramble, panic, scheming
+          tb('rumor', 35); tb('dispute', 30); tb('tdStrategy', 30);
+          tb('eavesdrop', 25); tb('doubt', 25); tb('confessional', 25);
+          tb('fight', 20); tb('leadershipClash', 15);
+          tb('weirdMoment', -10); tb('prank', -15); tb('flirtation', -10);
+        } else if (isWinner) {
+          // Won immunity — relief, celebration, let guard down
+          tb('tdBond', 30); tb('bond', 25); tb('flirtation', 20);
+          tb('prank', 20); tb('weirdMoment', 20); tb('hardWork', 15);
+          tb('confessional', 15); tb('showboat', 15);
+          tb('fight', -15); tb('dispute', -15); tb('rumor', -10);
+        } else {
+          // Safe (3+ tribes) — watching from a distance, speculating
+          tb('tdBond', 20); tb('confessional', 20); tb('tdStrategy', 15);
+          tb('rumor', 15); tb('eavesdrop', 10);
+        }
+        const total = totalForGroup(present);
+        const postCount = total - Math.ceil(total / 2); // complement of pre
+        if (!ep.campEvents[tribe.name]) ep.campEvents[tribe.name] = { pre: [], post: [] };
+        ep.campEvents[tribe.name].post = generateCampEventsForGroup(present, idolFinds, tribeBoosts, postCount);
+      });
+    } else {
+      // Post-merge: lighter outcome distinction — immunity winner is safe, everyone else is at risk
+      const postBoostsMerge = { ...boosts };
+      const pbm = (id, amt) => { postBoostsMerge[id] = (postBoostsMerge[id] || 0) + amt; };
+      pbm('tdStrategy', 20); pbm('confessional', 20); pbm('doubt', 15);
+      pbm('eavesdrop', 15); pbm('rumor', 15);
+      const total = totalForGroup(gs.activePlayers);
+      const postCount = total - Math.ceil(total / 2);
+      if (!ep.campEvents.merge) ep.campEvents.merge = { pre: [], post: [] };
+      ep.campEvents.merge.post = generateCampEventsForGroup(gs.activePlayers, idolFinds, postBoostsMerge, postCount);
+    }
+
+    // ── Inject guaranteed events for specific twists (post-challenge timing) ──
+    const hasLovedOnes = allTwists.some(tw => tw?.type === 'loved-ones');
+    if (hasLovedOnes) {
+      Object.keys(ep.campEvents).forEach(campName => {
+        const groupMembers = gs.phase === 'pre-merge'
+          ? (gs.tribes.find(t => t.name === campName)?.members || [])
+          : gs.activePlayers;
+        if (!groupMembers.length) return;
+        const p = groupMembers[Math.floor(Math.random() * groupMembers.length)];
+        const _loP = pronouns(p);
+        const loLines = [
+          `${p} sees ${_loP.posAdj} loved one and completely loses it. The composure ${_loP.sub} ${_loP.sub==='they'?'have':'has'} been holding for weeks breaks in seconds.`,
+          `${p} grabs ${_loP.posAdj} family and doesn't let go for a long time. The tribe looks away. Some of them are crying too.`,
+          `${p} holds it together during the visit. Barely. The dam breaks the moment they leave.`,
+          `Seeing home walks up to ${p} in person. ${_loP.Sub} ${_loP.sub==='they'?'keep':'keeps'} smiling. The smile doesn't reach ${_loP.posAdj} eyes.`,
+        ];
+        ep.campEvents[campName].post.unshift({ type: 'lovedOnes', text: loLines[Math.floor(Math.random() * loLines.length)] });
+      });
+    }
+
+    const hasTheFeast = allTwists.some(tw => tw?.type === 'the-feast' || tw?.type === 'merge-reward');
+    if (hasTheFeast) {
+      const camp = Object.keys(ep.campEvents)[0];
+      if (camp) {
+        const all = gs.activePlayers;
+        if (all.length >= 2) {
+          const a = all[Math.floor(Math.random() * all.length)];
+          const b = all.filter(p => p !== a)[Math.floor(Math.random() * (all.length - 1))];
+          const ev = { type: 'feast', text: `The feast brings everyone to the same table for the first time. ${a} and ${b} end up next to each other. That conversation will matter.` };
+          ep.campEvents[camp].post.unshift(ev);
+        }
+      }
+    }
+
+    // Alliance quitting evaluated once after all events are done
+    checkAllianceQuitting(ep);
+  }
+
+  // ── 'both' phase: no pre/post distinction (no-tribal, finale) — just one block ──
+  if (phase === 'both') {
+    // Alliance quitting after the single-phase generation
+    checkAllianceQuitting(ep);
+  }
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -3225,7 +3435,7 @@ function simulateEpisode() {
   // ── NO TRIBAL (no-tribal twist or spirit-island — no vote, no elimination) ──
   if (ep.twist?.type === 'no-tribal' || ep.noTribal) {
     ep.noTribal = true;
-    simulateJourney(ep); findAdvantages(ep); generateCampEvents(ep);
+    simulateJourney(ep); findAdvantages(ep); generateCampEvents(ep, 'both');
     gs.episode = epNum;
     gs.episodeHistory.push({ num: epNum, eliminated: ep.eliminated || null, riChoice: null, immunityWinner: ep.twist?.rewardWinner || null, challengeType: null, isMerge: ep.isMerge, votes: {}, alliances: [], summaryText: '', gsSnapshot: snapshotGameState() });
     const st = generateSummaryText(ep);
@@ -3242,7 +3452,7 @@ function simulateEpisode() {
   // ── JOURNEY & IDOL FINDING ──
   simulateJourney(ep);
   findAdvantages(ep);
-  generateCampEvents(ep);
+  generateCampEvents(ep, 'pre');
 
   // ── CHALLENGE ──
   if (ep.isDoubleTribal && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
@@ -3289,6 +3499,9 @@ function simulateEpisode() {
       heroTw.duelLoser  = ep.immunityWinner === a ? b : a;
     }
   }
+
+  // ── POST-CHALLENGE CAMP EVENTS (outcome now known — boosts differ by win/loss) ──
+  generateCampEvents(ep, 'post');
 
   // ── EXILE ISLAND: remove exiled player from their tribe's tribal ──
   if (gs.exiledThisEp) {
@@ -3775,10 +3988,19 @@ function generateSummaryText(ep) {
   // CAMP EVENTS
   if (ep.campEvents && Object.keys(ep.campEvents).length) {
     sec('CAMP EVENTS');
-    Object.entries(ep.campEvents).forEach(([campName, events]) => {
-      if (!events || !events.length) return;
+    Object.entries(ep.campEvents).forEach(([campName, phaseData]) => {
+      const preEvs  = Array.isArray(phaseData) ? phaseData : (phaseData?.pre  || []);
+      const postEvs = Array.isArray(phaseData) ? []         : (phaseData?.post || []);
+      if (!preEvs.length && !postEvs.length) return;
       if (campName !== 'merge') ln(`${campName.toUpperCase()} CAMP:`);
-      events.forEach(e => ln(`- ${e.text}`));
+      if (preEvs.length) {
+        ln('Before the challenge:');
+        preEvs.forEach(e => ln(`- ${e.text}`));
+      }
+      if (postEvs.length) {
+        ln('After the challenge:');
+        postEvs.forEach(e => ln(`- ${e.text}`));
+      }
     });
   }
 
@@ -4332,8 +4554,20 @@ function buildStorylines(ep) {
     lines.push(`${adv.holder} is sitting on ${typeLabel[adv.type] || 'a secret advantage'}. The longer they hold it, the more dangerous it becomes — for them and for everyone else.`);
   }
 
+  // Twist-seeded storylines
+  const allTwistsStory = ep.twists?.length ? ep.twists : (ep.twist ? [ep.twist] : []);
+  allTwistsStory.forEach(tw => {
+    if (!tw?.type) return;
+    if (tw.type === 'loved-ones') lines.push(`The loved ones visit cracked something open. Players who seemed composed showed a side the game hadn't seen. That vulnerability doesn't disappear after the visit ends.`);
+    if (tw.type === 'tribe-swap' || tw.type === 'tribe-expansion' || tw.type === 'abduction') lines.push(`The swap reshuffled more than just tribes. Old loyalties are still there — but so is the reality that everyone is sleeping next to different people now.`);
+    if (tw.type === 'cultural-reset') lines.push(`The reset blew up the social contract. Everything everyone thought was private is now public. The scramble starts from zero.`);
+    if (tw.type === 'returning-player') lines.push(`A player came back. The tribe that voted them out has to decide whether that's a threat or an asset. Both options have a cost.`);
+    if (tw.type === 'slasher-night') lines.push(`Someone was eliminated without a vote. The tribe woke up one smaller and nobody knows who made the call. That paranoia does not leave quickly.`);
+    if (tw.type === 'journey') lines.push(`The players who went on the journey came back knowing something. Whether they share it — or use it alone — will define the next few episodes.`);
+  });
+
   // Events from this episode that seeded ongoing threads
-  const allEvents = Object.values(ep.campEvents || {}).flat();
+  const allEvents = allCampEvents(ep);
   const flirt = allEvents.find(e => e.type === 'flirtation');
   if (flirt) {
     const text = flirt.text;
@@ -4418,7 +4652,7 @@ function buildColdOpen(ep) {
   }
 
   // Someone playing hard and visible
-  const overplayer = ep.campEvents && Object.values(ep.campEvents).flat().find(e => e.type === 'overplay');
+  const overplayer = allCampEvents(ep).find(e => e.type === 'overplay');
   if (overplayer) {
     pool.push(`Camp settles after tribal. One thing everyone noticed: someone was working too hard today. That conversation is happening in whispers now.`);
   }
@@ -5085,7 +5319,7 @@ function simulateFinale() {
     journey: null, twist: null, campEvents: {},
   };
 
-  generateCampEvents(ep);
+  generateCampEvents(ep, 'both');
 
   // Final immunity challenge
   const immResult = simulateIndividualChallenge(players, null);
@@ -5150,10 +5384,12 @@ function generateFinaleSummaryText(ep) {
   // Camp events
   if (ep.campEvents && Object.keys(ep.campEvents).length) {
     sec('CAMP EVENTS');
-    Object.entries(ep.campEvents).forEach(([campName, events]) => {
-      if (!events?.length) return;
+    Object.entries(ep.campEvents).forEach(([campName, phaseData]) => {
+      const preEvs  = Array.isArray(phaseData) ? phaseData : (phaseData?.pre  || []);
+      const postEvs = Array.isArray(phaseData) ? []         : (phaseData?.post || []);
+      if (!preEvs.length && !postEvs.length) return;
       if (campName !== 'merge') ln(`${campName.toUpperCase()} CAMP:`);
-      events.forEach(e => ln(`- ${e.text}`));
+      [...preEvs, ...postEvs].forEach(e => ln(`- ${e.text}`)); // finale = single block, no pre/post label needed
     });
   }
 

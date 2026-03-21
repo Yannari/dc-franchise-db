@@ -791,9 +791,8 @@ SIMULATOR INPUT → OUTPUT DESTINATION:
   "PRE-MERGE — Tribal Immunity" or "MERGE EPISODE — Individual Immunity" or "POST-MERGE — Individual Immunity"
 
 === TRIBE STATUS — [Tribe] === SECRET ADVANTAGES → these feed === ADVANTAGES IN PLAY === (keep at end)
-=== TRIBE STATUS — [Tribe] === INDIVIDUAL TARGETS (pre-challenge): → what players were thinking BEFORE immunity. Feed ## PRE-CHALLENGE STATUS and ## ANALYZE BEFORE IMMUNITY. These are intentions, not final votes.
 === POST-CHALLENGE STATUS — [Tribe] === INDIVIDUAL TARGETS: → actual targeting AFTER the challenge result. Feed ## POST-CHALLENGE STATUS — the real scramble.
-=== TRIBE STATUS — [Tribe] === GROUP TARGETS → feed ## PRE-CHALLENGE STATUS alongside pre-challenge individual targets
+=== POST-CHALLENGE STATUS — [Tribe] === GROUP TARGETS → same, feed ## POST-CHALLENGE STATUS
 
 === CAMP EVENTS === → TWO THINGS:
   (1) Copy ALL events verbatim into ## KEY EVENTS THIS EPISODE, separated into Before/After the challenge
@@ -1064,8 +1063,8 @@ Role tags: Hub / Shield / Operator / Threat / Outlier / Wildcard / Wounded / Hid
             "anthropic-beta": "max-tokens-3-5-sonnet-2024-07-15",
           },
           body: JSON.stringify({
-            model: "claude-sonnet-4-6",
-            max_tokens: 12000,
+            model: "claude-haiku-4-5-20251001",
+            max_tokens: 8000,
             stream: true,
             system: instructions,
             messages: [{ role: "user", content: input }],

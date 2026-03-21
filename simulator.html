@@ -745,7 +745,6 @@
                 <option value="fire-making">Fire Making Final</option>
                 <option value="fan-vote">Fan Vote Finale</option>
                 <option value="final-challenge">Final Challenge (No Jury)</option>
-                <option value="jury-elimination">Jury Elimination (TDI/DC4)</option>
               </select>
             </div>
             <div class="slider-control">
@@ -1064,6 +1063,7 @@ const TWIST_CATALOG = [
   { id:'merge-reward',     emoji:'🎉', name:'Merge Feast',          category:'social',     phase:'post-merge', desc:'A feast marks the merge. Bonds shift as alliances reorder. Tribal still runs.',              engineType:'merge-reward'    },
   { id:'reward-challenge', emoji:'🏅', name:'Reward Challenge',     category:'social',     phase:'any',        desc:'A reward challenge runs before immunity. Winner picks who shares it. Tribal still runs.',     engineType:'reward-challenge'},
   { id:'fan-vote-boot',    emoji:'📱', name:'Fan Vote Boot',        category:'social',     phase:'post-merge', desc:'Fans vote to eliminate a player at this tribal council.',                   engineType:'fan-vote-boot'   },
+  { id:'jury-elimination', emoji:'⚖️', name:'Jury Elimination',     category:'elim',       phase:'post-merge', desc:'All eliminated players (jury) vote to boot one active player. Immunity winner is safe.',        engineType:'jury-elimination'},
 ];
 
 // S10 preset data
@@ -2441,6 +2441,11 @@ function applyTwist(ep, twist, isPrimary = true) {
     gs.penaltyVoteThisEp = target;
     twistObj.fanVote = true;
 
+  } else if (engineType === 'jury-elimination') {
+    // Every eliminated player is on the "jury" — they vote to boot one active player
+    // Immunity winner will be excluded at resolution time (not known yet at twist setup)
+    twistObj.juryElimination = true;
+
   } else if (engineType === 'shot-in-dark') {
     gs.shotInDarkEnabledThisEp = true;
   }
@@ -3653,6 +3658,49 @@ function simulateEpisode() {
     ep.alliances = alliances;
   }
 
+  // ── TWIST: jury-elimination — all eliminated players vote to boot one active player (replaces tribal) ──
+  const juryElimTw = ep.twists?.find(t => t.type === 'jury-elimination');
+  if (juryElimTw && gs.eliminated.length > 0) {
+    const immune = ep.immunityWinner;
+    const candidates = gs.activePlayers.filter(p => p !== immune);
+    if (candidates.length > 0) {
+      const jurors = gs.eliminated;
+      const elimVotes = Object.fromEntries(candidates.map(p => [p, 0]));
+      const elimLog = [];
+      jurors.forEach(juror => {
+        const scores = candidates.map(p => ({
+          name: p,
+          score: -getBond(juror, p) + pStats(juror).strategic * 0.05 + Math.random() * 2
+        }));
+        scores.sort((a, b) => b.score - a.score);
+        const target = scores[0].name;
+        elimVotes[target]++;
+        elimLog.push({ juror, votedOut: target });
+      });
+      const elimSorted = Object.entries(elimVotes).sort(([,a],[,b]) => b-a);
+      const juryBooted = elimSorted[0][0];
+      juryElimTw.juryBooted = juryBooted;
+      juryElimTw.elimVotes = elimVotes;
+      juryElimTw.elimLog = elimLog;
+      ep.eliminated = juryBooted;
+      // Eliminated by jury during merge → joins jury like any other merge boot
+      gs.eliminated.push(juryBooted);
+      if (gs.isMerged) gs.jury.push(juryBooted);
+      gs.activePlayers = gs.activePlayers.filter(p => p !== juryBooted);
+      gs.tribes = gs.tribes.map(t => ({...t, members: t.members.filter(p => p !== juryBooted)}));
+      gs.advantages = gs.advantages.filter(a => a.holder !== juryBooted);
+    }
+    // No tribal vote — jury elimination replaces it
+    gs.episode = epNum;
+    ep.bondChanges = updateBonds([], ep.eliminated, alliances);
+    detectBetrayals(ep);
+    if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
+    gs.episodeHistory.push({ num: epNum, eliminated: ep.eliminated || null, riChoice: null, immunityWinner: ep.immunityWinner, challengeType: 'individual', isMerge: ep.isMerge, votes: {}, alliances: [], summaryText: '', gsSnapshot: snapshotGameState() });
+    const stJE = generateSummaryText(ep);
+    gs.episodeHistory[gs.episodeHistory.length-1].summaryText = stJE; ep.summaryText = stJE;
+    saveGameState(); return ep;
+  }
+
   // ── VOTE ──
   const r1 = runTribal(ep.tribalPlayers, ep.immunityWinner||null, alliances);
   ep.votes = r1.votes; ep.votingLog = r1.log;
@@ -4159,6 +4207,12 @@ function generateSummaryText(ep) {
     } else if (tw.type === 'fan-vote-boot') {
       ln('FAN VOTE — the audience cast their votes. The most unpopular player enters tribal with a penalty vote.');
       if (tw.penaltyTarget) ln(`Fan-voted target: ${tw.penaltyTarget} starts tribal with 1 pre-cast vote.`);
+    } else if (tw.type === 'jury-elimination') {
+      ln('JURY ELIMINATION — all eliminated players voted to remove one active player from the game.');
+      if (tw.juryBooted) {
+        ln(`Jury elimination votes: ${Object.entries(tw.elimVotes||{}).sort(([,a],[,b])=>b-a).map(([n,v])=>`${n} (${v})`).join(', ')}`);
+        ln(`${tw.juryBooted} was eliminated by the jury. The tribe still votes normally for the second elimination.`);
+      }
     } else if (tw.type === 'legacy-awakens') {
       if (tw.legacyActivated) ln(`LEGACY ADVANTAGE ACTIVATES — ${tw.legacyActivated}'s Legacy Advantage fires. They are immune this tribal.`);
     } else if (tw.type === 'amulet-activate') {
@@ -5365,35 +5419,6 @@ function simulateFinale() {
     ep.winner = ep.finalChallengeWinner;
     ep.juryResult = null;
     gs.finaleResult = { winner: ep.winner, votes: null, reasoning: null, finalists, finalChallenge: true };
-  } else if (cfg.finaleFormat === 'jury-elimination') {
-    // Jury votes to ELIMINATE one finalist (lowest support = cut), then votes for winner
-    const eliminatable = finalists.filter(p => p !== ep.immunityWinner);
-    const elimVotes = Object.fromEntries(eliminatable.map(p => [p, 0]));
-    const elimLog = [];
-    gs.jury.forEach(juror => {
-      // Vote to eliminate whoever you like least (most negative bond + random)
-      const scores = eliminatable.map(p => ({
-        name: p,
-        score: -getBond(juror, p) + pStats(juror).strategic * 0.1 + Math.random() * 1.5
-      }));
-      scores.sort((a, b) => b.score - a.score);
-      const target = scores[0].name;
-      elimVotes[target]++;
-      elimLog.push({ juror, votedOut: target });
-    });
-    const elimSorted = Object.entries(elimVotes).sort(([,a],[,b]) => b-a);
-    const juryEliminated = elimSorted[0][0];
-    ep.juryElimination = { eliminated: juryEliminated, votes: elimVotes, log: elimLog };
-    gs.eliminated.push(juryEliminated);
-    gs.activePlayers = gs.activePlayers.filter(p => p !== juryEliminated);
-    finalists = finalists.filter(p => p !== juryEliminated);
-    ep.finaleFinalists = finalists;
-    // Now jury votes for the winner among remaining finalists
-    const juryResult = simulateJuryVote(finalists);
-    ep.juryResult = juryResult;
-    const jSorted = Object.entries(juryResult.votes).sort(([,a],[,b]) => b-a);
-    ep.winner = jSorted[0]?.[0] || finalists[0];
-    gs.finaleResult = { winner: ep.winner, votes: juryResult.votes, reasoning: juryResult.reasoning, finalists, juryElimination: ep.juryElimination };
   } else {
     // Jury vote
     const juryResult = simulateJuryVote(finalists);
@@ -5465,20 +5490,6 @@ function generateFinaleSummaryText(ep) {
     if (cutBond <= -1) ln(`${fc.winner} never fully trusted ${fc.cut}. The finale was the first clean chance to act on it.`);
     else if (cutS.social >= 7) ln(`${fc.cut} had too many jury friends. ${fc.winner} could not afford to let them into the finals.`);
     else ln(`${fc.winner} calculated ${fc.brought} was the right seat-mate — and did not look back.`);
-  }
-
-  if (cfg.finaleFormat === 'jury-elimination' && ep.juryElimination) {
-    const je = ep.juryElimination;
-    const elimVoteSorted = Object.entries(je.votes).sort(([,a],[,b]) => b-a);
-    sec('JURY ELIMINATION');
-    ln(`The jury votes to eliminate one finalist. The immunity winner (${ep.immunityWinner}) is safe.`);
-    ln('');
-    ln(`Jury elimination votes:`);
-    elimVoteSorted.forEach(([name, v]) => ln(`  ${name}: ${v} vote${v !== 1 ? 's' : ''}`));
-    ln('');
-    ln(`${je.eliminated} is eliminated by the jury with ${je.votes[je.eliminated]} vote${je.votes[je.eliminated] !== 1 ? 's' : ''}.`);
-    ln(`The finalists are now: ${ep.finaleFinalists.join(', ')}.`);
-    ln('');
   }
 
   if (cfg.finaleFormat === 'final-challenge') {

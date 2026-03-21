@@ -3528,7 +3528,7 @@ function simulateEpisode() {
 
   // ── ALLIANCES ──
   const tribeLabel = ep.challengeType === 'tribe' ? ep.loser.name : null;
-  const alliances  = formAlliances(ep.tribalPlayers, tribeLabel, ep.challengeLabel);
+  let alliances  = formAlliances(ep.tribalPlayers, tribeLabel, ep.challengeLabel);
   ep.alliances = alliances;
   if (gs.phase === 'pre-merge') {
     gs.alliances = [];
@@ -3645,6 +3645,11 @@ function simulateEpisode() {
   // ── shared-immunity / double-safety: remove extra immune players from tribal ──
   if (ep.sharedImmunity)  ep.tribalPlayers = ep.tribalPlayers.filter(p => p !== ep.sharedImmunity);
   if (ep.secondImmune)    ep.tribalPlayers = ep.tribalPlayers.filter(p => p !== ep.secondImmune);
+  // Recompute alliances so their targets reflect who's actually voteable
+  if (ep.sharedImmunity || ep.secondImmune) {
+    alliances = formAlliances(ep.tribalPlayers, tribeLabel, ep.challengeLabel);
+    ep.alliances = alliances;
+  }
 
   // ── VOTE ──
   const r1 = runTribal(ep.tribalPlayers, ep.immunityWinner||null, alliances);

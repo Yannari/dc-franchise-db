@@ -744,6 +744,8 @@
                 <option value="traditional">Council Vote (Traditional)</option>
                 <option value="fire-making">Fire Making Final</option>
                 <option value="fan-vote">Fan Vote Finale</option>
+                <option value="final-challenge">Final Challenge (No Jury)</option>
+                <option value="jury-elimination">Jury Elimination (TDI/DC4)</option>
               </select>
             </div>
             <div class="slider-control">
@@ -5356,14 +5358,50 @@ function simulateFinale() {
 
   ep.finaleFinalists = finalists;
 
-  // Jury vote
-  const juryResult = simulateJuryVote(finalists);
-  ep.juryResult = juryResult;
-  const jSorted = Object.entries(juryResult.votes).sort(([,a],[,b]) => b-a);
-  ep.winner = jSorted[0]?.[0] || finalists[0];
-
-  // Store result for Results tab
-  gs.finaleResult = { winner: ep.winner, votes: juryResult.votes, reasoning: juryResult.reasoning, finalists };
+  if (cfg.finaleFormat === 'final-challenge') {
+    // No jury — winner is whoever wins the final challenge among all finalists
+    const finalChalResult = simulateIndividualChallenge(finalists, null);
+    ep.finalChallengeWinner = finalChalResult?.name || finalists[0];
+    ep.winner = ep.finalChallengeWinner;
+    ep.juryResult = null;
+    gs.finaleResult = { winner: ep.winner, votes: null, reasoning: null, finalists, finalChallenge: true };
+  } else if (cfg.finaleFormat === 'jury-elimination') {
+    // Jury votes to ELIMINATE one finalist (lowest support = cut), then votes for winner
+    const eliminatable = finalists.filter(p => p !== ep.immunityWinner);
+    const elimVotes = Object.fromEntries(eliminatable.map(p => [p, 0]));
+    const elimLog = [];
+    gs.jury.forEach(juror => {
+      // Vote to eliminate whoever you like least (most negative bond + random)
+      const scores = eliminatable.map(p => ({
+        name: p,
+        score: -getBond(juror, p) + pStats(juror).strategic * 0.1 + Math.random() * 1.5
+      }));
+      scores.sort((a, b) => b.score - a.score);
+      const target = scores[0].name;
+      elimVotes[target]++;
+      elimLog.push({ juror, votedOut: target });
+    });
+    const elimSorted = Object.entries(elimVotes).sort(([,a],[,b]) => b-a);
+    const juryEliminated = elimSorted[0][0];
+    ep.juryElimination = { eliminated: juryEliminated, votes: elimVotes, log: elimLog };
+    gs.eliminated.push(juryEliminated);
+    gs.activePlayers = gs.activePlayers.filter(p => p !== juryEliminated);
+    finalists = finalists.filter(p => p !== juryEliminated);
+    ep.finaleFinalists = finalists;
+    // Now jury votes for the winner among remaining finalists
+    const juryResult = simulateJuryVote(finalists);
+    ep.juryResult = juryResult;
+    const jSorted = Object.entries(juryResult.votes).sort(([,a],[,b]) => b-a);
+    ep.winner = jSorted[0]?.[0] || finalists[0];
+    gs.finaleResult = { winner: ep.winner, votes: juryResult.votes, reasoning: juryResult.reasoning, finalists, juryElimination: ep.juryElimination };
+  } else {
+    // Jury vote
+    const juryResult = simulateJuryVote(finalists);
+    ep.juryResult = juryResult;
+    const jSorted = Object.entries(juryResult.votes).sort(([,a],[,b]) => b-a);
+    ep.winner = jSorted[0]?.[0] || finalists[0];
+    gs.finaleResult = { winner: ep.winner, votes: juryResult.votes, reasoning: juryResult.reasoning, finalists };
+  }
 
   const summaryText = generateFinaleSummaryText(ep);
   ep.summaryText = summaryText;
@@ -5429,63 +5467,98 @@ function generateFinaleSummaryText(ep) {
     else ln(`${fc.winner} calculated ${fc.brought} was the right seat-mate — and did not look back.`);
   }
 
-  sec('FINAL TRIBAL COUNCIL');
-  ln(`The jury of ${jury.length} faces the finalists.`);
-  ln('');
-  finalists.forEach(f => {
-    const fs = pStats(f);
-    const idolPlays = gs.episodeHistory.filter(e => (e.alliances||[]).some(() => false)).length; // placeholder
-    const wins = gs.episodeHistory.filter(e => e.immunityWinner === f).length;
-    const votes = gs.episodeHistory.reduce((sum, e) => sum + (e.votes?.[f] || 0), 0);
-    ln(`${f}:`);
-    if (fs.strategic >= 8 && fs.social >= 7) ln(`  - Complete player. Dominated strategy and maintained relationships.`);
-    else if (fs.strategic >= 8) ln(`  - Ruthless strategist. Controlled the vote at every critical juncture.`);
-    else if (fs.social >= 8) ln(`  - Social anchor. Nobody wanted to vote against them — and nobody did.`);
-    else if (fs.physical >= 8 || wins >= 3) ln(`  - Challenge beast. Won immunity when it counted.`);
-    else ln(`  - Survived against the odds. The journey matters as much as the destination.`);
-    ln(`  - Individual immunities won: ${wins}`);
-    ln(`  - Votes against (total): ${votes}`);
-  });
+  if (cfg.finaleFormat === 'jury-elimination' && ep.juryElimination) {
+    const je = ep.juryElimination;
+    const elimVoteSorted = Object.entries(je.votes).sort(([,a],[,b]) => b-a);
+    sec('JURY ELIMINATION');
+    ln(`The jury votes to eliminate one finalist. The immunity winner (${ep.immunityWinner}) is safe.`);
+    ln('');
+    ln(`Jury elimination votes:`);
+    elimVoteSorted.forEach(([name, v]) => ln(`  ${name}: ${v} vote${v !== 1 ? 's' : ''}`));
+    ln('');
+    ln(`${je.eliminated} is eliminated by the jury with ${je.votes[je.eliminated]} vote${je.votes[je.eliminated] !== 1 ? 's' : ''}.`);
+    ln(`The finalists are now: ${ep.finaleFinalists.join(', ')}.`);
+    ln('');
+  }
 
-  sec('JURY VOTE');
-  juryResult.reasoning?.forEach(r => {
-    const js = pStats(r.juror);
-    const bond = getBond(r.juror, r.votedFor);
-    let reason;
-    if (bond >= 4) reason = `strong personal loyalty — felt closest to ${r.votedFor}`;
-    else if (bond >= 2) reason = `respected ${r.votedFor}'s game and felt a genuine connection`;
-    else if (js.strategic >= 8) reason = `pure gameplay — ${r.votedFor} made the best moves`;
-    else if (js.intuition >= 7) reason = `read the game correctly — ${r.votedFor} earned it`;
-    else if (bond >= 0) reason = `liked ${r.votedFor} the most of the remaining options`;
-    else reason = `voted against who they disliked more`;
-    ln(`${r.juror} → ${r.votedFor} — ${reason}`);
-  });
+  if (cfg.finaleFormat === 'final-challenge') {
+    sec('FINAL CHALLENGE');
+    ln(`No jury. The winner is decided by a final challenge among all finalists.`);
+    ln('');
+    finalists.forEach(f => {
+      const fs = pStats(f);
+      const wins = gs.episodeHistory.filter(e => e.immunityWinner === f).length;
+      ln(`${f}: ${wins} individual immunity win${wins !== 1 ? 's' : ''} — ${fs.physical >= 8 ? 'physical threat' : fs.endurance >= 8 ? 'endurance specialist' : fs.mental >= 8 ? 'mental powerhouse' : 'all-around competitor'}`);
+    });
+    ln('');
+    ln(`${ep.finalChallengeWinner} wins the Final Challenge and takes the season.`);
 
-  const sorted = Object.entries(juryResult.votes).sort(([,a],[,b]) => b-a);
-  const tally = sorted.map(([n,v]) => `${n}: ${v}`).join(' | ');
+    sec('WINNER');
+    const winner = ep.winner;
+    const ws = pStats(winner);
+    ln(`${winner} wins the season by winning the Final Challenge!`);
+    ln('');
+    if (ws.physical >= 8 || ws.endurance >= 8) ln(`${winner} dominated when it mattered most — a worthy champion.`);
+    else if (ws.mental >= 8) ln(`${winner} outlasted every mental obstacle thrown at them. The final challenge was just one more.`);
+    else ln(`${winner} dug deep and won the only vote that counted — the final challenge.`);
+  } else {
+    sec('FINAL TRIBAL COUNCIL');
+    ln(`The jury of ${jury.length} faces the finalists.`);
+    ln('');
+    finalists.forEach(f => {
+      const fs = pStats(f);
+      const wins = gs.episodeHistory.filter(e => e.immunityWinner === f).length;
+      const votes = gs.episodeHistory.reduce((sum, e) => sum + (e.votes?.[f] || 0), 0);
+      ln(`${f}:`);
+      if (fs.strategic >= 8 && fs.social >= 7) ln(`  - Complete player. Dominated strategy and maintained relationships.`);
+      else if (fs.strategic >= 8) ln(`  - Ruthless strategist. Controlled the vote at every critical juncture.`);
+      else if (fs.social >= 8) ln(`  - Social anchor. Nobody wanted to vote against them — and nobody did.`);
+      else if (fs.physical >= 8 || wins >= 3) ln(`  - Challenge beast. Won immunity when it counted.`);
+      else ln(`  - Survived against the odds. The journey matters as much as the destination.`);
+      ln(`  - Individual immunities won: ${wins}`);
+      ln(`  - Votes against (total): ${votes}`);
+    });
 
-  sec('FINAL TALLY');
-  ln(tally);
+    sec('JURY VOTE');
+    juryResult.reasoning?.forEach(r => {
+      const js = pStats(r.juror);
+      const bond = getBond(r.juror, r.votedFor);
+      let reason;
+      if (bond >= 4) reason = `strong personal loyalty — felt closest to ${r.votedFor}`;
+      else if (bond >= 2) reason = `respected ${r.votedFor}'s game and felt a genuine connection`;
+      else if (js.strategic >= 8) reason = `pure gameplay — ${r.votedFor} made the best moves`;
+      else if (js.intuition >= 7) reason = `read the game correctly — ${r.votedFor} earned it`;
+      else if (bond >= 0) reason = `liked ${r.votedFor} the most of the remaining options`;
+      else reason = `voted against who they disliked more`;
+      ln(`${r.juror} → ${r.votedFor} — ${reason}`);
+    });
 
-  sec('WINNER');
-  const winner = ep.winner;
-  const ws = pStats(winner);
-  const winVotes = juryResult.votes[winner] || 0;
-  const totalJury = jury.length;
-  ln(`${winner} wins the season with a ${winVotes}-${totalJury - winVotes}${sorted.length > 2 ? `-${sorted[2]?.[1]||0}` : ''} jury vote!`);
-  ln('');
-  if (ws.strategic >= 8 && ws.social >= 7) ln(`${winner} played a complete game — controlling votes while keeping the jury's respect. A textbook win.`);
-  else if (ws.strategic >= 8) ln(`${winner} played a dominant strategic game. Not everyone on the jury loved the moves — but they could not argue with them.`);
-  else if (ws.social >= 8) ln(`${winner} won through sheer social mastery. Made everyone feel like they mattered. In the end, the jury voted for someone they actually liked.`);
-  else if (ws.physical >= 8) ln(`${winner} won the challenges when it counted. The jury respected someone who earned their safety.`);
-  else ln(`${winner} outlasted, outplayed, and outsurvivedeveryone. A won built on resilience.`);
+    const sorted = Object.entries(juryResult.votes).sort(([,a],[,b]) => b-a);
+    const tally = sorted.map(([n,v]) => `${n}: ${v}`).join(' | ');
 
-  // Runner-up note
-  if (sorted.length >= 2) {
-    const ru = sorted[1][0];
-    const ruVotes = sorted[1][1];
-    if (ruVotes >= Math.floor(totalJury / 2)) ln(`${ru} came agonizingly close — ${ruVotes} jury votes. A different night, a different result.`);
-    else ln(`${ru} finishes as runner-up with ${ruVotes} jury vote${ruVotes !== 1 ? 's' : ''}.`);
+    sec('FINAL TALLY');
+    ln(tally);
+
+    sec('WINNER');
+    const winner = ep.winner;
+    const ws = pStats(winner);
+    const winVotes = juryResult.votes[winner] || 0;
+    const totalJury = jury.length;
+    ln(`${winner} wins the season with a ${winVotes}-${totalJury - winVotes}${sorted.length > 2 ? `-${sorted[2]?.[1]||0}` : ''} jury vote!`);
+    ln('');
+    if (ws.strategic >= 8 && ws.social >= 7) ln(`${winner} played a complete game — controlling votes while keeping the jury's respect. A textbook win.`);
+    else if (ws.strategic >= 8) ln(`${winner} played a dominant strategic game. Not everyone on the jury loved the moves — but they could not argue with them.`);
+    else if (ws.social >= 8) ln(`${winner} won through sheer social mastery. Made everyone feel like they mattered. In the end, the jury voted for someone they actually liked.`);
+    else if (ws.physical >= 8) ln(`${winner} won the challenges when it counted. The jury respected someone who earned their safety.`);
+    else ln(`${winner} outlasted, outplayed, and outsurvivedeveryone. A win built on resilience.`);
+
+    // Runner-up note
+    if (sorted.length >= 2) {
+      const ru = sorted[1][0];
+      const ruVotes = sorted[1][1];
+      if (ruVotes >= Math.floor(totalJury / 2)) ln(`${ru} came agonizingly close — ${ruVotes} jury votes. A different night, a different result.`);
+      else ln(`${ru} finishes as runner-up with ${ruVotes} jury vote${ruVotes !== 1 ? 's' : ''}.`);
+    }
   }
 
   return L.join('\n');

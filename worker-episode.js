@@ -1697,41 +1697,27 @@ Do NOT write "they were eliminated" at tribal. The tribal vote sends them to thi
 
 ` : '';
 
-  const tdCoreRules = isSurvivorStyle
-    ? `⚠️ THIS IS TOTAL DRAMA WITH A SURVIVOR FORMAT. KEY RULES:
-- The HOST is Chris McLean: sadistic, entertained by suffering, game show host energy — NOT solemn like Jeff Probst. He asks questions because he wants to watch people squirm, not because he cares about their journey.
-- CONFESSIONALS are punchy, funny, and personal — not long strategic monologues.
-- CHALLENGES can include Survivor-style endurance/puzzle/physical formats but should still go wrong or get chaotic in ways that fit Total Drama's tone.
-- TRIBAL COUNCIL uses torches, fire, and "the tribe has spoken" as described in the season setting — but Chris delivers it all with game show energy, not ceremony.
-- THE TONE still has Total Drama personality: big reactions, exaggerated moments, comedy mixed into strategy. It is not a straight Survivor episode.
-`
-    : `⚠️ THIS IS TOTAL DRAMA — NOT SURVIVOR. KEY DIFFERENCES:
-- The HOST is Chris McLean: sadistic, entertained by suffering, runs the show like a game show not a ceremony. He is NOT Jeff Probst. He does NOT ask probing questions at eliminations — he reads votes and enjoys the chaos.
-- CONFESSIONALS match the setting (outhouse on island, director's chair in movie studio, airplane bathroom on World Tour, diary room in a house). They are punchy, funny, and personal — not strategic monologues.
-- CHALLENGES are absurd, dangerous, or humiliating — they fit the setting and often go wrong in spectacular ways. They are NOT pure willpower/endurance Survivor-style challenges.
-- ELIMINATION CEREMONY is NOT a solemn Survivor tribal council. Chris is actively having fun. Use the format appropriate to the setting:
-  * Total Drama Island style → campfire ceremony, Chris throws marshmallows to safe players, the loser takes the Boat of Losers. NO torches. NO "the tribe has spoken."
-  * Other settings → elimination method fits the theme (parachute jump, flush of shame, catapult, etc.)
-- THERE ARE NO TORCHES, NO FIRE-MAKING, NO "THE TRIBE HAS SPOKEN." Those are Survivor. This is Total Drama.
-- THE TONE is cartoon drama: big personalities, exaggerated reactions, physical comedy embedded in real game strategy. If it reads like a serious Survivor episode with no laughs, you've written the wrong show.
+  const defaultFormatRules = `⚠️ NO SEASON SETTING PROVIDED — DEFAULTING TO SURVIVOR FORMAT:
+- Tropical island, tribal camps, hidden immunity idols, torches, fire-making.
+- TRIBAL COUNCIL at night around torches. Chris snuffs the torch of the eliminated player.
+- HOST is Chris McLean with Survivor structure but game show energy — not solemn like Jeff Probst.
+- CONFESSIONALS are punchy and personal, not long strategic monologues.
 `;
 
   const settingBlock = seasonSetting && seasonSetting.trim()
     ? `═══════════════════════════════════════════════════════════
-SEASON SETTING — READ THIS BEFORE WRITING ANYTHING
+SEASON SETTING — THIS IS THE AUTHORITY FOR THIS SEASON. FOLLOW IT EXACTLY.
 ═══════════════════════════════════════════════════════════
 
 ${seasonSetting.trim()}
 ${riMechanicsBlock}
-Every scene, every challenge, every confessional, and every elimination takes place inside this world. The physical environment shapes everything: where people sleep, where the confessional is shot, what the challenges look like, how eliminations happen.
-
-${tdCoreRules}
+Every scene, every challenge, every confessional, and every elimination takes place inside this world. The physical environment, elimination method, and tone described above override any default assumptions. Follow it exactly for every episode this season.
 `
     : `═══════════════════════════════════════════════════════════
-SHOW FORMAT
+SHOW FORMAT (DEFAULT — no season setting provided)
 ═══════════════════════════════════════════════════════════
 
-${tdCoreRules}
+${defaultFormatRules}
 `;
 
   const franchiseContextBlock = franchiseContext && franchiseContext.trim()

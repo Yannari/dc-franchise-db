@@ -2291,17 +2291,37 @@ Dave voted for Mickey
       let summaryText = els.summary.value || "";
       if (!summaryText.trim()) return setStatus("Paste an episode summary or raw BrantSteele output first.");
 
-      // Auto-convert raw BrantSteele output → structured summary if needed
+      // Auto-convert or enhance summary as needed before analytics
+      const cachedKey = `AI_SUMMARY_s${season}_e${episode}`;
       if (!isStructuredSummary(summaryText)) {
+        // Raw BrantSteele — summarize first
         setStatus("Step 1/2: Converting raw to structured summary…");
         try {
           const workerUrl = normalizeWorkerUrl(els.workerUrl.value || localStorage.getItem("AI_ENDPOINT_URL") || "");
           summaryText = await autoSummarize(season, episode, summaryText, workerUrl);
-          els.summary.value = summaryText; // show the generated summary in the textarea
+          els.summary.value = summaryText;
+          localStorage.setItem(cachedKey, summaryText);
         } catch (e) {
           return setStatus("Error generating summary: " + (e?.message || String(e)));
         }
         setStatus("Step 2/2: Generating analytics…");
+      } else if (isSimulatorSummary(summaryText)) {
+        // Simulator output — use cached enhanced version if available, otherwise enhance first
+        const cached = localStorage.getItem(cachedKey);
+        if (cached && !isSimulatorSummary(cached)) {
+          summaryText = cached;
+          setStatus("Generating analytics…");
+        } else {
+          setStatus("Step 1/2: Enhancing summary…");
+          try {
+            summaryText = await autoEnhance(season, episode, summaryText);
+            els.summary.value = summaryText;
+            localStorage.setItem(cachedKey, summaryText);
+          } catch (e) {
+            return setStatus("Error enhancing summary: " + (e?.message || String(e)));
+          }
+          setStatus("Step 2/2: Generating analytics…");
+        }
       } else {
         setStatus("Generating analytics…");
       }

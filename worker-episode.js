@@ -591,15 +591,18 @@ RESUMES (resumesList):
   Example: "Orchestrated Devin elimination with 8-4 vote"
 
 RELATIONSHIPS (relationshipsList):
-- Generate for ALL player pairs bidirectionally
-- Example: 14 players = 182 entries (14 × 13)
+- ONLY include pairs where |value| >= 2 (skip all neutral/unknown pairs — do NOT include value 0 or 1 entries)
+- This means: only alliances, friendships, tensions, rivalries, and enemies — not neutral strangers
+- Generate bidirectionally: if A→B = 5, also include B→A = 5
 - player1Slug and player2Slug: lowercase, no spaces
 - value: -10 to +10 scale
-  * 10: Unbreakable
+  * 10: Unbreakable bond
   * 7-9: Strong alliance
-  * 3-6: Friends
-  * 0-2: Neutral
-  * -3 to -6: Tension
+  * 3-6: Friends / working together
+  * 2: Slight warmth (include)
+  * 1, 0: Neutral (SKIP — do not include)
+  * -2: Slight tension (include)
+  * -3 to -6: Tension / distrust
   * -7 to -9: Rivalry
   * -10: Enemies
 
@@ -721,9 +724,14 @@ Season: ${season ?? "?"}, Episode: ${episode ?? "?"}.
         let data;
         try { data = JSON.parse(jsonMatch[0]); }
         catch (e) {
-          controller.enqueue(encoder.encode(JSON.stringify({ error: "Claude JSON parse failed: " + e.message })));
-          controller.close();
-          return;
+          // JSON likely truncated mid-stream — attempt repair by closing open structures
+          try {
+            data = JSON.parse(repairTruncatedJson(jsonMatch[0]));
+          } catch (e2) {
+            controller.enqueue(encoder.encode(JSON.stringify({ error: "Claude JSON parse failed: " + e.message })));
+            controller.close();
+            return;
+          }
         }
 
         convertAnalyticsData(data);
@@ -819,7 +827,7 @@ SIMULATOR INPUT → OUTPUT DESTINATION:
 
 === ADVANTAGES IN PLAY === → keep exactly
 
-=== ONGOING STORYLINES === → keep/expand; must include at least 5 numbered threads
+=== ONGOING STORYLINES === → rewrite from scratch using only what actually happened; 5–7 threads; every thread must name specific players and end with a specific forward tension; ban generic filler phrases like "someone knows something they weren't supposed to know"
 
 === COLD OPEN HOOK === → keep as-is
 
@@ -1013,11 +1021,18 @@ Role tags: Hub / Shield / Operator / Threat / Outlier / Wildcard / Wounded / Hid
 
 ## ONGOING STORYLINES
 
-1. [Unresolved conflict: what happened, what each person is feeling, what triggers the next confrontation]
-2. [Relationship developing or fracturing: the specific moment, where it is now, where it's heading]
-3. [Hidden information or secret advantage: who has it, who doesn't know, what happens when it surfaces]
-4. [Strategic threat building: who is building toward a move, who is the target, what is the obstacle]
-5. [Personal/emotional arc: what someone is carrying beyond strategy]
+[5–7 numbered threads. Each must:
+- Name specific players — NEVER use "someone", "a player", "one castmate", or any anonymous reference
+- Be grounded in something that actually happened THIS episode or has been building across episodes — no invented events
+- End with a specific forward tension: a named confrontation, a ticking clock, a decision that's coming
+- Be DIFFERENT in structure from every other thread in the list — no two threads can be "X is building toward a move" or "X holds information"
+
+BANNED patterns (do not use):
+- "Someone knows something they weren't supposed to know. They haven't used it yet. That won't last."
+- Any thread that could apply to any Survivor-type game without naming this season's specific cast
+- Repeating the same player in more than 2 threads
+- Generic arc labels like "personal arc" or "strategic threat" without specific content
+- Threads that are just restatements of what already happened with no forward tension]
 
 ---
 
@@ -1059,7 +1074,6 @@ Role tags: Hub / Shield / Operator / Threat / Outlier / Wildcard / Wounded / Hid
             "Content-Type": "application/json",
             "x-api-key": env.ANTHROPIC_API_KEY,
             "anthropic-version": "2023-06-01",
-            "anthropic-beta": "max-tokens-3-5-sonnet-2024-07-15",
           },
           body: JSON.stringify({
             model: "claude-haiku-4-5-20251001",
@@ -4106,6 +4120,45 @@ async function callAnthropic(system, userText, env) {
   return new Response(JSON.stringify({ episodeTranscript: text }), {
     headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
   });
+}
+
+function repairTruncatedJson(str) {
+  // Remove any trailing incomplete token (partial string, partial key, etc.)
+  // Strategy: walk backwards until we find a position that can be cleanly closed
+  let s = str.trimEnd();
+
+  // Remove trailing comma before a closing bracket we're about to add
+  s = s.replace(/,\s*$/, "");
+
+  // If we're mid-string, close the string
+  // Count unescaped quotes to detect open string
+  let inString = false;
+  for (let i = 0; i < s.length; i++) {
+    if (s[i] === '"' && (i === 0 || s[i - 1] !== '\\')) inString = !inString;
+  }
+  if (inString) {
+    s += '"';
+    // If this incomplete string was a key, add a null value
+    s = s.replace(/"([^"]*)"$/, (m) => m + ':null');
+  }
+
+  // Close all open arrays and objects
+  const stack = [];
+  inString = false;
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (c === '"' && (i === 0 || s[i - 1] !== '\\')) { inString = !inString; continue; }
+    if (inString) continue;
+    if (c === '{') stack.push('}');
+    else if (c === '[') stack.push(']');
+    else if (c === '}' || c === ']') stack.pop();
+  }
+
+  // Remove trailing comma again after string repair
+  s = s.replace(/,\s*$/, "");
+
+  while (stack.length) s += stack.pop();
+  return s;
 }
 
 async function callOpenAI(payload, env) {

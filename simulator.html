@@ -3457,11 +3457,22 @@ function simulateEpisode() {
     gs.episodeHistory[gs.episodeHistory.length-1].summaryText = st; ep.summaryText = st;
     saveGameState(); return ep;
   }
-  // ── SLASHER NIGHT — camp elimination already done; now run normal tribal for 2nd elimination ──
+  // ── SLASHER NIGHT — victim already eliminated at camp; replaces tribal entirely ──
   if (ep.isSlasherNight) {
-    // Mark slasher in summaryText but continue to regular tribal
-    ep.slasherEliminated = ep.eliminated;
-    ep.eliminated = null; // will be set again by tribal
+    if (ep.eliminated) {
+      gs.tribes = gs.tribes.map(t => ({...t, members: t.members.filter(p => p !== ep.eliminated)}));
+      gs.advantages = gs.advantages.filter(a => a.holder !== ep.eliminated);
+      if (gs.isMerged) gs.jury.push(ep.eliminated);
+    }
+    simulateJourney(ep); findAdvantages(ep); generateCampEvents(ep, 'both');
+    ep.bondChanges = updateBonds([], ep.eliminated, alliances);
+    detectBetrayals(ep);
+    gs.episode = epNum;
+    if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
+    gs.episodeHistory.push({ num: epNum, eliminated: ep.eliminated || null, riChoice: null, immunityWinner: null, challengeType: null, isMerge: ep.isMerge, votes: {}, alliances: [], summaryText: '', gsSnapshot: snapshotGameState() });
+    const stSN = generateSummaryText(ep);
+    gs.episodeHistory[gs.episodeHistory.length-1].summaryText = stSN; ep.summaryText = stSN;
+    saveGameState(); return ep;
   }
 
   // ── JOURNEY & IDOL FINDING ──
@@ -4211,7 +4222,7 @@ function generateSummaryText(ep) {
       ln('JURY ELIMINATION — all eliminated players voted to remove one active player from the game.');
       if (tw.juryBooted) {
         ln(`Jury elimination votes: ${Object.entries(tw.elimVotes||{}).sort(([,a],[,b])=>b-a).map(([n,v])=>`${n} (${v})`).join(', ')}`);
-        ln(`${tw.juryBooted} was eliminated by the jury. The tribe still votes normally for the second elimination.`);
+        ln(`${tw.juryBooted} was eliminated by the jury. No tribal council — jury elimination replaced the vote.`);
       }
     } else if (tw.type === 'legacy-awakens') {
       if (tw.legacyActivated) ln(`LEGACY ADVANTAGE ACTIVATES — ${tw.legacyActivated}'s Legacy Advantage fires. They are immune this tribal.`);
@@ -5174,8 +5185,8 @@ function buildEpisodeMap() {
     if (etype === 'no-tribal' || etype === 'spirit-island') elims = 0;
     // Double-kill twists
     if (etype === 'double-elim' || (etype === 'double-tribal' && !merged)) elims = 2;
-    // Slasher night: one at camp + one at tribal
-    if (etype === 'slasher-night') elims = 2;
+    // Slasher night: one at camp, replaces tribal
+    if (etype === 'slasher-night') elims = 1;
     // Returning player: someone comes back AND tribal still runs (net zero — count stays the same)
     const returns = (etype === 'returning-player') ? 1 : 0;
 

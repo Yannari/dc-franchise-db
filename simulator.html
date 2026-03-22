@@ -2067,16 +2067,16 @@ function buildVoteReason(voter, target, type, ctx = {}) {
     const stated = myAlliance?.target || '?';
     const base = underlyingReason || 'a personal read';
     if (voterS.strategic >= 8) return pick([
-      `told ${myAlliance?.label || 'the group'} to vote ${stated} — cast a completely different ballot`,
-      `ran the plan, then used the cover to quietly eliminate ${target}`,
-      `the alliance voted where they were pointed; ${voter} had a different endgame in mind`,
-      `publicly committed to ${stated}, privately chose ${target} — both agendas ran simultaneously`,
+      `told ${myAlliance?.label || 'the group'} to vote ${stated} — cast a completely different ballot — ${base}`,
+      `ran the plan, then used the cover to quietly eliminate ${target} — ${base}`,
+      `the alliance voted where they were pointed; ${voter} had a different endgame in mind — ${base}`,
+      `publicly committed to ${stated}, privately chose ${target} — ${base}`,
     ]);
     if (voterS.boldness >= 7) return pick([
-      `sent the bloc after ${stated} and slipped a personal vote to ${target} under the chaos`,
-      `the stated plan was ${stated} — the real plan was ${target}`,
-      `two targets this tribal: the one they told everyone about, and this one`,
-      `bold move — led the alliance one direction, stepped aside at the last second`,
+      `sent the bloc after ${stated} and slipped a personal vote to ${target} under the chaos — ${base}`,
+      `the stated plan was ${stated} — the real plan was ${target} — ${base}`,
+      `two targets this tribal: the one they told everyone about (${stated}), and this one — ${base}`,
+      `bold move — led the alliance one direction, stepped aside at the last second — ${base}`,
     ]);
     return pick([
       `stated plan was ${stated}, actual vote was ${target} — ${base}`,
@@ -4089,6 +4089,7 @@ function checkAllianceQuitting(ep) {
         const reason = wasBetrayed ? 'betrayed by alliance member'
           : isSplit ? 'tribe split — drifted away on separate tribe'
           : avgBond < -1 ? 'relationship breakdown'
+          : (s.strategic >= 7 && s.loyalty <= 4 && Math.random() < 0.55) ? 'strategic pivot'
           : 'went solo';
         alliance.members = alliance.members.filter(m => m !== member);
         alliance.quits = alliance.quits || [];
@@ -4259,6 +4260,12 @@ function generateCampEvents(ep, phase = 'both') {
           tb('eavesdrop', 25); tb('doubt', 25); tb('confessional', 25);
           tb('fight', 20); tb('leadershipClash', 15);
           tb('weirdMoment', -10); tb('prank', -15); tb('flirtation', -10);
+          // High-stat players stay visible even in a scramble — strategic/social players
+          // still operate in panic mode; their archetype events shouldn't be buried
+          const hasStrategist = present.some(n => pStats(n).strategic >= 8);
+          const hasSocialPlayer = present.some(n => pStats(n).social >= 8);
+          if (hasStrategist) { tb('mastermindOrchestrates', 20); tb('schemerManipulates', 15); }
+          if (hasSocialPlayer) { tb('socialBoost', 15); tb('perceptiveReads', 12); }
         } else if (isWinner) {
           // Won immunity — relief, celebration, let guard down
           tb('tdBond', 30); tb('bond', 25); tb('flirtation', 20);
@@ -5038,7 +5045,20 @@ function generateSummaryText(ep) {
   }
 
   // RELATIONSHIP HIGHLIGHTS — shown after camp events so bonds reflect what just happened
-  tribeGroups.forEach(tribe => {
+  // Re-include eliminated player(s) so their relationships during the episode are visible
+  const relTribeGroups = tribeGroups.map(t => ({ ...t, members: [...t.members] }));
+  const _addElimToTribe = (name) => {
+    if (!name) return;
+    const tribalTribe = ep.loser?.name;
+    const target = tribalTribe
+      ? relTribeGroups.find(t => t.name === tribalTribe)
+      : relTribeGroups[0];
+    if (target && !target.members.includes(name)) target.members.push(name);
+  };
+  _addElimToTribe(ep.eliminated);
+  _addElimToTribe(ep.firstEliminated);
+
+  relTribeGroups.forEach(tribe => {
     const isMerge = tribe.name === 'merged';
     sec(`RELATIONSHIP HIGHLIGHTS${isMerge ? '' : ' \u2014 ' + tribe.name.toUpperCase()}`);
     const relPairs = getTribeRelationshipHighlights(tribe.members);
@@ -5057,11 +5077,45 @@ function generateSummaryText(ep) {
   if (ep.allianceQuits?.length) {
     sec('ALLIANCE CHANGES');
     ep.allianceQuits.forEach(q => {
-      const reasonText = q.reason === 'betrayed by alliance member' ? `— someone in ${q.alliance} already voted against them`
-        : q.reason === 'tribe split — drifted away on separate tribe' ? `— the tribe swap put them on opposite sides. The distance was enough.`
-        : q.reason === 'relationship breakdown' ? `— bonds with the group had worn too thin`
-        : `— chose to go solo`;
-      ln(`- ${q.player} quietly steps away from ${q.alliance} ${reasonText}.`);
+      const _pick = arr => arr[Math.floor(Math.random() * arr.length)];
+      let line;
+      if (q.reason === 'betrayed by alliance member') {
+        line = _pick([
+          `${q.player} finds out someone in ${q.alliance} wrote their name down. The alliance is done — there's no version of this where they just move on.`,
+          `${q.player} knows. Someone in ${q.alliance} voted against them and didn't say a word. ${q.player} doesn't make a scene — but ${q.alliance} is finished to them.`,
+          `${q.player} is out of ${q.alliance}. Not quietly — they're out because someone in that group just proved they can't be trusted.`,
+          `The trust in ${q.alliance} is gone. ${q.player} got a vote from inside. They're not forgetting that.`,
+        ]);
+      } else if (q.reason === 'tribe split — drifted away on separate tribe') {
+        line = _pick([
+          `${q.player} and ${q.alliance} are on different tribes now. The alliance technically exists. Practically, it doesn't.`,
+          `Distance did the work. ${q.player} steps back from ${q.alliance} — they're not in the same conversations anymore.`,
+          `${q.alliance} was built on proximity. ${q.player} is on the other side of the swap. The group will move on without them.`,
+          `The tribe swap quietly ends ${q.player}'s involvement in ${q.alliance}. Nobody announces it. It just stops.`,
+        ]);
+      } else if (q.reason === 'relationship breakdown') {
+        line = _pick([
+          `${q.player} has had enough of ${q.alliance}. The bonds were already thin — this episode finished them off.`,
+          `${q.player} pulls back from ${q.alliance}. The relationships in that group aren't worth protecting anymore.`,
+          `Something cracked between ${q.player} and ${q.alliance}. ${q.player} stops showing up to those conversations.`,
+          `The chemistry in ${q.alliance} was never right for ${q.player}. They've stopped pretending otherwise.`,
+        ]);
+      } else if (q.reason === 'strategic pivot') {
+        line = _pick([
+          `${q.player} quietly reclassifies ${q.alliance} as a liability and starts doing the math without them.`,
+          `${q.alliance} served its purpose for ${q.player}. They're done with it — they just haven't said so yet.`,
+          `${q.player} has already moved on from ${q.alliance} in their head. The formal exit will come when it's useful.`,
+          `${q.player} reassesses. ${q.alliance} doesn't fit the plan anymore. They start working around it instead of through it.`,
+        ]);
+      } else {
+        line = _pick([
+          `${q.player} quietly steps away from ${q.alliance} — chose to go solo.`,
+          `${q.player} drifts out of ${q.alliance}. No drama, no announcement — just gone.`,
+          `${q.alliance} loses ${q.player} this episode. They'd rather move alone than stay committed.`,
+          `${q.player} decouples from ${q.alliance}. They'll work as a free agent from here.`,
+        ]);
+      }
+      ln(`- ${line}`);
     });
   }
 
@@ -5531,6 +5585,63 @@ function generateSummaryText(ep) {
     ln('No elimination this episode.');
   }
 
+  // FACTION MELTDOWN DETECTION
+  // Check each alliance: if 2+ members voted each other instead of their stated target, surface it
+  {
+    const allLogs = [
+      ...(ep.votingLog || []),
+      ...(ep.votingLog2 || []),
+    ];
+    (ep.alliances || []).forEach(alliance => {
+      if (!alliance.target || !alliance.label || alliance.type === 'solo') return;
+      const memberSet = new Set(alliance.members);
+      if (memberSet.size < 2) return;
+
+      // Only count members who actually cast a vote this tribal
+      const memberVotes = allLogs.filter(l => memberSet.has(l.voter));
+      if (memberVotes.length < 2) return;
+
+      const votedTarget = memberVotes.filter(l => l.voted === alliance.target);
+      const votedInternal = memberVotes.filter(l => memberSet.has(l.voted)); // voted another alliance member
+      const votedOther = memberVotes.filter(l => l.voted !== alliance.target && !memberSet.has(l.voted));
+
+      // Meltdown: nobody voted the stated target, AND 2+ members voted each other
+      const isMeltdown = votedTarget.length === 0 && votedInternal.length >= 2;
+      // Partial fracture: majority voted off-target
+      const isFracture = votedTarget.length < Math.ceil(memberVotes.length / 2) && votedInternal.length >= 1;
+
+      if (!isMeltdown && !isFracture) return;
+
+      // Build vote chain string
+      const chainParts = memberVotes.map(l => `${l.voter}→${l.voted}`);
+
+      if (isMeltdown) {
+        ln('');
+        ln(`FACTION COLLAPSE — ${alliance.label} (${alliance.members.join(', ')})`);
+        ln(`- Stated plan: vote ${alliance.target}`);
+        ln(`- What actually happened: ${chainParts.join(', ')}`);
+        ln(`- Result: zero members voted the stated target — they scattered votes at each other and unrelated players`);
+        if (votedInternal.length > 0) {
+          const internalChain = votedInternal.map(l => `${l.voter}→${l.voted}`).join(', ');
+          ln(`- Internal votes: ${internalChain} — the group ate itself`);
+        }
+        ln(`- This collapse is why the opposing side needed only clean votes to control the outcome`);
+      } else if (isFracture) {
+        ln('');
+        ln(`FACTION FRACTURE — ${alliance.label} split at tribal`);
+        ln(`- Stated plan: vote ${alliance.target}`);
+        ln(`- Votes cast: ${chainParts.join(', ')}`);
+        if (votedInternal.length > 0) {
+          const internalVoters = votedInternal.map(l => `${l.voter}→${l.voted}`).join(', ');
+          ln(`- Members voted each other: ${internalVoters} — the bloc was not unified`);
+        }
+        if (votedOther.length > 0) {
+          ln(`- Stray votes at unrelated players: ${votedOther.map(l => `${l.voter}→${l.voted}`).join(', ')}`);
+        }
+      }
+    });
+  }
+
   // VOTED OUT
   sec('VOTED OUT THIS EPISODE');
   if (ep.firstEliminated) {
@@ -5554,11 +5665,26 @@ function generateSummaryText(ep) {
     const topVotes   = Math.max(...Object.values(ep.votes), 0);
     if (topVotes === totalVotes) ln(`Unanimous vote (${topVotes}-0). ${elim} had no allies at the table.`);
     else ln(`${elim} received ${topVotes} of ${totalVotes} votes.`);
+    const _saElim = ep.eliminated || ep.firstEliminated;
     const dominant = ep.alliances?.find(a=>a.members.length>=(ep.tribalPlayers?.length||0)/2);
     if (dominant) {
-      const ls = pStats(dominant.members[0]);
-      if (ls.strategic >= 8) ln(`${dominant.members[0]} is orchestrating votes with precision — a long-term threat nobody is naming yet.`);
-      else ln(`${dominant.members.join(', ')} held the numbers and didn't crack.`);
+      const domLeader = dominant.members.find(m => gs.activePlayers.includes(m) && m !== _saElim) || dominant.members[0];
+      const ls = pStats(domLeader);
+      // Only credit "orchestrating" if their stated target is the one who went home
+      const planWorked = dominant.target && dominant.target === _saElim;
+      if (domLeader !== _saElim && planWorked && ls.strategic >= 8)
+        ln(`${domLeader} is orchestrating votes with precision — a long-term threat nobody is naming yet.`);
+      else if (domLeader !== _saElim && planWorked)
+        ln(`${dominant.members.filter(m=>m!==_saElim).join(', ')} held the numbers and didn't crack.`);
+      else if (domLeader !== _saElim && !planWorked)
+        ln(`${domLeader}'s bloc had the numbers but their stated target survived — the vote landed somewhere else.`);
+      else
+        ln(`${dominant.members.join(', ')} held the numbers.`);
+    }
+    // Was the eliminated player anyone's stated target?
+    const wasTargeted = (ep.alliances||[]).some(a => a.target === _saElim);
+    if (!wasTargeted && _saElim) {
+      ln(`${_saElim} was not the stated target of any alliance going into tribal — this elimination was unplanned. Scattered votes, not a coordinated move.`);
     }
   }
 
@@ -5633,8 +5759,12 @@ function buildStorylines(ep) {
     lines.push(`${recentBetrayal.player} just broke ${betrayedAlliance?.name || 'their alliance'} — voted ${recentBetrayal.votedFor} while the rest went ${recentBetrayal.consensusWas}. That does not go unnoticed.`);
   }
 
-  // Dominant player story
-  const dom = ep.alliances?.find(a => a.members.length >= Math.ceil((ep.tribalPlayers?.length||0)/2))?.members?.[0];
+  // Dominant player story — exclude the eliminated player (they ran the vote but are gone)
+  const _domElim = ep.eliminated || ep.firstEliminated;
+  const dom = ep.alliances
+    ?.filter(a => a.members.length >= Math.ceil((ep.tribalPlayers?.length || 0) / 2))
+    ?.flatMap(a => a.members)
+    ?.find(m => gs.activePlayers.includes(m) && m !== _domElim);
   if (dom) {
     const ds = pStats(dom);
     if (ds.strategic >= 8) lines.push(`${dom} controlled this vote cleanly. At what point does the rest of the game turn on them?`);

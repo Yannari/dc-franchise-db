@@ -1942,7 +1942,35 @@ function formAlliances(members, tribeLabel, challengeLabel) {
 
   const majTarget = pickTarget(majority, minority, challengeLabel);
   const { label: majLabel, type: majType } = classifyGroup(majority, hub, majTarget);
-  alliances.push({ members: majority, target: majTarget, label: majLabel, type: majType, tribe: tribeLabel, challengeLabel });
+  // Guard: a named alliance must never have one of its own members as its stated target.
+  // Exception: if bonds have genuinely deteriorated, allow the betrayal — but first remove the
+  // player from the alliance (pre-tribal fracture) so the departure shows up before the vote.
+  const _resolveAllianceTarget = (na, target, attackers, victims) => {
+    if (!na || !na.members.includes(target)) return target; // not a conflict
+    const _allies = na.members.filter(m => m !== target && present.has(m));
+    const _avgBond = _allies.length
+      ? _allies.reduce((sum, m) => sum + getBond(m, target), 0) / _allies.length : 0;
+    const _ts = pStats(target);
+    const _priorBetrayal = na.betrayals?.some(b => b.voter === target);
+    // Bonds degraded enough OR member already betrayed the group: justified fracture
+    const _justified = _avgBond < 0 || (_avgBond < 1.5 && _ts.loyalty <= 4) || _priorBetrayal;
+    if (_justified) {
+      // Remove from alliance pre-tribal — they're effectively cut loose before the vote
+      na.members = na.members.filter(m => m !== target);
+      na.quits = na.quits || [];
+      na.quits.push({ player: target, ep: gs.episodeNum || 0, reason: 'alliance turned' });
+      if (na.members.filter(m => gs.activePlayers.includes(m)).length < 2) na.active = false;
+      gs._pendingDepartures = gs._pendingDepartures || [];
+      gs._pendingDepartures.push({ player: target, alliance: na.name, reason: 'alliance turned' });
+      return target; // now safe — they've been removed
+    }
+    // Not justified — redirect to an external player
+    return pickTarget(attackers, victims.filter(m => !na.members.includes(m)), challengeLabel) || null;
+  };
+
+  const _majNa = majType === 'alliance' ? activeNamed.find(a => a.name === majLabel) : null;
+  const _majSafeTarget = _resolveAllianceTarget(_majNa, majTarget, majority, minority) ?? majTarget;
+  alliances.push({ members: majority, target: _majSafeTarget, label: majLabel, type: majType, tribe: tribeLabel, challengeLabel });
 
   if (minority.length >= 2) {
     const minAvgBond = groupBondStrength(minority);
@@ -1950,7 +1978,9 @@ function formAlliances(members, tribeLabel, challengeLabel) {
       const minLead = minority.slice().sort((a,b) => hubScore(b)-hubScore(a))[0];
       const minTarget = pickTarget(minority, majority, challengeLabel);
       const { label: minLabel, type: minType } = classifyGroup(minority, minLead, minTarget);
-      alliances.push({ members: minority, target: minTarget, label: minLabel, type: minType, tribe: tribeLabel, challengeLabel });
+      const _minNa = minType === 'alliance' ? activeNamed.find(a => a.name === minLabel) : null;
+      const _minSafeTarget = _resolveAllianceTarget(_minNa, minTarget, minority, majority) ?? minTarget;
+      alliances.push({ members: minority, target: _minSafeTarget, label: minLabel, type: minType, tribe: tribeLabel, challengeLabel });
     }
     // No group if members have no positive bonds — they vote independently (simulateVotes will use defection logic)
   } else if (minority.length === 1) {
@@ -2393,28 +2423,39 @@ function simulateRevote(tribalPlayers, tiedPlayers, lostVotes, originalLog = [])
 
     // Rock tolerance: base is LOW — most people want to avoid drawing rocks
     // Raised by: loyalty to alliance, boldness, protecting a close ally, deep hatred of target
+    const flipCandidates = originalTarget ? otherTied : tiedPlayers;
+    // If every flip candidate is a strong ally, holding is much more attractive — you'd be
+    // voting out your own person. Bond >= 2 = notable ally, >= 3 = close ally.
+    const bestFlipAllyBond = flipCandidates.reduce((max, t) => Math.max(max, getBond(voter, t)), 0);
+    const allyFlipPenalty = bestFlipAllyBond >= 3 ? 0.35   // close ally — strongly resist flipping
+                          : bestFlipAllyBond >= 2 ? 0.18   // notable ally — moderately resist
+                          : 0;
+
     const rockTolerance =
       0.08                               // base: ~8% willing to go to rocks
       + (s.loyalty - 5) * 0.04          // very loyal players hold firm
       + s.boldness * 0.03               // bold players risk rocks
       + allyBond * 0.05                 // strong bond with the person they're protecting
-      + Math.min(hatredOfTarget, 5) * 0.04; // deep hatred of original target
+      + Math.min(hatredOfTarget, 5) * 0.04 // deep hatred of original target
+      + allyFlipPenalty;                // resistance to flipping onto a close ally
 
-    const holdsPosition = originalTarget && Math.random() < Math.max(0.04, Math.min(0.75, rockTolerance));
+    const holdsPosition = originalTarget && Math.random() < Math.max(0.04, Math.min(0.90, rockTolerance));
 
     let target, reason;
     if (holdsPosition) {
       // Sticking — willing to draw rocks for their position
       target = originalTarget;
-      reason = allyBond >= 3 ? `held — protecting ${allyInTie}` : hatredOfTarget >= 3 ? `held — refuses to let ${originalTarget} stay` : `held position — willing to draw rocks`;
+      reason = allyBond >= 3 ? `held — protecting ${allyInTie}`
+             : allyFlipPenalty >= 0.3 ? `held — not willing to vote out an ally to avoid rocks`
+             : hatredOfTarget >= 3 ? `held — refuses to let ${originalTarget} stay`
+             : `held position — willing to draw rocks`;
     } else {
       // Flips to avoid rocks — votes for whichever tied player they're less bonded to
-      // (or the most threatening one if bonds are neutral)
-      const flipCandidates = originalTarget ? otherTied : tiedPlayers;
       target = wRandom(flipCandidates.length ? flipCandidates : tiedPlayers, t =>
         Math.max(0.1, (5 - getBond(voter, t)) * 0.6 + Math.random() * 0.5)
       );
-      reason = `flipped to avoid rocks`;
+      reason = allyFlipPenalty >= 0.18 ? `flipped to avoid rocks — chose numbers over loyalty`
+             : `flipped to avoid rocks`;
     }
 
     votes[target] = (votes[target] || 0) + 1;
@@ -4498,8 +4539,15 @@ function simulateEpisode() {
 
   // ── ALLIANCES ──
   const tribeLabel = ep.challengeType === 'tribe' ? ep.loser.name : null;
+  gs._pendingDepartures = [];
   let alliances  = formAlliances(ep.tribalPlayers, tribeLabel, ep.challengeLabel);
   ep.alliances = alliances;
+  // Flush pre-tribal fractures detected inside formAlliances into ep.allianceQuits
+  if (gs._pendingDepartures?.length) {
+    ep.allianceQuits = ep.allianceQuits || [];
+    ep.allianceQuits.push(...gs._pendingDepartures);
+    gs._pendingDepartures = [];
+  }
   if (gs.phase === 'pre-merge') {
     gs.alliances = [];
     gs.tribes.forEach(t => gs.alliances.push(...formAlliances(t.members, t.name, ep.challengeLabel)));
@@ -5079,7 +5127,14 @@ function generateSummaryText(ep) {
     ep.allianceQuits.forEach(q => {
       const _pick = arr => arr[Math.floor(Math.random() * arr.length)];
       let line;
-      if (q.reason === 'betrayed by alliance member') {
+      if (q.reason === 'alliance turned') {
+        line = _pick([
+          `The relationships inside ${q.alliance} had been eroding for a while. Before tribal, the group quietly decides ${q.player} is the liability. ${q.player} walks into the vote without knowing the ground shifted.`,
+          `${q.alliance} fractures before tribal. ${q.player}'s bonds inside the group were already threadbare — the others make a decision and don't say a word to ${q.player}.`,
+          `${q.player} is cut loose from ${q.alliance} before the vote even happens. Not through a blow-up — through silence and a quiet conversation they weren't in.`,
+          `The trust between ${q.player} and ${q.alliance} was already gone. The others formalize it before tribal: ${q.player} is not part of tonight's plan. They are tonight's plan.`,
+        ]);
+      } else if (q.reason === 'betrayed by alliance member') {
         line = _pick([
           `${q.player} finds out someone in ${q.alliance} wrote their name down. The alliance is done — there's no version of this where they just move on.`,
           `${q.player} knows. Someone in ${q.alliance} voted against them and didn't say a word. ${q.player} doesn't make a scene — but ${q.alliance} is finished to them.`,
@@ -5466,8 +5521,8 @@ function generateSummaryText(ep) {
       const rv = ep.revoteLog?.find(r => r.voter === voter);
       let line = `${voter} voted for ${voted} — ${reason||'strategic read'}`;
       if (rv) {
-        const flipNote = rv.voted !== voted ? ' (flipped on the revote)' : '';
-        line += `; voted for ${rv.voted} on revote${flipNote}`;
+        const revoteReason = rv.reason ? ` — ${rv.reason}` : '';
+        line += `; voted for ${rv.voted} on revote${revoteReason}`;
       }
       ln(line);
     });
@@ -5505,6 +5560,52 @@ function generateSummaryText(ep) {
     // Rock draw — person was never voted for, just drew the unlucky rock
     if (ep.isRockDraw && name === ep.eliminated && !ep.firstEliminated) {
       ln(`${name} was eliminated by rock draw — was NOT in the tie and never received a vote. Pure chance.`);
+      return;
+    }
+
+    // Revote elimination — completely different explanation
+    if (ep.isTie && ep.revoteLog && !ep.isRockDraw && ep.tiedPlayers?.includes(name)) {
+      const other = ep.tiedPlayers.find(p => p !== name);
+      // Initial tie breakdown
+      const initForName = (ep.votingLog||[]).filter(l => l.voted === name).map(l => l.voter);
+      const initForOther = other ? (ep.votingLog||[]).filter(l => l.voted === other).map(l => l.voter) : [];
+      ln(`${name} was voted out on the revote after tying ${initForName.length}-${initForOther.length} with ${other || 'another player'}:`);
+      ln(`- The tie: ${initForName.join(', ')} voted ${name} / ${initForOther.join(', ')} voted ${other}`);
+      ln(`- On the revote, ${ep.tiedPlayers.join(' and ')} could not vote`);
+      // Who held vs who flipped
+      const held = ep.revoteLog.filter(r => {
+        const orig = (ep.votingLog||[]).find(l => l.voter === r.voter)?.voted;
+        return r.voted === orig;
+      });
+      const flipped = ep.revoteLog.filter(r => {
+        const orig = (ep.votingLog||[]).find(l => l.voter === r.voter)?.voted;
+        return r.voted !== orig;
+      });
+      if (held.length) {
+        held.forEach(r => ln(`- ${r.voter} held on ${r.voted}${r.reason ? ` — ${r.reason}` : ''}`));
+      }
+      if (flipped.length) {
+        flipped.forEach(r => {
+          const orig = (ep.votingLog||[]).find(l => l.voter === r.voter)?.voted;
+          ln(`- ${r.voter} flipped from ${orig} to ${r.voted}${r.reason ? ` — ${r.reason}` : ''}`);
+        });
+      }
+      // Final revote count
+      const rvGroups = {};
+      ep.revoteLog.forEach(r => { rvGroups[r.voted] = (rvGroups[r.voted]||[]).concat(r.voter); });
+      const rvSummary = Object.entries(rvGroups).sort(([,a],[,b])=>b.length-a.length)
+        .map(([t, vs]) => `${t} (${vs.length}): ${vs.join(', ')}`).join(' | ');
+      ln(`- Final revote: ${rvSummary}`);
+      // Why the numbers broke this way
+      const flippedToName = flipped.filter(r => r.voted === name);
+      const heldOnName = held.filter(r => r.voted === name);
+      if (flippedToName.length && heldOnName.length === 0) {
+        ln(`- ${name} went home because nobody held firm on the original anti-${name} vote — all flippers landed on ${name}`);
+      } else if (flippedToName.length) {
+        ln(`- ${name} went home because the flippers broke toward ${name}, giving them the revote majority`);
+      } else {
+        ln(`- ${name} went home because the bloc that originally targeted them held firm while the other side cracked`);
+      }
       return;
     }
     const es = pStats(name);
@@ -5559,9 +5660,54 @@ function generateSummaryText(ep) {
     if (majVoters.length >= 2) ln(`- Voted out by: ${majVoters.join(', ')}`);
     if (betrayedByAlly) {
       const traitors = majVoters.filter(v => hadAlly.members.includes(v));
-      ln(`- Betrayed by alliance member${traitors.length > 1 ? 's' : ''}: ${traitors.join(', ')} — ${hadAlly.label} turned on them`);
+      // Check whether the eliminated player is actually a member of this named alliance
+      const elimInNamedAlliance = gs.namedAlliances?.some(a =>
+        a.members.includes(name) && traitors.some(t => a.members.includes(t))
+      );
+      traitors.forEach(traitor => {
+        const bondVal = getBond(traitor, name);
+        const traitorS = pStats(traitor);
+        if (!elimInNamedAlliance) {
+          // Traitor broke their own alliance to vote here — not a betrayal of the eliminated player
+          const doubleGame = (ep.votingLog||[]).find(l => l.voter === traitor && /broke own bloc|spearhead/i.test(l.reason||''));
+          if (doubleGame) {
+            ln(`- ${traitor} played a double game — told ${hadAlly.label} to vote elsewhere, secretly put the real votes on ${name}`);
+          } else {
+            ln(`- ${traitor} (${hadAlly.label}) voted against ${name} — ${traitorS.strategic >= 8 ? 'calculated pivot, not a personal move' : 'numbers decision'}`);
+          }
+        } else {
+          const betrayalContext = bondVal <= -1.5
+            ? `personal — ${traitor} and ${name} had a fractured relationship and this was the clean exit`
+            : bondVal <= -0.5
+            ? `the bond between ${traitor} and ${name} had been quietly eroding — this was the result`
+            : traitorS.strategic >= 8
+            ? `pure calculation — ${traitor} decided ${name} was more dangerous as an ally than as a target`
+            : traitorS.loyalty <= 3
+            ? `${traitor} never had strong loyalty here — the flip was always a matter of when, not if`
+            : `${traitor} weighed the options and decided the numbers were more important than the alliance`;
+          ln(`- Betrayed by ${traitor} (${hadAlly.label}) — ${betrayalContext}`);
+        }
+      });
     } else if (hadAlly) {
       ln(`- ${hadAlly.label} tried to protect them — but was outnumbered`);
+    }
+
+    // Players who voted to protect the eliminated player (voted elsewhere, had positive bond or shared alliance)
+    const allAlliances = alliances2 || ep.alliances || [];
+    const protectors = (votelog||[]).filter(l => {
+      if (l.voted === name) return false; // voted against, not a protector
+      if (!gs.activePlayers.includes(l.voter)) return false;
+      const sharedAlliance = allAlliances.find(a => a.members.includes(l.voter) && a.members.includes(name));
+      return sharedAlliance || getBond(l.voter, name) >= 1.5;
+    });
+    if (protectors.length) {
+      protectors.forEach(l => {
+        const sharedA = allAlliances.find(a => a.members.includes(l.voter) && a.members.includes(name));
+        const context = sharedA
+          ? `voted ${l.voted} to hold ${sharedA.label} together — it wasn't enough`
+          : `voted ${l.voted} — tried to pull the numbers a different way`;
+        ln(`- ${l.voter} ${context}`);
+      });
     }
   }
 
@@ -5670,8 +5816,9 @@ function generateSummaryText(ep) {
     if (dominant) {
       const domLeader = dominant.members.find(m => gs.activePlayers.includes(m) && m !== _saElim) || dominant.members[0];
       const ls = pStats(domLeader);
-      // Only credit "orchestrating" if their stated target is the one who went home
-      const planWorked = dominant.target && dominant.target === _saElim;
+      // Credit "plan worked" if stated target matches, OR if the majority of real votes went to the eliminated player
+      const elimVoteShare = (ep.votes?.[_saElim] || 0) / Math.max(1, totalVotes);
+      const planWorked = (dominant.target === _saElim) || (elimVoteShare > 0.5);
       if (domLeader !== _saElim && planWorked && ls.strategic >= 8)
         ln(`${domLeader} is orchestrating votes with precision — a long-term threat nobody is naming yet.`);
       else if (domLeader !== _saElim && planWorked)
@@ -5759,16 +5906,24 @@ function buildStorylines(ep) {
     lines.push(`${recentBetrayal.player} just broke ${betrayedAlliance?.name || 'their alliance'} — voted ${recentBetrayal.votedFor} while the rest went ${recentBetrayal.consensusWas}. That does not go unnoticed.`);
   }
 
-  // Dominant player story — exclude the eliminated player (they ran the vote but are gone)
+  // Dominant player story — exclude the eliminated player, only credit if their plan worked
   const _domElim = ep.eliminated || ep.firstEliminated;
-  const dom = ep.alliances
+  const _domAlliance = ep.alliances
     ?.filter(a => a.members.length >= Math.ceil((ep.tribalPlayers?.length || 0) / 2))
-    ?.flatMap(a => a.members)
-    ?.find(m => gs.activePlayers.includes(m) && m !== _domElim);
+    ?.[0];
+  const dom = _domAlliance?.members?.find(m => gs.activePlayers.includes(m) && m !== _domElim);
+  const _domEpVotes = ep.votes || {};
+  const _domTotalV = Object.values(_domEpVotes).reduce((a,b)=>a+b,0);
+  const _domElimShare = (_domEpVotes[_domElim] || 0) / Math.max(1, _domTotalV);
+  const domPlanWorked = dom && (_domAlliance?.target === _domElim || _domElimShare > 0.5);
   if (dom) {
     const ds = pStats(dom);
-    if (ds.strategic >= 8) lines.push(`${dom} controlled this vote cleanly. At what point does the rest of the game turn on them?`);
-    else if (ds.social >= 7) lines.push(`${dom} is quietly liked by everyone. Nobody is naming them yet — but they should be.`);
+    if (domPlanWorked && ds.strategic >= 8)
+      lines.push(`${dom} controlled this vote cleanly. At what point does the rest of the game turn on them?`);
+    else if (domPlanWorked && ds.social >= 7)
+      lines.push(`${dom} is quietly liked by everyone. Nobody is naming them yet — but they should be.`);
+    else if (!domPlanWorked && ds.strategic >= 8)
+      lines.push(`${dom} ran the numbers going into tribal — but the vote landed somewhere else. The plan didn't hold.`);
   }
 
   // Dynamic bond storylines from gs.bonds
@@ -5872,9 +6027,23 @@ function buildColdOpen(ep) {
   const rival = activeRels.find(r => r.type === 'enemy' || r.type === 'rival');
   const bond = activeRels.find(r => r.type === 'unbreakable');
 
-  // Pick a random non-tribal active player for variety hooks
-  const rndPlayer = () => gs.activePlayers[Math.floor(Math.random() * gs.activePlayers.length)];
-  const p1 = rndPlayer(), p2 = rndPlayer();
+  // Pick players for variety hooks — must be from the same camp (tribal tribe when pre-merge)
+  let hookPool;
+  if (gs.phase === 'pre-merge' && ep.tribalPlayers?.length) {
+    // Post-tribal episode: use surviving players from the tribe that just voted
+    hookPool = ep.tribalPlayers.filter(p => gs.activePlayers.includes(p));
+  } else if (gs.phase === 'pre-merge' && gs.tribes.length) {
+    // No-tribal / slasher: pick one tribe at random so p1+p2 are at the same camp
+    const tribe = gs.tribes[Math.floor(Math.random() * gs.tribes.length)];
+    hookPool = tribe.members.filter(p => gs.activePlayers.includes(p));
+  } else {
+    hookPool = [...gs.activePlayers];
+  }
+  if (!hookPool.length) hookPool = [...gs.activePlayers];
+  const rndPlayer = () => hookPool[Math.floor(Math.random() * hookPool.length)];
+  const p1 = rndPlayer();
+  const p2pool = hookPool.filter(p => p !== p1);
+  const p2 = p2pool.length ? p2pool[Math.floor(Math.random() * p2pool.length)] : p1;
   const advHolder = gs.advantages?.find(a => gs.activePlayers.includes(a.holder));
 
   // ── Category buckets — one option added per category so no type dominates ──

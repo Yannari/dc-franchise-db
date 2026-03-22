@@ -4319,7 +4319,10 @@ function generateCampEvents(ep, phase = 'both') {
           tb('rumor', 15); tb('eavesdrop', 10);
         }
         const total = totalForGroup(present);
-        const postCount = total - Math.ceil(total / 2); // complement of pre
+        // Loser tribe gets more post-challenge events — that's where the real action is
+        const postCount = isLoser
+          ? Math.floor(Math.random() * 3) + Math.max(4, Math.ceil(total * 0.6))
+          : Math.floor(Math.random() * 2) + Math.max(3, Math.ceil(total * 0.5));
         if (!ep.campEvents[tribe.name]) ep.campEvents[tribe.name] = { pre: [], post: [] };
         ep.campEvents[tribe.name].post = generateCampEventsForGroup(present, idolFinds, tribeBoosts, postCount);
       });
@@ -4330,7 +4333,7 @@ function generateCampEvents(ep, phase = 'both') {
       pbm('tdStrategy', 20); pbm('confessional', 20); pbm('doubt', 15);
       pbm('eavesdrop', 15); pbm('rumor', 15);
       const total = totalForGroup(gs.activePlayers);
-      const postCount = total - Math.ceil(total / 2);
+      const postCount = Math.floor(Math.random() * 2) + Math.max(3, Math.ceil(total * 0.55));
       if (!ep.campEvents.merge) ep.campEvents.merge = { pre: [], post: [] };
       ep.campEvents.merge.post = generateCampEventsForGroup(gs.activePlayers, idolFinds, postBoostsMerge, postCount);
     }
@@ -4534,6 +4537,53 @@ function simulateEpisode() {
         gs.advantages.push({ holder: exiled, type: 'idol', foundEp: epNum });
         ep.idolFinds.push({ finder: exiled, location: 'Exile Island' });
       }
+    }
+  }
+
+  // ── TRIBE DISSOLUTION: if the losing tribe has only 1 player left, dissolve it ──
+  if (ep.tribalPlayers?.length === 1 && ep.challengeType === 'tribe') {
+    const _soloP = ep.tribalPlayers[0];
+    const _fromName = ep.loser.name;
+    const _candTribes = gs.tribes.filter(t => t.name !== _fromName && t.members.filter(m => gs.activePlayers.includes(m)).length >= 1);
+    if (_candTribes.length) {
+      // Send them to the tribe they have the most bonds with
+      const _destTribe = _candTribes.slice().sort((a, b) => {
+        const bA = a.members.reduce((s, m) => s + getBond(_soloP, m), 0) / (a.members.length || 1);
+        const bB = b.members.reduce((s, m) => s + getBond(_soloP, m), 0) / (b.members.length || 1);
+        return bB - bA;
+      })[0];
+      ep.tribeDissolve = { player: _soloP, fromTribe: _fromName, toTribe: _destTribe.name };
+      // Rebuild tribe list: remove dissolved tribe, add player to destination
+      gs.tribes = gs.tribes
+        .filter(t => t.name !== _fromName)
+        .map(t => t.name === _destTribe.name ? { ...t, members: [...t.members, _soloP] } : t);
+      ep.tribalPlayers = [];
+      ep.noTribal = true;
+      // Generate post events — destination tribe now includes the arrival
+      generateCampEvents(ep, 'post');
+      // Inject a guaranteed arrival event for the destination tribe
+      const _sP = pronouns(_soloP);
+      const _arrLines = [
+        `${_soloP} arrives at ${_destTribe.name} camp with nothing but ${_sP.posAdj} bag and no allies. The tribe takes stock. Someone is already thinking about what this means.`,
+        `${_destTribe.name} gets a new addition. ${_soloP} was the last one standing on ${_fromName}. Now ${_sP.sub} ${_sP.sub==='they'?'have':'has'} to rebuild from scratch with strangers.`,
+        `${_soloP} walks into ${_destTribe.name} camp. ${_sP.Sub} ${_sP.sub==='they'?'try':'tries'} to look confident. Nobody here knows ${_sP.obj} — which is both the problem and the opening.`,
+        `${_fromName} is gone. ${_soloP} joins ${_destTribe.name} — the tribe ${_sP.sub} ${_sP.sub==='they'?'have':'has'} been watching from across the challenge course. Everything starts over.`,
+      ];
+      if (!ep.campEvents[_destTribe.name]) ep.campEvents[_destTribe.name] = { pre: [], post: [] };
+      ep.campEvents[_destTribe.name].post.unshift({ type: 'tribeArrival', text: _arrLines[Math.floor(Math.random() * _arrLines.length)] });
+      // Close episode with no vote
+      ep.alliances = [];
+      ep.bondChanges = updateBonds([], null, []);
+      detectBetrayals(ep);
+      updatePlayerStates(ep); decayAllianceTrust(ep.num);
+      if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
+      gs.episode = epNum;
+      gs.episodeHistory.push({ num: epNum, eliminated: null, riChoice: null, immunityWinner: null,
+        challengeType: ep.challengeType, isMerge: ep.isMerge, votes: {}, alliances: [],
+        summaryText: '', gsSnapshot: snapshotGameState() });
+      const stTD = generateSummaryText(ep);
+      gs.episodeHistory[gs.episodeHistory.length-1].summaryText = stTD; ep.summaryText = stTD;
+      saveGameState(); return ep;
     }
   }
 
@@ -5045,6 +5095,7 @@ function generateSummaryText(ep) {
   if (ep.isMerge) ln('MERGE EPISODE — tribes dissolve. Individual immunity. Everyone votes.');
   else if (ep.isRIReentry) ln(`RI re-entry episode. ${ep.riReentrant} rejoins the game. Tribe challenge follows.`);
   else if (ep.isDoubleElim) ln('DOUBLE ELIMINATION — two players voted out this episode.');
+  else if (ep.tribeDissolve) ln(`TRIBE DISSOLUTION — ${ep.tribeDissolve.fromTribe} is dissolved. ${ep.tribeDissolve.player} joins ${ep.tribeDissolve.toTribe}. No tribal council, no vote.`);
   else if (ep.noTribal) ln('NO TRIBAL COUNCIL — no one is voted out this episode.');
   else if (ep.challengeType === 'double-tribal') ln('DOUBLE TRIBAL — both tribes attend tribal council. Two players voted out.');
   else if (ep.twist?.type === 'exile-island') ln(`EXILE ISLAND episode. ${ep.twist.exiled} sent to exile — misses tribal.`);
@@ -5329,7 +5380,11 @@ function generateSummaryText(ep) {
     } else {
       ln(`${ep.winner?.name} win. ${ep.loser?.name} go to tribal council.`);
     }
-    ln(`RESULT: ${ep.loser?.name} go to tribal council.`);
+    if (ep.tribeDissolve) {
+      ln(`RESULT: ${ep.tribeDissolve.fromTribe} has only one player left — the tribe is dissolved. ${ep.tribeDissolve.player} is absorbed into ${ep.tribeDissolve.toTribe}. No tribal council.`);
+    } else {
+      ln(`RESULT: ${ep.loser?.name} go to tribal council.`);
+    }
   } else {
     ln(`INDIVIDUAL IMMUNITY (${ep.challengeLabel||'Mixed'} challenge): ${ep.immunityWinner} wins.`);
   }
@@ -5338,6 +5393,11 @@ function generateSummaryText(ep) {
   const tribalAlliances = ep.alliances || [];
   if (ep.challengeType === 'tribe' && ep.loser) {
     sec(`POST-CHALLENGE STATUS \u2014 ${ep.loser.name.toUpperCase()}`);
+    // Tribe dissolved — no vote
+    if (ep.tribeDissolve) {
+      const _td = ep.tribeDissolve;
+      ln(`${_td.fromTribe} is dissolved. ${_td.player} joins ${_td.toTribe}. No vote, no elimination.`);
+    } else {
     const individualTargets = ep.votingLog?.filter(e => e.voter !== 'THE GAME').map(e => ({ voter: e.voter, target: e.voted, reason: e.reason }))
       || getIndividualTargets(ep.tribalPlayers, ep.immunityWinner||null, tribalAlliances, ep.challengeLabel);
     if (individualTargets.length) {
@@ -5379,6 +5439,7 @@ function generateSummaryText(ep) {
       const finalT = ftSorted.filter(([,v]) => v >= topN * 0.6).slice(0, 3).map(([n]) => n);
       if (finalT.length) { ln(''); ln(`FINAL TARGETS: ${finalT.join(', ')}`); }
     }
+    } // end solo-player else
   } else if (ep.challengeType === 'individual' && ep.tribalPlayers) {
     sec('POST-CHALLENGE STATUS');
     ln(`${ep.immunityWinner} is safe (${ep.challengeLabel||'Mixed'} challenge). Everyone else is vulnerable.`);
@@ -5727,6 +5788,9 @@ function generateSummaryText(ep) {
   } else if (elim) {
     explainBoot(elim, ep.votingLog, ep.alliances);
     if (ep.isTie && !ep.isRockDraw) ln(`- Went to a revote`);
+  } else if (ep.tribeDissolve) {
+    const _td = ep.tribeDissolve;
+    ln(`No vote this episode. ${_td.fromTribe} was down to one player — ${_td.player} — and the tribe was dissolved. ${_td.player} is now on ${_td.toTribe}. The game resets for them.`);
   } else {
     ln('No elimination this episode.');
   }
@@ -5881,6 +5945,16 @@ function generateSummaryText(ep) {
 function buildStorylines(ep) {
   const lines = [], cfg = seasonConfig;
   const elim = ep.eliminated;
+
+  // Tribe dissolution arc
+  if (ep.tribeDissolve) {
+    const _td = ep.tribeDissolve;
+    const _s = pStats(_td.player);
+    const _prn = pronouns(_td.player);
+    if (_s.social >= 7) lines.push(`${_td.player} just joined ${_td.toTribe} with no numbers and no allies — but ${_prn.sub} ${_prn.sub==='they'?'know':'knows'} how to make people like them. That's the play.`);
+    else if (_s.strategic >= 7) lines.push(`${_td.player} is the new face at ${_td.toTribe} camp. ${_prn.Sub} ${_prn.sub==='they'?'have':'has'} no alliance and no safety net. That's a problem. Or it's an opportunity — if ${_prn.sub} ${_prn.sub==='they'?'move':'moves'} fast.`);
+    else lines.push(`${_td.player} arrives at ${_td.toTribe} camp as a free agent. ${_prn.Sub} ${_prn.sub==='they'?'didn\'t':'didn\'t'} choose these people. They didn't choose ${_prn.obj}. Now they have to coexist.`);
+  }
 
   // RI arc
   if (cfg.ri && ep.riChoice === 'REDEMPTION ISLAND' && elim) {
@@ -6040,6 +6114,17 @@ function buildColdOpen(ep) {
     hookPool = [...gs.activePlayers];
   }
   if (!hookPool.length) hookPool = [...gs.activePlayers];
+  // Solo-player tribe: return a single-player narrative immediately (no p2 available)
+  if (hookPool.length === 1) {
+    const solo = hookPool[0];
+    const soloLines = [
+      `${solo} is alone at camp. No alliances to navigate, no conversations to manage, no one watching. Just ${solo} and the fire and the knowledge that this can't last much longer.`,
+      `${solo} wakes up on an empty beach. There's something clarifying about it — no noise, no politics, no one to trust or distrust. Just survival. For now.`,
+      `${solo} sits at the edge of camp as the sun goes down. Alone has its advantages. Alone also has an expiration date.`,
+      `${solo} is the last one standing on their tribe. They've already survived what was supposed to end them. Whether that matters when the merge comes is another question.`,
+    ];
+    return soloLines[Math.floor(Math.random() * soloLines.length)];
+  }
   const rndPlayer = () => hookPool[Math.floor(Math.random() * hookPool.length)];
   const p1 = rndPlayer();
   const p2pool = hookPool.filter(p => p !== p1);
@@ -6158,6 +6243,10 @@ function buildColdOpen(ep) {
 
 function buildNextEpQs(ep) {
   const qs = [], cfg = seasonConfig, elim = ep.eliminated;
+  if (ep.tribeDissolve) {
+    const _td = ep.tribeDissolve;
+    qs.push(`${_td.player} just joined ${_td.toTribe} with no allies — do they find a foothold, or are they the next boot?`);
+  }
   if (cfg.ri && ep.riChoice==='REDEMPTION ISLAND' && elim) qs.push(`Can ${elim} survive their first RI duel?`);
   if (gs.riPlayers.length >= 2) qs.push(`${gs.riPlayers.join(' vs ')} — who wins the duel?`);
   const dom = ep.alliances?.find(a=>a.members.length>=Math.ceil((ep.tribalPlayers?.length||0)/2))?.members?.[0];

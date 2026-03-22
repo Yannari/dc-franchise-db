@@ -656,6 +656,21 @@
             <div class="setup-section-label">FORMATS &amp; TWISTS</div>
 
             <div class="accordion">
+              <div class="accordion-header" onclick="toggleAccordion('tiebreaker')">
+                <span>Tiebreaker Mode</span>
+                <span class="accordion-chevron" id="acc-chevron-tiebreaker">▼</span>
+              </div>
+              <div class="accordion-body" id="acc-body-tiebreaker" style="display:none">
+                <label class="form-label">When the vote ties:</label>
+                <select id="cfg-tiebreaker-mode" onchange="saveConfig()" style="margin-top:4px">
+                  <option value="survivor">Revote → Rock Draw (Survivor)</option>
+                  <option value="challenge">Challenge Tiebreaker (Total Drama / DC)</option>
+                </select>
+                <p class="acc-desc">Survivor: tied players can't vote on the revote; if still tied, non-tied players draw rocks. Total Drama/DC: tied players compete head-to-head in a physical or puzzle challenge — loser is eliminated, no rocks, no revote.</p>
+              </div>
+            </div>
+
+            <div class="accordion">
               <div class="accordion-header" onclick="toggleAccordion('firemaking')">
                 <span>Firemaking Final Elimination</span>
                 <span class="accordion-chevron" id="acc-chevron-firemaking">▼</span>
@@ -1037,6 +1052,7 @@ const REL_TYPES = {
 };
 const ADVANTAGES = [
   { key: 'idol',      label: 'Hidden Immunity Idol', default: 2 },
+  { key: 'beware',    label: 'Beware Advantage',     default: 0 },
   { key: 'voteSteal', label: 'Vote Steal',           default: 1 },
   { key: 'extraVote', label: 'Extra Vote',            default: 1 },
   { key: 'kip',       label: 'Knowledge is Power',   default: 0 },
@@ -1078,6 +1094,11 @@ const TWIST_CATALOG = [
   { id:'ri-duel',          emoji:'🏆', name:'2nd Chance Duel',      category:'returns',    phase:'any',        desc:'2nd Chance Isle players compete — loser goes home, winner stays.',           engineType:'ri-duel'         },
   { id:'second-chance',    emoji:'🎯', name:'Second Chance Vote',   category:'returns',    phase:'any',        desc:'Fans vote one eliminated player back. Tribal still runs — someone goes home. Net zero change.',  engineType:'returning-player'},
   // Advantages
+  { id:'three-gifts',      emoji:'🎁', name:'Three Gifts',           category:'advantages', phase:'pre-merge',  desc:'Two nominees (one per tribe) travel to a private location and choose: tribal survival kit, idol clue, or Immunity Totem.', engineType:'three-gifts' },
+  { id:'tiebreaker-challenge', emoji:'🏅', name:'Challenge Tiebreaker (episode override)', category:'elim', phase:'any', desc:'Forces challenge tiebreaker this episode regardless of season tiebreaker mode.',              engineType:'tiebreaker-challenge' },
+  { id:'auction',          emoji:'🏷️', name:'Survivor Auction',      category:'social',     phase:'any',        desc:'Players receive $500 each and bid on food, comfort, advantages, and a blind-bid immunity item.', engineType:'auction' },
+  { id:'elimination-swap', emoji:'🔀', name:'Elimination Swap',       category:'elim',       phase:'pre-merge',  desc:'The voted-out player is sent to another tribe instead. They pick one member of the new tribe to swap back in exchange.', engineType:'elimination-swap' },
+  { id:'exile-duel',       emoji:'🏴‍☠️', name:'Exile Duel',            category:'returns',    phase:'any',        desc:'The voted-out player is exiled instead of eliminated. Next episode they duel the next boot — winner returns, loser is out for good.', engineType:'exile-duel' },
   { id:'exile-island',     emoji:'🏝️', name:'Exile Island',         category:'advantages', phase:'any',        desc:'One player is exiled, missing tribal but getting an idol clue.',            engineType:'exile-island'    },
   { id:'journey',          emoji:'🗺️', name:'Journey',              category:'advantages', phase:'any',        desc:'Select players go on a journey for a chance at an advantage.',              engineType:'journey'         },
   { id:'legacy-awakens',   emoji:'📜', name:'Legacy Advantage',     category:'advantages', phase:'any',        desc:'A Legacy Advantage is planted — activates when a set number remain.',       engineType:'legacy-awakens'  },
@@ -1170,7 +1191,7 @@ function defaultConfig() {
     name: '', year: '', days: 39, gameMode: 'spectator',
     teams: 2, mergeAt: 12, finaleSize: 3, finaleFormat: 'traditional', jurySize: 9,
     ri: false, riReentryAt: 12, journey: false, shotInDark: false,
-    firemaking: false, qem: false, idolRehide: false,
+    firemaking: false, tiebreakerMode: 'survivor', qem: false, idolRehide: false,
     advExpire: 4, foodWater: 'disabled', survivalDifficulty: 'casual',
     advantages: Object.fromEntries(ADVANTAGES.map(a => [a.key, { enabled: a.default > 0, count: a.default }])),
     twistSchedule: [],
@@ -1495,6 +1516,7 @@ function saveConfig() {
     journey:     g('cfg-journey')?.checked || false,
     shotInDark:  g('cfg-sid')?.checked || false,
     firemaking:  g('cfg-firemaking')?.checked || false,
+    tiebreakerMode: g('cfg-tiebreaker-mode')?.value || 'survivor',
     qem:         g('cfg-qem')?.checked || false,
     idolRehide:  g('cfg-idol-rehide')?.checked || false,
     advExpire:   parseInt(g('cfg-adv-expire')?.value) || 4,
@@ -1530,6 +1552,7 @@ function renderConfig() {
   chk('cfg-journey',   seasonConfig.journey || false);
   chk('cfg-sid',       seasonConfig.shotInDark || false);
   chk('cfg-firemaking',seasonConfig.firemaking || false);
+  set('cfg-tiebreaker-mode', seasonConfig.tiebreakerMode || 'survivor');
   chk('cfg-qem',       seasonConfig.qem || false);
   chk('cfg-idol-rehide', seasonConfig.idolRehide || false);
   set('cfg-adv-expire',  seasonConfig.advExpire ?? 4);
@@ -2039,6 +2062,22 @@ function simulateTribeChallenge(tribes) {
   // safe = tribes that placed between 1st and last (immune but didn't win)
   const safe = scored.slice(1, scored.length - 1).map(s => s.tribe);
   return { winner: scored[0].tribe, loser: scored[scored.length-1].tribe, safe, placements: scored.map(s => s.tribe), challengeType: cType.label };
+}
+
+function simulateLastChance(a, b) {
+  // Head-to-head elimination: physical/endurance heavy — it's a fight to survive
+  const cTypes = [
+    { label: 'Fire-Making',   stat: s => s.physical * 0.5 + s.endurance * 0.5 },
+    { label: 'Endurance',     stat: s => s.endurance },
+    { label: 'Strength',      stat: s => s.physical },
+    { label: 'Obstacle Course', stat: s => s.physical * 0.6 + s.mental * 0.4 },
+    { label: 'Puzzle',        stat: s => s.mental },
+  ];
+  const cType = cTypes[Math.floor(Math.random() * cTypes.length)];
+  const sA = cType.stat(pStats(a)) + (Math.random() * 2 - 1);
+  const sB = cType.stat(pStats(b)) + (Math.random() * 2 - 1);
+  const winner = sA >= sB ? a : b;
+  return { winner, loser: winner === a ? b : a, challengeLabel: cType.label };
 }
 
 function simulateIndividualChallenge(pool, immune) {
@@ -2626,6 +2665,49 @@ function findAdvantages(ep) {
       }
     }
   });
+
+  // ── BEWARE ADVANTAGE (pre-merge only; one slot per tribe) ──
+  if (cfg.advantages?.beware?.enabled && gs.bewares && !gs.isMerged) {
+    gs.tribes.forEach(tribe => {
+      const slot = gs.bewares[tribe.name];
+      if (!slot || !slot.hidden) return;
+      const shuffled = tribe.members.filter(n => gs.activePlayers.includes(n)).sort(() => Math.random() - 0.5);
+      for (const name of shuffled) {
+        const s = pStats(name);
+        const epScale = Math.min(ep.num * 0.003, 0.025);
+        if (Math.random() < 0.008 + epScale + s.intuition * 0.001) {
+          slot.hidden = false;
+          slot.holder = name;
+          ep.idolFinds.push({ finder: name, type: 'beware', tribe: tribe.name });
+          // Also add to lostVotes for this episode (finding it mid-ep still costs the vote)
+          if (!gs.lostVotes.includes(name)) {
+            gs.lostVotes.push(name);
+            ep.bewareLostVotes = ep.bewareLostVotes || [];
+            if (!ep.bewareLostVotes.includes(name)) ep.bewareLostVotes.push(name);
+          }
+          // Check for activation — if all tribes have found their beware
+          const allFound = Object.values(gs.bewares).every(b => !b.hidden);
+          if (allFound) {
+            const activatedHolders = [];
+            Object.values(gs.bewares).forEach(b => {
+              if (b.holder && !b.activated && gs.activePlayers.includes(b.holder)) {
+                b.activated = true;
+                gs.advantages.push({ holder: b.holder, type: 'idol', foundEp: ep.num, fromBeware: true });
+                activatedHolders.push(b.holder);
+                // Remove from lostVotes — the restriction lifts on activation
+                gs.lostVotes = gs.lostVotes.filter(p => p !== b.holder);
+                if (ep.bewareLostVotes) ep.bewareLostVotes = ep.bewareLostVotes.filter(p => p !== b.holder);
+              }
+            });
+            if (activatedHolders.length) {
+              ep.idolFinds.push({ finder: '__activation__', type: 'beware-activated', tribe: 'camp', holders: activatedHolders });
+            }
+          }
+          break;
+        }
+      }
+    });
+  }
 }
 
 function checkIdolPlays(tribalPlayers, votesObj, ep) {
@@ -2956,6 +3038,183 @@ function applyTwist(ep, twist, isPrimary = true) {
       }
     }
 
+  // ── THREE GIFTS ──────────────────────────────────────────────────
+  } else if (engineType === 'three-gifts') {
+    if (gs.phase !== 'pre-merge' || gs.tribes.length < 2) return;
+    // Nominate one player per tribe (socially prominent players are typically chosen)
+    const nominees = [];
+    gs.tribes.forEach(tribe => {
+      const pool = tribe.members.filter(p => gs.activePlayers.includes(p));
+      if (!pool.length) return;
+      const nominee = wRandom(pool, n => { const s = pStats(n); return s.social * 0.5 + s.boldness * 0.3 + s.strategic * 0.2 + 1; });
+      if (nominee) nominees.push({ player: nominee, tribe: tribe.name });
+    });
+    if (nominees.length < 2) return;
+
+    // Each nominee independently chooses a gift
+    const giftResults = nominees.map(({ player, tribe }) => {
+      const s = pStats(player);
+      // Gift 1 (tribal survival kit): loyal, social players favour tribe
+      const w1 = s.loyalty * 1.5 + s.social * 1.0;
+      // Gift 2 (idol clue): strategic, intuitive players want the edge
+      const w2 = s.intuition * 1.5 + s.strategic * 1.0;
+      // Gift 3 (Immunity Totem): bold, disloyal players go for themselves
+      const w3 = s.boldness * 1.5 + (10 - s.loyalty) * 0.7;
+      const total = w1 + w2 + w3;
+      const r = Math.random() * total;
+      const gift = r < w1 ? 1 : r < w1 + w2 ? 2 : 3;
+      return { player, tribe, gift };
+    });
+
+    // Apply gift effects
+    ep.giftTribeBoosts = ep.giftTribeBoosts || {};
+    giftResults.forEach(({ player, tribe, gift }) => {
+      if (gift === 1) {
+        // Survival kit — comfort, food, bonding boost for their tribe's camp
+        const gtb = ep.giftTribeBoosts[tribe] = ep.giftTribeBoosts[tribe] || {};
+        gtb.comfort = (gtb.comfort || 0) + 30; gtb.hardWork = (gtb.hardWork || 0) + 25;
+        gtb.tdBond  = (gtb.tdBond  || 0) + 20; gtb.fight   = (gtb.fight   || 0) - 20;
+        gtb.dispute = (gtb.dispute || 0) - 15; gtb.foodConflict = (gtb.foodConflict || 0) - 20;
+      } else if (gift === 2) {
+        // Idol clue — 80% chance they find the idol this episode
+        const hasSlot = gs.idolSlots?.[tribe];
+        const maxIdols = seasonConfig.advantages?.idol?.count || 2;
+        const currentIdols = gs.advantages.filter(a => a.type === 'idol').length;
+        if (hasSlot && currentIdols < maxIdols && Math.random() < 0.80) {
+          gs.advantages.push({ holder: player, type: 'idol', foundEp: ep.num });
+          gs.idolSlots[tribe] = false;
+          ep.idolFinds.push({ finder: player, type: 'idol', tribe, fromGift2: true });
+        }
+      } else if (gift === 3) {
+        // Immunity Totem — immediate idol, bypasses slot/cap (it's a direct grant)
+        gs.advantages.push({ holder: player, type: 'idol', foundEp: ep.num, fromTotem: true });
+        ep.idolFinds.push({ finder: player, type: 'idol-totem', tribe });
+      }
+    });
+
+    twistObj.nominees = nominees;
+    twistObj.giftResults = giftResults;
+
+  // ── TIEBREAKER CHALLENGE ─────────────────────────────────────────
+  } else if (engineType === 'tiebreaker-challenge') {
+    ep.tiebreakerChallenge = true;
+
+  // ── AUCTION ──────────────────────────────────────────────────────
+  } else if (engineType === 'auction') {
+    // Item pool: always include one food, one blind advantage, one blind immunity
+    const AUCTION_POOL = [
+      { id:'meal',        label:'Full Meal',              type:'food',      blind:false, baseCost:60,  interest: s => s.endurance * 0.8 + 3 },
+      { id:'snacks',      label:'Assorted Snacks',        type:'food',      blind:false, baseCost:40,  interest: s => s.endurance * 0.6 + 2 },
+      { id:'comfort-kit', label:'Comfort Kit',            type:'comfort',   blind:false, baseCost:80,  interest: s => s.social * 0.5 + 2 },
+      { id:'letter',      label:'Letter from Home',       type:'comfort',   blind:false, baseCost:50,  interest: s => s.loyalty * 0.7 + 2 },
+      { id:'advantage',   label:'Game Advantage',         type:'advantage', blind:true,  baseCost:100, interest: s => s.strategic * 0.9 + s.intuition * 0.5 },
+      { id:'idol-clue',   label:'Idol Clue',              type:'advantage', blind:true,  baseCost:80,  interest: s => s.intuition * 1.0 + s.strategic * 0.6 },
+      { id:'immunity',    label:'Individual Immunity',    type:'immunity',  blind:true,  baseCost:200, interest: s => s.strategic * 0.8 + s.boldness * 0.4 + 2 },
+      { id:'info',        label:'Game Intel',             type:'advantage', blind:true,  baseCost:70,  interest: s => s.intuition * 1.1 },
+    ];
+    // Always auction: 1 food, 1 comfort, 1 blind advantage, 1 blind immunity + 1-2 extras
+    const required = ['meal','comfort-kit','advantage','immunity'];
+    const extras = ['snacks','letter','idol-clue','info'].sort(() => Math.random()-0.5).slice(0,1+Math.floor(Math.random()*2));
+    const auctionItems = [...required, ...extras].map(id => AUCTION_POOL.find(it => it.id === id)).filter(Boolean);
+
+    const budgets = {};
+    gs.activePlayers.forEach(p => { budgets[p] = 500; });
+    const results = [];
+
+    auctionItems.forEach(item => {
+      // Pooling: strongest bond pair in the group may pool for blind items
+      let poolPair = null;
+      if (item.blind && gs.activePlayers.length >= 3) {
+        let bestBond = 0, bestA = null, bestB = null;
+        for (let i = 0; i < gs.activePlayers.length; i++) {
+          for (let j = i+1; j < gs.activePlayers.length; j++) {
+            const b = getBond(gs.activePlayers[i], gs.activePlayers[j]);
+            if (b > bestBond && budgets[gs.activePlayers[i]] >= 50 && budgets[gs.activePlayers[j]] >= 50) {
+              bestBond = b; bestA = gs.activePlayers[i]; bestB = gs.activePlayers[j];
+            }
+          }
+        }
+        if (bestA && bestBond >= 2 && Math.random() < 0.25) poolPair = [bestA, bestB];
+      }
+
+      // Each active player bids up to their remaining budget
+      const bids = gs.activePlayers.map(p => {
+        if (poolPair && poolPair.includes(p)) return 0; // handled as pool bid
+        const s = pStats(p);
+        const interest = item.interest(s);
+        const maxBid = Math.min(budgets[p], Math.round(interest * 30 + Math.random() * 60));
+        return { player: p, bid: maxBid };
+      });
+      if (poolPair) {
+        const [pA, pB] = poolPair;
+        const sA = pStats(pA), sB = pStats(pB);
+        const poolInterest = (item.interest(sA) + item.interest(sB)) / 2;
+        const poolBid = Math.min(budgets[pA] + budgets[pB], Math.round(poolInterest * 50 + Math.random() * 100));
+        bids.push({ player: `${pA}+${pB}`, bid: poolBid, isPool: true, players: [pA, pB] });
+      }
+
+      const topBid = bids.sort((a,b) => b.bid - a.bid)[0];
+      if (!topBid || topBid.bid <= 0) return;
+
+      const winnerName = topBid.isPool ? topBid.players[0] : topBid.player;
+      // Deduct budget
+      if (topBid.isPool) {
+        const share = Math.ceil(topBid.bid / 2);
+        topBid.players.forEach(p => { budgets[p] = Math.max(0, budgets[p] - share); });
+      } else {
+        budgets[topBid.player] = Math.max(0, budgets[topBid.player] - topBid.bid);
+      }
+
+      // Apply effect
+      let effect = item.type; let effectLabel = item.label;
+      if (item.blind) {
+        // Revealed when opened
+        if (item.id === 'advantage') {
+          const advTypes = ['extraVote','voteSteal'];
+          const pick = advTypes[Math.floor(Math.random() * advTypes.length)];
+          const advMax = seasonConfig.advantages?.[pick]?.count || 1;
+          if (gs.advantages.filter(a => a.type === pick).length < advMax) {
+            gs.advantages.push({ holder: winnerName, type: pick, foundEp: ep.num, fromAuction: true });
+            effect = pick; effectLabel = pick === 'extraVote' ? 'Extra Vote' : 'Vote Steal';
+          } else {
+            effect = 'food'; effectLabel = '(advantage not available — consolation snack)';
+          }
+        } else if (item.id === 'idol-clue') {
+          const tribeName = gs.tribes.find(t => t.members.includes(winnerName))?.name;
+          if (tribeName && gs.idolSlots?.[tribeName] && Math.random() < 0.80) {
+            gs.advantages.push({ holder: winnerName, type: 'idol', foundEp: ep.num, fromAuction: true });
+            gs.idolSlots[tribeName] = false;
+            ep.idolFinds.push({ finder: winnerName, type: 'idol', tribe: tribeName, fromAuction: true });
+            effect = 'idol'; effectLabel = 'Idol Clue (found the idol!)';
+          } else {
+            effect = 'idolClue'; effectLabel = 'Idol Clue (didn\'t find it this episode)';
+          }
+        } else if (item.id === 'immunity') {
+          gs.guaranteedImmuneThisEp = winnerName;
+          effect = 'immunity'; effectLabel = 'Individual Immunity';
+        } else if (item.id === 'info') {
+          effect = 'info'; effectLabel = 'Game Intel (knows a strategic secret)';
+        }
+      }
+
+      results.push({
+        item: item.id, label: item.blind ? `Blind Bid (revealed: ${effectLabel})` : item.label,
+        winner: topBid.isPool ? `${topBid.players.join(' + ')} (pooled)` : topBid.player,
+        winnerName, bid: topBid.bid, isBlind: item.blind, effect, isPool: !!topBid.isPool
+      });
+    });
+
+    twistObj.auctionResults = results;
+    twistObj.budgetsRemaining = budgets;
+
+  // ── ELIMINATION SWAP ─────────────────────────────────────────────
+  } else if (engineType === 'elimination-swap') {
+    ep.eliminationSwap = true;
+
+  // ── EXILE DUEL ───────────────────────────────────────────────────
+  } else if (engineType === 'exile-duel') {
+    ep.exileDuelActive = true;
+
   // ── SOCIAL ─────────────────────────────────────────────────────────
   } else if (engineType === 'the-feast' || engineType === 'merge-reward') {
     const all = gs.activePlayers;
@@ -3091,9 +3350,32 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
   const boosts = twistBoosts || {};
 
   // If any advantage was found by someone in this group, always open with that event
-  const findsInGroup = finds.filter(f => group.includes(f.finder));
+  // beware-activated is a global event — include it regardless of finder
+  const findsInGroup = finds.filter(f => f.type === 'beware-activated' || group.includes(f.finder));
   findsInGroup.forEach(find => {
     const name = find.finder;
+    // Auction idol find — use auction-specific narrative
+    if (find.fromAuction) {
+      const _ap = pronouns(name);
+      events.push({ type: 'idolFound', text: `${name} spent their auction money on an idol clue and followed it immediately. ${_ap.Sub} come${_ap.sub==='they'?'':'s'} back to camp quiet — and armed.` });
+      return;
+    }
+    // Gift 2 (idol clue) — use Three Gifts-specific narrative
+    if (find.fromGift2) {
+      const _g2p = pronouns(name);
+      const g2lines = [
+        `Armed with the clue from the Three Gifts, ${name} slips away and searches. ${_g2p.Sub} find${_g2p.sub==='they'?'':'s'} the Hidden Immunity Idol. The second gift delivered.`,
+        `The idol clue from the Three Gifts pointed ${name} in the right direction. ${_g2p.Sub} come${_g2p.sub==='they'?'':'s'} back to camp with more than ${_g2p.sub} left with.`,
+      ];
+      events.push({ type: 'idolFound', text: g2lines[Math.floor(Math.random() * g2lines.length)] });
+      return;
+    }
+    // Beware activation is a group event — handle separately
+    if (find.type === 'beware-activated') {
+      const holderList = find.holders.join(', ');
+      events.push({ type: 'idolFound', text: `The final Beware Advantage has been found. Every tribe has now claimed theirs. The idols activate: ${holderList}. The vote restriction is lifted. Each holder now has a live Hidden Immunity Idol.` });
+      return;
+    }
     const advType = find.type || 'idol';
     const _fp = pronouns(name);
     const _fhv = _fp.sub === 'they' ? "they've" : _fp.sub === 'she' ? "she's" : "he's";
@@ -3123,6 +3405,14 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
       amulet: [
         `${name} finds an Amulet Advantage at camp. Its power grows as other holders are eliminated.`,
         `${name} discovers the Amulet — it starts weak but gets stronger the longer it survives. ${_fp.Sub} say${_fp.sub==='they'?'':'s'} nothing.`,
+      ],
+      'idol-totem': [
+        `${name} unwraps the third gift. Inside: a fully-operative Immunity Totem. An idol — no searching required. Just a decision, and a secret. ${_fp.Sub} close${_fp.sub==='they'?'':'s'} the box, pocket${_fp.sub==='they'?'':'s'} it, and head${_fp.sub==='they'?'':'s'} back to camp with the cover story ready.`,
+        `${name} chose the Immunity Totem at the Three Gifts ceremony. ${_fp.Sub} walk${_fp.sub==='they'?'':'s'} back to camp holding a live Hidden Immunity Idol. Nobody knows. The story ${_fp.sub} told${_fp.sub==='they'?'':'s'} their tribe is something about a fire-starting challenge. It worked.`,
+      ],
+      beware: [
+        `${name} finds the Beware Advantage — a Hidden Immunity Idol buried with a note attached. The catch: ${_fp.sub} cannot vote at tribal council until every tribe has found their own beware. ${_fp.Sub} pocket${_fp.sub==='they'?'':'s'} it in silence.`,
+        `${name} discovers something buried near camp. The Beware Advantage. A powerful idol — but it costs ${_fp.obj} the vote. Until all tribes have found theirs, ${_fp.sub} sit${_fp.sub==='they'?'':'s'} at tribal mute. ${_fp.Sub} debate${_fp.sub==='they'?'':'s'} for a moment. Then ${_fp.sub} keep${_fp.sub==='they'?'':'s'} it.`,
       ],
     };
     const lines = advTextMap[advType] || advTextMap.idol;
@@ -4225,6 +4515,22 @@ function generateCampEvents(ep, phase = 'both') {
         boost('rumor', 25); boost('homesick', 15);
         boost('weirdMoment', 15); // paranoia makes people act strange
         break;
+      case 'auction':
+        // After an auction — well-fed players are social; strategic players are thinking about advantages
+        boost('tdBond', 20); boost('comfort', 25); boost('flirtation', 15);
+        boost('tdStrategy', 20); boost('confessional', 15);
+        boost('fight', -10); // less tension — people got what they needed
+        break;
+      case 'elimination-swap':
+        // Chaos — alliances scrambled, strangers arriving at camp
+        boost('doubt', 30); boost('tdStrategy', 25); boost('dispute', 20);
+        boost('eavesdrop', 20); boost('scramble', 25); boost('rumor', 15);
+        break;
+      case 'exile-duel':
+        // Someone just escaped elimination — survivors relieved, but watching
+        boost('confessional', 20); boost('comfort', 15); boost('doubt', 20);
+        boost('tdStrategy', 15); boost('rumor', 15);
+        break;
       case 'no-tribal':
         // Relaxed episode — more flavor, less strategy stress
         boost('tdBond', 25); boost('flirtation', 20);
@@ -4272,7 +4578,11 @@ function generateCampEvents(ep, phase = 'both') {
         const present = getGroupPresent(tribe);
         const total = totalForGroup(present);
         const preCount = phase === 'both' ? total : Math.ceil(total / 2);
-        ep.campEvents[tribe.name] = { pre: generateCampEventsForGroup(present, idolFinds, boosts, preCount), post: [] };
+        // Merge tribe-specific gift boosts (from Three Gifts Gift 1) into the base boosts
+        const tribeBoosts = ep.giftTribeBoosts?.[tribe.name]
+          ? (() => { const tb = { ...boosts }; Object.entries(ep.giftTribeBoosts[tribe.name]).forEach(([k,v]) => { tb[k] = (tb[k]||0) + v; }); return tb; })()
+          : boosts;
+        ep.campEvents[tribe.name] = { pre: generateCampEventsForGroup(present, idolFinds, tribeBoosts, preCount), post: [] };
       });
     } else {
       const total = totalForGroup(gs.activePlayers);
@@ -4324,7 +4634,7 @@ function generateCampEvents(ep, phase = 'both') {
           ? Math.floor(Math.random() * 3) + Math.max(4, Math.ceil(total * 0.6))
           : Math.floor(Math.random() * 2) + Math.max(3, Math.ceil(total * 0.5));
         if (!ep.campEvents[tribe.name]) ep.campEvents[tribe.name] = { pre: [], post: [] };
-        ep.campEvents[tribe.name].post = generateCampEventsForGroup(present, idolFinds, tribeBoosts, postCount);
+        ep.campEvents[tribe.name].post = generateCampEventsForGroup(present, [], tribeBoosts, postCount);
       });
     } else {
       // Post-merge: lighter outcome distinction — immunity winner is safe, everyone else is at risk
@@ -4335,7 +4645,7 @@ function generateCampEvents(ep, phase = 'both') {
       const total = totalForGroup(gs.activePlayers);
       const postCount = Math.floor(Math.random() * 2) + Math.max(3, Math.ceil(total * 0.55));
       if (!ep.campEvents.merge) ep.campEvents.merge = { pre: [], post: [] };
-      ep.campEvents.merge.post = generateCampEventsForGroup(gs.activePlayers, idolFinds, postBoostsMerge, postCount);
+      ep.campEvents.merge.post = generateCampEventsForGroup(gs.activePlayers, [], postBoostsMerge, postCount);
     }
 
     // ── Inject guaranteed events for specific twists (post-challenge timing) ──
@@ -4397,6 +4707,16 @@ function simulateEpisode() {
 
   // ── RESET EPISODE VOTE-LOSS & TWIST FLAGS ──
   gs.lostVotes = [];
+  ep.bewareLostVotes = [];
+  // Beware holders lose their vote each tribal until all tribes have found their beware
+  if (gs.bewares && seasonConfig.advantages?.beware?.enabled) {
+    Object.values(gs.bewares).forEach(b => {
+      if (b.holder && !b.activated && gs.activePlayers.includes(b.holder)) {
+        gs.lostVotes.push(b.holder);
+        ep.bewareLostVotes.push(b.holder);
+      }
+    });
+  }
   gs.exiledThisEp = null;
   gs.penaltyVoteThisEp = null;
   gs.journeyForcedThisEp = false;
@@ -4540,6 +4860,58 @@ function simulateEpisode() {
     }
   }
 
+  // ── LAST CHANCE CHALLENGE: 2-player tribe loses → 1v1 duel, loser out, winner absorbed ──
+  if (ep.tribalPlayers?.length === 2 && ep.challengeType === 'tribe') {
+    const [_lcA, _lcB] = ep.tribalPlayers;
+    const _lc = simulateLastChance(_lcA, _lcB);
+    ep.lastChance = _lc;
+    ep.eliminated = _lc.loser;
+    const _lcFromName = ep.loser.name;
+    // Find destination for winner — best bond fit among other tribes
+    const _lcCands = gs.tribes.filter(t => t.name !== _lcFromName && t.members.filter(m => gs.activePlayers.includes(m)).length >= 1);
+    const _lcDest = _lcCands.slice().sort((a, b) => {
+      const bA = a.members.reduce((s, m) => s + getBond(_lc.winner, m), 0) / (a.members.length || 1);
+      const bB = b.members.reduce((s, m) => s + getBond(_lc.winner, m), 0) / (b.members.length || 1);
+      return bB - bA;
+    })[0] || null;
+    ep.lastChance.toTribe = _lcDest?.name || null;
+    ep.tribeDissolve = _lcDest ? { player: _lc.winner, fromTribe: _lcFromName, toTribe: _lcDest.name } : null;
+    // Eliminate loser
+    gs.eliminated.push(_lc.loser);
+    if (gs.isMerged) gs.jury.push(_lc.loser);
+    gs.activePlayers = gs.activePlayers.filter(p => p !== _lc.loser);
+    gs.advantages = gs.advantages.filter(a => a.holder !== _lc.loser);
+    // Move winner, dissolve tribe
+    gs.tribes = gs.tribes
+      .filter(t => t.name !== _lcFromName)
+      .map(t => _lcDest && t.name === _lcDest.name ? { ...t, members: [...t.members, _lc.winner] } : t);
+    // Generate post-challenge events including arrival
+    generateCampEvents(ep, 'post');
+    if (_lcDest) {
+      const _wP = pronouns(_lc.winner);
+      const _arrLc = [
+        `${_lc.winner} survived the Last Chance Challenge and walks straight into ${_lcDest.name} camp. No alliance, no history here — just the fact that ${_wP.sub} ${_wP.sub==='they'?'beat':'beat'} someone to get here.`,
+        `${_lcFromName} is gone. ${_lc.winner} earned ${_wP.posAdj} spot and ${_wP.sub} ${_wP.sub==='they'?'know':'knows'} it. ${_lcDest.name} gets a new face who just proved they'll fight to stay.`,
+        `${_lc.winner} shows up at ${_lcDest.name} camp after winning a head-to-head duel. The tribe watches ${_wP.obj} settle in and immediately starts doing the math.`,
+        `${_lcFromName} is dissolved. ${_lc.winner} arrives at ${_lcDest.name} — the survivor of a challenge that eliminated ${_lc.loser}. Everyone knows what that means about ${_wP.obj}.`,
+      ];
+      if (!ep.campEvents[_lcDest.name]) ep.campEvents[_lcDest.name] = { pre: [], post: [] };
+      ep.campEvents[_lcDest.name].post.unshift({ type: 'tribeArrival', text: _arrLc[Math.floor(Math.random() * _arrLc.length)] });
+    }
+    ep.alliances = [];
+    ep.bondChanges = updateBonds([], ep.eliminated, []);
+    detectBetrayals(ep);
+    updatePlayerStates(ep); decayAllianceTrust(ep.num);
+    if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
+    gs.episode = epNum;
+    gs.episodeHistory.push({ num: epNum, eliminated: ep.eliminated, riChoice: null, immunityWinner: null,
+      challengeType: ep.challengeType, isMerge: ep.isMerge, votes: {}, alliances: [],
+      lastChance: true, summaryText: '', gsSnapshot: snapshotGameState() });
+    const stLC = generateSummaryText(ep);
+    gs.episodeHistory[gs.episodeHistory.length-1].summaryText = stLC; ep.summaryText = stLC;
+    saveGameState(); return ep;
+  }
+
   // ── TRIBE DISSOLUTION: if the losing tribe has only 1 player left, dissolve it ──
   if (ep.tribalPlayers?.length === 1 && ep.challengeType === 'tribe') {
     const _soloP = ep.tribalPlayers[0];
@@ -4628,6 +5000,23 @@ function simulateEpisode() {
       }
     }
     if (res.isTie && res.tiedPlayers) {
+      // Challenge tiebreaker: tied players compete in a challenge instead of revote/rocks
+      if (ep.tiebreakerChallenge || cfg.tiebreakerMode === 'challenge') {
+        const tcTypes = [
+          { label: 'Fire-Making',    stat: s => s.physical * 0.5 + s.endurance * 0.5 },
+          { label: 'Endurance',      stat: s => s.endurance },
+          { label: 'Strength',       stat: s => s.physical },
+          { label: 'Obstacle Course',stat: s => s.physical * 0.6 + s.mental * 0.4 },
+          { label: 'Puzzle',         stat: s => s.mental },
+        ];
+        const tcType = tcTypes[Math.floor(Math.random() * tcTypes.length)];
+        const scores = res.tiedPlayers.map(p => ({ player: p, score: tcType.stat(pStats(p)) + (Math.random() * 2 - 1) }));
+        scores.sort((a, b) => a.score - b.score);
+        const tcLoser  = scores[0].player;
+        const tcWinner = scores[scores.length - 1].player;
+        ep.tiebreakerResult = { participants: [...res.tiedPlayers], loser: tcLoser, winner: tcWinner, challengeLabel: tcType.label };
+        return { votes, log, eliminated: tcLoser, isTie: true, tiedPlayers: res.tiedPlayers };
+      }
       // forceRockDraw: skip re-vote, go straight to rocks
       if (ep.forceRockDraw) {
         ep.isRockDraw = true;
@@ -4636,11 +5025,23 @@ function simulateEpisode() {
         const rockElim = drawFrom[Math.floor(Math.random() * drawFrom.length)];
         return { votes, log, eliminated: rockElim, isTie: true, tiedPlayers: res.tiedPlayers };
       }
-      // Full deadlock: everyone tied so nobody can vote on revote — go straight to rocks
+      // Full deadlock: everyone tied so nobody can vote on revote using standard rules.
+      // Run a fresh full re-vote — everyone votes again from scratch.
       const eligibleRevoters = tribalPlayers.filter(p => !res.tiedPlayers.includes(p) && !gs.lostVotes.includes(p));
       if (!eligibleRevoters.length) {
+        ep.isFullDeadlock = true;
+        const fdRv = simulateVotes(tribalPlayers, immuneName, allianceSet, gs.lostVotes, ep.openVote);
+        ep.revoteVotes = fdRv.votes;
+        ep.revoteLog = fdRv.log;
+        const fdRes = resolveVotes(fdRv.votes);
+        if (fdRes.eliminated) {
+          // Re-vote broke the deadlock
+          return { votes, log, eliminated: fdRes.eliminated, isTie: true, tiedPlayers: res.tiedPlayers };
+        }
+        // Still deadlocked after re-vote → rocks, all at risk
         ep.isRockDraw = true;
-        const rockElim = res.tiedPlayers[Math.floor(Math.random() * res.tiedPlayers.length)];
+        const rockPool = fdRes.tiedPlayers || res.tiedPlayers;
+        const rockElim = rockPool[Math.floor(Math.random() * rockPool.length)];
         return { votes, log, eliminated: rockElim, isTie: true, tiedPlayers: res.tiedPlayers };
       }
       const rv = simulateRevote(tribalPlayers, res.tiedPlayers, gs.lostVotes, log);
@@ -4811,8 +5212,61 @@ function simulateEpisode() {
     ep.eliminated = r1.eliminated;
   }
 
-  // ── RI CHOICE ──
-  if (ep.eliminated) {
+  // ── ELIMINATION SWAP: voted-out moves to another tribe; picks one member to come back ──
+  if (ep.eliminated && ep.eliminationSwap && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
+    const swapper = ep.eliminated;
+    const swapperTribe = gs.tribes.find(t => t.members.includes(swapper));
+    const otherTribes = gs.tribes.filter(t => t !== swapperTribe);
+    const destTribe = otherTribes.sort((a,b) => b.members.length - a.members.length)[0];
+    const destPool = destTribe?.members.filter(p => gs.activePlayers.includes(p)) || [];
+    if (swapperTribe && destTribe && destPool.length > 0) {
+      // Swapper picks whoever they're least bonded with (or weakest challenge threat)
+      const pickedPlayer = wRandom(destPool, p => Math.max(0.1, -getBond(swapper, p) + (10 - pStats(p).strategic) * 0.3 + 1));
+      swapperTribe.members = swapperTribe.members.filter(p => p !== swapper);
+      destTribe.members    = destTribe.members.filter(p => p !== pickedPlayer);
+      destTribe.members.push(swapper);
+      swapperTribe.members.push(pickedPlayer);
+      ep.swapResult = { swapper, fromTribe: swapperTribe.name, toTribe: destTribe.name, pickedPlayer };
+      ep.eliminated = null; // no one is eliminated
+    }
+
+  // ── EXILE DUEL SETUP: voted-out goes to exile instead of eliminated ──
+  } else if (ep.eliminated && ep.exileDuelActive) {
+    gs.exileDuelPlayer = ep.eliminated;
+    gs.activePlayers = gs.activePlayers.filter(p => p !== ep.eliminated);
+    gs.tribes = gs.tribes.map(t => ({...t, members: t.members.filter(p => p !== ep.eliminated)}));
+    gs.advantages = gs.advantages.filter(a => a.holder !== ep.eliminated);
+    ep.exilePlayer = ep.eliminated;
+    ep.eliminated = null; // in exile — not permanently out yet
+
+  // ── EXILE DUEL RESOLUTION: duel between exile player and this episode's boot ──
+  } else if (ep.eliminated && gs.exileDuelPlayer) {
+    const exilePlayer = gs.exileDuelPlayer;
+    const newBoot = ep.eliminated;
+    const _edResult = simulateLastChance(exilePlayer, newBoot);
+    ep.exileDuelResult = { exilePlayer, newBoot, winner: _edResult.winner, loser: _edResult.loser, challengeLabel: _edResult.challengeLabel };
+    gs.exileDuelPlayer = null;
+    const _edLoser = _edResult.loser; const _edWinner = _edResult.winner;
+    gs.eliminated.push(_edLoser);
+    if (gs.isMerged) gs.jury.push(_edLoser);
+    gs.activePlayers = gs.activePlayers.filter(p => p !== _edLoser);
+    gs.tribes = gs.tribes.map(t => ({...t, members: t.members.filter(p => p !== _edLoser)}));
+    gs.advantages = gs.advantages.filter(a => a.holder !== _edLoser);
+    if (_edWinner === exilePlayer) {
+      // Exile player won — returns to game (was already removed when sent to exile)
+      gs.activePlayers.push(_edWinner);
+      const _smallest = [...gs.tribes].sort((a,b) => a.members.length - b.members.length)[0];
+      if (_smallest) _smallest.members.push(_edWinner);
+      // New boot is the loser — already handled above, also remove from tribe/advantages
+      gs.activePlayers = gs.activePlayers.filter(p => p !== newBoot);
+      gs.tribes = gs.tribes.map(t => ({...t, members: t.members.filter(p => p !== newBoot)}));
+      gs.advantages = gs.advantages.filter(a => a.holder !== newBoot);
+    }
+    ep.eliminated = _edLoser;
+    ep.riChoice = null;
+
+  // ── RI CHOICE (standard elimination) ──
+  } else if (ep.eliminated) {
     if (cfg.ri) {
       const choice = simulateRIChoice(ep.eliminated);
       ep.riChoice = choice;
@@ -4824,7 +5278,6 @@ function simulateEpisode() {
     }
     gs.activePlayers = gs.activePlayers.filter(p => p!==ep.eliminated);
     gs.tribes = gs.tribes.map(t => ({...t, members: t.members.filter(p => p!==ep.eliminated)}));
-    // Advantages are lost when their holder is eliminated
     gs.advantages = gs.advantages.filter(a => a.holder !== ep.eliminated);
   }
 
@@ -4912,9 +5365,25 @@ function getTribeAdvantageStatus(tribeName, isMerge) {
       if (gs.idolSlots?.[tribeName]) lines.push(`The ${tribeName} Hidden Immunity Idol is currently hidden.`);
     }
   }
+  // Beware Advantage status
+  if (seasonConfig.advantages?.beware?.enabled && gs.bewares && !isMerge) {
+    const slot = gs.bewares[tribeName];
+    if (slot) {
+      if (slot.hidden) {
+        lines.push(`The ${tribeName} Beware Advantage is still hidden.`);
+      } else if (slot.holder && !slot.activated) {
+        lines.push(`${slot.holder} holds the Beware Advantage — VOTE RESTRICTED until all tribes find theirs.`);
+      } else if (slot.holder && slot.activated) {
+        lines.push(`${slot.holder} holds the Beware Advantage (activated — idol live, vote restored).`);
+      }
+    }
+  }
   const members = isMerge ? gs.activePlayers : (gs.tribes.find(t => t.name === tribeName)?.members || []);
   gs.advantages.forEach(adv => {
-    if (members.includes(adv.holder)) lines.push(`${adv.holder} has the ${typeLabel[adv.type]||adv.type} (found ep.${adv.foundEp}).`);
+    if (members.includes(adv.holder)) {
+      const label = adv.fromBeware ? 'Hidden Immunity Idol (from Beware)' : (typeLabel[adv.type]||adv.type);
+      lines.push(`${adv.holder} has the ${label} (found ep.${adv.foundEp}).`);
+    }
   });
   return lines;
 }
@@ -5029,7 +5498,11 @@ function generateSummaryText(ep) {
   if (prev) {
     sec('PREVIOUSLY');
     if (prev.eliminated) {
-      ln(`Ep.${prev.num}: ${prev.immunityWinner ? prev.immunityWinner + ' won immunity. ' : ''}${prev.eliminated} was voted out${prev.riChoice === 'REDEMPTION ISLAND' ? ' and chose Redemption Island' : ''}.`);
+      if (prev.lastChance) {
+        ln(`Ep.${prev.num}: Last Chance Challenge. ${prev.eliminated} was eliminated in a head-to-head duel.`);
+      } else {
+        ln(`Ep.${prev.num}: ${prev.immunityWinner ? prev.immunityWinner + ' won immunity. ' : ''}${prev.eliminated} was voted out${prev.riChoice === 'REDEMPTION ISLAND' ? ' and chose Redemption Island' : ''}.`);
+      }
     }
     const recentBetrayals = gs.namedAlliances?.flatMap(a => a.betrayals.filter(b => b.ep === prev.num)) || [];
     recentBetrayals.forEach(b => {
@@ -5074,6 +5547,18 @@ function generateSummaryText(ep) {
     sec('ON REDEMPTION ISLAND');
     ln(gs.riPlayers.length ? gs.riPlayers.join(', ') : 'None.');
   }
+  if (gs.exileDuelPlayer) {
+    sec('ON EXILE');
+    ln(`${gs.exileDuelPlayer} — sent to exile last episode. Will duel the next player voted out for a chance to return.`);
+  }
+  // Exile duel result this episode
+  if (ep.exileDuelResult) {
+    const _ed = ep.exileDuelResult;
+    sec('EXILE DUEL');
+    ln(`${_ed.exilePlayer} (exile) vs ${_ed.newBoot} (just voted out) — ${_ed.challengeLabel} duel.`);
+    ln(`Winner: ${_ed.winner} — ${_ed.winner === _ed.exilePlayer ? 'returns to the game' : 'stays in the game'}.`);
+    ln(`Loser: ${_ed.loser} — permanently eliminated.`);
+  }
 
   // RI DUEL
   if (ep.riDuel) {
@@ -5095,6 +5580,7 @@ function generateSummaryText(ep) {
   if (ep.isMerge) ln('MERGE EPISODE — tribes dissolve. Individual immunity. Everyone votes.');
   else if (ep.isRIReentry) ln(`RI re-entry episode. ${ep.riReentrant} rejoins the game. Tribe challenge follows.`);
   else if (ep.isDoubleElim) ln('DOUBLE ELIMINATION — two players voted out this episode.');
+  else if (ep.lastChance) { const _lc = ep.lastChance; ln(`LAST CHANCE CHALLENGE — ${_lc.loser} and ${_lc.winner} faced off in a head-to-head ${_lc.challengeLabel} duel. ${_lc.loser} lost and is eliminated. ${_lc.winner} joins ${_lc.toTribe || 'another tribe'}.`); }
   else if (ep.tribeDissolve) ln(`TRIBE DISSOLUTION — ${ep.tribeDissolve.fromTribe} is dissolved. ${ep.tribeDissolve.player} joins ${ep.tribeDissolve.toTribe}. No tribal council, no vote.`);
   else if (ep.noTribal) ln('NO TRIBAL COUNCIL — no one is voted out this episode.');
   else if (ep.challengeType === 'double-tribal') ln('DOUBLE TRIBAL — both tribes attend tribal council. Two players voted out.');
@@ -5105,6 +5591,12 @@ function generateSummaryText(ep) {
     ln(`Standard pre-merge episode.${safeStr} ${ep.loser?.name} goes to tribal council.`);
   }
   else ln('Post-merge episode. Individual immunity challenge.');
+
+  // BEWARE ACTIVATION (if it happened this episode)
+  const _bewareActivation = ep.idolFinds?.find(f => f.type === 'beware-activated');
+  if (_bewareActivation) {
+    ln(`BEWARE ADVANTAGE ACTIVATION — All tribes have now found their beware. Idols activated for: ${_bewareActivation.holders.join(', ')}. Vote restriction lifted.`);
+  }
 
   // TRIBE STATUS — per tribe (advantages only; relationships shown after camp events)
   let tribeGroups;
@@ -5352,6 +5844,51 @@ function generateSummaryText(ep) {
       else if (tw.idolWagerLoser) ln(`IDOL WAGER — ${tw.idolWagerLoser} wagered their idol and LOST. The idol was destroyed.`);
     } else if (tw.type === 'journey') {
       ln('JOURNEY — a journey was scheduled this episode. Players were sent on a journey for a chance at an advantage.');
+    } else if (tw.type === 'auction') {
+      ln('SURVIVOR AUCTION — players received $500 each to bid on items. Highest bidder wins.');
+      if (tw.auctionResults?.length) {
+        tw.auctionResults.forEach(r => {
+          ln(`${r.winner} won: ${r.label} — bid $${r.bid}${r.isPool ? ' (pooled)' : ''}.`);
+        });
+      }
+      ln('NOTE: purchased rewards cannot be shared. Blind bids are revealed after the winning bid.');
+    } else if (tw.type === 'elimination-swap') {
+      if (ep.swapResult) {
+        const sr = ep.swapResult;
+        ln(`ELIMINATION SWAP — ${sr.swapper} was voted out but instead moves to ${sr.toTribe}. Nobody is eliminated.`);
+        ln(`${sr.swapper} chose ${sr.pickedPlayer} from ${sr.toTribe} to go back to ${sr.fromTribe} in exchange.`);
+        ln(`New ${sr.fromTribe} member: ${sr.pickedPlayer}. New ${sr.toTribe} member: ${sr.swapper}.`);
+      } else {
+        ln('ELIMINATION SWAP active — the voted-out player will move to another tribe and pick one member to exchange.');
+      }
+    } else if (tw.type === 'exile-duel') {
+      if (ep.exilePlayer) {
+        ln(`EXILE DUEL — ${ep.exilePlayer} is voted out but sent to exile instead of being eliminated.`);
+        ln(`Next episode: ${ep.exilePlayer} will duel whoever gets voted out. Winner returns; loser is permanently eliminated.`);
+      }
+    } else if (tw.type === 'three-gifts') {
+      const giftLabels = { 1: 'Gift 1 — Tribal Survival Kit (food, supplies, flint)', 2: 'Gift 2 — Flint + Idol Clue', 3: 'Gift 3 — Immunity Totem (live idol)' };
+      const giftEffects = {
+        1: 'tribe receives full survival kit — comfort and morale boosted at camp.',
+        2: 'received an idol clue — searched and found the Hidden Immunity Idol.',
+        3: 'chose the Immunity Totem — holds a live Hidden Immunity Idol.',
+      };
+      ln('THREE GIFTS — two nominees traveled to a private location and each chose one of three gifts.');
+      if (tw.giftResults) {
+        tw.giftResults.forEach(({ player, tribe, gift }) => {
+          ln(`${player} (${tribe}): ${giftLabels[gift]} — ${giftEffects[gift]}`);
+        });
+        ln('Both nominees agreed to keep the details of the twist secret from their tribes.');
+      }
+    } else if (tw.type === 'tiebreaker-challenge') {
+      if (ep.tiebreakerResult) {
+        const tr = ep.tiebreakerResult;
+        ln(`CHALLENGE TIEBREAKER — the vote tied. Tied players competed in a ${tr.challengeLabel} challenge.`);
+        ln(`Participants: ${tr.participants.join(', ')}`);
+        ln(`${tr.loser} lost the tiebreaker and is eliminated. ${tr.winner} performed best.`);
+      } else {
+        ln('CHALLENGE TIEBREAKER active — if the vote ties this episode, tied players compete in a head-to-head challenge instead of a revote or rock draw.');
+      }
     }
   }); // end allTwists.forEach
 
@@ -5378,9 +5915,16 @@ function generateSummaryText(ep) {
         ln(`  ${i+1}. ${t.name} ${suffix}`);
       });
     } else {
-      ln(`${ep.winner?.name} win. ${ep.loser?.name} go to tribal council.`);
+      if (ep.lastChance) {
+        ln(`${ep.winner?.name} win immunity. ${ep.loser?.name} face the Last Chance Challenge.`);
+      } else {
+        ln(`${ep.winner?.name} win. ${ep.loser?.name} go to tribal council.`);
+      }
     }
-    if (ep.tribeDissolve) {
+    if (ep.lastChance) {
+      const _lc = ep.lastChance;
+      ln(`RESULT: ${ep.loser?.name} (2 players) go to Last Chance Challenge instead of tribal council.`);
+    } else if (ep.tribeDissolve) {
       ln(`RESULT: ${ep.tribeDissolve.fromTribe} has only one player left — the tribe is dissolved. ${ep.tribeDissolve.player} is absorbed into ${ep.tribeDissolve.toTribe}. No tribal council.`);
     } else {
       ln(`RESULT: ${ep.loser?.name} go to tribal council.`);
@@ -5389,14 +5933,36 @@ function generateSummaryText(ep) {
     ln(`INDIVIDUAL IMMUNITY (${ep.challengeLabel||'Mixed'} challenge): ${ep.immunityWinner} wins.`);
   }
 
+  // LAST CHANCE CHALLENGE section
+  if (ep.lastChance) {
+    const _lc = ep.lastChance;
+    sec('LAST CHANCE CHALLENGE');
+    ln(`${_lc.loser} vs. ${_lc.winner} — ${_lc.challengeLabel}`);
+    const _lcWP = pronouns(_lc.winner);
+    const _lcLP = pronouns(_lc.loser);
+    const _lcLines = [
+      `It comes down to two. ${_lc.loser} and ${_lc.winner} face off in a ${_lc.challengeLabel} challenge. No vote, no alliance, no politics — just who wins. ${_lc.winner} outlasts ${_lc.loser}. ${_lcLP.Sub} ${_lcLP.sub==='they'?'are':'is'} eliminated.`,
+      `No tribal council. Instead: ${_lc.loser} and ${_lc.winner}, head-to-head. The ${_lc.challengeLabel} challenge runs until someone breaks. ${_lc.loser} breaks first. ${_lc.winner} survives. ${_lcLP.Sub} ${_lcLP.sub==='they'?'go':'goes'} home.`,
+      `${ep.loser?.name} loses the immunity challenge and the tribe is down to two. The production calls it: Last Chance. ${_lc.loser} and ${_lc.winner} compete in ${_lc.challengeLabel}. ${_lc.winner} wins. ${_lc.loser} is done.`,
+      `One challenge. One person goes home. ${_lc.winner} wins the ${_lc.challengeLabel} duel against ${_lc.loser}. ${_lcLP.Sub} ${_lcLP.sub==='they'?'are':'is'} eliminated on the spot. No ceremony. Just results.`,
+    ];
+    ln(_lcLines[Math.floor(Math.random() * _lcLines.length)]);
+    if (_lc.toTribe) ln(`${_lc.winner} joins ${_lc.toTribe}. ${ep.loser?.name} is dissolved.`);
+  }
+
   // POST-CHALLENGE STATUS — individual/group targets + final targets
   const tribalAlliances = ep.alliances || [];
   if (ep.challengeType === 'tribe' && ep.loser) {
     sec(`POST-CHALLENGE STATUS \u2014 ${ep.loser.name.toUpperCase()}`);
-    // Tribe dissolved — no vote
-    if (ep.tribeDissolve) {
+    // Last Chance or dissolution — no vote
+    if (ep.lastChance || ep.tribeDissolve) {
       const _td = ep.tribeDissolve;
-      ln(`${_td.fromTribe} is dissolved. ${_td.player} joins ${_td.toTribe}. No vote, no elimination.`);
+      if (ep.lastChance) {
+        const _lc = ep.lastChance;
+        ln(`${_lc.loser} and ${_lc.winner} faced off directly. No vote, no strategy — just a challenge. ${_lc.loser} lost.`);
+      } else {
+        ln(`${_td.fromTribe} is dissolved. ${_td.player} joins ${_td.toTribe}. No vote, no elimination.`);
+      }
     } else {
     const individualTargets = ep.votingLog?.filter(e => e.voter !== 'THE GAME').map(e => ({ voter: e.voter, target: e.voted, reason: e.reason }))
       || getIndividualTargets(ep.tribalPlayers, ep.immunityWinner||null, tribalAlliances, ep.challengeLabel);
@@ -5542,7 +6108,10 @@ function generateSummaryText(ep) {
       .forEach(([target, voters]) => ln(`${target} (${voters.length}): ${voters.join(', ')}`));
     if (gs.lostVotes?.length) {
       gs.lostVotes.filter(p => ep.tribalPlayers?.includes(p))
-        .forEach(p => ln(`${p}: [no vote — lost vote on journey]`));
+        .forEach(p => {
+          const reason = ep.bewareLostVotes?.includes(p) ? 'Beware Advantage — idol inactive' : 'lost vote on journey';
+          ln(`${p}: [no vote — ${reason}]`);
+        });
     }
 
     // Idol plays
@@ -5557,20 +6126,42 @@ function generateSummaryText(ep) {
     // Revote / rock draw
     if (ep.isTie && ep.tiedPlayers) {
       ln('');
-      ln(`TIE \u2014 ${ep.tiedPlayers.join(', ')} are deadlocked.`);
-      if (ep.revoteVotes) {
-        ln(`REVOTE: ${ep.tiedPlayers.join(', ')} cannot vote. Everyone else votes between them.`);
-        ln('');
-        const rvGroups = {};
-        (ep.revoteLog||[]).forEach(({ voter, voted }) => {
-          if (!rvGroups[voted]) rvGroups[voted] = [];
-          rvGroups[voted].push(voter);
-        });
-        Object.entries(rvGroups).sort(([,a],[,b]) => b.length-a.length)
-          .forEach(([target, voters]) => ln(`${target} (${voters.length}): ${voters.join(', ')}`));
-        if (ep.isRockDraw) {
+      if (ep.tiebreakerResult) {
+        const tr = ep.tiebreakerResult;
+        ln(`TIE \u2014 ${ep.tiedPlayers.join(', ')} are deadlocked. CHALLENGE TIEBREAKER: no revote, no rocks.`);
+        ln(`${tr.participants.join(', ')} compete in a ${tr.challengeLabel} challenge. ${tr.loser} loses — eliminated. ${tr.winner} wins — safe.`);
+      } else if (ep.isFullDeadlock) {
+        ln(`FULL DEADLOCK \u2014 every player voted for a different person. No standard revote is possible. FULL RE-VOTE: all players vote again.`);
+        if (ep.revoteVotes) {
           ln('');
-          ln(`STILL TIED \u2014 ROCK DRAW. Tied players are safe. Everyone else draws a rock.`);
+          const fdGroups = {};
+          (ep.revoteLog||[]).forEach(({ voter, voted }) => {
+            if (!fdGroups[voted]) fdGroups[voted] = [];
+            fdGroups[voted].push(voter);
+          });
+          Object.entries(fdGroups).sort(([,a],[,b]) => b.length-a.length)
+            .forEach(([target, voters]) => ln(`${target} (${voters.length}): ${voters.join(', ')}`));
+          if (ep.isRockDraw) {
+            ln('');
+            ln(`STILL DEADLOCKED \u2014 ROCK DRAW. All players are at risk.`);
+          }
+        }
+      } else {
+        ln(`TIE \u2014 ${ep.tiedPlayers.join(', ')} are deadlocked.`);
+        if (ep.revoteVotes) {
+          ln(`REVOTE: ${ep.tiedPlayers.join(', ')} cannot vote. Everyone else votes between them.`);
+          ln('');
+          const rvGroups = {};
+          (ep.revoteLog||[]).forEach(({ voter, voted }) => {
+            if (!rvGroups[voted]) rvGroups[voted] = [];
+            rvGroups[voted].push(voter);
+          });
+          Object.entries(rvGroups).sort(([,a],[,b]) => b.length-a.length)
+            .forEach(([target, voters]) => ln(`${target} (${voters.length}): ${voters.join(', ')}`));
+          if (ep.isRockDraw) {
+            ln('');
+            ln(`STILL TIED \u2014 ROCK DRAW. Tied players are safe. Everyone else draws a rock.`);
+          }
         }
       }
     }
@@ -5591,7 +6182,10 @@ function generateSummaryText(ep) {
     if (ep.revoteLog) {
       ep.tiedPlayers?.forEach(p => ln(`${p} — could not vote on revote (was in the tie)`));
       gs.lostVotes?.filter(p => ep.tribalPlayers?.includes(p))
-        .forEach(p => ln(`${p} — [no vote — lost vote on journey]`));
+        .forEach(p => {
+          const reason = ep.bewareLostVotes?.includes(p) ? 'Beware Advantage — idol inactive' : 'lost vote on journey';
+          ln(`${p} — [no vote — ${reason}]`);
+        });
     }
   }
 
@@ -5618,9 +6212,38 @@ function generateSummaryText(ep) {
 
   function explainBoot(name, votelog, alliances2) {
     if (!name) return;
-    // Rock draw — person was never voted for, just drew the unlucky rock
+    // Elimination swap — no one eliminated, player moved tribes
+    if (ep.swapResult && !ep.eliminated) {
+      const sr = ep.swapResult;
+      ln(`${sr.swapper} received the most votes but was NOT eliminated — the Elimination Swap twist redirected them to ${sr.toTribe}. ${sr.swapper} chose ${sr.pickedPlayer} to go back to ${sr.fromTribe} in exchange. Both players' games are completely reset.`);
+      return;
+    }
+    // Exile duel — result determines elimination
+    if (ep.exileDuelResult && name === ep.eliminated) {
+      const _ed = ep.exileDuelResult;
+      ln(`${_ed.loser} was eliminated via Exile Duel. ${_ed.exilePlayer} (exiled last episode) faced ${_ed.newBoot} (just voted out) in a ${_ed.challengeLabel} challenge. ${_ed.winner} won and ${_ed.winner === _ed.exilePlayer ? 'returned to the game' : 'stayed in the game'}. ${_ed.loser} is permanently out.`);
+      return;
+    }
+    // Challenge tiebreaker
+    if (ep.tiebreakerResult && name === ep.eliminated && !ep.firstEliminated) {
+      const tr = ep.tiebreakerResult;
+      ln(`${name} was eliminated in a Challenge Tiebreaker. The vote tied between ${tr.participants.join(', ')} — no revote, no rocks. They competed in a ${tr.challengeLabel} challenge. ${name} lost. ${tr.winner} performed best and is safe.`);
+      return;
+    }
+    // Rock draw — person drew the unlucky rock
     if (ep.isRockDraw && name === ep.eliminated && !ep.firstEliminated) {
-      ln(`${name} was eliminated by rock draw — was NOT in the tie and never received a vote. Pure chance.`);
+      if (ep.isFullDeadlock) {
+        // Full deadlock: re-vote also tied — everyone at risk
+        const others = (ep.tiedPlayers || []).filter(p => p !== name).join(', ');
+        ln(`${name} was eliminated by rock draw after a complete deadlock. Every player received one vote. A full re-vote was held — still no majority. It came down to pure chance.`);
+      } else {
+        ln(`${name} was eliminated by rock draw — was NOT in the tie and never received a vote. Pure chance.`);
+      }
+      return;
+    }
+    // Full deadlock re-vote that DID break the tie
+    if (ep.isFullDeadlock && !ep.isRockDraw && name === ep.eliminated && !ep.firstEliminated) {
+      ln(`${name} was eliminated after a full deadlock re-vote. The first vote was a complete stalemate — everyone voted for a different person. A fresh full re-vote was held and ${name} received the most votes.`);
       return;
     }
 
@@ -5759,6 +6382,9 @@ function generateSummaryText(ep) {
       if (l.voted === name) return false; // voted against, not a protector
       if (!gs.activePlayers.includes(l.voter)) return false;
       const sharedAlliance = allAlliances.find(a => a.members.includes(l.voter) && a.members.includes(name));
+      // If they share an alliance with the eliminated player but voted FOR another alliance member,
+      // they defected — not a protector
+      if (sharedAlliance && sharedAlliance.members.includes(l.voted)) return false;
       return sharedAlliance || getBond(l.voter, name) >= 1.5;
     });
     if (protectors.length) {
@@ -5788,6 +6414,13 @@ function generateSummaryText(ep) {
   } else if (elim) {
     explainBoot(elim, ep.votingLog, ep.alliances);
     if (ep.isTie && !ep.isRockDraw) ln(`- Went to a revote`);
+  } else if (ep.lastChance) {
+    const _lc = ep.lastChance;
+    const _lcWS = pStats(_lc.winner);
+    const _lcLS = pStats(_lc.loser);
+    ln(`${_lc.loser} and ${_lc.winner} went head-to-head in ${_lc.challengeLabel}.`);
+    ln(`- ${_lc.winner} (${_lc.challengeLabel} score: ~${Math.round(_lcWS.physical * 0.5 + _lcWS.endurance * 0.5)}) outlasted ${_lc.loser} (score: ~${Math.round(_lcLS.physical * 0.5 + _lcLS.endurance * 0.5)}).`);
+    if (_lc.toTribe) ln(`- ${_lc.winner} joins ${_lc.toTribe}. ${ep.loser?.name} is gone.`);
   } else if (ep.tribeDissolve) {
     const _td = ep.tribeDissolve;
     ln(`No vote this episode. ${_td.fromTribe} was down to one player — ${_td.player} — and the tribe was dissolved. ${_td.player} is now on ${_td.toTribe}. The game resets for them.`);
@@ -5857,6 +6490,8 @@ function generateSummaryText(ep) {
   if (ep.firstEliminated) {
     ln(`1. ${ep.firstEliminated}${cfg.ri && ep.firstRIChoice ? ` — ${ep.firstRIChoice}` : ''}`);
     ln(`2. ${elim || '???'}${cfg.ri && ep.riChoice ? ` — ${ep.riChoice}` : ''}`);
+  } else if (ep.lastChance) {
+    ln(`${ep.lastChance.loser} — eliminated via Last Chance Challenge (lost ${ep.lastChance.challengeLabel} duel to ${ep.lastChance.winner})`);
   } else if (elim) {
     ln(elim);
     if (cfg.ri) ln(`Chose: ${ep.riChoice || 'N/A'}`);
@@ -5866,10 +6501,26 @@ function generateSummaryText(ep) {
 
   // STRATEGIC ANALYSIS
   sec('STRATEGIC ANALYSIS');
-  if (ep.isRockDraw && elim) {
-    ln(`${elim} was eliminated by rock draw — nobody chose to write their name down. The tribal council deadlocked and chance decided the result.`);
-    const tied = ep.tiedPlayers?.join(' and ') || 'the tied players';
-    ln(`${tied} were deadlocked and are safe. Everyone else drew rocks.`);
+  if (ep.tiebreakerResult && !ep.firstEliminated) {
+    const tr = ep.tiebreakerResult;
+    ln(`No rock draw, no revote. The vote tied — tied players competed in a ${tr.challengeLabel} challenge. ${tr.loser} performed worst and was eliminated. ${tr.winner} won the tiebreaker.`);
+  } else if (ep.lastChance) {
+    const _lc = ep.lastChance;
+    const _wS = pStats(_lc.winner); const _lS = pStats(_lc.loser);
+    ln(`No vote. ${_lc.loser} and ${_lc.winner} competed directly in ${_lc.challengeLabel}. No strategy, no alliances — the result came down to performance.`);
+    ln(`${_lc.winner} (physical: ${_wS.physical}, endurance: ${_wS.endurance}) outlasted ${_lc.loser} (physical: ${_lS.physical}, endurance: ${_lS.endurance}).`);
+  } else if (ep.isFullDeadlock && !ep.isRockDraw && elim) {
+    ln(`${elim} was eliminated after a full deadlock re-vote. The first vote split evenly — one vote each. A full re-vote was held and the tribe finally reached a majority.`);
+  } else if (ep.isRockDraw && elim) {
+    if (ep.isFullDeadlock) {
+      ln(`${elim} was eliminated by rock draw. The tribe split one vote each on the first ballot. A full re-vote was held — still no majority. All players were at equal risk. Chance picked ${elim}.`);
+      const others = (ep.tiedPlayers || []).filter(p => p !== elim);
+      if (others.length) ln(`${others.join(', ')} survive${others.length === 1 ? 's' : ''} — equally lucky.`);
+    } else {
+      ln(`${elim} was eliminated by rock draw — nobody chose to write their name down. The tribal council deadlocked and chance decided the result.`);
+      const tied = ep.tiedPlayers?.filter(p => p !== elim).join(' and ') || 'the tied players';
+      ln(`${tied} were in the tie and are safe. ${elim} drew the unlucky rock.`);
+    }
   } else if (elim && ep.votes) {
     const totalVotes = Object.values(ep.votes).reduce((a,b)=>a+b, 0);
     const topVotes   = Math.max(...Object.values(ep.votes), 0);
@@ -5910,10 +6561,22 @@ function generateSummaryText(ep) {
   if (gs.eliminated.length) ln(`Permanently out: ${gs.eliminated.join(', ')}`);
 
   // ADVANTAGES IN PLAY
-  if (gs.advantages.length) {
+  const _hasBewares = gs.bewares && Object.values(gs.bewares).some(b => b.holder && !b.activated);
+  if (gs.advantages.length || _hasBewares) {
     sec('ADVANTAGES IN PLAY');
     const typeLabel = { idol:'Hidden Immunity Idol', voteSteal:'Vote Steal', extraVote:'Extra Vote', kip:'Knowledge is Power', legacy:'Legacy Advantage', amulet:'Amulet Advantage' };
-    gs.advantages.forEach(adv => ln(`${adv.holder} holds: ${typeLabel[adv.type]||adv.type} (found ep.${adv.foundEp})`));
+    // Beware holders who haven't activated yet (idol pending)
+    if (gs.bewares) {
+      Object.values(gs.bewares).forEach(b => {
+        if (b.holder && !b.activated && gs.activePlayers.includes(b.holder)) {
+          ln(`${b.holder} holds: Beware Advantage (idol INACTIVE — VOTE RESTRICTED until all tribes find theirs)`);
+        }
+      });
+    }
+    gs.advantages.forEach(adv => {
+      const label = adv.fromBeware ? 'Hidden Immunity Idol (Beware — activated)' : (typeLabel[adv.type]||adv.type);
+      ln(`${adv.holder} holds: ${label} (found ep.${adv.foundEp})`);
+    });
   }
 
   // NAMED ALLIANCES
@@ -5946,8 +6609,20 @@ function buildStorylines(ep) {
   const lines = [], cfg = seasonConfig;
   const elim = ep.eliminated;
 
+  // Last Chance arc
+  if (ep.lastChance) {
+    const _lc = ep.lastChance;
+    const _wS = pStats(_lc.winner);
+    const _wP = pronouns(_lc.winner);
+    if (_lc.toTribe) {
+      if (_wS.social >= 7) lines.push(`${_lc.winner} survived the Last Chance Challenge and just walked into ${_lc.toTribe} camp. ${_wP.Sub} ${_wP.sub==='they'?'know':'knows'} how to win people over fast — which is exactly what ${_wP.sub} ${_wP.sub==='they'?'need':'needs'} right now.`);
+      else if (_wS.strategic >= 7) lines.push(`${_lc.winner} beat ${_lc.loser} one-on-one and landed at ${_lc.toTribe}. ${_wP.Sub} ${_wP.sub==='they'?'have':'has'} no alliance and no safety. The question is whether ${_wP.sub} ${_wP.sub==='they'?'can':'can'} build something fast enough to matter.`);
+      else lines.push(`${_lc.winner} is on ${_lc.toTribe} now. ${_wP.Sub} beat ${_lc.loser} to get there. That's a story — but stories don't vote. Numbers do.`);
+    }
+  }
+
   // Tribe dissolution arc
-  if (ep.tribeDissolve) {
+  if (ep.tribeDissolve && !ep.lastChance) {
     const _td = ep.tribeDissolve;
     const _s = pStats(_td.player);
     const _prn = pronouns(_td.player);
@@ -6243,7 +6918,10 @@ function buildColdOpen(ep) {
 
 function buildNextEpQs(ep) {
   const qs = [], cfg = seasonConfig, elim = ep.eliminated;
-  if (ep.tribeDissolve) {
+  if (ep.lastChance) {
+    const _lc = ep.lastChance;
+    if (_lc.toTribe) qs.push(`${_lc.winner} just survived the Last Chance Challenge and joined ${_lc.toTribe} — do they find allies, or are they the next target?`);
+  } else if (ep.tribeDissolve) {
     const _td = ep.tribeDissolve;
     qs.push(`${_td.player} just joined ${_td.toTribe} with no allies — do they find a foothold, or are they the next boot?`);
   }
@@ -6316,13 +6994,18 @@ function initGameState() {
   const idolSlots = {};
   if (seasonConfig.advantages?.idol?.enabled) tribeList.forEach(t => { idolSlots[t.name] = true; });
 
+  const bewares = {};
+  if (seasonConfig.advantages?.beware?.enabled) tribeList.forEach(t => { bewares[t.name] = { hidden: true, holder: null, activated: false }; });
+
   gs = {
     initialized: true, episode: 0, phase: 'pre-merge', isMerged: false,
     activePlayers: players.map(p=>p.name),
     tribes: tribeList,
     riPlayers: [], eliminated: [], bonds, alliances: [], episodeHistory: [],
-    advantages: [],      // [{ holder, type, foundEp }]
+    advantages: [],      // [{ holder, type, foundEp, fromBeware? }]
     idolSlots,           // { tribeName: bool }
+    bewares,             // { tribeName: { hidden, holder, activated } }
+    exileDuelPlayer: null, // player sent to exile — duels the next boot
     mergeIdolHidden: false,
     lostVotes: [],       // players who cannot vote this episode
     jury: [],            // players eliminated post-merge

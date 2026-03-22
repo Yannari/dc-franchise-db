@@ -247,169 +247,180 @@
     .results-empty p { font-size: 13px; max-width: 360px; line-height: 1.6; }
 
     /* ── VISUAL PLAYER ── */
-    #visual-player { position:fixed; inset:0; z-index:200; background:#0f172a; overflow-y:auto; }
-    .vp-nav { position:sticky; top:0; z-index:10; background:rgba(15,23,42,0.95); backdrop-filter:blur(8px); border-bottom:1px solid #1e293b; display:flex; align-items:center; justify-content:space-between; padding:10px 20px; }
-    .vp-nav-btn { padding:7px 16px; border-radius:6px; border:1px solid #334155; background:transparent; color:#94a3b8; font-size:12px; font-weight:600; cursor:pointer; transition:all 0.15s; }
-    .vp-nav-btn:hover:not(:disabled) { border-color:#10b981; color:#10b981; }
-    .vp-nav-btn:disabled { opacity:0.3; cursor:not-allowed; }
+    #visual-player { position:fixed; inset:0; z-index:200; background:linear-gradient(160deg,#060d1b 0%,#0f172a 55%,#0a1220 100%); overflow-y:auto; }
+    .vp-nav { position:sticky; top:0; z-index:10; background:rgba(6,13,27,0.94); backdrop-filter:blur(12px); border-bottom:1px solid rgba(255,255,255,0.05); display:flex; align-items:center; justify-content:space-between; padding:10px 20px; }
+    .vp-nav-btn { padding:7px 20px; border-radius:20px; border:1px solid #2d3f55; background:transparent; color:#7a94ae; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.15s; letter-spacing:0.5px; }
+    .vp-nav-btn:hover:not(:disabled) { border-color:#10b981; color:#10b981; background:rgba(16,185,129,0.06); }
+    .vp-nav-btn:disabled { opacity:0.2; cursor:not-allowed; }
     .vp-nav-btn.primary { background:#ef4444; border-color:#ef4444; color:#fff; }
     .vp-nav-btn.primary:hover { background:#dc2626; }
-    .vp-progress { display:flex; gap:6px; align-items:center; }
-    .vp-dot { width:8px; height:8px; border-radius:50%; background:#334155; transition:all 0.2s; }
-    .vp-dot.active { background:#10b981; width:22px; border-radius:4px; }
-    .vp-dot.done { background:#1e3a2e; }
-    .vp-page { max-width:820px; margin:0 auto; padding:32px 20px 80px; }
-    .vp-ep-label { font-size:11px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:#ef4444; margin-bottom:8px; }
-    .vp-title { font-size:32px; font-weight:800; color:#e2e8f0; margin-bottom:6px; font-family:Georgia,serif; }
-    .vp-subtitle { font-size:13px; color:#64748b; margin-bottom:28px; }
-    .vp-divider { height:1px; background:linear-gradient(to right,#ef4444,transparent); margin:28px 0; }
-    .vp-section-label { font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#ef4444; margin-bottom:14px; }
-    .vp-card { background:#1e293b; border:1px solid #263246; border-radius:12px; padding:20px; margin-bottom:16px; }
+    .vp-progress { display:flex; gap:5px; align-items:center; }
+    .vp-dot { width:6px; height:6px; border-radius:50%; background:#1a2a3e; transition:all 0.25s; }
+    .vp-dot.active { background:#ef4444; width:24px; border-radius:3px; }
+    .vp-dot.done { background:#1a3028; }
+    .vp-page { max-width:820px; margin:0 auto; padding:36px 20px 100px; }
+    .vp-ep-label { font-size:10px; font-weight:800; letter-spacing:2.5px; text-transform:uppercase; color:#ef4444; margin-bottom:10px; }
+    .vp-title { font-size:38px; font-weight:800; color:#f1f5f9; margin-bottom:6px; font-family:Georgia,serif; letter-spacing:-0.5px; line-height:1.15; }
+    .vp-subtitle { font-size:13px; color:#456080; margin-bottom:32px; line-height:1.55; }
+    .vp-divider { height:1px; background:linear-gradient(to right,rgba(239,68,68,0.6),rgba(239,68,68,0.1),transparent); margin:28px 0; }
+    .vp-section-label { font-size:10px; font-weight:800; letter-spacing:2.5px; text-transform:uppercase; color:#ef4444; margin-bottom:14px; opacity:0.85; }
+    .vp-card { background:rgba(22,34,52,0.8); border:1px solid rgba(40,56,78,0.9); border-radius:14px; padding:20px; margin-bottom:16px; }
     /* Tribe overview */
-    .vp-tribe-bar { height:3px; border-radius:3px 3px 0 0; margin:-20px -20px 16px; }
-    .vp-player-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:10px; }
-    .vp-player-tile { background:#263246; border-radius:10px; padding:12px 8px; text-align:center; border:1px solid #334155; }
-    .vp-avatar-wrap { width:56px; height:56px; border-radius:50%; overflow:hidden; margin:0 auto 8px; border:2px solid #334155; background:#0f172a; display:flex; align-items:center; justify-content:center; position:relative; }
+    .vp-tribe-bar { height:4px; border-radius:4px 4px 0 0; margin:-20px -20px 18px; }
+    .vp-player-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); gap:10px; }
+    .vp-player-tile { background:linear-gradient(160deg,#182338,#111b2c); border-radius:12px; padding:18px 10px 14px; text-align:center; border:1px solid #1e3050; transition:border-color 0.2s,transform 0.15s; }
+    .vp-player-tile:hover { transform:translateY(-2px); border-color:#2d4870; }
+    .vp-avatar-wrap { width:56px; height:56px; border-radius:50%; overflow:hidden; margin:0 auto 10px; border:2px solid #263246; background:#0a1220; display:flex; align-items:center; justify-content:center; position:relative; }
     .vp-avatar-wrap img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
-    .vp-avatar-wrap .vp-init { position:absolute; font-size:18px; font-weight:700; color:#64748b; }
-    .vp-player-name { font-size:12px; font-weight:700; color:#e2e8f0; margin-bottom:2px; }
-    .vp-player-arch { font-size:10px; color:#64748b; }
+    .vp-avatar-wrap .vp-init { position:absolute; font-size:18px; font-weight:700; color:#3a5070; }
+    .vp-player-name { font-size:12px; font-weight:800; color:#dce8f5; margin-bottom:3px; letter-spacing:0.2px; }
+    .vp-player-arch { font-size:9px; color:#3a5070; text-transform:uppercase; letter-spacing:0.8px; }
     .vp-resource-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px; }
     .vp-resource { }
-    .vp-res-label { font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:#64748b; margin-bottom:6px; }
-    .vp-res-bar-bg { height:6px; background:#263246; border-radius:3px; overflow:hidden; margin-bottom:4px; }
+    .vp-res-label { font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:#3a5070; margin-bottom:6px; }
+    .vp-res-bar-bg { height:5px; background:#111b2c; border-radius:3px; overflow:hidden; margin-bottom:4px; }
     .vp-res-bar-fill { height:100%; border-radius:3px; }
     .vp-res-val { font-size:12px; font-weight:700; }
     /* Challenge */
     .vp-challenge-tribe-row { display:flex; gap:12px; margin-bottom:20px; }
-    .vp-challenge-tribe { flex:1; background:#263246; border-radius:10px; padding:14px 12px; text-align:center; border:1px solid #334155; }
-    .vp-challenge-tribe.winner { border-color:#10b981; background:rgba(16,185,129,0.08); }
-    .vp-challenge-tribe.loser  { border-color:#ef4444; background:rgba(239,68,68,0.07); }
-    .vp-challenge-tribe.safe   { border-color:#6366f1; background:rgba(99,102,241,0.07); }
-    .vp-challenge-tribe-name { font-size:13px; font-weight:700; margin-bottom:10px; }
+    .vp-challenge-tribe { flex:1; background:#111b2c; border-radius:12px; padding:16px 12px; text-align:center; border:1px solid #1e3050; }
+    .vp-challenge-tribe.winner { border-color:#10b981; background:rgba(16,185,129,0.05); box-shadow:0 0 24px rgba(16,185,129,0.07); }
+    .vp-challenge-tribe.loser  { border-color:#ef4444; background:rgba(239,68,68,0.04); }
+    .vp-challenge-tribe.safe   { border-color:#6366f1; background:rgba(99,102,241,0.04); }
+    .vp-challenge-tribe-name { font-size:14px; font-weight:800; margin-bottom:12px; letter-spacing:0.3px; }
     .vp-mini-avatars { display:flex; flex-wrap:wrap; gap:4px; justify-content:center; }
-    .vp-mini-avatar { width:32px; height:32px; border-radius:50%; overflow:hidden; border:2px solid #334155; background:#0f172a; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:#64748b; }
+    .vp-mini-avatar { width:32px; height:32px; border-radius:50%; overflow:hidden; border:2px solid #1e3050; background:#0a1220; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:#3a5070; }
     .vp-mini-avatar img { width:100%; height:100%; object-fit:cover; }
     .vp-result-banner { border-radius:10px; padding:16px 20px; text-align:center; font-size:14px; font-weight:700; margin-top:16px; }
-    .vp-result-banner.win  { background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.3); color:#10b981; }
-    .vp-result-banner.lose { background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.25); color:#ef4444; }
+    .vp-result-banner.win  { background:rgba(16,185,129,0.07); border:1px solid rgba(16,185,129,0.22); color:#10b981; }
+    .vp-result-banner.lose { background:rgba(239,68,68,0.05); border:1px solid rgba(239,68,68,0.18); color:#ef4444; }
     /* Camp events */
-    .vp-camp-event { display:flex; gap:14px; padding:14px 0; border-bottom:1px solid #1e293b; align-items:flex-start; }
+    .vp-camp-event { display:flex; gap:14px; padding:16px 0; border-bottom:1px solid rgba(20,32,48,0.9); align-items:flex-start; }
     .vp-camp-event:last-child { border-bottom:none; }
-    .vp-camp-event-avatars { display:flex; gap:-4px; flex-shrink:0; }
+    .vp-camp-event-avatars { display:flex; flex-shrink:0; }
     .vp-camp-event-body { flex:1; }
-    .vp-camp-event-type { font-size:10px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; color:#94a3b8; margin-bottom:4px; }
-    .vp-camp-event-text { font-size:13px; color:#cbd5e1; line-height:1.55; }
-    .vp-rel-tag { display:inline-block; font-size:11px; font-weight:700; padding:1px 7px; border-radius:4px; margin-top:6px; }
-    .vp-rel-tag.pos { background:rgba(16,185,129,0.15); color:#10b981; }
-    .vp-rel-tag.neg { background:rgba(239,68,68,0.12); color:#ef4444; }
+    .vp-camp-event-type { font-size:9px; font-weight:800; letter-spacing:2px; text-transform:uppercase; margin-bottom:5px; }
+    .vp-camp-event-text { font-size:13px; color:#8aabcc; line-height:1.65; }
+    .vp-rel-tag { display:inline-block; font-size:11px; font-weight:700; padding:2px 8px; border-radius:4px; margin-top:7px; }
+    .vp-rel-tag.pos { background:rgba(16,185,129,0.1); color:#10b981; }
+    .vp-rel-tag.neg { background:rgba(239,68,68,0.08); color:#ef4444; }
     /* Confessionals */
     .vp-conf-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:14px; }
-    .vp-conf-card { background:#1e293b; border-radius:10px; padding:16px; border:1px solid #263246; border-left:3px solid #334155; }
-    .vp-conf-header { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
-    .vp-conf-mood { font-size:10px; font-weight:700; padding:2px 8px; border-radius:10px; }
-    .vp-conf-mood.confident { background:rgba(16,185,129,0.15); color:#10b981; }
-    .vp-conf-mood.worried   { background:rgba(239,68,68,0.12); color:#ef4444; }
-    .vp-conf-mood.strategic { background:rgba(99,102,241,0.15); color:#818cf8; }
-    .vp-conf-mood.bitter    { background:rgba(245,158,11,0.12); color:#f59e0b; }
-    .vp-conf-mood.neutral   { background:rgba(148,163,184,0.1); color:#94a3b8; }
-    .vp-conf-quote { font-size:13px; color:#cbd5e1; font-style:italic; line-height:1.6; }
-    .vp-conf-quote::before { content:'"'; } .vp-conf-quote::after { content:'"'; }
+    .vp-conf-card { background:rgba(18,28,44,0.8); border-radius:12px; padding:18px; border:1px solid #1e3050; border-left:3px solid #263246; }
+    .vp-conf-header { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+    .vp-conf-mood { font-size:9px; font-weight:800; padding:3px 9px; border-radius:10px; letter-spacing:0.8px; text-transform:uppercase; }
+    .vp-conf-mood.confident { background:rgba(16,185,129,0.1); color:#10b981; }
+    .vp-conf-mood.worried   { background:rgba(239,68,68,0.08); color:#ef4444; }
+    .vp-conf-mood.strategic { background:rgba(99,102,241,0.1); color:#818cf8; }
+    .vp-conf-mood.bitter    { background:rgba(245,158,11,0.08); color:#f59e0b; }
+    .vp-conf-mood.neutral   { background:rgba(70,100,130,0.12); color:#64748b; }
+    .vp-conf-quote { font-size:13px; color:#8aabcc; font-style:italic; line-height:1.7; }
+    .vp-conf-quote::before { content:'\201C'; color:#2d4870; } .vp-conf-quote::after { content:'\201D'; color:#2d4870; }
     /* Voting Plans */
     .vp-plans-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px; }
     @media(max-width:640px) { .vp-plans-grid { grid-template-columns:1fr; } }
-    .vp-plan-card { background:#1e293b; border-radius:12px; border:2px solid #334155; overflow:hidden; }
-    .vp-plan-card.plan-a { border-color:#f59e0b; }
-    .vp-plan-card.plan-b { border-color:#6366f1; }
-    .vp-plan-header { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:#263246; }
-    .vp-plan-badge { font-size:9px; font-weight:800; letter-spacing:2px; padding:3px 8px; border-radius:4px; }
-    .vp-plan-badge.a { background:rgba(245,158,11,0.2); color:#f59e0b; }
-    .vp-plan-badge.b { background:rgba(99,102,241,0.2); color:#818cf8; }
-    .vp-spearheader { font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:#64748b; }
+    .vp-plan-card { background:rgba(18,28,44,0.8); border-radius:14px; border:2px solid #1e3050; overflow:hidden; }
+    .vp-plan-card.plan-a { border-color:rgba(245,158,11,0.45); }
+    .vp-plan-card.plan-b { border-color:rgba(99,102,241,0.38); }
+    .vp-plan-header { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:rgba(8,14,24,0.5); }
+    .vp-plan-badge { font-size:9px; font-weight:800; letter-spacing:2px; padding:3px 9px; border-radius:4px; }
+    .vp-plan-badge.a { background:rgba(245,158,11,0.12); color:#f59e0b; }
+    .vp-plan-badge.b { background:rgba(99,102,241,0.12); color:#818cf8; }
+    .vp-spearheader { font-size:9px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; color:#3a5070; }
     .vp-plan-body { padding:16px; }
-    .vp-spearhead-row { display:flex; align-items:center; gap:10px; padding:10px 12px; background:#263246; border-radius:8px; margin-bottom:14px; }
-    .vp-spearhead-name { font-size:14px; font-weight:700; color:#e2e8f0; }
-    .vp-vote-count { display:inline-block; padding:4px 14px; border-radius:20px; font-size:12px; font-weight:700; background:#263246; border:1px solid #334155; color:#e2e8f0; margin-bottom:14px; }
-    .vp-target-card { background:#263246; border-radius:10px; padding:14px; text-align:center; margin-bottom:14px; }
-    .vp-target-big-avatar { width:80px; height:80px; border-radius:50%; overflow:hidden; margin:0 auto 10px; border:3px solid #ef4444; background:#0f172a; display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:700; color:#475569; position:relative; }
+    .vp-spearhead-row { display:flex; align-items:center; gap:10px; padding:10px 12px; background:rgba(8,14,24,0.5); border-radius:8px; margin-bottom:14px; }
+    .vp-spearhead-name { font-size:14px; font-weight:800; color:#dce8f5; }
+    .vp-vote-count { display:inline-block; padding:4px 14px; border-radius:20px; font-size:12px; font-weight:700; background:#111b2c; border:1px solid #1e3050; color:#dce8f5; margin-bottom:14px; }
+    .vp-target-card { background:rgba(8,14,24,0.6); border-radius:10px; padding:16px; text-align:center; margin-bottom:14px; }
+    .vp-target-big-avatar { width:80px; height:80px; border-radius:50%; overflow:hidden; margin:0 auto 12px; border:3px solid #ef4444; background:#0a1220; display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:700; color:#3a5070; position:relative; box-shadow:0 0 24px rgba(239,68,68,0.18); }
     .vp-target-big-avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
-    .vp-target-name { font-size:16px; font-weight:700; color:#e2e8f0; margin-bottom:2px; }
-    .vp-target-arch { font-size:11px; color:#64748b; margin-bottom:8px; }
+    .vp-target-name { font-size:16px; font-weight:800; color:#dce8f5; margin-bottom:3px; }
+    .vp-target-arch { font-size:10px; color:#3a5070; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px; }
     .vp-target-votes { font-size:11px; color:#10b981; margin-bottom:8px; }
-    .vp-reason-tag { display:inline-block; padding:4px 12px; border-radius:6px; font-size:11px; font-style:italic; font-weight:600; background:rgba(245,158,11,0.12); color:#f59e0b; border:1px solid rgba(245,158,11,0.2); }
+    .vp-reason-tag { display:inline-block; padding:5px 12px; border-radius:6px; font-size:11px; font-style:italic; font-weight:600; background:rgba(245,158,11,0.06); color:#b07020; border:1px solid rgba(245,158,11,0.12); }
     .vp-support-row { }
-    .vp-support-label { font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:#475569; margin-bottom:8px; }
+    .vp-support-label { font-size:9px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; color:#263040; margin-bottom:8px; }
     .vp-support-avatars { display:flex; gap:6px; flex-wrap:wrap; }
-    .vp-swing-section { background:#1e293b; border:1px solid #334155; border-radius:12px; padding:16px; margin-bottom:20px; }
-    .vp-swing-label { font-size:11px; font-weight:700; letter-spacing:1px; color:#f59e0b; text-transform:uppercase; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
-    .vp-swing-count { background:rgba(245,158,11,0.15); color:#f59e0b; font-size:10px; padding:2px 8px; border-radius:10px; }
+    .vp-swing-section { background:rgba(18,28,44,0.6); border:1px solid rgba(245,158,11,0.12); border-radius:12px; padding:16px; margin-bottom:20px; }
+    .vp-swing-label { font-size:10px; font-weight:800; letter-spacing:1.5px; color:#f59e0b; text-transform:uppercase; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+    .vp-swing-count { background:rgba(245,158,11,0.08); color:#f59e0b; font-size:10px; padding:2px 8px; border-radius:10px; }
     .vp-swing-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:10px; }
-    .vp-swing-card { background:#263246; border-radius:8px; padding:12px; display:flex; gap:10px; align-items:flex-start; }
-    .vp-swing-name { font-size:13px; font-weight:700; color:#e2e8f0; }
-    .vp-swing-tag { font-size:10px; font-weight:700; color:#ef4444; text-transform:uppercase; letter-spacing:0.5px; }
-    .vp-swing-detail { font-size:11px; color:#64748b; margin-top:2px; }
+    .vp-swing-card { background:rgba(8,14,24,0.5); border-radius:8px; padding:12px; display:flex; gap:10px; align-items:flex-start; border:1px solid #1e3050; }
+    .vp-swing-name { font-size:13px; font-weight:700; color:#dce8f5; }
+    .vp-swing-tag { font-size:9px; font-weight:800; color:#ef4444; text-transform:uppercase; letter-spacing:0.5px; }
+    .vp-swing-detail { font-size:11px; color:#3a5070; margin-top:3px; }
     .vp-swing-loyalty { font-size:11px; color:#ef4444; margin-top:2px; }
     /* Tribal targeting */
     .vp-targets-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:20px; }
     @media(max-width:600px) { .vp-targets-grid { grid-template-columns:1fr; } }
-    .vp-target-slot { background:#1e293b; border-radius:12px; border:1px solid #334155; overflow:hidden; }
-    .vp-target-slot.rank1 { border-color:#ef4444; }
-    .vp-target-slot.rank2 { border-color:#f59e0b; }
-    .vp-target-slot.rank3 { border-color:#6366f1; }
-    .vp-target-rank { font-size:10px; font-weight:800; letter-spacing:1px; text-align:center; padding:8px; }
-    .vp-target-rank.r1 { background:rgba(239,68,68,0.12); color:#ef4444; }
-    .vp-target-rank.r2 { background:rgba(245,158,11,0.1); color:#f59e0b; }
-    .vp-target-rank.r3 { background:rgba(99,102,241,0.1); color:#818cf8; }
+    .vp-target-slot { background:rgba(18,28,44,0.7); border-radius:12px; border:1px solid #1e3050; overflow:hidden; }
+    .vp-target-slot.rank1 { border-color:rgba(239,68,68,0.45); }
+    .vp-target-slot.rank2 { border-color:rgba(245,158,11,0.35); }
+    .vp-target-slot.rank3 { border-color:rgba(99,102,241,0.3); }
+    .vp-target-rank { font-size:10px; font-weight:800; letter-spacing:1.5px; text-align:center; padding:8px; text-transform:uppercase; }
+    .vp-target-rank.r1 { background:rgba(239,68,68,0.08); color:#ef4444; }
+    .vp-target-rank.r2 { background:rgba(245,158,11,0.07); color:#f59e0b; }
+    .vp-target-rank.r3 { background:rgba(99,102,241,0.07); color:#818cf8; }
     .vp-target-body { padding:16px; text-align:center; }
-    .vp-danger-label { font-size:10px; font-weight:800; letter-spacing:1px; text-transform:uppercase; color:#ef4444; margin-bottom:4px; }
-    .vp-danger-desc { font-size:11px; color:#64748b; margin-bottom:6px; }
-    .vp-targeted-by { font-size:10px; color:#475569; margin-bottom:8px; }
+    .vp-danger-label { font-size:10px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; color:#ef4444; margin-bottom:4px; }
+    .vp-danger-desc { font-size:11px; color:#3a5070; margin-bottom:6px; }
+    .vp-targeted-by { font-size:10px; color:#263040; margin-bottom:8px; }
     /* Q&A */
-    .vp-qa-entry { margin-bottom:16px; }
-    .vp-qa-host { background:#1a1a2e; border-left:3px solid #ef4444; padding:10px 14px; border-radius:0 6px 6px 0; font-size:13px; color:#94a3b8; font-style:italic; margin-bottom:8px; }
-    .vp-qa-host::before { content:'HOST  '; font-weight:700; color:#ef4444; font-style:normal; font-size:10px; letter-spacing:1px; display:block; margin-bottom:4px; }
-    .vp-qa-response { background:#1e293b; border-radius:8px; padding:12px 14px; display:flex; gap:12px; align-items:flex-start; }
+    .vp-qa-entry { margin-bottom:18px; }
+    .vp-qa-host { background:rgba(10,6,20,0.7); border-left:3px solid #ef4444; padding:12px 16px; border-radius:0 8px 8px 0; font-size:13px; color:#4a6080; font-style:italic; margin-bottom:8px; }
+    .vp-qa-host::before { content:'HOST  '; font-weight:800; color:#ef4444; font-style:normal; font-size:9px; letter-spacing:2px; display:block; margin-bottom:5px; }
+    .vp-qa-response { background:rgba(18,28,44,0.7); border-radius:10px; padding:14px 16px; display:flex; gap:12px; align-items:flex-start; }
     .vp-qa-resp-body { flex:1; }
-    .vp-qa-resp-name { font-size:13px; font-weight:700; margin-bottom:2px; }
-    .vp-qa-resp-arch { font-size:10px; color:#64748b; margin-bottom:8px; }
-    .vp-qa-resp-quote { font-size:13px; color:#cbd5e1; font-style:italic; line-height:1.55; }
-    .vp-qa-resp-quote::before { content:'"'; } .vp-qa-resp-quote::after { content:'"'; }
-    /* Vote reveal */
-    .vp-vote-layout { display:grid; grid-template-columns:1fr 320px; gap:16px; }
-    @media(max-width:700px) { .vp-vote-layout { grid-template-columns:1fr; } }
-    .vp-vote-reveals { background:#1e293b; border-radius:12px; overflow:hidden; }
-    .vp-vote-reveal-row { display:flex; align-items:center; gap:12px; padding:12px 16px; border-bottom:1px solid #263246; }
-    .vp-vote-reveal-row:last-child { border-bottom:none; }
-    .vp-vote-arrow { font-size:18px; color:#ef4444; margin:0 4px; }
-    .vp-vote-reveal-name { font-size:12px; font-weight:600; color:#94a3b8; text-align:center; }
-    .vp-vote-reveal-target { font-size:12px; font-weight:700; color:#ef4444; text-align:center; }
-    .vp-tally { background:#1e293b; border-radius:12px; overflow:hidden; }
-    .vp-tally-row { display:flex; align-items:center; gap:12px; padding:14px 16px; border-bottom:1px solid #263246; }
+    .vp-qa-resp-name { font-size:13px; font-weight:800; margin-bottom:2px; }
+    .vp-qa-resp-arch { font-size:10px; color:#3a5070; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px; }
+    .vp-qa-resp-quote { font-size:13px; color:#8aabcc; font-style:italic; line-height:1.65; }
+    .vp-qa-resp-quote::before { content:'\201C'; color:#2d4870; } .vp-qa-resp-quote::after { content:'\201D'; color:#2d4870; }
+    /* Vote parchments */
+    .vp-vote-parchments { display:grid; grid-template-columns:repeat(auto-fill,minmax(96px,1fr)); gap:8px; margin-bottom:28px; }
+    .vp-parchment { background:linear-gradient(to bottom,#1a1206,#130e04); border:1px solid #2e2210; border-radius:8px; padding:14px 10px 12px; text-align:center; }
+    .vp-parchment-voter { font-size:9px; color:#5a4a2a; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:7px; }
+    .vp-parchment-arrow { font-size:10px; color:#2e2210; margin:5px 0 7px; }
+    .vp-parchment-target { font-size:13px; font-weight:800; color:#c8a050; font-family:Georgia,serif; line-height:1.2; }
+    /* Live tally with bars */
+    .vp-tally { background:rgba(18,28,44,0.7); border-radius:12px; overflow:hidden; margin-bottom:28px; }
+    .vp-tally-row { display:flex; align-items:center; gap:12px; padding:14px 16px; border-bottom:1px solid rgba(20,32,48,0.9); }
     .vp-tally-row:last-child { border-bottom:none; }
-    .vp-tally-row.eliminated { background:rgba(239,68,68,0.08); }
-    .vp-tally-name { flex:1; font-size:14px; font-weight:700; color:#e2e8f0; }
-    .vp-tally-arch { font-size:11px; color:#64748b; }
-    .vp-tally-count { font-size:24px; font-weight:800; color:#ef4444; }
-    .vp-tally-label { font-size:10px; color:#64748b; text-transform:uppercase; }
-    .vp-elim-result { background:#1e293b; border-radius:12px; padding:20px; margin-top:16px; border:1px solid #263246; }
+    .vp-tally-row.eliminated { background:rgba(239,68,68,0.05); }
+    .vp-tally-name { flex:1; font-size:14px; font-weight:700; color:#dce8f5; }
+    .vp-tally-arch { font-size:11px; color:#3a5070; }
+    .vp-tally-count { font-size:26px; font-weight:800; color:#ef4444; min-width:30px; text-align:right; }
+    .vp-tally-label { font-size:9px; color:#3a5070; text-transform:uppercase; }
+    .vp-tally-bar-bg { height:4px; background:#111b2c; border-radius:2px; overflow:hidden; width:80px; flex-shrink:0; }
+    .vp-tally-bar-fill { height:100%; border-radius:2px; transition:width 0.3s; }
+    /* Elim result rows (kept for compat) */
+    .vp-elim-result { background:rgba(18,28,44,0.7); border-radius:12px; padding:20px; margin-top:16px; border:1px solid rgba(40,56,78,0.8); }
     .vp-elim-result-row { display:flex; align-items:center; justify-content:space-between; padding:10px 14px; border-radius:8px; margin-bottom:8px; border:1px solid; }
-    .vp-elim-result-row.eliminated { background:rgba(239,68,68,0.08); border-color:rgba(239,68,68,0.3); }
-    .vp-elim-result-row.safe { background:#263246; border-color:#334155; }
+    .vp-elim-result-row.eliminated { background:rgba(239,68,68,0.05); border-color:rgba(239,68,68,0.22); }
+    .vp-elim-result-row.safe { background:rgba(14,22,36,0.7); border-color:#1e3050; }
     .vp-elim-result-name { font-size:14px; font-weight:700; }
     .vp-elim-result-name.eliminated { color:#ef4444; }
-    .vp-elim-result-meta { font-size:11px; color:#64748b; }
-    .vp-elim-result-votes { font-size:20px; font-weight:800; color:#ef4444; }
-    .vp-elim-result-pct { font-size:10px; color:#64748b; text-align:right; }
+    .vp-elim-result-meta { font-size:11px; color:#3a5070; }
+    .vp-elim-result-votes { font-size:22px; font-weight:800; color:#ef4444; }
+    .vp-elim-result-pct { font-size:10px; color:#3a5070; text-align:right; }
     .vp-blindside-tag { padding:4px 10px; border-radius:4px; font-size:10px; font-weight:800; letter-spacing:1px; text-transform:uppercase; }
-    .vp-blindside-tag.blindside { background:rgba(245,158,11,0.2); color:#f59e0b; }
-    .vp-blindside-tag.expected  { background:rgba(16,185,129,0.1); color:#10b981; }
-    .vp-elim-card { background:#1e293b; border-radius:12px; padding:20px; margin-top:16px; display:flex; gap:16px; align-items:flex-start; border:1px solid #263246; }
+    .vp-blindside-tag.blindside { background:rgba(245,158,11,0.12); color:#f59e0b; }
+    .vp-blindside-tag.expected  { background:rgba(16,185,129,0.07); color:#10b981; }
+    /* Dramatic elimination spotlight */
+    .vp-elim-spotlight { text-align:center; padding:44px 20px 40px; background:radial-gradient(ellipse at 50% 30%,rgba(239,68,68,0.09) 0%,transparent 65%); border:1px solid rgba(239,68,68,0.12); border-radius:16px; margin-top:24px; }
+    .vp-spotlight-eyebrow { font-size:10px; font-weight:800; letter-spacing:3px; color:#ef4444; text-transform:uppercase; margin-bottom:20px; opacity:0.85; }
+    .vp-spotlight-name { font-size:32px; font-weight:800; color:#f1f5f9; margin:16px 0 5px; font-family:Georgia,serif; letter-spacing:-0.5px; }
+    .vp-spotlight-arch { font-size:11px; color:#3a5070; margin-bottom:18px; text-transform:uppercase; letter-spacing:1px; }
+    .vp-spotlight-quote { font-size:14px; color:#6a8aaa; font-style:italic; line-height:1.7; max-width:460px; margin:0 auto 18px; }
+    .vp-spotlight-quote::before { content:'\201C'; } .vp-spotlight-quote::after { content:'\201D'; }
+    .vp-spotlight-placement { font-size:12px; font-weight:700; letter-spacing:2.5px; color:#2d4060; text-transform:uppercase; }
+    /* Old elim card kept for compat */
+    .vp-elim-card { background:rgba(18,28,44,0.7); border-radius:12px; padding:20px; margin-top:16px; display:flex; gap:16px; align-items:flex-start; border:1px solid rgba(40,56,78,0.8); }
     .vp-elim-label { font-size:10px; font-weight:800; letter-spacing:2px; color:#ef4444; text-transform:uppercase; margin-bottom:6px; }
-    .vp-elim-name { font-size:22px; font-weight:800; color:#e2e8f0; margin-bottom:2px; }
-    .vp-elim-arch { font-size:12px; color:#64748b; margin-bottom:10px; }
-    .vp-elim-quote { font-size:13px; color:#94a3b8; font-style:italic; line-height:1.5; margin-bottom:10px; }
-    .vp-elim-quote::before { content:'"'; } .vp-elim-quote::after { content:'"'; }
-    .vp-elim-placement { font-size:11px; font-weight:700; letter-spacing:1px; color:#475569; text-transform:uppercase; }
+    .vp-elim-name { font-size:22px; font-weight:800; color:#dce8f5; margin-bottom:2px; }
+    .vp-elim-arch { font-size:12px; color:#3a5070; margin-bottom:10px; }
+    .vp-elim-quote { font-size:13px; color:#4a6080; font-style:italic; line-height:1.55; margin-bottom:10px; }
+    .vp-elim-quote::before { content:'\201C'; } .vp-elim-quote::after { content:'\201D'; }
+    .vp-elim-placement { font-size:11px; font-weight:700; letter-spacing:1px; color:#263040; text-transform:uppercase; }
     .vp-play-btn { background:#ef4444; color:#fff; border:none; border-radius:6px; padding:6px 12px; font-size:11px; font-weight:700; cursor:pointer; letter-spacing:0.5px; }
     .vp-play-btn:hover { background:#dc2626; }
 
@@ -1111,29 +1122,29 @@ const S10_BONDS_PRESET = [
   { a: 'Scott', b: 'Zoey',   type: 'rival',       note: 'Scott voted Zoey out in both S3 and S4. She voted FOR him at S3 FTC anyway.' },
 ];
 
-// S9 preset data
-const S9_PRESET = [
+// S9 preset — tribe assignments only; stats/archetype pulled from FRANCHISE_ROSTER at load time
+const S9_TRIBES = [
   // YELLOW TRIBE
-  { name:'Bowie',      slug:'bowie',       tribe:'Yellow', gender:'m',  archetype:'mastermind',       stats:{ physical:6, endurance:5, mental:7, social:9,  strategic:10, loyalty:3, boldness:9, intuition:8, temperament:4 } },
-  { name:'Chase',      slug:'chase',       tribe:'Yellow', gender:'m',  archetype:'floater',         stats:{ physical:5, endurance:6, mental:6, social:6,  strategic:6,  loyalty:7, boldness:5, intuition:7, temperament:7 } },
-  { name:'Ripper',     slug:'ripper',      tribe:'Yellow', gender:'m',  archetype:'chaos-agent',      stats:{ physical:6, endurance:6, mental:4, social:4,  strategic:5,  loyalty:4, boldness:9, intuition:5, temperament:2 } },
-  { name:'Scary Girl', slug:'scary-girl',  tribe:'Yellow', gender:'f',  archetype:'wildcard',         stats:{ physical:6, endurance:5, mental:4, social:3,  strategic:4,  loyalty:3, boldness:10,intuition:5, temperament:1 } },
-  { name:'Nichelle',   slug:'nichelle',    tribe:'Yellow', gender:'f',  archetype:'social-butterfly', stats:{ physical:5, endurance:5, mental:5, social:8,  strategic:4,  loyalty:7, boldness:4, intuition:5, temperament:8 } },
-  { name:'Axel',       slug:'axel',        tribe:'Yellow', gender:'f',  archetype:'hothead',  stats:{ physical:9, endurance:8, mental:4, social:5,  strategic:4,  loyalty:7, boldness:6, intuition:4, temperament:5 } },
+  { name:'Bowie',      tribe:'Yellow' },
+  { name:'Chase',      tribe:'Yellow' },
+  { name:'Ripper',     tribe:'Yellow' },
+  { name:'Scary Girl', tribe:'Yellow' },
+  { name:'Nichelle',   tribe:'Yellow' },
+  { name:'Axel',       tribe:'Yellow' },
   // RED TRIBE
-  { name:'Zee',        slug:'zee',         tribe:'Red',    gender:'m',  archetype:'floater',         stats:{ physical:5, endurance:5, mental:5, social:6,  strategic:3,  loyalty:6, boldness:3, intuition:4, temperament:8 } },
-  { name:'Brightly',   slug:'brightly',    tribe:'Red',    gender:'nb', archetype:'mastermind',       stats:{ physical:4, endurance:5, mental:7, social:7,  strategic:8,  loyalty:6, boldness:4, intuition:9, temperament:7 } },
-  { name:'Hicks',      slug:'hicks',       tribe:'Red',    gender:'m',  archetype:'mastermind',       stats:{ physical:5, endurance:5, mental:8, social:7,  strategic:9,  loyalty:6, boldness:5, intuition:9, temperament:7 } },
-  { name:'Emmah',      slug:'emmah',       tribe:'Red',    gender:'f',  archetype:'hothead',          stats:{ physical:6, endurance:6, mental:6, social:5,  strategic:7,  loyalty:5, boldness:10,intuition:6, temperament:2 } },
-  { name:'Millie',     slug:'millie',      tribe:'Red',    gender:'f',  archetype:'underdog',       stats:{ physical:5, endurance:5, mental:7, social:7,  strategic:8,  loyalty:8, boldness:4, intuition:8, temperament:9 } },
-  { name:'Caleb',      slug:'caleb',       tribe:'Red',    gender:'m',  archetype:'challenge-beast',  stats:{ physical:8, endurance:7, mental:4, social:5,  strategic:4,  loyalty:7, boldness:5, intuition:4, temperament:5 } },
+  { name:'Zee',        tribe:'Red'    },
+  { name:'Brightly',   tribe:'Red'    },
+  { name:'Hicks',      tribe:'Red'    },
+  { name:'Emmah',      tribe:'Red'    },
+  { name:'Millie',     tribe:'Red'    },
+  { name:'Caleb',      tribe:'Red'    },
   // BLUE TRIBE
-  { name:'Wayne',      slug:'wayne',       tribe:'Blue',   gender:'m',  archetype:'loyal-soldier',    stats:{ physical:8, endurance:7, mental:4, social:7,  strategic:5,  loyalty:7, boldness:6, intuition:4, temperament:6 } },
-  { name:'Raj',        slug:'raj',         tribe:'Blue',   gender:'m',  archetype:'social-butterfly', stats:{ physical:7, endurance:6, mental:5, social:8,  strategic:4,  loyalty:9, boldness:5, intuition:3, temperament:9 } },
-  { name:'Julia',      slug:'julia',       tribe:'Blue',   gender:'f',  archetype:'schemer',          stats:{ physical:4, endurance:5, mental:9, social:5,  strategic:9,  loyalty:4, boldness:7, intuition:8, temperament:3 } },
-  { name:'Priya',      slug:'priya',       tribe:'Blue',   gender:'f',  archetype:'mastermind',       stats:{ physical:6, endurance:6, mental:7, social:9,  strategic:9,  loyalty:7, boldness:7, intuition:8, temperament:6 } },
-  { name:'MK',         slug:'mk',          tribe:'Blue',   gender:'f',  archetype:'mastermind',       stats:{ physical:5, endurance:7, mental:8, social:6,  strategic:7,  loyalty:6, boldness:4, intuition:7, temperament:7 } },
-  { name:'Damien',     slug:'damien',      tribe:'Blue',   gender:'m',  archetype:'social-butterfly', stats:{ physical:7, endurance:8, mental:6, social:8,  strategic:8,  loyalty:7, boldness:6, intuition:6, temperament:8 } },
+  { name:'Wayne',      tribe:'Blue'   },
+  { name:'Raj',        tribe:'Blue'   },
+  { name:'Julia',      tribe:'Blue'   },
+  { name:'Priya',      tribe:'Blue'   },
+  { name:'MK',         tribe:'Blue'   },
+  { name:'Damien',     tribe:'Blue'   },
 ];
 // S9 is all newbies — no pre-game relationships
 const S9_BONDS_PRESET = [];
@@ -1316,7 +1327,7 @@ function resetForm() {
   STATS.forEach(s => setSlider(s.key, 5, false));
 }
 // ── Franchise Roster (embedded) ───────────────────────────────────────
-const FRANCHISE_ROSTER = [{"name":"Alejandro","slug":"alejandro","gender":"m","archetype":"schemer","stats":{"physical":8,"endurance":8,"mental":10,"social":10,"strategic":10,"loyalty":2,"boldness":9,"intuition":10,"temperament":4}},{"name":"Amy","slug":"amy","gender":"f","archetype":"hothead","stats":{"physical":4,"endurance":6,"mental":6,"social":6,"strategic":8,"loyalty":2,"boldness":9,"intuition":6,"temperament":2}},{"name":"Anne Maria","slug":"anne-maria","gender":"f","archetype":"wildcard","stats":{"physical":6,"endurance":4,"mental":4,"social":4,"strategic":4,"loyalty":4,"boldness":7,"intuition":4,"temperament":4}},{"name":"Axel","slug":"axel","gender":"f","archetype":"hothead","stats":{"physical":9,"endurance":8,"mental":4,"social":5,"strategic":4,"loyalty":7,"boldness":6,"intuition":4,"temperament":5}},{"name":"B","slug":"b","gender":"m","archetype":"loyal-soldier","stats":{"physical":6,"endurance":6,"mental":8,"social":2,"strategic":2,"loyalty":10,"boldness":3,"intuition":5,"temperament":10}},{"name":"Beardo","slug":"beardo","gender":"m","archetype":"goat","stats":{"physical":6,"endurance":4,"mental":4,"social":2,"strategic":2,"loyalty":6,"boldness":4,"intuition":3,"temperament":8}},{"name":"Beth","slug":"beth","gender":"f","archetype":"goat","stats":{"physical":4,"endurance":6,"mental":6,"social":4,"strategic":4,"loyalty":6,"boldness":5,"intuition":5,"temperament":6}},{"name":"Blaineley","slug":"blaineley","gender":"f","archetype":"chaos-agent","stats":{"physical":4,"endurance":4,"mental":8,"social":10,"strategic":8,"loyalty":2,"boldness":8,"intuition":9,"temperament":4}},{"name":"Bowie","slug":"bowie","gender":"m","archetype":"mastermind","stats":{"physical":6,"endurance":4,"mental":8,"social":10,"strategic":10,"loyalty":6,"boldness":7,"intuition":9,"temperament":6}},{"name":"Brick","slug":"brick","gender":"m","archetype":"challenge-beast","stats":{"physical":8,"endurance":10,"mental":4,"social":6,"strategic":2,"loyalty":10,"boldness":4,"intuition":5,"temperament":8}},{"name":"Bridgette","slug":"bridgette","gender":"f","archetype":"social-butterfly","stats":{"physical":8,"endurance":8,"mental":6,"social":8,"strategic":2,"loyalty":8,"boldness":4,"intuition":7,"temperament":8}},{"name":"Brightly","slug":"brightly","gender":"nb","archetype":"mastermind","stats":{"physical":4,"endurance":4,"mental":10,"social":6,"strategic":8,"loyalty":6,"boldness":6,"intuition":8,"temperament":6}},{"name":"Brody","slug":"brody","gender":"m","archetype":"social-butterfly","stats":{"physical":10,"endurance":8,"mental":2,"social":10,"strategic":2,"loyalty":10,"boldness":4,"intuition":6,"temperament":8}},{"name":"Caleb","slug":"caleb","gender":"m","archetype":"social-butterfly","stats":{"physical":10,"endurance":8,"mental":6,"social":8,"strategic":6,"loyalty":6,"boldness":7,"intuition":7,"temperament":6}},{"name":"Cameron","slug":"cameron","gender":"m","archetype":"mastermind","stats":{"physical":2,"endurance":4,"mental":10,"social":4,"strategic":8,"loyalty":8,"boldness":5,"intuition":7,"temperament":8}},{"name":"Carrie","slug":"carrie","gender":"f","archetype":"perceptive-player","stats":{"physical":4,"endurance":6,"mental":6,"social":10,"strategic":6,"loyalty":8,"boldness":4,"intuition":8,"temperament":8}},{"name":"Chase","slug":"chase","gender":"m","archetype":"social-butterfly","stats":{"physical":4,"endurance":4,"mental":4,"social":8,"strategic":2,"loyalty":4,"boldness":5,"intuition":6,"temperament":8}},{"name":"Chet","slug":"chet","gender":"m","archetype":"loyal-soldier","stats":{"physical":8,"endurance":6,"mental":4,"social":4,"strategic":2,"loyalty":8,"boldness":5,"intuition":4,"temperament":4}},{"name":"Cody","slug":"cody","gender":"m","archetype":"perceptive-player","stats":{"physical":2,"endurance":4,"mental":10,"social":8,"strategic":4,"loyalty":8,"boldness":4,"intuition":9,"temperament":8}},{"name":"Courtney","slug":"courtney","gender":"f","archetype":"hothead","stats":{"physical":6,"endurance":4,"mental":8,"social":6,"strategic":8,"loyalty":4,"boldness":8,"intuition":7,"temperament":2}},{"name":"Crimson","slug":"crimson","gender":"f","archetype":"loyal-soldier","stats":{"physical":4,"endurance":6,"mental":6,"social":2,"strategic":4,"loyalty":10,"boldness":3,"intuition":4,"temperament":8}},{"name":"DJ","slug":"dj","gender":"m","archetype":"perceptive-player","stats":{"physical":8,"endurance":4,"mental":6,"social":10,"strategic":2,"loyalty":10,"boldness":3,"intuition":8,"temperament":10}},{"name":"Dakota","slug":"dakota","gender":"f","archetype":"social-butterfly","stats":{"physical":4,"endurance":4,"mental":4,"social":8,"strategic":4,"loyalty":6,"boldness":5,"intuition":6,"temperament":6}},{"name":"Damien","slug":"damien","gender":"m","archetype":"underdog","stats":{"physical":2,"endurance":4,"mental":10,"social":6,"strategic":6,"loyalty":8,"boldness":4,"intuition":8,"temperament":8}},{"name":"Dave","slug":"dave","gender":"m","archetype":"floater","stats":{"physical":6,"endurance":4,"mental":8,"social":4,"strategic":4,"loyalty":8,"boldness":6,"intuition":6,"temperament":4}},{"name":"Dawn","slug":"dawn","gender":"f","archetype":"loyal-soldier","stats":{"physical":4,"endurance":4,"mental":8,"social":2,"strategic":2,"loyalty":10,"boldness":2,"intuition":5,"temperament":10}},{"name":"Devin","slug":"devin","gender":"m","archetype":"social-butterfly","stats":{"physical":6,"endurance":6,"mental":4,"social":8,"strategic":4,"loyalty":10,"boldness":4,"intuition":6,"temperament":8}},{"name":"Duncan","slug":"duncan","gender":"m","archetype":"chaos-agent","stats":{"physical":8,"endurance":8,"mental":6,"social":6,"strategic":8,"loyalty":4,"boldness":8,"intuition":6,"temperament":4}},{"name":"Dwayne","slug":"dwayne","gender":"m","archetype":"perceptive-player","stats":{"physical":4,"endurance":8,"mental":6,"social":10,"strategic":2,"loyalty":10,"boldness":2,"intuition":8,"temperament":10}},{"name":"Ella","slug":"ella","gender":"f","archetype":"social-butterfly","stats":{"physical":4,"endurance":6,"mental":4,"social":8,"strategic":4,"loyalty":10,"boldness":3,"intuition":6,"temperament":10}},{"name":"Ellody","slug":"ellody","gender":"f","archetype":"mastermind","stats":{"physical":4,"endurance":4,"mental":10,"social":6,"strategic":10,"loyalty":6,"boldness":7,"intuition":8,"temperament":6}},{"name":"Emma","slug":"emma","gender":"f","archetype":"social-butterfly","stats":{"physical":8,"endurance":8,"mental":4,"social":8,"strategic":6,"loyalty":8,"boldness":6,"intuition":6,"temperament":4}},{"name":"Emmah","slug":"emmah","gender":"f","archetype":"hothead","stats":{"physical":6,"endurance":6,"mental":6,"social":6,"strategic":8,"loyalty":6,"boldness":8,"intuition":6,"temperament":2}},{"name":"Ennui","slug":"ennui","gender":"m","archetype":"loyal-soldier","stats":{"physical":6,"endurance":6,"mental":6,"social":2,"strategic":4,"loyalty":8,"boldness":4,"intuition":4,"temperament":10}},{"name":"Eva","slug":"eva","gender":"f","archetype":"hothead","stats":{"physical":10,"endurance":10,"mental":4,"social":2,"strategic":2,"loyalty":4,"boldness":7,"intuition":3,"temperament":2}},{"name":"Ezekiel","slug":"ezekiel","gender":"m","archetype":"loyal-soldier","stats":{"physical":2,"endurance":4,"mental":2,"social":4,"strategic":6,"loyalty":6,"boldness":5,"intuition":3,"temperament":6}},{"name":"Geoff","slug":"geoff","gender":"m","archetype":"social-butterfly","stats":{"physical":8,"endurance":6,"mental":4,"social":10,"strategic":2,"loyalty":8,"boldness":4,"intuition":7,"temperament":10}},{"name":"Gerry","slug":"gerry","gender":"m","archetype":"floater","stats":{"physical":4,"endurance":2,"mental":6,"social":6,"strategic":6,"loyalty":6,"boldness":6,"intuition":6,"temperament":4}},{"name":"Gwen","slug":"gwen","gender":"f","archetype":"floater","stats":{"physical":6,"endurance":6,"mental":8,"social":6,"strategic":6,"loyalty":8,"boldness":6,"intuition":7,"temperament":4}},{"name":"Harold","slug":"harold","gender":"m","archetype":"floater","stats":{"physical":4,"endurance":4,"mental":10,"social":4,"strategic":6,"loyalty":6,"boldness":6,"intuition":7,"temperament":6}},{"name":"Heather","slug":"heather","gender":"f","archetype":"schemer","stats":{"physical":6,"endurance":6,"mental":8,"social":6,"strategic":10,"loyalty":2,"boldness":9,"intuition":7,"temperament":2}},{"name":"Hicks","slug":"hicks","gender":"m","archetype":"social-butterfly","stats":{"physical":6,"endurance":8,"mental":6,"social":8,"strategic":6,"loyalty":8,"boldness":5,"intuition":7,"temperament":8}},{"name":"Izzy","slug":"izzy","gender":"f","archetype":"wildcard","stats":{"physical":8,"endurance":10,"mental":2,"social":4,"strategic":2,"loyalty":4,"boldness":6,"intuition":3,"temperament":6}},{"name":"Jacques","slug":"jacques","gender":"m","archetype":"schemer","stats":{"physical":8,"endurance":8,"mental":6,"social":8,"strategic":10,"loyalty":2,"boldness":9,"intuition":7,"temperament":4}},{"name":"Jasmine","slug":"jasmine","gender":"f","archetype":"perceptive-player","stats":{"physical":8,"endurance":10,"mental":8,"social":8,"strategic":4,"loyalty":8,"boldness":5,"intuition":8,"temperament":8}},{"name":"Jay","slug":"jay","gender":"m","archetype":"loyal-soldier","stats":{"physical":4,"endurance":4,"mental":6,"social":6,"strategic":4,"loyalty":10,"boldness":3,"intuition":6,"temperament":8}},{"name":"Jen","slug":"jen","gender":"f","archetype":"social-butterfly","stats":{"physical":4,"endurance":6,"mental":6,"social":8,"strategic":4,"loyalty":8,"boldness":4,"intuition":7,"temperament":8}},{"name":"Jo","slug":"jo","gender":"f","archetype":"hothead","stats":{"physical":10,"endurance":10,"mental":6,"social":4,"strategic":8,"loyalty":2,"boldness":10,"intuition":5,"temperament":2}},{"name":"Josee","slug":"josee","gender":"f","archetype":"hothead","stats":{"physical":8,"endurance":8,"mental":6,"social":4,"strategic":6,"loyalty":4,"boldness":8,"intuition":5,"temperament":2}},{"name":"Julia","slug":"julia","gender":"f","archetype":"schemer","stats":{"physical":6,"endurance":8,"mental":6,"social":6,"strategic":10,"loyalty":2,"boldness":9,"intuition":6,"temperament":4}},{"name":"Junior","slug":"junior","gender":"m","archetype":"loyal-soldier","stats":{"physical":4,"endurance":4,"mental":6,"social":6,"strategic":4,"loyalty":8,"boldness":5,"intuition":6,"temperament":6}},{"name":"Justin","slug":"justin","gender":"m","archetype":"chaos-agent","stats":{"physical":6,"endurance":4,"mental":4,"social":10,"strategic":8,"loyalty":2,"boldness":8,"intuition":7,"temperament":4}},{"name":"Katie","slug":"katie","gender":"f","archetype":"loyal-soldier","stats":{"physical":4,"endurance":4,"mental":4,"social":6,"strategic":2,"loyalty":10,"boldness":3,"intuition":5,"temperament":8}},{"name":"Kelly","slug":"kelly","gender":"f","archetype":"schemer","stats":{"physical":4,"endurance":4,"mental":6,"social":8,"strategic":10,"loyalty":2,"boldness":8,"intuition":7,"temperament":4}},{"name":"Kitty","slug":"kitty","gender":"f","archetype":"perceptive-player","stats":{"physical":6,"endurance":6,"mental":8,"social":10,"strategic":6,"loyalty":8,"boldness":5,"intuition":9,"temperament":8}},{"name":"Laurie","slug":"laurie","gender":"f","archetype":"chaos-agent","stats":{"physical":4,"endurance":6,"mental":8,"social":6,"strategic":6,"loyalty":4,"boldness":7,"intuition":7,"temperament":4}},{"name":"Leonard","slug":"leonard","gender":"m","archetype":"goat","stats":{"physical":2,"endurance":2,"mental":4,"social":4,"strategic":2,"loyalty":4,"boldness":5,"intuition":4,"temperament":6}},{"name":"Leshawna","slug":"leshawna","gender":"f","archetype":"social-butterfly","stats":{"physical":8,"endurance":8,"mental":6,"social":8,"strategic":6,"loyalty":8,"boldness":6,"intuition":7,"temperament":4}},{"name":"Lightning","slug":"lightning","gender":"m","archetype":"wildcard","stats":{"physical":10,"endurance":8,"mental":2,"social":4,"strategic":4,"loyalty":2,"boldness":8,"intuition":3,"temperament":4}},{"name":"Lindsay","slug":"lindsay","gender":"f","archetype":"social-butterfly","stats":{"physical":4,"endurance":6,"mental":2,"social":8,"strategic":2,"loyalty":8,"boldness":4,"intuition":5,"temperament":8}},{"name":"Lorenzo","slug":"lorenzo","gender":"m","archetype":"hothead","stats":{"physical":6,"endurance":6,"mental":4,"social":6,"strategic":4,"loyalty":4,"boldness":7,"intuition":5,"temperament":2}},{"name":"MK","slug":"mk","gender":"f","archetype":"schemer","stats":{"physical":4,"endurance":4,"mental":8,"social":4,"strategic":10,"loyalty":2,"boldness":7,"intuition":6,"temperament":8}},{"name":"MacArthur","slug":"macarthur","gender":"f","archetype":"challenge-beast","stats":{"physical":10,"endurance":8,"mental":4,"social":6,"strategic":6,"loyalty":6,"boldness":7,"intuition":5,"temperament":4}},{"name":"Mary","slug":"mary","gender":"f","archetype":"mastermind","stats":{"physical":4,"endurance":4,"mental":10,"social":6,"strategic":8,"loyalty":8,"boldness":4,"intuition":8,"temperament":10}},{"name":"Max","slug":"max","gender":"m","archetype":"chaos-agent","stats":{"physical":4,"endurance":4,"mental":4,"social":4,"strategic":2,"loyalty":2,"boldness":6,"intuition":4,"temperament":4}},{"name":"Mickey","slug":"mickey","gender":"m","archetype":"mastermind","stats":{"physical":4,"endurance":4,"mental":10,"social":6,"strategic":8,"loyalty":10,"boldness":5,"intuition":8,"temperament":6}},{"name":"Mike","slug":"mike","gender":"m","archetype":"social-butterfly","stats":{"physical":6,"endurance":6,"mental":6,"social":8,"strategic":4,"loyalty":8,"boldness":5,"intuition":7,"temperament":6}},{"name":"Miles","slug":"miles","gender":"f","archetype":"loyal-soldier","stats":{"physical":4,"endurance":8,"mental":6,"social":6,"strategic":4,"loyalty":8,"boldness":3,"intuition":6,"temperament":10}},{"name":"Millie","slug":"millie","gender":"f","archetype":"underdog","stats":{"physical":4,"endurance":2,"mental":10,"social":4,"strategic":6,"loyalty":8,"boldness":5,"intuition":7,"temperament":6}},{"name":"Nichelle","slug":"nichelle","gender":"f","archetype":"social-butterfly","stats":{"physical":4,"endurance":4,"mental":6,"social":8,"strategic":2,"loyalty":6,"boldness":5,"intuition":7,"temperament":4}},{"name":"Noah","slug":"noah","gender":"m","archetype":"floater","stats":{"physical":2,"endurance":4,"mental":10,"social":4,"strategic":6,"loyalty":6,"boldness":6,"intuition":7,"temperament":4}},{"name":"Owen","slug":"owen","gender":"m","archetype":"social-butterfly","stats":{"physical":8,"endurance":4,"mental":2,"social":10,"strategic":2,"loyalty":10,"boldness":3,"intuition":6,"temperament":10}},{"name":"Pete","slug":"pete","gender":"m","archetype":"loyal-soldier","stats":{"physical":6,"endurance":6,"mental":6,"social":4,"strategic":8,"loyalty":6,"boldness":7,"intuition":5,"temperament":4}},{"name":"Priya","slug":"priya","gender":"f","archetype":"mastermind","stats":{"physical":10,"endurance":8,"mental":10,"social":6,"strategic":8,"loyalty":6,"boldness":7,"intuition":8,"temperament":6}},{"name":"Raj","slug":"raj","gender":"m","archetype":"challenge-beast","stats":{"physical":8,"endurance":8,"mental":2,"social":6,"strategic":2,"loyalty":10,"boldness":3,"intuition":4,"temperament":10}},{"name":"Ripper","slug":"ripper","gender":"m","archetype":"chaos-agent","stats":{"physical":8,"endurance":6,"mental":2,"social":4,"strategic":4,"loyalty":4,"boldness":6,"intuition":3,"temperament":6}},{"name":"Rock","slug":"rock","gender":"m","archetype":"social-butterfly","stats":{"physical":6,"endurance":6,"mental":4,"social":8,"strategic":4,"loyalty":8,"boldness":5,"intuition":6,"temperament":6}},{"name":"Rodney","slug":"rodney","gender":"m","archetype":"challenge-beast","stats":{"physical":8,"endurance":8,"mental":2,"social":4,"strategic":2,"loyalty":8,"boldness":4,"intuition":3,"temperament":8}},{"name":"Ryan","slug":"ryan","gender":"m","archetype":"challenge-beast","stats":{"physical":10,"endurance":8,"mental":4,"social":6,"strategic":4,"loyalty":8,"boldness":5,"intuition":5,"temperament":8}},{"name":"Sadie","slug":"sadie","gender":"f","archetype":"loyal-soldier","stats":{"physical":4,"endurance":4,"mental":4,"social":6,"strategic":2,"loyalty":10,"boldness":2,"intuition":5,"temperament":10}},{"name":"Sam","slug":"sam","gender":"m","archetype":"loyal-soldier","stats":{"physical":4,"endurance":2,"mental":8,"social":6,"strategic":2,"loyalty":10,"boldness":2,"intuition":7,"temperament":10}},{"name":"Samey","slug":"samey","gender":"f","archetype":"loyal-soldier","stats":{"physical":4,"endurance":6,"mental":6,"social":6,"strategic":4,"loyalty":10,"boldness":3,"intuition":6,"temperament":8}},{"name":"Sanders","slug":"sanders","gender":"f","archetype":"challenge-beast","stats":{"physical":8,"endurance":10,"mental":8,"social":6,"strategic":6,"loyalty":10,"boldness":4,"intuition":7,"temperament":10}},{"name":"Scarlett","slug":"scarlett","gender":"f","archetype":"schemer","stats":{"physical":4,"endurance":6,"mental":10,"social":6,"strategic":10,"loyalty":2,"boldness":9,"intuition":8,"temperament":2}},{"name":"Scary Girl","slug":"scary-girl","gender":"f","archetype":"wildcard","stats":{"physical":8,"endurance":8,"mental":4,"social":2,"strategic":2,"loyalty":4,"boldness":7,"intuition":3,"temperament":2}},{"name":"Scott","slug":"scott","gender":"m","archetype":"schemer","stats":{"physical":6,"endurance":8,"mental":8,"social":4,"strategic":10,"loyalty":2,"boldness":9,"intuition":6,"temperament":4}},{"name":"Shawn","slug":"shawn","gender":"m","archetype":"challenge-beast","stats":{"physical":8,"endurance":10,"mental":6,"social":4,"strategic":4,"loyalty":6,"boldness":6,"intuition":5,"temperament":4}},{"name":"Sierra","slug":"sierra","gender":"f","archetype":"loyal-soldier","stats":{"physical":6,"endurance":8,"mental":6,"social":4,"strategic":6,"loyalty":10,"boldness":5,"intuition":5,"temperament":4}},{"name":"Sky","slug":"sky","gender":"f","archetype":"challenge-beast","stats":{"physical":10,"endurance":10,"mental":8,"social":6,"strategic":6,"loyalty":6,"boldness":6,"intuition":7,"temperament":8}},{"name":"Spud","slug":"spud","gender":"m","archetype":"social-butterfly","stats":{"physical":4,"endurance":4,"mental":2,"social":8,"strategic":2,"loyalty":8,"boldness":3,"intuition":5,"temperament":10}},{"name":"Staci","slug":"staci","gender":"f","archetype":"loyal-soldier","stats":{"physical":2,"endurance":2,"mental":2,"social":2,"strategic":2,"loyalty":8,"boldness":3,"intuition":2,"temperament":10}},{"name":"Stephanie","slug":"stephanie","gender":"f","archetype":"hothead","stats":{"physical":8,"endurance":8,"mental":6,"social":6,"strategic":6,"loyalty":4,"boldness":8,"intuition":6,"temperament":2}},{"name":"Sugar","slug":"sugar","gender":"f","archetype":"hothead","stats":{"physical":6,"endurance":8,"mental":4,"social":6,"strategic":8,"loyalty":2,"boldness":9,"intuition":5,"temperament":2}},{"name":"Tammy","slug":"tammy","gender":"f","archetype":"loyal-soldier","stats":{"physical":4,"endurance":4,"mental":4,"social":4,"strategic":2,"loyalty":8,"boldness":4,"intuition":4,"temperament":8}},{"name":"Taylor","slug":"taylor","gender":"f","archetype":"hothead","stats":{"physical":4,"endurance":4,"mental":6,"social":10,"strategic":8,"loyalty":2,"boldness":9,"intuition":8,"temperament":2}},{"name":"Tom","slug":"tom","gender":"m","archetype":"social-butterfly","stats":{"physical":8,"endurance":8,"mental":4,"social":8,"strategic":4,"loyalty":10,"boldness":3,"intuition":6,"temperament":10}},{"name":"Topher","slug":"topher","gender":"m","archetype":"chaos-agent","stats":{"physical":4,"endurance":6,"mental":6,"social":8,"strategic":6,"loyalty":2,"boldness":8,"intuition":7,"temperament":4}},{"name":"Trent","slug":"trent","gender":"m","archetype":"social-butterfly","stats":{"physical":6,"endurance":6,"mental":6,"social":8,"strategic":4,"loyalty":8,"boldness":4,"intuition":7,"temperament":8}},{"name":"Tyler","slug":"tyler","gender":"m","archetype":"loyal-soldier","stats":{"physical":8,"endurance":6,"mental":2,"social":6,"strategic":2,"loyalty":8,"boldness":4,"intuition":4,"temperament":10}},{"name":"Wayne","slug":"wayne","gender":"m","archetype":"social-butterfly","stats":{"physical":8,"endurance":8,"mental":2,"social":8,"strategic":2,"loyalty":10,"boldness":3,"intuition":5,"temperament":10}},{"name":"Zee","slug":"zee","gender":"m","archetype":"social-butterfly","stats":{"physical":6,"endurance":8,"mental":6,"social":8,"strategic":2,"loyalty":8,"boldness":3,"intuition":7,"temperament":10}},{"name":"Zoey","slug":"zoey","gender":"f","archetype":"perceptive-player","stats":{"physical":8,"endurance":8,"mental":8,"social":10,"strategic":6,"loyalty":10,"boldness":4,"intuition":9,"temperament":8}}];
+const FRANCHISE_ROSTER = [{"name":"Alejandro","slug":"alejandro","gender":"m","archetype":"schemer","stats":{"physical":8,"endurance":8,"mental":10,"social":10,"strategic":10,"loyalty":2,"boldness":9,"intuition":10,"temperament":4}},{"name":"Amy","slug":"amy","gender":"f","archetype":"hothead","stats":{"physical":4,"endurance":6,"mental":6,"social":6,"strategic":8,"loyalty":2,"boldness":9,"intuition":6,"temperament":2}},{"name":"Anne Maria","slug":"anne-maria","gender":"f","archetype":"wildcard","stats":{"physical":6,"endurance":4,"mental":4,"social":4,"strategic":4,"loyalty":4,"boldness":7,"intuition":4,"temperament":4}},{"name":"Axel","slug":"axel","gender":"f","archetype":"hothead","stats":{"physical":9,"endurance":8,"mental":4,"social":5,"strategic":4,"loyalty":7,"boldness":6,"intuition":4,"temperament":3}},{"name":"B","slug":"b","gender":"m","archetype":"loyal-soldier","stats":{"physical":6,"endurance":6,"mental":8,"social":2,"strategic":2,"loyalty":10,"boldness":3,"intuition":5,"temperament":10}},{"name":"Beardo","slug":"beardo","gender":"m","archetype":"goat","stats":{"physical":6,"endurance":4,"mental":4,"social":2,"strategic":2,"loyalty":6,"boldness":4,"intuition":3,"temperament":8}},{"name":"Beth","slug":"beth","gender":"f","archetype":"goat","stats":{"physical":4,"endurance":6,"mental":6,"social":4,"strategic":4,"loyalty":6,"boldness":5,"intuition":5,"temperament":6}},{"name":"Blaineley","slug":"blaineley","gender":"f","archetype":"chaos-agent","stats":{"physical":4,"endurance":4,"mental":8,"social":10,"strategic":8,"loyalty":2,"boldness":8,"intuition":9,"temperament":4}},{"name":"Bowie","slug":"bowie","gender":"m","archetype":"mastermind","stats":{"physical":6,"endurance":4,"mental":8,"social":10,"strategic":10,"loyalty":6,"boldness":7,"intuition":9,"temperament":6}},{"name":"Brick","slug":"brick","gender":"m","archetype":"challenge-beast","stats":{"physical":8,"endurance":10,"mental":4,"social":6,"strategic":2,"loyalty":10,"boldness":4,"intuition":5,"temperament":8}},{"name":"Bridgette","slug":"bridgette","gender":"f","archetype":"social-butterfly","stats":{"physical":8,"endurance":8,"mental":6,"social":8,"strategic":2,"loyalty":8,"boldness":4,"intuition":7,"temperament":8}},{"name":"Brightly","slug":"brightly","gender":"nb","archetype":"mastermind","stats":{"physical":4,"endurance":4,"mental":10,"social":6,"strategic":8,"loyalty":6,"boldness":6,"intuition":8,"temperament":6}},{"name":"Brody","slug":"brody","gender":"m","archetype":"social-butterfly","stats":{"physical":10,"endurance":8,"mental":2,"social":10,"strategic":2,"loyalty":10,"boldness":4,"intuition":6,"temperament":8}},{"name":"Caleb","slug":"caleb","gender":"m","archetype":"social-butterfly","stats":{"physical":10,"endurance":8,"mental":6,"social":8,"strategic":6,"loyalty":6,"boldness":7,"intuition":7,"temperament":6}},{"name":"Cameron","slug":"cameron","gender":"m","archetype":"mastermind","stats":{"physical":2,"endurance":4,"mental":10,"social":4,"strategic":8,"loyalty":8,"boldness":5,"intuition":7,"temperament":8}},{"name":"Carrie","slug":"carrie","gender":"f","archetype":"perceptive-player","stats":{"physical":4,"endurance":6,"mental":6,"social":10,"strategic":6,"loyalty":8,"boldness":4,"intuition":8,"temperament":8}},{"name":"Chase","slug":"chase","gender":"m","archetype":"social-butterfly","stats":{"physical":4,"endurance":4,"mental":4,"social":8,"strategic":2,"loyalty":4,"boldness":5,"intuition":6,"temperament":8}},{"name":"Chet","slug":"chet","gender":"m","archetype":"loyal-soldier","stats":{"physical":8,"endurance":6,"mental":4,"social":4,"strategic":2,"loyalty":8,"boldness":5,"intuition":4,"temperament":4}},{"name":"Cody","slug":"cody","gender":"m","archetype":"perceptive-player","stats":{"physical":2,"endurance":4,"mental":10,"social":8,"strategic":4,"loyalty":8,"boldness":4,"intuition":9,"temperament":8}},{"name":"Courtney","slug":"courtney","gender":"f","archetype":"hothead","stats":{"physical":6,"endurance":4,"mental":8,"social":6,"strategic":8,"loyalty":4,"boldness":8,"intuition":7,"temperament":2}},{"name":"Crimson","slug":"crimson","gender":"f","archetype":"loyal-soldier","stats":{"physical":4,"endurance":6,"mental":6,"social":2,"strategic":4,"loyalty":10,"boldness":3,"intuition":4,"temperament":8}},{"name":"DJ","slug":"dj","gender":"m","archetype":"perceptive-player","stats":{"physical":8,"endurance":4,"mental":6,"social":10,"strategic":2,"loyalty":10,"boldness":3,"intuition":8,"temperament":10}},{"name":"Dakota","slug":"dakota","gender":"f","archetype":"social-butterfly","stats":{"physical":4,"endurance":4,"mental":4,"social":8,"strategic":4,"loyalty":6,"boldness":5,"intuition":6,"temperament":6}},{"name":"Damien","slug":"damien","gender":"m","archetype":"underdog","stats":{"physical":2,"endurance":4,"mental":10,"social":6,"strategic":6,"loyalty":8,"boldness":4,"intuition":8,"temperament":8}},{"name":"Dave","slug":"dave","gender":"m","archetype":"floater","stats":{"physical":6,"endurance":4,"mental":8,"social":4,"strategic":4,"loyalty":8,"boldness":6,"intuition":6,"temperament":4}},{"name":"Dawn","slug":"dawn","gender":"f","archetype":"loyal-soldier","stats":{"physical":4,"endurance":4,"mental":8,"social":2,"strategic":2,"loyalty":10,"boldness":2,"intuition":5,"temperament":10}},{"name":"Devin","slug":"devin","gender":"m","archetype":"social-butterfly","stats":{"physical":6,"endurance":6,"mental":4,"social":8,"strategic":4,"loyalty":10,"boldness":4,"intuition":6,"temperament":8}},{"name":"Duncan","slug":"duncan","gender":"m","archetype":"chaos-agent","stats":{"physical":8,"endurance":8,"mental":6,"social":6,"strategic":8,"loyalty":4,"boldness":8,"intuition":6,"temperament":4}},{"name":"Dwayne","slug":"dwayne","gender":"m","archetype":"perceptive-player","stats":{"physical":4,"endurance":8,"mental":6,"social":10,"strategic":2,"loyalty":10,"boldness":2,"intuition":8,"temperament":10}},{"name":"Ella","slug":"ella","gender":"f","archetype":"social-butterfly","stats":{"physical":4,"endurance":6,"mental":4,"social":8,"strategic":4,"loyalty":10,"boldness":3,"intuition":6,"temperament":10}},{"name":"Ellody","slug":"ellody","gender":"f","archetype":"mastermind","stats":{"physical":4,"endurance":4,"mental":10,"social":6,"strategic":10,"loyalty":6,"boldness":7,"intuition":8,"temperament":6}},{"name":"Emma","slug":"emma","gender":"f","archetype":"social-butterfly","stats":{"physical":8,"endurance":8,"mental":4,"social":8,"strategic":6,"loyalty":8,"boldness":6,"intuition":6,"temperament":4}},{"name":"Emmah","slug":"emmah","gender":"f","archetype":"hothead","stats":{"physical":6,"endurance":6,"mental":6,"social":6,"strategic":8,"loyalty":6,"boldness":8,"intuition":6,"temperament":2}},{"name":"Ennui","slug":"ennui","gender":"m","archetype":"loyal-soldier","stats":{"physical":6,"endurance":6,"mental":6,"social":2,"strategic":4,"loyalty":8,"boldness":4,"intuition":4,"temperament":10}},{"name":"Eva","slug":"eva","gender":"f","archetype":"hothead","stats":{"physical":10,"endurance":10,"mental":4,"social":2,"strategic":2,"loyalty":4,"boldness":7,"intuition":3,"temperament":2}},{"name":"Ezekiel","slug":"ezekiel","gender":"m","archetype":"loyal-soldier","stats":{"physical":2,"endurance":4,"mental":2,"social":4,"strategic":6,"loyalty":6,"boldness":5,"intuition":3,"temperament":6}},{"name":"Geoff","slug":"geoff","gender":"m","archetype":"social-butterfly","stats":{"physical":8,"endurance":6,"mental":4,"social":10,"strategic":2,"loyalty":8,"boldness":4,"intuition":7,"temperament":10}},{"name":"Gerry","slug":"gerry","gender":"m","archetype":"floater","stats":{"physical":4,"endurance":2,"mental":6,"social":6,"strategic":6,"loyalty":6,"boldness":6,"intuition":6,"temperament":4}},{"name":"Gwen","slug":"gwen","gender":"f","archetype":"floater","stats":{"physical":6,"endurance":6,"mental":8,"social":6,"strategic":6,"loyalty":8,"boldness":6,"intuition":7,"temperament":4}},{"name":"Harold","slug":"harold","gender":"m","archetype":"floater","stats":{"physical":4,"endurance":4,"mental":10,"social":4,"strategic":6,"loyalty":6,"boldness":6,"intuition":7,"temperament":6}},{"name":"Heather","slug":"heather","gender":"f","archetype":"schemer","stats":{"physical":6,"endurance":6,"mental":8,"social":6,"strategic":10,"loyalty":2,"boldness":9,"intuition":7,"temperament":2}},{"name":"Hicks","slug":"hicks","gender":"m","archetype":"social-butterfly","stats":{"physical":6,"endurance":8,"mental":6,"social":8,"strategic":6,"loyalty":8,"boldness":5,"intuition":7,"temperament":8}},{"name":"Izzy","slug":"izzy","gender":"f","archetype":"wildcard","stats":{"physical":8,"endurance":10,"mental":2,"social":4,"strategic":2,"loyalty":4,"boldness":6,"intuition":3,"temperament":6}},{"name":"Jacques","slug":"jacques","gender":"m","archetype":"schemer","stats":{"physical":8,"endurance":8,"mental":6,"social":8,"strategic":10,"loyalty":2,"boldness":9,"intuition":7,"temperament":4}},{"name":"Jasmine","slug":"jasmine","gender":"f","archetype":"perceptive-player","stats":{"physical":8,"endurance":10,"mental":8,"social":8,"strategic":4,"loyalty":8,"boldness":5,"intuition":8,"temperament":8}},{"name":"Jay","slug":"jay","gender":"m","archetype":"loyal-soldier","stats":{"physical":4,"endurance":4,"mental":6,"social":6,"strategic":4,"loyalty":10,"boldness":3,"intuition":6,"temperament":8}},{"name":"Jen","slug":"jen","gender":"f","archetype":"social-butterfly","stats":{"physical":4,"endurance":6,"mental":6,"social":8,"strategic":4,"loyalty":8,"boldness":4,"intuition":7,"temperament":8}},{"name":"Jo","slug":"jo","gender":"f","archetype":"hothead","stats":{"physical":10,"endurance":10,"mental":6,"social":4,"strategic":8,"loyalty":2,"boldness":10,"intuition":5,"temperament":2}},{"name":"Josee","slug":"josee","gender":"f","archetype":"hothead","stats":{"physical":8,"endurance":8,"mental":6,"social":4,"strategic":6,"loyalty":4,"boldness":8,"intuition":5,"temperament":2}},{"name":"Julia","slug":"julia","gender":"f","archetype":"schemer","stats":{"physical":6,"endurance":8,"mental":6,"social":6,"strategic":10,"loyalty":2,"boldness":9,"intuition":6,"temperament":4}},{"name":"Junior","slug":"junior","gender":"m","archetype":"loyal-soldier","stats":{"physical":4,"endurance":4,"mental":6,"social":6,"strategic":4,"loyalty":8,"boldness":5,"intuition":6,"temperament":6}},{"name":"Justin","slug":"justin","gender":"m","archetype":"chaos-agent","stats":{"physical":6,"endurance":4,"mental":4,"social":10,"strategic":8,"loyalty":2,"boldness":8,"intuition":7,"temperament":4}},{"name":"Katie","slug":"katie","gender":"f","archetype":"loyal-soldier","stats":{"physical":4,"endurance":4,"mental":4,"social":6,"strategic":2,"loyalty":10,"boldness":3,"intuition":5,"temperament":8}},{"name":"Kelly","slug":"kelly","gender":"f","archetype":"schemer","stats":{"physical":4,"endurance":4,"mental":6,"social":8,"strategic":10,"loyalty":2,"boldness":8,"intuition":7,"temperament":4}},{"name":"Kitty","slug":"kitty","gender":"f","archetype":"perceptive-player","stats":{"physical":6,"endurance":6,"mental":8,"social":10,"strategic":6,"loyalty":8,"boldness":5,"intuition":9,"temperament":8}},{"name":"Laurie","slug":"laurie","gender":"f","archetype":"chaos-agent","stats":{"physical":4,"endurance":6,"mental":8,"social":6,"strategic":6,"loyalty":4,"boldness":7,"intuition":7,"temperament":4}},{"name":"Leonard","slug":"leonard","gender":"m","archetype":"goat","stats":{"physical":2,"endurance":2,"mental":4,"social":4,"strategic":2,"loyalty":4,"boldness":5,"intuition":4,"temperament":6}},{"name":"Leshawna","slug":"leshawna","gender":"f","archetype":"social-butterfly","stats":{"physical":8,"endurance":8,"mental":6,"social":8,"strategic":6,"loyalty":8,"boldness":6,"intuition":7,"temperament":4}},{"name":"Lightning","slug":"lightning","gender":"m","archetype":"wildcard","stats":{"physical":10,"endurance":8,"mental":2,"social":4,"strategic":4,"loyalty":2,"boldness":8,"intuition":3,"temperament":4}},{"name":"Lindsay","slug":"lindsay","gender":"f","archetype":"social-butterfly","stats":{"physical":4,"endurance":6,"mental":2,"social":8,"strategic":2,"loyalty":8,"boldness":4,"intuition":5,"temperament":8}},{"name":"Lorenzo","slug":"lorenzo","gender":"m","archetype":"hothead","stats":{"physical":6,"endurance":6,"mental":4,"social":6,"strategic":4,"loyalty":4,"boldness":7,"intuition":5,"temperament":2}},{"name":"MK","slug":"mk","gender":"f","archetype":"schemer","stats":{"physical":4,"endurance":4,"mental":8,"social":4,"strategic":10,"loyalty":2,"boldness":7,"intuition":6,"temperament":8}},{"name":"MacArthur","slug":"macarthur","gender":"f","archetype":"challenge-beast","stats":{"physical":10,"endurance":8,"mental":4,"social":6,"strategic":6,"loyalty":6,"boldness":7,"intuition":5,"temperament":4}},{"name":"Mary","slug":"mary","gender":"f","archetype":"mastermind","stats":{"physical":4,"endurance":4,"mental":10,"social":6,"strategic":8,"loyalty":8,"boldness":4,"intuition":8,"temperament":10}},{"name":"Max","slug":"max","gender":"m","archetype":"chaos-agent","stats":{"physical":4,"endurance":4,"mental":4,"social":4,"strategic":2,"loyalty":2,"boldness":6,"intuition":4,"temperament":4}},{"name":"Mickey","slug":"mickey","gender":"m","archetype":"mastermind","stats":{"physical":4,"endurance":4,"mental":10,"social":6,"strategic":8,"loyalty":10,"boldness":5,"intuition":8,"temperament":6}},{"name":"Mike","slug":"mike","gender":"m","archetype":"social-butterfly","stats":{"physical":6,"endurance":6,"mental":6,"social":8,"strategic":4,"loyalty":8,"boldness":5,"intuition":7,"temperament":6}},{"name":"Miles","slug":"miles","gender":"f","archetype":"loyal-soldier","stats":{"physical":4,"endurance":8,"mental":6,"social":6,"strategic":4,"loyalty":8,"boldness":3,"intuition":6,"temperament":10}},{"name":"Millie","slug":"millie","gender":"f","archetype":"underdog","stats":{"physical":4,"endurance":2,"mental":10,"social":4,"strategic":6,"loyalty":8,"boldness":5,"intuition":7,"temperament":6}},{"name":"Nichelle","slug":"nichelle","gender":"f","archetype":"social-butterfly","stats":{"physical":4,"endurance":4,"mental":6,"social":8,"strategic":2,"loyalty":6,"boldness":5,"intuition":7,"temperament":4}},{"name":"Noah","slug":"noah","gender":"m","archetype":"floater","stats":{"physical":2,"endurance":4,"mental":10,"social":4,"strategic":6,"loyalty":6,"boldness":6,"intuition":7,"temperament":4}},{"name":"Owen","slug":"owen","gender":"m","archetype":"social-butterfly","stats":{"physical":8,"endurance":4,"mental":2,"social":10,"strategic":2,"loyalty":10,"boldness":3,"intuition":6,"temperament":10}},{"name":"Pete","slug":"pete","gender":"m","archetype":"loyal-soldier","stats":{"physical":6,"endurance":6,"mental":6,"social":4,"strategic":8,"loyalty":6,"boldness":7,"intuition":5,"temperament":4}},{"name":"Priya","slug":"priya","gender":"f","archetype":"mastermind","stats":{"physical":10,"endurance":8,"mental":10,"social":6,"strategic":8,"loyalty":6,"boldness":7,"intuition":8,"temperament":6}},{"name":"Raj","slug":"raj","gender":"m","archetype":"challenge-beast","stats":{"physical":8,"endurance":8,"mental":2,"social":6,"strategic":2,"loyalty":10,"boldness":3,"intuition":4,"temperament":10}},{"name":"Ripper","slug":"ripper","gender":"m","archetype":"chaos-agent","stats":{"physical":8,"endurance":6,"mental":2,"social":4,"strategic":4,"loyalty":4,"boldness":6,"intuition":3,"temperament":6}},{"name":"Rock","slug":"rock","gender":"m","archetype":"social-butterfly","stats":{"physical":6,"endurance":6,"mental":4,"social":8,"strategic":4,"loyalty":8,"boldness":5,"intuition":6,"temperament":6}},{"name":"Rodney","slug":"rodney","gender":"m","archetype":"challenge-beast","stats":{"physical":8,"endurance":8,"mental":2,"social":4,"strategic":2,"loyalty":8,"boldness":4,"intuition":3,"temperament":8}},{"name":"Ryan","slug":"ryan","gender":"m","archetype":"challenge-beast","stats":{"physical":10,"endurance":8,"mental":4,"social":6,"strategic":4,"loyalty":8,"boldness":5,"intuition":5,"temperament":8}},{"name":"Sadie","slug":"sadie","gender":"f","archetype":"loyal-soldier","stats":{"physical":4,"endurance":4,"mental":4,"social":6,"strategic":2,"loyalty":10,"boldness":2,"intuition":5,"temperament":10}},{"name":"Sam","slug":"sam","gender":"m","archetype":"loyal-soldier","stats":{"physical":4,"endurance":2,"mental":8,"social":6,"strategic":2,"loyalty":10,"boldness":2,"intuition":7,"temperament":10}},{"name":"Samey","slug":"samey","gender":"f","archetype":"loyal-soldier","stats":{"physical":4,"endurance":6,"mental":6,"social":6,"strategic":4,"loyalty":10,"boldness":3,"intuition":6,"temperament":8}},{"name":"Sanders","slug":"sanders","gender":"f","archetype":"challenge-beast","stats":{"physical":8,"endurance":10,"mental":8,"social":6,"strategic":6,"loyalty":10,"boldness":4,"intuition":7,"temperament":10}},{"name":"Scarlett","slug":"scarlett","gender":"f","archetype":"schemer","stats":{"physical":4,"endurance":6,"mental":10,"social":6,"strategic":10,"loyalty":2,"boldness":9,"intuition":8,"temperament":2}},{"name":"Scary Girl","slug":"scary-girl","gender":"f","archetype":"wildcard","stats":{"physical":8,"endurance":8,"mental":4,"social":2,"strategic":2,"loyalty":4,"boldness":7,"intuition":3,"temperament":2}},{"name":"Scott","slug":"scott","gender":"m","archetype":"schemer","stats":{"physical":6,"endurance":8,"mental":8,"social":4,"strategic":10,"loyalty":2,"boldness":9,"intuition":6,"temperament":4}},{"name":"Shawn","slug":"shawn","gender":"m","archetype":"challenge-beast","stats":{"physical":8,"endurance":10,"mental":6,"social":4,"strategic":4,"loyalty":6,"boldness":6,"intuition":5,"temperament":4}},{"name":"Sierra","slug":"sierra","gender":"f","archetype":"loyal-soldier","stats":{"physical":6,"endurance":8,"mental":6,"social":4,"strategic":6,"loyalty":10,"boldness":5,"intuition":5,"temperament":4}},{"name":"Sky","slug":"sky","gender":"f","archetype":"challenge-beast","stats":{"physical":10,"endurance":10,"mental":8,"social":6,"strategic":6,"loyalty":6,"boldness":6,"intuition":7,"temperament":8}},{"name":"Spud","slug":"spud","gender":"m","archetype":"social-butterfly","stats":{"physical":4,"endurance":4,"mental":2,"social":8,"strategic":2,"loyalty":8,"boldness":3,"intuition":5,"temperament":10}},{"name":"Staci","slug":"staci","gender":"f","archetype":"loyal-soldier","stats":{"physical":2,"endurance":2,"mental":2,"social":2,"strategic":2,"loyalty":8,"boldness":3,"intuition":2,"temperament":10}},{"name":"Stephanie","slug":"stephanie","gender":"f","archetype":"hothead","stats":{"physical":8,"endurance":8,"mental":6,"social":6,"strategic":6,"loyalty":4,"boldness":8,"intuition":6,"temperament":2}},{"name":"Sugar","slug":"sugar","gender":"f","archetype":"hothead","stats":{"physical":6,"endurance":8,"mental":4,"social":6,"strategic":8,"loyalty":2,"boldness":9,"intuition":5,"temperament":2}},{"name":"Tammy","slug":"tammy","gender":"f","archetype":"loyal-soldier","stats":{"physical":4,"endurance":4,"mental":4,"social":4,"strategic":2,"loyalty":8,"boldness":4,"intuition":4,"temperament":8}},{"name":"Taylor","slug":"taylor","gender":"f","archetype":"hothead","stats":{"physical":4,"endurance":4,"mental":6,"social":10,"strategic":8,"loyalty":2,"boldness":9,"intuition":8,"temperament":2}},{"name":"Tom","slug":"tom","gender":"m","archetype":"social-butterfly","stats":{"physical":8,"endurance":8,"mental":4,"social":8,"strategic":4,"loyalty":10,"boldness":3,"intuition":6,"temperament":10}},{"name":"Topher","slug":"topher","gender":"m","archetype":"chaos-agent","stats":{"physical":4,"endurance":6,"mental":6,"social":8,"strategic":6,"loyalty":2,"boldness":8,"intuition":7,"temperament":4}},{"name":"Trent","slug":"trent","gender":"m","archetype":"social-butterfly","stats":{"physical":6,"endurance":6,"mental":6,"social":8,"strategic":4,"loyalty":8,"boldness":4,"intuition":7,"temperament":8}},{"name":"Tyler","slug":"tyler","gender":"m","archetype":"loyal-soldier","stats":{"physical":8,"endurance":6,"mental":2,"social":6,"strategic":2,"loyalty":8,"boldness":4,"intuition":4,"temperament":10}},{"name":"Wayne","slug":"wayne","gender":"m","archetype":"social-butterfly","stats":{"physical":8,"endurance":8,"mental":2,"social":8,"strategic":2,"loyalty":10,"boldness":3,"intuition":5,"temperament":10}},{"name":"Zee","slug":"zee","gender":"m","archetype":"social-butterfly","stats":{"physical":6,"endurance":8,"mental":6,"social":8,"strategic":2,"loyalty":8,"boldness":3,"intuition":7,"temperament":10}},{"name":"Zoey","slug":"zoey","gender":"f","archetype":"perceptive-player","stats":{"physical":8,"endurance":8,"mental":8,"social":10,"strategic":6,"loyalty":10,"boldness":4,"intuition":9,"temperament":8}}];
 
 // ── Franchise Roster Search ───────────────────────────────────────────
 let rosterHighlight = -1;
@@ -1378,7 +1389,13 @@ function loadS10Preset() {
 }
 function loadS9Preset() {
   if (players.length>0 && !confirm('Replace cast with S9 Land of Powers (18 newbies)?')) return;
-  players = S9_PRESET.map((p,i) => ({...p, id:'s9-'+i})); saveCast(); cancelEdit(); renderCast();
+  const rosterMap = Object.fromEntries(FRANCHISE_ROSTER.map(p => [p.name, p]));
+  players = S9_TRIBES.map((t,i) => {
+    const r = rosterMap[t.name];
+    if (!r) { console.warn('S9 preset: missing roster entry for', t.name); return null; }
+    return { ...r, tribe: t.tribe, id: 's9-'+i };
+  }).filter(Boolean);
+  saveCast(); cancelEdit(); renderCast();
 }
 function exportCast() {
   const blob = new Blob([JSON.stringify(players,null,2)],{type:'application/json'});
@@ -2044,6 +2061,31 @@ function buildVoteReason(voter, target, type, ctx = {}) {
     ]);
   }
 
+  if (type === 'spearhead-defect') {
+    // Bloc leader who sent their alliance one way and privately voted elsewhere
+    const { myAlliance, underlyingReason } = ctx;
+    const stated = myAlliance?.target || '?';
+    const base = underlyingReason || 'a personal read';
+    if (voterS.strategic >= 8) return pick([
+      `told ${myAlliance?.label || 'the group'} to vote ${stated} — cast a completely different ballot`,
+      `ran the plan, then used the cover to quietly eliminate ${target}`,
+      `the alliance voted where they were pointed; ${voter} had a different endgame in mind`,
+      `publicly committed to ${stated}, privately chose ${target} — both agendas ran simultaneously`,
+    ]);
+    if (voterS.boldness >= 7) return pick([
+      `sent the bloc after ${stated} and slipped a personal vote to ${target} under the chaos`,
+      `the stated plan was ${stated} — the real plan was ${target}`,
+      `two targets this tribal: the one they told everyone about, and this one`,
+      `bold move — led the alliance one direction, stepped aside at the last second`,
+    ]);
+    return pick([
+      `stated plan was ${stated}, actual vote was ${target} — ${base}`,
+      `broke from their own bloc at the last moment — ${base}`,
+      `the group followed the plan; ${voter} didn't`,
+      `went to tribal with a plan, left it at the urn — voted ${target} instead`,
+    ]);
+  }
+
   if (type === 'conflict-flip') {
     const { conflictAlliance, myAlliance } = ctx;
     const cLabel = conflictAlliance?.label || 'another group';
@@ -2256,10 +2298,20 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
             target = wRandom(candidates, t => Math.max(0.1, threatScore(t) - getBond(voter, t)));
           }
           const bond = getBond(voter, target);
-          if (resistsBond && allianceTarget) reason = buildVoteReason(voter, target, 'protect-bond', { allianceTarget });
-          else if (bond <= -1) reason = buildVoteReason(voter, target, 'personal', { phase: gs.phase });
-          else if (gs.phase === 'pre-merge') reason = buildVoteReason(voter, target, 'challenge-liability', { cLabel: myAlliance?.challengeLabel, phase: gs.phase });
-          else reason = buildVoteReason(voter, target, 'threat', { voterS: s });
+          // Pick the underlying reason first
+          let underlyingType, underlyingCtx;
+          if (resistsBond && allianceTarget)  { underlyingType = 'protect-bond';        underlyingCtx = { allianceTarget }; }
+          else if (bond <= -1)                { underlyingType = 'personal';            underlyingCtx = { phase: gs.phase }; }
+          else if (gs.phase === 'pre-merge')  { underlyingType = 'challenge-liability'; underlyingCtx = { cLabel: myAlliance?.challengeLabel, phase: gs.phase }; }
+          else                                { underlyingType = 'threat';              underlyingCtx = { voterS: s }; }
+          // If this player is the spearheader of their bloc and is defecting from their own stated target, wrap with spearhead-defect narrative
+          const isSpearheader = myAlliance && myAlliance.members[0] === voter && allianceTarget && target !== allianceTarget;
+          if (isSpearheader) {
+            const underlyingReason = buildVoteReason(voter, target, underlyingType, underlyingCtx);
+            reason = buildVoteReason(voter, target, 'spearhead-defect', { myAlliance, underlyingReason });
+          } else {
+            reason = buildVoteReason(voter, target, underlyingType, underlyingCtx);
+          }
         } else {
           target = allianceTarget;
           reason = 'no other options';
@@ -2432,6 +2484,36 @@ function updateBonds(votingLog, eliminated, alliances) {
       });
     }
   }
+
+  // Spearheader defection: bloc leader votes differently from their own bloc's stated target
+  // The bloc members followed the plan — the leader secretly went elsewhere
+  alliances.forEach(alliance => {
+    if (!alliance.target || !alliance.members?.length) return;
+    const spear = alliance.members[0];
+    const spearEntry = votingLog.find(l => l.voter === spear);
+    if (!spearEntry || spearEntry.voted === alliance.target) return; // voted as planned — no issue
+
+    // Spearheader defected from their own bloc
+    const actualTarget = spearEntry.voted;
+
+    // Bond hit with the person they unexpectedly voted for
+    if (gs.activePlayers.includes(actualTarget)) {
+      addBond(spear, actualTarget, -1.5);
+      changes.push({ a:spear, b:actualTarget, delta:-1.5, reason:'voted against unexpectedly (bloc defection)' });
+    }
+
+    // Bond hit with loyal bloc members who followed the stated plan (they were misled)
+    const loyalFollowers = alliance.members.slice(1).filter(m =>
+      votingLog.find(l => l.voter === m && l.voted === alliance.target) && gs.activePlayers.includes(m)
+    );
+    loyalFollowers.forEach(m => {
+      addBond(spear, m, -1.2);
+      changes.push({ a:spear, b:m, delta:-1.2, reason:'misled ally (deviated from own bloc)' });
+    });
+
+    // Tag votingLog entry so updatePlayerStates counts it as a big move
+    spearEntry.reason = (spearEntry.reason ? spearEntry.reason + ' — ' : '') + 'broke own bloc';
+  });
 
   return changes;
 }
@@ -4919,7 +5001,17 @@ function generateSummaryText(ep) {
   else ln('Post-merge episode. Individual immunity challenge.');
 
   // TRIBE STATUS — per tribe (advantages only; relationships shown after camp events)
-  const tribeGroups = gs.phase === 'pre-merge' && gs.tribes.length ? gs.tribes : [{ name: 'merged', members: [...gs.activePlayers] }];
+  let tribeGroups;
+  if (gs.phase === 'pre-merge' && gs.tribes.length) {
+    // Deep-copy tribes and reattach any active player orphaned from gs.tribes (stale localStorage edge case)
+    tribeGroups = gs.tribes.map(t => ({ ...t, members: [...t.members] }));
+    const inTribe = new Set(tribeGroups.flatMap(t => t.members));
+    gs.activePlayers.filter(n => !inTribe.has(n)).forEach(n => {
+      tribeGroups.sort((a,b) => a.members.length - b.members.length)[0].members.push(n);
+    });
+  } else {
+    tribeGroups = [{ name: 'merged', members: [...gs.activePlayers] }];
+  }
   tribeGroups.forEach(tribe => {
     const isMerge = tribe.name === 'merged';
     sec(`TRIBE STATUS${isMerge ? '' : ' \u2014 ' + tribe.name.toUpperCase()}`);
@@ -5824,6 +5916,15 @@ function initGameState() {
   });
 
   const tribeList = Object.entries(tribeMap).map(([name,members]) => ({name, members:[...members]}));
+
+  // Any player with no tribe property gets added to the smallest tribe so nobody is orphaned
+  if (tribeList.length) {
+    players.forEach(p => {
+      if (p.tribe) return;
+      tribeList.sort((a,b) => a.members.length - b.members.length)[0].members.push(p.name);
+    });
+  }
+
   const idolSlots = {};
   if (seasonConfig.advantages?.idol?.enabled) tribeList.forEach(t => { idolSlots[t.name] = true; });
 
@@ -6831,7 +6932,7 @@ function vpBuildOverview(ep) {
     const foodMax = 500, waterMax = 600;
     html += `<div class="vp-card" style="margin-bottom:20px">
       <div class="vp-tribe-bar" style="background:${tc}"></div>
-      <div style="font-size:16px;font-weight:700;color:${tc};margin-bottom:14px">${tribe.name}</div>
+      <div style="font-size:18px;font-weight:800;color:${tc};margin-bottom:16px;letter-spacing:0.3px">${tribe.name} <span style="font-size:11px;color:#3a5070;font-weight:600">${tribe.members.length} players</span></div>
       <div class="vp-resource-row">
         <div class="vp-resource">
           <div class="vp-res-label">Food Supply</div>
@@ -6845,8 +6946,8 @@ function vpBuildOverview(ep) {
         </div>
       </div>
       <div class="vp-player-grid">
-        ${tribe.members.map(name => `<div class="vp-player-tile">
-          ${vpAvatar(name, 48, tc)}
+        ${tribe.members.map(name => `<div class="vp-player-tile" style="border-color:${tc}22">
+          ${vpAvatar(name, 60, tc)}
           <div class="vp-player-name">${name}</div>
           <div class="vp-player-arch">${vpArchLabel(name)}</div>
         </div>`).join('')}
@@ -6887,11 +6988,11 @@ function vpBuildChallenge(ep) {
     });
     html += `</div>`;
   } else if (winner) {
-    html += `<div class="vp-card" style="text-align:center;padding:28px">
-      ${vpAvatar(winner, 72, '#10b981')}
-      <div style="font-size:20px;font-weight:800;color:#10b981;margin:12px 0 4px">${winner}</div>
-      <div style="font-size:12px;color:#64748b">${vpArchLabel(winner)}</div>
-      <div style="font-size:11px;font-weight:700;color:#10b981;margin-top:10px">🏆 IMMUNITY WINNER</div>
+    html += `<div class="vp-card" style="text-align:center;padding:36px 28px;background:radial-gradient(ellipse at 50% 30%,rgba(16,185,129,0.08) 0%,transparent 65%);border-color:rgba(16,185,129,0.25)">
+      ${vpAvatar(winner, 80, '#10b981')}
+      <div style="font-size:24px;font-weight:800;color:#10b981;margin:14px 0 5px;font-family:Georgia,serif">${winner}</div>
+      <div style="font-size:11px;color:#3a5070;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px">${vpArchLabel(winner)}</div>
+      <div style="font-size:10px;font-weight:800;letter-spacing:2.5px;color:#10b981;text-transform:uppercase">🏆 Immunity Winner</div>
     </div>`;
   }
 
@@ -7216,86 +7317,63 @@ function vpBuildVoteReveal(ep) {
   const votes = ep.votes || {};
   const totalVotes = Object.values(votes).reduce((a,b)=>a+b,0);
   const elim = ep.eliminated;
-  const elimVotes = votes[elim] || 0;
   const sortedVotes = Object.entries(votes).sort(([,a],[,b]) => b-a);
   const isBlindside = elim && pStats(elim).strategic >= 7;
-  const placement = (gs.eliminated?.length || 0) + (gs.riPlayers?.length || 0) + (gs.activePlayers?.length || 0);
 
   const elimQuote = vpGenerateQuote(elim || '', ep, 'wrong_side');
 
   let html = `<div class="vp-page">
-    <div class="vp-ep-label">Episode ${ep.num} · Bloodfire</div>
-    <div class="vp-title">The Vote</div>
-    <div class="vp-subtitle">When the votes speak, one must go.</div>
-    <div class="vp-vote-layout">
-      <div>
-        <div class="vp-section-label">Vote Reveals</div>
-        <div class="vp-vote-reveals">`;
+    <div class="vp-ep-label">Episode ${ep.num} · The Vote</div>
+    <div class="vp-title">Bloodfire</div>
+    <div class="vp-subtitle">The votes are read. One torch is snuffed.</div>
+    <div class="vp-divider"></div>`;
 
-  vlog.forEach(({ voter, voted }) => {
-    html += `<div class="vp-vote-reveal-row">
-      <div>${vpMiniAvatar(voter)}<div class="vp-vote-reveal-name">${voter}</div></div>
-      <div class="vp-vote-arrow">→</div>
-      <div>${vpMiniAvatar(voted)}<div class="vp-vote-reveal-target">${voted}</div></div>
-    </div>`;
-  });
+  // Parchment vote cards
+  if (vlog.length) {
+    html += `<div class="vp-section-label">The Votes</div>
+    <div class="vp-vote-parchments">`;
+    vlog.forEach(({ voter, voted }) => {
+      html += `<div class="vp-parchment">
+        <div class="vp-parchment-voter">${voter}</div>
+        <div class="vp-parchment-arrow">↓</div>
+        <div>${vpMiniAvatar(voted)}</div>
+        <div class="vp-parchment-target">${voted}</div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
 
-  html += `</div></div>
-      <div>
-        <div class="vp-section-label">Live Tally</div>
-        <div class="vp-tally">`;
-
-  sortedVotes.forEach(([name, v]) => {
-    html += `<div class="vp-tally-row ${name === elim ? 'eliminated' : ''}">
-      ${vpMiniAvatar(name)}
-      <div style="flex:1"><div class="vp-tally-name">${name}</div><div class="vp-tally-arch">${vpArchLabel(name)}</div></div>
-      <div style="text-align:right"><div class="vp-tally-count">${v}</div><div class="vp-tally-label">${v === 1 ? 'vote' : 'votes'}</div></div>
-    </div>`;
-  });
-
-  html += `</div></div></div>`;
-
-  // Results block
-  html += `<div class="vp-section-label" style="margin-top:24px">Episode ${ep.num} Results</div>
-    <div style="font-size:12px;color:#475569;margin-bottom:12px">${totalVotes} votes cast</div>
-    <div class="vp-elim-result">`;
-
+  // Live tally with bars
+  html += `<div class="vp-section-label">Live Tally</div>
+    <div class="vp-tally">`;
   sortedVotes.forEach(([name, v]) => {
     const pct = Math.round((v / Math.max(1, totalVotes)) * 100);
-    const tribe = players.find(p => p.name === name)?.tribe || '';
-    html += `<div class="vp-elim-result-row ${name === elim ? 'eliminated' : 'safe'}">
-      <div style="display:flex;align-items:center;gap:10px">
-        ${vpMiniAvatar(name)}
-        <div>
-          <div class="vp-elim-result-name ${name === elim ? 'eliminated' : ''}">${name}${name === elim ? ' — Eliminated' : ''}</div>
-          <div class="vp-elim-result-meta">${vpArchLabel(name)}${tribe ? ' · ' + tribe : ''}</div>
-        </div>
+    const barColor = name === elim ? '#ef4444' : '#2d4870';
+    html += `<div class="vp-tally-row ${name === elim ? 'eliminated' : ''}">
+      ${vpMiniAvatar(name)}
+      <div style="flex:1;min-width:0">
+        <div class="vp-tally-name">${name}</div>
       </div>
-      <div style="text-align:right">
-        <div style="display:flex;align-items:center;gap:8px">
-          <div class="vp-elim-result-votes">${v}</div>
-          ${name === elim ? `<span class="vp-blindside-tag ${isBlindside ? 'blindside' : 'expected'}">${isBlindside ? 'BLINDSIDE' : 'EXPECTED'}</span>` : ''}
-        </div>
-        <div class="vp-elim-result-pct">${pct}%</div>
+      <div class="vp-tally-bar-bg"><div class="vp-tally-bar-fill" style="width:${pct}%;background:${barColor}"></div></div>
+      <div style="text-align:right;min-width:32px">
+        <div class="vp-tally-count" style="color:${name===elim?'#ef4444':'#dce8f5'}">${v}</div>
       </div>
+      ${name === elim ? `<span class="vp-blindside-tag ${isBlindside?'blindside':'expected'}">${isBlindside?'BLINDSIDE':'EXPECTED'}</span>` : ''}
     </div>`;
   });
-
   html += `</div>`;
 
-  // Elimination card
+  // Elimination spotlight
   if (elim) {
     const allElim = [...(gs.eliminated||[]), ...(gs.riPlayers||[])];
     const place = gs.activePlayers.length + allElim.length;
-    html += `<div class="vp-elim-card">
-      ${vpAvatar(elim, 72, '#ef4444')}
-      <div style="flex:1">
-        <div class="vp-elim-label">Eliminated</div>
-        <div class="vp-elim-name">${elim}</div>
-        <div class="vp-elim-arch">${vpArchLabel(elim)}</div>
-        <div class="vp-elim-quote">${elimQuote}</div>
-        <div class="vp-elim-placement">Placement: ${ordinal(place)}</div>
-      </div>
+    html += `<div class="vp-elim-spotlight">
+      <div class="vp-spotlight-eyebrow">The ${ordinal(place)} player voted out</div>
+      ${vpAvatar(elim, 88, '#ef4444')}
+      <div class="vp-spotlight-name">${elim}</div>
+      <div class="vp-spotlight-arch">${vpArchLabel(elim)}</div>
+      <div class="vp-spotlight-quote">${elimQuote}</div>
+      <div class="vp-spotlight-placement">${ordinal(place)} Place</div>
     </div>`;
   }
 

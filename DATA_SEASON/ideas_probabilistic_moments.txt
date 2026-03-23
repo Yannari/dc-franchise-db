@@ -1,0 +1,222 @@
+PROBABILISTIC MOMENTS — BACKLOG
+================================
+Ideas for future simulator events. Each entry has a trigger, a probability driver,
+and the downstream consequence. None are guaranteed — all fire on a roll.
+
+[DONE] #7 Last-Second Idol Share — implemented. Includes flush plant (schemer scares
+  holder into wasting it) and give & betray (holder hands idol to schemer, gets voted out).
+
+
+── RELATIONSHIPS ──────────────────────────────────────────────────────────────
+
+[B] NON-MUTUAL RELATIONSHIP (one-sided bond)
+Trigger: Player A has bond >= 4 with B but B has low loyalty (<= 3) AND
+  B is in a rival alliance that doesn't include A
+Roll: passive — detected each episode, not a one-time event
+What happens: A genuinely trusts B and won't vote them out, but B feels no
+  such obligation. The asymmetry grows over time — A makes defensive decisions
+  to protect B, B uses A as a shield. Eventually B votes A out and A is
+  blindsided because they never saw it coming.
+Priority: MEDIUM — high drama but needs an architectural decision first.
+Architectural note: current bonds are SYMMETRIC (bKey sorts names, single value
+  for both directions). Non-mutual relationships need either:
+  Option 1 — Directional bonds: gs.bonds stores A→B and B→A separately.
+    Major refactor but unlocks this and many other asymmetric dynamics.
+  Option 2 — Perceived bond overlay: gs.perceivedBonds[A][B] = how much A
+    THINKS the bond is worth. Doesn't change B's actual loyalty, just A's
+    decision-making. Smaller change, achieves the illusion effect.
+  Recommend Option 2 as a first pass.
+Mechanic (Option 2):
+  - Each episode: if A has bond >= 4 with B AND B's loyalty <= 3, there's a
+    ~15% chance A's perceived bond overshoots reality by +1 to +2
+  - A's vote logic uses perceivedBond(A→B) instead of actual bond for
+    willingness-to-vote-B calculations
+  - When B votes A out: A's perceivedBond collapses to actual bond — massive
+    emotional fallout (camp event next episode, bond drop with B's allies)
+  - Generates a camp event when the illusion cracks: "A thought they knew where
+    they stood. The vote told a different story."
+
+
+── CAMP / PRE-TRIBAL ──────────────────────────────────────────────────────────
+
+[1] PARANOIA SPIRAL
+Trigger: player with emotional state 'paranoid' + strategic >= 7
+Roll: ~15-30% per episode
+What happens: player convinces themselves a real ally is plotting against them,
+  confronts them or starts quietly campaigning against them — even though the ally
+  was loyal. Creates a self-fulfilling prophecy: the accused ally actually flips now.
+Mechanic: generates a camp event, forces a bond drop between the two, and nudges
+  the accused ally's vote away from the paranoid player's preferred target.
+
+[2] SOCIAL BOMB / FAUX PAS
+Trigger: player with temperament <= 3 or boldness >= 8
+Roll: ~10-20% per episode
+What happens: player says something that lands badly at camp — offensive, arrogant,
+  or just tone-deaf. Everyone who witnesses it takes a bond hit with them.
+Mechanic: all tribemates take -0.5 to -1.5 bond with that player depending on their
+  own social stat (high social = more offended). Camp event generated. Increases
+  their vote heat for that tribal.
+
+[3] OVERPLAYING AT TRIBAL
+Trigger: player with strategic >= 8 + paranoid or desperate emotional state
+Roll: ~20% when they are NOT the top vote-getter
+What happens: player starts whispering too much at tribal council, makes side deals
+  visible to everyone, alerts the majority. Votes switch onto them mid-tribal.
+Mechanic: a portion of votes that were going to the original target redirect to the
+  overplayer. Can cause an unexpected boot. Generates a WHY THIS VOTE HAPPENED note.
+
+[4] INFORMATION BROKER
+Trigger: player with social >= 8 + loyalty <= 4, game has 2 active named alliances
+Roll: ~25% once per game (not per episode)
+What happens: player starts feeding intel to both sides simultaneously. While active,
+  they gain a "broker" status flag that boosts their social standing but increases
+  betrayal risk. The broker gets exposed when both alliances compare notes — usually
+  at a merge or swap — causing a massive bond collapse with everyone who trusted them.
+Mechanic: flag persists across episodes, escalating exposure risk each ep. Blowup
+  generates a camp event and tanks bonds with both alliances at once.
+
+[5] STOLEN CREDIT
+Trigger: a "big move" vote happens (underdog wins, alliance crack, blindside)
+Roll: ~20% if there's a player with boldness >= 8 who wasn't the orchestrator
+What happens: the bold player takes loud public credit for the move at camp or in
+  confessional, overshadowing the actual architect. Architect takes a resentment hit.
+  Jury respect shifts toward the credit-stealer even though they didn't do the work.
+Mechanic: bond hit between orchestrator and credit-stealer. Jury perception adjusted.
+  Generates a camp event. Relevant at FTC if both are finalists.
+
+[6] FALSE IDOL PLANT
+Trigger: player with strategic >= 8 is actively being targeted AND an idol search is in progress
+Roll: ~15%
+What happens: player crafts a fake idol and plants it in an obvious location.
+  A searching player finds it and believes it's real. If they bring it to tribal and
+  play it, it's revealed as fake — humiliating and they lose credibility.
+Mechanic: gs.fakeIdols[] entry created. If played at tribal: no votes negated,
+  a camp event generated next episode, bond collapse between fake-idol-holder and everyone.
+
+
+── TRIBAL / VOTE ──────────────────────────────────────────────────────────────
+
+[8] VOTE MISCOMMUNICATION
+Trigger: alliance with 3+ members, one member has mental <= 4 or social <= 3
+Roll: ~10-15% per tribal that alliance votes together
+What happens: one member of the alliance votes the wrong name — miscounted the
+  split, misheard the plan, or changed their mind last second without telling anyone.
+  Can accidentally send the wrong person home or break up a split vote.
+Mechanic: that player's vote is randomly redirected. If it changes the outcome, the
+  incident is noted in WHY THIS VOTE HAPPENED. Alliance cracks afterward.
+
+[9] TRIBAL COUNCIL BLOWUP
+Trigger: player who is definitely going home (>= 60% of votes) with boldness >= 8
+Roll: ~30-40%
+What happens: the player being voted out blows up everyone's game at tribal —
+  reads out alliance names, calls out side deals, outs an idol holder. Information
+  becomes public and scrambles the next episode's dynamics significantly.
+Mechanic: gs.publicKnowledge entries created for whatever they reveal. Bond hits for
+  everyone they called out. Camp event in the aftermath. Next episode vote heat
+  redistributed based on what was exposed.
+
+
+── POST-MERGE / JURY ──────────────────────────────────────────────────────────
+
+[10] THE GOAT MUTINY
+Trigger: 2 players both identified as "goats" (archetype = goat OR threat score <= 2)
+  are on the same tribe/merge group, ep >= 8
+Roll: ~20% once per game
+What happens: the two goats realize they're being dragged along and quietly decide
+  to blow up the game. They form a surprise alliance, pull in a swing vote, and take
+  out a top player. Bond between the two goats maxes out. Everyone else is rattled.
+Mechanic: forced allianceForm event between the two goats, boosted vote heat on the
+  highest-threat player that tribal. Generates a camp event with a specific goat-mutiny
+  narrative frame.
+
+[11] JURY BITTER CASCADE
+Trigger: player on jury with very negative bond (<= -4) toward a finalist
+Roll: ~25-40% during FTC phase depending on jury bitterness levels
+What happens: the bitter juror's speech is so venomous it poisons other jurors who
+  were on the fence. Some previously-leaning jurors shift their votes away from the
+  targeted finalist.
+Mechanic: during FTC resolution, if the bitter juror fires, 1-2 nearby jurors
+  (sorted by bond) shift their vote to the other finalist. Can flip the winner.
+  Already partially tracked via gs.jurorHistory — would read from that.
+
+[12] IDOL INHERITANCE
+Trigger: player is voted out with an unplayed idol
+Roll: ~40% (should feel likely — idols are valuable, production might re-hide)
+What happens: the idol doesn't just disappear — it gets passed (narratively) to
+  the voted-out player's closest active ally as a hidden inheritance, OR it gets
+  re-hidden on the same tribe. Two outcomes with different roll weights.
+  Ally inheritance: ~60% of the 40%. Re-hide: ~40% of the 40%.
+Mechanic: if inheritance fires, gs.advantages gets a new entry for the ally with
+  a flag `fromInheritance: true`. Generates a post-tribal camp event.
+
+[13] CHALLENGE THROW DETECTED
+Trigger: player intentionally threw a challenge (already a mechanic or archetype)
+Roll: ~25% chance a perceptive tribemate (intuition >= 7) notices
+What happens: the observant player calls out the thrower at camp or in confessional.
+  Trust collapses between them. The tribe starts questioning whether to keep someone
+  who isn't trying.
+Mechanic: generates a camp event, bond hit between the thrower and the caller-outer,
+  and adds heat to the thrower for the next tribal council.
+
+[14] REWARD TRIP BONDING BACKFIRE
+Trigger: reward challenge with 2-3 winners who go on a trip together
+Roll: ~15% if one of the winners has a high-bond pair OUTSIDE the reward group
+What happens: players left behind see the reward group return close and happy, and
+  start to panic. The excluded players form a counter-alliance specifically to break
+  up the reward bonds. Creates a new fault line that persists.
+Mechanic: generates a camp event, forced bond boost between left-behind players,
+  and a new informal alliance flagged for vote targeting in the next tribal.
+
+
+── FINALE / FTC ───────────────────────────────────────────────────────────────
+
+[15] FINAL TRIBAL SURPRISE FLIP
+Trigger: FTC with jury where one finalist has majority of votes locked in
+Roll: ~15% if locked-in finalist has at least one jury member with bond <= 0
+What happens: a jury member who seemed locked in has a change of heart based on
+  the final speeches — specifically, the underdog finalist says something that
+  resonates more than expected. One previously-certain vote flips.
+Mechanic: final vote resolution re-rolls one borderline juror's vote based on
+  finalist speech quality (proxy: social + strategic combined score comparison).
+  Only fires when the margin is narrow enough to matter.
+
+
+── SIMULATION IMPROVEMENTS ────────────────────────────────────────────────────
+
+[16] CUMULATIVE CHALLENGE PERFORMANCE
+Trigger: any player who has won or placed top-2 in 2+ challenges
+Roll: passive — recalculated each episode, no single fire moment
+What happens: challenge performance accumulates in gs.chalRecord[playerName]
+  tracking wins, top-2 finishes, and bottom-2 finishes across all episodes.
+  A player on a win streak becomes a progressively larger target — not because
+  of their stats, but because of what the tribe has witnessed. A puzzle player
+  with 3 wins is just as scary as a physical beast. A player with 3 bottom-2
+  finishes gets quietly dismissed as a non-threat.
+Mechanic:
+  - gs.chalRecord[name] = { wins: 0, podiums: 0, bombs: 0 } — incremented
+    after each episode's challenge resolves.
+  - threatScore(name) gains a chalPrestige modifier:
+      wins >= 3 → +1.5
+      wins >= 2 → +0.8
+      podiums >= 3 → +0.5
+      bombs >= 3 → -0.5 (dismissed, easier to keep as goat)
+  - Summary text gets a line in POST-CHALLENGE STATUS if a player crosses a
+    threshold: "NOTE: [Name] has now won 3 challenges. The tribe is watching."
+  - camp event pool gets a new type 'chal-threat' that fires ~30% when a player
+    crosses wins >= 2: someone names them at camp as a challenge threat.
+Priority: MEDIUM-HIGH — affects every episode from ep 3+ onward. Gives
+  puzzle/mental players the same long-term danger arc as physical beasts.
+  Clean to implement; no new event types needed beyond the record tracking.
+
+
+── NOTES ──────────────────────────────────────────────────────────────────────
+- All of these should use the same probabilistic pattern as idol confessions:
+  roll fires or it doesn't, no guaranteed outcome, consequences cascade naturally.
+- Priority order: A, 2, 9, 16, 1, 10, 12, B, 8, 3, 6, 14, 5, 13, 4, 11, 15
+  A (showmance) first — clean to implement, high drama payoff.
+  16 (cumulative challenge performance) — systemic, affects every episode from
+    ep 3 onward, no architectural blocker. Ranked high because it makes the
+    game feel continuous rather than episodic.
+  B (non-mutual) needs the directional bond design decision before touching.
+- Some of these (4, 11, 15) touch FTC logic which isn't fully built yet —
+  hold those until the FTC simulation pass.

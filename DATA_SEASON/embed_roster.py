@@ -24,7 +24,8 @@ if not players:
 
 VALID_ARCHETYPES = {
     'mastermind','schemer','hothead','challenge-beast','social-butterfly',
-    'loyal-soldier','wildcard','chaos-agent','floater','underdog','goat','perceptive-player'
+    'loyal-soldier','wildcard','chaos-agent','floater','underdog','goat','perceptive-player',
+    'showmancer'
 }
 STAT_KEYS = {'physical','endurance','mental','social','strategic','loyalty','boldness','intuition','temperament'}
 

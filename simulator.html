@@ -12127,6 +12127,55 @@ function _renderTwistScene(scene) {
   return h;
 }
 
+// ── Merge Announcement Screen (NEW — inserted on isMerge episodes) ──
+function rpBuildMergeAnnouncement(ep) {
+  const snap = ep.gsSnapshot || {};
+  const mergedTribe = snap.tribes?.[0] || { name: gs.mergeName || 'Merged', members: snap.activePlayers || [] };
+  const tc = tribeColor(mergedTribe.name);
+  const alliances = snap.namedAlliances || [];
+  const active = snap.activePlayers || gs.activePlayers;
+
+  const topAlliances = [...alliances].sort((a,b) => b.members.length - a.members.length).slice(0, 2);
+
+  const alliedSet = new Set(alliances.flatMap(a => a.members));
+  const unallied = active.filter(n => !alliedSet.has(n));
+  const avgBond = n => {
+    const others = active.filter(p => p !== n);
+    return others.length ? others.reduce((s,p) => s + getBond(n,p), 0) / others.length : 0;
+  };
+  const onBottom = [...unallied].sort((a,b) => avgBond(a) - avgBond(b)).slice(0, 3);
+
+  let html = `<div class="rp-page tod-merge-am">
+    <div class="rp-eyebrow">Episode ${ep.num}</div>
+    <div style="font-family:var(--font-display);font-size:48px;letter-spacing:2px;text-align:center;color:${tc};margin-bottom:8px;animation:bannerUnfurl 0.6s var(--ease-broadcast) both;transform-origin:center">${mergedTribe.name.toUpperCase()}</div>
+    <div style="text-align:center;font-size:13px;color:var(--muted);margin-bottom:24px">The merge. ${active.length} players remain.</div>
+    <div class="rp-portrait-row" style="flex-wrap:wrap;justify-content:center;margin-bottom:28px">
+      ${active.map((n, i) => `<div style="animation:staggerIn 0.4s var(--ease-broadcast) ${i * 80}ms both">${rpPortrait(n)}</div>`).join('')}
+    </div>`;
+
+  if (topAlliances.length) {
+    html += `<div class="vp-section-header gold">Alliance threats going in</div>`;
+    topAlliances.forEach(a => {
+      const members = a.members.filter(n => active.includes(n));
+      html += `<div class="vp-card gold" style="margin-bottom:10px">
+        <div style="font-family:var(--font-display);font-size:14px;letter-spacing:1px;margin-bottom:6px">${a.name}</div>
+        <div style="font-size:12px;color:var(--muted)">${members.join(', ')}</div>
+      </div>`;
+    });
+  }
+
+  if (onBottom.length) {
+    html += `<div class="vp-section-header fire">On the bottom</div>`;
+    html += `<div class="vp-card fire">
+      <div style="font-size:13px">${onBottom.join(', ')}</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">Unallied going into the merge</div>
+    </div>`;
+  }
+
+  html += `</div>`;
+  return html;
+}
+
 // ── Screen 3: Pre-challenge twists (tribe swap, three gifts, journey, exile-island, etc.) ──
 function rpBuildPreTwist(ep) {
   const twistData = ep.twistScenes?.length ? ep.twistScenes : generateTwistScenes(ep);
@@ -15326,6 +15375,11 @@ function buildVPScreens(epRecord) {
 
   // ── 2. Tribe Status (always) ──
   vpScreens.push({ id:'tribes', label:'Tribe Status', html: rpBuildTribes(ep) });
+
+  // ── Merge Announcement (isMerge episodes only) ──
+  if (ep.isMerge) {
+    vpScreens.push({ id:'merge', label:'The Merge', html: rpBuildMergeAnnouncement(ep) });
+  }
 
   // ── 3. Pre-Challenge Twist (tribe swap, three gifts, journey, exile-island, etc.) ──
   const _preTwistHtml = rpBuildPreTwist(ep);

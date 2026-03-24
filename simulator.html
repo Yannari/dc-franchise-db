@@ -15267,7 +15267,7 @@ function buildVPScreens(epRecord) {
 
   // ── 3. Pre-Challenge Twist (tribe swap, three gifts, journey, exile-island, etc.) ──
   const _preTwistHtml = rpBuildPreTwist(ep);
-  if (_preTwistHtml) vpScreens.push({ id:'twist', label:'Twists & Events', html: _preTwistHtml });
+  if (_preTwistHtml) vpScreens.push({ id:'twist', label:'Pre-Tribal Events', html: _preTwistHtml });
 
   // ── Helper: derive tribe groups at start of episode ──
   const vpTribeGroups = (() => {
@@ -15283,11 +15283,12 @@ function buildVPScreens(epRecord) {
     const phaseData = ep.campEvents?.[tribe.name];
     const preEvs = Array.isArray(phaseData) ? phaseData : (phaseData?.pre || []);
     if (!preEvs.length) return;
+    const _tcPre = tribeColor(tribe.name);
+    const _dotPre = `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${_tcPre};margin-right:6px;flex-shrink:0"></span>`;
+    const _isMergeCampPre = tribe.name === 'merge' || tribe.name === (gs.mergeName||'merged');
     vpScreens.push({
       id: `camp-pre-${tribe.name}`,
-      label: tribe.name === 'merge' || tribe.name === (gs.mergeName||'merged')
-        ? 'Camp Life'
-        : `${tribe.name} Camp`,
+      label: _isMergeCampPre ? 'Camp Life' : `${_dotPre}${tribe.name} Camp`,
       html: rpBuildCampTribe(ep, tribe.name, tribe.members, 'pre'),
     });
   });
@@ -15314,11 +15315,12 @@ function buildVPScreens(epRecord) {
     const postMembers = tribe.members.length
       ? [...tribe.members]
       : [...(ep.gsSnapshot?.activePlayers || gs.activePlayers)];
+    const _tcPost = tribeColor(tribe.name);
+    const _dotPost = `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${_tcPost};margin-right:6px;flex-shrink:0"></span>`;
+    const _isMergeCampPost = tribe.name === 'merge' || tribe.name === (gs.mergeName||'merged');
     vpScreens.push({
       id: `camp-post-${tribe.name}`,
-      label: tribe.name === 'merge' || tribe.name === (gs.mergeName||'merged')
-        ? 'Camp — After TC'
-        : `${tribe.name} — After TC`,
+      label: _isMergeCampPost ? 'Camp — After TC' : `${_dotPost}${tribe.name} — After TC`,
       html: rpBuildCampTribe(ep, tribe.name, postMembers, 'post'),
     });
   });
@@ -15356,7 +15358,7 @@ function buildVPScreens(epRecord) {
 
   // ── 11. Post-elimination twists (exile, swap consequences, fire-making, jury-elimination) ──
   const _postElimHtml = rpBuildPostElimTwist(ep);
-  if (_postElimHtml) vpScreens.push({ id:'post-twist', label:'Twists & Events', html: _postElimHtml });
+  if (_postElimHtml) vpScreens.push({ id:'post-twist', label:'Post-Vote Twist', html: _postElimHtml });
 
   // ── 12. Aftermath (always — updated field, storyline threads, next-ep hooks) ──
   vpScreens.push({ id:'aftermath', label:'Aftermath', html: rpBuildAftermath(ep) });

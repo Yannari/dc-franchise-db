@@ -11925,6 +11925,14 @@ function rpBuildTribes(ep) {
 
   const tribeGroups = deriveTribeGroups();
 
+  // Toggle: tribe history strips (colored vertical bars showing past tribes)
+  const _swapTypes = ['tribe-swap','tribe-expansion','abduction','swapvote','mutiny','tribe-dissolve'];
+  const _hadSwap = (gs.episodeHistory || []).some(h =>
+    (h.twist?.type && _swapTypes.includes(h.twist.type)) ||
+    (h.twists || []).some(t => _swapTypes.includes(t.type))
+  );
+  const _showHistory = _hadSwap && localStorage.getItem('vp_showTribeHistory') !== 'false';
+
   // Build tribe stint history per player (deduplicated consecutive tribe changes)
   // Returns [{name, color}] oldest→newest, only when player changed tribes at least once
   function playerTribeStints(name) {
@@ -11951,10 +11959,16 @@ function rpBuildTribes(ep) {
   const playerTribeMap = {};
   tribeGroups.forEach(t => t.members.forEach(m => { playerTribeMap[m] = t.name; }));
 
-  let html = `<div class="rp-page">
+  let html = `<div class="rp-page tod-morning">
     <div class="rp-eyebrow">Episode ${ep.num}</div>
     <div class="rp-title">Tribe Status</div>
-    <div class="rp-subtitle">${countActive} players remain.</div>`;
+    <div class="rp-subtitle">${countActive} players remain.</div>
+    ${_hadSwap ? `<div style="text-align:right;margin-bottom:12px">
+      <button onclick="(function(){const n=localStorage.getItem('vp_showTribeHistory')!=='false';localStorage.setItem('vp_showTribeHistory',n?'false':'true');const ep=gs.episodeHistory.find(e=>e.num===vpEpNum);if(ep){buildVPScreens(ep);renderVPScreen();}})()"
+        style="font-size:10px;padding:4px 10px;border:1px solid var(--border);border-radius:4px;background:transparent;color:var(--muted);cursor:pointer">
+        Tribe History: ${_showHistory ? 'ON' : 'OFF'}
+      </button>
+    </div>` : ''}`;
 
   tribeGroups.forEach(tribe => {
     const tc = tribeColor(tribe.name);
@@ -11973,7 +11987,7 @@ function rpBuildTribes(ep) {
       <div class="rp-portrait-row">
         ${tribe.members.map(name => {
           if (name === ep.immunityWinner && isMerged) {
-            const stints = playerTribeStints(name);
+            const stints = _showHistory ? playerTribeStints(name) : [];
             const strips = stints.length ? `<div style="display:flex;flex-direction:column;gap:3px;padding-top:6px;align-self:flex-start">${stints.map(s=>`<div style="width:5px;height:16px;border-radius:2px;background:${s.color}" title="${s.name}"></div>`).join('')}</div>` : '';
             return strips ? `<div style="display:flex;align-items:flex-start;gap:3px">${strips}${rpPortrait(name,'immune','Immune')}</div>` : rpPortrait(name,'immune','Immune');
           }
@@ -11989,7 +12003,7 @@ function rpBuildTribes(ep) {
           }).filter(Boolean);
           const badge = badges[0] || '';
           const cls   = badge === 'Idol' || badge === 'Beware' ? 'sitd' : '';
-          const stints = playerTribeStints(name);
+          const stints = _showHistory ? playerTribeStints(name) : [];
           if (!stints.length) return rpPortrait(name, cls, badge);
           const strips = `<div style="display:flex;flex-direction:column;gap:3px;padding-top:6px;align-self:flex-start">${stints.map(s=>`<div style="width:5px;height:16px;border-radius:2px;background:${s.color}" title="${s.name}"></div>`).join('')}</div>`;
           return `<div style="display:flex;align-items:flex-start;gap:3px">${strips}${rpPortrait(name, cls, badge)}</div>`;

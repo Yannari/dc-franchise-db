@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "count": 102,
+  "count": 104,
   "players": [
     {
       "name": "Alejandro",
@@ -293,6 +293,23 @@
       }
     },
     {
+      "name": "Chef Hatchet",
+      "slug": "chef-hatchet",
+      "gender": "m",
+      "archetype": "hothead",
+      "stats": {
+        "physical": 10,
+        "endurance": 10,
+        "mental": 4,
+        "social": 2,
+        "strategic": 4,
+        "loyalty": 8,
+        "boldness": 8,
+        "intuition": 4,
+        "temperament": 2
+      }
+    },
+    {
       "name": "Chet",
       "slug": "chet",
       "gender": "m",
@@ -307,6 +324,23 @@
         "boldness": 5,
         "intuition": 4,
         "temperament": 4
+      }
+    },
+    {
+      "name": "Chris McLean",
+      "slug": "chris-mclean",
+      "gender": "m",
+      "archetype": "chaos-agent",
+      "stats": {
+        "physical": 6,
+        "endurance": 6,
+        "mental": 8,
+        "social": 10,
+        "strategic": 10,
+        "loyalty": 2,
+        "boldness": 10,
+        "intuition": 8,
+        "temperament": 2
       }
     },
     {
@@ -359,23 +393,6 @@
         "boldness": 3,
         "intuition": 4,
         "temperament": 8
-      }
-    },
-    {
-      "name": "DJ",
-      "slug": "dj",
-      "gender": "m",
-      "archetype": "perceptive-player",
-      "stats": {
-        "physical": 8,
-        "endurance": 4,
-        "mental": 6,
-        "social": 10,
-        "strategic": 2,
-        "loyalty": 10,
-        "boldness": 3,
-        "intuition": 8,
-        "temperament": 10
       }
     },
     {
@@ -461,6 +478,23 @@
         "boldness": 4,
         "intuition": 6,
         "temperament": 8
+      }
+    },
+    {
+      "name": "DJ",
+      "slug": "dj",
+      "gender": "m",
+      "archetype": "perceptive-player",
+      "stats": {
+        "physical": 8,
+        "endurance": 4,
+        "mental": 6,
+        "social": 10,
+        "strategic": 2,
+        "loyalty": 10,
+        "boldness": 3,
+        "intuition": 8,
+        "temperament": 10
       }
     },
     {
@@ -1044,24 +1078,6 @@
       }
     },
     {
-      "name": "MK",
-      "slug": "mk",
-      "gender": "f",
-      "sexuality": "queer",
-      "archetype": "schemer",
-      "stats": {
-        "physical": 4,
-        "endurance": 4,
-        "mental": 8,
-        "social": 4,
-        "strategic": 10,
-        "loyalty": 2,
-        "boldness": 7,
-        "intuition": 6,
-        "temperament": 8
-      }
-    },
-    {
       "name": "MacArthur",
       "slug": "macarthur",
       "gender": "f",
@@ -1179,6 +1195,24 @@
         "boldness": 5,
         "intuition": 7,
         "temperament": 6
+      }
+    },
+    {
+      "name": "MK",
+      "slug": "mk",
+      "gender": "f",
+      "sexuality": "queer",
+      "archetype": "schemer",
+      "stats": {
+        "physical": 4,
+        "endurance": 4,
+        "mental": 8,
+        "social": 4,
+        "strategic": 10,
+        "loyalty": 2,
+        "boldness": 7,
+        "intuition": 6,
+        "temperament": 8
       }
     },
     {

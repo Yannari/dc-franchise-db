@@ -3,8 +3,71 @@ PROBABILISTIC MOMENTS — BACKLOG
 Ideas for future simulator events. Each entry has a trigger, a probability driver,
 and the downstream consequence. None are guaranteed — all fire on a roll.
 
+── DONE ────────────────────────────────────────────────────────────────────────
+
 [DONE] #7 Last-Second Idol Share — implemented. Includes flush plant (schemer scares
   holder into wasting it) and give & betray (holder hands idol to schemer, gets voted out).
+
+[DONE] #3 Overplaying at Tribal — implemented. Trigger: paranoid/desperate state +
+  (strategic >= 7 OR social >= 7 OR boldness >= 7), NOT the top vote-getter.
+  ~20% deterministic roll. Redirects 1-2 votes from original target onto the overplayer.
+  Display: named narrative on Tribal Council screen showing who got cornered and what it
+  looked like (3 hash-selected variants). Vote log entries tagged [OVERPLAYING].
+
+[DONE] #9 Tribal Council Blowup — implemented. Trigger: boldness >= 8 OR temperament <= 3
+  + player received >= 60% of votes this tribal. ~25-40% deterministic roll.
+  Two tonal variants: controlled aggression (bold) vs emotional explosion (hothead).
+  Up to 3 reveals: orchestrator callout, idol exposure, alliance naming — each with
+  actual first-person speech text (2 tone variants per reveal, selected by hash).
+  Applies bond hits, populates gs.publicKnowledge and gs.blowupHeatNextEp (heat persists
+  into next episode via computeHeat +1.5).
+  Display: TRIBAL BLOWUP card on The Votes screen after elimination reveal.
+  Title: "Goes Out Swinging" (bold) / "Couldn't Hold It In" (hothead).
+
+[DONE] #16 Cumulative Challenge Performance — implemented via updateChalRecord(ep) + threatScore modifier.
+  gs.chalRecord[name] = { wins, podiums, bombs } updated after every challenge. threatScore gains
+  chalPrestige: wins>=3 → +1.5, wins>=2 → +0.8, podiums>=3 → +0.5, bombs>=3 → -0.5.
+  Threshold crossings (wins>=2, wins>=3, podiums>=3) inject two guaranteed VP events: chalThreat
+  (solo portrait of the threat, gold ⚠ CHALLENGE THREAT badge) + chalThreatReaction (duo portrait
+  of notifier + threat, gold ⚠ Threat noted badge). chalThreatReaction gets duo portrait via isRelEvt.
+  Call site: updateChalRecord(ep) runs after challenge simulation, before generateCampEvents 'post'.
+  ep.chalThreatEvents saved to history snapshot.
+
+[DONE] #2 Social Bomb / Faux Pas — implemented via checkSocialBomb(ep). Trigger: temperament <= 3
+  (hothead) OR boldness >= 8 (arrogant). Deterministic roll per player per episode (ep.num * 17
+  seed). Bond damage to all tribemates: -(0.5 + max(0, (social-5)*0.2)), capped at -1.5 (high
+  social = more offended). Adds player to gs.socialBombHeatThisEp → +1.0 heat in computeHeat
+  for that episode's tribal. Two text tone variants: arrogant (bold) vs hothead (low temp).
+  Fires in 'pre' and 'both' phases before checkAllianceQuitting. ep.socialBombs saved to history.
+
+[DONE] A Showmance — implemented. Two players with bond >= 5 and compatible archetypes
+  (social/romantic pairing) flagged as a showmance. Generates camp events, boosts
+  mutual bonds, creates a visible threat perception. Rivals target the pair as a unit.
+
+[DONE] #18 Comfort Blindspot — implemented. Three mechanical layers:
+  1. simulateVotes: comfortable players (boldness < 6 && strategic < 6) skip the
+     bond-following informal coordination path when defecting — vote stays locked to
+     their original plan. Flag: isComfortBlindspot.
+  2. checkIdolPlays: comfortPenalty = -0.15 added to didPlay formula for comfort
+     blindspot players — drops base play chance from ~0.25 to ~0.10.
+  3. checkComfortBlindspot(ep): new function called in generateCampEvents pre-phase
+     after checkIdolConfessions. Per tribe/merge: finds comfortable low-stat players,
+     picks heat leader (proxy: low avg bond + threatScore), ~25% fires two events:
+     comfortBlindspot (observer notices checked-out player) + clockingIt (observer
+     starts quietly floating their name). Events pushed directly into
+     ep.campEvents[campKey].pre. ep.comfortBlindspotPlayer stored + saved to history.
+  VP: comfortBlindspot gets ⭐ CHECKED OUT gold badge, clockingIt gets Clocking it
+     gold badge. Tribal screen: if comfortBlindspotPlayer === ep.eliminated, shows
+     ⭐ COMFORT BLINDSIDE block with portrait + narrative.
+
+[DONE] #19 Alliance Recruitment — implemented via checkAllianceRecruitment(ep).
+  Three scenarios: A) post-swap outsider pulled in by alliance with 2+ members on new
+  tribe (~45%), B) player who just quit an alliance joins a new one (~35%), C) swing
+  voter absorbed after a blindside (~30%). Fires twice per episode — once in
+  generateCampEvents (scenarios A+B) and once post-tribal (scenario C) to prevent
+  double-recruitment via ep.allianceRecruits guard. Camp event is 100% guaranteed
+  (fallback to first available block). ALLIANCE MOVES section added to rpBuildAftermath.
+  ep.allianceRecruits saved to episode history snapshot.
 
 
 ── RELATIONSHIPS ──────────────────────────────────────────────────────────────
@@ -104,6 +167,25 @@ What happens: one member of the alliance votes the wrong name — miscounted the
   Can accidentally send the wrong person home or break up a split vote.
 Mechanic: that player's vote is randomly redirected. If it changes the outcome, the
   incident is noted in WHY THIS VOTE HAPPENED. Alliance cracks afterward.
+
+[17] VOLUNTEER EXILE DUEL — ASK TO BE ELIMINATED
+Trigger: gs.exilePlayer is set (someone is already waiting at 2nd Chance Isle),
+  player has strategic >= 8 AND bond <= -3 with the exile player, ep >= 3
+Roll: ~20% once per game
+What happens: a player decides their best shot at eliminating a rival is to go
+  through the duel. They quietly engineer their own boot — redirecting votes
+  toward themselves, staying silent when they could campaign, or outright telling
+  a trusted ally "send me, I'll beat them." They're voted out deliberately, face
+  their enemy at the duel, and the rivalry becomes a do-or-die confrontation.
+Mechanic: flag player as gs.volunteerExile = true. At tribal, their vote heat
+  is inflated so they land as the boot. Post-boot narrative labels the elimination
+  as "strategic surrender." At the duel, add a scene beat noting the rivalry
+  context ("This wasn't an accident — [Name] came here looking for [Exile].").
+  If the volunteer loses the duel, it's an especially bitter exit (boldness >= 7
+  triggers a blowup scene). If they win, their return carries outsized respect
+  and narrative weight. Camp event on their return: "They chose this."
+Priority: MEDIUM — needs exile duel to be active and gs.exilePlayer check. Clean
+  to add once exile infrastructure is stable.
 
 [9] TRIBAL COUNCIL BLOWUP
 Trigger: player who is definitely going home (>= 60% of votes) with boldness >= 8
@@ -209,14 +291,95 @@ Priority: MEDIUM-HIGH — affects every episode from ep 3+ onward. Gives
   Clean to implement; no new event types needed beyond the record tracking.
 
 
+[18] COMFORT BLINDSPOT
+Trigger: player in 'comfortable' emotional state (already tracked in gs.playerStates)
+  who is also the top vote-getter this tribal. The 'comfortable' state already exists
+  in updatePlayerStates — it fires when a player has been safe for 5+ episodes AND
+  has low boldness (< 5) AND low strategic (< 6). Currently it does nothing mechanically.
+  This idea gives it teeth.
+Roll: passive — no roll needed. If the player IS comfortable AND is the top target,
+  the blindspot suppresses their normal survival instincts automatically.
+What happens: they walk into tribal without reading the room. They don't scramble,
+  don't pick up on signals, don't use their idol if they have one. They vote whoever
+  they planned to vote days ago, not whoever is actually threatening them right now.
+  They get eliminated without any defensive play. The narrative reads as a blindside
+  even if the vote wasn't particularly complex — their comfort was the weapon used
+  against them.
+Mechanic:
+  - In simulateVotes: comfortable players skip the intuition-based preemptive strike
+    check entirely (already true — that check requires paranoid/desperate). But also:
+    comfortable players don't react to computeHeat — their vote target locks to their
+    alliance's stated plan even if the heat is pointing back at them.
+  - In checkIdolPlays: if the comfort player holds an idol, suppress the auto-play
+    threshold by ~40% — they don't feel threatened enough to use it.
+    (Currently idol play willingness scales with emotional state; comfortable = low
+    urgency, so raise the willingness threshold so the idol stays in pocket.)
+  - Camp event the episode BEFORE: ~25% chance someone notices the comfortable player
+    is "not paying attention" and uses it. Generates a pre-tribal event: "[Name] hasn't
+    seemed worried about anything in weeks. [Other] clocked it." This seeds the
+    blindside in the previous episode's camp narrative.
+  - VP display: if a comfortable player is eliminated, add a note to the Tribal Council
+    screen — something like "They never saw it coming. Three weeks of safety had made
+    them invisible to their own danger."
+  - Idol suppression only applies if boldness < 6 AND strategic < 6. A bold comfortable
+    player still plays their idol out of ego — low strategic is the key variable.
+Priority: MEDIUM-HIGH — no new infrastructure needed. The 'comfortable' state already
+  tracks the right conditions. This just activates the "blind spot" comment that's been
+  sitting in updatePlayerStates with no mechanic behind it.
+Implementation note: the comfortable state currently gives emotionalMod = 0 in vote
+  logic. That stays. The new behavior is suppression (don't react to heat, don't
+  auto-play idol) rather than a numeric penalty — which is actually more correct to
+  the drama. A paranoid player at least TRIES to survive. A comfortable player doesn't
+  try because they don't know they need to.
+
+
+[19] ALLIANCE RECRUITMENT
+Trigger: one of three scenarios each episode:
+  A) Post-tribe-swap — a player is now a minority outsider on their new tribe AND
+     a named alliance has >= 2 members on that tribe with avg bond >= 3 with the outsider.
+  B) A player just quit a named alliance (checkAllianceQuitting fired) AND has
+     bond >= 3 with at least one member of a different active named alliance.
+  C) A blindside just happened (eliminated player was in a named alliance) AND
+     a swing voter who voted with the winning side has bond >= 3 with that winning bloc.
+Roll: ~30-45% per qualifying scenario per episode (higher for scenario A — swap
+  outsiders are under immediate pressure to find protection).
+What happens: the recruiting alliance pulls the target player in. Their name is
+  added to alliance.members. Bonds between the recruit and existing members get a
+  +0.5 boost. A camp event fires: "[Recruiter] brought [Player] into the fold —
+  [Alliance] just got bigger." The recruit's emotional state shifts toward 'confident'.
+  If the recruit was previously in a rival alliance, that alliance takes a trust hit
+  and the recruit is flagged as a betrayal risk (loyalty check applied next tribal).
+Mechanic:
+  - checkAllianceRecruitment(ep) runs after checkAllianceQuitting each episode.
+  - Iterate gs.namedAlliances filtering for active ones with 2+ active members.
+  - For each alliance, check qualifying players (not already members, active, present).
+  - Score candidates: bond avg with current members + social + loyalty (inverse —
+    low loyalty = higher recruitment appeal since they're easier to pull).
+  - Pick the best candidate, roll, push them into alliance.members if fires.
+  - Log to camp events. Bond boost. Emotional state update.
+  - Prevent double-recruitment: a player can only be recruited once per episode.
+  - Cap alliance size: don't recruit if alliance already has >= 5 active members
+    (prevents one alliance from absorbing everyone).
+Priority: HIGH — this is a gap in the current architecture. Alliances can only
+  shrink (quitting, betrayal, elimination) but never grow. Post-swap outsiders have
+  no path to safety. Swing voters who flip have no way to formalize their new loyalty.
+  Clean to implement: checkAllianceRecruitment is a new function that reads/writes
+  gs.namedAlliances and fires a camp event. No new state keys needed beyond
+  what already exists.
+Implementation note: scenario A requires knowing the pre-swap tribe. Use
+  ep.tribesAtStart to identify who moved tribes this episode (compare with current
+  gs.tribes). Scenario B requires checkAllianceQuitting to set a flag on the
+  player (e.g., gs.recentlyQuit = Set) that checkAllianceRecruitment can read.
+
+
 ── NOTES ──────────────────────────────────────────────────────────────────────
 - All of these should use the same probabilistic pattern as idol confessions:
   roll fires or it doesn't, no guaranteed outcome, consequences cascade naturally.
-- Priority order: A, 2, 9, 16, 1, 10, 12, B, 8, 3, 6, 14, 5, 13, 4, 11, 15
-  A (showmance) first — clean to implement, high drama payoff.
-  16 (cumulative challenge performance) — systemic, affects every episode from
-    ep 3 onward, no architectural blocker. Ranked high because it makes the
-    game feel continuous rather than episodic.
+- Priority order: [18 DONE], 1, 10, 12, B, 8, [3 DONE], 6, 14, 5, 13, 4, 11, 15, 17
+  16 (cumulative challenge performance) — DONE.
+  18 (comfort blindspot) — DONE.
+  1 (paranoia spiral) — NEXT UP. Paranoid + strategic >= 7 player wrongly suspects
+    a loyal ally, confronts or campaigns against them, self-fulfilling prophecy.
   B (non-mutual) needs the directional bond design decision before touching.
 - Some of these (4, 11, 15) touch FTC logic which isn't fully built yet —
   hold those until the FTC simulation pass.

@@ -11798,7 +11798,7 @@ function rpBuildColdOpen(ep) {
     : ep.isRIReentry ? 'RI Re-entry Episode'
     : (prevSnap.phase === 'post-merge' ? 'Post-Merge' : 'Pre-Merge');
 
-  let html = `<div class="rp-page rp-cold-open">
+  let html = `<div class="rp-page rp-cold-open tod-dawn">
     <div class="rp-co-eyebrow">${seasonConfig.name || 'Season'}</div>
     <div class="rp-co-epnum">Episode ${ep.num}</div>
     <div class="rp-co-phase">${phaseLabel} &mdash; ${countActive} of ${allPlayers.length} players remain</div>
@@ -11841,6 +11841,54 @@ function rpBuildColdOpen(ep) {
         return rpPortrait(name, 'elim', badge);
       }).join('')}
     </div>`;
+  }
+
+  // ── "Coming in from last episode" narrative hook ──
+  if (prevEp && ep.num > 1) {
+    const _pSnap = prevEp.gsSnapshot || {};
+    const _pAlliances = _pSnap.namedAlliances || [];
+    const _recruits = prevEp.allianceRecruits || [];
+    const _quits    = prevEp.allianceQuits    || [];
+
+    const _topAlliance = [..._pAlliances].sort((a,b) => b.members.length - a.members.length)[0];
+    const _activePlayers = gs.activePlayers;
+    const _avgBond = n => {
+      const others = _activePlayers.filter(p => p !== n);
+      if (!others.length) return 0;
+      return others.reduce((s, p) => s + getBond(n, p), 0) / others.length;
+    };
+    const _bottomTwo = [..._activePlayers].sort((a,b) => _avgBond(a) - _avgBond(b)).slice(0, 2);
+
+    html += `<div class="rp-co-divider"></div>
+      <div class="vp-section-header">Coming in from last episode</div>`;
+
+    if (_topAlliance) {
+      const _members = _topAlliance.members.filter(n => _activePlayers.includes(n));
+      if (_members.length) {
+        html += `<div class="vp-card" style="margin-bottom:10px">
+          <div style="font-family:var(--font-display);font-size:13px;letter-spacing:1px;margin-bottom:6px">${_topAlliance.name}</div>
+          <div style="font-size:12px;color:var(--muted)">${_members.join(', ')} — ${_members.length} strong going in</div>
+        </div>`;
+      }
+    }
+
+    if (_bottomTwo.length) {
+      html += `<div class="vp-card fire" style="margin-bottom:10px">
+        <div style="font-family:var(--font-display);font-size:11px;letter-spacing:1px;color:var(--accent-fire);margin-bottom:6px">On the bottom</div>
+        <div style="font-size:12px">${_bottomTwo.join(' and ')}</div>
+      </div>`;
+    }
+
+    _recruits.forEach(r => {
+      html += `<div style="font-size:12px;color:var(--muted);margin-bottom:4px">
+        ${r.player} joined ${r.toAlliance} last episode${r.fromAlliance ? ` (left ${r.fromAlliance})` : ''}.
+      </div>`;
+    });
+    _quits.forEach(q => {
+      html += `<div style="font-size:12px;color:var(--muted);margin-bottom:4px">
+        ${q.player} left ${q.alliance} last episode.
+      </div>`;
+    });
   }
 
   html += `</div>`;

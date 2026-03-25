@@ -2345,13 +2345,45 @@ function decayAllianceTrust(epNum) {
   if (!gs.namedAlliances?.length) return;
   gs.namedAlliances.forEach(alliance => {
     if (!alliance.active) return;
+
+    const activeMembers = alliance.members.filter(m => gs.activePlayers.includes(m));
+
+    // ── Dissolve: only 1 (or 0) active member left — alliance is dead ──
+    if (activeMembers.length <= 1) {
+      alliance.active = false;
+      return;
+    }
+
+    // ── Dissolve: internal bonds have collapsed — nobody likes each other anymore ──
+    if (activeMembers.length >= 2) {
+      let totalBond = 0, pairs = 0;
+      for (let i = 0; i < activeMembers.length; i++) {
+        for (let j = i + 1; j < activeMembers.length; j++) {
+          totalBond += getBond(activeMembers[i], activeMembers[j]);
+          pairs++;
+        }
+      }
+      const avgBond = pairs > 0 ? totalBond / pairs : 0;
+      // Average bond negative = this alliance is held together by nothing
+      if (avgBond <= -1) {
+        alliance.active = false;
+        return;
+      }
+      // Average bond barely positive + multiple betrayals = crumbling
+      if (avgBond < 0.5 && (alliance.betrayals?.length || 0) >= 2) {
+        alliance.active = false;
+        return;
+      }
+    }
+
+    // ── Decay: old alliances with strategic players naturally erode ──
     const age = epNum - alliance.formed;
     if (age < 5) return;
     const decay = Math.min(0.1, (age - 4) * 0.015);
-    alliance.members.filter(m => gs.activePlayers.includes(m)).forEach(m => {
+    activeMembers.forEach(m => {
       const s = pStats(m);
       if (s.strategic < 6) return;
-      alliance.members.filter(o => o !== m && gs.activePlayers.includes(o)).forEach(o => {
+      activeMembers.filter(o => o !== m).forEach(o => {
         if (getBond(m, o) > 2.5) addBond(m, o, -(decay * (s.strategic - 5) * 0.25));
       });
     });
@@ -11664,24 +11696,94 @@ function buildColdOpen(ep) {
 
 function buildNextEpQs(ep) {
   const qs = [], cfg = seasonConfig, elim = ep.eliminated;
+  const active = gs.activePlayers;
+  const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
+
+  // Twist-driven questions
   if (ep.lastChance) {
     const _lc = ep.lastChance;
     if (_lc.toTribe) qs.push(`${_lc.winner} just survived the Last Chance Challenge and joined ${_lc.toTribe} — do they find allies, or are they the next target?`);
   } else if (ep.tribeDissolve) {
-    const _td = ep.tribeDissolve;
-    qs.push(`${_td.player} just joined ${_td.toTribe} with no allies — do they find a foothold, or are they the next boot?`);
+    qs.push(`${ep.tribeDissolve.player} just joined ${ep.tribeDissolve.toTribe} with no allies — do they find a foothold, or are they the next boot?`);
   }
-  if (cfg.ri && ep.riChoice==='REDEMPTION ISLAND' && elim) qs.push(`Can ${elim} survive their first RI duel?`);
+  if (cfg.ri && ep.riChoice === 'REDEMPTION ISLAND' && elim) qs.push(`Can ${elim} survive their first RI duel?`);
   if (gs.riPlayers.length >= 2) qs.push(`${gs.riPlayers.join(' vs ')} — who wins the duel?`);
-  const dom = ep.alliances?.find(a=>a.members.length>=Math.ceil((ep.tribalPlayers?.length||0)/2))?.members?.[0];
-  if (dom) qs.push(`Is anyone going to challenge ${dom}'s control?`);
-  if (!gs.isMerged && ep.challengeType === 'tribe') {
-    if (ep.winner?.name) qs.push(`${ep.winner.name} won immunity — but how long before they crack?`);
-    if (ep.safeTribes?.length) ep.safeTribes.forEach(t => qs.push(`${t.name} dodged tribal this week — who are they targeting next?`));
+
+  // Merge proximity
+  if (!gs.isMerged && active.length <= (cfg.mergeAt || 12) + 2) qs.push('The merge is close. Who has the numbers to survive it?');
+
+  // Dominant player — varied phrasing
+  const dom = ep.alliances?.find(a => a.members.length >= Math.ceil((ep.tribalPlayers?.length || 0) / 2))?.members?.[0];
+  if (dom && active.includes(dom)) {
+    qs.push(_rp([
+      `${dom} ran the vote tonight. Can anyone break that grip before it's too late?`,
+      `${dom} is calling the shots. The question isn't if someone tries to stop it — it's who goes first.`,
+      `${dom} controlled the numbers again. At what point does the rest of the tribe decide enough is enough?`,
+    ]));
   }
-  if (!gs.isMerged && gs.activePlayers.length <= (cfg.mergeAt||12)+2) qs.push('Is the merge next? Who has cross-tribe numbers?');
-  if (!qs.length) qs.push('Who will be voted out next?');
-  return qs.slice(0,4);
+
+  // Close vote aftermath
+  if (ep.votes) {
+    const sorted = Object.entries(ep.votes).sort(([,a],[,b]) => b - a);
+    if (sorted.length >= 2 && sorted[0][1] - sorted[1][1] <= 1 && active.includes(sorted[1][0])) {
+      qs.push(`${sorted[1][0]} survived by a single vote. Do they scramble or play it cool?`);
+    }
+  }
+
+  // Idol holder questions
+  const idolHolders = (gs.advantages || []).filter(a => a.type === 'idol' && active.includes(a.holder)).map(a => a.holder);
+  if (idolHolders.length) {
+    qs.push(_rp([
+      `${idolHolders[0]} is holding an idol. Does the tribe know? And if they do — what's the plan?`,
+      `There's a hidden idol in play. The wrong vote could blow up in someone's face.`,
+    ]));
+  }
+
+  // Alliance tension
+  const tensedAlliances = (gs.namedAlliances || []).filter(a => {
+    if (!a.active) return false;
+    const am = a.members.filter(m => active.includes(m));
+    if (am.length < 2) return false;
+    let totalBond = 0, pairs = 0;
+    for (let i = 0; i < am.length; i++) for (let j = i + 1; j < am.length; j++) { totalBond += getBond(am[i], am[j]); pairs++; }
+    return pairs > 0 && totalBond / pairs < 1;
+  });
+  if (tensedAlliances.length) {
+    const t = tensedAlliances[0];
+    qs.push(`${t.name} is showing cracks. How long before someone exploits it?`);
+  }
+
+  // Free agents
+  const freeAgents = active.filter(n => !(gs.namedAlliances || []).some(a => a.active && a.members.includes(n) && a.members.filter(m => active.includes(m)).length >= 2));
+  if (freeAgents.length === 1) {
+    qs.push(`${freeAgents[0]} has no alliance. Are they the next target — or the next swing vote?`);
+  } else if (freeAgents.length >= 2) {
+    qs.push(`${freeAgents.slice(0,2).join(' and ')} are both on the outside. Do they find each other?`);
+  }
+
+  // Emotional state questions
+  const desperate = active.filter(n => gs.playerStates?.[n]?.emotional === 'desperate');
+  if (desperate.length) {
+    qs.push(`${desperate[0]} is desperate. Desperate players make big moves — or big mistakes.`);
+  }
+
+  // Post-merge specific
+  if (gs.isMerged && active.length <= 7) {
+    qs.push(_rp([
+      `With ${active.length} left, every vote is personal. Who draws the line?`,
+      `The endgame is here. Shields are becoming threats. Who goes first?`,
+      `${active.length} players remain. The margin for error just disappeared.`,
+    ]));
+  }
+
+  // Fallback
+  if (!qs.length) qs.push(_rp([
+    'The game is wide open. Anything can happen next.',
+    'No one is safe. The question is who figures that out first.',
+    'The next vote will define the rest of this season.',
+  ]));
+
+  return qs.slice(0, 4);
 }
 
 // ══════════════════════════════════════════════════════════════════════

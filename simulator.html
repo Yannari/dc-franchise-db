@@ -17962,6 +17962,187 @@ function rpBuildBenches(ep) {
   return html;
 }
 
+// ── The Grand Challenge: 3-stage finale challenge with narration ──
+function rpBuildFinaleGrandChallenge(ep) {
+  const stages = ep.finaleChallengeStages;
+  const scores = ep.finaleChallengeScores;
+  const winner = ep.finaleChallengeWinner;
+  const finalists = ep.finaleFinalists || [];
+  const assistants = ep.assistants || {};
+  const benchAssignments = ep.benchAssignments || {};
+  const sabotageEvents = ep.finaleSabotageEvents || [];
+  if (!stages?.length || !winner) return null;
+  const epNum = ep.num;
+  const _pick = (arr, seed) => arr[([...seed].reduce((a,c)=>a+c.charCodeAt(0),0)+epNum*7)%arr.length];
+
+  let html = `<div class="rp-page tod-arena">
+    <div class="rp-eyebrow">Episode ${epNum} \u2014 Finale</div>
+    <div style="font-family:var(--font-display);font-size:30px;letter-spacing:3px;text-align:center;margin-bottom:6px;text-transform:uppercase;color:var(--accent-gold);text-shadow:0 0 30px rgba(227,179,65,0.3)">The Final Challenge</div>
+    <div style="text-align:center;font-size:11px;color:var(--muted);margin-bottom:6px;letter-spacing:1.5px;text-transform:uppercase">Three stages. One winner. No jury. No vote.</div>
+    <div style="text-align:center;font-size:12px;color:#484f58;font-style:italic;margin-bottom:24px">The last challenge of the season will decide everything.</div>`;
+
+  // Finalist + assistant lineup
+  html += `<div style="display:flex;justify-content:center;gap:28px;margin-bottom:24px;flex-wrap:wrap">`;
+  finalists.forEach(f => {
+    const asst = assistants[f];
+    const benchCount = (benchAssignments[f] || []).length;
+    html += `<div style="text-align:center;min-width:120px">
+      ${rpPortrait(f, 'lg')}
+      <div style="font-family:var(--font-display);font-size:13px;margin-top:6px">${f}</div>
+      <div style="font-size:10px;color:var(--muted)">${vpArchLabel(f)}</div>
+      <div style="font-size:10px;color:var(--muted)">${benchCount} supporter${benchCount !== 1 ? 's' : ''}</div>
+      ${asst?.name ? `<div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-top:6px">
+        ${rpPortrait(asst.name)}
+        <div style="font-size:9px;color:var(--accent-gold)">Assistant</div>
+      </div>` : `<div style="font-size:9px;color:#484f58;margin-top:6px">Solo</div>`}
+    </div>`;
+  });
+  html += `</div>`;
+
+  // ═══ STAGE BY STAGE ═══
+  stages.forEach((stage, idx) => {
+    const isLast = idx === stages.length - 1;
+    const stageScores = stage.scores || {};
+    const stageSorted = Object.entries(stageScores).sort(([,a],[,b]) => b - a);
+    const stageWinner = stage.winner;
+    const stageSabotage = sabotageEvents.filter(s => s.stage === idx);
+
+    // Stage header
+    html += `<div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(227,179,65,0.15)">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <span style="font-family:var(--font-display);font-size:22px;color:var(--accent-gold)">${idx + 1}</span>
+        <div>
+          <div style="font-family:var(--font-display);font-size:16px;letter-spacing:1px;text-transform:uppercase">${stage.name}</div>
+          <div style="font-size:11px;color:var(--muted)">${stage.desc}</div>
+        </div>
+      </div>`;
+
+    // Pre-stage narration
+    const preNarration = [];
+    if (idx === 0) {
+      preNarration.push(`The finalists line up. The challenge begins. ${stage.hasAssistant ? 'Assistants take their positions alongside their partners.' : ''}`);
+      // Bench confessional
+      const loudestSupporter = finalists.reduce((best, f) => {
+        const bench = benchAssignments[f] || [];
+        const loudest = bench.find(s => pStats(s).boldness >= 7 || pStats(s).temperament <= 4);
+        return loudest && (!best || pStats(loudest).boldness > pStats(best.supporter).boldness)
+          ? { supporter: loudest, finalist: f } : best;
+      }, null);
+      if (loudestSupporter) {
+        const sp = loudestSupporter.supporter;
+        preNarration.push(`From the bench, ${sp} is already on ${sp === loudestSupporter.supporter ? 'their' : 'the'} feet. "Come on, ${loudestSupporter.finalist}! This is yours!"`);
+      }
+    } else if (idx === 1) {
+      preNarration.push(`Stage two. The pace changes. ${stage.hasAssistant ? 'Assistants are still in it \u2014 but not for long.' : 'Pure individual effort now.'}`);
+    } else {
+      preNarration.push(`The final stage. ${stage.hasAssistant ? '' : 'Assistants step back. "From here, you\'re on your own."'} This is where it ends.`);
+    }
+
+    preNarration.forEach(text => {
+      html += `<div style="font-size:13px;color:#8b949e;line-height:1.6;margin-bottom:8px;font-style:italic">${text}</div>`;
+    });
+
+    // Assistant contribution
+    if (stage.hasAssistant) {
+      finalists.forEach(f => {
+        const asst = assistants[f];
+        if (!asst?.name) return;
+        const isSabotage = stageSabotage.some(s => s.finalist === f);
+        if (isSabotage) {
+          html += `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;padding:8px;background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.15);border-radius:6px">
+            ${rpPortrait(asst.name, 'sm')}
+            <div>
+              <div style="font-size:11px;color:var(--accent-fire);font-weight:700">SABOTAGE</div>
+              <div style="font-size:12px;color:#c9d1d9">${asst.name} fumbles. The rope slips. The timing is off. Was it intentional? ${f} doesn't have time to wonder.</div>
+            </div>
+          </div>`;
+        } else {
+          const aS = pStats(asst.name);
+          const contribution = stage.name === 'Endurance' ? aS.endurance : aS.physical;
+          const quality = contribution >= 7 ? 'strong' : contribution >= 5 ? 'solid' : 'struggling';
+          const contText = quality === 'strong'
+            ? `${asst.name} is locked in. Every move synchronized. ${f} has a real advantage here.`
+            : quality === 'solid'
+            ? `${asst.name} keeps pace. Not flashy, but reliable. ${f} can focus on the challenge.`
+            : `${asst.name} is trying, but the gap in ability shows. ${f} is practically carrying both of them.`;
+          html += `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;padding:8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:6px">
+            ${rpPortrait(asst.name, 'sm')}
+            <div style="font-size:12px;color:#8b949e">${contText}</div>
+          </div>`;
+        }
+      });
+    }
+
+    // Assistant dropoff moment
+    if (stage.assistantDropoff) {
+      html += `<div style="text-align:center;font-size:12px;color:var(--accent-gold);font-weight:700;letter-spacing:1px;margin:12px 0;padding:8px;border:1px dashed rgba(227,179,65,0.3);border-radius:6px">
+        ASSISTANTS STEP BACK \u2014 "From here, you're on your own."
+      </div>`;
+    }
+
+    // Stage results — who won this stage
+    html += `<div style="margin-top:10px">`;
+    stageSorted.forEach(([name, score], rank) => {
+      const isWin = name === stageWinner;
+      const barPct = Math.round((score / Math.max(...Object.values(stageScores), 1)) * 100);
+      html += `<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;${isWin ? 'background:rgba(227,179,65,0.05);border-radius:6px;padding:6px' : 'padding:6px'}">
+        <span style="font-family:var(--font-mono);font-size:11px;color:${isWin ? 'var(--accent-gold)' : 'var(--muted)'};width:16px">${rank + 1}</span>
+        ${rpPortrait(name)}
+        <div style="flex:1">
+          <div style="font-size:12px;${isWin ? 'color:var(--accent-gold);font-weight:600' : 'color:#c9d1d9'}">${name}${isWin ? ' \u2014 Stage Winner' : ''}</div>
+          <div style="height:4px;background:var(--surface2);border-radius:2px;margin-top:3px;overflow:hidden">
+            <div style="height:100%;width:${barPct}%;background:${isWin ? 'var(--accent-gold)' : '#484f58'};border-radius:2px;transition:width 0.5s"></div>
+          </div>
+        </div>
+        <span style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">${score.toFixed(1)}</span>
+      </div>`;
+    });
+    html += `</div>`;
+
+    // Mid-stage bench confessional (after stage 1 and 2)
+    if (!isLast) {
+      const leadingFinalist = stageSorted[0][0];
+      const trailingFinalist = stageSorted[stageSorted.length - 1][0];
+      const leadBench = (benchAssignments[leadingFinalist] || []).find(s => pStats(s).social >= 6);
+      const trailBench = (benchAssignments[trailingFinalist] || []).find(s => pStats(s).boldness >= 6 || pStats(s).temperament <= 4);
+      if (leadBench) {
+        html += `<div style="font-size:12px;color:#484f58;font-style:italic;margin-top:8px;padding:6px 10px;border-left:2px solid rgba(63,185,80,0.2)">
+          ${rpPortrait(leadBench)} <span style="margin-left:6px">"${leadingFinalist} is ahead. I knew it. Keep going."</span>
+        </div>`;
+      }
+      if (trailBench && trailBench !== leadBench) {
+        html += `<div style="font-size:12px;color:#484f58;font-style:italic;margin-top:4px;padding:6px 10px;border-left:2px solid rgba(248,81,73,0.2)">
+          ${rpPortrait(trailBench)} <span style="margin-left:6px">"It's not over. ${trailingFinalist} can come back. I've seen it."</span>
+        </div>`;
+      }
+    }
+
+    html += `</div>`; // end stage block
+  });
+
+  // ═══ FINAL RESULT ═══
+  html += `<div style="margin-top:24px;padding-top:16px;border-top:2px solid rgba(227,179,65,0.3)">
+    <div style="text-align:center;font-family:var(--font-display);font-size:22px;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;color:var(--accent-gold)">Final Standings</div>`;
+
+  const placements = ep.finalChallengePlacements || Object.entries(scores).sort(([,a],[,b]) => b - a).map(([n]) => n);
+  placements.forEach((name, rank) => {
+    const total = scores?.[name] || 0;
+    const isWinner = name === winner;
+    const stageWins = stages.filter(s => s.winner === name).length;
+    html += `<div style="display:flex;align-items:center;gap:14px;margin-bottom:10px;padding:10px;${isWinner ? 'background:rgba(227,179,65,0.08);border:1px solid rgba(227,179,65,0.2)' : 'background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06)'};border-radius:8px">
+      <span style="font-family:var(--font-display);font-size:18px;color:${isWinner ? 'var(--accent-gold)' : 'var(--muted)'}">${rank + 1}</span>
+      ${rpPortrait(name, isWinner ? 'lg' : 'md')}
+      <div style="flex:1">
+        <div style="font-size:14px;font-family:var(--font-display);${isWinner ? 'color:var(--accent-gold)' : ''}">${name}${isWinner ? ' \u2014 WINNER' : ''}</div>
+        <div style="font-size:11px;color:var(--muted)">${vpArchLabel(name)} \u00b7 ${stageWins} stage win${stageWins !== 1 ? 's' : ''} \u00b7 Total: ${total.toFixed(1)}</div>
+      </div>
+    </div>`;
+  });
+
+  html += `</div></div>`;
+  return html;
+}
+
 function rpBuildFTC(ep) {
   const ftcData = ep.ftcData || {};
   const finalists = ep.finaleFinalists || gs.activePlayers;
@@ -19238,6 +19419,12 @@ function buildVPScreens(epRecord) {
       if (_jeA) vpScreens.push({ id:'jury-convenes', label:'Jury Convenes', html: _jeA });
       const _jeV = rpBuildJuryVotes(ep);
       if (_jeV) vpScreens.push({ id:'jury-votes', label:'Jury Votes', html: _jeV });
+    }
+
+    // Grand Challenge (final-challenge format only)
+    if (ep.finaleChallengeStages?.length) {
+      const _gcHtml = rpBuildFinaleGrandChallenge(ep);
+      if (_gcHtml) vpScreens.push({ id:'grand-challenge', label:'The Final Challenge', html: _gcHtml });
     }
 
     // Final Tribal Council (jury-based games only)

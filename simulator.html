@@ -18925,6 +18925,11 @@ function reunionRevealAll(epNum) {
 // Grand Challenge stage-by-stage reveal
 let _gcRevealed = {};
 function gcRevealNext(key, totalStages) {
+  // Reset if DOM was rebuilt (first stage is hidden = fresh render)
+  const firstStage = document.getElementById(`gc-stage-${key}-0`);
+  if (firstStage && firstStage.style.display === 'none' && (_gcRevealed[key] || 0) > 0) {
+    _gcRevealed[key] = 0;
+  }
   if (!_gcRevealed[key]) _gcRevealed[key] = 0;
   if (_gcRevealed[key] < totalStages) {
     const el = document.getElementById(`gc-stage-${key}-${_gcRevealed[key]}`);

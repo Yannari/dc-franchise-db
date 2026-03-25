@@ -13441,7 +13441,7 @@ function rpBuildVotingPlans(ep) {
 
   // ─── HTML ───────────────────────────────────────────────────────────────────
   const _vpTribeLabel = tribalTribeName ? ` \u00b7 ${tribalTribeName}` : '';
-  let html = `<div class="rp-page">
+  let html = `<div class="rp-page tod-dusk">
     <div class="rp-eyebrow">Episode ${ep.num} \u2014 Before the Vote${_vpTribeLabel}</div>
     <div class="rp-title" style="color:${tc}">Voting Plans</div>
     <div class="rp-vp-subtitle">As ${tribalTribeName || 'the tribe'} approaches tribal, alliances converge and targets emerge\u2026</div>
@@ -13484,6 +13484,7 @@ function rpBuildVotingPlans(ep) {
       }
 
       // TARGET section
+      const _isCheckedOut = ep.comfortBlindspotPlayer === g.target;
       ph += `<div class="rp-vp-section-mini">TARGET</div>
         <div class="rp-vp-target-row">
           ${rpPortrait(g.target)}
@@ -13491,6 +13492,7 @@ function rpBuildVotingPlans(ep) {
             <div class="rp-vp-target-name">${g.target}</div>
             <div class="rp-vp-target-cat" style="color:${cat.color}">${cat.label}</div>
             <div class="rp-vp-target-votes">${voterCount} vote${voterCount !== 1 ? 's' : ''} going here</div>
+            ${_isCheckedOut ? `<span class="rp-brant-badge gold">\u2b50 CHECKED OUT</span>` : ''}
           </div>
         </div>`;
 
@@ -13763,6 +13765,20 @@ function rpBuildVotingPlans(ep) {
       ${idolHolders.map(h => rpPortrait(h)).join('')}
       <span>${idolHolders.join(', ')} hold${idolHolders.length === 1 ? 's' : ''} a Hidden Immunity Idol. An idol play tonight could change everything.</span>
     </div>`;
+  }
+
+  // Defection callout (ep.defections: swing voters who broke from their bloc mid-vote)
+  if (ep.defections?.length) {
+    const defHtml = ep.defections.map(d =>
+      `<div class="vp-card fire" style="margin-bottom:8px;display:flex;align-items:flex-start;gap:10px">
+        ${rpPortrait(d.player)}
+        <div>
+          <div style="font-size:13px"><strong>${d.player}</strong> broke from ${d.alliance}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">Voted ${d.votedFor} \u2014 alliance wanted ${d.consensusWas}</div>
+        </div>
+      </div>`
+    ).join('');
+    html += `<div class="vp-section-header fire">Defectors</div>${defHtml}`;
   }
 
   // Key confessionals — spearheaders of each plan, solo voters, swing votes

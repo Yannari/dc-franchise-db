@@ -19907,6 +19907,7 @@ function buildVPScreens(epRecord) {
   delete _tvState[String(vpEpNum) + '_fv']; // fresh vote reveal state
   delete _tvState[String(vpEpNum) + '_je']; // jury elimination reveal state
   delete _tvState[String(vpEpNum) + '_bench'];
+  delete _reunionRevealed[String(vpEpNum) + '_reunion'];
   const ep = epRecord;
 
   const hasTribal = ep.alliances?.some(a => a.target) || ep.votingLog?.length;
@@ -20128,19 +20129,19 @@ function buildVPScreens(epRecord) {
       if (_jvHtml) vpScreens.push({ id:'jury-vote', label:'Jury Vote', html: _jvHtml });
     }
 
-    // Winner announcement
+    // Winner Ceremony (replaces old rpBuildWinner)
     if (ep.winner) {
-      vpScreens.push({ id:'winner', label:'The Winner', html: rpBuildWinner(ep) });
+      const _wcHtml = rpBuildWinnerCeremony(ep);
+      if (_wcHtml) vpScreens.push({ id:'winner-ceremony', label:'Winner', html: _wcHtml });
     }
 
-    // Fan Favorite — absorbed into Reunion Show (Sub-Plan 5)
-    // if (seasonConfig.popularityEnabled !== false) {
-    //   const _ffHtml = rpBuildFanFavorite(ep);
-    //   if (_ffHtml) vpScreens.push({ id:'fan-favorite', label:'Fan Favorite', html: _ffHtml });
-    // }
+    // Reunion Show (interactive awards, season recap)
+    const _reunionHtml = rpBuildReunion(ep);
+    if (_reunionHtml) vpScreens.push({ id:'reunion', label:'Reunion Show', html: _reunionHtml });
 
-    // Aftermath last
-    vpScreens.push({ id:'aftermath', label:'Aftermath', html: rpBuildAftermath(ep) });
+    // Season Statistics (full stats + Copy JSON)
+    const _statsHtml = rpBuildSeasonStats(ep);
+    if (_statsHtml) vpScreens.push({ id:'season-stats', label:'Statistics', html: _statsHtml });
 
   } else {
     // ── REGULAR EPISODE POST-VOTE ──

@@ -17967,78 +17967,274 @@ function rpBuildFTC(ep) {
   const finalists = ep.finaleFinalists || gs.activePlayers;
   const jury = gs.jury || [];
   if (!finalists.length || !jury.length) return '';
-
   const { finalistStatements = {}, jurorQA = [] } = ftcData;
+  const juryResult = ep.juryResult || {};
+  const reasoning = juryResult.reasoning || [];
+  const ftcSwings = ep.ftcSwings || [];
+  const epNum = ep.num;
+  const _pick = (arr, seed) => arr[([...seed].reduce((a,c)=>a+c.charCodeAt(0),0)+epNum*7)%arr.length];
 
   let html = `<div class="rp-page tod-deepnight">
-    <div class="rp-eyebrow">Episode ${ep.num} \u2014 Finale</div>
-    <div style="font-family:var(--font-display);font-size:28px;letter-spacing:2px;text-align:center;margin-bottom:6px;text-transform:uppercase">Final Tribal Council</div>
-    <div style="text-align:center;font-size:11px;color:var(--muted);margin-bottom:20px">The jury of ${jury.length} faces the finalists one last time</div>
-    <div style="display:flex;justify-content:center;gap:24px;margin-bottom:20px">
-      ${finalists.map(f => {
-        const wins = gs.episodeHistory.filter(e => e.immunityWinner === f).length;
-        return `<div style="text-align:center">
-          ${rpPortrait(f, 'lg')}
-          <div style="font-size:12px;font-family:var(--font-display);margin-top:6px">${f}</div>
-          <div style="font-size:10px;color:var(--muted)">${wins} win${wins!==1?'s':''} \u00b7 ${vpArchLabel(f)}</div>
-        </div>`;
-      }).join('')}
-    </div>
-    <hr class="rp-twist-divider">
-    <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px">Opening Statements</div>`;
+    <div class="rp-eyebrow">Episode ${epNum} \u2014 Finale</div>
+    <div style="font-family:var(--font-display);font-size:30px;letter-spacing:3px;text-align:center;margin-bottom:6px;text-transform:uppercase;color:var(--accent-gold);text-shadow:0 0 30px rgba(227,179,65,0.2)">Final Tribal Council</div>
+    <div style="text-align:center;font-size:11px;color:var(--muted);margin-bottom:24px;letter-spacing:1.5px">The jury of ${jury.length} will decide the winner</div>`;
+
+  // ═══ PHASE 1: THE WALK IN ═══
+  html += `<div style="font-size:9px;font-weight:700;letter-spacing:2px;color:var(--accent-gold);text-transform:uppercase;margin-bottom:12px;border-bottom:1px solid rgba(227,179,65,0.15);padding-bottom:6px">Phase 1 \u2014 The Walk In</div>`;
+
+  // Atmospheric text
+  html += `<div style="font-size:13px;color:#484f58;font-style:italic;text-align:center;margin-bottom:16px;line-height:1.6">
+    The torches are lit. The jury files in. ${jury.length} faces \u2014 some bitter, some curious, all carrying the weight of the game they lost. The finalists take their seats. Tonight, the power belongs to the people who were voted out.
+  </div>`;
+
+  // Finalist cards with game records
+  html += `<div style="display:flex;justify-content:center;gap:20px;margin-bottom:20px;flex-wrap:wrap">`;
+  finalists.forEach(f => {
+    const s = pStats(f);
+    const wins = gs.episodeHistory.filter(e => e.immunityWinner === f).length;
+    const idolsPlayed = gs.episodeHistory.reduce((sum, e) => sum + (e.idolPlays || []).filter(p => p.player === f).length, 0);
+    const votesAgainst = gs.episodeHistory.reduce((sum, e) => sum + ((e.votingLog || []).filter(v => v.voted === f && v.voter !== 'THE GAME').length), 0);
+    const topAlly = [...new Set(gs.episodeHistory.flatMap(e => (e.alliances || []).filter(a => a.members?.includes(f)).flatMap(a => a.members.filter(m => m !== f))))].slice(0, 1)[0];
+
+    html += `<div style="text-align:center;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:14px;min-width:140px">
+      ${rpPortrait(f, 'lg')}
+      <div style="font-family:var(--font-display);font-size:14px;margin-top:8px">${f}</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:2px">${vpArchLabel(f)}</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:6px;line-height:1.5">
+        ${wins} immunity win${wins !== 1 ? 's' : ''}<br>
+        ${idolsPlayed ? `${idolsPlayed} idol${idolsPlayed !== 1 ? 's' : ''} played \u00b7 ` : ''}${votesAgainst} vote${votesAgainst !== 1 ? 's' : ''} against<br>
+        ${topAlly ? `Key ally: ${topAlly}` : 'No dominant alliance'}
+      </div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  // Jury reaction row
+  html += `<div style="display:flex;flex-wrap:wrap;justify-content:center;gap:4px;margin-bottom:20px">
+    ${jury.map(j => {
+      const bestBond = Math.max(...finalists.map(f => getBond(j, f)));
+      const worstBond = Math.min(...finalists.map(f => getBond(j, f)));
+      const mood = bestBond >= 3 ? 'color:#3fb950' : worstBond <= -2 ? 'color:var(--accent-fire)' : 'color:var(--muted)';
+      return `<div style="text-align:center">${rpPortrait(j)}<div style="font-size:8px;${mood}">${bestBond >= 3 ? '\u2764' : worstBond <= -2 ? '\ud83d\udd25' : '\u2014'}</div></div>`;
+    }).join('')}
+  </div>`;
+
+  // ═══ PHASE 2: OPENING STATEMENTS ═══
+  html += `<div style="font-size:9px;font-weight:700;letter-spacing:2px;color:var(--accent-gold);text-transform:uppercase;margin:20px 0 12px;border-bottom:1px solid rgba(227,179,65,0.15);padding-bottom:6px">Phase 2 \u2014 Opening Statements</div>`;
 
   finalists.forEach(f => {
-    const lines = finalistStatements[f] || [`"I played my game and I'm standing here. Judge that."`];
+    const lines = finalistStatements[f] || ['"I played my game and I\'m standing here. Judge that."'];
     html += `<div style="margin-bottom:14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:12px">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
         ${rpPortrait(f, 'sm')}
         <div style="font-family:var(--font-display);font-size:13px">${f}</div>
       </div>
-      ${lines.map(l => `<div style="font-size:13px;color:#c9d1d9;line-height:1.6;font-style:italic;margin-bottom:4px">${l}</div>`).join('')}
+      ${lines.map(l => `<div style="font-size:13px;color:#c9d1d9;line-height:1.7;font-style:italic;margin-bottom:4px">${l}</div>`).join('')}
     </div>`;
   });
 
+  // ═══ PHASE 3: JURY Q&A ═══
+  html += `<div style="font-size:9px;font-weight:700;letter-spacing:2px;color:var(--accent-gold);text-transform:uppercase;margin:20px 0 12px;border-bottom:1px solid rgba(227,179,65,0.15);padding-bottom:6px">Phase 3 \u2014 Jury Questions</div>`;
+
   if (jurorQA.length) {
-    html += `<hr class="rp-twist-divider">
-    <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px">Jury Questions</div>`;
-    jurorQA.slice(0, 5).forEach(qa => {
-      html += `<div style="margin-bottom:12px;background:rgba(255,255,255,0.02);border-left:2px solid rgba(255,255,255,0.08);padding:10px 12px;border-radius:0 6px 6px 0">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+    jurorQA.forEach(qa => {
+      const jS = pStats(qa.juror);
+      const bond = getBond(qa.juror, qa.targetForQuestion);
+      const jHistory = gs.jurorHistory?.[qa.juror];
+      const votedThemOut = jHistory?.voters?.includes(qa.targetForQuestion);
+      const fS = pStats(qa.targetForQuestion);
+
+      // Classify the question type for styling
+      const isBitter = bond <= -2 || (votedThemOut && bond < 1);
+      const isStrategic = jS.strategic >= 7 && !isBitter;
+      const isEmotional = jS.social >= 7 && jS.temperament <= 4 && !isBitter && !isStrategic;
+      const isRespectful = bond >= 2 && !isBitter;
+
+      const qType = isBitter ? 'TRAP' : isStrategic ? 'STRATEGIC' : isEmotional ? 'EMOTIONAL' : isRespectful ? 'RESPECT' : 'QUESTION';
+      const qColor = isBitter ? 'var(--accent-fire)' : isStrategic ? '#6366f1' : isEmotional ? '#e3b341' : '#3fb950';
+      const borderColor = isBitter ? 'rgba(248,81,73,0.25)' : isStrategic ? 'rgba(99,102,241,0.25)' : isEmotional ? 'rgba(227,179,65,0.25)' : 'rgba(63,185,80,0.15)';
+
+      // Determine answer quality for reaction
+      const answerQuality = fS.social * 0.5 + fS.strategic * 0.3 + fS.boldness * 0.2;
+      const difficulty = jS.strategic * 0.4 + Math.max(0, -bond) * 0.6;
+      const isGoodAnswer = answerQuality > difficulty;
+
+      // Jury reaction
+      const reactions = isGoodAnswer
+        ? _pick([`The jury nods.`, `A few jurors exchange glances \u2014 that landed.`, `Even ${qa.juror} seems satisfied.`, `Respect. The jury felt that.`], qa.juror + qa.targetForQuestion + 'good')
+        : _pick([`${qa.juror} doesn't look convinced.`, `A few eye rolls from the jury bench.`, `That answer didn't land. The jury knows it.`, `Silence. Not the good kind.`], qa.juror + qa.targetForQuestion + 'bad');
+
+      html += `<div style="margin-bottom:14px;background:rgba(255,255,255,0.02);border-left:3px solid ${borderColor};padding:12px;border-radius:0 8px 8px 0">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
           ${rpPortrait(qa.juror, 'sm')}
-          <div style="font-size:11px;color:var(--muted)">${qa.juror} \u2192 ${qa.targetForQuestion}</div>
+          <div>
+            <div style="font-size:11px;color:var(--muted)">${qa.juror} \u2192 ${qa.targetForQuestion}</div>
+            <span style="font-size:8px;font-weight:700;letter-spacing:1px;color:${qColor};text-transform:uppercase">${qType}</span>
+          </div>
         </div>
-        <div style="font-size:13px;color:#c9d1d9;line-height:1.5;margin-bottom:5px">"${qa.question}"</div>
-        <div style="font-size:12px;color:#8b949e;line-height:1.5;padding-left:4px">${qa.response}</div>
+        <div style="font-size:13px;color:#c9d1d9;line-height:1.6;margin-bottom:6px;font-style:italic">"${qa.question}"</div>
+        <div style="font-size:12px;color:#8b949e;line-height:1.5;padding-left:8px;border-left:2px solid rgba(255,255,255,0.04);margin-bottom:6px">${qa.response}</div>
+        <div style="font-size:11px;color:#484f58;font-style:italic">${reactions}</div>
       </div>`;
     });
+  } else {
+    html += `<div style="font-size:12px;color:#484f58;font-style:italic">The jury asks their questions. The finalists answer. The room shifts.</div>`;
   }
 
-  // Vote casting
-  const juryResult = ep.juryResult || {};
-  const reasoning = juryResult.reasoning || [];
-  if (reasoning.length) {
-    html += `<hr class="rp-twist-divider">
-    <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:8px">Casting Votes</div>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Tonight they vote FOR who they want to win.</div>`;
-    reasoning.forEach(r => {
-      const bond = getBond(r.juror, r.votedFor);
-      const jHistory = gs.jurorHistory?.[r.juror];
-      const votedThemOut = jHistory?.voters?.includes(r.votedFor);
-      let castLine;
-      if (votedThemOut && bond >= 2) castLine = `Despite everything — I'm voting for ${r.votedFor}. Best game wins.`;
-      else if (votedThemOut) castLine = `${r.votedFor} had a hand in my elimination. But this vote is about the game.`;
-      else if (bond >= 4) castLine = `Easy vote. ${r.votedFor} never stopped fighting for me and played the better game.`;
-      else if (bond >= 2) castLine = `Voting for ${r.votedFor}. We had our moments but I respect the game they played.`;
-      else castLine = `Casting my vote for ${r.votedFor}. Not because of our relationship \u2014 because of their game.`;
-      html += `<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;padding:8px;background:rgba(255,255,255,0.02);border-radius:6px">
-        ${rpPortrait(r.juror, 'sm')}
-        <div>
-          <div style="font-size:11px;color:var(--muted);margin-bottom:3px">${r.juror} \u2192 <span style="color:#e3b341;font-weight:600">${r.votedFor}</span></div>
-          <div style="font-size:12px;color:#8b949e;font-style:italic">"${castLine}"</div>
+  // ═══ PHASE 4: FIREWORKS MOMENTS ═══
+  html += `<div style="font-size:9px;font-weight:700;letter-spacing:2px;color:var(--accent-gold);text-transform:uppercase;margin:20px 0 12px;border-bottom:1px solid rgba(227,179,65,0.15);padding-bottom:6px">Phase 4 \u2014 Fireworks</div>`;
+
+  const fireworks = [];
+
+  // Feuds: juror with bond <= -3 and a finalist
+  jury.forEach(j => {
+    finalists.forEach(f => {
+      if (getBond(j, f) <= -3) {
+        const jHistory = gs.jurorHistory?.[j];
+        const votedOut = jHistory?.voters?.includes(f);
+        const jp = pronouns(j);
+        const fp = pronouns(f);
+        const feudTexts = votedOut ? [
+          `${j} stands. "You sat there and told me I was safe. Then you wrote my name. I want you to look me in the eye and tell me that was 'just a game.' Go ahead. Say it."`,
+          `${j} can barely sit still. "${f}, you blindsided me. You smiled while you did it. So don't come in here pretending you played with honor. You didn't."`,
+          `${j} leans forward. "I have one question for ${f}. Were you lying to me the whole time, or just at the end? Because from where I sat, it felt like the whole time."`,
+        ] : [
+          `${j} goes after ${f} directly. "You played this game like nobody else mattered. The way you treated people \u2014 that's not strategy. That's just who you are."`,
+          `${j} doesn't hold back. "I watched you from the bench for weeks, ${f}. Every lie. Every deal you broke. The jury sees everything. We saw you."`,
+        ];
+        fireworks.push({ type: 'feud', players: [j, f], badgeClass: 'bad', badge: 'CONFRONTATION',
+          text: _pick(feudTexts, j + f + 'feud') });
+      }
+    });
+  });
+
+  // Mockery: finalist projected 0 votes
+  finalists.forEach(f => {
+    const projVotes = juryResult.votes?.[f] || 0;
+    if (projVotes === 0) {
+      const mocker = jury.find(j => getBond(j, f) <= 0) || jury[0];
+      fireworks.push({ type: 'mockery', players: [mocker, f], badgeClass: 'bad', badge: 'ROASTED',
+        text: `${mocker} looks at ${f}. "Let me be honest with you. You're sitting here because someone chose to bring you. Not because you earned it. That's not a game. That's a ride. And I think you know that."` });
+    }
+  });
+
+  // Unexpected respect: bitter juror compliments the finalist they dislike
+  jury.forEach(j => {
+    const worstFinalist = finalists.reduce((w, f) => getBond(j, f) < getBond(j, w) ? f : w, finalists[0]);
+    if (getBond(j, worstFinalist) <= -2 && getBond(j, worstFinalist) >= -3.5) {
+      const respectTexts = [
+        `${j} surprises everyone. "I can't stand ${worstFinalist}. I've made that clear. But I'll say this \u2014 ${worstFinalist} played harder than anyone else up there. I hate that I respect it. But I do."`,
+        `${j} pauses before speaking. "I don't like ${worstFinalist}. Probably never will. But ${worstFinalist} outplayed me. Fair and square. That's the truth, and I won't pretend otherwise."`,
+      ];
+      fireworks.push({ type: 'respect', players: [j, worstFinalist], badgeClass: 'gold', badge: 'UNEXPECTED RESPECT',
+        text: _pick(respectTexts, j + worstFinalist + 'respect') });
+    }
+  });
+
+  // Supporting moments: ally juror stands up for a finalist
+  jury.forEach(j => {
+    const bestFinalist = finalists.reduce((b, f) => getBond(j, f) > getBond(j, b) ? f : b, finalists[0]);
+    if (getBond(j, bestFinalist) >= 4) {
+      const supportTexts = [
+        `${j} speaks up. "I watched ${bestFinalist} play every single day. Nobody worked harder. Nobody sacrificed more. I just want you all to know that before you vote."`,
+        `${j} addresses the jury directly. "You want to know who deserves this? ${bestFinalist}. Not because we were allies \u2014 because I watched ${bestFinalist} earn every day out there. That's what this vote should be about."`,
+        `${j} turns to the jury. "I know some of you are angry. I get it. But ${bestFinalist} played the game better than any of us. If you can't see that, you're voting with your feelings, not your head."`,
+      ];
+      fireworks.push({ type: 'support', players: [j, bestFinalist], badgeClass: 'win', badge: 'JURY SUPPORT',
+        text: _pick(supportTexts, j + bestFinalist + 'support') });
+    }
+  });
+
+  // Laughter: high boldness/social finalist gets a funny moment
+  finalists.forEach(f => {
+    const s = pStats(f);
+    if (s.boldness >= 8 || (s.social >= 8 && s.boldness >= 6)) {
+      const laughTexts = [
+        `${f} breaks the tension with a self-aware grin. "Look, I know half of you want to throw something at me right now. But you've got to admit \u2014 I made this season entertaining." The jury laughs. Even the angry ones.`,
+        `${f} catches a juror's eye and just shrugs. "What can I say? I'm standing here. You're sitting there. And somehow we all survived each other." It gets a laugh \u2014 begrudging, but real.`,
+      ];
+      fireworks.push({ type: 'laughter', players: [f], badgeClass: 'gold', badge: 'MOMENT',
+        text: _pick(laughTexts, f + 'laugh') });
+    }
+  });
+
+  // Deduplicate: max 1 feud, 1 mockery, 1 respect, 1 support, 1 laughter — pick best of each
+  const seen = new Set();
+  const dedupedFireworks = [];
+  fireworks.forEach(fw => {
+    if (!seen.has(fw.type)) {
+      seen.add(fw.type);
+      dedupedFireworks.push(fw);
+    }
+  });
+
+  if (dedupedFireworks.length) {
+    dedupedFireworks.forEach(fw => {
+      const badgeColors = {
+        bad: 'color:var(--accent-fire);background:rgba(248,81,73,0.08);border-color:rgba(248,81,73,0.2)',
+        win: 'color:#3fb950;background:rgba(63,185,80,0.08);border-color:rgba(63,185,80,0.2)',
+        gold: 'color:#e3b341;background:rgba(227,179,65,0.08);border-color:rgba(227,179,65,0.2)',
+      };
+      const style = badgeColors[fw.badgeClass] || badgeColors.gold;
+      html += `<div style="margin-bottom:12px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:12px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          ${fw.players.map(p => rpPortrait(p, 'sm')).join('')}
+          <span style="font-size:8px;font-weight:700;letter-spacing:1px;padding:2px 8px;border-radius:4px;border:1px solid;${style}">${fw.badge}</span>
         </div>
+        <div style="font-size:13px;color:#c9d1d9;line-height:1.7">${fw.text}</div>
       </div>`;
     });
+  } else {
+    html += `<div style="font-size:12px;color:#484f58;font-style:italic">The room settles. No eruptions tonight \u2014 just weight.</div>`;
   }
+
+  // FTC swing vote callout
+  if (ftcSwings.length) {
+    html += `<div style="margin-top:12px;background:rgba(227,179,65,0.05);border:1px solid rgba(227,179,65,0.15);border-radius:8px;padding:10px">
+      <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:#e3b341;margin-bottom:6px">FTC CHANGED ${ftcSwings.length} VOTE${ftcSwings.length !== 1 ? 'S' : ''}</div>
+      ${ftcSwings.map(sw => `<div style="font-size:12px;color:#8b949e;margin-bottom:3px">
+        ${rpPortrait(sw.juror, 'sm')} ${sw.juror}: ${sw.originalVote} \u2192 <span style="color:#e3b341;font-weight:600">${sw.finalVote}</span>
+      </div>`).join('')}
+    </div>`;
+  }
+
+  // ═══ PHASE 5: FINAL PLEA ═══
+  html += `<div style="font-size:9px;font-weight:700;letter-spacing:2px;color:var(--accent-gold);text-transform:uppercase;margin:20px 0 12px;border-bottom:1px solid rgba(227,179,65,0.15);padding-bottom:6px">Phase 5 \u2014 Final Plea</div>`;
+
+  finalists.forEach(f => {
+    const s = pStats(f);
+    const wins = gs.episodeHistory.filter(e => e.immunityWinner === f).length;
+    const votesAgainst = gs.episodeHistory.reduce((sum, e) => sum + ((e.votingLog || []).filter(v => v.voted === f && v.voter !== 'THE GAME').length), 0);
+
+    let plea;
+    if (s.strategic >= 8 && wins >= 2)
+      plea = `"I controlled this game AND I competed. I didn't just scheme from the shadows \u2014 I won when I had to. I earned every day. Vote for the complete game."`;
+    else if (s.strategic >= 8)
+      plea = `"Every big move this season? I was behind it. I'm not going to apologize for playing hard. I'm asking you to reward it. Vote for the person who actually drove this game."`;
+    else if (s.social >= 8)
+      plea = `"I played this game with relationships. Real ones. I looked every single one of you in the eye and I meant what I said. That's what got me here. And I think that deserves your vote."`;
+    else if (wins >= 3)
+      plea = `"${wins} challenge wins. I fought for my life every single round. I never hid. I never coasted. I competed \u2014 and I'm asking you to reward that."`;
+    else if (votesAgainst >= 6)
+      plea = `"You all came for me. ${votesAgainst} votes against me this season. And I'm still here. That's not luck. That's fight. Vote for the person who refused to go home."`;
+    else if (s.loyalty >= 8)
+      plea = `"I kept my word. In a game where everybody lies, I tried to be someone you could count on. I'm asking you to reward loyalty \u2014 because this game needs more of it."`;
+    else
+      plea = `"I'm not the biggest personality. I'm not the flashiest player. But I'm standing here. I outlasted every single person on that bench. And I did it my way."`;
+
+    html += `<div style="margin-bottom:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:12px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        ${rpPortrait(f, 'sm')}
+        <div style="font-family:var(--font-display);font-size:13px">${f}</div>
+      </div>
+      <div style="font-size:13px;color:#c9d1d9;line-height:1.7;font-style:italic">${plea}</div>
+    </div>`;
+  });
+
+  // Closing atmosphere
+  html += `<div style="text-align:center;font-size:13px;color:#484f58;font-style:italic;margin-top:16px;line-height:1.6;padding:12px 0;border-top:1px solid rgba(255,255,255,0.04)">
+    The jury stands. One by one, they walk to the voting urn. Tonight, they vote FOR who they want to win.
+  </div>`;
 
   html += `</div>`;
   return html;

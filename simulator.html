@@ -2768,7 +2768,7 @@ function simulateIndividualChallenge(pool, immune) {
   if (!candidates.length) return null;
   // Score every candidate so we can produce a full ranking
   const scored = candidates
-    .map(name => ({ name, score: chal.stat(pStats(name)) + (Math.random()*4-2) }))
+    .map(name => ({ name, score: chal.stat(pStats(name)) + (Math.random()*6-3) }))
     .sort((a, b) => b.score - a.score);
   const winner = scored[0].name;
   const chalMemberScores = {};
@@ -3824,10 +3824,10 @@ function checkNonIdolAdvantageUse(tribalPlayers, votesObj, ep, voteLog = []) {
       _chance += _allyBias + _schemerPenalty;
     }
 
-    if (Math.random() < _chance) {
+    if (ep._forceAdvantages || Math.random() < _chance) {
       votesObj[_evTarget] = _targetVotes + 1;
       gs.advantages.splice(gs.advantages.indexOf(_adv), 1);
-      ep.idolPlays.push({ player: _holder, type: 'extraVote', target: _evTarget, forAlly: _forAlly || null });
+      ep.idolPlays.push({ player: _holder, type: 'extraVote', target: _evTarget, forAlly: _forAlly || null, forced: !!ep._forceAdvantages });
     }
   }
 
@@ -3854,7 +3854,7 @@ function checkNonIdolAdvantageUse(tribalPlayers, votesObj, ep, voteLog = []) {
 
     const _chance = 0.25 + _s.strategic * 0.03 + (_state.emotional === 'paranoid' ? 0.20 : 0);
 
-    if (Math.random() < _chance) {
+    if (ep._forceAdvantages || Math.random() < _chance) {
       const _stolenVotedFor = voteLog.find(l => l.voter === _stealTarget)?.voted;
       // Remove stolen vote
       if (_stolenVotedFor && (votesObj[_stolenVotedFor] || 0) > 0)
@@ -3864,7 +3864,7 @@ function checkNonIdolAdvantageUse(tribalPlayers, votesObj, ep, voteLog = []) {
       if (_holderTarget) votesObj[_holderTarget] = (votesObj[_holderTarget] || 0) + 1;
 
       gs.advantages.splice(gs.advantages.indexOf(_adv), 1);
-      ep.idolPlays.push({ player: _holder, type: 'voteSteal', stolenFrom: _stealTarget, target: _holderTarget });
+      ep.idolPlays.push({ player: _holder, type: 'voteSteal', stolenFrom: _stealTarget, target: _holderTarget, forced: !!ep._forceAdvantages });
     }
   }
 }
@@ -8106,6 +8106,29 @@ function simulateEpisode() {
     ep.idolHoldersAtVote = (ep.idolHoldersAtVote || []).concat(
       gs.advantages.filter(a => a.type === 'idol' && tribalPlayers.includes(a.holder)).map(a => a.holder)
     );
+
+    // ── FORCE-PLAY: last tribal before finale — all advantages must be used or lost ──
+    const _isLastTribalBeforeFinale = gs.activePlayers.length <= (seasonConfig.finaleSize || 3) + 1;
+    if (_isLastTribalBeforeFinale) {
+      // Force-play all idols: every idol holder at tribal plays their idol on themselves
+      const _forceIdols = gs.advantages.filter(a => a.type === 'idol' && tribalPlayers.includes(a.holder));
+      _forceIdols.forEach(idol => {
+        const holder = idol.holder;
+        const votesAgainst = votes[holder] || 0;
+        ep.idolPlays.push({
+          player: holder, playedFor: null, type: 'idol',
+          votesNegated: votesAgainst, forced: true,
+        });
+        // Negate votes
+        if (votesAgainst > 0) votes[holder] = 0;
+        // Remove the idol
+        gs.advantages = gs.advantages.filter(a => a !== idol);
+      });
+      // Force-play extra votes and vote steals — they fire automatically via checkNonIdolAdvantageUse
+      // but mark them as forced so they always trigger (not probabilistic)
+      ep._forceAdvantages = true;
+    }
+
     checkIdolPlays(tribalPlayers, votes, ep, log);
     checkNonIdolAdvantageUse(tribalPlayers, votes, ep, log);
     // Rival tip-off betrayal: if a cross-alliance player saved the idol holder and it was played

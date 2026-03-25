@@ -18312,18 +18312,39 @@ function rpBuildFinaleGrandChallenge(ep) {
         ${suspenseText}
       </div>`;
 
-      const leadBench = (benchAssignments[_leader] || []).find(s => pStats(s).social >= 6);
-      const trailBench = (benchAssignments[_trailer] || []).find(s => pStats(s).boldness >= 6 || pStats(s).temperament <= 4);
-      if (leadBench) {
-        html += `<div style="font-size:12px;color:#484f58;font-style:italic;margin-top:6px;padding:6px 10px;border-left:2px solid rgba(63,185,80,0.2)">
-          ${rpPortrait(leadBench)} <span style="margin-left:6px">"${_leader} has this. Keep pushing."</span>
+      // Bench confessionals — up to 2 per side, varied dialogue
+      const leadBenchAll = (benchAssignments[_leader] || []).filter(s => pStats(s).social >= 5 || pStats(s).boldness >= 6).slice(0, 2);
+      const trailBenchAll = (benchAssignments[_trailer] || []).filter(s => pStats(s).boldness >= 5 || pStats(s).temperament <= 5 || pStats(s).loyalty >= 7).slice(0, 2);
+
+      const _leadLines = [
+        `"${_leader} is in the zone. I've watched ${_leader} play for weeks \u2014 this is ${_leader} at ${_leader}'s best."`,
+        `"Look at ${_leader}'s face. That's not stress. That's focus. ${_leader} knows ${_leader}'s winning this."`,
+        `"I knew it. I told everyone \u2014 ${_leader} was going to show up when it mattered. This is why I'm on this bench."`,
+        `"Come on, come on, come on\u2026 ${_leader}, you've got this. Don't slow down."`,
+        `"Every person on this bench chose ${_leader} for a reason. This is that reason. Right here."`,
+        `"${_leader}'s doing what ${_leader} always does \u2014 finding a way. I'm not surprised."`,
+      ];
+      const _trailLines = [
+        `"${_trailer} can come back. I've seen ${_trailer} do it before. This game isn't over until it's over."`,
+        `"Nobody counts ${_trailer} out. Nobody. ${_trailer} fights harder from behind than anyone I've ever seen."`,
+        `"${_trailer}, dig deep! You didn't come this far to lose in the last stage!"`,
+        `"I'm not giving up on ${_trailer}. Not yet. The final puzzle changes everything."`,
+        `"This is where ${_trailer} is at ${_trailer}'s best \u2014 when everybody thinks it's done. Watch."`,
+        `"The gap isn't that big. One good run and ${_trailer}'s right back in it. I believe that."`,
+      ];
+
+      leadBenchAll.forEach((supporter, i) => {
+        const line = _leadLines[([...supporter+_leader].reduce((a,c)=>a+c.charCodeAt(0),0) + idx*3 + i) % _leadLines.length];
+        html += `<div style="font-size:12px;color:#484f58;font-style:italic;margin-top:${i===0?'6':'4'}px;padding:6px 10px;border-left:2px solid rgba(63,185,80,0.2)">
+          ${rpPortrait(supporter)} <span style="margin-left:6px">${line}</span>
         </div>`;
-      }
-      if (trailBench && trailBench !== leadBench) {
+      });
+      trailBenchAll.filter(s => !leadBenchAll.includes(s)).forEach((supporter, i) => {
+        const line = _trailLines[([...supporter+_trailer].reduce((a,c)=>a+c.charCodeAt(0),0) + idx*3 + i) % _trailLines.length];
         html += `<div style="font-size:12px;color:#484f58;font-style:italic;margin-top:4px;padding:6px 10px;border-left:2px solid rgba(248,81,73,0.2)">
-          ${rpPortrait(trailBench)} <span style="margin-left:6px">"It's not over. Don't count ${_trailer} out."</span>
+          ${rpPortrait(supporter)} <span style="margin-left:6px">${line}</span>
         </div>`;
-      }
+      });
     } else {
       // Final stage — cliffhanger, don't reveal who won
       let finalText;

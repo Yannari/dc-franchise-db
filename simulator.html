@@ -20503,40 +20503,65 @@ function vpRevealNextPlacement(containerId) {
   const place = placements.length - revealIdx;
   const s = pStats(playerName);
   const totalPlayers = placements.length;
-  const _pck = (arr, sd) => arr[([...sd].reduce((a,c)=>a+c.charCodeAt(0),0)+place*7)%arr.length];
+  // Use place + name + epNum for unique seed per player per episode — prevents repeats
+  const _pck = (arr, sd) => arr[([...sd].reduce((a,c)=>a+c.charCodeAt(0),0) + place * 13 + revealIdx * 7) % arr.length];
 
   // Context-aware reason for each placement
   let flavor = '';
   if (isWinner) {
     const winReasons = [];
     if (s.physical >= 8) winReasons.push(`Dominated physically \u2014 nobody was close.`);
-    if (s.endurance >= 8) winReasons.push(`Outlasted everyone. Willpower over skill.`);
+    if (s.endurance >= 8) winReasons.push(`Outlasted everyone. Pure willpower.`);
     if (s.mental >= 8) winReasons.push(`Solved it faster than anyone expected.`);
-    if (s.physical >= 6 && s.endurance >= 6) winReasons.push(`All-around performance \u2014 no weaknesses exposed.`);
-    if (!winReasons.length) winReasons.push(`Found another gear when it mattered most.`, `Peaked at the right time.`);
-    flavor = _pck(winReasons, playerName + 'win');
+    if (s.physical >= 6 && s.endurance >= 6) winReasons.push(`All-around performance \u2014 no weaknesses to exploit.`);
+    winReasons.push(`Found another gear when it mattered most.`);
+    winReasons.push(`Peaked at exactly the right time.`);
+    winReasons.push(`When the pressure was highest, ${playerName} was the calmest one out there.`);
+    flavor = _pck(winReasons, playerName + 'w' + place);
   } else if (place === totalPlayers) {
     // Last place
     const lastReasons = [
-      `Fell behind early. Never recovered.`,
-      `The challenge exposed a gap in ${playerName}'s game.`,
-      `Out of rhythm from the start. The pressure was visible.`,
-      `Struggled with the format. Not ${playerName}'s strength.`,
+      `Fell behind early and never found a rhythm.`,
+      `The challenge format exposed a real weakness.`,
+      `Out of sync from the start. The pressure showed on ${playerName}'s face.`,
+      `Struggled to keep pace. This wasn't ${playerName}'s kind of challenge.`,
     ];
-    if (s.physical <= 4) lastReasons.push(`Physical challenges aren't ${playerName}'s game. It showed.`);
-    if (s.endurance <= 4) lastReasons.push(`Couldn't hold on. Endurance failed early.`);
-    flavor = _pck(lastReasons, playerName + 'last');
+    if (s.physical <= 4) lastReasons.push(`Physical challenges have never been ${playerName}'s strength. Today confirmed it.`);
+    if (s.endurance <= 4) lastReasons.push(`Couldn't hold on. The body gave out before the will did.`);
+    if (s.mental <= 4) lastReasons.push(`Lost focus at a critical moment. One mistake snowballed.`);
+    lastReasons.push(`Gave everything. It just wasn't enough today.`);
+    flavor = _pck(lastReasons, playerName + 'L' + place);
   } else {
-    // Middle placement
-    const midReasons = [
-      `Solid effort \u2014 but not quite enough.`,
-      `Stayed in the fight longer than expected. Ran out of steam.`,
-      `Had moments of brilliance. Then one mistake.`,
-      `Competitive throughout \u2014 just got edged out.`,
-    ];
-    if (s.physical >= 7) midReasons.push(`Physical edge kept ${playerName} in it, but the finish required more.`);
-    if (s.mental >= 7) midReasons.push(`Smart approach. Execution just fell short.`);
-    flavor = _pck(midReasons, playerName + 'mid');
+    // Middle placements — large pool + placement-relative text to avoid repeats
+    const isUpperHalf = place <= Math.ceil(totalPlayers / 2);
+    const midReasons = [];
+
+    // Upper half — closer to winning
+    if (isUpperHalf) {
+      midReasons.push(`So close. A few more seconds and the outcome could've been different.`);
+      midReasons.push(`Pushed hard until the very end. Just couldn't close the gap.`);
+      midReasons.push(`${playerName} was right there. The margin was razor-thin.`);
+      midReasons.push(`Strong showing \u2014 but the winner was just a step ahead.`);
+      midReasons.push(`Had the lead at one point. Then lost it. That's the game.`);
+    }
+    // Lower half — further from winning
+    else {
+      midReasons.push(`Started strong but faded when the challenge got harder.`);
+      midReasons.push(`Stayed in longer than people expected. Still went out before the finish.`);
+      midReasons.push(`Not ${playerName}'s best showing. The frustration was visible.`);
+      midReasons.push(`Fought for every second but couldn't keep up with the top performers.`);
+      midReasons.push(`The challenge moved too fast. ${playerName} was always half a step behind.`);
+    }
+
+    // Stat-driven additions (unique to this player)
+    if (s.physical >= 7) midReasons.push(`${playerName}'s physical ability kept ${pronouns(playerName).obj} in contention, but the final stretch required something more.`);
+    if (s.mental >= 7) midReasons.push(`Read the challenge well. Hands just couldn't keep up with the mind.`);
+    if (s.endurance >= 7) midReasons.push(`Endurance wasn't the issue \u2014 it was the burst of speed at the end that ${playerName} couldn't match.`);
+    if (s.boldness >= 8) midReasons.push(`Took a risky approach. It almost worked. Almost.`);
+    if (s.temperament <= 3) midReasons.push(`Got frustrated and it cost ${pronouns(playerName).obj}. Composure matters in these moments.`);
+    if (s.strategic >= 7) midReasons.push(`Played the challenge smart. But smart doesn't always beat fast.`);
+
+    flavor = _pck(midReasons, playerName + 'M' + place);
   }
 
   slot.style.opacity = '1';

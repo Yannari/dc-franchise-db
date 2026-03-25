@@ -18198,10 +18198,11 @@ function rpBuildFinaleGrandChallenge(ep) {
         </div>
       </div>`;
 
-    // Pre-stage narration
+    // Pre-stage narration — check actual assistants data, not just stage definition
+    const _hasRealAssistants = assistants && finalists.some(f => assistants[f]?.name);
     const preNarration = [];
     if (idx === 0) {
-      preNarration.push(`The finalists line up. The challenge begins. ${stage.hasAssistant ? 'Assistants take their positions alongside their partners.' : ''}`);
+      preNarration.push(`The finalists line up. The challenge begins.${_hasRealAssistants ? ' Assistants take their positions alongside their partners.' : ''}`);
       // Bench confessional
       const loudestSupporter = finalists.reduce((best, f) => {
         const bench = benchAssignments[f] || [];
@@ -18211,20 +18212,20 @@ function rpBuildFinaleGrandChallenge(ep) {
       }, null);
       if (loudestSupporter) {
         const sp = loudestSupporter.supporter;
-        preNarration.push(`From the bench, ${sp} is already on ${sp === loudestSupporter.supporter ? 'their' : 'the'} feet. "Come on, ${loudestSupporter.finalist}! This is yours!"`);
+        preNarration.push(`From the bench, ${sp} is already on their feet. "Come on, ${loudestSupporter.finalist}! This is yours!"`);
       }
     } else if (idx === 1) {
-      preNarration.push(`Stage two. The pace changes. ${stage.hasAssistant ? 'Assistants are still in it \u2014 but not for long.' : 'Pure individual effort now.'}`);
+      preNarration.push(`Stage two. The pace changes.${_hasRealAssistants ? ' Assistants are still in it \u2014 but not for long.' : ' Pure individual effort now.'}`);
     } else {
-      preNarration.push(`The final stage. ${stage.hasAssistant ? '' : 'Assistants step back. "From here, you\'re on your own."'} This is where it ends.`);
+      preNarration.push(`The final stage.${_hasRealAssistants ? ' Assistants step back. "From here, you\'re on your own."' : ''} This is where it ends.`);
     }
 
     preNarration.forEach(text => {
       html += `<div style="font-size:13px;color:#8b949e;line-height:1.6;margin-bottom:8px;font-style:italic">${text}</div>`;
     });
 
-    // Assistant contribution
-    if (stage.hasAssistant) {
+    // Assistant contribution — only render if real assistants exist
+    if (stage.hasAssistant && _hasRealAssistants) {
       finalists.forEach(f => {
         const asst = assistants[f];
         if (!asst?.name) return;
@@ -18255,7 +18256,7 @@ function rpBuildFinaleGrandChallenge(ep) {
     }
 
     // Assistant dropoff moment
-    if (stage.assistantDropoff) {
+    if (stage.assistantDropoff && _hasRealAssistants) {
       html += `<div style="text-align:center;font-size:12px;color:var(--accent-gold);font-weight:700;letter-spacing:1px;margin:12px 0;padding:8px;border:1px dashed rgba(227,179,65,0.3);border-radius:6px">
         ASSISTANTS STEP BACK \u2014 "From here, you're on your own."
       </div>`;

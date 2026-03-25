@@ -993,6 +993,9 @@
                 <option value="fan-vote">Fan Vote Finale</option>
                 <option value="final-challenge">Final Challenge (No Jury)</option>
               </select>
+<label style="display:flex;align-items:center;gap:6px;margin-top:6px;font-size:12px">
+  <input type="checkbox" id="cfg-finale-assistants" onchange="saveConfig()"> Enable Assistants (Final Challenge)
+</label>
             </div>
             <div class="slider-control">
               <label>Council Size: <strong id="jury-display">9</strong> Members</label>
@@ -1419,7 +1422,7 @@ let currentTwistFilter = 'all';
 function defaultConfig() {
   return {
     name: '', year: '', days: 39, gameMode: 'spectator',
-    teams: 2, mergeAt: 12, finaleSize: 3, finaleFormat: 'traditional', jurySize: 9,
+    teams: 2, mergeAt: 12, finaleSize: 3, finaleFormat: 'traditional', finaleAssistants: false, jurySize: 9,
     ri: false, riReentryAt: 12, journey: false, shotInDark: false,
     firemaking: false, tiebreakerMode: 'survivor', qem: false, idolRehide: false,
     advExpire: 4, foodWater: 'disabled', survivalDifficulty: 'casual',
@@ -1871,6 +1874,7 @@ function saveConfig() {
     mergeAt:     parseInt(g('cfg-merge')?.value) || 12,
     finaleSize:  parseInt(g('cfg-finale')?.value) || 3,
     finaleFormat: g('cfg-finale-format')?.value || 'traditional',
+    finaleAssistants: g('cfg-finale-assistants')?.checked || false,
     jurySize:    parseInt(g('cfg-jury')?.value) || 9,
     ri:          g('cfg-ri')?.checked || false,
     riReentryAt: parseInt(g('cfg-ri-reentry')?.value) || 12,
@@ -1909,6 +1913,7 @@ function renderConfig() {
   set('cfg-merge',   seasonConfig.mergeAt);
   set('cfg-finale',  seasonConfig.finaleSize);
   set('cfg-finale-format', seasonConfig.finaleFormat || 'traditional');
+  if (g('cfg-finale-assistants')) g('cfg-finale-assistants').checked = !!seasonConfig.finaleAssistants;
   set('cfg-jury',    seasonConfig.jurySize || 9);
   chk('cfg-ri',        seasonConfig.ri);
   set('cfg-ri-reentry', seasonConfig.riReentryAt);
@@ -12109,6 +12114,19 @@ function simulateFinale() {
 
   ep.finaleFinalists = finalists;
 
+  // Bench selection: eliminated players pick sides (when there's a challenge in the finale)
+  const hasFinaleChallenge = cfg.finaleFormat === 'final-challenge' || cfg.finaleSize >= 3;
+  if (hasFinaleChallenge && (gs.eliminated.length > 0 || (gs.jury || []).length > 0)) {
+    const benchResult = generateBenchAssignments(finalists);
+    ep.benchAssignments = benchResult.assignments;
+    ep.benchReasons = benchResult.reasons;
+  }
+
+  // Assistant selection: final-challenge format only, when setting enabled
+  if (cfg.finaleFormat === 'final-challenge' && cfg.finaleAssistants && ep.benchAssignments) {
+    ep.assistants = selectAssistants(finalists, ep.benchAssignments);
+  }
+
   // Generate final challenge reenactment stages (used by VP viewer)
   ep.finalChallengeStages = generateFinalChallengeStages(finalists, ep.immunityWinner);
 
@@ -12457,6 +12475,106 @@ function generateFinalChallengeStages(finalists, winner) {
       : `${winner} pushes through the last stretch when everyone else had nothing left. ${winner} wins the Final Immunity Challenge.` });
 
   return stages;
+}
+
+// Eliminated players pick which finalist's bench to sit on
+function generateBenchAssignments(finalists) {
+  // Pool: jury for jury formats, all eliminated for final-challenge
+  const pool = seasonConfig.finaleFormat === 'final-challenge' ? [...gs.eliminated] : [...(gs.jury || [])];
+  const assignments = Object.fromEntries(finalists.map(f => [f, []]));
+  const reasons = {};
+
+  pool.forEach(supporter => {
+    const elimEp = (gs.episodeHistory || []).find(h => h.eliminated === supporter || h.firstEliminated === supporter);
+    const votersWhoGotMeOut = (elimEp?.votingLog || []).filter(v => v.voted === supporter && v.voter !== 'THE GAME').map(v => v.voter);
+
+    const scored = finalists.map(f => {
+      const bond = getBond(supporter, f);
+      const votedMeOut = votersWhoGotMeOut.includes(f);
+      const penalty = votedMeOut && bond < 2 ? -1.5 : 0;
+      return { finalist: f, bond, score: bond + penalty };
+    });
+    scored.sort((a, b) => b.score - a.score);
+
+    const best = scored[0];
+    const finalist = best.finalist;
+    assignments[finalist].push(supporter);
+
+    const votedMeOut = votersWhoGotMeOut.includes(finalist);
+    const wereAllied = (gs.episodeHistory || []).some(h =>
+      (h.alliances || []).some(a => a.members?.includes(supporter) && a.members?.includes(finalist))
+    );
+    let reason;
+    if (wereAllied && best.bond >= 2) reason = `We were in the same alliance. That bond didn't die when I got voted out.`;
+    else if (best.bond >= 3) reason = `${finalist} was always real with me. I trust that.`;
+    else if (best.bond >= 1) reason = `${finalist} never wrote my name down. That counts for something.`;
+    else if (votedMeOut && best.bond >= 0) reason = `${finalist} voted me out, but played the best game. I respect it.`;
+    else if (scored.length >= 2 && scored[1].score < -1) reason = `I don't love anyone left, but ${finalist} is the least of the evils.`;
+    else reason = `${finalist} played the game I would have played. That's enough.`;
+
+    reasons[supporter] = { finalist, reason, bond: best.bond };
+  });
+
+  return { assignments, reasons };
+}
+
+// Each finalist picks an assistant from their bench (final-challenge format only)
+function selectAssistants(finalists, benchAssignments) {
+  const assistants = {};
+
+  finalists.forEach(f => {
+    const bench = benchAssignments[f] || [];
+    if (!bench.length) {
+      assistants[f] = null;
+      return;
+    }
+
+    const fS = pStats(f);
+    const heartWeight = (fS.loyalty + fS.social + fS.temperament) / 3;
+    const brainWeight = (fS.strategic + fS.mental + fS.boldness) / 3;
+    const diff = heartWeight - brainWeight;
+
+    const heartPick = bench.reduce((best, p) =>
+      getBond(f, p) > getBond(f, best) ? p : best, bench[0]);
+    const brainPick = bench.reduce((best, p) => {
+      const pS = pStats(p), bS = pStats(best);
+      const pScore = pS.physical + pS.endurance + pS.mental;
+      const bScore = bS.physical + bS.endurance + bS.mental;
+      return pScore > bScore ? p : best;
+    }, bench[0]);
+
+    let chosen, decision;
+    if (heartPick === brainPick) {
+      chosen = heartPick;
+      decision = 'unanimous';
+    } else if (diff >= 3) {
+      chosen = heartPick;
+      decision = 'heart';
+    } else if (diff <= -3) {
+      chosen = brainPick;
+      decision = 'brain';
+    } else {
+      const heartChance = 0.5 + (diff / 6) * 0.3;
+      if (fS.temperament < 4) {
+        chosen = Math.random() < 0.5 ? heartPick : brainPick;
+        decision = 'impulsive';
+      } else {
+        chosen = Math.random() < heartChance ? heartPick : brainPick;
+        decision = 'agonized';
+      }
+    }
+
+    const chosenBond = getBond(f, chosen);
+    assistants[f] = {
+      name: chosen,
+      stats: pStats(chosen),
+      bond: chosenBond,
+      heartPick, brainPick,
+      decision,
+    };
+  });
+
+  return assistants;
 }
 
 // ── Generate FTC opening statements + juror Q&A from game data ──

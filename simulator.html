@@ -18050,14 +18050,14 @@ function rpBuildAftermath(ep) {
   }
 
   // Solo player — no alliance, no strong bonds
-  const _soloPlayers = active.filter(n => {
+  const _twSoloPlayers = active.filter(n => {
     const inAlliance = (gs.namedAlliances || []).some(a => a.active && a.members.includes(n) && a.members.filter(m => active.includes(m)).length >= 2);
     if (inAlliance) return false;
     const avgBond = active.filter(p => p !== n).reduce((s,p) => s + getBond(n,p), 0) / Math.max(1, active.length - 1);
     return avgBond < 0.5;
   });
-  if (_soloPlayers.length === 1) {
-    _threads.push({ icon: '◇', color: '#8b949e', text: `<strong>${_soloPlayers[0]}</strong> is playing alone. No alliance, no strong bonds. Either that's by choice — or nobody wants them.` });
+  if (_twSoloPlayers.length === 1) {
+    _threads.push({ icon: '◇', color: '#8b949e', text: `<strong>${_twSoloPlayers[0]}</strong> is playing alone. No alliance, no strong bonds. Either that's by choice — or nobody wants them.` });
   }
 
   if (!_threads.length) _threads.push({ icon: '→', color: '#8b949e', text: `The vote went cleanly. The tribe knows where it stands — for now.` });

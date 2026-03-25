@@ -18265,13 +18265,6 @@ function rpBuildFinaleGrandChallenge(ep) {
       });
     }
 
-    // Assistant dropoff moment
-    if (stage.assistantDropoff && _hasRealAssistants) {
-      html += `<div style="text-align:center;font-size:12px;color:var(--accent-gold);font-weight:700;letter-spacing:1px;margin:12px 0;padding:8px;border:1px dashed rgba(227,179,65,0.3);border-radius:6px">
-        ASSISTANTS STEP BACK \u2014 "From here, you're on your own."
-      </div>`;
-    }
-
     // Stage results — bars only, no exact scores (keep suspense)
     html += `<div style="margin-top:10px">`;
     stageSorted.forEach(([name], rank) => {
@@ -18289,6 +18282,13 @@ function rpBuildFinaleGrandChallenge(ep) {
       </div>`;
     });
     html += `</div>`;
+
+    // Assistant dropoff — after stage 2 results, before suspense narration
+    if (stage.assistantDropoff && _hasRealAssistants) {
+      html += `<div style="text-align:center;font-size:12px;color:var(--accent-gold);font-weight:700;letter-spacing:1px;margin:12px 0;padding:8px;border:1px dashed rgba(227,179,65,0.3);border-radius:6px">
+        ASSISTANTS STEP BACK \u2014 "From here, you're on your own."
+      </div>`;
+    }
 
     // Update running totals
     finalists.forEach(f => { _runningTotals[f] += stageScores[f] || 0; });

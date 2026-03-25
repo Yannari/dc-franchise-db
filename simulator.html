@@ -14957,7 +14957,7 @@ function rpBuildVotes(ep) {
     <div class="tv-tally-header">Live Tally</div>`;
   tallyNames.forEach(name => {
     const slug = name.replace(/[^a-zA-Z0-9]/g, '');
-    html += `<div class="tv-tally-row" data-name="${name}">
+    html += `<div class="tv-tally-row" data-name="${name}" style="opacity:0;transition:opacity 0.4s">
       ${rpPortrait(name)}
       <div class="tv-tally-pname">${name}</div>
       <div class="tv-tally-bar-bg"><div class="tv-tally-bar" id="tv-tb-${epNum}-${slug}" style="width:0%"></div></div>
@@ -15197,7 +15197,7 @@ function rpBuildVotes(ep) {
     const _fvTallyNames = [...new Set(revoteLog.map(v => v.voted))].sort((a,b) => (_fvVotes[b]||0) - (_fvVotes[a]||0));
     _fvTallyNames.forEach(name => {
       const _fvSlug = name.replace(/[^a-zA-Z0-9]/g, '');
-      html += `<div class="tv-tally-row" data-name="${name}">
+      html += `<div class="tv-tally-row" data-name="${name}" style="opacity:0;transition:opacity 0.4s">
         ${rpPortrait(name)}
         <div class="tv-tally-pname">${name}</div>
         <div class="tv-tally-bar-bg"><div class="tv-tally-bar" id="tv-tb-${_fvId}-${_fvSlug}" style="width:0%"></div></div>
@@ -15567,7 +15567,10 @@ function _tvUpdateTally(epNum, state) {
     const rowEl = document.querySelector(`#tv-tally-${epNum} .tv-tally-row[data-name="${name}"]`);
     if (countEl) countEl.textContent = count;
     if (barEl) barEl.style.width = `${Math.round((count / maxCount) * 100)}%`;
-    if (rowEl) rowEl.classList.toggle('tv-tally-leading', count === maxCount && count > 0);
+    if (rowEl) {
+      rowEl.style.opacity = '1'; // reveal row when it gets its first vote
+      rowEl.classList.toggle('tv-tally-leading', count === maxCount && count > 0);
+    }
   });
   // Clear leading from names with 0 count
   const tally = document.getElementById(`tv-tally-${epNum}`);
@@ -15940,7 +15943,7 @@ function rpBuildVotes2(ep) {
     <div class="tv-tally-header">Live Tally</div>`;
   tallyNames2.forEach(name => {
     const slug = name.replace(/[^a-zA-Z0-9]/g, '');
-    html += `<div class="tv-tally-row" data-name="${name}">
+    html += `<div class="tv-tally-row" data-name="${name}" style="opacity:0;transition:opacity 0.4s">
       ${rpPortrait(name)}
       <div class="tv-tally-pname">${name}</div>
       <div class="tv-tally-bar-bg"><div class="tv-tally-bar" id="tv-tb-${epId}-${slug}" style="width:0%"></div></div>

@@ -1,0 +1,187 @@
+POPULARITY SYSTEM — DONE
+========================
+Fan vote twist + fan favorite end-game award.
+Brainstormed 2026-03-24. Implemented 2026-03-25.
+
+
+── OVERVIEW ──────────────────────────────────────────────────────────────────
+
+A persistent per-player popularity score (gs.popularity[name]) that accumulates
+across all episodes via event-driven deltas. Drives two features:
+
+  1. Fan Vote Twist — highest-popularity player gets saved (pre-merge: immunity,
+     post-merge: advantage)
+  2. Fan Favorite Award — announced after FTC, pure bragging rights + VP screen
+
+
+── STATE ─────────────────────────────────────────────────────────────────────
+
+gs.popularity[name] — running integer, starts at 0, never resets.
+Eliminated players keep their final score (used for fan favorite).
+Saved to ep.gsSnapshot each episode.
+
+Three axes with per-episode caps to prevent runaway scores:
+
+  Drama    — max +6 per episode
+  Likability — max +4 per episode
+  Underdog — max +5 per episode
+
+Caps are per-axis per-episode. A player can earn up to +15 in a single
+standout episode across all three axes.
+
+
+── POSITIVE DELTAS ───────────────────────────────────────────────────────────
+
+Event / moment                                      Drama  Like  Under
+----------------------------------------------------  -----  ----  -----
+hotheadExplosion fires (the exploder)                  +3
+Tribal blowup (gs.blowupHeatNextEp fired)              +3
+Idol played at tribal (any idol play)                  +2
+showmancerMoment fires                                 +2    +1
+bigMoveThoughts fires AND that player votes correctly  +2
+allianceCrack — player who cracks (bold betrayal)      +2
+Confessional event (confessional type)                 +1
+tdStrategy / schemerManipulates fires                  +1
+
+socialBoost fires (the booster)                               +2
+comfort / tdBond fires                                        +1
+underdogMoment fires                                          +2    +1
+hardWork fires                                                +1
+soldierCheckin fires (loyalty visible)                        +1
+unexpectedCompetence fires                                    +1    +1
+
+Survived being the top vote-getter (most votes, not eliminated)             +4
+Came back from bottom (was #1 target last ep, safe this ep)                 +3
+Survived an idol play against them (votes negated, still in)                +3
+Won a tiebreaker duel / challenge tie                                        +2
+Voted out when holding an unplayed idol (dramatic exit)        +2           +1
+
+
+── NEGATIVE DELTAS ───────────────────────────────────────────────────────────
+
+Event / moment                                      Drama  Like  Under
+----------------------------------------------------  -----  ----  -----
+floaterInvisible fires for them                        -2
+overplay fires                                         -1
+Episode with zero strategic/social events (boring)     -2          (was -1, increased)
+Player not mentioned in ANY camp event this episode    -1
+Did not receive a single vote at tribal (tribal        -2
+  invisible — not even a throwaway)
+
+showboat fires (the showboater)                               -2
+overconfidence fires                                          -1
+foodConflict fires (the taker)                                -2
+loneWolf fires                                                -1
+socialBomb / hotheadExplosion aimed AT a popular             -1
+  player (fan backlash on the aggressor)
+
+Voted out a player with popularity >= 10                      -2
+Was #1 vote-getter for 3+ straight tribals without           -2
+  being eliminated (bully perception)
+
+Part of the dominant alliance that controlled the                     -2
+  last 3+ votes uncontested (no drama, no threat)
+Won immunity but was never actually threatened                        -1
+  that episode (safe without needing to be)
+
+
+── FAN VOTE TWIST ────────────────────────────────────────────────────────────
+
+Engine type: 'fan-vote-boot' (already exists, needs replacement logic)
+
+Current behavior: random weighted by low social + high boldness.
+New behavior: saves the HIGHEST popularity player instead.
+
+Trigger: twist fires as scheduled in the twist calendar.
+
+Resolution:
+  - Find highest gs.popularity score among active players.
+  - Pre-merge: that player receives full tribal immunity this episode.
+  - Post-merge: that player receives an extra vote advantage
+    (added to gs.advantages, usable at any future tribal).
+  - If multiple players are tied for highest: tiebreak by earliest episode
+    appearance (longer survivor = more fan investment).
+
+Twist narrative (VP):
+  - Dedicated screen showing saved player portrait.
+  - Their score + top 2 reasons they earned it (most recent delta sources).
+  - "Fans have spoken — [Name] is safe." / "Fans have spoken — [Name]
+    receives an Extra Vote."
+  - Badge: FAN VOTE SAVE (gold)
+
+
+── FAN FAVORITE AWARD ────────────────────────────────────────────────────────
+
+Fires after FTC winner is revealed. No game effect — title + VP screen only.
+
+Winner: player with highest gs.popularity score at season end.
+  - Active players AND eliminated players are both eligible.
+  - If the game winner also has the highest score: combined card
+    ("Winner AND Fan Favorite").
+
+VP screen content:
+  - Portrait of fan favorite player.
+  - Title card: FAN FAVORITE — [Name]
+  - Their episode-by-episode popularity arc (ep1: +2, ep2: +5, ep4: +4…)
+  - The single biggest moment that defined their arc (highest delta event).
+  - If eliminated: "Eliminated [ep.X] — but never forgotten."
+
+
+── VP VIEWER INTEGRATION ─────────────────────────────────────────────────────
+
+Cold Open screen:
+  - "Fan Pulse" row added below the cast roster.
+  - Shows top 3 players by current score with a small rank indicator.
+  - Updates every episode — visible arc shift over time.
+
+Camp Overview screen:
+  - Small "Fan Pulse" section at the bottom of the existing screen.
+  - Top 3 and bottom 3 players by current score. No full leaderboard.
+  - Keeps it contextual without a dedicated screen every episode.
+
+Fan Vote Twist screen:
+  - Fires when fan-vote twist is scheduled.
+  - Portrait of saved player + score + reward + narrative line.
+
+Fan Favorite screen (post-FTC):
+  - New final screen after the FTC winner reveal.
+  - Portrait + title + arc breakdown + defining moment.
+
+
+── IMPLEMENTATION NOTES ──────────────────────────────────────────────────────
+
+- updatePopularity(ep) — new function, called at end of each episode after
+  all events and tribal have resolved. Reads ep.campEvents, ep.idolPlays,
+  ep.blowupHeatNextEp, ep.eliminated, vote tallies, etc.
+
+- Delta sources need to be readable after the fact: store which events fired
+  per player in ep (already done for most types) so updatePopularity can
+  scan them without re-running logic.
+
+- New detection needed for balance fixes:
+    "tribal invisible" — scan ep vote log: if player attended tribal and
+      received 0 votes, apply -2 drama.
+    "not in any camp event" — scan ep.campEvents for player name presence;
+      if absent from all events, apply -1 drama.
+    "dominant alliance 3+ votes" — track gs.dominantAllianceStreak[allianceId];
+      increment when same alliance controls consecutive tribals, apply -2
+      underdog to all members when streak >= 3.
+    "won immunity, never threatened" — if player won immunity AND
+      computeHeat(player) < 1.5 that episode, apply -1 underdog.
+
+- Per-episode axis caps enforced inside updatePopularity before adding to
+  gs.popularity[name].
+
+- gs.popularity initialised in initGame() as {} alongside gs.chalRecord.
+
+- ep.popularityDeltas[name] = [{axis, delta, reason}, ...] saved to history
+  snapshot — feeds the VP arc display.
+
+- Fan vote twist: replace the wRandom logic in applyTwist fan-vote-boot
+  handler with a simple argmax over gs.popularity (active players only).
+
+- Fan favorite: computed in the finale/FTC resolution block, saved to
+  gs.fanFavorite = name.
+
+Priority: MEDIUM-HIGH — builds on existing event infrastructure.
+No new event types required. All delta sources already fire and are logged.

@@ -14586,7 +14586,20 @@ function vpWhyBullets(name, votelog, alliances, ep) {
     const sa = (alliances||[]).find(a => a.members.includes(l.voter) && a.members.includes(name));
     bullets.push(`${l.voter} ${sa ? `voted ${l.voted} to hold ${sa.label} together — it wasn't enough after the elimination` : `voted ${l.voted} — tried to pull numbers a different way`}`);
   });
-  if (misplay) bullets.push(`Held a Hidden Immunity Idol — and never played it (${misplay.votesAgainst} vote${misplay.votesAgainst !== 1 ? 's' : ''} against, idol stayed in pocket)`);
+  if (misplay) {
+    bullets.push(`Held a Hidden Immunity Idol — and never played it (${misplay.votesAgainst} vote${misplay.votesAgainst !== 1 ? 's' : ''} against, idol stayed in pocket)`);
+    if (misplay.tipOffAlly) {
+      const tipS = pStats(misplay.tipOffAlly);
+      const _tipperRivalAlliance = (ep.gsSnapshot?.namedAlliances || []).find(a =>
+        a.members.includes(misplay.tipOffAlly) && !a.members.includes(name)
+      );
+      if (_tipperRivalAlliance) {
+        bullets.push(`${misplay.tipOffAlly} (intuition ${tipS.intuition}/10) could have warned them — but was in rival alliance ${_tipperRivalAlliance.name}. The tip-off never crossed alliance lines.`);
+      } else {
+        bullets.push(`${misplay.tipOffAlly} (intuition ${tipS.intuition}/10) was at Tribal and could have read the room — the warning never came.`);
+      }
+    }
+  }
   return bullets;
 }
 
@@ -15502,9 +15515,17 @@ function rpBuildAftermath(ep) {
     <div style="font-size:12px;color:#cdd9e5;line-height:1.6">${t.text}</div>
   </div>`;
 
-  let html = `<div class="rp-page" style="padding-bottom:32px">
+  let html = `<div class="rp-page tod-posttribal" style="padding-bottom:32px">
     <div style="font-size:9px;font-weight:800;letter-spacing:2px;color:#8b949e;margin-bottom:4px">Episode ${ep.num}</div>
     <div style="font-size:22px;font-weight:700;color:#e6edf3;margin-bottom:24px">Aftermath</div>`;
+
+  // ── Comfort blindspot callout ──
+  if (ep.comfortBlindspotPlayer && ep.comfortBlindspotPlayer === elim) {
+    html += `<div class="vp-card fire" style="margin-bottom:16px">
+      <div style="font-family:var(--font-display);font-size:11px;letter-spacing:1px;color:var(--accent-fire);margin-bottom:4px">CHECKED OUT</div>
+      <div style="font-size:13px;color:#cdd9e5;line-height:1.6">${elim} was seen checked out at camp before Tribal — the tribe noticed, and it sealed the vote.</div>
+    </div>`;
+  }
 
   // ── Section 1: Power Shifts ──
   if (_gained.length || _lost.length) {

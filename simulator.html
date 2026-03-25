@@ -5196,13 +5196,15 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
         events.push({ type: 'allianceForm', text: formText.replace(/\{name\}/g, allianceName), alliance: allianceName, members });
       };
       const _isAllied = p => gs.namedAlliances?.some(a => a.active && a.members.includes(p) && a.members.filter(m => group.includes(m)).length >= 2);
+      // Cap: players in 3+ active alliances shouldn't form more (overcommitted)
+      const _isOvercommitted = p => (gs.namedAlliances || []).filter(a => a.active && a.members.includes(p)).length >= 3;
       const _rpl = arr => arr[Math.floor(Math.random() * arr.length)];
 
       // Pick which formation trigger to attempt (weighted by game state)
       const _triggers = [];
 
-      // ── TRIGGER 1: Strategic pitch (original) — strategic player recruits by affinity ──
-      const _stratPlayers = group.filter(n => pStats(n).strategic >= 6 && !_isAllied(n));
+      // ── TRIGGER 1: Strategic pitch — strategic player recruits by affinity (can be already allied — playing both sides) ──
+      const _stratPlayers = group.filter(n => pStats(n).strategic >= 6 && !_isOvercommitted(n));
       if (_stratPlayers.length) _triggers.push({ id: 'strategic-pitch', weight: 10 });
 
       // ── TRIGGER 2: Power couple — two players with bond >= 3 who aren't allied ──
@@ -5217,7 +5219,7 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
 
       // ── TRIGGER 3: Mutual enemy — two unallied players who both dislike someone ──
       let _mePair = null, _meEnemy = null;
-      const _unallied = group.filter(n => !_isAllied(n));
+      const _unallied = group.filter(n => !_isOvercommitted(n)); // mutual enemy: allowed even if already allied (you can hate someone while having other allies)
       for (let i = 0; i < _unallied.length && !_mePair; i++) {
         for (let j = i + 1; j < _unallied.length && !_mePair; j++) {
           if (getBond(_unallied[i], _unallied[j]) < -0.5) continue;

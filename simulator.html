@@ -15842,6 +15842,14 @@ function buildVPScreens(epRecord) {
 
   // ── Helper: derive tribe groups at start of episode ──
   const vpTribeGroups = (() => {
+    // Post-merge (including the merge episode itself): campEvents uses the literal key 'merge'.
+    // Collapse to one group so the VP builder looks up the right key.
+    if (ep.campEvents?.['merge']) {
+      const members = ep.tribesAtStart?.length
+        ? [...new Set(ep.tribesAtStart.flatMap(t => t.members))]
+        : [...gs.activePlayers];
+      return [{ name: 'merge', members }];
+    }
     if (ep.tribesAtStart?.length) return ep.tribesAtStart;
     const snap = gs.episodeHistory?.filter(h => h.num < ep.num).slice(-1)[0]?.gsSnapshot;
     if (snap?.tribes?.length) return snap.tribes;

@@ -12177,8 +12177,26 @@ function simulateFinale() {
   gs.episodeHistory.push({
     num: epNum, eliminated: ep.eliminated || null, firstEliminated: null,
     riChoice: null, immunityWinner: ep.immunityWinner, challengeType: 'individual',
+    challengeLabel: ep.challengeLabel || null,
+    chalPlacements: ep.chalPlacements || null,
     isMerge: false, isFinale: true, votes: {}, alliances: [], summaryText, gsSnapshot: snapshotGameState(),
     fanFavorite: ep.fanFavorite || null, fanFavoriteScore: ep.fanFavoriteScore || 0, fanFavoriteIsWinner: ep.fanFavoriteIsWinner || false,
+    // Finale-specific fields
+    finaleFinalists: ep.finaleFinalists || null,
+    finalCut: ep.finalCut || null,
+    immunityNarrationStages: ep.finalChallengeStages || null,
+    juryResult: ep.juryResult || null,
+    ftcData: ep.ftcData || null,
+    ftcSwings: ep.ftcSwings || [],
+    benchAssignments: ep.benchAssignments || null,
+    benchReasons: ep.benchReasons || null,
+    assistants: ep.assistants || null,
+    finaleChallengeStages: ep.finaleChallengeStages || null,
+    finaleChallengeScores: ep.finaleChallengeScores || null,
+    finaleChallengeWinner: ep.finaleChallengeWinner || null,
+    finalChallengePlacements: ep.finalChallengePlacements || null,
+    finaleSabotageEvents: ep.finaleSabotageEvents || [],
+    campEvents: ep.campEvents || null,
   });
 
   saveGameState();

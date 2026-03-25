@@ -13424,7 +13424,9 @@ function rpBuildColdOpen(ep) {
   // ── Fan Pulse — scores BEFORE this episode (use previous ep snapshot) ──
   if (seasonConfig.popularityEnabled !== false) {
     const _popSnap = prevEp?.popularitySnapshot || {};
-    const _allRanked = [...activeAtStart].sort((a, b) => (_popSnap[b] || 0) - (_popSnap[a] || 0));
+    // For finale: use finaleFinalists (activeAtStart may miss players due to tribesAtStart being unset)
+    const _popPool = ep.isFinale && ep.finaleFinalists?.length ? new Set(ep.finaleFinalists) : activeAtStart;
+    const _allRanked = [..._popPool].sort((a, b) => (_popSnap[b] || 0) - (_popSnap[a] || 0));
     const _n = _allRanked.length;
     const _icSz = _n >= 16 ? 20 : _n >= 12 ? 24 : _n >= 8 ? 30 : _n >= 5 ? 36 : 44;
     const _icFs = Math.round(_icSz * 0.4);

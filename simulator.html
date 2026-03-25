@@ -6185,6 +6185,13 @@ function checkAllianceRecruitment(ep) {
       addBond(recruit, recruiter, -0.2);
       ep.allianceRefusals = ep.allianceRefusals || [];
       ep.allianceRefusals.push({ player: recruit, recruiter, alliance: alliance.name, scenario });
+      // Refusal camp event
+      const _refKey = Object.keys(ep.campEvents || {})[0];
+      if (_refKey && ep.campEvents[_refKey]) {
+        const _refBlock = ep.campEvents[_refKey].post || ep.campEvents[_refKey].pre;
+        if (Array.isArray(_refBlock)) _refBlock.push({ type: 'allianceRefusal', players: [recruit, recruiter],
+          text: _getRefusalEventText(recruit, recruiter, alliance.name, scenario) });
+      }
       return;
     }
 
@@ -6221,13 +6228,8 @@ function checkAllianceRecruitment(ep) {
       const _rPrn = pronouns(recruit);
       const _block = ep.campEvents[_campKey];
       const _target = _block.post?.length >= 0 ? _block.post : _block.pre;
-      _target.push({ type: 'allianceRecruit', players: [recruit, recruiter], text: _rp([
-        `${recruiter} brought ${recruit} into the fold. ${alliance.name} just got bigger — and ${recruit} just found a home.`,
-        `${recruit} is now running with ${alliance.name}. ${recruiter} made the move. The numbers just shifted without anyone announcing it.`,
-        `The conversation between ${recruiter} and ${recruit} happened quietly. By the end of it, ${recruit} was in. ${alliance.name} has a new member.`,
-        `${alliance.name} extends an offer to ${recruit}. ${recruiter} makes the pitch. ${_rPrn.Sub} ${_rPrn.sub === 'they' ? 'say' : 'says'} yes. Nobody else at camp knows yet.`,
-        `${recruit} needed somewhere to land. ${recruiter} opened the door. ${alliance.name} just absorbed one more — and ${recruit} is exactly what they needed.`,
-      ]) });
+      _target.push({ type: 'allianceRecruit', players: [recruit, recruiter],
+        text: _getRecruitEventText(recruit, recruiter, alliance, scenario) });
     }
   };
 
@@ -6379,7 +6381,176 @@ function checkAllianceRecruitment(ep) {
         ep.allianceRecruits.push({ player: bestPair[1], toAlliance: allianceName, fromAlliance: null, scenario: 'emergency-pair' });
       }
     }
+
+    // ── SCENARIO F: Mutual enemy — two unallied players who both hate the same person form a pact ──
+    const _unalliedF = active.filter(p => !gs.namedAlliances.some(a => a.active && a.members.includes(p) && a.members.filter(m => active.includes(m)).length >= 2));
+    for (let i = 0; i < _unalliedF.length && i < 6; i++) {
+      for (let j = i + 1; j < _unalliedF.length; j++) {
+        const a = _unalliedF[i], b = _unalliedF[j];
+        if (ep.allianceRecruits?.some(r => r.player === a || r.player === b)) continue;
+        if (getBond(a, b) < -0.5) continue; // need at least neutral bond with each other
+        // Find common enemy: someone they both have bond <= -1.5 with
+        const commonEnemy = active.find(e => e !== a && e !== b && getBond(a, e) <= -1.5 && getBond(b, e) <= -1.5);
+        if (!commonEnemy) continue;
+        if (pctRoll(a + b + 'F' + ep.num) >= 40) continue; // ~40%
+        const allianceName = nameNewAlliance(2);
+        gs.namedAlliances.push({ id: `alliance_${Date.now()}_${Math.floor(Math.random()*1000)}`, name: allianceName, members: [a, b], formed: ep.num, betrayals: [], active: true });
+        addBond(a, b, 0.6);
+        ep.allianceRecruits = ep.allianceRecruits || [];
+        ep.allianceRecruits.push({ player: b, toAlliance: allianceName, fromAlliance: null, scenario: 'mutual-enemy' });
+        // Camp event
+        const _meKey = Object.keys(ep.campEvents || {})[0];
+        if (_meKey && ep.campEvents[_meKey]) {
+          const _meBlock = ep.campEvents[_meKey].post || ep.campEvents[_meKey].pre || ep.campEvents[_meKey];
+          if (Array.isArray(_meBlock)) _meBlock.push({ type: 'allianceRecruit', players: [a, b, commonEnemy],
+            text: `${a} and ${b} discovered they share the same target: ${commonEnemy}. "I can't stand ${commonEnemy}." "Neither can I." ${allianceName} was born from mutual frustration \u2014 not trust. But sometimes that's enough.`
+          });
+        }
+        break; // one mutual enemy alliance per episode
+      }
+    }
+
+    // ── SCENARIO G: Post-betrayal refuge — betrayed player recruited by rivals ──
+    (ep.allianceQuits || []).forEach(({ player, alliance: quitAlliance }) => {
+      if (!active.includes(player)) return;
+      if (ep.allianceRecruits?.some(r => r.player === player)) return;
+      // Find rival alliances that opposed the one they left
+      const rivalAlliances = gs.namedAlliances.filter(a =>
+        a.active && a.name !== quitAlliance && !a.members.includes(player) &&
+        a.members.filter(m => active.includes(m)).length >= 2
+      );
+      rivalAlliances.forEach(rival => {
+        const bestAnchor = rival.members.filter(m => active.includes(m)).sort((x,y) => getBond(player, y) - getBond(player, x))[0];
+        if (!bestAnchor || getBond(player, bestAnchor) < 0) return;
+        if (pctRoll(player + rival.name + 'G') >= 45) return; // ~45%
+        doRecruit(rival, player, bestAnchor, 'post-betrayal');
+      });
+    });
+
+    // ── SCENARIO H: Power couple — two players with very high mutual bond auto-ally if not already ──
+    for (let i = 0; i < active.length; i++) {
+      for (let j = i + 1; j < active.length; j++) {
+        const a = active[i], b = active[j];
+        const bond = getBond(a, b);
+        if (bond < 4) continue; // need very strong bond
+        // Skip if already in the same alliance
+        if (gs.namedAlliances.some(al => al.active && al.members.includes(a) && al.members.includes(b))) continue;
+        if (ep.allianceRecruits?.some(r => r.player === a || r.player === b)) continue;
+        if (pctRoll(a + b + 'H' + ep.num) >= 60) continue; // ~60%
+        // Check if one is in an alliance — recruit the other into it
+        const existingA = gs.namedAlliances.find(al => al.active && al.members.includes(a) && al.members.filter(m => active.includes(m)).length >= 2);
+        const existingB = gs.namedAlliances.find(al => al.active && al.members.includes(b) && al.members.filter(m => active.includes(m)).length >= 2);
+        if (existingA && !existingA.members.includes(b)) {
+          doRecruit(existingA, b, a, 'power-couple');
+        } else if (existingB && !existingB.members.includes(a)) {
+          doRecruit(existingB, a, b, 'power-couple');
+        } else if (!existingA && !existingB) {
+          // Neither in an alliance — form a new pair
+          const allianceName = nameNewAlliance(2);
+          gs.namedAlliances.push({ id: `alliance_${Date.now()}_${Math.floor(Math.random()*1000)}`, name: allianceName, members: [a, b], formed: ep.num, betrayals: [], active: true });
+          addBond(a, b, 0.3);
+          ep.allianceRecruits = ep.allianceRecruits || [];
+          ep.allianceRecruits.push({ player: b, toAlliance: allianceName, fromAlliance: null, scenario: 'power-couple' });
+        }
+        break; // one power couple per episode
+      }
+    }
+
+    // ── SCENARIO I: Idol holder seeks shield — player with an idol recruits a strong player for protection ──
+    const _idolHolders = (gs.advantages || []).filter(a => a.type === 'idol' && active.includes(a.holder)).map(a => a.holder);
+    _idolHolders.forEach(holder => {
+      if (ep.allianceRecruits?.some(r => r.player === holder)) return;
+      // Already in a strong alliance? Don't need to recruit
+      const holderAlliance = gs.namedAlliances.find(a => a.active && a.members.includes(holder) && a.members.filter(m => active.includes(m)).length >= 3);
+      if (holderAlliance) return;
+      // Find a strong player (high threat) with positive bond to recruit as shield
+      const shieldCandidates = active.filter(p => p !== holder && threatScore(p) >= 5 && getBond(holder, p) >= 0.5)
+        .sort((a,b) => threatScore(b) - threatScore(a));
+      if (!shieldCandidates.length) return;
+      if (pctRoll(holder + 'I' + ep.num) >= 35) return; // ~35%
+      const shield = shieldCandidates[0];
+      // Try to recruit into existing alliance or form new
+      const holderSmallAlliance = gs.namedAlliances.find(a => a.active && a.members.includes(holder) && !a.members.includes(shield));
+      if (holderSmallAlliance) {
+        doRecruit(holderSmallAlliance, shield, holder, 'idol-shield');
+      } else {
+        const allianceName = nameNewAlliance(2);
+        gs.namedAlliances.push({ id: `alliance_${Date.now()}_${Math.floor(Math.random()*1000)}`, name: allianceName, members: [holder, shield], formed: ep.num, betrayals: [], active: true });
+        addBond(holder, shield, 0.5);
+        ep.allianceRecruits = ep.allianceRecruits || [];
+        ep.allianceRecruits.push({ player: shield, toAlliance: allianceName, fromAlliance: null, scenario: 'idol-shield' });
+      }
+    });
   }
+}
+
+// ── Scenario-specific camp event text for recruitment ──
+// Called from doRecruit's camp event injection — replaces generic text with scenario-aware narration
+function _getRecruitEventText(recruit, recruiter, alliance, scenario) {
+  const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
+  const rPrn = pronouns(recruit);
+  switch (scenario) {
+    case 'swap-outsider': return _rp([
+      `${recruit} is the new face on this tribe. ${recruiter} doesn't waste time \u2014 by sundown, ${recruit} is part of ${alliance.name}. "You need us. We need numbers. Let's not overthink it."`,
+      `After the swap, ${recruit} was on the outside looking in. ${recruiter} saw an opportunity: bring ${recruit} in, and ${alliance.name} controls this new tribe. The pitch worked.`,
+    ]);
+    case 'post-quit': return _rp([
+      `${recruit} just walked away from everything. ${recruiter} was waiting. "Your old alliance is done. We're not. Come with us." ${recruit} didn't need to think long.`,
+      `After leaving ${rPrn.pos} old alliance, ${recruit} was floating. ${recruiter} offered a lifeline: ${alliance.name}. "We saw what they did to you. That won't happen here."`,
+    ]);
+    case 'blindside-swing': return _rp([
+      `${recruit} voted with the majority last tribal. ${recruiter} noticed. "You made the right call. Now make another one \u2014 join us." ${alliance.name} just got stronger.`,
+      `The blindside reshuffled everything. ${recruit} was the swing vote, and now ${recruiter} wants to lock that in. ${alliance.name} absorbs the free agent before anyone else can.`,
+    ]);
+    case 'free-agent': return _rp([
+      `${recruit} has been on the outside for too long. ${recruiter} finally extended the invitation. "You don't have to play alone anymore." ${recruit} joined ${alliance.name} \u2014 not out of love, but necessity.`,
+      `"I need people," ${recruit} told ${recruiter}. "And you need numbers." It wasn't romantic. It was math. ${alliance.name} adds ${recruit} to the fold.`,
+      `${recruiter} pulled ${recruit} aside after the challenge. "Everyone's talking about targeting you. Come with us." ${recruit} didn't hesitate. ${alliance.name} has a new member.`,
+    ]);
+    case 'emergency-pair': return _rp([
+      `With no alliances left standing, ${recruit} and the others had to start from scratch. It began with a look across the fire. By morning, they had a name for it.`,
+    ]);
+    case 'mutual-enemy': return _rp([
+      `${recruit} found someone who hates the same person. That's not trust \u2014 but it's a starting point. ${alliance.name} was built on shared frustration.`,
+    ]);
+    case 'post-betrayal': return _rp([
+      `${recruit}'s old alliance stabbed ${rPrn.obj} in the back. ${recruiter} saw the wreckage and moved in. "They threw you away. We won't." ${recruit} joins ${alliance.name} \u2014 hurt, angry, and looking for payback.`,
+      `${recruiter} approached ${recruit} the morning after the betrayal. "I know what they did to you. Come with us." ${recruit} was already nodding before ${recruiter} finished the sentence.`,
+    ]);
+    case 'power-couple': return _rp([
+      `${recruit} and ${recruiter} have been inseparable all season. It was only a matter of time before they made it official. ${alliance.name} is less a strategy and more a bond.`,
+      `Everyone at camp already knew ${recruit} and ${recruiter} were a pair. Now they have a name for it: ${alliance.name}. "We trust each other more than anyone else out here. That's enough."`,
+    ]);
+    case 'idol-shield': return _rp([
+      `${recruiter} has something hidden \u2014 and needs someone big enough to draw fire away. ${recruit} is the perfect shield. ${alliance.name} forms with an unspoken deal: protection for loyalty.`,
+      `${recruiter} brought ${recruit} in close. "I have safety. You have strength. Together, nobody touches us." ${recruit} doesn't know about the idol yet \u2014 but ${recruiter} knows ${recruit} is the kind of target that keeps ${recruiter} safe.`,
+    ]);
+    default: return _rp([
+      `${recruiter} brought ${recruit} into the fold. ${alliance.name} just got bigger.`,
+      `${recruit} is now part of ${alliance.name}. ${recruiter} made the pitch. The numbers shifted.`,
+    ]);
+  }
+}
+
+// ── Refusal camp event text ──
+function _getRefusalEventText(recruit, recruiter, allianceName, scenario) {
+  const rPrn = pronouns(recruit);
+  const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
+  const bond = getBond(recruit, recruiter);
+  if (bond <= -1) return _rp([
+    `${recruiter} tried to bring ${recruit} into ${allianceName}. ${recruit} didn't even let ${recruiter} finish. "After what you did? No." The rejection was immediate.`,
+    `${recruiter} approached ${recruit} about joining ${allianceName}. ${recruit} looked ${recruiter} dead in the eye. "I don't trust you. And I'm not going to pretend I do." ${recruiter} walked away empty-handed.`,
+  ]);
+  if (bond >= 2) return _rp([
+    `${recruiter} pitched ${allianceName} to ${recruit}. Surprisingly, ${recruit} said no. "I like you, ${recruiter}. But I don't like where this alliance is going. I need to keep my options open."`,
+    `${recruit} turned down ${recruiter}'s offer to join ${allianceName}. "It's not about you. I just can't commit right now. I need to see how the next vote plays out first."`,
+  ]);
+  return _rp([
+    `${recruiter} made the pitch. ${recruit} listened. Then shook ${rPrn.pos} head. "I'm not ready to lock in with anyone yet." ${recruiter} tried not to look hurt.`,
+    `${recruit} heard ${recruiter} out about ${allianceName}. Thought about it. Walked away. "I'll think about it" is a no in this game \u2014 and ${recruiter} knows it.`,
+    `${recruiter} offered ${recruit} a spot in ${allianceName}. ${recruit} paused. "I appreciate the offer. But I need to play my own game right now." The conversation ended there.`,
+    `"Not right now," ${recruit} told ${recruiter}. It wasn't hostile. It wasn't personal. But it was a no. ${recruiter} will have to look elsewhere.`,
+  ]);
 }
 
 // [2] SOCIAL BOMB / FAUX PAS — player with low temperament or high boldness says something

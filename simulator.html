@@ -4877,7 +4877,7 @@ const CAMP_EVENT_TYPES = [
   { id: 'strategicTalk',       twoPlayer: true,  weight: 12 },
   { id: 'idolSearch',          twoPlayer: false, weight: 10 },
   { id: 'injury',              twoPlayer: false, weight: 6  },
-  { id: 'allianceForm',        twoPlayer: false, weight: 10 },
+  { id: 'allianceForm',        twoPlayer: false, weight: 18 },
   { id: 'rumor',               twoPlayer: true,  weight: 10 },
   { id: 'comfort',             twoPlayer: true,  weight: 12 },
   { id: 'overplay',            twoPlayer: false, weight: 7  },
@@ -5210,11 +5210,13 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
       }, []);
       if (!safeRecruits.length) continue;
       const allianceMembers = [initiator, ...safeRecruits];
-      // Skip if ALL these players are already in the same named alliance
+      // Skip if ALL these players are already in the same named alliance (exact match)
       const alreadyAllied = gs.namedAlliances?.some(a =>
         a.active && allianceMembers.every(m => a.members.includes(m))
       );
       if (alreadyAllied) continue;
+      // Also skip if this initiator already formed an alliance this episode
+      if (events.some(e => e.type === 'allianceForm' && e.members?.includes(initiator))) continue;
       // Create the new alliance
       const allianceName = nameNewAlliance(allianceMembers.length);
       const newAlliance = {
@@ -6270,6 +6272,54 @@ function checkAllianceRecruitment(ep) {
       });
     }
   }
+
+  // ── SCENARIO D: Free agents post-merge — unallied players seek existing alliances ──
+  if (gs.isMerged) {
+    const _activeAlliances = gs.namedAlliances.filter(a => a.active && a.members.filter(m => active.includes(m)).length >= 2);
+    active.forEach(freeAgent => {
+      // Skip if already in an active alliance
+      if (_activeAlliances.some(a => a.members.includes(freeAgent))) return;
+      // Skip if already recruited this episode
+      if (ep.allianceRecruits?.some(r => r.player === freeAgent)) return;
+      // Find best alliance to join: highest avg bond with active members
+      const candidates = _activeAlliances.map(a => {
+        const actives = a.members.filter(m => active.includes(m));
+        const avg = avgBondWith(freeAgent, actives);
+        const bestMember = actives.sort((x,y) => getBond(freeAgent, y) - getBond(freeAgent, x))[0];
+        return { alliance: a, avg, bestMember };
+      }).filter(c => c.avg >= 0.5 && c.bestMember).sort((a,b) => b.avg - a.avg);
+
+      if (candidates.length && pctRoll(freeAgent + 'D' + ep.num) < 50) { // ~50% chance
+        const best = candidates[0];
+        doRecruit(best.alliance, freeAgent, best.bestMember, 'free-agent');
+      }
+    });
+
+    // ── SCENARIO E: No alliances at all — force create one from the two closest players ──
+    if (_activeAlliances.length === 0 && active.length >= 3) {
+      let bestPair = null, bestBond = -Infinity;
+      for (let i = 0; i < active.length; i++) {
+        for (let j = i + 1; j < active.length; j++) {
+          const b = getBond(active[i], active[j]);
+          if (b > bestBond) { bestBond = b; bestPair = [active[i], active[j]]; }
+        }
+      }
+      if (bestPair && bestBond > -1) {
+        const allianceName = nameNewAlliance(2);
+        gs.namedAlliances.push({
+          id: `alliance_${Date.now()}_${Math.floor(Math.random()*1000)}`,
+          name: allianceName,
+          members: [...bestPair],
+          formed: ep.num,
+          betrayals: [],
+          active: true,
+        });
+        addBond(bestPair[0], bestPair[1], 0.4);
+        ep.allianceRecruits = ep.allianceRecruits || [];
+        ep.allianceRecruits.push({ player: bestPair[1], toAlliance: allianceName, fromAlliance: null, scenario: 'emergency-pair' });
+      }
+    }
+  }
 }
 
 // [2] SOCIAL BOMB / FAUX PAS — player with low temperament or high boldness says something
@@ -6907,6 +6957,13 @@ function generateCampEvents(ep, phase = 'both') {
   }
   if (gs.namedAlliances?.some(a => a.active && (ep.num - a.formed) >= 5)) { boost('allianceCrack', 12); boost('sideDeal', 8); }
   if (gs.isMerged && gs.activePlayers.length <= 8) { boost('bigMoveThoughts', 15); boost('allianceCrack', 12); boost('sideDeal', 10); }
+  // Boost alliance formation when alliances are thin post-merge
+  if (gs.isMerged) {
+    const _activeAlliances = (gs.namedAlliances || []).filter(a => a.active && a.members.filter(m => gs.activePlayers.includes(m)).length >= 2);
+    const _unallied = gs.activePlayers.filter(p => !_activeAlliances.some(a => a.members.includes(p)));
+    if (_activeAlliances.length <= 2) boost('allianceForm', 20); // few alliances left — new ones should form
+    if (_unallied.length >= 2) boost('allianceForm', _unallied.length * 5); // free agents need alliances
+  }
 
   // ── Per-group event count: total split across pre and post ──
   const getGroupPresent = (tribe) => gs.exiledThisEp ? tribe.members.filter(m => m !== gs.exiledThisEp) : tribe.members;

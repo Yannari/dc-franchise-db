@@ -14306,15 +14306,32 @@ function rpBuildTribal(ep) {
   const dangerRankLabels = ['#1 TARGET', '#2 TARGET', '#3 WATCH'];
   const dangerColors = ['#f85149', '#d29922', '#8b949e'];
 
-  let html = `<div class="rp-page">
-    <div class="rp-eyebrow">Episode ${ep.num}</div>
-    <div class="rp-title" style="color:${tc}">Tribal Council</div>
-    <div class="rp-tribe">
+  const seatPlayers = tribal;
+  let html = `<div class="rp-page tod-night" style="position:relative;overflow:hidden">`;
+  html += `<div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 100%, rgba(232,135,58,0.15), transparent 70%);pointer-events:none;animation:torchFlicker 3.5s ease-in-out infinite alternate"></div>`;
+  html += `<div class="rp-eyebrow">Episode ${ep.num}</div>`;
+  html += `<div style="font-family:var(--font-display);font-size:48px;letter-spacing:2px;text-align:center;text-shadow:0 0 24px #e8873a,0 0 8px rgba(232,135,58,0.5);margin-bottom:8px">TRIBAL COUNCIL</div>`;
+  html += `<div class="rp-tribe">
       <div class="rp-tribe-head" style="color:${tc};border-color:${tc}">${tribalTribeName}</div>
-      <div class="rp-portrait-row">
-        ${tribal.map(n => rpPortrait(n)).join('')}
+      <div class="rp-portrait-row" style="justify-content:center">
+        ${seatPlayers.map((n, i) => {
+          const isOuter = i === 0 || i === 1 || i === seatPlayers.length - 1 || i === seatPlayers.length - 2;
+          const arcOffset = isOuter ? 'transform:translateY(6px)' : '';
+          return `<div class="vp-stump-wrap" style="${arcOffset};animation:staggerIn 0.4s var(--ease-broadcast) ${i * 60}ms both">
+            ${rpPortrait(n)}
+            <div class="vp-stump"></div>
+          </div>`;
+        }).join('')}
       </div>
     </div>`;
+  // Mood indicators
+  const _moodColor = { comfortable: '#10b981', confident: 'var(--accent-ice)', paranoid: 'var(--accent-fire)', desperate: '#c0392b' };
+  html += `<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:12px 0">`;
+  seatPlayers.forEach(n => {
+    const _state = gs.playerStates?.[n]?.emotional || 'comfortable';
+    html += `<span style="font-size:10px;padding:2px 8px;border-radius:10px;border:1px solid ${_moodColor[_state]||'var(--border)'};color:${_moodColor[_state]||'var(--muted)'}">${n}: ${_state}</span>`;
+  });
+  html += `</div>`;
 
   // Advantages in play teaser
   const idolHolders = (ep.idolPlays||[]).map(i => i.player);
@@ -14452,6 +14469,18 @@ function rpBuildTribal(ep) {
       </div>
     </div>`;
   }
+
+  // Comfort blindspot — player not eliminated but was seen checked out (elimination case handled above)
+  if (ep.comfortBlindspotPlayer && ep.comfortBlindspotPlayer !== ep.eliminated) {
+    html += `<div class="vp-card fire" style="font-size:13px;margin-top:12px">
+      <strong>${ep.comfortBlindspotPlayer}</strong> was seen checked out at camp before Tribal \u2014 the tribe noticed.
+    </div>`;
+  }
+
+  // Urn divider
+  html += `<div class="vp-card" style="text-align:center;font-family:var(--font-mono);font-style:italic;border-color:var(--accent-fire);color:var(--muted);margin:20px 0;font-size:14px">
+    \u201cThe votes have been cast.\u201d
+  </div>`;
 
   html += `<div class="tc-continue">It's time to vote.</div>
   </div>`;

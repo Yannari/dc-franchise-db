@@ -8108,8 +8108,9 @@ function simulateEpisode() {
     );
 
     // ── FORCE-PLAY: last tribal before finale — all advantages must be used or lost ──
-    const _isLastTribalBeforeFinale = gs.activePlayers.length <= (seasonConfig.finaleSize || 3) + 1;
-    if (_isLastTribalBeforeFinale) {
+    // Force-play at top 5: from top 4 onward, no advantages exist
+    const _isTop5 = gs.activePlayers.length <= 5;
+    if (_isTop5) {
       // Force-play all idols: every idol holder at tribal plays their idol on themselves
       const _forceIdols = gs.advantages.filter(a => a.type === 'idol' && tribalPlayers.includes(a.holder));
       _forceIdols.forEach(idol => {

@@ -12032,6 +12032,103 @@ function ordinal(n) {
 // ENGINE: FINALE
 // ══════════════════════════════════════════════════════════════════════
 
+// Replace generic camp events with finale-themed "last day" events
+function generateFinaleCampOverride(ep, finalists) {
+  const campKey = Object.keys(ep.campEvents || {})[0] || 'merge';
+  const events = [];
+  const _pick = (arr, seed) => arr[([...seed].reduce((a,c)=>a+c.charCodeAt(0),0)+(ep.num||0)*7)%arr.length];
+
+  // 1. Opening atmosphere — the last morning
+  const openers = [
+    `The fire burned low overnight. Nobody relit it. The game doesn\u2019t need warmth anymore \u2014 it needs an ending.`,
+    `The sun rises on the last day. The camp feels different. Smaller. The empty spots where the others used to sit say more than anyone will today.`,
+    `Morning. The last one. The sounds are the same \u2014 birds, waves, wind through the shelter. But everything feels heavier.`,
+    `There are ${finalists.length} torches left. ${finalists.length} people. After today, there will be one.`,
+  ];
+  events.push({ type: 'atmosphere', text: _pick(openers, 'open' + finalists.join('')), players: finalists, badge: null });
+
+  // 2. Per-finalist reflection — looking back on the game
+  finalists.forEach(f => {
+    const s = pStats(f);
+    const fp = pronouns(f);
+    const wins = (gs.episodeHistory || []).filter(e => e.immunityWinner === f).length;
+    const votesAgainst = (gs.episodeHistory || []).reduce((sum, e) =>
+      sum + ((e.votingLog || []).filter(v => v.voted === f && v.voter !== 'THE GAME').length), 0);
+    const elimCount = (gs.episodeHistory || []).filter(e => e.eliminated || e.firstEliminated).length;
+    const daysPlayed = ep.num > 1 ? (ep.num - 1) * 3 : 1;
+
+    const reflections = [];
+    if (s.strategic >= 8)
+      reflections.push(`${f} sits alone, running the numbers one last time. Every vote, every alliance, every move that led here. "I made this happen. Today I finish it."`);
+    else if (s.social >= 8)
+      reflections.push(`${f} takes a walk around camp. Past the shelter ${fp.sub} built. Past the fire pit where every real conversation happened. "I\u2019m going to miss this place. Not the game \u2014 the people."`);
+    else if (wins >= 2)
+      reflections.push(`${f} stares at the challenge course in the distance. ${wins} wins got ${fp.obj} here. "One more. That\u2019s all I need. One more."`);
+    else if (votesAgainst >= 5)
+      reflections.push(`${f} counts the empty torches. ${votesAgainst} times they came for ${fp.obj}. ${votesAgainst} times ${fp.sub} survived. "They tried everything. I\u2019m still here."`);
+    else if (s.loyalty >= 8)
+      reflections.push(`${f} looks at the names scratched into the shelter wall. Every player who was here. "I kept my promises. Most of them. The ones that mattered."`);
+    else
+      reflections.push(`${f} sits by the water\u2019s edge. ${daysPlayed} days. "I never thought I\u2019d make it this far. But I did. And today I find out if it was enough."`);
+
+    if (s.temperament <= 3)
+      reflections.push(`${f} is restless. Pacing. Fidgeting. The calm before the finale doesn\u2019t suit ${fp.obj}. "I can\u2019t just sit here. I need this to start."`);
+    else if (s.boldness >= 8)
+      reflections.push(`${f} looks at the other finalists and grins. "I outplayed all of you. The only question is whether you\u2019re honest enough to admit it tonight."`);
+
+    events.push({ type: 'reflection', text: _pick(reflections, f + 'reflect'), players: [f], badge: null });
+  });
+
+  // 3. Relationship moment — the strongest bond among finalists
+  let bestPair = null, bestBond = -Infinity;
+  for (let i = 0; i < finalists.length; i++) {
+    for (let j = i + 1; j < finalists.length; j++) {
+      const b = getBond(finalists[i], finalists[j]);
+      if (b > bestBond) { bestBond = b; bestPair = [finalists[i], finalists[j]]; }
+    }
+  }
+  if (bestPair && bestBond >= 1) {
+    const [a, b] = bestPair;
+    const bondTexts = bestBond >= 3 ? [
+      `${a} and ${b} sit together one last time. They built something real out here. In a few hours, they\u2019ll be trying to take it from each other. Neither of them mentions that.`,
+      `${a} looks at ${b}. "Whatever happens tonight \u2014 we did this together." ${b} nods. They both know what\u2019s coming.`,
+    ] : [
+      `${a} and ${b} share a quiet moment by the fire. Not allies, not enemies \u2014 just two people who survived the same game. "Good luck tonight." "You too."`,
+    ];
+    events.push({ type: 'bond', text: _pick(bondTexts, a + b + 'finalbond'), players: bestPair, badge: null });
+  }
+
+  // 4. Rivalry moment — the lowest bond among finalists
+  let worstPair = null, worstBond = Infinity;
+  for (let i = 0; i < finalists.length; i++) {
+    for (let j = i + 1; j < finalists.length; j++) {
+      const b = getBond(finalists[i], finalists[j]);
+      if (b < worstBond) { worstBond = b; worstPair = [finalists[i], finalists[j]]; }
+    }
+  }
+  if (worstPair && worstBond <= -1) {
+    const [a, b] = worstPair;
+    const rivalTexts = [
+      `${a} and ${b} don\u2019t speak this morning. They haven\u2019t spoken in days. The game put them on opposite sides and nothing about the finale will fix that.`,
+      `${a} catches ${b}\u2019s eye across camp. No words. Just the understanding that one of them is about to end the other\u2019s game. For good.`,
+    ];
+    events.push({ type: 'rivalry', text: _pick(rivalTexts, a + b + 'rival'), players: worstPair, badge: null });
+  }
+
+  // 5. Closing — burning the shelter / saying goodbye to camp
+  const closers = [
+    `The finalists stand together. They look at the shelter one last time. ${finalists[0]} picks up a torch. "It\u2019s time." The shelter burns. The game ends where it started \u2014 with fire.`,
+    `They walk out of camp single file. Nobody looks back. The game is ahead of them now, not behind.`,
+    `${finalists[0]} douses the fire. The smoke rises and disappears. "That\u2019s it. That\u2019s the last camp." They grab their torches and leave.`,
+    `The last meal. The last conversation. The last time this camp will hold all of them. Then they leave \u2014 and the game takes over.`,
+  ];
+  events.push({ type: 'closing', text: _pick(closers, 'close' + finalists.join('')), players: finalists, badge: null });
+
+  // Override the camp events — replace whatever was generated
+  const override = { pre: events };
+  ep.campEvents = { [campKey]: override };
+}
+
 function simulateFinale() {
   const cfg = seasonConfig;
   const epNum = gs.episode + 1;
@@ -12045,6 +12142,9 @@ function simulateFinale() {
   };
 
   generateCampEvents(ep, 'both');
+
+  // ── Override camp events with finale-themed "last day" events ──
+  generateFinaleCampOverride(ep, players);
 
   // Final immunity challenge
   const immResult = simulateIndividualChallenge(players, null);

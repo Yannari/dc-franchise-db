@@ -18664,6 +18664,273 @@ function rpBuildWinner(ep) {
   return html;
 }
 
+// ── Reunion Show: interactive awards reveal, season recap, drama ──
+let _reunionRevealed = {};
+function reunionRevealNext(epNum) {
+  const key = epNum + '_reunion';
+  if (!_reunionRevealed[key]) _reunionRevealed[key] = 0;
+  const sections = document.querySelectorAll(`#reunion-${epNum} .reunion-section`);
+  if (_reunionRevealed[key] < sections.length) {
+    sections[_reunionRevealed[key]].style.display = 'block';
+    sections[_reunionRevealed[key]].scrollIntoView({ behavior: 'smooth', block: 'start' });
+    _reunionRevealed[key]++;
+  }
+  const btn = document.getElementById(`reunion-btn-${epNum}`);
+  if (btn) {
+    if (_reunionRevealed[key] >= sections.length) btn.style.display = 'none';
+    else btn.textContent = `Next (${_reunionRevealed[key]}/${sections.length})`;
+  }
+}
+function reunionRevealAll(epNum) {
+  const sections = document.querySelectorAll(`#reunion-${epNum} .reunion-section`);
+  sections.forEach(s => s.style.display = 'block');
+  _reunionRevealed[epNum + '_reunion'] = sections.length;
+  const btn = document.getElementById(`reunion-btn-${epNum}`);
+  if (btn) btn.style.display = 'none';
+}
+
+function rpBuildReunion(ep) {
+  const epNum = ep.num;
+  const winner = ep.winner;
+  const finalists = ep.finaleFinalists || [];
+  const allPlayers = players.map(p => p.name);
+  const history = gs.episodeHistory || [];
+  _reunionRevealed[epNum + '_reunion'] = 0;
+
+  let html = `<div class="rp-page" style="background:linear-gradient(180deg,#0d1117 0%,#161b22 100%)">
+    <div class="rp-eyebrow">Season Finale</div>
+    <div style="font-family:var(--font-display);font-size:28px;letter-spacing:3px;text-align:center;margin-bottom:6px;text-transform:uppercase">Reunion Show</div>
+    <div style="text-align:center;font-size:11px;color:var(--muted);margin-bottom:16px">The season in review</div>
+    <div style="display:flex;gap:8px;justify-content:center;margin-bottom:20px">
+      <button class="tv-reveal-btn" id="reunion-btn-${epNum}" onclick="reunionRevealNext(${epNum})">Next (0/6)</button>
+      <button onclick="reunionRevealAll(${epNum})" style="background:none;border:1px solid var(--border);border-radius:6px;padding:6px 14px;font-size:11px;color:var(--muted);cursor:pointer">Skip to results</button>
+    </div>
+    <div id="reunion-${epNum}">`;
+
+  // ═══ SECTION 1: SEASON IN NUMBERS ═══
+  const totalVotesCast = history.reduce((s, e) => s + ((e.votingLog||[]).filter(v => v.voter !== 'THE GAME').length), 0);
+  const totalIdols = history.reduce((s, e) => s + ((e.idolPlays||[]).length), 0);
+  const totalBlindsides = history.filter(e => {
+    const elim = e.eliminated;
+    if (!elim) return false;
+    return (e.votingLog||[]).some(v => v.voter === elim && v.voted !== elim);
+  }).length;
+  const totalTies = history.filter(e => e.isTie).length;
+
+  html += `<div class="reunion-section" style="display:none;margin-bottom:20px">
+    <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--accent-gold);text-transform:uppercase;margin-bottom:10px;border-bottom:1px solid rgba(227,179,65,0.15);padding-bottom:6px">Season in Numbers</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center">
+      ${[
+        { label: 'Episodes', val: history.length },
+        { label: 'Votes Cast', val: totalVotesCast },
+        { label: 'Idol Plays', val: totalIdols },
+        { label: 'Blindsides', val: totalBlindsides },
+        { label: 'Tied Votes', val: totalTies },
+        { label: 'Players', val: allPlayers.length },
+      ].map(s => `<div style="text-align:center;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:10px 16px;min-width:80px">
+        <div style="font-family:var(--font-display);font-size:20px;color:var(--accent-gold)">${s.val}</div>
+        <div style="font-size:9px;color:var(--muted);letter-spacing:0.5px">${s.label}</div>
+      </div>`).join('')}
+    </div>
+  </div>`;
+
+  // ═══ SECTION 2: THE SEASON STORY ═══
+  const storyMoments = [];
+  // Biggest blindside: high-strategic player eliminated earliest
+  const blindsideEps = history.filter(e => e.eliminated && (e.votingLog||[]).some(v => v.voter === e.eliminated && v.voted !== e.eliminated));
+  if (blindsideEps.length) {
+    const best = blindsideEps.sort((a,b) => pStats(a.eliminated).strategic - pStats(b.eliminated).strategic).slice(-1)[0];
+    storyMoments.push({ ep: best.num, players: [best.eliminated], text: `Episode ${best.num}: ${best.eliminated} blindsided. ${best.eliminated} voted for someone else \u2014 never saw it coming.` });
+  }
+  // Closest vote
+  const closeVotes = history.filter(e => e.votes && Object.keys(e.votes).length >= 2).map(e => {
+    const sorted = Object.entries(e.votes).sort(([,a],[,b]) => b-a);
+    return { ep: e.num, margin: (sorted[0]?.[1]||0) - (sorted[1]?.[1]||0), elim: e.eliminated };
+  }).filter(v => v.margin <= 1 && v.elim);
+  if (closeVotes.length) {
+    const closest = closeVotes[0];
+    storyMoments.push({ ep: closest.ep, players: [closest.elim], text: `Episode ${closest.ep}: ${closest.elim} eliminated by a single vote. The margin couldn't have been thinner.` });
+  }
+  // Biggest idol play
+  const idolEps = history.filter(e => (e.idolPlays||[]).some(p => p.votesNegated > 0));
+  if (idolEps.length) {
+    const best = idolEps.sort((a,b) => Math.max(...(b.idolPlays||[]).map(p=>p.votesNegated||0)) - Math.max(...(a.idolPlays||[]).map(p=>p.votesNegated||0)))[0];
+    const play = (best.idolPlays||[]).sort((a,b)=>(b.votesNegated||0)-(a.votesNegated||0))[0];
+    storyMoments.push({ ep: best.num, players: [play.player], text: `Episode ${best.num}: ${play.player} plays an idol, negating ${play.votesNegated} vote${play.votesNegated!==1?'s':''}. The biggest idol play of the season.` });
+  }
+
+  html += `<div class="reunion-section" style="display:none;margin-bottom:20px">
+    <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--accent-gold);text-transform:uppercase;margin-bottom:10px;border-bottom:1px solid rgba(227,179,65,0.15);padding-bottom:6px">The Season Story</div>
+    ${storyMoments.length ? storyMoments.map(m => `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;padding:8px;background:rgba(255,255,255,0.02);border-radius:6px">
+      ${m.players.map(p => rpPortrait(p, 'sm')).join('')}
+      <div style="font-size:12px;color:#c9d1d9;line-height:1.5">${m.text}</div>
+    </div>`).join('') : '<div style="font-size:12px;color:#484f58">A season without standout moments? Unlikely. But here we are.</div>'}
+  </div>`;
+
+  // ═══ SECTION 3: AWARDS ═══
+  const awards = [];
+
+  // Best Strategic — full ranking
+  const stratRank = allPlayers.map(n => {
+    const s = pStats(n);
+    const placement = history.findIndex(e => e.eliminated === n || e.firstEliminated === n);
+    const survivalBonus = placement === -1 ? allPlayers.length : (allPlayers.length - placement);
+    const advCount = history.reduce((sum, e) => sum + ((e.idolPlays||[]).filter(p => p.player === n).length), 0);
+    return { name: n, score: s.strategic * 2 + survivalBonus * 0.5 + advCount * 1.5 };
+  }).sort((a,b) => b.score - a.score);
+  awards.push({ label: 'Best Strategic', icon: '\ud83e\udde0', winner: stratRank[0].name, detail: `Full ranking: ${stratRank.slice(0,5).map((r,i) => `${i+1}. ${r.name}`).join(', ')}${stratRank.length > 5 ? `, ... (${stratRank.length} total)` : ''}` });
+
+  // Best Physical
+  const physRank = allPlayers.map(n => ({ name: n, wins: gs.chalRecord?.[n]?.wins || 0 })).sort((a,b) => b.wins - a.wins);
+  if (physRank[0]?.wins > 0)
+    awards.push({ label: 'Best Physical', icon: '\ud83d\udcaa', winner: physRank[0].name, detail: `${physRank[0].wins} challenge wins. ${physRank.filter(p=>p.wins>0).slice(0,4).map(p=>`${p.name} (${p.wins})`).join(', ')}` });
+
+  // Best Social
+  const socialRank = allPlayers.map(n => {
+    const elimEp = history.find(e => e.eliminated === n || e.firstEliminated === n);
+    const snap = elimEp?.gsSnapshot;
+    const others = snap?.activePlayers || allPlayers.filter(p => p !== n);
+    const avgBond = others.length ? others.reduce((s, p) => s + getBond(n, p), 0) / others.length : 0;
+    return { name: n, avgBond };
+  }).sort((a,b) => b.avgBond - a.avgBond);
+  awards.push({ label: 'Best Social', icon: '\u2764\ufe0f', winner: socialRank[0].name, detail: `Highest average bond: ${socialRank[0].avgBond.toFixed(1)}` });
+
+  // Biggest Villain
+  const villainRank = allPlayers.map(n => {
+    const s = pStats(n);
+    const avgBond = allPlayers.filter(p=>p!==n).reduce((sum,p) => sum + getBond(n,p), 0) / Math.max(1, allPlayers.length-1);
+    return { name: n, score: -avgBond + s.boldness * 0.2 };
+  }).sort((a,b) => b.score - a.score);
+  awards.push({ label: 'Biggest Villain', icon: '\ud83d\ude08', winner: villainRank[0].name, detail: `Lowest average bond + boldness` });
+
+  // Most Chaotic
+  const chaosRank = allPlayers.map(n => {
+    const s = pStats(n);
+    return { name: n, score: s.boldness + s.temperament <= 3 ? 3 : 0 };
+  }).sort((a,b) => b.score - a.score);
+  awards.push({ label: 'Most Chaotic', icon: '\ud83c\udf2a\ufe0f', winner: chaosRank[0].name, detail: `Boldness: ${pStats(chaosRank[0].name).boldness}` });
+
+  // Fan Favorite
+  if (seasonConfig.popularityEnabled !== false && gs.popularity) {
+    const fanRank = allPlayers.map(n => ({ name: n, pop: gs.popularity[n] || 0 })).sort((a,b) => b.pop - a.pop);
+    if (fanRank[0]?.pop > 0)
+      awards.push({ label: 'Fan Favorite', icon: '\u2b50', winner: fanRank[0].name, detail: `Popularity: ${fanRank[0].pop}` });
+  }
+
+  // Best Duo
+  let bestDuo = null, bestDuoBond = -Infinity;
+  for (let i = 0; i < allPlayers.length; i++) {
+    for (let j = i+1; j < allPlayers.length; j++) {
+      const b = getBond(allPlayers[i], allPlayers[j]);
+      if (b > bestDuoBond) { bestDuoBond = b; bestDuo = [allPlayers[i], allPlayers[j]]; }
+    }
+  }
+  if (bestDuo && bestDuoBond > 0)
+    awards.push({ label: 'Best Duo', icon: '\ud83e\udd1d', winner: bestDuo.join(' & '), detail: `Bond: ${bestDuoBond.toFixed(1)}`, players: bestDuo });
+
+  html += `<div class="reunion-section" style="display:none;margin-bottom:20px">
+    <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--accent-gold);text-transform:uppercase;margin-bottom:10px;border-bottom:1px solid rgba(227,179,65,0.15);padding-bottom:6px">Awards Ceremony</div>
+    ${awards.map(aw => {
+      const pls = aw.players || [aw.winner];
+      return `<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;padding:10px;background:rgba(227,179,65,0.04);border:1px solid rgba(227,179,65,0.12);border-radius:8px">
+        <div style="font-size:24px">${aw.icon}</div>
+        ${pls.map(p => rpPortrait(p, 'sm')).join('')}
+        <div style="flex:1">
+          <div style="font-size:12px;font-weight:700;color:var(--accent-gold)">${aw.label}</div>
+          <div style="font-size:13px;color:#c9d1d9">${aw.winner}</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">${aw.detail}</div>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+
+  // ═══ SECTION 4: DRAMA HIGHLIGHTS ═══
+  const dramas = [];
+  history.forEach(e => {
+    if (e.tribalBlowup) dramas.push({ ep: e.num, text: `Episode ${e.num}: Tribal blowup \u2014 ${e.tribalBlowup.player} lost it at tribal council.`, player: e.tribalBlowup.player });
+    (e.socialBombs||[]).forEach(sb => dramas.push({ ep: e.num, text: `Episode ${e.num}: ${sb.player} dropped a social bomb at camp. Bridges burned.`, player: sb.player }));
+    (e.idolMisplays||[]).forEach(im => dramas.push({ ep: e.num, text: `Episode ${e.num}: ${im.player} misplayed an idol. Wasted protection.`, player: im.player }));
+  });
+
+  html += `<div class="reunion-section" style="display:none;margin-bottom:20px">
+    <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--accent-gold);text-transform:uppercase;margin-bottom:10px;border-bottom:1px solid rgba(227,179,65,0.15);padding-bottom:6px">Drama Highlights</div>
+    ${dramas.length ? dramas.slice(0,6).map(d => `<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;padding:6px;background:rgba(248,81,73,0.03);border-radius:6px">
+      ${d.player ? rpPortrait(d.player, 'sm') : ''}
+      <div style="font-size:12px;color:#c9d1d9">${d.text}</div>
+    </div>`).join('') : '<div style="font-size:12px;color:#484f58">A clean season. No drama. (Somehow.)</div>'}
+  </div>`;
+
+  // ═══ SECTION 5: SUPERLATIVES ═══
+  const superlatives = [];
+  // Most likely to return
+  const returnRank = allPlayers.filter(n => n !== winner).map(n => {
+    const s = pStats(n);
+    return { name: n, score: s.strategic + s.social + s.boldness };
+  }).sort((a,b) => b.score - a.score);
+  if (returnRank.length) superlatives.push({ label: 'Most Likely to Return', name: returnRank[0].name });
+
+  // Most robbed
+  const robbedRank = allPlayers.filter(n => n !== winner).map(n => {
+    const elimEp = history.find(e => e.eliminated === n);
+    const ts = threatScore(n);
+    return { name: n, score: ts, elimEp: elimEp?.num || 999 };
+  }).sort((a,b) => b.score - a.score);
+  if (robbedRank.length) superlatives.push({ label: 'Most Robbed', name: robbedRank[0].name });
+
+  // Quietest game
+  const quietRank = allPlayers.map(n => {
+    const totalVotes = history.reduce((s,e) => s + ((e.votingLog||[]).filter(v=>v.voted===n&&v.voter!=='THE GAME').length), 0);
+    return { name: n, score: totalVotes };
+  }).sort((a,b) => a.score - b.score);
+  if (quietRank.length) superlatives.push({ label: 'Quietest Game', name: quietRank[0].name });
+
+  html += `<div class="reunion-section" style="display:none;margin-bottom:20px">
+    <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--accent-gold);text-transform:uppercase;margin-bottom:10px;border-bottom:1px solid rgba(227,179,65,0.15);padding-bottom:6px">Superlatives</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      ${superlatives.map(s => `<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:8px;flex:1;min-width:200px">
+        ${rpPortrait(s.name, 'sm')}
+        <div>
+          <div style="font-size:9px;color:var(--muted);letter-spacing:0.5px">${s.label}</div>
+          <div style="font-size:13px;color:#c9d1d9">${s.name}</div>
+        </div>
+      </div>`).join('')}
+    </div>
+  </div>`;
+
+  // ═══ SECTION 6: FINAL STANDINGS ═══
+  const placements = [];
+  if (winner) placements.push({ name: winner, place: 1, note: 'Winner' });
+  finalists.filter(f => f !== winner).forEach((f, i) => {
+    const votes = ep.juryResult?.votes?.[f] || 0;
+    placements.push({ name: f, place: 2 + i, note: votes ? `${votes} jury vote${votes !== 1 ? 's' : ''}` : 'Finalist' });
+  });
+  // Add eliminated players in reverse order
+  [...history].reverse().forEach(e => {
+    if (e.eliminated && !placements.some(p => p.name === e.eliminated)) {
+      placements.push({ name: e.eliminated, place: placements.length + 1, note: `Ep ${e.num}` });
+    }
+    if (e.firstEliminated && !placements.some(p => p.name === e.firstEliminated)) {
+      placements.push({ name: e.firstEliminated, place: placements.length + 1, note: `Ep ${e.num}` });
+    }
+  });
+
+  html += `<div class="reunion-section" style="display:none;margin-bottom:20px">
+    <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--accent-gold);text-transform:uppercase;margin-bottom:10px;border-bottom:1px solid rgba(227,179,65,0.15);padding-bottom:6px">Final Standings</div>
+    ${placements.map(p => {
+      const isWin = p.place === 1;
+      return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;padding:6px;${isWin ? 'background:rgba(227,179,65,0.06);border-radius:6px' : ''}">
+        <span style="font-family:var(--font-mono);font-size:11px;color:${isWin ? 'var(--accent-gold)' : 'var(--muted)'};width:20px">${p.place}</span>
+        ${rpPortrait(p.name)}
+        <div style="flex:1;font-size:12px;${isWin ? 'color:var(--accent-gold);font-weight:600' : 'color:#c9d1d9'}">${p.name}</div>
+        <div style="font-size:10px;color:var(--muted)">${p.note}</div>
+      </div>`;
+    }).join('')}
+  </div>`;
+
+  html += `</div></div>`;
+  return html;
+}
+
 // ── Jury Life: resort/jury house dynamics — grudges, friendships, processing elimination ──
 function rpBuildJuryLife(ep) {
   const tw = (ep.twists||[]).find(t => t.type === 'jury-elimination');

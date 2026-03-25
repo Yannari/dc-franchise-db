@@ -12896,6 +12896,114 @@ function rpBuildChallenge(ep) {
   const chalDesc = ep.challengeDesc  || '';
   const chalCat  = ep.challengeCategory || 'mixed';
 
+  // ── Post-merge: interactive individual placement reveal ──
+  if ((ep.gsSnapshot?.isMerged || gs.isMerged) && ep.chalPlacements?.length) {
+    const placements = ep.chalPlacements;
+    const totalPlayers = placements.length;
+    const revealId = `chal-reveal-${ep.num}`;
+
+    const threatened = (ep.tribalPlayers || gs.activePlayers)
+      .filter(n => n !== winner)
+      .sort((a,b) => threatScore(b) - threatScore(a))
+      .slice(0, 3);
+
+    let html = `<div class="rp-page tod-dusk">
+      <div class="rp-eyebrow">Episode ${ep.num} \u2014 Individual Immunity</div>
+      <div class="rp-title">${chalName}</div>`;
+    if (chalDesc) html += `<div style="font-size:13px;color:var(--muted);margin-bottom:16px">${chalDesc}</div>`;
+    if (threatened.length) {
+      html += `<div class="vp-section-header fire">Needed this</div>`;
+      threatened.forEach(n => {
+        html += `<div class="vp-card fire" style="margin-bottom:8px;display:flex;align-items:center;gap:12px">
+          ${rpPortrait(n)}<span style="font-size:13px">${n}</span>
+        </div>`;
+      });
+    }
+    html += `<div class="vp-section-header">Finishing order</div>
+      <div id="${revealId}" data-placements='${JSON.stringify(placements)}' data-revealed="0" data-winner="${winner}">
+        ${placements.map((_,i) => `<div class="chal-slot" id="${revealId}-slot-${i}" style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);opacity:0.15">
+          <span style="font-family:var(--font-mono);font-size:11px;color:var(--muted);width:24px">${totalPlayers - i}</span>
+          <span style="color:var(--muted)">?</span>
+        </div>`).join('')}
+      </div>
+      <div style="display:flex;gap:12px;margin-top:16px;align-items:center">
+        <button onclick="vpRevealNextPlacement('${revealId}')" style="padding:8px 20px;background:var(--accent-fire);border:none;border-radius:6px;color:#fff;font-family:var(--font-display);font-size:13px;letter-spacing:1px;cursor:pointer">REVEAL</button>
+        <button onclick="vpRevealAllPlacements('${revealId}')" style="padding:6px 12px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:11px;cursor:pointer">See all results</button>
+      </div>`;
+
+    // Suspense cards
+    const _suspense = [];
+    (ep.tribalPlayers || gs.activePlayers).forEach(n => {
+      if (n === winner) return;
+      if (threatScore(n) > 6) {
+        _suspense.push({ player: n, text: `${n} didn't get the necklace. The target on their back just got bigger.`, type: 'fire' });
+      }
+    });
+    const _activePl = ep.tribalPlayers || gs.activePlayers;
+    const _gameMedian = [..._activePl].map(n => {
+      const oth = _activePl.filter(p => p !== n);
+      return oth.length ? oth.reduce((s,p) => s + getBond(n,p),0)/oth.length : 0;
+    }).sort((a,b)=>a-b)[Math.floor(_activePl.length/2)] || 0;
+    const _winnerAvgBond = _activePl.filter(p=>p!==winner).reduce((s,p)=>s+getBond(winner,p),0) / Math.max(1,_activePl.length-1);
+    if (_winnerAvgBond < _gameMedian) {
+      _suspense.unshift({ player: winner, text: `${winner} bought themselves one more day.`, type: 'ice' });
+    }
+    _suspense.slice(0,2).forEach(s => {
+      html += `<div class="vp-card ${s.type}" style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+        ${rpPortrait(s.player)}<span style="font-size:13px">${s.text}</span>
+      </div>`;
+    });
+
+    html += `</div>`;
+    return html;
+  }
+
+  // ── Pre-merge: interactive tribe reveal ──
+  if (!winner && ep.challengePlacements?.length) {
+    const tribePlacements = ep.challengePlacements;
+    const sitOuts = ep.chalSitOuts || {};
+    const memberScores = ep.chalMemberScores || {};
+    const revealId = `tribe-chal-reveal-${ep.num}`;
+    const orderedForReveal = [...tribePlacements].reverse(); // loser first
+
+    let html = `<div class="rp-page tod-afternoon">
+      <div class="rp-eyebrow">Episode ${ep.num} \u2014 Tribe Immunity</div>
+      <div class="rp-title">${chalName}</div>`;
+    if (chalDesc) html += `<div style="font-size:13px;color:var(--muted);margin-bottom:16px">${chalDesc}</div>`;
+
+    orderedForReveal.forEach((tribe, i) => {
+      const tName = tribe.name;
+      const tMembers = tribe.members || [];
+      const sos = sitOuts[tName] || [];
+      const competitors = tMembers.filter(n => !sos.includes(n));
+      const rankedCompetitors = [...competitors].sort((a,b) => (memberScores[b]||0) - (memberScores[a]||0));
+      const slotId = `${revealId}-tribe-${i}`;
+      const isWinner = i === orderedForReveal.length - 1;
+      const resultBadge = isWinner ? '<span class="rp-brant-badge gold">WIN</span>' : '<span class="rp-brant-badge red">LOSS</span>';
+
+      html += `<div class="vp-card" style="margin-bottom:12px">
+        <div id="${slotId}-header" style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <span id="${slotId}-name" style="font-family:var(--font-display);font-size:16px;color:var(--muted)">Tribe ?</span>
+          <span id="${slotId}-badge" style="display:none">${resultBadge}</span>
+          <button onclick="vpRevealTribe('${slotId}','${tName}')" style="margin-left:auto;padding:4px 12px;background:var(--accent-fire);border:none;border-radius:4px;color:#fff;font-size:11px;cursor:pointer">REVEAL</button>
+        </div>
+        <div class="rp-portrait-row" style="margin-bottom:8px">
+          ${rankedCompetitors.map((n,ri) => `<div style="text-align:center">
+            ${rpPortrait(n)}
+            <div style="font-size:9px;color:var(--muted);margin-top:2px">#${ri+1}</div>
+          </div>`).join('')}
+        </div>
+        ${sos.length ? `<div style="font-size:11px;color:var(--muted);margin-top:4px">Sit-outs: ${sos.map(n=>`<strong>${n}</strong>`).join(', ')}</div>` : ''}
+      </div>`;
+    });
+
+    const _allSlots = JSON.stringify(orderedForReveal.map((t,i) => ({ slotId:`${revealId}-tribe-${i}`, name:t.name })));
+    html += `<button onclick="vpRevealAllTribes('${revealId}',${_allSlots})"
+      style="padding:6px 12px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:11px;cursor:pointer;margin-top:8px">See all results</button>`;
+    html += `</div>`;
+    return html;
+  }
+
   let html = `<div class="rp-page">
     <div class="rp-eyebrow">Episode ${ep.num} \u2014 ${isTribe ? 'Tribe' : 'Individual'} Immunity Challenge</div>
     <div class="rp-title">${chalName}</div>
@@ -15692,6 +15800,64 @@ function buildVPScreens(epRecord) {
 
   // ── 12. Aftermath (always — updated field, storyline threads, next-ep hooks) ──
   vpScreens.push({ id:'aftermath', label:'Aftermath', html: rpBuildAftermath(ep) });
+}
+
+function vpRevealNextPlacement(containerId) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  const placements = JSON.parse(el.dataset.placements);
+  const revealed = parseInt(el.dataset.revealed);
+  if (revealed >= placements.length) return;
+
+  // Reveal from last place to first (index = placements.length-1 down to 0)
+  const revealIdx = placements.length - 1 - revealed;
+  const playerName = placements[revealIdx];
+  const isWinner = playerName === el.dataset.winner;
+  const slot = document.getElementById(`${containerId}-slot-${revealIdx}`);
+  if (!slot) return;
+
+  const place = placements.length - revealIdx;
+  const flavors = { physical: 'Physical dominance.', strategic: 'Read the comp perfectly.', endurance: 'Outlasted everyone.' };
+  const stat = Object.keys(flavors).find(k => (pStats(playerName)?.[k] || 0) >= 7);
+  const flavor = stat ? flavors[stat] : 'Fought for it.';
+
+  slot.style.opacity = '1';
+  slot.innerHTML = `
+    <span style="font-family:var(--font-mono);font-size:11px;color:var(--muted);width:24px">${place === 1 ? '\u{1F947}' : place}</span>
+    ${rpPortrait(playerName)}
+    <span style="font-size:13px${isWinner ? ';color:var(--accent-gold);font-family:var(--font-display)' : ''}">${playerName}</span>
+    ${isWinner ? `<span class="rp-brant-badge gold">IMMUNE</span><span style="font-size:11px;color:var(--muted);margin-left:8px">${flavor}</span>` : ''}
+  `;
+  slot.style.animation = 'staggerIn 0.35s var(--ease-broadcast) both';
+  if (isWinner) slot.style.boxShadow = '0 0 0 1px var(--accent-gold)';
+
+  el.dataset.revealed = revealed + 1;
+}
+
+function vpRevealAllPlacements(containerId) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  const placements = JSON.parse(el.dataset.placements);
+  const total = placements.length;
+  // Reset before loop — do NOT set inside loop (vpRevealNextPlacement increments internally)
+  el.dataset.revealed = '0';
+  for (let i = 0; i < total; i++) {
+    vpRevealNextPlacement(containerId);
+  }
+}
+
+function vpRevealTribe(slotId, tribeName) {
+  const nameEl = document.getElementById(`${slotId}-name`);
+  const badgeEl = document.getElementById(`${slotId}-badge`);
+  if (nameEl) {
+    nameEl.textContent = tribeName;
+    nameEl.style.color = tribeColor(tribeName);
+  }
+  if (badgeEl) badgeEl.style.display = '';
+}
+
+function vpRevealAllTribes(revealId, slots) {
+  slots.forEach(s => vpRevealTribe(s.slotId, s.name));
 }
 
 function vpToggleSection(id) {

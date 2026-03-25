@@ -12229,6 +12229,48 @@ function rpBuildPostElimTwist(ep) {
   return html;
 }
 
+// ── RI Duel Screen ──
+function rpBuildRIDuel(ep) {
+  const duel = ep.riDuel;
+  if (!duel) return null;
+  const { winner, loser } = duel;
+  const isLoserFinalElim = (ep.gsSnapshot?.eliminated || []).includes(loser);
+
+  const wStats = pStats(winner);
+  const flavorMap = {
+    physical: 'A dominant physical performance.',
+    endurance: 'Outlasted the challenger.',
+    mental: 'Puzzle solved under pressure.',
+    strategic: 'Smart comp strategy \u2014 knew when to push.',
+  };
+  const topStat = Object.entries(flavorMap).sort(([a],[b]) => (wStats[b]||0) - (wStats[a]||0))[0];
+  const flavor = topStat ? flavorMap[topStat[0]] : 'Won when it mattered.';
+
+  let html = `<div class="rp-page tod-arena">
+    <div class="rp-eyebrow">Episode ${ep.num} \u2014 Redemption Island</div>
+    <div style="font-family:var(--font-display);font-size:32px;letter-spacing:2px;text-align:center;margin-bottom:24px">REDEMPTION ISLAND DUEL</div>
+    <div style="display:flex;justify-content:center;align-items:flex-start;gap:32px;margin-bottom:24px">
+      <div style="text-align:center">
+        ${rpPortrait(winner, 'xl')}
+        <div style="font-family:var(--font-display);font-size:14px;margin-top:8px">${winner}</div>
+        <span class="rp-brant-badge gold" style="margin-top:4px">WINS</span>
+      </div>
+      <div style="font-family:var(--font-display);font-size:28px;color:var(--accent-fire);align-self:center">VS</div>
+      <div style="text-align:center"${isLoserFinalElim ? ' class="torch-snuffed"' : ''}>
+        ${rpPortrait(loser, 'xl')}
+        <div style="font-family:var(--font-display);font-size:14px;margin-top:8px">${loser}</div>
+        <span class="rp-brant-badge red" style="margin-top:4px">${isLoserFinalElim ? 'Eliminated' : 'Loses'}</span>
+      </div>
+    </div>
+    <div style="text-align:center;font-size:13px;color:var(--muted);margin-bottom:16px">${flavor}</div>
+    <div style="text-align:center;font-size:13px">
+      ${winner} remains on Redemption Island.
+      ${isLoserFinalElim ? `${loser} has been permanently eliminated.` : `${loser} loses the duel.`}
+    </div>
+  </div>`;
+  return html;
+}
+
 // ── Post-elimination consequence blocks ──
 function _buildPostTwistBlocks(ep) {
   const blocks = [];
@@ -15821,6 +15863,12 @@ function buildVPScreens(epRecord) {
   } else if (hasTribal) {
     vpScreens.push({ id:'tribal', label:'Tribal Council', html: rpBuildTribal(ep) });
     vpScreens.push({ id:'votes',  label:'The Votes',      html: rpBuildVotes(ep) });
+
+    // ── RI Duel (after vote reveal) ──
+    if (ep.riDuel) {
+      const _riHtml = rpBuildRIDuel(ep);
+      if (_riHtml) vpScreens.push({ id:'ri-duel', label:'RI Duel', html: _riHtml });
+    }
 
     // ── Surprise double boot: announcement + vote 2 plans + vote 2 reveal ──
     if (ep.firstEliminated && !ep.announcedDoubleElim && ep.votingLog2?.length) {

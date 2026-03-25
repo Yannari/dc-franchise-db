@@ -12488,6 +12488,73 @@ function buildSignalCards(ep, tribePlayers) {
   return cards.sort((a,b) => b.weight - a.weight).slice(0, 5);
 }
 
+// ── Screen: Relationships / Alliance State ──
+function rpBuildRelationships(ep) {
+  const alliances = (ep.gsSnapshot?.namedAlliances || []).filter(a => a.active !== false);
+  const active = ep.gsSnapshot?.activePlayers || gs.activePlayers;
+  const bondChanges = ep.bondChanges || [];
+  const recruits = ep.allianceRecruits || [];
+  const quits = ep.allianceQuits || [];
+
+  // Betrayals this episode
+  const betrayalsThisEp = alliances.flatMap(a =>
+    (a.betrayals || []).filter(b => b.ep === ep.num)
+      .map(b => ({ ...b, allianceName: a.name }))
+  );
+
+  let html = `<div class="rp-page tod-golden">
+    <div class="rp-eyebrow">Episode ${ep.num}</div>
+    <div class="rp-title">Relationships</div>`;
+
+  // Alliance cards
+  if (alliances.length) {
+    html += `<div class="vp-section-header ice">Alliances</div>`;
+    alliances.forEach((a, i) => {
+      const members = a.members.filter(n => active.includes(n));
+      if (!members.length) return;
+      const aRecruits = recruits.filter(r => r.toAlliance === a.name).map(r => r.player);
+      const aQuits = quits.filter(q => q.alliance === a.name).map(q => q.player);
+      html += `<div class="vp-card ice" style="animation:slideInLeft 0.4s var(--ease-broadcast) ${i * 100}ms both;margin-bottom:10px">
+        <div style="font-family:var(--font-display);font-size:14px;letter-spacing:1px;margin-bottom:8px">${a.name}</div>
+        <div class="rp-portrait-row" style="margin-bottom:8px">${members.map(n => rpPortrait(n)).join('')}</div>`;
+      if (aRecruits.length) html += `<div style="font-size:11px;color:var(--accent-ice)">+ Joined: ${aRecruits.join(', ')}</div>`;
+      if (aQuits.length) html += `<div style="font-size:11px;color:var(--accent-fire)">\u2212 Left: ${aQuits.join(', ')}</div>`;
+      html += `</div>`;
+    });
+  }
+
+  // Bond shifts this episode (top 5 by magnitude)
+  const topShifts = [...bondChanges].sort((a,b) => Math.abs(b.delta) - Math.abs(a.delta)).slice(0, 5);
+  if (topShifts.length) {
+    html += `<div class="vp-section-header">Bond shifts this episode</div>`;
+    topShifts.forEach(c => {
+      const col = c.delta > 0 ? 'var(--accent-ice)' : 'var(--accent-fire)';
+      const sign = c.delta > 0 ? '+' : '';
+      html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px">
+        <span>${c.a} &amp; ${c.b}</span>
+        <span style="color:${col};font-family:var(--font-mono);font-size:12px">${sign}${c.delta.toFixed(1)}</span>
+      </div>`;
+    });
+  }
+
+  // Betrayals this episode
+  if (betrayalsThisEp.length) {
+    html += `<div class="vp-section-header fire">Betrayals</div>`;
+    betrayalsThisEp.forEach(b => {
+      html += `<div class="vp-card fire" style="margin-bottom:8px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+          ${rpPortrait(b.player)}
+          <span style="font-size:13px">${b.player} voted against <strong>${b.allianceName}</strong></span>
+        </div>
+        <div style="font-size:11px;color:var(--muted)">Voted for ${b.votedFor} (alliance wanted ${b.consensusWas})</div>
+      </div>`;
+    });
+  }
+
+  html += `</div>`;
+  return html;
+}
+
 // ── Screen 4: Per-tribe camp life screen (pre or post challenge) ──
 function rpBuildCampTribe(ep, tribeName, members, phase) {
   const tc = tribeColor(tribeName);
@@ -15565,6 +15632,12 @@ function buildVPScreens(epRecord) {
       html: rpBuildCampTribe(ep, tribe.name, postMembers, 'post'),
     });
   });
+
+  // ── Relationships / Alliance State (after post-camp, before voting plans) ──
+  if (hasTribal || (ep.bondChanges?.length) || (ep.gsSnapshot?.namedAlliances?.length)) {
+    const _relHtml = rpBuildRelationships(ep);
+    if (_relHtml) vpScreens.push({ id:'relationships', label:'Relationships', html: _relHtml });
+  }
 
   // ── 8. Voting Plans (pre-vote strategy breakdown) ──
   if (hasTribal) {

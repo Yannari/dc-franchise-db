@@ -7296,11 +7296,14 @@ function generateCampEvents(ep, phase = 'both') {
   if (prevEp && (phase === 'pre' || phase === 'both')) {
     const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
     const _prevSaves = [
-      ...(prevEp.idolPlays || []).map(p => ({
-        player: p.player, playedFor: p.playedFor || null, votesNegated: p.votesNegated,
-        type: p.type === 'kip' ? 'kip' : p.playedFor ? 'idol-for-ally' : 'idol',
-        stolenFrom: p.stolenFrom || null, safe: true,
-      })),
+      ...(prevEp.idolPlays || [])
+        .filter(p => p.type === 'idol' || p.type === 'kip' || (!p.type && !p.stolenFrom && p.votesNegated !== undefined))  // only actual idol plays, not extra votes / vote steals
+        .filter((p, i, arr) => arr.findIndex(x => x.player === p.player && (x.playedFor || null) === (p.playedFor || null)) === i)  // deduplicate same player
+        .map(p => ({
+          player: p.player, playedFor: p.playedFor || null, votesNegated: p.votesNegated || 0,
+          type: p.type === 'kip' ? 'kip' : p.playedFor ? 'idol-for-ally' : 'idol',
+          stolenFrom: p.stolenFrom || null, safe: true,
+        })),
       // Include SITD regardless of safe/unsafe — both outcomes have drama
       ...(prevEp.shotInDark
         ? [{ player: prevEp.shotInDark.player, votesNegated: prevEp.shotInDark.votesNegated || 0, type: 'sitd', safe: prevEp.shotInDark.safe }]

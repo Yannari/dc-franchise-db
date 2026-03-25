@@ -6152,36 +6152,30 @@ function checkAllianceRecruitment(ep) {
     // Cap: don't recruit if alliance already has 5+ active members
     if (alliance.members.filter(m => active.includes(m)).length >= 5) return;
 
-    // ── Acceptance check: the recruit can refuse ──
+    // ── Acceptance check: based on RELATIONSHIPS, not stats ──
     const _rS = pStats(recruit);
     const _rState = gs.playerStates?.[recruit]?.emotional || 'comfortable';
     const bondWithRecruiter = getBond(recruit, recruiter);
     const allianceActives = alliance.members.filter(m => active.includes(m));
     const avgBondAlliance = allianceActives.length ? allianceActives.reduce((s,m) => s + getBond(recruit, m), 0) / allianceActives.length : 0;
-
-    // Base acceptance: 50%
-    let acceptChance = 50;
-    // Bond with recruiter matters most — trust drives alliance acceptance
-    acceptChance += bondWithRecruiter * 8;  // bond 3 = +24%, bond -2 = -16%
-    // Average bond with alliance members — do I like these people?
-    acceptChance += avgBondAlliance * 5;    // avg 2 = +10%, avg -1 = -5%
-    // Social players are more open to alliances
-    acceptChance += _rS.social * 1.5;       // social 8 = +12%
-    // Strategic players evaluate — accept if it helps their game
-    // But low social + high strategic = reads the offer but comes off cold, people don't trust the handshake
-    if (_rS.strategic >= 7 && _rS.social <= 4) acceptChance -= 10; // smart but unapproachable
-    // Loyal players honor existing commitments — less likely to join if already allied elsewhere
+    // Has the recruiter ever voted against the recruit?
+    const _recruiterVotedMe = (gs.episodeHistory || []).some(e =>
+      (e.votingLog || []).some(v => v.voter === recruiter && v.voted === recruit && v.voter !== 'THE GAME')
+    );
+    // Does the recruit have an existing alliance they're loyal to?
     const _hasExistingAlliance = gs.namedAlliances.some(a => a.active && a.members.includes(recruit) && a.members.filter(m => active.includes(m)).length >= 2);
-    if (_hasExistingAlliance && _rS.loyalty >= 7) acceptChance -= 20; // won't betray current alliance
-    // Emotional state
-    if (_rState === 'desperate') acceptChance += 20;     // takes any lifeline
-    else if (_rState === 'paranoid') acceptChance += 10;  // wants safety
-    else if (_rState === 'comfortable') acceptChance -= 10; // doesn't need it
-    else if (_rState === 'confident') acceptChance -= 5;   // already feels secure
-    // Boldness affects willingness to commit
-    if (_rS.boldness <= 3) acceptChance -= 8;  // too cautious to commit
-    // Temperament — hotheads might refuse on principle
-    if (_rS.temperament <= 3 && bondWithRecruiter < 1) acceptChance -= 12;
+
+    // Acceptance is relationship-driven:
+    // Strong bond = easy yes. Negative bond = hard no. History matters.
+    let acceptChance = 40; // base
+    acceptChance += bondWithRecruiter * 12;  // bond 3 = +36%, bond -2 = -24% (THE main driver)
+    acceptChance += avgBondAlliance * 6;     // avg 2 = +12% (do I trust this group?)
+    if (_recruiterVotedMe && bondWithRecruiter < 2) acceptChance -= 20; // you voted me out, now you want to ally?
+    if (_hasExistingAlliance && _rS.loyalty >= 6) acceptChance -= 15; // loyal to my current people
+    // Emotional state — desperation makes you say yes to anyone
+    if (_rState === 'desperate') acceptChance += 20;
+    else if (_rState === 'paranoid') acceptChance += 10;
+    else if (_rState === 'comfortable') acceptChance -= 8;
 
     acceptChance = Math.max(10, Math.min(90, acceptChance)); // clamp 10-90%
 

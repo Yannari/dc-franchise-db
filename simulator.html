@@ -18187,7 +18187,11 @@ function rpBuildFinaleGrandChallenge(ep) {
   });
   html += `</div>`;
 
-  // ═══ STAGE BY STAGE ═══
+  // ═══ STAGE BY STAGE — hidden behind reveal buttons ═══
+  const _gcKey = epNum + '_gc';
+  const _hasRealAssistants = assistants && finalists.some(f => assistants[f]?.name);
+  const _runningTotals = Object.fromEntries(finalists.map(f => [f, 0]));
+
   stages.forEach((stage, idx) => {
     const isLast = idx === stages.length - 1;
     const stageScores = stage.scores || {};
@@ -18195,8 +18199,8 @@ function rpBuildFinaleGrandChallenge(ep) {
     const stageWinner = stage.winner;
     const stageSabotage = sabotageEvents.filter(s => s.stage === idx);
 
-    // Stage header
-    html += `<div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(227,179,65,0.15)">
+    // Stage section — hidden until revealed
+    html += `<div class="gc-stage" id="gc-stage-${_gcKey}-${idx}" style="display:none;margin-top:20px;padding-top:16px;border-top:1px solid rgba(227,179,65,0.15)">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
         <span style="font-family:var(--font-display);font-size:22px;color:var(--accent-gold)">${idx + 1}</span>
         <div>
@@ -18205,8 +18209,7 @@ function rpBuildFinaleGrandChallenge(ep) {
         </div>
       </div>`;
 
-    // Pre-stage narration — check actual assistants data, not just stage definition
-    const _hasRealAssistants = assistants && finalists.some(f => assistants[f]?.name);
+    // Pre-stage narration
     const preNarration = [];
     if (idx === 0) {
       preNarration.push(`The finalists line up. The challenge begins.${_hasRealAssistants ? ' Assistants take their positions alongside their partners.' : ''}`);
@@ -18269,66 +18272,80 @@ function rpBuildFinaleGrandChallenge(ep) {
       </div>`;
     }
 
-    // Stage results — who won this stage
+    // Stage results — bars only, no exact scores (keep suspense)
     html += `<div style="margin-top:10px">`;
-    stageSorted.forEach(([name, score], rank) => {
+    stageSorted.forEach(([name], rank) => {
       const isWin = name === stageWinner;
+      const score = stageScores[name] || 0;
       const barPct = Math.round((score / Math.max(...Object.values(stageScores), 1)) * 100);
       html += `<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;${isWin ? 'background:rgba(227,179,65,0.05);border-radius:6px;padding:6px' : 'padding:6px'}">
-        <span style="font-family:var(--font-mono);font-size:11px;color:${isWin ? 'var(--accent-gold)' : 'var(--muted)'};width:16px">${rank + 1}</span>
         ${rpPortrait(name)}
         <div style="flex:1">
           <div style="font-size:12px;${isWin ? 'color:var(--accent-gold);font-weight:600' : 'color:#c9d1d9'}">${name}${isWin ? ' \u2014 Stage Winner' : ''}</div>
-          <div style="height:4px;background:var(--surface2);border-radius:2px;margin-top:3px;overflow:hidden">
-            <div style="height:100%;width:${barPct}%;background:${isWin ? 'var(--accent-gold)' : '#484f58'};border-radius:2px;transition:width 0.5s"></div>
+          <div style="height:6px;background:var(--surface2);border-radius:3px;margin-top:4px;overflow:hidden">
+            <div style="height:100%;width:${barPct}%;background:${isWin ? 'var(--accent-gold)' : '#484f58'};border-radius:3px"></div>
           </div>
         </div>
-        <span style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">${score.toFixed(1)}</span>
       </div>`;
     });
     html += `</div>`;
 
-    // Mid-stage bench confessional (after stage 1 and 2)
+    // Update running totals
+    finalists.forEach(f => { _runningTotals[f] += stageScores[f] || 0; });
+    const _totalSorted = Object.entries(_runningTotals).sort(([,a],[,b]) => b - a);
+    const _leader = _totalSorted[0][0];
+    const _trailer = _totalSorted[_totalSorted.length - 1][0];
+    const _gap = _totalSorted[0][1] - _totalSorted[_totalSorted.length - 1][1];
+    const _isClose = _gap < 3;
+
+    // Suspense narration + bench confessionals
     if (!isLast) {
-      const leadingFinalist = stageSorted[0][0];
-      const trailingFinalist = stageSorted[stageSorted.length - 1][0];
-      const leadBench = (benchAssignments[leadingFinalist] || []).find(s => pStats(s).social >= 6);
-      const trailBench = (benchAssignments[trailingFinalist] || []).find(s => pStats(s).boldness >= 6 || pStats(s).temperament <= 4);
+      let suspenseText;
+      if (_isClose)
+        suspenseText = `They're neck and neck. ${_leader} leads by a fraction \u2014 but ${_trailer} is right there. One mistake from either side changes everything.`;
+      else if (_gap < 6)
+        suspenseText = `${_leader} has an edge after ${idx + 1} stage${idx > 0 ? 's' : ''}. ${_trailer} is behind \u2014 but not out. Stage ${idx + 2} could flip it.`;
+      else
+        suspenseText = `${_leader} is pulling away. ${_trailer} needs a miracle in the next stage. The bench goes quiet.`;
+
+      html += `<div style="text-align:center;font-size:13px;color:#484f58;font-style:italic;margin-top:12px;padding:10px;border:1px solid rgba(255,255,255,0.04);border-radius:6px;background:rgba(255,255,255,0.01)">
+        ${suspenseText}
+      </div>`;
+
+      const leadBench = (benchAssignments[_leader] || []).find(s => pStats(s).social >= 6);
+      const trailBench = (benchAssignments[_trailer] || []).find(s => pStats(s).boldness >= 6 || pStats(s).temperament <= 4);
       if (leadBench) {
-        html += `<div style="font-size:12px;color:#484f58;font-style:italic;margin-top:8px;padding:6px 10px;border-left:2px solid rgba(63,185,80,0.2)">
-          ${rpPortrait(leadBench)} <span style="margin-left:6px">"${leadingFinalist} is ahead. I knew it. Keep going."</span>
+        html += `<div style="font-size:12px;color:#484f58;font-style:italic;margin-top:6px;padding:6px 10px;border-left:2px solid rgba(63,185,80,0.2)">
+          ${rpPortrait(leadBench)} <span style="margin-left:6px">"${_leader} has this. Keep pushing."</span>
         </div>`;
       }
       if (trailBench && trailBench !== leadBench) {
         html += `<div style="font-size:12px;color:#484f58;font-style:italic;margin-top:4px;padding:6px 10px;border-left:2px solid rgba(248,81,73,0.2)">
-          ${rpPortrait(trailBench)} <span style="margin-left:6px">"It's not over. ${trailingFinalist} can come back. I've seen it."</span>
+          ${rpPortrait(trailBench)} <span style="margin-left:6px">"It's not over. Don't count ${_trailer} out."</span>
         </div>`;
       }
+    } else {
+      // Final stage — cliffhanger, don't reveal who won
+      let finalText;
+      if (_isClose)
+        finalText = `It's over. And it was close \u2014 impossibly close. Both finalists collapse. The benches erupt. But only one name will be called.`;
+      else
+        finalText = `It's done. The challenge is over. One of them knows it. The other suspects it. The benches hold their breath.`;
+      html += `<div style="text-align:center;font-size:14px;color:var(--accent-gold);font-style:italic;margin-top:16px;padding:14px;border:1px solid rgba(227,179,65,0.2);border-radius:8px;background:rgba(227,179,65,0.04);line-height:1.6">
+        ${finalText}
+      </div>`;
     }
 
     html += `</div>`; // end stage block
   });
 
-  // ═══ FINAL RESULT ═══
-  html += `<div style="margin-top:24px;padding-top:16px;border-top:2px solid rgba(227,179,65,0.3)">
-    <div style="text-align:center;font-family:var(--font-display);font-size:22px;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;color:var(--accent-gold)">Final Standings</div>`;
+  // Reveal buttons
+  html += `<div style="display:flex;gap:8px;justify-content:center;margin-top:20px">
+    <button class="tv-reveal-btn" id="gc-btn-${_gcKey}" onclick="gcRevealNext('${_gcKey}', ${stages.length})">Reveal Stage 1</button>
+    <button onclick="gcRevealAll('${_gcKey}', ${stages.length})" style="background:none;border:1px solid var(--border);border-radius:6px;padding:6px 14px;font-size:11px;color:var(--muted);cursor:pointer">Show all stages</button>
+  </div>`;
 
-  const placements = ep.finalChallengePlacements || Object.entries(scores).sort(([,a],[,b]) => b - a).map(([n]) => n);
-  placements.forEach((name, rank) => {
-    const total = scores?.[name] || 0;
-    const isWinner = name === winner;
-    const stageWins = stages.filter(s => s.winner === name).length;
-    html += `<div style="display:flex;align-items:center;gap:14px;margin-bottom:10px;padding:10px;${isWinner ? 'background:rgba(227,179,65,0.08);border:1px solid rgba(227,179,65,0.2)' : 'background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06)'};border-radius:8px">
-      <span style="font-family:var(--font-display);font-size:18px;color:${isWinner ? 'var(--accent-gold)' : 'var(--muted)'}">${rank + 1}</span>
-      ${rpPortrait(name, isWinner ? 'lg' : 'md')}
-      <div style="flex:1">
-        <div style="font-size:14px;font-family:var(--font-display);${isWinner ? 'color:var(--accent-gold)' : ''}">${name}${isWinner ? ' \u2014 WINNER' : ''}</div>
-        <div style="font-size:11px;color:var(--muted)">${vpArchLabel(name)} \u00b7 ${stageWins} stage win${stageWins !== 1 ? 's' : ''} \u00b7 Total: ${total.toFixed(1)}</div>
-      </div>
-    </div>`;
-  });
-
-  html += `</div></div>`;
+  html += `</div>`;
   return html;
 }
 
@@ -18870,6 +18887,31 @@ function reunionRevealAll(epNum) {
   sections.forEach(s => s.style.display = 'block');
   _reunionRevealed[epNum + '_reunion'] = sections.length;
   const btn = document.getElementById(`reunion-btn-${epNum}`);
+  if (btn) btn.style.display = 'none';
+}
+
+// Grand Challenge stage-by-stage reveal
+let _gcRevealed = {};
+function gcRevealNext(key, totalStages) {
+  if (!_gcRevealed[key]) _gcRevealed[key] = 0;
+  if (_gcRevealed[key] < totalStages) {
+    const el = document.getElementById(`gc-stage-${key}-${_gcRevealed[key]}`);
+    if (el) { el.style.display = 'block'; el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    _gcRevealed[key]++;
+  }
+  const btn = document.getElementById(`gc-btn-${key}`);
+  if (btn) {
+    if (_gcRevealed[key] >= totalStages) btn.style.display = 'none';
+    else btn.textContent = `Reveal Stage ${_gcRevealed[key] + 1}`;
+  }
+}
+function gcRevealAll(key, totalStages) {
+  for (let i = 0; i < totalStages; i++) {
+    const el = document.getElementById(`gc-stage-${key}-${i}`);
+    if (el) el.style.display = 'block';
+  }
+  _gcRevealed[key] = totalStages;
+  const btn = document.getElementById(`gc-btn-${key}`);
   if (btn) btn.style.display = 'none';
 }
 
@@ -20092,6 +20134,7 @@ function buildVPScreens(epRecord) {
   delete _tvState[String(vpEpNum) + '_je']; // jury elimination reveal state
   delete _tvState[String(vpEpNum) + '_bench'];
   delete _reunionRevealed[String(vpEpNum) + '_reunion'];
+  delete _gcRevealed[String(vpEpNum) + '_gc'];
   const ep = epRecord;
 
   const hasTribal = ep.alliances?.some(a => a.target) || ep.votingLog?.length;

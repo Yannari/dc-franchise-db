@@ -14572,7 +14572,7 @@ function rpBuildVotes(ep) {
   const revoteLog = ep.revoteLog || [];
 
   const _voteTribeLabel = ep.tribalTribe ? ` \u00b7 ${ep.tribalTribe}` : '';
-  let html = `<div class="rp-page">
+  let html = `<div class="rp-page tod-deepnight">
     <div class="rp-eyebrow">Episode ${epNum} — Tribal Council${_voteTribeLabel}</div>
     <div class="rp-title">The Votes</div>`;
 
@@ -14604,7 +14604,7 @@ function rpBuildVotes(ep) {
     const slugV = String(voted).replace(/[^a-zA-Z0-9]/g, '');
     const _decl = _ovDecl ? _ovDecl(voter, voted) : null;
     const _react = _ovReact ? _ovReact(voter, voted) : null;
-    html += `<div class="tv-vote-card" data-voted="${voted}" data-voter="${voter}" data-index="${idx}">
+    html += `<div class="tv-vote-card" data-voted="${voted}" data-voter="${voter}" data-index="${idx}" style="animation:staggerIn 0.35s var(--ease-broadcast) ${idx * 120}ms both">
       <div class="tv-vote-voter-wrap">
         ${rpPortrait(voter, 'sm')}
         <div class="tv-vote-voter">${voter}</div>
@@ -14795,7 +14795,7 @@ function rpBuildVotes(ep) {
         ${rpPortrait(name)}
         <div class="tv-ft-name">${name}</div>
         <div class="tv-ft-bar-bg"><div class="tv-ft-bar" style="width:${pct}%;background:${barColor}"></div></div>
-        <div class="tv-ft-num">${v}</div>
+        <span class="vp-tally-num" data-target="${v}">0</span>
         ${isE  ? `<span style="font-size:9px;font-weight:800;letter-spacing:1px;padding:2px 8px;border-radius:4px;background:rgba(218,54,51,0.1);color:#da3633">${_v1IsBlindside  ? 'BLINDSIDE' : 'ELIMINATED'}</span>` : ''}
         ${isE2 ? `<span style="font-size:9px;font-weight:800;letter-spacing:1px;padding:2px 8px;border-radius:4px;background:rgba(218,54,51,0.1);color:#da3633">${_v1Elim2Bs ? 'BLINDSIDE' : 'ELIMINATED'}</span>` : ''}
         ${isDuel ? `<span style="font-size:9px;font-weight:800;letter-spacing:1px;padding:2px 8px;border-radius:4px;background:rgba(210,153,34,0.1);color:#d29922">DUEL</span>` : ''}
@@ -15178,6 +15178,14 @@ function rpBuildVotes(ep) {
         ${_whyInner}
       </div>`;
     }
+  }
+
+  // Torch-snuff (fires after vote results are shown)
+  if (elim) {
+    html += `<div id="torch-snuff-${ep.num}" style="text-align:center;margin-top:24px">
+      <div class="torch-snuffed">${rpPortrait(elim, 'xl')}</div>
+      <div style="font-family:var(--font-display);font-size:24px;color:var(--accent-fire);margin-top:16px;text-shadow:0 0 12px var(--accent-fire)">The tribe has spoken.</div>
+    </div>`;
   }
 
   html += `</div></div>`; // end tv-results + rp-page
@@ -15831,6 +15839,25 @@ function buildVPScreens(epRecord) {
   vpScreens.push({ id:'aftermath', label:'Aftermath', html: rpBuildAftermath(ep) });
 }
 
+function vpAnimateTallies(containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.querySelectorAll('.vp-tally-num[data-target]').forEach((el, i) => {
+    const target = parseInt(el.dataset.target);
+    let current = 0;
+    const duration = 600;
+    const startTime = performance.now() + i * 200;
+    function tick(now) {
+      if (now < startTime) { requestAnimationFrame(tick); return; }
+      const elapsed = now - startTime;
+      current = Math.min(target, Math.round((elapsed / duration) * target));
+      el.textContent = current;
+      if (current < target) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  });
+}
+
 function vpRevealNextPlacement(containerId) {
   const el = document.getElementById(containerId);
   if (!el) return;
@@ -15938,6 +15965,9 @@ function renderVPScreen() {
   Object.keys(_tvState).forEach(k => delete _tvState[k]);
   content.innerHTML = cur.html;
   document.querySelector('.rp-main').scrollTop = 0;
+  if (cur.id === 'votes' || cur.id?.startsWith('votes-')) {
+    vpAnimateTallies('tv-results-' + vpEpNum);
+  }
 }
 
 function openVisualPlayer(epNum) {

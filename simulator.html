@@ -18859,6 +18859,12 @@ function buildVPScreens(epRecord) {
     vpScreens.push({ id:'merge', label:'The Merge', html: rpBuildMergeAnnouncement(ep) });
   }
 
+  // ── Finale Camp Life (always for finale episodes) ──
+  if (ep.isFinale) {
+    const _campLifeHtml = rpBuildFinaleCampLife(ep);
+    if (_campLifeHtml) vpScreens.push({ id:'finale-camp', label:'The Last Morning', html: _campLifeHtml });
+  }
+
   // ── 3. Pre-Challenge Twist (tribe swap, three gifts, journey, exile-island, etc.) ──
   const _preTwistHtml = rpBuildPreTwist(ep);
   if (_preTwistHtml) vpScreens.push({ id:'twist', label:'Twists', html: _preTwistHtml });
@@ -18911,9 +18917,9 @@ function buildVPScreens(epRecord) {
   }
 
   // ── 5. Challenge ──
-  if (ep.isFinale && ep.challengeType) {
-    // Finale: dedicated reenactment screen instead of generic challenge screen
-    vpScreens.push({ id:'finale-challenge', label:'Final Challenge', html: rpBuildFinaleChallenge(ep) });
+  if (ep.isFinale && ep.challengeType && seasonConfig.finaleSize >= 3) {
+    // Finale immunity challenge: only shown when finaleSize >= 3 (not for finaleSize=2)
+    vpScreens.push({ id:'finale-challenge', label:'Final Immunity', html: rpBuildFinaleChallenge(ep) });
   } else if (ep.challengeType) {
     vpScreens.push({ id:'challenge', label:'Immunity Challenge', html: rpBuildChallenge(ep) });
   }
@@ -19022,6 +19028,12 @@ function buildVPScreens(epRecord) {
       vpScreens.push({ id:'final-cut', label:'The Decision', html: rpBuildFinalCut(ep) });
     }
 
+    // The Benches: eliminated players choose sides (when there's a challenge)
+    if (ep.benchAssignments) {
+      const _benchHtml = rpBuildBenches(ep);
+      if (_benchHtml) vpScreens.push({ id:'benches', label:'The Benches', html: _benchHtml });
+    }
+
     // Jury Elimination twist — jury life + announcement + interactive vote reveal
     if (_isJuryElim) {
       const _jeLife = rpBuildJuryLife(ep);
@@ -19047,11 +19059,11 @@ function buildVPScreens(epRecord) {
       vpScreens.push({ id:'winner', label:'The Winner', html: rpBuildWinner(ep) });
     }
 
-    // Fan Favorite
-    if (seasonConfig.popularityEnabled !== false) {
-      const _ffHtml = rpBuildFanFavorite(ep);
-      if (_ffHtml) vpScreens.push({ id:'fan-favorite', label:'Fan Favorite', html: _ffHtml });
-    }
+    // Fan Favorite — absorbed into Reunion Show (Sub-Plan 5)
+    // if (seasonConfig.popularityEnabled !== false) {
+    //   const _ffHtml = rpBuildFanFavorite(ep);
+    //   if (_ffHtml) vpScreens.push({ id:'fan-favorite', label:'Fan Favorite', html: _ffHtml });
+    // }
 
     // Aftermath last
     vpScreens.push({ id:'aftermath', label:'Aftermath', html: rpBuildAftermath(ep) });

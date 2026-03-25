@@ -409,7 +409,7 @@
     .rp-note { background:#161b22; border:1px solid #21262d; border-radius:8px; padding:12px 18px; font-size:13px; color:#484f58; font-style:italic; margin-bottom:20px; }
     /* ── Twist screen (BrantSteele-style centered narrative) ── */
     .rp-twist-page { text-align:center; }
-    .rp-twist-title { font-size:28px; font-weight:400; letter-spacing:5px; text-transform:uppercase; color:#d4a82a; font-family:var(--font-display); margin-bottom:36px; }
+    .rp-twist-title { font-size:28px; font-weight:400; letter-spacing:5px; text-transform:uppercase; color:#d4a82a; font-family:var(--font-display); margin-bottom:36px; text-shadow:0 0 20px #f0c040,0 0 8px rgba(240,192,64,0.5); animation:scrollDrop 0.4s var(--ease-broadcast) both; }
     .rp-scene { margin-bottom:28px; }
     .rp-scene-text { font-size:14px; color:#8b949e; line-height:1.7; max-width:580px; margin:0 auto 16px; }
     .rp-scene-text.outcome { color:#c9d1d9; font-weight:600; }
@@ -12111,6 +12111,25 @@ function buildTwistDesc(tw) {
 
 // ── Shared scene renderer for twist screens ──
 function _renderTwistScene(scene) {
+  if (scene.faceOff && scene.players?.length === 2) {
+    return `<div style="display:flex;justify-content:center;align-items:flex-start;gap:32px;margin:16px 0">
+      <div style="text-align:center">${rpPortrait(scene.players[0],'xl')}<div style="font-family:var(--font-display);font-size:12px;margin-top:6px">${scene.players[0]}</div></div>
+      <div style="font-family:var(--font-display);font-size:28px;color:var(--accent-fire);align-self:center">VS</div>
+      <div style="text-align:center">${rpPortrait(scene.players[1],'xl')}<div style="font-family:var(--font-display);font-size:12px;margin-top:6px">${scene.players[1]}</div></div>
+    </div>`;
+  }
+  if (scene.juryHeader) {
+    return `<div style="text-align:center;margin-bottom:16px">
+      <div style="font-size:10px;letter-spacing:2px;color:var(--muted);font-family:var(--font-display);margin-bottom:8px">THE JURY</div>
+      <div class="rp-portrait-row" style="justify-content:center">${scene.players.map(n=>rpPortrait(n)).join('')}</div>
+    </div>`;
+  }
+  if (scene.exileIsolated) {
+    return `<div style="text-align:center;padding:24px 0">
+      ${rpPortrait(scene.players[0],'xl')}
+      <div style="font-family:var(--font-mono);font-style:italic;color:var(--muted);margin-top:12px;font-size:13px">${scene.text}</div>
+    </div>`;
+  }
   let h = `<div class="rp-scene">`;
   if (scene.text) h += `<div class="rp-scene-text">${scene.text}</div>`;
   if (scene.tribeLabel) {
@@ -12185,13 +12204,18 @@ function rpBuildPreTwist(ep) {
     const hasTwistText = (parsed['TWIST']||[]).some(l=>l.trim()) || (parsed['JOURNEY']||[]).some(l=>l.trim());
     if (!hasTwistText) return null;
     const lines = [...(parsed['TWIST']||[]), ...(parsed['JOURNEY']||[])].filter(l=>l.trim());
-    return `<div class="rp-page rp-twist-page">
+    return `<div class="rp-page rp-twist-page tod-dusk">
       <div class="rp-eyebrow">Episode ${ep.num}</div>
       <div class="rp-twist-title">Twists &amp; Events</div>
       <div class="rp-scene"><div class="rp-scene-text">${lines.join('<br>')}</div></div>
     </div>`;
   }
-  let html = `<div class="rp-page rp-twist-page"><div class="rp-eyebrow">Episode ${ep.num}</div>`;
+  const _swapTypes = ['tribe-swap','tribe-dissolve','tribe-expansion','abduction','swapvote','mutiny'];
+  const _hasSwap = (ep.twists||[]).some(t => _swapTypes.includes(t.type)) || _swapTypes.includes(ep.twist?.type);
+  let html = `<div class="rp-page rp-twist-page tod-dusk"><div class="rp-eyebrow">Episode ${ep.num}</div>`;
+  if (_hasSwap) {
+    html += `<div style="font-family:var(--font-display);font-size:28px;letter-spacing:2px;text-align:center;color:var(--accent-gold);text-shadow:0 0 20px var(--accent-gold);margin-bottom:20px;animation:scrollDrop 0.5s var(--ease-broadcast) both">EVERYTHING JUST CHANGED</div>`;
+  }
   twistData.forEach((twObj, idx) => {
     if (idx > 0) html += `<hr class="rp-twist-divider">`;
     html += `<div class="rp-twist-title">${twObj.label}</div>`;
@@ -12205,11 +12229,13 @@ function rpBuildPreTwist(ep) {
 function rpBuildPostElimTwist(ep) {
   const blocks = _buildPostTwistBlocks(ep);
   if (!blocks.length) return null;
-  let html = `<div class="rp-page rp-twist-page"><div class="rp-eyebrow">Episode ${ep.num}</div>`;
+  let html = `<div class="rp-page rp-twist-page tod-deepnight"><div class="rp-eyebrow">Episode ${ep.num}</div>`;
   blocks.forEach((block, idx) => {
     if (idx > 0) html += `<hr class="rp-twist-divider">`;
+    if (block.darkCeremony) html += `<div style="background:#030507;margin:-16px;padding:16px;border-radius:8px">`;
     html += `<div class="rp-twist-title">${block.label}</div>`;
     block.scenes.forEach(s => { html += _renderTwistScene(s); });
+    if (block.darkCeremony) html += `</div>`;
   });
   // ── Exile duel loser elimination card (shown here, after the duel result scenes) ──
   if (ep.exileDuelResult) {
@@ -12299,6 +12325,7 @@ function _buildPostTwistBlocks(ep) {
   // ── Exile Duel: player sent to exile this episode ──
   if (ep.exilePlayer && !ep.exileDuelResult) {
     const sc = [];
+    sc.unshift({ text: 'Waiting.', players: [ep.exilePlayer], exileIsolated: true });
     sc.push({ text: `The votes are read. The game is not over for ${ep.exilePlayer}.`, players: [ep.exilePlayer] });
     sc.push({ text: `${ep.exilePlayer} is being sent to 2nd Chance Isle instead of going home.`, players: [ep.exilePlayer], badge: 'Sent to Exile', badgeClass: 'bad' });
     sc.push({ text: `On 2nd Chance Isle, ${ep.exilePlayer} waits alone — no tribe, no challenges, no vote — until the next player is eliminated.`, players: [ep.exilePlayer] });
@@ -12324,6 +12351,7 @@ function _buildPostTwistBlocks(ep) {
                     : _cat === 'social'    ? s => s.social
                     : s => s.physical * 0.5 + s.endurance * 0.5; // mixed / default
     const _eEdge = _edgeStat(_eS) > _edgeStat(_nS);
+    sc.unshift({ text: '', players: [dr.exilePlayer, dr.newBoot], faceOff: true });
     sc.push({ text: `${dr.exilePlayer} has been waiting on 2nd Chance Isle. Tonight's vote produced a challenger: ${dr.newBoot}.`, players: [dr.exilePlayer, dr.newBoot] });
     sc.push({ text: `One re-enters the game. One goes home for good.`, players: [dr.exilePlayer, dr.newBoot] });
     if (dr.challengeLabel) sc.push({ text: `The duel: ${dr.challengeLabel}.${dr.challengeDesc ? ' ' + dr.challengeDesc : ''}`, players: [dr.exilePlayer, dr.newBoot] });
@@ -12390,6 +12418,7 @@ function _buildPostTwistBlocks(ep) {
     const sc = [];
     const _fmPEdge = (pStats(fm.player).endurance + pStats(fm.player).physical) > (pStats(fm.opponent).endurance + pStats(fm.opponent).physical);
     sc.push({ text: `The vote is cast. But ${fm.player} is not going home — not yet.`, players: [fm.player] });
+    sc.unshift({ text: '', players: [fm.player, fm.opponent], faceOff: true });
     sc.push({ text: `${fm.player} vs ${fm.opponent}. First to build a sustainable fire stays in the game. The loser is eliminated on the spot.`, players: [fm.player, fm.opponent] });
     // Suspense
     if (_fmPEdge) {
@@ -12421,6 +12450,10 @@ function _buildPostTwistBlocks(ep) {
     const _jFor    = _jLog.filter(e => e.votedOut === _jBooted).map(e => e.juror);
     const _jAgainst= _jLog.filter(e => e.votedOut !== _jBooted).map(e => e.juror);
     const sc = [];
+    // Jury portrait header
+    if (_jJury.length) {
+      sc.unshift({ text: '', players: _jJury.slice(0, 6), juryHeader: true });
+    }
     // Deliberation
     if (_jJury.length) {
       sc.push({ text: `The jury met privately. They had watched everything — every deal, every betrayal, every vote. Now they had power to act on it.`, players: _jJury.slice(0, 5) });
@@ -12445,7 +12478,7 @@ function _buildPostTwistBlocks(ep) {
       sc.push({ text: `The vote was called. Tally: ${voteStr}. ${_jBooted} had the most votes against.`, players: sorted.map(([n]) => n).slice(0, 5) });
     }
     sc.push({ text: `${_jBooted} is removed from the game by the jury. No tribal council tonight.`, players: [_jBooted], badge: 'Jury Voted Out', badgeClass: 'bad' });
-    blocks.push({ label: 'Jury Elimination', scenes: sc });
+    blocks.push({ label: 'Jury Elimination', scenes: sc, darkCeremony: true });
   }
 
   return blocks;

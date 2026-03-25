@@ -12012,6 +12012,7 @@ function simulateFinale() {
   const immResult = simulateIndividualChallenge(players, null);
   ep.immunityWinner = immResult?.name || players[0];
   ep.challengeLabel = immResult?.challengeType || 'Mixed';
+  ep.chalPlacements = immResult?.chalPlacements || null;
 
   let finalists = [...players];
 
@@ -12027,9 +12028,34 @@ function simulateFinale() {
       cut = others.find(p => p !== brought);
       ep.finalCut = { winner: ep.immunityWinner, brought, cut, byJury: true, juryCutVotes: jvResult.votes, juryCutReasoning: jvResult.reasoning };
     } else {
-      brought = wRandom(others, p => Math.max(0.1, getBond(ep.immunityWinner, p) + pStats(p).loyalty * 0.3));
+      // Smart decision: project jury votes for each possible F2 pairing
+      const immWinner = ep.immunityWinner;
+      const immS = pStats(immWinner);
+      const pairings = others.map(partner => {
+        const opponent = others.find(p => p !== partner);
+        const projected = projectJuryVotes([immWinner, partner]);
+        const margin = (projected[immWinner] || 0) - (projected[partner] || 0);
+        return { partner, opponent, margin, bond: getBond(immWinner, partner) };
+      });
+      // Strategic players pick the most beatable opponent; loyal players lean toward allies
+      const loyaltyWeight = immS.loyalty * 0.1;  // 0-1 range
+      const stratWeight = immS.strategic * 0.1;
+      pairings.forEach(p => {
+        p.score = p.margin * (0.5 + stratWeight * 0.3) + p.bond * loyaltyWeight * 0.5;
+      });
+      pairings.sort((a, b) => b.score - a.score);
+      brought = pairings[0].partner;
       cut = others.find(p => p !== brought);
-      ep.finalCut = { winner: ep.immunityWinner, brought, cut };
+      const projectedVotes = projectJuryVotes([immWinner, brought]);
+      ep.finalCut = {
+        winner: immWinner, brought, cut,
+        reasoning: {
+          projectedVotes,
+          margin: pairings[0].margin,
+          loyaltyDriven: loyaltyWeight > stratWeight,
+          bondWithBrought: pairings[0].bond,
+        }
+      };
     }
     ep.eliminated = cut;
     gs.eliminated.push(cut);
@@ -12284,6 +12310,40 @@ function simulateJuryVote(finalists) {
   });
 
   return { votes, reasoning, jury };
+}
+
+// Project jury vote outcome for a given finalist set — used by smart decision logic
+// Thin wrapper around simulateJuryVote's scoring logic, but deterministic (no random noise)
+// Returns { [finalist]: projectedVotes } without modifying game state
+function projectJuryVotes(finalistSet) {
+  const jury = gs.jury || [];
+  if (!jury.length || !finalistSet.length) return {};
+  const votes = Object.fromEntries(finalistSet.map(f => [f, 0]));
+  jury.forEach(juror => {
+    const jS = pStats(juror);
+    const scores = finalistSet.map(f => {
+      const fS = pStats(f);
+      const bond = getBond(juror, f);
+      // Same formula as simulateJuryVote — keep in sync if that changes
+      const gameplay = fS.strategic * 0.3 + fS.boldness * 0.2 + fS.social * 0.2 + (fS.physical + fS.endurance) / 2 * 0.1;
+      const personal = bond * 1.5;
+      const history = gs.jurorHistory?.[juror];
+      let bitterness = 0;
+      if (history) {
+        const bondAtBoot = history.finalBonds?.[f] ?? 0;
+        if (history.voters.includes(f)) bitterness = -(0.6 + Math.max(0, bondAtBoot) * 0.5);
+        else bitterness = 0.25 + Math.max(0, bondAtBoot) * 0.15;
+      }
+      const score = jS.strategic > 7 || jS.intuition > 7
+        ? gameplay * 0.7 + personal * 0.3 + bitterness * 0.3
+        : gameplay * 0.3 + personal * 0.7 + bitterness * 0.8;
+      // Deterministic tiebreaker: use bond magnitude to break score ties
+      return { name: f, score, tiebreak: Math.abs(bond) };
+    });
+    scores.sort((a, b) => b.score - a.score || b.tiebreak - a.tiebreak);
+    votes[scores[0].name]++;
+  });
+  return votes;
 }
 
 // ── Generate final challenge stage-by-stage progression ──

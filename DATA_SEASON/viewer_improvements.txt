@@ -1,0 +1,130 @@
+VP VIEWER — IMPROVEMENT BACKLOG
+================================
+Gaps and polish issues in the Visual Player. Engine work that never
+surfaces visually, navigation issues, screen quality problems.
+
+
+── PRIORITY 1 — MISSING SCREENS ──────────────────────────────────────
+
+[A] RELATIONSHIPS / ALLIANCE STATE SCREEN
+Where: between Camp Life and Voting Plans.
+No screen currently surfaces bond + alliance state.
+What to show:
+  - Current named alliances and their members, with who just joined/left
+    this episode (ep.allianceRecruits / ep.allianceQuits)
+  - Biggest bond shifts this episode (ep.bondChanges)
+  - Detected betrayals (detectBetrayals output)
+  - Makes all engine work (vote discovery, lost ally, recruitment) visible
+Data: ep.bondChanges, ep.allianceRecruits, ep.allianceQuits,
+      ep.gsSnapshot.namedAlliances
+Priority: HIGH — without this screen, most of the relationship engine
+  is invisible to the viewer. Bond changes, betrayals, and alliance
+  recruitment all fire but never appear as a dedicated VP moment.
+
+[B] MERGE ANNOUNCEMENT SCREEN
+The merge has no dedicated dramatic screen. Currently falls into the
+first Camp Life block with no fanfare.
+What to show:
+  - Full merged cast portrait grid (new tribe banner + tribe color)
+  - Top alliance threats going into merge
+  - Who's on the bottom / currently unallied
+Condition: ep.isMerge === true
+Insert: between Tribe Status and Camp Life on merge episodes
+Priority: HIGH — merge is the biggest structural moment in the game.
+  It currently gets no visual treatment of its own.
+
+[C] RI DUEL SCREEN
+ep.riDuel has winner/loser/context data but no VP screen exists.
+The duel just disappears into episode history.
+What to show:
+  - Two players, portrait pair, duel result
+  - Who returns to game / who is finally eliminated
+  - Similar structure to the Challenge screen
+Condition: ep.riDuel exists
+Priority: MEDIUM — only relevant when RI is active, but when it is,
+  the duel is a major story beat with no visual representation.
+
+
+[H] WHY THIS VOTE HAPPENED SCREEN (rpBuildAftermath)
+Exists but has known gaps — engine work fires that never surfaces here.
+Known missing:
+  - Comfort blindside flag: if ep.comfortBlindspotPlayer === ep.eliminated,
+    a note should appear explaining they were spotted checked out pre-tribal
+    (the Tribal screen has this, Aftermath doesn't mirror it)
+  - Idol misplay ally analysis: tipOffAlly section shows ally intuition stat
+    but doesn't note when the ally was in a rival alliance (isRivalTipOff)
+  - Alliance recruitment: if ep.allianceRecruits fired this episode, no
+    mention in WHY of who just got absorbed and what it means for the vote
+Data: ep.comfortBlindspotPlayer, ep.idolMisplays, ep.allianceRecruits,
+      ep.tipOffBetrayalFired
+Priority: MEDIUM — screen exists, just incomplete. Gaps make the post-vote
+  analysis feel like it's missing context the engine already has.
+
+[I] VOTING PLANS SCREEN GAPS
+Screen exists but some newer systems don't feed into it.
+Known missing:
+  - No visual for comfort blindspot players in the plans — they're the top
+    target but show no "checked out" signal in the plan cards
+  - Defection log (ep.defections) not surfaced — swing voters who broke
+    from their bloc mid-vote have no callout before the reveal
+Data: ep.comfortBlindspotPlayer, ep.defections, ep.alliances
+Priority: LOW — polish, but these are real signals the engine tracks.
+
+
+── PRIORITY 2 — NAVIGATION PROBLEMS ──────────────────────────────────
+
+[D] SIDEBAR GETS NOISY (3+ TRIBES)
+With 3 tribes you get: "Yellow Camp", "Blue Camp", "Red Camp",
+"Yellow — After TC", "Blue — After TC", "Red — After TC" — all same
+style, no grouping, impossible to scan.
+Fix:
+  - Add a color dot matching tribe color to each camp sidebar label
+    (tribeColor() already exists, just thread it into the sidebar label)
+  - Group pre-camp and post-camp with a subtle divider or indent level
+Location: sidebar labels are built in the vpScreens.push() block inside
+  the main VP builder (search for `id:'camp-`). Each push has a `label`
+  string — that's where the color dot goes.
+Priority: MEDIUM — noticeable on any 3-tribe pre-merge episode.
+
+[E] DUPLICATE "TWISTS & EVENTS" LABEL
+Both pre-tribal twist screen and post-elimination twist screen use the
+same sidebar label. Can't tell them apart.
+Fix:
+  - Pre-tribal twist  → "Pre-Tribal Events" (or keep "Twists & Events")
+  - Post-elim twist   → "After Tribal" or "Post-Vote Twist"
+Priority: LOW — cosmetic but causes confusion when navigating.
+
+
+── PRIORITY 3 — SCREEN QUALITY ────────────────────────────────────────
+
+[F] CAMP LIFE OVERWHELMING POST-MERGE
+Post-merge, all active players' events land in one block with no
+hierarchy. Long scroll, no way to filter.
+Options:
+  - Group events by type (strategy / social / confessional)
+  - Show player-specific "standout moment" callout for players with
+    confessional-type events — prioritise those
+  - Cap to N events with an expand button
+Priority: MEDIUM — becomes worse as game goes late and more events fire.
+
+[G] COLD OPEN IS STATIC
+Shows cast status (alive/eliminated) but no narrative hook. Feels like
+a roster check, not an episode opener.
+What to add:
+  - "Coming in from last episode": who's on the bottom, lingering
+    threats, top alliance going into this ep
+  - Pull from prevEp.gsSnapshot bond data + last episode's
+    allianceQuits / allianceRecruits
+Priority: LOW — polish. Makes every episode of VP feel like a story,
+  not just a roster dump. Especially valuable from episode 3+ when
+  the bond/alliance history has something to pull from.
+
+
+── DONE ────────────────────────────────────────────────────────────────
+
+[DONE] Typography + visual design pass — replaced all system/Inter/Georgia
+  fonts with Anton (display) + DM Sans (body) + Space Mono (mono).
+  VP page entrance animation added (vpPageIn). Elimination spotlight,
+  cold open episode number, vote target names, tally numbers, twist
+  title all upgraded. Sidebar active state now uses accent green.
+  Vote cards get scale(0.98→1) reveal animation.

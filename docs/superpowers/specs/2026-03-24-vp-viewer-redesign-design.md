@@ -113,14 +113,38 @@ Shows:
 3. Any alliance shifts from last episode (`prevEp.allianceQuits` / `prevEp.allianceRecruits` if non-empty)
 
 Skipped entirely if `gs.episodeHistory.length < 2` (episode 1).
-
+No Spoilers from the active/current episode
 Style: Anton sub-header, fire-accent callout card for bottom players.
 Time-of-day: dawn palette.
 
-### 5.2 Tribe Status *(existing — minor polish)*
+### 5.2 Tribe Status *(existing — quality fix)*
 
 - Tribe name headers get color from `tribeColor()` as text or border accent
 - Time-of-day: early morning
+
+**Tribe history color display (toggleable):**
+
+After the first tribe swap of the game, each player's portrait gets a small row of color dots beneath it showing every tribe they've been a member of — giving a visual at-a-glance read of cross-tribal history.
+
+**Swap detection:** Show tribe history dots on any Tribe Status screen where at least one prior `gs.episodeHistory` entry has a `twist` with `type` in `['tribe-swap', 'tribe-expansion', 'abduction', 'swapvote', 'mutiny']`. In other words: once a swap has ever happened in the season, all subsequent Tribe Status screens show the dots.
+
+**Tribe history reconstruction:** For each active player, scan `gs.episodeHistory` in order. Each entry has `tribesAtStart` (array of `{ name, members[] }`). For each episode, find which tribe the player was in at the start — that's one dot in their history. Deduplicate consecutive same-tribe entries (only add a dot when the tribe changes). Result: an ordered array of tribe names the player has belonged to.
+
+```js
+function getTribeHistory(playerName) {
+  const history = [];
+  for (const ep of gs.episodeHistory) {
+    const tribe = ep.tribesAtStart?.find(t => t.members.includes(playerName));
+    if (!tribe) continue;
+    if (history[history.length - 1] !== tribe.name) history.push(tribe.name);
+  }
+  return history; // e.g. ['Luzon', 'Solana', 'Aparri']
+}
+```
+
+Each dot: `8px` circle, colored with `tribeColor(tribeName)`, inline with a `2px` gap. Render beneath the player's portrait name on the Tribe Status screen.
+
+**Toggle:** A small `[Tribe History: ON / OFF]` button rendered in the Tribe Status screen header (not the sidebar — lives on the screen itself so it's contextual). State stored in `localStorage` under key `'vp_showTribeHistory'`, defaulting to `true`. On toggle, re-render the Tribe Status screen content in place (or simply show/hide the dot rows via a CSS class on the screen container).
 
 ### 5.3 Merge Announcement *(NEW screen)*
 
@@ -163,7 +187,30 @@ Any type not in the above list falls into Social by default.
 
 **Note:** The "cap to N events with expand button" option from `viewer_improvements.txt [F]` is dropped. Grouping by type solves the hierarchy problem without truncating information. The cap option would require expand/collapse state management with no meaningful benefit given the grouping structure.
 
-Pre-merge behavior unchanged.
+---
+
+**Dynamic Signal Injection (applies pre-merge and post-merge)**
+
+The core principle: the VP should never feel thin. The engine already tracks far more than `campEvents` surfaces — bond breaks, betrayals, idol plays, close votes, alliance movement. After collecting the existing `ep.campEvents[tribe].pre/post` array, the VP builder scans a set of "detection signals" and injects additional scene cards for any signal that fired but isn't already represented in the camp events for that tribe.
+
+**How it works:** In `rpBuildCampTribe()`, after building the existing event list, call a new helper `buildSignalCards(ep, tribePlayers)` that returns up to **3 additional cards** ordered by drama weight (higher drama surfaced first). These cards are appended after the existing events.
+
+**Detection signals and what they inject:**
+
+| Signal | Condition | Drama weight | Scene text (template) |
+|---|---|---|---|
+| Bond rupture | `ep.bondChanges` has entry with `delta < -1.5` where both players are in `tribePlayers` | High | `"Something cracked between [A] and [B] this episode. The numbers on the surface look the same — but the dynamic isn't."` |
+| Betrayal aftermath | `ep.gsSnapshot.namedAlliances[i].betrayals.filter(b => b.ep === ep.num)` has entry where `b.player` is in `tribePlayers` | High | `"[Player] voted against the alliance. Everyone noticed."` |
+| Close vote survivor | Player in `ep.tribalPlayers` who received votes (check `ep.votes[voter] === player` for any voter) but is not `ep.eliminated`, and is in `tribePlayers` | Medium | `"[Player] had their name written down tonight. They're still here — but they know it now."` |
+| Idol play aftermath | `ep.idolPlays` has entry for player in `tribePlayers`, not already covered by an `'idol'` type camp event for that player | Medium | `"[Player] played an idol tonight. Camp tomorrow will not be the same."` |
+| Alliance shift | `ep.allianceRecruits` has entry where `player` is in `tribePlayers` | Medium | `"[Player] just got absorbed into [toAlliance]. The alliance map just got redrawn."` |
+| Bond spike | `ep.bondChanges` has entry with `delta > 2` where both players are in `tribePlayers` | Low | `"[A] and [B] got closer this episode. On a tribe this small, that matters."` |
+
+**Deduplication rule:** Before injecting a card, check if the same player pair or player name already appears in the collected `campEvents` for this tribe. If a `doubt` event already references the same pair as a bond-rupture signal, skip the signal card. The goal is to add what the engine tracked but the narrative didn't surface — not to repeat it.
+
+**Cap:** Maximum **5 signal cards per tribe per screen render**, sorted by drama weight (highest first). This supplements the existing campEvents without overwhelming them — a truly active episode hits all 5 and feels packed; a quiet one gets 1–2 and stays lean. The existing campEvents section has no cap of its own and already covers the main narrative; the 5 signal cards are a rich supplement on top.
+
+Pre-merge behavior: applies to each tribe's block independently.
 Time-of-day: midday.
 
 ### 5.5 Relationships / Alliance State *(NEW screen)*
@@ -198,9 +245,53 @@ Time-of-day: late afternoon.
 
 Time-of-day: dusk.
 
-### 5.7 Challenge *(existing — no changes)*
+### 5.7 Challenge *(existing — atmospheric redesign + interactive reveal)*
 
-Time-of-day: afternoon.
+Time-of-day: afternoon (pre-merge) / deep afternoon pushing toward dusk (post-merge).
+
+---
+
+**POST-MERGE — Individual immunity reveal (interactive)**
+
+Data: `ep.chalPlacements` (array of player names, index 0 = winner, last index = last place), `ep.chalMemberScores`, `ep.immunityWinner`.
+
+**Default state:** All placement positions hidden — show only numbered slots with portrait silhouettes. A single "REVEAL" button and a smaller "See All Results" link.
+
+**Reveal flow (click REVEAL once per position):**
+- Reveals from last place → 1st place → winner
+- Each reveal: portrait drops in (`translateY(-12px) → 0`, `opacity: 0 → 1`) with position number
+- Last reveal (winner): gold `box-shadow` pulse animation, "IMMUNE" badge in Anton gold, stat-derived flavor line beneath (`pStats(winner).physical >= 7` → *"Physical dominance."* / `pStats(winner).strategic >= 7` → *"Read the comp perfectly."* / fallback → *"Fought for it."*)
+- "See All Results" link: skips the step-by-step and shows the full hierarchy at once
+
+**"On the line" section (always visible, before the reveal card):**
+Surface who had the most to lose — top 3 players by `threatScore()` in fire-accent `.vp-card` callouts labeled *"Needed this."* Pre-reveal safe: `threatScore()` uses stats + game state, not vote outcomes.
+
+**Suspense signal cards (after result, post-merge only):**
+- Any player with `threatScore > 6` who did NOT win immunity → fire-accent: *"[Player] didn't get the necklace. The target on their back just got bigger."*
+- Winner who has below-median `getBond()` average → ice-accent: *"[Player] bought themselves one more day."*
+- Cap: 2 cards
+
+**Atmosphere:** Background pushes toward dusk tones post-merge — the day is running out, tribal is coming.
+
+---
+
+**PRE-MERGE — Tribe challenge reveal (interactive)**
+
+Data: `ep.challengePlacements` (tribe objects ordered 1st → last), `ep.chalSitOuts` (per-tribe, `{ tribeName: [names] }`), `ep.chalMemberScores` (per-player scores).
+
+**What is always visible (never hidden):**
+- Each tribe's member hierarchy — individual player rows ranked by `chalMemberScores[player]` within their tribe, highest to lowest
+- Sit-outs — shown at the bottom of their tribe's section with a `SIT-OUT` badge, always visible
+
+**What is hidden until revealed:**
+- The tribe's identity (name, color) — shown as "Tribe [?]" with a neutral grey placeholder
+- The WIN / LOSS result badge on each tribe
+
+**Reveal flow:** Tribes reveal from worst finishing (loser) to best (winner), matching the drama arc of a real challenge reveal. One "REVEAL" click per tribe. "See All" link skips to full results.
+
+Each tribe reveal: tribe name fades in with its color, WIN or LOSS badge slides in, tribe color floods the tribe header.
+
+Atmosphere: competitive energy, clean blue-sky tones. No dark palette needed — this is daytime competition.
 
 ### 5.8 Tribal Council *(existing — full atmospheric redesign)*
 
@@ -268,18 +359,47 @@ Time-of-day: midday (arena).
 
 Time-of-day: post-tribal / early dawn.
 
-### 5.12 Pre-Tribal Twists / Post-Vote Twists *(existing — label fix + style upgrade)*
+### 5.12 Pre-Tribal Twists / Post-Vote Twists *(existing — label fix + style + dramatic atmosphere)*
 
 **Label fixes:**
 - Pre-tribal twist → sidebar label: `"Pre-Tribal Events"`
 - Post-elim twist → sidebar label: `"Post-Vote Twist"`
 
-**Style:** Both screens:
+**Base style (all twist screens):**
 - Twist title: Anton, `font-size: 36px`, `text-shadow: 0 0 20px #f0c040, 0 0 8px rgba(240,192,64,0.5)` (gold glow)
 - Twist body: `.vp-card` with `background: rgba(240,192,64,0.04)`, gold-accent border
 - Entrance: `transform: scaleY(0) → scaleY(1)`, `transform-origin: top center`, `--ease-broadcast`, 400ms
+- Time-of-day: Pre-tribal → dusk. Post-vote → deep night.
 
-Time-of-day: Pre-tribal → dusk. Post-vote → deep night.
+---
+
+**Dramatic twist atmosphere (layered on top for high-stakes twists):**
+
+Certain post-vote twists are game-disrupting elimination events — they deserve a visual treatment that matches the weight of what just happened. Detect the twist type and apply the corresponding overlay.
+
+**Duel-type twists** (`ep.exileDuelResult`, `ep.fireMaking`):
+- Visual: face-off layout — two portraits side by side with a `VS` divider between them (Anton bold, fire-accent color, `font-size: 28px`)
+- Background: extra amber fire overlay (same `torchFlicker` animation as Tribal but slightly more intense — opacity range `0.12 → 0.22`)
+- Winner portrait: gold glow pulse. Loser portrait: torch-snuff (same `.torch-snuffed` CSS as Vote Reveal)
+- These scenes already have rich narrative text — the visual treatment amplifies it
+
+**Jury Elimination** (`ep.twists[].type === 'jury-elimination'`):
+- Visual: jury portrait row at the top of the screen — all current jury members shown as a council, dimly lit
+- Header: "THE JURY HAS SPOKEN" in Anton, fire-accent, with a slow fade-in (1s)
+- Background: darkest palette of any screen — deeper than Vote Reveal (`#030507`), pure ceremony
+- Eliminated jury member portrait: torch-snuff with a slower transition (2s) — more weight than a normal elimination
+- Atmosphere: this is the game reaching back and correcting itself. It should feel cold and final.
+
+**Exile / 2nd Chance Isle** (`ep.exilePlayer && !ep.exileDuelResult`):
+- Visual: single portrait, isolated — centered on screen with extra negative space around it
+- Background: a cool, lonely palette — dark blue-grey (`#090c12`) instead of the warm night tones. Exile is isolation, not fire.
+- Caption beneath portrait: *"Waiting."* in Space Mono italic
+
+**Tribe Swap / Dissolve** (`ep.twist?.type` in `['tribe-swap', 'tribe-dissolve', 'tribe-expansion', 'abduction']` on the pre-tribal screen):
+- Visual: "before" tribe groupings → "after" tribe groupings, side by side or stacked
+- Each group animates in with its new tribe color
+- Header: "EVERYTHING JUST CHANGED" in Anton, gold glow
+- This is already surfaced via `rpBuildPreTwist` — add the visual treatment to the existing rendering path
 
 ---
 

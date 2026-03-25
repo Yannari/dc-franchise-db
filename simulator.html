@@ -14706,18 +14706,68 @@ function vpWhyBullets(name, votelog, alliances, ep) {
     else if (/loyal|committed|follows|aligned|alliance/i.test(r)) rTypes.loyalty++;
   });
   const domType = Object.entries(rTypes).sort(([,a],[,b]) => b-a)[0][0];
+  // Deterministic hash for variety selection (no randomness across re-renders)
+  const _wh = ([...name].reduce((a,c)=>a+c.charCodeAt(0),0) + ep.num * 31) % 100;
+  const _pick = (arr) => arr[_wh % arr.length];
+
   if (phase === 'pre-merge' && chalWeak >= 5.5) bullets.push(`Challenge liability — ${name} was the weakest link and the tribe ran out of reasons to keep covering for it`);
-  else if (th >= 7.5) bullets.push(`Threat level too high to ignore (${th.toFixed(1)}/10) — someone this capable doesn't get easier to vote out later`);
-  else if (th >= 6 && domType === 'threat') bullets.push(`Identified as a long-term jury threat (${th.toFixed(1)}/10) — the group decided the window was now`);
+  else if (th >= 7.5) bullets.push(_pick([
+    `Threat level too high to ignore (${th.toFixed(1)}/10) — someone this capable doesn't get easier to vote out later`,
+    `A ${th.toFixed(1)}/10 threat at this stage of the game is a problem that compounds. The group moved while the window was still open`,
+    `${name}'s game was too strong to let run to the end. Threat score doesn't lie — and the players who can read it acted on it`,
+  ]));
+  else if (th >= 6 && domType === 'threat') bullets.push(_pick([
+    `Identified as a long-term jury threat (${th.toFixed(1)}/10) — the group decided the window was now`,
+    `Not the loudest name, but the most dangerous one to leave in the game. The group read that and acted`,
+    `${name} was playing a quiet game with a loud ceiling. The people who noticed it moved before it became everyone's problem`,
+  ]));
   else if (th <= 3.5 && domType === 'challenge') bullets.push(`Seen as the weakest player at this stage — no challenge value and no strategic protection`);
-  else if (domType === 'personal') bullets.push(`Personal tension — the vote was driven by distrust and friction, not just game position`);
+  else if (domType === 'personal') bullets.push(_pick([
+    `Personal tension — the vote was driven by distrust and friction, not just game position`,
+    `The animosity was real and predated this tribal. The game gave someone an opportunity to act on it, and they did`,
+    `This wasn't purely strategic. Relationships had eroded in ways that made ${name} unavailable as an ally — and available as a target`,
+  ]));
   else if (priorVotes >= 2) bullets.push(`The name had already come up before — eventually the consensus vote becomes inevitable`);
-  else bullets.push(`Became the consensus name — the path of least resistance when the tribe needed to move someone`);
+  else bullets.push(_pick([
+    `Became the consensus name — the path of least resistance when the tribe needed to move someone`,
+    `No single person drove this vote — the group arrived at ${name} independently and nobody pushed back hard enough to change it`,
+    `${name} wasn't the most obvious target, but became the one everyone could live with. That kind of agreement is hard to stop`,
+    `The vote wasn't a calculated move — it was convergence. Different people arrived at the same name for different reasons. That's enough`,
+    `When a name sits at the center of a tribal with no one willing to defend it, the vote is already decided. ${name} had no real defenders tonight`,
+  ]));
   if (priorVotes >= 2 && domType !== 'personal') bullets.push(`Name had been written down ${priorVotes} time${priorVotes > 1 ? 's' : ''} before — a recurring target that finally ran out of luck`);
-  if (es.boldness >= 8 && es.loyalty <= 4) bullets.push(`Unpredictable and hard to control — bold players with no loyalty are dangerous past a certain point`);
-  if (es.strategic >= 8 && phase !== 'pre-merge') bullets.push(`Strategic read: ${name} was running things and the window to stop that was closing fast`);
-  if (es.social >= 8 && phase !== 'pre-merge') bullets.push(`Jury threat: built genuine relationships that would translate directly into votes at Final Tribal`);
-  if (majVoters.length) bullets.push(`Voted out by: ${majVoters.join(', ')}`);
+  if (es.boldness >= 8 && es.loyalty <= 4) bullets.push(_pick([
+    `Unpredictable and hard to control — bold players with no loyalty are dangerous past a certain point`,
+    `${name} was a wildcard the game could no longer absorb. Bold, loose, and visible — a combination that accelerates exits`,
+    `Playing loud in a game this small draws votes. ${name} knew that and kept playing loud anyway`,
+  ]));
+  if (es.strategic >= 8 && phase !== 'pre-merge') bullets.push(_pick([
+    `Strategic read: ${name} was running things and the window to stop that was closing fast`,
+    `Too many people had fingerprints on this vote that traced back to ${name}. When the puppeteer becomes visible, they become the target`,
+    `${name} had been setting the agenda all game. Someone finally decided to put that on the ballot`,
+  ]));
+  if (es.social >= 8 && phase !== 'pre-merge') bullets.push(_pick([
+    `Jury threat: built genuine relationships that would translate directly into votes at Final Tribal`,
+    `The social game ${name} ran out here doesn't lose at Final Tribal. The people who recognized that moved before it was too late`,
+    `Liked by everyone. That's not a compliment at this stage — it's a reason to vote someone out`,
+  ]));
+
+  // Idol play by another player this tribal (not the eliminated player)
+  const _idolPlaysThisTribal = (ep.idolPlays || []).filter(p => p.player !== name);
+  _idolPlaysThisTribal.forEach(play => {
+    const _vn = play.votesNegated || 0;
+    bullets.push(_pick([
+      `${play.player} played a Hidden Immunity Idol at Tribal — ${_vn} vote${_vn !== 1 ? 's' : ''} were cancelled, and the remaining tally fell on ${name}`,
+      `The idol changed everything. ${play.player} negated ${_vn} vote${_vn !== 1 ? 's' : ''}, redirecting the outcome entirely. ${name} had the next-highest count`,
+      `${_vn} vote${_vn !== 1 ? 's' : ''} for ${play.player} were wiped out by a played idol. ${name}'s ${majVoters.length} vote${majVoters.length !== 1 ? 's' : ''} became the plurality — and the boot`,
+    ]));
+  });
+
+  if (majVoters.length) bullets.push(_pick([
+    `The votes that counted: ${majVoters.join(', ')}`,
+    `${majVoters.length === 1 ? `${majVoters[0]} cast the deciding vote` : `${majVoters.slice(0,-1).join(', ')} and ${majVoters.at(-1)} wrote the name that stuck`}`,
+    `${majVoters.join(', ')} — that's who put ${name} on the jury`,
+  ]));
   if (betrayed) {
     majVoters.filter(v => hadAlly.members.includes(v)).forEach(traitor => {
       const bv = getBond(traitor, name);
@@ -14729,16 +14779,42 @@ function vpWhyBullets(name, votelog, alliances, ep) {
       bullets.push(`Betrayed by ${traitor} (${hadAlly.label}) — ${bc}`);
     });
   } else if (hadAlly) {
-    bullets.push(`${hadAlly.label} tried to protect them — but was outnumbered`);
+    bullets.push(_pick([
+      `${hadAlly.label} tried to protect them — but was outnumbered`,
+      `${hadAlly.label} wanted to save ${name} and couldn't get the numbers. Loyalty without majority is just a losing vote`,
+      `The alliance held — but it wasn't big enough. ${hadAlly.label} voted together and still fell short`,
+      `${hadAlly.label} stood by them. It wasn't enough. Being loyal to the right person doesn't matter if the numbers aren't there`,
+    ]));
   }
-  (votelog||[]).filter(l => {
+
+  // Ally votes for a different target — collapse into one grouped bullet per alliance+target pair
+  const _allyVotes = (votelog||[]).filter(l => {
     if (l.voted === name || l.voter === 'THE GAME') return false;
     const sa = (alliances||[]).find(a => a.members.includes(l.voter) && a.members.includes(name));
     if (sa && sa.members.includes(l.voted)) return false;
     return sa || getBond(l.voter, name) >= 1.5;
-  }).forEach(l => {
+  });
+  // Group by (allianceLabel, votedTarget) to collapse repetitive bullets
+  const _allyGroups = {};
+  _allyVotes.forEach(l => {
     const sa = (alliances||[]).find(a => a.members.includes(l.voter) && a.members.includes(name));
-    bullets.push(`${l.voter} ${sa ? `voted ${l.voted} to hold ${sa.label} together — it wasn't enough after the elimination` : `voted ${l.voted} — tried to pull numbers a different way`}`);
+    const key = `${sa?.label||''}|${l.voted}`;
+    if (!_allyGroups[key]) _allyGroups[key] = { voters: [], voted: l.voted, alliance: sa };
+    _allyGroups[key].voters.push(l.voter);
+  });
+  Object.values(_allyGroups).forEach(({ voters, voted, alliance }) => {
+    const voterStr = voters.length === 1 ? voters[0]
+      : voters.length === 2 ? `${voters[0]} and ${voters[1]}`
+      : `${voters.slice(0,-1).join(', ')} and ${voters.at(-1)}`;
+    if (alliance) {
+      bullets.push(_pick([
+        `${voterStr} voted ${voted} to protect the ${alliance.label} bloc — the numbers still weren't there`,
+        `${alliance.label} split their effort: ${voterStr} voted ${voted}, trying to keep the alliance intact. It wasn't enough`,
+        `${voterStr} (${alliance.label}) held the line on ${voted} — loyal to the plan, but outrun by the numbers`,
+      ]));
+    } else {
+      bullets.push(`${voterStr} voted ${voted} — tried to pull numbers a different way`);
+    }
   });
   if (misplay) {
     bullets.push(`Held a Hidden Immunity Idol — and never played it (${misplay.votesAgainst} vote${misplay.votesAgainst !== 1 ? 's' : ''} against, idol stayed in pocket)`);

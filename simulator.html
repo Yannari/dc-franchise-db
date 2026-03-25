@@ -15086,8 +15086,10 @@ function rpBuildVotes(ep) {
   // Fresh vote: original votes were wiped — don't mark anyone eliminated in this tally.
   // Announced double elim: mark top 2 in the same tally.
   // Surprise double boot: mark vote-1 eliminated (ep.firstEliminated).
-  const _v1Elim = ep.sidFreshVote ? null : (ep.firstEliminated || elim);
-  const _v1IsBlindside = _v1Elim && pStats(_v1Elim).strategic >= 7;
+  // Tiebreaker: winner/loser resolved by challenge — tally shows TIE for both, elim card handles the outcome
+  const _hasTiebreaker = !ep.firstEliminated && !!ep.tiebreakerResult;
+  const _v1Elim = ep.sidFreshVote ? null : (ep.firstEliminated || (_hasTiebreaker ? null : elim));
+  const _v1IsBlindside = !_hasTiebreaker && _v1Elim && pStats(_v1Elim).strategic >= 7;
   const _v1Elim2 = ep.announcedDoubleElim ? elim : null; // second eliminated in announced double elim
   const _v1Elim2Bs = _v1Elim2 && pStats(_v1Elim2).strategic >= 7;
   if (sortedVotes.length) {
@@ -15095,20 +15097,23 @@ function rpBuildVotes(ep) {
     if (ep.sidFreshVote) _tallyHeader = 'Original Votes — Wiped';
     else if (ep.announcedDoubleElim) _tallyHeader = 'Final Tally — Double Elimination';
     else if (ep.firstEliminated) _tallyHeader = 'Vote 1 — Final Tally';
+    else if (_hasTiebreaker) _tallyHeader = 'Final Tally — Tied';
     html += `<div class="tv-final-tally">
       <div class="tv-ft-header">${_tallyHeader}</div>`;
     sortedVotes.forEach(([name, v]) => {
       const pct = Math.round((v / Math.max(1, totalVotes)) * 100);
       const isDuel = !!(ep.exileDuelResult) && name === ep.exileDuelResult.newBoot;
-      const isE  = !ep.exileDuelResult && name === _v1Elim;
-      const isE2 = !ep.exileDuelResult && name === _v1Elim2;
-      const isS  = !_v1Elim && !_v1Elim2 && swap && name === sortedVotes[0][0];
-      const barColor = (isE || isE2) ? '#da3633' : (isDuel || isS) ? '#d29922' : '#30363d';
+      const isTied = _hasTiebreaker && (ep.tiedPlayers||[]).includes(name);
+      const isE  = !ep.exileDuelResult && !isTied && name === _v1Elim;
+      const isE2 = !ep.exileDuelResult && !isTied && name === _v1Elim2;
+      const isS  = !_v1Elim && !_v1Elim2 && !_hasTiebreaker && swap && name === sortedVotes[0][0];
+      const barColor = (isE || isE2) ? '#da3633' : (isTied || isDuel || isS) ? '#d29922' : '#30363d';
       html += `<div class="tv-ft-row ${(isE || isE2) ? 'tv-ft-elim' : ''}">
         ${rpPortrait(name)}
         <div class="tv-ft-name">${name}</div>
         <div class="tv-ft-bar-bg"><div class="tv-ft-bar" style="width:${pct}%;background:${barColor}"></div></div>
         <span class="vp-tally-num" data-target="${v}">0</span>
+        ${isTied ? `<span style="font-size:9px;font-weight:800;letter-spacing:1px;padding:2px 8px;border-radius:4px;background:rgba(210,153,34,0.1);color:#d29922">TIE</span>` : ''}
         ${isE  ? `<span style="font-size:9px;font-weight:800;letter-spacing:1px;padding:2px 8px;border-radius:4px;background:rgba(218,54,51,0.1);color:#da3633">${_v1IsBlindside  ? 'BLINDSIDE' : 'ELIMINATED'}</span>` : ''}
         ${isE2 ? `<span style="font-size:9px;font-weight:800;letter-spacing:1px;padding:2px 8px;border-radius:4px;background:rgba(218,54,51,0.1);color:#da3633">${_v1Elim2Bs ? 'BLINDSIDE' : 'ELIMINATED'}</span>` : ''}
         ${isDuel ? `<span style="font-size:9px;font-weight:800;letter-spacing:1px;padding:2px 8px;border-radius:4px;background:rgba(210,153,34,0.1);color:#d29922">DUEL</span>` : ''}
@@ -15131,6 +15136,9 @@ function rpBuildVotes(ep) {
   // ── Vote 1 elimination card (not shown for fresh vote — elim card is inside fresh vote section) ──
   if (ep.tiebreakerResult1) {
     html += _renderTiebreakerCard(ep.tiebreakerResult1, ep.tiedPlayers);
+  } else if (ep.tiebreakerResult && !ep.firstEliminated) {
+    // Single-tribal tiebreaker — show the challenge card + elim
+    html += _renderTiebreakerCard(ep.tiebreakerResult, ep.tiedPlayers);
   } else if (ep.isRockDraw && !ep.firstEliminated && elim) {
     html += `<div class="rp-elim" style="background:radial-gradient(ellipse at 50% 30%,rgba(210,153,34,0.08) 0%,transparent 60%);border-color:rgba(210,153,34,0.2)">
       <div class="rp-elim-eyebrow" style="color:#d29922">Rock Draw</div>

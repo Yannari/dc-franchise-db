@@ -12064,6 +12064,49 @@ function simulateFinale() {
     finalists = [ep.immunityWinner, brought];
   }
 
+  // If finaleSize === 4: immunity winner cuts 1, top 3 go to FTC
+  if (cfg.finaleSize === 4 && players.length === 4 && cfg.finaleFormat !== 'final-challenge') {
+    const others4 = players.filter(p => p !== ep.immunityWinner);
+    // Smart decision: project jury votes for each possible F3 trio
+    const immWinner4 = ep.immunityWinner;
+    const immS4 = pStats(immWinner4);
+    const cutCandidates = others4.map(candidate => {
+      const remaining = others4.filter(p => p !== candidate);
+      const trio = [immWinner4, ...remaining];
+      const projected = projectJuryVotes(trio);
+      const myVotes = projected[immWinner4] || 0;
+      const bestRival = Math.max(...remaining.map(r => projected[r] || 0));
+      return { cut: candidate, margin: myVotes - bestRival, bond: getBond(immWinner4, candidate) };
+    });
+    const loyaltyW4 = immS4.loyalty * 0.1;
+    const stratW4 = immS4.strategic * 0.1;
+    cutCandidates.forEach(c => {
+      // High margin = immunity winner does well when this person is REMOVED = good candidate to cut
+      // High bond = loyalty cost of cutting them = bad candidate to cut (for loyal players)
+      // High cutScore = SHOULD be cut
+      c.cutScore = c.margin * (0.5 + stratW4 * 0.3) - c.bond * loyaltyW4 * 0.5;
+    });
+    // Highest cutScore = best candidate to cut (removes biggest threat / least loyal cost)
+    cutCandidates.sort((a, b) => b.cutScore - a.cutScore);
+    const cut4 = cutCandidates[0].cut;
+    const brought4 = others4.filter(p => p !== cut4);
+    const projectedVotes4 = projectJuryVotes([immWinner4, ...brought4]);
+    ep.finalCut = {
+      winner: immWinner4, brought: brought4, cut: cut4,
+      reasoning: {
+        projectedVotes: projectedVotes4,
+        margin: cutCandidates[0].margin,
+        loyaltyDriven: loyaltyW4 > stratW4,
+        bondWithCut: cutCandidates[0].bond,
+      }
+    };
+    ep.eliminated = cut4;
+    gs.eliminated.push(cut4);
+    gs.jury.push(cut4);
+    gs.activePlayers = gs.activePlayers.filter(p => p !== cut4);
+    finalists = [immWinner4, ...brought4];
+  }
+
   ep.finaleFinalists = finalists;
 
   // Generate final challenge reenactment stages (used by VP viewer)

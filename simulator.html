@@ -5186,7 +5186,7 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
 
     } else if (eventType === 'allianceForm') {
       // Skip if this group already has an allianceForm this episode
-      if (events.some(e => e.type === 'allianceForm')) continue;
+      if (events.filter(e => e.type === 'allianceForm').length >= 2) continue;
 
       // Helper: create alliance, boost bonds, push event
       const _createAlliance = (members, formText) => {

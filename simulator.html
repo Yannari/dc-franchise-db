@@ -6289,9 +6289,33 @@ function checkAllianceRecruitment(ep) {
         return { alliance: a, avg, bestMember };
       }).filter(c => c.avg >= 0.5 && c.bestMember).sort((a,b) => b.avg - a.avg);
 
-      if (candidates.length && pctRoll(freeAgent + 'D' + ep.num) < 50) { // ~50% chance
-        const best = candidates[0];
-        doRecruit(best.alliance, freeAgent, best.bestMember, 'free-agent');
+      if (candidates.length) {
+        const _faS = pStats(freeAgent);
+        const _faState = gs.playerStates?.[freeAgent]?.emotional || 'comfortable';
+        // Base chance scaled by personality:
+        // - Strategic players actively seek alliances (they know they need numbers)
+        // - Social players naturally gravitate toward groups
+        // - Desperate/paranoid players scramble for safety
+        // - Comfortable/content players feel less urgency
+        // - Low strategic + comfortable = barely tries
+        let _faChance = 20; // base 20%
+        _faChance += _faS.strategic * 2.5;  // strategic 1=+2.5%, 10=+25%
+        _faChance += _faS.social * 1.5;     // social 1=+1.5%, 10=+15%
+        if (_faState === 'desperate') _faChance += 25;  // scrambling for any lifeline
+        else if (_faState === 'paranoid') _faChance += 20;  // knows they need protection
+        else if (_faState === 'uneasy') _faChance += 10;   // starting to worry
+        else if (_faState === 'calculating') _faChance += 15; // actively planning
+        else if (_faState === 'comfortable') _faChance -= 10; // doesn't feel the urgency
+        else if (_faState === 'content') _faChance -= 5;
+        if (_faS.loyalty >= 7) _faChance += 5; // loyal players want a group
+        if (_faS.boldness >= 8) _faChance += 5; // bold players make moves
+        if (_faS.boldness <= 3) _faChance -= 10; // passive players wait to be approached
+        _faChance = Math.max(5, Math.min(85, _faChance)); // clamp 5-85%
+
+        if (pctRoll(freeAgent + 'D' + ep.num) < _faChance) {
+          const best = candidates[0];
+          doRecruit(best.alliance, freeAgent, best.bestMember, 'free-agent');
+        }
       }
     });
 

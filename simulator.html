@@ -14889,7 +14889,7 @@ function rpBuildVotes(ep) {
     const slugV = String(voted).replace(/[^a-zA-Z0-9]/g, '');
     const _decl = _ovDecl ? _ovDecl(voter, voted) : null;
     const _react = _ovReact ? _ovReact(voter, voted) : null;
-    html += `<div class="tv-vote-card" data-voted="${voted}" data-voter="${voter}" data-index="${idx}" style="animation:staggerIn 0.35s var(--ease-broadcast) ${idx * 120}ms both">
+    html += `<div class="tv-vote-card" data-voted="${voted}" data-voter="${voter}" data-index="${idx}">
       <div class="tv-vote-voter-wrap">
         ${rpPortrait(voter, 'sm')}
         <div class="tv-vote-voter">${voter}</div>

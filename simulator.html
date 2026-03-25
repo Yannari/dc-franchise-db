@@ -14693,14 +14693,7 @@ function rpBuildChallenge(ep) {
       <div class="rp-eyebrow">Episode ${ep.num} \u2014 Individual Immunity</div>
       <div class="rp-title">${chalName}</div>`;
     if (chalDesc) html += `<div style="font-size:13px;color:var(--muted);margin-bottom:16px">${chalDesc}</div>`;
-    if (threatened.length) {
-      html += `<div class="vp-section-header fire">Needed this</div>`;
-      threatened.forEach(n => {
-        html += `<div class="vp-card fire" style="margin-bottom:8px;display:flex;align-items:center;gap:12px">
-          ${rpPortrait(n)}<span style="font-size:13px">${n}</span>
-        </div>`;
-      });
-    }
+    // "Needed this" section removed — spoils who's in danger before reveal
     html += `<div class="vp-section-header">Finishing order</div>
       <div id="${revealId}" data-placements='${JSON.stringify(placements)}' data-revealed="0" data-winner="${winner}">
         ${placements.map((_,i) => `<div class="chal-slot" id="${revealId}-slot-${i}" style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);opacity:0.15">
@@ -14713,28 +14706,52 @@ function rpBuildChallenge(ep) {
         <button onclick="vpRevealAllPlacements('${revealId}')" style="padding:6px 12px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:11px;cursor:pointer">See all results</button>
       </div>`;
 
-    // Suspense cards
-    const _suspense = [];
-    (ep.tribalPlayers || gs.activePlayers).forEach(n => {
+    // Suspense cards — hidden until all placements revealed to avoid spoilers
+    const _activePl = ep.tribalPlayers || gs.activePlayers;
+    const _suspenseId = `chal-suspense-${ep.num}`;
+    const _suspenseCards = [];
+
+    // Winner card — varied based on context
+    const _winnerAvgBond = _activePl.filter(p=>p!==winner).reduce((s,p)=>s+getBond(winner,p),0) / Math.max(1,_activePl.length-1);
+    const _winS = pStats(winner);
+    const _winP = pronouns(winner);
+    const _wcPick = (arr) => arr[([...winner].reduce((a,c)=>a+c.charCodeAt(0),0)+ep.num*3)%arr.length];
+    if (_winnerAvgBond < 0) {
+      _suspenseCards.push({ player: winner, text: _wcPick([
+        `${winner} is safe tonight. But the camp won't be happy about it. The target doesn't go away \u2014 it just waits.`,
+        `Immunity buys ${winner} one more round. But ${_winP.sub} can feel it \u2014 the tribe wanted ${_winP.obj} gone tonight.`,
+      ]), type: 'ice' });
+    } else if (_winS.physical >= 8 || _winS.endurance >= 8) {
+      _suspenseCards.push({ player: winner, text: _wcPick([
+        `${winner} wins again. The challenge dominance is becoming a problem \u2014 for everyone else.`,
+        `Another necklace for ${winner}. At some point, the tribe has to find a way to beat ${_winP.obj} \u2014 or vote around ${_winP.obj}.`,
+      ]), type: 'gold' });
+    }
+
+    // Vulnerable players — no names before reveal, just after
+    _activePl.forEach(n => {
       if (n === winner) return;
-      if (threatScore(n) > 6) {
-        _suspense.push({ player: n, text: `${n} didn't get the necklace. The target on their back just got bigger.`, type: 'fire' });
+      const ts = threatScore(n);
+      const avgBond = _activePl.filter(p=>p!==n).reduce((s,p)=>s+getBond(n,p),0) / Math.max(1,_activePl.length-1);
+      if (ts > 6 && avgBond < 1) {
+        const _vPick = (arr) => arr[([...n].reduce((a,c)=>a+c.charCodeAt(0),0)+ep.num*5)%arr.length];
+        _suspenseCards.push({ player: n, text: _vPick([
+          `${n} needed that necklace. Without it, the target is fully exposed.`,
+          `No immunity for ${n}. The alliances have been circling \u2014 tonight might be the night.`,
+          `${n} is vulnerable. And ${n} knows it. The scramble starts now.`,
+        ]), type: 'fire' });
       }
     });
-    const _activePl = ep.tribalPlayers || gs.activePlayers;
-    const _gameMedian = [..._activePl].map(n => {
-      const oth = _activePl.filter(p => p !== n);
-      return oth.length ? oth.reduce((s,p) => s + getBond(n,p),0)/oth.length : 0;
-    }).sort((a,b)=>a-b)[Math.floor(_activePl.length/2)] || 0;
-    const _winnerAvgBond = _activePl.filter(p=>p!==winner).reduce((s,p)=>s+getBond(winner,p),0) / Math.max(1,_activePl.length-1);
-    if (_winnerAvgBond < _gameMedian) {
-      _suspense.unshift({ player: winner, text: `${winner} bought themselves one more day.`, type: 'ice' });
+
+    if (_suspenseCards.length) {
+      html += `<div id="${_suspenseId}" style="margin-top:12px">`;
+      _suspenseCards.slice(0,3).forEach(s => {
+        html += `<div class="vp-card ${s.type}" style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+          ${rpPortrait(s.player)}<span style="font-size:13px">${s.text}</span>
+        </div>`;
+      });
+      html += `</div>`;
     }
-    _suspense.slice(0,2).forEach(s => {
-      html += `<div class="vp-card ${s.type}" style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
-        ${rpPortrait(s.player)}<span style="font-size:13px">${s.text}</span>
-      </div>`;
-    });
 
     html += `</div>`;
     return html;
@@ -20484,16 +20501,53 @@ function vpRevealNextPlacement(containerId) {
   if (!slot) return;
 
   const place = placements.length - revealIdx;
-  const flavors = { physical: 'Physical dominance.', strategic: 'Read the comp perfectly.', endurance: 'Outlasted everyone.' };
-  const stat = Object.keys(flavors).find(k => (pStats(playerName)?.[k] || 0) >= 7);
-  const flavor = stat ? flavors[stat] : 'Fought for it.';
+  const s = pStats(playerName);
+  const totalPlayers = placements.length;
+  const _pck = (arr, sd) => arr[([...sd].reduce((a,c)=>a+c.charCodeAt(0),0)+place*7)%arr.length];
+
+  // Context-aware reason for each placement
+  let flavor = '';
+  if (isWinner) {
+    const winReasons = [];
+    if (s.physical >= 8) winReasons.push(`Dominated physically \u2014 nobody was close.`);
+    if (s.endurance >= 8) winReasons.push(`Outlasted everyone. Willpower over skill.`);
+    if (s.mental >= 8) winReasons.push(`Solved it faster than anyone expected.`);
+    if (s.physical >= 6 && s.endurance >= 6) winReasons.push(`All-around performance \u2014 no weaknesses exposed.`);
+    if (!winReasons.length) winReasons.push(`Found another gear when it mattered most.`, `Peaked at the right time.`);
+    flavor = _pck(winReasons, playerName + 'win');
+  } else if (place === totalPlayers) {
+    // Last place
+    const lastReasons = [
+      `Fell behind early. Never recovered.`,
+      `The challenge exposed a gap in ${playerName}'s game.`,
+      `Out of rhythm from the start. The pressure was visible.`,
+      `Struggled with the format. Not ${playerName}'s strength.`,
+    ];
+    if (s.physical <= 4) lastReasons.push(`Physical challenges aren't ${playerName}'s game. It showed.`);
+    if (s.endurance <= 4) lastReasons.push(`Couldn't hold on. Endurance failed early.`);
+    flavor = _pck(lastReasons, playerName + 'last');
+  } else {
+    // Middle placement
+    const midReasons = [
+      `Solid effort \u2014 but not quite enough.`,
+      `Stayed in the fight longer than expected. Ran out of steam.`,
+      `Had moments of brilliance. Then one mistake.`,
+      `Competitive throughout \u2014 just got edged out.`,
+    ];
+    if (s.physical >= 7) midReasons.push(`Physical edge kept ${playerName} in it, but the finish required more.`);
+    if (s.mental >= 7) midReasons.push(`Smart approach. Execution just fell short.`);
+    flavor = _pck(midReasons, playerName + 'mid');
+  }
 
   slot.style.opacity = '1';
   slot.innerHTML = `
     <span style="font-family:var(--font-mono);font-size:11px;color:var(--muted);width:24px">${place === 1 ? '\u{1F947}' : place}</span>
     ${rpPortrait(playerName)}
-    <span style="font-size:13px${isWinner ? ';color:var(--accent-gold);font-family:var(--font-display)' : ''}">${playerName}</span>
-    ${isWinner ? `<span class="rp-brant-badge gold">IMMUNE</span><span style="font-size:11px;color:var(--muted);margin-left:8px">${flavor}</span>` : ''}
+    <div style="flex:1">
+      <span style="font-size:13px${isWinner ? ';color:var(--accent-gold);font-family:var(--font-display)' : ''}">${playerName}</span>
+      ${isWinner ? `<span class="rp-brant-badge gold">IMMUNE</span>` : ''}
+      <div style="font-size:10px;color:var(--muted);margin-top:2px">${flavor}</div>
+    </div>
   `;
   slot.style.animation = 'staggerIn 0.35s var(--ease-broadcast) both';
   if (isWinner) slot.style.boxShadow = '0 0 0 1px var(--accent-gold)';

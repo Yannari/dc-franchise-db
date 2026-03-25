@@ -12660,7 +12660,7 @@ function generateBenchAssignments(finalists) {
     assignments[finalist].push(supporter);
 
     // Build context-rich reason referencing actual game history
-    const _pick = (arr, seed) => arr[([...seed].reduce((a,c)=>a+c.charCodeAt(0),0)+(ep?.num||0)*7)%arr.length];
+    const _pick = (arr, seed) => arr[([...seed].reduce((a,c)=>a+c.charCodeAt(0),0)+(gs.episode||0)*7)%arr.length];
     const votedMeOut = votersWhoGotMeOut.includes(finalist);
     const otherFinalist = scored.length >= 2 ? scored[scored.length - 1].finalist : null;
     const otherVotedMeOut = otherFinalist ? votersWhoGotMeOut.includes(otherFinalist) : false;

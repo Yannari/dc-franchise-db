@@ -13381,11 +13381,21 @@ function rpBuildColdOpen(ep) {
     const _quits    = prevEp.allianceQuits    || [];
 
     const _topAlliance = [..._pAlliances].sort((a,b) => b.members.length - a.members.length)[0];
-    const _activePlayers = gs.activePlayers;
+    // Use snapshot active players, not live gs — so viewing old episodes shows correct data
+    const _activePlayers = _pSnap.activePlayers || [...activeAtStart];
+    const _snapBonds = _pSnap.bonds || null;
+    // Bond lookup: use snapshot bonds if available, fallback to live getBond
+    const _getBondSnap = (a, b) => {
+      if (_snapBonds) {
+        const key1 = `${a}|${b}`, key2 = `${b}|${a}`;
+        return _snapBonds[key1] ?? _snapBonds[key2] ?? 0;
+      }
+      return getBond(a, b);
+    };
     const _avgBond = n => {
       const others = _activePlayers.filter(p => p !== n);
       if (!others.length) return 0;
-      return others.reduce((s, p) => s + getBond(n, p), 0) / others.length;
+      return others.reduce((s, p) => s + _getBondSnap(n, p), 0) / others.length;
     };
     const _bottomTwo = [..._activePlayers].sort((a,b) => _avgBond(a) - _avgBond(b)).slice(0, 2);
 
@@ -13393,7 +13403,8 @@ function rpBuildColdOpen(ep) {
       <div class="vp-section-header">Coming in from last episode</div>`;
 
     if (_topAlliance) {
-      const _members = _topAlliance.members.filter(n => _activePlayers.includes(n));
+      const _activeSet = new Set(_activePlayers);
+      const _members = _topAlliance.members.filter(n => _activeSet.has(n));
       if (_members.length) {
         html += `<div class="vp-card" style="margin-bottom:10px">
           <div style="font-family:var(--font-display);font-size:13px;letter-spacing:1px;margin-bottom:6px">${_topAlliance.name}</div>

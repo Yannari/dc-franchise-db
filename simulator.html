@@ -17710,6 +17710,146 @@ function rpBuildFinalCut(ep) {
   return html;
 }
 
+// ── The Benches: eliminated players choose which finalist to support ──
+function rpBuildBenches(ep) {
+  const benchAssignments = ep.benchAssignments;
+  const benchReasons = ep.benchReasons;
+  if (!benchAssignments) return null;
+  const finalists = Object.keys(benchAssignments);
+  if (!finalists.length) return null;
+  const allSupporters = finalists.flatMap(f => (benchAssignments[f] || []).map(s => ({ supporter: s, finalist: f })));
+  if (!allSupporters.length) return null;
+  const epNum = ep.num;
+  const stateKey = epNum + '_bench';
+  const assistants = ep.assistants || null;
+
+  let html = `<div class="rp-page tod-dusk">
+    <div class="rp-eyebrow">Episode ${epNum} \u2014 Finale</div>
+    <div style="font-family:var(--font-display);font-size:28px;letter-spacing:2px;text-align:center;margin-bottom:6px;text-transform:uppercase">The Benches</div>
+    <div style="text-align:center;font-size:11px;color:var(--muted);margin-bottom:20px;letter-spacing:1.5px">The eliminated players choose their side.</div>`;
+
+  // Finalist headers with bench count
+  html += `<div style="display:flex;justify-content:center;gap:32px;margin-bottom:20px">
+    ${finalists.map(f => {
+      const count = (benchAssignments[f] || []).length;
+      return `<div style="text-align:center">
+        ${rpPortrait(f, 'lg')}
+        <div style="font-size:12px;font-family:var(--font-display);margin-top:6px">${f}</div>
+        <div class="tv-tally-count" id="tv-tc-${stateKey}-${f.replace(/[^a-zA-Z0-9]/g,'')}" style="font-size:20px;font-family:var(--font-display);color:var(--accent-gold);margin-top:4px">0</div>
+        <div style="font-size:9px;color:var(--muted)">supporters</div>
+      </div>`;
+    }).join(`<div style="align-self:center;font-size:18px;color:#30363d;font-weight:700">vs</div>`)}
+  </div>`;
+
+  // Card-by-card reveal — each supporter walks to a bench
+  html += `<div class="tv-wrap"><div class="tv-reveal-panel" id="tv-cards-${stateKey}">`;
+
+  // Shuffle order for drama (deterministic seed)
+  const shuffled = [...allSupporters].sort((a, b) => {
+    const seedA = [...a.supporter].reduce((s, c) => s + c.charCodeAt(0), 0);
+    const seedB = [...b.supporter].reduce((s, c) => s + c.charCodeAt(0), 0);
+    return ((seedA * 17 + epNum) % 97) - ((seedB * 17 + epNum) % 97);
+  });
+
+  shuffled.forEach(({ supporter, finalist }, idx) => {
+    const reason = benchReasons?.[supporter]?.reason || '';
+    const bond = benchReasons?.[supporter]?.bond ?? 0;
+    // Check if this is a surprise (supporter had higher bond with a different finalist)
+    const otherFinalists = finalists.filter(f => f !== finalist);
+    const isSurprise = otherFinalists.some(of => getBond(supporter, of) > bond + 0.5);
+
+    html += `<div class="tv-vote-card" data-voted="${finalist}" data-voter="${supporter}" data-index="${idx}"${isSurprise ? ' style="border-color:rgba(227,179,65,0.4);background:rgba(227,179,65,0.03)"' : ''}>
+      <div class="tv-vote-voter-wrap">
+        ${rpPortrait(supporter, 'sm')}
+        <div class="tv-vote-voter">${supporter}</div>
+      </div>
+      <div class="tv-vote-arrow" style="color:var(--accent-gold)">\u2192</div>
+      <div class="tv-vote-right">
+        <div class="tv-vote-target">${finalist}'s Bench</div>
+        <div class="tv-vote-reason">${reason}</div>
+        ${isSurprise ? '<div style="font-size:9px;color:#e3b341;margin-top:3px;font-weight:700;letter-spacing:0.5px">SURPRISE PICK</div>' : ''}
+      </div>
+    </div>`;
+  });
+
+  html += `</div>`; // end tv-reveal-panel
+
+  // Live tally panel
+  html += `<div class="tv-tally-panel" id="tv-tally-${stateKey}">
+    <div class="tv-tally-header">Bench Count</div>`;
+  finalists.forEach(f => {
+    const slug = f.replace(/[^a-zA-Z0-9]/g, '');
+    html += `<div class="tv-tally-row" data-name="${f}" style="opacity:0;transition:opacity 0.4s">
+      ${rpPortrait(f)}
+      <div class="tv-tally-pname">${f}</div>
+      <div class="tv-tally-bar-bg"><div class="tv-tally-bar" id="tv-tb-${stateKey}-${slug}" style="width:0%"></div></div>
+      <div class="tv-tally-count" id="tv-tc-${stateKey}-${slug}" data-count="0">\u2014</div>
+    </div>`;
+  });
+  html += `</div></div>`; // end tally + tv-wrap
+
+  // Reveal buttons
+  html += `<div id="tv-btn-wrap-${stateKey}">
+    <button class="tv-reveal-btn" id="tv-btn-${stateKey}" onclick="tvRevealNext('${stateKey}')">Next (0/${shuffled.length})</button>
+    <div style="text-align:right;margin:-12px 0 14px">
+      <button onclick="tvRevealAll('${stateKey}')" style="background:none;border:none;font-size:11px;color:#484f58;cursor:pointer;padding:2px 0;letter-spacing:0.3px">Skip to results \u203a</button>
+    </div>
+  </div>`;
+
+  // Results section (shown after all reveals)
+  html += `<div id="tv-results-${stateKey}" style="display:none">`;
+
+  // Final bench summary
+  finalists.forEach(f => {
+    const supporters = benchAssignments[f] || [];
+    html += `<div style="margin-bottom:12px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:12px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        ${rpPortrait(f, 'sm')}
+        <div style="font-family:var(--font-display);font-size:14px">${f}'s Bench</div>
+        <span style="font-size:11px;color:var(--accent-gold);font-weight:700">${supporters.length} supporter${supporters.length !== 1 ? 's' : ''}</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px">
+        ${supporters.map(s => `<div style="text-align:center">${rpPortrait(s)}<div style="font-size:9px;color:var(--muted)">${s}</div></div>`).join('')}
+      </div>
+      ${!supporters.length ? '<div style="font-size:12px;color:var(--accent-fire);font-style:italic">Empty bench. Nobody came.</div>' : ''}
+    </div>`;
+  });
+
+  // Assistant selection (if applicable)
+  if (assistants) {
+    html += `<hr style="border:none;border-top:1px solid rgba(255,255,255,0.06);margin:16px 0">
+    <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--accent-gold);text-transform:uppercase;margin-bottom:12px">Assistant Selection</div>`;
+    finalists.forEach(f => {
+      const asst = assistants[f];
+      if (!asst) {
+        html += `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;padding:10px;background:rgba(248,81,73,0.04);border:1px solid rgba(248,81,73,0.15);border-radius:6px">
+          ${rpPortrait(f, 'sm')}
+          <div><div style="font-size:13px">${f}</div><div style="font-size:11px;color:var(--accent-fire)">Goes solo \u2014 nobody on their bench</div></div>
+        </div>`;
+        return;
+      }
+      const decisionText = asst.decision === 'unanimous' ? 'Easy choice \u2014 the only option that made sense.'
+        : asst.decision === 'heart' ? `Followed the heart. "${asst.name} is someone I trust. That matters more than stats."`
+        : asst.decision === 'brain' ? `Cold calculation. "${asst.name} gives me the best shot at winning. Simple as that."`
+        : asst.decision === 'impulsive' ? `Didn't think. Just said a name. "${asst.name}. Let's go."`
+        : `Agonized. "${asst.heartPick === asst.brainPick ? asst.name : `My gut says ${asst.heartPick}. My head says ${asst.brainPick}.`} I went with ${asst.name}."`;
+      html += `<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;padding:10px;background:rgba(227,179,65,0.04);border:1px solid rgba(227,179,65,0.15);border-radius:6px">
+        ${rpPortrait(f, 'sm')}
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:600">${f} picks ${asst.name}</div>
+          <div style="font-size:11px;color:#8b949e;margin-top:2px">${decisionText}</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:4px">Bond: ${asst.bond >= 2 ? 'Strong' : asst.bond >= 0 ? 'Neutral' : 'Risky'} \u00b7 ${asst.decision !== 'unanimous' && asst.heartPick !== asst.brainPick ? `Heart: ${asst.heartPick} \u00b7 Brain: ${asst.brainPick}` : 'Clear pick'}</div>
+        </div>
+        ${rpPortrait(asst.name, 'sm')}
+      </div>`;
+    });
+  }
+
+  html += `</div>`; // end results
+  html += `</div>`; // end page
+  return html;
+}
+
 function rpBuildFTC(ep) {
   const ftcData = ep.ftcData || {};
   const finalists = ep.finaleFinalists || gs.activePlayers;
@@ -18586,6 +18726,7 @@ function buildVPScreens(epRecord) {
   delete _tvState[String(vpEpNum) + '_v2']; // vote-2 reveal state (surprise double boot)
   delete _tvState[String(vpEpNum) + '_fv']; // fresh vote reveal state
   delete _tvState[String(vpEpNum) + '_je']; // jury elimination reveal state
+  delete _tvState[String(vpEpNum) + '_bench'];
   const ep = epRecord;
 
   const hasTribal = ep.alliances?.some(a => a.target) || ep.votingLog?.length;

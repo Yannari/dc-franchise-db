@@ -129,13 +129,27 @@ The immunity winner picks who to cut based on jury vote projection:
 
 **For final-challenge format — Assistant Selection:**
 Only when `seasonConfig.finaleAssistants === true`.
-After bench reveal, each finalist picks an assistant from their bench:
-- **Loyal/nice archetypes** (loyal-soldier, social-butterfly, underdog, temperament >= 6): pick highest bond supporter from bench (heart choice).
-- **Strategic/schemer archetypes** (mastermind, schemer, strategic >= 7): pick highest challenge-stat supporter from bench (smart choice).
-- **Others:** weighted blend 60% stats / 40% bond. If best stat pick has bond <= -1, downgrade (backfire risk).
+After bench reveal, each finalist picks an assistant from their bench using a balanced heart-vs-brain decision model:
+
+**Heart vs. Brain Weight:**
+```
+heartWeight = (loyalty + social + temperament) / 3
+brainWeight = (strategic + mental + boldness) / 3
+diff = heartWeight - brainWeight
+```
+
+- **Heart-dominant** (diff >= 3): picks highest bond supporter from bench. Easy decision. Confessional: "I trust [name]. That's all I need."
+- **Brain-dominant** (diff <= -3): picks highest challenge-stat supporter from bench. Easy decision. Confessional: "I need someone who can actually help me win."
+- **Balanced** (diff between -3 and 3): the finalist agonizes. Compute best heart pick (highest bond) and best brain pick (highest stats):
+  - If same person → easy pick, no struggle.
+  - If different → weighted coin flip. `heartChance = 0.5 + (diff / 6) * 0.3`. So diff=0 is 50/50, diff=2 is 60/40 toward heart, diff=-2 is 60/40 toward brain.
+  - Low temperament (< 4) makes impulsive snap picks (randomized). "I didn't think. I just said a name."
+  - High temperament (>= 7) deliberates visibly — the struggle is shown.
+  - Confessional reflects the struggle: "My gut says [heart pick] — we've been through everything together. But my head says [brain pick] — [brain pick] gives me the best shot. I don't know what to do."
+
 - **Empty bench:** finalist goes solo. Dramatic moment: "[Finalist] looks at the empty bench. Nobody came. They're on their own."
 - **Sabotage chance:** if assistant has bond <= -2 with finalist, `15% + abs(bond) * 2%` chance stats contribute negatively instead of positively. "[Assistant] drops the rope. Was it an accident? [Finalist] doesn't think so."
-- Store: `ep.assistants = { [finalist]: { name, stats, bond, sabotage } }`.
+- Store: `ep.assistants = { [finalist]: { name, stats, bond, heartPick, brainPick, decision, sabotage } }`.
 
 ### Screen 6a: FTC (Final Tribal Council) — Jury Format Only
 
@@ -297,8 +311,8 @@ After bench reveal, each finalist picks an assistant from their bench:
 
 ### Assistant Selection (`selectAssistant`)
 - Called after bench assignments, final-challenge format only, when `seasonConfig.finaleAssistants === true`.
-- Logic: archetype-driven (heart vs. smart choice) with bond guard.
-- Stored in `ep.assistants = { [finalist]: { name, stats, bond, sabotage } }`.
+- Logic: balanced heart-vs-brain model. `heartWeight = (loyalty+social+temperament)/3`, `brainWeight = (strategic+mental+boldness)/3`. Extreme stats = clear pick. Balanced stats = agonizing weighted coin flip. Low temperament = impulsive snap. High temperament = visible deliberation.
+- Stored in `ep.assistants = { [finalist]: { name, stats, bond, heartPick, brainPick, decision, sabotage } }`.
 
 ### Multi-Stage Final Challenge (`simulateFinaleChallenge`)
 - Replaces the current single `simulateIndividualChallenge` call for final-challenge format.

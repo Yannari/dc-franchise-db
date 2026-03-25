@@ -13063,10 +13063,16 @@ function rpBuildChallenge(ep) {
           <button onclick="vpRevealTribe('${slotId}','${tName}')" style="margin-left:auto;padding:4px 12px;background:var(--accent-fire);border:none;border-radius:4px;color:#fff;font-size:11px;cursor:pointer">REVEAL</button>
         </div>
         <div class="rp-portrait-row" style="margin-bottom:8px">
-          ${rankedCompetitors.map((n,ri) => `<div style="text-align:center">
-            ${rpPortrait(n)}
-            <div style="font-size:9px;color:var(--muted);margin-top:2px">#${ri+1}</div>
-          </div>`).join('')}
+          ${rankedCompetitors.map((n,ri) => {
+            const _isTop = ri === 0;
+            const _isBot = ri === rankedCompetitors.length - 1 && rankedCompetitors.length > 1;
+            const _rankBadge = _isTop
+              ? `<div style="font-size:9px;font-weight:800;letter-spacing:1px;background:rgba(63,185,80,0.12);color:#3fb950;padding:2px 5px;border-radius:3px;margin-top:3px">STANDOUT</div>`
+              : _isBot
+              ? `<div style="font-size:9px;font-weight:800;letter-spacing:1px;background:rgba(218,54,51,0.10);color:#f85149;padding:2px 5px;border-radius:3px;margin-top:3px">WEAK LINK</div>`
+              : `<div style="font-size:9px;color:var(--muted);margin-top:2px">#${ri+1}</div>`;
+            return `<div style="text-align:center">${rpPortrait(n)}${_rankBadge}</div>`;
+          }).join('')}
         </div>
         ${sos.length ? `<div style="font-size:11px;color:var(--muted);margin-top:4px">Sit-outs: ${sos.map(n=>`<strong>${n}</strong>`).join(', ')}</div>` : ''}
       </div>`;

@@ -18931,6 +18931,278 @@ function rpBuildReunion(ep) {
   return html;
 }
 
+// ── Season Statistics: full stats page + Copy JSON ──
+function rpBuildSeasonStats(ep) {
+  const epNum = ep.num;
+  const winner = ep.winner;
+  const finalists = ep.finaleFinalists || [];
+  const allPlayers = players.map(p => p.name);
+  const history = gs.episodeHistory || [];
+  const jury = gs.jury || [];
+  const juryResult = ep.juryResult;
+
+  let html = `<div class="rp-page" style="background:#0d1117">
+    <div class="rp-eyebrow">Season Statistics</div>
+    <div style="font-family:var(--font-display);font-size:24px;letter-spacing:2px;text-align:center;margin-bottom:16px;text-transform:uppercase">${seasonConfig.name || 'Season'} \u2014 Statistics</div>`;
+
+  // ═══ 1. SEASON METADATA ═══
+  const voteStr = juryResult ? Object.entries(juryResult.votes).sort(([,a],[,b]) => b-a).map(([,v]) => v).join('-') : 'N/A';
+  const fanFav = ep.fanFavorite || gs.fanFavorite || null;
+  html += `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;justify-content:center">
+    ${[
+      { l: 'Winner', v: winner || '?' },
+      { l: 'Final Vote', v: juryResult ? voteStr : 'Challenge' },
+      { l: 'Fan Favorite', v: fanFav || 'N/A' },
+      { l: 'Cast Size', v: allPlayers.length },
+      { l: 'Episodes', v: history.length },
+      { l: 'Jury Size', v: jury.length },
+    ].map(m => `<div style="text-align:center;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:6px;padding:8px 14px;min-width:70px">
+      <div style="font-size:14px;color:var(--accent-gold);font-family:var(--font-display)">${m.v}</div>
+      <div style="font-size:9px;color:var(--muted)">${m.l}</div>
+    </div>`).join('')}
+  </div>`;
+
+  // ═══ 2. PLACEMENT TABLE ═══
+  const placements = [];
+  if (winner) placements.push(winner);
+  finalists.filter(f => f !== winner).forEach(f => placements.push(f));
+  [...history].reverse().forEach(e => {
+    if (e.eliminated && !placements.includes(e.eliminated)) placements.push(e.eliminated);
+    if (e.firstEliminated && !placements.includes(e.firstEliminated)) placements.push(e.firstEliminated);
+  });
+  // Add anyone still missing
+  allPlayers.forEach(n => { if (!placements.includes(n)) placements.push(n); });
+
+  html += `<div style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--accent-gold);text-transform:uppercase;margin-bottom:8px">Placements</div>`;
+  html += `<div style="margin-bottom:20px">`;
+  placements.forEach((name, idx) => {
+    const place = idx + 1;
+    const isWinner = name === winner;
+    const isFinalist = finalists.includes(name);
+    const isJuror = jury.includes(name);
+    const phase = isWinner ? 'Winner' : isFinalist ? 'Finalist' : isJuror ? 'Juror' : 'Pre-Juror';
+    const elimEp = history.find(e => e.eliminated === name || e.firstEliminated === name);
+    const votesAtElim = elimEp ? Object.entries(elimEp.votes || {}).filter(([n]) => n === name).map(([,v]) => v)[0] : null;
+    const totalVotesAgainst = history.reduce((s,e) => s + ((e.votingLog||[]).filter(v=>v.voted===name&&v.voter!=='THE GAME').length), 0);
+
+    let note = '';
+    if (isWinner && juryResult) note = `${voteStr} jury vote`;
+    else if (isWinner) note = 'Final Challenge Winner';
+    else if (isFinalist) note = `${juryResult?.votes?.[name] || 0} jury votes`;
+    else if (elimEp) note = `Ep ${elimEp.num}`;
+
+    html += `<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;${isWinner ? 'background:rgba(227,179,65,0.06);border-radius:4px' : ''};${idx % 2 === 0 ? '' : 'background:rgba(255,255,255,0.015);border-radius:4px'}">
+      <span style="font-family:var(--font-mono);font-size:11px;color:${isWinner?'var(--accent-gold)':'var(--muted)'};width:22px;text-align:right">${place}</span>
+      ${rpPortrait(name)}
+      <div style="flex:1;font-size:12px;${isWinner?'color:var(--accent-gold);font-weight:600':'color:#c9d1d9'}">${name}</div>
+      <div style="font-size:10px;color:${phase==='Winner'?'var(--accent-gold)':phase==='Finalist'?'#3fb950':phase==='Juror'?'#58a6ff':'var(--muted)'};min-width:55px">${phase}</div>
+      <div style="font-size:10px;color:var(--muted);min-width:60px;text-align:right">${note}</div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  // ═══ 3. CHALLENGE PERFORMANCE ═══
+  const chalData = allPlayers.map(n => ({
+    name: n,
+    immunity: history.filter(e => e.immunityWinner === n && !e.isFinale).length,
+    total: gs.chalRecord?.[n]?.wins || 0,
+  })).filter(c => c.total > 0 || c.immunity > 0).sort((a,b) => b.total - a.total || b.immunity - a.immunity);
+
+  if (chalData.length) {
+    html += `<div style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--accent-gold);text-transform:uppercase;margin-bottom:8px">Challenge Performance</div>`;
+    html += `<div style="margin-bottom:20px">`;
+    chalData.forEach(c => {
+      html += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        ${rpPortrait(c.name)}
+        <div style="flex:1;font-size:12px;color:#c9d1d9">${c.name}</div>
+        <div style="font-size:10px;color:var(--muted)">${c.immunity} immunity \u00b7 ${c.total} total</div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  // ═══ 4. VOTES RECEIVED ═══
+  const votesReceived = allPlayers.map(n => ({
+    name: n,
+    votes: history.reduce((s,e) => s + ((e.votingLog||[]).filter(v=>v.voted===n&&v.voter!=='THE GAME').length), 0),
+  })).sort((a,b) => b.votes - a.votes);
+
+  html += `<div style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--accent-gold);text-transform:uppercase;margin-bottom:8px">Votes Received Against</div>`;
+  html += `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:20px">`;
+  votesReceived.forEach(v => {
+    const pct = v.votes > 0 ? Math.round((v.votes / Math.max(...votesReceived.map(x=>x.votes), 1)) * 100) : 0;
+    html += `<div style="display:flex;align-items:center;gap:6px;width:calc(50% - 4px);padding:3px 6px;font-size:11px">
+      ${rpPortrait(v.name)}
+      <div style="flex:1;color:#c9d1d9">${v.name}</div>
+      <div style="width:50px;height:4px;background:var(--surface2);border-radius:2px;overflow:hidden"><div style="height:100%;width:${pct}%;background:var(--accent-fire);border-radius:2px"></div></div>
+      <div style="color:var(--muted);min-width:16px;text-align:right">${v.votes}</div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  // ═══ 5. ADVANTAGES & IDOLS ═══
+  const idolFinds = history.flatMap(e => (e.idolFinds || []).map(f => ({ ep: e.num, ...f })));
+  const idolPlays = history.flatMap(e => (e.idolPlays || []).map(p => ({ ep: e.num, ...p })));
+  if (idolFinds.length || idolPlays.length) {
+    html += `<div style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--accent-gold);text-transform:uppercase;margin-bottom:8px">Advantages & Idols</div>`;
+    html += `<div style="margin-bottom:20px">`;
+    if (idolFinds.length) {
+      html += `<div style="font-size:10px;color:var(--muted);margin-bottom:4px">Found:</div>`;
+      idolFinds.forEach(f => {
+        html += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;font-size:11px">
+          ${rpPortrait(f.finder)} <span style="color:#c9d1d9">${f.finder}</span> <span style="color:var(--muted)">\u00b7 Ep ${f.ep}</span>
+        </div>`;
+      });
+    }
+    if (idolPlays.length) {
+      html += `<div style="font-size:10px;color:var(--muted);margin:6px 0 4px">Played:</div>`;
+      idolPlays.forEach(p => {
+        html += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;font-size:11px">
+          ${rpPortrait(p.player)} <span style="color:#c9d1d9">${p.player}${p.playedFor ? ` for ${p.playedFor}` : ''}</span>
+          <span style="color:var(--muted)">\u00b7 Ep ${p.ep}${p.votesNegated ? ` \u00b7 ${p.votesNegated} negated` : ''}</span>
+        </div>`;
+      });
+    }
+    html += `</div>`;
+  }
+
+  // ═══ 6. STRATEGIC RANKINGS ═══
+  const stratRank = allPlayers.map(n => {
+    const s = pStats(n);
+    const placementIdx = placements.indexOf(n);
+    const survivalBonus = allPlayers.length - placementIdx;
+    const advCount = history.reduce((sum, e) => sum + ((e.idolPlays||[]).filter(p => p.player === n).length), 0);
+    return { name: n, score: s.strategic * 2 + survivalBonus * 0.5 + advCount * 1.5 };
+  }).sort((a,b) => b.score - a.score);
+
+  html += `<div style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--accent-gold);text-transform:uppercase;margin-bottom:8px">Strategic Rankings (Full)</div>`;
+  html += `<div style="margin-bottom:20px">`;
+  stratRank.forEach((r, i) => {
+    html += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;padding:3px 6px">
+      <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);width:18px">${i+1}</span>
+      ${rpPortrait(r.name)}
+      <div style="flex:1;font-size:11px;color:#c9d1d9">${r.name}</div>
+      <div style="font-size:10px;color:var(--muted)">${r.score.toFixed(1)}</div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  // ═══ 7. COPY JSON BUTTON ═══
+  html += `<div style="text-align:center;margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.06)">
+    <button onclick="copySeasonJSON()" style="padding:10px 24px;background:var(--accent-gold);border:none;border-radius:8px;color:#0d1117;font-family:var(--font-display);font-size:13px;letter-spacing:1px;cursor:pointer;font-weight:700">Copy Season JSON</button>
+    <div id="json-copy-status" style="font-size:11px;color:var(--muted);margin-top:6px"></div>
+  </div>`;
+
+  html += `</div>`;
+  return html;
+}
+
+// Generate and copy season JSON to clipboard
+function copySeasonJSON() {
+  const history = gs.episodeHistory || [];
+  const allPlayers = players.map(p => p.name);
+  const winner = gs.finaleResult?.winner;
+  const finaleEp = history.find(e => e.isFinale);
+  const juryResult = finaleEp?.juryResult;
+  const finalists = finaleEp?.finaleFinalists || [];
+  const jury = gs.jury || [];
+
+  // Build placement order
+  const placementOrder = [];
+  if (winner) placementOrder.push(winner);
+  finalists.filter(f => f !== winner).forEach(f => placementOrder.push(f));
+  [...history].reverse().forEach(e => {
+    if (e.eliminated && !placementOrder.includes(e.eliminated)) placementOrder.push(e.eliminated);
+    if (e.firstEliminated && !placementOrder.includes(e.firstEliminated)) placementOrder.push(e.firstEliminated);
+  });
+  allPlayers.forEach(n => { if (!placementOrder.includes(n)) placementOrder.push(n); });
+
+  const voteStr = juryResult ? Object.entries(juryResult.votes).sort(([,a],[,b]) => b-a).map(([,v]) => v).join('-') : 'Challenge';
+
+  const json = {
+    seasonNumber: 0,
+    title: seasonConfig.name || 'Untitled Season',
+    subtitle: '',
+    castSize: allPlayers.length,
+    episodeCount: history.length,
+    jurySize: jury.length,
+    winner: {
+      name: winner,
+      playerSlug: players.find(p => p.name === winner)?.slug || winner?.toLowerCase().replace(/\s+/g, '-'),
+      vote: voteStr,
+      runnerUp: finalists.filter(f => f !== winner).join(' & '),
+      keyStats: '',
+      strategy: '',
+      legacy: '',
+    },
+    finalists: finalists.map((f, i) => ({
+      name: f,
+      playerSlug: players.find(p => p.name === f)?.slug || f.toLowerCase().replace(/\s+/g, '-'),
+      placement: placementOrder.indexOf(f) + 1,
+      votes: juryResult?.votes?.[f] || 0,
+    })),
+    placements: placementOrder.map((name, idx) => {
+      const place = idx + 1;
+      const isWinner = name === winner;
+      const isFinalist = finalists.includes(name);
+      const isJuror = jury.includes(name);
+      const phase = isWinner ? 'Winner' : isFinalist ? 'Finalist' : isJuror ? 'Juror' : 'Pre-Juror';
+      const elimEp = history.find(e => e.eliminated === name || e.firstEliminated === name);
+      const immunityWins = history.filter(e => e.immunityWinner === name && !e.isFinale).length;
+      const challengeWins = gs.chalRecord?.[name]?.wins || 0;
+      const votesReceived = history.reduce((s,e) => s + ((e.votingLog||[]).filter(v=>v.voted===name&&v.voter!=='THE GAME').length), 0);
+      const idolsFound = history.reduce((s,e) => s + ((e.idolFinds||[]).filter(f=>f.finder===name).length), 0);
+
+      // Key moments from episode history
+      const keyMoments = [];
+      history.forEach(e => {
+        if (e.immunityWinner === name) keyMoments.push(`Wins immunity (Ep${e.num})`);
+        (e.idolPlays||[]).forEach(p => { if (p.player === name) keyMoments.push(`Plays idol${p.playedFor ? ` for ${p.playedFor}` : ''} (Ep${e.num})`); });
+        if (e.eliminated === name) keyMoments.push(`Eliminated (Ep${e.num})`);
+      });
+
+      // Alliances
+      const allianceSet = new Set();
+      history.forEach(e => (e.alliances||[]).forEach(a => {
+        if (a.members?.includes(name)) a.members.forEach(m => { if (m !== name) allianceSet.add(m); });
+      }));
+
+      // Strategic rank
+      const s = pStats(name);
+      const survivalBonus = allPlayers.length - idx;
+      const advCount = history.reduce((sum, e) => sum + ((e.idolPlays||[]).filter(p => p.player === name).length), 0);
+      const strategicRank = Math.round(s.strategic * 2 + survivalBonus * 0.5 + advCount * 1.5);
+
+      return {
+        placement: place,
+        name,
+        playerSlug: players.find(p => p.name === name)?.slug || name.toLowerCase().replace(/\s+/g, '-'),
+        phase,
+        notes: isWinner ? `${voteStr} jury vote` : elimEp ? `Ep ${elimEp.num}` : '',
+        strategicRank,
+        story: '',
+        gameplayStyle: players.find(p => p.name === name)?.archetype || '',
+        keyMoments: keyMoments.slice(0, 8),
+        immunityWins,
+        rewardWins: 0,
+        challengeWins,
+        idolsFound,
+        votesReceived,
+        alliances: [...allianceSet].slice(0, 6),
+        rivalries: [],
+      };
+    }),
+  };
+
+  navigator.clipboard.writeText(JSON.stringify(json, null, 2)).then(() => {
+    const status = document.getElementById('json-copy-status');
+    if (status) { status.textContent = 'Copied to clipboard!'; status.style.color = '#3fb950'; }
+  }).catch(() => {
+    const status = document.getElementById('json-copy-status');
+    if (status) { status.textContent = 'Copy failed \u2014 check browser permissions'; status.style.color = 'var(--accent-fire)'; }
+  });
+}
+
 // ── Jury Life: resort/jury house dynamics — grudges, friendships, processing elimination ──
 function rpBuildJuryLife(ep) {
   const tw = (ep.twists||[]).find(t => t.type === 'jury-elimination');

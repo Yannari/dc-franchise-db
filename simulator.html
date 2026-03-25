@@ -700,13 +700,19 @@
     .fd-ep-phase-label { font-size: 8px; font-weight: 700; letter-spacing: 0.5px; color: var(--muted); margin-left: 3px; text-transform: uppercase; }
     .fd-episode.ri-ep { border-color: rgba(245,158,11,0.2); background: rgba(245,158,11,0.03); }
     @keyframes confetti-fall {
-      0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
-      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+      0% { transform: translateY(-10px) rotate(0deg) scale(1); opacity: 1; }
+      50% { opacity: 1; }
+      100% { transform: translateY(200px) rotate(720deg) scale(0.5); opacity: 0; }
     }
-    .confetti-container { position: relative; overflow: hidden; pointer-events: none; height: 0; }
+    @keyframes confetti-burst {
+      0% { transform: scale(0) rotate(0deg); opacity: 0; }
+      20% { transform: scale(1.2) rotate(90deg); opacity: 1; }
+      100% { transform: scale(0.6) translateY(180px) rotate(540deg); opacity: 0; }
+    }
+    .confetti-container { position: relative; pointer-events: none; }
     .confetti-piece {
-      position: absolute; top: -20px; width: 8px; height: 8px; border-radius: 2px;
-      animation: confetti-fall linear forwards; opacity: 0.8;
+      position: absolute; top: 0; width: 8px; height: 8px; border-radius: 2px;
+      animation: confetti-burst ease-out forwards;
     }
   </style>
 </head>
@@ -18672,14 +18678,18 @@ function rpBuildWinnerCeremony(ep) {
 
   // Generate confetti pieces (CSS-only, no JS animation needed)
   const confettiColors = ['#e3b341', '#3fb950', '#f85149', '#6366f1', '#58a6ff', '#d2a8ff'];
-  let confettiHtml = `<div class="confetti-container" style="height:120px;margin:-16px -16px 16px -16px;position:relative;overflow:hidden">`;
-  for (let i = 0; i < 40; i++) {
+  let confettiHtml = `<div class="confetti-container" style="height:200px;margin:-16px -16px 0 -16px;position:relative;overflow:visible">`;
+  for (let i = 0; i < 50; i++) {
     const color = confettiColors[i % confettiColors.length];
-    const left = Math.round((i * 17 + 3) % 100);
-    const delay = (i * 0.15).toFixed(2);
-    const duration = (2 + (i % 5) * 0.5).toFixed(1);
-    const size = 6 + (i % 4) * 2;
-    confettiHtml += `<div class="confetti-piece" style="left:${left}%;width:${size}px;height:${size}px;background:${color};animation-delay:${delay}s;animation-duration:${duration}s"></div>`;
+    const left = 10 + Math.round((i * 17 + 3) % 80); // 10-90% spread
+    const top = Math.round((i * 7) % 40); // stagger starting positions
+    const delay = (i * 0.08).toFixed(2); // faster stagger
+    const duration = (2.5 + (i % 5) * 0.6).toFixed(1);
+    const size = 6 + (i % 5) * 3;
+    const rotation = (i * 37) % 360;
+    const shapes = ['border-radius:2px', 'border-radius:50%', 'border-radius:0;transform:rotate(45deg)'];
+    const shape = shapes[i % 3];
+    confettiHtml += `<div class="confetti-piece" style="left:${left}%;top:${top}px;width:${size}px;height:${size}px;background:${color};animation-delay:${delay}s;animation-duration:${duration}s;${shape}"></div>`;
   }
   confettiHtml += `</div>`;
 

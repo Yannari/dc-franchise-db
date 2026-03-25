@@ -12409,6 +12409,85 @@ function _buildPostTwistBlocks(ep) {
   return blocks;
 }
 
+// ── Signal card helper for rpBuildCampTribe ──
+function buildSignalCards(ep, tribePlayers) {
+  const cards = [];
+  const playerSet = new Set(tribePlayers);
+  // Build per-player mention tracking (precise — avoids false positives from string search)
+  const existingLines = Object.values(ep.campEvents || {})
+    .flatMap(e => [...(e.pre||[]), ...(e.post||[])]).map(e => e.text || '');
+  const mentionedPairs = new Set();
+  const mentionedSolo  = new Set();
+  existingLines.forEach(txt => {
+    const named = tribePlayers.filter(n => txt.includes(n));
+    if (named.length >= 2) {
+      for (let i = 0; i < named.length; i++)
+        for (let j = i+1; j < named.length; j++)
+          mentionedPairs.add([named[i], named[j]].sort().join('|'));
+    } else if (named.length === 1) {
+      mentionedSolo.add(named[0]);
+    }
+  });
+  const alreadyMentioned = (a, b) =>
+    b ? mentionedPairs.has([a,b].sort().join('|'))
+      : mentionedSolo.has(a);
+
+  // Bond rupture (delta < -1.5, both in tribe)
+  (ep.bondChanges || [])
+    .filter(c => c.delta < -1.5 && playerSet.has(c.a) && playerSet.has(c.b) && !alreadyMentioned(c.a, c.b))
+    .forEach(c => cards.push({ weight: 3, type: 'bondRupture', players: [c.a, c.b],
+      text: `Something cracked between ${c.a} and ${c.b} this episode. The numbers on the surface look the same — but the dynamic isn't.`,
+      badge: '− Bond broken', badgeClass: 'red' }));
+
+  // Betrayal aftermath
+  (ep.gsSnapshot?.namedAlliances || []).forEach(a => {
+    (a.betrayals || []).filter(b => b.ep === ep.num && playerSet.has(b.player)).forEach(b => {
+      if (!alreadyMentioned(b.player)) {
+        cards.push({ weight: 3, type: 'betrayal', players: [b.player],
+          text: `${b.player} voted against the alliance. Everyone noticed.`,
+          badge: 'Betrayal', badgeClass: 'red' });
+      }
+    });
+  });
+
+  // Close vote survivor (received votes but not eliminated)
+  const _votes = ep.votes || {};
+  const _votesAgainst = {};
+  Object.values(_votes).forEach(v => { _votesAgainst[v] = (_votesAgainst[v] || 0) + 1; });
+  Object.entries(_votesAgainst)
+    .filter(([p, n]) => n > 0 && p !== ep.eliminated && playerSet.has(p))
+    .forEach(([p]) => {
+      if (!alreadyMentioned(p)) {
+        cards.push({ weight: 2, type: 'closeVote', players: [p],
+          text: `${p} had their name written down tonight. They're still here — but they know it now.`,
+          badge: 'Close call', badgeClass: 'gold' });
+      }
+    });
+
+  // Idol play aftermath
+  (ep.idolPlays || [])
+    .filter(ip => playerSet.has(ip.player) && !alreadyMentioned(ip.player))
+    .forEach(ip => cards.push({ weight: 2, type: 'idolPlay', players: [ip.player],
+      text: `${ip.player} played an idol tonight. Camp tomorrow will not be the same.`,
+      badge: 'Idol played', badgeClass: 'gold' }));
+
+  // Alliance shift
+  (ep.allianceRecruits || [])
+    .filter(r => playerSet.has(r.player))
+    .forEach(r => cards.push({ weight: 2, type: 'allianceShift', players: [r.player],
+      text: `${r.player} just got absorbed into ${r.toAlliance}. The alliance map just got redrawn.`,
+      badge: 'Alliance shift', badgeClass: 'gold' }));
+
+  // Bond spike (delta > 2, both in tribe)
+  (ep.bondChanges || [])
+    .filter(c => c.delta > 2 && playerSet.has(c.a) && playerSet.has(c.b) && !alreadyMentioned(c.a, c.b))
+    .forEach(c => cards.push({ weight: 1, type: 'bondSpike', players: [c.a, c.b],
+      text: `${c.a} and ${c.b} got closer this episode. On a tribe this small, that matters.`,
+      badge: '+ Bond', badgeClass: 'green' }));
+
+  return cards.sort((a,b) => b.weight - a.weight).slice(0, 5);
+}
+
 // ── Screen 4: Per-tribe camp life screen (pre or post challenge) ──
 function rpBuildCampTribe(ep, tribeName, members, phase) {
   const tc = tribeColor(tribeName);
@@ -12433,8 +12512,9 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
   const snapTribeMembers = (ep.gsSnapshot?.tribes || []).find(t => t.name === tribeName)?.members
     || (ep.gsSnapshot?.phase === 'post-merge' ? (ep.gsSnapshot?.activePlayers || []) : []);
   const matchPool = [...new Set([...portraitMembers, ...snapTribeMembers])];
+  const todClass = phase === 'pre' ? 'tod-midday' : 'tod-afternoon';
 
-  let html = `<div class="rp-page">
+  let html = `<div class="rp-page ${todClass}">
     <div class="rp-eyebrow">Episode ${ep.num} \u2014 ${phaseLabel}</div>
     <div class="rp-title" style="color:${tc}">${displayName.toUpperCase()} CAMP</div>`;
 
@@ -12472,103 +12552,148 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
       CAMP EVENTS <span class="rp-toggle-arrow">\u25b2</span>
     </button>
     <div id="evt-${safeId}" class="rp-camp-toggle-body">`;
-  if (events.length) {
-    events.forEach(evt => {
-      const words = evt.text.split(/\s+/);
-      // Use explicit player list when present (allianceForm/allianceCrack etc.)
-      // Fallback to text matching for older events or event types without explicit players.
-      const _explicitPlayers = (evt.members || evt.players || []).filter(n => matchPool.includes(n));
-      const mentioned = _explicitPlayers.length
-        ? _explicitPlayers.slice(0, 5)
-        : matchPool
-            .filter(n => {
-              if (evt.text.includes(n)) return true;
-              const first = n.split(' ')[0];
-              return words.some(w => w.replace(/'s$/i,'').replace(/[^a-zA-Z]/g,'') === first);
-            })
-            .slice(0, 5);
-      // Two-player events that should get duo portrait treatment
-      const isRelEvt = ['bond','fight','dispute','tdBond','flirtation','intimidation',
-                        'sideDeal','strategicTalk','comfort','rumor','watchingYou','goatOblivious',
-                        'idolConfession','idolBetrayal','idolShare','showmancerMoment',
-                        'socialBombReaction','chalThreatReaction',
-                        'goatObserver','ftcThreatStrategist'].includes(evt.type);
-      const isTipOff      = evt.type === 'eavesdrop';
-      const isIdolConf    = evt.type === 'idolConfession';
-      const isIdolShare   = evt.type === 'idolShare';
-      const isShowmance   = evt.type === 'showmancerMoment';
-      const isAlliance    = evt.type === 'allianceForm';
-      const isAllianceCrk   = evt.type === 'allianceCrack';
-      const isSocialBomb    = evt.type === 'socialBomb';
-      const isSocialReact   = evt.type === 'socialBombReaction';
-      const isChalThreat    = evt.type === 'chalThreat';
-      const isChalReact     = evt.type === 'chalThreatReaction';
-      const isGoatId        = evt.type === 'goatIdentified';
-      const isGoatObs       = evt.type === 'goatObserver';
-      const isFtcThreat     = evt.type === 'ftcThreatAlert';
-      const isFtcStrat      = evt.type === 'ftcThreatStrategist';
-      const isComfortBS     = evt.type === 'comfortBlindspot';
-      const isClockingIt    = evt.type === 'clockingIt';
-      // idolFound: solo = found quietly, 2+ = witnessed
-      const isIdolFind = evt.type === 'idolFound' && mentioned.length === 1;
-      const isIdolSpot = evt.type === 'idolFound' && mentioned.length >= 2;
-      const isPos = ['bond','tdBond','flirtation','sideDeal','strategicTalk','comfort','allianceForm',
-                     'hardWork','unexpectedCompetence','goatOblivious','underdogMoment'].includes(evt.type);
-      const isNeg = ['fight','intimidation','dispute','doubt','meltdown','allianceCrack',
-                     'overplay','foodConflict','leadershipClash','watchingYou','loneWolf','rumor',
-                     'chaosAgentStirsUp','idolBetrayal','socialBomb','socialBombReaction'].includes(evt.type);
-      // personal = event involves exactly 2 named players (targeted relationship shift)
-      // group = affects the whole tribe or a solo player's standing
-      const isPersonal = isRelEvt && mentioned.length === 2;
-      const badgeText  = isTipOff      ? 'PRE-TRIBAL WHISPER'
-                       : isIdolShare   ? 'IDOL SHARED'
-                       : isIdolConf    ? 'IDOL CONFESSED'
-                       : isIdolFind    ? 'IDOL FOUND'
-                       : isIdolSpot    ? 'IDOL FOUND — SPOTTED'
-                       : isShowmance   ? 'SHOWMANCE'
-                       : isAlliance    ? 'ALLIANCE FORMED'
-                       : isAllianceCrk ? 'ALLIANCE CRACKING'
-                       : isSocialBomb  ? '\u2212 SOCIAL BOMB'
-                       : isSocialReact ? '\u2212 Fallout'
-                       : isChalThreat  ? '\u26a0 CHALLENGE THREAT'
-                       : isChalReact   ? '\u26a0 Threat noted'
-                       : isGoatId      ? 'GOAT IDENTIFIED'
-                       : isGoatObs     ? 'Drag-along target'
-                       : isFtcThreat   ? '\u26a0 FTC THREAT'
-                       : isFtcStrat    ? '\u26a0 Reassessing'
-                       : isComfortBS   ? '\u2b50 CHECKED OUT'
-                       : isClockingIt  ? 'Clocking it'
-                       : isPos && isPersonal  ? '+ Bond formed'
-                       : isPos                ? '+ Morale boost'
-                       : isNeg && isPersonal  ? '\u2212 Personal tension'
-                       : isNeg                ? '\u2212 Camp tension' : '';
-      const badgeClass = isTipOff || isIdolShare || isIdolConf || isIdolFind || isIdolSpot || isShowmance ? 'gold'
-                       : isAlliance ? 'gold' : isAllianceCrk ? 'red'
-                       : isSocialBomb || isSocialReact ? 'red'
-                       : isChalThreat || isChalReact ? 'gold'
-                       : isGoatId || isGoatObs ? 'gold'
-                       : isFtcThreat || isFtcStrat ? 'red'
-                       : isComfortBS || isClockingIt ? 'gold'
-                       : isPos ? 'green' : isNeg ? 'red' : '';
+  // renderEvt: closure appender — writes one event card to html
+  const renderEvt = evt => {
+    const words = evt.text.split(/\s+/);
+    // Use explicit player list when present (allianceForm/allianceCrack etc.)
+    // Fallback to text matching for older events or event types without explicit players.
+    const _explicitPlayers = (evt.members || evt.players || []).filter(n => matchPool.includes(n));
+    const mentioned = _explicitPlayers.length
+      ? _explicitPlayers.slice(0, 5)
+      : matchPool
+          .filter(n => {
+            if (evt.text.includes(n)) return true;
+            const first = n.split(' ')[0];
+            return words.some(w => w.replace(/'s$/i,'').replace(/[^a-zA-Z]/g,'') === first);
+          })
+          .slice(0, 5);
+    // Two-player events that should get duo portrait treatment
+    const isRelEvt = ['bond','fight','dispute','tdBond','flirtation','intimidation',
+                      'sideDeal','strategicTalk','comfort','rumor','watchingYou','goatOblivious',
+                      'idolConfession','idolBetrayal','idolShare','showmancerMoment',
+                      'socialBombReaction','chalThreatReaction',
+                      'goatObserver','ftcThreatStrategist'].includes(evt.type);
+    const isTipOff      = evt.type === 'eavesdrop';
+    const isIdolConf    = evt.type === 'idolConfession';
+    const isIdolShare   = evt.type === 'idolShare';
+    const isShowmance   = evt.type === 'showmancerMoment';
+    const isAlliance    = evt.type === 'allianceForm';
+    const isAllianceCrk   = evt.type === 'allianceCrack';
+    const isSocialBomb    = evt.type === 'socialBomb';
+    const isSocialReact   = evt.type === 'socialBombReaction';
+    const isChalThreat    = evt.type === 'chalThreat';
+    const isChalReact     = evt.type === 'chalThreatReaction';
+    const isGoatId        = evt.type === 'goatIdentified';
+    const isGoatObs       = evt.type === 'goatObserver';
+    const isFtcThreat     = evt.type === 'ftcThreatAlert';
+    const isFtcStrat      = evt.type === 'ftcThreatStrategist';
+    const isComfortBS     = evt.type === 'comfortBlindspot';
+    const isClockingIt    = evt.type === 'clockingIt';
+    // idolFound: solo = found quietly, 2+ = witnessed
+    const isIdolFind = evt.type === 'idolFound' && mentioned.length === 1;
+    const isIdolSpot = evt.type === 'idolFound' && mentioned.length >= 2;
+    const isPos = ['bond','tdBond','flirtation','sideDeal','strategicTalk','comfort','allianceForm',
+                   'hardWork','unexpectedCompetence','goatOblivious','underdogMoment'].includes(evt.type);
+    const isNeg = ['fight','intimidation','dispute','doubt','meltdown','allianceCrack',
+                   'overplay','foodConflict','leadershipClash','watchingYou','loneWolf','rumor',
+                   'chaosAgentStirsUp','idolBetrayal','socialBomb','socialBombReaction'].includes(evt.type);
+    const isPersonal = isRelEvt && mentioned.length === 2;
+    const badgeText  = isTipOff      ? 'PRE-TRIBAL WHISPER'
+                     : isIdolShare   ? 'IDOL SHARED'
+                     : isIdolConf    ? 'IDOL CONFESSED'
+                     : isIdolFind    ? 'IDOL FOUND'
+                     : isIdolSpot    ? 'IDOL FOUND \u2014 SPOTTED'
+                     : isShowmance   ? 'SHOWMANCE'
+                     : isAlliance    ? 'ALLIANCE FORMED'
+                     : isAllianceCrk ? 'ALLIANCE CRACKING'
+                     : isSocialBomb  ? '\u2212 SOCIAL BOMB'
+                     : isSocialReact ? '\u2212 Fallout'
+                     : isChalThreat  ? '\u26a0 CHALLENGE THREAT'
+                     : isChalReact   ? '\u26a0 Threat noted'
+                     : isGoatId      ? 'GOAT IDENTIFIED'
+                     : isGoatObs     ? 'Drag-along target'
+                     : isFtcThreat   ? '\u26a0 FTC THREAT'
+                     : isFtcStrat    ? '\u26a0 Reassessing'
+                     : isComfortBS   ? '\u2b50 CHECKED OUT'
+                     : isClockingIt  ? 'Clocking it'
+                     : isPos && isPersonal  ? '+ Bond formed'
+                     : isPos                ? '+ Morale boost'
+                     : isNeg && isPersonal  ? '\u2212 Personal tension'
+                     : isNeg                ? '\u2212 Camp tension' : '';
+    const badgeClass = isTipOff || isIdolShare || isIdolConf || isIdolFind || isIdolSpot || isShowmance ? 'gold'
+                     : isAlliance ? 'gold' : isAllianceCrk ? 'red'
+                     : isSocialBomb || isSocialReact ? 'red'
+                     : isChalThreat || isChalReact ? 'gold'
+                     : isGoatId || isGoatObs ? 'gold'
+                     : isFtcThreat || isFtcStrat ? 'red'
+                     : isComfortBS || isClockingIt ? 'gold'
+                     : isPos ? 'green' : isNeg ? 'red' : '';
 
-      html += `<div class="rp-brant-entry">`;
-      if (mentioned.length >= 3) {
-        // 3+ players: show all as individual portraits in a row
-        html += `<div class="rp-brant-portraits">${mentioned.map(n => rpPortrait(n)).join('')}</div>`;
-      } else if (mentioned.length === 2 && isRelEvt) {
-        html += `<div class="rp-brant-portraits">${rpDuoImg(mentioned[0], mentioned[1])}</div>`;
-      } else if (mentioned.length === 2) {
-        html += `<div class="rp-brant-portraits">${mentioned.map(n => rpPortrait(n)).join('')}</div>`;
-      } else if (mentioned.length === 1) {
-        html += `<div class="rp-brant-portraits">${rpPortrait(mentioned[0])}</div>`;
-      }
-      html += `<div class="rp-brant-text" style="${isTipOff ? 'color:#e3b341' : ''}">${evt.text}</div>`;
-      if (badgeText) html += `<span class="rp-brant-badge ${badgeClass}">${badgeText}</span>`;
-      html += `</div>`;
-    });
+    html += `<div class="rp-brant-entry">`;
+    if (mentioned.length >= 3) {
+      html += `<div class="rp-brant-portraits">${mentioned.map(n => rpPortrait(n)).join('')}</div>`;
+    } else if (mentioned.length === 2 && isRelEvt) {
+      html += `<div class="rp-brant-portraits">${rpDuoImg(mentioned[0], mentioned[1])}</div>`;
+    } else if (mentioned.length === 2) {
+      html += `<div class="rp-brant-portraits">${mentioned.map(n => rpPortrait(n)).join('')}</div>`;
+    } else if (mentioned.length === 1) {
+      html += `<div class="rp-brant-portraits">${rpPortrait(mentioned[0])}</div>`;
+    }
+    html += `<div class="rp-brant-text" style="${isTipOff ? 'color:#e3b341' : ''}">${evt.text}</div>`;
+    if (badgeText) html += `<span class="rp-brant-badge ${badgeClass}">${badgeText}</span>`;
+    html += `</div>`;
+  };
+
+  if (events.length) {
+    const isPostMerge = ep.gsSnapshot?.isMerged || gs.isMerged;
+    if (isPostMerge && isMerge) {
+      // Post-merge: group events into Strategy / Social / Spotlight
+      const stratTypes = new Set(['allianceForm','allianceCrack','sideDeal','strategicTalk',
+        'eavesdrop','chalThreat','chalThreatReaction','idolConfession','idolShare','idolFound',
+        'idolBetrayal','ftcThreatAlert','ftcThreatStrategist','comfortBlindspot','clockingIt',
+        'watchingYou','goatIdentified','goatObserver','goatOblivious']);
+      const spotTypes = new Set(['socialBomb','socialBombReaction','showmancerMoment',
+        'unexpectedCompetence','underdogMoment','loneWolf','meltdown','leadershipClash']);
+      const stratEvts = events.filter(e => stratTypes.has(e.type));
+      const spotEvts  = events.filter(e => spotTypes.has(e.type));
+      const socialEvts = events.filter(e => !stratTypes.has(e.type) && !spotTypes.has(e.type));
+
+      const renderGroup = (label, evts, color) => {
+        if (!evts.length) return;
+        html += `<div style="margin-bottom:6px;padding:4px 0 4px 0;border-bottom:1px solid rgba(255,255,255,0.06)">
+          <span style="font-size:10px;font-weight:700;letter-spacing:1.2px;color:${color};text-transform:uppercase">${label}</span>
+        </div>`;
+        evts.forEach(e => renderEvt(e));
+      };
+
+      renderGroup('Strategy', stratEvts, 'var(--accent-gold)');
+      renderGroup('Social', socialEvts, 'var(--accent-ice)');
+      renderGroup('Spotlight', spotEvts, 'var(--accent-fire)');
+    } else {
+      events.forEach(evt => renderEvt(evt));
+    }
   } else {
     html += `<div style="font-size:12px;color:#484f58;text-align:center;padding:12px 0">No notable events at ${displayName} camp.</div>`;
   }
+
+  // Signal cards: distilled story beats (capped at 5, injected after events list)
+  const _signals = buildSignalCards(ep, portraitMembers);
+  if (_signals.length) {
+    html += `<div style="margin-top:16px;display:flex;flex-direction:column;gap:8px">
+      <div style="font-size:10px;font-weight:700;letter-spacing:1.2px;color:#8b949e;text-transform:uppercase;margin-bottom:2px">KEY STORY BEATS</div>`;
+    _signals.forEach(s => {
+      const _sc = s.badgeClass === 'red' ? '#f85149' : s.badgeClass === 'green' ? '#3fb950' : '#e3b341';
+      html += `<div style="display:flex;align-items:flex-start;gap:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-left:3px solid ${_sc};border-radius:4px;padding:8px 10px">
+        ${(s.players||[]).length ? `<div style="display:flex;gap:4px;flex-shrink:0">${s.players.slice(0,2).map(n => rpPortrait(n)).join('')}</div>` : ''}
+        <div>
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.8px;color:${_sc};text-transform:uppercase;margin-bottom:2px">${s.badge}</div>
+          <div style="font-size:12px;color:#c9d1d9;line-height:1.4">${s.text}</div>
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
   html += `</div></div>`;
 
   // ── ALLIANCES ──

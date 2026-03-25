@@ -4932,11 +4932,37 @@ const CAMP_EVENT_TYPES = [
 
 function nameNewAlliance(size) {
   const namesBySize = {
-    2: ['The Pact', 'The Deal', 'The Bond', 'The Two'],
-    3: ['The Core', 'The Unit', 'The Trinity', 'The Trio'],
-    4: ['The Four', 'The Bloc', 'The Circle', 'The Core Four'],
+    2: [
+      'The Pact', 'The Deal', 'The Bond', 'The Handshake', 'The Oath',
+      'The Double Edge', 'The Quiet Two', 'The Tandem', 'The Foundation',
+      'The Lifeline', 'The Anchor', 'The Undertow', 'The Signal',
+      'The Lock', 'The Bridge', 'The Wire', 'The Thread',
+      'The Foxhole', 'The Firewall', 'The Shadow Pact', 'The Backbone',
+      'The Last Resort', 'The Safety Net', 'The Iron Grip', 'The Pinky Swear',
+      'The Blood Oath', 'The Switchblade', 'The Velvet Rope', 'The Tightrope',
+    ],
+    3: [
+      'The Core', 'The Unit', 'The Trinity', 'The Trio', 'The Trident',
+      'The Inner Circle', 'The Nerve Center', 'The Triangle',
+      'The Three Headed Snake', 'The Triumvirate', 'The Trifecta',
+      'The Wolfpack', 'The Tripwire', 'The Third Rail', 'The Bermuda Triangle',
+      'The Hat Trick', 'The Triple Threat', 'The Three Amigos',
+    ],
+    4: [
+      'The Four', 'The Bloc', 'The Circle', 'The Core Four',
+      'The Fortress', 'The Iron Four', 'The Quadrant', 'The Square',
+      'The Four Corners', 'The Citadel', 'The Compound', 'The Grid',
+      'The Diamond', 'The Bunker', 'The Stronghold', 'The Four Walls',
+    ],
   };
-  const pool = namesBySize[size] || ['The Coalition', 'The Power Bloc', 'The Alliance', 'The Majority'];
+  const general = [
+    'The Coalition', 'The Power Bloc', 'The Alliance', 'The Majority',
+    'The Network', 'The Web', 'The Machine', 'The Engine',
+    'The Underground', 'The Current', 'The Pipeline', 'The Assembly',
+    'The Syndicate', 'The Collective', 'The Movement', 'The Front',
+    'The Guard', 'The Shield Wall', 'The Barricade', 'The War Room',
+  ];
+  const pool = [...(namesBySize[size] || []), ...general];
   const used = new Set((gs.namedAlliances || []).map(a => a.name));
   const available = pool.filter(n => !used.has(n));
   return available[Math.floor(Math.random() * available.length)] || `Alliance ${(gs.namedAlliances?.length || 0) + 1}`;

@@ -12131,14 +12131,22 @@ function simulateFinale() {
   ep.finalChallengeStages = generateFinalChallengeStages(finalists, ep.immunityWinner);
 
   if (cfg.finaleFormat === 'final-challenge') {
-    // No jury — winner is whoever wins the final challenge among all finalists
-    const finalChalResult = simulateIndividualChallenge(finalists, null);
-    ep.finalChallengeWinner = finalChalResult?.name || finalists[0];
-    ep.winner = ep.finalChallengeWinner;
+    // Multi-stage finale challenge
+    const chalResult = simulateFinaleChallenge(finalists, ep.assistants || null);
+    ep.finaleChallengeStages = chalResult.stages;
+    ep.finaleChallengeScores = chalResult.totalScores;
+    ep.finaleChallengeWinner = chalResult.winner;
+    ep.finalChallengePlacements = chalResult.placements;
+    ep.finaleSabotageEvents = chalResult.sabotageEvents;
+    ep.winner = chalResult.winner;
     ep.juryResult = null;
     gs.finaleResult = { winner: ep.winner, votes: null, reasoning: null, finalists, finalChallenge: true };
   } else {
-    // Jury vote
+    // FTC swing votes: nudge hesitating juror bonds based on FTC performance
+    // Must happen BEFORE simulateJuryVote so the vote uses post-FTC bonds
+    ep.ftcSwings = applyFTCSwingVotes(finalists);
+
+    // Jury vote (uses post-swing bonds)
     const juryResult = simulateJuryVote(finalists);
     ep.juryResult = juryResult;
     const jSorted = Object.entries(juryResult.votes).sort(([,a],[,b]) => b-a);
@@ -12250,7 +12258,7 @@ function generateFinaleSummaryText(ep) {
       ln(`${f}: ${wins} individual immunity win${wins !== 1 ? 's' : ''} — ${fs.physical >= 8 ? 'physical threat' : fs.endurance >= 8 ? 'endurance specialist' : fs.mental >= 8 ? 'mental powerhouse' : 'all-around competitor'}`);
     });
     ln('');
-    ln(`${ep.finalChallengeWinner} wins the Final Challenge and takes the season.`);
+    ln(`${ep.finaleChallengeWinner} wins the Final Challenge and takes the season.`);
 
     sec('WINNER');
     const winner = ep.winner;
@@ -12575,6 +12583,123 @@ function selectAssistants(finalists, benchAssignments) {
   });
 
   return assistants;
+}
+
+// Multi-stage finale challenge (replaces single simulateIndividualChallenge for final-challenge format)
+function simulateFinaleChallenge(finalists, assistants) {
+  const stages = [
+    { name: 'Endurance', statA: 'endurance', statB: 'mental', assistStat: 'endurance', desc: 'Hold on. Outlast. The last one standing moves forward.' },
+    { name: 'Obstacle Course', statA: 'physical', statB: 'endurance', assistStat: 'physical', desc: 'Sprint, climb, crawl. Pure physical will.' },
+    { name: 'Final Puzzle', statA: 'mental', statB: 'strategic', assistStat: null, desc: 'Alone. No help. Solve the puzzle or lose everything.' },
+  ];
+
+  const scores = Object.fromEntries(finalists.map(f => [f, 0]));
+  const stageResults = [];
+  const sabotageEvents = [];
+
+  stages.forEach((stage, idx) => {
+    const stageScores = {};
+    finalists.forEach(f => {
+      const s = pStats(f);
+      let base = s[stage.statA] * 0.6 + s[stage.statB] * 0.4 + (Math.random() * 3 - 1.5);
+
+      // Assistant boost (stages 0 and 1 only)
+      if (stage.assistStat && assistants?.[f]?.name) {
+        const asst = assistants[f];
+        const aStats = asst.stats || pStats(asst.name);
+        const boost = aStats[stage.assistStat] * 0.15;
+        // Sabotage: roll fresh each assisted stage — 15% + |bond| * 2% per stage
+        const sabotageChance = asst.bond <= -2 ? (0.15 + Math.abs(asst.bond) * 0.02) : 0;
+        if (sabotageChance > 0 && Math.random() < sabotageChance) {
+          base -= boost * 1.5;
+          sabotageEvents.push({ stage: idx, stageName: stage.name, finalist: f, assistant: asst.name });
+        } else {
+          base += boost;
+        }
+      }
+
+      stageScores[f] = Math.max(0, base);
+      scores[f] += stageScores[f];
+    });
+
+    const stageSorted = Object.entries(stageScores).sort(([,a],[,b]) => b - a);
+    stageResults.push({
+      name: stage.name,
+      desc: stage.desc,
+      scores: { ...stageScores },
+      winner: stageSorted[0][0],
+      hasAssistant: !!stage.assistStat,
+      assistantDropoff: idx === 1,
+    });
+  });
+
+  const sorted = Object.entries(scores).sort(([,a],[,b]) => b - a);
+  const winner = sorted[0][0];
+
+  return {
+    stages: stageResults,
+    totalScores: scores,
+    winner,
+    placements: sorted.map(([name]) => name),
+    sabotageEvents,
+  };
+}
+
+// FTC swing votes: hesitating jurors can change their vote based on FTC performance
+function applyFTCSwingVotes(finalists) {
+  const jury = gs.jury || [];
+  const swings = [];
+
+  jury.forEach(juror => {
+    const jS = pStats(juror);
+    const bonds = finalists.map(f => ({ name: f, bond: getBond(juror, f) }));
+    bonds.sort((a, b) => b.bond - a.bond);
+
+    if (bonds.length < 2) return;
+    const top = bonds[0], second = bonds[1];
+    const isHesitating = top.bond <= 1.5 && top.bond >= -0.5 && second.bond >= -0.5 && (top.bond - second.bond) < 2;
+    if (!isHesitating) return;
+
+    // Simulate FTC performance
+    const performances = finalists.map(f => {
+      const fS = pStats(f);
+      const answerQuality = fS.social * 0.5 + fS.strategic * 0.3 + fS.boldness * 0.2;
+      const bitterness = Math.max(0, -getBond(juror, f));
+      const difficulty = jS.strategic * 0.4 + bitterness * 0.6;
+      const performance = answerQuality - difficulty + (Math.random() * 2 - 1);
+      return { name: f, performance };
+    });
+    performances.sort((a, b) => b.performance - a.performance);
+
+    const bestPerformer = performances[0].name;
+    const worstPerformer = performances[performances.length - 1].name;
+    const nudge = 0.3 + Math.random() * 0.2;
+
+    const originalPick = top.name;
+
+    addBond(juror, bestPerformer, nudge);
+    addBond(juror, worstPerformer, -nudge * 0.5);
+
+    // Supporting moment: strong ally juror boosts a finalist for hesitating jurors
+    finalists.forEach(f => {
+      const allySupporter = jury.find(j =>
+        j !== juror && getBond(j, f) >= 3 && !(
+          finalists.every(ff => getBond(j, ff) >= -0.5 && getBond(j, ff) <= 1.5)
+        )
+      );
+      if (allySupporter) addBond(juror, f, 0.2);
+    });
+
+    const newBonds = finalists.map(f => ({ name: f, bond: getBond(juror, f) }));
+    newBonds.sort((a, b) => b.bond - a.bond);
+    const newPick = newBonds[0].name;
+
+    if (newPick !== originalPick) {
+      swings.push({ juror, originalVote: originalPick, finalVote: newPick, reason: `FTC performance and jury support changed ${juror}'s mind` });
+    }
+  });
+
+  return swings;
 }
 
 // ── Generate FTC opening statements + juror Q&A from game data ──
@@ -17703,7 +17828,7 @@ function rpBuildJuryVoteReveal(ep) {
 function rpBuildWinner(ep) {
   const winner = ep.winner;
   if (!winner) return '';
-  const isFinalChallenge = !!ep.finalChallengeWinner && !ep.juryResult;
+  const isFinalChallenge = !!ep.finaleChallengeWinner && !ep.juryResult;
   const votes = ep.juryResult?.votes || {};
   const sorted = Object.entries(votes).sort(([,a],[,b]) => b-a);
   const winVotes = votes[winner] || 0;

@@ -699,6 +699,15 @@
     .twist-card.phase-blocked:hover { border-color: var(--border); background: var(--surface); }
     .fd-ep-phase-label { font-size: 8px; font-weight: 700; letter-spacing: 0.5px; color: var(--muted); margin-left: 3px; text-transform: uppercase; }
     .fd-episode.ri-ep { border-color: rgba(245,158,11,0.2); background: rgba(245,158,11,0.03); }
+    @keyframes confetti-fall {
+      0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+    .confetti-container { position: relative; overflow: hidden; pointer-events: none; height: 0; }
+    .confetti-piece {
+      position: absolute; top: -20px; width: 8px; height: 8px; border-radius: 2px;
+      animation: confetti-fall linear forwards; opacity: 0.8;
+    }
   </style>
 </head>
 <body>
@@ -18469,6 +18478,149 @@ function rpBuildJuryVoteReveal(ep) {
       <div style="font-size:18px;font-family:var(--font-display);color:#e3b341">${sorted.map(([n,v])=>`${n}: ${v}`).join(' \u2014 ')}</div>
     </div>
   </div>`;
+  return html;
+}
+
+// ── Winner Ceremony: confetti, trophy, celebration ──
+function rpBuildWinnerCeremony(ep) {
+  const winner = ep.winner;
+  if (!winner) return null;
+  const finalists = ep.finaleFinalists || [];
+  const epNum = ep.num;
+  const juryResult = ep.juryResult;
+  const isFinalChallenge = !juryResult;
+  const ws = pStats(winner);
+  const wp = pronouns(winner);
+
+  // Winner vote count
+  const winVotes = juryResult?.votes?.[winner] || 0;
+  const totalJury = (gs.jury || []).length;
+  const voteStr = juryResult ? Object.entries(juryResult.votes).sort(([,a],[,b]) => b-a).map(([n,v]) => v).join('-') : null;
+
+  // Generate confetti pieces (CSS-only, no JS animation needed)
+  const confettiColors = ['#e3b341', '#3fb950', '#f85149', '#6366f1', '#58a6ff', '#d2a8ff'];
+  let confettiHtml = `<div class="confetti-container" style="height:120px;margin:-16px -16px 16px -16px;position:relative;overflow:hidden">`;
+  for (let i = 0; i < 40; i++) {
+    const color = confettiColors[i % confettiColors.length];
+    const left = Math.round((i * 17 + 3) % 100);
+    const delay = (i * 0.15).toFixed(2);
+    const duration = (2 + (i % 5) * 0.5).toFixed(1);
+    const size = 6 + (i % 4) * 2;
+    confettiHtml += `<div class="confetti-piece" style="left:${left}%;width:${size}px;height:${size}px;background:${color};animation-delay:${delay}s;animation-duration:${duration}s"></div>`;
+  }
+  confettiHtml += `</div>`;
+
+  let html = `<div class="rp-page tod-golden" style="overflow:hidden">
+    <div class="rp-eyebrow">Episode ${epNum} \u2014 Finale</div>`;
+
+  // Confetti burst
+  html += confettiHtml;
+
+  // Pause beat
+  html += `<div style="text-align:center;font-size:14px;color:#8b949e;letter-spacing:1px;margin-bottom:8px">The winner of ${seasonConfig.name || 'this season'}\u2026</div>`;
+
+  // Winner announcement
+  html += `<div style="text-align:center;margin-bottom:20px">
+    <div style="display:inline-block;border:3px solid var(--accent-gold);border-radius:16px;padding:20px 32px;background:rgba(227,179,65,0.06);box-shadow:0 0 40px rgba(227,179,65,0.15)">
+      ${rpPortrait(winner, 'xl')}
+      <div style="font-family:var(--font-display);font-size:28px;letter-spacing:3px;color:var(--accent-gold);margin-top:12px;text-shadow:0 0 20px rgba(227,179,65,0.3)">${winner}</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">${vpArchLabel(winner)}</div>
+      ${voteStr ? `<div style="font-size:13px;color:var(--accent-gold);font-family:var(--font-mono);margin-top:8px">${voteStr} jury vote</div>` : `<div style="font-size:13px;color:var(--accent-gold);font-family:var(--font-mono);margin-top:8px">Final Challenge Winner</div>`}
+    </div>
+  </div>`;
+
+  // Trophy moment
+  html += `<div style="text-align:center;font-size:15px;color:#c9d1d9;line-height:1.6;margin-bottom:20px">
+    ${isFinalChallenge
+      ? `${winner} wins the Final Challenge and takes the season. No jury. No vote. ${wp.Sub} earned it on the field.`
+      : `The tribe has spoken. ${winner} is the Sole Survivor. ${winVotes} out of ${totalJury} jury votes.`}
+  </div>`;
+
+  // Winner's final confessional — generated from full game arc
+  const wins = gs.episodeHistory.filter(e => e.immunityWinner === winner).length;
+  const votesAgainst = gs.episodeHistory.reduce((s, e) => s + ((e.votingLog||[]).filter(v => v.voted === winner && v.voter !== 'THE GAME').length), 0);
+  const idolsPlayed = gs.episodeHistory.reduce((s, e) => s + ((e.idolPlays||[]).filter(p => p.player === winner).length), 0);
+  const daysPlayed = epNum > 1 ? (epNum - 1) * 3 : 1;
+
+  let confessional;
+  if (ws.strategic >= 8 && ws.social >= 7)
+    confessional = `"I played every angle. Strategy, relationships, competition. I wasn't going to leave anything to chance. And here I am \u2014 holding the trophy. This is what I came here to do."`;
+  else if (ws.strategic >= 8)
+    confessional = `"Every move I made was calculated. Every alliance, every betrayal, every vote. People will call me cold. I call it winning. And I'd do it all again."`;
+  else if (ws.social >= 8)
+    confessional = `"I won this game with relationships. Real ones. Every person on that jury \u2014 I looked them in the eye and I meant what I said. That's what this game should be about."`;
+  else if (wins >= 3 || ws.physical >= 8)
+    confessional = `"${wins} challenge wins. ${daysPlayed} days. I never stopped fighting. People tried to vote me out \u2014 I won my way through. That's not luck. That's will."`;
+  else if (ws.loyalty >= 8)
+    confessional = `"I kept my word. In a game full of liars, I stayed true to the people who mattered. And the jury saw that. Loyalty wins."`;
+  else if (votesAgainst >= 6)
+    confessional = `"${votesAgainst} votes against me this season. ${votesAgainst}. And I'm still here. I survived everything they threw at me. That's my game."`;
+  else
+    confessional = `"If you told me on day one I'd be standing here with the trophy, I would have laughed. But I outlasted every single person. And I did it my way."`;
+
+  html += `<div style="background:rgba(227,179,65,0.05);border:1px solid rgba(227,179,65,0.15);border-radius:10px;padding:14px;margin-bottom:20px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+      ${rpPortrait(winner, 'sm')}
+      <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:var(--accent-gold)">WINNER'S CONFESSIONAL</div>
+    </div>
+    <div style="font-size:13px;color:#c9d1d9;line-height:1.7;font-style:italic">${confessional}</div>
+  </div>`;
+
+  // Runner-up reactions
+  const runnersUp = finalists.filter(f => f !== winner);
+  if (runnersUp.length) {
+    html += `<div style="font-size:9px;font-weight:700;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:10px">Runner${runnersUp.length > 1 ? 's' : ''}-Up</div>`;
+    runnersUp.forEach(ru => {
+      const bond = getBond(ru, winner);
+      const ruVotes = juryResult?.votes?.[ru] || 0;
+      let reaction;
+      if (bond >= 3) reaction = `${ru} smiles. It hurts \u2014 but if anyone was going to beat ${ru}, ${ru} is glad it was ${winner}. "You earned it. I mean that."`;
+      else if (bond >= 0) reaction = `${ru} nods. Gracious on the surface. "Congrats, ${winner}." But the eyes tell a different story.`;
+      else reaction = `${ru} doesn't clap. Doesn't speak. Just sits there, processing. This game took something from ${ru} that won't come back easily.`;
+
+      html += `<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;padding:8px;background:rgba(255,255,255,0.02);border-radius:6px">
+        ${rpPortrait(ru, 'sm')}
+        <div>
+          <div style="font-size:12px;color:#c9d1d9">${ru} ${ruVotes ? `\u00b7 ${ruVotes} vote${ruVotes !== 1 ? 's' : ''}` : ''}</div>
+          <div style="font-size:12px;color:#8b949e;font-style:italic;margin-top:3px">${reaction}</div>
+        </div>
+      </div>`;
+    });
+  }
+
+  // Bench eruption (final challenge format)
+  if (isFinalChallenge && ep.benchAssignments) {
+    const winBench = ep.benchAssignments[winner] || [];
+    const loseBench = finalists.filter(f => f !== winner).flatMap(f => ep.benchAssignments[f] || []);
+    if (winBench.length) {
+      html += `<div style="margin-top:12px;padding:10px;background:rgba(63,185,80,0.05);border:1px solid rgba(63,185,80,0.15);border-radius:8px">
+        <div style="font-size:10px;font-weight:700;color:#3fb950;letter-spacing:1px;margin-bottom:6px">${winner.toUpperCase()}'S BENCH ERUPTS</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px">
+          ${winBench.map(s => rpPortrait(s)).join('')}
+        </div>
+        <div style="font-size:12px;color:#8b949e;font-style:italic">They chose right. And they know it.</div>
+      </div>`;
+    }
+  }
+
+  // Assistant callout
+  if (ep.assistants?.[winner]?.name) {
+    const asst = ep.assistants[winner];
+    html += `<div style="display:flex;align-items:center;gap:10px;margin-top:12px;padding:10px;background:rgba(227,179,65,0.04);border:1px solid rgba(227,179,65,0.12);border-radius:6px">
+      ${rpPortrait(asst.name, 'sm')}
+      <div style="font-size:12px;color:#8b949e">${asst.name} helped ${winner} when it mattered most. ${asst.bond >= 2 ? 'A bond forged in the game, honored at the finish.' : 'An unlikely partnership that paid off.'}</div>
+    </div>`;
+  }
+
+  // FTC swing callout
+  if (ep.ftcSwings?.length) {
+    html += `<div style="margin-top:12px;font-size:11px;color:#484f58;font-style:italic;text-align:center">
+      FTC changed ${ep.ftcSwings.length} vote${ep.ftcSwings.length !== 1 ? 's' : ''} tonight.
+      ${ep.ftcSwings.some(s => s.finalVote === winner) ? `At least one swing went to ${winner} \u2014 performance at tribal mattered.` : ''}
+    </div>`;
+  }
+
+  html += `</div>`;
   return html;
 }
 

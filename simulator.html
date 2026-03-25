@@ -12030,8 +12030,8 @@ function simulateFinale() {
 
   let finalists = [...players];
 
-  // If finaleSize === 2 and 3 remain: decide who sits with immunity winner
-  if (cfg.finaleSize === 2 && players.length === 3) {
+  // If finaleSize === 2 and 3 remain: decide who sits with immunity winner (jury formats only — final-challenge runs all players)
+  if (cfg.finaleSize === 2 && players.length === 3 && cfg.finaleFormat !== 'final-challenge') {
     const others = players.filter(p => p !== ep.immunityWinner);
     let brought, cut;
     if (cfg.finaleFormat === 'jury-cut') {
@@ -19986,10 +19986,10 @@ function buildVPScreens(epRecord) {
   }
 
   // ── 5. Challenge ──
-  if (ep.isFinale && ep.challengeType && seasonConfig.finaleSize >= 3) {
-    // Finale immunity challenge: only shown when finaleSize >= 3 (not for finaleSize=2)
+  if (ep.isFinale && ep.challengeType && seasonConfig.finaleSize >= 3 && seasonConfig.finaleFormat !== 'final-challenge') {
+    // Finale immunity challenge: jury format only, finaleSize >= 3 (final-challenge has its own Grand Challenge screen)
     vpScreens.push({ id:'finale-challenge', label:'Final Immunity', html: rpBuildFinaleChallenge(ep) });
-  } else if (ep.challengeType) {
+  } else if (ep.challengeType && !ep.isFinale) {
     vpScreens.push({ id:'challenge', label:'Immunity Challenge', html: rpBuildChallenge(ep) });
   }
 

@@ -5185,66 +5185,138 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
       events.push({ type: 'injury', text: injuryLines[Math.floor(Math.random() * injuryLines.length)], player: p });
 
     } else if (eventType === 'allianceForm') {
-      // Initiator: highest strategic in group
-      const initiator = _pick(group, n => Math.max(0.1, pStats(n).strategic * 0.6 + pStats(n).social * 0.2 + 1));
-      // Recruit 1–3 others with positive bond and high social/loyalty
-      const recruits = group.filter(p => p !== initiator)
-        .map(p => ({ name: p, score: getBond(initiator, p) * 0.5 + pStats(p).social * 0.2 + pStats(p).loyalty * 0.15 + Math.random() * 0.5 }))
-        .sort((a, b) => b.score - a.score)
-        .slice(0, Math.min(2 + Math.floor(Math.random() * 2), group.length - 1))
-        .filter(r => {
-          if (r.score <= -0.5) return false;
-          if (getBond(initiator, r.name) <= -2.5) return false; // hard dislike — won't ally
-          const rel = relationships.find(rx => [rx.a,rx.b].sort().join('|') === [initiator,r.name].sort().join('|'));
-          if (rel?.type === 'enemy') return false; // pre-game enemies never ally
-          return true;
-        })
-        .map(r => r.name);
-      // Also remove any two recruits who are pre-game enemies with each other
-      const safeRecruits = recruits.reduce((acc, name) => {
-        const conflictsWithExisting = acc.some(existing => {
-          const rel = relationships.find(r => [r.a,r.b].sort().join('|') === [existing,name].sort().join('|'));
-          return rel?.type === 'enemy' || getBond(existing, name) <= -4;
-        });
-        return conflictsWithExisting ? acc : [...acc, name];
-      }, []);
-      if (!safeRecruits.length) continue;
-      const allianceMembers = [initiator, ...safeRecruits];
-      // Skip if ALL these players are already in the same named alliance (exact match)
-      const alreadyAllied = gs.namedAlliances?.some(a =>
-        a.active && allianceMembers.every(m => a.members.includes(m))
-      );
-      if (alreadyAllied) continue;
-      // Also skip if this initiator already formed an alliance this episode
-      if (events.some(e => e.type === 'allianceForm' && e.members?.includes(initiator))) continue;
-      // Create the new alliance
-      const allianceName = nameNewAlliance(allianceMembers.length);
-      const newAlliance = {
-        id: `alliance_${Date.now()}_${Math.floor(Math.random()*1000)}`,
-        name: allianceName,
-        members: [...allianceMembers],
-        formed: gs.episode + 1,
-        betrayals: [],
-        active: true,
+      // Skip if this group already has an allianceForm this episode
+      if (events.some(e => e.type === 'allianceForm')) continue;
+
+      // Helper: create alliance, boost bonds, push event
+      const _createAlliance = (members, formText) => {
+        const allianceName = nameNewAlliance(members.length);
+        gs.namedAlliances.push({ id: `alliance_${Date.now()}_${Math.floor(Math.random()*1000)}`, name: allianceName, members: [...members], formed: gs.episode + 1, betrayals: [], active: true });
+        for (let x = 0; x < members.length; x++) for (let y = x + 1; y < members.length; y++) addBond(members[x], members[y], 0.4);
+        events.push({ type: 'allianceForm', text: formText.replace(/\{name\}/g, allianceName), alliance: allianceName, members });
       };
-      gs.namedAlliances.push(newAlliance);
-      // Boost bonds between all members
-      for (let x = 0; x < allianceMembers.length; x++) {
-        for (let y = x + 1; y < allianceMembers.length; y++) {
-          addBond(allianceMembers[x], allianceMembers[y], 0.4);
+      const _isAllied = p => gs.namedAlliances?.some(a => a.active && a.members.includes(p) && a.members.filter(m => group.includes(m)).length >= 2);
+      const _rpl = arr => arr[Math.floor(Math.random() * arr.length)];
+
+      // Pick which formation trigger to attempt (weighted by game state)
+      const _triggers = [];
+
+      // ── TRIGGER 1: Strategic pitch (original) — strategic player recruits by affinity ──
+      const _stratPlayers = group.filter(n => pStats(n).strategic >= 6 && !_isAllied(n));
+      if (_stratPlayers.length) _triggers.push({ id: 'strategic-pitch', weight: 10 });
+
+      // ── TRIGGER 2: Power couple — two players with bond >= 3 who aren't allied ──
+      let _pcPair = null;
+      for (let i = 0; i < group.length && !_pcPair; i++) {
+        for (let j = i + 1; j < group.length && !_pcPair; j++) {
+          if (getBond(group[i], group[j]) >= 3 && !gs.namedAlliances?.some(a => a.active && a.members.includes(group[i]) && a.members.includes(group[j])))
+            _pcPair = [group[i], group[j]];
         }
       }
-      const strI = pStats(initiator).strategic;
-      const tmpI = pStats(initiator).temperament;
-      const formLines = (strI >= 9 && tmpI <= 5)
-        ? [`${initiator} doesn't pitch the alliance — they describe the future like it's already decided. ${safeRecruits.join(' and ')} realize they're agreeing before they meant to.`,
-           `${initiator} pulls ${safeRecruits.join(' and ')} in one at a time. By the time they're all together, ${allianceName} is already a done deal.`]
-        : (strI >= 8)
-        ? [`${initiator} approaches ${safeRecruits.join(' and ')} with a clear proposal. Names, targets, order. ${allianceName} is formed before the sun goes down.`,
-           `${initiator} maps it out for ${safeRecruits.join(' and ')}. The logic is clean. Everyone nods. They have a name for it now: ${allianceName}.`]
-        : [`${initiator} pulls ${safeRecruits.join(' and ')} aside. "It should be us." Nobody disagrees. That is how ${allianceName} begins.`,
-           `A quiet conversation between ${initiator} and ${safeRecruits.join(' and ')} turns into something more. ${allianceName} is real now — at least for today.`];
-      events.push({ type: 'allianceForm', text: formLines[Math.floor(Math.random() * formLines.length)], alliance: allianceName, members: allianceMembers });
+      if (_pcPair) _triggers.push({ id: 'power-couple', weight: 8 });
+
+      // ── TRIGGER 3: Mutual enemy — two unallied players who both dislike someone ──
+      let _mePair = null, _meEnemy = null;
+      const _unallied = group.filter(n => !_isAllied(n));
+      for (let i = 0; i < _unallied.length && !_mePair; i++) {
+        for (let j = i + 1; j < _unallied.length && !_mePair; j++) {
+          if (getBond(_unallied[i], _unallied[j]) < -0.5) continue;
+          const enemy = group.find(e => e !== _unallied[i] && e !== _unallied[j] && getBond(_unallied[i], e) <= -1.5 && getBond(_unallied[j], e) <= -1.5);
+          if (enemy) { _mePair = [_unallied[i], _unallied[j]]; _meEnemy = enemy; }
+        }
+      }
+      if (_mePair) _triggers.push({ id: 'mutual-enemy', weight: 7 });
+
+      // ── TRIGGER 4: Survival pact — minority players (bottom bonds) band together ──
+      const _bottomPlayers = [...group].sort((a,b) => {
+        const avgA = group.filter(p=>p!==a).reduce((s,p)=>s+getBond(a,p),0)/(group.length-1||1);
+        const avgB = group.filter(p=>p!==b).reduce((s,p)=>s+getBond(b,p),0)/(group.length-1||1);
+        return avgA - avgB;
+      }).slice(0, 2).filter(n => !_isAllied(n));
+      if (_bottomPlayers.length >= 2 && getBond(_bottomPlayers[0], _bottomPlayers[1]) > -1) _triggers.push({ id: 'survival-pact', weight: 6 });
+
+      // ── TRIGGER 5: Shared struggle — two players who survived close votes together ──
+      let _ssPair = null;
+      const _recentEps = (gs.episodeHistory || []).slice(-3);
+      for (const re of _recentEps) {
+        const vlog = re.votingLog || [];
+        const targetedPlayers = group.filter(n => vlog.filter(v => v.voted === n).length >= 2 && n !== re.eliminated);
+        if (targetedPlayers.length >= 2 && getBond(targetedPlayers[0], targetedPlayers[1]) >= 0) {
+          if (!gs.namedAlliances?.some(a => a.active && a.members.includes(targetedPlayers[0]) && a.members.includes(targetedPlayers[1]))) {
+            _ssPair = targetedPlayers.slice(0, 2);
+            break;
+          }
+        }
+      }
+      if (_ssPair) _triggers.push({ id: 'shared-struggle', weight: 7 });
+
+      if (!_triggers.length) continue;
+
+      // Weighted random pick from available triggers
+      const _totalW = _triggers.reduce((s,t) => s + t.weight, 0);
+      let _roll = Math.random() * _totalW;
+      let _chosen = _triggers[0];
+      for (const t of _triggers) { _roll -= t.weight; if (_roll <= 0) { _chosen = t; break; } }
+
+      // Execute the chosen trigger
+      if (_chosen.id === 'strategic-pitch') {
+        const initiator = _stratPlayers.sort((a,b) => pStats(b).strategic - pStats(a).strategic)[0];
+        const recruits = group.filter(p => p !== initiator)
+          .map(p => ({ name: p, score: getBond(initiator, p) * 0.5 + pStats(p).loyalty * 0.15 + Math.random() * 0.5 }))
+          .sort((a, b) => b.score - a.score)
+          .slice(0, Math.min(2 + Math.floor(Math.random() * 2), group.length - 1))
+          .filter(r => r.score > -0.5 && getBond(initiator, r.name) > -2.5)
+          .filter(r => { const rel = relationships.find(rx => [rx.a,rx.b].sort().join('|') === [initiator,r.name].sort().join('|')); return !rel || rel.type !== 'enemy'; })
+          .map(r => r.name);
+        const safeRecruits = recruits.reduce((acc, name) => {
+          const conflict = acc.some(ex => getBond(ex, name) <= -4);
+          return conflict ? acc : [...acc, name];
+        }, []);
+        if (!safeRecruits.length) continue;
+        const allianceMembers = [initiator, ...safeRecruits];
+        if (gs.namedAlliances?.some(a => a.active && allianceMembers.every(m => a.members.includes(m)))) continue;
+        const strI = pStats(initiator).strategic;
+        const formText = strI >= 8
+          ? _rpl([`${initiator} approaches ${safeRecruits.join(' and ')} with a clear proposal. Names, targets, order. {name} is formed before the sun goes down.`,
+                  `${initiator} maps it out for ${safeRecruits.join(' and ')}. The logic is clean. Everyone nods. {name}.`])
+          : _rpl([`${initiator} pulls ${safeRecruits.join(' and ')} aside. "It should be us." Nobody disagrees. {name} begins.`,
+                  `A quiet conversation between ${initiator} and ${safeRecruits.join(' and ')} turns into something more. {name} is real now.`]);
+        _createAlliance(allianceMembers, formText);
+
+      } else if (_chosen.id === 'power-couple') {
+        const [a, b] = _pcPair;
+        const formText = _rpl([
+          `${a} and ${b} have been gravitating toward each other all game. Tonight they made it official. {name} \u2014 built on trust, not strategy.`,
+          `"I trust you more than anyone out here." ${a} said it first. ${b} didn't hesitate. {name} is real.`,
+          `No pitch. No strategy talk. ${a} and ${b} just looked at each other and knew. {name} forms naturally \u2014 the way the best alliances do.`,
+        ]);
+        _createAlliance([a, b], formText);
+
+      } else if (_chosen.id === 'mutual-enemy') {
+        const [a, b] = _mePair;
+        const formText = _rpl([
+          `${a} and ${b} realized they share a common enemy: ${_meEnemy}. "I can't stand ${_meEnemy}." "Neither can I." {name} was born from frustration.`,
+          `"We both know who needs to go." ${a} looked at ${b}. ${b} nodded. {name} forms around one shared goal: ${_meEnemy} has to leave.`,
+        ]);
+        _createAlliance([a, b], formText);
+
+      } else if (_chosen.id === 'survival-pact') {
+        const [a, b] = _bottomPlayers;
+        const formText = _rpl([
+          `${a} and ${b} are both on the outside looking in. They know it. "If we don't stick together, we're next." {name} is a survival move \u2014 nothing more, nothing less.`,
+          `Nobody's including ${a} or ${b} in their plans. So they made their own. {name} forms at the bottom \u2014 two players with nothing to lose and everything to fight for.`,
+          `${a} found ${b} sitting alone by the water. "Everyone's got someone. We don't." By the time they walked back to camp, {name} existed.`,
+        ]);
+        _createAlliance([a, b], formText);
+
+      } else if (_chosen.id === 'shared-struggle') {
+        const [a, b] = _ssPair;
+        const formText = _rpl([
+          `${a} and ${b} both survived close votes recently. That kind of fear bonds people. "We almost went home. Let's make sure it doesn't happen again." {name} forms from shared survival.`,
+          `They both know what it feels like to see your name on the parchment. ${a} and ${b} form {name} \u2014 born from the shared experience of almost going home.`,
+        ]);
+        _createAlliance([a, b], formText);
+      }
 
     } else if (eventType === 'rumor') {
       // Someone hears their name is being floated — rattles them, slightly damages the spreader's bond
@@ -6382,33 +6454,7 @@ function checkAllianceRecruitment(ep) {
       }
     }
 
-    // ── SCENARIO F: Mutual enemy — two unallied players who both hate the same person form a pact ──
-    const _unalliedF = active.filter(p => !gs.namedAlliances.some(a => a.active && a.members.includes(p) && a.members.filter(m => active.includes(m)).length >= 2));
-    for (let i = 0; i < _unalliedF.length && i < 6; i++) {
-      for (let j = i + 1; j < _unalliedF.length; j++) {
-        const a = _unalliedF[i], b = _unalliedF[j];
-        if (ep.allianceRecruits?.some(r => r.player === a || r.player === b)) continue;
-        if (getBond(a, b) < -0.5) continue; // need at least neutral bond with each other
-        // Find common enemy: someone they both have bond <= -1.5 with
-        const commonEnemy = active.find(e => e !== a && e !== b && getBond(a, e) <= -1.5 && getBond(b, e) <= -1.5);
-        if (!commonEnemy) continue;
-        if (pctRoll(a + b + 'F' + ep.num) >= 40) continue; // ~40%
-        const allianceName = nameNewAlliance(2);
-        gs.namedAlliances.push({ id: `alliance_${Date.now()}_${Math.floor(Math.random()*1000)}`, name: allianceName, members: [a, b], formed: ep.num, betrayals: [], active: true });
-        addBond(a, b, 0.6);
-        ep.allianceRecruits = ep.allianceRecruits || [];
-        ep.allianceRecruits.push({ player: b, toAlliance: allianceName, fromAlliance: null, scenario: 'mutual-enemy' });
-        // Camp event
-        const _meKey = Object.keys(ep.campEvents || {})[0];
-        if (_meKey && ep.campEvents[_meKey]) {
-          const _meBlock = ep.campEvents[_meKey].post || ep.campEvents[_meKey].pre || ep.campEvents[_meKey];
-          if (Array.isArray(_meBlock)) _meBlock.push({ type: 'allianceRecruit', players: [a, b, commonEnemy],
-            text: `${a} and ${b} discovered they share the same target: ${commonEnemy}. "I can't stand ${commonEnemy}." "Neither can I." ${allianceName} was born from mutual frustration \u2014 not trust. But sometimes that's enough.`
-          });
-        }
-        break; // one mutual enemy alliance per episode
-      }
-    }
+    // ── SCENARIO F+H+I moved to camp event allianceForm triggers (prevents double-firing) ──
 
     // ── SCENARIO G: Post-betrayal refuge — betrayed player recruited by rivals ──
     (ep.allianceQuits || []).forEach(({ player, alliance: quitAlliance }) => {
@@ -6427,60 +6473,7 @@ function checkAllianceRecruitment(ep) {
       });
     });
 
-    // ── SCENARIO H: Power couple — two players with very high mutual bond auto-ally if not already ──
-    for (let i = 0; i < active.length; i++) {
-      for (let j = i + 1; j < active.length; j++) {
-        const a = active[i], b = active[j];
-        const bond = getBond(a, b);
-        if (bond < 4) continue; // need very strong bond
-        // Skip if already in the same alliance
-        if (gs.namedAlliances.some(al => al.active && al.members.includes(a) && al.members.includes(b))) continue;
-        if (ep.allianceRecruits?.some(r => r.player === a || r.player === b)) continue;
-        if (pctRoll(a + b + 'H' + ep.num) >= 60) continue; // ~60%
-        // Check if one is in an alliance — recruit the other into it
-        const existingA = gs.namedAlliances.find(al => al.active && al.members.includes(a) && al.members.filter(m => active.includes(m)).length >= 2);
-        const existingB = gs.namedAlliances.find(al => al.active && al.members.includes(b) && al.members.filter(m => active.includes(m)).length >= 2);
-        if (existingA && !existingA.members.includes(b)) {
-          doRecruit(existingA, b, a, 'power-couple');
-        } else if (existingB && !existingB.members.includes(a)) {
-          doRecruit(existingB, a, b, 'power-couple');
-        } else if (!existingA && !existingB) {
-          // Neither in an alliance — form a new pair
-          const allianceName = nameNewAlliance(2);
-          gs.namedAlliances.push({ id: `alliance_${Date.now()}_${Math.floor(Math.random()*1000)}`, name: allianceName, members: [a, b], formed: ep.num, betrayals: [], active: true });
-          addBond(a, b, 0.3);
-          ep.allianceRecruits = ep.allianceRecruits || [];
-          ep.allianceRecruits.push({ player: b, toAlliance: allianceName, fromAlliance: null, scenario: 'power-couple' });
-        }
-        break; // one power couple per episode
-      }
-    }
-
-    // ── SCENARIO I: Idol holder seeks shield — player with an idol recruits a strong player for protection ──
-    const _idolHolders = (gs.advantages || []).filter(a => a.type === 'idol' && active.includes(a.holder)).map(a => a.holder);
-    _idolHolders.forEach(holder => {
-      if (ep.allianceRecruits?.some(r => r.player === holder)) return;
-      // Already in a strong alliance? Don't need to recruit
-      const holderAlliance = gs.namedAlliances.find(a => a.active && a.members.includes(holder) && a.members.filter(m => active.includes(m)).length >= 3);
-      if (holderAlliance) return;
-      // Find a strong player (high threat) with positive bond to recruit as shield
-      const shieldCandidates = active.filter(p => p !== holder && threatScore(p) >= 5 && getBond(holder, p) >= 0.5)
-        .sort((a,b) => threatScore(b) - threatScore(a));
-      if (!shieldCandidates.length) return;
-      if (pctRoll(holder + 'I' + ep.num) >= 35) return; // ~35%
-      const shield = shieldCandidates[0];
-      // Try to recruit into existing alliance or form new
-      const holderSmallAlliance = gs.namedAlliances.find(a => a.active && a.members.includes(holder) && !a.members.includes(shield));
-      if (holderSmallAlliance) {
-        doRecruit(holderSmallAlliance, shield, holder, 'idol-shield');
-      } else {
-        const allianceName = nameNewAlliance(2);
-        gs.namedAlliances.push({ id: `alliance_${Date.now()}_${Math.floor(Math.random()*1000)}`, name: allianceName, members: [holder, shield], formed: ep.num, betrayals: [], active: true });
-        addBond(holder, shield, 0.5);
-        ep.allianceRecruits = ep.allianceRecruits || [];
-        ep.allianceRecruits.push({ player: shield, toAlliance: allianceName, fromAlliance: null, scenario: 'idol-shield' });
-      }
-    });
+    // ── SCENARIOS H+I: Power couple and idol shield now handled by camp event allianceForm triggers ──
   }
 }
 

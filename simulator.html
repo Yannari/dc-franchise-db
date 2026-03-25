@@ -17886,6 +17886,78 @@ function rpBuildAftermath(ep) {
     }
     _threads.push({ icon: '◆', color: '#a371f7', text: advText });
   });
+  // ── Additional threads from game state ──
+
+  // Close vote — someone almost went home
+  if (ep.votes) {
+    const _voteSorted = Object.entries(ep.votes).sort(([,a],[,b]) => b - a);
+    if (_voteSorted.length >= 2 && _voteSorted[0][1] - _voteSorted[1][1] <= 1 && _voteSorted[1][0] !== elim && active.includes(_voteSorted[1][0])) {
+      _threads.push({ icon: '!', color: '#f0883e', text: `<strong>${_voteSorted[1][0]}</strong> was one vote away from going home. ${_voteSorted[1][1]} vote${_voteSorted[1][1]!==1?'s':''} against — that margin doesn't make anyone feel safe.` });
+    }
+  }
+
+  // Betrayal — alliance member voted against their own
+  const _betrayals = (ep.votingLog || []).filter(v => {
+    if (v.voter === 'THE GAME' || v.voted === elim) return false;
+    return (ep.alliances || []).some(a => a.members?.includes(v.voter) && a.members?.includes(v.voted));
+  });
+  if (_betrayals.length && !_threads.some(t => t.text.includes(_betrayals[0].voter))) {
+    const b = _betrayals[0];
+    _threads.push({ icon: '✕', color: '#f85149', text: `<strong>${b.voter}</strong> voted against <strong>${b.voted}</strong> — their own alliance member. That's not a misfire. That's a signal.` });
+  }
+
+  // Someone flipped — voted differently from their alliance majority
+  const _flipVoters = (ep.votingLog || []).filter(v => {
+    if (v.voter === 'THE GAME') return false;
+    const voterAlliance = (ep.alliances || []).find(a => a.members?.includes(v.voter) && a.target);
+    return voterAlliance && v.voted !== voterAlliance.target && active.includes(v.voter);
+  });
+  if (_flipVoters.length && !_threads.some(t => t.text.includes(_flipVoters[0].voter))) {
+    _threads.push({ icon: '↔', color: '#d29922', text: `<strong>${_flipVoters[0].voter}</strong> didn't vote with their alliance tonight. Was it a mistake, a statement, or the start of something new?` });
+  }
+
+  // New alliance formed this episode
+  const _newAlliances = (ep.allianceRecruits || []).filter(r => r.scenario !== 'blindside-swing');
+  if (_newAlliances.length) {
+    const first = _newAlliances[0];
+    _threads.push({ icon: '★', color: '#3fb950', text: `<strong>${first.toAlliance}</strong> just formed. New alliances this late in the game don't happen unless someone feels unsafe.` });
+  }
+
+  // Alliance refusal
+  if (ep.allianceRefusals?.length) {
+    const ref = ep.allianceRefusals[0];
+    _threads.push({ icon: '✕', color: '#8b949e', text: `<strong>${ref.player}</strong> turned down an offer from <strong>${ref.recruiter}</strong>. That rejection will be remembered.` });
+  }
+
+  // Emotional state — multiple paranoid/desperate players
+  const _paranoidPlayers = active.filter(n => {
+    const state = gs.playerStates?.[n]?.emotional;
+    return state === 'paranoid' || state === 'desperate';
+  });
+  if (_paranoidPlayers.length >= 2) {
+    _threads.push({ icon: '⚡', color: '#f85149', text: `${_paranoidPlayers.join(' and ')} are both on edge. When multiple players feel unsafe, the vote becomes unpredictable.` });
+  }
+
+  // Challenge streak
+  const _winStreak = active.find(n => {
+    const last3 = (gs.episodeHistory || []).slice(-3);
+    return last3.length >= 2 && last3.filter(e => e.immunityWinner === n).length >= 2;
+  });
+  if (_winStreak) {
+    _threads.push({ icon: '▲', color: '#e3b341', text: `<strong>${_winStreak}</strong> has won immunity in back-to-back episodes. The tribe can't touch them — and they know it.` });
+  }
+
+  // Solo player — no alliance, no strong bonds
+  const _soloPlayers = active.filter(n => {
+    const inAlliance = (gs.namedAlliances || []).some(a => a.active && a.members.includes(n) && a.members.filter(m => active.includes(m)).length >= 2);
+    if (inAlliance) return false;
+    const avgBond = active.filter(p => p !== n).reduce((s,p) => s + getBond(n,p), 0) / Math.max(1, active.length - 1);
+    return avgBond < 0.5;
+  });
+  if (_soloPlayers.length === 1) {
+    _threads.push({ icon: '◇', color: '#8b949e', text: `<strong>${_soloPlayers[0]}</strong> is playing alone. No alliance, no strong bonds. Either that's by choice — or nobody wants them.` });
+  }
+
   if (!_threads.length) _threads.push({ icon: '→', color: '#8b949e', text: `The vote went cleanly. The tribe knows where it stands — for now.` });
 
   // ── Build HTML ──

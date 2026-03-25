@@ -13083,10 +13083,16 @@ function rpBuildChallenge(ep) {
           <button onclick="vpRevealTribe('${slotId}','${tName}')" style="margin-left:auto;padding:4px 12px;background:var(--accent-fire);border:none;border-radius:4px;color:#fff;font-size:11px;cursor:pointer">REVEAL</button>
         </div>
         <div class="rp-portrait-row" style="margin-bottom:8px">
-          ${rankedCompetitors.map((n,ri) => `<div style="text-align:center">
-            ${rpPortrait(n)}
-            <div style="font-size:9px;color:var(--muted);margin-top:2px">#${ri+1}</div>
-          </div>`).join('')}
+          ${rankedCompetitors.map((n,ri) => {
+            const _isTop = ri === 0;
+            const _isBot = ri === rankedCompetitors.length - 1 && rankedCompetitors.length > 1;
+            const _rankBadge = _isTop
+              ? `<div style="font-size:9px;font-weight:800;letter-spacing:1px;background:rgba(63,185,80,0.12);color:#3fb950;padding:2px 5px;border-radius:3px;margin-top:3px">STANDOUT</div>`
+              : _isBot
+              ? `<div style="font-size:9px;font-weight:800;letter-spacing:1px;background:rgba(218,54,51,0.10);color:#f85149;padding:2px 5px;border-radius:3px;margin-top:3px">WEAK LINK</div>`
+              : `<div style="font-size:9px;color:var(--muted);margin-top:2px">#${ri+1}</div>`;
+            return `<div style="text-align:center">${rpPortrait(n)}${_rankBadge}</div>`;
+          }).join('')}
         </div>
         ${sos.length ? `<div style="font-size:11px;color:var(--muted);margin-top:4px">Sit-outs: ${sos.map(n=>`<strong>${n}</strong>`).join(', ')}</div>` : ''}
       </div>`;
@@ -13468,6 +13474,8 @@ function rpBuildVotingPlans(ep) {
   const _hp = (arr, a, b) => arr[_nh(a, b) % arr.length];
 
   // Derive a meaningful WHY phrase from the target's actual stats + voter-target bond
+  const _phase = ep.gsSnapshot?.phase || gs.phase;
+  const _isMerged = _phase !== 'pre-merge';
   const targetWhyPhrase = (targetName, voterName) => {
     const ts = pStats(targetName);
     const bond = getBond(voterName, targetName);
@@ -13475,70 +13483,138 @@ function rpBuildVotingPlans(ep) {
     const priorVotes = (gs.episodeHistory || []).reduce((n, h) =>
       n + (h.votingLog || []).filter(v => v.voted === targetName).length, 0);
 
-    if (bond <= -2) return _hp([
+    if (bond <= -2) return _isMerged ? _hp([
+      `The friction between us never went away — it just went underground. When the game gives you an opening on someone you genuinely don't trust, you take it.`,
+      `${targetName} and I have never worked out here. That's not bitterness — it's just the truth. And the truth pointed my vote in one direction tonight.`,
+      `The relationship was already broken before tonight. This vote didn't damage anything. It just made something official that's been true for a while.`,
+      `There's no version of this game where ${targetName} and I end up on the same side at the end. Might as well be honest about that while the numbers back it up.`,
+      `You can smile at someone every morning and still know they're a problem. I've known it. Tonight the vote says it out loud.`,
+    ], voterName, targetName) : _hp([
       `Never fully trusted ${targetName} — the friction has been there since the start. This isn't a strategic vote. It's an honest one.`,
       `Something about ${targetName} has always felt off. Hard to name exactly, but it's been there. This is the moment to act on it.`,
       `${targetName} and I don't work out here. There's no version of this game where that changes. Voting ${targetName} is the most straightforward decision I've made.`,
       `The relationship with ${targetName} never recovered. Whatever goodwill existed is gone. When the numbers allow it, you clean up loose ends.`,
+      `It's not personal and it's not strategic. It's just honest. Some people in this tribe I'd fight for. ${targetName} isn't one of them.`,
     ], voterName, targetName);
 
-    if (bond <= 0) return _hp([
+    if (bond <= 0) return _isMerged ? _hp([
+      `When the game gets small, everyone without a real connection becomes a number. ${targetName} and I never built one. That made tonight easy.`,
+      `I don't have a relationship with ${targetName} worth protecting. That's not a grudge — it's just where we landed. And where we landed made this vote available.`,
+      `Post-merge, weak bonds become votes. ${targetName} and I were never close. When a name came up that I felt nothing about defending, I let it happen.`,
+      `There's no alliance, no trust, no real conversation between me and ${targetName}. In this game, that absence becomes a vote eventually. Tonight was eventually.`,
+      `I've watched ${targetName} build relationships with everyone except me. When you're not in someone's circle, you're in their threat column. I got there first.`,
+    ], voterName, targetName) : _hp([
       `No real bond with ${targetName} — never built anything worth protecting. When the numbers point here and there's no relationship to defend, the vote is easy.`,
       `${targetName} and I never clicked. Not enemies — just nothing there. That gap becomes a vote eventually. This is that moment.`,
       `There's no alliance, no trust, no conversation that would make me cover for ${targetName}. When a name comes up and I feel nothing about it, I let it happen.`,
       `${targetName} never made an effort here and neither did I. That's not bitterness — it's arithmetic. No bond means no protection when the vote lands here.`,
+      `This tribe has people I'd go to the end with. ${targetName} isn't one of them — not because of bad blood, just because we never built anything. That void is a vote.`,
     ], voterName, targetName);
 
-    if (ts.strategic >= 8 || arch === 'mastermind' || arch === 'schemer') return _hp([
+    if (ts.strategic >= 8 || arch === 'mastermind' || arch === 'schemer') return _isMerged ? _hp([
+      `${targetName} is running the board and pretending to just react. Everyone in this game feels it. The reads, the moves, the timing — you don't leave that kind of player in the game.`,
+      `Every big decision in this game has ${targetName}'s fingerprints on it somewhere. That's not coincidence. That's control. You don't let that reach a jury.`,
+      `${targetName} already has a final three in their head and we're probably not in it. The longer we wait, the harder it is to undo. Tonight is the window.`,
+      `The dangerous thing about ${targetName} is that they make you feel included while they're building around you. I'm not included. The vote is my answer to that.`,
+      `${targetName} is playing four moves ahead of everyone visible in this game. You can either follow that plan to the end — or you vote it out while you still have the numbers.`,
+      `I've sat across from ${targetName} at camp and watched them work. Every conversation is a transaction. That's not judgment — that's a threat assessment. My vote is the result.`,
+    ], voterName, targetName) : _hp([
       `${targetName} is running the board and acting like they're not. Everyone feels it, most people won't say it. The reads, the positioning, the timing — that's not luck. Clock is ticking.`,
       `Too calculating to leave in the game much longer. ${targetName} already has a path to the end mapped out. There's a real chance we're not on it.`,
       `${targetName} already has a final three locked in and we're probably not in it. Every day that passes is a day the plan gets harder to undo.`,
       `The reads, the timing, the positioning — ${targetName} is playing ahead of everyone in this game. You don't let that get to the end. You move before the window closes.`,
+      `Strategic players are quiet right up until they're not. ${targetName} has been patient. This vote is about interrupting that patience before it becomes the game's final chapter.`,
+      `${targetName} doesn't make mistakes. That's the problem. You can't wait for them to slip — you take the shot when the shot is there.`,
     ], voterName, targetName);
 
-    if (ts.physical >= 8 || arch === 'challenge-beast') return _hp([
-      `${targetName} wins every physical challenge they enter. At some point that's not impressive — it's untouchable. A challenge beast at merge is a challenge beast all the way to the end.`,
-      `A challenge beast at this stage is a threat at every stage. ${targetName} doesn't need to play a great social game if they can just win their way there. Clock is ticking on this one.`,
-      `${targetName} is going to win their way to the end if nobody moves now. Every immunity they pick up is a number we can't touch. The window for this vote gets smaller every episode.`,
-      `Physical players don't need alliances when the game gets small. ${targetName} can just win. Taking them out now — while we have the numbers and the cover — is the only realistic option.`,
+    if (ts.physical >= 8 || arch === 'challenge-beast') return _isMerged ? _hp([
+      `${targetName} wins every time they enter a challenge. Post-merge, that's not admirable — it's a problem. Challenge beasts don't need good games; they just need to keep winning.`,
+      `You can't vote out ${targetName} if they keep winning immunity. The window is now, while they're touchable. That window won't stay open.`,
+      `Physical threats get exponentially harder to remove as the game gets smaller. The alliance that moves on ${targetName} now does something the people who wait can't.`,
+      `${targetName} doesn't need alliances when the game gets small. They can just win. Sitting on this vote and hoping for a slip is wishful thinking, not strategy.`,
+      `Every challenge ${targetName} wins is a vote we can't take. Right now they're touchable. That changes the moment the numbers thin out.`,
+      `At merge, the players who can win challenges are the players you can't get rid of. ${targetName} can win challenges. That makes tonight necessary.`,
+    ], voterName, targetName) : _hp([
+      `${targetName} is going to win challenges all the way to the end if nobody does anything about it now. The pre-merge window is the only one where we control this.`,
+      `Challenge performers at this stage become untouchable later. Getting ${targetName} out before the merge is smarter than hoping we can beat them one-on-one when it counts.`,
+      `Physical threats are easiest to remove in a tribe setting, when you have the cover of numbers. Post-merge that goes away. This is the cleanest shot we get.`,
+      `${targetName} is dominant in the challenges that matter. Taking that ability out of the game before individual immunity kicks in is the right call.`,
     ], voterName, targetName);
 
-    if (ts.social >= 8 || arch === 'social-butterfly') return _hp([
+    if (ts.social >= 8 || arch === 'social-butterfly') return _isMerged ? _hp([
+      `${targetName} has built something real with every person on this tribe. That's not an ally — that's a jury winner. You don't beat that at final tribal. You vote it out before then.`,
+      `I've watched ${targetName} work this camp. Every conversation lands, every relationship deepens. That's not luck — that's a masterclass in the social game. And it wins.`,
+      `${targetName} doesn't need to win challenges or find idols. They've already won the room. A social game that strong doesn't get beaten — it gets removed.`,
+      `When someone has no enemies at this stage of the game, the odds are they win. ${targetName} has no enemies. That's not a compliment — that's a threat.`,
+      `The jury is watching everything. ${targetName} has been building their case in every conversation they've had out here. That story doesn't have a bad ending — unless we write one.`,
+      `${targetName} could stand up at final tribal and lose every strategic argument and still win. That's how good their social game is. That's exactly why this vote exists.`,
+    ], voterName, targetName) : _hp([
       `${targetName} is friends with everybody out here. That's a jury résumé, not loyalty. You can't beat that at final tribal — you remove it before it gets there.`,
       `Every conversation ${targetName} has ends with someone liking them more. That's dangerous in a way that's almost impossible to counter. The only answer is a vote while you still have the numbers.`,
       `${targetName} doesn't need an idol. They've already won the room. A social game that strong doesn't get beaten — it gets voted out before it reaches the end.`,
       `Social game that strong is impossible to beat at final tribal. ${targetName} has built something with everyone on this tribe. Letting that reach a jury is handing them the win.`,
+      `The most dangerous players out here aren't the loud ones — they're the ones everyone genuinely likes. ${targetName} is that person. This vote is an acknowledgment of it.`,
     ], voterName, targetName);
 
-    if ((ts.physical + ts.endurance) / 2 <= 4) return _hp([
-      `${targetName} keeps costing the tribe in challenges. Can't keep absorbing those losses. At some point the performance becomes a liability the game won't forgive.`,
+    // Challenge weakness — pre-merge only. Post-merge: no tribe, different framing.
+    if (!_isMerged && (ts.physical + ts.endurance) / 2 <= 4) return _hp([
+      `${targetName} has been the weak link in challenges and the tribe has been eating those losses. At some point the performance becomes the deciding factor. We're there.`,
       `The tribe has been covering for ${targetName} long enough. Performance doesn't lie. The numbers are what they are and somebody has to answer for it.`,
-      `Losing because of the same person every week isn't loyalty — it's stubbornness. The vote is the tribe deciding it can't keep absorbing this. That decision is overdue.`,
-      `The challenge record speaks for itself. ${targetName} has cost this tribe real ground. There's only so long you can separate game from performance.`,
+      `Challenge liability is challenge liability. ${targetName} hasn't been pulling their weight and everyone on this tribe knows it. The vote is the tribe saying it out loud.`,
+      `The challenge record speaks for itself. ${targetName} has cost this tribe real ground. At some point loyalty to a tribemate has to weigh against loyalty to the tribe's survival.`,
+      `Keeping a weak challenge player on the wrong side of the merge is how you hand the other tribe free wins. The vote is the tribe correcting that.`,
+      `Every loss that traces back to the same person eventually stops feeling like bad luck. The tribe made the math, and the math said ${targetName}. This isn't personal — it's a correction.`,
     ], voterName, targetName);
 
-    if (ts.loyalty <= 3) return _hp([
+    if (ts.loyalty <= 3) return _isMerged ? _hp([
+      `${targetName} doesn't have a real side in this game — they have whoever is most useful right now. That changes. I'm voting before it changes on me.`,
+      `I've watched ${targetName} float between groups and I know what that means. When the math shifts, so does their vote. The safest call is to remove that variable before it costs someone.`,
+      `You can't build a path to the end around someone who's willing to pivot at any moment. ${targetName} is a wildcard in a game where unpredictability is dangerous.`,
+      `${targetName} has been friendly to every alliance in this game. At some point that stops being diplomatic and starts being a threat. I stopped giving them the benefit of the doubt.`,
+      `A player with no real loyalties is the most dangerous kind — they're available to whoever needs them. I'm not letting that availability work against me.`,
+    ], voterName, targetName) : _hp([
       `${targetName} will flip the moment a better deal shows up. No question. You can't build anything solid with someone that loose at the core — and you definitely can't take them to the end.`,
       `${targetName}'s loyalty goes to whoever benefits them most right now. That changes. The safest move is to vote them out before the math shifts and they use that flexibility against us.`,
       `Can't build anything solid with someone that loose at the core. ${targetName} isn't an ally — they're a liability waiting for the right offer. Better to make the move before they do.`,
+      `Pre-merge, a flighty tribemate is fine — until they're not. ${targetName} has never been fully committed and we've been gambling on that. The gamble stops tonight.`,
     ], voterName, targetName);
 
-    if (ts.boldness >= 8) return _hp([
+    if (ts.boldness >= 8) return _isMerged ? _hp([
+      `${targetName} plays loud and everyone can see it. That kind of visibility is a magnet for chaos at this stage of the game. Bold players don't become safer — they become bigger threats.`,
+      `One wrong call from ${targetName} and everything blows up. That's not a player you manage — that's a player you remove before the damage becomes your damage.`,
+      `${targetName} makes moves for the story, not the outcome. That's entertaining until it derails your game. I'm not letting their boldness become my problem.`,
+      `Bold players are fine when they're pointed in the right direction. ${targetName} isn't pointed at anything reliable. When you can't predict someone, you remove the variable.`,
+      `${targetName} has been making noise this game. Loud games attract attention. Attention in the post-merge isn't glory — it's a target. I'm helping that process along.`,
+    ], voterName, targetName) : _hp([
       `${targetName} plays loud — that kind of visibility brings heat on everyone nearby. One big move from blowing the whole thing up. Some people you manage; some people you remove.`,
       `Too bold, too visible. ${targetName} is one bad tribal from becoming completely uncontrollable. Bold players don't stay predictable. The vote is a pre-empt before that becomes a problem.`,
       `${targetName} is one bad tribal from becoming completely uncontrollable. The boldness that makes them fun to watch also makes them impossible to trust with real information.`,
+      `Pre-merge, you can absorb a wildcard. Post-merge you can't. ${targetName} needs to go now, before the game stakes get high enough to make their boldness truly dangerous.`,
     ], voterName, targetName);
 
-    if (priorVotes >= 2) return _hp([
+    if (priorVotes >= 2) return _isMerged ? _hp([
+      `${targetName}'s name has come up before — more than once. The tribe has been circling this vote for a while. Tonight we close it.`,
+      `When a name keeps coming back, it's because the instinct behind it is right. The timing just wasn't there before. It's there now.`,
+      `The tribe has already had this conversation multiple times. ${targetName} survived — but the read on them hasn't changed. Eventually the vote that keeps almost happening just happens.`,
+      `${targetName} is still here because we couldn't get the numbers before. The numbers are there now. This isn't a new decision — it's a delayed one.`,
+    ], voterName, targetName) : _hp([
       `${targetName} has been on the block before. The tribe has already had this conversation — the vote just didn't land. This time we close it out.`,
       `This has been building since the first time ${targetName}'s name came up. It didn't happen then. It's happening now. The tribe's read on ${targetName} hasn't changed.`,
       `${targetName} survived once. The votes came back for a reason. When a name keeps circling it means the instinct is right — just the timing wasn't. Tonight the timing is right.`,
+      `The tribe has been wanting to make this move and waiting for the right moment. The moment is here. Some votes aren't new ideas — they're overdue corrections.`,
     ], voterName, targetName);
 
-    return _hp([
+    return _isMerged ? _hp([
+      `The numbers converged on ${targetName} and nobody had a strong enough argument to move them. That kind of consensus is rare — you don't ignore it.`,
+      `${targetName} wasn't the first name, but they became the one everyone could live with. In a game where half the tribe needs to agree, that matters more than being the obvious choice.`,
+      `When the dust settles and everyone's doing the same math, you go with it. ${targetName} is the answer everyone kept arriving at. That means something.`,
+      `At some point in every tribal, a name floats to the top and stays there. ${targetName} was that name tonight. Nobody had a better option. The vote followed.`,
+      `I ran through the scenarios. Every version of this game where I'm still here in two tribals, ${targetName} is not. The vote is just me catching up to that logic.`,
+    ], voterName, targetName) : _hp([
       `Numbers pointed here and nobody pushed back hard enough to move them. ${targetName} wasn't the only name, but became the one everyone could live with. That consensus has weight.`,
       `${targetName} wasn't the first name but became the one everyone could agree on. In this game, the vote that sticks is the one where nobody flinches at the last second. Nobody flinched.`,
       `When the dust settled, ${targetName} was the vote everyone could live with. Sometimes that's how it goes — not the loudest target, just the most available one with the least protection.`,
+      `Pre-merge votes are about tribe function. ${targetName} didn't fit the picture of what this tribe needs going into the merge. The vote reflects that read.`,
     ], voterName, targetName);
   };
 
@@ -13565,48 +13641,93 @@ function rpBuildVotingPlans(ep) {
       if (conf) return conf;
     }
     // Fresh target-based first-person confessionals — personal, narrative, different from member rows
-    if (ts.strategic >= 8 || arch === 'mastermind' || arch === 'schemer') return _hp([
+    if (ts.strategic >= 8 || arch === 'mastermind' || arch === 'schemer') return _isMerged ? _hp([
+      `${target} is three moves ahead and making sure nobody notices. I noticed. My vote is the only honest response to what I've been watching.`,
+      `I've sat across from ${target} at camp and watched every conversation land exactly where they wanted it to. That's a player who knows what they're doing. That's a player I need to remove.`,
+      `The scary ones don't announce themselves. ${target} doesn't have to. The fingerprints are on every decision this game has made. My vote is what happens when you see the pattern.`,
+      `${target} already has a winner's path mapped and I'm not on it. I figured that out. The question was whether I'd do something about it. Tonight is the answer.`,
+      `Everybody thinks they're aligned with ${target}. Somebody's wrong. I'm not waiting to find out if it's me.`,
+      `${target} has managed every relationship in this game like a project. I'm not a project. My vote is the one move they didn't account for.`,
+    ], voter, target) : _hp([
       `${target} is running this game and pretending they're not. I see every move three decisions back. That's not someone you keep around — that's someone you take out the moment you have cover.`,
       `I've watched ${target} work this camp since day one. Every conversation is a transaction. Impressive. Also the exact reason my vote is ${target} tonight.`,
       `The dangerous ones don't announce themselves. ${target} doesn't have to. It's written in every decision they make. My vote is a preemptive answer to a question nobody else is asking yet.`,
       `${target} has a plan. I don't know exactly what it is — that's the point. Someone that calculating doesn't leave room for accidents. I'd rather be the accident.`,
+      `Pre-merge, smart players can hide in the tribe's noise. I've been watching ${target} hide. The vote is about not taking that into the merge with us.`,
     ], voter, target);
 
-    if (ts.social >= 8 || arch === 'social-butterfly') return _hp([
+    if (ts.social >= 8 || arch === 'social-butterfly') return _isMerged ? _hp([
+      `${target} has made every single person out here feel like the important one. That's the most dangerous social game I've seen. You can't counter it — you can only vote it.`,
+      `Everybody loves ${target}. That's the whole problem. When someone has no enemies in the jury, they win. I'm not handing this game away because I liked someone.`,
+      `${target} is going to stand up at final tribal and get every single vote — not because of strategy, not because of challenge wins, because everyone genuinely likes them. I'm voting now.`,
+      `Watch how ${target} moves through this camp. Every moment is building something with someone. That's not personality — that's construction. My vote is demolition.`,
+      `I've played alongside ${target} and I genuinely like them. That's exactly why they're my vote. Likeable people win this game. I can't let that happen.`,
+      `The jury is building their case right now. ${target}'s case writes itself. I'm not letting that speech happen.`,
+    ], voter, target) : _hp([
       `${target} has made everyone feel like they're the real one. That's the most dangerous thing I've seen out here. You can't outplay that at final tribal. You remove it before it gets there.`,
       `Everybody loves ${target}. That's the problem. When someone has no enemies, they win. I'm not going to sit here and hand them the game.`,
       `${target} is going to reach the end and win — not because they outplayed us strategically, but because everyone in that jury box likes them. I'm voting now before that becomes inevitable.`,
       `Watch how ${target} moves through camp. Every exchange builds something. That's not being friendly — that's building a coalition. The vote is my counter to it.`,
+      `Pre-merge, being liked is a shield. ${target} has that shield maxed out. Getting rid of it now, before it becomes a jury block, is the smart play.`,
     ], voter, target);
 
-    if ((ts.physical + ts.endurance) / 2 <= 4) return _hp([
-      `I'm looking at this practically. We need to win challenges. ${target} is a part of why we're not. That's not personal — that's math. The vote is the logical conclusion of watching it happen.`,
-      `${target} is a good person out here. That's not the question. The question is whether we can keep absorbing the losses. I don't think we can. The vote is the answer.`,
+    // Challenge weakness — pre-merge confessional only
+    if (!_isMerged && (ts.physical + ts.endurance) / 2 <= 4) return _hp([
+      `I'm looking at this practically. We need to win challenges. ${target} is a part of why we're not. That's not personal — that's math. The vote is the logical conclusion.`,
+      `${target} is a good person out here. That's not the question. The question is whether we can keep absorbing the losses. I don't think we can.`,
       `Every time we hit a challenge I already know where the weak point is. Eventually that stops being a coincidence and starts being a decision. Tonight is that decision.`,
+      `I'm not voting based on feelings. I'm voting based on the challenge record. The record says ${target}. That's where my vote goes.`,
+      `Tribe survival is the goal. ${target} has been making that harder. There's a version of this game where loyalty costs you everything — this is that moment.`,
     ], voter, target);
 
-    if (ts.loyalty <= 3) return _hp([
+    if (ts.loyalty <= 3) return _isMerged ? _hp([
+      `${target} doesn't have a real side out here — they have a current arrangement. I've been watching. The moment the math changes, so does their vote. I'm not waiting for that.`,
+      `I don't know where ${target}'s actual loyalty lives. And I've been watching carefully. That uncertainty, at this stage of the game, is the most dangerous thing I can carry forward.`,
+      `${target} has been running deals with every group in this game. Everybody thinks they have them. Nobody does. I'm voting before I end up on the wrong side of that calculation.`,
+      `A player with no fixed loyalty is just a vote waiting to be used against you. ${target} is that player. Tonight I remove the liability before it activates.`,
+      `Flexibility sounds good until it's pointed at you. ${target} is flexible with everyone. I'm not giving them the opportunity to be flexible with me.`,
+    ], voter, target) : _hp([
       `${target} doesn't have a side — they have a situation. The moment the math shifts, so does their vote. I'd rather take the shot while I still have the numbers.`,
       `I don't know where ${target}'s loyalty actually lives. And I've been watching. That uncertainty is more dangerous to me than any idol or advantage in this game.`,
       `${target} has been friendly with every alliance out here. At some point friendly with everyone means loyal to no one. I'm not waiting to find out which way they land.`,
+      `Pre-merge, a loose player is manageable. Post-merge they become a swing vote that can flip the entire game. I'm not letting ${target} get there.`,
     ], voter, target);
 
-    if (bond <= -1) return _hp([
+    if (bond <= -1) return _isMerged ? _hp([
+      `${target} and I have never worked out here. I've been honest with myself about that for a while. When the game offers you a vote on someone you genuinely don't trust, you take it.`,
+      `I don't have a relationship with ${target} worth protecting. That makes tonight straightforward in a way most votes aren't.`,
+      `Some people you build something real with out here. ${target} and I never got there. In a game this small, that gap becomes a vote. Tonight it did.`,
+      `There's no version of this game where ${target} and I are working together at the end. We both know that. I got to the vote first.`,
+      `You can share a camp with someone for weeks and still not trust them. That's me and ${target}. The vote just says what we already both knew.`,
+    ], voter, target) : _hp([
       `${target} and I have never clicked out here. I've made peace with that. There's no bad blood — we're just not close. And when a vote is available and you're not close, you take it.`,
       `I don't have a relationship with ${target} worth protecting. That makes tonight straightforward in a way most votes aren't.`,
       `Some people you build something real with out here. ${target} and I never got there. That gap becomes a vote eventually. Tonight is that night.`,
     ], voter, target);
 
-    if (vs.strategic >= 8) return _hp([
+    if (vs.strategic >= 8) return _isMerged ? _hp([
+      `Nobody's bringing up ${target} right now. That's usually a sign someone's overlooking them. I'm not overlooking them. My vote is the difference.`,
+      `The obvious vote isn't always the right vote. ${target} isn't the name people are saying, but they're the name that matters for where this game is heading.`,
+      `${target} is going to be a real problem at six, or at four, or at final tribal. I'd rather solve it tonight while I have the numbers and the cover to do it cleanly.`,
+      `I'm playing the long game. ${target} doesn't fit in mine. Nobody else is thinking past this tribal — I am. That's what separates this vote from a reactive one.`,
+      `${target} is flying under the radar. I've been watching them do it. The most dangerous players are the ones nobody's discussing. I'm discussing it — with my vote.`,
+    ], voter, target) : _hp([
       `Nobody's talking about ${target} right now. That's the most dangerous place to be in this game — present, capable, and invisible. I see it. My vote names it.`,
       `The obvious vote isn't always the smart vote. ${target} isn't the name people are saying out loud, but they're the name that matters for where this game is going.`,
       `${target} is a problem at merge — or a problem at six, or a problem at four. I'd rather deal with it now when I have the numbers and the cover to do it cleanly.`,
     ], voter, target);
 
-    return _hp([
+    return _isMerged ? _hp([
+      `I looked at every option, I ran the scenarios, and ${target}'s name kept coming up as the right call. I'm not going to overthink something that clear.`,
+      `It's my vote. I own it completely. ${target} is the right call for where I need to be in this game and I'm not going to apologize for that.`,
+      `I'm not following anyone into this decision. ${target} is my read and I'm standing on it.`,
+      `Some votes are complicated. This one isn't. I looked at the board, I made the call, and I'm writing ${target}'s name down without hesitation.`,
+      `The right vote and the comfortable vote aren't always the same thing. Tonight they are. ${target} is the right call and I feel good about it.`,
+    ], voter, target) : _hp([
       `At the end of the day I looked at this tribe, I looked at the game, and ${target}'s name kept coming back to me. I trust that instinct. The vote is ${target}.`,
       `It's my vote. I own it completely. ${target} is the right call for where I need to be in this game and I'm not going to pretend otherwise.`,
       `I'm not following anyone else into this decision. ${target} is my read, tonight is the night, and I'm standing on it.`,
+      `Simple math: ${target} is the vote that makes this tribe better heading into what comes next. I don't need to dress that up.`,
     ], voter, target);
   };
 
@@ -14613,18 +14734,68 @@ function vpWhyBullets(name, votelog, alliances, ep) {
     else if (/loyal|committed|follows|aligned|alliance/i.test(r)) rTypes.loyalty++;
   });
   const domType = Object.entries(rTypes).sort(([,a],[,b]) => b-a)[0][0];
+  // Deterministic hash for variety selection (no randomness across re-renders)
+  const _wh = ([...name].reduce((a,c)=>a+c.charCodeAt(0),0) + ep.num * 31) % 100;
+  const _pick = (arr) => arr[_wh % arr.length];
+
   if (phase === 'pre-merge' && chalWeak >= 5.5) bullets.push(`Challenge liability — ${name} was the weakest link and the tribe ran out of reasons to keep covering for it`);
-  else if (th >= 7.5) bullets.push(`Threat level too high to ignore (${th.toFixed(1)}/10) — someone this capable doesn't get easier to vote out later`);
-  else if (th >= 6 && domType === 'threat') bullets.push(`Identified as a long-term jury threat (${th.toFixed(1)}/10) — the group decided the window was now`);
+  else if (th >= 7.5) bullets.push(_pick([
+    `Threat level too high to ignore (${th.toFixed(1)}/10) — someone this capable doesn't get easier to vote out later`,
+    `A ${th.toFixed(1)}/10 threat at this stage of the game is a problem that compounds. The group moved while the window was still open`,
+    `${name}'s game was too strong to let run to the end. Threat score doesn't lie — and the players who can read it acted on it`,
+  ]));
+  else if (th >= 6 && domType === 'threat') bullets.push(_pick([
+    `Identified as a long-term jury threat (${th.toFixed(1)}/10) — the group decided the window was now`,
+    `Not the loudest name, but the most dangerous one to leave in the game. The group read that and acted`,
+    `${name} was playing a quiet game with a loud ceiling. The people who noticed it moved before it became everyone's problem`,
+  ]));
   else if (th <= 3.5 && domType === 'challenge') bullets.push(`Seen as the weakest player at this stage — no challenge value and no strategic protection`);
-  else if (domType === 'personal') bullets.push(`Personal tension — the vote was driven by distrust and friction, not just game position`);
+  else if (domType === 'personal') bullets.push(_pick([
+    `Personal tension — the vote was driven by distrust and friction, not just game position`,
+    `The animosity was real and predated this tribal. The game gave someone an opportunity to act on it, and they did`,
+    `This wasn't purely strategic. Relationships had eroded in ways that made ${name} unavailable as an ally — and available as a target`,
+  ]));
   else if (priorVotes >= 2) bullets.push(`The name had already come up before — eventually the consensus vote becomes inevitable`);
-  else bullets.push(`Became the consensus name — the path of least resistance when the tribe needed to move someone`);
+  else bullets.push(_pick([
+    `Became the consensus name — the path of least resistance when the tribe needed to move someone`,
+    `No single person drove this vote — the group arrived at ${name} independently and nobody pushed back hard enough to change it`,
+    `${name} wasn't the most obvious target, but became the one everyone could live with. That kind of agreement is hard to stop`,
+    `The vote wasn't a calculated move — it was convergence. Different people arrived at the same name for different reasons. That's enough`,
+    `When a name sits at the center of a tribal with no one willing to defend it, the vote is already decided. ${name} had no real defenders tonight`,
+  ]));
   if (priorVotes >= 2 && domType !== 'personal') bullets.push(`Name had been written down ${priorVotes} time${priorVotes > 1 ? 's' : ''} before — a recurring target that finally ran out of luck`);
-  if (es.boldness >= 8 && es.loyalty <= 4) bullets.push(`Unpredictable and hard to control — bold players with no loyalty are dangerous past a certain point`);
-  if (es.strategic >= 8 && phase !== 'pre-merge') bullets.push(`Strategic read: ${name} was running things and the window to stop that was closing fast`);
-  if (es.social >= 8 && phase !== 'pre-merge') bullets.push(`Jury threat: built genuine relationships that would translate directly into votes at Final Tribal`);
-  if (majVoters.length) bullets.push(`Voted out by: ${majVoters.join(', ')}`);
+  if (es.boldness >= 8 && es.loyalty <= 4) bullets.push(_pick([
+    `Unpredictable and hard to control — bold players with no loyalty are dangerous past a certain point`,
+    `${name} was a wildcard the game could no longer absorb. Bold, loose, and visible — a combination that accelerates exits`,
+    `Playing loud in a game this small draws votes. ${name} knew that and kept playing loud anyway`,
+  ]));
+  if (es.strategic >= 8 && phase !== 'pre-merge') bullets.push(_pick([
+    `Strategic read: ${name} was running things and the window to stop that was closing fast`,
+    `Too many people had fingerprints on this vote that traced back to ${name}. When the puppeteer becomes visible, they become the target`,
+    `${name} had been setting the agenda all game. Someone finally decided to put that on the ballot`,
+  ]));
+  if (es.social >= 8 && phase !== 'pre-merge') bullets.push(_pick([
+    `Jury threat: built genuine relationships that would translate directly into votes at Final Tribal`,
+    `The social game ${name} ran out here doesn't lose at Final Tribal. The people who recognized that moved before it was too late`,
+    `Liked by everyone. That's not a compliment at this stage — it's a reason to vote someone out`,
+  ]));
+
+  // Idol play by another player this tribal (not the eliminated player)
+  const _idolPlaysThisTribal = (ep.idolPlays || []).filter(p => p.player !== name);
+  _idolPlaysThisTribal.forEach(play => {
+    const _vn = play.votesNegated || 0;
+    bullets.push(_pick([
+      `${play.player} played a Hidden Immunity Idol at Tribal — ${_vn} vote${_vn !== 1 ? 's' : ''} were cancelled, and the remaining tally fell on ${name}`,
+      `The idol changed everything. ${play.player} negated ${_vn} vote${_vn !== 1 ? 's' : ''}, redirecting the outcome entirely. ${name} had the next-highest count`,
+      `${_vn} vote${_vn !== 1 ? 's' : ''} for ${play.player} were wiped out by a played idol. ${name}'s ${majVoters.length} vote${majVoters.length !== 1 ? 's' : ''} became the plurality — and the boot`,
+    ]));
+  });
+
+  if (majVoters.length) bullets.push(_pick([
+    `The votes that counted: ${majVoters.join(', ')}`,
+    `${majVoters.length === 1 ? `${majVoters[0]} cast the deciding vote` : `${majVoters.slice(0,-1).join(', ')} and ${majVoters.at(-1)} wrote the name that stuck`}`,
+    `${majVoters.join(', ')} — that's who put ${name} on the jury`,
+  ]));
   if (betrayed) {
     majVoters.filter(v => hadAlly.members.includes(v)).forEach(traitor => {
       const bv = getBond(traitor, name);
@@ -14636,16 +14807,42 @@ function vpWhyBullets(name, votelog, alliances, ep) {
       bullets.push(`Betrayed by ${traitor} (${hadAlly.label}) — ${bc}`);
     });
   } else if (hadAlly) {
-    bullets.push(`${hadAlly.label} tried to protect them — but was outnumbered`);
+    bullets.push(_pick([
+      `${hadAlly.label} tried to protect them — but was outnumbered`,
+      `${hadAlly.label} wanted to save ${name} and couldn't get the numbers. Loyalty without majority is just a losing vote`,
+      `The alliance held — but it wasn't big enough. ${hadAlly.label} voted together and still fell short`,
+      `${hadAlly.label} stood by them. It wasn't enough. Being loyal to the right person doesn't matter if the numbers aren't there`,
+    ]));
   }
-  (votelog||[]).filter(l => {
+
+  // Ally votes for a different target — collapse into one grouped bullet per alliance+target pair
+  const _allyVotes = (votelog||[]).filter(l => {
     if (l.voted === name || l.voter === 'THE GAME') return false;
     const sa = (alliances||[]).find(a => a.members.includes(l.voter) && a.members.includes(name));
     if (sa && sa.members.includes(l.voted)) return false;
     return sa || getBond(l.voter, name) >= 1.5;
-  }).forEach(l => {
+  });
+  // Group by (allianceLabel, votedTarget) to collapse repetitive bullets
+  const _allyGroups = {};
+  _allyVotes.forEach(l => {
     const sa = (alliances||[]).find(a => a.members.includes(l.voter) && a.members.includes(name));
-    bullets.push(`${l.voter} ${sa ? `voted ${l.voted} to hold ${sa.label} together — it wasn't enough after the elimination` : `voted ${l.voted} — tried to pull numbers a different way`}`);
+    const key = `${sa?.label||''}|${l.voted}`;
+    if (!_allyGroups[key]) _allyGroups[key] = { voters: [], voted: l.voted, alliance: sa };
+    _allyGroups[key].voters.push(l.voter);
+  });
+  Object.values(_allyGroups).forEach(({ voters, voted, alliance }) => {
+    const voterStr = voters.length === 1 ? voters[0]
+      : voters.length === 2 ? `${voters[0]} and ${voters[1]}`
+      : `${voters.slice(0,-1).join(', ')} and ${voters.at(-1)}`;
+    if (alliance) {
+      bullets.push(_pick([
+        `${voterStr} voted ${voted} to protect the ${alliance.label} bloc — the numbers still weren't there`,
+        `${alliance.label} split their effort: ${voterStr} voted ${voted}, trying to keep the alliance intact. It wasn't enough`,
+        `${voterStr} (${alliance.label}) held the line on ${voted} — loyal to the plan, but outrun by the numbers`,
+      ]));
+    } else {
+      bullets.push(`${voterStr} voted ${voted} — tried to pull numbers a different way`);
+    }
   });
   if (misplay) {
     bullets.push(`Held a Hidden Immunity Idol — and never played it (${misplay.votesAgainst} vote${misplay.votesAgainst !== 1 ? 's' : ''} against, idol stayed in pocket)`);
@@ -14720,7 +14917,7 @@ function rpBuildVotes(ep) {
     const slugV = String(voted).replace(/[^a-zA-Z0-9]/g, '');
     const _decl = _ovDecl ? _ovDecl(voter, voted) : null;
     const _react = _ovReact ? _ovReact(voter, voted) : null;
-    html += `<div class="tv-vote-card" data-voted="${voted}" data-voter="${voter}" data-index="${idx}" style="animation:staggerIn 0.35s var(--ease-broadcast) ${idx * 120}ms both">
+    html += `<div class="tv-vote-card" data-voted="${voted}" data-voter="${voter}" data-index="${idx}">
       <div class="tv-vote-voter-wrap">
         ${rpPortrait(voter, 'sm')}
         <div class="tv-vote-voter">${voter}</div>
@@ -15864,6 +16061,14 @@ function buildVPScreens(epRecord) {
 
   // ── Helper: derive tribe groups at start of episode ──
   const vpTribeGroups = (() => {
+    // Post-merge (including the merge episode itself): campEvents uses the literal key 'merge'.
+    // Collapse to one group so the VP builder looks up the right key.
+    if (ep.campEvents?.['merge']) {
+      const members = ep.tribesAtStart?.length
+        ? [...new Set(ep.tribesAtStart.flatMap(t => t.members))]
+        : [...gs.activePlayers];
+      return [{ name: 'merge', members }];
+    }
     if (ep.tribesAtStart?.length) return ep.tribesAtStart;
     const snap = gs.episodeHistory?.filter(h => h.num < ep.num).slice(-1)[0]?.gsSnapshot;
     if (snap?.tribes?.length) return snap.tribes;

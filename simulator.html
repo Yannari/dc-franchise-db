@@ -18737,6 +18737,38 @@ function rpBuildWinnerCeremony(ep) {
       : `The tribe has spoken. ${winner} is the Sole Survivor. ${winVotes} out of ${totalJury} jury votes.`}
   </div>`;
 
+  // Final Challenge scores breakdown (final-challenge format only)
+  if (isFinalChallenge && ep.finaleChallengeScores && ep.finaleChallengeStages) {
+    const chalScores = ep.finaleChallengeScores;
+    const chalStages = ep.finaleChallengeStages;
+    const chalSorted = Object.entries(chalScores).sort(([,a],[,b]) => b - a);
+    const maxScore = chalSorted[0]?.[1] || 1;
+
+    html += `<div style="margin-bottom:20px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:14px">
+      <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:var(--accent-gold);text-transform:uppercase;margin-bottom:10px">Challenge Scores</div>`;
+
+    chalSorted.forEach(([name, total], rank) => {
+      const isWin = name === winner;
+      const barPct = Math.round((total / maxScore) * 100);
+      const stageWins = chalStages.filter(s => s.winner === name).length;
+      html += `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        ${rpPortrait(name, isWin ? 'md' : 'sm')}
+        <div style="flex:1">
+          <div style="font-size:13px;${isWin ? 'color:var(--accent-gold);font-weight:600' : 'color:#c9d1d9'}">${name}${isWin ? ' \u2014 Winner' : ''}</div>
+          <div style="height:6px;background:var(--surface2);border-radius:3px;margin-top:4px;overflow:hidden">
+            <div style="height:100%;width:${barPct}%;background:${isWin ? 'var(--accent-gold)' : '#484f58'};border-radius:3px"></div>
+          </div>
+        </div>
+        <div style="text-align:right;min-width:60px">
+          <div style="font-family:var(--font-mono);font-size:13px;color:${isWin ? 'var(--accent-gold)' : 'var(--muted)'}">${total.toFixed(1)}</div>
+          <div style="font-size:9px;color:var(--muted)">${stageWins} stage${stageWins !== 1 ? 's' : ''} won</div>
+        </div>
+      </div>`;
+    });
+
+    html += `</div>`;
+  }
+
   // Winner's final confessional — generated from full game arc
   const wins = gs.episodeHistory.filter(e => e.immunityWinner === winner).length;
   const votesAgainst = gs.episodeHistory.reduce((s, e) => s + ((e.votingLog||[]).filter(v => v.voted === winner && v.voter !== 'THE GAME').length), 0);

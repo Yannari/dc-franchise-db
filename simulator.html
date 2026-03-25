@@ -560,8 +560,10 @@
     .tv-vote-card.tv-latest { border-color:rgba(56,139,253,0.35); background:rgba(56,139,253,0.04); }
     .tv-vote-voter-wrap { display:flex; flex-direction:column; align-items:center; gap:3px; flex-shrink:0; }
     .tv-vote-voter { font-size:10.5px; font-weight:700; color:#6e8096; text-align:center; white-space:nowrap; font-family:var(--font-body); }
-    .tv-vote-arrow { color:#1e2d3d; font-size:16px; flex-shrink:0; font-weight:300; }
-    .tv-vote-right { flex:1; min-width:0; }
+    .tv-vote-arrow { color:#1e2d3d; font-size:16px; flex-shrink:0; font-weight:300; opacity:0; transition:opacity 0.25s 0.1s; }
+    .tv-vote-right { flex:1; min-width:0; opacity:0; transition:opacity 0.25s 0.1s; }
+    .tv-vote-card.tv-revealed .tv-vote-arrow,
+    .tv-vote-card.tv-revealed .tv-vote-right { opacity:1; }
     .tv-vote-target { font-size:17px; font-weight:400; color:#f85149; font-family:var(--font-display); letter-spacing:1.5px; }
     .tv-vote-reason { font-size:11px; color:#384a5c; font-style:italic; line-height:1.45; margin-top:4px; white-space:normal; word-break:break-word; }
     .tv-reveal-btn { display:block; width:100%; margin:10px 0 18px; padding:14px; background:rgba(56,139,253,0.06); border:1px solid rgba(56,139,253,0.18); border-radius:10px; font-size:12px; font-weight:700; color:#388bfd; letter-spacing:1.5px; text-transform:uppercase; cursor:pointer; text-align:center; transition:all 0.15s; font-family:var(--font-body); }

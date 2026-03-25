@@ -8345,7 +8345,23 @@ function simulateEpisode() {
         elimLog.push({ juror, votedOut: target });
       });
       const elimSorted = Object.entries(elimVotes).sort(([,a],[,b]) => b-a);
-      const juryBooted = elimSorted[0][0];
+      const topVoteCount = elimSorted[0][1];
+      const tiedPlayers = elimSorted.filter(([,v]) => v === topVoteCount).map(([n]) => n);
+      let juryBooted;
+      if (tiedPlayers.length > 1) {
+        // Tiebreaker: jury deliberates again — lowest average bond with jurors loses (most disliked)
+        const tieScores = tiedPlayers.map(p => ({
+          name: p,
+          avgBond: jurors.reduce((s, j) => s + getBond(j, p), 0) / jurors.length,
+        }));
+        tieScores.sort((a, b) => a.avgBond - b.avgBond); // lowest bond = most disliked = eliminated
+        juryBooted = tieScores[0].name;
+        juryElimTw.juryTie = true;
+        juryElimTw.juryTiedPlayers = tiedPlayers;
+        juryElimTw.juryTiebreaker = 'deliberation';
+      } else {
+        juryBooted = tiedPlayers[0];
+      }
       juryElimTw.juryBooted = juryBooted;
       juryElimTw.elimVotes = elimVotes;
       juryElimTw.elimLog = elimLog;
@@ -8361,11 +8377,56 @@ function simulateEpisode() {
     gs.episode = epNum;
     ep.bondChanges = updateBonds([], ep.eliminated, alliances);
     detectBetrayals(ep);
-    updatePlayerStates(ep); decayAllianceTrust(ep.num);
+    applyPostTribalConsequences(ep);
+    checkAllianceRecruitment(ep);
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
-    gs.episodeHistory.push({ num: epNum, eliminated: ep.eliminated || null, riChoice: null, immunityWinner: ep.immunityWinner, challengeType: 'individual', isMerge: ep.isMerge, votes: {}, alliances: [], summaryText: '', gsSnapshot: snapshotGameState() });
+    gs.episodeHistory.push({
+      num: epNum, eliminated: ep.eliminated || null, firstEliminated: null, riChoice: null,
+      immunityWinner: ep.immunityWinner || null,
+      challengeType: ep.challengeType || 'individual', isMerge: ep.isMerge,
+      challengeLabel: ep.challengeLabel || null,
+      challengeCategory: ep.challengeCategory || null,
+      challengeDesc: ep.challengeDesc || '',
+      challengePlacements: ep.challengePlacements
+        ? ep.challengePlacements.map(t => ({ name: t.name, members: [...(t.members||[])] }))
+        : null,
+      chalMemberScores: ep.chalMemberScores || null,
+      chalPlacements: ep.chalPlacements || null,
+      rewardChalData: (() => {
+        const rct = (ep.twists||[]).find(t => t.type === 'reward-challenge');
+        if (!rct) return null;
+        return {
+          winner: rct.rewardWinner, winnerType: rct.rewardWinnerType || 'individual',
+          placements: rct.rewardChalPlacements || [], label: rct.rewardChalLabel || 'Reward Challenge',
+          category: rct.rewardChalCategory || 'mixed', desc: rct.rewardChalDesc || '',
+          rewardItemId: rct.rewardItemId || null, rewardItemLabel: rct.rewardItemLabel || null,
+          rewardItemDesc: rct.rewardItemDesc || null, rewardCompanions: rct.rewardCompanions || null,
+          rewardCluedPlayer: rct.rewardCluedPlayer || null,
+        };
+      })(),
+      tribalTribe: null,
+      tribalPlayers: ep.tribalPlayers ? [...ep.tribalPlayers] : null,
+      votes: {}, alliances: (ep.alliances||[]).map(a=>({...a})),
+      tribesAtStart: (ep.tribesAtStart || []).map(t => ({ name: t.name, members: [...t.members] })),
+      twistScenes: [], campEvents: null, summaryText: '', gsSnapshot: snapshotGameState(),
+      twists: (ep.twists||[]).map(t => ({...t})),
+      votingLog: [], revoteLog: [],
+      idolPlays: ep.idolPlays || [], shotInDark: null,
+      socialBombs: ep.socialBombs || [],
+      chalThreatEvents: ep.chalThreatEvents || [],
+      goatEvents: ep.goatEvents || [],
+      allianceQuits: ep.allianceQuits || [],
+      allianceRecruits: ep.allianceRecruits || [],
+      chalSitOuts: ep.chalSitOuts || null,
+    });
+    const twistScenesJE = generateTwistScenes(ep);
+    gs.episodeHistory[gs.episodeHistory.length-1].twistScenes = twistScenesJE;
+    ep.twistScenes = twistScenesJE;
+    gs.episodeHistory[gs.episodeHistory.length-1].campEvents = ep.campEvents || null;
+    gs.episodeHistory[gs.episodeHistory.length-1].tipOffCampEvents = ep.tipOffCampEvents || null;
     const stJE = generateSummaryText(ep);
     gs.episodeHistory[gs.episodeHistory.length-1].summaryText = stJE; ep.summaryText = stJE;
+    updatePlayerStates(ep); decayAllianceTrust(ep.num);
     saveGameState(); return ep;
   }
 
@@ -12598,6 +12659,65 @@ function vpGenerateQuote(name, ep, role) {
       // Fallback
       `It hurts. But I watched people play safe and small and go home anyway. At least I actually played.`,
     ],
+    juryEliminated: (() => {
+      // Context-aware jury elimination quotes — pull in juror names and bond data
+      const _jeTw = (ep?.twists||[]).find(t => t.type === 'jury-elimination' && t.juryBooted === name);
+      const _jeLog = _jeTw?.elimLog || [];
+      const _jeVotedMe = _jeLog.filter(e => e.votedOut === name).map(e => e.juror);
+      const _jeVotedOther = _jeLog.filter(e => e.votedOut !== name).map(e => e.juror);
+      const _jeBitter = _jeVotedMe.find(j => getBond(j, name) <= -2);
+      const _jeBetrayedAlly = _jeVotedMe.find(j => getBond(j, name) >= 2);
+      const _jeDefender = _jeVotedOther.length ? _jeVotedOther[0] : null;
+      const pool = [];
+
+      // Archetype-driven jury reactions
+      if (arch === 'mastermind' || arch === 'schemer')
+        pool.push(`I ran circles around every person still in this game. And the people I already beat? They're the ones who took me out. That's not strategy \u2014 that's revenge.`);
+      else if (arch === 'challenge-beast')
+        pool.push(`I won immunity tonight. They couldn't touch me in the challenge. So instead they used people who aren't even playing anymore to get rid of me. That's what this game does to you.`);
+      else if (arch === 'social-butterfly' || s.social >= 8)
+        pool.push(`I spent every day out here building trust. Real trust. And the jury just proved that none of it mattered. The people who left the game decided my fate, not the people I was playing with.`);
+      else if (arch === 'hothead' || s.temperament <= 3)
+        pool.push(`The jury? Seriously? People I already outplayed get to vote me out from the bench? I burned some bridges, fine \u2014 but they should have stayed burned. Not come back to set fire to my game.`);
+      else if (arch === 'loyal-soldier' || s.loyalty >= 8)
+        pool.push(`I was loyal to my people every single day. The jury saw that and punished me for it. Loyalty makes you predictable, and predictable makes you a target \u2014 even from people who aren't in the game anymore.`);
+      else if (arch === 'underdog')
+        pool.push(`I fought from the bottom the entire game. Survived every vote. And then the jury \u2014 people who couldn't survive their own votes \u2014 got to end mine. That's a hard way to go.`);
+      else
+        pool.push(`I didn't lose to anyone still in this game. I lost to the people sitting on the sidelines. That's going to take a while to process.`);
+
+      // Bitter juror reaction
+      if (_jeBitter)
+        pool.push(`${_jeBitter} never forgave me. I saw it in their eyes every time they walked into tribal. And tonight they finally got to do something about it. From the jury bench. That's the kind of grudge that follows you out of this game.`);
+
+      // Betrayed ally reaction
+      if (_jeBetrayedAlly)
+        pool.push(`${_jeBetrayedAlly} voted against me. We were supposed to be close. But the jury bench changes people \u2014 you sit there watching, replaying every decision, and trust turns into resentment. I get it. I just wish I didn't have to.`);
+
+      // Defender acknowledgment
+      if (_jeDefender)
+        pool.push(`${_jeDefender} fought for me in that jury room. I could see it. Not everyone wanted me gone \u2014 but enough did. And that's all it takes.`);
+
+      // Strategic awareness quotes
+      if (s.strategic >= 7)
+        pool.push(`I prepared for every scenario in this game. Idol plays, alliance flips, tiebreakers \u2014 all of it. But you can't prepare for the eliminated players coming back with a vote. That's not a move I could counter.`);
+
+      // Bond-driven context
+      if (_jeVotedMe.length >= 3)
+        pool.push(`${_jeVotedMe.length} jurors wrote my name down. That many people wanting you gone \u2014 that's not a vote, that's a verdict. I played too hard, too visibly, and the jury made me pay for it.`);
+
+      // Emotional state reactions
+      if (gs.playerStates?.[name]?.emotional === 'comfortable' || gs.playerStates?.[name]?.emotional === 'content')
+        pool.push(`I was focused on the people still playing. I wasn't thinking about the jury. I should have been. The threats you forget about are the ones that end your game.`);
+      else if (gs.playerStates?.[name]?.emotional === 'paranoid' || gs.playerStates?.[name]?.emotional === 'desperate')
+        pool.push(`I felt the walls closing in all day. I just thought the threat was coming from inside the game. Turns out it was coming from the jury bench. I couldn't play defense against something I couldn't see.`);
+
+      // Universal jury elimination fallbacks
+      pool.push(`I didn't get outplayed by anyone in this game. I got eliminated by people who already lost. That's the twist \u2014 and it's the cruelest one they could have thrown at me.`);
+      pool.push(`The jury got to play god tonight. They sat in that room, weighed every grudge and every alliance, and decided I was the one who had to go. I respect the power. I just wish I'd had a chance to fight back.`);
+
+      return pool;
+    })(),
     general: [
       s.strategic >= 8 ? `Every vote is information. I'm cataloguing everything.` : `This game is exhausting. But I'm still here, and that's what matters.`,
       s.social >= 8 ? `I just need to keep the relationships strong. Everything else follows from that.` : `Surviving another round. That's the goal. One vote at a time.`,
@@ -13088,12 +13208,13 @@ function rpBuildMergeAnnouncement(ep) {
 // ── Screen 3: Pre-challenge twists (tribe swap, three gifts, journey, exile-island, etc.) ──
 function rpBuildPreTwist(ep) {
   const twistData = (ep.twistScenes?.length ? ep.twistScenes : generateTwistScenes(ep))
-    .filter(t => t.type !== 'exile-island'); // exile island shown post-challenge instead
+    .filter(t => t.type !== 'exile-island' && t.type !== 'jury-elimination'); // shown in dedicated screens
   if (!twistData.length) {
     // Text-only fallback for older saves — exclude exile island lines (shown in its own screen)
     const parsed = parseSummaryText(ep.summaryText || '');
     const _noPostVote = l => !l.includes('Exile Island') && !l.startsWith('EXILE ISLAND')
                           && !l.startsWith('ELIMINATION SWAP') && !l.startsWith('EXILE DUEL')
+                          && !l.startsWith('JURY ELIMINATION') && !l.includes('eliminated by the jury')
                           && !(ep.swapResult && l.includes(' in exchange'))
                           && !(ep.swapResult && l.startsWith('New ') && l.includes('member:'));
     const hasTwistText = (parsed['TWIST']||[]).some(l=>l.trim() && _noPostVote(l))
@@ -13337,7 +13458,7 @@ function _buildPostTwistBlocks(ep) {
     blocks.push({ label: 'Fire Making', scenes: sc });
   }
 
-  // ── Jury Elimination — handled by dedicated rpBuildJuryElimScreen; skip here ──
+  // ── Jury Elimination — handled by dedicated rpBuildJuryConvenes/rpBuildJuryVotes; skip here ──
   const _juryElimTw = null && (ep.twists||[]).find(t => t.type === 'jury-elimination' && t.juryBooted);
   if (_juryElimTw) {
     const _jBooted = _juryElimTw.juryBooted;
@@ -13819,7 +13940,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
   };
 
   if (events.length) {
-    const isPostMerge = ep.gsSnapshot?.isMerged || gs.isMerged;
+    const isPostMerge = ep.isMerge || ep.gsSnapshot?.isMerged;
     if (isPostMerge && isMerge) {
       // Post-merge: group events into Strategy / Social / Spotlight
       const stratTypes = new Set(['allianceForm','allianceCrack','sideDeal','strategicTalk',
@@ -14004,7 +14125,7 @@ function rpBuildChallenge(ep) {
   const chalCat  = ep.challengeCategory || 'mixed';
 
   // ── Post-merge: interactive individual placement reveal ──
-  if ((ep.gsSnapshot?.isMerged || gs.isMerged) && ep.chalPlacements?.length) {
+  if ((ep.isMerge || ep.gsSnapshot?.isMerged) && ep.chalPlacements?.length) {
     // chalPlacements is best-first ([0]=winner). Reverse so [0]=last place for the reveal
     // (suspense builds from worst to winner, winner revealed last at the bottom slot).
     const placements = [...ep.chalPlacements].reverse();
@@ -17398,55 +17519,634 @@ function rpBuildWinner(ep) {
   return html;
 }
 
-function rpBuildJuryElimScreen(ep) {
+// ── Jury Life: resort/jury house dynamics — grudges, friendships, processing elimination ──
+function rpBuildJuryLife(ep) {
+  const tw = (ep.twists||[]).find(t => t.type === 'jury-elimination');
+  if (!tw) return null;
+  const jurors = [...new Set((tw.elimLog || []).map(e => e.juror))];
+  if (jurors.length < 2) return null;
+  const activePlayers = ep.gsSnapshot?.activePlayers || gs.activePlayers;
+  const epNum = ep.num;
+  const _pick = (arr, seed) => arr[([...seed].reduce((a,c)=>a+c.charCodeAt(0),0)+epNum*7)%arr.length];
+  const _pick2 = (arr, seed) => arr[([...seed].reduce((a,c)=>a+c.charCodeAt(0),0)+epNum*13+3)%arr.length];
+  const _usedPairs = new Set(); // prevent duplicate multi-person events
+
+  const events = [];
+
+  // ── Helper: look up juror's elimination details ──
+  const getElimInfo = (juror) => {
+    const elimEp = (gs.episodeHistory||[]).find(h => h.eliminated === juror || h.firstEliminated === juror);
+    const elimEpNum = elimEp?.num || 0;
+    const epsSinceElim = epNum - elimEpNum;
+    const voters = (elimEp?.votingLog||[]).filter(v => v.voted === juror && v.voter !== 'THE GAME').map(v => v.voter);
+    const voteCount = voters.length;
+    const totalVoters = (elimEp?.votingLog||[]).filter(v => v.voter !== 'THE GAME').length;
+    const wasBlindside = elimEp?.votingLog?.some(v => v.voter === juror && v.voted !== juror); // juror voted for someone else
+    const wasUnanimous = voteCount === totalVoters;
+    const topVoter = voters.find(v => activePlayers.includes(v));
+    const allVotersStillIn = voters.filter(v => activePlayers.includes(v));
+    // Were they idoled out?
+    const wasIdoled = (elimEp?.idolPlays||[]).some(p => p.votesNegated > 0);
+    // Were they in an alliance that turned on them?
+    const allianceAtElim = (elimEp?.alliances||[]).find(a => a.members?.includes(juror));
+    const betrayedBy = allianceAtElim ? allianceAtElim.members.filter(m => voters.includes(m)) : [];
+    return { elimEp, elimEpNum, epsSinceElim, voters, voteCount, totalVoters, wasBlindside, wasUnanimous, topVoter, allVotersStillIn, wasIdoled, betrayedBy, allianceAtElim };
+  };
+
+  // ═══ PHASE 1: Each juror gets exactly ONE event (best pick by priority) ═══
+
+  jurors.forEach(juror => {
+    const jStats = pStats(juror);
+    const jp = pronouns(juror);
+    const arch = players.find(x => x.name === juror)?.archetype || '';
+    const info = getElimInfo(juror);
+
+    const friendInGame = activePlayers.map(p => ({ name: p, bond: getBond(juror, p) })).sort((a,b) => b.bond - a.bond)[0];
+    const enemyInGame = activePlayers.map(p => ({ name: p, bond: getBond(juror, p) })).sort((a,b) => a.bond - b.bond)[0];
+
+    // Priority-ordered candidates — first match wins
+    let picked = null;
+
+    // P1: NEW ARRIVAL — just got eliminated (1-2 eps ago)
+    if (!picked && info.epsSinceElim <= 2) {
+      const pool = [
+        `${juror} just arrived at the jury house. ${jp.Sub} ${jp.sub==='they'?'haven\'t':'hasn\'t'} unpacked yet. "I keep replaying it. What could I have done differently? I don't have an answer."`,
+        `${juror} is quiet. The other jurors try to include ${jp.obj}, but ${jp.sub} ${jp.sub==='they'?'aren\'t':'isn\'t'} ready. "I need a few days before I can talk about it."`,
+        `The newest arrival at the jury house, ${juror} sits apart from the group. "I thought I had more game left in me. Turns out I didn't."`,
+      ];
+      if (info.wasBlindside)
+        pool.push(`${juror} walked into the jury house in shock. "I didn't even know it was me. I voted for someone else. I had no idea." The other jurors have seen it before \u2014 but it never gets easier to watch.`);
+      if (info.wasUnanimous)
+        pool.push(`${juror} arrived knowing it was unanimous. Every single person wrote ${jp.pos} name. "Not one person tried to save me. Not one. That tells you everything about where I stood."`);
+      if (info.wasIdoled)
+        pool.push(`${juror} is still processing the idol play. "I wasn't even the target. The idol flipped everything and suddenly I'm here. I did nothing wrong and I'm still out."`);
+      if (info.betrayedBy.length)
+        pool.push(`${juror} arrived at the jury house and immediately asked who else was there. When ${jp.sub} saw ${info.betrayedBy[0]}'s face, everything clicked. "My own alliance. Nice."`);
+      picked = { type: 'processing', badge: 'NEW ARRIVAL', badgeClass: '', text: _pick(pool, juror + 'new'), players: [juror] };
+    }
+
+    // P2: BITTER — betrayed by someone still in the game
+    if (!picked && info.topVoter && getBond(juror, info.topVoter) <= -1) {
+      const pool = [
+        `${juror} hasn't stopped talking about ${info.topVoter} since ${jp.sub} got here. "${info.topVoter} smiled at me while writing my name down. You don't forget that."`,
+        `${juror} is still fuming. "I trusted ${info.topVoter}. And ${info.topVoter} looked me dead in the eye and voted me out. If ${info.topVoter} makes the finale, I'm voting for literally anyone else."`,
+        `Every time ${info.topVoter}'s name comes up at dinner, ${juror} puts down ${jp.pos} fork. "Don't. Just don't. I have nothing good to say about ${info.topVoter} and I won't pretend I do."`,
+        `${juror} cornered one of the newer jurors and walked them through exactly how ${info.topVoter} operates. "Let me tell you what ${info.topVoter} did to me. And then you tell me if that person deserves to win."`,
+      ];
+      if (info.betrayedBy.includes(info.topVoter))
+        pool.push(`${juror} keeps coming back to the alliance betrayal. "We had a deal. ${info.topVoter} and I shook hands on it. And then ${info.topVoter} organized the vote against me. That's not gameplay \u2014 that's just lying."`);
+      if (info.voteCount <= 2)
+        pool.push(`"I went home on ${info.voteCount} votes," ${juror} tells anyone who'll listen. "${info.topVoter} didn't even need a majority. ${info.topVoter} just needed enough people to be scared. And that's exactly what happened."`);
+      picked = { type: 'bitter', badge: 'GRUDGE', badgeClass: 'bad', text: _pick(pool, juror + info.topVoter), players: [juror] };
+    }
+
+    // P3: ROOTING FOR — strong bond with active player
+    if (!picked && friendInGame && friendInGame.bond >= 2) {
+      const pool = [
+        `${juror} watches every challenge from the jury bench like ${jp.pos} life depends on it. "I need ${friendInGame.name} to win. That's the only ending to this season that makes sense to me."`,
+        `"${friendInGame.name} is my person," ${juror} says. "We played together, we trusted each other, and the fact that ${friendInGame.name} is still in it when I'm not \u2014 that means something."`,
+        `${juror} has been coaching ${friendInGame.name} from the jury bench \u2014 eye contact, subtle nods during challenges. The other jurors notice. "I don't care if it's obvious."`,
+      ];
+      if (friendInGame.bond >= 4)
+        pool.push(`${juror} spends most of ${jp.pos} time at the jury house thinking about ${friendInGame.name}'s game. "If ${friendInGame.name} can just survive this next vote, I think ${friendInGame.name} wins the whole thing. I know it."`);
+      if (info.allVotersStillIn.length && !info.allVotersStillIn.includes(friendInGame.name))
+        pool.push(`${juror} has a clear agenda: "${friendInGame.name} wins, and ${info.allVotersStillIn[0]} goes home. That's my dream finale. One of those people had my back. The other wrote my name down."`);
+      picked = { type: 'rooting', badge: 'ROOTING FOR', badgeClass: 'win', text: _pick(pool, juror + friendInGame.name), players: [juror] };
+    }
+
+    // P4: RESENTMENT — doesn't want someone to win
+    if (!picked && enemyInGame && enemyInGame.bond <= -1) {
+      const pool = [
+        `${juror} keeps bringing up ${enemyInGame.name} at dinner. "I don't want ${enemyInGame.name} to win. That's all I know for sure. Everything else, I'm flexible on."`,
+        `Whenever the remaining players come up, ${juror} has one rule: "Anyone but ${enemyInGame.name}. I don't care who holds the trophy as long as it's not ${enemyInGame.name}."`,
+        `"${enemyInGame.name} played ugly," ${juror} says. "Not bold, not strategic \u2014 ugly. And if the jury rewards that, what are we even doing here?"`,
+      ];
+      picked = { type: 'resentment', badge: 'NOT OVER IT', badgeClass: 'bad', text: _pick(pool, juror + enemyInGame.name), players: [juror] };
+    }
+
+    // P5: ARCHETYPE-DRIVEN
+    if (!picked) {
+      if (arch === 'mastermind' || arch === 'schemer') {
+        const pool = [
+          `${juror} treats the jury house like a war room. Whiteboards, timelines, alliance charts \u2014 all for a game ${jp.sub} ${jp.sub==='they'?'are':'is'} no longer in. "Just because I'm out doesn't mean I stopped thinking."`,
+          `${juror} has been mapping every possible endgame scenario. "I know exactly who wins against who at Final Tribal. The question is whether the right people get eliminated before then."`,
+          `The other jurors caught ${juror} ranking them by "jury vote likelihood" on a napkin at breakfast. "What? It's interesting. I'm not allowed to think anymore?"`,
+        ];
+        picked = { type: 'scheming', badge: 'STILL SCHEMING', badgeClass: 'gold', text: _pick(pool, juror + 'scheme'), players: [juror] };
+      } else if (arch === 'hothead' || jStats.temperament <= 3) {
+        const pool = [
+          `${juror} has been difficult at the jury house. Two arguments this week alone. The other jurors are walking on eggshells. "I'm not angry. I'm just\u2026 yeah, I'm angry."`,
+          `${juror} broke a glass at dinner last night. Nobody said anything. "This game took something from me and I don't know how to get it back yet. Give me time."`,
+          `${juror} goes on long walks alone around the resort. The others have learned not to follow. "I need space. I need to stop thinking about how I got here or I'm going to lose it."`,
+        ];
+        picked = { type: 'volatile', badge: 'VOLATILE', badgeClass: 'bad', text: _pick(pool, juror + 'hot'), players: [juror] };
+      } else if (arch === 'social-butterfly' || jStats.social >= 8) {
+        const pool = [
+          `${juror} has turned the jury house into a social event. Movie nights, group dinners, beach bonfires. "We're all stuck here. We might as well make it fun."`,
+          `${juror} knows everyone's story now \u2014 why they came on the show, what they're going home to, what they regret. "The game strips all that away. Here, you actually get to know people."`,
+        ];
+        picked = { type: 'social', badge: 'HOST', badgeClass: 'gold', text: _pick(pool, juror + 'soc'), players: [juror] };
+      } else if ((arch === 'challenge-beast' || jStats.physical >= 7) && jStats.endurance >= 6) {
+        picked = { type: 'competing', badge: 'STILL COMPETING', badgeClass: '',
+          text: `${juror} has turned the jury house into a training camp. Push-ups at dawn, swimming laps, challenging anyone to anything. "I lost the game. I'm not losing at everything else too."`,
+          players: [juror] };
+      } else if (arch === 'underdog') {
+        picked = { type: 'reflective', badge: 'REFLECTIVE', badgeClass: '',
+          text: `${juror} has been writing in a journal every night since arriving. "I came into this game with nothing and I almost made it. Almost. I want to remember what that felt like before it fades."`,
+          players: [juror] };
+      }
+    }
+
+    // P6: AT PEACE — settled in, long-term juror
+    if (!picked && info.epsSinceElim >= 3) {
+      const pool = [
+        `${juror} has settled into jury life. Good food, no strategy, no votes. "I played my game. It wasn't enough. But this resort isn't bad."`,
+        `While others plot and rant, ${juror} is by the pool. "I said everything I needed to say in the game. Now I just want to watch how it ends."`,
+        `${juror} has started a workout routine at the jury house. Up early, running laps, eating clean. "I lost the game but I'm not losing myself. This is my reset."`,
+        `${juror} has become the unofficial therapist of the jury house. Every new arrival sits with ${jp.obj} first. "I listen. I don't judge. Everyone processes this differently."`,
+        `${juror} spends most of ${jp.pos} time reading by the pool. Detached, calm, unbothered. The other jurors aren't sure if ${jp.sub} ${jp.sub==='they'?'have':'has'} made peace with it or just shut down.`,
+      ];
+      picked = { type: 'peace', badge: 'AT PEACE', badgeClass: '', text: _pick(pool, juror + 'peace'), players: [juror] };
+    }
+
+    // P7: FALLBACK — watching, observing
+    if (!picked) {
+      const pool = [
+        `${juror} has been quiet at the jury house. Not bitter, not loud \u2014 just watching. Taking it all in. "I'll have my say when it counts."`,
+        `${juror} doesn't talk much about the game anymore. "I'm done thinking about what I could've done. Now I just want to see who earns it."`,
+        `${juror} sits in the back during jury bench sessions. Observing. Thinking. The other jurors can't read ${jp.obj}. "Good. That's the point."`,
+        `${juror} spends the days at the jury house keeping to ${jp.ref}. "I'm not here to make friends. I'm here because I got voted out. Let me process that in peace."`,
+      ];
+      picked = { type: 'observing', badge: 'WATCHING', badgeClass: '', text: _pick(pool, juror + 'watch'), players: [juror] };
+    }
+
+    if (picked) events.push({ juror, ...picked });
+  });
+
+  // ═══ PHASE 2: Multi-person events (group dynamics, confrontations, unlikely bonds) ═══
+
+  // ── Jury feuds — pairs with low bond (up to 2) ──
+  let _feudCount = 0;
+  const _feudPairs = [];
+  for (let i = 0; i < jurors.length && _feudCount < 2; i++) {
+    for (let j = i + 1; j < jurors.length && _feudCount < 2; j++) {
+      const a = jurors[i], b = jurors[j];
+      const bond = getBond(a, b);
+      const pairKey = [a,b].sort().join('|');
+      if (bond <= -1 && !_usedPairs.has(pairKey)) {
+        _usedPairs.add(pairKey);
+        _feudPairs.push({ a, b, bond });
+      }
+    }
+  }
+  _feudPairs.sort((x,y) => x.bond - y.bond).slice(0, 2).forEach(({ a, b, bond }) => {
+    const aInfo = getElimInfo(a), bInfo = getElimInfo(b);
+    const aVotedBOut = bInfo.voters.includes(a);
+    const bVotedAOut = aInfo.voters.includes(b);
+    const pool = [
+      `${a} and ${b} are barely speaking. They were on opposite sides in the game and being eliminated together hasn't fixed anything. Meals are tense. Silences are loud.`,
+      `${b} made a comment about ${a}'s game at dinner. ${a} didn't let it go. The argument lasted twenty minutes. Nobody else ate.`,
+      `${a} and ${b} avoid each other at the jury house. When they're forced into the same room, the temperature drops. Everyone else feels it.`,
+    ];
+    if (aVotedBOut)
+      pool.push(`${a} voted ${b} out during the game. Now they live together at the jury house. ${b} hasn't brought it up directly \u2014 but every conversation feels like it's circling back to that night. "I don't need to say it. ${a} knows what ${a} did."`);
+    if (bVotedAOut)
+      pool.push(`${b} was part of the vote that eliminated ${a}. At the jury house, ${a} found out. The confrontation was ugly. "${b} told me I was safe. Looked me in the eye and said 'you're good.' I'm done talking to ${b}."`);
+    if (bond <= -3)
+      pool.push(`It boiled over last night. ${a} and ${b} got into a full shouting match by the pool. The other jurors had to separate them. "This isn't about the game anymore," one of them said. "This is personal."`);
+    events.push({ type: 'feud', badge: 'JURY FEUD', badgeClass: 'bad',
+      text: _pick(pool, a + b + 'feud'), players: [a, b] });
+    _feudCount++;
+  });
+
+  // ── Jury bonding — pairs who became close (up to 2) ──
+  const _bondPairs = [];
+  for (let i = 0; i < jurors.length; i++) {
+    for (let j = i + 1; j < jurors.length; j++) {
+      const a = jurors[i], b = jurors[j];
+      const bond = getBond(a, b);
+      const pairKey = [a,b].sort().join('|');
+      if (bond >= 1 && !_usedPairs.has(pairKey)) {
+        _bondPairs.push({ a, b, bond, pairKey });
+      }
+    }
+  }
+  _bondPairs.sort((x,y) => y.bond - x.bond).slice(0, 2).forEach(({ a, b, bond, pairKey }) => {
+    _usedPairs.add(pairKey);
+    const wereAllied = (gs.episodeHistory||[]).some(h => (h.alliances||[]).some(al => al.members?.includes(a) && al.members?.includes(b)));
+    const wereRivals = (gs.episodeHistory||[]).some(h => {
+      const aAlliance = (h.alliances||[]).find(al => al.members?.includes(a));
+      const bAlliance = (h.alliances||[]).find(al => al.members?.includes(b));
+      return aAlliance && bAlliance && aAlliance !== bAlliance && (aAlliance.target === b || bAlliance.target === a);
+    });
+    const pool = [
+      `${a} and ${b} have become inseparable at the jury house. They spend every evening comparing notes on what went wrong and what they'd do differently.`,
+      `${a} and ${b} stay up late dissecting every move the remaining players make. "We see the game better from out here than we ever did inside it."`,
+      `The jury house has its own alliances now. ${a} and ${b} eat together, watch challenges together, and agree on almost everything about who deserves to win.`,
+    ];
+    if (wereAllied)
+      pool.push(`${a} and ${b} were allied during the game, and the bond survived elimination. They've been inseparable at the jury house. "We couldn't save each other in the game. But we can still decide who wins. And we're voting the same way."`);
+    if (wereRivals)
+      pool.push(`${a} and ${b} were enemies in the game \u2014 different alliances, different targets. But the jury house changed everything. "Funny how getting voted out puts things in perspective. ${a} is actually pretty cool when ${a}'s not trying to eliminate you."`);
+    if (bond >= 4)
+      pool.push(`${a} and ${b} have the closest friendship in the jury house. Late-night talks, inside jokes, finishing each other's sentences. The other jurors call them "the married couple." Neither of them corrects it.`);
+    events.push({ type: 'bonding', badge: 'JURY BOND', badgeClass: 'gold',
+      text: _pick(pool, a + b + 'bond'), players: [a, b] });
+  });
+
+  // ── Group dynamics: who deserves to win? (3+ jurors) ──
+  if (jurors.length >= 3) {
+    const topPick = activePlayers.map(p => ({
+      name: p,
+      supporters: jurors.filter(j => getBond(j, p) >= 1).length,
+      haters: jurors.filter(j => getBond(j, p) <= -1).length,
+    }));
+    const bySupporters = [...topPick].sort((a,b) => b.supporters - a.supporters);
+    const byHaters = [...topPick].sort((a,b) => b.haters - a.haters);
+    const favorite = bySupporters[0];
+    const controversial = topPick.find(p => p.supporters >= 2 && p.haters >= 2);
+    const hated = byHaters[0];
+
+    if (controversial) {
+      const supporters = jurors.filter(j => getBond(j, controversial.name) >= 1).slice(0, 3);
+      const opposers = jurors.filter(j => getBond(j, controversial.name) <= -1).slice(0, 3);
+      events.push({ type: 'debate', badge: 'DIVIDED', badgeClass: 'gold',
+        text: `The jury house is split on ${controversial.name}. ${supporters.join(' and ')} think ${controversial.name} deserves to be there. ${opposers.join(' and ')} can't stand the idea of ${controversial.name} winning. Dinner conversations keep circling back to the same argument \u2014 and nobody's changing their mind.`,
+        players: [...supporters, ...opposers] });
+    }
+
+    if (favorite && favorite.supporters >= 2 && (!controversial || controversial.name !== favorite.name)) {
+      const fans = jurors.filter(j => getBond(j, favorite.name) >= 1).slice(0, 4);
+      events.push({ type: 'consensus', badge: 'JURY FAVORITE', badgeClass: 'win',
+        text: `The jury house has an unofficial favorite: ${favorite.name}. ${fans.join(', ')} all agree \u2014 if ${favorite.name} makes it to the end, ${favorite.name} wins. "It's not even close," ${fans[0]} says. "Nobody else has played a game the jury respects like that."`,
+        players: fans });
+    }
+
+    if (hated && hated.haters >= 2 && (!controversial || controversial.name !== hated.name)) {
+      const haters = jurors.filter(j => getBond(j, hated.name) <= -1).slice(0, 4);
+      events.push({ type: 'consensus-neg', badge: 'JURY VILLAIN', badgeClass: 'bad',
+        text: `If there's one thing the jury agrees on, it's ${hated.name}. ${haters.join(', ')} \u2014 none of them want to see ${hated.name} hold the trophy. "I'd vote for an empty chair before I'd vote for ${hated.name}," ${haters[0]} says. The others nod.`,
+        players: haters });
+    }
+  }
+
+  // ── Confrontation replay: juror confronts the person who eliminated them (also a juror now) ──
+  jurors.forEach(juror => {
+    const info = getElimInfo(juror);
+    const eliminatorOnJury = info.voters.find(v => jurors.includes(v) && v !== juror);
+    if (eliminatorOnJury) {
+      const pairKey = [juror, eliminatorOnJury].sort().join('|') + '_confront';
+      if (!_usedPairs.has(pairKey)) {
+        _usedPairs.add(pairKey);
+        const bond = getBond(juror, eliminatorOnJury);
+        const pool = [];
+        if (bond <= -2) {
+          pool.push(`${juror} finally confronted ${eliminatorOnJury} at the jury house. "You voted me out. I want to know why. Not the game reason \u2014 the real reason." The conversation went late into the night. It didn't end well.`);
+          pool.push(`${eliminatorOnJury} tried to apologize to ${juror} over breakfast. ${juror} listened, then stood up and left. "Apology not accepted. Not yet. Maybe not ever."`);
+        } else if (bond >= 1) {
+          pool.push(`${juror} and ${eliminatorOnJury} had the conversation everyone was waiting for. "${eliminatorOnJury} voted me out and I needed to hear why. And honestly? The explanation made sense. I hate that it made sense. But it did."`,);
+          pool.push(`${eliminatorOnJury} sat down with ${juror} the first night and laid it all out. Why the vote happened. What the alternative was. By the end, ${juror} was nodding. "I would've done the same thing. I hate it, but I would've done the same thing."`,);
+        } else {
+          pool.push(`${juror} asked ${eliminatorOnJury} point-blank: "Was it personal?" The answer took ten minutes. By the end, neither of them felt better about it. But at least they talked.`);
+        }
+        events.push({ type: 'confrontation', badge: 'CONFRONTATION', badgeClass: 'bad',
+          text: _pick(pool, juror + eliminatorOnJury + 'confront'), players: [juror, eliminatorOnJury] });
+      }
+    }
+  });
+
+  // ── Shared elimination story: two jurors eliminated by the same person ──
+  const elimByMap = {};
+  jurors.forEach(juror => {
+    const info = getElimInfo(juror);
+    info.allVotersStillIn.forEach(v => {
+      if (!elimByMap[v]) elimByMap[v] = [];
+      elimByMap[v].push(juror);
+    });
+  });
+  Object.entries(elimByMap).forEach(([voter, victims]) => {
+    if (victims.length >= 2) {
+      const [a, b] = victims.slice(0, 2);
+      const pairKey = [a,b].sort().join('|') + '_shared';
+      if (!_usedPairs.has(pairKey)) {
+        _usedPairs.add(pairKey);
+        events.push({ type: 'shared-story', badge: 'COMMON ENEMY', badgeClass: 'bad',
+          text: `${a} and ${b} discovered something at the jury house: ${voter} voted both of them out. Different episodes, different alliances, same result. "We were both collateral damage for ${voter}'s game," ${a} says. ${b} nods. "And ${voter} is still out there playing. That doesn't sit right with either of us."`,
+          players: [a, b] });
+      }
+    }
+  });
+
+  if (!events.length) return null;
+
+  // Sort: vote-opinion events get a slight priority boost, then interleave solo/multi for pacing
+  const _voteTypes = new Set(['rooting','bitter','resentment','debate','consensus','consensus-neg']);
+  const soloVote = events.filter(e => (e.players||[]).length <= 1 && _voteTypes.has(e.type));
+  const soloOther = events.filter(e => (e.players||[]).length <= 1 && !_voteTypes.has(e.type));
+  const multiVote = events.filter(e => (e.players||[]).length >= 2 && _voteTypes.has(e.type));
+  const multiOther = events.filter(e => (e.players||[]).length >= 2 && !_voteTypes.has(e.type));
+  // Weave: vote-opinion solo, then other solo, with multi events sprinkled in
+  const interleaved = [];
+  let sv = 0, so = 0, mv = 0, mo = 0;
+  while (sv < soloVote.length || so < soloOther.length || mv < multiVote.length || mo < multiOther.length) {
+    if (sv < soloVote.length) interleaved.push(soloVote[sv++]);
+    if (so < soloOther.length) interleaved.push(soloOther[so++]);
+    if (mv < multiVote.length) interleaved.push(multiVote[mv++]);
+    if (sv < soloVote.length) interleaved.push(soloVote[sv++]);
+    if (so < soloOther.length) interleaved.push(soloOther[so++]);
+    if (mo < multiOther.length) interleaved.push(multiOther[mo++]);
+  }
+  const capped = interleaved.slice(0, 18);
+
+  let html = `<div class="rp-page tod-golden">
+    <div class="rp-eyebrow">Episode ${epNum}</div>
+    <div style="font-family:var(--font-display);font-size:28px;letter-spacing:2px;text-align:center;margin-bottom:4px;text-transform:uppercase">Jury Life</div>
+    <div style="text-align:center;font-size:11px;color:var(--muted);margin-bottom:20px;letter-spacing:1.5px;text-transform:uppercase">Meanwhile, at the jury house\u2026</div>`;
+
+  // Jury portraits row
+  html += `<div style="display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-bottom:20px">
+    ${jurors.map(j => `<div style="text-align:center">${rpPortrait(j)}<div style="font-size:9px;color:var(--muted);margin-top:2px">${j}</div></div>`).join('')}
+  </div>`;
+
+  capped.forEach(evt => {
+    const badgeColors = {
+      bad: 'color:var(--accent-fire);background:rgba(248,81,73,0.1);border-color:rgba(248,81,73,0.25)',
+      win: 'color:#3fb950;background:rgba(63,185,80,0.1);border-color:rgba(63,185,80,0.25)',
+      gold: 'color:#e3b341;background:rgba(227,179,65,0.1);border-color:rgba(227,179,65,0.25)',
+      '': 'color:var(--muted);background:var(--surface2);border-color:var(--border)',
+    };
+    const badgeStyle = badgeColors[evt.badgeClass] || badgeColors[''];
+    html += `<div style="margin-bottom:12px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:12px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        ${evt.players.map(p => rpPortrait(p, 'sm')).join('')}
+        <span style="font-size:9px;font-weight:700;letter-spacing:1px;padding:2px 8px;border-radius:4px;border:1px solid;${badgeStyle}">${evt.badge}</span>
+      </div>
+      <div style="font-size:13px;color:#cdd9e5;line-height:1.6">${evt.text}</div>
+    </div>`;
+  });
+
+  html += `</div>`;
+  return html;
+}
+
+// ── Jury Convenes: announcement screen showing jury + vulnerable players ──
+function rpBuildJuryConvenes(ep) {
+  const tw = (ep.twists||[]).find(t => t.type === 'jury-elimination' && t.juryBooted);
+  if (!tw) return null;
+  const immune = ep.immunityWinner;
+  const candidates = Object.keys(tw.elimVotes || {});
+  const jurors = [...new Set((tw.elimLog || []).map(e => e.juror))];
+
+  let html = `<div class="rp-page tod-deepnight">
+    <div class="rp-eyebrow">Episode ${ep.num}</div>
+    <div style="font-family:var(--font-display);font-size:28px;letter-spacing:2px;text-align:center;margin-bottom:6px;text-transform:uppercase;color:var(--accent-gold);text-shadow:0 0 30px rgba(227,179,65,0.3)">The Jury Has Power</div>
+    <div style="text-align:center;font-size:11px;color:var(--muted);margin-bottom:20px;letter-spacing:1.5px;text-transform:uppercase">Tonight, the eliminated players decide who goes home</div>`;
+
+  html += `<div class="vp-section-header gold">The Jury</div>`;
+  html += `<div style="display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-bottom:16px">
+    ${jurors.map(j => `<div style="text-align:center">${rpPortrait(j)}<div style="font-size:10px;color:var(--muted);margin-top:2px">${j}</div></div>`).join('')}
+  </div>`;
+
+  if (immune) {
+    html += `<div class="vp-card gold" style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+      ${rpPortrait(immune)}
+      <div><div style="font-size:13px;font-weight:600">${immune}</div><div style="font-size:11px;color:#e3b341">Immune \u2014 cannot be targeted</div></div>
+    </div>`;
+  }
+
+  html += `<div class="vp-section-header fire">Vulnerable</div>`;
+  candidates.forEach(c => {
+    const avgBondWithJury = jurors.length
+      ? jurors.reduce((s, j) => s + getBond(j, c), 0) / jurors.length : 0;
+    const dangerLevel = avgBondWithJury <= -1 ? 'high' : avgBondWithJury <= 1 ? 'medium' : 'low';
+    const dangerLabel = dangerLevel === 'high' ? 'Burned bridges with the jury'
+                      : dangerLevel === 'medium' ? 'Mixed relationships with jury'
+                      : 'Well-liked by the jury';
+    html += `<div class="vp-card" style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
+      ${rpPortrait(c)}
+      <div><div style="font-size:13px">${c}</div><div style="font-size:10px;color:${dangerLevel==='high'?'var(--accent-fire)':dangerLevel==='medium'?'#e3b341':'var(--muted)'}">${dangerLabel}</div></div>
+    </div>`;
+  });
+
+  html += `<div style="text-align:center;font-size:13px;color:#8b949e;margin-top:20px;line-height:1.6">
+    The eliminated players have voted. One active player will be removed from the game.<br>No tribal council tonight.
+  </div>`;
+
+  html += `</div>`;
+  return html;
+}
+
+// ── Jury Votes: interactive card-by-card reveal reusing tv-vote-card pattern ──
+function rpBuildJuryVotes(ep) {
   const tw = (ep.twists||[]).find(t => t.type === 'jury-elimination' && t.juryBooted);
   if (!tw) return null;
   const jBooted = tw.juryBooted;
-  const jLog    = tw.elimLog   || [];
-  const jVotes  = tw.elimVotes || {};
-  const jJury   = ep.gsSnapshot?.jury || gs.jury || [];
-  const jFor    = jLog.filter(e => e.votedOut === jBooted).map(e => e.juror);
-  const jAgainst= jLog.filter(e => e.votedOut !== jBooted).map(e => e.juror);
+  const jLog = tw.elimLog || [];
+  const jVotes = tw.elimVotes || {};
+  const epNum = ep.num;
+  const stateKey = epNum + '_je';
 
-  const sc = [];
-  if (jJury.length > 1) sc.push({ text: '', players: jJury.slice(0, 6), juryHeader: true });
+  let html = `<div class="rp-page tod-deepnight">
+    <div class="rp-eyebrow">Episode ${epNum} \u2014 Jury Elimination</div>
+    <div class="rp-title">The Jury Votes</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:16px;text-align:center">Tonight, the jury votes to <strong style="color:var(--accent-fire)">eliminate</strong> one active player.</div>`;
 
-  sc.push({ text: `The jury met privately. They had watched every vote, every deal, every betrayal. Now they had power of their own \u2014 the power to eliminate one active player before the finale.`, players: jJury.slice(0, 4) });
+  // Two-panel layout: cards left, tally right
+  html += `<div class="tv-wrap">
+    <div class="tv-reveal-panel" id="tv-cards-${stateKey}">`;
 
-  if (jFor.length >= 2)
-    sc.push({ text: `${jFor.slice(0,2).join(' and ')} led the case against ${jBooted}. Some things in this game are hard to forgive \u2014 and the jury has had weeks to think about it.`, players: jFor.slice(0,2) });
-  else if (jFor.length === 1)
-    sc.push({ text: `${jFor[0]} made the case against ${jBooted}. The argument landed.`, players: [jFor[0]] });
+  jLog.forEach(({ juror, votedOut }, idx) => {
+    const bond = getBond(juror, votedOut);
+    const _pick = arr => arr[([...juror+votedOut].reduce((a,c)=>a+c.charCodeAt(0),0)+epNum*11)%arr.length];
+    const jS = pStats(juror); const tS = pStats(votedOut);
+    const tp = pronouns(votedOut);
 
-  if (jAgainst.length >= 1) {
-    sc.push({ text: `Not everyone agreed. ${jAgainst[0]} pushed back \u2014 they saw this game differently from the jury bench.`, players: [jAgainst[0]] });
-    if (jAgainst.length >= 2)
-      sc.push({ text: `${jAgainst[1]} sided with them. The deliberation ran long. The room was divided.`, players: [jAgainst[1]] });
+    // Did votedOut vote juror out? Check episode history for betrayal context
+    const jurorElimEp = (gs.episodeHistory||[]).find(h => h.eliminated === juror || h.firstEliminated === juror);
+    const votedOutVotedJurorOut = jurorElimEp?.votingLog?.some(v => v.voter === votedOut && v.voted === juror);
+    const wereAllied = (gs.episodeHistory||[]).some(h =>
+      (h.alliances||[]).some(a => a.members?.includes(juror) && a.members?.includes(votedOut))
+    );
+
+    let reason;
+    // Tier 1: bitter betrayal — votedOut voted juror out AND bond is very low
+    // Only triggers for genuinely burned jurors (bond <= -3), not mild dislikes
+    if (votedOutVotedJurorOut && bond <= -3) reason = _pick([
+      `${votedOut} wrote my name down. I\u2019ve been waiting for this moment since I hit the jury bench.`,
+      `I sat on that bench replaying the night ${votedOut} ended my game. Tonight I return the favor.`,
+      `${votedOut} ended my game. Now I end ${tp.pos}.`,
+    ]);
+    // Tier 2: voted out by target but has processed it — respectful but pointed
+    else if (votedOutVotedJurorOut) reason = _pick([
+      `${votedOut} was part of the vote that sent me here. Good move at the time. But from the bench, I see ${tp.pos} game clearly now \u2014 and ${tp.sub} ${tp.sub==='they'?'need':'needs'} to go.`,
+      `${votedOut} voted me out. I\u2019ve had time to sit with that. No anger \u2014 but I\u2019ve also had time to see who\u2019s really controlling things. It\u2019s ${tp.obj}.`,
+      `Yeah, ${votedOut} got me. Fair play. But sitting on the jury changes your perspective. ${tp.Sub} ${tp.sub==='they'?'are':'is'} too good to leave in this game.`,
+      `${votedOut} made the move on me. I can respect it. But I also get a move now, and this is mine.`,
+    ]);
+    // Tier 3: former allies with broken trust
+    else if (wereAllied && bond <= -2) reason = _pick([
+      `We were in an alliance. ${votedOut} let it fall apart. I\u2019ve had weeks on the bench to think about how that went. This is where I land.`,
+      `${votedOut} and I were supposed to go deep together. ${tp.Sub} chose differently. I understand why \u2014 doesn\u2019t mean I won\u2019t vote accordingly.`,
+    ]);
+    // Tier 4: genuine grudge — very low bond, no direct betrayal
+    else if (bond <= -3) reason = _pick([
+      `${votedOut} burned every bridge in this game. The people on the other side of those bridges finally get a say.`,
+      `I\u2019ve watched ${votedOut} from the jury bench for weeks. ${tp.Sub} played selfish and it caught up to ${tp.obj}.`,
+    ]);
+    // Tier 5: mild negative / neutral — biggest pool since most jurors land here
+    else if (bond <= 0) {
+      const _jeFriend = (ep.gsSnapshot?.activePlayers || gs.activePlayers)
+        .filter(p => p !== votedOut && getBond(juror, p) >= 1)
+        .sort((a,b) => getBond(juror, b) - getBond(juror, a))[0];
+      const pool5 = [];
+      // Friend-based reasons
+      if (_jeFriend) {
+        pool5.push(`I still have someone in this game I\u2019m rooting for. ${_jeFriend} deserves a shot \u2014 and ${votedOut} is the one standing in the way.`);
+        pool5.push(`${_jeFriend} is still out there fighting. If I can do one thing from this bench, it\u2019s give ${_jeFriend} a clearer path. That means ${votedOut} goes.`);
+        pool5.push(`I want ${_jeFriend} to win this game. Simple as that. And I think ${votedOut} beats ${_jeFriend} at the end. So this is an easy vote for me.`);
+        pool5.push(`My heart is with ${_jeFriend}. And the best thing I can do for ${_jeFriend} right now is take out the person who beats ${_jeFriend} at Final Tribal. That\u2019s ${votedOut}.`);
+      }
+      // Personal dislike reasons
+      pool5.push(`I don\u2019t want ${votedOut} to win this game. That\u2019s honest. I\u2019ve been watching from the bench and I don\u2019t like what I\u2019ve seen.`);
+      pool5.push(`${votedOut} never built anything real out here. ${tp.Sub} played for ${tp.ref} and nobody else. The jury noticed.`);
+      pool5.push(`I\u2019ve been watching ${votedOut} coast while other people fought to stay. I don\u2019t think ${tp.sub} ${tp.sub==='they'?'deserve':'deserves'} to still be here.`);
+      pool5.push(`${votedOut} is still in this game because other people kept ${tp.obj} around as a number. Not because ${tp.sub} earned it. The jury sees that.`);
+      // Analytical reasons
+      pool5.push(`From out here, ${votedOut}\u2019s game doesn\u2019t hold up. Inside, it looked fine. From the bench? It\u2019s smoke and mirrors.`);
+      pool5.push(`I\u2019ve had weeks to think about this game. And every time I run the scenarios, ${votedOut} is the one who doesn\u2019t deserve to make it further.`);
+      pool5.push(`This isn\u2019t personal. I just think ${votedOut} has had the easiest ride to this point and I want to see what happens when that changes.`);
+      pool5.push(`The jury bench strips away the noise. And what I see clearly is that ${votedOut} shouldn\u2019t be the one holding the trophy at the end of this.`);
+      // Archetype-flavored
+      if (jS.strategic >= 7)
+        pool5.push(`I ran the numbers from the bench. ${votedOut} is the right elimination if you want a competitive finale. This is a math vote.`);
+      if (jS.social >= 7)
+        pool5.push(`I\u2019ve talked to every juror here. Most of us agree \u2014 ${votedOut} hasn\u2019t earned the relationships to win this thing. So why let ${tp.obj} stay?`);
+      if (jS.boldness >= 7)
+        pool5.push(`${votedOut} played safe the entire game. Never took a risk, never made a move. And now the jury gets to make a move for ${tp.obj}. Ironic.`);
+      reason = _pick(pool5);
+    }
+    // Tier 6: positive bond, high — painful, voting to help another friend or out of respect
+    else if (bond >= 3) {
+      const _jeFriend6 = (ep.gsSnapshot?.activePlayers || gs.activePlayers)
+        .filter(p => p !== votedOut && getBond(juror, p) >= 1)
+        .sort((a,b) => getBond(juror, b) - getBond(juror, a))[0];
+      const pool6 = [];
+      if (_jeFriend6) {
+        pool6.push(`I care about ${votedOut}. But I care about ${_jeFriend6} too, and ${_jeFriend6} can\u2019t win with ${votedOut} still in the game. I\u2019m sorry.`);
+        pool6.push(`${votedOut} and I were close. But ${_jeFriend6} is still fighting out there and I want to give ${_jeFriend6} a real chance. This is the only way.`);
+        pool6.push(`If ${votedOut} and ${_jeFriend6} both make the end, ${votedOut} wins. I can\u2019t let that happen to ${_jeFriend6}. So I\u2019m voting for the person I like more. That\u2019s how messed up this game is.`);
+      }
+      pool6.push(`This one hurts. ${votedOut} and I were close out there. But I\u2019ve had time to think, and I don\u2019t want to see ${tp.obj} win over people who had to fight harder.`);
+      pool6.push(`I respect ${votedOut} so much. That\u2019s what makes this hard. But from the bench, I can see how this game ends if ${tp.sub} ${tp.sub==='they'?'stay':'stays'}. I\u2019m sorry.`);
+      pool6.push(`${votedOut}, I hope you understand. You played a beautiful game. But the jury deserves a finale that isn\u2019t already decided. And with you in it \u2014 it is.`);
+      pool6.push(`I never thought I\u2019d vote against ${votedOut}. But the jury bench changes you. I can see things I couldn\u2019t see when I was playing. And what I see is that ${votedOut} can\u2019t stay.`);
+      pool6.push(`${votedOut} was my closest ally in this game. Writing ${tp.pos} name down is the hardest thing I\u2019ve done out here \u2014 harder than getting voted out. But it\u2019s the right call.`);
+      reason = _pick(pool6);
+    }
+    // Tier 7: mild positive — measured, reflective
+    else {
+      const _jeFriend7 = (ep.gsSnapshot?.activePlayers || gs.activePlayers)
+        .filter(p => p !== votedOut && getBond(juror, p) >= 1)
+        .sort((a,b) => getBond(juror, b) - getBond(juror, a))[0];
+      const pool7 = [];
+      if (_jeFriend7) {
+        pool7.push(`I\u2019m rooting for ${_jeFriend7}. That\u2019s the honest answer. And ${votedOut} is the one I think beats ${_jeFriend7} at the end. So here we are.`);
+        pool7.push(`I want to see ${_jeFriend7} get to the finale. ${votedOut} makes that harder. This vote is about giving my person a real shot.`);
+        pool7.push(`Between ${votedOut} and the other people left \u2014 I\u2019d rather see ${_jeFriend7} have a chance. That\u2019s what this vote comes down to.`);
+      }
+      pool7.push(`I\u2019ve had time to think on that jury bench. ${votedOut} is the right call. Not emotional \u2014 just clear.`);
+      pool7.push(`The jury bench changes how you see people. ${votedOut} looked different from inside the game than ${tp.sub} ${tp.sub==='they'?'do':'does'} from out here.`);
+      pool7.push(`I\u2019ve been thinking about this since I got eliminated. ${votedOut} is the one I keep landing on.`);
+      pool7.push(`Honestly? I don\u2019t have a strong feeling either way. But if I have to pick someone, ${votedOut} is the name that makes the most sense to me right now.`);
+      pool7.push(`${votedOut} is a good player. That\u2019s exactly why I\u2019m writing ${tp.pos} name. Good players don\u2019t get to coast to the end on the jury\u2019s watch.`);
+      pool7.push(`I\u2019ve gone back and forth on this. But at the end of the day, I think the game is better without ${votedOut} in it. And that\u2019s enough for me.`);
+      if (jS.strategic >= 6)
+        pool7.push(`I\u2019ve been running scenarios from the bench. In most of them, ${votedOut} wins the game if ${tp.sub} ${tp.sub==='they'?'make':'makes'} it to the end. I\u2019d rather shake things up.`);
+      if (jS.social >= 6)
+        pool7.push(`I\u2019ve been talking to the other jurors. ${votedOut}\u2019s name keeps coming up. I think this is where the room is leaning, and I\u2019m okay with it.`);
+      reason = _pick(pool7);
+    }
+
+    html += `<div class="tv-vote-card" data-voted="${votedOut}" data-voter="${juror}" data-index="${idx}">
+      <div class="tv-vote-voter-wrap">
+        ${rpPortrait(juror, 'sm')}
+        <div class="tv-vote-voter">${juror}</div>
+      </div>
+      <div class="tv-vote-arrow" style="color:var(--accent-fire)">\u2192</div>
+      <div class="tv-vote-right">
+        <div class="tv-vote-target">${votedOut}</div>
+        <div class="tv-vote-reason">${reason}</div>
+      </div>
+    </div>`;
+  });
+
+  html += `</div>`; // end tv-reveal-panel
+
+  // Live tally panel
+  const tallyNames = Object.entries(jVotes).sort(([,a],[,b]) => b-a).map(([n]) => n);
+  html += `<div class="tv-tally-panel" id="tv-tally-${stateKey}">
+    <div class="tv-tally-header">Jury Tally</div>`;
+  tallyNames.forEach(name => {
+    const slug = name.replace(/[^a-zA-Z0-9]/g, '');
+    html += `<div class="tv-tally-row" data-name="${name}" style="opacity:0;transition:opacity 0.4s">
+      ${rpPortrait(name)}
+      <div class="tv-tally-pname">${name}</div>
+      <div class="tv-tally-bar-bg"><div class="tv-tally-bar" id="tv-tb-${stateKey}-${slug}" style="width:0%"></div></div>
+      <div class="tv-tally-count" id="tv-tc-${stateKey}-${slug}" data-count="0">\u2014</div>
+    </div>`;
+  });
+  html += `</div></div>`; // end tally panel + tv-wrap
+
+  // Reveal buttons
+  html += `<div id="tv-btn-wrap-${stateKey}">
+    <button class="tv-reveal-btn" id="tv-btn-${stateKey}" onclick="tvRevealNext('${stateKey}')">Read the Vote (0/${jLog.length})</button>
+    <div style="text-align:right;margin:-12px 0 14px">
+      <button onclick="tvRevealAll('${stateKey}')" style="background:none;border:none;font-size:11px;color:#484f58;cursor:pointer;padding:2px 0;letter-spacing:0.3px">Skip to results \u203a</button>
+    </div>
+  </div>`;
+
+  // Results section (hidden until all votes revealed)
+  html += `<div id="tv-results-${stateKey}" style="display:none">`;
+
+  // Tie card — if the jury vote tied, show the deliberation tiebreaker
+  if (tw.juryTie && tw.juryTiedPlayers?.length > 1) {
+    const tiedNames = tw.juryTiedPlayers;
+    const tiedVoteCount = jVotes[tiedNames[0]] || 0;
+    html += `<div class="rp-elim" style="background:radial-gradient(ellipse at 50% 30%,rgba(210,153,34,0.08) 0%,transparent 60%);border-color:rgba(210,153,34,0.2)">
+      <div class="rp-elim-eyebrow" style="color:#d29922">Jury Deadlock \u2014 ${tiedVoteCount}-${tiedVoteCount} Tie</div>
+      <div style="font-size:13px;color:#8b949e;text-align:center;margin-bottom:16px;line-height:1.5">
+        The jury vote tied between ${tiedNames.join(' and ')}. ${tiedVoteCount} votes each.
+      </div>
+      <div style="display:flex;justify-content:center;gap:20px;flex-wrap:wrap;margin-bottom:16px">
+        ${tiedNames.map(n => `<div style="text-align:center">
+          ${rpPortrait(n, 'lg')}
+          <div style="font-size:11px;margin-top:4px">${n}</div>
+          <div style="font-size:10px;color:#d29922">${jVotes[n]} votes</div>
+        </div>`).join(`<div style="align-self:center;font-size:20px;color:#30363d;font-weight:700">vs</div>`)}
+      </div>
+      <div style="font-size:13px;color:#cdd9e5;text-align:center;line-height:1.6;margin-bottom:8px">
+        The jury reconvened. After further deliberation \u2014 old grudges, broken alliances, unfinished business \u2014 the room shifted.
+      </div>
+      <div style="font-size:13px;color:var(--accent-fire);text-align:center;font-weight:600">
+        The jury has made their decision: ${jBooted}.
+      </div>
+    </div>`;
   }
 
-  const vSorted = Object.entries(jVotes).sort(([,a],[,b]) => b-a);
-  if (vSorted.length)
-    sc.push({ text: `The vote was called. Tally: ${vSorted.map(([n,v]) => `${n} (${v})`).join(', ')}. ${jBooted} had the most votes against.`, players: vSorted.map(([n]) => n).slice(0, 5) });
-
-  sc.push({ text: `${jBooted} is removed from the game by the jury. No tribal council tonight.`, players: [jBooted], badge: 'Jury Voted Out', badgeClass: 'bad' });
-
-  let html = `<div class="rp-page rp-twist-page tod-deepnight"><div class="rp-eyebrow">Episode ${ep.num}</div>
-    <div style="background:#030507;margin:-16px;padding:16px;border-radius:8px">
-    <div class="rp-twist-title">Jury Elimination</div>`;
-  sc.forEach(s => { html += _renderTwistScene(s); });
-
-  // Elimination card for the booted player
-  const _jPlace = (gs.activePlayers.length) + 1;
-  const _jQ = vpGenerateQuote(jBooted, ep, 'eliminated');
-  html += `<hr class="rp-twist-divider"><div class="rp-elim">
+  // Elimination card
+  const _jPlace = (ep.gsSnapshot?.activePlayers ?? gs.activePlayers).length + 1;
+  const _jQ = vpGenerateQuote(jBooted, ep, 'juryEliminated');
+  html += `<div class="rp-elim">
     <div class="rp-elim-eyebrow">Jury eliminated \u2014 ${ordinal(_jPlace)} place</div>
     ${rpPortrait(jBooted, 'xl elim')}
     <div class="rp-elim-name">${jBooted}</div>
     <div class="rp-elim-arch">${vpArchLabel(jBooted)}</div>
     <div class="rp-elim-quote">"${_jQ}"</div>
-    <div class="rp-elim-place">Episode ${ep.num} \u2014 Jury Vote</div>
+    <div class="rp-elim-place">Episode ${ep.num} \u2014 Eliminated by the Jury</div>
   </div>`;
-  html += `</div></div>`;
+
+  html += `</div>`; // end results
+  html += `</div>`; // end page
   return html;
 }
 
@@ -17521,9 +18221,11 @@ function buildVPScreens(epRecord) {
   delete _tvState[vpEpNum];
   delete _tvState[String(vpEpNum) + '_v2']; // vote-2 reveal state (surprise double boot)
   delete _tvState[String(vpEpNum) + '_fv']; // fresh vote reveal state
+  delete _tvState[String(vpEpNum) + '_je']; // jury elimination reveal state
   const ep = epRecord;
 
   const hasTribal = ep.alliances?.some(a => a.target) || ep.votingLog?.length;
+  const _isJuryElim = !!(ep.twists||[]).find(t => t.type === 'jury-elimination' && t.juryBooted);
 
   const hasRelEvents = ep.campEvents && Object.values(ep.campEvents).some(phaseData => {
     const evs = Array.isArray(phaseData) ? phaseData : [...(phaseData?.pre||[]), ...(phaseData?.post||[])];
@@ -17546,9 +18248,11 @@ function buildVPScreens(epRecord) {
 
   // ── Helper: derive tribe groups at start of episode ──
   const vpTribeGroups = (() => {
-    // Post-merge: gs.tribes = [] so tribesAtStart is empty. Detect via gs.isMerged or ep.isMerge.
+    // Post-merge: gs.tribes = [] so tribesAtStart is empty. Detect via snapshot isMerged or ep.isMerge.
+    // Use ep.gsSnapshot.isMerged (not live gs.isMerged) so pre-merge episodes don't render as merged
+    // when viewed after the season has already merged.
     // The campEvents key is gs.mergeName (e.g. "Land of Powers"), NOT the literal 'merge'.
-    if (gs.isMerged || ep.isMerge) {
+    if (ep.isMerge || ep.gsSnapshot?.isMerged) {
       // Find the actual campEvents key for the merged tribe camp.
       const _mergeKey = ep.campEvents
         ? (['merge', gs.mergeName].find(k => k && ep.campEvents[k])
@@ -17657,7 +18361,7 @@ function buildVPScreens(epRecord) {
   if (_relHtml) vpScreens.push({ id:'relationships', label:'Camp Overview', html: _relHtml });
 
   // ── 8. Voting Plans (pre-vote strategy breakdown) ──
-  if (hasTribal) {
+  if (hasTribal && !_isJuryElim) {
     const _vpHtml = rpBuildVotingPlans(ep);
     if (_vpHtml) vpScreens.push({ id:'voting-plans', label:'Voting Plans', html: _vpHtml });
   }
@@ -17674,7 +18378,7 @@ function buildVPScreens(epRecord) {
       vpScreens.push({ id:`tribal-${r.tribe}`, label:`${r.tribe} Tribal`, html: rpBuildTribal(subEp) });
       vpScreens.push({ id:`votes-${r.tribe}`,  label:`${r.tribe} Votes`,  html: rpBuildVotes(subEp) });
     });
-  } else if (hasTribal) {
+  } else if (hasTribal && !_isJuryElim) {
     vpScreens.push({ id:'tribal', label:'Tribal Council', html: rpBuildTribal(ep) });
     vpScreens.push({ id:'votes',  label:'The Votes',      html: rpBuildVotes(ep) });
 
@@ -17701,9 +18405,15 @@ function buildVPScreens(epRecord) {
       vpScreens.push({ id:'final-cut', label:'The Decision', html: rpBuildFinalCut(ep) });
     }
 
-    // Jury Elimination twist — dedicated dramatic screen
-    const _juryElimScreen = rpBuildJuryElimScreen(ep);
-    if (_juryElimScreen) vpScreens.push({ id:'jury-elimination', label:'Jury Elimination', html: _juryElimScreen });
+    // Jury Elimination twist — jury life + announcement + interactive vote reveal
+    if (_isJuryElim) {
+      const _jeLife = rpBuildJuryLife(ep);
+      if (_jeLife) vpScreens.push({ id:'jury-life', label:'Jury Life', html: _jeLife });
+      const _jeA = rpBuildJuryConvenes(ep);
+      if (_jeA) vpScreens.push({ id:'jury-convenes', label:'Jury Convenes', html: _jeA });
+      const _jeV = rpBuildJuryVotes(ep);
+      if (_jeV) vpScreens.push({ id:'jury-votes', label:'Jury Votes', html: _jeV });
+    }
 
     // Final Tribal Council (jury-based games only)
     if (ep.juryResult) {
@@ -17732,11 +18442,17 @@ function buildVPScreens(epRecord) {
   } else {
     // ── REGULAR EPISODE POST-VOTE ──
 
-    // Jury Elimination (non-finale context — dedicated screen)
-    const _jeScreen = rpBuildJuryElimScreen(ep);
-    if (_jeScreen) vpScreens.push({ id:'jury-elimination', label:'Jury Elimination', html: _jeScreen });
+    // Jury Elimination — jury life + announcement + interactive vote reveal
+    if (_isJuryElim) {
+      const _jeLife2 = rpBuildJuryLife(ep);
+      if (_jeLife2) vpScreens.push({ id:'jury-life', label:'Jury Life', html: _jeLife2 });
+      const _jeA2 = rpBuildJuryConvenes(ep);
+      if (_jeA2) vpScreens.push({ id:'jury-convenes', label:'Jury Convenes', html: _jeA2 });
+      const _jeV2 = rpBuildJuryVotes(ep);
+      if (_jeV2) vpScreens.push({ id:'jury-votes', label:'Jury Votes', html: _jeV2 });
+    }
 
-    // Post-elimination twists (fire-making, exile duel, etc. — jury-elimination skipped inside)
+    // Post-elimination twists (fire-making, exile duel, etc.)
     const _postElimHtml = rpBuildPostElimTwist(ep);
     if (_postElimHtml) vpScreens.push({ id:'post-twist', label:'Post-Vote Twist', html: _postElimHtml });
 

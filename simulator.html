@@ -17621,6 +17621,118 @@ function rpBuildVotes2(ep) {
 // FINALE VP SCREENS
 // ─────────────────────────────────────────────────────────────────
 
+// ── Finale Camp Life: finalists reminisce, reflect on the season ──
+function rpBuildFinaleCampLife(ep) {
+  const finalists = ep.finaleFinalists || ep.gsSnapshot?.activePlayers || gs.activePlayers;
+  if (!finalists.length) return null;
+  const epNum = ep.num;
+
+  let html = `<div class="rp-page tod-golden">
+    <div class="rp-eyebrow">Episode ${epNum} \u2014 Finale</div>
+    <div style="font-family:var(--font-display);font-size:28px;letter-spacing:2px;text-align:center;margin-bottom:4px;text-transform:uppercase">The Last Morning</div>
+    <div style="text-align:center;font-size:11px;color:var(--muted);margin-bottom:24px;letter-spacing:1.5px">Day ${epNum > 1 ? (epNum - 1) * 3 : 1}. The fire is low. The game is almost over.</div>`;
+
+  // Finalist portraits row
+  html += `<div style="display:flex;justify-content:center;gap:24px;margin-bottom:24px">
+    ${finalists.map(f => {
+      const wins = gs.episodeHistory.filter(e => e.immunityWinner === f).length;
+      const arch = vpArchLabel(f);
+      return `<div style="text-align:center">
+        ${rpPortrait(f, 'lg')}
+        <div style="font-size:12px;font-family:var(--font-display);margin-top:6px">${f}</div>
+        <div style="font-size:10px;color:var(--muted)">${arch}</div>
+        <div style="font-size:10px;color:var(--muted)">${wins} win${wins !== 1 ? 's' : ''}</div>
+      </div>`;
+    }).join('')}
+  </div>`;
+
+  // Per-finalist confessional blocks
+  finalists.forEach(f => {
+    const s = pStats(f);
+    const fp = pronouns(f);
+    const arch = players.find(p => p.name === f)?.archetype || '';
+    const wins = gs.episodeHistory.filter(e => e.immunityWinner === f).length;
+    const votesAgainst = gs.episodeHistory.reduce((sum, e) => {
+      const vlog = e.votingLog || [];
+      return sum + vlog.filter(v => v.voted === f && v.voter !== 'THE GAME').length;
+    }, 0);
+    const idolsPlayed = gs.episodeHistory.reduce((sum, e) => {
+      return sum + (e.idolPlays || []).filter(p => p.player === f).length;
+    }, 0);
+    const allianceNames = [...new Set(gs.episodeHistory.flatMap(e =>
+      (e.alliances || []).filter(a => a.members?.includes(f) && a.members?.length >= 2).flatMap(a => a.members.filter(m => m !== f))
+    ))].slice(0, 3);
+    const rivalNames = gs.episodeHistory.reduce((rivals, e) => {
+      (e.alliances || []).forEach(a => {
+        if (a.target === f && a.members?.length) rivals.add(a.members[0]);
+      });
+      return rivals;
+    }, new Set());
+
+    // Journey confessional — archetype + stats driven
+    let journey;
+    if (arch === 'mastermind' || arch === 'schemer' || s.strategic >= 8)
+      journey = `"I came into this game knowing exactly what I wanted to do. Control the votes. Control the relationships. Control the outcome. And I'm still here \u2014 so either I did that, or I got lucky. I don't believe in luck."`;
+    else if (arch === 'challenge-beast' || s.physical >= 8)
+      journey = `"People underestimated me early. They saw a physical player and thought that's all I had. But I learned. I adapted. And every time they came for me, I won the challenge that mattered."`;
+    else if (arch === 'social-butterfly' || s.social >= 8)
+      journey = `"I built something real out here. Every conversation, every late-night talk by the fire \u2014 those weren't moves. Those were genuine connections. And somehow, they carried me to the end."`;
+    else if (arch === 'loyal-soldier' || s.loyalty >= 8)
+      journey = `"I gave my word to the people I trusted, and I kept it. In a game full of liars, I tried to be someone you could count on. Maybe that's not flashy. But I'm still here."`;
+    else if (arch === 'underdog')
+      journey = `"Nobody picked me to make it this far. Not the other players, not the audience, probably not even myself. But here I am. I survived every vote they threw at me."`;
+    else if (arch === 'hothead' || s.temperament <= 3)
+      journey = `"I know I'm not easy. I know I burned some people. But I never pretended to be something I wasn't out here. Every emotion was real. Every fight was real. And I'm in the finale."`;
+    else
+      journey = `"If you told me on day one that I'd be sitting here on the last morning, I would have laughed. But here I am. And I earned every single day."`;
+
+    // Relationships line
+    let relLine = '';
+    if (allianceNames.length >= 2)
+      relLine = `${fp.Sub} built ${fp.pos} game around ${allianceNames.slice(0, 2).join(' and ')}. Some of those bonds survived. Some didn't.`;
+    else if (allianceNames.length === 1)
+      relLine = `${allianceNames[0]} was ${fp.pos} closest ally out here. Whether that's enough to win \u2014 that's tonight's question.`;
+    if ([...rivalNames].length)
+      relLine += ` ${[...rivalNames][0]} was the rival ${fp.sub} never shook.`;
+
+    // What's at stake
+    let stakeLine = '';
+    if (wins >= 3) stakeLine = `${f} has dominated challenges. The jury knows it.`;
+    else if (votesAgainst >= 6) stakeLine = `${f} has survived ${votesAgainst} votes against. The target was always there.`;
+    else if (idolsPlayed >= 1) stakeLine = `${f} played an idol when it mattered. The jury saw that.`;
+    else if (s.social >= 7) stakeLine = `${f}'s social connections could carry the jury vote \u2014 if ${fp.sub} can articulate what ${fp.sub} did.`;
+    else stakeLine = `${f} made it to the end. Now ${fp.sub} ${fp.sub === 'they' ? 'have' : 'has'} to prove it wasn't by accident.`;
+
+    html += `<div style="margin-bottom:16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:14px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+        ${rpPortrait(f, 'sm')}
+        <div>
+          <div style="font-family:var(--font-display);font-size:14px">${f}</div>
+          <div style="font-size:10px;color:var(--muted)">${vpArchLabel(f)}</div>
+        </div>
+      </div>
+      <div style="font-size:13px;color:#cdd9e5;line-height:1.7;font-style:italic;margin-bottom:8px">${journey}</div>
+      ${relLine ? `<div style="font-size:12px;color:#8b949e;line-height:1.5;margin-bottom:6px">${relLine}</div>` : ''}
+      <div style="font-size:12px;color:var(--accent-gold);line-height:1.5">${stakeLine}</div>
+    </div>`;
+  });
+
+  // Final morning moment
+  const momentTexts = [
+    `The fire crackles low. Nobody adds wood. The game doesn't need it anymore.`,
+    `Empty hammocks. Empty seats. The spots where the others used to sit are louder than any conversation.`,
+    `Someone looks at the tribe flag one last time. It's faded now. Weathered. Just like them.`,
+    `The sun comes up the way it always does. But this morning feels different. This morning, it ends.`,
+  ];
+  const momentIdx = (finalists.reduce((s, f) => s + f.charCodeAt(0), 0) + epNum) % momentTexts.length;
+  html += `<div style="text-align:center;font-size:13px;color:#484f58;font-style:italic;margin-top:12px;line-height:1.6;padding:12px 0;border-top:1px solid rgba(255,255,255,0.04)">
+    ${momentTexts[momentIdx]}
+  </div>`;
+
+  html += `</div>`;
+  return html;
+}
+
 function rpBuildFinaleChallenge(ep) {
   const stages = ep.finalChallengeStages || [];
   const winner = ep.immunityWinner;

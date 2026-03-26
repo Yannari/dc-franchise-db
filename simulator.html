@@ -3027,7 +3027,8 @@ function simulateIndividualChallenge(pool, immune) {
       const fatigue = streak >= 4 ? 3 : streak >= 3 ? 2 : streak >= 2 ? 1.5 : streak >= 1 ? 0.5 : 0;
       // Lingering injury penalty — decays over episodes
       const _inj = gs.lingeringInjuries?.[name];
-      const injPenalty = _inj && (ep.num - _inj.ep) < _inj.duration ? _inj.penalty * (1 - (ep.num - _inj.ep) / _inj.duration) : 0;
+      const _epNum = (gs.episode || 0) + 1;
+      const injPenalty = _inj && (_epNum - _inj.ep) < _inj.duration ? _inj.penalty * (1 - (_epNum - _inj.ep) / _inj.duration) : 0;
       return { name, score: base - fatigue - injPenalty + (Math.random()*8-4) };
     })
     .sort((a, b) => b.score - a.score);

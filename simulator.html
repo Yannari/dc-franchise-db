@@ -1510,11 +1510,21 @@ function defaultConfig() {
 // JSON.parse loses Sets (they become {}). Restore them after any gs load.
 function repairGsSets(g) {
   if (!g) return;
-  const SET_FIELDS = ['blowupHeatNextEp', 'knownIdolHoldersThisEp', 'socialBombHeatThisEp',
-                      'injuredThisEp', 'scramblingThisEp', 'beastDrillsThisEp', 'lieTargetsThisEp'];
+  const SET_FIELDS = ['blowupHeatNextEp', 'knownIdolHoldersThisEp', 'knownIdolHoldersPersistent',
+                      'socialBombHeatThisEp', 'injuredThisEp', 'scramblingThisEp', 'beastDrillsThisEp', 'lieTargetsThisEp'];
   SET_FIELDS.forEach(f => {
-    if (!(g[f] instanceof Set)) g[f] = new Set();
+    if (g[f] instanceof Set) return; // already a Set
+    if (Array.isArray(g[f])) { g[f] = new Set(g[f]); return; } // saved as array — restore
+    g[f] = new Set();
   });
+}
+// Pre-save: convert Sets to arrays so JSON.stringify preserves them
+function prepGsForSave(g) {
+  if (!g) return g;
+  const SET_FIELDS = ['blowupHeatNextEp', 'knownIdolHoldersThisEp', 'knownIdolHoldersPersistent',
+                      'socialBombHeatThisEp', 'injuredThisEp', 'scramblingThisEp', 'beastDrillsThisEp', 'lieTargetsThisEp'];
+  SET_FIELDS.forEach(f => { if (g[f] instanceof Set) g[f] = [...g[f]]; });
+  return g;
 }
 
 function loadAll() {
@@ -8662,7 +8672,16 @@ function simulateEpisode() {
   const _journeyCarry = (gs.journeyLostVotes || []).filter(p => gs.activePlayers.includes(p));
   gs.lostVotes = [..._journeyCarry];
   ep.bewareLostVotes = [];
-  gs.knownIdolHoldersThisEp = new Set();
+  // Carry forward persistent idol knowledge, then reset episode-specific set
+  if (!gs.knownIdolHoldersPersistent) gs.knownIdolHoldersPersistent = new Set();
+  // Merge episode knowledge into persistent memory
+  (gs.knownIdolHoldersThisEp || new Set()).forEach(name => gs.knownIdolHoldersPersistent.add(name));
+  // Clean out players who no longer have an idol (played it, got voted out, KiP'd)
+  gs.knownIdolHoldersPersistent.forEach(name => {
+    if (!gs.advantages.some(a => a.type === 'idol' && a.holder === name)) gs.knownIdolHoldersPersistent.delete(name);
+  });
+  // Episode set starts with persistent knowledge + gets new discoveries added during the ep
+  gs.knownIdolHoldersThisEp = new Set(gs.knownIdolHoldersPersistent);
   gs.socialBombHeatThisEp = new Set(); // cleared each episode — only affects current tribal
   // blowupHeatNextEp is NOT reset here — it carries from last episode's tribal blowup/crashout
   // and is consumed by computeHeat() during alliance formation. Stale entries are harmless
@@ -12765,7 +12784,7 @@ function buildNextEpQs(ep) {
 // GAME STATE PERSISTENCE
 // ══════════════════════════════════════════════════════════════════════
 
-function saveGameState() { localStorage.setItem('simulator_gs', JSON.stringify(gs)); }
+function saveGameState() { prepGsForSave(gs); localStorage.setItem('simulator_gs', JSON.stringify(gs)); repairGsSets(gs); }
 
 function snapshotGameState() {
   return {

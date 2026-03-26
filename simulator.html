@@ -4329,6 +4329,7 @@ function applyTwist(ep, twist, isPrimary = true) {
         `There was an awkward energy around camp after ${s.name} arrived. They hadn't been invited. They'd been taken.`,
       ]) };
     });
+    const _preAbductionTribes = gs.tribes.map(t => ({ name: t.name, members: [...t.members] }));
     stolen.forEach(s => {
       gs.tribes = gs.tribes.map(t => ({
         ...t,
@@ -4338,6 +4339,7 @@ function applyTwist(ep, twist, isPrimary = true) {
     });
     twistObj.stolen = stolen;
     twistObj.newTribes = gs.tribes.map(t => ({ name: t.name, members: [...t.members] }));
+    twistObj.oldTribes = _preAbductionTribes;
 
   // ── IMMUNITY / NO BOOT ─────────────────────────────────────────────
   } else if (engineType === 'double-safety') {
@@ -9845,11 +9847,17 @@ function generateTwistScenes(ep) {
       case 'abduction':
         if (tw.stolen?.length) {
           sc.push({ text: 'Each tribe had the power to take one player from a rival tribe. No warning. No negotiation.', players: active });
+          // Show tribes BEFORE abduction
+          if (tw.oldTribes?.length) {
+            sc.push({ text: 'Before:', players: [] });
+            tw.oldTribes.forEach(t => sc.push({ text: t.name, players: t.members, tribeLabel: t.name }));
+          }
           tw.stolen.forEach(s => {
             sc.push({ text: `${s.to} chose to take ${s.name} from ${s.from}.`, players: [s.name] });
             sc.push({ text: `${s.name} left their tribe and joined ${s.to}. They had no say in the matter.`, players: [s.name] });
           });
-          // Show new tribe compositions after abduction
+          // Show tribes AFTER abduction
+          sc.push({ text: 'After:', players: [] });
           (tw.newTribes || ep.tribesAtStart || []).forEach(t => {
             sc.push({ text: t.name, players: t.members, tribeLabel: t.name });
           });

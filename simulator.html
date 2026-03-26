@@ -2812,11 +2812,21 @@ function simulateIndividualChallenge(pool, immune) {
   const chal = pickChallenge();
   const candidates = pool.filter(p => p!==immune);
   if (!candidates.length) return null;
+  // Consecutive-win fatigue: repeat winners face increasing pressure/fatigue
+  const _streaks = gs.challengeWinStreak || {};
   // Score every candidate so we can produce a full ranking
   const scored = candidates
-    .map(name => ({ name, score: chal.stat(pStats(name)) + (Math.random()*6-3) }))
+    .map(name => {
+      const base = chal.stat(pStats(name));
+      const streak = _streaks[name] || 0;
+      const fatigue = streak >= 4 ? 3 : streak >= 3 ? 2 : streak >= 2 ? 1.5 : streak >= 1 ? 0.5 : 0;
+      return { name, score: base - fatigue + (Math.random()*8-4) };
+    })
     .sort((a, b) => b.score - a.score);
   const winner = scored[0].name;
+  // Update win streaks — winner increments, everyone else resets
+  if (!gs.challengeWinStreak) gs.challengeWinStreak = {};
+  candidates.forEach(name => { gs.challengeWinStreak[name] = name === winner ? (gs.challengeWinStreak[name] || 0) + 1 : 0; });
   const chalMemberScores = {};
   scored.forEach(s => { chalMemberScores[s.name] = s.score; });
   return { name: winner, challengeLabel: chal.name, challengeCategory: chal.category, challengeDesc: chal.desc,

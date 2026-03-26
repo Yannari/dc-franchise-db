@@ -4241,11 +4241,16 @@ function applyTwist(ep, twist, isPrimary = true) {
         const chance = 0.10 + reasons * 0.10 + s.boldness * 0.02 + (s.loyalty <= 3 ? 0.10 : 0);
         if (Math.random() >= chance) return;
 
-        // Pick destination: tribe with the pull person, or tribe with least hostility
-        const dest = pullTribe || others.reduce((best, t) => {
-          const avg = t.members.reduce((s2,m) => s2+getBond(name,m), 0) / Math.max(1, t.members.length);
-          return avg > best.avg ? { tribe: t, avg } : best;
-        }, { tribe: others[0], avg: -Infinity }).tribe;
+        // Pick destination: tribe with the pull person, or tribe with least hostility (randomize ties)
+        let dest = pullTribe;
+        if (!dest) {
+          const _scored = others.map(t => ({
+            tribe: t,
+            avg: t.members.reduce((s2,m) => s2+getBond(name,m), 0) / Math.max(1, t.members.length) + Math.random() * 0.1,
+          }));
+          _scored.sort((a,b) => b.avg - a.avg);
+          dest = _scored[0].tribe;
+        }
 
         mutineers.push({ name, from: tribe.name, to: dest.name });
       });
@@ -9714,8 +9719,11 @@ function generateTwistScenes(ep) {
 
       case 'mutiny': {
         const mut = tw.mutineers||[];
-        sc.push({ text: 'Both tribes were brought to a neutral location. The offer was simple — and impossible to ignore.', players: active });
-        sc.push({ text: 'Any player may voluntarily leave their tribe and join the other. Step forward now — or stay where you are.', players: active });
+        const _numTribes = (ep.tribesAtStart || gs.tribes).length;
+        const _tribesWord = _numTribes === 2 ? 'Both tribes were' : `All ${_numTribes} tribes were`;
+        const _joinWord = _numTribes === 2 ? 'join the other' : 'join another tribe';
+        sc.push({ text: `${_tribesWord} brought to a neutral location. The offer was simple — and impossible to ignore.`, players: active });
+        sc.push({ text: `Any player may voluntarily leave their tribe and ${_joinWord}. Step forward now — or stay where you are.`, players: active });
         if (mut.length) {
           mut.forEach(m => {
             sc.push({ text: `${m.name} stepped off the mat.`, players: [m.name] });

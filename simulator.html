@@ -17244,15 +17244,18 @@ function rpBuildVotingPlans(ep) {
     <div class="rp-vp-subtitle">As ${tribalTribeName || 'the tribe'} approaches tribal, alliances converge and targets emerge\u2026</div>
     ${ep.firstEliminated && (ep.twists||[]).some(t => t.catalogId === 'double-elim') ? `<div style="background:rgba(210,153,34,0.06);border:1px solid rgba(210,153,34,0.2);border-radius:6px;padding:10px 14px;margin-bottom:4px;font-size:12px;color:#d29922">&#x26A1; <strong>Double Elimination</strong> &mdash; Jeff announced it before tribal. Two players are going home tonight. One vote — the top two vote-getters both go.</div>` : ''}`;
 
-  const _allImmuneVP = [immunity, ep.sharedImmunity, ep.secondImmune].filter(Boolean);
+  const _allImmuneVP = [...new Set([immunity, ep.sharedImmunity, ep.secondImmune, ...(ep.extraImmune || [])].filter(Boolean))];
   if (_allImmuneVP.length) {
     html += `<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px">`;
     _allImmuneVP.forEach(name => {
+      const _heroDuelTw = (ep.twists||[]).find(t => t.type === 'hero-duel' && t.duelWinner === name);
       const label = name === immunity ? `${name} \u2014 immune tonight`
                   : name === ep.sharedImmunity ? `${name} \u2014 shared immunity`
-                  : `${name} \u2014 safe (runner-up)`;
+                  : name === ep.secondImmune ? `${name} \u2014 safe (runner-up)`
+                  : _heroDuelTw ? `${name} \u2014 safe (hero duel winner)`
+                  : `${name} \u2014 safe`;
       html += `<div class="rp-vp-immunity-row">
-        ${rpPortrait(name, 'immune', 'Immune')}
+        ${rpPortrait(name, 'immune', 'Safe')}
         <span class="rp-vp-immunity-label">${label}</span>
       </div>`;
     });

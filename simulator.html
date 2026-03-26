@@ -12721,16 +12721,31 @@ function simulateFinale() {
     const juryResult = simulateJuryVote(finalists);
     ep.juryResult = juryResult;
     const jSorted = Object.entries(juryResult.votes).sort(([,a],[,b]) => b-a);
-    // Tiebreaker: if top 2 have equal votes, break by total jury bond (who the jury likes more overall)
+    // Tiebreaker: if top 2 have equal votes, revote — if still tied, double crowning
     if (jSorted.length >= 2 && jSorted[0][1] === jSorted[1][1]) {
       const tied = jSorted.filter(([,v]) => v === jSorted[0][1]).map(([n]) => n);
-      const bondTotals = tied.map(f => ({
-        name: f,
-        total: (gs.jury || []).reduce((s, j) => s + getBond(j, f), 0),
-      }));
-      bondTotals.sort((a, b) => b.total - a.total);
-      ep.juryTiebreak = { tied, winner: bondTotals[0].name, method: 'jury-sentiment' };
-      ep.winner = bondTotals[0].name;
+      // Revote: each juror re-evaluates with slight random shift
+      const revoteResult = { votes: Object.fromEntries(tied.map(f => [f, 0])), reasoning: [] };
+      (gs.jury || []).forEach(juror => {
+        const scores = tied.map(f => {
+          const fS = pStats(f);
+          const bond = getBond(juror, f);
+          const gameplay = fS.strategic * 0.3 + fS.boldness * 0.2 + fS.social * 0.2;
+          return { name: f, score: gameplay + bond * 1.5 + (Math.random() * 2.5) };
+        });
+        scores.sort((a, b) => b.score - a.score);
+        revoteResult.votes[scores[0].name]++;
+        revoteResult.reasoning.push({ juror, votedFor: scores[0].name });
+      });
+      const rvSorted = Object.entries(revoteResult.votes).sort(([,a],[,b]) => b-a);
+      if (rvSorted[0][1] === rvSorted[1]?.[1]) {
+        // Still tied — double crowning
+        ep.juryTiebreak = { tied, winners: tied, method: 'double-crowning', revote: revoteResult };
+        ep.winner = tied.join(' & ');
+      } else {
+        ep.juryTiebreak = { tied, winner: rvSorted[0][0], method: 'revote', revote: revoteResult };
+        ep.winner = rvSorted[0][0];
+      }
     } else {
       ep.winner = jSorted[0]?.[0] || finalists[0];
     }
@@ -13390,93 +13405,86 @@ function generateFTCData(finalists, juryResult) {
   const _h = (a,b) => [...a+b].reduce((s,c)=>s+c.charCodeAt(0),0); // deterministic hash
   const _pick = (arr,seed) => arr[seed % arr.length];
 
-  // ── Question pools by category ──
-  const _qStrategic = [
-    `What was your single biggest move — and how do you know it was yours?`,
-    `Name one player you outplayed. Tell me exactly how.`,
-    `When did you realize you could actually win this game?`,
-    `Walk me through your endgame. When did you start building it?`,
-    `Who was your most dangerous opponent and how did you handle them?`,
-  ];
-  const _qSocial = [
-    `I never felt like you were being straight with me. Convince me I was wrong.`,
-    `Who out here actually trusted you — and did you deserve it?`,
-    `What relationship in this game are you most proud of?`,
-    `Did anyone here see the real you, or were you performing the whole time?`,
-  ];
-  const _qLoyalty = [
-    `Did you keep your word out there? If you broke it — when, and why?`,
-    `Name one promise you made and kept — even when it cost you.`,
-    `Who did you betray, and would you do it again?`,
-    `Was there anyone you refused to write down, no matter what?`,
-  ];
-  const _qGeneral = [
-    `Tell me something real. What do you think you did better than everyone up here?`,
-    `What's the one thing you wish the jury knew about your game?`,
-    `If you were sitting where I am, would you vote for yourself? Why?`,
-    `What moment in this game changed who you are?`,
-    `Forget strategy. Tell me who you actually are outside this game.`,
-  ];
+  // ── Question-Answer pairs: each question has its own contextual responses ──
+  const _wins = name => gs.episodeHistory.filter(e => e.immunityWinner === name).length;
+  const _qa = (fS, wins) => {
+    const hi = v => fS[v] >= 7, lo = v => fS[v] <= 4;
+    return {
+    // ── Betrayal (voted them out, hostile) ──
+    betrayalHostile: [
+      { q:`You voted me out. Give me one real reason I should vote for you tonight.`,
+        r: hi('strategic') ? `"Because I made the hardest call in this game and I'm standing here because of it."` : `"I had to make the move that kept me here. I'm sorry it came at your expense."` },
+      { q:`You wrote my name down. Look me in the eye and tell me why.`,
+        r: hi('strategic') ? `"Because you were a threat and I respected you enough to make the move instead of hiding behind someone else."` : `"Because the game put me in a corner and I chose survival. I'd do it again."` },
+      { q:`I'm gone because of you. What makes you think you deserve my vote?`,
+        r: hi('social') ? `"Because I owned every move I made. I never pretended to be someone I wasn't. You deserved honesty, and I'm giving it to you now."` : `"I don't think I deserve it. I think I earned it. There's a difference."` },
+    ],
+    // ── Betrayal (voted them out, neutral) ──
+    betrayalNeutral: [
+      { q:`You had a hand in getting me eliminated. Was it personal, or purely the game?`,
+        r: hi('strategic') ? `"Purely game. You were dangerous and I knew it. The decision wasn't easy but it was right."` : `"It wasn't personal. The numbers pointed your direction and I followed them."` },
+      { q:`My torch got snuffed and you were part of it. Tell me why.`,
+        r: hi('social') ? `"The alliance made the call. I could've fought it, but the timing wasn't right for me to break ranks."` : `"I went along with the group. I'm not going to pretend I drove that vote."` },
+      { q:`I thought we had something out there. Then you voted me out. What happened?`,
+        r: hi('loyalty') ? `"We did. And losing that was one of the worst parts of this game for me. But the numbers left me no choice."` : `"The game changed faster than our relationship could keep up. I made a call."` },
+    ],
+    // ── Strategic ──
+    strategic: [
+      { q:`What was your single biggest move — and how do you know it was yours?`,
+        r: hi('strategic') ? `"I orchestrated the vote that changed the shape of this game. Ask anyone — they'll tell you whose idea it was."` : wins >= 2 ? `"Winning immunity when I absolutely had to. ${wins} times I saved myself when nobody else would."` : `"Staying alive when everyone counted me out. That's not one move — that's a whole game."` },
+      { q:`Name one player you outplayed. Tell me exactly how.`,
+        r: hi('strategic') ? `"I saw their game before they did. I let them feel safe, then moved when they weren't looking."` : hi('social') ? `"I built a relationship with them they trusted completely. When I needed to use it, I did."` : `"I outlasted them. They made a mistake and I was ready when they did."` },
+      { q:`When did you realize you could actually win this game?`,
+        r: hi('strategic') ? `"Early. I saw the path and I built toward it every single day."` : wins >= 2 ? `"After my second immunity win. I realized nobody could touch me if I kept competing."` : `"Honestly? Not until I was sitting in this chair. I just kept surviving."` },
+      { q:`Walk me through your endgame. When did you start building it?`,
+        r: hi('strategic') ? `"I started building it at the merge. Every vote after that was a step toward this seat."` : hi('social') ? `"I kept the right people close. My endgame was my relationships — they carried me here."` : `"I didn't have a master plan. I had a next-day plan, every day. And it worked."` },
+      { q:`Who was your most dangerous opponent and how did you handle them?`,
+        r: hi('strategic') ? `"I identified the biggest threat before anyone else and made sure the votes went that way."` : hi('social') ? `"I kept them close enough that they never saw me as a threat until it was too late."` : `"I avoided them. Let other people deal with them. Stayed out of the crossfire."` },
+    ],
+    // ── Social ──
+    social: [
+      { q:`I never felt like you were being straight with me. Convince me I was wrong.`,
+        r: hi('social') ? `"I was as real with you as this game allowed. I never lied to your face. I can look you in the eye on that."` : `"I played a game. Not everything I did was pretty. But I was never fake with you — I just couldn't show all my cards."` },
+      { q:`Who out here actually trusted you — and did you deserve it?`,
+        r: hi('loyalty') ? `"My closest ally trusted me completely, and I never broke that. They deserved someone who had their back and I was that person."` : `"A few people trusted me. Did I deserve it? Mostly. But this is a game where trust is currency, and I spent it when I had to."` },
+      { q:`What relationship in this game are you most proud of?`,
+        r: hi('social') ? `"The one that didn't help my game at all. The one that was just real. That's the one I'll remember."` : `"The person who had no reason to like me and ended up in my corner anyway. That wasn't strategy — that was earned."` },
+      { q:`Did anyone here see the real you, or were you performing the whole time?`,
+        r: hi('social') ? `"A few people saw the real me. Late at night, away from the game. Those conversations were real."` : `"Honestly, I don't know where the performance ended and I began. This game does that to you."` },
+    ],
+    // ── Loyalty ──
+    loyalty: [
+      { q:`Did you keep your word out there? If you broke it — when, and why?`,
+        r: hi('loyalty') ? `"I kept my word to the people I committed to. When the game forced a hard call, I owned it instead of hiding."` : `"I broke promises. I won't pretend otherwise. But every time I did, it was because standing still meant going home."` },
+      { q:`Name one promise you made and kept — even when it cost you.`,
+        r: hi('loyalty') ? `"I promised my closest ally I'd never write their name down. I didn't. Even when it would've been easier."` : `"I promised myself I'd play my own game. That cost me allies, but I'm sitting here."` },
+      { q:`Who did you betray, and would you do it again?`,
+        r: hi('loyalty') ? `"I only betrayed people who were already coming for me. And yes, I would."` : lo('loyalty') ? `"More people than I'd like to admit. And yeah — I would. This game doesn't reward loyalty. It rewards results."` : `"One person. They know who they are. I'd do it differently if I could. But I'd still be here."` },
+      { q:`Was there anyone you refused to write down, no matter what?`,
+        r: hi('loyalty') ? `"Yes. One person. I never wrote their name and I never would have. That was a line I drew on day one."` : `"No. Everyone was on the table. That's not cold — that's honest."` },
+    ],
+    // ── General ──
+    general: [
+      { q:`Tell me something real. What do you think you did better than everyone up here?`,
+        r: hi('strategic') ? `"I read the room better. Every vote, I knew where it was going before anyone spoke."` : hi('social') ? `"I connected with people. Not as a strategy — because I actually cared."` : `"I survived. Every day someone could've taken me out and no one did. That's not luck."` },
+      { q:`What's the one thing you wish the jury knew about your game?`,
+        r: hi('strategic') ? `"How much of what happened was my idea. You'd be surprised how many votes I quietly shaped."` : `"How hard it was. I made it look easy, but every day was a fight."` },
+      { q:`If you were sitting where I am, would you vote for yourself? Why?`,
+        r: hi('strategic') ? `"Absolutely. I played the best game and I know it."` : hi('social') ? `"I'd vote for the person who played with the most heart. I think that's me."` : `"Honestly? I'd probably struggle with it. But yeah — I'd vote for me. I earned this seat."` },
+      { q:`What moment in this game changed who you are?`,
+        r: hi('social') ? `"The night someone broke down at camp and I was the only one who stayed. That wasn't gameplay. That was just human."` : `"The first time I survived a vote I shouldn't have. It changed how I saw the whole game."` },
+      { q:`Forget strategy. Tell me who you actually are outside this game.`,
+        r: `"I'm someone who cares more than I let on out here. This game forces you to hide that. But I'm ready to stop hiding."` },
+    ],
+    };
+  };
 
-  // ── Response pools by finalist archetype ──
-  const _rStrategic = [
-    `"I orchestrated the vote nobody saw coming — the one that changed the shape of this game."`,
-    `"I saw every move three steps ahead. The people who got blindsided? I made sure they felt safe first."`,
-    `"My game was positioning. I put myself exactly where I needed to be, every single round."`,
-    `"I identified who was dangerous before anyone else did — and I moved on them first."`,
-  ];
-  const _rChallenge = wins => [
-    `"${wins} immunity wins. I earned my seat. Nobody gave me anything."`,
-    `"I competed every single time. When my back was against the wall, I won out."`,
-    `"I wasn't safe socially — so I made myself safe physically. ${wins} times."`,
-  ];
-  const _rSocial = [
-    `"I built real relationships. People told me things they didn't tell anyone else."`,
-    `"I was as real with you as this game allowed. I can look you in the eye on that."`,
-    `"I listened. Everyone out here is so busy talking they forget to listen."`,
-    `"I made people feel seen. That's not a strategy — that's who I am."`,
-  ];
-  const _rLoyalHigh = [
-    `"I kept my word to the people who mattered. When the game forced a hard call, I owned it."`,
-    `"I never blindsided an ally. If I was coming for you, you knew."`,
-    `"Loyalty isn't a weakness out here. It's a choice — and I made it every day."`,
-  ];
-  const _rLoyalLow = [
-    `"I made promises I couldn't keep — I won't pretend otherwise. But I'm still here."`,
-    `"I broke trust when I had to. I'm not proud of all of it. But I'd do it again."`,
-    `"This game demands flexibility. Rigid players go home. I adapted."`,
-  ];
-  const _rGeneral = [
-    `"I survived. That sounds simple — but in this game, it isn't."`,
-    `"I wasn't the loudest or the strongest. But I'm sitting here and they're not."`,
-    `"I found a way. Every single day, when things looked impossible, I found a way."`,
-    `"I didn't play a perfect game. But I played MY game — and it got me here."`,
-  ];
-
-  function _pickResponse(target, seed, category) {
-    const fS = pStats(target);
-    const wins = gs.episodeHistory.filter(e => e.immunityWinner === target).length;
-    // Match response to question category — don't give a loyalty answer to a strategy question
-    if (category === 'strategic') {
-      if (fS.strategic >= 8) return _pick(_rStrategic, seed);
-      if (wins >= 3) return _pick(_rChallenge(wins), seed);
-      return _pick([..._rStrategic, ..._rGeneral], seed);
-    }
-    if (category === 'social') return _pick(fS.social >= 7 ? _rSocial : _rGeneral, seed);
-    if (category === 'loyalty') return _pick(fS.loyalty >= 7 ? _rLoyalHigh : _rLoyalLow, seed);
-    // General — use finalist's strongest trait
-    if (fS.strategic >= 8) return _pick(_rStrategic, seed);
-    if (wins >= 3) return _pick(_rChallenge(wins), seed);
-    if (fS.social >= 7) return _pick(_rSocial, seed);
-    return _pick(_rGeneral, seed);
-  }
-
-  function _pickUnusedQ(pool, seed) {
-    const unused = pool.filter(q => !_usedQs.has(q));
-    const src = unused.length ? unused : pool; // fallback if all used
-    const q = _pick(src, seed);
-    _usedQs.add(q);
-    return q;
+  function _pickUnusedQA(pool, seed) {
+    const unused = pool.filter(qa => !_usedQs.has(qa.q));
+    const src = unused.length ? unused : pool;
+    const qa = _pick(src, seed);
+    _usedQs.add(qa.q);
+    return qa;
   }
 
   (juryResult?.reasoning || []).forEach((r, ri) => {
@@ -13489,49 +13497,24 @@ function generateFTCData(finalists, juryResult) {
     const votedThemOut = jHistory?.voters?.includes(target);
     const fS = pStats(target);
     const seed = _h(juror, target) + ri * 7;
+    const qa = _qa(fS, _wins(target));
 
-    let question, response;
+    let picked;
     if (votedThemOut && bond < 0) {
-      question = _pickUnusedQ([
-        `You voted me out. Give me one real reason I should vote for you tonight.`,
-        `You wrote my name down. Look me in the eye and tell me why.`,
-        `I'm gone because of you. What makes you think you deserve my vote?`,
-      ], seed);
-      response = fS.strategic >= 7
-        ? _pick([`"It was a game move. You were a threat and I respected you enough to be honest about it."`,
-                 `"Because I made the hard call. That's what winners do."`,
-                 `"I needed you out because keeping you was a risk I couldn't take."`], seed)
-        : _pick([`"I had to make the move that kept me here. I'm sorry it came at your expense."`,
-                 `"It wasn't easy. But I stand by it."`,
-                 `"I wish it had gone differently. But I'd be lying if I said I wouldn't do it again."`], seed);
+      picked = _pickUnusedQA(qa.betrayalHostile, seed);
     } else if (votedThemOut) {
-      question = _pickUnusedQ([
-        `You had a hand in getting me eliminated. Was it personal, or purely the game?`,
-        `My torch got snuffed and you were part of it. Tell me why.`,
-        `I thought we had something out there. Then you voted me out. What happened?`,
-      ], seed);
-      response = fS.strategic >= 7
-        ? _pick([`"Purely game. You were dangerous and I knew it."`,
-                 `"The numbers said your name. I followed the math, not my feelings."`,
-                 `"I respected your game enough to see you as a threat."`], seed)
-        : _pick([`"It wasn't personal. The numbers just pointed your direction."`,
-                 `"I didn't want to. But the game didn't give me another option."`,
-                 `"I followed the plan. If I'd gone rogue, I'd be sitting where you are."`], seed);
+      picked = _pickUnusedQA(qa.betrayalNeutral, seed);
     } else if (jS.strategic >= 8) {
-      question = _pickUnusedQ(_qStrategic, seed);
-      response = _pickResponse(target, seed, 'strategic');
+      picked = _pickUnusedQA(qa.strategic, seed);
     } else if (jS.social >= 7 && bond < 0) {
-      question = _pickUnusedQ(_qSocial, seed);
-      response = _pickResponse(target, seed, 'social');
+      picked = _pickUnusedQA(qa.social, seed);
     } else if (jS.loyalty >= 7) {
-      question = _pickUnusedQ(_qLoyalty, seed);
-      response = _pickResponse(target, seed, 'loyalty');
+      picked = _pickUnusedQA(qa.loyalty, seed);
     } else {
-      question = _pickUnusedQ(_qGeneral, seed);
-      response = _pickResponse(target, seed + 3, 'general');
+      picked = _pickUnusedQA(qa.general, seed);
     }
 
-    jurorQA.push({ juror, targetForQuestion: target, question, response });
+    jurorQA.push({ juror, targetForQuestion: target, question: picked.q, response: picked.r });
   });
 
   return { finalistStatements, jurorQA };
@@ -19475,8 +19458,11 @@ function rpBuildJuryVoteReveal(ep) {
       <div style="font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Final Tally</div>
       <div style="font-size:18px;font-family:var(--font-display);color:#e3b341">${sorted.map(([n,v])=>`${n}: ${v}`).join(' \u2014 ')}</div>
       ${ep.juryTiebreak ? `<div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(227,179,65,0.15)">
-        <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:#d29922;text-transform:uppercase;margin-bottom:4px">Deadlocked \u2014 Tiebreaker</div>
-        <div style="font-size:13px;color:#c9d1d9;line-height:1.6">The jury vote is tied ${sorted[0]?.[1]}\u2013${sorted[0]?.[1]}. After deliberation, the jury's overall sentiment breaks the deadlock in favor of <strong style="color:#e3b341">${ep.juryTiebreak.winner}</strong>.</div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:#d29922;text-transform:uppercase;margin-bottom:4px">Deadlocked \u2014 ${ep.juryTiebreak.method === 'double-crowning' ? 'Double Crowning' : 'Jury Revote'}</div>
+        <div style="font-size:13px;color:#c9d1d9;line-height:1.6">${ep.juryTiebreak.method === 'double-crowning'
+          ? `The jury votes again \u2014 and it's still deadlocked. For the first time in franchise history, <strong style="color:#e3b341">${ep.juryTiebreak.tied.join(' and ')}</strong> are both crowned winners.`
+          : `The jury votes again. On the revote, <strong style="color:#e3b341">${ep.juryTiebreak.winner}</strong> breaks through and takes the title.`
+        }</div>
       </div>` : ''}
     </div>
   </div>`;

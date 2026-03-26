@@ -21399,20 +21399,7 @@ function buildVPScreens(epRecord) {
         : [...gs.activePlayers];
       return [{ name: _mergeKey, members }];
     }
-    if (ep.tribesAtStart?.length) {
-      let tribes = ep.tribesAtStart;
-      // Kidnapping: move kidnapped player from home tribe to winner tribe for camp display
-      const _kidTw = (ep.twists||[]).find(t => t.type === 'kidnapping' && t.kidnapped);
-      if (_kidTw) {
-        tribes = tribes.map(t => ({
-          name: t.name,
-          members: t.name === _kidTw.fromTribe ? t.members.filter(m => m !== _kidTw.kidnapped)
-                 : t.name === _kidTw.toTribe ? (t.members.includes(_kidTw.kidnapped) ? [...t.members] : [...t.members, _kidTw.kidnapped])
-                 : [...t.members],
-        }));
-      }
-      return tribes;
-    }
+    if (ep.tribesAtStart?.length) return ep.tribesAtStart;
     const snap = gs.episodeHistory?.filter(h => h.num < ep.num).slice(-1)[0]?.gsSnapshot;
     if (snap?.tribes?.length) return snap.tribes;
     if (gs.phase === 'pre-merge' && gs.tribes?.length) return gs.tribes;
@@ -21500,11 +21487,16 @@ function buildVPScreens(epRecord) {
     const postEvs = Array.isArray(phaseData) ? [] : (phaseData?.post || []);
     const hasTipOff = !!ep.tipOffCampEvents?.[tribe.name];
     if (!postEvs.length && !hasTipOff) return;
-    // Post-challenge camp (pre-tribal): use same start-of-episode members as pre-challenge.
-    // The eliminated player was still at camp for these events — they hadn't been voted out yet.
-    const postMembers = tribe.members.length
+    // Post-challenge camp (pre-tribal): use start-of-episode members, adjusted for kidnapping.
+    // Kidnapped player moves to winner tribe's camp for this episode only.
+    let postMembers = tribe.members.length
       ? [...tribe.members]
       : [...(ep.gsSnapshot?.activePlayers || gs.activePlayers)];
+    const _kidTwPost = (ep.twists||[]).find(t => t.type === 'kidnapping' && t.kidnapped);
+    if (_kidTwPost) {
+      if (tribe.name === _kidTwPost.fromTribe) postMembers = postMembers.filter(m => m !== _kidTwPost.kidnapped);
+      if (tribe.name === _kidTwPost.toTribe && !postMembers.includes(_kidTwPost.kidnapped)) postMembers.push(_kidTwPost.kidnapped);
+    }
     const _tcPost = tribeColor(tribe.name);
     const _dotPost = `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${_tcPost};margin-right:6px;flex-shrink:0"></span>`;
     const _isMergeCampPost = tribe.name === 'merge' || tribe.name === (gs.mergeName||'merged');

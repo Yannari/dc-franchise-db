@@ -21990,10 +21990,11 @@ function rpBuildJuryVotes(ep) {
     ]);
     // Tier 2: voted out by target but has processed it — respectful but pointed
     else if (votedOutVotedJurorOut) reason = _pick([
-      `${votedOut} was part of the vote that sent me here. Good move at the time. But from the bench, I see ${tp.pos} game clearly now \u2014 and ${tp.sub} ${tp.sub==='they'?'need':'needs'} to go.`,
-      `${votedOut} voted me out. I\u2019ve had time to sit with that. No anger \u2014 but I\u2019ve also had time to see who\u2019s really controlling things. It\u2019s ${tp.obj}.`,
-      `Yeah, ${votedOut} got me. Fair play. But sitting on the jury changes your perspective. ${tp.Sub} ${tp.sub==='they'?'are':'is'} too good to leave in this game.`,
-      `${votedOut} made the move on me. I can respect it. But I also get a move now, and this is mine.`,
+      `${votedOut} put me on this bench. Now I get to return the favor. This is what the jury power is for.`,
+      `${votedOut} voted me out. I\u2019ve had weeks to think about it. Not angry \u2014 but I know who\u2019s too dangerous to leave in this game. It\u2019s ${tp.obj}.`,
+      `${votedOut} ended my game. I\u2019m not bitter \u2014 I\u2019m strategic. ${tp.Sub} ${tp.sub==='they'?'are':'is'} running things and if the jury doesn\u2019t stop ${tp.obj} now, nobody will.`,
+      `${votedOut} took me out. I accepted it. But now the jury has a shot to take ${tp.obj} out \u2014 and I\u2019m not wasting it.`,
+      `I\u2019ve been watching from the bench. ${votedOut} is the biggest threat left. This isn\u2019t revenge \u2014 it\u2019s the smart play.`,
     ]);
     // Tier 3: former allies with broken trust
     else if (wereAllied && bond <= -2) reason = _pick([

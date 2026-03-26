@@ -1179,11 +1179,16 @@
             <div class="form-group">
               <label class="form-label">Relationship type</label>
               <div class="type-seg" id="type-seg">
+                <button class="type-btn" data-type="hatred" onclick="setRelType('hatred')">Pure Hatred</button>
+                <button class="type-btn" data-type="nemesis" onclick="setRelType('nemesis')">Nemesis</button>
                 <button class="type-btn" data-type="enemy" onclick="setRelType('enemy')">Enemy</button>
                 <button class="type-btn" data-type="rival" onclick="setRelType('rival')">Rival</button>
+                <button class="type-btn" data-type="cold" onclick="setRelType('cold')">Cold</button>
                 <button class="type-btn active" data-type="neutral" onclick="setRelType('neutral')">Neutral</button>
+                <button class="type-btn" data-type="acquaintance" onclick="setRelType('acquaintance')">Acquaintance</button>
                 <button class="type-btn" data-type="ally" onclick="setRelType('ally')">Ally</button>
                 <button class="type-btn" data-type="friend" onclick="setRelType('friend')">Friend</button>
+                <button class="type-btn" data-type="rideordie" onclick="setRelType('rideordie')">Ride or Die</button>
                 <button class="type-btn" data-type="unbreakable" onclick="setRelType('unbreakable')">Unbreakable &#9733;</button>
               </div>
             </div>
@@ -1338,12 +1343,17 @@ const THREAT_TIERS = [
   { max: 10,  label: 'Extreme', color: '#ef4444' },
 ];
 const REL_TYPES = {
+  hatred:      { label: 'Pure Hatred',     color: '#7f1d1d', bond:-10, bg: 'rgba(127,29,29,0.15)' },
+  nemesis:     { label: 'Nemesis',         color: '#dc2626', bond: -8, bg: 'rgba(220,38,38,0.12)' },
   enemy:       { label: 'Enemy',           color: '#ef4444', bond: -5, bg: 'rgba(239,68,68,0.12)' },
-  rival:       { label: 'Rival',           color: '#f97316', bond: -2, bg: 'rgba(249,115,22,0.12)' },
+  rival:       { label: 'Rival',           color: '#f97316', bond: -3, bg: 'rgba(249,115,22,0.12)' },
+  cold:        { label: 'Cold',            color: '#a1a1aa', bond: -1, bg: 'rgba(161,161,170,0.12)' },
   neutral:     { label: 'Neutral',         color: '#94a3b8', bond:  0, bg: 'rgba(148,163,184,0.12)' },
-  ally:        { label: 'Ally',            color: '#3b82f6', bond:  2, bg: 'rgba(59,130,246,0.12)' },
-  friend:      { label: 'Friend',          color: '#6366f1', bond:  4, bg: 'rgba(99,102,241,0.12)' },
-  unbreakable: { label: 'Unbreakable \u2605', color: '#10b981', bond: 5, bg: 'rgba(16,185,129,0.12)' },
+  acquaintance:{ label: 'Acquaintance',    color: '#60a5fa', bond:  1, bg: 'rgba(96,165,250,0.12)' },
+  ally:        { label: 'Ally',            color: '#3b82f6', bond:  3, bg: 'rgba(59,130,246,0.12)' },
+  friend:      { label: 'Friend',          color: '#6366f1', bond:  5, bg: 'rgba(99,102,241,0.12)' },
+  rideordie:   { label: 'Ride or Die',     color: '#22c55e', bond:  8, bg: 'rgba(34,197,94,0.12)' },
+  unbreakable: { label: 'Unbreakable \u2605', color: '#10b981', bond: 10, bg: 'rgba(16,185,129,0.12)' },
 };
 const ADVANTAGES = [
   { key: 'idol',      label: 'Hidden Immunity Idol', default: 2 },
@@ -2108,8 +2118,9 @@ function openRelForm(id) {
 function closeRelForm() { editingRelId=null; document.getElementById('rel-form').style.display='none'; }
 function setRelType(type) {
   activeRelType = type;
-  document.querySelectorAll('.type-btn').forEach(btn => {
+  document.querySelectorAll('#type-seg .type-btn').forEach(btn => {
     const t=btn.dataset.type, rt=REL_TYPES[t];
+    if (!rt) return;
     btn.classList.toggle('active', t===type);
     btn.style.background = t===type ? rt.color : '';
     btn.style.borderColor = t===type ? rt.color : '';

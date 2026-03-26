@@ -4307,26 +4307,74 @@ function applyTwist(ep, twist, isPrimary = true) {
       _alreadyTaken.add(pick);
       stolen.push({ name: pick, from: source.name, to: tribe.name });
     });
-    // Bond consequences + narrative (before tribe mutation so composition is still accurate)
+    // Bond consequences, reasoning, and narrative (before tribe mutation so composition is still accurate)
     ep.twistNarrativeEvents = ep.twistNarrativeEvents || {};
     stolen.forEach(s => {
-      const fromMembers = gs.tribes.find(t => t.name === s.from)?.members.filter(p => p !== s.name && gs.activePlayers.includes(p)) || [];
-      const toMembers   = gs.tribes.find(t => t.name === s.to  )?.members.filter(p =>                  gs.activePlayers.includes(p)) || [];
-      // Old tribe: -1 bond with abducted player (loss, even if not personal betrayal)
+      const p = pronouns(s.name);
+      const ps = pStats(s.name);
+      const fromMembers = gs.tribes.find(t => t.name === s.from)?.members.filter(m => m !== s.name && gs.activePlayers.includes(m)) || [];
+      const toMembers   = gs.tribes.find(t => t.name === s.to  )?.members.filter(m =>                  gs.activePlayers.includes(m)) || [];
+      const oldAvgBond = fromMembers.length ? fromMembers.reduce((sum,m) => sum + getBond(s.name, m), 0) / fromMembers.length : 0;
+      const ts = threatScore(s.name);
+      const bondWithNew = toMembers.reduce((sum,m) => sum + Math.max(0, getBond(s.name,m)), 0);
+
+      // Reasoning: why did the tribe pick this player?
+      s.reason = ts >= 7 ? `${s.name} is a high-value target — taking ${p.obj} weakens ${s.from} and adds firepower to ${s.to}.`
+               : bondWithNew > 2 ? `${s.name} already has connections with members of ${s.to}. An easy integration.`
+               : ps.physical >= 8 ? `${s.name} is a physical asset. ${s.to} needed the challenge strength.`
+               : ps.strategic >= 8 ? `${s.name} is a strategic mind. ${s.to} wanted that brain on their side.`
+               : ps.social >= 8 ? `${s.name} gets along with everyone. ${s.to} saw someone who'd fit right in.`
+               : `${s.to} needed numbers. ${s.name} was available.`;
+
+      // Old tribe: bond loss (losing a member hurts)
       fromMembers.forEach(tm => addBond(s.name, tm, -1));
-      // New tribe: 30% suspicion check — nobody asked for this
-      toMembers.forEach(tm => { if (Math.random() < 0.30) addBond(s.name, tm, -1); });
-      // Old tribe narrative
+
+      // Abducted player's reaction: depends on how they felt about old tribe
+      const likedOldTribe = oldAvgBond >= 1.5;
+      const hatedOldTribe = oldAvgBond <= -1;
+      const isLoyal = ps.loyalty >= 7;
+      const isAdaptable = ps.social >= 7 || ps.boldness >= 7;
+
+      if (likedOldTribe && isLoyal) {
+        // Angry about being taken — resists new tribe
+        toMembers.forEach(tm => addBond(s.name, tm, -0.8));
+        s.reaction = 'resists';
+        ep.twistNarrativeEvents[s.to + '_abductee'] = { type: 'dispute', players: [s.name], text: _pick([
+          `${s.name} doesn't hide it — ${p.sub} didn't want to be here. The loyalty to ${s.from} is written on ${p.pos} face. ${s.to} watches and takes note.`,
+          `${s.name} sits apart from the group. ${p.Sub} had a tribe, had a plan, and someone else's decision just burned it down. The resentment is visible.`,
+          `${s.name} barely speaks to anyone at ${s.to} camp. ${p.Pos} silence says everything — ${p.sub} ${p.sub==='they'?'were':'was'} taken from people ${p.sub} trusted and dropped with strangers.`,
+        ]) };
+      } else if (hatedOldTribe || (!likedOldTribe && isAdaptable)) {
+        // Happy to leave — embraces new tribe
+        toMembers.forEach(tm => addBond(s.name, tm, 0.8));
+        s.reaction = 'embraces';
+        ep.twistNarrativeEvents[s.to + '_abductee'] = { type: 'bond', players: [s.name], text: _pick([
+          `${s.name} won't say it out loud, but being pulled from ${s.from} might be the best thing that's happened to ${p.obj} in this game. ${p.Sub} ${p.sub==='they'?'are':'is'} already making connections.`,
+          `${s.name} settles in fast. Too fast, some might say. But the truth is — ${p.sub} needed a fresh start, and ${s.to} might be exactly that.`,
+          `Within hours, ${s.name} looks more comfortable at ${s.to} camp than ${p.sub} ever did at ${s.from}. A change of scenery can change a game.`,
+        ]) };
+      } else {
+        // Cautious — uncertain, trying to read the room
+        toMembers.forEach(tm => { if (Math.random() < 0.4) addBond(s.name, tm, -0.5); });
+        s.reaction = 'cautious';
+        ep.twistNarrativeEvents[s.to + '_abductee'] = { type: 'doubt', players: [s.name], text: _pick([
+          `${s.name} is polite but guarded. ${p.Sub} ${p.sub==='they'?'don\'t':'doesn\'t'} know these people, and they don't know ${p.obj}. Trust takes time — and time is a luxury.`,
+          `${s.name} keeps ${p.pos} head down and watches. Not hostile, not warm. Just calculating. The new tribe reads it as either caution or threat.`,
+          `${s.name} arrived with nothing — no allies, no information, no safety. ${p.Sub} ${p.sub==='they'?'are':'is'} starting from scratch, and the tribe can feel it.`,
+        ]) };
+      }
+
+      // Old tribe narrative (the loss)
       ep.twistNarrativeEvents[s.from] = { type: 'doubt', text: _pick([
         `${s.name} was gone before they could say anything. The tribe was down a number and everyone felt it.`,
         `The other tribe just reached in and took ${s.name}. No vote, no warning. The camp felt different after that.`,
         `They couldn't stop it. ${s.name} left with ${s.to} and the tribe had to figure out how to move forward without them.`,
       ]) };
-      // New tribe narrative
+      // New tribe narrative (the arrival — general)
       ep.twistNarrativeEvents[s.to] = { type: 'rumor', text: _pick([
-        `${s.name} arrived at camp looking rattled. The tribe had chosen them — but they hadn't chosen the tribe.`,
+        `${s.name} arrived at camp. The tribe had chosen ${p.obj} — but ${p.sub} hadn't chosen them.`,
         `${s.name} showed up without warning. Everyone was polite. Everyone was watching.`,
-        `There was an awkward energy around camp after ${s.name} arrived. They hadn't been invited. They'd been taken.`,
+        `There was a shift in energy when ${s.name} walked in. A new number. A new variable. The game just changed.`,
       ]) };
     });
     const _preAbductionTribes = gs.tribes.map(t => ({ name: t.name, members: [...t.members] }));
@@ -9854,7 +9902,11 @@ function generateTwistScenes(ep) {
           }
           tw.stolen.forEach(s => {
             sc.push({ text: `${s.to} chose to take ${s.name} from ${s.from}.`, players: [s.name] });
+            if (s.reason) sc.push({ text: s.reason, players: [s.name] });
             sc.push({ text: `${s.name} left their tribe and joined ${s.to}. They had no say in the matter.`, players: [s.name] });
+            if (s.reaction === 'resists') sc.push({ text: `${s.name} is not happy about it. The loyalty to ${s.from} is clear.`, players: [s.name], badge: 'RESISTS', badgeClass: 'bad' });
+            else if (s.reaction === 'embraces') sc.push({ text: `${s.name} takes it in stride — maybe even welcomes the change.`, players: [s.name], badge: 'FRESH START', badgeClass: 'green' });
+            else sc.push({ text: `${s.name} says nothing. The tribe watches, waiting to see which way this goes.`, players: [s.name], badge: 'CAUTIOUS', badgeClass: 'gold' });
           });
           // Show tribes AFTER abduction
           sc.push({ text: 'After:', players: [] });

@@ -4289,12 +4289,22 @@ function applyTwist(ep, twist, isPrimary = true) {
   } else if (engineType === 'abduction') {
     if (gs.phase !== 'pre-merge' || gs.tribes.length < 2) return;
     const stolen = [];
+    const _alreadyTaken = new Set(); // prevent double-stealing
     gs.tribes.forEach(tribe => {
       const others = gs.tribes.filter(t => t.name !== tribe.name);
       if (!others.length) return;
-      const source = others[Math.floor(Math.random() * others.length)];
+      // Pick from the tribe with the most members (weaken the strongest)
+      const source = [...others].sort((a,b) => b.members.length - a.members.length)[0];
       if (source.members.length < 2) return;
-      const pick = source.members[Math.floor(Math.random() * source.members.length)];
+      const pool = source.members.filter(p => !_alreadyTaken.has(p));
+      if (!pool.length) return;
+      // Strategic pick: prefer strong players (weaken opponent) or players with existing bonds (easier to integrate)
+      const pick = wRandom(pool, p => {
+        const ts = threatScore(p);
+        const bondWithTribe = tribe.members.reduce((s,m) => s + Math.max(0, getBond(p,m)), 0);
+        return ts * 0.6 + bondWithTribe * 0.3 + Math.random() * 2;
+      });
+      _alreadyTaken.add(pick);
       stolen.push({ name: pick, from: source.name, to: tribe.name });
     });
     // Bond consequences + narrative (before tribe mutation so composition is still accurate)
@@ -4327,6 +4337,7 @@ function applyTwist(ep, twist, isPrimary = true) {
       }));
     });
     twistObj.stolen = stolen;
+    twistObj.newTribes = gs.tribes.map(t => ({ name: t.name, members: [...t.members] }));
 
   // ── IMMUNITY / NO BOOT ─────────────────────────────────────────────
   } else if (engineType === 'double-safety') {
@@ -9837,6 +9848,10 @@ function generateTwistScenes(ep) {
           tw.stolen.forEach(s => {
             sc.push({ text: `${s.to} chose to take ${s.name} from ${s.from}.`, players: [s.name] });
             sc.push({ text: `${s.name} left their tribe and joined ${s.to}. They had no say in the matter.`, players: [s.name] });
+          });
+          // Show new tribe compositions after abduction
+          (tw.newTribes || ep.tribesAtStart || []).forEach(t => {
+            sc.push({ text: t.name, players: t.members, tribeLabel: t.name });
           });
         } else {
           sc.push({ text: 'Abduction was offered but the tribes were too depleted for it to fire.', players: [] });

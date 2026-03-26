@@ -5511,6 +5511,10 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
         `${p} handles camp entirely while others rest. It earns quiet respect from the tribe.`,
         `${p} refuses to sit still — fishing, fixing the shelter, hauling water. ${_hwP.Sub} ${_hwP.sub==='they'?'are':'is'} making ${_hwP.ref} indispensable.`,
         `${p} works harder than anyone else today. It does not go unnoticed.`,
+        `${p} rebuilds the fire pit without being asked. By the time the tribe wakes up, camp looks different. Better.`,
+        `${p} spends the afternoon patching holes in the shelter roof. It's thankless work. ${_hwP.Sub} ${_hwP.sub==='they'?'do':'does'} it anyway.`,
+        `${p} catches three fish before anyone else has left their shelter. ${_hwP.Sub} ${_hwP.sub==='they'?'don\'t':'doesn\'t'} brag about it. The fish speak for themselves.`,
+        `${p} carries water for the entire tribe today. Two trips. Nobody else offered. The gesture isn't lost on anyone.`,
       ];
       events.push({ type: 'hardWork', text: hwLines[Math.floor(Math.random() * hwLines.length)], player: p });
 
@@ -5574,6 +5578,10 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
         `${p} wanders far from camp, searching for a hidden advantage. No one notices ${_gone} gone.`,
         `${p} is seen disappearing into the woods alone. Nobody follows. Nobody asks.`,
         `${p} searches the entire shoreline methodically. ${_srP.Sub} find${_srP.sub==='they'?'':'s'} nothing — but ${_srP.sub} ${_srP.sub==='they'?'are':'is'} not done looking.`,
+        `${p} volunteers for a water run and takes twice as long as usual. The tribe suspects exactly what ${_gone} doing.`,
+        `${p} digs through tree roots near camp while the others sleep. Nothing yet — but the desperation is building.`,
+        `${p} checks behind the same rock for the third time this week. The idol isn't there. The paranoia is.`,
+        `${p} comes back from a "walk" with dirt on ${_srP.posAdj} hands and a face that says nothing. The tribe reads everything.`,
       ];
       events.push({ type: 'idolSearch', text: searchLines[Math.floor(Math.random() * searchLines.length)] });
 
@@ -5585,6 +5593,10 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
         `${p} cuts ${_ijP.posAdj} hand badly at camp. Medical checks on ${_ijP.obj}. The tribe watches nervously.`,
         `${p} collapses briefly after a long day in the sun. The tribe rallies — but questions start.`,
         `${p} wakes up sick. ${_ijP.Sub} push${_ijP.sub==='they'?'':'es'} through the day, but ${_ijP.posAdj} tribemates are keeping a close eye.`,
+        `${p} burns ${_ijP.posAdj} hand on the fire. Nothing serious — but the grimace lingers all day.`,
+        `${p} barely sleeps. The bags under ${_ijP.posAdj} eyes tell a story. The tribe sees a liability forming.`,
+        `${p} twists ${_ijP.posAdj} knee during a camp task. ${_ijP.Sub} ${_ijP.sub==='they'?'don\'t':'doesn\'t'} sit out, but the limp is obvious.`,
+        `${p} throws up in the bushes. Nobody says "weak" out loud — but someone is thinking it.`,
       ];
       // Liability effect: tribe quietly reassesses the injured player as a challenge risk
       group.filter(x => x !== p).forEach(other => addBond(other, p, -0.3));
@@ -5763,10 +5775,14 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
       const socC = pStats(comforter).social;
       const comfortLines = socC >= 8
         ? [`${comforter} notices ${struggling} is struggling before anyone else does. By the time the tribe catches up, the bond is already there.`,
-           `${comforter} doesn't say much to ${struggling} — just stays close. That's enough.`]
+           `${comforter} doesn't say much to ${struggling} — just stays close. That's enough.`,
+           `${comforter} pulls ${struggling} aside and says exactly the right thing. The tribe doesn't know what was said. ${struggling} looks different after.`,
+           `${comforter} makes ${struggling} laugh on the worst day of the game. It's a gift nobody else could have given.`]
         : [`${comforter} sits with ${struggling} after a rough stretch. Nobody else checked in. ${comforter} did.`,
            `${comforter} checks on ${struggling} without being asked. It's a small thing. ${struggling} won't forget it.`,
-           `${comforter} and ${struggling} share a quiet moment by the water. Something real passes between them.`];
+           `${comforter} and ${struggling} share a quiet moment by the water. Something real passes between them.`,
+           `${comforter} brings ${struggling} food when nobody's looking. Small gesture. Huge in this game.`,
+           `${comforter} stays up with ${struggling} by the fire long after everyone else is asleep. No strategy. Just presence.`];
       events.push({ type: 'comfort', text: comfortLines[Math.floor(Math.random() * comfortLines.length)], players: [comforter, struggling] });
 
     } else if (eventType === 'overplay') {
@@ -6009,11 +6025,14 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
       addBond(a, b, -1.0);
       group.filter(x => x !== a && x !== b).forEach(x => { addBond(a, x, -0.2); addBond(b, x, -0.2); });
       const lcLines = [
-        `${a} gives an instruction. ${b} countermands it immediately. Neither backs down. The tribe watches both of them and wonders who to follow.`,
-        `${a} and ${b} both try to take control of camp at the same time. It gets awkward fast. The tribe quietly stops listening to either of them.`,
-        `${a} is running the show — or thinks they are. ${b} has other ideas. By the end of the day there are two separate operations happening and the tribe is exhausted.`,
-        `${a} takes charge. ${b} takes charge louder. The tribe picks sides purely based on who they find less annoying.`,
-        `${a} tells the group what to do. ${b} immediately explains why they're wrong. The actual task doesn't get done.`,
+        `${a} gives an instruction. ${b} countermands it immediately. Neither backs down.`,
+        `${a} and ${b} both try to take control of camp at the same time. The tribe stops listening to either.`,
+        `${a} is running the show — or thinks ${pronouns(a).sub} ${pronouns(a).sub==='they'?'are':'is'}. ${b} has other ideas. Two operations, one exhausted tribe.`,
+        `${a} takes charge. ${b} takes charge louder. The tribe picks sides based on who they find less annoying.`,
+        `${a} tells the group what to do. ${b} immediately explains why that's wrong. The actual task doesn't get done.`,
+        `${a} starts organizing the group. ${b} undercuts it with a different plan. Nobody wants to pick a side, so nothing happens.`,
+        `${a} and ${b} are both convinced they're the leader today. The tribe has a third opinion about who's actually in charge: nobody.`,
+        `${a} delegates tasks. ${b} reassigns them. By noon the tribe is doing whatever they want and ignoring both.`,
       ];
       events.push({ type: 'leadershipClash', text: lcLines[Math.floor(Math.random() * lcLines.length)] });
 
@@ -6028,6 +6047,9 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
         `${p} is very confident about ${_sbP.posAdj} position in this game. Very confident. Out loud. Repeatedly.`,
         `${p} narrates ${_sbP.posAdj} own moves like a sports commentator. It was funny once. It is not funny anymore.`,
         `${p} rates everyone at camp — including ${_sbP.ref} — on a scale of ten. ${_sbP.Sub} give${_sbP.sub==='they'?'':'s'} ${_sbP.ref} a nine. Everyone else gets a four.`,
+        `${p} tells the group exactly how ${_sbP.sub} would've played differently if ${_sbP.sub} ${_sbP.sub==='they'?'were':'was'} in charge. Nobody asked.`,
+        `${p} describes ${_sbP.posAdj} game to someone like it's already a documentary. The other person smiles and quietly reconsiders the alliance.`,
+        `${p} announces that ${_sbP.sub} ${_sbP.sub==='they'?'have':'has'} this figured out. The tribe exchanges looks. Nobody corrects ${_sbP.obj}.`,
       ];
       events.push({ type: 'showboat', text: sbLines[Math.floor(Math.random() * sbLines.length)], player: p });
 
@@ -6045,6 +6067,9 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
         `There's not enough food and ${a} doesn't seem to register that. ${b} does. The rest of the tribe does too.`,
         `${a} "borrows" supplies without clearing it with the group. ${b} calls it out directly. ${a} acts confused.`,
         `${a} finishes eating and immediately asks if there's more. There isn't. The tribe just looks at ${a}.`,
+        `${b} catches ${a} cooking extra rice while the rest of the tribe sleeps. The confrontation is quiet and devastating.`,
+        `${a} ate while others were working. ${b} says something about it. ${a} says it's not a big deal. ${b} disagrees. The tribe takes sides.`,
+        `${a} suggests rationing. Then eats more than the ration. ${b} counts and says nothing. For now.`,
       ];
       events.push({ type: 'foodConflict', text: fcLines[Math.floor(Math.random() * fcLines.length)], player: a });
 
@@ -6059,10 +6084,13 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
       const _intA = pronouns(a);
       const intLines = phA >= 8
         ? [`${a} hauls a log that ${b} couldn't move yesterday. ${b} watches and doesn't say anything.`,
-           `${a} doesn't need to threaten anyone. ${_intA.Sub} just exist${_intA.sub==='they'?'':'s'} in the space and everyone adjusts around ${_intA.obj}.`]
+           `${a} doesn't need to threaten anyone. ${_intA.Sub} just exist${_intA.sub==='they'?'':'s'} in the space and everyone adjusts around ${_intA.obj}.`,
+           `${a} stands up during a group discussion. Just stands. The conversation changes direction. ${b} noticed.`,
+           `${a} walks past ${b} on a narrow path and doesn't move. ${b} does. The tribe saw the whole thing.`]
         : [`${a} has been watching ${b} all day. ${b} noticed. Now ${b} is uncomfortable.`,
-           `${a} challenges ${b} to something small — a bet, a task, a point of logic. ${b} backs down. The tribe files it away.`,
-           `${a} makes a comment that wasn't technically a threat. ${b} heard it as one. Maybe that was the point.`];
+           `${a} challenges ${b} to something small — a bet, a task, a point of logic. ${b} backs down.`,
+           `${a} makes a comment that wasn't technically a threat. ${b} heard it as one. Maybe that was the point.`,
+           `${a} holds eye contact with ${b} a beat too long during a group conversation. ${b} looks away first.`];
       events.push({ type: 'intimidation', text: intLines[Math.floor(Math.random() * intLines.length)] });
 
     // ══════════════════════════════════════════════════════════
@@ -6113,7 +6141,10 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
         `${a} plants a story with ${b}. ${subject} is the target. By tomorrow it will sound like everyone's been saying it.`,
         `${a} bends the truth with ${b} about what ${subject} said at camp. The original quote was nothing. The new version is not nothing.`,
         `${a} and ${b} talk about ${subject} in a way that slowly shifts ${b}'s read of the game. ${a} doesn't call it lying. ${a} calls it context.`,
-        `${a} manufactures a grievance about ${subject} and delivers it to ${b} as fact. ${a} keeps a straight face. ${_lyA.Sub} ${_lyA.sub==='they'?'are':'is'} very good at this.`,
+        `${a} manufactures a grievance about ${subject} and delivers it to ${b} as fact. ${_lyA.Sub} ${_lyA.sub==='they'?'are':'is'} very good at this.`,
+        `${a} casually mentions to ${b} that ${subject} was asking questions about the vote — ${subject} wasn't. But now ${b} is on alert.`,
+        `${a} tells ${b} a version of last night's conversation that didn't happen. It's close enough to real that ${b} doesn't catch the edit.`,
+        `${a} invents a quote from ${subject} and drops it into conversation with ${b}. The seed is planted. ${a} moves on like nothing happened.`,
       ];
       if (!gs.lieTargetsThisEp) gs.lieTargetsThisEp = new Set();
       gs.lieTargetsThisEp.add(subject);
@@ -6254,6 +6285,10 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
         `${p} stops asking questions, stops checking in. ${_ocP.Sub} act${_ocP.sub==='they'?'':'s'} like the vote is settled. That energy makes people nervous.`,
         `${p} laughs a lot today — the kind that only happens when someone feels completely safe. The tribe watches.`,
         `${p} clearly thinks ${_ocP.sub} ${_ocP.sub==='they'?'are':'is'} fine. ${_ocP.Sub} might be. But assuming it out loud is how people get voted out.`,
+        `${p} tells someone ${_ocP.sub} ${_ocP.sub==='they'?'aren\'t':'isn\'t'} worried about tonight. Word travels. Now other people are worried about ${p}.`,
+        `${p} naps in the middle of the afternoon while everyone else strategizes. Either ${_ocP.sub} ${_ocP.sub==='they'?'have':'has'} nothing to fear — or ${_ocP.sub} ${_ocP.sub==='they'?'have':'has'} no idea what's coming.`,
+        `${p} walks around camp with the energy of someone who's already won today. The tribe reads it as arrogance.`,
+        `${p} makes a comment about how "the vote is obvious tonight." Three people in earshot disagree silently.`,
       ];
       events.push({ type: 'overconfidence', text: ocLines[Math.floor(Math.random() * ocLines.length)], player: p });
 
@@ -6293,6 +6328,9 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
         `Something ${acB} said lands differently to ${acA} today. ${_acA.Sub} file${_acA.sub==='they'?'':'s'} it away and say nothing.`,
         `${acA} starts wondering whether ${acB} is playing ${_acA.obj} or playing with ${_acA.obj}. The line is blurring.`,
         `${acA} and ${acB} don't argue. They just stop talking for a stretch. In this game, that means something.`,
+        `${acA} catches ${acB} in a conversation that wasn't meant for ${_acA.obj}. Nothing damning — but the secrecy itself is the problem.`,
+        `${acA} realizes ${_acA.sub} ${_acA.sub==='they'?'haven\'t':'hasn\'t'} been told the full plan in two days. The exclusion is quiet but deliberate.`,
+        `${acA} tests ${acB} with a small piece of information. When it comes back wrong, ${_acA.sub} ${_acA.sub==='they'?'know':'knows'} the trust is leaking.`,
       ];
       events.push({ type: 'allianceCrack', text: crackLines[Math.floor(Math.random() * crackLines.length)], players: [acA, acB] });
 
@@ -6316,6 +6354,9 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
         `${sdA} makes a quiet move toward ${sdB}. ${_sdA.Sub} don't${_sdA.sub==='they'?'':'es'} need permission from anyone. That's the point.`,
         `${sdA} tests the waters with ${sdB}. Nothing committed. But the door is open now.`,
         `${sdA} has been thinking about a different path. ${sdB} is the first person ${_sdA.sub} bring${_sdA.sub==='they'?'':'s'} it to.`,
+        `${sdA} whispers something to ${sdB} on the walk back from the well. ${sdB} doesn't react publicly. Privately, the gears start turning.`,
+        `${sdA} and ${sdB} have a conversation the rest of the tribe doesn't see. By tomorrow, the game might look different.`,
+        `${sdA} pulls ${sdB} aside with a pitch that's either brilliant or desperate. ${sdB} is going to sleep on it.`,
       ];
       events.push({ type: 'sideDeal', text: sdLines[Math.floor(Math.random() * sdLines.length)] });
 
@@ -6345,10 +6386,13 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
       const _wyA = pronouns(wyA);
       const wyLines = intA >= 7
         ? [`${wyA} catches ${wyB} watching ${_wyA.obj} from across camp. ${_wyA.Sub} smile${_wyA.sub==='they'?'':'s'} back and give${_wyA.sub==='they'?'':'s'} nothing away.`,
-           `${wyA} clocks that ${wyB} has been paying close attention and adjust${_wyA.sub==='they'?'':'s'} accordingly.`]
+           `${wyA} clocks that ${wyB} has been paying close attention and adjust${_wyA.sub==='they'?'':'s'} accordingly.`,
+           `${wyA} notices the surveillance and uses it — feeds ${wyB} exactly what ${_wyA.sub} want${_wyA.sub==='they'?'':'s'} ${wyB} to see.`,
+           `${wyA} catches ${wyB}'s eye and holds it. A small acknowledgment: I know you're watching. ${wyB} looks away first.`]
         : [`${wyA} gets the feeling that ${wyB} is watching every move. ${_wyA.Sub} ${_wyA.sub==='they'?'are':'is'} not wrong.`,
            `${wyA} notices ${wyB} tracking where ${_wyA.sub} go${_wyA.sub==='they'?'':'es'} and who ${_wyA.sub} talk${_wyA.sub==='they'?'':'s'} to. It makes ${_wyA.obj} uncomfortable.`,
-           `Something changes in how ${wyA} moves through camp after noticing ${wyB}'s attention. ${_wyA.Sub} ${_wyA.sub==='they'?'are':'is'} more careful now.`];
+           `Something changes in how ${wyA} moves through camp after noticing ${wyB}'s attention. ${_wyA.Sub} ${_wyA.sub==='they'?'are':'is'} more careful now.`,
+           `${wyA} can feel ${wyB}'s eyes on ${_wyA.obj} during every group conversation. It's not paranoia. It's accurate.`];
       events.push({ type: 'watchingYou', text: wyLines[Math.floor(Math.random() * wyLines.length)] });
 
     } else if (eventType === 'loneWolf') {
@@ -6360,6 +6404,10 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
         `${p} handles camp alone — no check-ins, no alliances. ${_lwP.Sub} seem${_lwP.sub==='they'?'':'s'} fine with that.`,
         `${p} makes it clear — quietly — that ${_lwP.sub} ${_lwP.sub==='they'?'are':'is'} not locking in right now. The tribe finds this suspicious.`,
         `${p} pulls back from the social game entirely for a day. Confidence or detachment. The tribe hasn't decided which.`,
+        `${p} eats alone. Not angrily — just... alone. The tribe watches from a distance and wonders what ${_lwP.posAdj} game actually is.`,
+        `${p} goes for a walk and doesn't come back for hours. When ${_lwP.sub} ${_lwP.sub==='they'?'do':'does'}, ${_lwP.sub} ${_lwP.sub==='they'?'don\'t':'doesn\'t'} explain where ${_lwP.sub} went.`,
+        `${p} sits at the edge of every group conversation. Present but not participating. It's calculated or it's checked out. Nobody can tell.`,
+        `Someone tries to loop ${p} into the vote discussion. ${p} listens, nods, contributes nothing. The non-answer is an answer.`,
       ];
       events.push({ type: 'loneWolf', text: lwLines[Math.floor(Math.random() * lwLines.length)], player: p });
 
@@ -6548,6 +6596,9 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
         `${a} does not come up in any strategic conversation today. ${_flA.Sub} ${_flA.sub==='they'?'have':'has'} worked very hard to ensure that.`,
         `${a} is present at every meal, every task, every fireside chat — and nobody considers ${_flA.obj} a threat. The perfect position.`,
         `Nobody names ${a} as a target today. To the untrained eye that means ${_flA.sub} ${_flA.sub==='they'?'are':'is'} safe. It means more than that.`,
+        `${a} agrees with whoever is speaking. Always. The tribe thinks ${_flA.sub} ${_flA.sub==='they'?'have':'has'} no opinion. ${_flA.Sub} ${_flA.sub==='they'?'have':'has'} plenty — ${_flA.sub} just ${_flA.sub==='they'?'keep':'keeps'} them quiet.`,
+        `${a} moves through camp like wallpaper. People talk freely around ${_flA.obj} because they forget ${_flA.sub} ${_flA.sub==='they'?'are':'is'} there. That's the whole strategy.`,
+        `${a} hasn't been on anyone's radar for three episodes. In this game, invisibility is a superpower — until it isn't.`,
       ];
       events.push({ type: 'floaterInvisible', text: fiLines[Math.floor(Math.random() * fiLines.length)], player: a });
 

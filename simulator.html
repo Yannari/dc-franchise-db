@@ -1324,7 +1324,7 @@ const TWIST_CATALOG = [
   { id:'kidnapping',       emoji:'🫳', name:'Kidnapping',           category:'team',       phase:'pre-merge',  desc:'Challenge winner tribe kidnaps one player from the losing tribe. That player skips tribal (safe) and bonds with their captors. Returns next episode.', engineType:'kidnapping' },
   // Immunity
   { id:'shared-immunity',  emoji:'🛡️', name:'Shared Immunity',      category:'immunity',   phase:'post-merge', desc:'Immunity winner picks one other player to share the necklace with.',        engineType:'shared-immunity' },
-  { id:'double-safety',    emoji:'🛡️', name:'Double Safety',        category:'immunity',   phase:'post-merge', desc:'Two players win immunity — one from challenge, one random.',                 engineType:'double-safety'   },
+  { id:'double-safety',    emoji:'🛡️', name:'Double Safety',        category:'immunity',   phase:'post-merge', desc:'Two players win immunity — the challenge winner and the runner-up.',         engineType:'double-safety'   },
   { id:'hero-duel',        emoji:'⚔️', name:'Hero Duel',            category:'immunity',   phase:'any',        desc:'Two players face off head-to-head for individual immunity.',                 engineType:'hero-duel'       },
   { id:'guardian-angel',   emoji:'😇', name:'Guardian Angel',       category:'immunity',   phase:'post-merge', desc:'Player with most jury support earns a safety advantage.',                   engineType:'guardian-angel'  },
   { id:'endurance-test',   emoji:'⚡', name:'Endurance Marathon',   category:'immunity',   phase:'any',        desc:'Extended endurance challenge — physical and endurance stats dominate.',     engineType:'reward-challenge' },
@@ -8435,19 +8435,64 @@ function simulateEpisode() {
       }
     }
 
-    // ── TWIST: shared-immunity — winner shares necklace with their best ally ──
+    // ── TWIST: shared-immunity — winner picks someone to share the necklace with ──
     const sharedTw = ep.twists?.find(t => t.type === 'shared-immunity');
     if (sharedTw && ep.immunityWinner) {
-      const allies = gs.activePlayers.filter(p => p !== ep.immunityWinner);
-      const sharedWith = allies.length ? wRandom(allies, n => Math.max(0.1, getBond(ep.immunityWinner, n) + 1 + Math.random() * 0.3)) : null;
-      if (sharedWith) { sharedTw.sharedWith = sharedWith; ep.sharedImmunity = sharedWith; }
+      const winner = ep.immunityWinner;
+      const wS = pStats(winner);
+      const candidates = gs.activePlayers.filter(p => p !== winner);
+      if (candidates.length) {
+        // Decision: bond-driven (loyalty) vs strategic (protect a shield/number)
+        const sharedWith = wRandom(candidates, n => {
+          const bond = getBond(winner, n);
+          const ts = threatScore(n);
+          const inAlliance = (gs.namedAlliances||[]).some(a => a.active && a.members.includes(winner) && a.members.includes(n));
+          const heat = computeHeat(n, gs.activePlayers, []);
+          // Loyal players protect allies; strategic players protect shields or numbers
+          const loyaltyPull = bond * 1.5 + (inAlliance ? 3 : 0);
+          const strategicPull = (heat >= 3 ? 2 : 0) + (ts >= 7 ? 1.5 : 0); // save someone in danger or a shield
+          const weight = wS.loyalty >= 7 ? loyaltyPull * 1.5 + strategicPull * 0.5
+                       : wS.strategic >= 7 ? loyaltyPull * 0.5 + strategicPull * 1.5
+                       : loyaltyPull + strategicPull;
+          return Math.max(0.1, weight + Math.random() * 1.5);
+        });
+        // Reasoning
+        const sBond = getBond(winner, sharedWith);
+        const sInAlliance = (gs.namedAlliances||[]).some(a => a.active && a.members.includes(winner) && a.members.includes(sharedWith));
+        const sHeat = computeHeat(sharedWith, gs.activePlayers, []);
+        sharedTw.reason = sInAlliance ? `${winner} and ${sharedWith} are in the same alliance. Loyalty rewarded.`
+                        : sBond >= 3 ? `${winner} and ${sharedWith} have a strong bond. This is personal, not strategic.`
+                        : sHeat >= 3 ? `${sharedWith} was in danger. ${winner} saw it — and used the necklace as a lifeline.`
+                        : threatScore(sharedWith) >= 7 ? `${sharedWith} is a shield. Keeping them safe keeps ${winner} safe.`
+                        : `${winner} made a calculated choice. ${sharedWith} is a number ${winner} needs.`;
+        // Snubbed player: the person who expected to be picked but wasn't
+        const snubbed = candidates.filter(p => p !== sharedWith && getBond(winner, p) >= 2)
+          .sort((a,b) => getBond(winner, b) - getBond(winner, a))[0] || null;
+        if (snubbed && getBond(winner, snubbed) >= sBond - 1) {
+          sharedTw.snubbed = snubbed;
+          addBond(snubbed, winner, -1.5); // feels betrayed
+        }
+        // Grateful player
+        addBond(sharedWith, winner, 1.5);
+        sharedTw.sharedWith = sharedWith;
+        ep.sharedImmunity = sharedWith;
+      }
     }
-    // ── TWIST: double-safety — winner + one random non-ally earn immunity ──
+    // ── TWIST: double-safety — winner + challenge runner-up both earn immunity ──
     const dblSafeTw = ep.twists?.find(t => t.type === 'double-safety');
     if (dblSafeTw && ep.immunityWinner) {
-      const others = gs.activePlayers.filter(p => p !== ep.immunityWinner);
-      const second  = others.length ? others[Math.floor(Math.random() * others.length)] : null;
-      if (second) { dblSafeTw.secondImmune = second; ep.secondImmune = second; }
+      // Runner-up from the challenge placements
+      const placements = ep.chalPlacements || [];
+      const runnerUp = placements.length >= 2 ? placements[1] : null;
+      const second = runnerUp && runnerUp !== ep.immunityWinner ? runnerUp
+        : gs.activePlayers.filter(p => p !== ep.immunityWinner)[0] || null;
+      if (second) {
+        dblSafeTw.secondImmune = second;
+        dblSafeTw.reason = runnerUp === second
+          ? `${second} finished second in the challenge — close enough to earn safety.`
+          : `${second} earned safety as the next-best performer.`;
+        ep.secondImmune = second;
+      }
     }
     // ── TWIST: hero-duel — only the two duelists compete; winner gets immunity ──
     const heroTw = ep.twists?.find(t => t.type === 'hero-duel');
@@ -8549,6 +8594,28 @@ function simulateEpisode() {
     const _ce = ep.campEvents[_exileEvtData.key];
     if (Array.isArray(_ce)) _ce.unshift(_exileEvtData.evt);
     else (_ce.post = _ce.post || []).unshift(_exileEvtData.evt);
+  }
+
+  // ── Inject shared-immunity / double-safety camp events ──
+  const _mergeCampKey = gs.isMerged ? (gs.mergeName || 'merge') : null;
+  if (sharedTw?.sharedWith && _mergeCampKey && ep.campEvents?.[_mergeCampKey]) {
+    const _ce = ep.campEvents[_mergeCampKey];
+    const _postArr = Array.isArray(_ce) ? _ce : (_ce.post = _ce.post || []);
+    const _sp = pronouns(sharedTw.sharedWith);
+    _postArr.unshift({ type: 'bond', players: [ep.immunityWinner, sharedTw.sharedWith],
+      text: `${ep.immunityWinner} walks over to ${sharedTw.sharedWith} and places the necklace around ${_sp.pos} neck. No words needed. The tribe watches in silence.` });
+    if (sharedTw.snubbed) {
+      const _snP = pronouns(sharedTw.snubbed);
+      _postArr.push({ type: 'doubt', players: [sharedTw.snubbed, ep.immunityWinner],
+        text: `${sharedTw.snubbed} stares at the ground. ${_snP.Sub} thought that necklace was coming ${_snP.pos} way. It didn't. That changes things.` });
+    }
+  }
+  if (dblSafeTw?.secondImmune && _mergeCampKey && ep.campEvents?.[_mergeCampKey]) {
+    const _ce = ep.campEvents[_mergeCampKey];
+    const _postArr = Array.isArray(_ce) ? _ce : (_ce.post = _ce.post || []);
+    const _dp = pronouns(dblSafeTw.secondImmune);
+    _postArr.unshift({ type: 'bond', players: [dblSafeTw.secondImmune],
+      text: `${dblSafeTw.secondImmune} came second in the challenge — and earned safety for it. ${_dp.Sub} can breathe tonight. The rest of the tribe cannot.` });
   }
 
   if (gs.exiledThisEp) {
@@ -9910,13 +9977,27 @@ function generateTwistScenes(ep) {
         result.push({ label:'Hero Duel', type:tw.type, scenes:sc }); break;
 
       case 'shared-immunity':
-        sc.push({ text: 'After the immunity challenge, the winner may share the Immunity Necklace with one other player.', players: [] });
-        sc.push({ text: 'If they choose to share, both players are completely safe at tonight\'s Tribal Council.', players: [] });
+        if (tw.sharedWith && ep.immunityWinner) {
+          sc.push({ text: `${ep.immunityWinner} won individual immunity — and with it, the power to share the necklace.`, players: [ep.immunityWinner] });
+          sc.push({ text: `${ep.immunityWinner} shares immunity with ${tw.sharedWith}.`, players: [ep.immunityWinner, tw.sharedWith], badge: 'SHARED IMMUNITY', badgeClass: 'win' });
+          if (tw.reason) sc.push({ text: tw.reason, players: [ep.immunityWinner, tw.sharedWith] });
+          if (tw.snubbed) {
+            sc.push({ text: `${tw.snubbed} expected to be picked. The necklace went to someone else. That silence says everything.`, players: [tw.snubbed], badge: 'SNUBBED', badgeClass: 'bad' });
+          }
+        } else {
+          sc.push({ text: 'The immunity winner may share the Immunity Necklace with one other player.', players: [] });
+        }
         result.push({ label:'Shared Immunity', type:tw.type, scenes:sc }); break;
 
       case 'double-safety':
-        sc.push({ text: 'After the immunity challenge, the winner will also grant safety to one other player of their choosing.', players: [] });
-        sc.push({ text: 'That player will be immune at tonight\'s Tribal Council.', players: [] });
+        if (tw.secondImmune && ep.immunityWinner) {
+          sc.push({ text: `Tonight, two players are safe. The challenge winner — and the runner-up.`, players: [ep.immunityWinner, tw.secondImmune] });
+          sc.push({ text: `${ep.immunityWinner} wins immunity.`, players: [ep.immunityWinner], badge: 'IMMUNE', badgeClass: 'win' });
+          sc.push({ text: `${tw.secondImmune} finishes second — also safe tonight.`, players: [tw.secondImmune], badge: 'SAFE', badgeClass: 'win' });
+          if (tw.reason) sc.push({ text: tw.reason, players: [tw.secondImmune] });
+        } else {
+          sc.push({ text: 'Two players will earn immunity tonight — the winner and the runner-up.', players: [] });
+        }
         result.push({ label:'Double Safety', type:tw.type, scenes:sc }); break;
 
       case 'guardian-angel': {
@@ -10896,7 +10977,7 @@ function generateSummaryText(ep) {
     const _dblSafeTw = (ep.twists||[]).find(t => t.type === 'double-safety');
     if (_heroTw?.duelWinner)      ln(`HERO DUEL RESULT: ${_heroTw.duelWinner} wins. ${_heroTw.duelLoser} is vulnerable.`);
     if (_sharedTw?.sharedWith)    ln(`SHARED IMMUNITY: ${ep.immunityWinner} chose to share the necklace with ${_sharedTw.sharedWith}. Both are safe.`);
-    if (_dblSafeTw?.secondImmune) ln(`DOUBLE SAFETY: ${ep.immunityWinner} won immunity. ${_dblSafeTw.secondImmune} also earned safety.`);
+    if (_dblSafeTw?.secondImmune) ln(`DOUBLE SAFETY: ${ep.immunityWinner} won immunity. ${_dblSafeTw.secondImmune} finished second — also safe tonight.`);
   }
 
   // POST-CHALLENGE STATUS — individual/group targets + final targets

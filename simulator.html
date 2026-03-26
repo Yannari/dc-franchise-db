@@ -8388,6 +8388,14 @@ function simulateEpisode() {
           players: [_kidPick],
           text: _kidEvts[_kidReaction][([..._kidPick].reduce((s,c)=>s+c.charCodeAt(0),0) + ep.num) % _kidEvts[_kidReaction].length],
         };
+
+        // Update tribesAtStart so camp screens show kidnappee with winner tribe, not home tribe
+        ep.tribesAtStart = ep.tribesAtStart.map(t => ({
+          name: t.name,
+          members: t.name === ep.loser.name ? t.members.filter(m => m !== _kidPick)
+                 : t.name === ep.winner.name ? [...t.members, _kidPick]
+                 : [...t.members],
+        }));
       }
     }
 

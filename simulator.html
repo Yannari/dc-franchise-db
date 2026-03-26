@@ -6618,6 +6618,11 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
 
       // ── PURE HATRED (-9 or worse) ──
       if (_eb <= -9 && Math.random() < 0.55) {
+        addBond(a, b, -0.8); // hatred deepens — becomes harder to recover
+        // Collateral: tribe morale suffers — everyone nearby loses small bonds with both
+        group.filter(p => p !== a && p !== b).forEach(p => {
+          addBond(p, a, -0.3); addBond(p, b, -0.3);
+        });
         events.push({ type: 'pureHatred', players: [a, b], text: _rp2([
           `${a} and ${b} can't be in the same space. The tribe has stopped trying to fix it. They just keep them apart now.`,
           `${a} moves ${pA.pos} things to the other side of camp. Nobody asks why. Everyone already knows — ${b} is the reason.`,
@@ -6629,6 +6634,10 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
 
       // ── NEMESIS (-7 to -9) ──
       else if (_eb <= -7 && Math.random() < 0.40) {
+        addBond(a, b, -0.5); // rivalry intensifies
+        // One of them becomes paranoid from the tension
+        if (gs.playerStates?.[a] && pStats(a).temperament <= 5) gs.playerStates[a].emotional = 'paranoid';
+        else if (gs.playerStates?.[b] && pStats(b).temperament <= 5) gs.playerStates[b].emotional = 'paranoid';
         events.push({ type: 'nemesis', players: [a, b], text: _rp2([
           `${a} and ${b} have a conversation that starts normal and ends with both of them walking away shaking. The tribe pretends not to notice.`,
           `Every time ${a} speaks at camp, ${b} visibly tenses. It's become the tribe's unspoken tension — always there, never addressed.`,
@@ -6639,6 +6648,12 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
 
       // ── UNBREAKABLE (+9 or better) ──
       if (_eb >= 9 && Math.random() < 0.55) {
+        addBond(a, b, 0.3); // bond reinforces itself
+        // Pair threat: everyone else sees them as a power duo — small negative shift toward both
+        group.filter(p => p !== a && p !== b).forEach(p => {
+          if (getBond(p, a) < 3) addBond(p, a, -0.2);
+          if (getBond(p, b) < 3) addBond(p, b, -0.2);
+        });
         events.push({ type: 'unbreakableBond', players: [a, b], text: _rp2([
           `${a} and ${b} don't need to talk strategy anymore. A look across the fire is enough. The tribe has noticed — and some of them are afraid of it.`,
           `${a} and ${b} have a conversation late at night that has nothing to do with the game. The kind of conversation that makes everyone else feel like outsiders.`,
@@ -6650,6 +6665,12 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
 
       // ── RIDE OR DIE (+7 to +9) ──
       else if (_eb >= 7 && Math.random() < 0.40) {
+        addBond(a, b, 0.5); // bond grows
+        // Loyalty spillover: the protector's rep grows with the tribe
+        const protector = pStats(a).loyalty >= pStats(b).loyalty ? a : b;
+        group.filter(p => p !== a && p !== b).forEach(p => {
+          if (Math.random() < 0.3) addBond(p, protector, 0.3);
+        });
         events.push({ type: 'rideOrDie', players: [a, b], text: _rp2([
           `${a} and ${b} sit together at every meal, every challenge, every tribal. The tribe has started referring to them as a single unit.`,
           `${a} catches wind that ${b}'s name was mentioned. ${pA.Sub} shut${pA.sub==='they'?'':'s'} it down immediately — not with strategy, with loyalty. The tribe saw it.`,

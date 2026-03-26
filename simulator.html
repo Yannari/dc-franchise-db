@@ -5645,7 +5645,7 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
       gs.injuredThisEp.add(p);
       // Lingering injury: challenge penalty for 2-3 episodes
       if (!gs.lingeringInjuries) gs.lingeringInjuries = {};
-      gs.lingeringInjuries[p] = { ep: ep.num, duration: 2 + Math.floor(Math.random() * 2), penalty: 1.5 + Math.random() };
+      gs.lingeringInjuries[p] = { ep: (gs.episode || 0) + 1, duration: 2 + Math.floor(Math.random() * 2), penalty: 1.5 + Math.random() };
       events.push({ type: 'injury', text: injuryLines[Math.floor(Math.random() * injuryLines.length)], player: p });
 
     } else if (eventType === 'allianceForm') {

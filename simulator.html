@@ -2988,7 +2988,12 @@ function simulateTribeChallenge(tribes) {
     });
     ms.forEach(x => { memberScores[x.name] = x.score; });
     const avg = ms.length ? ms.reduce((s,x) => s + x.score, 0) / ms.length : 0;
-    return { tribe, score: avg + (Math.random()*2-1), memberScores: ms };
+    // Underdog bonus: smaller tribes can't sit out weak players, so compensate
+    const sizeDiff = Math.max(0, minSize - tribe.members.length + sitOuts[tribe.name].length);
+    const underdogBonus = tribe.members.length < Math.max(...tribes.map(t => t.members.length))
+      ? (Math.max(...tribes.map(t => t.members.length)) - tribe.members.length) * 0.4
+      : 0;
+    return { tribe, score: avg + underdogBonus + (Math.random()*2-1), memberScores: ms };
   });
   scored.sort((a,b) => b.score-a.score);
   const safe = scored.slice(1, scored.length - 1).map(s => s.tribe);

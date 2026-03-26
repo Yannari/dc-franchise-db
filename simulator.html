@@ -7868,7 +7868,10 @@ function generateCampEvents(ep, phase = 'both') {
           const _isFullReshuffle = _newArrivals.length >= present.length * 0.5; // half or more are new = full swap
 
           if (_isFullReshuffle && _newArrivals.length >= 2) {
-            // Full tribe swap: group-level "new tribe dynamics" events
+            // Full tribe swap: everyone cautious — small universal bond penalty
+            present.forEach(a => present.forEach(b => {
+              if (a < b && !_prevMembers.includes(a) !== !_prevMembers.includes(b)) addBond(a, b, -0.3);
+            }));
             if (Math.random() < 0.60) {
               pre.push({ type: 'strategicTalk', players: present, text: _rp([
                 `New tribe. New faces. The first day at ${tribe.name} is a chess match disguised as small talk. Everyone is sizing each other up.`,
@@ -7877,34 +7880,58 @@ function generateCampEvents(ep, phase = 'both') {
                 `${tribe.name} is a brand new tribe in everything but name. The shelter is the same. The people aren't. The game starts over.`,
               ]) });
             }
-            // Originals vs newcomers tension
+            // Originals vs newcomers tension — originals bond tighter, newcomers scramble
             if (_originals.length >= 2 && _newArrivals.length >= 2 && Math.random() < 0.45) {
+              // Originals consolidate
+              for (let _oi = 0; _oi < _originals.length; _oi++)
+                for (let _oj = _oi+1; _oj < _originals.length; _oj++) addBond(_originals[_oi], _originals[_oj], 0.5);
+              // Newcomers try to bond with each other
+              for (let _ni = 0; _ni < _newArrivals.length; _ni++)
+                for (let _nj = _ni+1; _nj < _newArrivals.length; _nj++) addBond(_newArrivals[_ni], _newArrivals[_nj], 0.3);
               const _origNames = _originals.slice(0, 2).join(' and ');
               const _newNames = _newArrivals.slice(0, 2).join(' and ');
               pre.push({ type: 'doubt', players: [..._originals.slice(0,2), ..._newArrivals.slice(0,2)], text: _rp([
-                `The originals — ${_origNames} — already have a rhythm at camp. The newcomers — ${_newNames} — are watching from the outside. The question is who adapts first.`,
-                `There's a line between who was here before and who just arrived. ${_origNames} know the camp, the dynamics, the fire schedule. ${_newNames} know nothing except that they need allies fast.`,
-                `${_origNames} have home-court advantage. ${_newNames} have fresh perspective. Neither advantage lasts — but right now, both matter.`,
+                `The originals — ${_origNames} — already have a rhythm at camp. The newcomers — ${_newNames} — are watching from the outside.`,
+                `There's a line between who was here before and who just arrived. ${_origNames} know the camp. ${_newNames} know nothing except they need allies fast.`,
+                `${_origNames} have home-court advantage. ${_newNames} have fresh perspective. Neither lasts — but right now, both matter.`,
                 `The first meal at the new ${tribe.name} is tense. ${_origNames} serve. ${_newNames} accept. The power dynamic is silent but everyone feels it.`,
               ]) });
             }
-            // Cross-tribe intel: newcomers bring information
+            // Cross-tribe intel: newcomer bonds with tribe by sharing info, reveals idol holders
             if (_newArrivals.length >= 1 && Math.random() < 0.40) {
               const _intelSource = _newArrivals[Math.floor(Math.random() * _newArrivals.length)];
               const _iP = pronouns(_intelSource);
+              // Real consequence: intel source gains trust with originals
+              _originals.forEach(o => addBond(_intelSource, o, 0.6));
+              // Chance to expose an idol holder from the other tribe
+              const _otherTribes = gs.tribes.filter(t => t.name !== tribe.name);
+              const _otherIdolHolder = gs.advantages.find(a => a.type === 'idol' && _otherTribes.some(t => t.members.includes(a.holder)));
+              if (_otherIdolHolder && Math.random() < 0.35) {
+                if (!gs.knownIdolHoldersThisEp) gs.knownIdolHoldersThisEp = new Set();
+                gs.knownIdolHoldersThisEp.add(_otherIdolHolder.holder);
+              }
               pre.push({ type: 'eavesdrop', players: [_intelSource], text: _rp([
                 `${_intelSource} has information about the other tribe that ${tribe.name} didn't have before. Whether ${_iP.sub} ${_iP.sub==='they'?'share':'shares'} it — and how much — is ${_iP.posAdj} first strategic decision.`,
                 `The tribe wants to know what was happening at ${_intelSource}'s old camp. ${_intelSource} gives them enough to seem useful. Not enough to seem dangerous.`,
-                `${_intelSource} knows who has idols, who's on the bottom, and who's been lying on the other side. That knowledge is currency — and ${_iP.sub} ${_iP.sub==='they'?'aren\'t':'isn\'t'} spending it all at once.`,
-                `${_intelSource} drops a piece of information at camp — casually, like it doesn't matter. It does. The tribe's entire strategy shifts around a single sentence.`,
+                `${_intelSource} knows who has idols, who's on the bottom, and who's been lying on the other side. That knowledge is currency.`,
+                `${_intelSource} drops a piece of information at camp — casually, like it doesn't matter. It does.`,
               ]) });
             }
           } else {
-            // 1-2 newcomers into an existing group: individual integration events
+            // 1-2 newcomers into existing group: individual integration with real bond consequences
             _newArrivals.forEach(newcomer => {
               if (Math.random() < 0.55) {
                 const _ncP = pronouns(newcomer);
                 const _ncBondAvg = present.filter(m => m !== newcomer).reduce((s,m) => s + getBond(newcomer,m), 0) / Math.max(1, present.length - 1);
+                if (_ncBondAvg >= 1) {
+                  // Good integration: bonds grow with new tribe
+                  present.filter(m => m !== newcomer).forEach(m => addBond(newcomer, m, 0.4));
+                } else if (_ncBondAvg <= -1) {
+                  // Bad integration: outsider status worsens
+                  present.filter(m => m !== newcomer).forEach(m => addBond(newcomer, m, -0.3));
+                  if (gs.playerStates?.[newcomer]) gs.playerStates[newcomer].emotional = 'uneasy';
+                }
+                // Neutral: no bond change, just observing
                 const _ncText = _ncBondAvg >= 1 ? _rp([
                   `${newcomer} is settling in faster than expected. ${_ncP.Sub} already ${_ncP.sub==='they'?'have':'has'} inside jokes with half the tribe.`,
                   `${newcomer} fits. ${_ncP.Sub} ${_ncP.sub==='they'?'contribute':'contributes'} at camp, ${_ncP.sub} ${_ncP.sub==='they'?'listen':'listens'} at strategy talks. The new tribemates are warming up.`,

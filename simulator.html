@@ -21697,10 +21697,15 @@ function rpBuildJuryLife(ep) {
 
     // P4: RESENTMENT — doesn't want someone to win
     if (!picked && enemyInGame && enemyInGame.bond <= -1) {
+      const _ep = pronouns(enemyInGame.name);
       const pool = [
         `${juror} keeps bringing up ${enemyInGame.name} at dinner. "I don't want ${enemyInGame.name} to win. That's all I know for sure. Everything else, I'm flexible on."`,
         `Whenever the remaining players come up, ${juror} has one rule: "Anyone but ${enemyInGame.name}. I don't care who holds the trophy as long as it's not ${enemyInGame.name}."`,
         `"${enemyInGame.name} played ugly," ${juror} says. "Not bold, not strategic \u2014 ugly. And if the jury rewards that, what are we even doing here?"`,
+        `${juror} watches the game from the bench with one eye on ${enemyInGame.name}. "Every time ${_ep.sub} survive${_ep.sub==='they'?'':'s'} another vote, I die a little inside."`,
+        `"If ${enemyInGame.name} wins this game, it means the jury failed," ${juror} says. "I refuse to let that happen."`,
+        `${juror} has been lobbying the other jurors. "${enemyInGame.name} doesn't deserve this. I'll vote for literally anyone else at Final Tribal and I want you all to know that now."`,
+        `${juror} flinches every time ${enemyInGame.name}'s name is mentioned at the jury house. "I don't want to talk about ${_ep.obj}. I don't want to think about ${_ep.obj}. I just want ${_ep.obj} gone."`,
       ];
       picked = { type: 'resentment', badge: 'NOT OVER IT', badgeClass: 'bad', text: _pick(pool, juror + enemyInGame.name), players: [juror] };
     }
@@ -21725,16 +21730,40 @@ function rpBuildJuryLife(ep) {
         const pool = [
           `${juror} has turned the jury house into a social event. Movie nights, group dinners, beach bonfires. "We're all stuck here. We might as well make it fun."`,
           `${juror} knows everyone's story now \u2014 why they came on the show, what they're going home to, what they regret. "The game strips all that away. Here, you actually get to know people."`,
+          `${juror} mediates every argument at the jury house. Nobody asked ${jp.obj} to. "Somebody has to keep the peace. Might as well be me."`,
+          `${juror} organized a group dinner where nobody was allowed to talk about the game. "It lasted 12 minutes. Then Tribal came up. But those 12 minutes were nice."`,
+          `${juror} has become the person every new juror talks to first. "I just listen. Everyone needs that when they arrive."`,
         ];
         picked = { type: 'social', badge: 'HOST', badgeClass: 'gold', text: _pick(pool, juror + 'soc'), players: [juror] };
       } else if ((arch === 'challenge-beast' || jStats.physical >= 7) && jStats.endurance >= 6) {
-        picked = { type: 'competing', badge: 'STILL COMPETING', badgeClass: '',
-          text: `${juror} has turned the jury house into a training camp. Push-ups at dawn, swimming laps, challenging anyone to anything. "I lost the game. I'm not losing at everything else too."`,
-          players: [juror] };
+        const pool = [
+          `${juror} has turned the jury house into a training camp. Push-ups at dawn, swimming laps, challenging anyone to anything. "I lost the game. I'm not losing at everything else too."`,
+          `${juror} runs the beach every morning before anyone else wakes up. "My body still thinks I'm in the game. I'm not going to fight that."`,
+          `${juror} challenged three other jurors to a swimming race. Won all three. "Doesn't count for anything. But it felt good."`,
+          `${juror} is the first one up and the last one to sleep at the jury house. "I can't just sit here and wait. I need to move."`,
+        ];
+        picked = { type: 'competing', badge: 'STILL COMPETING', badgeClass: '', text: _pick(pool, juror + 'beast'), players: [juror] };
       } else if (arch === 'underdog') {
-        picked = { type: 'reflective', badge: 'REFLECTIVE', badgeClass: '',
-          text: `${juror} has been writing in a journal every night since arriving. "I came into this game with nothing and I almost made it. Almost. I want to remember what that felt like before it fades."`,
-          players: [juror] };
+        const pool = [
+          `${juror} has been writing in a journal every night since arriving. "I came into this game with nothing and I almost made it. Almost. I want to remember what that felt like before it fades."`,
+          `${juror} watches challenges from the bench and mouths the answers to puzzles. "I could've won that one. I know I could've."`,
+          `${juror} is the quietest person at the jury house. But when ${jp.sub} ${jp.sub==='they'?'speak':'speaks'}, everyone listens. "I earned my spot here. Nobody handed it to me."`,
+          `${juror} has started helping other jurors process their exits. "I know what it's like to feel like you didn't belong. You did. You made it to the jury. That's not nothing."`,
+        ];
+        picked = { type: 'reflective', badge: 'REFLECTIVE', badgeClass: '', text: _pick(pool, juror + 'under'), players: [juror] };
+      } else if (arch === 'wildcard' || arch === 'chaos-agent') {
+        const pool = [
+          `${juror} is the wildcard of the jury house. One day ${jp.sub} ${jp.sub==='they'?'are':'is'} cooking for everyone, the next ${jp.sub} ${jp.sub==='they'?'are':'is'} starting arguments for fun. "I'm bored. Sue me."`,
+          `${juror} tried to organize a prank on the next arriving juror. Half the house was in. The other half locked their doors. "It keeps things interesting."`,
+          `${juror} switches between loving the jury house and wanting to burn it down. "This is worse than the game. At least out there I could DO something."`,
+        ];
+        picked = { type: 'chaotic', badge: 'CHAOS', badgeClass: 'gold', text: _pick(pool, juror + 'chaos'), players: [juror] };
+      } else if (arch === 'goat') {
+        const pool = [
+          `${juror} has been surprisingly insightful at the jury house. Away from the pressure of the game, ${jp.sub} ${jp.sub==='they'?'see':'sees'} things clearly for the first time. "I know people thought I was carried. I know."`,
+          `${juror} has gotten more respect at the jury house than ${jp.sub} ever got in the game. "Turns out people like me fine when I'm not a vote."`,
+        ];
+        picked = { type: 'redeemed', badge: 'FINDING PEACE', badgeClass: '', text: _pick(pool, juror + 'goat'), players: [juror] };
       }
     }
 
@@ -21917,6 +21946,68 @@ function rpBuildJuryLife(ep) {
       }
     }
   });
+
+  // ── Mind changed: juror reconsiders their feelings about a player ──
+  jurors.forEach(juror => {
+    const jp = pronouns(juror);
+    const info = getElimInfo(juror);
+    // Juror who was bitter but bond has improved (e.g. through rekindle events)
+    if (info.topVoter && getBond(juror, info.topVoter) >= 0 && info.epsSinceElim >= 3) {
+      const pairKey = juror + info.topVoter + '_mindchange';
+      if (!_usedPairs.has(pairKey) && Math.random() < 0.30) {
+        _usedPairs.add(pairKey);
+        const pool = [
+          `${juror} surprised everyone at dinner. "I've been thinking about ${info.topVoter}. And I think... I think ${info.topVoter} made the right call voting me out. I'm not happy about it. But I get it now."`,
+          `Something shifted for ${juror} this week. "I came in here wanting ${info.topVoter} gone. But watching the game from the outside... ${info.topVoter} is playing. I can't be mad at someone for playing."`,
+          `${juror} pulls a newer juror aside. "When I got here I was furious at ${info.topVoter}. I'm not anymore. Time does that. The game looks different from this side."`,
+        ];
+        events.push({ type: 'mind-changed', badge: 'CHANGED MIND', badgeClass: 'gold',
+          text: _pick(pool, juror + 'mc'), players: [juror] });
+      }
+    }
+  });
+
+  // ── Gameplay reflection: juror reflects on their own mistakes ──
+  jurors.forEach(juror => {
+    const jp = pronouns(juror);
+    const jStats = pStats(juror);
+    const info = getElimInfo(juror);
+    if (info.epsSinceElim >= 2 && Math.random() < 0.20) {
+      const pairKey = juror + '_reflect' + epNum;
+      if (!_usedPairs.has(pairKey)) {
+        _usedPairs.add(pairKey);
+        const pool = [
+          `${juror} to the group: "I know where I went wrong. I trusted the wrong person at the wrong time. One conversation. That's all it took."`,
+          `${juror} has been replaying ${jp.pos} game in ${jp.pos} head. "I should've made a move at the final seven. I had the numbers. I was too scared. That's on me."`,
+          `"If I could go back," ${juror} says, "I'd play messier. I played safe and I still went home. At least a big move would've been fun."`,
+          `${juror} admits it at the jury house: "My social game was bad. I thought strategy was enough. It's not. You need people to actually like you."`,
+          `${juror} stares at the ceiling at night running scenarios. "What if I'd played my idol that night? Everything changes. EVERYTHING. I held it one round too long."`,
+        ];
+        events.push({ type: 'reflection', badge: 'LOOKING BACK', badgeClass: '',
+          text: _pick(pool, juror + 'refl'), players: [juror] });
+      }
+    }
+  });
+
+  // ── Outsider finding community: two jurors who never connected in the game bond at jury house ──
+  for (let i = 0; i < jurors.length && events.length < 15; i++) {
+    for (let j = i + 1; j < jurors.length; j++) {
+      const a = jurors[i], b = jurors[j];
+      const bond = getBond(a, b);
+      const pairKey = [a,b].sort().join('|') + '_newbond';
+      if (bond >= -0.5 && bond <= 0.5 && !_usedPairs.has(pairKey) && Math.random() < 0.15) {
+        _usedPairs.add(pairKey);
+        const pool = [
+          `${a} and ${b} never spoke during the game. Different tribes, different alliances, different worlds. At the jury house? They haven't stopped talking. "We should've been allies. We just never had the chance."`,
+          `${a} and ${b} bonded over the one thing they have in common: neither of them saw their elimination coming. "We're both blindside survivors. That's a club nobody wants to join — but the membership is real."`,
+          `${a} and ${b} were strangers in the game. At the jury house, they discovered they agree on almost everything. "If we'd been on the same tribe from day one, we'd have run this game."`,
+        ];
+        events.push({ type: 'new-connection', badge: 'UNLIKELY BOND', badgeClass: 'gold',
+          text: _pick(pool, a + b + 'newbond'), players: [a, b] });
+        break;
+      }
+    }
+  }
 
   if (!events.length) return null;
 

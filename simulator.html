@@ -8118,6 +8118,24 @@ function simulateEpisode() {
   findAdvantages(ep);
   generateCampEvents(ep, 'pre');
 
+  // Inject camp events for journey losers returning without their vote
+  if (ep.journey?.results) {
+    ep.journey.results.filter(r => r.result === 'lostVote').forEach(r => {
+      const tribe = gs.isMerged ? (gs.mergeName || 'merge')
+        : gs.tribes.find(t => t.members.includes(r.name))?.name;
+      if (!tribe || !ep.campEvents?.[tribe]) return;
+      const p = pronouns(r.name);
+      const evts = Array.isArray(ep.campEvents[tribe]) ? ep.campEvents[tribe] : (ep.campEvents[tribe].pre || []);
+      const texts = [
+        `${r.name} comes back from the Journey empty-handed — and without a vote. ${p.Sub} say${p.sub==='they'?'':'s'} nothing about what happened. The tribe notices the silence.`,
+        `${r.name} returns from the Journey. ${p.Sub} lost. No advantage, no vote at the next tribal. ${p.Sub} sit${p.sub==='they'?'':'s'} by the fire and stare${p.sub==='they'?'':'s'} at the flames.`,
+        `${r.name} walks back into camp with nothing. The Journey cost ${p.obj} ${p.pos} vote. The tribe reads it on ${p.pos} face before ${p.sub} say${p.sub==='they'?'':'s'} a word.`,
+      ];
+      const text = texts[([...r.name].reduce((s,c) => s + c.charCodeAt(0), 0) + ep.num) % texts.length];
+      evts.unshift({ type: 'journeyLoss', players: [r.name], text });
+    });
+  }
+
   // ── CHALLENGE ──
   if (ep.isDoubleTribal && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
     // Double tribal: ALL tribes vote — no immunity challenge, each tribe runs its own tribal
@@ -11891,6 +11909,8 @@ function snapshotGameState() {
       Object.entries(gs.playerStates || {}).map(([k, v]) => [k, { emotional: v.emotional || 'comfortable' }])
     ),
     advantages: (gs.advantages || []).map(a => ({ ...a })),
+    journeyLostVotes: gs.journeyLostVotes ? [...gs.journeyLostVotes] : [],
+    lostVotes: gs.lostVotes ? [...gs.lostVotes] : [],
   };
 }
 
@@ -15052,6 +15072,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'socialBoost'          ? '+ Lifted the mood'
                      : evt.type === 'soldierCheckin'       ? '+ Loyalty confirmed'
                      : evt.type === 'goatOblivious'        ? '+ Goat secured'
+                     : evt.type === 'journeyLoss'          ? 'NO VOTE'
                      : evt.type === 'confessional'         ? 'Confessional'
                      : evt.type === 'groupLaugh'           ? '+ Tribe lightens up'
                      : evt.type === 'sharedStruggle'       ? '+ Bonded through it'
@@ -15072,6 +15093,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : isFtcThreat || isFtcStrat ? 'red'
                      : isComfortBS || isClockingIt ? 'gold'
                      : isTdStrategy ? 'gold'
+                     : evt.type === 'journeyLoss' ? 'red'
                      : isSchemer ? 'red'
                      : isPos ? 'green' : isNeg ? 'red' : '';
 
@@ -17287,6 +17309,27 @@ function rpBuildVotes(ep) {
       </div>
     </div>`;
   }
+  // Journey lost votes — show who can't vote this tribal due to journey loss
+  const _journeyLosers = (ep.journey?.results || [])
+    .filter(r => r.result === 'lostVote' && (ep.tribalPlayers || []).includes(r.name))
+    .map(r => r.name);
+  // Also check carried-over journey lost votes from previous episodes
+  const _carriedLosers = (ep.gsSnapshot?.journeyLostVotes || [])
+    .filter(n => (ep.tribalPlayers || []).includes(n) && !_journeyLosers.includes(n));
+  [..._journeyLosers, ..._carriedLosers].forEach(name => {
+    const p = pronouns(name);
+    const lostEp = (gs.episodeHistory || []).find(h => h.journey?.results?.some(r => r.name === name && r.result === 'lostVote'))?.num || '?';
+    _advHtml += `<div class="tv-advantage-play">
+      <div class="tv-advantage-play-left">
+        ${rpPortrait(name, 'sm')}
+      </div>
+      <div class="tv-advantage-play-body">
+        <div class="tv-advantage-play-badge" style="color:#f0883e;background:rgba(240,136,62,0.12);border-color:rgba(240,136,62,0.25)">NO VOTE</div>
+        <div class="tv-advantage-play-title">${name} cannot vote tonight</div>
+        <div class="tv-advantage-play-desc">${name} lost ${p.pos} vote on the Journey (Episode ${lostEp}). ${p.Sub} must sit this tribal out without a voice.</div>
+      </div>
+    </div>`;
+  });
   if (_advHtml) html += _advHtml;
 
   // ── Two-panel layout: vote cards left, live tally right ──

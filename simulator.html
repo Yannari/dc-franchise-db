@@ -8744,14 +8744,17 @@ function simulateEpisode() {
         const _lateTied = _finalSorted.filter(([,v]) => v === _finalSorted[0][1]).map(([n]) => n);
         const _lateEligible = _lateTied.filter(p => !isTribalImmune(p));
         if (_lateEligible.length >= 2) {
+          ep.tiedPlayers = _lateTied;
+          // Challenge tiebreaker: skip revote, go straight to challenge
+          if (ep.tiebreakerChallenge || cfg.tiebreakerMode === 'challenge') {
+            const loser = runTiebreakerChallenge(_lateEligible);
+            return { votes, log, eliminated: loser, isTie: true, tiedPlayers: _lateTied };
+          }
+          // Standard: revote first, then rock draw if still tied
           const rv = simulateRevote(tribalPlayers, _lateTied, gs.lostVotes, log, tribalImmune);
-          ep.revoteVotes = rv.votes; ep.revoteLog = rv.log; ep.tiedPlayers = _lateTied;
+          ep.revoteVotes = rv.votes; ep.revoteLog = rv.log;
           const res2 = resolveVotes(rv.votes);
           if (res2.isTie) {
-            if (ep.tiebreakerChallenge || cfg.tiebreakerMode === 'challenge') {
-              const loser = runTiebreakerChallenge(_lateEligible);
-              return { votes, log, eliminated: loser, isTie: true, tiedPlayers: _lateTied };
-            }
             const rockElim = rockDraw(_lateTied);
             return { votes, log, eliminated: rockElim, isTie: true, tiedPlayers: _lateTied };
           }

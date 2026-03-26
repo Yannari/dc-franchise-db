@@ -9176,64 +9176,54 @@ function simulateEpisode() {
         ep.secondImmune = second;
       }
     }
-    // ── TWIST: hero-duel — participants from challenge results, duel for immunity ──
-    const heroTw = ep.twists?.find(t => t.type === 'hero-duel');
-    if (heroTw && gs.heroDuelPending) {
-      gs.heroDuelPending = false;
-      let duelA, duelB, duelReason;
-      if (gs.phase === 'pre-merge' && ep.loser && ep.chalMemberScores) {
-        // Pre-merge: best vs worst on the LOSING tribe
-        const loserMembers = ep.loser.members || [];
-        const loserScored = loserMembers
-          .filter(m => ep.chalMemberScores[m] !== undefined)
-          .sort((a,b) => (ep.chalMemberScores[b]||0) - (ep.chalMemberScores[a]||0));
-        if (loserScored.length >= 2) {
-          duelA = loserScored[0]; // best performer on losing tribe
-          duelB = loserScored[loserScored.length - 1]; // worst performer
-          duelReason = `${duelA} was the best performer on the losing tribe. ${duelB} was the worst. One of them earns safety — the other stays vulnerable.`;
-        }
-      } else if (ep.chalPlacements?.length >= 3) {
-        // Post-merge: 2nd place vs last place (winner already has immunity)
-        const nonWinner = ep.chalPlacements.filter(n => n !== ep.immunityWinner);
-        if (nonWinner.length >= 2) {
-          duelA = nonWinner[0]; // 2nd best (runner-up)
-          duelB = nonWinner[nonWinner.length - 1]; // worst performer
-          duelReason = `${duelA} finished second in the challenge. ${duelB} finished last. They duel for a second immunity necklace.`;
-        }
+  }
+
+  // ── TWIST: hero-duel — participants from challenge results, duel for immunity ──
+  // Runs AFTER challenge regardless of type (tribe or individual)
+  const heroTw = ep.twists?.find(t => t.type === 'hero-duel');
+  if (heroTw && gs.heroDuelPending) {
+    gs.heroDuelPending = false;
+    let duelA, duelB, duelReason;
+    if (gs.phase === 'pre-merge' && ep.loser && ep.chalMemberScores) {
+      // Pre-merge: best vs worst on the LOSING tribe
+      const loserMembers = ep.loser.members || [];
+      const loserScored = loserMembers
+        .filter(m => ep.chalMemberScores[m] !== undefined)
+        .sort((a,b) => (ep.chalMemberScores[b]||0) - (ep.chalMemberScores[a]||0));
+      if (loserScored.length >= 2) {
+        duelA = loserScored[0];
+        duelB = loserScored[loserScored.length - 1];
+        duelReason = `${duelA} was the best performer on the losing tribe. ${duelB} was the worst. One of them earns safety — the other stays vulnerable.`;
       }
-      if (!duelA || !duelB) {
-        // Fallback: two random active players
-        const pool = gs.activePlayers.filter(p => p !== ep.immunityWinner);
-        duelA = pool[0]; duelB = pool[pool.length - 1];
-        duelReason = `Two players face off head-to-head.`;
+    } else if (ep.chalPlacements?.length >= 3) {
+      // Post-merge: 2nd place vs last place (winner already has immunity)
+      const nonWinner = ep.chalPlacements.filter(n => n !== ep.immunityWinner);
+      if (nonWinner.length >= 2) {
+        duelA = nonWinner[0];
+        duelB = nonWinner[nonWinner.length - 1];
+        duelReason = `${duelA} finished second in the challenge. ${duelB} finished last. They duel for a second immunity necklace.`;
       }
-      heroTw.duelParticipants = [duelA, duelB];
-      heroTw.duelReason = duelReason;
-      // Simulate the duel
-      const duelResult = simulateIndividualChallenge([duelA, duelB], null);
-      const duelWinner = duelResult?.name || duelA;
-      const duelLoser = duelWinner === duelA ? duelB : duelA;
-      heroTw.duelWinner = duelWinner;
-      heroTw.duelLoser = duelLoser;
-      // Pre-merge: duel winner earns safety (not full immunity — just can't be voted out)
-      // Post-merge: duel winner gets a second immunity necklace
-      if (gs.phase === 'pre-merge') {
-        ep.extraImmune = ep.extraImmune || [];
-        ep.extraImmune.push(duelWinner);
-        heroTw.duelType = 'safety';
-      } else {
-        ep.extraImmune = ep.extraImmune || [];
-        ep.extraImmune.push(duelWinner);
-        heroTw.duelType = 'immunity';
-      }
-      // Bond consequences: rivalry or respect
-      const winnerTemp = pStats(duelWinner).temperament;
-      const loserTemp = pStats(duelLoser).temperament;
-      if (getBond(duelWinner, duelLoser) <= -2) {
-        addBond(duelWinner, duelLoser, -0.8); // rivalry deepens
-      } else if (winnerTemp >= 7 && loserTemp >= 7) {
-        addBond(duelWinner, duelLoser, 0.5); // mutual respect
-      }
+    }
+    if (!duelA || !duelB) {
+      const pool = gs.activePlayers.filter(p => p !== ep.immunityWinner);
+      duelA = pool[0]; duelB = pool[pool.length - 1];
+      duelReason = `Two players face off head-to-head.`;
+    }
+    heroTw.duelParticipants = [duelA, duelB];
+    heroTw.duelReason = duelReason;
+    const duelResult = simulateIndividualChallenge([duelA, duelB], null);
+    const duelWinner = duelResult?.name || duelA;
+    const duelLoser = duelWinner === duelA ? duelB : duelA;
+    heroTw.duelWinner = duelWinner;
+    heroTw.duelLoser = duelLoser;
+    ep.extraImmune = ep.extraImmune || [];
+    ep.extraImmune.push(duelWinner);
+    heroTw.duelType = gs.phase === 'pre-merge' ? 'safety' : 'immunity';
+    // Bond consequences
+    if (getBond(duelWinner, duelLoser) <= -2) {
+      addBond(duelWinner, duelLoser, -0.8);
+    } else if (pStats(duelWinner).temperament >= 7 && pStats(duelLoser).temperament >= 7) {
+      addBond(duelWinner, duelLoser, 0.5);
     }
   }
 

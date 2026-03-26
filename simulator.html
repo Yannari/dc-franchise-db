@@ -8799,7 +8799,7 @@ function simulateEpisode() {
           const _ovp = _ovpCandidates[0];
           const _rollOvp = ([..._ovp].reduce((a,c)=>a+c.charCodeAt(0),0) + ep.num * 13) % 100;
           if (_rollOvp < 20) {
-            const _votersOnTarget = log.filter(e => e.voted === _ovpTopTarget).slice();
+            const _votersOnTarget = log.filter(e => e.voted === _ovpTopTarget && e.voter !== _ovp).slice();
             _votersOnTarget.sort((a, b) => getBond(a.voter, _ovp) - getBond(b.voter, _ovp));
             const _toFlip = _votersOnTarget.slice(0, Math.min(2, _votersOnTarget.length));
             if (_toFlip.length) {

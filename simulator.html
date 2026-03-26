@@ -6608,6 +6608,58 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
     }
   }
 
+  // ── EXTREME BOND EVENTS: rare events that only fire for very high or very low bonds ──
+  const _rp2 = arr => arr[Math.floor(Math.random() * arr.length)];
+  for (let i = 0; i < group.length; i++) {
+    for (let j = i + 1; j < group.length; j++) {
+      const _eb = getBond(group[i], group[j]);
+      const a = group[i], b = group[j];
+      const pA = pronouns(a), pB = pronouns(b);
+
+      // ── PURE HATRED (-9 or worse) ──
+      if (_eb <= -9 && Math.random() < 0.55) {
+        events.push({ type: 'pureHatred', players: [a, b], text: _rp2([
+          `${a} and ${b} can't be in the same space. The tribe has stopped trying to fix it. They just keep them apart now.`,
+          `${a} moves ${pA.pos} things to the other side of camp. Nobody asks why. Everyone already knows — ${b} is the reason.`,
+          `${a} refuses to eat if ${b} is at the fire. It's not strategy. It's not a move. It's personal in a way this game rarely sees.`,
+          `The hatred between ${a} and ${b} is so visible that the rest of the tribe routes around it. Nobody sits between them. Nobody mediates. They just survive it.`,
+          `${b} says something and ${a} stands up and walks into the jungle without a word. ${pA.Sub} ${pA.sub==='they'?'don\'t':'doesn\'t'} come back for an hour. When ${pA.sub} ${pA.sub==='they'?'do':'does'}, ${pA.sub} ${pA.sub==='they'?'don\'t':'doesn\'t'} look at ${b}.`,
+        ]) });
+      }
+
+      // ── NEMESIS (-7 to -9) ──
+      else if (_eb <= -7 && Math.random() < 0.40) {
+        events.push({ type: 'nemesis', players: [a, b], text: _rp2([
+          `${a} and ${b} have a conversation that starts normal and ends with both of them walking away shaking. The tribe pretends not to notice.`,
+          `Every time ${a} speaks at camp, ${b} visibly tenses. It's become the tribe's unspoken tension — always there, never addressed.`,
+          `${a} makes a pointed comment that's clearly aimed at ${b}. ${b} doesn't respond. The silence is louder than any argument.`,
+          `${b} tells someone — quietly, away from camp — that ${pB.sub} will do whatever it takes to make sure ${a} doesn't make it to the end. It doesn't sound like game talk. It sounds like a promise.`,
+        ]) });
+      }
+
+      // ── UNBREAKABLE (+9 or better) ──
+      if (_eb >= 9 && Math.random() < 0.55) {
+        events.push({ type: 'unbreakableBond', players: [a, b], text: _rp2([
+          `${a} and ${b} don't need to talk strategy anymore. A look across the fire is enough. The tribe has noticed — and some of them are afraid of it.`,
+          `${a} and ${b} have a conversation late at night that has nothing to do with the game. The kind of conversation that makes everyone else feel like outsiders.`,
+          `The bond between ${a} and ${b} is so obvious it's become a liability. Everyone can see it. Neither of them cares.`,
+          `${a} tells the confessional: "I came into this game alone. I'm not alone anymore. Whatever happens, ${b} changed that." It's the most honest thing anyone's said out here.`,
+          `${a} gives ${b} the last of the rice without being asked. ${b} doesn't say thank you — ${pB.sub} just ${pB.sub==='they'?'nod':'nods'}. They're past words at this point.`,
+        ]) });
+      }
+
+      // ── RIDE OR DIE (+7 to +9) ──
+      else if (_eb >= 7 && Math.random() < 0.40) {
+        events.push({ type: 'rideOrDie', players: [a, b], text: _rp2([
+          `${a} and ${b} sit together at every meal, every challenge, every tribal. The tribe has started referring to them as a single unit.`,
+          `${a} catches wind that ${b}'s name was mentioned. ${pA.Sub} shut${pA.sub==='they'?'':'s'} it down immediately — not with strategy, with loyalty. The tribe saw it.`,
+          `${a} and ${b} have a way of finishing each other's sentences that makes other players uncomfortable. Not because it's fake — because it's clearly not.`,
+          `Someone asks ${a} who ${pA.sub}'d take to the end. ${a} doesn't hesitate. The answer is ${b}. It's been ${b} since day one.`,
+        ]) });
+      }
+    }
+  }
+
   return events;
 }
 
@@ -15650,6 +15702,10 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'soldierCheckin'       ? '+ Loyalty confirmed'
                      : evt.type === 'goatOblivious'        ? '+ Goat secured'
                      : evt.type === 'journeyLoss'          ? 'NO VOTE'
+                     : evt.type === 'pureHatred'           ? 'PURE HATRED'
+                     : evt.type === 'nemesis'              ? 'NEMESIS'
+                     : evt.type === 'unbreakableBond'      ? 'UNBREAKABLE'
+                     : evt.type === 'rideOrDie'            ? 'RIDE OR DIE'
                      : evt.type === 'confessional'         ? 'Confessional'
                      : evt.type === 'groupLaugh'           ? '+ Tribe lightens up'
                      : evt.type === 'sharedStruggle'       ? '+ Bonded through it'
@@ -15671,6 +15727,8 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : isComfortBS || isClockingIt ? 'gold'
                      : isTdStrategy ? 'gold'
                      : evt.type === 'journeyLoss' ? 'red'
+                     : evt.type === 'pureHatred' || evt.type === 'nemesis' ? 'red'
+                     : evt.type === 'unbreakableBond' || evt.type === 'rideOrDie' ? 'green'
                      : isSchemer ? 'red'
                      : isPos ? 'green' : isNeg ? 'red' : '';
 

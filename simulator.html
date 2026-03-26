@@ -1318,8 +1318,7 @@ const TWIST_CATALOG = [
   // Team Dynamics
   { id:'tribe-swap',       emoji:'🔀', name:'Tribe Swap',           category:'team',       phase:'pre-merge',  desc:'All players redistributed between existing tribes.',                        engineType:'tribe-swap'      },
   { id:'tribe-dissolve',   emoji:'💥', name:'Tribe Dissolve',       category:'team',       phase:'pre-merge',  desc:'Tribes reduced by one — all players reshuffled into fewer tribes.',         engineType:'tribe-dissolve'  },
-  { id:'tribe-expansion',  emoji:'📈', name:'Tribe Expansion',      category:'team',       phase:'pre-merge',  desc:'Current tribes gain a new tribe — players split into N+1 groups.',          engineType:'tribe-expansion' },
-  { id:'new-tribe',        emoji:'🆕', name:'New Tribe Formed',     category:'team',       phase:'pre-merge',  desc:'A new tribe is formed from members of existing tribes.',                    engineType:'tribe-expansion' },
+  { id:'tribe-expansion',  emoji:'📈', name:'Tribe Expansion',      category:'team',       phase:'pre-merge',  desc:'A new tribe is formed — all players reshuffled into N+1 groups.',           engineType:'tribe-expansion' },
   { id:'mutiny',           emoji:'⚔️', name:'Mutiny',               category:'team',       phase:'pre-merge',  desc:'Players may voluntarily switch tribes during a challenge.',                  engineType:'mutiny'          },
   { id:'abduction',        emoji:'🫳', name:'Abduction',            category:'team',       phase:'pre-merge',  desc:'Each tribe steals one player from a competing tribe.',                      engineType:'abduction'       },
   { id:'swapvote',         emoji:'🗳️', name:'Swap Vote',            category:'team',       phase:'pre-merge',  desc:'The strongest player picks one person from another tribe to bring over. One goes back in return.', engineType:'swapvote' },
@@ -9456,8 +9455,12 @@ function getTribeAdvantageStatus(tribeName, isMerge, snapAdvantages, snapMembers
     });
   }
   const advantagesToShow = snapAdvantages || gs.advantages;
+  const _shown = new Set(); // prevent duplicate lines for same holder+type
   advantagesToShow.forEach(adv => {
     if (members.includes(adv.holder)) {
+      const key = `${adv.holder}:${adv.type}`;
+      if (_shown.has(key)) return;
+      _shown.add(key);
       const label = adv.fromBeware ? 'Hidden Immunity Idol (from Beware)'
                   : adv.fromTotem  ? 'Immunity Totem'
                   : (typeLabel[adv.type] || adv.type);
@@ -14916,19 +14919,18 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
   }
 
   // ── SECRET ADVANTAGES ──
-  // Pre-challenge: show what existed at START of episode (prevEp snapshot)
-  // After challenge (post): show pre-tribal advantages (after journey/finds but before tribal plays)
-  const _advSnap = phase === 'post'
+  // Both pre and post camps use advantagesPreTribal if available — it captures
+  // state after journey + idol finds but before tribal (so played advantages still show).
+  // Fallback: pre uses prev-ep snapshot, post uses current-ep snapshot.
+  const _advSnapFallback = phase === 'post'
     ? ep.gsSnapshot
     : gs.episodeHistory?.find(h => h.num === ep.num - 1)?.gsSnapshot;
-  const _snapAdvantages = phase === 'post' && ep.advantagesPreTribal
-    ? ep.advantagesPreTribal
-    : (_advSnap?.advantages || null);
-  const _snapMembers = _advSnap
-    ? (isMerge ? (_advSnap.activePlayers || null) : (_advSnap.tribes?.find(t => t.name === tribeName)?.members || null))
+  const _snapAdvantages = ep.advantagesPreTribal || (_advSnapFallback?.advantages || null);
+  const _snapMembers = _advSnapFallback
+    ? (isMerge ? (_advSnapFallback.activePlayers || null) : (_advSnapFallback.tribes?.find(t => t.name === tribeName)?.members || null))
     : null;
-  // Post-challenge camp is pre-tribal — use portrait members (who's actually at camp), not end-of-ep snapshot
-  const _advMembers = phase === 'post' ? portraitMembers : _snapMembers;
+  // Use portrait members (who's actually at camp) for both phases
+  const _advMembers = portraitMembers.length ? portraitMembers : _snapMembers;
   const advLines = getTribeAdvantageStatus(tribeName, isMerge, _snapAdvantages, _advMembers);
   html += `<div class="rp-camp-toggle-section">
     <button class="rp-camp-toggle-btn" style="border-color:${tc};color:${tc}" onclick="vpToggleSection('adv-${safeId}')">

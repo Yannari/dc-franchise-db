@@ -16555,8 +16555,8 @@ function rpBuildChallenge(ep) {
       </div>`;
     });
 
-    const _allSlots = JSON.stringify(displayOrder.map((t,i) => ({ slotId:`${revealId}-tribe-${i}`, name:t.name })));
-    html += `<button onclick="vpRevealAllTribes('${revealId}',${_allSlots})"
+    const _allSlotsData = displayOrder.map((t,i) => `${revealId}-tribe-${i}:${t.name}`).join('|');
+    html += `<button onclick="vpRevealAllTribesFromData(this)" data-slots="${_allSlotsData}"
       style="padding:6px 12px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:11px;cursor:pointer;margin-top:8px">See all results</button>`;
     html += `</div>`;
     return html;
@@ -22651,6 +22651,13 @@ function vpRevealTribe(slotId, tribeName) {
 
 function vpRevealAllTribes(revealId, slots) {
   slots.forEach(s => vpRevealTribe(s.slotId, s.name));
+}
+function vpRevealAllTribesFromData(btn) {
+  const data = btn.dataset.slots || '';
+  data.split('|').forEach(entry => {
+    const [slotId, name] = entry.split(':');
+    if (slotId && name) vpRevealTribe(slotId, name);
+  });
 }
 
 function vpToggleSection(id) {

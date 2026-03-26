@@ -3139,6 +3139,9 @@ function buildVoteReason(voter, target, type, ctx = {}) {
       `couldn't fully commit to ${mLabel} this round — sided with ${cLabel}`,
       `chose ${cLabel} over ${mLabel} — loyalty has a limit`,
       `${mLabel} lost this one — ${cLabel} offered a better deal`,
+      `caught between two plans — ${cLabel} felt safer tonight`,
+      `${mLabel} pushed too hard — ${cLabel} let them make their own read`,
+      `the pitch from ${cLabel} landed better — sometimes it's about delivery`,
     ]);
   }
 
@@ -3151,6 +3154,9 @@ function buildVoteReason(voter, target, type, ctx = {}) {
       `intuition kicked in — this was the person organizing the vote against them`,
       `struck before being struck — calculated, not reactive`,
       `felt the heat building and chose to act instead of waiting`,
+      `saw the move forming and decided to be the one throwing, not catching`,
+      `the whispers got loud enough — this vote is self-defense`,
+      `if you wait until they come for you, it's too late — this was the window`,
     ]);
   }
 
@@ -3162,11 +3168,15 @@ function buildVoteReason(voter, target, type, ctx = {}) {
       `${allianceTarget} is untouchable to them — ${target} absorbs the vote instead`,
       `refused to write ${allianceTarget}'s name — this was the only redirect`,
       `${allianceTarget} is their person — ${target} pays for it`,
+      `would rather go home than write ${allianceTarget}'s name — ${target} is the alternative`,
+      `this vote isn't about ${target} — it's about keeping ${allianceTarget} safe`,
     ]);
     return pick([
       `redirected — couldn't vote ${allianceTarget}, landed on ${target}`,
       `protecting ${allianceTarget} at ${target}'s expense`,
       `${allianceTarget} stays safe — ${target} absorbs the vote`,
+      `the real target was ${allianceTarget} but they couldn't pull the trigger — ${target} instead`,
+      `refused to write ${allianceTarget}'s name — ${target} was the path of least resistance`,
     ]);
   }
 
@@ -3256,7 +3266,16 @@ function buildVoteReason(voter, target, type, ctx = {}) {
     ]);
   }
 
-  return 'strategic read';
+  return pick([
+    `strategic read`,
+    `the numbers pointed here — followed the math`,
+    `process of elimination — everyone else had protection`,
+    `couldn't find a reason to keep ${target} over anyone else`,
+    `${target}'s name came up and nobody defended it — that tells you everything`,
+    `this was the vote that made the most sense tonight`,
+    `no strong reason to protect ${target} — and that's a reason in itself`,
+    `the game needed a name — ${target}'s was available`,
+  ]);
 }
 
 function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], openVote = false) {
@@ -14187,7 +14206,56 @@ function simulateJuryVote(finalists) {
     scores.sort((a, b) => b.score - a.score);
     const pick = scores[0].name;
     votes[pick]++;
-    reasoning.push({ juror, votedFor: pick });
+    // Generate reason text for the vote
+    const _jrBond = getBond(juror, pick);
+    const _jrHistory = gs.jurorHistory?.[juror];
+    const _jrVotedOut = _jrHistory?.voters?.includes(pick);
+    const _jrFp = pronouns(pick);
+    const _jrPick = arr => arr[([...juror+pick].reduce((a,c)=>a+c.charCodeAt(0),0)+gs.episode*7)%arr.length];
+    let _jrReason;
+    if (_jrVotedOut && _jrBond >= 2) {
+      _jrReason = _jrPick([
+        `${pick} voted me out — and I'm voting for ${_jrFp.obj} to win. That's how good ${_jrFp.pos} game was.`,
+        `${pick} ended my game. I hated it then. But watching from the bench, I see it was the right move. That's why ${_jrFp.sub} ${_jrFp.sub==='they'?'get':'gets'} my vote.`,
+        `I was bitter. I'm not anymore. ${pick} played the best game and I can admit that now.`,
+      ]);
+    } else if (_jrVotedOut && _jrBond < 0) {
+      _jrReason = _jrPick([
+        `${pick} didn't vote me out. That matters more than people think. Loyalty deserves to be rewarded.`,
+        `I looked at who sent me home and who didn't. ${pick} wasn't part of that vote. ${_jrFp.Sub} ${_jrFp.sub==='they'?'have':'has'} my respect.`,
+        `${pick} kept ${_jrFp.pos} hands clean when others didn't. That's the kind of game I want to reward.`,
+      ]);
+    } else if (_jrBond >= 4) {
+      _jrReason = _jrPick([
+        `${pick} and I had something real out there. I'm voting for ${_jrFp.obj} because ${_jrFp.sub} earned it — as a player and as a person.`,
+        `I trust ${pick}. I've trusted ${_jrFp.obj} since the beginning. My vote reflects that.`,
+        `${pick} was my closest ally. ${_jrFp.Sub} played hard and ${_jrFp.sub} played honest. That's enough for me.`,
+        `gratitude and respect — ${pick} never wrote my name`,
+      ]);
+    } else if (jS.strategic >= 7) {
+      _jrReason = _jrPick([
+        `${pick} played the most complete game. Strategic, social, physical — ${_jrFp.sub} checked every box.`,
+        `I'm voting for the best game, not the best person. ${pick} controlled more votes than anyone up there.`,
+        `From the jury bench, it's clear: ${pick} made the moves that shaped this season. That deserves the win.`,
+        `respected ${pick}'s game and felt a genuine connection`,
+        `${pick} outplayed everyone sitting next to ${_jrFp.obj}. The jury should reward gameplay, not feelings.`,
+      ]);
+    } else if (_jrBond >= 1) {
+      _jrReason = _jrPick([
+        `${pick} treated people well. In this game, that's rare. My vote is personal — and I'm okay with that.`,
+        `I like ${pick}. I think ${_jrFp.sub} played a good game. That combination gets my vote.`,
+        `${pick} was genuine out there. Not everyone can say that. My vote reflects who I connected with.`,
+        `strong personal loyalty — felt closest to ${pick}`,
+      ]);
+    } else {
+      _jrReason = _jrPick([
+        `${pick} is the least bad option up there. Not a ringing endorsement — but it's the truth.`,
+        `I don't love any of the finalists. But ${pick} at least played ${_jrFp.pos} own game.`,
+        `Process of elimination. The others gave me less reason to vote for them than ${pick} did.`,
+        `${pick} survived. That's not nothing. In this game, making it to the end is its own argument.`,
+      ]);
+    }
+    reasoning.push({ juror, votedFor: pick, reason: _jrReason });
   });
 
   return { votes, reasoning, jury };
@@ -20719,6 +20787,7 @@ function rpBuildJuryVoteReveal(ep) {
       <div class="tv-vote-arrow" style="color:${isWin?'#e3b341':'#8b949e'}">\u2192</div>
       <div class="tv-vote-right">
         <div class="tv-vote-target" style="color:${isWin?'#e3b341':'#c9d1d9'}">${r.votedFor}</div>
+        ${r.reason ? `<div class="tv-vote-reason" style="color:${isWin?'#d4a82a':'#6e7681'};font-size:11px;margin-top:3px">${r.reason}</div>` : ''}
       </div>
     </div>`;
   });
@@ -21987,24 +22056,44 @@ function rpBuildJuryVotes(ep) {
       `${votedOut} wrote my name down. I\u2019ve been waiting for this moment since I hit the jury bench.`,
       `I sat on that bench replaying the night ${votedOut} ended my game. Tonight I return the favor.`,
       `${votedOut} ended my game. Now I end ${tp.pos}.`,
+      `Every night on that bench I thought about this moment. ${votedOut}\u2019s name. My handwriting. Done.`,
+      `${votedOut} smiled at me on the way out. I\u2019ve been holding onto that smile for weeks. Tonight I hand it back.`,
+      `This isn\u2019t strategy. This is personal. ${votedOut} knows exactly why.`,
+      `The jury gave me a pen and a parchment. I already know what I\u2019m writing. I\u2019ve known since the night ${tp.sub} voted me out.`,
+      `I don\u2019t need to explain this one. ${votedOut} knows what ${tp.sub} did.`,
     ]);
-    // Tier 2: voted out by target but has processed it — respectful but pointed
+    // Tier 2: voted out by target, processed — using power to eliminate
     else if (votedOutVotedJurorOut) reason = _pick([
       `${votedOut} put me on this bench. Tonight I\u2019m sending ${tp.obj} home. That\u2019s the whole speech.`,
       `${votedOut} voted me out. I\u2019ve been waiting for this. My vote tonight: ${votedOut}. Gone.`,
       `${votedOut} took my spot in this game. The jury just gave me the power to take ${tp.pos}. I\u2019m using it.`,
       `I\u2019m writing ${votedOut}\u2019s name down tonight. ${tp.Sub} ended my game \u2014 now I\u2019m ending ${tp.pos}.`,
       `${votedOut} is going home tonight because of my vote. ${tp.Sub} sent me to the bench. I\u2019m sending ${tp.obj} out the door.`,
+      `${votedOut} made a game move on me. I respected it. Now I\u2019m making mine. Bye.`,
+      `The jury just handed me the most powerful vote in this game. I\u2019m spending it on ${votedOut}. ${tp.Sub} earned this.`,
+      `I\u2019ve had weeks to cool off. I\u2019m cool. And I\u2019m still writing ${votedOut}\u2019s name.`,
     ]);
     // Tier 3: former allies with broken trust
     else if (wereAllied && bond <= -2) reason = _pick([
-      `We were in an alliance. ${votedOut} let it fall apart. I\u2019ve had weeks on the bench to think about how that went. This is where I land.`,
-      `${votedOut} and I were supposed to go deep together. ${tp.Sub} chose differently. I understand why \u2014 doesn\u2019t mean I won\u2019t vote accordingly.`,
+      `We were in an alliance. ${votedOut} let it fall apart. I\u2019ve had weeks to think about how that went. This is where I land.`,
+      `${votedOut} and I were supposed to go deep together. ${tp.Sub} chose differently. Doesn\u2019t mean I won\u2019t vote accordingly.`,
+      `I trusted ${votedOut}. That was my mistake. But tonight I get to make ${tp.pos}.`,
+      `We had a deal. ${votedOut} broke it. The jury bench gives you clarity \u2014 and my clarity says ${tp.sub} ${tp.sub==='they'?'go':'goes'} home.`,
+      `I carried ${votedOut} when ${tp.sub} needed me. ${tp.Sub} dropped me when I needed ${tp.obj}. This vote writes itself.`,
+      `${votedOut} and I built something out here. ${tp.Sub} burned it down. Now I get to vote on the ashes.`,
+      `Former ally. Current target. The game changes people. It changed what ${votedOut} meant to me.`,
+      `The alliance was real. The betrayal was real. This vote is real too.`,
     ]);
     // Tier 4: genuine grudge — very low bond, no direct betrayal
     else if (bond <= -3) reason = _pick([
       `${votedOut} burned every bridge in this game. The people on the other side of those bridges finally get a say.`,
       `I\u2019ve watched ${votedOut} from the jury bench for weeks. ${tp.Sub} played selfish and it caught up to ${tp.obj}.`,
+      `${votedOut} treated people like numbers. Tonight those numbers vote back.`,
+      `I never liked ${votedOut}\u2019s game. I never liked ${votedOut}. This is the most honest vote I\u2019ll ever cast.`,
+      `The jury bench shows you who people really are. And what I see in ${votedOut} doesn\u2019t deserve to stay.`,
+      `${votedOut} made enemies on the way up. We\u2019re all sitting on this bench now. ${tp.Sub} should\u2019ve been nicer.`,
+      `Some people play the game and earn respect. ${votedOut} played the game and earned this vote.`,
+      `I\u2019ve been waiting patiently. ${votedOut}\u2019s name is the first thing I\u2019m writing tonight.`,
     ]);
     // Tier 5: mild negative / neutral — biggest pool since most jurors land here
     else if (bond <= 0) {

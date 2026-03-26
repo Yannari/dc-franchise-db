@@ -9163,6 +9163,7 @@ function simulateEpisode() {
   gs.episodeHistory[gs.episodeHistory.length-1].advantagesPreTribal = ep.advantagesPreTribal || null;
   gs.episodeHistory[gs.episodeHistory.length-1].tribalPlayers = ep.tribalPlayers || null;
   gs.episodeHistory[gs.episodeHistory.length-1].bewareLostVotes = ep.bewareLostVotes || null;
+  gs.episodeHistory[gs.episodeHistory.length-1].journey = ep.journey || null;
 
   const summaryText = generateSummaryText(ep);
   gs.episodeHistory[gs.episodeHistory.length-1].summaryText = summaryText;
@@ -15665,13 +15666,8 @@ function rpBuildRewardChallenge(ep) {
 
 // ── Screen: Voting Plans (pre-vote strategy — who's targeting who) ──
 function rpBuildVotingPlans(ep) {
-  // Voting plans are pre-tribal — include SITD player's intended vote even though it was sacrificed
-  const _sitdEntry = ep.shotInDark?.ownVoteEntry
-    ? { ...ep.shotInDark.ownVoteEntry, sitdSacrificed: true }
-    : null;
-  const votingLog = _sitdEntry
-    ? [...(ep.votingLog || []), _sitdEntry]
-    : (ep.votingLog || []);
+  // Voting plans are pre-tribal — do NOT include SitD info here (it's a tribal reveal, showing it spoils)
+  const votingLog = (ep.votingLog || []);
   if (!votingLog.length) return null;
 
 
@@ -17337,7 +17333,8 @@ function rpBuildVotes(ep) {
   // Journey + beware lost votes — show who can't vote this tribal
   const _tribal = ep.tribalPlayers
     || (ep.tribalTribe && ep.tribesAtStart?.find(t => t.name === ep.tribalTribe)?.members)
-    || vlog.map(v => v.voter);
+    || ep.gsSnapshot?.activePlayers
+    || [...new Set([...vlog.map(v => v.voter), ...vlog.map(v => v.voted)])];
   // Journey losers from this episode
   const _journeyLosers = (ep.journey?.results || [])
     .filter(r => r.result === 'lostVote' && _tribal.includes(r.name))

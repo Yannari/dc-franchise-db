@@ -8598,6 +8598,8 @@ function simulateEpisode() {
 
   // ── Inject shared-immunity / double-safety camp events ──
   const _mergeCampKey = gs.isMerged ? (gs.mergeName || 'merge') : null;
+  const sharedTw = (ep.twists||[]).find(t => t.type === 'shared-immunity');
+  const dblSafeTw = (ep.twists||[]).find(t => t.type === 'double-safety');
   if (sharedTw?.sharedWith && _mergeCampKey && ep.campEvents?.[_mergeCampKey]) {
     const _ce = ep.campEvents[_mergeCampKey];
     const _postArr = Array.isArray(_ce) ? _ce : (_ce.post = _ce.post || []);

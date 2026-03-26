@@ -6678,6 +6678,50 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
           `Someone asks ${a} who ${pA.sub}'d take to the end. ${a} doesn't hesitate. The answer is ${b}. It's been ${b} since day one.`,
         ]) });
       }
+
+      // ── REKINDLE: two players with deeply damaged bond (-4 to -7) have a breakthrough ──
+      // Rare — requires at least one high-social or high-temperament player. The game breaks people down
+      // and sometimes that breakdown leads to honesty.
+      if (_eb >= -7 && _eb <= -4 && Math.random() < 0.12) {
+        const canRekindle = pStats(a).social >= 6 || pStats(b).social >= 6 || pStats(a).temperament >= 7 || pStats(b).temperament >= 7;
+        if (canRekindle) {
+          const initiator = pStats(a).social >= pStats(b).social ? a : b;
+          const receiver = initiator === a ? b : a;
+          const pI = pronouns(initiator), pR = pronouns(receiver);
+          addBond(a, b, 2.5); // significant repair — won't fix everything but opens a door
+          events.push({ type: 'rekindle', players: [initiator, receiver], text: _rp2([
+            `${initiator} sits down next to ${receiver} for the first time in days. Neither says anything for a while. Then ${initiator} speaks — not about the game, not about what happened between them. About home. ${receiver} listens. Something cracks open.`,
+            `${initiator} catches ${receiver} alone at the water well. "I know we've had our issues. I'm not asking to forget any of it. I'm just saying — we don't have to keep doing this." ${receiver} doesn't respond immediately. But ${pR.sub} ${pR.sub==='they'?'don\'t':'doesn\'t'} walk away.`,
+            `The game has a way of stripping everything back. ${initiator} and ${receiver} hit that point today. The conversation was raw, uncomfortable, and longer than either expected. Neither would call it forgiveness. But it's something.`,
+            `It starts with a shared task — firewood, water, something neither can do alone. By the end of it, ${initiator} and ${receiver} have exchanged more words than they have in a week. Not friendly. Not hostile. Just... honest.`,
+            `${initiator} apologizes. Not for everything — just for one specific thing. ${receiver} wasn't expecting it. The silence that follows isn't awkward. It's the first time things have felt breathable between them.`,
+          ]) });
+        }
+      }
+
+      // ── BEST FRIEND BREAKUP: two players with strong bond (+5 to +8) have a fracture ──
+      // Rare — requires a strategic player who starts questioning whether the bond is helping their game.
+      // The stronger the bond, the harder the fall.
+      if (_eb >= 5 && _eb <= 8 && Math.random() < 0.10) {
+        const hasStrategist = pStats(a).strategic >= 7 || pStats(b).strategic >= 7;
+        const hasLowLoyalty = pStats(a).loyalty <= 4 || pStats(b).loyalty <= 4;
+        if (hasStrategist || hasLowLoyalty) {
+          const instigator = pStats(a).strategic > pStats(b).strategic ? a : b;
+          const hurt = instigator === a ? b : a;
+          const pIn = pronouns(instigator), pH = pronouns(hurt);
+          const damage = -1.5 - Math.random() * 1.5; // -1.5 to -3.0 damage
+          addBond(a, b, damage);
+          // Hurt player's emotional state shifts
+          if (gs.playerStates?.[hurt]) gs.playerStates[hurt].emotional = 'uneasy';
+          events.push({ type: 'breakup', players: [instigator, hurt], text: _rp2([
+            `${instigator} pulls back from ${hurt} today. Not a fight — something quieter. ${hurt} notices the distance before ${pH.sub} understand${pH.sub==='they'?'':'s'} it. The conversations get shorter. The eye contact disappears. Something changed and ${hurt} doesn't know what.`,
+            `${instigator} is seen having long strategy talks with other players — talks that used to include ${hurt}. When ${hurt} asks about it, ${instigator} deflects. The trust is cracking and both of them can feel it.`,
+            `${hurt} overhears something ${instigator} said about ${pH.obj} to someone else. Not cruel — worse. Dismissive. Like the bond they built was a phase ${instigator} has moved past. ${hurt} says nothing. But the damage is done.`,
+            `It's not dramatic. There's no blowup. ${instigator} just starts treating ${hurt} like everyone else — and that's the part that hurts. ${hurt} thought they were different. Apparently not.`,
+            `${instigator} makes a strategic calculation that doesn't include ${hurt}. ${hurt} finds out through someone else. The betrayal isn't in the move — it's in not being told. That's the part that doesn't heal.`,
+          ]) });
+        }
+      }
     }
   }
 
@@ -15727,6 +15771,8 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'nemesis'              ? 'NEMESIS'
                      : evt.type === 'unbreakableBond'      ? 'UNBREAKABLE'
                      : evt.type === 'rideOrDie'            ? 'RIDE OR DIE'
+                     : evt.type === 'rekindle'             ? 'REKINDLE'
+                     : evt.type === 'breakup'              ? 'BREAKUP'
                      : evt.type === 'confessional'         ? 'Confessional'
                      : evt.type === 'groupLaugh'           ? '+ Tribe lightens up'
                      : evt.type === 'sharedStruggle'       ? '+ Bonded through it'
@@ -15748,8 +15794,8 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : isComfortBS || isClockingIt ? 'gold'
                      : isTdStrategy ? 'gold'
                      : evt.type === 'journeyLoss' ? 'red'
-                     : evt.type === 'pureHatred' || evt.type === 'nemesis' ? 'red'
-                     : evt.type === 'unbreakableBond' || evt.type === 'rideOrDie' ? 'green'
+                     : evt.type === 'pureHatred' || evt.type === 'nemesis' || evt.type === 'breakup' ? 'red'
+                     : evt.type === 'unbreakableBond' || evt.type === 'rideOrDie' || evt.type === 'rekindle' ? 'green'
                      : isSchemer ? 'red'
                      : isPos ? 'green' : isNeg ? 'red' : '';
 

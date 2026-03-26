@@ -2287,7 +2287,7 @@ function computeHeat(name, tribalPlayers, alliances) {
   // Lost vote — can't defend themselves, others smell blood
   if (gs.lostVotes?.includes(name)) heat += 1.2;
   // Penalty vote — already has a vote against them, easier to pile on
-  if (ep.penaltyVoteTarget === name) heat += 1.5;
+  if (gs.penaltyVoteThisEp === name) heat += 1.5;
   // Visible pair heat — close duo is a threat others want to split up
   const maxPartnerBond = tribalPlayers.filter(p => p !== name).reduce((m, p) => Math.max(m, getBond(name, p)), 0);
   if (maxPartnerBond >= 8) heat += gs.phase === 'post-merge' ? 0.8 : 0.3;

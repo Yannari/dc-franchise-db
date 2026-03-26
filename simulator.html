@@ -843,6 +843,7 @@
         <button class="setup-subnav-btn" id="subnav-basics" onclick="showSetupPanel('basics')">Season Setup</button>
         <button class="setup-subnav-btn" id="subnav-format" onclick="showSetupPanel('format')">Episode Format Designer</button>
         <button class="setup-subnav-btn" id="subnav-rels" onclick="showSetupPanel('rels')">Relationships</button>
+        <button class="setup-subnav-btn" id="subnav-alliances" onclick="showSetupPanel('alliances')">Alliances</button>
       </div>
 
       <!-- SEASON BASICS PANEL -->
@@ -1194,6 +1195,44 @@
             </div>
           </div>
           <div class="rel-list" id="rel-list"></div>
+        </div>
+      </div>
+
+      <!-- PRE-GAME ALLIANCES PANEL -->
+      <div id="setup-panel-alliances" class="setup-panel">
+        <div class="setup-rels-content">
+          <div class="setup-header">
+            <h2>Pre-Game Alliances <span style="font-size:12px;font-weight:400;color:var(--muted)">— alliances that start day 1 (max 5)</span></h2>
+            <div class="setup-header-actions">
+              <button class="btn btn-secondary btn-sm" onclick="clearPreAlliances()">Clear</button>
+              <button class="btn btn-primary btn-sm" onclick="openAllianceForm(null)" style="width:auto" id="add-alliance-btn">+ Add</button>
+            </div>
+          </div>
+          <div id="alliance-form" class="rel-form-box" style="display:none">
+            <div class="rel-form-title" id="alliance-form-title">Add Pre-Game Alliance</div>
+            <div class="form-group">
+              <label class="form-label">Alliance Name</label>
+              <input type="text" id="alliance-name" class="form-input" placeholder="e.g. The Power Trio">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Members <span class="hint">(select 2-6 players)</span></label>
+              <div id="alliance-member-grid" style="display:flex;flex-wrap:wrap;gap:6px;max-height:140px;overflow-y:auto"></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Permanence</label>
+              <div class="type-seg" id="alliance-perm-seg">
+                <button class="type-btn" data-perm="permanent" onclick="setAlliancePerm('permanent')">Permanent</button>
+                <button class="type-btn active" data-perm="normal" onclick="setAlliancePerm('normal')">Normal</button>
+                <button class="type-btn" data-perm="fragile" onclick="setAlliancePerm('fragile')">Fragile</button>
+              </div>
+              <div style="font-size:10px;color:var(--muted);margin-top:4px" id="alliance-perm-desc">Normal alliance — can dissolve through betrayals or low bonds.</div>
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-primary" id="alliance-submit-btn" onclick="submitAlliance()" style="width:auto;flex:1">Add Alliance</button>
+              <button class="btn btn-secondary" onclick="closeAllianceForm()">Cancel</button>
+            </div>
+          </div>
+          <div id="alliance-list" style="display:flex;flex-direction:column;gap:8px"></div>
         </div>
       </div>
     </div>
@@ -2087,6 +2126,96 @@ function renderRelList() {
 }
 
 // ══════════════════════════════════════════════════════════════════════
+// PRE-GAME ALLIANCES
+// ══════════════════════════════════════════════════════════════════════
+
+let preGameAlliances = JSON.parse(localStorage.getItem('simulator_prealliances') || '[]');
+let editingAllianceId = null;
+let alliancePerm = 'normal';
+const _alliancePermDesc = { permanent:'Permanent — cannot dissolve. Members stay loyal no matter what.', normal:'Normal — can dissolve through betrayals or low bonds.', fragile:'Fragile — dissolves easily. Low tolerance for betrayal or bond decay.' };
+
+function savePreAlliances() { localStorage.setItem('simulator_prealliances', JSON.stringify(preGameAlliances)); }
+
+function openAllianceForm(id) {
+  if (!id && preGameAlliances.length >= 5) { alert('Maximum 5 pre-game alliances.'); return; }
+  editingAllianceId = id;
+  const form = document.getElementById('alliance-form'); form.style.display = 'flex';
+  // Build member toggle grid
+  const grid = document.getElementById('alliance-member-grid');
+  const names = players.map(p => p.name).sort();
+  const existing = id ? preGameAlliances.find(a => a.id === id) : null;
+  const selected = new Set(existing?.members || []);
+  grid.innerHTML = names.map(n => `<button class="btn btn-sm ${selected.has(n)?'btn-primary':'btn-secondary'}" data-member="${n}" onclick="toggleAllianceMember(this)" style="font-size:11px;padding:4px 8px">${n}</button>`).join('');
+  if (existing) {
+    document.getElementById('alliance-name').value = existing.name || '';
+    setAlliancePerm(existing.permanence || 'normal');
+    document.getElementById('alliance-form-title').textContent = 'Edit Alliance';
+    document.getElementById('alliance-submit-btn').textContent = 'Update';
+  } else {
+    document.getElementById('alliance-name').value = '';
+    setAlliancePerm('normal');
+    document.getElementById('alliance-form-title').textContent = 'Add Pre-Game Alliance';
+    document.getElementById('alliance-submit-btn').textContent = 'Add Alliance';
+  }
+  form.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function closeAllianceForm() { editingAllianceId = null; document.getElementById('alliance-form').style.display = 'none'; }
+function setAlliancePerm(p) {
+  alliancePerm = p;
+  document.querySelectorAll('#alliance-perm-seg .type-btn').forEach(btn => {
+    const t = btn.dataset.perm;
+    btn.classList.toggle('active', t === p);
+    btn.style.background = t === p ? (p === 'permanent' ? '#10b981' : p === 'fragile' ? '#f85149' : 'var(--accent-dim)') : '';
+    btn.style.borderColor = t === p ? (p === 'permanent' ? '#10b981' : p === 'fragile' ? '#f85149' : 'var(--accent)') : '';
+  });
+  document.getElementById('alliance-perm-desc').textContent = _alliancePermDesc[p] || '';
+}
+function toggleAllianceMember(btn) {
+  btn.classList.toggle('btn-primary'); btn.classList.toggle('btn-secondary');
+}
+function submitAlliance() {
+  const name = document.getElementById('alliance-name').value.trim();
+  if (!name) { alert('Enter an alliance name.'); return; }
+  const members = [...document.querySelectorAll('#alliance-member-grid .btn-primary')].map(b => b.dataset.member);
+  if (members.length < 2) { alert('Select at least 2 members.'); return; }
+  if (members.length > 6) { alert('Maximum 6 members per alliance.'); return; }
+  const alliance = {
+    id: editingAllianceId || Date.now().toString(36) + Math.random().toString(36).slice(2,4),
+    name, members, permanence: alliancePerm,
+  };
+  if (editingAllianceId) {
+    const i = preGameAlliances.findIndex(a => a.id === editingAllianceId);
+    if (i !== -1) preGameAlliances[i] = alliance;
+  } else {
+    preGameAlliances.push(alliance);
+  }
+  savePreAlliances(); closeAllianceForm(); renderAllianceList();
+}
+function deletePreAlliance(id) { preGameAlliances = preGameAlliances.filter(a => a.id !== id); savePreAlliances(); renderAllianceList(); }
+function clearPreAlliances() { if (!confirm('Clear all pre-game alliances?')) return; preGameAlliances = []; savePreAlliances(); closeAllianceForm(); renderAllianceList(); }
+function renderAllianceList() {
+  const list = document.getElementById('alliance-list');
+  const addBtn = document.getElementById('add-alliance-btn');
+  if (addBtn) addBtn.disabled = preGameAlliances.length >= 5;
+  if (!preGameAlliances.length) { list.innerHTML = '<div class="rel-empty">No pre-game alliances defined.<br>Click <strong>+ Add</strong> to create one.</div>'; return; }
+  list.innerHTML = preGameAlliances.map(a => {
+    const permColor = a.permanence === 'permanent' ? '#10b981' : a.permanence === 'fragile' ? '#f85149' : 'var(--muted)';
+    const permLabel = a.permanence === 'permanent' ? 'PERMANENT' : a.permanence === 'fragile' ? 'FRAGILE' : 'NORMAL';
+    return `<div class="rel-card">
+      <div class="rel-players">
+        <div class="rel-names" style="flex-wrap:wrap;gap:4px"><strong style="color:var(--accent)">${a.name}</strong></div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">${a.members.join(', ')}</div>
+      </div>
+      <span class="rel-badge" style="color:${permColor};border:1px solid ${permColor};background:transparent;font-size:9px">${permLabel}</span>
+      <div class="rel-actions">
+        <button class="btn btn-secondary btn-sm" onclick="openAllianceForm('${a.id}')">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deletePreAlliance('${a.id}')">\u2715</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════════════════
 // ENGINE: UTILITIES
 // ══════════════════════════════════════════════════════════════════════
 
@@ -2358,12 +2487,16 @@ function decayAllianceTrust(epNum) {
     if (!alliance.active) return;
 
     const activeMembers = alliance.members.filter(m => gs.activePlayers.includes(m));
+    const perm = alliance.permanence || 'normal';
 
-    // ── Dissolve: only 1 (or 0) active member left — alliance is dead ──
+    // ── Dissolve: only 1 (or 0) active member left — alliance is dead (even permanent) ──
     if (activeMembers.length <= 1) {
       alliance.active = false;
       return;
     }
+
+    // Permanent alliances never dissolve from bonds or betrayals
+    if (perm === 'permanent') return;
 
     // ── Dissolve: internal bonds have collapsed — nobody likes each other anymore ──
     if (activeMembers.length >= 2) {
@@ -2375,15 +2508,12 @@ function decayAllianceTrust(epNum) {
         }
       }
       const avgBond = pairs > 0 ? totalBond / pairs : 0;
-      // Average bond negative = this alliance is held together by nothing
-      if (avgBond <= -1) {
-        alliance.active = false;
-        return;
-      }
-      // Average bond barely positive + multiple betrayals = crumbling
-      if (avgBond < 0.5 && (alliance.betrayals?.length || 0) >= 2) {
-        alliance.active = false;
-        return;
+      // Fragile: dissolves easier (avg bond <= 0 or any betrayal)
+      if (perm === 'fragile') {
+        if (avgBond <= 0 || (alliance.betrayals?.length || 0) >= 1) { alliance.active = false; return; }
+      } else {
+        if (avgBond <= -1) { alliance.active = false; return; }
+        if (avgBond < 0.5 && (alliance.betrayals?.length || 0) >= 2) { alliance.active = false; return; }
       }
     }
 
@@ -12274,6 +12404,17 @@ function initGameState() {
     }
   });
 
+  // Pre-game alliance bond boost (+2 permanent, +1.5 normal, +1 fragile)
+  (preGameAlliances || []).forEach(a => {
+    const boost = a.permanence === 'permanent' ? 2 : a.permanence === 'fragile' ? 1 : 1.5;
+    for (let i = 0; i < a.members.length; i++) {
+      for (let j = i + 1; j < a.members.length; j++) {
+        const k = bKey(a.members[i], a.members[j]);
+        bonds[k] = (bonds[k] || 0) + boost;
+      }
+    }
+  });
+
   const tribeList = Object.entries(tribeMap).map(([name,members]) => ({name, members:[...members]}));
 
   // Any player with no tribe property gets added to the smallest tribe so nobody is orphaned
@@ -12306,7 +12447,10 @@ function initGameState() {
     exiledThisEp: null,
     penaltyVoteThisEp: null,
     shotInDarkEnabledThisEp: false,
-    namedAlliances: [],  // [{ id, name, members, formed, betrayals, active }]
+    namedAlliances: (preGameAlliances || []).filter(a => a.members.every(m => players.some(p => p.name === m))).map(a => ({
+      id: 'pre-' + a.id, name: a.name, members: [...a.members], formed: 0, betrayals: [], quits: [], active: true,
+      permanence: a.permanence || 'normal', preGame: true,
+    })),
     playerStates: {},    // { [name]: { emotional, votesReceived, lastVotedEp, bigMoves } }
     jurorHistory: {},    // { [name]: { voters, ep, finalBonds } } — tracks how each jury member was voted out
     popularity: {},               // { [name]: running score }
@@ -22160,6 +22304,7 @@ function init() {
   renderCast();
   renderConfig();
   renderRelList();
+  renderAllianceList();
 }
 
 init();

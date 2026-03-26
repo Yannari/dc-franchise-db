@@ -13569,18 +13569,28 @@ function renderTwistCatalog() {
   const selPhases = new Set([...selectedEpisodes].map(ep => epLookup[ep] || 'pre-merge'));
 
   const canAssign = selectedEpisodes.size > 0;
+  // Check which twist types already exist on selected episodes (for incompatibility)
+  const _existingOnSelected = new Set();
+  if (canAssign) {
+    (seasonConfig.twistSchedule || []).forEach(tw => {
+      if (selectedEpisodes.has(Number(tw.episode))) _existingOnSelected.add(tw.type);
+    });
+  }
   container.innerHTML = filtered.map(t => {
     const phaseBlocked = canAssign && t.phase !== 'any' &&
       [...selPhases].every(ph => ph !== t.phase);
+    const incompBlocked = canAssign && (t.incompatible || []).some(ic => _existingOnSelected.has(ic));
+    const blocked = phaseBlocked || incompBlocked;
+    const blockReason = phaseBlocked ? ' ⚠️ wrong phase' : incompBlocked ? ' ⚠️ conflicts with existing twist' : '';
     return `
-    <div class="twist-card ${canAssign && !phaseBlocked ? 'assignable' : ''} ${phaseBlocked ? 'phase-blocked' : ''}" onclick="assignTwist('${t.id}')">
+    <div class="twist-card ${canAssign && !blocked ? 'assignable' : ''} ${blocked ? 'phase-blocked' : ''}" onclick="${blocked ? '' : `assignTwist('${t.id}')`}">
       <div class="twist-card-top">
         <span class="twist-card-emoji">${t.emoji}</span>
         <div class="twist-card-info">
           <span class="twist-card-name">${t.name}</span>
-          <span class="twist-phase">${t.phase}${phaseBlocked ? ' ⚠️ wrong phase' : ''}</span>
+          <span class="twist-phase">${t.phase}${blockReason}</span>
         </div>
-        <button class="twist-add-btn" ${canAssign && !phaseBlocked ? '' : 'disabled'} onclick="event.stopPropagation();assignTwist('${t.id}')">+</button>
+        <button class="twist-add-btn" ${canAssign && !blocked ? '' : 'disabled'} onclick="event.stopPropagation();${blocked ? '' : `assignTwist('${t.id}')`}">+</button>
       </div>
       <p class="twist-card-desc">${t.desc}</p>
     </div>`;
@@ -13599,7 +13609,6 @@ function assignTwist(twistId) {
 
   if (!seasonConfig.twistSchedule) seasonConfig.twistSchedule = [];
   const blocked = [];
-  const _incompBlocked = [];
 
   selectedEpisodes.forEach(ep => {
     const epPhase = epLookup[ep] || 'pre-merge';
@@ -13610,24 +13619,17 @@ function assignTwist(twistId) {
     if (twist?.phase === 'post-merge' && epPhase !== 'post-merge') {
       blocked.push(ep); return;
     }
-    // Incompatibility check: can't stack conflicting immunity twists on same episode
+    // Incompatibility check: silently skip conflicting episodes
     if (twist?.incompatible?.length) {
       const existingOnEp = seasonConfig.twistSchedule.filter(t => Number(t.episode) === ep);
-      const conflict = existingOnEp.find(t => twist.incompatible.includes(t.type));
-      if (conflict) {
-        const conflictName = TWIST_CATALOG.find(c => c.id === conflict.type)?.name || conflict.type;
-        blocked.push(ep);
-        _incompBlocked.push({ ep, conflictName });
-        return;
+      if (existingOnEp.some(t => twist.incompatible.includes(t.type))) {
+        blocked.push(ep); return;
       }
     }
     seasonConfig.twistSchedule.push({ id: 'tw-' + Date.now() + '-' + ep, episode: ep, type: twistId });
   });
 
-  if (_incompBlocked.length) {
-    const msgs = _incompBlocked.map(b => `Ep ${b.ep}: conflicts with ${b.conflictName}`);
-    alert(`"${twist?.name}" is incompatible with existing twists:\n${msgs.join('\n')}`);
-  } else if (blocked.length) {
+  if (blocked.length) {
     const phaseName = twist?.phase === 'pre-merge' ? 'pre-merge' : 'post-merge';
     alert(`"${twist?.name}" is a ${phaseName}-only twist.\nBlocked on episode${blocked.length > 1 ? 's' : ''}: ${blocked.join(', ')}.`);
   }

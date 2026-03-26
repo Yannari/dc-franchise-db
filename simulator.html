@@ -2170,13 +2170,14 @@ function openAllianceForm(id) {
     const p = players.find(x => x.name === n);
     const slug = p?.slug || n.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
     const init = (n||'?')[0].toUpperCase();
-    return `<button class="btn btn-sm ${selected.has(n)?'btn-primary':'btn-secondary'}" data-member="${n}" onclick="toggleAllianceMember(this)" style="display:flex;align-items:center;gap:4px;padding:3px 8px 3px 3px">
-      <div style="width:22px;height:22px;border-radius:50%;background:var(--surface2);overflow:hidden;flex-shrink:0;position:relative">
-        <img src="assets/avatars/${slug}.png" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"/>
-        <span style="display:none;font-size:10px;font-weight:700;color:var(--muted);text-align:center;line-height:22px;width:100%">${init}</span>
+    const sel = selected.has(n);
+    return `<div data-member="${n}" data-selected="${sel}" onclick="toggleAllianceMember(this)" style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;width:48px">
+      <div style="width:36px;height:36px;border-radius:50%;border:3px solid ${sel ? '#10b981' : 'transparent'};overflow:hidden;position:relative;background:var(--surface2);transition:border-color 0.15s">
+        <img src="assets/avatars/${slug}.png" style="width:100%;height:100%;object-fit:cover;border-radius:50%;${sel ? '' : 'filter:grayscale(0.5);opacity:0.6;'}transition:filter 0.15s,opacity 0.15s" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+        <span style="display:none;font-size:14px;font-weight:700;color:var(--muted);align-items:center;justify-content:center;width:100%;height:100%;position:absolute;top:0;left:0">${init}</span>
       </div>
-      <span style="font-size:11px">${n}</span>
-    </button>`;
+      <span style="font-size:9px;color:${sel ? '#10b981' : 'var(--muted)'};text-align:center;line-height:1.1;max-width:48px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transition:color 0.15s">${n}</span>
+    </div>`;
   }).join('');
   if (existing) {
     document.getElementById('alliance-name').value = existing.name || '';
@@ -2202,13 +2203,20 @@ function setAlliancePerm(p) {
   });
   document.getElementById('alliance-perm-desc').textContent = _alliancePermDesc[p] || '';
 }
-function toggleAllianceMember(btn) {
-  btn.classList.toggle('btn-primary'); btn.classList.toggle('btn-secondary');
+function toggleAllianceMember(el) {
+  const isSel = el.dataset.selected === 'true';
+  el.dataset.selected = isSel ? 'false' : 'true';
+  const ring = el.querySelector('div');
+  const img = el.querySelector('img');
+  const label = el.querySelector('span:last-child');
+  if (ring) ring.style.borderColor = isSel ? 'transparent' : '#10b981';
+  if (img) { img.style.filter = isSel ? 'grayscale(0.5)' : ''; img.style.opacity = isSel ? '0.6' : '1'; }
+  if (label) label.style.color = isSel ? 'var(--muted)' : '#10b981';
 }
 function submitAlliance() {
   const name = document.getElementById('alliance-name').value.trim();
   if (!name) { alert('Enter an alliance name.'); return; }
-  const members = [...document.querySelectorAll('#alliance-member-grid .btn-primary')].map(b => b.dataset.member);
+  const members = [...document.querySelectorAll('#alliance-member-grid [data-selected="true"]')].map(b => b.dataset.member);
   if (members.length < 2) { alert('Select at least 2 members.'); return; }
   if (members.length > 5) { alert('Maximum 5 members per alliance.'); return; }
   const alliance = {

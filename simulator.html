@@ -1374,9 +1374,9 @@ const TWIST_CATALOG = [
   { id:'abduction',        emoji:'🫳', name:'Abduction',            category:'team',       phase:'pre-merge',  desc:'Each tribe steals one player from a competing tribe.',                      engineType:'abduction'       },
   { id:'kidnapping',       emoji:'🫳', name:'Kidnapping',           category:'team',       phase:'pre-merge',  desc:'Challenge winner tribe kidnaps one player from the losing tribe. That player skips tribal (safe) and bonds with their captors. Returns next episode.', engineType:'kidnapping' },
   // Immunity
-  { id:'shared-immunity',  emoji:'🛡️', name:'Shared Immunity',      category:'immunity',   phase:'post-merge', desc:'Immunity winner picks one other player to share the necklace with.',        engineType:'shared-immunity' },
-  { id:'double-safety',    emoji:'🛡️', name:'Double Safety',        category:'immunity',   phase:'post-merge', desc:'Two players win immunity — the challenge winner and the runner-up.',         engineType:'double-safety'   },
-  { id:'hero-duel',        emoji:'⚔️', name:'Hero Duel',            category:'immunity',   phase:'any',        desc:'Two players face off head-to-head for individual immunity.',                 engineType:'hero-duel'       },
+  { id:'shared-immunity',  emoji:'🛡️', name:'Shared Immunity',      category:'immunity',   phase:'post-merge', desc:'Immunity winner picks one other player to share the necklace with.',        engineType:'shared-immunity', incompatible:['double-safety','hero-duel'] },
+  { id:'double-safety',    emoji:'🛡️', name:'Double Safety',        category:'immunity',   phase:'post-merge', desc:'Two players win immunity — the challenge winner and the runner-up.',         engineType:'double-safety',  incompatible:['shared-immunity','hero-duel'] },
+  { id:'hero-duel',        emoji:'⚔️', name:'Hero Duel',            category:'immunity',   phase:'any',        desc:'Pre-merge: best vs worst on losing tribe duel for safety. Post-merge: 2nd place vs last place duel for immunity.', engineType:'hero-duel', incompatible:['shared-immunity','double-safety'] },
   { id:'guardian-angel',   emoji:'😇', name:'Guardian Angel',       category:'immunity',   phase:'post-merge', desc:'Player with most jury support earns a safety advantage.',                   engineType:'guardian-angel'  },
   { id:'endurance-test',   emoji:'⚡', name:'Endurance Marathon',   category:'immunity',   phase:'any',        desc:'Extended endurance challenge — physical and endurance stats dominate.',     engineType:'reward-challenge' },
   { id:'knowledge-test',   emoji:'🧠', name:'Knowledge Test',       category:'immunity',   phase:'any',        desc:'Trivia or memory challenge — mental stat dominates.',                       engineType:'reward-challenge' },
@@ -4599,16 +4599,32 @@ function applyTwist(ep, twist, isPrimary = true) {
     twistObj.sharedImmunity = true;
 
   } else if (engineType === 'guardian-angel') {
-    const scores = gs.activePlayers.map(n => ({
-      name: n,
-      score: gs.activePlayers.filter(m=>m!==n).reduce((s,m)=>s+getBond(n,m),0),
-    }));
+    // Guardian Angel: player most liked by the JURY + camp combined
+    const juryWeight = 0.6, campWeight = 0.4;
+    const scores = gs.activePlayers.map(n => {
+      const juryBonds = (gs.jury || []).reduce((s,j) => s + getBond(j, n), 0);
+      const campBonds = gs.activePlayers.filter(m=>m!==n).reduce((s,m) => s + getBond(n, m), 0);
+      const juryNorm = (gs.jury?.length || 1);
+      const campNorm = Math.max(1, gs.activePlayers.length - 1);
+      return { name: n, score: (juryBonds / juryNorm) * juryWeight + (campBonds / campNorm) * campWeight, juryBonds, campBonds };
+    });
     scores.sort((a,b) => b.score - a.score);
-    twistObj.guardianAngel = scores[0]?.name || null;
+    const winner = scores[0];
+    const runnerUp = scores[1] || null;
+    twistObj.guardianAngel = winner?.name || null;
+    twistObj.gaScore = winner?.score || 0;
+    twistObj.gaRunnerUp = runnerUp?.name || null;
+    twistObj.gaRunnerUpScore = runnerUp?.score || 0;
+    twistObj.gaReason = winner ? (
+      winner.juryBonds > winner.campBonds ? `The jury remembers ${winner.name}. The bonds ${pronouns(winner.name).sub} built before being in power are now a shield.`
+      : `${winner.name} is the most connected player in the game. Camp bonds run deep — deep enough to earn protection.`
+    ) : null;
     if (twistObj.guardianAngel) gs.guaranteedImmuneThisEp = twistObj.guardianAngel;
 
   } else if (engineType === 'hero-duel') {
-    twistObj.duelParticipants = [...gs.activePlayers].sort(() => Math.random() - 0.5).slice(0, 2);
+    // Participants determined post-challenge — mark pending
+    twistObj.heroDuelPending = true;
+    gs.heroDuelPending = true;
 
   // ── ELIMINATION ────────────────────────────────────────────────────
   } else if (engineType === 'double-elim') {
@@ -8827,7 +8843,16 @@ function simulateEpisode() {
   gs.shotInDarkEnabledThisEp = cfg.shotInDark || false;
 
   // ── TWIST CHECK ──
-  const scheduledTwists = (cfg.twistSchedule||[]).filter(t => Number(t.episode) === epNum);
+  // Filter incompatible twists: if two immunity twists conflict, keep the first scheduled
+  const _rawScheduled = (cfg.twistSchedule||[]).filter(t => Number(t.episode) === epNum);
+  const _usedTypes = new Set();
+  const scheduledTwists = _rawScheduled.filter(twist => {
+    const cat = TWIST_CATALOG.find(c => c.id === twist.type);
+    const incomp = cat?.incompatible || [];
+    if (incomp.some(ic => _usedTypes.has(ic))) return false; // blocked by already-scheduled twist
+    _usedTypes.add(twist.type);
+    return true;
+  });
   scheduledTwists.forEach((twist, i) => applyTwist(ep, twist, i === 0));
   // Refresh tribesAtStart after team-changing twists (swap, dissolve, expansion, mutiny, abduction)
   const _teamTwists = ['tribe-swap','tribe-dissolve','tribe-expansion','mutiny','abduction'];
@@ -9151,15 +9176,64 @@ function simulateEpisode() {
         ep.secondImmune = second;
       }
     }
-    // ── TWIST: hero-duel — only the two duelists compete; winner gets immunity ──
+    // ── TWIST: hero-duel — participants from challenge results, duel for immunity ──
     const heroTw = ep.twists?.find(t => t.type === 'hero-duel');
-    if (heroTw?.duelParticipants?.length === 2) {
-      const [a, b] = heroTw.duelParticipants;
-      const aScore = simulateIndividualChallenge([a, b], null);
-      ep.immunityWinner = aScore?.name || a;
-      ep.challengeLabel = 'Hero Duel';
-      heroTw.duelWinner = ep.immunityWinner;
-      heroTw.duelLoser  = ep.immunityWinner === a ? b : a;
+    if (heroTw && gs.heroDuelPending) {
+      gs.heroDuelPending = false;
+      let duelA, duelB, duelReason;
+      if (gs.phase === 'pre-merge' && ep.loser && ep.chalMemberScores) {
+        // Pre-merge: best vs worst on the LOSING tribe
+        const loserMembers = ep.loser.members || [];
+        const loserScored = loserMembers
+          .filter(m => ep.chalMemberScores[m] !== undefined)
+          .sort((a,b) => (ep.chalMemberScores[b]||0) - (ep.chalMemberScores[a]||0));
+        if (loserScored.length >= 2) {
+          duelA = loserScored[0]; // best performer on losing tribe
+          duelB = loserScored[loserScored.length - 1]; // worst performer
+          duelReason = `${duelA} was the best performer on the losing tribe. ${duelB} was the worst. One of them earns safety — the other stays vulnerable.`;
+        }
+      } else if (ep.chalPlacements?.length >= 3) {
+        // Post-merge: 2nd place vs last place (winner already has immunity)
+        const nonWinner = ep.chalPlacements.filter(n => n !== ep.immunityWinner);
+        if (nonWinner.length >= 2) {
+          duelA = nonWinner[0]; // 2nd best (runner-up)
+          duelB = nonWinner[nonWinner.length - 1]; // worst performer
+          duelReason = `${duelA} finished second in the challenge. ${duelB} finished last. They duel for a second immunity necklace.`;
+        }
+      }
+      if (!duelA || !duelB) {
+        // Fallback: two random active players
+        const pool = gs.activePlayers.filter(p => p !== ep.immunityWinner);
+        duelA = pool[0]; duelB = pool[pool.length - 1];
+        duelReason = `Two players face off head-to-head.`;
+      }
+      heroTw.duelParticipants = [duelA, duelB];
+      heroTw.duelReason = duelReason;
+      // Simulate the duel
+      const duelResult = simulateIndividualChallenge([duelA, duelB], null);
+      const duelWinner = duelResult?.name || duelA;
+      const duelLoser = duelWinner === duelA ? duelB : duelA;
+      heroTw.duelWinner = duelWinner;
+      heroTw.duelLoser = duelLoser;
+      // Pre-merge: duel winner earns safety (not full immunity — just can't be voted out)
+      // Post-merge: duel winner gets a second immunity necklace
+      if (gs.phase === 'pre-merge') {
+        ep.extraImmune = ep.extraImmune || [];
+        ep.extraImmune.push(duelWinner);
+        heroTw.duelType = 'safety';
+      } else {
+        ep.extraImmune = ep.extraImmune || [];
+        ep.extraImmune.push(duelWinner);
+        heroTw.duelType = 'immunity';
+      }
+      // Bond consequences: rivalry or respect
+      const winnerTemp = pStats(duelWinner).temperament;
+      const loserTemp = pStats(duelLoser).temperament;
+      if (getBond(duelWinner, duelLoser) <= -2) {
+        addBond(duelWinner, duelLoser, -0.8); // rivalry deepens
+      } else if (winnerTemp >= 7 && loserTemp >= 7) {
+        addBond(duelWinner, duelLoser, 0.5); // mutual respect
+      }
     }
   }
 
@@ -10648,10 +10722,9 @@ function generateTwistScenes(ep) {
         result.push({ label:'Fire Making', type:tw.type, scenes:sc }); break;
 
       case 'hero-duel':
-        if (tw.duelParticipants?.length) {
-          sc.push({ text: 'Two players will go head-to-head for individual immunity.', players: tw.duelParticipants });
-          sc.push({ text: 'The winner earns the Immunity Necklace. The loser is vulnerable at tonight\'s Tribal Council.', players: tw.duelParticipants });
-        }
+        // Pre-challenge: just the announcement (participants not known yet)
+        sc.push({ text: 'After the challenge, two players will face off in a Hero Duel for safety.', players: [] });
+        sc.push({ text: 'The winner earns immunity. The loser is vulnerable at tonight\'s Tribal Council.', players: [] });
         result.push({ label:'Hero Duel', type:tw.type, scenes:sc }); break;
 
       case 'shared-immunity':
@@ -10665,18 +10738,12 @@ function generateTwistScenes(ep) {
         result.push({ label:'Double Safety', type:tw.type, scenes:sc }); break;
 
       case 'guardian-angel': {
+        sc.push({ text: 'One player has earned automatic immunity — not through winning a challenge, but through the strength of their relationships.', players: [] });
         if (tw.guardianAngel) {
-          const gaAllies = relationships
-            .filter(r => (r.a===tw.guardianAngel||r.b===tw.guardianAngel) && r.score > 20)
-            .sort((a,b)=>b.score-a.score).slice(0,2)
-            .map(r => r.a===tw.guardianAngel ? r.b : r.a)
-            .filter(n => gs.activePlayers.includes(n));
-          if (gaAllies.length) {
-            sc.push({ text: `${tw.guardianAngel}'s relationships at camp haven't gone unnoticed.`, players: [tw.guardianAngel, ...gaAllies] });
-          } else {
-            sc.push({ text: 'The game has been watching.', players: [tw.guardianAngel] });
-          }
-          sc.push({ text: `${tw.guardianAngel} has earned automatic immunity this episode. The bonds built at camp have become a shield.`, players: [tw.guardianAngel], badge:'Immune', badgeClass:'win' });
+          sc.push({ text: `${tw.guardianAngel} is the most liked player in the game right now.`, players: [tw.guardianAngel], badge: 'GUARDIAN ANGEL', badgeClass: 'win' });
+          if (tw.gaReason) sc.push({ text: tw.gaReason, players: [tw.guardianAngel] });
+          sc.push({ text: `${tw.guardianAngel} is safe tonight. The bonds built at camp — and on the jury — have become a shield.`, players: [tw.guardianAngel], badge: 'Immune', badgeClass: 'win' });
+          if (tw.gaRunnerUp) sc.push({ text: `${tw.gaRunnerUp} was the closest to earning the Guardian Angel. So close — but not enough.`, players: [tw.gaRunnerUp] });
         }
         result.push({ label:'Guardian Angel', type:tw.type, scenes:sc }); break;
       }
@@ -22281,6 +22348,20 @@ function buildVPScreens(epRecord) {
     if (_dblSafeTwVP.reason) _dsHtml += _renderTwistScene({ text: _dblSafeTwVP.reason, players: [_dblSafeTwVP.secondImmune] });
     _dsHtml += `</div>`;
     vpScreens.push({ id: 'double-safety', label: 'Double Safety', html: _dsHtml });
+  }
+
+  // ── 5f. Hero Duel result (post-challenge) ──
+  const _heroDuelTwVP = (ep.twists || []).find(t => t.type === 'hero-duel' && t.duelWinner);
+  if (_heroDuelTwVP) {
+    const _hd = _heroDuelTwVP;
+    let _hdHtml = `<div class="rp-page rp-twist-page tod-arena"><div class="rp-eyebrow">Episode ${ep.num}</div>`;
+    _hdHtml += `<div class="rp-twist-title">Hero Duel</div>`;
+    if (_hd.duelReason) _hdHtml += _renderTwistScene({ text: _hd.duelReason, players: _hd.duelParticipants || [] });
+    _hdHtml += _renderTwistScene({ text: `${_hd.duelParticipants[0]} vs ${_hd.duelParticipants[1]}. Head-to-head. One walks away safe.`, players: _hd.duelParticipants || [] });
+    _hdHtml += _renderTwistScene({ text: `${_hd.duelWinner} wins the Hero Duel.`, players: [_hd.duelWinner], badge: _hd.duelType === 'immunity' ? 'IMMUNE' : 'SAFE', badgeClass: 'win' });
+    _hdHtml += _renderTwistScene({ text: `${_hd.duelLoser} loses. ${pronouns(_hd.duelLoser).Sub} ${pronouns(_hd.duelLoser).sub==='they'?'are':'is'} vulnerable tonight.`, players: [_hd.duelLoser], badge: 'VULNERABLE', badgeClass: 'bad' });
+    _hdHtml += `</div>`;
+    vpScreens.push({ id: 'hero-duel', label: 'Hero Duel', html: _hdHtml });
   }
 
   // ── 6. Post-Challenge Camp — one screen per tribe with post events ──

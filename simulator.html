@@ -9599,6 +9599,9 @@ function simulateEpisode() {
   gs.episodeHistory[gs.episodeHistory.length-1].tribalPlayers = ep.tribalPlayers || null;
   gs.episodeHistory[gs.episodeHistory.length-1].bewareLostVotes = ep.bewareLostVotes || null;
   gs.episodeHistory[gs.episodeHistory.length-1].journey = ep.journey || null;
+  gs.episodeHistory[gs.episodeHistory.length-1].sharedImmunity = ep.sharedImmunity || null;
+  gs.episodeHistory[gs.episodeHistory.length-1].secondImmune = ep.secondImmune || null;
+  gs.episodeHistory[gs.episodeHistory.length-1].extraImmune = ep.extraImmune || null;
 
   const summaryText = generateSummaryText(ep);
   gs.episodeHistory[gs.episodeHistory.length-1].summaryText = summaryText;

@@ -21399,7 +21399,20 @@ function buildVPScreens(epRecord) {
         : [...gs.activePlayers];
       return [{ name: _mergeKey, members }];
     }
-    if (ep.tribesAtStart?.length) return ep.tribesAtStart;
+    if (ep.tribesAtStart?.length) {
+      let tribes = ep.tribesAtStart;
+      // Kidnapping: move kidnapped player from home tribe to winner tribe for camp display
+      const _kidTw = (ep.twists||[]).find(t => t.type === 'kidnapping' && t.kidnapped);
+      if (_kidTw) {
+        tribes = tribes.map(t => ({
+          name: t.name,
+          members: t.name === _kidTw.fromTribe ? t.members.filter(m => m !== _kidTw.kidnapped)
+                 : t.name === _kidTw.toTribe ? (t.members.includes(_kidTw.kidnapped) ? [...t.members] : [...t.members, _kidTw.kidnapped])
+                 : [...t.members],
+        }));
+      }
+      return tribes;
+    }
     const snap = gs.episodeHistory?.filter(h => h.num < ep.num).slice(-1)[0]?.gsSnapshot;
     if (snap?.tribes?.length) return snap.tribes;
     if (gs.phase === 'pre-merge' && gs.tribes?.length) return gs.tribes;

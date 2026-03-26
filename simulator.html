@@ -8100,6 +8100,11 @@ function simulateEpisode() {
   // ── TWIST CHECK ──
   const scheduledTwists = (cfg.twistSchedule||[]).filter(t => Number(t.episode) === epNum);
   scheduledTwists.forEach((twist, i) => applyTwist(ep, twist, i === 0));
+  // Refresh tribesAtStart after team-changing twists (swap, dissolve, expansion, mutiny, abduction)
+  const _teamTwists = ['tribe-swap','tribe-dissolve','tribe-expansion','mutiny','abduction','swapvote'];
+  if (ep.twists.some(t => _teamTwists.includes(t.type))) {
+    ep.tribesAtStart = gs.tribes.map(t => ({ name: t.name, members: [...t.members] }));
+  }
 
   // ── RI RE-ENTRY ──
   const isReentry = cfg.ri && gs.riPlayers.length > 0 && gs.activePlayers.length <= cfg.riReentryAt && !gs.isMerged;

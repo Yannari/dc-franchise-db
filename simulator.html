@@ -2513,7 +2513,8 @@ function updatePlayerStates(ep) {
     const allianceForMe = (ep.alliances || []).find(a => a.type === 'alliance' && a.members.includes(name));
     const atBottom = allianceForMe && isAllianceBottom(name, allianceForMe.members);
     const unallied = !allianceForMe && gs.isMerged; // no alliance, post-merge — exposed
-    const lostCloseAlly = ep.eliminated && getBond(name, ep.eliminated) >= 6; // close ally just went home
+    const _allyBond = ep.eliminated ? getBond(name, ep.eliminated) : 0;
+    const lostCloseAlly = ep.eliminated && _allyBond >= 3 && Math.random() < _allyBond * 0.12; // scales: bond 3=36%, 5=60%, 8=96%
     const longSafeStreak = (epNum - (state.lastVotedEp || 0)) >= 5 && epNum >= 5;
 
     // State priority: desperate → paranoid → uneasy → comfortable (complacent) → calculating → confident → content
@@ -3789,7 +3790,7 @@ function checkIdolPreTribal(ep, tribalPlayers) {
 
       // ── GIVE & BETRAY: schemer convinces holder to hand over the idol, then votes them out ──
       // Requires very high trust (bond >= 5, holder is social/trusting) and a very cold schemer
-      const holderTrusting = bond >= 5 && s.social >= 5;
+      const holderTrusting = bond >= 2 && s.social >= 4 && Math.random() < bond * 0.12; // scales: bond 3=36%, 5=60%, 8=96%
       const giveChance = Math.max(0.03, Math.min(0.18,
         (bond - 3) * 0.04 + ss.strategic * 0.008 + (10 - ss.loyalty) * 0.008 - 0.04
       ));
@@ -4011,11 +4012,11 @@ function checkIdolPlays(tribalPlayers, votesObj, ep, voteLog = []) {
     );
 
     // Tiered base chance: alliance+high bond / alliance+low bond / no alliance but deep bond
+    // Scales with bond intensity: higher bond = more likely to confide
     let _baseChance = 0;
-    if (_sharedAlliance && _bond >= 3)       _baseChance = 0.15;
-    else if (_sharedAlliance && _bond >= 1)  _baseChance = 0.05;
-    else if (!_sharedAlliance && _bond >= 4) _baseChance = 0.08;
-    if (_baseChance === 0) continue;
+    if (_bond < 1) continue;
+    if (_sharedAlliance) _baseChance = Math.min(0.25, _bond * 0.04);  // alliance: bond 2=8%, 5=20%, 8+=25%
+    else                 _baseChance = Math.min(0.15, _bond * 0.025); // no alliance: bond 2=5%, 5=12.5%, 6+=15%
 
     // Archetype modifiers
     const _hArch = players.find(p => p.name === _holder)?.archetype || '';
@@ -4055,7 +4056,7 @@ function checkNonIdolAdvantageUse(tribalPlayers, votesObj, ep, voteLog = []) {
     let _evTarget = _holderTarget;
     let _forAlly = null;
     const _allyInDanger = tribalPlayers
-      .filter(p => p !== _holder && getBond(_holder, p) >= 2.5
+      .filter(p => p !== _holder && getBond(_holder, p) >= 1.5
         && !ep.idolPlays?.some(ip => ip.player === p || ip.playedFor === p))
       .sort((a, b) => (votesObj[b] || 0) - (votesObj[a] || 0))[0];
     if (_allyInDanger && (votesObj[_allyInDanger] || 0) >= 2) {
@@ -4402,7 +4403,7 @@ function applyTwist(ep, twist, isPrimary = true) {
         others.forEach(t => {
           t.members.forEach(m => {
             const bond = getBond(name, m);
-            if (bond >= 3 && (!pullPerson || bond > getBond(name, pullPerson))) {
+            if (bond >= 1.5 && (!pullPerson || bond > getBond(name, pullPerson))) {
               pullTribe = t; pullPerson = m;
             }
           });
@@ -5685,7 +5686,7 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
           .filter(r => { const rel = relationships.find(rx => [rx.a,rx.b].sort().join('|') === [initiator,r.name].sort().join('|')); return !rel || rel.type !== 'enemy'; })
           .map(r => r.name);
         const safeRecruits = recruits.reduce((acc, name) => {
-          const conflict = acc.some(ex => getBond(ex, name) <= -4);
+          const conflict = acc.some(ex => getBond(ex, name) <= -2);
           return conflict ? acc : [...acc, name];
         }, []);
         if (!safeRecruits.length) continue;
@@ -6737,13 +6738,14 @@ function checkAllianceRecruitment(ep) {
           a.members.some(m => m !== outsider && newTribe.members.includes(m) && active.includes(m))
         );
         if (alreadyCovered) return;
-        // Find qualifying alliances: 2+ members on new tribe, avg bond >= 3 with outsider
+        // Find qualifying alliances: 2+ members on new tribe, positive avg bond with outsider
         gs.namedAlliances.forEach(alliance => {
           if (!alliance.active) return;
           const onNewTribe = alliance.members.filter(m => m !== outsider && newTribe.members.includes(m) && active.includes(m));
           if (onNewTribe.length < 2) return;
-          if (avgBondWith(outsider, onNewTribe) < 3) return;
-          if (pctRoll(outsider + alliance.name + 'A') >= 45) return; // ~45%
+          const _avgB = avgBondWith(outsider, onNewTribe);
+          if (_avgB < 1) return;
+          if (Math.random() >= Math.min(0.65, _avgB * 0.12)) return; // bond 2=24%, 4=48%, 6+=65%
           const recruiter = onNewTribe.sort((a, b) => getBond(outsider, b) - getBond(outsider, a))[0];
           doRecruit(alliance, outsider, recruiter, 'swap-outsider');
         });
@@ -7344,7 +7346,7 @@ function checkIdolConfessions(ep) {
       : (gs.tribes.find(t => t.members.includes(holder))?.members || []).filter(p => p !== holder);
     const allies = tribeMembers
       .map(p => ({ name: p, bond: getBond(holder, p) }))
-      .filter(x => x.bond >= 2)
+      .filter(x => x.bond > 0)
       .sort((a, b) => b.bond - a.bond);
     if (!allies.length) return;
 

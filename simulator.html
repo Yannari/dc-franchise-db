@@ -1170,9 +1170,11 @@
           <div id="rel-form" class="rel-form-box" style="display:none">
             <div class="rel-form-title" id="rel-form-title">Add Relationship</div>
             <div class="rel-player-row">
-              <select id="rel-a" class="form-select"></select>
+              <span id="rel-a-avatar"></span>
+              <select id="rel-a" class="form-select" onchange="updateRelAvatars()"></select>
               <span class="rel-vs">and</span>
-              <select id="rel-b" class="form-select"></select>
+              <span id="rel-b-avatar"></span>
+              <select id="rel-b" class="form-select" onchange="updateRelAvatars()"></select>
             </div>
             <div class="form-group">
               <label class="form-label">Relationship type</label>
@@ -2061,12 +2063,31 @@ function loadS9Config() {
 // RELATIONSHIPS
 // ══════════════════════════════════════════════════════════════════════
 
+function miniAvatar(name, size = 28) {
+  const p = players.find(x => x.name === name);
+  const slug = p?.slug || name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+  const init = (name||'?')[0].toUpperCase();
+  return `<div title="${name}" style="display:inline-flex;align-items:center;justify-content:center;width:${size}px;height:${size}px;border-radius:50%;background:var(--surface2);border:2px solid var(--border);overflow:hidden;flex-shrink:0;position:relative;font-size:${Math.round(size*0.4)}px;font-weight:700;color:var(--muted)">
+    <img src="assets/avatars/${slug}.png" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.style.display='none';this.nextElementSibling.style.display='block'" />
+    <span style="display:none">${init}</span>
+  </div>`;
+}
+
 function saveRels() { localStorage.setItem('simulator_rels', JSON.stringify(relationships)); }
 function populateRelDropdowns() {
   const names = players.map(p=>p.name).sort();
   const opts  = names.map(n=>`<option value="${n}">${n}</option>`).join('');
   document.getElementById('rel-a').innerHTML = opts;
   document.getElementById('rel-b').innerHTML = opts;
+  updateRelAvatars();
+}
+function updateRelAvatars() {
+  const a = document.getElementById('rel-a')?.value;
+  const b = document.getElementById('rel-b')?.value;
+  const aEl = document.getElementById('rel-a-avatar');
+  const bEl = document.getElementById('rel-b-avatar');
+  if (aEl && a) aEl.innerHTML = miniAvatar(a, 32);
+  if (bEl && b) bEl.innerHTML = miniAvatar(b, 32);
 }
 function openRelForm(id) {
   editingRelId = id; const form = document.getElementById('rel-form'); form.style.display='flex';
@@ -2122,7 +2143,7 @@ function renderRelList() {
   const list = document.getElementById('rel-list');
   if (!relationships.length) { list.innerHTML=`<div class="rel-empty">No relationships defined.<br>Click <strong>+ Add</strong> or load <strong>S9/S10 Bonds</strong> preset.</div>`; return; }
   const sorted = [...relationships].sort((a,b) => { if(a.type==='unbreakable'&&b.type!=='unbreakable') return -1; if(b.type==='unbreakable'&&a.type!=='unbreakable') return 1; return Math.abs(b.bond)-Math.abs(a.bond); });
-  list.innerHTML = sorted.map(r => { const rt=REL_TYPES[r.type]||REL_TYPES.neutral; return `<div class="rel-card"><div class="rel-players"><div class="rel-names"><span>${r.a}</span><span class="rel-arrow">\u2194</span><span>${r.b}</span></div>${r.note?`<div class="rel-note" title="${r.note}">${r.note}</div>`:''}</div><span class="rel-badge" style="background:${rt.bg};color:${rt.color}">${rt.label}</span><div class="rel-actions"><button class="btn btn-secondary btn-sm" onclick="openRelForm('${r.id}')">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteRel('${r.id}')">\u2715</button></div></div>`; }).join('');
+  list.innerHTML = sorted.map(r => { const rt=REL_TYPES[r.type]||REL_TYPES.neutral; return `<div class="rel-card"><div class="rel-players"><div style="display:flex;align-items:center;gap:6px">${miniAvatar(r.a)}<span style="font-size:12px;font-weight:600">${r.a}</span><span class="rel-arrow">\u2194</span>${miniAvatar(r.b)}<span style="font-size:12px;font-weight:600">${r.b}</span></div>${r.note?`<div class="rel-note" title="${r.note}">${r.note}</div>`:''}</div><span class="rel-badge" style="background:${rt.bg};color:${rt.color}">${rt.label}</span><div class="rel-actions"><button class="btn btn-secondary btn-sm" onclick="openRelForm('${r.id}')">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteRel('${r.id}')">\u2715</button></div></div>`; }).join('');
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -2145,7 +2166,18 @@ function openAllianceForm(id) {
   const names = players.map(p => p.name).sort();
   const existing = id ? preGameAlliances.find(a => a.id === id) : null;
   const selected = new Set(existing?.members || []);
-  grid.innerHTML = names.map(n => `<button class="btn btn-sm ${selected.has(n)?'btn-primary':'btn-secondary'}" data-member="${n}" onclick="toggleAllianceMember(this)" style="font-size:11px;padding:4px 8px">${n}</button>`).join('');
+  grid.innerHTML = names.map(n => {
+    const p = players.find(x => x.name === n);
+    const slug = p?.slug || n.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+    const init = (n||'?')[0].toUpperCase();
+    return `<button class="btn btn-sm ${selected.has(n)?'btn-primary':'btn-secondary'}" data-member="${n}" onclick="toggleAllianceMember(this)" style="display:flex;align-items:center;gap:4px;padding:3px 8px 3px 3px">
+      <div style="width:22px;height:22px;border-radius:50%;background:var(--surface2);overflow:hidden;flex-shrink:0;position:relative">
+        <img src="assets/avatars/${slug}.png" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"/>
+        <span style="display:none;font-size:10px;font-weight:700;color:var(--muted);text-align:center;line-height:22px;width:100%">${init}</span>
+      </div>
+      <span style="font-size:11px">${n}</span>
+    </button>`;
+  }).join('');
   if (existing) {
     document.getElementById('alliance-name').value = existing.name || '';
     setAlliancePerm(existing.permanence || 'normal');
@@ -2203,7 +2235,7 @@ function renderAllianceList() {
     return `<div class="rel-card">
       <div class="rel-players">
         <div class="rel-names" style="flex-wrap:wrap;gap:4px"><strong style="color:var(--accent)">${a.name}</strong></div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px">${a.members.join(', ')}</div>
+        <div style="display:flex;align-items:center;gap:4px;margin-top:4px;flex-wrap:wrap">${a.members.map(m => `<div style="display:flex;align-items:center;gap:3px">${miniAvatar(m, 24)}<span style="font-size:11px;color:var(--muted)">${m}</span></div>`).join('<span style="color:var(--border);font-size:10px">\u00b7</span>')}</div>
       </div>
       <span class="rel-badge" style="color:${permColor};border:1px solid ${permColor};background:transparent;font-size:9px">${permLabel}</span>
       <div class="rel-actions">

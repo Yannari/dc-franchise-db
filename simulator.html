@@ -13599,6 +13599,7 @@ function assignTwist(twistId) {
 
   if (!seasonConfig.twistSchedule) seasonConfig.twistSchedule = [];
   const blocked = [];
+  const _incompBlocked = [];
 
   selectedEpisodes.forEach(ep => {
     const epPhase = epLookup[ep] || 'pre-merge';
@@ -13609,10 +13610,24 @@ function assignTwist(twistId) {
     if (twist?.phase === 'post-merge' && epPhase !== 'post-merge') {
       blocked.push(ep); return;
     }
+    // Incompatibility check: can't stack conflicting immunity twists on same episode
+    if (twist?.incompatible?.length) {
+      const existingOnEp = seasonConfig.twistSchedule.filter(t => Number(t.episode) === ep);
+      const conflict = existingOnEp.find(t => twist.incompatible.includes(t.type));
+      if (conflict) {
+        const conflictName = TWIST_CATALOG.find(c => c.id === conflict.type)?.name || conflict.type;
+        blocked.push(ep);
+        _incompBlocked.push({ ep, conflictName });
+        return;
+      }
+    }
     seasonConfig.twistSchedule.push({ id: 'tw-' + Date.now() + '-' + ep, episode: ep, type: twistId });
   });
 
-  if (blocked.length) {
+  if (_incompBlocked.length) {
+    const msgs = _incompBlocked.map(b => `Ep ${b.ep}: conflicts with ${b.conflictName}`);
+    alert(`"${twist?.name}" is incompatible with existing twists:\n${msgs.join('\n')}`);
+  } else if (blocked.length) {
     const phaseName = twist?.phase === 'pre-merge' ? 'pre-merge' : 'post-merge';
     alert(`"${twist?.name}" is a ${phaseName}-only twist.\nBlocked on episode${blocked.length > 1 ? 's' : ''}: ${blocked.join(', ')}.`);
   }

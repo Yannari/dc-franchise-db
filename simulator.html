@@ -21990,11 +21990,11 @@ function rpBuildJuryVotes(ep) {
     ]);
     // Tier 2: voted out by target but has processed it — respectful but pointed
     else if (votedOutVotedJurorOut) reason = _pick([
-      `${votedOut} put me on this bench. Now I get to return the favor. This is what the jury power is for.`,
-      `${votedOut} voted me out. I\u2019ve had weeks to think about it. Not angry \u2014 but I know who\u2019s too dangerous to leave in this game. It\u2019s ${tp.obj}.`,
-      `${votedOut} ended my game. I\u2019m not bitter \u2014 I\u2019m strategic. ${tp.Sub} ${tp.sub==='they'?'are':'is'} running things and if the jury doesn\u2019t stop ${tp.obj} now, nobody will.`,
-      `${votedOut} took me out. I accepted it. But now the jury has a shot to take ${tp.obj} out \u2014 and I\u2019m not wasting it.`,
-      `I\u2019ve been watching from the bench. ${votedOut} is the biggest threat left. This isn\u2019t revenge \u2014 it\u2019s the smart play.`,
+      `${votedOut} put me on this bench. Tonight I\u2019m sending ${tp.obj} home. That\u2019s the whole speech.`,
+      `${votedOut} voted me out. I\u2019ve been waiting for this. My vote tonight: ${votedOut}. Gone.`,
+      `${votedOut} took my spot in this game. The jury just gave me the power to take ${tp.pos}. I\u2019m using it.`,
+      `I\u2019m writing ${votedOut}\u2019s name down tonight. ${tp.Sub} ended my game \u2014 now I\u2019m ending ${tp.pos}.`,
+      `${votedOut} is going home tonight because of my vote. ${tp.Sub} sent me to the bench. I\u2019m sending ${tp.obj} out the door.`,
     ]);
     // Tier 3: former allies with broken trust
     else if (wereAllied && bond <= -2) reason = _pick([

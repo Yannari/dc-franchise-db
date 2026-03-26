@@ -4211,12 +4211,15 @@ function applyTwist(ep, twist, isPrimary = true) {
       tribe.members.forEach(name => {
         const others = gs.tribes.filter(t => t.name !== tribe.name);
         if (!others.length) return;
-        const best     = others[0];
-        const ownAvg   = tribe.members.filter(m=>m!==name).reduce((s,m) => s+getBond(name,m), 0) / Math.max(1, tribe.members.length-1);
-        const otherAvg = best.members.reduce((s,m) => s+getBond(name,m), 0) / Math.max(1, best.members.length);
+        const ownAvg = tribe.members.filter(m=>m!==name).reduce((s,m) => s+getBond(name,m), 0) / Math.max(1, tribe.members.length-1);
+        // Find the other tribe this player has the strongest bonds with
+        const best = others.reduce((top, t) => {
+          const avg = t.members.reduce((s,m) => s+getBond(name,m), 0) / Math.max(1, t.members.length);
+          return avg > top.avg ? { tribe: t, avg } : top;
+        }, { tribe: others[0], avg: -Infinity });
         const s = pStats(name);
-        if (otherAvg - ownAvg > 1.5 && Math.random() < 0.25 + s.boldness * 0.025) {
-          mutineers.push({ name, from: tribe.name, to: best.name });
+        if (best.avg - ownAvg > 1.5 && Math.random() < 0.25 + s.boldness * 0.025) {
+          mutineers.push({ name, from: tribe.name, to: best.tribe.name });
         }
       });
     });

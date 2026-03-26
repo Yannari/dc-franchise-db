@@ -1202,7 +1202,7 @@
       <div id="setup-panel-alliances" class="setup-panel">
         <div class="setup-rels-content">
           <div class="setup-header">
-            <h2>Pre-Game Alliances <span style="font-size:12px;font-weight:400;color:var(--muted)">— alliances that start day 1 (max 5)</span></h2>
+            <h2>Pre-Game Alliances <span style="font-size:12px;font-weight:400;color:var(--muted)">— alliances that start day 1 (max 5 members each)</span></h2>
             <div class="setup-header-actions">
               <button class="btn btn-secondary btn-sm" onclick="clearPreAlliances()">Clear</button>
               <button class="btn btn-primary btn-sm" onclick="openAllianceForm(null)" style="width:auto" id="add-alliance-btn">+ Add</button>
@@ -1215,7 +1215,7 @@
               <input type="text" id="alliance-name" class="form-input" placeholder="e.g. The Power Trio">
             </div>
             <div class="form-group">
-              <label class="form-label">Members <span class="hint">(select 2-6 players)</span></label>
+              <label class="form-label">Members <span class="hint">(select 2-5 players)</span></label>
               <div id="alliance-member-grid" style="display:flex;flex-wrap:wrap;gap:6px;max-height:140px;overflow-y:auto"></div>
             </div>
             <div class="form-group">
@@ -2137,7 +2137,7 @@ const _alliancePermDesc = { permanent:'Permanent — cannot dissolve. Members st
 function savePreAlliances() { localStorage.setItem('simulator_prealliances', JSON.stringify(preGameAlliances)); }
 
 function openAllianceForm(id) {
-  if (!id && preGameAlliances.length >= 5) { alert('Maximum 5 pre-game alliances.'); return; }
+  // No limit on number of alliances — useful for Blood vs Water seasons
   editingAllianceId = id;
   const form = document.getElementById('alliance-form'); form.style.display = 'flex';
   // Build member toggle grid
@@ -2178,7 +2178,7 @@ function submitAlliance() {
   if (!name) { alert('Enter an alliance name.'); return; }
   const members = [...document.querySelectorAll('#alliance-member-grid .btn-primary')].map(b => b.dataset.member);
   if (members.length < 2) { alert('Select at least 2 members.'); return; }
-  if (members.length > 6) { alert('Maximum 6 members per alliance.'); return; }
+  if (members.length > 5) { alert('Maximum 5 members per alliance.'); return; }
   const alliance = {
     id: editingAllianceId || Date.now().toString(36) + Math.random().toString(36).slice(2,4),
     name, members, permanence: alliancePerm,
@@ -2196,7 +2196,6 @@ function clearPreAlliances() { if (!confirm('Clear all pre-game alliances?')) re
 function renderAllianceList() {
   const list = document.getElementById('alliance-list');
   const addBtn = document.getElementById('add-alliance-btn');
-  if (addBtn) addBtn.disabled = preGameAlliances.length >= 5;
   if (!preGameAlliances.length) { list.innerHTML = '<div class="rel-empty">No pre-game alliances defined.<br>Click <strong>+ Add</strong> to create one.</div>'; return; }
   list.innerHTML = preGameAlliances.map(a => {
     const permColor = a.permanence === 'permanent' ? '#10b981' : a.permanence === 'fragile' ? '#f85149' : 'var(--muted)';

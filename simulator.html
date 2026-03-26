@@ -3813,15 +3813,37 @@ function checkIdolPlays(tribalPlayers, votesObj, ep, voteLog = []) {
     }
   }
 
-  // KiP: steal an idol
+  // KiP: steal an advantage (idol, extra vote, vote steal) from another player at tribal
   const kip = gs.advantages.find(a => a.type === 'kip' && tribalPlayers.includes(a.holder));
   if (kip) {
-    const targets = gs.advantages.filter(a => a.type === 'idol' && tribalPlayers.includes(a.holder) && a.holder !== kip.holder);
-    if (targets.length && Math.random() < pStats(kip.holder).strategic / 10) {
-      const kipIdx = gs.advantages.indexOf(kip);
-      gs.advantages.splice(kipIdx, 1);
-      targets[0].holder = kip.holder;
-      ep.idolPlays.push({ player: kip.holder, type: 'kip', stolenFrom: targets[0].holder });
+    const holder = kip.holder;
+    const hS = pStats(holder);
+    const stealableTypes = ['idol', 'extraVote', 'voteSteal'];
+    const targets = gs.advantages.filter(a => stealableTypes.includes(a.type) && tribalPlayers.includes(a.holder) && a.holder !== holder);
+    if (targets.length) {
+      // Prioritize: known idol holders > enemies > random
+      const known = gs.knownIdolHoldersThisEp || new Set();
+      const sorted = [...targets].sort((a, b) => {
+        const aKnown = known.has(a.holder) ? 2 : 0;
+        const bKnown = known.has(b.holder) ? 2 : 0;
+        const aBond = getBond(holder, a.holder);
+        const bBond = getBond(holder, b.holder);
+        return (bKnown - aBond) - (aKnown - bBond); // prefer known + enemies
+      });
+      // Decision to use: intuition (reading who has it) + strategic (timing) + danger awareness
+      const votesAgainst = Object.entries(votesObj).find(([n]) => n === holder)?.[1] || 0;
+      const inDanger = votesAgainst >= 2 || computeHeat(holder, tribalPlayers, ep.alliances || []) >= 3;
+      const hasKnowledge = sorted.some(t => known.has(t.holder));
+      const useChance = (hS.intuition * 0.4 + hS.strategic * 0.4 + hS.boldness * 0.2) / 10
+        * (inDanger ? 1.5 : 0.6)       // much more likely when in danger
+        * (hasKnowledge ? 1.4 : 0.5);   // much more likely when they know someone has it
+      if (Math.random() < Math.min(useChance, 0.95)) {
+        const victim = sorted[0];
+        const originalHolder = victim.holder;
+        gs.advantages.splice(gs.advantages.indexOf(kip), 1); // consume KiP
+        victim.holder = holder; // transfer the advantage
+        ep.idolPlays.push({ player: holder, type: 'kip', stolenFrom: originalHolder, stolenType: victim.type });
+      }
     }
   }
 }
@@ -10821,7 +10843,7 @@ function generateSummaryText(ep) {
     if (ep.idolPlays?.length) {
       ln('');
       ep.idolPlays.forEach(p => {
-        if (p.type === 'kip') ln(`KiP PLAY: ${p.player} used Knowledge is Power — stole ${p.stolenFrom}'s idol.`);
+        if (p.type === 'kip') { const _stType = p.stolenType === 'extraVote' ? 'Extra Vote' : p.stolenType === 'voteSteal' ? 'Vote Steal' : 'idol'; ln(`KiP PLAY: ${p.player} used Knowledge is Power — stole ${p.stolenFrom}'s ${_stType}.`); }
         else if (p.type === 'extraVote') ln(`EXTRA VOTE: ${p.player} played an Extra Vote${p.forAlly ? ` for ${p.forAlly}` : ''} — cast a second vote against ${p.target}.`);
         else if (p.type === 'voteSteal') ln(`VOTE STEAL: ${p.player} stole ${p.stolenFrom}'s vote — redirected it against ${p.target || 'their target'}.`);
         else if (p.playedFor) ln(`IDOL PLAY: ${p.player} played the Hidden Immunity Idol for ${p.playedFor} — ${p.votesNegated} votes against ${p.playedFor} were cancelled.`);

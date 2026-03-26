@@ -3258,8 +3258,9 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
     // Bond with the alliance's intended target — strong bond creates resistance
     const targetBond = allianceTarget ? getBond(voter, allianceTarget) : 0;
     const isShowmanceTarget = allianceTarget && gs.showmances?.some(sh => sh.includes(voter) && sh.includes(allianceTarget));
+    // Bond resistance scales proportionally — stronger bonds make it harder to vote someone out
     const bondResistChance = isShowmanceTarget ? 0.82
-      : targetBond >= 4 ? 0.55 : targetBond >= 2.5 ? 0.25 : 0;
+      : targetBond >= 1 ? Math.min(0.70, targetBond * 0.10) : 0;
     // Showmance partner — even in free-vote situations, won't write their name
     const showmancePartner = gs.showmances?.find(sh => sh.includes(voter))?.find(p => p !== voter);
     const showmanceResist = showmancePartner && tribalPlayers.includes(showmancePartner)
@@ -3318,7 +3319,7 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
         // No formal alliance — check if a bonded player has a target already cast/planned
         // This simulates informal pre-tribal coordination ("I'm writing X, you in?")
         const bondedWithTarget = tribalPlayers.filter(p =>
-          p !== voter && getBond(voter, p) >= 1 && !isImmune(p)
+          p !== voter && getBond(voter, p) > 0 && !isImmune(p)
         );
         for (const ally of bondedWithTarget.sort((a, b) => getBond(voter, b) - getBond(voter, a))) {
           const allyAlliance = alliances.find(a => a.members.includes(ally));
@@ -3490,7 +3491,7 @@ function simulateRevote(tribalPlayers, tiedPlayers, lostVotes, originalLog = [],
     const otherTied = validTied.filter(p => p !== originalTarget);
 
     // How much do they care about the person they're trying to protect (their ally in the tie)?
-    const allyInTie = validTied.find(p => p !== originalTarget && getBond(voter, p) >= 2.5);
+    const allyInTie = validTied.filter(p => p !== originalTarget).sort((a,b) => getBond(voter,b) - getBond(voter,a))[0] || null;
     const allyBond = allyInTie ? getBond(voter, allyInTie) : 0;
     // How much do they hate the person they're currently targeting?
     const hatredOfTarget = originalTarget ? -getBond(voter, originalTarget) : 0;
@@ -3775,7 +3776,7 @@ function checkIdolPreTribal(ep, tribalPlayers) {
       .filter(p => {
         if (p === holder) return false;
         const ps = pStats(p);
-        return getBond(holder, p) >= 3 && ps.strategic >= 7 && ps.loyalty <= 4;
+        return getBond(holder, p) >= 1.5 && ps.strategic >= 6 && ps.loyalty <= 5;
       })
       .sort((a, b) => {
         const as = pStats(a), bs = pStats(b);
@@ -3823,7 +3824,7 @@ function checkIdolPreTribal(ep, tribalPlayers) {
 
     // ── IDOL SHARE: holder proactively passes idol to a close ally ──
     const best = tribalPlayers
-      .filter(p => p !== holder && getBond(holder, p) >= 4)
+      .filter(p => p !== holder && getBond(holder, p) >= 2)
       .map(p => ({ name: p, bond: getBond(holder, p) }))
       .sort((a, b) => b.bond - a.bond)[0] || null;
 
@@ -3902,7 +3903,7 @@ function checkIdolPlays(tribalPlayers, votesObj, ep, voteLog = []) {
     // ── Tip-off: close ally with high intuition who is NOT voting against the holder ──
     const tipOffCandidates = wasBetrayed ? [] : tribalPlayers.filter(p => {
       if (p === name) return false;
-      if (getBond(name, p) < 3) return false;              // needs to be a real ally
+      if (getBond(name, p) < 1.5) return false;            // needs at least a meaningful bond
       if (pStats(p).intuition < 7) return false;           // needs to be perceptive enough
       const theirVote = voteLog.find(l => l.voter === p)?.voted;
       return theirVote !== name;                            // not voting against the holder
@@ -5613,23 +5614,30 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
       const _stratPlayers = group.filter(n => pStats(n).strategic >= 6 && !_isOvercommitted(n));
       if (_stratPlayers.length) _triggers.push({ id: 'strategic-pitch', weight: 10 });
 
-      // ── TRIGGER 2: Power couple — two players with bond >= 3 who aren't allied ──
+      // ── TRIGGER 2: Power couple — two players with strong bond who aren't allied ──
+      // Probability scales: bond 2 = unlikely, bond 5 = likely, bond 8+ = near-certain
       let _pcPair = null;
       for (let i = 0; i < group.length && !_pcPair; i++) {
         for (let j = i + 1; j < group.length && !_pcPair; j++) {
-          if (getBond(group[i], group[j]) >= 3 && !gs.namedAlliances?.some(a => a.active && a.members.includes(group[i]) && a.members.includes(group[j])))
+          const _pcBond = getBond(group[i], group[j]);
+          if (_pcBond >= 1 && Math.random() < (_pcBond - 1) * 0.15 && !gs.namedAlliances?.some(a => a.active && a.members.includes(group[i]) && a.members.includes(group[j])))
             _pcPair = [group[i], group[j]];
         }
       }
       if (_pcPair) _triggers.push({ id: 'power-couple', weight: 8 });
 
       // ── TRIGGER 3: Mutual enemy — two unallied players who both dislike someone ──
+      // Scales: deeper mutual hatred = easier trigger
       let _mePair = null, _meEnemy = null;
-      const _unallied = group.filter(n => !_isOvercommitted(n)); // mutual enemy: allowed even if already allied (you can hate someone while having other allies)
+      const _unallied = group.filter(n => !_isOvercommitted(n));
       for (let i = 0; i < _unallied.length && !_mePair; i++) {
         for (let j = i + 1; j < _unallied.length && !_mePair; j++) {
           if (getBond(_unallied[i], _unallied[j]) < -0.5) continue;
-          const enemy = group.find(e => e !== _unallied[i] && e !== _unallied[j] && getBond(_unallied[i], e) <= -1.5 && getBond(_unallied[j], e) <= -1.5);
+          const enemy = group.find(e => {
+            if (e === _unallied[i] || e === _unallied[j]) return false;
+            const h1 = getBond(_unallied[i], e), h2 = getBond(_unallied[j], e);
+            return h1 <= -1 && h2 <= -1 && (h1 + h2) <= -3; // combined hatred must be significant
+          });
           if (enemy) { _mePair = [_unallied[i], _unallied[j]]; _meEnemy = enemy; }
         }
       }
@@ -6750,9 +6758,10 @@ function checkAllianceRecruitment(ep) {
       if (!alliance.active || alliance.members.includes(player)) return;
       const allianceActives = alliance.members.filter(m => active.includes(m));
       if (allianceActives.length < 2) return;
-      const anchor = allianceActives.find(m => getBond(player, m) >= 3);
-      if (!anchor) return;
-      if (pctRoll(player + alliance.name + 'B') >= 35) return; // ~35%
+      const anchor = allianceActives.sort((a,b) => getBond(player,b) - getBond(player,a))[0];
+      const anchorBond = getBond(player, anchor);
+      if (anchorBond < 1) return;
+      if (Math.random() >= Math.min(0.60, anchorBond * 0.10)) return; // bond 2=20%, 5=50%, 6+=60% cap
       doRecruit(alliance, player, anchor, 'post-quit');
     });
   });
@@ -6782,8 +6791,8 @@ function checkAllianceRecruitment(ep) {
           if (bloc.members.includes(voter)) return;
           const blocActives = bloc.members.filter(m => active.includes(m));
           if (!blocActives.length) return;
-          const anchor = blocActives.find(m => getBond(voter, m) >= 3);
-          if (!anchor) return;
+          const anchor = blocActives.sort((a,b) => getBond(voter,b) - getBond(voter,a))[0];
+          if (!anchor || getBond(voter, anchor) < 1) return;
           if (pctRoll(voter + bloc.name + 'C') >= 30) return; // ~30%
           doRecruit(bloc, voter, anchor, 'blindside-swing');
         });
@@ -10088,12 +10097,15 @@ function getIndividualTargets(tribalPlayers, immuneName, alliances, challengeLab
     const allianceTarget = myAlliance?.target;
     const cLabel = challengeLabel || myAlliance?.challengeLabel || null;
 
-    const personalEnemy = tribalPlayers
-      .filter(p => p !== voter && p !== immuneName)
-      .find(p => getBond(voter, p) <= -3.5);
+    // Personal enemy: scales with hatred — deeper bond = more likely to override alliance target
+    const _enemies = tribalPlayers
+      .filter(p => p !== voter && p !== immuneName && getBond(voter, p) <= -2)
+      .sort((a,b) => getBond(voter, a) - getBond(voter, b));
+    const personalEnemy = _enemies[0] || null;
+    const _enemyBond = personalEnemy ? Math.abs(getBond(voter, personalEnemy)) : 0;
 
     let target, reason;
-    if (personalEnemy && Math.random() < 0.3 + (10 - s.loyalty) * 0.025) {
+    if (personalEnemy && Math.random() < Math.min(0.65, _enemyBond * 0.07 + (10 - s.loyalty) * 0.02)) {
       target = personalEnemy;
       reason = deriveTargetReason(voter, personalEnemy, gs.phase, [voter], cLabel);
     } else if (allianceTarget && allianceTarget !== voter && allianceTarget !== immuneName) {
@@ -13913,7 +13925,8 @@ function simulateFinaleChallenge(finalists, assistants) {
         const aStats = asst.stats || pStats(asst.name);
         const boost = aStats[stage.assistStat] * 0.15;
         // Sabotage: roll fresh each assisted stage — 15% + |bond| * 2% per stage
-        const sabotageChance = asst.bond <= -2 ? (0.15 + Math.abs(asst.bond) * 0.02) : 0;
+        // Sabotage scales with hatred intensity — any negative bond has a chance, deeper hatred = higher
+        const sabotageChance = asst.bond < 0 ? Math.min(0.50, Math.abs(asst.bond) * 0.05) : 0;
         if (sabotageChance > 0 && Math.random() < sabotageChance) {
           base -= boost * 1.5;
           sabotageEvents.push({ stage: idx, stageName: stage.name, finalist: f, assistant: asst.name });

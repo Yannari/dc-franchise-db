@@ -19257,7 +19257,7 @@ function rpBuildFTC(ep) {
   // Supporting moments: ally juror stands up for a finalist
   jury.forEach(j => {
     const bestFinalist = finalists.reduce((b, f) => getBond(j, f) > getBond(j, b) ? f : b, finalists[0]);
-    if (getBond(j, bestFinalist) >= 4) {
+    if (getBond(j, bestFinalist) >= 3) {
       const supportTexts = [
         `${j} speaks up. "I watched ${bestFinalist} play every single day. Nobody worked harder. Nobody sacrificed more. I just want you all to know that before you vote."`,
         `${j} addresses the jury directly. "You want to know who deserves this? ${bestFinalist}. Not because we were allies \u2014 because I watched ${bestFinalist} earn every day out there. That's what this vote should be about."`,
@@ -19281,12 +19281,60 @@ function rpBuildFTC(ep) {
     }
   });
 
-  // Deduplicate: max 1 feud, 1 mockery, 1 respect, 1 support, 1 laughter — pick best of each
-  const seen = new Set();
+  // Emotional: juror who was close to a finalist gets emotional
+  jury.forEach(j => {
+    const bestF = finalists.reduce((b, f) => getBond(j, f) > getBond(j, b) ? f : b, finalists[0]);
+    if (getBond(j, bestF) >= 2 && getBond(j, bestF) < 4) {
+      const jHistory = gs.jurorHistory?.[j];
+      const earlyBoot = jHistory?.eliminatedEp && jHistory.eliminatedEp <= 4;
+      if (earlyBoot || pStats(j).temperament <= 4) {
+        const emotTexts = [
+          `${j}'s voice breaks. "I didn't make it as far as you did. But I wanted to. I just want someone up there to acknowledge that some of us gave everything and still went home." The room goes quiet.`,
+          `${j} takes a moment before speaking. "This game took something from me. I'm not over it. I'm not going to pretend I am." Nobody in the jury moves.`,
+          `${j} stares at the ground. "I've been sitting here for weeks thinking about what I'd say. And now that I'm here\u2026 I don't know if any of it matters." It matters. The whole room feels it.`,
+        ];
+        fireworks.push({ type: 'emotional', players: [j], badgeClass: 'gold', badge: 'EMOTIONAL',
+          text: _pick(emotTexts, j + 'emo') });
+      }
+    }
+  });
+
+  // Grudge: juror with moderate negative bond reveals a specific resentment
+  jury.forEach(j => {
+    finalists.forEach(f => {
+      const bond = getBond(j, f);
+      if (bond <= -1.5 && bond > -3) {
+        const grudgeTexts = [
+          `${j} is calm but pointed. "I want you to know, ${f} \u2014 I remember the conversation at camp the night before I went home. You looked me in the eye and lied. I just wanted to say it out loud."`,
+          `${j} turns to ${f}. "You never checked on me. Not once. When I was on the bottom, you acted like I didn't exist. That tells me everything I need to know about how you played."`,
+          `${j} keeps it short. "${f}, you took credit for a move that wasn't yours. Everyone on this bench knows it. I just want the record straight."`,
+        ];
+        fireworks.push({ type: 'grudge', players: [j, f], badgeClass: 'bad', badge: 'GRUDGE',
+          text: _pick(grudgeTexts, j + f + 'grudge') });
+      }
+    });
+  });
+
+  // Callout: juror addresses another juror about voting bias
+  if (jury.length >= 6) {
+    const biasedJuror = jury.find(j => {
+      const bonds = finalists.map(f => getBond(j, f));
+      return Math.max(...bonds) - Math.min(...bonds) >= 5;
+    });
+    const caller = biasedJuror ? jury.find(j => j !== biasedJuror && pStats(j).boldness >= 6) : null;
+    if (biasedJuror && caller) {
+      fireworks.push({ type: 'callout', players: [caller, biasedJuror], badgeClass: 'gold', badge: 'JURY CLASH',
+        text: `${caller} turns to ${biasedJuror}. "Be honest with yourself. You made up your mind the night you got voted out. Don't pretend this is about the game when it's about your feelings." ${biasedJuror} doesn't respond. The jury shifts uncomfortably.` });
+    }
+  }
+
+  // Deduplicate: max 2 per type, max 6 total fireworks
+  const typeCounts = {};
   const dedupedFireworks = [];
   fireworks.forEach(fw => {
-    if (!seen.has(fw.type)) {
-      seen.add(fw.type);
+    typeCounts[fw.type] = (typeCounts[fw.type] || 0);
+    if (typeCounts[fw.type] < 2 && dedupedFireworks.length < 6) {
+      typeCounts[fw.type]++;
       dedupedFireworks.push(fw);
     }
   });

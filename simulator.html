@@ -1317,7 +1317,7 @@ const ADVANTAGES = [
 const TWIST_CATALOG = [
   // Team Dynamics
   { id:'tribe-swap',       emoji:'🔀', name:'Tribe Swap',           category:'team',       phase:'pre-merge',  desc:'All players redistributed between existing tribes.',                        engineType:'tribe-swap'      },
-  { id:'tribe-dissolve',   emoji:'💥', name:'Tribe Dissolve',       category:'team',       phase:'pre-merge',  desc:'All tribes dissolved. Players absorbed into two new tribes.',               engineType:'tribe-swap'      },
+  { id:'tribe-dissolve',   emoji:'💥', name:'Tribe Dissolve',       category:'team',       phase:'pre-merge',  desc:'Tribes reduced by one — all players reshuffled into fewer tribes.',         engineType:'tribe-dissolve'  },
   { id:'tribe-expansion',  emoji:'📈', name:'Tribe Expansion',      category:'team',       phase:'pre-merge',  desc:'Current tribes gain a new tribe — players split into N+1 groups.',          engineType:'tribe-expansion' },
   { id:'new-tribe',        emoji:'🆕', name:'New Tribe Formed',     category:'team',       phase:'pre-merge',  desc:'A new tribe is formed from members of existing tribes.',                    engineType:'tribe-expansion' },
   { id:'mutiny',           emoji:'⚔️', name:'Mutiny',               category:'team',       phase:'pre-merge',  desc:'Players may voluntarily switch tribes during a challenge.',                  engineType:'mutiny'          },
@@ -4102,6 +4102,28 @@ function applyTwist(ep, twist, isPrimary = true) {
     gs.sitOutHistory = {}; // back-to-back rule resets after a tribe swap
     twistObj.newTribes = gs.tribes.map(t => ({ name: t.name, members: [...t.members] }));
 
+  } else if (engineType === 'tribe-dissolve') {
+    // Reduce tribe count by one — reshuffle all players into N-1 tribes
+    if (gs.phase !== 'pre-merge' || gs.tribes.length < 3) return; // need 3+ to dissolve
+    const allActive = [...gs.activePlayers];
+    for (let i = allActive.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [allActive[i], allActive[j]] = [allActive[j], allActive[i]];
+    }
+    const numTribes = gs.tribes.length - 1;
+    // Keep the first N-1 tribe names, drop the last one
+    const keptNames = gs.tribes.slice(0, numTribes).map(t => t.name);
+    const dissolvedName = gs.tribes[gs.tribes.length - 1].name;
+    const perTribe = Math.floor(allActive.length / numTribes);
+    gs.tribes = keptNames.map((name, i) => ({
+      name,
+      members: allActive.slice(i * perTribe, i === numTribes - 1 ? allActive.length : (i+1) * perTribe),
+    }));
+    if (seasonConfig.advantages?.idol?.enabled) keptNames.forEach(n => { gs.idolSlots[n] = true; });
+    gs.sitOutHistory = {};
+    twistObj.newTribes = gs.tribes.map(t => ({ name: t.name, members: [...t.members] }));
+    twistObj.dissolvedTribe = dissolvedName;
+
   } else if (engineType === 'tribe-expansion') {
     // Add one new tribe — take ~2 players from each existing tribe to form it
     if (gs.phase !== 'pre-merge' || gs.tribes.length < 2 || gs.activePlayers.length < gs.tribes.length + 3) return;
@@ -6385,7 +6407,7 @@ function checkAllianceRecruitment(ep) {
 
   // ── SCENARIO A: Post-swap outsider recruited by alliance majority on new tribe ──
   const hadSwap = ep.twists?.some(t =>
-    ['tribe-swap', 'tribe-expansion', 'abduction', 'swapvote', 'mutiny'].includes(t.type)
+    ['tribe-swap', 'tribe-dissolve', 'tribe-expansion', 'abduction', 'swapvote', 'mutiny'].includes(t.type)
   );
   if (hadSwap && ep.tribesAtStart?.length && gs.phase === 'pre-merge' && gs.tribes.length) {
     gs.tribes.forEach(newTribe => {
@@ -7135,6 +7157,7 @@ function generateCampEvents(ep, phase = 'both') {
     if (!tw?.type) return;
     switch (tw.type) {
       case 'tribe-swap':
+      case 'tribe-dissolve':
       case 'tribe-expansion':
       case 'abduction':
       case 'swapvote':
@@ -9545,6 +9568,13 @@ function generateTwistScenes(ep) {
         sc.push({ text: 'New Hidden Immunity Idols have been hidden at each tribe\'s camp.', players: [] });
         result.push({ label:'Tribe Swap', type:tw.type, scenes:sc }); break;
 
+      case 'tribe-dissolve':
+        sc.push({ text: 'Drop your buffs.', players: (tw.newTribes||[]).flatMap(t=>t.members) });
+        sc.push({ text: `${tw.dissolvedTribe||'One tribe'} has been dissolved. ${(tw.newTribes||[]).length} tribes remain.`, players: [] });
+        (tw.newTribes||[]).forEach(t => sc.push({ text: t.name, players: t.members, tribeLabel: t.name }));
+        sc.push({ text: 'New Hidden Immunity Idols have been hidden at each tribe\'s camp.', players: [] });
+        result.push({ label:'Tribe Dissolve', type:tw.type, scenes:sc }); break;
+
       case 'tribe-expansion':
         sc.push({ text: `Drop your buffs. A new tribe has been formed: ${tw.newTribeName||'New Tribe'}.`, players: (tw.newTribes||[]).flatMap(t=>t.members) });
         sc.push({ text: 'The game just got more complicated.', players: [] });
@@ -11522,7 +11552,7 @@ function buildStorylines(ep) {
   allTwistsStory.forEach(tw => {
     if (!tw?.type) return;
     if (tw.type === 'loved-ones') lines.push(`The loved ones visit cracked something open. Players who seemed composed showed a side the game hadn't seen. That vulnerability doesn't disappear after the visit ends.`);
-    if (tw.type === 'tribe-swap' || tw.type === 'tribe-expansion' || tw.type === 'abduction') lines.push(`The swap reshuffled more than just tribes. Old loyalties are still there — but so is the reality that everyone is sleeping next to different people now.`);
+    if (tw.type === 'tribe-swap' || tw.type === 'tribe-dissolve' || tw.type === 'tribe-expansion' || tw.type === 'abduction') lines.push(`The swap reshuffled more than just tribes. Old loyalties are still there — but so is the reality that everyone is sleeping next to different people now.`);
     if (tw.type === 'cultural-reset') lines.push(`The reset blew up the social contract. Everything everyone thought was private is now public. The scramble starts from zero.`);
     if (tw.type === 'returning-player') lines.push(`A player came back. The tribe that voted them out has to decide whether that's a threat or an asset. Both options have a cost.`);
     if (tw.type === 'slasher-night') lines.push(`Someone was eliminated without a vote. The tribe woke up one smaller and nobody knows who made the call. That paranoia does not leave quickly.`);

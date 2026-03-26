@@ -9979,27 +9979,13 @@ function generateTwistScenes(ep) {
         result.push({ label:'Hero Duel', type:tw.type, scenes:sc }); break;
 
       case 'shared-immunity':
-        if (tw.sharedWith && ep.immunityWinner) {
-          sc.push({ text: `${ep.immunityWinner} won individual immunity — and with it, the power to share the necklace.`, players: [ep.immunityWinner] });
-          sc.push({ text: `${ep.immunityWinner} shares immunity with ${tw.sharedWith}.`, players: [ep.immunityWinner, tw.sharedWith], badge: 'SHARED IMMUNITY', badgeClass: 'win' });
-          if (tw.reason) sc.push({ text: tw.reason, players: [ep.immunityWinner, tw.sharedWith] });
-          if (tw.snubbed) {
-            sc.push({ text: `${tw.snubbed} expected to be picked. The necklace went to someone else. That silence says everything.`, players: [tw.snubbed], badge: 'SNUBBED', badgeClass: 'bad' });
-          }
-        } else {
-          sc.push({ text: 'The immunity winner may share the Immunity Necklace with one other player.', players: [] });
-        }
+        sc.push({ text: 'Tonight, the immunity winner will have the power to share the necklace with one other player.', players: [] });
+        sc.push({ text: 'If they choose to share, both players are completely safe at Tribal Council.', players: [] });
         result.push({ label:'Shared Immunity', type:tw.type, scenes:sc }); break;
 
       case 'double-safety':
-        if (tw.secondImmune && ep.immunityWinner) {
-          sc.push({ text: `Tonight, two players are safe. The challenge winner — and the runner-up.`, players: [ep.immunityWinner, tw.secondImmune] });
-          sc.push({ text: `${ep.immunityWinner} wins immunity.`, players: [ep.immunityWinner], badge: 'IMMUNE', badgeClass: 'win' });
-          sc.push({ text: `${tw.secondImmune} finishes second — also safe tonight.`, players: [tw.secondImmune], badge: 'SAFE', badgeClass: 'win' });
-          if (tw.reason) sc.push({ text: tw.reason, players: [tw.secondImmune] });
-        } else {
-          sc.push({ text: 'Two players will earn immunity tonight — the winner and the runner-up.', players: [] });
-        }
+        sc.push({ text: 'Tonight, two players will earn immunity — the challenge winner and the runner-up.', players: [] });
+        sc.push({ text: 'Second place has never mattered more.', players: [] });
         result.push({ label:'Double Safety', type:tw.type, scenes:sc }); break;
 
       case 'guardian-angel': {
@@ -21562,6 +21548,31 @@ function buildVPScreens(epRecord) {
       _kidHtml += `</div>`;
       vpScreens.push({ id: 'kidnapping', label: 'Kidnapping', html: _kidHtml });
     }
+  }
+
+  // ── 5d. Shared Immunity result (post-challenge) ──
+  const _sharedTwVP = (ep.twists || []).find(t => t.type === 'shared-immunity' && t.sharedWith);
+  if (_sharedTwVP && ep.immunityWinner) {
+    let _siHtml = `<div class="rp-page rp-twist-page tod-dusk"><div class="rp-eyebrow">Episode ${ep.num}</div>`;
+    _siHtml += `<div class="rp-twist-title">Shared Immunity</div>`;
+    _siHtml += _renderTwistScene({ text: `${ep.immunityWinner} won individual immunity — and with it, a decision to make.`, players: [ep.immunityWinner] });
+    _siHtml += _renderTwistScene({ text: `${ep.immunityWinner} shares the necklace with ${_sharedTwVP.sharedWith}. Both are safe tonight.`, players: [ep.immunityWinner, _sharedTwVP.sharedWith], badge: 'SHARED IMMUNITY', badgeClass: 'win' });
+    if (_sharedTwVP.reason) _siHtml += _renderTwistScene({ text: _sharedTwVP.reason, players: [ep.immunityWinner, _sharedTwVP.sharedWith] });
+    if (_sharedTwVP.snubbed) _siHtml += _renderTwistScene({ text: `${_sharedTwVP.snubbed} expected to be picked. The necklace went to someone else. That silence says everything.`, players: [_sharedTwVP.snubbed], badge: 'SNUBBED', badgeClass: 'bad' });
+    _siHtml += `</div>`;
+    vpScreens.push({ id: 'shared-immunity', label: 'Shared Immunity', html: _siHtml });
+  }
+
+  // ── 5e. Double Safety result (post-challenge) ──
+  const _dblSafeTwVP = (ep.twists || []).find(t => t.type === 'double-safety' && t.secondImmune);
+  if (_dblSafeTwVP && ep.immunityWinner) {
+    let _dsHtml = `<div class="rp-page rp-twist-page tod-dusk"><div class="rp-eyebrow">Episode ${ep.num}</div>`;
+    _dsHtml += `<div class="rp-twist-title">Double Safety</div>`;
+    _dsHtml += _renderTwistScene({ text: `${ep.immunityWinner} wins immunity.`, players: [ep.immunityWinner], badge: 'IMMUNE', badgeClass: 'win' });
+    _dsHtml += _renderTwistScene({ text: `${_dblSafeTwVP.secondImmune} finishes second — also safe tonight.`, players: [_dblSafeTwVP.secondImmune], badge: 'SAFE', badgeClass: 'win' });
+    if (_dblSafeTwVP.reason) _dsHtml += _renderTwistScene({ text: _dblSafeTwVP.reason, players: [_dblSafeTwVP.secondImmune] });
+    _dsHtml += `</div>`;
+    vpScreens.push({ id: 'double-safety', label: 'Double Safety', html: _dsHtml });
   }
 
   // ── 6. Post-Challenge Camp — one screen per tribe with post events ──

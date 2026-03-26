@@ -1321,7 +1321,7 @@ const TWIST_CATALOG = [
   { id:'tribe-expansion',  emoji:'📈', name:'Tribe Expansion',      category:'team',       phase:'pre-merge',  desc:'A new tribe is formed — all players reshuffled into N+1 groups.',           engineType:'tribe-expansion' },
   { id:'mutiny',           emoji:'⚔️', name:'Mutiny',               category:'team',       phase:'pre-merge',  desc:'Players may voluntarily switch tribes during a challenge.',                  engineType:'mutiny'          },
   { id:'abduction',        emoji:'🫳', name:'Abduction',            category:'team',       phase:'pre-merge',  desc:'Each tribe steals one player from a competing tribe.',                      engineType:'abduction'       },
-  { id:'swapvote',         emoji:'🗳️', name:'Swap Vote',            category:'team',       phase:'pre-merge',  desc:'The strongest player picks one person from another tribe to bring over. One goes back in return.', engineType:'swapvote' },
+  { id:'kidnapping',       emoji:'🫳', name:'Kidnapping',           category:'team',       phase:'pre-merge',  desc:'Challenge winner tribe kidnaps one player from the losing tribe. That player skips tribal (safe) and bonds with their captors. Returns next episode.', engineType:'kidnapping' },
   // Immunity
   { id:'shared-immunity',  emoji:'🛡️', name:'Shared Immunity',      category:'immunity',   phase:'post-merge', desc:'Immunity winner picks one other player to share the necklace with.',        engineType:'shared-immunity' },
   { id:'double-safety',    emoji:'🛡️', name:'Double Safety',        category:'immunity',   phase:'post-merge', desc:'Two players win immunity — one from challenge, one random.',                 engineType:'double-safety'   },
@@ -4183,26 +4183,14 @@ function applyTwist(ep, twist, isPrimary = true) {
     twistObj.expansion  = true;
     twistObj.newTribeName = newName;
 
-  } else if (engineType === 'swapvote') {
-    // The socially dominant player picks one target from another tribe to pull over; sends one back
+  } else if (engineType === 'kidnapping') {
+    // Challenge winner tribe kidnaps a player from the losing tribe for one episode.
+    // The kidnapped player skips tribal (safe) and spends the episode with the winner tribe.
+    // They return to their original tribe next episode.
     if (gs.phase !== 'pre-merge' || gs.tribes.length < 2) return;
-    const picker      = wRandom(gs.activePlayers, n => Math.max(0.1, pStats(n).social * 0.5 + pStats(n).strategic * 0.3 + Math.random() * 0.5));
-    const pickerTribe = gs.tribes.find(t => t.members.includes(picker));
-    if (!pickerTribe) return;
-    const otherMembers = gs.tribes.filter(t => t.name !== pickerTribe.name).flatMap(t => t.members);
-    if (!otherMembers.length) return;
-    const target      = wRandom(otherMembers, n => Math.max(0.1, getBond(picker, n) + 2 + Math.random() * 0.5));
-    const targetTribe = gs.tribes.find(t => t.members.includes(target));
-    if (!targetTribe) return;
-    const sendBack    = pickerTribe.members.filter(m => m !== picker)[Math.floor(Math.random() * (pickerTribe.members.length - 1))];
-    if (!sendBack) return;
-    gs.tribes = gs.tribes.map(t => {
-      if (t.name === pickerTribe.name) return { ...t, members: [...t.members.filter(m => m !== sendBack), target] };
-      if (t.name === targetTribe.name) return { ...t, members: [...t.members.filter(m => m !== target), sendBack] };
-      return t;
-    });
-    twistObj.swapPicker = picker; twistObj.swapTarget = target;
-    twistObj.sendBack   = sendBack; twistObj.fromTribe = targetTribe.name; twistObj.toTribe = pickerTribe.name;
+    // This fires BEFORE the challenge — mark it pending. The actual kidnap happens post-challenge.
+    twistObj.kidnappingPending = true;
+    gs.kidnappingPending = true;
 
   } else if (engineType === 'mutiny') {
     if (gs.phase !== 'pre-merge' || gs.tribes.length < 2) return;
@@ -6540,7 +6528,7 @@ function checkAllianceRecruitment(ep) {
 
   // ── SCENARIO A: Post-swap outsider recruited by alliance majority on new tribe ──
   const hadSwap = ep.twists?.some(t =>
-    ['tribe-swap', 'tribe-dissolve', 'tribe-expansion', 'abduction', 'swapvote', 'mutiny'].includes(t.type)
+    ['tribe-swap', 'tribe-dissolve', 'tribe-expansion', 'abduction', 'kidnapping', 'mutiny'].includes(t.type) // kidnapping included: cross-tribe bond formation counts as swap-adjacent
   );
   if (hadSwap && ep.tribesAtStart?.length && gs.phase === 'pre-merge' && gs.tribes.length) {
     gs.tribes.forEach(newTribe => {
@@ -7293,7 +7281,7 @@ function generateCampEvents(ep, phase = 'both') {
       case 'tribe-dissolve':
       case 'tribe-expansion':
       case 'abduction':
-      case 'swapvote':
+      case 'kidnapping':
         // New faces, new pecking order — bonding + power struggle
         boost('tdBond', 30); boost('bond', 20);
         boost('leadershipClash', 25); boost('dispute', 15);
@@ -8133,6 +8121,24 @@ function simulateEpisode() {
                 revoteVotes: null, revoteLog: null, isRockDraw: false,
                 tribesAtStart: gs.tribes.map(t => ({ name: t.name, members: [...t.members] })) };
 
+  // ── RETURN KIDNAPPED PLAYER to their original tribe ──
+  if (gs.kidnappedPlayer) {
+    const _kr = gs.kidnappedPlayer;
+    const _fromT = gs.tribes.find(t => t.name === _kr.from);
+    if (_fromT && !_fromT.members.includes(_kr.name)) _fromT.members.push(_kr.name);
+    // Drama event: what happened while they were gone?
+    ep.twistNarrativeEvents = ep.twistNarrativeEvents || {};
+    const _krP = pronouns(_kr.name);
+    if (_kr.wasInDanger) {
+      ep.twistNarrativeEvents[_kr.from + '_return'] = { type: 'rumor', players: [_kr.name], text:
+        `${_kr.name} walks back into ${_kr.from} camp. Someone was voted out while ${_krP.sub} ${_krP.sub==='they'?'were':'was'} gone. ${_krP.Sub} ${_krP.sub==='they'?'scan':'scans'} the faces — trying to figure out who survived and who didn't. The tribe watches ${_krP.obj} like a stranger.` };
+    } else {
+      ep.twistNarrativeEvents[_kr.from + '_return'] = { type: 'doubt', players: [_kr.name], text:
+        `${_kr.name} returns from ${_kr.to}. The tribe wants to know what ${_krP.sub} said over there, who ${_krP.sub} bonded with, what information ${_krP.sub} gave up. ${_kr.name} smiles. The answers don't come easy.` };
+    }
+    delete gs.kidnappedPlayer;
+  }
+
   // ── RESET EPISODE VOTE-LOSS & TWIST FLAGS ──
   // Preserve journey lost votes until the player actually attends tribal
   const _journeyCarry = (gs.journeyLostVotes || []).filter(p => gs.activePlayers.includes(p));
@@ -8167,7 +8173,7 @@ function simulateEpisode() {
   const scheduledTwists = (cfg.twistSchedule||[]).filter(t => Number(t.episode) === epNum);
   scheduledTwists.forEach((twist, i) => applyTwist(ep, twist, i === 0));
   // Refresh tribesAtStart after team-changing twists (swap, dissolve, expansion, mutiny, abduction)
-  const _teamTwists = ['tribe-swap','tribe-dissolve','tribe-expansion','mutiny','abduction','swapvote'];
+  const _teamTwists = ['tribe-swap','tribe-dissolve','tribe-expansion','mutiny','abduction'];
   if (ep.twists.some(t => _teamTwists.includes(t.type))) {
     ep.tribesAtStart = gs.tribes.map(t => ({ name: t.name, members: [...t.members] }));
   }
@@ -8303,6 +8309,87 @@ function simulateEpisode() {
       .sort((a,b)=>(result.memberScores?.[a]||0)-(result.memberScores?.[b]||0));
     gs._chalStragglers = _loserMs.slice(0, Math.min(2, _loserMs.length));
     gs._chalStandouts  = null; // tribe challenges don't produce post-merge standout targets
+
+    // ── KIDNAPPING: winner tribe takes one player from loser tribe for this episode ──
+    if (gs.kidnappingPending && ep.winner && ep.loser) {
+      gs.kidnappingPending = false;
+      const _kidTw = ep.twists?.find(t => t.type === 'kidnapping');
+      const _winMembers = ep.winner.members;
+      const _loseMembers = ep.loser.members;
+      if (_loseMembers.length >= 3 && _kidTw) {
+        // Winner tribe picks strategically: prefer players in danger (high heat = they'll be grateful)
+        // or players with bonds to winner tribe (existing connection)
+        const _kidPick = wRandom(_loseMembers, n => {
+          const heat = computeHeat(n, _loseMembers, []);
+          const bondW = _winMembers.reduce((s,m) => s + Math.max(0, getBond(n,m)), 0);
+          return heat * 0.5 + bondW * 0.3 + threatScore(n) * 0.2 + Math.random() * 1.5;
+        });
+        const _kidP = pronouns(_kidPick);
+        const _kidS = pStats(_kidPick);
+        const _oldBondAvg = _loseMembers.filter(m=>m!==_kidPick).reduce((s,m)=>s+getBond(_kidPick,m),0) / Math.max(1,_loseMembers.length-1);
+        const _wasInDanger = computeHeat(_kidPick, _loseMembers, []) >= 2;
+
+        // Remove from losing tribe's tribal players (safe this episode)
+        ep.tribalPlayers = ep.tribalPlayers.filter(p => p !== _kidPick);
+
+        // Track for return next episode
+        gs.kidnappedPlayer = { name: _kidPick, from: ep.loser.name, to: ep.winner.name, wasInDanger: _wasInDanger };
+
+        // Determine reason
+        let _kidReason;
+        if (_wasInDanger) _kidReason = `${_kidPick} was on the chopping block at ${ep.loser.name}. Taking ${_kidP.obj} saves ${_kidP.obj} — and creates a debt.`;
+        else if (_winMembers.some(m => getBond(_kidPick, m) >= 2)) _kidReason = `${_kidPick} has connections on ${ep.winner.name}. An easy choice.`;
+        else if (_kidS.physical >= 8) _kidReason = `${_kidPick} is a physical threat. Pulling ${_kidP.obj} out weakens ${ep.loser.name} and shows ${_kidP.obj} a good time.`;
+        else _kidReason = `${ep.winner.name} wanted to shake things up. ${_kidPick} was the pick.`;
+
+        // Bond events based on how kidnappee feels
+        const _likesOldTribe = _oldBondAvg >= 1.5;
+        const _relieved = _wasInDanger;
+        let _kidReaction;
+        if (_relieved) {
+          // Grateful — was about to go home, kidnapping saved them
+          _winMembers.forEach(m => addBond(_kidPick, m, 1.2));
+          _kidReaction = 'grateful';
+        } else if (_likesOldTribe) {
+          // Frustrated — misses allies, worried about what's happening at tribal without them
+          _winMembers.forEach(m => addBond(_kidPick, m, -0.3));
+          _kidReaction = 'frustrated';
+        } else {
+          // Open to it — no strong attachment, enjoys the break
+          _winMembers.forEach(m => addBond(_kidPick, m, 0.5));
+          _kidReaction = 'open';
+        }
+
+        _kidTw.kidnapped = _kidPick;
+        _kidTw.fromTribe = ep.loser.name;
+        _kidTw.toTribe = ep.winner.name;
+        _kidTw.reason = _kidReason;
+        _kidTw.reaction = _kidReaction;
+        _kidTw.wasInDanger = _wasInDanger;
+
+        // Camp events for winner tribe (kidnappee spending the episode there)
+        ep.twistNarrativeEvents = ep.twistNarrativeEvents || {};
+        const _kidEvts = {
+          grateful: [
+            `${_kidPick} can barely hide the relief. ${_kidP.Sub} ${_kidP.sub==='they'?'were':'was'} dead at ${ep.loser.name} — and ${_kidP.sub} know${_kidP.sub==='they'?'':'s'} it. The ${ep.winner.name} camp feels like sanctuary.`,
+            `${_kidPick} opens up fast. ${_kidP.Sub} tell${_kidP.sub==='they'?'':'s'} the ${ep.winner.name} players things about ${ep.loser.name} that nobody was supposed to hear. The gratitude is real — and so is the information.`,
+          ],
+          frustrated: [
+            `${_kidPick} is polite but clearly somewhere else. ${_kidP.Pos} mind is at ${ep.loser.name}'s tribal. ${_kidP.Sub} ${_kidP.sub==='they'?'have':'has'} allies over there — and no idea what's happening to them.`,
+            `${_kidPick} keeps to ${_kidP.ref}. The ${ep.winner.name} players try to include ${_kidP.obj}, but ${_kidP.sub} ${_kidP.sub==='they'?'aren\'t':'isn\'t'} here to make friends. ${_kidP.Sub} ${_kidP.sub==='they'?'are':'is'} here because ${_kidP.sub} had no choice.`,
+          ],
+          open: [
+            `${_kidPick} surprises everyone by settling in. The food, the fire, the conversation — it's different over here. ${_kidP.Sub} ${_kidP.sub==='they'?'don\'t':'doesn\'t'} hate it.`,
+            `${_kidPick} treats the kidnapping like a vacation. No tribal, no drama, just a night with strangers who don't want ${_kidP.obj} dead. For one episode, the game feels different.`,
+          ],
+        };
+        ep.twistNarrativeEvents[ep.winner.name + '_kidnap'] = {
+          type: _kidReaction === 'frustrated' ? 'doubt' : 'bond',
+          players: [_kidPick],
+          text: _pick(_kidEvts[_kidReaction], _kidPick + ep.num),
+        };
+      }
+    }
 
     // ── PENALTY VOTE: assign to worst performer on losing tribe ──
     if (ep.penaltyVoteTwistPending) {
@@ -10027,13 +10114,23 @@ function generateTwistScenes(ep) {
         }
         result.push({ label:'Idol Wager', type:tw.type, scenes:sc }); break;
 
-      case 'swapvote':
-        if (tw.swapPicker) {
-          sc.push({ text: `${tw.swapPicker} holds the power to move one player between tribes.`, players: [tw.swapPicker] });
-          sc.push({ text: `${tw.swapPicker} chose ${tw.swapTarget} from ${tw.fromTribe} to join ${tw.toTribe}.`, players: [tw.swapTarget] });
-          sc.push({ text: `${tw.sendBack} went back to ${tw.fromTribe} in exchange.`, players: [tw.sendBack] });
+      case 'kidnapping':
+        if (tw.kidnapped) {
+          sc.push({ text: `${tw.toTribe} won the challenge — and with it, the power to kidnap one player from ${tw.fromTribe}.`, players: [] });
+          sc.push({ text: `${tw.toTribe} chose ${tw.kidnapped}.`, players: [tw.kidnapped] });
+          if (tw.reason) sc.push({ text: tw.reason, players: [tw.kidnapped] });
+          sc.push({ text: `${tw.kidnapped} will spend the episode at ${tw.toTribe} camp and skip tribal council. ${tw.kidnapped} returns to ${tw.fromTribe} next episode.`, players: [tw.kidnapped] });
+          const _rBadge = tw.reaction === 'grateful' ? { t: 'RELIEVED', c: 'green' }
+                        : tw.reaction === 'frustrated' ? { t: 'FRUSTRATED', c: 'bad' }
+                        : { t: 'OPEN TO IT', c: 'gold' };
+          const _rText = tw.reaction === 'grateful' ? `${tw.kidnapped} can barely hide the relief. This kidnapping might have just saved their game.`
+                       : tw.reaction === 'frustrated' ? `${tw.kidnapped} wanted to stay. Their allies are at ${tw.fromTribe} — and now they can't protect them.`
+                       : `${tw.kidnapped} takes it in stride. A night away from the game might be exactly what they needed.`;
+          sc.push({ text: _rText, players: [tw.kidnapped], badge: _rBadge.t, badgeClass: _rBadge.c });
+        } else {
+          sc.push({ text: 'Kidnapping was offered but conditions prevented it from firing.', players: [] });
         }
-        result.push({ label:'Swap Vote', type:tw.type, scenes:sc }); break;
+        result.push({ label:'Kidnapping', type:tw.type, scenes:sc }); break;
 
       case 'double-elim':
         sc.push({ text: 'Two players will be voted out tonight.', players: active });
@@ -10577,10 +10674,10 @@ function generateSummaryText(ep) {
       ln(`TRIBE EXPANSION — a new tribe "${tw.newTribeName || 'New Tribe'}" was formed. Players split into ${tw.newTribes?.length || '?'} groups.`);
       if (tw.newTribes) tw.newTribes.forEach(t => ln(`${t.name.toUpperCase()}: ${t.members.join(', ')}`));
       ln('New idols hidden for each tribe.');
-    } else if (tw.type === 'swapvote') {
-      if (tw.swapPicker) {
-        ln(`SWAP VOTE — ${tw.swapPicker} (strongest social position) chose ${tw.swapTarget} from ${tw.fromTribe} to join ${tw.toTribe}.`);
-        ln(`${tw.sendBack} went back to ${tw.fromTribe} in exchange.`);
+    } else if (tw.type === 'kidnapping') {
+      if (tw.kidnapped) {
+        ln(`KIDNAPPING — ${tw.toTribe} kidnapped ${tw.kidnapped} from ${tw.fromTribe}. ${tw.kidnapped} skips tribal and returns next episode.`);
+        if (tw.reason) ln(tw.reason);
       }
     } else if (tw.type === 'rock-draw') {
       ln('ROCK DRAW in effect — if the vote ties, there is NO re-vote. Non-immune players draw rocks immediately.');
@@ -14272,7 +14369,7 @@ function rpBuildTribes(ep) {
   const tribeGroups = deriveTribeGroups();
 
   // Toggle: tribe history strips (colored vertical bars showing past tribes)
-  const _swapTypes = ['tribe-swap','tribe-expansion','abduction','swapvote','mutiny','tribe-dissolve'];
+  const _swapTypes = ['tribe-swap','tribe-expansion','abduction','kidnapping','mutiny','tribe-dissolve'];
   const _hadSwap = (gs.episodeHistory || []).some(h =>
     (h.twist?.type && _swapTypes.includes(h.twist.type)) ||
     (h.twists || []).some(t => _swapTypes.includes(t.type))
@@ -14406,7 +14503,7 @@ function getTwistPlayers(tw) {
     case 'mutiny':            (tw.mutineers||[]).forEach(m => names.push(m.name||m)); break;
     case 'hero-duel':         (tw.duelParticipants||[]).forEach(n => names.push(n)); break;
     case 'guardian-angel':    if (tw.guardianAngel) names.push(tw.guardianAngel); break;
-    case 'swapvote':          [tw.swapPicker,tw.swapTarget,tw.sendBack].filter(Boolean).forEach(n => names.push(n)); break;
+    case 'kidnapping':          if (tw.kidnapped) names.push(tw.kidnapped); break;
     case 'penalty-vote':
     case 'fan-vote-boot':     if (tw.fanVoteSaved) names.push(tw.fanVoteSaved); break;
     case 'legacy-awakens':    if (tw.legacyActivated) names.push(tw.legacyActivated); break;
@@ -14442,7 +14539,7 @@ function buildTwistDesc(tw) {
     case 'penalty-vote':       if (tw.penaltyTarget) L.push(`${tw.penaltyTarget} starts tribal council with 1 pre-cast vote against them.`); break;
     case 'rock-draw':          L.push('If the vote ties, there is NO re-vote — non-immune players draw rocks immediately.'); break;
     case 'open-vote':          L.push('All votes will be cast publicly this tribal council.'); break;
-    case 'swapvote':           if (tw.swapPicker) L.push(`${tw.swapPicker} chose ${tw.swapTarget} from ${tw.fromTribe} to join ${tw.toTribe}. ${tw.sendBack} went back in exchange.`); break;
+    case 'kidnapping':           if (tw.kidnapped) L.push(`${tw.toTribe} kidnapped ${tw.kidnapped} from ${tw.fromTribe}. Skips tribal, returns next episode.`); break;
     case 'legacy-awakens':     if (tw.legacyActivated) L.push(`${tw.legacyActivated}'s Legacy Advantage fires — immune this tribal.`); break;
     case 'amulet-activate':    if (tw.amuletActivated) L.push(`${tw.amuletActivated}'s Amulet grants immunity this episode.`); break;
     case 'idol-wager':         if (tw.idolWagerWinner) L.push(`${tw.idolWagerWinner} wagered their idol and won — it's now a Super Idol.`); else if (tw.idolWagerLoser) L.push(`${tw.idolWagerLoser} wagered their idol and lost — it was destroyed.`); break;
@@ -14544,7 +14641,7 @@ function rpBuildMergeAnnouncement(ep) {
 // ── Screen 3: Pre-challenge twists (tribe swap, three gifts, journey, exile-island, etc.) ──
 function rpBuildPreTwist(ep) {
   const twistData = (ep.twistScenes?.length ? ep.twistScenes : generateTwistScenes(ep))
-    .filter(t => t.type !== 'exile-island' && t.type !== 'jury-elimination'); // shown in dedicated screens
+    .filter(t => t.type !== 'exile-island' && t.type !== 'jury-elimination' && t.type !== 'kidnapping'); // shown in dedicated screens / post-challenge
   if (!twistData.length) {
     // Text-only fallback for older saves — exclude exile island lines (shown in its own screen)
     const parsed = parseSummaryText(ep.summaryText || '');
@@ -14567,7 +14664,7 @@ function rpBuildPreTwist(ep) {
       <div class="rp-scene"><div class="rp-scene-text">${lines.join('<br>')}</div></div>
     </div>`;
   }
-  const _swapTypes = ['tribe-swap','tribe-dissolve','tribe-expansion','abduction','swapvote','mutiny'];
+  const _swapTypes = ['tribe-swap','tribe-dissolve','tribe-expansion','abduction','kidnapping','mutiny'];
   const _hasSwap = (ep.twists||[]).some(t => _swapTypes.includes(t.type)) || _swapTypes.includes(ep.twist?.type);
   let html = `<div class="rp-page rp-twist-page tod-dusk"><div class="rp-eyebrow">Episode ${ep.num}</div>`;
   if (_hasSwap) {
@@ -21361,6 +21458,19 @@ function buildVPScreens(epRecord) {
 
     _exHtml += `</div>`;
     vpScreens.push({ id: 'exile-island', label: 'Exile Island', html: _exHtml });
+  }
+
+  // ── 5c. Kidnapping (post-challenge — shown AFTER challenge) ──
+  const _kidTwVP = (ep.twists || []).find(t => t.type === 'kidnapping' && t.kidnapped);
+  if (_kidTwVP) {
+    const _scenes = generateTwistScenes(ep).find(s => s.type === 'kidnapping');
+    if (_scenes?.scenes?.length) {
+      let _kidHtml = `<div class="rp-page rp-twist-page tod-dusk"><div class="rp-eyebrow">Episode ${ep.num}</div>`;
+      _kidHtml += `<div class="rp-twist-title">Kidnapping</div>`;
+      _scenes.scenes.forEach(s => { _kidHtml += _renderTwistScene(s); });
+      _kidHtml += `</div>`;
+      vpScreens.push({ id: 'kidnapping', label: 'Kidnapping', html: _kidHtml });
+    }
   }
 
   // ── 6. Post-Challenge Camp — one screen per tribe with post events ──

@@ -3576,7 +3576,9 @@ function updateBonds(votingLog, eliminated, alliances) {
     });
 
     // Tag votingLog entry so updatePlayerStates counts it as a big move
-    spearEntry.reason = (spearEntry.reason ? spearEntry.reason + ' — ' : '') + 'broke own bloc';
+    if (!spearEntry.reason?.includes('broke own bloc')) {
+      spearEntry.reason = (spearEntry.reason ? spearEntry.reason + ' — ' : '') + 'broke own bloc';
+    }
   });
 
   return changes;
@@ -8901,7 +8903,9 @@ function simulateEpisode() {
   // Helper: run one full vote + idol + resolve (with revote on tie)
   function runTribal(tribalPlayers, immuneName, allianceSet) {
     // open-vote: boost loyalty pressure — pass flag to simulateVotes
-    const { votes, log, defections } = simulateVotes(tribalPlayers, immuneName, allianceSet, gs.lostVotes, ep.openVote);
+    // Combine challenge winner + shared-immunity/double-safety immune players
+    const _allImmune = [immuneName, ...(ep.extraImmune || [])].filter(Boolean);
+    const { votes, log, defections } = simulateVotes(tribalPlayers, _allImmune, allianceSet, gs.lostVotes, ep.openVote);
     if (defections?.length) ep.defections = [...(ep.defections || []), ...defections];
     // Clear journey lost votes for players who attended this tribal (penalty consumed)
     if (gs.journeyLostVotes?.length) {
@@ -9024,6 +9028,15 @@ function simulateEpisode() {
       const drawFrom = pool.length > 0 ? pool : tiedPlayers.filter(p => !isTribalImmune(p));
       return drawFrom[Math.floor(Math.random() * drawFrom.length)];
     };
+
+    // Safety: remove any self-votes that slipped through (overplaying edge case)
+    log.forEach((entry, i) => {
+      if (entry.voter === entry.voted && entry.voter !== 'THE GAME') {
+        votes[entry.voted] = Math.max(0, (votes[entry.voted] || 0) - 1);
+        if (votes[entry.voted] <= 0) delete votes[entry.voted];
+        log.splice(i, 1);
+      }
+    });
 
     const res = resolveVotes(votes);
 
@@ -9230,12 +9243,12 @@ function simulateEpisode() {
     saveGameState(); return ep;
   }
 
-  // ── shared-immunity / double-safety: remove extra immune players from tribal ──
-  if (ep.sharedImmunity)  ep.tribalPlayers = ep.tribalPlayers.filter(p => p !== ep.sharedImmunity);
-  if (ep.secondImmune)    ep.tribalPlayers = ep.tribalPlayers.filter(p => p !== ep.secondImmune);
-  // Recompute alliances so their targets reflect who's actually voteable
-  if (ep.sharedImmunity || ep.secondImmune) {
-    alliances = formAlliances(ep.tribalPlayers, tribeLabel, ep.challengeCategory);
+  // ── shared-immunity / double-safety: mark extra immune players (stay in tribalPlayers for display) ──
+  ep.extraImmune = [ep.sharedImmunity, ep.secondImmune].filter(Boolean);
+  // Recompute alliances excluding extra immune players (they can't be targeted)
+  if (ep.extraImmune.length) {
+    const _voteablePlayers = ep.tribalPlayers.filter(p => !ep.extraImmune.includes(p));
+    alliances = formAlliances(_voteablePlayers, tribeLabel, ep.challengeCategory);
     ep.alliances = alliances;
   }
 

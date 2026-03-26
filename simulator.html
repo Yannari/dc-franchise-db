@@ -9161,6 +9161,8 @@ function simulateEpisode() {
   gs.episodeHistory[gs.episodeHistory.length-1].tipOffCampEvents = ep.tipOffCampEvents || null;
   gs.episodeHistory[gs.episodeHistory.length-1].comfortBlindspotPlayer = ep.comfortBlindspotPlayer || null;
   gs.episodeHistory[gs.episodeHistory.length-1].advantagesPreTribal = ep.advantagesPreTribal || null;
+  gs.episodeHistory[gs.episodeHistory.length-1].tribalPlayers = ep.tribalPlayers || null;
+  gs.episodeHistory[gs.episodeHistory.length-1].bewareLostVotes = ep.bewareLostVotes || null;
 
   const summaryText = generateSummaryText(ep);
   gs.episodeHistory[gs.episodeHistory.length-1].summaryText = summaryText;
@@ -17332,16 +17334,26 @@ function rpBuildVotes(ep) {
       </div>
     </div>`;
   }
-  // Journey lost votes — show who can't vote this tribal due to journey loss
+  // Journey + beware lost votes — show who can't vote this tribal
+  const _tribal = ep.tribalPlayers
+    || (ep.tribalTribe && ep.tribesAtStart?.find(t => t.name === ep.tribalTribe)?.members)
+    || vlog.map(v => v.voter);
+  // Journey losers from this episode
   const _journeyLosers = (ep.journey?.results || [])
-    .filter(r => r.result === 'lostVote' && (ep.tribalPlayers || []).includes(r.name))
+    .filter(r => r.result === 'lostVote' && _tribal.includes(r.name))
     .map(r => r.name);
-  // Also check carried-over journey lost votes from previous episodes
-  const _carriedLosers = (ep.gsSnapshot?.journeyLostVotes || [])
-    .filter(n => (ep.tribalPlayers || []).includes(n) && !_journeyLosers.includes(n));
-  [..._journeyLosers, ..._carriedLosers].forEach(name => {
+  // Carried-over journey lost votes from previous episodes
+  const _prevSnap = gs.episodeHistory?.find(h => h.num === epNum - 1)?.gsSnapshot;
+  const _carriedLosers = (_prevSnap?.journeyLostVotes || [])
+    .filter(n => _tribal.includes(n) && !_journeyLosers.includes(n));
+  // Beware lost votes
+  const _bewareLosers = (ep.bewareLostVotes || []).filter(n => _tribal.includes(n));
+  // Combine all lost-vote players (dedup)
+  const _allLostVoters = [...new Set([..._journeyLosers, ..._carriedLosers, ..._bewareLosers])];
+  _allLostVoters.forEach(name => {
     const p = pronouns(name);
-    const lostEp = (gs.episodeHistory || []).find(h => h.journey?.results?.some(r => r.name === name && r.result === 'lostVote'))?.num || '?';
+    const isBeware = _bewareLosers.includes(name);
+    const lostEp = isBeware ? null : (gs.episodeHistory || []).find(h => h.journey?.results?.some(r => r.name === name && r.result === 'lostVote'))?.num || '?';
     _advHtml += `<div class="tv-advantage-play">
       <div class="tv-advantage-play-left">
         ${rpPortrait(name, 'sm')}
@@ -17349,7 +17361,10 @@ function rpBuildVotes(ep) {
       <div class="tv-advantage-play-body">
         <div class="tv-advantage-play-badge" style="color:#f0883e;background:rgba(240,136,62,0.12);border-color:rgba(240,136,62,0.25)">NO VOTE</div>
         <div class="tv-advantage-play-title">${name} cannot vote tonight</div>
-        <div class="tv-advantage-play-desc">${name} lost ${p.pos} vote on the Journey (Episode ${lostEp}). ${p.Sub} must sit this tribal out without a voice.</div>
+        <div class="tv-advantage-play-desc">${isBeware
+          ? `${name}'s Beware Advantage restricts ${p.pos} vote until all tribes find theirs. ${p.Sub} must sit this tribal out without a voice.`
+          : `${name} lost ${p.pos} vote on the Journey (Episode ${lostEp}). ${p.Sub} must sit this tribal out without a voice.`
+        }</div>
       </div>
     </div>`;
   });

@@ -12721,7 +12721,19 @@ function simulateFinale() {
     const juryResult = simulateJuryVote(finalists);
     ep.juryResult = juryResult;
     const jSorted = Object.entries(juryResult.votes).sort(([,a],[,b]) => b-a);
-    ep.winner = jSorted[0]?.[0] || finalists[0];
+    // Tiebreaker: if top 2 have equal votes, break by total jury bond (who the jury likes more overall)
+    if (jSorted.length >= 2 && jSorted[0][1] === jSorted[1][1]) {
+      const tied = jSorted.filter(([,v]) => v === jSorted[0][1]).map(([n]) => n);
+      const bondTotals = tied.map(f => ({
+        name: f,
+        total: (gs.jury || []).reduce((s, j) => s + getBond(j, f), 0),
+      }));
+      bondTotals.sort((a, b) => b.total - a.total);
+      ep.juryTiebreak = { tied, winner: bondTotals[0].name, method: 'jury-sentiment' };
+      ep.winner = bondTotals[0].name;
+    } else {
+      ep.winner = jSorted[0]?.[0] || finalists[0];
+    }
     gs.finaleResult = { winner: ep.winner, votes: juryResult.votes, reasoning: juryResult.reasoning, finalists };
     // Generate FTC narrative data (opening statements + juror Q&A) for VP viewer
     ep.ftcData = generateFTCData(finalists, juryResult);
@@ -13441,14 +13453,21 @@ function generateFTCData(finalists, juryResult) {
     `"I didn't play a perfect game. But I played MY game — and it got me here."`,
   ];
 
-  function _pickResponse(target, seed) {
+  function _pickResponse(target, seed, category) {
     const fS = pStats(target);
     const wins = gs.episodeHistory.filter(e => e.immunityWinner === target).length;
+    // Match response to question category — don't give a loyalty answer to a strategy question
+    if (category === 'strategic') {
+      if (fS.strategic >= 8) return _pick(_rStrategic, seed);
+      if (wins >= 3) return _pick(_rChallenge(wins), seed);
+      return _pick([..._rStrategic, ..._rGeneral], seed);
+    }
+    if (category === 'social') return _pick(fS.social >= 7 ? _rSocial : _rGeneral, seed);
+    if (category === 'loyalty') return _pick(fS.loyalty >= 7 ? _rLoyalHigh : _rLoyalLow, seed);
+    // General — use finalist's strongest trait
     if (fS.strategic >= 8) return _pick(_rStrategic, seed);
     if (wins >= 3) return _pick(_rChallenge(wins), seed);
     if (fS.social >= 7) return _pick(_rSocial, seed);
-    if (fS.loyalty >= 7) return _pick(_rLoyalHigh, seed);
-    if (fS.loyalty <= 4) return _pick(_rLoyalLow, seed);
     return _pick(_rGeneral, seed);
   }
 
@@ -13500,18 +13519,16 @@ function generateFTCData(finalists, juryResult) {
                  `"I followed the plan. If I'd gone rogue, I'd be sitting where you are."`], seed);
     } else if (jS.strategic >= 8) {
       question = _pickUnusedQ(_qStrategic, seed);
-      response = _pickResponse(target, seed);
+      response = _pickResponse(target, seed, 'strategic');
     } else if (jS.social >= 7 && bond < 0) {
       question = _pickUnusedQ(_qSocial, seed);
-      response = fS.social >= 7
-        ? _pick(_rSocial, seed)
-        : _pick(_rGeneral, seed);
+      response = _pickResponse(target, seed, 'social');
     } else if (jS.loyalty >= 7) {
       question = _pickUnusedQ(_qLoyalty, seed);
-      response = fS.loyalty >= 7 ? _pick(_rLoyalHigh, seed) : _pick(_rLoyalLow, seed);
+      response = _pickResponse(target, seed, 'loyalty');
     } else {
       question = _pickUnusedQ(_qGeneral, seed);
-      response = _pickResponse(target, seed + 3);
+      response = _pickResponse(target, seed + 3, 'general');
     }
 
     jurorQA.push({ juror, targetForQuestion: target, question, response });
@@ -19457,6 +19474,10 @@ function rpBuildJuryVoteReveal(ep) {
     <div id="ftc-final-${epNum}" style="display:none;text-align:center;padding:16px;background:rgba(227,179,65,0.05);border:1px solid rgba(227,179,65,0.2);border-radius:8px;margin-top:8px">
       <div style="font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Final Tally</div>
       <div style="font-size:18px;font-family:var(--font-display);color:#e3b341">${sorted.map(([n,v])=>`${n}: ${v}`).join(' \u2014 ')}</div>
+      ${ep.juryTiebreak ? `<div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(227,179,65,0.15)">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:#d29922;text-transform:uppercase;margin-bottom:4px">Deadlocked \u2014 Tiebreaker</div>
+        <div style="font-size:13px;color:#c9d1d9;line-height:1.6">The jury vote is tied ${sorted[0]?.[1]}\u2013${sorted[0]?.[1]}. After deliberation, the jury's overall sentiment breaks the deadlock in favor of <strong style="color:#e3b341">${ep.juryTiebreak.winner}</strong>.</div>
+      </div>` : ''}
     </div>
   </div>`;
   return html;

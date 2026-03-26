@@ -7813,6 +7813,75 @@ function generateCampEvents(ep, phase = 'both') {
         if (ep.giftNarrativeEvents?.[tribe.name]) preEvents.unshift(ep.giftNarrativeEvents[tribe.name]);
         if (ep.twistNarrativeEvents?.[tribe.name]) preEvents.unshift(ep.twistNarrativeEvents[tribe.name]);
         ep.campEvents[tribe.name] = { pre: preEvents, post: [] };
+
+        // ── PRE-MERGE SPECIFIC EVENTS: drama unique to small tribal camps ──
+        const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
+        const pre = preEvents;
+
+        // Challenge pressure: if this tribe lost last episode, anxiety builds
+        const _prevLoss = gs.episodeHistory?.find(h => h.num === ep.num - 1);
+        if (_prevLoss?.tribalTribe === tribe.name && Math.random() < 0.50) {
+          const _cpSpeaker = present[Math.floor(Math.random() * present.length)];
+          const _cpP = pronouns(_cpSpeaker);
+          pre.push({ type: 'strategicTalk', players: present, text: _rp([
+            `The mood at ${tribe.name} is heavy. They lost last time and everyone knows what another loss means. ${_cpSpeaker} says it out loud: "We can't afford to go back there."`,
+            `${_cpSpeaker} addresses the tribe. "We lose again, one of us goes home. That's the reality." Nobody argues. Nobody has to.`,
+            `${tribe.name} is on edge. The last vote is still fresh. ${_cpSpeaker} tries to rally the group: "We need this one. No excuses." The tribe nods. Whether they believe it is another question.`,
+            `The shelter is quiet this morning. Last tribal took something out of ${tribe.name}. ${_cpSpeaker} breaks the silence: "We're not going back. Not tonight."`,
+          ]) });
+        }
+
+        // Cross-tribe rivalry speculation
+        if (gs.tribes.length >= 2 && Math.random() < 0.25) {
+          const _otherTribe = gs.tribes.filter(t => t.name !== tribe.name)[Math.floor(Math.random() * (gs.tribes.length - 1))];
+          const _speculator = present[Math.floor(Math.random() * present.length)];
+          if (_otherTribe) {
+            pre.push({ type: 'strategicTalk', players: [_speculator], text: _rp([
+              `${_speculator} wonders aloud what's happening at ${_otherTribe.name} camp. "You think they're falling apart over there?" The tribe laughs. But they're all thinking the same thing.`,
+              `${_speculator} brings up ${_otherTribe.name} at the fire. "They looked off at the challenge. Something's going on over there." The speculation fuels the tribe's confidence.`,
+              `"I bet ${_otherTribe.name} is a mess right now." ${_speculator} says it with a grin. Nobody disagrees. Whether it's true or not, believing it helps.`,
+              `The tribe talks about ${_otherTribe.name} more than their own game tonight. ${_speculator} starts it: "Did you see their faces?" It becomes the camp's favorite topic.`,
+            ]) });
+          }
+        }
+
+        // Underdog rally: small tribe or tribe that's been losing rallies together
+        if (present.length <= 4 && Math.random() < 0.35) {
+          const _rallier = present.reduce((best, p) => pStats(p).social + pStats(p).loyalty > pStats(best).social + pStats(best).loyalty ? p : best, present[0]);
+          const _raP = pronouns(_rallier);
+          pre.push({ type: 'bond', players: present, text: _rp([
+            `${_rallier} gathers the tribe. "We're small. That means every single person here matters. We go out there and we fight." It's not a speech — it's a promise.`,
+            `${tribe.name} is outnumbered and they know it. ${_rallier} turns that into fuel. "They think we're done. Let's make them wrong." The energy shifts.`,
+            `${_rallier} sits the tribe down. "I know the numbers aren't great. But look around — everyone here is still fighting. That counts for something." It does.`,
+            `The fire is low and the tribe is smaller than ever. ${_rallier} keeps it burning. Not the fire — the belief that they can still do this.`,
+          ]) });
+          present.forEach(p => { if (p !== _rallier) addBond(p, _rallier, 0.3); });
+        }
+
+        // New arrival integration: someone swapped/abducted/mutinied into this tribe
+        const _swapTw = (ep.twists || []).find(t => ['tribe-swap','tribe-dissolve','abduction','mutiny','kidnapping'].includes(t.type));
+        if (_swapTw) {
+          const _prevTribes = gs.episodeHistory?.find(h => h.num === ep.num - 1)?.gsSnapshot?.tribes || [];
+          const _prevMembers = _prevTribes.find(t => t.name === tribe.name)?.members || [];
+          const _newArrivals = present.filter(p => !_prevMembers.includes(p));
+          _newArrivals.forEach(newcomer => {
+            if (Math.random() < 0.55) {
+              const _ncP = pronouns(newcomer);
+              const _ncBondAvg = present.filter(m => m !== newcomer).reduce((s,m) => s + getBond(newcomer,m), 0) / Math.max(1, present.length - 1);
+              const _ncText = _ncBondAvg >= 1 ? _rp([
+                `${newcomer} is settling in faster than expected. ${_ncP.Sub} already ${_ncP.sub==='they'?'have':'has'} inside jokes with half the tribe. The transition feels seamless.`,
+                `${newcomer} fits. The tribe didn't expect that. ${_ncP.Sub} ${_ncP.sub==='they'?'contribute':'contributes'} at camp, ${_ncP.sub} ${_ncP.sub==='they'?'listen':'listens'} at strategy talks. The new tribemates are warming up.`,
+              ]) : _ncBondAvg <= -1 ? _rp([
+                `${newcomer} hasn't found ${_ncP.pos} footing at ${tribe.name}. The conversations are polite but short. The integration isn't happening naturally.`,
+                `${newcomer} eats alone again. The tribe isn't hostile — just closed. Breaking into an existing group is harder than it looks.`,
+              ]) : _rp([
+                `${newcomer} is still reading the room at ${tribe.name}. Who's in charge, who's on the outs, who can be trusted — all new questions. The answers aren't obvious yet.`,
+                `${newcomer} watches more than ${_ncP.sub} ${_ncP.sub==='they'?'talk':'talks'} today. Every conversation is data. The tribe is an open book if you know how to read it.`,
+              ]);
+              pre.push({ type: 'doubt', players: [newcomer], text: _ncText });
+            }
+          });
+        }
       });
     } else {
       const total = totalForGroup(gs.activePlayers);

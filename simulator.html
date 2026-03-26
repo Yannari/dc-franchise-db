@@ -3667,6 +3667,35 @@ function checkIdolPlays(tribalPlayers, votesObj, ep, voteLog = []) {
   ep.idolPlays   = ep.idolPlays   || [];
   ep.idolMisplays = ep.idolMisplays || [];
   ep.idolRehide  = ep.idolRehide  || false;
+
+  // ── KiP fires FIRST (before any idol plays) ──
+  const kip = gs.advantages.find(a => a.type === 'kip' && tribalPlayers.includes(a.holder));
+  if (kip) {
+    const _kipHolder = kip.holder;
+    const _kipS = pStats(_kipHolder);
+    const stealableTypes = ['idol', 'extraVote', 'voteSteal'];
+    const _kipTargets = gs.advantages.filter(a => stealableTypes.includes(a.type) && tribalPlayers.includes(a.holder) && a.holder !== _kipHolder);
+    if (_kipTargets.length) {
+      const known = gs.knownIdolHoldersThisEp || new Set();
+      const _kipSorted = [..._kipTargets].sort((a, b) => {
+        const aK = known.has(a.holder) ? 2 : 0, bK = known.has(b.holder) ? 2 : 0;
+        return (bK - getBond(_kipHolder, b.holder)) - (aK - getBond(_kipHolder, a.holder));
+      });
+      const _kipVotesAgainst = Object.entries(votesObj).find(([n]) => n === _kipHolder)?.[1] || 0;
+      const _kipInDanger = _kipVotesAgainst >= 2 || computeHeat(_kipHolder, tribalPlayers, ep.alliances || []) >= 3;
+      const _kipHasKnowledge = _kipSorted.some(t => known.has(t.holder));
+      const _kipChance = (_kipS.intuition * 0.4 + _kipS.strategic * 0.4 + _kipS.boldness * 0.2) / 10
+        * (_kipInDanger ? 1.5 : 0.6) * (_kipHasKnowledge ? 1.4 : 0.5);
+      if (Math.random() < Math.min(_kipChance, 0.95)) {
+        const victim = _kipSorted[0];
+        const originalHolder = victim.holder;
+        gs.advantages.splice(gs.advantages.indexOf(kip), 1);
+        victim.holder = _kipHolder;
+        ep.idolPlays.push({ player: _kipHolder, type: 'kip', stolenFrom: originalHolder, stolenType: victim.type });
+      }
+    }
+  }
+
   if (!seasonConfig.advantages?.idol?.enabled) return;
 
   const sorted = Object.entries(votesObj).sort(([,a],[,b]) => b - a);
@@ -3813,39 +3842,7 @@ function checkIdolPlays(tribalPlayers, votesObj, ep, voteLog = []) {
     }
   }
 
-  // KiP: steal an advantage (idol, extra vote, vote steal) from another player at tribal
-  const kip = gs.advantages.find(a => a.type === 'kip' && tribalPlayers.includes(a.holder));
-  if (kip) {
-    const holder = kip.holder;
-    const hS = pStats(holder);
-    const stealableTypes = ['idol', 'extraVote', 'voteSteal'];
-    const targets = gs.advantages.filter(a => stealableTypes.includes(a.type) && tribalPlayers.includes(a.holder) && a.holder !== holder);
-    if (targets.length) {
-      // Prioritize: known idol holders > enemies > random
-      const known = gs.knownIdolHoldersThisEp || new Set();
-      const sorted = [...targets].sort((a, b) => {
-        const aKnown = known.has(a.holder) ? 2 : 0;
-        const bKnown = known.has(b.holder) ? 2 : 0;
-        const aBond = getBond(holder, a.holder);
-        const bBond = getBond(holder, b.holder);
-        return (bKnown - aBond) - (aKnown - bBond); // prefer known + enemies
-      });
-      // Decision to use: intuition (reading who has it) + strategic (timing) + danger awareness
-      const votesAgainst = Object.entries(votesObj).find(([n]) => n === holder)?.[1] || 0;
-      const inDanger = votesAgainst >= 2 || computeHeat(holder, tribalPlayers, ep.alliances || []) >= 3;
-      const hasKnowledge = sorted.some(t => known.has(t.holder));
-      const useChance = (hS.intuition * 0.4 + hS.strategic * 0.4 + hS.boldness * 0.2) / 10
-        * (inDanger ? 1.5 : 0.6)       // much more likely when in danger
-        * (hasKnowledge ? 1.4 : 0.5);   // much more likely when they know someone has it
-      if (Math.random() < Math.min(useChance, 0.95)) {
-        const victim = sorted[0];
-        const originalHolder = victim.holder;
-        gs.advantages.splice(gs.advantages.indexOf(kip), 1); // consume KiP
-        victim.holder = holder; // transfer the advantage
-        ep.idolPlays.push({ player: holder, type: 'kip', stolenFrom: originalHolder, stolenType: victim.type });
-      }
-    }
-  }
+  // (KiP logic moved to top of function — fires before idol plays)
 }
 
 // ── Extra Vote / Vote Steal usage at tribal ──

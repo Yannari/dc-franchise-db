@@ -3656,9 +3656,8 @@ function updateBonds(votingLog, eliminated, alliances) {
     });
 
     // Tag votingLog entry so updatePlayerStates counts it as a big move
-    if (!spearEntry.reason?.includes('broke own bloc')) {
-      spearEntry.reason = (spearEntry.reason ? spearEntry.reason + ' — ' : '') + 'broke own bloc';
-    }
+    const _cleanReason = (spearEntry.reason || '').replace(/\s*—\s*broke own bloc/gi, '').trim();
+    spearEntry.reason = (_cleanReason ? _cleanReason + ' — ' : '') + 'broke own bloc';
   });
 
   return changes;
@@ -9556,13 +9555,13 @@ function simulateEpisode() {
     };
 
     // Safety: remove any self-votes that slipped through (overplaying edge case)
-    log.forEach((entry, i) => {
-      if (entry.voter === entry.voted && entry.voter !== 'THE GAME') {
-        votes[entry.voted] = Math.max(0, (votes[entry.voted] || 0) - 1);
-        if (votes[entry.voted] <= 0) delete votes[entry.voted];
-        log.splice(i, 1);
+    for (let _si = log.length - 1; _si >= 0; _si--) {
+      if (log[_si].voter === log[_si].voted && log[_si].voter !== 'THE GAME') {
+        votes[log[_si].voted] = Math.max(0, (votes[log[_si].voted] || 0) - 1);
+        if (votes[log[_si].voted] <= 0) delete votes[log[_si].voted];
+        log.splice(_si, 1);
       }
-    });
+    }
 
     const res = resolveVotes(votes);
 
@@ -18990,10 +18989,11 @@ function rpBuildVotes(ep) {
     }
   }
 
-  // Torch-snuff (fires after vote results are shown)
-  if (elim) {
+  // Torch-snuff: use firstEliminated for vote-1 in double boot, else use elim
+  const _torchElim = ep.firstEliminated || elim;
+  if (_torchElim) {
     html += `<div id="torch-snuff-${ep.num}" style="text-align:center;margin-top:24px">
-      <div class="torch-snuffed">${rpPortrait(elim, 'xl')}</div>
+      <div class="torch-snuffed">${rpPortrait(_torchElim, 'xl')}</div>
       <div style="font-family:var(--font-display);font-size:24px;color:var(--accent-fire);margin-top:16px;text-shadow:0 0 12px var(--accent-fire)">The tribe has spoken.</div>
     </div>`;
   }

@@ -21678,6 +21678,7 @@ function rpBuildJuryLife(ep) {
         pool.push(`${juror} keeps coming back to the alliance betrayal. "We had a deal. ${info.topVoter} and I shook hands on it. And then ${info.topVoter} organized the vote against me. That's not gameplay \u2014 that's just lying."`);
       if (info.voteCount <= 2)
         pool.push(`"I went home on ${info.voteCount} votes," ${juror} tells anyone who'll listen. "${info.topVoter} didn't even need a majority. ${info.topVoter} just needed enough people to be scared. And that's exactly what happened."`);
+      addBond(juror, info.topVoter, -0.8); // bitterness deepens each episode on the bench
       picked = { type: 'bitter', badge: 'GRUDGE', badgeClass: 'bad', text: _pick(pool, juror + info.topVoter), players: [juror] };
     }
 
@@ -21692,6 +21693,7 @@ function rpBuildJuryLife(ep) {
         pool.push(`${juror} spends most of ${jp.pos} time at the jury house thinking about ${friendInGame.name}'s game. "If ${friendInGame.name} can just survive this next vote, I think ${friendInGame.name} wins the whole thing. I know it."`);
       if (info.allVotersStillIn.length && !info.allVotersStillIn.includes(friendInGame.name))
         pool.push(`${juror} has a clear agenda: "${friendInGame.name} wins, and ${info.allVotersStillIn[0]} goes home. That's my dream finale. One of those people had my back. The other wrote my name down."`);
+      addBond(juror, friendInGame.name, 0.5); // rooting strengthens the bond — matters for jury vote
       picked = { type: 'rooting', badge: 'ROOTING FOR', badgeClass: 'win', text: _pick(pool, juror + friendInGame.name), players: [juror] };
     }
 
@@ -21707,6 +21709,7 @@ function rpBuildJuryLife(ep) {
         `${juror} has been lobbying the other jurors. "${enemyInGame.name} doesn't deserve this. I'll vote for literally anyone else at Final Tribal and I want you all to know that now."`,
         `${juror} flinches every time ${enemyInGame.name}'s name is mentioned at the jury house. "I don't want to talk about ${_ep.obj}. I don't want to think about ${_ep.obj}. I just want ${_ep.obj} gone."`,
       ];
+      addBond(juror, enemyInGame.name, -0.5); // resentment festers — affects jury elimination vote and FTC
       picked = { type: 'resentment', badge: 'NOT OVER IT', badgeClass: 'bad', text: _pick(pool, juror + enemyInGame.name), players: [juror] };
     }
 
@@ -21824,6 +21827,7 @@ function rpBuildJuryLife(ep) {
       pool.push(`${b} was part of the vote that eliminated ${a}. At the jury house, ${a} found out. The confrontation was ugly. "${b} told me I was safe. Looked me in the eye and said 'you're good.' I'm done talking to ${b}."`);
     if (bond <= -3)
       pool.push(`It boiled over last night. ${a} and ${b} got into a full shouting match by the pool. The other jurors had to separate them. "This isn't about the game anymore," one of them said. "This is personal."`);
+    addBond(a, b, -0.6); // jury feuds deepen hostility
     events.push({ type: 'feud', badge: 'JURY FEUD', badgeClass: 'bad',
       text: _pick(pool, a + b + 'feud'), players: [a, b] });
     _feudCount++;
@@ -21860,6 +21864,7 @@ function rpBuildJuryLife(ep) {
       pool.push(`${a} and ${b} were enemies in the game \u2014 different alliances, different targets. But the jury house changed everything. "Funny how getting voted out puts things in perspective. ${a} is actually pretty cool when ${a}'s not trying to eliminate you."`);
     if (bond >= 4)
       pool.push(`${a} and ${b} have the closest friendship in the jury house. Late-night talks, inside jokes, finishing each other's sentences. The other jurors call them "the married couple." Neither of them corrects it.`);
+    addBond(a, b, 0.8); // jury house bonding — these two will likely vote the same way at FTC
     events.push({ type: 'bonding', badge: 'JURY BOND', badgeClass: 'gold',
       text: _pick(pool, a + b + 'bond'), players: [a, b] });
   });
@@ -21911,9 +21916,11 @@ function rpBuildJuryLife(ep) {
         const bond = getBond(juror, eliminatorOnJury);
         const pool = [];
         if (bond <= -2) {
+          addBond(juror, eliminatorOnJury, -0.5); // confrontation made it worse
           pool.push(`${juror} finally confronted ${eliminatorOnJury} at the jury house. "You voted me out. I want to know why. Not the game reason \u2014 the real reason." The conversation went late into the night. It didn't end well.`);
           pool.push(`${eliminatorOnJury} tried to apologize to ${juror} over breakfast. ${juror} listened, then stood up and left. "Apology not accepted. Not yet. Maybe not ever."`);
         } else if (bond >= 1) {
+          addBond(juror, eliminatorOnJury, 0.5); // honest conversation healed something
           pool.push(`${juror} and ${eliminatorOnJury} had the conversation everyone was waiting for. "${eliminatorOnJury} voted me out and I needed to hear why. And honestly? The explanation made sense. I hate that it made sense. But it did."`,);
           pool.push(`${eliminatorOnJury} sat down with ${juror} the first night and laid it all out. Why the vote happened. What the alternative was. By the end, ${juror} was nodding. "I would've done the same thing. I hate it, but I would've done the same thing."`,);
         } else {
@@ -21956,6 +21963,8 @@ function rpBuildJuryLife(ep) {
       const pairKey = juror + info.topVoter + '_mindchange';
       if (!_usedPairs.has(pairKey) && Math.random() < 0.30) {
         _usedPairs.add(pairKey);
+        // Real consequence: juror's bitterness softens — bond improves toward their eliminator
+        addBond(juror, info.topVoter, 1.5);
         const pool = [
           `${juror} surprised everyone at dinner. "I've been thinking about ${info.topVoter}. And I think... I think ${info.topVoter} made the right call voting me out. I'm not happy about it. But I get it now."`,
           `Something shifted for ${juror} this week. "I came in here wanting ${info.topVoter} gone. But watching the game from the outside... ${info.topVoter} is playing. I can't be mad at someone for playing."`,
@@ -22002,6 +22011,7 @@ function rpBuildJuryLife(ep) {
           `${a} and ${b} bonded over the one thing they have in common: neither of them saw their elimination coming. "We're both blindside survivors. That's a club nobody wants to join — but the membership is real."`,
           `${a} and ${b} were strangers in the game. At the jury house, they discovered they agree on almost everything. "If we'd been on the same tribe from day one, we'd have run this game."`,
         ];
+        addBond(a, b, 1.0); // strangers bonding — fresh connection formed on the bench
         events.push({ type: 'new-connection', badge: 'UNLIKELY BOND', badgeClass: 'gold',
           text: _pick(pool, a + b + 'newbond'), players: [a, b] });
         break;

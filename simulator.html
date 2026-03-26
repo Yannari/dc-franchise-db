@@ -18860,9 +18860,12 @@ function rpBuildVotes(ep) {
     </div>`;
   }
 
-  // Blowup (engine-driven, fires when player controlled the vote) or Crashout (display-time fallback)
-  const blowup = ep.tribalBlowup || null;
-  const crashout = blowup ? null : buildCrashout(ep);
+  // Blowup / Crashout — only show if the eliminated player is from THIS vote (not vote 2 in a double boot)
+  const _v1Target = ep.firstEliminated || elim;
+  const _crashoutPlayer = ep.eliminated;
+  const _showCrashout = !ep.firstEliminated || _crashoutPlayer === _v1Target; // only in vote 1 if it's the same person
+  const blowup = _showCrashout ? (ep.tribalBlowup || null) : null;
+  const crashout = blowup ? null : (_showCrashout ? buildCrashout(ep) : null);
   if (blowup) {
     const _blowupSubtitle = blowup.trigger === 'temperament'
       ? `${blowup.player} — Couldn't Hold It In`
@@ -19638,7 +19641,7 @@ function rpBuildVotingPlans2(ep) {
   return rpBuildVotingPlans({ ...ep,
     votingLog: ep.votingLog2,
     alliances: ep.alliances2 || [],
-    immunityWinner: null,
+    immunityWinner: ep.immunityWinner, // still immune in vote 2
     shotInDark: null,
     firstEliminated: null, // suppress double-elim banner
     announcedDoubleElim: false,
@@ -19761,6 +19764,28 @@ function rpBuildVotes2(ep) {
     html += `<div style="margin-top:28px;border-top:1px solid #21262d;padding-top:20px">
       <div style="font-size:9px;font-weight:800;letter-spacing:2px;color:#484f58;margin-bottom:14px">=== WHY THIS VOTE HAPPENED ===</div>
       ${vpWhyCard(_v2WhyElim, _v2WhyBullets, `${_v2WhyElim} was voted out because:`)}
+    </div>`;
+  }
+
+  // Blowup / Crashout for the vote-2 eliminated player
+  const _v2Blowup = ep.tribalBlowup?.player === v2Elim ? ep.tribalBlowup : null;
+  const _v2Crashout = _v2Blowup ? null : buildCrashout(ep);
+  if (_v2Blowup) {
+    const _bSubt = _v2Blowup.trigger === 'temperament' ? `${_v2Blowup.player} — Couldn't Hold It In` : `${_v2Blowup.player} — Goes Out Swinging`;
+    html += `<div class="tc-crashout"><div class="tc-crashout-header">${rpPortrait(_v2Blowup.player,'sm')}<div><div class="tc-crashout-badge">CRASHOUT</div><div class="tc-crashout-title">${_bSubt}</div></div></div><div class="tc-crashout-reveal">`;
+    (_v2Blowup.reveals || []).forEach(({ text, consequence }) => { html += `<div class="tc-crashout-item"><div class="tc-crashout-quote">"${text}"</div><div class="tc-crashout-consequence">↳ ${consequence}</div></div>`; });
+    html += `</div></div>`;
+  } else if (_v2Crashout) {
+    html += `<div class="tc-crashout"><div class="tc-crashout-header">${rpPortrait(_v2Crashout.player,'sm')}<div><div class="tc-crashout-badge">CRASHOUT</div><div class="tc-crashout-title">${_v2Crashout.player} — Last Words</div></div></div><div class="tc-crashout-reveal">`;
+    _v2Crashout.reveals.forEach(({ text, consequence }) => { html += `<div class="tc-crashout-item"><div class="tc-crashout-quote">"${text}"</div><div class="tc-crashout-consequence">↳ ${consequence}</div></div>`; });
+    html += `</div></div>`;
+  }
+
+  // Torch-snuff for vote-2 eliminated
+  if (v2Elim) {
+    html += `<div id="torch-snuff-${ep.num}-v2" style="text-align:center;margin-top:24px">
+      <div class="torch-snuffed">${rpPortrait(v2Elim, 'xl')}</div>
+      <div style="font-family:var(--font-display);font-size:24px;color:var(--accent-fire);margin-top:16px;text-shadow:0 0 12px var(--accent-fire)">The tribe has spoken.</div>
     </div>`;
   }
 

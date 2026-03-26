@@ -79,8 +79,10 @@ Finale-specific ep fields:
 
 ## Patterns
 - New camp event types: push into `ep.campEvents[campKey].pre` directly; add badge
-  handling in `rpBuildCampTribe()` `badgeText`/`badgeClass` block
+  handling in `rpBuildCampTribe()` `badgeText`/`badgeClass` block; events MUST have
+  consequences (addBond, state changes) — text-only events are cosmetic and waste screentime
 - Save episode-level data to history: `gs.episodeHistory[gs.episodeHistory.length-1].key = value`
+  Fields on the live `ep` object are NOT auto-saved — must explicitly copy after push
 - Probabilistic checks follow the idol confession pattern: roll fires or it doesn't,
   consequences cascade naturally from there
 - `pronouns(name)` returns `{sub, obj, pos, posAdj, ref, Sub, Obj, PosAdj}` for any player
@@ -96,6 +98,41 @@ Key config fields in `seasonConfig`:
 - `finaleFormat` (traditional/fire-making/jury-cut/fan-vote/final-challenge)
 - `finaleAssistants` (boolean) — enable assistant selection for final challenge
 - `popularityEnabled` — fan popularity system
+
+## Scope Gotchas
+- `ep` is NOT available in: `generateCampEventsForGroup`, `simulateIndividualChallenge`,
+  `simulateTribeChallenge`, `computeHeat`. Use `(gs.episode || 0) + 1` for episode number.
+- `_pick` is scoped to `applyTwist` — not available in `simulateEpisode` or event generators.
+  Use `arr[Math.floor(Math.random() * arr.length)]` or hash-based selection instead.
+- Pre-merge code path (`ep.challengeType === 'tribe'`) and post-merge (`individual`) are
+  separate branches. Features that should run for BOTH must be placed AFTER the if/else block.
+- `ep.extraImmune` is written by multiple systems (hero duel, shared immunity, double safety).
+  Always MERGE (`[...new Set([...existing, ...new])]`), never overwrite.
+
+## Serialization
+- Sets don't survive `JSON.stringify` — use `prepGsForSave()` before save, `repairGsSets()`
+  on load. New Set fields must be added to `SET_FIELDS` array in both functions.
+- JSON in `onclick` attributes breaks HTML (double quotes). Use `data-*` attributes instead.
+- `forEach` + `splice` skips entries — use reverse for-loop when removing during iteration.
+
+## Bond System
+- Full range: -10 (Pure Hatred) to +10 (Unbreakable). 11 tiers in `REL_TYPES`.
+- Use proportional formulas (`bond * 0.10`) not binary thresholds (`bond >= 3`).
+- `gs.knownIdolHoldersPersistent` survives across episodes; `gs.knownIdolHoldersThisEp` resets.
+- `gs.lingeringInjuries[name]` — challenge penalty that decays over 2-3 episodes.
+
+## Pronouns — NEVER hardcode
+- Always use `pronouns(name)` → `{sub, obj, pos, posAdj, ref, Sub, Obj, PosAdj}`
+- Never write literal "he/she/him/her" in player-describing template literals
+- Ternary branching on `.sub` is acceptable for contractions (e.g. `they're` vs `he's`)
+
+## Twist System
+- `TWIST_CATALOG` entries can have `incompatible: ['twist-id']` — enforced at both UI
+  scheduling (greyed out) and engine execution (first scheduled wins)
+- Pre-game alliances: `preGameAlliances` array (localStorage), injected into
+  `gs.namedAlliances` at init with `preGame: true`, `permanence: 'permanent'|'normal'|'fragile'`
+- `tribesAtStart` must be refreshed after team-changing twists (swap, mutiny, abduction, dissolve)
+  but NOT after kidnapping (temporary, not a real tribe change)
 
 ## Backlog Files
 - `DATA_SEASON/ideas_probabilistic_moments.txt` — feature ideas with priority order

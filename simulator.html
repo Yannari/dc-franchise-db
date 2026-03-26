@@ -6618,90 +6618,101 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
 
       // ── PURE HATRED (-9 or worse) ──
       if (_eb <= -9 && Math.random() < 0.55) {
-        addBond(a, b, -0.8); // hatred deepens — becomes harder to recover
-        // Collateral: tribe morale suffers — everyone nearby loses small bonds with both
-        group.filter(p => p !== a && p !== b).forEach(p => {
-          addBond(p, a, -0.3); addBond(p, b, -0.3);
-        });
+        addBond(a, b, -0.8);
+        group.filter(p => p !== a && p !== b).forEach(p => { addBond(p, a, -0.3); addBond(p, b, -0.3); });
         events.push({ type: 'pureHatred', players: [a, b], text: _rp2([
           `${a} and ${b} can't be in the same space. The tribe has stopped trying to fix it. They just keep them apart now.`,
           `${a} moves ${pA.pos} things to the other side of camp. Nobody asks why. Everyone already knows — ${b} is the reason.`,
           `${a} refuses to eat if ${b} is at the fire. It's not strategy. It's not a move. It's personal in a way this game rarely sees.`,
           `The hatred between ${a} and ${b} is so visible that the rest of the tribe routes around it. Nobody sits between them. Nobody mediates. They just survive it.`,
-          `${b} says something and ${a} stands up and walks into the jungle without a word. ${pA.Sub} ${pA.sub==='they'?'don\'t':'doesn\'t'} come back for an hour. When ${pA.sub} ${pA.sub==='they'?'do':'does'}, ${pA.sub} ${pA.sub==='they'?'don\'t':'doesn\'t'} look at ${b}.`,
+          `${b} says something and ${a} stands up and walks into the jungle without a word. ${pA.Sub} ${pA.sub==='they'?'don\'t':'doesn\'t'} come back for an hour.`,
+          `${a} talks about ${b} to the confessional like ${pB.sub} ${pB.sub==='they'?'aren\'t':'isn\'t'} even a person anymore. Just a problem to solve. The contempt is total.`,
+          `The tribe tried to have a group conversation. ${a} walked away the moment ${b} sat down. Nobody even pretended to be surprised.`,
+          `${a} won't say ${b}'s name. Not at tribal, not at camp, not in confessional. ${pA.Sub} just ${pA.sub==='they'?'say':'says'} "that person." The tribe knows exactly who ${pA.sub} ${pA.sub==='they'?'mean':'means'}.`,
+          `${b} accidentally brushes past ${a} on the way to the well. ${a} recoils like ${pA.sub} ${pA.sub==='they'?'were':'was'} burned. The rest of the tribe freezes.`,
+          `Someone makes the mistake of sitting between ${a} and ${b} at the fire. The temperature on both sides drops. They don't make that mistake again.`,
         ]) });
       }
 
       // ── NEMESIS (-7 to -9) ──
       else if (_eb <= -7 && Math.random() < 0.40) {
-        addBond(a, b, -0.5); // rivalry intensifies
-        // One of them becomes paranoid from the tension
+        addBond(a, b, -0.5);
         if (gs.playerStates?.[a] && pStats(a).temperament <= 5) gs.playerStates[a].emotional = 'paranoid';
         else if (gs.playerStates?.[b] && pStats(b).temperament <= 5) gs.playerStates[b].emotional = 'paranoid';
         events.push({ type: 'nemesis', players: [a, b], text: _rp2([
-          `${a} and ${b} have a conversation that starts normal and ends with both of them walking away shaking. The tribe pretends not to notice.`,
-          `Every time ${a} speaks at camp, ${b} visibly tenses. It's become the tribe's unspoken tension — always there, never addressed.`,
-          `${a} makes a pointed comment that's clearly aimed at ${b}. ${b} doesn't respond. The silence is louder than any argument.`,
-          `${b} tells someone — quietly, away from camp — that ${pB.sub} will do whatever it takes to make sure ${a} doesn't make it to the end. It doesn't sound like game talk. It sounds like a promise.`,
+          `${a} and ${b} have a conversation that starts normal and ends with both of them walking away shaking.`,
+          `Every time ${a} speaks at camp, ${b} visibly tenses. It's the tribe's unspoken tension.`,
+          `${a} makes a pointed comment clearly aimed at ${b}. ${b} doesn't respond. The silence is louder than any argument.`,
+          `${b} tells someone quietly that ${pB.sub} will do whatever it takes to make sure ${a} doesn't make it to the end.`,
+          `${a} and ${b} end up on the same task. They complete it without exchanging a single word. The efficiency is terrifying.`,
+          `${a} laughs at something someone else says. ${b} looks at the ground. It's not jealousy. It's something colder.`,
+          `The tribe has learned to read the weather between ${a} and ${b}. Today is a storm warning. Nobody pushes it.`,
+          `${b} brings up ${a}'s name in a strategy conversation — not as a target, just as a reference. The edge in ${pB.pos} voice is unmistakable.`,
         ]) });
       }
 
       // ── UNBREAKABLE (+9 or better) ──
       if (_eb >= 9 && Math.random() < 0.55) {
-        addBond(a, b, 0.3); // bond reinforces itself
-        // Pair threat: everyone else sees them as a power duo — small negative shift toward both
+        addBond(a, b, 0.3);
         group.filter(p => p !== a && p !== b).forEach(p => {
           if (getBond(p, a) < 3) addBond(p, a, -0.2);
           if (getBond(p, b) < 3) addBond(p, b, -0.2);
         });
         events.push({ type: 'unbreakableBond', players: [a, b], text: _rp2([
           `${a} and ${b} don't need to talk strategy anymore. A look across the fire is enough. The tribe has noticed — and some of them are afraid of it.`,
-          `${a} and ${b} have a conversation late at night that has nothing to do with the game. The kind of conversation that makes everyone else feel like outsiders.`,
+          `${a} and ${b} have a conversation late at night that has nothing to do with the game. The kind that makes everyone else feel like outsiders.`,
           `The bond between ${a} and ${b} is so obvious it's become a liability. Everyone can see it. Neither of them cares.`,
-          `${a} tells the confessional: "I came into this game alone. I'm not alone anymore. Whatever happens, ${b} changed that." It's the most honest thing anyone's said out here.`,
-          `${a} gives ${b} the last of the rice without being asked. ${b} doesn't say thank you — ${pB.sub} just ${pB.sub==='they'?'nod':'nods'}. They're past words at this point.`,
+          `${a} tells the confessional: "I came into this game alone. I'm not alone anymore. Whatever happens, ${b} changed that."`,
+          `${a} gives ${b} the last of the rice without being asked. ${b} doesn't say thank you — ${pB.sub} just ${pB.sub==='they'?'nod':'nods'}. They're past words.`,
+          `${a} falls asleep at the fire. ${b} stays up and keeps it going. In the morning, neither mentions it. They don't have to.`,
+          `Someone tries to pull ${a} into a side conversation about ${b}. ${a} shuts it down so fast the other person apologizes. The loyalty isn't strategic — it's reflexive.`,
+          `${a} and ${b} build the shelter together in silence. It takes half the time it took the rest of the tribe. They've been in sync since the beginning and everyone knows it.`,
+          `The tribe debates the plan. ${a} looks at ${b}. ${b} nods. That's the vote. Nobody questions it because nobody can compete with what those two have.`,
+          `${a} gets emotional at the fire tonight. ${b} doesn't say "it's okay" or "stay strong." ${pB.Sub} just ${pB.sub==='they'?'sit':'sits'} closer. That's enough.`,
         ]) });
       }
 
       // ── RIDE OR DIE (+7 to +9) ──
       else if (_eb >= 7 && Math.random() < 0.40) {
-        addBond(a, b, 0.5); // bond grows
-        // Loyalty spillover: the protector's rep grows with the tribe
+        addBond(a, b, 0.5);
         const protector = pStats(a).loyalty >= pStats(b).loyalty ? a : b;
-        group.filter(p => p !== a && p !== b).forEach(p => {
-          if (Math.random() < 0.3) addBond(p, protector, 0.3);
-        });
+        group.filter(p => p !== a && p !== b).forEach(p => { if (Math.random() < 0.3) addBond(p, protector, 0.3); });
         events.push({ type: 'rideOrDie', players: [a, b], text: _rp2([
           `${a} and ${b} sit together at every meal, every challenge, every tribal. The tribe has started referring to them as a single unit.`,
-          `${a} catches wind that ${b}'s name was mentioned. ${pA.Sub} shut${pA.sub==='they'?'':'s'} it down immediately — not with strategy, with loyalty. The tribe saw it.`,
-          `${a} and ${b} have a way of finishing each other's sentences that makes other players uncomfortable. Not because it's fake — because it's clearly not.`,
+          `${a} catches wind that ${b}'s name was mentioned. ${pA.Sub} shut${pA.sub==='they'?'':'s'} it down immediately — not with strategy, with loyalty.`,
+          `${a} and ${b} finish each other's sentences in a way that makes other players uncomfortable. Because it's clearly not fake.`,
           `Someone asks ${a} who ${pA.sub}'d take to the end. ${a} doesn't hesitate. The answer is ${b}. It's been ${b} since day one.`,
+          `${b} has a rough day. ${a} doesn't fix it or talk about it. ${pA.Sub} just ${pA.sub==='they'?'stay':'stays'} nearby. That's what loyalty looks like out here.`,
+          `${a} volunteers for the hardest camp task so ${b} doesn't have to. ${b} notices. The tribe notices ${b} noticing.`,
+          `${a} and ${b} have a way of communicating across the camp with just eye contact. The tribe has caught on but can't decode it.`,
+          `${a} tells the confessional: "${b} is the only person in this game I trust completely. That's either going to save me or get me killed. I'm okay with both."`,
         ]) });
       }
 
-      // ── REKINDLE: two players with deeply damaged bond (-4 to -7) have a breakthrough ──
-      // Rare — requires at least one high-social or high-temperament player. The game breaks people down
-      // and sometimes that breakdown leads to honesty.
+      // ── REKINDLE: damaged bond (-4 to -7) starts to heal ──
       if (_eb >= -7 && _eb <= -4 && Math.random() < 0.12) {
         const canRekindle = pStats(a).social >= 6 || pStats(b).social >= 6 || pStats(a).temperament >= 7 || pStats(b).temperament >= 7;
         if (canRekindle) {
           const initiator = pStats(a).social >= pStats(b).social ? a : b;
           const receiver = initiator === a ? b : a;
           const pI = pronouns(initiator), pR = pronouns(receiver);
-          addBond(a, b, 2.5); // significant repair — won't fix everything but opens a door
+          addBond(a, b, 2.5);
           events.push({ type: 'rekindle', players: [initiator, receiver], text: _rp2([
-            `${initiator} sits down next to ${receiver} for the first time in days. Neither says anything for a while. Then ${initiator} speaks — not about the game, not about what happened between them. About home. ${receiver} listens. Something cracks open.`,
-            `${initiator} catches ${receiver} alone at the water well. "I know we've had our issues. I'm not asking to forget any of it. I'm just saying — we don't have to keep doing this." ${receiver} doesn't respond immediately. But ${pR.sub} ${pR.sub==='they'?'don\'t':'doesn\'t'} walk away.`,
-            `The game has a way of stripping everything back. ${initiator} and ${receiver} hit that point today. The conversation was raw, uncomfortable, and longer than either expected. Neither would call it forgiveness. But it's something.`,
-            `It starts with a shared task — firewood, water, something neither can do alone. By the end of it, ${initiator} and ${receiver} have exchanged more words than they have in a week. Not friendly. Not hostile. Just... honest.`,
-            `${initiator} apologizes. Not for everything — just for one specific thing. ${receiver} wasn't expecting it. The silence that follows isn't awkward. It's the first time things have felt breathable between them.`,
+            `${initiator} sits down next to ${receiver} for the first time in days. Neither says anything for a while. Then ${initiator} speaks — about home. ${receiver} listens. Something cracks open.`,
+            `${initiator} catches ${receiver} alone at the water well. "I know we've had our issues. I'm just saying — we don't have to keep doing this." ${receiver} doesn't walk away.`,
+            `The game stripped everything back today. ${initiator} and ${receiver} had a conversation that was raw, uncomfortable, and longer than either expected. Not forgiveness. But something.`,
+            `It starts with a shared task — firewood, water, something neither can do alone. By the end, ${initiator} and ${receiver} have talked more than they have in a week.`,
+            `${initiator} apologizes. Not for everything — just for one specific thing. ${receiver} wasn't expecting it. The silence that follows isn't awkward for the first time.`,
+            `${receiver} is struggling with the shelter. ${initiator} helps without being asked, without making it a thing. ${receiver} looks up, surprised. The wall between them feels thinner.`,
+            `Rain drives everyone under the same tarp. ${initiator} and ${receiver} end up side by side. Neither moves. By morning, the coldness has thawed — just slightly.`,
+            `${initiator} makes a joke at the fire. ${receiver} laughs before ${pR.sub} can stop ${pR.ref}. It's the first real laugh between them in a long time. The tribe notices.`,
+            `${initiator} passes ${receiver} during a challenge and mutters "nice move." Two words. But from ${initiator} to ${receiver}, after everything? That's a lot.`,
+            `${receiver} defends ${initiator} in a group conversation — not warmly, but factually. "That's not what happened." ${initiator} hears about it later. Doesn't say anything. But remembers.`,
           ]) });
         }
       }
 
-      // ── BEST FRIEND BREAKUP: two players with strong bond (+5 to +8) have a fracture ──
-      // Rare — requires a strategic player who starts questioning whether the bond is helping their game.
-      // The stronger the bond, the harder the fall.
+      // ── BREAKUP: strong bond (+5 to +8) fractures ──
       if (_eb >= 5 && _eb <= 8 && Math.random() < 0.10) {
         const hasStrategist = pStats(a).strategic >= 7 || pStats(b).strategic >= 7;
         const hasLowLoyalty = pStats(a).loyalty <= 4 || pStats(b).loyalty <= 4;
@@ -6709,16 +6720,20 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
           const instigator = pStats(a).strategic > pStats(b).strategic ? a : b;
           const hurt = instigator === a ? b : a;
           const pIn = pronouns(instigator), pH = pronouns(hurt);
-          const damage = -1.5 - Math.random() * 1.5; // -1.5 to -3.0 damage
+          const damage = -1.5 - Math.random() * 1.5;
           addBond(a, b, damage);
-          // Hurt player's emotional state shifts
           if (gs.playerStates?.[hurt]) gs.playerStates[hurt].emotional = 'uneasy';
           events.push({ type: 'breakup', players: [instigator, hurt], text: _rp2([
-            `${instigator} pulls back from ${hurt} today. Not a fight — something quieter. ${hurt} notices the distance before ${pH.sub} understand${pH.sub==='they'?'':'s'} it. The conversations get shorter. The eye contact disappears. Something changed and ${hurt} doesn't know what.`,
-            `${instigator} is seen having long strategy talks with other players — talks that used to include ${hurt}. When ${hurt} asks about it, ${instigator} deflects. The trust is cracking and both of them can feel it.`,
-            `${hurt} overhears something ${instigator} said about ${pH.obj} to someone else. Not cruel — worse. Dismissive. Like the bond they built was a phase ${instigator} has moved past. ${hurt} says nothing. But the damage is done.`,
-            `It's not dramatic. There's no blowup. ${instigator} just starts treating ${hurt} like everyone else — and that's the part that hurts. ${hurt} thought they were different. Apparently not.`,
-            `${instigator} makes a strategic calculation that doesn't include ${hurt}. ${hurt} finds out through someone else. The betrayal isn't in the move — it's in not being told. That's the part that doesn't heal.`,
+            `${instigator} pulls back from ${hurt} today. Not a fight — something quieter. The conversations get shorter. The eye contact disappears.`,
+            `${instigator} is seen having long strategy talks with other players — talks that used to include ${hurt}. When ${hurt} asks, ${instigator} deflects.`,
+            `${hurt} overhears something ${instigator} said about ${pH.obj}. Not cruel — worse. Dismissive. Like the bond was a phase ${instigator} has moved past.`,
+            `It's not dramatic. ${instigator} just starts treating ${hurt} like everyone else — and that's the part that hurts.`,
+            `${instigator} makes a strategic calculation that doesn't include ${hurt}. ${hurt} finds out through someone else. The betrayal is in not being told.`,
+            `${hurt} reaches for the usual check-in before tribal. ${instigator} is already talking to someone else. The moment passes. It keeps passing.`,
+            `${instigator} doesn't save ${hurt} a seat at the fire tonight. Small thing. Huge signal. ${hurt} sits somewhere else and pretends not to care.`,
+            `${hurt} asks ${instigator} directly: "Are we good?" ${instigator} says yes too quickly. ${hurt} knows what too-quickly means by now.`,
+            `The tribe watches ${instigator} build a new inner circle that doesn't include ${hurt}. Everyone sees it except — no, ${hurt} sees it too. ${pH.Sub} just ${pH.sub==='they'?'haven\'t':'hasn\'t'} decided what to do about it yet.`,
+            `${instigator} tells the confessional: "I love ${hurt}. But I can't win sitting next to ${pH.obj}." It's the most honest and most devastating thing ${pIn.sub}'ve said all season.`,
           ]) });
         }
       }

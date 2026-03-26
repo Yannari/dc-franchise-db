@@ -4058,6 +4058,8 @@ function simulateJourney(ep) {
         return { name, result: 'safe' };
       } else {
         gs.lostVotes.push(name);
+        if (!gs.journeyLostVotes) gs.journeyLostVotes = [];
+        if (!gs.journeyLostVotes.includes(name)) gs.journeyLostVotes.push(name);
         return { name, result: 'lostVote' };
       }
     });
@@ -4074,6 +4076,8 @@ function simulateJourney(ep) {
         return { name, result: 'safe' };
       } else {
         gs.lostVotes.push(name);
+        if (!gs.journeyLostVotes) gs.journeyLostVotes = [];
+        if (!gs.journeyLostVotes.includes(name)) gs.journeyLostVotes.push(name);
         return { name, result: 'lostVote' };
       }
     });
@@ -8012,7 +8016,9 @@ function simulateEpisode() {
                 tribesAtStart: gs.tribes.map(t => ({ name: t.name, members: [...t.members] })) };
 
   // ── RESET EPISODE VOTE-LOSS & TWIST FLAGS ──
-  gs.lostVotes = [];
+  // Preserve journey lost votes until the player actually attends tribal
+  const _journeyCarry = (gs.journeyLostVotes || []).filter(p => gs.activePlayers.includes(p));
+  gs.lostVotes = [..._journeyCarry];
   ep.bewareLostVotes = [];
   gs.knownIdolHoldersThisEp = new Set();
   gs.socialBombHeatThisEp = new Set(); // cleared each episode — only affects current tribal
@@ -8299,6 +8305,8 @@ function simulateEpisode() {
 
   // ── POST-CHALLENGE CAMP EVENTS (outcome now known — exiled player already excluded) ──
   generateCampEvents(ep, 'post');
+  // Save pre-tribal advantage snapshot for VP post-challenge camp display
+  ep.advantagesPreTribal = gs.advantages.map(a => ({...a}));
 
   // ── Inject exile-selection event into winner tribe's post events ──
   if (_exileEvtData && ep.campEvents?.[_exileEvtData.key]) {
@@ -8460,6 +8468,10 @@ function simulateEpisode() {
     // open-vote: boost loyalty pressure — pass flag to simulateVotes
     const { votes, log, defections } = simulateVotes(tribalPlayers, immuneName, allianceSet, gs.lostVotes, ep.openVote);
     if (defections?.length) ep.defections = [...(ep.defections || []), ...defections];
+    // Clear journey lost votes for players who attended this tribal (penalty consumed)
+    if (gs.journeyLostVotes?.length) {
+      gs.journeyLostVotes = gs.journeyLostVotes.filter(p => !tribalPlayers.includes(p));
+    }
 
     // ── [3] OVERPLAYING AT TRIBAL ──
     // A scared player (paranoid/desperate) who is chatty, scheming, or bold starts
@@ -9108,6 +9120,7 @@ function simulateEpisode() {
   gs.episodeHistory[gs.episodeHistory.length-1].campEvents = ep.campEvents || null;
   gs.episodeHistory[gs.episodeHistory.length-1].tipOffCampEvents = ep.tipOffCampEvents || null;
   gs.episodeHistory[gs.episodeHistory.length-1].comfortBlindspotPlayer = ep.comfortBlindspotPlayer || null;
+  gs.episodeHistory[gs.episodeHistory.length-1].advantagesPreTribal = ep.advantagesPreTribal || null;
 
   const summaryText = generateSummaryText(ep);
   gs.episodeHistory[gs.episodeHistory.length-1].summaryText = summaryText;
@@ -14904,11 +14917,13 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
 
   // ── SECRET ADVANTAGES ──
   // Pre-challenge: show what existed at START of episode (prevEp snapshot)
-  // After TC (post): show what existed at END of episode (current ep snapshot, after tribal)
+  // After challenge (post): show pre-tribal advantages (after journey/finds but before tribal plays)
   const _advSnap = phase === 'post'
     ? ep.gsSnapshot
     : gs.episodeHistory?.find(h => h.num === ep.num - 1)?.gsSnapshot;
-  const _snapAdvantages = _advSnap?.advantages || null;
+  const _snapAdvantages = phase === 'post' && ep.advantagesPreTribal
+    ? ep.advantagesPreTribal
+    : (_advSnap?.advantages || null);
   const _snapMembers = _advSnap
     ? (isMerge ? (_advSnap.activePlayers || null) : (_advSnap.tribes?.find(t => t.name === tribeName)?.members || null))
     : null;

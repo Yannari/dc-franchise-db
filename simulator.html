@@ -2416,12 +2416,17 @@ function updateChalRecord(ep) {
 // Pre-merge challenge weakness score — higher = more likely to be cut as liability
 function challengeWeakness(name, challengeCategory) {
   const s = pStats(name);
-  if (challengeCategory === 'physical')  return 10 - s.physical;
-  if (challengeCategory === 'endurance') return 10 - s.endurance;
-  if (challengeCategory === 'balance')   return 10 - (s.endurance*0.6 + s.physical*0.4);
-  if (challengeCategory === 'puzzle')    return 10 - s.mental;
-  if (challengeCategory === 'social')    return 10 - (s.social*0.5 + s.mental*0.3 + s.boldness*0.2);
-  return 10 - (s.physical + s.endurance + s.mental) / 3;
+  let base;
+  if (challengeCategory === 'physical')  base = 10 - s.physical;
+  else if (challengeCategory === 'endurance') base = 10 - s.endurance;
+  else if (challengeCategory === 'balance')   base = 10 - (s.endurance*0.6 + s.physical*0.4);
+  else if (challengeCategory === 'puzzle')    base = 10 - s.mental;
+  else if (challengeCategory === 'social')    base = 10 - (s.social*0.5 + s.mental*0.3 + s.boldness*0.2);
+  else base = 10 - (s.physical + s.endurance + s.mental) / 3;
+  // Lingering injury makes you a bigger challenge liability
+  const _inj = gs?.lingeringInjuries?.[name];
+  if (_inj && (gs.episode + 1 - _inj.ep) < _inj.duration) base += 1.5;
+  return base;
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -2976,7 +2981,11 @@ function simulateTribeChallenge(tribes) {
   const memberScores = {};
   const scored = tribes.map(tribe => {
     const competitors = tribe.members.filter(m => !sitOuts[tribe.name].includes(m));
-    const ms = competitors.map(m => ({ name: m, score: chal.stat(pStats(m)) + (Math.random()*4-2) }));
+    const ms = competitors.map(m => {
+      const _inj = gs.lingeringInjuries?.[m];
+      const _injP = _inj && (gs.episode + 1 - _inj.ep) < _inj.duration ? _inj.penalty * (1 - (gs.episode + 1 - _inj.ep) / _inj.duration) : 0;
+      return { name: m, score: chal.stat(pStats(m)) - _injP + (Math.random()*4-2) };
+    });
     ms.forEach(x => { memberScores[x.name] = x.score; });
     const avg = ms.length ? ms.reduce((s,x) => s + x.score, 0) / ms.length : 0;
     return { tribe, score: avg + (Math.random()*2-1), memberScores: ms };
@@ -3016,7 +3025,10 @@ function simulateIndividualChallenge(pool, immune) {
       const base = chal.stat(pStats(name));
       const streak = _streaks[name] || 0;
       const fatigue = streak >= 4 ? 3 : streak >= 3 ? 2 : streak >= 2 ? 1.5 : streak >= 1 ? 0.5 : 0;
-      return { name, score: base - fatigue + (Math.random()*8-4) };
+      // Lingering injury penalty — decays over episodes
+      const _inj = gs.lingeringInjuries?.[name];
+      const injPenalty = _inj && (ep.num - _inj.ep) < _inj.duration ? _inj.penalty * (1 - (ep.num - _inj.ep) / _inj.duration) : 0;
+      return { name, score: base - fatigue - injPenalty + (Math.random()*8-4) };
     })
     .sort((a, b) => b.score - a.score);
   const winner = scored[0].name;
@@ -3193,6 +3205,10 @@ function buildVoteReason(voter, target, type, ctx = {}) {
       `${target} hasn't pulled their weight${ws.length ? ', especially in ' + weakLabel : ''}`,
       `${ws.length ? 'weak in ' + weakLabel : 'no challenge value'} — hard to justify keeping them when the tribe is losing`,
       `tribe comes first — ${target} is the weakest link and everyone knows it`,
+      ...(gs?.lingeringInjuries?.[target] ? [
+        `${target} is hurt — can't compete at full strength and the tribe can't carry that`,
+        `the injury is holding ${target} back — voting them out is doing them a favor and the tribe a service`,
+      ] : []),
     ]);
   }
 
@@ -5612,6 +5628,9 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
       group.filter(x => x !== p).forEach(other => addBond(other, p, -0.3));
       if (!gs.injuredThisEp) gs.injuredThisEp = new Set();
       gs.injuredThisEp.add(p);
+      // Lingering injury: challenge penalty for 2-3 episodes
+      if (!gs.lingeringInjuries) gs.lingeringInjuries = {};
+      gs.lingeringInjuries[p] = { ep: ep.num, duration: 2 + Math.floor(Math.random() * 2), penalty: 1.5 + Math.random() };
       events.push({ type: 'injury', text: injuryLines[Math.floor(Math.random() * injuryLines.length)], player: p });
 
     } else if (eventType === 'allianceForm') {
@@ -7968,6 +7987,108 @@ function generateCampEvents(ep, phase = 'both') {
       if (ep.twistNarrativeEvents?.['merge']) mergePreEvents.unshift(ep.twistNarrativeEvents['merge']);
       ep.campEvents = { merge: { pre: mergePreEvents, post: [] } };
     }
+  }
+
+  // ── LINGERING INJURY EVENTS: recovery or ongoing pain ──
+  if (gs.lingeringInjuries && (phase === 'pre' || phase === 'both')) {
+    const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
+    Object.entries(gs.lingeringInjuries).forEach(([name, inj]) => {
+      if (!gs.activePlayers.includes(name)) { delete gs.lingeringInjuries[name]; return; }
+      const age = ep.num - inj.ep;
+      if (age >= inj.duration) { delete gs.lingeringInjuries[name]; return; } // fully healed
+      const _ip = pronouns(name);
+      const tribe = gs.isMerged ? (Object.keys(ep.campEvents)[0] || 'merge')
+        : gs.tribes.find(t => t.members.includes(name))?.name;
+      if (!tribe || !ep.campEvents?.[tribe]) return;
+      const pre = Array.isArray(ep.campEvents[tribe]) ? ep.campEvents[tribe] : (ep.campEvents[tribe].pre || []);
+      if (age === 0) return; // injury event itself already fired this episode
+      if (age === inj.duration - 1) {
+        // Last episode of injury — recovery event
+        pre.push({ type: 'injury', players: [name], text: _rp([
+          `${name} moves differently today — looser, faster. The injury from a few days ago is finally fading. The tribe notices.`,
+          `${name} is back to full strength. ${_ip.Sub} ${_ip.sub==='they'?'don\'t':'doesn\'t'} announce it — ${_ip.sub} just ${_ip.sub==='they'?'start':'starts'} keeping up again. The worry is over.`,
+          `The limp is gone. ${name} pushes through a camp task that would've been painful yesterday. The tribe watches and recalculates.`,
+        ]) });
+      } else {
+        // Still injured — ongoing pain event
+        if (Math.random() < 0.45) {
+          pre.push({ type: 'injury', players: [name], text: _rp([
+            `${name} is still hurting. ${_ip.Sub} ${_ip.sub==='they'?'hide':'hides'} it well — but not well enough. The tribe is watching.`,
+            `${name} winces during a camp task. ${_ip.Sub} ${_ip.sub==='they'?'wave':'waves'} it off. Nobody believes ${_ip.obj}.`,
+            `The injury is slowing ${name} down. ${_ip.Sub} ${_ip.sub==='they'?'know':'knows'} it. The tribe knows it. A challenge is coming.`,
+            `${name} sits out of a camp task for the first time. "I'm fine," ${_ip.sub} ${_ip.sub==='they'?'say':'says'}. ${_ip.Sub} ${_ip.sub==='they'?'are':'is'} not fine.`,
+          ]) });
+        }
+      }
+    });
+  }
+
+  // ── IDOL SNOOPING: bold/low-loyalty players search through belongings ──
+  if ((phase === 'pre' || phase === 'both') && gs.advantages?.some(a => a.type === 'idol')) {
+    const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
+    Object.entries(ep.campEvents || {}).forEach(([tribeName, phaseData]) => {
+      const pre = Array.isArray(phaseData) ? phaseData : (phaseData.pre || []);
+      const tribeMembers = gs.isMerged ? gs.activePlayers
+        : (gs.tribes.find(t => t.name === tribeName)?.members || []);
+
+      // Snooping: bold + low-loyalty player searches through belongings
+      const idolHoldersHere = gs.advantages.filter(a => a.type === 'idol' && tribeMembers.includes(a.holder));
+      if (idolHoldersHere.length && Math.random() < 0.08) {
+        const snooper = tribeMembers.filter(n =>
+          !idolHoldersHere.some(a => a.holder === n) && pStats(n).boldness >= 6 && pStats(n).loyalty <= 5
+        ).sort((a,b) => (pStats(b).boldness + pStats(b).intuition) - (pStats(a).boldness + pStats(a).intuition))[0];
+        if (snooper) {
+          const target = idolHoldersHere[Math.floor(Math.random() * idolHoldersHere.length)];
+          const _spP = pronouns(snooper);
+          const caught = Math.random() < 0.35;
+          if (!gs.knownIdolHoldersThisEp) gs.knownIdolHoldersThisEp = new Set();
+          gs.knownIdolHoldersThisEp.add(target.holder);
+          if (caught) {
+            addBond(target.holder, snooper, -2.5);
+            tribeMembers.filter(m => m !== snooper && m !== target.holder).forEach(m => addBond(m, snooper, -0.5));
+            pre.push({ type: 'idolBetrayal', players: [snooper, target.holder], text: _rp([
+              `${snooper} goes through ${target.holder}'s bag while the tribe is at the water well. ${_spP.Sub} find${_spP.sub==='they'?'':'s'} it — the idol. But ${target.holder} walks back early and catches ${_spP.obj} red-handed. The camp goes silent.`,
+              `${snooper} searches ${target.holder}'s belongings and discovers a hidden idol. ${_spP.Sub} barely ${_spP.sub==='they'?'get':'gets'} it back in the bag before someone sees. Someone did see.`,
+              `${target.holder} finds ${snooper} rummaging through ${pronouns(target.holder).pos} things. The excuse is bad. The damage is real. Everyone at camp heard what happened.`,
+            ]) });
+          } else {
+            pre.push({ type: 'eavesdrop', players: [snooper, target.holder], text: _rp([
+              `${snooper} searches ${target.holder}'s bag while nobody is looking. ${_spP.Sub} find${_spP.sub==='they'?'':'s'} what ${_spP.sub} ${_spP.sub==='they'?'were':'was'} looking for. Nobody knows. Not yet.`,
+              `${snooper} waits until ${target.holder} is gone and checks ${pronouns(target.holder).pos} things. There it is — the idol. ${snooper} puts everything back exactly as it was. The secret is ${_spP.posAdj} now.`,
+              `${snooper} discovers ${target.holder}'s idol during a quiet moment at camp. ${_spP.Sub} ${_spP.sub==='they'?'don\'t':'doesn\'t'} take it — ${_spP.sub} just ${_spP.sub==='they'?'need':'needs'} to know it's there. And now ${_spP.sub} ${_spP.sub==='they'?'do':'does'}.`,
+            ]) });
+          }
+        }
+      }
+
+      // Ally tip-off: someone with high social tells their close ally about an idol holder
+      if (idolHoldersHere.length && Math.random() < 0.10) {
+        const knownHolders = [...(gs.knownIdolHoldersThisEp || [])].filter(n => tribeMembers.includes(n));
+        if (knownHolders.length) {
+          const holder = knownHolders[Math.floor(Math.random() * knownHolders.length)];
+          // Find a social player who knows and has a close ally who DOESN'T know
+          const informers = tribeMembers.filter(n =>
+            n !== holder && pStats(n).social >= 6 && getBond(n, holder) <= 1
+          );
+          const informer = informers[Math.floor(Math.random() * informers.length)];
+          if (informer) {
+            const recipient = tribeMembers.filter(n =>
+              n !== informer && n !== holder && getBond(informer, n) >= 2
+            ).sort((a,b) => getBond(informer,b) - getBond(informer,a))[0];
+            if (recipient) {
+              addBond(informer, recipient, 0.5);
+              const _infP = pronouns(informer);
+              pre.push({ type: 'eavesdrop', players: [informer, recipient], text: _rp([
+                `${informer} pulls ${recipient} aside. "${holder} has an idol." Two words that change everything. ${recipient} nods. The plan adjusts.`,
+                `${informer} tells ${recipient} about ${holder}'s idol — quietly, away from camp. It's the kind of information that bonds people. And targets others.`,
+                `${informer} shares what ${_infP.sub} know${_infP.sub==='they'?'':'s'} about ${holder}'s idol with ${recipient}. Trust has a price. This is how you pay it.`,
+                `${informer} whispers to ${recipient}: "${holder} is holding something." ${recipient} doesn't need to ask what. The look on ${informer}'s face says it all.`,
+              ]) });
+            }
+          }
+        }
+      }
+    });
   }
 
   // ── MERGE ANNOUNCEMENT: inject guaranteed reaction events when tribes dissolve ──

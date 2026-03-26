@@ -8730,6 +8730,30 @@ function simulateEpisode() {
       }
       return { votes, log, eliminated: res2.eliminated, isTie: true, tiedPlayers: res.tiedPlayers };
     }
+    // Safety net: if resolveVotes returned an elimination but the top 2 vote counts are actually tied,
+    // force a revote. This catches edge cases where vote modifications create ties that resolveVotes
+    // didn't detect (e.g. Extra Vote creating a tie after the initial tally was clear).
+    if (res.eliminated && !res.isTie) {
+      const _finalSorted = Object.entries(votes).sort(([,a],[,b]) => b-a);
+      if (_finalSorted.length >= 2 && _finalSorted[0][1] === _finalSorted[1][1]) {
+        const _lateTied = _finalSorted.filter(([,v]) => v === _finalSorted[0][1]).map(([n]) => n);
+        const _lateEligible = _lateTied.filter(p => !isTribalImmune(p));
+        if (_lateEligible.length >= 2) {
+          const rv = simulateRevote(tribalPlayers, _lateTied, gs.lostVotes, log, tribalImmune);
+          ep.revoteVotes = rv.votes; ep.revoteLog = rv.log; ep.tiedPlayers = _lateTied;
+          const res2 = resolveVotes(rv.votes);
+          if (res2.isTie) {
+            if (ep.tiebreakerChallenge || cfg.tiebreakerMode === 'challenge') {
+              const loser = runTiebreakerChallenge(_lateEligible);
+              return { votes, log, eliminated: loser, isTie: true, tiedPlayers: _lateTied };
+            }
+            const rockElim = rockDraw(_lateTied);
+            return { votes, log, eliminated: rockElim, isTie: true, tiedPlayers: _lateTied };
+          }
+          return { votes, log, eliminated: res2.eliminated, isTie: true, tiedPlayers: _lateTied };
+        }
+      }
+    }
     return { votes, log, ...res };
   }
 

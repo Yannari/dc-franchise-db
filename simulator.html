@@ -8386,7 +8386,7 @@ function simulateEpisode() {
         ep.twistNarrativeEvents[ep.winner.name + '_kidnap'] = {
           type: _kidReaction === 'frustrated' ? 'doubt' : 'bond',
           players: [_kidPick],
-          text: _pick(_kidEvts[_kidReaction], _kidPick + ep.num),
+          text: _kidEvts[_kidReaction][([..._kidPick].reduce((s,c)=>s+c.charCodeAt(0),0) + ep.num) % _kidEvts[_kidReaction].length],
         };
       }
     }

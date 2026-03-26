@@ -15881,33 +15881,31 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
   };
 
   if (events.length) {
-    const isPostMerge = ep.isMerge || ep.gsSnapshot?.isMerged;
-    if (isPostMerge && isMerge) {
-      // Post-merge: group events into Strategy / Social / Spotlight
-      const stratTypes = new Set(['allianceForm','allianceCrack','sideDeal','strategicTalk',
-        'eavesdrop','chalThreat','chalThreatReaction','idolConfession','idolShare','idolFound',
-        'idolBetrayal','ftcThreatAlert','ftcThreatStrategist','comfortBlindspot','clockingIt',
-        'watchingYou','goatIdentified','goatObserver','goatOblivious']);
-      const spotTypes = new Set(['socialBomb','socialBombReaction','showmancerMoment',
-        'unexpectedCompetence','underdogMoment','loneWolf','meltdown','leadershipClash']);
-      const stratEvts = events.filter(e => stratTypes.has(e.type));
-      const spotEvts  = events.filter(e => spotTypes.has(e.type));
-      const socialEvts = events.filter(e => !stratTypes.has(e.type) && !spotTypes.has(e.type));
+    // Group events into Strategy / Social / Spotlight for all camps (pre-merge and post-merge)
+    const stratTypes = new Set(['allianceForm','allianceCrack','sideDeal','strategicTalk',
+      'eavesdrop','chalThreat','chalThreatReaction','idolConfession','idolShare','idolFound',
+      'idolBetrayal','ftcThreatAlert','ftcThreatStrategist','comfortBlindspot','clockingIt',
+      'watchingYou','goatIdentified','goatObserver','goatOblivious','scramble','lie',
+      'overconfidence','bigMoveThoughts','schemerManipulates','mastermindOrchestrates']);
+    const spotTypes = new Set(['socialBomb','socialBombReaction','showmancerMoment',
+      'unexpectedCompetence','underdogMoment','loneWolf','meltdown','leadershipClash',
+      'showboat','pureHatred','nemesis','unbreakableBond','rideOrDie','rekindle','breakup',
+      'hotheadExplosion','beastDrills','chaosAgentStirsUp','wildcardPivot']);
+    const stratEvts = events.filter(e => stratTypes.has(e.type));
+    const spotEvts  = events.filter(e => spotTypes.has(e.type));
+    const socialEvts = events.filter(e => !stratTypes.has(e.type) && !spotTypes.has(e.type));
 
-      const renderGroup = (label, evts, color) => {
-        if (!evts.length) return;
-        html += `<div style="margin-bottom:6px;padding:4px 0 4px 0;border-bottom:1px solid rgba(255,255,255,0.06)">
-          <span style="font-size:10px;font-weight:700;letter-spacing:1.2px;color:${color};text-transform:uppercase">${label}</span>
-        </div>`;
-        evts.forEach(e => renderEvt(e));
-      };
+    const renderGroup = (label, evts, color) => {
+      if (!evts.length) return;
+      html += `<div style="margin-bottom:6px;padding:4px 0 4px 0;border-bottom:1px solid rgba(255,255,255,0.06)">
+        <span style="font-size:10px;font-weight:700;letter-spacing:1.2px;color:${color};text-transform:uppercase">${label}</span>
+      </div>`;
+      evts.forEach(e => renderEvt(e));
+    };
 
-      renderGroup('Strategy', stratEvts, 'var(--accent-gold)');
-      renderGroup('Social', socialEvts, 'var(--accent-ice)');
-      renderGroup('Spotlight', spotEvts, 'var(--accent-fire)');
-    } else {
-      events.forEach(evt => renderEvt(evt));
-    }
+    renderGroup('Strategy', stratEvts, 'var(--accent-gold)');
+    renderGroup('Social', socialEvts, 'var(--accent-ice)');
+    renderGroup('Spotlight', spotEvts, 'var(--accent-fire)');
   } else {
     html += `<div style="font-size:12px;color:#484f58;text-align:center;padding:12px 0">No notable events at ${displayName} camp.</div>`;
   }

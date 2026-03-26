@@ -2442,8 +2442,8 @@ function computeHeat(name, tribalPlayers, alliances) {
     const a = alliances.find(al => al.members.includes(voter));
     if (a?.target === name) heat += 1.5;
     const bond = getBond(voter, name);
-    if (bond <= -2) heat += 0.8;
-    if (bond <= -4) heat += 0.5;
+    // Scale heat with bond intensity — deeper hatred = much more heat
+    if (bond <= -1) heat += Math.min(2.5, (-bond) * 0.3);
   });
   if (gs.phase === 'post-merge') {
     const ts = threatScore(name);
@@ -2467,10 +2467,12 @@ function computeHeat(name, tribalPlayers, alliances) {
   if (gs.lostVotes?.includes(name)) heat += 1.2;
   // Penalty vote — already has a vote against them, easier to pile on
   if (gs.penaltyVoteThisEp === name) heat += 1.5;
-  // Visible pair heat — close duo is a threat others want to split up
+  // Visible pair heat — scales with bond intensity. Stronger pairs are bigger targets.
   const maxPartnerBond = tribalPlayers.filter(p => p !== name).reduce((m, p) => Math.max(m, getBond(name, p)), 0);
-  if (maxPartnerBond >= 8) heat += gs.phase === 'post-merge' ? 0.8 : 0.3;
-  else if (maxPartnerBond >= 7) heat += gs.phase === 'post-merge' ? 0.5 : 0.2;
+  if (maxPartnerBond >= 5) {
+    const pairHeat = (maxPartnerBond - 4) * (gs.phase === 'post-merge' ? 0.2 : 0.08);
+    heat += Math.min(1.5, pairHeat);
+  }
   // Showmance — recognized romantic pair draws even more heat
   if (gs.showmances?.some(sh => sh.includes(name))) heat += gs.phase === 'post-merge' ? 0.6 : 0.2;
   return Math.min(10, heat);
@@ -3905,8 +3907,11 @@ function checkIdolPlays(tribalPlayers, votesObj, ep, voteLog = []) {
       const theirVote = voteLog.find(l => l.voter === p)?.voted;
       return theirVote !== name;                            // not voting against the holder
     });
-    const tipOffAlly = tipOffCandidates[0] || null;
-    const tipOffBonus = Math.min(tipOffCandidates.length * 0.20, 0.35); // up to +35%
+    const tipOffAlly = tipOffCandidates.sort((a,b) => getBond(name, b) - getBond(name, a))[0] || null;
+    // Tip-off bonus scales with bond intensity — stronger allies give better intel
+    const tipOffBonus = tipOffCandidates.length
+      ? Math.min(0.50, tipOffCandidates.reduce((s, p) => s + Math.min(0.25, getBond(name, p) * 0.03), 0))
+      : 0;
 
     // boldness + strategic drives willingness; intuition + emotional state raises readiness
     const iState = getPlayerState(name);
@@ -9911,14 +9916,16 @@ function updatePopularity(ep) {
 // ══════════════════════════════════════════════════════════════════════
 
 function bondLabel(val) {
-  if (val >= 8)   return 'unbreakable bond';
+  if (val >= 9)   return 'unbreakable bond';
+  if (val >= 7)   return 'ride-or-die bond';
   if (val >= 5)   return 'strong bond';
   if (val >= 3)   return 'solid bond';
   if (val >= 1)   return 'slight bond';
   if (val >= 0.5) return 'very slight bond';
   if (val > -0.5) return 'neutral relationship';
-  if (val <= -7)  return 'pure hatred';
-  if (val <= -5)  return 'deeply hostile';
+  if (val <= -9)  return 'pure hatred';
+  if (val <= -7)  return 'deep-rooted hostility';
+  if (val <= -5)  return 'strong hostility';
   if (val <= -3)  return 'strong dislike';
   if (val <= -1)  return 'dislike';
   return 'slight dislike';
@@ -15818,11 +15825,13 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
     relPairs.forEach(p => {
       const v = p.val;
       let badgeText = '', badgeClass = '';
-      if      (v >= 8)   { badgeText = 'UNBREAKABLE';  badgeClass = 'green'; }
+      if      (v >= 9)   { badgeText = 'UNBREAKABLE';  badgeClass = 'green'; }
+      else if (v >= 7)   { badgeText = 'RIDE OR DIE';  badgeClass = 'green'; }
       else if (v >= 5)   { badgeText = 'STRONG BOND';  badgeClass = 'green'; }
       else if (v >= 3)   { badgeText = 'SOLID BOND';   badgeClass = 'green'; }
       else if (v >= 1)   { badgeText = 'BOND';         badgeClass = 'green'; }
-      else if (v <= -7)  { badgeText = 'PURE HATRED';  badgeClass = 'red'; }
+      else if (v <= -9)  { badgeText = 'PURE HATRED';  badgeClass = 'red'; }
+      else if (v <= -7)  { badgeText = 'NEMESIS';      badgeClass = 'red'; }
       else if (v <= -5)  { badgeText = 'HOSTILE';      badgeClass = 'red'; }
       else if (v <= -3)  { badgeText = 'CONFLICT';     badgeClass = 'red'; }
       else if (v <= -1)  { badgeText = 'TENSION';      badgeClass = 'red'; }

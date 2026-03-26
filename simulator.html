@@ -7858,29 +7858,70 @@ function generateCampEvents(ep, phase = 'both') {
           present.forEach(p => { if (p !== _rallier) addBond(p, _rallier, 0.3); });
         }
 
-        // New arrival integration: someone swapped/abducted/mutinied into this tribe
+        // New arrival / tribe reshuffle events
         const _swapTw = (ep.twists || []).find(t => ['tribe-swap','tribe-dissolve','abduction','mutiny','kidnapping'].includes(t.type));
         if (_swapTw) {
           const _prevTribes = gs.episodeHistory?.find(h => h.num === ep.num - 1)?.gsSnapshot?.tribes || [];
           const _prevMembers = _prevTribes.find(t => t.name === tribe.name)?.members || [];
           const _newArrivals = present.filter(p => !_prevMembers.includes(p));
-          _newArrivals.forEach(newcomer => {
-            if (Math.random() < 0.55) {
-              const _ncP = pronouns(newcomer);
-              const _ncBondAvg = present.filter(m => m !== newcomer).reduce((s,m) => s + getBond(newcomer,m), 0) / Math.max(1, present.length - 1);
-              const _ncText = _ncBondAvg >= 1 ? _rp([
-                `${newcomer} is settling in faster than expected. ${_ncP.Sub} already ${_ncP.sub==='they'?'have':'has'} inside jokes with half the tribe. The transition feels seamless.`,
-                `${newcomer} fits. The tribe didn't expect that. ${_ncP.Sub} ${_ncP.sub==='they'?'contribute':'contributes'} at camp, ${_ncP.sub} ${_ncP.sub==='they'?'listen':'listens'} at strategy talks. The new tribemates are warming up.`,
-              ]) : _ncBondAvg <= -1 ? _rp([
-                `${newcomer} hasn't found ${_ncP.pos} footing at ${tribe.name}. The conversations are polite but short. The integration isn't happening naturally.`,
-                `${newcomer} eats alone again. The tribe isn't hostile — just closed. Breaking into an existing group is harder than it looks.`,
-              ]) : _rp([
-                `${newcomer} is still reading the room at ${tribe.name}. Who's in charge, who's on the outs, who can be trusted — all new questions. The answers aren't obvious yet.`,
-                `${newcomer} watches more than ${_ncP.sub} ${_ncP.sub==='they'?'talk':'talks'} today. Every conversation is data. The tribe is an open book if you know how to read it.`,
-              ]);
-              pre.push({ type: 'doubt', players: [newcomer], text: _ncText });
+          const _originals = present.filter(p => _prevMembers.includes(p));
+          const _isFullReshuffle = _newArrivals.length >= present.length * 0.5; // half or more are new = full swap
+
+          if (_isFullReshuffle && _newArrivals.length >= 2) {
+            // Full tribe swap: group-level "new tribe dynamics" events
+            if (Math.random() < 0.60) {
+              pre.push({ type: 'strategicTalk', players: present, text: _rp([
+                `New tribe. New faces. The first day at ${tribe.name} is a chess match disguised as small talk. Everyone is sizing each other up.`,
+                `${tribe.name} camp feels different with the new blood. Old alliances mean nothing here — or everything. Nobody knows which yet.`,
+                `The swap changed the numbers, the relationships, and the pecking order at ${tribe.name}. The first conversations are careful. Nobody shows their hand.`,
+                `${tribe.name} is a brand new tribe in everything but name. The shelter is the same. The people aren't. The game starts over.`,
+              ]) });
             }
-          });
+            // Originals vs newcomers tension
+            if (_originals.length >= 2 && _newArrivals.length >= 2 && Math.random() < 0.45) {
+              const _origNames = _originals.slice(0, 2).join(' and ');
+              const _newNames = _newArrivals.slice(0, 2).join(' and ');
+              pre.push({ type: 'doubt', players: [..._originals.slice(0,2), ..._newArrivals.slice(0,2)], text: _rp([
+                `The originals — ${_origNames} — already have a rhythm at camp. The newcomers — ${_newNames} — are watching from the outside. The question is who adapts first.`,
+                `There's a line between who was here before and who just arrived. ${_origNames} know the camp, the dynamics, the fire schedule. ${_newNames} know nothing except that they need allies fast.`,
+                `${_origNames} have home-court advantage. ${_newNames} have fresh perspective. Neither advantage lasts — but right now, both matter.`,
+                `The first meal at the new ${tribe.name} is tense. ${_origNames} serve. ${_newNames} accept. The power dynamic is silent but everyone feels it.`,
+              ]) });
+            }
+            // Cross-tribe intel: newcomers bring information
+            if (_newArrivals.length >= 1 && Math.random() < 0.40) {
+              const _intelSource = _newArrivals[Math.floor(Math.random() * _newArrivals.length)];
+              const _iP = pronouns(_intelSource);
+              pre.push({ type: 'eavesdrop', players: [_intelSource], text: _rp([
+                `${_intelSource} has information about the other tribe that ${tribe.name} didn't have before. Whether ${_iP.sub} ${_iP.sub==='they'?'share':'shares'} it — and how much — is ${_iP.posAdj} first strategic decision.`,
+                `The tribe wants to know what was happening at ${_intelSource}'s old camp. ${_intelSource} gives them enough to seem useful. Not enough to seem dangerous.`,
+                `${_intelSource} knows who has idols, who's on the bottom, and who's been lying on the other side. That knowledge is currency — and ${_iP.sub} ${_iP.sub==='they'?'aren\'t':'isn\'t'} spending it all at once.`,
+                `${_intelSource} drops a piece of information at camp — casually, like it doesn't matter. It does. The tribe's entire strategy shifts around a single sentence.`,
+              ]) });
+            }
+          } else {
+            // 1-2 newcomers into an existing group: individual integration events
+            _newArrivals.forEach(newcomer => {
+              if (Math.random() < 0.55) {
+                const _ncP = pronouns(newcomer);
+                const _ncBondAvg = present.filter(m => m !== newcomer).reduce((s,m) => s + getBond(newcomer,m), 0) / Math.max(1, present.length - 1);
+                const _ncText = _ncBondAvg >= 1 ? _rp([
+                  `${newcomer} is settling in faster than expected. ${_ncP.Sub} already ${_ncP.sub==='they'?'have':'has'} inside jokes with half the tribe.`,
+                  `${newcomer} fits. ${_ncP.Sub} ${_ncP.sub==='they'?'contribute':'contributes'} at camp, ${_ncP.sub} ${_ncP.sub==='they'?'listen':'listens'} at strategy talks. The new tribemates are warming up.`,
+                  `${newcomer} brings an energy ${tribe.name} didn't know it needed. By sundown, ${_ncP.sub} ${_ncP.sub==='they'?'feel':'feels'} less like an outsider and more like a missing piece.`,
+                ]) : _ncBondAvg <= -1 ? _rp([
+                  `${newcomer} hasn't found ${_ncP.pos} footing at ${tribe.name}. The conversations are polite but short.`,
+                  `${newcomer} eats alone again. The tribe isn't hostile — just closed. Breaking in is harder than it looks.`,
+                  `${newcomer} tries to join a strategy talk. The conversation stops. It starts again when ${_ncP.sub} ${_ncP.sub==='they'?'leave':'leaves'}.`,
+                ]) : _rp([
+                  `${newcomer} is still reading the room. Who's in charge, who's on the outs, who can be trusted — all new questions.`,
+                  `${newcomer} watches more than ${_ncP.sub} ${_ncP.sub==='they'?'talk':'talks'} today. Every conversation is data.`,
+                  `${newcomer} keeps ${_ncP.pos} head down and does the work. No alliances yet. Just proving ${_ncP.sub} ${_ncP.sub==='they'?'belong':'belongs'} here.`,
+                ]);
+                pre.push({ type: 'doubt', players: [newcomer], text: _ncText });
+              }
+            });
+          }
         }
       });
     } else {

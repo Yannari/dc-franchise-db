@@ -3995,19 +3995,30 @@ function simulateJourney(ep) {
   if ((!seasonConfig.journey && !gs.journeyForcedThisEp) || gs.phase === 'finale' || gs.activePlayers.length < 4) return;
   gs.journeyForcedThisEp = false;
 
-  const numTravelers = gs.activePlayers.length <= 6 ? 1 : 2;
   const travelers = [];
   const nominationDrama = [];
   const pool = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
-  for (let i = 0; i < numTravelers; i++) {
-    const subPool = pool.filter(p => !travelers.includes(p));
-    const weightFn = n => { const s = pStats(n); return s.social + s.intuition; };
-    const { nominee, dramaEvent } = pickNomineeWithDrama(subPool, weightFn);
-    if (!nominee) continue;
-    travelers.push(nominee);
-    if (dramaEvent) {
-      const tName = gs.isMerged ? 'merge' : gs.tribes.find(t => t.members.includes(nominee))?.name;
-      nominationDrama.push({ player: nominee, tribe: tName, event: dramaEvent });
+  const weightFn = n => { const s = pStats(n); return s.social + s.intuition; };
+
+  if (!gs.isMerged && gs.tribes.length >= 2) {
+    // Pre-merge: one traveler per tribe
+    gs.tribes.forEach(tribe => {
+      const tribePool = tribe.members.filter(p => pool.includes(p));
+      if (!tribePool.length) return;
+      const { nominee, dramaEvent } = pickNomineeWithDrama(tribePool, weightFn);
+      if (!nominee) return;
+      travelers.push(nominee);
+      if (dramaEvent) nominationDrama.push({ player: nominee, tribe: tribe.name, event: dramaEvent });
+    });
+  } else {
+    // Post-merge: 1-2 travelers from the merged tribe
+    const numTravelers = pool.length <= 6 ? 1 : 2;
+    for (let i = 0; i < numTravelers; i++) {
+      const subPool = pool.filter(p => !travelers.includes(p));
+      const { nominee, dramaEvent } = pickNomineeWithDrama(subPool, weightFn);
+      if (!nominee) continue;
+      travelers.push(nominee);
+      if (dramaEvent) nominationDrama.push({ player: nominee, tribe: 'merge', event: dramaEvent });
     }
   }
 

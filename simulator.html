@@ -14203,7 +14203,10 @@ function rpBuildPreTwist(ep) {
                           && !l.startsWith('ELIMINATION SWAP') && !l.startsWith('EXILE DUEL')
                           && !l.startsWith('JURY ELIMINATION') && !l.includes('eliminated by the jury')
                           && !(ep.swapResult && l.includes(' in exchange'))
-                          && !(ep.swapResult && l.startsWith('New ') && l.includes('member:'));
+                          && !(ep.swapResult && l.startsWith('New ') && l.includes('member:'))
+                          && !l.startsWith('Next episode:')
+                          && !(ep.swapResult && l.includes('chose') && l.includes('to go back'))
+                          && !l.startsWith('FIRE MAKING');
     const hasTwistText = (parsed['TWIST']||[]).some(l=>l.trim() && _noPostVote(l))
                       || (parsed['JOURNEY']||[]).some(l=>l.trim());
     if (!hasTwistText) return null;
@@ -14767,7 +14770,9 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
   const _snapMembers = _advSnap
     ? (isMerge ? (_advSnap.activePlayers || null) : (_advSnap.tribes?.find(t => t.name === tribeName)?.members || null))
     : null;
-  const advLines = getTribeAdvantageStatus(tribeName, isMerge, _snapAdvantages, _snapMembers);
+  // Post-challenge camp is pre-tribal — use portrait members (who's actually at camp), not end-of-ep snapshot
+  const _advMembers = phase === 'post' ? portraitMembers : _snapMembers;
+  const advLines = getTribeAdvantageStatus(tribeName, isMerge, _snapAdvantages, _advMembers);
   html += `<div class="rp-camp-toggle-section">
     <button class="rp-camp-toggle-btn" style="border-color:${tc};color:${tc}" onclick="vpToggleSection('adv-${safeId}')">
       SECRET ADVANTAGES <span class="rp-toggle-arrow">\u25b2</span>

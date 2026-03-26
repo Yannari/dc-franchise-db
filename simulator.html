@@ -9838,10 +9838,13 @@ function simulateEpisode() {
     saveGameState(); return ep;
   }
 
-  // ── shared-immunity / double-safety: mark extra immune players (stay in tribalPlayers for display) ──
-  ep.extraImmune = [ep.sharedImmunity, ep.secondImmune].filter(Boolean);
-  // Recompute alliances excluding extra immune players (they can't be targeted)
-  if (ep.extraImmune.length) {
+  // ── Merge all extra immune players: shared-immunity, double-safety, hero-duel winner ──
+  const _sharedSecond = [ep.sharedImmunity, ep.secondImmune].filter(Boolean);
+  if (_sharedSecond.length) {
+    ep.extraImmune = [...new Set([...(ep.extraImmune || []), ..._sharedSecond])];
+  }
+  // Recompute alliances excluding ALL extra immune players (they can't be targeted)
+  if (ep.extraImmune?.length) {
     const _voteablePlayers = ep.tribalPlayers.filter(p => !ep.extraImmune.includes(p));
     alliances = formAlliances(_voteablePlayers, tribeLabel, ep.challengeCategory);
     ep.alliances = alliances;

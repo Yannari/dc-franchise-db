@@ -1378,9 +1378,12 @@ const TWIST_CATALOG = [
   { id:'double-safety',    emoji:'🛡️', name:'Double Safety',        category:'immunity',   phase:'post-merge', desc:'Two players win immunity — the challenge winner and the runner-up.',         engineType:'double-safety',  incompatible:['shared-immunity','hero-duel'] },
   { id:'hero-duel',        emoji:'⚔️', name:'Hero Duel',            category:'immunity',   phase:'any',        desc:'Pre-merge: best vs worst on losing tribe duel for safety. Post-merge: 2nd place vs last place duel for immunity.', engineType:'hero-duel', incompatible:['shared-immunity','double-safety'] },
   { id:'guardian-angel',   emoji:'😇', name:'Guardian Angel',       category:'immunity',   phase:'post-merge', desc:'Player with most jury support earns a safety advantage.',                   engineType:'guardian-angel'  },
-  { id:'endurance-test',   emoji:'⚡', name:'Endurance Marathon',   category:'immunity',   phase:'any',        desc:'Extended endurance challenge — physical and endurance stats dominate.',     engineType:'reward-challenge' },
-  { id:'knowledge-test',   emoji:'🧠', name:'Knowledge Test',       category:'immunity',   phase:'any',        desc:'Trivia or memory challenge — mental stat dominates.',                       engineType:'reward-challenge' },
-  { id:'puzzle-immunity',  emoji:'🧩', name:'Puzzle Gauntlet',      category:'immunity',   phase:'any',        desc:'Multi-stage puzzle challenge — mental and endurance dominate.',             engineType:'reward-challenge' },
+  { id:'endurance-test',   emoji:'⚡', name:'Endurance Marathon',   category:'immunity',   phase:'any',        desc:'Forces this episode\'s immunity to be an endurance challenge.',             engineType:'force-challenge-endurance' },
+  { id:'knowledge-test',   emoji:'🧠', name:'Knowledge Test',       category:'immunity',   phase:'any',        desc:'Forces this episode\'s immunity to be a puzzle/mental challenge.',           engineType:'force-challenge-puzzle' },
+  { id:'puzzle-immunity',  emoji:'🧩', name:'Puzzle Gauntlet',      category:'immunity',   phase:'any',        desc:'Forces this episode\'s immunity to be a puzzle challenge.',                  engineType:'force-challenge-puzzle' },
+  { id:'physical-test',    emoji:'💪', name:'Physical Showdown',    category:'immunity',   phase:'any',        desc:'Forces this episode\'s immunity to be a physical challenge.',                engineType:'force-challenge-physical' },
+  { id:'social-challenge', emoji:'🗣️', name:'Social Challenge',     category:'immunity',   phase:'any',        desc:'Forces this episode\'s immunity to be a social challenge.',                  engineType:'force-challenge-social' },
+  { id:'balance-test',     emoji:'⚖️', name:'Balance Challenge',    category:'immunity',   phase:'any',        desc:'Forces this episode\'s immunity to be a balance challenge.',                 engineType:'force-challenge-balance' },
   { id:'no-tribal',        emoji:'🚫', name:'No Tribal Council',    category:'immunity',   phase:'any',        desc:'No elimination this episode. A reward is still possible.',                  engineType:'no-tribal'       },
   // Elimination
   { id:'double-elim',      emoji:'💀', name:'Double Elimination',   category:'elim',       phase:'post-merge', desc:'Two players are voted out this episode.',                                   engineType:'double-elim'     },
@@ -2902,6 +2905,17 @@ const CHALLENGE_DB = [
 ];
 
 function pickChallenge() {
+  // Forced category: twist override — pick only from that category
+  if (gs.forcedChallengeCategory) {
+    const forced = gs.forcedChallengeCategory;
+    delete gs.forcedChallengeCategory;
+    const pool = CHALLENGE_DB.filter(c => c.category === forced);
+    if (pool.length) {
+      const picked = pool[Math.floor(Math.random() * pool.length)];
+      gs.recentChallengeCategories = [...(gs.recentChallengeCategories || []), picked.category].slice(-3);
+      return picked;
+    }
+  }
   // Reduce probability of recently-used categories so you don't get 4 physical challenges in a row.
   // Last episode's category = 10% weight, 2 episodes ago = 40% weight, anything older = 100%.
   const recent = gs.recentChallengeCategories || [];
@@ -5194,6 +5208,12 @@ function applyTwist(ep, twist, isPrimary = true) {
       `Everyone was affected. ${lovedName} more than most. The tears came fast and didn't stop for a while. The game felt very far away, and very close, at the same time.`,
       `${lovedName} had been holding it together for weeks. One hug from home and the walls came down. Back at camp that night, something had shifted — softer, more honest, more dangerous.`,
     ]) };
+
+  } else if (engineType?.startsWith('force-challenge-')) {
+    // Force the immunity challenge to be a specific category
+    const _forceCat = engineType.replace('force-challenge-', '');
+    gs.forcedChallengeCategory = _forceCat;
+    twistObj.forcedCategory = _forceCat;
 
   } else if (engineType === 'reward-challenge') {
     const rchal = pickChallenge();

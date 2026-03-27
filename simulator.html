@@ -2680,30 +2680,51 @@ function formAlliances(members, tribeLabel, challengeLabel) {
     a.active && a.members.filter(m => present.has(m)).length >= 2
   );
 
-  // Find the social hub: highest social + strategic; bonus if already in a named alliance
-  const hubScore = n => {
-    const s = pStats(n);
-    const namedBonus = activeNamed.some(a => a.members.includes(n)) ? 2 : 0;
-    return s.social * 0.5 + s.strategic * 0.5 + namedBonus + Math.random() * 0.5;
-  };
-  const hub = [...members].sort((a,b) => hubScore(b)-hubScore(a))[0];
+  // ── Try to form majority from the largest named alliance first ──
+  // If an active named alliance has majority numbers at this tribal, it should drive the vote.
+  const _alliancesBySize = activeNamed
+    .map(a => ({ alliance: a, present: a.members.filter(m => present.has(m)) }))
+    .filter(a => a.present.length >= 2)
+    .sort((a,b) => b.present.length - a.present.length);
 
-  // Hub recruits allies by affinity: bond + social compatibility + loyalty
-  const affinityFor = other => {
-    const bond = getBond(hub, other);
-    const sh = pStats(hub), so = pStats(other);
-    const compat = (sh.social + so.social) / 20;
-    const rel = relationships.find(r => [r.a,r.b].sort().join('|') === [hub,other].sort().join('|'));
-    const ubBonus = rel?.type === 'unbreakable' ? 5 : 0;
-    const rivalPenalty = (rel?.type === 'rival' || rel?.type === 'enemy') ? -4 : 0;
-    const allianceBonus = activeNamed.some(a => a.members.includes(hub) && a.members.includes(other)) ? 4 : 0;
-    return bond + compat*2 + ubBonus + rivalPenalty + allianceBonus + (Math.random()-0.5)*0.4;
-  };
+  let majority, minority, hub;
+  const _bestAlliance = _alliancesBySize[0];
+  if (_bestAlliance && _bestAlliance.present.length >= Math.ceil(members.length / 2)) {
+    // Named alliance has majority — use it directly
+    majority = [..._bestAlliance.present];
+    minority = members.filter(m => !majority.includes(m));
+    // Hub is the most strategic/social member of the alliance
+    hub = majority.sort((a,b) => {
+      const sa = pStats(a), sb = pStats(b);
+      return (sb.social + sb.strategic) - (sa.social + sa.strategic);
+    })[0];
+    majority.sort();
+  } else {
+    // No alliance has majority — fall back to hub-affinity system
+    const hubScore = n => {
+      const s = pStats(n);
+      const namedBonus = activeNamed.some(a => a.members.includes(n)) ? 2 : 0;
+      return s.social * 0.5 + s.strategic * 0.5 + namedBonus + Math.random() * 0.5;
+    };
+    hub = [...members].sort((a,b) => hubScore(b)-hubScore(a))[0];
 
-  const others  = members.filter(m => m!==hub).sort((a,b) => affinityFor(b)-affinityFor(a));
-  const majSize = Math.ceil(members.length/2);
-  const majority = [hub, ...others.slice(0, majSize-1)];
-  const minority = members.filter(m => !majority.includes(m));
+    const affinityFor = other => {
+      const bond = getBond(hub, other);
+      const sh = pStats(hub), so = pStats(other);
+      const compat = (sh.social + so.social) / 20;
+      const rel = relationships.find(r => [r.a,r.b].sort().join('|') === [hub,other].sort().join('|'));
+      const ubBonus = rel?.type === 'unbreakable' ? 5 : 0;
+      const rivalPenalty = (rel?.type === 'rival' || rel?.type === 'enemy') ? -4 : 0;
+      const allianceBonus = activeNamed.some(a => a.members.includes(hub) && a.members.includes(other)) ? 4 : 0;
+      return bond + compat*2 + ubBonus + rivalPenalty + allianceBonus + (Math.random()-0.5)*0.4;
+    };
+
+    const others = members.filter(m => m!==hub).sort((a,b) => affinityFor(b)-affinityFor(a));
+    const majSize = Math.ceil(members.length/2);
+    majority = [hub, ...others.slice(0, majSize-1)];
+    minority = members.filter(m => !majority.includes(m));
+    majority.sort();
+  }
   majority.sort();
 
   // Measure how bonded a group is (avg pairwise bond)

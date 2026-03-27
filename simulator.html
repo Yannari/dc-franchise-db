@@ -2856,6 +2856,10 @@ function formAlliances(members, tribeLabel, challengeLabel) {
         const { label: _uLabel, type: _uType } = classifyGroup(_unaligned, _uLead, _uTarget);
         alliances.push({ members: _unaligned, target: _uTarget, label: _uLabel, type: _uType, tribe: tribeLabel, challengeLabel });
       }
+      // Solo unaligned players still need a vote entry
+      _unaligned.filter(m => _unaligned.length < 2 || !alliances.some(a => a.members.includes(m))).forEach(solo => {
+        alliances.push({ members: [solo], target: pickTarget([solo], majority, challengeLabel), label: 'Solo', type: 'solo', tribe: tribeLabel, challengeLabel });
+      });
     } else {
       // No minority alliance — original behavior: bond-based or solo
       const minAvgBond = groupBondStrength(minority);
@@ -2888,6 +2892,9 @@ function formAlliances(members, tribeLabel, challengeLabel) {
 function pickTarget(attackers, victims, challengeLabel) {
   if (!victims.length) return null;
   const phase = gs?.phase || 'pre-merge';
+  // Hub personality: the lead attacker's stats influence what kind of target they prioritize
+  const _hub = attackers[0];
+  const _hubS = _hub ? pStats(_hub) : null;
   return wRandom(victims, v => {
     const avgBond = attackers.reduce((sum,a) => sum+getBond(a,v), 0) / attackers.length;
     if (phase === 'pre-merge') {
@@ -2895,14 +2902,27 @@ function pickTarget(attackers, victims, challengeLabel) {
       const dramaRisk = (s.boldness > 7 && s.loyalty < 5) ? 1.5 : 0;
       return Math.max(0.1, challengeWeakness(v, challengeLabel) * 0.55 + (-avgBond) * 0.3 + dramaRisk + Math.random() * 0.5);
     } else {
-      // Pair threat: player with a very close ally is a dangerous duo to leave intact
       const allAtTribal = [...attackers, v];
       const maxBond = allAtTribal.filter(p => p !== v).reduce((m, p) => Math.max(m, getBond(v, p)), 0);
       const pairThreat = (maxBond >= 8 ? 1.0 : maxBond >= 7 ? 0.5 : 0)
                        + (gs.showmances?.some(sh => sh.includes(v)) ? 0.5 : 0);
-      // Group-level standout awareness: strong recent challenge performer is harder to ignore
       const standoutMod = gs._chalStandouts?.includes(v) ? 0.35 : 0;
-      return Math.max(0.1, threatScore(v) * 0.6 + (-avgBond) * 0.4 + pairThreat + standoutMod + Math.random() * 0.5);
+      // Hub personality shifts targeting priority
+      let personalityMod = 0;
+      if (_hubS) {
+        const vs = pStats(v);
+        // Strategic hubs target other strategic threats (cut the competition)
+        if (_hubS.strategic >= 7) personalityMod += vs.strategic >= 7 ? 1.0 : 0;
+        // Social hubs target antisocial players (they can't be controlled)
+        if (_hubS.social >= 7) personalityMod += vs.social <= 4 ? 0.5 : vs.social >= 8 ? 0.8 : 0;
+        // Bold hubs target physical threats (challenge beasts threaten them)
+        if (_hubS.boldness >= 7) personalityMod += (vs.physical >= 8 || vs.endurance >= 8) ? 0.6 : 0;
+        // Loyal hubs target disloyal players (can't trust them)
+        if (_hubS.loyalty >= 7) personalityMod += vs.loyalty <= 3 ? 0.7 : 0;
+        // Intuitive hubs target known idol holders
+        if (_hubS.intuition >= 7 && gs.knownIdolHoldersThisEp?.has(v)) personalityMod += 1.5;
+      }
+      return Math.max(0.1, threatScore(v) * 0.6 + (-avgBond) * 0.4 + pairThreat + standoutMod + personalityMod + Math.random() * 0.5);
     }
   });
 }

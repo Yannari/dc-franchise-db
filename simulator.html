@@ -2827,9 +2827,13 @@ function formAlliances(members, tribeLabel, challengeLabel) {
     return pickTarget(attackers, victims.filter(m => !na.members.includes(m)), challengeLabel) || null;
   };
 
-  const _majNa = majType === 'alliance' ? activeNamed.find(a => a.name === majLabel) : null;
+  // If majority was built from a named alliance core, force the label to that alliance name
+  const _majForceLabel = _bestAlliance?.alliance?.name || null;
+  const _majFinalLabel = _majForceLabel || majLabel;
+  const _majFinalType = _majForceLabel ? 'alliance' : majType;
+  const _majNa = _majFinalType === 'alliance' ? activeNamed.find(a => a.name === _majFinalLabel) : null;
   const _majSafeTarget = _resolveAllianceTarget(_majNa, majTarget, majority, minority) ?? majTarget;
-  alliances.push({ members: majority, target: _majSafeTarget, label: majLabel, type: majType, tribe: tribeLabel, challengeLabel });
+  alliances.push({ members: majority, target: _majSafeTarget, label: _majFinalLabel, type: _majFinalType, tribe: tribeLabel, challengeLabel });
 
   if (minority.length >= 2) {
     // ── Check if minority has its own named alliance(s) to coordinate counter-vote ──

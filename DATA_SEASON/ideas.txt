@@ -185,3 +185,98 @@ Fan Favorite screen (post-FTC):
 
 Priority: MEDIUM-HIGH — builds on existing event infrastructure.
 No new event types required. All delta sources already fire and are logged.
+
+
+SURVIVAL MECHANICS — PLANNED
+=============================
+Food & water system. UI exists (cfg-food-water, cfg-survival-difficulty) but no engine.
+Brainstormed 2026-03-27.
+
+
+── OVERVIEW ──────────────────────────────────────────────────────────────────
+
+Per-player survival score (gs.survival[name]) that decays each episode.
+Low survival creates challenge penalties, emotional pressure, camp conflict,
+and at brutal difficulty, medevac risk. Makes reward challenges meaningful.
+
+
+── STATE ─────────────────────────────────────────────────────────────────────
+
+gs.survival[name] — 0-100, starts at 100. Decays per episode based on difficulty.
+Saved to ep.gsSnapshot each episode.
+
+Difficulty decay rates (per episode):
+  Casual:    -3 to -5 (slow, survival is flavor)
+  Realistic: -6 to -10 (noticeable, food matters)
+  Brutal:    -10 to -16 (harsh, Koh-Lanta style)
+
+Variance: +(endurance * 0.3) reduces decay (fit players handle it better).
+
+
+── EFFECTS OF LOW SURVIVAL ───────────────────────────────────────────────────
+
+Threshold    Effect
+---------    ------
+< 70         Mild challenge penalty (-0.5 to stat rolls)
+< 50         Moderate penalty (-1.0), emotional push toward desperate/paranoid
+< 35         Severe penalty (-1.5), camp conflict events (food fights, hoarding)
+< 20         Critical: -2.0 penalty, medevac risk (brutal only, ~8% per episode)
+
+Medevac: player is removed from the game (not voted out, no jury).
+Dramatic VP screen showing medical team, player's reaction, tribe impact.
+
+
+── WHAT RESTORES SURVIVAL ────────────────────────────────────────────────────
+
+Source                          Restore amount
+------------------------------  --------
+Reward challenge win (Feast)    +25
+Reward challenge win (Supplies) +15
+Reward challenge win (Overnight)+20
+Merge feast                     +30 (all players)
+Fishing/foraging camp event     +5 to +10 (endurance-scaled)
+Comfort reward                  +10
+Auction: Full Meal              +20
+Auction: Assorted Snacks        +10
+
+Camp events that restore survival also have bond consequences (shared meals
+bring people together, hoarding creates enemies).
+
+
+── CAMP EVENTS (NEW) ─────────────────────────────────────────────────────────
+
+Low survival triggers new event types:
+  - foodConflict: two players fight over rations (bond -1.5, both lose -1 survival)
+  - hoarding: one player caught stashing food (bond -2.0 with discoverer)
+  - fishing: high-endurance player catches food (+8 survival for tribe, +1.0 bond)
+  - foraging: player finds fruit/coconuts (+5 survival, +0.5 bond with sharer)
+  - starvationBond: two players bond over shared suffering (+1.0 bond)
+  - rationing: strategic player manages food distribution (+0.5 bond with tribe)
+  - collapse: player collapses from exhaustion (foreshadows medevac at brutal)
+
+All events MUST have consequences (bond changes, survival changes, state changes).
+
+
+── REWARD CHALLENGE INTEGRATION ──────────────────────────────────────────────
+
+Currently most rewards (Feast, Comfort, Supply Cache) are pure flavor text.
+With survival enabled, they restore survival points — making reward challenges
+matter mechanically. Players on a losing streak get weaker in challenges AND
+more emotionally volatile, creating a death spiral that only a reward win breaks.
+
+This also makes the Survivor Auction more strategic: do you spend on food
+(+20 survival) or gamble on a blind bid advantage?
+
+
+── IMPLEMENTATION NOTES ──────────────────────────────────────────────────────
+
+- gs.survival initialized in initGame() as { [name]: 100 } for all players
+- updateSurvival(ep) called at end of each episode alongside updatePlayerStates
+- Reads cfg.foodWater ('disabled'|'enabled') and cfg.survivalDifficulty
+- If disabled, function returns immediately (zero impact on existing games)
+- Challenge stat functions receive a survivalPenalty modifier when survival < 70
+- generateCampEventsForGroup checks tribe avg survival for food-related events
+- Medevac: replaces normal elimination flow (no vote, no jury, dramatic exit)
+
+Priority: MEDIUM — significant feature, touches challenge + camp + emotional systems.
+Blocked by: nothing. Can be built incrementally (decay first, then events, then medevac).

@@ -23,6 +23,15 @@ Simulation core:
 - `resolveVotes()` — determines elimination from vote tallies
 - `decayAllianceTrust()` — alliance bond decay + auto-dissolve (1 member left, avg bond <= -1, or 2+ betrayals with low bond)
 
+Slasher Night (post-merge):
+- `simulateSlasherNight()` — horror survival challenge, replaces challenge + tribal
+- `SLASHER_EVENTS` — 19 positive + 20 negative event types with stat triggers and bond effects
+- `SLASHER_CAUGHT_SCENES` / `SLASHER_ATMOSPHERE` / `SLASHER_FINAL_WIN` / `SLASHER_FINAL_LOSE`
+- Round-by-round: events → catch targeting → score tracking → final showdown (last 2)
+- Last standing = immunity, lowest score = auto-eliminated (no vote)
+- VP: 6 screens (Announcement, Rounds, Showdown, Immunity, Elimination, Leaderboard)
+- Particle profile: `'slasher'` (dark fog/mist)
+
 Finale engine:
 - `simulateFinale()` — finale episode (handles finaleSize 2/3/4, jury + final-challenge formats)
 - `projectJuryVotes()` — deterministic jury vote projection (no random noise)
@@ -133,6 +142,36 @@ Key config fields in `seasonConfig`:
   `gs.namedAlliances` at init with `preGame: true`, `permanence: 'permanent'|'normal'|'fragile'`
 - `tribesAtStart` must be refreshed after team-changing twists (swap, mutiny, abduction, dissolve)
   but NOT after kidnapping (temporary, not a real tribe change)
+
+## Advantage System
+- `ADVANTAGES` array: idol, beware, voteSteal, extraVote, kip, legacy, amulet, secondLife
+- `findAdvantages()` handles camp discovery; `checkIdolPlays()` handles idol/KiP use at tribal
+- `checkNonIdolAdvantageUse()` handles extra votes, vote steals (post-idol)
+- Second Life Amulet: auto-activates on elimination → holder picks opponent → random duel type
+  - Can be played for an ally (bond >= 3, loyalty-scaled chance)
+  - `gs.knownAmuletHoldersThisEp` / `gs.knownAmuletHoldersPersistent` tracks who knows
+  - Known holders get personality-driven targeting: challenge beasts want to flush (+1.5),
+    strategic players avoid (-2.0), weak players terrified of being picked for the duel (-3.0)
+  - Camp events: confession, leak, false security, dilemma, weight, snooping — all with consequences
+- Idol misplays: 5 triggers (flush plant, bottom dweller, paranoid spiral, overconfident read,
+  last-second vote shift) — capped at 30%, each produces a unique VP reason
+- `ep.fireMaking` object: `{ player, opponent, winner, loser, reason, duelType, duelName,
+  duelDesc, fromAmulet, allyPlayer }` — used by both twist and amulet paths
+
+## VP Screen Order
+Normal episode: Cold Open → Camp (pre) → Challenge → Twists (exile/kidnapping/etc) →
+  Camp (post) → Voting Plans → Tribal → Votes → (Post-Vote Twist) → Camp Overview → Aftermath
+No-tribal episode: same up to Camp (post) → No Tribal Council screen → Camp Overview → Aftermath
+Finale: has its own 10-screen sequence (see VP Finale screens above)
+
+## Collaboration Style
+- Think independently when implementing — brainstorm improvements and propose them, don't just
+  copy the user's exact words. Add nuance, better reasons, edge cases they didn't think of.
+- Always propose ideas before implementing — never silently add features.
+- Camp events MUST have gameplay consequences (bond changes, state changes, knowledge tracking).
+  Text-only events waste screentime and don't affect the simulation.
+- When a mechanic creates information (leak, snoop, confession), that information must flow
+  into the targeting system (computeHeat, pickTarget, simulateVotes) or it's cosmetic.
 
 ## Backlog Files
 - `DATA_SEASON/ideas_probabilistic_moments.txt` — feature ideas with priority order

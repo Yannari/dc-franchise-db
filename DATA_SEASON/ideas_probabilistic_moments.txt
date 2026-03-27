@@ -372,14 +372,162 @@ Implementation note: scenario A requires knowing the pre-swap tribe. Use
   player (e.g., gs.recentlyQuit = Set) that checkAllianceRecruitment can read.
 
 
+── ADVANTAGES ────────────────────────────────────────────────────────────────
+
+[20] SUPER IDOL (plays AFTER the votes are read)
+Trigger: holder is the top vote-getter at tribal, votes have been read
+Roll: auto-plays (holder would never choose not to use it when they're going home)
+What happens: unlike a normal idol (played before votes are read — guesswork),
+  the Super Idol activates AFTER votes are revealed. The holder sees the votes
+  land on them and then plays it — guaranteed save, zero risk of misplay.
+  This makes it the most powerful advantage in the game. Finding it should be
+  extremely rare and it should come with a visible cost so the tribe can
+  counterplay.
+Mechanic:
+  - New advantage type: 'superIdol' in ADVANTAGES array
+  - checkIdolPlays currently runs BEFORE resolveVotes. Super Idol needs a
+    second pass AFTER resolveVotes: if the eliminated player holds a superIdol,
+    negate all votes against them, remove from elimination, consume the idol.
+  - Resolution order: normal idols (pre-vote) → votes resolved → Super Idol
+    (post-vote) → Second Life Amulet (post-vote, duel).
+  - Super Idol fires before Second Life Amulet — if you have both, the Super
+    Idol saves you cleanly (no duel needed).
+Tradeoffs (pick 1-2 to keep it balanced):
+  A) Publicly known: when found, the ENTIRE tribe is told someone found it.
+     Everyone knows it exists — they just don't know who has it. Creates
+     paranoia, split votes, and flush attempts. The holder can't hide it.
+  B) Expires fast: only lasts 2-3 tribals after finding it. Use it or lose it.
+     Prevents hoarding. Creates a visible countdown that the tribe can track.
+  C) Vote penalty: holder loses their vote at every tribal while holding it
+     (like Beware but permanent until played). The safety net costs influence.
+  D) Transferable on elimination: if the holder is voted out and doesn't
+     use it (not enough votes, or they chose not to), it passes to their
+     closest ally — extending the paranoia.
+  E) Can't be played for allies: self-only. No ally-play option unlike the
+     normal idol. The selfishness of the advantage is part of its design.
+Discovery:
+  - Camp search: extremely rare (~0.1% base, lower than any other advantage)
+  - Exile Island: rare find tier (~3%)
+  - Auction: possible blind bid item (~8% if enabled)
+  - Three Gifts: possible third gift option
+  - NOT findable via Journey (too powerful for a side game reward)
+VP Display:
+  - Vote reveal: all votes land, elimination name shown, THEN the Super Idol
+    reveal fires — portrait + gold badge "SUPER IDOL" + all votes wiped.
+    The most dramatic moment possible: the tribe thinks they got their target,
+    and then the rug is pulled.
+  - Camp event on find: "Something is different about [Name]. They came back
+    from the well with a look that said more than any confession could."
+  - If publicly known (tradeoff A): every tribal from that point shows a
+    small indicator "[Name] holds the Super Idol" in Voting Plans, and the
+    tribe's targeting shifts to flush it via split votes.
+Priority: MEDIUM — powerful addition but needs careful balancing. The tradeoff
+  choice determines whether it's a fun dramatic tool or a game-breaking weapon.
+  Recommend tradeoffs A+B (publicly known + expires) for maximum strategic
+  tension with minimal balance risk.
+
+[21] SURVIVAL MECHANICS (food & water system)
+See ideas.txt for full design. UI exists, engine not built.
+Core: per-player survival score decaying each episode. Low survival causes
+  challenge penalties, emotional pressure, camp conflict, and medevac risk.
+  Makes reward challenges mechanically meaningful.
+Priority: MEDIUM.
+
+
+── RELATIONSHIPS ── (continued)
+
+[22] SHOWMANCE LIFECYCLE
+Trigger: existing showmance detection (bond >= 5 + compatible archetypes) already fires once.
+  This expands it into a multi-episode arc with escalating drama and strategic consequences.
+What happens: showmances evolve through distinct phases that create camp events, influence
+  votes, paint targets, and eventually force a dramatic choice.
+
+Phases:
+  1. SPARK (current, already implemented)
+     - Detected when bond crosses threshold + archetype compatibility
+     - One-off camp event announcing the connection
+     - Showmance flag set on gs.showmances
+
+  2. HONEYMOON (episodes 1-3 after spark)
+     - Pair gravitates toward each other in camp events more often
+     - Bond growth accelerated between them (+0.3 bonus per episode)
+     - Camp events: stolen glances, inside jokes, late-night conversations
+     - Tribe starts noticing — "everyone sees it except them" narrative
+     - The pair defends each other in conversations (loyalty boost in votes)
+
+  3. TARGET ON THEIR BACK (episode 3+ after spark)
+     - Strategic players flag them as a power couple
+     - computeHeat: +1.5 pair heat for showmance partners (already partially exists)
+     - Camp events: someone proposes splitting them up, alliance discussions shift
+     - The pair becomes a voting bloc that others have to account for
+     - Confessional: "Those two are going to the end together if we don't do something"
+
+  4. JEALOUSY / THIRD WHEEL (~20% per episode when a 3rd player has bond >= 3 with one partner)
+     - A player close to one half of the showmance feels excluded
+     - Bond drop with the pair (-0.5 to -1.0)
+     - Camp event: "Something changed. They don't need me anymore."
+     - The jealous player becomes a potential swing vote against the couple
+     - Creates a triangle that adds narrative texture beyond simple pair dynamics
+
+  5. THE TEST (when one partner is targeted at tribal)
+     - The other partner faces a choice: vote with the alliance or protect them
+     - Loyalty threshold boosted by showmance bond — they're more likely to defy the plan
+     - If they break ranks to save the partner: alliance fallout, dramatic narrative
+     - If they vote with the alliance: showmance takes a massive hit, potential breakup
+     - Camp event foreshadows: "Tonight is going to test everything"
+
+  6. RESOLUTION — breakup or ride-or-die
+     - BREAKUP: one votes out the other → bond collapses to -5 or lower
+       - Biggest betrayal event in the game
+       - Camp events next episode: grief, anger, tribe processing what happened
+       - Jury impact: if both make FTC, the breakup dominates the narrative
+     - RIDE-OR-DIE: both survive together past episode 5 of the showmance
+       - Bond becomes functionally unbreakable (+8 or higher)
+       - They vote as a unit — effectively a permanent alliance
+       - The tribe either accepts them as a package deal or targets them harder
+
+Mechanic:
+  - gs.showmances[i].phase = 'spark'|'honeymoon'|'target'|'test'|'resolved'
+  - gs.showmances[i].sparkEp = when detected (already exists)
+  - gs.showmances[i].episodesActive = counter, incremented each episode
+  - Phase transitions are automatic based on episodesActive + event triggers
+  - Camp events: new pool per phase, 1-2 events per episode while showmance is active
+  - Vote influence: showmance partner's name as alliance target triggers the "test" phase
+  - Breakup detection: if one votes against the other, breakup fires immediately
+  - VP display: showmance badge on camp events, "SHOWMANCE" section in Camp Overview,
+    breakup gets a dramatic standalone card like ALLIANCE FALLOUT
+
+Why this matters for the viewer:
+  - Currently showmances are a one-time event that fades into the background
+  - Real Survivor showmances (Rob/Amber, Boston Rob/Amber, Keith/Whitney) are multi-episode
+    story arcs that define seasons
+  - The phases create predictable dramatic beats: discovery → joy → threat → test → resolution
+  - Each phase generates its own camp events, so the VP always has showmance content
+  - The breakup is potentially the most dramatic single moment in a season
+
+Priority: HIGH — showmances are already detected but wasted. The infrastructure exists
+  (gs.showmances, bond system, camp events). This is about making something that already
+  fires actually MATTER. Touches: generateCampEventsForGroup, simulateVotes (loyalty),
+  computeHeat (pair heat), detectBetrayals (breakup), rpBuildCampTribe (badges),
+  rpBuildRelationships (Camp Overview section).
+Implementation: can be built incrementally — honeymoon events first, then targeting,
+  then the test/resolution mechanics.
+
+
 ── NOTES ──────────────────────────────────────────────────────────────────────
 - All of these should use the same probabilistic pattern as idol confessions:
   roll fires or it doesn't, no guaranteed outcome, consequences cascade naturally.
-- Priority order: [18 DONE], 1, 10, 12, B, 8, [3 DONE], 6, 14, 5, 13, 4, 11, 15, 17
+- Priority order: [18 DONE], 22, 1, 10, 20, 12, 21, B, 8, [3 DONE], 6, 14, 5, 13, 4, 11, 15, 17
   16 (cumulative challenge performance) — DONE.
   18 (comfort blindspot) — DONE.
-  1 (paranoia spiral) — NEXT UP. Paranoid + strategic >= 7 player wrongly suspects
-    a loyal ally, confronts or campaigns against them, self-fulfilling prophecy.
+  22 (showmance lifecycle) — NEXT UP. Infrastructure exists (gs.showmances, bond system).
+    Expands one-time detection into multi-episode arc with phases, camp events, vote influence,
+    targeting, and dramatic breakup/ride-or-die resolution. HIGH priority — biggest narrative ROI.
+  1 (paranoia spiral) — Paranoid + strategic >= 7 player wrongly suspects a loyal ally.
+  10 (goat mutiny) — two goats realize they're being dragged, form surprise alliance.
+  20 (super idol) — plays after votes, needs tradeoff decision (recommend A+B: public + expires).
+  12 (idol inheritance) — voted-out idol holder passes it to closest ally.
+  21 (survival mechanics) — food/water decay, challenge penalty, medevac. UI exists, needs engine.
   B (non-mutual) needs the directional bond design decision before touching.
 - Some of these (4, 11, 15) touch FTC logic which isn't fully built yet —
   hold those until the FTC simulation pass.

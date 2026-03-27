@@ -10198,6 +10198,11 @@ function simulateEpisode() {
       ep.alliances2 = alliances2;
       ep.tiebreakerResult1 = ep.tiebreakerResult || null; // capture vote-1 tiebreaker before vote-2 may overwrite
       ep.tiebreakerResult = null;
+      // Save vote-1 idol plays and reset for vote 2 — idol protection doesn't carry over
+      ep.idolPlays1 = ep.idolPlays || [];
+      ep.idolPlays = [];
+      ep.shotInDark1 = ep.shotInDark || null;
+      ep.shotInDark = null;
       const r2 = runTribal(remaining, ep.immunityWinner2, alliances2);
       ep.votes2 = r2.votes; ep.votingLog2 = r2.log;
       ep.eliminated = r2.eliminated; ep.isTie = r2.isTie; ep.tiedPlayers = r2.tiedPlayers;
@@ -10356,7 +10361,7 @@ function simulateEpisode() {
     alliances2:   ep.alliances2   ? ep.alliances2.map(a=>({...a})) : null,
     immunityWinner2: ep.immunityWinner2 || null,
     sidFreshVote:     ep.sidFreshVote     || false,
-    idolPlays:        ep.idolPlays        || [],
+    idolPlays:        [...(ep.idolPlays1 || []), ...(ep.idolPlays || [])],
     idolMisplays:     ep.idolMisplays     || [],
     shotInDark:       ep.shotInDark       || null,
     overplayer:       ep.overplayer       || null,
@@ -18605,8 +18610,10 @@ function rpBuildVotes(ep) {
     <div class="rp-title">The Votes</div>`;
 
   // ── Advantage plays — always visible before votes are read ──
+  // Use idolPlays1 if available (double boot: vote-1 plays saved separately)
+  const _voteIdolPlays = ep.idolPlays1 || ep.idolPlays || [];
   let _advHtml = '';
-  (ep.idolPlays||[]).forEach((play) => {
+  _voteIdolPlays.forEach((play) => {
     const { player, votesNegated, type, playedFor, target, stolenFrom } = play;
     if (type === 'kip') return;
     if (type === 'extraVote') {
@@ -18702,8 +18709,8 @@ function rpBuildVotes(ep) {
         <div class="tv-advantage-play-badge" style="color:#f0883e;background:rgba(240,136,62,0.12);border-color:rgba(240,136,62,0.25)">NO VOTE</div>
         <div class="tv-advantage-play-title">${name} cannot vote tonight</div>
         <div class="tv-advantage-play-desc">${isBeware
-          ? `${name}'s Beware Advantage restricts ${p.pos} vote until all tribes find theirs. ${p.Sub} must sit this tribal out without a voice.`
-          : `${name} lost ${p.pos} vote on the Journey (Episode ${lostEp}). ${p.Sub} must sit this tribal out without a voice.`
+          ? `${name}'s Beware Advantage restricts ${p.posAdj} vote until all tribes find theirs. ${p.Sub} must sit this tribal out without a voice.`
+          : `${name} lost ${p.posAdj} vote on the Journey (Episode ${lostEp}). ${p.Sub} must sit this tribal out without a voice.`
         }</div>
       </div>
     </div>`;

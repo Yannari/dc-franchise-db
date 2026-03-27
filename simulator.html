@@ -1390,7 +1390,7 @@ const TWIST_CATALOG = [
   { id:'double-tribal',    emoji:'🏕️', name:'Double Tribal',        category:'elim',       phase:'pre-merge',  desc:'Both tribes attend tribal — each votes someone out.',                       engineType:'double-tribal'   },
   { id:'multi-tribal',     emoji:'🏕️', name:'Multi-Tribal',         category:'elim',       phase:'pre-merge',  desc:'Challenge runs, winner is safe — all other tribes (2+) each vote someone out. Requires 3+ tribes.',  engineType:'multi-tribal'    },
   { id:'double-boot',      emoji:'🥾', name:'Double Boot',          category:'elim',       phase:'any',        desc:'Two separate votes — one after the other — same episode.',                  engineType:'double-elim'     },
-  { id:'fire-making',      emoji:'🔥', name:'Fire Making',          category:'elim',       phase:'any',        desc:'Instead of a vote, two players compete in a fire-making challenge.',        engineType:'fire-making'     },
+  { id:'fire-making',      emoji:'🔥', name:'Second Life',          category:'elim',       phase:'any',        desc:'The voted-out player gets a second chance — they pick any non-immune player to challenge in a fire-making duel. Loser is permanently eliminated.',        engineType:'fire-making'     },
   { id:'penalty-vote',     emoji:'⚠️', name:'Penalty Vote',         category:'elim',       phase:'any',        desc:'A player receives a penalty vote against them at the next tribal.',         engineType:'penalty-vote'    },
   { id:'slasher-night',    emoji:'🔪', name:'Slasher Night',        category:'elim',       phase:'any',        desc:'A randomly revealed player secretly eliminates one castmate at camp.',      engineType:'slasher-night'   },
   { id:'cultural-reset',   emoji:'🔄', name:'Cultural Reset',       category:'elim',       phase:'any',        desc:'All previous alliances are publicly revealed. Game resets socially.',        engineType:'cultural-reset'  },
@@ -10167,16 +10167,43 @@ function simulateEpisode() {
   ep.isTie = r1.isTie; ep.tiedPlayers = r1.tiedPlayers;
 
   // ── FIRE MAKING: voted-out player competes against runner-up vote-getter ──
-  if (ep.isFireMaking && r1.eliminated && ep.votes) {
-    const sorted = Object.entries(ep.votes).sort(([,a],[,b]) => b-a);
-    const opponent = sorted.find(([n]) => n !== r1.eliminated)?.[0];
-    if (opponent) {
-      const eS = pStats(r1.eliminated), oS = pStats(opponent);
-      const eScore = eS.endurance * 0.6 + eS.physical * 0.4 + Math.random() * 2;
-      const oScore = oS.endurance * 0.6 + oS.physical * 0.4 + Math.random() * 2;
+  // ── SECOND LIFE: voted-out player picks an opponent to duel ──
+  if (ep.isFireMaking && r1.eliminated) {
+    const _slElim = r1.eliminated;
+    const _slS = pStats(_slElim);
+    // Eliminated player CHOOSES opponent — picks based on who they think they can beat
+    // Avoids immunity winner and extraImmune players
+    const _slPool = ep.tribalPlayers.filter(p =>
+      p !== _slElim && p !== ep.immunityWinner && !(ep.extraImmune||[]).includes(p)
+    );
+    if (_slPool.length) {
+      // Strategic players pick the weakest physical opponent; bold/desperate pick their enemy
+      const opponent = wRandom(_slPool, p => {
+        const os = pStats(p);
+        const bond = getBond(_slElim, p);
+        // Prefer: weak in fire (low endurance/physical), or personal enemy (revenge pick)
+        const weakScore = (10 - os.endurance) * 0.4 + (10 - os.physical) * 0.3;
+        const revengeMod = bond <= -3 ? 2.0 : bond <= -1 ? 0.5 : 0;
+        return Math.max(0.1, _slS.strategic >= 7
+          ? weakScore * 1.5 + revengeMod * 0.3  // strategic: pick the beatable
+          : weakScore * 0.5 + revengeMod * 1.5   // emotional: pick the enemy
+        ) + Math.random() * 0.5;
+      });
+      // Reason for the pick
+      const _opBond = getBond(_slElim, opponent);
+      const _opS = pStats(opponent);
+      const _slReason = _opBond <= -2 ? `${_slElim} picked ${opponent} — personal. This isn't just about survival. It's about taking someone down with ${pronouns(_slElim).obj}.`
+                       : _opS.endurance <= 4 ? `${_slElim} picked ${opponent} — the weakest fire-maker at this tribal. Calculated.`
+                       : _slS.boldness >= 7 ? `${_slElim} picked ${opponent} — the biggest threat. If ${pronouns(_slElim).sub} ${pronouns(_slElim).sub==='they'?'are':'is'} going down, ${pronouns(_slElim).sub} ${pronouns(_slElim).sub==='they'?'are':'is'} going down swinging.`
+                       : `${_slElim} picked ${opponent}. The tribe watches in silence.`;
+      // Duel
+      const eScore = _slS.endurance * 0.6 + _slS.physical * 0.4 + Math.random() * 2;
+      const oScore = _opS.endurance * 0.6 + _opS.physical * 0.4 + Math.random() * 2;
       const elimWins = eScore > oScore;
-      ep.fireMaking = { player: r1.eliminated, opponent, winner: elimWins ? r1.eliminated : opponent };
-      if (elimWins) r1.eliminated = opponent;
+      const winner = elimWins ? _slElim : opponent;
+      const loser = elimWins ? opponent : _slElim;
+      ep.fireMaking = { player: _slElim, opponent, winner, loser, reason: _slReason };
+      r1.eliminated = loser;
     }
   }
 
@@ -10925,9 +10952,9 @@ function generateTwistScenes(ep) {
         break; // shown post-challenge in buildVPScreens — not here
 
       case 'fire-making':
-        sc.push({ text: 'Tonight, the vote does not end the game for the person voted out.', players: [] });
-        sc.push({ text: 'The eliminated player must compete in a fire-making challenge to survive. Win, and they return to camp. Lose, and their torch is snuffed.', players: [] });
-        result.push({ label:'Fire Making', type:tw.type, scenes:sc }); break;
+        sc.push({ text: 'Tonight, the person voted out gets a Second Life.', players: [] });
+        sc.push({ text: 'They pick any non-immune player to challenge in a fire-making duel. The loser is permanently eliminated.', players: [] });
+        result.push({ label:'Second Life', type:tw.type, scenes:sc }); break;
 
       case 'hero-duel':
         // Pre-challenge: just the announcement (participants not known yet)
@@ -12583,8 +12610,9 @@ function generateSummaryText(ep) {
     }
     if (_fireMakingTw && ep.fireMaking) {
       const fm = ep.fireMaking;
-      ln(`FIRE MAKING — ${fm.player} vs ${fm.opponent}.`);
-      ln(`${fm.winner} wins${fm.winner === fm.player ? ` — ${fm.opponent} is eliminated instead` : ` — ${fm.player} is eliminated`}.`);
+      ln(`SECOND LIFE — ${fm.player} was voted out but gets a second chance. ${fm.player} picks ${fm.opponent} for the fire-making duel.`);
+      if (fm.reason) ln(fm.reason);
+      ln(`${fm.winner} wins the fire. ${fm.loser} is eliminated.`);
     }
     if (_juryElimTw?.juryBooted) {
       ln(`JURY ELIMINATION RESULT — votes: ${Object.entries(_juryElimTw.elimVotes||{}).sort(([,a],[,b])=>b-a).map(([n,v])=>`${n} (${v})`).join(', ')}`);
@@ -15976,27 +16004,28 @@ function _buildPostTwistBlocks(ep) {
     const fm = ep.fireMaking;
     const sc = [];
     const _fmPEdge = (pStats(fm.player).endurance + pStats(fm.player).physical) > (pStats(fm.opponent).endurance + pStats(fm.opponent).physical);
-    sc.push({ text: `The vote is cast. But ${fm.player} is not going home — not yet.`, players: [fm.player] });
+    sc.push({ text: `The vote is cast. But ${fm.player} is not going home — not yet. Second Life is in play.`, players: [fm.player] });
     sc.unshift({ text: '', players: [fm.player, fm.opponent], faceOff: true });
+    // The pick
+    if (fm.reason) sc.push({ text: fm.reason, players: [fm.player, fm.opponent] });
     sc.push({ text: `${fm.player} vs ${fm.opponent}. First to build a sustainable fire stays in the game. The loser is eliminated on the spot.`, players: [fm.player, fm.opponent] });
     // Suspense
     if (_fmPEdge) {
       sc.push({ text: `${fm.player} gets smoke first. It's thin, but it's real.`, players: [fm.player] });
-      sc.push({ text: `${fm.opponent} rushes and loses ground. The challenge is slipping away from them.`, players: [fm.opponent] });
+      sc.push({ text: `${fm.opponent} rushes and loses ground. The challenge is slipping away from ${pronouns(fm.opponent).obj}.`, players: [fm.opponent] });
     } else {
       sc.push({ text: `${fm.opponent} builds faster out of the gate. ${fm.player} is falling behind.`, players: [fm.player, fm.opponent] });
       sc.push({ text: `${fm.player} slows down and resets. Every second counts. The smoke finally comes.`, players: [fm.player] });
     }
     if (fm.winner === fm.player) {
-      sc.push({ text: `${fm.player} catches the flame first. It holds.`, players: [fm.player], badge: 'Survives', badgeClass: 'win' });
-      sc.push({ text: `${fm.opponent} loses the fire challenge and is eliminated.`, players: [fm.opponent], badge: 'Eliminated', badgeClass: 'bad' });
-      sc.push({ text: `${fm.player} walks back to camp. They fought their way off the chopping block. The game looks different from this side of it.`, players: [fm.player] });
+      sc.push({ text: `${fm.player} catches the flame first. It holds.`, players: [fm.player], badge: 'SECOND LIFE', badgeClass: 'win' });
+      sc.push({ text: `${fm.loser} loses the fire and is eliminated.`, players: [fm.loser], badge: 'Eliminated', badgeClass: 'bad' });
+      sc.push({ text: `${fm.player} walks back to camp. ${pronouns(fm.player).Sub} fought ${pronouns(fm.player).pos} way off the chopping block.`, players: [fm.player] });
     } else {
       sc.push({ text: `${fm.opponent}'s fire takes hold first.`, players: [fm.opponent], badge: 'Wins Fire', badgeClass: 'win' });
-      sc.push({ text: `${fm.player} loses the challenge and is eliminated. The original vote stands.`, players: [fm.player], badge: 'Eliminated', badgeClass: 'bad' });
-      sc.push({ text: `${fm.opponent} returns to camp. The vote was right. The fire just confirmed it.`, players: [fm.opponent] });
+      sc.push({ text: `${fm.loser} loses the challenge and is eliminated.`, players: [fm.loser], badge: 'Eliminated', badgeClass: 'bad' });
     }
-    blocks.push({ label: 'Fire Making', scenes: sc });
+    blocks.push({ label: 'Second Life', scenes: sc });
   }
 
   // ── Jury Elimination — handled by dedicated rpBuildJuryConvenes/rpBuildJuryVotes; skip here ──

@@ -4242,6 +4242,9 @@ function checkIdolPlays(tribalPlayers, votesObj, ep, voteLog = []) {
       gs.advantages.splice(_advIdx, 1);
       delete votesObj[_allyName];
       ep.idolPlays.push({ player: _holder, playedFor: _allyName, votesNegated: _allyVotes, allianceName: _sharedAlliance?.name || null });
+      // Massive bond boost — playing an idol for someone is the biggest trust move in the game
+      addBond(_holder, _allyName, 3.0);
+      addBond(_allyName, _holder, 3.0);
       ep.idolRehide = true;
     }
   }

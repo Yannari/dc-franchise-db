@@ -16004,8 +16004,7 @@ function _buildPostTwistBlocks(ep) {
     const fm = ep.fireMaking;
     const sc = [];
     const _fmPEdge = (pStats(fm.player).endurance + pStats(fm.player).physical) > (pStats(fm.opponent).endurance + pStats(fm.opponent).physical);
-    sc.push({ text: `The vote is cast. But ${fm.player} is not going home — not yet. Second Life is in play.`, players: [fm.player] });
-    sc.unshift({ text: '', players: [fm.player, fm.opponent], faceOff: true });
+    sc.push({ text: `The vote is cast. But ${fm.player} is not going home — not yet. Second Life is in play.`, players: [fm.player, fm.opponent].filter(Boolean) });
     // The pick
     if (fm.reason) sc.push({ text: fm.reason, players: [fm.player, fm.opponent] });
     sc.push({ text: `${fm.player} vs ${fm.opponent}. First to build a sustainable fire stays in the game. The loser is eliminated on the spot.`, players: [fm.player, fm.opponent] });

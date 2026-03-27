@@ -10739,7 +10739,7 @@ function getTribeAdvantageStatus(tribeName, isMerge, snapAdvantages, snapMembers
   const _shown = new Set(); // prevent duplicate lines for same holder+type
   advantagesToShow.forEach(adv => {
     if (members.includes(adv.holder)) {
-      const key = `${adv.holder}:${adv.type}`;
+      const key = `${adv.holder}:${adv.type}:${adv.foundEp||''}`;
       if (_shown.has(key)) return;
       _shown.add(key);
       const label = adv.fromBeware ? 'Hidden Immunity Idol (from Beware)'

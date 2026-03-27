@@ -2675,15 +2675,16 @@ function formAlliances(members, tribeLabel, challengeLabel) {
   const alliances = [];
   const present = new Set(members);
 
-  // Active named alliances with 2+ members present
+  // Active named alliances with 2+ members present at tribal
+  // Use full active players for membership check (immune players still coordinate with their alliance)
+  const _allAtTribal = new Set([...present, ...(gs._currentImmuneNames || []).filter(n => gs.activePlayers?.includes(n))]);
   const activeNamed = (gs.namedAlliances || []).filter(a =>
-    a.active && a.members.filter(m => present.has(m)).length >= 2
+    a.active && a.members.filter(m => _allAtTribal.has(m)).length >= 2
   );
 
   // ── Try to form majority from the largest named alliance first ──
-  // If an active named alliance has majority numbers at this tribal, it should drive the vote.
   const _alliancesBySize = activeNamed
-    .map(a => ({ alliance: a, present: a.members.filter(m => present.has(m)) }))
+    .map(a => ({ alliance: a, present: a.members.filter(m => _allAtTribal.has(m)) }))
     .filter(a => a.present.length >= 2)
     .sort((a,b) => b.present.length - a.present.length);
 

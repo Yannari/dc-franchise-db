@@ -2832,16 +2832,43 @@ function formAlliances(members, tribeLabel, challengeLabel) {
   alliances.push({ members: majority, target: _majSafeTarget, label: majLabel, type: majType, tribe: tribeLabel, challengeLabel });
 
   if (minority.length >= 2) {
-    const minAvgBond = groupBondStrength(minority);
-    if (minAvgBond > 0 || hasUB(minority)) {
-      const minLead = minority.slice().sort((a,b) => hubScore(b)-hubScore(a))[0];
-      const minTarget = pickTarget(minority, majority, challengeLabel);
-      const { label: minLabel, type: minType } = classifyGroup(minority, minLead, minTarget);
-      const _minNa = minType === 'alliance' ? activeNamed.find(a => a.name === minLabel) : null;
-      const _minSafeTarget = _resolveAllianceTarget(_minNa, minTarget, minority, majority) ?? minTarget;
-      alliances.push({ members: minority, target: _minSafeTarget, label: minLabel, type: minType, tribe: tribeLabel, challengeLabel });
+    // ── Check if minority has its own named alliance(s) to coordinate counter-vote ──
+    const _minAlliancesUsed = new Set();
+    const _minAllianceBlocs = [];
+    _alliancesBySize.forEach(({ alliance, present: aPresent }) => {
+      if (alliance === _bestAlliance?.alliance) return; // skip the majority alliance
+      const minMembers = aPresent.filter(m => minority.includes(m));
+      if (minMembers.length < 2) return;
+      if (minMembers.every(m => _minAlliancesUsed.has(m))) return; // all already in a bloc
+      minMembers.forEach(m => _minAlliancesUsed.add(m));
+      const minTarget = pickTarget(minMembers, majority, challengeLabel);
+      const _minNa = alliance;
+      const _minSafeTarget = _resolveAllianceTarget(_minNa, minTarget, minMembers, majority) ?? minTarget;
+      _minAllianceBlocs.push({ members: minMembers, target: _minSafeTarget, label: _minNa.name, type: 'alliance', tribe: tribeLabel, challengeLabel });
+    });
+    if (_minAllianceBlocs.length) {
+      _minAllianceBlocs.forEach(bloc => alliances.push(bloc));
+      // Remaining minority members not in any alliance bloc vote as a loose group or solo
+      const _unaligned = minority.filter(m => !_minAlliancesUsed.has(m));
+      if (_unaligned.length >= 2) {
+        const _uLead = _unaligned.sort((a,b) => (pStats(b).social + pStats(b).strategic) - (pStats(a).social + pStats(a).strategic))[0];
+        const _uTarget = pickTarget(_unaligned, majority, challengeLabel);
+        const { label: _uLabel, type: _uType } = classifyGroup(_unaligned, _uLead, _uTarget);
+        alliances.push({ members: _unaligned, target: _uTarget, label: _uLabel, type: _uType, tribe: tribeLabel, challengeLabel });
+      }
+    } else {
+      // No minority alliance — original behavior: bond-based or solo
+      const minAvgBond = groupBondStrength(minority);
+      if (minAvgBond > 0 || hasUB(minority)) {
+        const _minHubScore = n => { const s = pStats(n); return s.social * 0.5 + s.strategic * 0.5 + Math.random() * 0.5; };
+        const minLead = minority.slice().sort((a,b) => _minHubScore(b)-_minHubScore(a))[0];
+        const minTarget = pickTarget(minority, majority, challengeLabel);
+        const { label: minLabel, type: minType } = classifyGroup(minority, minLead, minTarget);
+        const _minNa = minType === 'alliance' ? activeNamed.find(a => a.name === minLabel) : null;
+        const _minSafeTarget = _resolveAllianceTarget(_minNa, minTarget, minority, majority) ?? minTarget;
+        alliances.push({ members: minority, target: _minSafeTarget, label: minLabel, type: minType, tribe: tribeLabel, challengeLabel });
+      }
     }
-    // No group if members have no positive bonds — they vote independently (simulateVotes will use defection logic)
   } else if (minority.length === 1) {
     alliances.push({ members: minority, target: pickTarget(minority, majority, challengeLabel), label: 'Solo', type: 'solo', tribe: tribeLabel, challengeLabel });
   }

@@ -18159,7 +18159,7 @@ function rpBuildTribal(ep) {
   html += `<div style="font-family:var(--font-display);font-size:48px;letter-spacing:2px;text-align:center;text-shadow:0 0 24px #e8873a,0 0 8px rgba(232,135,58,0.5);margin-bottom:8px">TRIBAL COUNCIL</div>`;
   html += `<div class="rp-tribe">
       <div class="rp-tribe-head" style="color:${tc};border-color:${tc}">${tribalTribeName}</div>
-      <div class="rp-portrait-row" style="justify-content:center">
+      <div class="rp-portrait-row" style="justify-content:center;${seatPlayers.length >= 8 ? 'gap:6px;' : ''}">
         ${seatPlayers.map((n, i) => {
           const isOuter = i === 0 || i === 1 || i === seatPlayers.length - 1 || i === seatPlayers.length - 2;
           const arcOffset = isOuter ? 'transform:translateY(6px)' : '';

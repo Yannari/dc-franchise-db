@@ -2882,13 +2882,15 @@ function formAlliances(members, tribeLabel, challengeLabel) {
     alliances.push({ members: minority, target: pickTarget(minority, majority, challengeLabel), label: 'Solo', type: 'solo', tribe: tribeLabel, challengeLabel });
   }
 
-  // Add named alliances not already the primary label — players can belong to multiple
+  // Add ALL remaining named alliances as their own voting blocs
+  // Every alliance with 2+ members at tribal gets a plan — they coordinated for a reason
   activeNamed.forEach(na => {
-    const naMembers = na.members.filter(m => present.has(m));
+    const naMembers = na.members.filter(m => _allAtTribal.has(m));
     if (naMembers.length < 2) return;
-    if (alliances.some(a => a.label === na.name)) return;
-    const targets = members.filter(m => !naMembers.includes(m));
-    alliances.push({ members: naMembers, target: targets.length ? pickTarget(naMembers, targets, challengeLabel) : null, label: na.name, type: 'alliance', tribe: tribeLabel, challengeLabel });
+    if (alliances.some(a => a.label === na.name)) return; // already used
+    const targets = members.filter(m => !naMembers.includes(m) && !gs._currentImmuneNames?.includes(m));
+    if (!targets.length) return;
+    alliances.push({ members: naMembers, target: pickTarget(naMembers, targets, challengeLabel), label: na.name, type: 'alliance', tribe: tribeLabel, challengeLabel });
   });
 
   return alliances;

@@ -4686,27 +4686,9 @@ function applyTwist(ep, twist, isPrimary = true) {
     twistObj.sharedImmunity = true;
 
   } else if (engineType === 'guardian-angel') {
-    // Guardian Angel: player most liked by the JURY + camp combined
-    const juryWeight = 0.6, campWeight = 0.4;
-    const scores = gs.activePlayers.map(n => {
-      const juryBonds = (gs.jury || []).reduce((s,j) => s + getBond(j, n), 0);
-      const campBonds = gs.activePlayers.filter(m=>m!==n).reduce((s,m) => s + getBond(n, m), 0);
-      const juryNorm = (gs.jury?.length || 1);
-      const campNorm = Math.max(1, gs.activePlayers.length - 1);
-      return { name: n, score: (juryBonds / juryNorm) * juryWeight + (campBonds / campNorm) * campWeight, juryBonds, campBonds };
-    });
-    scores.sort((a,b) => b.score - a.score);
-    const winner = scores[0];
-    const runnerUp = scores[1] || null;
-    twistObj.guardianAngel = winner?.name || null;
-    twistObj.gaScore = winner?.score || 0;
-    twistObj.gaRunnerUp = runnerUp?.name || null;
-    twistObj.gaRunnerUpScore = runnerUp?.score || 0;
-    twistObj.gaReason = winner ? (
-      winner.juryBonds > winner.campBonds ? `The jury remembers ${winner.name}. The bonds ${pronouns(winner.name).sub} built before being in power are now a shield.`
-      : `${winner.name} is the most connected player in the game. Camp bonds run deep — deep enough to earn protection.`
-    ) : null;
-    if (twistObj.guardianAngel) gs.guaranteedImmuneThisEp = twistObj.guardianAngel;
+    // Mark pending — resolve after challenge so immunity winner is excluded
+    twistObj.guardianAngelPending = true;
+    gs.guardianAngelPending = true;
 
   } else if (engineType === 'hero-duel') {
     // Participants determined post-challenge — mark pending
@@ -9320,6 +9302,36 @@ function simulateEpisode() {
     }
   }
 
+  // ── TWIST: guardian-angel — resolve after challenge, exclude immunity winner ──
+  const gaTw = ep.twists?.find(t => t.type === 'guardian-angel');
+  if (gaTw && gs.guardianAngelPending) {
+    gs.guardianAngelPending = false;
+    const juryWeight = 0.6, campWeight = 0.4;
+    const candidates = gs.activePlayers.filter(p => p !== ep.immunityWinner);
+    const scores = candidates.map(n => {
+      const juryBonds = (gs.jury || []).reduce((s,j) => s + getBond(j, n), 0);
+      const campBonds = gs.activePlayers.filter(m=>m!==n).reduce((s,m) => s + getBond(n, m), 0);
+      const juryNorm = (gs.jury?.length || 1);
+      const campNorm = Math.max(1, gs.activePlayers.length - 1);
+      return { name: n, score: (juryBonds / juryNorm) * juryWeight + (campBonds / campNorm) * campWeight, juryBonds, campBonds };
+    });
+    scores.sort((a,b) => b.score - a.score);
+    const gaWinner = scores[0];
+    const gaRunnerUp = scores[1] || null;
+    gaTw.guardianAngel = gaWinner?.name || null;
+    gaTw.gaScore = gaWinner?.score || 0;
+    gaTw.gaRunnerUp = gaRunnerUp?.name || null;
+    gaTw.gaRunnerUpScore = gaRunnerUp?.score || 0;
+    gaTw.gaReason = gaWinner ? (
+      gaWinner.juryBonds > gaWinner.campBonds ? `The jury remembers ${gaWinner.name}. The bonds ${pronouns(gaWinner.name).sub} built before being in power are now a shield.`
+      : `${gaWinner.name} is the most connected player in the game. Camp bonds run deep — deep enough to earn protection.`
+    ) : null;
+    if (gaTw.guardianAngel) {
+      ep.extraImmune = ep.extraImmune || [];
+      ep.extraImmune.push(gaTw.guardianAngel);
+    }
+  }
+
   // ── CHALLENGE RECORD UPDATE: track wins/podiums/bombs, inject chalThreat events ──
   updateChalRecord(ep);
 
@@ -10824,13 +10836,9 @@ function generateTwistScenes(ep) {
         result.push({ label:'Double Safety', type:tw.type, scenes:sc }); break;
 
       case 'guardian-angel': {
-        sc.push({ text: 'One player has earned automatic immunity — not through winning a challenge, but through the strength of their relationships.', players: [] });
-        if (tw.guardianAngel) {
-          sc.push({ text: `${tw.guardianAngel} is the most liked player in the game right now.`, players: [tw.guardianAngel], badge: 'GUARDIAN ANGEL', badgeClass: 'win' });
-          if (tw.gaReason) sc.push({ text: tw.gaReason, players: [tw.guardianAngel] });
-          sc.push({ text: `${tw.guardianAngel} is safe tonight. The bonds built at camp — and on the jury — have become a shield.`, players: [tw.guardianAngel], badge: 'Immune', badgeClass: 'win' });
-          if (tw.gaRunnerUp) sc.push({ text: `${tw.gaRunnerUp} was the closest to earning the Guardian Angel. So close — but not enough.`, players: [tw.gaRunnerUp] });
-        }
+        // Pre-challenge: announcement only
+        sc.push({ text: 'After the challenge, one player will earn automatic immunity — not through winning, but through the strength of their relationships.', players: [] });
+        sc.push({ text: 'The jury and the camp have been watching. The most connected player earns a Guardian Angel.', players: [] });
         result.push({ label:'Guardian Angel', type:tw.type, scenes:sc }); break;
       }
 
@@ -17385,10 +17393,12 @@ function rpBuildVotingPlans(ep) {
     html += `<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px">`;
     _allImmuneVP.forEach(name => {
       const _heroDuelTw = (ep.twists||[]).find(t => t.type === 'hero-duel' && t.duelWinner === name);
+      const _gaTw2 = (ep.twists||[]).find(t => t.type === 'guardian-angel' && t.guardianAngel === name);
       const label = name === immunity ? `${name} \u2014 immune tonight`
                   : name === ep.sharedImmunity ? `${name} \u2014 shared immunity`
                   : name === ep.secondImmune ? `${name} \u2014 safe (runner-up)`
                   : _heroDuelTw ? `${name} \u2014 safe (hero duel winner)`
+                  : _gaTw2 ? `${name} \u2014 safe (guardian angel)`
                   : `${name} \u2014 safe`;
       html += `<div class="rp-vp-immunity-row">
         ${rpPortrait(name, 'immune', 'Safe')}
@@ -22665,6 +22675,19 @@ function buildVPScreens(epRecord) {
     _hdHtml += _renderTwistScene({ text: `${_hd.duelLoser} loses. ${pronouns(_hd.duelLoser).Sub} ${pronouns(_hd.duelLoser).sub==='they'?'are':'is'} vulnerable tonight.`, players: [_hd.duelLoser], badge: 'VULNERABLE', badgeClass: 'bad' });
     _hdHtml += `</div>`;
     vpScreens.push({ id: 'hero-duel', label: 'Hero Duel', html: _hdHtml });
+  }
+
+  // ── 5g. Guardian Angel result (post-challenge) ──
+  const _gaTwVP = (ep.twists || []).find(t => t.type === 'guardian-angel' && t.guardianAngel);
+  if (_gaTwVP) {
+    let _gaHtml = `<div class="rp-page rp-twist-page tod-golden"><div class="rp-eyebrow">Episode ${ep.num}</div>`;
+    _gaHtml += `<div class="rp-twist-title">Guardian Angel</div>`;
+    _gaHtml += _renderTwistScene({ text: `${_gaTwVP.guardianAngel} is the most liked player in the game right now.`, players: [_gaTwVP.guardianAngel], badge: 'GUARDIAN ANGEL', badgeClass: 'win' });
+    if (_gaTwVP.gaReason) _gaHtml += _renderTwistScene({ text: _gaTwVP.gaReason, players: [_gaTwVP.guardianAngel] });
+    _gaHtml += _renderTwistScene({ text: `${_gaTwVP.guardianAngel} is safe tonight.`, players: [_gaTwVP.guardianAngel], badge: 'Immune', badgeClass: 'win' });
+    if (_gaTwVP.gaRunnerUp) _gaHtml += _renderTwistScene({ text: `${_gaTwVP.gaRunnerUp} was the closest to earning the Guardian Angel. So close — but not enough.`, players: [_gaTwVP.gaRunnerUp] });
+    _gaHtml += `</div>`;
+    vpScreens.push({ id: 'guardian-angel', label: 'Guardian Angel', html: _gaHtml });
   }
 
   // ── 6. Post-Challenge Camp — one screen per tribe with post events ──

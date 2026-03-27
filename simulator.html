@@ -17615,6 +17615,28 @@ function rpBuildVotingPlans(ep) {
         ph += `</div>`;
       }
 
+      // Alliance alignment: show which OTHER alliances have members voting with this plan
+      const _planVoterNames = g.voters.map(v => v.voter);
+      const _alignedAlliances = (ep.gsSnapshot?.namedAlliances || gs.namedAlliances || [])
+        .filter(a => a.active !== false && a.name !== (matched?.label || ''))
+        .filter(a => {
+          const membersInPlan = a.members.filter(m => _planVoterNames.includes(m));
+          const membersPresent = a.members.filter(m => _allImmuneVP.includes(m) || _planVoterNames.includes(m) || votingLog.some(l => l.voter === m));
+          return membersInPlan.length >= 2 || (membersInPlan.length >= 1 && membersPresent.length <= 2);
+        });
+      if (_alignedAlliances.length) {
+        ph += `<div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.06)">`;
+        _alignedAlliances.forEach(a => {
+          const _inPlan = a.members.filter(m => _planVoterNames.includes(m));
+          ph += `<div style="font-size:10px;color:#8b949e;display:flex;align-items:center;gap:4px;margin-bottom:2px">
+            <span style="color:var(--accent-gold);font-weight:700">\u2605</span>
+            <span>${a.name} backs this plan</span>
+            <span style="color:#484f58">(${_inPlan.join(', ')})</span>
+          </div>`;
+        });
+        ph += `</div>`;
+      }
+
       ph += `</div>`;
       return ph;
     });

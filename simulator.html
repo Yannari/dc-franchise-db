@@ -2687,20 +2687,39 @@ function formAlliances(members, tribeLabel, challengeLabel) {
     .filter(a => a.present.length >= 2)
     .sort((a,b) => b.present.length - a.present.length);
 
+  // ── Build majority: start from the largest alliance core, recruit to majority ──
   let majority, minority, hub;
+  const majSize = Math.ceil(members.length / 2);
   const _bestAlliance = _alliancesBySize[0];
-  if (_bestAlliance && _bestAlliance.present.length >= Math.ceil(members.length / 2)) {
-    // Named alliance has majority — use it directly
-    majority = [..._bestAlliance.present];
-    minority = members.filter(m => !majority.includes(m));
-    // Hub is the most strategic/social member of the alliance
-    hub = majority.sort((a,b) => {
+
+  if (_bestAlliance && _bestAlliance.present.length >= 2) {
+    // Named alliance forms the CORE — recruit non-members by affinity to reach majority
+    const core = [..._bestAlliance.present];
+    hub = core.sort((a,b) => {
       const sa = pStats(a), sb = pStats(b);
       return (sb.social + sb.strategic) - (sa.social + sa.strategic);
     })[0];
+
+    // Recruit from non-core members by bond with the hub + alliance affinity
+    const nonCore = members.filter(m => !core.includes(m));
+    const recruited = nonCore
+      .map(m => ({
+        name: m,
+        score: getBond(hub, m) * 1.5
+          + core.reduce((s, c) => s + getBond(m, c), 0) / core.length * 0.5 // avg bond with core
+          + (activeNamed.some(a => a !== _bestAlliance.alliance && a.members.includes(m) && a.members.includes(hub)) ? 3 : 0) // shared other alliance
+          + Math.random() * 0.5
+      }))
+      .sort((a,b) => b.score - a.score);
+
+    // Fill up to majority size
+    const needed = Math.max(0, majSize - core.length);
+    const recruits = recruited.slice(0, needed).filter(r => r.score > -1).map(r => r.name);
+    majority = [...core, ...recruits];
+    minority = members.filter(m => !majority.includes(m));
     majority.sort();
   } else {
-    // No alliance has majority — fall back to hub-affinity system
+    // No named alliance present — fall back to hub-affinity system
     const hubScore = n => {
       const s = pStats(n);
       const namedBonus = activeNamed.some(a => a.members.includes(n)) ? 2 : 0;
@@ -2715,12 +2734,10 @@ function formAlliances(members, tribeLabel, challengeLabel) {
       const rel = relationships.find(r => [r.a,r.b].sort().join('|') === [hub,other].sort().join('|'));
       const ubBonus = rel?.type === 'unbreakable' ? 5 : 0;
       const rivalPenalty = (rel?.type === 'rival' || rel?.type === 'enemy') ? -4 : 0;
-      const allianceBonus = activeNamed.some(a => a.members.includes(hub) && a.members.includes(other)) ? 4 : 0;
-      return bond + compat*2 + ubBonus + rivalPenalty + allianceBonus + (Math.random()-0.5)*0.4;
+      return bond + compat*2 + ubBonus + rivalPenalty + (Math.random()-0.5)*0.4;
     };
 
     const others = members.filter(m => m!==hub).sort((a,b) => affinityFor(b)-affinityFor(a));
-    const majSize = Math.ceil(members.length/2);
     majority = [hub, ...others.slice(0, majSize-1)];
     minority = members.filter(m => !majority.includes(m));
     majority.sort();

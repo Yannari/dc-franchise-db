@@ -2890,12 +2890,19 @@ function formAlliances(members, tribeLabel, challengeLabel) {
 }
 
 function pickTarget(attackers, victims, challengeLabel) {
-  if (!victims.length) return null;
+  // Filter out immune players — can't target someone with immunity
+  const _immune = new Set([
+    ...(gs._currentImmuneNames || []),
+    ...(gs.guaranteedImmuneThisEp ? [gs.guaranteedImmuneThisEp] : []),
+  ]);
+  const _filteredVictims = victims.filter(v => !_immune.has(v));
+  const _victims = _filteredVictims.length ? _filteredVictims : victims; // fallback if all immune
+  if (!_victims.length) return null;
   const phase = gs?.phase || 'pre-merge';
   // Hub personality: the lead attacker's stats influence what kind of target they prioritize
   const _hub = attackers[0];
   const _hubS = _hub ? pStats(_hub) : null;
-  return wRandom(victims, v => {
+  return wRandom(_victims, v => {
     const avgBond = attackers.reduce((sum,a) => sum+getBond(a,v), 0) / attackers.length;
     if (phase === 'pre-merge') {
       const s = pStats(v);
@@ -9647,6 +9654,8 @@ function simulateEpisode() {
   // ── ALLIANCES ──
   const tribeLabel = ep.challengeType === 'tribe' ? ep.loser.name : null;
   gs._pendingDepartures = [];
+  // Track immune players so pickTarget/formAlliances won't target them
+  gs._currentImmuneNames = [ep.immunityWinner, ...(ep.extraImmune || [])].filter(Boolean);
   // Expose lost-vote players to formAlliances so fallbackLabel uses voter count for size labels
   gs.lostVoteThisEp = [...(gs.lostVotes || [])];
   let alliances  = formAlliances(ep.tribalPlayers, tribeLabel, ep.challengeCategory);
@@ -10194,6 +10203,7 @@ function simulateEpisode() {
       // Surprise double boot: run a second tribal vote
       const remaining = ep.tribalPlayers.filter(p => p !== r1.eliminated);
       ep.immunityWinner2 = null; // no separate immunity challenge for vote 2
+      gs._currentImmuneNames = [ep.immunityWinner, ...(ep.extraImmune || [])].filter(Boolean);
       const alliances2 = formAlliances(remaining, tribeLabel);
       ep.alliances2 = alliances2;
       ep.tiebreakerResult1 = ep.tiebreakerResult || null; // capture vote-1 tiebreaker before vote-2 may overwrite

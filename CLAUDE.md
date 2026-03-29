@@ -101,12 +101,47 @@ Finale-specific ep fields:
 - Alliance acceptance is relationship-driven (bond with recruiter + group avg bond), not stat-driven
 - Advantages force-play at top 5 (`activePlayers.length <= 5`)
 
+## Redemption Island / Rescue Island
+Two return systems (mutually exclusive, configured via `cfg.riFormat`):
+- **Redemption Island** (`'redemption'`): 1v1 duels on arrival. Loser goes home. Winner stays.
+  `RI_DUEL_CHALLENGES` — 6 challenge types. `simulateRIDuel()`, `simulateRIChoice()`, `simulateRIReentry()`
+- **Rescue Island** (`'rescue'`): ALL eliminees go. Full social game. Big return challenge.
+  `generateRescueIslandLife()` — processing/social/survival/quit events per episode
+- `isRIStillActive()` — checks if RI is still accepting players (returns used < return points)
+- `cfg.riReturnPoints` (1 or 2), `cfg.riReentryAt` (active count to trigger return)
+- RI re-entry fires FIRST in episode (before twists/challenge/camp) so returnee participates
+- EVERY elimination path checks `isRIStillActive()` before sending to RI vs permanent elimination
+- VP: `rpBuildRILife()`, `rpBuildRIDuel()`, `rpBuildRIReturn()`, `rpBuildRescueIslandLife()`, `rpBuildRescueReturnChallenge()`
+- RI Return screen shows after Cold Open (before everything else)
+- New alliance grace period: alliances formed this episode get +0.20 loyalty boost, grudge mechanic suppressed
+
+## Open Vote System
+- `ep.openVote = true` — votes cast sequentially in order chosen by immunity winner
+- `ep.openVoteOrder` — voter sequence, personality-driven (enemies first, allies last, self last)
+- Cascade mechanic: later voters see running tally, may switch under pressure
+- Per-vote consequences: friend betrayal (-2.0 bond face-to-face), enemy solidarity (+0.3)
+- First voter: intimidation flag, target emotional hit, leadership credit if target eliminated
+- Last voter: cowardice tag (pile-on) or defiance respect (against majority)
+- `ep.cascadeSwitches` tracks who changed vote under pressure (alliance betrayal)
+- VP: "OPEN VOTE" banner, "SETS THE TONE"/"FINAL WORD" badges, micro-reactions per vote
+
+## Cultural Reset Twist
+- Exposes all alliances publicly, tests each: survive (bond >= 3) / crack / dissolve (bond < 1)
+- Double-dippers exposed: conflicting (-2.5 bond) vs overlapping (-1.0 bond)
+- Per-player personality reaction (ONE per player, priority order):
+  explodes > owns-it > devastated > pivots > vindicated > withdrawn > composed
+- Camp events with typed badges (culturalResetExposure, culturalResetSurvived, etc.)
+
 ## Settings
 Key config fields in `seasonConfig`:
 - `finaleSize` (2/3/4) — how many enter finale
 - `finaleFormat` (traditional/fire-making/jury-cut/fan-vote/final-challenge)
 - `finaleAssistants` (boolean) — enable assistant selection for final challenge
 - `popularityEnabled` — fan popularity system
+- `ri` (boolean) — enable 2nd Chance Isle
+- `riFormat` ('redemption'|'rescue') — duel format vs edge of extinction
+- `riReentryAt` — active player count that triggers return
+- `riReturnPoints` (1|2) — how many returns per season
 
 ## Scope Gotchas
 - `ep` is NOT available in: `generateCampEventsForGroup`, `simulateIndividualChallenge`,
@@ -159,9 +194,13 @@ Key config fields in `seasonConfig`:
   duelDesc, fromAmulet, allyPlayer }` — used by both twist and amulet paths
 
 ## VP Screen Order
-Normal episode: Cold Open → Camp (pre) → Challenge → Twists (exile/kidnapping/etc) →
-  Camp (post) → Voting Plans → Tribal → Votes → (Post-Vote Twist) → Camp Overview → Aftermath
-No-tribal episode: same up to Camp (post) → No Tribal Council screen → Camp Overview → Aftermath
+Normal episode: Cold Open → (RI Return) → (Merge) → Camp (pre) → Challenge → Twists →
+  Camp (post) → Voting Plans → Tribal → Votes → (Post-Vote Twist) → (RI Life) → (RI Duel) →
+  Camp Overview → Aftermath
+No-tribal episode: same up to Camp (post) → No Tribal Council → (RI screens) → Camp Overview → Aftermath
+Slasher Night: Cold Open → (RI Return) → Camp (pre) → Announcement → Rounds → Showdown →
+  Immunity → Elimination → Leaderboard → (RI screens) → Camp Overview → Aftermath
+Open Vote: same as normal but Votes screen has sequential reveal with cascade badges
 Finale: has its own 10-screen sequence (see VP Finale screens above)
 
 ## Collaboration Style
@@ -175,6 +214,7 @@ Finale: has its own 10-screen sequence (see VP Finale screens above)
 
 ## Backlog Files
 - `DATA_SEASON/ideas_probabilistic_moments.txt` — feature ideas with priority order
+- `DATA_SEASON/ideas.txt` — larger feature designs (survival mechanics, popularity system)
 - `DATA_SEASON/viewer_improvements.txt` — VP viewer gap list
-- `docs/superpowers/specs/2026-03-25-finale-vp-overhaul-design.md` — finale VP overhaul spec
-- `docs/superpowers/plans/2026-03-25-finale-engine-mechanics.md` — finale engine plan (sub-plan 1/6)
+- `docs/superpowers/specs/` — approved design specs (slasher night, cultural reset, open vote, RI, rescue island)
+- `docs/superpowers/plans/` — implementation plans

@@ -514,16 +514,240 @@ Implementation: can be built incrementally — honeymoon events first, then targ
   then the test/resolution mechanics.
 
 
+── TWISTS / EVENTS ───────────────────────────────────────────────────────────
+
+[23] LOVED ONES VISIT OVERHAUL
+Trigger: loved-ones twist scheduled (already exists, post-merge only).
+Current state: generic announcement + random bond shifts + one emotional standout. No per-player
+  moments, no loved one identities, no individual scenes. Feels hollow.
+What it should be: one of the most emotional and strategically consequential events of the season.
+
+Per-player content:
+  - Each player gets a NAMED loved one: generated relationship type (mom, partner, sister,
+    best friend, dad, fiancée) based on archetype/personality. Stored on gs or ep so it's
+    consistent if referenced later (jury speech, confessional, etc.)
+  - Individual reaction based on personality:
+    - High loyalty + low boldness: breaks down immediately. Raw, visible, camp-defining.
+    - High boldness + low loyalty: holds it together. Controlled. Others notice the restraint.
+    - High social: uses the moment to bond with everyone — comforts others while processing.
+    - Schemer/mastermind: genuinely affected but already calculating. "This is a vulnerability
+      I need to manage."
+    - High temperament: quiet gratitude. Not dramatic but the tribe feels the sincerity.
+  - Each player gets 1-2 lines of scene text showing THEIR moment with their loved one.
+
+Bond consequences (not random — driven by what happens):
+  - Players who share vulnerable moments bond (+1.0 to +1.5)
+  - Players who comfort others bond (+0.5)
+  - Players who stay guarded while others cry: tribe notices — slight suspicion (-0.3)
+  - Showmance pairs get a specific scene (loved one meets the partner)
+  - Rivals who see each other's humanity: possible thaw (+0.5 if bond was -2 to -4)
+
+Strategic angle:
+  - Schemer archetype: ~25% chance they use the emotional chaos to make a side deal.
+    Camp event: "While everyone was wiping their eyes, {schemer} pulled {target} aside."
+  - Players who were on the bottom get a sympathy boost — the tribe sees them as human.
+  - Players who were in power get a reality check — loved one says something that makes
+    them reconsider their game.
+
+VP screen:
+  - Dedicated "Loved Ones Visit" screen (replaces the current generic twist scene)
+  - Each player gets a card: portrait, loved one name + relationship, reaction text
+  - Most emotional moment highlighted with a gold "BREAKING POINT" badge
+  - Strategic scheming moment (if fires) gets amber "WHILE THEY WEREN'T LOOKING" badge
+  - Group photo moment at the end — all players + loved ones together
+
+Jury impact:
+  - If a player who had a big emotional moment gets voted out this episode, their
+    jury speech at FTC can reference it: "You voted me out the night my mom was there."
+  - Loved one names stored so FTC Q&A can reference them for emotional weight.
+
+Priority: MEDIUM-HIGH — the twist already exists and fires, it's just empty. This fills it
+  with the emotional content that defines great Survivor seasons. Touches: applyTwist (loved-ones
+  handler), generateTwistScenes, camp events, VP screen builder. No new state keys needed
+  beyond storing loved one names per player.
+
+
+── ARCHETYPES ────────────────────────────────────────────────────────────────
+
+[24] VILLAIN ARCHETYPE
+A villain is NOT a schemer. A schemer manipulates quietly — deception, hidden moves, plausible
+  deniability. A villain operates in the OPEN — confrontation, intimidation, deliberate cruelty.
+  They WANT people to fear them. They announce their power plays. They celebrate when enemies fall.
+
+The distinction matters because the engine currently has no way to express open aggression as
+  a strategy. High boldness + low loyalty + low temperament creates a hothead (reactive anger),
+  not a villain (calculated dominance). A villain is COLD and LOUD — they're not losing control,
+  they're asserting it.
+
+Behavioral hooks needed:
+  Camp events:
+  - Taunting a target before tribal: "You know it's you tonight, right?"
+  - Celebrating an enemy's elimination: laughing, gloating, rubbing it in
+  - Intimidation walk: physically positioning themselves at camp to make others uncomfortable
+  - Power declaration: "I'm running this game and everyone knows it"
+  - Deliberate provocation: provoking a reaction from someone to make THEM look bad
+
+  Vote targeting:
+  - Targeted MORE by the tribe (people want villains gone — +1.5 heat baseline)
+  - BUT also FEARED — low-boldness players avoid voting for them (-2.0 for boldness <= 3)
+  - Creates a paradox: everyone wants them out but nobody wants to be the one to do it
+  - Villains draw votes but also repel weak voters — the math is interesting
+
+  Social dynamics:
+  - Bond formation is one-directional: the villain bonds with useful people (tools)
+    but doesn't form genuine connections. Others bond with the villain out of fear, not love.
+  - Loyalty is performative — the villain protects allies as long as they're useful,
+    then discards them without remorse (no bond cost to the villain, massive cost to the ally)
+  - Tribe polarization: the villain splits the camp into "with me" and "against me"
+    factions. There's no neutral ground near a villain.
+
+  FTC:
+  - Jury is split: some respect the dominance ("they played the hardest game"),
+    others punish the cruelty ("they don't deserve it after what they did to us")
+  - A villain at FTC is the most polarizing possible finalist
+  - The bitter jury mechanic fires harder against villains
+
+  Slasher Night:
+  - Villains THRIVE — intimidation is their element
+  - Higher positive event rates (stand & fight, intimidation, scare teammate)
+  - Lower negative event rates (they don't panic, they cause panic)
+  - Final showdown: villain almost always uses the "shield push" method
+
+  Balance — villains can't be ALL bad:
+  UPSIDE:
+  - Loyalty to their chosen few: villains protect their inner circle FIERCELY. They're the
+    best ally you can have — as long as you're useful. Bond with their #1 ally is ironclad.
+  - Entertainment value: popularity system LOVES villains. Drama = screen time = fan attention.
+    Villains get +3 drama per episode just for existing. Fan favorite is possible.
+  - Honesty in a game of liars: the villain doesn't pretend. Everyone knows where they
+    stand. Some jurors RESPECT that transparency over a schemer's deception.
+  - Clutch performer: when backed into a corner, villains perform at their best.
+    Challenge bonus when they have 2+ votes against them (adrenaline).
+  DOWNSIDE:
+  - The target on their back never goes away. Heat is permanent, not episodic.
+  - They struggle to build numbers — intimidation works short-term but alliances built
+    on fear crumble when the villain loses immunity.
+  - Jury is a coin flip — they either win 7-2 or lose 1-8. No middle ground.
+  - Emotional isolation: even the villain feels it. Late-game camp event: "For the
+    first time, {name} sits alone. Not by choice. The game finally costs something real."
+
+  Suggested stats profile: { strategic: 8, boldness: 9, loyalty: 2, temperament: 4,
+    social: 6, physical: 7, intuition: 7, mental: 6, endurance: 5 }
+  Key: high strategic + high boldness + low loyalty. Different from schemer (high strategic
+    + low boldness + high intuition) — the villain doesn't hide, the schemer does.
+
+Priority: MEDIUM — significant feature touching camp events, vote targeting, social dynamics,
+  FTC, and slasher night. Not blocking anything but would add the most underrepresented
+  archetype in the game. Every great Survivor season has a villain.
+
+
+[25] HERO ARCHETYPE
+The counterpart to the villain. A hero isn't just a loyal soldier — a loyal soldier follows.
+  A hero LEADS. They stand up for the weak, confront the villain, take risks to protect others,
+  and play with a moral code that sometimes costs them the game.
+
+The distinction from loyal-soldier: a soldier follows orders (high loyalty, low boldness).
+  A hero writes their own orders (high loyalty AND high boldness). They're the person who
+  says "this isn't right" at tribal and means it. They're the player who plays their idol
+  for someone else, who volunteers for the hard position, who takes the hit so an ally doesn't.
+
+Behavioral hooks needed:
+  Camp events:
+  - Standing up for someone being bullied/targeted: "Leave them alone."
+  - Confronting the villain directly: "{hero} walks up to {villain} and says what nobody
+    else will. The camp holds its breath."
+  - Sacrifice moment: giving up a reward, sharing food, volunteering for the worst job
+  - Rallying the underdogs: pulling the bottom players together for a common cause
+  - Moral stand: refusing to participate in a blindside they see as unjust (costs them
+    strategically but earns them social capital and jury respect)
+
+  Vote targeting:
+  - Protected by the tribe: hero gets -1.0 heat (people don't want to vote for the hero)
+  - BUT strategists see them as a jury threat (+2.0 heat from strategic 7+ players)
+  - Creates the classic "we have to vote out the hero before FTC" dynamic
+  - Heroes draw fewer votes early but become prime targets late game
+
+  Social dynamics:
+  - Genuine bond formation: the hero forms REAL bonds, not strategic ones
+  - Bonds with the hero are asymmetric — THEY give +1.5 but receive +1.0
+    (people appreciate the hero but also take them for granted)
+  - Heroes protect showmance partners, alliance members, and underdogs at personal cost
+  - The hero-villain dynamic: if both exist in the same season, automatic rivalry
+    (-3.0 bond minimum). Creates the central narrative arc.
+
+  Idol plays:
+  - Heroes are MORE likely to play idol for an ally (ally-play chance doubled)
+  - Heroes are MORE likely to play Second Life Amulet for an ally
+  - The sacrifice play defines their game
+
+  FTC:
+  - Jury loves them: +2.0 base jury vote modifier
+  - The hero's FTC speech is about values, not strategy — and it usually works
+  - If the hero is sitting next to the villain: the most dramatic FTC possible
+  - If the hero played their idol for someone else: that moment gets referenced
+    in every jury speech
+
+  Slasher Night:
+  - Heroes protect others at personal cost (more "protect someone" events)
+  - Heroic sacrifice in the final showdown fires much more often
+  - Lower personal score but massive bond gains
+  - The hero might get caught because they were protecting someone else — dramatic exit
+
+  Balance — heroes can't be ALL good:
+  UPSIDE:
+  - Jury magnet: heroes almost always win if they reach FTC. The social capital is massive.
+  - Shield effect: people genuinely don't want to vote the hero out. The tribe protects them
+    longer than they should — which is a strategic advantage even if unintentional.
+  - Bond accumulation: heroes build the deepest bonds in the game. When they need a favor,
+    people deliver. Idol plays for them, information shared, saved from the bottom.
+  - Narrative armor: the hero's story is compelling. Popularity system rewards them.
+  DOWNSIDE:
+  - Strategic blindspot: heroes play with a moral code that COSTS them. They refuse blindsides
+    they see as unjust — even when the blindside would save their game. Principles > survival.
+  - Predictable: everyone knows the hero won't betray them, which means the hero can't
+    make the dirty moves that sometimes win the game. They're the easiest player to read.
+  - Target at F7-F5: the tribe KNOWS the hero wins FTC. The "vote out the hero" conversation
+    starts early and the hero has no counter — they can't threaten or intimidate.
+  - Naive trust: heroes get burned by schemers and villains because they see the good in people.
+    Bond perception is inflated — they think alliances are stronger than they are.
+    The idol give-and-betray mechanic fires MORE against heroes (they trust too easily).
+  - Emotional weight: carrying the tribe's moral compass is exhausting. Late-game camp event:
+    "Everyone comes to {name} with their problems. Nobody asks how {name} is doing."
+
+  Suggested stats profile: { strategic: 5, boldness: 8, loyalty: 9, temperament: 7,
+    social: 7, physical: 6, intuition: 6, mental: 5, endurance: 7 }
+  Key: high loyalty + high boldness + high temperament. They're brave AND principled.
+  Different from loyal-soldier (high loyalty + low boldness) — the hero acts on their
+  convictions instead of just following the plan.
+
+  Hero-Villain dynamic:
+  If both archetypes exist in the same season, the engine should:
+  - Auto-detect and flag the rivalry from episode 1
+  - Generate confrontation events every 2-3 episodes
+  - Track the rivalry as a named storyline in Camp Overview
+  - The resolution (one votes out the other) gets extra dramatic treatment
+  - If BOTH reach FTC: the season-defining moment. The jury decides which game they respect.
+
+Priority: MEDIUM — same scope as villain. Both should be built together since they're
+  designed to interact. The hero-villain dynamic is the single best narrative engine
+  a season can have. Build both in the same implementation pass.
+
+
 ── NOTES ──────────────────────────────────────────────────────────────────────
 - All of these should use the same probabilistic pattern as idol confessions:
   roll fires or it doesn't, no guaranteed outcome, consequences cascade naturally.
-- Priority order: [18 DONE], 22, 1, 10, 20, 12, 21, B, 8, [3 DONE], 6, 14, 5, 13, 4, 11, 15, 17
+- Priority order: [18 DONE], 22, 1, 23, 24+25, 10, 20, 12, 21, B, 8, [3 DONE], 6, 14, 5, 13, 4, 11, 15, 17
   16 (cumulative challenge performance) — DONE.
   18 (comfort blindspot) — DONE.
   22 (showmance lifecycle) — NEXT UP. Infrastructure exists (gs.showmances, bond system).
     Expands one-time detection into multi-episode arc with phases, camp events, vote influence,
     targeting, and dramatic breakup/ride-or-die resolution. HIGH priority — biggest narrative ROI.
   1 (paranoia spiral) — Paranoid + strategic >= 7 player wrongly suspects a loyal ally.
+  23 (loved ones visit overhaul) — per-player moments, named loved ones, emotional reactions,
+    strategic scheming, bond consequences, dedicated VP screen. The twist exists but is empty.
+  24+25 (villain + hero archetypes) — build together. Villain: open aggression, intimidation,
+    deliberate cruelty. Hero: principled leadership, sacrifice, moral stands. The hero-villain
+    dynamic is the best narrative engine a season can have. MEDIUM priority.
   10 (goat mutiny) — two goats realize they're being dragged, form surprise alliance.
   20 (super idol) — plays after votes, needs tradeoff decision (recommend A+B: public + expires).
   12 (idol inheritance) — voted-out idol holder passes it to closest ally.

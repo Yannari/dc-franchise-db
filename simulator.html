@@ -859,8 +859,9 @@
         <select id="preset-list" class="form-select" style="margin-top:4px;font-size:11px" onchange="loadPreset(this.value)">
           <option value="">— Load saved preset —</option>
         </select>
-        <div id="preset-delete-row" style="display:none;margin-top:2px">
-          <button class="btn btn-danger btn-sm" onclick="deletePreset()" style="font-size:10px;padding:2px 8px">Delete selected preset</button>
+        <div id="preset-delete-row" style="display:none;margin-top:2px;display:flex;gap:4px">
+          <button class="btn btn-secondary btn-sm" onclick="loadPreset(document.getElementById('preset-list').value)" style="font-size:10px;padding:2px 8px;flex:1">Load</button>
+          <button class="btn btn-danger btn-sm" onclick="deletePreset()" style="font-size:10px;padding:2px 8px">Delete</button>
         </div>
       </aside>
       <main class="cast-panel">
@@ -1319,7 +1320,8 @@
         <select id="season-save-list" class="form-select" style="font-size:10px;margin-top:2px" onchange="loadSeasonFromStorage(this.value)">
           <option value="">— Load saved season —</option>
         </select>
-        <div id="season-delete-row" style="display:none;margin-top:2px">
+        <div id="season-delete-row" style="display:none;margin-top:2px;display:flex;gap:4px">
+          <button class="btn btn-secondary btn-sm" onclick="loadSeasonFromStorage(document.getElementById('season-save-list').value)" style="font-size:10px;padding:2px 8px;flex:1">Load</button>
           <button class="btn btn-danger btn-sm" onclick="deleteSeasonSave()" style="font-size:10px;padding:2px 8px">Delete</button>
         </div>
       </aside>
@@ -2062,10 +2064,9 @@ function renderPresetList() {
   const presets = _getPresets();
   sel.innerHTML = '<option value="">— Load saved preset —</option>' +
     presets.map(p => `<option value="${p.name}">${p.name} (${p.date || '?'})</option>`).join('');
-  // Show delete button when a preset is selected
+  // Show load/delete buttons when a preset is selected — don't auto-load
   sel.onchange = function() {
     document.getElementById('preset-delete-row').style.display = this.value ? 'block' : 'none';
-    if (this.value) loadPreset(this.value);
   };
 }
 
@@ -2196,8 +2197,8 @@ function renderSeasonSaveList() {
   sel.innerHTML = '<option value="">— Load saved season —</option>' +
     saves.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
   sel.onchange = function() {
+    // Just show load/delete buttons — don't auto-load
     document.getElementById('season-delete-row').style.display = this.value ? 'block' : 'none';
-    if (this.value) loadSeasonFromStorage(this.value);
   };
 }
 

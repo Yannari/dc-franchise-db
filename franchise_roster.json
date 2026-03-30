@@ -23,7 +23,7 @@
       "name": "Amy",
       "slug": "amy",
       "gender": "f",
-      "archetype": "hothead",
+      "archetype": "villain",
       "stats": {
         "physical": 4,
         "endurance": 6,
@@ -160,7 +160,7 @@
       "name": "Brick",
       "slug": "brick",
       "gender": "m",
-      "archetype": "challenge-beast",
+      "archetype": "hero",
       "stats": {
         "physical": 8,
         "endurance": 10,
@@ -484,7 +484,7 @@
       "name": "DJ",
       "slug": "dj",
       "gender": "m",
-      "archetype": "perceptive-player",
+      "archetype": "hero",
       "stats": {
         "physical": 8,
         "endurance": 4,
@@ -723,7 +723,7 @@
       "name": "Heather",
       "slug": "heather",
       "gender": "f",
-      "archetype": "schemer",
+      "archetype": "villain",
       "stats": {
         "physical": 6,
         "endurance": 6,
@@ -843,7 +843,7 @@
       "name": "Jo",
       "slug": "jo",
       "gender": "f",
-      "archetype": "hothead",
+      "archetype": "villain",
       "stats": {
         "physical": 10,
         "endurance": 10,
@@ -1306,7 +1306,7 @@
       "slug": "raj",
       "gender": "m",
       "sexuality": "gay",
-      "archetype": "challenge-beast",
+      "archetype": "loyal-soldier",
       "stats": {
         "physical": 8,
         "endurance": 8,
@@ -1425,7 +1425,7 @@
       "name": "Samey",
       "slug": "samey",
       "gender": "f",
-      "archetype": "loyal-soldier",
+      "archetype": "hero",
       "stats": {
         "physical": 4,
         "endurance": 6,
@@ -1443,7 +1443,7 @@
       "slug": "sanders",
       "gender": "f",
       "sexuality": "lesbian",
-      "archetype": "challenge-beast",
+      "archetype": "hero",
       "stats": {
         "physical": 8,
         "endurance": 10,
@@ -1494,7 +1494,7 @@
       "name": "Scott",
       "slug": "scott",
       "gender": "m",
-      "archetype": "schemer",
+      "archetype": "villain",
       "stats": {
         "physical": 6,
         "endurance": 8,
@@ -1511,7 +1511,7 @@
       "name": "Shawn",
       "slug": "shawn",
       "gender": "m",
-      "archetype": "challenge-beast",
+      "archetype": "hero",
       "stats": {
         "physical": 8,
         "endurance": 10,
@@ -1613,7 +1613,7 @@
       "name": "Sugar",
       "slug": "sugar",
       "gender": "f",
-      "archetype": "hothead",
+      "archetype": "villain",
       "stats": {
         "physical": 6,
         "endurance": 8,
@@ -1647,7 +1647,7 @@
       "name": "Taylor",
       "slug": "taylor",
       "gender": "f",
-      "archetype": "hothead",
+      "archetype": "villain",
       "stats": {
         "physical": 4,
         "endurance": 4,
@@ -1733,7 +1733,7 @@
       "name": "Wayne",
       "slug": "wayne",
       "gender": "m",
-      "archetype": "social-butterfly",
+      "archetype": "hero",
       "stats": {
         "physical": 8,
         "endurance": 8,

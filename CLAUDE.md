@@ -298,11 +298,63 @@ Key config fields in `seasonConfig`:
 - `forEach` + `splice` skips entries — use reverse for-loop when removing during iteration.
 - New Set fields: `knownLegacyHolders`, `knownAmuletHoldersThisEp`, `knownAmuletHoldersPersistent`
 
+## Stat Philosophy
+
+### Rule 1: ALWAYS Proportional
+**NEVER use `if (stat >= X)` threshold checks for gameplay effects.** Every stat effect MUST
+use `stat * factor` so that every point matters. Stat 10 > stat 9 > stat 8, always.
+- Pattern: `stat * 0.03` not `stat >= 7 ? 0.15 : 0`
+- No floors needed — `stat * factor` at stat 1 produces a near-zero effect naturally
+- Threshold checks (`>= X`) are ONLY acceptable for selecting narrative TEXT variants
+  (confessional lines, vote reason flavor), never for gameplay values
+- When adding new stat-driven mechanics, always ask: "does stat 6 behave differently from stat 7?"
+
+### Rule 2: Behavior > Stats
+**Stats set tendency, actions define reputation.** A loyalty 10 player who betrayed 3 times
+is NOT actually loyal. Always check behavioral track record alongside raw stats:
+- `loyalty` stat influences defection CHANCE, but betrayal history modifies the threshold
+- FTC jury honor bonus is based on ACTUAL betrayal count (0 betrayals = +0.6), not loyalty stat
+- Alliance bond glue is based on clean record (0 betrayals of THIS alliance), not loyalty stat
+- Betrayal cost multiplier scales with victim's actual loyalty record, not their stat
+
+### Stat Roles (all proportional):
+- **Strategic** — alliance initiation (`strategic * 0.08`), coalition cap (`2 + floor(strategic * 0.3)`),
+  cascade flip resistance (`-(strategic * 0.03)`), information control (`-(strategic * 0.007)`),
+  alliance bond floor override (`0.5 - strategic * 0.15`), confidant scoring (`strategic * 0.04 * loyalty`),
+  self-preservation (`strategic * 0.05`)
+- **Social** — tribe cohesion (`social * 0.02 + social * 0.01`), bond event boost (`social * 0.01` per player),
+  alliance recruitment charm (`social * 0.05`), social intel gathering (`social * 0.03`),
+  idol discovery through conversation (`social * 0.05`), comfort event weighting (`social * 0.4`)
+- **Intuition** — idol finding (`intuition * 0.001`), preemptive strikes (`intuition * 0.03`),
+  tip-off ally (`intuition * 0.08`), KiP targeting (`intuition * 0.4`), snooping (`intuition * 0.04`),
+  eavesdrop events (`intuition * 0.015`)
+- **Loyalty** — defection threshold base (`loyalty / 11`), grudge modifier (`(10 - loyalty) * 0.006`),
+  ally-save bias (`(loyalty - 5) * 0.06`), track record penalty (`-0.03 to -0.15` per betrayal count),
+  FTC honor (behavioral, not stat), alliance bond glue (behavioral)
+- **Boldness** — counteracts loyalty (`-(boldness - 5) * 0.3 / 11`), heat reduction (`-(boldness * 0.04)`),
+  chaos dividend (`boldness * 0.03`), advantage play (`boldness * 0.015`),
+  KiP guess (`max(boldness, intuition) * 0.03`), grudge vote (`boldness * 0.008`),
+  big moves FTC resume (`bigMoves * 0.15`, capped at 0.8)
+- **Temperament** — bond swing scaling (`1.0 + (5 - temperament) * 0.04`),
+  emotional resistance (`temperament * 0.08` resist, `(10 - temperament) * 0.05` escalate),
+  tribal disruption (`(10 - temperament) * 0.04 + boldness * 0.03`),
+  social bomb (`(10 - temperament) * 1.5 + boldness * 0.8`)
+- **Physical/Endurance/Mental** — challenge performance (already proportional in formulas),
+  threat score, Rescue Island survival events (`stat * factor`), Slasher Night mechanics
+
+### Track Record Systems:
+- `gs.playerStates[name].bigMoves` — counts idol plays, KiP steals, alliance breaks, surviving as top target
+- Betrayal count: `(gs.namedAlliances || []).reduce(...)` — total betrayals across all alliances
+- Per-alliance betrayals: `alliance.betrayals.filter(b => b.player === name)` — clean record in THIS alliance
+
 ## Bond System
 - Full range: -10 (Pure Hatred) to +10 (Unbreakable). 11 tiers in `REL_TYPES`.
 - Use proportional formulas (`bond * 0.10`) not binary thresholds (`bond >= 3`).
 - `gs.knownIdolHoldersPersistent` survives across episodes; `gs.knownIdolHoldersThisEp` resets.
 - `gs.lingeringInjuries[name]` — challenge penalty that decays over 2-3 episodes.
+- `recoverBonds(ep)` — extreme negative bonds (< -1.5) soften toward -1.0 over time if not actively fighting
+- Tribe cohesion: +0.10 to +0.30 per episode for tribemates who don't fight (social-scaled)
+- Alliance loyalty glue: +0.05 to +0.12 per episode for members with clean betrayal records
 
 ## Pronouns — NEVER hardcode
 - Always use `pronouns(name)` → `{sub, obj, pos, posAdj, ref, Sub, Obj, PosAdj}`
@@ -323,6 +375,11 @@ Key config fields in `seasonConfig`:
 - Think independently when implementing — brainstorm improvements and propose them, don't just
   copy the user's exact words. Add nuance, better reasons, edge cases they didn't think of.
 - Always propose ideas before implementing — never silently add features.
+- **Stats are ALWAYS proportional.** Never write `if (stat >= 7)` for gameplay effects.
+  Use `stat * factor` so every point matters. This is non-negotiable.
+- **Behavior is as important as stats.** When checking if a player is "loyal" or "strategic,"
+  always consider their ACTIONS (betrayal count, big moves, actual alliances) alongside the raw
+  stat number. A stat is a tendency; actions are proof.
 - Camp events MUST have gameplay consequences (bond changes, state changes, knowledge tracking).
   Text-only events waste screentime and don't affect the simulation.
 - When a mechanic creates information (leak, snoop, confession), that information must flow

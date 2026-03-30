@@ -809,6 +809,8 @@
             <option value="challenge-beast">Challenge Beast</option>
             <option value="social-butterfly">Social Butterfly</option>
             <option value="loyal-soldier">Loyal Soldier</option>
+            <option value="hero">Hero</option>
+            <option value="villain">Villain</option>
             <option value="wildcard">Wildcard</option>
             <option value="chaos-agent">Chaos Agent</option>
             <option value="floater">Floater</option>
@@ -1367,6 +1369,8 @@ const ARCHETYPES = {
   'chaos-agent':       { physical:6, endurance:5, mental:6, social:6, strategic:6, loyalty:3, boldness:8, intuition:6, temperament:3, desc:'Deliberately stirs the pot. Survives by making drama useful. Gets cut when the tribe is exhausted.' },
   'floater':           { physical:5, endurance:5, mental:6, social:6, strategic:5, loyalty:6, boldness:4, intuition:6, temperament:6, desc:'Stays off radar. Votes with the majority. Reaches F5 without anyone noticing.' },
   'underdog':          { physical:4, endurance:5, mental:5, social:6, strategic:5, loyalty:8, boldness:5, intuition:6, temperament:7, desc:'Starts weak. Crowd favorite. Jury loves a comeback story.' },
+  'hero':              { physical:6, endurance:7, mental:5, social:7, strategic:5, loyalty:9, boldness:8, intuition:6, temperament:7, desc:'Principled leader. Stands up for the weak. Plays with a moral code that sometimes costs them the game. Jury magnet.' },
+  'villain':           { physical:7, endurance:5, mental:6, social:6, strategic:8, loyalty:2, boldness:9, intuition:7, temperament:4, desc:'Open aggression. Intimidation. Celebrates when enemies fall. Feared and targeted — but fiercely loyal to their inner circle.' },
   'goat':              { physical:4, endurance:4, mental:4, social:4, strategic:3, loyalty:6, boldness:3, intuition:4, temperament:6, desc:'Non-threatening. Gets dragged to the end. Loses FTC in a landslide.' },
   'perceptive-player': { physical:5, endurance:5, mental:7, social:8, strategic:6, loyalty:7, boldness:4, intuition:9, temperament:7, desc:'Reads deception. Detects betrayal early. Gets targeted for knowing too much.' },
   'showmancer':        { physical:5, endurance:5, mental:5, social:9, strategic:5, loyalty:8, boldness:6, intuition:6, temperament:8, desc:'Builds the game around one person. Magnetic, warm, dangerously easy to underestimate. Gets to the end on love — or goes home because of it.' },
@@ -1374,7 +1378,8 @@ const ARCHETYPES = {
 const ARCHETYPE_NAMES = {
   'mastermind': 'Mastermind', 'schemer': 'Schemer', 'hothead': 'Hothead',
   'challenge-beast': 'Challenge Beast', 'social-butterfly': 'Social Butterfly',
-  'loyal-soldier': 'Loyal Soldier', 'wildcard': 'Wildcard', 'chaos-agent': 'Chaos Agent',
+  'loyal-soldier': 'Loyal Soldier', 'hero': 'Hero', 'villain': 'Villain',
+  'wildcard': 'Wildcard', 'chaos-agent': 'Chaos Agent',
   'floater': 'Floater', 'underdog': 'Underdog', 'goat': 'Goat', 'perceptive-player': 'Perceptive Player',
   'showmancer': 'Showmancer',
 };
@@ -1457,7 +1462,7 @@ const TWIST_CATALOG = [
   { id:'idol-wager',       emoji:'🗿', name:'Idol Wager',           category:'advantages', phase:'any',        desc:'Players can wager their idol for a larger power — or lose it.',             engineType:'idol-wager'      },
   // Social
   { id:'loved-ones',       emoji:'❤️', name:'Loved Ones Visit',     category:'social',     phase:'post-merge', desc:"Loved ones visit before tribal. Bonds shift dramatically. Tribal still runs — someone goes home.",  engineType:'loved-ones'      },
-  { id:'the-feast',        emoji:'🍗', name:'The Feast',            category:'social',     phase:'any',        desc:'All tribes share a feast — bonds form across tribal lines. Tribal still runs.',               engineType:'the-feast'       },
+  { id:'the-feast',        emoji:'🍗', name:'The Feast',            category:'social',     phase:'pre-merge',  desc:'All tribes share a feast — bonds form across tribal lines. Strategic deals and emotional moments.',  engineType:'the-feast'       },
   { id:'merge-reward',     emoji:'🎉', name:'Merge Feast',          category:'social',     phase:'post-merge', desc:'A feast marks the merge. Bonds shift as alliances reorder. Tribal still runs.',              engineType:'merge-reward'    },
   { id:'reward-challenge', emoji:'🏅', name:'Reward Challenge',     category:'advantages', phase:'any',        desc:'A reward challenge runs before immunity. Winner picks who shares it. Tribal still runs.',     engineType:'reward-challenge'},
   { id:'fan-vote-boot',    emoji:'📱', name:'Fan Vote Save',        category:'social',     phase:'post-merge', desc:'Fans vote to save the most popular player — pre-merge: tribal immunity; post-merge: Extra Vote.',  engineType:'fan-vote-boot'   },
@@ -1465,27 +1470,27 @@ const TWIST_CATALOG = [
 ];
 
 // S10 preset data
-const S10_PRESET = [
+const S10_TRIBES = [
   // CHAMPIONS
-  { name:'Bowie',    slug:'bowie',    tribe:'Champions', gender:'m', archetype:'mastermind',       stats:{ physical:6, endurance:5, mental:7, social:8,  strategic:9, loyalty:4, boldness:8, intuition:7 } },
-  { name:'Mickey',   slug:'mickey',   tribe:'Champions', gender:'m', archetype:'social-butterfly', stats:{ physical:5, endurance:6, mental:7, social:9,  strategic:8, loyalty:7, boldness:5, intuition:6 } },
-  { name:'Scott',    slug:'scott',    tribe:'Champions', gender:'m', archetype:'schemer',       stats:{ physical:7, endurance:6, mental:7, social:6,  strategic:7, loyalty:6, boldness:6, intuition:5 } },
-  { name:'Zoey',     slug:'zoey',     tribe:'Champions', gender:'f', archetype:'perceptive-player', stats:{ physical:6, endurance:7, mental:6, social:10, strategic:7, loyalty:7, boldness:7, intuition:8 } },
-  { name:'Gwen',     slug:'gwen',     tribe:'Champions', gender:'f', archetype:'challenge-beast',  stats:{ physical:9, endurance:9, mental:5, social:5,  strategic:5, loyalty:7, boldness:6, intuition:5 } },
-  { name:'Cody',     slug:'cody',     tribe:'Champions', gender:'m', archetype:'perceptive-player',    stats:{ physical:6, endurance:6, mental:6, social:7,  strategic:7, loyalty:8, boldness:5, intuition:6 } },
-  { name:'Carrie',   slug:'carrie',   tribe:'Champions', gender:'f', archetype:'perceptive-player',       stats:{ physical:6, endurance:5, mental:8, social:7,  strategic:8, loyalty:7, boldness:7, intuition:7 } },
-  { name:'Ryan',     slug:'ryan',     tribe:'Champions', gender:'m', archetype:'floater',         stats:{ physical:5, endurance:5, mental:6, social:8,  strategic:7, loyalty:8, boldness:4, intuition:8 } },
-  { name:'Sanders',  slug:'sanders',  tribe:'Champions', gender:'f', archetype:'mastermind',       stats:{ physical:7, endurance:7, mental:7, social:7,  strategic:9, loyalty:8, boldness:9, intuition:8 } },
+  { name:'Bowie',     tribe:'Champions' },
+  { name:'Mickey',    tribe:'Champions' },
+  { name:'Scott',     tribe:'Champions' },
+  { name:'Zoey',      tribe:'Champions' },
+  { name:'Gwen',      tribe:'Champions' },
+  { name:'Cody',      tribe:'Champions' },
+  { name:'Carrie',    tribe:'Champions' },
+  { name:'Ryan',      tribe:'Champions' },
+  { name:'Sanders',   tribe:'Champions' },
   // CONTENDERS
-  { name:'Priya',     slug:'priya',     tribe:'Contenders', gender:'f', archetype:'mastermind',       stats:{ physical:7, endurance:6, mental:8, social:8,  strategic:9, loyalty:6, boldness:7, intuition:8 } },
-  { name:'Hicks',     slug:'hicks',     tribe:'Contenders', gender:'m', archetype:'mastermind',       stats:{ physical:5, endurance:5, mental:8, social:7,  strategic:9, loyalty:6, boldness:6, intuition:8 } },
-  { name:'Jasmine',   slug:'jasmine',   tribe:'Contenders', gender:'f', archetype:'social-butterfly', stats:{ physical:6, endurance:6, mental:6, social:8,  strategic:7, loyalty:7, boldness:5, intuition:6 } },
-  { name:'Josee',     slug:'josee',     tribe:'Contenders', gender:'f', archetype:'hothead',         stats:{ physical:6, endurance:5, mental:6, social:5,  strategic:6, loyalty:5, boldness:8, intuition:5 } },
-  { name:'Sam',       slug:'sam',       tribe:'Contenders', gender:'m', archetype:'loyal-soldier',    stats:{ physical:6, endurance:7, mental:7, social:7,  strategic:8, loyalty:8, boldness:5, intuition:7 } },
-  { name:'Brick',     slug:'brick',     tribe:'Contenders', gender:'m', archetype:'loyal-soldier',    stats:{ physical:8, endurance:8, mental:4, social:6,  strategic:4, loyalty:9, boldness:4, intuition:4 } },
-  { name:'Stephanie', slug:'stephanie', tribe:'Contenders', gender:'f', archetype:'hothead',          stats:{ physical:7, endurance:6, mental:5, social:4,  strategic:6, loyalty:5, boldness:9, intuition:6 } },
-  { name:'Courtney',  slug:'courtney',  tribe:'Contenders', gender:'f', archetype:'hothead',         stats:{ physical:5, endurance:5, mental:6, social:5,  strategic:6, loyalty:5, boldness:6, intuition:5 } },
-  { name:'Tyler',     slug:'tyler',     tribe:'Contenders', gender:'m', archetype:'underdog',         stats:{ physical:4, endurance:5, mental:5, social:6,  strategic:5, loyalty:8, boldness:5, intuition:6 } },
+  { name:'Priya',     tribe:'Contenders' },
+  { name:'Hicks',     tribe:'Contenders' },
+  { name:'Jasmine',   tribe:'Contenders' },
+  { name:'Josee',     tribe:'Contenders' },
+  { name:'Sam',       tribe:'Contenders' },
+  { name:'Brick',     tribe:'Contenders' },
+  { name:'Stephanie', tribe:'Contenders' },
+  { name:'Courtney',  tribe:'Contenders' },
+  { name:'Tyler',     tribe:'Contenders' },
 ];
 const S10_BONDS_PRESET = [
   { a: 'Cody',  b: 'Carrie', type: 'unbreakable', note: 'S7 duo — built Lawa together, reached F3 as a pair' },
@@ -1832,8 +1837,8 @@ function resetForm() {
   document.getElementById('archetype-desc').textContent='';
   STATS.forEach(s => setSlider(s.key, 5, false));
 }
-// ── Franchise Roster (embedded) ───────────────────────────────────────
-const FRANCHISE_ROSTER = [{"name":"Alejandro","slug":"alejandro","gender":"m","archetype":"schemer","stats":{"physical":8,"endurance":8,"mental":10,"social":10,"strategic":10,"loyalty":2,"boldness":9,"intuition":10,"temperament":4}},{"name":"Amy","slug":"amy","gender":"f","archetype":"hothead","stats":{"physical":4,"endurance":6,"mental":6,"social":6,"strategic":8,"loyalty":2,"boldness":9,"intuition":6,"temperament":2}},{"name":"Anne Maria","slug":"anne-maria","gender":"f","archetype":"wildcard","stats":{"physical":6,"endurance":4,"mental":4,"social":4,"strategic":4,"loyalty":4,"boldness":7,"intuition":4,"temperament":4}},{"name":"Axel","slug":"axel","gender":"f","archetype":"hothead","stats":{"physical":9,"endurance":8,"mental":4,"social":5,"strategic":4,"loyalty":7,"boldness":6,"intuition":4,"temperament":3}},{"name":"B","slug":"b","gender":"m","archetype":"loyal-soldier","stats":{"physical":6,"endurance":6,"mental":8,"social":2,"strategic":2,"loyalty":10,"boldness":3,"intuition":5,"temperament":10}},{"name":"Beardo","slug":"beardo","gender":"m","archetype":"goat","stats":{"physical":6,"endurance":4,"mental":4,"social":2,"strategic":2,"loyalty":6,"boldness":4,"intuition":3,"temperament":8}},{"name":"Beth","slug":"beth","gender":"f","archetype":"goat","stats":{"physical":4,"endurance":6,"mental":6,"social":4,"strategic":4,"loyalty":6,"boldness":5,"intuition":5,"temperament":6}},{"name":"Blaineley","slug":"blaineley","gender":"f","archetype":"chaos-agent","stats":{"physical":4,"endurance":4,"mental":8,"social":10,"strategic":8,"loyalty":2,"boldness":8,"intuition":9,"temperament":4}},{"name":"Bowie","slug":"bowie","gender":"m","sexuality":"gay","archetype":"mastermind","stats":{"physical":6,"endurance":4,"mental":8,"social":10,"strategic":10,"loyalty":6,"boldness":7,"intuition":9,"temperament":6}},{"name":"Brick","slug":"brick","gender":"m","archetype":"challenge-beast","stats":{"physical":8,"endurance":10,"mental":4,"social":6,"strategic":2,"loyalty":10,"boldness":4,"intuition":5,"temperament":8}},{"name":"Bridgette","slug":"bridgette","gender":"f","archetype":"showmancer","stats":{"physical":8,"endurance":8,"mental":6,"social":8,"strategic":2,"loyalty":8,"boldness":4,"intuition":7,"temperament":8}},{"name":"Brightly","slug":"brightly","gender":"nb","archetype":"mastermind","stats":{"physical":4,"endurance":4,"mental":10,"social":6,"strategic":8,"loyalty":6,"boldness":6,"intuition":8,"temperament":6}},{"name":"Brody","slug":"brody","gender":"m","archetype":"social-butterfly","stats":{"physical":10,"endurance":8,"mental":2,"social":10,"strategic":2,"loyalty":10,"boldness":4,"intuition":6,"temperament":8}},{"name":"Caleb","slug":"caleb","gender":"m","archetype":"social-butterfly","stats":{"physical":10,"endurance":8,"mental":6,"social":8,"strategic":6,"loyalty":6,"boldness":7,"intuition":7,"temperament":6}},{"name":"Cameron","slug":"cameron","gender":"m","archetype":"mastermind","stats":{"physical":2,"endurance":4,"mental":10,"social":4,"strategic":8,"loyalty":8,"boldness":5,"intuition":7,"temperament":8}},{"name":"Carrie","slug":"carrie","gender":"f","archetype":"perceptive-player","stats":{"physical":4,"endurance":6,"mental":6,"social":10,"strategic":6,"loyalty":8,"boldness":4,"intuition":8,"temperament":8}},{"name":"Chase","slug":"chase","gender":"m","archetype":"social-butterfly","stats":{"physical":4,"endurance":4,"mental":4,"social":8,"strategic":2,"loyalty":4,"boldness":5,"intuition":6,"temperament":8}},{"name":"Chef Hatchet","slug":"chef-hatchet","gender":"m","archetype":"hothead","stats":{"physical":10,"endurance":10,"mental":4,"social":2,"strategic":4,"loyalty":8,"boldness":8,"intuition":4,"temperament":2}},{"name":"Chet","slug":"chet","gender":"m","archetype":"loyal-soldier","stats":{"physical":8,"endurance":6,"mental":4,"social":4,"strategic":2,"loyalty":8,"boldness":5,"intuition":4,"temperament":4}},{"name":"Chris McLean","slug":"chris-mclean","gender":"m","archetype":"chaos-agent","stats":{"physical":6,"endurance":6,"mental":8,"social":10,"strategic":10,"loyalty":2,"boldness":10,"intuition":8,"temperament":2}},{"name":"Cody","slug":"cody","gender":"m","archetype":"perceptive-player","stats":{"physical":2,"endurance":4,"mental":10,"social":8,"strategic":4,"loyalty":8,"boldness":4,"intuition":9,"temperament":8}},{"name":"Courtney","slug":"courtney","gender":"f","archetype":"hothead","stats":{"physical":6,"endurance":4,"mental":8,"social":6,"strategic":8,"loyalty":4,"boldness":8,"intuition":7,"temperament":2}},{"name":"Crimson","slug":"crimson","gender":"f","sexuality":"bi","archetype":"loyal-soldier","stats":{"physical":4,"endurance":6,"mental":6,"social":2,"strategic":4,"loyalty":10,"boldness":3,"intuition":4,"temperament":8}},{"name":"Dakota","slug":"dakota","gender":"f","archetype":"social-butterfly","stats":{"physical":4,"endurance":4,"mental":4,"social":8,"strategic":4,"loyalty":6,"boldness":5,"intuition":6,"temperament":6}},{"name":"Damien","slug":"damien","gender":"m","archetype":"underdog","stats":{"physical":2,"endurance":4,"mental":10,"social":6,"strategic":6,"loyalty":8,"boldness":4,"intuition":8,"temperament":8}},{"name":"Dave","slug":"dave","gender":"m","archetype":"floater","stats":{"physical":6,"endurance":4,"mental":8,"social":4,"strategic":4,"loyalty":8,"boldness":6,"intuition":6,"temperament":4}},{"name":"Dawn","slug":"dawn","gender":"f","archetype":"loyal-soldier","stats":{"physical":4,"endurance":4,"mental":8,"social":2,"strategic":2,"loyalty":10,"boldness":2,"intuition":5,"temperament":10}},{"name":"Devin","slug":"devin","gender":"m","archetype":"showmancer","stats":{"physical":6,"endurance":6,"mental":4,"social":8,"strategic":4,"loyalty":10,"boldness":4,"intuition":6,"temperament":8}},{"name":"DJ","slug":"dj","gender":"m","archetype":"perceptive-player","stats":{"physical":8,"endurance":4,"mental":6,"social":10,"strategic":2,"loyalty":10,"boldness":3,"intuition":8,"temperament":10}},{"name":"Duncan","slug":"duncan","gender":"m","archetype":"chaos-agent","stats":{"physical":8,"endurance":8,"mental":6,"social":6,"strategic":8,"loyalty":4,"boldness":8,"intuition":6,"temperament":4}},{"name":"Dwayne","slug":"dwayne","gender":"m","archetype":"perceptive-player","stats":{"physical":4,"endurance":8,"mental":6,"social":10,"strategic":2,"loyalty":10,"boldness":2,"intuition":8,"temperament":10}},{"name":"Ella","slug":"ella","gender":"f","archetype":"showmancer","stats":{"physical":4,"endurance":6,"mental":4,"social":8,"strategic":4,"loyalty":10,"boldness":3,"intuition":6,"temperament":10}},{"name":"Ellody","slug":"ellody","gender":"f","archetype":"mastermind","stats":{"physical":4,"endurance":4,"mental":10,"social":6,"strategic":10,"loyalty":6,"boldness":7,"intuition":8,"temperament":6}},{"name":"Emma","slug":"emma","gender":"f","archetype":"social-butterfly","stats":{"physical":8,"endurance":8,"mental":4,"social":8,"strategic":6,"loyalty":8,"boldness":6,"intuition":6,"temperament":4}},{"name":"Emmah","slug":"emmah","gender":"f","archetype":"hothead","stats":{"physical":6,"endurance":6,"mental":6,"social":6,"strategic":8,"loyalty":6,"boldness":8,"intuition":6,"temperament":2}},{"name":"Ennui","slug":"ennui","gender":"m","archetype":"loyal-soldier","stats":{"physical":6,"endurance":6,"mental":6,"social":2,"strategic":4,"loyalty":8,"boldness":4,"intuition":4,"temperament":10}},{"name":"Eva","slug":"eva","gender":"f","archetype":"hothead","stats":{"physical":10,"endurance":10,"mental":4,"social":2,"strategic":2,"loyalty":4,"boldness":7,"intuition":3,"temperament":2}},{"name":"Ezekiel","slug":"ezekiel","gender":"m","archetype":"loyal-soldier","stats":{"physical":2,"endurance":4,"mental":2,"social":4,"strategic":6,"loyalty":6,"boldness":5,"intuition":3,"temperament":6}},{"name":"Geoff","slug":"geoff","gender":"m","archetype":"showmancer","stats":{"physical":8,"endurance":6,"mental":4,"social":10,"strategic":2,"loyalty":8,"boldness":4,"intuition":7,"temperament":10}},{"name":"Gerry","slug":"gerry","gender":"m","archetype":"floater","stats":{"physical":4,"endurance":2,"mental":6,"social":6,"strategic":6,"loyalty":6,"boldness":6,"intuition":6,"temperament":4}},{"name":"Gwen","slug":"gwen","gender":"f","sexuality":"bi","archetype":"floater","stats":{"physical":6,"endurance":6,"mental":8,"social":6,"strategic":6,"loyalty":8,"boldness":6,"intuition":7,"temperament":4}},{"name":"Harold","slug":"harold","gender":"m","archetype":"floater","stats":{"physical":4,"endurance":4,"mental":10,"social":4,"strategic":6,"loyalty":6,"boldness":6,"intuition":7,"temperament":6}},{"name":"Heather","slug":"heather","gender":"f","archetype":"schemer","stats":{"physical":6,"endurance":6,"mental":8,"social":6,"strategic":10,"loyalty":2,"boldness":9,"intuition":7,"temperament":2}},{"name":"Hicks","slug":"hicks","gender":"m","archetype":"social-butterfly","stats":{"physical":6,"endurance":8,"mental":6,"social":8,"strategic":6,"loyalty":8,"boldness":5,"intuition":7,"temperament":8}},{"name":"Izzy","slug":"izzy","gender":"f","archetype":"wildcard","stats":{"physical":8,"endurance":10,"mental":2,"social":4,"strategic":2,"loyalty":4,"boldness":6,"intuition":3,"temperament":6}},{"name":"Jacques","slug":"jacques","gender":"m","sexuality":"gay","archetype":"schemer","stats":{"physical":8,"endurance":8,"mental":6,"social":8,"strategic":10,"loyalty":2,"boldness":9,"intuition":7,"temperament":4}},{"name":"Jasmine","slug":"jasmine","gender":"f","archetype":"perceptive-player","stats":{"physical":8,"endurance":10,"mental":8,"social":8,"strategic":4,"loyalty":8,"boldness":5,"intuition":8,"temperament":8}},{"name":"Jay","slug":"jay","gender":"m","archetype":"loyal-soldier","stats":{"physical":4,"endurance":4,"mental":6,"social":6,"strategic":4,"loyalty":10,"boldness":3,"intuition":6,"temperament":8}},{"name":"Jen","slug":"jen","gender":"f","archetype":"social-butterfly","stats":{"physical":4,"endurance":6,"mental":6,"social":8,"strategic":4,"loyalty":8,"boldness":4,"intuition":7,"temperament":8}},{"name":"Jo","slug":"jo","gender":"f","archetype":"hothead","stats":{"physical":10,"endurance":10,"mental":6,"social":4,"strategic":8,"loyalty":2,"boldness":10,"intuition":5,"temperament":2}},{"name":"Josee","slug":"josee","gender":"f","archetype":"hothead","stats":{"physical":8,"endurance":8,"mental":6,"social":4,"strategic":6,"loyalty":4,"boldness":8,"intuition":5,"temperament":2}},{"name":"Julia","slug":"julia","gender":"f","archetype":"schemer","stats":{"physical":6,"endurance":8,"mental":6,"social":6,"strategic":10,"loyalty":2,"boldness":9,"intuition":6,"temperament":4}},{"name":"Junior","slug":"junior","gender":"m","archetype":"loyal-soldier","stats":{"physical":4,"endurance":4,"mental":6,"social":6,"strategic":4,"loyalty":8,"boldness":5,"intuition":6,"temperament":6}},{"name":"Justin","slug":"justin","gender":"m","archetype":"chaos-agent","stats":{"physical":6,"endurance":4,"mental":4,"social":10,"strategic":8,"loyalty":2,"boldness":8,"intuition":7,"temperament":4}},{"name":"Katie","slug":"katie","gender":"f","archetype":"loyal-soldier","stats":{"physical":4,"endurance":4,"mental":4,"social":6,"strategic":2,"loyalty":10,"boldness":3,"intuition":5,"temperament":8}},{"name":"Kelly","slug":"kelly","gender":"f","archetype":"schemer","stats":{"physical":4,"endurance":4,"mental":6,"social":8,"strategic":10,"loyalty":2,"boldness":8,"intuition":7,"temperament":4}},{"name":"Kitty","slug":"kitty","gender":"f","archetype":"perceptive-player","stats":{"physical":6,"endurance":6,"mental":8,"social":10,"strategic":6,"loyalty":8,"boldness":5,"intuition":9,"temperament":8}},{"name":"Laurie","slug":"laurie","gender":"f","archetype":"chaos-agent","stats":{"physical":4,"endurance":6,"mental":8,"social":6,"strategic":6,"loyalty":4,"boldness":7,"intuition":7,"temperament":4}},{"name":"Leonard","slug":"leonard","gender":"m","archetype":"goat","stats":{"physical":2,"endurance":2,"mental":4,"social":4,"strategic":2,"loyalty":4,"boldness":5,"intuition":4,"temperament":6}},{"name":"Leshawna","slug":"leshawna","gender":"f","archetype":"social-butterfly","stats":{"physical":8,"endurance":8,"mental":6,"social":8,"strategic":6,"loyalty":8,"boldness":6,"intuition":7,"temperament":4}},{"name":"Lightning","slug":"lightning","gender":"m","archetype":"wildcard","stats":{"physical":10,"endurance":8,"mental":2,"social":4,"strategic":4,"loyalty":2,"boldness":8,"intuition":3,"temperament":4}},{"name":"Lindsay","slug":"lindsay","gender":"f","archetype":"social-butterfly","stats":{"physical":4,"endurance":6,"mental":2,"social":8,"strategic":2,"loyalty":8,"boldness":4,"intuition":5,"temperament":8}},{"name":"Lorenzo","slug":"lorenzo","gender":"m","archetype":"hothead","stats":{"physical":6,"endurance":6,"mental":4,"social":6,"strategic":4,"loyalty":4,"boldness":7,"intuition":5,"temperament":2}},{"name":"MacArthur","slug":"macarthur","gender":"f","sexuality":"lesbian","archetype":"challenge-beast","stats":{"physical":10,"endurance":8,"mental":4,"social":6,"strategic":6,"loyalty":6,"boldness":7,"intuition":5,"temperament":4}},{"name":"Mary","slug":"mary","gender":"f","archetype":"mastermind","stats":{"physical":4,"endurance":4,"mental":10,"social":6,"strategic":8,"loyalty":8,"boldness":4,"intuition":8,"temperament":10}},{"name":"Max","slug":"max","gender":"m","archetype":"chaos-agent","stats":{"physical":4,"endurance":4,"mental":4,"social":4,"strategic":2,"loyalty":2,"boldness":6,"intuition":4,"temperament":4}},{"name":"Mickey","slug":"mickey","gender":"m","archetype":"mastermind","stats":{"physical":4,"endurance":4,"mental":10,"social":6,"strategic":8,"loyalty":10,"boldness":5,"intuition":8,"temperament":6}},{"name":"Mike","slug":"mike","gender":"m","archetype":"showmancer","stats":{"physical":6,"endurance":6,"mental":6,"social":8,"strategic":4,"loyalty":8,"boldness":5,"intuition":7,"temperament":6}},{"name":"Miles","slug":"miles","gender":"f","archetype":"loyal-soldier","stats":{"physical":4,"endurance":8,"mental":6,"social":6,"strategic":4,"loyalty":8,"boldness":3,"intuition":6,"temperament":10}},{"name":"Millie","slug":"millie","gender":"f","archetype":"underdog","stats":{"physical":4,"endurance":2,"mental":10,"social":4,"strategic":6,"loyalty":8,"boldness":5,"intuition":7,"temperament":6}},{"name":"MK","slug":"mk","gender":"f","sexuality":"queer","archetype":"schemer","stats":{"physical":4,"endurance":4,"mental":8,"social":4,"strategic":10,"loyalty":2,"boldness":7,"intuition":6,"temperament":8}},{"name":"Nichelle","slug":"nichelle","gender":"f","archetype":"social-butterfly","stats":{"physical":4,"endurance":4,"mental":6,"social":8,"strategic":2,"loyalty":6,"boldness":5,"intuition":7,"temperament":4}},{"name":"Noah","slug":"noah","gender":"m","archetype":"floater","stats":{"physical":2,"endurance":4,"mental":10,"social":4,"strategic":6,"loyalty":6,"boldness":6,"intuition":7,"temperament":4}},{"name":"Owen","slug":"owen","gender":"m","sexuality":"bi","archetype":"social-butterfly","stats":{"physical":8,"endurance":4,"mental":2,"social":10,"strategic":2,"loyalty":10,"boldness":3,"intuition":6,"temperament":10}},{"name":"Pete","slug":"pete","gender":"m","archetype":"loyal-soldier","stats":{"physical":6,"endurance":6,"mental":6,"social":4,"strategic":8,"loyalty":6,"boldness":7,"intuition":5,"temperament":4}},{"name":"Priya","slug":"priya","gender":"f","archetype":"mastermind","stats":{"physical":10,"endurance":8,"mental":10,"social":6,"strategic":8,"loyalty":6,"boldness":7,"intuition":8,"temperament":6}},{"name":"Raj","slug":"raj","gender":"m","sexuality":"gay","archetype":"challenge-beast","stats":{"physical":8,"endurance":8,"mental":2,"social":6,"strategic":2,"loyalty":10,"boldness":3,"intuition":4,"temperament":10}},{"name":"Ripper","slug":"ripper","gender":"m","archetype":"chaos-agent","stats":{"physical":8,"endurance":6,"mental":2,"social":4,"strategic":4,"loyalty":4,"boldness":6,"intuition":3,"temperament":6}},{"name":"Rock","slug":"rock","gender":"m","archetype":"social-butterfly","stats":{"physical":6,"endurance":6,"mental":4,"social":8,"strategic":4,"loyalty":8,"boldness":5,"intuition":6,"temperament":6}},{"name":"Rodney","slug":"rodney","gender":"m","archetype":"challenge-beast","stats":{"physical":8,"endurance":8,"mental":2,"social":4,"strategic":2,"loyalty":8,"boldness":4,"intuition":3,"temperament":8}},{"name":"Ryan","slug":"ryan","gender":"m","archetype":"challenge-beast","stats":{"physical":10,"endurance":8,"mental":4,"social":6,"strategic":4,"loyalty":8,"boldness":5,"intuition":5,"temperament":8}},{"name":"Sadie","slug":"sadie","gender":"f","archetype":"loyal-soldier","stats":{"physical":4,"endurance":4,"mental":4,"social":6,"strategic":2,"loyalty":10,"boldness":2,"intuition":5,"temperament":10}},{"name":"Sam","slug":"sam","gender":"m","archetype":"loyal-soldier","stats":{"physical":4,"endurance":2,"mental":8,"social":6,"strategic":2,"loyalty":10,"boldness":2,"intuition":7,"temperament":10}},{"name":"Samey","slug":"samey","gender":"f","archetype":"loyal-soldier","stats":{"physical":4,"endurance":6,"mental":6,"social":6,"strategic":4,"loyalty":10,"boldness":3,"intuition":6,"temperament":8}},{"name":"Sanders","slug":"sanders","gender":"f","sexuality":"lesbian","archetype":"challenge-beast","stats":{"physical":8,"endurance":10,"mental":8,"social":6,"strategic":6,"loyalty":10,"boldness":4,"intuition":7,"temperament":10}},{"name":"Scarlett","slug":"scarlett","gender":"f","archetype":"schemer","stats":{"physical":4,"endurance":6,"mental":10,"social":6,"strategic":10,"loyalty":2,"boldness":9,"intuition":8,"temperament":2}},{"name":"Scary Girl","slug":"scary-girl","gender":"f","archetype":"wildcard","stats":{"physical":8,"endurance":8,"mental":4,"social":2,"strategic":2,"loyalty":4,"boldness":7,"intuition":3,"temperament":2}},{"name":"Scott","slug":"scott","gender":"m","archetype":"schemer","stats":{"physical":6,"endurance":8,"mental":8,"social":4,"strategic":10,"loyalty":2,"boldness":9,"intuition":6,"temperament":4}},{"name":"Shawn","slug":"shawn","gender":"m","archetype":"challenge-beast","stats":{"physical":8,"endurance":10,"mental":6,"social":4,"strategic":4,"loyalty":6,"boldness":6,"intuition":5,"temperament":4}},{"name":"Sierra","slug":"sierra","gender":"f","archetype":"loyal-soldier","stats":{"physical":6,"endurance":8,"mental":6,"social":4,"strategic":6,"loyalty":10,"boldness":5,"intuition":5,"temperament":4}},{"name":"Sky","slug":"sky","gender":"f","archetype":"challenge-beast","stats":{"physical":10,"endurance":10,"mental":8,"social":6,"strategic":6,"loyalty":6,"boldness":6,"intuition":7,"temperament":8}},{"name":"Spud","slug":"spud","gender":"m","archetype":"social-butterfly","stats":{"physical":4,"endurance":4,"mental":2,"social":8,"strategic":2,"loyalty":8,"boldness":3,"intuition":5,"temperament":10}},{"name":"Staci","slug":"staci","gender":"f","archetype":"loyal-soldier","stats":{"physical":2,"endurance":2,"mental":2,"social":2,"strategic":2,"loyalty":8,"boldness":3,"intuition":2,"temperament":10}},{"name":"Stephanie","slug":"stephanie","gender":"f","archetype":"hothead","stats":{"physical":8,"endurance":8,"mental":6,"social":6,"strategic":6,"loyalty":4,"boldness":8,"intuition":6,"temperament":2}},{"name":"Sugar","slug":"sugar","gender":"f","archetype":"hothead","stats":{"physical":6,"endurance":8,"mental":4,"social":6,"strategic":8,"loyalty":2,"boldness":9,"intuition":5,"temperament":2}},{"name":"Tammy","slug":"tammy","gender":"f","archetype":"loyal-soldier","stats":{"physical":4,"endurance":4,"mental":4,"social":4,"strategic":2,"loyalty":8,"boldness":4,"intuition":4,"temperament":8}},{"name":"Taylor","slug":"taylor","gender":"f","archetype":"hothead","stats":{"physical":4,"endurance":4,"mental":6,"social":10,"strategic":8,"loyalty":2,"boldness":9,"intuition":8,"temperament":2}},{"name":"Tom","slug":"tom","gender":"m","sexuality":"gay","archetype":"social-butterfly","stats":{"physical":8,"endurance":8,"mental":4,"social":8,"strategic":4,"loyalty":10,"boldness":3,"intuition":6,"temperament":10}},{"name":"Topher","slug":"topher","gender":"m","archetype":"chaos-agent","stats":{"physical":4,"endurance":6,"mental":6,"social":8,"strategic":6,"loyalty":2,"boldness":8,"intuition":7,"temperament":4}},{"name":"Trent","slug":"trent","gender":"m","archetype":"showmancer","stats":{"physical":6,"endurance":6,"mental":6,"social":8,"strategic":4,"loyalty":8,"boldness":4,"intuition":7,"temperament":8}},{"name":"Tyler","slug":"tyler","gender":"m","archetype":"loyal-soldier","stats":{"physical":8,"endurance":6,"mental":2,"social":6,"strategic":2,"loyalty":8,"boldness":4,"intuition":4,"temperament":10}},{"name":"Wayne","slug":"wayne","gender":"m","archetype":"social-butterfly","stats":{"physical":8,"endurance":8,"mental":2,"social":8,"strategic":2,"loyalty":10,"boldness":3,"intuition":5,"temperament":10}},{"name":"Zee","slug":"zee","gender":"m","archetype":"social-butterfly","stats":{"physical":6,"endurance":8,"mental":6,"social":8,"strategic":2,"loyalty":8,"boldness":3,"intuition":7,"temperament":10}},{"name":"Zoey","slug":"zoey","gender":"f","archetype":"showmancer","stats":{"physical":8,"endurance":8,"mental":8,"social":10,"strategic":6,"loyalty":10,"boldness":4,"intuition":9,"temperament":8}}];
+// ── Franchise Roster: fetched from JSON on load, embedded copy as fallback ──
+let FRANCHISE_ROSTER = [{"name":"Alejandro","slug":"alejandro","gender":"m","archetype":"schemer","stats":{"physical":8,"endurance":8,"mental":10,"social":10,"strategic":10,"loyalty":2,"boldness":9,"intuition":10,"temperament":4}},{"name":"Amy","slug":"amy","gender":"f","archetype":"villain","stats":{"physical":4,"endurance":6,"mental":6,"social":6,"strategic":8,"loyalty":2,"boldness":9,"intuition":6,"temperament":2}},{"name":"Anne Maria","slug":"anne-maria","gender":"f","archetype":"wildcard","stats":{"physical":6,"endurance":4,"mental":4,"social":4,"strategic":4,"loyalty":4,"boldness":7,"intuition":4,"temperament":4}},{"name":"Axel","slug":"axel","gender":"f","archetype":"hothead","stats":{"physical":9,"endurance":8,"mental":4,"social":5,"strategic":4,"loyalty":7,"boldness":6,"intuition":4,"temperament":3}},{"name":"B","slug":"b","gender":"m","archetype":"loyal-soldier","stats":{"physical":6,"endurance":6,"mental":8,"social":2,"strategic":2,"loyalty":10,"boldness":3,"intuition":5,"temperament":10}},{"name":"Beardo","slug":"beardo","gender":"m","archetype":"goat","stats":{"physical":6,"endurance":4,"mental":4,"social":2,"strategic":2,"loyalty":6,"boldness":4,"intuition":3,"temperament":8}},{"name":"Beth","slug":"beth","gender":"f","archetype":"goat","stats":{"physical":4,"endurance":6,"mental":6,"social":4,"strategic":4,"loyalty":6,"boldness":5,"intuition":5,"temperament":6}},{"name":"Blaineley","slug":"blaineley","gender":"f","archetype":"chaos-agent","stats":{"physical":4,"endurance":4,"mental":8,"social":10,"strategic":8,"loyalty":2,"boldness":8,"intuition":9,"temperament":4}},{"name":"Bowie","slug":"bowie","gender":"m","sexuality":"gay","archetype":"mastermind","stats":{"physical":6,"endurance":4,"mental":8,"social":10,"strategic":10,"loyalty":6,"boldness":7,"intuition":9,"temperament":6}},{"name":"Brick","slug":"brick","gender":"m","archetype":"hero","stats":{"physical":8,"endurance":10,"mental":4,"social":6,"strategic":2,"loyalty":10,"boldness":4,"intuition":5,"temperament":8}},{"name":"Bridgette","slug":"bridgette","gender":"f","archetype":"showmancer","stats":{"physical":8,"endurance":8,"mental":6,"social":8,"strategic":2,"loyalty":8,"boldness":4,"intuition":7,"temperament":8}},{"name":"Brightly","slug":"brightly","gender":"nb","archetype":"mastermind","stats":{"physical":4,"endurance":4,"mental":10,"social":6,"strategic":8,"loyalty":6,"boldness":6,"intuition":8,"temperament":6}},{"name":"Brody","slug":"brody","gender":"m","archetype":"social-butterfly","stats":{"physical":10,"endurance":8,"mental":2,"social":10,"strategic":2,"loyalty":10,"boldness":4,"intuition":6,"temperament":8}},{"name":"Caleb","slug":"caleb","gender":"m","archetype":"social-butterfly","stats":{"physical":10,"endurance":8,"mental":6,"social":8,"strategic":6,"loyalty":6,"boldness":7,"intuition":7,"temperament":6}},{"name":"Cameron","slug":"cameron","gender":"m","archetype":"mastermind","stats":{"physical":2,"endurance":4,"mental":10,"social":4,"strategic":8,"loyalty":8,"boldness":5,"intuition":7,"temperament":8}},{"name":"Carrie","slug":"carrie","gender":"f","archetype":"perceptive-player","stats":{"physical":4,"endurance":6,"mental":6,"social":10,"strategic":6,"loyalty":8,"boldness":4,"intuition":8,"temperament":8}},{"name":"Chase","slug":"chase","gender":"m","archetype":"social-butterfly","stats":{"physical":4,"endurance":4,"mental":4,"social":8,"strategic":2,"loyalty":4,"boldness":5,"intuition":6,"temperament":8}},{"name":"Chef Hatchet","slug":"chef-hatchet","gender":"m","archetype":"hothead","stats":{"physical":10,"endurance":10,"mental":4,"social":2,"strategic":4,"loyalty":8,"boldness":8,"intuition":4,"temperament":2}},{"name":"Chet","slug":"chet","gender":"m","archetype":"loyal-soldier","stats":{"physical":8,"endurance":6,"mental":4,"social":4,"strategic":2,"loyalty":8,"boldness":5,"intuition":4,"temperament":4}},{"name":"Chris McLean","slug":"chris-mclean","gender":"m","archetype":"chaos-agent","stats":{"physical":6,"endurance":6,"mental":8,"social":10,"strategic":10,"loyalty":2,"boldness":10,"intuition":8,"temperament":2}},{"name":"Cody","slug":"cody","gender":"m","archetype":"perceptive-player","stats":{"physical":2,"endurance":4,"mental":10,"social":8,"strategic":4,"loyalty":8,"boldness":4,"intuition":9,"temperament":8}},{"name":"Courtney","slug":"courtney","gender":"f","archetype":"hothead","stats":{"physical":6,"endurance":4,"mental":8,"social":6,"strategic":8,"loyalty":4,"boldness":8,"intuition":7,"temperament":2}},{"name":"Crimson","slug":"crimson","gender":"f","sexuality":"bi","archetype":"loyal-soldier","stats":{"physical":4,"endurance":6,"mental":6,"social":2,"strategic":4,"loyalty":10,"boldness":3,"intuition":4,"temperament":8}},{"name":"Dakota","slug":"dakota","gender":"f","archetype":"social-butterfly","stats":{"physical":4,"endurance":4,"mental":4,"social":8,"strategic":4,"loyalty":6,"boldness":5,"intuition":6,"temperament":6}},{"name":"Damien","slug":"damien","gender":"m","archetype":"underdog","stats":{"physical":2,"endurance":4,"mental":10,"social":6,"strategic":6,"loyalty":8,"boldness":4,"intuition":8,"temperament":8}},{"name":"Dave","slug":"dave","gender":"m","archetype":"floater","stats":{"physical":6,"endurance":4,"mental":8,"social":4,"strategic":4,"loyalty":8,"boldness":6,"intuition":6,"temperament":4}},{"name":"Dawn","slug":"dawn","gender":"f","archetype":"loyal-soldier","stats":{"physical":4,"endurance":4,"mental":8,"social":2,"strategic":2,"loyalty":10,"boldness":2,"intuition":5,"temperament":10}},{"name":"Devin","slug":"devin","gender":"m","archetype":"showmancer","stats":{"physical":6,"endurance":6,"mental":4,"social":8,"strategic":4,"loyalty":10,"boldness":4,"intuition":6,"temperament":8}},{"name":"DJ","slug":"dj","gender":"m","archetype":"hero","stats":{"physical":8,"endurance":4,"mental":6,"social":10,"strategic":2,"loyalty":10,"boldness":3,"intuition":8,"temperament":10}},{"name":"Duncan","slug":"duncan","gender":"m","archetype":"chaos-agent","stats":{"physical":8,"endurance":8,"mental":6,"social":6,"strategic":8,"loyalty":4,"boldness":8,"intuition":6,"temperament":4}},{"name":"Dwayne","slug":"dwayne","gender":"m","archetype":"perceptive-player","stats":{"physical":4,"endurance":8,"mental":6,"social":10,"strategic":2,"loyalty":10,"boldness":2,"intuition":8,"temperament":10}},{"name":"Ella","slug":"ella","gender":"f","archetype":"showmancer","stats":{"physical":4,"endurance":6,"mental":4,"social":8,"strategic":4,"loyalty":10,"boldness":3,"intuition":6,"temperament":10}},{"name":"Ellody","slug":"ellody","gender":"f","archetype":"mastermind","stats":{"physical":4,"endurance":4,"mental":10,"social":6,"strategic":10,"loyalty":6,"boldness":7,"intuition":8,"temperament":6}},{"name":"Emma","slug":"emma","gender":"f","archetype":"social-butterfly","stats":{"physical":8,"endurance":8,"mental":4,"social":8,"strategic":6,"loyalty":8,"boldness":6,"intuition":6,"temperament":4}},{"name":"Emmah","slug":"emmah","gender":"f","archetype":"hothead","stats":{"physical":6,"endurance":6,"mental":6,"social":6,"strategic":8,"loyalty":6,"boldness":8,"intuition":6,"temperament":2}},{"name":"Ennui","slug":"ennui","gender":"m","archetype":"loyal-soldier","stats":{"physical":6,"endurance":6,"mental":6,"social":2,"strategic":4,"loyalty":8,"boldness":4,"intuition":4,"temperament":10}},{"name":"Eva","slug":"eva","gender":"f","archetype":"hothead","stats":{"physical":10,"endurance":10,"mental":4,"social":2,"strategic":2,"loyalty":4,"boldness":7,"intuition":3,"temperament":2}},{"name":"Ezekiel","slug":"ezekiel","gender":"m","archetype":"loyal-soldier","stats":{"physical":2,"endurance":4,"mental":2,"social":4,"strategic":6,"loyalty":6,"boldness":5,"intuition":3,"temperament":6}},{"name":"Geoff","slug":"geoff","gender":"m","archetype":"showmancer","stats":{"physical":8,"endurance":6,"mental":4,"social":10,"strategic":2,"loyalty":8,"boldness":4,"intuition":7,"temperament":10}},{"name":"Gerry","slug":"gerry","gender":"m","archetype":"floater","stats":{"physical":4,"endurance":2,"mental":6,"social":6,"strategic":6,"loyalty":6,"boldness":6,"intuition":6,"temperament":4}},{"name":"Gwen","slug":"gwen","gender":"f","sexuality":"bi","archetype":"floater","stats":{"physical":6,"endurance":6,"mental":8,"social":6,"strategic":6,"loyalty":8,"boldness":6,"intuition":7,"temperament":4}},{"name":"Harold","slug":"harold","gender":"m","archetype":"floater","stats":{"physical":4,"endurance":4,"mental":10,"social":4,"strategic":6,"loyalty":6,"boldness":6,"intuition":7,"temperament":6}},{"name":"Heather","slug":"heather","gender":"f","archetype":"villain","stats":{"physical":6,"endurance":6,"mental":8,"social":6,"strategic":10,"loyalty":2,"boldness":9,"intuition":7,"temperament":2}},{"name":"Hicks","slug":"hicks","gender":"m","archetype":"social-butterfly","stats":{"physical":6,"endurance":8,"mental":6,"social":8,"strategic":6,"loyalty":8,"boldness":5,"intuition":7,"temperament":8}},{"name":"Izzy","slug":"izzy","gender":"f","archetype":"wildcard","stats":{"physical":8,"endurance":10,"mental":2,"social":4,"strategic":2,"loyalty":4,"boldness":6,"intuition":3,"temperament":6}},{"name":"Jacques","slug":"jacques","gender":"m","sexuality":"gay","archetype":"schemer","stats":{"physical":8,"endurance":8,"mental":6,"social":8,"strategic":10,"loyalty":2,"boldness":9,"intuition":7,"temperament":4}},{"name":"Jasmine","slug":"jasmine","gender":"f","archetype":"perceptive-player","stats":{"physical":8,"endurance":10,"mental":8,"social":8,"strategic":4,"loyalty":8,"boldness":5,"intuition":8,"temperament":8}},{"name":"Jay","slug":"jay","gender":"m","archetype":"loyal-soldier","stats":{"physical":4,"endurance":4,"mental":6,"social":6,"strategic":4,"loyalty":10,"boldness":3,"intuition":6,"temperament":8}},{"name":"Jen","slug":"jen","gender":"f","archetype":"social-butterfly","stats":{"physical":4,"endurance":6,"mental":6,"social":8,"strategic":4,"loyalty":8,"boldness":4,"intuition":7,"temperament":8}},{"name":"Jo","slug":"jo","gender":"f","archetype":"villain","stats":{"physical":10,"endurance":10,"mental":6,"social":4,"strategic":8,"loyalty":2,"boldness":10,"intuition":5,"temperament":2}},{"name":"Josee","slug":"josee","gender":"f","archetype":"hothead","stats":{"physical":8,"endurance":8,"mental":6,"social":4,"strategic":6,"loyalty":4,"boldness":8,"intuition":5,"temperament":2}},{"name":"Julia","slug":"julia","gender":"f","archetype":"schemer","stats":{"physical":6,"endurance":8,"mental":6,"social":6,"strategic":10,"loyalty":2,"boldness":9,"intuition":6,"temperament":4}},{"name":"Junior","slug":"junior","gender":"m","archetype":"loyal-soldier","stats":{"physical":4,"endurance":4,"mental":6,"social":6,"strategic":4,"loyalty":8,"boldness":5,"intuition":6,"temperament":6}},{"name":"Justin","slug":"justin","gender":"m","archetype":"chaos-agent","stats":{"physical":6,"endurance":4,"mental":4,"social":10,"strategic":8,"loyalty":2,"boldness":8,"intuition":7,"temperament":4}},{"name":"Katie","slug":"katie","gender":"f","archetype":"loyal-soldier","stats":{"physical":4,"endurance":4,"mental":4,"social":6,"strategic":2,"loyalty":10,"boldness":3,"intuition":5,"temperament":8}},{"name":"Kelly","slug":"kelly","gender":"f","archetype":"schemer","stats":{"physical":4,"endurance":4,"mental":6,"social":8,"strategic":10,"loyalty":2,"boldness":8,"intuition":7,"temperament":4}},{"name":"Kitty","slug":"kitty","gender":"f","archetype":"perceptive-player","stats":{"physical":6,"endurance":6,"mental":8,"social":10,"strategic":6,"loyalty":8,"boldness":5,"intuition":9,"temperament":8}},{"name":"Laurie","slug":"laurie","gender":"f","archetype":"chaos-agent","stats":{"physical":4,"endurance":6,"mental":8,"social":6,"strategic":6,"loyalty":4,"boldness":7,"intuition":7,"temperament":4}},{"name":"Leonard","slug":"leonard","gender":"m","archetype":"goat","stats":{"physical":2,"endurance":2,"mental":4,"social":4,"strategic":2,"loyalty":4,"boldness":5,"intuition":4,"temperament":6}},{"name":"Leshawna","slug":"leshawna","gender":"f","archetype":"social-butterfly","stats":{"physical":8,"endurance":8,"mental":6,"social":8,"strategic":6,"loyalty":8,"boldness":6,"intuition":7,"temperament":4}},{"name":"Lightning","slug":"lightning","gender":"m","archetype":"wildcard","stats":{"physical":10,"endurance":8,"mental":2,"social":4,"strategic":4,"loyalty":2,"boldness":8,"intuition":3,"temperament":4}},{"name":"Lindsay","slug":"lindsay","gender":"f","archetype":"social-butterfly","stats":{"physical":4,"endurance":6,"mental":2,"social":8,"strategic":2,"loyalty":8,"boldness":4,"intuition":5,"temperament":8}},{"name":"Lorenzo","slug":"lorenzo","gender":"m","archetype":"hothead","stats":{"physical":6,"endurance":6,"mental":4,"social":6,"strategic":4,"loyalty":4,"boldness":7,"intuition":5,"temperament":2}},{"name":"MacArthur","slug":"macarthur","gender":"f","sexuality":"lesbian","archetype":"challenge-beast","stats":{"physical":10,"endurance":8,"mental":4,"social":6,"strategic":6,"loyalty":6,"boldness":7,"intuition":5,"temperament":4}},{"name":"Mary","slug":"mary","gender":"f","archetype":"mastermind","stats":{"physical":4,"endurance":4,"mental":10,"social":6,"strategic":8,"loyalty":8,"boldness":4,"intuition":8,"temperament":10}},{"name":"Max","slug":"max","gender":"m","archetype":"chaos-agent","stats":{"physical":4,"endurance":4,"mental":4,"social":4,"strategic":2,"loyalty":2,"boldness":6,"intuition":4,"temperament":4}},{"name":"Mickey","slug":"mickey","gender":"m","archetype":"mastermind","stats":{"physical":4,"endurance":4,"mental":10,"social":6,"strategic":8,"loyalty":10,"boldness":5,"intuition":8,"temperament":6}},{"name":"Mike","slug":"mike","gender":"m","archetype":"showmancer","stats":{"physical":6,"endurance":6,"mental":6,"social":8,"strategic":4,"loyalty":8,"boldness":5,"intuition":7,"temperament":6}},{"name":"Miles","slug":"miles","gender":"f","archetype":"loyal-soldier","stats":{"physical":4,"endurance":8,"mental":6,"social":6,"strategic":4,"loyalty":8,"boldness":3,"intuition":6,"temperament":10}},{"name":"Millie","slug":"millie","gender":"f","archetype":"underdog","stats":{"physical":4,"endurance":2,"mental":10,"social":4,"strategic":6,"loyalty":8,"boldness":5,"intuition":7,"temperament":6}},{"name":"MK","slug":"mk","gender":"f","sexuality":"queer","archetype":"schemer","stats":{"physical":4,"endurance":4,"mental":8,"social":4,"strategic":10,"loyalty":2,"boldness":7,"intuition":6,"temperament":8}},{"name":"Nichelle","slug":"nichelle","gender":"f","archetype":"social-butterfly","stats":{"physical":4,"endurance":4,"mental":6,"social":8,"strategic":2,"loyalty":6,"boldness":5,"intuition":7,"temperament":4}},{"name":"Noah","slug":"noah","gender":"m","archetype":"floater","stats":{"physical":2,"endurance":4,"mental":10,"social":4,"strategic":6,"loyalty":6,"boldness":6,"intuition":7,"temperament":4}},{"name":"Owen","slug":"owen","gender":"m","sexuality":"bi","archetype":"social-butterfly","stats":{"physical":8,"endurance":4,"mental":2,"social":10,"strategic":2,"loyalty":10,"boldness":3,"intuition":6,"temperament":10}},{"name":"Pete","slug":"pete","gender":"m","archetype":"loyal-soldier","stats":{"physical":6,"endurance":6,"mental":6,"social":4,"strategic":8,"loyalty":6,"boldness":7,"intuition":5,"temperament":4}},{"name":"Priya","slug":"priya","gender":"f","archetype":"mastermind","stats":{"physical":10,"endurance":8,"mental":10,"social":6,"strategic":8,"loyalty":6,"boldness":7,"intuition":8,"temperament":6}},{"name":"Raj","slug":"raj","gender":"m","sexuality":"gay","archetype":"loyal-soldier","stats":{"physical":8,"endurance":8,"mental":2,"social":6,"strategic":2,"loyalty":10,"boldness":3,"intuition":4,"temperament":10}},{"name":"Ripper","slug":"ripper","gender":"m","archetype":"chaos-agent","stats":{"physical":8,"endurance":6,"mental":2,"social":4,"strategic":4,"loyalty":4,"boldness":6,"intuition":3,"temperament":6}},{"name":"Rock","slug":"rock","gender":"m","archetype":"social-butterfly","stats":{"physical":6,"endurance":6,"mental":4,"social":8,"strategic":4,"loyalty":8,"boldness":5,"intuition":6,"temperament":6}},{"name":"Rodney","slug":"rodney","gender":"m","archetype":"challenge-beast","stats":{"physical":8,"endurance":8,"mental":2,"social":4,"strategic":2,"loyalty":8,"boldness":4,"intuition":3,"temperament":8}},{"name":"Ryan","slug":"ryan","gender":"m","archetype":"challenge-beast","stats":{"physical":10,"endurance":8,"mental":4,"social":6,"strategic":4,"loyalty":8,"boldness":5,"intuition":5,"temperament":8}},{"name":"Sadie","slug":"sadie","gender":"f","archetype":"loyal-soldier","stats":{"physical":4,"endurance":4,"mental":4,"social":6,"strategic":2,"loyalty":10,"boldness":2,"intuition":5,"temperament":10}},{"name":"Sam","slug":"sam","gender":"m","archetype":"loyal-soldier","stats":{"physical":4,"endurance":2,"mental":8,"social":6,"strategic":2,"loyalty":10,"boldness":2,"intuition":7,"temperament":10}},{"name":"Samey","slug":"samey","gender":"f","archetype":"hero","stats":{"physical":4,"endurance":6,"mental":6,"social":6,"strategic":4,"loyalty":10,"boldness":3,"intuition":6,"temperament":8}},{"name":"Sanders","slug":"sanders","gender":"f","sexuality":"lesbian","archetype":"hero","stats":{"physical":8,"endurance":10,"mental":8,"social":6,"strategic":6,"loyalty":10,"boldness":4,"intuition":7,"temperament":10}},{"name":"Scarlett","slug":"scarlett","gender":"f","archetype":"schemer","stats":{"physical":4,"endurance":6,"mental":10,"social":6,"strategic":10,"loyalty":2,"boldness":9,"intuition":8,"temperament":2}},{"name":"Scary Girl","slug":"scary-girl","gender":"f","archetype":"wildcard","stats":{"physical":8,"endurance":8,"mental":4,"social":2,"strategic":2,"loyalty":4,"boldness":7,"intuition":3,"temperament":2}},{"name":"Scott","slug":"scott","gender":"m","archetype":"villain","stats":{"physical":6,"endurance":8,"mental":8,"social":4,"strategic":10,"loyalty":2,"boldness":9,"intuition":6,"temperament":4}},{"name":"Shawn","slug":"shawn","gender":"m","archetype":"hero","stats":{"physical":8,"endurance":10,"mental":6,"social":4,"strategic":4,"loyalty":6,"boldness":6,"intuition":5,"temperament":4}},{"name":"Sierra","slug":"sierra","gender":"f","archetype":"loyal-soldier","stats":{"physical":6,"endurance":8,"mental":6,"social":4,"strategic":6,"loyalty":10,"boldness":5,"intuition":5,"temperament":4}},{"name":"Sky","slug":"sky","gender":"f","archetype":"challenge-beast","stats":{"physical":10,"endurance":10,"mental":8,"social":6,"strategic":6,"loyalty":6,"boldness":6,"intuition":7,"temperament":8}},{"name":"Spud","slug":"spud","gender":"m","archetype":"social-butterfly","stats":{"physical":4,"endurance":4,"mental":2,"social":8,"strategic":2,"loyalty":8,"boldness":3,"intuition":5,"temperament":10}},{"name":"Staci","slug":"staci","gender":"f","archetype":"loyal-soldier","stats":{"physical":2,"endurance":2,"mental":2,"social":2,"strategic":2,"loyalty":8,"boldness":3,"intuition":2,"temperament":10}},{"name":"Stephanie","slug":"stephanie","gender":"f","archetype":"hothead","stats":{"physical":8,"endurance":8,"mental":6,"social":6,"strategic":6,"loyalty":4,"boldness":8,"intuition":6,"temperament":2}},{"name":"Sugar","slug":"sugar","gender":"f","archetype":"villain","stats":{"physical":6,"endurance":8,"mental":4,"social":6,"strategic":8,"loyalty":2,"boldness":9,"intuition":5,"temperament":2}},{"name":"Tammy","slug":"tammy","gender":"f","archetype":"loyal-soldier","stats":{"physical":4,"endurance":4,"mental":4,"social":4,"strategic":2,"loyalty":8,"boldness":4,"intuition":4,"temperament":8}},{"name":"Taylor","slug":"taylor","gender":"f","archetype":"villain","stats":{"physical":4,"endurance":4,"mental":6,"social":10,"strategic":8,"loyalty":2,"boldness":9,"intuition":8,"temperament":2}},{"name":"Tom","slug":"tom","gender":"m","sexuality":"gay","archetype":"social-butterfly","stats":{"physical":8,"endurance":8,"mental":4,"social":8,"strategic":4,"loyalty":10,"boldness":3,"intuition":6,"temperament":10}},{"name":"Topher","slug":"topher","gender":"m","archetype":"chaos-agent","stats":{"physical":4,"endurance":6,"mental":6,"social":8,"strategic":6,"loyalty":2,"boldness":8,"intuition":7,"temperament":4}},{"name":"Trent","slug":"trent","gender":"m","archetype":"showmancer","stats":{"physical":6,"endurance":6,"mental":6,"social":8,"strategic":4,"loyalty":8,"boldness":4,"intuition":7,"temperament":8}},{"name":"Tyler","slug":"tyler","gender":"m","archetype":"loyal-soldier","stats":{"physical":8,"endurance":6,"mental":2,"social":6,"strategic":2,"loyalty":8,"boldness":4,"intuition":4,"temperament":10}},{"name":"Wayne","slug":"wayne","gender":"m","archetype":"hero","stats":{"physical":8,"endurance":8,"mental":2,"social":8,"strategic":2,"loyalty":10,"boldness":3,"intuition":5,"temperament":10}},{"name":"Zee","slug":"zee","gender":"m","archetype":"social-butterfly","stats":{"physical":6,"endurance":8,"mental":6,"social":8,"strategic":2,"loyalty":8,"boldness":3,"intuition":7,"temperament":10}},{"name":"Zoey","slug":"zoey","gender":"f","archetype":"showmancer","stats":{"physical":8,"endurance":8,"mental":8,"social":10,"strategic":6,"loyalty":10,"boldness":4,"intuition":9,"temperament":8}}];
 
 // ── Franchise Roster Search ───────────────────────────────────────────
 let rosterHighlight = -1;
@@ -1892,7 +1897,12 @@ function saveCast() { localStorage.setItem('simulator_cast', JSON.stringify(play
 function clearCast() { if(!confirm('Clear all players?')) return; players=[]; saveCast(); cancelEdit(); renderCast(); }
 function loadS10Preset() {
   if (players.length>0 && !confirm('Replace cast with S10 Champions vs Contenders?')) return;
-  players = S10_PRESET.map((p,i) => ({...p, id:'s10-'+i}));
+  const rosterMap = Object.fromEntries(FRANCHISE_ROSTER.map(p => [p.name, p]));
+  players = S10_TRIBES.map((t,i) => {
+    const r = rosterMap[t.name];
+    if (!r) { console.warn('S10 preset: missing roster entry for', t.name); return null; }
+    return { ...r, tribe: t.tribe, id: 's10-'+i };
+  }).filter(Boolean);
   if (!seasonConfig.tribes?.length) {
     seasonConfig.tribes = [{ name:'Champions', color:'#f59e0b' }, { name:'Contenders', color:'#ef4444' }];
     localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
@@ -2360,7 +2370,28 @@ function renderAllianceList() {
 function bKey(a, b)         { return [a,b].sort().join('||'); }
 function getBond(a, b)      { return gs?.bonds?.[bKey(a,b)] ?? 0; }
 function setBond(a, b, val) { if(gs) gs.bonds[bKey(a,b)] = Math.max(-10, Math.min(10, val)); }
-function addBond(a, b, d)   { setBond(a, b, getBond(a,b)+d); }
+function addBond(a, b, d) {
+  // Temperament scaling: hotheads feel everything harder (bonds swing faster both ways)
+  const _pA = players.find(p => p.name === a), _pB = players.find(p => p.name === b);
+  const _sA = _pA?.stats, _sB = _pB?.stats;
+  if (_sA || _sB) {
+    const _minTemp = Math.min(_sA?.temperament ?? 5, _sB?.temperament ?? 5);
+    const _tempScale = 1.0 + (5 - _minTemp) * 0.04;
+    d *= _tempScale;
+  }
+  // Villain bond dynamics: villains gain LESS from positive bonds (they use people, not love them)
+  // But they lose LESS from negative ones too (they don't care what people think)
+  const _archA = _pA?.archetype, _archB = _pB?.archetype;
+  if (_archA === 'villain' || _archB === 'villain') {
+    if (d > 0) d *= 0.7; // positive bonds form slower for villains (not genuine)
+    if (d < 0) d *= 0.8; // negative bonds hit less (they don't care)
+  }
+  // Hero bond dynamics: heroes give MORE but receive slightly less (taken for granted)
+  if (_archA === 'hero' || _archB === 'hero') {
+    if (d > 0) d *= 1.15; // heroes build bonds faster (genuine warmth)
+  }
+  setBond(a, b, getBond(a,b)+d);
+}
 
 const DEFAULT_STATS = { physical:5, endurance:5, mental:5, social:5, strategic:5, loyalty:5, boldness:5, intuition:5, temperament:5 };
 
@@ -2565,6 +2596,21 @@ function computeHeat(name, tribalPlayers, alliances) {
   if (gs.socialBombHeatThisEp?.has(name)) heat += 1.0;
   // KiP holder — stolen advantage makes you a known threat
   if (gs.kipStealLastEp?.holder === name) heat += 0.3;
+  // Fan vote winner — being fan favorite = FTC threat
+  if (gs.fanVoteWinner === name || gs.fanVoteEp === (gs.episode || 0) + 1 && gs.advantages?.some(a => a.holder === name && a.fromFanVote)) heat += 0.5;
+  // Hero/Villain archetype heat modifiers
+  const _nameArch = players.find(p => p.name === name)?.archetype || '';
+  if (_nameArch === 'villain') {
+    heat += 1.5; // everyone wants the villain gone
+    // BUT low-boldness players FEAR voting for the villain (intimidation effect)
+    // This is applied per-voter in simulateVotes, not here (computeHeat is voterless)
+  }
+  if (_nameArch === 'hero') {
+    heat -= 1.0; // people don't want to vote for the hero (proportional with game stage)
+    // Strategic players see the hero as a jury threat
+    const _stratVoters = tribalPlayers.filter(p => pStats(p).strategic * 0.1 > 0.6);
+    if (_stratVoters.length && gs.isMerged) heat += _stratVoters.length * 0.3; // late-game jury threat targeting
+  }
   // Legacy holder — known holders are late-game threats (they have guaranteed immunity coming)
   const _nameHasLegacy = gs.advantages?.some(a => a.type === 'legacy' && a.holder === name);
   if (_nameHasLegacy) {
@@ -2615,6 +2661,20 @@ function computeHeat(name, tribalPlayers, alliances) {
   }
   // Showmance — recognized romantic pair draws even more heat
   if (gs.showmances?.some(sh => sh.includes(name))) heat += gs.phase === 'post-merge' ? 0.6 : 0.2;
+  // Bold unpredictability — proportional: every point of boldness makes you slightly harder to target
+  const _nameBoldness = pStats(name).boldness;
+  heat -= _nameBoldness * 0.04; // stat 4=-0.16, stat 7=-0.28, stat 10=-0.40
+  // Chaos dividend: if the last tribal was chaotic (scattered votes), bold players benefit
+  // They thrive in disorganization — when nobody can agree, the wildcard survives
+  const _prevEp = gs.episodeHistory?.[gs.episodeHistory.length - 1];
+  if (_prevEp) {
+    const _prevVotes = _prevEp.votes || {};
+    const _uniqueTargets = Object.keys(_prevVotes).length;
+    const _totalVoters = Object.values(_prevVotes).reduce((s, v) => s + v, 0);
+    if (_uniqueTargets >= 4 && _uniqueTargets / Math.max(1, _totalVoters) >= 0.35) {
+      heat -= _nameBoldness * 0.03; // proportional: stat 4=-0.12, stat 7=-0.21, stat 10=-0.30
+    }
+  }
   // Spirit Island intel — jury visitor told someone who the jury respects/resents
   // Expires after 3 episodes (info becomes stale as jury dynamics shift)
   if (gs.spiritIntel) {
@@ -2655,8 +2715,21 @@ function updatePlayerStates(ep) {
       state.votesReceived = (state.votesReceived || 0) + votesThisEp;
       state.lastVotedEp = epNum;
     }
-    // Big move: voted against alliance consensus
+    // Big moves: actions that build a FTC resume
+    // Broke alliance consensus (intentional flip)
     if (ep.votingLog?.some(e => e.voter === name && e.reason?.includes('broke '))) {
+      state.bigMoves = (state.bigMoves || 0) + 1;
+    }
+    // Played an idol successfully (on self or ally)
+    if (ep.idolPlays?.some(p => p.player === name && !p.misplay && !p.failed && (p.votesNegated || 0) > 0)) {
+      state.bigMoves = (state.bigMoves || 0) + 1;
+    }
+    // Used KiP successfully
+    if (ep.kipSteal?.holder === name && ep.kipSteal?.success) {
+      state.bigMoves = (state.bigMoves || 0) + 1;
+    }
+    // Survived being the top target (received most votes but wasn't eliminated)
+    if (votesThisEp >= 3 && ep.eliminated !== name) {
       state.bigMoves = (state.bigMoves || 0) + 1;
     }
 
@@ -2679,9 +2752,24 @@ function updatePlayerStates(ep) {
     else if (wasTagged || unallied || lostCloseAlly)               emotional = 'uneasy';      // mild anxiety — something's off
     else if (longSafeStreak && s.boldness < 5 && s.strategic < 6) emotional = 'comfortable'; // complacent blind spot
     else if (s.strategic >= 7 && !atBottom)                        emotional = 'calculating'; // strategic mind, actively plotting
-    else if (s.boldness >= 7 || (hasIdol && !wasTargetedRecently)) emotional = 'confident';   // brash or idol-secure
+    else if (Math.random() < s.boldness * 0.10 || (hasIdol && !wasTargetedRecently)) emotional = 'confident'; // proportional: stat 5=50%, stat 8=80%
     else                                                            emotional = 'content';     // genuinely fine, nothing to report
 
+    // High temperament players resist extreme emotional states — they stay composed
+    // Temperament-scaled emotional resistance: proportional
+    // High temperament resists negative states, low temperament escalates
+    const _tempResist = s.temperament * 0.08; // stat 3=0.24, stat 5=0.40, stat 8=0.64, stat 10=0.80
+    const _tempEscalate = (10 - s.temperament) * 0.05; // stat 3=0.35, stat 5=0.25, stat 8=0.10
+    if (emotional === 'desperate' && Math.random() < _tempResist) {
+      emotional = 'paranoid'; // composed players downgrade
+    } else if (emotional === 'paranoid' && Math.random() < _tempResist * 0.7) {
+      emotional = 'calculating'; // very composed → strategic mindset under pressure
+    }
+    if (emotional === 'uneasy' && Math.random() < _tempEscalate) {
+      emotional = 'paranoid'; // volatile players spiral
+    } else if (emotional === 'paranoid' && wasTargeted && Math.random() < _tempEscalate * 0.7) {
+      emotional = 'desperate'; // volatile + targeted → full meltdown
+    }
     state.emotional = emotional;
     gs.playerStates[name] = state;
   });
@@ -2811,7 +2899,7 @@ function recoverBonds(ep) {
       // bond -3 → recover +0.15, bond -5 → +0.20, bond -8 → +0.25
       // Social players recover faster (they smooth things over naturally)
       const _avgSocial = (pStats(a).social + pStats(b).social) / 2;
-      const _socialBonus = Math.max(0, (_avgSocial - 5) * 0.02);
+      const _socialBonus = _avgSocial * 0.015; // proportional: stat 4=0.06, stat 8=0.12
       const recovery = Math.min(0.30, 0.10 + Math.abs(bond + 1.5) * 0.03 + _socialBonus);
       // Cap: never recover past -1.0 (the memory of the feud stays, but the heat cools)
       const newBond = Math.min(-1.0, bond + recovery);
@@ -2822,6 +2910,29 @@ function recoverBonds(ep) {
     }
   }
 
+  // ── Loyalty glue: players who have ACTUALLY been loyal strengthen their alliance bonds ──
+  // Based on behavior (betrayal record), not just their loyalty stat
+  (gs.namedAlliances || []).forEach(alliance => {
+    if (!alliance.active) return;
+    const allyActive = alliance.members.filter(m => active.includes(m));
+    if (allyActive.length < 2) return;
+    allyActive.forEach(m => {
+      // Check actual loyalty: how many times have they betrayed THIS alliance?
+      const _myBetrayals = (alliance.betrayals || []).filter(b => b.player === m).length;
+      if (_myBetrayals >= 2) return; // serial betrayer of this alliance — no glue
+      // Didn't betray this episode
+      const _betrayedThisEp = (alliance.betrayals || []).some(b => b.player === m && b.ep === (ep?.num || gs.episode));
+      if (_betrayedThisEp) return;
+      // Boost scales with clean record: 0 betrayals → +0.12, 1 betrayal → +0.05
+      const loyaltyBoost = _myBetrayals === 0 ? 0.12 : 0.05;
+      allyActive.filter(o => o !== m).forEach(o => {
+        if (!_activeFeuds.has([m, o].sort().join('|'))) {
+          addBond(m, o, loyaltyBoost);
+        }
+      });
+    });
+  });
+
   // ── Tribe cohesion: tribemates who coexist without fighting naturally drift closer ──
   // Shared survival builds bonds over time — this is why pre-merge tribes are tight
   const _tribeGroups = gs.isMerged ? [{ members: [...active] }] : gs.tribes;
@@ -2830,13 +2941,16 @@ function recoverBonds(ep) {
     for (let i = 0; i < members.length; i++) {
       for (let j = i + 1; j < members.length; j++) {
         const a = members[i], b = members[j];
-        if (_activeFeuds.has([a, b].sort().join('|'))) continue; // fought this episode — no cohesion
+        if (_activeFeuds.has([a, b].sort().join('|'))) continue;
         const bond = getBond(a, b);
-        if (bond >= 5) continue; // already strong — diminishing returns
-        // Small nudge: +0.15 per episode of peaceful coexistence
-        // Scales slightly with social stats (social players build bonds faster)
-        const _socialAvg = (pStats(a).social + pStats(b).social) / 2;
-        const nudge = 0.10 + Math.min(0.10, (_socialAvg - 5) * 0.02);
+        if (bond >= 5) continue;
+        // Base cohesion + social butterfly bonus
+        // If EITHER player is highly social, bonds grow faster — they make everyone around them comfortable
+        const _sA = pStats(a).social, _sB = pStats(b).social;
+        const _highestSocial = Math.max(_sA, _sB);
+        const nudge = 0.10
+          + _highestSocial * 0.02                          // proportional: stat 4=0.08, stat 8=0.16, stat 10=0.20
+          + _highestSocial * 0.01;                         // butterfly bonus: stat 4=0.04, stat 8=0.08, stat 10=0.10
         addBond(a, b, nudge);
       }
     }
@@ -2923,7 +3037,11 @@ function detectBetrayals(ep) {
         bondCost = -1.5;  // consensus target survived — rogue vote may have cost someone's game
       }
       alliance.members.filter(m => m !== voter && gs.activePlayers.includes(m)).forEach(other => {
-        addBond(voter, other, bondCost);
+        // Betraying someone who was ACTUALLY loyal hurts more — based on their betrayal record, not their stat
+        const _victimBetrayalCount = (gs.namedAlliances || []).reduce((n, a) => n + (a.betrayals || []).filter(b => b.player === other).length, 0);
+        const _victimWasLoyal = _victimBetrayalCount === 0; // never betrayed anyone
+        const _loyaltyMultiplier = _victimWasLoyal ? 1.3 : _victimBetrayalCount <= 1 ? 1.1 : 1.0;
+        addBond(voter, other, bondCost * _loyaltyMultiplier);
       });
       const newAllianceNote = formedThisEp
         ? ` (alliance formed this episode — bonds never had time to solidify)`
@@ -3197,21 +3315,19 @@ function pickTarget(attackers, victims, challengeLabel) {
         if (_hubS.strategic >= 7) personalityMod += vs.strategic >= 7 ? 1.0 : 0;
         // Social hubs target antisocial players (they can't be controlled)
         if (_hubS.social >= 7) personalityMod += vs.social <= 4 ? 0.5 : vs.social >= 8 ? 0.8 : 0;
-        // Bold hubs target physical threats (challenge beasts threaten them)
-        if (_hubS.boldness >= 7) personalityMod += (vs.physical >= 8 || vs.endurance >= 8) ? 0.6 : 0;
-        // Loyal hubs target disloyal players (can't trust them)
-        if (_hubS.loyalty >= 7) personalityMod += vs.loyalty <= 3 ? 0.7 : 0;
-        // Intuitive hubs target known idol holders
-        if (_hubS.intuition >= 7 && gs.knownIdolHoldersThisEp?.has(v)) personalityMod += 1.5;
+        // Proportional personality targeting
+        personalityMod += _hubS.boldness * 0.03 * Math.max(vs.physical, vs.endurance) * 0.1; // bold targets physical threats
+        personalityMod += _hubS.loyalty * 0.07 * Math.max(0, (5 - vs.loyalty) * 0.2); // loyal targets disloyal
+        if (gs.knownIdolHoldersThisEp?.has(v)) personalityMod += _hubS.intuition * 0.15; // intuitive targets known idol holders
       }
       // Known Second Life Amulet holder — personality-driven reaction
       let _amuletMod = 0;
       if (gs.knownAmuletHoldersThisEp?.has(v) && _hubS) {
         const _hubAvgDuel = (_hubS.physical + _hubS.endurance + _hubS.mental) / 3;
         const _vAvgDuel   = (pStats(v).physical + pStats(v).endurance + pStats(v).mental) / 3;
-        if (_hubS.physical >= 8 || _hubS.endurance >= 8 || _hubS.mental >= 8 || (_hubS.boldness >= 7 && _hubAvgDuel > _vAvgDuel)) {
-          // Challenge beasts (any stat) / bold players who'd win the duel: WANT to flush it
-          _amuletMod = 1.5; // "vote them out, I'll beat them"
+        if (_hubAvgDuel >= 6 || (_hubS.boldness * 0.1 > Math.random() && _hubAvgDuel > _vAvgDuel)) {
+          // Proportional: confident in duel based on actual stats
+          _amuletMod = Math.max(_hubS.physical, _hubS.endurance, _hubS.mental) * 0.15; // stat 6=0.9, stat 8=1.2, stat 10=1.5
         } else if (_hubS.strategic >= 7) {
           // Strategic players: avoid — unpredictable, wastes a vote
           _amuletMod = -2.0;
@@ -4447,10 +4563,31 @@ function simulateSlasherNight(ep) {
           } else if (leaderStats.social >= 7) {
             // Social hub: prevents panic
             allianceAlive.forEach(n => { roundFlags[n].panicImmune = true; });
-          } else if (leaderStats.physical >= 7) {
-            // Physical hub: stands guard
+          } else if (Math.random() < leaderStats.physical * 0.10) {
+            // Physical hub: stands guard — proportional
             allianceAlive.forEach(n => { roundFlags[n].catchBoost = (roundFlags[n].catchBoost || 0) - 1; });
           }
+        }
+      }
+    });
+
+    // ── Hero/Villain Slasher Night bonuses ──
+    survivors.forEach(p => {
+      const _pArch = players.find(pl => pl.name === p)?.archetype || '';
+      if (_pArch === 'villain') {
+        // Villains THRIVE in Slasher Night — intimidation is their element
+        scores[p] += 2; // baseline score boost
+        roundFlags[p].panicImmune = true; // villains don't panic
+      }
+      if (_pArch === 'hero') {
+        // Heroes protect others at personal cost — lower score but bond gains
+        const _nearbyAllies = (pairings[p] || []).filter(a => survivors.includes(a));
+        if (_nearbyAllies.length) {
+          _nearbyAllies.forEach(ally => {
+            scores[ally] += 1; // hero shields allies
+            addBond(ally, p, 0.3); // ally appreciates the protection
+          });
+          scores[p] -= 1; // hero takes the risk
         }
       }
     });
@@ -4522,7 +4659,7 @@ function simulateSlasherNight(ep) {
       const gain = roundScoreGains[n] || 0;
       return gain > (best.gain || -Infinity) ? { name: n, gain } : best;
     }, { gain: -Infinity });
-    if (topScorer.name && pStats(topScorer.name).boldness >= 6 && Math.random() < SLASHER_OVERCONFIDENCE_CHANCE) {
+    if (topScorer.name && Math.random() < pStats(topScorer.name).boldness * 0.02) { // proportional: stat 4=8%, stat 7=14%, stat 10=20%
       scores[topScorer.name] -= 3;
       roundFlags[topScorer.name].highScore = true;
       roundEvents.push({
@@ -4570,28 +4707,21 @@ function simulateSlasherNight(ep) {
       (pairings[name] || []).filter(a => survivors.includes(a) && !caughtThisRound.has(a)).forEach(ally => {
         const allyStats = pStats(ally);
         const allyBond = getBond(ally, name);
-        if (allyStats.loyalty >= 7) {
-          // Try to save: +3 protect but higher catch risk next round
-          scores[ally] += 3;
-          addBond(ally, name, 1.5);
-          roundFlags[ally].decoyCatchBoost = (roundFlags[ally].decoyCatchBoost || 0) + 2;
+        // Proportional rescue: loyalty determines chance and quality of help
+        const _rescueChance = allyStats.loyalty * 0.10; // loyalty 3=30%, loyalty 7=70%, loyalty 10=100%
+        if (Math.random() < _rescueChance) {
+          const _rescueQuality = allyStats.loyalty * 0.3; // loyalty 3=0.9, loyalty 7=2.1, loyalty 10=3.0
+          scores[ally] += Math.round(_rescueQuality);
+          addBond(ally, name, allyStats.loyalty * 0.15);
+          roundFlags[ally].decoyCatchBoost = (roundFlags[ally].decoyCatchBoost || 0) + Math.round(allyStats.loyalty * 0.2);
           roundEvents.push({
-            player: ally, eventId: 'partner-rescue-attempt', points: 3,
+            player: ally, eventId: 'partner-rescue-attempt', points: Math.round(_rescueQuality),
             text: `${ally} sees ${name} go down and charges in. ${pronouns(ally).Sub} ${pronouns(ally).sub === 'they' ? 'aren\'t' : 'isn\'t'} leaving anyone behind.`,
-            type: 'positive', bondChanges: [{ a: ally, b: name, delta: 1.5 }], ally: name, enemy: null, victim: null
+            type: 'positive', bondChanges: [{ a: ally, b: name, delta: allyStats.loyalty * 0.15 }], ally: name, enemy: null, victim: null
           });
-        } else if (allyStats.loyalty >= 4) {
-          // 50/50 help or run
-          if (Math.random() < 0.5) {
-            scores[ally] += 1;
-            addBond(ally, name, 0.5);
-          } else {
-            scores[ally] -= 1;
-            addBond(ally, name, -0.5);
-          }
         } else {
-          // Run: bond penalty
-          addBond(ally, name, -1.0);
+          // Didn't help — bond penalty scales inversely with loyalty (disloyal = bigger betrayal)
+          addBond(ally, name, -(1.0 - allyStats.loyalty * 0.08));
           roundFlags[ally].partnerCaught = true;
         }
       });
@@ -5217,7 +5347,7 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
     // your alliance to eliminate a threat IS a strategic move, not complacency.
     const isLateGame = gs.isMerged && gs.activePlayers.length <= 7;
     const _inNamedAlliance = myAlliance?.type === 'alliance';
-    const resumeMod = isLateGame && (state.bigMoves || 0) === 0 && s.strategic >= 7 && !_inNamedAlliance ? -0.10 : 0;
+    const resumeMod = isLateGame && (state.bigMoves || 0) === 0 && !_inNamedAlliance ? -(s.strategic * 0.015) : 0; // proportional: stat 5=-0.075, stat 10=-0.15
 
     // Named alliance bond boost: trust in your allies makes you more likely to follow through.
     // Purely relationship-driven — strong bonds = high trust = follow the plan.
@@ -5236,8 +5366,12 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
       return _avgBond * 0.03 + _gracePeriod;
     })();
 
+    // Track record: past betrayals erode the loyalty stat's influence
+    // A loyalty 10 player who has betrayed 3 times isn't actually loyal — their actions say otherwise
+    const _voterBetrayals = (gs.namedAlliances || []).reduce((n, a) => n + (a.betrayals || []).filter(b => b.player === voter).length, 0);
+    const _trackRecordPenalty = _voterBetrayals >= 3 ? -0.15 : _voterBetrayals >= 2 ? -0.08 : _voterBetrayals >= 1 ? -0.03 : 0;
     // Loyalty check — open vote adds social pressure to follow the group
-    const loyaltyThreshold = (s.loyalty - (s.boldness - 5) * 0.3) / 11 + (openVote ? 0.1 : 0) + emotionalMod + bottomMod + resumeMod + _allianceBondMod;
+    const loyaltyThreshold = (s.loyalty - (s.boldness - 5) * 0.3) / 11 + (openVote ? 0.1 : 0) + emotionalMod + bottomMod + resumeMod + _allianceBondMod + _trackRecordPenalty;
     const isLoyal = Math.random() < Math.max(0.10, Math.min(0.95, loyaltyThreshold));
     const resistsBond = Math.random() < bondResistChance;
     // Conflicting alliance pull: bolder + less loyal players more likely to honor the other alliance
@@ -5266,8 +5400,8 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
         // Late-game discipline: at F5 or smaller, grudges are suppressed — every vote is too critical
         const _lateGameGrudgePenalty = tribalPlayers.length <= 5 ? -0.15 : tribalPlayers.length <= 7 ? -0.05 : 0;
         const _grudgeChance = Math.max(0, 0.02 + Math.abs(_enemyBond) * 0.04
-          + (s.boldness >= 7 ? 0.06 : 0)
-          + (s.loyalty <= 4 ? 0.05 : 0)
+          + s.boldness * 0.008                                              // proportional: stat 5=0.04, stat 8=0.064, stat 10=0.08
+          + (10 - s.loyalty) * 0.006                                        // proportional: loyalty 3=0.042, loyalty 7=0.018, loyalty 10=0
           + (emotional === 'desperate' || emotional === 'paranoid' ? 0.04 : 0)
           + _lateGameGrudgePenalty);
         if (Math.random() < Math.min(0.40, _grudgeChance)) {
@@ -5289,9 +5423,10 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
     } else {
       isDefecting = true;
       // Intuition-based preemptive strike: paranoid/desperate player senses they're being targeted and strikes first
-      if ((emotional === 'paranoid' || emotional === 'desperate') && s.intuition >= 7) {
+      // Proportional: any intuition level can sense danger, higher = better
+      if (emotional === 'paranoid' || emotional === 'desperate') {
         const heat = computeHeat(voter, tribalPlayers, alliances);
-        if (heat >= 2.5 && Math.random() < 0.18 + (s.intuition - 7) * 0.07) {
+        if (heat >= 2.5 && Math.random() < s.intuition * 0.03) { // proportional: stat 4=12%, stat 7=21%, stat 10=30%
           const orchestrators = tribalPlayers.filter(p => p !== voter && !isImmune(p)
             && alliances.some(a => a.members.includes(p) && a.target === voter));
           if (orchestrators.length) {
@@ -5323,7 +5458,7 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
 
       // ── Self-preservation: strategic/intuitive player senses they're the target and scrambles ──
       // Fires for any unallied player (target still null) who is listed as a target by a bloc of ≥2.
-      if (!target && s.strategic >= 6) {
+      if (!target) {
         const _targetedByBlocs = alliances.filter(a => a.target === voter && a.type !== 'solo' && a.members.length >= 2);
         if (_targetedByBlocs.length) {
           const _iState = getPlayerState(voter);
@@ -5333,9 +5468,8 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
                          : _iState.emotional === 'comfortable' ? -0.10
                          : _iState.emotional === 'content'     ? -0.05 : 0;
           const _eavMod = gs.playerStates[voter]?.eavesdropBoostThisEp ? s.intuition * 0.015 : 0;
-          // Late-game boost: at F5 or smaller, it's obvious you're a target — everyone knows
           const _lateGameBoost = tribalPlayers.length <= 5 ? 0.25 : tribalPlayers.length <= 7 ? 0.10 : 0;
-          const _senseChance = 0.20 + s.strategic * 0.04 + s.intuition * 0.02 + _emotMod + _eavMod + _lateGameBoost;
+          const _senseChance = s.strategic * 0.05 + s.intuition * 0.02 + _emotMod + _eavMod + _lateGameBoost; // proportional: stat 4=0.20, stat 8=0.40
           if (Math.random() < _senseChance) {
             // Join the largest bloc not targeting them — scramble to safety
             const _safeBlocs = alliances
@@ -5351,15 +5485,21 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
 
       if (!target) {
         // Exclude: bond-protected target, showmance partner, strong allies (won't freely vote them)
+        // Villain intimidation: low-boldness voters avoid targeting the villain (fear)
+        const _voterFeared = (p) => {
+          const _pArch = players.find(pl => pl.name === p)?.archetype;
+          return _pArch === 'villain' && s.boldness * 0.1 < Math.random(); // bold 3 = 70% avoid, bold 7 = 30% avoid, bold 10 = never avoid
+        };
         const candidates = tribalPlayers.filter(p => p !== voter && !isImmune(p)
           && (!resistsBond || p !== allianceTarget)
           && (!showmanceResist || p !== showmancePartner)
-          && getBond(voter, p) < 5); // won't freely target someone they genuinely like
+          && getBond(voter, p) < 5 // won't freely target someone they genuinely like
+          && !_voterFeared(p)); // low-boldness voters fear the villain
         if (candidates.length) {
           const cLabel = myAlliance?.challengeLabel || null;
           const voterArch = players.find(p => p.name === voter)?.archetype;
-          const isChalBeast = voterArch === 'challenge-beast' || s.physical >= 8;
-          const isSchemer   = voterArch === 'schemer' || voterArch === 'mastermind' || s.strategic >= 7;
+          const isChalBeast = voterArch === 'challenge-beast' || s.physical * 0.1 > Math.random(); // proportional: phys 5=50%, phys 8=80%
+          const isSchemer   = voterArch === 'schemer' || voterArch === 'mastermind' || s.strategic * 0.1 > Math.random();
           // Vote gravity: each existing vote pulls later voters toward the same target,
           // simulating real-time consolidation at tribal. Prevents perfect round-robin scatter.
           const voteGravity = t => (votes[t] || 0) * 0.5;
@@ -5387,7 +5527,7 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
               const _tS = pStats(t);
               const _vAvg = (s.physical + s.endurance + s.mental) / 3;
               const _tAvg = (_tS.physical + _tS.endurance + _tS.mental) / 3;
-              if (isChalBeast || s.endurance >= 8 || s.mental >= 8 || (s.boldness >= 7 && _vAvg > _tAvg)) return 1.5; // "I'd beat them in the duel"
+              if (isChalBeast || _vAvg >= 7 || (s.boldness * 0.1 > Math.random() && _vAvg > _tAvg)) return 1.5; // proportional: confident in duel
               if (isSchemer) return -2.0; // waste of a vote
               if (_vAvg < _tAvg - 1) return -3.0; // terrified of being picked
               return -1.0;
@@ -5608,20 +5748,12 @@ function simulateRIChoice(name) {
   const state = getPlayerState(name);
   const emotional = state?.emotional || 'content';
 
-  // Bold 7+ or physical 7+: always RI (fighters)
-  if (s.boldness >= 7 || s.physical >= 7) return 'REDEMPTION ISLAND';
-
-  // Desperate emotional state: always RI (nothing to lose)
-  if (emotional === 'desperate') return 'REDEMPTION ISLAND';
-
-  // Strategic 7+ or loyalty 7+: always RI (driven to return)
-  if (s.strategic >= 7 || s.loyalty >= 7) return 'REDEMPTION ISLAND';
-
-  // Low boldness <= 3 AND low physical <= 3: small chance to go home (~20%)
-  if (s.boldness <= 3 && s.physical <= 3) return Math.random() < 0.2 ? 'WENT HOME' : 'REDEMPTION ISLAND';
-
-  // Everyone else: ~90% go to RI (going home is very rare — most people fight)
-  return Math.random() < 0.9 ? 'REDEMPTION ISLAND' : 'WENT HOME';
+  // Proportional: fight score determines whether they go to RI
+  // Bold, physical, strategic, loyal players fight. Meek players might quit.
+  const _fightScore = (s.boldness + s.physical + s.strategic + s.loyalty) / 4; // avg of fighting stats
+  const _emotBoost = emotional === 'desperate' ? 2.0 : emotional === 'paranoid' ? 1.0 : 0;
+  const _riChance = Math.min(0.98, (_fightScore + _emotBoost) * 0.10); // stat avg 5 = 50%, avg 7 = 70%, avg 9 = 90%
+  return Math.random() < _riChance ? 'REDEMPTION ISLAND' : 'WENT HOME';
 }
 
 function simulateRIDuel(riPlayers) {
@@ -5916,23 +6048,24 @@ function generateRescueIslandLife(ep) {
     riList.forEach(name => {
       const pr = pronouns(name);
       const s = pStats(name);
-      if (s.endurance >= 7 && !usedTypes.has('thriving-' + name)) {
-        pool.push({ weight: 1.5, type: 'thriving', player: name,
+      // Proportional: thriving/struggling scales with endurance
+      if (s.endurance * 0.1 > Math.random() && !usedTypes.has('thriving-' + name)) {
+        pool.push({ weight: s.endurance * 0.2, type: 'thriving', player: name,
           text: `${name} looks stronger now than when ${pr.sub} left the main game.` });
       }
-      if (s.endurance <= 4 && !usedTypes.has('struggling-' + name)) {
-        pool.push({ weight: 1.5, type: 'struggling', player: name,
+      if ((10 - s.endurance) * 0.1 > Math.random() && !usedTypes.has('struggling-' + name)) {
+        pool.push({ weight: (10 - s.endurance) * 0.2, type: 'struggling', player: name,
           text: `${name} is barely eating. The island is taking a physical toll.` });
       }
-      if (s.endurance >= 6 && !usedTypes.has('fishing-' + name)) {
+      if (s.endurance * 0.08 > Math.random() && !usedTypes.has('fishing-' + name)) {
         pool.push({ weight: 1, type: 'bonding', player: name,
           text: `${name} catches enough fish for the whole island. Respect earned.`,
-          allBond: 0.3 });
+          allBond: s.endurance * 0.04 }); // proportional bond: endurance 5=0.20, endurance 8=0.32
       }
-      if (s.physical >= 6 && !usedTypes.has('shelter-' + name)) {
+      if (s.physical * 0.08 > Math.random() && !usedTypes.has('shelter-' + name)) {
         pool.push({ weight: 1, type: 'bonding', player: name,
           text: `${name} builds a windbreak. Nobody asked. Everyone benefits.`,
-          allBond: 0.2 });
+          allBond: s.physical * 0.03 }); // proportional: phys 5=0.15, phys 8=0.24
       }
     });
 
@@ -6358,7 +6491,7 @@ function checkIdolPlays(tribalPlayers, votesObj, ep, voteLog = []) {
     const _kipWillUse = ep._forceAdvantages || (_kipRealTargets.length > 0 && Math.random() < Math.min(_kipUseChance, 0.95));
     // Also use if they THINK someone has an advantage (even if wrong) — bold/paranoid players guess
     const _kipGuessUse = !_kipWillUse && _kipRealTargets.length === 0 && _kipInDanger
-      && (_kipS.boldness >= 7 || _kipS.intuition >= 7) && Math.random() < 0.25;
+      && Math.random() < Math.max(_kipS.boldness, _kipS.intuition) * 0.03; // proportional: stat 5=15%, stat 8=24%, stat 10=30%
     if (_kipWillUse || _kipGuessUse) {
       // Pick who to ask — score all tribal players, not just confirmed holders
       const _kipCandidates = tribalPlayers.filter(p => p !== _kipHolder).map(p => {
@@ -6367,7 +6500,7 @@ function checkIdolPlays(tribalPlayers, votesObj, ep, voteLog = []) {
         if (known.has(p)) score += 10;
         // Actual holder (even if not known) — intuitive players sense it
         const hasAdv = _kipRealTargets.some(t => t.holder === p);
-        if (hasAdv && _kipS.intuition >= 7) score += 3;
+        if (hasAdv) score += _kipS.intuition * 0.4; // proportional: stat 4=1.6, stat 7=2.8, stat 10=4.0
         if (hasAdv) score += 1;
         // Suspicion: players who search a lot, act secretive, or have been near idol spots
         score += pStats(p).strategic * 0.1;
@@ -6440,14 +6573,14 @@ function checkIdolPlays(tribalPlayers, votesObj, ep, voteLog = []) {
     const tipOffCandidates = wasBetrayed ? [] : tribalPlayers.filter(p => {
       if (p === name) return false;
       if (getBond(name, p) < 1.5) return false;            // needs at least a meaningful bond
-      if (pStats(p).intuition < 7) return false;           // needs to be perceptive enough
+      if (Math.random() > pStats(p).intuition * 0.08) return false; // proportional: stat 4=32%, stat 7=56%, stat 10=80%
       const theirVote = voteLog.find(l => l.voter === p)?.voted;
       return theirVote !== name;                            // not voting against the holder
     });
     const tipOffAlly = tipOffCandidates.sort((a,b) => getBond(name, b) - getBond(name, a))[0] || null;
     // Tip-off bonus scales with bond intensity — stronger allies give better intel
     const tipOffBonus = tipOffCandidates.length
-      ? Math.min(0.50, tipOffCandidates.reduce((s, p) => s + Math.min(0.25, getBond(name, p) * 0.03), 0))
+      ? Math.min(0.50, tipOffCandidates.reduce((s, p) => s + Math.min(0.25, getBond(name, p) * pStats(p).intuition * 0.005), 0))
       : 0;
 
     // boldness + strategic drives willingness; intuition + emotional state raises readiness
@@ -6617,9 +6750,11 @@ function checkIdolPlays(tribalPlayers, votesObj, ep, voteLog = []) {
 
     // Archetype modifiers
     const _hArch = players.find(p => p.name === _holder)?.archetype || '';
-    const _archMod = _hArch === 'loyal-soldier'    ?  0.07
+    const _archMod = _hArch === 'hero'              ?  0.15  // heroes sacrifice for allies — doubled chance
+                   : _hArch === 'loyal-soldier'    ?  0.07
                    : _hArch === 'social-butterfly'  ?  0.04
                    : (_hArch === 'wildcard' || _hArch === 'chaos-agent') ? 0.03
+                   : _hArch === 'villain'           ? -0.08  // villains don't waste power on others
                    : _hArch === 'mastermind'        ? -0.05 : 0;
 
     const _doAllyPlay = Math.random() < _baseChance + _hs.boldness * 0.03 + _hs.loyalty * 0.03 + _archMod;
@@ -6677,16 +6812,14 @@ function checkNonIdolAdvantageUse(tribalPlayers, votesObj, ep, voteLog = []) {
     const _maxVotes = _allVoteCounts.length ? Math.max(..._allVoteCounts) : 0;
     const _isCloseRace = _targetVotes > 0 && _targetVotes >= _maxVotes - 1;
     const _isNervous = ['paranoid', 'desperate'].includes(_state.emotional);
-    let _chance = 0.20 + _s.strategic * 0.025 + (_isCloseRace ? 0.25 : 0) + (_isNervous ? 0.12 : 0);
+    // Proportional: boldness scales advantage play aggressiveness
+    let _chance = 0.20 + _s.strategic * 0.025 + _s.boldness * 0.015 + (_isCloseRace ? 0.25 : 0) + (_isNervous ? 0.12 : 0);
     if (_forAlly) {
       // Selfish/scheming players won't burn an advantage for someone else.
       // Scale the ally-save bonus by loyalty; schemer archetype gets an extra penalty.
       const _arch = players.find(p => p.name === _holder)?.archetype || '';
       const _loy  = _s.loyalty;
-      const _allyBias = _loy >= 7 ? 0.30
-                      : _loy >= 5 ? 0.10
-                      : _loy >= 3 ? -0.05
-                      : -0.30; // ruthlessly selfish
+      const _allyBias = (_loy - 5) * 0.06; // proportional: loyalty 3=-0.12, loyalty 5=0, loyalty 7=+0.12, loyalty 10=+0.30
       const _schemerPenalty = (_arch === 'schemer') ? -0.15 : 0;
       _chance += _allyBias + _schemerPenalty;
     }
@@ -6719,7 +6852,7 @@ function checkNonIdolAdvantageUse(tribalPlayers, votesObj, ep, voteLog = []) {
       .sort((a, b) => b.score - a.score)[0]?.name;
     if (!_stealTarget) continue;
 
-    const _chance = 0.25 + _s.strategic * 0.03 + (_state.emotional === 'paranoid' ? 0.20 : 0);
+    const _chance = 0.25 + _s.strategic * 0.03 + _s.boldness * 0.015 + (_state.emotional === 'paranoid' ? 0.20 : 0);
 
     if (ep._forceAdvantages || Math.random() < _chance) {
       const _stolenEntry = voteLog.find(l => l.voter === _stealTarget);
@@ -7603,16 +7736,17 @@ function applyTwist(ep, twist, isPrimary = true) {
     if (_siBetrayer) {
       const _siBetBond = getBond(spirit, _siBetrayer);
       const _siBetPr = pronouns(_siBetrayer);
-      if (_siS.boldness >= 7 || _siS.temperament <= 3) {
+      // Proportional: explosive chance = boldness + inverse temperament
+      const _explosiveChance = _siS.boldness * 0.08 + (10 - _siS.temperament) * 0.06;
+      if (Math.random() < _explosiveChance) {
         // Public confrontation — explosive
         _siConfrontation = { type: 'explosive', betrayer: _siBetrayer };
         addBond(spirit, _siBetrayer, -1.5);
-        // Witnesses sympathize with the visitor
         gs.activePlayers.forEach(p => {
           if (p === _siBetrayer) return;
           if (getBond(p, spirit) >= 1) addBond(p, _siBetrayer, -0.5);
         });
-      } else if (_siS.strategic >= 7) {
+      } else if (Math.random() < _siS.strategic * 0.08) {
         // Quiet tension — channels anger into extra intel for ally
         _siConfrontation = { type: 'quiet', betrayer: _siBetrayer };
         // No public bond damage, but visitor tells ally about the betrayer
@@ -8134,39 +8268,169 @@ function applyTwist(ep, twist, isPrimary = true) {
   // ── SOCIAL ─────────────────────────────────────────────────────────
   } else if (engineType === 'the-feast' || engineType === 'merge-reward') {
     const all = gs.activePlayers;
-    for (let i = 0; i < all.length; i++) {
-      for (let j = i+1; j < all.length; j++) {
-        if (getBond(all[i], all[j]) > -1) addBond(all[i], all[j], 0.3 + Math.random() * 0.4);
-      }
-    }
-    // Find the cross-tribe pair who clicked hardest — give them an extra strategic-conversation bump
-    let bestPair = null, bestBond = -Infinity;
+    const isMergeFeast = engineType === 'merge-reward';
+    const _feastLabel = isMergeFeast ? 'merge feast' : 'feast';
     const tribeOf = n => gs.tribes.find(t => t.members.includes(n))?.name || 'merge';
+    const _baseBondBoost = isMergeFeast ? 0.5 : 0.3;
+
+    // Base bond boost — proportional with social
     for (let i = 0; i < all.length; i++) {
       for (let j = i+1; j < all.length; j++) {
-        if (gs.phase === 'pre-merge' && tribeOf(all[i]) === tribeOf(all[j])) continue;
-        const b = getBond(all[i], all[j]);
-        if (b > bestBond) { bestBond = b; bestPair = [all[i], all[j]]; }
+        if (getBond(all[i], all[j]) > -2) {
+          const _highSocial = Math.max(pStats(all[i]).social, pStats(all[j]).social);
+          addBond(all[i], all[j], _baseBondBoost + _highSocial * 0.04);
+        }
       }
     }
-    if (bestPair) {
-      addBond(bestPair[0], bestPair[1], 0.5);
-      twistObj.feastHighlight = bestPair;
+
+    // Generate personality-driven events
+    const _numEvents = Math.floor(all.length / 3) + 2;
+    ep.feastEvents = [];
+    const _usedPairs = new Set();
+    const _pairKey = (a, b) => [a, b].sort().join('|');
+
+    for (let _ei = 0; _ei < _numEvents; _ei++) {
+      // Build weighted event pool
+      const _pool = [];
+
+      // Candidate pairs
+      for (let i = 0; i < all.length; i++) {
+        for (let j = i + 1; j < all.length; j++) {
+          if (_usedPairs.has(_pairKey(all[i], all[j]))) continue;
+          const a = all[i], b = all[j];
+          const sA = pStats(a), sB = pStats(b);
+          const bond = getBond(a, b);
+          const crossTribe = !isMergeFeast && tribeOf(a) !== tribeOf(b);
+
+          // 1. Strategic deal — BOTH players need strategic ability to make moves at a feast
+          const _stratMin = Math.min(sA.strategic, sB.strategic);
+          if (_stratMin >= 3) _pool.push({ type: 'strategic-deal', a, b,
+            weight: _stratMin * 0.04 * (crossTribe ? 1.5 : 1) }); // need both to be strategic
+
+          // 2. Emotional positive — driven by social stats, not existing bond (cross-tribe has no bond history)
+          const _socialAvg = (sA.social + sB.social) / 2;
+          _pool.push({ type: 'emotional-positive', a, b,
+            weight: _socialAvg * 0.04 // high social pair = warm moment. low social pair = unlikely
+              + (sA.social * sB.social * 0.002) }); // BOTH being social compounds
+
+          // 3. Emotional negative — driven by low temperament, not existing bond
+          const _worstTemp = Math.min(sA.temperament, sB.temperament);
+          const _hothead = (10 - _worstTemp);
+          _pool.push({ type: 'emotional-negative', a, b,
+            weight: _hothead * 0.025 // low temperament = friction. high temperament = unlikely
+              + (bond < -1 ? 0.15 : 0) // existing tension amplifies chance
+              + (sA.boldness + sB.boldness) * 0.005 }); // bold players provoke
+
+          // 4. Intel leak — leaker needs to be loose (low temperament or high boldness), listener needs intuition
+          const _leakerScore = Math.max((10 - Math.min(sA.temperament, sB.temperament)) * 0.03, Math.max(sA.boldness, sB.boldness) * 0.02);
+          const _listenerScore = Math.max(sA.intuition, sB.intuition) * 0.03;
+          _pool.push({ type: 'intel-leak', a, b, weight: _leakerScore * _listenerScore * 5 }); // needs BOTH a leaker AND listener
+
+          // 5. Cross-tribe sizing up (pre-merge only) — targets the highest-threat cross-tribe players
+          if (crossTribe) {
+            const _threatAvg = (threatScore(a) + threatScore(b)) / 2;
+            _pool.push({ type: 'sizing-up', a, b,
+              weight: Math.max(sA.strategic, sB.strategic) * 0.02 * (_threatAvg * 0.15) }); // strategic observers + high-threat targets
+          }
+
+          // 6. Power revealed — centers on the actual power players
+          if (isMergeFeast) {
+            const _powerScore = Math.max(threatScore(a), threatScore(b));
+            _pool.push({ type: 'power-revealed', a, b,
+              weight: _powerScore * 0.03 * Math.max(sA.strategic + sA.intuition, sB.strategic + sB.intuition) * 0.02 }); // power + someone perceptive enough to notice
+          }
+        }
+      }
+
+      if (!_pool.length) break;
+
+      // Weighted random selection
+      const _totalW = _pool.reduce((s, e) => s + e.weight, 0);
+      let _roll = Math.random() * _totalW;
+      let _chosen = _pool[0];
+      for (const e of _pool) { _roll -= e.weight; if (_roll <= 0) { _chosen = e; break; } }
+
+      const { type, a, b } = _chosen;
+      _usedPairs.add(_pairKey(a, b));
+      const _prA = pronouns(a), _prB = pronouns(b);
+      const sA = pStats(a), sB = pStats(b);
+
+      if (type === 'strategic-deal') {
+        addBond(a, b, 0.8);
+        ep.feastEvents.push({ type, players: [a, b], text: _pick([
+          `${a} and ${b} end up at the same end of the table. What starts as small talk turns into a full strategy session. By the time the plates are cleared, they have a plan.`,
+          `${a} leans across the table to ${b}. "After tonight, we should talk." ${b} nods. The deal isn't made yet — but the door is open.`,
+          `The ${_feastLabel} gave ${a} and ${b} something they didn't have before: time. They used every minute of it.`,
+        ]), badgeText: 'Strategic Deal', badgeClass: 'gold' });
+      } else if (type === 'emotional-positive') {
+        const _bondGain = 0.5 + Math.max(sA.social, sB.social) * 0.05;
+        addBond(a, b, _bondGain);
+        ep.feastEvents.push({ type, players: [a, b], text: _pick([
+          `${a} and ${b} start talking — not about the game. About home, about why they're here, about things that don't usually come up at camp. Something shifts.`,
+          `The food loosens things up. ${a} tells a story that makes ${b} laugh until ${_prB.sub} can't breathe. For five minutes, nobody is playing Survivor.`,
+          `${a} and ${b} discover they have more in common than either expected. The game will test whether that matters.`,
+        ]), badgeText: 'Connection', badgeClass: 'green' });
+      } else if (type === 'emotional-negative') {
+        const _bondLoss = -(0.5 + Math.max(10 - sA.temperament, 10 - sB.temperament) * 0.05);
+        addBond(a, b, _bondLoss);
+        ep.feastEvents.push({ type, players: [a, b], text: _pick([
+          `${a} says something to ${b} that lands wrong. The table goes quiet. Nobody knows whether to laugh or leave.`,
+          `The ${_feastLabel} was supposed to be a truce. ${a} and ${b} didn't get that memo. The tension is visible across the table.`,
+          `${a} brings up something from a past tribal. ${b}'s face changes. The conversation is over, but the damage is done.`,
+          `Somewhere between the second course and dessert, ${a} and ${b} stop pretending to get along. The rest of the table feels it.`,
+        ]), badgeText: 'Tension', badgeClass: 'red' });
+      } else if (type === 'intel-leak') {
+        // Determine leaker (lower temperament) and listener (higher intuition)
+        const _leaker = sA.temperament <= sB.temperament ? a : b;
+        const _listener = _leaker === a ? b : a;
+        const _listenerS = _leaker === a ? sB : sA;
+        // Check if leaker has an advantage to leak about
+        const _leakerAdv = gs.advantages.find(adv => adv.holder === _leaker && ['idol', 'legacy', 'amulet', 'secondLife'].includes(adv.type));
+        if (_leakerAdv) {
+          if (!gs.knownIdolHoldersThisEp) gs.knownIdolHoldersThisEp = new Set();
+          gs.knownIdolHoldersThisEp.add(_leaker);
+          if (!gs.knownIdolHoldersPersistent) gs.knownIdolHoldersPersistent = new Set();
+          gs.knownIdolHoldersPersistent.add(_leaker);
+          const _advLabel = _leakerAdv.type === 'idol' ? 'Hidden Immunity Idol' : _leakerAdv.type === 'legacy' ? 'Legacy Advantage' : _leakerAdv.type === 'amulet' ? 'Amulet' : _leakerAdv.type === 'secondLife' ? 'Second Life Amulet' : 'advantage';
+          const _lkPr = pronouns(_leaker);
+          ep.feastEvents.push({ type, players: [_leaker, _listener], text: _pick([
+            `${_leaker} got too comfortable at the ${_feastLabel}. ${_listener} noticed the way ${_lkPr.sub} touched ${_lkPr.posAdj} bag. By the end of the meal, ${_listener} is certain: ${_leaker} has a ${_advLabel}. That secret is out.`,
+            `${_leaker} let something slip about ${_lkPr.posAdj} ${_advLabel} at the ${_feastLabel}. ${_listener} didn't react — but ${pronouns(_listener).sub} heard every word. ${_leaker}'s ${_advLabel} is no longer a secret.`,
+            `${_listener} watched ${_leaker} all through the ${_feastLabel}. The confidence, the posture, the way ${_lkPr.sub} relaxed when idol talk came up. ${_listener} knows ${_leaker} has a ${_advLabel}. The question is what ${pronouns(_listener).sub} ${pronouns(_listener).sub==='they'?'do':'does'} with that information.`,
+          ]), badgeText: `${_advLabel} Exposed`, badgeClass: 'red' });
+        } else {
+          // No advantage to leak — general vote intel / strategic read
+          if (gs.playerStates?.[_listener]) gs.playerStates[_listener].eavesdropBoostThisEp = true;
+          const _lkPr = pronouns(_leaker);
+          const _liPr = pronouns(_listener);
+          ep.feastEvents.push({ type, players: [_leaker, _listener], text: _pick([
+            `${_listener} overhears ${_leaker} mapping out vote targets at the ${_feastLabel}. ${_liPr.Sub} now ${_liPr.sub==='they'?'know':'knows'} where ${_leaker}'s head is at going into tribal.`,
+            `${_leaker} talks too freely about who ${_lkPr.sub} ${_lkPr.sub==='they'?'want':'wants'} out next. ${_listener} sits quietly and absorbs every word. That information will be used tonight.`,
+            `Between courses, ${_listener} pieces together ${_leaker}'s entire strategy just from watching who ${_lkPr.sub} ${_lkPr.sub==='they'?'talk':'talks'} to and who ${_lkPr.sub} ${_lkPr.sub==='they'?'avoid':'avoids'}. ${_listener} has a read now — and it's a good one.`,
+          ]), badgeText: 'Vote Intel', badgeClass: 'gold' });
+        }
+      } else if (type === 'sizing-up') {
+        const _tA = threatScore(a), _tB = threatScore(b);
+        const _threat = _tA > _tB ? a : b;
+        const _observer = _threat === a ? b : a;
+        ep.feastEvents.push({ type, players: [_observer, _threat], text: _pick([
+          `${_observer} gets a good look at ${_threat} for the first time. The challenge record, the way people defer to ${pronouns(_threat).obj} — it all registers.`,
+          `${_observer} watches ${_threat} work the table and takes mental notes. If they merge, that's someone to worry about.`,
+        ]), badgeText: 'Sizing Up', badgeClass: '' });
+      } else if (type === 'power-revealed') {
+        const _powerPlayer = all.slice().sort((x, y) => threatScore(y) - threatScore(x))[0];
+        if (_powerPlayer === a || _powerPlayer === b) {
+          const _observer = _powerPlayer === a ? b : a;
+          ep.feastEvents.push({ type, players: [_observer, _powerPlayer], text: _pick([
+            `At the ${_feastLabel}, ${_observer} watches who defers to whom. ${_powerPlayer} is at the center of every conversation. That's information.`,
+            `The power dynamics are visible at the table. ${_powerPlayer} doesn't even have to try — people orbit ${pronouns(_powerPlayer).obj}. ${_observer} sees it clearly.`,
+          ]), badgeText: 'Power Dynamics', badgeClass: 'gold' });
+        }
+      }
     }
+
     twistObj.feastBonusApplied = true;
-    // Inject narrative
-    ep.twistNarrativeEvents = ep.twistNarrativeEvents || {};
-    const feastKey = gs.phase === 'pre-merge' && gs.tribes.length ? 'merge' : 'merge';
-    const feastLabel = engineType === 'merge-reward' ? 'merge feast' : 'feast';
-    if (bestPair) {
-      ep.twistNarrativeEvents[feastKey] = { type: 'tdBond', text: _pick([
-        `The ${feastLabel} table put old enemies elbow-to-elbow for the first time. ${bestPair[0]} and ${bestPair[1]} ended up next to each other. That conversation will matter later.`,
-        `Food has a way of lowering defenses. ${bestPair[0]} and ${bestPair[1]} talked for almost an hour at the ${feastLabel}. Neither of them had planned on that.`,
-        `At the ${feastLabel}, the game paused long enough for people to actually see each other. ${bestPair[0]} and ${bestPair[1]} found common ground nobody expected them to find.`,
-      ]) };
-    } else {
-      ep.twistNarrativeEvents[feastKey] = { type: 'tdBond', text: `The ${feastLabel} brought everyone to the same table. Conversations happened. Some of them were even honest.` };
-    }
+    twistObj.feastEvents = ep.feastEvents;
 
   } else if (engineType === 'loved-ones') {
     const all = gs.activePlayers;
@@ -8284,12 +8548,11 @@ function applyTwist(ep, twist, isPrimary = true) {
     }
 
   } else if (engineType === 'fan-vote-boot') {
-    // Save the highest-popularity active player
+    if (!seasonConfig.popularityEnabled) { twistObj.blocked = true; return; }
     const _pop = gs.popularity || {};
     const _sorted = [...gs.activePlayers].sort((a, b) => {
       const diff = (_pop[b] || 0) - (_pop[a] || 0);
       if (diff !== 0) return diff;
-      // Tiebreak: earlier roster position = more fan investment
       const iA = players.findIndex(p => p.name === a);
       const iB = players.findIndex(p => p.name === b);
       return iA - iB;
@@ -8299,11 +8562,20 @@ function applyTwist(ep, twist, isPrimary = true) {
     twistObj.fanVoteScore = _pop[saved] || 0;
     twistObj.fanVoteIsPreMerge = gs.phase === 'pre-merge';
     twistObj.fanVote = true;
+    // Full ranking for VP reveal
+    const _totalPop = _sorted.reduce((s, n) => s + Math.max(0, _pop[n] || 0), 0) || 1;
+    twistObj.fanVoteResults = _sorted.map(n => ({ name: n, pct: Math.round((_pop[n] || 0) / _totalPop * 100), popularity: _pop[n] || 0 }));
+    // Reward
     if (gs.phase === 'pre-merge') {
       gs.guaranteedImmuneThisEp = saved;
     } else {
-      gs.advantages.push({ holder: saved, type: 'extra-vote', foundEp: ep.num, fromFanVote: true });
+      gs.advantages.push({ holder: saved, type: 'extraVote', foundEp: ep.num, fromFanVote: true });
     }
+    // Winner emotional boost
+    if (gs.playerStates?.[saved]) gs.playerStates[saved].emotional = 'confident';
+    // Consequence events — carry forward for next camp events
+    gs.fanVoteWinner = saved;
+    gs.fanVoteEp = (gs.episode || 0) + 1;
 
   } else if (engineType === 'jury-elimination') {
     // Every eliminated player is on the "jury" — they vote to boot one active player
@@ -8437,6 +8709,14 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
 
   const numEvents = maxEvents ?? (Math.floor(Math.random() * 5) + Math.max(10, Math.floor(group.length * 1.5)));
   const boosts = twistBoosts || {};
+  // Social players generate more bonding events — proportional boost per social player on tribe
+  const _groupSocialBoost = group.reduce((sum, p) => sum + pStats(p).social * 0.01, 0);
+  if (_groupSocialBoost > 0) {
+    boosts.tdBond = (boosts.tdBond || 0) + Math.round(_groupSocialBoost * 10);
+    boosts.bond = (boosts.bond || 0) + Math.round(_groupSocialBoost * 8);
+    boosts.comfort = (boosts.comfort || 0) + Math.round(_groupSocialBoost * 5);
+    boosts.groupLaugh = (boosts.groupLaugh || 0) + Math.round(_groupSocialBoost * 5);
+  }
 
   // If any advantage was found by someone in this group, always open with that event
   // beware-activated is a global event — include it regardless of finder
@@ -8699,7 +8979,7 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
         // Don't form alliances between players who dislike each other
         // Strategic players (≥7) can bridge slight negativity — they make pitches that work even without chemistry
         const _maxStrategic = Math.max(...members.map(m => pStats(m).strategic));
-        const _bondFloor = _maxStrategic >= 8 ? -1.0 : _maxStrategic >= 7 ? -0.5 : 0.5;
+        const _bondFloor = 0.5 - _maxStrategic * 0.15; // stat 5=-0.25, stat 8=-0.70, stat 10=-1.0
         for (let x = 0; x < members.length; x++) {
           for (let y = x + 1; y < members.length; y++) {
             if (getBond(members[x], members[y]) < _bondFloor) return;
@@ -8715,7 +8995,7 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
       // Strategic players can juggle more alliances without being overcommitted
       const _isOvercommitted = p => {
         const _activeCount = (gs.namedAlliances || []).filter(a => a.active && a.members.includes(p)).length;
-        const _cap = pStats(p).strategic >= 8 ? 5 : pStats(p).strategic >= 7 ? 4 : 3;
+        const _cap = 2 + Math.floor(pStats(p).strategic * 0.3); // stat 3=2, stat 5=3, stat 7=4, stat 10=5
         return _activeCount >= _cap;
       };
       const _rpl = arr => arr[Math.floor(Math.random() * arr.length)];
@@ -8723,8 +9003,13 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
       // Pick which formation trigger to attempt (weighted by game state)
       const _triggers = [];
 
-      // ── TRIGGER 1: Strategic pitch — strategic player recruits by affinity (can be already allied — playing both sides) ──
-      const _stratPlayers = group.filter(n => pStats(n).strategic >= 6 && !_isOvercommitted(n));
+      // ── TRIGGER 1: Strategic pitch — strategic OR social player recruits by affinity ──
+      // Strategic players recruit via game logic; social players recruit via personal charm
+      // Proportional: any player can initiate, chance scales with strategic/social
+      const _stratPlayers = group.filter(n => {
+        const _ns = pStats(n);
+        return Math.random() < Math.max(_ns.strategic, _ns.social) * 0.08 && !_isOvercommitted(n);
+      });
       if (_stratPlayers.length) _triggers.push({ id: 'strategic-pitch', weight: 10 });
 
       // ── TRIGGER 2: Power couple — two players with strong bond who aren't allied ──
@@ -8789,9 +9074,13 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
 
       // Execute the chosen trigger
       if (_chosen.id === 'strategic-pitch') {
-        const initiator = _stratPlayers.sort((a,b) => pStats(b).strategic - pStats(a).strategic)[0];
+        // Pick initiator: highest strategic OR social (social butterflies can recruit too)
+        const initiator = _stratPlayers.sort((a,b) => Math.max(pStats(b).strategic, pStats(b).social) - Math.max(pStats(a).strategic, pStats(a).social))[0];
+        const _initS = pStats(initiator);
+        // Social initiators get a charm bonus — people are drawn to them naturally
+        const _socialCharm = _initS.social * 0.05; // proportional: stat 3=0.15, stat 7=0.35, stat 10=0.50
         const recruits = group.filter(p => p !== initiator)
-          .map(p => ({ name: p, score: getBond(initiator, p) * 0.5 + pStats(p).loyalty * 0.15 + Math.random() * 0.5 }))
+          .map(p => ({ name: p, score: getBond(initiator, p) * 0.5 + pStats(p).loyalty * 0.15 + _socialCharm + Math.random() * 0.5 }))
           .sort((a, b) => b.score - a.score)
           .slice(0, Math.min(2 + Math.floor(Math.random() * 2), group.length - 1))
           .filter(r => r.score > -0.5 && getBond(initiator, r.name) > -2.5)
@@ -10324,9 +10613,9 @@ function checkSocialBomb(ep) {
     members.forEach(name => {
       if (ep.socialBombs.some(b => b.player === name)) return;
       const s = pStats(name);
-      if (s.temperament > 3 && s.boldness < 8) return;
+      // Proportional: chance = inverse temperament + boldness
       const roll = ([...name].reduce((a, c) => a + c.charCodeAt(0), 0) + epSeed) % 100;
-      const threshold = s.temperament <= 2 ? 20 : s.temperament <= 3 ? 15 : s.boldness >= 9 ? 18 : 12;
+      const threshold = Math.round((10 - s.temperament) * 1.5 + s.boldness * 0.8); // temp 3 + bold 8 = 17%, temp 5 + bold 5 = 11.5%
       if (roll >= threshold) return;
 
       // Bond damage to all tribemates — high social = more offended
@@ -10681,7 +10970,7 @@ function checkIdolConfessions(ep) {
     const s = pStats(holder);
     // Confession chance: social + bold players talk; high loyalty keeps secrets
     // Strategic players are more deliberate — they confess less randomly but more purposefully
-    const _stratPenalty = s.strategic >= 7 ? -0.05 : 0; // strategic players hold info tighter
+    const _stratPenalty = -(s.strategic * 0.007); // proportional: stat 5=-0.035, stat 10=-0.07
     const confChance = Math.max(0.03, Math.min(0.28, 0.03 + s.social * 0.015 + s.boldness * 0.01 - s.loyalty * 0.008 + _stratPenalty));
     if (Math.random() >= confChance) return;
 
@@ -10692,7 +10981,7 @@ function checkIdolConfessions(ep) {
     // Strategic players pick confidants smarter — they factor in the person's loyalty stat
     // (less likely to pick a leaky low-loyalty player as their confidant)
     const allies = tribeMembers
-      .map(p => ({ name: p, bond: getBond(holder, p), trustScore: getBond(holder, p) + (s.strategic >= 7 ? pStats(p).loyalty * 0.3 : 0) }))
+      .map(p => ({ name: p, bond: getBond(holder, p), trustScore: getBond(holder, p) + s.strategic * 0.04 * pStats(p).loyalty }))
       .filter(x => x.bond > 0)
       .sort((a, b) => b.trustScore - a.trustScore);
     if (!allies.length) return;
@@ -10737,6 +11026,73 @@ function checkIdolConfessions(ep) {
     if (tribeName && ep.campEvents?.[tribeName]) {
       const campBlock = ep.campEvents[tribeName];
       (Array.isArray(campBlock) ? campBlock : (campBlock.pre || [])).push(betrayEvt);
+    }
+  });
+}
+
+// ── Social intel gathering: social butterflies learn things through conversation, not sneaking ──
+function checkSocialIntel(ep) {
+  if (!ep.campEvents) return;
+  // Proportional: every player has a chance, scales with social stat
+  const _socialPlayers = gs.activePlayers;
+
+  _socialPlayers.forEach(socialP => {
+    const _socialChance = pStats(socialP).social * 0.03; // proportional: stat 4=12%, stat 7=21%, stat 10=30%
+    if (Math.random() > _socialChance) return;
+    const _sS = pStats(socialP);
+    const _pr = pronouns(socialP);
+    const tribeName = gs.isMerged ? 'merge' : gs.tribes.find(t => t.members.includes(socialP))?.name;
+    if (!tribeName || !ep.campEvents?.[tribeName]) return;
+    const campBlock = ep.campEvents[tribeName];
+    const _pushEvt = evt => (Array.isArray(campBlock) ? campBlock : (campBlock.pre || [])).push(evt);
+
+    // What do they learn? Check what secrets exist on their tribe
+    const tribeMembers = gs.isMerged
+      ? gs.activePlayers.filter(p => p !== socialP)
+      : (gs.tribes.find(t => t.members.includes(socialP))?.members || []).filter(p => p !== socialP);
+
+    // 1. Discover an idol holder through natural conversation (not snooping — they just READ people)
+    const _hiddenIdolHolder = tribeMembers.find(p =>
+      gs.advantages.some(a => (a.type === 'idol' || a.type === 'legacy') && a.holder === p)
+      && !gs.knownIdolHoldersPersistent?.has(p)
+      && getBond(socialP, p) > -1 // needs at least neutral relationship to have a conversation
+    );
+    if (_hiddenIdolHolder && Math.random() < _sS.social * 0.05) { // proportional: stat 4=20%, stat 7=35%, stat 10=50%
+      if (!gs.knownIdolHoldersThisEp) gs.knownIdolHoldersThisEp = new Set();
+      gs.knownIdolHoldersThisEp.add(_hiddenIdolHolder);
+      if (!gs.knownIdolHoldersPersistent) gs.knownIdolHoldersPersistent = new Set();
+      gs.knownIdolHoldersPersistent.add(_hiddenIdolHolder);
+      _pushEvt({ type: 'socialIntel', players: [socialP, _hiddenIdolHolder], text:
+        `${socialP} has a way of making people talk without asking direct questions. After a long conversation with ${_hiddenIdolHolder}, ${_pr.sub} ${_pr.sub==='they'?'know':'knows'} something ${_pr.sub} ${_pr.sub==='they'?'weren\'t':'wasn\'t'} supposed to know.`,
+        badgeText: 'Social Intel', badgeClass: 'gold' });
+      return; // one intel per episode max
+    }
+
+    // 2. Pick up on vote plans — learn who's being targeted through camp gossip
+    const _targetedPlayers = tribeMembers.filter(p => computeHeat(p, tribeMembers.concat(socialP), []) >= 3);
+    if (_targetedPlayers.length && Math.random() < 0.30) {
+      const _target = _targetedPlayers[Math.floor(Math.random() * _targetedPlayers.length)];
+      _pushEvt({ type: 'socialIntel', players: [socialP], text:
+        `${socialP} doesn't need to eavesdrop. ${_pr.Sub} just listen${_pr.sub==='they'?'':'s'} — really listen${_pr.sub==='they'?'':'s'} — and by sunset ${_pr.sub} ${_pr.sub==='they'?'know':'knows'} ${_target}'s name is floating. Nobody told ${_pr.obj} directly. ${_pr.Sub} just pieced it together.`,
+        badgeText: 'Social Read', badgeClass: 'gold' });
+      // Boost their eavesdrop flag so voting plans are more accurate for them
+      if (gs.playerStates?.[socialP]) gs.playerStates[socialP].eavesdropBoostThisEp = true;
+      return;
+    }
+
+    // 3. Read the room — sense alliance dynamics others miss
+    const _crackingAlliances = (gs.namedAlliances || []).filter(a => {
+      if (!a.active) return false;
+      const members = a.members.filter(m => tribeMembers.includes(m) || m === socialP);
+      if (members.length < 2) return false;
+      const avgBond = members.reduce((s, m) => s + members.filter(o => o !== m).reduce((ss, o) => ss + getBond(m, o), 0), 0) / Math.max(1, members.length * (members.length - 1));
+      return avgBond < 1;
+    });
+    if (_crackingAlliances.length && Math.random() < 0.25) {
+      const _crackA = _crackingAlliances[Math.floor(Math.random() * _crackingAlliances.length)];
+      _pushEvt({ type: 'socialIntel', players: [socialP], text:
+        `${socialP} watches ${_crackA.name} interact at camp and sees what nobody else is admitting: the trust isn't there anymore. ${_pr.Sub} file${_pr.sub==='they'?'':'s'} that away for later.`,
+        badgeText: 'Social Read', badgeClass: 'gold' });
     }
   });
 }
@@ -10832,7 +11188,8 @@ function checkSecondLifeAmuletEvents(ep) {
 
     } else {
       // ── Snooping: someone spots the amulet ──
-      const snooper = tribeMembers.filter(p => pStats(p).intuition >= 6)
+      // Proportional: any player can snoop, chance scales with intuition
+      const snooper = tribeMembers.filter(p => Math.random() < pStats(p).intuition * 0.04) // stat 4=16%, stat 7=28%, stat 10=40%
         .sort(() => Math.random() - 0.5)[0];
       if (snooper) {
         const snoopLines = [
@@ -10955,6 +11312,127 @@ function checkLegacyCampEvents(ep) {
 // Fires ~25% when a checked-out player (comfortable + low stats) is the heat leader on their tribe.
 // Pushes a comfortBlindspot event + clockingIt reaction into pre-challenge camp events.
 // ep.comfortBlindspotPlayer is used by rpBuildTribal to flag a comfort blindside if they're eliminated.
+// ── Hero + Villain archetype camp events ──
+function checkHeroVillainEvents(ep) {
+  if (!ep.campEvents) return;
+  const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
+
+  const _heroes = gs.activePlayers.filter(p => players.find(pl => pl.name === p)?.archetype === 'hero');
+  const _villains = gs.activePlayers.filter(p => players.find(pl => pl.name === p)?.archetype === 'villain');
+
+  // ── VILLAIN EVENTS (~30% per villain per episode) ──
+  _villains.forEach(v => {
+    if (Math.random() > 0.30) return;
+    const _vPr = pronouns(v);
+    const _vS = pStats(v);
+    const tribeName = gs.isMerged ? 'merge' : gs.tribes.find(t => t.members.includes(v))?.name;
+    if (!tribeName || !ep.campEvents?.[tribeName]) return;
+    const campBlock = ep.campEvents[tribeName];
+    const pushEvt = evt => (Array.isArray(campBlock) ? campBlock : (campBlock.pre || [])).push(evt);
+    const tribeMembers = gs.isMerged ? gs.activePlayers.filter(p => p !== v) : (gs.tribes.find(t => t.members.includes(v))?.members || []).filter(p => p !== v);
+
+    const _roll = Math.random();
+
+    if (_roll < 0.25 && tribeMembers.length) {
+      // Intimidation — villain asserts dominance
+      const _target = tribeMembers.sort((a, b) => getBond(v, a) - getBond(v, b))[0]; // worst enemy
+      addBond(_target, v, -0.4);
+      pushEvt({ type: 'villainIntimidate', players: [v, _target], text: _rp([
+        `${v} walks past ${_target} at the fire and doesn't sit down. Just stands there. Looking. The message is clear.`,
+        `"You know it's coming, right?" ${v} says it to ${_target} like ${_vPr.sub} ${_vPr.sub==='they'?'are':'is'} discussing the weather. ${_target} doesn't respond.`,
+        `${v} positions ${_vPr.ref} between ${_target} and the rest of the tribe. It's not accidental. Everyone notices.`,
+      ]), badgeText: 'Intimidation', badgeClass: 'red' });
+    } else if (_roll < 0.50) {
+      // Power declaration — villain announces control
+      pushEvt({ type: 'villainPower', players: [v], text: _rp([
+        `"I'm running this game and everyone knows it." ${v} says it at camp. Out loud. The tribe goes quiet.`,
+        `${v} doesn't whisper strategy. ${_vPr.Sub} announce${_vPr.sub==='they'?'':'s'} it. The tribe can accept it or fight it — but ${_vPr.sub} ${_vPr.sub==='they'?'aren\'t':'isn\'t'} hiding.`,
+        `${v} lays out exactly what's going to happen tonight. No deception. No spin. Just power.`,
+      ]), badgeText: 'Power Play', badgeClass: 'red' });
+    } else if (_roll < 0.70 && ep.eliminated) {
+      // Gloating — villain celebrates an enemy's departure
+      const _elimBond = getBond(v, ep.eliminated);
+      if (_elimBond < -1) {
+        pushEvt({ type: 'villainGloat', players: [v], text: _rp([
+          `${v} doesn't hide ${_vPr.posAdj} satisfaction this morning. ${ep.eliminated} is gone and ${v} wants everyone to know ${_vPr.sub} ${_vPr.sub==='they'?'are':'is'} happy about it.`,
+          `"One down." ${v} says it with a smile that makes the rest of the tribe uncomfortable.`,
+        ]), badgeText: 'Gloating', badgeClass: 'red' });
+        tribeMembers.forEach(p => { if (getBond(p, ep.eliminated) >= 2) addBond(p, v, -0.3); }); // allies of eliminated resent
+      }
+    } else {
+      // Villain's inner circle — fierce loyalty to their #1
+      const _bestAlly = tribeMembers.sort((a, b) => getBond(v, b) - getBond(v, a))[0];
+      if (_bestAlly && getBond(v, _bestAlly) >= 1) {
+        addBond(v, _bestAlly, 0.4);
+        pushEvt({ type: 'villainLoyalty', players: [v, _bestAlly], text: _rp([
+          `${v} is ruthless with everyone — except ${_bestAlly}. The loyalty there is real. And it makes ${_bestAlly} untouchable.`,
+          `${v} pulls ${_bestAlly} aside. "Nobody touches you. That's not strategy — that's a promise." ${_bestAlly} believes it.`,
+        ]), badgeText: 'Inner Circle', badgeClass: 'gold' });
+      }
+    }
+  });
+
+  // ── HERO EVENTS (~30% per hero per episode) ──
+  _heroes.forEach(h => {
+    if (Math.random() > 0.30) return;
+    const _hPr = pronouns(h);
+    const _hS = pStats(h);
+    const tribeName = gs.isMerged ? 'merge' : gs.tribes.find(t => t.members.includes(h))?.name;
+    if (!tribeName || !ep.campEvents?.[tribeName]) return;
+    const campBlock = ep.campEvents[tribeName];
+    const pushEvt = evt => (Array.isArray(campBlock) ? campBlock : (campBlock.pre || [])).push(evt);
+    const tribeMembers = gs.isMerged ? gs.activePlayers.filter(p => p !== h) : (gs.tribes.find(t => t.members.includes(h))?.members || []).filter(p => p !== h);
+
+    const _roll = Math.random();
+
+    if (_roll < 0.25 && _villains.some(v => tribeMembers.includes(v) || v === h)) {
+      // Confronting the villain — the hero stands up
+      const _villain = _villains.find(v => tribeMembers.includes(v));
+      if (_villain) {
+        addBond(h, _villain, -0.5);
+        // Tribe respects the stand
+        tribeMembers.filter(p => p !== _villain).forEach(p => addBond(p, h, 0.2));
+        pushEvt({ type: 'heroConfront', players: [h, _villain], text: _rp([
+          `${h} walks up to ${_villain} and says what nobody else will. The camp holds its breath.`,
+          `"Enough." ${h} says it to ${_villain}'s face in front of everyone. ${_villain} ${pronouns(_villain).sub==='they'?'don\'t':'doesn\'t'} flinch — but the tribe sees something shift.`,
+          `${h} stands between ${_villain} and the rest of the tribe. Not physically — but in a way that everyone understands.`,
+        ]), badgeText: 'Hero vs Villain', badgeClass: 'gold' });
+      }
+    } else if (_roll < 0.50) {
+      // Standing up for the weak — protect an underdog/bottom player
+      const _weak = tribeMembers.sort((a, b) => {
+        const avgA = tribeMembers.reduce((s, p) => s + getBond(a, p), 0) / Math.max(1, tribeMembers.length);
+        const avgB = tribeMembers.reduce((s, p) => s + getBond(b, p), 0) / Math.max(1, tribeMembers.length);
+        return avgA - avgB;
+      })[0]; // most isolated player
+      if (_weak) {
+        addBond(h, _weak, 0.6);
+        addBond(_weak, h, 0.8);
+        pushEvt({ type: 'heroProtect', players: [h, _weak], text: _rp([
+          `${h} notices ${_weak} is on the outside. Instead of using it, ${_hPr.sub} sit${_hPr.sub==='they'?'':'s'} with ${_weak}. Not strategy — just decency.`,
+          `"Leave ${_weak} alone." ${h} doesn't say it loudly. But the people who needed to hear it, heard it.`,
+          `Everyone else is circling ${_weak}. ${h} is the only one who extends a hand instead of writing a name.`,
+        ]), badgeText: 'Protecting the Weak', badgeClass: 'green' });
+      }
+    } else if (_roll < 0.70) {
+      // Sacrifice — giving up something for the tribe
+      pushEvt({ type: 'heroSacrifice', players: [h], text: _rp([
+        `${h} gives up ${_hPr.posAdj} portion of rice so someone else can eat. Nobody asked ${_hPr.obj} to. That's the point.`,
+        `${h} volunteers for the hardest camp task — the one nobody wants. Again. The tribe notices, even if they don't say it.`,
+        `${h} could have kept the information to ${_hPr.ref}. Instead, ${_hPr.sub} shared it with the group. It's a risk — but ${_hPr.sub} ${_hPr.sub==='they'?'play':'plays'} with a code.`,
+      ]), badgeText: 'Sacrifice', badgeClass: 'green' });
+      tribeMembers.forEach(p => addBond(p, h, 0.15)); // tribe respects the sacrifice
+    } else {
+      // Emotional weight — the cost of being the hero
+      pushEvt({ type: 'heroWeight', players: [h], text: _rp([
+        `Everyone comes to ${h} with their problems. Nobody asks how ${h} is doing.`,
+        `${h} sits alone at the end of the day. The moral compass of the tribe is heavy. ${_hPr.Sub} carry${_hPr.sub==='they'?'':'s'} it because nobody else will.`,
+        `${h} is tired. Not physically — emotionally. Being the person everyone trusts means being the person everyone leans on.`,
+      ]), badgeText: 'The Weight', badgeClass: '' });
+    }
+  });
+}
+
 function checkComfortBlindspot(ep) {
   if (!ep.campEvents) return;
   const groups = gs.isMerged
@@ -11502,8 +11980,10 @@ function generateCampEvents(ep, phase = 'both') {
   // ── Idol confession/betrayal + amulet events: probabilistic chain fired after pre events are built ──
   if (phase === 'pre' || phase === 'both') {
     checkIdolConfessions(ep);
+    checkSocialIntel(ep);
     checkSecondLifeAmuletEvents(ep);
     checkLegacyCampEvents(ep);
+    checkHeroVillainEvents(ep);
     checkComfortBlindspot(ep);
   }
 
@@ -11788,6 +12268,45 @@ function generateCampEvents(ep, phase = 'both') {
         ep.campEvents[_campKey].pre.push({ type: 'allianceDissolved', players: activeMembers, text, badgeText: 'Alliance Dissolved', badgeClass: 'red' });
       }
     });
+  }
+
+  // ── Fan Vote consequences ──
+  if (gs.fanVoteWinner && gs.fanVoteEp === ((gs.episode || 0) + 1) && (phase === 'pre' || phase === 'both')) {
+    const _fvWinner = gs.fanVoteWinner;
+    gs.fanVoteWinner = null; // consume
+    const _campKey = gs.isMerged ? 'merge' : gs.tribes.find(t => t.members.includes(_fvWinner))?.name;
+    if (_campKey && ep.campEvents?.[_campKey] && gs.activePlayers.includes(_fvWinner)) {
+      const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
+      const _wPr = pronouns(_fvWinner);
+
+      // 1. Winner confidence
+      ep.campEvents[_campKey].pre.push({ type: 'fanVoteWinner', players: [_fvWinner], text: _rp([
+        `${_fvWinner} walks different today. The fans chose ${_wPr.obj}. Whatever that means for the game, it means something for ${_wPr.posAdj} confidence.`,
+        `The fan vote landed on ${_fvWinner}. ${_wPr.Sub} ${_wPr.sub==='they'?'try':'tries'} not to let it show — but the energy at camp has shifted. Everyone noticed.`,
+      ]), badgeText: 'Fan Favorite', badgeClass: 'gold' });
+
+      // 2. Jealousy from personality-driven rivals (NOT nice archetypes)
+      const _jealousArchetypes = new Set(['schemer', 'mastermind', 'hothead', 'wildcard', 'villain', 'chaos-agent']);
+      gs.activePlayers.filter(p => p !== _fvWinner).forEach(p => {
+        const _pArch = players.find(pl => pl.name === p)?.archetype || '';
+        const _pS = pStats(p);
+        // Jealousy driven by personality: low social + scheming/hotheaded archetype
+        const _jealousChance = (_jealousArchetypes.has(_pArch) ? 0.40 : 0) + (10 - _pS.social) * 0.03;
+        if (Math.random() < _jealousChance && getBond(p, _fvWinner) < 3) {
+          addBond(p, _fvWinner, -0.3);
+          ep.campEvents[_campKey].pre.push({ type: 'fanVoteJealousy', players: [p, _fvWinner], text: _rp([
+            `${p} watches ${_fvWinner} celebrate the fan vote and says nothing. The silence is louder than any reaction.`,
+            `${p} to the confessional: "The fans love ${_fvWinner}. Good for ${_wPr.obj}. That just tells me ${_wPr.sub} ${_wPr.sub==='they'?'win':'wins'} at the end. And I can't let that happen."`,
+            `${p} doesn't care about the fans. But ${pronouns(p).sub} care${pronouns(p).sub==='they'?'':'s'} about jury votes — and fan favorite is a FTC resume line. ${_fvWinner} just became more dangerous.`,
+          ]), badgeText: 'Jealousy', badgeClass: 'red' });
+        }
+      });
+
+      // 3. Alliance validation — winner's allies feel good
+      gs.activePlayers.filter(p => p !== _fvWinner && getBond(p, _fvWinner) >= 2).forEach(p => {
+        addBond(p, _fvWinner, 0.2);
+      });
+    }
   }
 
   // ── Legacy inheritance camp events ──
@@ -13373,6 +13892,44 @@ function simulateEpisode() {
       ep.openVoteOrderedBy = _orderer;
     }
 
+    // ── TRIBAL DISRUPTION: hotheads may blow up at tribal, shifting the vote ──
+    // Low temperament players who sense they're targeted sometimes confront their accuser publicly.
+    // This can redirect votes AWAY from the hothead (the outburst makes others reconsider)
+    // or TOWARD them (the outburst confirms they're dangerous). Coin flip of chaos.
+    if (!ep.tribalDisruption) {
+      const _disruptCandidates = tribalPlayers.filter(p => {
+        const _ts = pStats(p);
+        // Proportional: disruption chance = inverse temperament + boldness
+        return Math.random() < ((10 - _ts.temperament) * 0.04 + _ts.boldness * 0.03) && !_allImmune.includes(p)
+          && computeHeat(p, tribalPlayers, allianceSet) >= 2.5;
+      });
+      if (_disruptCandidates.length && Math.random() < 0.20) {
+        const _disruptor = _disruptCandidates[Math.floor(Math.random() * _disruptCandidates.length)];
+        const _dPr = pronouns(_disruptor);
+        // Find who's organizing against them
+        const _organizer = tribalPlayers.find(p => p !== _disruptor
+          && allianceSet.some(a => a.members.includes(p) && a.target === _disruptor));
+        if (_organizer) {
+          // 50/50: disruption helps or hurts
+          const _helpsDisruptor = Math.random() < 0.50;
+          if (_helpsDisruptor) {
+            // Outburst makes tribe reconsider — some voters shift away
+            // Reduce heat on disruptor, increase on organizer (exposed)
+            addBond(_disruptor, _organizer, -1.0); // feud deepens
+            tribalPlayers.filter(p => p !== _disruptor && p !== _organizer).forEach(p => {
+              if (getBond(p, _disruptor) > -2 && Math.random() < 0.30) addBond(p, _organizer, -0.3);
+            });
+          } else {
+            // Outburst confirms they're dangerous — votes pile on
+            tribalPlayers.filter(p => p !== _disruptor).forEach(p => {
+              if (Math.random() < 0.20) addBond(p, _disruptor, -0.3);
+            });
+          }
+          ep.tribalDisruption = { disruptor: _disruptor, organizer: _organizer, helped: _helpsDisruptor };
+        }
+      }
+    }
+
     const { votes, log, defections } = simulateVotes(tribalPlayers, _allImmune, allianceSet, gs.lostVotes, ep.openVote);
     if (defections?.length) ep.defections = [...(ep.defections || []), ...defections];
 
@@ -13407,7 +13964,7 @@ function simulateEpisode() {
             const _isIntimidated = s.boldness <= 4 && (_intimidators.size > 0 || ep._openFirstVoterIntimidates);
 
             // Strategic players resist cascade pressure — they see the bigger picture and stick to the plan
-            const _strategicResist = s.strategic >= 8 ? -0.25 : s.strategic >= 7 ? -0.15 : s.strategic >= 6 ? -0.08 : 0;
+            const _strategicResist = -(s.strategic * 0.03); // proportional: stat 5=-0.15, stat 8=-0.24, stat 10=-0.30
             const _cascade = (_leaderVotes / Math.max(1, _totalSoFar)) * 0.4
               + (_leaderIsAllianceTarget ? 0.2 : 0)
               - (_bondWithLeader >= 4 ? 0.3 : 0)
@@ -13583,10 +14140,14 @@ function simulateEpisode() {
       gs.advantages.filter(a => a.type === 'idol' && tribalPlayers.includes(a.holder)).map(a => a.holder)
     );
 
-    // ── FORCE-PLAY: last tribal before finale — all advantages must be used or lost ──
-    // Force-play at top 5: from top 4 onward, no advantages exist
-    const _isTop5 = gs.activePlayers.length <= 5;
-    if (_isTop5) {
+    // ── FORCE-PLAY / EXPIRE: advantages must be used or lost ──
+    const _advExpireAt = seasonConfig.advExpire || 4;
+    const _isLastChanceTribal = gs.activePlayers.length <= _advExpireAt + 1; // force-play one episode before expiry
+    const _isExpired = gs.activePlayers.length <= _advExpireAt; // at or below expiry = no advantages allowed
+    if (_isExpired) {
+      // Remove ALL advantages — no force-play, just gone
+      gs.advantages = gs.advantages.filter(a => !tribalPlayers.includes(a.holder));
+    } else if (_isLastChanceTribal) {
       // Force-play all idols: every idol holder at tribal plays their idol on themselves
       const _forceIdols = gs.advantages.filter(a => a.type === 'idol' && tribalPlayers.includes(a.holder));
       _forceIdols.forEach(idol => {
@@ -13894,7 +14455,7 @@ function simulateEpisode() {
       campEvents: ep.campEvents || null,
       bewareLostVotes: ep.bewareLostVotes || [],
       idolPlays: ep.idolPlays || [], idolMisplays: ep.idolMisplays || [],
-      shotInDark: ep.shotInDark || null, kipSteal: ep.kipSteal || null, idolShares: ep.idolShares || [], spiritIslandEvents: ep.spiritIslandEvents || null, amuletCoordination: ep.amuletCoordination || null,
+      shotInDark: ep.shotInDark || null, kipSteal: ep.kipSteal || null, idolShares: ep.idolShares || [], spiritIslandEvents: ep.spiritIslandEvents || null, amuletCoordination: ep.amuletCoordination || null, tribalDisruption: ep.tribalDisruption || null, feastEvents: ep.feastEvents || null,
       fireMaking: ep.fireMaking || null,
       doubleTribalLosingTribes: (ep.doubleTribalLosingTribes || []).map(t => ({ name: t.name, members: [...t.members] })),
       allianceQuits: ep.allianceQuits || [], allianceRecruits: ep.allianceRecruits || [],
@@ -13991,7 +14552,7 @@ function simulateEpisode() {
         eliminated: tResult.eliminated, isTie: tResult.isTie, tiedPlayers: tResult.tiedPlayers,
         fireMaking: ep.fireMaking || null,
         idolPlays: _tribeIdolPlays,
-        shotInDark: ep.shotInDark || null, kipSteal: ep.kipSteal || null, idolShares: ep.idolShares || [], spiritIslandEvents: ep.spiritIslandEvents || null, amuletCoordination: ep.amuletCoordination || null,
+        shotInDark: ep.shotInDark || null, kipSteal: ep.kipSteal || null, idolShares: ep.idolShares || [], spiritIslandEvents: ep.spiritIslandEvents || null, amuletCoordination: ep.amuletCoordination || null, tribalDisruption: ep.tribalDisruption || null, feastEvents: ep.feastEvents || null,
         tiebreakerResult: ep.tiebreakerResult || null,
         revoteVotes: ep.revoteVotes || null, revoteLog: ep.revoteLog || null,
         sidFreshVote: ep.sidFreshVote || false,
@@ -14072,7 +14633,7 @@ function simulateEpisode() {
       twists: (ep.twists||[]).map(t => ({...t})),
       campEvents: ep.campEvents || null,
       idolPlays: ep.idolPlays || [], idolMisplays: ep.idolMisplays || [],
-      shotInDark: ep.shotInDark || null, kipSteal: ep.kipSteal || null, idolShares: ep.idolShares || [], spiritIslandEvents: ep.spiritIslandEvents || null, amuletCoordination: ep.amuletCoordination || null,
+      shotInDark: ep.shotInDark || null, kipSteal: ep.kipSteal || null, idolShares: ep.idolShares || [], spiritIslandEvents: ep.spiritIslandEvents || null, amuletCoordination: ep.amuletCoordination || null, tribalDisruption: ep.tribalDisruption || null, feastEvents: ep.feastEvents || null,
       multiTribalResults: ep.multiTribalResults, multiTribalElims: multiElims,
       votingLog: ep.votingLog || [],
       bewareLostVotes: ep.bewareLostVotes || [],
@@ -14788,6 +15349,7 @@ function simulateEpisode() {
     idolShares:       ep.idolShares       || [],
     spiritIslandEvents: ep.spiritIslandEvents || null,
     amuletCoordination: ep.amuletCoordination || null,
+    feastEvents:      ep.feastEvents      || null,
     overplayer:       ep.overplayer       || null,
     tribalBlowup:     ep.tribalBlowup     || null,
     chalSitOuts:      ep.chalSitOuts      || null,
@@ -14880,6 +15442,14 @@ function updatePopularity(ep) {
     axisTotals[name][axis] += delta;
     epDeltas[name].push({ axis, delta, reason });
   };
+
+  // ── Archetype popularity bonuses ──
+  gs.activePlayers.forEach(name => {
+    const _arch = players.find(p => p.name === name)?.archetype || '';
+    if (_arch === 'villain') add(name, 'drama', 3, 'villain archetype — drama machine');
+    if (_arch === 'hero') add(name, 'like', 2, 'hero archetype — fan favorite energy');
+    if (_arch === 'underdog') add(name, 'under', 2, 'underdog archetype — crowd support');
+  });
 
   // ── Build per-player event index ──
   const epEventsByPlayer = {};
@@ -15683,9 +16253,9 @@ function generateTwistScenes(ep) {
         result.push({ label:'No Tribal Council', type:tw.type, scenes:sc }); break;
 
       case 'the-feast': case 'merge-reward': {
-        const fl = tw.type === 'the-feast' ? 'The Feast' : 'Merge Reward';
-        sc.push({ text: 'All players were brought together for a shared meal.', players: active });
-        sc.push({ text: 'Cross-tribal bonds were strengthened. The social dynamics have shifted.', players: [] });
+        // Teaser only — dedicated VP screen handles the full feast events
+        const fl = tw.type === 'the-feast' ? 'The Feast' : 'Merge Feast';
+        sc.push({ text: tw.type === 'merge-reward' ? 'The merge. One tribe. One table. Everything changes tonight.' : 'The tribes gather for a shared meal. What happens at the table doesn\'t stay at the table.', players: [] });
         result.push({ label:fl, type:tw.type, scenes:sc }); break;
       }
 
@@ -17939,6 +18509,18 @@ function initGameState() {
     }
   });
 
+  // Hero-Villain auto-rivalry: if both exist, they start with -3.0 bond (natural conflict)
+  const _heroes = players.filter(p => p.archetype === 'hero').map(p => p.name);
+  const _villains = players.filter(p => p.archetype === 'villain').map(p => p.name);
+  const _heroVillainRivalries = [];
+  _heroes.forEach(h => {
+    _villains.forEach(v => {
+      const k = bKey(h, v);
+      bonds[k] = Math.min(bonds[k] || 0, -3.0);
+      _heroVillainRivalries.push({ hero: h, villain: v });
+    });
+  });
+
   const tribeList = Object.entries(tribeMap).map(([name,members]) => ({name, members:[...members]}));
 
   // Any player with no tribe property gets added to the smallest tribe so nobody is orphaned
@@ -17983,6 +18565,7 @@ function initGameState() {
     popularityArcs: {},           // { [name]: [{ep, delta, score}] } — episode-by-episode arc
     topVoteStreak: {},            // { [name]: consecutive eps as top vote-getter }
     dominantAllianceStreak: { id: null, count: 0 },
+    heroVillainRivalries: _heroVillainRivalries, // [{ hero, villain }] — auto-detected at init
   };
   saveGameState();
   return true;
@@ -18162,6 +18745,16 @@ let _spoilerFree = false;
 window.addEventListener('DOMContentLoaded', () => {
   const _sfCb = document.getElementById('cfg-spoiler-free');
   if (_sfCb?.checked) { _spoilerFree = true; }
+  // Load roster from JSON — works on GitHub Pages (HTTP), fails silently on file://
+  fetch('franchise_roster.json')
+    .then(r => r.json())
+    .then(data => {
+      if (data?.players?.length) {
+        FRANCHISE_ROSTER = data.players;
+        console.log(`Roster loaded from JSON: ${data.players.length} players`);
+      }
+    })
+    .catch(() => {}); // silent fallback to embedded copy
 });
 function toggleSpoilerFree() {
   _spoilerFree = document.getElementById('cfg-spoiler-free')?.checked || false;
@@ -19102,7 +19695,17 @@ function simulateJuryVote(finalists) {
       const bond = getBond(juror, f);
       // Gameplay = strategic + boldness (big moves) + social (jury management)
       const gameplay = fS.strategic * 0.3 + fS.boldness * 0.2 + fS.social * 0.2 + (fS.physical + fS.endurance) / 2 * 0.1;
-      const personal = bond * 1.5;
+      // Loyalty honor (behavior-based) + big moves resume
+      const _betrayalCount = (gs.namedAlliances || []).reduce((n, a) => n + (a.betrayals || []).filter(b => b.player === f).length, 0);
+      const _loyaltyHonor = _betrayalCount === 0 ? 0.6 : _betrayalCount <= 1 ? 0.3 : _betrayalCount <= 2 ? 0.1 : 0;
+      const _bigMoves = gs.playerStates?.[f]?.bigMoves || 0;
+      const _resumeBonus = Math.min(0.8, _bigMoves * 0.15);
+      // Hero/Villain archetype FTC modifiers
+      const _fArch = players.find(p => p.name === f)?.archetype || '';
+      const _heroBonus = _fArch === 'hero' ? 2.0 : 0; // jury loves heroes
+      // Villain polarization: jurors with positive bond = respect, negative bond = extra bitter
+      const _villainMod = _fArch === 'villain' ? (bond >= 1 ? 1.5 : bond <= -1 ? -2.0 : 0) : 0;
+      const personal = bond * 1.5 + _loyaltyHonor + _resumeBonus + _heroBonus + _villainMod;
       // Bitterness/gratitude: was this finalist the one who voted me out?
       const history = gs.jurorHistory?.[juror];
       let bitterness = 0;
@@ -19195,7 +19798,17 @@ function projectJuryVotes(finalistSet) {
       const bond = getBond(juror, f);
       // Same formula as simulateJuryVote — keep in sync if that changes
       const gameplay = fS.strategic * 0.3 + fS.boldness * 0.2 + fS.social * 0.2 + (fS.physical + fS.endurance) / 2 * 0.1;
-      const personal = bond * 1.5;
+      // Loyalty honor: jurors respect finalists who ACTUALLY stayed loyal (behavior, not stat)
+      const _betrayalCount = (gs.namedAlliances || []).reduce((n, a) => n + (a.betrayals || []).filter(b => b.player === f).length, 0);
+      const _loyaltyHonor = _betrayalCount === 0 ? 0.6 : _betrayalCount <= 1 ? 0.3 : _betrayalCount <= 2 ? 0.1 : 0;
+      // Big moves resume: bold players who made flashy moves earn jury respect
+      const _bigMoves = gs.playerStates?.[f]?.bigMoves || 0;
+      const _resumeBonus = Math.min(0.8, _bigMoves * 0.15);
+      // Hero/Villain archetype FTC modifiers
+      const _fArch = players.find(p => p.name === f)?.archetype || '';
+      const _heroBonus = _fArch === 'hero' ? 2.0 : 0;
+      const _villainMod = _fArch === 'villain' ? (bond >= 1 ? 1.5 : bond <= -1 ? -2.0 : 0) : 0;
+      const personal = bond * 1.5 + _loyaltyHonor + _resumeBonus + _heroBonus + _villainMod;
       const history = gs.jurorHistory?.[juror];
       let bitterness = 0;
       if (history) {
@@ -21151,6 +21764,90 @@ function rpBuildSpiritIsland(ep) {
 
 // ── Post-elimination consequence blocks ──
 // ── Second Chance Vote VP Screen ──
+// ── Feast VP Screen ──
+// ── Fan Vote Save VP Screen ──
+function rpBuildFanVote(ep) {
+  const _tw = (ep.twists || []).find(t => t.type === 'fan-vote-boot' || t.catalogId === 'fan-vote-boot');
+  if (!_tw?.fanVoteSaved) return null;
+  const winner = _tw.fanVoteSaved;
+  const results = _tw.fanVoteResults || [];
+  const epNum = ep.num || 0;
+  const _wPr = pronouns(winner);
+  const _reward = _tw.fanVoteIsPreMerge ? 'Tribal Immunity' : 'Extra Vote';
+
+  let html = `<div class="rp-page tod-golden">
+    <div class="rp-eyebrow">Episode ${epNum}</div>
+    <div style="font-family:var(--font-display);font-size:32px;letter-spacing:2px;text-align:center;margin-bottom:4px;color:#6366f1;text-shadow:0 0 20px rgba(99,102,241,0.3)">FAN VOTE</div>
+    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:24px">The fans have voted. The most popular player receives a reward.</div>`;
+
+  // Ranking — show all players with percentages
+  if (results.length) {
+    html += `<div style="margin-bottom:20px">`;
+    results.forEach((r, i) => {
+      const isWinner = r.name === winner;
+      const barPct = Math.max(3, r.pct);
+      html += `<div style="display:flex;align-items:center;gap:10px;padding:6px 0;${isWinner ? 'background:rgba(99,102,241,0.06);border-radius:6px;padding:8px' : ''}">
+        <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);width:20px">${i+1}</span>
+        ${rpPortrait(r.name)}
+        <div style="flex:1">
+          <div style="font-size:12px;color:${isWinner ? '#6366f1' : '#c9d1d9'};font-weight:${isWinner ? '700' : '400'}">${r.name}</div>
+          <div style="height:4px;background:var(--surface2);border-radius:2px;margin-top:3px;overflow:hidden">
+            <div style="height:100%;width:${barPct}%;background:${isWinner ? '#6366f1' : '#484f58'};border-radius:2px"></div>
+          </div>
+        </div>
+        <span style="font-size:10px;color:${isWinner ? '#6366f1' : 'var(--muted)'};font-weight:${isWinner ? '700' : '400'}">${r.pct}%</span>
+        ${isWinner ? '<span class="rp-brant-badge gold">FAN FAVORITE</span>' : ''}
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  // Winner announcement
+  html += `<div style="text-align:center;padding:16px;border:1px solid rgba(99,102,241,0.3);border-radius:12px;background:rgba(99,102,241,0.04)">
+    ${rpPortrait(winner, 'xl')}
+    <div style="font-family:var(--font-display);font-size:18px;margin-top:10px;color:#6366f1">${winner}</div>
+    <div style="font-size:11px;color:#e3b341;font-weight:700;letter-spacing:1px;margin-top:4px">${_reward}</div>
+    <div style="font-size:12px;color:#8b949e;margin-top:10px;font-style:italic;max-width:400px;margin-left:auto;margin-right:auto;line-height:1.6">
+      The fans see something the tribe might not. ${winner} is the most popular player in the game — and that comes with a target.
+    </div>
+  </div>`;
+
+  html += `</div>`;
+  return html;
+}
+
+function rpBuildFeast(ep) {
+  const evts = ep.feastEvents;
+  if (!evts?.length) return null;
+  const epNum = ep.num || 0;
+  const _tw = (ep.twists || []).find(t => t.type === 'the-feast' || t.type === 'merge-reward' || t.catalogId === 'the-feast' || t.catalogId === 'merge-reward');
+  const isMerge = _tw?.type === 'merge-reward' || _tw?.catalogId === 'merge-reward';
+  const _title = isMerge ? 'THE MERGE FEAST' : 'THE FEAST';
+  const _subtitle = isMerge ? 'The tribes are one. The game begins anew.' : 'All tribes. One table. No rules.';
+
+  let html = `<div class="rp-page tod-golden">
+    <div class="rp-eyebrow">Episode ${epNum}</div>
+    <div style="font-family:var(--font-display);font-size:32px;letter-spacing:2px;text-align:center;margin-bottom:4px;color:#e3b341;text-shadow:0 0 20px rgba(227,179,65,0.3)">${_title}</div>
+    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:24px">${_subtitle}</div>`;
+
+  evts.forEach(evt => {
+    const badge = evt.badgeText ? { text: evt.badgeText, cls: evt.badgeClass || '' } : { text: '', cls: '' };
+    const mentioned = evt.players || [];
+    html += `<div class="vp-card" style="border-color:rgba(227,179,65,0.15);margin-bottom:10px">
+      <div style="display:flex;align-items:flex-start;gap:10px">
+        ${mentioned.length >= 2 ? mentioned.map(n => rpPortrait(n, 'sm')).join('') : mentioned.length === 1 ? rpPortrait(mentioned[0], 'sm') : ''}
+        <div style="flex:1">
+          <div style="font-size:12px;color:#cdd9e5;line-height:1.7">${evt.text}</div>
+          ${badge.text ? `<span class="rp-brant-badge ${badge.cls}" style="margin-top:6px">${badge.text}</span>` : ''}
+        </div>
+      </div>
+    </div>`;
+  });
+
+  html += `</div>`;
+  return html;
+}
+
 function rpBuildSecondChanceVote(ep) {
   const _tw = (ep.twists || []).find(t => t.type === 'second-chance' || t.catalogId === 'second-chance' || (t.type === 'returning-player' && t.catalogId === 'second-chance'));
   if (!_tw?.returnee) return null;
@@ -21963,6 +22660,17 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : isCRVindicated ? 'VINDICATED'
                      : isCRPivot      ? 'PIVOTING'
                      : isCRBlowup     ? 'EXPLODES'
+                     : evt.type === 'fanVoteWinner'           ? (evt.badgeText || 'Fan Favorite')
+                     : evt.type === 'fanVoteJealousy'         ? (evt.badgeText || 'Jealousy')
+                     : evt.type === 'villainIntimidate'       ? (evt.badgeText || 'Intimidation')
+                     : evt.type === 'villainPower'            ? (evt.badgeText || 'Power Play')
+                     : evt.type === 'villainGloat'            ? (evt.badgeText || 'Gloating')
+                     : evt.type === 'villainLoyalty'          ? (evt.badgeText || 'Inner Circle')
+                     : evt.type === 'heroConfront'            ? (evt.badgeText || 'Hero vs Villain')
+                     : evt.type === 'heroProtect'             ? (evt.badgeText || 'Protecting')
+                     : evt.type === 'heroSacrifice'           ? (evt.badgeText || 'Sacrifice')
+                     : evt.type === 'heroWeight'              ? (evt.badgeText || 'The Weight')
+                     : evt.type === 'socialIntel'             ? (evt.badgeText || 'Social Intel')
                      : evt.type === 'allianceDissolved'      ? (evt.badgeText || 'Alliance Dissolved')
                      : evt.type === 'kipAftermath'          ? (evt.badgeText || 'KiP Aftermath')
                      : evt.type === 'amuletReunion'         ? (evt.badgeText || 'Amulet Holders')
@@ -22008,6 +22716,17 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : isCRExposure || isCRDissolved || isCRBlowup ? 'red'
                      : isCRSurvived || isCRVindicated ? 'green'
                      : isCRCracked || isCRPivot ? 'gold'
+                     : evt.type === 'fanVoteWinner' ? 'gold'
+                     : evt.type === 'fanVoteJealousy' ? 'red'
+                     : evt.type === 'villainIntimidate' ? 'red'
+                     : evt.type === 'villainPower' ? 'red'
+                     : evt.type === 'villainGloat' ? 'red'
+                     : evt.type === 'villainLoyalty' ? 'gold'
+                     : evt.type === 'heroConfront' ? 'gold'
+                     : evt.type === 'heroProtect' ? 'green'
+                     : evt.type === 'heroSacrifice' ? 'green'
+                     : evt.type === 'heroWeight' ? ''
+                     : evt.type === 'socialIntel' ? (evt.badgeClass || 'gold')
                      : evt.type === 'allianceDissolved' ? 'red'
                      : evt.type === 'kipAftermath' ? (evt.badgeClass || 'red')
                      : evt.type === 'amuletReunion' ? (evt.badgeClass || 'gold')
@@ -22048,7 +22767,10 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
       'idolBetrayal','ftcThreatAlert','ftcThreatStrategist','comfortBlindspot','clockingIt',
       'watchingYou','goatIdentified','goatObserver','goatOblivious','scramble','lie',
       'overconfidence','bigMoveThoughts','schemerManipulates','mastermindOrchestrates','kipAftermath',
-      'allianceDissolved','amuletReunion','amuletUpgrade','amuletBetrayal','amuletRivalry','legacyInheritance',
+      'allianceDissolved','socialIntel','fanVoteWinner','fanVoteJealousy',
+      'villainIntimidate','villainPower','villainGloat','villainLoyalty',
+      'heroConfront','heroProtect','heroSacrifice','heroWeight',
+      'amuletReunion','amuletUpgrade','amuletBetrayal','amuletRivalry','legacyInheritance',
       'legacyConfession','legacyLeak','legacyScheme','legacyWeight','legacyHeirWatch']);
     const spotTypes = new Set(['socialBomb','socialBombReaction','showmancerMoment',
       'unexpectedCompetence','underdogMoment','loneWolf','meltdown','leadershipClash',
@@ -23985,6 +24707,22 @@ function rpBuildTribal(ep) {
       suspicion: '#e3b341', uncertainty: '#e3b341', confrontation: '#f85149',
       control: '#388bfd', read: '#8b949e', vulnerability: '#8b949e', motive: '#8b949e',
     };
+    // Tribal disruption event (hothead blowup that shifts the vote)
+    if (ep.tribalDisruption) {
+      const _td = ep.tribalDisruption;
+      const _tdPr = pronouns(_td.disruptor);
+      html += `<div style="margin:12px 0;padding:12px 16px;border-left:3px solid ${_td.helped ? 'var(--accent-gold)' : 'var(--accent-fire)'};background:${_td.helped ? 'rgba(227,179,65,0.05)' : 'rgba(218,54,51,0.05)'};border-radius:0 8px 8px 0">
+        <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;color:${_td.helped ? '#e3b341' : '#f85149'};margin-bottom:6px">${_td.helped ? 'TRIBAL DISRUPTION — BACKFIRED ON THE TRIBE' : 'TRIBAL DISRUPTION — BACKFIRED ON THE DISRUPTOR'}</div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          ${rpPortrait(_td.disruptor, 'sm')}
+          ${rpPortrait(_td.organizer, 'sm')}
+        </div>
+        <div style="font-size:12px;color:#cdd9e5;line-height:1.6">${_td.helped
+          ? `${_td.disruptor} erupted at tribal, calling out ${_td.organizer} in front of everyone. The outburst was raw — but it made the tribe reconsider. ${_td.organizer}'s plan is exposed.`
+          : `${_td.disruptor} lost ${_tdPr.posAdj} composure at tribal, confronting ${_td.organizer} publicly. The explosion confirmed what people suspected — ${_td.disruptor} is too volatile to keep around.`
+        }</div>
+      </div>`;
+    }
     html += `<div class="rp-vp-section-label">AT TRIBAL COUNCIL</div>
     <div class="tc-qa-section">`;
     qa.forEach(item => {
@@ -29264,6 +30002,19 @@ function buildVPScreens(epRecord) {
   if (ep.spiritIslandEvents?.length) {
     const _siHtml = rpBuildSpiritIsland(ep);
     if (_siHtml) vpScreens.push({ id:'spirit-island', label:'Spirit Island', html: _siHtml });
+  }
+
+  // ── Fan Vote screen ──
+  const _fvTw = (ep.twists || []).find(t => (t.type === 'fan-vote-boot' || t.catalogId === 'fan-vote-boot') && t.fanVoteSaved);
+  if (_fvTw) {
+    const _fvHtml = rpBuildFanVote(ep);
+    if (_fvHtml) vpScreens.push({ id:'fan-vote', label:'Fan Vote', html: _fvHtml });
+  }
+
+  // ── Feast screen (after twists, before camp) ──
+  if (ep.feastEvents?.length) {
+    const _feastHtml = rpBuildFeast(ep);
+    if (_feastHtml) vpScreens.push({ id:'feast', label:'The Feast', html: _feastHtml });
   }
 
   // ── No Tribal Council — show announcement screen instead of voting/tribal ──

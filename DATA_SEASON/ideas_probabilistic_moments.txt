@@ -69,6 +69,22 @@ and the downstream consequence. None are guaranteed — all fire on a roll.
   (fallback to first available block). ALLIANCE MOVES section added to rpBuildAftermath.
   ep.allianceRecruits saved to episode history snapshot.
 
+[DONE] #24+25 Hero + Villain Archetypes — implemented in 3 phases.
+  Phase 1: stat profiles + heat modifiers + bond dynamics.
+  - Villain: +1.5 heat, low-boldness voters fear targeting, bonds form 30% slower (not genuine),
+    -0.08 idol-for-ally penalty, +3 drama popularity per episode.
+  - Hero: -1.0 heat, strategic players add +0.3 each (jury threat), bonds form 15% faster,
+    +0.15 idol-for-ally boost, +2 like popularity per episode.
+  - Hero-villain auto-rivalry: -3.0 bond floor at game init.
+  Phase 2: camp events + FTC scoring.
+  - Villain events (30%): intimidation, power play, gloating, inner circle loyalty.
+  - Hero events (30%): confront villain, protect weak, sacrifice, emotional weight.
+  - FTC: hero +2.0 jury bonus. Villain polarizing (bond >= 1: +1.5, bond <= -1: -2.0).
+  Phase 3: rivalry tracking + Slasher Night.
+  - gs.heroVillainRivalries tracked. Slasher: villain +2 score + panic immune.
+    Hero shields allies (+1 each, -1 self) + bond gains.
+  Roster updated: Heather/Scott/Jo/Sugar/Taylor → villain. DJ/Brick/Sanders/Samey → hero.
+
 
 ── RELATIONSHIPS ──────────────────────────────────────────────────────────────
 
@@ -736,7 +752,7 @@ Priority: MEDIUM — same scope as villain. Both should be built together since 
 ── NOTES ──────────────────────────────────────────────────────────────────────
 - All of these should use the same probabilistic pattern as idol confessions:
   roll fires or it doesn't, no guaranteed outcome, consequences cascade naturally.
-- Priority order: [18 DONE], 22, 1, 23, 24+25, 10, 20, 12, 21, B, 8, [3 DONE], 6, 14, 5, 13, 4, 11, 15, 17
+- Priority order: [18 DONE], 22, 1, 23, [24+25 DONE], 10, 20, 12, 21, B, 8, [3 DONE], 6, 14, 5, 13, 4, 11, 15, 17
   16 (cumulative challenge performance) — DONE.
   18 (comfort blindspot) — DONE.
   22 (showmance lifecycle) — NEXT UP. Infrastructure exists (gs.showmances, bond system).

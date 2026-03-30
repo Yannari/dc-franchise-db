@@ -19043,6 +19043,13 @@ function toggleEpisode(ep) {
 }
 
 function clearEpisodeSelection() {
+  // If twists are scheduled, ask if they want to clear those too
+  if (seasonConfig.twistSchedule?.length) {
+    if (confirm('Clear all scheduled twists from the timeline?')) {
+      seasonConfig.twistSchedule = [];
+      localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
+    }
+  }
   selectedEpisodes.clear();
   renderTimeline();
   renderTwistCatalog();

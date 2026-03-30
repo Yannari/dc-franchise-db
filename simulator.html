@@ -8212,17 +8212,51 @@ function applyTwist(ep, twist, isPrimary = true) {
   // amulet-activate removed — Amulet power scales automatically via handleAdvantageInheritance
 
   } else if (engineType === 'idol-wager') {
-    const idols = (gs.advantages||[]).filter(a => a.type === 'idol');
-    if (idols.length) {
-      const chosen = idols[Math.floor(Math.random() * idols.length)];
-      if (Math.random() < 0.5) {
-        twistObj.idolWagerWinner = chosen.holder;
-        chosen.superIdol = true;
-      } else {
-        twistObj.idolWagerLoser = chosen.holder;
-        gs.advantages = gs.advantages.filter(a => a !== chosen);
+    // All idol holders are offered the wager — each decides independently
+    const idols = (gs.advantages||[]).filter(a => a.type === 'idol' && gs.activePlayers.includes(a.holder));
+    twistObj.idolWagerResults = [];
+    idols.forEach(adv => {
+      const holder = adv.holder;
+      const s = pStats(holder);
+      const _arch = players.find(p => p.name === holder)?.archetype || '';
+      const emotional = getPlayerState(holder)?.emotional || 'content';
+      // Decision: proportional with boldness, inversely with strategic
+      const _archBonus = _arch === 'hero' ? 0.15 : _arch === 'villain' ? 0.10 : 0;
+      const _emotBonus = emotional === 'desperate' ? 0.20 : emotional === 'confident' ? 0.10 : 0;
+      const _wagerChance = s.boldness * 0.08 + (10 - s.strategic) * 0.03 + _archBonus + _emotBonus;
+      const _willWager = Math.random() < Math.min(0.85, _wagerChance);
+
+      if (!_willWager) {
+        twistObj.idolWagerResults.push({ holder, decision: 'declined' });
+        return;
       }
-    }
+
+      // Challenge: tests WEAKEST stat (physical/endurance/mental)
+      const _chalStats = [
+        { key: 'physical', val: s.physical },
+        { key: 'endurance', val: s.endurance },
+        { key: 'mental', val: s.mental },
+      ].sort((a, b) => a.val - b.val);
+      const _weakest = _chalStats[0]; // lowest stat
+      const _secondWeak = _chalStats[1];
+      const _chalNames = { physical: 'Obstacle Sprint', endurance: 'Endurance Hold', mental: 'Speed Puzzle' };
+      const _chalDescs = { physical: 'Raw physicality under pressure.', endurance: 'Hold on longer than the idol is worth.', mental: 'Solve it before time runs out.' };
+      const _score = _weakest.val * 0.6 + _secondWeak.val * 0.3 + Math.random() * 3;
+      const _won = _score >= 5.0;
+
+      if (_won) {
+        adv.superIdol = true;
+        twistObj.idolWagerResults.push({ holder, decision: 'wagered', won: true,
+          challenge: _chalNames[_weakest.key], challengeStat: _weakest.key, score: Math.round(_score * 10) / 10 });
+        twistObj.idolWagerWinner = holder; // backward compat
+      } else {
+        gs.advantages = gs.advantages.filter(a => a !== adv);
+        twistObj.idolWagerResults.push({ holder, decision: 'wagered', won: false,
+          challenge: _chalNames[_weakest.key], challengeStat: _weakest.key, score: Math.round(_score * 10) / 10 });
+        twistObj.idolWagerLoser = holder; // backward compat
+      }
+    });
+    if (!idols.length) twistObj.idolWagerResults.push({ decision: 'no-idols' });
 
   // ── THREE GIFTS ──────────────────────────────────────────────────
   } else if (engineType === 'three-gifts') {
@@ -14723,7 +14757,7 @@ function simulateEpisode() {
       campEvents: ep.campEvents || null,
       bewareLostVotes: ep.bewareLostVotes || [],
       idolPlays: ep.idolPlays || [], idolMisplays: ep.idolMisplays || [],
-      shotInDark: ep.shotInDark || null, kipSteal: ep.kipSteal || null, idolShares: ep.idolShares || [], spiritIslandEvents: ep.spiritIslandEvents || null, amuletCoordination: ep.amuletCoordination || null, tribalDisruption: ep.tribalDisruption || null, feastEvents: ep.feastEvents || null,
+      shotInDark: ep.shotInDark || null, kipSteal: ep.kipSteal || null, idolShares: ep.idolShares || [], spiritIslandEvents: ep.spiritIslandEvents || null, amuletCoordination: ep.amuletCoordination || null, tribalDisruption: ep.tribalDisruption || null, feastEvents: ep.feastEvents || null, idolWagerResults: ep.idolWagerResults || null,
       fireMaking: ep.fireMaking || null,
       doubleTribalLosingTribes: (ep.doubleTribalLosingTribes || []).map(t => ({ name: t.name, members: [...t.members] })),
       allianceQuits: ep.allianceQuits || [], allianceRecruits: ep.allianceRecruits || [],
@@ -14820,7 +14854,7 @@ function simulateEpisode() {
         eliminated: tResult.eliminated, isTie: tResult.isTie, tiedPlayers: tResult.tiedPlayers,
         fireMaking: ep.fireMaking || null,
         idolPlays: _tribeIdolPlays,
-        shotInDark: ep.shotInDark || null, kipSteal: ep.kipSteal || null, idolShares: ep.idolShares || [], spiritIslandEvents: ep.spiritIslandEvents || null, amuletCoordination: ep.amuletCoordination || null, tribalDisruption: ep.tribalDisruption || null, feastEvents: ep.feastEvents || null,
+        shotInDark: ep.shotInDark || null, kipSteal: ep.kipSteal || null, idolShares: ep.idolShares || [], spiritIslandEvents: ep.spiritIslandEvents || null, amuletCoordination: ep.amuletCoordination || null, tribalDisruption: ep.tribalDisruption || null, feastEvents: ep.feastEvents || null, idolWagerResults: ep.idolWagerResults || null,
         tiebreakerResult: ep.tiebreakerResult || null,
         revoteVotes: ep.revoteVotes || null, revoteLog: ep.revoteLog || null,
         sidFreshVote: ep.sidFreshVote || false,
@@ -14901,7 +14935,7 @@ function simulateEpisode() {
       twists: (ep.twists||[]).map(t => ({...t})),
       campEvents: ep.campEvents || null,
       idolPlays: ep.idolPlays || [], idolMisplays: ep.idolMisplays || [],
-      shotInDark: ep.shotInDark || null, kipSteal: ep.kipSteal || null, idolShares: ep.idolShares || [], spiritIslandEvents: ep.spiritIslandEvents || null, amuletCoordination: ep.amuletCoordination || null, tribalDisruption: ep.tribalDisruption || null, feastEvents: ep.feastEvents || null,
+      shotInDark: ep.shotInDark || null, kipSteal: ep.kipSteal || null, idolShares: ep.idolShares || [], spiritIslandEvents: ep.spiritIslandEvents || null, amuletCoordination: ep.amuletCoordination || null, tribalDisruption: ep.tribalDisruption || null, feastEvents: ep.feastEvents || null, idolWagerResults: ep.idolWagerResults || null,
       multiTribalResults: ep.multiTribalResults, multiTribalElims: multiElims,
       votingLog: ep.votingLog || [],
       bewareLostVotes: ep.bewareLostVotes || [],
@@ -15618,6 +15652,7 @@ function simulateEpisode() {
     spiritIslandEvents: ep.spiritIslandEvents || null,
     amuletCoordination: ep.amuletCoordination || null,
     feastEvents:      ep.feastEvents      || null,
+    idolWagerResults: ep.idolWagerResults || null,
     overplayer:       ep.overplayer       || null,
     tribalBlowup:     ep.tribalBlowup     || null,
     chalSitOuts:      ep.chalSitOuts      || null,
@@ -16465,14 +16500,26 @@ function generateTwistScenes(ep) {
         }
         result.push({ label:'Amulet Activates', type:tw.type, scenes:sc }); break;
 
-      case 'idol-wager':
-        if (tw.idolWagerWinner) {
-          sc.push({ text: `${tw.idolWagerWinner} wagered their Hidden Immunity Idol.`, players: [tw.idolWagerWinner] });
-          sc.push({ text: `${tw.idolWagerWinner} won the wager. Their idol is now a Super Idol — it can protect other players.`, players: [tw.idolWagerWinner], badge:'Super Idol', badgeClass:'win' });
-        } else if (tw.idolWagerLoser) {
-          sc.push({ text: `${tw.idolWagerLoser} wagered their Hidden Immunity Idol.`, players: [tw.idolWagerLoser] });
-          sc.push({ text: `${tw.idolWagerLoser} lost the wager. Their idol has been destroyed.`, players: [tw.idolWagerLoser], badge:'Idol Lost', badgeClass:'bad' });
+      case 'idol-wager': {
+        const _wResults = tw.idolWagerResults || [];
+        if (!_wResults.length || _wResults[0]?.decision === 'no-idols') {
+          sc.push({ text: 'The Idol Wager was offered — but no one holds an idol to risk.', players: [] });
+        } else {
+          sc.push({ text: 'The Idol Wager. Every idol holder must decide: risk it all for a Super Idol, or play it safe.', players: [] });
+          _wResults.forEach(r => {
+            if (r.decision === 'declined') {
+              sc.push({ text: `${r.holder} holds the idol in ${pronouns(r.holder).posAdj} hands... and puts it back. Too much to lose.`, players: [r.holder], badge: 'Declined', badgeClass: '' });
+            } else if (r.won) {
+              sc.push({ text: `${r.holder} accepts the wager. The challenge: ${r.challenge} — testing ${pronouns(r.holder).posAdj} weakest area.`, players: [r.holder] });
+              sc.push({ text: `${r.holder} wins. The idol transforms. It's now a Super Idol — playable for anyone, even after votes are read.`, players: [r.holder], badge: 'Super Idol', badgeClass: 'win' });
+            } else {
+              sc.push({ text: `${r.holder} accepts the wager. The challenge: ${r.challenge} — testing ${pronouns(r.holder).posAdj} weakest area.`, players: [r.holder] });
+              sc.push({ text: `${r.holder} fails. The idol shatters. Gone. The wager cost everything.`, players: [r.holder], badge: 'Idol Destroyed', badgeClass: 'bad' });
+            }
+          });
         }
+        result.push({ label:'Idol Wager', type:tw.type, scenes:sc }); break;
+      }
         result.push({ label:'Idol Wager', type:tw.type, scenes:sc }); break;
 
       case 'kidnapping':
@@ -17127,8 +17174,15 @@ function generateSummaryText(ep) {
     } else if (tw.type === 'amulet-activate') {
       if (tw.amuletActivated) ln(`AMULET ACTIVATES — ${tw.amuletActivated}'s Amulet grants immunity this episode.`);
     } else if (tw.type === 'idol-wager') {
-      if (tw.idolWagerWinner) ln(`IDOL WAGER — ${tw.idolWagerWinner} wagered their idol and WON. Their idol is now a Super Idol — can protect others.`);
-      else if (tw.idolWagerLoser) ln(`IDOL WAGER — ${tw.idolWagerLoser} wagered their idol and LOST. The idol was destroyed.`);
+      if (tw.idolWagerResults?.length) {
+        ln('IDOL WAGER — all idol holders offered the choice:');
+        tw.idolWagerResults.forEach(r => {
+          if (r.decision === 'no-idols') ln('  No idol holders in the game.');
+          else if (r.decision === 'declined') ln(`  ${r.holder} — DECLINED. Kept their idol safe.`);
+          else if (r.won) ln(`  ${r.holder} — WAGERED on ${r.challenge} (score: ${r.score}). WON. Idol upgraded to Super Idol.`);
+          else ln(`  ${r.holder} — WAGERED on ${r.challenge} (score: ${r.score}). LOST. Idol destroyed.`);
+        });
+      }
     } else if (tw.type === 'journey') {
       ln('JOURNEY — a journey was scheduled this episode. Players were sent on a journey for a chance at an advantage.');
     } else if (tw.type === 'auction') {

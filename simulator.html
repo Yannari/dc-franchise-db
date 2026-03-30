@@ -2101,8 +2101,15 @@ function _applySeasonSave(data) {
   renderConfig(); renderCast(); renderTribeBuilder(); renderTribeSelect();
   if (typeof renderRelList === 'function') renderRelList();
   if (typeof renderAllianceList === 'function') renderAllianceList();
-  if (typeof renderGameState === 'function') renderGameState();
+  // Fully refresh the Run tab — show content, render episode history, show last episode
+  if (typeof renderRunTab === 'function') renderRunTab();
   if (typeof renderEpisodeHistory === 'function') renderEpisodeHistory();
+  if (typeof renderTimeline === 'function') renderTimeline();
+  // Show the last episode's result
+  if (gs.episodeHistory?.length) {
+    const lastEp = gs.episodeHistory[gs.episodeHistory.length - 1];
+    if (typeof renderEpisodeView === 'function') renderEpisodeView(lastEp);
+  }
 }
 
 // Export season as JSON file

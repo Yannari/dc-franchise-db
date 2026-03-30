@@ -1310,6 +1310,18 @@
         <button class="btn btn-secondary btn-sm" id="replay-btn" onclick="replayEpisode(viewingEpNum||gs?.episode)" style="margin-top:4px;display:none">↺ Re-run This Episode</button>
         <button class="btn btn-secondary btn-sm" onclick="resetSeason()" style="margin-top:4px">Reset Season</button>
         <div style="font-size:10px;color:var(--muted);line-height:1.5;margin-top:4px">Reset clears all episode history but keeps your cast and setup intact.</div>
+        <div class="divider" style="margin:8px 0"></div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px">Season Save</div>
+        <button class="btn btn-secondary btn-sm" onclick="saveSeasonToStorage()" style="margin-bottom:2px;width:100%">Save Season</button>
+        <button class="btn btn-secondary btn-sm" onclick="exportSeason()" style="margin-bottom:2px;width:100%">Export Season</button>
+        <button class="btn btn-secondary btn-sm" onclick="document.getElementById('import-season-file').click()" style="margin-bottom:2px;width:100%">Import Season</button>
+        <input type="file" id="import-season-file" accept=".json" style="display:none" onchange="importSeason(event)">
+        <select id="season-save-list" class="form-select" style="font-size:10px;margin-top:2px" onchange="loadSeasonFromStorage(this.value)">
+          <option value="">— Load saved season —</option>
+        </select>
+        <div id="season-delete-row" style="display:none;margin-top:2px">
+          <button class="btn btn-danger btn-sm" onclick="deleteSeasonSave()" style="font-size:10px;padding:2px 8px">Delete</button>
+        </div>
       </aside>
       <!-- RIGHT: Output -->
       <main class="run-main" id="run-main">
@@ -2054,6 +2066,131 @@ function renderPresetList() {
   sel.onchange = function() {
     document.getElementById('preset-delete-row').style.display = this.value ? 'block' : 'none';
     if (this.value) loadPreset(this.value);
+  };
+}
+
+// ── Season Save/Load: saves completed seasons (full gs + config + cast) ──
+function _buildSeasonSaveData() {
+  prepGsForSave(gs);
+  return {
+    version: 1,
+    type: 'season-save',
+    name: seasonConfig.name || 'Untitled Season',
+    date: new Date().toISOString().slice(0, 10),
+    episode: gs.episode || 0,
+    config: { ...seasonConfig },
+    players: players.map(p => ({ ...p })),
+    relationships: relationships.map(r => ({ ...r })),
+    preGameAlliances: (preGameAlliances || []).map(a => ({ ...a })),
+    gs: JSON.parse(JSON.stringify(gs)), // deep clone
+  };
+}
+function _applySeasonSave(data) {
+  if (!data?.gs || !data?.config) { alert('Invalid season save.'); return; }
+  seasonConfig = data.config;
+  localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
+  players = data.players || [];
+  saveCast();
+  relationships = data.relationships || [];
+  localStorage.setItem('simulator_relationships', JSON.stringify(relationships));
+  preGameAlliances = data.preGameAlliances || [];
+  localStorage.setItem('simulator_pre_alliances', JSON.stringify(preGameAlliances));
+  gs = data.gs;
+  repairGsSets(gs);
+  saveGameState();
+  renderConfig(); renderCast(); renderTribeBuilder(); renderTribeSelect();
+  if (typeof renderRelList === 'function') renderRelList();
+  if (typeof renderAllianceList === 'function') renderAllianceList();
+  if (typeof renderGameState === 'function') renderGameState();
+  if (typeof renderEpisodeHistory === 'function') renderEpisodeHistory();
+}
+
+// Export season as JSON file
+function exportSeason() {
+  if (!gs?.initialized) { alert('No season to export. Initialize first.'); return; }
+  const data = _buildSeasonSaveData();
+  const name = (seasonConfig.name || 'season').replace(/[^a-zA-Z0-9 ]/g, '').replace(/\s+/g, '-').toLowerCase();
+  const ep = gs.episode || 0;
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `season-${name}-ep${ep}.json`; a.click();
+}
+function importSeason(event) {
+  const file = event.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data.type !== 'season-save') { alert('This is not a season save file.'); return; }
+      if (!confirm(`Load season "${data.name}" (Episode ${data.episode || 0})? This replaces everything.`)) return;
+      _applySeasonSave(data);
+    } catch { alert('Invalid season file.'); }
+  };
+  reader.readAsText(file); event.target.value = '';
+}
+
+// Save/load seasons to localStorage
+function _getSeasonSaves() {
+  try { return JSON.parse(localStorage.getItem('simulator_season_saves') || '[]'); } catch { return []; }
+}
+function _saveSeasonSaves(list) {
+  localStorage.setItem('simulator_season_saves', JSON.stringify(list));
+  renderSeasonSaveList();
+}
+function saveSeasonToStorage() {
+  if (!gs?.initialized) { alert('No season to save. Initialize first.'); return; }
+  const defaultName = (seasonConfig.name || 'Season') + ' (Ep ' + (gs.episode || 0) + ')';
+  const name = prompt('Save name:', defaultName);
+  if (!name) return;
+  const saves = _getSeasonSaves();
+  const existing = saves.findIndex(s => s.name === name);
+  const data = _buildSeasonSaveData();
+  data.name = name;
+  if (existing >= 0) {
+    if (!confirm(`Overwrite "${name}"?`)) return;
+    saves[existing] = data;
+  } else {
+    saves.push(data);
+  }
+  try {
+    _saveSeasonSaves(saves);
+    alert(`Season "${name}" saved.`);
+  } catch (e) {
+    // localStorage might be full — offer export instead
+    alert('localStorage full. Use "Export Season" to save as a file instead.');
+  }
+}
+function loadSeasonFromStorage(name) {
+  if (!name) { document.getElementById('season-delete-row').style.display = 'none'; return; }
+  const saves = _getSeasonSaves();
+  const data = saves.find(s => s.name === name);
+  if (!data) { alert('Save not found.'); return; }
+  if (!confirm(`Load "${name}"? This replaces your current season.`)) {
+    document.getElementById('season-save-list').value = '';
+    return;
+  }
+  _applySeasonSave(data);
+  document.getElementById('season-save-list').value = '';
+  document.getElementById('season-delete-row').style.display = 'none';
+}
+function deleteSeasonSave() {
+  const sel = document.getElementById('season-save-list');
+  const name = sel.value;
+  if (!name) return;
+  if (!confirm(`Delete "${name}"?`)) return;
+  const saves = _getSeasonSaves().filter(s => s.name !== name);
+  _saveSeasonSaves(saves);
+  sel.value = '';
+  document.getElementById('season-delete-row').style.display = 'none';
+}
+function renderSeasonSaveList() {
+  const sel = document.getElementById('season-save-list');
+  if (!sel) return;
+  const saves = _getSeasonSaves();
+  sel.innerHTML = '<option value="">— Load saved season —</option>' +
+    saves.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
+  sel.onchange = function() {
+    document.getElementById('season-delete-row').style.display = this.value ? 'block' : 'none';
+    if (this.value) loadSeasonFromStorage(this.value);
   };
 }
 
@@ -30842,6 +30979,7 @@ function init() {
   renderRelList();
   renderAllianceList();
   renderPresetList();
+  renderSeasonSaveList();
 }
 
 init();

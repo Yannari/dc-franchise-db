@@ -846,6 +846,22 @@
           <button class="btn btn-secondary" onclick="document.getElementById('import-file').click()">Import JSON</button>
         </div>
         <input type="file" id="import-file" accept=".json" style="display:none" onchange="importCast(event)">
+        <div class="divider"></div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:2px">Presets</div>
+        <div class="btn-row">
+          <button class="btn btn-secondary" onclick="savePreset()" style="background:#6366f1;color:#fff">Save Preset</button>
+          <button class="btn btn-secondary" onclick="exportPreset()">Export Full</button>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-secondary" onclick="document.getElementById('import-preset-file').click()">Import Full</button>
+        </div>
+        <input type="file" id="import-preset-file" accept=".json" style="display:none" onchange="importPreset(event)">
+        <select id="preset-list" class="form-select" style="margin-top:4px;font-size:11px" onchange="loadPreset(this.value)">
+          <option value="">— Load saved preset —</option>
+        </select>
+        <div id="preset-delete-row" style="display:none;margin-top:2px">
+          <button class="btn btn-danger btn-sm" onclick="deletePreset()" style="font-size:10px;padding:2px 8px">Delete selected preset</button>
+        </div>
       </aside>
       <main class="cast-panel">
         <div class="cast-header">
@@ -1932,6 +1948,113 @@ function importCast(event) {
   const reader = new FileReader();
   reader.onload = e => { try { const data=JSON.parse(e.target.result); if(!Array.isArray(data)) throw new Error(); players=data; saveCast(); renderCast(); } catch { alert('Invalid JSON file.'); } };
   reader.readAsText(file); event.target.value='';
+}
+
+// ── Preset System: save/load full season setups ──
+function _buildPresetData() {
+  return {
+    version: 1,
+    name: seasonConfig.name || 'Untitled',
+    date: new Date().toISOString().slice(0, 10),
+    config: { ...seasonConfig },
+    players: players.map(p => ({ ...p })),
+    relationships: relationships.map(r => ({ ...r })),
+    preGameAlliances: (preGameAlliances || []).map(a => ({ ...a })),
+  };
+}
+function _applyPreset(data) {
+  if (!data?.config || !data?.players) { alert('Invalid preset data.'); return; }
+  seasonConfig = data.config;
+  localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
+  players = data.players;
+  saveCast();
+  relationships = data.relationships || [];
+  localStorage.setItem('simulator_relationships', JSON.stringify(relationships));
+  preGameAlliances = data.preGameAlliances || [];
+  localStorage.setItem('simulator_pre_alliances', JSON.stringify(preGameAlliances));
+  renderConfig(); renderCast(); renderTribeBuilder(); renderTribeSelect();
+  if (typeof renderRelList === 'function') renderRelList();
+  if (typeof renderAllianceList === 'function') renderAllianceList();
+}
+
+// A) Export full preset as JSON file
+function exportPreset() {
+  const data = _buildPresetData();
+  const name = (seasonConfig.name || 'preset').replace(/[^a-zA-Z0-9 ]/g, '').replace(/\s+/g, '-').toLowerCase();
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `preset-${name}.json`; a.click();
+}
+function importPreset(event) {
+  const file = event.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!confirm(`Load preset "${data.name || 'Untitled'}"? This will replace your current setup.`)) return;
+      _applyPreset(data);
+    } catch { alert('Invalid preset file.'); }
+  };
+  reader.readAsText(file); event.target.value = '';
+}
+
+// B) Save/load presets to localStorage
+function _getPresets() {
+  try { return JSON.parse(localStorage.getItem('simulator_presets') || '[]'); } catch { return []; }
+}
+function _savePresets(list) {
+  localStorage.setItem('simulator_presets', JSON.stringify(list));
+  renderPresetList();
+}
+function savePreset() {
+  const name = prompt('Preset name:', seasonConfig.name || 'My Season');
+  if (!name) return;
+  const presets = _getPresets();
+  const existing = presets.findIndex(p => p.name === name);
+  const data = _buildPresetData();
+  data.name = name;
+  if (existing >= 0) {
+    if (!confirm(`Overwrite existing preset "${name}"?`)) return;
+    presets[existing] = data;
+  } else {
+    presets.push(data);
+  }
+  _savePresets(presets);
+  alert(`Preset "${name}" saved.`);
+}
+function loadPreset(name) {
+  if (!name) { document.getElementById('preset-delete-row').style.display = 'none'; return; }
+  const presets = _getPresets();
+  const data = presets.find(p => p.name === name);
+  if (!data) { alert('Preset not found.'); return; }
+  if (!confirm(`Load preset "${name}"? This will replace your current setup.`)) {
+    document.getElementById('preset-list').value = '';
+    return;
+  }
+  _applyPreset(data);
+  document.getElementById('preset-list').value = '';
+  document.getElementById('preset-delete-row').style.display = 'none';
+}
+function deletePreset() {
+  const sel = document.getElementById('preset-list');
+  const name = sel.value;
+  if (!name) return;
+  if (!confirm(`Delete preset "${name}"?`)) return;
+  const presets = _getPresets().filter(p => p.name !== name);
+  _savePresets(presets);
+  sel.value = '';
+  document.getElementById('preset-delete-row').style.display = 'none';
+}
+function renderPresetList() {
+  const sel = document.getElementById('preset-list');
+  if (!sel) return;
+  const presets = _getPresets();
+  sel.innerHTML = '<option value="">— Load saved preset —</option>' +
+    presets.map(p => `<option value="${p.name}">${p.name} (${p.date || '?'})</option>`).join('');
+  // Show delete button when a preset is selected
+  sel.onchange = function() {
+    document.getElementById('preset-delete-row').style.display = this.value ? 'block' : 'none';
+    if (this.value) loadPreset(this.value);
+  };
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -30718,6 +30841,7 @@ function init() {
   renderConfig();
   renderRelList();
   renderAllianceList();
+  renderPresetList();
 }
 
 init();

@@ -2794,8 +2794,9 @@ function updateChalRecord(ep) {
 function challengeWeakness(name, challengeCategory) {
   const s = pStats(name);
   const _rec = gs?.chalRecord?.[name] || { wins: 0, podiums: 0, bombs: 0 };
-  // Estimate total challenges from episode count (roughly 1 challenge per episode)
-  const _totalChallenges = Math.max(_rec.wins + _rec.podiums + _rec.bombs, (gs?.episode || 0));
+  // Total challenges seen: by vote time, this episode's challenge already happened
+  // gs.episode is 0-indexed, +1 = current episode number = challenges seen
+  const _totalChallenges = Math.max(_rec.wins + _rec.podiums + _rec.bombs, (gs?.episode || 0) + 1);
 
   // ── STAT BASE: overall challenge ability (what the tribe EXPECTS) ──
   // Always use GENERIC average for targeting — future challenges could be any type
@@ -2822,7 +2823,7 @@ function challengeWeakness(name, challengeCategory) {
   // Early game (0-1 challenges): almost pure stats (tribe hasn't seen enough)
   // Mid game (3-4 challenges): 50/50 blend
   // Late pre-merge (6+ challenges): performance dominates — the tribe trusts what they've seen
-  const _perfWeight = Math.min(0.6, _totalChallenges * 0.12); // 0=0%, 2=24%, 4=48%, 5+=60%
+  const _perfWeight = Math.min(0.85, _totalChallenges * 0.08); // 1=8%, 3=24%, 5=40%, 8=64%, 10=80%, 11+=85%
   const _useBase = challengeCategory ? statBase : genericBase;
   const blended = _useBase + perfMod * (0.4 + _perfWeight); // perfMod always matters, but scales up
 

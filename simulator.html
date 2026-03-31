@@ -26083,7 +26083,29 @@ function rpBuildVotes(ep) {
       <div class="tv-tally-count" id="tv-tc-${epNum}-${slug}" data-count="0">—</div>
     </div>`;
   });
-  html += `</div></div>`; // end tally panel + tv-wrap
+  html += `</div>`; // end tally panel
+
+  // Second Live Tally for revote — hidden until revote cards start revealing
+  if (revoteLog.length && !ep.sidFreshVote) {
+    const rvTallyNames = [...new Set(revoteLog.map(v => v.voted))].sort((a,b) => {
+      const rv = ep.revoteVotes || {};
+      return (rv[b]||0) - (rv[a]||0);
+    });
+    html += `<div class="tv-tally-panel" id="tv-tally-rv-${epNum}" style="display:none;border-color:rgba(210,153,34,0.3)">
+      <div class="tv-tally-header" style="color:#d29922">Live Tally #2</div>`;
+    rvTallyNames.forEach(name => {
+      const slug = name.replace(/[^a-zA-Z0-9]/g, '');
+      html += `<div class="tv-tally-row" data-name="${name}" style="opacity:0;transition:opacity 0.4s">
+        ${rpPortrait(name)}
+        <div class="tv-tally-pname">${name}</div>
+        <div class="tv-tally-bar-bg"><div class="tv-tally-bar" id="tv-tb-rv-${epNum}-${slug}" style="width:0%;background:#d29922"></div></div>
+        <div class="tv-tally-count" id="tv-tc-rv-${epNum}-${slug}" data-count="0">—</div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  html += `</div>`; // end tv-wrap
 
   const totalCards = vlog.length + _extraVotePlays.length + (revoteLog.length && !ep.sidFreshVote ? revoteLog.length : 0);
   html += `<div id="tv-btn-wrap-${epNum}">
@@ -26686,8 +26708,11 @@ function tvRevealNext(epNum) {
       const voted = card.dataset.voted;
       if (voted) {
         if (isRevote) {
-          // Revote cards don't add to the main Live Tally — separate count
+          // Show revote tally panel on first revote card
+          const rvPanel = document.getElementById(`tv-tally-rv-${epNum}`);
+          if (rvPanel && rvPanel.style.display === 'none') rvPanel.style.display = '';
           state.revoteCounts[voted] = (state.revoteCounts[voted] || 0) + 1;
+          _tvUpdateRevoteTally(epNum, state);
         } else {
           state.tallyCounts[voted] = (state.tallyCounts[voted] || 0) + 1;
           _tvUpdateTally(epNum, state);
@@ -26809,6 +26834,12 @@ function tvRevealAll(epNum) {
   });
   state.revealed = cards.length;
   _tvUpdateTally(epNum, state);
+  // Show + update revote tally if any revote cards exist
+  if (Object.keys(state.revoteCounts).length) {
+    const rvPanel = document.getElementById(`tv-tally-rv-${epNum}`);
+    if (rvPanel) rvPanel.style.display = '';
+    _tvUpdateRevoteTally(epNum, state);
+  }
   const btn = document.getElementById(`tv-btn-${epNum}`);
   if (btn) btn.style.display = 'none';
   // Also hide the skip button (sibling)
@@ -26838,6 +26869,22 @@ function _tvUpdateTally(epNum, state) {
       if (!state.tallyCounts[rName]) row.classList.remove('tv-tally-leading');
     });
   }
+}
+
+function _tvUpdateRevoteTally(epNum, state) {
+  const maxCount = Math.max(...Object.values(state.revoteCounts), 1);
+  Object.entries(state.revoteCounts).forEach(([name, count]) => {
+    const slug = name.replace(/[^a-zA-Z0-9]/g, '');
+    const countEl = document.getElementById(`tv-tc-rv-${epNum}-${slug}`);
+    const barEl = document.getElementById(`tv-tb-rv-${epNum}-${slug}`);
+    const rowEl = document.querySelector(`#tv-tally-rv-${epNum} .tv-tally-row[data-name="${name}"]`);
+    if (countEl) countEl.textContent = count;
+    if (barEl) barEl.style.width = `${Math.round((count / maxCount) * 100)}%`;
+    if (rowEl) {
+      rowEl.style.opacity = '1';
+      rowEl.classList.toggle('tv-tally-leading', count === maxCount && count > 0);
+    }
+  });
 }
 
 // ── Screen 11: Aftermath ──

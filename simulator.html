@@ -526,7 +526,7 @@
     .rp-vp-blindside-badge { font-size:10px; font-weight:800; letter-spacing:1px; text-transform:uppercase; color:#e3b341; white-space:nowrap; padding-top:1px; }
     .rp-vp-blindside-text { font-size:12px; color:#8b949e; line-height:1.5; flex:1; }
     .rp-vp-swings { display:flex; flex-direction:column; gap:8px; }
-    .rp-vp-swing { display:flex; align-items:center; gap:12px; background:#0d1117; border:1px solid #21262d; border-radius:10px; padding:12px 14px; }
+    .rp-vp-swing { background:#0d1117; border:1px solid #21262d; border-radius:10px; padding:14px 16px; }
     .rp-vp-swing-info { flex:1; }
     .rp-vp-swing-name { font-size:13px; font-weight:800; color:#c9d1d9; margin-bottom:4px; }
     .rp-vp-conflicted { font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:#e3b341; margin-left:8px; vertical-align:middle; }
@@ -25043,30 +25043,34 @@ function rpBuildVotingPlans(ep) {
       const soloTarget = soloA?.target || null;
       const soloTCat = soloTarget ? targetCategory(soloTarget) : null;
       if (isNoVote) {
-        html += `<div class="rp-vp-swing" style="animation:slideInLeft 0.4s ease;opacity:0.5">
-          ${rpPortrait(player)}
-          <div class="rp-vp-swing-info">
-            <div class="rp-vp-swing-name">${player} <span style="font-size:9px;color:#f85149;font-weight:600">NO VOTE</span></div>
-            <div class="rp-vp-swing-detail" style="color:#484f58">Cannot vote tonight</div>
+        html += `<div class="rp-vp-swing" style="animation:slideInLeft 0.4s ease;opacity:0.4">
+          <div style="display:flex;align-items:center;gap:10px">
+            ${rpPortrait(player)}
+            <div>
+              <div style="font-size:14px;font-weight:700;color:#484f58">${player}</div>
+              <div style="font-size:10px;color:#f85149;font-weight:600">Cannot vote tonight</div>
+            </div>
           </div>
         </div>`;
       } else if (soloTarget) {
         const _stCat = soloTCat;
         const _indReason = _vpTargetReason(soloTarget, player, _stCat || { label: 'Active Player', color: '#484f58' });
         html += `<div class="rp-vp-swing" style="animation:slideInLeft 0.4s ease">
-          ${rpPortrait(player, 'sm')}
-          <div class="rp-vp-swing-info" style="flex:1">
-            <div class="rp-vp-swing-name">${player}</div>
-            <div style="display:flex;align-items:center;gap:6px;margin-top:4px">
-              <span style="font-size:10px;color:#484f58">\u2192</span>
-              ${rpPortrait(soloTarget, 'sm')}
-              <div>
-                <div style="font-size:12px;font-weight:700;color:#e6edf3">${soloTarget}</div>
-                <div style="font-size:10px;color:${_stCat?.color || '#484f58'}">${_stCat?.label || 'Target'}</div>
-              </div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+            ${rpPortrait(player)}
+            <div style="flex:1">
+              <div style="font-size:14px;font-weight:700;color:#e6edf3">${player}</div>
             </div>
-            <div style="font-size:10px;color:#6e7681;margin-top:4px;font-style:italic">${_indReason}</div>
           </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(248,81,73,0.04);border:1px solid rgba(248,81,73,0.1);border-radius:6px;margin-bottom:6px">
+            <span style="font-size:9px;font-weight:800;letter-spacing:1.5px;color:#f85149">TARGET</span>
+            ${rpPortrait(soloTarget, 'sm')}
+            <div>
+              <div style="font-size:13px;font-weight:700;color:#e6edf3">${soloTarget}</div>
+              <div style="font-size:10px;color:${_stCat?.color || '#484f58'}">${_stCat?.label || 'Target'}</div>
+            </div>
+          </div>
+          <div style="font-size:11px;color:#8b949e;line-height:1.5;font-style:italic;padding-left:2px">${_indReason}</div>
         </div>`;
       } else {
         // No solo alliance target — try to find a likely target from vote log (show name but not outcome)
@@ -25076,26 +25080,30 @@ function rpBuildVotingPlans(ep) {
         if (_likelyTarget && !isImmune) {
           const _fbReason = _vpTargetReason(_likelyTarget, player, _ltCat || { label: 'Active Player', color: '#484f58' });
           html += `<div class="rp-vp-swing" style="animation:slideInLeft 0.4s ease">
-            ${rpPortrait(player, 'sm')}
-            <div class="rp-vp-swing-info" style="flex:1">
-              <div class="rp-vp-swing-name">${player}</div>
-              <div style="display:flex;align-items:center;gap:6px;margin-top:4px">
-                <span style="font-size:10px;color:#484f58">\u2192</span>
-                ${rpPortrait(_likelyTarget, 'sm')}
-                <div>
-                  <div style="font-size:12px;font-weight:700;color:#e6edf3">${_likelyTarget}</div>
-                  <div style="font-size:10px;color:${_ltCat?.color || '#484f58'}">${_ltCat?.label || 'Target'}</div>
-                </div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+              ${rpPortrait(player)}
+              <div style="flex:1">
+                <div style="font-size:14px;font-weight:700;color:#e6edf3">${player}</div>
               </div>
-              <div style="font-size:10px;color:#6e7681;margin-top:4px;font-style:italic">${_fbReason}</div>
             </div>
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(248,81,73,0.04);border:1px solid rgba(248,81,73,0.1);border-radius:6px;margin-bottom:6px">
+              <span style="font-size:9px;font-weight:800;letter-spacing:1.5px;color:#f85149">TARGET</span>
+              ${rpPortrait(_likelyTarget, 'sm')}
+              <div>
+                <div style="font-size:13px;font-weight:700;color:#e6edf3">${_likelyTarget}</div>
+                <div style="font-size:10px;color:${_ltCat?.color || '#484f58'}">${_ltCat?.label || 'Target'}</div>
+              </div>
+            </div>
+            <div style="font-size:11px;color:#8b949e;line-height:1.5;font-style:italic;padding-left:2px">${_fbReason}</div>
           </div>`;
         } else {
           html += `<div class="rp-vp-swing" style="animation:slideInLeft 0.4s ease">
-            ${rpPortrait(player, 'sm')}
-            <div class="rp-vp-swing-info">
-              <div class="rp-vp-swing-name">${player}</div>
-              <div class="rp-vp-swing-detail" style="color:#484f58">${isImmune ? 'Safe tonight — voting freely' : 'Reading the room'}</div>
+            <div style="display:flex;align-items:center;gap:10px">
+              ${rpPortrait(player)}
+              <div>
+                <div style="font-size:14px;font-weight:700;color:#e6edf3">${player}</div>
+                <div style="font-size:11px;color:#484f58;margin-top:2px">${isImmune ? 'Safe tonight — voting freely' : 'Reading the room'}</div>
+              </div>
             </div>
           </div>`;
         }

@@ -3221,29 +3221,26 @@ function recoverBonds(ep) {
 
   // ── Tribe cohesion: tribemates who coexist without fighting naturally drift closer ──
   // Shared survival builds bonds over time — this is why pre-merge tribes are tight
-  // POST-MERGE: cohesion stops. You're not building passive bonds with 10 people.
-  // The merge is where relationships become strategic, not automatic.
-  if (!gs.isMerged) {
-    gs.tribes.forEach(tribe => {
-      const members = tribe.members?.filter(m => active.includes(m)) || [];
-      for (let i = 0; i < members.length; i++) {
-        for (let j = i + 1; j < members.length; j++) {
-          const a = members[i], b = members[j];
-          if (_activeFeuds.has([a, b].sort().join('|'))) continue;
-          const bond = getBond(a, b);
-          if (bond >= 5) continue;
-          // Base cohesion + social butterfly bonus
-          // If EITHER player is highly social, bonds grow faster — they make everyone around them comfortable
-          const _sA = pStats(a).social, _sB = pStats(b).social;
-          const _highestSocial = Math.max(_sA, _sB);
-          const nudge = 0.10
-            + _highestSocial * 0.02                          // proportional: stat 4=0.08, stat 8=0.16, stat 10=0.20
-            + _highestSocial * 0.01;                         // butterfly bonus: stat 4=0.04, stat 8=0.08, stat 10=0.10
-          addBond(a, b, nudge);
-        }
+  const _tribeGroups = gs.isMerged ? [{ members: [...active] }] : gs.tribes;
+  _tribeGroups.forEach(tribe => {
+    const members = tribe.members?.filter(m => active.includes(m)) || [];
+    for (let i = 0; i < members.length; i++) {
+      for (let j = i + 1; j < members.length; j++) {
+        const a = members[i], b = members[j];
+        if (_activeFeuds.has([a, b].sort().join('|'))) continue;
+        const bond = getBond(a, b);
+        if (bond >= 5) continue;
+        // Base cohesion + social butterfly bonus
+        // If EITHER player is highly social, bonds grow faster — they make everyone around them comfortable
+        const _sA = pStats(a).social, _sB = pStats(b).social;
+        const _highestSocial = Math.max(_sA, _sB);
+        const nudge = 0.10
+          + _highestSocial * 0.02                          // proportional: stat 4=0.08, stat 8=0.16, stat 10=0.20
+          + _highestSocial * 0.01;                         // butterfly bonus: stat 4=0.04, stat 8=0.08, stat 10=0.10
+        addBond(a, b, nudge);
       }
-    });
-  }
+    }
+  });
 }
 
 function wRandom(pool, weightFn) {

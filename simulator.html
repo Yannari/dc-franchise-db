@@ -526,7 +526,7 @@
     .rp-vp-blindside-badge { font-size:10px; font-weight:800; letter-spacing:1px; text-transform:uppercase; color:#e3b341; white-space:nowrap; padding-top:1px; }
     .rp-vp-blindside-text { font-size:12px; color:#8b949e; line-height:1.5; flex:1; }
     .rp-vp-swings { display:flex; flex-direction:column; gap:8px; }
-    .rp-vp-swing { display:flex; align-items:flex-start; gap:12px; background:#0d1117; border:1px solid #21262d; border-radius:10px; padding:12px 14px; }
+    .rp-vp-swing { display:flex; align-items:center; gap:12px; background:#0d1117; border:1px solid #21262d; border-radius:10px; padding:12px 14px; }
     .rp-vp-swing-info { flex:1; }
     .rp-vp-swing-name { font-size:13px; font-weight:800; color:#c9d1d9; margin-bottom:4px; }
     .rp-vp-conflicted { font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:#e3b341; margin-left:8px; vertical-align:middle; }
@@ -24488,8 +24488,19 @@ function rpBuildVotingPlans(ep) {
     if (arch === 'challenge-beast' || s.physical >= 8) return { label: 'Physical Threat', color: '#f85149' };
     if (s.strategic >= 8 || arch === 'mastermind' || arch === 'schemer') return { label: 'Strategic Threat', color: '#f85149' };
     if (s.social >= 8 || arch === 'social-butterfly') return { label: 'Social Threat', color: '#e3b341' };
+    if (arch === 'hero') return { label: 'Jury Threat', color: '#e3b341' };
+    if (arch === 'villain') return { label: 'Villain', color: '#f85149' };
     if (arch === 'goat' || threatScore(name) <= 2) return { label: 'Easy Vote', color: '#484f58' };
     if (s.loyalty <= 3) return { label: 'Wildcard', color: '#e3b341' };
+    // Challenge weakness (pre-merge relevance)
+    const _cw = challengeWeakness(name);
+    if (_cw >= 5.5 && gs.phase !== 'post-merge') return { label: 'Challenge Liability', color: '#f85149' };
+    // Low bonds with the tribe — outsider
+    const _avgBond = (ep.tribalPlayers || gs.activePlayers).filter(p => p !== name)
+      .reduce((s, p) => s + getBond(name, p), 0) / Math.max(1, (ep.tribalPlayers || gs.activePlayers).length - 1);
+    if (_avgBond <= -0.5) return { label: 'Outsider', color: '#f85149' };
+    if (_avgBond <= 0.5) return { label: 'On the Outs', color: '#e3b341' };
+    if (threatScore(name) >= 6) return { label: 'Emerging Threat', color: '#e3b341' };
     return { label: 'Active Player', color: '#484f58' };
   };
 
@@ -24884,8 +24895,25 @@ function rpBuildVotingPlans(ep) {
         <span class="rp-vp-plan-votes">${membersAtTribal.length} member${membersAtTribal.length !== 1 ? 's' : ''} \u00b7 ${canVote.length} can vote</span>
       </div>`;
 
-      // TARGET box
+      // TARGET box + reasoning
       const _isCheckedOut = ep.comfortBlindspotPlayer === a.target;
+      // Generate a brief targeting reason from the spearheader's perspective
+      const _targetReason = (() => {
+        const _ts = pStats(a.target);
+        const _spBond = spear ? getBond(spear, a.target) : 0;
+        const _cw = challengeWeakness(a.target);
+        if (_cw >= 5.5 && !gs.isMerged) return `Challenge liability — ${a.target} has been a weak link and the tribe can't keep carrying that weight.`;
+        if (_spBond <= -2) return `Bad blood with ${a.target}. When the relationship is this far gone, the vote is personal.`;
+        if (_spBond <= -0.5) return `No real bond with ${a.target}. In this game, that absence becomes a vote.`;
+        if (cat.label === 'Physical Threat') return `${a.target} wins challenges. Post-merge that becomes untouchable. Move now.`;
+        if (cat.label === 'Strategic Threat') return `${a.target} is running things quietly. The longer they stay, the harder they are to remove.`;
+        if (cat.label === 'Social Threat') return `${a.target} is too well-liked. That's a jury winner if nobody does something about it.`;
+        if (cat.label === 'Jury Threat') return `${a.target} wins any jury vote. The longer they stay, the more inevitable that becomes.`;
+        if (cat.label === 'Outsider') return `${a.target} doesn't have strong bonds with anyone here. That makes the vote clean.`;
+        if (cat.label === 'On the Outs') return `${a.target}'s connections are thin. When the group needs a name, the person with the fewest defenders is the answer.`;
+        if (threatScore(a.target) >= 6) return `Threat level is climbing. ${a.target} is getting harder to vote out with every episode.`;
+        return `${a.target}'s name came up and nobody pushed back. Sometimes that's all it takes.`;
+      })();
       ph += `<div class="rp-vp-section-mini">\u2694\uFE0F TARGET</div>
         <div class="rp-vp-target-row" style="background:rgba(248,81,73,0.06);border-radius:8px;padding:8px 10px">
           ${rpPortrait(a.target)}
@@ -24893,6 +24921,7 @@ function rpBuildVotingPlans(ep) {
             <div class="rp-vp-target-name">${a.target}</div>
             <div class="rp-vp-target-cat" style="color:${cat.color}">${cat.label}</div>
             ${_isCheckedOut ? `<span class="rp-brant-badge gold">\u2b50 CHECKED OUT</span>` : ''}
+            <div style="font-size:11px;color:#8b949e;margin-top:4px;line-height:1.4;font-style:italic">${_targetReason}</div>
           </div>
         </div>`;
 
@@ -24981,6 +25010,15 @@ function rpBuildVotingPlans(ep) {
         </div>`;
       } else if (soloTarget) {
         const _stCat = soloTCat;
+        // Brief reasoning for this independent vote
+        const _indBond = getBond(player, soloTarget);
+        const _indReason = _indBond <= -2 ? `The friction has been there since the start.`
+          : _indBond <= 0 ? `No real bond — that absence becomes a vote.`
+          : _stCat?.label === 'Challenge Liability' ? `Challenge weakness the tribe can't afford.`
+          : _stCat?.label === 'Physical Threat' ? `Too dangerous to leave in the game.`
+          : _stCat?.label === 'Strategic Threat' ? `Playing too hard, too quietly.`
+          : _stCat?.label === 'Social Threat' ? `Too well-liked — jury threat.`
+          : `The name came up. Nobody defended it.`;
         html += `<div class="rp-vp-swing" style="animation:slideInLeft 0.4s ease">
           ${rpPortrait(player, 'sm')}
           <div class="rp-vp-swing-info" style="flex:1">
@@ -24993,6 +25031,7 @@ function rpBuildVotingPlans(ep) {
                 <div style="font-size:10px;color:${_stCat?.color || '#484f58'}">${_stCat?.label || 'Target'}</div>
               </div>
             </div>
+            <div style="font-size:10px;color:#6e7681;margin-top:4px;font-style:italic">${_indReason}</div>
           </div>
         </div>`;
       } else {
@@ -25001,6 +25040,11 @@ function rpBuildVotingPlans(ep) {
         const _likelyTarget = _logEntry?.voted || null;
         const _ltCat = _likelyTarget ? targetCategory(_likelyTarget) : null;
         if (_likelyTarget && !isImmune) {
+          const _fbBond = getBond(player, _likelyTarget);
+          const _fbReason = _fbBond <= -2 ? `The friction has been there since the start.`
+            : _fbBond <= 0 ? `No real bond — that absence becomes a vote.`
+            : _ltCat?.label === 'Challenge Liability' ? `Challenge weakness the tribe can't afford.`
+            : `The name came up. Nobody defended it.`;
           html += `<div class="rp-vp-swing" style="animation:slideInLeft 0.4s ease">
             ${rpPortrait(player, 'sm')}
             <div class="rp-vp-swing-info" style="flex:1">
@@ -25013,6 +25057,7 @@ function rpBuildVotingPlans(ep) {
                   <div style="font-size:10px;color:${_ltCat?.color || '#484f58'}">${_ltCat?.label || 'Target'}</div>
                 </div>
               </div>
+              <div style="font-size:10px;color:#6e7681;margin-top:4px;font-style:italic">${_fbReason}</div>
             </div>
           </div>`;
         } else {

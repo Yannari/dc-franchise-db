@@ -3180,16 +3180,34 @@ function recoverBonds(ep) {
 
   // ── Loyalty glue: players who have ACTUALLY been loyal strengthen their alliance bonds ──
   // Based on behavior (betrayal record), not just their loyalty stat
+  // Only fires when the alliance DID something together this episode:
+  //   - Voted the same target (coordination), OR
+  //   - Survived a tribal together (shared threat)
+  // Just existing isn't enough — alliances that coast don't strengthen passively.
+  const _epNum = ep?.num || gs.episode || 0;
+  const _epVoteLog = ep?.votingLog || [];
   (gs.namedAlliances || []).forEach(alliance => {
     if (!alliance.active) return;
     const allyActive = alliance.members.filter(m => active.includes(m));
     if (allyActive.length < 2) return;
+    // Check if alliance members coordinated this episode
+    const _allyVotes = _epVoteLog.filter(v => allyActive.includes(v.voter));
+    const _allyTargets = _allyVotes.map(v => v.voted);
+    // Did at least 2 members vote the same target?
+    const _targetCounts = {};
+    _allyTargets.forEach(t => { _targetCounts[t] = (_targetCounts[t] || 0) + 1; });
+    const _coordinated = Object.values(_targetCounts).some(c => c >= 2);
+    // Did they survive a tribal together? (at least 2 members were at tribal and none eliminated)
+    const _tribalMembers = ep?.tribalPlayers || [];
+    const _allyAtTribal = allyActive.filter(m => _tribalMembers.includes(m));
+    const _survivedTogether = _allyAtTribal.length >= 2 && !_allyAtTribal.includes(ep?.eliminated);
+    if (!_coordinated && !_survivedTogether) return; // alliance coasted — no glue
     allyActive.forEach(m => {
       // Check actual loyalty: how many times have they betrayed THIS alliance?
       const _myBetrayals = (alliance.betrayals || []).filter(b => b.player === m).length;
       if (_myBetrayals >= 2) return; // serial betrayer of this alliance — no glue
       // Didn't betray this episode
-      const _betrayedThisEp = (alliance.betrayals || []).some(b => b.player === m && b.ep === (ep?.num || gs.episode));
+      const _betrayedThisEp = (alliance.betrayals || []).some(b => b.player === m && b.ep === _epNum);
       if (_betrayedThisEp) return;
       // Boost scales with clean record: 0 betrayals → +0.12, 1 betrayal → +0.05
       const loyaltyBoost = _myBetrayals === 0 ? 0.12 : 0.05;
@@ -3203,26 +3221,29 @@ function recoverBonds(ep) {
 
   // ── Tribe cohesion: tribemates who coexist without fighting naturally drift closer ──
   // Shared survival builds bonds over time — this is why pre-merge tribes are tight
-  const _tribeGroups = gs.isMerged ? [{ members: [...active] }] : gs.tribes;
-  _tribeGroups.forEach(tribe => {
-    const members = tribe.members?.filter(m => active.includes(m)) || [];
-    for (let i = 0; i < members.length; i++) {
-      for (let j = i + 1; j < members.length; j++) {
-        const a = members[i], b = members[j];
-        if (_activeFeuds.has([a, b].sort().join('|'))) continue;
-        const bond = getBond(a, b);
-        if (bond >= 5) continue;
-        // Base cohesion + social butterfly bonus
-        // If EITHER player is highly social, bonds grow faster — they make everyone around them comfortable
-        const _sA = pStats(a).social, _sB = pStats(b).social;
-        const _highestSocial = Math.max(_sA, _sB);
-        const nudge = 0.10
-          + _highestSocial * 0.02                          // proportional: stat 4=0.08, stat 8=0.16, stat 10=0.20
-          + _highestSocial * 0.01;                         // butterfly bonus: stat 4=0.04, stat 8=0.08, stat 10=0.10
-        addBond(a, b, nudge);
+  // POST-MERGE: cohesion stops. You're not building passive bonds with 10 people.
+  // The merge is where relationships become strategic, not automatic.
+  if (!gs.isMerged) {
+    gs.tribes.forEach(tribe => {
+      const members = tribe.members?.filter(m => active.includes(m)) || [];
+      for (let i = 0; i < members.length; i++) {
+        for (let j = i + 1; j < members.length; j++) {
+          const a = members[i], b = members[j];
+          if (_activeFeuds.has([a, b].sort().join('|'))) continue;
+          const bond = getBond(a, b);
+          if (bond >= 5) continue;
+          // Base cohesion + social butterfly bonus
+          // If EITHER player is highly social, bonds grow faster — they make everyone around them comfortable
+          const _sA = pStats(a).social, _sB = pStats(b).social;
+          const _highestSocial = Math.max(_sA, _sB);
+          const nudge = 0.10
+            + _highestSocial * 0.02                          // proportional: stat 4=0.08, stat 8=0.16, stat 10=0.20
+            + _highestSocial * 0.01;                         // butterfly bonus: stat 4=0.04, stat 8=0.08, stat 10=0.10
+          addBond(a, b, nudge);
+        }
       }
-    }
-  });
+    });
+  }
 }
 
 function wRandom(pool, weightFn) {

@@ -14896,6 +14896,7 @@ function simulateEpisode() {
       }
       // forceRockDraw: skip re-vote
       if (ep.forceRockDraw) {
+        ep.isRockDraw = true;
         const rockElim = rockDraw(res.tiedPlayers);
         return { votes, log, eliminated: rockElim, isTie: true, tiedPlayers: res.tiedPlayers };
       }
@@ -14921,6 +14922,7 @@ function simulateEpisode() {
           const loser = runTiebreakerChallenge(eligibleTied2.length ? eligibleTied2 : res2.tiedPlayers);
           return { votes, log, eliminated: loser, isTie: true, tiedPlayers: res.tiedPlayers };
         }
+        ep.isRockDraw = true;
         const rockElim = rockDraw(res.tiedPlayers);
         return { votes, log, eliminated: rockElim, isTie: true, tiedPlayers: res.tiedPlayers };
       }

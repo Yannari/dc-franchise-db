@@ -24872,10 +24872,12 @@ function rpBuildVotingPlans(ep) {
       let ph = `<div class="rp-vp-plan" style="border:1px solid rgba(99,102,241,0.25);background:rgba(99,102,241,0.04);animation:slideInLeft 0.4s ease ${aIdx * 0.1}s both">`;
 
       // Header: alliance name + type badge + member counts
-      const _typeLabel = a.type === 'alliance' ? 'Alliance' : 'Consensus';
-      const _typeBg = a.type === 'alliance' ? 'rgba(99,102,241,0.15)' : 'rgba(139,148,158,0.15)';
-      const _typeCol = a.type === 'alliance' ? '#818cf8' : '#8b949e';
-      const _typeBorder = a.type === 'alliance' ? 'rgba(99,102,241,0.3)' : 'rgba(139,148,158,0.3)';
+      // Only show "Alliance" if the name matches an actual gs.namedAlliance — otherwise it's a voting bloc
+      const _isRealAlliance = a.type === 'alliance' && (gs.namedAlliances || []).some(na => na.active && na.name === a.label);
+      const _typeLabel = _isRealAlliance ? 'Alliance' : 'Voting Bloc';
+      const _typeBg = _isRealAlliance ? 'rgba(99,102,241,0.15)' : 'rgba(139,148,158,0.15)';
+      const _typeCol = _isRealAlliance ? '#818cf8' : '#8b949e';
+      const _typeBorder = _isRealAlliance ? 'rgba(99,102,241,0.3)' : 'rgba(139,148,158,0.3)';
       ph += `<div class="rp-vp-plan-header">
         <span class="rp-vp-plan-label">${a.label}</span>
         <span class="rp-vp-plan-type" style="background:${_typeBg};color:${_typeCol};border:1px solid ${_typeBorder}">${_typeLabel}</span>
@@ -24994,13 +24996,34 @@ function rpBuildVotingPlans(ep) {
           </div>
         </div>`;
       } else {
-        html += `<div class="rp-vp-swing" style="animation:slideInLeft 0.4s ease">
-          ${rpPortrait(player, 'sm')}
-          <div class="rp-vp-swing-info">
-            <div class="rp-vp-swing-name">${player}</div>
-            <div class="rp-vp-swing-detail" style="color:#484f58">${isImmune ? 'Safe tonight — voting freely' : 'Reading the room'}</div>
-          </div>
-        </div>`;
+        // No solo alliance target — try to find a likely target from vote log (show name but not outcome)
+        const _logEntry = votingLog.find(l => l.voter === player);
+        const _likelyTarget = _logEntry?.voted || null;
+        const _ltCat = _likelyTarget ? targetCategory(_likelyTarget) : null;
+        if (_likelyTarget && !isImmune) {
+          html += `<div class="rp-vp-swing" style="animation:slideInLeft 0.4s ease">
+            ${rpPortrait(player, 'sm')}
+            <div class="rp-vp-swing-info" style="flex:1">
+              <div class="rp-vp-swing-name">${player}</div>
+              <div style="display:flex;align-items:center;gap:6px;margin-top:4px">
+                <span style="font-size:10px;color:#484f58">\u2192</span>
+                ${rpPortrait(_likelyTarget, 'sm')}
+                <div>
+                  <div style="font-size:12px;font-weight:700;color:#e6edf3">${_likelyTarget}</div>
+                  <div style="font-size:10px;color:${_ltCat?.color || '#484f58'}">${_ltCat?.label || 'Target'}</div>
+                </div>
+              </div>
+            </div>
+          </div>`;
+        } else {
+          html += `<div class="rp-vp-swing" style="animation:slideInLeft 0.4s ease">
+            ${rpPortrait(player, 'sm')}
+            <div class="rp-vp-swing-info">
+              <div class="rp-vp-swing-name">${player}</div>
+              <div class="rp-vp-swing-detail" style="color:#484f58">${isImmune ? 'Safe tonight — voting freely' : 'Reading the room'}</div>
+            </div>
+          </div>`;
+        }
       }
     });
     html += `</div>`;

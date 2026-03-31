@@ -25188,6 +25188,7 @@ function rpBuildVotingPlans(ep) {
     html += `<div class="rp-vp-section-label">ALLIANCE PLANS</div>
       <div class="rp-vp-plans-row">`;
     namedAlliances.forEach((a, aIdx) => {
+      if (!a.target) return; // skip alliances with no target
       const spear = allianceSpear(a.members);
       const membersAtTribal = a.members.filter(m => tribalPlayers.includes(m));
       const canVote = membersAtTribal.filter(m => !_vpLostVoteSet.has(m) && !_allImmuneVP.includes(m));

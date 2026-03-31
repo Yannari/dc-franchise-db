@@ -5655,6 +5655,7 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
   const isImmune = p => _immSet.has(p);
 
   const votes = {}, log = [], defections = [];
+  let _voteMiscommunications = null;
 
   // Penalty vote: a pre-cast vote against the penalty target (if they're at this tribal)
   if (gs.penaltyVoteThisEp && tribalPlayers.includes(gs.penaltyVoteThisEp) && !isImmune(gs.penaltyVoteThisEp)) {
@@ -5817,8 +5818,8 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
           if (_miscTarget) {
             target = _miscTarget;
             reason = `[MISCOMMUNICATION] ${voter} tried to follow the plan but voted the wrong name`;
-            ep.voteMiscommunications = ep.voteMiscommunications || [];
-            ep.voteMiscommunications.push({ voter, intended: allianceTarget, actual: _miscTarget, alliance: myAlliance.label });
+            if (!_voteMiscommunications) _voteMiscommunications = [];
+            _voteMiscommunications.push({ voter, intended: allianceTarget, actual: _miscTarget, alliance: myAlliance.label });
           }
         }
       }
@@ -5970,7 +5971,7 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
     }
   });
 
-  return { votes, log, defections };
+  return { votes, log, defections, voteMiscommunications: _voteMiscommunications };
 }
 
 // Legacy Advantage: when a holder is eliminated, will it to highest-bonded active player
@@ -14876,7 +14877,8 @@ function simulateEpisode() {
       }
     }
 
-    const { votes, log, defections } = simulateVotes(tribalPlayers, _allImmune, allianceSet, gs.lostVotes, ep.openVote);
+    const { votes, log, defections, voteMiscommunications } = simulateVotes(tribalPlayers, _allImmune, allianceSet, gs.lostVotes, ep.openVote);
+    if (voteMiscommunications?.length) ep.voteMiscommunications = (ep.voteMiscommunications || []).concat(voteMiscommunications);
     if (defections?.length) ep.defections = [...(ep.defections || []), ...defections];
 
     // ── OPEN VOTE: sequential cascade — re-process votes with visible tally ──

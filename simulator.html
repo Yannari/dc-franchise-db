@@ -26045,7 +26045,28 @@ function rpBuildVotes(ep) {
     });
   }
 
-  // Revote: no individual vote cards — the revote tally in the results section tells the story
+  // Revote vote cards — styled distinctly so they're clearly a second round
+  if (revoteLog.length && !ep.sidFreshVote) {
+    const _rvTied = ep.tiedPlayers || [];
+    const _rvTiedLabel = _rvTied.length ? _rvTied.join(' and ') : 'the tied players';
+    html += `<div style="font-size:9px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:#d29922;text-align:center;padding:8px 0 4px;border-top:1px solid #2d2504;margin-top:4px">REVOTE — ${_rvTiedLabel.toUpperCase()} ONLY</div>`;
+    if (_rvTied.length) {
+      html += `<div style="font-size:10px;color:#484f58;text-align:center;margin-bottom:6px;font-style:italic">${_rvTiedLabel} cannot vote. Everyone else must choose between them.</div>`;
+    }
+    revoteLog.forEach(({ voter, voted, reason }, idx) => {
+      html += `<div class="tv-vote-card" data-voted="${voted}" data-voter="${voter}" data-index="${vlog.length + _extraVotePlays.length + idx}" style="border-color:rgba(210,153,34,0.3);background:rgba(210,153,34,0.03)">
+        <div class="tv-vote-voter-wrap">
+          ${rpPortrait(voter, 'sm')}
+          <div class="tv-vote-voter">${voter}</div>
+        </div>
+        <div class="tv-vote-arrow" style="color:#d29922">\u2192</div>
+        <div class="tv-vote-right">
+          <div class="tv-vote-target">${voted}</div>
+          <div class="tv-vote-reason" style="color:#d29922;font-size:10px">${reason || 'Revote'}</div>
+        </div>
+      </div>`;
+    });
+  }
 
   html += `</div>`; // end tv-reveal-panel
 
@@ -26064,7 +26085,7 @@ function rpBuildVotes(ep) {
   });
   html += `</div></div>`; // end tally panel + tv-wrap
 
-  const totalCards = vlog.length + _extraVotePlays.length;
+  const totalCards = vlog.length + _extraVotePlays.length + (revoteLog.length && !ep.sidFreshVote ? revoteLog.length : 0);
   html += `<div id="tv-btn-wrap-${epNum}">
     <button class="tv-reveal-btn" id="tv-btn-${epNum}" onclick="tvRevealNext(${epNum})">Read the Vote (0/${totalCards})</button>
     <div style="text-align:right;margin:-12px 0 14px">

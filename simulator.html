@@ -26054,7 +26054,7 @@ function rpBuildVotes(ep) {
       html += `<div style="font-size:10px;color:#484f58;text-align:center;margin-bottom:6px;font-style:italic">${_rvTiedLabel} cannot vote. Everyone else must choose between them.</div>`;
     }
     revoteLog.forEach(({ voter, voted, reason }, idx) => {
-      html += `<div class="tv-vote-card" data-voted="${voted}" data-voter="${voter}" data-index="${vlog.length + _extraVotePlays.length + idx}" style="border-color:rgba(210,153,34,0.3);background:rgba(210,153,34,0.03)">
+      html += `<div class="tv-vote-card" data-voted="${voted}" data-voter="${voter}" data-revote="1" data-index="${vlog.length + _extraVotePlays.length + idx}" style="border-color:rgba(210,153,34,0.3);background:rgba(210,153,34,0.03)">
         <div class="tv-vote-voter-wrap">
           ${rpPortrait(voter, 'sm')}
           <div class="tv-vote-voter">${voter}</div>
@@ -26173,12 +26173,14 @@ function rpBuildVotes(ep) {
   const _hasTiebreaker = !ep.firstEliminated && !!ep.tiebreakerResult;
   const _hasFireMaking = !!ep.fireMaking;
   const _hasSuperIdol = !!ep.superIdolPlayed;
+  // Revote tie: first vote was a tie → went to revote (or rocks). Don't mark anyone eliminated in first-vote tally.
+  const _hasRevoteTie = !ep.firstEliminated && ep.isTie && !!ep.revoteVotes && !_hasTiebreaker;
   const _tallyVotes = _hasSuperIdol && ep.votesBeforeSuperIdol ? ep.votesBeforeSuperIdol : votes;
   const _tallySorted = Object.entries(_tallyVotes).sort(([,a],[,b]) => b-a);
   const _tallyTotal = Object.values(_tallyVotes).reduce((a,b) => a+b, 0);
   // When super idol fires, the original target (before negation) is the one marked
   const _superIdolTarget = ep.superIdolPlayed?.savedPlayer || null;
-  const _v1Elim = ep.sidFreshVote ? null : _hasFireMaking ? ep.fireMaking.player : _hasSuperIdol ? null : (ep.firstEliminated || (_hasTiebreaker ? null : elim));
+  const _v1Elim = ep.sidFreshVote ? null : _hasFireMaking ? ep.fireMaking.player : _hasSuperIdol ? null : _hasRevoteTie ? null : (ep.firstEliminated || (_hasTiebreaker ? null : elim));
   const _v1IsBlindside = !_hasTiebreaker && !_hasFireMaking && _v1Elim && pStats(_v1Elim).strategic >= 7;
   const _v1Elim2 = ep.announcedDoubleElim ? elim : null; // second eliminated in announced double elim
   const _v1Elim2Bs = _v1Elim2 && pStats(_v1Elim2).strategic >= 7;
@@ -26188,13 +26190,14 @@ function rpBuildVotes(ep) {
     else if (ep.announcedDoubleElim) _tallyHeader = 'Final Tally — Double Elimination';
     else if (ep.firstEliminated) _tallyHeader = 'Vote 1 — Final Tally';
     else if (_hasSuperIdol) _tallyHeader = 'Final Tally — Before Super Idol';
+    else if (_hasRevoteTie) _tallyHeader = 'Final Tally — Tied';
     else if (_hasTiebreaker) _tallyHeader = 'Final Tally — Tied';
     html += `<div class="tv-final-tally">
       <div class="tv-ft-header">${_tallyHeader}</div>`;
     _tallySorted.forEach(([name, v]) => {
       const pct = Math.round((v / Math.max(1, _tallyTotal)) * 100);
       const isDuel = !!(ep.exileDuelResult) && name === ep.exileDuelResult.newBoot;
-      const isTied = _hasTiebreaker && (ep.tiedPlayers||[]).includes(name);
+      const isTied = (_hasTiebreaker || _hasRevoteTie) && (ep.tiedPlayers||[]).includes(name);
       const isE  = !ep.exileDuelResult && !isTied && name === _v1Elim;
       const isE2 = !ep.exileDuelResult && !isTied && name === _v1Elim2;
       const isS  = !_v1Elim && !_v1Elim2 && !_hasTiebreaker && !_hasSuperIdol && swap && name === _tallySorted[0][0];
@@ -26246,7 +26249,7 @@ function rpBuildVotes(ep) {
     const _rvTied = ep.tiedPlayers || [];
     const _rvStillTied = rvSorted.length >= 2 && rvSorted[0][1] === rvSorted[1][1];
     html += `<div style="margin:16px 0 20px;padding:14px 16px;background:rgba(210,153,34,0.04);border:1px solid rgba(210,153,34,0.15);border-radius:10px">
-      <div style="font-size:10px;font-weight:800;letter-spacing:2px;color:#d29922;text-align:center;margin-bottom:8px">REVOTE${_rvTied.length ? ` — ${_rvTied.join(' & ').toUpperCase()} ONLY` : ''}</div>
+      <div style="font-size:10px;font-weight:800;letter-spacing:2px;color:#d29922;text-align:center;margin-bottom:8px">FINAL TALLY #2${_rvTied.length ? ` — ${_rvTied.join(' & ').toUpperCase()} ONLY` : ''}</div>
       ${_rvTied.length ? `<div style="font-size:10px;color:#484f58;text-align:center;margin-bottom:10px">${_rvTied.join(' and ')} cannot vote. Everyone else votes for one of them.</div>` : ''}
       <div style="display:flex;justify-content:center;gap:20px;flex-wrap:wrap">
         ${rvSorted.map(([n, v]) => {
@@ -26666,7 +26669,7 @@ function rpBuildVotes(ep) {
 const _tvState = {};
 
 function tvRevealNext(epNum) {
-  if (!_tvState[epNum]) _tvState[epNum] = { revealed: 0, tallyCounts: {} };
+  if (!_tvState[epNum]) _tvState[epNum] = { revealed: 0, tallyCounts: {}, revoteCounts: {} };
   const state = _tvState[epNum];
   if (state.flipping) return;
   const cards = document.querySelectorAll(`#tv-cards-${epNum} .tv-vote-card`);
@@ -26674,6 +26677,7 @@ function tvRevealNext(epNum) {
   cards.forEach(c => c.classList.remove('tv-latest'));
   if (state.revealed < cards.length) {
     const card = cards[state.revealed];
+    const isRevote = card.dataset.revote === '1';
     state.flipping = true;
     card.classList.add('tv-flipping');
     // At midpoint (edge-on), swap content visibility
@@ -26681,8 +26685,13 @@ function tvRevealNext(epNum) {
       card.classList.add('tv-revealed', 'tv-latest');
       const voted = card.dataset.voted;
       if (voted) {
-        state.tallyCounts[voted] = (state.tallyCounts[voted] || 0) + 1;
-        _tvUpdateTally(epNum, state);
+        if (isRevote) {
+          // Revote cards don't add to the main Live Tally — separate count
+          state.revoteCounts[voted] = (state.revoteCounts[voted] || 0) + 1;
+        } else {
+          state.tallyCounts[voted] = (state.tallyCounts[voted] || 0) + 1;
+          _tvUpdateTally(epNum, state);
+        }
       }
     }, 250);
     setTimeout(() => { card.classList.remove('tv-flipping'); state.flipping = false; }, 500);
@@ -26782,14 +26791,21 @@ function torchSnuffFx(el) {
 }
 
 function tvRevealAll(epNum) {
-  if (!_tvState[epNum]) _tvState[epNum] = { revealed: 0, tallyCounts: {} };
+  if (!_tvState[epNum]) _tvState[epNum] = { revealed: 0, tallyCounts: {}, revoteCounts: {} };
   const state = _tvState[epNum];
   const cards = document.querySelectorAll(`#tv-cards-${epNum} .tv-vote-card`);
   cards.forEach(card => {
     card.classList.add('tv-revealed');
     card.classList.remove('tv-latest');
     const voted = card.dataset.voted;
-    if (voted) state.tallyCounts[voted] = (state.tallyCounts[voted] || 0) + 1;
+    const isRevote = card.dataset.revote === '1';
+    if (voted) {
+      if (isRevote) {
+        state.revoteCounts[voted] = (state.revoteCounts[voted] || 0) + 1;
+      } else {
+        state.tallyCounts[voted] = (state.tallyCounts[voted] || 0) + 1;
+      }
+    }
   });
   state.revealed = cards.length;
   _tvUpdateTally(epNum, state);

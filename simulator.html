@@ -6826,7 +6826,7 @@ function checkIdolPlays(tribalPlayers, votesObj, ep, voteLog = []) {
 
   const sorted = Object.entries(votesObj).sort(([,a],[,b]) => b - a);
   for (const [name, voteCount] of sorted) {
-    const idolIdx = gs.advantages.findIndex(a => a.holder === name && (a.type === 'idol' || (a.type === 'amulet' && a.amuletPower === 'idol')));
+    const idolIdx = gs.advantages.findIndex(a => a.holder === name && !a.superIdol && (a.type === 'idol' || (a.type === 'amulet' && a.amuletPower === 'idol')));
     if (idolIdx === -1) continue;
     const s = pStats(name);
     const totalVoters = tribalPlayers.length;
@@ -6925,7 +6925,7 @@ function checkIdolPlays(tribalPlayers, votesObj, ep, voteLog = []) {
   // ── Idol Misplay: player wastes idol when they're NOT actually the target ──
   // Multiple triggers — each represents a different way a player misreads the situation
   const _unusedIdolHolders = gs.advantages.filter(a =>
-    a.type === 'idol' && tribalPlayers.includes(a.holder) &&
+    a.type === 'idol' && !a.superIdol && tribalPlayers.includes(a.holder) &&
     !ep.idolPlays.some(p => p.player === a.holder) &&
     !ep.idolMisplays?.some(m => m.player === a.holder)
   );
@@ -6987,7 +6987,7 @@ function checkIdolPlays(tribalPlayers, votesObj, ep, voteLog = []) {
   // ── Idol for Ally ──
   // Holder is NOT in danger themselves — might burn their idol to protect a close ally
   const _allyPlayHolders = gs.advantages.filter(a =>
-    a.type === 'idol' && tribalPlayers.includes(a.holder) &&
+    a.type === 'idol' && !a.superIdol && tribalPlayers.includes(a.holder) &&
     !ep.idolPlays.some(p => p.player === a.holder)
   );
   for (const _adv of _allyPlayHolders) {
@@ -12299,7 +12299,7 @@ function generateCampEvents(ep, phase = 'both') {
         .filter((p, i, arr) => arr.findIndex(x => x.player === p.player && (x.playedFor || null) === (p.playedFor || null)) === i)  // deduplicate same player
         .map(p => ({
           player: p.player, playedFor: p.playedFor || null, votesNegated: p.votesNegated || 0,
-          type: p.type === 'kip' ? 'kip' : p.playedFor ? 'idol-for-ally' : 'idol',
+          type: p.type === 'kip' ? 'kip' : p.superIdol ? 'super-idol' : p.playedFor ? 'idol-for-ally' : 'idol',
           stolenFrom: p.stolenFrom || null, safe: true,
         })),
       // Include SITD regardless of safe/unsafe — both outcomes have drama
@@ -12347,6 +12347,25 @@ function generateCampEvents(ep, phase = 'both') {
         pre.push({ type: 'saveScramble', text: _rp([
           `${save.stolenFrom ? save.stolenFrom + ' needs a new plan' : 'Someone lost their insurance last night'}. The idol is gone, and the person who has it is a threat in a different way now.`,
           `Everyone knows what ${save.player} did. The question is what ${_p.sub} ${_p.sub==='they'?'do':'does'} next — and who ${_p.sub} ${_p.sub==='they'?'use':'uses'} it on.`,
+        ]) });
+      } else if (save.type === 'super-idol') {
+        // Super Idol: played AFTER votes — the most dramatic play possible
+        if (save.playedFor) {
+          pre.push({ type: 'saveReaction', text: _rp([
+            `Nobody can stop talking about it. The votes were read. ${save.playedFor} was done. Then ${save.player} stood up with the Super Idol. ${vn} ${voteWord} — erased. After the read. That's never happened before.`,
+            `${save.player} waited until the host read every single vote. Then pulled out the Super Idol for ${save.playedFor}. The camp hasn't recovered. You don't see that kind of loyalty — or that kind of nerve.`,
+          ]) });
+          addBond(save.player, save.playedFor, 1.5); // lingering gratitude on top of the engine's +3
+        } else {
+          pre.push({ type: 'saveReaction', text: _rp([
+            `The Super Idol play is all anyone is talking about this morning. ${save.player} sat through every vote being read — ${_p.posAdj} name, over and over — and then pulled it out. ${vn} ${voteWord} gone. After the read.`,
+            `${save.player} let the votes happen. Watched ${_p.posAdj} own name pile up. Then played the Super Idol. The camp woke up to a different game. That wasn't just an advantage play — that was a statement.`,
+            `Nobody sleeps well after a Super Idol play. ${save.player} is still here, the idol is gone, and everyone who voted for ${_p.obj} knows they were outplayed in a way they couldn't have predicted.`,
+          ]) });
+        }
+        pre.push({ type: 'saveScramble', text: _rp([
+          `The coalition that put ${vn} ${voteWord} on ${save.playedFor || save.player}? Still exists. Still wants them gone. But now they know what they're up against — someone who waits, watches, and strikes at the last possible moment.`,
+          `The Super Idol is gone. That's the consolation. But the player who held it just proved they're willing to play the most dangerous game possible. That changes how everyone plans from here.`,
         ]) });
       } else if (save.type === 'idol-for-ally') {
         const _a = pronouns(save.playedFor);
@@ -14535,6 +14554,68 @@ function simulateEpisode() {
 
     const res = resolveVotes(votes);
 
+    // ── SUPER IDOL: plays AFTER votes are read ──
+    // The holder sees who's going home, then decides whether to save them (or themselves).
+    // Can't be misplayed — perfect information. That's the reward for winning the wager.
+    if (res.eliminated) {
+      const _superIdols = gs.advantages.filter(a => a.type === 'idol' && a.superIdol && tribalPlayers.includes(a.holder));
+      for (const _si of _superIdols) {
+        const _siHolder = _si.holder;
+        const _siTarget = res.eliminated;
+        let _siPlayFor = null;
+
+        if (_siHolder === _siTarget) {
+          // Holder IS the target — always plays for self
+          _siPlayFor = _siHolder;
+        } else {
+          // Holder is safe — consider playing for the target if they're a close ally
+          const _siBond = getBond(_siHolder, _siTarget);
+          const _siS = pStats(_siHolder);
+          // Loyalty + bond drives ally saves; boldness raises willingness to burn advantage for someone else
+          const _siAllyChance = _siBond * 0.08 + _siS.loyalty * 0.04 + _siS.boldness * 0.02;
+          // Same alliance = higher motivation
+          const _siSameAlliance = (gs.namedAlliances || []).some(a => a.active && a.members.includes(_siHolder) && a.members.includes(_siTarget));
+          const _siAllyBonus = _siSameAlliance ? 0.20 : 0;
+          if (Math.random() < Math.min(0.85, _siAllyChance + _siAllyBonus)) {
+            _siPlayFor = _siTarget;
+          }
+        }
+
+        if (_siPlayFor) {
+          const _siVotesNeg = votes[_siPlayFor] || 0;
+          delete votes[_siPlayFor];
+          gs.advantages.splice(gs.advantages.indexOf(_si), 1);
+          ep.idolPlays = ep.idolPlays || [];
+          ep.idolPlays.push({
+            player: _siHolder,
+            playedFor: _siHolder !== _siPlayFor ? _siPlayFor : undefined,
+            votesNegated: _siVotesNeg,
+            superIdol: true,
+          });
+          ep.superIdolPlayed = { holder: _siHolder, savedPlayer: _siPlayFor, votesNegated: _siVotesNeg };
+          ep.idolRehide = true;
+          // Add to tribal immune list so they're safe through revotes/rocks too
+          tribalImmune.push(_siPlayFor);
+          if (_siHolder !== _siPlayFor) {
+            // Massive bond boost for saving someone's game
+            addBond(_siHolder, _siPlayFor, 3.0);
+            // Observers impressed/alarmed
+            tribalPlayers.filter(p => p !== _siHolder && p !== _siPlayFor).forEach(p => {
+              addBond(p, _siHolder, pStats(p).strategic * 0.05 - 0.3); // strategic players see threat; others see hero
+            });
+          }
+          // Re-resolve votes with the super idol negation
+          const _siRes2 = resolveVotes(votes);
+          // Overwrite original result
+          res.eliminated = _siRes2.eliminated;
+          res.isTie = _siRes2.isTie;
+          res.tiedPlayers = _siRes2.tiedPlayers;
+          res.allVotesCancelled = _siRes2.allVotesCancelled;
+          break; // only one super idol play per tribal
+        }
+      }
+    }
+
     // All votes cancelled by idols — treat all non-immune players as tied
     if (res.allVotesCancelled) {
       const _nonImmune = tribalPlayers.filter(p => !isTribalImmune(p));
@@ -15814,8 +15895,9 @@ function updatePopularity(ep) {
     add(ep.tribalBlowup.player, 'drama', 3, 'tribalBlowup');
   }
 
-  // ── Idol plays: +2 drama to the player who played ──
+  // ── Idol plays: +2 drama to the player who played, +4 for Super Idol ──
   (ep.idolPlays || []).forEach(play => {
+    if (play.superIdol && play.player) { add(play.player, 'drama', 4, 'superIdolPlay'); return; }
     if (play.player) add(play.player, 'drama', 2, 'idolPlay');
   });
 
@@ -15849,7 +15931,7 @@ function updatePopularity(ep) {
   // ── Voted out with unplayed idol: +2 drama, +1 underdog ──
   if (ep.eliminated && prevEp) {
     const hadIdol = (prevEp.gsSnapshot?.advantages || [])
-      .some(a => a.holder === ep.eliminated && (a.type === 'idol' || a.type === 'super-idol'));
+      .some(a => a.holder === ep.eliminated && a.type === 'idol');
     if (hadIdol) {
       add(ep.eliminated, 'drama', 2, 'eliminatedWithIdol');
       add(ep.eliminated, 'under', 1, 'eliminatedWithIdol');
@@ -16052,7 +16134,9 @@ function getTribeAdvantageStatus(tribeName, isMerge, snapAdvantages, snapMembers
       // For idols: always prefix with tribe name ("the Red Hidden Immunity Idol")
       // For other advantages: only mention tribe if holder swapped away from where they found it
       let label;
-      if (adv.type === 'idol' && !adv.fromBeware && !adv.fromTotem && _hasTribeName) {
+      if (adv.superIdol) {
+        label = '<span style="color:#e3b341;font-weight:700">Super Idol</span> (can play after votes are read)';
+      } else if (adv.type === 'idol' && !adv.fromBeware && !adv.fromTotem && _hasTribeName) {
         const _crossTribe = _origTribe !== tribeName;
         label = `${_colorTribe(_origTribe)} Hidden Immunity Idol${_crossTribe ? ' (brought from swap)' : ''}`;
       } else if (adv.fromBeware) {
@@ -17544,6 +17628,7 @@ function generateSummaryText(ep) {
       if (r.idolPlays?.length) {
         r.idolPlays.forEach(p => {
           if (p.misplay) ln(`IDOL MISPLAY: ${p.player} wasted the idol — wasn't the target.`);
+          else if (p.superIdol) ln(`⚡ SUPER IDOL: ${p.player}${p.playedFor ? ` played Super Idol for ${p.playedFor}` : ' played the Super Idol'} AFTER votes were read — ${p.votesNegated} votes cancelled.`);
           else if (p.playedFor) ln(`IDOL: ${p.player} played idol for ${p.playedFor} — ${p.votesNegated} votes cancelled.`);
           else if (p.type !== 'kip' && p.type !== 'extraVote' && p.type !== 'voteSteal')
             ln(`IDOL: ${p.player} played idol — ${p.votesNegated} votes cancelled.`);
@@ -17612,6 +17697,8 @@ function generateSummaryText(ep) {
         if (p.type === 'kip') { const _stType = p.stolenType === 'extraVote' ? 'Extra Vote' : p.stolenType === 'voteSteal' ? 'Vote Steal' : 'idol'; ln(`KiP PLAY: ${p.player} used Knowledge is Power — stole ${p.stolenFrom}'s ${_stType}.`); }
         else if (p.type === 'extraVote') ln(`EXTRA VOTE: ${p.player} played an Extra Vote${p.forAlly ? ` for ${p.forAlly}` : ''} — cast a second vote against ${p.target}.`);
         else if (p.type === 'voteSteal') ln(`VOTE STEAL: ${p.player} stole ${p.stolenFrom}'s vote — redirected it against ${p.target || 'their target'}.`);
+        else if (p.superIdol && p.playedFor) ln(`⚡ SUPER IDOL: ${p.player} played the Super Idol for ${p.playedFor} AFTER votes were read — ${p.votesNegated} votes cancelled.`);
+        else if (p.superIdol) ln(`⚡ SUPER IDOL: ${p.player} played the Super Idol AFTER the votes were read — ${p.votesNegated} votes cancelled. The ultimate power play.`);
         else if (p.misplay) ln(`IDOL MISPLAY: ${p.player} played the Hidden Immunity Idol — but wasn't the target. ${p.votesNegated || 0} votes cancelled. Idol wasted.${p.misplayReason ? ' (' + p.misplayReason + ')' : ''}`);
         else if (p.playedFor) ln(`IDOL PLAY: ${p.player} played the Hidden Immunity Idol for ${p.playedFor} — ${p.votesNegated} votes against ${p.playedFor} were cancelled.`);
         else ln(`IDOL PLAY: ${p.player} played the Hidden Immunity Idol — ${p.votesNegated} votes against them were cancelled.`);
@@ -18754,6 +18841,7 @@ function patchEpisodeHistory(ep) {
   if (!h.advantagesPreTribal && ep.advantagesPreTribal) h.advantagesPreTribal = ep.advantagesPreTribal;
   if (!h.idolShares && ep.idolShares?.length) h.idolShares = ep.idolShares;
   if (!h.kipSteal && ep.kipSteal) h.kipSteal = ep.kipSteal;
+  if (!h.superIdolPlayed && ep.superIdolPlayed) h.superIdolPlayed = ep.superIdolPlayed;
   if (!h.spiritIslandEvents && ep.spiritIslandEvents) h.spiritIslandEvents = ep.spiritIslandEvents;
   // Misc
   if (!h.comfortBlindspotPlayer && ep.comfortBlindspotPlayer) h.comfortBlindspotPlayer = ep.comfortBlindspotPlayer;
@@ -21263,7 +21351,8 @@ function rpBuildTribes(ep) {
           }
           const adv = advList.filter(a => a.holder === name);
           const badges = adv.map(a => {
-            if (a.type === 'idol' || a.type === 'super-idol') return 'Idol';
+            if (a.type === 'idol' && a.superIdol) return 'Super Idol';
+            if (a.type === 'idol') return 'Idol';
             if (a.type === 'beware')      return 'Beware';
             if (a.type === 'extra-vote')  return 'Extra Vote';
             if (a.type === 'vote-steal')  return 'Vote Steal';
@@ -22650,9 +22739,11 @@ function rpBuildRelationships(ep) {
           ${members.map(n => {
             const mood = _emotional(n);
             const moodCol = _moodColor[mood] || '#6ee7b7';
-            const hasIdol = advList.some(adv => adv.holder === n && (adv.type === 'idol' || adv.type === 'super-idol'));
+            const _heldAdv = advList.find(adv => adv.holder === n && adv.type === 'idol');
+            const hasIdol = !!_heldAdv;
+            const _idolLabel = _heldAdv?.superIdol ? 'Super Idol' : 'Idol';
             return `<div style="display:flex;flex-direction:column;align-items:center;gap:3px">
-              ${rpPortrait(n, hasIdol ? 'sitd' : '', hasIdol ? 'Idol' : '')}
+              ${rpPortrait(n, hasIdol ? 'sitd' : '', hasIdol ? _idolLabel : '')}
               <span style="font-size:8px;font-weight:700;color:${moodCol};text-transform:uppercase;letter-spacing:0.5px">${mood}</span>
             </div>`;
           }).join('')}
@@ -22706,8 +22797,8 @@ function rpBuildRelationships(ep) {
     html += `<div class="vp-section-header gold" style="margin-top:4px">Advantages in Play</div>`;
     activeAdvs.forEach(adv => {
       const _amuPowerLabel = { extraVote:'Extra Vote', voteSteal:'Vote Steal', idol:'Idol' };
-      const label = adv.type === 'idol' ? 'Hidden Immunity Idol'
-                  : adv.type === 'super-idol' ? 'Super Idol'
+      const label = (adv.type === 'idol' && adv.superIdol) ? '⚡ Super Idol (plays after votes read)'
+                  : adv.type === 'idol' ? 'Hidden Immunity Idol'
                   : adv.type === 'extra-vote' ? 'Extra Vote'
                   : adv.type === 'vote-steal' ? 'Vote Steal'
                   : adv.type === 'legacy'     ? `Legacy Advantage (${(adv.activatesAt||[]).map(n=>'F'+n).join('/')})`
@@ -25372,7 +25463,8 @@ function rpBuildVotes(ep) {
 
   // ── Advantage plays — always visible before votes are read ──
   // Use idolPlays1 if available (double boot: vote-1 plays saved separately)
-  const _voteIdolPlays = ep.idolPlays1 || ep.idolPlays || [];
+  // Super Idol plays AFTER votes are read — exclude from pre-vote section
+  const _voteIdolPlays = (ep.idolPlays1 || ep.idolPlays || []).filter(p => !p.superIdol);
   let _advHtml = '';
   _voteIdolPlays.forEach((play) => {
     const { player, votesNegated, type, playedFor, target, stolenFrom } = play;
@@ -25833,6 +25925,30 @@ function rpBuildVotes(ep) {
       </div>`;
     });
     html += `</div>`;
+  }
+
+  // ── SUPER IDOL play banner — appears AFTER votes are read ──
+  if (ep.superIdolPlayed) {
+    const _sip = ep.superIdolPlayed;
+    const _sipPr = pronouns(_sip.holder);
+    const _sipIsAlly = _sip.holder !== _sip.savedPlayer;
+    const _sipSavedPr = _sipIsAlly ? pronouns(_sip.savedPlayer) : _sipPr;
+    html += `<div style="text-align:center;margin:20px 0;padding:16px 20px;background:radial-gradient(ellipse at 50% 30%,rgba(227,179,65,0.12) 0%,rgba(227,179,65,0.02) 70%);border:2px solid rgba(227,179,65,0.4);border-radius:12px">
+      <div style="font-size:10px;font-weight:800;letter-spacing:3px;color:#e3b341;margin-bottom:8px">⚡ SUPER IDOL</div>
+      <div style="display:flex;justify-content:center;align-items:center;gap:12px;margin-bottom:10px">
+        ${rpPortrait(_sip.holder, 'sitd')}
+        ${_sipIsAlly ? rpPortrait(_sip.savedPlayer, '') : ''}
+      </div>
+      <div style="font-size:14px;font-weight:700;color:#e6edf3;margin-bottom:6px">${_sipIsAlly
+        ? `${_sip.holder} plays the Super Idol for ${_sip.savedPlayer}`
+        : `${_sip.holder} plays the Super Idol`
+      }</div>
+      <div style="font-size:12px;color:#8b949e;line-height:1.5;max-width:400px;margin:0 auto">${_sipIsAlly
+        ? `The votes are read. ${_sip.savedPlayer} is going home — until ${_sip.holder} stands up. "Not tonight." The Super Idol negates all ${_sip.votesNegated} vote${_sip.votesNegated !== 1 ? 's' : ''}.`
+        : `The votes are read. ${_sip.holder}'s name comes up ${_sip.votesNegated} time${_sip.votesNegated !== 1 ? 's' : ''}. ${_sipPr.Sub} ${_sipPr.sub==='they'?'reach':'reaches'} into ${_sipPr.posAdj} pocket. "I have something." The Super Idol. All votes negated.`
+      }</div>
+      <div style="font-size:11px;color:#e3b341;font-weight:700;margin-top:8px">${_sip.votesNegated} vote${_sip.votesNegated !== 1 ? 's' : ''} cancelled — played after the votes were read</div>
+    </div>`;
   }
 
   // Revote tally (regular tie-revote only)

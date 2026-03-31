@@ -3148,28 +3148,92 @@ function decayAllianceTrust(epNum) {
           return;
         }
       } else {
+        // ── BONDS COLLAPSED: nobody likes each other — alliance is dead ──
         if (avgBond <= -1) {
           alliance.active = false;
           gs.allianceDissolutions.push({ name: alliance.name, ep: epNum, reason: 'bonds-collapsed', members: [...activeMembers], avgBond: Math.round(avgBond * 10) / 10 });
           return;
         }
-        // Normal: 3 significant betrayals + low trust
-        if (avgBond < 0.5 && betrayalCount >= 3 + _graceBonus) {
+
+        // ── BETRAYAL HANDLING: prioritize EXPELLING the betrayer over dissolving the alliance ──
+        // Count betrayals PER MEMBER to find the cancer
+        const _betrayalsByMember = {};
+        (alliance.betrayals || []).filter(b => b.severity !== 'minor').forEach(b => {
+          _betrayalsByMember[b.player] = (_betrayalsByMember[b.player] || 0) + 1;
+        });
+        const _majorByMember = {};
+        (alliance.betrayals || []).filter(b => b.severity === 'major').forEach(b => {
+          _majorByMember[b.player] = (_majorByMember[b.player] || 0) + 1;
+        });
+
+        // Find repeat offenders (2+ betrayals from the same person)
+        const _repeatOffenders = Object.entries(_betrayalsByMember)
+          .filter(([player, count]) => count >= 2 && activeMembers.includes(player))
+          .map(([player]) => player);
+        // Find major betrayers (voted against alliance member)
+        const _majorBetrayers = Object.entries(_majorByMember)
+          .filter(([player, count]) => count >= 1 && activeMembers.includes(player))
+          .map(([player]) => player);
+
+        // How many UNIQUE members have betrayed?
+        const _uniqueBetrayers = new Set(Object.keys(_betrayalsByMember).filter(p => activeMembers.includes(p)));
+
+        // EXPEL: if betrayals come from 1-2 specific members, kick THEM out — don't dissolve
+        // The alliance survives by cutting the cancer
+        if ((_repeatOffenders.length || _majorBetrayers.length) && _uniqueBetrayers.size <= Math.ceil(activeMembers.length / 2)) {
+          const _toExpel = [...new Set([..._repeatOffenders, ..._majorBetrayers])];
+          const _remainingAfterExpel = activeMembers.filter(m => !_toExpel.includes(m));
+
+          // Only expel if the alliance survives with 2+ members
+          if (_remainingAfterExpel.length >= 2) {
+            _toExpel.forEach(expelled => {
+              alliance.members = alliance.members.filter(m => m !== expelled);
+              alliance.quits = alliance.quits || [];
+              alliance.quits.push({ player: expelled, ep: epNum, reason: 'expelled — betrayed the alliance' });
+              // Camp event: the expulsion
+              if (!gs._pendingExpulsions) gs._pendingExpulsions = [];
+              gs._pendingExpulsions.push({
+                player: expelled,
+                alliance: alliance.name,
+                reason: _majorByMember[expelled] ? 'voted against an alliance member' : 'repeated betrayals',
+                remainingMembers: [..._remainingAfterExpel],
+              });
+            });
+            // Bond damage: remaining members lose trust with expelled
+            _toExpel.forEach(expelled => {
+              _remainingAfterExpel.forEach(member => addBond(member, expelled, -1.5));
+            });
+            // Remaining members get a small trust boost — they survived together
+            for (let i = 0; i < _remainingAfterExpel.length; i++) {
+              for (let j = i + 1; j < _remainingAfterExpel.length; j++) {
+                addBond(_remainingAfterExpel[i], _remainingAfterExpel[j], 0.3);
+              }
+            }
+            // Check if alliance is still viable
+            if (alliance.members.filter(m => gs.activePlayers.includes(m)).length < 2) {
+              alliance.active = false;
+              gs.allianceDissolutions.push({ name: alliance.name, ep: epNum, reason: 'last-member', members: [...alliance.members] });
+            }
+            return;
+          }
+        }
+
+        // DISSOLVE: betrayals from MULTIPLE members across the board — the alliance is rotten
+        if (_uniqueBetrayers.size >= Math.ceil(activeMembers.length * 0.6) && betrayalCount >= 3 + _graceBonus) {
           alliance.active = false;
           gs.allianceDissolutions.push({ name: alliance.name, ep: epNum, reason: 'betrayals-and-low-trust', members: [...activeMembers], betrayals: recentBetrayals, betrayalCount, avgBond: Math.round(avgBond * 10) / 10 });
           return;
         }
-        // 2+ MAJOR betrayals (voted against an alliance member) → unforgivable, dissolve regardless
-        const _majorBetrayals = (alliance.betrayals || []).filter(b => b.severity === 'major').length;
-        if (_majorBetrayals >= 2) {
+        // DISSOLVE: widespread major betrayals from different people
+        if (_uniqueBetrayers.size >= 2 && Object.keys(_majorByMember).filter(p => activeMembers.includes(p)).length >= 2) {
           alliance.active = false;
-          gs.allianceDissolutions.push({ name: alliance.name, ep: epNum, reason: 'ally-betrayals', members: [...activeMembers], betrayals: recentBetrayals, betrayalCount: _majorBetrayals, avgBond: Math.round(avgBond * 10) / 10 });
+          gs.allianceDissolutions.push({ name: alliance.name, ep: epNum, reason: 'ally-betrayals', members: [...activeMembers], betrayals: recentBetrayals, betrayalCount: Object.keys(_majorByMember).length, avgBond: Math.round(avgBond * 10) / 10 });
           return;
         }
-        // Absolute cap: 5+ total betrayals OR 3+ quits OR 6+ combined
+        // Absolute cap: too much damage from too many sources
         const _totalBetrayals = alliance.betrayals?.length || 0;
         const _quitCount = alliance.quits?.length || 0;
-        if (_totalBetrayals >= 5 || _quitCount >= 3 || (_totalBetrayals + _quitCount) >= 6) {
+        if (_totalBetrayals >= 6 || _quitCount >= 4 || (_totalBetrayals + _quitCount) >= 8) {
           alliance.active = false;
           gs.allianceDissolutions.push({ name: alliance.name, ep: epNum, reason: 'too-many-betrayals', members: [...activeMembers], betrayals: recentBetrayals, betrayalCount, avgBond: Math.round(avgBond * 10) / 10 });
           return;
@@ -13272,6 +13336,37 @@ function generateCampEvents(ep, phase = 'both') {
       if (text) {
         ep.campEvents[_campKey].pre.push({ type: 'allianceDissolved', players: activeMembers, text, badgeText: 'Alliance Dissolved', badgeClass: 'red' });
       }
+    });
+  }
+
+  // ── Alliance expulsion camp events ──
+  if (gs._pendingExpulsions?.length && (phase === 'pre' || phase === 'both')) {
+    const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
+    const _expulsions = [...gs._pendingExpulsions];
+    gs._pendingExpulsions = [];
+    _expulsions.forEach(({ player, alliance, reason, remainingMembers }) => {
+      if (!gs.activePlayers.includes(player)) return;
+      const _campKey = gs.isMerged ? 'merge' : gs.tribes.find(t => t.members.includes(player))?.name;
+      if (!_campKey || !ep.campEvents?.[_campKey]) return;
+      const _pr = pronouns(player);
+      const _remaining = (remainingMembers || []).filter(m => gs.activePlayers.includes(m));
+      const _rNames = _remaining.length <= 2 ? _remaining.join(' and ') : `${_remaining.slice(0,-1).join(', ')} and ${_remaining.at(-1)}`;
+      const text = reason === 'voted against an alliance member' ? _rp([
+        `${alliance} had a conversation this morning. ${player} wasn't invited. By the time ${_pr.sub} ${_pr.sub==='they'?'realized':'realized'} what was happening, ${_pr.posAdj} name was already off the list. ${_rNames} ${_remaining.length === 1 ? 'made' : 'made'} the call together.`,
+        `${player} voted against ${_pr.posAdj} own alliance. ${alliance} didn't forget. This morning, ${_rNames} pulled ${_pr.obj} aside and said what everyone was thinking: "You're out."`,
+        `After what ${player} did at tribal, ${alliance} cut ${_pr.obj} loose. No drama, no discussion. ${_rNames} ${_remaining.length === 1 ? 'decided' : 'decided'} — and ${player} found out after the fact.`,
+      ]) : _rp([
+        `${player} broke rank one too many times. ${alliance} isn't carrying that anymore. ${_rNames} closed the door.`,
+        `The trust inside ${alliance} was already thin. ${player} was the reason. This morning, the rest of the group made it official: ${_pr.sub} ${_pr.sub==='they'?'are':'is'} done.`,
+        `${alliance} survived — but without ${player}. The repeated betrayals forced ${_rNames} to cut ${_pr.obj} loose.`,
+      ]);
+      ep.campEvents[_campKey].pre.push({
+        type: 'allianceExpelled',
+        players: [player, ..._remaining],
+        text,
+        badgeText: 'EXPELLED',
+        badgeClass: 'red'
+      });
     });
   }
 
@@ -23921,6 +24016,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'showmanceTarget'      ? '🎯 Split Them Up'
                      : evt.type === 'showmanceJealousy'    ? 'Third Wheel'
                      : evt.type === 'showmanceRideOrDie'   ? '💕 Ride or Die'
+                     : evt.type === 'allianceExpelled'      ? 'EXPELLED'
                      : evt.type === 'journeyLoss'          ? 'NO VOTE'
                      : evt.type === 'pureHatred'           ? 'PURE HATRED'
                      : evt.type === 'nemesis'              ? 'NEMESIS'
@@ -23984,6 +24080,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'showmanceSpark' || evt.type === 'showmanceHoneymoon' || evt.type === 'showmanceRideOrDie' ? 'green'
                      : evt.type === 'showmanceNoticed' || evt.type === 'showmanceTarget' ? 'gold'
                      : evt.type === 'showmanceJealousy' ? 'red'
+                     : evt.type === 'allianceExpelled' ? 'red'
                      : evt.type === 'journeyLoss' ? 'red'
                      : evt.type === 'pureHatred' || evt.type === 'nemesis' || evt.type === 'breakup' ? 'red'
                      : evt.type === 'unbreakableBond' || evt.type === 'rideOrDie' || evt.type === 'rekindle' ? 'green'

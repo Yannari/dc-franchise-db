@@ -14218,7 +14218,12 @@ function simulateEpisode() {
       .filter(m => !_loserSitOuts.includes(m))
       .sort((a,b)=>(result.memberScores?.[a]||0)-(result.memberScores?.[b]||0));
     gs._chalStragglers = _loserMs.slice(0, Math.min(2, _loserMs.length));
-    gs._chalStandouts  = null; // tribe challenges don't produce post-merge standout targets
+    // Top performers on the LOSING tribe — they shouldn't be called "challenge liability"
+    const _loserMsDesc = [..._loserMs].reverse(); // best to worst
+    gs._chalStandouts = _loserMsDesc.slice(0, Math.min(2, _loserMsDesc.length));
+    gs._chalTopHalf = _loserMsDesc.slice(0, Math.ceil(_loserMsDesc.length / 2));
+    // Also store placements for the losing tribe so targetCategory can read them
+    ep.chalPlacements = _loserMsDesc;
 
     // ── KIDNAPPING: winner tribe takes one player from loser tribe for this episode ──
     if (gs.kidnappingPending && ep.winner && ep.loser) {
@@ -25095,7 +25100,8 @@ function rpBuildVotingPlans(ep) {
 
       // Header: alliance name + type badge + member counts
       // Only show "Alliance" if the name matches an actual gs.namedAlliance — otherwise it's a voting bloc
-      const _isRealAlliance = a.type === 'alliance' && (gs.namedAlliances || []).some(na => na.active && na.name === a.label);
+      const _snapAlliances = ep.gsSnapshot?.namedAlliances || gs.namedAlliances || [];
+      const _isRealAlliance = a.type === 'alliance' && _snapAlliances.some(na => na.active !== false && na.name === a.label);
       const _typeLabel = _isRealAlliance ? 'Alliance' : 'Voting Bloc';
       const _typeBg = _isRealAlliance ? 'rgba(99,102,241,0.15)' : 'rgba(139,148,158,0.15)';
       const _typeCol = _isRealAlliance ? '#818cf8' : '#8b949e';

@@ -2793,27 +2793,44 @@ function updateChalRecord(ep) {
 // Pre-merge challenge weakness score — higher = more likely to be cut as liability
 function challengeWeakness(name, challengeCategory) {
   const s = pStats(name);
-  let base;
-  if (challengeCategory === 'physical')  base = 10 - s.physical;
-  else if (challengeCategory === 'endurance') base = 10 - s.endurance;
-  else if (challengeCategory === 'balance')   base = 10 - (s.endurance*0.6 + s.physical*0.4);
-  else if (challengeCategory === 'puzzle')    base = 10 - s.mental;
-  else if (challengeCategory === 'social')    base = 10 - (s.social*0.5 + s.mental*0.3 + s.boldness*0.2);
-  else base = 10 - (s.physical + s.endurance + s.mental) / 3;
-  // Lingering injury makes you a bigger challenge liability
+  const _rec = gs?.chalRecord?.[name] || { wins: 0, podiums: 0, bombs: 0 };
+  // Estimate total challenges from episode count (roughly 1 challenge per episode)
+  const _totalChallenges = Math.max(_rec.wins + _rec.podiums + _rec.bombs, (gs?.episode || 0));
+
+  // ── STAT BASE: overall challenge ability (what the tribe EXPECTS) ──
+  // Always use GENERIC average for targeting — future challenges could be any type
+  // Category-specific is only used for the actual challenge simulation, not perception
+  let statBase;
+  if (challengeCategory === 'physical')       statBase = 10 - s.physical;
+  else if (challengeCategory === 'endurance') statBase = 10 - s.endurance;
+  else if (challengeCategory === 'balance')   statBase = 10 - (s.endurance*0.6 + s.physical*0.4);
+  else if (challengeCategory === 'puzzle')    statBase = 10 - s.mental;
+  else if (challengeCategory === 'social')    statBase = 10 - (s.social*0.5 + s.mental*0.3 + s.boldness*0.2);
+  else statBase = 10 - (s.physical + s.endurance + s.mental) / 3;
+
+  // For TARGETING (no category passed), use the generic average — the tribe evaluates overall ability
+  const genericBase = 10 - (s.physical + s.endurance + s.mental + s.social * 0.5) / 3.5;
+
+  // ── PERFORMANCE: what the tribe has SEEN (accumulates over episodes) ──
+  // Each bomb/podium shifts perception. More data = more trust in the track record.
+  let perfMod = 0;
+  if (_rec.bombs >= 1) perfMod += _rec.bombs * 0.6;   // each bomb: +0.6 (1=0.6, 2=1.2, 3=1.8, 5=3.0)
+  if (_rec.podiums >= 1) perfMod -= _rec.podiums * 0.35; // each podium: -0.35 (2=-0.7, 4=-1.4)
+  if (_rec.wins >= 1) perfMod -= _rec.wins * 0.5;      // wins are strong proof: -0.5 each
+
+  // ── BLEND: stats vs performance ──
+  // Early game (0-1 challenges): almost pure stats (tribe hasn't seen enough)
+  // Mid game (3-4 challenges): 50/50 blend
+  // Late pre-merge (6+ challenges): performance dominates — the tribe trusts what they've seen
+  const _perfWeight = Math.min(0.6, _totalChallenges * 0.12); // 0=0%, 2=24%, 4=48%, 5+=60%
+  const _useBase = challengeCategory ? statBase : genericBase;
+  const blended = _useBase + perfMod * (0.4 + _perfWeight); // perfMod always matters, but scales up
+
+  // ── INJURY: lingering injury makes you a bigger liability ──
   const _inj = gs?.lingeringInjuries?.[name];
-  if (_inj && (gs.episode + 1 - _inj.ep) < _inj.duration) base += 1.5;
-  // Actual performance: players who bomb challenges are seen as weaker regardless of stats
-  const _rec = gs?.chalRecord?.[name];
-  if (_rec) {
-    if (_rec.bombs >= 3) base += 1.5;        // consistently last — tribe has seen enough
-    else if (_rec.bombs >= 2) base += 0.8;    // repeated poor showing
-    else if (_rec.bombs >= 1) base += 0.3;    // one bad outing
-    // Good performers get a slight reduction — they've proven themselves
-    if (_rec.podiums >= 3) base -= 1.0;
-    else if (_rec.podiums >= 2) base -= 0.4;
-  }
-  return base;
+  const injMod = (_inj && (gs.episode + 1 - _inj.ep) < _inj.duration) ? 1.5 : 0;
+
+  return blended + injMod;
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -3720,7 +3737,9 @@ function pickTarget(attackers, victims, challengeLabel) {
           _amuletMod = -1.0;
         }
       }
-      return Math.max(0.1, threatScore(v) * 0.6 + (-avgBond) * 0.4 + pairThreat + standoutMod + personalityMod + _amuletMod + Math.random() * 0.5);
+      // Heat as tiebreaker: existing momentum toward this target from multiple sources
+      const _heatMod = computeHeat(v, [...attackers, v], []) * 0.15;
+      return Math.max(0.1, threatScore(v) * 0.6 + (-avgBond) * 0.4 + pairThreat + standoutMod + personalityMod + _amuletMod + _heatMod + Math.random() * 0.5);
     }
   });
 }
@@ -5978,7 +5997,11 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
           let underlyingType, underlyingCtx;
           if (resistsBond && allianceTarget)  { underlyingType = 'protect-bond';        underlyingCtx = { allianceTarget }; }
           else if (bond <= -1)                { underlyingType = 'personal';            underlyingCtx = { phase: gs.phase }; }
-          else if (gs.phase === 'pre-merge')  { underlyingType = 'challenge-liability'; underlyingCtx = { cLabel: myAlliance?.challengeLabel, phase: gs.phase }; }
+          else if (gs.phase === 'pre-merge' && challengeWeakness(target, ep?.challengeCategory) >= 4.0
+                   && !(gs._chalStandouts || []).includes(target))  {
+            // Only call them a challenge liability if they actually ARE weak — not if they were a standout
+            underlyingType = 'challenge-liability'; underlyingCtx = { cLabel: ep?.challengeCategory || myAlliance?.challengeLabel, phase: gs.phase };
+          }
           else                                { underlyingType = 'threat';              underlyingCtx = { voterS: s }; }
           // If this player is the spearheader of their bloc and is defecting from their own stated target, wrap with spearhead-defect narrative
           const isSpearheader = myAlliance && myAlliance.members[0] === voter && allianceTarget && target !== allianceTarget;
@@ -24524,6 +24547,7 @@ function rpBuildVotingPlans(ep) {
     const _isMerged = gs.isMerged || (ep.gsSnapshot?.isMerged);
     const _epNum = ep.num || 1;
     // Challenge weakness is the TOP priority pre-merge — tribes need to win
+    // Use GENERIC (no category) — the tribe evaluates overall ability across all challenge types
     const _cw = challengeWeakness(name);
     if (_cw >= 5.5 && !_isMerged) return { label: 'Challenge Liability', color: '#f85149' };
     if (arch === 'challenge-beast' || s.physical >= 8) return { label: 'Physical Threat', color: '#f85149' };
@@ -24538,8 +24562,9 @@ function rpBuildVotingPlans(ep) {
     if (arch === 'villain') return { label: 'Villain', color: '#f85149' };
     if (arch === 'goat' || threatScore(name) <= 2) return { label: 'Easy Vote', color: '#484f58' };
     if (s.loyalty <= 3) return { label: 'Wildcard', color: '#e3b341' };
-    // Challenge weakness at a lower threshold
-    if (_cw >= 4.0 && !_isMerged) return { label: 'Challenge Weakness', color: '#e3b341' };
+    // Challenge weakness at a lower threshold — but NOT if the player was a standout this episode
+    const _wasStandout = gs.chalRecord?.[name]?.podiums >= 1 && (gs._chalStandouts || []).includes(name);
+    if (_cw >= 4.0 && !_isMerged && !_wasStandout) return { label: 'Challenge Weakness', color: '#e3b341' };
     // Low bonds with the tribe — outsider
     const _avgBond = (ep.tribalPlayers || gs.activePlayers).filter(p => p !== name)
       .reduce((sum, p) => sum + getBond(name, p), 0) / Math.max(1, (ep.tribalPlayers || gs.activePlayers).length - 1);

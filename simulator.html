@@ -24719,10 +24719,11 @@ function rpBuildVotingPlans(ep) {
 
   // ─── target reasoning (shared by alliance plans + independent votes) ─────
   const _vpTargetReason = (target, voter, cat) => {
+    if (!target) return 'No clear target.';
     const _ts = pStats(target);
     const _bond = voter ? getBond(voter, target) : 0;
     const _cw = challengeWeakness(target);
-    const _h = [...(voter || ''), ...target].reduce((s, c) => s + c.charCodeAt(0), 0);
+    const _h = [...(voter || ''), ...(target || '')].reduce((s, c) => s + c.charCodeAt(0), 0) || 1;
     const _pick = arr => arr[_h % arr.length];
     // Priority order: challenge weakness > personal friction > threat category > social position > generic
     if (_cw >= 5.5 && !gs.isMerged) {

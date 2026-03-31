@@ -26024,7 +26024,12 @@ function rpBuildVotes(ep) {
 
   // Revote rows (regular tie-revote only — fresh vote has its own separate section below)
   if (revoteLog.length && !ep.sidFreshVote) {
-    html += `<div style="font-size:9px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:#30363d;text-align:center;padding:8px 0 4px;border-top:1px solid #161b22;margin-top:4px">REVOTE</div>`;
+    const _rvTied = ep.tiedPlayers || [];
+    const _rvTiedLabel = _rvTied.length ? _rvTied.join(' and ') : 'the tied players';
+    html += `<div style="font-size:9px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:#484f58;text-align:center;padding:8px 0 4px;border-top:1px solid #161b22;margin-top:4px">REVOTE — ${_rvTiedLabel.toUpperCase()} ONLY</div>`;
+    if (_rvTied.length) {
+      html += `<div style="font-size:10px;color:#484f58;text-align:center;margin-bottom:6px;font-style:italic">${_rvTiedLabel} cannot vote. Everyone else must vote for one of them.</div>`;
+    }
     revoteLog.forEach(({ voter, voted }, idx) => {
       html += `<div class="tv-vote-card" data-voted="${voted}" data-voter="${voter}" data-index="${vlog.length + _extraVotePlays.length + idx}">
         <div class="tv-vote-voter-wrap">

@@ -24504,6 +24504,62 @@ function rpBuildVotingPlans(ep) {
     return { label: 'Active Player', color: '#484f58' };
   };
 
+  // ─── target reasoning (shared by alliance plans + independent votes) ─────
+  const _vpTargetReason = (target, voter, cat) => {
+    const _ts = pStats(target);
+    const _bond = voter ? getBond(voter, target) : 0;
+    const _cw = challengeWeakness(target);
+    const _h = [...(voter || ''), ...target].reduce((s, c) => s + c.charCodeAt(0), 0);
+    const _pick = arr => arr[_h % arr.length];
+    // Priority order: challenge weakness > personal friction > threat category > social position > generic
+    if (_cw >= 5.5 && !gs.isMerged) return _pick([
+      `Challenge liability — ${target} has been a weak link and the tribe can't keep carrying that weight.`,
+      `The tribe needs strength right now. ${target} isn't providing it. That's enough.`,
+      `When the tribe keeps losing, the weakest link becomes the clearest vote.`,
+    ]);
+    if (_bond <= -2) return _pick([
+      `Bad blood with ${target}. When the relationship is this far gone, the vote is personal.`,
+      `The friction with ${target} has been building. Tonight it becomes a ballot.`,
+      `This isn't strategy — it's honesty. ${target} and I don't work.`,
+    ]);
+    if (cat.label === 'Physical Threat') return _pick([
+      `${target} wins challenges. Post-merge that becomes untouchable. Move now.`,
+      `Every challenge ${target} wins is a vote the tribe can't take. The window is closing.`,
+    ]);
+    if (cat.label === 'Strategic Threat') return _pick([
+      `${target} is running things quietly. The longer they stay, the harder they are to remove.`,
+      `${target} has fingerprints on every decision. That kind of control doesn't get easier to stop.`,
+    ]);
+    if (cat.label === 'Social Threat' || cat.label === 'Jury Threat') return _pick([
+      `${target} is too well-liked. That's a jury winner if nobody does something about it.`,
+      `When someone has no enemies at this stage, the odds are they win. ${target} has no enemies.`,
+    ]);
+    if (cat.label === 'Outsider') return _pick([
+      `${target} doesn't have strong bonds with anyone here. That makes the vote clean.`,
+      `Nobody is going to fight for ${target}. That's the simplest reason to write a name down.`,
+      `The tribe needs a vote that doesn't fracture anything. ${target} is that vote.`,
+    ]);
+    if (cat.label === 'On the Outs') return _pick([
+      `${target}'s connections are thin. The person with the fewest defenders is the easiest vote.`,
+      `${target} hasn't built enough relationships to survive a tribal where names are needed.`,
+      `When the group needs a name everyone can agree on, it lands on the person nobody is protecting.`,
+    ]);
+    if (cat.label === 'Challenge Liability') return _pick([
+      `The tribe can't afford to keep losing. ${target} is the reason they are.`,
+      `Challenges matter. ${target} isn't pulling their weight. The tribe noticed.`,
+    ]);
+    if (threatScore(target) >= 6) return _pick([
+      `Threat level is climbing. ${target} is getting harder to vote out with every episode.`,
+      `${target}'s game is getting louder. The people paying attention are moving before it's too late.`,
+    ]);
+    return _pick([
+      `${target}'s name came up and nobody pushed back. Sometimes that's all it takes.`,
+      `No strong reason to keep ${target} safe. When a name has no defenders, it sticks.`,
+      `The vote needs to land somewhere. ${target} is the path of least resistance tonight.`,
+      `${target} didn't do anything wrong — they just didn't do enough right. That's how votes happen early.`,
+    ]);
+  };
+
   // ─── reason → first-person confessional ──────────────────────────────────
   const reasonToConf = reason => {
     if (!reason) return null;
@@ -24897,23 +24953,7 @@ function rpBuildVotingPlans(ep) {
 
       // TARGET box + reasoning
       const _isCheckedOut = ep.comfortBlindspotPlayer === a.target;
-      // Generate a brief targeting reason from the spearheader's perspective
-      const _targetReason = (() => {
-        const _ts = pStats(a.target);
-        const _spBond = spear ? getBond(spear, a.target) : 0;
-        const _cw = challengeWeakness(a.target);
-        if (_cw >= 5.5 && !gs.isMerged) return `Challenge liability — ${a.target} has been a weak link and the tribe can't keep carrying that weight.`;
-        if (_spBond <= -2) return `Bad blood with ${a.target}. When the relationship is this far gone, the vote is personal.`;
-        if (_spBond <= -0.5) return `No real bond with ${a.target}. In this game, that absence becomes a vote.`;
-        if (cat.label === 'Physical Threat') return `${a.target} wins challenges. Post-merge that becomes untouchable. Move now.`;
-        if (cat.label === 'Strategic Threat') return `${a.target} is running things quietly. The longer they stay, the harder they are to remove.`;
-        if (cat.label === 'Social Threat') return `${a.target} is too well-liked. That's a jury winner if nobody does something about it.`;
-        if (cat.label === 'Jury Threat') return `${a.target} wins any jury vote. The longer they stay, the more inevitable that becomes.`;
-        if (cat.label === 'Outsider') return `${a.target} doesn't have strong bonds with anyone here. That makes the vote clean.`;
-        if (cat.label === 'On the Outs') return `${a.target}'s connections are thin. When the group needs a name, the person with the fewest defenders is the answer.`;
-        if (threatScore(a.target) >= 6) return `Threat level is climbing. ${a.target} is getting harder to vote out with every episode.`;
-        return `${a.target}'s name came up and nobody pushed back. Sometimes that's all it takes.`;
-      })();
+      const _targetReason = _vpTargetReason(a.target, spear, cat);
       ph += `<div class="rp-vp-section-mini">\u2694\uFE0F TARGET</div>
         <div class="rp-vp-target-row" style="background:rgba(248,81,73,0.06);border-radius:8px;padding:8px 10px">
           ${rpPortrait(a.target)}
@@ -25010,15 +25050,7 @@ function rpBuildVotingPlans(ep) {
         </div>`;
       } else if (soloTarget) {
         const _stCat = soloTCat;
-        // Brief reasoning for this independent vote
-        const _indBond = getBond(player, soloTarget);
-        const _indReason = _indBond <= -2 ? `The friction has been there since the start.`
-          : _indBond <= 0 ? `No real bond — that absence becomes a vote.`
-          : _stCat?.label === 'Challenge Liability' ? `Challenge weakness the tribe can't afford.`
-          : _stCat?.label === 'Physical Threat' ? `Too dangerous to leave in the game.`
-          : _stCat?.label === 'Strategic Threat' ? `Playing too hard, too quietly.`
-          : _stCat?.label === 'Social Threat' ? `Too well-liked — jury threat.`
-          : `The name came up. Nobody defended it.`;
+        const _indReason = _vpTargetReason(soloTarget, player, _stCat || { label: 'Active Player', color: '#484f58' });
         html += `<div class="rp-vp-swing" style="animation:slideInLeft 0.4s ease">
           ${rpPortrait(player, 'sm')}
           <div class="rp-vp-swing-info" style="flex:1">
@@ -25040,11 +25072,7 @@ function rpBuildVotingPlans(ep) {
         const _likelyTarget = _logEntry?.voted || null;
         const _ltCat = _likelyTarget ? targetCategory(_likelyTarget) : null;
         if (_likelyTarget && !isImmune) {
-          const _fbBond = getBond(player, _likelyTarget);
-          const _fbReason = _fbBond <= -2 ? `The friction has been there since the start.`
-            : _fbBond <= 0 ? `No real bond — that absence becomes a vote.`
-            : _ltCat?.label === 'Challenge Liability' ? `Challenge weakness the tribe can't afford.`
-            : `The name came up. Nobody defended it.`;
+          const _fbReason = _vpTargetReason(_likelyTarget, player, _ltCat || { label: 'Active Player', color: '#484f58' });
           html += `<div class="rp-vp-swing" style="animation:slideInLeft 0.4s ease">
             ${rpPortrait(player, 'sm')}
             <div class="rp-vp-swing-info" style="flex:1">

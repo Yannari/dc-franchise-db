@@ -15052,7 +15052,18 @@ function simulateEpisode() {
           const _ovp = _ovpCandidates[0];
           const _rollOvp = ([..._ovp].reduce((a,c)=>a+c.charCodeAt(0),0) + ep.num * 13) % 100;
           if (_rollOvp < 20) {
-            const _votersOnTarget = log.filter(e => e.voted === _ovpTopTarget && e.voter !== _ovp).slice();
+            const _votersOnTarget = log.filter(e => {
+              if (e.voted !== _ovpTopTarget || e.voter === _ovp) return false;
+              // Alliance loyalty protection: voters in a named alliance with bond >= 3
+              // resist overplay — they're committed to the plan and won't flip from a whisper
+              const _voterNa = (gs.namedAlliances || []).find(a => a.active && a.members.includes(e.voter) && a.members.length >= 3);
+              if (_voterNa) {
+                const _naAvgBond = _voterNa.members.filter(m => m !== e.voter && gs.activePlayers.includes(m))
+                  .reduce((s, m) => s + getBond(e.voter, m), 0) / Math.max(1, _voterNa.members.filter(m => m !== e.voter && gs.activePlayers.includes(m)).length);
+                if (_naAvgBond >= 3) return false; // too loyal to flip
+              }
+              return true;
+            }).slice();
             _votersOnTarget.sort((a, b) => getBond(a.voter, _ovp) - getBond(b.voter, _ovp));
             const _toFlip = _votersOnTarget.slice(0, Math.min(2, _votersOnTarget.length));
             if (_toFlip.length) {

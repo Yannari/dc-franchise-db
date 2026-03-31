@@ -25,6 +25,12 @@ Simulation core:
 - `decayAllianceTrust()` — alliance bond decay + auto-dissolve (1 member left, avg bond <= -1, or 2+ betrayals with low bond)
 - `handleAdvantageInheritance()` — called before stripping advantages on elimination. Handles Legacy willing + Amulet power upgrade.
 - `buildVoteReason()` — generates vote reasoning text, includes amulet/legacy/KiP-specific reasons
+- `checkParanoiaSpiral()` — paranoid + strategic player turns on closest ally (self-fulfilling prophecy)
+- `checkShowmanceFormation()` — detects new showmances (bond + archetype compatibility)
+- `updateShowmancePhases()` — progresses showmance lifecycle (spark → honeymoon → target → ride-or-die/broken-up)
+- `checkShowmanceBreakup()` — detects partner elimination (betrayal breakup vs grief separation)
+- `getShowmance(name)` / `getShowmancePartner(name)` — helper functions for showmance lookups
+- `patchEpisodeHistory(ep)` — universal helper patching missing fields after every history push
 
 Slasher Night (post-merge):
 - `simulateSlasherNight()` — horror survival challenge, replaces challenge + tribal
@@ -87,6 +93,9 @@ VP Finale screens (10 screens):
 - `gs.amuletHolders` — original group of amulet holders (all 3)
 - `gs.amuletPlanted` — boolean, whether amulets have been distributed
 - `gs.kipStealLastEp` — carries KiP steal data for next-episode camp events
+- `gs.showmances[]` — showmance objects: `{ players:[a,b], phase, sparkEp, episodesActive, jealousPlayer, tested }`
+  - Phases: `'spark'` → `'honeymoon'` → `'target'` → `'ride-or-die'` or `'broken-up'`
+- `gs.paranoiaNudges` — `{ [target]: { accusedBy, ep } }` — paranoia spiral vote nudge (expires after 1 ep)
 
 Finale-specific ep fields:
 - `ep.benchAssignments` — `{ [finalist]: [supporter1, ...] }`
@@ -103,6 +112,12 @@ Episode-level advantage fields:
 - `ep.amuletCoordination` — `{ holders, votes, agreed, power }` — coordinated play result
 - `ep.advantagesPreTribal` — snapshot of advantages BEFORE tribal (prevents spoiling eliminations)
 - `ep.riPlayersPreDuel` — snapshot of RI players before duel fires
+- `ep.superIdolPlayed` — `{ holder, savedPlayer, votesNegated }` — Super Idol play data
+- `ep.votesBeforeSuperIdol` — vote snapshot before Super Idol negation (for VP tally display)
+- `ep.paranoiaSpirals` — `[{ paranoid, target, bondDrop, campKey }]`
+- `ep.showmanceEvents` — `[{ type, players, phase }]` — showmance lifecycle events this ep
+- `ep.showmanceBreakup` — `{ voter, eliminated, bond }` — partner voted them out
+- `ep.showmanceSeparation` — `{ survivor, eliminated, bond }` — partner eliminated but tried to save
 
 ## Patterns
 - New camp event types: push into `ep.campEvents[campKey].pre` directly; add badge
@@ -115,6 +130,10 @@ Episode-level advantage fields:
 - `pronouns(name)` returns `{sub, obj, pos, posAdj, ref, Sub, Obj, PosAdj}` for any player
 - `pStats(name)` returns player stats object; `threatScore(name)` returns numeric threat
 - Interactive reveals use `_tvState[key]` pattern: `tvRevealNext(key)` / `tvRevealAll(key)` for vote cards, `gcRevealNext` for challenge stages, `reunionRevealNext` for reunion sections
+- Revote cards tagged with `data-revote="1"` — Live Tally ignores them (separate Live Tally #2 panel)
+- `ep.isRockDraw` MUST be set for every rock draw path — VP rock draw card and WHY section depend on it
+- Tie display: "Final Tally — Tied" header + TIE badges on tied players (no ELIMINATED badge)
+- Revote tally: "FINAL TALLY #2 — [NAMES] ONLY" with portraits + vote counts + DEADLOCKED banner if still tied
 - VP screens use `ep.gsSnapshot` (from episodeHistory) not live `gs` — prevents old episodes showing current-state data
 - VP advantage displays use `ep.advantagesPreTribal` to prevent spoiling eliminations
 - Alliance acceptance is relationship-driven (bond with recruiter + group avg bond), not stat-driven
@@ -180,6 +199,8 @@ Two return systems (mutually exclusive, configured via `cfg.riFormat`):
 - Holder picks a target and asks "Do you have an idol?" — can FAIL if target has nothing
 - Target selection: known holders (+10 score), intuition senses real holders, rivals preferred
 - Bold/paranoid players in danger may guess even with no confirmed targets (25% chance)
+- KiP skips entirely if holder just received an idol via sharing (no point stealing what you already have)
+- KiP targeting excludes players who just shared their idol to the holder (you know they don't have it)
 - Success: steal the advantage. Fail: KiP consumed, wasted, embarrassment.
 - Bond consequences: ally steal -4.0, enemy steal -2.5, fail -1.0
 - `gs.kipStealLastEp` carries data for next-episode camp events (aftermath, power shift)
@@ -237,6 +258,17 @@ Two return systems (mutually exclusive, configured via `cfg.riFormat`):
 - At merge: all found bewares auto-activate into idols, votes restored.
 - `_willMerge` check prevents vote-loss on the merge episode.
 
+### Super Idol
+- Created via Idol Wager twist: holder risks idol in a challenge, wins → `adv.superIdol = true`
+- Type remains `'idol'` with `superIdol` flag — NOT a separate advantage type
+- Plays AFTER votes are read (post-`resolveVotes`), not before like regular idols
+- Excluded from regular idol play logic (`checkIdolPlays` skips `superIdol` advs)
+- Self-play: always fires when holder is the elimination target (perfect info, can't misplay)
+- Ally-play: checks if saving the ally would make the holder the new target (won't suicide)
+- `ep.votesBeforeSuperIdol` snapshot saved for VP tally display
+- VP: golden "Final Tally — Before Super Idol" with target badge, then dramatic reveal banner
+- Camp events: unique super-idol-specific morning-after reactions
+
 ### Idol Sharing
 - `checkIdolPreTribal()`: holders may share idol with closest ally before tribal
 - Saved in `ep.idolShares`, displayed as "IDOL SHARED" banner on votes screen
@@ -248,6 +280,25 @@ Two return systems (mutually exclusive, configured via `cfg.riFormat`):
   last-second vote shift) — capped at 30%, each produces a unique VP reason
 - `ep.fireMaking` object: `{ player, opponent, winner, loser, reason, duelType, duelName,
   duelDesc, fromAmulet, allyPlayer }` — used by both twist and amulet paths
+
+## Showmance Lifecycle
+- `gs.showmances[]` are objects (NOT simple arrays): `{ players:[a,b], phase, sparkEp, episodesActive, jealousPlayer, tested }`
+- 6 phases: `spark` → `honeymoon` (ep 2+) → `target` (ep 4+) → `ride-or-die` (ep 7+, bond ≥ 6) or `broken-up`
+- `getShowmance(name)` / `getShowmancePartner(name)` — use these helpers, never search the array directly
+- Honeymoon: +0.3 bond/ep, couple camp events, tribe starts noticing
+- Target: strategists plot to split them, `computeHeat` scales by phase (spark +0.2, target +1.2, ride-or-die +1.5)
+- Jealousy/Third Wheel: ~20%/ep, 3rd player close to one partner feels excluded (-0.5 bond each)
+- The Test: `checkShowmanceTest()` fires when alliance targets showmance partner (loyalty check)
+- Breakup: partner votes to eliminate → bond collapses -5.0. Separation: partner eliminated but didn't vote → grief
+- Camp events: showmanceSpark, showmanceHoneymoon, showmanceNoticed, showmanceTarget, showmanceJealousy, showmanceRideOrDie
+
+## Paranoia Spiral
+- `checkParanoiaSpiral(ep)` — fires in 'post' and 'both' camp event phases
+- Trigger: emotional='paranoid', roll `strategic * 0.03` (stat 5=15%, stat 10=30%)
+- Picks closest ally (bond ≥ 2), bond drop -(0.8 + strategic×0.1)
+- Self-fulfilling prophecy: `gs.paranoiaNudges[target]` → -0.15 loyalty in `simulateVotes` that episode
+- Two tonal variants: bold (public confrontation) vs strategic (quiet campaign)
+- VP badge: red "⚠ Paranoia Spiral", +3 drama, -1 likability
 
 ## Alliance Betrayal Costs
 Bond damage scales by severity:
@@ -355,6 +406,8 @@ is NOT actually loyal. Always check behavioral track record alongside raw stats:
 - `recoverBonds(ep)` — extreme negative bonds (< -1.5) soften toward -1.0 over time if not actively fighting
 - Tribe cohesion: +0.10 to +0.30 per episode for tribemates who don't fight (social-scaled)
 - Alliance loyalty glue: +0.05 to +0.12 per episode for members with clean betrayal records
+  - Only fires when the alliance DID something together: coordinated vote (2+ voted same target) OR survived tribal together
+  - Alliances that coast through no-tribal episodes get nothing
 
 ## Pronouns — NEVER hardcode
 - Always use `pronouns(name)` → `{sub, obj, pos, posAdj, ref, Sub, Obj, PosAdj}`

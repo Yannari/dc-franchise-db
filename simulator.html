@@ -5663,8 +5663,11 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
     // A loyalty 10 player who has betrayed 3 times isn't actually loyal — their actions say otherwise
     const _voterBetrayals = (gs.namedAlliances || []).reduce((n, a) => n + (a.betrayals || []).filter(b => b.player === voter).length, 0);
     const _trackRecordPenalty = _voterBetrayals >= 3 ? -0.15 : _voterBetrayals >= 2 ? -0.08 : _voterBetrayals >= 1 ? -0.03 : 0;
+    // Paranoia spiral nudge: if someone accused this voter of disloyalty this episode, they're less likely to cooperate
+    // Self-fulfilling prophecy — accuse your ally and they actually turn on you
+    const _paranoiaNudge = gs.paranoiaNudges?.[voter]?.ep === ((gs.episode || 0) + 1) ? -0.15 : 0;
     // Loyalty check — open vote adds social pressure to follow the group
-    const loyaltyThreshold = (s.loyalty - (s.boldness - 5) * 0.3) / 11 + (openVote ? 0.1 : 0) + emotionalMod + bottomMod + resumeMod + _allianceBondMod + _trackRecordPenalty;
+    const loyaltyThreshold = (s.loyalty - (s.boldness - 5) * 0.3) / 11 + (openVote ? 0.1 : 0) + emotionalMod + bottomMod + resumeMod + _allianceBondMod + _trackRecordPenalty + _paranoiaNudge;
     const isLoyal = Math.random() < Math.max(0.10, Math.min(0.95, loyaltyThreshold));
     const resistsBond = Math.random() < bondResistChance;
     // Conflicting alliance pull: bolder + less loyal players more likely to honor the other alliance
@@ -10932,6 +10935,84 @@ function _getRefusalEventText(recruit, recruiter, allianceName, scenario) {
   ]);
 }
 
+// [1] PARANOIA SPIRAL — paranoid + strategic player turns on a real ally, creating a self-fulfilling prophecy.
+// The ally was loyal. Now they might not be.
+function checkParanoiaSpiral(ep) {
+  if (!ep.paranoiaSpirals) ep.paranoiaSpirals = [];
+  const active = gs.activePlayers;
+  const _pick = arr => arr[Math.floor(Math.random() * arr.length)];
+
+  // Group by tribe (pre-merge) or merge
+  const groups = gs.isMerged ? [{ name: 'merge', members: [...active] }] : gs.tribes;
+
+  groups.forEach(tribe => {
+    const members = tribe.members?.filter(m => active.includes(m)) || [];
+    if (members.length < 3) return;
+
+    // Find paranoid + strategic players
+    const candidates = members.filter(p => {
+      const em = gs.playerStates?.[p]?.emotional;
+      if (em !== 'paranoid') return false;
+      const s = pStats(p);
+      // Proportional: strategic * 0.03 chance (stat 5=15%, stat 7=21%, stat 10=30%)
+      return Math.random() < s.strategic * 0.03;
+    });
+
+    candidates.forEach(paranoid => {
+      // Already spiraled this episode? One per player max
+      if (ep.paranoiaSpirals.some(ps => ps.paranoid === paranoid)) return;
+
+      const s = pStats(paranoid);
+      const _pr = pronouns(paranoid);
+
+      // Pick the target: their CLOSEST ally on the tribe — the person they should trust most
+      // That's what makes paranoia devastating — it attacks the strongest bonds
+      const allies = members.filter(p => p !== paranoid && getBond(paranoid, p) >= 2)
+        .sort((a, b) => getBond(paranoid, b) - getBond(paranoid, a));
+      if (!allies.length) return; // no allies to turn on
+      const target = allies[0];
+      const targetBond = getBond(paranoid, target);
+      const _tPr = pronouns(target);
+
+      // Bond damage — proportional to strategic (smarter paranoid players build more elaborate theories)
+      const bondDrop = -(0.8 + s.strategic * 0.1); // stat 5: -1.3, stat 8: -1.6, stat 10: -1.8
+      addBond(paranoid, target, bondDrop);
+      // The target also loses trust — being accused when you're innocent creates distance
+      addBond(target, paranoid, bondDrop * 0.6);
+
+      // Flag the accused ally for vote nudge: they're now less likely to follow the paranoid player's plan
+      // This is stored and read by simulateVotes — makes the self-fulfilling prophecy work
+      if (!gs.paranoiaNudges) gs.paranoiaNudges = {};
+      gs.paranoiaNudges[target] = { accusedBy: paranoid, ep: ep.num || (gs.episode || 0) + 1 };
+
+      const campKey = gs.isMerged ? 'merge' : tribe.name;
+      const spiralData = { paranoid, target, bondDrop, campKey };
+      ep.paranoiaSpirals.push(spiralData);
+
+      // Camp event — two tonal variants: confrontation (bold) vs quiet campaign (strategic)
+      if (ep.campEvents?.[campKey]) {
+        const block = ep.campEvents[campKey];
+        const evts = Array.isArray(block) ? block : (block.pre || []);
+        const isBold = s.boldness >= 6;
+        const texts = isBold ? [
+          `${paranoid} pulled ${target} aside after the challenge and the conversation went sideways fast. "I know what you're doing." ${target} didn't know what ${_tPr.sub} ${_tPr.sub==='they'?'were':'was'} being accused of. That didn't matter — ${paranoid} had already decided.`,
+          `${paranoid} confronted ${target} in front of half the tribe. The accusation wasn't subtle. ${target} denied it. ${paranoid} didn't believe ${_tPr.obj}. The damage was already done.`,
+          `Something snapped in ${paranoid} today. ${_pr.Sub} went after ${target} — ${_pr.posAdj} closest ally — with an accusation nobody saw coming. ${target} stood there, stunned. The tribe watched.`,
+        ] : [
+          `${paranoid} has been talking to people about ${target}. Quietly. Carefully. Planting the idea that ${target} isn't as loyal as everyone thinks. The thing is — ${target} has been completely loyal. But the seed is planted now.`,
+          `${paranoid} didn't say it to ${target}'s face. ${_pr.Sub} said it to three other people first. "Watch ${target}. Something's off." Nobody had noticed anything off about ${target} until ${paranoid} pointed it out. Now everyone's watching.`,
+          `${paranoid} pulled two people aside today with the same quiet message: ${target} is playing both sides. ${target} isn't. But try proving a negative in this game.`,
+        ];
+        evts.push({
+          type: 'paranoiaSpiral',
+          text: _pick(texts),
+          players: [paranoid, target],
+        });
+      }
+    });
+  });
+}
+
 // [2] SOCIAL BOMB / FAUX PAS — player with low temperament or high boldness says something
 // that lands badly at camp. All tribemates take a bond hit (high-social players feel it more).
 // Adds vote heat for that episode's tribal via gs.socialBombHeatThisEp.
@@ -13118,6 +13199,8 @@ function generateCampEvents(ep, phase = 'both') {
       }
     }
 
+    // Paranoia spiral — fires before social bomb (bond hits stack)
+    checkParanoiaSpiral(ep);
     // Social bomb check — fires before alliance quitting (bond hits can trigger quitting)
     checkSocialBomb(ep);
     // Alliance quitting evaluated once after all events are done, then recruitment (scenarios A + B)
@@ -13129,6 +13212,7 @@ function generateCampEvents(ep, phase = 'both') {
 
   // ── 'both' phase: no pre/post distinction (no-tribal, finale) — just one block ──
   if (phase === 'both') {
+    checkParanoiaSpiral(ep);
     // Social bomb + alliance quitting + recruitment after the single-phase generation
     checkSocialBomb(ep);
     checkAllianceQuitting(ep);
@@ -16104,6 +16188,7 @@ function updatePopularity(ep) {
       // Positive Drama
       case 'hotheadExplosion':    if (p)       add(p, 'drama', 3, evt.type); break;
       case 'showmancerMoment':    if (ps?.[0]) { add(ps[0], 'drama', 2, evt.type); add(ps[0], 'like', 1, evt.type); } break;
+      case 'paranoiaSpiral':      if (ps?.[0]) { add(ps[0], 'drama', 3, evt.type); add(ps[0], 'like', -1, evt.type); } break;
       case 'showmanceSpark':      if (ps?.[0]) { add(ps[0], 'drama', 3, evt.type); add(ps[0], 'like', 2, evt.type); } break;
       case 'showmanceHoneymoon':  if (ps?.[0]) { add(ps[0], 'drama', 1, evt.type); add(ps[0], 'like', 1, evt.type); } break;
       case 'showmanceTarget':     if (ps?.[0]) add(ps[0], 'drama', 2, evt.type); break;
@@ -19111,6 +19196,7 @@ function patchEpisodeHistory(ep) {
   if (!h.tribesAtStart && ep.tribesAtStart) h.tribesAtStart = ep.tribesAtStart.map(t => ({ name: t.name, members: [...t.members] }));
   // Showmance lifecycle
   if (!h.showmanceBreakup && !h.showmanceSeparation) checkShowmanceBreakup(ep);
+  if (ep.paranoiaSpirals?.length) h.paranoiaSpirals = ep.paranoiaSpirals;
   if (ep.showmanceBreakup) h.showmanceBreakup = ep.showmanceBreakup;
   if (ep.showmanceSeparation) h.showmanceSeparation = ep.showmanceSeparation;
   if (ep.showmanceEvents?.length) h.showmanceEvents = ep.showmanceEvents;
@@ -23241,6 +23327,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
     const isRelEvt = ['bond','fight','dispute','tdBond','flirtation','intimidation',
                       'sideDeal','strategicTalk','comfort','rumor','watchingYou','goatOblivious',
                       'idolConfession','idolBetrayal','idolShare','showmancerMoment',
+                      'paranoiaSpiral',
                       'showmanceSpark','showmanceHoneymoon','showmanceNoticed','showmanceTarget','showmanceJealousy','showmanceRideOrDie',
                       'socialBombReaction','chalThreatReaction',
                       'goatObserver','ftcThreatStrategist'].includes(evt.type);
@@ -23367,6 +23454,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'legacyScheme'          ? (evt.badgeText || 'Heir Scheming')
                      : evt.type === 'legacyWeight'          ? (evt.badgeText || 'Legacy Weight')
                      : evt.type === 'legacyHeirWatch'       ? (evt.badgeText || 'Watching the Heir')
+                     : evt.type === 'paranoiaSpiral'       ? '⚠ Paranoia Spiral'
                      : evt.type === 'showmanceSpark'       ? '💕 Showmance'
                      : evt.type === 'showmanceHoneymoon'   ? '💕 Honeymoon'
                      : evt.type === 'showmanceNoticed'     ? '⚠ Power Couple'
@@ -23429,6 +23517,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'legacyScheme' ? 'red'
                      : evt.type === 'legacyWeight' ? ''
                      : evt.type === 'legacyHeirWatch' ? 'gold'
+                     : evt.type === 'paranoiaSpiral' ? 'red'
                      : evt.type === 'showmanceSpark' || evt.type === 'showmanceHoneymoon' || evt.type === 'showmanceRideOrDie' ? 'green'
                      : evt.type === 'showmanceNoticed' || evt.type === 'showmanceTarget' ? 'gold'
                      : evt.type === 'showmanceJealousy' ? 'red'
@@ -23465,7 +23554,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
       'heroConfront','heroProtect','heroSacrifice','heroWeight',
       'amuletReunion','amuletUpgrade','amuletBetrayal','amuletRivalry','legacyInheritance',
       'legacyConfession','legacyLeak','legacyScheme','legacyWeight','legacyHeirWatch']);
-    const spotTypes = new Set(['socialBomb','socialBombReaction','showmancerMoment',
+    const spotTypes = new Set(['socialBomb','socialBombReaction','paranoiaSpiral','showmancerMoment',
       'showmanceSpark','showmanceHoneymoon','showmanceNoticed','showmanceTarget','showmanceJealousy','showmanceRideOrDie',
       'unexpectedCompetence','underdogMoment','loneWolf','meltdown','leadershipClash',
       'showboat','pureHatred','nemesis','unbreakableBond','rideOrDie','rekindle','breakup',

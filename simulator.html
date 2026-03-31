@@ -5725,8 +5725,10 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
       const _namedAlliance = (gs.namedAlliances || []).find(a => a.name === myAlliance.label);
       const _formedThisEp = _namedAlliance?.formed === (gs.episode || 0) + 1;
       const _gracePeriod = _formedThisEp ? 0.20 : 0;
-      // Scales proportionally: bond 5 → +0.15, bond 0 → 0, bond -3 → -0.09
-      return _avgBond * 0.03 + _gracePeriod;
+      // Scales proportionally with bond AND alliance size — bigger alliances with good bonds hold tighter
+      // Bond 4, size 5 → +0.12 + 0.10 = +0.22. Bond 2, size 3 → +0.06 + 0.04 = +0.10
+      const _sizeBonus = Math.max(0, (_allyMembers.length - 1) * 0.03); // 2-member=0.03, 4-member=0.09, 5-member=0.12
+      return _avgBond * 0.03 + _sizeBonus + _gracePeriod;
     })();
 
     // Track record: past betrayals erode the loyalty stat's influence
@@ -15052,18 +15054,7 @@ function simulateEpisode() {
           const _ovp = _ovpCandidates[0];
           const _rollOvp = ([..._ovp].reduce((a,c)=>a+c.charCodeAt(0),0) + ep.num * 13) % 100;
           if (_rollOvp < 20) {
-            const _votersOnTarget = log.filter(e => {
-              if (e.voted !== _ovpTopTarget || e.voter === _ovp) return false;
-              // Alliance loyalty protection: voters in a named alliance with bond >= 3
-              // resist overplay — they're committed to the plan and won't flip from a whisper
-              const _voterNa = (gs.namedAlliances || []).find(a => a.active && a.members.includes(e.voter) && a.members.length >= 3);
-              if (_voterNa) {
-                const _naAvgBond = _voterNa.members.filter(m => m !== e.voter && gs.activePlayers.includes(m))
-                  .reduce((s, m) => s + getBond(e.voter, m), 0) / Math.max(1, _voterNa.members.filter(m => m !== e.voter && gs.activePlayers.includes(m)).length);
-                if (_naAvgBond >= 3) return false; // too loyal to flip
-              }
-              return true;
-            }).slice();
+            const _votersOnTarget = log.filter(e => e.voted === _ovpTopTarget && e.voter !== _ovp).slice();
             _votersOnTarget.sort((a, b) => getBond(a.voter, _ovp) - getBond(b.voter, _ovp));
             const _toFlip = _votersOnTarget.slice(0, Math.min(2, _votersOnTarget.length));
             if (_toFlip.length) {
@@ -24975,6 +24966,53 @@ function rpBuildVotingPlans(ep) {
       </div>`;
     });
     html += `</div>`;
+  }
+
+  // ── Original Alliance Plans: what named alliances INTENDED before defections/overplay ──
+  const _namedPlans = (ep.alliances || []).filter(a => a.type === 'alliance' && a.label && a.members.length >= 2);
+  if (_namedPlans.length) {
+    // Check if actual votes diverged from the plan (at least 1 member voted differently)
+    const _hasDeviation = _namedPlans.some(a => {
+      const planned = a.splitTarget ? [a.target, a.splitTarget] : [a.target];
+      return a.members.some(m => {
+        const actual = votingLog.find(l => l.voter === m)?.voted;
+        return actual && !planned.includes(actual);
+      });
+    });
+    if (_hasDeviation) {
+      html += `<div style="margin-bottom:12px;padding:10px 14px;background:rgba(99,102,241,0.04);border:1px solid rgba(99,102,241,0.15);border-radius:8px">
+        <div style="font-size:9px;font-weight:800;letter-spacing:2px;color:#6366f1;margin-bottom:8px">ORIGINAL ALLIANCE PLANS</div>`;
+      _namedPlans.forEach(a => {
+        const _tCat = targetCategory(a.target);
+        const _actualVotes = a.members.map(m => {
+          const entry = votingLog.find(l => l.voter === m);
+          const planned = a.splitTarget && a.splitSecondary?.includes(m) ? a.splitTarget : a.target;
+          const followed = entry?.voted === planned;
+          const noVote = !entry || _vpLostVotes.includes(m);
+          return { name: m, planned, actual: entry?.voted, followed, noVote, reason: entry?.reason || '' };
+        });
+        const followedCount = _actualVotes.filter(v => v.followed).length;
+        const deviatedCount = _actualVotes.filter(v => !v.followed && !v.noVote).length;
+        html += `<div style="margin-bottom:8px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <span style="font-size:12px;font-weight:700;color:#e6edf3">${a.label}</span>
+            <span style="font-size:10px;color:#6366f1">\u2192 ${a.target}</span>
+            <span style="font-size:9px;color:#484f58">(${_tCat.label})</span>
+            ${a.splitTarget ? `<span style="font-size:10px;color:#d29922">+ split on ${a.splitTarget}</span>` : ''}
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px">
+            ${_actualVotes.map(v => {
+              const col = v.noVote ? '#484f58' : v.followed ? '#3fb950' : '#f85149';
+              const label = v.noVote ? 'no vote' : v.followed ? '\u2713' : `\u2192 ${v.actual}`;
+              const _isOverplay = v.reason?.includes('OVERPLAYING');
+              return `<span style="font-size:10px;padding:2px 8px;border-radius:4px;background:rgba(${v.followed ? '63,185,80' : v.noVote ? '72,79,88' : '248,81,73'},0.1);color:${col};border:1px solid rgba(${v.followed ? '63,185,80' : v.noVote ? '72,79,88' : '248,81,73'},0.2)">${v.name} ${label}${_isOverplay ? ' (overplay)' : ''}</span>`;
+            }).join('')}
+          </div>
+          ${deviatedCount ? `<div style="font-size:10px;color:#8b949e;margin-top:3px">${followedCount}/${_actualVotes.filter(v => !v.noVote).length} followed the plan</div>` : ''}
+        </div>`;
+      });
+      html += `</div>`;
+    }
   }
 
   // Competing plans (2+ voters)

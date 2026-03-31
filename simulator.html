@@ -3299,10 +3299,12 @@ function detectBetrayals(ep) {
         const _loyalVoter = voters.find(v => v !== _votedForAllyMember);
         consensusVote = ep.votingLog.find(l => l.voter === _loyalVoter)?.voted;
       } else {
-        // Both voted external targets — pick the one that matches the broader tribal plan
+        // Both voted external targets — pick the one that matches THIS alliance's tribal plan
         const _epAlliances = ep.alliances || [];
-        const _alliancePlan = _epAlliances.find(a => a.members.some(m => voters.includes(m)))?.target;
-        consensusVote = _alliancePlan || sorted[0][0];
+        // Match by name first (exact alliance plan), then by member overlap (broader coordination)
+        const _ownPlan = _epAlliances.find(a => a.label === alliance.name)?.target;
+        const _anyPlan = _epAlliances.find(a => a.members.some(m => voters.includes(m)) && !alliance.members.includes(a.target))?.target;
+        consensusVote = _ownPlan || _anyPlan || sorted[0][0];
       }
     } else {
       consensusVote = sorted[0][0];

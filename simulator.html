@@ -14569,19 +14569,30 @@ function simulateEpisode() {
           _siPlayFor = _siHolder;
         } else {
           // Holder is safe — consider playing for the target if they're a close ally
-          const _siBond = getBond(_siHolder, _siTarget);
-          const _siS = pStats(_siHolder);
-          // Loyalty + bond drives ally saves; boldness raises willingness to burn advantage for someone else
-          const _siAllyChance = _siBond * 0.08 + _siS.loyalty * 0.04 + _siS.boldness * 0.02;
-          // Same alliance = higher motivation
-          const _siSameAlliance = (gs.namedAlliances || []).some(a => a.active && a.members.includes(_siHolder) && a.members.includes(_siTarget));
-          const _siAllyBonus = _siSameAlliance ? 0.20 : 0;
-          if (Math.random() < Math.min(0.85, _siAllyChance + _siAllyBonus)) {
-            _siPlayFor = _siTarget;
+          // BUT: check if saving the target would make the HOLDER the new target (suicide play)
+          const _siTestVotes = { ...votes };
+          delete _siTestVotes[_siTarget];
+          const _siTestRes = resolveVotes(_siTestVotes);
+          if (_siTestRes.eliminated === _siHolder) {
+            // Playing for the ally would get the holder voted out instead — never do this
+            _siPlayFor = null;
+          } else {
+            const _siBond = getBond(_siHolder, _siTarget);
+            const _siS = pStats(_siHolder);
+            // Loyalty + bond drives ally saves; boldness raises willingness to burn advantage for someone else
+            const _siAllyChance = _siBond * 0.08 + _siS.loyalty * 0.04 + _siS.boldness * 0.02;
+            // Same alliance = higher motivation
+            const _siSameAlliance = (gs.namedAlliances || []).some(a => a.active && a.members.includes(_siHolder) && a.members.includes(_siTarget));
+            const _siAllyBonus = _siSameAlliance ? 0.20 : 0;
+            if (Math.random() < Math.min(0.85, _siAllyChance + _siAllyBonus)) {
+              _siPlayFor = _siTarget;
+            }
           }
         }
 
         if (_siPlayFor) {
+          // Snapshot votes BEFORE negation so VP can show who was going home
+          ep.votesBeforeSuperIdol = { ...votes };
           const _siVotesNeg = votes[_siPlayFor] || 0;
           delete votes[_siPlayFor];
           gs.advantages.splice(gs.advantages.indexOf(_si), 1);
@@ -18842,6 +18853,7 @@ function patchEpisodeHistory(ep) {
   if (!h.idolShares && ep.idolShares?.length) h.idolShares = ep.idolShares;
   if (!h.kipSteal && ep.kipSteal) h.kipSteal = ep.kipSteal;
   if (!h.superIdolPlayed && ep.superIdolPlayed) h.superIdolPlayed = ep.superIdolPlayed;
+  if (!h.votesBeforeSuperIdol && ep.votesBeforeSuperIdol) h.votesBeforeSuperIdol = ep.votesBeforeSuperIdol;
   if (!h.spiritIslandEvents && ep.spiritIslandEvents) h.spiritIslandEvents = ep.spiritIslandEvents;
   // Misc
   if (!h.comfortBlindspotPlayer && ep.comfortBlindspotPlayer) h.comfortBlindspotPlayer = ep.comfortBlindspotPlayer;
@@ -25890,33 +25902,43 @@ function rpBuildVotes(ep) {
   // Surprise double boot: mark vote-1 eliminated (ep.firstEliminated).
   // Tiebreaker: winner/loser resolved by challenge — tally shows TIE for both, elim card handles the outcome
   // Fire-making (Second Life): mark the voted-out player, not the fire loser — Aftermath handles the duel
+  // Super Idol: show pre-cancellation votes so viewer sees who was going home before the play
   const _hasTiebreaker = !ep.firstEliminated && !!ep.tiebreakerResult;
   const _hasFireMaking = !!ep.fireMaking;
-  const _v1Elim = ep.sidFreshVote ? null : _hasFireMaking ? ep.fireMaking.player : (ep.firstEliminated || (_hasTiebreaker ? null : elim));
+  const _hasSuperIdol = !!ep.superIdolPlayed;
+  const _tallyVotes = _hasSuperIdol && ep.votesBeforeSuperIdol ? ep.votesBeforeSuperIdol : votes;
+  const _tallySorted = Object.entries(_tallyVotes).sort(([,a],[,b]) => b-a);
+  const _tallyTotal = Object.values(_tallyVotes).reduce((a,b) => a+b, 0);
+  // When super idol fires, the original target (before negation) is the one marked
+  const _superIdolTarget = ep.superIdolPlayed?.savedPlayer || null;
+  const _v1Elim = ep.sidFreshVote ? null : _hasFireMaking ? ep.fireMaking.player : _hasSuperIdol ? null : (ep.firstEliminated || (_hasTiebreaker ? null : elim));
   const _v1IsBlindside = !_hasTiebreaker && !_hasFireMaking && _v1Elim && pStats(_v1Elim).strategic >= 7;
   const _v1Elim2 = ep.announcedDoubleElim ? elim : null; // second eliminated in announced double elim
   const _v1Elim2Bs = _v1Elim2 && pStats(_v1Elim2).strategic >= 7;
-  if (sortedVotes.length) {
+  if (_tallySorted.length) {
     let _tallyHeader = 'Final Tally';
     if (ep.sidFreshVote) _tallyHeader = 'Original Votes — Wiped';
     else if (ep.announcedDoubleElim) _tallyHeader = 'Final Tally — Double Elimination';
     else if (ep.firstEliminated) _tallyHeader = 'Vote 1 — Final Tally';
+    else if (_hasSuperIdol) _tallyHeader = 'Final Tally — Before Super Idol';
     else if (_hasTiebreaker) _tallyHeader = 'Final Tally — Tied';
     html += `<div class="tv-final-tally">
       <div class="tv-ft-header">${_tallyHeader}</div>`;
-    sortedVotes.forEach(([name, v]) => {
-      const pct = Math.round((v / Math.max(1, totalVotes)) * 100);
+    _tallySorted.forEach(([name, v]) => {
+      const pct = Math.round((v / Math.max(1, _tallyTotal)) * 100);
       const isDuel = !!(ep.exileDuelResult) && name === ep.exileDuelResult.newBoot;
       const isTied = _hasTiebreaker && (ep.tiedPlayers||[]).includes(name);
       const isE  = !ep.exileDuelResult && !isTied && name === _v1Elim;
       const isE2 = !ep.exileDuelResult && !isTied && name === _v1Elim2;
-      const isS  = !_v1Elim && !_v1Elim2 && !_hasTiebreaker && swap && name === sortedVotes[0][0];
-      const barColor = ((isE && !_hasFireMaking) || isE2) ? '#da3633' : ((isE && _hasFireMaking) || isTied || isDuel || isS) ? '#d29922' : '#30363d';
+      const isS  = !_v1Elim && !_v1Elim2 && !_hasTiebreaker && !_hasSuperIdol && swap && name === _tallySorted[0][0];
+      const isSuperIdolTarget = name === _superIdolTarget;
+      const barColor = isSuperIdolTarget ? '#e3b341' : ((isE && !_hasFireMaking) || isE2) ? '#da3633' : ((isE && _hasFireMaking) || isTied || isDuel || isS) ? '#d29922' : '#30363d';
       html += `<div class="tv-ft-row ${((isE && !_hasFireMaking) || isE2) ? 'tv-ft-elim' : ''}">
         ${rpPortrait(name)}
         <div class="tv-ft-name">${name}</div>
         <div class="tv-ft-bar-bg"><div class="tv-ft-bar" style="width:${pct}%;background:${barColor}"></div></div>
         <span class="vp-tally-num" data-target="${v}">0</span>
+        ${isSuperIdolTarget ? `<span style="font-size:9px;font-weight:800;letter-spacing:1px;padding:2px 8px;border-radius:4px;background:rgba(227,179,65,0.15);color:#e3b341">⚡ SUPER IDOL</span>` : ''}
         ${isTied ? `<span style="font-size:9px;font-weight:800;letter-spacing:1px;padding:2px 8px;border-radius:4px;background:rgba(210,153,34,0.1);color:#d29922">TIE</span>` : ''}
         ${isE  ? `<span style="font-size:9px;font-weight:800;letter-spacing:1px;padding:2px 8px;border-radius:4px;background:${_hasFireMaking ? 'rgba(210,153,34,0.1)' : 'rgba(218,54,51,0.1)'};color:${_hasFireMaking ? '#d29922' : '#da3633'}">${_hasFireMaking ? 'SECOND LIFE' : _v1IsBlindside  ? 'BLINDSIDE' : 'ELIMINATED'}</span>` : ''}
         ${isE2 ? `<span style="font-size:9px;font-weight:800;letter-spacing:1px;padding:2px 8px;border-radius:4px;background:rgba(218,54,51,0.1);color:#da3633">${_v1Elim2Bs ? 'BLINDSIDE' : 'ELIMINATED'}</span>` : ''}

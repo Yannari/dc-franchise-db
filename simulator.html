@@ -26022,28 +26022,7 @@ function rpBuildVotes(ep) {
     });
   }
 
-  // Revote rows (regular tie-revote only — fresh vote has its own separate section below)
-  if (revoteLog.length && !ep.sidFreshVote) {
-    const _rvTied = ep.tiedPlayers || [];
-    const _rvTiedLabel = _rvTied.length ? _rvTied.join(' and ') : 'the tied players';
-    html += `<div style="font-size:9px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:#484f58;text-align:center;padding:8px 0 4px;border-top:1px solid #161b22;margin-top:4px">REVOTE — ${_rvTiedLabel.toUpperCase()} ONLY</div>`;
-    if (_rvTied.length) {
-      html += `<div style="font-size:10px;color:#484f58;text-align:center;margin-bottom:6px;font-style:italic">${_rvTiedLabel} cannot vote. Everyone else must vote for one of them.</div>`;
-    }
-    revoteLog.forEach(({ voter, voted }, idx) => {
-      html += `<div class="tv-vote-card" data-voted="${voted}" data-voter="${voter}" data-index="${vlog.length + _extraVotePlays.length + idx}">
-        <div class="tv-vote-voter-wrap">
-          ${rpPortrait(voter, 'sm')}
-          <div class="tv-vote-voter">${voter}</div>
-        </div>
-        <div class="tv-vote-arrow">\u2192</div>
-        <div class="tv-vote-right">
-          <div class="tv-vote-target">${voted}</div>
-          <div class="tv-vote-reason">Revote</div>
-        </div>
-      </div>`;
-    });
-  }
+  // Revote: no individual vote cards — the revote tally in the results section tells the story
 
   html += `</div>`; // end tv-reveal-panel
 
@@ -26062,7 +26041,7 @@ function rpBuildVotes(ep) {
   });
   html += `</div></div>`; // end tally panel + tv-wrap
 
-  const totalCards = vlog.length + _extraVotePlays.length + (revoteLog.length && !ep.sidFreshVote ? revoteLog.length : 0);
+  const totalCards = vlog.length + _extraVotePlays.length;
   html += `<div id="tv-btn-wrap-${epNum}">
     <button class="tv-reveal-btn" id="tv-btn-${epNum}" onclick="tvRevealNext(${epNum})">Read the Vote (0/${totalCards})</button>
     <div style="text-align:right;margin:-12px 0 14px">
@@ -26220,10 +26199,23 @@ function rpBuildVotes(ep) {
   // Revote tally (regular tie-revote only)
   if (ep.revoteVotes && Object.keys(ep.revoteVotes).length && !ep.sidFreshVote && !ep.firstEliminated) {
     const rvSorted = Object.entries(ep.revoteVotes).sort(([,a],[,b]) => b-a);
-    html += `<div class="tv-tribal-events" style="margin-top:0;margin-bottom:20px">
-      <div class="tv-tribal-events-header">Revote Tally</div>
-      ${(ep.tiedPlayers||[]).map(p => `<div class="tv-tribal-event-item" style="color:#484f58;font-style:italic">${p} could not vote (was in the tie)</div>`).join('')}
-      ${rvSorted.map(([n,v]) => `<div class="tv-tribal-event-item">${n}: ${v} vote${v!==1?'s':''}</div>`).join('')}
+    const _rvTied = ep.tiedPlayers || [];
+    const _rvStillTied = rvSorted.length >= 2 && rvSorted[0][1] === rvSorted[1][1];
+    html += `<div style="margin:16px 0 20px;padding:14px 16px;background:rgba(210,153,34,0.04);border:1px solid rgba(210,153,34,0.15);border-radius:10px">
+      <div style="font-size:10px;font-weight:800;letter-spacing:2px;color:#d29922;text-align:center;margin-bottom:8px">REVOTE${_rvTied.length ? ` — ${_rvTied.join(' & ').toUpperCase()} ONLY` : ''}</div>
+      ${_rvTied.length ? `<div style="font-size:10px;color:#484f58;text-align:center;margin-bottom:10px">${_rvTied.join(' and ')} cannot vote. Everyone else votes for one of them.</div>` : ''}
+      <div style="display:flex;justify-content:center;gap:20px;flex-wrap:wrap">
+        ${rvSorted.map(([n, v]) => {
+          const pct = Math.round((v / Math.max(1, Object.values(ep.revoteVotes).reduce((a,b)=>a+b,0))) * 100);
+          return `<div style="text-align:center;min-width:80px">
+            ${rpPortrait(n)}
+            <div style="font-size:12px;font-weight:700;color:#e6edf3;margin-top:4px">${n}</div>
+            <div style="font-size:18px;font-weight:800;color:${_rvStillTied ? '#d29922' : '#e6edf3'}">${v}</div>
+            <div style="font-size:9px;color:#484f58">${v} vote${v!==1?'s':''}</div>
+          </div>`;
+        }).join(`<div style="align-self:center;font-size:18px;color:#30363d;font-weight:800">vs</div>`)}
+      </div>
+      ${_rvStillTied ? `<div style="font-size:11px;font-weight:700;color:#d29922;text-align:center;margin-top:10px;letter-spacing:0.5px">DEADLOCKED — DRAWING ROCKS</div>` : ''}
     </div>`;
   }
 
@@ -26234,11 +26226,25 @@ function rpBuildVotes(ep) {
     // Single-tribal tiebreaker — show the challenge card + elim
     html += _renderTiebreakerCard(ep.tiebreakerResult, ep.tiedPlayers);
   } else if (ep.isRockDraw && !ep.firstEliminated && elim) {
+    const _rdTied = ep.tiedPlayers || [];
+    const _rdSafe = _rdTied.filter(p => p !== elim);
+    const _rdPlace = (ep.gsSnapshot?.activePlayers ?? gs.activePlayers).length + 1;
+    const _rdQuote = vpGenerateQuote(elim, ep, 'eliminated');
+    const _rdQuotes = [
+      `The vote deadlocked${_rdTied.length ? ` between ${_rdTied.join(' and ')}` : ''}. Nobody changed their vote. The tribe drew rocks.`,
+      `Neither side blinked. It went to rocks.`,
+    ];
     html += `<div class="rp-elim" style="background:radial-gradient(ellipse at 50% 30%,rgba(210,153,34,0.08) 0%,transparent 60%);border-color:rgba(210,153,34,0.2)">
-      <div class="rp-elim-eyebrow" style="color:#d29922">Rock Draw</div>
-      <div style="font-size:13px;color:#8b949e;text-align:center;margin-bottom:18px">Nobody budged. A rock decided it.</div>
+      <div class="rp-elim-eyebrow" style="color:#d29922">ROCK DRAW</div>
+      <div style="font-size:13px;color:#8b949e;text-align:center;margin-bottom:14px;line-height:1.5">${_rdQuotes[Math.floor(Math.random() * _rdQuotes.length)]}</div>
+      ${_rdSafe.length ? `<div style="display:flex;justify-content:center;gap:16px;margin-bottom:16px">
+        ${_rdSafe.map(p => `<div style="text-align:center">${rpPortrait(p)}<div style="font-size:9px;font-weight:800;color:#3fb950;margin-top:4px;letter-spacing:1px">SAFE (TIED)</div></div>`).join('')}
+      </div>` : ''}
+      <div style="text-align:center;font-size:10px;color:#484f58;margin-bottom:12px;letter-spacing:0.5px">Non-tied, non-immune players draw rocks. One is wrong.</div>
       ${rpPortrait(elim,'xl elim')}<div class="rp-elim-name">${elim}</div>
-      <div class="rp-elim-quote">"I didn't pull the wrong rock. This game pulled it for me."</div>
+      <div class="rp-elim-arch">${vpArchLabel(elim)}</div>
+      <div class="rp-elim-quote">"${_rdQuote}"</div>
+      <div class="rp-elim-place">Eliminated by Rock Draw — Episode ${epNum}</div>
     </div>`;
   } else if (ep.firstEliminated && !ep.sidFreshVote) {
     // Vote 1 clean elimination card (surprise double boot, no fresh vote)

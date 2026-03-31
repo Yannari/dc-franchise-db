@@ -2917,6 +2917,15 @@ function computeHeat(name, tribalPlayers, alliances) {
       }
     }
   }
+  // Pre-merge: challenge liability adds heat — tribe needs strength, weak players get targeted
+  if (gs.phase !== 'post-merge') {
+    const _cwHeat = challengeWeakness(name);
+    if (_cwHeat >= 5.5) heat += 1.5;       // serious liability
+    else if (_cwHeat >= 4.0) heat += 0.6;   // noticeable weakness
+    // Physical beasts get NEGATIVE heat pre-merge — the tribe wants to keep them
+    const _ns = pStats(name);
+    if (_ns.physical >= 8 || _ns.endurance >= 8) heat -= 0.5;
+  }
   // Lost vote — can't defend themselves, others smell blood
   if (gs.lostVotes?.includes(name)) heat += 1.2;
   // Penalty vote — already has a vote against them, easier to pile on
@@ -24536,10 +24545,10 @@ function rpBuildVotingPlans(ep) {
       `This isn't strategy — it's honesty. ${target} and I don't work.`,
     ]);
     if (cat.label === 'Physical Threat') {
-      const _epNum = ep.num || 1;
       const _chalRec = gs.chalRecord?.[target];
-      const _hasWins = _chalRec?.wins >= 1 || _chalRec?.podiums >= 2;
-      return _hasWins ? _pick([
+      // Pre-merge: "wins" = standout performances (best on tribe). Post-merge: actual individual wins.
+      const _hasRecord = _chalRec?.wins >= 1 || _chalRec?.podiums >= 2;
+      return _hasRecord ? _pick([
         `${target} keeps winning challenges. Post-merge that becomes untouchable. Move now.`,
         `Every challenge ${target} wins is a vote the tribe can't take. The window is closing.`,
         `${target} has been dominating. The tribe can see what's coming if nobody acts.`,

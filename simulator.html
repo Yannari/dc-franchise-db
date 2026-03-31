@@ -21729,6 +21729,7 @@ function parseSummaryText(text) {
 
 // ── Portrait helper (BrantSteele-style square image + name) ──
 function rpPortrait(name, cls='', badge='') {
+  if (!name) return `<div class="rp-portrait ${cls}"><div class="rp-portrait-img"><span>?</span></div><div class="rp-portrait-name">?</div></div>`;
   const p = players.find(x => x.name === name);
   const slug = p?.slug || name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
   const init = (name||'?')[0].toUpperCase();

@@ -15127,10 +15127,15 @@ function simulateEpisode() {
     }
     checkShotInDark(tribalPlayers, votes, log, ep);
 
-    // Build full tribal immunity list: anyone who played an idol OR survived SitD is safe
+    // Build full tribal immunity list: anyone PROTECTED by an idol OR survived SitD is safe
     // for the ENTIRE tribal — original vote, revote, and rock draw.
+    // Playing an idol for SOMEONE ELSE does NOT make the player immune — only the recipient is safe.
+    // Playing an idol for YOURSELF makes you immune.
     const tribalImmune = [
-      ...(ep.idolPlays || []).flatMap(p => p.playedFor ? [p.player, p.playedFor] : [p.player]),
+      ...(ep.idolPlays || []).flatMap(p => {
+        if (p.playedFor) return [p.playedFor]; // ally play: only the recipient is immune, NOT the player
+        return [p.player]; // self play: the player is immune
+      }),
       ...(ep.shotInDark?.safe ? [ep.shotInDark.player] : []),
     ];
     const isTribalImmune = p => tribalImmune.includes(p);
@@ -19519,6 +19524,10 @@ function patchEpisodeHistory(ep) {
   if (!h.loser && ep.loser) h.loser = { name: ep.loser.name, members: [...(ep.loser.members||[])] };
   // Tribes at start
   if (!h.tribesAtStart && ep.tribesAtStart) h.tribesAtStart = ep.tribesAtStart.map(t => ({ name: t.name, members: [...t.members] }));
+  // Clear journey lost votes for players who attended this tribal — vote loss is consumed
+  if (ep.tribalPlayers?.length && gs.journeyLostVotes?.length) {
+    gs.journeyLostVotes = gs.journeyLostVotes.filter(p => !ep.tribalPlayers.includes(p));
+  }
   // Showmance lifecycle
   if (!h.showmanceBreakup && !h.showmanceSeparation) checkShowmanceBreakup(ep);
   if (ep.paranoiaSpirals?.length) h.paranoiaSpirals = ep.paranoiaSpirals;

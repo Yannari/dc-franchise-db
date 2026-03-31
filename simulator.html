@@ -2803,6 +2803,16 @@ function challengeWeakness(name, challengeCategory) {
   // Lingering injury makes you a bigger challenge liability
   const _inj = gs?.lingeringInjuries?.[name];
   if (_inj && (gs.episode + 1 - _inj.ep) < _inj.duration) base += 1.5;
+  // Actual performance: players who bomb challenges are seen as weaker regardless of stats
+  const _rec = gs?.chalRecord?.[name];
+  if (_rec) {
+    if (_rec.bombs >= 3) base += 1.5;        // consistently last — tribe has seen enough
+    else if (_rec.bombs >= 2) base += 0.8;    // repeated poor showing
+    else if (_rec.bombs >= 1) base += 0.3;    // one bad outing
+    // Good performers get a slight reduction — they've proven themselves
+    if (_rec.podiums >= 3) base -= 1.0;
+    else if (_rec.podiums >= 2) base -= 0.4;
+  }
   return base;
 }
 
@@ -2919,12 +2929,19 @@ function computeHeat(name, tribalPlayers, alliances) {
   }
   // Pre-merge: challenge liability adds heat — tribe needs strength, weak players get targeted
   if (gs.phase !== 'post-merge') {
-    const _cwHeat = challengeWeakness(name);
-    if (_cwHeat >= 5.5) heat += 1.5;       // serious liability
-    else if (_cwHeat >= 4.0) heat += 0.6;   // noticeable weakness
+    // Blend stats + actual performance: bombs make you a bigger liability than stats alone
+    const _cwStats = challengeWeakness(name);
+    const _rec = gs.chalRecord?.[name];
+    const _bombs = _rec?.bombs || 0;
+    const _cwActual = _cwStats + (_bombs >= 3 ? 2.0 : _bombs >= 2 ? 1.0 : _bombs >= 1 ? 0.3 : 0);
+    if (_cwActual >= 5.5) heat += 1.5;       // serious liability (stats + performance)
+    else if (_cwActual >= 4.0) heat += 0.6;   // noticeable weakness
     // Physical beasts get NEGATIVE heat pre-merge — the tribe wants to keep them
     const _ns = pStats(name);
     if (_ns.physical >= 8 || _ns.endurance >= 8) heat -= 0.5;
+    // BUT: if someone is dominating pre-merge challenges (4+ podiums), strategic players start planning for merge
+    const _podiums = _rec?.podiums || 0;
+    if (_podiums >= 4) heat += 0.4; // tribe starts thinking about merge — this player becomes untouchable soon
   }
   // Lost vote — can't defend themselves, others smell blood
   if (gs.lostVotes?.includes(name)) heat += 1.2;

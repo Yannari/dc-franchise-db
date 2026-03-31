@@ -5665,7 +5665,8 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
 
     const s = pStats(voter);
     // Primary alliance this player is voting with
-    const myAlliance = alliances.find(a => a.members.includes(voter));
+    const myAlliance = alliances.find(a => a.type === 'alliance' && a.members.includes(voter))
+                   || alliances.find(a => a.members.includes(voter));
     const allianceTarget = myAlliance?.target;
 
     // All real alliances this player belongs to (they may be in multiple)
@@ -16902,7 +16903,8 @@ function getIndividualTargets(tribalPlayers, immuneName, alliances, challengeLab
   tribalPlayers.forEach(voter => {
     if (voter === immuneName) return;
     const s = pStats(voter);
-    const myAlliance = alliances.find(a => a.members.includes(voter));
+    const myAlliance = alliances.find(a => a.type === 'alliance' && a.members.includes(voter))
+                   || alliances.find(a => a.members.includes(voter));
     const allianceTarget = myAlliance?.target;
     const cLabel = challengeLabel || myAlliance?.challengeLabel || null;
 

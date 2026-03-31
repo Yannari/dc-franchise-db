@@ -24855,8 +24855,10 @@ function rpBuildVotingPlans(ep) {
       }
     }
 
-    // Bond conflict: alliance target has bond >= 3 with the voter
-    const conflictAlliance = myAlliances.find(a => getBond(player, a.target) >= 3);
+    // Bond conflict: voter has a meaningful positive bond with the alliance's target
+    // Threshold scales with game stage — EP1-3 bonds are 0-2, so lower bar. Late game needs stronger bond.
+    const _bondConflictThreshold = ep.num <= 3 ? 1.0 : ep.num <= 6 ? 1.5 : 2.5;
+    const conflictAlliance = myAlliances.find(a => getBond(player, a.target) >= _bondConflictThreshold);
     if (conflictAlliance) {
       _seenConflicted.add(player);
       conflictedPlayers.push({ player, reason: 'bond-conflict', alliances: myAlliances });

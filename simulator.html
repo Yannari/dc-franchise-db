@@ -502,11 +502,11 @@
     .rp-vp-subtitle { font-size:13px; color:#484f58; font-style:italic; margin-bottom:24px; text-align:center; }
     .rp-vp-immunity-row { display:flex; align-items:center; gap:12px; background:#0d1117; border:1px solid #21262d; border-radius:10px; padding:10px 16px; margin-bottom:20px; }
     .rp-vp-immunity-label { font-size:12px; color:#388bfd; font-weight:700; }
-    .rp-vp-section-label { font-size:10px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:#2a3a4a; margin:24px 0 12px; border-bottom:1px solid #0f161e; padding-bottom:8px; font-family:var(--font-body); }
-    .rp-vp-plans-row { display:flex; gap:12px; flex-wrap:wrap; }
-    .rp-vp-plan { flex:1; min-width:160px; background:#0d1117; border:1px solid #21262d; border-radius:12px; padding:16px 14px; display:flex; flex-direction:column; gap:10px; }
+    .rp-vp-section-label { font-size:11px; font-weight:800; letter-spacing:3px; text-transform:uppercase; color:#484f58; margin:24px 0 12px; border-bottom:1px solid #21262d; padding-bottom:8px; font-family:var(--font-body); }
+    .rp-vp-plans-row { display:flex; flex-direction:column; gap:12px; }
+    .rp-vp-plan { background:#0d1117; border:1px solid #21262d; border-radius:12px; padding:16px 14px; display:flex; flex-direction:column; gap:10px; }
     .rp-vp-plan-header { display:flex; align-items:center; gap:8px; }
-    .rp-vp-plan-label { font-size:13px; font-weight:800; color:#e6edf3; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .rp-vp-plan-label { font-size:16px; font-weight:800; color:#e6edf3; flex:1; font-family:var(--font-display); letter-spacing:0.5px; }
     .rp-vp-plan-votes { font-size:11px; font-weight:700; color:#484f58; }
     .rp-vp-conf { font-size:12px; font-weight:800; }
     .rp-vp-spear-row { display:flex; align-items:center; gap:10px; }
@@ -516,7 +516,7 @@
     .rp-vp-arrow { text-align:center; font-size:16px; color:#30363d; line-height:1; }
     .rp-vp-target-row { display:flex; align-items:center; gap:10px; background:#161b22; border-radius:8px; padding:8px 10px; }
     .rp-vp-target-info { flex:1; min-width:0; }
-    .rp-vp-target-name { font-size:13px; font-weight:800; color:#c9d1d9; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .rp-vp-target-name { font-size:15px; font-weight:800; color:#e6edf3; }
     .rp-vp-target-cat { font-size:10px; font-weight:700; letter-spacing:0.5px; margin-top:1px; }
     .rp-vp-target-votes { font-size:10px; color:#484f58; margin-top:3px; }
     .rp-vp-plan-reason { font-size:11px; color:#484f58; font-style:italic; line-height:1.5; border-top:1px solid #21262d; padding-top:8px; margin-top:2px; }
@@ -543,10 +543,10 @@
     .rp-vp-plan-type { font-size:9px; font-weight:800; letter-spacing:1px; text-transform:uppercase; border-radius:4px; padding:2px 6px; flex-shrink:0; }
     .rp-vp-members-label { font-size:9px; font-weight:800; letter-spacing:2px; text-transform:uppercase; color:#30363d; border-top:1px solid #21262d; padding-top:8px; margin-top:2px; }
     .rp-vp-section-mini { font-size:9px; font-weight:800; letter-spacing:2px; text-transform:uppercase; color:#484f58; border-top:1px solid #21262d; padding-top:8px; margin-top:6px; }
-    .rp-vp-members { display:flex; flex-direction:column; gap:6px; }
-    .rp-vp-member-row { display:flex; align-items:center; gap:8px; }
+    .rp-vp-members { display:flex; flex-wrap:wrap; gap:8px; }
+    .rp-vp-member-row { display:flex; align-items:center; gap:6px; padding:4px 10px;background:rgba(255,255,255,0.02);border-radius:6px; }
     .rp-vp-member-info { flex:1; min-width:0; }
-    .rp-vp-member-name { font-size:12px; font-weight:700; color:#c9d1d9; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .rp-vp-member-name { font-size:13px; font-weight:700; color:#e6edf3; }
     .rp-vp-spear-badge { font-size:9px; font-weight:800; letter-spacing:0.5px; text-transform:uppercase; color:#e3b341; margin-left:5px; vertical-align:middle; }
     .rp-vp-member-reason { font-size:11px; color:#484f58; font-style:italic; line-height:1.4; margin-top:1px; white-space:normal; word-break:break-word; }
     .rp-vp-plan .rp-portrait-name { display:none; }
@@ -24851,10 +24851,14 @@ function rpBuildVotingPlans(ep) {
 
       let ph = `<div class="rp-vp-plan" style="border:1px solid rgba(99,102,241,0.25);background:rgba(99,102,241,0.04);animation:slideInLeft 0.4s ease ${aIdx * 0.1}s both">`;
 
-      // Header: alliance name + member counts
+      // Header: alliance name + type badge + member counts
+      const _typeLabel = a.type === 'alliance' ? 'Alliance' : 'Consensus';
+      const _typeBg = a.type === 'alliance' ? 'rgba(99,102,241,0.15)' : 'rgba(139,148,158,0.15)';
+      const _typeCol = a.type === 'alliance' ? '#818cf8' : '#8b949e';
+      const _typeBorder = a.type === 'alliance' ? 'rgba(99,102,241,0.3)' : 'rgba(139,148,158,0.3)';
       ph += `<div class="rp-vp-plan-header">
         <span class="rp-vp-plan-label">${a.label}</span>
-        <span class="rp-vp-plan-type" style="background:rgba(99,102,241,0.15);color:#818cf8;border:1px solid rgba(99,102,241,0.3)">Alliance</span>
+        <span class="rp-vp-plan-type" style="background:${_typeBg};color:${_typeCol};border:1px solid ${_typeBorder}">${_typeLabel}</span>
         <span class="rp-vp-plan-votes">${membersAtTribal.length} member${membersAtTribal.length !== 1 ? 's' : ''} \u00b7 ${canVote.length} can vote</span>
       </div>`;
 

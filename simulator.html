@@ -24449,9 +24449,10 @@ function rpBuildRewardChallenge(ep) {
 // ── Screen: Voting Plans (pre-vote strategy — who's targeting who) ──
 function rpBuildVotingPlans(ep) {
   // Voting plans are pre-tribal — do NOT include SitD info here (it's a tribal reveal, showing it spoils)
+  // This screen is ALLIANCE-FIRST: shows what alliances PLAN to do, not what actually happened.
+  // NO vote outcomes, NO checkmarks, NO "voted X". Pure pre-tribal setup.
   const votingLog = (ep.votingLog || []);
   if (!votingLog.length) return null;
-
 
   // Tribe name — use saved tribalTribe, then alliance tribe, then merged/fallback
   const tribalTribeName = ep.tribalTribe
@@ -24473,10 +24474,8 @@ function rpBuildVotingPlans(ep) {
   };
 
   // ─── reason → first-person confessional ──────────────────────────────────
-  // Converts engine vote reason strings (third-person/shorthand) to spoken confessional text.
   const reasonToConf = reason => {
     if (!reason) return null;
-    // Strip trailing meta-labels that aren't speech-worthy
     const r = reason
       .replace(/\s*—\s*broke own bloc\s*$/i, '')
       .replace(/\s*—\s*bloc defection\s*$/i, '')
@@ -24485,7 +24484,6 @@ function rpBuildVotingPlans(ep) {
     const sub = (pat, fn) => { const m = r.match(pat); return m ? fn(...m.slice(1)) : null; };
     const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
     return (
-      // ── loyal ──
       sub(/^loyal to (.+?) — not breaking ranks$/i,                    g  => `Loyal to ${g}. I'm not breaking ranks.`) ||
       sub(/^(.+?) made the call and they(?:'re| are) committed$/i,     g  => `${g} made the call. I'm committed.`) ||
       sub(/^trust is everything out here — following (.+)$/i,          g  => `Trust is everything. I'm following ${g}.`) ||
@@ -24500,7 +24498,6 @@ function rpBuildVotingPlans(ep) {
       sub(/^(.+?) get(?:s)? the vote this round — convenient alignment$/i, g => `${g} gets the vote. Convenient alignment for now.`) ||
       sub(/^goes? with (.+?)'s read — no reason to deviate$/i,         g  => `I'm going with ${g}'s read. No reason to deviate.`) ||
       sub(/^(.+?) agreed on this name — going along with it$/i,        g  => `${g} agreed on this name. I'm going along with it.`) ||
-      // ── spearhead-defect ──
       sub(/^the group followed the plan; .+ didn't(?:\s*—\s*(.+))?$/i, base => base ? `The group went where I pointed them. I had a different plan. ${cap(base)}.` : `The group went where I pointed them. I had a different plan.`) ||
       sub(/^went to tribal with a plan, left it at the urn — voted (.+?) instead(?:\s*—\s*(.+))?$/i, (t, base) => base ? `I went to tribal with a plan. I left it at the urn. ${cap(base)}.` : `I went to tribal with a plan. I left it at the urn. ${t} was the real move.`) ||
       sub(/^broke from their own bloc at the last moment — (.+)$/i,    rest => { const core = rest.replace(/\s*—\s*broke own bloc\s*$/i,'').trim(); return `I broke from the group at the last moment. ${cap(core)}.`; }) ||
@@ -24508,106 +24505,38 @@ function rpBuildVotingPlans(ep) {
       sub(/^publicly committed to (.+?), privately chose .+ — (.+)$/i, (t, base) => `I publicly committed to ${t}. Privately, I had a different plan. ${cap(base)}.`) ||
       sub(/^stated plan was .+, actual vote was .+ — (.+)$/i,          base => `The stated plan was a cover. ${cap(base)}.`) ||
       sub(/^ran the plan, then used the cover to quietly eliminate (.+?) — (.+)$/i, (t,base) => `I ran the plan. Then I used the cover to take out ${t}. ${cap(base)}.`) ||
-      // ── conflict-flip ──
       sub(/^split — (.+?) made a more compelling case$/i,              g  => `I was split. ${g} made a more compelling case.`) ||
       sub(/^two alliances, one vote — went with (.+)$/i,               g  => `Two alliances wanted my vote. I went with ${g}.`) ||
       sub(/^(.+?) lost this one — (.+?) offered a better deal$/i,      (a,b) => `${a} lost this one. ${b} offered a better deal.`) ||
       sub(/^couldn't fully commit to (.+?) this round — sided with (.+)$/i, (a,b) => `I couldn't fully commit to ${a}. I sided with ${b}.`) ||
       sub(/^chose (.+?) over (.+?) — loyalty has a limit$/i,           (a,b) => `I chose ${a} over ${b}. Loyalty has a limit.`) ||
-      // ── preemptive ──
       sub(/^preemptive strike — sensed they were being targeted and hit first$/i, () => `Preemptive strike. I sensed it was coming and I hit first.`) ||
       sub(/^struck before being struck — calculated, not reactive$/i,  () => `I struck before being struck. Calculated, not reactive.`) ||
       sub(/^read the room — the vote was coming their way, they redirected it$/i, () => `I read the room. The vote was coming my way. I redirected it.`) ||
       sub(/^felt the heat building and chose to act instead of waiting$/i, () => `I felt the heat building. I chose to act.`) ||
-      // ── protect-bond ──
       sub(/^redirected — couldn't vote (.+?), landed on (.+)$/i,       (a,b) => `I couldn't vote ${a}. ${b} was the redirect.`) ||
       sub(/^protecting (.+?) at (.+?)'s expense$/i,                    (a,b) => `I'm protecting ${a}. ${b} absorbs the vote.`) ||
       sub(/^protecting (.+?) — the bond runs too deep to go against$/i, a  => `${a} is safe. The bond runs too deep to go against.`) ||
       sub(/^(.+?) is untouchable to them — (.+?) absorbs the vote instead$/i, (a,b) => `${a} is untouchable. ${b} absorbs the vote.`) ||
-      // ── personal ──
       sub(/^deep personal animosity/i,                                  () => `This has been building since before the game started.`) ||
       sub(/^pure hostility/i,                                           () => `The name was never going to be anyone else.`) ||
       sub(/^can't work with (.+?) — the distrust has gotten too personal$/i, t => `I can't work with ${t}. The distrust has gotten too personal.`) ||
       sub(/^gut feeling — (.+?) doesn't sit right with them$/i,        t  => `Gut feeling. ${t} doesn't sit right with me.`) ||
       sub(/^reads people well — and (.+?) is not what they're presenting$/i, t => `I read people. ${t} is not what they're presenting.`) ||
-      // ── challenge-liability ──
       sub(/^can't afford to keep losing — (.+?) is the answer to that problem$/i, t => `We can't afford to keep losing. ${t} is the answer to that problem.`) ||
       sub(/^tribe comes first — (.+?) is the weakest link and everyone knows it$/i, t => `Tribe comes first. ${t} is the weakest link. Everyone knows it.`) ||
       sub(/^dead weight in challenges — (.+?) has been costing the tribe(.*)$/i, (t,ctx) => `${t} is dead weight in challenges. We can't keep losing${ctx ? ctx.replace(/—.*$/,'').trim() : ''}.`) ||
       sub(/^(.+?) hasn't pulled their weight(.*)$/i,                   (t,ctx) => `${t} hasn't pulled their weight${ctx || ''}.`) ||
-      // ── threat ──
       sub(/^most dangerous person left/i,                               () => `The most dangerous person left. Has to go now or it's too late.`) ||
       sub(/^strategic threat — the longer they stay/i,                  () => `Strategic threat. The longer they stay, the more locked-in their position becomes.`) ||
       sub(/^(.+?)'s name keeps coming up/i,                            t  => `${t}'s name keeps coming up. Eventually you vote the name everyone writes.`) ||
       sub(/^been a target for a while/i,                                () => `They've been a target for a while. The stars finally aligned.`) ||
       sub(/^complete player/i,                                          () => `Complete player — controls votes and has the jury in their pocket. Has to go.`) ||
       sub(/^running the game and building the jury at the same time/i,  () => `Running the game and building the jury at the same time. Cut now or lose.`) ||
-      // ── generic fallback ──
       (cap(r) + (r.endsWith('.') ? '' : '.'))
     );
   };
 
-  // Solo vote "why" label from reason
-  const soloLabel = reason => {
-    if (!reason) return 'Independent vote';
-    if (/broke from their own bloc|the group followed the plan.*didn't|went to tribal with a plan/i.test(reason)) return 'Defected from bloc';
-    if (/protecting (.+?) at/i.test(reason)) return 'Protecting an ally';
-    if (/redirected|couldn't vote/i.test(reason)) return 'Redirected vote';
-    if (/preemptive|struck before/i.test(reason)) return 'Preemptive strike';
-    if (/personal animosity|pure hostility|can't work with/i.test(reason)) return 'Personal vote';
-    if (/split|two alliances/i.test(reason)) return 'Chose a side';
-    return 'Independent vote';
-  };
-
-  // Is this vote showing instability (swing candidate)?
-  // Must match engine-generated reason strings that indicate genuine conflict or opportunism.
-  // Do NOT use stat floors (loyalty <= N) — they catch committed bloc members who just have low loyalty scores.
-  const isUnstableReason = reason => {
-    if (!reason) return false;
-    return /split — |two alliances, one vote|couldn't fully commit|chose .+ over .+ — loyalty has a limit|conflict|not out of pure loy|for now[,.]|convenient alignment|their agenda lines up|cross-alliance|aligned with .+ against|loyalty pull|bond over bloc/i.test(reason);
-  };
-
-  // ─── group votes by target ─────────────────────────────────────────────────
-  // Extract penalty votes (voter === 'THE GAME') — shown as a note, not a player entry
-  const _penaltyVotes = votingLog.filter(e => e.voter === 'THE GAME');
-  const targetGroups = {}; // target → [{ voter, reason }]
-  votingLog.forEach(({ voter, voted, reason, sitdSacrificed }) => {
-    if (voter === 'THE GAME') return; // penalty vote — handled separately
-    if (!targetGroups[voted]) targetGroups[voted] = [];
-    targetGroups[voted].push({ voter, reason: reason || '', sitdSacrificed: !!sitdSacrificed });
-  });
-
-  // Sort groups by size desc
-  const plans = Object.entries(targetGroups)
-    .map(([target, voters]) => ({ target, voters }))
-    .sort((a, b) => b.voters.length - a.voters.length);
-
-  const mainPlans = plans.filter(p => p.voters.length >= 2);
-  const soloVotes = plans.filter(p => p.voters.length === 1);
-
-  // Spearheader for each plan: highest social + strategic
-  const planSpear = voters => voters.slice().sort((a, b) =>
-    (pStats(b.voter).social + pStats(b.voter).strategic) - (pStats(a.voter).social + pStats(a.voter).strategic)
-  )[0]?.voter;
-
-  // Match a voter group to an ep.alliances entry for label + type
-  // ep.alliances entries use `label` (not `name`) for the display name
-  // Requires at least 2 actual alliance members in the voter group — prevents a single
-  // member dragging their alliance's name onto a bloc that's mostly outsiders.
-  const matchAlliance = (voterNames, target) => {
-    const candidates = (ep.alliances || []).filter(a => a.target === target && a.label && a.type !== 'solo');
-    if (!candidates.length) return null;
-    const best = candidates.reduce((best, a) => {
-      const overlap = voterNames.filter(n => a.members.includes(n)).length;
-      const bestOverlap = best ? voterNames.filter(n => best.members.includes(n)).length : 0;
-      return overlap > bestOverlap ? a : best;
-    }, null);
-    if (!best) return null;
-    const overlap = voterNames.filter(n => best.members.includes(n)).length;
-    return overlap >= 2 ? best : null;
-  };
-
-  // Short reason — first clause, strip meta-labels
   const shortReason = reason => {
     if (!reason) return null;
     const clean = reason
@@ -24617,7 +24546,6 @@ function rpBuildVotingPlans(ep) {
     return clean.split(' — ')[0] || null;
   };
 
-  // Detect generic loyalty phrases — these say nothing about WHY the target was chosen
   const isGenericLoyal = reason => {
     if (!reason) return true;
     return /^(loyal to |following |.{1,60} agreed on this name|.{1,60} has been solid|.{1,60} has the numbers|public commitment|no reason to hide|trust is everything|goes? with .+?'s read|.{1,60} made the call|this is what .{1,60} decided|.{1,60} gets? the vote|convenient alignment)/i.test(reason);
@@ -24627,9 +24555,10 @@ function rpBuildVotingPlans(ep) {
   const _nh = (a, b) => [...(a + b)].reduce((s, c) => s + c.charCodeAt(0), 0);
   const _hp = (arr, a, b) => arr[_nh(a, b) % arr.length];
 
-  // Derive a meaningful WHY phrase from the target's actual stats + voter-target bond
   const _phase = ep.gsSnapshot?.phase || gs.phase;
   const _isMerged = _phase !== 'pre-merge';
+
+  // Derive a meaningful WHY phrase from the target's actual stats + voter-target bond
   const targetWhyPhrase = (targetName, voterName) => {
     const ts = pStats(targetName);
     const bond = getBond(voterName, targetName);
@@ -24710,7 +24639,6 @@ function rpBuildVotingPlans(ep) {
       `The most dangerous players out here aren't the loud ones — they're the ones everyone genuinely likes. ${targetName} is that person. This vote is an acknowledgment of it.`,
     ], voterName, targetName);
 
-    // Challenge weakness — pre-merge only. Post-merge: no tribe, different framing.
     if (!_isMerged && (ts.physical + ts.endurance) / 2 <= 4) return _hp([
       `${targetName} has been the weak link in challenges and the tribe has been eating those losses. At some point the performance becomes the deciding factor. We're there.`,
       `The tribe has been covering for ${targetName} long enough. Performance doesn't lie. The numbers are what they are and somebody has to answer for it.`,
@@ -24772,150 +24700,81 @@ function rpBuildVotingPlans(ep) {
     ], voterName, targetName);
   };
 
-  // For member rows: use the voter's own reason if it's substantive, else derive from target stats
-  const memberReason = (voter, target, reason) => {
-    if (isGenericLoyal(reason)) return targetWhyPhrase(target, voter);
-    const sr = shortReason(reason);
-    // If the clipped reason is too short to be meaningful, use full target-stat reasoning
-    if (!sr || sr.length < 45) return targetWhyPhrase(target, voter);
-    return sr;
-  };
+  // ─── data sourcing ─────────────────────────────────────────────────────────
+  // Source plan data from ep.alliances (alliance objects from formAlliances), NOT votingLog
+  const allAlliances = (ep.alliances || []);
+  const namedAlliances = allAlliances.filter(a => a.type === 'alliance' && a.label && a.members.length >= 2);
+  const soloAlliances = allAlliances.filter(a => a.type === 'solo' || (a.members && a.members.length === 1));
+  const tribalPlayers = ep.tribalPlayers || [];
 
-  // For solo voter confessionals: generate a fresh first-person target-focused narrative
-  // so it doesn't duplicate the individual vote section (which already shows the mechanical reason)
-  const soloConf = (voter, target, reason) => {
-    if (!target) return null;
-    const ts = pStats(target);
-    const vs = pStats(voter);
-    const bond = getBond(voter, target);
-    const arch = ts.archetype || '';
-    // Only defer to reasonToConf for truly unique mechanical reasons
-    if (/broke from their own bloc|preemptive|struck before being struck|personal animosity|pure hostility|can't work with/i.test(reason)) {
-      const conf = reasonToConf(reason);
-      if (conf) return conf;
-    }
-    // Fresh target-based first-person confessionals — personal, narrative, different from member rows
-    if (ts.strategic >= 8 || arch === 'mastermind' || arch === 'schemer') return _isMerged ? _hp([
-      `${target} is three moves ahead and making sure nobody notices. I noticed. My vote is the only honest response to what I've been watching.`,
-      `I've sat across from ${target} at camp and watched every conversation land exactly where they wanted it to. That's a player who knows what they're doing. That's a player I need to remove.`,
-      `The scary ones don't announce themselves. ${target} doesn't have to. The fingerprints are on every decision this game has made. My vote is what happens when you see the pattern.`,
-      `${target} already has a winner's path mapped and I'm not on it. I figured that out. The question was whether I'd do something about it. Tonight is the answer.`,
-      `Everybody thinks they're aligned with ${target}. Somebody's wrong. I'm not waiting to find out if it's me.`,
-      `${target} has managed every relationship in this game like a project. I'm not a project. My vote is the one move they didn't account for.`,
-    ], voter, target) : _hp([
-      `${target} is running this game and pretending they're not. I see every move three decisions back. That's not someone you keep around — that's someone you take out the moment you have cover.`,
-      `I've watched ${target} work this camp since day one. Every conversation is a transaction. Impressive. Also the exact reason my vote is ${target} tonight.`,
-      `The dangerous ones don't announce themselves. ${target} doesn't have to. It's written in every decision they make. My vote is a preemptive answer to a question nobody else is asking yet.`,
-      `${target} has a plan. I don't know exactly what it is — that's the point. Someone that calculating doesn't leave room for accidents. I'd rather be the accident.`,
-      `Pre-merge, smart players can hide in the tribe's noise. I've been watching ${target} hide. The vote is about not taking that into the merge with us.`,
-    ], voter, target);
+  // Penalty votes (voter === 'THE GAME')
+  const _penaltyVotes = votingLog.filter(e => e.voter === 'THE GAME');
 
-    if (ts.social >= 8 || arch === 'social-butterfly') return _isMerged ? _hp([
-      `${target} has made every single person out here feel like the important one. That's the most dangerous social game I've seen. You can't counter it — you can only vote it.`,
-      `Everybody loves ${target}. That's the whole problem. When someone has no enemies in the jury, they win. I'm not handing this game away because I liked someone.`,
-      `${target} is going to stand up at final tribal and get every single vote — not because of strategy, not because of challenge wins, because everyone genuinely likes them. I'm voting now.`,
-      `Watch how ${target} moves through this camp. Every moment is building something with someone. That's not personality — that's construction. My vote is demolition.`,
-      `I've played alongside ${target} and I genuinely like them. That's exactly why they're my vote. Likeable people win this game. I can't let that happen.`,
-      `The jury is building their case right now. ${target}'s case writes itself. I'm not letting that speech happen.`,
-    ], voter, target) : _hp([
-      `${target} has made everyone feel like they're the real one. That's the most dangerous thing I've seen out here. You can't outplay that at final tribal. You remove it before it gets there.`,
-      `Everybody loves ${target}. That's the problem. When someone has no enemies, they win. I'm not going to sit here and hand them the game.`,
-      `${target} is going to reach the end and win — not because they outplayed us strategically, but because everyone in that jury box likes them. I'm voting now before that becomes inevitable.`,
-      `Watch how ${target} moves through camp. Every exchange builds something. That's not being friendly — that's building a coalition. The vote is my counter to it.`,
-      `Pre-merge, being liked is a shield. ${target} has that shield maxed out. Getting rid of it now, before it becomes a jury block, is the smart play.`,
-    ], voter, target);
+  // Spearheader: highest social + strategic in alliance
+  const allianceSpear = members => members.slice().sort((a, b) =>
+    (pStats(b).social + pStats(b).strategic) - (pStats(a).social + pStats(a).strategic)
+  )[0];
 
-    // Challenge weakness — pre-merge confessional only
-    if (!_isMerged && (ts.physical + ts.endurance) / 2 <= 4) return _hp([
-      `I'm looking at this practically. We need to win challenges. ${target} is a part of why we're not. That's not personal — that's math. The vote is the logical conclusion.`,
-      `${target} is a good person out here. That's not the question. The question is whether we can keep absorbing the losses. I don't think we can.`,
-      `Every time we hit a challenge I already know where the weak point is. Eventually that stops being a coincidence and starts being a decision. Tonight is that decision.`,
-      `I'm not voting based on feelings. I'm voting based on the challenge record. The record says ${target}. That's where my vote goes.`,
-      `Tribe survival is the goal. ${target} has been making that harder. There's a version of this game where loyalty costs you everything — this is that moment.`,
-    ], voter, target);
+  // Players in named alliances (for detecting independents)
+  const allAllianceMembers = new Set(namedAlliances.flatMap(a => a.members));
 
-    if (ts.loyalty <= 3) return _isMerged ? _hp([
-      `${target} doesn't have a real side out here — they have a current arrangement. I've been watching. The moment the math changes, so does their vote. I'm not waiting for that.`,
-      `I don't know where ${target}'s actual loyalty lives. And I've been watching carefully. That uncertainty, at this stage of the game, is the most dangerous thing I can carry forward.`,
-      `${target} has been running deals with every group in this game. Everybody thinks they have them. Nobody does. I'm voting before I end up on the wrong side of that calculation.`,
-      `A player with no fixed loyalty is just a vote waiting to be used against you. ${target} is that player. Tonight I remove the liability before it activates.`,
-      `Flexibility sounds good until it's pointed at you. ${target} is flexible with everyone. I'm not giving them the opportunity to be flexible with me.`,
-    ], voter, target) : _hp([
-      `${target} doesn't have a side — they have a situation. The moment the math shifts, so does their vote. I'd rather take the shot while I still have the numbers.`,
-      `I don't know where ${target}'s loyalty actually lives. And I've been watching. That uncertainty is more dangerous to me than any idol or advantage in this game.`,
-      `${target} has been friendly with every alliance out here. At some point friendly with everyone means loyal to no one. I'm not waiting to find out which way they land.`,
-      `Pre-merge, a loose player is manageable. Post-merge they become a swing vote that can flip the entire game. I'm not letting ${target} get there.`,
-    ], voter, target);
-
-    if (bond <= -1) return _isMerged ? _hp([
-      `${target} and I have never worked out here. I've been honest with myself about that for a while. When the game offers you a vote on someone you genuinely don't trust, you take it.`,
-      `I don't have a relationship with ${target} worth protecting. That makes tonight straightforward in a way most votes aren't.`,
-      `Some people you build something real with out here. ${target} and I never got there. In a game this small, that gap becomes a vote. Tonight it did.`,
-      `There's no version of this game where ${target} and I are working together at the end. We both know that. I got to the vote first.`,
-      `You can share a camp with someone for weeks and still not trust them. That's me and ${target}. The vote just says what we already both knew.`,
-    ], voter, target) : _hp([
-      `${target} and I have never clicked out here. I've made peace with that. There's no bad blood — we're just not close. And when a vote is available and you're not close, you take it.`,
-      `I don't have a relationship with ${target} worth protecting. That makes tonight straightforward in a way most votes aren't.`,
-      `Some people you build something real with out here. ${target} and I never got there. That gap becomes a vote eventually. Tonight is that night.`,
-    ], voter, target);
-
-    if (vs.strategic >= 8) return _isMerged ? _hp([
-      `Nobody's bringing up ${target} right now. That's usually a sign someone's overlooking them. I'm not overlooking them. My vote is the difference.`,
-      `The obvious vote isn't always the right vote. ${target} isn't the name people are saying, but they're the name that matters for where this game is heading.`,
-      `${target} is going to be a real problem at six, or at four, or at final tribal. I'd rather solve it tonight while I have the numbers and the cover to do it cleanly.`,
-      `I'm playing the long game. ${target} doesn't fit in mine. Nobody else is thinking past this tribal — I am. That's what separates this vote from a reactive one.`,
-      `${target} is flying under the radar. I've been watching them do it. The most dangerous players are the ones nobody's discussing. I'm discussing it — with my vote.`,
-    ], voter, target) : _hp([
-      `Nobody's talking about ${target} right now. That's the most dangerous place to be in this game — present, capable, and invisible. I see it. My vote names it.`,
-      `The obvious vote isn't always the smart vote. ${target} isn't the name people are saying out loud, but they're the name that matters for where this game is going.`,
-      `${target} is a problem at merge — or a problem at six, or a problem at four. I'd rather deal with it now when I have the numbers and the cover to do it cleanly.`,
-    ], voter, target);
-
-    return _isMerged ? _hp([
-      `I looked at every option, I ran the scenarios, and ${target}'s name kept coming up as the right call. I'm not going to overthink something that clear.`,
-      `It's my vote. I own it completely. ${target} is the right call for where I need to be in this game and I'm not going to apologize for that.`,
-      `I'm not following anyone into this decision. ${target} is my read and I'm standing on it.`,
-      `Some votes are complicated. This one isn't. I looked at the board, I made the call, and I'm writing ${target}'s name down without hesitation.`,
-      `The right vote and the comfortable vote aren't always the same thing. Tonight they are. ${target} is the right call and I feel good about it.`,
-    ], voter, target) : _hp([
-      `At the end of the day I looked at this tribe, I looked at the game, and ${target}'s name kept coming back to me. I trust that instinct. The vote is ${target}.`,
-      `It's my vote. I own it completely. ${target} is the right call for where I need to be in this game and I'm not going to pretend otherwise.`,
-      `I'm not following anyone else into this decision. ${target} is my read, tonight is the night, and I'm standing on it.`,
-      `Simple math: ${target} is the vote that makes this tribe better heading into what comes next. I don't need to dress that up.`,
-    ], voter, target);
-  };
-
-  // Idol holders
-  const snapAdvantages = ep.gsSnapshot?.advantages || [];
-  const allVoters = votingLog.map(l => l.voter);
-  const idolHolders = snapAdvantages
-    .filter(a => ['idol','beware'].includes(a.type) && allVoters.includes(a.holder) && a.holder !== immunity)
-    .map(a => a.holder);
-
-  // Broke-rank: named alliance members who voted against their alliance's consensus this ep.
-  const _snapAlliancesVP = (ep.gsSnapshot?.namedAlliances || []).filter(a => a.active !== false);
-  const brokeRankPlayers = _snapAlliancesVP.flatMap(a =>
-    (a.betrayals || [])
-      .filter(b => b.ep === ep.num && votingLog.some(l => l.voter === b.player))
-      .map(b => ({ player: b.player, allianceName: a.name, votedFor: b.votedFor, consensusWas: b.consensusWas, formedThisEp: b.formedThisEp }))
+  // Independent players: at tribal, not in any named alliance
+  const independentPlayers = tribalPlayers.filter(p =>
+    !allAllianceMembers.has(p)
   );
-  const brokeRankSet = new Set(brokeRankPlayers.map(b => b.player));
 
-  // Swing votes: bloc members whose reason signals genuine conflict or opportunism.
-  // Loyalty stat alone is not enough — a disloyal player who voted cleanly with their bloc is not a swing vote.
-  // Exclude broke-rank players — they get their own section.
-  const soloPeople = soloVotes.map(p => p.voters[0].voter);
-  const swingVotes = votingLog
-    .filter(l => !soloPeople.includes(l.voter))
-    .filter(l => !brokeRankSet.has(l.voter))
-    .filter(l => isUnstableReason(l.reason))
-    .map(l => l.voter)
-    .filter((v, i, a) => a.indexOf(v) === i); // dedupe
+  // Conflicted players: in 2+ alliances with different targets, OR alliance target has bond >= 3 with voter
+  const generateConflictReasoning = (player, playerAlliances, tribalPlayersList) => {
+    return playerAlliances.map(a => {
+      const target = a.target;
+      const tCat = targetCategory(target);
+      const bond = getBond(player, target);
+      const allyCount = a.members.filter(m => tribalPlayersList.includes(m)).length;
 
-  // Blindside: a main plan targets someone who IS voting in the dominant bloc
-  const dominantPlan = mainPlans[0];
-  const dominantVoters = new Set(dominantPlan?.voters.map(v => v.voter) || []);
-  const blindsidePlan = mainPlans.slice(1).find(p => dominantVoters.has(p.target));
+      // Why vote
+      let whyVote = allyCount >= 3
+        ? `Alliance consensus. ${allyCount} members committed.`
+        : `${a.label} wants this. Clean strategic move.`;
+      if (tCat.label.includes('Physical')) whyVote += ` ${target} is a physical threat everyone agrees on.`;
+      else if (tCat.label.includes('Strategic')) whyVote += ` ${target} is running the game from behind — too smart to keep.`;
+      else if (tCat.label.includes('Social')) whyVote += ` ${target} is too well-liked. Every vote they survive gets harder.`;
+
+      // Why not
+      let whyNot = '';
+      if (bond >= 3) whyNot = `The bond with ${target} runs deep. Writing that name means betraying a real relationship.`;
+      else if (bond >= 1) whyNot = `There's enough goodwill with ${target} that this vote feels personal, not just strategic.`;
+      else if (allyCount <= 2) whyNot = `Only ${allyCount} votes. Needs help from outside. High risk if nobody else follows.`;
+      else whyNot = `This might not be the right moment. The numbers could shift.`;
+
+      return { alliance: a.label, target, tCat, whyVote, whyNot, bond, allyCount };
+    });
+  };
+
+  // Identify conflicted players
+  const conflictedPlayers = [];
+  const _seenConflicted = new Set();
+  tribalPlayers.forEach(player => {
+    if (_seenConflicted.has(player)) return;
+    const myAlliances = namedAlliances.filter(a => a.members.includes(player));
+    if (myAlliances.length < 1) return;
+
+    // Multi-alliance with different targets
+    if (myAlliances.length >= 2) {
+      const targets = [...new Set(myAlliances.map(a => a.target))];
+      if (targets.length >= 2) {
+        _seenConflicted.add(player);
+        conflictedPlayers.push({ player, reason: 'multi-alliance', alliances: myAlliances });
+        return;
+      }
+    }
+
+    // Bond conflict: alliance target has bond >= 3 with the voter
+    const conflictAlliance = myAlliances.find(a => getBond(player, a.target) >= 3);
+    if (conflictAlliance) {
+      _seenConflicted.add(player);
+      conflictedPlayers.push({ player, reason: 'bond-conflict', alliances: myAlliances });
+    }
+  });
 
   // ─── HTML ───────────────────────────────────────────────────────────────────
   const _vpTribeLabel = tribalTribeName ? ` \u00b7 ${tribalTribeName}` : '';
@@ -24925,6 +24784,7 @@ function rpBuildVotingPlans(ep) {
     <div class="rp-vp-subtitle">As ${tribalTribeName || 'the tribe'} approaches tribal, alliances converge and targets emerge\u2026</div>
     ${ep.firstEliminated && (ep.twists||[]).some(t => t.catalogId === 'double-elim') ? `<div style="background:rgba(210,153,34,0.06);border:1px solid rgba(210,153,34,0.2);border-radius:6px;padding:10px 14px;margin-bottom:4px;font-size:12px;color:#d29922">&#x26A1; <strong>Double Elimination</strong> &mdash; Jeff announced it before tribal. Two players are going home tonight. One vote — the top two vote-getters both go.</div>` : ''}`;
 
+  // ── Immune banners ──
   const _allImmuneVP = [...new Set([immunity, ep.sharedImmunity, ep.secondImmune, ...(ep.extraImmune || [])].filter(Boolean))];
   if (_allImmuneVP.length) {
     html += `<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px">`;
@@ -24941,26 +24801,24 @@ function rpBuildVotingPlans(ep) {
                   : `${name} \u2014 safe`;
       html += `<div class="rp-vp-immunity-row">
         ${rpPortrait(name, 'immune', 'Safe')}
-        <span class="rp-vp-immunity-label">${label}</span>
+        <span class="rp-vp-immunity-label">\u{1F6E1}\uFE0F ${label}</span>
       </div>`;
     });
     html += `</div>`;
   }
 
-  // ── Lost vote banner: only PRE-TRIBAL vote losses (Beware, Journey, or any gs.lostVotes entry) ──
-  // SitD happens AT tribal — the detection below checks actual pre-tribal lostVotes, not SitD.
+  // ── Lost vote banner ──
   const _snap = ep.gsSnapshot || {};
   const _bewareLosers = new Set(ep.bewareLostVotes || []);
   const _journeyLosers = new Set((ep.journey?.results || []).filter(r => r.result === 'lostVote').map(r => r.name));
   const _prevSnap2 = gs.episodeHistory?.find(h => h.num === ep.num - 1)?.gsSnapshot;
-  const _carriedJourney = new Set((_prevSnap2?.journeyLostVotes || []).filter(n => (ep.tribalPlayers || []).includes(n)));
-  // Catch-all: anyone in the snapshot's lostVotes who is at this tribal (covers edge cases)
-  const _snapLostVotes = new Set((_snap.lostVotes || []).filter(n => (ep.tribalPlayers || []).includes(n)));
-  const _vpLostVotes = (ep.tribalPlayers || []).filter(name => {
-    const isImmune = _allImmuneVP.includes(name);
-    if (isImmune) return false;
+  const _carriedJourney = new Set((_prevSnap2?.journeyLostVotes || []).filter(n => tribalPlayers.includes(n)));
+  const _snapLostVotes = new Set((_snap.lostVotes || []).filter(n => tribalPlayers.includes(n)));
+  const _vpLostVotes = tribalPlayers.filter(name => {
+    if (_allImmuneVP.includes(name)) return false;
     return _bewareLosers.has(name) || _journeyLosers.has(name) || _carriedJourney.has(name) || _snapLostVotes.has(name);
   });
+  const _vpLostVoteSet = new Set(_vpLostVotes);
   if (_vpLostVotes.length) {
     html += `<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px">`;
     _vpLostVotes.forEach(name => {
@@ -24980,433 +24838,293 @@ function rpBuildVotingPlans(ep) {
     html += `</div>`;
   }
 
-  // ── Original Alliance Plans: what named alliances INTENDED before defections/overplay ──
-  const _namedPlans = (ep.alliances || []).filter(a => a.type === 'alliance' && a.label && a.members.length >= 2);
-  if (_namedPlans.length) {
-    // Check if actual votes diverged from the plan (at least 1 member voted differently)
-    const _hasDeviation = _namedPlans.some(a => {
-      const planned = a.splitTarget ? [a.target, a.splitTarget] : [a.target];
-      return a.members.some(m => {
-        const actual = votingLog.find(l => l.voter === m)?.voted;
-        return actual && !planned.includes(actual);
-      });
-    });
-    if (_hasDeviation) {
-      html += `<div style="margin-bottom:12px;padding:10px 14px;background:rgba(99,102,241,0.04);border:1px solid rgba(99,102,241,0.15);border-radius:8px">
-        <div style="font-size:9px;font-weight:800;letter-spacing:2px;color:#6366f1;margin-bottom:8px">ORIGINAL ALLIANCE PLANS</div>`;
-      _namedPlans.forEach(a => {
-        const _tCat = targetCategory(a.target);
-        const _actualVotes = a.members.map(m => {
-          const entry = votingLog.find(l => l.voter === m);
-          const planned = a.splitTarget && a.splitSecondary?.includes(m) ? a.splitTarget : a.target;
-          const followed = entry?.voted === planned;
-          const noVote = !entry || _vpLostVotes.includes(m);
-          return { name: m, planned, actual: entry?.voted, followed, noVote, reason: entry?.reason || '' };
-        });
-        const followedCount = _actualVotes.filter(v => v.followed).length;
-        const deviatedCount = _actualVotes.filter(v => !v.followed && !v.noVote).length;
-        html += `<div style="margin-bottom:8px">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-            <span style="font-size:12px;font-weight:700;color:#e6edf3">${a.label}</span>
-            <span style="font-size:10px;color:#6366f1">\u2192 ${a.target}</span>
-            <span style="font-size:9px;color:#484f58">(${_tCat.label})</span>
-            ${a.splitTarget ? `<span style="font-size:10px;color:#d29922">+ split on ${a.splitTarget}</span>` : ''}
-          </div>
-          <div style="display:flex;flex-wrap:wrap;gap:4px">
-            ${_actualVotes.map(v => {
-              const col = v.noVote ? '#484f58' : v.followed ? '#3fb950' : '#f85149';
-              const label = v.noVote ? 'no vote' : v.followed ? '\u2713' : `\u2192 ${v.actual}`;
-              const _isOverplay = v.reason?.includes('OVERPLAYING');
-              return `<span style="font-size:10px;padding:2px 8px;border-radius:4px;background:rgba(${v.followed ? '63,185,80' : v.noVote ? '72,79,88' : '248,81,73'},0.1);color:${col};border:1px solid rgba(${v.followed ? '63,185,80' : v.noVote ? '72,79,88' : '248,81,73'},0.2)">${v.name} ${label}${_isOverplay ? ' (overplay)' : ''}</span>`;
-            }).join('')}
-          </div>
-          ${deviatedCount ? `<div style="font-size:10px;color:#8b949e;margin-top:3px">${followedCount}/${_actualVotes.filter(v => !v.noVote).length} followed the plan</div>` : ''}
-        </div>`;
-      });
-      html += `</div>`;
-    }
-  }
+  // ── ALLIANCE PLANS ──────────────────────────────────────────────────────────
+  if (namedAlliances.length) {
+    html += `<div class="rp-vp-section-label">ALLIANCE PLANS</div>
+      <div class="rp-vp-plans-row">`;
+    namedAlliances.forEach((a, aIdx) => {
+      const spear = allianceSpear(a.members);
+      const membersAtTribal = a.members.filter(m => tribalPlayers.includes(m));
+      const canVote = membersAtTribal.filter(m => !_vpLostVoteSet.has(m) && !_allImmuneVP.includes(m));
+      const cat = targetCategory(a.target);
+      const splitPlan = (ep.splitVotePlans || []).find(sp => sp.alliance === a.label);
 
-  // Competing plans (2+ voters)
-  if (mainPlans.length) {
-    const planBlocks = mainPlans.map((g) => {
-      const spear = planSpear(g.voters);
-      const voterCount = g.voters.length;
-      const cat = targetCategory(g.target);
-      const matched = matchAlliance(g.voters.map(v => v.voter), g.target);
-      const planName = matched?.label || (voterCount >= 3 ? 'Majority Bloc' : 'Voting Bloc');
-      const planType = matched?.type || 'consensus';
-      const typeLabel = planType === 'alliance' ? 'Alliance' : 'Consensus';
-      const typeBadgeColor = planType === 'alliance' ? '#f0ad4e' : '#388bfd';
+      let ph = `<div class="rp-vp-plan" style="border:1px solid rgba(99,102,241,0.25);background:rgba(99,102,241,0.04);animation:slideInLeft 0.4s ease ${aIdx * 0.1}s both">`;
 
-      const supporters = g.voters.filter(({ voter }) => voter !== spear);
+      // Header: alliance name + member counts
+      ph += `<div class="rp-vp-plan-header">
+        <span class="rp-vp-plan-label">${a.label}</span>
+        <span class="rp-vp-plan-type" style="background:rgba(99,102,241,0.15);color:#818cf8;border:1px solid rgba(99,102,241,0.3)">Alliance</span>
+        <span class="rp-vp-plan-votes">${membersAtTribal.length} member${membersAtTribal.length !== 1 ? 's' : ''} \u00b7 ${canVote.length} can vote</span>
+      </div>`;
 
-      let ph = `<div class="rp-vp-plan">`;
-
-      // Alliance badge (only shown if named alliance label was matched)
-      if (matched) {
-        ph += `<div class="rp-vp-plan-header">
-          <span class="rp-vp-plan-label">${planName}</span>
-          <span class="rp-vp-plan-type" style="background:${typeBadgeColor}20;color:${typeBadgeColor};border:1px solid ${typeBadgeColor}40">${typeLabel}</span>
-          <span class="rp-vp-plan-votes">${voterCount} Vote${voterCount !== 1 ? 's' : ''}</span>
-        </div>`;
-      } else {
-        ph += `<div class="rp-vp-plan-header">
-          <span class="rp-vp-plan-votes" style="margin-left:0">${voterCount} Vote${voterCount !== 1 ? 's' : ''} \u2014 ${typeLabel}</span>
-        </div>`;
-      }
-
-      // TARGET section
-      const _isCheckedOut = ep.comfortBlindspotPlayer === g.target;
-      ph += `<div class="rp-vp-section-mini">TARGET</div>
-        <div class="rp-vp-target-row">
-          ${rpPortrait(g.target)}
+      // TARGET box
+      const _isCheckedOut = ep.comfortBlindspotPlayer === a.target;
+      ph += `<div class="rp-vp-section-mini">\u2694\uFE0F TARGET</div>
+        <div class="rp-vp-target-row" style="background:rgba(248,81,73,0.06);border-radius:8px;padding:8px 10px">
+          ${rpPortrait(a.target)}
           <div class="rp-vp-target-info">
-            <div class="rp-vp-target-name">${g.target}</div>
+            <div class="rp-vp-target-name">${a.target}</div>
             <div class="rp-vp-target-cat" style="color:${cat.color}">${cat.label}</div>
-            <div class="rp-vp-target-votes">${voterCount} vote${voterCount !== 1 ? 's' : ''} going here</div>
             ${_isCheckedOut ? `<span class="rp-brant-badge gold">\u2b50 CHECKED OUT</span>` : ''}
           </div>
         </div>`;
 
-      // ORGANIZED BY (spearheader)
-      const spearEntry = g.voters.find(({ voter }) => voter === spear);
-      if (spearEntry) {
-        const spearReason = memberReason(spear, g.target, spearEntry.reason);
-        ph += `<div class="rp-vp-section-mini">ORGANIZED BY</div>
-          <div class="rp-vp-members">
-            <div class="rp-vp-member-row">
-              ${rpPortrait(spear)}
-              <div class="rp-vp-member-info">
-                <div class="rp-vp-member-name">${spear} <span class="rp-vp-spear-badge">Spearheader</span></div>
-                ${spearReason ? `<div class="rp-vp-member-reason">${spearReason}</div>` : ''}
-              </div>
-            </div>
-          </div>`;
+      // Split vote indicator
+      if (a.splitTarget || splitPlan) {
+        const splitTarget = a.splitTarget || splitPlan?.secondary;
+        const splitCat = targetCategory(splitTarget);
+        ph += `<div style="display:flex;align-items:center;gap:8px;margin-top:6px;padding:6px 10px;background:rgba(210,153,34,0.06);border:1px solid rgba(210,153,34,0.15);border-radius:6px">
+          <span style="font-size:12px">\u{1F5E1}\uFE0F</span>
+          <div>
+            <div style="font-size:11px;font-weight:700;color:#d29922">SPLIT VOTE</div>
+            <div style="font-size:10px;color:#8b949e">Some votes going to <strong style="color:#e6edf3">${splitTarget}</strong> <span style="color:${splitCat.color}">(${splitCat.label})</span> as insurance</div>
+          </div>
+        </div>`;
       }
 
-      // BACKED BY (supporters + dimmed absent named-alliance members — no vote reveal)
-      // For named alliances only: show members not voting this target dimmed with "not backing"
-      // so the alliance composition is visible without spoiling their actual vote.
-      // Use the snapshot's full named alliance membership (ep.alliances.members is only the
-      // voting group, not the complete alliance — it would miss members like Caleb).
-      const voterNames = g.voters.map(v => v.voter);
-      const _snapAllianceLookup = matched?.type === 'alliance'
-        ? (ep.gsSnapshot?.namedAlliances || []).find(a => a.name === matched.label)
-        : null;
-      const absentAllianceMembers = _snapAllianceLookup
-        ? _snapAllianceLookup.members.filter(m =>
-            m !== spear &&
-            !voterNames.includes(m) &&
-            (ep.votingLog || []).some(l => l.voter === m) // present at this tribal
-          )
-        : [];
-      if (supporters.length || absentAllianceMembers.length) {
-        ph += `<div class="rp-vp-section-mini">BACKED BY</div>
-          <div class="rp-vp-members">`;
-        supporters.forEach(({ voter, reason, sitdSacrificed }) => {
-          const mr = memberReason(voter, g.target, reason);
-          ph += `<div class="rp-vp-member-row">
-            ${rpPortrait(voter)}
-            <div class="rp-vp-member-info">
-              <div class="rp-vp-member-name">${voter}${sitdSacrificed ? ` <span style="font-size:9px;color:#f97316;font-weight:700;letter-spacing:0.5px">SITD</span>` : ''}</div>
-              ${mr ? `<div class="rp-vp-member-reason">${mr}</div>` : ''}
-              ${sitdSacrificed ? `<div class="rp-vp-member-reason" style="color:#f97316">Vote sacrificed — played Shot in the Dark at tribal</div>` : ''}
-            </div>
-          </div>`;
-        });
-        absentAllianceMembers.forEach(member => {
-          ph += `<div class="rp-vp-member-row" style="opacity:0.4">
-            ${rpPortrait(member)}
-            <div class="rp-vp-member-info">
-              <div class="rp-vp-member-name">${member}</div>
-              <div class="rp-vp-member-reason" style="font-style:italic">not backing this plan</div>
-            </div>
-          </div>`;
-        });
-        ph += `</div>`;
-      }
-
-      // Alliance alignment: show which OTHER alliances have members voting with this plan
-      const _planVoterNames = g.voters.map(v => v.voter);
-      const _alignedAlliances = (ep.gsSnapshot?.namedAlliances || gs.namedAlliances || [])
-        .filter(a => a.active !== false && a.name !== (matched?.label || ''))
-        .filter(a => {
-          const membersInPlan = a.members.filter(m => _planVoterNames.includes(m));
-          const membersPresent = a.members.filter(m => _allImmuneVP.includes(m) || _planVoterNames.includes(m) || votingLog.some(l => l.voter === m));
-          return membersInPlan.length >= 2 || (membersInPlan.length >= 1 && membersPresent.length <= 2);
-        });
-      if (_alignedAlliances.length) {
-        ph += `<div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.06)">`;
-        _alignedAlliances.forEach(a => {
-          const _inPlan = a.members.filter(m => _planVoterNames.includes(m));
-          ph += `<div style="font-size:10px;color:#8b949e;display:flex;align-items:center;gap:4px;margin-bottom:2px">
-            <span style="color:var(--accent-gold);font-weight:700">\u2605</span>
-            <span>${a.name} backs this plan</span>
-            <span style="color:#484f58">(${_inPlan.join(', ')})</span>
-          </div>`;
-        });
-        ph += `</div>`;
-      }
+      // Member list
+      ph += `<div class="rp-vp-section-mini">MEMBERS</div><div class="rp-vp-members">`;
+      membersAtTribal.forEach(member => {
+        const isSpear = member === spear;
+        const isConflicted = _seenConflicted.has(member);
+        const isNoVote = _vpLostVoteSet.has(member);
+        const opacity = isNoVote ? 'opacity:0.4;' : '';
+        ph += `<div class="rp-vp-member-row" style="${opacity}">
+          ${rpPortrait(member, isNoVote ? '' : 'sm')}
+          <div class="rp-vp-member-info">
+            <div class="rp-vp-member-name">${member}${isSpear ? ` <span class="rp-vp-spear-badge">Spearheader</span>` : ''}${isConflicted ? ` <span style="font-size:11px;color:#d29922">\u26A0</span>` : ''}${isNoVote ? ` <span style="font-size:9px;color:#f85149;font-weight:600">NO VOTE</span>` : ''}</div>
+          </div>
+        </div>`;
+      });
+      ph += `</div>`;
 
       ph += `</div>`;
-      return ph;
+      html += ph;
     });
-    html += `<div class="rp-vp-section-label">COMPETING VOTE PLANS</div>
-      <div class="rp-vp-plans-row">${planBlocks.join('')}</div>`;
+    html += `</div>`;
   }
 
-  // Solo votes (individual deviants)
-  if (soloVotes.length) {
-    html += `<div class="rp-vp-section-label">INDIVIDUAL VOTES</div><div class="rp-vp-swings">`;
-    soloVotes.forEach(({ target, voters }) => {
-      const voter = voters[0].voter;
-      const reason = voters[0].reason || '';
-      const isSitd = voters[0].sitdSacrificed;
-      const cat = targetCategory(target);
-      let soloType = isSitd ? 'Shot in the Dark' : 'Independent read';
-      if (!isSitd) {
-        if (/broke from their own bloc|the group followed the plan|went to tribal with a plan/i.test(reason)) soloType = 'Defected from bloc';
-        else if (/protecting (.+?) at/i.test(reason)) soloType = 'Protecting an ally';
-        else if (/preemptive|struck before/i.test(reason)) soloType = 'Preemptive strike';
-        else if (/split|two alliances|conflict/i.test(reason)) soloType = 'Chose a side';
-        else if (/personal animosity|pure hostility|can't work with/i.test(reason)) soloType = 'Personal vote';
-      }
-      const why = memberReason(voter, target, reason);
-      const sitdNote = isSitd ? `<div class="rp-vp-swing-detail" style="color:#f97316;font-size:10px;font-weight:600">Vote sacrificed — played Shot in the Dark at tribal</div>` : '';
-      html += `<div class="rp-vp-swing">
-        ${rpPortrait(voter)}
-        <div class="rp-vp-swing-info">
-          <div class="rp-vp-swing-name">${voter} <span class="rp-vp-conflicted" style="color:${isSitd?'#f97316':'#388bfd'}">${soloType}</span></div>
-          <div class="rp-vp-swing-detail">→ ${target} — <span style="color:${cat.color};font-weight:700">${cat.label}</span></div>
-          ${why ? `<div class="rp-vp-swing-detail" style="font-style:italic;color:#6e7681">${why}</div>` : ''}
-          ${sitdNote}
+  // ── CONFLICTED PLAYERS ──────────────────────────────────────────────────────
+  if (conflictedPlayers.length) {
+    html += `<div class="rp-vp-section-label">\u26A0 CONFLICTED PLAYERS</div><div class="rp-vp-swings">`;
+    conflictedPlayers.forEach(({ player, reason: conflictType, alliances: playerAlliances }) => {
+      const reasoning = generateConflictReasoning(player, playerAlliances, tribalPlayers);
+      let ch = `<div style="background:rgba(210,153,34,0.06);border:1px solid rgba(210,153,34,0.25);border-radius:10px;padding:12px 14px;margin-bottom:8px;animation:slideInLeft 0.4s ease">`;
+      ch += `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        ${rpPortrait(player)}
+        <div>
+          <div style="font-size:14px;font-weight:700;color:#e6edf3">${player}</div>
+          <div style="font-size:10px;color:#d29922;font-weight:600;letter-spacing:0.5px">${conflictType === 'multi-alliance' ? 'PULLED IN MULTIPLE DIRECTIONS' : 'BOND CONFLICT'}</div>
         </div>
-        ${rpPortrait(target)}
+      </div>`;
+
+      reasoning.forEach(r => {
+        ch += `<div style="padding:8px 10px;background:rgba(99,102,241,0.04);border:1px solid rgba(99,102,241,0.12);border-radius:6px;margin-bottom:6px">
+          <div style="font-size:11px;font-weight:700;color:#818cf8;margin-bottom:4px">${r.alliance} \u2192 <span style="color:${r.tCat.color}">${r.target}</span></div>
+          <div style="font-size:11px;color:#3fb950;margin-bottom:2px"><strong>Why vote:</strong> ${r.whyVote}</div>
+          <div style="font-size:11px;color:#f85149"><strong>Why not:</strong> ${r.whyNot}</div>
+        </div>`;
+      });
+
+      ch += `<div style="font-size:11px;color:#d29922;font-style:italic;text-align:center;margin-top:4px">\u2753 Wild card \u2192 ???</div>`;
+      ch += `</div>`;
+      html += ch;
+    });
+    html += `</div>`;
+  }
+
+  // ── INDEPENDENT VOTES ───────────────────────────────────────────────────────
+  const trueIndependents = independentPlayers.filter(p => !_seenConflicted.has(p));
+  if (trueIndependents.length) {
+    html += `<div class="rp-vp-section-label">INDEPENDENT VOTES</div><div class="rp-vp-swings">`;
+    trueIndependents.forEach(player => {
+      const isNoVote = _vpLostVoteSet.has(player);
+      const isImmune = _allImmuneVP.includes(player);
+      // Brief context from their solo alliance target if available
+      const soloA = soloAlliances.find(a => a.members.includes(player));
+      const soloTarget = soloA?.target || null;
+      const soloTCat = soloTarget ? targetCategory(soloTarget) : null;
+      let context = '';
+      if (isNoVote) context = 'Cannot vote tonight';
+      else if (isImmune) context = 'Safe tonight — voting freely';
+      else if (soloTarget) context = `Has ${soloTarget} in mind`;
+      else context = 'Reading the room';
+
+      html += `<div class="rp-vp-swing" style="animation:slideInLeft 0.4s ease">
+        ${rpPortrait(player, isNoVote ? '' : 'sm')}
+        <div class="rp-vp-swing-info">
+          <div class="rp-vp-swing-name">${player}${isNoVote ? ` <span style="font-size:9px;color:#f85149;font-weight:600">NO VOTE</span>` : ''}</div>
+          <div class="rp-vp-swing-detail" style="color:#8b949e">${context}</div>
+        </div>
+        ${soloTarget ? rpPortrait(soloTarget, 'sm') : ''}
       </div>`;
     });
     html += `</div>`;
   }
 
-  // Blindside risk
-  if (blindsidePlan) {
-    html += `<div class="rp-vp-blindside">
-      <span class="rp-vp-blindside-badge">\u26a0 Possible Blindside</span>
-      <span class="rp-vp-blindside-text">${blindsidePlan.voters.map(v=>v.voter).join(', ')} are targeting ${blindsidePlan.target} \u2014 who is voting in the dominant bloc. If this lands, it changes everything tonight.</span>
-    </div>`;
-  }
+  // ── GOING INTO TRIBAL ───────────────────────────────────────────────────────
+  // Determine primary and counter targets from alliance plans
+  const _targetVoteCounts = {};
+  namedAlliances.forEach(a => {
+    const votingMembers = a.members.filter(m => tribalPlayers.includes(m) && !_vpLostVoteSet.has(m));
+    if (a.splitTarget) {
+      const primaryCount = (a.splitPrimary || []).filter(m => votingMembers.includes(m)).length;
+      const secondaryCount = (a.splitSecondary || []).filter(m => votingMembers.includes(m)).length;
+      _targetVoteCounts[a.target] = (_targetVoteCounts[a.target] || 0) + (primaryCount || Math.ceil(votingMembers.length * 0.6));
+      _targetVoteCounts[a.splitTarget] = (_targetVoteCounts[a.splitTarget] || 0) + (secondaryCount || Math.floor(votingMembers.length * 0.4));
+    } else {
+      _targetVoteCounts[a.target] = (_targetVoteCounts[a.target] || 0) + votingMembers.length;
+    }
+  });
+  // Solo alliances contribute too
+  soloAlliances.forEach(a => {
+    const member = a.members[0];
+    if (member && tribalPlayers.includes(member) && !_vpLostVoteSet.has(member) && a.target) {
+      _targetVoteCounts[a.target] = (_targetVoteCounts[a.target] || 0) + 1;
+    }
+  });
+  const _sortedTargets = Object.entries(_targetVoteCounts).sort(([,a],[,b]) => b - a);
+  if (_sortedTargets.length) {
+    const primaryTarget = _sortedTargets[0];
+    const counterTarget = _sortedTargets[1] || null;
+    const totalPlannedVotes = _sortedTargets.reduce((s, [,c]) => s + c, 0);
 
-  // Final Targets — top 2 plans by vote count, shown side-by-side for suspense
-  const sortedPlans = mainPlans.slice().sort((a, b) => b.voters.length - a.voters.length);
-  // Also pull in solo votes as potential targets if no second main plan exists
-  const finalTargets = sortedPlans.slice(0, 2);
-  if (finalTargets.length === 1 && soloVotes.length) {
-    finalTargets.push({ target: soloVotes[0].voters[0] ? soloVotes[0].target : null, voters: soloVotes[0].voters, isSolo: true });
-  }
-  if (finalTargets.length) {
-    const dominant = finalTargets[0];
-    html += `<div class="rp-vp-section-label">GOING INTO TRIBAL</div>
-      <div class="rp-vp-final-row">`;
-    // Vague heat labels — convey momentum without revealing exact vote counts
     const _heatLabel = (n, total) => {
       const frac = total > 0 ? n / total : 0;
-      if (n === 1)    return 'A name in the mix';
+      if (n === 1)     return 'A name in the mix';
       if (frac >= 0.7) return 'Strong numbers behind this';
       if (frac >= 0.5) return 'Majority momentum';
       if (frac >= 0.35) return 'Real support going in';
       return 'Support building';
     };
-    const _totalVotes = finalTargets.reduce((s, p) => s + p.voters.length, 0);
-    finalTargets.forEach((plan, idx) => {
-      if (!plan.target) return;
-      const cat = targetCategory(plan.target);
-      const isDominant = idx === 0;
-      const borderColor = isDominant ? cat.color : '#30363d';
-      const label = isDominant ? 'Primary Target' : (plan.isSolo ? 'Lone Vote' : 'Counter Target');
-      const heatText = _heatLabel(plan.voters.length, _totalVotes);
-      html += `<div class="rp-vp-final-card" style="border-color:${borderColor}${isDominant ? '' : '66'}">
-        <div class="rp-vp-final-label" style="color:${isDominant ? cat.color : '#484f58'}">${label}</div>
-        ${rpPortrait(plan.target)}
-        <div class="rp-vp-final-name">${plan.target}</div>
-        <div class="rp-vp-final-cat" style="color:${cat.color}">${cat.label}</div>
-        <div class="rp-vp-final-votes">${heatText}</div>
-      </div>`;
-    });
-    html += `</div>`;
-  }
 
-  // Swing votes (broke-rank first, then conflicted)
-  if (brokeRankPlayers.length || swingVotes.length) {
-    html += `<div class="rp-vp-section-label">SWING VOTES</div><div class="rp-vp-swings">`;
+    html += `<div class="rp-vp-section-label">GOING INTO TRIBAL</div>
+      <div class="rp-vp-final-row">`;
 
-    // Broke-rank entries
-    brokeRankPlayers.forEach(b => {
-      const logEntry = votingLog.find(l => l.voter === b.player);
-      const reason   = logEntry?.reason || '';
-      const swingWhy = memberReason(b.player, b.votedFor, reason);
-      // Why they didn't vote consensus — reuse helper from ALLIANCE FALLOUT
-      const btWhyLines = (() => {
-        const r = reason.toLowerCase();
-        if (r.includes('preemptive') || r.includes('sensed they were being targeted'))
-          return `Made a preemptive strike instead of following the plan`;
-        if ((r.includes('protecting') || r.includes('protect')) && (r.includes('bond') || r.includes('untouchable') || r.includes('expense')))
-          return `Had too strong a bond to write ${b.consensusWas}'s name`;
-        if (r.includes('two alliances') || r.includes('split') || r.includes('conflict') || (r.includes('chose') && r.includes('over')))
-          return `Pulled by a competing alliance — couldn't stay put`;
-        if (r.includes('broke from their own bloc') || r.includes('cast a completely different ballot') || r.includes('stated plan was') || r.includes('went to tribal with a plan') || r.includes('the group followed the plan'))
-          return `Ran the plan, privately voted elsewhere`;
-        if (r.includes('personal animosity') || r.includes('pure hostility') || r.includes("can't work with"))
-          return `Personal conflict took priority over the plan`;
-        if (r.includes('threat') || r.includes('winning too much'))
-          return `Saw a bigger threat that couldn't wait`;
-        const firstClause = reason.split(' — ')[0];
-        return firstClause.length <= 70 ? firstClause : `Chose a different play`;
-      })();
-      const newNote = b.formedThisEp ? ` (brand new alliance — bonds still forming)` : '';
-      html += `<div class="rp-vp-swing">
-        ${rpPortrait(b.player)}
-        <div class="rp-vp-swing-info">
-          <div class="rp-vp-swing-name">${b.player} <span class="rp-vp-conflicted" style="color:#f97316">Possible Flip</span></div>
-          <div class="rp-vp-swing-detail" style="color:#c9d1d9;font-weight:600">In ${b.allianceName}${newNote} — consensus is ${b.consensusWas}, but loyalty uncertain</div>
-          <div class="rp-vp-swing-detail" style="color:#484f58">${btWhyLines}</div>
-        </div>
-      </div>`;
-    });
-
-    swingVotes.forEach(m => {
-      const s = pStats(m);
-      const myVote = votingLog.find(l => l.voter === m);
-      const reason = myVote?.reason || '';
-      const swingTarget = myVote?.voted || null;
-
-      // Find the plan they voted with and the alternative they passed on.
-      // Exclude plans that are targeting the swing voter themselves — they can't be "torn" about voting themselves.
-      const myPlan = mainPlans.find(p => p.voters.some(v => v.voter === m));
-      const altPlan = mainPlans.find(p => p !== myPlan && p.target !== swingTarget && p.target !== m);
-      const altTarget = altPlan?.target || null;
-
-      // "Torn between X and Y" — the core of being a swing vote
-      let tornLine = null;
-      if (swingTarget && altTarget) {
-        tornLine = _hp([
-          `Torn between voting ${swingTarget} or ${altTarget}`,
-          `Had a foot in both camps — ${swingTarget} vs ${altTarget}`,
-          `Could have gone either way: ${swingTarget} or ${altTarget}`,
-        ], m, swingTarget);
-      } else if (swingTarget) {
-        tornLine = _hp([
-          `Considered alternatives before settling on ${swingTarget}`,
-          `Didn't commit to ${swingTarget} until late`,
-        ], m, swingTarget);
-      }
-
-      // How they resolved it
-      let swingHow;
-      if (/split — |two alliances, one vote/i.test(reason)) swingHow = _hp([
-        `Both sides made their case — only one vote to give`,
-        `Two blocs pulled in opposite directions. One of them got it`,
-        `Caught between two plans, had to commit to one`,
-      ], m, swingTarget || '');
-      else if (/couldn't fully commit|sided with/i.test(reason)) swingHow = _hp([
-        `Couldn't fully lock in — wavered until the last moment`,
-        `The conviction wasn't there. The vote still had to go somewhere`,
-        `Kept one foot out the door until tribal forced the call`,
-      ], m, swingTarget || '');
-      else if (/chose .+ over .+ — loyalty has a limit/i.test(reason)) swingHow = _hp([
-        `Loyalty has a limit — and it ran out here`,
-        `Picked a side when the pressure came. Not unconditional`,
-        `Made the call when it counted — loyalty only stretches so far`,
-      ], m, swingTarget || '');
-      else if (/not out of pure loy|for now[,.]/i.test(reason)) swingHow = _hp([
-        `Voted with the bloc — but the conviction wasn't fully there`,
-        `Went along for now. That can change`,
-        `Not a committed vote. A calculated one`,
-      ], m, swingTarget || '');
-      else if (/convenient alignment|their agenda lines up/i.test(reason)) swingHow = _hp([
-        `Aligned with this bloc because the math worked — not loyalty`,
-        `The numbers pointed the same way. For now`,
-        `Convenient agreement. Not the same as trust`,
-      ], m, swingTarget || '');
-      else if (/cross-alliance|bond over bloc|loyalty pull|aligned with .+ against/i.test(reason)) swingHow = _hp([
-        `A relationship outside the bloc pulled at this vote`,
-        `Personal loyalty crossed alliance lines`,
-        `The bond ran deeper than the bloc — had to make a call`,
-      ], m, swingTarget || '');
-      else swingHow = _hp([
-        `Weighed both options — this one won out tonight`,
-        `The decision came late. Could have landed differently`,
-        `Picked a side when it mattered`,
-      ], m, swingTarget || '');
-
-      // Why this specific target won out
-      const swingWhy = swingTarget ? memberReason(m, swingTarget, reason) : null;
-
-      html += `<div class="rp-vp-swing">
-        ${rpPortrait(m)}
-        <div class="rp-vp-swing-info">
-          <div class="rp-vp-swing-name">${m} <span class="rp-vp-conflicted">Conflicted</span></div>
-          ${tornLine ? `<div class="rp-vp-swing-detail" style="color:#c9d1d9;font-weight:600">${tornLine}</div>` : ''}
-          <div class="rp-vp-swing-detail" style="color:#484f58">${swingHow}</div>
-        </div>
-      </div>`;
-    });
-    html += `</div>`;
-  }
-
-  // Idol warning
-  if (idolHolders.length) {
-    html += `<div class="rp-vp-idol-warn">
-      <span class="rp-vp-idol-badge">Idol in Play</span>
-      ${idolHolders.map(h => rpPortrait(h)).join('')}
-      <span>${idolHolders.join(', ')} hold${idolHolders.length === 1 ? 's' : ''} a Hidden Immunity Idol. An idol play tonight could change everything.</span>
+    const primaryCat = targetCategory(primaryTarget[0]);
+    html += `<div class="rp-vp-final-card" style="border-color:${primaryCat.color}">
+      <div class="rp-vp-final-label" style="color:${primaryCat.color}">Primary Target</div>
+      ${rpPortrait(primaryTarget[0])}
+      <div class="rp-vp-final-name">${primaryTarget[0]}</div>
+      <div class="rp-vp-final-cat" style="color:${primaryCat.color}">${primaryCat.label}</div>
+      <div class="rp-vp-final-votes">${_heatLabel(primaryTarget[1], totalPlannedVotes)}</div>
     </div>`;
+
+    if (counterTarget && counterTarget[0] !== primaryTarget[0]) {
+      const counterCat = targetCategory(counterTarget[0]);
+      html += `<div class="rp-vp-final-card" style="border-color:#30363d66">
+        <div class="rp-vp-final-label" style="color:#484f58">${counterTarget[1] === 1 ? 'Lone Vote' : 'Counter Target'}</div>
+        ${rpPortrait(counterTarget[0])}
+        <div class="rp-vp-final-name">${counterTarget[0]}</div>
+        <div class="rp-vp-final-cat" style="color:${counterCat.color}">${counterCat.label}</div>
+        <div class="rp-vp-final-votes">${_heatLabel(counterTarget[1], totalPlannedVotes)}</div>
+      </div>`;
+    }
+    html += `</div>`;
+
+    // Tension summary
+    if (counterTarget && counterTarget[1] >= 2 && primaryTarget[1] - counterTarget[1] <= 2) {
+      html += `<div style="text-align:center;font-size:11px;color:#d29922;margin-top:4px;font-style:italic">The margin is razor-thin. One flip changes everything tonight.</div>`;
+    } else if (conflictedPlayers.length) {
+      html += `<div style="text-align:center;font-size:11px;color:#8b949e;margin-top:4px;font-style:italic">${conflictedPlayers.length} conflicted player${conflictedPlayers.length !== 1 ? 's' : ''} could reshape the outcome.</div>`;
+    }
   }
 
-  // Defection callout (ep.defections: swing voters who broke from their bloc mid-vote)
-  if (ep.defections?.length) {
-    const defHtml = ep.defections.map(d =>
-      `<div class="vp-card fire" style="margin-bottom:8px;display:flex;align-items:flex-start;gap:10px">
-        ${rpPortrait(d.player)}
+  // ── ADVANTAGES IN PLAY ──────────────────────────────────────────────────────
+  const snapAdvantages = ep.advantagesPreTribal || ep.gsSnapshot?.advantages || [];
+  const tribalSet = new Set(tribalPlayers);
+  const relevantAdvantages = snapAdvantages.filter(a => tribalSet.has(a.holder) && a.holder !== immunity);
+  const idolHolders = relevantAdvantages
+    .filter(a => ['idol','beware'].includes(a.type))
+    .map(a => a.holder);
+  const otherAdvantages = relevantAdvantages.filter(a => !['idol','beware'].includes(a.type));
+
+  if (idolHolders.length || otherAdvantages.length) {
+    html += `<div class="rp-vp-section-label">ADVANTAGES IN PLAY</div>`;
+    if (idolHolders.length) {
+      html += `<div class="rp-vp-idol-warn">
+        <span class="rp-vp-idol-badge">Idol in Play</span>
+        ${idolHolders.map(h => rpPortrait(h)).join('')}
+        <span>${idolHolders.join(', ')} hold${idolHolders.length === 1 ? 's' : ''} a Hidden Immunity Idol. An idol play tonight could change everything.</span>
+      </div>`;
+    }
+    otherAdvantages.forEach(adv => {
+      const typeLabels = { extraVote: 'Extra Vote', voteSteal: 'Vote Steal', legacy: 'Legacy Advantage', amulet: 'Amulet', kip: 'Knowledge is Power', secondLife: 'Second Life' };
+      const advLabel = typeLabels[adv.type] || adv.type;
+      html += `<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(130,80,223,0.06);border:1px solid rgba(130,80,223,0.15);border-radius:8px;margin-bottom:4px">
+        ${rpPortrait(adv.holder, 'sm')}
         <div>
-          <div style="font-size:13px"><strong>${d.player}</strong> broke from ${d.alliance}</div>
-          <div style="font-size:11px;color:var(--muted);margin-top:4px">Voted ${d.votedFor} \u2014 alliance wanted ${d.consensusWas}</div>
+          <div style="font-size:12px;font-weight:600;color:#a78bfa">${adv.holder} \u2014 ${advLabel}</div>
+          <div style="font-size:10px;color:#8b949e">Could be played tonight</div>
         </div>
-      </div>`
-    ).join('');
-    html += `<div class="vp-section-header fire">Defectors</div>${defHtml}`;
+      </div>`;
+    });
   }
 
-  // Key confessionals — spearheaders of each plan, solo voters, swing votes
-  // Each entry carries the actual vote reason so reasonToConf can use it.
-  const confCast = [
-    ...mainPlans.map(g => {
-      const spear = planSpear(g.voters);
-      const entry = g.voters.find(v => v.voter === spear);
-      return { name: spear, role: 'spearheader', reason: entry?.reason || '' };
-    }),
-    ...soloVotes.map(g => ({ name: g.voters[0].voter, role: 'solo', reason: g.voters[0].reason || '', target: g.target })),
-    ...brokeRankPlayers.map(b => {
-      const entry = votingLog.find(l => l.voter === b.player);
-      return { name: b.player, role: 'brokerank', reason: entry?.reason || '' };
-    }),
-    ...swingVotes.map(m => {
-      const entry = votingLog.find(l => l.voter === m);
-      return { name: m, role: 'swing', reason: entry?.reason || '' };
-    }),
-  ].filter((v, i, arr) => v.name && arr.findIndex(x => x.name === v.name) === i);
+  // ── KEY CONFESSIONALS ───────────────────────────────────────────────────────
+  // Source from alliance spearheaders + conflicted players + independents with solo targets
+  const confCast = [];
+  // Spearheaders from each named alliance
+  namedAlliances.forEach(a => {
+    const spear = allianceSpear(a.members);
+    if (spear) confCast.push({ name: spear, role: 'spearheader', target: a.target });
+  });
+  // Conflicted players
+  conflictedPlayers.forEach(({ player }) => {
+    confCast.push({ name: player, role: 'conflicted', target: null });
+  });
+  // Independent players with a target
+  trueIndependents.forEach(player => {
+    const soloA = soloAlliances.find(a => a.members.includes(player));
+    if (soloA?.target) confCast.push({ name: player, role: 'independent', target: soloA.target });
+  });
+  // Dedupe
+  const _confSeen = new Set();
+  const confCastUnique = confCast.filter(c => {
+    if (_confSeen.has(c.name)) return false;
+    _confSeen.add(c.name);
+    return true;
+  });
 
-  if (confCast.length) {
+  if (confCastUnique.length) {
     html += `<div class="rp-vp-section-label">KEY CONFESSIONALS</div><div class="rp-vp-confs">`;
-    confCast.forEach(({ name, role, reason, target }) => {
-      const line = role === 'solo' ? soloConf(name, target, reason) : reasonToConf(reason);
+    confCastUnique.forEach(({ name, role, target }) => {
+      let line = null;
+      if (role === 'spearheader' && target) {
+        line = targetWhyPhrase(target, name);
+      } else if (role === 'conflicted') {
+        const myAlliances = namedAlliances.filter(a => a.members.includes(name));
+        if (myAlliances.length >= 2) {
+          line = _hp([
+            `Two alliances want my vote tonight. One of them is going to be disappointed. I just have to make sure it's the one I can recover from.`,
+            `I've got one vote and two groups telling me where to put it. That's not a bad position — it's the most dangerous one in this game.`,
+            `Everyone thinks they have me. The truth is, nobody does. Not fully. Tonight I make a choice and live with it.`,
+            `I'm in the middle and I know it. The question isn't who I vote for — it's who I can afford to betray.`,
+          ], name, String(ep.num));
+        } else {
+          const bondTarget = myAlliances[0]?.target;
+          line = bondTarget ? _hp([
+            `The alliance says ${bondTarget}. My gut says something different. Writing that name down isn't as easy as it should be.`,
+            `I know the plan. I know what's smart. But there's a version of this where I can't bring myself to do it.`,
+            `${bondTarget} and I have something real out here. The alliance doesn't care about that. I have to decide if I do.`,
+          ], name, bondTarget) : null;
+        }
+      } else if (role === 'independent' && target) {
+        line = targetWhyPhrase(target, name);
+      }
+      if (!line) {
+        // Try votingLog reason as fallback
+        const logEntry = votingLog.find(l => l.voter === name);
+        if (logEntry?.reason) line = reasonToConf(logEntry.reason);
+      }
       if (!line) return;
+
       const roleLabel = role === 'spearheader'
         ? `<span class="rp-vp-conf-role">Spearheader</span>`
-        : role === 'solo'
-          ? `<span class="rp-vp-conf-role" style="color:#388bfd">Solo Vote</span>`
-          : role === 'brokerank'
-            ? `<span class="rp-vp-conf-role" style="color:#f97316">Possible Flip</span>`
-            : `<span class="rp-vp-conf-role swing">Conflicted</span>`;
+        : role === 'conflicted'
+          ? `<span class="rp-vp-conf-role swing">Conflicted</span>`
+          : `<span class="rp-vp-conf-role" style="color:#388bfd">Independent</span>`;
       html += `<div class="rp-vp-conf-entry">
         ${rpPortrait(name)}
         <div class="rp-vp-conf-body">

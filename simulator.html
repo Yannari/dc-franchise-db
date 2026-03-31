@@ -6009,8 +6009,9 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
           if (resistsBond && allianceTarget)  { underlyingType = 'protect-bond';        underlyingCtx = { allianceTarget }; }
           else if (bond <= -1)                { underlyingType = 'personal';            underlyingCtx = { phase: gs.phase }; }
           else if (gs.phase === 'pre-merge' && challengeWeakness(target, myAlliance?.challengeLabel) >= 4.0
-                   && !(gs._chalStandouts || []).includes(target))  {
-            // Only call them a challenge liability if they actually ARE weak — not if they were a standout
+                   && !(gs._chalStandouts || []).includes(target)
+                   && !(gs._chalTopHalf || []).includes(target))  {
+            // Only call them a challenge liability if they actually performed poorly — not top half of placements
             underlyingType = 'challenge-liability'; underlyingCtx = { cLabel: myAlliance?.challengeLabel, phase: gs.phase };
           }
           else                                { underlyingType = 'threat';              underlyingCtx = { voterS: s }; }
@@ -14330,6 +14331,7 @@ function simulateEpisode() {
     const _immune = ep.immunityWinner;
     const _ranked = (ep.chalPlacements || []).filter(n => n !== _immune);
     gs._chalStandouts = _ranked.slice(0, Math.min(2, _ranked.length));
+    gs._chalTopHalf = _ranked.slice(0, Math.ceil(_ranked.length / 2)); // top half performers — shouldn't be called "liability"
     gs._chalStragglers = _ranked.slice(Math.max(0, _ranked.length - 2));
 
     // ── PENALTY VOTE: assign to challenge loser (last-place finisher) ──

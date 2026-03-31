@@ -6747,9 +6747,16 @@ function checkIdolPlays(tribalPlayers, votesObj, ep, voteLog = []) {
   if (kip) {
     const _kipHolder = kip.holder;
     const _kipS = pStats(_kipHolder);
+    // If the KiP holder just RECEIVED an idol via sharing, they already have one — skip KiP
+    const _kipJustReceivedIdol = (ep.idolShares || []).some(s => s.to === _kipHolder);
+    if (_kipJustReceivedIdol) {
+      // Don't use KiP — you just got an idol handed to you, no need to steal one
+    } else {
     const stealableTypes = ['idol', 'extraVote', 'voteSteal'];
     const _kipRealTargets = gs.advantages.filter(a => stealableTypes.includes(a.type) && tribalPlayers.includes(a.holder) && a.holder !== _kipHolder);
     const known = gs.knownIdolHoldersThisEp || new Set();
+    // Remove people who just shared their idol to this holder — you KNOW they don't have it
+    const _kipSharers = new Set((ep.idolShares || []).filter(s => s.to === _kipHolder).map(s => s.from));
     const _kipVotesAgainst = Object.entries(votesObj).find(([n]) => n === _kipHolder)?.[1] || 0;
     const _kipInDanger = _kipVotesAgainst >= 2 || computeHeat(_kipHolder, tribalPlayers, ep.alliances || []) >= 3;
     const _kipHasKnowledge = _kipRealTargets.some(t => known.has(t.holder));
@@ -6762,7 +6769,7 @@ function checkIdolPlays(tribalPlayers, votesObj, ep, voteLog = []) {
       && Math.random() < Math.max(_kipS.boldness, _kipS.intuition) * 0.03; // proportional: stat 5=15%, stat 8=24%, stat 10=30%
     if (_kipWillUse || _kipGuessUse) {
       // Pick who to ask — score all tribal players, not just confirmed holders
-      const _kipCandidates = tribalPlayers.filter(p => p !== _kipHolder).map(p => {
+      const _kipCandidates = tribalPlayers.filter(p => p !== _kipHolder && !_kipSharers.has(p)).map(p => {
         let score = 0;
         // Known holder = guaranteed correct target
         if (known.has(p)) score += 10;
@@ -6807,6 +6814,7 @@ function checkIdolPlays(tribalPlayers, votesObj, ep, voteLog = []) {
       // F5 force-play with nobody holding anything — consume it
       gs.advantages.splice(gs.advantages.indexOf(kip), 1);
     }
+    } // end: !_kipJustReceivedIdol
   }
 
   // ── LEGACY ADVANTAGE: auto-activates when player count matches activatesAt ──

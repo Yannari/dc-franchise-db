@@ -19532,6 +19532,18 @@ function patchEpisodeHistory(ep) {
   if (ep.tribalPlayers?.length && gs.journeyLostVotes?.length) {
     gs.journeyLostVotes = gs.journeyLostVotes.filter(p => !ep.tribalPlayers.includes(p));
   }
+  // Refresh alliance data in snapshot — decayAllianceTrust runs AFTER the initial snapshot,
+  // so dissolutions aren't captured. Update the snapshot so Camp Overview can show them.
+  if (h.gsSnapshot) {
+    h.gsSnapshot.namedAlliances = (gs.namedAlliances || []).filter(a => a.active).map(a => ({
+      name: a.name, formed: a.formed, members: [...a.members],
+      betrayals: a.betrayals ? [...a.betrayals] : [], quits: a.quits ? [...a.quits] : [], active: true,
+    }));
+    h.gsSnapshot.dissolvedAlliances = (gs.namedAlliances || []).filter(a => !a.active).map(a => ({
+      name: a.name, formed: a.formed, members: [...a.members],
+      betrayals: a.betrayals ? [...a.betrayals] : [], active: false,
+    }));
+  }
   // Showmance lifecycle
   if (!h.showmanceBreakup && !h.showmanceSeparation) checkShowmanceBreakup(ep);
   if (ep.paranoiaSpirals?.length) h.paranoiaSpirals = ep.paranoiaSpirals;

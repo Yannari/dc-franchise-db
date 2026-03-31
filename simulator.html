@@ -24485,21 +24485,30 @@ function rpBuildVotingPlans(ep) {
 
   const targetCategory = name => {
     const s = pStats(name); const arch = s.archetype || '';
+    const _isMerged = gs.isMerged || (ep.gsSnapshot?.isMerged);
+    const _epNum = ep.num || 1;
+    // Challenge weakness is the TOP priority pre-merge — tribes need to win
+    const _cw = challengeWeakness(name);
+    if (_cw >= 5.5 && !_isMerged) return { label: 'Challenge Liability', color: '#f85149' };
     if (arch === 'challenge-beast' || s.physical >= 8) return { label: 'Physical Threat', color: '#f85149' };
     if (s.strategic >= 8 || arch === 'mastermind' || arch === 'schemer') return { label: 'Strategic Threat', color: '#f85149' };
-    if (s.social >= 8 || arch === 'social-butterfly') return { label: 'Social Threat', color: '#e3b341' };
-    if (arch === 'hero') return { label: 'Jury Threat', color: '#e3b341' };
+    // Social threat: "jury threat" only post-merge or late-game. Pre-merge it's just "well-connected"
+    if (s.social >= 8 || arch === 'social-butterfly') {
+      return _isMerged || _epNum >= 6
+        ? { label: 'Social Threat', color: '#e3b341' }
+        : { label: 'Well-Connected', color: '#e3b341' };
+    }
+    if (arch === 'hero') return _isMerged ? { label: 'Jury Threat', color: '#e3b341' } : { label: 'Likeable', color: '#e3b341' };
     if (arch === 'villain') return { label: 'Villain', color: '#f85149' };
     if (arch === 'goat' || threatScore(name) <= 2) return { label: 'Easy Vote', color: '#484f58' };
     if (s.loyalty <= 3) return { label: 'Wildcard', color: '#e3b341' };
-    // Challenge weakness (pre-merge relevance)
-    const _cw = challengeWeakness(name);
-    if (_cw >= 5.5 && gs.phase !== 'post-merge') return { label: 'Challenge Liability', color: '#f85149' };
+    // Challenge weakness at a lower threshold
+    if (_cw >= 4.0 && !_isMerged) return { label: 'Challenge Weakness', color: '#e3b341' };
     // Low bonds with the tribe — outsider
     const _avgBond = (ep.tribalPlayers || gs.activePlayers).filter(p => p !== name)
-      .reduce((s, p) => s + getBond(name, p), 0) / Math.max(1, (ep.tribalPlayers || gs.activePlayers).length - 1);
+      .reduce((sum, p) => sum + getBond(name, p), 0) / Math.max(1, (ep.tribalPlayers || gs.activePlayers).length - 1);
     if (_avgBond <= -0.5) return { label: 'Outsider', color: '#f85149' };
-    if (_avgBond <= 0.5) return { label: 'On the Outs', color: '#e3b341' };
+    if (_avgBond <= 0.5 && _epNum <= 4) return { label: 'On the Outs', color: '#e3b341' };
     if (threatScore(name) >= 6) return { label: 'Emerging Threat', color: '#e3b341' };
     return { label: 'Active Player', color: '#484f58' };
   };
@@ -24533,6 +24542,21 @@ function rpBuildVotingPlans(ep) {
     if (cat.label === 'Social Threat' || cat.label === 'Jury Threat') return _pick([
       `${target} is too well-liked. That's a jury winner if nobody does something about it.`,
       `When someone has no enemies at this stage, the odds are they win. ${target} has no enemies.`,
+      `${target}'s social game is the real threat. Challenges end — relationships last.`,
+    ]);
+    if (cat.label === 'Well-Connected') return _pick([
+      `${target} gets along with everyone. Pre-merge that's fine — but it's also a sign of someone building a path to the end.`,
+      `${target} is tight with too many people. That kind of social capital becomes a weapon later.`,
+      `Everyone likes ${target}. That's not a compliment in this game — it's a reason to be nervous.`,
+    ]);
+    if (cat.label === 'Likeable') return _pick([
+      `${target} is the kind of player people root for. That makes them dangerous at final tribal.`,
+      `${target}'s likeability is a weapon they don't even have to use on purpose. The tribe sees it.`,
+    ]);
+    if (cat.label === 'Challenge Weakness') return _pick([
+      `${target} hasn't been strong in challenges. The tribe needs every advantage it can get.`,
+      `Challenges are tight right now. ${target} isn't carrying enough weight to justify keeping.`,
+      `${target}'s challenge performance is a liability. The tribe can't afford passengers.`,
     ]);
     if (cat.label === 'Outsider') return _pick([
       `${target} doesn't have strong bonds with anyone here. That makes the vote clean.`,

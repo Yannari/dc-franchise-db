@@ -24557,6 +24557,15 @@ function rpBuildVotingPlans(ep) {
     const s = pStats(name); const arch = s.archetype || '';
     const _isMerged = gs.isMerged || (ep.gsSnapshot?.isMerged);
     const _epNum = ep.num || 1;
+
+    // THIS EPISODE's performance overrides stats — the tribe just SAW what happened
+    const _placements = ep.chalPlacements || [];
+    const _isWeakLink = _placements.length >= 3 && _placements[_placements.length - 1] === name;
+    const _isStandout = _placements.length >= 3 && _placements[0] === name;
+    const _isBottom2 = _placements.length >= 4 && _placements.indexOf(name) >= _placements.length - 2;
+    if (_isWeakLink && !_isMerged) return { label: 'Challenge Liability', color: '#f85149' };
+    if (_isBottom2 && !_isMerged && !_isStandout) return { label: 'Challenge Weakness', color: '#e3b341' };
+
     // Challenge weakness is the TOP priority pre-merge — tribes need to win
     // Use GENERIC (no category) — the tribe evaluates overall ability across all challenge types
     const _cw = challengeWeakness(name);

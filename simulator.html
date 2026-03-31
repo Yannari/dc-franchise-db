@@ -14948,10 +14948,33 @@ function simulateEpisode() {
           ep.revoteVotes = rv.votes; ep.revoteLog = rv.log;
           const res2 = resolveVotes(rv.votes);
           if (res2.isTie) {
+            ep.isRockDraw = true;
             const rockElim = rockDraw(_lateTied);
             return { votes, log, eliminated: rockElim, isTie: true, tiedPlayers: _lateTied };
           }
           return { votes, log, eliminated: res2.eliminated, isTie: true, tiedPlayers: _lateTied };
+        }
+      }
+    }
+    // Final safeguard: if we're about to return a clean elimination but the votes show a tie,
+    // something upstream missed it. Force the tie path.
+    if (res.eliminated && !res.isTie) {
+      const _finalCheck = Object.entries(votes).filter(([,v]) => v > 0).sort(([,a],[,b]) => b-a);
+      if (_finalCheck.length >= 2 && _finalCheck[0][1] === _finalCheck[1][1]) {
+        // This IS a tie — resolveVotes or upstream code missed it
+        const _fcTied = _finalCheck.filter(([,v]) => v === _finalCheck[0][1]).map(([n]) => n);
+        const _fcEligible = _fcTied.filter(p => !isTribalImmune(p));
+        if (_fcEligible.length >= 2) {
+          ep.tiedPlayers = _fcTied;
+          const rv = simulateRevote(tribalPlayers, _fcTied, gs.lostVotes, log, tribalImmune);
+          ep.revoteVotes = rv.votes; ep.revoteLog = rv.log;
+          const res2 = resolveVotes(rv.votes);
+          if (res2.isTie) {
+            ep.isRockDraw = true;
+            const rockElim = rockDraw(_fcTied);
+            return { votes, log, eliminated: rockElim, isTie: true, tiedPlayers: _fcTied };
+          }
+          return { votes, log, eliminated: res2.eliminated, isTie: true, tiedPlayers: _fcTied };
         }
       }
     }

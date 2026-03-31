@@ -2869,12 +2869,17 @@ function computeHeat(name, tribalPlayers, alliances) {
     const ts = threatScore(name);
     if (ts >= 7) heat += 1;
     if (ts >= 9) heat += 0.5;
-    // Pre-merge challenge dominance carry-over: people remember who was winning pre-merge
+    // Challenge record carry-over: people remember pre-merge performance
+    // Dominators are threats, but chronic bombers can also be targeted (dead weight / goat-cutting)
     const rec = gs.chalRecord?.[name];
     if (rec) {
-      if (rec.podiums >= 6)      heat += 1.0; // dominated pre-merge — immediate target at merge
+      // Strong performers: challenge threat — they'll keep winning individual immunity
+      if (rec.podiums >= 6)      heat += 1.0;
       else if (rec.podiums >= 4) heat += 0.6;
       else if (rec.podiums >= 2) heat += 0.2;
+      // Weak performers post-merge: not a liability anymore, but can be seen as a goat
+      // Strategic players might cut them before FTC to avoid dragging a goat who gets 0 jury respect
+      // OR keep them as a shield — this creates nuance, not a binary
     }
   }
   // Betrayed idol holder — their secret is out, they're now a priority target
@@ -2954,9 +2959,10 @@ function computeHeat(name, tribalPlayers, alliances) {
     const _cwActual = _cwStats + (_bombs >= 3 ? 2.0 : _bombs >= 2 ? 1.0 : _bombs >= 1 ? 0.3 : 0);
     if (_cwActual >= 5.5) heat += 1.5;       // serious liability (stats + performance)
     else if (_cwActual >= 4.0) heat += 0.6;   // noticeable weakness
-    // Physical beasts get NEGATIVE heat pre-merge — the tribe wants to keep them
+    // Physical beasts get slight protection pre-merge — tribe wants their strength
+    // BUT not immune: bad bonds or strategic threat can override this
     const _ns = pStats(name);
-    if (_ns.physical >= 8 || _ns.endurance >= 8) heat -= 0.5;
+    if ((_ns.physical >= 8 || _ns.endurance >= 8) && _cwActual < 4.0) heat -= 0.3;
     // BUT: if someone is dominating pre-merge challenges (4+ podiums), strategic players start planning for merge
     const _podiums = _rec?.podiums || 0;
     if (_podiums >= 4) heat += 0.4; // tribe starts thinking about merge — this player becomes untouchable soon
@@ -3699,7 +3705,11 @@ function pickTarget(attackers, victims, challengeLabel) {
     if (phase === 'pre-merge') {
       const s = pStats(v);
       const dramaRisk = (s.boldness > 7 && s.loyalty < 5) ? 1.5 : 0;
-      return Math.max(0.1, challengeWeakness(v, challengeLabel) * 0.55 + (-avgBond) * 0.3 + dramaRisk + Math.random() * 0.5);
+      // Pre-merge: challenge weakness matters but bonds, threat, and personal friction also drive votes
+      // Strong players CAN be targeted if relationships are bad enough or they're strategic threats
+      const _cwScore = challengeWeakness(v, challengeLabel);
+      const _threatMod = threatScore(v) >= 6 ? (threatScore(v) - 5) * 0.3 : 0; // emerging threats targetable even pre-merge
+      return Math.max(0.1, _cwScore * 0.35 + (-avgBond) * 0.35 + _threatMod + dramaRisk + Math.random() * 0.5);
     } else {
       const allAtTribal = [...attackers, v];
       const maxBond = allAtTribal.filter(p => p !== v).reduce((m, p) => Math.max(m, getBond(v, p)), 0);
@@ -5998,10 +6008,10 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
           let underlyingType, underlyingCtx;
           if (resistsBond && allianceTarget)  { underlyingType = 'protect-bond';        underlyingCtx = { allianceTarget }; }
           else if (bond <= -1)                { underlyingType = 'personal';            underlyingCtx = { phase: gs.phase }; }
-          else if (gs.phase === 'pre-merge' && challengeWeakness(target, ep?.challengeCategory) >= 4.0
+          else if (gs.phase === 'pre-merge' && challengeWeakness(target, myAlliance?.challengeLabel) >= 4.0
                    && !(gs._chalStandouts || []).includes(target))  {
             // Only call them a challenge liability if they actually ARE weak — not if they were a standout
-            underlyingType = 'challenge-liability'; underlyingCtx = { cLabel: ep?.challengeCategory || myAlliance?.challengeLabel, phase: gs.phase };
+            underlyingType = 'challenge-liability'; underlyingCtx = { cLabel: myAlliance?.challengeLabel, phase: gs.phase };
           }
           else                                { underlyingType = 'threat';              underlyingCtx = { voterS: s }; }
           // If this player is the spearheader of their bloc and is defecting from their own stated target, wrap with spearhead-defect narrative

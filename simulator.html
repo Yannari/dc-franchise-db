@@ -24510,6 +24510,10 @@ function rpBuildVotingPlans(ep) {
     if (_avgBond <= -0.5) return { label: 'Outsider', color: '#f85149' };
     if (_avgBond <= 0.5 && _epNum <= 4) return { label: 'On the Outs', color: '#e3b341' };
     if (threatScore(name) >= 6) return { label: 'Emerging Threat', color: '#e3b341' };
+    // Heat-based: compute how much pressure is on this player from multiple sources
+    const _heat = computeHeat(name, ep.tribalPlayers || gs.activePlayers, ep.alliances || []);
+    if (_heat >= 5) return { label: 'Under Fire', color: '#f85149' };
+    if (_heat >= 3) return { label: 'Target on Their Back', color: '#e3b341' };
     return { label: 'Active Player', color: '#484f58' };
   };
 
@@ -24575,6 +24579,16 @@ function rpBuildVotingPlans(ep) {
     if (threatScore(target) >= 6) return _pick([
       `Threat level is climbing. ${target} is getting harder to vote out with every episode.`,
       `${target}'s game is getting louder. The people paying attention are moving before it's too late.`,
+    ]);
+    if (cat.label === 'Under Fire') return _pick([
+      `Multiple people want ${target} gone. The pressure has been building from every direction.`,
+      `${target} has a target on their back from alliances, grudges, and game position. Tonight it all converges.`,
+      `The heat on ${target} isn't from one source — it's from everywhere. That's when votes become inevitable.`,
+    ]);
+    if (cat.label === 'Target on Their Back') return _pick([
+      `${target}'s name keeps coming up. Not from one person — from several. That kind of consensus is hard to survive.`,
+      `There's quiet agreement forming around ${target}. Not loud, not dramatic — just steady and growing.`,
+      `${target} can feel the pressure building. Whether they react to it or not defines tonight.`,
     ]);
     return _pick([
       `${target}'s name came up and nobody pushed back. Sometimes that's all it takes.`,

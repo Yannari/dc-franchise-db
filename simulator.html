@@ -9435,11 +9435,16 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
         events.push({ type: 'allianceForm', text: formText.replace(/\{name\}/g, allianceName), alliance: allianceName, members });
       };
       const _isAllied = p => gs.namedAlliances?.some(a => a.active && a.members.includes(p) && a.members.filter(m => group.includes(m)).length >= 2);
-      // Cap: players in 3+ active alliances shouldn't form more (overcommitted)
+      // Global cap: max active alliances scales with active player count
+      // 10 players → max 4 alliances, 8 → max 3, 6 → max 2
+      const _globalAllianceCount = (gs.namedAlliances || []).filter(a => a.active).length;
+      const _globalCap = Math.max(2, Math.floor(gs.activePlayers.length / 2.5));
+      if (_globalAllianceCount >= _globalCap) return; // don't form more — game has enough alliances
+      // Cap: players in too many active alliances shouldn't form more (overcommitted)
       // Strategic players can juggle more alliances without being overcommitted
       const _isOvercommitted = p => {
         const _activeCount = (gs.namedAlliances || []).filter(a => a.active && a.members.includes(p)).length;
-        const _cap = 2 + Math.floor(pStats(p).strategic * 0.3); // stat 3=2, stat 5=3, stat 7=4, stat 10=5
+        const _cap = 1 + Math.floor(pStats(p).strategic * 0.2); // stat 3=1, stat 5=2, stat 7=2, stat 10=3
         return _activeCount >= _cap;
       };
       const _rpl = arr => arr[Math.floor(Math.random() * arr.length)];
@@ -18681,7 +18686,14 @@ function generateSummaryText(ep) {
         }
       });
     } else if (hadAlly) {
-      ln(`- ${hadAlly.label} tried to protect them — but was outnumbered`);
+      // Did the eliminated player follow their own alliance's plan?
+      const _txtElimVote = (votelog||[]).find(l => l.voter === name)?.voted;
+      const _txtElimFollowed = _txtElimVote === hadAlly.target || (hadAlly.splitTarget && _txtElimVote === hadAlly.splitTarget);
+      if (_txtElimFollowed) {
+        ln(`- ${hadAlly.label} tried to protect them — but was outnumbered`);
+      } else {
+        ln(`- ${name} broke from ${hadAlly.label}'s plan and went their own way. Without the alliance's protection, the vote landed on them`);
+      }
     }
 
     // Players who voted to protect the eliminated player (voted elsewhere, had positive bond or shared alliance)
@@ -19528,6 +19540,12 @@ function patchEpisodeHistory(ep) {
   if (!h.loser && ep.loser) h.loser = { name: ep.loser.name, members: [...(ep.loser.members||[])] };
   // Tribes at start
   if (!h.tribesAtStart && ep.tribesAtStart) h.tribesAtStart = ep.tribesAtStart.map(t => ({ name: t.name, members: [...t.members] }));
+  // Save tie/revote state so VP can detect ties for display
+  if (ep.isTie !== undefined && !h.isTie) h.isTie = ep.isTie;
+  if (ep.tiedPlayers?.length && !h.tiedPlayers) h.tiedPlayers = [...ep.tiedPlayers];
+  if (ep.revoteVotes && !h.revoteVotes) h.revoteVotes = ep.revoteVotes;
+  if (ep.revoteLog?.length && !h.revoteLog) h.revoteLog = ep.revoteLog;
+  if (ep.isRockDraw && !h.isRockDraw) h.isRockDraw = ep.isRockDraw;
   // Clear journey lost votes for players who attended this tribal — vote loss is consumed
   if (ep.tribalPlayers?.length && gs.journeyLostVotes?.length) {
     gs.journeyLostVotes = gs.journeyLostVotes.filter(p => !ep.tribalPlayers.includes(p));
@@ -25100,18 +25118,26 @@ function rpBuildVotingPlans(ep) {
       } else if (role === 'conflicted') {
         const myAlliances = namedAlliances.filter(a => a.members.includes(name));
         if (myAlliances.length >= 2) {
+          const _aNames = myAlliances.map(a => a.label).join(', ');
+          const _aTargets = myAlliances.map(a => a.target);
           line = _hp([
-            `Two alliances want my vote tonight. One of them is going to be disappointed. I just have to make sure it's the one I can recover from.`,
-            `I've got one vote and two groups telling me where to put it. That's not a bad position — it's the most dangerous one in this game.`,
-            `Everyone thinks they have me. The truth is, nobody does. Not fully. Tonight I make a choice and live with it.`,
-            `I'm in the middle and I know it. The question isn't who I vote for — it's who I can afford to betray.`,
-          ], name, String(ep.num));
+            `${_aNames} — both want my vote tonight. One is going to be disappointed. I have to make sure it's the one I can recover from.`,
+            `${myAlliances[0].label} says ${_aTargets[0]}. ${myAlliances[1].label} says ${_aTargets[1]}. One vote. Neither answer is free.`,
+            `Everyone thinks they have me. The truth is, nobody does. Not fully. Tonight I pick a side and live with it.`,
+            `I'm in the middle and I know it. The question isn't who I vote for — it's who I can afford to disappoint.`,
+            `${_aTargets[0]} or ${_aTargets[1]}. That's the real decision tonight. Everything else is noise.`,
+            `Two plans. Two promises. I can only keep one. The person I betray tonight is someone I'll face tomorrow.`,
+            `${myAlliances[0].label} built something with me. So did ${myAlliances[1].label}. One of them is about to find out which one I believed in.`,
+            `I've been told ${_aTargets[0]}, I've been told ${_aTargets[1]}. Nobody asked what I think. That's the vote that matters.`,
+          ], name, _aNames);
         } else {
           const bondTarget = myAlliances[0]?.target;
+          const _alLabel = myAlliances[0]?.label || 'the alliance';
           line = bondTarget ? _hp([
-            `The alliance says ${bondTarget}. My gut says something different. Writing that name down isn't as easy as it should be.`,
-            `I know the plan. I know what's smart. But there's a version of this where I can't bring myself to do it.`,
-            `${bondTarget} and I have something real out here. The alliance doesn't care about that. I have to decide if I do.`,
+            `${_alLabel} says ${bondTarget}. My gut says something different. Writing that name isn't as easy as it should be.`,
+            `I know the plan. I know what's smart. But there's a version of this where I can't write ${bondTarget}'s name.`,
+            `${bondTarget} and I have something real. ${_alLabel} doesn't care about that. I have to decide if I do.`,
+            `The plan is ${bondTarget}. The relationship says otherwise. One wins tonight — I'm not sure which.`,
           ], name, bondTarget) : null;
         }
       } else if (role === 'independent' && target) {
@@ -25728,6 +25754,9 @@ function vpWhyBullets(name, votelog, alliances, ep) {
   const majVoters = (votelog||[]).filter(l => l.voted === name && l.voter !== 'THE GAME').map(l => l.voter);
   const hadAlly = (alliances||[]).find(a => a.members.includes(name) && a.type !== 'solo');
   const betrayed = hadAlly && majVoters.some(v => hadAlly.members.includes(v));
+  // Did the eliminated player actually follow their alliance's plan? If they defected, don't say the alliance "stood by them"
+  const _elimVote = (votelog||[]).find(l => l.voter === name)?.voted;
+  const _elimFollowedPlan = hadAlly && (_elimVote === hadAlly.target || (hadAlly.splitTarget && _elimVote === hadAlly.splitTarget));
   const priorVotes = (gs.episodeHistory||[]).filter(h => h.num < ep.num)
     .reduce((n,h) => n + (h.votingLog||[]).filter(v => v.voted === name).length, 0);
   const misplay = ep.idolMisplays?.find(m => m.player === name);
@@ -25888,12 +25917,22 @@ function vpWhyBullets(name, votelog, alliances, ep) {
       bullets.push(`Betrayed by ${traitor} (${hadAlly.label}) — ${bc}`);
     });
   } else if (hadAlly) {
-    bullets.push(_pick([
-      `${hadAlly.label} tried to protect them — but was outnumbered`,
-      `${hadAlly.label} wanted to save ${name} and couldn't get the numbers. Loyalty without majority is just a losing vote`,
-      `The alliance held — but it wasn't big enough. ${hadAlly.label} voted together and still fell short`,
-      `${hadAlly.label} stood by them. It wasn't enough. Being loyal to the right person doesn't matter if the numbers aren't there`,
-    ]));
+    if (_elimFollowedPlan) {
+      // Eliminated player was loyal to the alliance — the alliance tried but failed
+      bullets.push(_pick([
+        `${hadAlly.label} tried to protect them — but was outnumbered`,
+        `${hadAlly.label} wanted to save ${name} and couldn't get the numbers. Loyalty without majority is just a losing vote`,
+        `The alliance held — but it wasn't big enough. ${hadAlly.label} voted together and still fell short`,
+        `${hadAlly.label} stood by them. It wasn't enough. Being loyal to the right person doesn't matter if the numbers aren't there`,
+      ]));
+    } else {
+      // Eliminated player defected from their own alliance — they went rogue and paid for it
+      bullets.push(_pick([
+        `${name} broke from ${hadAlly.label}'s plan — went their own way instead of following the group. The numbers weren't there for a solo play`,
+        `${hadAlly.label} had a plan. ${name} didn't follow it. Without the alliance's protection, the vote landed somewhere ${name} didn't expect`,
+        `${name} left ${hadAlly.label}'s plan behind and paid the price. Going rogue only works if the numbers are already there`,
+      ]));
+    }
   }
 
   // Ally votes for a different target — collapse into one grouped bullet per alliance+target pair

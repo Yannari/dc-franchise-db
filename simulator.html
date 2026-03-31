@@ -24723,7 +24723,7 @@ function rpBuildVotingPlans(ep) {
   // ─── data sourcing ─────────────────────────────────────────────────────────
   // Source plan data from ep.alliances (alliance objects from formAlliances), NOT votingLog
   const allAlliances = (ep.alliances || []);
-  const namedAlliances = allAlliances.filter(a => a.type === 'alliance' && a.label && a.members.length >= 2);
+  const namedAlliances = allAlliances.filter(a => (a.type === 'alliance' || a.type === 'consensus') && a.label && a.members.length >= 2);
   const soloAlliances = allAlliances.filter(a => a.type === 'solo' || (a.members && a.members.length === 1));
   const tribalPlayers = ep.tribalPlayers || [];
 
@@ -24735,7 +24735,7 @@ function rpBuildVotingPlans(ep) {
     (pStats(b).social + pStats(b).strategic) - (pStats(a).social + pStats(a).strategic)
   )[0];
 
-  // Players in named alliances (for detecting independents)
+  // Players in named alliances or consensus groups (for detecting independents)
   const allAllianceMembers = new Set(namedAlliances.flatMap(a => a.members));
 
   // Independent players: at tribal, not in any named alliance
@@ -24969,20 +24969,39 @@ function rpBuildVotingPlans(ep) {
       const soloA = soloAlliances.find(a => a.members.includes(player));
       const soloTarget = soloA?.target || null;
       const soloTCat = soloTarget ? targetCategory(soloTarget) : null;
-      let context = '';
-      if (isNoVote) context = 'Cannot vote tonight';
-      else if (isImmune) context = 'Safe tonight — voting freely';
-      else if (soloTarget) context = `Has ${soloTarget} in mind`;
-      else context = 'Reading the room';
-
-      html += `<div class="rp-vp-swing" style="animation:slideInLeft 0.4s ease">
-        ${rpPortrait(player, isNoVote ? '' : 'sm')}
-        <div class="rp-vp-swing-info">
-          <div class="rp-vp-swing-name">${player}${isNoVote ? ` <span style="font-size:9px;color:#f85149;font-weight:600">NO VOTE</span>` : ''}</div>
-          <div class="rp-vp-swing-detail" style="color:#8b949e">${context}</div>
-        </div>
-        ${soloTarget ? rpPortrait(soloTarget, 'sm') : ''}
-      </div>`;
+      if (isNoVote) {
+        html += `<div class="rp-vp-swing" style="animation:slideInLeft 0.4s ease;opacity:0.5">
+          ${rpPortrait(player)}
+          <div class="rp-vp-swing-info">
+            <div class="rp-vp-swing-name">${player} <span style="font-size:9px;color:#f85149;font-weight:600">NO VOTE</span></div>
+            <div class="rp-vp-swing-detail" style="color:#484f58">Cannot vote tonight</div>
+          </div>
+        </div>`;
+      } else if (soloTarget) {
+        const _stCat = soloTCat;
+        html += `<div class="rp-vp-swing" style="animation:slideInLeft 0.4s ease">
+          ${rpPortrait(player, 'sm')}
+          <div class="rp-vp-swing-info" style="flex:1">
+            <div class="rp-vp-swing-name">${player}</div>
+            <div style="display:flex;align-items:center;gap:6px;margin-top:4px">
+              <span style="font-size:10px;color:#484f58">\u2192</span>
+              ${rpPortrait(soloTarget, 'sm')}
+              <div>
+                <div style="font-size:12px;font-weight:700;color:#e6edf3">${soloTarget}</div>
+                <div style="font-size:10px;color:${_stCat?.color || '#484f58'}">${_stCat?.label || 'Target'}</div>
+              </div>
+            </div>
+          </div>
+        </div>`;
+      } else {
+        html += `<div class="rp-vp-swing" style="animation:slideInLeft 0.4s ease">
+          ${rpPortrait(player, 'sm')}
+          <div class="rp-vp-swing-info">
+            <div class="rp-vp-swing-name">${player}</div>
+            <div class="rp-vp-swing-detail" style="color:#484f58">${isImmune ? 'Safe tonight — voting freely' : 'Reading the room'}</div>
+          </div>
+        </div>`;
+      }
     });
     html += `</div>`;
   }
@@ -26447,9 +26466,9 @@ function rpBuildVotes(ep) {
       </div>
     </div>`;
     if (tr.loser) {
-      const _place = (ep.gsSnapshot?.activePlayers ?? gs.activePlayers).length + (ep.firstEliminated ? 1 : 0) + 1;
+      const _elimNum = (gs.episodeHistory || []).filter(h => h.eliminated && h.num < ep.num).length + 1 + (ep.firstEliminated ? 1 : 0);
       const _eq = vpGenerateQuote(tr.loser, ep, 'eliminated');
-      _out += `<div class="rp-elim"><div class="rp-elim-eyebrow">${ordinal(_place)} player voted out</div>
+      _out += `<div class="rp-elim"><div class="rp-elim-eyebrow">${ordinal(_elimNum)} player voted out</div>
         ${rpPortrait(tr.loser,'xl elim')}<div class="rp-elim-name">${tr.loser}</div>
         <div class="rp-elim-arch">${vpArchLabel(tr.loser)}</div>
         <div class="rp-elim-quote">"${_eq}"</div>
@@ -26460,10 +26479,11 @@ function rpBuildVotes(ep) {
 
   // ── Helper: render a clean elimination card ──
   const _renderElimCard = (name, isBs, placeOffset) => {
-    const _place = (ep.gsSnapshot?.activePlayers ?? gs.activePlayers).length + (placeOffset||0) + 1;
+    // Chronological elimination number (1st voted out, 2nd voted out, etc.)
+    const _elimNumber = (gs.episodeHistory || []).filter(h => h.eliminated && h.num < ep.num).length + 1 + (placeOffset || 0);
     const _eq = vpGenerateQuote(name, ep, 'eliminated');
     return `<div class="rp-elim">
-      <div class="rp-elim-eyebrow">${isBs ? 'BLINDSIDE — ' : ''}${ordinal(_place)} player voted out</div>
+      <div class="rp-elim-eyebrow">${isBs ? 'BLINDSIDE — ' : ''}${ordinal(_elimNumber)} player voted out</div>
       ${rpPortrait(name,'xl elim')}<div class="rp-elim-name">${name}</div>
       <div class="rp-elim-arch">${vpArchLabel(name)}</div>
       <div class="rp-elim-quote">"${_eq}"</div>

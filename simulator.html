@@ -5569,7 +5569,17 @@ function buildVoteReason(voter, target, type, ctx = {}) {
 
   if (type === 'challenge-liability') {
     const { cLabel, phase } = ctx;
-    const ws = ['physical','endurance','mental'].filter(k => targetS[k] <= 5);
+    // Check all challenge-relevant stats, prioritize the one matching THIS challenge's category
+    const _catStats = cLabel === 'physical' ? ['physical']
+      : cLabel === 'endurance' ? ['endurance','physical']
+      : cLabel === 'puzzle' ? ['mental']
+      : cLabel === 'social' ? ['social','mental']
+      : cLabel === 'balance' ? ['endurance','physical']
+      : []; // mixed — no single stat dominates
+    const _allStats = ['physical','endurance','mental','social'];
+    // Sort: challenge-category stats first, then others
+    const _sorted = [..._catStats, ..._allStats.filter(k => !_catStats.includes(k))];
+    const ws = _sorted.filter(k => targetS[k] <= 5);
     const weakLabel = ws.length ? ws[0] : 'challenges';
     const challengeContext = cLabel && cLabel !== 'Mixed' ? ` — they just lost a ${cLabel} challenge` : '';
     return pick([
@@ -24551,11 +24561,17 @@ function rpBuildVotingPlans(ep) {
     const _h = [...(voter || ''), ...target].reduce((s, c) => s + c.charCodeAt(0), 0);
     const _pick = arr => arr[_h % arr.length];
     // Priority order: challenge weakness > personal friction > threat category > social position > generic
-    if (_cw >= 5.5 && !gs.isMerged) return _pick([
-      `Challenge liability — ${target} has been a weak link and the tribe can't keep carrying that weight.`,
-      `The tribe needs strength right now. ${target} isn't providing it. That's enough.`,
-      `When the tribe keeps losing, the weakest link becomes the clearest vote.`,
-    ]);
+    if (_cw >= 5.5 && !gs.isMerged) {
+      const _chalCat = ep.challengeCategory || '';
+      const _catLabel = _chalCat === 'physical' ? 'physical challenges' : _chalCat === 'endurance' ? 'endurance'
+        : _chalCat === 'puzzle' ? 'puzzles' : _chalCat === 'social' ? 'social challenges'
+        : _chalCat === 'balance' ? 'balance' : 'challenges';
+      return _pick([
+        `Challenge liability — ${target} can't keep up in ${_catLabel} and the tribe can't carry that.`,
+        `The tribe needs strength right now. ${target} isn't providing it in ${_catLabel}. That's enough.`,
+        `When the tribe keeps losing, the weakest link becomes the clearest vote. ${target} is that link.`,
+      ]);
+    }
     if (_bond <= -2) return _pick([
       `Bad blood with ${target}. When the relationship is this far gone, the vote is personal.`,
       `The friction with ${target} has been building. Tonight it becomes a ballot.`,

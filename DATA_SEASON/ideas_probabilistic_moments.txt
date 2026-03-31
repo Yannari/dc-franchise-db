@@ -67,24 +67,29 @@ and the downstream consequence. None are guaranteed — all fire on a roll.
   HIGH PRIORITY
   ─────────────
 
-[4] INFORMATION BROKER
-Trigger: player with social >= 8 + loyalty <= 4, game has 2 active named alliances
-Roll: ~25% once per game (not per episode)
-What happens: player starts feeding intel to both sides simultaneously. While active,
-  they gain a "broker" status flag that boosts their social standing but increases
-  betrayal risk. The broker gets exposed when both alliances compare notes — usually
-  at a merge or swap — causing a massive bond collapse with everyone who trusted them.
-Mechanic: flag persists across episodes, escalating exposure risk each ep. Blowup
-  generates a camp event and tanks bonds with both alliances at once.
+[DONE] #4 Information Broker — implemented via checkInformationBroker(ep).
+  Trigger: player in 2+ active alliances, social >= 5, loyalty <= 5. Once per game.
+  Roll: social * 0.025 * (6 - loyalty) * 0.1. Three code paths: activation, active effects, exposure.
+  Active: +0.15 bond/ep with both alliances, eavesdrop intel, -0.5 heat. Camp events: brokerWhisper,
+  brokerManipulate, brokerConfidence, brokerClose (60%/ep, gold "Double Agent" badge).
+  Exposure risk: episodesActive * 0.08, merge/swap +0.30, cap 85%. Detector = highest intuition
+  among alliance members (named in narrative). Bond collapse: -(1.0 + episodesActive * 0.4).
+  Light -0.3 between alliance members. Exposer gets +0.5 bond with everyone. +2.0 heat for 2 eps.
+  Exposure events: brokerExposed (confrontation), brokerFallout, brokerDefense (personality-driven).
+  gs.broker = { player, alliances, startEp, episodesActive, exposed, exposedEp, exposer }.
 
-[8] VOTE MISCOMMUNICATION
-Trigger: alliance with 3+ members, one member has mental <= 4 or social <= 3
-Roll: ~10-15% per tribal that alliance votes together
-What happens: one member of the alliance votes the wrong name — miscounted the
-  split, misheard the plan, or changed their mind last second without telling anyone.
-  Can accidentally send the wrong person home or break up a split vote.
-Mechanic: that player's vote is randomly redirected. If it changes the outcome, the
-  incident is noted in WHY THIS VOTE HAPPENED. Alliance cracks afterward.
+[DONE] #8 Vote Miscommunication — implemented inline in simulateVotes.
+  Trigger: loyal voter in 3+ member alliance, mental <= 4 OR social <= 3.
+  Roll: (5 - mental) * 0.025 + (4 - social) * 0.03 (~5-15%).
+  Wrong target: if split vote active, votes the wrong half. Else: personal grudge (bond <= -2),
+  or 2nd-highest-heat player (someone who was discussed). Tagged [MISCOMMUNICATION] in vote log.
+  ep.voteMiscommunications saved. WHY section explains if it changed the outcome.
+  Also implemented: SPLIT VOTE SYSTEM — alliances split votes to flush idols.
+  Confirmed idol = auto-split, suspected = strategic * 0.06 roll. Needs 4+ members.
+  Secondary target: primary's closest ally (bond >= 2), fallback lowest-threat.
+  Assignment: majority on primary, bond-protected (bond >= 3 with secondary → primary group).
+  Betrayal exempt: voting the split secondary is NOT a betrayal in decayAllianceTrust.
+  ep.splitVotePlans saved. WHY section explains when split catches an idol.
 
 [10] THE GOAT MUTINY
 Trigger: 2 players both identified as "goats" (archetype = goat OR threat score <= 2)

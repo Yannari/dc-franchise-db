@@ -1265,7 +1265,7 @@
       <div id="setup-panel-alliances" class="setup-panel">
         <div class="setup-rels-content">
           <div class="setup-header">
-            <h2>Pre-Game Alliances <span style="font-size:12px;font-weight:400;color:var(--muted)">— alliances that start day 1 (max 5 members each)</span></h2>
+            <h2>Pre-Game Alliances <span style="font-size:12px;font-weight:400;color:var(--muted)">— alliances that start day 1 (max 6 members each)</span></h2>
             <div class="setup-header-actions">
               <button class="btn btn-secondary btn-sm" onclick="clearPreAlliances()">Clear</button>
               <button class="btn btn-primary btn-sm" onclick="openAllianceForm(null)" style="width:auto" id="add-alliance-btn">+ Add</button>
@@ -2595,7 +2595,7 @@ function submitAlliance() {
   if (!name) { alert('Enter an alliance name.'); return; }
   const members = [...document.querySelectorAll('#alliance-member-grid [data-selected="true"]')].map(b => b.dataset.member);
   if (members.length < 2) { alert('Select at least 2 members.'); return; }
-  if (members.length > 5) { alert('Maximum 5 members per alliance.'); return; }
+  if (members.length > 6) { alert('Maximum 6 members per alliance.'); return; }
   const alliance = {
     id: editingAllianceId || Date.now().toString(36) + Math.random().toString(36).slice(2,4),
     name, members, permanence: alliancePerm,
@@ -2934,6 +2934,9 @@ function computeHeat(name, tribalPlayers, alliances) {
     const _shmHeat = _shm.phase === 'target' ? 1.2 : _shm.phase === 'honeymoon' ? 0.6 : _shm.phase === 'ride-or-die' ? 1.5 : 0.2;
     heat += gs.phase === 'post-merge' ? _shmHeat : _shmHeat * 0.3;
   }
+  // Information Broker — active: hard to target (-0.5), exposed: massive target (+2.0 for 2 eps)
+  if (gs.broker?.player === name && !gs.broker.exposed) heat -= 0.5;
+  if (gs.brokerExposedHeat === name && gs.brokerExposedEp && ((gs.episode || 0) + 1) - gs.brokerExposedEp <= 2) heat += 2.0;
   // Bold unpredictability — proportional: every point of boldness makes you slightly harder to target
   const _nameBoldness = pStats(name).boldness;
   heat -= _nameBoldness * 0.04; // stat 4=-0.16, stat 7=-0.28, stat 10=-0.40
@@ -3308,6 +3311,9 @@ function detectBetrayals(ep) {
     voters.forEach(voter => {
       const entry = ep.votingLog.find(l => l.voter === voter);
       if (!entry || entry.voted === consensusVote) return;
+      // Split vote exemption: if voter was assigned to vote the split target, that's the plan, not betrayal
+      const _splitPlan = (ep.splitVotePlans || []).find(sp => sp.alliance === alliance.name);
+      if (_splitPlan && entry.voted === _splitPlan.secondary && _splitPlan.secondaryVoters.includes(voter)) return;
       // This player voted against the alliance consensus — betrayal
       const betrayerVotedFor = entry.voted;
       const consensusTargetEliminated = ep.eliminated === consensusVote;
@@ -3568,6 +3574,62 @@ function formAlliances(members, tribeLabel, challengeLabel) {
     const targets = members.filter(m => !naMembers.includes(m) && !gs._currentImmuneNames?.includes(m));
     if (!targets.length) return;
     alliances.push({ members: naMembers, target: pickTarget(naMembers, targets, challengeLabel), label: na.name, type: 'alliance', tribe: tribeLabel, challengeLabel });
+  });
+
+  // ── SPLIT VOTE: evaluate each alliance for idol-flush split ──
+  alliances.forEach(a => {
+    if (a.type === 'solo' || a.members.length < 4) return; // need 4+ to split
+    if (!a.target) return;
+    const _atTribal = a.members.filter(m => present.has(m));
+    if (_atTribal.length < 4) return;
+
+    // Check: confirmed idol on target?
+    const _confirmedIdol = gs.knownIdolHoldersThisEp?.has(a.target) || gs.knownIdolHoldersPersistent?.has(a.target);
+    // Check: suspected idol? Strategic roll.
+    const _maxStrategic = Math.max(..._atTribal.map(m => pStats(m).strategic));
+    const _suspectedIdol = !_confirmedIdol && threatScore(a.target) >= 5 && Math.random() < _maxStrategic * 0.06;
+
+    if (!_confirmedIdol && !_suspectedIdol) return;
+
+    // Pick secondary target: primary's closest ally outside the alliance
+    const _nonAlliance = members.filter(m => !a.members.includes(m) && m !== a.target
+      && !(gs._currentImmuneNames || []).includes(m));
+    let _secondary = null;
+    // Option C: closest ally of primary target (bond >= 2)
+    const _primaryAllies = _nonAlliance
+      .filter(m => getBond(a.target, m) >= 2)
+      .sort((x, y) => getBond(a.target, y) - getBond(a.target, x));
+    if (_primaryAllies.length) {
+      _secondary = _primaryAllies[0];
+    } else {
+      // Fallback A: lowest-threat non-immune outside alliance
+      const _safe = _nonAlliance.sort((x, y) => threatScore(x) - threatScore(y));
+      if (_safe.length) _secondary = _safe[0];
+    }
+    if (!_secondary) return;
+
+    // Assign voters: majority on primary, minority on secondary
+    // Bond protection: if voter has bond >= 3 with secondary, force to primary group
+    const _primaryGroup = [];
+    const _secondaryGroup = [];
+    const _secondaryCount = a.members.length <= 4 ? 1 : 2;
+    // Sort by bond with secondary (lowest bond = best candidate for secondary group)
+    const _sorted = [..._atTribal].sort((x, y) => getBond(x, _secondary) - getBond(y, _secondary));
+    _sorted.forEach((m, i) => {
+      if (_secondaryGroup.length < _secondaryCount && getBond(m, _secondary) < 3) {
+        _secondaryGroup.push(m);
+      } else {
+        _primaryGroup.push(m);
+      }
+    });
+    // If we couldn't fill secondary group (everyone has bond >= 3 with secondary), skip split
+    if (!_secondaryGroup.length) return;
+
+    // Decorate the alliance object
+    a.splitTarget = _secondary;
+    a.splitPrimary = _primaryGroup;
+    a.splitSecondary = _secondaryGroup;
+    a.splitReason = _confirmedIdol ? 'confirmed-idol' : 'suspected-idol';
   });
 
   return alliances;
@@ -5301,7 +5363,12 @@ function buildVoteReason(voter, target, type, ctx = {}) {
   const priorVotesAgainst = (gs.episodeHistory || []).reduce((n, h) => n + (h.votingLog||[]).filter(v => v.voted === target).length, 0);
 
   if (type === 'loyal') {
-    const { myAlliance, openVote, phase } = ctx;
+    const { myAlliance, openVote, phase, splitVote } = ctx;
+    if (splitVote) return pick([
+      `split vote — covering the idol`,
+      `split vote — assigned to the backup target`,
+      `the alliance split the votes — this is the insurance plan`,
+    ]);
     // For consensus groups, invented labels ("The Mike Trio", "Zoey's Three") should NOT appear
     // in vote reasons — they're tactical voting blocs, not real alliances. Use the lead player's
     // name instead. Only real named alliances (gs.namedAlliances) or strong bond-based alliances
@@ -5714,8 +5781,42 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
       reason = buildVoteReason(voter, target, 'conflict-flip', { conflictAlliance, myAlliance });
       isDefecting = true;
     } else if (!target && isLoyal && !resistsBond && allianceTarget && allianceTarget !== voter && !isImmune(allianceTarget)) {
-      target = allianceTarget;
-      reason = buildVoteReason(voter, target, 'loyal', { myAlliance, openVote, phase: gs.phase });
+      // Split vote: if voter is in the secondary group, vote the split target instead
+      if (myAlliance?.splitTarget && myAlliance.splitSecondary?.includes(voter) && !isImmune(myAlliance.splitTarget)) {
+        target = myAlliance.splitTarget;
+        reason = buildVoteReason(voter, target, 'loyal', { myAlliance, openVote, phase: gs.phase, splitVote: true });
+      } else {
+        target = allianceTarget;
+        reason = buildVoteReason(voter, target, 'loyal', { myAlliance, openVote, phase: gs.phase });
+      }
+      // [8] VOTE MISCOMMUNICATION: low mental or social player votes the wrong name
+      // They were loyal — they TRIED to follow the plan — but miscounted, misheard, or got confused.
+      if (target && myAlliance && myAlliance.members.length >= 3 && (s.mental <= 4 || s.social <= 3)) {
+        const _miscChance = (s.mental <= 4 ? (5 - s.mental) * 0.025 : 0) + (s.social <= 3 ? (4 - s.social) * 0.03 : 0);
+        if (Math.random() < _miscChance) {
+          // Wrong target: alliance's secondary (if split), or 2nd-highest-heat player, or personal grudge
+          const _miscCandidates = tribalPlayers.filter(p => p !== voter && p !== target && !isImmune(p));
+          let _miscTarget = null;
+          // If split vote exists, vote the wrong half
+          if (myAlliance.splitTarget && target === allianceTarget) _miscTarget = myAlliance.splitTarget;
+          else if (myAlliance.splitTarget && target === myAlliance.splitTarget) _miscTarget = allianceTarget;
+          // Personal grudge override
+          if (!_miscTarget) {
+            const _grudge = _miscCandidates.filter(p => getBond(voter, p) <= -2).sort((a,b) => getBond(voter, a) - getBond(voter, b))[0];
+            if (_grudge) _miscTarget = _grudge;
+          }
+          // Fallback: someone discussed but not the final pick (2nd highest heat)
+          if (!_miscTarget && _miscCandidates.length) {
+            _miscTarget = _miscCandidates.sort((a,b) => computeHeat(b, tribalPlayers, alliances) - computeHeat(a, tribalPlayers, alliances))[0];
+          }
+          if (_miscTarget) {
+            target = _miscTarget;
+            reason = `[MISCOMMUNICATION] ${voter} tried to follow the plan but voted the wrong name`;
+            ep.voteMiscommunications = ep.voteMiscommunications || [];
+            ep.voteMiscommunications.push({ voter, intended: allianceTarget, actual: _miscTarget, alliance: myAlliance.label });
+          }
+        }
+      }
     } else {
       isDefecting = true;
       // Intuition-based preemptive strike: paranoid/desperate player senses they're being targeted and strikes first
@@ -10609,7 +10710,7 @@ function checkAllianceRecruitment(ep) {
     if (ep.allianceRecruits.some(r => r.player === recruit)) return;
     if (alliance.members.includes(recruit)) return;
     // Cap: don't recruit if alliance already has 5+ active members
-    if (alliance.members.filter(m => active.includes(m)).length >= 5) return;
+    if (alliance.members.filter(m => active.includes(m)).length >= 6) return;
 
     // ── Acceptance check: based on RELATIONSHIPS, not stats ──
     const _rS = pStats(recruit);
@@ -11011,6 +11112,213 @@ function checkParanoiaSpiral(ep) {
       }
     });
   });
+}
+
+// [4] INFORMATION BROKER — player in 2+ alliances with high social + low loyalty plays both sides.
+// Intel from both alliances, bond boosts while active, escalating exposure risk per episode.
+// Exposure: bond collapse with both alliances, heat spike, named exposer gets credit.
+function checkInformationBroker(ep) {
+  const active = gs.activePlayers;
+  const epNum = ep.num || (gs.episode || 0) + 1;
+  const _pick = arr => arr[Math.floor(Math.random() * arr.length)];
+
+  if (!gs.broker) gs.broker = null;
+
+  // ── PATH 1: No broker yet — check if one emerges ──
+  if (!gs.broker) {
+    // Once per game
+    const activeAlliances = (gs.namedAlliances || []).filter(a => a.active && a.members.filter(m => active.includes(m)).length >= 2);
+    if (activeAlliances.length < 2) return;
+
+    for (const player of active) {
+      const s = pStats(player);
+      if (s.social < 5 || s.loyalty > 5) continue;
+      const playerAlliances = activeAlliances.filter(a => a.members.includes(player));
+      if (playerAlliances.length < 2) continue;
+
+      // Proportional roll: social * 0.025 * (6 - loyalty) * 0.1
+      const chance = s.social * 0.025 * (6 - s.loyalty) * 0.1;
+      if (Math.random() >= chance) continue;
+
+      // Broker emerges
+      gs.broker = {
+        player,
+        alliances: playerAlliances.slice(0, 2).map(a => a.name),
+        startEp: epNum,
+        episodesActive: 0,
+        exposed: false,
+        exposedEp: null,
+      };
+
+      // Activation camp event
+      const campKey = gs.isMerged ? 'merge' : (gs.tribes.find(t => t.members.includes(player))?.name || 'merge');
+      if (ep.campEvents?.[campKey]) {
+        const block = ep.campEvents[campKey];
+        const evts = Array.isArray(block) ? block : (block.post || block.pre || []);
+        const _pr = pronouns(player);
+        evts.push({ type: 'brokerConfidence', text: _pick([
+          `${player} has ${_pr.posAdj} hands in two pots and nobody knows it yet. ${_pr.Sub} ${_pr.sub==='they'?'sit':'sits'} between two alliances, hearing everything, saying exactly what each side needs to hear. It's working. For now.`,
+          `${player} knows what ${gs.broker.alliances[0]} is planning. ${player} also knows what ${gs.broker.alliances[1]} is planning. Neither group knows ${_pr.sub} ${_pr.sub==='they'?'know':'knows'} the other side's plan. That's the game ${_pr.sub}'s playing.`,
+          `There's a version of this game where ${player} gets caught. But right now? Right now ${_pr.sub} ${_pr.sub==='they'?'have':'has'} more information than anyone else on this island. That's power.`,
+        ]), players: [player] });
+      }
+      ep.brokerEvents = ep.brokerEvents || [];
+      ep.brokerEvents.push({ type: 'activation', player });
+      return; // one broker per game
+    }
+    return;
+  }
+
+  // ── PATH 2: Broker exists but already exposed — nothing to do ──
+  if (gs.broker.exposed) return;
+
+  // ── PATH 3: Broker is active — run per-episode effects ──
+  const broker = gs.broker;
+  const player = broker.player;
+  if (!active.includes(player)) { broker.exposed = true; return; } // broker eliminated
+
+  broker.episodesActive++;
+  const s = pStats(player);
+  const _pr = pronouns(player);
+  const campKey = gs.isMerged ? 'merge' : (gs.tribes.find(t => t.members.includes(player))?.name || 'merge');
+  ep.brokerEvents = ep.brokerEvents || [];
+
+  // Gather all alliance members (excluding broker)
+  const allianceMembers = new Set();
+  broker.alliances.forEach(aName => {
+    const alliance = (gs.namedAlliances || []).find(a => a.name === aName && a.active);
+    if (alliance) alliance.members.filter(m => m !== player && active.includes(m)).forEach(m => allianceMembers.add(m));
+  });
+
+  // If both alliances dissolved, broker status ends quietly
+  if (!allianceMembers.size) { broker.exposed = true; return; }
+
+  // ── Intel gain: eavesdrop boost ──
+  if (!gs.playerStates[player]) gs.playerStates[player] = {};
+  gs.playerStates[player].eavesdropBoostThisEp = true;
+
+  // ── Bond boost: +0.15 with all alliance members ──
+  allianceMembers.forEach(m => addBond(player, m, 0.15));
+
+  // ── Exposure check ──
+  const baseRisk = broker.episodesActive * 0.08;
+  const mergeSwapSpike = (ep.isMerge || ep.swapResult) ? 0.30 : 0;
+  const exposureRisk = Math.min(0.85, baseRisk + mergeSwapSpike);
+
+  // Detector: highest intuition among all alliance members
+  let bestDetector = null, bestDetectorScore = 0;
+  allianceMembers.forEach(m => {
+    const score = pStats(m).intuition * 0.04 + Math.random() * 0.1;
+    if (score > bestDetectorScore) { bestDetectorScore = score; bestDetector = m; }
+  });
+
+  if (Math.random() < exposureRisk && bestDetector) {
+    // ── EXPOSURE FIRES ──
+    broker.exposed = true;
+    broker.exposedEp = epNum;
+    broker.exposer = bestDetector;
+
+    // Bond collapse with all alliance members
+    const bondHit = -(1.0 + broker.episodesActive * 0.4);
+    allianceMembers.forEach(m => {
+      addBond(player, m, bondHit);
+    });
+
+    // Light secondary hit between alliance members (-0.3 "how did we not see this")
+    const memberArr = [...allianceMembers];
+    for (let i = 0; i < memberArr.length; i++) {
+      for (let j = i + 1; j < memberArr.length; j++) {
+        addBond(memberArr[i], memberArr[j], -0.3);
+      }
+    }
+
+    // Exposer bond boost
+    allianceMembers.forEach(m => {
+      if (m !== bestDetector) addBond(bestDetector, m, 0.5);
+    });
+
+    // Heat spike flag
+    gs.brokerExposedHeat = player;
+    gs.brokerExposedEp = epNum;
+
+    // Camp events: exposure blowup (guaranteed)
+    if (ep.campEvents?.[campKey]) {
+      const block = ep.campEvents[campKey];
+      const evts = Array.isArray(block) ? block : (block.post || block.pre || []);
+      const _dPr = pronouns(bestDetector);
+      const isBoldDetector = pStats(bestDetector).boldness >= 6;
+
+      // Event 1: The confrontation
+      evts.push({ type: 'brokerExposed', text: _pick(isBoldDetector ? [
+        `${bestDetector} stood up at camp and said it in front of everyone. "${player} has been playing both sides. ${gs.broker.alliances[0]} and ${gs.broker.alliances[1]}. Ask ${_pr.obj}." The silence that followed was worse than any argument.`,
+        `${bestDetector} didn't wait for the right moment. ${_dPr.Sub} walked up to ${player} and laid it out: "You've been feeding ${gs.broker.alliances[0]} our plans and feeding us theirs. It's done." ${player} didn't deny it fast enough.`,
+      ] : [
+        `${bestDetector} pulled three people aside before ${player} woke up. By breakfast, everyone knew. ${player} walked into a camp that had already made up its mind.`,
+        `It started with a question ${bestDetector} asked ${player} that didn't add up. Then another. Then ${bestDetector} went to ${gs.broker.alliances[0]} and asked what ${player} had told them. The story didn't match. It was over.`,
+      ]), players: [bestDetector, player] });
+
+      // Event 2: Fallout
+      evts.push({ type: 'brokerFallout', text: _pick([
+        `The camp split open. Not into new alliances — into silence. Nobody trusted anyone. ${player} did that. Even the people who weren't involved are recalculating.`,
+        `${gs.broker.alliances[0]} and ${gs.broker.alliances[1]} spent the afternoon comparing notes. Every conversation ${player} had with either side — exposed. The betrayal wasn't the worst part. The worst part was how long it worked.`,
+        `People are angry. Not screaming angry — the quiet kind. The kind where you don't talk to someone at camp and everybody notices.`,
+      ]), players: [player] });
+
+      // Event 3: Broker's defense
+      const isBoldBroker = s.boldness >= 6;
+      const isLowTemp = s.temperament <= 4;
+      evts.push({ type: 'brokerDefense', text: _pick(isBoldBroker ? [
+        `${player} didn't apologize. "I played the game. Both of you were using me too — you just didn't know I was using you back." The audacity almost earned respect. Almost.`,
+        `"You can be mad," ${player} said. "But I had more information than anyone in this game for ${broker.episodesActive} episodes. That's not betrayal — that's strategy." Nobody agreed, but nobody could argue the math.`,
+      ] : isLowTemp ? [
+        `${player} tried to explain. It came out wrong. Then it came out worse. By the end, ${_pr.sub} ${_pr.sub==='they'?'were':'was'} sitting alone by the fire, and the explanation had turned into an apology nobody accepted.`,
+        `The confrontation broke ${player}. Not strategically — emotionally. ${_pr.Sub} didn't have a speech prepared for this. ${_pr.Sub} just said "I'm sorry" and it wasn't enough.`,
+      ] : [
+        `${player} tried to reframe it. "I was keeping options open for all of us." The room didn't buy it. ${_pr.Sub} knew ${_pr.sub} ${_pr.sub==='they'?'were':'was'} done the moment ${bestDetector} opened ${pronouns(bestDetector).posAdj} mouth.`,
+        `${player} went quiet after the confrontation. Not defeated — calculating. But the math has changed. The numbers aren't there anymore.`,
+      ]), players: [player] });
+    }
+
+    ep.brokerExposure = { player, exposer: bestDetector, episodesActive: broker.episodesActive, bondHit, alliances: [...broker.alliances] };
+    ep.brokerEvents.push({ type: 'exposed', player, exposer: bestDetector });
+    return;
+  }
+
+  // ── Not exposed this episode — generate active-phase camp event (~60%) ──
+  if (Math.random() < 0.60 && ep.campEvents?.[campKey]) {
+    const block = ep.campEvents[campKey];
+    const evts = Array.isArray(block) ? block : (block.post || block.pre || []);
+    const memberArr = [...allianceMembers];
+    const randomAlly = memberArr[Math.floor(Math.random() * memberArr.length)];
+
+    const eventRoll = Math.random();
+    if (eventRoll < 0.25) {
+      evts.push({ type: 'brokerWhisper', text: _pick([
+        `${player} caught ${randomAlly} alone and dropped a name. "Watch out for that one. I've been hearing things." ${randomAlly} didn't question where the intel came from. That's the trick.`,
+        `${player} slipped ${randomAlly} a piece of information that nobody else had. It was true. That's what makes ${player} dangerous — the lies are mixed in with just enough truth.`,
+      ]), players: [player, randomAlly] });
+      ep.brokerEvents.push({ type: 'whisper', player, target: randomAlly });
+    } else if (eventRoll < 0.50) {
+      const scapegoat = active.filter(p => p !== player && !allianceMembers.has(p))[0] || randomAlly;
+      evts.push({ type: 'brokerManipulate', text: _pick([
+        `${player} mentioned ${scapegoat}'s name in two separate conversations today — casually, but deliberately. By sunset, ${scapegoat} was a topic. ${player} wasn't.`,
+        `Somebody asked who was running things. ${player} said nothing — but glanced at ${scapegoat}. The redirect was so smooth nobody noticed it was a redirect.`,
+      ]), players: [player, scapegoat] });
+      ep.brokerEvents.push({ type: 'manipulate', player, scapegoat });
+    } else if (eventRoll < 0.75) {
+      evts.push({ type: 'brokerConfidence', text: _pick([
+        `${player} is ${broker.episodesActive} episodes into the double game and it's still holding. ${_pr.Sub} ${_pr.sub==='they'?'know':'knows'} what both sides are planning before they plan it. The question isn't whether it works — it's how long.`,
+        `Confessional: "${_pr.Sub === 'They' ? 'I have' : 'I have'} two alliances. Two sets of plans. Two sets of trust. And neither one knows about the other. This is the best position in the game." — ${player}`,
+      ]), players: [player] });
+      ep.brokerEvents.push({ type: 'confidence', player });
+    } else {
+      evts.push({ type: 'brokerClose', text: _pick([
+        `${randomAlly} asked ${player} a question today that came a little too close. "Who told you that?" ${player} deflected. ${randomAlly} let it go. But ${_pr.sub} won't forget the question.`,
+        `There was a moment at camp where ${player}'s story didn't quite line up. ${randomAlly} noticed. ${player} noticed that ${randomAlly} noticed. Neither said anything. The clock is ticking.`,
+      ]), players: [player, randomAlly] });
+      ep.brokerEvents.push({ type: 'close', player, suspector: randomAlly });
+    }
+  }
 }
 
 // [2] SOCIAL BOMB / FAUX PAS — player with low temperament or high boldness says something
@@ -13201,6 +13509,8 @@ function generateCampEvents(ep, phase = 'both') {
 
     // Paranoia spiral — fires before social bomb (bond hits stack)
     checkParanoiaSpiral(ep);
+    // Information broker — double agent playing both alliances
+    checkInformationBroker(ep);
     // Social bomb check — fires before alliance quitting (bond hits can trigger quitting)
     checkSocialBomb(ep);
     // Alliance quitting evaluated once after all events are done, then recruitment (scenarios A + B)
@@ -13213,6 +13523,7 @@ function generateCampEvents(ep, phase = 'both') {
   // ── 'both' phase: no pre/post distinction (no-tribal, finale) — just one block ──
   if (phase === 'both') {
     checkParanoiaSpiral(ep);
+    checkInformationBroker(ep);
     // Social bomb + alliance quitting + recruitment after the single-phase generation
     checkSocialBomb(ep);
     checkAllianceQuitting(ep);
@@ -14407,6 +14718,12 @@ function simulateEpisode() {
   gs.lostVoteThisEp = [...(gs.lostVotes || [])];
   let alliances  = formAlliances(ep.tribalPlayers, tribeLabel, ep.challengeCategory);
   ep.alliances = alliances;
+  // Save split vote plans for betrayal exemption + VP display
+  ep.splitVotePlans = alliances.filter(a => a.splitTarget).map(a => ({
+    alliance: a.label, primary: a.target, secondary: a.splitTarget,
+    primaryVoters: [...(a.splitPrimary || [])], secondaryVoters: [...(a.splitSecondary || [])],
+    reason: a.splitReason,
+  }));
   // Flush pre-tribal fractures detected inside formAlliances into ep.allianceQuits
   if (gs._pendingDepartures?.length) {
     ep.allianceQuits = ep.allianceQuits || [];
@@ -16189,6 +16506,12 @@ function updatePopularity(ep) {
       case 'hotheadExplosion':    if (p)       add(p, 'drama', 3, evt.type); break;
       case 'showmancerMoment':    if (ps?.[0]) { add(ps[0], 'drama', 2, evt.type); add(ps[0], 'like', 1, evt.type); } break;
       case 'paranoiaSpiral':      if (ps?.[0]) { add(ps[0], 'drama', 3, evt.type); add(ps[0], 'like', -1, evt.type); } break;
+      case 'brokerWhisper':       case 'brokerManipulate': case 'brokerConfidence': case 'brokerClose':
+                                  if (ps?.[0]) add(ps[0], 'drama', 2, evt.type); break;
+      case 'brokerExposed':       if (ps?.[0]) { add(ps[0], 'drama', 4, evt.type); add(ps[0], 'like', -2, evt.type); }
+                                  if (ps?.[1]) add(ps[1], 'drama', 2, 'brokerExposer'); break;
+      case 'brokerFallout':       break; // no individual scoring — it's a group reaction
+      case 'brokerDefense':       if (ps?.[0]) add(ps[0], 'drama', 2, evt.type); break;
       case 'showmanceSpark':      if (ps?.[0]) { add(ps[0], 'drama', 3, evt.type); add(ps[0], 'like', 2, evt.type); } break;
       case 'showmanceHoneymoon':  if (ps?.[0]) { add(ps[0], 'drama', 1, evt.type); add(ps[0], 'like', 1, evt.type); } break;
       case 'showmanceTarget':     if (ps?.[0]) add(ps[0], 'drama', 2, evt.type); break;
@@ -19197,6 +19520,10 @@ function patchEpisodeHistory(ep) {
   // Showmance lifecycle
   if (!h.showmanceBreakup && !h.showmanceSeparation) checkShowmanceBreakup(ep);
   if (ep.paranoiaSpirals?.length) h.paranoiaSpirals = ep.paranoiaSpirals;
+  if (ep.splitVotePlans?.length) h.splitVotePlans = ep.splitVotePlans;
+  if (ep.voteMiscommunications?.length) h.voteMiscommunications = ep.voteMiscommunications;
+  if (ep.brokerEvents?.length) h.brokerEvents = ep.brokerEvents;
+  if (ep.brokerExposure) h.brokerExposure = ep.brokerExposure;
   if (ep.showmanceBreakup) h.showmanceBreakup = ep.showmanceBreakup;
   if (ep.showmanceSeparation) h.showmanceSeparation = ep.showmanceSeparation;
   if (ep.showmanceEvents?.length) h.showmanceEvents = ep.showmanceEvents;
@@ -19239,6 +19566,7 @@ function snapshotGameState() {
     journeyLostVotes: gs.journeyLostVotes ? [...gs.journeyLostVotes] : [],
     lostVotes: gs.lostVotes ? [...gs.lostVotes] : [],
     showmances: (gs.showmances || []).map(sh => ({ ...sh, players: [...sh.players] })),
+    broker: gs.broker ? { ...gs.broker, alliances: [...gs.broker.alliances] } : null,
   };
 }
 
@@ -23327,7 +23655,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
     const isRelEvt = ['bond','fight','dispute','tdBond','flirtation','intimidation',
                       'sideDeal','strategicTalk','comfort','rumor','watchingYou','goatOblivious',
                       'idolConfession','idolBetrayal','idolShare','showmancerMoment',
-                      'paranoiaSpiral',
+                      'paranoiaSpiral','brokerWhisper','brokerManipulate','brokerExposed',
                       'showmanceSpark','showmanceHoneymoon','showmanceNoticed','showmanceTarget','showmanceJealousy','showmanceRideOrDie',
                       'socialBombReaction','chalThreatReaction',
                       'goatObserver','ftcThreatStrategist'].includes(evt.type);
@@ -23454,6 +23782,13 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'legacyScheme'          ? (evt.badgeText || 'Heir Scheming')
                      : evt.type === 'legacyWeight'          ? (evt.badgeText || 'Legacy Weight')
                      : evt.type === 'legacyHeirWatch'       ? (evt.badgeText || 'Watching the Heir')
+                     : evt.type === 'brokerWhisper'        ? 'Double Agent'
+                     : evt.type === 'brokerManipulate'     ? 'Double Agent'
+                     : evt.type === 'brokerConfidence'     ? 'Double Agent'
+                     : evt.type === 'brokerClose'          ? 'Double Agent'
+                     : evt.type === 'brokerExposed'        ? 'EXPOSED'
+                     : evt.type === 'brokerFallout'        ? 'Trust Shattered'
+                     : evt.type === 'brokerDefense'        ? 'Defense'
                      : evt.type === 'paranoiaSpiral'       ? '⚠ Paranoia Spiral'
                      : evt.type === 'showmanceSpark'       ? '💕 Showmance'
                      : evt.type === 'showmanceHoneymoon'   ? '💕 Honeymoon'
@@ -23517,6 +23852,9 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'legacyScheme' ? 'red'
                      : evt.type === 'legacyWeight' ? ''
                      : evt.type === 'legacyHeirWatch' ? 'gold'
+                     : evt.type === 'brokerWhisper' || evt.type === 'brokerManipulate' || evt.type === 'brokerConfidence' || evt.type === 'brokerClose' ? 'gold'
+                     : evt.type === 'brokerExposed' || evt.type === 'brokerFallout' ? 'red'
+                     : evt.type === 'brokerDefense' ? (pStats(evt.players?.[0])?.boldness >= 6 ? 'gold' : 'red')
                      : evt.type === 'paranoiaSpiral' ? 'red'
                      : evt.type === 'showmanceSpark' || evt.type === 'showmanceHoneymoon' || evt.type === 'showmanceRideOrDie' ? 'green'
                      : evt.type === 'showmanceNoticed' || evt.type === 'showmanceTarget' ? 'gold'
@@ -23554,7 +23892,9 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
       'heroConfront','heroProtect','heroSacrifice','heroWeight',
       'amuletReunion','amuletUpgrade','amuletBetrayal','amuletRivalry','legacyInheritance',
       'legacyConfession','legacyLeak','legacyScheme','legacyWeight','legacyHeirWatch']);
-    const spotTypes = new Set(['socialBomb','socialBombReaction','paranoiaSpiral','showmancerMoment',
+    const spotTypes = new Set(['socialBomb','socialBombReaction','paranoiaSpiral',
+      'brokerWhisper','brokerManipulate','brokerConfidence','brokerClose','brokerExposed','brokerFallout','brokerDefense',
+      'showmancerMoment',
       'showmanceSpark','showmanceHoneymoon','showmanceNoticed','showmanceTarget','showmanceJealousy','showmanceRideOrDie',
       'unexpectedCompetence','underdogMoment','loneWolf','meltdown','leadershipClash',
       'showboat','pureHatred','nemesis','unbreakableBond','rideOrDie','rekindle','breakup',
@@ -25666,6 +26006,25 @@ function vpWhyBullets(name, votelog, alliances, ep) {
       `The idol changed everything. ${play.player} negated ${_vn} vote${_vn !== 1 ? 's' : ''}, redirecting the outcome entirely. ${name} had the next-highest count`,
       `${_vn} vote${_vn !== 1 ? 's' : ''} for ${play.player} were wiped out by a played idol. ${name}'s ${majVoters.length} vote${majVoters.length !== 1 ? 's' : ''} became the plurality — and the boot`,
     ]));
+  });
+  // Vote miscommunication impact: someone voted the wrong name and it may have changed the result
+  (ep.voteMiscommunications || []).forEach(mc => {
+    if (mc.actual === name) {
+      bullets.push(`${mc.voter} tried to follow ${mc.alliance}'s plan to vote ${mc.intended} — but wrote the wrong name. That misfire landed on ${name}.`);
+    } else if (mc.intended === name) {
+      bullets.push(`${mc.voter} was supposed to vote ${name} but miscommunicated and voted ${mc.actual} instead. One fewer vote on ${name} — the margin mattered.`);
+    }
+  });
+  // Split vote impact: if eliminated was the secondary target and idol caught the primary
+  (ep.splitVotePlans || []).forEach(sp => {
+    if (sp.secondary === name) {
+      const idolCaughtPrimary = (ep.idolPlays || []).some(p => (p.player === sp.primary || p.playedFor === sp.primary) && (p.votesNegated || 0) > 0);
+      if (idolCaughtPrimary) {
+        bullets.push(`The alliance split their votes between ${sp.primary} and ${name}. ${sp.primary} played an idol — the split worked. ${name} was the backup target and it held.`);
+      } else {
+        bullets.push(`The alliance split their votes — ${name} was the secondary target as insurance against an idol play on ${sp.primary}.`);
+      }
+    }
   });
   // Vote steal impact
   const _voteStealPlaysWhy = (ep.idolPlays || []).filter(p => p.type === 'voteSteal' && p.player !== name);

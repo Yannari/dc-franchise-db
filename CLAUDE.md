@@ -26,6 +26,7 @@ Simulation core:
 - `handleAdvantageInheritance()` — called before stripping advantages on elimination. Handles Legacy willing + Amulet power upgrade.
 - `buildVoteReason()` — generates vote reasoning text, includes amulet/legacy/KiP-specific reasons
 - `checkParanoiaSpiral()` — paranoid + strategic player turns on closest ally (self-fulfilling prophecy)
+- `checkInformationBroker()` — double agent in 2+ alliances, escalating exposure risk, bond collapse on blowup
 - `checkShowmanceFormation()` — detects new showmances (bond + archetype compatibility)
 - `updateShowmancePhases()` — progresses showmance lifecycle (spark → honeymoon → target → ride-or-die/broken-up)
 - `checkShowmanceBreakup()` — detects partner elimination (betrayal breakup vs grief separation)
@@ -96,6 +97,8 @@ VP Finale screens (10 screens):
 - `gs.showmances[]` — showmance objects: `{ players:[a,b], phase, sparkEp, episodesActive, jealousPlayer, tested }`
   - Phases: `'spark'` → `'honeymoon'` → `'target'` → `'ride-or-die'` or `'broken-up'`
 - `gs.paranoiaNudges` — `{ [target]: { accusedBy, ep } }` — paranoia spiral vote nudge (expires after 1 ep)
+- `gs.broker` — `{ player, alliances:[name1,name2], startEp, episodesActive, exposed, exposedEp, exposer }` — information broker state (once per game)
+- `gs.brokerExposedHeat` / `gs.brokerExposedEp` — heat spike tracking after broker exposure (2 episodes)
 
 Finale-specific ep fields:
 - `ep.benchAssignments` — `{ [finalist]: [supporter1, ...] }`
@@ -299,6 +302,37 @@ Two return systems (mutually exclusive, configured via `cfg.riFormat`):
 - Self-fulfilling prophecy: `gs.paranoiaNudges[target]` → -0.15 loyalty in `simulateVotes` that episode
 - Two tonal variants: bold (public confrontation) vs strategic (quiet campaign)
 - VP badge: red "⚠ Paranoia Spiral", +3 drama, -1 likability
+
+## Information Broker
+- `checkInformationBroker(ep)` — called in `generateCampEvents` post-phase after paranoia spiral
+- **Trigger:** Player in 2+ active alliances, `social >= 5`, `loyalty <= 5`. Once per game.
+- **State:** `gs.broker = { player, alliances:[name1,name2], startEp, episodesActive, exposed, exposedEp, exposer }`
+- **Active phase:** +0.15 bond/ep with both alliances, eavesdrop intel, -0.5 heat in `computeHeat`
+- **Exposure risk:** `episodesActive * 0.08` + merge/swap spike (+0.30), cap 85%
+- **Detector:** Highest `intuition * 0.04` among alliance members — named exposer in narrative
+- **Bond collapse:** `-(1.0 + episodesActive * 0.4)` with all alliance members. Light -0.3 between members.
+- **Heat spike:** `gs.brokerExposedHeat` → +2.0 heat for 2 episodes post-exposure
+- **Camp events:** brokerWhisper, brokerManipulate, brokerConfidence, brokerClose (active); brokerExposed, brokerFallout, brokerDefense (exposure)
+- **VP:** gold "Double Agent" badges while active, red "EXPOSED"/"Trust Shattered" on blowup
+
+## Split Vote System
+- Alliances with 4+ members at tribal can split votes to flush idols
+- **Confirmed idol** (target in `knownIdolHolders`): auto-split, no roll
+- **Suspected idol** (high threat, no confirmation): `max(strategic) * 0.06` roll
+- Secondary target: primary's closest ally (bond ≥ 2), fallback = lowest-threat outsider
+- Assignment: majority on primary, minority on secondary. Bond protection: bond ≥ 3 with secondary → primary group
+- `alliance.splitTarget` / `alliance.splitPrimary` / `alliance.splitSecondary` on the alliance object
+- `ep.splitVotePlans` saved for betrayal exemption + VP WHY section
+- Voting the split secondary is NOT a betrayal in `detectBetrayals` — the plan was agreed on
+- Vote reason: "split vote — covering the idol" / "split vote — assigned to the backup target"
+
+## Vote Miscommunication
+- Inline in `simulateVotes` — fires AFTER the loyal vote is determined
+- Trigger: alliance 3+ members, voter has mental ≤ 4 OR social ≤ 3
+- Roll: `(5 - mental) * 0.025 + (4 - social) * 0.03` (~5-15%)
+- Wrong target: if split active → votes wrong half. Else: personal grudge (bond ≤ -2), or 2nd-highest-heat player
+- Tagged `[MISCOMMUNICATION]` in vote log. `ep.voteMiscommunications` saved to history
+- WHY section explains if the misfire changed the outcome
 
 ## Alliance Betrayal Costs
 Bond damage scales by severity:

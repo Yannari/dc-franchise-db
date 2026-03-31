@@ -2928,7 +2928,12 @@ function computeHeat(name, tribalPlayers, alliances) {
     heat += Math.min(1.5, pairHeat);
   }
   // Showmance — recognized romantic pair draws even more heat
-  if (gs.showmances?.some(sh => sh.includes(name))) heat += gs.phase === 'post-merge' ? 0.6 : 0.2;
+  const _shm = getShowmance(name);
+  if (_shm) {
+    // Heat scales by phase: spark barely noticed, target = full heat
+    const _shmHeat = _shm.phase === 'target' ? 1.2 : _shm.phase === 'honeymoon' ? 0.6 : _shm.phase === 'ride-or-die' ? 1.5 : 0.2;
+    heat += gs.phase === 'post-merge' ? _shmHeat : _shmHeat * 0.3;
+  }
   // Bold unpredictability — proportional: every point of boldness makes you slightly harder to target
   const _nameBoldness = pStats(name).boldness;
   heat -= _nameBoldness * 0.04; // stat 4=-0.16, stat 7=-0.28, stat 10=-0.40
@@ -3591,7 +3596,7 @@ function pickTarget(attackers, victims, challengeLabel) {
       const allAtTribal = [...attackers, v];
       const maxBond = allAtTribal.filter(p => p !== v).reduce((m, p) => Math.max(m, getBond(v, p)), 0);
       const pairThreat = (maxBond >= 8 ? 1.0 : maxBond >= 7 ? 0.5 : 0)
-                       + (gs.showmances?.some(sh => sh.includes(v)) ? 0.5 : 0);
+                       + (getShowmance(v) ? 0.5 : 0);
       const standoutMod = gs._chalStandouts?.includes(v) ? 0.35 : 0;
       // Hub personality shifts targeting priority
       let personalityMod = 0;
@@ -4477,7 +4482,7 @@ function _slasherPickEvents(player, survivors, context) {
   if (!victimName && nearby.length) victimName = nearby[0];
 
   // Showmance partner
-  const showmancePartner = (gs.showmances || []).find(sh => sh.includes(player))?.find(p => p !== player);
+  const showmancePartner = getShowmancePartner(player);
 
   // Player's past event IDs for diminishing returns
   const pastIds = (eventHistory[player] || []);
@@ -4791,7 +4796,8 @@ function simulateSlasherNight(ep) {
 
   // Showmance pairs always together
   (gs.showmances || []).forEach(sh => {
-    const [a, b] = sh;
+    if (sh.phase === 'broken-up') return;
+    const [a, b] = sh.players;
     if (activePlayers.includes(a) && activePlayers.includes(b)) {
       if (!pairings[a].includes(b)) pairings[a].push(b);
       if (!pairings[b].includes(a)) pairings[b].push(a);
@@ -5604,7 +5610,8 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
 
     // Bond with the alliance's intended target — strong bond creates resistance
     const targetBond = allianceTarget ? getBond(voter, allianceTarget) : 0;
-    const isShowmanceTarget = allianceTarget && gs.showmances?.some(sh => sh.includes(voter) && sh.includes(allianceTarget));
+    const _voterSh = getShowmance(voter);
+    const isShowmanceTarget = allianceTarget && _voterSh?.players.includes(allianceTarget);
     // Bond resistance scales proportionally — stronger bonds make it harder to vote someone out
     // Bond resistance: scales with bond strength. Strong bonds = near-impossible to betray.
     // Bond 2 → 20%, Bond 5 → 50%, Bond 7 → 75%, Bond 9 → 92%
@@ -5612,7 +5619,7 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
       : targetBond >= 7 ? Math.min(0.95, 0.50 + targetBond * 0.05)
       : targetBond >= 1 ? Math.min(0.75, targetBond * 0.10) : 0;
     // Showmance partner — even in free-vote situations, won't write their name
-    const showmancePartner = gs.showmances?.find(sh => sh.includes(voter))?.find(p => p !== voter);
+    const showmancePartner = getShowmancePartner(voter);
     const showmanceResist = showmancePartner && tribalPlayers.includes(showmancePartner)
       && Math.random() < 0.82;
 
@@ -9650,13 +9657,13 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
       // Prefer confirmed showmance partner if present, otherwise closest compatible person
       const compatOthers = others.filter(p => romanticCompat(a, p));
       if (!compatOthers.length) continue;
-      const smPartner = gs.showmances?.find(sh => sh.includes(a))?.find(p => p !== a);
+      const smPartner = getShowmancePartner(a);
       const b = (smPartner && compatOthers.includes(smPartner))
         ? smPartner
         : compatOthers.reduce((best, p) => getBond(a, p) >= getBond(a, best) ? p : best, compatOthers[0]);
       addBond(a, b, 1.5);
       const _sA = pronouns(a), _sB = pronouns(b);
-      const isCouple = gs.showmances?.some(sh => sh.includes(a) && sh.includes(b));
+      const isCouple = gs.showmances?.some(sh => sh.players.includes(a) && sh.players.includes(b) && sh.phase !== 'broken-up');
       const smLines = isCouple ? [
         `${a} and ${b} aren't hiding it anymore. They walk back from the well holding hands and nobody says a word.`,
         `${b} leans in and ${a} meets them halfway. The kiss is quick, easy — like they've done it before. The tribe tactfully looks elsewhere.`,
@@ -11231,18 +11238,27 @@ const SHOWMANCE_ARCHETYPE_MULT = {
   'challenge-beast':   0.15, // focused on winning, not bonding
 };
 
+// Helper: check if a player is in any active showmance
+function getShowmance(name) {
+  return (gs.showmances || []).find(sh => sh.players.includes(name) && sh.phase !== 'broken-up');
+}
+function getShowmancePartner(name) {
+  const sh = getShowmance(name);
+  return sh ? sh.players.find(p => p !== name) : null;
+}
+
 function checkShowmanceFormation(ep) {
   if (!gs.showmances) gs.showmances = [];
   const active = gs.activePlayers;
 
   // Cap: max 2 active showmances at a time — 3+ starts feeling like Love Island
-  const activeShowmances = gs.showmances.filter(sh => sh.every(p => active.includes(p)));
+  const activeShowmances = gs.showmances.filter(sh => sh.phase !== 'broken-up' && sh.players.every(p => active.includes(p)));
   if (activeShowmances.length >= 2) return;
 
   for (let i = 0; i < active.length; i++) {
     for (let j = i + 1; j < active.length; j++) {
       const a = active[i], b = active[j];
-      if (gs.showmances.some(sh => sh.includes(a) && sh.includes(b))) continue;
+      if (gs.showmances.some(sh => sh.players.includes(a) && sh.players.includes(b))) continue;
 
       // Must be on the same tribe (or post-merge) to develop a showmance
       const sameTribe = gs.isMerged || gs.tribes.some(t => t.members.includes(a) && t.members.includes(b));
@@ -11266,8 +11282,16 @@ function checkShowmanceFormation(ep) {
       const chance = Math.min(0.40, 0.07 * combinedMult);
       if (Math.random() >= chance) continue;
 
-      // Showmance forms
-      gs.showmances.push([a, b]);
+      // Showmance forms — object with phase tracking
+      const showmance = {
+        players: [a, b],
+        phase: 'spark',        // spark → honeymoon → target → resolved (ride-or-die or broken-up)
+        sparkEp: ep.num || (gs.episode || 0) + 1,
+        episodesActive: 0,
+        jealousPlayer: null,   // 3rd wheel if detected
+        tested: false,         // whether "the test" has fired
+      };
+      gs.showmances.push(showmance);
       ep.newShowmances = ep.newShowmances || [];
       ep.newShowmances.push({ a, b });
 
@@ -11276,14 +11300,176 @@ function checkShowmanceFormation(ep) {
       if (tribeName && ep.campEvents?.[tribeName]) {
         const block = ep.campEvents[tribeName];
         const evts = Array.isArray(block) ? block : (block.pre || []);
-        evts.push({ type: 'showmancerMoment', text:
+        evts.push({ type: 'showmanceSpark', text:
           `At some point between the first day and now, whatever ${a} and ${b} have stopped being a question. ` +
-          `The tribe has a word for it. Nobody says it out loud — but they all think it every time ${a} and ${b} are in the same frame.`
+          `The tribe has a word for it. Nobody says it out loud — but they all think it every time ${a} and ${b} are in the same frame.`,
+          players: [a, b]
         });
       }
       return; // one showmance per episode check is enough
     }
   }
+}
+
+// ── Showmance Lifecycle: phase progression + events each episode ──
+function updateShowmancePhases(ep) {
+  if (!gs.showmances?.length) return;
+  const active = gs.activePlayers;
+  const epNum = ep.num || (gs.episode || 0) + 1;
+  const _pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  ep.showmanceEvents = ep.showmanceEvents || [];
+
+  gs.showmances.forEach(sh => {
+    if (sh.phase === 'broken-up' || sh.phase === 'ride-or-die') return;
+    const [a, b] = sh.players;
+    if (!active.includes(a) || !active.includes(b)) return; // one eliminated — skip
+    sh.episodesActive = (sh.episodesActive || 0) + 1;
+    const bond = getBond(a, b);
+    const _pA = pronouns(a), _pB = pronouns(b);
+
+    const tribeName = gs.isMerged ? 'merge' : (gs.tribes.find(t => t.members.includes(a))?.name || 'merge');
+    const pushEvt = (type, text, players) => {
+      if (!ep.campEvents?.[tribeName]) return;
+      const block = ep.campEvents[tribeName];
+      const evts = Array.isArray(block) ? block : (block.post || block.pre || []);
+      evts.push({ type, text, players: players || [a, b] });
+      ep.showmanceEvents.push({ type, players: players || [a, b], phase: sh.phase });
+    };
+
+    // ── Phase transitions ──
+    if (sh.phase === 'spark' && sh.episodesActive >= 2) {
+      sh.phase = 'honeymoon';
+    } else if (sh.phase === 'honeymoon' && sh.episodesActive >= 4) {
+      sh.phase = 'target';
+    }
+
+    // ── RIDE-OR-DIE: survived 7+ episodes together → bond locks ──
+    if (sh.episodesActive >= 7 && sh.phase !== 'ride-or-die' && bond >= 6) {
+      sh.phase = 'ride-or-die';
+      addBond(a, b, 2.0); // cement the bond
+      pushEvt('showmanceRideOrDie', _pick([
+        `${a} and ${b} have stopped pretending this is temporary. They're going to the end together or not at all. Everyone knows it. Nobody can do anything about it.`,
+        `Seven episodes in, ${a} and ${b} are inseparable. The tribe has accepted it like weather — you can't vote it out, you can't split it up, you just have to plan around it.`,
+        `${a} and ${b} made a promise somewhere between day one and now. The kind that doesn't get spoken out loud but everyone can see. Ride or die.`,
+      ]));
+      return;
+    }
+
+    // ── Phase-specific effects ──
+    if (sh.phase === 'honeymoon') {
+      // Accelerated bond growth
+      addBond(a, b, 0.3);
+      // Camp events: the glow period
+      if (Math.random() < 0.50) {
+        pushEvt('showmanceHoneymoon', _pick([
+          `${a} and ${b} are doing that thing again where they finish each other's sentences. The tribe watches like it's a nature documentary.`,
+          `${b} brought ${a} water without being asked. ${a} didn't say thank you — just smiled. The tribe filed it away.`,
+          `Late at night, ${a} and ${b} are the last ones awake. Whatever they're whispering about isn't strategy.`,
+          `${a} laughed at something ${b} said and the whole camp went quiet for a second. Not awkward — just aware.`,
+          `${b} reached for ${a}'s hand during a quiet moment and didn't let go. The tribe pretended not to notice. They all noticed.`,
+        ]));
+      }
+      // Tribe notices — foreshadowing the target phase
+      if (sh.episodesActive >= 3 && Math.random() < 0.35) {
+        const observer = active.filter(p => p !== a && p !== b && pStats(p).strategic >= 5);
+        if (observer.length) {
+          const obs = observer[Math.floor(Math.random() * observer.length)];
+          pushEvt('showmanceNoticed', _pick([
+            `${obs} watches ${a} and ${b} from across the fire and starts doing math. Two votes. Always together. Always protecting each other. That's a problem.`,
+            `"Those two are going to the end together if we don't do something." ${obs} says it to nobody in particular. Everybody hears it.`,
+          ]), [obs, a, b]);
+        }
+      }
+    }
+
+    if (sh.phase === 'target') {
+      // Heat escalation — the pair is now actively targeted
+      // (computeHeat already adds +0.6 post-merge; this adds camp event pressure)
+      if (Math.random() < 0.40) {
+        const strategists = active.filter(p => p !== a && p !== b && pStats(p).strategic >= 6);
+        if (strategists.length) {
+          const plotter = strategists[Math.floor(Math.random() * strategists.length)];
+          pushEvt('showmanceTarget', _pick([
+            `${plotter} has been talking to people about ${a} and ${b}. The pitch is simple: split them up now, or watch them ride to the final two together.`,
+            `The showmance has become the elephant in every strategy conversation. ${plotter} is the one who finally says it out loud: "One of them has to go."`,
+            `${plotter} pulled three people aside today with the same message: ${a} and ${b} are a guaranteed final two if nobody breaks them up. The numbers are starting to move.`,
+          ]), [plotter, a, b]);
+        }
+      }
+    }
+
+    // ── JEALOUSY / THIRD WHEEL (~20% per episode when conditions met) ──
+    if (!sh.jealousPlayer && sh.episodesActive >= 2 && Math.random() < 0.20) {
+      // Find a 3rd player who has bond >= 3 with one partner but feels excluded
+      const candidates = active.filter(p => {
+        if (p === a || p === b) return false;
+        const bondA = getBond(p, a), bondB = getBond(p, b);
+        // Close to one, not close to the other — the asymmetry creates jealousy
+        return (bondA >= 3 && bondB < 1) || (bondB >= 3 && bondA < 1);
+      });
+      if (candidates.length) {
+        const jealous = candidates[Math.floor(Math.random() * candidates.length)];
+        sh.jealousPlayer = jealous;
+        const closerTo = getBond(jealous, a) > getBond(jealous, b) ? a : b;
+        const other = closerTo === a ? b : a;
+        addBond(jealous, a, -0.5);
+        addBond(jealous, b, -0.5);
+        pushEvt('showmanceJealousy', _pick([
+          `${jealous} used to be the person ${closerTo} talked to at night. Now that's ${other}'s role. ${jealous} hasn't said anything about it. The silence says enough.`,
+          `Something shifted between ${jealous} and ${closerTo}. It happened the day ${closerTo} started spending every free moment with ${other}. ${jealous} clocked it. The distance is growing.`,
+          `${jealous} sat alone at the fire last night while ${closerTo} and ${other} whispered on the beach. "I'm happy for them," ${jealous} said. Nobody believed it.`,
+        ]), [jealous, closerTo, other]);
+      }
+    }
+  });
+}
+
+// ── Showmance Test: fires when a partner is the top vote target at tribal ──
+function checkShowmanceTest(voter, allianceTarget, tribalPlayers, ep) {
+  if (!allianceTarget) return null;
+  const sh = getShowmance(voter);
+  if (!sh || sh.tested || sh.phase === 'broken-up' || sh.phase === 'ride-or-die') return null;
+  if (!sh.players.includes(allianceTarget)) return null; // target isn't their partner
+  // The Test fires — the alliance wants to vote out their showmance partner
+  sh.tested = true;
+  const partner = allianceTarget;
+  const s = pStats(voter);
+  const bond = getBond(voter, partner);
+  // Will they defy the alliance to protect the partner?
+  // High bond + high loyalty + showmance attachment = resist
+  const defyChance = Math.min(0.90, bond * 0.08 + s.loyalty * 0.04 + 0.15);
+  ep.showmanceTests = ep.showmanceTests || [];
+  ep.showmanceTests.push({ voter, partner, defied: Math.random() < defyChance, bond, phase: sh.phase });
+  return { defyChance };
+}
+
+// ── Showmance Breakup: detect when one partner votes out the other ──
+function checkShowmanceBreakup(ep) {
+  if (!gs.showmances?.length || !ep.eliminated) return;
+  const elim = ep.eliminated;
+  gs.showmances.forEach(sh => {
+    if (sh.phase === 'broken-up') return;
+    if (!sh.players.includes(elim)) return;
+    const partner = sh.players.find(p => p !== elim);
+    if (!gs.activePlayers.includes(partner)) return;
+    // Did the partner vote for them?
+    const partnerVotedThem = (ep.votingLog || []).some(v => v.voter === partner && v.voted === elim);
+    if (partnerVotedThem) {
+      // BREAKUP — the ultimate betrayal
+      sh.phase = 'broken-up';
+      sh.breakupEp = ep.num || (gs.episode || 0) + 1;
+      sh.breakupVoter = partner;
+      addBond(partner, elim, -5.0); // devastating collapse
+      ep.showmanceBreakup = { voter: partner, eliminated: elim, bond: getBond(partner, elim) };
+    } else {
+      // Partner didn't vote for them — they tried to save them but failed
+      sh.phase = 'broken-up';
+      sh.breakupEp = ep.num || (gs.episode || 0) + 1;
+      sh.breakupType = 'separated'; // not betrayal, just loss
+      // Bond stays high — grief, not anger
+      ep.showmanceSeparation = { survivor: partner, eliminated: elim, bond: getBond(partner, elim) };
+    }
+  });
 }
 
 function checkIdolConfessions(ep) {
@@ -12952,6 +13138,8 @@ function generateCampEvents(ep, phase = 'both') {
 
   // ── Showmance formation: check all pairs after bonds are updated this episode ──
   checkShowmanceFormation(ep);
+  // ── Showmance lifecycle: progress phases, generate phase-specific events ──
+  updateShowmancePhases(ep);
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -15891,6 +16079,11 @@ function updatePopularity(ep) {
       // Positive Drama
       case 'hotheadExplosion':    if (p)       add(p, 'drama', 3, evt.type); break;
       case 'showmancerMoment':    if (ps?.[0]) { add(ps[0], 'drama', 2, evt.type); add(ps[0], 'like', 1, evt.type); } break;
+      case 'showmanceSpark':      if (ps?.[0]) { add(ps[0], 'drama', 3, evt.type); add(ps[0], 'like', 2, evt.type); } break;
+      case 'showmanceHoneymoon':  if (ps?.[0]) { add(ps[0], 'drama', 1, evt.type); add(ps[0], 'like', 1, evt.type); } break;
+      case 'showmanceTarget':     if (ps?.[0]) add(ps[0], 'drama', 2, evt.type); break;
+      case 'showmanceJealousy':   if (ps?.[0]) { add(ps[0], 'drama', 3, evt.type); add(ps[0], 'like', -1, evt.type); } break;
+      case 'showmanceRideOrDie':  if (ps?.[0]) { add(ps[0], 'drama', 2, evt.type); add(ps[0], 'like', 2, evt.type); } break;
       case 'bigMoveThoughts':     if (p)       add(p, 'drama', 2, evt.type); break;
       case 'allianceCrack':       if (ps?.[0]) add(ps[0], 'drama', 2, evt.type); break;
       case 'confessional':        if (p)       add(p, 'drama', 1, evt.type); break;
@@ -18891,6 +19084,12 @@ function patchEpisodeHistory(ep) {
   if (!h.loser && ep.loser) h.loser = { name: ep.loser.name, members: [...(ep.loser.members||[])] };
   // Tribes at start
   if (!h.tribesAtStart && ep.tribesAtStart) h.tribesAtStart = ep.tribesAtStart.map(t => ({ name: t.name, members: [...t.members] }));
+  // Showmance lifecycle
+  if (!h.showmanceBreakup && !h.showmanceSeparation) checkShowmanceBreakup(ep);
+  if (ep.showmanceBreakup) h.showmanceBreakup = ep.showmanceBreakup;
+  if (ep.showmanceSeparation) h.showmanceSeparation = ep.showmanceSeparation;
+  if (ep.showmanceEvents?.length) h.showmanceEvents = ep.showmanceEvents;
+  if (ep.showmanceTests?.length) h.showmanceTests = ep.showmanceTests;
 }
 
 function snapshotGameState() {
@@ -18928,6 +19127,7 @@ function snapshotGameState() {
     advantages: (gs.advantages || []).map(a => ({ ...a })),
     journeyLostVotes: gs.journeyLostVotes ? [...gs.journeyLostVotes] : [],
     lostVotes: gs.lostVotes ? [...gs.lostVotes] : [],
+    showmances: (gs.showmances || []).map(sh => ({ ...sh, players: [...sh.players] })),
   };
 }
 
@@ -23016,12 +23216,13 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
     const isRelEvt = ['bond','fight','dispute','tdBond','flirtation','intimidation',
                       'sideDeal','strategicTalk','comfort','rumor','watchingYou','goatOblivious',
                       'idolConfession','idolBetrayal','idolShare','showmancerMoment',
+                      'showmanceSpark','showmanceHoneymoon','showmanceNoticed','showmanceTarget','showmanceJealousy','showmanceRideOrDie',
                       'socialBombReaction','chalThreatReaction',
                       'goatObserver','ftcThreatStrategist'].includes(evt.type);
     const isTipOff      = evt.type === 'eavesdrop';
     const isIdolConf    = evt.type === 'idolConfession';
     const isIdolShare   = evt.type === 'idolShare';
-    const isShowmance   = evt.type === 'showmancerMoment';
+    const isShowmance   = evt.type === 'showmancerMoment' || evt.type?.startsWith('showmance');
     const isAlliance    = evt.type === 'allianceForm';
     const isAllianceCrk   = evt.type === 'allianceCrack';
     const isSocialBomb    = evt.type === 'socialBomb';
@@ -23141,6 +23342,12 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'legacyScheme'          ? (evt.badgeText || 'Heir Scheming')
                      : evt.type === 'legacyWeight'          ? (evt.badgeText || 'Legacy Weight')
                      : evt.type === 'legacyHeirWatch'       ? (evt.badgeText || 'Watching the Heir')
+                     : evt.type === 'showmanceSpark'       ? '💕 Showmance'
+                     : evt.type === 'showmanceHoneymoon'   ? '💕 Honeymoon'
+                     : evt.type === 'showmanceNoticed'     ? '⚠ Power Couple'
+                     : evt.type === 'showmanceTarget'      ? '🎯 Split Them Up'
+                     : evt.type === 'showmanceJealousy'    ? 'Third Wheel'
+                     : evt.type === 'showmanceRideOrDie'   ? '💕 Ride or Die'
                      : evt.type === 'journeyLoss'          ? 'NO VOTE'
                      : evt.type === 'pureHatred'           ? 'PURE HATRED'
                      : evt.type === 'nemesis'              ? 'NEMESIS'
@@ -23197,6 +23404,9 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'legacyScheme' ? 'red'
                      : evt.type === 'legacyWeight' ? ''
                      : evt.type === 'legacyHeirWatch' ? 'gold'
+                     : evt.type === 'showmanceSpark' || evt.type === 'showmanceHoneymoon' || evt.type === 'showmanceRideOrDie' ? 'green'
+                     : evt.type === 'showmanceNoticed' || evt.type === 'showmanceTarget' ? 'gold'
+                     : evt.type === 'showmanceJealousy' ? 'red'
                      : evt.type === 'journeyLoss' ? 'red'
                      : evt.type === 'pureHatred' || evt.type === 'nemesis' || evt.type === 'breakup' ? 'red'
                      : evt.type === 'unbreakableBond' || evt.type === 'rideOrDie' || evt.type === 'rekindle' ? 'green'
@@ -23231,6 +23441,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
       'amuletReunion','amuletUpgrade','amuletBetrayal','amuletRivalry','legacyInheritance',
       'legacyConfession','legacyLeak','legacyScheme','legacyWeight','legacyHeirWatch']);
     const spotTypes = new Set(['socialBomb','socialBombReaction','showmancerMoment',
+      'showmanceSpark','showmanceHoneymoon','showmanceNoticed','showmanceTarget','showmanceJealousy','showmanceRideOrDie',
       'unexpectedCompetence','underdogMoment','loneWolf','meltdown','leadershipClash',
       'showboat','pureHatred','nemesis','unbreakableBond','rideOrDie','rekindle','breakup',
       'hotheadExplosion','beastDrills','chaosAgentStirsUp','wildcardPivot']);
@@ -24720,8 +24931,8 @@ function buildTribalQA(ep, tribal) {
   const immune = ep.immunityWinner && tribal.includes(ep.immunityWinner) ? ep.immunityWinner : null;
 
   // Showmance pair at tribal
-  const showmancePair = (gs.showmances || []).find(pair =>
-    pair.every(p => tribal.includes(p))
+  const showmancePair = (gs.showmances || []).find(sh =>
+    sh.phase !== 'broken-up' && sh.players.every(p => tribal.includes(p))
   );
 
   const qa = [];
@@ -24895,7 +25106,7 @@ function buildTribalQA(ep, tribal) {
 
   // ── Exchange 6: Showmance pair ────────────────────────────────────────
   if (showmancePair && qa.length < 5) {
-    const [pA, pB] = showmancePair;
+    const [pA, pB] = showmancePair.players;
     const h = _tcnh(pA + pB, ep.num + 5);
     const question = [
       `${hostName} looks between ${pA} and ${pB}. "You two have been close out here. Does that protect you both — or make you both a target?"`,

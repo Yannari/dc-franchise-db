@@ -85,6 +85,21 @@ and the downstream consequence. None are guaranteed — all fire on a roll.
     Hero shields allies (+1 each, -1 self) + bond gains.
   Roster updated: Heather/Scott/Jo/Sugar/Taylor → villain. DJ/Brick/Sanders/Samey → hero.
 
+[DONE] #22 Showmance Lifecycle — implemented via updateShowmancePhases(ep) + checkShowmanceBreakup(ep).
+  gs.showmances converted from [[a,b]] arrays to objects with phase tracking:
+  { players, phase, sparkEp, episodesActive, jealousPlayer, tested }.
+  6 phases: spark → honeymoon (ep 2+, +0.3 bond/ep, couple events) → target (ep 4+,
+  camp plots to split them) → ride-or-die (ep 7+ if bond >= 6, bond locks) or broken-up.
+  Jealousy/Third Wheel: ~20% per ep, 3rd player close to one partner feels excluded (-0.5 bond).
+  The Test: when alliance targets showmance partner, loyalty check fires (defyChance scales
+  with bond + loyalty). Breakup: if partner votes to eliminate → bond collapses to -5.
+  Separation: partner eliminated but didn't vote for them → grief, not anger.
+  computeHeat scales by phase: spark +0.2, honeymoon +0.6, target +1.2, ride-or-die +1.5.
+  Camp events: showmanceSpark, showmanceHoneymoon, showmanceNoticed, showmanceTarget,
+  showmanceJealousy, showmanceRideOrDie. VP badges: green (spark/honeymoon/ride-or-die),
+  gold (noticed/target), red (jealousy). Drama scoring per phase.
+  Helper functions: getShowmance(name), getShowmancePartner(name).
+
 
 ── RELATIONSHIPS ──────────────────────────────────────────────────────────────
 

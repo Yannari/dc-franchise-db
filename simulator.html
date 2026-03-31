@@ -24535,13 +24535,24 @@ function rpBuildVotingPlans(ep) {
       `The friction with ${target} has been building. Tonight it becomes a ballot.`,
       `This isn't strategy — it's honesty. ${target} and I don't work.`,
     ]);
-    if (cat.label === 'Physical Threat') return _pick([
-      `${target} wins challenges. Post-merge that becomes untouchable. Move now.`,
-      `Every challenge ${target} wins is a vote the tribe can't take. The window is closing.`,
-    ]);
+    if (cat.label === 'Physical Threat') {
+      const _epNum = ep.num || 1;
+      const _chalRec = gs.chalRecord?.[target];
+      const _hasWins = _chalRec?.wins >= 1 || _chalRec?.podiums >= 2;
+      return _hasWins ? _pick([
+        `${target} keeps winning challenges. Post-merge that becomes untouchable. Move now.`,
+        `Every challenge ${target} wins is a vote the tribe can't take. The window is closing.`,
+        `${target} has been dominating. The tribe can see what's coming if nobody acts.`,
+      ]) : _pick([
+        `Look at ${target}. Built for challenges. Once immunity is individual, nobody catches that.`,
+        `${target} is the strongest person out here. That's a shield now — but it becomes a weapon at merge.`,
+        `The tribe sees ${target}'s physical game. Nobody is saying it out loud yet, but everyone is thinking the same thing.`,
+      ]);
+    }
     if (cat.label === 'Strategic Threat') return _pick([
       `${target} is running things quietly. The longer they stay, the harder they are to remove.`,
       `${target} has fingerprints on every decision. That kind of control doesn't get easier to stop.`,
+      `${target} reads the game better than most. That's the kind of player who ends up at the end.`,
     ]);
     if (cat.label === 'Social Threat' || cat.label === 'Jury Threat') return _pick([
       `${target} is too well-liked. That's a jury winner if nobody does something about it.`,
@@ -24743,8 +24754,8 @@ function rpBuildVotingPlans(ep) {
       `Every challenge ${targetName} wins is a vote we can't take. Right now they're touchable. That changes the moment the numbers thin out.`,
       `At merge, the players who can win challenges are the players you can't get rid of. ${targetName} can win challenges. That makes tonight necessary.`,
     ], voterName, targetName) : _hp([
-      `${targetName} is going to win challenges all the way to the end if nobody does anything about it now. The pre-merge window is the only one where we control this.`,
-      `Challenge performers at this stage become untouchable later. Getting ${targetName} out before the merge is smarter than hoping we can beat them one-on-one when it counts.`,
+      `Look at ${targetName}. Built for this. Once individual immunity starts, nobody's catching that. The time to move is now, while we still vote as a tribe.`,
+      `${targetName} is the strongest person out here. That's useful right up until it isn't. Pre-merge is when you take the shot — post-merge the window closes.`,
       `Physical threats are easiest to remove in a tribe setting, when you have the cover of numbers. Post-merge that goes away. This is the cleanest shot we get.`,
       `${targetName} is dominant in the challenges that matter. Taking that ability out of the game before individual immunity kicks in is the right call.`,
     ], voterName, targetName);

@@ -26564,16 +26564,47 @@ function rpBuildVotingPlans(ep) {
       `${target} is alone out here — not by choice, but by consequence. The relationships are gone and so is the protection.`,
       `The tribe doesn't just want ${target} gone. They need ${target} gone. That kind of animosity doesn't wait.`,
     ]);
-    if (cat.label === 'Outsider') return _pick([
-      `${target} doesn't have strong bonds with anyone here. That makes the vote clean.`,
-      `Nobody is going to fight for ${target}. That's the simplest reason to write a name down.`,
-      `The tribe needs a vote that doesn't fracture anything. ${target} is that vote.`,
-    ]);
-    if (cat.label === 'On the Outs') return _pick([
-      `${target}'s connections are thin. The person with the fewest defenders is the easiest vote.`,
-      `${target} hasn't built enough relationships to survive a tribal where names are needed.`,
-      `When the group needs a name everyone can agree on, it lands on the person nobody is protecting.`,
-    ]);
+    if (cat.label === 'Outsider' || cat.label === 'On the Outs') {
+      // Build specific reasoning from actual relationship data
+      const _tribal = ep.tribalPlayers || gs.activePlayers;
+      const _enemies = _tribal.filter(p => p !== target && getBond(target, p) <= -1);
+      const _allies = _tribal.filter(p => p !== target && getBond(target, p) >= 2);
+      const _inAlliance = (gs.namedAlliances || []).some(a => a.active !== false && a.members.includes(target));
+      const _socialBombed = ep.socialBombs?.includes(target);
+      const _isStandout = (() => {
+        const pl = ep.chalPlacements || [];
+        return pl.length >= 3 && pl[0] === target;
+      })();
+      const _tPr = pronouns(target);
+
+      // Pick the most specific reason available
+      if (_enemies.length >= 2 && !_inAlliance) return _pick([
+        `${target} has friction with ${_enemies.slice(0, 2).join(' and ')} — and no alliance to shield ${_tPr.obj}. When the votes need a name, the person with enemies and no friends is the obvious choice.`,
+        `${_enemies.length} people on this tribe actively dislike ${target}. With no alliance backing, that's a death sentence at tribal.`,
+      ]);
+      if (_socialBombed) return _pick([
+        `${target}'s outburst at camp sealed it. The tribe was already lukewarm — the social bomb turned lukewarm into consensus.`,
+        `After what happened at camp, ${target} gave the tribe permission to write ${_tPr.pos} name. Nobody needed a second reason.`,
+      ]);
+      if (_isStandout && _allies.length === 0) return _pick([
+        `${target} was the best performer in the challenge — but that doesn't matter when nobody at camp is willing to protect you. No alliance, no safety net.`,
+        `Strong in challenges, isolated at camp. ${target} has the skills but not the relationships. The tribe votes out the person nobody will miss, no matter how well they perform.`,
+      ]);
+      if (!_inAlliance && _allies.length === 0) return _pick([
+        `${target} has no alliance and no close bonds on this tribe. When a vote needs to happen, the unprotected player is the path of least resistance.`,
+        `No alliance. No tight bonds. ${target} is the vote that doesn't break anything — and in a game where relationships are currency, having none is fatal.`,
+        `The tribe looked around for a name that wouldn't cause a war. ${target} — no alliance, no defenders — was that name.`,
+      ]);
+      if (_enemies.length >= 1) return _pick([
+        `The tension with ${_enemies[0]} gave the tribe a direction. ${target} doesn't have enough allies to survive when someone is actively pushing against ${_tPr.obj}.`,
+        `${target} and ${_enemies[0]} don't get along — and ${_enemies[0]} has more connections. When relationships collide, the person with fewer friends loses.`,
+      ]);
+      return _pick([
+        `${target}'s connections are thin. Not hated — just not needed. The person with the fewest defenders is the easiest vote.`,
+        `${target} hasn't built the relationships to survive a tribal where names are needed. It's not personal — it's math.`,
+        `Nobody is going to war for ${target}. In a game of alliances, the unaligned player is always the first casualty.`,
+      ]);
+    }
     if (cat.label === 'Challenge Liability') return _pick([
       `The tribe can't afford to keep losing. ${target} is the reason they are.`,
       `Challenges matter. ${target} isn't pulling their weight. The tribe noticed.`,

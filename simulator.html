@@ -2940,6 +2940,8 @@ function computeHeat(name, tribalPlayers, alliances) {
   if (gs.kipStealLastEp?.holder === name) heat += 0.3;
   // Fan vote winner — being fan favorite = FTC threat
   if (gs.fanVoteWinner === name || gs.fanVoteEp === (gs.episode || 0) + 1 && gs.advantages?.some(a => a.holder === name && a.fromFanVote)) heat += 0.5;
+  // Stolen credit: stealer gets heat after losing confrontation
+  if (gs.stolenCreditHeat?.player === name && gs.stolenCreditHeat.ep >= ((gs.episode || 0) + 1) - 1) heat += 0.3;
   // Hero/Villain archetype heat modifiers
   const _nameArch = players.find(p => p.name === name)?.archetype || '';
   if (_nameArch === 'villain') {
@@ -13997,6 +13999,8 @@ function generateCampEvents(ep, phase = 'both') {
     checkParanoiaSpiral(ep);
     // Information broker — double agent playing both alliances
     checkInformationBroker(ep);
+    // Stolen credit — bold player takes credit for another's big move
+    checkStolenCredit(ep);
     // Social bomb check — fires before alliance quitting (bond hits can trigger quitting)
     checkSocialBomb(ep);
     // Alliance quitting evaluated once after all events are done, then recruitment (scenarios A + B)
@@ -14010,6 +14014,7 @@ function generateCampEvents(ep, phase = 'both') {
   if (phase === 'both') {
     checkParanoiaSpiral(ep);
     checkInformationBroker(ep);
+    checkStolenCredit(ep);
     // Social bomb + alliance quitting + recruitment after the single-phase generation
     checkSocialBomb(ep);
     checkAllianceQuitting(ep);
@@ -20071,6 +20076,7 @@ function patchEpisodeHistory(ep) {
   // Showmance lifecycle
   if (!h.showmanceBreakup && !h.showmanceSeparation) checkShowmanceBreakup(ep);
   if (ep.paranoiaSpirals?.length) h.paranoiaSpirals = ep.paranoiaSpirals;
+  if (ep.stolenCreditEvents?.length) h.stolenCreditEvents = ep.stolenCreditEvents;
   if (ep.splitVotePlans?.length) h.splitVotePlans = ep.splitVotePlans;
   if (ep.voteMiscommunications?.length) h.voteMiscommunications = ep.voteMiscommunications;
   if (ep.brokerEvents?.length) h.brokerEvents = ep.brokerEvents;
@@ -25077,6 +25083,8 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'brokerExposed'        ? 'EXPOSED'
                      : evt.type === 'brokerFallout'        ? 'Trust Shattered'
                      : evt.type === 'brokerDefense'        ? 'Defense'
+                     : evt.type === 'stolenCredit'              ? (evt.badgeText || 'STOLEN CREDIT')
+                     : evt.type === 'stolenCreditConfrontation' ? (evt.badgeText || 'CONFRONTATION')
                      : evt.type === 'paranoiaSpiral'       ? '⚠ Paranoia Spiral'
                      : evt.type === 'showmanceSpark'       ? '💕 Showmance'
                      : evt.type === 'showmanceHoneymoon'   ? '💕 Honeymoon'
@@ -25144,6 +25152,8 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'brokerWhisper' || evt.type === 'brokerManipulate' || evt.type === 'brokerConfidence' || evt.type === 'brokerClose' ? 'gold'
                      : evt.type === 'brokerExposed' || evt.type === 'brokerFallout' ? 'red'
                      : evt.type === 'brokerDefense' ? (pStats(evt.players?.[0])?.boldness >= 6 ? 'gold' : 'red')
+                     : evt.type === 'stolenCredit' ? 'gold'
+                     : evt.type === 'stolenCreditConfrontation' ? (evt.badgeClass || 'red')
                      : evt.type === 'paranoiaSpiral' ? 'red'
                      : evt.type === 'showmanceSpark' || evt.type === 'showmanceHoneymoon' || evt.type === 'showmanceRideOrDie' ? 'green'
                      : evt.type === 'showmanceNoticed' || evt.type === 'showmanceTarget' ? 'gold'
@@ -25182,7 +25192,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
       'heroConfront','heroProtect','heroSacrifice','heroWeight',
       'amuletReunion','amuletUpgrade','amuletBetrayal','amuletRivalry','legacyInheritance',
       'legacyConfession','legacyLeak','legacyScheme','legacyWeight','legacyHeirWatch']);
-    const spotTypes = new Set(['socialBomb','socialBombReaction','paranoiaSpiral',
+    const spotTypes = new Set(['socialBomb','socialBombReaction','paranoiaSpiral','stolenCredit','stolenCreditConfrontation',
       'brokerWhisper','brokerManipulate','brokerConfidence','brokerClose','brokerExposed','brokerFallout','brokerDefense',
       'showmancerMoment',
       'showmanceSpark','showmanceHoneymoon','showmanceNoticed','showmanceTarget','showmanceJealousy','showmanceRideOrDie',

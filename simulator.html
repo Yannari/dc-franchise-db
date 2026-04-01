@@ -3137,12 +3137,15 @@ function updatePlayerStates(ep) {
     if (votesThisEp >= 3 && ep.eliminated !== name) {
       state.bigMoves = (state.bigMoves || 0) + 1;
     }
-    // Orchestrated a blindside — voted for eliminated player who didn't play an idol [STEALABLE]
+    // Orchestrated a blindside — target didn't see it coming [STEALABLE]
     if (ep.eliminated && ep.eliminated !== name && ep.votingLog?.some(e => e.voter === name && e.voted === ep.eliminated)) {
       const _elimPlayedIdol = (ep.idolPlays || []).some(p => (p.player === ep.eliminated || p.playedFor === ep.eliminated) && (p.votesNegated || 0) > 0);
-      const _elimWasTopTarget = ep.votingLog.filter(e => e.voted === ep.eliminated).length >= Math.floor(ep.votingLog.length * 0.6);
-      // Blindside = target didn't protect themselves AND wasn't the obvious consensus (< 60% of votes)
-      if (!_elimPlayedIdol && !_elimWasTopTarget) {
+      const _elimVoteCount = ep.votingLog.filter(e => e.voted === ep.eliminated).length;
+      const _elimTotalVoters = ep.votingLog.filter(e => e.voter !== 'THE GAME').length;
+      const _elimWasObvious = _elimTotalVoters > 0 && _elimVoteCount / _elimTotalVoters >= 0.7;
+      const _elimFeltSafe = ['confident', 'comfortable', 'content'].includes(gs.playerStates?.[ep.eliminated]?.emotional || '');
+      // Blindside = target felt safe OR wasn't obvious consensus, AND didn't protect themselves
+      if (!_elimPlayedIdol && !_elimWasObvious && (_elimFeltSafe || _elimVoteCount < _elimTotalVoters * 0.5)) {
         state.bigMoves = (state.bigMoves || 0) + 1;
         if (!gs.bigMoveEarnersThisEp) gs.bigMoveEarnersThisEp = [];
         if (!gs.bigMoveEarnersThisEp.includes(name)) gs.bigMoveEarnersThisEp.push(name);
@@ -28221,7 +28224,20 @@ function rpBuildVotes(ep) {
   const rawElim = ep.exileDuelVotedOut || ep.eliminated;
   const elim = (rawElim && rawElim !== 'No elimination' && players.find(p => p.name === rawElim)) ? rawElim : null;
   const sortedVotes = Object.entries(votes).sort(([,a],[,b]) => b-a);
-  const isBlindside = elim && pStats(elim).strategic >= 7;
+  // Blindside: the eliminated player didn't see it coming
+  // Requires: (1) they felt safe (confident/comfortable/content) OR voted for someone else (thought target was elsewhere)
+  // AND (2) they weren't the obvious consensus target (< 70% of votes, or they had low heat)
+  const isBlindside = (() => {
+    if (!elim) return false;
+    const _elimState = gs.playerStates?.[elim]?.emotional || 'content';
+    const _feltSafe = ['confident', 'comfortable', 'content'].includes(_elimState);
+    const _votedElsewhere = votingLog.some(v => v.voter === elim && v.voted !== elim);
+    const _elimVotes = sortedVotes.find(([n]) => n === elim)?.[1] || 0;
+    const _totalVoters = votingLog.filter(v => v.voter !== 'THE GAME').length;
+    const _wasObviousTarget = _totalVoters > 0 && _elimVotes / _totalVoters >= 0.7;
+    // Blindside = they didn't expect it AND it wasn't a foregone conclusion
+    return (_feltSafe || _votedElsewhere) && !_wasObviousTarget;
+  })();
   const swap = ep.swapResult || null;
   const epNum = ep.num;
   const revoteLog = ep.revoteLog || [];

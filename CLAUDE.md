@@ -111,12 +111,19 @@ VP Finale screens:
 - `gs.brokerExposedHeat` / `gs.brokerExposedEp` — heat spike tracking after broker exposure (2 episodes)
 
 Finale-specific ep fields:
+- `ep.finaleEntrants` — snapshot of ALL players entering the finale (before any eliminations)
 - `ep.benchAssignments` — `{ [finalist]: [supporter1, ...] }`
 - `ep.benchReasons` — `{ [supporter]: { finalist, reason, bond } }`
 - `ep.assistants` — `{ [finalist]: { name, stats, bond, heartPick, brainPick, decision } }`
 - `ep.finaleChallengeStages/Scores/Winner` — multi-stage challenge data
 - `ep.ftcSwings` — `[{ juror, originalVote, finalVote, reason }]`
 - `ep.finalCut.reasoning` — jury vote projection data for the Decision
+- `ep.klOrienteering` — `{ placements, eliminated, scores, stages[] }` — orienteering race data
+- `ep.klPerch` — `{ phases[], dropOrder, winner, scores }` — perch endurance (phases include interludes with `isInterlude: true`)
+- `ep.klChoice` — `{ winner, chosen, eliminated, reason, betrayal?, preBond? }` — the choice + betrayal tracking
+- `ep.firemakingDecision` — `{ immunityWinner, saved, savedReason, competitors[] }`
+- `ep.firemakingResult` — `{ winner, loser, winnerScore, loserScore }`
+- `gs.playerStates[name].perchWinner` — true if won the koh-lanta perch (jury bonus in FTC scoring)
 
 Episode-level advantage fields:
 - `ep.kipSteal` — `{ holder, victim, stolenType, wasAlly, success }`
@@ -366,7 +373,10 @@ Finale: has its own 10-screen sequence (see VP Finale screens above)
 ## Settings
 Key config fields in `seasonConfig`:
 - `finaleSize` (2/3/4) — how many enter finale
-- `finaleFormat` (traditional/fire-making/jury-cut/fan-vote/final-challenge)
+- `finaleFormat` (traditional/fire-making/jury-cut/fan-vote/final-challenge/koh-lanta)
+  - `jury-cut` = "Winner's Cut" in UI — immunity winner picks who goes to FTC (works with F3 and F4)
+  - `koh-lanta` and `fire-making` lock finaleSize to 4
+  - `fan-vote` — UI exists but engine NOT implemented (TODO)
 - `finaleAssistants` (boolean) — enable assistant selection for final challenge
 - `popularityEnabled` — fan popularity system
 - `ri` (boolean) — enable 2nd Chance Isle

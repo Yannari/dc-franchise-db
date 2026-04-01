@@ -26916,12 +26916,18 @@ function rpBuildVotingPlans(ep) {
       else if (tCat.label.includes('Strategic')) whyVote += ` ${target} is running the game from behind — too smart to keep.`;
       else if (tCat.label.includes('Social')) whyVote += ` ${target} is too well-liked. Every vote they survive gets harder.`;
 
-      // Why not
+      // Why not — specific reasons a player might hesitate
       let whyNot = '';
-      if (bond >= 3) whyNot = `The bond with ${target} runs deep. Writing that name means betraying a real relationship.`;
-      else if (bond >= 1) whyNot = `There's enough goodwill with ${target} that this vote feels personal, not just strategic.`;
-      else if (allyCount <= 2) whyNot = `Only ${allyCount} votes. Needs help from outside. High risk if nobody else follows.`;
-      else whyNot = `This might not be the right moment. The numbers could shift.`;
+      const _sharedAlliance = (gs.namedAlliances || []).find(al => al.active !== false && al.members.includes(player) && al.members.includes(target));
+      const _showmance = gs.showmances?.find(sm => sm.players.includes(player) && sm.players.includes(target) && sm.phase !== 'broken-up');
+      if (_showmance) whyNot = `${player} and ${target} are in a showmance. This vote would destroy something real.`;
+      else if (bond >= 5) whyNot = `${player} and ${target} are extremely close — this would be a betrayal neither forgets.`;
+      else if (bond >= 3 && _sharedAlliance) whyNot = `${player} and ${target} are allies in ${_sharedAlliance.name}. Voting ${target} out breaks that trust.`;
+      else if (bond >= 3) whyNot = `The bond with ${target} is strong. Writing that name means betraying a real relationship.`;
+      else if (_sharedAlliance) whyNot = `${player} and ${target} are in ${_sharedAlliance.name} together. Following through means breaking ranks.`;
+      else if (bond >= 2) whyNot = `${player} has a genuine connection with ${target}. This isn't a clean vote — it's personal.`;
+      else if (allyCount <= 2) whyNot = `Only ${allyCount} votes behind this. Needs help from outside. High risk if nobody else follows.`;
+      else whyNot = `The numbers are there, but the timing feels off. This might not be the right moment.`;
 
       return { alliance: a.label, target, tCat, whyVote, whyNot, bond, allyCount };
     });

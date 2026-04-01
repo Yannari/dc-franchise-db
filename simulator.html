@@ -6978,8 +6978,10 @@ function checkIdolPreTribal(ep, tribalPlayers) {
     }
 
     // ── IDOL SHARE: holder proactively passes idol to a close ally ──
+    // Don't share to someone who already holds an idol — they'll play their own at F5
     const best = tribalPlayers
-      .filter(p => p !== holder && getBond(holder, p) >= 2)
+      .filter(p => p !== holder && getBond(holder, p) >= 2
+        && !gs.advantages.some(a => a.type === 'idol' && a.holder === p)) // skip players who already have an idol
       .map(p => ({ name: p, bond: getBond(holder, p) }))
       .sort((a, b) => b.bond - a.bond)[0] || null;
 
@@ -13961,6 +13963,8 @@ function simulateEpisode() {
   repairGsSets(gsCheckpoints[_cpNum]);
   try { localStorage.setItem('simulator_cp_' + _cpNum, JSON.stringify(gsCheckpoints[_cpNum])); } catch(e) {}
   const cfg = seasonConfig;
+  // Fire-making forces F4 finale regardless of finaleSize setting
+  if (cfg.firemaking) cfg.finaleSize = Math.max(cfg.finaleSize || 3, 4);
   const epNum = gs.episode + 1;
   const ep = { num: epNum, bondChanges: [], riDuel: null, isRIReentry: false, isMerge: false,
                 idolFinds: [], idolPlays: [], idolRehide: false, journey: null, twist: null, twists: [], campEvents: {},
@@ -15269,18 +15273,37 @@ function simulateEpisode() {
       // Remove ALL advantages — no force-play, just gone
       gs.advantages = gs.advantages.filter(a => !tribalPlayers.includes(a.holder));
     } else if (_isLastChanceTribal) {
-      // Force-play all idols: every idol holder at tribal plays their idol on themselves
+      // Force-play all idols: holders play for themselves first, then allies if already safe
       const _forceIdols = gs.advantages.filter(a => a.type === 'idol' && tribalPlayers.includes(a.holder));
+      const _alreadyProtected = new Set(); // track who already has idol protection
       _forceIdols.forEach(idol => {
         const holder = idol.holder;
-        const votesAgainst = votes[holder] || 0;
-        ep.idolPlays.push({
-          player: holder, playedFor: null, type: 'idol',
-          votesNegated: votesAgainst, forced: true,
-        });
-        // Negate votes
-        if (votesAgainst > 0) votes[holder] = 0;
-        // Remove the idol
+        if (!_alreadyProtected.has(holder)) {
+          // Play for SELF — highest priority
+          const votesAgainst = votes[holder] || 0;
+          ep.idolPlays.push({
+            player: holder, playedFor: null, type: 'idol',
+            votesNegated: votesAgainst, forced: true,
+          });
+          if (votesAgainst > 0) votes[holder] = 0;
+          _alreadyProtected.add(holder);
+        } else {
+          // Already safe — play for closest unprotected ally
+          const _allies = tribalPlayers
+            .filter(p => p !== holder && !_alreadyProtected.has(p) && p !== immuneName && getBond(holder, p) >= 0)
+            .sort((a, b) => getBond(holder, b) - getBond(holder, a));
+          const _playFor = _allies[0] || null;
+          if (_playFor) {
+            const votesAgainst = votes[_playFor] || 0;
+            ep.idolPlays.push({
+              player: holder, playedFor: _playFor, type: 'idol',
+              votesNegated: votesAgainst, forced: true,
+            });
+            if (votesAgainst > 0) votes[_playFor] = 0;
+            _alreadyProtected.add(_playFor);
+            addBond(holder, _playFor, 2.0); // forced ally-play still builds trust
+          }
+        }
         gs.advantages = gs.advantages.filter(a => a !== idol);
       });
       // Force-play extra votes, vote steals, and KiP
@@ -15511,11 +15534,13 @@ function simulateEpisode() {
         if (ep.tiebreakerChallenge || cfg.tiebreakerMode === 'challenge') {
           const eligibleTied2 = res2.tiedPlayers.filter(p => !isTribalImmune(p));
           const loser = runTiebreakerChallenge(eligibleTied2.length ? eligibleTied2 : res2.tiedPlayers);
-          return { votes, log, eliminated: loser, isTie: true, tiedPlayers: res.tiedPlayers };
+          return { votes, log, eliminated: loser, isTie: true, tiedPlayers: res2.tiedPlayers };
         }
         ep.isRockDraw = true;
-        const rockElim = rockDraw(res.tiedPlayers);
-        return { votes, log, eliminated: rockElim, isTie: true, tiedPlayers: res.tiedPlayers };
+        // Use REVOTE tied players for rock draw safety — only the still-tied players are safe
+        // Players who got fewer votes in the revote ARE eligible for rocks
+        const rockElim = rockDraw(res2.tiedPlayers);
+        return { votes, log, eliminated: rockElim, isTie: true, tiedPlayers: res2.tiedPlayers };
       }
       return { votes, log, eliminated: res2.eliminated, isTie: true, tiedPlayers: res.tiedPlayers };
     }
@@ -15540,8 +15565,8 @@ function simulateEpisode() {
           const res2 = resolveVotes(rv.votes);
           if (res2.isTie) {
             ep.isRockDraw = true;
-            const rockElim = rockDraw(_lateTied);
-            return { votes, log, eliminated: rockElim, isTie: true, tiedPlayers: _lateTied };
+            const rockElim = rockDraw(res2.tiedPlayers);
+            return { votes, log, eliminated: rockElim, isTie: true, tiedPlayers: res2.tiedPlayers };
           }
           return { votes, log, eliminated: res2.eliminated, isTie: true, tiedPlayers: _lateTied };
         }
@@ -15562,8 +15587,8 @@ function simulateEpisode() {
           const res2 = resolveVotes(rv.votes);
           if (res2.isTie) {
             ep.isRockDraw = true;
-            const rockElim = rockDraw(_fcTied);
-            return { votes, log, eliminated: rockElim, isTie: true, tiedPlayers: _fcTied };
+            const rockElim = rockDraw(res2.tiedPlayers);
+            return { votes, log, eliminated: rockElim, isTie: true, tiedPlayers: res2.tiedPlayers };
           }
           return { votes, log, eliminated: res2.eliminated, isTie: true, tiedPlayers: _fcTied };
         }
@@ -20633,8 +20658,85 @@ function simulateFinale() {
 
   let finalists = [...players];
 
+  // ── FIRE-MAKING FINALE: forced F4 → decision → fire duel → F3 enters finaleFormat ──
+  if (cfg.firemaking && players.length >= 4) {
+    const _fmImmWinner = ep.immunityWinner;
+    const _fmOthers = players.filter(p => p !== _fmImmWinner);
+    const _fmS = pStats(_fmImmWinner);
+
+    // THE DECISION: immunity winner picks one person to save
+    let _fmSaved, _fmSavedReason;
+    const _fmUseStrategy = Math.random() < _fmS.strategic * 0.1; // stat 5=50%, stat 8=80%, stat 10=100%
+
+    if (_fmUseStrategy) {
+      // Strategic read: project jury votes, save the person I can BEAT at FTC
+      const _fmProjections = _fmOthers.map(candidate => {
+        const trio = [_fmImmWinner, candidate, ..._fmOthers.filter(p => p !== candidate).slice(0, 1)];
+        const projected = projectJuryVotes([_fmImmWinner, ...(_fmOthers.filter(p => p !== candidate))]);
+        const myVotes = projected[_fmImmWinner] || 0;
+        const theirVotes = Math.max(..._fmOthers.filter(p => p !== candidate).map(r => projected[r] || 0), projected[candidate] || 0);
+        return { name: candidate, margin: myVotes - theirVotes, juryThreat: projected[candidate] || 0 };
+      });
+      // Save the WEAKEST jury threat (easiest to beat at FTC)
+      _fmProjections.sort((a, b) => a.juryThreat - b.juryThreat);
+      _fmSaved = _fmProjections[0].name;
+      _fmSavedReason = 'strategic';
+    } else {
+      // Bond-based: save closest ally
+      _fmSaved = _fmOthers.sort((a, b) => getBond(_fmImmWinner, b) - getBond(_fmImmWinner, a))[0];
+      _fmSavedReason = 'bond';
+    }
+
+    // The two NOT saved go to fire-making
+    const _fmCompetitors = _fmOthers.filter(p => p !== _fmSaved);
+
+    // FIRE-MAKING DUEL
+    const _fmScores = _fmCompetitors.map(p => {
+      const s = pStats(p);
+      return {
+        name: p,
+        score: s.physical * 0.4 + s.endurance * 0.4 + s.temperament * 0.2 + (Math.random() * 3 - 1.5),
+      };
+    });
+    _fmScores.sort((a, b) => b.score - a.score);
+    const _fmWinner = _fmScores[0].name;
+    const _fmLoser = _fmScores[1].name;
+
+    // Store data
+    ep.firemakingDecision = {
+      immunityWinner: _fmImmWinner,
+      saved: _fmSaved,
+      savedReason: _fmSavedReason,
+      competitors: [_fmCompetitors[0], _fmCompetitors[1]],
+    };
+    ep.firemakingResult = {
+      winner: _fmWinner,
+      loser: _fmLoser,
+      winnerScore: Math.round(_fmScores[0].score * 10) / 10,
+      loserScore: Math.round(_fmScores[1].score * 10) / 10,
+    };
+    ep.firemaking = true;
+
+    // Eliminate the loser (4th place)
+    handleAdvantageInheritance(_fmLoser, ep);
+    ep.eliminated = _fmLoser;
+    gs.eliminated.push(_fmLoser);
+    gs.jury.push(_fmLoser);
+    gs.activePlayers = gs.activePlayers.filter(p => p !== _fmLoser);
+
+    // F3 proceeds to finale format
+    finalists = [_fmImmWinner, _fmSaved, _fmWinner];
+    ep.finaleFinalists = finalists;
+
+    // Bond consequences
+    addBond(_fmImmWinner, _fmSaved, 2.0); // saving someone is a massive trust gesture
+    addBond(_fmWinner, _fmImmWinner, -0.5); // fire winner might resent not being saved
+
+    // Skip the finaleSize cut logic below — fire-making already handled the cut
+  }
+
   // If finaleSize === 2 and 3 remain: decide who sits with immunity winner (jury formats only — final-challenge runs all players)
-  if (cfg.finaleSize === 2 && players.length === 3 && cfg.finaleFormat !== 'final-challenge') {
+  if (!ep.firemaking && cfg.finaleSize === 2 && players.length === 3 && cfg.finaleFormat !== 'final-challenge') {
     const others = players.filter(p => p !== ep.immunityWinner);
     let brought, cut;
     if (cfg.finaleFormat === 'jury-cut') {
@@ -20682,7 +20784,7 @@ function simulateFinale() {
   }
 
   // If finaleSize === 4: immunity winner cuts 1, top 3 go to FTC
-  if (cfg.finaleSize === 4 && players.length === 4 && cfg.finaleFormat !== 'final-challenge') {
+  if (!ep.firemaking && cfg.finaleSize === 4 && players.length === 4 && cfg.finaleFormat !== 'final-challenge') {
     const others4 = players.filter(p => p !== ep.immunityWinner);
     // Smart decision: project jury votes for each possible F3 trio
     const immWinner4 = ep.immunityWinner;
@@ -24683,8 +24785,15 @@ function rpBuildVotingPlans(ep) {
     const _avgBond = _tribal.filter(p => p !== name)
       .reduce((sum, p) => sum + getBond(name, p), 0) / Math.max(1, _tribal.length - 1);
     const _hostileCount = _tribal.filter(p => p !== name && getBond(name, p) <= -1.5).length;
-    if (_avgBond <= -1.0 || _hostileCount >= 2) return { label: 'Outsider', color: '#f85149' };
-    if (_avgBond <= 0 && !_isMerged) return { label: 'On the Outs', color: '#e3b341' };
+    if (!_isMerged) {
+      // Pre-merge: outsider = nobody on your tribe likes you. Common and decisive.
+      if (_avgBond <= -1.0 || _hostileCount >= 2) return { label: 'Outsider', color: '#f85149' };
+      if (_avgBond <= 0) return { label: 'On the Outs', color: '#e3b341' };
+    } else {
+      // Post-merge: everyone has enemies. "Outsider" only for extreme isolation.
+      // Most players = nobody, only truly hated players with 4+ hostile bonds or avg <= -2
+      if (_avgBond <= -2.0 || _hostileCount >= 4) return { label: 'Pariah', color: '#f85149' };
+    }
 
     // ── HEAT: pressure from multiple sources (idols, blowups, social bombs, etc.) ──
     const _heat = computeHeat(name, _tribal, ep.alliances || []);
@@ -24780,6 +24889,11 @@ function rpBuildVotingPlans(ep) {
       `${target} hasn't been strong in challenges. The tribe needs every advantage it can get.`,
       `Challenges are tight right now. ${target} isn't carrying enough weight to justify keeping.`,
       `${target}'s challenge performance is a liability. The tribe can't afford passengers.`,
+    ]);
+    if (cat.label === 'Pariah') return _pick([
+      `Nobody in this game is willing to defend ${target}. When you've burned that many bridges, the vote writes itself.`,
+      `${target} is alone out here — not by choice, but by consequence. The relationships are gone and so is the protection.`,
+      `The tribe doesn't just want ${target} gone. They need ${target} gone. That kind of animosity doesn't wait.`,
     ]);
     if (cat.label === 'Outsider') return _pick([
       `${target} doesn't have strong bonds with anyone here. That makes the vote clean.`,
@@ -28288,6 +28402,91 @@ function rpBuildFinaleChallenge(ep) {
   return html;
 }
 
+// ── Fire-Making Decision Screen ──
+function rpBuildFiremakingDecision(ep) {
+  if (!ep.firemakingDecision) return '';
+  const d = ep.firemakingDecision;
+  const _pr = pronouns(d.immunityWinner);
+  const _savedPr = pronouns(d.saved);
+  const reasonText = d.savedReason === 'strategic'
+    ? `${d.immunityWinner} ran the numbers. ${_pr.Sub} projected the jury votes and chose to save the person ${_pr.sub} can beat at Final Tribal. This wasn't about loyalty — it was about winning.`
+    : `${d.immunityWinner} didn't hesitate. ${_pr.Sub} saved ${d.saved} — the person ${_pr.sub} ${_pr.sub==='they'?'trust':'trusts'} most in this game. Whatever happens next, they face it together.`;
+
+  let html = `<div class="rp-page tod-deepnight">
+    <div class="rp-eyebrow">Episode ${ep.num} — Finale</div>
+    <div class="rp-title" style="color:#e3b341">The Decision</div>
+    <div style="text-align:center;margin:20px 0">
+      ${rpPortrait(d.immunityWinner, 'xl immune')}
+      <div style="font-size:16px;font-weight:800;color:#e6edf3;margin-top:8px">${d.immunityWinner}</div>
+      <div style="font-size:11px;color:#3fb950;font-weight:700;letter-spacing:1px">IMMUNITY WINNER</div>
+    </div>
+    <div style="font-size:13px;color:#8b949e;text-align:center;line-height:1.6;max-width:500px;margin:0 auto 20px">${d.immunityWinner} must choose one person to save. The other two will make fire. The loser goes home.</div>
+    <div style="display:flex;justify-content:center;gap:24px;margin:20px 0;flex-wrap:wrap">
+      <div style="text-align:center;padding:16px;background:rgba(63,185,80,0.06);border:2px solid rgba(63,185,80,0.3);border-radius:12px;min-width:120px">
+        ${rpPortrait(d.saved, 'xl')}
+        <div style="font-size:14px;font-weight:800;color:#3fb950;margin-top:8px">SAVED</div>
+        <div style="font-size:12px;color:#e6edf3">${d.saved}</div>
+      </div>
+      ${d.competitors.map(c => `<div style="text-align:center;padding:16px;background:rgba(248,81,73,0.06);border:2px solid rgba(248,81,73,0.3);border-radius:12px;min-width:120px">
+        ${rpPortrait(c, 'xl')}
+        <div style="font-size:14px;font-weight:800;color:#f85149;margin-top:8px">FIRE</div>
+        <div style="font-size:12px;color:#e6edf3">${c}</div>
+      </div>`).join('')}
+    </div>
+    <div style="font-size:13px;color:#cdd9e5;text-align:center;line-height:1.6;max-width:500px;margin:0 auto;font-style:italic">${reasonText}</div>
+  </div>`;
+  return html;
+}
+
+// ── Fire-Making Duel Screen ──
+function rpBuildFiremakingDuel(ep) {
+  if (!ep.firemakingResult) return '';
+  const r = ep.firemakingResult;
+  const wS = pStats(r.winner);
+  const lS = pStats(r.loser);
+  const _wPr = pronouns(r.winner);
+  const _lPr = pronouns(r.loser);
+  const _place = (gs.episodeHistory || []).filter(h => h.eliminated).length + 1;
+  const _eq = vpGenerateQuote(r.loser, ep, 'eliminated');
+
+  // Narrative based on score gap
+  const gap = r.winnerScore - r.loserScore;
+  const narrative = gap >= 3 ? `It wasn't close. ${r.winner} built the fire with a calm efficiency that made ${r.loser}'s effort look frantic. The flame caught, the flag burned through, and it was over.`
+    : gap >= 1 ? `Both fires grew. Both players fought for their life. ${r.winner} found the angle first — the flame climbed the rope, the flag dropped. ${r.loser} was seconds behind.`
+    : `This was as close as fire-making gets. Both ropes were burning. Both players were shaking. ${r.winner}'s flag dropped a heartbeat before ${r.loser}'s. A fraction of a second. That's the margin of a million-dollar game.`;
+
+  let html = `<div class="rp-page tod-deepnight">
+    <div class="rp-eyebrow">Episode ${ep.num} — Finale</div>
+    <div class="rp-title" style="color:#e8873a">Fire-Making</div>
+    <div style="font-size:13px;color:#8b949e;text-align:center;margin-bottom:16px">Make fire. Burn through the rope. Raise the flag. First one done stays in the game.</div>
+    <div style="display:flex;justify-content:center;align-items:flex-start;gap:32px;margin:20px 0;flex-wrap:wrap">
+      <div style="text-align:center">
+        ${rpPortrait(r.winner, 'xl')}
+        <div style="font-size:14px;font-weight:800;color:#3fb950;margin-top:8px">${r.winner}</div>
+        <div style="font-size:10px;color:#8b949e">Physical ${wS.physical} · Endurance ${wS.endurance} · Temperament ${wS.temperament}</div>
+        <div style="font-size:18px;font-weight:900;color:#3fb950;margin-top:6px">STAYS</div>
+      </div>
+      <div style="align-self:center;font-size:28px;color:#e8873a">🔥</div>
+      <div style="text-align:center">
+        ${rpPortrait(r.loser, 'xl elim')}
+        <div style="font-size:14px;font-weight:800;color:#f85149;margin-top:8px">${r.loser}</div>
+        <div style="font-size:10px;color:#8b949e">Physical ${lS.physical} · Endurance ${lS.endurance} · Temperament ${lS.temperament}</div>
+        <div style="font-size:18px;font-weight:900;color:#f85149;margin-top:6px">ELIMINATED</div>
+      </div>
+    </div>
+    <div style="font-size:13px;color:#cdd9e5;text-align:center;line-height:1.7;max-width:500px;margin:0 auto 20px">${narrative}</div>
+    <div class="rp-elim" style="margin-top:16px">
+      <div class="rp-elim-eyebrow">${ordinal(_place)} player eliminated — Fire-Making</div>
+      ${rpPortrait(r.loser, 'xl elim')}
+      <div class="rp-elim-name">${r.loser}</div>
+      <div class="rp-elim-arch">${vpArchLabel(r.loser)}</div>
+      <div class="rp-elim-quote">"${_eq}"</div>
+      <div class="rp-elim-place">Eliminated by Fire — Episode ${ep.num}</div>
+    </div>
+  </div>`;
+  return html;
+}
+
 function rpBuildFinalCut(ep) {
   if (!ep.finalCut) return '';
   const fc = ep.finalCut;
@@ -31630,8 +31829,16 @@ function buildVPScreens(epRecord) {
   if (ep.isFinale) {
     // ── FINALE-SPECIFIC SCREENS ──
 
-    // Final Cut: immunity winner's decision (or jury-cut) — shown after challenge
-    if (ep.finalCut) {
+    // Fire-Making: immunity winner's decision + fire duel
+    if (ep.firemakingDecision) {
+      vpScreens.push({ id:'firemaking-decision', label:'The Decision', html: rpBuildFiremakingDecision(ep) });
+    }
+    if (ep.firemakingResult) {
+      vpScreens.push({ id:'firemaking-duel', label:'Fire-Making', html: rpBuildFiremakingDuel(ep) });
+    }
+
+    // Final Cut: immunity winner's decision (or jury-cut) — shown after challenge (non-firemaking)
+    if (ep.finalCut && !ep.firemaking) {
       vpScreens.push({ id:'final-cut', label:'The Decision', html: rpBuildFinalCut(ep) });
     }
 

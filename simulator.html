@@ -34293,6 +34293,10 @@ function buildVPScreens(epRecord) {
           || Object.keys(ep.campEvents)[0])
         : (gs.mergeName || 'merge');
       // Reconstruct start-of-episode membership: snapshot (post-elim) + whoever was eliminated.
+      // For finale: use finaleEntrants (all players BEFORE koh-lanta/fire-making eliminations)
+      if (ep.isFinale && ep.finaleEntrants?.length) {
+        return [{ name: _mergeKey, members: [...ep.finaleEntrants] }];
+      }
       const snapActive = ep.gsSnapshot?.activePlayers || [];
       const eliminated = [ep.eliminated, ep.firstEliminated].filter(Boolean);
       const members = snapActive.length

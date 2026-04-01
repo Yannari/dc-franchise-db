@@ -3169,6 +3169,10 @@ function updatePlayerStates(ep) {
     if (ep.firemakingResult?.winner === name) {
       state.bigMoves = (state.bigMoves || 0) + 1;
     }
+    // Won a tiebreaker challenge — survived a deadlocked vote through a head-to-head challenge
+    if (ep.tiebreakerResult?.winner === name) {
+      state.bigMoves = (state.bigMoves || 0) + 1;
+    }
     // Pulled off a tight margin vote — in minority but still got target out (3-2, 2-1, 4-3)
     if (ep.eliminated && ep.votingLog?.length) {
       const _elimVotes = ep.votingLog.filter(e => e.voted === ep.eliminated).length;

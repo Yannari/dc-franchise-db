@@ -110,8 +110,40 @@ What happens: the bold player takes loud public credit for the move at camp or i
 Mechanic: bond hit between orchestrator and credit-stealer. Jury perception adjusted.
 
 
+  TODO — ENGINE MISSING
+  ─────────────────────
+
+[TODO] FAN VOTE FINALE ENGINE
+  The 'fan-vote' finaleFormat option exists in the dropdown but has NO engine logic.
+  Needs: popularity-driven finale where fans vote for the winner (gs.popularity).
+  Currently selecting it does nothing — falls through to traditional FTC.
+
+[TODO] SURVIVAL MECHANICS ENGINE
+  UI exists (cfg-food-water, cfg-survival-difficulty) but engine is not built.
+  Full design in ideas.txt under "SURVIVAL MECHANICS — PLANNED".
+  Core: gs.survival[name] decays per episode. Low survival → challenge penalties,
+  emotional pressure, camp conflict, medevac risk. Reward challenges become meaningful.
+
+
   MEDIUM PRIORITY
   ───────────────
+
+[KL-1] AMBASSADORS (Koh-Lanta twist)
+  Trigger: immediately before the merge, each tribe names one ambassador
+  What happens: ambassadors meet privately and must agree on one player to eliminate.
+    If they can't agree, one of the ambassadors is eliminated via rock draw.
+  Mechanic: schedulable twist (pre-merge final episode). Each tribe picks ambassador
+    based on social + strategic weight. Ambassadors negotiate: if bonds allow agreement
+    they pick the highest-threat outsider. If not → rock draw between ambassadors.
+  Consequence: one player eliminated without a vote. Massive bond impact on ambassadors.
+  VP: dedicated screen with ambassador portraits, negotiation narrative, outcome.
+
+[KL-3] REPLACEMENT (Koh-Lanta medevac rule)
+  Trigger: a player is medically evacuated
+  What happens: the most recently voted-out player returns to the game.
+  Mechanic: on medevac, check gs.eliminated for last voted-out player (not quitters).
+    Return them to gs.activePlayers, same tribe. Camp event: shock, bond reset.
+  Note: incompatible with RI/Rescue Island (they already handle returnees).
 
 [6] FALSE IDOL PLANT
 Trigger: player with strategic >= 8 is actively being targeted AND an idol search is in progress
@@ -152,11 +184,7 @@ Roll: ~20% once per game
 What happens: player engineers their own boot to face rival at the duel. Post-boot
   narrative: "strategic surrender." Needs RI/exile infrastructure active.
 
-[21] SURVIVAL MECHANICS (food & water system)
-See ideas.txt for full design. UI exists, engine not built.
-Core: per-player survival score decaying each episode. Low survival causes
-  challenge penalties, emotional pressure, camp conflict, and medevac risk.
-  Makes reward challenges mechanically meaningful.
+[21] SURVIVAL MECHANICS (food & water system) — see TODO section above + ideas.txt for full design.
 
 
   LOW PRIORITY
@@ -181,3 +209,25 @@ Trigger: reward challenge with 2-3 winners who go on a trip together
 Roll: ~15% if one of the winners has a high-bond pair OUTSIDE the reward group
 What happens: players left behind form counter-alliance to break up reward bonds.
 Note: needs reward challenge system implemented first.
+
+[KL-2] TIED DESTINIES (Koh-Lanta twist)
+  Trigger: post-merge, final 8/10/12. Players randomly paired for the episode.
+  What happens: pairs compete together in challenges. At tribal, the person who
+    receives the most votes causes their partner's elimination too (double elim).
+  Mechanic: schedulable twist. Random pairing at episode start. Challenge scores
+    averaged between pairs. Vote targeting considers both members of the pair.
+    Two eliminations in one tribal — the voted-out player AND their tied partner.
+  Consequence: massive strategic upheaval. Allies paired with enemies. Bond dynamics.
+  Note: complex — needs pair-aware voting, double elimination path, VP display.
+
+[KL-4] BLACK VOTE (Koh-Lanta twist)
+  Trigger: after being voted out at tribal council
+  What happens: the eliminated player casts a secret "Black Vote" against one
+    remaining player. This vote counts at the next tribal council the target attends.
+  Modern variant (post-Cambodge): instead of an extra vote against someone, the
+    eliminated player gives a remaining player an Extra Vote advantage.
+  Mechanic: on elimination, eliminated player picks target (highest-heat enemy or
+    lowest-bond rival). gs.blackVote = { from, target, ep }. Next tribal: injected
+    as extra vote. OR modern: eliminated gives Extra Vote to closest ally.
+  Consequence: eliminated players still influence the game. Grudge mechanic.
+  Note: two variants (classic = punish, modern = reward). Pick one or make configurable.

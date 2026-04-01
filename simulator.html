@@ -1057,7 +1057,7 @@
               <label class="form-label">Finale Format</label>
               <select id="cfg-finale-format" class="form-select" onchange="onFinaleFormatChange()">
                 <option value="traditional">Council Vote (Traditional)</option>
-                <option value="jury-cut">Jury Cut (jury picks F3 finalist)</option>
+                <option value="jury-cut">Winner's Cut (immunity winner picks who goes to FTC)</option>
                 <option value="fan-vote">Fan Vote Finale</option>
                 <option value="final-challenge">Final Challenge (No Jury)</option>
                 <option value="fire-making">Fire-Making (F4 → duel → F3 FTC)</option>
@@ -21040,19 +21040,13 @@ function simulateFinale() {
     }
   }
 
-  // If finaleSize === 2 and 3 remain: decide who sits with immunity winner (jury formats only — final-challenge runs all players)
-  if (!ep.firemaking && !ep.klChoice && cfg.finaleSize === 2 && players.length === 3 && cfg.finaleFormat !== 'final-challenge' && cfg.finaleFormat !== 'koh-lanta') {
+  // If 3 remain and need to cut to F2: finaleSize===2 (always cut), OR winner's-cut format with finaleSize===3 (winner decides who to cut)
+  const _needsF3Cut = (cfg.finaleSize === 2) || (cfg.finaleFormat === 'jury-cut' && cfg.finaleSize === 3);
+  if (!ep.firemaking && !ep.klChoice && _needsF3Cut && players.length === 3 && cfg.finaleFormat !== 'final-challenge' && cfg.finaleFormat !== 'koh-lanta') {
     const others = players.filter(p => p !== ep.immunityWinner);
     let brought, cut;
-    if (cfg.finaleFormat === 'jury-cut') {
-      // Jury votes between the 2 non-immune players — most votes goes to finale
-      const jvResult = simulateJuryVote(others);
-      const jvSorted = Object.entries(jvResult.votes).sort(([,a],[,b]) => b-a);
-      brought = jvSorted[0]?.[0] || others[0];
-      cut = others.find(p => p !== brought);
-      ep.finalCut = { winner: ep.immunityWinner, brought, cut, byJury: true, juryCutVotes: jvResult.votes, juryCutReasoning: jvResult.reasoning };
-    } else {
-      // Smart decision: project jury votes for each possible F2 pairing
+    // Smart decision: immunity winner projects jury votes for each possible F2 pairing
+    {
       const immWinner = ep.immunityWinner;
       const immS = pStats(immWinner);
       const pairings = others.map(partner => {
@@ -21295,7 +21289,7 @@ function generateFinaleSummaryText(ep) {
   if (ep.finalCut) {
     const fc = ep.finalCut;
     if (fc.byJury) {
-      sec('JURY CUT');
+      sec('WINNER\'S CUT');
       ln(`${fc.winner} wins immunity and is safe. The jury now decides who joins them in the finale.`);
       const jvTally = Object.entries(fc.juryCutVotes).sort(([,a],[,b]) => b-a).map(([n,v]) => `${n}: ${v}`).join(' | ');
       ln(`Jury vote (between ${fc.brought} and ${fc.cut}): ${jvTally}`);
@@ -29243,7 +29237,10 @@ function rpBuildFiremakingDuel(ep) {
 function rpBuildFinalCut(ep) {
   if (!ep.finalCut) return '';
   const fc = ep.finalCut;
-  const { winner, brought, cut, byJury, juryCutVotes } = fc;
+  const { winner, cut, byJury, juryCutVotes } = fc;
+  // brought can be a string (F2) or array (F4 — multiple players advance)
+  const broughtArr = Array.isArray(fc.brought) ? fc.brought : [fc.brought];
+  const broughtLabel = broughtArr.join(' and ');
 
   let html = `<div class="rp-page tod-deepnight">
     <div class="rp-eyebrow">Episode ${ep.num} \u2014 Finale</div>
@@ -29251,29 +29248,30 @@ function rpBuildFinalCut(ep) {
 
   if (byJury) {
     html += _renderTwistScene({ text: `${winner} is safe \u2014 their immunity win locks them into the finale. But the jury now holds the power. They must choose which of the remaining players earns a seat at the Final Tribal Council.`, players: [winner] });
-    html += _renderTwistScene({ text: `${brought} and ${cut} stand before the jury. One advances. One goes home.`, players: [brought, cut], faceOff: true });
+    html += _renderTwistScene({ text: `${broughtLabel} and ${cut} stand before the jury. One advances. One goes home.`, players: [...broughtArr, cut].filter(Boolean), faceOff: broughtArr.length === 1 });
     if (juryCutVotes) {
       const sorted = Object.entries(juryCutVotes).sort(([,a],[,b]) => b-a);
       html += _renderTwistScene({ text: `Jury vote: ${sorted.map(([n,v]) => `${n} \u2014 ${v}`).join(' / ')}`, players: sorted.map(([n]) => n) });
     }
-    html += _renderTwistScene({ text: `${brought} advances to the Final Tribal Council.`, players: [brought], badge: 'Advances', badgeClass: 'win' });
+    html += _renderTwistScene({ text: `${broughtLabel} advance${broughtArr.length === 1 ? 's' : ''} to the Final Tribal Council.`, players: broughtArr, badge: 'Advances', badgeClass: 'win' });
     html += _renderTwistScene({ text: `${cut} has been eliminated by the jury.`, players: [cut], badge: 'Eliminated', badgeClass: 'bad' });
   } else {
-    html += _renderTwistScene({ text: `${winner} wins final immunity and holds all the power. They must now decide who sits beside them at the Final Tribal Council \u2014 and who goes home tonight.`, players: [winner] });
-    html += _renderTwistScene({ text: `${brought} and ${cut} wait. One gets a chance to plead their case to the jury. The other goes home.`, players: [brought, cut], faceOff: true });
+    html += _renderTwistScene({ text: `${winner} wins final immunity and holds all the power. ${winner} must now decide who sits beside them at the Final Tribal Council \u2014 and who goes home tonight.`, players: [winner] });
+    html += _renderTwistScene({ text: `${broughtLabel} and ${cut} wait. ${broughtArr.length > 1 ? 'The immunity winner must choose who to cut.' : 'One gets a chance to plead their case to the jury. The other goes home.'}`, players: [...broughtArr, cut].filter(Boolean) });
 
-    const bond = getBond(winner, brought), bondCut = getBond(winner, cut);
+    const bond = broughtArr.length === 1 ? getBond(winner, broughtArr[0]) : 0;
+    const bondCut = getBond(winner, cut);
     const cutS = pStats(cut);
     let reasonText;
     if (bondCut <= -1) reasonText = `${winner} and ${cut} were never aligned. This was never really in question. ${cut} goes home.`;
     else if (cutS.social >= 7) reasonText = `${cut} had too many friends on that jury. ${winner} could not afford to take them to the end. The decision was painful \u2014 but calculated.`;
-    else if (bond >= 3) reasonText = `${winner} chooses loyalty. ${brought} has been their closest ally all game. They honor that.`;
-    else reasonText = `${winner} runs the numbers. ${brought} gives them the best shot at the win. ${cut} doesn\u2019t make it to the finale.`;
+    else if (bond >= 3) reasonText = `${winner} chooses loyalty. ${broughtLabel} has been their closest ally all game. They honor that.`;
+    else reasonText = `${winner} runs the numbers. ${broughtLabel} give${broughtArr.length === 1 ? 's' : ''} them the best shot at the win. ${cut} doesn\u2019t make it to the finale.`;
 
     html += _renderTwistScene({ text: reasonText, players: [winner] });
-    html += _renderTwistScene({ text: `${brought} advances to the Final Tribal Council.`, players: [brought], badge: 'Advances', badgeClass: 'win' });
+    html += _renderTwistScene({ text: `${broughtLabel} advance${broughtArr.length === 1 ? 's' : ''} to the Final Tribal Council.`, players: broughtArr, badge: 'Advances', badgeClass: 'win' });
 
-    const cutPlace = (ep.gsSnapshot?.activePlayers?.length || 0) + 2;
+    const cutPlace = (ep.finaleFinalists?.length || broughtArr.length + 1) + 1;
     // Cut-specific exit quote — eliminated by immunity winner's choice, not voted out
     const _cutS = pStats(cut);
     const _cutPr = pronouns(cut);

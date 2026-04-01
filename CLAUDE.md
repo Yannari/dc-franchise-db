@@ -50,6 +50,9 @@ Finale engine:
 - `simulateFinaleChallenge()` — 3-stage challenge (endurance/physical/puzzle) with assistant boost + sabotage
 - `applyFTCSwingVotes()` — hesitating jurors influenced by FTC performance + ally support
 - `generateFinaleCampOverride()` — replaces generic camp events with "last day" themed events
+- Koh-Lanta finale: orienteering race (F4→F3) → perch endurance (F3→immunity) → choice (winner picks F2) → FTC
+- Fire-making finale: immunity → decision (save one) → fire duel (other two) → F3 FTC
+- Winner's Cut format (`jury-cut`): immunity winner cuts one player at any finaleSize (F3 or F4)
 
 Jury elimination twist:
 - Twist `jury-elimination` — all eliminated players vote to boot one non-immune active player
@@ -66,10 +69,10 @@ VP Viewer (Visual Player):
 - `rpBuildAftermath()` — post-vote analysis with Threads to Watch
 - Camp event types render with badges via `badgeText`/`badgeClass` logic in `rpBuildCampTribe()`
 
-VP Finale screens (10 screens):
-- `rpBuildFinaleCampLife()` — last morning reflections + confessionals
-- `rpBuildFinaleChallenge()` — final immunity (jury format, finaleSize >= 3)
-- `rpBuildFinalCut()` — the Decision (immunity winner cuts someone)
+VP Finale screens:
+- `rpBuildFinaleCampLife()` — last morning reflections + confessionals (uses `ep.finaleEntrants` for full F4 cast)
+- `rpBuildFinaleChallenge()` — final immunity (NOT shown for koh-lanta or fire-making)
+- `rpBuildFinalCut()` — the Decision (immunity winner cuts someone, handles `brought` as string or array)
 - `rpBuildBenches()` — interactive bench walk (eliminated pick sides)
 - `rpBuildFTC()` — 5-phase FTC (walk-in, speeches, Q&A, fireworks, final plea)
 - `rpBuildFinaleGrandChallenge()` — 3-stage challenge with stage-by-stage reveal
@@ -77,6 +80,13 @@ VP Finale screens (10 screens):
 - `rpBuildReunion()` — interactive awards reveal, season story, drama highlights
 - `rpBuildSeasonStats()` — full statistics + Copy JSON button
 - `rpBuildJuryVoteReveal()` — interactive jury vote card reveal
+- `rpBuildKLOrienteering()` — 8-stage orienteering race (start → waiting → jungle → horns → race for last)
+- `rpBuildKLPerch()` — perch endurance with interlude beats (time, pain, jury reactions)
+- `rpBuildKLCampLife()` — after the perch: lobbying scene (like fire-making's After Immunity)
+- `rpBuildKLChoice()` — winner picks F2 opponent, betrayal detection + context-specific exit quotes
+- `rpBuildFiremakingCampLife()` — lobbying the immunity winner before fire-making
+- `rpBuildFiremakingDecision()` — who gets saved, who makes fire
+- `rpBuildFiremakingDuel()` — 4-beat staged fire-making duel with context-specific exit quotes
 
 ## State
 - `gs` — global game state object (tribes, players, alliances, bonds, advantages)

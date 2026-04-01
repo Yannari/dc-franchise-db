@@ -20859,8 +20859,8 @@ function simulateFinale() {
 
   ep.finaleFinalists = finalists;
 
-  // Bench selection: eliminated players pick sides (when there's a challenge in the finale)
-  const hasFinaleChallenge = cfg.finaleFormat === 'final-challenge' || cfg.finaleSize >= 3;
+  // Bench selection: eliminated players pick sides (final-challenge format ONLY — jury formats don't have benches)
+  const hasFinaleChallenge = cfg.finaleFormat === 'final-challenge';
   if (hasFinaleChallenge && (gs.eliminated.length > 0 || (gs.jury || []).length > 0)) {
     const benchResult = generateBenchAssignments(finalists);
     ep.benchAssignments = benchResult.assignments;

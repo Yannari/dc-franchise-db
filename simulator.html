@@ -20153,6 +20153,11 @@ function viewEpisode(num) {
 
 function simulateNext() {
   if (!gs) { if (!initGameState()) { alert('Add players to Cast Builder first.'); return; } }
+  // Fire-making override: if finale triggered too early (F3 instead of F4), revert to regular episode
+  if (seasonConfig.firemaking && gs.phase === 'finale' && gs.activePlayers.length > 4) {
+    gs.phase = 'post-merge'; // not ready for finale yet — keep playing
+  }
+  if (seasonConfig.firemaking && seasonConfig.finaleSize < 4) seasonConfig.finaleSize = 4;
   const ep = gs.phase === 'finale' ? simulateFinale() : simulateEpisode();
   if (!ep) return;
   if (seasonConfig.popularityEnabled !== false) { updatePopularity(ep); saveGameState(); }

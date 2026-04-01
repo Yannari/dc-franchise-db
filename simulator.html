@@ -2090,6 +2090,8 @@ function _buildSeasonSaveData() {
 function _applySeasonSave(data) {
   if (!data?.gs || !data?.config) { alert('Invalid season save.'); return; }
   seasonConfig = data.config;
+  // Fire-making override on season load
+  if (seasonConfig.firemaking && seasonConfig.finaleSize < 4) seasonConfig.finaleSize = 4;
   localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
   players = data.players || [];
   saveCast();
@@ -13963,7 +13965,8 @@ function simulateEpisode() {
   repairGsSets(gsCheckpoints[_cpNum]);
   try { localStorage.setItem('simulator_cp_' + _cpNum, JSON.stringify(gsCheckpoints[_cpNum])); } catch(e) {}
   const cfg = seasonConfig;
-  // Fire-making forces F4 finale — applied once to cfg (persistent for all future checks)
+  // Fire-making forces F4 finale — override every episode start to catch saves/loads
+  if (cfg.firemaking && cfg.finaleSize < 4) cfg.finaleSize = 4;
   const epNum = gs.episode + 1;
   const ep = { num: epNum, bondChanges: [], riDuel: null, isRIReentry: false, isMerge: false,
                 idolFinds: [], idolPlays: [], idolRehide: false, journey: null, twist: null, twists: [], campEvents: {},
@@ -20637,6 +20640,8 @@ function generateFinaleCampOverride(ep, finalists) {
 
 function simulateFinale() {
   const cfg = seasonConfig;
+  // Fire-making override — ensure F4 even if loaded from save
+  if (cfg.firemaking && cfg.finaleSize < 4) cfg.finaleSize = 4;
   const epNum = gs.episode + 1;
   const players = [...gs.activePlayers];
 

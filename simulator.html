@@ -26465,12 +26465,18 @@ function rpBuildVotingPlans(ep) {
     const _isWeakLink = _placements.length >= 3 && _placements[_placements.length - 1] === name;
     const _isStandout = _placements.length >= 3 && _placements[0] === name;
     const _isBottom2 = _placements.length >= 4 && _placements.indexOf(name) >= _placements.length - 2;
-    if (_isWeakLink && !_isMerged) return { label: 'Challenge Liability', color: '#f85149' };
-    if (_isBottom2 && !_isMerged && !_isStandout) return { label: 'Challenge Weakness', color: '#e3b341' };
+    // Check reward challenge performance — standout in reward counters weak immunity showing
+    const _rewardTw = (ep.twists || []).find(t => t.type === 'reward-challenge');
+    const _rewardPlacements = _rewardTw?.rewardChalPlacements || [];
+    const _isRewardStandout = Array.isArray(_rewardPlacements) && _rewardPlacements.length >= 3
+      && (typeof _rewardPlacements[0] === 'string' ? _rewardPlacements[0] === name : _rewardPlacements[0]?.members?.some(m => m === name && _rewardPlacements[0].memberScores?.[m] === Math.max(...Object.values(_rewardPlacements[0].memberScores || {}))));
+    // Don't label someone Challenge Weakness/Liability if they were the reward standout this same episode
+    if (_isWeakLink && !_isMerged && !_isRewardStandout) return { label: 'Challenge Liability', color: '#f85149' };
+    if (_isBottom2 && !_isMerged && !_isStandout && !_isRewardStandout) return { label: 'Challenge Weakness', color: '#e3b341' };
 
     // ── CHALLENGE PERFORMANCE: what just happened this episode (highest priority pre-merge) ──
     const _cw = challengeWeakness(name);
-    if (_cw >= 5.5 && !_isMerged) return { label: 'Challenge Liability', color: '#f85149' };
+    if (_cw >= 5.5 && !_isMerged && !_isRewardStandout) return { label: 'Challenge Liability', color: '#f85149' };
     const _wasStandout = gs.chalRecord?.[name]?.podiums >= 1 && (gs._chalStandouts || []).includes(name);
     if (_cw >= 4.0 && !_isMerged && !_wasStandout) return { label: 'Challenge Weakness', color: '#e3b341' };
 

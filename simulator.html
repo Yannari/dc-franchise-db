@@ -30673,14 +30673,16 @@ function rpBuildKLCampLife(ep) {
     const pS = pStats(player);
     const pPr = pronouns(player);
     const isChosen = player === ep.klChoice.chosen;
-    const lobbyText = bond >= 3 ? _pick([
+    // Hash-based pick to avoid duplicate text between players
+    const _hPick = (arr, seed) => arr[([...(seed || player)].reduce((a,c)=>a+c.charCodeAt(0),0)+(ep.num||0)*7)%arr.length];
+    const lobbyText = bond >= 3 ? _hPick([
       `${player} doesn't need to make a pitch. ${pPr.Sub} and ${winner} just look at each other. The understanding is already there. "You know where I stand," ${player} says quietly. The bond between them is the argument.`,
       `${player} finds ${winner} by the water. The conversation is short — they've said everything that matters over the last ${ep.num > 1 ? (ep.num - 1) * 3 : 1} days. "I trust you," ${player} says. ${winner} nods. Whether that trust is returned — that's the question.`,
       `${player} sits next to ${winner} and says nothing for a long time. Then: "We said we'd go to the end together. This is the end." ${winner} doesn't respond. But ${_pr.sub} doesn't leave either.`,
-    ]) : bond >= 1 ? _pick([
+    ]) : bond >= 1 ? _hPick([
       `${player} pulls ${winner} aside. "I know you have a decision to make. I'm just asking you to think about what we've been through." ${pS.social >= 7 ? `It's a carefully measured pitch — not too desperate, not too aggressive.` : `The words come out rougher than ${pPr.sub} intended. The pressure is showing.`}`,
       `${player} makes ${pPr.posAdj} case: "Think about who the jury respects and who they don't. You want to sit next to someone you can beat." ${pS.strategic >= 7 ? `It's a smart argument. ${winner} knows it.` : `It's transparent — but not wrong.`}`,
-    ]) : _pick([
+    ]) : _hPick([
       `${player} approaches ${winner} knowing the odds aren't great. "If you send me home, that's your call. But I'll say this — I'd be easier to beat at FTC than ${others.find(o => o !== player) || 'the other one'}." It's the most honest thing ${pPr.sub}'s said all game.`,
       `${player} doesn't have a strong bond with ${winner}. ${pPr.Sub} ${pPr.sub==='they'?'know':'knows'} it. The pitch isn't about loyalty — it's pure game: "Think about the jury votes. Who are they going to respect more — me or ${others.find(o => o !== player) || 'them'}?"`,
       `${player} barely gets three sentences out before ${pPr.pos} voice cracks. This isn't strategy anymore. It's survival. "I've been out here for ${ep.num > 1 ? (ep.num - 1) * 3 : 1} days. Don't let it end like this."`,

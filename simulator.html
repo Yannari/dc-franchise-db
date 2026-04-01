@@ -3276,6 +3276,93 @@ function updatePlayerStates(ep) {
   });
 }
 
+// ══════════════════════════════════════════════════════════════════════
+// ENGINE: SURVIVAL MECHANICS
+// ══════════════════════════════════════════════════════════════════════
+
+function updateSurvival(ep) {
+  if (seasonConfig.foodWater !== 'enabled') return;
+  if (!gs.survival) gs.survival = {};
+  if (!gs.tribeFood) gs.tribeFood = {};
+  const difficulty = seasonConfig.survivalDifficulty || 'casual';
+  const epNum = ep.num || (gs.episode || 0) + 1;
+
+  // ── 1. Tribe food decay ──
+  const decayRanges = { casual: [3, 5], realistic: [6, 10], brutal: [10, 16] };
+  const [decayMin, decayMax] = decayRanges[difficulty] || decayRanges.casual;
+
+  // Get current tribe groups (pre-merge: gs.tribes, post-merge: single merged group)
+  const tribeGroups = gs.isMerged
+    ? [{ name: gs.mergeName || 'merge', members: [...gs.activePlayers] }]
+    : gs.tribes.filter(t => t.members.length > 0);
+
+  tribeGroups.forEach(tribe => {
+    if (!gs.tribeFood[tribe.name] && gs.tribeFood[tribe.name] !== 0) gs.tribeFood[tribe.name] = 60;
+    const decay = decayMin + Math.random() * (decayMax - decayMin);
+    gs.tribeFood[tribe.name] = Math.max(0, gs.tribeFood[tribe.name] - decay);
+  });
+
+  // ── 2. Provider/slacker calculation ──
+  gs.currentProviders = [];
+  gs.currentSlackers = [];
+  if (!gs.providerHistory) gs.providerHistory = {};
+
+  tribeGroups.forEach(tribe => {
+    const members = tribe.members.filter(m => gs.activePlayers.includes(m));
+    if (!members.length) return;
+
+    // Calculate contributions
+    const contributions = members.map(name => {
+      const s = pStats(name);
+      const willingness = s.loyalty * 0.3 + s.social * 0.3 + (10 - s.boldness) * 0.1;
+      const ability = s.endurance * 0.3 + s.physical * 0.2;
+      const contribution = (willingness + ability) * 0.5 + (Math.random() * 1.5 - 0.75);
+      return { name, contribution };
+    });
+
+    const avg = contributions.reduce((s, c) => s + c.contribution, 0) / contributions.length;
+
+    contributions.forEach(({ name, contribution }) => {
+      const isProvider = contribution > avg;
+      const isSlacker = contribution < avg;
+      const diff = Math.abs(contribution - avg);
+
+      if (isProvider) {
+        gs.currentProviders.push(name);
+        gs.providerHistory[name] = (gs.providerHistory[name] || 0) + 1;
+        // Provider adds extra to tribe food
+        gs.tribeFood[tribe.name] = Math.min(100, gs.tribeFood[tribe.name] + diff * 0.5);
+        // Provider bond boost with tribemates
+        members.filter(m => m !== name).forEach(m => addBond(m, name, diff * 0.03));
+        // Energy cost — providing is exhausting
+        gs.survival[name] = Math.max(0, (gs.survival[name] || 80) - contribution * 0.3);
+      } else if (isSlacker) {
+        gs.currentSlackers.push(name);
+        // Slacker drags tribe food down
+        gs.tribeFood[tribe.name] = Math.max(0, gs.tribeFood[tribe.name] - diff * 0.3);
+        // Slacker bond decay with non-slackers
+        members.filter(m => m !== name && !gs.currentSlackers.includes(m)).forEach(m => addBond(m, name, -0.1));
+        // Energy conservation — resting preserves survival
+        gs.survival[name] = Math.min(100, (gs.survival[name] || 80) + diff * 0.2);
+      }
+    });
+
+    // ── 3. Player survival sync toward tribe food ──
+    members.forEach(name => {
+      if (!gs.survival[name] && gs.survival[name] !== 0) gs.survival[name] = 80;
+      const s = pStats(name);
+      const tribeFood = gs.tribeFood[tribe.name] || 0;
+      const shift = (tribeFood - gs.survival[name]) * 0.3 + s.endurance * 0.2;
+      gs.survival[name] = Math.max(0, Math.min(100, gs.survival[name] + shift));
+    });
+  });
+
+  // ── 4. Save provider/slacker data to episode ──
+  ep.providerSlackerData = { providers: [...gs.currentProviders], slackers: [...gs.currentSlackers] };
+  ep.survivalSnapshot = { ...gs.survival };
+  ep.tribeFoodSnapshot = { ...gs.tribeFood };
+}
+
 // Slow trust erosion: strategic players in old alliances start quietly questioning loyalty
 function decayAllianceTrust(epNum) {
   if (!gs.namedAlliances?.length) return;

@@ -935,19 +935,7 @@
               </div>
             </div>
 
-            <div class="accordion">
-              <div class="accordion-header" onclick="toggleAccordion('firemaking')">
-                <span>Firemaking Final Elimination</span>
-                <span class="accordion-chevron" id="acc-chevron-firemaking">▼</span>
-              </div>
-              <div class="accordion-body" id="acc-body-firemaking" style="display:none">
-                <label class="acc-check-row">
-                  <input type="checkbox" id="cfg-firemaking" onchange="toggleFiremaking()">
-                  <span>Enable Firemaking Final Elimination</span>
-                </label>
-                <p class="acc-desc">At the last bloodfire before the finale, the immunity winner picks 2 players to duel in a firemaking challenge. Non-picked players earn Shared Immunity. Loser is eliminated.</p>
-              </div>
-            </div>
+            <!-- Firemaking moved to finaleFormat dropdown -->
 
             <div class="accordion">
               <div class="accordion-header" onclick="toggleAccordion('ri')">
@@ -1067,11 +1055,13 @@
             </div>
             <div class="form-group">
               <label class="form-label">Finale Format</label>
-              <select id="cfg-finale-format" class="form-select" onchange="saveConfig()">
+              <select id="cfg-finale-format" class="form-select" onchange="onFinaleFormatChange()">
                 <option value="traditional">Council Vote (Traditional)</option>
                 <option value="jury-cut">Jury Cut (jury picks F3 finalist)</option>
                 <option value="fan-vote">Fan Vote Finale</option>
                 <option value="final-challenge">Final Challenge (No Jury)</option>
+                <option value="fire-making">Fire-Making (F4 → duel → F3 FTC)</option>
+                <option value="koh-lanta">Koh-Lanta (F4 orienteering → F3 perch → F2 FTC)</option>
               </select>
 <label style="display:flex;align-items:center;gap:6px;margin-top:6px;font-size:12px">
   <input type="checkbox" id="cfg-finale-assistants" onchange="saveConfig()"> Enable Assistants (Final Challenge)
@@ -2282,13 +2272,15 @@ function toggleAdv(key) {
   }
   saveConfig();
 }
-function toggleFiremaking() {
-  const checked = document.getElementById('cfg-firemaking')?.checked;
+function onFinaleFormatChange() {
+  const format = document.getElementById('cfg-finale-format')?.value;
   const slider = document.getElementById('cfg-finale');
   const display = document.getElementById('finale-display');
-  if (checked) {
+  const needsF4 = format === 'fire-making' || format === 'koh-lanta';
+  if (needsF4) {
     if (slider) { slider.value = 4; slider.disabled = true; slider.style.opacity = '0.4'; }
-    if (display) display.textContent = '4 (locked — firemaking)';
+    const label = format === 'koh-lanta' ? 'koh-lanta' : 'fire-making';
+    if (display) display.textContent = `4 (locked — ${label})`;
   } else {
     if (slider) { slider.disabled = false; slider.style.opacity = '1'; }
     if (display) display.textContent = slider?.value || '3';
@@ -2324,7 +2316,7 @@ function saveConfig() {
     riSecondReturnAt: parseInt(g('cfg-ri-second-return')?.value) || 5,
     journey:     g('cfg-journey')?.checked || false,
     shotInDark:  g('cfg-sid')?.checked || false,
-    firemaking:  g('cfg-firemaking')?.checked || false,
+    firemaking:  (g('cfg-finale-format')?.value === 'fire-making') || false,
     tiebreakerMode: g('cfg-tiebreaker-mode')?.value || 'survivor',
     qem:         g('cfg-qem')?.checked || false,
     idolRehide:  g('cfg-idol-rehide')?.checked || false,
@@ -2368,16 +2360,16 @@ function renderConfig() {
   if (g('ri-settings')) g('ri-settings').style.display = seasonConfig.ri ? 'flex' : 'none';
   chk('cfg-journey',   seasonConfig.journey || false);
   chk('cfg-sid',       seasonConfig.shotInDark || false);
-  chk('cfg-firemaking',seasonConfig.firemaking || false);
-  // Apply firemaking lock on render
-  if (seasonConfig.firemaking) {
-    const _fmSlider = g('cfg-finale');
+  // Apply finaleFormat lock on render (fire-making and koh-lanta force F4)
+  const _fmFormat = seasonConfig.finaleFormat;
+  const _needsF4 = _fmFormat === 'fire-making' || _fmFormat === 'koh-lanta';
+  const _fmSlider = g('cfg-finale');
+  const _fmDisplay = document.getElementById('finale-display');
+  if (_needsF4) {
     if (_fmSlider) { _fmSlider.value = 4; _fmSlider.disabled = true; _fmSlider.style.opacity = '0.4'; }
-    const _fmDisplay = document.getElementById('finale-display');
-    if (_fmDisplay) _fmDisplay.textContent = '4 (locked — firemaking)';
+    if (_fmDisplay) _fmDisplay.textContent = `4 (locked — ${_fmFormat})`;
   } else {
-    const _fmSlider2 = g('cfg-finale');
-    if (_fmSlider2) { _fmSlider2.disabled = false; _fmSlider2.style.opacity = '1'; }
+    if (_fmSlider) { _fmSlider.disabled = false; _fmSlider.style.opacity = '1'; }
   }
   set('cfg-tiebreaker-mode', seasonConfig.tiebreakerMode || 'survivor');
   chk('cfg-qem',        seasonConfig.qem || false);
@@ -13988,8 +13980,8 @@ function simulateEpisode() {
   repairGsSets(gsCheckpoints[_cpNum]);
   try { localStorage.setItem('simulator_cp_' + _cpNum, JSON.stringify(gsCheckpoints[_cpNum])); } catch(e) {}
   const cfg = seasonConfig;
-  // Fire-making forces F4 finale — override every episode start to catch saves/loads
-  if (cfg.firemaking && cfg.finaleSize < 4) cfg.finaleSize = 4;
+  // Fire-making / Koh-Lanta force F4 finale — override every episode start
+  if ((cfg.firemaking || cfg.finaleFormat === 'fire-making' || cfg.finaleFormat === 'koh-lanta') && cfg.finaleSize < 4) cfg.finaleSize = 4;
   const epNum = gs.episode + 1;
   const ep = { num: epNum, bondChanges: [], riDuel: null, isRIReentry: false, isMerge: false,
                 idolFinds: [], idolPlays: [], idolRehide: false, journey: null, twist: null, twists: [], campEvents: {},
@@ -19843,8 +19835,8 @@ function snapshotGameState() {
 function initGameState() {
   if (!players.length) return false;
 
-  // Fire-making forces F4 finale — override finaleSize permanently before any episode runs
-  if (seasonConfig.firemaking) seasonConfig.finaleSize = Math.max(seasonConfig.finaleSize || 3, 4);
+  // Fire-making / Koh-Lanta force F4 finale
+  if (seasonConfig.firemaking || seasonConfig.finaleFormat === 'fire-making' || seasonConfig.finaleFormat === 'koh-lanta') seasonConfig.finaleSize = Math.max(seasonConfig.finaleSize || 3, 4);
 
   const bonds = {};
   // Pre-game relationship bonds
@@ -20153,14 +20145,13 @@ function viewEpisode(num) {
 
 function simulateNext() {
   if (!gs) { if (!initGameState()) { alert('Add players to Cast Builder first.'); return; } }
-  // Fire-making override: if finale triggered too early (F3 instead of F4), revert to regular episode
-  if (seasonConfig.firemaking) {
+  // Fire-making / Koh-Lanta override: force F4 finale
+  const _needsF4Finale = seasonConfig.firemaking || seasonConfig.finaleFormat === 'fire-making' || seasonConfig.finaleFormat === 'koh-lanta';
+  if (_needsF4Finale) {
     if (seasonConfig.finaleSize < 4) seasonConfig.finaleSize = 4;
     if (gs.phase === 'finale' && gs.activePlayers.length > 4) {
-      console.log(`[FIREMAKING] Reverting premature finale: ${gs.activePlayers.length} players, need 4`);
       gs.phase = 'post-merge';
     }
-    console.log(`[NEXT] firemaking=true, phase=${gs.phase}, players=${gs.activePlayers.length}, finaleSize=${seasonConfig.finaleSize}`);
   }
   const ep = gs.phase === 'finale' ? simulateFinale() : simulateEpisode();
   if (!ep) return;
@@ -20672,8 +20663,8 @@ function generateFinaleCampOverride(ep, finalists) {
 
 function simulateFinale() {
   const cfg = seasonConfig;
-  // Fire-making override — ensure F4 even if loaded from save
-  if (cfg.firemaking && cfg.finaleSize < 4) cfg.finaleSize = 4;
+  // Fire-making / Koh-Lanta override — ensure F4 even if loaded from save
+  if ((cfg.firemaking || cfg.finaleFormat === 'fire-making' || cfg.finaleFormat === 'koh-lanta') && cfg.finaleSize < 4) cfg.finaleSize = 4;
   const epNum = gs.episode + 1;
   const players = [...gs.activePlayers];
   console.log(`[FINALE] firemaking=${cfg.firemaking}, finaleSize=${cfg.finaleSize}, players=${players.length} (${players.join(', ')}), finaleFormat=${cfg.finaleFormat}`);
@@ -20775,6 +20766,139 @@ function simulateFinale() {
     addBond(_fmWinner, _fmImmWinner, -0.5); // fire winner might resent not being saved
 
     // Skip the finaleSize cut logic below — fire-making already handled the cut
+  }
+
+  // ── KOH-LANTA FINALE: orienteering → perch → choice → F2 FTC ──
+  if (cfg.finaleFormat === 'koh-lanta' && players.length === 4) {
+    const _pick = arr => arr[Math.floor(Math.random() * arr.length)];
+
+    // ── STEP 1: ORIENTEERING RACE (F4 → F3) ──
+    const _orScores = players.map(p => {
+      const s = pStats(p);
+      return {
+        name: p,
+        score: s.mental * 0.3 + s.intuition * 0.25 + s.physical * 0.2 + s.endurance * 0.15 + s.strategic * 0.1 + (Math.random() * 5 - 2.5),
+      };
+    }).sort((a, b) => b.score - a.score);
+
+    const _orPlacements = _orScores.map(s => s.name);
+    const _orEliminated = _orPlacements[3]; // last place
+    const _orStages = [
+      { type: 'start', text: `Four players. Four maps. Four compasses. One dagger each hidden in the jungle. First three back are safe. The host gives the signal — they scatter.` },
+      { type: 'horn1', player: _orPlacements[0], text: `A horn blasts through the jungle. ${_orPlacements[0]} bursts out of the treeline, dagger in hand. Safe. Three spots become two.` },
+      { type: 'horn2', player: _orPlacements[1], text: `The second horn. ${_orPlacements[1]} emerges — exhausted, muddy, but holding the dagger. Safe. One spot left. Two players still out there.` },
+      { type: 'horn3', player: _orPlacements[2], eliminated: _orEliminated, text: `Minutes pass. Then — the third horn. ${_orPlacements[2]} stumbles back to the starting point. Safe. The horn doesn't sound again. ${_orEliminated} walks out of the jungle empty-handed. It's over.` },
+    ];
+
+    ep.klOrienteering = { placements: _orPlacements, eliminated: _orEliminated, scores: Object.fromEntries(_orScores.map(s => [s.name, Math.round(s.score * 10) / 10])), stages: _orStages };
+
+    // Eliminate 4th place
+    handleAdvantageInheritance(_orEliminated, ep);
+    gs.eliminated.push(_orEliminated);
+    gs.jury.push(_orEliminated);
+    gs.activePlayers = gs.activePlayers.filter(p => p !== _orEliminated);
+
+    // ── STEP 2: THE PERCH (F3 → immunity winner) ──
+    const _perchPlayers = _orPlacements.slice(0, 3); // F3
+    const _perchCumulative = Object.fromEntries(_perchPlayers.map(p => [p, 0]));
+    const _perchPhases = [];
+    const _perchDropOrder = [];
+    const _phasePlatforms = ['21×16 cm (full)', '16×16 cm (first peg removed)', '10×16 cm (second peg removed)', '10×10 cm (final stage)'];
+
+    for (let phase = 0; phase < 4; phase++) {
+      const remaining = _perchPlayers.filter(p => !_perchDropOrder.includes(p));
+      if (remaining.length <= 1) break;
+
+      // Score this phase
+      remaining.forEach(p => {
+        const s = pStats(p);
+        const phaseScore = s.endurance * 0.4 + s.temperament * 0.3 + s.physical * 0.2 + s.mental * 0.1 + (Math.random() * 4 - 2);
+        _perchCumulative[p] += phaseScore;
+      });
+
+      // Sort by cumulative (lowest = most likely to drop)
+      const sorted = remaining.sort((a, b) => _perchCumulative[a] - _perchCumulative[b]);
+      const weakest = sorted[0];
+
+      // Drop logic: phase 0 = no drop, phase 1 = 40% chance, phase 2+ = guaranteed
+      const dropChance = phase === 0 ? 0 : phase === 1 ? 0.4 : 1.0;
+      const drops = Math.random() < dropChance;
+
+      let phaseText;
+      if (phase === 0) {
+        phaseText = _pick([
+          `The three finalists step onto their perches. Platform: ${_phasePlatforms[0]}. The jungle goes quiet. Nobody moves. The challenge begins.`,
+          `${remaining.join(', ')} take their positions. The host reminds them: last one standing wins. The perch is wide enough — for now.`,
+        ]);
+      } else if (phase === 3 && remaining.length === 2) {
+        // Final showdown
+        const [a, b] = remaining;
+        const winner = _perchCumulative[a] > _perchCumulative[b] ? a : b;
+        const loser = winner === a ? b : a;
+        _perchDropOrder.push(loser);
+        phaseText = _pick([
+          `Platform: ${_phasePlatforms[3]}. ${a} and ${b}. One foot each. Neither speaks. The wind picks up. ${loser}'s knee buckles — tries to correct — overcorrects. Falls. ${winner} doesn't move. Doesn't celebrate. Just stands there. It's over.`,
+          `The final stage. ${_phasePlatforms[3]}. Nothing left to hold. ${a} and ${b} are shaking. Minutes feel like hours. Then ${loser}'s balance shifts — a fraction too far. ${pronouns(loser).Sub} ${pronouns(loser).sub==='they'?'reach':'reaches'} for the perch — too late. ${winner} is the last one standing.`,
+        ]);
+      } else if (drops) {
+        _perchDropOrder.push(weakest);
+        const _wPr = pronouns(weakest);
+        phaseText = _pick([
+          `Platform reduced to ${_phasePlatforms[phase]}. ${weakest} pulls the cord. The platform shrinks. ${_wPr.Sub} ${_wPr.sub==='they'?'adjust':'adjusts'} — but ${_wPr.posAdj} weight shifts. A wobble. A grab. Then — ${_wPr.sub} ${_wPr.sub==='they'?'fall':'falls'}. ${remaining.filter(p => p !== weakest).join(' and ')} remain.`,
+          `${_phasePlatforms[phase]} now. ${weakest} was solid until the cord pull. The new surface is too small. ${_wPr.Sub} ${_wPr.sub==='they'?'fight':'fights'} it for twenty seconds — legs shaking, arms out — but physics wins. Down. ${remaining.filter(p => p !== weakest).join(' and ')} are still up.`,
+        ]);
+      } else {
+        phaseText = _pick([
+          `Platform reduced to ${_phasePlatforms[phase]}. All ${remaining.length} pull their cords. The platform shrinks. Everyone adjusts. ${weakest} wobbles — but holds. Not yet.`,
+          `${_phasePlatforms[phase]}. The surface is smaller. ${remaining.join(', ')} recalibrate. Feet closer together. Arms out. Nobody falls — but ${weakest} is working harder than the others.`,
+        ]);
+      }
+
+      _perchPhases.push({ phase, platform: _phasePlatforms[phase], text: phaseText, dropped: drops ? weakest : null, remaining: [...remaining] });
+    }
+
+    const _perchWinner = _perchPlayers.filter(p => !_perchDropOrder.includes(p))[0];
+    ep.immunityWinner = _perchWinner; // override immunity from the orienteering challenge
+    ep.klPerch = { phases: _perchPhases, dropOrder: _perchDropOrder, winner: _perchWinner, scores: { ..._perchCumulative } };
+
+    // ── STEP 3: THE CHOICE (winner picks F2 opponent) ──
+    const _choiceOthers = _perchPlayers.filter(p => p !== _perchWinner);
+    const _choiceS = pStats(_perchWinner);
+    const _choiceUseStrategy = Math.random() < _choiceS.strategic * 0.1;
+    let _choiceChosen, _choiceReason;
+
+    if (_choiceUseStrategy) {
+      // Jury projection: pick who I can beat
+      const projections = _choiceOthers.map(opp => {
+        const proj = projectJuryVotes([_perchWinner, opp]);
+        return { name: opp, myVotes: proj[_perchWinner] || 0, theirVotes: proj[opp] || 0 };
+      });
+      projections.sort((a, b) => (b.myVotes - b.theirVotes) - (a.myVotes - a.theirVotes));
+      _choiceChosen = projections[0].name; // pick the one I beat by the most
+      _choiceReason = 'strategic';
+    } else {
+      // Bond: pick closest ally
+      _choiceChosen = _choiceOthers.sort((a, b) => getBond(_perchWinner, b) - getBond(_perchWinner, a))[0];
+      _choiceReason = 'bond';
+    }
+
+    const _choiceEliminated = _choiceOthers.find(p => p !== _choiceChosen);
+    ep.klChoice = { winner: _perchWinner, chosen: _choiceChosen, eliminated: _choiceEliminated, reason: _choiceReason };
+
+    // Eliminate 3rd place
+    handleAdvantageInheritance(_choiceEliminated, ep);
+    gs.eliminated.push(_choiceEliminated);
+    gs.jury.push(_choiceEliminated);
+    gs.activePlayers = gs.activePlayers.filter(p => p !== _choiceEliminated);
+
+    // F2 finalists
+    finalists = [_perchWinner, _choiceChosen];
+    ep.finaleFinalists = finalists;
+    ep.eliminated = _choiceEliminated; // last eliminated for history
+
+    // Bond consequences
+    addBond(_perchWinner, _choiceChosen, 2.0);
+    addBond(_perchWinner, _choiceEliminated, -1.0);
   }
 
   // If finaleSize === 2 and 3 remain: decide who sits with immunity winner (jury formats only — final-challenge runs all players)
@@ -20985,6 +21109,10 @@ function simulateFinale() {
     firemaking: ep.firemaking || false,
     firemakingDecision: ep.firemakingDecision || null,
     firemakingResult: ep.firemakingResult || null,
+    // Koh-Lanta finale
+    klOrienteering: ep.klOrienteering || null,
+    klPerch: ep.klPerch || null,
+    klChoice: ep.klChoice || null,
   });
 
   saveGameState();
@@ -28448,6 +28576,129 @@ function rpBuildFinaleChallenge(ep) {
   return html;
 }
 
+// ── Koh-Lanta: Orienteering Race Screen ──
+function rpBuildKLOrienteering(ep) {
+  if (!ep.klOrienteering) return '';
+  const o = ep.klOrienteering;
+  const _eq = vpGenerateQuote(o.eliminated, ep, 'eliminated');
+  const _place = (gs.episodeHistory || []).filter(h => h.eliminated).length + 1;
+
+  let html = `<div class="rp-page tod-arena" style="background:radial-gradient(ellipse at 50% 30%, rgba(63,185,80,0.06) 0%, transparent 50%)">
+    <div class="rp-eyebrow">Episode ${ep.num} — Finale</div>
+    <div style="font-family:var(--font-display);font-size:28px;letter-spacing:2px;text-align:center;margin-bottom:4px;text-transform:uppercase;color:#3fb950">The Orienteering Race</div>
+    <div style="font-size:12px;color:#8b949e;text-align:center;margin-bottom:20px">Four maps. Four compasses. Three daggers. Find yours or go home.</div>
+
+    <div style="display:flex;justify-content:center;gap:16px;margin-bottom:24px;flex-wrap:wrap">
+      ${o.placements.map((p, i) => `<div style="text-align:center;opacity:${i === 3 ? '0.5' : '1'}">
+        ${rpPortrait(p, i === 3 ? 'lg elim' : 'lg')}
+        <div style="font-size:12px;font-weight:700;color:#e6edf3;margin-top:4px">${p}</div>
+      </div>`).join('')}
+    </div>`;
+
+  // Staged narrative
+  o.stages.forEach(stage => {
+    const borderColor = stage.type === 'start' ? 'rgba(63,185,80,0.3)' : stage.eliminated ? 'rgba(248,81,73,0.3)' : 'rgba(63,185,80,0.4)';
+    const label = stage.type === 'start' ? 'THE RACE BEGINS' : stage.type === 'horn1' ? '🔔 FIRST HORN' : stage.type === 'horn2' ? '🔔 SECOND HORN' : '🔔 THIRD HORN';
+    html += `<div style="padding:12px 16px;background:rgba(0,0,0,0.2);border-left:3px solid ${borderColor};margin-bottom:10px;border-radius:0 8px 8px 0">
+      <div style="font-size:9px;font-weight:800;letter-spacing:2px;color:${stage.eliminated ? '#f85149' : '#3fb950'};margin-bottom:4px">${label}</div>
+      <div style="font-size:12px;color:#cdd9e5;line-height:1.6">${stage.text}</div>
+    </div>`;
+  });
+
+  // Elimination card
+  html += `<div class="rp-elim" style="margin-top:16px">
+    <div class="rp-elim-eyebrow">${ordinal(_place)} player eliminated — Orienteering</div>
+    ${rpPortrait(o.eliminated, 'xl elim')}
+    <div class="rp-elim-name">${o.eliminated}</div>
+    <div class="rp-elim-arch">${vpArchLabel(o.eliminated)}</div>
+    <div class="rp-elim-quote">"${_eq}"</div>
+    <div class="rp-elim-place">Eliminated — Episode ${ep.num}</div>
+  </div></div>`;
+  return html;
+}
+
+// ── Koh-Lanta: The Perch Screen ──
+function rpBuildKLPerch(ep) {
+  if (!ep.klPerch) return '';
+  const p = ep.klPerch;
+
+  let html = `<div class="rp-page tod-arena" style="background:radial-gradient(ellipse at 50% 80%, rgba(227,179,65,0.06) 0%, transparent 50%)">
+    <div class="rp-eyebrow">Episode ${ep.num} — Finale</div>
+    <div style="font-family:var(--font-display);font-size:28px;letter-spacing:2px;text-align:center;margin-bottom:4px;text-transform:uppercase;color:#e3b341">The Perch</div>
+    <div style="font-size:12px;color:#8b949e;text-align:center;margin-bottom:20px">Stand on the perch. Don't fall. Last one standing chooses who sits next to them at Final Tribal.</div>`;
+
+  // Phase-by-phase narrative
+  p.phases.forEach(phase => {
+    const hasDropped = !!phase.dropped;
+    const borderColor = hasDropped ? 'rgba(248,81,73,0.4)' : 'rgba(227,179,65,0.3)';
+    const label = phase.phase === 0 ? 'FULL PLATFORM' : phase.phase === 1 ? 'FIRST PEG REMOVED' : phase.phase === 2 ? 'SECOND PEG REMOVED' : 'FINAL STAGE';
+    html += `<div style="padding:12px 16px;background:rgba(0,0,0,0.2);border-left:3px solid ${borderColor};margin-bottom:10px;border-radius:0 8px 8px 0">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        <span style="font-size:9px;font-weight:800;letter-spacing:2px;color:${hasDropped ? '#f85149' : '#e3b341'}">${label}</span>
+        <span style="font-size:9px;color:#484f58">${phase.platform}</span>
+      </div>
+      <div style="font-size:12px;color:#cdd9e5;line-height:1.6">${phase.text}</div>
+      ${hasDropped ? `<div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+        ${rpPortrait(phase.dropped, 'sm')}
+        <span style="font-size:11px;font-weight:700;color:#f85149">FALLS</span>
+      </div>` : ''}
+    </div>`;
+  });
+
+  // Winner
+  html += `<div style="text-align:center;margin:20px 0">
+    ${rpPortrait(p.winner, 'xl immune')}
+    <div style="font-size:16px;font-weight:800;color:#e3b341;margin-top:8px">${p.winner}</div>
+    <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:#3fb950">WINS THE PERCH — FINAL IMMUNITY</div>
+  </div></div>`;
+  return html;
+}
+
+// ── Koh-Lanta: The Choice Screen ──
+function rpBuildKLChoice(ep) {
+  if (!ep.klChoice) return '';
+  const c = ep.klChoice;
+  const _pr = pronouns(c.winner);
+  const _eq = vpGenerateQuote(c.eliminated, ep, 'eliminated');
+  const _place = (gs.episodeHistory || []).filter(h => h.eliminated).length + 1;
+  const reasonText = c.reason === 'strategic'
+    ? `${c.winner} ran the jury math. ${_pr.Sub} chose ${c.chosen} — the person ${_pr.sub} ${_pr.sub==='they'?'project':'projects'} ${_pr.sub} can beat. This wasn't about friendship. It was about winning.`
+    : `${c.winner} chose loyalty. ${c.chosen} — the person ${_pr.sub} ${_pr.sub==='they'?'trust':'trusts'} most in this game. Whatever the jury decides, they face it together.`;
+
+  let html = `<div class="rp-page tod-deepnight">
+    <div class="rp-eyebrow">Episode ${ep.num} — Finale</div>
+    <div class="rp-title" style="color:#e3b341">The Choice</div>
+    <div style="font-size:13px;color:#8b949e;text-align:center;margin-bottom:16px">${c.winner} must choose one opponent for Final Tribal Council. The other is eliminated.</div>
+    <div style="text-align:center;margin-bottom:16px">
+      ${rpPortrait(c.winner, 'xl immune')}
+      <div style="font-size:14px;font-weight:800;color:#e3b341;margin-top:6px">${c.winner}</div>
+      <div style="font-size:10px;color:#3fb950;font-weight:700;letter-spacing:1px">PERCH WINNER</div>
+    </div>
+    <div style="display:flex;justify-content:center;gap:32px;margin:20px 0;flex-wrap:wrap">
+      <div style="text-align:center;padding:16px;background:rgba(63,185,80,0.06);border:2px solid rgba(63,185,80,0.3);border-radius:12px;min-width:120px">
+        ${rpPortrait(c.chosen, 'xl')}
+        <div style="font-size:14px;font-weight:800;color:#3fb950;margin-top:8px">FINAL TWO</div>
+        <div style="font-size:12px;color:#e6edf3">${c.chosen}</div>
+      </div>
+      <div style="text-align:center;padding:16px;background:rgba(248,81,73,0.06);border:2px solid rgba(248,81,73,0.3);border-radius:12px;min-width:120px">
+        ${rpPortrait(c.eliminated, 'xl elim')}
+        <div style="font-size:14px;font-weight:800;color:#f85149;margin-top:8px">3RD PLACE</div>
+        <div style="font-size:12px;color:#e6edf3">${c.eliminated}</div>
+      </div>
+    </div>
+    <div style="font-size:13px;color:#cdd9e5;text-align:center;line-height:1.6;max-width:500px;margin:0 auto 20px;font-style:italic">${reasonText}</div>
+    <div class="rp-elim" style="margin-top:16px">
+      <div class="rp-elim-eyebrow">${ordinal(_place)} player eliminated — The Choice</div>
+      ${rpPortrait(c.eliminated, 'xl elim')}
+      <div class="rp-elim-name">${c.eliminated}</div>
+      <div class="rp-elim-arch">${vpArchLabel(c.eliminated)}</div>
+      <div class="rp-elim-quote">"${_eq}"</div>
+      <div class="rp-elim-place">Eliminated — Episode ${ep.num}</div>
+    </div>
+  </div>`;
+  return html;
+}
+
 // ── Fire-Making: Camp Life — the lobbying and weight of the decision ──
 function rpBuildFiremakingCampLife(ep) {
   if (!ep.firemakingDecision) return '';
@@ -32003,6 +32254,17 @@ function buildVPScreens(epRecord) {
 
   if (ep.isFinale) {
     // ── FINALE-SPECIFIC SCREENS ──
+
+    // Koh-Lanta: orienteering → perch → choice
+    if (ep.klOrienteering) {
+      vpScreens.push({ id:'kl-orienteering', label:'Orienteering Race', html: rpBuildKLOrienteering(ep) });
+    }
+    if (ep.klPerch) {
+      vpScreens.push({ id:'kl-perch', label:'The Perch', html: rpBuildKLPerch(ep) });
+    }
+    if (ep.klChoice) {
+      vpScreens.push({ id:'kl-choice', label:'The Choice', html: rpBuildKLChoice(ep) });
+    }
 
     // Fire-Making: camp lobbying → decision → fire duel
     if (ep.firemakingDecision) {

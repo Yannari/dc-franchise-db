@@ -120,6 +120,18 @@ and the downstream consequence. None are guaranteed — all fire on a roll.
   Core: gs.survival[name] decays per episode. Low survival → challenge penalties,
   emotional pressure, camp conflict, medevac risk. Reward challenges become meaningful.
 
+  PROVIDER / SLACKER SYSTEM (part of survival mechanics):
+  Ties into tribe food/water reserves. Each player contributes based on stats
+  (endurance * 0.3 + social * 0.2 + physical * 0.2). Players above tribe avg = "provider",
+  below = "slacker". Provider: +bond with tribemates, jury resume (camp contributor),
+  harder to vote out (tribe needs them). Slacker: -bond over time, vote target pressure,
+  camp events ("they sit around while we fish"). Villain twist: targeting a provider is
+  a bold strategic move (tribe weakens but a threat is removed). Provider status feeds
+  into jury scoring (endurance * 0.05 camp workhorse bonus) and computeHeat (providers
+  get -0.3 heat from non-villains, villains give +0.5 heat to providers as strategic targets).
+  Camp events: provider praised, provider resentment toward slackers, slacker called out,
+  slacker confrontation, provider voted out = tribe morale drop + food crisis event.
+
 
   MEDIUM PRIORITY
   ───────────────

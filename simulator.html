@@ -21909,6 +21909,20 @@ function simulateJuryVote(finalists) {
       // Survival resume: cumulative votes survived — jurors respect someone who kept getting targeted and kept surviving
       const _totalVotesReceived = gs.playerStates?.[f]?.votesReceived || 0;
       const _survivalBonus = Math.min(0.5, _totalVotesReceived * 0.04); // 5 votes = 0.2, 10 votes = 0.4, caps at 0.5
+      // Challenge dominance: individual immunity wins impress the jury
+      const _immWins = gs.episodeHistory.filter(e => e.immunityWinner === f && e.challengeType === 'individual').length;
+      const _challengeBonus = _immWins >= 5 ? 0.8 : _immWins >= 4 ? 0.6 : _immWins >= 3 ? 0.4 : _immWins >= 2 ? 0.2 : 0;
+      // Underdog bonus: high votes received in pre-merge but made it to the end — comeback story
+      const _preMergeVotes = gs.episodeHistory.filter(e => !e.isMerge && e.challengeType === 'tribe')
+        .reduce((s, e) => s + ((e.votingLog || []).filter(v => v.voted === f).length), 0);
+      const _underdogBonus = _preMergeVotes >= 6 ? 0.5 : _preMergeVotes >= 4 ? 0.3 : _preMergeVotes >= 2 ? 0.15 : 0;
+      // Social breadth: positive bonds with many jurors (not just deep bonds with a few)
+      const _posJurorBonds = (gs.jury || []).filter(j => getBond(j, f) >= 1).length;
+      const _socialBreadth = Math.min(0.5, _posJurorBonds * 0.08); // 3 jurors = 0.24, 6 = 0.48, cap 0.5
+      // Showmance partner on jury: strong emotional pull — they almost always vote for you
+      const _showmanceOnJury = gs.showmances?.find(sm => sm.players.includes(f) && sm.phase !== 'broken-up'
+        && sm.players.some(p => p !== f && (gs.jury || []).includes(p)));
+      const _showmanceJuryBonus = (_showmanceOnJury && juror === _showmanceOnJury.players.find(p => p !== f)) ? 2.5 : 0;
       // Hero/Villain archetype FTC modifiers
       const _fArch = players.find(p => p.name === f)?.archetype || '';
       const _heroBonus = _fArch === 'hero' ? 2.0 : 0; // jury loves heroes
@@ -21916,7 +21930,7 @@ function simulateJuryVote(finalists) {
       const _villainMod = _fArch === 'villain' ? (bond >= 1 ? 1.5 : bond <= -1 ? -2.0 : 0) : 0;
       // Perch victory bonus: winning the iconic endurance finale earns jury respect (proportional to juror's physical/endurance appreciation)
       const _perchBonus = gs.playerStates?.[f]?.perchWinner ? 0.4 + jS.physical * 0.05 : 0;
-      const personal = bond * 1.5 + _loyaltyHonor + _resumeBonus + _survivalBonus + _heroBonus + _villainMod + _perchBonus;
+      const personal = bond * 1.5 + _loyaltyHonor + _resumeBonus + _survivalBonus + _challengeBonus + _underdogBonus + _socialBreadth + _showmanceJuryBonus + _heroBonus + _villainMod + _perchBonus;
       // Bitterness/gratitude: was this finalist the one who voted me out?
       const history = gs.jurorHistory?.[juror];
       let bitterness = 0;
@@ -21946,8 +21960,21 @@ function simulateJuryVote(finalists) {
     const _jrVotedOut = _jrHistory?.voters?.includes(pick);
     const _jrFp = pronouns(pick);
     const _jrPick = arr => arr[([...juror+pick].reduce((a,c)=>a+c.charCodeAt(0),0)+gs.episode*7)%arr.length];
+    // Compute finalist stats for reasoning
+    const _jrImmWins = gs.episodeHistory.filter(e => e.immunityWinner === pick && e.challengeType === 'individual').length;
+    const _jrPreMergeVotes = gs.episodeHistory.filter(e => !e.isMerge && e.challengeType === 'tribe')
+      .reduce((s, e) => s + ((e.votingLog || []).filter(v => v.voted === pick).length), 0);
+    const _jrPosJurorBonds = (gs.jury || []).filter(j => getBond(j, pick) >= 1).length;
+    const _jrShowmance = gs.showmances?.find(sm => sm.players.includes(pick) && sm.phase !== 'broken-up' && sm.players.includes(juror));
     let _jrReason;
-    if (_jrVotedOut && _jrBond >= 2) {
+    // Showmance partner — strongest emotional pull, takes priority
+    if (_jrShowmance) {
+      _jrReason = _jrPick([
+        `${pick} is my person. Out there and in here. There was never a question who I'm voting for.`,
+        `We went through this game together. ${pick} is the reason I survived as long as I did. My vote is for ${_jrFp.obj} — and it's not even close.`,
+        `I'm not going to pretend this is objective. ${pick} and I had something real. ${_jrFp.Sub} ${_jrFp.sub==='they'?'deserve':'deserves'} this. I believe that with everything I have.`,
+      ]);
+    } else if (_jrVotedOut && _jrBond >= 2) {
       _jrReason = _jrPick([
         `${pick} voted me out — and I'm voting for ${_jrFp.obj} to win. That's how good ${_jrFp.pos} game was.`,
         `${pick} ended my game. I hated it then. But watching from the bench, I see it was the right move. That's why ${_jrFp.sub} ${_jrFp.sub==='they'?'get':'gets'} my vote.`,
@@ -21973,6 +22000,24 @@ function simulateJuryVote(finalists) {
         `From the jury bench, it's clear: ${pick} made the moves that shaped this season. That deserves the win.`,
         `respected ${pick}'s game and felt a genuine connection`,
         `${pick} outplayed everyone sitting next to ${_jrFp.obj}. The jury should reward gameplay, not feelings.`,
+      ]);
+    } else if (_jrImmWins >= 3) {
+      _jrReason = _jrPick([
+        `${_jrImmWins} individual immunities. ${pick} won when it mattered. You can't argue with someone who earned their safety that many times.`,
+        `${pick} is a challenge beast — ${_jrImmWins} immunity wins. ${_jrFp.Sub} didn't need alliances to survive. ${_jrFp.Sub} just kept winning.`,
+        `I respect dominance. ${pick} won ${_jrImmWins} immunities. That's not luck — that's will. My vote goes to the competitor.`,
+      ]);
+    } else if (_jrPreMergeVotes >= 4) {
+      _jrReason = _jrPick([
+        `${pick} was on the bottom from day one. ${_jrPreMergeVotes} votes before the merge — and ${_jrFp.sub} ${_jrFp.sub==='they'?'are':'is'} still here. That's the best underdog story I've seen.`,
+        `Everyone tried to get rid of ${pick} early. It didn't work. ${_jrFp.Sub} clawed ${_jrFp.pos} way to the end and I respect that more than any blindside.`,
+        `${pick} was targeted before most people even learned each other's names. The fact that ${_jrFp.sub} survived to the finale is ${_jrFp.pos} argument. I'm voting for the comeback.`,
+      ]);
+    } else if (_jrPosJurorBonds >= 5) {
+      _jrReason = _jrPick([
+        `Everybody on this jury has something good to say about ${pick}. That's not an accident — ${_jrFp.sub} built real relationships with real people. My vote reflects that.`,
+        `${pick} connected with more people on this jury than anyone else up there. That's social game. That's what Survivor is about.`,
+        `I look at this jury and I see ${_jrPosJurorBonds} people who genuinely like ${pick}. You can't fake that over 30 days. ${_jrFp.Sub} earned every one of those relationships.`,
       ]);
     } else if (_jrBond >= 1) {
       _jrReason = _jrPick([
@@ -22018,13 +22063,27 @@ function projectJuryVotes(finalistSet) {
       // Survival resume: cumulative votes survived
       const _totalVotesReceived = gs.playerStates?.[f]?.votesReceived || 0;
       const _survivalBonus = Math.min(0.5, _totalVotesReceived * 0.04);
+      // Challenge dominance: individual immunity wins
+      const _immWins = gs.episodeHistory.filter(e => e.immunityWinner === f && e.challengeType === 'individual').length;
+      const _challengeBonus = _immWins >= 5 ? 0.8 : _immWins >= 4 ? 0.6 : _immWins >= 3 ? 0.4 : _immWins >= 2 ? 0.2 : 0;
+      // Underdog bonus: high votes in pre-merge but survived to finale
+      const _preMergeVotes = gs.episodeHistory.filter(e => !e.isMerge && e.challengeType === 'tribe')
+        .reduce((s, e) => s + ((e.votingLog || []).filter(v => v.voted === f).length), 0);
+      const _underdogBonus = _preMergeVotes >= 6 ? 0.5 : _preMergeVotes >= 4 ? 0.3 : _preMergeVotes >= 2 ? 0.15 : 0;
+      // Social breadth: positive bonds with many jurors
+      const _posJurorBonds = (gs.jury || []).filter(j => getBond(j, f) >= 1).length;
+      const _socialBreadth = Math.min(0.5, _posJurorBonds * 0.08);
+      // Showmance partner on jury
+      const _showmanceOnJury = gs.showmances?.find(sm => sm.players.includes(f) && sm.phase !== 'broken-up'
+        && sm.players.some(p => p !== f && (gs.jury || []).includes(p)));
+      const _showmanceJuryBonus = (_showmanceOnJury && juror === _showmanceOnJury.players.find(p => p !== f)) ? 2.5 : 0;
       // Hero/Villain archetype FTC modifiers
       const _fArch = players.find(p => p.name === f)?.archetype || '';
       const _heroBonus = _fArch === 'hero' ? 2.0 : 0;
       const _villainMod = _fArch === 'villain' ? (bond >= 1 ? 1.5 : bond <= -1 ? -2.0 : 0) : 0;
       // Perch victory bonus (koh-lanta): jurors respect iconic endurance win (proportional to juror's physical appreciation)
       const _perchBonus = gs.playerStates?.[f]?.perchWinner ? 0.4 + jS.physical * 0.05 : 0;
-      const personal = bond * 1.5 + _loyaltyHonor + _resumeBonus + _survivalBonus + _heroBonus + _villainMod + _perchBonus;
+      const personal = bond * 1.5 + _loyaltyHonor + _resumeBonus + _survivalBonus + _challengeBonus + _underdogBonus + _socialBreadth + _showmanceJuryBonus + _heroBonus + _villainMod + _perchBonus;
       const history = gs.jurorHistory?.[juror];
       let bitterness = 0;
       if (history) {

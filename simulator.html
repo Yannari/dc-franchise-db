@@ -20681,11 +20681,14 @@ function simulateFinale() {
   // ── Override camp events with finale-themed "last day" events ──
   generateFinaleCampOverride(ep, players);
 
-  // Final immunity challenge
-  const immResult = simulateIndividualChallenge(players, null);
-  ep.immunityWinner = immResult?.name || players[0];
-  ep.challengeLabel = immResult?.challengeType || 'Mixed';
-  ep.chalPlacements = immResult?.chalPlacements || null;
+  // Final immunity challenge — skip for fan-vote F2 (no one to cut)
+  const _skipImmunity = cfg.finaleFormat === 'fan-vote' && cfg.finaleSize <= 2;
+  if (!_skipImmunity) {
+    const immResult = simulateIndividualChallenge(players, null);
+    ep.immunityWinner = immResult?.name || players[0];
+    ep.challengeLabel = immResult?.challengeType || 'Mixed';
+    ep.chalPlacements = immResult?.chalPlacements || null;
+  }
 
   let finalists = [...players];
 
@@ -21127,6 +21130,23 @@ function simulateFinale() {
 
   ep.finaleFinalists = finalists;
 
+  // ── FAN VOTE FINALE: fan campaign + popularity-based vote ──
+  if (cfg.finaleFormat === 'fan-vote') {
+    // Require popularity system
+    if (!seasonConfig.popularityEnabled || !gs.popularity) {
+      // Fallback: treat as traditional jury if popularity not enabled
+      cfg.finaleFormat = 'traditional';
+    } else {
+      // Generate fan campaign data
+      ep.fanCampaign = generateFanCampaign(finalists);
+
+      // Run the fan vote
+      ep.fanVoteResult = simulateFanVote(finalists);
+      ep.winner = ep.fanVoteResult.winner;
+      gs.finaleResult = { winner: ep.winner, votes: null, reasoning: null, finalists, fanVote: true };
+    }
+  }
+
   // Bench selection: eliminated players pick sides (final-challenge format ONLY — jury formats don't have benches)
   const hasFinaleChallenge = cfg.finaleFormat === 'final-challenge';
   if (hasFinaleChallenge && (gs.eliminated.length > 0 || (gs.jury || []).length > 0)) {
@@ -21154,7 +21174,7 @@ function simulateFinale() {
     ep.winner = chalResult.winner;
     ep.juryResult = null;
     gs.finaleResult = { winner: ep.winner, votes: null, reasoning: null, finalists, finalChallenge: true };
-  } else {
+  } else if (cfg.finaleFormat !== 'fan-vote' || !ep.fanVoteResult) {
     // FTC swing votes: nudge hesitating juror bonds based on FTC performance
     // Must happen BEFORE simulateJuryVote so the vote uses post-FTC bonds
     ep.ftcSwings = applyFTCSwingVotes(finalists);
@@ -21246,6 +21266,9 @@ function simulateFinale() {
     klOrienteering: ep.klOrienteering || null,
     klPerch: ep.klPerch || null,
     klChoice: ep.klChoice || null,
+    // Fan vote finale
+    fanCampaign: ep.fanCampaign || null,
+    fanVoteResult: ep.fanVoteResult || null,
     // All players who entered the finale (before fire-making/koh-lanta eliminations)
     finaleEntrants: ep.finaleEntrants || null,
   });

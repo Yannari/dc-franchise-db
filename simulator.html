@@ -27512,6 +27512,7 @@ function rpBuildVotingPlans(ep) {
   // Determine primary and counter targets from alliance plans
   const _targetVoteCounts = {};
   namedAlliances.forEach(a => {
+    if (!a.target) return; // skip alliances with no valid target
     const votingMembers = a.members.filter(m => tribalPlayers.includes(m) && !_vpLostVoteSet.has(m));
     if (a.splitTarget) {
       const primaryCount = (a.splitPrimary || []).filter(m => votingMembers.includes(m)).length;
@@ -27525,11 +27526,11 @@ function rpBuildVotingPlans(ep) {
   // Solo alliances contribute too
   soloAlliances.forEach(a => {
     const member = a.members[0];
-    if (member && tribalPlayers.includes(member) && !_vpLostVoteSet.has(member) && a.target) {
+    if (member && tribalPlayers.includes(member) && !_vpLostVoteSet.has(member) && a.target && a.target !== 'null') {
       _targetVoteCounts[a.target] = (_targetVoteCounts[a.target] || 0) + 1;
     }
   });
-  const _sortedTargets = Object.entries(_targetVoteCounts).sort(([,a],[,b]) => b - a);
+  const _sortedTargets = Object.entries(_targetVoteCounts).filter(([name]) => name && name !== 'null' && name !== 'undefined').sort(([,a],[,b]) => b - a);
   if (_sortedTargets.length) {
     const primaryTarget = _sortedTargets[0];
     const counterTarget = _sortedTargets[1] || null;

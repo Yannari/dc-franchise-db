@@ -28,6 +28,8 @@ Simulation core:
 - `checkParanoiaSpiral()` — paranoid + strategic player turns on closest ally (self-fulfilling prophecy)
 - `checkInformationBroker()` — double agent in 2+ alliances, escalating exposure risk, bond collapse on blowup
 - `checkStolenCredit()` — bold player steals credit for another's big move (once per game). Confrontation next episode if architect is bold/hothead enough.
+- `updateSurvival()` — per-episode tribe food decay, provider/slacker calculation (willingness + ability), energy cost/savings, player survival sync
+- `generateSurvivalEvents()` — survival camp events: provider fishing/foraging/praised, slacker callout/confrontation/bonding, food conflict/hoarding/rationing/crisis, collapse warning, medevac
 - `checkShowmanceFormation()` — detects new showmances (bond + archetype compatibility)
 - `updateShowmancePhases()` — progresses showmance lifecycle (spark → honeymoon → target → ride-or-die/broken-up)
 - `checkShowmanceBreakup()` — detects partner elimination (betrayal breakup vs grief separation)
@@ -123,6 +125,13 @@ VP Finale screens:
 - `gs.stolenCreditFired` — boolean, once-per-game flag
 - `gs.stolenCreditHeat` — `{ player, ep }` — heat boost for stealer after losing confrontation
 - `gs.bigMoveEarnersThisEp` — array of player names who earned bigMoves this episode
+- `gs.survival[name]` — 0-100, per-player survival level (foodWater system)
+- `gs.tribeFood[tribeName]` — 0-100, per-tribe food reserve
+- `gs.currentProviders` / `gs.currentSlackers` — arrays of player names this episode
+- `gs.providerHistory[name]` — count of episodes as provider (feeds jury scoring)
+- `gs.collapseWarning[name]` — episode number of collapse event (medevac fires next episode)
+- `gs.medevacs` — array of medevac records for season stats
+- `gs.providerVotedOutLastEp` — `{ name, tribeName }` — triggers food crisis camp event next episode
 
 Finale-specific ep fields:
 - `ep.finaleEntrants` — snapshot of ALL players entering the finale (before any eliminations)

@@ -114,23 +114,19 @@ and the downstream consequence. None are guaranteed — all fire on a roll.
   Lobbying camp scene before Decision. Config: requires popularityEnabled, hidePopularity
   option hides Fan Pulse rankings during season for no-spoiler mode.
 
-[TODO] SURVIVAL MECHANICS ENGINE
-  UI exists (cfg-food-water, cfg-survival-difficulty) but engine is not built.
-  Full design in ideas.txt under "SURVIVAL MECHANICS — PLANNED".
-  Core: gs.survival[name] decays per episode. Low survival → challenge penalties,
-  emotional pressure, camp conflict, medevac risk. Reward challenges become meaningful.
-
-  PROVIDER / SLACKER SYSTEM (part of survival mechanics):
-  Ties into tribe food/water reserves. Each player contributes based on stats
-  (endurance * 0.3 + social * 0.2 + physical * 0.2). Players above tribe avg = "provider",
-  below = "slacker". Provider: +bond with tribemates, jury resume (camp contributor),
-  harder to vote out (tribe needs them). Slacker: -bond over time, vote target pressure,
-  camp events ("they sit around while we fish"). Villain twist: targeting a provider is
-  a bold strategic move (tribe weakens but a threat is removed). Provider status feeds
-  into jury scoring (endurance * 0.05 camp workhorse bonus) and computeHeat (providers
-  get -0.3 heat from non-villains, villains give +0.5 heat to providers as strategic targets).
-  Camp events: provider praised, provider resentment toward slackers, slacker called out,
-  slacker confrontation, provider voted out = tribe morale drop + food crisis event.
+[DONE] SURVIVAL MECHANICS ENGINE — implemented via updateSurvival() + generateSurvivalEvents().
+  Per-tribe food reserves (gs.tribeFood) decay per episode. Difficulty: casual/realistic/brutal.
+  Provider/slacker system: contribution = willingness (loyalty+social+(10-boldness)) + ability
+  (endurance+physical). Providers add to tribe food but burn energy (survival cost).
+  Slackers drag food but conserve energy (survival bonus = better challenges).
+  14 camp event types: fishing, foraging, praised, slacker callout, confrontation,
+  lazy alliance bonding, food conflict, hoarding, starvation bond, rationing, crisis,
+  collapse warning, medevac, provider voted out aftermath.
+  Collapse → medevac two-episode arc (realistic/brutal only).
+  VP: tribe food bar + member survival indicators on camp screens.
+  Jury: provider bonus (providerHistory * 0.04, cap 0.4).
+  computeHeat: provider -0.3 protection, villain +0.5 / schemer +0.3 toward providers,
+  slacker +0.04 per non-slacker. Challenge: proportional penalty (70 - survival) * 0.03.
 
 
   MEDIUM PRIORITY

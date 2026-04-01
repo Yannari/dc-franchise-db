@@ -9764,8 +9764,8 @@ function applyTwist(ep, twist, isPrimary = true) {
       // Strategic talk chance — proportional to stats + emotional state
       // Desperate/paranoid players are MORE likely to use reward time for strategy (they need it)
       const _emotionalBoost = ['desperate','paranoid','calculating'].includes(getPlayerState(_w).emotional) ? 0.15 : 0;
-      const _stratTalkChance = _ws.strategic * 0.06 + _ws.social * 0.03 + _emotionalBoost;
-      // stat 5+5 = 45%, stat 8+8 = 72%, + desperate = +15%
+      const _stratTalkChance = _ws.strategic * 0.08 + _ws.social * 0.04 + _emotionalBoost + 0.10;
+      // base 10% + stat 5+5 = 60%, stat 8+8 = 86%, stat 3+3 = 46%, + desperate = +15%
       if (_existingAlliance && Math.random() < _stratTalkChance) {
         const _strengthenBoost = _ws.strategic * 0.025; // stat 5 = 0.125, stat 10 = 0.25
         _rewardGroup.forEach(m1 => _rewardGroup.filter(m2 => m2 !== m1).forEach(m2 => addBond(m1, m2, _strengthenBoost)));

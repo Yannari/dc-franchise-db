@@ -9762,12 +9762,9 @@ function applyTwist(ep, twist, isPrimary = true) {
         const _avgGroupBond = _bondPairs > 0 ? _totalBond / _bondPairs : 0;
         // Strategic players can bridge lower bonds (same bondFloor pattern as formAlliances)
         const _bondFloor = 0.5 - _ws.strategic * 0.15;
-        const _allAboveFloor = (() => {
-          for (let _ri = 0; _ri < _rewardGroup.length; _ri++)
-            for (let _rj = _ri + 1; _rj < _rewardGroup.length; _rj++)
-              if (getBond(_rewardGroup[_ri], _rewardGroup[_rj]) < _bondFloor) return false;
-          return true;
-        })();
+        // Check pitcher's bond with each companion (NOT companion-to-companion)
+        // The pitcher is making individual pitches — companions don't need to like each other
+        const _allAboveFloor = _companions.every(c => getBond(_w, c) >= _bondFloor);
         // Check they're not already all in an alliance together
         const _alreadyAllied = (gs.namedAlliances || []).some(a =>
           a.active !== false && _rewardGroup.every(m => a.members.includes(m)));
@@ -9795,24 +9792,21 @@ function applyTwist(ep, twist, isPrimary = true) {
           twistObj.rewardAlliancePitched = true;
           twistObj.rewardAllianceFailed = true;
 
-          // Bond damage scales with how far below the floor the weakest pair is
-          // Bigger gap = more awkward/offensive the pitch was
+          // Bond damage scales with how far below the floor the pitcher-companion bond is
           const _failedPairs = [];
-          for (let _ri = 0; _ri < _rewardGroup.length; _ri++) {
-            for (let _rj = _ri + 1; _rj < _rewardGroup.length; _rj++) {
-              const _pairBond = getBond(_rewardGroup[_ri], _rewardGroup[_rj]);
-              if (_pairBond < _bondFloor) {
-                const _gap = _bondFloor - _pairBond; // how far below floor
-                const _damage = -(0.1 + _gap * 0.15); // floor gap 0.5 = -0.175, gap 2.0 = -0.40, gap 4.0 = -0.70
-                addBond(_rewardGroup[_ri], _rewardGroup[_rj], _damage);
-                _failedPairs.push({ a: _rewardGroup[_ri], b: _rewardGroup[_rj], bond: _pairBond, damage: Math.round(_damage * 10) / 10 });
-              }
+          _companions.forEach(c => {
+            const _pairBond = getBond(_w, c);
+            if (_pairBond < _bondFloor) {
+              const _gap = _bondFloor - _pairBond;
+              const _damage = -(0.1 + _gap * 0.15); // floor gap 0.5 = -0.175, gap 2.0 = -0.40, gap 4.0 = -0.70
+              addBond(_w, c, _damage);
+              _failedPairs.push({ a: _w, b: c, bond: Math.round(_pairBond * 10) / 10, damage: Math.round(_damage * 10) / 10 });
             }
-          }
+          });
 
           // Chance the rejected person leaks the pitch back at camp
           // Low loyalty = more likely to tell. High loyalty = keeps it quiet.
-          const _rejecters = _rewardGroup.filter(p => p !== _w && _failedPairs.some(fp => fp.a === p || fp.b === p));
+          const _rejecters = _companions.filter(c => _failedPairs.some(fp => fp.b === c));
           _rejecters.forEach(rejecter => {
             const _rjS = pStats(rejecter);
             const _leakChance = (10 - _rjS.loyalty) * 0.06 + _rjS.social * 0.03;

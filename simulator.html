@@ -9686,44 +9686,72 @@ function applyTwist(ep, twist, isPrimary = true) {
     twistObj.rewardItemLabel = _reward.label;
     twistObj.rewardItemDesc  = _reward.desc;
 
-    const _winMembers = twistObj.rewardWinnerType === 'tribe'
-      ? (twistObj.rewardChalPlacements[0]?.members || [])
-      : [twistObj.rewardWinner];
-
-    if (_reward.id === 'overnight') {
-      // Winners bond with each other (tribe: all members, individual: winner + companions)
-      if (twistObj.rewardWinnerType === 'tribe') {
-        for (let _i = 0; _i < _winMembers.length; _i++) {
-          for (let _j = _i + 1; _j < _winMembers.length; _j++) {
-            addBond(_winMembers[_i], _winMembers[_j], 0.5);
-          }
-        }
+    // ── Companion selection (post-merge individual: winner picks 1-2 people to share) ──
+    if (twistObj.rewardWinnerType === 'individual') {
+      const _w = twistObj.rewardWinner;
+      const _ws = pStats(_w);
+      const _isSchemer = _ws.strategic >= 7 || ['schemer','mastermind'].includes(
+        players.find(p => p.name === _w)?.archetype);
+      const _others = gs.activePlayers.filter(p => p !== _w);
+      // Companion 1: always highest bond
+      const _c1 = _others.sort((a,b) => getBond(_w,b) - getBond(_w,a))[0];
+      // Companion 2: schemer courts middle-ground players; others bring second-closest
+      let _c2;
+      if (_isSchemer) {
+        const _middle = _others.filter(p => p !== _c1)
+          .filter(p => { const b = getBond(_w,p); return b > -1 && b < 2; });
+        _c2 = _middle.length
+          ? _middle[Math.floor(Math.random() * _middle.length)]
+          : _others.filter(p => p !== _c1)[0];
       } else {
-        const _w = twistObj.rewardWinner;
-        const _ws = pStats(_w);
-        const _isSchemer = _ws.strategic >= 7 || ['schemer','mastermind'].includes(
-          players.find(p => p.name === _w)?.archetype);
-        const _others = gs.activePlayers.filter(p => p !== _w);
-        // Companion 1: always highest bond
-        const _c1 = _others.sort((a,b) => getBond(_w,b) - getBond(_w,a))[0];
-        // Companion 2: schemer courts middle-ground players; others bring second-closest
-        let _c2;
-        if (_isSchemer) {
-          const _middle = _others.filter(p => p !== _c1)
-            .filter(p => { const b = getBond(_w,p); return b > -1 && b < 2; });
-          _c2 = _middle.length
-            ? _middle[Math.floor(Math.random() * _middle.length)]
-            : _others.filter(p => p !== _c1)[0];
-        } else {
-          _c2 = _others.filter(p => p !== _c1)
-            .sort((a,b) => getBond(_w,b) + Math.random()*0.5 - getBond(_w,a) - Math.random()*0.5)[0];
-        }
-        const _companions = [_c1, _c2].filter(Boolean);
-        _companions.forEach(c => addBond(_w, c, 0.5));
-        twistObj.rewardCompanions = _companions;
+        _c2 = _others.filter(p => p !== _c1)
+          .sort((a,b) => getBond(_w,b) + Math.random()*0.5 - getBond(_w,a) - Math.random()*0.5)[0];
       }
-    } else if (_reward.id === 'clue') {
-      // One player from the winning side receives the clue
+      const _companions = [_c1, _c2].filter(Boolean);
+      _companions.forEach(c => addBond(_w, c, 0.5));
+      twistObj.rewardCompanions = _companions;
+      // Losers left behind: mild resentment if bond is low
+      _others.filter(p => !_companions.includes(p) && getBond(_w, p) >= 1).forEach(p => {
+        if (Math.random() < 0.3) addBond(p, _w, -0.2); // snubbed
+      });
+    } else {
+      // Tribe: winners bond with each other
+      const _winMembers = twistObj.rewardChalPlacements[0]?.members || [];
+      for (let _i = 0; _i < _winMembers.length; _i++) {
+        for (let _j = _i + 1; _j < _winMembers.length; _j++) {
+          addBond(_winMembers[_i], _winMembers[_j], 0.5);
+        }
+      }
+    }
+
+    // ── Survival food restoration from reward ──
+    if (seasonConfig.foodWater === 'enabled') {
+      const _foodBonus = { feast: 25, overnight: 20, comfort: 10, supplies: 15, spa: 10, letters: 0, clue: 0 };
+      const _survBonus = { feast: 15, overnight: 12, comfort: 8, supplies: 8, spa: 8, letters: 0, clue: 0 };
+      const _tribeBoost = _foodBonus[_reward.id] || 0;
+      const _playerBoost = _survBonus[_reward.id] || 0;
+      if (twistObj.rewardWinnerType === 'tribe') {
+        const _winTribe = twistObj.rewardChalPlacements[0]?.name || '';
+        if (_winTribe && _tribeBoost > 0) gs.tribeFood[_winTribe] = Math.min(100, (gs.tribeFood[_winTribe] || 60) + _tribeBoost);
+        if (_playerBoost > 0) (twistObj.rewardChalPlacements[0]?.members || []).forEach(p => {
+          gs.survival[p] = Math.min(100, (gs.survival[p] || 80) + _playerBoost);
+        });
+      } else {
+        // Individual: winner + companions get the food. Merged tribe food gets a smaller boost.
+        const _mergeName = gs.mergeName || 'merge';
+        if (_tribeBoost > 0) gs.tribeFood[_mergeName] = Math.min(100, (gs.tribeFood[_mergeName] || 60) + Math.round(_tribeBoost * 0.5)); // half for tribe (only some people ate)
+        const _fedPlayers = [twistObj.rewardWinner, ...(twistObj.rewardCompanions || [])].filter(Boolean);
+        if (_playerBoost > 0) _fedPlayers.forEach(p => {
+          gs.survival[p] = Math.min(100, (gs.survival[p] || 80) + _playerBoost);
+        });
+      }
+    }
+
+    // ── Reward-specific effects ──
+    if (_reward.id === 'clue') {
+      const _winMembers = twistObj.rewardWinnerType === 'tribe'
+        ? (twistObj.rewardChalPlacements[0]?.members || [])
+        : [twistObj.rewardWinner];
       const _cluedPlayer = _winMembers[Math.floor(Math.random() * _winMembers.length)];
       twistObj.rewardCluedPlayer = _cluedPlayer;
     }
@@ -26415,26 +26443,35 @@ function rpBuildRewardChallenge(ep) {
     html += `<button onclick="vpRevealAllTribesFromData(this)" data-slots="${_rcAllSlotsData}"
       style="padding:6px 12px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:11px;cursor:pointer;margin-top:4px">See all results</button>`;
   } else {
-    // Individual mode
+    // Individual mode — interactive reveal (last-to-first like immunity)
     const placements = rc.placements?.length ? rc.placements : (rc.winner ? [rc.winner] : []);
-    html += `<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:24px">`;
-    placements.forEach((name, rank) => {
-      const isFirst = rank === 0;
-      const isLast  = rank === placements.length - 1 && placements.length > 1;
-      const numColor = isFirst ? '#f0a500' : isLast ? '#f85149' : '#484f58';
-      const badge = isFirst
-        ? `<span style="font-size:9px;font-weight:800;letter-spacing:1px;background:rgba(240,165,0,0.12);color:#f0a500;padding:2px 7px;border-radius:3px">REWARD</span>`
-        : isLast
-        ? `<span style="font-size:9px;font-weight:800;letter-spacing:1px;background:rgba(218,54,51,0.10);color:#f85149;padding:2px 7px;border-radius:3px">LAST</span>`
-        : '';
-      html += `<div style="display:flex;align-items:center;gap:10px">
-        <span style="font-size:${isFirst?'15':'11'}px;font-weight:800;color:${numColor};min-width:20px;text-align:right">${rank+1}</span>
-        ${rpPortrait(name, isFirst ? 'lg' : '')}
-        <span style="font-size:${isFirst?'14':'12'}px;font-weight:${isFirst?'700':'400'};color:${isFirst?'#e6edf3':'#8b949e'}">${name}</span>
-        ${badge}
+    const rcIndRevealId = `rc-ind-reveal-${ep.num}`;
+    const companions = rc.rewardCompanions || [];
+
+    html += `<div id="${rcIndRevealId}" data-total="${placements.length}" data-revealed="0" data-placements='${JSON.stringify(placements)}' data-winner="${rc.winner || ''}" data-companions='${JSON.stringify(companions)}'>`;
+    // Slots — hidden initially, revealed last-to-first
+    [...placements].reverse().forEach((name, i) => {
+      const rank = placements.length - 1 - i;
+      html += `<div class="rc-ind-slot" id="${rcIndRevealId}-slot-${i}" style="display:flex;align-items:center;gap:10px;padding:8px;margin-bottom:4px;border-radius:8px;border:1px solid var(--border);opacity:0.15;transition:all 0.4s">
+        <span style="font-size:11px;font-weight:800;color:var(--muted);min-width:20px;text-align:right;font-family:var(--font-mono)">${rank + 1}</span>
+        <span style="color:var(--muted)">?</span>
       </div>`;
     });
     html += `</div>`;
+
+    // Reveal buttons
+    html += `<div style="display:flex;gap:12px;margin-top:12px;align-items:center">
+      <button onclick="rcIndRevealNext('${rcIndRevealId}')" id="${rcIndRevealId}-btn" style="padding:8px 20px;background:var(--accent-fire);border:none;border-radius:6px;color:#fff;font-family:var(--font-display);font-size:13px;letter-spacing:1px;cursor:pointer;font-weight:700">REVEAL (0/${placements.length})</button>
+      <button onclick="rcIndRevealAll('${rcIndRevealId}')" style="padding:6px 12px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:11px;cursor:pointer">See all results</button>
+    </div>`;
+
+    // Winner + companions section — hidden until fully revealed
+    html += `<div id="${rcIndRevealId}-winner" style="display:none;margin-top:16px;padding:14px;background:rgba(240,165,0,0.06);border:1px solid rgba(240,165,0,0.2);border-radius:10px;text-align:center">
+      ${rpPortrait(rc.winner || '', 'lg')}
+      <div style="font-size:14px;font-weight:700;color:#f0a500;margin-top:8px">${rc.winner} wins the reward!</div>
+      ${companions.length ? `<div style="font-size:12px;color:#8b949e;margin-top:8px">Shares with: ${companions.map(c => `<strong>${c}</strong>`).join(', ')}</div>
+      <div style="display:flex;justify-content:center;gap:6px;margin-top:8px">${companions.map(c => rpPortrait(c, 'sm')).join('')}</div>` : ''}
+    </div>`;
   }
 
   html += `</div>`;
@@ -34595,6 +34632,57 @@ function vpRevealAllTribesFromData(btn) {
     const [slotId, name] = entry.split(':');
     if (slotId && name) vpRevealTribe(slotId, name);
   });
+}
+
+// Interactive reveal for individual reward challenge (last-to-first)
+function rcIndRevealNext(revealId) {
+  const container = document.getElementById(revealId);
+  if (!container) return;
+  const total = parseInt(container.dataset.total);
+  let revealed = parseInt(container.dataset.revealed);
+  if (revealed >= total) return;
+  const placements = JSON.parse(container.dataset.placements || '[]');
+  const winner = container.dataset.winner;
+  const companions = JSON.parse(container.dataset.companions || '[]');
+  // Reveal from last place to first (slot 0 = last place, slot N-1 = winner)
+  const slot = document.getElementById(`${revealId}-slot-${revealed}`);
+  if (!slot) return;
+  const rank = total - 1 - revealed; // actual placement rank
+  const name = [...placements].reverse()[revealed];
+  const isWinner = name === winner;
+  const isCompanion = companions.includes(name);
+  const isLast = rank === total - 1;
+  slot.style.opacity = '1';
+  slot.style.borderColor = isWinner ? 'rgba(240,165,0,0.4)' : isCompanion ? 'rgba(63,185,80,0.3)' : 'rgba(139,148,158,0.2)';
+  if (isWinner) slot.style.background = 'rgba(240,165,0,0.06)';
+  else if (isCompanion) slot.style.background = 'rgba(63,185,80,0.04)';
+  const badge = isWinner
+    ? '<span style="font-size:9px;font-weight:800;letter-spacing:1px;background:rgba(240,165,0,0.12);color:#f0a500;padding:2px 7px;border-radius:3px">REWARD</span>'
+    : isCompanion
+    ? '<span style="font-size:9px;font-weight:800;letter-spacing:1px;background:rgba(63,185,80,0.12);color:#3fb950;padding:2px 7px;border-radius:3px">SHARES</span>'
+    : isLast
+    ? '<span style="font-size:9px;font-weight:800;letter-spacing:1px;background:rgba(218,54,51,0.10);color:#f85149;padding:2px 7px;border-radius:3px">LAST</span>'
+    : '';
+  slot.innerHTML = `
+    <span style="font-size:11px;font-weight:800;color:${isWinner?'#f0a500':isLast?'#f85149':'#484f58'};min-width:20px;text-align:right;font-family:var(--font-mono)">${rank + 1}</span>
+    ${typeof rpPortrait === 'function' ? rpPortrait(name, isWinner ? 'lg' : '') : ''}
+    <span style="font-size:${isWinner?'14':'12'}px;font-weight:${isWinner?'700':'400'};color:${isWinner?'#f0a500':'#8b949e'}">${name}</span>
+    ${badge}
+  `;
+  revealed++;
+  container.dataset.revealed = revealed;
+  const btn = document.getElementById(`${revealId}-btn`);
+  if (btn) btn.textContent = revealed >= total ? 'All Revealed' : `REVEAL (${revealed}/${total})`;
+  if (revealed >= total) {
+    const winnerDiv = document.getElementById(`${revealId}-winner`);
+    if (winnerDiv) winnerDiv.style.display = 'block';
+  }
+}
+function rcIndRevealAll(revealId) {
+  const container = document.getElementById(revealId);
+  if (!container) return;
+  const total = parseInt(container.dataset.total);
+  while (parseInt(container.dataset.revealed) < total) rcIndRevealNext(revealId);
 }
 
 function vpToggleSection(id) {

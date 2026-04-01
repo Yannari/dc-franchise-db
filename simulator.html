@@ -15028,9 +15028,15 @@ function simulateEpisode() {
 
   // ── RESET EPISODE VOTE-LOSS & TWIST FLAGS ──
   // Preserve journey lost votes until the player actually attends tribal (dedup to prevent stale repeats)
-  const _journeyCarry = [...new Set((gs.journeyLostVotes || []).filter(p => gs.activePlayers.includes(p)))];
-  gs.journeyLostVotes = _journeyCarry; // clean the source too
-  gs.lostVotes = [..._journeyCarry];
+  // Post-merge: everyone attends tribal, so clear all journey lost votes — they should only last one tribal
+  if (gs.isMerged) {
+    gs.journeyLostVotes = [];
+    gs.lostVotes = [];
+  } else {
+    const _journeyCarry = [...new Set((gs.journeyLostVotes || []).filter(p => gs.activePlayers.includes(p)))];
+    gs.journeyLostVotes = _journeyCarry;
+    gs.lostVotes = [..._journeyCarry];
+  }
   ep.bewareLostVotes = [];
   // Carry forward persistent idol knowledge, then reset episode-specific set
   if (!gs.knownIdolHoldersPersistent) gs.knownIdolHoldersPersistent = new Set();

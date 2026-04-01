@@ -9791,14 +9791,46 @@ function applyTwist(ep, twist, isPrimary = true) {
           twistObj.rewardAllianceFormed = _rwAllianceName;
           twistObj.rewardAllianceMembers = [..._rewardGroup];
         } else if (!_allAboveFloor) {
-          // Pitch failed — bonds too weak, awkward conversation
+          // Pitch failed — bonds too weak
           twistObj.rewardAlliancePitched = true;
           twistObj.rewardAllianceFailed = true;
-          // Awkwardness: mild bond penalty between the pitcher and the resistant member
-          for (let _ri = 0; _ri < _rewardGroup.length; _ri++)
-            for (let _rj = _ri + 1; _rj < _rewardGroup.length; _rj++)
-              if (getBond(_rewardGroup[_ri], _rewardGroup[_rj]) < _bondFloor)
-                addBond(_rewardGroup[_ri], _rewardGroup[_rj], -0.2);
+
+          // Bond damage scales with how far below the floor the weakest pair is
+          // Bigger gap = more awkward/offensive the pitch was
+          const _failedPairs = [];
+          for (let _ri = 0; _ri < _rewardGroup.length; _ri++) {
+            for (let _rj = _ri + 1; _rj < _rewardGroup.length; _rj++) {
+              const _pairBond = getBond(_rewardGroup[_ri], _rewardGroup[_rj]);
+              if (_pairBond < _bondFloor) {
+                const _gap = _bondFloor - _pairBond; // how far below floor
+                const _damage = -(0.1 + _gap * 0.15); // floor gap 0.5 = -0.175, gap 2.0 = -0.40, gap 4.0 = -0.70
+                addBond(_rewardGroup[_ri], _rewardGroup[_rj], _damage);
+                _failedPairs.push({ a: _rewardGroup[_ri], b: _rewardGroup[_rj], bond: _pairBond, damage: Math.round(_damage * 10) / 10 });
+              }
+            }
+          }
+
+          // Chance the rejected person leaks the pitch back at camp
+          // Low loyalty = more likely to tell. High loyalty = keeps it quiet.
+          const _rejecters = _rewardGroup.filter(p => p !== _w && _failedPairs.some(fp => fp.a === p || fp.b === p));
+          _rejecters.forEach(rejecter => {
+            const _rjS = pStats(rejecter);
+            const _leakChance = (10 - _rjS.loyalty) * 0.06 + _rjS.social * 0.03;
+            // loyalty 3, social 7 = 42+21 = 63%. loyalty 8, social 4 = 12+12 = 24%.
+            if (Math.random() < _leakChance) {
+              // Pick who they tell — closest bond outside the reward group
+              const _tellTarget = gs.activePlayers
+                .filter(p => !_rewardGroup.includes(p))
+                .sort((a, b) => getBond(rejecter, b) - getBond(rejecter, a))[0];
+              if (_tellTarget) {
+                // The person told now knows the winner is scheming
+                addBond(_tellTarget, _w, -0.3); // suspicion toward the pitcher
+                if (!twistObj.rewardPitchLeaks) twistObj.rewardPitchLeaks = [];
+                twistObj.rewardPitchLeaks.push({ leaker: rejecter, toldTo: _tellTarget });
+              }
+            }
+          });
+          twistObj.rewardFailedPairs = _failedPairs;
         }
       }
 
@@ -17029,7 +17061,7 @@ function simulateEpisode() {
           rewardItemId: rct.rewardItemId || null, rewardItemLabel: rct.rewardItemLabel || null,
           rewardItemDesc: rct.rewardItemDesc || null, rewardCompanions: rct.rewardCompanions || null,
           rewardPickReasons: rct.rewardPickReasons || null, rewardPickStrategy: rct.rewardPickStrategy || null,
-          rewardSnubs: rct.rewardSnubs || null, rewardAlliancePitched: rct.rewardAlliancePitched || false, rewardAllianceFormed: rct.rewardAllianceFormed || null, rewardAllianceFailed: rct.rewardAllianceFailed || false, rewardAllianceMembers: rct.rewardAllianceMembers || null, rewardAllianceStrengthened: rct.rewardAllianceStrengthened || null,
+          rewardSnubs: rct.rewardSnubs || null, rewardAlliancePitched: rct.rewardAlliancePitched || false, rewardAllianceFormed: rct.rewardAllianceFormed || null, rewardAllianceFailed: rct.rewardAllianceFailed || false, rewardAllianceMembers: rct.rewardAllianceMembers || null, rewardAllianceStrengthened: rct.rewardAllianceStrengthened || null, rewardFailedPairs: rct.rewardFailedPairs || null, rewardPitchLeaks: rct.rewardPitchLeaks || null,
           rewardMaxCompanions: rct.rewardMaxCompanions || null,
           rewardCluedPlayer: rct.rewardCluedPlayer || null,
         };
@@ -17580,7 +17612,7 @@ function simulateEpisode() {
         rewardItemDesc:  rct.rewardItemDesc  || null,
         rewardCompanions:  rct.rewardCompanions  || null,
         rewardPickReasons: rct.rewardPickReasons || null, rewardPickStrategy: rct.rewardPickStrategy || null,
-        rewardSnubs: rct.rewardSnubs || null, rewardAlliancePitched: rct.rewardAlliancePitched || false, rewardAllianceFormed: rct.rewardAllianceFormed || null, rewardAllianceFailed: rct.rewardAllianceFailed || false, rewardAllianceMembers: rct.rewardAllianceMembers || null, rewardAllianceStrengthened: rct.rewardAllianceStrengthened || null,
+        rewardSnubs: rct.rewardSnubs || null, rewardAlliancePitched: rct.rewardAlliancePitched || false, rewardAllianceFormed: rct.rewardAllianceFormed || null, rewardAllianceFailed: rct.rewardAllianceFailed || false, rewardAllianceMembers: rct.rewardAllianceMembers || null, rewardAllianceStrengthened: rct.rewardAllianceStrengthened || null, rewardFailedPairs: rct.rewardFailedPairs || null, rewardPitchLeaks: rct.rewardPitchLeaks || null,
         rewardMaxCompanions: rct.rewardMaxCompanions || null,
         rewardCluedPlayer: rct.rewardCluedPlayer || null,
       };
@@ -26651,7 +26683,21 @@ function rpBuildRewardChallenge(ep) {
       html += `<div style="padding:10px 12px;background:rgba(218,54,51,0.04);border:1px solid rgba(218,54,51,0.12);border-radius:6px;margin-bottom:8px">
         <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:#f85149;margin-bottom:4px">PITCH FAILED</div>
         <div style="font-size:12px;color:#8b949e">${rc.winner} tried to form an alliance during the reward. The conversation went nowhere — the bonds aren't there. Awkward silence on the ride back.</div>
+        ${(rc.rewardFailedPairs || []).map(fp => `<div style="display:flex;align-items:center;gap:6px;margin-top:6px;font-size:11px;color:#f85149">
+          ${rpPortrait(fp.a, 'xs')} ${rpPortrait(fp.b, 'xs')} <span>Bond ${fp.bond >= 0 ? '+' : ''}${Math.round(fp.bond * 10) / 10} → too cold (${fp.damage} hit)</span>
+        </div>`).join('')}
       </div>`;
+      if (rc.rewardPitchLeaks?.length) {
+        html += `<div style="padding:8px 12px;background:rgba(218,54,51,0.03);border:1px solid rgba(218,54,51,0.08);border-radius:6px;margin-bottom:8px">
+          <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:#f0883e;margin-bottom:4px">LEAKED</div>`;
+        rc.rewardPitchLeaks.forEach(leak => {
+          html += `<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#8b949e;margin-bottom:4px">
+            ${rpPortrait(leak.leaker, 'xs')} <span style="color:#f0883e">${leak.leaker}</span> told
+            ${rpPortrait(leak.toldTo, 'xs')} <span>${leak.toldTo}</span> about ${rc.winner}'s failed pitch
+          </div>`;
+        });
+        html += `</div>`;
+      }
     } else if (rc.rewardAllianceStrengthened) {
       html += `<div style="padding:8px 12px;background:rgba(227,179,65,0.06);border:1px solid rgba(227,179,65,0.15);border-radius:6px;margin-bottom:8px;font-size:11px;color:#e3b341">
         <strong>ALLIANCE STRENGTHENED</strong> — ${rc.rewardAllianceStrengthened} used the reward to solidify their deal. Private time, no distractions.

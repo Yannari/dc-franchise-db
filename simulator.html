@@ -9690,31 +9690,45 @@ function applyTwist(ep, twist, isPrimary = true) {
     if (twistObj.rewardWinnerType === 'individual') {
       const _w = twistObj.rewardWinner;
       const _ws = pStats(_w);
-      const _isSchemer = _ws.strategic >= 7 || ['schemer','mastermind'].includes(
-        players.find(p => p.name === _w)?.archetype);
+      const _wArch = players.find(p => p.name === _w)?.archetype || '';
       const _others = gs.activePlayers.filter(p => p !== _w);
+      const _wPr = pronouns(_w);
       // F7+: pick 2 companions. F6 and below: pick 1 (fewer people, more intimate)
       const _maxCompanions = gs.activePlayers.length >= 7 ? 2 : 1;
 
-      // Companion 1: always highest bond
-      const _c1 = _others.sort((a,b) => getBond(_w,b) - getBond(_w,a))[0];
-      const _companions = [_c1].filter(Boolean);
+      // ── Decision model: heart vs brain ──
+      // Heart = pick closest bonds (loyalty-driven). Brain = pick strategically useful people.
+      // Blend is proportional: higher strategic/boldness → more brain. Higher loyalty/social → more heart.
+      const _brainWeight = _ws.strategic * 0.08 + _ws.boldness * 0.03
+        + (['schemer','mastermind'].includes(_wArch) ? 0.25 : _wArch === 'villain' ? 0.15 : 0);
+      const _heartWeight = _ws.loyalty * 0.06 + _ws.social * 0.04;
+      const _useStrategy = Math.random() < _brainWeight / (_brainWeight + _heartWeight + 0.01);
 
-      // Companion 2 (only when F7+)
-      if (_maxCompanions >= 2 && _others.length >= 2) {
-        let _c2;
-        if (_isSchemer) {
-          // Schemer courts middle-ground players — build new connections strategically
-          const _middle = _others.filter(p => p !== _c1)
-            .filter(p => { const b = getBond(_w,p); return b > -1 && b < 2; });
-          _c2 = _middle.length
-            ? _middle[Math.floor(Math.random() * _middle.length)]
-            : _others.filter(p => p !== _c1)[0];
-        } else {
-          _c2 = _others.filter(p => p !== _c1)
-            .sort((a,b) => getBond(_w,b) + Math.random()*0.5 - getBond(_w,a) - Math.random()*0.5)[0];
-        }
-        if (_c2) _companions.push(_c2);
+      // Score each candidate
+      const _scored = _others.map(p => {
+        const bond = getBond(_w, p);
+        const ps = pStats(p);
+        // Heart score: bond strength (pick people you like)
+        const heartScore = bond * 1.0;
+        // Brain score: strategic value (pick people you need to work with)
+        const _sharedAlliance = (gs.namedAlliances || []).find(a =>
+          a.active !== false && a.members.includes(_w) && a.members.includes(p));
+        const _notAllied = !_sharedAlliance && bond < 2; // someone you NEED to court
+        const brainScore = (_notAllied ? 2.0 : 0) + ps.strategic * 0.1 + (bond <= 0 ? 1.0 : 0); // court enemies/neutrals
+        const score = _useStrategy
+          ? brainScore * 0.7 + heartScore * 0.3 + Math.random() * 0.5
+          : heartScore * 0.8 + brainScore * 0.2 + Math.random() * 0.5;
+        const reason = _useStrategy
+          ? (_notAllied ? 'strategic-court' : _sharedAlliance ? 'strategic-strengthen' : 'strategic-read')
+          : (bond >= 5 ? 'heart-closest' : bond >= 2 ? 'heart-ally' : 'heart-connection');
+        return { name: p, score, bond, reason };
+      }).sort((a, b) => b.score - a.score);
+
+      const _companions = [];
+      const _pickReasons = [];
+      for (let i = 0; i < _maxCompanions && i < _scored.length; i++) {
+        _companions.push(_scored[i].name);
+        _pickReasons.push({ name: _scored[i].name, reason: _scored[i].reason, bond: _scored[i].bond });
       }
 
       // Bond boost: reward time together strengthens relationships
@@ -9722,30 +9736,42 @@ function applyTwist(ep, twist, isPrimary = true) {
       // Companions also bond with each other (they're sharing the experience)
       if (_companions.length >= 2) addBond(_companions[0], _companions[1], 0.3);
 
-      // Strategic talk during reward — chance to form or strengthen an alliance
-      if (_ws.strategic >= 5 || _isSchemer) {
-        const _rewardGroup = [_w, ..._companions];
-        // Check if they're already in an alliance together
-        const _existingAlliance = (gs.namedAlliances || []).find(a =>
-          a.active !== false && _rewardGroup.every(m => a.members.includes(m)));
-        if (_existingAlliance) {
-          // Strengthen existing alliance bonds
-          _rewardGroup.forEach(m1 => _rewardGroup.filter(m2 => m2 !== m1).forEach(m2 => addBond(m1, m2, 0.2)));
-        } else if (Math.random() < _ws.strategic * 0.06) {
-          // Chance to pitch a new alliance (strategic * 0.06: stat 5 = 30%, stat 8 = 48%)
-          twistObj.rewardAlliancePitched = true;
-        }
+      // Strategic talk during reward — proportional chance to strengthen alliance or pitch new one
+      const _rewardGroup = [_w, ..._companions];
+      const _existingAlliance = (gs.namedAlliances || []).find(a =>
+        a.active !== false && _rewardGroup.every(m => a.members.includes(m)));
+      if (_existingAlliance) {
+        // Strengthen existing alliance bonds (proportional to strategic)
+        const _strengthenBoost = _ws.strategic * 0.025; // stat 5 = 0.125, stat 10 = 0.25
+        _rewardGroup.forEach(m1 => _rewardGroup.filter(m2 => m2 !== m1).forEach(m2 => addBond(m1, m2, _strengthenBoost)));
+      } else if (Math.random() < _ws.strategic * 0.04 + _ws.social * 0.02) {
+        // Chance to pitch a new alliance (proportional: stat 5+5 = 30%, stat 8+8 = 48%)
+        twistObj.rewardAlliancePitched = true;
       }
 
       twistObj.rewardCompanions = _companions;
+      twistObj.rewardPickReasons = _pickReasons;
+      twistObj.rewardPickStrategy = _useStrategy ? 'brain' : 'heart';
       twistObj.rewardMaxCompanions = _maxCompanions;
 
-      // Losers left behind: snubbed allies feel it
+      // ── Snub/alienation: not being picked hurts proportional to bond + temperament ──
       _others.filter(p => !_companions.includes(p)).forEach(p => {
         const _snubBond = getBond(_w, p);
-        // Closer bonds = more hurt by being left behind
-        if (_snubBond >= 2 && Math.random() < 0.4) addBond(p, _w, -0.4); // close ally snubbed — hurts
-        else if (_snubBond >= 1 && Math.random() < 0.25) addBond(p, _w, -0.2); // mild sting
+        if (_snubBond <= 0) return; // didn't expect to be picked — no damage
+        const _pTemp = pStats(p).temperament;
+        // Damage scales with bond (stronger bond = bigger betrayal) AND temperament (hotheads take it harder)
+        // Bond 2 = mild, bond 5 = significant, bond 8+ = devastating
+        // Low temperament amplifies: temp 2 = 1.4x, temp 5 = 1.0x, temp 10 = 0.75x
+        const _tempMult = 1.0 + (5 - _pTemp) * 0.08;
+        const _snubDamage = -(_snubBond * 0.08 * _tempMult); // bond 2, temp 5 = -0.16. bond 6, temp 2 = -0.67. bond 8, temp 2 = -0.90
+        if (Math.abs(_snubDamage) > 0.1) {
+          addBond(p, _w, _snubDamage);
+          // Track significant snubs for camp events
+          if (_snubBond >= 3) {
+            if (!twistObj.rewardSnubs) twistObj.rewardSnubs = [];
+            twistObj.rewardSnubs.push({ player: p, bond: _snubBond, damage: Math.round(_snubDamage * 10) / 10 });
+          }
+        }
       });
     } else {
       // Tribe: winners bond with each other
@@ -16949,6 +16975,9 @@ function simulateEpisode() {
           category: rct.rewardChalCategory || 'mixed', desc: rct.rewardChalDesc || '',
           rewardItemId: rct.rewardItemId || null, rewardItemLabel: rct.rewardItemLabel || null,
           rewardItemDesc: rct.rewardItemDesc || null, rewardCompanions: rct.rewardCompanions || null,
+          rewardPickReasons: rct.rewardPickReasons || null, rewardPickStrategy: rct.rewardPickStrategy || null,
+          rewardSnubs: rct.rewardSnubs || null, rewardAlliancePitched: rct.rewardAlliancePitched || false,
+          rewardMaxCompanions: rct.rewardMaxCompanions || null,
           rewardCluedPlayer: rct.rewardCluedPlayer || null,
         };
       })(),
@@ -17497,6 +17526,9 @@ function simulateEpisode() {
         rewardItemLabel: rct.rewardItemLabel || null,
         rewardItemDesc:  rct.rewardItemDesc  || null,
         rewardCompanions:  rct.rewardCompanions  || null,
+        rewardPickReasons: rct.rewardPickReasons || null, rewardPickStrategy: rct.rewardPickStrategy || null,
+        rewardSnubs: rct.rewardSnubs || null, rewardAlliancePitched: rct.rewardAlliancePitched || false,
+        rewardMaxCompanions: rct.rewardMaxCompanions || null,
         rewardCluedPlayer: rct.rewardCluedPlayer || null,
       };
     })(),
@@ -26499,12 +26531,70 @@ function rpBuildRewardChallenge(ep) {
     </div>`;
 
     // Winner + companions section — hidden until fully revealed
-    html += `<div id="${rcIndRevealId}-winner" style="display:none;margin-top:16px;padding:14px;background:rgba(240,165,0,0.06);border:1px solid rgba(240,165,0,0.2);border-radius:10px;text-align:center">
+    const pickReasons = rc.rewardPickReasons || [];
+    const pickStrategy = rc.rewardPickStrategy || 'heart';
+    const snubs = rc.rewardSnubs || [];
+    const _wPrRc = pronouns(rc.winner || '');
+
+    html += `<div id="${rcIndRevealId}-winner" style="display:none;margin-top:16px">`;
+
+    // Winner announcement
+    html += `<div style="padding:14px;background:rgba(240,165,0,0.06);border:1px solid rgba(240,165,0,0.2);border-radius:10px;text-align:center;margin-bottom:10px">
       ${rpPortrait(rc.winner || '', 'lg')}
       <div style="font-size:14px;font-weight:700;color:#f0a500;margin-top:8px">${rc.winner} wins the reward!</div>
-      ${companions.length ? `<div style="font-size:12px;color:#8b949e;margin-top:8px">Shares with: ${companions.map(c => `<strong>${c}</strong>`).join(', ')}</div>
-      <div style="display:flex;justify-content:center;gap:6px;margin-top:8px">${companions.map(c => rpPortrait(c, 'sm')).join('')}</div>` : ''}
+      <div style="font-size:10px;color:#8b949e;margin-top:4px;letter-spacing:1px">${pickStrategy === 'brain' ? 'STRATEGIC PICK' : 'HEART PICK'}</div>
     </div>`;
+
+    // Companion picks with reasoning
+    if (companions.length) {
+      html += `<div style="padding:12px;background:rgba(139,148,158,0.04);border:1px solid rgba(139,148,158,0.08);border-radius:8px;margin-bottom:10px">
+        <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:#8b949e;margin-bottom:8px">${_wPrRc.Sub.toUpperCase()} ${companions.length > 1 ? 'PICKS' : 'PICKS'}</div>`;
+      pickReasons.forEach(pr => {
+        const _prBond = pr.bond;
+        const _bondColor = _prBond >= 5 ? '#3fb950' : _prBond >= 2 ? '#58a6ff' : _prBond >= 0 ? '#8b949e' : '#f85149';
+        const _reasonText = pr.reason === 'heart-closest' ? `Closest bond — no hesitation`
+          : pr.reason === 'heart-ally' ? `Trusted ally — reward together`
+          : pr.reason === 'heart-connection' ? `Genuine connection — wants to share this`
+          : pr.reason === 'strategic-court' ? `Strategic pick — courting a new relationship`
+          : pr.reason === 'strategic-strengthen' ? `Alliance move — strengthening an existing deal`
+          : pr.reason === 'strategic-read' ? `Reading the room — strategic positioning`
+          : `Chose to share the reward`;
+        html += `<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+          ${rpPortrait(pr.name, 'sm')}
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:600;color:#e6edf3">${pr.name}</div>
+            <div style="font-size:11px;color:#8b949e;margin-top:2px">${_reasonText}</div>
+          </div>
+          <span style="font-size:10px;font-weight:700;color:${_bondColor};font-family:var(--font-mono)">Bond: ${_prBond >= 0 ? '+' : ''}${Math.round(_prBond * 10) / 10}</span>
+        </div>`;
+      });
+      html += `</div>`;
+    }
+
+    // Snubs — significant alienation
+    if (snubs.length) {
+      html += `<div style="padding:10px;background:rgba(218,54,51,0.04);border:1px solid rgba(218,54,51,0.12);border-radius:8px;margin-bottom:10px">
+        <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:#f85149;margin-bottom:6px">LEFT BEHIND</div>`;
+      snubs.forEach(s => {
+        html += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          ${rpPortrait(s.player, 'sm')}
+          <div style="flex:1">
+            <div style="font-size:12px;color:#e6edf3">${s.player}</div>
+            <div style="font-size:10px;color:#f85149">Bond ${s.bond >= 0 ? '+' : ''}${Math.round(s.bond * 10) / 10} → took it personally (${s.damage} hit)</div>
+          </div>
+        </div>`;
+      });
+      html += `</div>`;
+    }
+
+    // Alliance pitched
+    if (rc.rewardAlliancePitched) {
+      html += `<div style="padding:8px 12px;background:rgba(227,179,65,0.06);border:1px solid rgba(227,179,65,0.15);border-radius:6px;font-size:11px;color:#e3b341">
+        <strong>STRATEGIC TALK</strong> — ${rc.winner} used the reward to pitch an alliance. Away from camp, away from ears.
+      </div>`;
+    }
+
+    html += `</div>`;
   }
 
   html += `</div>`;

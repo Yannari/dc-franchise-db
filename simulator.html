@@ -20699,6 +20699,7 @@ function simulateFinale() {
   let finalists = [...players];
 
   // ── FIRE-MAKING FINALE: forced F4 → decision → fire duel → F3 enters finaleFormat ──
+  console.log(`[FIREMAKING CHECK] cfg.firemaking=${cfg.firemaking}, players.length=${players.length}, should fire=${cfg.firemaking && players.length === 4}`);
   if (cfg.firemaking && players.length === 4) {
     const _fmImmWinner = ep.immunityWinner;
     const _fmOthers = players.filter(p => p !== _fmImmWinner);
@@ -20756,6 +20757,7 @@ function simulateFinale() {
       loserScore: Math.round(_fmScores[1].score * 10) / 10,
     };
     ep.firemaking = true;
+    console.log(`[FIREMAKING] Decision: ${_fmImmWinner} saved ${_fmSaved} (${_fmSavedReason}). Duel: ${_fmWinner} beat ${_fmLoser}. ep.firemakingDecision=${!!ep.firemakingDecision}, ep.firemakingResult=${!!ep.firemakingResult}`);
 
     // Eliminate the loser (4th place)
     handleAdvantageInheritance(_fmLoser, ep);
@@ -20979,6 +20981,10 @@ function simulateFinale() {
     finalChallengePlacements: ep.finalChallengePlacements || null,
     finaleSabotageEvents: ep.finaleSabotageEvents || [],
     campEvents: ep.campEvents || null,
+    // Fire-making finale
+    firemaking: ep.firemaking || false,
+    firemakingDecision: ep.firemakingDecision || null,
+    firemakingResult: ep.firemakingResult || null,
   });
 
   saveGameState();

@@ -14964,14 +14964,18 @@ function simulateEpisode() {
     ep.isMerge = true; gs.isMerged = true; gs.phase = 'post-merge'; gs.tribes = [];
     gs.sitOutHistory = {}; // sit-out back-to-back rule doesn't carry into individual game
     if (cfg.advantages?.idol?.enabled) gs.mergeIdolHidden = true;
-    // Transfer tribe food to merged pool — average of pre-merge tribes + merge feast bonus
+    // Transfer tribe food to merged pool — average of pre-merge tribes (NO automatic feast bonus)
     if (seasonConfig.foodWater === 'enabled' && gs.tribeFood) {
       const _preMergeFoods = Object.values(gs.tribeFood).filter(v => v > 0);
       const _avgFood = _preMergeFoods.length ? _preMergeFoods.reduce((s, v) => s + v, 0) / _preMergeFoods.length : 60;
       gs.tribeFood = {};
-      gs.tribeFood[gs.mergeName || 'merge'] = Math.min(100, _avgFood + 30);
-      // Merge feast also boosts individual survival
-      gs.activePlayers.forEach(p => { gs.survival[p] = Math.min(100, (gs.survival[p] || 80) + 20); });
+      gs.tribeFood[gs.mergeName || 'merge'] = Math.min(100, _avgFood);
+      // Feast bonus only if a merge-reward or the-feast twist is scheduled this episode
+      const _hasMergeFeast = (cfg.twistSchedule || []).some(t => Number(t.episode) === epNum && (t.type === 'merge-reward' || t.type === 'the-feast'));
+      if (_hasMergeFeast) {
+        gs.tribeFood[gs.mergeName || 'merge'] = Math.min(100, gs.tribeFood[gs.mergeName || 'merge'] + 30);
+        gs.activePlayers.forEach(p => { gs.survival[p] = Math.min(100, (gs.survival[p] || 80) + 20); });
+      }
     }
     // Beware Advantage: activate all found bewares at merge — tribes no longer exist, condition can never be met
     if (gs.bewares) {

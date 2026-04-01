@@ -9652,6 +9652,31 @@ function applyTwist(ep, twist, isPrimary = true) {
       twistObj.rewardMemberScores    = rIndScores;
     }
 
+    // ── Track reward challenge performance in chalRecord (podiums + bombs) ──
+    if (!gs.chalRecord) gs.chalRecord = {};
+    if (twistObj.rewardWinnerType === 'individual' && twistObj.rewardMemberScores) {
+      // Individual reward: track podiums/bombs from individual placements
+      const _rwPlayers = Object.keys(twistObj.rewardMemberScores);
+      _rwPlayers.forEach(p => { if (!gs.chalRecord[p]) gs.chalRecord[p] = { wins: 0, podiums: 0, bombs: 0 }; });
+      const _rwRanked = [..._rwPlayers].sort((a, b) => twistObj.rewardMemberScores[b] - twistObj.rewardMemberScores[a]);
+      if (_rwRanked.length >= 2) {
+        _rwRanked.slice(0, 2).forEach(p => { gs.chalRecord[p].podiums++; });
+        _rwRanked.slice(Math.max(0, _rwRanked.length - 2)).forEach(p => { gs.chalRecord[p].bombs++; });
+      }
+    } else if (twistObj.rewardWinnerType === 'tribe' && twistObj.rewardChalPlacements?.length) {
+      // Tribe reward: track podiums/bombs from per-tribe member scores
+      twistObj.rewardChalPlacements.forEach(tribe => {
+        const ms = tribe.memberScores || {};
+        const _rwMembers = Object.keys(ms);
+        _rwMembers.forEach(p => { if (!gs.chalRecord[p]) gs.chalRecord[p] = { wins: 0, podiums: 0, bombs: 0 }; });
+        const _rwRanked = [..._rwMembers].sort((a, b) => ms[b] - ms[a]);
+        if (_rwRanked.length >= 2) {
+          _rwRanked.slice(0, 2).forEach(p => { gs.chalRecord[p].podiums++; });
+          _rwRanked.slice(Math.max(0, _rwRanked.length - 2)).forEach(p => { gs.chalRecord[p].bombs++; });
+        }
+      });
+    }
+
     // ── Pick reward from pool (phase-aware) and apply effects ──
     const _reward = pickReward();
     twistObj.rewardItemId    = _reward.id;

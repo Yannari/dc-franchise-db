@@ -3092,13 +3092,17 @@ function updatePlayerStates(ep) {
       if (!gs.bigMoveEarnersThisEp) gs.bigMoveEarnersThisEp = [];
       if (!gs.bigMoveEarnersThisEp.includes(name)) gs.bigMoveEarnersThisEp.push(name);
     }
-    // Played an idol successfully (on self or ally)
+    // Played an idol successfully (on self or ally) [STEALABLE — "I convinced them to play it"]
     if (ep.idolPlays?.some(p => p.player === name && !p.misplay && !p.failed && (p.votesNegated || 0) > 0)) {
       state.bigMoves = (state.bigMoves || 0) + 1;
+      if (!gs.bigMoveEarnersThisEp) gs.bigMoveEarnersThisEp = [];
+      if (!gs.bigMoveEarnersThisEp.includes(name)) gs.bigMoveEarnersThisEp.push(name);
     }
-    // Used KiP successfully
+    // Used KiP successfully [STEALABLE — "I told them who had the idol"]
     if (ep.kipSteal?.holder === name && ep.kipSteal?.success) {
       state.bigMoves = (state.bigMoves || 0) + 1;
+      if (!gs.bigMoveEarnersThisEp) gs.bigMoveEarnersThisEp = [];
+      if (!gs.bigMoveEarnersThisEp.includes(name)) gs.bigMoveEarnersThisEp.push(name);
     }
     // Survived being the top target (received most votes but wasn't eliminated)
     if (votesThisEp >= 3 && ep.eliminated !== name) {
@@ -3145,11 +3149,13 @@ function updatePlayerStates(ep) {
         }
       }
     }
-    // Successful vote steal / extra vote that changed the outcome
+    // Successful vote steal / extra vote that changed the outcome [STEALABLE — "I said we needed the extra vote"]
     if (ep.idolPlays?.some(p => p.player === name && (p.type === 'voteSteal' || p.type === 'extraVote')) && ep.eliminated) {
       // Check if the advantage user voted for the eliminated player
       if (ep.votingLog?.some(e => e.voter === name && e.voted === ep.eliminated)) {
         state.bigMoves = (state.bigMoves || 0) + 1;
+        if (!gs.bigMoveEarnersThisEp) gs.bigMoveEarnersThisEp = [];
+        if (!gs.bigMoveEarnersThisEp.includes(name)) gs.bigMoveEarnersThisEp.push(name);
       }
     }
     // Survived a rock draw
@@ -21900,6 +21906,9 @@ function simulateJuryVote(finalists) {
       const _loyaltyHonor = _betrayalCount === 0 ? 0.6 : _betrayalCount <= 1 ? 0.3 : _betrayalCount <= 2 ? 0.1 : 0;
       const _bigMoves = gs.playerStates?.[f]?.bigMoves || 0;
       const _resumeBonus = Math.min(0.8, _bigMoves * 0.15);
+      // Survival resume: cumulative votes survived — jurors respect someone who kept getting targeted and kept surviving
+      const _totalVotesReceived = gs.playerStates?.[f]?.votesReceived || 0;
+      const _survivalBonus = Math.min(0.5, _totalVotesReceived * 0.04); // 5 votes = 0.2, 10 votes = 0.4, caps at 0.5
       // Hero/Villain archetype FTC modifiers
       const _fArch = players.find(p => p.name === f)?.archetype || '';
       const _heroBonus = _fArch === 'hero' ? 2.0 : 0; // jury loves heroes
@@ -21907,7 +21916,7 @@ function simulateJuryVote(finalists) {
       const _villainMod = _fArch === 'villain' ? (bond >= 1 ? 1.5 : bond <= -1 ? -2.0 : 0) : 0;
       // Perch victory bonus: winning the iconic endurance finale earns jury respect (proportional to juror's physical/endurance appreciation)
       const _perchBonus = gs.playerStates?.[f]?.perchWinner ? 0.4 + jS.physical * 0.05 : 0;
-      const personal = bond * 1.5 + _loyaltyHonor + _resumeBonus + _heroBonus + _villainMod + _perchBonus;
+      const personal = bond * 1.5 + _loyaltyHonor + _resumeBonus + _survivalBonus + _heroBonus + _villainMod + _perchBonus;
       // Bitterness/gratitude: was this finalist the one who voted me out?
       const history = gs.jurorHistory?.[juror];
       let bitterness = 0;
@@ -22006,13 +22015,16 @@ function projectJuryVotes(finalistSet) {
       // Big moves resume: bold players who made flashy moves earn jury respect
       const _bigMoves = gs.playerStates?.[f]?.bigMoves || 0;
       const _resumeBonus = Math.min(0.8, _bigMoves * 0.15);
+      // Survival resume: cumulative votes survived
+      const _totalVotesReceived = gs.playerStates?.[f]?.votesReceived || 0;
+      const _survivalBonus = Math.min(0.5, _totalVotesReceived * 0.04);
       // Hero/Villain archetype FTC modifiers
       const _fArch = players.find(p => p.name === f)?.archetype || '';
       const _heroBonus = _fArch === 'hero' ? 2.0 : 0;
       const _villainMod = _fArch === 'villain' ? (bond >= 1 ? 1.5 : bond <= -1 ? -2.0 : 0) : 0;
       // Perch victory bonus (koh-lanta): jurors respect iconic endurance win (proportional to juror's physical appreciation)
       const _perchBonus = gs.playerStates?.[f]?.perchWinner ? 0.4 + jS.physical * 0.05 : 0;
-      const personal = bond * 1.5 + _loyaltyHonor + _resumeBonus + _heroBonus + _villainMod + _perchBonus;
+      const personal = bond * 1.5 + _loyaltyHonor + _resumeBonus + _survivalBonus + _heroBonus + _villainMod + _perchBonus;
       const history = gs.jurorHistory?.[juror];
       let bitterness = 0;
       if (history) {

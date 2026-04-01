@@ -28231,9 +28231,10 @@ function rpBuildVotes(ep) {
     if (!elim) return false;
     const _elimState = gs.playerStates?.[elim]?.emotional || 'content';
     const _feltSafe = ['confident', 'comfortable', 'content'].includes(_elimState);
-    const _votedElsewhere = votingLog.some(v => v.voter === elim && v.voted !== elim);
+    const _vLog = ep.votingLog || [];
+    const _votedElsewhere = _vLog.some(v => v.voter === elim && v.voted !== elim);
     const _elimVotes = sortedVotes.find(([n]) => n === elim)?.[1] || 0;
-    const _totalVoters = votingLog.filter(v => v.voter !== 'THE GAME').length;
+    const _totalVoters = _vLog.filter(v => v.voter !== 'THE GAME').length;
     const _wasObviousTarget = _totalVoters > 0 && _elimVotes / _totalVoters >= 0.7;
     // Blindside = they didn't expect it AND it wasn't a foregone conclusion
     return (_feltSafe || _votedElsewhere) && !_wasObviousTarget;

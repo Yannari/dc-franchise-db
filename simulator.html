@@ -21067,7 +21067,7 @@ function simulateFinale() {
   }
 
   // If 3 remain and need to cut to F2: finaleSize===2 (always cut), OR winner's-cut format with finaleSize===3 (winner decides who to cut)
-  const _needsF3Cut = (cfg.finaleSize === 2) || (cfg.finaleFormat === 'jury-cut' && cfg.finaleSize === 3);
+  const _needsF3Cut = (cfg.finaleSize === 2) || (cfg.finaleFormat === 'jury-cut' && cfg.finaleSize === 3) || (cfg.finaleFormat === 'fan-vote' && cfg.finaleSize === 3);
   if (!ep.firemaking && !ep.klChoice && _needsF3Cut && players.length === 3 && cfg.finaleFormat !== 'final-challenge' && cfg.finaleFormat !== 'koh-lanta') {
     const others = players.filter(p => p !== ep.immunityWinner);
     let brought, cut;
@@ -22157,7 +22157,7 @@ function generateFanCampaign(finalists) {
     if (style === 'bold') {
       speech = _pick([
         `"I didn't come here to make friends. I came here to win. ${_betrayalCount > 0 ? `Yeah, I cut people. ${_betrayalCount} alliance${_betrayalCount !== 1 ? 's' : ''} — I broke them because they were in my way.` : `I stayed loyal when I could, and I fought when I had to.`} ${wins > 0 ? `${wins} immunity win${wins !== 1 ? 's' : ''} — I earned my safety.` : `I didn't need immunity. I made myself too valuable to vote out.`} You want a winner who played scared? Vote for ${pr.obj === 'them' ? 'someone else' : 'the other one'}. You want a winner who played with guts? I'm right here."`,
-        `"Every person sitting on that jury knows what I did. I owned every move. ${_bigMoves > 0 ? `${_bigMoves} big move${_bigMoves !== 1 ? 's' : ''} — and I'd make every one of them again.` : `I played steady when others crumbled.`} This isn't a popularity contest — ${pr.sub === 'they' ? 'wait' : 'wait'}, actually, it is. And I think the fans respect someone who plays hard."`,
+        `"Every person sitting on that jury knows what I did. I owned every move. ${_bigMoves > 0 ? `${_bigMoves} big move${_bigMoves !== 1 ? 's' : ''} — and I'd make every one of them again.` : `I played steady when others crumbled.`} This isn't a popularity contest — wait, actually, it is. And I think the fans respect someone who plays hard."`,
         `"Look — I'm not perfect. I know that. But I played THIS game harder than anyone sitting next to me. ${showmance ? `${showmance.players.find(p => p !== name)} and I had something real out there — that wasn't strategy, that was human.` : `I connected with people when it mattered.`} ${_betrayalCount >= 2 ? `Did I betray people? Absolutely. Did I feel good about it? No. Did it get me here? Yes.` : `I kept my word more than most.`} Vote for the player who actually played."`,
       ], name + 'bold');
     } else if (style === 'social') {
@@ -22196,7 +22196,8 @@ function generateFanCampaign(finalists) {
       : ['overrated', 'meh', 'boring winner', 'not impressed'];
 
     // Higher popularity = more positive reactions
-    const posCount = pop >= (gs.popularity?.[finalists.find(f => f !== name)] || 0) ? 2 : 1;
+    const otherMaxPop = Math.max(...finalists.filter(f => f !== name).map(f => gs.popularity?.[f] || 0));
+    const posCount = pop >= otherMaxPop ? 2 : 1;
     const negCount = 3 - posCount;
     const fanReactions = [];
     const _usedPos = new Set(), _usedNeg = new Set();
@@ -22292,7 +22293,10 @@ function simulateFanVote(finalists) {
   const rankings = sorted.map(([name]) => name);
   const winner = rankings[0];
   const winnerPct = percentages[winner];
-  const margin = winnerPct >= 60 ? 'landslide' : winnerPct >= 52 ? 'comfortable' : 'razor-thin';
+  const isF3 = finalists.length >= 3;
+  const margin = isF3
+    ? (winnerPct >= 45 ? 'landslide' : winnerPct >= 37 ? 'comfortable' : 'razor-thin')
+    : (winnerPct >= 60 ? 'landslide' : winnerPct >= 52 ? 'comfortable' : 'razor-thin');
 
   return { scores, percentages, rankings, winner, margin, breakdown };
 }
@@ -23978,9 +23982,10 @@ if (typeof window !== 'undefined') {
         }, 50);
       }
     } else if (subPhase === 2) {
-      // Show jury reaction
+      // Show jury reaction — auto-skip if no reaction for this finalist
       const el = document.getElementById(`${baseId}-jury`);
       if (el) { el.style.display = 'block'; setTimeout(() => el.style.opacity = '1', 50); }
+      else { window._fcState[key] = step + 1; fanCampaignAdvance(key, totalPhases); return; }
     }
 
     window._fcState[key] = step + 1;

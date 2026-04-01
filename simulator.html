@@ -1169,6 +1169,11 @@
                   </select>
                 </div>
                 <p class="acc-desc" id="survival-desc">Disabled: No food or water tracking. Players have unlimited resources.</p>
+                <label class="acc-check-row" id="auto-reward-row" style="margin-top:6px;display:none">
+                  <input type="checkbox" id="cfg-auto-reward" onchange="saveConfig()">
+                  <span>Auto Reward Challenges</span>
+                </label>
+                <p class="acc-desc" id="auto-reward-desc" style="display:none">Automatically adds a reward challenge every episode (stops at F4). Rewards restore tribe food — makes survival meaningful.</p>
               </div>
             </div>
           </div>
@@ -2328,6 +2333,7 @@ function saveConfig() {
     advExpire:   parseInt(g('cfg-adv-expire')?.value) || 4,
     foodWater:   g('cfg-food-water')?.value || 'disabled',
     survivalDifficulty: g('cfg-survival-difficulty')?.value || 'casual',
+    autoRewardChallenges: g('cfg-auto-reward')?.checked ?? false,
     host:        g('cfg-host')?.value || 'Chris',
     advantages: Object.fromEntries(ADVANTAGES.map(a => {
       if (a.key === 'idol') {
@@ -2401,6 +2407,13 @@ function renderConfig() {
   set('cfg-adv-expire',  seasonConfig.advExpire ?? 4);
   set('cfg-food-water',  seasonConfig.foodWater || 'disabled');
   set('cfg-survival-difficulty', seasonConfig.survivalDifficulty || 'casual');
+  chk('cfg-auto-reward', seasonConfig.autoRewardChallenges ?? false);
+  // Show/hide auto-reward row based on food/water being enabled
+  const _arRow = g('auto-reward-row');
+  const _arDesc = g('auto-reward-desc');
+  const _fwOn = (seasonConfig.foodWater || 'disabled') === 'enabled';
+  if (_arRow) _arRow.style.display = _fwOn ? '' : 'none';
+  if (_arDesc) _arDesc.style.display = _fwOn ? '' : 'none';
   set('cfg-host', seasonConfig.host || 'Chris');
   // Sync slider displays
   ['teams','merge','finale','jury','adv-expire'].forEach(name => updateSlider(name));
@@ -14906,6 +14919,14 @@ function simulateEpisode() {
 
   // ── TWIST CHECK ──
   // Filter incompatible twists: if two immunity twists conflict, keep the first scheduled
+  // Auto-inject reward challenge when survival + auto-reward is enabled (stops at F4)
+  if (cfg.autoRewardChallenges && cfg.foodWater === 'enabled' && gs.activePlayers.length > 4) {
+    const _hasReward = (cfg.twistSchedule||[]).some(t => Number(t.episode) === epNum && t.type === 'reward-challenge');
+    if (!_hasReward) {
+      if (!cfg.twistSchedule) cfg.twistSchedule = [];
+      cfg.twistSchedule.push({ episode: epNum, type: 'reward-challenge', id: 'auto-reward-' + epNum });
+    }
+  }
   const _rawScheduled = (cfg.twistSchedule||[]).filter(t => Number(t.episode) === epNum);
   const _usedTypes = new Set();
   const scheduledTwists = _rawScheduled.filter(twist => {
@@ -21088,6 +21109,11 @@ function updateSurvivalDesc() {
   const group = document.getElementById('survival-difficulty-group');
   const desc  = document.getElementById('survival-desc');
   if (group) group.style.display = mode === 'disabled' ? 'none' : 'block';
+  // Show/hide auto-reward checkbox
+  const _arRow2 = document.getElementById('auto-reward-row');
+  const _arDesc2 = document.getElementById('auto-reward-desc');
+  if (_arRow2) _arRow2.style.display = mode === 'enabled' ? '' : 'none';
+  if (_arDesc2) _arDesc2.style.display = mode === 'enabled' ? '' : 'none';
   if (desc) {
     const text = {
       disabled: 'Disabled: No food or water tracking. Players have unlimited resources.',

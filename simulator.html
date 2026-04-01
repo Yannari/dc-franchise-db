@@ -9686,33 +9686,66 @@ function applyTwist(ep, twist, isPrimary = true) {
     twistObj.rewardItemLabel = _reward.label;
     twistObj.rewardItemDesc  = _reward.desc;
 
-    // ── Companion selection (post-merge individual: winner picks 1-2 people to share) ──
+    // ── Companion selection (post-merge individual: winner picks companions to share) ──
     if (twistObj.rewardWinnerType === 'individual') {
       const _w = twistObj.rewardWinner;
       const _ws = pStats(_w);
       const _isSchemer = _ws.strategic >= 7 || ['schemer','mastermind'].includes(
         players.find(p => p.name === _w)?.archetype);
       const _others = gs.activePlayers.filter(p => p !== _w);
+      // F7+: pick 2 companions. F6 and below: pick 1 (fewer people, more intimate)
+      const _maxCompanions = gs.activePlayers.length >= 7 ? 2 : 1;
+
       // Companion 1: always highest bond
       const _c1 = _others.sort((a,b) => getBond(_w,b) - getBond(_w,a))[0];
-      // Companion 2: schemer courts middle-ground players; others bring second-closest
-      let _c2;
-      if (_isSchemer) {
-        const _middle = _others.filter(p => p !== _c1)
-          .filter(p => { const b = getBond(_w,p); return b > -1 && b < 2; });
-        _c2 = _middle.length
-          ? _middle[Math.floor(Math.random() * _middle.length)]
-          : _others.filter(p => p !== _c1)[0];
-      } else {
-        _c2 = _others.filter(p => p !== _c1)
-          .sort((a,b) => getBond(_w,b) + Math.random()*0.5 - getBond(_w,a) - Math.random()*0.5)[0];
+      const _companions = [_c1].filter(Boolean);
+
+      // Companion 2 (only when F7+)
+      if (_maxCompanions >= 2 && _others.length >= 2) {
+        let _c2;
+        if (_isSchemer) {
+          // Schemer courts middle-ground players — build new connections strategically
+          const _middle = _others.filter(p => p !== _c1)
+            .filter(p => { const b = getBond(_w,p); return b > -1 && b < 2; });
+          _c2 = _middle.length
+            ? _middle[Math.floor(Math.random() * _middle.length)]
+            : _others.filter(p => p !== _c1)[0];
+        } else {
+          _c2 = _others.filter(p => p !== _c1)
+            .sort((a,b) => getBond(_w,b) + Math.random()*0.5 - getBond(_w,a) - Math.random()*0.5)[0];
+        }
+        if (_c2) _companions.push(_c2);
       }
-      const _companions = [_c1, _c2].filter(Boolean);
+
+      // Bond boost: reward time together strengthens relationships
       _companions.forEach(c => addBond(_w, c, 0.5));
+      // Companions also bond with each other (they're sharing the experience)
+      if (_companions.length >= 2) addBond(_companions[0], _companions[1], 0.3);
+
+      // Strategic talk during reward — chance to form or strengthen an alliance
+      if (_ws.strategic >= 5 || _isSchemer) {
+        const _rewardGroup = [_w, ..._companions];
+        // Check if they're already in an alliance together
+        const _existingAlliance = (gs.namedAlliances || []).find(a =>
+          a.active !== false && _rewardGroup.every(m => a.members.includes(m)));
+        if (_existingAlliance) {
+          // Strengthen existing alliance bonds
+          _rewardGroup.forEach(m1 => _rewardGroup.filter(m2 => m2 !== m1).forEach(m2 => addBond(m1, m2, 0.2)));
+        } else if (Math.random() < _ws.strategic * 0.06) {
+          // Chance to pitch a new alliance (strategic * 0.06: stat 5 = 30%, stat 8 = 48%)
+          twistObj.rewardAlliancePitched = true;
+        }
+      }
+
       twistObj.rewardCompanions = _companions;
-      // Losers left behind: mild resentment if bond is low
-      _others.filter(p => !_companions.includes(p) && getBond(_w, p) >= 1).forEach(p => {
-        if (Math.random() < 0.3) addBond(p, _w, -0.2); // snubbed
+      twistObj.rewardMaxCompanions = _maxCompanions;
+
+      // Losers left behind: snubbed allies feel it
+      _others.filter(p => !_companions.includes(p)).forEach(p => {
+        const _snubBond = getBond(_w, p);
+        // Closer bonds = more hurt by being left behind
+        if (_snubBond >= 2 && Math.random() < 0.4) addBond(p, _w, -0.4); // close ally snubbed — hurts
+        else if (_snubBond >= 1 && Math.random() < 0.25) addBond(p, _w, -0.2); // mild sting
       });
     } else {
       // Tribe: winners bond with each other

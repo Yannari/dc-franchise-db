@@ -23980,6 +23980,66 @@ if (typeof window !== 'undefined') {
       if (el.style.opacity === '0.4') el.style.opacity = '1';
     });
   };
+
+  window.fanVoteRevealNext = function(key) {
+    const container = document.getElementById(key);
+    if (!container) return;
+    let step = parseInt(container.dataset.step);
+    const total = parseInt(container.dataset.total);
+    if (step >= total) return;
+    step++;
+    container.dataset.step = step;
+
+    const pcts = container.dataset.pcts.split(',').map(Number);
+    const names = container.dataset.names.split(',');
+    const progress = step / total; // 0.0 to 1.0
+    const isF2 = names.length === 2;
+
+    if (isF2) {
+      const revA = Math.round(pcts[0] * progress);
+      const revB = Math.round(pcts[1] * progress);
+      document.getElementById(`${key}-pct-a`).textContent = revA + '%';
+      document.getElementById(`${key}-pct-b`).textContent = revB + '%';
+      document.getElementById(`${key}-bar-a`).style.width = revA + '%';
+      document.getElementById(`${key}-bar-b`).style.width = revB + '%';
+    } else {
+      names.forEach((name, i) => {
+        const revPct = Math.round(pcts[i] * progress);
+        const pctEl = document.getElementById(`${key}-vpct-${i}`);
+        const barEl = document.getElementById(`${key}-vbar-${i}`);
+        if (pctEl) pctEl.textContent = revPct + '%';
+        if (barEl) barEl.style.height = Math.max(2, revPct * 1.5) + '%';
+      });
+    }
+
+    // Update button
+    const btn = document.getElementById(`${key}-btn`);
+    if (btn) btn.textContent = step >= total ? 'All Revealed' : `REVEAL (${step}/${total})`;
+
+    // Show winner on final step
+    if (step >= total) {
+      const winnerEl = document.getElementById(`${key}-winner`);
+      if (winnerEl) winnerEl.style.display = 'block';
+
+      // Highlight winner portrait
+      if (isF2) {
+        const winIdx = names.indexOf(container.dataset.winner);
+        const sideId = winIdx === 0 ? `${key}-left` : `${key}-right`;
+        const loseId = winIdx === 0 ? `${key}-right` : `${key}-left`;
+        const winSide = document.getElementById(sideId);
+        const loseSide = document.getElementById(loseId);
+        if (winSide) winSide.style.filter = 'drop-shadow(0 0 20px rgba(227,179,65,0.5))';
+        if (loseSide) loseSide.style.opacity = '0.5';
+      }
+    }
+  };
+  window.fanVoteRevealAll = function(key) {
+    const container = document.getElementById(key);
+    if (!container) return;
+    const total = parseInt(container.dataset.total);
+    container.dataset.step = '0';
+    for (let i = 0; i < total; i++) fanVoteRevealNext(key);
+  };
 }
 
 function _buildPostTwistBlocks(ep) {
@@ -30380,6 +30440,106 @@ function rpBuildFanCampaign(ep) {
   html += `<div style="display:flex;gap:12px;margin-top:16px;align-items:center" id="${stateKey}-controls">
     <button onclick="fanCampaignAdvance('${stateKey}', ${totalPhases})" id="${stateKey}-btn" style="padding:8px 20px;background:var(--accent-gold);border:none;border-radius:6px;color:#0d1117;font-family:var(--font-display);font-size:13px;letter-spacing:1px;cursor:pointer;font-weight:700">BEGIN BROADCAST</button>
     <button onclick="fanCampaignRevealAll('${stateKey}', ${totalPhases})" style="padding:6px 12px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:11px;cursor:pointer">See all</button>
+  </div>`;
+
+  html += `</div>`;
+  return html;
+}
+
+function rpBuildFanVoteReveal(ep) {
+  const fvr = ep.fanVoteResult;
+  if (!fvr) return null;
+  const epNum = ep.num || 0;
+  const stateKey = `fan-vote-${epNum}`;
+  const finalists = fvr.rankings;
+  const isF2 = finalists.length === 2;
+  const totalSteps = 10; // 10 reveal clicks to fill to 100%
+
+  let html = `<div class="rp-page tod-golden" style="overflow:hidden">
+    <div class="rp-eyebrow">Episode ${epNum} — Finale</div>
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:10px;letter-spacing:3px;color:#e3b341;font-weight:700">THE MOMENT OF TRUTH</div>
+      <div style="font-family:var(--font-display);font-size:28px;letter-spacing:2px;color:#f0f6fc;margin-top:4px;text-shadow:0 0 20px rgba(227,179,65,0.15)">THE FAN VOTE</div>
+      <div style="width:60px;height:2px;background:#e3b341;margin:8px auto"></div>
+      <div style="font-size:11px;color:#8b949e;margin-top:4px">${isF2 ? 'Head to head. One winner.' : 'Three finalists. One winner. The fans decide.'}</div>
+    </div>`;
+
+  if (isF2) {
+    // F2: Head-to-head layout
+    const [a, b] = finalists;
+    const aPct = fvr.percentages[a] || 50;
+    const bPct = fvr.percentages[b] || 50;
+
+    html += `<div id="${stateKey}" data-step="0" data-total="${totalSteps}" data-pcts="${aPct},${bPct}" data-names="${a},${b}" data-winner="${fvr.winner}" data-margin="${fvr.margin}">`;
+
+    // Portraits facing each other
+    html += `<div style="display:flex;justify-content:center;align-items:center;gap:32px;margin-bottom:24px">
+      <div style="text-align:center" id="${stateKey}-left">
+        ${rpPortrait(a, 'xl')}
+        <div style="font-family:var(--font-display);font-size:16px;color:#f0f6fc;margin-top:8px">${a}</div>
+        <div style="font-size:11px;color:#8b949e">${vpArchLabel(a)}</div>
+      </div>
+      <div style="font-family:var(--font-display);font-size:20px;color:#8b949e;letter-spacing:2px">VS</div>
+      <div style="text-align:center" id="${stateKey}-right">
+        ${rpPortrait(b, 'xl')}
+        <div style="font-family:var(--font-display);font-size:16px;color:#f0f6fc;margin-top:8px">${b}</div>
+        <div style="font-size:11px;color:#8b949e">${vpArchLabel(b)}</div>
+      </div>
+    </div>`;
+
+    // Central percentage display
+    html += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <div id="${stateKey}-pct-a" style="font-family:var(--font-mono);font-size:28px;color:#e3b341;font-weight:700;text-align:right;flex:1;transition:all 0.4s">\u2014</div>
+      <div style="font-size:12px;color:#8b949e">|</div>
+      <div id="${stateKey}-pct-b" style="font-family:var(--font-mono);font-size:28px;color:#58a6ff;font-weight:700;text-align:left;flex:1;transition:all 0.4s">\u2014</div>
+    </div>`;
+
+    // Dual bar
+    html += `<div style="display:flex;height:24px;border-radius:12px;overflow:hidden;background:rgba(139,148,158,0.1);margin-bottom:20px">
+      <div id="${stateKey}-bar-a" style="height:100%;background:linear-gradient(90deg,#e3b341,#d29922);width:0%;transition:width 0.6s ease;border-radius:12px 0 0 12px"></div>
+      <div id="${stateKey}-bar-b" style="height:100%;background:linear-gradient(90deg,#3b82f6,#58a6ff);width:0%;transition:width 0.6s ease;border-radius:0 12px 12px 0;margin-left:auto"></div>
+    </div>`;
+
+    html += `</div>`;
+
+  } else {
+    // F3: Vertical bars layout
+    html += `<div id="${stateKey}" data-step="0" data-total="${totalSteps}" data-pcts="${finalists.map(f => fvr.percentages[f] || 0).join(',')}" data-names="${finalists.join(',')}" data-winner="${fvr.winner}" data-margin="${fvr.margin}">`;
+
+    html += `<div style="display:flex;justify-content:center;gap:24px;margin-bottom:20px;align-items:flex-end">`;
+    finalists.forEach((name, i) => {
+      const colors = ['#e3b341', '#58a6ff', '#a78bfa'];
+      html += `<div style="text-align:center;flex:1;max-width:160px">
+        <div style="height:160px;display:flex;align-items:flex-end;justify-content:center;margin-bottom:8px">
+          <div id="${stateKey}-vbar-${i}" style="width:48px;border-radius:6px 6px 0 0;background:${colors[i]};height:0%;transition:height 0.6s ease"></div>
+        </div>
+        ${rpPortrait(name, 'lg')}
+        <div style="font-family:var(--font-display);font-size:14px;color:#f0f6fc;margin-top:6px">${name}</div>
+        <div style="font-size:10px;color:#8b949e">${vpArchLabel(name)}</div>
+        <div id="${stateKey}-vpct-${i}" style="font-family:var(--font-mono);font-size:20px;color:${colors[i]};font-weight:700;margin-top:6px;transition:all 0.4s">\u2014</div>
+      </div>`;
+    });
+    html += `</div>`;
+
+    html += `</div>`;
+  }
+
+  // Winner section — hidden until fully revealed
+  html += `<div id="${stateKey}-winner" style="display:none;text-align:center;margin-top:20px;padding:20px;border:2px solid rgba(227,179,65,0.4);border-radius:12px;background:rgba(227,179,65,0.06);box-shadow:0 0 30px rgba(227,179,65,0.1)">
+    <div style="font-size:10px;letter-spacing:3px;color:#e3b341;font-weight:700;margin-bottom:12px">THE FANS HAVE SPOKEN</div>
+    ${rpPortrait(fvr.winner, 'xl')}
+    <div style="font-family:var(--font-display);font-size:24px;color:#e3b341;margin-top:12px;text-shadow:0 0 20px rgba(227,179,65,0.3)">${fvr.winner}</div>
+    <div style="font-size:13px;color:#8b949e;margin-top:8px">${fvr.percentages[fvr.winner]}% of the fan vote</div>
+    <span class="rp-brant-badge gold" style="margin-top:8px;display:inline-block">${fvr.margin === 'landslide' ? 'LANDSLIDE' : fvr.margin === 'razor-thin' ? 'RAZOR-THIN' : 'COMFORTABLE'}</span>
+    <div style="margin-top:16px;font-size:11px;color:#8b949e">
+      ${fvr.breakdown.map(b => `${b.name}: ${b.pct}% (popularity: ${b.popularity})`).join(' &nbsp;|&nbsp; ')}
+    </div>
+  </div>`;
+
+  // Control buttons
+  html += `<div style="display:flex;gap:12px;margin-top:16px;align-items:center">
+    <button onclick="fanVoteRevealNext('${stateKey}')" id="${stateKey}-btn" style="padding:8px 20px;background:var(--accent-gold);border:none;border-radius:6px;color:#0d1117;font-family:var(--font-display);font-size:13px;letter-spacing:1px;cursor:pointer;font-weight:700">REVEAL (0/${totalSteps})</button>
+    <button onclick="fanVoteRevealAll('${stateKey}')" style="padding:6px 12px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:11px;cursor:pointer">See all results</button>
   </div>`;
 
   html += `</div>`;

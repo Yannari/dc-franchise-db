@@ -1135,10 +1135,15 @@
               </div>
               <div class="accordion-body" id="acc-body-popularity" style="display:none">
                 <label class="acc-check-row">
-                  <input type="checkbox" id="cfg-popularity" onchange="saveConfig()" checked>
+                  <input type="checkbox" id="cfg-popularity" onchange="saveConfig();const _hr=document.getElementById('hide-pop-row');if(_hr)_hr.style.display=this.checked?'':'none'" checked>
                   <span>Enable Popularity System</span>
                 </label>
                 <p class="acc-desc">Tracks fan popularity across the season. Drives the Fan Vote twist (saves the highest-popularity player) and the Fan Favorite award after the Final Tribal Council.</p>
+                <label class="acc-check-row" id="hide-pop-row" style="margin-top:6px">
+                  <input type="checkbox" id="cfg-hide-popularity" onchange="saveConfig()">
+                  <span>Hide rankings (no spoilers)</span>
+                </label>
+                <p class="acc-desc">Hides the Fan Pulse leaderboard during the season. Popularity still tracks internally — results only revealed at the Fan Vote finale.</p>
               </div>
             </div>
 
@@ -2336,8 +2341,22 @@ function saveConfig() {
     twistSchedule: seasonConfig.twistSchedule || [],
     tribes: seasonConfig.tribes || [],
     popularityEnabled: g('cfg-popularity')?.checked ?? true,
+    hidePopularity: g('cfg-hide-popularity')?.checked ?? false,
   };
   localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
+  // Disable fan-vote finale option when popularity is off
+  const _fvOpt = document.querySelector('#cfg-finale-format option[value="fan-vote"]');
+  if (_fvOpt) {
+    const _popOn = g('cfg-popularity')?.checked;
+    _fvOpt.disabled = !_popOn;
+    _fvOpt.textContent = _popOn ? 'Fan Vote Finale' : 'Fan Vote Finale (requires popularity)';
+    // If fan-vote was selected but popularity just got disabled, reset to traditional
+    if (!_popOn && seasonConfig.finaleFormat === 'fan-vote') {
+      seasonConfig.finaleFormat = 'traditional';
+      const _fmSel = g('cfg-finale-format');
+      if (_fmSel) _fmSel.value = 'traditional';
+    }
+  }
 }
 function renderConfig() {
   const g = id => document.getElementById(id);
@@ -2374,6 +2393,10 @@ function renderConfig() {
   set('cfg-tiebreaker-mode', seasonConfig.tiebreakerMode || 'survivor');
   chk('cfg-qem',        seasonConfig.qem || false);
   chk('cfg-popularity', seasonConfig.popularityEnabled ?? true);
+  chk('cfg-hide-popularity', seasonConfig.hidePopularity ?? false);
+  // Show/hide the hide-popularity row based on popularity being enabled
+  const _hpRow = g('hide-pop-row');
+  if (_hpRow) _hpRow.style.display = (seasonConfig.popularityEnabled ?? true) ? '' : 'none';
   chk('cfg-idol-rehide', seasonConfig.idolRehide || false);
   set('cfg-adv-expire',  seasonConfig.advExpire ?? 4);
   set('cfg-food-water',  seasonConfig.foodWater || 'disabled');
@@ -22757,7 +22780,7 @@ function rpBuildColdOpen(ep) {
   }
 
   // ── Fan Pulse — scores BEFORE this episode (use previous ep snapshot) ──
-  if (seasonConfig.popularityEnabled !== false) {
+  if (seasonConfig.popularityEnabled !== false && !seasonConfig.hidePopularity) {
     const _popSnap = prevEp?.popularitySnapshot || {};
     // For finale: use finaleFinalists (activeAtStart may miss players due to tribesAtStart being unset)
     const _popPool = ep.isFinale && ep.finaleFinalists?.length ? new Set(ep.finaleFinalists) : activeAtStart;
@@ -24518,7 +24541,7 @@ function rpBuildRelationships(ep) {
   }
 
   // ── Fan Pulse — scores AFTER this episode ──
-  if (seasonConfig.popularityEnabled !== false) {
+  if (seasonConfig.popularityEnabled !== false && !seasonConfig.hidePopularity) {
     const _popSnap = ep.popularitySnapshot || {};
     const _allRanked = [...active].sort((a, b) => (_popSnap[b] || 0) - (_popSnap[a] || 0));
     const _n = _allRanked.length;

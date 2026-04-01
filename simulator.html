@@ -30374,6 +30374,74 @@ function rpBuildFTC(ep) {
   return html;
 }
 
+// ── Fan Vote Finale: After Immunity (lobbying before the cut) ──
+function rpBuildFanVoteCampLife(ep) {
+  if (!ep.finalCut || !ep.immunityWinner) return '';
+  const winner = ep.immunityWinner;
+  const others = (ep.finaleEntrants || []).filter(p => p !== winner);
+  if (!others.length) return '';
+  const _pr = pronouns(winner);
+  const _wS = pStats(winner);
+  const _pick = arr => arr[([...winner].reduce((a,c)=>a+c.charCodeAt(0),0)+ep.num*7)%arr.length];
+
+  let html = `<div class="rp-page tod-golden">
+    <div class="rp-eyebrow">Episode ${ep.num} — Finale</div>
+    <div class="rp-title">After Immunity</div>
+    <div style="font-size:13px;color:#8b949e;text-align:center;margin-bottom:20px">${winner} holds the necklace. ${_pr.Sub} ${_pr.sub==='they'?'decide':'decides'} who goes to the Fan Vote — and who goes home.</div>`;
+
+  // Winner's internal monologue
+  html += `<div style="margin-bottom:16px;padding:14px;background:rgba(227,179,65,0.04);border:1px solid rgba(227,179,65,0.15);border-radius:10px">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+      ${rpPortrait(winner, 'sm')}
+      <div>
+        <div style="font-size:14px;font-weight:700;color:#e3b341">${winner}</div>
+        <div style="font-size:10px;color:#8b949e;font-weight:700;letter-spacing:1px">IMMUNITY HOLDER</div>
+      </div>
+    </div>
+    <div style="font-size:12px;color:#cdd9e5;line-height:1.6;font-style:italic">${_pick([
+      `${winner} sits by the fire with the necklace. Tonight isn't about the jury — the fans decide. But first, ${_pr.sub} ${_pr.sub==='they'?'have':'has'} to choose who stands beside ${_pr.obj} when the votes come in. ${_wS.strategic >= 7 ? `${_pr.Sub}'s already thinking about who the fans like less.` : `${_pr.Sub}'s thinking about who ${_pr.sub} ${_pr.sub==='they'?'want':'wants'} beside ${_pr.obj} at the end.`}`,
+      `The necklace is around ${_pr.posAdj} neck, but the real power is the decision that comes next. In a fan vote, popularity is everything — and ${winner} gets to choose who ${_pr.sub} ${_pr.sub==='they'?'face':'faces'} in front of a million viewers. ${_wS.strategic >= 7 ? `${_pr.Sub} ${_pr.sub==='they'?'know':'knows'} exactly who ${_pr.sub} can beat.` : `${_pr.Sub} ${_pr.sub==='they'?'wish':'wishes'} ${_pr.sub} knew what the fans were thinking.`}`,
+      `${winner} hasn't spoken to anyone since winning immunity. The tribe can feel it — the calculation happening behind those eyes. This isn't a regular vote. The fans are watching. Everyone at camp is wondering the same thing: who does ${winner} want to face when a million people cast their vote?`,
+    ])}</div>
+  </div>`;
+
+  // Each other player lobbies the winner — fan-vote specific pitches
+  others.forEach(player => {
+    const bond = getBond(winner, player);
+    const pS = pStats(player);
+    const pPr = pronouns(player);
+    const pop = gs.popularity?.[player] || 0;
+    const winnerPop = gs.popularity?.[winner] || 0;
+    const isMorePopular = pop > winnerPop;
+
+    const lobbyText = bond >= 3 ? _pick([
+      `${player} doesn't need to make a pitch. ${pPr.Sub} and ${winner} just look at each other. "We said the end. This is it." The bond is the argument. But in a fan vote, bonds don't matter — popularity does. And they both know it.`,
+      `${player} sits next to ${winner}. "I know it's a fan vote. I know the fans love you. Take me — I won't beat you. The fans will crown you either way." ${pPr.Sub} ${pPr.sub==='they'?'mean':'means'} it. Whether ${winner} believes it is another question.`,
+      `${player} finds ${winner} by the water. "We've been through everything together. Don't cut me now. Not like this. Let the fans decide between us — we earned that." ${winner} stares at the water and says nothing.`,
+    ]) : bond >= 1 ? _pick([
+      `${player} pulls ${winner} aside. "Think about it — who do the fans like less? Me or ${others.find(o => o !== player) || 'them'}? You want to sit next to someone the audience doesn't care about. That's me." ${pS.social >= 7 ? `It's calculated self-deprecation. Brilliant, actually.` : `The desperation shows through the strategy.`}`,
+      `${player} makes ${pPr.posAdj} case: "The fan vote isn't about gameplay. It's about who people want to win. You need someone sitting next to you that the fans like LESS than you." ${pS.strategic >= 7 ? `It's the right argument in a fan-vote finale.` : `${pPr.Sub} ${pPr.sub==='they'?'hope':'hopes'} ${winner} is thinking the same way.`}`,
+      `"I know the fans aren't voting for me," ${player} says. "I've seen the looks at tribal — I'm not the favorite. But that's exactly why you should take me. ${isMorePopular ? `Okay, maybe I'm wrong. But I think you beat me.` : `You're the fan favorite. I'm the easy win.`}"`,
+    ]) : _pick([
+      `${player} approaches ${winner} knowing the odds aren't great. "I'm not going to pretend we're close. But this is a fan vote — the fans haven't seen our relationship up close. They've seen the confessionals. Take me and you win. Easy." It's brutally honest.`,
+      `${player} doesn't have a strong bond with ${winner}. ${pPr.Sub} ${pPr.sub==='they'?'know':'knows'} it. The pitch isn't about loyalty — it's pure math: "The fans don't know me. They don't care about me. That means you win. Take the easy path."`,
+      `${player} barely gets three sentences out before the emotion hits. This isn't strategy. It's ${ep.num > 1 ? (ep.num - 1) * 3 : 1} days on an island, and it's about to end. "Just give me a chance to stand up there. Let the fans see who I really am."`,
+    ]);
+
+    html += `<div style="margin-bottom:12px;padding:12px;background:#0d1117;border:1px solid #21262d;border-radius:8px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        ${rpPortrait(player, 'sm')}
+        <div style="font-size:13px;font-weight:700;color:#e6edf3">${player}</div>
+        <div style="font-size:10px;color:${bond >= 2 ? '#3fb950' : bond >= 0 ? '#8b949e' : '#f85149'};margin-left:auto">Bond: ${bond >= 3 ? 'Strong' : bond >= 1 ? 'Positive' : bond >= 0 ? 'Neutral' : 'Negative'}</div>
+      </div>
+      <div style="font-size:12px;color:#8b949e;line-height:1.6;font-style:italic">${lobbyText}</div>
+    </div>`;
+  });
+
+  html += `</div>`;
+  return html;
+}
+
 function rpBuildFanCampaign(ep) {
   const fc = ep.fanCampaign;
   if (!fc?.phases?.length) return null;
@@ -33215,6 +33283,12 @@ function buildVPScreens(epRecord) {
     }
     if (ep.firemakingResult) {
       vpScreens.push({ id:'firemaking-duel', label:'Fire-Making', html: rpBuildFiremakingDuel(ep) });
+    }
+
+    // Fan Vote: lobbying scene before the Decision
+    if (ep.finalCut && seasonConfig.finaleFormat === 'fan-vote' && ep.immunityWinner) {
+      const _fvCampHtml = rpBuildFanVoteCampLife(ep);
+      if (_fvCampHtml) vpScreens.push({ id:'fanvote-camp', label:'After Immunity', html: _fvCampHtml });
     }
 
     // Final Cut: immunity winner's decision (or jury-cut) — shown after challenge (non-firemaking)

@@ -27330,11 +27330,10 @@ function rpBuildVotingPlans(ep) {
     html += `<div class="rp-vp-section-label">ALLIANCE PLANS</div>
       <div class="rp-vp-plans-row">`;
     namedAlliances.forEach((a, aIdx) => {
-      if (!a.target) return; // skip alliances with no target
       const spear = allianceSpear(a.members);
       const membersAtTribal = a.members.filter(m => tribalPlayers.includes(m));
       const canVote = membersAtTribal.filter(m => !_vpLostVoteSet.has(m) && !_allImmuneVP.includes(m));
-      const cat = targetCategory(a.target);
+      const cat = a.target ? targetCategory(a.target) : { label: 'No Target', color: '#484f58' };
       const splitPlan = (ep.splitVotePlans || []).find(sp => sp.alliance === a.label);
 
       let ph = `<div class="rp-vp-plan" style="border:1px solid rgba(99,102,241,0.25);background:rgba(99,102,241,0.04);animation:slideInLeft 0.4s ease ${aIdx * 0.1}s both">`;
@@ -27354,18 +27353,25 @@ function rpBuildVotingPlans(ep) {
       </div>`;
 
       // TARGET box + reasoning
-      const _isCheckedOut = ep.comfortBlindspotPlayer === a.target;
-      const _targetReason = _vpTargetReason(a.target, spear, cat);
-      ph += `<div class="rp-vp-section-mini">\u2694\uFE0F TARGET</div>
-        <div class="rp-vp-target-row" style="background:rgba(248,81,73,0.06);border-radius:8px;padding:8px 10px">
-          ${rpPortrait(a.target)}
-          <div class="rp-vp-target-info">
-            <div class="rp-vp-target-name">${a.target}</div>
-            <div class="rp-vp-target-cat" style="color:${cat.color}">${cat.label}</div>
-            ${_isCheckedOut ? `<span class="rp-brant-badge gold">\u2b50 CHECKED OUT</span>` : ''}
-            <div style="font-size:11px;color:#8b949e;margin-top:4px;line-height:1.4;font-style:italic">${_targetReason}</div>
-          </div>
-        </div>`;
+      if (a.target) {
+        const _isCheckedOut = ep.comfortBlindspotPlayer === a.target;
+        const _targetReason = _vpTargetReason(a.target, spear, cat);
+        ph += `<div class="rp-vp-section-mini">\u2694\uFE0F TARGET</div>
+          <div class="rp-vp-target-row" style="background:rgba(248,81,73,0.06);border-radius:8px;padding:8px 10px">
+            ${rpPortrait(a.target)}
+            <div class="rp-vp-target-info">
+              <div class="rp-vp-target-name">${a.target}</div>
+              <div class="rp-vp-target-cat" style="color:${cat.color}">${cat.label}</div>
+              ${_isCheckedOut ? `<span class="rp-brant-badge gold">\u2b50 CHECKED OUT</span>` : ''}
+              <div style="font-size:11px;color:#8b949e;margin-top:4px;line-height:1.4;font-style:italic">${_targetReason}</div>
+            </div>
+          </div>`;
+      } else {
+        ph += `<div class="rp-vp-section-mini">\u2694\uFE0F TARGET</div>
+          <div style="padding:10px;background:rgba(139,148,158,0.04);border-radius:8px;border:1px solid rgba(139,148,158,0.08)">
+            <div style="font-size:12px;color:#8b949e;font-style:italic">No clear target — the alliance is scrambling. With this few people left, every option is personal.</div>
+          </div>`;
+      }
 
       // Split vote indicator
       if (a.splitTarget || splitPlan) {

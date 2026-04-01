@@ -6837,12 +6837,34 @@ function findAdvantages(ep) {
     });
   }
 
+  // ── LEGACY ADVANTAGE: guaranteed find in episodes 1-3 ──
+  // Legacy needs time to breathe — confessions, scheming, heir dynamics.
+  // Finding it late (ep 7+) when it activates at F5 wastes the whole mechanic.
+  if (cfg.advantages?.legacy?.enabled && ep.num <= 3 && !gs.advantages.some(a => a.type === 'legacy')) {
+    // Escalating chance: ep1 = 40%, ep2 = 70%, ep3 = 100% (guaranteed by ep3)
+    const _legacyChance = ep.num === 1 ? 0.4 : ep.num === 2 ? 0.7 : 1.0;
+    if (Math.random() < _legacyChance) {
+      const _legPool = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer).sort(() => Math.random() - 0.5);
+      if (_legPool.length) {
+        // Slight bias toward intuitive players (they search harder)
+        const _legWeighted = _legPool.map(p => ({ name: p, w: 1 + pStats(p).intuition * 0.1 }));
+        const _legTotal = _legWeighted.reduce((s, w) => s + w.w, 0);
+        let _legRoll = Math.random() * _legTotal;
+        let _legFinder = _legWeighted[0].name;
+        for (const w of _legWeighted) { _legRoll -= w.w; if (_legRoll <= 0) { _legFinder = w.name; break; } }
+        const _legTribe = gs.isMerged ? 'merge' : (gs.tribes.find(t => t.members.includes(_legFinder))?.name || 'camp');
+        gs.advantages.push({ holder: _legFinder, type: 'legacy', foundEp: ep.num, foundTribe: _legTribe, activatesAt: seasonConfig.legacyActivatesAt || [5] });
+        ep.idolFinds.push({ finder: _legFinder, type: 'legacy', tribe: _legTribe });
+      }
+    }
+  }
+
   // ── NON-IDOL ADVANTAGES (found at camp via hidden notes/clues) ──
   // Each type has its own rate and game-phase requirement.
   const nonIdolTypes = [
     { key: 'extraVote',  postMergeOnly: false, baseChance: 0.003, epScaleCap: 0.012 },
     { key: 'voteSteal',  postMergeOnly: false, baseChance: 0.002, epScaleCap: 0.010 },
-    { key: 'legacy',     postMergeOnly: false, baseChance: 0.002, epScaleCap: 0.008 },
+    // legacy removed from random finding — guaranteed early via dedicated handler above
     { key: 'kip',        postMergeOnly: true,  baseChance: 0.004, epScaleCap: 0.010 },
     // amulet removed from random finding — planted simultaneously in ep 1 via special handler above
     { key: 'secondLife', postMergeOnly: false, baseChance: 0.002, epScaleCap: 0.008 },

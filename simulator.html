@@ -20154,10 +20154,14 @@ function viewEpisode(num) {
 function simulateNext() {
   if (!gs) { if (!initGameState()) { alert('Add players to Cast Builder first.'); return; } }
   // Fire-making override: if finale triggered too early (F3 instead of F4), revert to regular episode
-  if (seasonConfig.firemaking && gs.phase === 'finale' && gs.activePlayers.length > 4) {
-    gs.phase = 'post-merge'; // not ready for finale yet — keep playing
+  if (seasonConfig.firemaking) {
+    if (seasonConfig.finaleSize < 4) seasonConfig.finaleSize = 4;
+    if (gs.phase === 'finale' && gs.activePlayers.length > 4) {
+      console.log(`[FIREMAKING] Reverting premature finale: ${gs.activePlayers.length} players, need 4`);
+      gs.phase = 'post-merge';
+    }
+    console.log(`[NEXT] firemaking=true, phase=${gs.phase}, players=${gs.activePlayers.length}, finaleSize=${seasonConfig.finaleSize}`);
   }
-  if (seasonConfig.firemaking && seasonConfig.finaleSize < 4) seasonConfig.finaleSize = 4;
   const ep = gs.phase === 'finale' ? simulateFinale() : simulateEpisode();
   if (!ep) return;
   if (seasonConfig.popularityEnabled !== false) { updatePopularity(ep); saveGameState(); }
@@ -20672,6 +20676,7 @@ function simulateFinale() {
   if (cfg.firemaking && cfg.finaleSize < 4) cfg.finaleSize = 4;
   const epNum = gs.episode + 1;
   const players = [...gs.activePlayers];
+  console.log(`[FINALE] firemaking=${cfg.firemaking}, finaleSize=${cfg.finaleSize}, players=${players.length} (${players.join(', ')}), finaleFormat=${cfg.finaleFormat}`);
 
   const ep = {
     num: epNum, isFinale: true, challengeType: 'individual',

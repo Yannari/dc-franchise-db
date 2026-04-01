@@ -7529,6 +7529,12 @@ function checkIdolPreTribal(ep, tribalPlayers) {
     }
 
     // ── IDOL SHARE: holder proactively passes idol to a close ally ──
+    // Don't share if holder is likely in danger — prioritize self-play
+    const _holderHeat = computeHeat(holder, tribalPlayers, gs.namedAlliances || []);
+    const _holderThreat = threatScore(holder);
+    const _holderInDanger = _holderHeat >= 3 || _holderThreat >= 7 || (getPlayerState(holder).emotional === 'paranoid' || getPlayerState(holder).emotional === 'desperate');
+    if (_holderInDanger) return; // keep your idol — you might need it
+
     // Don't share to someone who already holds an idol — they'll play their own at F5
     const best = tribalPlayers
       .filter(p => p !== holder && getBond(holder, p) >= 2

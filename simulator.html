@@ -32853,7 +32853,7 @@ function buildVPScreens(epRecord) {
   }
 
   // ── 5. Challenge ──
-  if (ep.isFinale && ep.challengeType && (seasonConfig.finaleSize >= 3 || seasonConfig.firemaking) && seasonConfig.finaleFormat !== 'final-challenge' && seasonConfig.finaleFormat !== 'koh-lanta') {
+  if (ep.isFinale && ep.challengeType && ep.immunityWinner && (seasonConfig.finaleSize >= 3 || seasonConfig.firemaking) && seasonConfig.finaleFormat !== 'final-challenge' && seasonConfig.finaleFormat !== 'koh-lanta') {
     // Finale immunity: use the same detailed challenge screen as regular episodes (koh-lanta has its own orienteering/perch screens)
     vpScreens.push({ id:'finale-challenge', label:'Final Immunity', html: rpBuildChallenge(ep) });
   } else if (ep.challengeType && !ep.isFinale && !ep.isSlasherNight) {
@@ -33214,6 +33214,16 @@ function buildVPScreens(epRecord) {
     if (ep.finaleChallengeStages?.length) {
       const _gcHtml = rpBuildFinaleGrandChallenge(ep);
       if (_gcHtml) vpScreens.push({ id:'grand-challenge', label:'The Final Challenge', html: _gcHtml });
+    }
+
+    // Fan Vote Finale — campaign + vote reveal (replaces FTC)
+    if (ep.fanCampaign) {
+      const _fcHtml = rpBuildFanCampaign(ep);
+      if (_fcHtml) vpScreens.push({ id:'fan-campaign', label:'Fan Campaign', html: _fcHtml });
+    }
+    if (ep.fanVoteResult) {
+      const _fvrHtml = rpBuildFanVoteReveal(ep);
+      if (_fvrHtml) vpScreens.push({ id:'fan-vote-reveal', label:'The Fan Vote', html: _fvrHtml });
     }
 
     // Final Tribal Council (jury-based games only)

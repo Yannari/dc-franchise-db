@@ -1069,7 +1069,6 @@
               <label class="form-label">Finale Format</label>
               <select id="cfg-finale-format" class="form-select" onchange="saveConfig()">
                 <option value="traditional">Council Vote (Traditional)</option>
-                <option value="fire-making">Fire Making Final</option>
                 <option value="jury-cut">Jury Cut (jury picks F3 finalist)</option>
                 <option value="fan-vote">Fan Vote Finale</option>
                 <option value="final-challenge">Final Challenge (No Jury)</option>
@@ -2284,8 +2283,8 @@ function toggleAdv(key) {
   saveConfig();
 }
 function toggleFiremaking() {
-  const checked = g('cfg-firemaking')?.checked;
-  const slider = g('cfg-finale');
+  const checked = document.getElementById('cfg-firemaking')?.checked;
+  const slider = document.getElementById('cfg-finale');
   const display = document.getElementById('finale-display');
   if (checked) {
     if (slider) { slider.value = 4; slider.disabled = true; slider.style.opacity = '0.4'; }

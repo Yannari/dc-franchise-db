@@ -13963,8 +13963,7 @@ function simulateEpisode() {
   repairGsSets(gsCheckpoints[_cpNum]);
   try { localStorage.setItem('simulator_cp_' + _cpNum, JSON.stringify(gsCheckpoints[_cpNum])); } catch(e) {}
   const cfg = seasonConfig;
-  // Fire-making forces F4 finale regardless of finaleSize setting
-  if (cfg.firemaking) cfg.finaleSize = Math.max(cfg.finaleSize || 3, 4);
+  // Fire-making forces F4 finale — applied once to cfg (persistent for all future checks)
   const epNum = gs.episode + 1;
   const ep = { num: epNum, bondChanges: [], riDuel: null, isRIReentry: false, isMerge: false,
                 idolFinds: [], idolPlays: [], idolRehide: false, journey: null, twist: null, twists: [], campEvents: {},
@@ -19818,6 +19817,9 @@ function snapshotGameState() {
 function initGameState() {
   if (!players.length) return false;
 
+  // Fire-making forces F4 finale — override finaleSize permanently before any episode runs
+  if (seasonConfig.firemaking) seasonConfig.finaleSize = Math.max(seasonConfig.finaleSize || 3, 4);
+
   const bonds = {};
   // Pre-game relationship bonds
   relationships.forEach(r => { bonds[bKey(r.a,r.b)] = r.bond; });
@@ -20659,7 +20661,7 @@ function simulateFinale() {
   let finalists = [...players];
 
   // ── FIRE-MAKING FINALE: forced F4 → decision → fire duel → F3 enters finaleFormat ──
-  if (cfg.firemaking && players.length >= 4) {
+  if (cfg.firemaking && players.length === 4) {
     const _fmImmWinner = ep.immunityWinner;
     const _fmOthers = players.filter(p => p !== _fmImmWinner);
     const _fmS = pStats(_fmImmWinner);

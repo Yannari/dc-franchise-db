@@ -14937,6 +14937,15 @@ function simulateEpisode() {
     ep.isMerge = true; gs.isMerged = true; gs.phase = 'post-merge'; gs.tribes = [];
     gs.sitOutHistory = {}; // sit-out back-to-back rule doesn't carry into individual game
     if (cfg.advantages?.idol?.enabled) gs.mergeIdolHidden = true;
+    // Transfer tribe food to merged pool — average of pre-merge tribes + merge feast bonus
+    if (seasonConfig.foodWater === 'enabled' && gs.tribeFood) {
+      const _preMergeFoods = Object.values(gs.tribeFood).filter(v => v > 0);
+      const _avgFood = _preMergeFoods.length ? _preMergeFoods.reduce((s, v) => s + v, 0) / _preMergeFoods.length : 60;
+      gs.tribeFood = {};
+      gs.tribeFood[gs.mergeName || 'merge'] = Math.min(100, _avgFood + 30);
+      // Merge feast also boosts individual survival
+      gs.activePlayers.forEach(p => { gs.survival[p] = Math.min(100, (gs.survival[p] || 80) + 20); });
+    }
     // Beware Advantage: activate all found bewares at merge — tribes no longer exist, condition can never be met
     if (gs.bewares) {
       Object.values(gs.bewares).forEach(b => {
@@ -20574,6 +20583,10 @@ function patchEpisodeHistory(ep) {
   if (!h.showmanceBreakup && !h.showmanceSeparation) checkShowmanceBreakup(ep);
   if (ep.paranoiaSpirals?.length) h.paranoiaSpirals = ep.paranoiaSpirals;
   if (ep.stolenCreditEvents?.length) h.stolenCreditEvents = ep.stolenCreditEvents;
+  h.survivalSnapshot = ep.survivalSnapshot || null;
+  h.tribeFoodSnapshot = ep.tribeFoodSnapshot || null;
+  h.providerSlackerData = ep.providerSlackerData || null;
+  h.medevac = ep.medevac || null;
   if (ep.splitVotePlans?.length) h.splitVotePlans = ep.splitVotePlans;
   if (ep.voteMiscommunications?.length) h.voteMiscommunications = ep.voteMiscommunications;
   if (ep.brokerEvents?.length) h.brokerEvents = ep.brokerEvents;
@@ -22305,6 +22318,9 @@ function simulateJuryVote(finalists) {
       // Social breadth: positive bonds with many jurors (not just deep bonds with a few)
       const _posJurorBonds = (gs.jury || []).filter(j => getBond(j, f) >= 1).length;
       const _socialBreadth = Math.min(0.5, _posJurorBonds * 0.08); // 3 jurors = 0.24, 6 = 0.48, cap 0.5
+      // Provider bonus: camp workhorse respected by jury
+      const _providerEps = gs.providerHistory?.[f] || 0;
+      const _providerBonus = Math.min(0.4, _providerEps * 0.04); // 5 eps = 0.2, 10 = 0.4
       // Showmance partner on jury: strong emotional pull — they almost always vote for you
       const _showmanceOnJury = gs.showmances?.find(sm => sm.players.includes(f) && sm.phase !== 'broken-up'
         && sm.players.some(p => p !== f && (gs.jury || []).includes(p)));
@@ -22316,7 +22332,7 @@ function simulateJuryVote(finalists) {
       const _villainMod = _fArch === 'villain' ? (bond >= 1 ? 1.5 : bond <= -1 ? -2.0 : 0) : 0;
       // Perch victory bonus: winning the iconic endurance finale earns jury respect (proportional to juror's physical/endurance appreciation)
       const _perchBonus = gs.playerStates?.[f]?.perchWinner ? 0.4 + jS.physical * 0.05 : 0;
-      const personal = bond * 1.5 + _loyaltyHonor + _resumeBonus + _survivalBonus + _challengeBonus + _underdogBonus + _socialBreadth + _showmanceJuryBonus + _heroBonus + _villainMod + _perchBonus;
+      const personal = bond * 1.5 + _loyaltyHonor + _resumeBonus + _survivalBonus + _challengeBonus + _underdogBonus + _socialBreadth + _providerBonus + _showmanceJuryBonus + _heroBonus + _villainMod + _perchBonus;
       // Bitterness/gratitude: was this finalist the one who voted me out?
       const history = gs.jurorHistory?.[juror];
       let bitterness = 0;
@@ -22405,6 +22421,12 @@ function simulateJuryVote(finalists) {
         `${pick} connected with more people on this jury than anyone else up there. That's social game. That's what Survivor is about.`,
         `I look at this jury and I see ${_jrPosJurorBonds} people who genuinely like ${pick}. You can't fake that over 30 days. ${_jrFp.Sub} earned every one of those relationships.`,
       ]);
+    } else if ((gs.providerHistory?.[pick] || 0) >= 5) {
+      _jrReason = _jrPick([
+        `${pick} fed this tribe. While everyone else was scheming, ${_jrFp.sub} ${_jrFp.sub==='they'?'were':'was'} fishing, foraging, keeping the fire alive. That matters. That's real.`,
+        `I watched ${pick} work every single day. Camp wasn't glamorous, but it kept us alive. The jury remembers who carried the weight.`,
+        `${pick} didn't just play the game — ${_jrFp.sub} kept us FED. Try thinking strategically on an empty stomach. ${pick} made that possible for all of us.`,
+      ]);
     } else if (_jrBond >= 1) {
       _jrReason = _jrPick([
         `${pick} treated people well. In this game, that's rare. My vote is personal — and I'm okay with that.`,
@@ -22459,6 +22481,9 @@ function projectJuryVotes(finalistSet) {
       // Social breadth: positive bonds with many jurors
       const _posJurorBonds = (gs.jury || []).filter(j => getBond(j, f) >= 1).length;
       const _socialBreadth = Math.min(0.5, _posJurorBonds * 0.08);
+      // Provider bonus: camp workhorse respected by jury
+      const _providerEps = gs.providerHistory?.[f] || 0;
+      const _providerBonus = Math.min(0.4, _providerEps * 0.04); // 5 eps = 0.2, 10 = 0.4
       // Showmance partner on jury
       const _showmanceOnJury = gs.showmances?.find(sm => sm.players.includes(f) && sm.phase !== 'broken-up'
         && sm.players.some(p => p !== f && (gs.jury || []).includes(p)));
@@ -22469,7 +22494,7 @@ function projectJuryVotes(finalistSet) {
       const _villainMod = _fArch === 'villain' ? (bond >= 1 ? 1.5 : bond <= -1 ? -2.0 : 0) : 0;
       // Perch victory bonus (koh-lanta): jurors respect iconic endurance win (proportional to juror's physical appreciation)
       const _perchBonus = gs.playerStates?.[f]?.perchWinner ? 0.4 + jS.physical * 0.05 : 0;
-      const personal = bond * 1.5 + _loyaltyHonor + _resumeBonus + _survivalBonus + _challengeBonus + _underdogBonus + _socialBreadth + _showmanceJuryBonus + _heroBonus + _villainMod + _perchBonus;
+      const personal = bond * 1.5 + _loyaltyHonor + _resumeBonus + _survivalBonus + _challengeBonus + _underdogBonus + _socialBreadth + _providerBonus + _showmanceJuryBonus + _heroBonus + _villainMod + _perchBonus;
       const history = gs.jurorHistory?.[juror];
       let bitterness = 0;
       if (history) {
@@ -25501,6 +25526,44 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
   }
   html += `</div></div>`;
 
+  // ── Survival: Tribe Food Bar ──
+  if (seasonConfig.foodWater === 'enabled') {
+    const _tf = ep.tribeFoodSnapshot?.[tribeName] ?? gs.tribeFood?.[tribeName] ?? 60;
+    const _tfLabel = _tf >= 80 ? 'Well-Fed' : _tf >= 60 ? 'Comfortable' : _tf >= 40 ? 'Hungry' : _tf >= 20 ? 'Starving' : 'Critical';
+    const _tfColor = _tf >= 80 ? '#3fb950' : _tf >= 60 ? '#58a6ff' : _tf >= 40 ? '#e3b341' : _tf >= 20 ? '#f0883e' : '#da3633';
+    html += `<div style="margin-bottom:12px;padding:8px 12px;background:rgba(139,148,158,0.04);border:1px solid rgba(139,148,158,0.08);border-radius:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <span style="font-size:9px;font-weight:700;letter-spacing:1px;color:#8b949e">TRIBE FOOD</span>
+        <span style="font-size:10px;font-weight:700;color:${_tfColor}">${_tfLabel}</span>
+      </div>
+      <div style="height:6px;background:rgba(139,148,158,0.15);border-radius:3px;overflow:hidden">
+        <div style="height:100%;width:${Math.round(_tf)}%;background:${_tfColor};border-radius:3px;transition:width 0.4s"></div>
+      </div>
+    </div>`;
+  }
+
+  // ── Survival: Member status indicators ──
+  if (seasonConfig.foodWater === 'enabled' && ep.survivalSnapshot) {
+    const _surv = ep.survivalSnapshot;
+    const _memberSurvival = members.filter(m => _surv[m] !== undefined).sort((a, b) => (_surv[a] || 0) - (_surv[b] || 0));
+    if (_memberSurvival.length) {
+      html += `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px">`;
+      _memberSurvival.forEach(m => {
+        const sv = Math.round(_surv[m] || 0);
+        const svColor = sv >= 70 ? '#3fb950' : sv >= 50 ? '#58a6ff' : sv >= 35 ? '#e3b341' : sv >= 20 ? '#f0883e' : '#da3633';
+        const isProvider = ep.providerSlackerData?.providers?.includes(m);
+        const isSlacker = ep.providerSlackerData?.slackers?.includes(m);
+        const roleIcon = isProvider ? '\u{1F41F}' : isSlacker ? '\u{1F4A4}' : '';
+        html += `<div style="display:flex;align-items:center;gap:4px;padding:2px 6px;background:rgba(139,148,158,0.04);border-radius:4px;border:1px solid rgba(139,148,158,0.08)" title="Survival: ${sv}/100${isProvider ? ' (Provider)' : isSlacker ? ' (Slacker)' : ''}">
+          ${rpPortrait(m, 'xs')}
+          <span style="font-size:9px;color:${svColor};font-weight:700;font-family:var(--font-mono)">${sv}</span>
+          ${roleIcon ? `<span style="font-size:8px">${roleIcon}</span>` : ''}
+        </div>`;
+      });
+      html += `</div>`;
+    }
+  }
+
   // ── CAMP EVENTS ──
   html += `<div class="rp-camp-toggle-section">
     <button class="rp-camp-toggle-btn" style="border-color:${tc};color:${tc}" onclick="vpToggleSection('evt-${safeId}')">
@@ -25662,6 +25725,20 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'brokerDefense'        ? 'Defense'
                      : evt.type === 'stolenCredit'              ? (evt.badgeText || 'STOLEN CREDIT')
                      : evt.type === 'stolenCreditConfrontation' ? (evt.badgeText || 'CONFRONTATION')
+                     : evt.type === 'providerFishing'           ? (evt.badgeText || 'PROVIDER')
+                     : evt.type === 'providerForaging'          ? (evt.badgeText || 'FORAGING')
+                     : evt.type === 'providerPraised'           ? (evt.badgeText || 'PRAISED')
+                     : evt.type === 'slackerCalledOut'          ? (evt.badgeText || 'CALLED OUT')
+                     : evt.type === 'slackerConfrontation'      ? (evt.badgeText || 'CONFRONTATION')
+                     : evt.type === 'slackerBonding'            ? (evt.badgeText || 'LAZY ALLIANCE')
+                     : evt.type === 'foodConflict'              ? (evt.badgeText || 'FOOD FIGHT')
+                     : evt.type === 'foodHoarding'              ? (evt.badgeText || 'HOARDING')
+                     : evt.type === 'starvationBond'            ? (evt.badgeText || 'SHARED SUFFERING')
+                     : evt.type === 'foodRationing'             ? (evt.badgeText || 'RATIONING')
+                     : evt.type === 'foodCrisis'                ? (evt.badgeText || 'FOOD CRISIS')
+                     : evt.type === 'survivalCollapse'          ? (evt.badgeText || 'COLLAPSE')
+                     : evt.type === 'medevac'                   ? (evt.badgeText || 'MEDEVAC')
+                     : evt.type === 'providerVotedOut'          ? (evt.badgeText || 'FOOD CRISIS')
                      : evt.type === 'paranoiaSpiral'       ? '⚠ Paranoia Spiral'
                      : evt.type === 'showmanceSpark'       ? '💕 Showmance'
                      : evt.type === 'showmanceHoneymoon'   ? '💕 Honeymoon'
@@ -25731,6 +25808,9 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'brokerDefense' ? (pStats(evt.players?.[0])?.boldness >= 6 ? 'gold' : 'red')
                      : evt.type === 'stolenCredit' ? 'gold'
                      : evt.type === 'stolenCreditConfrontation' ? (evt.badgeClass || 'red')
+                     : evt.type === 'providerFishing' || evt.type === 'providerForaging' || evt.type === 'providerPraised' || evt.type === 'foodRationing' ? 'gold'
+                     : evt.type === 'slackerBonding' || evt.type === 'starvationBond' ? 'green'
+                     : evt.type === 'slackerCalledOut' || evt.type === 'slackerConfrontation' || evt.type === 'foodConflict' || evt.type === 'foodHoarding' || evt.type === 'foodCrisis' || evt.type === 'survivalCollapse' || evt.type === 'medevac' || evt.type === 'providerVotedOut' ? 'red'
                      : evt.type === 'paranoiaSpiral' ? 'red'
                      : evt.type === 'showmanceSpark' || evt.type === 'showmanceHoneymoon' || evt.type === 'showmanceRideOrDie' ? 'green'
                      : evt.type === 'showmanceNoticed' || evt.type === 'showmanceTarget' ? 'gold'
@@ -25775,7 +25855,8 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
       'showmanceSpark','showmanceHoneymoon','showmanceNoticed','showmanceTarget','showmanceJealousy','showmanceRideOrDie',
       'unexpectedCompetence','underdogMoment','loneWolf','meltdown','leadershipClash',
       'showboat','pureHatred','nemesis','unbreakableBond','rideOrDie','rekindle','breakup',
-      'hotheadExplosion','beastDrills','chaosAgentStirsUp','wildcardPivot']);
+      'hotheadExplosion','beastDrills','chaosAgentStirsUp','wildcardPivot',
+      'providerFishing','providerForaging','providerPraised','slackerCalledOut','slackerConfrontation','slackerBonding','foodConflict','foodHoarding','starvationBond','foodRationing','foodCrisis','survivalCollapse','medevac','providerVotedOut']);
     const stratEvts = events.filter(e => stratTypes.has(e.type));
     const spotEvts  = events.filter(e => spotTypes.has(e.type));
     const socialEvts = events.filter(e => !stratTypes.has(e.type) && !spotTypes.has(e.type));

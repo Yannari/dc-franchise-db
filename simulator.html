@@ -26408,8 +26408,8 @@ function rpBuildRewardChallenge(ep) {
         </div>
       </div>`;
     });
-    const _rcAllSlots = JSON.stringify(rcDisplayOrder.map((t,i) => ({ slotId:`${rcRevealId}-tribe-${i}`, name:t.name })));
-    html += `<button onclick="vpRevealAllTribes('${rcRevealId}',${_rcAllSlots})"
+    const _rcAllSlotsData = rcDisplayOrder.map((t,i) => `${rcRevealId}-tribe-${i}:${t.name}`).join('|');
+    html += `<button onclick="vpRevealAllTribesFromData(this)" data-slots="${_rcAllSlotsData}"
       style="padding:6px 12px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:11px;cursor:pointer;margin-top:4px">See all results</button>`;
   } else {
     // Individual mode

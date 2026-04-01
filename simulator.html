@@ -9626,7 +9626,9 @@ function applyTwist(ep, twist, isPrimary = true) {
     twistObj.rewardChalLabel    = rchal.name;
     twistObj.rewardChalCategory = rchal.category;
     twistObj.rewardChalDesc     = rchal.desc;
-    if (gs.phase === 'pre-merge' && gs.tribes.length > 1) {
+    // If merge is about to happen this episode, run individual reward (not tribe)
+    const _rwWillMerge = !gs.isMerged && gs.activePlayers.length <= (seasonConfig.mergeAt || 12);
+    if (gs.phase === 'pre-merge' && gs.tribes.length > 1 && !_rwWillMerge) {
       // Tribe-based reward
       const rTribes = gs.tribes
         .filter(t => t.members?.some(m => gs.activePlayers.includes(m)))

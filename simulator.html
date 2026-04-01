@@ -34776,13 +34776,11 @@ function rcIndRevealNext(revealId) {
   const isCompanion = companions.includes(name);
   const isLast = rank === total - 1;
   slot.style.opacity = '1';
-  slot.style.borderColor = isWinner ? 'rgba(240,165,0,0.4)' : isCompanion ? 'rgba(63,185,80,0.3)' : 'rgba(139,148,158,0.2)';
+  slot.style.borderColor = isWinner ? 'rgba(240,165,0,0.4)' : 'rgba(139,148,158,0.2)';
   if (isWinner) slot.style.background = 'rgba(240,165,0,0.06)';
-  else if (isCompanion) slot.style.background = 'rgba(63,185,80,0.04)';
+  // No SHARES badge during reveal — companion picks only shown in winner section after full reveal
   const badge = isWinner
     ? '<span style="font-size:9px;font-weight:800;letter-spacing:1px;background:rgba(240,165,0,0.12);color:#f0a500;padding:2px 7px;border-radius:3px">REWARD</span>'
-    : isCompanion
-    ? '<span style="font-size:9px;font-weight:800;letter-spacing:1px;background:rgba(63,185,80,0.12);color:#3fb950;padding:2px 7px;border-radius:3px">SHARES</span>'
     : isLast
     ? '<span style="font-size:9px;font-weight:800;letter-spacing:1px;background:rgba(218,54,51,0.10);color:#f85149;padding:2px 7px;border-radius:3px">LAST</span>'
     : '';

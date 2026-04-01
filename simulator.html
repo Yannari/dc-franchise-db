@@ -23939,10 +23939,10 @@ if (typeof window !== 'undefined') {
       window.scvRevealNext(revealId);
     }
   };
-  window._fcState = {};
   window.fanCampaignAdvance = function(key, totalPhases) {
-    if (!window._fcState[key]) window._fcState[key] = 0;
-    const step = window._fcState[key];
+    const container = document.getElementById(key);
+    if (!container) return;
+    const step = parseInt(container.dataset.step) || 0;
     if (step >= totalPhases) return;
 
     const phaseIdx = Math.floor(step / 3);
@@ -23985,10 +23985,10 @@ if (typeof window !== 'undefined') {
       // Show jury reaction — auto-skip if no reaction for this finalist
       const el = document.getElementById(`${baseId}-jury`);
       if (el) { el.style.display = 'block'; setTimeout(() => el.style.opacity = '1', 50); }
-      else { window._fcState[key] = step + 1; fanCampaignAdvance(key, totalPhases); return; }
+      else { container.dataset.step = String(step + 1); fanCampaignAdvance(key, totalPhases); return; }
     }
 
-    window._fcState[key] = step + 1;
+    container.dataset.step = String(step + 1);
     const btn = document.getElementById(`${key}-btn`);
     if (btn) {
       if (step + 1 >= totalPhases) btn.textContent = 'BROADCAST COMPLETE';
@@ -24000,7 +24000,9 @@ if (typeof window !== 'undefined') {
     }
   };
   window.fanCampaignRevealAll = function(key, totalPhases) {
-    while ((window._fcState[key] || 0) < totalPhases) {
+    const container = document.getElementById(key);
+    if (!container) return;
+    while ((parseInt(container.dataset.step) || 0) < totalPhases) {
       fanCampaignAdvance(key, totalPhases);
     }
     // Undim everything
@@ -30450,7 +30452,7 @@ function rpBuildFanCampaign(ep) {
   const totalPhases = fc.phases.length * 3; // per finalist: spotlight, speech+pulse, jury reaction
   const jury = ep.gsSnapshot?.jury || gs.jury || [];
 
-  let html = `<div class="rp-page tod-golden" style="overflow:hidden">
+  let html = `<div class="rp-page tod-golden" style="overflow:hidden" id="${stateKey}" data-step="0" data-total="${totalPhases}">
     <div class="rp-eyebrow">Episode ${epNum} — Finale</div>
     <div style="text-align:center;margin-bottom:4px">
       <div style="font-size:10px;letter-spacing:3px;color:#e3b341;font-weight:700">LIVE FROM TRIBAL COUNCIL</div>

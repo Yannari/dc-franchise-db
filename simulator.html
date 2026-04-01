@@ -20667,13 +20667,13 @@ function simulateFinale() {
   if ((cfg.firemaking || cfg.finaleFormat === 'fire-making' || cfg.finaleFormat === 'koh-lanta') && cfg.finaleSize < 4) cfg.finaleSize = 4;
   const epNum = gs.episode + 1;
   const players = [...gs.activePlayers];
-  console.log(`[FINALE] firemaking=${cfg.firemaking}, finaleSize=${cfg.finaleSize}, players=${players.length} (${players.join(', ')}), finaleFormat=${cfg.finaleFormat}`);
 
   const ep = {
     num: epNum, isFinale: true, challengeType: 'individual',
     alliances: [], votingLog: [], votes: {},
     idolFinds: [], idolPlays: [], idolRehide: false,
     journey: null, twist: null, campEvents: {},
+    finaleEntrants: [...players], // snapshot of all players entering the finale (before any eliminations)
   };
 
   generateCampEvents(ep, 'both');
@@ -20690,7 +20690,6 @@ function simulateFinale() {
   let finalists = [...players];
 
   // ── FIRE-MAKING FINALE: forced F4 → decision → fire duel → F3 enters finaleFormat ──
-  console.log(`[FIREMAKING CHECK] cfg.firemaking=${cfg.firemaking}, players.length=${players.length}, should fire=${cfg.firemaking && players.length === 4}`);
   if (cfg.firemaking && players.length === 4) {
     const _fmImmWinner = ep.immunityWinner;
     const _fmOthers = players.filter(p => p !== _fmImmWinner);
@@ -20748,7 +20747,6 @@ function simulateFinale() {
       loserScore: Math.round(_fmScores[1].score * 10) / 10,
     };
     ep.firemaking = true;
-    console.log(`[FIREMAKING] Decision: ${_fmImmWinner} saved ${_fmSaved} (${_fmSavedReason}). Duel: ${_fmWinner} beat ${_fmLoser}. ep.firemakingDecision=${!!ep.firemakingDecision}, ep.firemakingResult=${!!ep.firemakingResult}`);
 
     // Eliminate the loser (4th place)
     handleAdvantageInheritance(_fmLoser, ep);
@@ -20783,11 +20781,91 @@ function simulateFinale() {
 
     const _orPlacements = _orScores.map(s => s.name);
     const _orEliminated = _orPlacements[3]; // last place
+    const _or1Pr = pronouns(_orPlacements[0]), _or2Pr = pronouns(_orPlacements[1]);
+    const _or3Pr = pronouns(_orPlacements[2]), _or4Pr = pronouns(_orEliminated);
+    const _or1S = pStats(_orPlacements[0]), _or2S = pStats(_orPlacements[1]);
+    const _or3S = pStats(_orPlacements[2]), _or4S = pStats(_orEliminated);
+    // Determine if any two players have a strong bond (might follow each other)
+    const _orBonds = [];
+    for (let i = 0; i < 4; i++) for (let j = i+1; j < 4; j++) _orBonds.push({ a: _orPlacements[i], b: _orPlacements[j], bond: getBond(_orPlacements[i], _orPlacements[j]) });
+    _orBonds.sort((a,b) => b.bond - a.bond);
+    const _orRival = _orBonds.find(b => b.bond <= -1);
+    const _orAlly = _orBonds.find(b => b.bond >= 2);
+    // The two slowest — locked in a race for last
+    const _orSlow1 = _orPlacements[2], _orSlow2 = _orPlacements[3];
+    const _s1Pr = pronouns(_orSlow1), _s2Pr = pronouns(_orSlow2);
+    const _s1S = pStats(_orSlow1), _s2S = pStats(_orSlow2);
+
     const _orStages = [
-      { type: 'start', text: `Four players. Four maps. Four compasses. One dagger each hidden in the jungle. First three back are safe. The host gives the signal — they scatter.` },
-      { type: 'horn1', player: _orPlacements[0], text: `A horn blasts through the jungle. ${_orPlacements[0]} bursts out of the treeline, dagger in hand. Safe. Three spots become two.` },
-      { type: 'horn2', player: _orPlacements[1], text: `The second horn. ${_orPlacements[1]} emerges — exhausted, muddy, but holding the dagger. Safe. One spot left. Two players still out there.` },
-      { type: 'horn3', player: _orPlacements[2], eliminated: _orEliminated, text: `Minutes pass. Then — the third horn. ${_orPlacements[2]} stumbles back to the starting point. Safe. The horn doesn't sound again. ${_orEliminated} walks out of the jungle empty-handed. It's over.` },
+      // 1. THE START
+      { type: 'start', text: _pick([
+        `Four players. Four maps. Four compasses. Somewhere in that jungle, four daggers are hidden — one for each of them. The first three to return with their dagger survive. The last one is eliminated on the spot. No tribal. No vote. No second chance. The host raises a hand — and drops it. They scatter.`,
+        `The host lays it out: four colored beacons are hidden in the jungle. Each one holds coordinates to a dagger. Find the beacon, decode the direction, retrieve the dagger. First three back are safe. The fourth goes home. ${_orPlacements.join(', ')} — all four take one last look at each other. Then they run.`,
+      ]) },
+      // 2. WAITING — nobody's come back yet
+      { type: 'waiting', text: _pick([
+        `Five minutes. Nothing. The clearing is empty. The jury watches the treeline. Somewhere in there, four people are fighting for their lives with a compass and a piece of paper. A bird screams. Nobody laughs.`,
+        `It's been seven minutes. No horn. No movement in the trees. Just the jungle sounds and the host standing at the finish line, waiting. The crew adjusts the cameras. The jury shifts in their seats. Everyone's thinking the same thing: who's lost out there?`,
+        `The minutes stretch. No sign of anyone. ${_orPlacements[0]} and ${_orPlacements[1]} went east. ${_orPlacements[2]} and ${_orEliminated} went west. The jungle has swallowed all four of them. The heat is brutal — the kind that melts your focus and makes the compass swim.`,
+      ]) },
+      // 3. JUNGLE CHAOS — what's happening in there
+      { type: 'jungle', text: (() => {
+        const _jTexts = [];
+        // Compass/navigation struggle
+        if (_or4S.mental <= 4) _jTexts.push(`Deep in the jungle, ${_orEliminated} is turning the map sideways, then upside down. ${_or4Pr.Sub} can't make the compass work — north keeps shifting, or maybe ${_or4Pr.sub} ${_or4Pr.sub==='they'?'are':'is'} the one shifting. ${_or4Pr.Sub} ${_or4Pr.sub==='they'?'pick':'picks'} a direction and ${_or4Pr.sub==='they'?'commit':'commits'}.`);
+        else _jTexts.push(`In the jungle, ${_orEliminated} is methodical — reading the map, checking the compass, recalibrating. But methodical takes time. And time is the one thing ${_or4Pr.sub} ${_or4Pr.sub==='they'?'don\'t':'doesn\'t'} have.`);
+        // Following / same path
+        if (_orAlly && ((_orAlly.a === _orSlow1 && _orAlly.b === _orSlow2) || (_orAlly.b === _orSlow1 && _orAlly.a === _orSlow2)))
+          _jTexts.push(`${_orSlow1} and ${_orSlow2} started heading the same direction — old habits from being allies. But there's only one dagger per beacon. At some point, one of them is going to realize they're wasting time following a friend.`);
+        else if (Math.random() < 0.5)
+          _jTexts.push(`${_orSlow2} doesn't know where to go. ${_s2Pr.Sub} ${_s2Pr.sub==='they'?'spot':'spots'} ${_orSlow1} through the trees and ${_s2Pr.sub==='they'?'start':'starts'} following — maybe ${_s1Pr.sub} ${_s1Pr.sub==='they'?'know':'knows'} something. ${_orSlow1} hasn't noticed yet.`);
+        else
+          _jTexts.push(`Somewhere in the east quadrant, two players nearly collide at the same beacon. They both grab for the coordinates — but there's only one set. One of them takes it and runs. The other has to find another beacon.`);
+        return _jTexts.join(' ');
+      })() },
+      // 4. FIRST HORN
+      { type: 'horn1', player: _orPlacements[0], text: _pick([
+        `Then — a horn blasts through the trees. ${_orPlacements[0]} breaks out of the undergrowth, dagger raised high. ${_or1S.mental >= 7 ? `${_or1Pr.Sub} read the map like it was second nature — beacon found, coordinates decoded, dagger recovered before the others even had a bearing.` : _or1S.physical >= 7 ? `Pure speed. ${_or1Pr.Sub} covered more ground than anyone and found ${_or1Pr.pos} beacon first.` : `${_or1Pr.Sub} got lucky — found the beacon early and never second-guessed the bearing.`} Safe. Three still out there.`,
+        `A horn rips through the silence. ${_orPlacements[0]} emerges at a dead sprint, dagger in hand. ${_or1Pr.Sub} ${_or1Pr.sub==='they'?'slam':'slams'} it into the pedestal. Safe. The three still in the jungle hear that horn — and the panic sets in.`,
+      ]) },
+      // 5. AFTER FIRST HORN — pressure building
+      { type: 'pressure1', text: _pick([
+        `${_orPlacements[0]} catches ${_or1Pr.pos} breath at the finish line, mud-streaked and winded. ${_or1Pr.Sub} ${_or1Pr.sub==='they'?'look':'looks'} back at the jungle. "Come on," ${_or1Pr.sub} ${_or1Pr.sub==='they'?'whisper':'whispers'}. Nobody knows who ${_or1Pr.sub}'s talking to.`,
+        `One spot filled. Two left. The horn echoes and fades. In the jungle, three people just heard the starting gun of a race they're losing. The calculations change — it's not about finding your dagger anymore. It's about not being the last one to find it.`,
+        `The waiting resumes. Longer this time. The heat isn't letting up. It's past noon and the jungle is an oven. Whatever stamina they had at the start is being cooked out of them step by step.`,
+      ]) },
+      // 6. SECOND HORN
+      { type: 'horn2', player: _orPlacements[1], text: _pick([
+        `The second horn. ${_orPlacements[1]} appears at the clearing's edge, legs shaking, mud-streaked, dagger in hand. ${_or2S.intuition >= 7 ? `${_or2Pr.Sub} found the beacon early but got turned around — instinct got ${_or2Pr.obj} back on track.` : `It wasn't pretty — wrong turns, retracing steps — but the dagger is in ${_or2Pr.pos} hand.`} Safe. One spot left. ${_orPlacements[2]} and ${_orEliminated} — one of them is going home.`,
+        `The second horn echoes. ${_orPlacements[1]} staggers back, holding the dagger like a lifeline. ${_or2Pr.Sub} ${_or2Pr.sub==='they'?'collapse':'collapses'} at the finish. One dagger remains. Two players are fighting for it somewhere in that jungle.`,
+      ]) },
+      // 7. THE RACE FOR LAST — extended suspense
+      { type: 'raceForLast', text: (() => {
+        const _rl = [];
+        _rl.push(`${_orSlow1} and ${_orSlow2}. One of them will survive. One of them won't. The clearing is silent.`);
+        // Time passage
+        _rl.push(_pick([
+          `Twenty minutes pass. Then twenty-five. The shadows are getting longer. ${_orPlacements[0]} and ${_orPlacements[1]} sit at the finish line, watching the treeline, saying nothing.`,
+          `It's been over half an hour. The jungle is brutally quiet. Every snap of a branch in the distance makes the jury turn their heads. Nothing. Nothing. Nothing.`,
+          `The waiting is unbearable. It's so hot that the air itself seems to shimmer above the clearing. The crew starts exchanging looks. How long can this go on?`,
+        ]));
+        // What the two are doing
+        if (_s1S.physical >= 7 && _s2S.physical < 5)
+          _rl.push(`${_orSlow1} is covering ground fast but reading the map wrong. ${_orSlow2} is reading the map right but can barely run. It's a race between legs and brains.`);
+        else if (_orRival && ((_orRival.a === _orSlow1 && _orRival.b === _orSlow2) || (_orRival.b === _orSlow1 && _orRival.a === _orSlow2)))
+          _rl.push(`Somewhere in the trees, ${_orSlow1} and ${_orSlow2} cross paths. They lock eyes. There's nothing to say — they've been rivals all season. Now one of them ends the other's game. They split in opposite directions.`);
+        else
+          _rl.push(_pick([
+            `${_orSlow2} can hear ${_orSlow1} crashing through the undergrowth nearby. ${_s2Pr.Sub} doesn't know if that means ${_orSlow1} is close to the dagger or just as lost as ${_s2Pr.sub} ${_s2Pr.sub==='they'?'are':'is'}.`,
+            `${_orSlow1} finds a beacon — wrong color. It's not ${_s1Pr.pos}. ${_s1Pr.Sub} ${_s1Pr.sub==='they'?'slam':'slams'} a fist against a tree and ${_s1Pr.sub==='they'?'keep':'keeps'} moving. Every wrong turn feels like a death sentence.`,
+          ]));
+        return _rl.join(' ');
+      })() },
+      // 8. THIRD HORN + ELIMINATION
+      { type: 'horn3', player: _orPlacements[2], eliminated: _orEliminated, text: _pick([
+        `Then — movement in the treeline. ${_orPlacements[2]} stumbles into the clearing, barely standing, dagger in hand. The third horn sounds. Safe. The other three watch the jungle. Minutes pass. Finally, ${_orEliminated} appears — slow, empty-handed. ${_or4S.temperament >= 7 ? `${_or4Pr.Sub} ${_or4Pr.sub==='they'?'take':'takes'} a breath, ${_or4Pr.sub==='they'?'nod':'nods'}, and ${_or4Pr.sub==='they'?'accept':'accepts'} it.` : `The look on ${_or4Pr.pos} face says everything.`} It's over.`,
+        `The third horn. ${_orPlacements[2]} crashes through the trees holding a dagger. Safe. Then the wait. The long, awful wait. When ${_orEliminated} finally emerges — no dagger — ${_or4Pr.sub} ${_or4Pr.sub==='they'?'don\'t':'doesn\'t'} need to be told. ${_or4S.social >= 7 ? `${_or4Pr.Sub} ${_or4Pr.sub==='they'?'hug':'hugs'} each of the remaining three before walking away.` : `${_or4Pr.Sub} ${_or4Pr.sub==='they'?'stand':'stands'} there for a moment. Then ${_or4Pr.sub} ${_or4Pr.sub==='they'?'turn':'turns'} and ${_or4Pr.sub==='they'?'walk':'walks'} away.`}`,
+      ]) },
     ];
 
     ep.klOrienteering = { placements: _orPlacements, eliminated: _orEliminated, scores: Object.fromEntries(_orScores.map(s => [s.name, Math.round(s.score * 10) / 10])), stages: _orStages };
@@ -20827,39 +20905,84 @@ function simulateFinale() {
       let phaseText;
       if (phase === 0) {
         phaseText = _pick([
-          `The three finalists step onto their perches. Platform: ${_phasePlatforms[0]}. The jungle goes quiet. Nobody moves. The challenge begins.`,
-          `${remaining.join(', ')} take their positions. The host reminds them: last one standing wins. The perch is wide enough — for now.`,
+          `The three finalists step onto their perches. Platform: ${_phasePlatforms[0]}. Wide enough to stand comfortably — but that won't last. The host explains: every few minutes, they'll each pull a cord that removes a peg from beneath their platform. The surface shrinks. Last one standing wins immunity and gets to choose who sits next to them at Final Tribal Council. The jungle goes quiet. Nobody moves. The challenge begins.`,
+          `${remaining.join(', ')} take their positions on the wooden perches. ${_phasePlatforms[0]}. The host reminds them what's at stake: the person who outlasts the other two doesn't just win immunity — they choose their opponent at FTC. This isn't just about endurance. It's about who gets to decide the entire outcome of this game. The first minutes pass in silence. Everyone is steady. For now.`,
+          `Three perches. Three players. One winner. The platforms are ${_phasePlatforms[0]} — generous, but temporary. The mechanism is simple: pull the cord, lose a peg, lose surface. The challenge is patience. The stakes are everything. ${remaining[0]} closes ${pronouns(remaining[0]).pos} eyes. ${remaining[1]} stares straight ahead. ${remaining[2]} looks down at the platform beneath ${pronouns(remaining[2]).pos} feet — measuring it, memorizing it. They all know it's about to get smaller.`,
         ]);
       } else if (phase === 3 && remaining.length === 2) {
         // Final showdown
         const [a, b] = remaining;
         const winner = _perchCumulative[a] > _perchCumulative[b] ? a : b;
         const loser = winner === a ? b : a;
+        const _wPrF = pronouns(winner), _lPrF = pronouns(loser);
+        const _wSF = pStats(winner), _lSF = pStats(loser);
         _perchDropOrder.push(loser);
         phaseText = _pick([
-          `Platform: ${_phasePlatforms[3]}. ${a} and ${b}. One foot each. Neither speaks. The wind picks up. ${loser}'s knee buckles — tries to correct — overcorrects. Falls. ${winner} doesn't move. Doesn't celebrate. Just stands there. It's over.`,
-          `The final stage. ${_phasePlatforms[3]}. Nothing left to hold. ${a} and ${b} are shaking. Minutes feel like hours. Then ${loser}'s balance shifts — a fraction too far. ${pronouns(loser).Sub} ${pronouns(loser).sub==='they'?'reach':'reaches'} for the perch — too late. ${winner} is the last one standing.`,
+          `Platform: ${_phasePlatforms[3]}. One foot each. ${a} and ${b} are both shaking — calves burning, ankles screaming. Neither speaks. The jury watches from the bench. The wind picks up. A bird screams somewhere above them. Five minutes. Ten. Then ${loser}'s knee buckles — ${_lPrF.sub} ${_lPrF.sub==='they'?'try':'tries'} to correct — overcorrects. ${_lPrF.Sub} ${_lPrF.sub==='they'?'grab':'grabs'} at air. Falls. ${winner} doesn't move. Doesn't celebrate. Just stands there — one foot on a 10-centimeter platform, the last person standing. It's over.`,
+          `The final stage. ${_phasePlatforms[3]}. Nothing left to hold. The platform is barely bigger than a hand. ${a} and ${b} are trembling — not from cold, but from the muscle fatigue that comes after standing still for this long. The jury is on the edge of their seats. Minutes feel like hours. ${_wSF.endurance >= 7 ? `${winner}'s breathing is slow, controlled — ${_wPrF.sub} ${_wPrF.sub==='they'?'have':'has'} been training for this ${_wPrF.pos} whole life.` : `${winner} is hurting — but ${_wPrF.sub} ${_wPrF.sub==='they'?'refuse':'refuses'} to show it.`} Then ${loser}'s balance shifts — a fraction too far. ${_lPrF.Sub} ${_lPrF.sub==='they'?'reach':'reaches'} for the perch — too late. ${winner} is the last one standing. The jury erupts.`,
+          `${_phasePlatforms[3]}. One foot. No room for error. ${a} and ${b} have been up here for what feels like an eternity. ${_lSF.temperament >= 7 ? `${loser} has been remarkably composed — until now. The tremor starts in ${_lPrF.pos} ankle and works upward.` : `${loser} has been fighting ${_lPrF.pos} body for the last ten minutes — and the body is winning.`} The wind gusts. ${loser} sways. Catches it. Sways again. This time there's nothing left to catch. ${_lPrF.Sub} steps off the perch. ${winner} exhales for what might be the first time in twenty minutes. The host calls it: ${winner} wins the Perch.`,
         ]);
       } else if (drops) {
         _perchDropOrder.push(weakest);
         const _wPr = pronouns(weakest);
+        const _wS = pStats(weakest);
+        const _remainStr = remaining.filter(p => p !== weakest).join(' and ');
         phaseText = _pick([
-          `Platform reduced to ${_phasePlatforms[phase]}. ${weakest} pulls the cord. The platform shrinks. ${_wPr.Sub} ${_wPr.sub==='they'?'adjust':'adjusts'} — but ${_wPr.posAdj} weight shifts. A wobble. A grab. Then — ${_wPr.sub} ${_wPr.sub==='they'?'fall':'falls'}. ${remaining.filter(p => p !== weakest).join(' and ')} remain.`,
-          `${_phasePlatforms[phase]} now. ${weakest} was solid until the cord pull. The new surface is too small. ${_wPr.Sub} ${_wPr.sub==='they'?'fight':'fights'} it for twenty seconds — legs shaking, arms out — but physics wins. Down. ${remaining.filter(p => p !== weakest).join(' and ')} are still up.`,
+          `Platform reduced to ${_phasePlatforms[phase]}. ${weakest} pulls the cord. The peg drops. The platform shrinks beneath ${_wPr.pos} feet. ${_wPr.Sub} ${_wPr.sub==='they'?'adjust':'adjusts'} — shifts weight to the center — but the new surface is merciless. A wobble. ${_wPr.Sub} ${_wPr.sub==='they'?'fight':'fights'} it. Arms out. Legs shaking. For a moment it looks like ${_wPr.sub} might hold. Then — ${_wPr.sub} ${_wPr.sub==='they'?'fall':'falls'}. The sound of feet hitting sand. ${_remainStr} remain. Neither of them looked down.`,
+          `${_phasePlatforms[phase]} now. ${weakest} was solid on the last surface. But the cord pull changes everything — the platform shrinks and suddenly ${_wS.physical >= 7 ? `${_wPr.pos} strength becomes a liability. Too much weight, too little surface.` : `the math doesn't work. ${_wPr.Sub} ${_wPr.sub==='they'?'don\'t':'doesn\'t'} have the frame for this.`} ${_wPr.Sub} ${_wPr.sub==='they'?'fight':'fights'} it for twenty agonizing seconds — legs shaking, arms out, jaw clenched — but physics wins. Down. ${_remainStr} ${remaining.filter(p => p !== weakest).length > 1 ? 'are' : 'is'} still up. The challenge continues.`,
+          `The cord pulls. ${_phasePlatforms[phase]}. ${weakest} recalibrates — feet together, center of gravity low — but the surface betrays ${_wPr.obj}. ${_wPr.Sub} ${_wPr.sub==='they'?'start':'starts'} to lean, ${_wPr.sub==='they'?'overcorrect':'overcorrects'}, and for one long second the outcome hangs in the air. Then gravity decides. ${weakest} is down. ${_wPr.Sub} ${_wS.temperament >= 6 ? `${_wPr.sub==='they'?'take':'takes'} it in stride — ${_wPr.sub==='they'?'nod':'nods'} to the others as ${_wPr.sub} ${_wPr.sub==='they'?'step':'steps'} off.` : `${_wPr.sub==='they'?'slam':'slams'} a fist against the post. ${_wPr.Sub} ${_wPr.sub==='they'?'know':'knows'} what this means.`} ${_remainStr} stand alone.`,
         ]);
       } else {
+        const _wkPr = pronouns(weakest);
         phaseText = _pick([
-          `Platform reduced to ${_phasePlatforms[phase]}. All ${remaining.length} pull their cords. The platform shrinks. Everyone adjusts. ${weakest} wobbles — but holds. Not yet.`,
-          `${_phasePlatforms[phase]}. The surface is smaller. ${remaining.join(', ')} recalibrate. Feet closer together. Arms out. Nobody falls — but ${weakest} is working harder than the others.`,
+          `Platform reduced to ${_phasePlatforms[phase]}. All ${remaining.length} pull their cords simultaneously. The platform shrinks. For a moment, everyone freezes — recalibrating, finding their center. ${weakest} wobbles — a sharp intake of breath from the jury — but ${_wkPr.sub} ${_wkPr.sub==='they'?'hold':'holds'}. Not yet. The challenge continues. But the cracks are showing.`,
+          `${_phasePlatforms[phase]}. The surface is visibly smaller. ${remaining.join(', ')} recalibrate — feet closer together, arms out for balance. ${weakest} is working harder than the others — shifting weight more often, breathing faster. But ${_wkPr.sub} ${_wkPr.sub==='they'?'refuse':'refuses'} to fall. The jury leans forward. Everyone can feel it — someone is about to go. But not this round.`,
+          `The pegs drop. ${_phasePlatforms[phase]}. Less room. More pressure. ${remaining.join(' and ')} all adjust. ${weakest} is the first to wobble — catches it with an arm swing that draws a gasp from the watching players — but ${_wkPr.sub} ${_wkPr.sub==='they'?'stay':'stays'} up. Barely. The host says nothing. The jungle says nothing. The challenge stretches on.`,
         ]);
       }
 
       _perchPhases.push({ phase, platform: _phasePlatforms[phase], text: phaseText, dropped: drops ? weakest : null, remaining: [...remaining] });
+
+      // Add interlude beats between phases (time passing, heat, pain, faces, jury)
+      const _intRemaining = _perchPlayers.filter(p => !_perchDropOrder.includes(p));
+      if (_intRemaining.length >= 2 && phase < 3) {
+        const _intWeak = _intRemaining.reduce((w, p) => _perchCumulative[p] < _perchCumulative[w] ? p : w, _intRemaining[0]);
+        const _intStrong = _intRemaining.reduce((s, p) => _perchCumulative[p] > _perchCumulative[s] ? p : s, _intRemaining[0]);
+        const _iwPr = pronouns(_intWeak), _isPr = pronouns(_intStrong);
+        const _iwS = pStats(_intWeak), _isS = pStats(_intStrong);
+        const _timeMarks = ['It\'s been forty-five minutes.', 'Over an hour now.', 'An hour and a half. Nobody expected this.', 'Two hours in.', 'It\'s been three hours. Nobody has moved.'];
+        const _intTexts = [];
+        // Time + conditions
+        _intTexts.push(_pick([
+          `${_timeMarks[Math.min(phase, _timeMarks.length - 1)]} The sun has shifted. The shadows have moved. The perches haven't.`,
+          `${_timeMarks[Math.min(phase, _timeMarks.length - 1)]} The heat is relentless. Sweat rolls down every face. The wooden perch is slick now.`,
+          `${_timeMarks[Math.min(phase, _timeMarks.length - 1)]} The jungle sounds have changed — the afternoon insects have taken over. Nobody on the perches notices. They're somewhere else entirely.`,
+        ]));
+        // Body language / pain
+        _intTexts.push(_pick([
+          `${_intWeak} can't feel ${_iwPr.pos} legs anymore. ${_iwPr.Sub} ${_iwPr.sub==='they'?'shift':'shifts'} weight from one foot to the other — each transfer a risk. The muscles have gone from burning to numb. ${_iwPr.Sub} ${_iwPr.sub==='they'?'don\'t':'doesn\'t'} know which is worse.`,
+          `${_intStrong} hasn't moved in ten minutes. Eyes closed. Breathing slow. ${_isS.temperament >= 7 ? `${_isPr.Sub} ${_isPr.sub==='they'?'look':'looks'} almost meditative — like ${_isPr.sub} could stand here forever.` : `It's not calm — it's concentration so intense that everything else has disappeared.`}`,
+          `${_intWeak}'s face is telling a story. The jaw is clenched. The eyes are wet — not crying, just the strain. ${_iwS.boldness >= 7 ? `${_iwPr.Sub} ${_iwPr.sub==='they'?'catch':'catches'} ${_intStrong}'s eye and ${_iwPr.sub==='they'?'grin':'grins'}. It's not real — it's defiance.` : `${_iwPr.Sub} ${_iwPr.sub==='they'?'stare':'stares'} straight ahead. Don't look down. Don't think about falling.`}`,
+          `A cramp shoots through ${_intWeak}'s calf. ${_iwPr.Sub} ${_iwPr.sub==='they'?'flinch':'flinches'} — for one terrible second ${_iwPr.pos} balance wavers — then ${_iwPr.sub} ${_iwPr.sub==='they'?'steady':'steadies'}. The jury exhales. ${_intStrong} doesn't react. ${_isPr.Sub} heard it. ${_isPr.Sub} felt it. But ${_isPr.sub} ${_isPr.sub==='they'?'don\'t':'doesn\'t'} give ${_intWeak} the satisfaction.`,
+        ]));
+        // Opponent's face / jury
+        if (phase >= 1) _intTexts.push(_pick([
+          `The face of ${_intStrong} — steady, composed, almost bored — is the worst thing ${_intWeak} can see right now. It makes ${_iwPr.obj} want to hold on longer just to wipe that look off.`,
+          `On the jury bench, someone whispers. ${_intWeak} can't hear what — but ${_iwPr.sub} ${_iwPr.sub==='they'?'see':'sees'} them looking. Are they impressed or are they already writing ${_iwPr.obj} off?`,
+          `${_intStrong} opens ${_isPr.pos} eyes for the first time in minutes. ${_isPr.Sub} ${_isPr.sub==='they'?'look':'looks'} at ${_intWeak}. Not challenging. Not pitying. Just… acknowledging. We're both still here.`,
+        ]));
+        _perchPhases.push({ phase: phase + 0.5, platform: '', text: _intTexts.join(' '), dropped: null, remaining: [..._intRemaining], isInterlude: true });
+      }
     }
 
     const _perchWinner = _perchPlayers.filter(p => !_perchDropOrder.includes(p))[0];
     ep.immunityWinner = _perchWinner; // override immunity from the orienteering challenge
     ep.klPerch = { phases: _perchPhases, dropOrder: _perchDropOrder, winner: _perchWinner, scores: { ..._perchCumulative } };
+
+    // Perch victory = resume-worthy moment: jury respects the iconic endurance win
+    gs.playerStates[_perchWinner] = gs.playerStates[_perchWinner] || { emotional: 'content', votesReceived: 0, lastVotedEp: null, bigMoves: 0 };
+    gs.playerStates[_perchWinner].bigMoves = (gs.playerStates[_perchWinner].bigMoves || 0) + 1;
+    gs.playerStates[_perchWinner].perchWinner = true; // tracked for jury bonus
 
     // ── STEP 3: THE CHOICE (winner picks F2 opponent) ──
     const _choiceOthers = _perchPlayers.filter(p => p !== _perchWinner);
@@ -20896,13 +21019,29 @@ function simulateFinale() {
     ep.finaleFinalists = finalists;
     ep.eliminated = _choiceEliminated; // last eliminated for history
 
-    // Bond consequences
-    addBond(_perchWinner, _choiceChosen, 2.0);
-    addBond(_perchWinner, _choiceEliminated, -1.0);
+    // Bond consequences — scale by betrayal severity
+    const _choiceBondWithElim = getBond(_perchWinner, _choiceEliminated);
+    const _choiceBondWithChosen = getBond(_perchWinner, _choiceChosen);
+    addBond(_perchWinner, _choiceChosen, 2.0); // choosing someone = trust gesture
+    if (_choiceBondWithElim >= 2) {
+      // Cutting an ally = betrayal. The stronger the bond, the deeper the wound.
+      // Bond ≥ 2 → -3.0 to -5.0, scaled by how close they were
+      const _betrayalDamage = -(3.0 + Math.min(2.0, (_choiceBondWithElim - 2) * 0.5));
+      addBond(_perchWinner, _choiceEliminated, _betrayalDamage);
+      ep.klChoice.betrayal = true;
+      ep.klChoice.preBond = _choiceBondWithElim;
+    } else {
+      // Not close — mild resentment
+      addBond(_perchWinner, _choiceEliminated, -1.0);
+    }
+    // If winner picked someone they DON'T like over an ally, the chosen player gets a bond boost too (gratitude)
+    if (_choiceBondWithChosen <= 0 && _choiceBondWithElim >= 2) {
+      addBond(_choiceChosen, _perchWinner, 1.5); // unexpected save = gratitude
+    }
   }
 
   // If finaleSize === 2 and 3 remain: decide who sits with immunity winner (jury formats only — final-challenge runs all players)
-  if (!ep.firemaking && cfg.finaleSize === 2 && players.length === 3 && cfg.finaleFormat !== 'final-challenge') {
+  if (!ep.firemaking && !ep.klChoice && cfg.finaleSize === 2 && players.length === 3 && cfg.finaleFormat !== 'final-challenge' && cfg.finaleFormat !== 'koh-lanta') {
     const others = players.filter(p => p !== ep.immunityWinner);
     let brought, cut;
     if (cfg.finaleFormat === 'jury-cut') {
@@ -20950,7 +21089,7 @@ function simulateFinale() {
   }
 
   // If finaleSize === 4: immunity winner cuts 1, top 3 go to FTC
-  if (!ep.firemaking && cfg.finaleSize === 4 && players.length === 4 && cfg.finaleFormat !== 'final-challenge') {
+  if (!ep.firemaking && !ep.klChoice && cfg.finaleSize === 4 && players.length === 4 && cfg.finaleFormat !== 'final-challenge' && cfg.finaleFormat !== 'koh-lanta') {
     const others4 = players.filter(p => p !== ep.immunityWinner);
     // Smart decision: project jury votes for each possible F3 trio
     const immWinner4 = ep.immunityWinner;
@@ -21113,6 +21252,8 @@ function simulateFinale() {
     klOrienteering: ep.klOrienteering || null,
     klPerch: ep.klPerch || null,
     klChoice: ep.klChoice || null,
+    // All players who entered the finale (before fire-making/koh-lanta eliminations)
+    finaleEntrants: ep.finaleEntrants || null,
   });
 
   saveGameState();
@@ -21295,7 +21436,9 @@ function simulateJuryVote(finalists) {
       const _heroBonus = _fArch === 'hero' ? 2.0 : 0; // jury loves heroes
       // Villain polarization: jurors with positive bond = respect, negative bond = extra bitter
       const _villainMod = _fArch === 'villain' ? (bond >= 1 ? 1.5 : bond <= -1 ? -2.0 : 0) : 0;
-      const personal = bond * 1.5 + _loyaltyHonor + _resumeBonus + _heroBonus + _villainMod;
+      // Perch victory bonus: winning the iconic endurance finale earns jury respect (proportional to juror's physical/endurance appreciation)
+      const _perchBonus = gs.playerStates?.[f]?.perchWinner ? 0.4 + jS.physical * 0.05 : 0;
+      const personal = bond * 1.5 + _loyaltyHonor + _resumeBonus + _heroBonus + _villainMod + _perchBonus;
       // Bitterness/gratitude: was this finalist the one who voted me out?
       const history = gs.jurorHistory?.[juror];
       let bitterness = 0;
@@ -21398,7 +21541,9 @@ function projectJuryVotes(finalistSet) {
       const _fArch = players.find(p => p.name === f)?.archetype || '';
       const _heroBonus = _fArch === 'hero' ? 2.0 : 0;
       const _villainMod = _fArch === 'villain' ? (bond >= 1 ? 1.5 : bond <= -1 ? -2.0 : 0) : 0;
-      const personal = bond * 1.5 + _loyaltyHonor + _resumeBonus + _heroBonus + _villainMod;
+      // Perch victory bonus (koh-lanta): jurors respect iconic endurance win (proportional to juror's physical appreciation)
+      const _perchBonus = gs.playerStates?.[f]?.perchWinner ? 0.4 + jS.physical * 0.05 : 0;
+      const personal = bond * 1.5 + _loyaltyHonor + _resumeBonus + _heroBonus + _villainMod + _perchBonus;
       const history = gs.jurorHistory?.[juror];
       let bitterness = 0;
       if (history) {
@@ -28427,8 +28572,8 @@ function rpBuildVotes2(ep) {
 // ── Finale Camp Life: finalists reminisce, reflect on the season ──
 function rpBuildFinaleCampLife(ep) {
   // Show ALL players who entered the finale (before fire-making/koh-lanta eliminations)
-  // gsSnapshot captures the state at episode start, before any eliminations happen
-  const finalists = ep.gsSnapshot?.activePlayers || ep.finaleFinalists || gs.activePlayers;
+  // finaleEntrants is snapshotted at the very start of simulateFinale, before any cuts
+  const finalists = ep.finaleEntrants || ep.gsSnapshot?.activePlayers || ep.finaleFinalists || gs.activePlayers;
   if (!finalists.length) return null;
   const epNum = ep.num;
 
@@ -28582,34 +28727,78 @@ function rpBuildFinaleChallenge(ep) {
 function rpBuildKLOrienteering(ep) {
   if (!ep.klOrienteering) return '';
   const o = ep.klOrienteering;
-  const _eq = vpGenerateQuote(o.eliminated, ep, 'eliminated');
-  const _place = (gs.episodeHistory || []).filter(h => h.eliminated).length + 1;
+  // Orienteering-specific exit quote — lost in the jungle, not voted out
+  const _eS = pStats(o.eliminated);
+  const _ePr = pronouns(o.eliminated);
+  const _eqPick = arr => arr[([...o.eliminated].reduce((a,c)=>a+c.charCodeAt(0),0)+(ep.num||0)*3)%arr.length];
+  const _eqPool = [];
+  if (_eS.mental >= 7) _eqPool.push(`I knew how to read the map. I just read it too slowly. One wrong turn and the game was over. That's the cruelest way to go — not outplayed, just… lost.`);
+  else if (_eS.physical >= 7) _eqPool.push(`I'm the fastest one out here. Speed doesn't matter when you're running the wrong direction. The jungle won. Not them.`);
+  else if (_eS.strategic >= 7) _eqPool.push(`I controlled votes. I built alliances. I outplayed everyone. And I went home because I couldn't read a compass. There's no strategy for that.`);
+  if (_eS.temperament >= 7) _eqPool.push(`I walked out of that jungle knowing it was over. No vote. No tribal. Just the jungle deciding I wasn't fast enough. I can accept that.`);
+  else if (_eS.temperament <= 3) _eqPool.push(`No tribal. No chance to fight. No chance to plead my case. I just walked out of the jungle and my torch was gone. That's not how I wanted to go.`);
+  _eqPool.push(`I survived every vote. Every blindside. Every twist. And I went home because I got lost. The jungle doesn't care about your game.`);
+  _eqPool.push(`I was so close. I could hear the others coming back. I just couldn't find it in time. That's going to stay with me.`);
+  _eqPool.push(`No one voted me out. No one outplayed me at tribal. I lost to a map and a compass. That's the hardest thing to accept.`);
+  const _eq = _eqPick(_eqPool);
 
   let html = `<div class="rp-page tod-arena" style="background:radial-gradient(ellipse at 50% 30%, rgba(63,185,80,0.06) 0%, transparent 50%)">
     <div class="rp-eyebrow">Episode ${ep.num} — Finale</div>
     <div style="font-family:var(--font-display);font-size:28px;letter-spacing:2px;text-align:center;margin-bottom:4px;text-transform:uppercase;color:#3fb950">The Orienteering Race</div>
-    <div style="font-size:12px;color:#8b949e;text-align:center;margin-bottom:20px">Four maps. Four compasses. Three daggers. Find yours or go home.</div>
+    <div style="font-size:12px;color:#8b949e;text-align:center;margin-bottom:8px">Four maps. Four compasses. Three daggers. Find yours or go home.</div>
+    <div style="font-size:11px;color:#484f58;text-align:center;margin-bottom:20px;max-width:480px;margin-left:auto;margin-right:auto;line-height:1.5">
+      Each player is given a map and compass. Somewhere in the jungle, colored beacons mark coordinates to hidden daggers. Decode the beacon, follow the bearing, find the dagger. The first three to return are safe. The last player is eliminated immediately — no vote, no tribal council.
+    </div>
 
     <div style="display:flex;justify-content:center;gap:16px;margin-bottom:24px;flex-wrap:wrap">
-      ${o.placements.map((p, i) => `<div style="text-align:center;opacity:${i === 3 ? '0.5' : '1'}">
-        ${rpPortrait(p, i === 3 ? 'lg elim' : 'lg')}
+      ${o.placements.map(p => `<div style="text-align:center">
+        ${rpPortrait(p, 'lg')}
         <div style="font-size:12px;font-weight:700;color:#e6edf3;margin-top:4px">${p}</div>
+        <div style="font-size:10px;color:#8b949e">${vpArchLabel(p)}</div>
       </div>`).join('')}
     </div>`;
 
   // Staged narrative
   o.stages.forEach(stage => {
-    const borderColor = stage.type === 'start' ? 'rgba(63,185,80,0.3)' : stage.eliminated ? 'rgba(248,81,73,0.3)' : 'rgba(63,185,80,0.4)';
-    const label = stage.type === 'start' ? 'THE RACE BEGINS' : stage.type === 'horn1' ? '🔔 FIRST HORN' : stage.type === 'horn2' ? '🔔 SECOND HORN' : '🔔 THIRD HORN';
-    html += `<div style="padding:12px 16px;background:rgba(0,0,0,0.2);border-left:3px solid ${borderColor};margin-bottom:10px;border-radius:0 8px 8px 0">
-      <div style="font-size:9px;font-weight:800;letter-spacing:2px;color:${stage.eliminated ? '#f85149' : '#3fb950'};margin-bottom:4px">${label}</div>
-      <div style="font-size:12px;color:#cdd9e5;line-height:1.6">${stage.text}</div>
+    const _stageLabels = {
+      start: '🗺️ THE RACE BEGINS',
+      waiting: '⏳ SILENCE',
+      jungle: '🌿 IN THE JUNGLE',
+      horn1: '🔔 FIRST HORN',
+      pressure1: '⏳ THE WAIT RESUMES',
+      horn2: '🔔 SECOND HORN',
+      raceForLast: '⚡ RACE FOR LAST',
+      horn3: '🔔 THIRD HORN',
+    };
+    const _stageColors = {
+      start: 'rgba(63,185,80,0.3)',
+      waiting: 'rgba(139,148,158,0.3)',
+      jungle: 'rgba(139,148,158,0.3)',
+      horn1: 'rgba(63,185,80,0.4)',
+      pressure1: 'rgba(227,179,65,0.3)',
+      horn2: 'rgba(63,185,80,0.4)',
+      raceForLast: 'rgba(248,81,73,0.3)',
+      horn3: stage.eliminated ? 'rgba(248,81,73,0.4)' : 'rgba(63,185,80,0.4)',
+    };
+    const _labelColors = {
+      start: '#3fb950', waiting: '#8b949e', jungle: '#8b949e',
+      horn1: '#3fb950', pressure1: '#e3b341', horn2: '#3fb950',
+      raceForLast: '#f85149', horn3: stage.eliminated ? '#f85149' : '#3fb950',
+    };
+    const borderColor = _stageColors[stage.type] || 'rgba(63,185,80,0.3)';
+    const label = _stageLabels[stage.type] || stage.type.toUpperCase();
+    const labelColor = _labelColors[stage.type] || '#3fb950';
+    const icon = stage.player ? `<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">${rpPortrait(stage.player, 'sm')}${stage.eliminated ? rpPortrait(stage.eliminated, 'sm elim') : ''}</div>` : '';
+    html += `<div style="padding:14px 18px;background:rgba(0,0,0,0.25);border-left:3px solid ${borderColor};margin-bottom:12px;border-radius:0 8px 8px 0">
+      <div style="font-size:9px;font-weight:800;letter-spacing:2px;color:${labelColor};margin-bottom:6px">${label}</div>
+      ${icon}
+      <div style="font-size:12.5px;color:#cdd9e5;line-height:1.7">${stage.text}</div>
     </div>`;
   });
 
   // Elimination card
   html += `<div class="rp-elim" style="margin-top:16px">
-    <div class="rp-elim-eyebrow">${ordinal(_place)} player eliminated — Orienteering</div>
+    <div class="rp-elim-eyebrow">4th Place — Orienteering Race</div>
     ${rpPortrait(o.eliminated, 'xl elim')}
     <div class="rp-elim-name">${o.eliminated}</div>
     <div class="rp-elim-arch">${vpArchLabel(o.eliminated)}</div>
@@ -28623,36 +28812,134 @@ function rpBuildKLOrienteering(ep) {
 function rpBuildKLPerch(ep) {
   if (!ep.klPerch) return '';
   const p = ep.klPerch;
+  const _allPlayers = p.phases[0]?.remaining || [];
+  const _wPr = pronouns(p.winner);
 
   let html = `<div class="rp-page tod-arena" style="background:radial-gradient(ellipse at 50% 80%, rgba(227,179,65,0.06) 0%, transparent 50%)">
     <div class="rp-eyebrow">Episode ${ep.num} — Finale</div>
     <div style="font-family:var(--font-display);font-size:28px;letter-spacing:2px;text-align:center;margin-bottom:4px;text-transform:uppercase;color:#e3b341">The Perch</div>
-    <div style="font-size:12px;color:#8b949e;text-align:center;margin-bottom:20px">Stand on the perch. Don't fall. Last one standing chooses who sits next to them at Final Tribal.</div>`;
+    <div style="font-size:12px;color:#8b949e;text-align:center;margin-bottom:8px">Stand on the perch. Don't fall. Last one standing chooses who sits next to them at Final Tribal.</div>
+    <div style="font-size:11px;color:#484f58;text-align:center;margin-bottom:20px;max-width:480px;margin-left:auto;margin-right:auto;line-height:1.5">
+      Three wooden perches. Each player stands on a platform supported by removable pegs. Every few minutes, each player pulls a cord to remove a peg — shrinking their platform. The surface goes from full-size to barely a handprint. Last one standing wins final immunity and the power to choose their opponent at FTC.
+    </div>
+
+    <div style="display:flex;justify-content:center;gap:20px;margin-bottom:24px;flex-wrap:wrap">
+      ${_allPlayers.map(pl => `<div style="text-align:center">
+          ${rpPortrait(pl, 'lg')}
+          <div style="font-size:12px;font-weight:700;color:#e6edf3;margin-top:4px">${pl}</div>
+          <div style="font-size:10px;color:#8b949e">${vpArchLabel(pl)}</div>
+        </div>`).join('')}
+    </div>`;
 
   // Phase-by-phase narrative
+  const _phaseIcons = ['🟢', '🟡', '🟠', '🔴'];
   p.phases.forEach(phase => {
     const hasDropped = !!phase.dropped;
-    const borderColor = hasDropped ? 'rgba(248,81,73,0.4)' : 'rgba(227,179,65,0.3)';
-    const label = phase.phase === 0 ? 'FULL PLATFORM' : phase.phase === 1 ? 'FIRST PEG REMOVED' : phase.phase === 2 ? 'SECOND PEG REMOVED' : 'FINAL STAGE';
-    html += `<div style="padding:12px 16px;background:rgba(0,0,0,0.2);border-left:3px solid ${borderColor};margin-bottom:10px;border-radius:0 8px 8px 0">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-        <span style="font-size:9px;font-weight:800;letter-spacing:2px;color:${hasDropped ? '#f85149' : '#e3b341'}">${label}</span>
-        <span style="font-size:9px;color:#484f58">${phase.platform}</span>
+    if (phase.isInterlude) {
+      // Interlude: time passing, pain, heat — different styling
+      html += `<div style="padding:12px 18px;background:rgba(0,0,0,0.15);border-left:3px solid rgba(139,148,158,0.2);margin-bottom:12px;border-radius:0 8px 8px 0">
+        <div style="font-size:9px;font-weight:800;letter-spacing:2px;color:#484f58;margin-bottom:6px">⏳ TIME PASSES</div>
+        <div style="font-size:12px;color:#8b949e;line-height:1.7;font-style:italic">${phase.text}</div>
+        <div style="display:flex;gap:6px;margin-top:8px">
+          ${phase.remaining.map(r => `<div style="display:flex;align-items:center;gap:4px">${rpPortrait(r, 'xs')}<span style="font-size:9px;color:#484f58">still up</span></div>`).join('')}
+        </div>
+      </div>`;
+      return;
+    }
+    const borderColor = hasDropped ? 'rgba(248,81,73,0.4)' : phase.phase === 3 ? 'rgba(227,179,65,0.5)' : 'rgba(227,179,65,0.3)';
+    const phaseIdx = Math.floor(phase.phase);
+    const label = phaseIdx === 0 ? 'FULL PLATFORM' : phaseIdx === 1 ? 'FIRST PEG REMOVED' : phaseIdx === 2 ? 'SECOND PEG REMOVED' : '⚡ FINAL SHOWDOWN';
+    html += `<div style="padding:14px 18px;background:rgba(0,0,0,0.25);border-left:3px solid ${borderColor};margin-bottom:12px;border-radius:0 8px 8px 0${phaseIdx === 3 ? ';box-shadow:0 0 12px rgba(227,179,65,0.15)' : ''}">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <span style="font-size:9px;font-weight:800;letter-spacing:2px;color:${hasDropped ? '#f85149' : '#e3b341'}">${_phaseIcons[Math.min(phaseIdx, 3)]} ${label}</span>
+        ${phase.platform ? `<span style="font-size:9px;color:#484f58">${phase.platform}</span>` : ''}
       </div>
-      <div style="font-size:12px;color:#cdd9e5;line-height:1.6">${phase.text}</div>
-      ${hasDropped ? `<div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+      <div style="font-size:12.5px;color:#cdd9e5;line-height:1.7">${phase.text}</div>
+      ${hasDropped ? `<div style="display:flex;align-items:center;gap:8px;margin-top:10px;padding:8px 12px;background:rgba(248,81,73,0.08);border-radius:6px">
         ${rpPortrait(phase.dropped, 'sm')}
-        <span style="font-size:11px;font-weight:700;color:#f85149">FALLS</span>
-      </div>` : ''}
+        <div>
+          <span style="font-size:11px;font-weight:700;color:#f85149">FALLS</span>
+          <div style="font-size:10px;color:#8b949e">${phase.dropped} is out of the challenge</div>
+        </div>
+      </div>` : `<div style="display:flex;gap:6px;margin-top:8px">
+        ${phase.remaining.map(r => `<div style="display:flex;align-items:center;gap:4px">${rpPortrait(r, 'xs')}<span style="font-size:9px;color:#8b949e">holding</span></div>`).join('')}
+      </div>`}
     </div>`;
   });
 
-  // Winner
-  html += `<div style="text-align:center;margin:20px 0">
+  // Winner reveal
+  html += `<div style="text-align:center;margin:24px 0;padding:20px;background:rgba(227,179,65,0.06);border:1px solid rgba(227,179,65,0.2);border-radius:12px">
     ${rpPortrait(p.winner, 'xl immune')}
-    <div style="font-size:16px;font-weight:800;color:#e3b341;margin-top:8px">${p.winner}</div>
-    <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:#3fb950">WINS THE PERCH — FINAL IMMUNITY</div>
+    <div style="font-size:20px;font-weight:800;color:#e3b341;margin-top:10px;font-family:var(--font-display);letter-spacing:1px">${p.winner}</div>
+    <div style="font-size:12px;font-weight:700;letter-spacing:2px;color:#3fb950;margin-top:4px">WINS THE PERCH — FINAL IMMUNITY</div>
+    <div style="font-size:11px;color:#8b949e;margin-top:8px;max-width:400px;margin-left:auto;margin-right:auto;line-height:1.5">
+      ${_wPr.Sub} ${_wPr.sub==='they'?'outlasted':'outlasted'} everyone on a platform the size of a postcard. ${_wPr.Sub} now ${_wPr.sub==='they'?'choose':'chooses'} who sits next to ${_wPr.obj} at Final Tribal Council — and who goes home.
+    </div>
   </div></div>`;
+  return html;
+}
+
+// ── Koh-Lanta: After the Perch (lobbying scene) ──
+function rpBuildKLCampLife(ep) {
+  if (!ep.klChoice || !ep.klPerch) return '';
+  const winner = ep.klPerch.winner;
+  const others = (ep.klPerch.phases[0]?.remaining || []).filter(p => p !== winner);
+  if (!others.length) return '';
+  const _pr = pronouns(winner);
+  const _pick = arr => arr[Math.floor(Math.random() * arr.length)];
+
+  let html = `<div class="rp-page tod-golden">
+    <div class="rp-eyebrow">Episode ${ep.num} — Finale</div>
+    <div class="rp-title">After the Perch</div>
+    <div style="font-size:13px;color:#8b949e;text-align:center;margin-bottom:20px">${winner} holds immunity. Two people need something from ${_pr.obj} right now.</div>`;
+
+  // Winner's weight
+  const _wS = pStats(winner);
+  html += `<div style="margin-bottom:16px;padding:14px;background:rgba(227,179,65,0.04);border:1px solid rgba(227,179,65,0.15);border-radius:10px">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+      ${rpPortrait(winner, 'sm')}
+      <div>
+        <div style="font-size:14px;font-weight:700;color:#e3b341">${winner}</div>
+        <div style="font-size:10px;color:#8b949e;font-weight:700;letter-spacing:1px">PERCH WINNER</div>
+      </div>
+    </div>
+    <div style="font-size:12px;color:#cdd9e5;line-height:1.6;font-style:italic">${_pick([
+      `${winner} climbs down from the perch and the weight shifts — from ${_pr.pos} legs to ${_pr.pos} mind. Two people are about to make their case. ${_pr.Sub} already ${_pr.sub==='they'?'know':'knows'} what they'll say. The question is whether it changes anything.`,
+      `The necklace is around ${_pr.posAdj} neck. ${_pr.Sub} won the Perch. Now comes the harder part: choosing who to bring and who to send home. ${_wS.strategic >= 7 ? `${_pr.Sub}'s already running the numbers.` : `${_pr.Sub}'s thinking about promises made on day one.`}`,
+      `${winner} sits alone at camp, legs still trembling from the perch. Two conversations are coming. Two pitches. One choice. ${_pr.Sub} ${_pr.sub==='they'?'stare':'stares'} at the fire and ${_pr.sub==='they'?'wait':'waits'}.`,
+    ])}</div>
+  </div>`;
+
+  // Each other player lobbies the winner
+  others.forEach(player => {
+    const bond = getBond(winner, player);
+    const pS = pStats(player);
+    const pPr = pronouns(player);
+    const isChosen = player === ep.klChoice.chosen;
+    const lobbyText = bond >= 3 ? _pick([
+      `${player} doesn't need to make a pitch. ${pPr.Sub} and ${winner} just look at each other. The understanding is already there. "You know where I stand," ${player} says quietly. The bond between them is the argument.`,
+      `${player} finds ${winner} by the water. The conversation is short — they've said everything that matters over the last ${ep.num > 1 ? (ep.num - 1) * 3 : 1} days. "I trust you," ${player} says. ${winner} nods. Whether that trust is returned — that's the question.`,
+      `${player} sits next to ${winner} and says nothing for a long time. Then: "We said we'd go to the end together. This is the end." ${winner} doesn't respond. But ${_pr.sub} doesn't leave either.`,
+    ]) : bond >= 1 ? _pick([
+      `${player} pulls ${winner} aside. "I know you have a decision to make. I'm just asking you to think about what we've been through." ${pS.social >= 7 ? `It's a carefully measured pitch — not too desperate, not too aggressive.` : `The words come out rougher than ${pPr.sub} intended. The pressure is showing.`}`,
+      `${player} makes ${pPr.posAdj} case: "Think about who the jury respects and who they don't. You want to sit next to someone you can beat." ${pS.strategic >= 7 ? `It's a smart argument. ${winner} knows it.` : `It's transparent — but not wrong.`}`,
+    ]) : _pick([
+      `${player} approaches ${winner} knowing the odds aren't great. "If you send me home, that's your call. But I'll say this — I'd be easier to beat at FTC than ${others.find(o => o !== player) || 'the other one'}." It's the most honest thing ${pPr.sub}'s said all game.`,
+      `${player} doesn't have a strong bond with ${winner}. ${pPr.Sub} ${pPr.sub==='they'?'know':'knows'} it. The pitch isn't about loyalty — it's pure game: "Think about the jury votes. Who are they going to respect more — me or ${others.find(o => o !== player) || 'them'}?"`,
+      `${player} barely gets three sentences out before ${pPr.pos} voice cracks. This isn't strategy anymore. It's survival. "I've been out here for ${ep.num > 1 ? (ep.num - 1) * 3 : 1} days. Don't let it end like this."`,
+    ]);
+
+    html += `<div style="margin-bottom:12px;padding:12px;background:#0d1117;border:1px solid #21262d;border-radius:8px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        ${rpPortrait(player, 'sm')}
+        <div style="font-size:13px;font-weight:700;color:#e6edf3">${player}</div>
+        <div style="font-size:10px;color:${bond >= 2 ? '#3fb950' : bond >= 0 ? '#8b949e' : '#f85149'};margin-left:auto">Bond: ${bond >= 3 ? 'Strong' : bond >= 1 ? 'Positive' : bond >= 0 ? 'Neutral' : 'Negative'}</div>
+      </div>
+      <div style="font-size:12px;color:#8b949e;line-height:1.6;font-style:italic">${lobbyText}</div>
+    </div>`;
+  });
+
+  html += `</div>`;
   return html;
 }
 
@@ -28661,11 +28948,34 @@ function rpBuildKLChoice(ep) {
   if (!ep.klChoice) return '';
   const c = ep.klChoice;
   const _pr = pronouns(c.winner);
-  const _eq = vpGenerateQuote(c.eliminated, ep, 'eliminated');
-  const _place = (gs.episodeHistory || []).filter(h => h.eliminated).length + 1;
-  const reasonText = c.reason === 'strategic'
-    ? `${c.winner} ran the jury math. ${_pr.Sub} chose ${c.chosen} — the person ${_pr.sub} ${_pr.sub==='they'?'project':'projects'} ${_pr.sub} can beat. This wasn't about friendship. It was about winning.`
-    : `${c.winner} chose loyalty. ${c.chosen} — the person ${_pr.sub} ${_pr.sub==='they'?'trust':'trusts'} most in this game. Whatever the jury decides, they face it together.`;
+  const _ePr = pronouns(c.eliminated);
+  // Choice-specific exit quote — cut by the perch winner, not voted out
+  const _ceS = pStats(c.eliminated);
+  const _cePick = arr => arr[([...c.eliminated].reduce((a,ch)=>a+ch.charCodeAt(0),0)+(ep.num||0)*5)%arr.length];
+  const _cePool = [];
+  if (c.betrayal) {
+    // Ally betrayal — the cut hurts personally
+    _cePool.push(`${c.winner} and I had something real out here. Or I thought we did. ${_pr.Sub} looked me in the eyes and chose someone else. That's not strategy. That's betrayal.`);
+    _cePool.push(`I trusted ${c.winner}. After everything we went through together, ${_pr.sub} cut me. I'll carry that into the jury room. ${_pr.Sub} can count on it.`);
+    _cePool.push(`${c.winner} picked the person ${_pr.sub} can beat over the person ${_pr.sub} ${_pr.sub==='they'?'owe':'owes'}. I get the math. I just don't respect it.`);
+    if (_ceS.loyalty >= 7) _cePool.push(`I would never have done that to ${c.winner}. Never. And ${_pr.sub} ${_pr.sub==='they'?'know':'knows'} it. That's what makes this hurt the most.`);
+    if (_ceS.strategic >= 7) _cePool.push(`Smart move. Cold move. I would have been harder to beat at FTC. ${c.winner} knew that. But knowing it was smart doesn't make it hurt less.`);
+  } else {
+    // Not close — less personal, more about the game
+    _cePool.push(`I made it to the final three. One person decided that wasn't enough. That's the game — and I lost it on someone else's terms, not mine.`);
+    _cePool.push(`${c.winner} had the power and ${_pr.sub} used it. I can't be mad about that. I just wish I'd won the Perch.`);
+    _cePool.push(`Third place. I outlasted everyone except two people. And one of those people decided I was the bigger threat. I'll take that as a compliment.`);
+    if (_ceS.boldness >= 7) _cePool.push(`If I'd won that Perch, I would've done the same thing. Cut the strongest opponent. ${c.winner} made the right call. I just wish I was on the other side of it.`);
+  }
+  const _eq = _cePick(_cePool);
+  let reasonText;
+  if (c.reason === 'strategic' && c.betrayal) {
+    reasonText = `${c.winner} ran the jury math — and the numbers said to cut ${c.eliminated}. ${_pr.Sub} chose ${c.chosen} over ${_pr.pos} own ally. The bond didn't matter. The vote projection did. ${c.eliminated} trusted ${_pr.obj}. That trust just ended ${_ePr.pos} game.`;
+  } else if (c.reason === 'strategic') {
+    reasonText = `${c.winner} ran the jury math. ${_pr.Sub} chose ${c.chosen} — the person ${_pr.sub} ${_pr.sub==='they'?'project':'projects'} ${_pr.sub} can beat. This wasn't about friendship. It was about winning.`;
+  } else {
+    reasonText = `${c.winner} chose loyalty. ${c.chosen} — the person ${_pr.sub} ${_pr.sub==='they'?'trust':'trusts'} most in this game. Whatever the jury decides, they face it together.`;
+  }
 
   let html = `<div class="rp-page tod-deepnight">
     <div class="rp-eyebrow">Episode ${ep.num} — Finale</div>
@@ -28690,7 +29000,7 @@ function rpBuildKLChoice(ep) {
     </div>
     <div style="font-size:13px;color:#cdd9e5;text-align:center;line-height:1.6;max-width:500px;margin:0 auto 20px;font-style:italic">${reasonText}</div>
     <div class="rp-elim" style="margin-top:16px">
-      <div class="rp-elim-eyebrow">${ordinal(_place)} player eliminated — The Choice</div>
+      <div class="rp-elim-eyebrow">3rd Place — The Choice</div>
       ${rpPortrait(c.eliminated, 'xl elim')}
       <div class="rp-elim-name">${c.eliminated}</div>
       <div class="rp-elim-arch">${vpArchLabel(c.eliminated)}</div>
@@ -31944,8 +32254,8 @@ function buildVPScreens(epRecord) {
   }
 
   // ── 5. Challenge ──
-  if (ep.isFinale && ep.challengeType && (seasonConfig.finaleSize >= 3 || seasonConfig.firemaking) && seasonConfig.finaleFormat !== 'final-challenge') {
-    // Finale immunity: use the same detailed challenge screen as regular episodes
+  if (ep.isFinale && ep.challengeType && (seasonConfig.finaleSize >= 3 || seasonConfig.firemaking) && seasonConfig.finaleFormat !== 'final-challenge' && seasonConfig.finaleFormat !== 'koh-lanta') {
+    // Finale immunity: use the same detailed challenge screen as regular episodes (koh-lanta has its own orienteering/perch screens)
     vpScreens.push({ id:'finale-challenge', label:'Final Immunity', html: rpBuildChallenge(ep) });
   } else if (ep.challengeType && !ep.isFinale && !ep.isSlasherNight) {
     vpScreens.push({ id:'challenge', label:'Immunity Challenge', html: rpBuildChallenge(ep) });
@@ -32257,7 +32567,7 @@ function buildVPScreens(epRecord) {
   if (ep.isFinale) {
     // ── FINALE-SPECIFIC SCREENS ──
 
-    // Koh-Lanta: orienteering → perch → choice
+    // Koh-Lanta: orienteering → perch → camp lobbying → choice
     if (ep.klOrienteering) {
       vpScreens.push({ id:'kl-orienteering', label:'Orienteering Race', html: rpBuildKLOrienteering(ep) });
     }
@@ -32265,6 +32575,8 @@ function buildVPScreens(epRecord) {
       vpScreens.push({ id:'kl-perch', label:'The Perch', html: rpBuildKLPerch(ep) });
     }
     if (ep.klChoice) {
+      const _klCampHtml = rpBuildKLCampLife(ep);
+      if (_klCampHtml) vpScreens.push({ id:'kl-camp', label:'After the Perch', html: _klCampHtml });
       vpScreens.push({ id:'kl-choice', label:'The Choice', html: rpBuildKLChoice(ep) });
     }
 
@@ -32279,7 +32591,7 @@ function buildVPScreens(epRecord) {
     }
 
     // Final Cut: immunity winner's decision (or jury-cut) — shown after challenge (non-firemaking)
-    if (ep.finalCut && !ep.firemaking) {
+    if (ep.finalCut && !ep.firemaking && !ep.klChoice) {
       vpScreens.push({ id:'final-cut', label:'The Decision', html: rpBuildFinalCut(ep) });
     }
 

@@ -32042,22 +32042,22 @@ function rpBuildJuryVoteReveal(ep) {
       ${finalists.map(f => `<div style="text-align:center">
         ${rpPortrait(f, 'lg')}
         <div style="font-size:11px;font-family:var(--font-display);margin-top:6px">${f}</div>
-        <div id="ftc-cnt-${epNum}-${f.replace(/\s+/g,'_')}" style="font-size:28px;font-family:var(--font-display);color:${f===winner?'#e3b341':'#8b949e'};margin-top:4px;min-width:40px">0</div>
+        <div id="ftc-cnt-${epNum}-${f.replace(/\s+/g,'_')}" style="font-size:28px;font-family:var(--font-display);color:#8b949e;margin-top:4px;min-width:40px" data-finalist="${f}" data-winner="${winner}">0</div>
       </div>`).join('')}
     </div>
     <div id="ftc-cards-${epNum}" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">`;
 
   reasoning.forEach((r, i) => {
     const isWin = r.votedFor === winner;
-    html += `<div class="tv-vote-card ftc-card" data-voted="${r.votedFor}" data-voter="${r.juror}" data-index="${i}" data-epnum="${epNum}" style="display:none;border-color:rgba(${isWin?'227,179,65':'139,148,158'},0.3);background:rgba(${isWin?'227,179,65':'139,148,158'},0.03)">
+    html += `<div class="tv-vote-card ftc-card" data-voted="${r.votedFor}" data-voter="${r.juror}" data-index="${i}" data-epnum="${epNum}" data-is-winner-vote="${isWin}" style="display:none;border-color:rgba(139,148,158,0.3);background:rgba(139,148,158,0.03)">
       <div class="tv-vote-voter-wrap">
         ${rpPortrait(r.juror, 'sm')}
         <div class="tv-vote-voter">${r.juror}</div>
       </div>
-      <div class="tv-vote-arrow" style="color:${isWin?'#e3b341':'#8b949e'}">\u2192</div>
+      <div class="tv-vote-arrow">\u2192</div>
       <div class="tv-vote-right">
-        <div class="tv-vote-target" style="color:${isWin?'#e3b341':'#c9d1d9'}">${r.votedFor}</div>
-        ${r.reason ? `<div class="tv-vote-reason" style="color:${isWin?'#d4a82a':'#6e7681'};font-size:11px;margin-top:3px">${r.reason}</div>` : ''}
+        <div class="tv-vote-target">${r.votedFor}</div>
+        ${r.reason ? `<div class="tv-vote-reason" style="font-size:11px;margin-top:3px">${r.reason}</div>` : ''}
       </div>
     </div>`;
   });
@@ -35032,6 +35032,8 @@ function ftcRevealNext(epNum, total) {
     if (finalEl) finalEl.style.display = 'block';
     const btn = document.getElementById(`ftc-btn-next-${epNum}`);
     if (btn) btn.disabled = true;
+    // Now that all votes are revealed — highlight winner's counter in gold
+    _ftcHighlightWinner(epNum);
   }
 }
 
@@ -35068,6 +35070,25 @@ function ftcRevealAll(epNum, total) {
   const btn = document.getElementById(`ftc-btn-next-${epNum}`);
   if (btn) btn.disabled = true;
   _ftcState[epNum].revealed = cards.length;
+  _ftcHighlightWinner(epNum);
+}
+
+// Highlight winner's vote counter + cards in gold AFTER all votes revealed
+function _ftcHighlightWinner(epNum) {
+  // Find all finalist counters and highlight the winner
+  document.querySelectorAll(`[id^="ftc-cnt-${epNum}-"]`).forEach(el => {
+    if (el.dataset.finalist === el.dataset.winner) {
+      el.style.color = '#e3b341';
+      el.style.textShadow = '0 0 10px rgba(227,179,65,0.3)';
+    }
+  });
+  // Color winner vote cards gold, loser cards stay neutral
+  document.querySelectorAll(`#ftc-cards-${epNum} .ftc-card`).forEach(card => {
+    if (card.dataset.isWinnerVote === 'true') {
+      card.style.borderColor = 'rgba(227,179,65,0.3)';
+      card.style.background = 'rgba(227,179,65,0.03)';
+    }
+  });
 }
 
 // ══════════════════════════════════════════════════════════════════════

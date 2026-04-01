@@ -3082,6 +3082,7 @@ function updatePlayerStates(ep) {
       state.votesReceived = (state.votesReceived || 0) + votesThisEp;
       state.lastVotedEp = epNum;
     }
+    const _priorBigMoves = state.bigMoves || 0;
     // Big moves: actions that build a FTC resume
     // Broke alliance consensus (intentional flip)
     if (ep.votingLog?.some(e => e.voter === name && e.reason?.includes('broke '))) {
@@ -3098,6 +3099,11 @@ function updatePlayerStates(ep) {
     // Survived being the top target (received most votes but wasn't eliminated)
     if (votesThisEp >= 3 && ep.eliminated !== name) {
       state.bigMoves = (state.bigMoves || 0) + 1;
+    }
+    // Track who earned bigMoves this episode for Stolen Credit mechanic
+    if ((state.bigMoves || 0) > _priorBigMoves) {
+      if (!gs.bigMoveEarnersThisEp) gs.bigMoveEarnersThisEp = [];
+      if (!gs.bigMoveEarnersThisEp.includes(name)) gs.bigMoveEarnersThisEp.push(name);
     }
 
     const wasTargeted = votesThisEp >= 2;

@@ -942,7 +942,7 @@
               </div>
               <div class="accordion-body" id="acc-body-firemaking" style="display:none">
                 <label class="acc-check-row">
-                  <input type="checkbox" id="cfg-firemaking" onchange="saveConfig()">
+                  <input type="checkbox" id="cfg-firemaking" onchange="toggleFiremaking()">
                   <span>Enable Firemaking Final Elimination</span>
                 </label>
                 <p class="acc-desc">At the last bloodfire before the finale, the immunity winner picks 2 players to duel in a firemaking challenge. Non-picked players earn Shared Immunity. Loser is eliminated.</p>
@@ -2283,6 +2283,20 @@ function toggleAdv(key) {
   }
   saveConfig();
 }
+function toggleFiremaking() {
+  const checked = g('cfg-firemaking')?.checked;
+  const slider = g('cfg-finale');
+  const display = document.getElementById('finale-display');
+  if (checked) {
+    if (slider) { slider.value = 4; slider.disabled = true; slider.style.opacity = '0.4'; }
+    if (display) display.textContent = '4 (locked — firemaking)';
+  } else {
+    if (slider) { slider.disabled = false; slider.style.opacity = '1'; }
+    if (display) display.textContent = slider?.value || '3';
+  }
+  saveConfig();
+}
+
 function toggleRI() {
   const on = document.getElementById('cfg-ri').checked;
   const _riEl = document.getElementById('ri-settings');
@@ -2356,6 +2370,16 @@ function renderConfig() {
   chk('cfg-journey',   seasonConfig.journey || false);
   chk('cfg-sid',       seasonConfig.shotInDark || false);
   chk('cfg-firemaking',seasonConfig.firemaking || false);
+  // Apply firemaking lock on render
+  if (seasonConfig.firemaking) {
+    const _fmSlider = g('cfg-finale');
+    if (_fmSlider) { _fmSlider.value = 4; _fmSlider.disabled = true; _fmSlider.style.opacity = '0.4'; }
+    const _fmDisplay = document.getElementById('finale-display');
+    if (_fmDisplay) _fmDisplay.textContent = '4 (locked — firemaking)';
+  } else {
+    const _fmSlider2 = g('cfg-finale');
+    if (_fmSlider2) { _fmSlider2.disabled = false; _fmSlider2.style.opacity = '1'; }
+  }
   set('cfg-tiebreaker-mode', seasonConfig.tiebreakerMode || 'survivor');
   chk('cfg-qem',        seasonConfig.qem || false);
   chk('cfg-popularity', seasonConfig.popularityEnabled ?? true);

@@ -26506,8 +26506,8 @@ function rpBuildVotingPlans(ep) {
       if (s.strategic >= 8 || arch === 'mastermind' || arch === 'schemer') return { label: 'Strategic Threat', color: '#f85149' };
       if (s.social >= 8 || arch === 'social-butterfly') return { label: 'Well-Connected', color: '#e3b341' };
       if (arch === 'hero') return { label: 'Likeable', color: '#e3b341' };
-      // Physical Threat only shows pre-merge if they're ALSO the standout — otherwise being strong is good
-      if ((arch === 'challenge-beast' || s.physical >= 8) && _wasStandout) return { label: 'Physical Threat', color: '#f85149' };
+      // Physical Threat only shows pre-merge if they have a strong challenge record — otherwise being strong is good
+      if ((arch === 'challenge-beast' || s.physical >= 8) && _rec.podiums >= 2) return { label: 'Physical Threat', color: '#f85149' };
     }
 
     // ── REMAINING ──

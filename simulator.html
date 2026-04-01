@@ -2942,6 +2942,22 @@ function computeHeat(name, tribalPlayers, alliances) {
   if (gs.fanVoteWinner === name || gs.fanVoteEp === (gs.episode || 0) + 1 && gs.advantages?.some(a => a.holder === name && a.fromFanVote)) heat += 0.5;
   // Stolen credit: stealer gets heat after losing confrontation
   if (gs.stolenCreditHeat?.player === name && gs.stolenCreditHeat.ep >= ((gs.episode || 0) + 1) - 1) heat += 0.3;
+  // Survival: provider protection + villain/schemer targeting + slacker resentment
+  if (seasonConfig.foodWater === 'enabled') {
+    if (gs.currentProviders?.includes(name)) {
+      const _villSchem = tribalPlayers.filter(p => {
+        const a = players.find(x => x.name === p)?.archetype || '';
+        return a === 'villain' || a === 'schemer';
+      }).length;
+      const _protectors = tribalPlayers.filter(p => p !== name).length - _villSchem;
+      heat += _villSchem * 0.5 - _protectors * 0.05;
+      heat -= 0.3; // base provider protection
+    }
+    if (gs.currentSlackers?.includes(name)) {
+      const _nonSlackers = tribalPlayers.filter(p => p !== name && !gs.currentSlackers?.includes(p)).length;
+      heat += _nonSlackers * 0.04;
+    }
+  }
   // Hero/Villain archetype heat modifiers
   const _nameArch = players.find(p => p.name === name)?.archetype || '';
   if (_nameArch === 'villain') {
@@ -5916,7 +5932,10 @@ function simulateTribeChallenge(tribes) {
     const ms = competitors.map(m => {
       const _inj = gs.lingeringInjuries?.[m];
       const _injP = _inj && (gs.episode + 1 - _inj.ep) < _inj.duration ? _inj.penalty * (1 - (gs.episode + 1 - _inj.ep) / _inj.duration) : 0;
-      return { name: m, score: chal.stat(pStats(m)) - _injP + (Math.random()*4-2) };
+      const survPenalty = (seasonConfig.foodWater === 'enabled' && gs.survival)
+        ? Math.max(0, (70 - (gs.survival[m] || 80)) * 0.03)
+        : 0;
+      return { name: m, score: chal.stat(pStats(m)) - _injP - survPenalty + (Math.random()*4-2) };
     });
     ms.forEach(x => { memberScores[x.name] = x.score; });
     const avg = ms.length ? ms.reduce((s,x) => s + x.score, 0) / ms.length : 0;
@@ -5966,7 +5985,11 @@ function simulateIndividualChallenge(pool, immune) {
       const _inj = gs.lingeringInjuries?.[name];
       const _epNum = (gs.episode || 0) + 1;
       const injPenalty = _inj && (_epNum - _inj.ep) < _inj.duration ? _inj.penalty * (1 - (_epNum - _inj.ep) / _inj.duration) : 0;
-      return { name, score: base - fatigue - injPenalty + (Math.random()*8-4) };
+      // Survival penalty: proportional — every point below 70 matters
+      const survPenalty = (seasonConfig.foodWater === 'enabled' && gs.survival)
+        ? Math.max(0, (70 - (gs.survival[name] || 80)) * 0.03)
+        : 0;
+      return { name, score: base - fatigue - injPenalty - survPenalty + (Math.random()*8-4) };
     })
     .sort((a, b) => b.score - a.score);
   const winner = scored[0].name;
@@ -14453,6 +14476,8 @@ function generateCampEvents(ep, phase = 'both') {
       }
     }
 
+    // Survival events — provider/slacker/food crisis
+    generateSurvivalEvents(ep);
     // Paranoia spiral — fires before social bomb (bond hits stack)
     checkParanoiaSpiral(ep);
     // Information broker — double agent playing both alliances
@@ -14470,6 +14495,7 @@ function generateCampEvents(ep, phase = 'both') {
 
   // ── 'both' phase: no pre/post distinction (no-tribal, finale) — just one block ──
   if (phase === 'both') {
+    generateSurvivalEvents(ep);
     checkParanoiaSpiral(ep);
     checkInformationBroker(ep);
     checkStolenCredit(ep);
@@ -14976,6 +15002,7 @@ function simulateEpisode() {
     ep.bondChanges = updateBonds([], ep.eliminated, []);
     detectBetrayals(ep);
     updatePlayerStates(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
+    updateSurvival(ep);
     gs.episode = epNum;
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
 
@@ -15569,6 +15596,7 @@ function simulateEpisode() {
     ep.bondChanges = updateBonds([], ep.eliminated, []);
     detectBetrayals(ep);
     updatePlayerStates(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
+    updateSurvival(ep);
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
     gs.episode = epNum;
     gs.episodeHistory.push({ num: epNum, eliminated: ep.eliminated, riChoice: ep.riChoice || null, immunityWinner: null,
@@ -15616,6 +15644,7 @@ function simulateEpisode() {
       ep.bondChanges = updateBonds([], null, []);
       detectBetrayals(ep);
       updatePlayerStates(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
+      updateSurvival(ep);
       if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
       gs.episode = epNum;
       gs.episodeHistory.push({ num: epNum, eliminated: null, riChoice: null, immunityWinner: null,
@@ -15639,6 +15668,7 @@ function simulateEpisode() {
     ep.bondChanges = updateBonds([], null, []);
     detectBetrayals(ep);
     updatePlayerStates(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
+    updateSurvival(ep);
     gs.episode = epNum;
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
     gs.episodeHistory.push({ num: epNum, eliminated: null, riChoice: null,
@@ -16457,6 +16487,7 @@ function simulateEpisode() {
     ep.bondChanges = updateBonds(ep.votingLog, ep.eliminated, _dtAlliances);
     detectBetrayals(ep); applyPostTribalConsequences(ep); checkAllianceRecruitment(ep);
     updatePlayerStates(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
+    updateSurvival(ep);
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
     gs.episode = epNum;
     gs.episodeHistory.push({ num: epNum, eliminated: ep.eliminated, riChoice: ep.riChoice || null,
@@ -16638,6 +16669,7 @@ function simulateEpisode() {
     ep.bondChanges = updateBonds(ep.votingLog, ep.eliminated, alliances);
     applyPostTribalConsequences(ep); checkAllianceRecruitment(ep);
     updatePlayerStates(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
+    updateSurvival(ep);
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
     gs.episode = epNum;
     gs.episodeHistory.push({
@@ -16815,6 +16847,7 @@ function simulateEpisode() {
     const stJE = generateSummaryText(ep);
     gs.episodeHistory[gs.episodeHistory.length-1].summaryText = stJE; ep.summaryText = stJE;
     updatePlayerStates(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
+    updateSurvival(ep);
     patchEpisodeHistory(ep); saveGameState(); return ep;
   }
 
@@ -17255,6 +17288,11 @@ function simulateEpisode() {
     gs.tribes = gs.tribes.map(t => ({...t, members: t.members.filter(p => p!==ep.eliminated)}));
     handleAdvantageInheritance(ep.eliminated, ep);
     gs.advantages = gs.advantages.filter(a => a.holder !== ep.eliminated);
+    // Track if a provider was voted out (for food crisis next episode)
+    if (seasonConfig.foodWater === 'enabled' && gs.currentProviders?.includes(ep.eliminated)) {
+      const _elimTribe = gs.isMerged ? (gs.mergeName || 'merge') : (gs.tribes.find(t => t.members.includes(ep.eliminated))?.name || '');
+      gs.providerVotedOutLastEp = { name: ep.eliminated, tribeName: _elimTribe };
+    }
   }
 
   // ── POST-ELIMINATION RESCUE ISLAND: generate life events for new arrival ──
@@ -17413,6 +17451,7 @@ function simulateEpisode() {
   ep.summaryText = summaryText;
 
   updatePlayerStates(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
+  updateSurvival(ep);
 
   patchEpisodeHistory(ep);
   saveGameState();

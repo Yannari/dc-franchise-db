@@ -27575,6 +27575,28 @@ function rpBuildVotingPlans(ep) {
     } else if (conflictedPlayers.length) {
       html += `<div style="text-align:center;font-size:11px;color:#8b949e;margin-top:4px;font-style:italic">${conflictedPlayers.length} conflicted player${conflictedPlayers.length !== 1 ? 's' : ''} could reshape the outcome.</div>`;
     }
+  } else if (votingLog.length) {
+    // No alliance plans produced valid targets — fall back to vote log
+    // This happens at F5/F4 when alliances have dissolved and everyone is a free agent
+    const _fallbackCounts = {};
+    votingLog.forEach(v => { if (v.voted) _fallbackCounts[v.voted] = (_fallbackCounts[v.voted] || 0) + 1; });
+    const _fbSorted = Object.entries(_fallbackCounts).filter(([n]) => n && n !== 'null').sort(([,a],[,b]) => b - a);
+    if (_fbSorted.length) {
+      html += `<div class="rp-vp-section-label">GOING INTO TRIBAL</div>
+        <div style="text-align:center;font-size:11px;color:#8b949e;margin-bottom:8px;font-style:italic">No clear consensus — everyone is playing for themselves.</div>
+        <div class="rp-vp-final-row">`;
+      _fbSorted.slice(0, 2).forEach(([name, count], i) => {
+        const _fbCat = targetCategory(name);
+        html += `<div class="rp-vp-final-card" style="border-color:${i === 0 ? _fbCat.color : '#30363d66'}">
+          <div class="rp-vp-final-label" style="color:${i === 0 ? _fbCat.color : '#484f58'}">${i === 0 ? 'Most Likely Target' : count === 1 ? 'Lone Vote' : 'Also Targeted'}</div>
+          ${rpPortrait(name)}
+          <div class="rp-vp-final-name">${name}</div>
+          <div class="rp-vp-final-cat" style="color:${_fbCat.color}">${_fbCat.label}</div>
+          <div class="rp-vp-final-votes">${count} vote${count !== 1 ? 's' : ''} going in</div>
+        </div>`;
+      });
+      html += `</div>`;
+    }
   }
 
   // ── ADVANTAGES IN PLAY ──────────────────────────────────────────────────────

@@ -23912,6 +23912,74 @@ if (typeof window !== 'undefined') {
       window.scvRevealNext(revealId);
     }
   };
+  window._fcState = {};
+  window.fanCampaignAdvance = function(key, totalPhases) {
+    if (!window._fcState[key]) window._fcState[key] = 0;
+    const step = window._fcState[key];
+    if (step >= totalPhases) return;
+
+    const phaseIdx = Math.floor(step / 3);
+    const subPhase = step % 3;
+    const baseId = `${key}-p${phaseIdx}`;
+
+    // Dim previous finalist's section
+    if (phaseIdx > 0 && subPhase === 0) {
+      const prevBase = `${key}-p${phaseIdx - 1}`;
+      ['spotlight', 'speech', 'jury'].forEach(s => {
+        const el = document.getElementById(`${prevBase}-${s}`);
+        if (el) el.style.opacity = '0.4';
+      });
+    }
+
+    if (subPhase === 0) {
+      // Show spotlight
+      const el = document.getElementById(`${baseId}-spotlight`);
+      if (el) { el.style.display = 'block'; setTimeout(() => el.style.opacity = '1', 50); }
+    } else if (subPhase === 1) {
+      // Show speech + animate pulse bars + pop fan pills
+      const el = document.getElementById(`${baseId}-speech`);
+      if (el) {
+        el.style.display = 'block';
+        setTimeout(() => {
+          el.style.opacity = '1';
+          // Animate bars
+          for (let i = 0; i < 7; i++) {
+            const bar = document.getElementById(`${baseId}-bar-${i}`);
+            if (bar) bar.style.height = bar.dataset.targetHeight;
+          }
+          // Pop pills
+          for (let i = 0; i < 5; i++) {
+            const pill = document.getElementById(`${baseId}-pill-${i}`);
+            if (pill) pill.style.opacity = '1';
+          }
+        }, 50);
+      }
+    } else if (subPhase === 2) {
+      // Show jury reaction
+      const el = document.getElementById(`${baseId}-jury`);
+      if (el) { el.style.display = 'block'; setTimeout(() => el.style.opacity = '1', 50); }
+    }
+
+    window._fcState[key] = step + 1;
+    const btn = document.getElementById(`${key}-btn`);
+    if (btn) {
+      if (step + 1 >= totalPhases) btn.textContent = 'BROADCAST COMPLETE';
+      else {
+        const labels = ['SHOW SPEECH', 'JURY REACTS', 'NEXT FINALIST'];
+        const nextSub = (step + 1) % 3;
+        btn.textContent = step + 1 >= totalPhases - 1 ? 'JURY REACTS' : labels[nextSub] || 'CONTINUE';
+      }
+    }
+  };
+  window.fanCampaignRevealAll = function(key, totalPhases) {
+    while ((window._fcState[key] || 0) < totalPhases) {
+      fanCampaignAdvance(key, totalPhases);
+    }
+    // Undim everything
+    document.querySelectorAll(`[id^="${key}-p"]`).forEach(el => {
+      if (el.style.opacity === '0.4') el.style.opacity = '1';
+    });
+  };
 }
 
 function _buildPostTwistBlocks(ep) {
@@ -30212,6 +30280,106 @@ function rpBuildFTC(ep) {
   // Closing atmosphere
   html += `<div style="text-align:center;font-size:13px;color:#484f58;font-style:italic;margin-top:16px;line-height:1.6;padding:12px 0;border-top:1px solid rgba(255,255,255,0.04)">
     The jury stands. One by one, they walk to the voting urn. Tonight, they vote FOR who they want to win.
+  </div>`;
+
+  html += `</div>`;
+  return html;
+}
+
+function rpBuildFanCampaign(ep) {
+  const fc = ep.fanCampaign;
+  if (!fc?.phases?.length) return null;
+  const epNum = ep.num || 0;
+  const stateKey = `fan-campaign-${epNum}`;
+  const totalPhases = fc.phases.length * 3; // per finalist: spotlight, speech+pulse, jury reaction
+  const jury = ep.gsSnapshot?.jury || gs.jury || [];
+
+  let html = `<div class="rp-page tod-golden" style="overflow:hidden">
+    <div class="rp-eyebrow">Episode ${epNum} — Finale</div>
+    <div style="text-align:center;margin-bottom:4px">
+      <div style="font-size:10px;letter-spacing:3px;color:#e3b341;font-weight:700">LIVE FROM TRIBAL COUNCIL</div>
+      <div style="font-family:var(--font-display);font-size:28px;letter-spacing:2px;color:#f0f6fc;margin-top:4px;text-shadow:0 0 20px rgba(227,179,65,0.15)">THE FAN CAMPAIGN</div>
+      <div style="width:60px;height:2px;background:#e3b341;margin:8px auto"></div>
+      <div style="font-size:11px;color:#8b949e;margin-top:4px">The jury watches. The fans decide.</div>
+    </div>`;
+
+  // Jury bench — always visible
+  html += `<div style="display:flex;flex-wrap:wrap;justify-content:center;gap:4px;margin:16px 0 20px;padding:10px;background:rgba(139,148,158,0.04);border-radius:8px;border:1px solid rgba(139,148,158,0.08)">
+    <div style="width:100%;font-size:9px;letter-spacing:2px;color:#8b949e;font-weight:700;text-align:center;margin-bottom:6px">THE JURY</div>`;
+  jury.forEach(j => { html += rpPortrait(j, 'sm'); });
+  html += `</div>`;
+
+  // Phase containers — all hidden initially, revealed by clicks
+  fc.phases.forEach((phase, pIdx) => {
+    const baseId = `${stateKey}-p${pIdx}`;
+    const fPr = pronouns(phase.finalist);
+
+    // Sub-phase A: Spotlight (portrait + name + badge)
+    html += `<div id="${baseId}-spotlight" style="display:none;opacity:0;transition:opacity 0.5s;margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:16px;padding:16px;border:1px solid rgba(227,179,65,0.2);border-radius:12px;background:rgba(227,179,65,0.04)">
+        <div>${rpPortrait(phase.finalist, 'xl')}</div>
+        <div>
+          <div style="font-family:var(--font-display);font-size:18px;color:#e3b341;letter-spacing:1px">${phase.finalist}</div>
+          <div style="font-size:10px;letter-spacing:2px;color:#8b949e;font-weight:700;margin-top:4px">THE PITCH</div>
+          <div style="font-size:11px;color:#58a6ff;margin-top:6px">${vpArchLabel(phase.finalist)}</div>
+        </div>
+      </div>
+    </div>`;
+
+    // Sub-phase B: Speech + Pulse + Fan reactions
+    const pulseHeights = phase.pulseReaction === 'surging' ? [60,75,85,70,90,95,100]
+      : phase.pulseReaction === 'steady' ? [50,55,60,65,55,60,65]
+      : phase.pulseReaction === 'mixed' ? [40,60,35,55,30,50,45]
+      : [55,45,35,40,30,25,20]; // cooling
+
+    html += `<div id="${baseId}-speech" style="display:none;opacity:0;transition:opacity 0.5s;margin-bottom:16px">
+      <div style="padding:14px;border-radius:10px;background:rgba(139,148,158,0.04);border:1px solid rgba(139,148,158,0.08)">
+        <div style="font-size:13px;color:#c9d1d9;font-style:italic;line-height:1.7;margin-bottom:14px">${phase.speech}</div>
+        <div style="margin-bottom:10px">
+          <div style="font-size:9px;letter-spacing:2px;color:#8b949e;font-weight:700;margin-bottom:6px">AUDIENCE PULSE</div>
+          <div style="display:flex;gap:3px;align-items:flex-end;height:40px">`;
+    pulseHeights.forEach((h, i) => {
+      const color = phase.pulseReaction === 'surging' ? '#e3b341' : phase.pulseReaction === 'cooling' ? '#da3633' : '#58a6ff';
+      html += `<div id="${baseId}-bar-${i}" style="flex:1;border-radius:2px;height:0%;background:${color};transition:height 0.6s ease ${i * 0.1}s" data-target-height="${h}%"></div>`;
+    });
+    html += `</div>
+          <div style="font-size:10px;color:${phase.pulseReaction === 'surging' ? '#e3b341' : phase.pulseReaction === 'cooling' ? '#da3633' : '#8b949e'};margin-top:4px;text-align:center">Audience response: <strong>${phase.pulseReaction.toUpperCase()}</strong></div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">`;
+    phase.fanReactions.forEach((r, i) => {
+      const bgColor = r.sentiment === 'positive' ? 'rgba(227,179,65,0.1)' : 'rgba(139,148,158,0.1)';
+      const borderColor = r.sentiment === 'positive' ? 'rgba(227,179,65,0.2)' : 'rgba(139,148,158,0.2)';
+      const textColor = r.sentiment === 'positive' ? '#e3b341' : '#8b949e';
+      const emoji = r.sentiment === 'positive' ? '\u{1F525}' : '\u{1F624}';
+      html += `<div id="${baseId}-pill-${i}" style="opacity:0;transition:opacity 0.4s ease ${0.3 + i * 0.2}s;background:${bgColor};border:1px solid ${borderColor};border-radius:20px;padding:4px 10px;font-size:10px;color:${textColor}">${emoji} "${r.text}"</div>`;
+    });
+    html += `</div>
+      </div>
+    </div>`;
+
+    // Sub-phase C: Jury reaction
+    if (phase.juryReactions?.length) {
+      html += `<div id="${baseId}-jury" style="display:none;opacity:0;transition:opacity 0.5s;margin-bottom:20px">
+        <div style="background:rgba(139,148,158,0.06);border-radius:8px;padding:12px">
+          <div style="font-size:9px;letter-spacing:2px;color:#8b949e;font-weight:700;margin-bottom:8px">JURY REACTS TO ${phase.finalist.toUpperCase()}</div>`;
+      phase.juryReactions.forEach(jr => {
+        const bondColor = jr.bond >= 3 ? '#3fb950' : jr.bond <= -2 ? '#f85149' : '#8b949e';
+        html += `<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px">
+          ${rpPortrait(jr.juror, 'sm')}
+          <div>
+            <div style="font-size:11px;font-weight:600;color:${bondColor}">${jr.juror}</div>
+            <div style="font-size:12px;color:#c9d1d9;font-style:italic;line-height:1.5;margin-top:2px">${jr.text}</div>
+          </div>
+        </div>`;
+      });
+      html += `</div></div>`;
+    }
+  });
+
+  // Control buttons
+  html += `<div style="display:flex;gap:12px;margin-top:16px;align-items:center" id="${stateKey}-controls">
+    <button onclick="fanCampaignAdvance('${stateKey}', ${totalPhases})" id="${stateKey}-btn" style="padding:8px 20px;background:var(--accent-gold);border:none;border-radius:6px;color:#0d1117;font-family:var(--font-display);font-size:13px;letter-spacing:1px;cursor:pointer;font-weight:700">BEGIN BROADCAST</button>
+    <button onclick="fanCampaignRevealAll('${stateKey}', ${totalPhases})" style="padding:6px 12px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:11px;cursor:pointer">See all</button>
   </div>`;
 
   html += `</div>`;

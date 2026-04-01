@@ -28426,7 +28426,9 @@ function rpBuildVotes2(ep) {
 
 // ── Finale Camp Life: finalists reminisce, reflect on the season ──
 function rpBuildFinaleCampLife(ep) {
-  const finalists = ep.finaleFinalists || ep.gsSnapshot?.activePlayers || gs.activePlayers;
+  // Show ALL players who entered the finale (before fire-making/koh-lanta eliminations)
+  // gsSnapshot captures the state at episode start, before any eliminations happen
+  const finalists = ep.gsSnapshot?.activePlayers || ep.finaleFinalists || gs.activePlayers;
   if (!finalists.length) return null;
   const epNum = ep.num;
 

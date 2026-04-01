@@ -9740,12 +9740,12 @@ function applyTwist(ep, twist, isPrimary = true) {
       const _rewardGroup = [_w, ..._companions];
       const _existingAlliance = (gs.namedAlliances || []).find(a =>
         a.active !== false && _rewardGroup.every(m => a.members.includes(m)));
-      if (_existingAlliance) {
-        // Strengthen existing alliance bonds (proportional to strategic)
+      if (_existingAlliance && Math.random() < _ws.strategic * 0.06 + _ws.social * 0.03) {
+        // Proportional chance to use reward time strategically (stat 5+5 = 45%, stat 8+8 = 72%)
         const _strengthenBoost = _ws.strategic * 0.025; // stat 5 = 0.125, stat 10 = 0.25
         _rewardGroup.forEach(m1 => _rewardGroup.filter(m2 => m2 !== m1).forEach(m2 => addBond(m1, m2, _strengthenBoost)));
         twistObj.rewardAllianceStrengthened = _existingAlliance.name;
-      } else if (Math.random() < _ws.strategic * 0.04 + _ws.social * 0.02) {
+      } else if (!_existingAlliance && Math.random() < _ws.strategic * 0.04 + _ws.social * 0.02) {
         // Pitch fires — check if bonds support actual alliance formation
         // Avg bond between all reward group members determines success
         let _totalBond = 0, _bondPairs = 0;

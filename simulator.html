@@ -9726,9 +9726,30 @@ function applyTwist(ep, twist, isPrimary = true) {
 
       const _companions = [];
       const _pickReasons = [];
-      for (let i = 0; i < _maxCompanions && i < _scored.length; i++) {
-        _companions.push(_scored[i].name);
-        _pickReasons.push({ name: _scored[i].name, reason: _scored[i].reason, bond: _scored[i].bond });
+      // First companion: best scoring candidate
+      if (_scored.length) {
+        _companions.push(_scored[0].name);
+        _pickReasons.push({ name: _scored[0].name, reason: _scored[0].reason, bond: _scored[0].bond });
+      }
+      // Second companion: factor in compatibility with first pick
+      // Strategic pickers consider whether the pair can work together (for alliance pitch)
+      if (_maxCompanions >= 2 && _scored.length >= 2) {
+        const _c1 = _companions[0];
+        const _bondFloorPick = 0.5 - _ws.strategic * 0.15;
+        const _c2Scored = _scored.slice(1).map(c => {
+          const _pairBond = getBond(_c1, c.name);
+          // Compatibility bonus: if c1 and c2 get along, the reward group works better
+          // Strategic pickers weight this more — they're thinking about the alliance pitch
+          const _compatBonus = _useStrategy ? _pairBond * 0.3 : _pairBond * 0.1;
+          // Penalty if pair bond is below floor — strategic pickers avoid this (pitch will fail)
+          const _compatPenalty = (_useStrategy && _pairBond < _bondFloorPick) ? -2.0 : 0;
+          return { ...c, adjustedScore: c.score + _compatBonus + _compatPenalty, pairBond: _pairBond };
+        }).sort((a, b) => b.adjustedScore - a.adjustedScore);
+        if (_c2Scored.length) {
+          const _pick2 = _c2Scored[0];
+          _companions.push(_pick2.name);
+          _pickReasons.push({ name: _pick2.name, reason: _pick2.reason, bond: _pick2.bond, pairBond: Math.round(_pick2.pairBond * 10) / 10 });
+        }
       }
 
       // Bond boost: reward time together strengthens relationships
@@ -9762,9 +9783,13 @@ function applyTwist(ep, twist, isPrimary = true) {
         const _avgGroupBond = _bondPairs > 0 ? _totalBond / _bondPairs : 0;
         // Strategic players can bridge lower bonds (same bondFloor pattern as formAlliances)
         const _bondFloor = 0.5 - _ws.strategic * 0.15;
-        // Check pitcher's bond with each companion (NOT companion-to-companion)
-        // The pitcher is making individual pitches — companions don't need to like each other
-        const _allAboveFloor = _companions.every(c => getBond(_w, c) >= _bondFloor);
+        // All pairs must tolerate each other to form an alliance
+        const _allAboveFloor = (() => {
+          for (let _ri = 0; _ri < _rewardGroup.length; _ri++)
+            for (let _rj = _ri + 1; _rj < _rewardGroup.length; _rj++)
+              if (getBond(_rewardGroup[_ri], _rewardGroup[_rj]) < _bondFloor) return false;
+          return true;
+        })();
         // Check they're not already all in an alliance together
         const _alreadyAllied = (gs.namedAlliances || []).some(a =>
           a.active !== false && _rewardGroup.every(m => a.members.includes(m)));
@@ -9792,21 +9817,23 @@ function applyTwist(ep, twist, isPrimary = true) {
           twistObj.rewardAlliancePitched = true;
           twistObj.rewardAllianceFailed = true;
 
-          // Bond damage scales with how far below the floor the pitcher-companion bond is
+          // Bond damage scales with how far below the floor each pair is
           const _failedPairs = [];
-          _companions.forEach(c => {
-            const _pairBond = getBond(_w, c);
-            if (_pairBond < _bondFloor) {
-              const _gap = _bondFloor - _pairBond;
-              const _damage = -(0.1 + _gap * 0.15); // floor gap 0.5 = -0.175, gap 2.0 = -0.40, gap 4.0 = -0.70
-              addBond(_w, c, _damage);
-              _failedPairs.push({ a: _w, b: c, bond: Math.round(_pairBond * 10) / 10, damage: Math.round(_damage * 10) / 10 });
+          for (let _ri = 0; _ri < _rewardGroup.length; _ri++) {
+            for (let _rj = _ri + 1; _rj < _rewardGroup.length; _rj++) {
+              const _pairBond = getBond(_rewardGroup[_ri], _rewardGroup[_rj]);
+              if (_pairBond < _bondFloor) {
+                const _gap = _bondFloor - _pairBond;
+                const _damage = -(0.1 + _gap * 0.15);
+                addBond(_rewardGroup[_ri], _rewardGroup[_rj], _damage);
+                _failedPairs.push({ a: _rewardGroup[_ri], b: _rewardGroup[_rj], bond: Math.round(_pairBond * 10) / 10, damage: Math.round(_damage * 10) / 10 });
+              }
             }
-          });
+          }
 
           // Chance the rejected person leaks the pitch back at camp
           // Low loyalty = more likely to tell. High loyalty = keeps it quiet.
-          const _rejecters = _companions.filter(c => _failedPairs.some(fp => fp.b === c));
+          const _rejecters = _rewardGroup.filter(p => p !== _w && _failedPairs.some(fp => fp.a === p || fp.b === p));
           _rejecters.forEach(rejecter => {
             const _rjS = pStats(rejecter);
             const _leakChance = (10 - _rjS.loyalty) * 0.06 + _rjS.social * 0.03;
@@ -26676,7 +26703,13 @@ function rpBuildRewardChallenge(ep) {
     } else if (rc.rewardAllianceFailed) {
       html += `<div style="padding:10px 12px;background:rgba(218,54,51,0.04);border:1px solid rgba(218,54,51,0.12);border-radius:6px;margin-bottom:8px">
         <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:#f85149;margin-bottom:4px">PITCH FAILED</div>
-        <div style="font-size:12px;color:#8b949e">${rc.winner} tried to form an alliance during the reward. The conversation went nowhere — the bonds aren't there. Awkward silence on the ride back.</div>
+        <div style="font-size:12px;color:#8b949e">${rc.winner} tried to form an alliance during the reward. ${
+          (rc.rewardFailedPairs || []).length === 1 && rc.rewardFailedPairs[0].a !== rc.winner && rc.rewardFailedPairs[0].b !== rc.winner
+            ? `The problem wasn't ${rc.winner} — it was ${rc.rewardFailedPairs[0].a} and ${rc.rewardFailedPairs[0].b}. They can't stand each other. No alliance survives that.`
+            : (rc.rewardFailedPairs || []).some(fp => fp.a === rc.winner || fp.b === rc.winner)
+            ? `The bonds between ${rc.winner} and ${(rc.rewardFailedPairs || []).find(fp => fp.a === rc.winner || fp.b === rc.winner)?.a === rc.winner ? (rc.rewardFailedPairs || [])[0]?.b : (rc.rewardFailedPairs || [])[0]?.a} aren't strong enough. The pitch fell flat.`
+            : `The conversation went nowhere — the bonds aren't there. Awkward silence on the ride back.`
+        }</div>
         ${(rc.rewardFailedPairs || []).map(fp => `<div style="display:flex;align-items:center;gap:6px;margin-top:6px;font-size:11px;color:#f85149">
           ${rpPortrait(fp.a, 'xs')} ${rpPortrait(fp.b, 'xs')} <span>Bond ${fp.bond >= 0 ? '+' : ''}${Math.round(fp.bond * 10) / 10} → too cold (${fp.damage} hit)</span>
         </div>`).join('')}

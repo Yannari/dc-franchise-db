@@ -29115,8 +29115,23 @@ function rpBuildFiremakingDuel(ep) {
   const lS = pStats(r.loser);
   const _wPr = pronouns(r.winner);
   const _lPr = pronouns(r.loser);
-  const _place = (gs.episodeHistory || []).filter(h => h.eliminated).length + 1;
-  const _eq = vpGenerateQuote(r.loser, ep, 'eliminated');
+  // Fire-making-specific exit quote — lost a duel, not voted out
+  const _fmPick = arr => arr[([...r.loser].reduce((a,c)=>a+c.charCodeAt(0),0)+(ep.num||0)*3)%arr.length];
+  const _fmPool = [];
+  const _wasSaved = ep.firemakingDecision?.saved;
+  const _immWinner = ep.firemakingDecision?.immunityWinner;
+  if (r.winnerScore - r.loserScore < 1) {
+    _fmPool.push(`That close. That close and I'm sitting on the jury. My fire was right there. A few more seconds and it's a completely different ending.`);
+    _fmPool.push(`I lost by nothing. My rope was burning. ${r.winner}'s just burned faster. That's the kind of loss that haunts you.`);
+  }
+  if (lS.physical >= 7) _fmPool.push(`I'm supposed to win challenges. That's my thing. But fire doesn't care about your stats. ${r.winner} wanted it more. Or got luckier. I'll never know which.`);
+  if (lS.strategic >= 7) _fmPool.push(`I controlled this game for weeks. Votes, alliances, every move — mine. And I'm going home because of a flint and some coconut husk. The game has a sick sense of humor.`);
+  if (_immWinner && getBond(r.loser, _immWinner) >= 3) _fmPool.push(`${_immWinner} could have saved me. ${pronouns(_immWinner).Sub} had the necklace. ${pronouns(_immWinner).Sub} chose someone else. I understand the move. I just wish I didn't have to.`);
+  if (_wasSaved && getBond(r.loser, _wasSaved) <= -1) _fmPool.push(`${_immWinner} saved ${_wasSaved} over me. I'm making fire while ${_wasSaved} sits there watching. That decision is going to follow ${_immWinner} into FTC. I'll make sure of it.`);
+  _fmPool.push(`I didn't get outplayed. I didn't get blindsided. I lost a fire-making challenge. No strategy can save you from that. Just your hands and a flint.`);
+  _fmPool.push(`The game came down to fire and I couldn't make it fast enough. ${r.winner} earned that spot. I hate it, but ${pronouns(r.winner).sub} earned it.`);
+  _fmPool.push(`I survived every tribal council. Every single one. And I'm going home because of a duel I never asked for. That's this game.`);
+  const _eq = _fmPick(_fmPool);
   const gap = r.winnerScore - r.loserScore;
   const _pick = arr => arr[Math.floor(Math.random() * arr.length)];
 
@@ -29214,7 +29229,7 @@ function rpBuildFiremakingDuel(ep) {
 
   // Elimination card
   html += `<div class="rp-elim" style="margin-top:16px">
-    <div class="rp-elim-eyebrow">${ordinal(_place)} player eliminated — Fire-Making</div>
+    <div class="rp-elim-eyebrow">4th Place — Fire-Making</div>
     ${rpPortrait(r.loser, 'xl elim')}
     <div class="rp-elim-name">${r.loser}</div>
     <div class="rp-elim-arch">${vpArchLabel(r.loser)}</div>
@@ -29259,7 +29274,24 @@ function rpBuildFinalCut(ep) {
     html += _renderTwistScene({ text: `${brought} advances to the Final Tribal Council.`, players: [brought], badge: 'Advances', badgeClass: 'win' });
 
     const cutPlace = (ep.gsSnapshot?.activePlayers?.length || 0) + 2;
-    const _elimQ = vpGenerateQuote(cut, ep, 'eliminated');
+    // Cut-specific exit quote — eliminated by immunity winner's choice, not voted out
+    const _cutS = pStats(cut);
+    const _cutPr = pronouns(cut);
+    const _cutPick = arr => arr[([...cut].reduce((a,c)=>a+c.charCodeAt(0),0)+(ep.num||0)*5)%arr.length];
+    const _cutPool = [];
+    const _cutBondW = getBond(cut, winner);
+    if (_cutBondW >= 3) {
+      _cutPool.push(`${winner} and I were allies. Real allies. And ${pronouns(winner).sub} looked me in the eyes and sent me home. That's the kind of move that wins the game — or loses the jury.`);
+      _cutPool.push(`I trusted ${winner}. We went through everything together. And at the very end, ${pronouns(winner).sub} chose someone else. That's going to sit with me for a long time.`);
+    } else if (_cutBondW <= -1) {
+      _cutPool.push(`${winner} was never going to pick me. We both knew it. I just needed to win that last challenge and I didn't. That's on me.`);
+    }
+    if (_cutS.strategic >= 7) _cutPool.push(`I can see the math. ${winner} picked the person ${pronouns(winner).sub} can beat. I was the bigger jury threat. Smart move. Cold, but smart.`);
+    if (_cutS.social >= 7) _cutPool.push(`I had too many friends on that jury. ${winner} knew that. If I'm sitting at FTC, I probably win. That's why I'm not.`);
+    _cutPool.push(`One person had the power to end my game, and ${pronouns(winner).sub} used it. No vote. No tribal. Just a decision. That's the hardest way to go out.`);
+    _cutPool.push(`I made it to the final ${cutPlace > 3 ? cutPlace : 'three'}. I outlasted almost everyone. And one person's choice is the reason I'm not sitting at FTC right now.`);
+    _cutPool.push(`${ordinal(cutPlace)} place. So close. I can see the finish line from here — I'm just not allowed to cross it.`);
+    const _elimQ = _cutPick(_cutPool);
     html += `<hr class="rp-twist-divider"><div class="rp-elim">
       <div class="rp-elim-eyebrow">${ordinal(cutPlace)} place</div>
       ${rpPortrait(cut, 'xl elim')}

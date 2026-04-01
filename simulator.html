@@ -3086,9 +3086,11 @@ function updatePlayerStates(ep) {
     }
     const _priorBigMoves = state.bigMoves || 0;
     // Big moves: actions that build a FTC resume
-    // Broke alliance consensus (intentional flip)
+    // Broke alliance consensus (intentional flip) [STEALABLE]
     if (ep.votingLog?.some(e => e.voter === name && e.reason?.includes('broke '))) {
       state.bigMoves = (state.bigMoves || 0) + 1;
+      if (!gs.bigMoveEarnersThisEp) gs.bigMoveEarnersThisEp = [];
+      if (!gs.bigMoveEarnersThisEp.includes(name)) gs.bigMoveEarnersThisEp.push(name);
     }
     // Played an idol successfully (on self or ally)
     if (ep.idolPlays?.some(p => p.player === name && !p.misplay && !p.failed && (p.votesNegated || 0) > 0)) {
@@ -3102,13 +3104,15 @@ function updatePlayerStates(ep) {
     if (votesThisEp >= 3 && ep.eliminated !== name) {
       state.bigMoves = (state.bigMoves || 0) + 1;
     }
-    // Orchestrated a blindside — voted for eliminated player who didn't play an idol
+    // Orchestrated a blindside — voted for eliminated player who didn't play an idol [STEALABLE]
     if (ep.eliminated && ep.eliminated !== name && ep.votingLog?.some(e => e.voter === name && e.voted === ep.eliminated)) {
       const _elimPlayedIdol = (ep.idolPlays || []).some(p => (p.player === ep.eliminated || p.playedFor === ep.eliminated) && (p.votesNegated || 0) > 0);
       const _elimWasTopTarget = ep.votingLog.filter(e => e.voted === ep.eliminated).length >= Math.floor(ep.votingLog.length * 0.6);
       // Blindside = target didn't protect themselves AND wasn't the obvious consensus (< 60% of votes)
       if (!_elimPlayedIdol && !_elimWasTopTarget) {
         state.bigMoves = (state.bigMoves || 0) + 1;
+        if (!gs.bigMoveEarnersThisEp) gs.bigMoveEarnersThisEp = [];
+        if (!gs.bigMoveEarnersThisEp.includes(name)) gs.bigMoveEarnersThisEp.push(name);
       }
     }
     // Clutch immunity win — won immunity when you received votes last episode
@@ -3129,12 +3133,14 @@ function updatePlayerStates(ep) {
         const _primaryIdol = (ep.idolPlays || []).some(p => (p.player === _myPlan.primary || p.playedFor === _myPlan.primary) && (p.votesNegated || 0) > 0);
         // Idol was flushed AND secondary went home = split worked perfectly
         if (_primaryIdol && ep.eliminated === _myPlan.secondary) {
-          // Credit goes to highest strategic in the alliance
+          // Credit goes to highest strategic in the alliance [STEALABLE]
           const _allianceObj = (gs.namedAlliances || []).find(a => a.name === _myPlan.alliance);
           const _leader = (_allianceObj?.members || []).filter(m => gs.activePlayers.includes(m))
             .sort((a, b) => pStats(b).strategic - pStats(a).strategic)[0];
           if (_leader === name) {
             state.bigMoves = (state.bigMoves || 0) + 1;
+            if (!gs.bigMoveEarnersThisEp) gs.bigMoveEarnersThisEp = [];
+            if (!gs.bigMoveEarnersThisEp.includes(name)) gs.bigMoveEarnersThisEp.push(name);
           }
         }
       }
@@ -3150,12 +3156,14 @@ function updatePlayerStates(ep) {
     if (ep.isRockDraw && ep.eliminated !== name) {
       state.bigMoves = (state.bigMoves || 0) + 1;
     }
-    // Engineered someone else's idol misplay — voted for someone ELSE but the eliminated player wasted their idol
+    // Engineered someone else's idol misplay — voted for someone ELSE but the eliminated player wasted their idol [STEALABLE]
     if (ep.idolPlays?.some(p => p.misplay && p.player !== name)) {
       // You were part of the vote that caused the misplay (you didn't vote for the idol player)
       const _misplayer = ep.idolPlays.find(p => p.misplay)?.player;
       if (_misplayer && ep.votingLog?.some(e => e.voter === name && e.voted !== _misplayer)) {
         state.bigMoves = (state.bigMoves || 0) + 1;
+        if (!gs.bigMoveEarnersThisEp) gs.bigMoveEarnersThisEp = [];
+        if (!gs.bigMoveEarnersThisEp.includes(name)) gs.bigMoveEarnersThisEp.push(name);
       }
     }
     // Survived unanimous target — everyone voted for you but you survived (idol/advantage)
@@ -3173,7 +3181,7 @@ function updatePlayerStates(ep) {
     if (ep.tiebreakerResult?.winner === name) {
       state.bigMoves = (state.bigMoves || 0) + 1;
     }
-    // Pulled off a tight margin vote — in minority but still got target out (3-2, 2-1, 4-3)
+    // Pulled off a tight margin vote — in minority but still got target out (3-2, 2-1, 4-3) [STEALABLE]
     if (ep.eliminated && ep.votingLog?.length) {
       const _elimVotes = ep.votingLog.filter(e => e.voted === ep.eliminated).length;
       const _totalVotes = ep.votingLog.filter(e => e.voter !== 'THE GAME').length;
@@ -3181,18 +3189,24 @@ function updatePlayerStates(ep) {
       // Margin of 1 = tight vote, and this player voted for the eliminated
       if (_margin >= 1 && _margin <= 2 && _elimVotes < _totalVotes * 0.6 && ep.votingLog.some(e => e.voter === name && e.voted === ep.eliminated)) {
         state.bigMoves = (state.bigMoves || 0) + 1;
+        if (!gs.bigMoveEarnersThisEp) gs.bigMoveEarnersThisEp = [];
+        if (!gs.bigMoveEarnersThisEp.includes(name)) gs.bigMoveEarnersThisEp.push(name);
       }
     }
-    // First post-merge boot architect — orchestrated the first elimination after merge
+    // First post-merge boot architect — orchestrated the first elimination after merge [STEALABLE]
     if (ep.isMerge && ep.eliminated && ep.votingLog?.some(e => e.voter === name && e.voted === ep.eliminated)) {
       state.bigMoves = (state.bigMoves || 0) + 1;
+      if (!gs.bigMoveEarnersThisEp) gs.bigMoveEarnersThisEp = [];
+      if (!gs.bigMoveEarnersThisEp.includes(name)) gs.bigMoveEarnersThisEp.push(name);
     }
-    // Took out the biggest threat — eliminated player had the highest threat score
+    // Took out the biggest threat — eliminated player had the highest threat score [STEALABLE]
     if (ep.eliminated && ep.votingLog?.some(e => e.voter === name && e.voted === ep.eliminated)) {
       const _elimThreat = threatScore(ep.eliminated);
       const _maxThreat = Math.max(...gs.activePlayers.map(p => threatScore(p)), _elimThreat);
       if (_elimThreat >= _maxThreat && _elimThreat > 5) {
         state.bigMoves = (state.bigMoves || 0) + 1;
+        if (!gs.bigMoveEarnersThisEp) gs.bigMoveEarnersThisEp = [];
+        if (!gs.bigMoveEarnersThisEp.includes(name)) gs.bigMoveEarnersThisEp.push(name);
       }
     }
     // Challenge beast — 3+ individual immunity wins total
@@ -3210,11 +3224,9 @@ function updatePlayerStates(ep) {
         state.bigMoves = (state.bigMoves || 0) + 1;
       }
     }
-    // Track who earned bigMoves this episode for Stolen Credit mechanic
-    if ((state.bigMoves || 0) > _priorBigMoves) {
-      if (!gs.bigMoveEarnersThisEp) gs.bigMoveEarnersThisEp = [];
-      if (!gs.bigMoveEarnersThisEp.includes(name)) gs.bigMoveEarnersThisEp.push(name);
-    }
+    // Note: bigMoveEarnersThisEp tracking is done inline above — only STEALABLE moves
+    // (strategic/social moves where someone can reframe the narrative) push to the array.
+    // Personal achievements (challenge wins, idol plays, survival) can't be stolen.
 
     const wasTargeted = votesThisEp >= 2;
     const wasTagged    = votesThisEp === 1; // got one vote — noticed but not the main target

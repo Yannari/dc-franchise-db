@@ -28448,12 +28448,72 @@ function rpBuildFinaleChallenge(ep) {
   return html;
 }
 
+// ── Fire-Making: Camp Life — the lobbying and weight of the decision ──
+function rpBuildFiremakingCampLife(ep) {
+  if (!ep.firemakingDecision) return '';
+  const d = ep.firemakingDecision;
+  const winner = d.immunityWinner;
+  const others = [...(d.competitors || []), d.saved].filter(Boolean);
+  const _pr = pronouns(winner);
+  const _pick = arr => arr[Math.floor(Math.random() * arr.length)];
+
+  let html = `<div class="rp-page tod-golden">
+    <div class="rp-eyebrow">Episode ${ep.num} — Finale</div>
+    <div class="rp-title">After Immunity</div>
+    <div style="font-size:13px;color:#8b949e;text-align:center;margin-bottom:20px">${winner} holds the necklace. Three people need something from ${_pr.obj} tonight.</div>`;
+
+  // Winner's weight
+  html += `<div style="margin-bottom:16px;padding:14px;background:rgba(227,179,65,0.04);border:1px solid rgba(227,179,65,0.15);border-radius:10px">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+      ${rpPortrait(winner, 'sm')}
+      <div>
+        <div style="font-size:14px;font-weight:700;color:#e3b341">${winner}</div>
+        <div style="font-size:10px;color:#8b949e;font-weight:700;letter-spacing:1px">IMMUNITY HOLDER</div>
+      </div>
+    </div>
+    <div style="font-size:12px;color:#cdd9e5;line-height:1.6;font-style:italic">${_pick([
+      `${winner} sits by the fire with the necklace around ${_pr.posAdj} neck. Three people are going to walk up to ${_pr.obj} before tonight. ${_pr.Sub} already ${_pr.sub==='they'?'know':'knows'} what each of them will say. The question is what ${_pr.sub} ${_pr.sub==='they'?'say':'says'} back.`,
+      `The weight of the necklace isn't physical. It's the three conversations ${winner} has to have before tribal. One person gets saved. Two people make fire. ${_pr.Sub} ${_pr.sub==='they'?'decide':'decides'} who.`,
+      `${winner} hasn't spoken to anyone since winning immunity. ${_pr.Sub}'s thinking. The tribe can see it — the calculation behind the eyes. Everyone is giving ${_pr.obj} space. Nobody wants to push too hard.`,
+    ])}</div>
+  </div>`;
+
+  // Each other player lobbies the winner
+  others.forEach(player => {
+    const bond = getBond(winner, player);
+    const pS = pStats(player);
+    const pPr = pronouns(player);
+    const isSaved = player === d.saved;
+    const lobbyText = bond >= 3 ? _pick([
+      `${player} doesn't need to make a pitch. ${pPr.Sub} and ${winner} just look at each other. The understanding is already there. "You know where I stand," ${player} says quietly.`,
+      `${player} finds ${winner} alone. The conversation is short — they've said everything that matters over the last 30 days. "I trust you," ${player} says. ${winner} nods.`,
+    ]) : bond >= 1 ? _pick([
+      `${player} pulls ${winner} aside. "I know you have a decision to make. I'm just asking you to think about what we've built out here." ${winner} listens.`,
+      `${player} makes ${pPr.posAdj} case calmly. No begging. No threats. Just: "I've been loyal. That should mean something tonight."`,
+    ]) : _pick([
+      `${player} approaches ${winner} knowing the odds aren't great. "If you send me to fire, I'll win it. But I'd rather not have to." It's the most honest thing ${pPr.sub}'s said all game.`,
+      `${player} doesn't have a strong bond with ${winner}. ${pPr.Sub} ${pPr.sub==='they'?'know':'knows'} it. The pitch is pure strategy: "Think about who you can beat at the end. It's not ${d.saved || 'them'}."`,
+    ]);
+
+    html += `<div style="margin-bottom:12px;padding:12px;background:#0d1117;border:1px solid #21262d;border-radius:8px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        ${rpPortrait(player, 'sm')}
+        <div style="font-size:13px;font-weight:700;color:#e6edf3">${player}</div>
+        <div style="font-size:10px;color:${bond >= 2 ? '#3fb950' : bond >= 0 ? '#8b949e' : '#f85149'};margin-left:auto">Bond: ${bond >= 3 ? 'Strong' : bond >= 1 ? 'Positive' : bond >= 0 ? 'Neutral' : 'Negative'}</div>
+      </div>
+      <div style="font-size:12px;color:#8b949e;line-height:1.6;font-style:italic">${lobbyText}</div>
+    </div>`;
+  });
+
+  html += `</div>`;
+  return html;
+}
+
 // ── Fire-Making Decision Screen ──
 function rpBuildFiremakingDecision(ep) {
   if (!ep.firemakingDecision) return '';
   const d = ep.firemakingDecision;
   const _pr = pronouns(d.immunityWinner);
-  const _savedPr = pronouns(d.saved);
   const reasonText = d.savedReason === 'strategic'
     ? `${d.immunityWinner} ran the numbers. ${_pr.Sub} projected the jury votes and chose to save the person ${_pr.sub} can beat at Final Tribal. This wasn't about loyalty — it was about winning.`
     : `${d.immunityWinner} didn't hesitate. ${_pr.Sub} saved ${d.saved} — the person ${_pr.sub} ${_pr.sub==='they'?'trust':'trusts'} most in this game. Whatever happens next, they face it together.`;
@@ -28466,7 +28526,7 @@ function rpBuildFiremakingDecision(ep) {
       <div style="font-size:16px;font-weight:800;color:#e6edf3;margin-top:8px">${d.immunityWinner}</div>
       <div style="font-size:11px;color:#3fb950;font-weight:700;letter-spacing:1px">IMMUNITY WINNER</div>
     </div>
-    <div style="font-size:13px;color:#8b949e;text-align:center;line-height:1.6;max-width:500px;margin:0 auto 20px">${d.immunityWinner} must choose one person to save. The other two will make fire. The loser goes home.</div>
+    <div style="font-size:13px;color:#8b949e;text-align:center;line-height:1.6;max-width:500px;margin:0 auto 20px">${d.immunityWinner} must choose one person to take to Final Tribal. The other two will make fire. The loser goes home.</div>
     <div style="display:flex;justify-content:center;gap:24px;margin:20px 0;flex-wrap:wrap">
       <div style="text-align:center;padding:16px;background:rgba(63,185,80,0.06);border:2px solid rgba(63,185,80,0.3);border-radius:12px;min-width:120px">
         ${rpPortrait(d.saved, 'xl')}
@@ -28484,7 +28544,7 @@ function rpBuildFiremakingDecision(ep) {
   return html;
 }
 
-// ── Fire-Making Duel Screen ──
+// ── Fire-Making Duel Screen — staged suspense ──
 function rpBuildFiremakingDuel(ep) {
   if (!ep.firemakingResult) return '';
   const r = ep.firemakingResult;
@@ -28494,41 +28554,110 @@ function rpBuildFiremakingDuel(ep) {
   const _lPr = pronouns(r.loser);
   const _place = (gs.episodeHistory || []).filter(h => h.eliminated).length + 1;
   const _eq = vpGenerateQuote(r.loser, ep, 'eliminated');
-
-  // Narrative based on score gap
   const gap = r.winnerScore - r.loserScore;
-  const narrative = gap >= 3 ? `It wasn't close. ${r.winner} built the fire with a calm efficiency that made ${r.loser}'s effort look frantic. The flame caught, the flag burned through, and it was over.`
-    : gap >= 1 ? `Both fires grew. Both players fought for their life. ${r.winner} found the angle first — the flame climbed the rope, the flag dropped. ${r.loser} was seconds behind.`
-    : `This was as close as fire-making gets. Both ropes were burning. Both players were shaking. ${r.winner}'s flag dropped a heartbeat before ${r.loser}'s. A fraction of a second. That's the margin of a million-dollar game.`;
+  const _pick = arr => arr[Math.floor(Math.random() * arr.length)];
 
-  let html = `<div class="rp-page tod-deepnight">
+  // Determine who had the early lead (adds to suspense if the leader changes)
+  const _wBase = wS.physical * 0.4 + wS.endurance * 0.4 + wS.temperament * 0.2;
+  const _lBase = lS.physical * 0.4 + lS.endurance * 0.4 + lS.temperament * 0.2;
+  const earlyLeader = _wBase >= _lBase ? r.winner : r.loser;
+  const comeback = earlyLeader !== r.winner;
+
+  let html = `<div class="rp-page tod-deepnight" style="background:radial-gradient(ellipse at 50% 80%, rgba(232,135,58,0.08) 0%, transparent 50%)">
     <div class="rp-eyebrow">Episode ${ep.num} — Finale</div>
-    <div class="rp-title" style="color:#e8873a">Fire-Making</div>
-    <div style="font-size:13px;color:#8b949e;text-align:center;margin-bottom:16px">Make fire. Burn through the rope. Raise the flag. First one done stays in the game.</div>
-    <div style="display:flex;justify-content:center;align-items:flex-start;gap:32px;margin:20px 0;flex-wrap:wrap">
+    <div style="font-family:var(--font-display);font-size:28px;letter-spacing:2px;text-align:center;margin-bottom:4px;text-transform:uppercase;color:#e8873a">Fire-Making</div>
+    <div style="font-size:12px;color:#8b949e;text-align:center;margin-bottom:20px">Make fire. Burn through the rope. Raise the flag. First one done stays in the game.</div>
+
+    <div style="display:flex;justify-content:center;align-items:center;gap:24px;margin:16px 0 24px;flex-wrap:wrap">
       <div style="text-align:center">
         ${rpPortrait(r.winner, 'xl')}
-        <div style="font-size:14px;font-weight:800;color:#3fb950;margin-top:8px">${r.winner}</div>
-        <div style="font-size:10px;color:#8b949e">Physical ${wS.physical} · Endurance ${wS.endurance} · Temperament ${wS.temperament}</div>
-        <div style="font-size:18px;font-weight:900;color:#3fb950;margin-top:6px">STAYS</div>
+        <div style="font-size:14px;font-weight:800;color:#e6edf3;margin-top:6px">${r.winner}</div>
+        <div style="font-size:10px;color:#8b949e">PHY ${wS.physical} · END ${wS.endurance} · TMP ${wS.temperament}</div>
       </div>
-      <div style="align-self:center;font-size:28px;color:#e8873a">🔥</div>
+      <div style="font-size:36px;color:#e8873a">🔥</div>
       <div style="text-align:center">
-        ${rpPortrait(r.loser, 'xl elim')}
-        <div style="font-size:14px;font-weight:800;color:#f85149;margin-top:8px">${r.loser}</div>
-        <div style="font-size:10px;color:#8b949e">Physical ${lS.physical} · Endurance ${lS.endurance} · Temperament ${lS.temperament}</div>
-        <div style="font-size:18px;font-weight:900;color:#f85149;margin-top:6px">ELIMINATED</div>
+        ${rpPortrait(r.loser, 'xl')}
+        <div style="font-size:14px;font-weight:800;color:#e6edf3;margin-top:6px">${r.loser}</div>
+        <div style="font-size:10px;color:#8b949e">PHY ${lS.physical} · END ${lS.endurance} · TMP ${lS.temperament}</div>
       </div>
+    </div>`;
+
+  // ── STAGED NARRATIVE — 4 beats building tension ──
+  // Stage 1: Setup
+  html += `<div style="padding:12px 16px;background:rgba(232,135,58,0.03);border-left:3px solid rgba(232,135,58,0.3);margin-bottom:10px;border-radius:0 8px 8px 0">
+    <div style="font-size:9px;font-weight:800;letter-spacing:2px;color:#e8873a;margin-bottom:4px">THE FIRE IS LIT</div>
+    <div style="font-size:12px;color:#cdd9e5;line-height:1.6">${_pick([
+      `Both players kneel in front of their stations. Flint in one hand. Husks in the other. The jury leans forward. This is it.`,
+      `The host gives the signal. ${r.winner} and ${r.loser} grab their flints. The sound of steel on stone cuts through the silence. The race is on.`,
+      `Everything they've done for the past 30 days comes down to this. Two people. Two fires. One stays.`,
+    ])}</div>
+  </div>`;
+
+  // Stage 2: Early progress
+  html += `<div style="padding:12px 16px;background:rgba(232,135,58,0.03);border-left:3px solid rgba(232,135,58,0.4);margin-bottom:10px;border-radius:0 8px 8px 0">
+    <div style="font-size:9px;font-weight:800;letter-spacing:2px;color:#e8873a;margin-bottom:4px">SPARKS</div>
+    <div style="font-size:12px;color:#cdd9e5;line-height:1.6">${earlyLeader === r.winner ? _pick([
+      `${r.winner} gets sparks first. A small flame catches the coconut husk and holds. ${r.loser} is still striking — the frustration is starting to show.`,
+      `${r.winner} finds a rhythm early. Spark. Smoke. Flame. ${r.loser} watches from the corner of ${_lPr.posAdj} eye and adjusts.`,
+    ]) : _pick([
+      `${r.loser} gets a flame going first. The jury shifts. ${r.winner} is behind — but not panicking. Not yet.`,
+      `${r.loser} has fire. ${r.winner} doesn't. The gap is real. But fire-making isn't about who starts first — it's about who finishes.`,
+    ])}</div>
+  </div>`;
+
+  // Stage 3: The tension
+  html += `<div style="padding:12px 16px;background:rgba(232,135,58,0.03);border-left:3px solid rgba(232,135,58,0.5);margin-bottom:10px;border-radius:0 8px 8px 0">
+    <div style="font-size:9px;font-weight:800;letter-spacing:2px;color:#e8873a;margin-bottom:4px">${comeback ? 'THE COMEBACK' : gap < 1 ? 'NECK AND NECK' : 'PULLING AWAY'}</div>
+    <div style="font-size:12px;color:#cdd9e5;line-height:1.6">${comeback ? _pick([
+      `${r.winner}'s fire gutters. Then catches again. Then GROWS. In thirty seconds, ${_wPr.sub} ${_wPr.sub==='they'?'go':'goes'} from behind to level. The jury gasps.`,
+      `${r.loser}'s flame was bigger. WAS. ${r.winner} rebuilt from nothing and now both fires are climbing. The lead is gone.`,
+    ]) : gap < 1 ? _pick([
+      `Both fires are climbing. Both ropes are smoking. Nobody in the jury can tell who's ahead. The host is leaning in.`,
+      `It's dead even. Both flames licking the rope. Both players feeding fuel with shaking hands. This is coming down to seconds.`,
+    ]) : _pick([
+      `${r.winner}'s fire is roaring. The rope above it is starting to blacken. ${r.loser} is working — but the gap is widening with every second.`,
+      `${r.winner} found the angle. The flame is climbing straight up the rope now. ${r.loser} can see it. Everyone can see it.`,
+    ])}</div>
+  </div>`;
+
+  // Stage 4: The finish
+  html += `<div style="padding:12px 16px;background:rgba(232,135,58,0.06);border-left:3px solid #e8873a;margin-bottom:16px;border-radius:0 8px 8px 0">
+    <div style="font-size:9px;font-weight:800;letter-spacing:2px;color:#e8873a;margin-bottom:4px">THE FLAG DROPS</div>
+    <div style="font-size:12px;color:#cdd9e5;line-height:1.6">${gap >= 3 ? _pick([
+      `${r.winner}'s rope snaps. The flag drops. It's over. ${r.loser} puts ${_lPr.posAdj} hands on ${_lPr.posAdj} knees and looks at the ground. The jury erupts.`,
+      `The rope burns through and ${r.winner}'s flag drops with a finality that silences the entire tribal. ${r.loser} stops. Stares at the fire. Then nods.`,
+    ]) : gap >= 1 ? _pick([
+      `${r.winner}'s rope gives way first. The flag drops. ${r.loser}'s rope was seconds from breaking — but seconds are everything. The jury is on their feet.`,
+      `Both ropes are burning. ${r.winner}'s gives first. The flag falls. ${r.loser} watches it happen from three feet away, knowing ${_lPr.posAdj} rope was almost there.`,
+    ]) : _pick([
+      `Both flags are hanging by a thread. Then ${r.winner}'s drops. A FRACTION of a second before ${r.loser}'s. The closest fire-making in the history of this game. The jury can't believe what they just saw.`,
+      `It happens almost simultaneously. Both ropes snap. Both flags drop. But ${r.winner}'s hit the ground first. By a margin you couldn't see with the naked eye. ${r.loser} collapses. ${r.winner} collapses. The jury collapses.`,
+    ])}</div>
+  </div>`;
+
+  // Result
+  html += `<div style="display:flex;justify-content:center;gap:32px;margin:20px 0;flex-wrap:wrap">
+    <div style="text-align:center">
+      ${rpPortrait(r.winner, 'xl')}
+      <div style="font-size:18px;font-weight:900;color:#3fb950;margin-top:8px">STAYS</div>
+      <div style="font-size:12px;color:#e6edf3">${r.winner}</div>
     </div>
-    <div style="font-size:13px;color:#cdd9e5;text-align:center;line-height:1.7;max-width:500px;margin:0 auto 20px">${narrative}</div>
-    <div class="rp-elim" style="margin-top:16px">
-      <div class="rp-elim-eyebrow">${ordinal(_place)} player eliminated — Fire-Making</div>
+    <div style="text-align:center">
       ${rpPortrait(r.loser, 'xl elim')}
-      <div class="rp-elim-name">${r.loser}</div>
-      <div class="rp-elim-arch">${vpArchLabel(r.loser)}</div>
-      <div class="rp-elim-quote">"${_eq}"</div>
-      <div class="rp-elim-place">Eliminated by Fire — Episode ${ep.num}</div>
+      <div style="font-size:18px;font-weight:900;color:#f85149;margin-top:8px">ELIMINATED</div>
+      <div style="font-size:12px;color:#e6edf3">${r.loser}</div>
     </div>
+  </div>`;
+
+  // Elimination card
+  html += `<div class="rp-elim" style="margin-top:16px">
+    <div class="rp-elim-eyebrow">${ordinal(_place)} player eliminated — Fire-Making</div>
+    ${rpPortrait(r.loser, 'xl elim')}
+    <div class="rp-elim-name">${r.loser}</div>
+    <div class="rp-elim-arch">${vpArchLabel(r.loser)}</div>
+    <div class="rp-elim-quote">"${_eq}"</div>
+    <div class="rp-elim-place">Eliminated by Fire — Episode ${ep.num}</div>
+  </div>
   </div>`;
   return html;
 }
@@ -31562,9 +31691,9 @@ function buildVPScreens(epRecord) {
   }
 
   // ── 5. Challenge ──
-  if (ep.isFinale && ep.challengeType && seasonConfig.finaleSize >= 3 && seasonConfig.finaleFormat !== 'final-challenge') {
-    // Finale immunity challenge: jury format only, finaleSize >= 3 (final-challenge has its own Grand Challenge screen)
-    vpScreens.push({ id:'finale-challenge', label:'Final Immunity', html: rpBuildFinaleChallenge(ep) });
+  if (ep.isFinale && ep.challengeType && (seasonConfig.finaleSize >= 3 || seasonConfig.firemaking) && seasonConfig.finaleFormat !== 'final-challenge') {
+    // Finale immunity: use the same detailed challenge screen as regular episodes
+    vpScreens.push({ id:'finale-challenge', label:'Final Immunity', html: rpBuildChallenge(ep) });
   } else if (ep.challengeType && !ep.isFinale && !ep.isSlasherNight) {
     vpScreens.push({ id:'challenge', label:'Immunity Challenge', html: rpBuildChallenge(ep) });
   }
@@ -31875,8 +32004,10 @@ function buildVPScreens(epRecord) {
   if (ep.isFinale) {
     // ── FINALE-SPECIFIC SCREENS ──
 
-    // Fire-Making: immunity winner's decision + fire duel
+    // Fire-Making: camp lobbying → decision → fire duel
     if (ep.firemakingDecision) {
+      const _fmCampHtml = rpBuildFiremakingCampLife(ep);
+      if (_fmCampHtml) vpScreens.push({ id:'firemaking-camp', label:'After Immunity', html: _fmCampHtml });
       vpScreens.push({ id:'firemaking-decision', label:'The Decision', html: rpBuildFiremakingDecision(ep) });
     }
     if (ep.firemakingResult) {

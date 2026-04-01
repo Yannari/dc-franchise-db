@@ -9744,9 +9744,58 @@ function applyTwist(ep, twist, isPrimary = true) {
         // Strengthen existing alliance bonds (proportional to strategic)
         const _strengthenBoost = _ws.strategic * 0.025; // stat 5 = 0.125, stat 10 = 0.25
         _rewardGroup.forEach(m1 => _rewardGroup.filter(m2 => m2 !== m1).forEach(m2 => addBond(m1, m2, _strengthenBoost)));
+        twistObj.rewardAllianceStrengthened = _existingAlliance.name;
       } else if (Math.random() < _ws.strategic * 0.04 + _ws.social * 0.02) {
-        // Chance to pitch a new alliance (proportional: stat 5+5 = 30%, stat 8+8 = 48%)
-        twistObj.rewardAlliancePitched = true;
+        // Pitch fires — check if bonds support actual alliance formation
+        // Avg bond between all reward group members determines success
+        let _totalBond = 0, _bondPairs = 0;
+        for (let _ri = 0; _ri < _rewardGroup.length; _ri++) {
+          for (let _rj = _ri + 1; _rj < _rewardGroup.length; _rj++) {
+            _totalBond += getBond(_rewardGroup[_ri], _rewardGroup[_rj]);
+            _bondPairs++;
+          }
+        }
+        const _avgGroupBond = _bondPairs > 0 ? _totalBond / _bondPairs : 0;
+        // Strategic players can bridge lower bonds (same bondFloor pattern as formAlliances)
+        const _bondFloor = 0.5 - _ws.strategic * 0.15;
+        const _allAboveFloor = (() => {
+          for (let _ri = 0; _ri < _rewardGroup.length; _ri++)
+            for (let _rj = _ri + 1; _rj < _rewardGroup.length; _rj++)
+              if (getBond(_rewardGroup[_ri], _rewardGroup[_rj]) < _bondFloor) return false;
+          return true;
+        })();
+        // Check they're not already all in an alliance together
+        const _alreadyAllied = (gs.namedAlliances || []).some(a =>
+          a.active !== false && _rewardGroup.every(m => a.members.includes(m)));
+        // Check global alliance cap
+        const _activeAlliances = (gs.namedAlliances || []).filter(a => a.active !== false).length;
+        const _globalCap = Math.max(2, Math.floor(gs.activePlayers.length * 0.4));
+
+        if (_allAboveFloor && !_alreadyAllied && _activeAlliances < _globalCap) {
+          // Alliance forms! Away from camp, private setting — perfect conditions
+          const _rwAllianceName = nameNewAlliance(_rewardGroup.length);
+          gs.namedAlliances.push({
+            id: `alliance_${Date.now()}_${Math.floor(Math.random()*1000)}`,
+            name: _rwAllianceName, members: [..._rewardGroup],
+            formed: (gs.episode || 0) + 1, betrayals: [], active: true,
+          });
+          // Bonus bond from forming away from camp (private, intimate setting)
+          for (let _ri = 0; _ri < _rewardGroup.length; _ri++)
+            for (let _rj = _ri + 1; _rj < _rewardGroup.length; _rj++)
+              addBond(_rewardGroup[_ri], _rewardGroup[_rj], 0.5);
+          twistObj.rewardAlliancePitched = true;
+          twistObj.rewardAllianceFormed = _rwAllianceName;
+          twistObj.rewardAllianceMembers = [..._rewardGroup];
+        } else if (!_allAboveFloor) {
+          // Pitch failed — bonds too weak, awkward conversation
+          twistObj.rewardAlliancePitched = true;
+          twistObj.rewardAllianceFailed = true;
+          // Awkwardness: mild bond penalty between the pitcher and the resistant member
+          for (let _ri = 0; _ri < _rewardGroup.length; _ri++)
+            for (let _rj = _ri + 1; _rj < _rewardGroup.length; _rj++)
+              if (getBond(_rewardGroup[_ri], _rewardGroup[_rj]) < _bondFloor)
+                addBond(_rewardGroup[_ri], _rewardGroup[_rj], -0.2);
+        }
       }
 
       twistObj.rewardCompanions = _companions;
@@ -16976,7 +17025,7 @@ function simulateEpisode() {
           rewardItemId: rct.rewardItemId || null, rewardItemLabel: rct.rewardItemLabel || null,
           rewardItemDesc: rct.rewardItemDesc || null, rewardCompanions: rct.rewardCompanions || null,
           rewardPickReasons: rct.rewardPickReasons || null, rewardPickStrategy: rct.rewardPickStrategy || null,
-          rewardSnubs: rct.rewardSnubs || null, rewardAlliancePitched: rct.rewardAlliancePitched || false,
+          rewardSnubs: rct.rewardSnubs || null, rewardAlliancePitched: rct.rewardAlliancePitched || false, rewardAllianceFormed: rct.rewardAllianceFormed || null, rewardAllianceFailed: rct.rewardAllianceFailed || false, rewardAllianceMembers: rct.rewardAllianceMembers || null, rewardAllianceStrengthened: rct.rewardAllianceStrengthened || null,
           rewardMaxCompanions: rct.rewardMaxCompanions || null,
           rewardCluedPlayer: rct.rewardCluedPlayer || null,
         };
@@ -17527,7 +17576,7 @@ function simulateEpisode() {
         rewardItemDesc:  rct.rewardItemDesc  || null,
         rewardCompanions:  rct.rewardCompanions  || null,
         rewardPickReasons: rct.rewardPickReasons || null, rewardPickStrategy: rct.rewardPickStrategy || null,
-        rewardSnubs: rct.rewardSnubs || null, rewardAlliancePitched: rct.rewardAlliancePitched || false,
+        rewardSnubs: rct.rewardSnubs || null, rewardAlliancePitched: rct.rewardAlliancePitched || false, rewardAllianceFormed: rct.rewardAllianceFormed || null, rewardAllianceFailed: rct.rewardAllianceFailed || false, rewardAllianceMembers: rct.rewardAllianceMembers || null, rewardAllianceStrengthened: rct.rewardAllianceStrengthened || null,
         rewardMaxCompanions: rct.rewardMaxCompanions || null,
         rewardCluedPlayer: rct.rewardCluedPlayer || null,
       };
@@ -26587,10 +26636,21 @@ function rpBuildRewardChallenge(ep) {
       html += `</div>`;
     }
 
-    // Alliance pitched
-    if (rc.rewardAlliancePitched) {
-      html += `<div style="padding:8px 12px;background:rgba(227,179,65,0.06);border:1px solid rgba(227,179,65,0.15);border-radius:6px;font-size:11px;color:#e3b341">
-        <strong>STRATEGIC TALK</strong> — ${rc.winner} used the reward to pitch an alliance. Away from camp, away from ears.
+    // Alliance outcome
+    if (rc.rewardAllianceFormed) {
+      html += `<div style="padding:10px 12px;background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.2);border-radius:6px;margin-bottom:8px">
+        <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:#3fb950;margin-bottom:4px">ALLIANCE FORMED</div>
+        <div style="font-size:12px;color:#e6edf3"><strong>${rc.rewardAllianceFormed}</strong> — born over a shared reward, away from camp. ${rc.winner} made the pitch. Nobody else heard it.</div>
+        <div style="display:flex;gap:4px;margin-top:6px">${(rc.rewardAllianceMembers || []).map(m => rpPortrait(m, 'sm')).join('')}</div>
+      </div>`;
+    } else if (rc.rewardAllianceFailed) {
+      html += `<div style="padding:10px 12px;background:rgba(218,54,51,0.04);border:1px solid rgba(218,54,51,0.12);border-radius:6px;margin-bottom:8px">
+        <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:#f85149;margin-bottom:4px">PITCH FAILED</div>
+        <div style="font-size:12px;color:#8b949e">${rc.winner} tried to form an alliance during the reward. The conversation went nowhere — the bonds aren't there. Awkward silence on the ride back.</div>
+      </div>`;
+    } else if (rc.rewardAllianceStrengthened) {
+      html += `<div style="padding:8px 12px;background:rgba(227,179,65,0.06);border:1px solid rgba(227,179,65,0.15);border-radius:6px;margin-bottom:8px;font-size:11px;color:#e3b341">
+        <strong>ALLIANCE STRENGTHENED</strong> — ${rc.rewardAllianceStrengthened} used the reward to solidify their deal. Private time, no distractions.
       </div>`;
     }
 

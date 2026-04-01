@@ -20339,7 +20339,22 @@ function initGameState() {
     topVoteStreak: {},            // { [name]: consecutive eps as top vote-getter }
     dominantAllianceStreak: { id: null, count: 0 },
     heroVillainRivalries: _heroVillainRivalries, // [{ hero, villain }] — auto-detected at init
+    // Survival mechanics
+    survival: {},                  // { [name]: 0-100 } per-player survival
+    tribeFood: {},                 // { [tribeName]: 0-100 } per-tribe food reserve
+    currentProviders: [],          // provider names this episode
+    currentSlackers: [],           // slacker names this episode
+    providerHistory: {},           // { [name]: episodeCount } — how many eps as provider
+    collapseWarning: {},           // { [name]: epNum } — collapse event fired
+    medevacs: [],                  // medevac records for season stats
   };
+
+  // Initialize survival values when food/water system is enabled
+  if (seasonConfig.foodWater === 'enabled') {
+    gs.activePlayers.forEach(p => { gs.survival[p] = 80; });
+    gs.tribes.forEach(t => { gs.tribeFood[t.name] = 60; });
+  }
+
   saveGameState();
   return true;
 }

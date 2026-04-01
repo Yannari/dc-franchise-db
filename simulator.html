@@ -22069,6 +22069,135 @@ function generateFTCData(finalists, juryResult) {
   return { finalistStatements, jurorQA };
 }
 
+function generateFanCampaign(finalists) {
+  const jury = gs.jury || [];
+  const _pick = (arr, seed) => arr[([...seed].reduce((a,c)=>a+c.charCodeAt(0),0)+gs.episode*7)%arr.length];
+  const usedJurors = new Set();
+
+  const phases = finalists.map((name, idx) => {
+    const s = pStats(name);
+    const pr = pronouns(name);
+    const arch = players.find(p => p.name === name)?.archetype || '';
+    const pop = gs.popularity?.[name] || 0;
+    const _betrayalCount = (gs.namedAlliances || []).reduce((n, a) => n + (a.betrayals || []).filter(b => b.player === name).length, 0);
+    const _bigMoves = gs.playerStates?.[name]?.bigMoves || 0;
+    const wins = gs.episodeHistory.filter(e => e.immunityWinner === name).length;
+    const showmance = gs.showmances?.find(sm => sm.players.includes(name) && sm.phase !== 'broken-up');
+
+    // Determine speech style from highest stat
+    const styleScores = [
+      { style: 'bold', val: s.boldness },
+      { style: 'social', val: s.social },
+      { style: 'strategic', val: s.strategic },
+    ].sort((a, b) => b.val - a.val);
+    const style = styleScores[0].style;
+
+    // Speech — personality-driven, references actual game
+    let speech;
+    if (style === 'bold') {
+      speech = _pick([
+        `"I didn't come here to make friends. I came here to win. ${_betrayalCount > 0 ? `Yeah, I cut people. ${_betrayalCount} alliance${_betrayalCount !== 1 ? 's' : ''} — I broke them because they were in my way.` : `I stayed loyal when I could, and I fought when I had to.`} ${wins > 0 ? `${wins} immunity win${wins !== 1 ? 's' : ''} — I earned my safety.` : `I didn't need immunity. I made myself too valuable to vote out.`} You want a winner who played scared? Vote for ${pr.obj === 'them' ? 'someone else' : 'the other one'}. You want a winner who played with guts? I'm right here."`,
+        `"Every person sitting on that jury knows what I did. I owned every move. ${_bigMoves > 0 ? `${_bigMoves} big move${_bigMoves !== 1 ? 's' : ''} — and I'd make every one of them again.` : `I played steady when others crumbled.`} This isn't a popularity contest — ${pr.sub === 'they' ? 'wait' : 'wait'}, actually, it is. And I think the fans respect someone who plays hard."`,
+        `"Look — I'm not perfect. I know that. But I played THIS game harder than anyone sitting next to me. ${showmance ? `${showmance.players.find(p => p !== name)} and I had something real out there — that wasn't strategy, that was human.` : `I connected with people when it mattered.`} ${_betrayalCount >= 2 ? `Did I betray people? Absolutely. Did I feel good about it? No. Did it get me here? Yes.` : `I kept my word more than most.`} Vote for the player who actually played."`,
+      ], name + 'bold');
+    } else if (style === 'social') {
+      speech = _pick([
+        `"I know people think this game is about strategy. And it is. But it's also about people. ${showmance ? `${showmance.players.find(p => p !== name)} — you know what we had was real. That's not a weakness.` : `Every relationship I built out there was genuine.`} I listened. I cared. And I made it to the end because people trusted me — not because I tricked them. ${wins > 0 ? `I won challenges too — ${wins} of them.` : ''} I played a full game. A human game. I hope that's enough."`,
+        `"Thirty-something days out here. I've laughed, I've cried, I've been scared, I've been angry. ${_betrayalCount === 0 ? `And through all of it, I never wrote down someone I promised I wouldn't.` : `I made mistakes — I know that. But I owned them.`} I built real connections with real people. That's not weakness. That's the hardest thing to do in this game. If the fans saw that — if they felt what I felt — then I think they'll know who to vote for."`,
+        `"I want to tell you who I am. Not what I did in the game — who I AM. I'm someone who ${s.loyalty >= 7 ? `keeps ${pr.pos} word even when it costs ${pr.obj}` : `fights for the people ${pr.sub} ${pr.sub==='they'?'care':'cares'} about`}. That's what I brought to this island. ${_bigMoves > 0 ? `I made moves too — don't think I didn't. But the moves meant something because the relationships meant something.` : `I survived by being someone people wanted around.`} I hope the fans saw that."`,
+      ], name + 'social');
+    } else {
+      speech = _pick([
+        `"Let me break it down. ${_bigMoves > 0 ? `${_bigMoves} big move${_bigMoves !== 1 ? 's' : ''}. ` : ''}${wins > 0 ? `${wins} immunity win${wins !== 1 ? 's' : ''}. ` : ''}${_betrayalCount > 0 ? `${_betrayalCount} alliance${_betrayalCount !== 1 ? 's' : ''} broken — each one for a reason.` : `Zero betrayals. I played clean.`} I controlled votes. I read the room. I positioned myself where I needed to be at every tribal. ${pr.Sub} sitting next to me ${finalists.length > 2 ? 'can\'t say that' : 'can\'t say that'}. If you're voting on gameplay — the choice is obvious."`,
+        `"I played this game like a chess match. Every vote, I knew who was going home before tribal started. ${_betrayalCount >= 2 ? `Yes, I cut allies. Because I understood the board better than they did.` : `I didn't need to betray people — I set the board so I didn't have to.`} ${showmance ? `Even my relationship with ${showmance.players.find(p => p !== name)} — I won't pretend that wasn't partly strategic. But it was real too.` : ''} The fans have watched every episode. They've seen every confessional. They know who ran this game."`,
+        `"Strategy. That's what got me here. Not luck, not immunity wins${wins > 0 ? ` — well, ${wins} of those too` : ''}, not being liked. I outplayed everyone. ${_bigMoves >= 2 ? `The idol play in episode — that was me. The alliance flip — me. The split vote — me.` : `Every move I made was calculated.`} I'm not going to stand here and cry about relationships. I'm going to tell you I played the best game. And I think the fans agree."`,
+      ], name + 'strategic');
+    }
+
+    // Pulse reaction — based on popularity rank among finalists
+    const popRanks = [...finalists].sort((a, b) => (gs.popularity?.[b] || 0) - (gs.popularity?.[a] || 0));
+    const popRank = popRanks.indexOf(name);
+    const pulseReaction = popRank === 0 ? 'surging' : popRank === popRanks.length - 1 ? (Math.random() < 0.5 ? 'mixed' : 'cooling') : 'steady';
+
+    // Fan reactions — keyed to archetype and game history
+    const posPool = arch === 'villain'
+      ? ['ICONIC VILLAIN', 'love to hate you', 'RESPECT THE GAME', 'villain era']
+      : arch === 'hero'
+      ? ['DESERVES IT', 'the real deal', 'HERO', 'pure heart']
+      : _bigMoves >= 2
+      ? ['GAME CHANGER', 'what a player', 'MASTERMIND', 'ran the season']
+      : showmance
+      ? ['power couple energy', 'heart of the season', 'LOVE WINS', 'rooting for you']
+      : ['let\'s GO', 'earned it', 'WINNER', 'fan favorite'];
+    const negPool = arch === 'villain'
+      ? ['snake', 'didn\'t deserve it', 'carried', 'no loyalty']
+      : _betrayalCount >= 2
+      ? ['backstabber', 'can\'t trust that', 'FAKE', 'snake energy']
+      : ['overrated', 'meh', 'boring winner', 'not impressed'];
+
+    // Higher popularity = more positive reactions
+    const posCount = pop >= (gs.popularity?.[finalists.find(f => f !== name)] || 0) ? 2 : 1;
+    const negCount = 3 - posCount;
+    const fanReactions = [];
+    const _usedPos = new Set(), _usedNeg = new Set();
+    for (let i = 0; i < posCount; i++) {
+      const r = _pick(posPool.filter(x => !_usedPos.has(x)), name + 'pos' + i);
+      _usedPos.add(r);
+      fanReactions.push({ text: r, sentiment: 'positive' });
+    }
+    for (let i = 0; i < negCount; i++) {
+      const r = _pick(negPool.filter(x => !_usedNeg.has(x)), name + 'neg' + i);
+      _usedNeg.add(r);
+      fanReactions.push({ text: r, sentiment: 'negative' });
+    }
+
+    // Jury reactions — pick juror with strongest bond to THIS finalist, not used yet
+    const juryReactions = [];
+    const availJurors = jury.filter(j => !usedJurors.has(j));
+    if (availJurors.length) {
+      // Sort by absolute bond strength — strongest relationship reacts
+      const ranked = availJurors.map(j => ({ juror: j, bond: getBond(j, name), absBond: Math.abs(getBond(j, name)) }))
+        .sort((a, b) => b.absBond - a.absBond);
+      // Take 1-2 jurors (1 for F3, 2 for F2 to fill the space)
+      const takeCount = finalists.length <= 2 ? Math.min(2, ranked.length) : Math.min(1, ranked.length);
+      for (let i = 0; i < takeCount; i++) {
+        const { juror, bond } = ranked[i];
+        usedJurors.add(juror);
+        const jPr = pronouns(juror);
+        const fPr = pronouns(name);
+        let text;
+        if (bond >= 3) {
+          text = _pick([
+            `"We were allies from day one. Everything ${name} said up there is true. ${fPr.Sub} earned this."`,
+            `"${name} played with heart. I watched it every day. The fans see what I see — ${fPr.sub} ${fPr.sub==='they'?'deserve':'deserves'} this."`,
+            `"I trust ${name}. I trusted ${fPr.obj} out there and I trust ${fPr.obj} now. My vote would go to ${fPr.obj} — but tonight it's not my call."`,
+            `"${name} and I had something real. Not strategy — real. ${fPr.Sub} played the game I wish I could have played."`,
+          ], juror + name + 'pos');
+        } else if (bond <= -2) {
+          text = _pick([
+            `"${name} talks about loyalty? Ask me how that loyalty felt when the votes came out. I'll never forget."`,
+            `"I sat on that jury and watched ${name} do to others what ${fPr.sub} did to me. The fans should see through it."`,
+            `"${name} is a good player. I'll give ${fPr.obj} that. But ${fPr.sub} ${fPr.sub==='they'?'are':'is'}n't a good person out here. And the fans know the difference."`,
+            `"I have nothing nice to say about ${name}'s game. ${fPr.Sub} got here by cutting people who trusted ${fPr.obj}. That's not a winner."`,
+          ], juror + name + 'neg');
+        } else {
+          text = _pick([
+            `"${name} played hard. Whether that's enough — the fans will decide. Not me. Not anymore."`,
+            `"I respect ${name}'s game. I don't love it. But I respect it. The fans have more information than we did — let them judge."`,
+            `"${name} made it to the end. That's not nothing. Whether ${fPr.sub} ${fPr.sub==='they'?'deserve':'deserves'} to win — that's between ${fPr.obj} and a million viewers."`,
+            `"I've watched ${name} play for ${gs.episode || 0} episodes. ${fPr.Sub} ${fPr.sub==='they'?'are':'is'} good. ${fPr.Sub} ${fPr.sub==='they'?'are':'is'}n't great. But good might be enough tonight."`,
+          ], juror + name + 'neutral');
+        }
+        juryReactions.push({ juror, text, bond: Math.round(bond * 10) / 10 });
+      }
+    }
+
+    return { finalist: name, style, speech, pulseReaction, fanReactions, juryReactions };
+  });
+
+  return { finalists: [...finalists], phases };
+}
+
 function renderResultsTab() {
   const empty   = document.getElementById('results-empty');
   const content = document.getElementById('results-content');

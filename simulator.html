@@ -21303,11 +21303,13 @@ function generateFinaleSummaryText(ep) {
     });
   }
 
-  sec('FINAL IMMUNITY CHALLENGE');
-  ln(`${ep.immunityWinner} wins the Final Immunity Challenge (${ep.challengeLabel||'Mixed'}).`);
-  const immS = pStats(ep.immunityWinner);
-  if (immS.physical >= 8 || immS.endurance >= 8) ln(`A dominant performance — ${ep.immunityWinner} wanted this one.`);
-  else ln(`${ep.immunityWinner} digs deep when it matters most.`);
+  if (ep.immunityWinner) {
+    sec('FINAL IMMUNITY CHALLENGE');
+    ln(`${ep.immunityWinner} wins the Final Immunity Challenge (${ep.challengeLabel||'Mixed'}).`);
+    const immS = pStats(ep.immunityWinner);
+    if (immS.physical >= 8 || immS.endurance >= 8) ln(`A dominant performance — ${ep.immunityWinner} wanted this one.`);
+    else ln(`${ep.immunityWinner} digs deep when it matters most.`);
+  }
 
   if (ep.finalCut) {
     const fc = ep.finalCut;
@@ -21340,7 +21342,42 @@ function generateFinaleSummaryText(ep) {
     }
   }
 
-  if (cfg.finaleFormat === 'final-challenge') {
+  if (cfg.finaleFormat === 'fan-vote' && ep.fanVoteResult) {
+    sec('FAN CAMPAIGN');
+    ln(`The finalists pitch to the audience. No jury vote tonight — the fans decide.`);
+    ln('');
+    (ep.fanCampaign?.phases || []).forEach(phase => {
+      ln(`${phase.finalist} (${phase.style} pitch): pulse reaction — ${phase.pulseReaction}`);
+      if (phase.juryReactions?.length) phase.juryReactions.forEach(jr => ln(`  ${jr.juror}: ${jr.text}`));
+    });
+
+    sec('FAN VOTE');
+    const fvr = ep.fanVoteResult;
+    fvr.breakdown.forEach(b => ln(`${b.name}: ${b.pct}% (popularity: ${b.popularity}, campaign boost: ${b.campaignBoost})`));
+    ln('');
+    ln(`Margin: ${fvr.margin}`);
+
+    sec('WINNER');
+    const winner = ep.winner;
+    const ws = pStats(winner);
+    const winPct = fvr.percentages[winner] || 0;
+    ln(`${winner} wins the fan vote with ${winPct}% of the audience vote (${fvr.margin})!`);
+    ln('');
+    if (ws.social >= 8) ln(`${winner} won the fans over with charm and heart. The audience saw what the island saw.`);
+    else if (ws.strategic >= 8) ln(`${winner} played a game the fans could respect — calculated, controlled, dominant.`);
+    else if (ws.boldness >= 8) ln(`${winner} played with guts and the fans loved every second of it.`);
+    else ln(`${winner} connected with the audience and earned their vote. A fan-crowned champion.`);
+
+    // Runner-up
+    if (fvr.rankings.length >= 2) {
+      const ru = fvr.rankings[1];
+      const ruPct = fvr.percentages[ru] || 0;
+      if (fvr.margin === 'razor-thin') ln(`${ru} came agonizingly close — ${ruPct}%. A few more fans and the result flips.`);
+      else ln(`${ru} finishes with ${ruPct}% of the fan vote.`);
+    }
+
+    return L.join('\n');
+  } else if (cfg.finaleFormat === 'final-challenge') {
     sec('FINAL CHALLENGE');
     ln(`No jury. The winner is decided by a final challenge among all finalists.`);
     ln('');
@@ -30342,7 +30379,9 @@ function rpBuildWinnerCeremony(ep) {
         <div style="display:flex;justify-content:center">${rpPortrait(winner, 'xl')}</div>
         <div style="font-family:var(--font-display);font-size:28px;letter-spacing:3px;color:var(--accent-gold);margin-top:12px;text-shadow:0 0 20px rgba(227,179,65,0.3)">${winner}</div>
         <div style="font-size:11px;color:var(--muted);margin-top:4px">${vpArchLabel(winner)}</div>
-        ${voteStr ? `<div style="font-size:13px;color:var(--accent-gold);font-family:var(--font-mono);margin-top:8px">${voteStr} jury vote</div>` : `<div style="font-size:13px;color:var(--accent-gold);font-family:var(--font-mono);margin-top:8px">Final Challenge Winner</div>`}
+        ${ep.fanVoteResult ? `<div style="font-size:13px;color:var(--accent-gold);font-family:var(--font-mono);margin-top:8px">${ep.fanVoteResult.percentages[winner] || 0}% Fan Vote</div>`
+        : voteStr ? `<div style="font-size:13px;color:var(--accent-gold);font-family:var(--font-mono);margin-top:8px">${voteStr} jury vote</div>`
+        : `<div style="font-size:13px;color:var(--accent-gold);font-family:var(--font-mono);margin-top:8px">Final Challenge Winner</div>`}
       </div>
     </div>`;
   }
@@ -30351,6 +30390,8 @@ function rpBuildWinnerCeremony(ep) {
   html += `<div style="text-align:center;font-size:15px;color:#c9d1d9;line-height:1.6;margin-bottom:20px">
     ${isDoubleCrowning
       ? `The tribe has spoken. ${doubleCrowningWinners.join(' and ')} are the Sole Survivors. ${voteStr || '?'} jury vote — deadlocked.`
+      : ep.fanVoteResult
+      ? `The fans have spoken. ${winner} wins the season with ${ep.fanVoteResult.percentages[winner] || 0}% of the fan vote. ${ep.fanVoteResult.margin === 'landslide' ? 'A dominant performance.' : ep.fanVoteResult.margin === 'razor-thin' ? 'By the slimmest of margins.' : 'A decisive victory.'}`
       : isFinalChallenge
       ? `${winner} wins the Final Challenge and takes the season. No jury. No vote. ${wp.Sub} earned it on the field.`
       : `The tribe has spoken. ${winner} is the Sole Survivor. ${winVotes} out of ${totalJury} jury votes.`}
@@ -30395,7 +30436,16 @@ function rpBuildWinnerCeremony(ep) {
   const daysPlayed = epNum > 1 ? (epNum - 1) * 3 : 1;
 
   let confessional;
-  if (ws.strategic >= 8 && ws.social >= 7)
+  // Fan-vote specific confessional
+  if (ep.fanVoteResult) {
+    const fvMargin = ep.fanVoteResult.margin;
+    if (fvMargin === 'landslide')
+      confessional = `"The fans saw everything. Every move, every conversation, every confessional. And they chose me. That's not luck — that's validation. I played a game worth watching."`;
+    else if (fvMargin === 'razor-thin')
+      confessional = `"I almost lost. I know how close it was. But almost doesn't count. The fans saw something in me — by the thinnest margin — and I'll take it. A win is a win."`;
+    else
+      confessional = `"The jury doesn't decide tonight. The fans do. And they picked me. That means more than any jury vote. A million people watched and said — that's the one. I can't believe it."`;
+  } else if (ws.strategic >= 8 && ws.social >= 7)
     confessional = `"I played every angle. Strategy, relationships, competition. I wasn't going to leave anything to chance. And here I am \u2014 holding the trophy. This is what I came here to do."`;
   else if (ws.strategic >= 8)
     confessional = `"Every move I made was calculated. Every alliance, every betrayal, every vote. People will call me cold. I call it winning. And I'd do it all again."`;

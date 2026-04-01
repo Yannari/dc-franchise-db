@@ -26460,25 +26460,13 @@ function rpBuildVotingPlans(ep) {
     const _isMerged = gs.isMerged || (ep.gsSnapshot?.isMerged);
     const _epNum = ep.num || 1;
 
-    // THIS EPISODE's performance overrides stats — the tribe just SAW what happened
-    const _placements = ep.chalPlacements || [];
-    const _isWeakLink = _placements.length >= 3 && _placements[_placements.length - 1] === name;
-    const _isStandout = _placements.length >= 3 && _placements[0] === name;
-    const _isBottom2 = _placements.length >= 4 && _placements.indexOf(name) >= _placements.length - 2;
-    // Check reward challenge performance — standout in reward counters weak immunity showing
-    const _rewardTw = (ep.twists || []).find(t => t.type === 'reward-challenge');
-    const _rewardPlacements = _rewardTw?.rewardChalPlacements || [];
-    const _isRewardStandout = Array.isArray(_rewardPlacements) && _rewardPlacements.length >= 3
-      && (typeof _rewardPlacements[0] === 'string' ? _rewardPlacements[0] === name : _rewardPlacements[0]?.members?.some(m => m === name && _rewardPlacements[0].memberScores?.[m] === Math.max(...Object.values(_rewardPlacements[0].memberScores || {}))));
-    // Don't label someone Challenge Weakness/Liability if they were the reward standout this same episode
-    if (_isWeakLink && !_isMerged && !_isRewardStandout) return { label: 'Challenge Liability', color: '#f85149' };
-    if (_isBottom2 && !_isMerged && !_isStandout && !_isRewardStandout) return { label: 'Challenge Weakness', color: '#e3b341' };
-
-    // ── CHALLENGE PERFORMANCE: what just happened this episode (highest priority pre-merge) ──
+    // ── CHALLENGE PERFORMANCE: cumulative record — not just one episode's result ──
     const _cw = challengeWeakness(name);
-    if (_cw >= 5.5 && !_isMerged && !_isRewardStandout) return { label: 'Challenge Liability', color: '#f85149' };
-    const _wasStandout = gs.chalRecord?.[name]?.podiums >= 1 && (gs._chalStandouts || []).includes(name);
-    if (_cw >= 4.0 && !_isMerged && !_wasStandout) return { label: 'Challenge Weakness', color: '#e3b341' };
+    const _rec = gs.chalRecord?.[name] || { wins: 0, podiums: 0, bombs: 0 };
+    // Don't label someone weak if their podiums outweigh their bombs (they're objectively not weak)
+    const _hasStrongRecord = _rec.podiums > _rec.bombs;
+    if (_cw >= 5.5 && !_isMerged && !_hasStrongRecord) return { label: 'Challenge Liability', color: '#f85149' };
+    if (_cw >= 4.0 && !_isMerged && !_hasStrongRecord) return { label: 'Challenge Weakness', color: '#e3b341' };
 
     // ── RELATIONSHIPS: the real driver for most votes, especially pre-merge ──
     const _tribal = ep.tribalPlayers || gs.activePlayers;

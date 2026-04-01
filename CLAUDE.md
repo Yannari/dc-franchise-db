@@ -27,6 +27,7 @@ Simulation core:
 - `buildVoteReason()` — generates vote reasoning text, includes amulet/legacy/KiP-specific reasons
 - `checkParanoiaSpiral()` — paranoid + strategic player turns on closest ally (self-fulfilling prophecy)
 - `checkInformationBroker()` — double agent in 2+ alliances, escalating exposure risk, bond collapse on blowup
+- `checkStolenCredit()` — bold player steals credit for another's big move (once per game). Confrontation next episode if architect is bold/hothead enough.
 - `checkShowmanceFormation()` — detects new showmances (bond + archetype compatibility)
 - `updateShowmancePhases()` — progresses showmance lifecycle (spark → honeymoon → target → ride-or-die/broken-up)
 - `checkShowmanceBreakup()` — detects partner elimination (betrayal breakup vs grief separation)
@@ -53,6 +54,12 @@ Finale engine:
 - Koh-Lanta finale: orienteering race (F4→F3) → perch endurance (F3→immunity) → choice (winner picks F2) → FTC
 - Fire-making finale: immunity → decision (save one) → fire duel (other two) → F3 FTC
 - Winner's Cut format (`jury-cut`): immunity winner cuts one player at any finaleSize (F3 or F4)
+- Fan Vote finale: fans crown the winner via popularity (no jury vote)
+  - `generateFanCampaign()` — broadcast-style campaign data: speeches (bold/social/strategic), pulse reactions, fan reaction pills, bond-based jury commentary per finalist
+  - `simulateFanVote()` — popularity * 1.0 + campaign boost (social * 0.3 + boldness * 0.2 + strategic * 0.1) + variance. F2/F3 margin thresholds.
+  - F2: no immunity, straight to fan campaign. F3: immunity + cut → F2. F4: immunity + cut → F3.
+  - `rpBuildFanVoteCampLife()` — lobbying scene before Decision (fan-vote-specific pitches about popularity/audience)
+  - Requires `popularityEnabled`. `hidePopularity` option hides Fan Pulse during season.
 
 Jury elimination twist:
 - Twist `jury-elimination` — all eliminated players vote to boot one non-immune active player
@@ -87,6 +94,9 @@ VP Finale screens:
 - `rpBuildFiremakingCampLife()` — lobbying the immunity winner before fire-making
 - `rpBuildFiremakingDecision()` — who gets saved, who makes fire
 - `rpBuildFiremakingDuel()` — 4-beat staged fire-making duel with context-specific exit quotes
+- `rpBuildFanVoteCampLife()` — lobbying before the Decision in fan-vote finale (popularity-focused pitches)
+- `rpBuildFanCampaign()` — interactive phased broadcast: spotlight → speech + animated pulse bars + fan pills → jury reaction per finalist
+- `rpBuildFanVoteReveal()` — interactive percentage reveal (F2 head-to-head bars, F3 vertical bars, 10-step progressive)
 
 ## State
 - `gs` — global game state object (tribes, players, alliances, bonds, advantages)
@@ -109,6 +119,10 @@ VP Finale screens:
 - `gs.paranoiaNudges` — `{ [target]: { accusedBy, ep } }` — paranoia spiral vote nudge (expires after 1 ep)
 - `gs.broker` — `{ player, alliances:[name1,name2], startEp, episodesActive, exposed, exposedEp, exposer }` — information broker state (once per game)
 - `gs.brokerExposedHeat` / `gs.brokerExposedEp` — heat spike tracking after broker exposure (2 episodes)
+- `gs.stolenCredit` — `{ stealer, architect, ep, confronted }` — active stolen credit tracking (once per game)
+- `gs.stolenCreditFired` — boolean, once-per-game flag
+- `gs.stolenCreditHeat` — `{ player, ep }` — heat boost for stealer after losing confrontation
+- `gs.bigMoveEarnersThisEp` — array of player names who earned bigMoves this episode
 
 Finale-specific ep fields:
 - `ep.finaleEntrants` — snapshot of ALL players entering the finale (before any eliminations)
@@ -124,6 +138,8 @@ Finale-specific ep fields:
 - `ep.firemakingDecision` — `{ immunityWinner, saved, savedReason, competitors[] }`
 - `ep.firemakingResult` — `{ winner, loser, winnerScore, loserScore }`
 - `gs.playerStates[name].perchWinner` — true if won the koh-lanta perch (jury bonus in FTC scoring)
+- `ep.fanCampaign` — `{ finalists, phases: [{ finalist, style, speech, pulseReaction, fanReactions, juryReactions }] }` — fan vote campaign data
+- `ep.fanVoteResult` — `{ scores, percentages, rankings, winner, margin, breakdown }` — fan vote outcome
 
 Episode-level advantage fields:
 - `ep.kipSteal` — `{ holder, victim, stolenType, wasAlly, success }`
@@ -369,6 +385,8 @@ Open Vote: same as normal but Votes screen has sequential reveal with cascade ba
 Spirit Island: Cold Open → Camp → Challenge → Twists (teaser) → Spirit Island (reveal) →
   Camp (post) → Voting Plans → Tribal → Votes → Camp Overview → Aftermath
 Finale: has its own 10-screen sequence (see VP Finale screens above)
+Fan Vote Finale: Last Morning → (Final Immunity, if F3+) → (After Immunity lobbying) →
+  (The Decision) → Fan Campaign → The Fan Vote → Winner → Reunion → Statistics
 
 ## Settings
 Key config fields in `seasonConfig`:
@@ -376,9 +394,10 @@ Key config fields in `seasonConfig`:
 - `finaleFormat` (traditional/fire-making/jury-cut/fan-vote/final-challenge/koh-lanta)
   - `jury-cut` = "Winner's Cut" in UI — immunity winner picks who goes to FTC (works with F3 and F4)
   - `koh-lanta` and `fire-making` lock finaleSize to 4
-  - `fan-vote` — UI exists but engine NOT implemented (TODO)
+  - `fan-vote` — fans crown winner via popularity. Requires `popularityEnabled`. F2: no immunity. F3: cut to F2. F4: cut to F3.
 - `finaleAssistants` (boolean) — enable assistant selection for final challenge
 - `popularityEnabled` — fan popularity system
+- `hidePopularity` — hides Fan Pulse rankings during season (no spoilers for fan-vote finale)
 - `ri` (boolean) — enable 2nd Chance Isle
 - `riFormat` ('redemption'|'rescue') — duel format vs edge of extinction
 - `riReentryAt` — active player count that triggers return

@@ -91,32 +91,28 @@ and the downstream consequence. None are guaranteed — all fire on a roll.
   Betrayal exempt: voting the split secondary is NOT a betrayal in decayAllianceTrust.
   ep.splitVotePlans saved. WHY section explains when split catches an idol.
 
-[10] THE GOAT MUTINY
-Trigger: 2 players both identified as "goats" (archetype = goat OR threat score <= 2)
-  are on the same tribe/merge group, ep >= 8
-Roll: ~20% once per game
-What happens: the two goats realize they're being dragged along and quietly decide
-  to blow up the game. They form a surprise alliance, pull in a swing vote, and take
-  out a top player. Bond between the two goats maxes out. Everyone else is rattled.
-Mechanic: forced allianceForm event between the two goats, boosted vote heat on the
-  highest-threat player that tribal.
-
-[5] STOLEN CREDIT
-Trigger: a "big move" vote happens (underdog wins, alliance crack, blindside)
-Roll: ~20% if there's a player with boldness >= 8 who wasn't the orchestrator
-What happens: the bold player takes loud public credit for the move at camp or in
-  confessional, overshadowing the actual architect. Architect takes a resentment hit.
-  Jury respect shifts toward the credit-stealer even though they didn't do the work.
-Mechanic: bond hit between orchestrator and credit-stealer. Jury perception adjusted.
+[DONE] #5 STOLEN CREDIT — implemented via checkStolenCredit(ep).
+  Trigger: player earns bigMoves, bold player (boldness >= 6) at same camp, not strong allies.
+  Roll: boldness * 0.015 + (bond <= -1 ? 0.05 : 0). Once per game.
+  Theft: stealer bigMoves += 1, architect bigMoves -= 1, bond damage, gold "STOLEN CREDIT" badge.
+  Confrontation (next episode): roll boldness * 0.08 + (10 - temperament) * 0.05.
+  Three callout tones: hothead (explosive), bold (calculated), emotional (crack).
+  Outcome: architect wins (social+strategic > stealer social+boldness) → partial credit reclaimed,
+  stealer loses face. Architect loses → looks petty, loses MORE standing.
+  gs.stolenCredit, gs.stolenCreditFired, gs.stolenCreditHeat state tracking.
 
 
   TODO — ENGINE MISSING
   ─────────────────────
 
-[TODO] FAN VOTE FINALE ENGINE
-  The 'fan-vote' finaleFormat option exists in the dropdown but has NO engine logic.
-  Needs: popularity-driven finale where fans vote for the winner (gs.popularity).
-  Currently selecting it does nothing — falls through to traditional FTC.
+[DONE] FAN VOTE FINALE ENGINE — implemented via generateFanCampaign() + simulateFanVote().
+  Broadcast-style Fan Campaign screen (interactive phased reveal: spotlight → speech + pulse
+  bars + fan reaction pills → jury commentary per finalist). Fan Vote reveal (F2 head-to-head
+  bars, F3 vertical bars, 10-step progressive reveal). Popularity-dominant scoring with
+  campaign boost (social * 0.3 + boldness * 0.2 + strategic * 0.1) + variance.
+  F2: no immunity, straight to campaign. F3: immunity + cut to F2. F4: immunity + cut to F3.
+  Lobbying camp scene before Decision. Config: requires popularityEnabled, hidePopularity
+  option hides Fan Pulse rankings during season for no-spoiler mode.
 
 [TODO] SURVIVAL MECHANICS ENGINE
   UI exists (cfg-food-water, cfg-survival-difficulty) but engine is not built.
@@ -219,6 +215,16 @@ Note: needs reward challenge system implemented first.
     Two eliminations in one tribal — the voted-out player AND their tied partner.
   Consequence: massive strategic upheaval. Allies paired with enemies. Bond dynamics.
   Note: complex — needs pair-aware voting, double elimination path, VP display.
+
+[10] THE GOAT MUTINY
+Trigger: 2 players both identified as "goats" (archetype = goat OR threat score <= 2)
+  are on the same tribe/merge group, ep >= 8
+Roll: ~20% once per game
+What happens: the two goats realize they're being dragged along and quietly decide
+  to blow up the game. They form a surprise alliance, pull in a swing vote, and take
+  out a top player. Bond between the two goats maxes out. Everyone else is rattled.
+Mechanic: forced allianceForm event between the two goats, boosted vote heat on the
+  highest-threat player that tribal.
 
 [KL-4] BLACK VOTE (Koh-Lanta twist)
   Trigger: after being voted out at tribal council

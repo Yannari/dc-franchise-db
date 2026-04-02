@@ -16954,6 +16954,8 @@ function simulateEpisode() {
   generateCampEvents(ep, 'post');
   // Save pre-tribal advantage snapshot for VP post-challenge camp display
   ep.advantagesPreTribal = gs.advantages.map(a => ({...a}));
+  // Save pre-tribal alliance snapshot for VP camp display (captures in-episode recruitment)
+  ep.alliancesPreTribal = (gs.namedAlliances || []).map(a => ({ ...a, members: [...a.members], betrayals: [...(a.betrayals || [])] }));
 
   // ── Inject exile-selection event into winner tribe's post events ──
   if (_exileEvtData && ep.campEvents?.[_exileEvtData.key]) {
@@ -22356,6 +22358,7 @@ function patchEpisodeHistory(ep) {
   if (ep.paranoiaSpirals?.length) h.paranoiaSpirals = ep.paranoiaSpirals;
   if (ep.stolenCreditEvents?.length) h.stolenCreditEvents = ep.stolenCreditEvents;
   h.ambassadorData = ep.ambassadorData || null;
+  if (ep.alliancesPreTribal) h.alliancesPreTribal = ep.alliancesPreTribal;
   h.blackVote = ep.blackVote || null;
   h.blackVote1 = ep.blackVote1 || null;
   h.blackVote2 = ep.blackVote2 || null;
@@ -27950,33 +27953,10 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
   html += `</div></div>`;
 
   // ── ALLIANCES ──
-  // Show alliances that were active during this episode — includes:
-  // (a) alliances active in the current snapshot
-  // (b) alliances from previous snapshot still active (dissolved THIS episode — existed during camp)
-  // (c) alliances formed or recruited into THIS episode (may not be in previous snapshot)
-  const _prevEpSnap = gs.episodeHistory?.filter(h => h.num < ep.num).slice(-1)[0]?.gsSnapshot;
-  const _curAlliances = ep.gsSnapshot?.namedAlliances || gs.namedAlliances || [];
-  const _prevAlliances = _prevEpSnap?.namedAlliances || [];
-  // Merge all sources to get the most complete picture of alliances during this episode:
-  // 1. Current snapshot (post-vote — may have dissolutions)
-  // 2. Previous snapshot (pre-vote — may have alliances dissolved this ep)
-  // 3. Live gs.namedAlliances (has in-episode recruitments that snapshots miss)
-  const _allSources = [..._curAlliances];
-  // Add alliances from prev snapshot that were dissolved this episode
-  _prevAlliances.forEach(pa => {
-    if (pa.active !== false && !_allSources.some(ca => ca.id === pa.id || ca.name === pa.name)) {
-      _allSources.push({ ...pa, _dissolvedThisEp: true });
-    }
-  });
-  // Update member lists from live gs if available (catches in-episode recruitment)
-  const _liveAlliances = gs.namedAlliances || [];
-  _allSources.forEach(a => {
-    const live = _liveAlliances.find(la => la.id === a.id || la.name === a.name);
-    if (live && live.members.length > a.members.length) {
-      a.members = [...live.members]; // use the fuller member list (post-recruitment)
-    }
-  });
-  const _snapAlliances = _allSources.filter(a => a.active !== false || a._dissolvedThisEp);
+  // Use pre-tribal alliance snapshot (captures mid-episode state: after recruitment, before dissolution)
+  // Falls back to post-episode snapshot if pre-tribal snapshot not available
+  const _snapAlliances = (ep.alliancesPreTribal || ep.gsSnapshot?.namedAlliances || gs.namedAlliances || [])
+    .filter(a => a.active !== false);
   const _tribeSet = new Set(portraitMembers);
   // Both pre- and post-challenge camp screens are before tribal council — the player
   // eliminated this episode is still in the game at this point in the story.

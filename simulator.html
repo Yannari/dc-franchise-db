@@ -990,6 +990,24 @@
             </div>
 
             <div class="accordion">
+              <div class="accordion-header" onclick="toggleAccordion('blackvote')">
+                <span>Black Vote (KL-4)</span>
+                <span class="accordion-chevron" id="acc-chevron-blackvote">▼</span>
+              </div>
+              <div class="accordion-body" id="acc-body-blackvote" style="display:none">
+                <div class="form-group">
+                  <label class="form-label">Black Vote Mode</label>
+                  <select id="cfg-black-vote" class="form-select" onchange="saveConfig()">
+                    <option value="off">Off</option>
+                    <option value="classic">Classic — eliminated votes AGAINST someone</option>
+                    <option value="modern">Modern — eliminated gives Extra Vote to an ally</option>
+                  </select>
+                </div>
+                <p class="acc-desc">Every eliminated player (until F4) casts a secret vote or gift before leaving. Classic: extra vote against their enemy at next tribal. Modern: Extra Vote advantage to their closest ally.</p>
+              </div>
+            </div>
+
+            <div class="accordion">
               <div class="accordion-header" onclick="toggleAccordion('journey')">
                 <span>Journey Format</span>
                 <span class="accordion-chevron" id="acc-chevron-journey">▼</span>
@@ -2339,6 +2357,7 @@ function saveConfig() {
     riSecondReturnAt: parseInt(g('cfg-ri-second-return')?.value) || 5,
     journey:     g('cfg-journey')?.checked || false,
     shotInDark:  g('cfg-sid')?.checked || false,
+    blackVote:   g('cfg-black-vote')?.value || 'off',
     firemaking:  (g('cfg-finale-format')?.value === 'fire-making') || false,
     tiebreakerMode: g('cfg-tiebreaker-mode')?.value || 'survivor',
     qem:         g('cfg-qem')?.checked || false,
@@ -2400,6 +2419,7 @@ function renderConfig() {
   if (g('ri-settings')) g('ri-settings').style.display = seasonConfig.ri ? 'flex' : 'none';
   chk('cfg-journey',   seasonConfig.journey || false);
   chk('cfg-sid',       seasonConfig.shotInDark || false);
+  set('cfg-black-vote', seasonConfig.blackVote || 'off');
   // Apply finaleFormat lock on render (fire-making and koh-lanta force F4)
   const _fmFormat = seasonConfig.finaleFormat;
   const _needsF4 = _fmFormat === 'fire-making' || _fmFormat === 'koh-lanta';
@@ -6506,7 +6526,9 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
   // Penalty vote: a pre-cast vote against the penalty target (if they're at this tribal)
   if (gs.penaltyVoteThisEp && tribalPlayers.includes(gs.penaltyVoteThisEp) && !isImmune(gs.penaltyVoteThisEp)) {
     votes[gs.penaltyVoteThisEp] = (votes[gs.penaltyVoteThisEp] || 0) + 1;
-    log.push({ voter: 'THE GAME', voted: gs.penaltyVoteThisEp, reason: 'penalty vote — pre-cast by the twist' });
+    const _pvBv = ep.blackVoteApplied;
+    const _pvReason = _pvBv ? `Black Vote from ${_pvBv.from} — ${_pvBv.reason || 'parting shot'}` : 'penalty vote — pre-cast by the twist';
+    log.push({ voter: _pvBv ? _pvBv.from : 'THE GAME', voted: gs.penaltyVoteThisEp, reason: _pvReason, isBlackVote: !!_pvBv });
   }
 
   tribalPlayers.forEach(voter => {
@@ -16041,6 +16063,17 @@ function simulateEpisode() {
   }
   gs.exiledThisEp = null;
   gs.penaltyVoteThisEp = null;
+  // ── BLACK VOTE: inject pending black votes as penalty votes this episode ──
+  if (gs.blackVotes?.length) {
+    const _bvToApply = gs.blackVotes.filter(bv => bv.type === 'classic' && gs.activePlayers.includes(bv.target));
+    if (_bvToApply.length) {
+      // Apply the oldest pending black vote
+      const _bv = _bvToApply[0];
+      gs.penaltyVoteThisEp = _bv.target;
+      ep.blackVoteApplied = _bv;
+      gs.blackVotes = gs.blackVotes.filter(bv => bv !== _bv);
+    }
+  }
   gs.guaranteedImmuneThisEp = null;
   gs._chalStandouts = null;
   // Clear per-episode eavesdrop boost flags
@@ -18579,6 +18612,42 @@ function simulateEpisode() {
     if (seasonConfig.foodWater === 'enabled' && gs.currentProviders?.includes(ep.eliminated)) {
       const _elimTribe = gs.isMerged ? (gs.mergeName || 'merge') : (gs.tribes.find(t => t.members.includes(ep.eliminated))?.name || '');
       gs.providerVotedOutLastEp = { name: ep.eliminated, tribeName: _elimTribe };
+    }
+
+    // ── BLACK VOTE: eliminated player casts a parting vote/gift (until F4) ──
+    if (cfg.blackVote && cfg.blackVote !== 'off' && gs.activePlayers.length > 4) {
+      const _bvElim = ep.eliminated;
+      const _bvS = pStats(_bvElim);
+      const _bvPr = pronouns(_bvElim);
+      const _bvPick = (arr, seed) => arr[([...seed].reduce((a,c)=>a+c.charCodeAt(0),0)+epNum*7)%arr.length];
+
+      if (cfg.blackVote === 'classic') {
+        // Classic: eliminated votes AGAINST someone — extra vote at next tribal
+        // Target: highest heat enemy or lowest bond rival
+        const _bvCandidates = gs.activePlayers.sort((a, b) => getBond(_bvElim, a) - getBond(_bvElim, b));
+        const _bvTarget = _bvCandidates[0];
+        if (_bvTarget) {
+          if (!gs.blackVotes) gs.blackVotes = [];
+          gs.blackVotes.push({ from: _bvElim, target: _bvTarget, ep: epNum, type: 'classic' });
+          ep.blackVote = { from: _bvElim, target: _bvTarget, type: 'classic',
+            reason: getBond(_bvElim, _bvTarget) <= -2
+              ? `grudge — ${_bvElim} and ${_bvTarget} had bad blood`
+              : `${_bvElim} wants ${_bvTarget} gone — lowest bond of anyone left`,
+          };
+        }
+      } else if (cfg.blackVote === 'modern') {
+        // Modern: eliminated gives an Extra Vote to their closest ally
+        const _bvAllies = gs.activePlayers.sort((a, b) => getBond(_bvElim, b) - getBond(_bvElim, a));
+        const _bvRecipient = _bvAllies[0];
+        if (_bvRecipient) {
+          gs.advantages.push({ holder: _bvRecipient, type: 'extraVote', foundEp: epNum, fromBlackVote: true, giftedBy: _bvElim });
+          ep.blackVote = { from: _bvElim, recipient: _bvRecipient, type: 'modern',
+            reason: getBond(_bvElim, _bvRecipient) >= 3
+              ? `loyalty — ${_bvElim} wanted to help ${_bvRecipient} get to the end`
+              : `${_bvElim}'s closest remaining connection`,
+          };
+        }
+      }
     }
   }
 
@@ -21891,6 +21960,9 @@ function patchEpisodeHistory(ep) {
   if (ep.paranoiaSpirals?.length) h.paranoiaSpirals = ep.paranoiaSpirals;
   if (ep.stolenCreditEvents?.length) h.stolenCreditEvents = ep.stolenCreditEvents;
   h.ambassadorData = ep.ambassadorData || null;
+  h.blackVote = ep.blackVote || null;
+  h.blackVoteApplied = ep.blackVoteApplied || null;
+  h.fakeIdolEvents = ep.fakeIdolEvents || null;
   h.survivalSnapshot = ep.survivalSnapshot || null;
   h.tribeFoodSnapshot = ep.tribeFoodSnapshot || null;
   h.providerSlackerData = ep.providerSlackerData || null;
@@ -29612,6 +29684,21 @@ function rpBuildTribal(ep) {
     </div>`;
   }
 
+  // ── Black Vote announcement (before the vote) ──
+  if (ep.blackVoteApplied) {
+    const _bva = ep.blackVoteApplied;
+    html += `<div class="vp-card" style="border-color:rgba(99,102,241,0.3);background:rgba(99,102,241,0.04);margin:16px 0;padding:14px">
+      <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:#818cf8;margin-bottom:8px">BLACK VOTE</div>
+      <div style="font-size:13px;color:#c9d1d9;line-height:1.6">"Before we vote — ${_bva.from} left a message." Chris holds up a parchment. "This is a Black Vote. ${_bva.from} has cast a vote against <strong style="color:#f85149">${_bva.target}</strong>. This vote counts tonight."</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:10px">
+        ${rpPortrait(_bva.from, 'sm')}
+        <span style="font-size:16px;color:#818cf8">\u2192</span>
+        ${rpPortrait(_bva.target, 'sm')}
+        <span style="font-size:11px;color:#8b949e;font-style:italic">${_bva.reason || ''}</span>
+      </div>
+    </div>`;
+  }
+
   // Urn divider
   html += `<div class="vp-card" style="text-align:center;font-family:var(--font-mono);font-style:italic;border-color:var(--accent-fire);color:var(--muted);margin:20px 0;font-size:14px">
     \u201cThe votes have been cast.\u201d
@@ -30855,6 +30942,24 @@ function rpBuildVotes(ep) {
       <div class="torch-snuffed">${rpPortrait(_torchElim, 'xl')}</div>
       <div style="font-family:var(--font-display);font-size:24px;color:var(--accent-fire);margin-top:16px;text-shadow:0 0 12px var(--accent-fire)">The tribe has spoken.</div>
     </div>`;
+    // Black Vote: eliminated player casts their parting shot
+    if (ep.blackVote) {
+      const _bvc = ep.blackVote;
+      html += `<div style="margin-top:16px;padding:12px;border:1px solid rgba(99,102,241,0.25);border-radius:8px;background:rgba(99,102,241,0.04);text-align:center">
+        <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:#818cf8;margin-bottom:6px">BLACK VOTE CAST</div>
+        <div style="font-size:12px;color:#c9d1d9;line-height:1.5">${
+          _bvc.type === 'classic'
+            ? `Before leaving, ${_bvc.from} casts a Black Vote against <strong style="color:#f85149">${_bvc.target}</strong>. This vote will count at the next tribal council.`
+            : `Before leaving, ${_bvc.from} gifts an Extra Vote to <strong style="color:#3fb950">${_bvc.recipient}</strong>. "${pronouns(_bvc.from).Sub} earned it," ${_bvc.from} says.`
+        }</div>
+        <div style="display:flex;justify-content:center;gap:8px;margin-top:8px">
+          ${rpPortrait(_bvc.from, 'sm')}
+          <span style="font-size:16px;color:#818cf8;align-self:center">\u2192</span>
+          ${rpPortrait(_bvc.type === 'classic' ? _bvc.target : _bvc.recipient, 'sm')}
+        </div>
+        <div style="font-size:10px;color:#8b949e;margin-top:6px;font-style:italic">${_bvc.reason || ''}</div>
+      </div>`;
+    }
   }
 
   html += `</div></div>`; // end tv-results + rp-page

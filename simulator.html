@@ -23894,6 +23894,9 @@ function simulateFinale() {
   const summaryText = generateFinaleSummaryText(ep);
   ep.summaryText = summaryText;
 
+  // Deduplicate jury + eliminated (can accumulate duplicates from multi-path finales)
+  gs.jury = [...new Set(gs.jury || [])];
+  gs.eliminated = [...new Set(gs.eliminated || [])];
   gs.phase = 'complete';
   gs.episode = epNum;
   gs.episodeHistory.push({
@@ -24130,7 +24133,9 @@ function generateFinaleSummaryText(ep) {
 }
 
 function simulateJuryVote(finalists) {
-  const jury = gs.jury || [];
+  // Deduplicate jury (can happen if a player is added by multiple code paths, e.g. koh-lanta orienteering + finale)
+  const jury = [...new Set(gs.jury || [])];
+  gs.jury = jury; // fix the source too
   if (!jury.length || !finalists.length) return { votes: {}, reasoning: [], jury: [] };
 
   const votes = Object.fromEntries(finalists.map(f => [f, 0]));

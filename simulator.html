@@ -1474,6 +1474,7 @@ const TWIST_CATALOG = [
   { id:'cultural-reset',   emoji:'🔄', name:'Cultural Reset',       category:'elim',       phase:'any',        desc:'All alliances exposed publicly. Weak alliances dissolve, strong ones survive but become targets. Double-dippers are caught. The social game resets.',        engineType:'cultural-reset'  },
   { id:'rock-draw',        emoji:'🪨', name:'Rock Draw',            category:'elim',       phase:'any',        desc:'No re-vote on a tie — non-immune, non-tied players draw rocks. Random exit.', engineType:'rock-draw'      },
   { id:'open-vote',        emoji:'📢', name:'Open Vote',            category:'elim',       phase:'any',        desc:'Votes are public — cast one by one in an order chosen by the immunity winner. Cascade pressure builds. Everyone sees who said whose name.', engineType:'open-vote' },
+  { id:'ambassadors',     emoji:'🤝', name:'Ambassadors',          category:'elim',       phase:'pre-merge', desc:'Each tribe names an ambassador. They meet and must agree on one elimination — or one ambassador draws the wrong rock.',  engineType:'ambassadors' },
   // Returns
   { id:'returning-player', emoji:'🔁', name:'Returning Player',     category:'returns',    phase:'any',        desc:'A previously eliminated player returns. Tribal still runs — someone goes home. Net zero change in count.',  engineType:'returning-player'},
   { id:'spirit-island',    emoji:'👻', name:'Spirit Island',        category:'returns',    phase:'post-merge', desc:'A jury member returns to camp for one day as a temporary visitor. They observe, reconnect, and share what the jury thinks.',    engineType:'spirit-island'   },
@@ -9619,6 +9620,304 @@ function applyTwist(ep, twist, isPrimary = true) {
     const _forceCat = engineType.replace('force-challenge-', '');
     gs.forcedChallengeCategory = _forceCat;
     twistObj.forcedCategory = _forceCat;
+
+  } else if (engineType === 'ambassadors') {
+    // Requires 2+ tribes with 2+ members each
+    const _ambTribes = gs.tribes.filter(t => t.members.filter(m => gs.activePlayers.includes(m)).length >= 2);
+    if (_ambTribes.length < 2 || gs.isMerged) { twistObj.blocked = true; twistObj.blockedReason = 'need 2+ tribes'; return; }
+
+    // ── 1. AMBASSADOR SELECTION ──
+    const _ambSelections = _ambTribes.map(tribe => {
+      const members = tribe.members.filter(m => gs.activePlayers.includes(m));
+      const scored = members.map(name => {
+        const s = pStats(name);
+        const avgBond = members.filter(m => m !== name).reduce((sum, m) => sum + getBond(name, m), 0) / Math.max(1, members.length - 1);
+        return { name, score: s.social * 0.3 + s.strategic * 0.3 + avgBond * 0.4 + Math.random() * 1.0 };
+      }).sort((a, b) => b.score - a.score);
+      return { tribe: tribe.name, ambassador: scored[0].name, runnerUp: scored[1]?.name || null, score: scored[0].score, members };
+    });
+    twistObj.ambassadorSelections = _ambSelections;
+
+    // ── 2. DETERMINE NEGOTIATION ARCHETYPES ──
+    const _ambGetType = (name) => {
+      const s = pStats(name);
+      const arch = players.find(p => p.name === name)?.archetype || '';
+      if ((arch === 'schemer' || arch === 'mastermind') && s.strategic >= 7) return 'manipulator';
+      if (s.strategic >= 8 && s.loyalty <= 4) return 'manipulator';
+      if (arch === 'villain' || (s.boldness >= 8 && s.loyalty <= 3)) return 'villain';
+      if (s.strategic >= 6 && s.social >= 5) return 'dealmaker';
+      if (s.loyalty >= 7 && s.social >= 5) return 'loyal-shield';
+      return 'emotional';
+    };
+    const _ambassadors = _ambSelections.map(sel => ({
+      name: sel.ambassador, tribe: sel.tribe, type: _ambGetType(sel.ambassador),
+      stats: pStats(sel.ambassador), pr: pronouns(sel.ambassador),
+    }));
+    twistObj.ambassadorTypes = _ambassadors.map(a => ({ name: a.name, type: a.type }));
+
+    // ── 3. NEGOTIATION ──
+    const _ambPick = (arr, seed) => arr[([...seed].reduce((a,c)=>a+c.charCodeAt(0),0)+(gs.episode||0)*7)%arr.length];
+    const _allNonAmb = gs.activePlayers.filter(p => !_ambassadors.some(a => a.name === p));
+
+    if (_ambassadors.length === 2) {
+      // ════ 2-TRIBE NEGOTIATION ════
+      const [amb1, amb2] = _ambassadors;
+      const ambBond = getBond(amb1.name, amb2.name);
+      let agreed = false, target = null, targetReason = '', rockDrawLoser = null;
+      const narrative = [];
+
+      // Agreement formula — proportional, archetype-influenced
+      let agreeBase = 0.3 + ambBond * 0.06;
+      const types = [amb1.type, amb2.type].sort();
+      const typeKey = types.join('-');
+      if (typeKey === 'dealmaker-dealmaker') agreeBase += 0.4;
+      else if (typeKey === 'emotional-emotional') agreeBase += 0.25 + ambBond * 0.06;
+      else if (typeKey === 'dealmaker-emotional') agreeBase += 0.15;
+      else if (typeKey === 'dealmaker-manipulator') agreeBase += 0.2;
+      else if (typeKey === 'manipulator-manipulator') agreeBase += 0.25;
+      else if (typeKey === 'emotional-loyal-shield') agreeBase += 0.05;
+      else if (typeKey === 'dealmaker-loyal-shield') agreeBase -= 0.05;
+      else if (typeKey === 'loyal-shield-loyal-shield') agreeBase -= 0.15;
+      else if (typeKey === 'loyal-shield-villain') agreeBase -= 0.2;
+      else if (typeKey === 'villain-villain') agreeBase -= 0.25;
+      else if (typeKey === 'emotional-manipulator') agreeBase += 0.1;
+      else if (typeKey === 'loyal-shield-manipulator') agreeBase -= 0.1;
+      else if (typeKey === 'emotional-villain') agreeBase -= 0.1;
+      else if (typeKey === 'dealmaker-villain') agreeBase += 0.0;
+      // Shared enemy bonus
+      const _sharedEnemy = _allNonAmb.find(p => getBond(amb1.name, p) <= -1 && getBond(amb2.name, p) <= -1);
+      if (_sharedEnemy) agreeBase += 0.2;
+
+      // Resistance check for domination pairings
+      let dominatorIdx = -1, defenderIdx = -1, resistFired = false;
+      if (amb1.type === 'manipulator' && amb2.type !== 'manipulator') { dominatorIdx = 0; defenderIdx = 1; }
+      else if (amb2.type === 'manipulator' && amb1.type !== 'manipulator') { dominatorIdx = 1; defenderIdx = 0; }
+      else if (amb1.type === 'villain' && amb2.type !== 'villain') { dominatorIdx = 0; defenderIdx = 1; }
+      else if (amb2.type === 'villain' && amb1.type !== 'villain') { dominatorIdx = 1; defenderIdx = 0; }
+      if (dominatorIdx >= 0) {
+        const def = _ambassadors[defenderIdx];
+        const resistChance = def.stats.boldness * 0.06 + def.stats.temperament * 0.04 + (10 - _ambassadors[dominatorIdx].stats.social) * 0.02;
+        resistFired = Math.random() < resistChance;
+        if (resistFired) {
+          agreeBase -= 0.15;
+          narrative.push(`${def.name} pushed back. The dynamic shifted — what looked like a one-sided conversation became a standoff.`);
+        }
+      }
+
+      agreed = Math.random() < Math.max(0.05, Math.min(0.95, agreeBase));
+
+      if (agreed) {
+        // Target selection
+        if (_sharedEnemy) {
+          target = _sharedEnemy;
+          targetReason = 'shared enemy — both ambassadors wanted this person gone';
+        } else {
+          const _candidates = _allNonAmb
+            .filter(p => getBond(amb1.name, p) < 3 && getBond(amb2.name, p) < 3)
+            .sort((a, b) => threatScore(b) - threatScore(a));
+          target = _candidates[0] || _allNonAmb[0];
+          targetReason = `highest threat — ${target} was too dangerous to bring into the merge`;
+        }
+        // Manipulator override (if not resisted)
+        if (!resistFired && dominatorIdx >= 0 && _ambassadors[dominatorIdx].type === 'manipulator') {
+          const manip = _ambassadors[dominatorIdx];
+          const _manipTarget = _allNonAmb.sort((a, b) => getBond(manip.name, a) - getBond(manip.name, b))[0];
+          if (_manipTarget) { target = _manipTarget; targetReason = `${manip.name}'s choice — steered the conversation to serve ${manip.pr.pos} agenda`; }
+        }
+        // Villain override (if not resisted)
+        if (!resistFired && dominatorIdx >= 0 && _ambassadors[dominatorIdx].type === 'villain') {
+          const vill = _ambassadors[dominatorIdx];
+          const _villTarget = _allNonAmb.sort((a, b) => getBond(vill.name, a) - getBond(vill.name, b))[0];
+          if (_villTarget && getBond(vill.name, _villTarget) < 0) { target = _villTarget; targetReason = `${vill.name}'s grudge — personal score settled through the meeting`; }
+        }
+      }
+
+      if (!agreed) {
+        rockDrawLoser = Math.random() < 0.5 ? amb1.name : amb2.name;
+        target = null;
+      }
+
+      // ── NARRATIVE ──
+      narrative.unshift(_ambPick([
+        `${amb1.name} and ${amb2.name} meet at the neutral ground. The torches are lit. This conversation decides someone's fate.`,
+        `Two ambassadors. One decision. ${amb1.name} sits down first. ${amb2.name} follows. Neither speaks for a moment.`,
+      ], amb1.name + amb2.name + 'arrival'));
+      if (agreed) {
+        narrative.push(_ambPick([
+          `The conversation lasted longer than expected. But a name emerged. ${target}. Both ambassadors know what this means.`,
+          `After the arguments, the silence, the weighing of names — they agreed. ${target} never gets to merge.`,
+        ], amb1.name + amb2.name + 'agreed'));
+      } else {
+        const _rlPr = pronouns(rockDrawLoser);
+        const _rsSurvivor = rockDrawLoser === amb1.name ? amb2.name : amb1.name;
+        narrative.push(_ambPick([
+          `The conversation broke down. Neither would budge. The host reaches for the bag of rocks.`,
+          `No agreement. The gap was too wide. Two rocks. One is the wrong color.`,
+        ], amb1.name + amb2.name + 'disagreed'));
+        narrative.push(`${rockDrawLoser} reaches into the bag. Pulls out a rock. ${_rlPr.Sub} ${_rlPr.sub==='they'?'look':'looks'} down. The wrong color. ${_rsSurvivor} exhales. ${rockDrawLoser}'s game is over.`);
+      }
+
+      // ── ELIMINATION ──
+      const eliminated = agreed ? target : rockDrawLoser;
+      const eliminatedByRocks = !agreed;
+
+      // Bond consequences
+      if (agreed) {
+        const _elimTribe = _ambSelections.find(s => s.members.includes(eliminated));
+        const _elimAmb = _elimTribe ? _ambassadors.find(a => a.tribe === _elimTribe.tribe) : null;
+        if (_elimAmb) {
+          _elimTribe.members.filter(m => m !== eliminated && m !== _elimAmb.name).forEach(m => {
+            addBond(m, _elimAmb.name, getBond(m, eliminated) >= 2 ? -1.0 : -0.3);
+          });
+        }
+        const _safeAmb = _ambassadors.find(a => a.tribe !== _elimTribe?.tribe);
+        if (_safeAmb) {
+          const _safeSel = _ambSelections.find(s => s.tribe === _safeAmb.tribe);
+          if (_safeSel) _safeSel.members.filter(m => m !== _safeAmb.name).forEach(m => addBond(m, _safeAmb.name, 0.3));
+        }
+      }
+      if (eliminatedByRocks) {
+        const _elimSel = _ambSelections.find(s => s.ambassador === eliminated);
+        if (_elimSel) _elimSel.members.filter(m => m !== eliminated).forEach(m1 => {
+          _elimSel.members.filter(m2 => m2 !== eliminated && m2 !== m1).forEach(m2 => addBond(m1, m2, 0.5));
+        });
+        const _survivor = _ambassadors.find(a => a.name !== eliminated);
+        if (_survivor) addBond(_survivor.name, eliminated, -1.0);
+      }
+
+      handleAdvantageInheritance(eliminated, ep);
+      gs.activePlayers = gs.activePlayers.filter(p => p !== eliminated);
+      gs.eliminated.push(eliminated);
+      gs.tribes.forEach(t => { t.members = t.members.filter(m => m !== eliminated); });
+
+      // ── RETURN EVENTS ──
+      const _returnEvents = [];
+      _ambSelections.forEach(sel => {
+        const amb = _ambassadors.find(a => a.tribe === sel.tribe);
+        if (!amb) return;
+        if (eliminatedByRocks && eliminated === amb.name) {
+          _returnEvents.push({ tribe: sel.tribe, type: 'ambassador-eliminated',
+            text: _ambPick([
+              `${amb.name} doesn't come back. The news reaches ${sel.tribe} like a weight dropping. ${amb.pr.Sub} drew the wrong rock. The tribe stares at ${amb.pr.pos} empty spot.`,
+              `When ${sel.tribe} learns what happened, nobody speaks. ${amb.name} went to protect them — and became the casualty.`,
+            ], amb.name + 'rockLoss'),
+          });
+        } else if (agreed && sel.members.includes(eliminated)) {
+          const _tPr = pronouns(eliminated);
+          const _tS = pStats(eliminated);
+          let _reactionText;
+          if (_tS.temperament <= 4 || _tS.boldness >= 7) _reactionText = `${eliminated} stares at ${amb.name}. "You had ONE job. Protect us. And you gave ME up?" The camp goes dead silent.`;
+          else if (_tS.loyalty >= 7) _reactionText = `${eliminated} doesn't yell. ${_tPr.Sub} just ${_tPr.sub==='they'?'look':'looks'} at ${amb.name}: "I trusted you." It's the last thing ${_tPr.sub} ${_tPr.sub==='they'?'say':'says'} before walking away.`;
+          else if (_tS.strategic >= 7) _reactionText = `${eliminated} nods slowly. "Smart move." ${_tPr.Sub} ${_tPr.sub==='they'?'pause':'pauses'}. "No. I would have fought harder for my people." ${amb.name} has no response.`;
+          else _reactionText = `${eliminated}'s face crumbles. ${_tPr.Sub} did everything right at camp. And someone ${_tPr.sub} never got to face decided ${_tPr.pos} fate.`;
+          const _bDmg = _tS.temperament <= 4 ? -3.0 : _tS.loyalty >= 7 ? -2.5 : _tS.strategic >= 7 ? -1.5 : -2.0;
+          addBond(eliminated, amb.name, _bDmg);
+          _returnEvents.push({ tribe: sel.tribe, type: 'tribemate-eliminated', eliminated, ambassador: amb.name, text: _reactionText, betrayalDamage: _bDmg });
+        } else {
+          _returnEvents.push({ tribe: sel.tribe, type: 'safe',
+            text: _ambPick([
+              `${amb.name} walks back into camp. The tribe reads ${amb.pr.pos} face. "We're safe," ${amb.pr.sub} ${amb.pr.sub==='they'?'say':'says'}. The relief is instant.`,
+              `${amb.name} returns. One look and the tribe knows — they made it through.`,
+            ], amb.name + 'safe'),
+          });
+        }
+      });
+
+      twistObj.ambassadorMeeting = {
+        ambassadors: _ambassadors.map(a => a.name), types: _ambassadors.map(a => ({ name: a.name, type: a.type })),
+        agreed, target, targetReason, rockDrawLoser, narrative, eliminatedByRocks, eliminated, resistFired,
+        returnEvents: _returnEvents,
+      };
+      twistObj.ambassadorEliminated = eliminated;
+      ep.ambassadorData = twistObj;
+
+    } else {
+      // ════ 3+ TRIBE NEGOTIATION — coalition mechanics ════
+      const _ambNames = _ambassadors.map(a => a.name);
+      const _coalitionScores = [];
+      for (let i = 0; i < _ambassadors.length; i++) {
+        for (let j = i + 1; j < _ambassadors.length; j++) {
+          const a = _ambassadors[i], b = _ambassadors[j];
+          const bond = getBond(a.name, b.name);
+          const sharedEnemy = _allNonAmb.find(p => getBond(a.name, p) <= -1 && getBond(b.name, p) <= -1);
+          const score = bond * 0.3 + (sharedEnemy ? 0.3 : 0) + (a.stats.strategic + b.stats.strategic) * 0.02 + Math.random() * 0.2;
+          _coalitionScores.push({ pair: [a.name, b.name], score, sharedEnemy });
+        }
+      }
+      _coalitionScores.sort((a, b) => b.score - a.score);
+      const _coalition = _coalitionScores[0].pair;
+      const _oddOneOut = _ambNames.find(n => !_coalition.includes(n));
+      const _oddS = pStats(_oddOneOut);
+      const _counterChance = _oddS.social * 0.06 + _oddS.strategic * 0.04;
+      const _counterSucceeds = Math.random() < _counterChance;
+
+      let agreed = false, target = null, targetReason = '', rockDrawLoser = null;
+      const narrative = [];
+      narrative.push(`Three ambassadors. ${_coalition.join(' and ')} find common ground quickly. ${_oddOneOut} is on the outside.`);
+
+      if (_counterSucceeds) {
+        const _newPartner = _coalition[Math.random() < 0.5 ? 0 : 1];
+        const _newOdd = _coalition.find(n => n !== _newPartner);
+        narrative.push(`${_oddOneOut} pulls ${_newPartner} aside and pitches a new deal. The coalition shatters. ${_newOdd} is suddenly the odd one out.`);
+        const _oddTribe = _ambSelections.find(s => s.ambassador === _newOdd);
+        const _cands = (_oddTribe?.members || []).filter(m => m !== _newOdd && getBond(_oddOneOut, m) < 3 && getBond(_newPartner, m) < 3);
+        target = _cands.sort((a, b) => threatScore(b) - threatScore(a))[0] || _oddTribe?.members.find(m => m !== _newOdd);
+        agreed = !!target;
+        targetReason = `${_oddOneOut}'s counter-offer succeeded — new coalition targeted ${_newOdd}'s tribe`;
+      } else {
+        narrative.push(`${_oddOneOut} tries to counter but ${_coalition.join(' and ')} aren't budging.`);
+        const _oddTribe = _ambSelections.find(s => s.ambassador === _oddOneOut);
+        const _cands = (_oddTribe?.members || []).filter(m => m !== _oddOneOut && getBond(_coalition[0], m) < 3);
+        target = _cands.sort((a, b) => threatScore(b) - threatScore(a))[0] || _oddTribe?.members.find(m => m !== _oddOneOut);
+        const _acceptChance = 0.3 + _oddS.strategic * 0.04 + getBond(_oddOneOut, _coalition[0]) * 0.05;
+        if (target && Math.random() < _acceptChance) {
+          agreed = true; targetReason = `coalition decision — ${_oddOneOut} accepted the majority`;
+          narrative.push(`${_oddOneOut} accepts. ${target} never merges.`);
+        } else {
+          agreed = false;
+          narrative.push(`${_oddOneOut} refuses. The rocks come out.`);
+          rockDrawLoser = _ambNames[Math.floor(Math.random() * _ambNames.length)];
+          narrative.push(`Three rocks. One wrong color. ${rockDrawLoser} draws it. Gone.`);
+        }
+      }
+
+      const eliminated = agreed ? target : rockDrawLoser;
+      const eliminatedByRocks = !agreed;
+
+      if (eliminatedByRocks) {
+        const _elimSel = _ambSelections.find(s => s.ambassador === eliminated);
+        if (_elimSel) _elimSel.members.filter(m => m !== eliminated).forEach(m1 => {
+          _elimSel.members.filter(m2 => m2 !== eliminated && m2 !== m1).forEach(m2 => addBond(m1, m2, 0.5));
+        });
+      } else {
+        const _elimTribe = _ambSelections.find(s => s.members.includes(eliminated));
+        const _elimAmb = _elimTribe ? _ambassadors.find(a => a.tribe === _elimTribe.tribe) : null;
+        if (_elimAmb) _elimTribe.members.filter(m => m !== eliminated && m !== _elimAmb.name).forEach(m => {
+          addBond(m, _elimAmb.name, getBond(m, eliminated) >= 2 ? -1.0 : -0.3);
+        });
+      }
+
+      handleAdvantageInheritance(eliminated, ep);
+      gs.activePlayers = gs.activePlayers.filter(p => p !== eliminated);
+      gs.eliminated.push(eliminated);
+      gs.tribes.forEach(t => { t.members = t.members.filter(m => m !== eliminated); });
+
+      const _returnEvents = _ambSelections.map(sel => {
+        const amb = _ambassadors.find(a => a.tribe === sel.tribe);
+        if (eliminatedByRocks && eliminated === amb?.name) return { tribe: sel.tribe, type: 'ambassador-eliminated', text: `${amb.name} drew the wrong rock. ${sel.tribe} lost their ambassador.` };
+        if (sel.members.includes(eliminated)) return { tribe: sel.tribe, type: 'tribemate-eliminated', eliminated, ambassador: amb?.name, text: `${amb?.name || 'The ambassador'} returns with bad news. ${eliminated} was the price.` };
+        return { tribe: sel.tribe, type: 'safe', text: `${amb?.name || 'The ambassador'} returns. ${sel.tribe} is safe.` };
+      });
+
+      twistObj.ambassadorMeeting = {
+        ambassadors: _ambNames, types: _ambassadors.map(a => ({ name: a.name, type: a.type })),
+        agreed, target, targetReason, rockDrawLoser, narrative, eliminatedByRocks, eliminated,
+        coalition: _coalition, oddOneOut: _oddOneOut, counterSucceeded: _counterSucceeds,
+        returnEvents: _returnEvents,
+      };
+      twistObj.ambassadorEliminated = eliminated;
+      ep.ambassadorData = twistObj;
+    }
 
   } else if (engineType === 'reward-challenge') {
     const rchal = pickChallenge();

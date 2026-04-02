@@ -18695,10 +18695,16 @@ function simulateEpisode() {
       const _bvPr = pronouns(_bvElim);
       const _bvPick = (arr, seed) => arr[([...seed].reduce((a,c)=>a+c.charCodeAt(0),0)+epNum*7)%arr.length];
 
+      // Pre-merge: only target/gift players from the same tribal (your tribemates)
+      // Post-merge: anyone is fair game
+      const _bvPool = ep.tribalPlayers?.length
+        ? ep.tribalPlayers.filter(p => p !== _bvElim && gs.activePlayers.includes(p))
+        : gs.activePlayers.filter(p => p !== _bvElim);
+
       if (cfg.blackVote === 'classic') {
         // Classic: eliminated votes AGAINST someone — extra vote at next tribal
-        // Target: highest heat enemy or lowest bond rival
-        const _bvCandidates = gs.activePlayers.sort((a, b) => getBond(_bvElim, a) - getBond(_bvElim, b));
+        // Target: lowest bond rival from the tribal pool
+        const _bvCandidates = [..._bvPool].sort((a, b) => getBond(_bvElim, a) - getBond(_bvElim, b));
         const _bvTarget = _bvCandidates[0];
         if (_bvTarget) {
           if (!gs.blackVotes) gs.blackVotes = [];
@@ -18710,8 +18716,8 @@ function simulateEpisode() {
           };
         }
       } else if (cfg.blackVote === 'modern') {
-        // Modern: eliminated gives an Extra Vote to their closest ally
-        const _bvAllies = gs.activePlayers.sort((a, b) => getBond(_bvElim, b) - getBond(_bvElim, a));
+        // Modern: eliminated gives an Extra Vote to their closest ally (from tribal pool)
+        const _bvAllies = [..._bvPool].sort((a, b) => getBond(_bvElim, b) - getBond(_bvElim, a));
         const _bvRecipient = _bvAllies[0];
         if (_bvRecipient) {
           gs.advantages.push({ holder: _bvRecipient, type: 'extraVote', foundEp: epNum, fromBlackVote: true, giftedBy: _bvElim });

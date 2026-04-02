@@ -21532,21 +21532,140 @@ function generateSummaryText(ep) {
   sec('ONGOING STORYLINES');
   buildStorylines(ep).forEach(s => ln(`- ${s}`));
 
-  // BLACK VOTE
+  // ══════════════════════════════════════════════════════════════════════
+  // VP-SYNCED EVENTS — dump all camp events + VP-specific data
+  // This section ensures the text backlog matches the VP viewer
+  // ══════════════════════════════════════════════════════════════════════
+
+  // ── ALL CAMP EVENTS (what the viewer sees on camp screens) ──
+  if (ep.campEvents && Object.keys(ep.campEvents).length) {
+    sec('CAMP EVENTS (FULL)');
+    Object.entries(ep.campEvents).forEach(([campName, phaseData]) => {
+      const preEvs = Array.isArray(phaseData) ? phaseData : (phaseData?.pre || []);
+      const postEvs = Array.isArray(phaseData) ? [] : (phaseData?.post || []);
+      const allEvs = [...preEvs, ...postEvs];
+      if (!allEvs.length) return;
+      ln(`${campName.toUpperCase()}:`);
+      allEvs.forEach(e => {
+        const badge = e.badgeText ? `[${e.badgeText}] ` : '';
+        const playerStr = e.players?.length ? ` (${e.players.join(', ')})` : '';
+        ln(`  ${badge}${e.text || e.type}${playerStr}`);
+      });
+    });
+  }
+
+  // ── AMBASSADORS ──
+  if (ep.ambassadorData?.ambassadorMeeting) {
+    sec('AMBASSADORS');
+    const am = ep.ambassadorData.ambassadorMeeting;
+    am.types?.forEach(t => ln(`  Ambassador: ${t.name} — ${t.type}`));
+    ln('  MEETING:');
+    am.narrative?.forEach(beat => ln(`  ${beat}`));
+    if (am.agreed) ln(`  AGREED: ${am.target} eliminated. ${am.targetReason}`);
+    else ln(`  DEADLOCKED: Rock draw. ${am.rockDrawLoser} eliminated.`);
+    ln('  RETURN:');
+    am.returnEvents?.forEach(re => {
+      re.beats?.forEach(b => ln(`  [${re.tribe}] ${b}`));
+    });
+  }
+
+  // ── FAN CAMPAIGN + FAN VOTE ──
+  if (ep.fanCampaign?.phases?.length) {
+    sec('FAN CAMPAIGN');
+    ep.fanCampaign.phases.forEach(phase => {
+      ln(`  ${phase.finalist} (${phase.style} pitch): pulse ${phase.pulseReaction}`);
+      ln(`  Speech: ${phase.speech}`);
+      phase.fanReactions?.forEach(r => ln(`    [${r.sentiment}] "${r.text}"`));
+      phase.juryReactions?.forEach(jr => ln(`    ${jr.juror}: ${jr.text}`));
+    });
+  }
+  if (ep.fanVoteResult) {
+    sec('FAN VOTE RESULT');
+    ep.fanVoteResult.breakdown?.forEach(b => ln(`  ${b.name}: ${b.pct}% (popularity: ${b.popularity}, boost: ${b.campaignBoost})`));
+    ln(`  Winner: ${ep.fanVoteResult.winner} (${ep.fanVoteResult.margin})`);
+  }
+
+  // ── STOLEN CREDIT ──
+  if (ep.stolenCreditEvents?.length) {
+    sec('STOLEN CREDIT');
+    ep.stolenCreditEvents.forEach(sc => {
+      if (sc.type === 'theft') ln(`  ${sc.stealer} stole credit for ${sc.architect}'s big move.`);
+      if (sc.type === 'confrontation') ln(`  ${sc.architect} confronted ${sc.stealer}. ${sc.architectWins ? 'Architect won — partial credit reclaimed.' : 'Architect lost — looked petty.'}`);
+    });
+  }
+
+  // ── CHALLENGE THROWS ──
+  if (ep.challengeThrows?.length) {
+    sec('CHALLENGE THROWS');
+    ep.challengeThrows.forEach(ct => {
+      ln(`  ${ct.thrower} threw the challenge.${ct.caught ? ` CAUGHT by ${ct.detectedBy.join(', ')}.` : ' Not detected.'}`);
+    });
+  }
+
+  // ── FAKE IDOL ──
+  if (ep.fakeIdolEvents?.length) {
+    sec('FAKE IDOL');
+    ep.fakeIdolEvents.forEach(fi => {
+      if (fi.arc === 'caught-crafting') ln(`  ${fi.planter} caught crafting a fake idol by ${fi.caughtBy}. Exposed.`);
+      if (fi.arc === 'planted') ln(`  ${fi.planter} planted a fake idol. ${fi.victim} found it and thinks it's real.`);
+      if (fi.arc === 'tipped-off') ln(`  ${fi.planter} planted a fake idol. ${fi.victim} found it. ${fi.tippedOffBy} warned ${fi.victim} — fake discarded.`);
+      if (fi.arc === 'played-at-tribal') ln(`  ${fi.victim} played a FAKE idol at tribal (planted by ${fi.planter}). ${fi.votesAgainst} votes counted. Humiliated.`);
+    });
+  }
+
+  // ── BLACK VOTE ──
   if (ep.blackVote) {
     sec('BLACK VOTE');
     const _bvs = ep.blackVote;
     if (_bvs.type === 'classic') {
-      ln(`${_bvs.from} casts a Black Vote against ${_bvs.target} before leaving. This vote will count at ${_bvs.target}'s next tribal council.`);
-      ln(`Reason: ${_bvs.reason}`);
+      ln(`  ${_bvs.from} casts a Black Vote against ${_bvs.target}. Counts at next tribal.`);
+      ln(`  Reason: ${_bvs.reason}`);
     } else {
-      ln(`${_bvs.from} gifts an Extra Vote to ${_bvs.recipient} before leaving.`);
-      ln(`Reason: ${_bvs.reason}`);
+      ln(`  ${_bvs.from} gifts an Extra Vote to ${_bvs.recipient}.`);
+      ln(`  Reason: ${_bvs.reason}`);
     }
   }
   if (ep.blackVoteApplied) {
-    sec('BLACK VOTE APPLIED');
-    ln(`${ep.blackVoteApplied.from}'s Black Vote against ${ep.blackVoteApplied.target} counts at this tribal council.`);
+    ln(`  BLACK VOTE APPLIED: ${ep.blackVoteApplied.from}'s vote against ${ep.blackVoteApplied.target} counts tonight.`);
+  }
+
+  // ── SURVIVAL STATUS ──
+  if (ep.survivalSnapshot && seasonConfig.foodWater === 'enabled') {
+    sec('SURVIVAL STATUS');
+    const _tf = ep.tribeFoodSnapshot || {};
+    Object.entries(_tf).forEach(([tribe, food]) => ln(`  ${tribe}: ${Math.round(food)} food (${food >= 80 ? 'Well-Fed' : food >= 60 ? 'Comfortable' : food >= 40 ? 'Hungry' : food >= 20 ? 'Starving' : 'Critical'})`));
+    if (ep.providerSlackerData) {
+      if (ep.providerSlackerData.providers.length) ln(`  Providers: ${ep.providerSlackerData.providers.join(', ')}`);
+      if (ep.providerSlackerData.slackers.length) ln(`  Slackers: ${ep.providerSlackerData.slackers.join(', ')}`);
+    }
+    if (ep.medevac) ln(`  MEDEVAC: ${ep.medevac.name} (survival: ${ep.medevac.survival})`);
+    if (ep.medevacReplacement) ln(`  REPLACEMENT: ${ep.medevacReplacement.returned} returns (${ep.medevacReplacement.mindset} mindset)`);
+  }
+
+  // ── REWARD CHALLENGE DETAILS ──
+  if (ep.rewardChalData) {
+    const rc = ep.rewardChalData;
+    sec('REWARD CHALLENGE');
+    ln(`  ${rc.label} (${rc.category}): ${rc.winner} wins.`);
+    if (rc.rewardItemLabel) ln(`  Reward: ${rc.rewardItemLabel}`);
+    if (rc.rewardCompanions?.length) ln(`  Shares with: ${rc.rewardCompanions.join(', ')} (${rc.rewardPickStrategy || 'heart'} pick)`);
+    if (rc.rewardPickReasons?.length) rc.rewardPickReasons.forEach(pr => ln(`    ${pr.name}: ${pr.reason} (bond: ${pr.bond})`));
+    if (rc.rewardSnubs?.length) ln(`  Snubbed: ${rc.rewardSnubs.map(s => `${s.player} (bond ${s.bond}, hit ${s.damage})`).join(', ')}`);
+    if (rc.rewardAllianceFormed) ln(`  ALLIANCE FORMED during reward: ${rc.rewardAllianceFormed}`);
+    if (rc.rewardAllianceFailed) ln(`  Alliance pitch FAILED during reward.`);
+    if (rc.rewardAllianceStrengthened) ln(`  Alliance ${rc.rewardAllianceStrengthened} STRENGTHENED during reward.`);
+    if (rc.rewardPitchLeaks?.length) rc.rewardPitchLeaks.forEach(l => ln(`  LEAKED: ${l.leaker} told ${l.toldTo} about the failed pitch.`));
+    if (rc.rewardShareInvite) ln(`  REWARD SHARED: ${rc.rewardShareInvite.invited} invited by ${rc.rewardShareInvite.invitedBy} (${rc.rewardShareInvite.reason})`);
+  }
+
+  // ── FTC Q&A (if finale) ──
+  if (ep.ftcData?.jurorQA?.length) {
+    sec('FTC Q&A');
+    ep.ftcData.jurorQA.forEach(qa => {
+      ln(`  ${qa.juror} asks ${qa.targetForQuestion}:`);
+      ln(`    Q: ${qa.question}`);
+      ln(`    A: ${qa.response}`);
+    });
   }
 
   // COLD OPEN HOOK

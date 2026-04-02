@@ -6533,7 +6533,6 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
   // ── BLACK VOTE: direct injection if penalty vote didn't fire (target on different tribe) ──
   // Check gs.blackVotes for any pending classic vote whose target is at THIS tribal
   if (gs.blackVotes?.length) {
-    console.log('[BV-DIRECT] checking', gs.blackVotes.map(bv => `${bv.from}→${bv.target}`), 'tribalPlayers:', tribalPlayers.slice(0,3)+'...', 'penaltyTarget:', gs.penaltyVoteThisEp);
     const _bvDirect = gs.blackVotes.find(bv => bv.type === 'classic' && tribalPlayers.includes(bv.target) && !isImmune(bv.target) && bv.target !== gs.penaltyVoteThisEp);
     if (_bvDirect) {
       votes[_bvDirect.target] = (votes[_bvDirect.target] || 0) + 1;

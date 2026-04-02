@@ -9903,7 +9903,7 @@ function applyTwist(ep, twist, isPrimary = true) {
       gs.eliminated.push(eliminated);
       gs.tribes.forEach(t => { t.members = t.members.filter(m => m !== eliminated); });
 
-      // ── RETURN EVENTS — multi-beat per tribe ──
+      // ── RETURN EVENTS — multi-beat per tribe, expanded variants ──
       const _returnEvents = [];
       _ambSelections.forEach(sel => {
         const amb = _ambassadors.find(a => a.tribe === sel.tribe);
@@ -9912,66 +9912,148 @@ function applyTwist(ep, twist, isPrimary = true) {
         const closestToElim = eliminated ? tribemates.sort((a, b) => getBond(b, eliminated) - getBond(a, eliminated))[0] : null;
 
         if (eliminatedByRocks && eliminated === amb.name) {
-          // Ambassador lost to rocks — tribe mourns
+          // ═══ AMBASSADOR LOST TO ROCKS ═══
           const beats = [];
-          beats.push(`${amb.name} doesn't come back. The surviving ambassador delivers the news. ${sel.tribe} goes silent.`);
-          beats.push(`"${amb.pr.Sub} volunteered to protect us," someone says. "And now ${amb.pr.sub}'s gone." The tribe gathers around ${amb.pr.pos} empty spot in the shelter. Nobody moves for a long time.`);
-          if (closestToElim || tribemates[0]) {
+          beats.push(_ambPick([
+            `${amb.name} doesn't come back. The surviving ambassador delivers the news. ${sel.tribe} goes silent.`,
+            `The tribe is waiting. They see movement on the path — but it's not ${amb.name}. It's the host. The look on the host's face tells them everything before a word is spoken.`,
+            `Minutes pass. Then more minutes. When the other tribe's ambassador appears alone at the edge of camp, ${sel.tribe} knows. ${amb.name} is gone.`,
+          ], amb.name + sel.tribe + 'rockReturn1'));
+          beats.push(_ambPick([
+            `"${amb.pr.Sub} volunteered to protect us," someone says. "And now ${amb.pr.sub}'s gone." The tribe gathers around ${amb.pr.pos} empty spot in the shelter. Nobody moves for a long time.`,
+            `The tribe processes it in waves. Shock first. Then anger — not at ${amb.name}, but at the game. "A rock? ${amb.pr.Sub} went home because of a ROCK?" Then sadness. The shelter feels bigger tonight.`,
+            `${amb.name}'s torch sits unlit at the edge of camp. ${amb.pr.Sub} ${amb.pr.sub==='they'?'were':'was'} supposed to come back with good news. Instead, ${amb.pr.pos} bag is packed by someone else. The tribe does it silently — folding ${amb.pr.pos} clothes, clearing ${amb.pr.pos} spot. It feels like a funeral.`,
+          ], amb.name + sel.tribe + 'rockReturn2'));
+          if (tribemates.length) {
             const reactor = closestToElim || tribemates[0];
             const rPr = pronouns(reactor);
             beats.push(_ambPick([
               `${reactor} walks to the water alone. ${rPr.Sub} ${rPr.sub==='they'?'don\'t':'doesn\'t'} cry in front of the tribe — but ${rPr.sub} ${rPr.sub==='they'?'cry':'cries'} at the water.`,
               `${reactor} says what everyone's thinking: "That should have been a deal, not a coin flip. ${amb.name} deserved better than a rock."`,
+              `${reactor} to confessional: "${amb.name} went in there to protect us and paid the price. I'm going to honor that. Whatever it takes — I'm playing for both of us now."`,
+              `${reactor} sits by the fire long after everyone else has gone to sleep. ${rPr.Sub} ${rPr.sub==='they'?'keep':'keeps'} looking at the path, like ${amb.name} might still walk back.`,
             ], reactor + amb.name + 'mourn'));
           }
           _returnEvents.push({ tribe: sel.tribe, type: 'ambassador-eliminated', text: beats.join(' '), beats });
+
         } else if (agreed && sel.members.includes(eliminated)) {
-          // Tribemate eliminated — ambassador sold them out
+          // ═══ TRIBEMATE ELIMINATED — ambassador gave them up ═══
           const _tPr = pronouns(eliminated);
           const _tS = pStats(eliminated);
           const beats = [];
-          // Ambassador returns with the news
-          beats.push(`${amb.name} walks back into ${sel.tribe} camp. The tribe looks up. ${amb.pr.Sub} can't make eye contact. "I need to tell you something."`);
-          // The reveal
-          beats.push(`"They're sending ${eliminated} home." The words land like a punch. ${eliminated} was right there — listening. ${_tPr.Sub} heard ${_tPr.pos} own name come out of ${_tPr.pos} ambassador's mouth.`);
-          // Target's reaction — personality-driven
+
+          // Beat 1: Ambassador returns with the news (3 variants)
+          beats.push(_ambPick([
+            `${amb.name} walks back into ${sel.tribe} camp. The tribe looks up. ${amb.pr.Sub} can't make eye contact. "I need to tell you something."`,
+            `${amb.name} appears at the edge of camp. ${amb.pr.Sub} ${amb.pr.sub==='they'?'don\'t':'doesn\'t'} sit down. ${amb.pr.Sub} ${amb.pr.sub==='they'?'stand':'stands'} there, looking at the ground. The tribe stops what they're doing. They know bad news when they see it.`,
+            `The tribe sees ${amb.name} coming back and starts to cheer — then stops. Something is wrong. ${amb.pr.Sub} ${amb.pr.sub==='they'?'are':'is'}n't celebrating. ${amb.pr.Sub} ${amb.pr.sub==='they'?'are':'is'}n't smiling. "I need everyone to sit down," ${amb.pr.sub} ${amb.pr.sub==='they'?'say':'says'}.`,
+          ], amb.name + eliminated + 'reveal1'));
+
+          // Beat 2: The reveal (3 variants)
+          beats.push(_ambPick([
+            `"They're sending ${eliminated} home." The words land like a punch. ${eliminated} was right there — listening. ${_tPr.Sub} heard ${_tPr.pos} own name.`,
+            `${amb.name} looks at ${eliminated}. "I'm sorry. I tried. But the deal..." ${amb.pr.Sub} ${amb.pr.sub==='they'?'trail':'trails'} off. ${eliminated} already understands. The color drains from ${_tPr.pos} face.`,
+            `"${eliminated}." ${amb.name} says the name and everything stops. The birds. The wind. ${eliminated}'s breath. "What?" "I couldn't — the other ambassador wouldn't—" "What are you saying?" "${eliminated}. It's you. I'm sorry."`,
+          ], amb.name + eliminated + 'reveal2'));
+
+          // Beat 3: Target's reaction — personality-driven (2-3 variants per type)
           if (_tS.temperament <= 4 || _tS.boldness >= 7) {
-            beats.push(`${eliminated} stands up. "${amb.name}. Look at me." ${amb.name} looks. "You had ONE job. Protect this tribe. And you gave ME up?" ${_tPr.Sub} ${_tPr.sub==='they'?'don\'t':'doesn\'t'} wait for an answer. "I fought for you every single day out here. Every challenge. Every camp chore. And THIS is what I get?" The camp goes dead silent. Nobody moves.`);
+            beats.push(_ambPick([
+              `${eliminated} stands up. "${amb.name}. Look at me." ${amb.name} looks. "You had ONE job. Protect this tribe. And you gave ME up?" ${_tPr.Sub} ${_tPr.sub==='they'?'don\'t':'doesn\'t'} wait for an answer. "I fought for you every single day. And THIS is what I get?" Dead silence.`,
+              `${eliminated} laughs. Not a real laugh — the kind that comes right before the explosion. "You're joking. Tell me you're joking." ${amb.name}: "I'm not." The laugh stops. What replaces it is worse. "You GAVE me to them. You looked at the other ambassador and said MY name. Say it. SAY you said my name." ${amb.name} can't speak.`,
+              `${eliminated} doesn't sit down. ${_tPr.Sub} ${_tPr.sub==='they'?'pace':'paces'}. Back and forth. The tribe watches. "Of all the people — of EVERYONE on this tribe — you chose ME?" ${_tPr.Sub} ${_tPr.sub==='they'?'kick':'kicks'} a coconut shell across camp. "I hope it was worth it. I hope that deal keeps you warm at night."`,
+            ], eliminated + 'hotheadReact'));
           } else if (_tS.loyalty >= 7) {
-            beats.push(`${eliminated} doesn't yell. That's what makes it worse. ${_tPr.Sub} just ${_tPr.sub==='they'?'look':'looks'} at ${amb.name} and ${_tPr.sub==='they'?'say':'says'}, quietly: "I trusted you. I told everyone you were the right person to send. I vouched for you." ${amb.name} opens ${amb.pr.pos} mouth. Nothing comes out.`);
+            beats.push(_ambPick([
+              `${eliminated} doesn't yell. That's what makes it worse. ${_tPr.Sub} just ${_tPr.sub==='they'?'look':'looks'} at ${amb.name}: "I trusted you. I told everyone you were the right person to send. I vouched for you." ${amb.name} opens ${amb.pr.pos} mouth. Nothing comes out.`,
+              `${eliminated} is quiet for a long time. Then: "I stuck up for you, ${amb.name}. When people said you shouldn't go, I said you were the right choice. I believed in you." ${_tPr.Sub} ${_tPr.sub==='they'?'wipe':'wipes'} ${_tPr.pos} eyes. "That's the part that hurts."`,
+              `"I need you to tell me one thing," ${eliminated} says. "Did you fight for me? Even a little? Or was I the first name out of your mouth?" ${amb.name} hesitates a fraction too long. ${eliminated} nods. "That's my answer." ${_tPr.Sub} ${_tPr.sub==='they'?'walk':'walks'} to ${_tPr.pos} bag and ${_tPr.sub==='they'?'start':'starts'} packing.`,
+            ], eliminated + 'loyalReact'));
           } else if (_tS.strategic >= 7) {
-            beats.push(`${eliminated} nods. Slowly. "Smart move. Strategically, I get it. I would have been the biggest threat in the merge." ${_tPr.Sub} ${_tPr.sub==='they'?'pause':'pauses'}. "But I wouldn't have done it to you. I would have fought harder for my people." ${amb.name} has no response.`);
+            beats.push(_ambPick([
+              `${eliminated} nods. Slowly. "Smart move. Strategically, I get it." ${_tPr.Sub} ${_tPr.sub==='they'?'pause':'pauses'}. "But I wouldn't have done it to you. I would have fought harder." ${amb.name} has no response.`,
+              `${eliminated} takes a breath. "I respect the game. I respect that you made a call. But let me tell you what I would have done differently — I would have gone to rocks before I gave up one of my own. Think about that." ${eliminated} walks away.`,
+              `"You know what? I saw this coming," ${eliminated} says. "Not this specifically — but I knew sending you in there was a gamble. I just thought the gamble was on the other tribe, not on me." ${_tPr.Sub} almost ${_tPr.sub==='they'?'smile':'smiles'}. Almost. "Good game."`,
+            ], eliminated + 'stratReact'));
           } else {
-            beats.push(`${eliminated}'s face crumbles. ${_tPr.Sub} ${_tPr.sub==='they'?'don\'t':'doesn\'t'} understand. ${_tPr.Sub} did everything right — provided at camp, stayed loyal, built bonds. And someone ${_tPr.sub} never got to face decided ${_tPr.pos} fate. "I never even got to argue my case," ${_tPr.sub} ${_tPr.sub==='they'?'whisper':'whispers'}.`);
+            beats.push(_ambPick([
+              `${eliminated}'s face crumbles. ${_tPr.Sub} ${_tPr.sub==='they'?'don\'t':'doesn\'t'} understand. ${_tPr.Sub} did everything right. "I never even got to argue my case," ${_tPr.sub} ${_tPr.sub==='they'?'whisper':'whispers'}.`,
+              `${eliminated} sits down hard. ${_tPr.Sub} ${_tPr.sub==='they'?'stare':'stares'} at ${_tPr.pos} hands. "I didn't even get a vote. I didn't get a tribal. I got a conversation I wasn't part of." The tears come. ${_tPr.Sub} ${_tPr.sub==='they'?'don\'t':'doesn\'t'} try to stop them.`,
+              `"Why me?" ${eliminated} asks. It's not angry — it's genuine confusion. "What did I do wrong?" ${amb.name}: "Nothing. You did nothing wrong." "Then WHY?" The question hangs in the air. There's no answer that fixes this.`,
+            ], eliminated + 'emotReact'));
           }
-          // Tribe's reaction
+
+          // Beat 4: Tribe's reaction (expanded)
           if (closestToElim) {
             const cPr = pronouns(closestToElim);
             const cBond = getBond(closestToElim, eliminated);
             if (cBond >= 3) {
-              beats.push(`${closestToElim} turns to ${amb.name}. "Why ${eliminated}? Why not someone from THEIR tribe?" ${cPr.Sub} ${cPr.sub==='they'?'don\'t':'doesn\'t'} wait for an answer. ${cPr.Sub} ${cPr.sub==='they'?'go':'goes'} to ${eliminated} instead. "I'm sorry. I'm so sorry."`);
+              beats.push(_ambPick([
+                `${closestToElim} turns to ${amb.name}. "Why ${eliminated}? Why not someone from THEIR tribe?" ${cPr.Sub} ${cPr.sub==='they'?'don\'t':'doesn\'t'} wait for an answer. ${cPr.Sub} ${cPr.sub==='they'?'go':'goes'} to ${eliminated} instead. "I'm sorry. I'm so sorry."`,
+                `${closestToElim} hasn't said a word. ${cPr.Sub} ${cPr.sub==='they'?'walk':'walks'} over to ${eliminated} and ${cPr.sub==='they'?'sit':'sits'} down next to ${_tPr.obj}. No words. Just presence. Then quietly: "This isn't right. And I'm going to make sure everyone at the merge knows it."`,
+                `${closestToElim} to confessional: "They took ${eliminated}. The one person on this tribe who didn't deserve it. ${amb.name} is going to answer for this — maybe not today, but soon."`,
+              ], closestToElim + eliminated + 'allyReact'));
             } else {
-              beats.push(`${closestToElim} watches from across camp. ${cPr.Sub} ${cPr.sub==='they'?'don\'t':'doesn\'t'} say anything to ${amb.name}. But the look says enough.`);
+              beats.push(_ambPick([
+                `${closestToElim} watches from across camp. ${cPr.Sub} ${cPr.sub==='they'?'don\'t':'doesn\'t'} say anything to ${amb.name}. But the look says enough.`,
+                `${closestToElim} exchanges a glance with ${tribemates[1] || tribemates[0] || amb.name}. The unspoken question: "Can we trust ${amb.name} after this?" The answer isn't obvious.`,
+              ], closestToElim + 'distantReact'));
             }
           }
+
           const _bDmg = _tS.temperament <= 4 ? -3.0 : _tS.loyalty >= 7 ? -2.5 : _tS.strategic >= 7 ? -1.5 : -2.0;
           addBond(eliminated, amb.name, _bDmg);
           _returnEvents.push({ tribe: sel.tribe, type: 'tribemate-eliminated', eliminated, ambassador: amb.name, text: beats.join(' '), beats, betrayalDamage: _bDmg });
+
         } else {
-          // Tribe is safe — ambassador protected them
+          // ═══ TRIBE IS SAFE — ambassador protected them ═══
           const beats = [];
-          beats.push(`${amb.name} walks back into camp. The tribe reads ${amb.pr.pos} face — and the relief is instant. "We're safe," ${amb.pr.sub} ${amb.pr.sub==='they'?'say':'says'}. The tribe exhales.`);
-          if (amb.type === 'manipulator' || amb.type === 'dealmaker') {
-            beats.push(`"I got what we needed," ${amb.name} says. ${amb.pr.Sub} doesn't explain the details. ${amb.pr.Sub} doesn't need to. The result speaks.`);
+
+          // Beat 1: The return (3 variants)
+          beats.push(_ambPick([
+            `${amb.name} walks back into camp. The tribe reads ${amb.pr.pos} face — and the relief is instant. "We're safe," ${amb.pr.sub} ${amb.pr.sub==='they'?'say':'says'}. The tribe exhales.`,
+            `${amb.name} appears on the path. The tribe holds its breath. Then ${amb.pr.sub} ${amb.pr.sub==='they'?'smile':'smiles'}. Just barely — but enough. "We're all going to the merge." The cheering starts before ${amb.pr.sub} even ${amb.pr.sub==='they'?'sit':'sits'} down.`,
+            `Before ${amb.name} even speaks, the tribe sees it in ${amb.pr.pos} posture. Shoulders back. Head up. "Nobody from ${sel.tribe} is going home tonight." The relief is physical — people sag, laugh, wipe their eyes.`,
+          ], amb.name + sel.tribe + 'safeReturn'));
+
+          // Beat 2: What happened (archetype-driven, 2 variants each)
+          if (amb.type === 'manipulator') {
+            beats.push(_ambPick([
+              `"I got what we needed," ${amb.name} says. ${amb.pr.Sub} doesn't explain the details. ${amb.pr.Sub} doesn't need to. The result speaks. But something about the way ${amb.pr.sub} ${amb.pr.sub==='they'?'avoid':'avoids'} eye contact tells the tribe there's a story ${amb.pr.sub}'s not sharing.`,
+              `${amb.name} gives the tribe a version of what happened. It's smooth, it's clean, and it might not be entirely true. But the tribe got what they needed: safety. Nobody asks too many questions.`,
+            ], amb.name + 'manipSafe'));
+          } else if (amb.type === 'dealmaker') {
+            beats.push(_ambPick([
+              `${amb.name} lays it out: who was discussed, what the deal was, why it worked. Clear, strategic, no emotion. "It was business. And we came out on top." The tribe respects it.`,
+              `"Clean deal," ${amb.name} says. "We looked at the threats, agreed on a name, shook hands. No tricks." The tribe nods. That's the ambassador they sent — and that's the ambassador who came back.`,
+            ], amb.name + 'dealSafe'));
           } else if (amb.type === 'loyal-shield') {
-            beats.push(`"I wasn't going to let anyone from this tribe go home," ${amb.name} says. The tribe believes ${amb.pr.obj}. They should — ${amb.pr.sub} meant it.`);
+            beats.push(_ambPick([
+              `"I wasn't going to let anyone from this tribe go home," ${amb.name} says. The tribe believes ${amb.pr.obj}. They should — ${amb.pr.sub} meant it. "I was ready to go to rocks if I had to."`,
+              `"They tried to get me to give up one of us," ${amb.name} says. "I said no. I said I'd rather draw a rock myself than sacrifice someone from my family." The tribe looks at ${amb.pr.obj} differently now. That's loyalty that goes beyond the game.`,
+            ], amb.name + 'loyalSafe'));
+          } else if (amb.type === 'villain') {
+            beats.push(_ambPick([
+              `${amb.name} sits down with a look that says "don't ask." The tribe doesn't ask. Whatever ${amb.pr.sub} did in that clearing, it worked. That's all that matters. For now.`,
+              `"The other ambassador folded," ${amb.name} says flatly. "They gave up one of theirs. It's done." No empathy. No guilt. Just results. The tribe exchanges looks but says nothing.`,
+            ], amb.name + 'villSafe'));
           } else {
-            beats.push(`${amb.name} sits down at the fire. The tribe gathers around. "It was hard," ${amb.pr.sub} ${amb.pr.sub==='they'?'say':'says'}. "But we made it." Someone puts a hand on ${amb.pr.pos} shoulder. That's enough.`);
+            beats.push(_ambPick([
+              `${amb.name} sits down at the fire. The tribe gathers around. "It was hard," ${amb.pr.sub} ${amb.pr.sub==='they'?'say':'says'}. "But we made it." Someone puts a hand on ${amb.pr.pos} shoulder. That's enough.`,
+              `${amb.name} tells the tribe what happened — the back and forth, the proposals, the tension. ${amb.pr.Sub} ${amb.pr.sub==='they'?'leave':'leaves'} out the worst parts. The tribe doesn't need to know how close it was.`,
+            ], amb.name + 'emotSafe'));
           }
+
+          // Beat 3: Grateful tribemate (3 variants)
           if (tribemates.length) {
-            const grateful = tribemates[0];
-            beats.push(`${grateful} to confessional: "${amb.name} came through for us. I won't forget that. Going into the merge — that's someone I want on my side."`);
+            const grateful = tribemates[Math.floor(tribemates.length * 0.5)]; // middle of the group
+            beats.push(_ambPick([
+              `${grateful} to confessional: "${amb.name} came through for us. I won't forget that. Going into the merge — that's someone I want on my side."`,
+              `${grateful} pulls ${amb.name} aside later. "Thank you. I mean it. Whatever you had to do in there — thank you." ${amb.name} nods. The weight of what happened hasn't fully lifted yet.`,
+              `${grateful}: "I owe ${amb.name}. We all do. ${amb.pr.Sub} went into that room alone and came back with all of us. That's not nothing."`,
+            ], grateful + amb.name + 'grateful'));
           }
+
           _returnEvents.push({ tribe: sel.tribe, type: 'safe', text: beats.join(' '), beats });
         }
       });

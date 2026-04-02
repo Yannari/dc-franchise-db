@@ -22692,10 +22692,12 @@ function renderEpisodeView(epRecord) {
 }
 
 let _spoilerFree = false;
-// Sync on page load in case browser restores checkbox state
+// Sync on page load — restore from localStorage
 window.addEventListener('DOMContentLoaded', () => {
+  const _sfSaved = localStorage.getItem('simulator_spoilerFree') === 'true';
   const _sfCb = document.getElementById('cfg-spoiler-free');
-  if (_sfCb?.checked) { _spoilerFree = true; }
+  if (_sfCb) { _sfCb.checked = _sfSaved; }
+  _spoilerFree = _sfSaved;
   // Load roster from JSON — works on GitHub Pages (HTTP), fails silently on file://
   fetch('franchise_roster.json')
     .then(r => r.json())
@@ -22709,6 +22711,7 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 function toggleSpoilerFree() {
   _spoilerFree = document.getElementById('cfg-spoiler-free')?.checked || false;
+  try { localStorage.setItem('simulator_spoilerFree', _spoilerFree); } catch(e) {}
   renderEpisodeHistory();
   const epToShow = viewingEpNum ? gs.episodeHistory.find(e => e.num === viewingEpNum) : gs.episodeHistory[gs.episodeHistory.length - 1];
   if (epToShow) renderEpisodeView(epToShow);

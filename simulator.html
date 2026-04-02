@@ -18682,10 +18682,11 @@ function simulateEpisode() {
     }
 
     // ── BLACK VOTE: consume the pending black vote (target was at this tribal) ──
-    if (ep.blackVotePending && gs.blackVotes?.length) {
+    // Only consume black vote if the target was actually at THIS tribal
+    if (ep.blackVotePending && gs.blackVotes?.length && ep.tribalPlayers?.includes(ep.blackVotePending.target)) {
       gs.blackVotes = gs.blackVotes.filter(bv => bv !== ep.blackVotePending);
-      delete ep.blackVotePending;
     }
+    delete ep.blackVotePending;
     delete gs._activeBlackVote;
     // ── BLACK VOTE: eliminated player casts a parting vote/gift (until F4) ──
     if (cfg.blackVote && cfg.blackVote !== 'off' && gs.activePlayers.length > 4) {

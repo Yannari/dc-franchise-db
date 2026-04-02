@@ -6047,10 +6047,16 @@ function simulateIndividualChallenge(pool, immune) {
   _throwers.forEach(thrower => {
     const tS = pStats(thrower);
     const tPr = pronouns(thrower);
+    // Track throw count for escalating detection
+    if (!gs.challengeThrowCount) gs.challengeThrowCount = {};
+    gs.challengeThrowCount[thrower] = (gs.challengeThrowCount[thrower] || 0) + 1;
+    const _throwCount = gs.challengeThrowCount[thrower];
     // Detection: each other player rolls intuition to notice
+    // Escalating: each previous throw adds +0.03 detection chance (tribe gets suspicious)
     const _detectors = [];
     candidates.filter(p => p !== thrower).forEach(p => {
-      if (Math.random() < pStats(p).intuition * 0.04) _detectors.push(p);
+      const _detectChance = pStats(p).intuition * 0.04 + (_throwCount - 1) * 0.03;
+      if (Math.random() < _detectChance) _detectors.push(p);
     });
     if (_detectors.length) {
       // Caught — consequences

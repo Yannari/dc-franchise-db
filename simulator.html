@@ -37290,6 +37290,12 @@ function init() {
   renderAllianceList();
   renderPresetList();
   renderSeasonSaveList();
+  // Restore spoiler-free state BEFORE rendering tabs (so episode history respects it)
+  const _sfSaved2 = localStorage.getItem('simulator_spoilerFree') === 'true';
+  const _sfCb2 = document.getElementById('cfg-spoiler-free');
+  if (_sfCb2) _sfCb2.checked = _sfSaved2;
+  _spoilerFree = _sfSaved2;
+
   // Restore last active tab
   const _savedTab = localStorage.getItem('simulator_activeTab');
   if (_savedTab && ['cast','setup','run','results'].includes(_savedTab)) {

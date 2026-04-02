@@ -13801,6 +13801,69 @@ function generateFakeIdolTipOffEvents(ep) {
   });
 }
 
+// Black Vote guess events — players speculate about who received the black vote
+function generateBlackVoteGuessEvents(ep) {
+  if (!gs.blackVotes?.length && !ep.blackVoteApplied) return;
+  if (seasonConfig.blackVote === 'off' || !seasonConfig.blackVote) return;
+
+  const _pick = (arr, seed) => arr[([...seed].reduce((a,c)=>a+c.charCodeAt(0),0)+(gs.episode||0)*7)%arr.length];
+
+  // Who knows there's a black vote in play? Everyone — it's a known rule.
+  // But who received it is secret. Players try to guess.
+  const _pendingBVs = gs.blackVotes?.filter(bv => bv.type === 'classic' && gs.activePlayers.includes(bv.target)) || [];
+  if (!_pendingBVs.length) return;
+
+  const _bv = _pendingBVs[0]; // the active black vote
+  const _realTarget = _bv.target;
+  const _from = _bv.from;
+
+  // Each strategic/intuitive player guesses who got the black vote
+  const _guessers = gs.activePlayers.filter(p => {
+    const s = pStats(p);
+    return (s.strategic >= 5 || s.intuition >= 6) && Math.random() < s.strategic * 0.04 + s.intuition * 0.03;
+  });
+
+  if (!_guessers.length) return;
+
+  const campKey = gs.isMerged ? (gs.mergeName || 'merge') : (gs.tribes.find(t => t.members.includes(_guessers[0]))?.name || 'merge');
+  if (!ep.campEvents?.[campKey]) return;
+
+  _guessers.forEach(guesser => {
+    const gS = pStats(guesser);
+    const gPr = pronouns(guesser);
+
+    // Correct guess? proportional to intuition
+    const _guessCorrect = Math.random() < gS.intuition * 0.08; // intuition 7 = 56%, intuition 3 = 24%
+    const _guessedTarget = _guessCorrect ? _realTarget
+      : gs.activePlayers.filter(p => p !== guesser).sort((a, b) => getBond(_from, a) - getBond(_from, b))[0]; // wrong guess — picks someone with bad bond to the eliminated
+
+    if (!_guessedTarget) return;
+
+    // Heat consequences of the guess
+    if (!_guessCorrect) {
+      // Wrong guess — heat on the wrong person
+      // Other players who hear this might pile on
+      if (Math.random() < 0.4) {
+        if (!gs.blackVoteGuessHeat) gs.blackVoteGuessHeat = {};
+        gs.blackVoteGuessHeat[_guessedTarget] = (gs.episode || 0) + 1;
+      }
+    }
+
+    const _guessText = _pick([
+      `${guesser} pulls someone aside. "I've been thinking about ${_from}'s Black Vote. I think ${gPr.sub} ${gPr.sub==='they'?'sent':'sent'} it to ${_guessedTarget}." ${_guessCorrect ? 'The read is correct — but nobody can confirm it.' : 'The read is wrong. But nobody knows that yet.'}`,
+      `${guesser} to confessional: "Who did ${_from} target with the Black Vote? ${gS.intuition >= 7 ? `My gut says ${_guessedTarget}. ${_from} never trusted ${pronouns(_guessedTarget).obj}.` : `I have no idea. But if I had to guess... ${_guessedTarget}. ${_from} would want to hurt ${pronouns(_guessedTarget).obj} one last time.`}"`,
+      `At camp, ${guesser} brings it up: "We need to talk about the Black Vote. ${_from} is gone but ${pronouns(_from).pos} vote isn't. I think it's on ${_guessedTarget}." The tribe considers this. ${_guessCorrect ? 'They should — because it\'s right.' : 'They shouldn\'t — because it\'s wrong.'}`,
+    ], guesser + _guessedTarget + 'bvguess');
+
+    (ep.campEvents[campKey].pre || []).push({
+      type: 'blackVoteGuess', players: [guesser, _guessedTarget],
+      text: _guessText,
+      badgeText: _guessCorrect ? 'CORRECT READ' : 'WRONG READ',
+      badgeClass: _guessCorrect ? 'gold' : 'red',
+    });
+  });
+}
+
 function checkShowmanceFormation(ep) {
   if (!gs.showmances) gs.showmances = [];
   const active = gs.activePlayers;
@@ -15715,6 +15778,7 @@ function generateCampEvents(ep, phase = 'both') {
     checkFakeIdolPlant(ep);
     // Fake idol tip-off confrontation (fires next episode after tip-off)
     generateFakeIdolTipOffEvents(ep);
+    generateBlackVoteGuessEvents(ep);
     // Social bomb check — fires before alliance quitting (bond hits can trigger quitting)
     checkSocialBomb(ep);
     // Alliance quitting evaluated once after all events are done, then recruitment (scenarios A + B)
@@ -15732,6 +15796,7 @@ function generateCampEvents(ep, phase = 'both') {
     checkStolenCredit(ep);
     checkFakeIdolPlant(ep);
     generateFakeIdolTipOffEvents(ep);
+    generateBlackVoteGuessEvents(ep);
     // Social bomb + alliance quitting + recruitment after the single-phase generation
     checkSocialBomb(ep);
     checkAllianceQuitting(ep);
@@ -16063,15 +16128,15 @@ function simulateEpisode() {
   }
   gs.exiledThisEp = null;
   gs.penaltyVoteThisEp = null;
-  // ── BLACK VOTE: inject pending black votes as penalty votes this episode ──
+  // ── BLACK VOTE: stage pending black votes — consumed AFTER tribal if the target attended ──
+  // Don't consume yet — just mark for this episode. Consumed in the post-tribal handler.
   if (gs.blackVotes?.length) {
     const _bvToApply = gs.blackVotes.filter(bv => bv.type === 'classic' && gs.activePlayers.includes(bv.target));
     if (_bvToApply.length) {
-      // Apply the oldest pending black vote
       const _bv = _bvToApply[0];
       gs.penaltyVoteThisEp = _bv.target;
       ep.blackVoteApplied = _bv;
-      gs.blackVotes = gs.blackVotes.filter(bv => bv !== _bv);
+      ep.blackVotePending = _bv; // mark for consumption after tribal confirms target was there
     }
   }
   gs.guaranteedImmuneThisEp = null;
@@ -18614,6 +18679,11 @@ function simulateEpisode() {
       gs.providerVotedOutLastEp = { name: ep.eliminated, tribeName: _elimTribe };
     }
 
+    // ── BLACK VOTE: consume the pending black vote (target was at this tribal) ──
+    if (ep.blackVotePending && gs.blackVotes?.length) {
+      gs.blackVotes = gs.blackVotes.filter(bv => bv !== ep.blackVotePending);
+      delete ep.blackVotePending;
+    }
     // ── BLACK VOTE: eliminated player casts a parting vote/gift (until F4) ──
     if (cfg.blackVote && cfg.blackVote !== 'off' && gs.activePlayers.length > 4) {
       const _bvElim = ep.eliminated;
@@ -21461,6 +21531,23 @@ function generateSummaryText(ep) {
   // ONGOING STORYLINES
   sec('ONGOING STORYLINES');
   buildStorylines(ep).forEach(s => ln(`- ${s}`));
+
+  // BLACK VOTE
+  if (ep.blackVote) {
+    sec('BLACK VOTE');
+    const _bvs = ep.blackVote;
+    if (_bvs.type === 'classic') {
+      ln(`${_bvs.from} casts a Black Vote against ${_bvs.target} before leaving. This vote will count at ${_bvs.target}'s next tribal council.`);
+      ln(`Reason: ${_bvs.reason}`);
+    } else {
+      ln(`${_bvs.from} gifts an Extra Vote to ${_bvs.recipient} before leaving.`);
+      ln(`Reason: ${_bvs.reason}`);
+    }
+  }
+  if (ep.blackVoteApplied) {
+    sec('BLACK VOTE APPLIED');
+    ln(`${ep.blackVoteApplied.from}'s Black Vote against ${ep.blackVoteApplied.target} counts at this tribal council.`);
+  }
 
   // COLD OPEN HOOK
   sec('COLD OPEN HOOK');
@@ -27356,6 +27443,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'brokerExposed'        ? 'EXPOSED'
                      : evt.type === 'brokerFallout'        ? 'Trust Shattered'
                      : evt.type === 'brokerDefense'        ? 'Defense'
+                     : evt.type === 'blackVoteGuess'             ? (evt.badgeText || 'BLACK VOTE')
                      : evt.type === 'fakeIdolCaught'             ? (evt.badgeText || 'FAKE IDOL EXPOSED')
                      : evt.type === 'fakeIdolFound'              ? (evt.badgeText || 'IDOL FOUND')
                      : evt.type === 'fakeIdolPlanted'            ? (evt.badgeText || 'FAKE IDOL PLANTED')
@@ -27445,6 +27533,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'brokerWhisper' || evt.type === 'brokerManipulate' || evt.type === 'brokerConfidence' || evt.type === 'brokerClose' ? 'gold'
                      : evt.type === 'brokerExposed' || evt.type === 'brokerFallout' ? 'red'
                      : evt.type === 'brokerDefense' ? (pStats(evt.players?.[0])?.boldness >= 6 ? 'gold' : 'red')
+                     : evt.type === 'blackVoteGuess' ? (evt.badgeClass || 'gold')
                      : evt.type === 'fakeIdolCaught' || evt.type === 'fakeIdolPlanted' || evt.type === 'fakeIdolConfrontation' ? 'red'
                      : evt.type === 'fakeIdolFound' ? (evt.badgeClass || 'gold')
                      : evt.type === 'medevacReplacement' ? 'gold'
@@ -27492,7 +27581,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
       'heroConfront','heroProtect','heroSacrifice','heroWeight',
       'amuletReunion','amuletUpgrade','amuletBetrayal','amuletRivalry','legacyInheritance',
       'legacyConfession','legacyLeak','legacyScheme','legacyWeight','legacyHeirWatch']);
-    const spotTypes = new Set(['socialBomb','socialBombReaction','paranoiaSpiral','challengeThrowCaught','medevacReplacement','fakeIdolCaught','fakeIdolFound','fakeIdolPlanted','fakeIdolConfrontation','stolenCredit','stolenCreditConfrontation',
+    const spotTypes = new Set(['socialBomb','socialBombReaction','paranoiaSpiral','challengeThrowCaught','medevacReplacement','blackVoteGuess','fakeIdolCaught','fakeIdolFound','fakeIdolPlanted','fakeIdolConfrontation','stolenCredit','stolenCreditConfrontation',
       'brokerWhisper','brokerManipulate','brokerConfidence','brokerClose','brokerExposed','brokerFallout','brokerDefense',
       'showmancerMoment',
       'showmanceSpark','showmanceHoneymoon','showmanceNoticed','showmanceTarget','showmanceJealousy','showmanceRideOrDie',

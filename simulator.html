@@ -27309,7 +27309,7 @@ function buildSignalCards(ep, tribePlayers) {
 
 // ── Screen: Relationships / Alliance State ──
 function rpBuildRelationships(ep) {
-  const alliances = (ep.gsSnapshot?.namedAlliances || []).filter(a => a.active !== false);
+  const alliances = (ep.alliancesPreTribal || ep.gsSnapshot?.namedAlliances || []).filter(a => a.active !== false);
   const active = ep.gsSnapshot?.activePlayers || gs.activePlayers;
   const bondChanges = ep.bondChanges || [];
   const recruits = ep.allianceRecruits || [];

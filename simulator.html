@@ -18546,6 +18546,16 @@ function generateTwistScenes(ep) {
     const sc = [];
     switch (tw.type) {
 
+      case 'ambassadors':
+        if (tw.ambassadorMeeting) {
+          const am = tw.ambassadorMeeting;
+          sc.push({ text: 'Each tribe must name one ambassador. The ambassadors will meet — and one person\'s game ends tonight.', players: am.ambassadors || [] });
+          am.types?.forEach(t => sc.push({ text: `${t.name} represents ${tw.ambassadorSelections?.find(s => s.ambassador === t.name)?.tribe || 'their tribe'}.`, players: [t.name], badge: t.type === 'manipulator' ? 'Manipulator' : t.type === 'villain' ? 'Villain' : t.type === 'dealmaker' ? 'Dealmaker' : t.type === 'loyal-shield' ? 'Loyal Shield' : 'Emotional', badgeClass: t.type === 'villain' ? 'red' : 'gold' }));
+          if (am.agreed) sc.push({ text: `The ambassadors agreed. ${am.target} is eliminated — without a vote, without a chance to fight.`, players: [am.target], badge: 'ELIMINATED', badgeClass: 'red' });
+          else sc.push({ text: `No agreement. ${am.rockDrawLoser} drew the wrong rock. Gone.`, players: [am.rockDrawLoser], badge: 'ROCK DRAW', badgeClass: 'red' });
+        }
+        result.push({ label:'Ambassadors', type:tw.type, scenes:sc }); break;
+
       case 'tribe-swap':
         sc.push({ text: 'Drop your buffs.', players: (tw.newTribes||[]).flatMap(t=>t.members) });
         sc.push({ text: 'The game has been reshuffled. Every alliance, every bond, every strategic position — subject to review.', players: [] });
@@ -19507,6 +19517,19 @@ function generateSummaryText(ep) {
     } else if (tw.type === 'reward-challenge') {
       ln('REWARD CHALLENGE — a reward challenge ran before the immunity challenge. Tribal council still runs tonight.');
       if (tw.rewardWinner) ln(`${tw.rewardWinner} won the reward.`);
+    } else if (tw.type === 'ambassadors') {
+      ln('AMBASSADORS — each tribe named an ambassador. They met to negotiate an elimination before the merge.');
+      if (tw.ambassadorMeeting) {
+        const am = tw.ambassadorMeeting;
+        am.types?.forEach(t => ln(`  ${t.name} — ${t.type === 'manipulator' ? 'The Manipulator' : t.type === 'villain' ? 'The Villain' : t.type === 'dealmaker' ? 'The Dealmaker' : t.type === 'loyal-shield' ? 'The Loyal Shield' : 'The Emotional Pitch'}`));
+        if (am.agreed) {
+          ln(`  AGREED: ${am.target} eliminated. ${am.targetReason}`);
+        } else {
+          ln(`  DEADLOCKED: No agreement. Rock draw between ambassadors.`);
+          ln(`  ${am.rockDrawLoser} drew the wrong rock — eliminated.`);
+        }
+        am.returnEvents?.forEach(re => ln(`  ${re.tribe}: ${re.type === 'safe' ? 'Safe' : re.type === 'ambassador-eliminated' ? 'Ambassador lost' : 'Tribemate eliminated'}`));
+      }
     } else if (tw.type === 'fan-vote-boot') {
       if (tw.fanVoteSaved) {
         const _fvr = tw.fanVoteIsPreMerge ? 'tribal immunity' : 'an Extra Vote';
@@ -21517,7 +21540,7 @@ function renderEpisodeHistory() {
       : '';
     return `<div class="ep-hist-card ${ep.num===currentNum?'active':''}" onclick="viewEpisode(${ep.num})">
       <div class="ep-hist-ep">Episode ${ep.num}${replayBtn}</div>
-      <div class="ep-hist-elim">${_spoilerFree ? '???' : ep.multiTribalElims?.length >= 2 ? ep.multiTribalElims.join(' + ') : ep.firstEliminated ? `${ep.firstEliminated} + ${ep.eliminated||'?'}` : (ep.eliminated || (ep.isFinale ? 'FTC' : '\u2014'))}</div>
+      <div class="ep-hist-elim">${_spoilerFree ? '???' : ep.multiTribalElims?.length >= 2 ? ep.multiTribalElims.join(' + ') : ep.ambassadorData?.ambassadorEliminated ? `${ep.ambassadorData.ambassadorEliminated} + ${ep.eliminated||'?'}` : ep.firstEliminated ? `${ep.firstEliminated} + ${ep.eliminated||'?'}` : (ep.eliminated || (ep.isFinale ? 'FTC' : '\u2014'))}</div>
       <div>${riTag}${mergeTag}${finaleTag}</div>
     </div>`;
   }).join('');
@@ -21721,6 +21744,8 @@ function buildEpisodeMap() {
     if (etype === 'double-elim') elims = 2;
     if (etype === 'multi-tribal' && !merged) elims = Math.max(2, (seasonConfig.teams || 2) - 1);
     if (etype === 'slasher-night') elims = 1;
+    // Ambassadors: eliminates 1 person BEFORE merge + regular tribal eliminates 1 = 2 total
+    if (etype === 'ambassadors') elims = 2;
     const returns = (etype === 'returning-player' || etype === 'second-chance') ? 1 : 0;
 
     // RI return: fires when the episode STARTS with <= riReentryAt players.

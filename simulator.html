@@ -16952,6 +16952,29 @@ function simulateEpisode() {
 
   // ── POST-CHALLENGE CAMP EVENTS (outcome now known — exiled player already excluded) ──
   generateCampEvents(ep, 'post');
+  // ── HUNGER FLAVOR: when tribe food is Critical, add starvation context to some camp events ──
+  if (seasonConfig.foodWater === 'enabled' && ep.campEvents) {
+    const _hungerSuffixes = [
+      ' The hunger is making everything worse.',
+      ' Nobody has eaten properly in days — it shows.',
+      ' The exhaustion is visible. Every conversation is slower, every reaction sharper.',
+      ' Empty stomachs make bad decisions. This might be one of them.',
+      ' The tribe is running on fumes. This conversation wouldn\'t be happening on a full stomach.',
+    ];
+    Object.entries(ep.campEvents).forEach(([campKey, phaseData]) => {
+      const tribeFood = gs.tribeFood?.[campKey] || 60;
+      if (tribeFood >= 20) return; // only Critical food level
+      const allEvs = [...(Array.isArray(phaseData) ? phaseData : [...(phaseData?.pre || []), ...(phaseData?.post || [])])];
+      // Add hunger flavor to ~30% of strategy/social events (not survival events which already have it)
+      const _hungerTypes = new Set(['doubt', 'strategicTalk', 'sideDeal', 'allianceCrack', 'scramble', 'lie', 'confessional']);
+      allEvs.forEach(evt => {
+        if (_hungerTypes.has(evt.type) && Math.random() < 0.3 && evt.text && !evt.text.includes('hunger') && !evt.text.includes('starv')) {
+          evt.text += _hungerSuffixes[Math.floor(Math.random() * _hungerSuffixes.length)];
+        }
+      });
+    });
+  }
+
   // Save pre-tribal advantage snapshot for VP post-challenge camp display
   ep.advantagesPreTribal = gs.advantages.map(a => ({...a}));
   // Save pre-tribal alliance snapshot for VP camp display (captures in-episode recruitment)
@@ -27292,10 +27315,16 @@ function buildSignalCards(ep, tribePlayers) {
       badge: 'Idol played', badgeClass: 'gold' }));
 
   // Alliance shift — show even if player was later eliminated (recruitment happened before the vote)
+  const _quitSet = new Set((ep.allianceQuits || []).map(q => `${q.player}:${q.alliance}`));
   (ep.allianceRecruits || [])
-    .forEach(r => cards.push({ weight: 2, type: 'allianceShift', players: [r.player],
-      text: `${r.player} just got absorbed into ${r.toAlliance}. The alliance map just got redrawn.`,
-      badge: 'Alliance shift', badgeClass: 'gold' }));
+    .forEach(r => {
+      const _wasReRecruit = _quitSet.has(`${r.player}:${r.toAlliance}`);
+      cards.push({ weight: 2, type: 'allianceShift', players: [r.player],
+        text: _wasReRecruit
+          ? `${r.player} left ${r.toAlliance} — then got pulled back in. The alliance is shaky, but holding.`
+          : `${r.player} just got absorbed into ${r.toAlliance}. The alliance map just got redrawn.`,
+        badge: _wasReRecruit ? 'Alliance — shaky' : 'Alliance shift', badgeClass: 'gold' });
+    });
 
   // Bond spike (delta > 2, both in tribe)
   (ep.bondChanges || [])
@@ -28025,7 +28054,9 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
         </div>`;
       });
       // Quits — players who left this alliance this episode (happens pre-tribal, safe to show)
-      quittersThisEp.forEach(name => {
+      // Skip if they were re-recruited back into the same alliance (quit + return = show as member, not quitter)
+      const _reRecruits = new Set((ep.allianceRecruits || []).filter(r => r.toAlliance === alliance.name).map(r => r.player));
+      quittersThisEp.filter(name => !_reRecruits.has(name)).forEach(name => {
         if (!_activePlayerSet.has(name)) return;
         const slug = (players.find(p=>p.name===name)?.slug) || name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
         const init = (name||'?')[0].toUpperCase();

@@ -21148,6 +21148,7 @@ function patchEpisodeHistory(ep) {
   if (!h.showmanceBreakup && !h.showmanceSeparation) checkShowmanceBreakup(ep);
   if (ep.paranoiaSpirals?.length) h.paranoiaSpirals = ep.paranoiaSpirals;
   if (ep.stolenCreditEvents?.length) h.stolenCreditEvents = ep.stolenCreditEvents;
+  h.ambassadorData = ep.ambassadorData || null;
   h.survivalSnapshot = ep.survivalSnapshot || null;
   h.tribeFoodSnapshot = ep.tribeFoodSnapshot || null;
   h.providerSlackerData = ep.providerSlackerData || null;
@@ -24616,6 +24617,115 @@ function _renderTwistScene(scene) {
   if (scene.badge) h += `<div><span class="rp-scene-badge ${scene.badgeClass||''}">${scene.badge}</span></div>`;
   h += `</div>`;
   return h;
+}
+
+// ── Ambassadors Screen (pre-merge twist) ──
+function rpBuildAmbassadors(ep) {
+  const data = ep.ambassadorData;
+  if (!data?.ambassadorMeeting) return null;
+  const meeting = data.ambassadorMeeting;
+  const selections = data.ambassadorSelections || [];
+  const epNum = ep.num || 0;
+
+  let html = `<div class="rp-page" style="background:linear-gradient(180deg,rgba(99,102,241,0.06) 0%,transparent 40%)">
+    <div class="rp-eyebrow">Episode ${epNum}</div>
+    <div style="font-family:var(--font-display);font-size:28px;letter-spacing:2px;text-align:center;margin-bottom:4px;color:#818cf8;text-shadow:0 0 20px rgba(99,102,241,0.2)">THE AMBASSADORS</div>
+    <div style="width:60px;height:2px;background:#818cf8;margin:8px auto 20px"></div>`;
+
+  // ── SELECTION ──
+  html += `<div style="font-size:9px;font-weight:700;letter-spacing:2px;color:#8b949e;margin-bottom:10px">TRIBAL SELECTIONS</div>`;
+  html += `<div style="display:flex;gap:16px;margin-bottom:20px;flex-wrap:wrap">`;
+  selections.forEach(sel => {
+    const tc = tribeColor(sel.tribe);
+    const typeObj = meeting.types?.find(t => t.name === sel.ambassador);
+    const typeLabel = typeObj?.type === 'manipulator' ? 'The Manipulator' : typeObj?.type === 'villain' ? 'The Villain' : typeObj?.type === 'dealmaker' ? 'The Dealmaker' : typeObj?.type === 'loyal-shield' ? 'The Loyal Shield' : 'The Emotional Pitch';
+    html += `<div style="flex:1;min-width:140px;padding:12px;border:1px solid ${tc};border-radius:10px;background:rgba(0,0,0,0.2)">
+      <div style="font-size:10px;font-weight:700;color:${tc};letter-spacing:1px;margin-bottom:8px">${sel.tribe.toUpperCase()}</div>
+      <div style="text-align:center">
+        ${rpPortrait(sel.ambassador, 'lg')}
+        <div style="font-size:14px;font-weight:700;color:#e6edf3;margin-top:6px">${sel.ambassador}</div>
+        <div style="font-size:10px;color:#818cf8;margin-top:2px">${typeLabel}</div>
+      </div>
+      ${sel.runnerUp ? `<div style="display:flex;align-items:center;gap:6px;margin-top:8px;opacity:0.5">
+        ${rpPortrait(sel.runnerUp, 'xs')}
+        <span style="font-size:10px;color:#8b949e">${sel.runnerUp} — runner-up</span>
+      </div>` : ''}
+    </div>`;
+  });
+  html += `</div>`;
+
+  // ── MEETING NARRATIVE ──
+  html += `<div style="font-size:9px;font-weight:700;letter-spacing:2px;color:#8b949e;margin-bottom:10px">THE MEETING</div>`;
+  meeting.narrative?.forEach(beat => {
+    html += `<div style="padding:10px 14px;margin-bottom:8px;background:rgba(99,102,241,0.04);border:1px solid rgba(99,102,241,0.12);border-radius:8px;font-size:12px;color:#c9d1d9;line-height:1.6;font-style:italic">${beat}</div>`;
+  });
+
+  // ── OUTCOME ──
+  if (meeting.agreed && meeting.target) {
+    html += `<div style="text-align:center;margin-top:16px;padding:16px;border:2px solid rgba(218,54,51,0.3);border-radius:12px;background:rgba(218,54,51,0.04)">
+      ${rpPortrait(meeting.target, 'xl')}
+      <div style="font-family:var(--font-display);font-size:18px;color:#f85149;margin-top:10px">${meeting.target}</div>
+      <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:#f85149;margin-top:4px">ELIMINATED BY AMBASSADORS</div>
+      <div style="font-size:11px;color:#8b949e;margin-top:8px;max-width:350px;margin-left:auto;margin-right:auto">${meeting.targetReason}</div>
+    </div>`;
+  } else if (meeting.rockDrawLoser) {
+    html += `<div style="text-align:center;margin-top:16px;padding:16px;border:2px solid rgba(218,54,51,0.3);border-radius:12px;background:rgba(218,54,51,0.04)">
+      ${rpPortrait(meeting.rockDrawLoser, 'xl')}
+      <div style="font-family:var(--font-display);font-size:18px;color:#f85149;margin-top:10px">${meeting.rockDrawLoser}</div>
+      <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:#f85149;margin-top:4px">ELIMINATED BY ROCK DRAW</div>
+      <div style="font-size:11px;color:#8b949e;margin-top:8px">The ambassadors couldn't agree. The rocks decided.</div>
+    </div>`;
+  }
+
+  // ── RETURN EVENTS ──
+  if (meeting.returnEvents?.length) {
+    html += `<div style="font-size:9px;font-weight:700;letter-spacing:2px;color:#8b949e;margin-top:20px;margin-bottom:10px">THE RETURN</div>`;
+    meeting.returnEvents.forEach(re => {
+      const borderColor = re.type === 'safe' ? 'rgba(63,185,80,0.2)' : 'rgba(218,54,51,0.2)';
+      const bg = re.type === 'safe' ? 'rgba(63,185,80,0.03)' : 'rgba(218,54,51,0.03)';
+      const badge = re.type === 'safe' ? '<span style="font-size:9px;font-weight:700;color:#3fb950;letter-spacing:1px">SAFE</span>'
+        : re.type === 'ambassador-eliminated' ? '<span style="font-size:9px;font-weight:700;color:#f85149;letter-spacing:1px">AMBASSADOR LOST</span>'
+        : '<span style="font-size:9px;font-weight:700;color:#f85149;letter-spacing:1px">ELIMINATED</span>';
+      const tc = tribeColor(re.tribe);
+      html += `<div style="padding:10px;margin-bottom:6px;border:1px solid ${borderColor};border-radius:8px;background:${bg}">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span style="font-size:10px;font-weight:700;color:${tc}">${re.tribe}</span>
+          ${badge}
+        </div>
+        <div style="font-size:12px;color:#c9d1d9;line-height:1.6;font-style:italic">${re.text}</div>
+      </div>`;
+    });
+  }
+
+  // ── EXIT QUOTE ──
+  if (meeting.eliminated) {
+    const _exitPick = (arr) => arr[([...meeting.eliminated].reduce((a,c)=>a+c.charCodeAt(0),0)+(epNum||0)*5)%arr.length];
+    const exitQuote = meeting.eliminatedByRocks
+      ? _exitPick([
+        `"I'd do it again. I'd volunteer again. At least I went down swinging."`,
+        `"Tell them I tried. Tell them I didn't give anyone up. The rock took me — not the game."`,
+        `"Bad luck. That's all this is. I played it right and the rock said no."`,
+      ])
+      : _exitPick([
+        `"Two people I never got to face decided my fate. That's not the game — that's a backroom deal."`,
+        `"I would have fought for my tribe. I would have stood in that room and refused. But I never got the chance."`,
+        `"It was the right move. I hate it — but it was right. I just wish I'd been the one making it."`,
+        `"I thought the bonds I built would protect me. They didn't. The game happened in a room I wasn't in."`,
+      ]);
+    html += `<div style="margin-top:16px;padding:12px;background:rgba(139,148,158,0.04);border:1px solid rgba(139,148,158,0.08);border-radius:8px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        ${rpPortrait(meeting.eliminated, 'sm')}
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#e6edf3">${meeting.eliminated}</div>
+          <div style="font-size:10px;color:#8b949e">${vpArchLabel(meeting.eliminated)}</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:#8b949e;font-style:italic;line-height:1.6">${exitQuote}</div>
+    </div>`;
+  }
+
+  html += `</div>`;
+  return html;
 }
 
 // ── Merge Announcement Screen (NEW — inserted on isMerge episodes) ──
@@ -34677,6 +34787,12 @@ function buildVPScreens(epRecord) {
   }
 
   // Tribe Status removed — tribe composition is shown on camp screens; advantages move to Alliance Overview
+
+  // ── Ambassador twist screen (before merge) ──
+  if (ep.ambassadorData?.ambassadorMeeting) {
+    const _ambHtml = rpBuildAmbassadors(ep);
+    if (_ambHtml) vpScreens.push({ id:'ambassadors', label:'The Ambassadors', html: _ambHtml });
+  }
 
   // ── Merge Announcement (isMerge episodes only) ──
   if (ep.isMerge) {

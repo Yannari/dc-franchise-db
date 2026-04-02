@@ -24807,7 +24807,8 @@ function rpBuildAmbassadors(ep) {
     <button onclick="ambNarRevealAll('${_ambNarId}')" style="padding:6px 12px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:11px;cursor:pointer">See all</button>
   </div>`;
 
-  // ── OUTCOME ──
+  // ── OUTCOME + RETURN + EXIT — hidden until narrative fully revealed ──
+  html += `<div id="${_ambNarId}-outcome" style="display:none">`;
   if (meeting.agreed && meeting.target) {
     html += `<div style="text-align:center;margin-top:16px;padding:16px;border:2px solid rgba(218,54,51,0.3);border-radius:12px;background:rgba(218,54,51,0.04)">
       ${rpPortrait(meeting.target, 'xl')}
@@ -24874,6 +24875,8 @@ function rpBuildAmbassadors(ep) {
       <div style="font-size:12px;color:#8b949e;font-style:italic;line-height:1.6">${exitQuote}</div>
     </div>`;
   }
+
+  html += `</div>`; // close outcome hidden div
 
   html += `</div>`;
   return html;
@@ -35684,6 +35687,11 @@ function ambNarAdvance(narId) {
   container.dataset.step = String(step + 1);
   const btn = document.getElementById(`${narId}-btn`);
   if (btn) btn.textContent = step + 1 >= total ? 'MEETING COMPLETE' : 'CONTINUE';
+  // Show outcome section when all narrative beats are revealed
+  if (step + 1 >= total) {
+    const outcomeDiv = document.getElementById(`${narId}-outcome`);
+    if (outcomeDiv) outcomeDiv.style.display = 'block';
+  }
 }
 function ambNarRevealAll(narId) {
   const container = document.getElementById(narId);

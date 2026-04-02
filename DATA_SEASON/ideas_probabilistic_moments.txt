@@ -132,15 +132,15 @@ and the downstream consequence. None are guaranteed — all fire on a roll.
   MEDIUM PRIORITY
   ───────────────
 
-[KL-1] AMBASSADORS (Koh-Lanta twist)
-  Trigger: immediately before the merge, each tribe names one ambassador
-  What happens: ambassadors meet privately and must agree on one player to eliminate.
-    If they can't agree, one of the ambassadors is eliminated via rock draw.
-  Mechanic: schedulable twist (pre-merge final episode). Each tribe picks ambassador
-    based on social + strategic weight. Ambassadors negotiate: if bonds allow agreement
-    they pick the highest-threat outsider. If not → rock draw between ambassadors.
-  Consequence: one player eliminated without a vote. Massive bond impact on ambassadors.
-  VP: dedicated screen with ambassador portraits, negotiation narrative, outcome.
+[DONE] KL-1 AMBASSADORS — implemented via engineType 'ambassadors' in applyTwist.
+  Schedulable pre-merge twist. Each tribe selects ambassador (social*0.3 + strategic*0.3 +
+  avgBond*0.4). 5 negotiation archetypes: manipulator, villain, dealmaker, loyal-shield,
+  emotional. 15 pairings with resistance checks (boldness+temperament vs social). 3+ tribe
+  coalition mechanics (majority rules, odd-one-out counter-offer). Agreement → target
+  eliminated without vote. Disagreement → rock draw between ambassadors. Return drama:
+  4 scenarios (hero welcome, tribemate sacrificed with personality reactions, ambassador
+  lost to rocks, rock draw exit). VP: 4-section screen (selection, meeting, return, elimination).
+  Bond consequences carry into merged game. Exit quotes personality-driven.
 
 [KL-3] REPLACEMENT (Koh-Lanta medevac rule)
   Trigger: a player is medically evacuated

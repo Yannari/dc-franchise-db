@@ -28,6 +28,7 @@ Simulation core:
 - `checkParanoiaSpiral()` — paranoid + strategic player turns on closest ally (self-fulfilling prophecy)
 - `checkInformationBroker()` — double agent in 2+ alliances, escalating exposure risk, bond collapse on blowup
 - `checkStolenCredit()` — bold player steals credit for another's big move (once per game). Confrontation next episode if architect is bold/hothead enough.
+- Ambassadors twist (`engineType: 'ambassadors'`) — pre-merge: tribes select ambassadors who negotiate an elimination. 15 personality-driven pairings with resistance checks. 3+ tribe coalition mechanics. VP: selection, meeting narrative, return drama, elimination card.
 - `updateSurvival()` — per-episode tribe food decay, provider/slacker calculation (willingness + ability), energy cost/savings, player survival sync
 - `generateSurvivalEvents()` — survival camp events: provider fishing/foraging/praised, slacker callout/confrontation/bonding, food conflict/hoarding/rationing/crisis, collapse warning, medevac
 - `checkShowmanceFormation()` — detects new showmances (bond + archetype compatibility)

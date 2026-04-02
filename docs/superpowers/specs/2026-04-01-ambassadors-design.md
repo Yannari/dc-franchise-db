@@ -277,28 +277,115 @@ Each archetype pairing produces unique multi-beat text:
 
 **Beat 3: The Outcome** — agreement or deadlock. If agreed: who goes and why. If rocks: the moment of truth.
 
-### Post-Meeting (aftermath events)
+### Post-Meeting — The Return (BIGGEST DRAMA MOMENT)
 
-**Target eliminated — target's tribe reacts:**
-- `"[target] never saw it coming. One conversation — between two people [pr.sub] never got to face — ended [pr.pos] game. The tribe absorbs the news in silence."`
+Each ambassador returns to their tribe to announce the result. This is where the real emotions happen — before the elimination is even announced publicly. One tribe celebrates, one tribe mourns, or both tribes process the rocks.
 
-**Ambassador returns — successful deal:**
-- `"[ambassador] walks back into camp. The tribe reads [pr.pos] face. 'We're safe,' [pr.sub] [pr.sub==='they'?'say':'says']. But safe came at a cost nobody is talking about."`
+**Separate camp events per tribe, shown BEFORE the elimination card.**
 
-**Ambassador eliminated by rocks — tribe mourns:**
-- `"[ambassador] went to protect the tribe and didn't come back. [pr.Sub] drew the wrong rock. The tribe stares at [pr.pos] empty spot in the shelter."`
+---
 
-## VP Screen
+#### Scenario A: Ambassador protected the tribe (other tribe's member eliminated)
 
-Dedicated `rpBuildAmbassadors(ep)` screen with purple/gold theme. Shown after pre-challenge camp, before the merge announcement.
+**Ambassador returns — hero's welcome:**
+- Ambassador walks back. Tribe reads the face. Relief floods camp.
+- Bond: ambassador +0.3 with every tribemate (delivered for the tribe)
+- If ambassador is a Loyal Shield type: extra +0.2 ("this is what loyalty looks like")
+- If ambassador is a Manipulator and tribe finds out HOW: mixed reaction — respect for result, unease about method
 
-**Layout:**
-1. **Header**: "THE AMBASSADORS" title
-2. **Selection**: both tribes shown side by side with ambassador highlighted, runner-up shown dimmed
-3. **The Meeting**: narrative text unfolds beat by beat. Ambassador portraits face each other.
-4. **The Outcome**: 
-   - Agreement: target portrait with "ELIMINATED BY AMBASSADORS" badge
-   - Rocks: both ambassador portraits, rock draw animation, loser shown
+Text variants (personality-driven):
+- Bold ambassador: `"[ambassador] walks back into camp with a look that says everything. 'We're good.' The tribe exhales. [pr.Sub] doesn't explain how — and nobody asks."`
+- Social ambassador: `"[ambassador] comes back and immediately hugs [closestTribemate]. 'I did it. We're safe.' The tears are real. The tribe gathers around."`
+- Strategic ambassador: `"[ambassador] sits down at the fire and lays it out cold. Who the target is. Why. How the negotiation went. The tribe listens. Nobody interrupts."`
+
+---
+
+#### Scenario B: Ambassador sacrificed a tribemate (own tribe's member eliminated)
+
+**The hardest return.** The ambassador agreed to send one of their own home.
+
+**Target's reaction** — personality-driven, creates lasting bond damage:
+- **Bold/hothead target** (temperament <= 4 OR boldness >= 7): Explosive. Confrontation in front of the whole tribe.
+  - `"[target] stares at [ambassador]. 'You had ONE job. Protect us. And you gave ME up?' The camp goes dead silent. [ambassador] has nothing. [target] walks to [pr.pos] bag and starts packing. [pr.Sub] ${pr.sub==='they'?'don\'t':'doesn\'t'} look back."`
+  - Bond: target → ambassador: -3.0 (deep betrayal). This carries into jury if post-merge elimination.
+  
+- **Loyal target** (loyalty >= 7): Quiet devastation. The betrayal cuts deeper because they trusted the ambassador.
+  - `"[target] doesn't yell. ${pr.Sub} just ${pr.sub==='they'?'look':'looks'} at [ambassador] and ${pr.sub==='they'?'say':'says'}: 'I trusted you.' It's the last thing ${pr.sub} ${pr.sub==='they'?'say':'says'} before walking away. The tribe has never been this quiet."`
+  - Bond: target → ambassador: -2.5. Target → tribe: +0.5 (sympathy).
+  
+- **Strategic target** (strategic >= 7): Cold acceptance. Understands the game but files it away.
+  - `"[target] nods slowly. 'Smart move. I would've done the same thing.' [pr.Sub] ${pr.sub==='they'?'pause':'pauses'}. 'No I wouldn't. I would have fought harder for my people.' [ambassador] has no response."`
+  - Bond: target → ambassador: -1.5 (respect but resentment). If target makes jury, this becomes a pointed FTC question.
+  
+- **Social/emotional target** (social >= 7): Heartbreak. Not anger — grief.
+  - `"[target]'s face crumbles. ${pr.Sub} ${pr.sub==='they'?'don\'t':'doesn\'t'} understand. ${pr.Sub} did everything right at camp — provided, bonded, worked. And someone ${pr.sub} never got to face decided ${pr.pos} fate. [ambassador] can't look at ${pr.obj}."`
+  - Bond: target → ambassador: -2.0. Tribe: divided — some blame the ambassador, some understand.
+
+**Tribe reaction** to losing a member:
+- Tribemates close to the target: bond -1.0 with ambassador ("you sold us out")
+- Tribemates who weren't close to the target: bond -0.3 with ambassador (uncomfortable but they understand)
+- If the ambassador was manipulated (by a Manipulator ambassador): bond -0.5 EXTRA when tribe learns the truth
+
+---
+
+#### Scenario C: Ambassador eliminated by rock draw
+
+**The tribe learns their ambassador is gone.**
+
+- `"[ambassador] doesn't come back. The other tribe's ambassador walks over with the news. [pr.Sub] drew the wrong rock. The tribe stares at [pr.pos] empty torch."`
+- Bond: all tribemates +0.5 with each other (shared loss, they band together)
+- If ambassador was Loyal Shield: tribe +0.8 internal bond (the sacrifice is honored)
+- The other ambassador who survived: -0.5 with the fallen ambassador's tribe (guilt, resentment)
+- Narrative: `"[survivor] walks past [fallenAmbassador]'s tribe on the way back. Nobody speaks. There's nothing to say."`
+
+---
+
+#### Scenario D: Rock draw from the eliminated ambassador's perspective
+
+**The ambassador who drew the wrong rock — their exit.**
+
+- `"[ambassador] reaches into the bag. One rock. The wrong color. ${pr.Sub} ${pr.sub==='they'?'close':'closes'} ${pr.pos} eyes. ${pr.Sub} came here to protect ${pr.pos} tribe — and now ${pr.sub} ${pr.sub==='they'?'are':'is'} the one going home."`
+- Personality-driven exit quotes:
+  - Bold: `"I'd do it again. I'd volunteer again. At least I went down swinging — not hiding behind someone else's name."`
+  - Loyal: `"Tell them I tried. Tell them I didn't give anyone up. The rock took me — not the game."`
+  - Strategic: `"Bad luck. That's all this is. I played it right and the rock said no. That's the cruelest part."`
+  - Emotional: `"I just wanted to protect them. That's all I wanted to do. And I couldn't even do that."`
+
+---
+
+### Elimination Card
+
+Shown AFTER the return drama, before the merge announcement. Different from a regular vote-out card.
+
+**"ELIMINATED BY AMBASSADORS"** — special badge, purple/gold theme.
+
+Two variants:
+
+**Agreed elimination:**
+- `"[Ordinal] player eliminated — by ambassadors, not by vote."`
+- Exit quote referencing the ambassador meeting: personality-driven
+- Bold target: `"Two people I never got to face decided my fate. That's not the game — that's a backroom deal. And I'll remember every word."`
+- Loyal target: `"I would have fought for my tribe. I would have stood in that room and refused. But I never got the chance."`
+- Strategic target: `"It was the right move. I hate it — but it was right. I just wish I'd been the one making it."`
+- Social target: `"I thought the bonds I built would protect me. They didn't. The game happened in a room I wasn't in."`
+
+**Rock draw elimination:**
+- `"[Ordinal] player eliminated — by rock draw at the ambassador meeting."`
+- Exit quote from Scenario D above.
+
+## VP Screens
+
+### Screen 1: Ambassador Selection (`rpBuildAmbassadorSelection`)
+Purple/gold theme. Both tribes shown side by side with ambassador highlighted, runner-up dimmed.
+
+### Screen 2: The Meeting (`rpBuildAmbassadorMeeting`)
+Ambassador portraits face each other. Negotiation narrative unfolds beat by beat (interactive — click to advance like Fan Campaign). Archetype labels shown.
+
+### Screen 3: The Return (`rpBuildAmbassadorReturn`)
+Split screen — each tribe's camp shown simultaneously. The ambassador returns. Drama events fire. Target reacts. Tribe processes.
+
+### Screen 4: Elimination (`rpBuildAmbassadorElimination`)
+Elimination card with "ELIMINATED BY AMBASSADORS" badge. Exit quote. Transition to merge announcement.
 
 ## Constraints
 

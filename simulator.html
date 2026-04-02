@@ -15562,6 +15562,16 @@ function simulateEpisode() {
     _usedTypes.add(twist.type);
     return true;
   });
+  // Sort: elimination twists (ambassadors, etc.) fire BEFORE non-elimination twists (reward, etc.)
+  // This ensures eliminated players don't participate in reward challenges
+  const _elimCategories = new Set(['elim']);
+  scheduledTwists.sort((a, b) => {
+    const aCat = TWIST_CATALOG.find(c => c.id === a.type)?.category || '';
+    const bCat = TWIST_CATALOG.find(c => c.id === b.type)?.category || '';
+    const aIsElim = _elimCategories.has(aCat) ? 0 : 1;
+    const bIsElim = _elimCategories.has(bCat) ? 0 : 1;
+    return aIsElim - bIsElim;
+  });
   scheduledTwists.forEach((twist, i) => applyTwist(ep, twist, i === 0));
   // Refresh tribesAtStart after team-changing twists (swap, dissolve, expansion, mutiny, abduction)
   const _teamTwists = ['tribe-swap','tribe-dissolve','tribe-expansion','mutiny','abduction'];

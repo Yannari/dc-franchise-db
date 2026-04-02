@@ -7852,6 +7852,30 @@ function checkIdolPlays(tribalPlayers, votesObj, ep, voteLog = []) {
   for (const [name, voteCount] of sorted) {
     const idolIdx = gs.advantages.findIndex(a => a.holder === name && !a.superIdol && (a.type === 'idol' || (a.type === 'amulet' && a.amuletPower === 'idol')));
     if (idolIdx === -1) continue;
+    const _idolAdv = gs.advantages[idolIdx];
+
+    // ── FAKE IDOL CHECK — played at tribal, revealed as fake ──
+    if (_idolAdv.fake) {
+      const s = pStats(name);
+      const _fPr = pronouns(name);
+      const _fPlanter = _idolAdv.plantedBy;
+      // Remove the fake idol
+      gs.advantages.splice(idolIdx, 1);
+      // Votes are NOT negated — they count
+      ep.idolPlays.push({ player: name, type: 'fake-idol', votesNegated: 0, fake: true, plantedBy: _fPlanter,
+        misplay: true, misplayReason: 'Fake idol — planted by ' + (_fPlanter || 'unknown') });
+      // Bond consequences
+      if (_fPlanter && gs.activePlayers.includes(_fPlanter)) {
+        addBond(name, _fPlanter, -3.0); // deep betrayal
+        // Tribe sees the deception — planter's reputation tanks
+        tribalPlayers.filter(p => p !== _fPlanter && p !== name).forEach(p => addBond(p, _fPlanter, -0.5));
+      }
+      // Store for VP
+      if (!ep.fakeIdolEvents) ep.fakeIdolEvents = [];
+      ep.fakeIdolEvents.push({ arc: 'played-at-tribal', victim: name, planter: _fPlanter, votesAgainst: voteCount });
+      continue; // skip the real idol play logic
+    }
+
     const s = pStats(name);
     const totalVoters = tribalPlayers.length;
     const isInDanger = voteCount >= 3 || (voteCount / totalVoters >= 0.33);
@@ -13586,6 +13610,175 @@ function getShowmancePartner(name) {
   return sh ? sh.players.find(p => p !== name) : null;
 }
 
+// [6] FALSE IDOL PLANT — strategic player crafts and plants a fake idol
+function checkFakeIdolPlant(ep) {
+  if (gs.fakeIdolPlanted) return; // once per game
+  const epNum = (gs.episode || 0) + 1;
+  if (epNum < 3) return; // too early — nobody's searching yet
+
+  const _pick = (arr, seed) => arr[([...seed].reduce((a,c)=>a+c.charCodeAt(0),0)+epNum*7)%arr.length];
+
+  // Find potential planters: strategic >= 7, being targeted (heat >= 3)
+  const _campMembers = gs.isMerged ? gs.activePlayers : (gs.tribes.flatMap(t => t.members).filter(m => gs.activePlayers.includes(m)));
+  const _planters = _campMembers.filter(name => {
+    const s = pStats(name);
+    if (s.strategic < 7) return false;
+    const heat = computeHeat(name, _campMembers, gs.namedAlliances || []);
+    if (heat < 3) return false;
+    return true;
+  });
+  if (!_planters.length) return;
+
+  // Roll for each potential planter: strategic * 0.015 + boldness * 0.01
+  for (const planter of _planters) {
+    const pS = pStats(planter);
+    const pPr = pronouns(planter);
+    if (Math.random() >= pS.strategic * 0.015 + pS.boldness * 0.01) continue;
+
+    // FAKE IDOL PLANT FIRES
+    gs.fakeIdolPlanted = true;
+    const campKey = gs.isMerged ? (gs.mergeName || 'merge') : (gs.tribes.find(t => t.members.includes(planter))?.name || 'merge');
+
+    // ── ARC 1: Planter caught crafting? ──
+    const _witnesses = _campMembers.filter(p => p !== planter);
+    const _caughtBy = _witnesses.find(w => Math.random() < pStats(w).intuition * 0.03);
+    if (_caughtBy) {
+      // Exposed — no fake idol enters the game
+      const cPr = pronouns(_caughtBy);
+      addBond(_caughtBy, planter, -1.0);
+      _witnesses.filter(w => w !== _caughtBy).forEach(w => addBond(w, planter, -0.3));
+      if (!gs.challengeThrowHeat) gs.challengeThrowHeat = {};
+      // Reuse heat mechanism — schemer exposed
+      const evtText = _pick([
+        `${_caughtBy} catches ${planter} behind the shelter, carving something out of wood and paint. "What is that?" ${planter} freezes. "Nothing." It's not nothing — it's a fake idol. ${_caughtBy} tells the tribe. ${planter}'s credibility evaporates.`,
+        `${_caughtBy} follows ${planter} into the jungle and watches ${pPr.obj} bury something near the water well. ${cPr.Sub} digs it up later — a fake idol, crudely made but convincing enough. "You tried to play us." Word spreads by morning.`,
+        `${_caughtBy} notices ${planter} working on something at night. A carved coconut shell, wrapped in string, painted with charcoal. It looks like an idol. It's not. "${planter} was making a fake idol. I SAW it." The tribe turns. ${planter} has nowhere to hide.`,
+      ], planter + _caughtBy + 'caught');
+
+      if (ep.campEvents?.[campKey]) {
+        (ep.campEvents[campKey].pre || ep.campEvents[campKey].post || []).push({
+          type: 'fakeIdolCaught', players: [_caughtBy, planter], text: evtText,
+          badgeText: 'FAKE IDOL EXPOSED', badgeClass: 'red',
+        });
+      }
+      if (!ep.fakeIdolEvents) ep.fakeIdolEvents = [];
+      ep.fakeIdolEvents.push({ arc: 'caught-crafting', planter, caughtBy: _caughtBy });
+      return;
+    }
+
+    // ── ARC 2-4: Fake idol successfully planted ──
+    // Find the victim — target based on planter's lowest bond (enemy) who searches
+    const _searchers = _campMembers.filter(p => p !== planter && pStats(p).intuition >= 4);
+    // Targeted victim: planter's enemy or the person the planter most wants to deceive
+    let victim;
+    const _enemies = _campMembers.filter(p => p !== planter && getBond(planter, p) <= -1)
+      .sort((a, b) => getBond(planter, a) - getBond(planter, b));
+    if (_enemies.length && _searchers.some(s => _enemies.includes(s))) {
+      victim = _enemies.find(e => _searchers.includes(e)) || _enemies[0];
+    } else if (_searchers.length) {
+      victim = _searchers[Math.floor(Math.random() * _searchers.length)];
+    } else {
+      victim = _campMembers.filter(p => p !== planter)[0];
+    }
+    if (!victim) return;
+
+    const vPr = pronouns(victim);
+    const vS = pStats(victim);
+
+    // Plant the fake idol as an advantage with fake flag
+    gs.advantages.push({ holder: victim, type: 'idol', fake: true, plantedBy: planter, foundEp: epNum });
+
+    // Camp event: victim finds the "idol" — they're excited
+    const _findText = _pick([
+      `${victim} finds something buried near the tree mail. ${vPr.Sub} ${vPr.sub==='they'?'unwrap':'unwraps'} it with shaking hands — it looks like a Hidden Immunity Idol. ${vPr.Sub} ${vPr.sub==='they'?'can\'t':'can\'t'} believe it. "${vPr.Sub === 'They' ? 'We found' : 'I found'} an idol." ${planter} watches from across camp. ${pPr.Sub} ${pPr.sub==='they'?'say':'says'} nothing.`,
+      `${victim} stumbles onto something half-buried near the water well. It's wrapped in a leaf with a note: "This is a Hidden Immunity Idol." ${vPr.Sub} ${vPr.sub==='they'?'tuck':'tucks'} it away before anyone sees. But ${planter} already knows — because ${pPr.sub} put it there.`,
+      `${victim} has been searching for days. Today, ${vPr.sub} finally ${vPr.sub==='they'?'find':'finds'} it — or what ${vPr.sub} ${vPr.sub==='they'?'think':'thinks'} is it. An idol. The relief on ${vPr.pos} face is real. The idol is not.`,
+    ], victim + planter + 'find');
+
+    if (ep.campEvents?.[campKey]) {
+      (ep.campEvents[campKey].pre || ep.campEvents[campKey].post || []).push({
+        type: 'fakeIdolFound', players: [victim], text: _findText,
+        badgeText: 'IDOL FOUND', badgeClass: 'gold', // looks real to the viewer at this point? No — viewer should know
+      });
+      // Also show the planter's satisfaction (viewer knows it's fake)
+      (ep.campEvents[campKey].pre || ep.campEvents[campKey].post || []).push({
+        type: 'fakeIdolPlanted', players: [planter], text: _pick([
+          `${planter} to confessional: "That idol ${victim} just found? I made it. Last night. Coconut shell, string, and a prayer. If ${vPr.sub} ${vPr.sub==='they'?'play':'plays'} it at tribal — and ${vPr.sub} will — the look on ${vPr.pos} face will be worth more than any real idol."`,
+          `${planter} watches ${victim} celebrate the find from across camp. ${pPr.Sub} almost ${pPr.sub==='they'?'feel':'feels'} bad. Almost. "That's not an idol. That's a death sentence wrapped in a leaf."`,
+        ], planter + 'satisfaction'),
+        badgeText: 'FAKE IDOL PLANTED', badgeClass: 'red',
+      });
+    }
+
+    // ── ARC 3: Tip-off check — can someone warn the victim? ──
+    // Players who are close to the victim AND perceptive might notice something is off
+    const _tipOffers = _campMembers.filter(p => p !== planter && p !== victim && getBond(p, victim) >= 2);
+    const _tipOff = _tipOffers.find(t => Math.random() < pStats(t).intuition * 0.035 + getBond(t, victim) * 0.02);
+
+    if (_tipOff) {
+      // Someone warns the victim — fake idol exposed before tribal
+      const tPr = pronouns(_tipOff);
+      gs.advantages = gs.advantages.filter(a => !(a.fake && a.holder === victim && a.plantedBy === planter));
+      addBond(victim, _tipOff, 1.0); // gratitude
+      addBond(victim, planter, -2.0); // betrayal
+      addBond(_tipOff, planter, -0.5); // suspicion confirmed
+
+      // Store tip-off for next-episode camp event (confrontation happens after they verify)
+      gs.fakeIdolTipOff = { victim, tipOffer: _tipOff, planter, ep: epNum };
+    }
+
+    if (!ep.fakeIdolEvents) ep.fakeIdolEvents = [];
+    ep.fakeIdolEvents.push({
+      arc: _tipOff ? 'tipped-off' : 'planted',
+      planter, victim, tippedOffBy: _tipOff || null,
+    });
+    return; // one fake idol per game
+  }
+}
+
+// Fake idol tip-off confrontation — fires next episode if someone warned the victim
+function generateFakeIdolTipOffEvents(ep) {
+  if (!gs.fakeIdolTipOff) return;
+  const { victim, tipOffer, planter, ep: tipEp } = gs.fakeIdolTipOff;
+  if ((gs.episode || 0) + 1 <= tipEp) return; // wait for next episode
+  gs.fakeIdolTipOff = null; // consume
+
+  if (!gs.activePlayers.includes(victim) || !gs.activePlayers.includes(planter)) return;
+
+  const _pick = (arr, seed) => arr[([...seed].reduce((a,c)=>a+c.charCodeAt(0),0)+(gs.episode||0)*7)%arr.length];
+  const vPr = pronouns(victim);
+  const pPr = pronouns(planter);
+  const vS = pStats(victim);
+
+  const campKey = gs.isMerged ? (gs.mergeName || 'merge') : (gs.tribes.find(t => t.members.includes(victim))?.name || 'merge');
+  if (!ep.campEvents?.[campKey]) return;
+
+  // Confrontation — personality-driven
+  let confrontText;
+  if (vS.temperament <= 4 || vS.boldness >= 7) {
+    confrontText = _pick([
+      `${victim} holds up the fake idol in front of the tribe. "This is what ${planter} thinks of me. A FAKE. ${pPr.Sub} planted this hoping I'd humiliate myself at tribal." ${victim} throws it in the fire. ${planter} doesn't deny it.`,
+      `${victim} walks straight up to ${planter}. "You made this." ${vPr.Sub} ${vPr.sub==='they'?'hold':'holds'} up the fake idol. "You thought I was stupid enough to play this." ${planter}: "I thought you were desperate enough." The camp goes nuclear.`,
+    ], victim + planter + 'confrontBold');
+  } else if (vS.strategic >= 7) {
+    confrontText = _pick([
+      `${victim} doesn't confront ${planter} publicly. Instead, ${vPr.sub} quietly ${vPr.sub==='they'?'show':'shows'} the fake to two allies. "This is what we're dealing with. ${planter} is playing dirty." The fake becomes ammunition — not for tribal, but for the social game.`,
+      `${victim} to confessional: "${tipOffer} warned me. The idol is fake — ${planter} made it. I'm not going to blow up at camp. I'm going to use this information when it matters most. ${planter} doesn't know I know. And that's power."`,
+    ], victim + planter + 'confrontStrat');
+  } else {
+    confrontText = _pick([
+      `${victim} sits by the fire holding the fake idol. ${vPr.Sub} ${vPr.sub==='they'?'know':'knows'} now. ${tipOffer} told ${vPr.obj} everything. The hurt on ${vPr.pos} face isn't anger — it's disbelief. "I actually believed it was real. I was so happy." ${vPr.Sub} ${vPr.sub==='they'?'drop':'drops'} it in the dirt.`,
+      `${victim} doesn't say anything to ${planter}. But ${vPr.sub} ${vPr.sub==='they'?'stop':'stops'} talking to ${pPr.obj}. ${vPr.Sub} ${vPr.sub==='they'?'stop':'stops'} making eye contact. The silence is the punishment. Everyone notices. Nobody asks why.`,
+    ], victim + planter + 'confrontEmotional');
+  }
+
+  (ep.campEvents[campKey].pre || []).push({
+    type: 'fakeIdolConfrontation', players: [victim, planter, tipOffer],
+    text: `${tipOffer} pulled ${victim} aside last night. "That idol you found? I don't think it's real. I saw ${planter} working on something." ${victim} checked. ${tipOffer} was right. ` + confrontText,
+    badgeText: 'FAKE IDOL', badgeClass: 'red',
+  });
+}
+
 function checkShowmanceFormation(ep) {
   if (!gs.showmances) gs.showmances = [];
   const active = gs.activePlayers;
@@ -15496,6 +15689,10 @@ function generateCampEvents(ep, phase = 'both') {
     checkInformationBroker(ep);
     // Stolen credit — bold player takes credit for another's big move
     checkStolenCredit(ep);
+    // Fake idol plant — strategic player crafts and plants a fake idol
+    checkFakeIdolPlant(ep);
+    // Fake idol tip-off confrontation (fires next episode after tip-off)
+    generateFakeIdolTipOffEvents(ep);
     // Social bomb check — fires before alliance quitting (bond hits can trigger quitting)
     checkSocialBomb(ep);
     // Alliance quitting evaluated once after all events are done, then recruitment (scenarios A + B)
@@ -15511,6 +15708,8 @@ function generateCampEvents(ep, phase = 'both') {
     checkParanoiaSpiral(ep);
     checkInformationBroker(ep);
     checkStolenCredit(ep);
+    checkFakeIdolPlant(ep);
+    generateFakeIdolTipOffEvents(ep);
     // Social bomb + alliance quitting + recruitment after the single-phase generation
     checkSocialBomb(ep);
     checkAllianceQuitting(ep);
@@ -27085,6 +27284,10 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'brokerExposed'        ? 'EXPOSED'
                      : evt.type === 'brokerFallout'        ? 'Trust Shattered'
                      : evt.type === 'brokerDefense'        ? 'Defense'
+                     : evt.type === 'fakeIdolCaught'             ? (evt.badgeText || 'FAKE IDOL EXPOSED')
+                     : evt.type === 'fakeIdolFound'              ? (evt.badgeText || 'IDOL FOUND')
+                     : evt.type === 'fakeIdolPlanted'            ? (evt.badgeText || 'FAKE IDOL PLANTED')
+                     : evt.type === 'fakeIdolConfrontation'      ? (evt.badgeText || 'FAKE IDOL')
                      : evt.type === 'medevacReplacement'         ? (evt.badgeText || 'REPLACEMENT')
                      : evt.type === 'challengeThrowCaught'      ? (evt.badgeText || 'THREW THE CHALLENGE')
                      : evt.type === 'stolenCredit'              ? (evt.badgeText || 'STOLEN CREDIT')
@@ -27170,6 +27373,8 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'brokerWhisper' || evt.type === 'brokerManipulate' || evt.type === 'brokerConfidence' || evt.type === 'brokerClose' ? 'gold'
                      : evt.type === 'brokerExposed' || evt.type === 'brokerFallout' ? 'red'
                      : evt.type === 'brokerDefense' ? (pStats(evt.players?.[0])?.boldness >= 6 ? 'gold' : 'red')
+                     : evt.type === 'fakeIdolCaught' || evt.type === 'fakeIdolPlanted' || evt.type === 'fakeIdolConfrontation' ? 'red'
+                     : evt.type === 'fakeIdolFound' ? (evt.badgeClass || 'gold')
                      : evt.type === 'medevacReplacement' ? 'gold'
                      : evt.type === 'challengeThrowCaught' ? 'red'
                      : evt.type === 'stolenCredit' ? 'gold'
@@ -27215,7 +27420,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
       'heroConfront','heroProtect','heroSacrifice','heroWeight',
       'amuletReunion','amuletUpgrade','amuletBetrayal','amuletRivalry','legacyInheritance',
       'legacyConfession','legacyLeak','legacyScheme','legacyWeight','legacyHeirWatch']);
-    const spotTypes = new Set(['socialBomb','socialBombReaction','paranoiaSpiral','challengeThrowCaught','medevacReplacement','stolenCredit','stolenCreditConfrontation',
+    const spotTypes = new Set(['socialBomb','socialBombReaction','paranoiaSpiral','challengeThrowCaught','medevacReplacement','fakeIdolCaught','fakeIdolFound','fakeIdolPlanted','fakeIdolConfrontation','stolenCredit','stolenCreditConfrontation',
       'brokerWhisper','brokerManipulate','brokerConfidence','brokerClose','brokerExposed','brokerFallout','brokerDefense',
       'showmancerMoment',
       'showmanceSpark','showmanceHoneymoon','showmanceNoticed','showmanceTarget','showmanceJealousy','showmanceRideOrDie',

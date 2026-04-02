@@ -18938,11 +18938,14 @@ function generateTwistScenes(ep) {
         result.push({ label:'Spirit Island', type:tw.type, scenes:sc }); break;
       }
 
-      case 'loved-ones':
-        sc.push({ text: 'They hadn\'t seen a familiar face in weeks.', players: active });
-        sc.push({ text: 'Players\' loved ones arrived at camp — family, partners, closest friends. Some broke down immediately. Others held it together, already calculating what this means for the game.', players: active });
+      case 'loved-ones': {
+        // Include the eliminated player — they were part of the loved ones visit before tribal
+        const _lovedActive = [...new Set([...active, ...[ep.eliminated, ep.firstEliminated].filter(Boolean)])];
+        sc.push({ text: 'They hadn\'t seen a familiar face in weeks.', players: _lovedActive });
+        sc.push({ text: 'Players\' loved ones arrived at camp — family, partners, closest friends. Some broke down immediately. Others held it together, already calculating what this means for the game.', players: _lovedActive });
         sc.push({ text: 'Tribal Council still runs tonight. The loved ones will watch.', players: [] });
         result.push({ label:'Loved Ones Visit', type:tw.type, scenes:sc }); break;
+      }
 
       case 'reward-challenge':
         // Reward challenge has its own dedicated VP screen — skip here.

@@ -16130,8 +16130,8 @@ function simulateEpisode() {
   gs.exiledThisEp = null;
   gs.penaltyVoteThisEp = null;
   // ── BLACK VOTE: stage pending black votes — consumed AFTER tribal if the target attended ──
-  // Don't consume yet — just mark for this episode. Consumed in the post-tribal handler.
-  if (gs.blackVotes?.length) {
+  if (!gs.blackVotes) gs.blackVotes = []; // safety init for saves/checkpoints without this field
+  if (gs.blackVotes.length) {
     const _bvToApply = gs.blackVotes.filter(bv => bv.type === 'classic' && gs.activePlayers.includes(bv.target));
     if (_bvToApply.length) {
       const _bv = _bvToApply[0];

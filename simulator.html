@@ -2956,6 +2956,9 @@ function computeHeat(name, tribalPlayers, alliances) {
   if (gs.fanVoteWinner === name || gs.fanVoteEp === (gs.episode || 0) + 1 && gs.advantages?.some(a => a.holder === name && a.fromFanVote)) heat += 0.5;
   // Stolen credit: stealer gets heat after losing confrontation
   if (gs.stolenCreditHeat?.player === name && gs.stolenCreditHeat.ep >= ((gs.episode || 0) + 1) - 1) heat += 0.3;
+  // Challenge throw: caught = suspicion heat. Uncaught = reduced heat (looked weak on purpose)
+  if (gs.challengeThrowHeat?.[name] >= ((gs.episode || 0) + 1) - 1) heat += 0.5;
+  if (gs.challengeThrowHeatReduction?.[name] >= ((gs.episode || 0) + 1) - 1) heat -= 0.3;
   // Survival: provider protection + villain/schemer targeting + slacker resentment
   if (seasonConfig.foodWater === 'enabled') {
     if (gs.currentProviders?.includes(name)) {
@@ -5992,6 +5995,27 @@ function simulateIndividualChallenge(pool, immune) {
   if (!candidates.length) return null;
   // Consecutive-win fatigue: repeat winners face increasing pressure/fatigue
   const _streaks = gs.challengeWinStreak || {};
+
+  // ── Challenge throw check (post-merge only) ──
+  const _throwers = new Set();
+  if (gs.isMerged) {
+    candidates.forEach(name => {
+      const s = pStats(name);
+      const streak = _streaks[name] || 0;
+      const heat = computeHeat(name, candidates, gs.namedAlliances || []);
+      // Motivation: high heat (target on your back) OR recent immunity streak (looking too strong)
+      const _wantsToThrow = heat >= 3 || streak >= 2;
+      if (!_wantsToThrow) return;
+      // Roll: strategic players are better at recognizing when to lay low
+      const throwChance = s.strategic * 0.04 + s.boldness * 0.03;
+      // Bold players are LESS likely to throw (they want to win) — but strategic ones override
+      const _boldPenalty = s.boldness >= 8 ? -0.15 : 0;
+      if (Math.random() < throwChance + _boldPenalty) {
+        _throwers.add(name);
+      }
+    });
+  }
+
   // Score every candidate so we can produce a full ranking
   const scored = candidates
     .map(name => {
@@ -6006,7 +6030,9 @@ function simulateIndividualChallenge(pool, immune) {
       const survPenalty = (seasonConfig.foodWater === 'enabled' && gs.survival)
         ? Math.max(0, (70 - (gs.survival[name] || 80)) * 0.03)
         : 0;
-      return { name, score: base - fatigue - injPenalty - survPenalty + (Math.random()*8-4) };
+      // Challenge throw: massive score penalty to place near the bottom
+      const throwPenalty = _throwers.has(name) ? 5 + Math.random() * 3 : 0; // -5 to -8
+      return { name, score: base - fatigue - injPenalty - survPenalty - throwPenalty + (Math.random()*8-4), threwIt: _throwers.has(name) };
     })
     .sort((a, b) => b.score - a.score);
   const winner = scored[0].name;
@@ -6015,7 +6041,35 @@ function simulateIndividualChallenge(pool, immune) {
   candidates.forEach(name => { gs.challengeWinStreak[name] = name === winner ? (gs.challengeWinStreak[name] || 0) + 1 : 0; });
   const chalMemberScores = {};
   scored.forEach(s => { chalMemberScores[s.name] = s.score; });
+
+  // ── Challenge throw detection + consequences ──
+  const _throwData = [];
+  _throwers.forEach(thrower => {
+    const tS = pStats(thrower);
+    const tPr = pronouns(thrower);
+    // Detection: each other player rolls intuition to notice
+    const _detectors = [];
+    candidates.filter(p => p !== thrower).forEach(p => {
+      if (Math.random() < pStats(p).intuition * 0.04) _detectors.push(p);
+    });
+    if (_detectors.length) {
+      // Caught — consequences
+      _detectors.forEach(d => addBond(d, thrower, -0.5));
+      // Heat bump for being deceptive
+      if (!gs.challengeThrowHeat) gs.challengeThrowHeat = {};
+      gs.challengeThrowHeat[thrower] = (gs.episode || 0) + 1;
+    }
+    // Heat reduction for successful throw (whether caught or not — you DID place lower)
+    // But if caught, the heat reduction is cancelled by the suspicion
+    if (!_detectors.length) {
+      if (!gs.challengeThrowHeatReduction) gs.challengeThrowHeatReduction = {};
+      gs.challengeThrowHeatReduction[thrower] = (gs.episode || 0) + 1;
+    }
+    _throwData.push({ thrower, detectedBy: _detectors, caught: _detectors.length > 0 });
+  });
+
   return { name: winner, challengeLabel: chal.name, challengeCategory: chal.category, challengeDesc: chal.desc,
+    challengeThrows: _throwData.length ? _throwData : null,
            chalPlacements: scored.map(s => s.name), chalMemberScores };
 }
 
@@ -16046,6 +16100,7 @@ function simulateEpisode() {
     ep.challengeDesc     = immResult?.challengeDesc     || '';
     ep.chalPlacements    = immResult?.chalPlacements    || [];
     ep.chalMemberScores  = immResult?.chalMemberScores  || {};
+    ep.challengeThrows   = immResult?.challengeThrows   || null;
     ep.tribalPlayers = [...gs.activePlayers];
     // Store standouts/stragglers for voter-specific targeting logic (cleared after tribal)
     const _immune = ep.immunityWinner;
@@ -16207,6 +16262,41 @@ function simulateEpisode() {
 
   // ── CHALLENGE RECORD UPDATE: track wins/podiums/bombs, inject chalThreat events ──
   updateChalRecord(ep);
+
+  // ── CHALLENGE THROW CAMP EVENTS ──
+  if (ep.challengeThrows?.length) {
+    const _throwCampKey = gs.isMerged ? (gs.mergeName || 'merge') : (gs.tribes[0]?.name || 'merge');
+    ep.challengeThrows.forEach(ct => {
+      const tPr = pronouns(ct.thrower);
+      const tS = pStats(ct.thrower);
+      if (ct.caught && ct.detectedBy?.length) {
+        const detector = ct.detectedBy[0];
+        const dPr = pronouns(detector);
+        const dS = pStats(detector);
+        const _pick = arr => arr[([...ct.thrower + detector].reduce((a,c)=>a+c.charCodeAt(0),0)+(gs.episode||0)*7)%arr.length];
+        // Camp event: someone saw through the throw
+        if (ep.campEvents?.[_throwCampKey]) {
+          const evtText = dS.boldness >= 7
+            ? _pick([
+              `${detector} pulls ${ct.thrower} aside after the challenge. "You threw that." ${ct.thrower} starts to deny it. ${detector}: "Don't. I watched you. You're better than that performance and we both know it." The accusation hangs in the air.`,
+              `"Interesting performance out there, ${ct.thrower}," ${detector} says at camp. The sarcasm is barely concealed. "Funny how someone with ${tS.physical >= 7 ? 'your physical ability' : 'your track record'} suddenly can't keep up." ${ct.thrower}'s jaw tightens.`,
+              `${detector} to confessional: "I've seen ${ct.thrower} compete. That was not ${tPr.pos} best. That was ${tPr.pos} worst — on purpose. ${tPr.Sub} ${tPr.sub==='they'?'think':'thinks'} nobody noticed. I noticed."`,
+            ])
+            : _pick([
+              `${detector} doesn't say anything to ${ct.thrower} directly. But at camp, ${dPr.sub} ${dPr.sub==='they'?'mention':'mentions'} to someone: "Did that challenge look off to you? ${ct.thrower} just... stopped trying." The seed is planted.`,
+              `${detector} watches ${ct.thrower} at camp after the challenge. Something doesn't add up. ${ct.thrower} was fine yesterday — strong, focused. Today ${tPr.sub} ${tPr.sub==='they'?'fell':'fell'} apart? ${detector} files it away. Not forgotten.`,
+              `${detector} to confessional: "I think ${ct.thrower} threw that challenge. I can't prove it, but my gut says ${tPr.sub} didn't want to win today. And that tells me ${tPr.sub} ${tPr.sub==='they'?'are':'is'} playing a different game than the rest of us."`,
+            ]);
+          (ep.campEvents[_throwCampKey].post || ep.campEvents[_throwCampKey].pre || []).push({
+            type: 'challengeThrowCaught', players: [detector, ct.thrower], text: evtText,
+            badgeText: 'THREW THE CHALLENGE', badgeClass: 'red',
+          });
+        }
+      }
+    });
+    // Save throw data to ep for VP display on challenge screen
+    ep.challengeThrowData = ep.challengeThrows;
+  }
 
   // ── EXILE ISLAND: select exile BEFORE post-camp gen so they're excluded from events ──
   let _exileEvtData = null; // deferred camp-event injection (needs post arrays to exist)
@@ -26810,6 +26900,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'brokerExposed'        ? 'EXPOSED'
                      : evt.type === 'brokerFallout'        ? 'Trust Shattered'
                      : evt.type === 'brokerDefense'        ? 'Defense'
+                     : evt.type === 'challengeThrowCaught'      ? (evt.badgeText || 'THREW THE CHALLENGE')
                      : evt.type === 'stolenCredit'              ? (evt.badgeText || 'STOLEN CREDIT')
                      : evt.type === 'stolenCreditConfrontation' ? (evt.badgeText || 'CONFRONTATION')
                      : evt.type === 'providerFishing'           ? (evt.badgeText || 'PROVIDER')
@@ -26893,6 +26984,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'brokerWhisper' || evt.type === 'brokerManipulate' || evt.type === 'brokerConfidence' || evt.type === 'brokerClose' ? 'gold'
                      : evt.type === 'brokerExposed' || evt.type === 'brokerFallout' ? 'red'
                      : evt.type === 'brokerDefense' ? (pStats(evt.players?.[0])?.boldness >= 6 ? 'gold' : 'red')
+                     : evt.type === 'challengeThrowCaught' ? 'red'
                      : evt.type === 'stolenCredit' ? 'gold'
                      : evt.type === 'stolenCreditConfrontation' ? (evt.badgeClass || 'red')
                      : evt.type === 'providerFishing' || evt.type === 'providerForaging' || evt.type === 'providerPraised' || evt.type === 'foodRationing' ? 'gold'
@@ -26936,7 +27028,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
       'heroConfront','heroProtect','heroSacrifice','heroWeight',
       'amuletReunion','amuletUpgrade','amuletBetrayal','amuletRivalry','legacyInheritance',
       'legacyConfession','legacyLeak','legacyScheme','legacyWeight','legacyHeirWatch']);
-    const spotTypes = new Set(['socialBomb','socialBombReaction','paranoiaSpiral','stolenCredit','stolenCreditConfrontation',
+    const spotTypes = new Set(['socialBomb','socialBombReaction','paranoiaSpiral','challengeThrowCaught','stolenCredit','stolenCreditConfrontation',
       'brokerWhisper','brokerManipulate','brokerConfidence','brokerClose','brokerExposed','brokerFallout','brokerDefense',
       'showmancerMoment',
       'showmanceSpark','showmanceHoneymoon','showmanceNoticed','showmanceTarget','showmanceJealousy','showmanceRideOrDie',
@@ -27139,7 +27231,7 @@ function rpBuildChallenge(ep) {
     if (chalDesc) html += `<p style="font-size:13px;color:#8b949e;line-height:1.65;margin:0 auto 16px;text-align:center;max-width:440px">${chalDesc}</p>`;
     // "Needed this" section removed — spoils who's in danger before reveal
     html += `<div class="vp-section-header">Finishing order</div>
-      <div id="${revealId}" data-placements='${JSON.stringify(placements)}' data-revealed="0" data-winner="${winner}">
+      <div id="${revealId}" data-placements='${JSON.stringify(placements)}' data-revealed="0" data-winner="${winner}" data-throwers='${JSON.stringify((ep.challengeThrows || []).filter(t => t.thrower).map(t => t.thrower))}'>
         ${placements.map((_,i) => `<div class="chal-slot" id="${revealId}-slot-${i}" style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);opacity:0.15">
           <span style="font-family:var(--font-mono);font-size:11px;color:var(--muted);width:24px">${totalPlayers - i}</span>
           <span style="color:var(--muted)">?</span>
@@ -35657,9 +35749,21 @@ function vpRevealNextPlacement(containerId) {
   // Use place + name + epNum for unique seed per player per episode — prevents repeats
   const _pck = (arr, sd) => arr[([...sd].reduce((a,c)=>a+c.charCodeAt(0),0) + place * 13 + revealIdx * 7) % arr.length];
 
+  // Check if this player threw the challenge (viewer-only info)
+  const _throwers = JSON.parse(el.dataset.throwers || '[]');
+  const _threwIt = _throwers.includes(playerName);
+
   // Context-aware reason for each placement
   let flavor = '';
-  if (isWinner) {
+  if (_threwIt) {
+    // Viewer knows they threw it — show the strategic reasoning
+    const _threwReasons = [
+      `Deliberately underperformed. The target on ${playerName}'s back was getting too heavy — winning again would've sealed ${pronouns(playerName).pos} fate.`,
+      `Threw it. ${playerName} could've competed harder — chose not to. Looking weak is a strategy. The tribe doesn't know yet.`,
+      `${playerName} pulled back on purpose. After recent wins, another immunity necklace would've painted a target ${pronouns(playerName).sub} couldn't survive. Smart? Maybe. Risky? Definitely.`,
+    ];
+    flavor = _pck(_threwReasons, playerName + 'throw');
+  } else if (isWinner) {
     const winReasons = [];
     if (s.physical >= 8) winReasons.push(`Dominated physically \u2014 nobody was close.`);
     if (s.endurance >= 8) winReasons.push(`Outlasted everyone. Pure willpower.`);
@@ -35722,7 +35826,8 @@ function vpRevealNextPlacement(containerId) {
     <div style="flex:1">
       <span style="font-size:13px${isWinner ? ';color:var(--accent-gold);font-family:var(--font-display)' : ''}">${playerName}</span>
       ${isWinner ? `<span class="rp-brant-badge gold">IMMUNE</span>` : ''}
-      <div style="font-size:10px;color:var(--muted);margin-top:2px">${flavor}</div>
+      ${_threwIt ? `<span class="rp-brant-badge" style="color:#f0883e;background:rgba(240,136,62,0.1);border-color:rgba(240,136,62,0.3)">THREW IT</span>` : ''}
+      <div style="font-size:10px;color:${_threwIt ? '#f0883e' : 'var(--muted)'};margin-top:2px">${flavor}</div>
     </div>
   `;
   slot.style.animation = 'staggerIn 0.35s var(--ease-broadcast) both';

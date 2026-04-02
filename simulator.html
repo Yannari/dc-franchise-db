@@ -16470,7 +16470,7 @@ function simulateEpisode() {
       challengeType: 'individual', challengeLabel: ep.challengeLabel,
       challengeCategory: ep.challengeCategory, challengeDesc: ep.challengeDesc,
       chalPlacements: ep.chalPlacements, chalMemberScores: ep.chalMemberScores,
-      isMerge: ep.isMerge, isSuddenDeath: true, noTribal: true,
+      isMerge: ep.isMerge, isSuddenDeath: true, noTribal: true, suddenDeathEliminated: ep.suddenDeathEliminated || null,
       votes: {}, alliances: [],
       twists: (ep.twists || []).map(t => ({...t})),
       tribesAtStart: (ep.tribesAtStart || []).map(t => ({ name: t.name, members: [...t.members] })),

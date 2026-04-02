@@ -21265,8 +21265,9 @@ function replayEpisode(epNum) {
       try { localStorage.removeItem('simulator_cp_' + k); } catch(e) {}
     }
   });
-  // Re-run this episode
-  const ep = simulateEpisode();
+  // Re-run this episode — check if we're replaying the finale
+  const _isFinaleReplay = gs.phase === 'finale';
+  const ep = _isFinaleReplay ? simulateFinale() : simulateEpisode();
   if (!ep) return;
   if (seasonConfig.popularityEnabled !== false) { updatePopularity(ep); saveGameState(); }
   viewingEpNum = ep.num;

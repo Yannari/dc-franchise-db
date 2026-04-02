@@ -9657,7 +9657,9 @@ function applyTwist(ep, twist, isPrimary = true) {
 
     // ── 3. NEGOTIATION ──
     const _ambPick = (arr, seed) => arr[([...seed].reduce((a,c)=>a+c.charCodeAt(0),0)+(gs.episode||0)*7)%arr.length];
-    const _allNonAmb = gs.activePlayers.filter(p => !_ambassadors.some(a => a.name === p));
+    // Exclude returnees from this episode — they just came back, can't be immediately eliminated by ambassadors
+    const _thisEpReturnees = new Set((ep.twists || []).filter(t => t.returnee).map(t => t.returnee));
+    const _allNonAmb = gs.activePlayers.filter(p => !_ambassadors.some(a => a.name === p) && !_thisEpReturnees.has(p));
 
     if (_ambassadors.length === 2) {
       // ════ 2-TRIBE NEGOTIATION ════

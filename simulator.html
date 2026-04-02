@@ -19660,6 +19660,17 @@ function generateTwistScenes(ep) {
         result.push({ label:'Guardian Angel', type:tw.type, scenes:sc }); break;
       }
 
+      case 'sudden-death': {
+        const _sdActive = gs.activePlayers.slice();
+        sc.push({ text: 'The host gathers the tribe. "Today is different. There is no tribal council tonight."', players: _sdActive });
+        sc.push({ text: '"Instead — the person who finishes LAST in today\'s challenge will be immediately eliminated. No vote. No discussion. No second chance."', players: _sdActive });
+        sc.push({ text: 'The tribe absorbs the news. Every challenge before this was about winning safety. This one is about avoiding the end.', players: [] });
+        if (ep.suddenDeathEliminated) {
+          sc.push({ text: `${ep.suddenDeathEliminated} finished last. ${pronouns(ep.suddenDeathEliminated).Sub} ${pronouns(ep.suddenDeathEliminated).sub==='they'?'are':'is'} eliminated on the spot.`, players: [ep.suddenDeathEliminated], badge: 'AUTO-ELIMINATED', badgeClass: 'red' });
+        }
+        result.push({ label:'Sudden Death', type:tw.type, scenes:sc }); break;
+      }
+
       case 'slasher-night': {
         // Use round 1 remaining (all players before any elimination) to avoid spoilers
         const _slAll = ep.slasherNight?.rounds?.[0]?.remaining
@@ -25776,6 +25787,7 @@ function buildTwistDesc(tw) {
     case 'double-safety':      L.push('The immunity winner grants safety to one additional player. Result after the challenge.'); break;
     case 'fire-making':        L.push('The person voted out picks an opponent for a random duel. Loser is eliminated.'); break;
     case 'guardian-angel':     if (tw.guardianAngel) L.push(`${tw.guardianAngel} earned automatic immunity through the strength of their bonds.`); break;
+    case 'sudden-death':       L.push('Sudden Death. No tribal council tonight. Last place in the challenge is auto-eliminated on the spot. No vote. No strategy. Pure performance.'); break;
     case 'slasher-night':      L.push('A slasher is loose. Survive the night. Last standing wins immunity. Lowest scorer is eliminated.'); break;
     case 'cultural-reset':     L.push('All active alliances publicly revealed.'); if (tw.revealedAlliances?.length) L.push(`Exposed: ${tw.revealedAlliances.join(', ')}.`); break;
     case 'spirit-island':      if (tw.spiritVisitor) L.push(`Jury member ${tw.spiritVisitor} returns to camp for one day.`); break;

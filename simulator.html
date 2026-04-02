@@ -1498,6 +1498,7 @@ const TWIST_CATALOG = [
   { id:'double-boot',      emoji:'🥾', name:'Double Boot',          category:'elim',       phase:'any',        desc:'Two separate votes — one after the other — same episode.',                  engineType:'double-elim'     },
   { id:'fire-making',      emoji:'🔥', name:'Second Life',          category:'elim',       phase:'any',        desc:'The voted-out player gets a second chance — they pick any non-immune player to challenge in a random duel (fire, puzzle, endurance, balance, or precision). Loser is eliminated.',        engineType:'fire-making'     },
   { id:'penalty-vote',     emoji:'⚠️', name:'Penalty Vote',         category:'elim',       phase:'any',        desc:'A player receives a penalty vote against them at the next tribal.',         engineType:'penalty-vote'    },
+  { id:'sudden-death',     emoji:'💀', name:'Sudden Death',         category:'elim',       phase:'post-merge', desc:'No tribal council. Last place in the challenge is auto-eliminated on the spot. Pure performance — no vote, no strategy, no safety net.',  engineType:'sudden-death'    },
   { id:'slasher-night',    emoji:'🔪', name:'Slasher Night',        category:'elim',       phase:'post-merge', desc:'A slasher hunts the tribe. Players are picked off round by round. Last one standing wins immunity. Lowest scorer is eliminated. No tribal council.',  engineType:'slasher-night'   },
   { id:'cultural-reset',   emoji:'🔄', name:'Cultural Reset',       category:'elim',       phase:'any',        desc:'All alliances exposed publicly. Weak alliances dissolve, strong ones survive but become targets. Double-dippers are caught. The social game resets.',        engineType:'cultural-reset'  },
   { id:'rock-draw',        emoji:'🪨', name:'Rock Draw',            category:'elim',       phase:'any',        desc:'No re-vote on a tie — non-immune, non-tied players draw rocks. Random exit.', engineType:'rock-draw'      },
@@ -8754,6 +8755,12 @@ function applyTwist(ep, twist, isPrimary = true) {
   } else if (engineType === 'open-vote') {
     // Votes are public — loyalty pressure increases, bold outliers still deviate
     ep.openVote = true;
+
+  } else if (engineType === 'sudden-death') {
+    // Sudden Death: last place in the challenge is auto-eliminated. No tribal.
+    twistObj.suddenDeath = true;
+    ep.isSuddenDeath = true;
+    ep.noTribal = true; // skip tribal council
 
   } else if (engineType === 'slasher-night') {
     // Post-merge only; need at least 3 players for a meaningful slasher night
@@ -16392,6 +16399,91 @@ function simulateEpisode() {
     patchEpisodeHistory(ep); saveGameState(); return ep;
   }
 
+  // ── SUDDEN DEATH — last place in challenge is auto-eliminated, no tribal ──
+  if (ep.isSuddenDeath) {
+    simulateJourney(ep); findAdvantages(ep); generateCampEvents(ep, 'both');
+
+    // Run the immunity challenge — last place is eliminated
+    const _sdResult = simulateIndividualChallenge(gs.activePlayers, null);
+    ep.challengeType = 'individual';
+    ep.immunityWinner = _sdResult?.name || gs.activePlayers[0];
+    ep.challengeLabel = _sdResult?.challengeLabel || 'Sudden Death';
+    ep.challengeCategory = _sdResult?.challengeCategory || 'mixed';
+    ep.challengeDesc = _sdResult?.challengeDesc || '';
+    ep.chalPlacements = _sdResult?.chalPlacements || [];
+    ep.chalMemberScores = _sdResult?.chalMemberScores || {};
+    ep.challengeThrows = _sdResult?.challengeThrows || null;
+
+    // Last place = eliminated
+    const _sdLastPlace = ep.chalPlacements.length ? ep.chalPlacements[ep.chalPlacements.length - 1] : null;
+    if (_sdLastPlace) {
+      ep.eliminated = _sdLastPlace;
+      ep.suddenDeathEliminated = _sdLastPlace;
+      handleAdvantageInheritance(_sdLastPlace, ep);
+      gs.activePlayers = gs.activePlayers.filter(p => p !== _sdLastPlace);
+      gs.eliminated.push(_sdLastPlace);
+      if (gs.isMerged) gs.jury.push(_sdLastPlace);
+      gs.advantages = gs.advantages.filter(a => a.holder !== _sdLastPlace);
+
+      // Provider tracking
+      if (seasonConfig.foodWater === 'enabled' && gs.currentProviders?.includes(_sdLastPlace)) {
+        const _sdTribe = gs.isMerged ? (gs.mergeName || 'merge') : '';
+        gs.providerVotedOutLastEp = { name: _sdLastPlace, tribeName: _sdTribe };
+      }
+
+      // Black vote for sudden death elimination
+      if (seasonConfig.blackVote && seasonConfig.blackVote !== 'off' && gs.activePlayers.length > 4) {
+        const _sdPool = gs.activePlayers.filter(p => p !== _sdLastPlace);
+        if (_sdPool.length) {
+          if (seasonConfig.blackVote === 'classic') {
+            const _sdBvTarget = [..._sdPool].sort((a, b) => getBond(_sdLastPlace, a) - getBond(_sdLastPlace, b))[0];
+            if (_sdBvTarget) {
+              if (!gs.blackVotes) gs.blackVotes = [];
+              gs.blackVotes.push({ from: _sdLastPlace, target: _sdBvTarget, ep: epNum, type: 'classic', reason: getBond(_sdLastPlace, _sdBvTarget) <= -2 ? `grudge — ${_sdLastPlace} and ${_sdBvTarget} had bad blood` : `${_sdLastPlace} wants ${_sdBvTarget} gone — lowest bond of anyone left` });
+              ep.blackVote = { from: _sdLastPlace, target: _sdBvTarget, type: 'classic', reason: getBond(_sdLastPlace, _sdBvTarget) <= -2 ? `grudge` : `lowest bond` };
+            }
+          } else if (seasonConfig.blackVote === 'modern') {
+            const _sdBvRecip = [..._sdPool].sort((a, b) => getBond(_sdLastPlace, b) - getBond(_sdLastPlace, a))[0];
+            if (_sdBvRecip) {
+              gs.advantages.push({ holder: _sdBvRecip, type: 'extraVote', foundEp: epNum, fromBlackVote: true, giftedBy: _sdLastPlace });
+              ep.blackVote = { from: _sdLastPlace, recipient: _sdBvRecip, type: 'modern', reason: `closest ally` };
+            }
+          }
+        }
+      }
+    }
+
+    // Challenge record + camp events
+    updateChalRecord(ep);
+    if (ep.challengeThrows?.length) {
+      ep.challengeThrowData = ep.challengeThrows;
+    }
+    generateCampEvents(ep, 'post');
+    updatePlayerStates(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
+    updateSurvival(ep);
+    gs.episode = epNum;
+    if (gs.activePlayers.length <= seasonConfig.finaleSize) gs.phase = 'finale';
+
+    gs.episodeHistory.push({
+      num: epNum, eliminated: ep.eliminated || null, riChoice: null,
+      immunityWinner: ep.immunityWinner || null,
+      challengeType: 'individual', challengeLabel: ep.challengeLabel,
+      challengeCategory: ep.challengeCategory, challengeDesc: ep.challengeDesc,
+      chalPlacements: ep.chalPlacements, chalMemberScores: ep.chalMemberScores,
+      isMerge: ep.isMerge, isSuddenDeath: true, noTribal: true,
+      votes: {}, alliances: [],
+      twists: (ep.twists || []).map(t => ({...t})),
+      tribesAtStart: (ep.tribesAtStart || []).map(t => ({ name: t.name, members: [...t.members] })),
+      campEvents: ep.campEvents || null,
+      journey: ep.journey || null,
+      idolFinds: ep.idolFinds || [],
+      advantagesPreTribal: ep.advantagesPreTribal || null, summaryText: '', gsSnapshot: snapshotGameState()
+    });
+    const stSD = generateSummaryText(ep);
+    gs.episodeHistory[gs.episodeHistory.length-1].summaryText = stSD; ep.summaryText = stSD;
+    patchEpisodeHistory(ep); saveGameState(); return ep;
+  }
+
   // ── JOURNEY & IDOL FINDING ──
   simulateJourney(ep);
   findAdvantages(ep);
@@ -20169,6 +20261,7 @@ function generateSummaryText(ep) {
   else if (ep.challengeType === 'double-tribal') ln(`DOUBLE TRIBAL — ${ep.winner?.name || '?'} wins immunity. Losing tribes merge into one council. One player voted out.`);
   else if (ep.challengeType === 'multi-tribal') ln(`MULTI-TRIBAL — ${ep.winner?.name || '?'} wins immunity. All other tribes go to tribal council.`);
   else if (ep.twist?.type === 'exile-island') ln(`EXILE ISLAND episode. ${ep.twist.exiled} sent to exile — misses tribal.`);
+  else if (ep.isSuddenDeath) ln('SUDDEN DEATH — last place in the challenge is auto-eliminated. No tribal council. No vote. Pure performance.');
   else if (ep.isSlasherNight) ln('SLASHER NIGHT — survival challenge. No tribal council. Lowest scorer eliminated.');
   else if (ep.isFireMaking) ln('FIRE MAKING episode — voted-out player may win their way back.');
   else if (ep.challengeType === 'tribe') {
@@ -22845,6 +22938,7 @@ function buildEpisodeMap() {
     if (_allTypes.includes('double-elim')) elims = Math.max(elims, 2);
     if (_allTypes.includes('multi-tribal') && !merged) elims = Math.max(elims, Math.max(2, (seasonConfig.teams || 2) - 1));
     if (_allTypes.includes('slasher-night')) elims = Math.max(elims, 1);
+    if (_allTypes.includes('sudden-death')) elims = Math.max(elims, 1);
     if (_allTypes.includes('ambassadors')) elims = Math.max(elims, 2);
     const returns = (_allTypes.includes('returning-player') || _allTypes.includes('second-chance')) ? 1 : 0;
 
@@ -36262,6 +36356,60 @@ function buildVPScreens(epRecord) {
     // Camp Overview + Aftermath flow normally after
     const _slRelHtml = rpBuildRelationships(ep);
     if (_slRelHtml) vpScreens.push({ id:'relationships', label:'Camp Overview', html: _slRelHtml });
+    vpScreens.push({ id:'aftermath', label:'Aftermath', html: rpBuildAftermath(ep) });
+    return;
+  }
+
+  // ── Sudden Death — challenge + auto-elimination, no tribal ──
+  if (ep.isSuddenDeath && ep.suddenDeathEliminated) {
+    // Challenge screen already added above (it's a regular individual challenge)
+    // Add a sudden death elimination card
+    const _sdElim = ep.suddenDeathEliminated;
+    const _sdPr = pronouns(_sdElim);
+    const _sdS = pStats(_sdElim);
+    const _sdPick = arr => arr[([..._sdElim].reduce((a,c)=>a+c.charCodeAt(0),0)+(ep.num||0)*7)%arr.length];
+    let _sdHtml = `<div class="rp-page tod-deepnight">
+      <div class="rp-eyebrow">Episode ${ep.num}</div>
+      <div style="font-family:var(--font-display);font-size:28px;letter-spacing:2px;text-align:center;color:#f85149;margin-bottom:4px;text-shadow:0 0 20px rgba(248,81,73,0.3)">SUDDEN DEATH</div>
+      <div style="width:60px;height:2px;background:#f85149;margin:8px auto 20px"></div>
+      <div style="text-align:center;font-size:13px;color:#8b949e;margin-bottom:24px">Last place in the challenge. No vote. No tribal. No second chance.</div>
+      <div style="text-align:center;margin-bottom:20px">
+        ${rpPortrait(_sdElim, 'xl')}
+        <div style="font-family:var(--font-display);font-size:20px;color:#f85149;margin-top:10px">${_sdElim}</div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:#f85149;margin-top:4px">AUTO-ELIMINATED</div>
+        <div style="font-size:11px;color:#8b949e;margin-top:6px">${vpArchLabel(_sdElim)}</div>
+      </div>
+      <div style="padding:12px;background:rgba(139,148,158,0.04);border:1px solid rgba(139,148,158,0.08);border-radius:8px;text-align:center">
+        <div style="font-size:12px;color:#8b949e;font-style:italic;line-height:1.6">${_sdPick([
+          `"I didn't get voted out. I didn't get blindsided. I just... lost. That's the hardest way to go — knowing it was on me."`,
+          `"No tribal. No speech. No chance to fight for my life. One bad challenge and it's over. That's Sudden Death."`,
+          `"I gave everything I had in that challenge. It wasn't enough. There's no one to blame but myself."`,
+          `"The worst part isn't losing. It's knowing that if this had been a regular episode, I might have survived tribal. But there was no tribal. Just the challenge. And I was last."`,
+        ])}</div>
+      </div>`;
+    // Black Vote display
+    const _sdBvc = ep.blackVote;
+    if (_sdBvc) {
+      _sdHtml += `<div style="margin-top:16px;padding:12px;border:1px solid rgba(99,102,241,0.25);border-radius:8px;background:rgba(99,102,241,0.04);text-align:center">
+        <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:#818cf8;margin-bottom:6px">BLACK VOTE CAST</div>
+        <div style="font-size:12px;color:#c9d1d9;line-height:1.5">${
+          _sdBvc.type === 'classic'
+            ? `Before leaving, ${_sdBvc.from} casts a Black Vote against <strong style="color:#f85149">${_sdBvc.target}</strong>.`
+            : `Before leaving, ${_sdBvc.from} gifts an Extra Vote to <strong style="color:#3fb950">${_sdBvc.recipient}</strong>.`
+        }</div>
+        <div style="display:flex;justify-content:center;gap:8px;margin-top:8px">
+          ${rpPortrait(_sdBvc.from, 'sm')}
+          <span style="font-size:16px;color:#818cf8;align-self:center">\u2192</span>
+          ${rpPortrait(_sdBvc.type === 'classic' ? _sdBvc.target : _sdBvc.recipient, 'sm')}
+        </div>
+      </div>`;
+    }
+    _sdHtml += `</div>`;
+    vpScreens.push({ id:'sudden-death', label:'Sudden Death', html: _sdHtml });
+
+    // Camp Overview + Aftermath
+    const _sdRelHtml = rpBuildRelationships(ep);
+    if (_sdRelHtml) vpScreens.push({ id:'relationships', label:'Camp Overview', html: _sdRelHtml });
     vpScreens.push({ id:'aftermath', label:'Aftermath', html: rpBuildAftermath(ep) });
     return;
   }

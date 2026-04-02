@@ -27950,7 +27950,13 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
   html += `</div></div>`;
 
   // ── ALLIANCES ──
-  const _snapAlliances = (ep.gsSnapshot?.namedAlliances || []).filter(a => a.active !== false);
+  // Pre-challenge camp: use PREVIOUS episode's alliances (before this episode's vote dissolved anything)
+  // Post-challenge camp: use current snapshot (but include alliances dissolved THIS episode)
+  const _prevEpSnap = gs.episodeHistory?.filter(h => h.num < ep.num).slice(-1)[0]?.gsSnapshot;
+  const _allianceSource = phase === 'pre' && _prevEpSnap?.namedAlliances
+    ? _prevEpSnap.namedAlliances
+    : (ep.gsSnapshot?.namedAlliances || gs.namedAlliances || []);
+  const _snapAlliances = _allianceSource.filter(a => a.active !== false);
   const _tribeSet = new Set(portraitMembers);
   // Both pre- and post-challenge camp screens are before tribal council — the player
   // eliminated this episode is still in the game at this point in the story.

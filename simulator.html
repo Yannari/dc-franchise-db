@@ -1654,6 +1654,8 @@ function showTab(name) {
   if (name === 'setup')   { populateRelDropdowns(); updateCastSizeDisplay(); renderTimeline(); renderTwistCatalog(); }
   if (name === 'run')     initRunTab();
   if (name === 'results') renderResultsTab();
+  // Remember active tab across reloads
+  try { localStorage.setItem('simulator_activeTab', name); } catch(e) {}
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -2420,9 +2422,14 @@ function renderConfig() {
   set('cfg-adv-expire',  seasonConfig.advExpire ?? 4);
   set('cfg-food-water',  seasonConfig.foodWater || 'disabled');
   set('cfg-survival-difficulty', seasonConfig.survivalDifficulty || 'casual');
+  // Show/hide survival sub-options based on food/water being enabled
+  const _fwOn = (seasonConfig.foodWater || 'disabled') === 'enabled';
   chk('cfg-auto-reward', seasonConfig.autoRewardChallenges ?? false);
+  const _arRow = g('auto-reward-row');
+  const _arDesc = g('auto-reward-desc');
+  if (_arRow) _arRow.style.display = _fwOn ? '' : 'none';
+  if (_arDesc) _arDesc.style.display = _fwOn ? '' : 'none';
   chk('cfg-replacement', seasonConfig.replacementOnMedevac ?? false);
-  // Show/hide replacement + reward sharing rows based on food/water being enabled
   const _repRow = g('replacement-row');
   const _repDesc = g('replacement-desc');
   if (_repRow) _repRow.style.display = _fwOn ? '' : 'none';
@@ -2432,12 +2439,6 @@ function renderConfig() {
   const _rsDesc = g('reward-sharing-desc');
   if (_rsRow) _rsRow.style.display = _fwOn ? '' : 'none';
   if (_rsDesc) _rsDesc.style.display = _fwOn ? '' : 'none';
-  // Show/hide auto-reward row based on food/water being enabled
-  const _arRow = g('auto-reward-row');
-  const _arDesc = g('auto-reward-desc');
-  const _fwOn = (seasonConfig.foodWater || 'disabled') === 'enabled';
-  if (_arRow) _arRow.style.display = _fwOn ? '' : 'none';
-  if (_arDesc) _arDesc.style.display = _fwOn ? '' : 'none';
   set('cfg-host', seasonConfig.host || 'Chris');
   // Sync slider displays
   ['teams','merge','finale','jury','adv-expire'].forEach(name => updateSlider(name));

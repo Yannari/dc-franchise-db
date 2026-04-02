@@ -30430,11 +30430,13 @@ function rpBuildVotes(ep) {
   vlog.filter(e => !e.sitdSacrificed).forEach((entry, idx) => {
     const { voter, voted, reason } = entry;
     const isStolen = entry.voteStolen || _stolenVoters.has(voter);
+    const isBlackVote = entry.isBlackVote || false;
     const r = reason ? reason.trim() : '';
     const slugV = String(voted).replace(/[^a-zA-Z0-9]/g, '');
     const _decl = _ovDecl ? _ovDecl(voter, voted) : null;
     const _react = _ovReact ? _ovReact(voter, voted) : null;
     const _stolenStyle = isStolen ? 'opacity:0.4;border-color:rgba(240,165,0,0.3);background:rgba(240,165,0,0.03)' : '';
+    const _blackVoteStyle = isBlackVote ? 'border-color:rgba(99,102,241,0.4);background:rgba(99,102,241,0.06)' : '';
 
     // Open vote: per-card badges and cascade info
     let _ovBadgeHtml = '';
@@ -30466,12 +30468,13 @@ function rpBuildVotes(ep) {
       }
     }
 
-    html += `<div class="tv-vote-card" data-voted="${isStolen ? '' : voted}" data-voter="${voter}" data-index="${idx}" ${isStolen ? `style="${_stolenStyle}"` : ''}>
+    html += `<div class="tv-vote-card" data-voted="${isStolen ? '' : voted}" data-voter="${voter}" data-index="${idx}" ${isStolen ? `style="${_stolenStyle}"` : isBlackVote ? `style="${_blackVoteStyle}"` : ''}>
+      ${isBlackVote ? `<div style="font-size:8px;font-weight:800;letter-spacing:1.5px;color:#818cf8;margin-bottom:4px">BLACK VOTE</div>` : ''}
       <div class="tv-vote-voter-wrap">
         ${rpPortrait(voter, 'sm')}
-        <div class="tv-vote-voter">${voter}</div>
+        <div class="tv-vote-voter"${isBlackVote ? ' style="color:#818cf8"' : ''}>${voter}${isBlackVote ? ' (eliminated)' : ''}</div>
       </div>
-      <div class="tv-vote-arrow"${isStolen ? ' style="color:#f0a500"' : ''}>\u2192</div>
+      <div class="tv-vote-arrow"${isStolen ? ' style="color:#f0a500"' : isBlackVote ? ' style="color:#818cf8"' : ''}>\u2192</div>
       <div class="tv-vote-right">
         ${_ovBadgeHtml ? `<div style="margin-bottom:3px">${_ovBadgeHtml}</div>` : ''}
         <div class="tv-vote-target">${voted}</div>

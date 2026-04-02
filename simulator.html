@@ -18646,7 +18646,6 @@ function simulateEpisode() {
           const _bv2Elim = r2.eliminated;
           if (cfg.blackVote === 'classic') {
             const _bv2Target = [..._bv2Pool].sort((a, b) => getBond(_bv2Elim, a) - getBond(_bv2Elim, b))[0];
-            console.log('[BV-V2] CREATING classic vote:', _bv2Elim, '→', _bv2Target, 'ep.blackVote2 set');
             if (_bv2Target) {
               if (!gs.blackVotes) gs.blackVotes = [];
               gs.blackVotes.push({ from: _bv2Elim, target: _bv2Target, ep: epNum, type: 'classic', reason: `${_bv2Elim} wants ${_bv2Target} gone — lowest bond of anyone left` });
@@ -32040,6 +32039,24 @@ function rpBuildVotes2(ep) {
       <div class="torch-snuffed">${rpPortrait(v2Elim, 'xl')}</div>
       <div style="font-family:var(--font-display);font-size:24px;color:var(--accent-fire);margin-top:16px;text-shadow:0 0 12px var(--accent-fire)">The tribe has spoken.</div>
     </div>`;
+    // Black Vote: vote 2 eliminated player casts their parting shot
+    const _bvc2 = [ep.blackVote2, ep.blackVote].find(bv => bv && bv.from === v2Elim);
+    if (_bvc2) {
+      html += `<div style="margin-top:16px;padding:12px;border:1px solid rgba(99,102,241,0.25);border-radius:8px;background:rgba(99,102,241,0.04);text-align:center">
+        <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:#818cf8;margin-bottom:6px">BLACK VOTE CAST</div>
+        <div style="font-size:12px;color:#c9d1d9;line-height:1.5">${
+          _bvc2.type === 'classic'
+            ? `Before leaving, ${_bvc2.from} casts a Black Vote against <strong style="color:#f85149">${_bvc2.target}</strong>. This vote will count at the next tribal council.`
+            : `Before leaving, ${_bvc2.from} gifts an Extra Vote to <strong style="color:#3fb950">${_bvc2.recipient}</strong>. "${pronouns(_bvc2.from).Sub} earned it," ${_bvc2.from} says.`
+        }</div>
+        <div style="display:flex;justify-content:center;gap:8px;margin-top:8px">
+          ${rpPortrait(_bvc2.from, 'sm')}
+          <span style="font-size:16px;color:#818cf8;align-self:center">\u2192</span>
+          ${rpPortrait(_bvc2.type === 'classic' ? _bvc2.target : _bvc2.recipient, 'sm')}
+        </div>
+        <div style="font-size:10px;color:#8b949e;margin-top:6px;font-style:italic">${_bvc2.reason || ''}</div>
+      </div>`;
+    }
   }
 
   html += `</div>`; // tv-results

@@ -236,6 +236,31 @@ Note: needs reward challenge system implemented first.
     moment, followed by swap announcement.
   Note: inspired by Survivor's first impressions twist and Disventure Camp 1.
 
+[DC-2] EMISSARY VOTE (Disventure Camp twist)
+  Trigger: schedulable twist, post-immunity challenge (pre-merge only).
+  What happens: the winning tribe sends one member as an "emissary" to the losing
+    tribe's tribal council. The emissary casts a SOLE VOTE to eliminate an additional
+    contestant — a double elimination where the tribe votes out one person normally,
+    and the emissary eliminates a second person with one vote.
+  Mechanic: winning tribe picks emissary (strategic/social weighted, or volunteered).
+    Emissary attends losing tribe's tribal as an observer, then casts one decisive vote.
+    Emissary's target selection: bonds (cross-tribal ally protection vs enemy targeting),
+    strategic read (eliminate the biggest threat), or instructions from their tribe.
+    Creates cross-tribal dynamics: the emissary can protect an ally on the other tribe
+    (like Gabby protecting Ellie) or target an enemy.
+  Consequence: double elimination — one by tribal vote, one by emissary sole vote.
+    The losing tribe has no control over who the emissary picks. Creates massive
+    cross-tribal strategy, alliances that span tribe lines, and resentment.
+    The emissary's choice reveals their cross-tribal loyalties publicly.
+  VP: dedicated screen — tribal vote first (normal), then emissary reveal ("But wait —
+    tonight's tribal isn't over"). Emissary steps forward, casts their vote, dramatic
+    reveal of who they chose and why.
+  Bond consequences: emissary gains bond with whoever they protect (ally on other tribe),
+    loses bond with the eliminated player's allies. The eliminated player knows exactly
+    who ended their game — one person, one vote, no hiding.
+  Note: inspired by Disventure Camp 1. Works best as a one-off or rare twist, not
+    every episode. Can create pre-tribal deal-making across tribe lines.
+
 [KL-2] TIED DESTINIES (Koh-Lanta twist)
   Trigger: post-merge, final 8/10/12. Players randomly paired for the episode.
   What happens: pairs compete together in challenges. At tribal, the person who

@@ -1174,6 +1174,11 @@
                   <span>Auto Reward Challenges</span>
                 </label>
                 <p class="acc-desc" id="auto-reward-desc" style="display:none">Automatically adds a reward challenge every episode (stops at F4). Rewards restore tribe food — makes survival meaningful.</p>
+                <label class="acc-check-row" id="replacement-row" style="margin-top:6px;display:none">
+                  <input type="checkbox" id="cfg-replacement" onchange="saveConfig()">
+                  <span>Medevac Replacement (KL-3)</span>
+                </label>
+                <p class="acc-desc" id="replacement-desc" style="display:none">When a player is medically evacuated, the most recently voted-out player returns to take their spot. Incompatible with Redemption/Rescue Island.</p>
               </div>
             </div>
           </div>
@@ -2335,6 +2340,7 @@ function saveConfig() {
     foodWater:   g('cfg-food-water')?.value || 'disabled',
     survivalDifficulty: g('cfg-survival-difficulty')?.value || 'casual',
     autoRewardChallenges: g('cfg-auto-reward')?.checked ?? false,
+    replacementOnMedevac: g('cfg-replacement')?.checked ?? false,
     host:        g('cfg-host')?.value || 'Chris',
     advantages: Object.fromEntries(ADVANTAGES.map(a => {
       if (a.key === 'idol') {
@@ -2409,6 +2415,12 @@ function renderConfig() {
   set('cfg-food-water',  seasonConfig.foodWater || 'disabled');
   set('cfg-survival-difficulty', seasonConfig.survivalDifficulty || 'casual');
   chk('cfg-auto-reward', seasonConfig.autoRewardChallenges ?? false);
+  chk('cfg-replacement', seasonConfig.replacementOnMedevac ?? false);
+  // Show/hide replacement row based on food/water being enabled
+  const _repRow = g('replacement-row');
+  const _repDesc = g('replacement-desc');
+  if (_repRow) _repRow.style.display = _fwOn ? '' : 'none';
+  if (_repDesc) _repDesc.style.display = _fwOn ? '' : 'none';
   // Show/hide auto-reward row based on food/water being enabled
   const _arRow = g('auto-reward-row');
   const _arDesc = g('auto-reward-desc');
@@ -3393,7 +3405,24 @@ function updateSurvival(ep) {
     });
   });
 
-  // ── 4. Save provider/slacker data to episode ──
+  // ── 4. Injury drain — injured players lose survival faster ──
+  if (gs.lingeringInjuries) {
+    const _epNum = (gs.episode || 0) + 1;
+    gs.activePlayers.forEach(name => {
+      const inj = gs.lingeringInjuries[name];
+      if (!inj || (_epNum - inj.ep) >= inj.duration) return;
+      // Injury drains survival proportional to penalty severity
+      const _injDrain = inj.penalty * 1.5; // penalty 1.5 = drain 2.25/ep, penalty 2.5 = drain 3.75/ep
+      gs.survival[name] = Math.max(0, (gs.survival[name] || 80) - _injDrain);
+      // Severe injury on low survival → immediate collapse risk
+      if ((gs.survival[name] || 0) < 30 && inj.penalty >= 2.0 && !gs.collapseWarning?.[name]) {
+        if (!gs.collapseWarning) gs.collapseWarning = {};
+        gs.collapseWarning[name] = _epNum; // triggers medevac check next episode
+      }
+    });
+  }
+
+  // ── 5. Save provider/slacker data to episode ──
   ep.providerSlackerData = { providers: [...gs.currentProviders], slackers: [...gs.currentSlackers] };
   ep.survivalSnapshot = { ...gs.survival };
   ep.tribeFoodSnapshot = { ...gs.tribeFood };
@@ -3625,6 +3654,72 @@ function generateSurvivalEvents(ep) {
           // Provider medevac = food crisis
           if (gs.currentProviders.includes(name)) {
             gs.tribeFood[campKey] = Math.max(0, (gs.tribeFood[campKey] || 0) - 15);
+          }
+
+          // ── KL-3 REPLACEMENT: most recently voted-out player returns ──
+          if (seasonConfig.replacementOnMedevac && !seasonConfig.ri) {
+            // Find the most recently voted-out player (not quitters, not medevaced)
+            const _medevacNames = new Set((gs.medevacs || []).map(m => m.name));
+            const _votedOut = gs.eliminated.filter(p => p !== name && !_medevacNames.has(p) && !gs.activePlayers.includes(p));
+            const _replacement = _votedOut.length ? _votedOut[_votedOut.length - 1] : null;
+            if (_replacement) {
+              gs.activePlayers.push(_replacement);
+              gs.eliminated = gs.eliminated.filter(p => p !== _replacement);
+              // Remove from jury if they were on it
+              gs.jury = (gs.jury || []).filter(p => p !== _replacement);
+              // Add to tribe
+              if (!isPostMerge && tribe.members) tribe.members.push(_replacement);
+              // Reset survival
+              if (gs.survival) gs.survival[_replacement] = 60;
+              // Bonds: soften extreme negatives (time away)
+              gs.activePlayers.filter(p => p !== _replacement).forEach(p => {
+                if (getBond(_replacement, p) < -1) addBond(_replacement, p, 0.5);
+              });
+
+              // Returning player's mindset — personality-driven camp event
+              const _rS = pStats(_replacement);
+              const _rPr = pronouns(_replacement);
+              // Who voted them out?
+              const _votedOutEp = gs.episodeHistory?.slice().reverse().find(e => e.eliminated === _replacement);
+              const _voters = _votedOutEp?.votingLog?.filter(v => v.voted === _replacement).map(v => v.voter).filter(v => gs.activePlayers.includes(v)) || [];
+              const _hasEnemies = _voters.length > 0;
+              let _returnText;
+              if (_rS.boldness >= 7 && _hasEnemies) {
+                // Vengeful — comes back aggressive
+                const _enemy = _voters[0];
+                _returnText = _pick([
+                  `${_replacement} walks back into camp. ${_rPr.Sub} ${_rPr.sub==='they'?'scan':'scans'} the faces until ${_rPr.sub} ${_rPr.sub==='they'?'find':'finds'} ${_enemy}. "You thought you got rid of me." The temperature at camp just dropped ten degrees.`,
+                  `${_replacement} is back. And ${_rPr.sub} ${_rPr.sub==='they'?'haven\'t':'hasn\'t'} forgotten. "I know exactly who wrote my name. ${_enemy} — we're going to have a conversation." The tribe watches ${_rPr.obj} like a lit fuse.`,
+                ], _replacement + 'vengeful');
+                addBond(_replacement, _enemy, -1.0);
+              } else if (_rS.strategic >= 7) {
+                // Strategic reset — recalculates everything
+                _returnText = _pick([
+                  `${_replacement} comes back different. Quieter. More calculated. "I had time to think about every mistake I made. This time I play with perfect information." The tribe doesn't know what to make of the new version.`,
+                  `${_replacement} walks into camp and immediately starts reading the room. Who's allied with who now? What changed while ${_rPr.sub} ${_rPr.sub==='they'?'were':'was'} gone? The old ${_replacement} played with heart. This one plays with a plan.`,
+                ], _replacement + 'strategic');
+              } else if (_rS.loyalty >= 7 || _rS.social >= 7) {
+                // Grateful/humble — rebuilds bonds
+                _returnText = _pick([
+                  `${_replacement} comes back with tears in ${_rPr.pos} eyes. "I didn't think I'd get this chance. I'm not wasting it." ${_rPr.Sub} hugs the first person ${_rPr.sub} ${_rPr.sub==='they'?'see':'sees'}. The tribe is shaken — but there's something genuine about the gratitude.`,
+                  `"I know I was voted out. I know why. And I'm not holding grudges," ${_replacement} says. "I just want to play. Whatever happened before — clean slate." Some believe ${_rPr.obj}. Some don't.`,
+                ], _replacement + 'grateful');
+                gs.activePlayers.filter(p => p !== _replacement).forEach(p => addBond(_replacement, p, 0.3));
+              } else {
+                // Default — mixed emotions
+                _returnText = _pick([
+                  `${_replacement} walks back into a game ${_rPr.sub} thought was over. The tribe stares. "Yeah," ${_rPr.sub} ${_rPr.sub==='they'?'say':'says'}. "I'm back." Nobody knows what that means yet — including ${_replacement}.`,
+                  `${_replacement} returns to camp. It's the same shelter, the same fire, the same people — but everything feels different. ${_rPr.Sub} ${_rPr.sub==='they'?'sit':'sits'} down quietly. The game gave ${_rPr.obj} a second chance. Now ${_rPr.sub} has to figure out what to do with it.`,
+                ], _replacement + 'default');
+              }
+
+              ep.campEvents[campKey].pre.push({
+                type: 'medevacReplacement', players: [_replacement, name],
+                text: `${name} is out. But the game doesn't lose a player today — ${_replacement} returns to take ${pronouns(name).pos} spot. ` + _returnText,
+                badgeText: 'REPLACEMENT', badgeClass: 'gold',
+              });
+              ep.medevacReplacement = { returned: _replacement, replaced: name, mindset: _rS.boldness >= 7 && _hasEnemies ? 'vengeful' : _rS.strategic >= 7 ? 'strategic' : _rS.loyalty >= 7 || _rS.social >= 7 ? 'grateful' : 'neutral' };
+            }
           }
         }
       });
@@ -22029,6 +22124,11 @@ function updateSurvivalDesc() {
   const _arDesc2 = document.getElementById('auto-reward-desc');
   if (_arRow2) _arRow2.style.display = mode === 'enabled' ? '' : 'none';
   if (_arDesc2) _arDesc2.style.display = mode === 'enabled' ? '' : 'none';
+  // Show/hide replacement checkbox
+  const _repRow2 = document.getElementById('replacement-row');
+  const _repDesc2 = document.getElementById('replacement-desc');
+  if (_repRow2) _repRow2.style.display = mode === 'enabled' ? '' : 'none';
+  if (_repDesc2) _repDesc2.style.display = mode === 'enabled' ? '' : 'none';
   if (desc) {
     const text = {
       disabled: 'Disabled: No food or water tracking. Players have unlimited resources.',
@@ -26908,6 +27008,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'brokerExposed'        ? 'EXPOSED'
                      : evt.type === 'brokerFallout'        ? 'Trust Shattered'
                      : evt.type === 'brokerDefense'        ? 'Defense'
+                     : evt.type === 'medevacReplacement'         ? (evt.badgeText || 'REPLACEMENT')
                      : evt.type === 'challengeThrowCaught'      ? (evt.badgeText || 'THREW THE CHALLENGE')
                      : evt.type === 'stolenCredit'              ? (evt.badgeText || 'STOLEN CREDIT')
                      : evt.type === 'stolenCreditConfrontation' ? (evt.badgeText || 'CONFRONTATION')
@@ -26992,6 +27093,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'brokerWhisper' || evt.type === 'brokerManipulate' || evt.type === 'brokerConfidence' || evt.type === 'brokerClose' ? 'gold'
                      : evt.type === 'brokerExposed' || evt.type === 'brokerFallout' ? 'red'
                      : evt.type === 'brokerDefense' ? (pStats(evt.players?.[0])?.boldness >= 6 ? 'gold' : 'red')
+                     : evt.type === 'medevacReplacement' ? 'gold'
                      : evt.type === 'challengeThrowCaught' ? 'red'
                      : evt.type === 'stolenCredit' ? 'gold'
                      : evt.type === 'stolenCreditConfrontation' ? (evt.badgeClass || 'red')
@@ -27036,7 +27138,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
       'heroConfront','heroProtect','heroSacrifice','heroWeight',
       'amuletReunion','amuletUpgrade','amuletBetrayal','amuletRivalry','legacyInheritance',
       'legacyConfession','legacyLeak','legacyScheme','legacyWeight','legacyHeirWatch']);
-    const spotTypes = new Set(['socialBomb','socialBombReaction','paranoiaSpiral','challengeThrowCaught','stolenCredit','stolenCreditConfrontation',
+    const spotTypes = new Set(['socialBomb','socialBombReaction','paranoiaSpiral','challengeThrowCaught','medevacReplacement','stolenCredit','stolenCreditConfrontation',
       'brokerWhisper','brokerManipulate','brokerConfidence','brokerClose','brokerExposed','brokerFallout','brokerDefense',
       'showmancerMoment',
       'showmanceSpark','showmanceHoneymoon','showmanceNoticed','showmanceTarget','showmanceJealousy','showmanceRideOrDie',

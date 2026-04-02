@@ -21841,14 +21841,13 @@ function buildEpisodeMap() {
     const _allTypes = twistMapAll[ep] || [];
 
     // How many players leave/return this episode?
+    // Check ALL twists on this episode (not just the last one)
     let elims = 1;
-    if (etype === 'no-tribal') elims = 0;
-    if (etype === 'elimination-swap') elims = 0;
-    if (etype === 'double-elim') elims = 2;
-    if (etype === 'multi-tribal' && !merged) elims = Math.max(2, (seasonConfig.teams || 2) - 1);
-    if (etype === 'slasher-night') elims = 1;
-    // Ambassadors: eliminates 1 person BEFORE merge + regular tribal eliminates 1 = 2 total
-    // Check ALL twists on this episode so it works even with other twists scheduled
+    if (_allTypes.includes('no-tribal')) elims = 0;
+    if (_allTypes.includes('elimination-swap')) elims = 0;
+    if (_allTypes.includes('double-elim')) elims = Math.max(elims, 2);
+    if (_allTypes.includes('multi-tribal') && !merged) elims = Math.max(elims, Math.max(2, (seasonConfig.teams || 2) - 1));
+    if (_allTypes.includes('slasher-night')) elims = Math.max(elims, 1);
     if (_allTypes.includes('ambassadors')) elims = Math.max(elims, 2);
     const returns = (etype === 'returning-player' || etype === 'second-chance') ? 1 : 0;
 

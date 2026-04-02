@@ -29,8 +29,11 @@ Simulation core:
 - `checkInformationBroker()` — double agent in 2+ alliances, escalating exposure risk, bond collapse on blowup
 - `checkStolenCredit()` — bold player steals credit for another's big move (once per game). Confrontation next episode if architect is bold/hothead enough.
 - Ambassadors twist (`engineType: 'ambassadors'`) — pre-merge: tribes select ambassadors who negotiate an elimination. 15 personality-driven pairings with resistance checks. 3+ tribe coalition mechanics. VP: selection, meeting narrative, return drama, elimination card.
-- `updateSurvival()` — per-episode tribe food decay, provider/slacker calculation (willingness + ability), energy cost/savings, player survival sync
-- `generateSurvivalEvents()` — survival camp events: provider fishing/foraging/praised, slacker callout/confrontation/bonding, food conflict/hoarding/rationing/crisis, collapse warning, medevac
+- `updateSurvival()` — per-episode tribe food decay, provider/slacker calculation (willingness + ability), energy cost/savings, player survival sync, injury→survival drain
+- `generateSurvivalEvents()` — survival camp events: provider fishing/foraging/praised, slacker callout/confrontation/bonding, food conflict/hoarding/rationing/crisis, collapse warning, medevac, KL-3 replacement
+- Challenge throw mechanic — post-merge: strategic players can intentionally underperform to reduce targeting pressure. VP shows "THREW IT" badge. Detection escalates with repeat throws. Caught = +0.8 heat, uncaught = -1.0 heat.
+- KL-3 Replacement — on medevac, most recently voted-out player returns. Personality-driven return events (vengeful/strategic/grateful/neutral). Requires `replacementOnMedevac` config.
+- Pre-merge reward sharing — winning tribe can invite one person from losing tribe. Tribe decision (avg bond). Configurable via `rewardSharing`.
 - `checkShowmanceFormation()` — detects new showmances (bond + archetype compatibility)
 - `updateShowmancePhases()` — progresses showmance lifecycle (spark → honeymoon → target → ride-or-die/broken-up)
 - `checkShowmanceBreakup()` — detects partner elimination (betrayal breakup vs grief separation)
@@ -133,6 +136,9 @@ VP Finale screens:
 - `gs.collapseWarning[name]` — episode number of collapse event (medevac fires next episode)
 - `gs.medevacs` — array of medevac records for season stats
 - `gs.providerVotedOutLastEp` — `{ name, tribeName }` — triggers food crisis camp event next episode
+- `gs.challengeThrowCount[name]` — number of times this player has thrown a challenge (escalating detection)
+- `gs.challengeThrowHeat[name]` — episode number when caught throwing (heat +0.8 for 1 ep)
+- `gs.challengeThrowHeatReduction[name]` — episode number when uncaught throw succeeded (heat -1.0 for 1 ep)
 
 Finale-specific ep fields:
 - `ep.finaleEntrants` — snapshot of ALL players entering the finale (before any eliminations)
@@ -408,6 +414,9 @@ Key config fields in `seasonConfig`:
 - `finaleAssistants` (boolean) — enable assistant selection for final challenge
 - `popularityEnabled` — fan popularity system
 - `hidePopularity` — hides Fan Pulse rankings during season (no spoilers for fan-vote finale)
+- `autoRewardChallenges` — auto-injects reward challenge every episode (stops at F4)
+- `replacementOnMedevac` — KL-3: most recently voted-out player returns on medevac
+- `rewardSharing` — pre-merge: winning tribe can invite one losing tribe member to share reward
 - `ri` (boolean) — enable 2nd Chance Isle
 - `riFormat` ('redemption'|'rescue') — duel format vs edge of extinction
 - `riReentryAt` — active player count that triggers return

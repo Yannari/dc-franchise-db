@@ -142,12 +142,12 @@ and the downstream consequence. None are guaranteed — all fire on a roll.
   lost to rocks, rock draw exit). VP: 4-section screen (selection, meeting, return, elimination).
   Bond consequences carry into merged game. Exit quotes personality-driven.
 
-[KL-3] REPLACEMENT (Koh-Lanta medevac rule)
-  Trigger: a player is medically evacuated
-  What happens: the most recently voted-out player returns to the game.
-  Mechanic: on medevac, check gs.eliminated for last voted-out player (not quitters).
-    Return them to gs.activePlayers, same tribe. Camp event: shock, bond reset.
-  Note: incompatible with RI/Rescue Island (they already handle returnees).
+[DONE] KL-3 REPLACEMENT — implemented in generateSurvivalEvents (medevac block).
+  On medevac: most recently voted-out player returns. Personality-driven return events:
+  vengeful (bold + has enemies), strategic reset, grateful (loyal/social), neutral.
+  Incompatible with RI/Rescue Island. Configurable via replacementOnMedevac checkbox.
+  Injuries now drain survival (penalty * 1.5/ep), severe injury + low survival → collapse.
+  Low survival increases injury chance (survival 40 = 1.6x, survival 20 = 2.2x).
 
 [6] FALSE IDOL PLANT
 Trigger: player with strategic >= 8 is actively being targeted AND an idol search is in progress
@@ -202,11 +202,15 @@ What happens: idol gets passed to closest active ally as hidden inheritance, OR
 Note: Legacy Advantage already covers the "idol passes on elimination" mechanic.
   This would be for regular idols. May overlap.
 
-[13] CHALLENGE THROW DETECTED
-Trigger: player intentionally threw a challenge
-Roll: ~25% chance a perceptive tribemate (intuition >= 7) notices
-What happens: observant player calls out the thrower. Trust collapses. Heat added.
-Note: needs challenge throw mechanic implemented first.
+[DONE] #13 CHALLENGE THROW + DETECTION — implemented in simulateIndividualChallenge.
+  Post-merge: players with high heat (>=3) or immunity streak (>=2) may throw.
+  Roll: strategic * 0.04 + boldness * 0.03 (bold penalty for wanting to win).
+  Score penalty: -5 to -8. VP: orange "THREW IT" badge (viewer always knows).
+  Detection: intuition * 0.04 per observer, +0.03 per previous throw (escalating).
+  Caught: bond -0.5, heat +0.8. Uncaught: heat -1.0 (strategy worked).
+  Camp events: bold detectors confront, quiet ones file it away.
+  Throw count resets when caught. Pre-merge reward sharing also added
+  (winning tribe invites one losing tribe member, configurable).
 
 [14] REWARD TRIP BONDING BACKFIRE
 Trigger: reward challenge with 2-3 winners who go on a trip together

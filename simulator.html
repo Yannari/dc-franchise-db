@@ -22275,30 +22275,68 @@ function simulateFinale() {
     const juryResult = simulateJuryVote(finalists);
     ep.juryResult = juryResult;
     const jSorted = Object.entries(juryResult.votes).sort(([,a],[,b]) => b-a);
-    // Tiebreaker: if top 2 have equal votes, revote — if still tied, double crowning
+    // Tiebreaker: if top 2 have equal votes
     if (jSorted.length >= 2 && jSorted[0][1] === jSorted[1][1]) {
       const tied = jSorted.filter(([,v]) => v === jSorted[0][1]).map(([n]) => n);
-      // Revote: each juror re-evaluates with slight random shift
+
+      // Step 1: Revote — jurors re-evaluate with slight shift (reduced randomness)
       const revoteResult = { votes: Object.fromEntries(tied.map(f => [f, 0])), reasoning: [] };
       (gs.jury || []).forEach(juror => {
         const scores = tied.map(f => {
           const fS = pStats(f);
           const bond = getBond(juror, f);
           const gameplay = fS.strategic * 0.3 + fS.boldness * 0.2 + fS.social * 0.2;
-          return { name: f, score: gameplay + bond * 1.5 + (Math.random() * 2.5) };
+          return { name: f, score: gameplay + bond * 1.5 + (Math.random() * 1.2) };
         });
         scores.sort((a, b) => b.score - a.score);
         revoteResult.votes[scores[0].name]++;
         revoteResult.reasoning.push({ juror, votedFor: scores[0].name });
       });
       const rvSorted = Object.entries(revoteResult.votes).sort(([,a],[,b]) => b-a);
-      if (rvSorted[0][1] === rvSorted[1]?.[1]) {
-        // Still tied — double crowning
-        ep.juryTiebreak = { tied, winners: tied, method: 'double-crowning', revote: revoteResult };
-        ep.winner = tied.join(' & ');
-      } else {
+
+      if (rvSorted[0][1] !== rvSorted[1]?.[1]) {
+        // Revote broke the tie
         ep.juryTiebreak = { tied, winner: rvSorted[0][0], method: 'revote', revote: revoteResult };
         ep.winner = rvSorted[0][0];
+      } else {
+        // Step 2: Still tied — check if finalists agree to share the title
+        // Double crowning requires a genuine bond (>= 4) — they must actually respect each other
+        const _tieBond = tied.length === 2 ? getBond(tied[0], tied[1]) : 0;
+        const _bothAgree = tied.length === 2 && _tieBond >= 4;
+        // Even with high bond, personalities matter — bold/competitive players refuse to share
+        const _willingToShare = tied.every(f => {
+          const fs = pStats(f);
+          // Bold/competitive players won't share — they want sole credit
+          return fs.boldness <= 7 && Math.random() < 0.5 + _tieBond * 0.05;
+        });
+
+        if (_bothAgree && _willingToShare) {
+          // Double crowning — mutual respect, they agree to share
+          ep.juryTiebreak = { tied, winners: tied, method: 'double-crowning', revote: revoteResult, bond: Math.round(_tieBond * 10) / 10 };
+          ep.winner = tied.join(' & ');
+        } else {
+          // Step 3: No agreement — the eliminated finalist (3rd place) casts the deciding vote
+          // In real Survivor, this is often how ties are broken (the non-finalist breaks the deadlock)
+          const _tiebreaker = ep.finalCut?.cut || ep.eliminated || (gs.jury.length ? gs.jury[gs.jury.length - 1] : null);
+          if (_tiebreaker && players.find(p => p.name === _tiebreaker)) {
+            const _tbS = pStats(_tiebreaker);
+            const _tbScores = tied.map(f => ({
+              name: f,
+              score: getBond(_tiebreaker, f) * 1.5 + pStats(f).strategic * 0.2 + pStats(f).social * 0.2 + Math.random() * 0.5,
+            })).sort((a, b) => b.score - a.score);
+            const _tbWinner = _tbScores[0].name;
+            const _tbReason = getBond(_tiebreaker, _tbWinner) >= 3
+              ? `${_tiebreaker} votes based on loyalty — ${_tbWinner} was closer.`
+              : `${_tiebreaker} votes based on gameplay — ${_tbWinner} played the stronger game.`;
+            ep.juryTiebreak = { tied, winner: _tbWinner, method: 'finalist-tiebreaker', revote: revoteResult,
+              tiebreaker: _tiebreaker, tiebreakerReason: _tbReason };
+            ep.winner = _tbWinner;
+          } else {
+            // Ultimate fallback: eliminated finalist not available — force double crowning
+            ep.juryTiebreak = { tied, winners: tied, method: 'double-crowning', revote: revoteResult };
+            ep.winner = tied.join(' & ');
+          }
+        }
       }
     } else {
       ep.winner = jSorted[0]?.[0] || finalists[0];
@@ -32136,10 +32174,12 @@ function rpBuildJuryVoteReveal(ep) {
         const rv = tb.revote;
         let tbHtml = `<div style="margin-top:16px;padding-top:16px;border-top:2px solid rgba(210,153,34,0.4)">
           <div style="font-size:12px;font-weight:700;letter-spacing:1.5px;color:#d29922;text-transform:uppercase;margin-bottom:8px;text-align:center">
-            \u26A1 DEADLOCKED \u2014 ${isDouble ? 'DOUBLE CROWNING' : 'JURY REVOTE'}
+            \u26A1 DEADLOCKED \u2014 ${isDouble ? 'DOUBLE CROWNING' : tb.method === 'finalist-tiebreaker' ? 'DECIDING VOTE' : 'JURY REVOTE'}
           </div>
           <div style="font-size:13px;color:#c9d1d9;text-align:center;margin-bottom:14px;line-height:1.6">
-            The vote is tied. The jury must vote again.
+            ${isDouble ? `The vote is tied. ${tb.tied.join(' and ')} agree to share the title.${tb.bond ? ` Their bond (${tb.bond}) made this possible.` : ''}`
+            : tb.method === 'finalist-tiebreaker' ? `The vote is tied. The jury revoted — still deadlocked. ${tb.tiebreaker} casts the deciding vote.`
+            : `The vote is tied. The jury must vote again.`}
           </div>`;
         // Show revote cards
         if (rv?.reasoning?.length) {
@@ -32165,9 +32205,20 @@ function rpBuildJuryVoteReveal(ep) {
             </div>`;
           });
         }
+        // Finalist tiebreaker card
+        if (tb.method === 'finalist-tiebreaker' && tb.tiebreaker) {
+          tbHtml += `<div style="margin-top:12px;padding:10px;background:rgba(227,179,65,0.06);border:1px solid rgba(227,179,65,0.2);border-radius:8px;text-align:center">
+            <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:#e3b341;margin-bottom:6px">THE DECIDING VOTE</div>
+            ${rpPortrait(tb.tiebreaker, 'sm')}
+            <div style="font-size:13px;color:#e6edf3;margin-top:4px"><strong>${tb.tiebreaker}</strong> \u2192 <strong>${tb.winner}</strong></div>
+            <div style="font-size:11px;color:#8b949e;margin-top:4px;font-style:italic">${tb.tiebreakerReason || ''}</div>
+          </div>`;
+        }
         tbHtml += `<div style="font-size:14px;color:#e3b341;text-align:center;margin-top:14px;font-family:var(--font-display);letter-spacing:1px">
           ${isDouble
-            ? `Still deadlocked. <strong>${tb.tied.join(' and ')}</strong> are both crowned Sole Survivors.`
+            ? `Still deadlocked. <strong>${tb.tied.join(' and ')}</strong> agree to share the title and are both crowned Sole Survivors.`
+            : tb.method === 'finalist-tiebreaker'
+            ? `<strong>${tb.winner}</strong> wins — decided by ${tb.tiebreaker}'s vote.`
             : `<strong>${tb.winner}</strong> breaks through on the revote and wins the game.`}
         </div></div>`;
         return tbHtml;

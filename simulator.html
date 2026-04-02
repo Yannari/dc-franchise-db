@@ -2956,9 +2956,9 @@ function computeHeat(name, tribalPlayers, alliances) {
   if (gs.fanVoteWinner === name || gs.fanVoteEp === (gs.episode || 0) + 1 && gs.advantages?.some(a => a.holder === name && a.fromFanVote)) heat += 0.5;
   // Stolen credit: stealer gets heat after losing confrontation
   if (gs.stolenCreditHeat?.player === name && gs.stolenCreditHeat.ep >= ((gs.episode || 0) + 1) - 1) heat += 0.3;
-  // Challenge throw: caught = suspicion heat. Uncaught = reduced heat (looked weak on purpose)
-  if (gs.challengeThrowHeat?.[name] >= ((gs.episode || 0) + 1) - 1) heat += 0.5;
-  if (gs.challengeThrowHeatReduction?.[name] >= ((gs.episode || 0) + 1) - 1) heat -= 0.3;
+  // Challenge throw: caught = suspicion heat. Uncaught = significant heat reduction (the whole point of throwing)
+  if (gs.challengeThrowHeat?.[name] >= ((gs.episode || 0) + 1) - 1) heat += 0.8;
+  if (gs.challengeThrowHeatReduction?.[name] >= ((gs.episode || 0) + 1) - 1) heat -= 1.0;
   // Survival: provider protection + villain/schemer targeting + slacker resentment
   if (seasonConfig.foodWater === 'enabled') {
     if (gs.currentProviders?.includes(name)) {

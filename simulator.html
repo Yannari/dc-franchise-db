@@ -18489,6 +18489,26 @@ function simulateEpisode() {
         gs.tribes = gs.tribes.map(t => ({...t, members: t.members.filter(p => p !== _second)}));
         handleAdvantageInheritance(_second, ep);
         gs.advantages = gs.advantages.filter(a => a.holder !== _second);
+        // BLACK VOTE for announced double boot second elimination
+        if (cfg.blackVote && cfg.blackVote !== 'off' && gs.activePlayers.length > 4) {
+          const _bvA2Pool = ep.tribalPlayers?.filter(p => p !== _second && p !== r1.eliminated && gs.activePlayers.includes(p)) || [];
+          if (_bvA2Pool.length) {
+            if (cfg.blackVote === 'classic') {
+              const _bvA2Target = [..._bvA2Pool].sort((a, b) => getBond(_second, a) - getBond(_second, b))[0];
+              if (_bvA2Target) {
+                if (!gs.blackVotes) gs.blackVotes = [];
+                gs.blackVotes.push({ from: _second, target: _bvA2Target, ep: epNum, type: 'classic', reason: `${_second} wants ${_bvA2Target} gone — lowest bond of anyone left` });
+                ep.blackVote2 = { from: _second, target: _bvA2Target, type: 'classic', reason: `${_second} wants ${_bvA2Target} gone — lowest bond of anyone left` };
+              }
+            } else if (cfg.blackVote === 'modern') {
+              const _bvA2Recipient = [..._bvA2Pool].sort((a, b) => getBond(_second, b) - getBond(_second, a))[0];
+              if (_bvA2Recipient) {
+                gs.advantages.push({ holder: _bvA2Recipient, type: 'extraVote', foundEp: epNum, fromBlackVote: true, giftedBy: _second });
+                ep.blackVote2 = { from: _second, recipient: _bvA2Recipient, type: 'modern', reason: `${_second}'s closest remaining connection` };
+              }
+            }
+          }
+        }
       }
     } else {
       // Surprise double boot: run a second tribal vote
@@ -18597,6 +18617,27 @@ function simulateEpisode() {
       }
 
       ep.eliminated = r2.eliminated;
+      // BLACK VOTE for vote 2 eliminated player
+      if (r2.eliminated && cfg.blackVote && cfg.blackVote !== 'off' && gs.activePlayers.length > 4) {
+        const _bv2Pool = ep.tribalPlayers?.filter(p => p !== r2.eliminated && p !== r1.eliminated && gs.activePlayers.includes(p)) || [];
+        if (_bv2Pool.length) {
+          const _bv2Elim = r2.eliminated;
+          if (cfg.blackVote === 'classic') {
+            const _bv2Target = [..._bv2Pool].sort((a, b) => getBond(_bv2Elim, a) - getBond(_bv2Elim, b))[0];
+            if (_bv2Target) {
+              if (!gs.blackVotes) gs.blackVotes = [];
+              gs.blackVotes.push({ from: _bv2Elim, target: _bv2Target, ep: epNum, type: 'classic', reason: `${_bv2Elim} wants ${_bv2Target} gone — lowest bond of anyone left` });
+              ep.blackVote2 = { from: _bv2Elim, target: _bv2Target, type: 'classic', reason: `${_bv2Elim} wants ${_bv2Target} gone — lowest bond of anyone left` };
+            }
+          } else if (cfg.blackVote === 'modern') {
+            const _bv2Recipient = [..._bv2Pool].sort((a, b) => getBond(_bv2Elim, b) - getBond(_bv2Elim, a))[0];
+            if (_bv2Recipient) {
+              gs.advantages.push({ holder: _bv2Recipient, type: 'extraVote', foundEp: epNum, fromBlackVote: true, giftedBy: _bv2Elim });
+              ep.blackVote2 = { from: _bv2Elim, recipient: _bv2Recipient, type: 'modern', reason: `${_bv2Elim}'s closest remaining connection` };
+            }
+          }
+        }
+      }
     }
   } else {
     ep.eliminated = r1.eliminated;
@@ -22191,6 +22232,7 @@ function patchEpisodeHistory(ep) {
   if (ep.stolenCreditEvents?.length) h.stolenCreditEvents = ep.stolenCreditEvents;
   h.ambassadorData = ep.ambassadorData || null;
   h.blackVote = ep.blackVote || null;
+  h.blackVote2 = ep.blackVote2 || null;
   h.blackVoteApplied = ep.blackVoteApplied || null;
   h.fakeIdolEvents = ep.fakeIdolEvents || null;
   h.survivalSnapshot = ep.survivalSnapshot || null;

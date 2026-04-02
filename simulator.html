@@ -6064,6 +6064,8 @@ function simulateIndividualChallenge(pool, immune) {
       // Heat bump for being deceptive
       if (!gs.challengeThrowHeat) gs.challengeThrowHeat = {};
       gs.challengeThrowHeat[thrower] = (gs.episode || 0) + 1;
+      // Reset throw count — suspicion is confirmed and out in the open
+      gs.challengeThrowCount[thrower] = 0;
     }
     // Heat reduction for successful throw (whether caught or not — you DID place lower)
     // But if caught, the heat reduction is cancelled by the suspicion

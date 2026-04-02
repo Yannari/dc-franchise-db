@@ -24916,7 +24916,7 @@ function rpBuildMergeAnnouncement(ep) {
   if (topAlliances.length) {
     html += `<div class="vp-section-header gold">Alliance threats going in</div>`;
     topAlliances.forEach(a => {
-      const members = a.members.filter(n => active.includes(n));
+      const members = a.members.filter(n => _mergeParticipants.includes(n));
       html += `<div class="vp-card gold" style="margin-bottom:10px">
         <div style="font-family:var(--font-display);font-size:14px;letter-spacing:1px;margin-bottom:6px">${a.name}</div>
         <div style="font-size:12px;color:var(--muted)">${members.join(', ')}</div>

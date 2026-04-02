@@ -18642,11 +18642,11 @@ function simulateEpisode() {
       // BLACK VOTE for vote 2 eliminated player
       if (r2.eliminated && cfg.blackVote && cfg.blackVote !== 'off' && gs.activePlayers.length > 4) {
         const _bv2Pool = ep.tribalPlayers?.filter(p => p !== r2.eliminated && p !== r1.eliminated && gs.activePlayers.includes(p)) || [];
-        console.log('[BV-V2] pool:', _bv2Pool, 'tribalPlayers:', ep.tribalPlayers, 'r1:', r1.eliminated, 'r2:', r2.eliminated);
         if (_bv2Pool.length) {
           const _bv2Elim = r2.eliminated;
           if (cfg.blackVote === 'classic') {
             const _bv2Target = [..._bv2Pool].sort((a, b) => getBond(_bv2Elim, a) - getBond(_bv2Elim, b))[0];
+            console.log('[BV-V2] CREATING classic vote:', _bv2Elim, '→', _bv2Target, 'ep.blackVote2 set');
             if (_bv2Target) {
               if (!gs.blackVotes) gs.blackVotes = [];
               gs.blackVotes.push({ from: _bv2Elim, target: _bv2Target, ep: epNum, type: 'classic', reason: `${_bv2Elim} wants ${_bv2Target} gone — lowest bond of anyone left` });

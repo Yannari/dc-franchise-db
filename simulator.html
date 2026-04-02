@@ -9749,58 +9749,108 @@ function applyTwist(ep, twist, isPrimary = true) {
       if (_amb2Target) _discussedNames.push({ proposer: amb2.name, proposed: _amb2Target, fromTribe: _ambSelections.find(s => s.members.includes(_amb2Target))?.tribe });
       if (target && !_discussedNames.some(d => d.proposed === target)) _discussedNames.push({ proposer: 'both', proposed: target });
 
-      // Beat 1: THE ARRIVAL
+      // Beat 1: THE ARRIVAL (5 variants)
       narrative.unshift(_ambPick([
         `${amb1.name} and ${amb2.name} meet at the neutral ground. Two torches. Two chairs. One conversation that ends someone's game. The host steps back. This is between them now.`,
         `The clearing is quiet. ${amb1.name} arrives first, sits down, ${amb1.pr.sub==='they'?'stare':'stares'} at the fire. ${amb2.name} appears a minute later. They size each other up. Neither speaks. The weight of what's about to happen fills the space between them.`,
         `Two ambassadors. Two tribes. One of them walks out of here having ended someone's game. ${amb1.name} and ${amb2.name} sit across from each other. The fire crackles. The jungle waits.`,
+        `A small clearing. Two torches burning. ${amb1.name} walks in from the left, ${amb2.name} from the right. They've never been alone together before. Everything that happens next decides who merges and who doesn't.`,
+        `The host meets them at the clearing. "You each represent your tribe. You must agree on one person to eliminate. If you can't agree — one of you goes home." ${amb1.name} and ${amb2.name} lock eyes. The host leaves. The negotiation begins.`,
       ], amb1.name + amb2.name + 'arrival'));
 
-      // Beat 2: THE OPENING — archetype-driven first move
+      // Beat 2: THE OPENING — archetype-driven first move (3+ variants per type)
       const _dominator = dominatorIdx >= 0 ? _ambassadors[dominatorIdx] : null;
       const _defender = defenderIdx >= 0 ? _ambassadors[defenderIdx] : null;
       if (_dominator?.type === 'manipulator' && !resistFired) {
-        narrative.push(`${_dominator.name} starts soft. "I've been thinking about this all day. There's a name I keep coming back to." ${_dominator.pr.Sub} ${_dominator.pr.sub==='they'?'lean':'leans'} forward. "What if we talked about ${_discussedNames[0]?.proposed || 'someone'}?" The framing is careful — making it sound like a shared idea, not a demand.`);
+        narrative.push(_ambPick([
+          `${_dominator.name} starts soft. "I've been thinking about this all day. There's a name I keep coming back to." ${_dominator.pr.Sub} ${_dominator.pr.sub==='they'?'lean':'leans'} forward. "What if we talked about ${_discussedNames[0]?.proposed || 'someone'}?" The framing is careful — making it sound like a shared idea, not a demand.`,
+          `${_dominator.name} doesn't lead with a name. ${_dominator.pr.Sub} ${_dominator.pr.sub==='they'?'lead':'leads'} with a feeling. "I know this is hard. I know neither of us wants to be here. But if we think about what's best for BOTH tribes going into the merge..." The trap is already set.`,
+          `"Let me ask you something," ${_dominator.name} says. "Who on your tribe do YOU think is holding you back?" It's a beautiful move — getting the other ambassador to name their own people first. ${_defender?.name || amb2.name} hesitates. That hesitation is all ${_dominator.name} needs.`,
+        ], _dominator.name + 'manipOpen'));
       } else if (_dominator?.type === 'villain') {
-        narrative.push(`${_dominator.name} doesn't waste time. "${_discussedNames[0]?.proposed || 'Someone'} goes. That's what I came here to say." ${_defender?.name || amb2.name} blinks. The conversation just started and it already has a direction.`);
+        narrative.push(_ambPick([
+          `${_dominator.name} doesn't waste time. "${_discussedNames[0]?.proposed || 'Someone'} goes. That's what I came here to say." ${_defender?.name || amb2.name} blinks. The conversation just started and it already has a direction.`,
+          `${_dominator.name} sits down and says one word. A name. "${_discussedNames[0]?.proposed || 'Someone'}." No explanation. No justification. Just the name. The other ambassador stares. "That's... that's your opening?"`,
+          `"I didn't come here to talk," ${_dominator.name} says. "I came here to handle business. ${_discussedNames[0]?.proposed || 'Someone'} is dangerous and we both know it. Write the name or we draw rocks. Your choice." The bluntness is staggering.`,
+        ], _dominator.name + 'villOpen'));
       } else if (amb1.type === 'dealmaker' || amb2.type === 'dealmaker') {
         const dm = amb1.type === 'dealmaker' ? amb1 : amb2;
         const other = dm === amb1 ? amb2 : amb1;
-        narrative.push(`${dm.name} gets right to it. "Let's not play games. We both know why we're here. I'll tell you who I think is the biggest threat if you tell me yours." ${other.name} considers this. A straight deal — no tricks. ${other.type === 'loyal-shield' ? `But ${other.name} already knows ${other.pr.sub} ${other.pr.sub==='they'?'won\'t':'won\'t'} give up one of ${other.pr.pos} own.` : 'Maybe.'}`);
+        narrative.push(_ambPick([
+          `${dm.name} gets right to it. "Let's not play games. We both know why we're here. I'll tell you who I think is the biggest threat if you tell me yours." ${other.name} considers this. A straight deal — no tricks. ${other.type === 'loyal-shield' ? `But ${other.name} already knows ${other.pr.sub} won't give up one of ${other.pr.pos} own.` : 'Maybe.'}`,
+          `${dm.name} pulls out an imaginary scorecard. "Let me lay it out. Here's who I think survives the merge and here's who doesn't. If we're smart about this, we can both walk out of here with our tribes intact — minus one person who was going to cause problems anyway."`,
+          `"I want to make a deal," ${dm.name} says. "A clean one. No tricks, no manipulation, no emotion. We look at the numbers, we pick the right person, and we both live to merge. Can you do that?" ${other.name} thinks. ${other.type === 'emotional' ? `"I can try," ${other.name} says. But trying and doing are different things.` : `"Yeah. Let's talk."`}`,
+        ], dm.name + 'dealOpen'));
       } else if (amb1.type === 'loyal-shield' && amb2.type === 'loyal-shield') {
-        narrative.push(`Neither speaks for a long time. Both know what's at stake — and both know they came here to protect their people, not sacrifice them. ${amb1.name} finally breaks the silence: "I'm not writing anyone from my tribe's name." ${amb2.name}: "Neither am I." The standoff begins.`);
+        narrative.push(_ambPick([
+          `Neither speaks for a long time. Both know what's at stake — and both know they came here to protect their people, not sacrifice them. ${amb1.name} finally breaks the silence: "I'm not writing anyone from my tribe's name." ${amb2.name}: "Neither am I." The standoff begins.`,
+          `${amb1.name} looks at ${amb2.name}. "My tribe sent me here to protect them. That's what I'm going to do." ${amb2.name} nods slowly. "So did mine." The silence that follows is the loudest thing in the clearing.`,
+          `"Before we start," ${amb1.name} says, "I need you to know something. I'm not giving up anyone from my tribe. Not today. Not ever." ${amb2.name}: "Then we have a problem. Because neither am I." They both know where this is heading. Rocks.`,
+        ], amb1.name + amb2.name + 'loyalOpen'));
+      } else if (amb1.type === 'emotional' || amb2.type === 'emotional') {
+        const em = amb1.type === 'emotional' ? amb1 : amb2;
+        const other = em === amb1 ? amb2 : amb1;
+        narrative.push(_ambPick([
+          `${em.name} speaks first. "This is hard." ${other.name} nods. "Yeah." A pause. Then: "We have to agree on someone." The fire pops. Neither wants to say a name first.`,
+          `${em.name} takes a breath. "I've been dreading this conversation all day. I don't want to do this to anyone." ${other.name} watches ${em.pr.obj} carefully. "Neither do I. But one of us has to say a name."`,
+          `"Can I be honest with you?" ${em.name} says. "I don't think I can do this. Writing someone's name — ending their game — without them even getting to defend themselves..." ${em.pr.Sub} ${em.pr.sub==='they'?'trail':'trails'} off. ${other.name} waits. The fire crackles.`,
+          `${em.name} sits down and immediately ${em.pr.pos} eyes get wet. "Sorry. I just — the weight of this is real." ${other.name}: "I know." And for a moment, two people from different tribes share something honest.`,
+        ], em.name + 'emotOpen'));
       } else {
-        narrative.push(`${amb1.name} speaks first. "This is hard." ${amb2.name} nods. "Yeah." A pause. Then: "We have to agree on someone." The fire pops. Neither wants to say a name first.`);
+        narrative.push(_ambPick([
+          `${amb1.name} speaks first. "So... where do we start?" ${amb2.name}: "I don't know. I've never done this before." A pause. "Neither have I." The fire between them feels very small.`,
+          `They sit in silence for almost a minute. ${amb1.name} stares at the fire. ${amb2.name} stares at ${amb1.name}. Finally: "Someone has to say a name." "I know." More silence. "You first." "No. You."`,
+          `${amb1.name}: "This is the worst part of this game." ${amb2.name}: "Agreed." They both laugh — nervous, short. Then the laughter stops. "Okay. Let's do this."`,
+        ], amb1.name + amb2.name + 'genericOpen'));
       }
 
-      // Beat 3: THE NEGOTIATION — proposals and counter-proposals
+      // Beat 3: THE NEGOTIATION — proposals and counter-proposals (expanded)
       if (_discussedNames.length >= 2 && _discussedNames[0].proposed !== _discussedNames[1].proposed) {
         const p1 = _discussedNames[0], p2 = _discussedNames[1];
-        narrative.push(`${p1.proposer} puts a name forward: "${p1.proposed}." ${p2.proposer === amb2.name ? amb2.name : amb1.name} shakes ${(p2.proposer === amb2.name ? amb2.pr : amb1.pr).pos} head slowly. "That's one of ${p1.fromTribe ? 'your' : 'my'} people asking me to sacrifice one of mine." A counter: "${p2.proposed}." Now it's ${p1.proposer}'s turn to hesitate.`);
+        narrative.push(_ambPick([
+          `${p1.proposer} puts a name forward: "${p1.proposed}." ${p2.proposer === amb2.name ? amb2.name : amb1.name} shakes ${(p2.proposer === amb2.name ? amb2.pr : amb1.pr).pos} head slowly. "That's one of ${p1.fromTribe ? 'your' : 'my'} people asking me to sacrifice one of mine." A counter: "${p2.proposed}." Now it's ${p1.proposer}'s turn to hesitate.`,
+          `"I think we should talk about ${p1.proposed}," ${p1.proposer} says carefully. The other ambassador's jaw tightens. "Absolutely not. ${p1.proposed} is one of the reasons we're still in this game." A beat. "Then what about ${p2.proposed}?" The negotiation is real now.`,
+          `${p1.proposer}: "${p1.proposed}." ${p2.proposer === amb2.name ? amb2.name : amb1.name}: "No." "${p1.proposed} is a threat to both of us—" "I said no. What about ${p2.proposed}?" The room gets colder. Neither is giving ground easily.`,
+        ], p1.proposer + p2.proposed + 'counter'));
         if (agreed && target !== p1.proposed && target !== p2.proposed) {
-          narrative.push(`Neither name sticks. They go back and forth — ${p1.proposed}, ${p2.proposed}, the arguments for each. Then ${amb1.name} says a third name: "${target}." The room shifts. ${amb2.name} looks at the fire. "${target}..." ${amb2.pr.Sub} ${amb2.pr.sub==='they'?'think':'thinks'} about it. "${target}." A nod. That's the one.`);
+          narrative.push(_ambPick([
+            `Neither name sticks. They go back and forth — ${p1.proposed}, ${p2.proposed}, the arguments for each. Then ${amb1.name} says a third name: "${target}." The room shifts. ${amb2.name} looks at the fire. "${target}..." A long pause. Then a nod. That's the one.`,
+            `The first two names are dead ends. Both ambassadors know it. Then ${amb2.name} says something neither expected: "What about ${target}?" ${amb1.name} stops. Thinks. "${target}." The logic clicks for both of them simultaneously. "Yeah. ${target}."`,
+            `After twenty minutes of going nowhere, ${amb1.name} leans back. "We're stuck." ${amb2.name}: "We're stuck." Silence. Then ${amb1.name}: "What about someone neither of us is close to?" They both think the same name at the same time. "${target}." It's almost eerie how fast the agreement comes after that.`,
+          ], amb1.name + amb2.name + target + 'thirdName'));
         } else if (agreed) {
-          narrative.push(`The debate circles back to ${target}. ${amb1.name}: "If we're being honest, ${target} is the one neither of us can afford to let into the merge." ${amb2.name} doesn't argue. The logic is clean — even if the cost isn't. "${target}." Agreement. It's done.`);
+          narrative.push(_ambPick([
+            `The debate circles back to ${target}. ${amb1.name}: "If we're being honest, ${target} is the one neither of us can afford to let into the merge." ${amb2.name} doesn't argue. The logic is clean — even if the cost isn't. "${target}." Agreement.`,
+            `They keep coming back to the same name. ${target}. "Every time we try another name, we end up here," ${amb2.name} says. ${amb1.name}: "Because this is the right call. We both see it." A heavy exhale. "Fine. ${target}."`,
+            `"${target}," ${amb1.name} says for the third time. ${amb2.name} rubs ${amb2.pr.pos} face. "I know. I just needed to hear myself not say no." ${amb1.name} waits. ${amb2.name}: "Okay. ${target}. Let's go tell them."`,
+          ], amb1.name + amb2.name + target + 'circleBack'));
         }
       } else if (_discussedNames.length && agreed) {
-        narrative.push(`The name comes faster than expected. ${target}. Both of them see it. ${_ambPick([
-          `"${target} is too dangerous," ${amb1.name} says. ${amb2.name} doesn't disagree.`,
-          `"What about ${target}?" The other ambassador thinks. Then nods. "Yeah. ${target}."`,
-        ], target + 'quickagree')}`);
+        narrative.push(_ambPick([
+          `The name comes faster than expected. ${target}. Both of them see it. "${target} is too dangerous," ${amb1.name} says. ${amb2.name} doesn't disagree. "Yeah. ${target}."`,
+          `"What about ${target}?" The other ambassador doesn't even hesitate. "I was going to say the same name." For a second, they both feel relieved. Then the weight of it lands.`,
+          `They both reach the same conclusion independently. ${target}. The biggest threat, the most logical pick, the name that makes sense for both sides. "So we agree?" "We agree." Neither feels good about it.`,
+          `It's quick. Almost too quick. "${target}," ${amb1.name} says. ${amb2.name}: "${target}." That's it. No argument, no debate. Just two people who saw the same thing and acted on it. The simplicity is the most unsettling part.`,
+        ], target + 'quickagree'));
       }
 
-      // Beat 4: RESISTANCE (if it fired)
+      // Beat 4: RESISTANCE (if it fired) — expanded
       if (resistFired && _defender) {
-        // This was already pushed to narrative earlier — add the aftermath
-        narrative.push(`The room changed after ${_defender.name} pushed back. What ${_dominator?.name || 'the other ambassador'} thought would be easy became a real conversation. ${_defender.name}: "I didn't come here to be told what to do. I came here to negotiate." ${_dominator?.name || 'The other ambassador'} recalibrates. This isn't going to be one-sided.`);
+        narrative.push(_ambPick([
+          `The room changed after ${_defender.name} pushed back. What ${_dominator?.name || 'the other ambassador'} thought would be easy became a real conversation. ${_defender.name}: "I didn't come here to be told what to do. I came here to negotiate." ${_dominator?.name || 'The other ambassador'} recalibrates. This isn't going to be one-sided.`,
+          `${_defender.name} stops ${_dominator?.name || 'the other ambassador'} mid-sentence. "Hold on. I heard you. Now hear me." The shift is visible — what was a lecture just became a conversation. ${_dominator?.name || 'The other ambassador'} wasn't expecting resistance. Now ${_dominator?.pr?.sub || 'they'} ${_dominator?.pr?.sub==='they'?'have':'has'} to actually think.`,
+          `"No." ${_defender.name} says it plainly. "I'm not doing that. You came in here thinking this would be easy — it's not. I have people counting on me too. So let's start over and have a real conversation." The power dynamic just flipped.`,
+        ], _defender.name + 'resist'));
       }
 
-      // Beat 5: THE DECISION — agreement or deadlock
+      // Beat 5: THE DECISION — agreement or deadlock (expanded)
       if (agreed) {
         narrative.push(_ambPick([
           `It's settled. ${target}. ${amb1.name} and ${amb2.name} stand up. Neither offers a handshake — this isn't a friendship. It's a transaction. And someone pays the price without ever knowing why.`,
           `The deal is done. ${target} goes home. ${amb1.name} looks at ${amb2.name} one last time. "For what it's worth — I didn't enjoy this." ${amb2.name}: "Nobody asked you to."`,
           `"${target}." The name hangs in the air. ${amb1.name} and ${amb2.name} hold eye contact for a long moment. Then ${amb1.name} nods. ${amb2.name} nods. Someone's game just ended in a clearing they've never seen.`,
+          `${amb1.name} extends a hand. ${amb2.name} looks at it. Takes it. The handshake is brief and means nothing — but the agreement behind it means everything. ${target} is out. They head back to their tribes to deliver the news.`,
+          `"We're done here." ${amb1.name} stands. ${amb2.name} stays seated a moment longer, staring at the fire where the name ${target} was spoken into existence. Then ${amb2.pr.sub} ${amb2.pr.sub==='they'?'get':'gets'} up too. Two ambassadors. One decision. No going back.`,
         ], amb1.name + amb2.name + target + 'final'));
       } else {
         const _rlPr = pronouns(rockDrawLoser);
@@ -9808,8 +9858,13 @@ function applyTwist(ep, twist, isPrimary = true) {
         narrative.push(_ambPick([
           `Silence. ${amb1.name} won't budge. ${amb2.name} won't budge. The host steps forward. "Since you can't agree — the rocks will decide." Two rocks in a bag. One black, one white. The ambassador who draws black goes home.`,
           `"I will go to rocks before I give up one of mine," ${amb1.type === 'loyal-shield' ? amb1.name : amb2.name} says. The other ambassador stares. "Then we go to rocks." The bag comes out. This just got real.`,
+          `The negotiation is over. Neither ambassador moved. Neither compromised. The host produces a bag with two rocks — one black, one white. "You know the rules. Whoever draws the black rock is eliminated. Right here. Right now." The clearing goes very quiet.`,
+          `"This is your last chance," the host says. "Agree on a name — or draw." Neither ambassador speaks. The host opens the bag. "Very well." Two rocks. Two fates. One of these ambassadors came to protect their tribe and is about to become the sacrifice instead.`,
         ], amb1.name + amb2.name + 'deadlock'));
-        narrative.push(`${amb1.name} draws first. ${amb1.name === rockDrawLoser ? `${_rlPr.Sub} ${_rlPr.sub==='they'?'open':'opens'} ${_rlPr.pos} hand. Black. The wrong color.` : `White. Safe. ${_rlPr.Sub} exhales.`} ${amb2.name} doesn't need to look. ${amb2.name === rockDrawLoser ? `The rock in ${_rlPr.pos} hand confirms it. ${_rlPr.Sub} ${_rlPr.sub==='they'?'close':'closes'} ${_rlPr.pos} eyes.` : `${pronouns(amb2.name).Sub} ${pronouns(amb2.name).sub==='they'?'are':'is'} still in the game.`} ${rockDrawLoser}'s torch is snuffed in the clearing. ${_rsSurvivor} walks back alone.`);
+        narrative.push(_ambPick([
+          `${amb1.name} draws first. ${amb1.name === rockDrawLoser ? `${_rlPr.Sub} ${_rlPr.sub==='they'?'open':'opens'} ${_rlPr.pos} hand. Black. The wrong color.` : `White. Safe. ${_rlPr.Sub} exhales.`} ${amb2.name} doesn't need to look. ${amb2.name === rockDrawLoser ? `The rock in ${_rlPr.pos} hand confirms it. ${_rlPr.Sub} ${_rlPr.sub==='they'?'close':'closes'} ${_rlPr.pos} eyes.` : `${pronouns(amb2.name).Sub} ${pronouns(amb2.name).sub==='they'?'are':'is'} still in the game.`} ${rockDrawLoser}'s torch is snuffed in the clearing. ${_rsSurvivor} walks back alone.`,
+          `The host holds the bag between them. ${rockDrawLoser} reaches in. Pulls out a rock. Looks down. Black. The wrong color. For a moment nobody moves. Then ${_rsSurvivor} exhales — relief mixed with something that looks a lot like guilt. ${rockDrawLoser} sets the rock on the ground, stands up, and walks toward the torch. No words. No drama. Just the sound of a torch being snuffed and footsteps fading into the jungle.`,
+        ], amb1.name + amb2.name + rockDrawLoser + 'rockdraw'));
       }
 
       // Store discussed names for VP display

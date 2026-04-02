@@ -18640,6 +18640,7 @@ function simulateEpisode() {
 
       ep.eliminated = r2.eliminated;
       // BLACK VOTE for vote 2 eliminated player
+      console.log('[BV-V2] r2.eliminated:', r2.eliminated, 'cfg.blackVote:', cfg.blackVote, 'activePlayers.length:', gs.activePlayers.length);
       if (r2.eliminated && cfg.blackVote && cfg.blackVote !== 'off' && gs.activePlayers.length > 4) {
         const _bv2Pool = ep.tribalPlayers?.filter(p => p !== r2.eliminated && p !== r1.eliminated && gs.activePlayers.includes(p)) || [];
         if (_bv2Pool.length) {

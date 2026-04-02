@@ -9627,9 +9627,13 @@ function applyTwist(ep, twist, isPrimary = true) {
     if (_ambTribes.length < 2 || gs.isMerged) { twistObj.blocked = true; twistObj.blockedReason = 'need 2+ tribes'; return; }
 
     // ── 1. AMBASSADOR SELECTION ──
+    // Exclude returnees from this episode — they just came back, tribe wouldn't send them
+    const _thisEpReturneesSet = new Set((ep.twists || []).filter(t => t.returnee).map(t => t.returnee));
     const _ambSelections = _ambTribes.map(tribe => {
-      const members = tribe.members.filter(m => gs.activePlayers.includes(m));
-      const scored = members.map(name => {
+      const members = tribe.members.filter(m => gs.activePlayers.includes(m) && !_thisEpReturneesSet.has(m));
+      // If all members are returnees (shouldn't happen), fall back to full list
+      const _fallbackMembers = members.length ? members : tribe.members.filter(m => gs.activePlayers.includes(m));
+      const scored = _fallbackMembers.map(name => {
         const s = pStats(name);
         const avgBond = members.filter(m => m !== name).reduce((sum, m) => sum + getBond(name, m), 0) / Math.max(1, members.length - 1);
         return { name, score: s.social * 0.3 + s.strategic * 0.3 + avgBond * 0.4 + Math.random() * 1.0 };

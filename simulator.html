@@ -23197,7 +23197,7 @@ function generateFTCData(finalists, juryResult) {
     // ── Betrayal (voted them out, neutral) ──
     betrayalNeutral: [
       { q:`You had a hand in getting me eliminated, ${target}. Was it personal, or purely the game?`,
-        r: hi('strategic') ? `"Purely game, ${juror}. You were dangerous — ${threatScore(juror) >= 6 ? 'a ' + Math.round(threatScore(juror)) + ' out of 10 threat' : 'too well-positioned to leave in'}. The decision wasn't easy but it was right."` : `"It wasn't personal. The alliance needed a name and yours came up. I followed the numbers."` },
+        r: hi('strategic') ? `"Purely game, ${juror}. You were too dangerous to keep around — everyone knew it. The decision wasn't easy but it was right."` : `"It wasn't personal, ${juror}. The alliance needed a name and yours came up. I followed the numbers."` },
       { q:`My torch got snuffed and you were part of it, ${target}. Tell me why.`,
         r: hi('social') ? `"${ally} and I made that call together. I could've fought it, but breaking ranks would've ended my game."` : `"I went along with the group. I'm not going to pretend I drove that vote, ${juror}."` },
       { q:`I thought we had something out there, ${target}. Then you voted me out. What happened?`,
@@ -23250,6 +23250,37 @@ function generateFTCData(finalists, juryResult) {
         r: hi('social') ? `"The night ${ally} broke down at camp and I was the only one who stayed. That wasn't gameplay. That was just human."` : `"${kill ? 'The vote that took out ' + kill + '.' : 'The first time I survived a vote I shouldn\'t have.'} It changed how I saw the whole game."` },
       { q:`Forget strategy, ${target}. Tell me who you actually are outside this game.`,
         r: `"I'm someone who cares more than I let on out here. This game forces you to hide that. But I'm ready to stop hiding."` },
+      { q:`Why should I vote for you over ${finalists.find(x => x !== target) || 'them'}, ${target}?`,
+        r: hi('strategic') ? `"Because ${finalists.find(x => x !== target) || 'they'} rode coattails while I drove the bus. ${bigM >= 2 ? bigM + ' big moves to their... what, exactly?' : 'My game had direction. Theirs had survival.'}"` : hi('social') ? `"Because I treated people like people, not like chess pieces. ${finalists.find(x => x !== target) || 'They'} can't say that."` : `"Because I earned this seat the hard way. ${wins >= 2 ? wins + ' immunity wins.' : 'Every day was a fight.'} I never had it easy."` },
+      { q:`${target}, what was the hardest day out here for you?`,
+        r: hi('social') ? `"The day ${kill || jury[0]} went home. I knew it was coming and I couldn't stop it. That stuck with me."` : `"Day ${Math.max(1, (gs.episodeHistory.length - 3) * 3)}. I was exhausted, paranoid, and completely alone. But I didn't quit."` },
+    ],
+    // ── Challenge / Physical ──
+    challenge: [
+      { q:`${target}, you ${wins >= 3 ? 'dominated challenges' : wins >= 1 ? 'won some challenges' : 'barely won challenges'}. Is that enough to earn a vote?`,
+        r: wins >= 3 ? `"${wins} immunity wins. ${wins >= 4 ? 'Nobody in this game came close.' : 'When my life was on the line, I saved it myself.'} That's not just physical — that's mental toughness."` : wins >= 1 ? `"I won when it counted most. One immunity win at the right time is worth more than three at the wrong time."` : `"I didn't need immunity because I built relationships that kept me safe. That takes a different kind of strength."` },
+      { q:`Did you ever throw a challenge, ${target}? Be honest.`,
+        r: hi('strategic') ? `"I played every challenge to win. But I also knew when winning would put a target on my back."` : `"Never. I gave everything every single time. Ask anyone who competed next to me."` },
+    ],
+    // ── Respect / Acknowledgment ──
+    respect: [
+      { q:`Who sitting next to you deserves to be here, ${target}? And who doesn't?`,
+        r: hi('strategic') ? `"Everyone here earned their spot. But only one of us controlled how we got here. I'll let you figure out who."` : hi('social') ? `"I respect everyone sitting next to me. We all survived the same game. But our games were very different."` : `"We're all here. That means something. But my path was harder than ${finalists.find(x => x !== target) || 'theirs'}. And I think the jury knows it."` },
+      { q:`${target}, is there anyone on this jury you owe an apology to?`,
+        r: bCount >= 2 ? `"${kill || jury[0]}. I owe ${pronouns(kill || jury[0]).obj} that. What I did was game, but it was also personal, and I should have handled it better."` : bCount === 1 ? `"One person. ${pronouns(kill || jury[0]).Sub} ${pronouns(kill || jury[0]).sub==='they'?'know':'knows'} who ${pronouns(kill || jury[0]).sub} ${pronouns(kill || jury[0]).sub==='they'?'are':'is'}. I'm sorry for how it went down — not for the move, but for the way I did it."` : `"No. I played with integrity. I didn't always succeed, but I never did anything I need to apologize for."` },
+      { q:`What would you say to the person you hurt most in this game, ${target}?`,
+        r: hi('social') ? `"I'd say I'm sorry it happened in this context. Outside the game, it wouldn't have gone that way. But in here, I had to make choices I'm not proud of."` : `"I'd tell ${pronouns(kill || jury[0]).obj} I respected ${pronouns(kill || jury[0]).pos} game. The move wasn't about disrespect — it was about winning."` },
+    ],
+    // ── Fire / Aggressive ──
+    fire: [
+      { q:`Be honest, ${target}. Did you ride coattails to get here?`,
+        r: hi('strategic') ? `"Name one vote I didn't have a hand in. I'll wait."` : wins >= 2 ? `"${wins} immunity wins and you think I rode coattails? I saved myself more than anyone out here."` : hi('social') ? `"I built every relationship that got me here. That's not riding coattails — that's a different kind of game."` : `"Maybe. But I'm sitting here and a lot of people who played 'their own game' aren't. Results matter."` },
+      { q:`${target}, why do you think half this jury is rolling their eyes right now?`,
+        r: hi('social') ? `"Because this game makes people bitter. I get it. But bitterness doesn't change who played the best game."` : hi('strategic') ? `"Because I beat them and they know it. I'd be rolling my eyes too."` : `"Because nobody wants to admit that the person who beat them deserved it. That's human nature."` },
+      { q:`Stop performing, ${target}. Who are you really?`,
+        r: hi('social') ? `"This IS who I am, ${juror}. The person you saw at camp, the one who listened, who cared — that's not an act. I brought myself to this game."` : `"I'm someone who wanted to win badly enough to do things I wouldn't do in real life. I'm not proud of all of it. But I'd do it again."` },
+      { q:`${target}, you're sitting there acting humble. We both know that's not real. Drop the act.`,
+        r: hi('boldness') ? `"Fine. I played the best game out here. I know it. You know it. Everyone on that bench knows it. I'm not apologizing for winning."` : `"It's not an act, ${juror}. I'm genuinely grateful to be here. If that looks like performance to you, that says more about the game than about me."` },
     ],
     };
   };
@@ -23274,19 +23305,26 @@ function generateFTCData(finalists, juryResult) {
     const seed = _h(juror, target) + ri * 7;
     const qa = _qa(target, fS, _wins(target), juror);
 
+    // Pick the most relevant Q&A category based on juror personality + relationship
+    // Multiple categories can apply — use proportional weighting to vary the selection
     let picked;
     if (votedThemOut && bond < 0) {
       picked = _pickUnusedQA(qa.betrayalHostile, seed);
     } else if (votedThemOut) {
       picked = _pickUnusedQA(qa.betrayalNeutral, seed);
-    } else if (jS.strategic >= 8) {
-      picked = _pickUnusedQA(qa.strategic, seed);
-    } else if (jS.social >= 7 && bond < 0) {
-      picked = _pickUnusedQA(qa.social, seed);
-    } else if (jS.loyalty >= 7) {
-      picked = _pickUnusedQA(qa.loyalty, seed);
     } else {
-      picked = _pickUnusedQA(qa.general, seed);
+      // Build a weighted pool of eligible categories
+      const _catPool = [];
+      if (jS.strategic >= 6) _catPool.push(...Array(Math.round(jS.strategic * 0.3)).fill('strategic'));
+      if (jS.social >= 5) _catPool.push(...Array(Math.round(jS.social * 0.2)).fill('social'));
+      if (jS.loyalty >= 6) _catPool.push(...Array(Math.round(jS.loyalty * 0.2)).fill('loyalty'));
+      if (jS.physical >= 7 || _wins(target) >= 2) _catPool.push('challenge', 'challenge');
+      if (jS.boldness >= 7 || jS.temperament <= 4) _catPool.push('fire', 'fire', 'fire');
+      if (bond >= 2) _catPool.push('respect', 'respect');
+      if (bond <= -1) _catPool.push('fire', 'fire');
+      _catPool.push('general', 'general', 'respect'); // always some general/respect chance
+      const _catChoice = _pick(_catPool, seed);
+      picked = _pickUnusedQA(qa[_catChoice] || qa.general, seed);
     }
 
     jurorQA.push({ juror, targetForQuestion: target, question: picked.q, response: picked.r });

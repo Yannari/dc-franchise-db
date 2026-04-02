@@ -9737,25 +9737,83 @@ function applyTwist(ep, twist, isPrimary = true) {
         target = null;
       }
 
-      // ── NARRATIVE ──
+      // ── NARRATIVE — multi-beat negotiation dialogue ──
+      // Build a list of "discussed names" — the proposals and counter-proposals
+      const _discussedNames = [];
+      // Each ambassador's initial proposal (what they'd want)
+      const _amb1Target = _allNonAmb.filter(p => !_ambSelections.find(s => s.tribe === amb1.tribe)?.members.includes(p))
+        .sort((a, b) => threatScore(b) - threatScore(a))[0]; // amb1 proposes someone from amb2's tribe
+      const _amb2Target = _allNonAmb.filter(p => !_ambSelections.find(s => s.tribe === amb2.tribe)?.members.includes(p))
+        .sort((a, b) => threatScore(b) - threatScore(a))[0]; // amb2 proposes someone from amb1's tribe
+      if (_amb1Target) _discussedNames.push({ proposer: amb1.name, proposed: _amb1Target, fromTribe: _ambSelections.find(s => s.members.includes(_amb1Target))?.tribe });
+      if (_amb2Target) _discussedNames.push({ proposer: amb2.name, proposed: _amb2Target, fromTribe: _ambSelections.find(s => s.members.includes(_amb2Target))?.tribe });
+      if (target && !_discussedNames.some(d => d.proposed === target)) _discussedNames.push({ proposer: 'both', proposed: target });
+
+      // Beat 1: THE ARRIVAL
       narrative.unshift(_ambPick([
-        `${amb1.name} and ${amb2.name} meet at the neutral ground. The torches are lit. This conversation decides someone's fate.`,
-        `Two ambassadors. One decision. ${amb1.name} sits down first. ${amb2.name} follows. Neither speaks for a moment.`,
+        `${amb1.name} and ${amb2.name} meet at the neutral ground. Two torches. Two chairs. One conversation that ends someone's game. The host steps back. This is between them now.`,
+        `The clearing is quiet. ${amb1.name} arrives first, sits down, ${amb1.pr.sub==='they'?'stare':'stares'} at the fire. ${amb2.name} appears a minute later. They size each other up. Neither speaks. The weight of what's about to happen fills the space between them.`,
+        `Two ambassadors. Two tribes. One of them walks out of here having ended someone's game. ${amb1.name} and ${amb2.name} sit across from each other. The fire crackles. The jungle waits.`,
       ], amb1.name + amb2.name + 'arrival'));
+
+      // Beat 2: THE OPENING — archetype-driven first move
+      const _dominator = dominatorIdx >= 0 ? _ambassadors[dominatorIdx] : null;
+      const _defender = defenderIdx >= 0 ? _ambassadors[defenderIdx] : null;
+      if (_dominator?.type === 'manipulator' && !resistFired) {
+        narrative.push(`${_dominator.name} starts soft. "I've been thinking about this all day. There's a name I keep coming back to." ${_dominator.pr.Sub} ${_dominator.pr.sub==='they'?'lean':'leans'} forward. "What if we talked about ${_discussedNames[0]?.proposed || 'someone'}?" The framing is careful — making it sound like a shared idea, not a demand.`);
+      } else if (_dominator?.type === 'villain') {
+        narrative.push(`${_dominator.name} doesn't waste time. "${_discussedNames[0]?.proposed || 'Someone'} goes. That's what I came here to say." ${_defender?.name || amb2.name} blinks. The conversation just started and it already has a direction.`);
+      } else if (amb1.type === 'dealmaker' || amb2.type === 'dealmaker') {
+        const dm = amb1.type === 'dealmaker' ? amb1 : amb2;
+        const other = dm === amb1 ? amb2 : amb1;
+        narrative.push(`${dm.name} gets right to it. "Let's not play games. We both know why we're here. I'll tell you who I think is the biggest threat if you tell me yours." ${other.name} considers this. A straight deal — no tricks. ${other.type === 'loyal-shield' ? `But ${other.name} already knows ${other.pr.sub} ${other.pr.sub==='they'?'won\'t':'won\'t'} give up one of ${other.pr.pos} own.` : 'Maybe.'}`);
+      } else if (amb1.type === 'loyal-shield' && amb2.type === 'loyal-shield') {
+        narrative.push(`Neither speaks for a long time. Both know what's at stake — and both know they came here to protect their people, not sacrifice them. ${amb1.name} finally breaks the silence: "I'm not writing anyone from my tribe's name." ${amb2.name}: "Neither am I." The standoff begins.`);
+      } else {
+        narrative.push(`${amb1.name} speaks first. "This is hard." ${amb2.name} nods. "Yeah." A pause. Then: "We have to agree on someone." The fire pops. Neither wants to say a name first.`);
+      }
+
+      // Beat 3: THE NEGOTIATION — proposals and counter-proposals
+      if (_discussedNames.length >= 2 && _discussedNames[0].proposed !== _discussedNames[1].proposed) {
+        const p1 = _discussedNames[0], p2 = _discussedNames[1];
+        narrative.push(`${p1.proposer} puts a name forward: "${p1.proposed}." ${p2.proposer === amb2.name ? amb2.name : amb1.name} shakes ${(p2.proposer === amb2.name ? amb2.pr : amb1.pr).pos} head slowly. "That's one of ${p1.fromTribe ? 'your' : 'my'} people asking me to sacrifice one of mine." A counter: "${p2.proposed}." Now it's ${p1.proposer}'s turn to hesitate.`);
+        if (agreed && target !== p1.proposed && target !== p2.proposed) {
+          narrative.push(`Neither name sticks. They go back and forth — ${p1.proposed}, ${p2.proposed}, the arguments for each. Then ${amb1.name} says a third name: "${target}." The room shifts. ${amb2.name} looks at the fire. "${target}..." ${amb2.pr.Sub} ${amb2.pr.sub==='they'?'think':'thinks'} about it. "${target}." A nod. That's the one.`);
+        } else if (agreed) {
+          narrative.push(`The debate circles back to ${target}. ${amb1.name}: "If we're being honest, ${target} is the one neither of us can afford to let into the merge." ${amb2.name} doesn't argue. The logic is clean — even if the cost isn't. "${target}." Agreement. It's done.`);
+        }
+      } else if (_discussedNames.length && agreed) {
+        narrative.push(`The name comes faster than expected. ${target}. Both of them see it. ${_ambPick([
+          `"${target} is too dangerous," ${amb1.name} says. ${amb2.name} doesn't disagree.`,
+          `"What about ${target}?" The other ambassador thinks. Then nods. "Yeah. ${target}."`,
+        ], target + 'quickagree')}`);
+      }
+
+      // Beat 4: RESISTANCE (if it fired)
+      if (resistFired && _defender) {
+        // This was already pushed to narrative earlier — add the aftermath
+        narrative.push(`The room changed after ${_defender.name} pushed back. What ${_dominator?.name || 'the other ambassador'} thought would be easy became a real conversation. ${_defender.name}: "I didn't come here to be told what to do. I came here to negotiate." ${_dominator?.name || 'The other ambassador'} recalibrates. This isn't going to be one-sided.`);
+      }
+
+      // Beat 5: THE DECISION — agreement or deadlock
       if (agreed) {
         narrative.push(_ambPick([
-          `The conversation lasted longer than expected. But a name emerged. ${target}. Both ambassadors know what this means.`,
-          `After the arguments, the silence, the weighing of names — they agreed. ${target} never gets to merge.`,
-        ], amb1.name + amb2.name + 'agreed'));
+          `It's settled. ${target}. ${amb1.name} and ${amb2.name} stand up. Neither offers a handshake — this isn't a friendship. It's a transaction. And someone pays the price without ever knowing why.`,
+          `The deal is done. ${target} goes home. ${amb1.name} looks at ${amb2.name} one last time. "For what it's worth — I didn't enjoy this." ${amb2.name}: "Nobody asked you to."`,
+          `"${target}." The name hangs in the air. ${amb1.name} and ${amb2.name} hold eye contact for a long moment. Then ${amb1.name} nods. ${amb2.name} nods. Someone's game just ended in a clearing they've never seen.`,
+        ], amb1.name + amb2.name + target + 'final'));
       } else {
         const _rlPr = pronouns(rockDrawLoser);
         const _rsSurvivor = rockDrawLoser === amb1.name ? amb2.name : amb1.name;
         narrative.push(_ambPick([
-          `The conversation broke down. Neither would budge. The host reaches for the bag of rocks.`,
-          `No agreement. The gap was too wide. Two rocks. One is the wrong color.`,
-        ], amb1.name + amb2.name + 'disagreed'));
-        narrative.push(`${rockDrawLoser} reaches into the bag. Pulls out a rock. ${_rlPr.Sub} ${_rlPr.sub==='they'?'look':'looks'} down. The wrong color. ${_rsSurvivor} exhales. ${rockDrawLoser}'s game is over.`);
+          `Silence. ${amb1.name} won't budge. ${amb2.name} won't budge. The host steps forward. "Since you can't agree — the rocks will decide." Two rocks in a bag. One black, one white. The ambassador who draws black goes home.`,
+          `"I will go to rocks before I give up one of mine," ${amb1.type === 'loyal-shield' ? amb1.name : amb2.name} says. The other ambassador stares. "Then we go to rocks." The bag comes out. This just got real.`,
+        ], amb1.name + amb2.name + 'deadlock'));
+        narrative.push(`${amb1.name} draws first. ${amb1.name === rockDrawLoser ? `${_rlPr.Sub} ${_rlPr.sub==='they'?'open':'opens'} ${_rlPr.pos} hand. Black. The wrong color.` : `White. Safe. ${_rlPr.Sub} exhales.`} ${amb2.name} doesn't need to look. ${amb2.name === rockDrawLoser ? `The rock in ${_rlPr.pos} hand confirms it. ${_rlPr.Sub} ${_rlPr.sub==='they'?'close':'closes'} ${_rlPr.pos} eyes.` : `${pronouns(amb2.name).Sub} ${pronouns(amb2.name).sub==='they'?'are':'is'} still in the game.`} ${rockDrawLoser}'s torch is snuffed in the clearing. ${_rsSurvivor} walks back alone.`);
       }
+
+      // Store discussed names for VP display
+      twistObj.discussedNames = _discussedNames;
 
       // ── ELIMINATION ──
       const eliminated = agreed ? target : rockDrawLoser;
@@ -9790,36 +9848,76 @@ function applyTwist(ep, twist, isPrimary = true) {
       gs.eliminated.push(eliminated);
       gs.tribes.forEach(t => { t.members = t.members.filter(m => m !== eliminated); });
 
-      // ── RETURN EVENTS ──
+      // ── RETURN EVENTS — multi-beat per tribe ──
       const _returnEvents = [];
       _ambSelections.forEach(sel => {
         const amb = _ambassadors.find(a => a.tribe === sel.tribe);
         if (!amb) return;
+        const tribemates = sel.members.filter(m => m !== amb.name && m !== eliminated && gs.activePlayers.includes(m));
+        const closestToElim = eliminated ? tribemates.sort((a, b) => getBond(b, eliminated) - getBond(a, eliminated))[0] : null;
+
         if (eliminatedByRocks && eliminated === amb.name) {
-          _returnEvents.push({ tribe: sel.tribe, type: 'ambassador-eliminated',
-            text: _ambPick([
-              `${amb.name} doesn't come back. The news reaches ${sel.tribe} like a weight dropping. ${amb.pr.Sub} drew the wrong rock. The tribe stares at ${amb.pr.pos} empty spot.`,
-              `When ${sel.tribe} learns what happened, nobody speaks. ${amb.name} went to protect them — and became the casualty.`,
-            ], amb.name + 'rockLoss'),
-          });
+          // Ambassador lost to rocks — tribe mourns
+          const beats = [];
+          beats.push(`${amb.name} doesn't come back. The surviving ambassador delivers the news. ${sel.tribe} goes silent.`);
+          beats.push(`"${amb.pr.Sub} volunteered to protect us," someone says. "And now ${amb.pr.sub}'s gone." The tribe gathers around ${amb.pr.pos} empty spot in the shelter. Nobody moves for a long time.`);
+          if (closestToElim || tribemates[0]) {
+            const reactor = closestToElim || tribemates[0];
+            const rPr = pronouns(reactor);
+            beats.push(_ambPick([
+              `${reactor} walks to the water alone. ${rPr.Sub} ${rPr.sub==='they'?'don\'t':'doesn\'t'} cry in front of the tribe — but ${rPr.sub} ${rPr.sub==='they'?'cry':'cries'} at the water.`,
+              `${reactor} says what everyone's thinking: "That should have been a deal, not a coin flip. ${amb.name} deserved better than a rock."`,
+            ], reactor + amb.name + 'mourn'));
+          }
+          _returnEvents.push({ tribe: sel.tribe, type: 'ambassador-eliminated', text: beats.join(' '), beats });
         } else if (agreed && sel.members.includes(eliminated)) {
+          // Tribemate eliminated — ambassador sold them out
           const _tPr = pronouns(eliminated);
           const _tS = pStats(eliminated);
-          let _reactionText;
-          if (_tS.temperament <= 4 || _tS.boldness >= 7) _reactionText = `${eliminated} stares at ${amb.name}. "You had ONE job. Protect us. And you gave ME up?" The camp goes dead silent.`;
-          else if (_tS.loyalty >= 7) _reactionText = `${eliminated} doesn't yell. ${_tPr.Sub} just ${_tPr.sub==='they'?'look':'looks'} at ${amb.name}: "I trusted you." It's the last thing ${_tPr.sub} ${_tPr.sub==='they'?'say':'says'} before walking away.`;
-          else if (_tS.strategic >= 7) _reactionText = `${eliminated} nods slowly. "Smart move." ${_tPr.Sub} ${_tPr.sub==='they'?'pause':'pauses'}. "No. I would have fought harder for my people." ${amb.name} has no response.`;
-          else _reactionText = `${eliminated}'s face crumbles. ${_tPr.Sub} did everything right at camp. And someone ${_tPr.sub} never got to face decided ${_tPr.pos} fate.`;
+          const beats = [];
+          // Ambassador returns with the news
+          beats.push(`${amb.name} walks back into ${sel.tribe} camp. The tribe looks up. ${amb.pr.Sub} can't make eye contact. "I need to tell you something."`);
+          // The reveal
+          beats.push(`"They're sending ${eliminated} home." The words land like a punch. ${eliminated} was right there — listening. ${_tPr.Sub} heard ${_tPr.pos} own name come out of ${_tPr.pos} ambassador's mouth.`);
+          // Target's reaction — personality-driven
+          if (_tS.temperament <= 4 || _tS.boldness >= 7) {
+            beats.push(`${eliminated} stands up. "${amb.name}. Look at me." ${amb.name} looks. "You had ONE job. Protect this tribe. And you gave ME up?" ${_tPr.Sub} ${_tPr.sub==='they'?'don\'t':'doesn\'t'} wait for an answer. "I fought for you every single day out here. Every challenge. Every camp chore. And THIS is what I get?" The camp goes dead silent. Nobody moves.`);
+          } else if (_tS.loyalty >= 7) {
+            beats.push(`${eliminated} doesn't yell. That's what makes it worse. ${_tPr.Sub} just ${_tPr.sub==='they'?'look':'looks'} at ${amb.name} and ${_tPr.sub==='they'?'say':'says'}, quietly: "I trusted you. I told everyone you were the right person to send. I vouched for you." ${amb.name} opens ${amb.pr.pos} mouth. Nothing comes out.`);
+          } else if (_tS.strategic >= 7) {
+            beats.push(`${eliminated} nods. Slowly. "Smart move. Strategically, I get it. I would have been the biggest threat in the merge." ${_tPr.Sub} ${_tPr.sub==='they'?'pause':'pauses'}. "But I wouldn't have done it to you. I would have fought harder for my people." ${amb.name} has no response.`);
+          } else {
+            beats.push(`${eliminated}'s face crumbles. ${_tPr.Sub} ${_tPr.sub==='they'?'don\'t':'doesn\'t'} understand. ${_tPr.Sub} did everything right — provided at camp, stayed loyal, built bonds. And someone ${_tPr.sub} never got to face decided ${_tPr.pos} fate. "I never even got to argue my case," ${_tPr.sub} ${_tPr.sub==='they'?'whisper':'whispers'}.`);
+          }
+          // Tribe's reaction
+          if (closestToElim) {
+            const cPr = pronouns(closestToElim);
+            const cBond = getBond(closestToElim, eliminated);
+            if (cBond >= 3) {
+              beats.push(`${closestToElim} turns to ${amb.name}. "Why ${eliminated}? Why not someone from THEIR tribe?" ${cPr.Sub} ${cPr.sub==='they'?'don\'t':'doesn\'t'} wait for an answer. ${cPr.Sub} ${cPr.sub==='they'?'go':'goes'} to ${eliminated} instead. "I'm sorry. I'm so sorry."`);
+            } else {
+              beats.push(`${closestToElim} watches from across camp. ${cPr.Sub} ${cPr.sub==='they'?'don\'t':'doesn\'t'} say anything to ${amb.name}. But the look says enough.`);
+            }
+          }
           const _bDmg = _tS.temperament <= 4 ? -3.0 : _tS.loyalty >= 7 ? -2.5 : _tS.strategic >= 7 ? -1.5 : -2.0;
           addBond(eliminated, amb.name, _bDmg);
-          _returnEvents.push({ tribe: sel.tribe, type: 'tribemate-eliminated', eliminated, ambassador: amb.name, text: _reactionText, betrayalDamage: _bDmg });
+          _returnEvents.push({ tribe: sel.tribe, type: 'tribemate-eliminated', eliminated, ambassador: amb.name, text: beats.join(' '), beats, betrayalDamage: _bDmg });
         } else {
-          _returnEvents.push({ tribe: sel.tribe, type: 'safe',
-            text: _ambPick([
-              `${amb.name} walks back into camp. The tribe reads ${amb.pr.pos} face. "We're safe," ${amb.pr.sub} ${amb.pr.sub==='they'?'say':'says'}. The relief is instant.`,
-              `${amb.name} returns. One look and the tribe knows — they made it through.`,
-            ], amb.name + 'safe'),
-          });
+          // Tribe is safe — ambassador protected them
+          const beats = [];
+          beats.push(`${amb.name} walks back into camp. The tribe reads ${amb.pr.pos} face — and the relief is instant. "We're safe," ${amb.pr.sub} ${amb.pr.sub==='they'?'say':'says'}. The tribe exhales.`);
+          if (amb.type === 'manipulator' || amb.type === 'dealmaker') {
+            beats.push(`"I got what we needed," ${amb.name} says. ${amb.pr.Sub} doesn't explain the details. ${amb.pr.Sub} doesn't need to. The result speaks.`);
+          } else if (amb.type === 'loyal-shield') {
+            beats.push(`"I wasn't going to let anyone from this tribe go home," ${amb.name} says. The tribe believes ${amb.pr.obj}. They should — ${amb.pr.sub} meant it.`);
+          } else {
+            beats.push(`${amb.name} sits down at the fire. The tribe gathers around. "It was hard," ${amb.pr.sub} ${amb.pr.sub==='they'?'say':'says'}. "But we made it." Someone puts a hand on ${amb.pr.pos} shoulder. That's enough.`);
+          }
+          if (tribemates.length) {
+            const grateful = tribemates[0];
+            beats.push(`${grateful} to confessional: "${amb.name} came through for us. I won't forget that. Going into the merge — that's someone I want on my side."`);
+          }
+          _returnEvents.push({ tribe: sel.tribe, type: 'safe', text: beats.join(' '), beats });
         }
       });
 
@@ -24679,11 +24777,20 @@ function rpBuildAmbassadors(ep) {
   });
   html += `</div>`;
 
-  // ── MEETING NARRATIVE ──
+  // ── MEETING NARRATIVE — interactive click-to-advance ──
+  const _ambNarId = `amb-nar-${epNum}`;
+  const _ambBeats = meeting.narrative || [];
+  const _ambTotalBeats = _ambBeats.length;
   html += `<div style="font-size:9px;font-weight:700;letter-spacing:2px;color:#8b949e;margin-bottom:10px">THE MEETING</div>`;
-  meeting.narrative?.forEach(beat => {
-    html += `<div style="padding:10px 14px;margin-bottom:8px;background:rgba(99,102,241,0.04);border:1px solid rgba(99,102,241,0.12);border-radius:8px;font-size:12px;color:#c9d1d9;line-height:1.6;font-style:italic">${beat}</div>`;
+  html += `<div id="${_ambNarId}" data-step="0" data-total="${_ambTotalBeats}">`;
+  _ambBeats.forEach((beat, i) => {
+    html += `<div id="${_ambNarId}-beat-${i}" style="display:none;opacity:0;transition:opacity 0.5s;padding:10px 14px;margin-bottom:8px;background:rgba(99,102,241,0.04);border:1px solid rgba(99,102,241,0.12);border-radius:8px;font-size:12px;color:#c9d1d9;line-height:1.6;font-style:italic">${beat}</div>`;
   });
+  html += `</div>`;
+  html += `<div style="display:flex;gap:12px;margin-bottom:16px">
+    <button onclick="ambNarAdvance('${_ambNarId}')" id="${_ambNarId}-btn" style="padding:8px 20px;background:#818cf8;border:none;border-radius:6px;color:#0d1117;font-family:var(--font-display);font-size:13px;letter-spacing:1px;cursor:pointer;font-weight:700">BEGIN</button>
+    <button onclick="ambNarRevealAll('${_ambNarId}')" style="padding:6px 12px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:11px;cursor:pointer">See all</button>
+  </div>`;
 
   // ── OUTCOME ──
   if (meeting.agreed && meeting.target) {
@@ -24702,23 +24809,27 @@ function rpBuildAmbassadors(ep) {
     </div>`;
   }
 
-  // ── RETURN EVENTS ──
+  // ── RETURN EVENTS — show each beat separately ──
   if (meeting.returnEvents?.length) {
     html += `<div style="font-size:9px;font-weight:700;letter-spacing:2px;color:#8b949e;margin-top:20px;margin-bottom:10px">THE RETURN</div>`;
     meeting.returnEvents.forEach(re => {
-      const borderColor = re.type === 'safe' ? 'rgba(63,185,80,0.2)' : 'rgba(218,54,51,0.2)';
+      const borderColor = re.type === 'safe' ? 'rgba(63,185,80,0.2)' : re.type === 'ambassador-eliminated' ? 'rgba(218,54,51,0.25)' : 'rgba(218,54,51,0.2)';
       const bg = re.type === 'safe' ? 'rgba(63,185,80,0.03)' : 'rgba(218,54,51,0.03)';
       const badge = re.type === 'safe' ? '<span style="font-size:9px;font-weight:700;color:#3fb950;letter-spacing:1px">SAFE</span>'
         : re.type === 'ambassador-eliminated' ? '<span style="font-size:9px;font-weight:700;color:#f85149;letter-spacing:1px">AMBASSADOR LOST</span>'
-        : '<span style="font-size:9px;font-weight:700;color:#f85149;letter-spacing:1px">ELIMINATED</span>';
+        : '<span style="font-size:9px;font-weight:700;color:#f85149;letter-spacing:1px">TRIBEMATE ELIMINATED</span>';
       const tc = tribeColor(re.tribe);
-      html += `<div style="padding:10px;margin-bottom:6px;border:1px solid ${borderColor};border-radius:8px;background:${bg}">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-          <span style="font-size:10px;font-weight:700;color:${tc}">${re.tribe}</span>
+      html += `<div style="padding:12px;margin-bottom:8px;border:1px solid ${borderColor};border-radius:8px;background:${bg}">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <span style="font-size:11px;font-weight:700;color:${tc};letter-spacing:0.5px">${re.tribe.toUpperCase()}</span>
           ${badge}
-        </div>
-        <div style="font-size:12px;color:#c9d1d9;line-height:1.6;font-style:italic">${re.text}</div>
-      </div>`;
+        </div>`;
+      // Show beats individually if available
+      const beats = re.beats || [re.text];
+      beats.forEach(beat => {
+        html += `<div style="font-size:12px;color:#c9d1d9;line-height:1.7;font-style:italic;margin-bottom:6px;padding-left:8px;border-left:2px solid ${borderColor}">${beat}</div>`;
+      });
+      html += `</div>`;
     });
   }
 
@@ -35536,6 +35647,26 @@ function rcIndRevealAll(revealId) {
   if (!container) return;
   const total = parseInt(container.dataset.total);
   while (parseInt(container.dataset.revealed) < total) rcIndRevealNext(revealId);
+}
+
+// Ambassador meeting narrative — interactive beat-by-beat reveal
+function ambNarAdvance(narId) {
+  const container = document.getElementById(narId);
+  if (!container) return;
+  const step = parseInt(container.dataset.step) || 0;
+  const total = parseInt(container.dataset.total) || 0;
+  if (step >= total) return;
+  const beat = document.getElementById(`${narId}-beat-${step}`);
+  if (beat) { beat.style.display = 'block'; setTimeout(() => beat.style.opacity = '1', 50); }
+  container.dataset.step = String(step + 1);
+  const btn = document.getElementById(`${narId}-btn`);
+  if (btn) btn.textContent = step + 1 >= total ? 'MEETING COMPLETE' : 'CONTINUE';
+}
+function ambNarRevealAll(narId) {
+  const container = document.getElementById(narId);
+  if (!container) return;
+  const total = parseInt(container.dataset.total) || 0;
+  while ((parseInt(container.dataset.step) || 0) < total) ambNarAdvance(narId);
 }
 
 function vpToggleSection(id) {

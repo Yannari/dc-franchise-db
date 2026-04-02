@@ -24885,16 +24885,22 @@ function rpBuildMergeAnnouncement(ep) {
   const mergedTribe = snap.tribes?.[0] || { name: gs.mergeName || 'Merged', members: snap.activePlayers || [] };
   const tc = tribeColor(mergedTribe.name);
   const alliances = snap.namedAlliances || [];
-  const active = snap.activePlayers || gs.activePlayers;
-  // If ambassadors eliminated someone this episode, include them in the merge display
-  const _ambEliminated = ep.ambassadorData?.ambassadorEliminated || null;
+  // Reconstruct merge participants: snapshot active + anyone eliminated at tribal THIS episode
+  // (they were part of the merge but got voted out the same night)
+  // Do NOT include ambassador-eliminated players (they were eliminated BEFORE the merge)
+  const _tribalElim = [ep.eliminated, ep.firstEliminated].filter(Boolean);
+  const _ambElim = ep.ambassadorData?.ambassadorEliminated || null;
+  const _mergeParticipants = [...new Set([
+    ...(snap.activePlayers || gs.activePlayers),
+    ..._tribalElim.filter(e => e !== _ambElim), // tribal eliminees were part of the merge
+  ])];
 
   const topAlliances = [...alliances].sort((a,b) => b.members.length - a.members.length).slice(0, 2);
 
   const alliedSet = new Set(alliances.flatMap(a => a.members));
-  const unallied = active.filter(n => !alliedSet.has(n));
+  const unallied = _mergeParticipants.filter(n => !alliedSet.has(n));
   const avgBond = n => {
-    const others = active.filter(p => p !== n);
+    const others = _mergeParticipants.filter(p => p !== n);
     return others.length ? others.reduce((s,p) => s + getBond(n,p), 0) / others.length : 0;
   };
   const onBottom = [...unallied].sort((a,b) => avgBond(a) - avgBond(b)).slice(0, 3);
@@ -24902,10 +24908,9 @@ function rpBuildMergeAnnouncement(ep) {
   let html = `<div class="rp-page tod-merge-am">
     <div class="rp-eyebrow">Episode ${ep.num}</div>
     <div style="font-family:var(--font-display);font-size:48px;letter-spacing:2px;text-align:center;color:${tc};margin-bottom:8px;animation:bannerUnfurl 0.6s var(--ease-broadcast) both;transform-origin:center">${mergedTribe.name.toUpperCase()}</div>
-    <div style="text-align:center;font-size:13px;color:var(--muted);margin-bottom:24px">${_ambEliminated ? `${active.length + 1} entered the merge episode. ${_ambEliminated} was eliminated by the ambassadors. ${active.length} remain.` : `The merge. ${active.length} players remain.`}</div>
+    <div style="text-align:center;font-size:13px;color:var(--muted);margin-bottom:24px">The merge. ${_mergeParticipants.length} players enter the individual game.</div>
     <div class="rp-portrait-row" style="flex-wrap:wrap;justify-content:center;margin-bottom:28px">
-      ${_ambEliminated ? `<div style="animation:staggerIn 0.4s var(--ease-broadcast) 0ms both;opacity:0.3;position:relative">${rpPortrait(_ambEliminated)}<div style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);font-size:8px;font-weight:700;color:#f85149;letter-spacing:1px;white-space:nowrap">ELIMINATED</div></div>` : ''}
-      ${active.map((n, i) => `<div style="animation:staggerIn 0.4s var(--ease-broadcast) ${(i + (_ambEliminated ? 1 : 0)) * 80}ms both">${rpPortrait(n)}</div>`).join('')}
+      ${_mergeParticipants.map((n, i) => `<div style="animation:staggerIn 0.4s var(--ease-broadcast) ${i * 80}ms both">${rpPortrait(n)}</div>`).join('')}
     </div>`;
 
   if (topAlliances.length) {

@@ -18465,6 +18465,28 @@ function simulateEpisode() {
     handleAdvantageInheritance(r1.eliminated, ep);
     gs.advantages = gs.advantages.filter(a => a.holder !== r1.eliminated);
 
+    // BLACK VOTE for vote 1 eliminated player (double boot — first elimination)
+    if (cfg.blackVote && cfg.blackVote !== 'off' && gs.activePlayers.length > 4) {
+      const _bv1Pool = ep.tribalPlayers?.filter(p => p !== r1.eliminated && gs.activePlayers.includes(p)) || [];
+      if (_bv1Pool.length) {
+        const _bv1Elim = r1.eliminated;
+        if (cfg.blackVote === 'classic') {
+          const _bv1Target = [..._bv1Pool].sort((a, b) => getBond(_bv1Elim, a) - getBond(_bv1Elim, b))[0];
+          if (_bv1Target) {
+            if (!gs.blackVotes) gs.blackVotes = [];
+            gs.blackVotes.push({ from: _bv1Elim, target: _bv1Target, ep: epNum, type: 'classic', reason: getBond(_bv1Elim, _bv1Target) <= -2 ? `grudge — ${_bv1Elim} and ${_bv1Target} had bad blood` : `${_bv1Elim} wants ${_bv1Target} gone — lowest bond of anyone left` });
+            ep.blackVote = { from: _bv1Elim, target: _bv1Target, type: 'classic', reason: getBond(_bv1Elim, _bv1Target) <= -2 ? `grudge — ${_bv1Elim} and ${_bv1Target} had bad blood` : `${_bv1Elim} wants ${_bv1Target} gone — lowest bond of anyone left` };
+          }
+        } else if (cfg.blackVote === 'modern') {
+          const _bv1Recipient = [..._bv1Pool].sort((a, b) => getBond(_bv1Elim, b) - getBond(_bv1Elim, a))[0];
+          if (_bv1Recipient) {
+            gs.advantages.push({ holder: _bv1Recipient, type: 'extraVote', foundEp: epNum, fromBlackVote: true, giftedBy: _bv1Elim });
+            ep.blackVote = { from: _bv1Elim, recipient: _bv1Recipient, type: 'modern', reason: `${_bv1Elim}'s closest remaining connection` };
+          }
+        }
+      }
+    }
+
     if (ep.announcedDoubleElim) {
       // Announced: top 2 vote-getters both go — no second vote needed
       const _a2Sorted = Object.entries(ep.votes||{}).sort(([,a],[,b]) => b-a);

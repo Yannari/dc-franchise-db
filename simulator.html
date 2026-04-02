@@ -1474,7 +1474,7 @@ const TWIST_CATALOG = [
   { id:'cultural-reset',   emoji:'🔄', name:'Cultural Reset',       category:'elim',       phase:'any',        desc:'All alliances exposed publicly. Weak alliances dissolve, strong ones survive but become targets. Double-dippers are caught. The social game resets.',        engineType:'cultural-reset'  },
   { id:'rock-draw',        emoji:'🪨', name:'Rock Draw',            category:'elim',       phase:'any',        desc:'No re-vote on a tie — non-immune, non-tied players draw rocks. Random exit.', engineType:'rock-draw'      },
   { id:'open-vote',        emoji:'📢', name:'Open Vote',            category:'elim',       phase:'any',        desc:'Votes are public — cast one by one in an order chosen by the immunity winner. Cascade pressure builds. Everyone sees who said whose name.', engineType:'open-vote' },
-  { id:'ambassadors',     emoji:'🤝', name:'Ambassadors',          category:'elim',       phase:'any',       desc:'Schedule on the merge episode. Each tribe names an ambassador. They meet and must agree on one elimination — or one ambassador draws the wrong rock.',  engineType:'ambassadors', incompatible:['second-chance','returning-player'] },
+  { id:'ambassadors',     emoji:'🤝', name:'Ambassadors',          category:'elim',       phase:'any',       desc:'Schedule on the merge episode. Each tribe names an ambassador. They meet and must agree on one elimination — or one ambassador draws the wrong rock.',  engineType:'ambassadors' },
   // Returns
   { id:'returning-player', emoji:'🔁', name:'Returning Player',     category:'returns',    phase:'any',        desc:'A previously eliminated player returns. Tribal still runs — someone goes home. Net zero change in count.',  engineType:'returning-player'},
   { id:'spirit-island',    emoji:'👻', name:'Spirit Island',        category:'returns',    phase:'post-merge', desc:'A jury member returns to camp for one day as a temporary visitor. They observe, reconnect, and share what the jury thinks.',    engineType:'spirit-island'   },
@@ -15699,15 +15699,15 @@ function simulateEpisode() {
     _usedTypes.add(twist.type);
     return true;
   });
-  // Sort: elimination twists (ambassadors, etc.) fire BEFORE non-elimination twists (reward, etc.)
-  // This ensures eliminated players don't participate in reward challenges
-  const _elimCategories = new Set(['elim']);
+  // Sort twist processing order: returns FIRST → eliminations → everything else
+  // Returns first so returnees are in the active pool for ambassador selection
+  // Eliminations before rewards so eliminated players don't compete in reward challenges
   scheduledTwists.sort((a, b) => {
     const aCat = TWIST_CATALOG.find(c => c.id === a.type)?.category || '';
     const bCat = TWIST_CATALOG.find(c => c.id === b.type)?.category || '';
-    const aIsElim = _elimCategories.has(aCat) ? 0 : 1;
-    const bIsElim = _elimCategories.has(bCat) ? 0 : 1;
-    return aIsElim - bIsElim;
+    const aOrder = aCat === 'returns' ? 0 : aCat === 'elim' ? 1 : 2;
+    const bOrder = bCat === 'returns' ? 0 : bCat === 'elim' ? 1 : 2;
+    return aOrder - bOrder;
   });
   scheduledTwists.forEach((twist, i) => applyTwist(ep, twist, i === 0));
   // Refresh tribesAtStart after team-changing twists (swap, dissolve, expansion, mutiny, abduction)

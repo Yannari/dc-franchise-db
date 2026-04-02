@@ -23159,75 +23159,96 @@ function generateFTCData(finalists, juryResult) {
   const _h = (a,b) => [...a+b].reduce((s,c)=>s+c.charCodeAt(0),0); // deterministic hash
   const _pick = (arr,seed) => arr[seed % arr.length];
 
-  // ── Question-Answer pairs: each question has its own contextual responses ──
+  // ── Question-Answer pairs: responses reference actual game data (names, events, numbers) ──
   const _wins = name => gs.episodeHistory.filter(e => e.immunityWinner === name).length;
-  const _qa = (fS, wins) => {
+  const _bigMoves = name => gs.playerStates?.[name]?.bigMoves || 0;
+  const _betrayalCount = name => (gs.namedAlliances || []).reduce((n, a) => n + (a.betrayals || []).filter(b => b.player === name).length, 0);
+  // Find the finalist's closest ally (for specific references)
+  const _closestAlly = name => {
+    const active = [...finalists, ...jury];
+    return active.filter(p => p !== name).sort((a, b) => getBond(name, b) - getBond(name, a))[0] || 'my ally';
+  };
+  // Find the biggest threat the finalist helped eliminate
+  const _biggestKill = name => {
+    for (let i = gs.episodeHistory.length - 1; i >= 0; i--) {
+      const e = gs.episodeHistory[i];
+      if (e.eliminated && e.votingLog?.some(v => v.voter === name && v.voted === e.eliminated)) return e.eliminated;
+    }
+    return null;
+  };
+  const _qa = (target, fS, wins, juror) => {
     const hi = v => fS[v] >= 7, lo = v => fS[v] <= 4;
+    const tPr = pronouns(target);
+    const ally = _closestAlly(target);
+    const kill = _biggestKill(target);
+    const bCount = _betrayalCount(target);
+    const bigM = _bigMoves(target);
+    const jPr = pronouns(juror);
     return {
     // ── Betrayal (voted them out, hostile) ──
     betrayalHostile: [
-      { q:`You voted me out. Give me one real reason I should vote for you tonight.`,
-        r: hi('strategic') ? `"Because I made the hardest call in this game and I'm standing here because of it."` : `"I had to make the move that kept me here. I'm sorry it came at your expense."` },
-      { q:`You wrote my name down. Look me in the eye and tell me why.`,
-        r: hi('strategic') ? `"Because you were a threat and I respected you enough to make the move instead of hiding behind someone else."` : `"Because the game put me in a corner and I chose survival. I'd do it again."` },
-      { q:`I'm gone because of you. What makes you think you deserve my vote?`,
-        r: hi('social') ? `"Because I owned every move I made. I never pretended to be someone I wasn't. You deserved honesty, and I'm giving it to you now."` : `"I don't think I deserve it. I think I earned it. There's a difference."` },
+      { q:`You voted me out, ${target}. Give me one real reason I should vote for you tonight.`,
+        r: hi('strategic') ? `"Because voting you out, ${juror}, was the hardest call I made in this game — and I'm standing here because I had the guts to make it."` : `"${juror}, I had to make the move that kept me alive. I'm sorry it came at your expense — but I'd make that call again."` },
+      { q:`You wrote my name down, ${target}. Look me in the eye and tell me why.`,
+        r: hi('strategic') ? `"Because you were the biggest threat left, ${juror}. I respected you enough to make the move myself instead of hiding behind someone else."` : `"Because the numbers told me it was you or me, ${juror}. I chose me. I'd do it again."` },
+      { q:`I'm gone because of you, ${target}. What makes you think you deserve my vote?`,
+        r: hi('social') ? `"Because I owned what I did to you, ${juror}. I never hid behind excuses. You deserved honesty then, and I'm giving it to you now."` : `"I don't think I deserve it. I think I earned it. ${bigM > 0 ? `${bigM} big moves — including the one that sent you home.` : `Every day I survived was earned.`}"` },
     ],
     // ── Betrayal (voted them out, neutral) ──
     betrayalNeutral: [
-      { q:`You had a hand in getting me eliminated. Was it personal, or purely the game?`,
-        r: hi('strategic') ? `"Purely game. You were dangerous and I knew it. The decision wasn't easy but it was right."` : `"It wasn't personal. The numbers pointed your direction and I followed them."` },
-      { q:`My torch got snuffed and you were part of it. Tell me why.`,
-        r: hi('social') ? `"The alliance made the call. I could've fought it, but the timing wasn't right for me to break ranks."` : `"I went along with the group. I'm not going to pretend I drove that vote."` },
-      { q:`I thought we had something out there. Then you voted me out. What happened?`,
-        r: hi('loyalty') ? `"We did. And losing that was one of the worst parts of this game for me. But the numbers left me no choice."` : `"The game changed faster than our relationship could keep up. I made a call."` },
+      { q:`You had a hand in getting me eliminated, ${target}. Was it personal, or purely the game?`,
+        r: hi('strategic') ? `"Purely game, ${juror}. You were dangerous — ${threatScore(juror) >= 6 ? 'a ' + Math.round(threatScore(juror)) + ' out of 10 threat' : 'too well-positioned to leave in'}. The decision wasn't easy but it was right."` : `"It wasn't personal. The alliance needed a name and yours came up. I followed the numbers."` },
+      { q:`My torch got snuffed and you were part of it, ${target}. Tell me why.`,
+        r: hi('social') ? `"${ally} and I made that call together. I could've fought it, but breaking ranks would've ended my game."` : `"I went along with the group. I'm not going to pretend I drove that vote, ${juror}."` },
+      { q:`I thought we had something out there, ${target}. Then you voted me out. What happened?`,
+        r: hi('loyalty') ? `"We did, ${juror}. And losing that was one of the worst parts of this game. But the numbers left me no choice."` : `"The game moved faster than our relationship could keep up. I made a call — and I'm sorry."` },
     ],
     // ── Strategic ──
     strategic: [
-      { q:`What was your single biggest move — and how do you know it was yours?`,
-        r: hi('strategic') ? `"I orchestrated the vote that changed the shape of this game. Ask anyone — they'll tell you whose idea it was."` : wins >= 2 ? `"Winning immunity when I absolutely had to. ${wins} times I saved myself when nobody else would."` : `"Staying alive when everyone counted me out. That's not one move — that's a whole game."` },
-      { q:`Name one player you outplayed. Tell me exactly how.`,
-        r: hi('strategic') ? `"I saw their game before they did. I let them feel safe, then moved when they weren't looking."` : hi('social') ? `"I built a relationship with them they trusted completely. When I needed to use it, I did."` : `"I outlasted them. They made a mistake and I was ready when they did."` },
-      { q:`When did you realize you could actually win this game?`,
-        r: hi('strategic') ? `"Early. I saw the path and I built toward it every single day."` : wins >= 2 ? `"After my second immunity win. I realized nobody could touch me if I kept competing."` : `"Honestly? Not until I was sitting in this chair. I just kept surviving."` },
-      { q:`Walk me through your endgame. When did you start building it?`,
-        r: hi('strategic') ? `"I started building it at the merge. Every vote after that was a step toward this seat."` : hi('social') ? `"I kept the right people close. My endgame was my relationships — they carried me here."` : `"I didn't have a master plan. I had a next-day plan, every day. And it worked."` },
-      { q:`Who was your most dangerous opponent and how did you handle them?`,
-        r: hi('strategic') ? `"I identified the biggest threat before anyone else and made sure the votes went that way."` : hi('social') ? `"I kept them close enough that they never saw me as a threat until it was too late."` : `"I avoided them. Let other people deal with them. Stayed out of the crossfire."` },
+      { q:`What was your single biggest move, ${target} — and how do you know it was yours?`,
+        r: hi('strategic') ? `"${kill ? `Getting ${kill} out. That was my idea — I pulled the votes together and made it happen.` : `The merge vote. I set the direction and everyone followed.`} Ask anyone on this jury."` : wins >= 2 ? `"Winning immunity when I absolutely had to. ${wins} times I saved myself — including the one that got me this seat."` : `"Staying alive when everyone counted me out. That's not one move — that's a whole game."` },
+      { q:`Name one player you outplayed, ${target}. Tell me exactly how.`,
+        r: hi('strategic') ? `"${kill || jury[0]}. I saw ${pronouns(kill || jury[0]).pos} game before ${pronouns(kill || jury[0]).sub} did. I let ${pronouns(kill || jury[0]).obj} feel safe, then moved when ${pronouns(kill || jury[0]).sub} ${pronouns(kill || jury[0]).sub==='they'?'weren\'t':'wasn\'t'} looking."` : hi('social') ? `"${kill || jury[0]}. I built a relationship ${pronouns(kill || jury[0]).sub} trusted completely. When the vote came, ${pronouns(kill || jury[0]).sub} never saw it coming from me."` : `"${kill || jury[0]}. ${pronouns(kill || jury[0]).Sub} made a mistake at the wrong time and I was positioned to capitalize. That's how you win this game."` },
+      { q:`When did you realize you could actually win this game, ${target}?`,
+        r: hi('strategic') ? `"At the merge. I looked around and knew I could outmaneuver everyone left."` : wins >= 2 ? `"After my second immunity win. I realized nobody could stop me if I kept competing."` : `"Honestly? Not until I was sitting in this chair. I just kept surviving."` },
+      { q:`Walk me through your endgame, ${target}. When did you start building it?`,
+        r: hi('strategic') ? `"I started building it at the merge. ${ally} was my endgame partner — every vote after that was a step toward tonight."` : hi('social') ? `"I kept ${ally} close. My endgame was my relationships — they carried me here."` : `"I didn't have a master plan. I had a next-day plan, every day. And here I am."` },
+      { q:`Who was your most dangerous opponent, ${target}, and how did you handle ${jPr.obj}?`,
+        r: hi('strategic') ? `"${kill || jury[jury.length-1]}. I identified ${pronouns(kill || jury[jury.length-1]).obj} as the biggest threat and made sure the votes went that way."` : hi('social') ? `"${kill || jury[jury.length-1]}. I kept ${pronouns(kill || jury[jury.length-1]).obj} close enough that ${pronouns(kill || jury[jury.length-1]).sub} never saw me as a threat. Until it was too late."` : `"${kill || jury[jury.length-1]}. I stayed out of ${pronouns(kill || jury[jury.length-1]).pos} crosshairs and let other people take the shot."` },
     ],
     // ── Social ──
     social: [
-      { q:`I never felt like you were being straight with me. Convince me I was wrong.`,
-        r: hi('social') ? `"I was as real with you as this game allowed. I never lied to your face. I can look you in the eye on that."` : `"I played a game. Not everything I did was pretty. But I was never fake with you — I just couldn't show all my cards."` },
-      { q:`Who out here actually trusted you — and did you deserve it?`,
-        r: hi('loyalty') ? `"My closest ally trusted me completely, and I never broke that. They deserved someone who had their back and I was that person."` : `"A few people trusted me. Did I deserve it? Mostly. But this is a game where trust is currency, and I spent it when I had to."` },
-      { q:`What relationship in this game are you most proud of?`,
-        r: hi('social') ? `"The one that didn't help my game at all. The one that was just real. That's the one I'll remember."` : `"The person who had no reason to like me and ended up in my corner anyway. That wasn't strategy — that was earned."` },
-      { q:`Did anyone here see the real you, or were you performing the whole time?`,
-        r: hi('social') ? `"A few people saw the real me. Late at night, away from the game. Those conversations were real."` : `"Honestly, I don't know where the performance ended and I began. This game does that to you."` },
+      { q:`I never felt like you were being straight with me, ${target}. Convince me I was wrong.`,
+        r: hi('social') ? `"${juror}, I was as real with you as this game allowed. I never lied to your face. I can look you in the eye on that."` : `"I played a game, ${juror}. Not everything I did was pretty. But I was never fake with you — I just couldn't show all my cards."` },
+      { q:`Who out here actually trusted you, ${target} — and did you deserve it?`,
+        r: hi('loyalty') ? `"${ally} trusted me completely, and I never broke that. ${pronouns(ally).Sub} deserved someone who had ${pronouns(ally).pos} back and I was that person."` : `"${ally} trusted me. Did I deserve it? ${bCount === 0 ? 'Yes — I never betrayed anyone.' : `Mostly. But I broke ${bCount} promise${bCount !== 1 ? 's' : ''} to get here.`}"` },
+      { q:`What relationship in this game are you most proud of, ${target}?`,
+        r: hi('social') ? `"My relationship with ${ally}. It didn't always help my game, but it was the most real thing out here."` : `"${ally}. ${pronouns(ally).Sub} had no reason to trust me early on and ended up in my corner. That wasn't strategy — that was earned."` },
+      { q:`Did anyone here see the real you, ${target}, or were you performing the whole time?`,
+        r: hi('social') ? `"${ally} saw the real me. Late at night, away from the game. Those conversations were real."` : `"Honestly? I don't know where the performance ended and I began. This game does that to you."` },
     ],
     // ── Loyalty ──
     loyalty: [
-      { q:`Did you keep your word out there? If you broke it — when, and why?`,
-        r: hi('loyalty') ? `"I kept my word to the people I committed to. When the game forced a hard call, I owned it instead of hiding."` : `"I broke promises. I won't pretend otherwise. But every time I did, it was because standing still meant going home."` },
-      { q:`Name one promise you made and kept — even when it cost you.`,
-        r: hi('loyalty') ? `"I promised my closest ally I'd never write their name down. I didn't. Even when it would've been easier."` : `"I promised myself I'd play my own game. That cost me allies, but I'm sitting here."` },
-      { q:`Who did you betray, and would you do it again?`,
-        r: hi('loyalty') ? `"I only betrayed people who were already coming for me. And yes, I would."` : lo('loyalty') ? `"More people than I'd like to admit. And yeah — I would. This game doesn't reward loyalty. It rewards results."` : `"One person. They know who they are. I'd do it differently if I could. But I'd still be here."` },
-      { q:`Was there anyone you refused to write down, no matter what?`,
-        r: hi('loyalty') ? `"Yes. One person. I never wrote their name and I never would have. That was a line I drew on day one."` : `"No. Everyone was on the table. That's not cold — that's honest."` },
+      { q:`Did you keep your word out there, ${target}? If you broke it — when, and why?`,
+        r: hi('loyalty') ? `"I kept my word to ${ally}. When the game forced hard calls, I owned them instead of hiding."` : `"I broke ${bCount > 0 ? bCount + ' promise' + (bCount !== 1 ? 's' : '') : 'promises'}. I won't pretend otherwise. Every time I did, standing still meant going home."` },
+      { q:`Name one promise you made and kept, ${target} — even when it cost you.`,
+        r: hi('loyalty') ? `"I promised ${ally} I'd never write ${pronouns(ally).pos} name down. I didn't. Even when it would've been the easier play."` : `"I promised myself I'd play my own game. That cost me allies, but I'm sitting here."` },
+      { q:`Who did you betray, ${target}, and would you do it again?`,
+        r: hi('loyalty') ? `"${bCount === 0 ? 'Nobody. I played clean and I\'m proud of that.' : 'I only moved against people who were already coming for me. And yes, I would.'}"` : lo('loyalty') ? `"${bCount} alliance${bCount !== 1 ? 's' : ''}. And yeah — I would. This game doesn't reward loyalty. It rewards results."` : `"${kill ? kill + '. ' + pronouns(kill).Sub + ' ' + (pronouns(kill).sub==='they'?'know':'knows') + ' why.' : 'One person. They know who they are.'} I'd do it differently if I could. But I'd still be here."` },
+      { q:`Was there anyone you refused to write down, ${target}, no matter what?`,
+        r: hi('loyalty') ? `"${ally}. I never wrote ${pronouns(ally).pos} name and I never would have. That was a line I drew on day one."` : `"No. Everyone was on the table. That's not cold — that's honest."` },
     ],
     // ── General ──
     general: [
-      { q:`Tell me something real. What do you think you did better than everyone up here?`,
-        r: hi('strategic') ? `"I read the room better. Every vote, I knew where it was going before anyone spoke."` : hi('social') ? `"I connected with people. Not as a strategy — because I actually cared."` : `"I survived. Every day someone could've taken me out and no one did. That's not luck."` },
-      { q:`What's the one thing you wish the jury knew about your game?`,
-        r: hi('strategic') ? `"How much of what happened was my idea. You'd be surprised how many votes I quietly shaped."` : `"How hard it was. I made it look easy, but every day was a fight."` },
-      { q:`If you were sitting where I am, would you vote for yourself? Why?`,
-        r: hi('strategic') ? `"Absolutely. I played the best game and I know it."` : hi('social') ? `"I'd vote for the person who played with the most heart. I think that's me."` : `"Honestly? I'd probably struggle with it. But yeah — I'd vote for me. I earned this seat."` },
-      { q:`What moment in this game changed who you are?`,
-        r: hi('social') ? `"The night someone broke down at camp and I was the only one who stayed. That wasn't gameplay. That was just human."` : `"The first time I survived a vote I shouldn't have. It changed how I saw the whole game."` },
-      { q:`Forget strategy. Tell me who you actually are outside this game.`,
+      { q:`Tell me something real, ${target}. What do you think you did better than everyone up here?`,
+        r: hi('strategic') ? `"I read the room better. Every vote, I knew where it was going before anyone spoke. ${bigM >= 3 ? bigM + ' big moves — I shaped this season.' : ''}"` : hi('social') ? `"I connected with people. Not as a strategy — because I actually cared. Ask ${ally}."` : `"I survived. ${wins >= 2 ? wins + ' immunity wins. ' : ''}Every day someone could've taken me out and no one did. That's not luck."` },
+      { q:`What's the one thing you wish the jury knew about your game, ${target}?`,
+        r: hi('strategic') ? `"How much of what happened was my idea. ${kill ? 'The ' + kill + ' vote? Mine.' : 'You\'d be surprised how many votes I quietly shaped.'}"` : `"How hard it was. I made it look easy, but every day was a fight. ${wins >= 2 ? wins + ' immunity wins didn\'t fall from the sky.' : ''}"` },
+      { q:`If you were sitting where I am, ${target}, would you vote for yourself? Why?`,
+        r: hi('strategic') ? `"Absolutely. ${bigM >= 2 ? bigM + ' big moves, ' : ''}${wins >= 2 ? wins + ' immunity wins, ' : ''}I played the best game and I know it."` : hi('social') ? `"I'd vote for the person who played with the most heart. I think that's me. Ask ${ally}."` : `"Honestly? I'd probably struggle with it. But yeah — I'd vote for me. I earned this seat."` },
+      { q:`What moment in this game changed who you are, ${target}?`,
+        r: hi('social') ? `"The night ${ally} broke down at camp and I was the only one who stayed. That wasn't gameplay. That was just human."` : `"${kill ? 'The vote that took out ' + kill + '.' : 'The first time I survived a vote I shouldn\'t have.'} It changed how I saw the whole game."` },
+      { q:`Forget strategy, ${target}. Tell me who you actually are outside this game.`,
         r: `"I'm someone who cares more than I let on out here. This game forces you to hide that. But I'm ready to stop hiding."` },
     ],
     };
@@ -23251,7 +23272,7 @@ function generateFTCData(finalists, juryResult) {
     const votedThemOut = jHistory?.voters?.includes(target);
     const fS = pStats(target);
     const seed = _h(juror, target) + ri * 7;
-    const qa = _qa(fS, _wins(target));
+    const qa = _qa(target, fS, _wins(target), juror);
 
     let picked;
     if (votedThemOut && bond < 0) {

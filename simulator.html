@@ -21818,11 +21818,15 @@ function buildEpisodeMap() {
   const mergeAt = seasonConfig.mergeAt || 12;
   const riActive = seasonConfig.ri;
 
-  // Build ep→engineType lookup from the twist schedule
+  // Build ep→engineTypes lookup from the twist schedule (ALL twists per episode)
   const twistMap = {};
+  const twistMapAll = {}; // all engine types on this episode
   (seasonConfig.twistSchedule || []).forEach(t => {
     const cat = TWIST_CATALOG.find(c => c.id === t.type);
-    twistMap[Number(t.episode)] = cat?.engineType || t.type;
+    const et = cat?.engineType || t.type;
+    twistMap[Number(t.episode)] = et;
+    if (!twistMapAll[Number(t.episode)]) twistMapAll[Number(t.episode)] = [];
+    twistMapAll[Number(t.episode)].push(et);
   });
 
   const eps = [];
@@ -21834,6 +21838,7 @@ function buildEpisodeMap() {
 
   while (active > finale && ep <= 100) {
     const etype = twistMap[ep] || null;
+    const _allTypes = twistMapAll[ep] || [];
 
     // How many players leave/return this episode?
     let elims = 1;
@@ -21843,7 +21848,8 @@ function buildEpisodeMap() {
     if (etype === 'multi-tribal' && !merged) elims = Math.max(2, (seasonConfig.teams || 2) - 1);
     if (etype === 'slasher-night') elims = 1;
     // Ambassadors: eliminates 1 person BEFORE merge + regular tribal eliminates 1 = 2 total
-    if (etype === 'ambassadors') elims = 2;
+    // Check ALL twists on this episode so it works even with other twists scheduled
+    if (_allTypes.includes('ambassadors')) elims = Math.max(elims, 2);
     const returns = (etype === 'returning-player' || etype === 'second-chance') ? 1 : 0;
 
     // RI return: fires when the episode STARTS with <= riReentryAt players.

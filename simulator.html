@@ -36499,6 +36499,11 @@ function init() {
   renderAllianceList();
   renderPresetList();
   renderSeasonSaveList();
+  // Restore last active tab
+  const _savedTab = localStorage.getItem('simulator_activeTab');
+  if (_savedTab && ['cast','setup','run','results'].includes(_savedTab)) {
+    showTab(_savedTab);
+  }
 }
 
 init();

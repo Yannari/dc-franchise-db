@@ -6524,13 +6524,22 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
   let _voteMiscommunications = null;
 
   // Penalty vote: a pre-cast vote against the penalty target (if they're at this tribal)
-  console.log('[BLACK VOTE] simulateVotes. penaltyVoteThisEp:', gs.penaltyVoteThisEp, 'tribalPlayers:', tribalPlayers, 'includes?', tribalPlayers.includes(gs.penaltyVoteThisEp));
   if (gs.penaltyVoteThisEp && tribalPlayers.includes(gs.penaltyVoteThisEp) && !isImmune(gs.penaltyVoteThisEp)) {
     votes[gs.penaltyVoteThisEp] = (votes[gs.penaltyVoteThisEp] || 0) + 1;
-    // Check if this penalty vote is from a Black Vote (stored on gs, not ep)
-    const _pvBv = gs.blackVotes?.find(bv => bv.target === gs.penaltyVoteThisEp && bv.type === 'classic') || gs._activeBlackVote || null;
+    const _pvBv = gs._activeBlackVote || null;
     const _pvReason = _pvBv ? `Black Vote from ${_pvBv.from} — ${_pvBv.reason || 'parting shot'}` : 'penalty vote — pre-cast by the twist';
     log.push({ voter: _pvBv ? _pvBv.from : 'THE GAME', voted: gs.penaltyVoteThisEp, reason: _pvReason, isBlackVote: !!_pvBv });
+  }
+  // ── BLACK VOTE: direct injection if penalty vote didn't fire (target on different tribe) ──
+  // Check gs.blackVotes for any pending classic vote whose target is at THIS tribal
+  if (gs.blackVotes?.length) {
+    const _bvDirect = gs.blackVotes.find(bv => bv.type === 'classic' && tribalPlayers.includes(bv.target) && !isImmune(bv.target) && bv.target !== gs.penaltyVoteThisEp);
+    if (_bvDirect) {
+      votes[_bvDirect.target] = (votes[_bvDirect.target] || 0) + 1;
+      log.push({ voter: _bvDirect.from, voted: _bvDirect.target, reason: `Black Vote from ${_bvDirect.from} — ${_bvDirect.reason || 'parting shot'}`, isBlackVote: true });
+      // Mark for consumption
+      _bvDirect._applied = true;
+    }
   }
 
   tribalPlayers.forEach(voter => {
@@ -16132,7 +16141,6 @@ function simulateEpisode() {
   gs.penaltyVoteThisEp = null;
   // ── BLACK VOTE: stage pending black votes — consumed AFTER tribal if the target attended ──
   if (!gs.blackVotes) gs.blackVotes = []; // safety init for saves/checkpoints without this field
-  console.log('[BLACK VOTE] Episode start. gs.blackVotes:', JSON.stringify(gs.blackVotes), 'penaltyVoteThisEp:', gs.penaltyVoteThisEp);
   if (gs.blackVotes.length) {
     const _bvToApply = gs.blackVotes.filter(bv => bv.type === 'classic' && gs.activePlayers.includes(bv.target));
     if (_bvToApply.length) {
@@ -18684,9 +18692,13 @@ function simulateEpisode() {
     }
 
     // ── BLACK VOTE: consume the pending black vote (target was at this tribal) ──
-    // Only consume black vote if the target was actually at THIS tribal
+    // Consume black votes that were applied (via penalty vote or direct injection)
     if (ep.blackVotePending && gs.blackVotes?.length && ep.tribalPlayers?.includes(ep.blackVotePending.target)) {
       gs.blackVotes = gs.blackVotes.filter(bv => bv !== ep.blackVotePending);
+    }
+    // Also consume any directly-injected black votes (marked _applied in simulateVotes)
+    if (gs.blackVotes?.length) {
+      gs.blackVotes = gs.blackVotes.filter(bv => !bv._applied);
     }
     delete ep.blackVotePending;
     delete gs._activeBlackVote;

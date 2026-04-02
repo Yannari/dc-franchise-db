@@ -1179,6 +1179,11 @@
                   <span>Medevac Replacement (KL-3)</span>
                 </label>
                 <p class="acc-desc" id="replacement-desc" style="display:none">When a player is medically evacuated, the most recently voted-out player returns to take their spot. Incompatible with Redemption/Rescue Island.</p>
+                <label class="acc-check-row" id="reward-sharing-row" style="margin-top:6px;display:none">
+                  <input type="checkbox" id="cfg-reward-sharing" onchange="saveConfig()">
+                  <span>Pre-Merge Reward Sharing</span>
+                </label>
+                <p class="acc-desc" id="reward-sharing-desc" style="display:none">Winning tribe can invite one person from the losing tribe to share the reward. Builds cross-tribal bonds and strategy.</p>
               </div>
             </div>
           </div>
@@ -2341,6 +2346,7 @@ function saveConfig() {
     survivalDifficulty: g('cfg-survival-difficulty')?.value || 'casual',
     autoRewardChallenges: g('cfg-auto-reward')?.checked ?? false,
     replacementOnMedevac: g('cfg-replacement')?.checked ?? false,
+    rewardSharing: g('cfg-reward-sharing')?.checked ?? false,
     host:        g('cfg-host')?.value || 'Chris',
     advantages: Object.fromEntries(ADVANTAGES.map(a => {
       if (a.key === 'idol') {
@@ -2416,11 +2422,16 @@ function renderConfig() {
   set('cfg-survival-difficulty', seasonConfig.survivalDifficulty || 'casual');
   chk('cfg-auto-reward', seasonConfig.autoRewardChallenges ?? false);
   chk('cfg-replacement', seasonConfig.replacementOnMedevac ?? false);
-  // Show/hide replacement row based on food/water being enabled
+  // Show/hide replacement + reward sharing rows based on food/water being enabled
   const _repRow = g('replacement-row');
   const _repDesc = g('replacement-desc');
   if (_repRow) _repRow.style.display = _fwOn ? '' : 'none';
   if (_repDesc) _repDesc.style.display = _fwOn ? '' : 'none';
+  chk('cfg-reward-sharing', seasonConfig.rewardSharing ?? false);
+  const _rsRow = g('reward-sharing-row');
+  const _rsDesc = g('reward-sharing-desc');
+  if (_rsRow) _rsRow.style.display = _fwOn ? '' : 'none';
+  if (_rsDesc) _rsDesc.style.display = _fwOn ? '' : 'none';
   // Show/hide auto-reward row based on food/water being enabled
   const _arRow = g('auto-reward-row');
   const _arDesc = g('auto-reward-desc');
@@ -10588,6 +10599,62 @@ function applyTwist(ep, twist, isPrimary = true) {
       }
     }
 
+    // ── Pre-merge reward sharing: winning tribe invites one person from losing tribe ──
+    if (twistObj.rewardWinnerType === 'tribe' && seasonConfig.rewardSharing && !gs.isMerged) {
+      const _winTribeObj = twistObj.rewardChalPlacements[0];
+      const _losingTribes = twistObj.rewardChalPlacements.slice(1);
+      const _winMembers = _winTribeObj?.members || [];
+      if (_winMembers.length >= 2 && _losingTribes.length >= 1) {
+        // Roll: tribe decides together — weighted by avg social + strategic of winning tribe
+        const _avgSocial = _winMembers.reduce((s, m) => s + pStats(m).social, 0) / _winMembers.length;
+        const _avgStrategic = _winMembers.reduce((s, m) => s + pStats(m).strategic, 0) / _winMembers.length;
+        const _shareChance = _avgSocial * 0.05 + _avgStrategic * 0.03 + 0.05;
+        if (Math.random() < _shareChance) {
+          // Tribe decides who to invite — consensus based on bonds across tribal lines
+          const _losingPlayers = _losingTribes.flatMap(t => t.members || []);
+          if (_losingPlayers.length) {
+            // Score each losing player: avg bond with ALL winning tribe members (tribe decision)
+            const _inviteScored = _losingPlayers.map(p => {
+              const avgBondWithWinners = _winMembers.reduce((s, w) => s + getBond(w, p), 0) / _winMembers.length;
+              const isStrategicPick = pStats(p).strategic >= 6 || pStats(p).social >= 6;
+              return {
+                name: p,
+                score: avgBondWithWinners * 0.6 + (isStrategicPick ? 1.0 : 0) + Math.random() * 0.5,
+                avgBond: avgBondWithWinners,
+                reason: avgBondWithWinners >= 1.5 ? 'cross-tribal-bond' : isStrategicPick ? 'strategic-invite' : 'goodwill',
+              };
+            }).sort((a, b) => b.score - a.score);
+            const _invited = _inviteScored[0];
+
+            // Effects
+            // Bond boost: invited + each winning tribe member (shared experience)
+            _winMembers.forEach(w => addBond(w, _invited.name, 0.4));
+            // Losing tribemates: mild resentment toward the invited (why YOU?)
+            const _invTribe = _losingTribes.find(t => (t.members || []).includes(_invited.name));
+            (_invTribe?.members || []).filter(m => m !== _invited.name).forEach(m => {
+              if (Math.random() < 0.3) addBond(m, _invited.name, -0.15);
+            });
+            // Survival boost for invited (they ate)
+            if (seasonConfig.foodWater === 'enabled' && gs.survival) {
+              gs.survival[_invited.name] = Math.min(100, (gs.survival[_invited.name] || 80) + 8);
+            }
+
+            const _reasonText = _invited.reason === 'cross-tribal-bond'
+              ? `The tribe had connections with ${_invited.name} from swaps and shared challenges. This was personal.`
+              : _invited.reason === 'strategic-invite'
+              ? `${_invited.name} is someone the tribe wants to work with after the merge. This was strategic.`
+              : `A goodwill gesture. ${_invited.name} looked like ${pronouns(_invited.name).sub} needed it.`;
+
+            twistObj.rewardShareInvite = {
+              invited: _invited.name, invitedBy: _winTribeObj.name,
+              reason: _invited.reason, reasonText: _reasonText,
+              avgBond: Math.round(_invited.avgBond * 10) / 10,
+            };
+          }
+        }
+      }
+    }
+
     // ── Survival food restoration from reward ──
     if (seasonConfig.foodWater === 'enabled') {
       const _foodBonus = { feast: 25, overnight: 20, comfort: 10, supplies: 15, spa: 10, letters: 0, clue: 0 };
@@ -11017,7 +11084,12 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
       events.push({ type: 'idolSearch', text: searchLines[Math.floor(Math.random() * searchLines.length)] });
 
     } else if (eventType === 'injury') {
-      const p = _pick(group, n => Math.max(0.1, (10 - pStats(n).endurance) * 0.5 + 1));
+      // Low survival = more injury-prone (weakened body). Survival 80 = 1x, 40 = 1.6x, 20 = 2.2x
+      const p = _pick(group, n => {
+        const _survMult = seasonConfig.foodWater === 'enabled' && gs.survival
+          ? 1.0 + Math.max(0, (70 - (gs.survival[n] || 80)) * 0.02) : 1.0;
+        return Math.max(0.1, ((10 - pStats(n).endurance) * 0.5 + 1) * _survMult);
+      });
       const _ijP = pronouns(p);
       const injuryLines = [
         `${p} rolls ${_ijP.posAdj} ankle on the way back from the water well. ${_ijP.Sub} play${_ijP.sub==='they'?'':'s'} it down, but ${_ijP.sub} ${_ijP.sub==='they'?'are':'is'} clearly in pain.`,
@@ -17835,7 +17907,7 @@ function simulateEpisode() {
           rewardPickReasons: rct.rewardPickReasons || null, rewardPickStrategy: rct.rewardPickStrategy || null,
           rewardSnubs: rct.rewardSnubs || null, rewardAlliancePitched: rct.rewardAlliancePitched || false, rewardAllianceFormed: rct.rewardAllianceFormed || null, rewardAllianceFailed: rct.rewardAllianceFailed || false, rewardAllianceMembers: rct.rewardAllianceMembers || null, rewardAllianceStrengthened: rct.rewardAllianceStrengthened || null, rewardFailedPairs: rct.rewardFailedPairs || null, rewardPitchLeaks: rct.rewardPitchLeaks || null,
           rewardMaxCompanions: rct.rewardMaxCompanions || null,
-          rewardCluedPlayer: rct.rewardCluedPlayer || null,
+          rewardCluedPlayer: rct.rewardCluedPlayer || null, rewardShareInvite: rct.rewardShareInvite || null,
         };
       })(),
       tribalTribe: null,
@@ -22124,11 +22196,15 @@ function updateSurvivalDesc() {
   const _arDesc2 = document.getElementById('auto-reward-desc');
   if (_arRow2) _arRow2.style.display = mode === 'enabled' ? '' : 'none';
   if (_arDesc2) _arDesc2.style.display = mode === 'enabled' ? '' : 'none';
-  // Show/hide replacement checkbox
+  // Show/hide replacement + reward sharing checkboxes
   const _repRow2 = document.getElementById('replacement-row');
   const _repDesc2 = document.getElementById('replacement-desc');
   if (_repRow2) _repRow2.style.display = mode === 'enabled' ? '' : 'none';
   if (_repDesc2) _repDesc2.style.display = mode === 'enabled' ? '' : 'none';
+  const _rsRow2 = document.getElementById('reward-sharing-row');
+  const _rsDesc2 = document.getElementById('reward-sharing-desc');
+  if (_rsRow2) _rsRow2.style.display = mode === 'enabled' ? '' : 'none';
+  if (_rsDesc2) _rsDesc2.style.display = mode === 'enabled' ? '' : 'none';
   if (desc) {
     const text = {
       disabled: 'Disabled: No food or water tracking. Players have unlimited resources.',
@@ -27639,6 +27715,24 @@ function rpBuildRewardChallenge(ep) {
     const _rcAllSlotsData = rcDisplayOrder.map((t,i) => `${rcRevealId}-tribe-${i}:${t.name}`).join('|');
     html += `<button onclick="vpRevealAllTribesFromData(this)" data-slots="${_rcAllSlotsData}"
       style="padding:6px 12px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:11px;cursor:pointer;margin-top:4px">See all results</button>`;
+
+    // ── Reward share invite (pre-merge: winning tribe invites one from losing tribe) ──
+    if (rc.rewardShareInvite) {
+      const _rsi = rc.rewardShareInvite;
+      const _rsiTc = tribeColor(_rsi.invitedBy);
+      html += `<div style="margin-top:14px;padding:12px;border:1px solid rgba(240,165,0,0.2);border-radius:8px;background:rgba(240,165,0,0.04)">
+        <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:#f0a500;margin-bottom:8px">REWARD SHARED</div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          ${rpPortrait(_rsi.invited, 'sm')}
+          <div>
+            <div style="font-size:13px;font-weight:600;color:#e6edf3">${_rsi.invited}</div>
+            <div style="font-size:11px;color:#f0a500">Invited by <span style="color:${_rsiTc}">${_rsi.invitedBy}</span></div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:#8b949e;line-height:1.5;font-style:italic">${_rsi.reasonText}</div>
+      </div>`;
+    }
+
   } else {
     // Individual mode — interactive reveal (last-to-first like immunity)
     const placements = rc.placements?.length ? rc.placements : (rc.winner ? [rc.winner] : []);

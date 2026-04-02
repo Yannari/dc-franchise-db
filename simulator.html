@@ -6526,7 +6526,8 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
   // Penalty vote: a pre-cast vote against the penalty target (if they're at this tribal)
   if (gs.penaltyVoteThisEp && tribalPlayers.includes(gs.penaltyVoteThisEp) && !isImmune(gs.penaltyVoteThisEp)) {
     votes[gs.penaltyVoteThisEp] = (votes[gs.penaltyVoteThisEp] || 0) + 1;
-    const _pvBv = ep.blackVoteApplied;
+    // Check if this penalty vote is from a Black Vote (stored on gs, not ep)
+    const _pvBv = gs.blackVotes?.find(bv => bv.target === gs.penaltyVoteThisEp && bv.type === 'classic') || gs._activeBlackVote || null;
     const _pvReason = _pvBv ? `Black Vote from ${_pvBv.from} — ${_pvBv.reason || 'parting shot'}` : 'penalty vote — pre-cast by the twist';
     log.push({ voter: _pvBv ? _pvBv.from : 'THE GAME', voted: gs.penaltyVoteThisEp, reason: _pvReason, isBlackVote: !!_pvBv });
   }
@@ -16135,6 +16136,7 @@ function simulateEpisode() {
     if (_bvToApply.length) {
       const _bv = _bvToApply[0];
       gs.penaltyVoteThisEp = _bv.target;
+      gs._activeBlackVote = _bv; // accessible from simulateVotes (which doesn't have ep)
       ep.blackVoteApplied = _bv;
       ep.blackVotePending = _bv; // mark for consumption after tribal confirms target was there
     }
@@ -18684,6 +18686,7 @@ function simulateEpisode() {
       gs.blackVotes = gs.blackVotes.filter(bv => bv !== ep.blackVotePending);
       delete ep.blackVotePending;
     }
+    delete gs._activeBlackVote;
     // ── BLACK VOTE: eliminated player casts a parting vote/gift (until F4) ──
     if (cfg.blackVote && cfg.blackVote !== 'off' && gs.activePlayers.length > 4) {
       const _bvElim = ep.eliminated;

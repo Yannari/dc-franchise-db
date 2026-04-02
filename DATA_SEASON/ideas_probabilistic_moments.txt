@@ -188,7 +188,7 @@ Roll: ~20% once per game
 What happens: player engineers their own boot to face rival at the duel. Post-boot
   narrative: "strategic surrender." Needs RI/exile infrastructure active.
 
-[21] SURVIVAL MECHANICS (food & water system) — see TODO section above + ideas.txt for full design.
+
 
 
   LOW PRIORITY

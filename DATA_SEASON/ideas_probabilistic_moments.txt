@@ -218,6 +218,24 @@ Roll: ~15% if one of the winners has a high-bond pair OUTSIDE the reward group
 What happens: players left behind form counter-alliance to break up reward bonds.
 Note: needs reward challenge system implemented first.
 
+[DC-1] FIRST IMPRESSIONS (Disventure Camp twist)
+  Trigger: Episode 1, before any challenge. Each tribe votes immediately.
+  What happens: each tribe votes out one person based on first impressions only.
+    No challenge, no camp time, no strategy — pure gut reaction.
+    The "eliminated" players are NOT actually eliminated — they SWAP tribes.
+    Mock elimination → tribe swap. The voted-out players join the opposing tribe.
+  Mechanic: schedulable twist (episode 1 only). Each tribe runs a quick vote
+    based on initial bonds + first impressions (social + temperament + archetype).
+    Low social/low temperament/villain archetypes more likely to be first targets.
+    Voted-out players swap to the other tribe. They know who voted for them — creates
+    immediate grudges and loyalty dynamics.
+  Consequence: massive early-game drama. The swapped players arrive at a new tribe
+    with information about who targeted them. Bond damage with voters, bond boost
+    with the new tribe (fresh start). "Never feel safe" message established day 1.
+  VP: dedicated screen — dramatic vote reveal, then "TWIST — they're not going home"
+    moment, followed by swap announcement.
+  Note: inspired by Survivor's first impressions twist and Disventure Camp 1.
+
 [KL-2] TIED DESTINIES (Koh-Lanta twist)
   Trigger: post-merge, final 8/10/12. Players randomly paired for the episode.
   What happens: pairs compete together in challenges. At tribal, the person who
@@ -238,14 +256,16 @@ What happens: the two goats realize they're being dragged along and quietly deci
 Mechanic: forced allianceForm event between the two goats, boosted vote heat on the
   highest-threat player that tribal.
 
-[KL-4] BLACK VOTE (Koh-Lanta twist)
-  Trigger: after being voted out at tribal council
-  What happens: the eliminated player casts a secret "Black Vote" against one
-    remaining player. This vote counts at the next tribal council the target attends.
-  Modern variant (post-Cambodge): instead of an extra vote against someone, the
-    eliminated player gives a remaining player an Extra Vote advantage.
-  Mechanic: on elimination, eliminated player picks target (highest-heat enemy or
-    lowest-bond rival). gs.blackVote = { from, target, ep }. Next tribal: injected
-    as extra vote. OR modern: eliminated gives Extra Vote to closest ally.
-  Consequence: eliminated players still influence the game. Grudge mechanic.
-  Note: two variants (classic = punish, modern = reward). Pick one or make configurable.
+[DONE] KL-4 BLACK VOTE — implemented as season-long rule (config dropdown: Off/Classic/Modern).
+  Classic: eliminated votes AGAINST lowest-bond rival. Injected as penalty vote at
+  next tribal the target attends. Modern: eliminated gifts Extra Vote to closest ally.
+  VP: "BLACK VOTE CAST" after torch snuff, "BLACK VOTE" announcement at next tribal.
+  Strategic guessing camp events: players speculate who received it (correct/wrong reads).
+  Direct injection in simulateVotes handles multi-tribal episodes. Works with double boots.
+  gs.blackVotes array, ep.blackVote/blackVote1/blackVote2/blackVoteApplied.
+
+[DONE] #6 FALSE IDOL PLANT — implemented via checkFakeIdolPlant(ep).
+  Strategic player (>=7) with high heat crafts fake idol. Once per game.
+  4 arcs: caught crafting, planted→played at tribal (humiliation), planted→tipped off
+  (confrontation next ep), planted→nobody finds. Fake flag on gs.advantages.
+  checkIdolPlays handles fake reveal (no votes negated). VP: 4 badge types.

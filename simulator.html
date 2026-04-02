@@ -18475,13 +18475,13 @@ function simulateEpisode() {
           if (_bv1Target) {
             if (!gs.blackVotes) gs.blackVotes = [];
             gs.blackVotes.push({ from: _bv1Elim, target: _bv1Target, ep: epNum, type: 'classic', reason: getBond(_bv1Elim, _bv1Target) <= -2 ? `grudge — ${_bv1Elim} and ${_bv1Target} had bad blood` : `${_bv1Elim} wants ${_bv1Target} gone — lowest bond of anyone left` });
-            ep.blackVote = { from: _bv1Elim, target: _bv1Target, type: 'classic', reason: getBond(_bv1Elim, _bv1Target) <= -2 ? `grudge — ${_bv1Elim} and ${_bv1Target} had bad blood` : `${_bv1Elim} wants ${_bv1Target} gone — lowest bond of anyone left` };
+            ep.blackVote1 = { from: _bv1Elim, target: _bv1Target, type: 'classic', reason: getBond(_bv1Elim, _bv1Target) <= -2 ? `grudge — ${_bv1Elim} and ${_bv1Target} had bad blood` : `${_bv1Elim} wants ${_bv1Target} gone — lowest bond of anyone left` };
           }
         } else if (cfg.blackVote === 'modern') {
           const _bv1Recipient = [..._bv1Pool].sort((a, b) => getBond(_bv1Elim, b) - getBond(_bv1Elim, a))[0];
           if (_bv1Recipient) {
             gs.advantages.push({ holder: _bv1Recipient, type: 'extraVote', foundEp: epNum, fromBlackVote: true, giftedBy: _bv1Elim });
-            ep.blackVote = { from: _bv1Elim, recipient: _bv1Recipient, type: 'modern', reason: `${_bv1Elim}'s closest remaining connection` };
+            ep.blackVote1 = { from: _bv1Elim, recipient: _bv1Recipient, type: 'modern', reason: `${_bv1Elim}'s closest remaining connection` };
           }
         }
       }
@@ -22254,6 +22254,7 @@ function patchEpisodeHistory(ep) {
   if (ep.stolenCreditEvents?.length) h.stolenCreditEvents = ep.stolenCreditEvents;
   h.ambassadorData = ep.ambassadorData || null;
   h.blackVote = ep.blackVote || null;
+  h.blackVote1 = ep.blackVote1 || null;
   h.blackVote2 = ep.blackVote2 || null;
   h.blackVoteApplied = ep.blackVoteApplied || null;
   h.fakeIdolEvents = ep.fakeIdolEvents || null;
@@ -31242,8 +31243,9 @@ function rpBuildVotes(ep) {
       <div style="font-family:var(--font-display);font-size:24px;color:var(--accent-fire);margin-top:16px;text-shadow:0 0 12px var(--accent-fire)">The tribe has spoken.</div>
     </div>`;
     // Black Vote: eliminated player casts their parting shot
-    if (ep.blackVote) {
-      const _bvc = ep.blackVote;
+    // Match the correct black vote to the eliminated player shown
+    const _bvc = [ep.blackVote1, ep.blackVote, ep.blackVote2].find(bv => bv && bv.from === _torchElim) || ep.blackVote;
+    if (_bvc) {
       html += `<div style="margin-top:16px;padding:12px;border:1px solid rgba(99,102,241,0.25);border-radius:8px;background:rgba(99,102,241,0.04);text-align:center">
         <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:#818cf8;margin-bottom:6px">BLACK VOTE CAST</div>
         <div style="font-size:12px;color:#c9d1d9;line-height:1.5">${

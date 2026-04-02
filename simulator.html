@@ -21849,7 +21849,7 @@ function buildEpisodeMap() {
     if (_allTypes.includes('multi-tribal') && !merged) elims = Math.max(elims, Math.max(2, (seasonConfig.teams || 2) - 1));
     if (_allTypes.includes('slasher-night')) elims = Math.max(elims, 1);
     if (_allTypes.includes('ambassadors')) elims = Math.max(elims, 2);
-    const returns = (etype === 'returning-player' || etype === 'second-chance') ? 1 : 0;
+    const returns = (_allTypes.includes('returning-player') || _allTypes.includes('second-chance')) ? 1 : 0;
 
     // RI return: fires when the episode STARTS with <= riReentryAt players.
     const _riReentryAt = seasonConfig.riReentryAt || seasonConfig.mergeAt || mergeAt;

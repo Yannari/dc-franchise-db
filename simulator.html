@@ -19661,13 +19661,12 @@ function generateTwistScenes(ep) {
       }
 
       case 'sudden-death': {
-        const _sdActive = gs.activePlayers.slice();
-        sc.push({ text: 'The host gathers the tribe. "Today is different. There is no tribal council tonight."', players: _sdActive });
-        sc.push({ text: '"Instead — the person who finishes LAST in today\'s challenge will be immediately eliminated. No vote. No discussion. No second chance."', players: _sdActive });
+        // Show ALL players — don't spoil who goes home. The result is on the Sudden Death screen.
+        const _sdAllPlayers = [...(ep.gsSnapshot?.activePlayers || gs.activePlayers), ep.suddenDeathEliminated].filter(Boolean);
+        const _sdUnique = [...new Set(_sdAllPlayers)];
+        sc.push({ text: 'The host gathers the tribe. "Today is different. There is no tribal council tonight."', players: _sdUnique });
+        sc.push({ text: '"Instead — the person who finishes LAST in today\'s challenge will be immediately eliminated. No vote. No discussion. No second chance."', players: [] });
         sc.push({ text: 'The tribe absorbs the news. Every challenge before this was about winning safety. This one is about avoiding the end.', players: [] });
-        if (ep.suddenDeathEliminated) {
-          sc.push({ text: `${ep.suddenDeathEliminated} finished last. ${pronouns(ep.suddenDeathEliminated).Sub} ${pronouns(ep.suddenDeathEliminated).sub==='they'?'are':'is'} eliminated on the spot.`, players: [ep.suddenDeathEliminated], badge: 'AUTO-ELIMINATED', badgeClass: 'red' });
-        }
         result.push({ label:'Sudden Death', type:tw.type, scenes:sc }); break;
       }
 

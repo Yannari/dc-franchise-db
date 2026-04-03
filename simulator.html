@@ -20352,7 +20352,7 @@ function getTribeRelationshipHighlights(members) {
 
 function getTribeAdvantageStatus(tribeName, isMerge, snapAdvantages, snapMembers) {
   const lines = [];
-  const typeLabel = { idol:'Hidden Immunity Idol', voteSteal:'Vote Steal', extraVote:'Extra Vote', kip:'Knowledge is Power', legacy:'Legacy Advantage', amulet:'Amulet Advantage', secondLife:'Second Life Amulet', teamSwap:'Team Swap', voteBlock:'Vote Block', safetyNoPower:'Safety Without Power' };
+  const typeLabel = { idol:'Hidden Immunity Idol', voteSteal:'Vote Steal', extraVote:'Extra Vote', kip:'Knowledge is Power', legacy:'Legacy Advantage', amulet:'Amulet Advantage', secondLife:'Second Life Amulet', teamSwap:'Team Swap', voteBlock:'Vote Block', safetyNoPower:'Safety Without Power', soleVote:'Sole Vote' };
   const members = snapMembers || (isMerge ? gs.activePlayers : (gs.tribes.find(t => t.name === tribeName)?.members || []));
   const _colorTribe = name => `<span style="color:${tribeColor(name)};font-weight:700">${name}</span>`;
 
@@ -22602,7 +22602,7 @@ function generateSummaryText(ep) {
   const _hasBewares = gs.bewares && Object.values(gs.bewares).some(b => b.holder && !b.activated);
   if (gs.advantages.length || _hasBewares) {
     sec('ADVANTAGES IN PLAY');
-    const typeLabel = { idol:'Hidden Immunity Idol', voteSteal:'Vote Steal', extraVote:'Extra Vote', kip:'Knowledge is Power', legacy:'Legacy Advantage', amulet:'Amulet Advantage', secondLife:'Second Life Amulet', teamSwap:'Team Swap', voteBlock:'Vote Block', safetyNoPower:'Safety Without Power' };
+    const typeLabel = { idol:'Hidden Immunity Idol', voteSteal:'Vote Steal', extraVote:'Extra Vote', kip:'Knowledge is Power', legacy:'Legacy Advantage', amulet:'Amulet Advantage', secondLife:'Second Life Amulet', teamSwap:'Team Swap', voteBlock:'Vote Block', safetyNoPower:'Safety Without Power', soleVote:'Sole Vote' };
     // Beware holders who haven't activated yet (idol pending)
     if (gs.bewares) {
       Object.values(gs.bewares).forEach(b => {
@@ -23350,6 +23350,7 @@ function patchEpisodeHistory(ep) {
   if (ep.showmanceEvents?.length) h.showmanceEvents = ep.showmanceEvents;
   if (ep.showmanceTests?.length) h.showmanceTests = ep.showmanceTests;
   if (ep.safetyNoPowerPlayed) h.safetyNoPowerPlayed = ep.safetyNoPowerPlayed;
+  if (ep.soleVotePlayed) h.soleVotePlayed = ep.soleVotePlayed;
   if (ep.juryRoundtable) h.juryRoundtable = ep.juryRoundtable;
   // Reward sharing: ensure it lands on rewardChalData even if the push path didn't build it
   if (ep.rewardShareInvite && h.rewardChalData) h.rewardChalData.rewardShareInvite = ep.rewardShareInvite;
@@ -28735,6 +28736,12 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'safetyNoPowerSnooped'     ? '\u26a0 SNOOPED'
                      : evt.type === 'safetyNoPowerAftermath'   ? 'ABANDONED TRIBAL'
                      : evt.type === 'safetyNoPowerEscaped'     ? 'ESCAPED'
+                     : evt.type === 'soleVoteFound'         ? 'ADVANTAGE FOUND'
+                     : evt.type === 'soleVoteConfession'    ? 'CONFESSION'
+                     : evt.type === 'soleVoteSnooped'       ? '\u26a0 SNOOPED'
+                     : evt.type === 'soleVoteFallout'       ? 'DICTATOR\'S FALLOUT'
+                     : evt.type === 'soleVoteWasted'        ? 'WASTED POWER'
+                     : evt.type === 'soleVoteAccomplice'    ? 'ACCOMPLICE?'
                      : evt.type === 'miscommunicationFallout' ? (evt.badgeText || 'MISFIRE')
                      : evt.type === 'hardWork'             ? '+ Earned respect'
                      : evt.type === 'unexpectedCompetence' ? '+ Surprised the tribe'
@@ -28844,6 +28851,8 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'teamSwapSnooped' || evt.type === 'voteBlockSnooped' || evt.type === 'voteStealSnooped' ? 'red'
                      : evt.type === 'safetyNoPowerFound' || evt.type === 'safetyNoPowerConfession' || evt.type === 'safetyNoPowerEscaped' ? 'gold'
                      : evt.type === 'safetyNoPowerSnooped' || evt.type === 'safetyNoPowerAftermath' ? 'red'
+                     : evt.type === 'soleVoteFound' || evt.type === 'soleVoteConfession' ? 'gold'
+                     : evt.type === 'soleVoteSnooped' || evt.type === 'soleVoteFallout' || evt.type === 'soleVoteWasted' || evt.type === 'soleVoteAccomplice' ? 'red'
                      : evt.type === 'miscommunicationFallout' ? 'red'
                      : isAmuletSec ? 'gold'
                      : isCRExposure || isCRDissolved || isCRBlowup ? 'red'
@@ -30457,7 +30466,7 @@ function rpBuildVotingPlans(ep) {
       </div>`;
     }
     otherAdvantages.forEach(adv => {
-      const typeLabels = { extraVote: 'Extra Vote', voteSteal: 'Vote Steal', legacy: 'Legacy Advantage', amulet: 'Amulet', kip: 'Knowledge is Power', secondLife: 'Second Life', teamSwap: 'Team Swap', voteBlock: 'Vote Block', safetyNoPower: 'Safety Without Power' };
+      const typeLabels = { extraVote: 'Extra Vote', voteSteal: 'Vote Steal', legacy: 'Legacy Advantage', amulet: 'Amulet', kip: 'Knowledge is Power', secondLife: 'Second Life', teamSwap: 'Team Swap', voteBlock: 'Vote Block', safetyNoPower: 'Safety Without Power', soleVote: 'Sole Vote' };
       const advLabel = typeLabels[adv.type] || adv.type;
       html += `<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(130,80,223,0.06);border:1px solid rgba(130,80,223,0.15);border-radius:8px;margin-bottom:4px">
         ${rpPortrait(adv.holder, 'sm')}
@@ -31546,6 +31555,17 @@ function rpBuildVotes(ep) {
           <div class="tv-advantage-play-badge" style="color:#818cf8;background:rgba(129,140,248,0.12);border-color:rgba(129,140,248,0.25)">TEAM SWAP</div>
           <div class="tv-advantage-play-title">${_tsIsAlly ? `${player} plays Team Swap for ${play.playedFor}` : `${player} plays Team Swap`}</div>
           <div class="tv-advantage-play-desc">${_tsIsAlly ? `Instead of going home, ${play.playedFor} will swap to another tribe. ${player} burned the advantage to save ${pronouns(play.playedFor).obj}.` : `Instead of going home, ${player} will swap to another tribe. No one is eliminated tonight.`}</div>
+        </div>
+      </div>`;
+      return;
+    }
+    if (type === 'soleVote') {
+      _advHtml += `<div class="tv-advantage-play">
+        <div class="tv-advantage-play-left">${rpPortrait(player, 'sm sitd')}</div>
+        <div class="tv-advantage-play-body">
+          <div class="tv-advantage-play-badge" style="color:#f0a500;background:rgba(240,165,0,0.12);border-color:rgba(240,165,0,0.25)">SOLE VOTE</div>
+          <div class="tv-advantage-play-title">${player} plays the Sole Vote</div>
+          <div class="tv-advantage-play-desc">All other votes are void. ${player}'s vote is the only one that counts tonight.</div>
         </div>
       </div>`;
       return;
@@ -33093,6 +33113,8 @@ function rpBuildVotes2(ep) {
       } else if (type === 'voteBlock') {
         const _blocked = play.blockedPlayer;
         html += `<div class="tv-advantage-play"><div class="tv-advantage-play-left">${rpPortrait(player, 'sm sitd')}${_blocked ? rpPortrait(_blocked, 'sm') : ''}</div><div class="tv-advantage-play-body"><div class="tv-advantage-play-badge" style="color:#f85149;background:rgba(248,81,73,0.12);border-color:rgba(248,81,73,0.25)">VOTE BLOCK</div><div class="tv-advantage-play-title">${player} blocks ${_blocked || 'a player'}'s vote</div><div class="tv-advantage-play-desc">${_blocked || 'A player'} cannot vote tonight. Their voice has been silenced.</div></div></div>`;
+      } else if (type === 'soleVote') {
+        html += `<div class="tv-advantage-play"><div class="tv-advantage-play-left">${rpPortrait(player, 'sm sitd')}</div><div class="tv-advantage-play-body"><div class="tv-advantage-play-badge" style="color:#f0a500;background:rgba(240,165,0,0.12);border-color:rgba(240,165,0,0.25)">SOLE VOTE</div><div class="tv-advantage-play-title">${player} plays the Sole Vote</div><div class="tv-advantage-play-desc">All other votes are void. ${player}'s vote is the only one that counts.</div></div></div>`;
       } else if (type === 'safetyNoPower') {
         const _snpWarned = play.warned;
         html += `<div class="tv-advantage-play">

@@ -29069,7 +29069,7 @@ function rpBuildRewardChallenge(ep) {
         <div id="${slotId}-header" style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
           <span id="${slotId}-name" style="font-family:var(--font-display);font-size:16px;color:var(--muted)">Tribe ?</span>
           <span id="${slotId}-badge" style="display:none">${_rcResultBadge[tName]}</span>
-          <button onclick="vpRevealTribe('${slotId}','${tName}')" style="margin-left:auto;padding:4px 12px;background:var(--accent-fire);border:none;border-radius:4px;color:#fff;font-size:11px;cursor:pointer">REVEAL</button>
+          <button onclick="vpRevealTribe('${slotId}','${tName}');var _c=this.closest('.rp-page');if(_c){var _bs=_c.querySelectorAll('[id$=-badge]');var _all=[..._bs].every(b=>b.style.display!=='none');if(_all){var _sh=document.getElementById('rc-share-${ep.num}');if(_sh)_sh.style.display=''}}" style="margin-left:auto;padding:4px 12px;background:var(--accent-fire);border:none;border-radius:4px;color:#fff;font-size:11px;cursor:pointer">REVEAL</button>
         </div>
         <div class="rp-portrait-row" style="margin-bottom:8px">
           ${ranked.map((n,ri) => {
@@ -29085,15 +29085,16 @@ function rpBuildRewardChallenge(ep) {
         </div>
       </div>`;
     });
+    const _rcShareId = `rc-share-${ep.num}`;
     const _rcAllSlotsData = rcDisplayOrder.map((t,i) => `${rcRevealId}-tribe-${i}:${t.name}`).join('|');
-    html += `<button onclick="vpRevealAllTribesFromData(this)" data-slots="${_rcAllSlotsData}"
+    html += `<button onclick="vpRevealAllTribesFromData(this);var _sh=document.getElementById('${_rcShareId}');if(_sh)_sh.style.display=''" data-slots="${_rcAllSlotsData}"
       style="padding:6px 12px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:11px;cursor:pointer;margin-top:4px">See all results</button>`;
 
     // ── Reward share invite (pre-merge: winning tribe invites one from losing tribe) ──
     if (rc.rewardShareInvite) {
       const _rsi = rc.rewardShareInvite;
       const _rsiTc = tribeColor(_rsi.invitedBy);
-      html += `<div style="margin-top:14px;padding:12px;border:1px solid rgba(240,165,0,0.2);border-radius:8px;background:rgba(240,165,0,0.04)">
+      html += `<div id="${_rcShareId}" style="display:none;margin-top:14px;padding:12px;border:1px solid rgba(240,165,0,0.2);border-radius:8px;background:rgba(240,165,0,0.04)">
         <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:#f0a500;margin-bottom:8px">REWARD SHARED</div>
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
           ${rpPortrait(_rsi.invited, 'sm')}

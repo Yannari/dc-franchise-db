@@ -1469,6 +1469,8 @@ const ADVANTAGES = [
   { key: 'legacy',    label: 'Legacy Advantage',     default: 0 },
   { key: 'amulet',    label: 'Amulet Advantage',     default: 0 },
   { key: 'secondLife', label: 'Second Life Amulet',  default: 0 },
+  { key: 'teamSwap',   label: 'Team Swap',            default: 0 },
+  { key: 'voteBlock',  label: 'Vote Block',           default: 0 },
 ];
 
 const TWIST_CATALOG = [
@@ -7577,6 +7579,8 @@ function findAdvantages(ep) {
     { key: 'kip',        postMergeOnly: true,  baseChance: 0.004, epScaleCap: 0.010 },
     // amulet removed from random finding — planted simultaneously in ep 1 via special handler above
     { key: 'secondLife', postMergeOnly: false, baseChance: 0.002, epScaleCap: 0.008 },
+    { key: 'teamSwap',   postMergeOnly: false, baseChance: 0.002, epScaleCap: 0.008 },  // pre-merge only useful but can be found anytime
+    { key: 'voteBlock',  postMergeOnly: false, baseChance: 0.002, epScaleCap: 0.010 },
   ];
 
   nonIdolTypes.forEach(({ key, postMergeOnly, baseChance, epScaleCap }) => {
@@ -8277,6 +8281,87 @@ function checkNonIdolAdvantageUse(tribalPlayers, votesObj, ep, voteLog = []) {
   } else if (_amuHoldersAtTribal.length === 1 && _amuAdvs.length >= 2) {
     // Only 1 holder at this tribal but 2+ holders exist — can't play without the others
     // (pre-merge: holders on different tribes. The amulet is useless until they're together)
+  }
+
+  // ── Vote Block: holder blocks one player's vote this tribal ──
+  const _vbAdvs = gs.advantages.filter(a => a.type === 'voteBlock' && tribalPlayers.includes(a.holder));
+  for (const _vbAdv of _vbAdvs) {
+    const _vbHolder = _vbAdv.holder;
+    const _vbS = pStats(_vbHolder);
+    const _vbState = getPlayerState(_vbHolder);
+    // Play when in danger or strategically useful — proportional to strategic + boldness
+    const _vbHeat = computeHeat(_vbHolder, tribalPlayers, []);
+    const _vbForcePlay = ep._forceAdvantages || gs.activePlayers.length <= (seasonConfig.advExpire || 4);
+    const _vbPlayChance = _vbForcePlay ? 1.0 : _vbS.strategic * 0.05 + _vbS.boldness * 0.03 + (_vbHeat >= 3 ? 0.3 : 0);
+    if (Math.random() >= _vbPlayChance) continue;
+
+    // Target: the biggest threat who is likely to vote against the holder
+    const _vbCandidates = tribalPlayers.filter(p => p !== _vbHolder && !gs.lostVotes.includes(p));
+    const _vbTarget = _vbCandidates.sort((a, b) => {
+      const bondA = getBond(_vbHolder, a), bondB = getBond(_vbHolder, b);
+      const threatA = threatScore(a), threatB = threatScore(b);
+      // Block the biggest enemy who's likely to vote against us
+      return (bondA - threatA * 0.3) - (bondB - threatB * 0.3);
+    })[0];
+    if (!_vbTarget) continue;
+
+    // Block the vote
+    gs.advantages.splice(gs.advantages.indexOf(_vbAdv), 1);
+    gs.lostVotes.push(_vbTarget);
+    // Remove their vote from the tally if already cast
+    const _vbEntry = voteLog.find(l => l.voter === _vbTarget);
+    if (_vbEntry) {
+      const _vbVoted = _vbEntry.voted;
+      if (_vbVoted && votesObj[_vbVoted]) votesObj[_vbVoted]--;
+      _vbEntry.voteBlocked = true;
+    }
+    ep.idolPlays.push({ player: _vbHolder, type: 'voteBlock', blockedPlayer: _vbTarget, forced: _vbForcePlay });
+  }
+
+  // ── Team Swap: holder swaps self or ally to another tribe (pre-merge only) ──
+  if (!gs.isMerged && gs.tribes.length >= 2) {
+    const _tsAdvs = gs.advantages.filter(a => a.type === 'teamSwap' && tribalPlayers.includes(a.holder));
+    for (const _tsAdv of _tsAdvs) {
+      const _tsHolder = _tsAdv.holder;
+      const _tsS = pStats(_tsHolder);
+      const _tsHeat = computeHeat(_tsHolder, tribalPlayers, []);
+      // Play when in serious danger — this is a last resort escape
+      const _tsForcePlay = ep._forceAdvantages;
+      const _tsPlayChance = _tsForcePlay ? 1.0 : (_tsHeat >= 4 ? 0.6 : _tsHeat >= 3 ? 0.3 : 0.05) + _tsS.strategic * 0.02;
+      if (Math.random() >= _tsPlayChance) continue;
+
+      // Decide: swap self or save an ally?
+      // Self-swap if holder is the main target. Ally-save if ally is in more danger.
+      const _tsVotesAgainstHolder = Object.entries(votesObj).find(([n]) => n === _tsHolder)?.[1] || 0;
+      const _tsClosestAlly = tribalPlayers.filter(p => p !== _tsHolder && getBond(_tsHolder, p) >= 2)
+        .sort((a, b) => getBond(_tsHolder, b) - getBond(_tsHolder, a))[0];
+      const _tsAllyVotes = _tsClosestAlly ? (Object.entries(votesObj).find(([n]) => n === _tsClosestAlly)?.[1] || 0) : 0;
+      const _tsSwapSelf = _tsVotesAgainstHolder >= _tsAllyVotes || !_tsClosestAlly || _tsS.loyalty <= 4;
+      const _tsSwapTarget = _tsSwapSelf ? _tsHolder : _tsClosestAlly;
+
+      // Find destination tribe
+      const _tsCurTribe = gs.tribes.find(t => t.members.includes(_tsSwapTarget));
+      const _tsDestTribe = gs.tribes.filter(t => t !== _tsCurTribe).sort((a, b) => b.members.length - a.members.length)[0];
+      if (!_tsCurTribe || !_tsDestTribe) continue;
+
+      // Execute the swap
+      gs.advantages.splice(gs.advantages.indexOf(_tsAdv), 1);
+      _tsCurTribe.members = _tsCurTribe.members.filter(m => m !== _tsSwapTarget);
+      _tsDestTribe.members.push(_tsSwapTarget);
+
+      // Remove their votes from this tribal (they're no longer here)
+      if (votesObj[_tsSwapTarget]) delete votesObj[_tsSwapTarget]; // votes against them don't count
+      const _tsVoteEntry = voteLog.find(l => l.voter === _tsSwapTarget);
+      if (_tsVoteEntry) {
+        if (_tsVoteEntry.voted && votesObj[_tsVoteEntry.voted]) votesObj[_tsVoteEntry.voted]--;
+        _tsVoteEntry.teamSwapped = true;
+      }
+
+      ep.idolPlays.push({ player: _tsHolder, type: 'teamSwap', swappedPlayer: _tsSwapTarget,
+        fromTribe: _tsCurTribe.name, toTribe: _tsDestTribe.name, selfSwap: _tsSwapSelf, forced: _tsForcePlay });
+      ep.teamSwapPlayed = { holder: _tsHolder, swapped: _tsSwapTarget, from: _tsCurTribe.name, to: _tsDestTribe.name };
+      break; // one swap per tribal
+    }
   }
 }
 
@@ -19402,7 +19487,7 @@ function getTribeRelationshipHighlights(members) {
 
 function getTribeAdvantageStatus(tribeName, isMerge, snapAdvantages, snapMembers) {
   const lines = [];
-  const typeLabel = { idol:'Hidden Immunity Idol', voteSteal:'Vote Steal', extraVote:'Extra Vote', kip:'Knowledge is Power', legacy:'Legacy Advantage', amulet:'Amulet Advantage', secondLife:'Second Life Amulet' };
+  const typeLabel = { idol:'Hidden Immunity Idol', voteSteal:'Vote Steal', extraVote:'Extra Vote', kip:'Knowledge is Power', legacy:'Legacy Advantage', amulet:'Amulet Advantage', secondLife:'Second Life Amulet', teamSwap:'Team Swap', voteBlock:'Vote Block' };
   const members = snapMembers || (isMerge ? gs.activePlayers : (gs.tribes.find(t => t.name === tribeName)?.members || []));
   const _colorTribe = name => `<span style="color:${tribeColor(name)};font-weight:700">${name}</span>`;
 
@@ -21652,7 +21737,7 @@ function generateSummaryText(ep) {
   const _hasBewares = gs.bewares && Object.values(gs.bewares).some(b => b.holder && !b.activated);
   if (gs.advantages.length || _hasBewares) {
     sec('ADVANTAGES IN PLAY');
-    const typeLabel = { idol:'Hidden Immunity Idol', voteSteal:'Vote Steal', extraVote:'Extra Vote', kip:'Knowledge is Power', legacy:'Legacy Advantage', amulet:'Amulet Advantage', secondLife:'Second Life Amulet' };
+    const typeLabel = { idol:'Hidden Immunity Idol', voteSteal:'Vote Steal', extraVote:'Extra Vote', kip:'Knowledge is Power', legacy:'Legacy Advantage', amulet:'Amulet Advantage', secondLife:'Second Life Amulet', teamSwap:'Team Swap', voteBlock:'Vote Block' };
     // Beware holders who haven't activated yet (idol pending)
     if (gs.bewares) {
       Object.values(gs.bewares).forEach(b => {
@@ -32050,6 +32135,14 @@ function rpBuildVotes2(ep) {
         html += `<div class="tv-advantage-play"><div class="tv-advantage-play-left">${rpPortrait(player, 'sm sitd')}</div><div class="tv-advantage-play-body"><div class="tv-advantage-play-badge" style="color:#e3b341;background:rgba(227,179,65,0.12);border-color:rgba(227,179,65,0.25)">EXTRA VOTE</div><div class="tv-advantage-play-title">${player} plays an Extra Vote</div><div class="tv-advantage-play-desc">${player} casts a second vote. It will be read with the others.</div></div></div>`;
       } else if (type === 'voteSteal') {
         html += `<div class="tv-advantage-play"><div class="tv-advantage-play-left">${rpPortrait(player, 'sm sitd')}${stolenFrom ? rpPortrait(stolenFrom, 'sm') : ''}</div><div class="tv-advantage-play-body"><div class="tv-advantage-play-badge" style="color:#f0a500;background:rgba(240,165,0,0.12);border-color:rgba(240,165,0,0.25)">VOTE STEAL</div><div class="tv-advantage-play-title">${player} steals ${stolenFrom ? `${stolenFrom}'s vote` : 'a vote'}</div><div class="tv-advantage-play-desc">${stolenFrom ? `${stolenFrom} loses their vote.` : 'A vote is stolen.'} The redirect will be read with the others.</div></div></div>`;
+      } else if (type === 'voteBlock') {
+        const _blocked = play.blockedPlayer;
+        html += `<div class="tv-advantage-play"><div class="tv-advantage-play-left">${rpPortrait(player, 'sm sitd')}${_blocked ? rpPortrait(_blocked, 'sm') : ''}</div><div class="tv-advantage-play-body"><div class="tv-advantage-play-badge" style="color:#f85149;background:rgba(248,81,73,0.12);border-color:rgba(248,81,73,0.25)">VOTE BLOCK</div><div class="tv-advantage-play-title">${player} blocks ${_blocked || 'a player'}'s vote</div><div class="tv-advantage-play-desc">${_blocked || 'A player'} cannot vote tonight. Their voice has been silenced.</div></div></div>`;
+      } else if (type === 'teamSwap') {
+        const _ts = play;
+        html += `<div class="tv-advantage-play"><div class="tv-advantage-play-left">${rpPortrait(_ts.swappedPlayer || player, 'sm sitd')}</div><div class="tv-advantage-play-body"><div class="tv-advantage-play-badge" style="color:#818cf8;background:rgba(99,102,241,0.12);border-color:rgba(99,102,241,0.25)">TEAM SWAP</div><div class="tv-advantage-play-title">${_ts.selfSwap ? `${player} swaps to ${_ts.toTribe}` : `${player} sends ${_ts.swappedPlayer} to ${_ts.toTribe}`}</div><div class="tv-advantage-play-desc">${_ts.selfSwap ? `${player} plays the Team Swap to escape. ${pronouns(player).Sub} ${pronouns(player).sub==='they'?'leave':'leaves'} ${_ts.fromTribe} and ${pronouns(player).sub==='they'?'join':'joins'} ${_ts.toTribe}.` : `${player} plays the Team Swap to save ${_ts.swappedPlayer}. ${_ts.swappedPlayer} moves from ${_ts.fromTribe} to ${_ts.toTribe}.`}</div></div></div>`;
+      } else if (type === 'fake-idol') {
+        html += `<div class="tv-advantage-play"><div class="tv-advantage-play-left">${rpPortrait(player, 'sm sitd')}</div><div class="tv-advantage-play-body"><div class="tv-advantage-play-badge" style="color:#f85149;background:rgba(248,81,73,0.12);border-color:rgba(248,81,73,0.25)">FAKE IDOL</div><div class="tv-advantage-play-title">${player} plays a fake idol</div><div class="tv-advantage-play-desc">The host examines it. "This... is not a Hidden Immunity Idol." ${player}'s face drops. The votes count.${play.plantedBy ? ` Planted by ${play.plantedBy}.` : ''}</div></div></div>`;
       } else if (!type || type === 'idol') {
         // Regular idol play
         const _isAlly = !!playedFor;

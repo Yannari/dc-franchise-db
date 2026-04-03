@@ -16755,6 +16755,59 @@ function applyPostTribalConsequences(ep) {
   }
 }
 
+function handleExileFormat(ep) {
+  const cfg = seasonConfig;
+  if (!cfg.exile || gs.activePlayers.length <= 4) return;
+  if (gs.phase === 'finale') return;
+  // Phase check: pre = pre-merge only, post = post-merge only, both = always
+  const phase = cfg.exilePhase || 'both';
+  if (phase === 'pre' && gs.isMerged) return;
+  if (phase === 'post' && !gs.isMerged) return;
+  // Don't fire on special episode types
+  if (ep.isMultiTribal || ep.isDoubleTribal || ep.isSlasherNight || ep.isSuddenDeath) return;
+  // Don't double up with exile-island twist (which handles its own exile selection)
+  if (ep.exileIslandPending) return;
+
+  let _exiled = null, _chooser = null, _chooserTribe = null, _chooserMembers = null;
+
+  if (!gs.isMerged && ep.winner && ep.loser) {
+    // Pre-merge: winning tribe picks from losing tribe
+    const _winM = ep.winner.members.filter(m => gs.activePlayers.includes(m));
+    const _losM = ep.loser.members.filter(m => gs.activePlayers.includes(m));
+    if (_winM.length && _losM.length) {
+      _chooserTribe = ep.winner.name;
+      _chooserMembers = _winM;
+      _exiled = wRandom(_losM, n => Math.max(0.1, pStats(n).intuition * 0.35 + pStats(n).strategic * 0.15 + 0.5));
+    }
+  } else if (gs.isMerged && ep.immunityWinner) {
+    // Post-merge: immunity winner picks (excludes immune players)
+    _chooser = ep.immunityWinner;
+    const _eligible = gs.activePlayers.filter(p => p !== ep.immunityWinner && p !== ep.sharedImmunity && p !== ep.secondImmune);
+    if (_eligible.length) {
+      _exiled = wRandom(_eligible, n => Math.max(0.1, pStats(n).intuition * 0.35 + pStats(n).strategic * 0.15 + 0.5));
+    }
+  }
+
+  if (!_exiled) return;
+
+  gs.exiledThisEp = _exiled;
+  ep.exileFormatMode = true; // flag: don't remove from tribal, clear exile before vote
+
+  // Bond consequences
+  if (_chooser) addBond(_exiled, _chooser, -1.5); // post-merge: personal pick carries cost
+  if (!gs.isMerged && ep.loser) {
+    // Strategists may exploit the absence — vote out the missing player's closest ally
+    const _opp = ep.loser.members.filter(p => p !== _exiled && gs.activePlayers.includes(p) && pStats(p).strategic >= 6);
+    if (_opp.length && Math.random() < 0.35) {
+      const _plotter = _opp[Math.floor(Math.random() * _opp.length)];
+      ep.loser.members.filter(p => p !== _exiled && p !== _plotter && gs.activePlayers.includes(p)).forEach(p => addBond(_exiled, p, -0.5));
+    }
+  }
+
+  // Store data for VP and for the search block below
+  ep.exileFormatData = { exiled: _exiled, chooser: _chooser, chooserTribe: _chooserTribe, chooserMembers: _chooserMembers, exileFound: null };
+}
+
 function simulateEpisode() {
   if (!gs?.initialized || !players.length) return null;
   // Save full checkpoint before any mutation so this episode can be replayed
@@ -17574,6 +17627,9 @@ function simulateEpisode() {
     ep.challengeThrowData = ep.challengeThrows;
   }
 
+  // ── EXILE FORMAT: automatic exile every episode (winning tribe sends one from losing tribe) ──
+  handleExileFormat(ep);
+
   // ── EXILE ISLAND: select exile BEFORE post-camp gen so they're excluded from events ──
   let _exileEvtData = null; // deferred camp-event injection (needs post arrays to exist)
   if (ep.exileIslandPending) {
@@ -17712,7 +17768,9 @@ function simulateEpisode() {
 
   if (gs.exiledThisEp) {
     const exiled = gs.exiledThisEp;
-    if (ep.tribalPlayers) ep.tribalPlayers = ep.tribalPlayers.filter(p => p !== exiled);
+    // Twist version: player skips tribal (removed from tribalPlayers)
+    // Format version: player returns for tribal (stays in tribalPlayers)
+    if (!ep.exileFormatMode && ep.tribalPlayers) ep.tribalPlayers = ep.tribalPlayers.filter(p => p !== exiled);
     // Exile Island search — separate roll for each find tier
     // Idol: hard (~15-25%), Extra Vote: moderate (~25-35%), Idol Clue: easier (~35-50%)
     // Rolls are exclusive — first hit wins, checked from hardest to easiest
@@ -17728,6 +17786,7 @@ function simulateEpisode() {
       gs.advantages.push({ holder: exiled, type: 'idol', foundEp: epNum });
       ep.idolFinds.push({ finder: exiled, location: 'Exile Island' });
       if (_exileTwObj) _exileTwObj.exileFound = { type: 'idol', label: 'Hidden Immunity Idol' };
+      if (ep.exileFormatData) ep.exileFormatData.exileFound = { type: 'idol', label: 'Hidden Immunity Idol' };
     } else if (cfg.advantages?.secondLife?.enabled && _exileSrc('secondLife')
       && !gs.advantages.some(a => a.type === 'secondLife')
       && _roll < 0.16 + _intMod) {
@@ -17735,6 +17794,7 @@ function simulateEpisode() {
       gs.advantages.push({ holder: exiled, type: 'secondLife', foundEp: epNum });
       ep.idolFinds.push({ finder: exiled, type: 'secondLife', location: 'Exile Island' });
       if (_exileTwObj) _exileTwObj.exileFound = { type: 'secondLife', label: 'Second Life Amulet' };
+      if (ep.exileFormatData) ep.exileFormatData.exileFound = { type: 'secondLife', label: 'Second Life Amulet' };
     } else if (cfg.advantages?.safetyNoPower?.enabled && _exileSrc('safetyNoPower')
       && gs.advantages.filter(a => a.type === 'safetyNoPower').length < (cfg.advantages.safetyNoPower.count || 1)
       && _roll < 0.19 + _intMod) {
@@ -17742,6 +17802,7 @@ function simulateEpisode() {
       gs.advantages.push({ holder: exiled, type: 'safetyNoPower', foundEp: epNum });
       ep.idolFinds.push({ finder: exiled, type: 'safetyNoPower', location: 'Exile Island' });
       if (_exileTwObj) _exileTwObj.exileFound = { type: 'safetyNoPower', label: 'Safety Without Power' };
+      if (ep.exileFormatData) ep.exileFormatData.exileFound = { type: 'safetyNoPower', label: 'Safety Without Power' };
     } else if (cfg.advantages?.soleVote?.enabled && _exileSrc('soleVote')
       && gs.advantages.filter(a => a.type === 'soleVote').length < (cfg.advantages.soleVote.count || 1)
       && _roll < 0.22 + _intMod) {
@@ -17749,20 +17810,29 @@ function simulateEpisode() {
       gs.advantages.push({ holder: exiled, type: 'soleVote', foundEp: epNum });
       ep.idolFinds.push({ finder: exiled, type: 'soleVote', location: 'Exile Island' });
       if (_exileTwObj) _exileTwObj.exileFound = { type: 'soleVote', label: 'Sole Vote' };
+      if (ep.exileFormatData) ep.exileFormatData.exileFound = { type: 'soleVote', label: 'Sole Vote' };
     } else if (cfg.advantages?.extraVote?.enabled && _exileSrc('extraVote')
       && gs.advantages.filter(a => a.type === 'extraVote').length < (cfg.advantages.extraVote.count || 1)
       && _roll < 0.30 + _intMod) {
       // ~8-18% window — Extra Vote
       gs.advantages.push({ holder: exiled, type: 'extraVote', foundEp: epNum });
       if (_exileTwObj) _exileTwObj.exileFound = { type: 'extraVote', label: 'Extra Vote' };
+      if (ep.exileFormatData) ep.exileFormatData.exileFound = { type: 'extraVote', label: 'Extra Vote' };
     } else if (cfg.advantages?.idol?.enabled && _roll < 0.45 + _intMod) {
       // ~15-25% window — Idol Clue
       if (_exileTwObj) _exileTwObj.exileFound = { type: 'clue', label: 'Idol Clue' };
+      if (ep.exileFormatData) ep.exileFormatData.exileFound = { type: 'clue', label: 'Idol Clue' };
       gs.playerStates[exiled] = gs.playerStates[exiled] || {};
       gs.playerStates[exiled].eavesdropBoostThisEp = true;
     } else {
       // ~55-84% — found nothing
       if (_exileTwObj) _exileTwObj.exileFound = null;
+      if (ep.exileFormatData) ep.exileFormatData.exileFound = null;
+    }
+
+    // Exile Format: player returns for tribal — clear exile flag so they're included
+    if (ep.exileFormatMode) {
+      gs.exiledThisEp = null;
     }
   }
 

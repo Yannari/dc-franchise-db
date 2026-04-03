@@ -6692,8 +6692,8 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
       }
       // [8] VOTE MISCOMMUNICATION: low mental or social player votes the wrong name
       // They were loyal — they TRIED to follow the plan — but miscounted, misheard, or got confused.
-      if (target && myAlliance && myAlliance.members.length >= 3 && (s.mental <= 4 || s.social <= 3)) {
-        const _miscChance = (s.mental <= 4 ? (5 - s.mental) * 0.025 : 0) + (s.social <= 3 ? (4 - s.social) * 0.03 : 0);
+      if (target && myAlliance && myAlliance.members.length >= 3) {
+        const _miscChance = (10 - s.mental) * 0.008 + (10 - s.social) * 0.006;
         if (Math.random() < _miscChance) {
           // Wrong target: alliance's secondary (if split), or 2nd-highest-heat player, or personal grudge
           const _miscCandidates = tribalPlayers.filter(p => p !== voter && p !== target && !isImmune(p));

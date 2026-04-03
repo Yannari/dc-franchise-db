@@ -17630,6 +17630,66 @@ function simulateEpisode() {
       }
     }
 
+    // ── Safety Without Power: holder leaves tribal before votes are cast ──
+    const _snpAdvs = gs.advantages.filter(a => a.type === 'safetyNoPower' && tribalPlayers.includes(a.holder));
+    for (const _snpAdv of _snpAdvs) {
+      const _snpHolder = _snpAdv.holder;
+      const _snpS = pStats(_snpHolder);
+      const _snpHeat = computeHeat(_snpHolder, tribalPlayers, []);
+      const _snpForcePlay = ep._forceAdvantages || gs.activePlayers.length <= (seasonConfig.advExpire || 4);
+      const _snpPlayChance = _snpForcePlay ? 1.0 : _snpHeat * 0.08 + (10 - _snpS.loyalty) * 0.02 + _snpS.boldness * 0.02;
+      if (Math.random() >= _snpPlayChance) continue;
+
+      // Warning decision: tell closest ally?
+      const _snpAllyPool = tribalPlayers.filter(p => p !== _snpHolder && getBond(_snpHolder, p) >= 2)
+        .sort((a, b) => getBond(_snpHolder, b) - getBond(_snpHolder, a));
+      const _snpClosestAlly = _snpAllyPool[0] || null;
+      const _snpWarnChance = _snpClosestAlly
+        ? _snpS.loyalty * 0.06 + getBond(_snpHolder, _snpClosestAlly) * 0.04
+        : 0;
+      const _snpWarned = _snpClosestAlly && Math.random() < _snpWarnChance ? _snpClosestAlly : null;
+
+      // Execute: remove holder from tribal
+      gs.advantages.splice(gs.advantages.indexOf(_snpAdv), 1);
+      gs.knownSafetyNoPowerHolders?.delete(_snpHolder);
+      tribalPlayers.splice(tribalPlayers.indexOf(_snpHolder), 1);
+      gs.lostVotes.push(_snpHolder);
+
+      // Bond consequences
+      const _snpPr = pronouns(_snpHolder);
+      tribalPlayers.forEach(p => {
+        const bond = getBond(p, _snpHolder);
+        if (p === _snpWarned) {
+          addBond(p, _snpHolder, -0.5); // warned ally — mild
+        } else if (bond >= 2) {
+          addBond(p, _snpHolder, _snpWarned ? -1.0 : -1.5); // ally not warned — abandonment
+        } else {
+          addBond(p, _snpHolder, -0.3); // general coward perception
+        }
+      });
+
+      // Popularity
+      if (seasonConfig.popularityEnabled && gs.popularity) {
+        gs.popularity[_snpHolder] = (gs.popularity[_snpHolder] || 0) + (_snpWarned ? -0.2 : 0.3);
+      }
+
+      // Heat next episode
+      gs.safetyNoPowerHeat = { player: _snpHolder, ep: (gs.episode || 0) + 1 };
+
+      // bigMoves
+      const _snpBmState = getPlayerState(_snpHolder);
+      _snpBmState.bigMoves = (_snpBmState.bigMoves || 0) + 1;
+      if (!gs.bigMoveEarnersThisEp) gs.bigMoveEarnersThisEp = [];
+      if (!gs.bigMoveEarnersThisEp.includes(_snpHolder)) gs.bigMoveEarnersThisEp.push(_snpHolder);
+
+      // Record
+      ep.idolPlays = ep.idolPlays || [];
+      ep.idolPlays.push({ player: _snpHolder, type: 'safetyNoPower', warned: _snpWarned, surprise: !_snpWarned, forced: _snpForcePlay });
+      ep.safetyNoPowerPlayed = { holder: _snpHolder, warnedAlly: _snpWarned, surprise: !_snpWarned };
+      gs.safetyNoPowerPlayed = { holder: _snpHolder, warnedAlly: _snpWarned, surprise: !_snpWarned };
+      break; // one per tribal
+    }
+
     const { votes, log, defections, voteMiscommunications } = simulateVotes(tribalPlayers, _allImmune, allianceSet, gs.lostVotes, ep.openVote);
     if (voteMiscommunications?.length) ep.voteMiscommunications = (ep.voteMiscommunications || []).concat(voteMiscommunications);
     if (defections?.length) ep.defections = [...(ep.defections || []), ...defections];
@@ -19250,6 +19310,12 @@ function simulateJuryRoundtable(ep) {
     }
   } else {
     ep.eliminated = r1.eliminated;
+  }
+
+  // Track if Safety Without Power caused an ally's elimination
+  if (gs.safetyNoPowerPlayed && ep.eliminated) {
+    const _snpBond = getBond(gs.safetyNoPowerPlayed.holder, ep.eliminated);
+    if (_snpBond >= 2) gs.safetyNoPowerPlayed.allyCost = ep.eliminated;
   }
 
   // ── [9] TRIBAL COUNCIL BLOWUP ──

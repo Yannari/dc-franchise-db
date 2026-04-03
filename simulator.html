@@ -6146,14 +6146,10 @@ function simulateIndividualChallenge(pool, immune) {
       const s = pStats(name);
       const streak = _streaks[name] || 0;
       const heat = computeHeat(name, candidates, gs.namedAlliances || []);
-      // Motivation: high heat (target on your back) OR recent immunity streak (looking too strong)
-      const _wantsToThrow = heat >= 3 || streak >= 2;
-      if (!_wantsToThrow) return;
-      // Roll: strategic players are better at recognizing when to lay low
-      const throwChance = s.strategic * 0.04 + s.boldness * 0.03;
-      // Bold players are LESS likely to throw (they want to win) — but strategic ones override
-      const _boldPenalty = s.boldness >= 8 ? -0.15 : 0;
-      if (Math.random() < throwChance + _boldPenalty) {
+      // Motivation: proportional — higher heat + streak = more reason to lay low
+      // Roll: strategic players recognize when to throw, bold players resist (want to win)
+      const throwChance = heat * (s.strategic * 0.008) + streak * 0.08 - s.boldness * 0.015;
+      if (throwChance > 0 && Math.random() < throwChance) {
         _throwers.add(name);
       }
     });

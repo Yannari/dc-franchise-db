@@ -8339,7 +8339,7 @@ function checkNonIdolAdvantageUse(tribalPlayers, votesObj, ep, voteLog = []) {
     // Play when in danger or strategically useful — proportional to strategic + boldness
     const _vbHeat = computeHeat(_vbHolder, tribalPlayers, []);
     const _vbActualVotes = votesObj[_vbHolder] || 0;
-    const _vbEffectiveHeat = _vbHeat + _vbActualVotes * 1.5;
+    const _vbEffectiveHeat = _vbHeat + _vbActualVotes * 0.5;
     const _vbForcePlay = ep._forceAdvantages || gs.activePlayers.length <= (seasonConfig.advExpire || 4);
     const _vbPlayChance = _vbForcePlay ? 1.0 : _vbEffectiveHeat * (0.05 + _vbS.strategic * 0.005) + _vbS.boldness * 0.03;
     if (Math.random() >= _vbPlayChance) continue;

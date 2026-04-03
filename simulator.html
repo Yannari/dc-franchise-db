@@ -18556,7 +18556,7 @@ function simulateJuryRoundtable(ep) {
       const text = lS.boldness >= 7
         ? `${l.juror} slams the table. "${player} played the best game out here. Period. If you can't see that, you weren't paying attention."`
         : lS.strategic >= 7
-        ? `${l.juror} lays out ${_pr.posAdj} case methodically. "${player} made moves when it counted. The numbers don't lie — ${_pr.sub} earned this."`
+        ? `${l.juror} lays out ${lPr.posAdj} case methodically. "${player} made moves when it counted. The numbers don't lie — ${_pr.sub} earned this."`
         : lS.social >= 7
         ? `${l.juror} gets personal. "I know ${player}. ${_pr.Sub} ${_pr.sub === 'they' ? 'are' : 'is'} a good person who played a real game. That matters to me."`
         : lS.loyalty >= 7

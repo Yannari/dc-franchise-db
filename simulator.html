@@ -17729,7 +17729,7 @@ function simulateEpisode() {
       const _snpS = pStats(_snpHolder);
       const _snpHeat = computeHeat(_snpHolder, tribalPlayers, []);
       const _snpForcePlay = ep._forceAdvantages || gs.activePlayers.length <= (seasonConfig.advExpire || 4);
-      const _snpPlayChance = _snpForcePlay ? 1.0 : _snpHeat * 0.08 + (10 - _snpS.loyalty) * 0.02 + _snpS.boldness * 0.02;
+      const _snpPlayChance = _snpForcePlay ? 1.0 : _snpHeat * (0.05 + _snpS.strategic * 0.005) + (10 - _snpS.loyalty) * 0.02 + _snpS.boldness * 0.02 - _snpS.mental * 0.01;
       if (Math.random() >= _snpPlayChance) continue;
 
       // Warning decision: tell closest ally?

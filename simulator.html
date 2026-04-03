@@ -8522,6 +8522,9 @@ function simulateJourney(ep) {
   if (cfg.advantages?.voteSteal?.enabled) {
     if (gs.advantages.filter(a=>a.type==='voteSteal').length < (cfg.advantages.voteSteal.count||1)) advPool.push('voteSteal');
   }
+  if (cfg.advantages?.voteBlock?.enabled) {
+    if (gs.advantages.filter(a=>a.type==='voteBlock').length < (cfg.advantages.voteBlock.count||1)) advPool.push('voteBlock');
+  }
 
   const jChal = JOURNEY_CHALLENGES[Math.floor(Math.random() * JOURNEY_CHALLENGES.length)];
 

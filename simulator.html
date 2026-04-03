@@ -21788,6 +21788,22 @@ function generateSummaryText(ep) {
     }
   } // end __outputTwist
 
+  // Exile Format text output (not a twist — separate handling)
+  if (ep.exileFormatData?.exiled) {
+    const _exfD = ep.exileFormatData;
+    if (_exfD.chooser) ln(`EXILE: ${_exfD.chooser} sends ${_exfD.exiled} to Exile Island.`);
+    else ln(`EXILE: ${_exfD.chooserTribe} sends ${_exfD.exiled} to Exile Island.`);
+    const _exF = _exfD.exileFound;
+    if (_exF?.type === 'idol') ln(`${_exfD.exiled} searches Exile Island and finds a Hidden Immunity Idol.`);
+    else if (_exF?.type === 'secondLife') ln(`${_exfD.exiled} searches Exile Island and finds the Second Life Amulet.`);
+    else if (_exF?.type === 'extraVote') ln(`${_exfD.exiled} searches Exile Island and finds an Extra Vote.`);
+    else if (_exF?.type === 'safetyNoPower') ln(`${_exfD.exiled} searches Exile Island and finds a Safety Without Power.`);
+    else if (_exF?.type === 'soleVote') ln(`${_exfD.exiled} searches Exile Island and finds a Sole Vote.`);
+    else if (_exF?.type === 'clue') ln(`${_exfD.exiled} searches Exile Island and finds an Idol Clue.`);
+    else ln(`${_exfD.exiled} searches Exile Island but finds nothing.`);
+    ln(`${_exfD.exiled} returns to camp and will attend tribal council.`);
+  }
+
   // REWARD CHALLENGE (if one ran this episode)
   const _rcTwist = (ep.twists||[]).find(t => t.type === 'reward-challenge');
   if (_rcTwist) {
@@ -23519,6 +23535,7 @@ function patchEpisodeHistory(ep) {
   if (ep.showmanceTests?.length) h.showmanceTests = ep.showmanceTests;
   if (ep.safetyNoPowerPlayed) h.safetyNoPowerPlayed = ep.safetyNoPowerPlayed;
   if (ep.soleVotePlayed) h.soleVotePlayed = ep.soleVotePlayed;
+  if (ep.exileFormatData) h.exileFormatData = ep.exileFormatData;
   if (ep.juryRoundtable) h.juryRoundtable = ep.juryRoundtable;
   // Reward sharing: ensure it lands on rewardChalData even if the push path didn't build it
   if (ep.rewardShareInvite && h.rewardChalData) h.rewardChalData.rewardShareInvite = ep.rewardShareInvite;
@@ -24258,8 +24275,9 @@ function renderTwistCatalog() {
     const tribeBlocked = canAssign && t.minTribes && (seasonConfig.teams || 2) < t.minTribes;
     const riBlocked = canAssign && (t.id === 'exile-duel' || t.id === 'second-chance') && seasonConfig.ri;
     const popBlocked = canAssign && t.id === 'second-chance' && !seasonConfig.popularityEnabled;
-    const blocked = phaseBlocked || incompBlocked || tribeBlocked || riBlocked || popBlocked;
-    const blockReason = phaseBlocked ? ' ⚠️ wrong phase' : incompBlocked ? ' ⚠️ conflicts with existing twist' : tribeBlocked ? ` ⚠️ needs ${t.minTribes}+ tribes` : riBlocked ? ' ⚠️ incompatible with 2nd Chance Isle' : popBlocked ? ' ⚠️ requires Popularity enabled' : '';
+    const exileBlocked = canAssign && t.id === 'exile-island' && seasonConfig.exile;
+    const blocked = phaseBlocked || incompBlocked || tribeBlocked || riBlocked || popBlocked || exileBlocked;
+    const blockReason = phaseBlocked ? ' ⚠️ wrong phase' : incompBlocked ? ' ⚠️ conflicts with existing twist' : tribeBlocked ? ` ⚠️ needs ${t.minTribes}+ tribes` : riBlocked ? ' ⚠️ incompatible with 2nd Chance Isle' : exileBlocked ? ' ⚠️ incompatible with Exile Format' : popBlocked ? ' ⚠️ requires Popularity enabled' : '';
     return `
     <div class="twist-card ${canAssign && !blocked ? 'assignable' : ''} ${blocked ? 'phase-blocked' : ''}" onclick="${blocked ? '' : `assignTwist('${t.id}')`}">
       <div class="twist-card-top">
@@ -37612,6 +37630,36 @@ function buildVPScreens(epRecord) {
 
     _exHtml += `</div>`;
     vpScreens.push({ id: 'exile-island', label: 'Exile Island', html: _exHtml });
+  }
+
+  // ── Exile Format: automatic exile (not a twist, rendered in twist slot) ──
+  if (ep.exileFormatData?.exiled) {
+    const _exfData = ep.exileFormatData;
+    const _exfPr = pronouns(_exfData.exiled);
+    const _exfChooserText = _exfData.chooser
+      ? `${_exfData.chooser} sent ${_exfData.exiled} to Exile Island.`
+      : `${_exfData.chooserTribe} sent ${_exfData.exiled} to Exile Island.`;
+    let _exfHtml = `<div class="rp-page rp-twist-page tod-dusk"><div class="rp-eyebrow">Episode ${ep.num}</div>`;
+    _exfHtml += `<div class="rp-twist-title">Exile Island</div>`;
+    _exfHtml += _renderTwistScene({ text: _exfChooserText, players: _exfData.chooser ? [_exfData.chooser, _exfData.exiled] : [_exfData.exiled], badge: 'Exile Island', badgeClass: 'gold' });
+    if (_exfData.exileFound?.type === 'idol') {
+      _exfHtml += _renderTwistScene({ text: `${_exfData.exiled} searched the island — and found a Hidden Immunity Idol.`, players: [_exfData.exiled], badge: 'Idol Found', badgeClass: 'win' });
+    } else if (_exfData.exileFound?.type === 'secondLife') {
+      _exfHtml += _renderTwistScene({ text: `${_exfData.exiled} searched the island — and found the Second Life Amulet.`, players: [_exfData.exiled], badge: 'Second Life Amulet', badgeClass: 'win' });
+    } else if (_exfData.exileFound?.type === 'safetyNoPower') {
+      _exfHtml += _renderTwistScene({ text: `${_exfData.exiled} searched the island — and found a Safety Without Power.`, players: [_exfData.exiled], badge: 'Safety Without Power', badgeClass: 'win' });
+    } else if (_exfData.exileFound?.type === 'soleVote') {
+      _exfHtml += _renderTwistScene({ text: `${_exfData.exiled} searched the island — and found a Sole Vote.`, players: [_exfData.exiled], badge: 'Sole Vote', badgeClass: 'win' });
+    } else if (_exfData.exileFound?.type === 'extraVote') {
+      _exfHtml += _renderTwistScene({ text: `${_exfData.exiled} searched the island — and found an Extra Vote.`, players: [_exfData.exiled], badge: 'Extra Vote', badgeClass: 'win' });
+    } else if (_exfData.exileFound?.type === 'clue') {
+      _exfHtml += _renderTwistScene({ text: `${_exfData.exiled} searched the island — and found a clue to a Hidden Immunity Idol.`, players: [_exfData.exiled], badge: 'Idol Clue', badgeClass: 'win' });
+    } else {
+      _exfHtml += _renderTwistScene({ text: `${_exfData.exiled} searched the island thoroughly — but came up empty.`, players: [_exfData.exiled] });
+    }
+    _exfHtml += _renderTwistScene({ text: `${_exfData.exiled} returns to camp. ${_exfPr.Sub} ${_exfPr.sub === 'they' ? 'are' : 'is'} not safe — ${_exfPr.sub} will attend tribal council tonight.`, players: [_exfData.exiled], badge: 'Returns', badgeClass: 'gold' });
+    _exfHtml += `</div>`;
+    vpScreens.push({ id: 'exile-format', label: 'Exile Island', html: _exfHtml });
   }
 
   // ── 5c. Kidnapping (post-challenge — shown AFTER challenge) ──

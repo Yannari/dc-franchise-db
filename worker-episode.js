@@ -3000,19 +3000,40 @@ Owen covers himself in urine because that's Owen. It's gross and it doesn't help
 EPISODE STRUCTURE (CRITICAL)
 ═══════════════════════════════════════════════════════════
 
-⚠️ TOTAL EPISODE LENGTH: 400-600 lines MAX. Not every scene needs to be long.
-Scenes should be TIGHT — enter late, leave early. If a scene isn't revealing
-character, strategy, or emotion, cut it.
+⚠️ TOTAL EPISODE LENGTH: 300-450 lines MAX. This is a TV episode, not a novel.
+
+⚠️ PACING — THE #1 RULE:
+Total Drama moves FAST. Study the original show's pacing:
+- A character introduction is 3-5 lines (arrival + one joke/moment + move on)
+- A camp scene is 5-15 lines (enter late, leave early, end on a beat)
+- A confessional is 2-4 lines MAX (one thought, one punchline, done)
+- A challenge is 40-60 lines total including Chris commentary
+- Tribal council is 30-50 lines (Chris asks 3-4 questions, voting, reveal)
+NO SCENE should exceed 20 lines. If it does, split it or cut it.
+NO CONFESSIONAL should exceed 4 lines. If it does, you're writing an essay.
+
+Think of it like this: the original Total Drama Episode 1 introduces 22 characters,
+assigns teams, shows the cafeteria, AND teases the first challenge — all in 22 minutes.
+That's roughly ONE MINUTE per character introduction. Move at that speed.
 
 ⚠️ EPISODE 1 IS DIFFERENT:
 Episode 1 has NO "Previously on..." because nothing has happened yet.
-Instead, Episode 1 opens with:
-- Chris introduces the season, the location, the twist/format
-- The cast ARRIVES — show them meeting each other for the first time
-- First impressions, initial sizing up, the energy of day one
-- Then into camp life where alliances begin forming
+Episode 1 structure:
+1. Chris at the dock — introduces the show, the island, the prize (10-15 lines)
+2. RAPID-FIRE ARRIVALS — each player gets ONE moment as they step off the boat:
+   - A first impression joke, a pratfall, a one-liner, a reaction to the camp
+   - Chris has a sarcastic comment for each one
+   - 3-5 lines PER PLAYER. That's it. Move on.
+   - Group them in waves (boats arrive with 4-5 people each) to keep it moving
+3. Chris assigns tribes and explains the rules (10-15 lines)
+4. Camp setup — quick scenes of personality clashes, first alliances forming (30-40 lines)
+5. Summit/twist scenes if any (20-30 lines)
+6. Challenge (40-60 lines)
+7. Post-challenge scramble + tribal + vote (60-80 lines)
+
 Do NOT write Episode 1 like it's mid-season. Nobody knows anyone. Nobody has
-grudges or history. Everything is first meetings and early reads.
+grudges or history. Everything is first meetings, first impressions, and chaos.
+The tone is EXCITED and CHAOTIC — people are still figuring out where to sleep.
 
 ⚠️ CHRONOLOGY IS SACRED:
 The episode follows real time. Events happen in THIS order:
@@ -3023,78 +3044,63 @@ Characters cannot reference things that haven't happened yet. If the challenge
 hasn't occurred, nobody discusses "after the challenge." If it's day 1, nobody
 says "yesterday" or "this week." Check your timeline before every scene.
 
-1. **COLD OPEN (30-50 lines)**
-   - Episode 1: Chris intro + cast arrival (see above)
-   - Later episodes: "Previously on..." recap with Chris McLean
-   - Immediate character drama OR strategic conversation
-   - Sets up episode's emotional/strategic arc
+1. **COLD OPEN (15-25 lines)**
+   - Episode 1: Chris intro + first boat arrival
+   - Later episodes: "Previously on..." (4-6 lines from Chris, TIGHT) then straight into camp
+   - End the cold open with momentum — cut to theme song
 
-1b. **MERGE ANNOUNCEMENT — MANDATORY only on the episode where the merge HAPPENS**
-   If === TRIBES (ACTIVE) === says "MERGED THIS EPISODE", the episode MUST contain a formal merge announcement scene. This only happens ONCE per season — the first time the merge occurs. If the tribes section has no merge header and just lists players, the merge already happened in a previous episode — do NOT write an announcement scene, just continue the individual game.
-   This is a major TV moment — do not skip it or have it happen offscreen.
-   - Chris gathers ALL players (they arrive from different directions, old tribemates together for the last time)
-   - Chris announces the merge dramatically — new tribe name, new buffs, merge feast revealed
-   - Players REACT in real-time: some are relieved, some are calculating, some are scared, rivals are suddenly standing next to each other
-   - Old alliances make eye contact across the group — silent acknowledgment of "now it's different"
-   - The feast is a scene: people eat, people talk, people strategize while pretending not to
-   - At least one confessional during or after the feast about what the merge means for that specific player's game
-   The merge announcement is one of the most dramatic moments of any Survivor-style season. Write it like it matters.
+2. **CAMP LIFE (40-60 lines total)**
+   - 3-5 SHORT scenes (5-12 lines each), not one long continuous camp sequence
+   - Each scene: location + conflict + punchline or beat. Done.
+   - Pepper confessionals BETWEEN scenes (2-4 lines each)
+   - NOT every character needs a camp scene. Focus on 4-6 key players.
 
-2. **MORNING CAMP LIFE (80-120 lines)**
-   - Multiple camp scenes showing different relationships
-   - Characters bonding over personal topics (family, background, fears)
-   - Strategic conversations forming alliances
-   - Personality clashes and arguments
-   - Confessionals revealing backstories and motivations
+2b. **MERGE ANNOUNCEMENT (if applicable, 15-20 lines)**
+   Chris gathers everyone, announces the merge, new tribe name. Players react.
+   Keep it punchy — the merge is exciting, not a ceremony.
 
-3. **SUMMIT / JOURNEY / TWIST SCENES (40-80 lines, if present)**
-   If the summary has a === TWISTS === section with Summit, Journey, Auction, or other
-   twist events, these are FULL SCENES that must be shown happening on screen:
-   - THE SUMMIT: Show the nominees traveling to the location. Show them choosing gifts.
-     Show the consequences (returning to camp empty-handed, finding an idol, etc.)
-   - JOURNEY: Show travelers arriving, the challenge, the outcome
-   - AUCTION: Show bidding, items, reactions
-   - EXILE ISLAND: If === EXILE ISLAND === exists, show the player being sent,
-     what they found (or didn't), their time alone, their return
-   These are NOT confessionals about what happened. They are SCENES.
+3. **TWIST SCENES — Summit/Journey/Exile (20-40 lines, if present)**
+   These are QUICK scenes. The Summit is not a 10-minute character study:
+   - Players arrive at location (2-3 lines)
+   - Chris/Chef explains the options (3-5 lines)
+   - Each player picks, quick reaction (2-3 lines each)
+   - Consequence shown (returning to camp, idol found) (3-5 lines)
+   - One confessional from someone who made a big choice (2-4 lines)
+   EXILE: Player arrives, searches, finds something or doesn't. 10-15 lines MAX.
 
-4. **REWARD CHALLENGE (60-100 lines, if present)**
-   - Only if the summary has a === REWARD CHALLENGE === section
-   - Challenge sequence with host intro, play-by-play, result
-   - Reward sharing scene if applicable
+4. **REWARD CHALLENGE (30-50 lines, if present)**
+   Chris explains, quick play-by-play, result, move on.
 
-5. **IMMUNITY CHALLENGE (100-150 lines)**
-   - Host intro with personality (Chris McLean: sarcastic, sadistic, loves drama)
-   - Clear challenge explanation with visual details
-   - Play-by-play with standout/weak link moments from the summary
-   - Victory celebration OR defeat aftermath
+5. **IMMUNITY CHALLENGE (40-60 lines)**
+   Chris explains with sadistic glee. Play-by-play focusing on:
+   - The standout performer (from summary)
+   - The weak link who costs the tribe (from summary)
+   - ONE physical comedy moment
+   - Victory/defeat reactions
    - ⚠️ SEE "CHALLENGE INVENTION" SECTION BELOW
 
-6. **POST-CHALLENGE SCRAMBLING (80-120 lines)**
-   - Losing tribe returns to camp
-   - Use the === VOTING PLANS === section as the skeleton for this scramble
-   - Show alliance meetings: who's the spearheader, what's the pitch, who's conflicted
-   - Independent voters making their decisions
-   - Paranoia building, side deals, last-minute pivots
-   - The VOTING PLANS section tells you exactly who targeted whom and why — dramatize it
+6. **POST-CHALLENGE SCRAMBLE (40-60 lines)**
+   This is where the VOTING PLANS data lives. Show it FAST:
+   - Alliance meeting: spearheader pitches the target (5-8 lines)
+   - Counter-alliance or independent voters disagree (5-8 lines)
+   - Conflicted player torn between sides (5-8 lines)
+   - Quick confessionals from spearheader + conflicted player (2-4 lines each)
+   - The energy is URGENT — tribal is coming, time is running out
 
-7. **TRIBAL COUNCIL (50-80 lines)**
-   - Use the === TRIBAL COUNCIL === section's actual Q&A dialogue
-   - Don't invent new Q&A — the summary provides Chris's questions, player answers, and consequences
-   - Show the emotional states from the summary (mood badges)
-   - Word at Camp targets from the summary inform body language
-   - Disruption/overplaying events from the summary are scenes at tribal
-   - Voting sequence with confessionals
+7. **TRIBAL COUNCIL (30-50 lines)**
+   - Chris asks 3-4 pointed questions (from the === TRIBAL COUNCIL === Q&A data)
+   - Each answer is 1-2 lines. Not speeches. Quick, loaded exchanges.
+   - Voting montage: show 2-3 key votes with 2-line confessionals, skip the rest
+   - Vote reveal: Chris reads votes with maximum suspense (see VOTE READING section)
+   - Disruption/overplaying events if present — show them FAST
+   - The whole tribal should feel like a powder keg, not a therapy session
 
-8. **EXIT CONFESSIONAL & TAG (15-25 lines)**
-   - ⚠️ THE ELIMINATED PLAYER MUST HAVE A FINAL CONFESSIONAL. This is non-negotiable. Every boot gets one last confessional — on the boat, at the dock, walking away, wherever. It is their last moment to speak directly to the audience. Do not skip it.
-   - The confessional should sound like THEM, not a generic exit speech. How do they actually feel? Bitter? Relieved? Proud? Unbothered? Blindsided? Let it be specific to who they are.
-   - The eliminated player's walk to the Dock of Shame is a SCENE, not a goodbye wave
-   - Give them a final act that is funny, painful, or consequential — something that makes their exit memorable
-   - Someone escorts them out? That escort can reveal something. The boot can say something to one specific person. Something can go wrong at the dock (always more interesting than a clean exit)
-   - After they leave: a short scene back at camp OR a final confessional from someone still in the game that plants a seed for the next episode
-   - The audience should leave thinking "wait — what happens with THAT?" not "okay, they're gone"
-   - NEVER end with "The remaining players watched [name] leave and headed back to camp." That is a dead end.
+8. **ELIMINATION + EXIT (10-20 lines)**
+   - Torch snuffed. Dock of Shame walk.
+   - ONE thing happens on the way out: a parting shot, a pratfall, a reveal, a look
+   - Final confessional from the boot: 2-4 lines, in CHARACTER, with a punchline or gut-punch
+   - Chris's closing tease for next episode: 2-3 lines
+   - NEVER end with "The remaining players watched [name] leave." End on a HOOK.
 
 ═══════════════════════════════════════════════════════════
 🏆 CHALLENGE INVENTION — THIS IS YOUR JOB
@@ -3821,27 +3827,21 @@ Logan: [sniffling] Yeah, man! Any time, bro!
 \`\`\`
 
 ═══════════════════════════════════════════════════════════
-SCENE PACING
+SCENE PACING — TOTAL DRAMA SPEED
 ═══════════════════════════════════════════════════════════
 
-**CAMP SCENES:** 20-40 lines each
-- Multiple scenes showing different groups
-- Mix of strategy, bonding, and conflict
+Total Drama moves like a cartoon — because it IS a cartoon. Scenes are SHORT.
+If a scene isn't funny, dramatic, or advancing the plot, CUT IT.
 
-**CHALLENGE:** 150-200 lines total
-- Detailed play-by-play
-- Multiple confessionals throughout
-- Character reactions to every moment
+**CAMP SCENES:** 5-15 lines each. Enter late, leave early. End on a joke or a beat.
+**CONFESSIONALS:** 2-4 lines. One thought. One punchline. Done.
+**CHALLENGE:** 40-60 lines total. Chris commentary + key moments + result.
+**SCRAMBLE:** 40-60 lines. Quick alliance pitches, not long conversations.
+**TRIBAL:** 30-50 lines. Chris asks 3-4 questions. Voting. Reveal. Done.
+**EXIT:** 10-15 lines. Torch snuff, one parting moment, final confessional.
 
-**SCRAMBLING:** 100-150 lines
-- Show both alliances meeting
-- Individual approaches for votes
-- Paranoia and suspicion
-
-**TRIBAL:** 50-80 lines
-- Host questions
-- Vote reveals with reaction shots
-- Dramatic elimination
+NO SCENE exceeds 20 lines. If you wrote more than 20 lines for a single scene,
+you're writing a drama. Cut it in half. Find the joke. Move on.
 
 ═══════════════════════════════════════════════════════════
 CRITICAL REMINDERS

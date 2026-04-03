@@ -8251,6 +8251,7 @@ function checkNonIdolAdvantageUse(tribalPlayers, votesObj, ep, voteLog = []) {
       if (_holderTarget) votesObj[_holderTarget] = (votesObj[_holderTarget] || 0) + 1;
 
       gs.advantages.splice(gs.advantages.indexOf(_adv), 1);
+      gs.knownVoteStealHolders?.delete(_holder);
       ep.idolPlays.push({ player: _holder, type: 'voteSteal', stolenFrom: _stealTarget, target: _holderTarget, forced: !!ep._forceAdvantages });
     }
   }
@@ -8337,6 +8338,7 @@ function checkNonIdolAdvantageUse(tribalPlayers, votesObj, ep, voteLog = []) {
 
     // Block the vote
     gs.advantages.splice(gs.advantages.indexOf(_vbAdv), 1);
+    gs.knownVoteBlockHolders?.delete(_vbHolder);
     gs.lostVotes.push(_vbTarget);
     // Remove their vote from the tally if already cast
     const _vbEntry = voteLog.find(l => l.voter === _vbTarget);
@@ -8346,6 +8348,16 @@ function checkNonIdolAdvantageUse(tribalPlayers, votesObj, ep, voteLog = []) {
       _vbEntry.voteBlocked = true;
     }
     ep.idolPlays.push({ player: _vbHolder, type: 'voteBlock', blockedPlayer: _vbTarget, forced: _vbForcePlay });
+    // Bond consequences
+    addBond(_vbTarget, _vbHolder, -1.0); // getting silenced is personal
+    // Check if this protected an ally (blocked someone voting against holder's ally)
+    const _vbBlockedVote = voteLog.find(l => l.voter === _vbTarget);
+    if (_vbBlockedVote?.voted) {
+      const _vbProtected = _vbBlockedVote.voted;
+      if (_vbProtected !== _vbHolder && getBond(_vbHolder, _vbProtected) >= 2) {
+        addBond(_vbHolder, _vbProtected, 0.5); // mild gratitude for protection
+      }
+    }
   }
 
   // ── Team Swap: holder swaps self or ally to another tribe (pre-merge only) ──
@@ -8376,6 +8388,7 @@ function checkNonIdolAdvantageUse(tribalPlayers, votesObj, ep, voteLog = []) {
 
       // Execute the swap
       gs.advantages.splice(gs.advantages.indexOf(_tsAdv), 1);
+      gs.knownTeamSwapHolders?.delete(_tsHolder);
       _tsCurTribe.members = _tsCurTribe.members.filter(m => m !== _tsSwapTarget);
       _tsDestTribe.members.push(_tsSwapTarget);
 
@@ -8390,6 +8403,15 @@ function checkNonIdolAdvantageUse(tribalPlayers, votesObj, ep, voteLog = []) {
       ep.idolPlays.push({ player: _tsHolder, type: 'teamSwap', swappedPlayer: _tsSwapTarget,
         fromTribe: _tsCurTribe.name, toTribe: _tsDestTribe.name, selfSwap: _tsSwapSelf, forced: _tsForcePlay });
       ep.teamSwapPlayed = { holder: _tsHolder, swapped: _tsSwapTarget, from: _tsCurTribe.name, to: _tsDestTribe.name };
+      // bigMoves credit — escaping or saving someone is a bold strategic move
+      const _tsBmState = getPlayerState(_tsHolder);
+      _tsBmState.bigMoves = (_tsBmState.bigMoves || 0) + 1;
+      if (!gs.bigMoveEarnersThisEp) gs.bigMoveEarnersThisEp = [];
+      if (!gs.bigMoveEarnersThisEp.includes(_tsHolder)) gs.bigMoveEarnersThisEp.push(_tsHolder);
+      // Bond consequences: ally save = significant gratitude
+      if (!_tsSwapSelf && _tsClosestAlly) {
+        addBond(_tsHolder, _tsClosestAlly, 1.5);
+      }
       break; // one swap per tribal
     }
   }

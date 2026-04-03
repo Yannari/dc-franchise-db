@@ -31290,12 +31290,17 @@ function rpBuildVotes(ep) {
       return;
     }
     if (type === 'teamSwap') {
+      const _tsIsAlly = !!play.playedFor;
+      const _tsSaved = play.playedFor || player;
       _advHtml += `<div class="tv-advantage-play">
-        <div class="tv-advantage-play-left">${rpPortrait(player, 'sm sitd')}</div>
+        <div class="tv-advantage-play-left">
+          ${rpPortrait(player, 'sm sitd')}
+          ${_tsIsAlly ? rpPortrait(play.playedFor, 'sm') : ''}
+        </div>
         <div class="tv-advantage-play-body">
           <div class="tv-advantage-play-badge" style="color:#818cf8;background:rgba(129,140,248,0.12);border-color:rgba(129,140,248,0.25)">TEAM SWAP</div>
-          <div class="tv-advantage-play-title">${play.selfSwap ? `${player} swaps to ${play.toTribe}` : `${player} sends ${play.swappedPlayer} to ${play.toTribe}`}</div>
-          <div class="tv-advantage-play-desc">${play.selfSwap ? `${player} leaves this tribal and joins ${play.toTribe}.` : `${play.swappedPlayer} is moved to ${play.toTribe}. ${player} made the call.`}</div>
+          <div class="tv-advantage-play-title">${_tsIsAlly ? `${player} plays Team Swap for ${play.playedFor}` : `${player} plays Team Swap`}</div>
+          <div class="tv-advantage-play-desc">${_tsIsAlly ? `Instead of going home, ${play.playedFor} will swap to another tribe. ${player} burned the advantage to save ${pronouns(play.playedFor).obj}.` : `Instead of going home, ${player} will swap to another tribe. No one is eliminated tonight.`}</div>
         </div>
       </div>`;
       return;

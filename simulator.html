@@ -1472,6 +1472,7 @@ const ADVANTAGES = [
   { key: 'teamSwap',   label: 'Team Swap',            default: 0 },
   { key: 'voteBlock',  label: 'Vote Block',           default: 0 },
   { key: 'safetyNoPower', label: 'Safety Without Power', default: 0 },
+  { key: 'soleVote', label: 'Sole Vote', default: 0 },
 ];
 
 const TWIST_CATALOG = [
@@ -1627,7 +1628,7 @@ function repairGsSets(g) {
   const SET_FIELDS = ['blowupHeatNextEp', 'knownIdolHoldersThisEp', 'knownIdolHoldersPersistent',
                       'knownAmuletHoldersThisEp', 'knownAmuletHoldersPersistent',
                       'socialBombHeatThisEp', 'injuredThisEp', 'scramblingThisEp', 'beastDrillsThisEp', 'lieTargetsThisEp',
-                      'knownTeamSwapHolders', 'knownVoteBlockHolders', 'knownVoteStealHolders', 'knownSafetyNoPowerHolders'];
+                      'knownTeamSwapHolders', 'knownVoteBlockHolders', 'knownVoteStealHolders', 'knownSafetyNoPowerHolders', 'knownSoleVoteHolders'];
   SET_FIELDS.forEach(f => {
     if (g[f] instanceof Set) return; // already a Set
     if (Array.isArray(g[f])) { g[f] = new Set(g[f]); return; } // saved as array — restore
@@ -1640,7 +1641,7 @@ function prepGsForSave(g) {
   const SET_FIELDS = ['blowupHeatNextEp', 'knownIdolHoldersThisEp', 'knownIdolHoldersPersistent',
                       'knownAmuletHoldersThisEp', 'knownAmuletHoldersPersistent',
                       'socialBombHeatThisEp', 'injuredThisEp', 'scramblingThisEp', 'beastDrillsThisEp', 'lieTargetsThisEp',
-                      'knownTeamSwapHolders', 'knownVoteBlockHolders', 'knownVoteStealHolders', 'knownSafetyNoPowerHolders'];
+                      'knownTeamSwapHolders', 'knownVoteBlockHolders', 'knownVoteStealHolders', 'knownSafetyNoPowerHolders', 'knownSoleVoteHolders'];
   SET_FIELDS.forEach(f => { if (g[f] instanceof Set) g[f] = [...g[f]]; });
   return g;
 }
@@ -3009,6 +3010,10 @@ function computeHeat(name, tribalPlayers, alliances) {
   if (gs.knownSafetyNoPowerHolders?.has(name)) heat += 0.5;
   // Used Safety Without Power last episode — "ran away, get them before they run again"
   if (gs.safetyNoPowerHeat?.player === name && gs.safetyNoPowerHeat?.ep === ((gs.episode || 0) + 1)) heat += 1.0;
+  // Known Sole Vote holder — everyone wants it flushed, it's terrifying
+  if (gs.knownSoleVoteHolders?.has(name)) heat += 1.5;
+  // Used Sole Vote last episode — dictator backlash
+  if (gs.soleVoteHeat?.player === name && gs.soleVoteHeat?.ep === ((gs.episode || 0) + 1)) heat += 1.0;
   // Tribal blowup fallout — someone named this player on the way out
   if (gs.blowupHeatNextEp?.has(name)) heat += 1.5;
   // Social bomb — said something that landed badly at camp this episode
@@ -6544,6 +6549,7 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
     const _pvBv = gs._activeBlackVote || null;
     const _pvReason = _pvBv ? `Black Vote from ${_pvBv.from} — ${_pvBv.reason || 'parting shot'}` : 'penalty vote — pre-cast by the twist';
     log.push({ voter: _pvBv ? _pvBv.from : 'THE GAME', voted: gs.penaltyVoteThisEp, reason: _pvReason, isBlackVote: !!_pvBv });
+    if (_pvBv) _pvBv._applied = true;
   }
   // ── BLACK VOTE: direct injection if penalty vote didn't fire (target on different tribe) ──
   // Check gs.blackVotes for any pending classic vote whose target is at THIS tribal
@@ -6926,7 +6932,7 @@ function checkShotInDark(tribalPlayers, votes, log, ep) {
   const [target, voteCount] = sorted[0];
   if (voteCount < 2) return; // only desperate players risk it
   // Don't play SITD if you have any protective advantage (idol, team swap, safety without power — all strictly better)
-  const _sitdHasProtection = gs.advantages.some(a => a.holder === target && (a.type === 'idol' || a.type === 'teamSwap' || a.type === 'safetyNoPower' || (a.type === 'amulet' && a.amuletPower === 'idol')));
+  const _sitdHasProtection = gs.advantages.some(a => a.holder === target && (a.type === 'idol' || a.type === 'teamSwap' || a.type === 'safetyNoPower' || a.type === 'soleVote' || (a.type === 'amulet' && a.amuletPower === 'idol')));
   if (_sitdHasProtection) return;
   // Don't play SITD if already protected this tribal (idol played for you, or already swapped out)
   if (ep.idolPlays?.some(p => p.playedFor === target || (p.type === 'teamSwap' && p.swappedPlayer === target))) return;
@@ -7599,6 +7605,7 @@ function findAdvantages(ep) {
     { key: 'teamSwap',   postMergeOnly: false, baseChance: 0.002, epScaleCap: 0.008 },  // pre-merge only useful but can be found anytime
     { key: 'voteBlock',  postMergeOnly: false, baseChance: 0.002, epScaleCap: 0.010 },
     { key: 'safetyNoPower', postMergeOnly: false, baseChance: 0.001, epScaleCap: 0.005 },
+    { key: 'soleVote', postMergeOnly: false, baseChance: 0.001, epScaleCap: 0.005 },
   ];
 
   nonIdolTypes.forEach(({ key, postMergeOnly, baseChance, epScaleCap }) => {
@@ -7629,13 +7636,17 @@ function findAdvantages(ep) {
         }
         ep.idolFinds.push({ finder: name, type: key, tribe: _advTribe });
         // ── Discovery camp event for tactical advantages ──
-        if (['teamSwap', 'voteBlock', 'voteSteal', 'safetyNoPower'].includes(key)) {
-          const _discLabel = { teamSwap: 'Team Swap', voteBlock: 'Vote Block', voteSteal: 'Vote Steal', safetyNoPower: 'Safety Without Power' }[key];
+        if (['teamSwap', 'voteBlock', 'voteSteal', 'safetyNoPower', 'soleVote'].includes(key)) {
+          const _discLabel = { teamSwap: 'Team Swap', voteBlock: 'Vote Block', voteSteal: 'Vote Steal', safetyNoPower: 'Safety Without Power', soleVote: 'Sole Vote' }[key];
           const _discPr = pronouns(name);
           const _discLines = key === 'safetyNoPower' ? [
             `${name} found a Safety Without Power hidden at camp. ${_discPr.Sub} read the note twice. Leave tribal. Stay safe. Lose your vote. That's one hell of a trade-off.`,
             `${name} discovered a Safety Without Power tucked under a rock. ${_discPr.Sub} can walk out of tribal whenever ${_discPr.sub} want${_discPr.sub === 'they' ? '' : 's'}. The question is whether ${_discPr.sub}'ll have the nerve to use it.`,
             `${name} found something at camp — a Safety Without Power. An escape hatch. No vote, no voice, but no torch snuffed either. ${_discPr.Sub} pocketed it fast.`,
+          ] : key === 'soleVote' ? [
+            `${name} found a Sole Vote hidden at camp. ${_discPr.Sub} read the parchment: "When played, you cast the only vote. All other votes are void." ${_discPr.Sub} didn't blink.`,
+            `${name} discovered a Sole Vote wedged under a tree root. One vote. The only vote. Everyone else silenced. ${_discPr.Sub} tucked it away before anyone noticed.`,
+            `${name} found something terrifying — a Sole Vote. Play it, and you decide who goes home. No discussion. No democracy. Just you.`,
           ] : key === 'teamSwap' ? [
             `${name} found something hidden at camp — a ${_discLabel}. ${_discPr.Sub} can feel the weight of it already. The power to move someone between tribes... that changes everything.`,
             `${name} was alone when ${_discPr.sub} found the ${_discLabel}. ${_discPr.Sub} turned it over in ${_discPr.posAdj} hands. This could save ${_discPr.obj} — or save someone else. Either way, the game just shifted.`,
@@ -8396,6 +8407,68 @@ function checkNonIdolAdvantageUse(tribalPlayers, votesObj, ep, voteLog = []) {
     }
   }
 
+  // ── Sole Vote: holder casts the ONLY vote — all others silenced ──
+  const _svAdvs = gs.advantages.filter(a => a.type === 'soleVote' && tribalPlayers.includes(a.holder));
+  for (const _svAdv of _svAdvs) {
+    const _svHolder = _svAdv.holder;
+    const _svS = pStats(_svHolder);
+    const _svHeat = computeHeat(_svHolder, tribalPlayers, []);
+    const _svActualVotes = votesObj[_svHolder] || 0;
+    const _svEffectiveHeat = _svHeat + _svActualVotes * 0.5;
+    const _svForcePlay = ep._forceAdvantages || gs.activePlayers.length <= (seasonConfig.advExpire || 4);
+    const _svPlayChance = _svForcePlay ? 1.0 : _svEffectiveHeat * (0.05 + _svS.strategic * 0.005) + _svS.boldness * 0.02;
+    if (Math.random() >= _svPlayChance) continue;
+
+    // Silence every other player's vote
+    const _svSilenced = tribalPlayers.filter(p => p !== _svHolder && !gs.lostVotes.includes(p));
+    _svSilenced.forEach(p => {
+      gs.lostVotes.push(p);
+      // Remove their vote from tally if already cast
+      const _svEntry = voteLog.find(l => l.voter === p);
+      if (_svEntry) {
+        const _svVoted = _svEntry.voted;
+        if (_svVoted && votesObj[_svVoted]) votesObj[_svVoted]--;
+        _svEntry.voteBlocked = true;
+      }
+    });
+
+    // Consume advantage
+    gs.advantages.splice(gs.advantages.indexOf(_svAdv), 1);
+    gs.knownSoleVoteHolders?.delete(_svHolder);
+
+    // Check if holder had confessed to someone (warned ally for aftermath)
+    const _svConfidants = gs.knownSoleVoteHolders?.size
+      ? [...(gs.knownSoleVoteHolders || [])].filter(p => p !== _svHolder && gs.activePlayers.includes(p) && getBond(_svHolder, p) >= 2)
+      : [];
+    const _svWarnedAlly = _svConfidants[0] || null;
+
+    // Record play
+    ep.idolPlays.push({ player: _svHolder, type: 'soleVote', silencedPlayers: _svSilenced, forced: _svForcePlay });
+    ep.soleVotePlayed = { holder: _svHolder, warnedAlly: _svWarnedAlly };
+    gs.soleVotePlayed = { holder: _svHolder, warnedAlly: _svWarnedAlly };
+
+    // Bond consequences — everyone whose vote was silenced
+    _svSilenced.forEach(p => {
+      const _svBond = getBond(p, _svHolder);
+      addBond(p, _svHolder, -(0.5 + _svBond * 0.05));
+    });
+
+    // Popularity
+    if (seasonConfig.popularityEnabled && gs.popularity) {
+      gs.popularity[_svHolder] = (gs.popularity[_svHolder] || 0) - 0.3;
+    }
+
+    // Heat next episode
+    gs.soleVoteHeat = { player: _svHolder, ep: (gs.episode || 0) + 1 };
+
+    // bigMoves
+    const _svBmState = getPlayerState(_svHolder);
+    _svBmState.bigMoves = (_svBmState.bigMoves || 0) + 1;
+    if (!gs.bigMoveEarnersThisEp) gs.bigMoveEarnersThisEp = [];
+    if (!gs.bigMoveEarnersThisEp.includes(_svHolder)) gs.bigMoveEarnersThisEp.push(_svHolder);
+    break; // one per tribal
+  }
+
   // ── Team Swap: holder plays it at tribal → triggers elimination-swap post-vote ──
   // The actual tribe swap happens AFTER resolveVotes, using the same path as the elimination-swap twist.
   // Here we just decide whether to play it and flag it.
@@ -8536,7 +8609,7 @@ function simulateJourney(ep) {
     if (tc.oncePer === 'phase' && (gs.advantagesFoundThisPhase?.[type] || 0) >= max) return false;
     return true;
   };
-  ['extraVote', 'voteSteal', 'voteBlock', 'safetyNoPower'].forEach(t => { if (_canSpawn(t)) advPool.push(t); });
+  ['extraVote', 'voteSteal', 'voteBlock'].forEach(t => { if (_canSpawn(t)) advPool.push(t); });
 
   const jChal = JOURNEY_CHALLENGES[Math.floor(Math.random() * JOURNEY_CHALLENGES.length)];
 
@@ -19561,6 +19634,16 @@ function simulateJuryRoundtable(ep) {
       swapperTribe.members.push(pickedPlayer);
       ep.swapResult = { swapper, fromTribe: swapperTribe.name, toTribe: destTribe.name, pickedPlayer };
       ep.eliminated = null; // no one is eliminated
+      // Track skipped elimination so buildEpisodeMap extends the season
+      if (!gs.skippedEliminationEps) gs.skippedEliminationEps = [];
+      if (!gs.skippedEliminationEps.includes(epNum)) gs.skippedEliminationEps.push(epNum);
+      // Shift all future twists forward by 1 episode — keeps ambassadors at merge, jury-elim at top 3, etc.
+      if (seasonConfig.twistSchedule?.length) {
+        seasonConfig.twistSchedule.forEach(tw => {
+          if (Number(tw.episode) > epNum) tw.episode = Number(tw.episode) + 1;
+        });
+        try { localStorage.setItem('simulator_config', JSON.stringify(seasonConfig)); } catch(e) {}
+      }
     }
 
   // ── EXILE DUEL SETUP: voted-out goes to exile instead of eliminated ──
@@ -19630,17 +19713,6 @@ function simulateJuryRoundtable(ep) {
       gs.providerVotedOutLastEp = { name: ep.eliminated, tribeName: _elimTribe };
     }
 
-    // ── BLACK VOTE: consume the pending black vote (target was at this tribal) ──
-    // Consume black votes that were applied (via penalty vote or direct injection)
-    if (ep.blackVotePending && gs.blackVotes?.length && ep.tribalPlayers?.includes(ep.blackVotePending.target)) {
-      gs.blackVotes = gs.blackVotes.filter(bv => bv !== ep.blackVotePending);
-    }
-    // Also consume any directly-injected black votes (marked _applied in simulateVotes)
-    if (gs.blackVotes?.length) {
-      gs.blackVotes = gs.blackVotes.filter(bv => !bv._applied);
-    }
-    delete ep.blackVotePending;
-    delete gs._activeBlackVote;
     // ── BLACK VOTE: eliminated player casts a parting vote/gift (until F4) ──
     if (cfg.blackVote && cfg.blackVote !== 'off' && gs.activePlayers.length > 4) {
       const _bvElim = ep.eliminated;
@@ -19683,6 +19755,17 @@ function simulateJuryRoundtable(ep) {
       }
     }
   }
+
+  // ── BLACK VOTE: consume fired black votes (OUTSIDE elimination branches so it runs even on Team Swap / exile) ──
+  if (ep.blackVotePending && gs.blackVotes?.length) {
+    const _bvP = ep.blackVotePending;
+    gs.blackVotes = gs.blackVotes.filter(bv => !(bv.from === _bvP.from && bv.target === _bvP.target && bv.ep === _bvP.ep));
+  }
+  if (gs.blackVotes?.length) {
+    gs.blackVotes = gs.blackVotes.filter(bv => !bv._applied);
+  }
+  delete ep.blackVotePending;
+  delete gs._activeBlackVote;
 
   // ── POST-ELIMINATION RESCUE ISLAND: generate life events for new arrival ──
   if (cfg.ri && cfg.riFormat === 'rescue' && gs.riPlayers.length > 0) {
@@ -23742,6 +23825,8 @@ function buildEpisodeMap() {
     let elims = 1;
     if (_allTypes.includes('no-tribal')) elims = 0;
     if (_allTypes.includes('elimination-swap')) elims = 0;
+    // Account for Team Swap advantages that cancelled eliminations mid-season
+    if (gs?.skippedEliminationEps?.includes(ep)) elims = 0;
     if (_allTypes.includes('double-elim')) elims = Math.max(elims, 2);
     if (_allTypes.includes('multi-tribal') && !merged) elims = Math.max(elims, Math.max(2, (seasonConfig.teams || 2) - 1));
     if (_allTypes.includes('slasher-night')) elims = Math.max(elims, 1);

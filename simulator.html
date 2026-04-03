@@ -6916,11 +6916,12 @@ function checkShotInDark(tribalPlayers, votes, log, ep) {
   if (!sorted.length) return;
   const [target, voteCount] = sorted[0];
   if (voteCount < 2) return; // only desperate players risk it
-  // Don't play SITD if you have an idol (you'd play that instead — it's strictly better)
-  const _sitdHasIdol = gs.advantages.some(a => a.holder === target && (a.type === 'idol' || (a.type === 'amulet' && a.amuletPower === 'idol')));
-  if (_sitdHasIdol) return;
-  // Don't play SITD if someone already played an idol for you this tribal
-  if (ep.idolPlays?.some(p => p.playedFor === target)) return;
+  // Don't play SITD if you have any protective advantage (idol, team swap, safety without power — all strictly better)
+  const _sitdHasProtection = gs.advantages.some(a => a.holder === target && (a.type === 'idol' || a.type === 'teamSwap' || a.type === 'safetyNoPower' || (a.type === 'amulet' && a.amuletPower === 'idol')));
+  if (_sitdHasProtection) return;
+  // Don't play SITD if already protected this tribal (idol played for you, or already swapped out)
+  if (ep.idolPlays?.some(p => p.playedFor === target || (p.type === 'teamSwap' && p.swappedPlayer === target))) return;
+  if (ep.safetyNoPowerPlayed?.holder === target) return;
   if (ep.shotInDark?.player === target) return; // already played SitD this episode — can't play again in vote 2
   const s = pStats(target);
   const eavBonus = gs.playerStates[target]?.eavesdropBoostThisEp ? 0.10 + s.intuition * 0.01 : 0;
@@ -8412,13 +8413,20 @@ function checkNonIdolAdvantageUse(tribalPlayers, votesObj, ep, voteLog = []) {
       _tsCurTribe.members = _tsCurTribe.members.filter(m => m !== _tsSwapTarget);
       _tsDestTribe.members.push(_tsSwapTarget);
 
-      // Remove their votes from this tribal (they're no longer here)
+      // Remove them from this tribal entirely (they're no longer here)
       if (votesObj[_tsSwapTarget]) delete votesObj[_tsSwapTarget]; // votes against them don't count
+      tribalPlayers.splice(tribalPlayers.indexOf(_tsSwapTarget), 1); // no longer a tribal participant
       const _tsVoteEntry = voteLog.find(l => l.voter === _tsSwapTarget);
       if (_tsVoteEntry) {
         if (_tsVoteEntry.voted && votesObj[_tsVoteEntry.voted]) votesObj[_tsVoteEntry.voted]--;
         _tsVoteEntry.teamSwapped = true;
       }
+
+      // Clean votesObj: remove entries for players no longer at tribal, and zero-out entries with no real votes
+      Object.keys(votesObj).forEach(k => {
+        if (!tribalPlayers.includes(k)) delete votesObj[k];
+        else if (votesObj[k] <= 0) delete votesObj[k];
+      });
 
       ep.idolPlays.push({ player: _tsHolder, type: 'teamSwap', swappedPlayer: _tsSwapTarget,
         fromTribe: _tsCurTribe.name, toTribe: _tsDestTribe.name, selfSwap: _tsSwapSelf, forced: _tsForcePlay });

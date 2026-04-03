@@ -3905,6 +3905,7 @@ setTimeout(function() {
     }
   }
   
+  window.clearCurrentSeasonData = clearCurrentSeasonData;
   function clearCurrentSeasonData() {
     const seasonNumber = parseInt(document.getElementById("sb-season-number").value) || 0;
     if (!seasonNumber) {

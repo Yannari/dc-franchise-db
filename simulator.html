@@ -7916,8 +7916,10 @@ function checkIdolPlays(tribalPlayers, votesObj, ep, voteLog = []) {
 
   if (!seasonConfig.advantages?.idol?.enabled) return;
 
+  const _idolPlayedThisTribal = new Set(); // track who already played an idol — one per tribal
   const sorted = Object.entries(votesObj).sort(([,a],[,b]) => b - a);
   for (const [name, voteCount] of sorted) {
+    if (_idolPlayedThisTribal.has(name)) continue; // already played an idol this tribal
     const idolIdx = gs.advantages.findIndex(a => a.holder === name && !a.superIdol && (a.type === 'idol' || (a.type === 'amulet' && a.amuletPower === 'idol')));
     if (idolIdx === -1) continue;
     const _idolAdv = gs.advantages[idolIdx];
@@ -8025,6 +8027,7 @@ function checkIdolPlays(tribalPlayers, votesObj, ep, voteLog = []) {
     if (didPlay) {
       gs.advantages.splice(idolIdx, 1);
       delete votesObj[name];
+      _idolPlayedThisTribal.add(name);
       ep.idolPlays.push({ player: name, votesNegated: voteCount, tippedOff: !!tipOffAlly });
       ep.idolRehide = true;
     } else {
@@ -8042,6 +8045,7 @@ function checkIdolPlays(tribalPlayers, votesObj, ep, voteLog = []) {
   // Multiple triggers — each represents a different way a player misreads the situation
   const _unusedIdolHolders = gs.advantages.filter(a =>
     a.type === 'idol' && !a.superIdol && tribalPlayers.includes(a.holder) &&
+    !_idolPlayedThisTribal.has(a.holder) &&
     !ep.idolPlays.some(p => p.player === a.holder) &&
     !ep.idolMisplays?.some(m => m.player === a.holder)
   );
@@ -8095,6 +8099,7 @@ function checkIdolPlays(tribalPlayers, votesObj, ep, voteLog = []) {
       const idolIdx = gs.advantages.indexOf(_adv);
       gs.advantages.splice(idolIdx, 1);
       delete votesObj[_ph];
+      _idolPlayedThisTribal.add(_ph);
       ep.idolPlays.push({ player: _ph, votesNegated: _votesAgainst, misplay: true, misplayReason: _misplayReason });
       ep.idolRehide = true;
     }
@@ -8104,6 +8109,7 @@ function checkIdolPlays(tribalPlayers, votesObj, ep, voteLog = []) {
   // Holder is NOT in danger themselves — might burn their idol to protect a close ally
   const _allyPlayHolders = gs.advantages.filter(a =>
     a.type === 'idol' && !a.superIdol && tribalPlayers.includes(a.holder) &&
+    !_idolPlayedThisTribal.has(a.holder) &&
     !ep.idolPlays.some(p => p.player === a.holder)
   );
   for (const _adv of _allyPlayHolders) {
@@ -8146,6 +8152,7 @@ function checkIdolPlays(tribalPlayers, votesObj, ep, voteLog = []) {
       const _advIdx = gs.advantages.indexOf(_adv);
       gs.advantages.splice(_advIdx, 1);
       delete votesObj[_allyName];
+      _idolPlayedThisTribal.add(_holder);
       ep.idolPlays.push({ player: _holder, playedFor: _allyName, votesNegated: _allyVotes, allianceName: _sharedAlliance?.name || null });
       // Massive bond boost — playing an idol for someone is the biggest trust move in the game
       addBond(_holder, _allyName, 3.0);

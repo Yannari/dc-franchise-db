@@ -2295,6 +2295,11 @@ function buildAdvantageList() {
     <div class="adv-row">
       <input type="checkbox" id="adv-${a.key}" class="adv-check" ${a.default>0?'checked':''} onchange="toggleAdv('${a.key}')">
       <span style="flex:1;font-size:13px;color:#e2e8f0;cursor:pointer" onclick="document.getElementById('adv-${a.key}').click()">${a.label}</span>
+      <select id="adv-onceper-${a.key}" class="adv-onceper" style="font-size:10px;padding:1px 4px;background:var(--surface2);color:var(--muted);border:1px solid var(--border);border-radius:3px;margin-right:4px" ${a.default===0?'disabled':''} onchange="saveConfig()">
+        <option value="">respawn</option>
+        <option value="season">per season</option>
+        <option value="phase">per phase</option>
+      </select>
       <input type="number" id="adv-count-${a.key}" class="adv-count" min="0" max="9" value="${a.default}" ${a.default===0?'disabled':''} oninput="saveConfig()">
     </div>
     ${a.key === 'legacy' ? `<div id="legacy-settings" style="display:none;margin:4px 0 8px 24px">
@@ -2312,6 +2317,8 @@ function toggleAdv(key) {
   const countEl = document.getElementById('adv-count-'+key);
   countEl.disabled = !checked;
   if (!checked) countEl.value=0; else if (!parseInt(countEl.value)) countEl.value=1;
+  const oncePerEl = document.getElementById('adv-onceper-'+key);
+  if (oncePerEl) oncePerEl.disabled = !checked;
   // Show/hide legacy-specific settings
   if (key === 'legacy') {
     const legSet = document.getElementById('legacy-settings');
@@ -2380,8 +2387,8 @@ function saveConfig() {
         const en = g('adv-idol-enabled'), ct = g('adv-idol-count');
         return [a.key, { enabled: en ? en.checked : false, count: ct ? parseInt(ct.value)||0 : 0 }];
       }
-      const en = g('adv-' + a.key), ct = g('adv-count-' + a.key);
-      return [a.key, { enabled: en ? en.checked : false, count: ct ? parseInt(ct.value)||0 : 0 }];
+      const en = g('adv-' + a.key), ct = g('adv-count-' + a.key), op = g('adv-onceper-' + a.key);
+      return [a.key, { enabled: en ? en.checked : false, count: ct ? parseInt(ct.value)||0 : 0, oncePer: op?.value || '' }];
     })),
     legacyActivatesAt: (g('cfg-legacy-activates')?.value || '5').split(',').map(Number),
     twistSchedule: seasonConfig.twistSchedule || [],
@@ -2481,6 +2488,8 @@ function renderConfig() {
     const en = g('adv-'+a.key), ct = g('adv-count-'+a.key);
     if (en) en.checked = adv.enabled;
     if (ct) { ct.value = adv.count; ct.disabled = !adv.enabled; }
+    const op = g('adv-onceper-'+a.key);
+    if (op) { op.value = adv.oncePer || ''; op.disabled = !adv.enabled; }
   });
   // Legacy settings
   const legSet = g('legacy-settings');
@@ -7598,9 +7607,9 @@ function findAdvantages(ep) {
     if (postMergeOnly && !gs.isMerged) return;
     const max = typeCfg.count || 1;
     if (gs.advantages.filter(a => a.type === key).length >= max) return;
-    // Season-wide cap: check lifetime usage (found + consumed), not just currently held
-    if (!gs.advantagesFoundThisSeason) gs.advantagesFoundThisSeason = {};
-    if ((gs.advantagesFoundThisSeason[key] || 0) >= max) return;
+    // Once-per-season: if enabled, check lifetime counter
+    if (typeCfg.oncePer === 'season' && (gs.advantagesFoundThisSeason?.[key] || 0) >= max) return;
+    if (typeCfg.oncePer === 'phase' && (gs.advantagesFoundThisPhase?.[key] || 0) >= max) return;
 
     const pool = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer).sort(() => Math.random() - 0.5);
     for (const name of pool) {
@@ -7612,8 +7621,12 @@ function findAdvantages(ep) {
           : key === 'amulet' ? { amuletPower: (() => { const c = gs.advantages.filter(a => a.type === 'amulet').length + 1; return c >= 3 ? 'extraVote' : c === 2 ? 'voteSteal' : 'idol'; })() }
           : {};
         gs.advantages.push({ holder: name, type: key, foundEp: ep.num, foundTribe: _advTribe, ..._advExtra });
-        if (!gs.advantagesFoundThisSeason) gs.advantagesFoundThisSeason = {};
-        gs.advantagesFoundThisSeason[key] = (gs.advantagesFoundThisSeason[key] || 0) + 1;
+        // Track lifetime finds for once-per-season/phase caps
+        if (typeCfg.oncePer) {
+          const _counterKey = typeCfg.oncePer === 'phase' ? 'advantagesFoundThisPhase' : 'advantagesFoundThisSeason';
+          if (!gs[_counterKey]) gs[_counterKey] = {};
+          gs[_counterKey][key] = (gs[_counterKey][key] || 0) + 1;
+        }
         ep.idolFinds.push({ finder: name, type: key, tribe: _advTribe });
         // ── Discovery camp event for tactical advantages ──
         if (['teamSwap', 'voteBlock', 'voteSteal', 'safetyNoPower'].includes(key)) {
@@ -8514,18 +8527,16 @@ function simulateJourney(ep) {
 
   const cfg = seasonConfig;
   const advPool = [];
-  if (cfg.advantages?.extraVote?.enabled) {
-    if (gs.advantages.filter(a=>a.type==='extraVote').length < (cfg.advantages.extraVote.count||1) && (gs.advantagesFoundThisSeason?.extraVote || 0) < (cfg.advantages.extraVote.count||1)) advPool.push('extraVote');
-  }
-  if (cfg.advantages?.voteSteal?.enabled) {
-    if (gs.advantages.filter(a=>a.type==='voteSteal').length < (cfg.advantages.voteSteal.count||1) && (gs.advantagesFoundThisSeason?.voteSteal || 0) < (cfg.advantages.voteSteal.count||1)) advPool.push('voteSteal');
-  }
-  if (cfg.advantages?.voteBlock?.enabled) {
-    if (gs.advantages.filter(a=>a.type==='voteBlock').length < (cfg.advantages.voteBlock.count||1) && (gs.advantagesFoundThisSeason?.voteBlock || 0) < (cfg.advantages.voteBlock.count||1)) advPool.push('voteBlock');
-  }
-  if (cfg.advantages?.safetyNoPower?.enabled) {
-    if (gs.advantages.filter(a=>a.type==='safetyNoPower').length < (cfg.advantages.safetyNoPower.count||1) && (gs.advantagesFoundThisSeason?.safetyNoPower || 0) < (cfg.advantages.safetyNoPower.count||1)) advPool.push('safetyNoPower');
-  }
+  const _canSpawn = (type) => {
+    const tc = cfg.advantages?.[type];
+    if (!tc?.enabled) return false;
+    const max = tc.count || 1;
+    if (gs.advantages.filter(a => a.type === type).length >= max) return false;
+    if (tc.oncePer === 'season' && (gs.advantagesFoundThisSeason?.[type] || 0) >= max) return false;
+    if (tc.oncePer === 'phase' && (gs.advantagesFoundThisPhase?.[type] || 0) >= max) return false;
+    return true;
+  };
+  ['extraVote', 'voteSteal', 'voteBlock', 'safetyNoPower'].forEach(t => { if (_canSpawn(t)) advPool.push(t); });
 
   const jChal = JOURNEY_CHALLENGES[Math.floor(Math.random() * JOURNEY_CHALLENGES.length)];
 
@@ -8549,8 +8560,12 @@ function simulateJourney(ep) {
         if (advPool.length) {
           const type = advPool[Math.floor(Math.random() * advPool.length)];
           gs.advantages.push({ holder: name, type, foundEp: ep.num });
-          if (!gs.advantagesFoundThisSeason) gs.advantagesFoundThisSeason = {};
-          gs.advantagesFoundThisSeason[type] = (gs.advantagesFoundThisSeason[type] || 0) + 1;
+          const _jOncePer = cfg.advantages?.[type]?.oncePer;
+          if (_jOncePer) {
+            const _jck = _jOncePer === 'phase' ? 'advantagesFoundThisPhase' : 'advantagesFoundThisSeason';
+            if (!gs[_jck]) gs[_jck] = {};
+            gs[_jck][type] = (gs[_jck][type] || 0) + 1;
+          }
           return { name, result: 'advantage', type };
         }
         return { name, result: 'safe' };
@@ -8569,8 +8584,12 @@ function simulateJourney(ep) {
       if (gambles && advPool.length) {
         const type = advPool[Math.floor(Math.random() * advPool.length)];
         gs.advantages.push({ holder: name, type, foundEp: ep.num });
-        if (!gs.advantagesFoundThisSeason) gs.advantagesFoundThisSeason = {};
-        gs.advantagesFoundThisSeason[type] = (gs.advantagesFoundThisSeason[type] || 0) + 1;
+        const _j2OncePer = cfg.advantages?.[type]?.oncePer;
+        if (_j2OncePer) {
+          const _j2ck = _j2OncePer === 'phase' ? 'advantagesFoundThisPhase' : 'advantagesFoundThisSeason';
+          if (!gs[_j2ck]) gs[_j2ck] = {};
+          gs[_j2ck][type] = (gs[_j2ck][type] || 0) + 1;
+        }
         return { name, result: 'advantage', type };
       } else if (gambles) {
         return { name, result: 'safe' };
@@ -9713,15 +9732,26 @@ function applyTwist(ep, twist, isPrimary = true) {
       if (item.blind) {
         // Revealed when opened
         if (item.id === 'advantage') {
-          const advTypes = ['extraVote','voteSteal','voteBlock'].filter(t => seasonConfig.advantages?.[t]?.enabled);
+          const advTypes = ['extraVote','voteSteal','voteBlock'].filter(t => {
+            const tc = seasonConfig.advantages?.[t];
+            if (!tc?.enabled) return false;
+            const max = tc.count || 1;
+            if (gs.advantages.filter(a => a.type === t).length >= max) return false;
+            if (tc.oncePer === 'season' && (gs.advantagesFoundThisSeason?.[t] || 0) >= max) return false;
+            if (tc.oncePer === 'phase' && (gs.advantagesFoundThisPhase?.[t] || 0) >= max) return false;
+            return true;
+          });
           if (!advTypes.length) advTypes.push('extraVote','voteSteal');
           const pick = advTypes[Math.floor(Math.random() * advTypes.length)];
           const advMax = seasonConfig.advantages?.[pick]?.count || 1;
-          const _auctionSeasonCount = gs.advantagesFoundThisSeason?.[pick] || 0;
-          if (gs.advantages.filter(a => a.type === pick).length < advMax && _auctionSeasonCount < advMax) {
+          if (gs.advantages.filter(a => a.type === pick).length < advMax) {
             gs.advantages.push({ holder: winnerName, type: pick, foundEp: ep.num, fromAuction: true });
-            if (!gs.advantagesFoundThisSeason) gs.advantagesFoundThisSeason = {};
-            gs.advantagesFoundThisSeason[pick] = (gs.advantagesFoundThisSeason[pick] || 0) + 1;
+            const _oncePer = seasonConfig.advantages?.[pick]?.oncePer;
+            if (_oncePer) {
+              const _ck = _oncePer === 'phase' ? 'advantagesFoundThisPhase' : 'advantagesFoundThisSeason';
+              if (!gs[_ck]) gs[_ck] = {};
+              gs[_ck][pick] = (gs[_ck][pick] || 0) + 1;
+            }
             effect = pick; effectLabel = pick === 'extraVote' ? 'Extra Vote' : pick === 'voteSteal' ? 'Vote Steal' : 'Vote Block';
           } else {
             effect = 'food'; effectLabel = '(advantage not available — consolation snack)';
@@ -16708,6 +16738,7 @@ function simulateEpisode() {
   if (isMerge) {
     ep.isMerge = true; gs.isMerged = true; gs.phase = 'post-merge'; gs.tribes = [];
     gs.sitOutHistory = {}; // sit-out back-to-back rule doesn't carry into individual game
+    gs.advantagesFoundThisPhase = {}; // reset per-phase advantage caps (e.g., KiP 1 pre + 1 post)
     if (cfg.advantages?.idol?.enabled) gs.mergeIdolHidden = true;
     // Transfer tribe food to merged pool — average of pre-merge tribes (NO automatic feast bonus)
     if (seasonConfig.foodWater === 'enabled' && gs.tribeFood) {

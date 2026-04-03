@@ -21390,23 +21390,37 @@ function _textMeta(ep, ln, sec) {
 // ── HEADER: CAST ──
 function _textCast(ep, ln, sec) {
   const cfg = seasonConfig;
-  sec('CAST');
-  ln(`STARTING CAST (${players.length}): ${players.map(p=>p.name).join(', ')}`);
-  ln('TRIBES:');
+  // Use CAST (ALL) header — current-season.html parser depends on this exact format
+  // Each name on its own line so parseCastFromSummary's cleanNameLine/isProbablyName can read them
+  sec('CAST (ALL)');
+  ln(`STARTING CAST (${players.length}):`);
+  players.forEach(p => ln(p.name));
+
+  // Separate TRIBES section — current-season.html parser looks for === TRIBES header
+  // Format: "TribeName Tribe (N): Name1, Name2" so Pattern 3 in current-season.html matches
+  sec('TRIBES (ACTIVE)');
   if (ep.isMerge) {
-    ln(`  MERGED THIS EPISODE`);
-    ln(`  Remaining (${gs.activePlayers.length}): ${gs.activePlayers.join(', ')}`);
+    ln('MERGED THIS EPISODE');
+    ln(`Remaining (${gs.activePlayers.length}): ${gs.activePlayers.join(', ')}`);
   } else if (ep.tribesAtStart?.length) {
-    ep.tribesAtStart.forEach(t => ln(`  ${t.name.toUpperCase()} (${t.members.length}): ${t.members.join(', ')}`));
-    if (ep.swapResult) ln(`  (tribes shown before Elimination Swap fired)`);
+    ep.tribesAtStart.forEach(t => ln(`${t.name} Tribe (${t.members.length}): ${t.members.join(', ')}`));
+    if (ep.swapResult) ln(`(tribes shown before Elimination Swap fired)`);
   } else if (gs.tribes.length) {
-    gs.tribes.forEach(t => ln(`  ${t.name.toUpperCase()} (${t.members.length}): ${t.members.join(', ')}`));
+    gs.tribes.forEach(t => ln(`${t.name} Tribe (${t.members.length}): ${t.members.join(', ')}`));
   } else {
-    ln(`  MERGED (${gs.activePlayers.length}): ${gs.activePlayers.join(', ')}`);
+    ln(`MERGED (${gs.activePlayers.length}): ${gs.activePlayers.join(', ')}`);
   }
-  ln(`ELIMINATED: ${gs.eliminated.length ? gs.eliminated.join(', ') : 'None yet.'}`);
-  if (cfg.ri && gs.riPlayers.length) ln(`ON REDEMPTION ISLAND: ${gs.riPlayers.join(', ')}`);
-  if (gs.exileDuelPlayer) ln(`ON EXILE: ${gs.exileDuelPlayer}`);
+
+  sec('ELIMINATED (PERMANENT)');
+  ln(gs.eliminated.length ? gs.eliminated.join(', ') : 'None yet.');
+  if (cfg.ri) {
+    sec('ON REDEMPTION ISLAND');
+    ln(gs.riPlayers.length ? gs.riPlayers.join(', ') : 'None.');
+  }
+  if (gs.exileDuelPlayer) {
+    sec('ON EXILE');
+    ln(`${gs.exileDuelPlayer} — sent to exile last episode. Will duel the next player voted out for a chance to return.`);
+  }
 }
 
 // ── COLD OPEN ──

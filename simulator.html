@@ -2780,8 +2780,8 @@ function threatScore(name) {
   const rec = gs.chalRecord?.[name];
   if (!rec) return base;
   let prestige = 0;
-  // Individual wins (post-merge only — high value)
-  prestige += rec.wins * 0.4;
+  // Individual wins (post-merge only — high value, "can't vote them out" pressure)
+  prestige += rec.wins * 0.6;
   // Podiums = top-2 in any challenge (pre + post) — consistent challenge force
   prestige += rec.podiums * 0.2;
   // Bombs = poor performances — drags down threat perception
@@ -2974,8 +2974,8 @@ function computeHeat(name, tribalPlayers, alliances) {
     // Dominators are threats, but chronic bombers can also be targeted (dead weight / goat-cutting)
     const rec = gs.chalRecord?.[name];
     if (rec) {
-      // Strong performers: challenge threat — they'll keep winning individual immunity
-      heat += rec.podiums * 0.15;
+      // Immunity wins create direct heat — proven winner = must go before they win again
+      heat += rec.wins * 0.35;
       // Weak performers post-merge: not a liability anymore, but can be seen as a goat
       // Strategic players might cut them before FTC to avoid dragging a goat who gets 0 jury respect
       // OR keep them as a shield — this creates nuance, not a binary

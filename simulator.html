@@ -1625,7 +1625,8 @@ function repairGsSets(g) {
   if (!g) return;
   const SET_FIELDS = ['blowupHeatNextEp', 'knownIdolHoldersThisEp', 'knownIdolHoldersPersistent',
                       'knownAmuletHoldersThisEp', 'knownAmuletHoldersPersistent',
-                      'socialBombHeatThisEp', 'injuredThisEp', 'scramblingThisEp', 'beastDrillsThisEp', 'lieTargetsThisEp'];
+                      'socialBombHeatThisEp', 'injuredThisEp', 'scramblingThisEp', 'beastDrillsThisEp', 'lieTargetsThisEp',
+                      'knownTeamSwapHolders', 'knownVoteBlockHolders', 'knownVoteStealHolders'];
   SET_FIELDS.forEach(f => {
     if (g[f] instanceof Set) return; // already a Set
     if (Array.isArray(g[f])) { g[f] = new Set(g[f]); return; } // saved as array — restore
@@ -1637,7 +1638,8 @@ function prepGsForSave(g) {
   if (!g) return g;
   const SET_FIELDS = ['blowupHeatNextEp', 'knownIdolHoldersThisEp', 'knownIdolHoldersPersistent',
                       'knownAmuletHoldersThisEp', 'knownAmuletHoldersPersistent',
-                      'socialBombHeatThisEp', 'injuredThisEp', 'scramblingThisEp', 'beastDrillsThisEp', 'lieTargetsThisEp'];
+                      'socialBombHeatThisEp', 'injuredThisEp', 'scramblingThisEp', 'beastDrillsThisEp', 'lieTargetsThisEp',
+                      'knownTeamSwapHolders', 'knownVoteBlockHolders', 'knownVoteStealHolders'];
   SET_FIELDS.forEach(f => { if (g[f] instanceof Set) g[f] = [...g[f]]; });
   return g;
 }
@@ -2993,6 +2995,12 @@ function computeHeat(name, tribalPlayers, alliances) {
   // a specific attacker — so we use the average reaction across archetypes.
   // The per-voter nuance happens in pickTarget instead.
   if (gs.knownAmuletHoldersThisEp?.has(name)) heat -= 0.5; // mild general deterrent only
+  // Known Team Swap holder — get them before they escape
+  if (gs.knownTeamSwapHolders?.has(name)) heat += 0.6;
+  // Known Vote Block holder — mild tactical awareness
+  if (gs.knownVoteBlockHolders?.has(name)) heat += 0.3;
+  // Known Vote Steal holder — mild tactical awareness
+  if (gs.knownVoteStealHolders?.has(name)) heat += 0.3;
   // Tribal blowup fallout — someone named this player on the way out
   if (gs.blowupHeatNextEp?.has(name)) heat += 1.5;
   // Social bomb — said something that landed badly at camp this episode
@@ -7601,6 +7609,28 @@ function findAdvantages(ep) {
           : {};
         gs.advantages.push({ holder: name, type: key, foundEp: ep.num, foundTribe: _advTribe, ..._advExtra });
         ep.idolFinds.push({ finder: name, type: key, tribe: _advTribe });
+        // ── Discovery camp event for tactical advantages ──
+        if (['teamSwap', 'voteBlock', 'voteSteal'].includes(key)) {
+          const _discLabel = { teamSwap: 'Team Swap', voteBlock: 'Vote Block', voteSteal: 'Vote Steal' }[key];
+          const _discPr = pronouns(name);
+          const _discLines = key === 'teamSwap' ? [
+            `${name} found something hidden at camp — a ${_discLabel}. ${_discPr.Sub} can feel the weight of it already. The power to move someone between tribes... that changes everything.`,
+            `${name} was alone when ${_discPr.sub} found the ${_discLabel}. ${_discPr.Sub} turned it over in ${_discPr.posAdj} hands. This could save ${_discPr.obj} — or save someone else. Either way, the game just shifted.`,
+            `${name} discovered a ${_discLabel} tucked into a tree. ${_discPr.Sub} pocketed it fast. Nobody saw. But now ${_discPr.sub} ${_discPr.sub === 'they' ? 'have' : 'has'} an escape route nobody knows about.`,
+          ] : [
+            `${name} found a ${_discLabel} at camp. A quiet advantage — but a useful one. The right play at the right time could change a vote.`,
+            `${name} discovered a ${_discLabel} hidden near the well. ${_discPr.Sub} slipped it into ${_discPr.posAdj} bag without a word. One more tool in the arsenal.`,
+            `${name} was searching near the shelter when ${_discPr.sub} found a ${_discLabel}. Not flashy, but tactical. ${_discPr.Sub} ${_discPr.sub === 'they' ? 'know' : 'knows'} exactly when to use it.`,
+          ];
+          const _discTribe = _advTribe;
+          if (_discTribe && ep.campEvents?.[_discTribe]) {
+            const _discBlock = ep.campEvents[_discTribe];
+            (Array.isArray(_discBlock) ? _discBlock : (_discBlock.pre || [])).push({
+              type: key + 'Found', players: [name],
+              text: _discLines[Math.floor(Math.random() * _discLines.length)]
+            });
+          }
+        }
         break;
       }
     }

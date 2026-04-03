@@ -2979,9 +2979,7 @@ function computeHeat(name, tribalPlayers, alliances) {
     const rec = gs.chalRecord?.[name];
     if (rec) {
       // Strong performers: challenge threat — they'll keep winning individual immunity
-      if (rec.podiums >= 6)      heat += 1.0;
-      else if (rec.podiums >= 4) heat += 0.6;
-      else if (rec.podiums >= 2) heat += 0.2;
+      heat += rec.podiums * 0.15;
       // Weak performers post-merge: not a liability anymore, but can be seen as a goat
       // Strategic players might cut them before FTC to avoid dragging a goat who gets 0 jury respect
       // OR keep them as a shield — this creates nuance, not a binary

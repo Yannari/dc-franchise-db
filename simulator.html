@@ -30984,10 +30984,10 @@ function vpWhyBullets(name, votelog, alliances, ep) {
     if (_elimFollowedPlan) {
       // Eliminated player was loyal to the alliance — the alliance tried but failed
       bullets.push(_pick([
-        `${hadAlly.label} tried to protect them — but was outnumbered`,
-        `${hadAlly.label} wanted to save ${name} and couldn't get the numbers. Loyalty without majority is just a losing vote`,
-        `The alliance held — but it wasn't big enough. ${hadAlly.label} voted together and still fell short`,
-        `${hadAlly.label} stood by them. It wasn't enough. Being loyal to the right person doesn't matter if the numbers aren't there`,
+        `${hadAlly.label} voted with ${name} — but was outnumbered`,
+        `${hadAlly.label} and ${name} were on the same side, but the numbers weren't there. Voting together only works if you have the majority`,
+        `${hadAlly.label} voted together and still fell short. The other side had more votes`,
+        `${hadAlly.label} held the line — but the opposing bloc was bigger. Being on the right side doesn't matter if the numbers aren't there`,
       ]));
     } else {
       // Eliminated player defected from their own alliance — they went rogue and paid for it

@@ -158,12 +158,14 @@ What happens: player crafts a fake idol and plants it in an obvious location.
 Mechanic: gs.fakeIdols[] entry created. If played at tribal: no votes negated,
   camp event generated next episode, bond collapse.
 
-[11] JURY BITTER CASCADE
-Trigger: player on jury with very negative bond (<= -4) toward a finalist
-Roll: ~25-40% during FTC phase depending on jury bitterness levels
-What happens: the bitter juror's speech is so venomous it poisons other jurors who
-  were on the fence. 1-2 nearby jurors shift their vote away from the targeted finalist.
-Mechanic: during FTC resolution, re-roll borderline juror votes. Can flip the winner.
+[DONE] #11 JURY BITTER CASCADE / ROUNDTABLE — implemented via simulateJuryRoundtable(ep).
+  Fires during jury-elimination twist episodes. Lobbyists identified proportionally
+  (abs(bond) * 0.08 + boldness * 0.03). Persuadable jurors detected by margin threshold
+  (2.0 - social * 0.08). Persuasion: social * 0.04 + bond * 0.05, pushback resistance:
+  abs(bond) * 0.12 + strategic * 0.03. Bond shift on success: 0.15 + social * 0.03.
+  VP: roundtable section appended to rpBuildJuryLife with finalist-by-finalist debate,
+  badges (IN FAVOR/AGAINST/LOBBIED/PUSHED BACK), personality-driven arguments.
+  ep.juryRoundtable saved to history.
 
 [15] FINAL TRIBAL SURPRISE FLIP
 Trigger: FTC with jury where one finalist has majority of votes locked in

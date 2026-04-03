@@ -1131,8 +1131,12 @@
                 </label>
                 <p class="acc-desc">When an idol is played, the tribe gets a new one to find.</p>
                 <div class="form-group" style="margin-top:8px">
-                  <label class="form-label">Max Idols in game</label>
-                  <input type="number" id="adv-idol-count" class="adv-count" min="1" max="6" value="2" onchange="saveAdvantage('idol')" style="width:60px">
+                  <label class="form-label">Idols per tribe <span style="font-weight:400;font-size:10px;color:var(--muted)">(pre-merge, max = tribes × this)</span></label>
+                  <input type="number" id="cfg-idols-per-tribe" class="adv-count" min="1" max="3" value="1" onchange="saveConfig()" style="width:60px">
+                </div>
+                <div class="form-group" style="margin-top:6px">
+                  <label class="form-label">Idols at merge <span style="font-weight:400;font-size:10px;color:var(--muted)">(hidden at merged camp)</span></label>
+                  <input type="number" id="cfg-idols-at-merge" class="adv-count" min="0" max="3" value="1" onchange="saveConfig()" style="width:60px">
                 </div>
               </div>
             </div>
@@ -2413,6 +2417,8 @@ function saveConfig() {
     tiebreakerMode: g('cfg-tiebreaker-mode')?.value || 'survivor',
     qem:         g('cfg-qem')?.checked || false,
     idolRehide:  g('cfg-idol-rehide')?.checked || false,
+    idolsPerTribe: parseInt(g('cfg-idols-per-tribe')?.value) || 1,
+    idolsAtMerge: parseInt(g('cfg-idols-at-merge')?.value) ?? 1,
     advExpire:   parseInt(g('cfg-adv-expire')?.value) || 4,
     foodWater:   g('cfg-food-water')?.value || 'disabled',
     survivalDifficulty: g('cfg-survival-difficulty')?.value || 'casual',
@@ -2422,8 +2428,11 @@ function saveConfig() {
     host:        g('cfg-host')?.value || 'Chris',
     advantages: Object.fromEntries(ADVANTAGES.map(a => {
       if (a.key === 'idol') {
-        const en = g('adv-idol-enabled'), ct = g('adv-idol-count');
-        return [a.key, { enabled: en ? en.checked : false, count: ct ? parseInt(ct.value)||0 : 0 }];
+        const en = g('adv-idol-enabled');
+        const _ipt = parseInt(g('cfg-idols-per-tribe')?.value) || 1;
+        const _numTribes = parseInt(g('cfg-teams')?.value) || 2;
+        const _iam = parseInt(g('cfg-idols-at-merge')?.value) ?? 1;
+        return [a.key, { enabled: en ? en.checked : false, count: _ipt * _numTribes + _iam }];
       }
       const en = g('adv-' + a.key), ct = g('adv-count-' + a.key), op = g('adv-onceper-' + a.key);
       const sources = Object.keys(ADV_SOURCE_LABELS).filter(src => g('adv-src-' + a.key + '-' + src)?.checked);
@@ -2495,6 +2504,8 @@ function renderConfig() {
   const _hpRow = g('hide-pop-row');
   if (_hpRow) _hpRow.style.display = (seasonConfig.popularityEnabled ?? true) ? '' : 'none';
   chk('cfg-idol-rehide', seasonConfig.idolRehide || false);
+  set('cfg-idols-per-tribe', seasonConfig.idolsPerTribe || 1);
+  set('cfg-idols-at-merge', seasonConfig.idolsAtMerge ?? 1);
   set('cfg-adv-expire',  seasonConfig.advExpire ?? 4);
   set('cfg-food-water',  seasonConfig.foodWater || 'disabled');
   set('cfg-survival-difficulty', seasonConfig.survivalDifficulty || 'casual');
@@ -2523,7 +2534,6 @@ function renderConfig() {
   const idolAdv = seasonConfig.advantages?.idol;
   if (idolAdv) {
     chk('adv-idol-enabled', idolAdv.enabled);
-    set('adv-idol-count', idolAdv.count);
   }
   // Other advantages in adv-list
   ADVANTAGES.filter(a => a.key !== 'idol').forEach(a => {
@@ -7314,6 +7324,20 @@ function generateRescueIslandLife(ep) {
     });
   }
 
+  // Survival drain — Rescue Island is brutal (minimal food, no shelter, exposed elements)
+  // Harder than exile: sustained over multiple episodes, cumulative toll
+  if (seasonConfig.foodWater === 'enabled' && gs.survival) {
+    riList.forEach(name => {
+      const s = pStats(name);
+      const daysOn = epNum - (gs.riArrivalEp[name] || epNum);
+      // Base drain 6-10 per episode, reduced by endurance. Gets worse the longer you stay.
+      const _riBaseDrain = 10 - s.endurance * 0.4;
+      const _riDaysPenalty = Math.min(daysOn * 0.5, 3); // up to +3 extra drain after 6 episodes
+      const _riDrain = _riBaseDrain + _riDaysPenalty;
+      gs.survival[name] = Math.max(0, (gs.survival[name] || 80) - _riDrain);
+    });
+  }
+
   // Determine how many events: 2-4 based on population
   const eventCount = riList.length <= 2 ? 2 : riList.length <= 4 ? 3 : 4;
   const usedTypes = new Set();
@@ -7612,8 +7636,8 @@ function findAdvantages(ep) {
         const eavBoostFind = gs.playerStates[name]?.eavesdropBoostThisEp ? 0.008 + s.intuition * 0.001 : 0;
         if (Math.random() < 0.004 + epScale + s.intuition * 0.001 + s.strategic * 0.0005 + eavBoostFind) {
           gs.advantages.push({ holder: name, type: 'idol', foundEp: ep.num, foundTribe: isMergeSlot ? 'merge' : tribe.name });
-          if (isMergeSlot) gs.mergeIdolHidden = false;
-          else gs.idolSlots[tribe.name] = false;
+          if (isMergeSlot) gs.mergeIdolHidden = Math.max(0, (gs.mergeIdolHidden || 1) - 1);
+          else gs.idolSlots[tribe.name] = Math.max(0, (gs.idolSlots[tribe.name] || 1) - 1);
           ep.idolFinds.push({ finder: name, type: 'idol', tribe: isMergeSlot ? 'merge' : tribe.name });
           break;
         }
@@ -8488,6 +8512,11 @@ function checkNonIdolAdvantageUse(tribalPlayers, votesObj, ep, voteLog = []) {
         _svEntry.voteBlocked = true;
       }
     });
+    // Also remove Black Vote / penalty votes — Sole Vote means THE ONLY vote
+    voteLog.filter(l => l.isBlackVote && l.voter !== _svHolder).forEach(bvEntry => {
+      if (bvEntry.voted && votesObj[bvEntry.voted]) votesObj[bvEntry.voted]--;
+      bvEntry.voteBlocked = true;
+    });
 
     // Consume advantage
     gs.advantages.splice(gs.advantages.indexOf(_svAdv), 1);
@@ -8765,7 +8794,7 @@ function applyTwist(ep, twist, isPrimary = true) {
       name,
       members: allActive.slice(i * perTribe, i === tribeNames.length - 1 ? allActive.length : (i+1)*perTribe),
     }));
-    if (seasonConfig.advantages?.idol?.enabled) tribeNames.forEach(n => { gs.idolSlots[n] = true; });
+    if (seasonConfig.advantages?.idol?.enabled) tribeNames.forEach(n => { gs.idolSlots[n] = seasonConfig.idolsPerTribe || 1; });
     gs.sitOutHistory = {}; // back-to-back rule resets after a tribe swap
     twistObj.newTribes = gs.tribes.map(t => ({ name: t.name, members: [...t.members] }));
 
@@ -8786,7 +8815,7 @@ function applyTwist(ep, twist, isPrimary = true) {
       name,
       members: allActive.slice(i * perTribe, i === numTribes - 1 ? allActive.length : (i+1) * perTribe),
     }));
-    if (seasonConfig.advantages?.idol?.enabled) keptNames.forEach(n => { gs.idolSlots[n] = true; });
+    if (seasonConfig.advantages?.idol?.enabled) keptNames.forEach(n => { gs.idolSlots[n] = seasonConfig.idolsPerTribe || 1; });
     gs.sitOutHistory = {};
     twistObj.newTribes = gs.tribes.map(t => ({ name: t.name, members: [...t.members] }));
     twistObj.dissolvedTribe = dissolvedName;
@@ -8808,7 +8837,7 @@ function applyTwist(ep, twist, isPrimary = true) {
       name,
       members: allActive.slice(i * perTribe, i === numTribes - 1 ? allActive.length : (i+1) * perTribe),
     }));
-    if (seasonConfig.advantages?.idol?.enabled) gs.tribes.forEach(t => { gs.idolSlots[t.name] = true; });
+    if (seasonConfig.advantages?.idol?.enabled) gs.tribes.forEach(t => { gs.idolSlots[t.name] = seasonConfig.idolsPerTribe || 1; });
     twistObj.newTribes  = gs.tribes.map(t => ({ name: t.name, members: [...t.members] }));
     twistObj.expansion  = true;
     twistObj.newTribeName = newName;
@@ -9696,12 +9725,14 @@ function applyTwist(ep, twist, isPrimary = true) {
           `The survival kit ${player} brought back landed in the middle of camp like a peace offering. A pot. A machete. Flint. Nobody said it out loud, but ${player} had made the right choice — and that counted for something.`,
         ]) };
       } else if (gift === 2) {
-        // Idol clue — 65% chance they find the idol (slot availability is the only gate; global cap excluded to avoid blocking by beware idols)
+        // Idol clue — 65% chance they find the idol (requires slot + under global cap)
         const hasSlot = gs.idolSlots?.[tribe];
-        const foundIdol = hasSlot && Math.random() < 0.65;
+        const _g2IdolCount = gs.advantages.filter(a => a.type === 'idol').length;
+        const _g2IdolMax = seasonConfig.advantages?.idol?.count || 2;
+        const foundIdol = hasSlot && _g2IdolCount < _g2IdolMax && Math.random() < 0.65;
         if (foundIdol) {
           gs.advantages.push({ holder: player, type: 'idol', foundEp: ep.num });
-          gs.idolSlots[tribe] = false;
+          gs.idolSlots[tribe] = Math.max(0, (gs.idolSlots[tribe] || 1) - 1);
           ep.idolFinds.push({ finder: player, type: 'idol', tribe, fromGift2: true });
         }
         // Suspicion: each tribemate has 25% chance of noticing the searching (-1 bond)
@@ -9739,7 +9770,7 @@ function applyTwist(ep, twist, isPrimary = true) {
           ]) + (spotted.length ? ` ${spotted.join(' and ')} saw ${player} looking around and noticed the behaviour.` : '') };
         }
       } else if (gift === 3) {
-        // Immunity Totem — immediate idol, baseline resentment (-1 per tribemate; tribe doesn't know why, just feels the absence)
+        // Immunity Totem — immediate idol, bypasses idol cap (it's a summit gift choice, not a camp find)
         gs.advantages.push({ holder: player, type: 'idol', foundEp: ep.num, fromTotem: true });
         ep.idolFinds.push({ finder: player, type: 'idol-totem', tribe });
         tribemates.forEach(tm => addBond(player, tm, -1));
@@ -9895,7 +9926,7 @@ function applyTwist(ep, twist, isPrimary = true) {
           const tribeName = gs.tribes.find(t => t.members.includes(winnerName))?.name;
           if (tribeName && gs.idolSlots?.[tribeName] && Math.random() < 0.80) {
             gs.advantages.push({ holder: winnerName, type: 'idol', foundEp: ep.num, fromAuction: true });
-            gs.idolSlots[tribeName] = false;
+            gs.idolSlots[tribeName] = Math.max(0, (gs.idolSlots[tribeName] || 1) - 1);
             ep.idolFinds.push({ finder: winnerName, type: 'idol', tribe: tribeName, fromAuction: true });
             effect = 'idol'; effectLabel = 'Idol Clue (found the idol!)';
           } else {
@@ -16804,6 +16835,13 @@ function handleExileFormat(ep) {
     }
   }
 
+  // Survival drain — exile island is harsh (no food, no shelter, no fire)
+  if (seasonConfig.foodWater === 'enabled' && gs.survival) {
+    const _exEndurance = pStats(_exiled).endurance || 5;
+    const _exDrain = 12 - _exEndurance * 0.4; // high endurance = less drain (8-12 range)
+    gs.survival[_exiled] = Math.max(0, (gs.survival[_exiled] || 80) - _exDrain);
+  }
+
   // Store data for VP and for the search block below
   ep.exileFormatData = { exiled: _exiled, chooser: _chooser, chooserTribe: _chooserTribe, chooserMembers: _chooserMembers, exileFound: null };
 }
@@ -17031,7 +17069,7 @@ function simulateEpisode() {
     ep.isMerge = true; gs.isMerged = true; gs.phase = 'post-merge'; gs.tribes = [];
     gs.sitOutHistory = {}; // sit-out back-to-back rule doesn't carry into individual game
     gs.advantagesFoundThisPhase = {}; // reset per-phase advantage caps (e.g., KiP 1 pre + 1 post)
-    if (cfg.advantages?.idol?.enabled) gs.mergeIdolHidden = true;
+    if (cfg.advantages?.idol?.enabled) gs.mergeIdolHidden = cfg.idolsAtMerge ?? 1;
     // Transfer tribe food to merged pool — average of pre-merge tribes (NO automatic feast bonus)
     if (seasonConfig.foodWater === 'enabled' && gs.tribeFood) {
       const _preMergeFoods = Object.values(gs.tribeFood).filter(v => v > 0);
@@ -17778,10 +17816,12 @@ function simulateEpisode() {
     const _intMod = eS.intuition * 0.01;
     const _exileTwObj = (ep.twists||[]).find(t => t.type === 'exile-island');
     const _hasIdol = gs.advantages.some(a => a.holder === exiled && a.type === 'idol');
+    const _idolMax = cfg.advantages?.idol?.count || 2;
+    const _idolsInPlay = gs.advantages.filter(a => a.type === 'idol').length;
     const _exileSrc = type => (cfg.advantages?.[type]?.sources || ADVANTAGES.find(a => a.key === type)?.defaultSources || []).includes('exile');
     const _roll = Math.random();
 
-    if (!_hasIdol && cfg.advantages?.idol?.enabled && _roll < 0.12 + _intMod) {
+    if (!_hasIdol && _idolsInPlay < _idolMax && cfg.advantages?.idol?.enabled && _roll < 0.12 + _intMod) {
       // ~13-22% — Hidden Immunity Idol (hardest)
       gs.advantages.push({ holder: exiled, type: 'idol', foundEp: epNum });
       ep.idolFinds.push({ finder: exiled, location: 'Exile Island' });
@@ -17834,6 +17874,8 @@ function simulateEpisode() {
     if (ep.exileFormatMode) {
       gs.exiledThisEp = null;
     }
+    // Re-snapshot advantages after exile search so found advantages appear in camp display
+    ep.advantagesPreTribal = gs.advantages.map(a => ({...a}));
   }
 
   // ── LAST CHANCE CHALLENGE: 2-player tribe loses → 1v1 duel, loser out, winner absorbed ──
@@ -20060,8 +20102,8 @@ function simulateJuryRoundtable(ep) {
 
   // ── REHIDE IDOL IF PLAYED (only if season config allows it) ──
   if (ep.idolRehide && seasonConfig.idolRehide) {
-    if (gs.isMerged) gs.mergeIdolHidden = true;
-    else if (ep.loser) gs.idolSlots[ep.loser.name] = true;
+    if (gs.isMerged) gs.mergeIdolHidden = (gs.mergeIdolHidden || 0) + 1;
+    else if (ep.loser) gs.idolSlots[ep.loser.name] = (gs.idolSlots[ep.loser.name] || 0) + 1;
   }
 
   // ── BOND UPDATES ──
@@ -20519,15 +20561,20 @@ function getTribeAdvantageStatus(tribeName, isMerge, snapAdvantages, snapMembers
 
   if (seasonConfig.advantages?.idol?.enabled) {
     if (isMerge) {
-      // Only show "hidden" if no active player already holds the merge idol
-      const mergeHolderExists = gs.advantages.some(a => a.type === 'idol' && !a.fromBeware && gs.activePlayers.includes(a.holder));
-      if (gs.mergeIdolHidden && !mergeHolderExists) lines.push('The Merge Hidden Immunity Idol is currently hidden.');
+      const _mergeSlots = typeof gs.mergeIdolHidden === 'number' ? gs.mergeIdolHidden : (gs.mergeIdolHidden ? 1 : 0);
+      if (_mergeSlots === 1) lines.push('The Merge Hidden Immunity Idol is currently hidden.');
+      else if (_mergeSlots >= 2) lines.push(`${_mergeSlots} Merge Hidden Immunity Idols are currently hidden.`);
+      // If 0 slots and no one holds one — not in play
+      else if (_mergeSlots === 0 && !gs.advantages.some(a => a.type === 'idol' && !a.fromBeware && gs.activePlayers.includes(a.holder))) {
+        lines.push('The Merge Hidden Immunity Idol is not currently in play.');
+      }
     } else {
-      // Only show "hidden" if no tribe member holds a regular (non-beware, non-totem) idol for this tribe
-      const tribeHoldsIdol = gs.advantages.some(a => a.type === 'idol' && !a.fromBeware && !a.fromTotem && members.includes(a.holder));
-      if (gs.idolSlots?.[tribeName] && !tribeHoldsIdol) {
+      const _tribeSlots = typeof gs.idolSlots?.[tribeName] === 'number' ? gs.idolSlots[tribeName] : (gs.idolSlots?.[tribeName] ? 1 : 0);
+      if (_tribeSlots === 1) {
         lines.push(`The ${_colorTribe(tribeName)} Hidden Immunity Idol is currently hidden.`);
-      } else if (gs.idolSlots?.[tribeName] === false && !tribeHoldsIdol) {
+      } else if (_tribeSlots >= 2) {
+        lines.push(`${_tribeSlots} ${_colorTribe(tribeName)} Hidden Immunity Idols are currently hidden.`);
+      } else if (_tribeSlots === 0 && !gs.advantages.some(a => a.type === 'idol' && !a.fromBeware && !a.fromTotem && members.includes(a.holder))) {
         lines.push(`The ${_colorTribe(tribeName)} Hidden Immunity Idol is not currently in play.`);
       }
     }
@@ -23638,7 +23685,7 @@ function initGameState() {
   }
 
   const idolSlots = {};
-  if (seasonConfig.advantages?.idol?.enabled) tribeList.forEach(t => { idolSlots[t.name] = true; });
+  if (seasonConfig.advantages?.idol?.enabled) tribeList.forEach(t => { idolSlots[t.name] = seasonConfig.idolsPerTribe || 1; });
 
   const bewares = {};
   if (seasonConfig.advantages?.beware?.enabled) tribeList.forEach(t => { bewares[t.name] = { hidden: true, holder: null, activated: false }; });
@@ -37592,27 +37639,37 @@ function buildVPScreens(epRecord) {
       <div class="rp-eyebrow">Episode ${ep.num}</div>
       <div class="rp-twist-title">Exile Island</div>`;
 
+    const _exPr = pronouns(_tw.exiled);
     if (_tw.exileChooserMembers?.length) {
-      // Pre-merge: whole winning tribe decided — show all their portraits + tribe colour
+      // Pre-merge: whole winning tribe decided — show portraits + tribe colour + reasoning
       const _dot = `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${_tc};margin-right:6px;vertical-align:middle"></span>`;
+      const _exTargetS = pStats(_tw.exiled);
+      const _exReason = _exTargetS.intuition >= 7 ? `${_tw.exiled} is perceptive — sending ${_exPr.obj} to exile keeps ${_exPr.obj} away from camp politics.`
+        : _exTargetS.strategic >= 7 ? `${_tw.exiled} is a strategic player — isolating ${_exPr.obj} before tribal disrupts ${_exPr.posAdj} plans.`
+        : _exTargetS.physical >= 7 ? `${_tw.exiled} is a physical threat — exile can't weaken ${_exPr.obj}, but it can isolate ${_exPr.obj}.`
+        : _exTargetS.social >= 7 ? `${_tw.exiled} is well-connected — sending ${_exPr.obj} away strips ${_exPr.obj} of ${_exPr.posAdj} influence before the vote.`
+        : `${_tw.exiled} drew the short straw. The tribe didn't overthink it.`;
       _exHtml += `<div style="text-align:center;margin-bottom:14px">
         <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:${_tc};text-transform:uppercase;margin-bottom:8px">${_dot}${_tw.exileChooserTribe} — tribe decision</div>
         <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-bottom:10px">
           ${_tw.exileChooserMembers.map(m => rpPortrait(m)).join('')}
         </div>
-        <div style="font-size:13px;color:#8b949e;line-height:1.5">After the challenge, <span style="color:${_tc};font-weight:600">${_tw.exileChooserTribe}</span> gathered and made their choice.</div>
+        <div style="font-size:13px;color:#8b949e;line-height:1.5">After the challenge, <span style="color:${_tc};font-weight:600">${_tw.exileChooserTribe}</span> gathered and made their choice.<br><span style="font-size:12px;font-style:italic;color:#6b7280">${_exReason}</span></div>
       </div>`;
     } else if (_tw.exileChooser) {
-      // Post-merge: immunity winner's personal call
-      _exHtml += _renderTwistScene({ text: `${_tw.exileChooser} won immunity — and used that power to send ${_tw.exiled} to Exile Island.`, players: [_tw.exileChooser, _tw.exiled] });
+      // Post-merge: immunity winner's personal call + reasoning
+      const _exChBond = getBond(_tw.exileChooser, _tw.exiled);
+      const _exChReason = _exChBond <= -1 ? `There's bad blood between them. This was personal.`
+        : threatScore(_tw.exiled) >= 6 ? `${_tw.exiled} is too dangerous to leave at camp unchecked.`
+        : `${_tw.exileChooser} wants ${_tw.exiled} isolated before the vote.`;
+      _exHtml += _renderTwistScene({ text: `${_tw.exileChooser} won immunity — and used that power to send ${_tw.exiled} to Exile Island. ${_exChReason}`, players: [_tw.exileChooser, _tw.exiled] });
     }
 
     _exHtml += _renderTwistScene({ text: `${_tw.exiled} is sent to Exile Island and will miss Tribal Council tonight.`, players: [_tw.exiled], badge: 'Sent to Exile', badgeClass: 'bad' });
 
     // What did the exiled player find?
     const _exFound = _tw.exileFound;
-    const _exIdol = ep.idolFinds?.find(f => f.finder === _tw.exiled);
-    if (_exFound?.type === 'idol' || _exIdol) {
+    if (_exFound?.type === 'idol') {
       _exHtml += _renderTwistScene({ text: `${_tw.exiled} searched the island — and found a Hidden Immunity Idol.`, players: [_tw.exiled], badge: 'Idol Found', badgeClass: 'win' });
     } else if (_exFound?.type === 'secondLife') {
       _exHtml += _renderTwistScene({ text: `${_tw.exiled} searched the island — and found the Second Life Amulet buried under a rock. If ${pronouns(_tw.exiled).sub} ${pronouns(_tw.exiled).sub==='they'?'get':'gets'} voted out, ${pronouns(_tw.exiled).sub} can fight to stay.`, players: [_tw.exiled], badge: 'Second Life Amulet', badgeClass: 'win' });
@@ -37632,32 +37689,63 @@ function buildVPScreens(epRecord) {
     vpScreens.push({ id: 'exile-island', label: 'Exile Island', html: _exHtml });
   }
 
-  // ── Exile Format: automatic exile (not a twist, rendered in twist slot) ──
+  // ── Exile Format: automatic exile (same visual format as exile-island twist) ──
   if (ep.exileFormatData?.exiled) {
     const _exfData = ep.exileFormatData;
     const _exfPr = pronouns(_exfData.exiled);
-    const _exfChooserText = _exfData.chooser
-      ? `${_exfData.chooser} sent ${_exfData.exiled} to Exile Island.`
-      : `${_exfData.chooserTribe} sent ${_exfData.exiled} to Exile Island.`;
-    let _exfHtml = `<div class="rp-page rp-twist-page tod-dusk"><div class="rp-eyebrow">Episode ${ep.num}</div>`;
-    _exfHtml += `<div class="rp-twist-title">Exile Island</div>`;
-    _exfHtml += _renderTwistScene({ text: _exfChooserText, players: _exfData.chooser ? [_exfData.chooser, _exfData.exiled] : [_exfData.exiled], badge: 'Exile Island', badgeClass: 'gold' });
-    if (_exfData.exileFound?.type === 'idol') {
+    const _exfTc = tribeColor(_exfData.chooserTribe || '');
+    let _exfHtml = `<div class="rp-page rp-twist-page tod-dusk">
+      <div class="rp-eyebrow">Episode ${ep.num}</div>
+      <div class="rp-twist-title">Exile Island</div>`;
+
+    if (_exfData.chooserMembers?.length) {
+      // Pre-merge: whole winning tribe decided — show portraits + tribe colour + reasoning
+      const _exfDot = `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${_exfTc};margin-right:6px;vertical-align:middle"></span>`;
+      // Reasoning for why this player was chosen
+      const _exfTarget = _exfData.exiled;
+      const _exfTargetS = pStats(_exfTarget);
+      const _exfReason = _exfTargetS.intuition >= 7 ? `${_exfTarget} is perceptive — sending ${_exfPr.obj} to exile keeps ${_exfPr.obj} away from camp politics.`
+        : _exfTargetS.strategic >= 7 ? `${_exfTarget} is a strategic player — isolating ${_exfPr.obj} before tribal disrupts ${_exfPr.posAdj} plans.`
+        : _exfTargetS.physical >= 7 ? `${_exfTarget} is a physical threat — exile can't weaken ${_exfPr.obj}, but it can isolate ${_exfPr.obj}.`
+        : _exfTargetS.social >= 7 ? `${_exfTarget} is well-connected — sending ${_exfPr.obj} away strips ${_exfPr.obj} of ${_exfPr.posAdj} influence before the vote.`
+        : `${_exfTarget} drew the short straw. The tribe didn't overthink it.`;
+      _exfHtml += `<div style="text-align:center;margin-bottom:14px">
+        <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:${_exfTc};text-transform:uppercase;margin-bottom:8px">${_exfDot}${_exfData.chooserTribe} — tribe decision</div>
+        <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-bottom:10px">
+          ${_exfData.chooserMembers.map(m => rpPortrait(m)).join('')}
+        </div>
+        <div style="font-size:13px;color:#8b949e;line-height:1.5">After the challenge, <span style="color:${_exfTc};font-weight:600">${_exfData.chooserTribe}</span> gathered and made their choice.<br><span style="font-size:12px;font-style:italic;color:#6b7280">${_exfReason}</span></div>
+      </div>`;
+    } else if (_exfData.chooser) {
+      // Post-merge: immunity winner's personal call
+      const _exfTarget = _exfData.exiled;
+      const _exfChBond = getBond(_exfData.chooser, _exfTarget);
+      const _exfChReason = _exfChBond <= -1 ? `There's bad blood between them. This was personal.`
+        : threatScore(_exfTarget) >= 6 ? `${_exfTarget} is too dangerous to leave at camp unchecked.`
+        : `${_exfData.chooser} wants ${_exfTarget} isolated before the vote.`;
+      _exfHtml += _renderTwistScene({ text: `${_exfData.chooser} won immunity — and used that power to send ${_exfTarget} to Exile Island. ${_exfChReason}`, players: [_exfData.chooser, _exfTarget] });
+    }
+
+    _exfHtml += _renderTwistScene({ text: `${_exfData.exiled} is sent to Exile Island. ${_exfPr.Sub} will search for advantages — but ${_exfPr.sub} ${_exfPr.sub === 'they' ? 'are' : 'is'} not safe. ${_exfPr.Sub} will return for Tribal Council.`, players: [_exfData.exiled], badge: 'Sent to Exile', badgeClass: 'bad' });
+
+    // What did the exiled player find?
+    const _exfFound = _exfData.exileFound;
+    if (_exfFound?.type === 'idol') {
       _exfHtml += _renderTwistScene({ text: `${_exfData.exiled} searched the island — and found a Hidden Immunity Idol.`, players: [_exfData.exiled], badge: 'Idol Found', badgeClass: 'win' });
-    } else if (_exfData.exileFound?.type === 'secondLife') {
-      _exfHtml += _renderTwistScene({ text: `${_exfData.exiled} searched the island — and found the Second Life Amulet.`, players: [_exfData.exiled], badge: 'Second Life Amulet', badgeClass: 'win' });
-    } else if (_exfData.exileFound?.type === 'safetyNoPower') {
-      _exfHtml += _renderTwistScene({ text: `${_exfData.exiled} searched the island — and found a Safety Without Power.`, players: [_exfData.exiled], badge: 'Safety Without Power', badgeClass: 'win' });
-    } else if (_exfData.exileFound?.type === 'soleVote') {
-      _exfHtml += _renderTwistScene({ text: `${_exfData.exiled} searched the island — and found a Sole Vote.`, players: [_exfData.exiled], badge: 'Sole Vote', badgeClass: 'win' });
-    } else if (_exfData.exileFound?.type === 'extraVote') {
-      _exfHtml += _renderTwistScene({ text: `${_exfData.exiled} searched the island — and found an Extra Vote.`, players: [_exfData.exiled], badge: 'Extra Vote', badgeClass: 'win' });
-    } else if (_exfData.exileFound?.type === 'clue') {
-      _exfHtml += _renderTwistScene({ text: `${_exfData.exiled} searched the island — and found a clue to a Hidden Immunity Idol.`, players: [_exfData.exiled], badge: 'Idol Clue', badgeClass: 'win' });
+    } else if (_exfFound?.type === 'secondLife') {
+      _exfHtml += _renderTwistScene({ text: `${_exfData.exiled} searched the island — and found the Second Life Amulet buried under a rock. If ${_exfPr.sub} ${_exfPr.sub==='they'?'get':'gets'} voted out, ${_exfPr.sub} can fight to stay.`, players: [_exfData.exiled], badge: 'Second Life Amulet', badgeClass: 'win' });
+    } else if (_exfFound?.type === 'extraVote') {
+      _exfHtml += _renderTwistScene({ text: `${_exfData.exiled} searched the island — and found an Extra Vote hidden in the shelter.`, players: [_exfData.exiled], badge: 'Extra Vote', badgeClass: 'win' });
+    } else if (_exfFound?.type === 'safetyNoPower') {
+      _exfHtml += _renderTwistScene({ text: `${_exfData.exiled} searched the island — and found a Safety Without Power. An escape hatch from tribal — but it costs ${_exfPr.obj} ${_exfPr.posAdj} vote.`, players: [_exfData.exiled], badge: 'Safety Without Power', badgeClass: 'win' });
+    } else if (_exfFound?.type === 'soleVote') {
+      _exfHtml += _renderTwistScene({ text: `${_exfData.exiled} searched the island — and found a Sole Vote. When played, ${_exfPr.sub} cast${_exfPr.sub==='they'?'':'s'} the only vote. Everyone else is silenced.`, players: [_exfData.exiled], badge: 'Sole Vote', badgeClass: 'win' });
+    } else if (_exfFound?.type === 'clue') {
+      _exfHtml += _renderTwistScene({ text: `${_exfData.exiled} searched the island — and found a clue to a Hidden Immunity Idol back at camp.`, players: [_exfData.exiled], badge: 'Idol Clue', badgeClass: 'win' });
     } else {
       _exfHtml += _renderTwistScene({ text: `${_exfData.exiled} searched the island thoroughly — but came up empty.`, players: [_exfData.exiled] });
     }
-    _exfHtml += _renderTwistScene({ text: `${_exfData.exiled} returns to camp. ${_exfPr.Sub} ${_exfPr.sub === 'they' ? 'are' : 'is'} not safe — ${_exfPr.sub} will attend tribal council tonight.`, players: [_exfData.exiled], badge: 'Returns', badgeClass: 'gold' });
+
     _exfHtml += `</div>`;
     vpScreens.push({ id: 'exile-format', label: 'Exile Island', html: _exfHtml });
   }

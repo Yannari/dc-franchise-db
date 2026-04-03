@@ -34,6 +34,13 @@ Simulation core:
 - Challenge throw mechanic — post-merge: strategic players can intentionally underperform to reduce targeting pressure. VP shows "THREW IT" badge. Detection escalates with repeat throws. Caught = +0.8 heat, uncaught = -1.0 heat.
 - KL-3 Replacement — on medevac, most recently voted-out player returns. Personality-driven return events (vengeful/strategic/grateful/neutral). Requires `replacementOnMedevac` config.
 - Pre-merge reward sharing — winning tribe can invite one person from losing tribe. Tribe decision (avg bond). Configurable via `rewardSharing`.
+- `checkFakeIdolPlant()` — strategic player crafts fake idol (once per game). 4 arcs: caught crafting, played at tribal (humiliation), tipped off (confrontation next ep), nobody finds. `fake` flag on gs.advantages.
+- Black Vote — season-long rule (config: Off/Classic/Modern). Every eliminated player until F4 casts parting vote (classic: against enemy) or gift (modern: Extra Vote to ally). VP: tribal announcement, strategic guessing camp events.
+- Sudden Death twist — post-merge schedulable. Last place in challenge auto-eliminated, no tribal.
+- Ambassadors twist — pre-merge. 15 personality-driven negotiation pairings, resistance checks, 3+ tribe coalition. 4 VP screens.
+- Fan Vote finale — fans crown winner via popularity. Broadcast-style campaign, interactive reveal.
+- Survival mechanics — tribe food decay, provider/slacker, injury→survival drain, collapse→medevac arc, KL-3 replacement.
+- 18 bigMoves triggers + 4 jury bonuses (challenge dominance, underdog, social breadth, showmance on jury) + survival resume.
 - `checkShowmanceFormation()` — detects new showmances (bond + archetype compatibility)
 - `updateShowmancePhases()` — progresses showmance lifecycle (spark → honeymoon → target → ride-or-die/broken-up)
 - `checkShowmanceBreakup()` — detects partner elimination (betrayal breakup vs grief separation)
@@ -417,6 +424,7 @@ Key config fields in `seasonConfig`:
 - `autoRewardChallenges` — auto-injects reward challenge every episode (stops at F4)
 - `replacementOnMedevac` — KL-3: most recently voted-out player returns on medevac
 - `rewardSharing` — pre-merge: winning tribe can invite one losing tribe member to share reward
+- `blackVote` — Off/Classic/Modern: eliminated players cast parting vote or gift (season-long rule)
 - `ri` (boolean) — enable 2nd Chance Isle
 - `riFormat` ('redemption'|'rescue') — duel format vs edge of extinction
 - `riReentryAt` — active player count that triggers return

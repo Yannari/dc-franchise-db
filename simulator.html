@@ -8337,8 +8337,10 @@ function checkNonIdolAdvantageUse(tribalPlayers, votesObj, ep, voteLog = []) {
     const _vbState = getPlayerState(_vbHolder);
     // Play when in danger or strategically useful — proportional to strategic + boldness
     const _vbHeat = computeHeat(_vbHolder, tribalPlayers, []);
+    const _vbActualVotes = votesObj[_vbHolder] || 0;
+    const _vbEffectiveHeat = _vbHeat + _vbActualVotes * 0.5;
     const _vbForcePlay = ep._forceAdvantages || gs.activePlayers.length <= (seasonConfig.advExpire || 4);
-    const _vbPlayChance = _vbForcePlay ? 1.0 : _vbHeat * (0.05 + _vbS.strategic * 0.005) + _vbS.boldness * 0.03;
+    const _vbPlayChance = _vbForcePlay ? 1.0 : _vbEffectiveHeat * (0.05 + _vbS.strategic * 0.005) + _vbS.boldness * 0.03;
     if (Math.random() >= _vbPlayChance) continue;
 
     // Target: the biggest threat who is likely to vote against the holder
@@ -8382,9 +8384,12 @@ function checkNonIdolAdvantageUse(tribalPlayers, votesObj, ep, voteLog = []) {
       const _tsHolder = _tsAdv.holder;
       const _tsS = pStats(_tsHolder);
       const _tsHeat = computeHeat(_tsHolder, tribalPlayers, []);
+      // Boost heat if actual votes are against holder (they can feel the pressure at tribal)
+      const _tsActualVotes = votesObj[_tsHolder] || 0;
+      const _tsEffectiveHeat = _tsHeat + _tsActualVotes * 0.5;
       // Play when in serious danger — this is a last resort escape
       const _tsForcePlay = ep._forceAdvantages;
-      const _tsPlayChance = _tsForcePlay ? 1.0 : _tsHeat * (0.05 + _tsS.strategic * 0.005) + _tsS.boldness * 0.02;
+      const _tsPlayChance = _tsForcePlay ? 1.0 : _tsEffectiveHeat * (0.05 + _tsS.strategic * 0.005) + _tsS.boldness * 0.02;
       if (Math.random() >= _tsPlayChance) continue;
 
       // Decide: swap self or save an ally?

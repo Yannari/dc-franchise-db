@@ -8378,69 +8378,34 @@ function checkNonIdolAdvantageUse(tribalPlayers, votesObj, ep, voteLog = []) {
     }
   }
 
-  // ── Team Swap: holder swaps self or ally to another tribe (pre-merge only) ──
+  // ── Team Swap: holder plays it at tribal → triggers elimination-swap post-vote ──
+  // The actual tribe swap happens AFTER resolveVotes, using the same path as the elimination-swap twist.
+  // Here we just decide whether to play it and flag it.
   if (!gs.isMerged && gs.tribes.length >= 2) {
     const _tsAdvs = gs.advantages.filter(a => a.type === 'teamSwap' && tribalPlayers.includes(a.holder));
     for (const _tsAdv of _tsAdvs) {
       const _tsHolder = _tsAdv.holder;
       const _tsS = pStats(_tsHolder);
       const _tsHeat = computeHeat(_tsHolder, tribalPlayers, []);
-      // Boost heat if actual votes are against holder (they can feel the pressure at tribal)
       const _tsActualVotes = votesObj[_tsHolder] || 0;
       const _tsEffectiveHeat = _tsHeat + _tsActualVotes * 0.5;
-      // Play when in serious danger — this is a last resort escape
       const _tsForcePlay = ep._forceAdvantages;
       const _tsPlayChance = _tsForcePlay ? 1.0 : _tsEffectiveHeat * (0.05 + _tsS.strategic * 0.005) + _tsS.boldness * 0.02;
       if (Math.random() >= _tsPlayChance) continue;
 
-      // Decide: swap self or save an ally?
-      // Self-swap if holder is the main target. Ally-save if ally is in more danger.
-      const _tsVotesAgainstHolder = Object.entries(votesObj).find(([n]) => n === _tsHolder)?.[1] || 0;
-      const _tsClosestAlly = tribalPlayers.filter(p => p !== _tsHolder && getBond(_tsHolder, p) >= 2)
-        .sort((a, b) => getBond(_tsHolder, b) - getBond(_tsHolder, a))[0];
-      const _tsAllyVotes = _tsClosestAlly ? (Object.entries(votesObj).find(([n]) => n === _tsClosestAlly)?.[1] || 0) : 0;
-      const _tsSwapSelf = _tsVotesAgainstHolder >= _tsAllyVotes || !_tsClosestAlly || _tsS.loyalty <= 4;
-      const _tsSwapTarget = _tsSwapSelf ? _tsHolder : _tsClosestAlly;
-
-      // Find destination tribe
-      const _tsCurTribe = gs.tribes.find(t => t.members.includes(_tsSwapTarget));
-      const _tsDestTribe = gs.tribes.filter(t => t !== _tsCurTribe).sort((a, b) => b.members.length - a.members.length)[0];
-      if (!_tsCurTribe || !_tsDestTribe) continue;
-
-      // Execute the swap
+      // Consume the advantage and flag for post-vote elimination-swap
       gs.advantages.splice(gs.advantages.indexOf(_tsAdv), 1);
       gs.knownTeamSwapHolders?.delete(_tsHolder);
-      _tsCurTribe.members = _tsCurTribe.members.filter(m => m !== _tsSwapTarget);
-      _tsDestTribe.members.push(_tsSwapTarget);
-
-      // Remove them from this tribal entirely (they're no longer here)
-      if (votesObj[_tsSwapTarget]) delete votesObj[_tsSwapTarget]; // votes against them don't count
-      tribalPlayers.splice(tribalPlayers.indexOf(_tsSwapTarget), 1); // no longer a tribal participant
-      const _tsVoteEntry = voteLog.find(l => l.voter === _tsSwapTarget);
-      if (_tsVoteEntry) {
-        if (_tsVoteEntry.voted && votesObj[_tsVoteEntry.voted]) votesObj[_tsVoteEntry.voted]--;
-        _tsVoteEntry.teamSwapped = true;
-      }
-
-      // Clean votesObj: remove entries for players no longer at tribal, and zero-out entries with no real votes
-      Object.keys(votesObj).forEach(k => {
-        if (!tribalPlayers.includes(k)) delete votesObj[k];
-        else if (votesObj[k] <= 0) delete votesObj[k];
-      });
-
-      ep.idolPlays.push({ player: _tsHolder, type: 'teamSwap', swappedPlayer: _tsSwapTarget,
-        fromTribe: _tsCurTribe.name, toTribe: _tsDestTribe.name, selfSwap: _tsSwapSelf, forced: _tsForcePlay });
-      ep.teamSwapPlayed = { holder: _tsHolder, swapped: _tsSwapTarget, from: _tsCurTribe.name, to: _tsDestTribe.name };
-      // bigMoves credit — escaping or saving someone is a bold strategic move
+      ep.eliminationSwap = true; // triggers the elimination-swap handler post-vote
+      ep.teamSwapAdvantage = true; // distinguish from the twist version
+      ep.idolPlays.push({ player: _tsHolder, type: 'teamSwap', forced: _tsForcePlay });
+      ep.teamSwapPlayed = { holder: _tsHolder };
+      // bigMoves credit
       const _tsBmState = getPlayerState(_tsHolder);
       _tsBmState.bigMoves = (_tsBmState.bigMoves || 0) + 1;
       if (!gs.bigMoveEarnersThisEp) gs.bigMoveEarnersThisEp = [];
       if (!gs.bigMoveEarnersThisEp.includes(_tsHolder)) gs.bigMoveEarnersThisEp.push(_tsHolder);
-      // Bond consequences: ally save = significant gratitude
-      if (!_tsSwapSelf && _tsClosestAlly) {
-        addBond(_tsHolder, _tsClosestAlly, 1.5);
-      }
-      break; // one swap per tribal
+      break;
     }
   }
 }

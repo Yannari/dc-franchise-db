@@ -30837,12 +30837,17 @@ function vpWhyBullets(name, votelog, alliances, ep) {
   const _pick = (arr) => arr[_wh % arr.length];
 
   if (phase === 'pre-merge' && chalWeak >= 5.5) bullets.push(`Challenge liability — ${name} was the weakest link and the tribe ran out of reasons to keep covering for it`);
-  else if (th >= 7.5) bullets.push(_pick([
+  else if (phase === 'pre-merge' && domType === 'personal') bullets.push(_pick([
+    `Personal tension drove this vote — bonds broke down and the tribe acted on it`,
+    `This wasn't about challenges or threats. The relationships around ${name} collapsed, and the votes followed`,
+    `${name} was on the wrong side of the social dynamics. The people who had issues with ${pronouns(name).obj} had the numbers`,
+  ]));
+  else if (phase !== 'pre-merge' && th >= 7.5) bullets.push(_pick([
     `Threat level too high to ignore (${th.toFixed(1)}/10) — someone this capable doesn't get easier to vote out later`,
     `A ${th.toFixed(1)}/10 threat at this stage of the game is a problem that compounds. The group moved while the window was still open`,
     `${name}'s game was too strong to let run to the end. Threat score doesn't lie — and the players who can read it acted on it`,
   ]));
-  else if (th >= 6 && domType === 'threat') bullets.push(_pick([
+  else if (phase !== 'pre-merge' && th >= 6 && domType === 'threat') bullets.push(_pick([
     `Identified as a long-term jury threat (${th.toFixed(1)}/10) — the group decided the window was now`,
     `Not the loudest name, but the most dangerous one to leave in the game. The group read that and acted`,
     `${name} was playing a quiet game with a loud ceiling. The people who noticed it moved before it became everyone's problem`,
@@ -30997,16 +31002,19 @@ function vpWhyBullets(name, votelog, alliances, ep) {
   // Ally votes for a different target — collapse into one grouped bullet per alliance+target pair
   const _allyVotes = (votelog||[]).filter(l => {
     if (l.voted === name || l.voter === 'THE GAME') return false;
+    // Voter must have a connection to the eliminated player (shared alliance OR bond)
     const sa = (alliances||[]).find(a => a.members.includes(l.voter) && a.members.includes(name));
     if (sa && sa.members.includes(l.voted)) return false;
     return sa || getBond(l.voter, name) >= 1.5;
   });
-  // Group by (allianceLabel, votedTarget) to collapse repetitive bullets
+  // Group by (voterAllianceLabel, votedTarget) — use the VOTER's alliance, not shared alliance with eliminated
   const _allyGroups = {};
   _allyVotes.forEach(l => {
-    const sa = (alliances||[]).find(a => a.members.includes(l.voter) && a.members.includes(name));
-    const key = `${sa?.label||''}|${l.voted}`;
-    if (!_allyGroups[key]) _allyGroups[key] = { voters: [], voted: l.voted, alliance: sa };
+    const voterAlliance = (alliances||[]).find(a => a.members.includes(l.voter));
+    // Only label with alliance if eliminated player is ALSO a member (truly shared alliance)
+    const sharedAlliance = voterAlliance?.members.includes(name) ? voterAlliance : null;
+    const key = `${sharedAlliance?.label||''}|${l.voted}`;
+    if (!_allyGroups[key]) _allyGroups[key] = { voters: [], voted: l.voted, alliance: sharedAlliance };
     _allyGroups[key].voters.push(l.voter);
   });
   Object.values(_allyGroups).forEach(({ voters, voted, alliance }) => {

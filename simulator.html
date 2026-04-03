@@ -19474,6 +19474,34 @@ function simulateJuryRoundtable(ep) {
   checkTribalBlowup(ep);
   applyCrashoutEffects(ep); // applies game effects when full blowup threshold not met
 
+  // ── TEAM SWAP ALLY-SAVE: holder plays Team Swap for an eliminated ally ──
+  if (ep.eliminated && !ep.eliminationSwap && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
+    const _tsAllyAdvs = gs.advantages.filter(a => a.type === 'teamSwap' && gs.activePlayers.includes(a.holder) && a.holder !== ep.eliminated);
+    for (const _tsAdv of _tsAllyAdvs) {
+      const _tsHolder = _tsAdv.holder;
+      const _tsS = pStats(_tsHolder);
+      const _tsBond = getBond(_tsHolder, ep.eliminated);
+      // Only save allies with strong bond — proportional to loyalty and bond
+      const _tsAllyPlayChance = _tsBond * 0.08 + _tsS.loyalty * 0.04;
+      if (_tsBond < 2 || Math.random() >= _tsAllyPlayChance) continue;
+      // Play it — flag for elimination-swap
+      gs.advantages.splice(gs.advantages.indexOf(_tsAdv), 1);
+      gs.knownTeamSwapHolders?.delete(_tsHolder);
+      ep.eliminationSwap = true;
+      ep.teamSwapAdvantage = true;
+      ep.idolPlays = ep.idolPlays || [];
+      ep.idolPlays.push({ player: _tsHolder, type: 'teamSwap', playedFor: ep.eliminated, forced: false });
+      ep.teamSwapPlayed = { holder: _tsHolder, savedAlly: ep.eliminated };
+      // bigMoves + bond boost
+      const _tsBmState = getPlayerState(_tsHolder);
+      _tsBmState.bigMoves = (_tsBmState.bigMoves || 0) + 1;
+      if (!gs.bigMoveEarnersThisEp) gs.bigMoveEarnersThisEp = [];
+      if (!gs.bigMoveEarnersThisEp.includes(_tsHolder)) gs.bigMoveEarnersThisEp.push(_tsHolder);
+      addBond(_tsHolder, ep.eliminated, 1.5); // saved your game
+      break;
+    }
+  }
+
   // ── ELIMINATION SWAP: voted-out moves to another tribe; picks one member to come back ──
   if (ep.eliminated && ep.eliminationSwap && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
     const swapper = ep.eliminated;

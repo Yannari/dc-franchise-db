@@ -172,9 +172,9 @@ New badge types in `rpBuildCampTribe()` badgeText/badgeClass block:
 | `voteBlockFound` | Found Advantage | gold |
 | `voteStealFound` | Found Advantage | gold |
 | `teamSwapConfession` | Confession | gold |
-| `teamSwapSnooped` | Snooped | purple |
-| `voteBlockSnooped` | Snooped | purple |
-| `voteStealSnooped` | Snooped | purple |
+| `teamSwapSnooped` | Snooped | red |
+| `voteBlockSnooped` | Snooped | red |
+| `voteStealSnooped` | Snooped | red |
 | `teamSwapExposed` | Exposed | red |
 | `voteBlockExposed` | Exposed | red |
 | `voteStealExposed` | Exposed | red |

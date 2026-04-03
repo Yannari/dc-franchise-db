@@ -10875,6 +10875,8 @@ function applyTwist(ep, twist, isPrimary = true) {
               reason: _invited.reason, reasonText: _reasonText,
               avgBond: Math.round(_invited.avgBond * 10) / 10,
             };
+            // Also save directly on ep for patchEpisodeHistory (some push paths don't build rewardChalData)
+            ep.rewardShareInvite = twistObj.rewardShareInvite;
           }
         }
       }
@@ -23021,6 +23023,13 @@ function patchEpisodeHistory(ep) {
   if (ep.showmanceTests?.length) h.showmanceTests = ep.showmanceTests;
   if (ep.safetyNoPowerPlayed) h.safetyNoPowerPlayed = ep.safetyNoPowerPlayed;
   if (ep.juryRoundtable) h.juryRoundtable = ep.juryRoundtable;
+  // Reward sharing: ensure it lands on rewardChalData even if the push path didn't build it
+  if (ep.rewardShareInvite && h.rewardChalData) h.rewardChalData.rewardShareInvite = ep.rewardShareInvite;
+  if (ep.rewardShareInvite && !h.rewardChalData) {
+    // Build minimal rewardChalData from twist if the push path skipped it
+    const _rct = (ep.twists||[]).find(t => t.type === 'reward-challenge');
+    if (_rct) h.rewardChalData = { winner: _rct.rewardWinner, winnerType: _rct.rewardWinnerType || 'individual', placements: _rct.rewardChalPlacements || [], label: _rct.rewardChalLabel || 'Reward Challenge', category: _rct.rewardChalCategory || 'mixed', desc: _rct.rewardChalDesc || '', rewardItemId: _rct.rewardItemId || null, rewardItemLabel: _rct.rewardItemLabel || null, rewardItemDesc: _rct.rewardItemDesc || null, rewardShareInvite: ep.rewardShareInvite };
+  }
 }
 
 function snapshotGameState() {

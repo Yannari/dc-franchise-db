@@ -1471,6 +1471,7 @@ const ADVANTAGES = [
   { key: 'secondLife', label: 'Second Life Amulet',  default: 0 },
   { key: 'teamSwap',   label: 'Team Swap',            default: 0 },
   { key: 'voteBlock',  label: 'Vote Block',           default: 0 },
+  { key: 'safetyNoPower', label: 'Safety Without Power', default: 0 },
 ];
 
 const TWIST_CATALOG = [
@@ -1626,7 +1627,7 @@ function repairGsSets(g) {
   const SET_FIELDS = ['blowupHeatNextEp', 'knownIdolHoldersThisEp', 'knownIdolHoldersPersistent',
                       'knownAmuletHoldersThisEp', 'knownAmuletHoldersPersistent',
                       'socialBombHeatThisEp', 'injuredThisEp', 'scramblingThisEp', 'beastDrillsThisEp', 'lieTargetsThisEp',
-                      'knownTeamSwapHolders', 'knownVoteBlockHolders', 'knownVoteStealHolders'];
+                      'knownTeamSwapHolders', 'knownVoteBlockHolders', 'knownVoteStealHolders', 'knownSafetyNoPowerHolders'];
   SET_FIELDS.forEach(f => {
     if (g[f] instanceof Set) return; // already a Set
     if (Array.isArray(g[f])) { g[f] = new Set(g[f]); return; } // saved as array — restore
@@ -1639,7 +1640,7 @@ function prepGsForSave(g) {
   const SET_FIELDS = ['blowupHeatNextEp', 'knownIdolHoldersThisEp', 'knownIdolHoldersPersistent',
                       'knownAmuletHoldersThisEp', 'knownAmuletHoldersPersistent',
                       'socialBombHeatThisEp', 'injuredThisEp', 'scramblingThisEp', 'beastDrillsThisEp', 'lieTargetsThisEp',
-                      'knownTeamSwapHolders', 'knownVoteBlockHolders', 'knownVoteStealHolders'];
+                      'knownTeamSwapHolders', 'knownVoteBlockHolders', 'knownVoteStealHolders', 'knownSafetyNoPowerHolders'];
   SET_FIELDS.forEach(f => { if (g[f] instanceof Set) g[f] = [...g[f]]; });
   return g;
 }
@@ -3001,6 +3002,10 @@ function computeHeat(name, tribalPlayers, alliances) {
   if (gs.knownVoteBlockHolders?.has(name)) heat += 0.3;
   // Known Vote Steal holder — mild tactical awareness
   if (gs.knownVoteStealHolders?.has(name)) heat += 0.3;
+  // Known Safety Without Power holder — people want to flush it
+  if (gs.knownSafetyNoPowerHolders?.has(name)) heat += 0.5;
+  // Used Safety Without Power last episode — "ran away, get them before they run again"
+  if (gs.safetyNoPowerHeat?.player === name && gs.safetyNoPowerHeat?.ep === ((gs.episode || 0) + 1)) heat += 1.0;
   // Tribal blowup fallout — someone named this player on the way out
   if (gs.blowupHeatNextEp?.has(name)) heat += 1.5;
   // Social bomb — said something that landed badly at camp this episode
@@ -7589,6 +7594,7 @@ function findAdvantages(ep) {
     { key: 'secondLife', postMergeOnly: false, baseChance: 0.002, epScaleCap: 0.008 },
     { key: 'teamSwap',   postMergeOnly: false, baseChance: 0.002, epScaleCap: 0.008 },  // pre-merge only useful but can be found anytime
     { key: 'voteBlock',  postMergeOnly: false, baseChance: 0.002, epScaleCap: 0.010 },
+    { key: 'safetyNoPower', postMergeOnly: false, baseChance: 0.002, epScaleCap: 0.008 },
   ];
 
   nonIdolTypes.forEach(({ key, postMergeOnly, baseChance, epScaleCap }) => {
@@ -7610,10 +7616,14 @@ function findAdvantages(ep) {
         gs.advantages.push({ holder: name, type: key, foundEp: ep.num, foundTribe: _advTribe, ..._advExtra });
         ep.idolFinds.push({ finder: name, type: key, tribe: _advTribe });
         // ── Discovery camp event for tactical advantages ──
-        if (['teamSwap', 'voteBlock', 'voteSteal'].includes(key)) {
-          const _discLabel = { teamSwap: 'Team Swap', voteBlock: 'Vote Block', voteSteal: 'Vote Steal' }[key];
+        if (['teamSwap', 'voteBlock', 'voteSteal', 'safetyNoPower'].includes(key)) {
+          const _discLabel = { teamSwap: 'Team Swap', voteBlock: 'Vote Block', voteSteal: 'Vote Steal', safetyNoPower: 'Safety Without Power' }[key];
           const _discPr = pronouns(name);
-          const _discLines = key === 'teamSwap' ? [
+          const _discLines = key === 'safetyNoPower' ? [
+            `${name} found a Safety Without Power hidden at camp. ${_discPr.Sub} read the note twice. Leave tribal. Stay safe. Lose your vote. That's one hell of a trade-off.`,
+            `${name} discovered a Safety Without Power tucked under a rock. ${_discPr.Sub} can walk out of tribal whenever ${_discPr.sub} want${_discPr.sub === 'they' ? '' : 's'}. The question is whether ${_discPr.sub}'ll have the nerve to use it.`,
+            `${name} found something at camp — a Safety Without Power. An escape hatch. No vote, no voice, but no torch snuffed either. ${_discPr.Sub} pocketed it fast.`,
+          ] : key === 'teamSwap' ? [
             `${name} found something hidden at camp — a ${_discLabel}. ${_discPr.Sub} can feel the weight of it already. The power to move someone between tribes... that changes everything.`,
             `${name} was alone when ${_discPr.sub} found the ${_discLabel}. ${_discPr.Sub} turned it over in ${_discPr.posAdj} hands. This could save ${_discPr.obj} — or save someone else. Either way, the game just shifted.`,
             `${name} discovered a ${_discLabel} tucked into a tree. ${_discPr.Sub} pocketed it fast. Nobody saw. But now ${_discPr.sub} ${_discPr.sub === 'they' ? 'have' : 'has'} an escape route nobody knows about.`,
@@ -19862,7 +19872,7 @@ function getTribeRelationshipHighlights(members) {
 
 function getTribeAdvantageStatus(tribeName, isMerge, snapAdvantages, snapMembers) {
   const lines = [];
-  const typeLabel = { idol:'Hidden Immunity Idol', voteSteal:'Vote Steal', extraVote:'Extra Vote', kip:'Knowledge is Power', legacy:'Legacy Advantage', amulet:'Amulet Advantage', secondLife:'Second Life Amulet', teamSwap:'Team Swap', voteBlock:'Vote Block' };
+  const typeLabel = { idol:'Hidden Immunity Idol', voteSteal:'Vote Steal', extraVote:'Extra Vote', kip:'Knowledge is Power', legacy:'Legacy Advantage', amulet:'Amulet Advantage', secondLife:'Second Life Amulet', teamSwap:'Team Swap', voteBlock:'Vote Block', safetyNoPower:'Safety Without Power' };
   const members = snapMembers || (isMerge ? gs.activePlayers : (gs.tribes.find(t => t.name === tribeName)?.members || []));
   const _colorTribe = name => `<span style="color:${tribeColor(name)};font-weight:700">${name}</span>`;
 
@@ -22112,7 +22122,7 @@ function generateSummaryText(ep) {
   const _hasBewares = gs.bewares && Object.values(gs.bewares).some(b => b.holder && !b.activated);
   if (gs.advantages.length || _hasBewares) {
     sec('ADVANTAGES IN PLAY');
-    const typeLabel = { idol:'Hidden Immunity Idol', voteSteal:'Vote Steal', extraVote:'Extra Vote', kip:'Knowledge is Power', legacy:'Legacy Advantage', amulet:'Amulet Advantage', secondLife:'Second Life Amulet', teamSwap:'Team Swap', voteBlock:'Vote Block' };
+    const typeLabel = { idol:'Hidden Immunity Idol', voteSteal:'Vote Steal', extraVote:'Extra Vote', kip:'Knowledge is Power', legacy:'Legacy Advantage', amulet:'Amulet Advantage', secondLife:'Second Life Amulet', teamSwap:'Team Swap', voteBlock:'Vote Block', safetyNoPower:'Safety Without Power' };
     // Beware holders who haven't activated yet (idol pending)
     if (gs.bewares) {
       Object.values(gs.bewares).forEach(b => {

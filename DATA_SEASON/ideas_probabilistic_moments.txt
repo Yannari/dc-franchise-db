@@ -61,111 +61,46 @@ and the downstream consequence. None are guaranteed — all fire on a roll.
 [DONE] A Showmance — base detection implemented (bond >= 5 + compatible archetypes).
   Expanded by #22 Showmance Lifecycle above.
 
-
-── REMAINING — RANKED BY PRIORITY ─────────────────────────────────────────────
-
-  HIGH PRIORITY
-  ─────────────
-
 [DONE] #4 Information Broker — implemented via checkInformationBroker(ep).
-  Trigger: player in 2+ active alliances, social >= 5, loyalty <= 5. Once per game.
-  Roll: social * 0.025 * (6 - loyalty) * 0.1. Three code paths: activation, active effects, exposure.
-  Active: +0.15 bond/ep with both alliances, eavesdrop intel, -0.5 heat. Camp events: brokerWhisper,
-  brokerManipulate, brokerConfidence, brokerClose (60%/ep, gold "Double Agent" badge).
-  Exposure risk: episodesActive * 0.08, merge/swap +0.30, cap 85%. Detector = highest intuition
-  among alliance members (named in narrative). Bond collapse: -(1.0 + episodesActive * 0.4).
-  Light -0.3 between alliance members. Exposer gets +0.5 bond with everyone. +2.0 heat for 2 eps.
-  Exposure events: brokerExposed (confrontation), brokerFallout, brokerDefense (personality-driven).
-  gs.broker = { player, alliances, startEp, episodesActive, exposed, exposedEp, exposer }.
-
-[DONE] #8 Vote Miscommunication — implemented inline in simulateVotes.
-  Trigger: loyal voter in 3+ member alliance, mental <= 4 OR social <= 3.
-  Roll: (5 - mental) * 0.025 + (4 - social) * 0.03 (~5-15%).
-  Wrong target: if split vote active, votes the wrong half. Else: personal grudge (bond <= -2),
-  or 2nd-highest-heat player (someone who was discussed). Tagged [MISCOMMUNICATION] in vote log.
-  ep.voteMiscommunications saved. WHY section explains if it changed the outcome.
-  Also implemented: SPLIT VOTE SYSTEM — alliances split votes to flush idols.
-  Confirmed idol = auto-split, suspected = strategic * 0.06 roll. Needs 4+ members.
-  Secondary target: primary's closest ally (bond >= 2), fallback lowest-threat.
-  Assignment: majority on primary, bond-protected (bond >= 3 with secondary → primary group).
-  Betrayal exempt: voting the split secondary is NOT a betrayal in decayAllianceTrust.
-  ep.splitVotePlans saved. WHY section explains when split catches an idol.
 
 [DONE] #5 STOLEN CREDIT — implemented via checkStolenCredit(ep).
-  Trigger: player earns bigMoves, bold player (boldness >= 6) at same camp, not strong allies.
-  Roll: boldness * 0.015 + (bond <= -1 ? 0.05 : 0). Once per game.
-  Theft: stealer bigMoves += 1, architect bigMoves -= 1, bond damage, gold "STOLEN CREDIT" badge.
-  Confrontation (next episode): roll boldness * 0.08 + (10 - temperament) * 0.05.
-  Three callout tones: hothead (explosive), bold (calculated), emotional (crack).
-  Outcome: architect wins (social+strategic > stealer social+boldness) → partial credit reclaimed,
-  stealer loses face. Architect loses → looks petty, loses MORE standing.
-  gs.stolenCredit, gs.stolenCreditFired, gs.stolenCreditHeat state tracking.
 
+[DONE] #6 FALSE IDOL PLANT — implemented via checkFakeIdolPlant(ep).
 
-  TODO — ENGINE MISSING
-  ─────────────────────
+[DONE] #8 Vote Miscommunication + Split Vote System — implemented inline in simulateVotes.
+
+[DONE] #11 JURY BITTER CASCADE / ROUNDTABLE — implemented via simulateJuryRoundtable(ep).
+
+[DONE] KL-1 AMBASSADORS — implemented via engineType 'ambassadors' in applyTwist.
+
+[DONE] KL-3 REPLACEMENT — implemented in generateSurvivalEvents (medevac block).
+
+[DONE] KL-4 BLACK VOTE — implemented as season-long rule (config dropdown: Off/Classic/Modern).
 
 [DONE] FAN VOTE FINALE ENGINE — implemented via generateFanCampaign() + simulateFanVote().
-  Broadcast-style Fan Campaign screen (interactive phased reveal: spotlight → speech + pulse
-  bars + fan reaction pills → jury commentary per finalist). Fan Vote reveal (F2 head-to-head
-  bars, F3 vertical bars, 10-step progressive reveal). Popularity-dominant scoring with
-  campaign boost (social * 0.3 + boldness * 0.2 + strategic * 0.1) + variance.
-  F2: no immunity, straight to campaign. F3: immunity + cut to F2. F4: immunity + cut to F3.
-  Lobbying camp scene before Decision. Config: requires popularityEnabled, hidePopularity
-  option hides Fan Pulse rankings during season for no-spoiler mode.
 
 [DONE] SURVIVAL MECHANICS ENGINE — implemented via updateSurvival() + generateSurvivalEvents().
-  Per-tribe food reserves (gs.tribeFood) decay per episode. Difficulty: casual/realistic/brutal.
-  Provider/slacker system: contribution = willingness (loyalty+social+(10-boldness)) + ability
-  (endurance+physical). Providers add to tribe food but burn energy (survival cost).
-  Slackers drag food but conserve energy (survival bonus = better challenges).
-  14 camp event types: fishing, foraging, praised, slacker callout, confrontation,
-  lazy alliance bonding, food conflict, hoarding, starvation bond, rationing, crisis,
-  collapse warning, medevac, provider voted out aftermath.
-  Collapse → medevac two-episode arc (realistic/brutal only).
-  VP: tribe food bar + member survival indicators on camp screens.
-  Jury: provider bonus (providerHistory * 0.04, cap 0.4).
-  computeHeat: provider -0.3 protection, villain +0.5 / schemer +0.3 toward providers,
-  slacker +0.04 per non-slacker. Challenge: proportional penalty (70 - survival) * 0.03.
 
+[DONE] #13 CHALLENGE THROW + DETECTION — implemented in simulateIndividualChallenge.
+
+
+── REMAINING — RANKED BY PRIORITY ─────────────────────────────────────────────
 
   MEDIUM PRIORITY
   ───────────────
 
-[DONE] KL-1 AMBASSADORS — implemented via engineType 'ambassadors' in applyTwist.
-  Schedulable pre-merge twist. Each tribe selects ambassador (social*0.3 + strategic*0.3 +
-  avgBond*0.4). 5 negotiation archetypes: manipulator, villain, dealmaker, loyal-shield,
-  emotional. 15 pairings with resistance checks (boldness+temperament vs social). 3+ tribe
-  coalition mechanics (majority rules, odd-one-out counter-offer). Agreement → target
-  eliminated without vote. Disagreement → rock draw between ambassadors. Return drama:
-  4 scenarios (hero welcome, tribemate sacrificed with personality reactions, ambassador
-  lost to rocks, rock draw exit). VP: 4-section screen (selection, meeting, return, elimination).
-  Bond consequences carry into merged game. Exit quotes personality-driven.
-
-[DONE] KL-3 REPLACEMENT — implemented in generateSurvivalEvents (medevac block).
-  On medevac: most recently voted-out player returns. Personality-driven return events:
-  vengeful (bold + has enemies), strategic reset, grateful (loyal/social), neutral.
-  Incompatible with RI/Rescue Island. Configurable via replacementOnMedevac checkbox.
-  Injuries now drain survival (penalty * 1.5/ep), severe injury + low survival → collapse.
-  Low survival increases injury chance (survival 40 = 1.6x, survival 20 = 2.2x).
-
-[6] FALSE IDOL PLANT
-Trigger: player with strategic >= 8 is actively being targeted AND an idol search is in progress
-Roll: ~15%
-What happens: player crafts a fake idol and plants it in an obvious location.
-  A searching player finds it and believes it's real. If they bring it to tribal and
-  play it, it's revealed as fake — humiliating and they lose credibility.
-Mechanic: gs.fakeIdols[] entry created. If played at tribal: no votes negated,
-  camp event generated next episode, bond collapse.
-
-[DONE] #11 JURY BITTER CASCADE / ROUNDTABLE — implemented via simulateJuryRoundtable(ep).
-  Fires during jury-elimination twist episodes. Lobbyists identified proportionally
-  (abs(bond) * 0.08 + boldness * 0.03). Persuadable jurors detected by margin threshold
-  (2.0 - social * 0.08). Persuasion: social * 0.04 + bond * 0.05, pushback resistance:
-  abs(bond) * 0.12 + strategic * 0.03. Bond shift on success: 0.15 + social * 0.03.
-  VP: roundtable section appended to rpBuildJuryLife with finalist-by-finalist debate,
-  badges (IN FAVOR/AGAINST/LOBBIED/PUSHED BACK), personality-driven arguments.
-  ep.juryRoundtable saved to history.
+[TD-1] SOLE VOTE (inspired by Total Drama: Grand Chef Auto — Scott's Sole Vote)
+  One-shot advantage: holder casts the ONLY valid vote at tribal. All other votes cancelled.
+  Trigger: holder plays it at tribal (heat-based play chance, like Vote Block).
+  Mechanic: nuclear Vote Block — every other player added to gs.lostVotes. Holder's single
+    vote determines the elimination. No split votes, no alliances, no counter-play.
+  Consequences: massive bond damage from everyone whose vote was silenced (-0.5 to -1.0
+    proportional to bond with holder). Target has no defense except idols.
+  Heat: known holder gets +1.5 (everyone wants it flushed — it's terrifying).
+  Discovery: rare, same as Vote Block pipeline. One per season max.
+  VP: dramatic "SOLE VOTE" banner, all other vote cards greyed out.
+  Camp lifecycle: confession/leak/snoop like Vote Block but higher drama.
+  Note: works as a new advantage type in the existing ADVANTAGES system.
 
 [15] FINAL TRIBAL SURPRISE FLIP
 Trigger: FTC with jury where one finalist has majority of votes locked in
@@ -195,24 +130,6 @@ What happens: player engineers their own boot to face rival at the duel. Post-bo
 
   LOW PRIORITY
   ────────────
-
-[12] IDOL INHERITANCE
-Trigger: player is voted out with an unplayed idol
-Roll: ~40%
-What happens: idol gets passed to closest active ally as hidden inheritance, OR
-  re-hidden on the same tribe. Two outcomes with different roll weights.
-Note: Legacy Advantage already covers the "idol passes on elimination" mechanic.
-  This would be for regular idols. May overlap.
-
-[DONE] #13 CHALLENGE THROW + DETECTION — implemented in simulateIndividualChallenge.
-  Post-merge: players with high heat (>=3) or immunity streak (>=2) may throw.
-  Roll: strategic * 0.04 + boldness * 0.03 (bold penalty for wanting to win).
-  Score penalty: -5 to -8. VP: orange "THREW IT" badge (viewer always knows).
-  Detection: intuition * 0.04 per observer, +0.03 per previous throw (escalating).
-  Caught: bond -0.5, heat +0.8. Uncaught: heat -1.0 (strategy worked).
-  Camp events: bold detectors confront, quiet ones file it away.
-  Throw count resets when caught. Pre-merge reward sharing also added
-  (winning tribe invites one losing tribe member, configurable).
 
 [14] REWARD TRIP BONDING BACKFIRE
 Trigger: reward challenge with 2-3 winners who go on a trip together
@@ -283,16 +200,17 @@ What happens: the two goats realize they're being dragged along and quietly deci
 Mechanic: forced allianceForm event between the two goats, boosted vote heat on the
   highest-threat player that tribal.
 
-[DONE] KL-4 BLACK VOTE — implemented as season-long rule (config dropdown: Off/Classic/Modern).
-  Classic: eliminated votes AGAINST lowest-bond rival. Injected as penalty vote at
-  next tribal the target attends. Modern: eliminated gifts Extra Vote to closest ally.
-  VP: "BLACK VOTE CAST" after torch snuff, "BLACK VOTE" announcement at next tribal.
-  Strategic guessing camp events: players speculate who received it (correct/wrong reads).
-  Direct injection in simulateVotes handles multi-tribal episodes. Works with double boots.
-  gs.blackVotes array, ep.blackVote/blackVote1/blackVote2/blackVoteApplied.
-
-[DONE] #6 FALSE IDOL PLANT — implemented via checkFakeIdolPlant(ep).
-  Strategic player (>=7) with high heat crafts fake idol. Once per game.
-  4 arcs: caught crafting, planted→played at tribal (humiliation), planted→tipped off
-  (confrontation next ep), planted→nobody finds. Fake flag on gs.advantages.
-  checkIdolPlays handles fake reveal (no votes negated). VP: 4 badge types.
+[TD-2] THE MOLE (inspired by Total Drama: Rock n' Rule — Owen as the Mole)
+  Season-long role: one player is secretly a saboteur. They throw challenges (intentional
+    underperformance beyond the existing throw mechanic — structured, not optional) and
+    leak alliance information to production / an outside force.
+  Trigger: assigned at season start (config toggle). Random or hand-picked player.
+  Mechanic: mole has forced challenge throw each episode (detection risk escalates like
+    existing throw system). Mole leaks one alliance's target to a random outsider each
+    episode (creates "how did they know?" paranoia). Exposure arc: intuition-based
+    detection by tribemates, proportional. On exposure: massive bond collapse, potential
+    immediate elimination or social pariah status.
+  Consequence: season-long tension. Challenges feel unreliable. Information leaks create
+    paranoia that feeds into the existing paranoia spiral system.
+  Note: complex — season-long role, needs mole assignment UI, forced throws, info leak
+    pipeline, exposure arc. Future "season archetype" feature, not a schedulable twist.

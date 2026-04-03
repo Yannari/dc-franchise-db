@@ -2781,14 +2781,11 @@ function threatScore(name) {
   if (!rec) return base;
   let prestige = 0;
   // Individual wins (post-merge only — high value)
-  if (rec.wins >= 3)      prestige += 1.5;
-  else if (rec.wins >= 2) prestige += 0.8;
-  else if (rec.wins >= 1) prestige += 0.3;
+  prestige += rec.wins * 0.4;
   // Podiums = top-2 in any challenge (pre + post) — consistent challenge force
-  if (rec.podiums >= 6)      prestige += 1.5;
-  else if (rec.podiums >= 4) prestige += 1.0;
-  else if (rec.podiums >= 2) prestige += 0.5;
-  if (rec.bombs >= 3)        prestige -= 0.5;
+  prestige += rec.podiums * 0.2;
+  // Bombs = poor performances — drags down threat perception
+  prestige -= rec.bombs * 0.15;
   return base + prestige;
 }
 
@@ -2972,8 +2969,7 @@ function computeHeat(name, tribalPlayers, alliances) {
   });
   if (gs.phase === 'post-merge') {
     const ts = threatScore(name);
-    if (ts >= 7) heat += 1;
-    if (ts >= 9) heat += 0.5;
+    heat += Math.max(0, (ts - 4) * 0.3);
     // Challenge record carry-over: people remember pre-merge performance
     // Dominators are threats, but chronic bombers can also be targeted (dead weight / goat-cutting)
     const rec = gs.chalRecord?.[name];

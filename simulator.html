@@ -7608,6 +7608,7 @@ function findAdvantages(ep) {
     { key: 'soleVote', postMergeOnly: false, baseChance: 0.001, epScaleCap: 0.005 },
   ];
 
+  const _advFoundThisEp = new Set(); // prevent one player finding multiple advantages per episode
   nonIdolTypes.forEach(({ key, postMergeOnly, baseChance, epScaleCap }) => {
     const typeCfg = cfg.advantages?.[key];
     if (!typeCfg?.enabled) return;
@@ -7618,7 +7619,7 @@ function findAdvantages(ep) {
     if (typeCfg.oncePer === 'season' && (gs.advantagesFoundThisSeason?.[key] || 0) >= max) return;
     if (typeCfg.oncePer === 'phase' && (gs.advantagesFoundThisPhase?.[key] || 0) >= max) return;
 
-    const pool = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer).sort(() => Math.random() - 0.5);
+    const pool = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer && !_advFoundThisEp.has(p)).sort(() => Math.random() - 0.5);
     for (const name of pool) {
       const s = pStats(name);
       const epScale = Math.min(ep.num * 0.001, epScaleCap);
@@ -7635,6 +7636,7 @@ function findAdvantages(ep) {
           gs[_counterKey][key] = (gs[_counterKey][key] || 0) + 1;
         }
         ep.idolFinds.push({ finder: name, type: key, tribe: _advTribe });
+        _advFoundThisEp.add(name);
         // ── Discovery camp event for tactical advantages ──
         if (['teamSwap', 'voteBlock', 'voteSteal', 'safetyNoPower', 'soleVote'].includes(key)) {
           const _discLabel = { teamSwap: 'Team Swap', voteBlock: 'Vote Block', voteSteal: 'Vote Steal', safetyNoPower: 'Safety Without Power', soleVote: 'Sole Vote' }[key];
@@ -11256,6 +11258,9 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
         `${name} discovers something buried near camp. The Beware Advantage. A powerful idol — but it costs ${_fp.obj} the vote. Until all tribes have found theirs, ${_fp.sub} sit${_fp.sub==='they'?'':'s'} at tribal mute. ${_fp.Sub} debate${_fp.sub==='they'?'':'s'} for a moment. Then ${_fp.sub} keep${_fp.sub==='they'?'':'s'} it.`,
       ],
     };
+    // Tactical advantages (teamSwap, voteBlock, voteSteal, safetyNoPower, soleVote) already
+    // generate their own discovery camp events via key+'Found' in findAdvantages — skip them here
+    if (['teamSwap', 'voteBlock', 'voteSteal', 'safetyNoPower', 'soleVote'].includes(advType)) return;
     const lines = advTextMap[advType] || advTextMap.idol;
     events.push({ type: 'idolFound', advType, text: lines[Math.floor(Math.random() * lines.length)], players: [name] });
   });

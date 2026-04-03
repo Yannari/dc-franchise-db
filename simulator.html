@@ -26746,18 +26746,27 @@ function rpBuildAmbassadors(ep) {
   // ── EXIT QUOTE ──
   if (meeting.eliminated) {
     const _exitPick = (arr) => arr[([...meeting.eliminated].reduce((a,c)=>a+c.charCodeAt(0),0)+(epNum||0)*5)%arr.length];
+    const _elimS = pStats(meeting.eliminated);
+    const _elimPr = pronouns(meeting.eliminated);
     const exitQuote = meeting.eliminatedByRocks
-      ? _exitPick([
-        `"I'd do it again. I'd volunteer again. At least I went down swinging."`,
-        `"Tell them I tried. Tell them I didn't give anyone up. The rock took me — not the game."`,
-        `"Bad luck. That's all this is. I played it right and the rock said no."`,
-      ])
-      : _exitPick([
-        `"Two people I never got to face decided my fate. That's not the game — that's a backroom deal."`,
-        `"I would have fought for my tribe. I would have stood in that room and refused. But I never got the chance."`,
-        `"It was the right move. I hate it — but it was right. I just wish I'd been the one making it."`,
-        `"I thought the bonds I built would protect me. They didn't. The game happened in a room I wasn't in."`,
-      ]);
+      ? _elimS.boldness >= 7
+        ? _exitPick([`"I'd do it again. I'd volunteer again. At least I went down swinging."`, `"A rock? That's how I go out? Fine. At least I didn't go out on my knees."`])
+        : _elimS.loyalty >= 7
+        ? _exitPick([`"Tell them I tried. Tell them I didn't give anyone up. The rock took me — not the game."`, `"I stayed loyal. The rock didn't care about that. But I did."`])
+        : _elimS.strategic >= 7
+        ? _exitPick([`"Bad luck. That's all this is. I played it right and the rock said no."`, `"I calculated every angle. You can't calculate a rock draw. That's the one variable I couldn't control."`])
+        : _exitPick([`"I don't even know what to say. A rock. That's how this ends for me."`, `"I didn't see this coming. Not like this."`])
+      : _elimS.boldness >= 7
+        ? _exitPick([`"Two people I never got to face decided my fate. That's not the game — that's a backroom deal. And I would have blown it up if I'd been in that room."`, `"You want to take me out? Say it to my face. Don't send ambassadors to do your dirty work."`])
+        : _elimS.temperament <= 4
+        ? _exitPick([`"This is garbage. I didn't even get a vote. I didn't get to fight. Someone in a room I wasn't in wrote my name and that's it? That's not Survivor."`, `"I'm angry. I'm not gonna pretend I'm not. They took the coward's way out and I'm the one who pays for it."`])
+        : _elimS.strategic >= 7
+        ? _exitPick([`"I respect the move. I don't respect that I never got to counter it. The game happened in a room I wasn't in."`, `"Strategically, it makes sense. I would have done the same thing. That doesn't make it easier to walk away."`])
+        : _elimS.social >= 7
+        ? _exitPick([`"I thought the bonds I built would protect me. They didn't. The game happened in a room I wasn't in."`, `"I connected with everyone on my tribe. None of that mattered when two strangers sat down and decided my fate."`])
+        : _elimS.loyalty >= 7
+        ? _exitPick([`"I would have fought for my tribe. I would have stood in that room and refused. But I never got the chance."`, `"I stayed loyal to the end. And the end came from somewhere I never expected."`])
+        : _exitPick([`"I didn't get to play my game today. Someone else played it for me."`, `"I keep replaying it. What could I have done? Nothing. That's the worst part."`]);
     html += `<div style="margin-top:16px;padding:12px;background:rgba(139,148,158,0.04);border:1px solid rgba(139,148,158,0.08);border-radius:8px">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
         ${rpPortrait(meeting.eliminated, 'sm')}

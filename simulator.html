@@ -18549,52 +18549,92 @@ function simulateJuryRoundtable(ep) {
     const champLobbyists = lobbyists.filter(l => l.target === player && l.type === 'champion');
     const opposeLobbyists = lobbyists.filter(l => l.target === player && l.type === 'oppose');
 
+    // Seeded pick for variety — different juror+player combos get different lines
+    const _seed = (a, b) => [...(a+b)].reduce((s, c) => s + c.charCodeAt(0), 0);
+    const _pickFrom = (arr, a, b) => arr[_seed(a, b) % arr.length];
+
     // Champion arguments
     champLobbyists.forEach(l => {
       const lPr = pronouns(l.juror);
       const lS = pStats(l.juror);
-      const text = lS.boldness >= 7
-        ? `${l.juror} slams the table. "${player} played the best game out here. Period. If you can't see that, you weren't paying attention."`
-        : lS.strategic >= 7
-        ? `${l.juror} lays out ${lPr.posAdj} case methodically. "${player} made moves when it counted. The numbers don't lie — ${_pr.sub} earned this."`
-        : lS.social >= 7
-        ? `${l.juror} gets personal. "I know ${player}. ${_pr.Sub} ${_pr.sub === 'they' ? 'are' : 'is'} a good person who played a real game. That matters to me."`
-        : lS.loyalty >= 7
-        ? `${l.juror} appeals to honor. "${player} played with integrity. ${_pr.Sub} didn't backstab ${_pr.posAdj} way here. That should count for something."`
-        : `${l.juror} makes ${lPr.posAdj} pitch for ${player}. "${player} deserves this. I've seen enough to know."`;
-      evts.push({ juror: l.juror, type: 'support', text, badge: 'IN FAVOR', badgeClass: 'win', players: [l.juror, player] });
+      const pool = lS.boldness >= 7 ? [
+        `${l.juror} slams the table. "${player} played the best game out here. Period. If you can't see that, you weren't paying attention."`,
+        `${l.juror} leans forward. "I watched ${player} play from day one. ${_pr.Sub} outplayed everyone. End of discussion."`,
+        `${l.juror} stands up. "You want to know who deserves this? ${player}. And I dare anyone here to argue otherwise."`,
+      ] : lS.strategic >= 7 ? [
+        `${l.juror} lays out ${lPr.posAdj} case methodically. "${player} made moves when it counted. The numbers don't lie — ${_pr.sub} earned this."`,
+        `${l.juror} counts on ${lPr.posAdj} fingers. "Idol play. Alliance flip. Challenge win when it mattered. ${player} has the resume."`,
+        `${l.juror} walks through the timeline. "Look at what ${player} did at merge, at final seven, at the last tribal. That's a winner's game."`,
+      ] : lS.social >= 7 ? [
+        `${l.juror} gets personal. "I know ${player}. ${_pr.Sub} ${_pr.sub === 'they' ? 'are' : 'is'} a good person who played a real game. That matters to me."`,
+        `${l.juror} speaks from the heart. "${player} was there for people when it mattered. That's not nothing. That's the whole game."`,
+        `${l.juror} looks around the table. "How many of you can say ${player} treated you badly? Exactly. That counts."`,
+      ] : lS.loyalty >= 7 ? [
+        `${l.juror} appeals to honor. "${player} played with integrity. ${_pr.Sub} didn't backstab ${_pr.posAdj} way here. That should count for something."`,
+        `${l.juror} keeps it simple. "${player} kept ${_pr.posAdj} word. In this game, that's rare. I respect it."`,
+        `${l.juror} nods firmly. "You can win this game without lying. ${player} proved that. I want to reward that."`,
+      ] : [
+        `${l.juror} makes ${lPr.posAdj} pitch for ${player}. "${player} deserves this. I've seen enough to know."`,
+        `${l.juror} speaks up. "I've been thinking about this a lot. ${player} is the right winner."`,
+        `${l.juror} clears ${lPr.posAdj} throat. "I'm voting ${player}. And I think some of you should too."`,
+      ];
+      evts.push({ juror: l.juror, type: 'support', text: _pickFrom(pool, l.juror, player), badge: 'IN FAVOR', badgeClass: 'win', players: [l.juror, player] });
     });
 
     // Oppose arguments
     opposeLobbyists.forEach(l => {
       const lPr = pronouns(l.juror);
       const lS = pStats(l.juror);
-      const text = lS.boldness >= 7
-        ? `${l.juror} doesn't hold back. "${player} doesn't deserve to sit in those chairs. And I'll tell anyone who'll listen exactly why."`
-        : lS.temperament <= 4
-        ? `${l.juror} can barely contain ${lPr.ref}. "Don't even get me started on ${player}. What ${_pr.sub} did to me — to US — that's not gameplay."`
-        : lS.strategic >= 7
-        ? `${l.juror} breaks it down. "${player} rode coattails. ${_pr.Sub} didn't make a single real decision all game. I'm not rewarding that."`
-        : `${l.juror} shakes ${lPr.posAdj} head. "I've had a lot of time to think about ${player}'s game. It wasn't as impressive as ${_pr.sub} think${_pr.sub === 'they' ? '' : 's'}."`;
-      evts.push({ juror: l.juror, type: 'oppose', text, badge: 'AGAINST', badgeClass: 'bad', players: [l.juror, player] });
+      const pool = lS.boldness >= 7 ? [
+        `${l.juror} doesn't hold back. "${player} doesn't deserve to sit in those chairs. And I'll tell anyone who'll listen exactly why."`,
+        `${l.juror} points across the table. "If ${player} wins, this whole season meant nothing. I said what I said."`,
+        `${l.juror} is on ${lPr.posAdj} feet. "You're really going to reward ${player}? After everything? Come on."`,
+      ] : lS.temperament <= 4 ? [
+        `${l.juror} can barely contain ${lPr.ref}. "Don't even get me started on ${player}. What ${_pr.sub} did to me — to US — that's not gameplay."`,
+        `${l.juror}'s voice cracks. "${player} looked me in the eye and lied. I can't forgive that. And neither should you."`,
+        `${l.juror} is shaking. "I have sat on that bench replaying what ${player} did. Every single night. Don't tell me to let it go."`,
+      ] : lS.strategic >= 7 ? [
+        `${l.juror} breaks it down. "${player} rode coattails. ${_pr.Sub} didn't make a single real decision all game. I'm not rewarding that."`,
+        `${l.juror} ticks off the episodes. "${player} was carried to this point. Name one move ${_pr.sub} made alone. I'll wait."`,
+        `${l.juror} leans back. "${player}'s whole game was being in the right alliance at the right time. That's luck, not skill."`,
+      ] : [
+        `${l.juror} shakes ${lPr.posAdj} head. "I've had a lot of time to think about ${player}'s game. It wasn't as impressive as ${_pr.sub} think${_pr.sub === 'they' ? '' : 's'}."`,
+        `${l.juror} sighs. "I wanted to root for ${player}. I really did. But ${_pr.sub} lost me."`,
+        `${l.juror} folds ${lPr.posAdj} arms. "${player} had chances to play a bigger game. ${_pr.Sub} didn't. That's on ${_pr.obj}."`,
+      ];
+      evts.push({ juror: l.juror, type: 'oppose', text: _pickFrom(pool, l.juror, player), badge: 'AGAINST', badgeClass: 'bad', players: [l.juror, player] });
     });
 
     // Lobby outcomes for this player
     shifts.filter(s => s.finalist === player).forEach(s => {
       const sPr = pronouns(s.persuaded);
-      const dir = s.direction === 'for' ? 'warming up to' : 'cooling on';
-      evts.push({ juror: s.persuaded, type: 'lobbied',
-        text: `${s.persuaded} listens to ${s.lobbyist}'s argument. ${sPr.Sub} ${sPr.sub === 'they' ? 'don\'t' : 'doesn\'t'} say much — but ${sPr.posAdj} expression says ${sPr.sub} ${sPr.sub === 'they' ? 'are' : 'is'} ${dir} ${player}.`,
-        badge: 'LOBBIED', badgeClass: 'gold', players: [s.persuaded, player] });
+      const lPr = pronouns(s.lobbyist);
+      const forPool = [
+        `${s.persuaded} listens to ${s.lobbyist}'s argument and nods slowly. Something landed. ${sPr.Sub} ${sPr.sub === 'they' ? 'are' : 'is'} reconsidering ${player}.`,
+        `After ${s.lobbyist}'s pitch, ${s.persuaded} goes quiet. When ${sPr.sub} finally speak${sPr.sub === 'they' ? '' : 's'}, it's clear — ${sPr.posAdj} mind is shifting toward ${player}.`,
+        `${s.lobbyist}'s words hit home. ${s.persuaded} didn't expect to be swayed, but ${sPr.sub} ${sPr.sub === 'they' ? 'are' : 'is'} starting to see ${player} differently.`,
+      ];
+      const againstPool = [
+        `${s.persuaded} hears ${s.lobbyist} out. By the end, ${sPr.posAdj} expression has changed. ${sPr.Sub} ${sPr.sub === 'they' ? 'are' : 'is'} cooling on ${player}.`,
+        `${s.lobbyist}'s argument plants a seed of doubt. ${s.persuaded} had been leaning toward ${player} — now ${sPr.sub} ${sPr.sub === 'they' ? 'aren\'t' : 'isn\'t'} so sure.`,
+        `${s.persuaded} thought ${sPr.sub} had ${sPr.posAdj} mind made up. Then ${s.lobbyist} started talking. Now ${player} doesn't look as strong.`,
+      ];
+      const text = _pickFrom(s.direction === 'for' ? forPool : againstPool, s.persuaded, s.lobbyist);
+      evts.push({ juror: s.persuaded, type: 'lobbied', text, badge: 'LOBBIED', badgeClass: 'gold', players: [s.persuaded, player] });
     });
 
     pushbacks.filter(pb => pb.finalist === player).forEach(pb => {
       const pbPr = pronouns(pb.resistedBy);
-      const pbS = pStats(pb.resistedBy);
-      const text = pb.reason === 'strategic-mind'
-        ? `${pb.resistedBy} cuts in. "I appreciate the pitch, but I'll make up my own mind about ${player}. I've been watching the game too."`
-        : `${pb.resistedBy} pushes back. "I know how I feel about ${player}. You're not changing that."`;
-      evts.push({ juror: pb.resistedBy, type: 'pushback', text, badge: 'PUSHED BACK', badgeClass: 'bad', players: [pb.resistedBy, player] });
+      const pool = pb.reason === 'strategic-mind' ? [
+        `${pb.resistedBy} cuts in. "I appreciate the pitch, but I'll make up my own mind about ${player}. I've been watching the game too."`,
+        `${pb.resistedBy} holds up a hand. "I hear you. But I've done my own analysis on ${player}. I don't need help."`,
+        `${pb.resistedBy} stays measured. "Interesting take. But I've already thought this through. ${player} is who ${pronouns(player).sub} ${pronouns(player).sub === 'they' ? 'are' : 'is'}."`,
+      ] : [
+        `${pb.resistedBy} pushes back. "I know how I feel about ${player}. You're not changing that."`,
+        `${pb.resistedBy} shuts it down. "Save it. My mind's made up on ${player}."`,
+        `${pb.resistedBy} crosses ${pbPr.posAdj} arms. "You can argue all night. I know what I saw from ${player}."`,
+      ];
+      evts.push({ juror: pb.resistedBy, type: 'pushback', text: _pickFrom(pool, pb.resistedBy, player), badge: 'PUSHED BACK', badgeClass: 'bad', players: [pb.resistedBy, player] });
     });
 
     // General jury sentiment (fill to at least 2 events if not enough lobby activity)

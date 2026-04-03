@@ -30211,7 +30211,7 @@ function rpBuildVotingPlans(ep) {
       </div>`;
     }
     otherAdvantages.forEach(adv => {
-      const typeLabels = { extraVote: 'Extra Vote', voteSteal: 'Vote Steal', legacy: 'Legacy Advantage', amulet: 'Amulet', kip: 'Knowledge is Power', secondLife: 'Second Life' };
+      const typeLabels = { extraVote: 'Extra Vote', voteSteal: 'Vote Steal', legacy: 'Legacy Advantage', amulet: 'Amulet', kip: 'Knowledge is Power', secondLife: 'Second Life', teamSwap: 'Team Swap', voteBlock: 'Vote Block', safetyNoPower: 'Safety Without Power' };
       const advLabel = typeLabels[adv.type] || adv.type;
       html += `<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(130,80,223,0.06);border:1px solid rgba(130,80,223,0.15);border-radius:8px;margin-bottom:4px">
         ${rpPortrait(adv.holder, 'sm')}

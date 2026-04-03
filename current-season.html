@@ -1356,7 +1356,7 @@ Dave voted for Mickey
 
     function parseEpisodeTitle(text) {
       // Episode 2: "Shadows of Doubt"
-      const m = (text || “”).match(/Episode\s+(\d+)\s*[:\-\u2013\u2014]\s*[“”]?([^”\n”]+)[“”]?/i);
+      const m = (text || "").match(/Episode\s+(\d+)\s*[:\-\u2013\u2014]\s*[“”]?([^”\n”]+)[“”]?/i);
       if (m) return { num: parseInt(m[1], 10), title: m[2].trim().replace(/^["""]+|["""]+$/g, "").trim() };
       // EPISODE 1 SUMMARY (no title)
       const m2 = (text || "").match(/EPISODE\s+(\d+)/i);

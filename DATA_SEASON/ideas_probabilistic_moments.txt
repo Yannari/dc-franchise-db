@@ -214,3 +214,17 @@ Mechanic: forced allianceForm event between the two goats, boosted vote heat on 
     paranoia that feeds into the existing paranoia spiral system.
   Note: complex — season-long role, needs mole assignment UI, forced throws, info leak
     pipeline, exposure arc. Future "season archetype" feature, not a schedulable twist.
+
+[STAT] MENTAL STAT — NON-CHALLENGE ROLE
+  Problem: mental is almost entirely a challenge stat (puzzle/balance/mixed). Physical and
+    endurance have survival mechanics (provider ability, injury resistance, collapse) as a
+    second system. Mental has nothing equivalent outside challenges + vote miscommunication.
+  Ideas for expanding mental's social/strategic footprint:
+  - Emotional resilience: mental scales resistance to negative emotional state transitions
+    (high mental = harder to become paranoid/desperate, recovers to content/calculating faster)
+  - Camp strategy sessions: mental improves quality of eavesdrop/intel events (better info)
+  - Advantage reading: mental helps identify fake idols (detection chance proportional to mental)
+  - Pressure handling: mental reduces bond damage from being on the bottom (stays composed)
+  - Tribal focus: high mental reduces vote miscommunication (already done, proportional)
+  Note: don't overload mental — it should remain primarily a challenge stat with 1-2 light
+    social touches, not become a second strategic stat.

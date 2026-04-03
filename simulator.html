@@ -18042,6 +18042,8 @@ function simulateEpisode() {
       });
     }
 
+    // SITD fires first — player sacrifices their vote before votes are read
+    checkShotInDark(tribalPlayers, votes, log, ep);
     checkIdolPlays(tribalPlayers, votes, ep, log);
     checkNonIdolAdvantageUse(tribalPlayers, votes, ep, log);
     // Rival tip-off betrayal: if a cross-alliance player saved the idol holder and it was played
@@ -18054,7 +18056,6 @@ function simulateEpisode() {
       }
       delete ep.tipOffBetrayalRisk;
     }
-    checkShotInDark(tribalPlayers, votes, log, ep);
 
     // Build full tribal immunity list: anyone PROTECTED by an idol OR survived SitD is safe
     // for the ENTIRE tribal — original vote, revote, and rock draw.

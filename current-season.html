@@ -3919,7 +3919,15 @@ setTimeout(function() {
     
     const storageKey = getSeasonStorageKey(seasonNumber);
     localStorage.removeItem(storageKey);
-    
+
+    // Also clear all episode transcripts and analytics for this season
+    const keysToRemove = Object.keys(localStorage).filter(k =>
+      k.includes(`_s${seasonNumber}_e`) || k.includes(`_s${seasonNumber}_`)
+    );
+    keysToRemove.forEach(k => localStorage.removeItem(k));
+    // Clear franchise context for this season
+    localStorage.removeItem(`franchise_context_s${seasonNumber}`);
+
     // Clear all fields
     document.getElementById("sb-season-title").value = '';
     document.getElementById("sb-season-subtitle").value = '';

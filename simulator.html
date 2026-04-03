@@ -9890,13 +9890,24 @@ function applyTwist(ep, twist, isPrimary = true) {
         const _listener = _leaker === a ? b : a;
         const _listenerS = _leaker === a ? sB : sA;
         // Check if leaker has an advantage to leak about
-        const _leakerAdv = gs.advantages.find(adv => adv.holder === _leaker && ['idol', 'legacy', 'amulet', 'secondLife'].includes(adv.type));
+        const _leakerAdv = gs.advantages.find(adv => adv.holder === _leaker && ['idol', 'legacy', 'amulet', 'secondLife', 'teamSwap', 'voteBlock', 'voteSteal'].includes(adv.type));
         if (_leakerAdv) {
-          if (!gs.knownIdolHoldersThisEp) gs.knownIdolHoldersThisEp = new Set();
-          gs.knownIdolHoldersThisEp.add(_leaker);
-          if (!gs.knownIdolHoldersPersistent) gs.knownIdolHoldersPersistent = new Set();
-          gs.knownIdolHoldersPersistent.add(_leaker);
-          const _advLabel = _leakerAdv.type === 'idol' ? 'Hidden Immunity Idol' : _leakerAdv.type === 'legacy' ? 'Legacy Advantage' : _leakerAdv.type === 'amulet' ? 'Amulet' : _leakerAdv.type === 'secondLife' ? 'Second Life Amulet' : 'advantage';
+          if (['teamSwap'].includes(_leakerAdv.type)) {
+            if (!gs.knownTeamSwapHolders) gs.knownTeamSwapHolders = new Set();
+            gs.knownTeamSwapHolders.add(_leaker);
+          } else if (['voteBlock'].includes(_leakerAdv.type)) {
+            if (!gs.knownVoteBlockHolders) gs.knownVoteBlockHolders = new Set();
+            gs.knownVoteBlockHolders.add(_leaker);
+          } else if (['voteSteal'].includes(_leakerAdv.type)) {
+            if (!gs.knownVoteStealHolders) gs.knownVoteStealHolders = new Set();
+            gs.knownVoteStealHolders.add(_leaker);
+          } else {
+            if (!gs.knownIdolHoldersThisEp) gs.knownIdolHoldersThisEp = new Set();
+            gs.knownIdolHoldersThisEp.add(_leaker);
+            if (!gs.knownIdolHoldersPersistent) gs.knownIdolHoldersPersistent = new Set();
+            gs.knownIdolHoldersPersistent.add(_leaker);
+          }
+          const _advLabel = _leakerAdv.type === 'idol' ? 'Hidden Immunity Idol' : _leakerAdv.type === 'legacy' ? 'Legacy Advantage' : _leakerAdv.type === 'amulet' ? 'Amulet' : _leakerAdv.type === 'secondLife' ? 'Second Life Amulet' : _leakerAdv.type === 'teamSwap' ? 'Team Swap' : _leakerAdv.type === 'voteBlock' ? 'Vote Block' : _leakerAdv.type === 'voteSteal' ? 'Vote Steal' : 'advantage';
           const _lkPr = pronouns(_leaker);
           ep.feastEvents.push({ type, players: [_leaker, _listener], text: _pick([
             `${_leaker} got too comfortable at the ${_feastLabel}. ${_listener} noticed the way ${_lkPr.sub} touched ${_lkPr.posAdj} bag. By the end of the meal, ${_listener} is certain: ${_leaker} has a ${_advLabel}. That secret is out.`,
@@ -14294,6 +14305,50 @@ function checkIdolConfessions(ep) {
   });
 }
 
+// ── Team Swap confession: holder confides in closest ally about the Team Swap advantage ──
+function checkTeamSwapConfessions(ep) {
+  const tsHolders = (gs.advantages || []).filter(a => a.type === 'teamSwap' && gs.activePlayers.includes(a.holder));
+  if (!tsHolders.length || !ep.campEvents) return;
+  if (!gs.knownTeamSwapHolders) gs.knownTeamSwapHolders = new Set();
+
+  tsHolders.forEach(adv => {
+    const holder = adv.holder;
+    const s = pStats(holder);
+    // ~15% chance, proportional to social
+    const confChance = s.social * 0.03;
+    if (Math.random() >= confChance) return;
+
+    // Find best ally on same tribe with bond >= 2
+    const tribeMembers = gs.isMerged
+      ? gs.activePlayers.filter(p => p !== holder)
+      : (gs.tribes.find(t => t.members.includes(holder))?.members || []).filter(p => p !== holder);
+    const allies = tribeMembers
+      .map(p => ({ name: p, bond: getBond(holder, p) }))
+      .filter(x => x.bond >= 2)
+      .sort((a, b) => b.bond - a.bond);
+    if (!allies.length) return;
+
+    const confidant = allies[0].name;
+    gs.knownTeamSwapHolders.add(holder);
+    addBond(holder, confidant, 0.3); // trust gesture
+
+    const _pr = pronouns(holder);
+    const confLines = [
+      `${holder} pulled ${confidant} aside. ${_pr.Sub} showed ${confidant} the Team Swap — the power to move someone between tribes. ${confidant}'s eyes widened. That kind of trust doesn't come cheap.`,
+      `${holder} needed someone to know. ${_pr.Sub} told ${confidant} about the Team Swap. If things go south, ${_pr.sub} ${_pr.sub === 'they' ? 'have' : 'has'} an exit strategy — and now ${confidant} knows it too.`,
+      `In a quiet moment, ${holder} confided in ${confidant} about the Team Swap. It felt like the right move — sharing the weight of that kind of power.`,
+    ];
+    const confEvt = { type: 'teamSwapConfession', players: [holder, confidant],
+      text: confLines[Math.floor(Math.random() * confLines.length)] };
+
+    const tribeName = gs.isMerged ? 'merge' : (gs.tribes.find(t => t.members.includes(holder))?.name);
+    if (tribeName && ep.campEvents?.[tribeName]) {
+      const campBlock = ep.campEvents[tribeName];
+      (Array.isArray(campBlock) ? campBlock : (campBlock.pre || [])).push(confEvt);
+    }
+  });
+}
+
 // ── Social intel gathering: social butterflies learn things through conversation, not sneaking ──
 function checkSocialIntel(ep) {
   if (!ep.campEvents) return;
@@ -14569,6 +14624,55 @@ function checkLegacyCampEvents(ep) {
         }
       }
     }
+  });
+}
+
+// ── Tactical advantage snoop: intuitive players notice Team Swap / Vote Block / Vote Steal holders ──
+function checkTacticalAdvantageSnoop(ep) {
+  if (!ep.campEvents) return;
+  const _snoopTypes = [
+    { type: 'teamSwap', setKey: 'knownTeamSwapHolders', chance: 0.02, evtType: 'teamSwapSnooped', label: 'Team Swap' },
+    { type: 'voteBlock', setKey: 'knownVoteBlockHolders', chance: 0.015, evtType: 'voteBlockSnooped', label: 'Vote Block' },
+    { type: 'voteSteal', setKey: 'knownVoteStealHolders', chance: 0.015, evtType: 'voteStealSnooped', label: 'Vote Steal' },
+  ];
+
+  _snoopTypes.forEach(({ type: _sType, setKey, chance, evtType, label }) => {
+    const _sHolders = (gs.advantages || []).filter(a => a.type === _sType && gs.activePlayers.includes(a.holder));
+    _sHolders.forEach(_sAdv => {
+      const _sHolder = _sAdv.holder;
+      if (!gs[setKey]) gs[setKey] = new Set();
+
+      const tribeName = gs.isMerged ? 'merge' : (gs.tribes.find(t => t.members.includes(_sHolder))?.name);
+      if (!tribeName || !ep.campEvents?.[tribeName]) return;
+
+      const tribeMembers = gs.isMerged
+        ? gs.activePlayers.filter(p => p !== _sHolder)
+        : (gs.tribes.find(t => t.members.includes(_sHolder))?.members || []).filter(p => p !== _sHolder);
+
+      // Skip if all tribemates already know
+      const _sUnaware = tribeMembers.filter(p => !gs[setKey].has(p));
+      if (!_sUnaware.length) return;
+
+      // Find snooper — proportional to intuition
+      const _sSnooper = _sUnaware.filter(p => Math.random() < pStats(p).intuition * chance)
+        .sort((a, b) => pStats(b).intuition - pStats(a).intuition)[0];
+      if (!_sSnooper) return;
+
+      gs[setKey].add(_sHolder);
+      const _sPr = pronouns(_sHolder);
+      const _sSnoopPr = pronouns(_sSnooper);
+      const _sSnoopLines = [
+        `${_sSnooper} noticed ${_sHolder} checking ${_sPr.posAdj} bag one too many times. Something's in there — and ${_sSnoopPr.sub} think${_sSnoopPr.sub === 'they' ? '' : 's'} it's a ${label}.`,
+        `${_sSnooper} caught a glimpse of something in ${_sHolder}'s things. ${_sSnoopPr.Sub} ${_sSnoopPr.sub === 'they' ? 'aren\'t' : 'isn\'t'} sure, but it looked like a ${label}. ${_sSnooper} is keeping that to ${_sSnoopPr.ref}.`,
+        `${_sSnooper} has been watching ${_sHolder}. The way ${_sPr.sub} ${_sPr.sub === 'they' ? 'move' : 'moves'} around camp changed a few days ago. ${_sSnooper} is almost certain ${_sHolder} has a ${label}.`,
+      ];
+
+      const campBlock = ep.campEvents[tribeName];
+      (Array.isArray(campBlock) ? campBlock : (campBlock.pre || [])).push({
+        type: evtType, players: [_sSnooper, _sHolder],
+        text: _sSnoopLines[Math.floor(Math.random() * _sSnoopLines.length)]
+      });
+    });
   });
 }
 
@@ -15244,9 +15348,11 @@ function generateCampEvents(ep, phase = 'both') {
   // ── Idol confession/betrayal + amulet events: probabilistic chain fired after pre events are built ──
   if (phase === 'pre' || phase === 'both') {
     checkIdolConfessions(ep);
+    checkTeamSwapConfessions(ep);
     checkSocialIntel(ep);
     checkSecondLifeAmuletEvents(ep);
     checkLegacyCampEvents(ep);
+    checkTacticalAdvantageSnoop(ep);
     checkHeroVillainEvents(ep);
     checkComfortBlindspot(ep);
   }

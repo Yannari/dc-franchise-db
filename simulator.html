@@ -30890,10 +30890,12 @@ function vpWhyBullets(name, votelog, alliances, ep) {
   _idolPlaysThisTribal.forEach(play => {
     const _vn = play.votesNegated || 0;
     if (_vn === 0) return; // idol wasted (0 votes negated) — don't claim it "changed everything"
+    const _idolTarget = play.playedFor || play.player; // who was saved (could be self or ally)
+    const _playedBySelf = _idolTarget === play.player;
     bullets.push(_pick([
-      `${play.player} played a Hidden Immunity Idol at Tribal — ${_vn} vote${_vn !== 1 ? 's' : ''} were cancelled, and the remaining tally fell on ${name}`,
-      `The idol changed everything. ${play.player} negated ${_vn} vote${_vn !== 1 ? 's' : ''}, redirecting the outcome entirely. ${name} had the next-highest count`,
-      `${_vn} vote${_vn !== 1 ? 's' : ''} for ${play.player} were wiped out by a played idol. ${name}'s ${majVoters.length} vote${majVoters.length !== 1 ? 's' : ''} became the plurality — and the boot`,
+      `${play.player} played a Hidden Immunity Idol${_playedBySelf ? '' : ` for ${_idolTarget}`} at Tribal — ${_vn} vote${_vn !== 1 ? 's' : ''} were cancelled, and the remaining tally fell on ${name}`,
+      `The idol changed everything. ${play.player} negated ${_vn} vote${_vn !== 1 ? 's' : ''} against ${_idolTarget}, redirecting the outcome entirely. ${name} had the next-highest count`,
+      `${_vn} vote${_vn !== 1 ? 's' : ''} for ${_idolTarget} were wiped out by ${play.player}'s idol. ${name}'s ${majVoters.length} vote${majVoters.length !== 1 ? 's' : ''} became the plurality — and the boot`,
     ]));
   });
   // Vote miscommunication impact: someone voted the wrong name and it may have changed the result

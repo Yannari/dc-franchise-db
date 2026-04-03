@@ -6916,7 +6916,11 @@ function checkShotInDark(tribalPlayers, votes, log, ep) {
   if (!sorted.length) return;
   const [target, voteCount] = sorted[0];
   if (voteCount < 2) return; // only desperate players risk it
-  if (ep.idolPlays?.some(p => p.player === target || p.playedFor === target)) return; // already played an idol (self or for ally)
+  // Don't play SITD if you have an idol (you'd play that instead — it's strictly better)
+  const _sitdHasIdol = gs.advantages.some(a => a.holder === target && (a.type === 'idol' || (a.type === 'amulet' && a.amuletPower === 'idol')));
+  if (_sitdHasIdol) return;
+  // Don't play SITD if someone already played an idol for you this tribal
+  if (ep.idolPlays?.some(p => p.playedFor === target)) return;
   if (ep.shotInDark?.player === target) return; // already played SitD this episode — can't play again in vote 2
   const s = pStats(target);
   const eavBonus = gs.playerStates[target]?.eavesdropBoostThisEp ? 0.10 + s.intuition * 0.01 : 0;
@@ -7920,6 +7924,8 @@ function checkIdolPlays(tribalPlayers, votesObj, ep, voteLog = []) {
   const sorted = Object.entries(votesObj).sort(([,a],[,b]) => b - a);
   for (const [name, voteCount] of sorted) {
     if (_idolPlayedThisTribal.has(name)) continue; // already played an idol this tribal
+    // Skip if already protected by someone else's idol play (don't waste your own)
+    if (ep.idolPlays.some(p => p.playedFor === name && (p.votesNegated || 0) > 0)) continue;
     const idolIdx = gs.advantages.findIndex(a => a.holder === name && !a.superIdol && (a.type === 'idol' || (a.type === 'amulet' && a.amuletPower === 'idol')));
     if (idolIdx === -1) continue;
     const _idolAdv = gs.advantages[idolIdx];

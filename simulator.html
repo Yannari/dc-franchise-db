@@ -16559,6 +16559,15 @@ function simulateEpisode() {
       });
       ep.bewareLostVotes = [];
     }
+    // Team Swap: useless post-merge (can't swap tribes), auto-remove
+    const _tsRemoved = gs.advantages.filter(a => a.type === 'teamSwap');
+    if (_tsRemoved.length) {
+      _tsRemoved.forEach(a => {
+        gs.advantages.splice(gs.advantages.indexOf(a), 1);
+        gs.knownTeamSwapHolders?.delete(a.holder);
+      });
+      ep.teamSwapExpiredAtMerge = _tsRemoved.map(a => a.holder);
+    }
   }
 
   // ── NO TRIBAL — flag only; the episode runs normally (challenge, camp, etc.)

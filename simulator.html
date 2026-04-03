@@ -9926,7 +9926,7 @@ function applyTwist(ep, twist, isPrimary = true) {
         const _listener = _leaker === a ? b : a;
         const _listenerS = _leaker === a ? sB : sA;
         // Check if leaker has an advantage to leak about
-        const _leakerAdv = gs.advantages.find(adv => adv.holder === _leaker && ['idol', 'legacy', 'amulet', 'secondLife', 'teamSwap', 'voteBlock', 'voteSteal'].includes(adv.type));
+        const _leakerAdv = gs.advantages.find(adv => adv.holder === _leaker && ['idol', 'legacy', 'amulet', 'secondLife', 'teamSwap', 'voteBlock', 'voteSteal', 'safetyNoPower'].includes(adv.type));
         if (_leakerAdv) {
           if (['teamSwap'].includes(_leakerAdv.type)) {
             if (!gs.knownTeamSwapHolders) gs.knownTeamSwapHolders = new Set();
@@ -9937,13 +9937,16 @@ function applyTwist(ep, twist, isPrimary = true) {
           } else if (['voteSteal'].includes(_leakerAdv.type)) {
             if (!gs.knownVoteStealHolders) gs.knownVoteStealHolders = new Set();
             gs.knownVoteStealHolders.add(_leaker);
+          } else if (['safetyNoPower'].includes(_leakerAdv.type)) {
+            if (!gs.knownSafetyNoPowerHolders) gs.knownSafetyNoPowerHolders = new Set();
+            gs.knownSafetyNoPowerHolders.add(_leaker);
           } else {
             if (!gs.knownIdolHoldersThisEp) gs.knownIdolHoldersThisEp = new Set();
             gs.knownIdolHoldersThisEp.add(_leaker);
             if (!gs.knownIdolHoldersPersistent) gs.knownIdolHoldersPersistent = new Set();
             gs.knownIdolHoldersPersistent.add(_leaker);
           }
-          const _advLabel = _leakerAdv.type === 'idol' ? 'Hidden Immunity Idol' : _leakerAdv.type === 'legacy' ? 'Legacy Advantage' : _leakerAdv.type === 'amulet' ? 'Amulet' : _leakerAdv.type === 'secondLife' ? 'Second Life Amulet' : _leakerAdv.type === 'teamSwap' ? 'Team Swap' : _leakerAdv.type === 'voteBlock' ? 'Vote Block' : _leakerAdv.type === 'voteSteal' ? 'Vote Steal' : 'advantage';
+          const _advLabel = _leakerAdv.type === 'idol' ? 'Hidden Immunity Idol' : _leakerAdv.type === 'legacy' ? 'Legacy Advantage' : _leakerAdv.type === 'amulet' ? 'Amulet' : _leakerAdv.type === 'secondLife' ? 'Second Life Amulet' : _leakerAdv.type === 'teamSwap' ? 'Team Swap' : _leakerAdv.type === 'voteBlock' ? 'Vote Block' : _leakerAdv.type === 'voteSteal' ? 'Vote Steal' : _leakerAdv.type === 'safetyNoPower' ? 'Safety Without Power' : 'advantage';
           const _lkPr = pronouns(_leaker);
           ep.feastEvents.push({ type, players: [_leaker, _listener], text: _pick([
             `${_leaker} got too comfortable at the ${_feastLabel}. ${_listener} noticed the way ${_lkPr.sub} touched ${_lkPr.posAdj} bag. By the end of the meal, ${_listener} is certain: ${_leaker} has a ${_advLabel}. That secret is out.`,
@@ -14385,6 +14388,48 @@ function checkTeamSwapConfessions(ep) {
   });
 }
 
+function checkSafetyNoPowerConfessions(ep) {
+  const holders = (gs.advantages || []).filter(a => a.type === 'safetyNoPower' && gs.activePlayers.includes(a.holder));
+  if (!holders.length || !ep.campEvents) return;
+  if (!gs.knownSafetyNoPowerHolders) gs.knownSafetyNoPowerHolders = new Set();
+
+  holders.forEach(adv => {
+    const holder = adv.holder;
+    const s = pStats(holder);
+    const confChance = s.social * 0.03;
+    if (Math.random() >= confChance) return;
+
+    const tribeMembers = gs.isMerged
+      ? gs.activePlayers.filter(p => p !== holder)
+      : (gs.tribes.find(t => t.members.includes(holder))?.members || []).filter(p => p !== holder);
+    const allies = tribeMembers
+      .map(p => ({ name: p, bond: getBond(holder, p) }))
+      .filter(x => x.bond >= 2)
+      .sort((a, b) => b.bond - a.bond);
+    if (!allies.length) return;
+
+    const confidant = allies[0].name;
+    gs.knownSafetyNoPowerHolders.add(holder);
+    addBond(holder, confidant, 0.3);
+
+    const _pr = pronouns(holder);
+    const confLines = [
+      `${holder} pulled ${confidant} aside. "I found something. If things go bad, I can leave tribal. Just... walk out." ${confidant} stared. "And your vote?" ${holder} shrugged. "Gone."`,
+      `${holder} told ${confidant} about the Safety Without Power. An escape route — but it means abandoning the vote. ${confidant} didn't say much. The weight of it sat between them.`,
+      `In a quiet moment, ${holder} confided in ${confidant}. "I have a way out. But if I use it, you're on your own at tribal." ${confidant} nodded slowly. That kind of honesty costs something.`,
+    ];
+    const _seed = [...(holder+confidant)].reduce((s, c) => s + c.charCodeAt(0), 0);
+    const confEvt = { type: 'safetyNoPowerConfession', players: [holder, confidant],
+      text: confLines[_seed % confLines.length] };
+
+    const tribeName = gs.isMerged ? 'merge' : (gs.tribes.find(t => t.members.includes(holder))?.name);
+    if (tribeName && ep.campEvents?.[tribeName]) {
+      const campBlock = ep.campEvents[tribeName];
+      (Array.isArray(campBlock) ? campBlock : (campBlock.pre || [])).push(confEvt);
+    }
+  });
+}
+
 // ── Social intel gathering: social butterflies learn things through conversation, not sneaking ──
 function checkSocialIntel(ep) {
   if (!ep.campEvents) return;
@@ -14670,6 +14715,7 @@ function checkTacticalAdvantageSnoop(ep) {
     { type: 'teamSwap', setKey: 'knownTeamSwapHolders', chance: 0.02, evtType: 'teamSwapSnooped', label: 'Team Swap' },
     { type: 'voteBlock', setKey: 'knownVoteBlockHolders', chance: 0.015, evtType: 'voteBlockSnooped', label: 'Vote Block' },
     { type: 'voteSteal', setKey: 'knownVoteStealHolders', chance: 0.015, evtType: 'voteStealSnooped', label: 'Vote Steal' },
+    { type: 'safetyNoPower', setKey: 'knownSafetyNoPowerHolders', chance: 0.02, evtType: 'safetyNoPowerSnooped', label: 'Safety Without Power' },
   ];
 
   _snoopTypes.forEach(({ type: _sType, setKey, chance, evtType, label }) => {
@@ -15385,6 +15431,7 @@ function generateCampEvents(ep, phase = 'both') {
   if (phase === 'pre' || phase === 'both') {
     checkIdolConfessions(ep);
     checkTeamSwapConfessions(ep);
+    checkSafetyNoPowerConfessions(ep);
     checkSocialIntel(ep);
     checkSecondLifeAmuletEvents(ep);
     checkLegacyCampEvents(ep);

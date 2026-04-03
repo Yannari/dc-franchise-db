@@ -1022,6 +1022,28 @@
             </div>
 
             <div class="accordion">
+              <div class="accordion-header" onclick="toggleAccordion('exile')">
+                <span>Exile Island Format</span>
+                <span class="accordion-chevron" id="acc-chevron-exile">▼</span>
+              </div>
+              <div class="accordion-body" id="acc-body-exile" style="display:none">
+                <label class="acc-check-row">
+                  <input type="checkbox" id="cfg-exile" onchange="const s=document.getElementById('exile-phase-row');if(s)s.style.display=this.checked?'':'none';saveConfig()">
+                  <span>Enable Exile Island</span>
+                </label>
+                <p class="acc-desc">Each episode, the winning tribe sends one member of the losing tribe to Exile Island to search for advantages. The exiled player returns for tribal — they are NOT safe.</p>
+                <div id="exile-phase-row" style="display:none;margin-top:8px">
+                  <label style="font-size:11px;color:#8b949e">Active during</label>
+                  <select id="cfg-exile-phase" class="form-select" style="font-size:11px;padding:2px 6px;width:auto;margin-left:6px" onchange="saveConfig()">
+                    <option value="pre">Pre-Merge Only</option>
+                    <option value="post">Post-Merge Only</option>
+                    <option value="both" selected>Both</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="accordion">
               <div class="accordion-header" onclick="toggleAccordion('fan')">
                 <span>Fan Decided Format</span>
                 <span class="accordion-chevron" id="acc-chevron-fan">▼</span>
@@ -1461,19 +1483,20 @@ const REL_TYPES = {
   unbreakable: { label: 'Unbreakable \u2605', color: '#10b981', bond: 10, bg: 'rgba(16,185,129,0.12)' },
 };
 const ADVANTAGES = [
-  { key: 'idol',      label: 'Hidden Immunity Idol', default: 2 },
-  { key: 'beware',    label: 'Beware Advantage',     default: 0 },
-  { key: 'voteSteal', label: 'Vote Steal',           default: 1 },
-  { key: 'extraVote', label: 'Extra Vote',            default: 1 },
-  { key: 'kip',       label: 'Knowledge is Power',   default: 0 },
-  { key: 'legacy',    label: 'Legacy Advantage',     default: 0 },
-  { key: 'amulet',    label: 'Amulet Advantage',     default: 0 },
-  { key: 'secondLife', label: 'Second Life Amulet',  default: 0 },
-  { key: 'teamSwap',   label: 'Team Swap',            default: 0 },
-  { key: 'voteBlock',  label: 'Vote Block',           default: 0 },
-  { key: 'safetyNoPower', label: 'Safety Without Power', default: 0 },
-  { key: 'soleVote', label: 'Sole Vote', default: 0 },
+  { key: 'idol',      label: 'Hidden Immunity Idol', default: 2, defaultSources: ['camp'] },
+  { key: 'beware',    label: 'Beware Advantage',     default: 0, defaultSources: ['camp'] },
+  { key: 'voteSteal', label: 'Vote Steal',           default: 1, defaultSources: ['camp','journey','auction','exile'] },
+  { key: 'extraVote', label: 'Extra Vote',            default: 1, defaultSources: ['camp','journey','auction','exile'] },
+  { key: 'kip',       label: 'Knowledge is Power',   default: 0, defaultSources: ['camp'] },
+  { key: 'legacy',    label: 'Legacy Advantage',     default: 0, defaultSources: ['camp'] },
+  { key: 'amulet',    label: 'Amulet Advantage',     default: 0, defaultSources: [] },
+  { key: 'secondLife', label: 'Second Life Amulet',  default: 0, defaultSources: ['camp','auction','exile'] },
+  { key: 'teamSwap',   label: 'Team Swap',            default: 0, defaultSources: ['camp'] },
+  { key: 'voteBlock',  label: 'Vote Block',           default: 0, defaultSources: ['camp','journey','auction','exile'] },
+  { key: 'safetyNoPower', label: 'Safety Without Power', default: 0, defaultSources: ['journey','auction','exile'] },
+  { key: 'soleVote', label: 'Sole Vote', default: 0, defaultSources: ['journey','auction','exile'] },
 ];
+const ADV_SOURCE_LABELS = { camp: '🏕️ Camp', journey: '🗺️ Journey', auction: '💰 Auction', exile: '🏝️ Exile' };
 
 const TWIST_CATALOG = [
   // Team Dynamics
@@ -2292,8 +2315,15 @@ function renderCard(p) {
 function buildAdvantageList() {
   // idol is handled by the Hidden Immunity Idol accordion above — only render other advantages here
   const advToList = ADVANTAGES.filter(a => a.key !== 'idol');
-  document.getElementById('adv-list').innerHTML = advToList.map(a => `
-    <div class="adv-row">
+  document.getElementById('adv-list').innerHTML = advToList.map(a => {
+    const hasSources = a.defaultSources && a.defaultSources.length > 0;
+    const srcHtml = hasSources ? `<div id="adv-sources-${a.key}" class="adv-sources" style="display:${a.default>0?'flex':'none'};gap:4px;margin:2px 0 4px 24px;flex-wrap:wrap">
+      ${Object.entries(ADV_SOURCE_LABELS).map(([src, lbl]) => `<label style="font-size:10px;color:var(--muted);display:flex;align-items:center;gap:2px;cursor:pointer;padding:1px 5px;border-radius:3px;border:1px solid var(--border);background:var(--surface2)">
+        <input type="checkbox" id="adv-src-${a.key}-${src}" style="width:11px;height:11px" ${(a.defaultSources||[]).includes(src)?'checked':''} onchange="saveConfig()">
+        <span>${lbl}</span>
+      </label>`).join('')}
+    </div>` : '';
+    return `<div class="adv-row">
       <input type="checkbox" id="adv-${a.key}" class="adv-check" ${a.default>0?'checked':''} onchange="toggleAdv('${a.key}')">
       <span style="flex:1;font-size:13px;color:#e2e8f0;cursor:pointer" onclick="document.getElementById('adv-${a.key}').click()">${a.label}</span>
       <select id="adv-onceper-${a.key}" class="adv-onceper" style="font-size:10px;padding:1px 4px;background:var(--surface2);color:var(--muted);border:1px solid var(--border);border-radius:3px;margin-right:4px" ${a.default===0?'disabled':''} onchange="saveConfig()">
@@ -2303,6 +2333,7 @@ function buildAdvantageList() {
       </select>
       <input type="number" id="adv-count-${a.key}" class="adv-count" min="0" max="9" value="${a.default}" ${a.default===0?'disabled':''} oninput="saveConfig()">
     </div>
+    ${srcHtml}
     ${a.key === 'legacy' ? `<div id="legacy-settings" style="display:none;margin:4px 0 8px 24px">
       <label style="font-size:11px;color:#8b949e">Activates at</label>
       <select id="cfg-legacy-activates" class="form-select" style="font-size:11px;padding:2px 6px;width:auto;margin-left:6px" onchange="saveConfig()">
@@ -2311,7 +2342,8 @@ function buildAdvantageList() {
         <option value="7">Final 7</option>
         <option value="13,6">Final 13 + Final 6</option>
       </select>
-    </div>` : ''}`).join('');
+    </div>` : ''}`;
+  }).join('');
 }
 function toggleAdv(key) {
   const checked = document.getElementById('adv-'+key).checked;
@@ -2320,6 +2352,9 @@ function toggleAdv(key) {
   if (!checked) countEl.value=0; else if (!parseInt(countEl.value)) countEl.value=1;
   const oncePerEl = document.getElementById('adv-onceper-'+key);
   if (oncePerEl) oncePerEl.disabled = !checked;
+  // Show/hide source toggles
+  const srcEl = document.getElementById('adv-sources-'+key);
+  if (srcEl) srcEl.style.display = checked ? 'flex' : 'none';
   // Show/hide legacy-specific settings
   if (key === 'legacy') {
     const legSet = document.getElementById('legacy-settings');
@@ -2370,6 +2405,8 @@ function saveConfig() {
     riReturnPoints: parseInt(g('cfg-ri-return-points')?.value) || 1,
     riSecondReturnAt: parseInt(g('cfg-ri-second-return')?.value) || 5,
     journey:     g('cfg-journey')?.checked || false,
+    exile:       g('cfg-exile')?.checked || false,
+    exilePhase:  g('cfg-exile-phase')?.value || 'both',
     shotInDark:  g('cfg-sid')?.checked || false,
     blackVote:   g('cfg-black-vote')?.value || 'off',
     firemaking:  (g('cfg-finale-format')?.value === 'fire-making') || false,
@@ -2389,7 +2426,8 @@ function saveConfig() {
         return [a.key, { enabled: en ? en.checked : false, count: ct ? parseInt(ct.value)||0 : 0 }];
       }
       const en = g('adv-' + a.key), ct = g('adv-count-' + a.key), op = g('adv-onceper-' + a.key);
-      return [a.key, { enabled: en ? en.checked : false, count: ct ? parseInt(ct.value)||0 : 0, oncePer: op?.value || '' }];
+      const sources = Object.keys(ADV_SOURCE_LABELS).filter(src => g('adv-src-' + a.key + '-' + src)?.checked);
+      return [a.key, { enabled: en ? en.checked : false, count: ct ? parseInt(ct.value)||0 : 0, oncePer: op?.value || '', sources }];
     })),
     legacyActivatesAt: (g('cfg-legacy-activates')?.value || '5').split(',').map(Number),
     twistSchedule: seasonConfig.twistSchedule || [],
@@ -2432,6 +2470,10 @@ function renderConfig() {
   set('cfg-ri-second-return', seasonConfig.riSecondReturnAt || 5);
   if (g('ri-settings')) g('ri-settings').style.display = seasonConfig.ri ? 'flex' : 'none';
   chk('cfg-journey',   seasonConfig.journey || false);
+  chk('cfg-exile', seasonConfig.exile || false);
+  set('cfg-exile-phase', seasonConfig.exilePhase || 'both');
+  const _exilePhaseRow = g('exile-phase-row');
+  if (_exilePhaseRow) _exilePhaseRow.style.display = seasonConfig.exile ? '' : 'none';
   chk('cfg-sid',       seasonConfig.shotInDark || false);
   set('cfg-black-vote', seasonConfig.blackVote || 'off');
   // Apply finaleFormat lock on render (fire-making and koh-lanta force F4)
@@ -2491,6 +2533,14 @@ function renderConfig() {
     if (ct) { ct.value = adv.count; ct.disabled = !adv.enabled; }
     const op = g('adv-onceper-'+a.key);
     if (op) { op.value = adv.oncePer || ''; op.disabled = !adv.enabled; }
+    // Source toggles
+    const srcEl = g('adv-sources-'+a.key);
+    if (srcEl) srcEl.style.display = adv.enabled ? 'flex' : 'none';
+    const sources = adv.sources || a.defaultSources || [];
+    Object.keys(ADV_SOURCE_LABELS).forEach(src => {
+      const cb = g('adv-src-' + a.key + '-' + src);
+      if (cb) cb.checked = sources.includes(src);
+    });
   });
   // Legacy settings
   const legSet = g('legacy-settings');
@@ -7594,19 +7644,21 @@ function findAdvantages(ep) {
   }
 
   // ── NON-IDOL ADVANTAGES (found at camp via hidden notes/clues) ──
-  // Each type has its own rate and game-phase requirement.
-  const nonIdolTypes = [
-    { key: 'extraVote',  postMergeOnly: false, baseChance: 0.003, epScaleCap: 0.012 },
-    { key: 'voteSteal',  postMergeOnly: false, baseChance: 0.002, epScaleCap: 0.010 },
-    // legacy removed from random finding — guaranteed early via dedicated handler above
-    { key: 'kip',        postMergeOnly: true,  baseChance: 0.004, epScaleCap: 0.010 },
-    // amulet removed from random finding — planted simultaneously in ep 1 via special handler above
-    { key: 'secondLife', postMergeOnly: false, baseChance: 0.001, epScaleCap: 0.005 },
-    { key: 'teamSwap',   postMergeOnly: false, baseChance: 0.002, epScaleCap: 0.008 },  // pre-merge only useful but can be found anytime
-    { key: 'voteBlock',  postMergeOnly: false, baseChance: 0.002, epScaleCap: 0.010 },
+  // Each type has its own rate and game-phase requirement. Only included if 'camp' is in sources.
+  const _campAdvTypes = [
+    { key: 'extraVote',    postMergeOnly: false, baseChance: 0.003, epScaleCap: 0.012 },
+    { key: 'voteSteal',    postMergeOnly: false, baseChance: 0.002, epScaleCap: 0.010 },
+    { key: 'kip',          postMergeOnly: true,  baseChance: 0.004, epScaleCap: 0.010 },
+    { key: 'secondLife',   postMergeOnly: false, baseChance: 0.001, epScaleCap: 0.005 },
+    { key: 'teamSwap',     postMergeOnly: false, baseChance: 0.002, epScaleCap: 0.008 },
+    { key: 'voteBlock',    postMergeOnly: false, baseChance: 0.002, epScaleCap: 0.010 },
     { key: 'safetyNoPower', postMergeOnly: false, baseChance: 0.001, epScaleCap: 0.005 },
-    { key: 'soleVote', postMergeOnly: false, baseChance: 0.001, epScaleCap: 0.005 },
+    { key: 'soleVote',     postMergeOnly: false, baseChance: 0.001, epScaleCap: 0.005 },
   ];
+  const nonIdolTypes = _campAdvTypes.filter(({ key }) => {
+    const src = cfg.advantages?.[key]?.sources || ADVANTAGES.find(a => a.key === key)?.defaultSources || [];
+    return src.includes('camp');
+  });
 
   const _advFoundThisEp = new Set(); // prevent one player finding multiple advantages per episode
   nonIdolTypes.forEach(({ key, postMergeOnly, baseChance, epScaleCap }) => {
@@ -7659,7 +7711,10 @@ function findAdvantages(ep) {
             `${name} was searching near the shelter when ${_discPr.sub} found a ${_discLabel}. Not flashy, but tactical. ${_discPr.Sub} ${_discPr.sub === 'they' ? 'know' : 'knows'} exactly when to use it.`,
           ];
           const _discTribe = _advTribe;
-          if (_discTribe && ep.campEvents?.[_discTribe]) {
+          // Ensure campEvents structure exists (findAdvantages runs before generateCampEvents)
+          if (!ep.campEvents) ep.campEvents = {};
+          if (_discTribe && !ep.campEvents[_discTribe]) ep.campEvents[_discTribe] = { pre: [], post: [] };
+          if (_discTribe && ep.campEvents[_discTribe]) {
             const _discBlock = ep.campEvents[_discTribe];
             (Array.isArray(_discBlock) ? _discBlock : (_discBlock.pre || [])).push({
               type: key + 'Found', players: [name],
@@ -8418,7 +8473,7 @@ function checkNonIdolAdvantageUse(tribalPlayers, votesObj, ep, voteLog = []) {
     const _svActualVotes = votesObj[_svHolder] || 0;
     const _svEffectiveHeat = _svHeat + _svActualVotes * 0.5;
     const _svForcePlay = ep._forceAdvantages || gs.activePlayers.length <= (seasonConfig.advExpire || 4);
-    const _svPlayChance = _svForcePlay ? 1.0 : _svEffectiveHeat * (0.05 + _svS.strategic * 0.005) + _svS.boldness * 0.02;
+    const _svPlayChance = _svForcePlay ? 1.0 : _svEffectiveHeat * (0.08 + _svS.strategic * 0.008) + _svS.boldness * 0.005;
     if (Math.random() >= _svPlayChance) continue;
 
     // Silence every other player's vote
@@ -8611,7 +8666,10 @@ function simulateJourney(ep) {
     if (tc.oncePer === 'phase' && (gs.advantagesFoundThisPhase?.[type] || 0) >= max) return false;
     return true;
   };
-  ['extraVote', 'voteSteal', 'voteBlock'].forEach(t => { if (_canSpawn(t)) advPool.push(t); });
+  ['extraVote', 'voteSteal', 'voteBlock', 'safetyNoPower', 'soleVote'].forEach(t => {
+    const _src = cfg.advantages?.[t]?.sources || ADVANTAGES.find(a => a.key === t)?.defaultSources || [];
+    if (_src.includes('journey') && _canSpawn(t)) advPool.push(t);
+  });
 
   const jChal = JOURNEY_CHALLENGES[Math.floor(Math.random() * JOURNEY_CHALLENGES.length)];
 
@@ -9807,7 +9865,9 @@ function applyTwist(ep, twist, isPrimary = true) {
       if (item.blind) {
         // Revealed when opened
         if (item.id === 'advantage') {
-          const advTypes = ['extraVote','voteSteal','voteBlock'].filter(t => {
+          const advTypes = ['extraVote','voteSteal','voteBlock','safetyNoPower','soleVote'].filter(t => {
+            const _src = seasonConfig.advantages?.[t]?.sources || ADVANTAGES.find(a => a.key === t)?.defaultSources || [];
+            if (!_src.includes('auction')) return false;
             const tc = seasonConfig.advantages?.[t];
             if (!tc?.enabled) return false;
             const max = tc.count || 1;
@@ -15255,7 +15315,7 @@ function generateCampEvents(ep, phase = 'both') {
   // ── PRE-CHALLENGE phase: initialize structure, fill pre events ──
   if (phase === 'pre' || phase === 'both') {
     if (gs.phase === 'pre-merge' && gs.tribes.length > 0) {
-      ep.campEvents = {};
+      if (!ep.campEvents) ep.campEvents = {};
       gs.tribes.forEach(tribe => {
         const present = getGroupPresent(tribe);
         const total = totalForGroup(present);
@@ -15268,7 +15328,8 @@ function generateCampEvents(ep, phase = 'both') {
         // Prepend gift return narrative as the first camp event for this tribe
         if (ep.giftNarrativeEvents?.[tribe.name]) preEvents.unshift(ep.giftNarrativeEvents[tribe.name]);
         if (ep.twistNarrativeEvents?.[tribe.name]) preEvents.unshift(ep.twistNarrativeEvents[tribe.name]);
-        ep.campEvents[tribe.name] = { pre: preEvents, post: [] };
+        const _existingPre = ep.campEvents[tribe.name]?.pre || [];
+        ep.campEvents[tribe.name] = { pre: [..._existingPre, ...preEvents], post: [] };
 
         // ── PRE-MERGE SPECIFIC EVENTS: drama unique to small tribal camps ──
         const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
@@ -15412,7 +15473,9 @@ function generateCampEvents(ep, phase = 'both') {
       const preCount = phase === 'both' ? total : Math.ceil(total / 2);
       const mergePreEvents = generateCampEventsForGroup(gs.activePlayers, idolFinds, boosts, preCount);
       if (ep.twistNarrativeEvents?.['merge']) mergePreEvents.unshift(ep.twistNarrativeEvents['merge']);
-      ep.campEvents = { merge: { pre: mergePreEvents, post: [] } };
+      if (!ep.campEvents) ep.campEvents = {};
+      const _existingMergePre = ep.campEvents.merge?.pre || [];
+      ep.campEvents.merge = { pre: [..._existingMergePre, ...mergePreEvents], post: [] };
     }
   }
 
@@ -17657,6 +17720,7 @@ function simulateEpisode() {
     const _intMod = eS.intuition * 0.01;
     const _exileTwObj = (ep.twists||[]).find(t => t.type === 'exile-island');
     const _hasIdol = gs.advantages.some(a => a.holder === exiled && a.type === 'idol');
+    const _exileSrc = type => (cfg.advantages?.[type]?.sources || ADVANTAGES.find(a => a.key === type)?.defaultSources || []).includes('exile');
     const _roll = Math.random();
 
     if (!_hasIdol && cfg.advantages?.idol?.enabled && _roll < 0.12 + _intMod) {
@@ -17664,17 +17728,31 @@ function simulateEpisode() {
       gs.advantages.push({ holder: exiled, type: 'idol', foundEp: epNum });
       ep.idolFinds.push({ finder: exiled, location: 'Exile Island' });
       if (_exileTwObj) _exileTwObj.exileFound = { type: 'idol', label: 'Hidden Immunity Idol' };
-    } else if (cfg.advantages?.secondLife?.enabled
+    } else if (cfg.advantages?.secondLife?.enabled && _exileSrc('secondLife')
       && !gs.advantages.some(a => a.type === 'secondLife')
       && _roll < 0.16 + _intMod) {
       // ~4-6% window — Second Life Amulet (rare)
       gs.advantages.push({ holder: exiled, type: 'secondLife', foundEp: epNum });
       ep.idolFinds.push({ finder: exiled, type: 'secondLife', location: 'Exile Island' });
       if (_exileTwObj) _exileTwObj.exileFound = { type: 'secondLife', label: 'Second Life Amulet' };
-    } else if (cfg.advantages?.extraVote?.enabled
+    } else if (cfg.advantages?.safetyNoPower?.enabled && _exileSrc('safetyNoPower')
+      && gs.advantages.filter(a => a.type === 'safetyNoPower').length < (cfg.advantages.safetyNoPower.count || 1)
+      && _roll < 0.19 + _intMod) {
+      // ~3-5% window — Safety Without Power (rare)
+      gs.advantages.push({ holder: exiled, type: 'safetyNoPower', foundEp: epNum });
+      ep.idolFinds.push({ finder: exiled, type: 'safetyNoPower', location: 'Exile Island' });
+      if (_exileTwObj) _exileTwObj.exileFound = { type: 'safetyNoPower', label: 'Safety Without Power' };
+    } else if (cfg.advantages?.soleVote?.enabled && _exileSrc('soleVote')
+      && gs.advantages.filter(a => a.type === 'soleVote').length < (cfg.advantages.soleVote.count || 1)
+      && _roll < 0.22 + _intMod) {
+      // ~3-5% window — Sole Vote (rare)
+      gs.advantages.push({ holder: exiled, type: 'soleVote', foundEp: epNum });
+      ep.idolFinds.push({ finder: exiled, type: 'soleVote', location: 'Exile Island' });
+      if (_exileTwObj) _exileTwObj.exileFound = { type: 'soleVote', label: 'Sole Vote' };
+    } else if (cfg.advantages?.extraVote?.enabled && _exileSrc('extraVote')
       && gs.advantages.filter(a => a.type === 'extraVote').length < (cfg.advantages.extraVote.count || 1)
       && _roll < 0.30 + _intMod) {
-      // ~14-24% window — Extra Vote
+      // ~8-18% window — Extra Vote
       gs.advantages.push({ holder: exiled, type: 'extraVote', foundEp: epNum });
       if (_exileTwObj) _exileTwObj.exileFound = { type: 'extraVote', label: 'Extra Vote' };
     } else if (cfg.advantages?.idol?.enabled && _roll < 0.45 + _intMod) {
@@ -18464,6 +18542,14 @@ function simulateEpisode() {
 
     // All votes cancelled by idols — treat all non-immune players as tied
     if (res.allVotesCancelled) {
+      // If Sole Vote caused this (idol cancelled the sole vote), restore everyone's voting rights for the revote
+      const _svPlay = (ep.idolPlays || []).find(p => p.type === 'soleVote');
+      if (_svPlay?.silencedPlayers?.length) {
+        _svPlay.silencedPlayers.forEach(p => {
+          const idx = gs.lostVotes.indexOf(p);
+          if (idx >= 0) gs.lostVotes.splice(idx, 1);
+        });
+      }
       const _nonImmune = tribalPlayers.filter(p => !isTribalImmune(p));
       res.tiedPlayers = _nonImmune;
       // Skip straight to tiebreaker (revote would just repeat the same deadlock)
@@ -21451,6 +21537,8 @@ function generateSummaryText(ep) {
         if (_exF?.type === 'idol') ln(`${tw.exiled} searches Exile Island and finds a Hidden Immunity Idol.`);
         else if (_exF?.type === 'secondLife') ln(`${tw.exiled} searches Exile Island and finds the Second Life Amulet.`);
         else if (_exF?.type === 'extraVote') ln(`${tw.exiled} searches Exile Island and finds an Extra Vote.`);
+        else if (_exF?.type === 'safetyNoPower') ln(`${tw.exiled} searches Exile Island and finds a Safety Without Power.`);
+        else if (_exF?.type === 'soleVote') ln(`${tw.exiled} searches Exile Island and finds a Sole Vote.`);
         else if (_exF?.type === 'clue') ln(`${tw.exiled} searches Exile Island and finds an Idol Clue.`);
         else ln(`${tw.exiled} searches Exile Island but finds nothing.`);
       }
@@ -22287,7 +22375,12 @@ function generateSummaryText(ep) {
     if (es.social >= 8 && gs.phase !== 'pre-merge') ln(`- Jury threat: ${name} had built genuine relationships that would translate directly into votes at Final Tribal`);
 
     // Vote breakdown
-    if (majVoters.length >= 2) ln(`- Voted out by: ${majVoters.join(', ')}`);
+    const _txtSoleVote = (ep.idolPlays || []).find(p => p.type === 'soleVote');
+    if (_txtSoleVote) {
+      ln(`- ${_txtSoleVote.player}'s Sole Vote was the only vote that counted — every other voice at tribal was silenced`);
+    } else if (majVoters.length >= 2) {
+      ln(`- Voted out by: ${majVoters.join(', ')}`);
+    }
     if (betrayedByAlly) {
       const traitors = majVoters.filter(v => hadAlly.members.includes(v));
       // Check whether the eliminated player is actually a member of this named alliance
@@ -30147,9 +30240,12 @@ function rpBuildVotingPlans(ep) {
   const _journeyLosers = new Set((ep.journey?.results || []).filter(r => r.result === 'lostVote').map(r => r.name));
   const _prevSnap2 = gs.episodeHistory?.find(h => h.num === ep.num - 1)?.gsSnapshot;
   const _carriedJourney = new Set((_prevSnap2?.journeyLostVotes || []).filter(n => tribalPlayers.includes(n)));
-  const _snapLostVotes = new Set((_snap.lostVotes || []).filter(n => tribalPlayers.includes(n)));
+  // Sole Vote silenced players should NOT appear as "No Vote" — that spoils the Sole Vote reveal
+  const _soleVoteSilenced = new Set((ep.idolPlays || []).find(p => p.type === 'soleVote')?.silencedPlayers || []);
+  const _snapLostVotes = new Set((_snap.lostVotes || []).filter(n => tribalPlayers.includes(n) && !_soleVoteSilenced.has(n)));
   const _vpLostVotes = tribalPlayers.filter(name => {
     if (_allImmuneVP.includes(name)) return false;
+    if (_soleVoteSilenced.has(name)) return false;
     return _bewareLosers.has(name) || _journeyLosers.has(name) || _carriedJourney.has(name) || _snapLostVotes.has(name);
   });
   const _vpLostVoteSet = new Set(_vpLostVotes);
@@ -31322,11 +31418,17 @@ function vpWhyBullets(name, votelog, alliances, ep) {
     }
   });
 
-  if (majVoters.length) bullets.push(_pick([
-    `The votes that counted: ${majVoters.join(', ')}`,
-    `${majVoters.length === 1 ? `${majVoters[0]} cast the deciding vote` : `${majVoters.slice(0,-1).join(', ')} and ${majVoters.at(-1)} wrote the name that stuck`}`,
-    `${majVoters.join(', ')} — that's who put ${name} on the jury`,
-  ]));
+  // Sole Vote: only the holder's vote counted — override the "votes that counted" line
+  const _whySoleVote = (ep.idolPlays || []).find(p => p.type === 'soleVote');
+  if (_whySoleVote) {
+    bullets.push(`${_whySoleVote.player}'s Sole Vote was the only vote that mattered — every other voice at tribal was silenced`);
+  } else if (majVoters.length) {
+    bullets.push(_pick([
+      `The votes that counted: ${majVoters.join(', ')}`,
+      `${majVoters.length === 1 ? `${majVoters[0]} cast the deciding vote` : `${majVoters.slice(0,-1).join(', ')} and ${majVoters.at(-1)} wrote the name that stuck`}`,
+      `${majVoters.join(', ')} — that's who put ${name} on the jury`,
+    ]));
+  }
   if (betrayed) {
     majVoters.filter(v => hadAlly.members.includes(v)).forEach(traitor => {
       const bv = getBond(traitor, name);
@@ -37428,6 +37530,10 @@ function buildVPScreens(epRecord) {
       _exHtml += _renderTwistScene({ text: `${_tw.exiled} searched the island — and found the Second Life Amulet buried under a rock. If ${pronouns(_tw.exiled).sub} ${pronouns(_tw.exiled).sub==='they'?'get':'gets'} voted out, ${pronouns(_tw.exiled).sub} can fight to stay.`, players: [_tw.exiled], badge: 'Second Life Amulet', badgeClass: 'win' });
     } else if (_exFound?.type === 'extraVote') {
       _exHtml += _renderTwistScene({ text: `${_tw.exiled} searched the island — and found an Extra Vote hidden in the shelter.`, players: [_tw.exiled], badge: 'Extra Vote', badgeClass: 'win' });
+    } else if (_tw.exileFound?.type === 'safetyNoPower') {
+      _exHtml += _renderTwistScene({ text: `${_tw.exiled} searched the island — and found a Safety Without Power. An escape hatch from tribal — but it costs ${pronouns(_tw.exiled).obj} ${pronouns(_tw.exiled).posAdj} vote.`, players: [_tw.exiled], badge: 'Safety Without Power', badgeClass: 'win' });
+    } else if (_tw.exileFound?.type === 'soleVote') {
+      _exHtml += _renderTwistScene({ text: `${_tw.exiled} searched the island — and found a Sole Vote. When played, ${pronouns(_tw.exiled).sub} cast${pronouns(_tw.exiled).sub==='they'?'':'s'} the only vote. Everyone else is silenced.`, players: [_tw.exiled], badge: 'Sole Vote', badgeClass: 'win' });
     } else if (_exFound?.type === 'clue') {
       _exHtml += _renderTwistScene({ text: `${_tw.exiled} searched the island — and found a clue to a Hidden Immunity Idol back at camp.`, players: [_tw.exiled], badge: 'Idol Clue', badgeClass: 'win' });
     } else {

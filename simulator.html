@@ -31276,6 +31276,40 @@ function rpBuildVotes(ep) {
       </div>`;
       return;
     }
+    if (type === 'voteBlock') {
+      const _blocked = play.blockedPlayer;
+      _advHtml += `<div class="tv-advantage-play">
+        <div class="tv-advantage-play-left">${rpPortrait(player, 'sm sitd')}</div>
+        <div class="tv-advantage-play-body">
+          <div class="tv-advantage-play-badge" style="color:#f85149;background:rgba(248,81,73,0.12);border-color:rgba(248,81,73,0.25)">VOTE BLOCK</div>
+          <div class="tv-advantage-play-title">${player} blocks ${_blocked}'s vote</div>
+          <div class="tv-advantage-play-desc">${_blocked} cannot vote tonight. Their voice has been silenced.</div>
+        </div>
+      </div>`;
+      return;
+    }
+    if (type === 'teamSwap') {
+      _advHtml += `<div class="tv-advantage-play">
+        <div class="tv-advantage-play-left">${rpPortrait(player, 'sm sitd')}</div>
+        <div class="tv-advantage-play-body">
+          <div class="tv-advantage-play-badge" style="color:#818cf8;background:rgba(129,140,248,0.12);border-color:rgba(129,140,248,0.25)">TEAM SWAP</div>
+          <div class="tv-advantage-play-title">${play.selfSwap ? `${player} swaps to ${play.toTribe}` : `${player} sends ${play.swappedPlayer} to ${play.toTribe}`}</div>
+          <div class="tv-advantage-play-desc">${play.selfSwap ? `${player} leaves this tribal and joins ${play.toTribe}.` : `${play.swappedPlayer} is moved to ${play.toTribe}. ${player} made the call.`}</div>
+        </div>
+      </div>`;
+      return;
+    }
+    if (type === 'safetyNoPower') {
+      _advHtml += `<div class="tv-advantage-play">
+        <div class="tv-advantage-play-left">${rpPortrait(player, 'sm sitd')}</div>
+        <div class="tv-advantage-play-body">
+          <div class="tv-advantage-play-badge" style="color:#818cf8;background:rgba(129,140,248,0.12);border-color:rgba(129,140,248,0.25)">SAFETY WITHOUT POWER</div>
+          <div class="tv-advantage-play-title">${player} leaves Tribal Council</div>
+          <div class="tv-advantage-play-desc">${player} is safe tonight — but cannot vote.${play.warned ? ` ${player} warned ${play.warned} before leaving.` : ' Nobody saw it coming.'}</div>
+        </div>
+      </div>`;
+      return;
+    }
     const _isAllyPlay = !!playedFor;
     const _idolTarget = _isAllyPlay ? playedFor : player;
     const _isMisplay = !!play.misplay;

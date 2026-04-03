@@ -7598,6 +7598,9 @@ function findAdvantages(ep) {
     if (postMergeOnly && !gs.isMerged) return;
     const max = typeCfg.count || 1;
     if (gs.advantages.filter(a => a.type === key).length >= max) return;
+    // Season-wide cap: check lifetime usage (found + consumed), not just currently held
+    if (!gs.advantagesFoundThisSeason) gs.advantagesFoundThisSeason = {};
+    if ((gs.advantagesFoundThisSeason[key] || 0) >= max) return;
 
     const pool = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer).sort(() => Math.random() - 0.5);
     for (const name of pool) {
@@ -7609,6 +7612,8 @@ function findAdvantages(ep) {
           : key === 'amulet' ? { amuletPower: (() => { const c = gs.advantages.filter(a => a.type === 'amulet').length + 1; return c >= 3 ? 'extraVote' : c === 2 ? 'voteSteal' : 'idol'; })() }
           : {};
         gs.advantages.push({ holder: name, type: key, foundEp: ep.num, foundTribe: _advTribe, ..._advExtra });
+        if (!gs.advantagesFoundThisSeason) gs.advantagesFoundThisSeason = {};
+        gs.advantagesFoundThisSeason[key] = (gs.advantagesFoundThisSeason[key] || 0) + 1;
         ep.idolFinds.push({ finder: name, type: key, tribe: _advTribe });
         // ── Discovery camp event for tactical advantages ──
         if (['teamSwap', 'voteBlock', 'voteSteal', 'safetyNoPower'].includes(key)) {
@@ -8510,16 +8515,16 @@ function simulateJourney(ep) {
   const cfg = seasonConfig;
   const advPool = [];
   if (cfg.advantages?.extraVote?.enabled) {
-    if (gs.advantages.filter(a=>a.type==='extraVote').length < (cfg.advantages.extraVote.count||1)) advPool.push('extraVote');
+    if (gs.advantages.filter(a=>a.type==='extraVote').length < (cfg.advantages.extraVote.count||1) && (gs.advantagesFoundThisSeason?.extraVote || 0) < (cfg.advantages.extraVote.count||1)) advPool.push('extraVote');
   }
   if (cfg.advantages?.voteSteal?.enabled) {
-    if (gs.advantages.filter(a=>a.type==='voteSteal').length < (cfg.advantages.voteSteal.count||1)) advPool.push('voteSteal');
+    if (gs.advantages.filter(a=>a.type==='voteSteal').length < (cfg.advantages.voteSteal.count||1) && (gs.advantagesFoundThisSeason?.voteSteal || 0) < (cfg.advantages.voteSteal.count||1)) advPool.push('voteSteal');
   }
   if (cfg.advantages?.voteBlock?.enabled) {
-    if (gs.advantages.filter(a=>a.type==='voteBlock').length < (cfg.advantages.voteBlock.count||1)) advPool.push('voteBlock');
+    if (gs.advantages.filter(a=>a.type==='voteBlock').length < (cfg.advantages.voteBlock.count||1) && (gs.advantagesFoundThisSeason?.voteBlock || 0) < (cfg.advantages.voteBlock.count||1)) advPool.push('voteBlock');
   }
   if (cfg.advantages?.safetyNoPower?.enabled) {
-    if (gs.advantages.filter(a=>a.type==='safetyNoPower').length < (cfg.advantages.safetyNoPower.count||1)) advPool.push('safetyNoPower');
+    if (gs.advantages.filter(a=>a.type==='safetyNoPower').length < (cfg.advantages.safetyNoPower.count||1) && (gs.advantagesFoundThisSeason?.safetyNoPower || 0) < (cfg.advantages.safetyNoPower.count||1)) advPool.push('safetyNoPower');
   }
 
   const jChal = JOURNEY_CHALLENGES[Math.floor(Math.random() * JOURNEY_CHALLENGES.length)];
@@ -8544,6 +8549,8 @@ function simulateJourney(ep) {
         if (advPool.length) {
           const type = advPool[Math.floor(Math.random() * advPool.length)];
           gs.advantages.push({ holder: name, type, foundEp: ep.num });
+          if (!gs.advantagesFoundThisSeason) gs.advantagesFoundThisSeason = {};
+          gs.advantagesFoundThisSeason[type] = (gs.advantagesFoundThisSeason[type] || 0) + 1;
           return { name, result: 'advantage', type };
         }
         return { name, result: 'safe' };
@@ -8562,6 +8569,8 @@ function simulateJourney(ep) {
       if (gambles && advPool.length) {
         const type = advPool[Math.floor(Math.random() * advPool.length)];
         gs.advantages.push({ holder: name, type, foundEp: ep.num });
+        if (!gs.advantagesFoundThisSeason) gs.advantagesFoundThisSeason = {};
+        gs.advantagesFoundThisSeason[type] = (gs.advantagesFoundThisSeason[type] || 0) + 1;
         return { name, result: 'advantage', type };
       } else if (gambles) {
         return { name, result: 'safe' };
@@ -9708,8 +9717,11 @@ function applyTwist(ep, twist, isPrimary = true) {
           if (!advTypes.length) advTypes.push('extraVote','voteSteal');
           const pick = advTypes[Math.floor(Math.random() * advTypes.length)];
           const advMax = seasonConfig.advantages?.[pick]?.count || 1;
-          if (gs.advantages.filter(a => a.type === pick).length < advMax) {
+          const _auctionSeasonCount = gs.advantagesFoundThisSeason?.[pick] || 0;
+          if (gs.advantages.filter(a => a.type === pick).length < advMax && _auctionSeasonCount < advMax) {
             gs.advantages.push({ holder: winnerName, type: pick, foundEp: ep.num, fromAuction: true });
+            if (!gs.advantagesFoundThisSeason) gs.advantagesFoundThisSeason = {};
+            gs.advantagesFoundThisSeason[pick] = (gs.advantagesFoundThisSeason[pick] || 0) + 1;
             effect = pick; effectLabel = pick === 'extraVote' ? 'Extra Vote' : pick === 'voteSteal' ? 'Vote Steal' : 'Vote Block';
           } else {
             effect = 'food'; effectLabel = '(advantage not available — consolation snack)';

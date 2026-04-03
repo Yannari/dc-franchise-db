@@ -10027,7 +10027,7 @@ function applyTwist(ep, twist, isPrimary = true) {
         const _listener = _leaker === a ? b : a;
         const _listenerS = _leaker === a ? sB : sA;
         // Check if leaker has an advantage to leak about
-        const _leakerAdv = gs.advantages.find(adv => adv.holder === _leaker && ['idol', 'legacy', 'amulet', 'secondLife', 'teamSwap', 'voteBlock', 'voteSteal', 'safetyNoPower'].includes(adv.type));
+        const _leakerAdv = gs.advantages.find(adv => adv.holder === _leaker && ['idol', 'legacy', 'amulet', 'secondLife', 'teamSwap', 'voteBlock', 'voteSteal', 'safetyNoPower', 'soleVote'].includes(adv.type));
         if (_leakerAdv) {
           if (['teamSwap'].includes(_leakerAdv.type)) {
             if (!gs.knownTeamSwapHolders) gs.knownTeamSwapHolders = new Set();
@@ -10041,13 +10041,16 @@ function applyTwist(ep, twist, isPrimary = true) {
           } else if (['safetyNoPower'].includes(_leakerAdv.type)) {
             if (!gs.knownSafetyNoPowerHolders) gs.knownSafetyNoPowerHolders = new Set();
             gs.knownSafetyNoPowerHolders.add(_leaker);
+          } else if (['soleVote'].includes(_leakerAdv.type)) {
+            if (!gs.knownSoleVoteHolders) gs.knownSoleVoteHolders = new Set();
+            gs.knownSoleVoteHolders.add(_leaker);
           } else {
             if (!gs.knownIdolHoldersThisEp) gs.knownIdolHoldersThisEp = new Set();
             gs.knownIdolHoldersThisEp.add(_leaker);
             if (!gs.knownIdolHoldersPersistent) gs.knownIdolHoldersPersistent = new Set();
             gs.knownIdolHoldersPersistent.add(_leaker);
           }
-          const _advLabel = _leakerAdv.type === 'idol' ? 'Hidden Immunity Idol' : _leakerAdv.type === 'legacy' ? 'Legacy Advantage' : _leakerAdv.type === 'amulet' ? 'Amulet' : _leakerAdv.type === 'secondLife' ? 'Second Life Amulet' : _leakerAdv.type === 'teamSwap' ? 'Team Swap' : _leakerAdv.type === 'voteBlock' ? 'Vote Block' : _leakerAdv.type === 'voteSteal' ? 'Vote Steal' : _leakerAdv.type === 'safetyNoPower' ? 'Safety Without Power' : 'advantage';
+          const _advLabel = _leakerAdv.type === 'idol' ? 'Hidden Immunity Idol' : _leakerAdv.type === 'legacy' ? 'Legacy Advantage' : _leakerAdv.type === 'amulet' ? 'Amulet' : _leakerAdv.type === 'secondLife' ? 'Second Life Amulet' : _leakerAdv.type === 'teamSwap' ? 'Team Swap' : _leakerAdv.type === 'voteBlock' ? 'Vote Block' : _leakerAdv.type === 'voteSteal' ? 'Vote Steal' : _leakerAdv.type === 'safetyNoPower' ? 'Safety Without Power' : _leakerAdv.type === 'soleVote' ? 'Sole Vote' : 'advantage';
           const _lkPr = pronouns(_leaker);
           ep.feastEvents.push({ type, players: [_leaker, _listener], text: _pick([
             `${_leaker} got too comfortable at the ${_feastLabel}. ${_listener} noticed the way ${_lkPr.sub} touched ${_lkPr.posAdj} bag. By the end of the meal, ${_listener} is certain: ${_leaker} has a ${_advLabel}. That secret is out.`,
@@ -14533,6 +14536,48 @@ function checkSafetyNoPowerConfessions(ep) {
   });
 }
 
+function checkSoleVoteConfessions(ep) {
+  const holders = (gs.advantages || []).filter(a => a.type === 'soleVote' && gs.activePlayers.includes(a.holder));
+  if (!holders.length || !ep.campEvents) return;
+  if (!gs.knownSoleVoteHolders) gs.knownSoleVoteHolders = new Set();
+
+  holders.forEach(adv => {
+    const holder = adv.holder;
+    const s = pStats(holder);
+    const tribeMembers = gs.isMerged
+      ? gs.activePlayers.filter(p => p !== holder)
+      : (gs.tribes.find(t => t.members.includes(holder))?.members || []).filter(p => p !== holder);
+    const allies = tribeMembers
+      .map(p => ({ name: p, bond: getBond(holder, p) }))
+      .filter(x => x.bond >= 2)
+      .sort((a, b) => b.bond - a.bond);
+    if (!allies.length) return;
+
+    const confidant = allies[0].name;
+    const confChance = s.loyalty * 0.06 + getBond(holder, confidant) * 0.04;
+    if (Math.random() >= confChance) return;
+
+    gs.knownSoleVoteHolders.add(holder);
+    addBond(holder, confidant, 0.3);
+
+    const _pr = pronouns(holder);
+    const confLines = [
+      `${holder} pulled ${confidant} aside and lowered ${_pr.posAdj} voice. "I found something that changes everything. I can cast the only vote at tribal. Everyone else? Silenced." ${confidant} went pale.`,
+      `${holder} confided in ${confidant}. "I have a Sole Vote. When I play it, I decide who goes. Just me." ${confidant} didn't know whether to feel protected or terrified.`,
+      `${holder} trusted ${confidant} enough to share the truth: ${_pr.sub} ${_pr.sub === 'they' ? 'hold' : 'holds'} a Sole Vote. One person decides the entire elimination. ${confidant} nodded slowly, already calculating what that means for ${pronouns(confidant).obj}.`,
+    ];
+    const _seed = [...(holder+confidant)].reduce((s, c) => s + c.charCodeAt(0), 0);
+    const confEvt = { type: 'soleVoteConfession', players: [holder, confidant],
+      text: confLines[_seed % confLines.length] };
+
+    const tribeName = gs.isMerged ? 'merge' : (gs.tribes.find(t => t.members.includes(holder))?.name);
+    if (tribeName && ep.campEvents?.[tribeName]) {
+      const campBlock = ep.campEvents[tribeName];
+      (Array.isArray(campBlock) ? campBlock : (campBlock.pre || [])).push(confEvt);
+    }
+  });
+}
+
 // ── Social intel gathering: social butterflies learn things through conversation, not sneaking ──
 function checkSocialIntel(ep) {
   if (!ep.campEvents) return;
@@ -14819,6 +14864,7 @@ function checkTacticalAdvantageSnoop(ep) {
     { type: 'voteBlock', setKey: 'knownVoteBlockHolders', chance: 0.015, evtType: 'voteBlockSnooped', label: 'Vote Block' },
     { type: 'voteSteal', setKey: 'knownVoteStealHolders', chance: 0.015, evtType: 'voteStealSnooped', label: 'Vote Steal' },
     { type: 'safetyNoPower', setKey: 'knownSafetyNoPowerHolders', chance: 0.02, evtType: 'safetyNoPowerSnooped', label: 'Safety Without Power' },
+    { type: 'soleVote', setKey: 'knownSoleVoteHolders', chance: 0.02, evtType: 'soleVoteSnooped', label: 'Sole Vote' },
   ];
 
   _snoopTypes.forEach(({ type: _sType, setKey, chance, evtType, label }) => {
@@ -15535,6 +15581,7 @@ function generateCampEvents(ep, phase = 'both') {
     checkIdolConfessions(ep);
     checkTeamSwapConfessions(ep);
     checkSafetyNoPowerConfessions(ep);
+    checkSoleVoteConfessions(ep);
     checkSocialIntel(ep);
     checkSecondLifeAmuletEvents(ep);
     checkLegacyCampEvents(ep);
@@ -15841,6 +15888,57 @@ function generateCampEvents(ep, phase = 'both') {
       }
       delete gs.safetyNoPowerPlayed;
     }
+
+  // ── Sole Vote aftermath: holder dictated the vote last tribal ──
+  if (gs.soleVotePlayed && (phase === 'pre' || phase === 'both')) {
+    const _svData = gs.soleVotePlayed;
+    const _svPr = pronouns(_svData.holder);
+    const _svTribe = gs.isMerged ? 'merge' : (gs.tribes.find(t => t.members.includes(_svData.holder))?.name);
+    if (_svTribe && ep.campEvents?.[_svTribe]) {
+      const _svBlock = ep.campEvents[_svTribe];
+      const _push = evt => (Array.isArray(_svBlock) ? _svBlock : (_svBlock.pre || [])).push(evt);
+      const _svSeed = [..._svData.holder].reduce((s, c) => s + c.charCodeAt(0), 0);
+
+      if (_svData.target && !_svData.survived) {
+        // Target was eliminated — dictator fallout
+        const _svLines = [
+          `Nobody is talking to ${_svData.holder} this morning. ${_svPr.Sub} silenced every voice at tribal and sent ${_svData.target} home alone. That kind of power leaves a mark.`,
+          `${_svData.holder} made the call. One vote. ${_svPr.Pos} vote. ${_svData.target} is gone because ${_svData.holder} said so. The tribe hasn't forgotten.`,
+          `Camp is quiet. ${_svData.holder} played the Sole Vote and eliminated ${_svData.target} single-handedly. Some call it strategy. Others call it tyranny. Nobody calls it forgettable.`,
+        ];
+        _push({ type: 'soleVoteFallout', players: [_svData.holder],
+          text: _svLines[_svSeed % _svLines.length] });
+        // Extra bond damage from players bonded to the eliminated
+        gs.activePlayers.filter(p => p !== _svData.holder && getBond(p, _svData.target) >= 2).forEach(p => {
+          addBond(p, _svData.holder, -0.5);
+        });
+      } else if (_svData.survived) {
+        // Target idol'd out — wasted power
+        const _svLines = [
+          `${_svData.holder} played the Sole Vote — and it didn't matter. The target had an idol. Every voice was silenced for nothing. The dictator's crown turned to dust.`,
+          `The Sole Vote was supposed to be the ultimate power move. Instead, an idol made it the ultimate embarrassment. ${_svData.holder} has no advantage and no allies to show for it.`,
+          `${_svData.holder} burned the biggest advantage in the game for nothing. The idol cancelled the only vote that counted. Now ${_svPr.sub} ${_svPr.sub === 'they' ? 'have' : 'has'} a target on ${_svPr.posAdj} back and nothing left to play.`,
+        ];
+        _push({ type: 'soleVoteWasted', players: [_svData.holder],
+          text: _svLines[_svSeed % _svLines.length] });
+        // General contempt — wasted a scary advantage
+        gs.activePlayers.filter(p => p !== _svData.holder).forEach(p => {
+          addBond(p, _svData.holder, -0.3);
+        });
+      }
+
+      // Warned ally noticed — complicity suspicion
+      if (_svData.warnedAlly && gs.activePlayers.includes(_svData.warnedAlly)) {
+        const _svAllyPr = pronouns(_svData.warnedAlly);
+        _push({ type: 'soleVoteAccomplice', players: [_svData.warnedAlly, _svData.holder],
+          text: `People noticed that ${_svData.warnedAlly} didn't flinch when ${_svData.holder} played the Sole Vote. ${_svAllyPr.Sub} knew. The tribe is asking what else ${_svAllyPr.sub} knew.` });
+        gs.activePlayers.filter(p => p !== _svData.holder && p !== _svData.warnedAlly).forEach(p => {
+          addBond(p, _svData.warnedAlly, -0.3);
+        });
+      }
+    }
+    delete gs.soleVotePlayed;
+  }
 
   // ── Miscommunication fallout: voter accidentally helped eliminate their own ally ──
   if (gs.miscommunicationFallout?.length && (phase === 'pre' || phase === 'both')) {
@@ -19584,6 +19682,16 @@ function simulateJuryRoundtable(ep) {
   if (gs.safetyNoPowerPlayed && ep.eliminated) {
     const _snpBond = getBond(gs.safetyNoPowerPlayed.holder, ep.eliminated);
     if (_snpBond >= 2) gs.safetyNoPowerPlayed.allyCost = ep.eliminated;
+  }
+
+  // Track whether sole vote target survived (for aftermath events)
+  if (gs.soleVotePlayed) {
+    if (ep.eliminated) {
+      gs.soleVotePlayed.target = ep.eliminated;
+      gs.soleVotePlayed.survived = false;
+    } else {
+      gs.soleVotePlayed.survived = true;
+    }
   }
 
   // ── [9] TRIBAL COUNCIL BLOWUP ──

@@ -8535,6 +8535,9 @@ function simulateJourney(ep) {
   if (cfg.advantages?.voteBlock?.enabled) {
     if (gs.advantages.filter(a=>a.type==='voteBlock').length < (cfg.advantages.voteBlock.count||1)) advPool.push('voteBlock');
   }
+  if (cfg.advantages?.safetyNoPower?.enabled) {
+    if (gs.advantages.filter(a=>a.type==='safetyNoPower').length < (cfg.advantages.safetyNoPower.count||1)) advPool.push('safetyNoPower');
+  }
 
   const jChal = JOURNEY_CHALLENGES[Math.floor(Math.random() * JOURNEY_CHALLENGES.length)];
 
@@ -15696,6 +15699,48 @@ function generateCampEvents(ep, phase = 'both') {
       }
     }
   }
+
+  // ── Safety Without Power aftermath: holder walked out last tribal ──
+  if (gs.safetyNoPowerPlayed && (phase === 'pre' || phase === 'both')) {
+      const _snpData = gs.safetyNoPowerPlayed;
+      const _snpPr = pronouns(_snpData.holder);
+      const _snpTribe = gs.isMerged ? 'merge' : (gs.tribes.find(t => t.members.includes(_snpData.holder))?.name);
+      if (_snpTribe && ep.campEvents?.[_snpTribe]) {
+        const _snpBlock = ep.campEvents[_snpTribe];
+        const _push = evt => (Array.isArray(_snpBlock) ? _snpBlock : (_snpBlock.pre || [])).push(evt);
+
+        if (_snpData.surprise) {
+          // Surprise exit — dramatic aftermath
+          const _snpLines = [
+            `Camp is tense this morning. ${_snpData.holder} walked out of tribal last night without a word. ${_snpPr.Sub} ${_snpPr.sub === 'they' ? 'are' : 'is'} safe, but the trust ${_snpPr.sub} left behind isn't.`,
+            `Nobody has spoken to ${_snpData.holder} since last night. ${_snpPr.Sub} stood up, walked out, and left everyone to fend for themselves. Some people call that survival. Others have a different word for it.`,
+            `${_snpData.holder} sits alone by the fire. ${_snpPr.Sub} used the Safety Without Power. ${_snpPr.Sub} ${_snpPr.sub === 'they' ? 'are' : 'is'} still here. But the looks from the others say everything words can't.`,
+          ];
+          const _snpSeed = [..._snpData.holder].reduce((s, c) => s + c.charCodeAt(0), 0);
+          _push({ type: 'safetyNoPowerAftermath', players: [_snpData.holder],
+            text: _snpLines[_snpSeed % _snpLines.length] });
+        } else {
+          // Warned exit — quieter aftermath
+          const _snpLines = [
+            `${_snpData.holder} is back at camp after walking out of tribal. ${_snpData.warnedAlly} knew it was coming. The rest didn't. The air is different this morning.`,
+            `${_snpData.holder} warned ${_snpData.warnedAlly} before leaving tribal. That bought some goodwill — but not with everyone. The tribe is split on whether it was smart or selfish.`,
+            `${_snpData.holder} played the Safety Without Power. ${_snpData.warnedAlly} covered for ${_snpPr.obj} as best ${pronouns(_snpData.warnedAlly).sub} could. The question now is whether anyone else will.`,
+          ];
+          const _snpSeed = [..._snpData.holder].reduce((s, c) => s + c.charCodeAt(0), 0);
+          _push({ type: 'safetyNoPowerEscaped', players: [_snpData.holder, _snpData.warnedAlly],
+            text: _snpLines[_snpSeed % _snpLines.length] });
+        }
+
+        // If an ally was eliminated because of the missing vote
+        if (_snpData.allyCost) {
+          const _costPr = pronouns(_snpData.allyCost);
+          _push({ type: 'safetyNoPowerAftermath', players: [_snpData.holder],
+            text: `${_snpData.allyCost} went home last night. ${_snpData.holder}'s vote could have changed that. ${_snpPr.Sub} know${_snpPr.sub === 'they' ? '' : 's'} it. Everyone knows it.` });
+          addBond(_snpData.allyCost, _snpData.holder, -1.0); // extra sting
+        }
+      }
+      delete gs.safetyNoPowerPlayed;
+    }
 
   // ── Alliance dissolution camp events ──
   if (gs.allianceDissolutions?.length && (phase === 'pre' || phase === 'both')) {
@@ -22982,6 +23027,7 @@ function patchEpisodeHistory(ep) {
   if (ep.showmanceSeparation) h.showmanceSeparation = ep.showmanceSeparation;
   if (ep.showmanceEvents?.length) h.showmanceEvents = ep.showmanceEvents;
   if (ep.showmanceTests?.length) h.showmanceTests = ep.showmanceTests;
+  if (ep.safetyNoPowerPlayed) h.safetyNoPowerPlayed = ep.safetyNoPowerPlayed;
   if (ep.juryRoundtable) h.juryRoundtable = ep.juryRoundtable;
 }
 
@@ -28344,6 +28390,11 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'teamSwapSnooped'      ? '\u26a0 SNOOPED'
                      : evt.type === 'voteBlockSnooped'     ? '\u26a0 SNOOPED'
                      : evt.type === 'voteStealSnooped'     ? '\u26a0 SNOOPED'
+                     : evt.type === 'safetyNoPowerFound'       ? 'ADVANTAGE FOUND'
+                     : evt.type === 'safetyNoPowerConfession'  ? 'CONFESSION'
+                     : evt.type === 'safetyNoPowerSnooped'     ? '\u26a0 SNOOPED'
+                     : evt.type === 'safetyNoPowerAftermath'   ? 'ABANDONED TRIBAL'
+                     : evt.type === 'safetyNoPowerEscaped'     ? 'ESCAPED'
                      : evt.type === 'hardWork'             ? '+ Earned respect'
                      : evt.type === 'unexpectedCompetence' ? '+ Surprised the tribe'
                      : evt.type === 'underdogMoment'       ? '+ Underdog rising'
@@ -28450,6 +28501,8 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'teamSwapFound' || evt.type === 'voteBlockFound' || evt.type === 'voteStealFound' ? 'gold'
                      : evt.type === 'teamSwapConfession' ? 'gold'
                      : evt.type === 'teamSwapSnooped' || evt.type === 'voteBlockSnooped' || evt.type === 'voteStealSnooped' ? 'red'
+                     : evt.type === 'safetyNoPowerFound' || evt.type === 'safetyNoPowerConfession' || evt.type === 'safetyNoPowerEscaped' ? 'gold'
+                     : evt.type === 'safetyNoPowerSnooped' || evt.type === 'safetyNoPowerAftermath' ? 'red'
                      : isAmuletSec ? 'gold'
                      : isCRExposure || isCRDissolved || isCRBlowup ? 'red'
                      : isCRSurvived || isCRVindicated ? 'green'
@@ -32647,6 +32700,16 @@ function rpBuildVotes2(ep) {
       } else if (type === 'voteBlock') {
         const _blocked = play.blockedPlayer;
         html += `<div class="tv-advantage-play"><div class="tv-advantage-play-left">${rpPortrait(player, 'sm sitd')}${_blocked ? rpPortrait(_blocked, 'sm') : ''}</div><div class="tv-advantage-play-body"><div class="tv-advantage-play-badge" style="color:#f85149;background:rgba(248,81,73,0.12);border-color:rgba(248,81,73,0.25)">VOTE BLOCK</div><div class="tv-advantage-play-title">${player} blocks ${_blocked || 'a player'}'s vote</div><div class="tv-advantage-play-desc">${_blocked || 'A player'} cannot vote tonight. Their voice has been silenced.</div></div></div>`;
+      } else if (type === 'safetyNoPower') {
+        const _snpWarned = play.warned;
+        html += `<div class="tv-advantage-play">
+          <div class="tv-advantage-play-left">${rpPortrait(player, 'sm sitd')}</div>
+          <div class="tv-advantage-play-body">
+            <div class="tv-advantage-play-badge" style="color:#818cf8;background:rgba(129,140,248,0.12);border-color:rgba(129,140,248,0.25)">SAFETY WITHOUT POWER</div>
+            <div class="tv-advantage-play-title">${player} leaves Tribal Council</div>
+            <div class="tv-advantage-play-desc">${player} is safe tonight — but cannot vote.${_snpWarned ? ` ${player} warned ${_snpWarned} before leaving.` : ' Nobody saw it coming.'}</div>
+          </div>
+        </div>`;
       } else if (type === 'teamSwap') {
         const _ts = play;
         html += `<div class="tv-advantage-play"><div class="tv-advantage-play-left">${rpPortrait(_ts.swappedPlayer || player, 'sm sitd')}</div><div class="tv-advantage-play-body"><div class="tv-advantage-play-badge" style="color:#818cf8;background:rgba(99,102,241,0.12);border-color:rgba(99,102,241,0.25)">TEAM SWAP</div><div class="tv-advantage-play-title">${_ts.selfSwap ? `${player} swaps to ${_ts.toTribe}` : `${player} sends ${_ts.swappedPlayer} to ${_ts.toTribe}`}</div><div class="tv-advantage-play-desc">${_ts.selfSwap ? `${player} plays the Team Swap to escape. ${pronouns(player).Sub} ${pronouns(player).sub==='they'?'leave':'leaves'} ${_ts.fromTribe} and ${pronouns(player).sub==='they'?'join':'joins'} ${_ts.toTribe}.` : `${player} plays the Team Swap to save ${_ts.swappedPlayer}. ${_ts.swappedPlayer} moves from ${_ts.fromTribe} to ${_ts.toTribe}.`}</div></div></div>`;

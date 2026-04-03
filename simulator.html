@@ -15736,6 +15736,42 @@ function generateCampEvents(ep, phase = 'both') {
       delete gs.safetyNoPowerPlayed;
     }
 
+  // ── Miscommunication fallout: voter accidentally helped eliminate their own ally ──
+  if (gs.miscommunicationFallout?.length && (phase === 'pre' || phase === 'both')) {
+    const _mcFallouts = gs.miscommunicationFallout;
+    gs.miscommunicationFallout = null;
+    _mcFallouts.forEach(mc => {
+      if (!gs.activePlayers.includes(mc.voter)) return;
+      const _campKey = gs.isMerged ? 'merge' : gs.tribes.find(t => t.members.includes(mc.voter))?.name;
+      if (!_campKey || !ep.campEvents?.[_campKey]) return;
+      const _mcPr = pronouns(mc.voter);
+      const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
+      if (mc.wasAlly && mc.changedOutcome) {
+        // Worst case: ally went home because of the miscommunication
+        ep.campEvents[_campKey].pre.push({ type: 'miscommunicationFallout', players: [mc.voter],
+          text: _rp([
+            `${mc.voter} hasn't spoken since last night. ${_mcPr.Sub} voted ${mc.eliminated} by accident — meant to write ${mc.intended}. And ${mc.eliminated} went home because of it. Everyone at camp knows. Nobody's saying it out loud.`,
+            `The miscommunication cost ${mc.eliminated} the game. ${mc.voter} knows it. The rest of ${mc.alliance} knows it. ${_mcPr.Sub} can't take it back, and ${_mcPr.sub} can't explain it away. That's the kind of mistake that defines the rest of your game.`,
+            `${mc.voter} was supposed to vote ${mc.intended}. Instead ${_mcPr.sub} wrote ${mc.eliminated}'s name. ${mc.eliminated} is gone now — and ${mc.voter}'s alliance is looking at ${_mcPr.obj} differently this morning.`,
+          ]), badgeText: 'COSTLY MISTAKE', badgeClass: 'red' });
+      } else if (mc.wasAlly) {
+        // Voted ally but didn't change the outcome — still embarrassing
+        ep.campEvents[_campKey].pre.push({ type: 'miscommunicationFallout', players: [mc.voter],
+          text: _rp([
+            `${mc.voter} voted for ${mc.eliminated} last night — ${_mcPr.posAdj} own ally. It didn't change the result, but ${mc.alliance} noticed. Trust takes time to build. One wrong name can undo it.`,
+            `The tribe figured out that ${mc.voter} wrote the wrong name. ${mc.eliminated} would have gone home anyway, but that's not the point. ${mc.alliance} is questioning ${_mcPr.posAdj} focus.`,
+          ]), badgeText: 'MISFIRE', badgeClass: 'red' });
+      } else if (mc.changedOutcome) {
+        // Not an ally but the misfire changed who went home
+        ep.campEvents[_campKey].pre.push({ type: 'miscommunicationFallout', players: [mc.voter],
+          text: _rp([
+            `${mc.voter}'s stray vote landed on ${mc.eliminated}. It wasn't supposed to. And it might have been the vote that sent ${mc.eliminated} home. The tribe is still processing what happened.`,
+            `${mc.voter} wrote the wrong name — and it mattered. ${mc.eliminated} went home on a margin that thin. One misfire, one exit. That's the game.`,
+          ]), badgeText: 'COSTLY MISTAKE', badgeClass: 'red' });
+      }
+    });
+  }
+
   // ── Alliance dissolution camp events ──
   if (gs.allianceDissolutions?.length && (phase === 'pre' || phase === 'both')) {
     const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
@@ -16407,6 +16443,44 @@ function applyPostTribalConsequences(ep) {
       gs.discoveredVotesLastEp.push({ type: 'vote-discovery', target, voter });
     });
   });
+
+  // ── 4. MISCOMMUNICATION FALLOUT: voter accidentally eliminated their own ally ──
+  if (elim && ep.voteMiscommunications?.length) {
+    ep.voteMiscommunications.forEach(mc => {
+      if (mc.actual !== elim) return; // misfire didn't land on the eliminated player — no extra consequences
+      const miscVoter = mc.voter;
+      if (!active.includes(miscVoter)) return;
+
+      // Check if the misfire actually changed the outcome
+      // (would the eliminated player have survived without this accidental vote?)
+      const elimVoteCount = voteCounts[elim] || 0;
+      const secondHighest = Object.entries(voteCounts).filter(([n]) => n !== elim).sort(([,a],[,b]) => b-a)[0]?.[1] || 0;
+      const misfireChangedOutcome = elimVoteCount - 1 <= secondHighest; // without this vote, it would've been tied or someone else goes
+
+      // Were they in the same alliance? That makes it much worse
+      const sharedAlliance = (gs.namedAlliances || []).find(a =>
+        a.active && a.members.includes(miscVoter) && a.members.includes(elim));
+
+      if (sharedAlliance) {
+        // Voted out your own ally by accident — devastating
+        addBond(elim, miscVoter, misfireChangedOutcome ? -3.0 : -1.5);
+        // Other alliance members lose trust in the miscommunicator
+        sharedAlliance.members.filter(m => m !== miscVoter && m !== elim && active.includes(m))
+          .forEach(m => addBond(m, miscVoter, misfireChangedOutcome ? -1.0 : -0.5));
+      } else if (getBond(miscVoter, elim) >= 1.5) {
+        // Not in same alliance but had a bond — still bad
+        addBond(elim, miscVoter, misfireChangedOutcome ? -2.0 : -1.0);
+      }
+
+      // Save for next-episode camp events
+      if (!gs.miscommunicationFallout) gs.miscommunicationFallout = [];
+      gs.miscommunicationFallout.push({
+        voter: miscVoter, eliminated: elim, intended: mc.intended,
+        alliance: mc.alliance, changedOutcome: misfireChangedOutcome,
+        wasAlly: !!sharedAlliance
+      });
+    });
+  }
 }
 
 function simulateEpisode() {
@@ -28397,6 +28471,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'safetyNoPowerSnooped'     ? '\u26a0 SNOOPED'
                      : evt.type === 'safetyNoPowerAftermath'   ? 'ABANDONED TRIBAL'
                      : evt.type === 'safetyNoPowerEscaped'     ? 'ESCAPED'
+                     : evt.type === 'miscommunicationFallout' ? (evt.badgeText || 'MISFIRE')
                      : evt.type === 'hardWork'             ? '+ Earned respect'
                      : evt.type === 'unexpectedCompetence' ? '+ Surprised the tribe'
                      : evt.type === 'underdogMoment'       ? '+ Underdog rising'
@@ -28505,6 +28580,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'teamSwapSnooped' || evt.type === 'voteBlockSnooped' || evt.type === 'voteStealSnooped' ? 'red'
                      : evt.type === 'safetyNoPowerFound' || evt.type === 'safetyNoPowerConfession' || evt.type === 'safetyNoPowerEscaped' ? 'gold'
                      : evt.type === 'safetyNoPowerSnooped' || evt.type === 'safetyNoPowerAftermath' ? 'red'
+                     : evt.type === 'miscommunicationFallout' ? 'red'
                      : isAmuletSec ? 'gold'
                      : isCRExposure || isCRDissolved || isCRBlowup ? 'red'
                      : isCRSurvived || isCRVindicated ? 'green'

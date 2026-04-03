@@ -9705,12 +9705,13 @@ function applyTwist(ep, twist, isPrimary = true) {
       if (item.blind) {
         // Revealed when opened
         if (item.id === 'advantage') {
-          const advTypes = ['extraVote','voteSteal'];
+          const advTypes = ['extraVote','voteSteal','voteBlock'].filter(t => seasonConfig.advantages?.[t]?.enabled);
+          if (!advTypes.length) advTypes.push('extraVote','voteSteal');
           const pick = advTypes[Math.floor(Math.random() * advTypes.length)];
           const advMax = seasonConfig.advantages?.[pick]?.count || 1;
           if (gs.advantages.filter(a => a.type === pick).length < advMax) {
             gs.advantages.push({ holder: winnerName, type: pick, foundEp: ep.num, fromAuction: true });
-            effect = pick; effectLabel = pick === 'extraVote' ? 'Extra Vote' : 'Vote Steal';
+            effect = pick; effectLabel = pick === 'extraVote' ? 'Extra Vote' : pick === 'voteSteal' ? 'Vote Steal' : 'Vote Block';
           } else {
             effect = 'food'; effectLabel = '(advantage not available — consolation snack)';
           }

@@ -8207,7 +8207,8 @@ function checkNonIdolAdvantageUse(tribalPlayers, votesObj, ep, voteLog = []) {
     const _isCloseRace = _targetVotes > 0 && _targetVotes >= _maxVotes - 1;
     const _isNervous = ['paranoid', 'desperate'].includes(_state.emotional);
     // Proportional: boldness scales advantage play aggressiveness
-    let _chance = 0.20 + _s.strategic * 0.025 + _s.boldness * 0.015 + (_isCloseRace ? 0.25 : 0) + (_isNervous ? 0.12 : 0);
+    const _evHeat = computeHeat(_holder, tribalPlayers, []);
+    let _chance = _evHeat * (0.03 + _s.strategic * 0.003) + _s.boldness * 0.015 + (_isCloseRace ? 0.25 : 0) + (_isNervous ? 0.12 : 0);
     if (_forAlly) {
       // Selfish/scheming players won't burn an advantage for someone else.
       // Scale the ally-save bonus by loyalty; schemer archetype gets an extra penalty.
@@ -8246,7 +8247,8 @@ function checkNonIdolAdvantageUse(tribalPlayers, votesObj, ep, voteLog = []) {
       .sort((a, b) => b.score - a.score)[0]?.name;
     if (!_stealTarget) continue;
 
-    const _chance = 0.25 + _s.strategic * 0.03 + _s.boldness * 0.015 + (_state.emotional === 'paranoid' ? 0.20 : 0);
+    const _vsHeat = computeHeat(_holder, tribalPlayers, []);
+    const _chance = _vsHeat * (0.05 + _s.strategic * 0.005) + _s.boldness * 0.015 + (_state.emotional === 'paranoid' ? 0.15 : 0);
 
     if (ep._forceAdvantages || Math.random() < _chance) {
       const _stolenEntry = voteLog.find(l => l.voter === _stealTarget);
@@ -8333,7 +8335,7 @@ function checkNonIdolAdvantageUse(tribalPlayers, votesObj, ep, voteLog = []) {
     // Play when in danger or strategically useful — proportional to strategic + boldness
     const _vbHeat = computeHeat(_vbHolder, tribalPlayers, []);
     const _vbForcePlay = ep._forceAdvantages || gs.activePlayers.length <= (seasonConfig.advExpire || 4);
-    const _vbPlayChance = _vbForcePlay ? 1.0 : _vbS.strategic * 0.05 + _vbS.boldness * 0.03 + (_vbHeat >= 3 ? 0.3 : 0);
+    const _vbPlayChance = _vbForcePlay ? 1.0 : _vbHeat * (0.05 + _vbS.strategic * 0.005) + _vbS.boldness * 0.03;
     if (Math.random() >= _vbPlayChance) continue;
 
     // Target: the biggest threat who is likely to vote against the holder
@@ -8379,7 +8381,7 @@ function checkNonIdolAdvantageUse(tribalPlayers, votesObj, ep, voteLog = []) {
       const _tsHeat = computeHeat(_tsHolder, tribalPlayers, []);
       // Play when in serious danger — this is a last resort escape
       const _tsForcePlay = ep._forceAdvantages;
-      const _tsPlayChance = _tsForcePlay ? 1.0 : (_tsHeat >= 4 ? 0.6 : _tsHeat >= 3 ? 0.3 : 0.05) + _tsS.strategic * 0.02;
+      const _tsPlayChance = _tsForcePlay ? 1.0 : _tsHeat * (0.05 + _tsS.strategic * 0.005) + _tsS.boldness * 0.02;
       if (Math.random() >= _tsPlayChance) continue;
 
       // Decide: swap self or save an ally?
@@ -17729,7 +17731,7 @@ function simulateEpisode() {
       const _snpS = pStats(_snpHolder);
       const _snpHeat = computeHeat(_snpHolder, tribalPlayers, []);
       const _snpForcePlay = ep._forceAdvantages || gs.activePlayers.length <= (seasonConfig.advExpire || 4);
-      const _snpPlayChance = _snpForcePlay ? 1.0 : _snpHeat * (0.05 + _snpS.strategic * 0.005) + (10 - _snpS.loyalty) * 0.02 + _snpS.boldness * 0.02 - _snpS.mental * 0.01;
+      const _snpPlayChance = _snpForcePlay ? 1.0 : _snpHeat * (0.05 + _snpS.strategic * 0.005) + (10 - _snpS.loyalty) * 0.02 + _snpS.boldness * 0.02;
       if (Math.random() >= _snpPlayChance) continue;
 
       // Warning decision: tell closest ally?

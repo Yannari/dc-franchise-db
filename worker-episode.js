@@ -66,6 +66,9 @@ function extractCastFromEpisode1(episodes) {
       if (banned.has(lower)) return false;
       if (lower.includes('votes to win')) return false;
       if (lower.includes('place') && lower.includes('player')) return false;
+      // Filter out header lines like "STARTING CAST (18):" or lines with colons/parentheses
+      if (/^starting cast/i.test(n)) return false;
+      if (/^\w+.*\(\d+\)\s*:/.test(n)) return false;
       return true;
     });
 
@@ -781,6 +784,10 @@ CRITICAL RULES:
 HOW TO MAP SIMULATOR SECTIONS TO OUTPUT FORMAT
 ═══════════════════════════════════════════════════════════
 
+The simulator output follows VP (Visual Player) screen order. Each === SECTION === maps
+to one or more output sections. Read the ENTIRE summary first before writing — sections
+reference each other.
+
 SIMULATOR INPUT → OUTPUT DESTINATION:
 
 === META === → copy to output, reformat as:
@@ -792,46 +799,102 @@ SIMULATOR INPUT → OUTPUT DESTINATION:
 === TRIBES (ACTIVE) === → reformat: each tribe gets a # header, players one per line
   (post-merge: list players one per line, no header)
 
-=== ELIMINATED === → copy, one per line
+=== ELIMINATED (PERMANENT) === → copy, one per line
 
-=== EPISODE TYPE === → reformat as ## EPISODE TYPE, use exact language:
-  "PRE-MERGE — Tribal Immunity" or "MERGE EPISODE — Individual Immunity" or "POST-MERGE — Individual Immunity"
+=== ON REDEMPTION ISLAND === → copy if present
 
-=== TRIBE STATUS — [Tribe] === SECRET ADVANTAGES → these feed === ADVANTAGES IN PLAY === (keep at end)
-=== POST-CHALLENGE STATUS — [Tribe] === INDIVIDUAL TARGETS: → actual targeting AFTER the challenge result. Feed ## POST-CHALLENGE STATUS — the real scramble.
-=== POST-CHALLENGE STATUS — [Tribe] === GROUP TARGETS → same, feed ## POST-CHALLENGE STATUS
+=== ON EXILE === → copy if present
 
-=== CAMP EVENTS === → TWO THINGS:
-  (1) Copy ALL events verbatim into ## KEY EVENTS THIS EPISODE, separated into Before/After the challenge
-  (2) ALSO weave them into the narrative: before-challenge events feed ## PRE-CHALLENGE STATUS; after-challenge events feed ## POST-CHALLENGE STATUS
-  Every single event must appear in both places. None can be dropped.
+=== COLD OPEN === → contains "previously on" context (last episode's boot, betrayals).
+  Feed ## PRE-CHALLENGE STATUS opening paragraph: "Coming into this episode..."
 
-=== RELATIONSHIP HIGHLIGHTS — [Tribe] === → weave into ## PRE-CHALLENGE STATUS and ## TRIBE/FACTION RELATIONSHIPS
+=== RETURNS === → RI re-entry or exile duel results. Include as a scene before camp.
+
+=== MERGE === → If present, this is a merge episode. Include the merge announcement as a KEY EVENT.
+
+=== CAMP — PRE-CHALLENGE — [Tribe] === → Contains THREE sub-blocks per tribe:
+  ADVANTAGES: → secret advantages held. Feed === ADVANTAGES IN PLAY === at end.
+  SURVIVAL: → food/water status. Weave into camp atmosphere.
+  CAMP EVENTS: → pre-challenge camp events per tribe. TWO THINGS:
+    (1) Copy ALL events verbatim into ## KEY EVENTS THIS EPISODE → Before the challenge
+    (2) ALSO weave them into ## PRE-CHALLENGE STATUS narrative
+    Every single event must appear in both places. None can be dropped.
+  RELATIONSHIPS — [Tribe]: → bond descriptions. Weave into ## PRE-CHALLENGE STATUS and ## TRIBE/FACTION RELATIONSHIPS
+  ALLIANCES: → named alliances (formed, betrayals, quits). Feed ## NAMED ALLIANCES and ## PRE-CHALLENGE STATUS
+  ALLIANCE CHANGES: → alliance quits this episode. Include in narrative.
+
+=== REWARD CHALLENGE === → reformat as ## REWARD CHALLENGE with Type, Challenge Title, Winner, Key Moments, Reward item, sharing/snubs
 
 === IMMUNITY CHALLENGE === → reformat as ## IMMUNITY CHALLENGE with Type, Challenge Title, Winner, Key Moments
+  May include LAST CHANCE CHALLENGE (head-to-head duel when tribe is down to 2).
+  May include immunity-result twists (HERO DUEL, SHARED IMMUNITY, DOUBLE SAFETY).
 
-=== POST-CHALLENGE STATUS — [Tribe] === individual targets → these supplement the POST-CHALLENGE narrative
-  (Note: if the simulator has a separate POST-CHALLENGE STATUS section, use it; otherwise derive from TRIBE STATUS + challenge result)
+=== TWISTS === → Contains ALL twist scenes for this episode. Each twist is a SCENE that MUST be shown:
+  - THE SUMMIT / THREE GIFTS → SHOW the actual summit scene with nominees choosing gifts. Not just confessionals — show the location, the gifts, the choice, the return to camp.
+  - JOURNEY → travelers sent to a private location. Show the scene.
+  - TRIBE SWAP → show the swap happening.
+  - AUCTION → show the auction scene.
+  - CULTURAL RESET → show alliances being revealed publicly.
+  - SHOT IN THE DARK → declared at tribal, show the roll.
+  - Any other twist type → show as a scene at the appropriate moment in the episode.
+  CRITICAL: Twists are NOT confessionals. They are SCENES. Show them happening.
 
-=== TRIBAL COUNCIL / VOTE ANALYSIS === → reformat as ## TRIBAL COUNCIL / VOTE ANALYSIS, expand with tribal atmosphere
+=== EXILE ISLAND === → A player was sent to exile. Show the exile scene:
+  - Who sent them, reasoning
+  - What they found (or didn't)
+  - Whether they return for tribal
+  Include as a scene BETWEEN challenges and tribal.
 
-=== WHY THIS VOTE HAPPENED === → expand into: Surface story / Real structure (bullet points) / What would have changed it
+=== CAMP — POST-CHALLENGE === → post-challenge camp events per tribe. TWO THINGS:
+  (1) Copy ALL events into ## KEY EVENTS THIS EPISODE → After the challenge
+  (2) Weave into ## POST-CHALLENGE STATUS narrative
 
-=== VOTED OUT THIS EPISODE === → reformat as ## VOTED OUT THIS TRIBAL with Reason label
+=== VOTING PLANS === → The pre-tribal strategy. Contains:
+  ALLIANCE PLANS: each alliance's target, reasoning, members, spearheader, conflicted players
+  INDEPENDENT VOTES: players outside alliances with their targets
+  GOING INTO TRIBAL: primary target, counter target
+  ADVANTAGES IN PLAY: who holds what going into tribal
+  KEY CONFESSIONALS: spearheader and conflicted player quotes
+  → Feed ## POST-CHALLENGE STATUS (the real scramble before tribal)
 
-=== STRATEGIC ANALYSIS === → expand into ## STRATEGIC ANALYSIS with 4–6 full per-player portraits (see format below)
+=== TRIBAL COUNCIL === → Attendees, emotional states (mood), advantages being considered,
+  WORD AT CAMP (top 3 targets with reasoning), tribal Q&A dialogue (host questions, player answers, consequences),
+  TRIBAL DISRUPTION (blowups), OVERPLAYING detection, BLINDSPOT flags.
+  → Feed ## TRIBAL COUNCIL / VOTE ANALYSIS — use the actual dialogue, don't invent new Q&A.
 
-=== CURRENT GAME STATUS === → expand using role tags
+=== THE VOTES === → Per-player vote reasoning, live tally, revotes, rock draws, multi-tribal results.
+  → Feed ## TRIBAL COUNCIL / VOTE ANALYSIS vote breakdown.
 
-=== NAMED ALLIANCES === → keep exactly
+=== WHY THIS VOTE HAPPENED === → Vote analysis, boot explanation, faction collapse/fracture,
+  post-elimination twists (elimination swap, exile duel, second life, jury elimination),
+  tribal blowup/crashout (exit explosion with reveals), black vote cast.
+  → Feed ## WHY THIS VOTE HAPPENED and ## VOTED OUT THIS TRIBAL
 
-=== ADVANTAGES IN PLAY === → keep exactly
+=== SLASHER NIGHT === → If present, replaces normal challenge+tribal. Show the full slasher sequence.
 
-=== ONGOING STORYLINES === → rewrite from scratch using only what actually happened; 5–7 threads; every thread must name specific players and end with a specific forward tension; ban generic filler phrases like "someone knows something they weren't supposed to know"
+=== AMBASSADORS === → If present, show the ambassador meeting scene.
 
-=== COLD OPEN HOOK === → keep as-is
+=== REDEMPTION ISLAND DUEL === / === RESCUE ISLAND === → If present, show the duel/island life.
 
-=== NEXT EPISODE QUESTIONS === → keep as-is
+=== JURY LIFE === → If present, show jury members reflecting.
+
+=== CAMP OVERVIEW === → Current advantages and game status. Feed === ADVANTAGES IN PLAY === and ## CURRENT GAME STATUS.
+
+=== AFTERMATH === → Strategic analysis, ongoing storylines. Feed ## STRATEGIC ANALYSIS and ## ONGOING STORYLINES.
+
+=== WRITER CONTEXT === → Contains stolen credit, fake idol, challenge throws, cold open hook, next episode questions.
+  Feed ## COMEDY BEATS (fake idols, throws), keep COLD OPEN HOOK and NEXT EPISODE QUESTIONS.
+
+FINALE-ONLY SECTIONS (only present in finale episodes):
+=== GRAND CHALLENGE === → final immunity
+=== FINAL CUT === → fire-making or jury cut
+=== FTC Q&A === → jury questions and answers
+=== JURY CONVENES === → jury deliberation
+=== JURY VOTES === → individual jury votes
+=== FAN CAMPAIGN === / === FAN VOTE === → fan vote finale
+=== WINNER CEREMONY === → winner announced
+=== REUNION === → post-game reflections
+=== SEASON STATS === → season records
 
 SECTIONS YOU MUST CREATE (not in simulator output):
 
@@ -840,7 +903,7 @@ SECTIONS YOU MUST CREATE (not in simulator output):
   **Positive ties:** [Player A] ↔ [Player B] — [what holds them together]
   **Friction points:** [Player A] ↔ [Player B] — [what's between them]
   **Strategic impact:** 2–3 sentences about what this relationship map means for the game.
-  Derive every relationship from the RELATIONSHIP HIGHLIGHTS sections.
+  Derive every relationship from the RELATIONSHIPS sub-blocks in CAMP — PRE-CHALLENGE.
 
 ## ANALYZE BEFORE IMMUNITY
   Write as if the challenge hasn't happened yet. Build suspense.

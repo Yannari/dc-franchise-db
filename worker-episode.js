@@ -3000,8 +3000,32 @@ Owen covers himself in urine because that's Owen. It's gross and it doesn't help
 EPISODE STRUCTURE (CRITICAL)
 ═══════════════════════════════════════════════════════════
 
+⚠️ TOTAL EPISODE LENGTH: 400-600 lines MAX. Not every scene needs to be long.
+Scenes should be TIGHT — enter late, leave early. If a scene isn't revealing
+character, strategy, or emotion, cut it.
+
+⚠️ EPISODE 1 IS DIFFERENT:
+Episode 1 has NO "Previously on..." because nothing has happened yet.
+Instead, Episode 1 opens with:
+- Chris introduces the season, the location, the twist/format
+- The cast ARRIVES — show them meeting each other for the first time
+- First impressions, initial sizing up, the energy of day one
+- Then into camp life where alliances begin forming
+Do NOT write Episode 1 like it's mid-season. Nobody knows anyone. Nobody has
+grudges or history. Everything is first meetings and early reads.
+
+⚠️ CHRONOLOGY IS SACRED:
+The episode follows real time. Events happen in THIS order:
+  Camp morning → Summit/Journey/Twists (if any) → Reward Challenge (if any) →
+  Exile Island (if any) → Immunity Challenge → Post-challenge scramble →
+  Voting plans → Tribal Council → Vote → Elimination → Exit
+Characters cannot reference things that haven't happened yet. If the challenge
+hasn't occurred, nobody discusses "after the challenge." If it's day 1, nobody
+says "yesterday" or "this week." Check your timeline before every scene.
+
 1. **COLD OPEN (30-50 lines)**
-   - "Previously on..." recap with Chris McLean
+   - Episode 1: Chris intro + cast arrival (see above)
+   - Later episodes: "Previously on..." recap with Chris McLean
    - Immediate character drama OR strategic conversation
    - Sets up episode's emotional/strategic arc
 
@@ -3016,54 +3040,53 @@ EPISODE STRUCTURE (CRITICAL)
    - At least one confessional during or after the feast about what the merge means for that specific player's game
    The merge announcement is one of the most dramatic moments of any Survivor-style season. Write it like it matters.
 
-2. **MORNING CAMP LIFE (100-150 lines)**
+2. **MORNING CAMP LIFE (80-120 lines)**
    - Multiple camp scenes showing different relationships
    - Characters bonding over personal topics (family, background, fears)
    - Strategic conversations forming alliances
    - Personality clashes and arguments
    - Confessionals revealing backstories and motivations
-   - Chef Hatchet may occasionally appear (especially early episodes) for meals or camp activities
-   
-   EXAMPLES:
-   - Ted and Lynda bond over being parents
-   - Zaid shares culinary school story with Ivy
-   - Hannah gives life advice to Amelie
-   - Logan tries to understand Alessio's art obsession
-   - (Early episodes only) Chef serves disgusting breakfast and complainers react
 
-3. **CHALLENGE SEQUENCE (150-200 lines)**
+3. **SUMMIT / JOURNEY / TWIST SCENES (40-80 lines, if present)**
+   If the summary has a === TWISTS === section with Summit, Journey, Auction, or other
+   twist events, these are FULL SCENES that must be shown happening on screen:
+   - THE SUMMIT: Show the nominees traveling to the location. Show them choosing gifts.
+     Show the consequences (returning to camp empty-handed, finding an idol, etc.)
+   - JOURNEY: Show travelers arriving, the challenge, the outcome
+   - AUCTION: Show bidding, items, reactions
+   - EXILE ISLAND: If === EXILE ISLAND === exists, show the player being sent,
+     what they found (or didn't), their time alone, their return
+   These are NOT confessionals about what happened. They are SCENES.
+
+4. **REWARD CHALLENGE (60-100 lines, if present)**
+   - Only if the summary has a === REWARD CHALLENGE === section
+   - Challenge sequence with host intro, play-by-play, result
+   - Reward sharing scene if applicable
+
+5. **IMMUNITY CHALLENGE (100-150 lines)**
    - Host intro with personality (Chris McLean: sarcastic, sadistic, loves drama)
-   - Chef Hatchet may assist with physical challenges or judging
    - Clear challenge explanation with visual details
-   - Individual matchups with play-by-play commentary
-   - Character reactions during action: [gasps], [groans], [screams]
-   - Confessionals between rounds showing strategy/emotion
+   - Play-by-play with standout/weak link moments from the summary
    - Victory celebration OR defeat aftermath
-   - ⚠️ SEE "CHALLENGE INVENTION" SECTION BELOW — you create the challenge, the summary only tells you who won
+   - ⚠️ SEE "CHALLENGE INVENTION" SECTION BELOW
 
-4. **POST-CHALLENGE SCRAMBLING (100-150 lines)**
+6. **POST-CHALLENGE SCRAMBLING (80-120 lines)**
    - Losing tribe returns to camp
-   - Alliance meetings with actual strategy discussion
-   - Players approaching others for votes
-   - Paranoia and suspicion building
-   - Side conversations revealing different plans
-   - Confessionals showing true intentions vs. public statements
+   - Use the === VOTING PLANS === section as the skeleton for this scramble
+   - Show alliance meetings: who's the spearheader, what's the pitch, who's conflicted
+   - Independent voters making their decisions
+   - Paranoia building, side deals, last-minute pivots
+   - The VOTING PLANS section tells you exactly who targeted whom and why — dramatize it
 
-5. **PRE-TRIBAL TENSION (50-100 lines)**
-   - Final conversations before vote
-   - Last-minute flip attempts
-   - Emotional moments (fear of going home)
-   - Strategic positioning
+7. **TRIBAL COUNCIL (50-80 lines)**
+   - Use the === TRIBAL COUNCIL === section's actual Q&A dialogue
+   - Don't invent new Q&A — the summary provides Chris's questions, player answers, and consequences
+   - Show the emotional states from the summary (mood badges)
+   - Word at Camp targets from the summary inform body language
+   - Disruption/overplaying events from the summary are scenes at tribal
+   - Voting sequence with confessionals
 
-6. **TRIBAL COUNCIL (50-80 lines)**
-   - Chris asks questions that reveal dynamics (with sarcasm and glee)
-   - Players defending themselves
-   - Voting sequence
-   - Vote reveals with reactions
-   - Elimination exit (can be gracious, bitter, or revealing)
-   - Chris makes sarcastic comments throughout
-
-7. **EXIT CONFESSIONAL & TAG (15-25 lines)**
+8. **EXIT CONFESSIONAL & TAG (15-25 lines)**
    - ⚠️ THE ELIMINATED PLAYER MUST HAVE A FINAL CONFESSIONAL. This is non-negotiable. Every boot gets one last confessional — on the boat, at the dock, walking away, wherever. It is their last moment to speak directly to the audience. Do not skip it.
    - The confessional should sound like THEM, not a generic exit speech. How do they actually feel? Bitter? Relieved? Proud? Unbothered? Blindsided? Let it be specific to who they are.
    - The eliminated player's walk to the Dock of Shame is a SCENE, not a goodbye wave
@@ -3239,6 +3262,11 @@ Before writing a line, ask: "Would THIS specific character say THIS?" Courtney d
 ═══════════════════════════════════════════════════════════
 DIALOGUE RULES (CRITICAL - AI KEEPS SCREWING THIS UP)
 ═══════════════════════════════════════════════════════════
+
+🚫 **CHARACTERS NEVER REFER TO THEMSELVES IN THIRD PERSON**
+   A character named Sam will NEVER say "Sam is dangerous" or "the safer vote than Sam."
+   They say "I" and "me." Check every line of dialogue: is the speaker's own name in it?
+   If yes, rewrite it. The only exception is when someone is quoting what others said about them.
 
 🚫 **STOP BEING "CLEVER" - WRITE LIKE ACTUAL HUMANS**
 1. COMPOUND-NOUN WORDPLAY — This is the #1 slop tell. Never do this.

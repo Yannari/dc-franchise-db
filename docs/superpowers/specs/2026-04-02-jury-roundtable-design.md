@@ -21,32 +21,35 @@ The result: jurors feel like passive observers. In reality (and in DC), jury hou
 
 Called during jury-elimination twist episodes, after jury life events are generated. Bond shifts carry forward into future episodes and eventually into FTC voting.
 
-**Step 1 — Identify lobbyists:**
-Jurors with strong opinions about finalists (active players heading toward FTC):
-- **Champion lobbyist:** bond >= 4 with a finalist. Will argue FOR that finalist.
-- **Bitter lobbyist:** bond <= -4 with a finalist. Will argue AGAINST that finalist.
-- If a juror qualifies for both, pick whichever bond magnitude is stronger.
-- Each lobbyist has ONE agenda (one finalist to champion or oppose).
+**Step 1 — Identify lobbyists (proportional activation):**
+Any juror CAN lobby. Whether they speak up depends on bond strength + personality:
+- **Lobby chance:** `abs(bond_with_strongest_finalist) * 0.08 + boldness * 0.03`
+  - Bond 5, boldness 7 = 61%. Bond 2, boldness 3 = 25%. Stronger feelings + bolder personalities speak up more.
+- **Agenda:** If highest bond with any active player is positive → champion that player. If lowest bond is negative and has larger magnitude → oppose that player.
+- Each lobbyist has ONE agenda (one active player to champion or oppose).
 
 "Finalists" at this point = `gs.activePlayers` (the people still in the game who could reach FTC).
 
-**Step 2 — Identify persuadable jurors:**
-Jurors whose top two active-player bond scores are within margin < 2. These are swing votes — they don't have a strong locked-in preference yet.
+**Step 2 — Identify persuadable jurors (proportional margin):**
+Jurors whose top two active-player bond scores are close — swing votes without a locked-in preference.
 
-Use bond magnitude to rank active players per juror: `score = getBond(juror, player)`. If the gap between #1 and #2 is < 2, the juror is persuadable.
+- **Margin threshold:** `2.0 - juror_social * 0.08`
+  - Social 10 = margin 1.2 (reads people well, harder to be "undecided"). Social 3 = margin 1.76 (more susceptible).
+- Use bond to rank active players per juror. If gap between #1 and #2 is less than the juror's margin threshold, they're persuadable.
+- Jurors who activated as lobbyists are NOT persuadable (they have fixed opinions).
 
-Jurors who are lobbyists themselves are NOT persuadable (they have fixed opinions).
-
-**Step 3 — Lobbying rolls:**
+**Step 3 — Lobbying rolls (all proportional):**
 For each lobbyist, attempt to persuade each persuadable juror:
 
 - **Persuasion chance:** `lobbyist_social * 0.04 + max(0, getBond(lobbyist, target_juror)) * 0.05`
-  - Social skill matters (proportional). Lobbyist-juror relationship matters.
-  - Negative bond with target = no influence (capped at 0 via max).
-- **Pushback:** If target juror has bond >= 3 with the finalist being opposed, OR bond <= -3 with the finalist being championed, they resist. Lobby fails. Generate pushback event.
-- **Success:** 
-  - Champion lobby: `addBond(target_juror, championed_finalist, +0.4)`
-  - Bitter lobby: `addBond(target_juror, opposed_finalist, -0.4)`
+  - Social skill matters. Lobbyist-juror relationship matters. Negative bond = no influence (capped at 0 via max).
+- **Pushback resistance:** `abs(getBond(juror, discussed_finalist)) * 0.12 + juror_strategic * 0.03`
+  - Strategic jurors harder to sway. Strong existing opinions harder to move. But nobody is immune.
+  - If `Math.random() < resistance` → lobby fails, generate pushback event.
+- **Bond shift on success (proportional to social):**
+  - Champion lobby: `addBond(target_juror, championed_finalist, +(0.15 + lobbyist_social * 0.03))`
+    - Social 3 = +0.24. Social 8 = +0.39. Social 10 = +0.45.
+  - Bitter lobby: `addBond(target_juror, opposed_finalist, -(0.15 + lobbyist_social * 0.03))`
 - **Cap:** Each persuadable juror can only be shifted ONCE per roundtable. First successful lobby wins.
 
 **Step 4 — Generate discussion events per active player:**

@@ -6148,7 +6148,7 @@ function simulateIndividualChallenge(pool, immune) {
       const heat = computeHeat(name, candidates, gs.namedAlliances || []);
       // Motivation: proportional — higher heat + streak = more reason to lay low
       // Roll: strategic players recognize when to throw, bold players resist (want to win)
-      const throwChance = heat * (s.strategic * 0.008) + streak * 0.08 - s.boldness * 0.015;
+      const throwChance = heat * (s.strategic * 0.012) + streak * 0.08 - s.boldness * 0.015;
       if (throwChance > 0 && Math.random() < throwChance) {
         _throwers.add(name);
       }

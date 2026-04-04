@@ -3069,6 +3069,209 @@ function checkPerceivedBondTriggers(ep) {
       });
     });
   });
+
+  // ── Trigger D: Alliance Blindspot ──
+  // An alliance targets one of its own members AND the target didn't sense it (failed scramble check)
+  (gs.namedAlliances || []).forEach(alliance => {
+    if (!alliance.active) return;
+    const activeMembers = alliance.members.filter(m => gs.activePlayers.includes(m));
+    if (activeMembers.length < 3) return;
+    // Check if this alliance's vote target is one of its own members
+    const epAlliances = ep.alliances || [];
+    epAlliances.forEach(a => {
+      if (a.label !== alliance.name) return;
+      if (!a.target || !activeMembers.includes(a.target)) return;
+      const target = a.target;
+      // Did the target sense it? Use the scramble check formula
+      const tS = pStats(target);
+      const _senseChance = tS.strategic * 0.05 + tS.intuition * 0.02;
+      if (Math.random() < _senseChance) return; // they sensed it — no blindspot
+      // Freeze perceived bonds with alliance members
+      activeMembers.forEach(member => {
+        if (member === target) return;
+        const key = target + '→' + member;
+        if (gs.perceivedBonds[key]) return;
+        const realBond = getBond(target, member);
+        if (realBond < 1) return; // they already don't trust this person
+        addPerceivedBond(target, member, realBond, 'alliance-blindspot');
+      });
+      // Camp event (~40% chance)
+      if (Math.random() < 0.40) {
+        const pr = pronouns(target);
+        const tribeKey = campKey || gs.tribes.find(t => t.members.includes(target))?.name;
+        if (tribeKey && ep.campEvents?.[tribeKey]?.pre) {
+          ep.campEvents[tribeKey].pre.push({
+            type: 'allianceBlindspot', players: [target],
+            text: _pick([
+              `${target} sits with the alliance at dinner. The conversation feels the same as always. It isn't.`,
+              `${target} checks in with everyone. They all say the right things. None of them mean it.`,
+              `The plan is set. ${target} is the only one who doesn't know.`,
+              `${target} goes to bed feeling safe. ${pr.Sub} shouldn't.`,
+            ]),
+            badgeText: 'ONE-SIDED', badgeClass: 'gold'
+          });
+        }
+      }
+    });
+  });
+
+  // ── Trigger E: Post-Betrayal Denial ──
+  // After votes: if A was betrayed by an ally and A has loyalty >= 7, perceived bond drops slower
+  vlog.forEach(v => {
+    if (!v.voter || v.voter === 'THE GAME' || !v.voted) return;
+    const betrayer = v.voter, victim = v.voted;
+    if (!gs.activePlayers.includes(victim)) return;
+    const victimS = pStats(victim);
+    if (victimS.loyalty < 7) return;
+    const preBond = getBond(victim, betrayer);
+    if (preBond < 2) return; // wasn't a trusted relationship
+    // Check if they were in the same named alliance
+    const sharedAlliance = (gs.namedAlliances || []).some(a =>
+      a.active && a.members.includes(victim) && a.members.includes(betrayer)
+    );
+    if (!sharedAlliance && preBond < 4) return; // needs either alliance or very strong bond
+    const key = victim + '→' + betrayer;
+    if (gs.perceivedBonds[key]) return;
+    // Perceived bond freezes near pre-vote level; real bond will crash from the betrayal
+    const correctionRate = Math.max(0.05, victimS.intuition * 0.08 - victimS.loyalty * 0.03);
+    gs.perceivedBonds[key] = { perceived: preBond, reason: 'post-betrayal-denial', createdEp: curEp, correctionRate };
+    // Camp event (~45% chance — denial is visible to the tribe)
+    if (Math.random() < 0.45) {
+      const pr = pronouns(victim);
+      const tribeKey = campKey || gs.tribes.find(t => t.members.includes(victim))?.name;
+      if (tribeKey && ep.campEvents?.[tribeKey]?.pre) {
+        ep.campEvents[tribeKey].pre.push({
+          type: 'betrayalDenial', players: [victim, betrayer],
+          text: _pick([
+            `${victim} still sits next to ${betrayer} at the fire. Everyone else sees it. ${pr.Sub} ${pr.sub==='they'?'don\'t':'doesn\'t'}. Not yet.`,
+            `${victim} makes excuses for ${betrayer}. "Maybe ${betrayer} had no choice." The tribe doesn't argue. They know.`,
+            `${victim} won't hear it. ${betrayer} is still ${pr.pos} ally. That's the story ${pr.sub} ${pr.sub==='they'?'are':'is'} telling ${pr.ref}.`,
+          ]),
+          badgeText: 'ONE-SIDED', badgeClass: 'gold'
+        });
+      }
+    }
+  });
+
+  // ── Trigger F: Showmance Blindspot ──
+  // Partner in showmance with loyalty <= 5 OR in a separate alliance targeting the player
+  (gs.showmances || []).forEach(shm => {
+    if (!shm.players || shm.players.length < 2) return;
+    if (shm.phase !== 'honeymoon' && shm.phase !== 'ride-or-die') return;
+    const [a, b] = shm.players;
+    if (!gs.activePlayers.includes(a) || !gs.activePlayers.includes(b)) return;
+    // Check each direction
+    [{ loyal: a, drifter: b }, { loyal: b, drifter: a }].forEach(({ loyal, drifter }) => {
+      const dS = pStats(drifter);
+      // Drifter has low loyalty OR is in a separate alliance targeting the loyal partner
+      const isLowLoyalty = dS.loyalty <= 5;
+      const isPlotting = (gs.namedAlliances || []).some(al =>
+        al.active && al.members.includes(drifter) && !al.members.includes(loyal)
+      );
+      if (!isLowLoyalty && !isPlotting) return;
+      const key = loyal + '→' + drifter;
+      if (gs.perceivedBonds[key]) return;
+      const realBond = getBond(loyal, drifter);
+      if (realBond < 5) return; // showmance bond should be high
+      // Inflate perceived bond to showmance levels
+      addPerceivedBond(loyal, drifter, Math.min(10, realBond + 1.5), 'showmance-blindspot');
+      // Override correction rate — very slow for showmance
+      gs.perceivedBonds[key].correctionRate = pStats(loyal).intuition * 0.05;
+      // Camp event (~30% chance)
+      if (Math.random() < 0.30) {
+        const pr = pronouns(loyal);
+        const tribeKey = campKey || gs.tribes.find(t => t.members.includes(loyal))?.name;
+        if (tribeKey && ep.campEvents?.[tribeKey]?.pre) {
+          ep.campEvents[tribeKey].pre.push({
+            type: 'showmanceBlindspot', players: [loyal, drifter],
+            text: _pick([
+              `${loyal} thinks they're going to the end together. ${drifter} has been having conversations ${loyal} doesn't know about.`,
+              `The showmance is real for ${loyal}. For ${drifter}, it's a strategy.`,
+              `${loyal} trusts ${drifter} completely. ${drifter} trusts the game more.`,
+            ]),
+            badgeText: 'ONE-SIDED', badgeClass: 'gold'
+          });
+        }
+      }
+    });
+  });
+
+  // ── Trigger G: Provider Entitlement ──
+  // Provider whose tribe bonds are declining — they think food buys loyalty
+  if (gs.currentProviders?.length) {
+    gs.currentProviders.forEach(provider => {
+      if (!gs.activePlayers.includes(provider)) return;
+      // Check if average bond with tribemates has declined over last 2 episodes
+      const tribe = gs.isMerged ? gs.activePlayers : (gs.tribes.find(t => t.members.includes(provider))?.members || []);
+      const tribemates = tribe.filter(m => m !== provider);
+      if (!tribemates.length) return;
+      const avgBond = tribemates.reduce((sum, m) => sum + getBond(provider, m), 0) / tribemates.length;
+      // Only trigger if bonds are actually declining (avg below 2) — provider thinks they should be higher
+      if (avgBond >= 2) return;
+      // Check if any tribemate already has a gap with this provider
+      const existingGaps = tribemates.filter(m => gs.perceivedBonds[provider + '→' + m]);
+      if (existingGaps.length >= 2) return; // already tracking enough
+      // Pick 1-2 tribemates with declining bonds
+      const decliningMates = tribemates.filter(m => getBond(provider, m) < 1.5).slice(0, 2);
+      decliningMates.forEach(mate => {
+        const key = provider + '→' + mate;
+        if (gs.perceivedBonds[key]) return;
+        const realBond = getBond(provider, mate);
+        addPerceivedBond(provider, mate, realBond + 1.0 + Math.random() * 0.5, 'provider-entitlement');
+      });
+      // Camp event (~25% chance)
+      if (decliningMates.length && Math.random() < 0.25) {
+        const pr = pronouns(provider);
+        const tribeKey = campKey || gs.tribes.find(t => t.members.includes(provider))?.name;
+        if (tribeKey && ep.campEvents?.[tribeKey]?.pre) {
+          ep.campEvents[tribeKey].pre.push({
+            type: 'providerEntitlement', players: [provider],
+            text: _pick([
+              `${provider} caught three fish today. ${pr.Sub} think${pr.sub==='they'?'s':''} that buys ${pr.obj} another week. It doesn't.`,
+              `${provider} works harder than anyone at camp. ${pr.Sub} think${pr.sub==='they'?'s':''} that matters more than it does.`,
+              `${provider} looks at the fire ${pr.sub} built, the food ${pr.sub} caught, and wonders why the tribe isn't more grateful.`,
+            ]),
+            badgeText: 'ONE-SIDED', badgeClass: 'gold'
+          });
+        }
+      }
+    });
+  }
+
+  // ── Trigger H: Swap Loyalty Assumption ──
+  // Player recently swapped tribes and mistakes early friendliness for genuine loyalty
+  if (gs._recentSwaps) {
+    Object.entries(gs._recentSwaps).forEach(([name, swapEp]) => {
+      if (!gs.activePlayers.includes(name)) return;
+      if (curEp - swapEp > 2) { delete gs._recentSwaps[name]; return; } // only first 2 episodes after swap
+      const tribe = gs.tribes.find(t => t.members.includes(name));
+      if (!tribe) return;
+      const newMates = tribe.members.filter(m => m !== name);
+      newMates.forEach(mate => {
+        const key = name + '→' + mate;
+        if (gs.perceivedBonds[key]) return;
+        const realBond = getBond(name, mate);
+        if (realBond < 0.5) return; // no positive bond to inflate
+        addPerceivedBond(name, mate, realBond + 1.0 + Math.random() * 0.5, 'swap-loyalty-assumption');
+      });
+      // Camp event (once per swap, first episode only)
+      if (curEp === swapEp) {
+        const pr = pronouns(name);
+        const tribeKey = tribe.name;
+        if (ep.campEvents?.[tribeKey]?.pre) {
+          ep.campEvents[tribeKey].pre.push({
+            type: 'swapLoyaltyAssumption', players: [name],
+            text: _pick([
+              `${name} thinks ${pr.sub} ${pr.sub==='they'?'have':'has'} found a new home. The tribe is being kind. Kind isn't the same as loyal.`,
+              `The new tribe welcomed ${name}. Smiles. Shelter space. A seat at the fire. It felt real. The question is whether it stays that way.`,
+              `${name} reads the warmth as loyalty. It might just be politeness. ${pr.Sub} can't tell yet.`,
+            ]),
+            badgeText: 'ONE-SIDED', badgeClass: 'gold'
+          });
+        }
+      }
+    });
+  }
 }
 
 const DEFAULT_STATS = { physical:5, endurance:5, mental:5, social:5, strategic:5, loyalty:5, boldness:5, intuition:5, temperament:5 };
@@ -17487,6 +17690,17 @@ function simulateEpisode() {
   // Refresh tribesAtStart after team-changing twists (swap, dissolve, expansion, mutiny, abduction)
   const _teamTwists = ['tribe-swap','tribe-dissolve','tribe-expansion','mutiny','abduction','first-impressions'];
   if (ep.twists.some(t => _teamTwists.includes(t.type))) {
+    // Track who changed tribes for Trigger H (swap loyalty assumption)
+    const _oldTribes = ep.tribesAtStart || [];
+    const _curEpNum = (gs.episode || 0) + 1;
+    if (!gs._recentSwaps) gs._recentSwaps = {};
+    gs.activePlayers.forEach(name => {
+      const oldTribe = _oldTribes.find(t => t.members.includes(name))?.name;
+      const newTribe = gs.tribes.find(t => t.members.includes(name))?.name;
+      if (oldTribe && newTribe && oldTribe !== newTribe) {
+        gs._recentSwaps[name] = _curEpNum;
+      }
+    });
     ep.tribesAtStart = gs.tribes.map(t => ({ name: t.name, members: [...t.members] }));
   }
 

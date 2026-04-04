@@ -22075,8 +22075,8 @@ function _textMeta(ep, ln, sec) {
   const cfg = seasonConfig;
   sec('META');
   ln(`Season: ${cfg.name||'Unknown'} | Episode: ${ep.num} | Phase: ${gs.phase || 'unknown'} | Players Remaining: ${gs.activePlayers.length}`);
-  if (cfg.ri) ln('Format: Redemption Island — voted out players may fight back via RI duels');
-  if (cfg.riFormat === 'rescue') ln('Format: Rescue Island — all eliminees go to Rescue Island (social game)');
+  if (cfg.ri && cfg.riFormat !== 'rescue') ln('Format: Redemption Island — voted out players may fight back via RI duels');
+  if (cfg.ri && cfg.riFormat === 'rescue') ln('Format: Rescue Island — all eliminees go to Rescue Island (social game)');
 }
 
 // ── HEADER: CAST ──

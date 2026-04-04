@@ -1510,6 +1510,7 @@ const TWIST_CATALOG = [
   { id:'mutiny',           emoji:'⚔️', name:'Mutiny',               category:'team',       phase:'pre-merge',  desc:'Players may voluntarily switch tribes during a challenge.',                  engineType:'mutiny'          },
   { id:'abduction',        emoji:'🫳', name:'Abduction',            category:'team',       phase:'pre-merge',  desc:'Each tribe steals one player from a competing tribe.',                      engineType:'abduction'       },
   { id:'kidnapping',       emoji:'🫳', name:'Kidnapping',           category:'team',       phase:'pre-merge',  desc:'Challenge winner tribe kidnaps one player from the losing tribe. That player skips tribal (safe) and bonds with their captors. Returns next episode.', engineType:'kidnapping' },
+  { id:'first-impressions',emoji:'👀', name:'First Impressions',    category:'team',       phase:'pre-merge',  desc:'Each tribe votes someone out on first impressions alone. The "eliminated" players swap tribes instead.', engineType:'first-impressions' },
   // Immunity
   { id:'shared-immunity',  emoji:'🛡️', name:'Shared Immunity',      category:'immunity',   phase:'post-merge', desc:'Immunity winner picks one other player to share the necklace with.',        engineType:'shared-immunity', incompatible:['double-safety','hero-duel'] },
   { id:'double-safety',    emoji:'🛡️', name:'Double Safety',        category:'immunity',   phase:'post-merge', desc:'Two players win immunity — the challenge winner and the runner-up.',         engineType:'double-safety',  incompatible:['shared-immunity','hero-duel'] },
@@ -8829,6 +8830,87 @@ function simulateJourney(ep) {
   gs.journeyHistory.push({ ep: ep.num, travelers, results });
 }
 
+// ── FIRST IMPRESSIONS: mock vote → round-robin tribe swap ──
+function executeFirstImpressions(ep, twistObj) {
+  if (gs.phase !== 'pre-merge' || gs.tribes.length < 2) return;
+  const _pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  const results = []; // { tribe, votedOut, votes, voters, nonVoters, sentTo }
+
+  // Step 1: each tribe runs a full vote (no immune, no challenge context)
+  gs.tribes.forEach(tribe => {
+    const members = [...tribe.members];
+    const alliances = formAlliances(members, tribe.name, null);
+    const voteResult = simulateVotes(members, null, alliances, [], false);
+    // Find the target (most votes)
+    const voteCounts = voteResult.votes;
+    const sorted = Object.entries(voteCounts).sort((a, b) => b[1] - a[1]);
+    const votedOut = sorted[0]?.[0];
+    if (!votedOut) return;
+    // Track who voted for the target
+    const voters = voteResult.log.filter(l => l.voted === votedOut).map(l => l.voter);
+    const nonVoters = members.filter(m => m !== votedOut && !voters.includes(m));
+    results.push({ tribe: tribe.name, votedOut, votes: voteCounts, voters, nonVoters, log: voteResult.log });
+  });
+
+  if (!results.length) return;
+
+  // Step 2: round-robin swap assignment
+  for (let i = 0; i < results.length; i++) {
+    const nextIdx = (i + 1) % results.length;
+    results[i].sentTo = gs.tribes[nextIdx].name;
+  }
+
+  // Step 3: apply bond consequences BEFORE moving players
+  results.forEach(r => {
+    const pr = pronouns(r.votedOut);
+    // Bond damage with voters (-2.0)
+    r.voters.forEach(v => addBond(r.votedOut, v, -2.0));
+    // Bond boost with non-voters (+0.5) — "you didn't vote me out, I remember that"
+    r.nonVoters.forEach(nv => addBond(r.votedOut, nv, 0.5));
+    // Bond boost with new tribe members (+1.0)
+    const newTribe = gs.tribes.find(t => t.name === r.sentTo);
+    if (newTribe) {
+      newTribe.members.forEach(m => addBond(r.votedOut, m, 1.0));
+    }
+    // Emotional state: uneasy
+    if (!gs.playerStates) gs.playerStates = {};
+    if (!gs.playerStates[r.votedOut]) gs.playerStates[r.votedOut] = { emotional: 'content', votesReceived: 0, lastVotedEp: null, bigMoves: 0 };
+    gs.playerStates[r.votedOut].emotional = 'uneasy';
+  });
+
+  // Step 4: move players — remove from old tribes, add to new tribes
+  results.forEach(r => {
+    const oldTribe = gs.tribes.find(t => t.name === r.tribe);
+    const newTribe = gs.tribes.find(t => t.name === r.sentTo);
+    if (oldTribe) oldTribe.members = oldTribe.members.filter(m => m !== r.votedOut);
+    if (newTribe && !newTribe.members.includes(r.votedOut)) newTribe.members.push(r.votedOut);
+  });
+
+  // Step 5: inject camp events for swapped players
+  results.forEach(r => {
+    const pr = pronouns(r.votedOut);
+    const campKey = r.sentTo;
+    if (!ep.campEvents) ep.campEvents = {};
+    if (!ep.campEvents[campKey]) ep.campEvents[campKey] = { pre: [], post: [] };
+    const pre = ep.campEvents[campKey].pre;
+    pre.push({ type: 'firstImpressionsSwap', players: [r.votedOut], text: _pick([
+      `${r.votedOut} walks into ${r.sentTo} camp carrying nothing but a grudge. ${pr.Sub} know${pr.sub==='they'?'':'s'} exactly who put ${pr.obj} here.`,
+      `${r.votedOut} arrives at ${r.sentTo}. New faces. Fresh start. But ${pr.sub} ${pr.sub==='they'?'haven\'t':'hasn\'t'} forgotten what ${r.tribe} did.`,
+      `The tribe watches ${r.votedOut} walk in. Nobody expected a new face this early. ${r.votedOut} doesn't explain — ${pr.sub} just start${pr.sub==='they'?'':'s'} building shelter.`,
+      `${r.votedOut} drops ${pr.pos} bag at ${r.sentTo} and looks around. These people didn't vote ${pr.obj} out. That's a start.`,
+      `${r.votedOut} doesn't say much when ${pr.sub} arrive${pr.sub==='they'?'':'s'} at ${r.sentTo}. The look on ${pr.pos} face says enough. ${pr.Sub} ${pr.sub==='they'?'were':'was'} voted out by ${pr.pos} own tribe on day one.`,
+    ]), badgeText: 'SWAPPED', badgeClass: 'gold' });
+  });
+
+  // Step 6: store results for VP
+  twistObj.firstImpressions = results.map(r => ({
+    tribe: r.tribe, votedOut: r.votedOut, votes: r.votes, voters: r.voters,
+    nonVoters: r.nonVoters, sentTo: r.sentTo, log: r.log
+  }));
+  twistObj.newTribes = gs.tribes.map(t => ({ name: t.name, members: [...t.members] }));
+  gs.sitOutHistory = {}; // reset sit-out tracking after roster change
+}
+
 function applyTwist(ep, twist, isPrimary = true) {
   // Resolve engineType from TWIST_CATALOG so catalog aliases work
   const catalogEntry = TWIST_CATALOG.find(t => t.id === twist.type);
@@ -8908,6 +8990,9 @@ function applyTwist(ep, twist, isPrimary = true) {
     // This fires BEFORE the challenge — mark it pending. The actual kidnap happens post-challenge.
     twistObj.kidnappingPending = true;
     gs.kidnappingPending = true;
+
+  } else if (engineType === 'first-impressions') {
+    executeFirstImpressions(ep, twistObj);
 
   } else if (engineType === 'mutiny') {
     if (gs.phase !== 'pre-merge' || gs.tribes.length < 2) return;
@@ -17158,7 +17243,7 @@ function simulateEpisode() {
   });
   scheduledTwists.forEach((twist, i) => applyTwist(ep, twist, i === 0));
   // Refresh tribesAtStart after team-changing twists (swap, dissolve, expansion, mutiny, abduction)
-  const _teamTwists = ['tribe-swap','tribe-dissolve','tribe-expansion','mutiny','abduction'];
+  const _teamTwists = ['tribe-swap','tribe-dissolve','tribe-expansion','mutiny','abduction','first-impressions'];
   if (ep.twists.some(t => _teamTwists.includes(t.type))) {
     ep.tribesAtStart = gs.tribes.map(t => ({ name: t.name, members: [...t.members] }));
   }
@@ -20929,6 +21014,9 @@ function generateTwistScenes(ep) {
 
       case 'exile-island':
         break; // shown post-challenge in buildVPScreens — not here
+
+      case 'first-impressions':
+        break; // dedicated VP screen — rpBuildFirstImpressions
 
       case 'fire-making':
         sc.push({ text: 'Tonight, the person voted out gets a Second Life.', players: [] });
@@ -27248,10 +27336,109 @@ function rpBuildMergeAnnouncement(ep) {
   return html;
 }
 
+// ── First Impressions VP Screen — click-by-click vote reveal per tribe, twist card, swap announcement ──
+function rpBuildFirstImpressions(ep, twistObj) {
+  const fi = twistObj.firstImpressions;
+  if (!fi?.length) return null;
+  const stateKey = String(ep.num) + '_fi';
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: 0 };
+  const state = _tvState[stateKey];
+
+  // Build all reveal steps: per-tribe votes (one by one), target reveal, twist card, then swap
+  const steps = [];
+  fi.forEach((tribe, tIdx) => {
+    // Tribe header step
+    steps.push({ type: 'tribe-header', tribe: tribe.tribe, tribeIdx: tIdx });
+    // Individual vote cards
+    (tribe.log || []).forEach((v, vIdx) => {
+      steps.push({ type: 'vote', tribe: tribe.tribe, tribeIdx: tIdx, voter: v.voter, voted: v.voted, reason: v.reason, voteIdx: vIdx });
+    });
+    // Target revealed
+    steps.push({ type: 'target', tribe: tribe.tribe, tribeIdx: tIdx, votedOut: tribe.votedOut, votes: tribe.votes });
+    // Twist card
+    steps.push({ type: 'twist-reveal', tribe: tribe.tribe, tribeIdx: tIdx, votedOut: tribe.votedOut });
+  });
+  // Final swap announcement
+  steps.push({ type: 'swap-announce', tribes: fi });
+
+  const visibleSteps = steps.slice(0, state.idx + 1);
+  const allRevealed = state.idx >= steps.length - 1;
+
+  let html = `<div class="rp-page tod-deepnight">
+    <div class="rp-eyebrow">Episode ${ep.num}</div>
+    <div style="font-family:var(--font-display);font-size:28px;letter-spacing:2px;text-align:center;color:var(--accent-gold);text-shadow:0 0 20px var(--accent-gold);margin-bottom:20px;animation:scrollDrop 0.5s var(--ease-broadcast) both">FIRST IMPRESSIONS</div>
+    <div style="text-align:center;font-size:13px;color:#8b949e;margin-bottom:20px">Before camp. Before strategy. Before anything — the tribe has spoken.</div>`;
+
+  visibleSteps.forEach(step => {
+    if (step.type === 'tribe-header') {
+      html += `<div style="font-family:var(--font-display);font-size:18px;color:#e6edf3;text-align:center;margin:20px 0 10px;letter-spacing:1px;border-top:1px solid rgba(255,255,255,0.06);padding-top:16px">${step.tribe}</div>`;
+    } else if (step.type === 'vote') {
+      html += `<div class="vp-card" style="border-color:rgba(129,140,248,0.15);margin-bottom:6px;animation:scrollDrop 0.3s var(--ease-broadcast) both">
+        <div style="display:flex;align-items:center;gap:10px">
+          ${rpPortrait(step.voter, 'sm')}
+          <div style="flex:1">
+            <div style="font-size:12px;color:#cdd9e5"><strong>${step.voter}</strong> voted for <strong style="color:#f47067">${step.voted}</strong></div>
+            ${step.reason ? `<div style="font-size:10px;color:#8b949e;margin-top:2px">${step.reason}</div>` : ''}
+          </div>
+        </div>
+      </div>`;
+    } else if (step.type === 'target') {
+      const sortedVotes = Object.entries(step.votes).sort(([,a],[,b]) => b - a);
+      html += `<div style="text-align:center;margin:14px 0;padding:12px;background:rgba(244,112,103,0.08);border:1px solid rgba(244,112,103,0.2);border-radius:8px;animation:scrollDrop 0.4s var(--ease-broadcast) both">
+        ${rpPortrait(step.votedOut, 'md')}
+        <div style="font-family:var(--font-display);font-size:16px;color:#f47067;margin-top:8px">${step.votedOut}</div>
+        <div style="font-size:11px;color:#8b949e;margin-top:4px">${sortedVotes.map(([n,c]) => `${n}: ${c}`).join(' · ')}</div>
+        <div style="font-size:13px;color:#e6edf3;margin-top:8px">The tribe has spoken. ${step.votedOut}, bring me your torch.</div>
+      </div>`;
+    } else if (step.type === 'twist-reveal') {
+      const pr = pronouns(step.votedOut);
+      html += `<div style="text-align:center;margin:14px 0;padding:16px;background:rgba(227,179,65,0.08);border:1px solid rgba(227,179,65,0.25);border-radius:8px;animation:scrollDrop 0.5s var(--ease-broadcast) both">
+        <div style="font-family:var(--font-display);font-size:20px;color:var(--accent-gold);letter-spacing:2px;text-shadow:0 0 15px var(--accent-gold)">TWIST</div>
+        <div style="font-size:14px;color:#e6edf3;margin-top:10px">${step.votedOut} is <strong>not</strong> going home.</div>
+        <div style="font-size:12px;color:#8b949e;margin-top:6px">${pr.Sub} ${pr.sub==='they'?'don\'t':'doesn\'t'} know it yet — but ${pr.pos} game just changed completely.</div>
+      </div>`;
+    } else if (step.type === 'swap-announce') {
+      html += `<div style="text-align:center;margin:20px 0 10px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.06)">
+        <div style="font-family:var(--font-display);font-size:18px;color:var(--accent-gold);letter-spacing:2px;margin-bottom:14px">THE SWAP</div>`;
+      step.tribes.forEach(t => {
+        const pr = pronouns(t.votedOut);
+        html += `<div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:12px;animation:scrollDrop 0.4s var(--ease-broadcast) both">
+          ${rpPortrait(t.votedOut, 'md')}
+          <div style="text-align:left">
+            <div style="font-size:14px;color:#e6edf3"><strong>${t.votedOut}</strong></div>
+            <div style="font-size:12px;color:#8b949e">${t.tribe} <span style="color:var(--accent-gold)">→</span> ${t.sentTo}</div>
+          </div>
+        </div>`;
+      });
+      // New tribe compositions
+      html += `<div style="margin-top:16px;border-top:1px solid rgba(255,255,255,0.06);padding-top:14px">
+        <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;color:#8b949e;margin-bottom:10px">NEW TRIBE COMPOSITIONS</div>`;
+      (twistObj.newTribes || []).forEach(t => {
+        html += `<div style="margin-bottom:10px">
+          <div style="font-size:13px;font-weight:700;color:#e6edf3;margin-bottom:6px">${t.name}</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center">${t.members.map(m => rpPortrait(m, 'sm')).join('')}</div>
+        </div>`;
+      });
+      html += `</div></div>`;
+    }
+  });
+
+  // Reveal controls
+  if (!allRevealed) {
+    html += `<div style="text-align:center;margin-top:16px">
+      <button class="rp-btn" onclick="_tvState['${stateKey}'].idx++;const ep=gs.episodeHistory.find(e=>e.num===${ep.num});if(ep){buildVPScreens(ep);renderVPScreen();}">Reveal Next</button>
+      <button class="rp-btn" style="margin-left:8px;opacity:0.6" onclick="_tvState['${stateKey}'].idx=${steps.length - 1};const ep=gs.episodeHistory.find(e=>e.num===${ep.num});if(ep){buildVPScreens(ep);renderVPScreen();}">Reveal All</button>
+    </div>`;
+  }
+
+  html += `</div>`;
+  return html;
+}
+
 // ── Screen 3: Pre-challenge twists (tribe swap, three gifts, journey, exile-island, etc.) ──
 function rpBuildPreTwist(ep) {
   const _rawTwistData = (ep.twistScenes?.length ? ep.twistScenes : generateTwistScenes(ep))
-    .filter(t => t.type !== 'exile-island' && t.type !== 'jury-elimination' && t.type !== 'kidnapping'); // shown in dedicated screens / post-challenge
+    .filter(t => t.type !== 'exile-island' && t.type !== 'jury-elimination' && t.type !== 'kidnapping' && t.type !== 'first-impressions'); // shown in dedicated screens
   // Deduplicate: only show one scene per twist type (prevents double display if twist is in ep.twists twice)
   const _seenTypes = new Set();
   const twistData = _rawTwistData.filter(t => { if (_seenTypes.has(t.type)) return false; _seenTypes.add(t.type); return true; });
@@ -37509,6 +37696,14 @@ function buildVPScreens(epRecord) {
 
   // ── 1. Cold Open (always) ──
   vpScreens.push({ id:'cold-open', label:'Cold Open', html: rpBuildColdOpen(ep) });
+
+  // ── First Impressions — mock vote + tribe swap (episode 1 twist) ──
+  const _fiTw = (ep.twists || []).find(t => t.type === 'first-impressions' && t.firstImpressions?.length);
+  if (_fiTw) {
+    delete _tvState[String(vpEpNum) + '_fi']; // reset reveal state
+    const _fiHtml = rpBuildFirstImpressions(ep, _fiTw);
+    if (_fiHtml) vpScreens.push({ id:'first-impressions', label:'First Impressions', html: _fiHtml });
+  }
 
   // ── Second Chance Vote — always right after Cold Open ──
   const _scvTw = (ep.twists || []).find(t => (t.type === 'second-chance' || t.catalogId === 'second-chance' || (t.type === 'returning-player' && t.catalogId === 'second-chance')) && t.returnee);

@@ -1748,7 +1748,7 @@ function putStats(stats) { STATS.forEach(s => setSlider(s.key, stats[s.key] || 5
 // ══════════════════════════════════════════════════════════════════════
 
 function overall(stats) { return (STATS.reduce((t,s) => t+(stats[s.key]||0),0)/STATS.length).toFixed(1); }
-function threat(stats)  { return ((stats.physical+stats.strategic+stats.social)/3).toFixed(1); }
+function threat(stats)  { return ((stats.physical*0.8+stats.endurance*0.3+stats.strategic+stats.social+stats.boldness*0.5+(stats.intuition+stats.mental)/2-stats.loyalty*0.15)/4).toFixed(1); }
 function threatTier(score) { return THREAT_TIERS.find(t => score <= t.max) || THREAT_TIERS[THREAT_TIERS.length-1]; }
 function tribeColor(tribe) {
   if (!tribe) return '#6366f1';
@@ -2846,7 +2846,7 @@ function pStats(name) {
 // Post-merge threat score — how dangerous is this player to keep?
 function threatScore(name) {
   const s = pStats(name);
-  const base = ((s.physical + s.endurance) / 2 + s.strategic + s.social + s.boldness * 0.5 + (s.intuition + s.mental) / 2) / 4;
+  const base = (s.physical * 0.8 + s.endurance * 0.3 + s.strategic + s.social + s.boldness * 0.5 + (s.intuition + s.mental) / 2 - s.loyalty * 0.15) / 4;
   const rec = gs.chalRecord?.[name];
   if (!rec) return base;
   let prestige = 0;

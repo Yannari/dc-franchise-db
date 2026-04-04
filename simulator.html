@@ -2846,7 +2846,7 @@ function pStats(name) {
 // Post-merge threat score — how dangerous is this player to keep?
 function threatScore(name) {
   const s = pStats(name);
-  const base = ((s.physical + s.endurance) / 2 + s.strategic + s.social + s.boldness * 0.5) / 3.5;
+  const base = ((s.physical + s.endurance) / 2 + s.strategic + s.social + s.boldness * 0.5 + s.mental * 0.5) / 4;
   const rec = gs.chalRecord?.[name];
   if (!rec) return base;
   let prestige = 0;
@@ -4678,6 +4678,31 @@ const CHALLENGE_DB = [
   { name:'Treasure Hunt',       desc:'Clues are hidden around camp. Each clue leads to the next. First player to find the final treasure wins. Speed, smarts, and gut instinct.',                                       category:'mixed',     mode:'individual', stat:s=>s.intuition*0.3+s.physical*0.3+s.mental*0.2+s.strategic*0.2 },
   { name:'Human Slingshot',     desc:'Players launch themselves via a giant slingshot at targets in the water. Closest to the bullseye wins. It\'s ridiculous. It\'s Total Drama.',                                     category:'physical',  mode:'individual', stat:s=>s.boldness*0.4+s.physical*0.3+s.endurance*0.3 },
   { name:'Confessional Recall', desc:'Players are quizzed on things their tribemates said in confessionals throughout the season. The player who remembers the most wins.',                                              category:'puzzle',    mode:'individual', stat:s=>s.intuition*0.4+s.social*0.3+s.mental*0.3 },
+  // ── TOTAL DRAMA STYLE (BATCH 2) ──
+  // — balance —
+  { name:'Jelly Beam',           desc:'Cross a balance beam slathered in industrial jelly. Fall off and you land in a kiddie pool of mystery slime. First tribe to get everyone across wins.',                               category:'balance',   mode:'team', stat:s=>s.endurance*0.5+s.physical*0.3+s.temperament*0.2 },
+  { name:'Stack Attack',         desc:'Stack crates on a wobbly platform while standing on a spinning disc. Tallest tower still standing after the buzzer wins. Gravity is not your friend.',                                category:'balance',   mode:'individual', stat:s=>s.endurance*0.4+s.mental*0.3+s.temperament*0.3 },
+  { name:'Dizzy Dash',           desc:'Spin around a baseball bat ten times, then sprint across a balance beam to place a flag. First tribe with all flags placed wins. Expect collisions.',                                 category:'balance',   mode:'both', stat:s=>s.endurance*0.4+s.physical*0.3+s.temperament*0.3 },
+  { name:'Plate Spinner',        desc:'Keep as many plates spinning on poles as possible. Every 30 seconds a new plate is added. Drop one and you\'re out. Last player still spinning wins.',                                category:'balance',   mode:'individual', stat:s=>s.endurance*0.4+s.mental*0.3+s.temperament*0.3 },
+  { name:'Surfboard Showdown',   desc:'Stand on a surfboard mounted on a rolling log. Opponents throw water balloons at you. Last player still on their board wins immunity.',                                               category:'balance',   mode:'individual', stat:s=>s.endurance*0.5+s.physical*0.3+s.boldness*0.2 },
+  { name:'Egg Head',             desc:'Balance an egg on a spoon while navigating an obstacle course. Break your egg and you restart with a new one. First to finish with an intact egg wins.',                               category:'balance',   mode:'both', stat:s=>s.temperament*0.4+s.endurance*0.3+s.physical*0.3 },
+  // — social —
+  { name:'Roast Battle',         desc:'Players take turns roasting each other in front of the tribe. The host judges on wit, delivery, and crowd reaction. Best roaster wins. Feelings are optional.',                       category:'social',    mode:'individual', stat:s=>s.social*0.4+s.boldness*0.3+s.mental*0.3 },
+  { name:'Impression Idol',      desc:'Each player does an impression of another castaway. The tribe votes on accuracy. Most votes wins. Getting impersonated badly hurts more than losing.',                                 category:'social',    mode:'individual', stat:s=>s.social*0.5+s.intuition*0.3+s.boldness*0.2 },
+  { name:'Secret Ballot',        desc:'Players anonymously answer brutal questions about each other — who\'s the weakest, who\'s two-faced, who\'d you vote out right now. Most correct guesses about the majority wins.',    category:'social',    mode:'individual', stat:s=>s.intuition*0.4+s.social*0.3+s.strategic*0.3 },
+  { name:'Buddy System',         desc:'Tribes are handcuffed in pairs for the entire challenge. Complete an obstacle course while literally attached to someone. Coordination — or lack of it — decides everything.',         category:'social',    mode:'team', stat:s=>s.social*0.3+s.physical*0.3+s.endurance*0.2+s.temperament*0.2 },
+  // — physical —
+  { name:'Demolition Derby',     desc:'Players ride shopping carts down a hill through destructible walls. Farthest distance without wiping out wins. Safety was never the point.',                                           category:'physical',  mode:'individual', stat:s=>s.boldness*0.4+s.physical*0.3+s.endurance*0.3 },
+  { name:'Mud Pit Melee',        desc:'Tribes wrestle in a massive mud pit trying to retrieve flags planted on the opposite side. First tribe to collect all their flags wins. Expect chaos.',                                category:'physical',  mode:'team', stat:s=>s.physical*0.5+s.endurance*0.3+s.boldness*0.2 },
+  // — endurance —
+  { name:'Bug Burial',           desc:'Lie in a coffin-shaped box while it slowly fills with insects. Last player to tap out wins. Your skin crawls. Your brain screams. Stay anyway.',                                      category:'endurance', mode:'individual', stat:s=>s.endurance*0.4+s.temperament*0.3+s.boldness*0.3 },
+  { name:'Spin Cycle',           desc:'Hang onto a giant rotating wheel that speeds up every minute. Centrifugal force does the rest. Last player clinging on wins.',                                                        category:'endurance', mode:'both', stat:s=>s.endurance*0.5+s.physical*0.3+s.boldness*0.2 },
+  // — puzzle —
+  { name:'Bomb Defusal',         desc:'Each player has a fake bomb with colored wires. The host reads cryptic clues — cut the right wire in order or your paint bomb explodes. Last player not splattered wins.',             category:'puzzle',    mode:'individual', stat:s=>s.mental*0.4+s.intuition*0.3+s.temperament*0.3 },
+  { name:'Total Recall',         desc:'Study a ridiculous crime scene for 60 seconds — an overturned canoe, 14 rubber ducks, a pirate flag. Then answer rapid-fire questions. Most correct answers wins.',                   category:'puzzle',    mode:'both', stat:s=>s.mental*0.4+s.intuition*0.4+s.strategic*0.2 },
+  // — mixed —
+  { name:'Fear Factor',          desc:'Three rounds of escalating fear stunts: eat something vile, jump from a height, endure something crawling on you. Points for completing each. Most points wins.',                     category:'mixed',     mode:'both', stat:s=>s.boldness*0.4+s.endurance*0.3+s.temperament*0.3 },
+  { name:'Wrecking Ball',        desc:'Swing on a rope over a mud pit to knock down targets on the other side. Miss your target and you faceplant in the mud. Most targets down wins.',                                      category:'mixed',     mode:'both', stat:s=>s.physical*0.4+s.boldness*0.3+s.endurance*0.3 },
 ];
 
 // ═══════════════════════════════════════════════════════════════════
@@ -6083,11 +6108,13 @@ function pickChallenge(mode = 'both') {
   }
   // Reduce probability of recently-used categories so you don't get 4 physical challenges in a row.
   // Last episode's category = 10% weight, 2 episodes ago = 40% weight, anything older = 100%.
+  // Core categories (physical, endurance, puzzle) get a frequency boost.
+  const CATEGORY_FREQ = { physical: 1.4, endurance: 1.3, puzzle: 1.25, balance: 1, social: 1, mixed: 1 };
   const recent = gs.recentChallengeCategories || [];
   const weighted = pool.map(c => {
     const lastIdx = recent.lastIndexOf(c.category); // -1 if not in recent
     const ageBack = lastIdx === -1 ? 99 : (recent.length - 1 - lastIdx);
-    const w = ageBack === 0 ? 0.10 : ageBack === 1 ? 0.40 : ageBack === 2 ? 0.70 : 1;
+    const w = (ageBack === 0 ? 0.10 : ageBack === 1 ? 0.40 : ageBack === 2 ? 0.70 : 1) * (CATEGORY_FREQ[c.category] || 1);
     return { c, w };
   });
   const totalW = weighted.reduce((s, x) => s + x.w, 0);

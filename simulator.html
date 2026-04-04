@@ -3029,6 +3029,7 @@ function isAllianceBottom(name, allianceMembers) {
 
 // Estimated heat: how much are other players targeting this person right now?
 function computeHeat(name, tribalPlayers, alliances) {
+  const s = pStats(name);
   let heat = 0;
   tribalPlayers.filter(p => p !== name).forEach(voter => {
     const a = alliances.find(al => al.members.includes(voter));
@@ -3165,8 +3166,7 @@ function computeHeat(name, tribalPlayers, alliances) {
     else if (_cwActual >= 4.0) heat += 0.6;   // noticeable weakness
     // Physical beasts get slight protection pre-merge — tribe wants their strength
     // BUT not immune: bad bonds or strategic threat can override this
-    const _ns = pStats(name);
-    if ((_ns.physical >= 8 || _ns.endurance >= 8) && _cwActual < 4.0) heat -= 0.3;
+    if ((s.physical >= 8 || s.endurance >= 8) && _cwActual < 4.0) heat -= 0.3;
     // BUT: if someone is dominating pre-merge challenges (4+ podiums), strategic players start planning for merge
     const _podiums = _rec?.podiums || 0;
     if (_podiums >= 4) heat += 0.4; // tribe starts thinking about merge — this player becomes untouchable soon
@@ -3191,8 +3191,39 @@ function computeHeat(name, tribalPlayers, alliances) {
   // Information Broker — active: hard to target (-0.5), exposed: massive target (+2.0 for 2 eps)
   if (gs.broker?.player === name && !gs.broker.exposed) heat -= 0.5;
   if (gs.brokerExposedHeat === name && gs.brokerExposedEp && ((gs.episode || 0) + 1) - gs.brokerExposedEp <= 2) heat += 2.0;
+  // ── Scramble Effect: high social/strategic players work the camp to deflect pressure ──
+  if (gs.phase === 'post-merge' && heat > 3) {
+    const _scramblePower = s.social * 0.04 + s.strategic * 0.04;
+    heat -= _scramblePower;
+    // Track for camp event injection (done in generateCampEvents where ep is available)
+    if (_scramblePower >= 0.5) {
+      if (!gs._scrambleActivations) gs._scrambleActivations = {};
+      gs._scrambleActivations[name] = _scramblePower;
+    }
+  }
+  // ── Shield Network: strategic players hide behind bigger targets ──
+  if (gs.phase === 'post-merge' && s.strategic >= 6) {
+    // Lightweight heat estimate for other tribal players (threat-based, avoids recursion)
+    const _otherHeats = tribalPlayers.filter(p => p !== name).map(p => {
+      const _os = pStats(p);
+      return threatScore(p) * 0.3 + (gs.chalRecord?.[p]?.wins || 0) * 0.35;
+    });
+    const _highestOtherHeat = _otherHeats.length ? Math.max(..._otherHeats) : 0;
+    const _myEstHeat = threatScore(name) * 0.3 + (gs.chalRecord?.[name]?.wins || 0) * 0.35;
+    if (_highestOtherHeat > _myEstHeat) {
+      const _shieldBonus = Math.min(0.6, (_highestOtherHeat - _myEstHeat) * 0.15) * (s.strategic * 0.1);
+      heat -= _shieldBonus;
+      if (_shieldBonus > 0.3) {
+        if (!gs._shieldActivations) gs._shieldActivations = {};
+        // Find the meatshield (player with highest estimated heat)
+        const _shieldIdx = _otherHeats.indexOf(_highestOtherHeat);
+        const _meatshield = tribalPlayers.filter(p => p !== name)[_shieldIdx];
+        gs._shieldActivations[name] = { bonus: _shieldBonus, meatshield: _meatshield };
+      }
+    }
+  }
   // Bold unpredictability — proportional: every point of boldness makes you slightly harder to target
-  const _nameBoldness = pStats(name).boldness;
+  const _nameBoldness = s.boldness;
   heat -= _nameBoldness * 0.04; // stat 4=-0.16, stat 7=-0.28, stat 10=-0.40
   // Chaos dividend: if the last tribal was chaotic (scattered votes), bold players benefit
   // They thrive in disorganization — when nobody can agree, the wildcard survives
@@ -15221,6 +15252,8 @@ function generateCampEvents(ep, phase = 'both') {
   gs.scramblingThisEp = new Set();
   gs.beastDrillsThisEp = new Set();
   gs.lieTargetsThisEp  = new Set();
+  delete gs._scrambleActivations;
+  delete gs._shieldActivations;
 
   const idolFinds = ep.idolFinds || [];
   const allTwists = ep.twists?.length ? ep.twists : (ep.twist ? [ep.twist] : []);
@@ -15569,6 +15602,61 @@ function generateCampEvents(ep, phase = 'both') {
         }
       }
     });
+  }
+
+  // ── SCRAMBLE & SHIELD NETWORK camp events (post-merge only) ──
+  if (gs.phase === 'post-merge' && (phase === 'pre' || phase === 'both')) {
+    const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
+    const _campKey = Object.keys(ep.campEvents || {}).find(k => ep.campEvents[k]?.pre) || 'merge';
+    const _pre = ep.campEvents?.[_campKey]?.pre;
+    if (_pre) {
+      // Scramble Effect camp events
+      if (gs._scrambleActivations) {
+        Object.entries(gs._scrambleActivations).forEach(([name, power]) => {
+          if (Math.random() >= 0.35) return; // ~35% chance to show the event
+          const pr = pronouns(name);
+          const allies = gs.activePlayers.filter(p => p !== name && getBond(name, p) >= 2);
+          // Bond boost: +0.3 with 1-2 random allies
+          const bondTargets = allies.sort(() => Math.random() - 0.5).slice(0, Math.min(2, allies.length));
+          bondTargets.forEach(a => addBond(a, name, 0.3));
+          _pre.push({ type: 'scramble', players: [name, ...bondTargets], text: _rp([
+            `${name} pulled three people aside before tribal. By sundown, the conversation had shifted.`,
+            `Nobody's sure who changed the plan. ${name} knows.`,
+            `${name} spent the afternoon making rounds. By dinner, ${pr.pos} name wasn't coming up anymore.`,
+            `The vote was locked — until ${name} had a conversation with the right person at the right time.`,
+            `${name} doesn't panic. ${pr.Sub} work${pr.sub==='they'?'':'s'} the camp like it's a job. Two hours later, the target is someone else.`,
+            `There was a plan. Then ${name} talked to everyone individually. Now there's a different plan. Nobody can explain how it happened.`,
+          ], name + 'scramble' + ep.num), badgeText: 'SCRAMBLE', badgeClass: 'gold' });
+        });
+        delete gs._scrambleActivations;
+      }
+      // Shield Network camp events
+      if (gs._shieldActivations) {
+        Object.entries(gs._shieldActivations).forEach(([name, { bonus, meatshield }]) => {
+          if (Math.random() >= 0.25) return; // ~25% chance to show the event
+          if (!meatshield || !gs.activePlayers.includes(meatshield)) return;
+          const pr = pronouns(name);
+          _pre.push({ type: 'shieldSteer', players: [name, meatshield], text: _rp([
+            `${name} mentioned the challenge wins at dinner. Not loudly. Just enough. The tribe did the rest.`,
+            `Every conversation ${name} had today ended the same way — with someone else's name.`,
+            `${name} doesn't need to campaign against anyone. ${pr.Sub} just ask${pr.sub==='they'?'':'s'} the right questions and let the tribe connect the dots.`,
+            `The target shifted overnight. ${name} was the last person seen talking to the swing vote.`,
+            `${name} brought up ${meatshield}'s threat level casually. Like an observation, not a pitch. Three people repeated it by sunset.`,
+            `"Have you thought about who wins if we don't make a move?" ${name} planted the seed. ${meatshield}'s name grew from it.`,
+          ], name + 'shield' + ep.num), badgeText: 'SHIELD PLAY', badgeClass: 'gold' });
+          // 20% chance the meatshield figures out they're being used
+          if (Math.random() < 0.20) {
+            addBond(meatshield, name, -0.3);
+            const _msP = pronouns(meatshield);
+            _pre.push({ type: 'shieldCaught', players: [meatshield, name], text: _rp([
+              `${meatshield} notices the pattern. Every time ${name} "casually" brings up threats, ${_msP.pos} name is somehow part of the conversation. ${_msP.Sub} file${_msP.sub==='they'?'':'s'} that away.`,
+              `${meatshield} catches ${name}'s game. The deflection. The subtle redirects. ${_msP.Sub} ${_msP.sub==='they'?'don\'t':'doesn\'t'} say anything — yet.`,
+            ], meatshield + 'caught' + ep.num), badgeText: 'SUSPICIOUS', badgeClass: 'red' });
+          }
+        });
+        delete gs._shieldActivations;
+      }
+    }
   }
 
   // ── IDOL SNOOPING: bold/low-loyalty players search through belongings ──

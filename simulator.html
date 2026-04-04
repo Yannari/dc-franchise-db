@@ -2837,6 +2837,240 @@ function addBond(a, b, d) {
   setBond(a, b, getBond(a,b)+d);
 }
 
+// ── Perceived Bond Overlay: non-mutual relationship perception ──
+function getPerceivedBond(a, b) {
+  const key = a + '→' + b;
+  const entry = gs?.perceivedBonds?.[key];
+  if (entry && Math.abs(entry.perceived - getBond(a, b)) >= 0.3) {
+    return entry.perceived;
+  }
+  return getBond(a, b);
+}
+function addPerceivedBond(a, b, perceived, reason) {
+  if (!gs.perceivedBonds) gs.perceivedBonds = {};
+  const s = pStats(a);
+  const correctionRate = s.intuition * 0.07;
+  gs.perceivedBonds[a + '→' + b] = { perceived, reason, createdEp: (gs.episode || 0) + 1, correctionRate };
+}
+function removePerceivedBondsFor(name) {
+  if (!gs.perceivedBonds) return;
+  Object.keys(gs.perceivedBonds).forEach(k => {
+    if (k.startsWith(name + '→') || k.endsWith('→' + name)) delete gs.perceivedBonds[k];
+  });
+}
+
+// ── Perceived Bond Correction: close gaps each episode based on intuition + situational modifiers ──
+function updatePerceivedBonds(ep) {
+  if (!gs.perceivedBonds || !Object.keys(gs.perceivedBonds).length) return;
+  const _pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  const curEp = (gs.episode || 0) + 1;
+
+  Object.keys(gs.perceivedBonds).forEach(key => {
+    const entry = gs.perceivedBonds[key];
+    if (!entry) return;
+    const [from, to] = key.split('→');
+    if (!gs.activePlayers.includes(from) || !gs.activePlayers.includes(to)) {
+      delete gs.perceivedBonds[key]; return;
+    }
+    const real = getBond(from, to);
+    let rate = entry.correctionRate;
+
+    // Situational modifiers
+    const _prevEp = gs.episodeHistory?.[gs.episodeHistory.length - 1];
+    // Received votes at tribal last episode
+    if (_prevEp?.votes?.[from]) rate += 0.30;
+    // Witnessed deceiver betray someone else
+    if (_prevEp?.votingLog?.some(v => v.voter === to && v.voted !== from && getBond(from, v.voted) >= 2)) rate += 0.20;
+    // Paranoid emotional state
+    if (gs.playerStates?.[from]?.emotional === 'paranoid') rate += 0.10;
+    // Trigger E: loyalty slows correction
+    if (entry.reason === 'post-betrayal-denial') {
+      const _loy = pStats(from).loyalty || 5;
+      rate = Math.max(0.05, rate - _loy * 0.03);
+    }
+    // Trigger F: showmance blindspot — very slow
+    if (entry.reason === 'showmance-blindspot') {
+      rate = Math.min(rate, pStats(from).intuition * 0.05);
+    }
+
+    // Apply correction
+    entry.perceived += (real - entry.perceived) * Math.min(1, rate);
+
+    // Check if gap is closed
+    if (Math.abs(entry.perceived - real) < 0.3) {
+      const gapSize = Math.abs(entry.perceived - real + (real - entry.perceived) / Math.min(1, rate)); // original gap before this correction
+      const _origGap = Math.abs((gs.perceivedBonds[key]?.perceived ?? real) - real);
+      // Fire realization camp event
+      const pr = pronouns(from);
+      const campKey = gs.isMerged ? 'merge' : (gs.tribes.find(t => t.members.includes(from))?.name || 'merge');
+      if (ep.campEvents?.[campKey]?.pre) {
+        const _realizationText = {
+          'low-loyalty-betrayal': [
+            `${from} replays the last vote in ${pr.pos} head. The math doesn't add up. ${to}'s name keeps coming back.`,
+            `${from} finally sees what everyone else saw weeks ago. ${to} was never on ${pr.pos} side.`,
+            `${from} catches ${to} avoiding eye contact. It clicks.`
+          ],
+          'villain-manipulation': [
+            `${from} catches ${to} in a lie. A small one. But it rewrites everything.`,
+            `${from} watched ${to} do to someone else exactly what ${to} did to ${pr.obj}. The pattern is clear now.`,
+            `${from} sees through ${to} for the first time. The warmth was never real.`
+          ],
+          'goat-keeping': [
+            `${from} overhears a conversation ${pr.sub} wasn't supposed to hear.`,
+            `${from} asks ${to} about the final three. The pause before the answer says everything.`,
+            `Someone tells ${from} the truth. ${pr.Sub} didn't believe it at first. Now ${pr.sub} ${pr.sub==='they'?'do':'does'}.`
+          ],
+          'alliance-blindspot': [
+            `${from} counts the eye contact at dinner. Something changed.`,
+            `${from} sees it too late. The alliance moved without ${pr.obj}.`
+          ],
+          'post-betrayal-denial': [
+            `${from} stops sitting next to ${to}. No announcement. Just a gap at the fire.`,
+            `${from} doesn't forgive ${to}. ${pr.Sub} just stop${pr.sub==='they'?'':'s'} pretending.`
+          ],
+          'showmance-blindspot': [
+            `${from} finds out about the other alliance. The look on ${pr.pos} face says everything.`,
+            `${from} and ${to} sit apart for the first time. The tribe notices before either of them does.`
+          ],
+          'provider-entitlement': [
+            `${from} got votes. After everything ${pr.sub} did for the tribe. The betrayal isn't strategic — it's personal.`,
+            `${from} stopped fishing. Not because ${pr.sub} can't. Because ${pr.sub} finally realized it wasn't earning ${pr.obj} anything.`
+          ],
+          'swap-loyalty-assumption': [
+            `${from} realizes the new tribe was never ${pr.pos} tribe. Just a waiting room.`,
+            `${from} hears ${pr.pos} name come up. Not as a target — just as an option. That's worse.`
+          ]
+        };
+        const variants = _realizationText[entry.reason] || [`${from} finally sees the truth about ${to}.`];
+        ep.campEvents[campKey].pre.push({
+          type: 'perceptionRealization', players: [from, to],
+          text: _pick(variants), badgeText: 'WAKE-UP CALL', badgeClass: 'red'
+        });
+      }
+      // Consequences based on gap size
+      const _entryGap = Math.abs(entry.perceived - real) / Math.max(0.01, 1 - Math.min(1, rate)); // estimate original gap
+      if (_entryGap >= 2.0) addBond(from, to, -0.5); // pain of being wrong
+      if (_entryGap >= 4.0) {
+        if (gs.playerStates?.[from]) gs.playerStates[from].emotional = 'desperate';
+      } else if (_entryGap >= 3.0) {
+        if (gs.playerStates?.[from]) gs.playerStates[from].emotional = 'paranoid';
+      }
+      delete gs.perceivedBonds[key];
+    }
+  });
+}
+
+// ── Perceived Bond Triggers: create perception gaps based on game events ──
+function checkPerceivedBondTriggers(ep) {
+  if (!gs.perceivedBonds) gs.perceivedBonds = {};
+  const _pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  const curEp = (gs.episode || 0) + 1;
+  const campKey = gs.isMerged ? 'merge' : null;
+
+  // ── Trigger A: Low-Loyalty Betrayal ──
+  // After votes: if B voted against A, A had bond >= 3 with B, and B has loyalty <= 4
+  const vlog = ep.votingLog || [];
+  vlog.forEach(v => {
+    if (!v.voter || v.voter === 'THE GAME' || !v.voted) return;
+    const voter = v.voter, target = v.voted;
+    if (!gs.activePlayers.includes(target)) return; // eliminated — skip
+    const targetBond = getBond(target, voter); // real bond BEFORE this vote
+    const voterLoyalty = pStats(voter).loyalty;
+    if (targetBond >= 3 && voterLoyalty <= 4) {
+      const key = target + '→' + voter;
+      if (gs.perceivedBonds[key]) return; // already has a gap
+      addPerceivedBond(target, voter, targetBond, 'low-loyalty-betrayal');
+      // No creation camp event — the point is they don't know (silent)
+    }
+  });
+
+  // ── Trigger B: Villain Manipulation ──
+  // Each episode: villain with strategic >= 7 inflates target's perception
+  gs.activePlayers.forEach(name => {
+    const arch = players.find(p => p.name === name)?.archetype;
+    if (arch !== 'villain') return;
+    const vS = pStats(name);
+    if (vS.strategic < 7) return;
+    // Find non-villain players with bond >= 2 and low intuition
+    gs.activePlayers.forEach(target => {
+      if (target === name) return;
+      const tArch = players.find(p => p.name === target)?.archetype;
+      if (tArch === 'villain') return;
+      const tS = pStats(target);
+      if (tS.intuition > 6) return;
+      const realBond = getBond(target, name);
+      if (realBond < 2) return;
+      const key = target + '→' + name;
+      if (gs.perceivedBonds[key]) {
+        // Already has a gap — inflate further (+0.3 to +0.5 per episode)
+        gs.perceivedBonds[key].perceived += 0.3 + Math.random() * 0.2;
+        gs.perceivedBonds[key].perceived = Math.min(10, gs.perceivedBonds[key].perceived);
+      } else {
+        // Create new gap
+        const inflation = 0.3 + Math.random() * 0.2;
+        addPerceivedBond(target, name, realBond + inflation, 'villain-manipulation');
+      }
+      // Camp event (~30% chance)
+      if (Math.random() < 0.30) {
+        const pr = pronouns(name);
+        const tPr = pronouns(target);
+        const tribeKey = campKey || gs.tribes.find(t => t.members.includes(name))?.name;
+        if (tribeKey && ep.campEvents?.[tribeKey]?.pre) {
+          ep.campEvents[tribeKey].pre.push({
+            type: 'villainManipulation', players: [name, target],
+            text: _pick([
+              `${name} smiles at ${target}. It's rehearsed. ${target} doesn't notice.`,
+              `${name} tells ${target} exactly what ${tPr.sub} need${tPr.sub==='they'?'':'s'} to hear. None of it is real.`,
+              `${name} puts an arm around ${target}. The camera catches the look on ${name}'s face when ${target} turns away.`,
+              `${name} and ${target} talk for an hour. ${name} learned everything. ${target} learned nothing true.`,
+            ]),
+            badgeText: 'ONE-SIDED', badgeClass: 'gold'
+          });
+        }
+      }
+    });
+  });
+
+  // ── Trigger C: Mastermind Goat-Keeping ──
+  // Strategic >= 8 player allied with a low-threat player (threat <= 3.5), real bond <= 2
+  (gs.namedAlliances || []).forEach(alliance => {
+    if (!alliance.active) return;
+    const activeMembers = alliance.members.filter(m => gs.activePlayers.includes(m));
+    if (activeMembers.length < 2) return;
+    activeMembers.forEach(mastermind => {
+      const mS = pStats(mastermind);
+      if (mS.strategic < 8) return;
+      activeMembers.forEach(goat => {
+        if (goat === mastermind) return;
+        if (threatScore(goat) > 3.5) return;
+        const realBond = getBond(goat, mastermind);
+        if (realBond > 2) return; // mastermind actually likes them — not goat-keeping
+        const key = goat + '→' + mastermind;
+        if (gs.perceivedBonds[key]) return; // already has a gap
+        const inflation = 2 + Math.random();
+        addPerceivedBond(goat, mastermind, realBond + inflation, 'goat-keeping');
+        // Camp event (~35% chance)
+        if (Math.random() < 0.35) {
+          const pr = pronouns(goat);
+          const tribeKey = campKey || gs.tribes.find(t => t.members.includes(goat))?.name;
+          if (tribeKey && ep.campEvents?.[tribeKey]?.pre) {
+            ep.campEvents[tribeKey].pre.push({
+              type: 'goatKeeping', players: [goat, mastermind],
+              text: _pick([
+                `${goat} tells the camera ${mastermind} is taking ${pr.obj} to the end. ${mastermind} told ${pr.obj} so.`,
+                `${goat} walks around camp like ${pr.sub} already won. ${mastermind} watches. Smiles. Says nothing.`,
+                `${mastermind} needs ${goat} for three more votes. After that, ${pr.sub} ${pr.sub==='they'?'are':'is'} disposable.`,
+                `${goat} thinks ${pr.sub} ${pr.sub==='they'?'have':'has'} a final two deal. ${mastermind} has three of those.`,
+              ]),
+              badgeText: 'ONE-SIDED', badgeClass: 'gold'
+            });
+          }
+        }
+      });
+    });
+  });
+}
+
 const DEFAULT_STATS = { physical:5, endurance:5, mental:5, social:5, strategic:5, loyalty:5, boldness:5, intuition:5, temperament:5 };
 
 function pStats(name) {
@@ -3035,7 +3269,7 @@ function computeHeat(name, tribalPlayers, alliances) {
   tribalPlayers.filter(p => p !== name).forEach(voter => {
     const a = alliances.find(al => al.members.includes(voter));
     if (a?.target === name) heat += 1.5;
-    const bond = getBond(voter, name);
+    const bond = getPerceivedBond(voter, name); // voter's perception drives targeting
     // Scale heat with bond intensity — deeper hatred = much more heat
     if (bond <= -1) heat += Math.min(2.5, (-bond) * 0.3);
   });
@@ -4551,7 +4785,7 @@ function pickTarget(attackers, victims, challengeLabel) {
   const _hub = attackers[0];
   const _hubS = _hub ? pStats(_hub) : null;
   return wRandom(_victims, v => {
-    const avgBond = attackers.reduce((sum,a) => sum+getBond(a,v), 0) / attackers.length;
+    const avgBond = attackers.reduce((sum,a) => sum+getPerceivedBond(a,v), 0) / attackers.length;
     if (phase === 'pre-merge') {
       const s = pStats(v);
       const dramaRisk = (s.boldness > 7 && s.loyalty < 5) ? 1.5 : 0;
@@ -4562,7 +4796,7 @@ function pickTarget(attackers, victims, challengeLabel) {
       return Math.max(0.1, _cwScore * 0.35 + (-avgBond) * 0.35 + _threatMod + dramaRisk + Math.random() * 0.5);
     } else {
       const allAtTribal = [...attackers, v];
-      const maxBond = allAtTribal.filter(p => p !== v).reduce((m, p) => Math.max(m, getBond(v, p)), 0);
+      const maxBond = allAtTribal.filter(p => p !== v).reduce((m, p) => Math.max(m, getPerceivedBond(p, v)), 0);
       const pairThreat = (maxBond >= 8 ? 1.0 : maxBond >= 7 ? 0.5 : 0)
                        + (getShowmance(v) ? 0.5 : 0);
       const standoutMod = gs._chalStandouts?.includes(v) ? 0.35 : 0;
@@ -6354,7 +6588,7 @@ function simulateIndividualChallenge(pool, immune) {
 function buildVoteReason(voter, target, type, ctx = {}) {
   const voterS = pStats(voter);
   const targetS = pStats(target);
-  const bond = getBond(voter, target);
+  const bond = getPerceivedBond(voter, target);
   const th = threatScore(target);
   const pick = arr => arr[Math.floor(Math.random() * arr.length)];
   const priorVotesAgainst = (gs.episodeHistory || []).reduce((n, h) => n + (h.votingLog||[]).filter(v => v.voted === target).length, 0);
@@ -6489,7 +6723,7 @@ function buildVoteReason(voter, target, type, ctx = {}) {
 
   if (type === 'protect-bond') {
     const { allianceTarget } = ctx;
-    const allyBond = getBond(voter, allianceTarget);
+    const allyBond = getPerceivedBond(voter, allianceTarget);
     if (allyBond >= 4) return pick([
       `protecting ${allianceTarget} — the bond runs too deep to go against`,
       `${allianceTarget} is untouchable to them — ${target} absorbs the vote instead`,
@@ -6698,8 +6932,8 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
       a !== myAlliance && a.target && a.target !== allianceTarget && a.target !== voter && !isImmune(a.target)
     );
 
-    // Bond with the alliance's intended target — strong bond creates resistance
-    const targetBond = allianceTarget ? getBond(voter, allianceTarget) : 0;
+    // Bond with the alliance's intended target — strong bond creates resistance (uses voter's perception)
+    const targetBond = allianceTarget ? getPerceivedBond(voter, allianceTarget) : 0;
     const _voterSh = getShowmance(voter);
     const isShowmanceTarget = allianceTarget && _voterSh?.players.includes(allianceTarget);
     // Bond resistance scales proportionally — stronger bonds make it harder to vote someone out
@@ -6739,7 +6973,7 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
       if (!_inNamedAlliance) return 0;
       const _allyMembers = myAlliance.members.filter(m => m !== voter);
       if (!_allyMembers.length) return 0;
-      const _avgBond = _allyMembers.reduce((sum, m) => sum + getBond(voter, m), 0) / _allyMembers.length;
+      const _avgBond = _allyMembers.reduce((sum, m) => sum + getPerceivedBond(voter, m), 0) / _allyMembers.length;
       // New alliance grace period: alliances formed this episode get a loyalty boost
       // You don't join an alliance and immediately betray it — even wildcards follow through once
       const _namedAlliance = (gs.namedAlliances || []).find(a => a.name === myAlliance.label);
@@ -6777,12 +7011,12 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
     const _grudgeGracePeriod = _grudgeNamedAlliance?.formed === ((gs.episode || 0) + 1);
     if (_inNamedAlliance && !target && !_grudgeGracePeriod) {
       const _grudgeTargets = myAlliance.members.filter(m =>
-        m !== voter && tribalPlayers.includes(m) && !isImmune(m) && getBond(voter, m) <= -2
+        m !== voter && tribalPlayers.includes(m) && !isImmune(m) && getPerceivedBond(voter, m) <= -2
       );
       if (_grudgeTargets.length) {
         // Worst enemy in the alliance
-        const _worstEnemy = _grudgeTargets.sort((a, b) => getBond(voter, a) - getBond(voter, b))[0];
-        const _enemyBond = getBond(voter, _worstEnemy);
+        const _worstEnemy = _grudgeTargets.sort((a, b) => getPerceivedBond(voter, a) - getPerceivedBond(voter, b))[0];
+        const _enemyBond = getPerceivedBond(voter, _worstEnemy);
         // Chance scales with how deep the hatred runs + low loyalty + boldness
         // Bond -2 → ~8%, bond -5 → ~20%, bond -8 → ~32%
         // Late-game discipline: at F5 or smaller, grudges are suppressed — every vote is too critical
@@ -6915,7 +7149,7 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
         const candidates = tribalPlayers.filter(p => p !== voter && !isImmune(p)
           && (!resistsBond || p !== allianceTarget)
           && (!showmanceResist || p !== showmancePartner)
-          && getBond(voter, p) < 5 // won't freely target someone they genuinely like
+          && getPerceivedBond(voter, p) < 5 // won't freely target someone they genuinely like
           && !_voterFeared(p)); // low-boldness voters fear the villain
         if (candidates.length) {
           const cLabel = myAlliance?.challengeLabel || null;
@@ -6928,7 +7162,7 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
           if (gs.phase === 'pre-merge') {
             const stragMod = t => gs._chalStragglers?.includes(t) ? 0.5 : 0;
             target = wRandom(candidates, t => Math.max(0.1,
-              challengeWeakness(t, cLabel) * 0.4 + (-getBond(voter, t)) * 0.35 + stragMod(t) + Math.random() * 0.15 + voteGravity(t)));
+              challengeWeakness(t, cLabel) * 0.4 + (-getPerceivedBond(voter, t)) * 0.35 + stragMod(t) + Math.random() * 0.15 + voteGravity(t)));
           } else {
             // Voter-specific challenge performance signal
             const chalMod = t => {
@@ -6954,9 +7188,9 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
               if (_vAvg < _tAvg - 1) return -3.0; // terrified of being picked
               return -1.0;
             };
-            target = wRandom(candidates, t => Math.max(0.1, threatScore(t) - getBond(voter, t) + chalMod(t) + _penPileMod(t) + _slAmuletMod(t) + voteGravity(t)));
+            target = wRandom(candidates, t => Math.max(0.1, threatScore(t) - getPerceivedBond(voter, t) + chalMod(t) + _penPileMod(t) + _slAmuletMod(t) + voteGravity(t)));
           }
-          const bond = getBond(voter, target);
+          const bond = getPerceivedBond(voter, target);
           // Pick the underlying reason first
           let underlyingType, underlyingCtx;
           if (resistsBond && allianceTarget)  { underlyingType = 'protect-bond';        underlyingCtx = { allianceTarget }; }
@@ -13001,9 +13235,9 @@ function checkAllianceRecruitment(ep) {
     // ── Acceptance check: based on RELATIONSHIPS, not stats ──
     const _rS = pStats(recruit);
     const _rState = gs.playerStates?.[recruit]?.emotional || 'comfortable';
-    const bondWithRecruiter = getBond(recruit, recruiter);
+    const bondWithRecruiter = getPerceivedBond(recruit, recruiter);
     const allianceActives = alliance.members.filter(m => active.includes(m));
-    const avgBondAlliance = allianceActives.length ? allianceActives.reduce((s,m) => s + getBond(recruit, m), 0) / allianceActives.length : 0;
+    const avgBondAlliance = allianceActives.length ? allianceActives.reduce((s,m) => s + getPerceivedBond(recruit, m), 0) / allianceActives.length : 0;
     // Has the recruiter ever voted against the recruit?
     const _recruiterVotedMe = (gs.episodeHistory || []).some(e =>
       (e.votingLog || []).some(v => v.voter === recruiter && v.voted === recruit && v.voter !== 'THE GAME')
@@ -13305,7 +13539,7 @@ function _getRecruitEventText(recruit, recruiter, alliance, scenario) {
 function _getRefusalEventText(recruit, recruiter, allianceName, scenario) {
   const rPrn = pronouns(recruit);
   const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
-  const bond = getBond(recruit, recruiter);
+  const bond = getPerceivedBond(recruit, recruiter);
   if (bond <= -1) return _rp([
     `${recruiter} tried to bring ${recruit} into ${allianceName}. ${recruit} didn't even let ${recruiter} finish. "After what you did? No." The rejection was immediate.`,
     `${recruiter} approached ${recruit} about joining ${allianceName}. ${recruit} looked ${recruiter} dead in the eye. "I don't trust you. And I'm not going to pretend I do." ${recruiter} walked away empty-handed.`,
@@ -17126,6 +17360,13 @@ function simulateEpisode() {
   }
   gs.exiledThisEp = null;
   gs.penaltyVoteThisEp = null;
+  // Clean up perceived bonds for eliminated players
+  if (gs.perceivedBonds) {
+    Object.keys(gs.perceivedBonds).forEach(k => {
+      const [from, to] = k.split('→');
+      if (!gs.activePlayers.includes(from) || !gs.activePlayers.includes(to)) delete gs.perceivedBonds[k];
+    });
+  }
   // ── BLACK VOTE: stage pending black votes — consumed AFTER tribal if the target attended ──
   if (!gs.blackVotes) gs.blackVotes = []; // safety init for saves/checkpoints without this field
   if (gs.blackVotes.length) {
@@ -17319,6 +17560,7 @@ function simulateEpisode() {
   if (ep.isSlasherNight) {
     // Pre-slasher: journey, advantages, camp events fire normally
     simulateJourney(ep); findAdvantages(ep); generateCampEvents(ep, 'pre');
+    updatePerceivedBonds(ep);
 
     // Run the slasher night challenge
     simulateSlasherNight(ep);
@@ -17357,7 +17599,7 @@ function simulateEpisode() {
 
     ep.bondChanges = updateBonds([], ep.eliminated, []);
     detectBetrayals(ep);
-    updatePlayerStates(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
+    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
     updateSurvival(ep);
     gs.episode = epNum;
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
@@ -17393,6 +17635,7 @@ function simulateEpisode() {
   // ── SUDDEN DEATH — last place in challenge is auto-eliminated, no tribal ──
   if (ep.isSuddenDeath) {
     simulateJourney(ep); findAdvantages(ep); generateCampEvents(ep, 'both');
+    updatePerceivedBonds(ep);
 
     // Run the immunity challenge — last place is eliminated
     const _sdResult = simulateIndividualChallenge(gs.activePlayers, null);
@@ -17450,7 +17693,7 @@ function simulateEpisode() {
       ep.challengeThrowData = ep.challengeThrows;
     }
     generateCampEvents(ep, 'post');
-    updatePlayerStates(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
+    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
     updateSurvival(ep);
     gs.episode = epNum;
     if (gs.activePlayers.length <= seasonConfig.finaleSize) gs.phase = 'finale';
@@ -17479,6 +17722,7 @@ function simulateEpisode() {
   simulateJourney(ep);
   findAdvantages(ep);
   generateCampEvents(ep, 'pre');
+  updatePerceivedBonds(ep); // close perception gaps before tribal decisions
 
   // Inject camp events for journey losers returning without their vote
   if (ep.journey?.results) {
@@ -18133,7 +18377,7 @@ function simulateEpisode() {
     ep.alliances = [];
     ep.bondChanges = updateBonds([], ep.eliminated, []);
     detectBetrayals(ep);
-    updatePlayerStates(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
+    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
     updateSurvival(ep);
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
     gs.episode = epNum;
@@ -18181,7 +18425,7 @@ function simulateEpisode() {
       ep.alliances = [];
       ep.bondChanges = updateBonds([], null, []);
       detectBetrayals(ep);
-      updatePlayerStates(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
+      updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
       updateSurvival(ep);
       if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
       gs.episode = epNum;
@@ -18205,7 +18449,7 @@ function simulateEpisode() {
     ep.alliances = [];
     ep.bondChanges = updateBonds([], null, []);
     detectBetrayals(ep);
-    updatePlayerStates(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
+    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
     updateSurvival(ep);
     gs.episode = epNum;
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
@@ -19093,7 +19337,7 @@ function simulateEpisode() {
     }
     ep.bondChanges = updateBonds(ep.votingLog, ep.eliminated, _dtAlliances);
     detectBetrayals(ep); applyPostTribalConsequences(ep); checkAllianceRecruitment(ep);
-    updatePlayerStates(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
+    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
     updateSurvival(ep);
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
     gs.episode = epNum;
@@ -19275,7 +19519,7 @@ function simulateEpisode() {
     }
     ep.bondChanges = updateBonds(ep.votingLog, ep.eliminated, alliances);
     applyPostTribalConsequences(ep); checkAllianceRecruitment(ep);
-    updatePlayerStates(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
+    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
     updateSurvival(ep);
     if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
     gs.episode = epNum;
@@ -19660,7 +19904,7 @@ function simulateJuryRoundtable(ep) {
     gs.episodeHistory[gs.episodeHistory.length-1].tipOffCampEvents = ep.tipOffCampEvents || null;
     const stJE = generateSummaryText(ep);
     gs.episodeHistory[gs.episodeHistory.length-1].summaryText = stJE; ep.summaryText = stJE;
-    updatePlayerStates(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
+    updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
     updateSurvival(ep);
     patchEpisodeHistory(ep); saveGameState(); return ep;
   }
@@ -23764,7 +24008,7 @@ function initGameState() {
     tribes: tribeList,
     riPlayers: [], riReturnCount: 0, riDuelHistory: [], riLifeEvents: {},
     riArrivalEp: {}, riQuits: [], riAlliancesFormed: [],
-    eliminated: [], bonds, alliances: [], episodeHistory: [],
+    eliminated: [], bonds, perceivedBonds: {}, alliances: [], episodeHistory: [],
     advantages: [],      // [{ holder, type, foundEp, fromBeware? }]
     idolSlots,           // { tribeName: bool }
     bewares,             // { tribeName: { hidden, holder, activated } }
@@ -29487,8 +29731,15 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
   if (relPairs.length) {
     relPairs.forEach(p => {
       const v = p.val;
+      // Check for perception gaps in either direction
+      const _snapPB = ep.gsSnapshot?.perceivedBonds || gs.perceivedBonds || {};
+      const _gapAB = _snapPB[p.a + '→' + p.b];
+      const _gapBA = _snapPB[p.b + '→' + p.a];
+      const _hasGap = (_gapAB && Math.abs(_gapAB.perceived - v) >= 0.3) || (_gapBA && Math.abs(_gapBA.perceived - v) >= 0.3);
       let badgeText = '', badgeClass = '';
-      if      (v >= 9)   { badgeText = 'UNBREAKABLE';  badgeClass = 'green'; }
+      if (_hasGap) {
+        badgeText = 'ONE-SIDED'; badgeClass = 'gold';
+      } else if (v >= 9)   { badgeText = 'UNBREAKABLE';  badgeClass = 'green'; }
       else if (v >= 7)   { badgeText = 'RIDE OR DIE';  badgeClass = 'green'; }
       else if (v >= 5)   { badgeText = 'STRONG BOND';  badgeClass = 'green'; }
       else if (v >= 3)   { badgeText = 'SOLID BOND';   badgeClass = 'green'; }
@@ -29500,9 +29751,20 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
       else if (v <= -1)  { badgeText = 'TENSION';      badgeClass = 'red'; }
       const preRel = relationships.find(r => [r.a,r.b].sort().join('|') === [p.a,p.b].sort().join('|'));
       const note = preRel?.note ? ` (${preRel.note})` : '';
+      // Split display for perception gaps
+      let feelingText;
+      if (_hasGap) {
+        const _aPerceived = _gapAB ? _gapAB.perceived : v;
+        const _bPerceived = _gapBA ? _gapBA.perceived : v;
+        const _aLabel = bondLabel(_aPerceived);
+        const _bLabel = bondLabel(_bPerceived);
+        feelingText = `${p.a} feels ${_aLabel}. ${p.b} feels ${_bLabel}`;
+      } else {
+        feelingText = bondFeeling(p.val);
+      }
       html += `<div class="rp-brant-entry">
         <div class="rp-brant-portraits">${rpDuoImg(p.a, p.b)}</div>
-        <div class="rp-brant-text">${p.a} & ${p.b} \u2014 ${bondFeeling(p.val)}${note}.</div>
+        <div class="rp-brant-text">${p.a} & ${p.b} \u2014 ${feelingText}${note}.</div>
         ${badgeText ? `<span class="rp-brant-badge ${badgeClass}">${badgeText}</span>` : ''}
       </div>`;
     });

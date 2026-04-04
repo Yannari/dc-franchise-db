@@ -131,29 +131,61 @@ What happens: player engineers their own boot to face rival at the duel. Post-bo
   LOW PRIORITY
   ────────────
 
+[TD-3] TRIBE RAID
+  Trigger: schedulable twist, post-challenge (pre-merge only).
+  What happens: winning tribe sends 1-2 raiders to the losing tribe's camp. They take
+    one item: food supply, comfort item, or tool. Losing tribe loses the resource.
+  Mechanic: raider selection weighted by boldness + physical. Item choice: strategic
+    players take food (hurts survival), bold players take comfort (demoralizing), social
+    players take tools (sabotage). Losing tribe bond damage toward raiders (-1.0 to -1.5).
+    Winning tribe bond boost with raider (+0.3). Creates cross-tribal grudges that pay
+    off at merge — "you raided our camp, I remember that."
+  Consequence: survival impact (food loss → hunger events), morale damage, and specific
+    player-to-player grudges. The raider becomes a known face and a target.
+  VP: raider arrives at losing camp, dramatic item selection, losing tribe reaction.
+  Note: simple, high drama, Total Drama energy. Works with survival mechanics system.
+
+[TD-4] CHOOSE YOUR CHAMPION
+  Trigger: schedulable twist, replaces normal tribe challenge (pre-merge only).
+  What happens: each tribe picks one player to compete in a 1v1 challenge. Winner's
+    tribe wins immunity. The champion selection itself creates drama.
+  Mechanic: tribe selection weighted by physical/endurance/mental (depends on challenge
+    type). Selection drama: the tribe discusses and picks — players NOT picked may feel
+    overlooked (bond damage if social >= 7 and not chosen). The chosen champion gets
+    pressure: if they win, +0.5 bond with entire tribe + hero moment. If they lose,
+    challenge liability heat + bond damage from tribe (-0.3 to -0.5).
+  Consequence: forces the tribe to publicly evaluate who their best competitor is.
+    The champion becomes a visible target post-merge ("they're the one the tribe trusted
+    to win"). Creates "why didn't you pick me?" drama and pressure on the selected player.
+  VP: champion selection scene, 1v1 challenge result, tribe reaction (celebration or blame).
+  Note: simple 1v1 variant of existing challenge system. Clean implementation.
+
+[TD-5] SCHOOLYARD PICK
+  Trigger: schedulable twist, alternative to random tribe swap (pre-merge only).
+  What happens: two captains are chosen (highest strategic + social). They alternate
+    picking players for their team. Last person picked knows they're on the bottom.
+  Mechanic: captain selection weighted by strategic * 0.5 + social * 0.5. Captains pick
+    in alternating order, choosing players weighted by challenge strength + bond with captain.
+    Pick order tracked: early picks get +0.3 bond with captain (valued), last 1-2 picks get
+    -0.5 bond (rejected) + emotional state shift to 'uneasy'. The "last picked" player
+    becomes a known bottom-dweller — targeted or recruited as a desperate swing vote.
+  Consequence: public pecking order established immediately. Creates clear in-group/out-group
+    dynamics. Last-picked players become either easy targets or dangerous free agents.
+  VP: draft screen showing pick order, captain deliberation, last-picked reaction.
+  Note: overlaps with tribe-swap but adds social drama layer. Lower priority than Raid/Champion.
+
 [14] REWARD TRIP BONDING BACKFIRE
 Trigger: reward challenge with 2-3 winners who go on a trip together
 Roll: ~15% if one of the winners has a high-bond pair OUTSIDE the reward group
 What happens: players left behind form counter-alliance to break up reward bonds.
 Note: needs reward challenge system implemented first.
 
-[DC-1] FIRST IMPRESSIONS (Disventure Camp twist)
-  Trigger: Episode 1, before any challenge. Each tribe votes immediately.
-  What happens: each tribe votes out one person based on first impressions only.
-    No challenge, no camp time, no strategy — pure gut reaction.
-    The "eliminated" players are NOT actually eliminated — they SWAP tribes.
-    Mock elimination → tribe swap. The voted-out players join the opposing tribe.
-  Mechanic: schedulable twist (episode 1 only). Each tribe runs a quick vote
-    based on initial bonds + first impressions (social + temperament + archetype).
-    Low social/low temperament/villain archetypes more likely to be first targets.
-    Voted-out players swap to the other tribe. They know who voted for them — creates
-    immediate grudges and loyalty dynamics.
-  Consequence: massive early-game drama. The swapped players arrive at a new tribe
-    with information about who targeted them. Bond damage with voters, bond boost
-    with the new tribe (fresh start). "Never feel safe" message established day 1.
-  VP: dedicated screen — dramatic vote reveal, then "TWIST — they're not going home"
-    moment, followed by swap announcement.
-  Note: inspired by Survivor's first impressions twist and Disventure Camp 1.
+[DONE] [DC-1] FIRST IMPRESSIONS (Disventure Camp twist) — implemented via executeFirstImpressions().
+  Schedulable twist (category: team, pre-merge). Each tribe runs full formAlliances + simulateVotes
+  with near-zero bonds. Voted-out players swap tribes via round-robin. Full voter knowledge:
+  -2.0 bond with voters, +0.5 with non-voters, +1.0 with new tribe. Emotional state: uneasy.
+  VP: dedicated click-by-click vote reveal screen with twist card and swap announcement.
+  Fires before all other twists (sort priority -1) so roster changes are visible to subsequent twists.
 
 [DC-2] EMISSARY VOTE (Disventure Camp twist)
   Trigger: schedulable twist, post-immunity challenge (pre-merge only).

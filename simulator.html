@@ -9205,6 +9205,8 @@ function simulateJourney(ep) {
     }
   }
 
+  if (!travelers.length) return; // no travelers picked — skip journey
+
   const cfg = seasonConfig;
   const advPool = [];
   const _canSpawn = (type) => {

@@ -5,83 +5,38 @@ and the downstream consequence. None are guaranteed — all fire on a roll.
 
 ── DONE ────────────────────────────────────────────────────────────────────────
 
-[DONE] #1 Paranoia Spiral — implemented via checkParanoiaSpiral(ep).
-  Trigger: emotional='paranoid', roll: strategic * 0.03 (stat 5=15%, stat 10=30%).
-  Picks closest ally (bond >= 2), bond drop -(0.8 + strategic * 0.1), target gets -60% of that too.
-  Self-fulfilling prophecy: gs.paranoiaNudges[target] gives -0.15 loyalty penalty in simulateVotes
-  that episode — accused ally more likely to defect. Two tonal variants: bold = public confrontation,
-  strategic = quiet campaign behind their back. VP badge: red "⚠ Paranoia Spiral". +3 drama, -1 like.
-
-[DONE] #2 Social Bomb / Faux Pas — implemented via checkSocialBomb(ep). Trigger: temperament <= 3
-  (hothead) OR boldness >= 8 (arrogant). Deterministic roll per player per episode (ep.num * 17
-  seed). Bond damage to all tribemates: -(0.5 + max(0, (social-5)*0.2)), capped at -1.5 (high
-  social = more offended). Adds player to gs.socialBombHeatThisEp → +1.0 heat in computeHeat
-  for that episode's tribal. Two text tone variants: arrogant (bold) vs hothead (low temp).
-  Fires in 'pre' and 'both' phases before checkAllianceQuitting. ep.socialBombs saved to history.
-
-[DONE] #3 Overplaying at Tribal — implemented. Trigger: paranoid/desperate state +
-  (strategic >= 7 OR social >= 7 OR boldness >= 7), NOT the top vote-getter.
-  ~20% deterministic roll. Redirects 1-2 votes from original target onto the overplayer.
-  Display: named narrative on Tribal Council screen showing who got cornered and what it
-  looked like (3 hash-selected variants). Vote log entries tagged [OVERPLAYING].
-
-[DONE] #7 Last-Second Idol Share — implemented. Includes flush plant (schemer scares
-  holder into wasting it) and give & betray (holder hands idol to schemer, gets voted out).
-
-[DONE] #9 Tribal Council Blowup — implemented. Trigger: boldness >= 8 OR temperament <= 3
-  + player received >= 60% of votes this tribal. ~25-40% deterministic roll.
-  Two tonal variants: controlled aggression (bold) vs emotional explosion (hothead).
-  Up to 3 reveals: orchestrator callout, idol exposure, alliance naming — each with
-  actual first-person speech text (2 tone variants per reveal, selected by hash).
-  Applies bond hits, populates gs.publicKnowledge and gs.blowupHeatNextEp (heat persists
-  into next episode via computeHeat +1.5).
-
-[DONE] #16 Cumulative Challenge Performance — implemented via updateChalRecord(ep) + threatScore modifier.
-  gs.chalRecord[name] = { wins, podiums, bombs } updated after every challenge. threatScore gains
-  chalPrestige: wins>=3 → +1.5, wins>=2 → +0.8, podiums>=3 → +0.5, bombs>=3 → -0.5.
-
-[DONE] #18 Comfort Blindspot — implemented. Three mechanical layers:
-  simulateVotes suppression, checkIdolPlays comfortPenalty, checkComfortBlindspot(ep) camp events.
-
-[DONE] #19 Alliance Recruitment — implemented via checkAllianceRecruitment(ep).
-  Three scenarios: A) post-swap outsider, B) post-quit free agent, C) post-blindside swing voter.
-
-[DONE] #20 Super Idol — implemented. Plays AFTER votes are read. Auto-plays for self,
-  considers ally-play (won't suicide). Won via Idol Wager twist. VP: golden post-vote banner,
-  "Final Tally — Before Super Idol" shows who was going home. Camp event reactions next episode.
-
-[DONE] #22 Showmance Lifecycle — implemented via updateShowmancePhases(ep) + checkShowmanceBreakup(ep).
-  6 phases: spark → honeymoon → target → ride-or-die or broken-up.
-  Jealousy/Third Wheel, The Test, breakup/separation detection.
-  computeHeat scales by phase. Helper functions: getShowmance(), getShowmancePartner().
-
-[DONE] #24+25 Hero + Villain Archetypes — implemented in 3 phases.
-  Stat profiles, heat modifiers, bond dynamics, camp events, FTC scoring, Slasher Night bonuses.
-
-[DONE] A Showmance — base detection implemented (bond >= 5 + compatible archetypes).
-  Expanded by #22 Showmance Lifecycle above.
-
-[DONE] #4 Information Broker — implemented via checkInformationBroker(ep).
-
-[DONE] #5 STOLEN CREDIT — implemented via checkStolenCredit(ep).
-
-[DONE] #6 FALSE IDOL PLANT — implemented via checkFakeIdolPlant(ep).
-
-[DONE] #8 Vote Miscommunication + Split Vote System — implemented inline in simulateVotes.
-
-[DONE] #11 JURY BITTER CASCADE / ROUNDTABLE — implemented via simulateJuryRoundtable(ep).
-
-[DONE] KL-1 AMBASSADORS — implemented via engineType 'ambassadors' in applyTwist.
-
-[DONE] KL-3 REPLACEMENT — implemented in generateSurvivalEvents (medevac block).
-
-[DONE] KL-4 BLACK VOTE — implemented as season-long rule (config dropdown: Off/Classic/Modern).
-
-[DONE] FAN VOTE FINALE ENGINE — implemented via generateFanCampaign() + simulateFanVote().
-
-[DONE] SURVIVAL MECHANICS ENGINE — implemented via updateSurvival() + generateSurvivalEvents().
-
-[DONE] #13 CHALLENGE THROW + DETECTION — implemented in simulateIndividualChallenge.
+[DONE] #1 Paranoia Spiral — checkParanoiaSpiral(ep)
+[DONE] #2 Social Bomb / Faux Pas — checkSocialBomb(ep)
+[DONE] #3 Overplaying at Tribal — inline in simulateVotes
+[DONE] #4 Information Broker — checkInformationBroker(ep)
+[DONE] #5 Stolen Credit — checkStolenCredit(ep)
+[DONE] #6 False Idol Plant — checkFakeIdolPlant(ep)
+[DONE] #7 Last-Second Idol Share — checkIdolPlays (flush plant + give & betray)
+[DONE] #8 Vote Miscommunication + Split Vote — inline in simulateVotes
+[DONE] #9 Tribal Council Blowup — inline post-vote
+[DONE] #11 Jury Bitter Cascade / Roundtable — simulateJuryRoundtable(ep)
+[DONE] #13 Challenge Throw + Detection — simulateIndividualChallenge
+[DONE] #16 Cumulative Challenge Performance — updateChalRecord(ep) + threatScore
+[DONE] #18 Comfort Blindspot — simulateVotes + checkComfortBlindspot(ep)
+[DONE] #19 Alliance Recruitment — checkAllianceRecruitment(ep)
+[DONE] #20 Super Idol — post-resolveVotes, won via Idol Wager
+[DONE] #22 Showmance Lifecycle — updateShowmancePhases(ep) + checkShowmanceBreakup(ep)
+[DONE] #24+25 Hero + Villain Archetypes — stat profiles, heat, bond dynamics, FTC
+[DONE] KL-1 Ambassadors — engineType 'ambassadors' in applyTwist
+[DONE] KL-3 Replacement — generateSurvivalEvents (medevac block)
+[DONE] KL-4 Black Vote — season-long rule (config dropdown)
+[DONE] Fan Vote Finale Engine — generateFanCampaign() + simulateFanVote()
+[DONE] Survival Mechanics Engine — updateSurvival() + generateSurvivalEvents()
+[DONE] DC-1 First Impressions — executeFirstImpressions(), dedicated VP screen
+[DONE] TD-1 Sole Vote — advantage type in checkNonIdolAdvantageUse, suppresses redundant plays
+[DONE] [B] Non-Mutual Relationships — gs.perceivedBonds overlay, getPerceivedBond(),
+  8 triggers (low-loyalty betrayal, villain manipulation, goat-keeping, alliance blindspot,
+  post-betrayal denial, showmance blindspot, provider entitlement, swap loyalty assumption),
+  intuition-based correction, VP ONE-SIDED display + WAKE-UP CALL events
+[DONE] Social/Strategic Survivability — scramble effect + shield network in computeHeat
+[DONE] Threat Formula Update — physical*0.8, endurance*0.3, (intuition+mental)/2, -loyalty*0.15
+[DONE] Challenge Frequency Boost — CATEGORY_FREQ weights for physical/endurance/puzzle
+[DONE] Strategic Event Weighting — squared stat scaling for strategicTalk/tdStrategy
 
 
 ── REMAINING — RANKED BY PRIORITY ─────────────────────────────────────────────
@@ -89,174 +44,59 @@ and the downstream consequence. None are guaranteed — all fire on a roll.
   MEDIUM PRIORITY
   ───────────────
 
-[TD-1] SOLE VOTE (inspired by Total Drama: Grand Chef Auto — Scott's Sole Vote)
-  One-shot advantage: holder casts the ONLY valid vote at tribal. All other votes cancelled.
-  Trigger: holder plays it at tribal (heat-based play chance, like Vote Block).
-  Mechanic: nuclear Vote Block — every other player added to gs.lostVotes. Holder's single
-    vote determines the elimination. No split votes, no alliances, no counter-play.
-  Consequences: massive bond damage from everyone whose vote was silenced (-0.5 to -1.0
-    proportional to bond with holder). Target has no defense except idols.
-  Heat: known holder gets +1.5 (everyone wants it flushed — it's terrifying).
-  Discovery: rare, same as Vote Block pipeline. One per season max.
-  VP: dramatic "SOLE VOTE" banner, all other vote cards greyed out.
-  Camp lifecycle: confession/leak/snoop like Vote Block but higher drama.
-  Note: works as a new advantage type in the existing ADVANTAGES system.
-
 [15] FINAL TRIBAL SURPRISE FLIP
-Trigger: FTC with jury where one finalist has majority of votes locked in
-Roll: ~15% if locked-in finalist has at least one jury member with bond <= 0
-What happens: a jury member who seemed locked in has a change of heart based on
-  final speeches. One previously-certain vote flips.
-Mechanic: final vote resolution re-rolls one borderline juror's vote. Only fires
-  when the margin is narrow enough to matter.
-
-[B] NON-MUTUAL RELATIONSHIP (one-sided bond)
-Trigger: Player A has bond >= 4 with B but B has low loyalty (<= 3) AND
-  B is in a rival alliance that doesn't include A
-Roll: passive — detected each episode
-What happens: A genuinely trusts B and won't vote them out, but B feels no
-  such obligation. Eventually B votes A out and A is blindsided.
-Architectural note: recommend perceived bond overlay (gs.perceivedBonds) as first pass.
-  Smaller change than full directional bonds.
+  Trigger: FTC with jury, one finalist has majority locked in
+  Roll: ~15% if locked-in finalist has jury member with bond <= 0
+  Mechanic: re-rolls one borderline juror's vote. Only fires when margin is narrow.
 
 [17] VOLUNTEER EXILE DUEL — ASK TO BE ELIMINATED
-Trigger: gs.exilePlayer is set, player has strategic >= 8 AND bond <= -3 with exile, ep >= 3
-Roll: ~20% once per game
-What happens: player engineers their own boot to face rival at the duel. Post-boot
-  narrative: "strategic surrender." Needs RI/exile infrastructure active.
+  Trigger: strategic >= 8, bond <= -3 with exile, ep >= 3
+  Roll: ~20% once per game. Player engineers own boot to face rival at duel.
+  Note: needs RI/exile infrastructure active.
 
+[DC-2] EMISSARY VOTE (Disventure Camp twist)
+  Trigger: schedulable, post-immunity (pre-merge only).
+  Mechanic: winning tribe sends emissary to losing tribe's tribal. Emissary casts
+    a sole vote to eliminate an additional player. Double elimination.
+  Note: inspired by Disventure Camp 1. One-off or rare twist.
 
+[STAT] MENTAL STAT — NON-CHALLENGE ROLE
+  Problem: mental is almost entirely a challenge stat. Needs 1-2 social touches.
+  Ideas: emotional resilience, eavesdrop quality, fake idol detection, pressure handling.
+  Note: don't overload — keep primarily a challenge stat.
 
 
   LOW PRIORITY
   ────────────
 
 [TD-3] TRIBE RAID
-  Trigger: schedulable twist, post-challenge (pre-merge only).
-  What happens: winning tribe sends 1-2 raiders to the losing tribe's camp. They take
-    one item: food supply, comfort item, or tool. Losing tribe loses the resource.
-  Mechanic: raider selection weighted by boldness + physical. Item choice: strategic
-    players take food (hurts survival), bold players take comfort (demoralizing), social
-    players take tools (sabotage). Losing tribe bond damage toward raiders (-1.0 to -1.5).
-    Winning tribe bond boost with raider (+0.3). Creates cross-tribal grudges that pay
-    off at merge — "you raided our camp, I remember that."
-  Consequence: survival impact (food loss → hunger events), morale damage, and specific
-    player-to-player grudges. The raider becomes a known face and a target.
-  VP: raider arrives at losing camp, dramatic item selection, losing tribe reaction.
-  Note: simple, high drama, Total Drama energy. Works with survival mechanics system.
+  Trigger: schedulable, post-challenge (pre-merge only).
+  Mechanic: winning tribe raids losing camp. Takes food/comfort/tools. Bond damage
+    toward raiders. Creates cross-tribal grudges. Works with survival mechanics.
 
 [TD-4] CHOOSE YOUR CHAMPION
-  Trigger: schedulable twist, replaces normal tribe challenge (pre-merge only).
-  What happens: each tribe picks one player to compete in a 1v1 challenge. Winner's
-    tribe wins immunity. The champion selection itself creates drama.
-  Mechanic: tribe selection weighted by physical/endurance/mental (depends on challenge
-    type). Selection drama: the tribe discusses and picks — players NOT picked may feel
-    overlooked (bond damage if social >= 7 and not chosen). The chosen champion gets
-    pressure: if they win, +0.5 bond with entire tribe + hero moment. If they lose,
-    challenge liability heat + bond damage from tribe (-0.3 to -0.5).
-  Consequence: forces the tribe to publicly evaluate who their best competitor is.
-    The champion becomes a visible target post-merge ("they're the one the tribe trusted
-    to win"). Creates "why didn't you pick me?" drama and pressure on the selected player.
-  VP: champion selection scene, 1v1 challenge result, tribe reaction (celebration or blame).
-  Note: simple 1v1 variant of existing challenge system. Clean implementation.
+  Trigger: schedulable, replaces tribe challenge (pre-merge only).
+  Mechanic: each tribe picks 1v1 champion. Win = hero moment. Lose = blame.
+    Creates "why didn't you pick me?" drama.
 
 [TD-5] SCHOOLYARD PICK
-  Trigger: schedulable twist, alternative to random tribe swap (pre-merge only).
-  What happens: two captains are chosen (highest strategic + social). They alternate
-    picking players for their team. Last person picked knows they're on the bottom.
-  Mechanic: captain selection weighted by strategic * 0.5 + social * 0.5. Captains pick
-    in alternating order, choosing players weighted by challenge strength + bond with captain.
-    Pick order tracked: early picks get +0.3 bond with captain (valued), last 1-2 picks get
-    -0.5 bond (rejected) + emotional state shift to 'uneasy'. The "last picked" player
-    becomes a known bottom-dweller — targeted or recruited as a desperate swing vote.
-  Consequence: public pecking order established immediately. Creates clear in-group/out-group
-    dynamics. Last-picked players become either easy targets or dangerous free agents.
-  VP: draft screen showing pick order, captain deliberation, last-picked reaction.
-  Note: overlaps with tribe-swap but adds social drama layer. Lower priority than Raid/Champion.
+  Trigger: schedulable, alternative to random tribe swap (pre-merge only).
+  Mechanic: captains draft teams. Last picked = bottom. Creates pecking order.
+  Note: overlaps with tribe-swap. Lower priority than Raid/Champion.
 
 [14] REWARD TRIP BONDING BACKFIRE
-Trigger: reward challenge with 2-3 winners who go on a trip together
-Roll: ~15% if one of the winners has a high-bond pair OUTSIDE the reward group
-What happens: players left behind form counter-alliance to break up reward bonds.
-Note: needs reward challenge system implemented first.
-
-[DONE] [DC-1] FIRST IMPRESSIONS (Disventure Camp twist) — implemented via executeFirstImpressions().
-  Schedulable twist (category: team, pre-merge). Each tribe runs full formAlliances + simulateVotes
-  with near-zero bonds. Voted-out players swap tribes via round-robin. Full voter knowledge:
-  -2.0 bond with voters, +0.5 with non-voters, +1.0 with new tribe. Emotional state: uneasy.
-  VP: dedicated click-by-click vote reveal screen with twist card and swap announcement.
-  Fires before all other twists (sort priority -1) so roster changes are visible to subsequent twists.
-
-[DC-2] EMISSARY VOTE (Disventure Camp twist)
-  Trigger: schedulable twist, post-immunity challenge (pre-merge only).
-  What happens: the winning tribe sends one member as an "emissary" to the losing
-    tribe's tribal council. The emissary casts a SOLE VOTE to eliminate an additional
-    contestant — a double elimination where the tribe votes out one person normally,
-    and the emissary eliminates a second person with one vote.
-  Mechanic: winning tribe picks emissary (strategic/social weighted, or volunteered).
-    Emissary attends losing tribe's tribal as an observer, then casts one decisive vote.
-    Emissary's target selection: bonds (cross-tribal ally protection vs enemy targeting),
-    strategic read (eliminate the biggest threat), or instructions from their tribe.
-    Creates cross-tribal dynamics: the emissary can protect an ally on the other tribe
-    (like Gabby protecting Ellie) or target an enemy.
-  Consequence: double elimination — one by tribal vote, one by emissary sole vote.
-    The losing tribe has no control over who the emissary picks. Creates massive
-    cross-tribal strategy, alliances that span tribe lines, and resentment.
-    The emissary's choice reveals their cross-tribal loyalties publicly.
-  VP: dedicated screen — tribal vote first (normal), then emissary reveal ("But wait —
-    tonight's tribal isn't over"). Emissary steps forward, casts their vote, dramatic
-    reveal of who they chose and why.
-  Bond consequences: emissary gains bond with whoever they protect (ally on other tribe),
-    loses bond with the eliminated player's allies. The eliminated player knows exactly
-    who ended their game — one person, one vote, no hiding.
-  Note: inspired by Disventure Camp 1. Works best as a one-off or rare twist, not
-    every episode. Can create pre-tribal deal-making across tribe lines.
+  Trigger: reward with 2-3 winners, one has high-bond pair outside group.
+  Mechanic: left-behind players form counter-alliance. ~15% roll.
 
 [KL-2] TIED DESTINIES (Koh-Lanta twist)
-  Trigger: post-merge, final 8/10/12. Players randomly paired for the episode.
-  What happens: pairs compete together in challenges. At tribal, the person who
-    receives the most votes causes their partner's elimination too (double elim).
-  Mechanic: schedulable twist. Random pairing at episode start. Challenge scores
-    averaged between pairs. Vote targeting considers both members of the pair.
-    Two eliminations in one tribal — the voted-out player AND their tied partner.
-  Consequence: massive strategic upheaval. Allies paired with enemies. Bond dynamics.
-  Note: complex — needs pair-aware voting, double elimination path, VP display.
+  Trigger: post-merge, F8/10/12. Players randomly paired.
+  Mechanic: voted-out player causes partner's elimination too. Double elim.
+  Note: complex — needs pair-aware voting, double elimination path.
 
 [10] THE GOAT MUTINY
-Trigger: 2 players both identified as "goats" (archetype = goat OR threat score <= 2)
-  are on the same tribe/merge group, ep >= 8
-Roll: ~20% once per game
-What happens: the two goats realize they're being dragged along and quietly decide
-  to blow up the game. They form a surprise alliance, pull in a swing vote, and take
-  out a top player. Bond between the two goats maxes out. Everyone else is rattled.
-Mechanic: forced allianceForm event between the two goats, boosted vote heat on the
-  highest-threat player that tribal.
+  Trigger: 2 goats on same tribe, ep >= 8. ~20% once per game.
+  Mechanic: goats form surprise alliance, pull swing vote, take out top threat.
 
-[TD-2] THE MOLE (inspired by Total Drama: Rock n' Rule — Owen as the Mole)
-  Season-long role: one player is secretly a saboteur. They throw challenges (intentional
-    underperformance beyond the existing throw mechanic — structured, not optional) and
-    leak alliance information to production / an outside force.
-  Trigger: assigned at season start (config toggle). Random or hand-picked player.
-  Mechanic: mole has forced challenge throw each episode (detection risk escalates like
-    existing throw system). Mole leaks one alliance's target to a random outsider each
-    episode (creates "how did they know?" paranoia). Exposure arc: intuition-based
-    detection by tribemates, proportional. On exposure: massive bond collapse, potential
-    immediate elimination or social pariah status.
-  Consequence: season-long tension. Challenges feel unreliable. Information leaks create
-    paranoia that feeds into the existing paranoia spiral system.
-  Note: complex — season-long role, needs mole assignment UI, forced throws, info leak
-    pipeline, exposure arc. Future "season archetype" feature, not a schedulable twist.
-
-[STAT] MENTAL STAT — NON-CHALLENGE ROLE
-  Problem: mental is almost entirely a challenge stat (puzzle/balance/mixed). Physical and
-    endurance have survival mechanics (provider ability, injury resistance, collapse) as a
-    second system. Mental has nothing equivalent outside challenges + vote miscommunication.
-  Ideas for expanding mental's social/strategic footprint:
-  - Emotional resilience: mental scales resistance to negative emotional state transitions
-    (high mental = harder to become paranoid/desperate, recovers to content/calculating faster)
-  - Camp strategy sessions: mental improves quality of eavesdrop/intel events (better info)
-  - Advantage reading: mental helps identify fake idols (detection chance proportional to mental)
-  - Pressure handling: mental reduces bond damage from being on the bottom (stays composed)
-  - Tribal focus: high mental reduces vote miscommunication (already done, proportional)
-  Note: don't overload mental — it should remain primarily a challenge stat with 1-2 light
-    social touches, not become a second strategic stat.
+[TD-2] THE MOLE (Total Drama: Rock n' Rule)
+  Season-long saboteur role. Forced challenge throws, info leaks, exposure arc.
+  Note: complex — future "season archetype" feature, not a schedulable twist.

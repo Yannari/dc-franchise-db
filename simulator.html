@@ -2966,17 +2966,20 @@ function checkPerceivedBondTriggers(ep) {
   const _pick = arr => arr[Math.floor(Math.random() * arr.length)];
   const curEp = (gs.episode || 0) + 1;
   const campKey = gs.isMerged ? 'merge' : null;
+  // Use pre-vote bond snapshot if available (bonds change during vote resolution)
+  const _preVoteBonds = ep._preVoteBondSnapshot || {};
+  const _getPreVoteBond = (a, b) => _preVoteBonds[bKey(a, b)] ?? getBond(a, b);
 
   // ── Trigger A: Low-Loyalty Betrayal ──
-  // After votes: if B voted against A, A had bond >= 3 with B, and B has loyalty <= 4
+  // After votes: if B voted against A, A had bond >= 1.5 with B, and B has loyalty <= 6
   const vlog = ep.votingLog || [];
   vlog.forEach(v => {
     if (!v.voter || v.voter === 'THE GAME' || !v.voted) return;
     const voter = v.voter, target = v.voted;
     if (!gs.activePlayers.includes(target)) return; // eliminated — skip
-    const targetBond = getBond(target, voter); // real bond BEFORE this vote
+    const targetBond = _getPreVoteBond(target, voter); // real bond BEFORE this vote
     const voterLoyalty = pStats(voter).loyalty;
-    if (targetBond >= 3 && voterLoyalty <= 4) {
+    if (targetBond >= 1.5 && voterLoyalty <= 6) {
       const key = target + '→' + voter;
       if (gs.perceivedBonds[key]) return; // already has a gap
       addPerceivedBond(target, voter, targetBond, 'low-loyalty-betrayal');
@@ -2984,22 +2987,22 @@ function checkPerceivedBondTriggers(ep) {
     }
   });
 
-  // ── Trigger B: Villain Manipulation ──
-  // Each episode: villain with strategic >= 7 inflates target's perception
+  // ── Trigger B: Villain/Schemer Manipulation ──
+  // Each episode: villain/schemer/mastermind with strategic >= 6 inflates target's perception
   gs.activePlayers.forEach(name => {
     const arch = players.find(p => p.name === name)?.archetype;
-    if (arch !== 'villain') return;
+    if (arch !== 'villain' && arch !== 'schemer' && arch !== 'mastermind') return;
     const vS = pStats(name);
-    if (vS.strategic < 7) return;
-    // Find non-villain players with bond >= 2 and low intuition
+    if (vS.strategic < 6) return;
+    // Find non-manipulator players with bond >= 1 and lower intuition than the manipulator
     gs.activePlayers.forEach(target => {
       if (target === name) return;
       const tArch = players.find(p => p.name === target)?.archetype;
-      if (tArch === 'villain') return;
+      if (tArch === 'villain' || tArch === 'schemer' || tArch === 'mastermind') return;
       const tS = pStats(target);
-      if (tS.intuition > 6) return;
+      if (tS.intuition >= vS.strategic) return; // target is too sharp to be fooled
       const realBond = getBond(target, name);
-      if (realBond < 2) return;
+      if (realBond < 1) return;
       const key = target + '→' + name;
       if (gs.perceivedBonds[key]) {
         // Already has a gap — inflate further (+0.3 to +0.5 per episode)
@@ -3032,19 +3035,21 @@ function checkPerceivedBondTriggers(ep) {
   });
 
   // ── Trigger C: Mastermind Goat-Keeping ──
-  // Strategic >= 8 player allied with a low-threat player (threat <= 3.5), real bond <= 2
+  // Strategic >= 7 player allied with a lower-threat player (threat gap >= 3), real bond <= 3
   (gs.namedAlliances || []).forEach(alliance => {
     if (!alliance.active) return;
     const activeMembers = alliance.members.filter(m => gs.activePlayers.includes(m));
     if (activeMembers.length < 2) return;
     activeMembers.forEach(mastermind => {
       const mS = pStats(mastermind);
-      if (mS.strategic < 8) return;
+      if (mS.strategic < 7) return;
+      const mThreat = threatScore(mastermind);
       activeMembers.forEach(goat => {
         if (goat === mastermind) return;
-        if (threatScore(goat) > 3.5) return;
+        const gThreat = threatScore(goat);
+        if (mThreat - gThreat < 3) return; // not enough of a gap — they're peers, not goat-keeper
         const realBond = getBond(goat, mastermind);
-        if (realBond > 2) return; // mastermind actually likes them — not goat-keeping
+        if (realBond > 3) return; // mastermind actually likes them — not goat-keeping
         const key = goat + '→' + mastermind;
         if (gs.perceivedBonds[key]) return; // already has a gap
         const inflation = 2 + Math.random();
@@ -3116,20 +3121,20 @@ function checkPerceivedBondTriggers(ep) {
   });
 
   // ── Trigger E: Post-Betrayal Denial ──
-  // After votes: if A was betrayed by an ally and A has loyalty >= 7, perceived bond drops slower
+  // After votes: if A was betrayed by an ally and A has loyalty >= 6, perceived bond drops slower
   vlog.forEach(v => {
     if (!v.voter || v.voter === 'THE GAME' || !v.voted) return;
     const betrayer = v.voter, victim = v.voted;
     if (!gs.activePlayers.includes(victim)) return;
     const victimS = pStats(victim);
-    if (victimS.loyalty < 7) return;
-    const preBond = getBond(victim, betrayer);
-    if (preBond < 2) return; // wasn't a trusted relationship
+    if (victimS.loyalty < 6) return;
+    const preBond = _getPreVoteBond(victim, betrayer);
+    if (preBond < 1) return; // wasn't a trusted relationship
     // Check if they were in the same named alliance
     const sharedAlliance = (gs.namedAlliances || []).some(a =>
       a.active && a.members.includes(victim) && a.members.includes(betrayer)
     );
-    if (!sharedAlliance && preBond < 4) return; // needs either alliance or very strong bond
+    if (!sharedAlliance && preBond < 2) return; // needs either alliance or decent bond
     const key = victim + '→' + betrayer;
     if (gs.perceivedBonds[key]) return;
     // Perceived bond freezes near pre-vote level; real bond will crash from the betrayal
@@ -18935,6 +18940,9 @@ function simulateEpisode() {
       gs.safetyNoPowerPlayed = { holder: _snpHolder, warnedAlly: _snpWarned, surprise: !_snpWarned };
       break; // one per tribal
     }
+
+    // Snapshot bonds before vote — triggers need pre-vote bond values
+    ep._preVoteBondSnapshot = { ...gs.bonds };
 
     const { votes, log, defections, voteMiscommunications } = simulateVotes(tribalPlayers, _allImmune, allianceSet, gs.lostVotes, ep.openVote);
     if (voteMiscommunications?.length) ep.voteMiscommunications = (ep.voteMiscommunications || []).concat(voteMiscommunications);

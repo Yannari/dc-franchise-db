@@ -22,12 +22,17 @@ Do not split it into separate files. This is intentional.
 - `handleAdvantageInheritance()` — called BEFORE stripping advantages on elimination
 - `simulateFinale()` — handles finaleSize 2/3/4, all finale formats
 - `patchEpisodeHistory(ep)` — universal helper patching missing fields after every history push
+- `executeFirstImpressions()` — episode 1 mock vote → round-robin tribe swap (fires before all other twists)
+- `checkPerceivedBondTriggers(ep)` — creates perception gaps after vote resolution
+- `updatePerceivedBonds(ep)` — closes gaps each episode via intuition-based correction
 - VP Viewer: `rpBuild*()` functions for each screen
 
 ## Core State
 - `gs` — global game state (tribes, players, alliances, bonds, advantages)
 - `gs.episodeHistory[]` — full episode log, used by VP viewer
 - `getBond(a,b)` / `addBond(a,b,delta)` — symmetric bond system
+- `getPerceivedBond(a,b)` — returns what player A *thinks* the bond is (overlay or real)
+- `gs.perceivedBonds` — directional perception gaps (`"A→B": { perceived, reason, correctionRate }`)
 - `gs.advantages[]` — active idols and advantages with holder/type
 - `gs.namedAlliances[]` — named alliance objects with members, betrayals, formed ep, active flag
 - `gs.showmances[]` — objects: `{ players:[a,b], phase, sparkEp, episodesActive, jealousPlayer, tested }`
@@ -51,9 +56,10 @@ Do not split it into separate files. This is intentional.
 - `handleAdvantageInheritance(eliminatedName, ep)` must be called BEFORE stripping advantages on every elimination path
 
 ## Advantage System
-- `ADVANTAGES` array: idol, beware, voteSteal, extraVote, kip, legacy, amulet, secondLife, teamSwap, voteBlock
+- `ADVANTAGES` array: idol, beware, voteSteal, extraVote, kip, legacy, amulet, secondLife, teamSwap, voteBlock, safetyNoPower, soleVote
 - `findAdvantages()` handles camp discovery; `checkIdolPlays()` handles idol/KiP/legacy use at tribal
-- `checkNonIdolAdvantageUse()` handles extra votes, vote steals, amulet coordinated play, team swap, vote block
+- `checkNonIdolAdvantageUse()` handles extra votes, vote steals, amulet coordinated play, team swap, vote block, sole vote
+- Sole vote suppresses redundant plays: `ep._soleVoteHolder` pre-check skips idol/extra vote/vote steal for the holder
 - `handleAdvantageInheritance()` — Legacy wills to highest-bond active player; Amulet upgrades remaining holders
 - Super Idol: `superIdol` flag on idol, plays AFTER votes read (post-`resolveVotes`)
 - Team Swap advantage cancelling elimination → shifts twist schedule forward by 1 via `gs.skippedEliminationEps`
@@ -91,6 +97,18 @@ is NOT actually loyal. Always check behavioral track record alongside raw stats.
 ## Bond System
 - Full range: -10 to +10. 11 tiers in `REL_TYPES`.
 - Use proportional formulas (`bond * 0.10`) not binary thresholds (`bond >= 3`).
+- Perceived bond overlay: `getPerceivedBond(a,b)` for decision systems (votes, alliances, heat).
+  `getBond(a,b)` for everything else (decay, VP display, jury, addBond).
+- 8 triggers create perception gaps: low-loyalty betrayal, villain manipulation, goat-keeping,
+  alliance blindspot, post-betrayal denial, showmance blindspot, provider entitlement, swap loyalty.
+- Correction: intuition-based (`intuition * 0.07`), modifiers for receiving votes (+0.3), witnessing betrayal (+0.2).
+- VP: ONE-SIDED badge when gap exists, split per-player tier display. WAKE-UP CALL badge on realization.
+
+## Threat System
+- `threatScore(name)`: `(physical*0.8 + endurance*0.3 + strategic + social + boldness*0.5 + (intuition+mental)/2 - loyalty*0.15) / 4`
+- Cast builder `threat(stats)` matches the engine formula
+- `computeHeat`: scramble effect (social+strategic reduce heat when >3, post-merge), shield network (strategic players hide behind bigger targets)
+- Challenge category frequency: physical 1.4x, endurance 1.3x, puzzle 1.25x via `CATEGORY_FREQ`
 
 ## Pronouns — NEVER hardcode
 - Always use `pronouns(name)` → `{sub, obj, pos, posAdj, ref, Sub, Obj, PosAdj}`

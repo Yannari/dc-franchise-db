@@ -27364,10 +27364,14 @@ function rpBuildFirstImpressions(ep, twistObj) {
   const visibleSteps = steps.slice(0, state.idx + 1);
   const allRevealed = state.idx >= steps.length - 1;
 
+  // Safe onclick helper — ensures state exists before incrementing
+  const _fiReveal = (targetIdx) => `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:0};_tvState['${stateKey}'].idx=${targetIdx};const ep=gs.episodeHistory.find(e=>e.num===${ep.num});if(ep){buildVPScreens(ep);renderVPScreen();}`;
+
   let html = `<div class="rp-page tod-deepnight">
     <div class="rp-eyebrow">Episode ${ep.num}</div>
     <div style="font-family:var(--font-display);font-size:28px;letter-spacing:2px;text-align:center;color:var(--accent-gold);text-shadow:0 0 20px var(--accent-gold);margin-bottom:20px;animation:scrollDrop 0.5s var(--ease-broadcast) both">FIRST IMPRESSIONS</div>
-    <div style="text-align:center;font-size:13px;color:#8b949e;margin-bottom:20px">Before camp. Before strategy. Before anything — the tribe has spoken.</div>`;
+    <div style="text-align:center;font-size:13px;color:#8b949e;margin-bottom:8px">No camp. No alliances. No strategy. Just gut feeling.</div>
+    <div style="text-align:center;font-size:12px;color:#6e7681;margin-bottom:20px">Each tribe must vote one person out immediately. But this is not what it seems.</div>`;
 
   visibleSteps.forEach(step => {
     if (step.type === 'tribe-header') {
@@ -27387,7 +27391,7 @@ function rpBuildFirstImpressions(ep, twistObj) {
       html += `<div style="text-align:center;margin:14px 0;padding:12px;background:rgba(244,112,103,0.08);border:1px solid rgba(244,112,103,0.2);border-radius:8px;animation:scrollDrop 0.4s var(--ease-broadcast) both">
         ${rpPortrait(step.votedOut, 'md')}
         <div style="font-family:var(--font-display);font-size:16px;color:#f47067;margin-top:8px">${step.votedOut}</div>
-        <div style="font-size:11px;color:#8b949e;margin-top:4px">${sortedVotes.map(([n,c]) => `${n}: ${c}`).join(' · ')}</div>
+        <div style="font-size:11px;color:#8b949e;margin-top:4px">${sortedVotes.map(([n,c]) => `${n}: ${c}`).join(' \u00b7 ')}</div>
         <div style="font-size:13px;color:#e6edf3;margin-top:8px">The tribe has spoken. ${step.votedOut}, bring me your torch.</div>
       </div>`;
     } else if (step.type === 'twist-reveal') {
@@ -27399,14 +27403,14 @@ function rpBuildFirstImpressions(ep, twistObj) {
       </div>`;
     } else if (step.type === 'swap-announce') {
       html += `<div style="text-align:center;margin:20px 0 10px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.06)">
-        <div style="font-family:var(--font-display);font-size:18px;color:var(--accent-gold);letter-spacing:2px;margin-bottom:14px">THE SWAP</div>`;
+        <div style="font-family:var(--font-display);font-size:18px;color:var(--accent-gold);letter-spacing:2px;margin-bottom:6px">THE SWAP</div>
+        <div style="font-size:12px;color:#8b949e;margin-bottom:14px">The voted-out players aren't eliminated — they're switching tribes.</div>`;
       step.tribes.forEach(t => {
-        const pr = pronouns(t.votedOut);
         html += `<div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:12px;animation:scrollDrop 0.4s var(--ease-broadcast) both">
           ${rpPortrait(t.votedOut, 'md')}
           <div style="text-align:left">
             <div style="font-size:14px;color:#e6edf3"><strong>${t.votedOut}</strong></div>
-            <div style="font-size:12px;color:#8b949e">${t.tribe} <span style="color:var(--accent-gold)">→</span> ${t.sentTo}</div>
+            <div style="font-size:12px;color:#8b949e">${t.tribe} <span style="color:var(--accent-gold)">\u2192</span> ${t.sentTo}</div>
           </div>
         </div>`;
       });
@@ -27426,8 +27430,8 @@ function rpBuildFirstImpressions(ep, twistObj) {
   // Reveal controls
   if (!allRevealed) {
     html += `<div style="text-align:center;margin-top:16px">
-      <button class="rp-btn" onclick="_tvState['${stateKey}'].idx++;const ep=gs.episodeHistory.find(e=>e.num===${ep.num});if(ep){buildVPScreens(ep);renderVPScreen();}">Reveal Next</button>
-      <button class="rp-btn" style="margin-left:8px;opacity:0.6" onclick="_tvState['${stateKey}'].idx=${steps.length - 1};const ep=gs.episodeHistory.find(e=>e.num===${ep.num});if(ep){buildVPScreens(ep);renderVPScreen();}">Reveal All</button>
+      <button class="rp-btn" onclick="${_fiReveal(state.idx + 1)}">Reveal Next</button>
+      <button class="rp-btn" style="margin-left:8px;opacity:0.6" onclick="${_fiReveal(steps.length - 1)}">Reveal All</button>
     </div>`;
   }
 
@@ -37700,7 +37704,7 @@ function buildVPScreens(epRecord) {
   // ── First Impressions — mock vote + tribe swap (episode 1 twist) ──
   const _fiTw = (ep.twists || []).find(t => t.type === 'first-impressions' && t.firstImpressions?.length);
   if (_fiTw) {
-    delete _tvState[String(vpEpNum) + '_fi']; // reset reveal state
+    // Don't delete _tvState — the reveal must persist across rebuilds
     const _fiHtml = rpBuildFirstImpressions(ep, _fiTw);
     if (_fiHtml) vpScreens.push({ id:'first-impressions', label:'First Impressions', html: _fiHtml });
   }

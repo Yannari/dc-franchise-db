@@ -17231,14 +17231,15 @@ function simulateEpisode() {
     _usedTypes.add(twist.type);
     return true;
   });
-  // Sort twist processing order: returns FIRST → eliminations → everything else
+  // Sort twist processing order: first-impressions FIRST (changes rosters) → returns → eliminations → everything else
+  // First-impressions must fire before any other twist so roster changes are visible to subsequent twists
   // Returns first so returnees are in the active pool for ambassador selection
   // Eliminations before rewards so eliminated players don't compete in reward challenges
   scheduledTwists.sort((a, b) => {
     const aCat = TWIST_CATALOG.find(c => c.id === a.type)?.category || '';
     const bCat = TWIST_CATALOG.find(c => c.id === b.type)?.category || '';
-    const aOrder = aCat === 'returns' ? 0 : aCat === 'elim' ? 1 : 2;
-    const bOrder = bCat === 'returns' ? 0 : bCat === 'elim' ? 1 : 2;
+    const aOrder = a.type === 'first-impressions' ? -1 : aCat === 'returns' ? 0 : aCat === 'elim' ? 1 : 2;
+    const bOrder = b.type === 'first-impressions' ? -1 : bCat === 'returns' ? 0 : bCat === 'elim' ? 1 : 2;
     return aOrder - bOrder;
   });
   scheduledTwists.forEach((twist, i) => applyTwist(ep, twist, i === 0));

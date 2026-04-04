@@ -11229,7 +11229,7 @@ const CAMP_EVENT_TYPES = [
   { id: 'dispute',             twoPlayer: true,  weight: 12 },
   { id: 'meltdown',            twoPlayer: false, weight: 8  },
   { id: 'hardWork',            twoPlayer: false, weight: 14 },
-  { id: 'strategicTalk',       twoPlayer: true,  weight: 12 },
+  { id: 'strategicTalk',       twoPlayer: true,  weight: 16 },
   { id: 'idolSearch',          twoPlayer: false, weight: 10 },
   { id: 'injury',              twoPlayer: false, weight: 6  },
   { id: 'allianceForm',        twoPlayer: false, weight: 18 },
@@ -11251,7 +11251,7 @@ const CAMP_EVENT_TYPES = [
   { id: 'foodConflict',        twoPlayer: true,  weight: 7  },
   { id: 'intimidation',        twoPlayer: true,  weight: 6  },
   // ── Total Drama flavor — strategy & scheming ──
-  { id: 'tdStrategy',          twoPlayer: true,  weight: 13 },
+  { id: 'tdStrategy',          twoPlayer: true,  weight: 17 },
   { id: 'lie',                 twoPlayer: true,  weight: 9  },
   { id: 'eavesdrop',           twoPlayer: true,  weight: 9  },
   // ── flavor / no impact ──
@@ -11507,7 +11507,7 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
       events.push({ type: 'hardWork', text: hwLines[Math.floor(Math.random() * hwLines.length)], player: p });
 
     } else if (eventType === 'strategicTalk') {
-      const a = _pick(group, n => Math.max(0.1, pStats(n).strategic * 0.5 + 1));
+      const a = _pick(group, n => Math.max(0.1, pStats(n).strategic * pStats(n).strategic * 0.1));
       const others = group.filter(p => p !== a);
       if (!others.length) continue;
       const b = wRandom(others, n => Math.max(0.1, getBond(a, n) + pStats(n).social * 0.2 + 1));
@@ -12128,7 +12128,7 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
 
     } else if (eventType === 'tdStrategy') {
       // TD-flavored strategy — covers villain scheming, paranoia, manipulation
-      const a = _pick(group, n => Math.max(0.1, pStats(n).strategic * 0.5 + pStats(n).boldness * 0.2 + 1));
+      const a = _pick(group, n => Math.max(0.1, pStats(n).strategic * pStats(n).strategic * 0.1 + pStats(n).boldness * 0.2));
       const others = group.filter(p => p !== a);
       if (!others.length) continue;
       const b = wRandom(others, n => Math.max(0.1, getBond(a, n) * 0.3 + pStats(n).social * 0.2 + 1));

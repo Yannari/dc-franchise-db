@@ -24194,6 +24194,9 @@ function snapshotGameState() {
     lostVotes: gs.lostVotes ? [...gs.lostVotes] : [],
     showmances: (gs.showmances || []).map(sh => ({ ...sh, players: [...sh.players] })),
     broker: gs.broker ? { ...gs.broker, alliances: [...gs.broker.alliances] } : null,
+    perceivedBonds: gs.perceivedBonds ? Object.fromEntries(
+      Object.entries(gs.perceivedBonds).map(([k, v]) => [k, { ...v }])
+    ) : {},
   };
 }
 
@@ -27827,6 +27830,163 @@ function rpBuildMergeAnnouncement(ep) {
       <div style="font-size:13px">${onBottom.join(', ')}</div>
       <div style="font-size:11px;color:var(--muted);margin-top:4px">Unallied going into the merge</div>
     </div>`;
+  }
+
+  html += `</div>`;
+  return html;
+}
+
+// ── Debug VP Screen — hidden engine data for testing ──
+function rpBuildDebug(ep) {
+  const snap = ep.gsSnapshot || {};
+  const activePlayers = snap.activePlayers || gs.activePlayers || [];
+  const _bonds = snap.bonds || gs.bonds || {};
+  const _pb = snap.perceivedBonds || gs.perceivedBonds || {};
+  const _chalRec = gs.chalRecord || {};
+
+  let html = `<div class="rp-page tod-morning" style="font-size:12px">
+    <div class="rp-eyebrow">Episode ${ep.num}</div>
+    <div style="font-family:var(--font-display);font-size:22px;color:#f0883e;text-align:center;margin-bottom:16px">DEBUG DATA</div>`;
+
+  // ── Threat Scores ──
+  html += `<div style="margin-bottom:20px">
+    <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#8b949e;margin-bottom:8px">THREAT SCORES</div>`;
+  const threatData = activePlayers.map(name => {
+    const s = pStats(name);
+    const ts = threatScore(name);
+    const rec = _chalRec[name] || { wins: 0, podiums: 0, bombs: 0 };
+    const tier = threatTier(ts);
+    return { name, ts, s, rec, tier };
+  }).sort((a, b) => b.ts - a.ts);
+  threatData.forEach(({ name, ts, s, rec, tier }) => {
+    html += `<div style="display:flex;align-items:center;gap:8px;padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.04)">
+      ${rpPortrait(name, 'sm')}
+      <div style="flex:1;font-weight:600;color:#e6edf3">${name}</div>
+      <div style="width:60px;text-align:right"><span style="color:${tier.color};font-weight:700">${ts.toFixed(1)}</span></div>
+      <div style="width:80px;text-align:right;color:#8b949e;font-size:10px">${tier.label}</div>
+      <div style="width:100px;text-align:right;color:#6e7681;font-size:10px">W${rec.wins} P${rec.podiums} B${rec.bombs}</div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  // ── Heat Scores (if post-merge or at tribal) ──
+  if (activePlayers.length <= 13) {
+    html += `<div style="margin-bottom:20px">
+      <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#8b949e;margin-bottom:8px">ESTIMATED HEAT</div>`;
+    const heatData = activePlayers.map(name => {
+      const heat = computeHeat(name, activePlayers, gs.namedAlliances || []);
+      return { name, heat };
+    }).sort((a, b) => b.heat - a.heat);
+    heatData.forEach(({ name, heat }) => {
+      const pct = Math.min(100, Math.max(0, heat * 10));
+      const col = heat >= 5 ? '#f47067' : heat >= 3 ? '#f0883e' : heat >= 1 ? '#d29922' : '#3fb950';
+      html += `<div style="display:flex;align-items:center;gap:8px;padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.04)">
+        ${rpPortrait(name, 'sm')}
+        <div style="flex:1;font-weight:600;color:#e6edf3">${name}</div>
+        <div style="width:120px;background:rgba(255,255,255,0.05);border-radius:4px;height:8px;overflow:hidden">
+          <div style="width:${pct}%;height:100%;background:${col};border-radius:4px"></div>
+        </div>
+        <div style="width:40px;text-align:right;color:${col};font-weight:700;font-size:11px">${heat.toFixed(1)}</div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  // ── Perceived Bond Gaps ──
+  const pbEntries = Object.entries(_pb);
+  if (pbEntries.length) {
+    html += `<div style="margin-bottom:20px">
+      <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#8b949e;margin-bottom:8px">PERCEIVED BOND GAPS (${pbEntries.length})</div>`;
+    pbEntries.forEach(([key, entry]) => {
+      const [from, to] = key.split('→');
+      const realBond = getBond(from, to);
+      const gap = entry.perceived - realBond;
+      const gapCol = gap > 0 ? '#3fb950' : '#f47067';
+      html += `<div style="display:flex;align-items:center;gap:8px;padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.04)">
+        <div style="flex:1;color:#e6edf3;font-size:11px"><strong>${from}</strong> → ${to}</div>
+        <div style="color:#8b949e;font-size:10px">${entry.reason}</div>
+        <div style="width:80px;text-align:right;font-size:11px">
+          <span style="color:#8b949e">real:</span> <span style="color:#e6edf3">${realBond.toFixed(1)}</span>
+        </div>
+        <div style="width:90px;text-align:right;font-size:11px">
+          <span style="color:#8b949e">thinks:</span> <span style="color:${gapCol}">${entry.perceived.toFixed(1)}</span>
+        </div>
+        <div style="width:50px;text-align:right;font-size:10px;color:${gapCol}">${gap > 0 ? '+' : ''}${gap.toFixed(1)}</div>
+      </div>`;
+    });
+    html += `</div>`;
+  } else {
+    html += `<div style="margin-bottom:20px;color:#484f58;font-size:11px">No perceived bond gaps active this episode.</div>`;
+  }
+
+  // ── Player Stats Overview ──
+  html += `<div style="margin-bottom:20px">
+    <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#8b949e;margin-bottom:8px">PLAYER STATS</div>
+    <div style="overflow-x:auto">
+    <table style="width:100%;border-collapse:collapse;font-size:10px;color:#8b949e">
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.08)">
+        <th style="text-align:left;padding:4px;color:#e6edf3">Player</th>
+        <th style="padding:4px">PHY</th><th style="padding:4px">END</th><th style="padding:4px">MNT</th>
+        <th style="padding:4px">SOC</th><th style="padding:4px">STR</th><th style="padding:4px">LOY</th>
+        <th style="padding:4px">BLD</th><th style="padding:4px">INT</th><th style="padding:4px">TMP</th>
+        <th style="padding:4px;color:#f0883e">Threat</th>
+        <th style="padding:4px">State</th>
+      </tr>`;
+  activePlayers.forEach(name => {
+    const s = pStats(name);
+    const ts = threatScore(name);
+    const state = (snap.playerStates?.[name]?.emotional || gs.playerStates?.[name]?.emotional || 'content');
+    const stateCol = state === 'desperate' ? '#f47067' : state === 'paranoid' ? '#f0883e' : state === 'uneasy' ? '#d29922' : '#8b949e';
+    const statColor = v => v >= 8 ? '#3fb950' : v >= 6 ? '#e6edf3' : v <= 3 ? '#f47067' : '#8b949e';
+    html += `<tr style="border-bottom:1px solid rgba(255,255,255,0.04)">
+      <td style="padding:4px;color:#e6edf3;font-weight:600">${name}</td>
+      <td style="padding:4px;text-align:center;color:${statColor(s.physical)}">${s.physical}</td>
+      <td style="padding:4px;text-align:center;color:${statColor(s.endurance)}">${s.endurance}</td>
+      <td style="padding:4px;text-align:center;color:${statColor(s.mental)}">${s.mental}</td>
+      <td style="padding:4px;text-align:center;color:${statColor(s.social)}">${s.social}</td>
+      <td style="padding:4px;text-align:center;color:${statColor(s.strategic)}">${s.strategic}</td>
+      <td style="padding:4px;text-align:center;color:${statColor(s.loyalty)}">${s.loyalty}</td>
+      <td style="padding:4px;text-align:center;color:${statColor(s.boldness)}">${s.boldness}</td>
+      <td style="padding:4px;text-align:center;color:${statColor(s.intuition)}">${s.intuition}</td>
+      <td style="padding:4px;text-align:center;color:${statColor(s.temperament)}">${s.temperament}</td>
+      <td style="padding:4px;text-align:center;color:#f0883e;font-weight:700">${ts.toFixed(1)}</td>
+      <td style="padding:4px;text-align:center;color:${stateCol};font-size:9px">${state}</td>
+    </tr>`;
+  });
+  html += `</table></div></div>`;
+
+  // ── Advantages ──
+  const advs = snap.advantages || gs.advantages || [];
+  const activeAdvs = advs.filter(a => activePlayers.includes(a.holder));
+  if (activeAdvs.length) {
+    html += `<div style="margin-bottom:20px">
+      <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#8b949e;margin-bottom:8px">ADVANTAGES IN PLAY</div>`;
+    activeAdvs.forEach(a => {
+      html += `<div style="display:flex;align-items:center;gap:8px;padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.04)">
+        ${rpPortrait(a.holder, 'sm')}
+        <div style="flex:1;color:#e6edf3">${a.holder}</div>
+        <div style="color:#d29922;font-size:11px;font-weight:600">${a.type}${a.superIdol ? ' (Super)' : ''}${a.fake ? ' (FAKE)' : ''}</div>
+        <div style="color:#6e7681;font-size:10px">found ep.${a.foundEp || '?'}</div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  // ── Scramble & Shield activations this episode ──
+  if (gs._scrambleActivations || gs._shieldActivations) {
+    html += `<div style="margin-bottom:20px">
+      <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#8b949e;margin-bottom:8px">SCRAMBLE & SHIELD (this ep)</div>`;
+    if (gs._scrambleActivations) {
+      Object.entries(gs._scrambleActivations).forEach(([name, power]) => {
+        html += `<div style="padding:3px 8px;color:#d29922;font-size:11px">SCRAMBLE: ${name} (−${power.toFixed(2)} heat)</div>`;
+      });
+    }
+    if (gs._shieldActivations) {
+      Object.entries(gs._shieldActivations).forEach(([name, { bonus, meatshield }]) => {
+        html += `<div style="padding:3px 8px;color:#3fb950;font-size:11px">SHIELD: ${name} behind ${meatshield} (−${bonus.toFixed(2)} heat)</div>`;
+      });
+    }
+    html += `</div>`;
   }
 
   html += `</div>`;
@@ -38895,6 +39055,12 @@ function buildVPScreens(epRecord) {
     // Aftermath
     vpScreens.push({ id:'aftermath', label:'Aftermath', html: rpBuildAftermath(ep) });
   }
+
+  // ── Debug screen (toggleable) ──
+  if (localStorage.getItem('vp_debug') === 'true') {
+    const _debugHtml = rpBuildDebug(ep);
+    if (_debugHtml) vpScreens.push({ id:'debug', label:'Debug', html: _debugHtml });
+  }
 }
 
 function vpAnimateTallies(containerId) {
@@ -39503,6 +39669,7 @@ init();
       <button class="rp-btn" id="vp-prev-btn" onclick="vpPrev()">← Back</button>
       <span class="rp-nav-ep" id="vp-nav-ep-label" style="flex:1;text-align:center"></span>
       <button class="rp-btn" id="vp-next-btn" onclick="vpNext()">Continue →</button>
+      <button class="rp-btn" onclick="(function(){const on=localStorage.getItem('vp_debug')!=='true';localStorage.setItem('vp_debug',on?'true':'false');const ep=gs.episodeHistory.find(e=>e.num===vpEpNum);if(ep){buildVPScreens(ep);renderVPScreen();}})()" style="font-size:9px;opacity:0.5;padding:2px 6px" title="Toggle Debug Screen">🔧</button>
       <button class="rp-btn close" onclick="closeVisualPlayer()">✕</button>
     </div>
     <div id="vp-screen-content"></div>

@@ -2893,6 +2893,11 @@ function updatePerceivedBonds(ep) {
       rate = Math.min(rate, pStats(from).intuition * 0.05);
     }
 
+    // If this was a positive-inflation trigger but real has overtaken perceived, gap is irrelevant
+    const _positiveInflation = ['villain-manipulation', 'goat-keeping', 'swap-loyalty-assumption', 'provider-entitlement', 'showmance-blindspot'];
+    if (_positiveInflation.includes(entry.reason) && entry.perceived <= real) {
+      delete gs.perceivedBonds[key]; return;
+    }
     // Apply correction
     entry.perceived += (real - entry.perceived) * Math.min(1, rate);
 
@@ -2969,69 +2974,69 @@ function checkPerceivedBondTriggers(ep) {
   // Use pre-vote bond snapshot if available (bonds change during vote resolution)
   const _preVoteBonds = ep._preVoteBondSnapshot || {};
   const _getPreVoteBond = (a, b) => _preVoteBonds[bKey(a, b)] ?? getBond(a, b);
+  if (!ep._pbTriggerLog) ep._pbTriggerLog = [];
+  const _tlog = msg => ep._pbTriggerLog.push(msg);
 
   // ── Trigger A: Low-Loyalty Betrayal ──
   // After votes: if B voted against A, A had bond >= 1.5 with B, and B has loyalty <= 6
   const vlog = ep.votingLog || [];
+  _tlog(`Trigger A: checking ${vlog.length} votes, snapshot has ${Object.keys(_preVoteBonds).length} bonds`);
   vlog.forEach(v => {
     if (!v.voter || v.voter === 'THE GAME' || !v.voted) return;
     const voter = v.voter, target = v.voted;
-    if (!gs.activePlayers.includes(target)) return; // eliminated — skip
-    const targetBond = _getPreVoteBond(target, voter); // real bond BEFORE this vote
+    if (!gs.activePlayers.includes(target)) { _tlog(`  A skip: ${target} not active (eliminated)`); return; }
+    const targetBond = _getPreVoteBond(target, voter);
     const voterLoyalty = pStats(voter).loyalty;
     if (targetBond >= 1.5 && voterLoyalty <= 6) {
       const key = target + '→' + voter;
-      if (gs.perceivedBonds[key]) return; // already has a gap
+      if (gs.perceivedBonds[key]) { _tlog(`  A skip: ${key} already exists`); return; }
       addPerceivedBond(target, voter, targetBond, 'low-loyalty-betrayal');
-      // No creation camp event — the point is they don't know (silent)
+      _tlog(`  A CREATED: ${target}→${voter} perceived=${targetBond.toFixed(1)} loyalty=${voterLoyalty}`);
+    } else {
+      _tlog(`  A miss: ${voter}→${target} bond=${targetBond.toFixed(1)} loyalty=${voterLoyalty}`);
     }
   });
 
-  // ── Trigger B: Villain/Schemer Manipulation ──
-  // Each episode: villain/schemer/mastermind with strategic >= 6 inflates target's perception
+  // ── Trigger B: Villain Manipulation ──
+  // Each episode: villain with strategic >= 7 picks ONE target to manipulate (most vulnerable)
   gs.activePlayers.forEach(name => {
     const arch = players.find(p => p.name === name)?.archetype;
-    if (arch !== 'villain' && arch !== 'schemer' && arch !== 'mastermind') return;
+    if (arch !== 'villain') return;
     const vS = pStats(name);
-    if (vS.strategic < 6) return;
-    // Find non-manipulator players with bond >= 1 and lower intuition than the manipulator
-    gs.activePlayers.forEach(target => {
-      if (target === name) return;
-      const tArch = players.find(p => p.name === target)?.archetype;
-      if (tArch === 'villain' || tArch === 'schemer' || tArch === 'mastermind') return;
-      const tS = pStats(target);
-      if (tS.intuition >= vS.strategic) return; // target is too sharp to be fooled
-      const realBond = getBond(target, name);
-      if (realBond < 1) return;
-      const key = target + '→' + name;
-      if (gs.perceivedBonds[key]) {
-        // Already has a gap — inflate further (+0.3 to +0.5 per episode)
-        gs.perceivedBonds[key].perceived += 0.3 + Math.random() * 0.2;
-        gs.perceivedBonds[key].perceived = Math.min(10, gs.perceivedBonds[key].perceived);
-      } else {
-        // Create new gap
-        const inflation = 0.3 + Math.random() * 0.2;
-        addPerceivedBond(target, name, realBond + inflation, 'villain-manipulation');
-      }
-      // Camp event (~30% chance)
-      if (Math.random() < 0.30) {
-        const pr = pronouns(name);
-        const tPr = pronouns(target);
-        const tribeKey = campKey || gs.tribes.find(t => t.members.includes(name))?.name;
-        if (tribeKey && ep.campEvents?.[tribeKey]?.pre) {
-          ep.campEvents[tribeKey].pre.push({
-            type: 'villainManipulation', players: [name, target],
-            text: _pick([
-              `${name} smiles at ${target}. It's rehearsed. ${target} doesn't notice.`,
-              `${name} tells ${target} exactly what ${tPr.sub} need${tPr.sub==='they'?'':'s'} to hear. None of it is real.`,
-              `${name} puts an arm around ${target}. The camera catches the look on ${name}'s face when ${target} turns away.`,
-              `${name} and ${target} talk for an hour. ${name} learned everything. ${target} learned nothing true.`,
-            ]),
-            badgeText: 'ONE-SIDED', badgeClass: 'gold'
-          });
-        }
-      }
+    if (vS.strategic < 7) return;
+    // Pick the single most manipulable non-villain: bond >= 2, intuition <= 5, no existing gap
+    const candidates = gs.activePlayers.filter(t => {
+      if (t === name) return false;
+      if (players.find(p => p.name === t)?.archetype === 'villain') return false;
+      if (pStats(t).intuition > 5) return false;
+      if (getBond(t, name) < 2) return false;
+      if (gs.perceivedBonds[t + '→' + name]) return false;
+      return true;
     });
+    if (!candidates.length) return;
+    const target = candidates.sort((a, b) => pStats(a).intuition - pStats(b).intuition)[0];
+    const realBond = getBond(target, name);
+    const inflation = 1.0 + Math.random() * 0.5; // meaningful gap: +1.0 to +1.5
+    addPerceivedBond(target, name, realBond + inflation, 'villain-manipulation');
+    _tlog(`  B CREATED: ${target}→${name} real=${realBond.toFixed(1)} perceived=${(realBond + inflation).toFixed(1)}`);
+    // Camp event (~40% chance)
+    if (Math.random() < 0.40) {
+      const pr = pronouns(name);
+      const tPr = pronouns(target);
+      const tribeKey = campKey || gs.tribes.find(t => t.members.includes(name))?.name;
+      if (tribeKey && ep.campEvents?.[tribeKey]?.pre) {
+        ep.campEvents[tribeKey].pre.push({
+          type: 'villainManipulation', players: [name, target],
+          text: _pick([
+            `${name} smiles at ${target}. It's rehearsed. ${target} doesn't notice.`,
+            `${name} tells ${target} exactly what ${tPr.sub} need${tPr.sub==='they'?'':'s'} to hear. None of it is real.`,
+            `${name} puts an arm around ${target}. The camera catches the look on ${name}'s face when ${target} turns away.`,
+            `${name} and ${target} talk for an hour. ${name} learned everything. ${target} learned nothing true.`,
+          ]),
+          badgeText: 'ONE-SIDED', badgeClass: 'gold'
+        });
+      }
+    }
   });
 
   // ── Trigger C: Mastermind Goat-Keeping ──
@@ -3202,22 +3207,24 @@ function checkPerceivedBondTriggers(ep) {
   });
 
   // ── Trigger G: Provider Entitlement ──
-  // Provider whose tribe bonds are declining — they think food buys loyalty
-  if (gs.currentProviders?.length) {
+  // Provider whose tribe bonds are declining — only when survival mechanics are enabled
+  if (seasonConfig.foodWater === 'enabled' && gs.currentProviders?.length) {
     gs.currentProviders.forEach(provider => {
       if (!gs.activePlayers.includes(provider)) return;
-      // Check if average bond with tribemates has declined over last 2 episodes
+      // Only fire once per provider per season
+      if (gs.perceivedBonds && Object.keys(gs.perceivedBonds).some(k => k.startsWith(provider + '→') && gs.perceivedBonds[k].reason === 'provider-entitlement')) return;
       const tribe = gs.isMerged ? gs.activePlayers : (gs.tribes.find(t => t.members.includes(provider))?.members || []);
       const tribemates = tribe.filter(m => m !== provider);
       if (!tribemates.length) return;
       const avgBond = tribemates.reduce((sum, m) => sum + getBond(provider, m), 0) / tribemates.length;
-      // Only trigger if bonds are actually declining (avg below 2) — provider thinks they should be higher
-      if (avgBond >= 2) return;
-      // Check if any tribemate already has a gap with this provider
-      const existingGaps = tribemates.filter(m => gs.perceivedBonds[provider + '→' + m]);
-      if (existingGaps.length >= 2) return; // already tracking enough
-      // Pick 1-2 tribemates with declining bonds
-      const decliningMates = tribemates.filter(m => getBond(provider, m) < 1.5).slice(0, 2);
+      // Only trigger if avg bond is low despite providing — they should be loved but aren't
+      if (avgBond >= 1.5) return;
+      // Need at least ep 4 — takes time for entitlement to build
+      if (curEp < 4) return;
+      // Pick ONE tribemate with lowest bond
+      const worstMate = tribemates.filter(m => !gs.perceivedBonds[provider + '→' + m]).sort((a, b) => getBond(provider, a) - getBond(provider, b))[0];
+      if (!worstMate) return;
+      const decliningMates = [worstMate];
       decliningMates.forEach(mate => {
         const key = provider + '→' + mate;
         if (gs.perceivedBonds[key]) return;
@@ -3252,11 +3259,14 @@ function checkPerceivedBondTriggers(ep) {
       const tribe = gs.tribes.find(t => t.members.includes(name));
       if (!tribe) return;
       const newMates = tribe.members.filter(m => m !== name);
-      newMates.forEach(mate => {
+      // Cap at 2 gaps per swapped player — pick the 2 highest-bond new tribemates
+      const _swapCandidates = newMates
+        .filter(m => !gs.perceivedBonds[name + '→' + m] && getBond(name, m) >= 1)
+        .sort((a, b) => getBond(name, b) - getBond(name, a))
+        .slice(0, 2);
+      _swapCandidates.forEach(mate => {
         const key = name + '→' + mate;
-        if (gs.perceivedBonds[key]) return;
         const realBond = getBond(name, mate);
-        if (realBond < 0.5) return; // no positive bond to inflate
         addPerceivedBond(name, mate, realBond + 1.0 + Math.random() * 0.5, 'swap-loyalty-assumption');
       });
       // Camp event (once per swap, first episode only)
@@ -3645,23 +3655,21 @@ function computeHeat(name, tribalPlayers, alliances) {
     }
   }
   // ── Shield Network: strategic players hide behind bigger targets ──
-  if (gs.phase === 'post-merge' && s.strategic >= 6) {
-    // Lightweight heat estimate for other tribal players (threat-based, avoids recursion)
-    const _otherHeats = tribalPlayers.filter(p => p !== name).map(p => {
-      const _os = pStats(p);
-      return threatScore(p) * 0.3 + (gs.chalRecord?.[p]?.wins || 0) * 0.35;
-    });
-    const _highestOtherHeat = _otherHeats.length ? Math.max(..._otherHeats) : 0;
-    const _myEstHeat = threatScore(name) * 0.3 + (gs.chalRecord?.[name]?.wins || 0) * 0.35;
-    if (_highestOtherHeat > _myEstHeat) {
-      const _shieldBonus = Math.min(0.6, (_highestOtherHeat - _myEstHeat) * 0.15) * (s.strategic * 0.1);
+  // Only fires when there's a real threat gap (>= 1.5) — mastermind-level strategic play
+  if (gs.phase === 'post-merge' && s.strategic >= 8) {
+    const _otherThreats = tribalPlayers.filter(p => p !== name).map(p => ({
+      name: p, threat: threatScore(p) + (gs.chalRecord?.[p]?.wins || 0) * 0.5
+    }));
+    const _biggestTarget = _otherThreats.length ? _otherThreats.sort((a, b) => b.threat - a.threat)[0] : null;
+    const _myThreat = threatScore(name) + (gs.chalRecord?.[name]?.wins || 0) * 0.5;
+    if (_biggestTarget && _biggestTarget.threat - _myThreat >= 1.5) {
+      const _gap = _biggestTarget.threat - _myThreat;
+      // Stronger formula: gap directly scales the bonus, strategic just gates entry
+      const _shieldBonus = Math.min(0.8, _gap * 0.25);
       heat -= _shieldBonus;
-      if (_shieldBonus > 0.3) {
+      if (_shieldBonus > 0.2) {
         if (!gs._shieldActivations) gs._shieldActivations = {};
-        // Find the meatshield (player with highest estimated heat)
-        const _shieldIdx = _otherHeats.indexOf(_highestOtherHeat);
-        const _meatshield = tribalPlayers.filter(p => p !== name)[_shieldIdx];
-        gs._shieldActivations[name] = { bonus: _shieldBonus, meatshield: _meatshield };
+        gs._shieldActivations[name] = { bonus: _shieldBonus, meatshield: _biggestTarget.name };
       }
     }
   }
@@ -6717,7 +6725,9 @@ function simulateIndividualChallenge(pool, immune) {
       const heat = computeHeat(name, candidates, gs.namedAlliances || []);
       // Motivation: proportional — higher heat + streak = more reason to lay low
       // Roll: strategic players recognize when to throw, bold players resist (want to win)
-      const throwChance = heat * (s.strategic * 0.012) + streak * 0.08 - s.boldness * 0.015;
+      // Only throw when heat is genuinely high (>= 4) — don't throw for mild pressure
+      if (heat < 4) return;
+      const throwChance = (heat - 4) * (s.strategic * 0.008) + streak * 0.06 - s.boldness * 0.02;
       if (throwChance > 0 && Math.random() < throwChance) {
         _throwers.add(name);
       }
@@ -16182,10 +16192,12 @@ function generateCampEvents(ep, phase = 'both') {
             `There was a plan. Then ${name} talked to everyone individually. Now there's a different plan. Nobody can explain how it happened.`,
           ], name + 'scramble' + ep.num), badgeText: 'SCRAMBLE', badgeClass: 'gold' });
         });
+        ep._debugScramble = { ...gs._scrambleActivations };
         delete gs._scrambleActivations;
       }
       // Shield Network camp events
       if (gs._shieldActivations) {
+        ep._debugShield = Object.fromEntries(Object.entries(gs._shieldActivations).map(([k, v]) => [k, { ...v }]));
         Object.entries(gs._shieldActivations).forEach(([name, { bonus, meatshield }]) => {
           if (Math.random() >= 0.25) return; // ~25% chance to show the event
           if (!meatshield || !gs.activePlayers.includes(meatshield)) return;
@@ -17805,7 +17817,10 @@ function simulateEpisode() {
   // ── SLASHER NIGHT — round-by-round survival challenge replaces immunity + tribal ──
   if (ep.isSlasherNight) {
     // Pre-slasher: journey, advantages, camp events fire normally
-    simulateJourney(ep); findAdvantages(ep); generateCampEvents(ep, 'pre');
+    simulateJourney(ep); findAdvantages(ep);
+    if (gs._scrambleActivations) ep._debugScramble = { ...gs._scrambleActivations };
+    if (gs._shieldActivations) ep._debugShield = Object.fromEntries(Object.entries(gs._shieldActivations).map(([k, v]) => [k, { ...v }]));
+    generateCampEvents(ep, 'pre');
     updatePerceivedBonds(ep);
 
     // Run the slasher night challenge
@@ -17880,7 +17895,10 @@ function simulateEpisode() {
 
   // ── SUDDEN DEATH — last place in challenge is auto-eliminated, no tribal ──
   if (ep.isSuddenDeath) {
-    simulateJourney(ep); findAdvantages(ep); generateCampEvents(ep, 'both');
+    simulateJourney(ep); findAdvantages(ep);
+    if (gs._scrambleActivations) ep._debugScramble = { ...gs._scrambleActivations };
+    if (gs._shieldActivations) ep._debugShield = Object.fromEntries(Object.entries(gs._shieldActivations).map(([k, v]) => [k, { ...v }]));
+    generateCampEvents(ep, 'both');
     updatePerceivedBonds(ep);
 
     // Run the immunity challenge — last place is eliminated
@@ -17967,6 +17985,9 @@ function simulateEpisode() {
   // ── JOURNEY & IDOL FINDING ──
   simulateJourney(ep);
   findAdvantages(ep);
+  // Save scramble/shield data before camp events clear them
+  if (gs._scrambleActivations) ep._debugScramble = { ...gs._scrambleActivations };
+  if (gs._shieldActivations) ep._debugShield = Object.fromEntries(Object.entries(gs._shieldActivations).map(([k, v]) => [k, { ...v }]));
   generateCampEvents(ep, 'pre');
   updatePerceivedBonds(ep); // close perception gaps before tribal decisions
 
@@ -20813,6 +20834,7 @@ function simulateJuryRoundtable(ep) {
   detectBetrayals(ep);
   applyPostTribalConsequences(ep);
   checkAllianceRecruitment(ep); // scenario C: blindside swing voters
+  updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
 
   // ── PHASE CHECK ──
   if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
@@ -20933,6 +20955,10 @@ function simulateJuryRoundtable(ep) {
   updatePlayerStates(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
   updateSurvival(ep);
 
+  // Save debug data to episode history before patching
+  if (gs._scrambleActivations && !ep._debugScramble) ep._debugScramble = { ...gs._scrambleActivations };
+  if (gs._shieldActivations && !ep._debugShield) ep._debugShield = Object.fromEntries(Object.entries(gs._shieldActivations).map(([k, v]) => [k, { ...v }]));
+  if (ep.challengeThrows?.length && !ep._debugThrows) ep._debugThrows = [...ep.challengeThrows];
   patchEpisodeHistory(ep);
   saveGameState();
   return ep;
@@ -24091,6 +24117,10 @@ function patchEpisodeHistory(ep) {
   if (!h.spiritIslandEvents && ep.spiritIslandEvents) h.spiritIslandEvents = ep.spiritIslandEvents;
   // Misc
   if (!h.comfortBlindspotPlayer && ep.comfortBlindspotPlayer) h.comfortBlindspotPlayer = ep.comfortBlindspotPlayer;
+  if (!h._pbTriggerLog && ep._pbTriggerLog?.length) h._pbTriggerLog = ep._pbTriggerLog;
+  if (!h._debugScramble && ep._debugScramble) h._debugScramble = ep._debugScramble;
+  if (!h._debugShield && ep._debugShield) h._debugShield = ep._debugShield;
+  if (!h.challengeThrows && ep.challengeThrows?.length) h.challengeThrows = ep.challengeThrows;
   if (!h.bewareLostVotes && ep.bewareLostVotes) h.bewareLostVotes = ep.bewareLostVotes;
   if (!h.journey && ep.journey) h.journey = ep.journey;
   if (!h.extraImmune && ep.extraImmune) h.extraImmune = ep.extraImmune;
@@ -27840,89 +27870,130 @@ function rpBuildMergeAnnouncement(ep) {
 function rpBuildDebug(ep) {
   const snap = ep.gsSnapshot || {};
   const activePlayers = snap.activePlayers || gs.activePlayers || [];
-  const _bonds = snap.bonds || gs.bonds || {};
   const _pb = snap.perceivedBonds || gs.perceivedBonds || {};
   const _chalRec = gs.chalRecord || {};
+  const allEps = gs.episodeHistory || [];
+  const _viewEps = allEps.filter(e => e.num <= ep.num);
+
+  // Tab state
+  const _dbTab = localStorage.getItem('vp_debug_tab') || 'episode';
+  const _tabBtn = (id, label) => `<button onclick="localStorage.setItem('vp_debug_tab','${id}');const ep=gs.episodeHistory.find(e=>e.num===${ep.num});if(ep){buildVPScreens(ep);renderVPScreen();}" style="padding:4px 12px;font-size:11px;font-weight:600;border:1px solid ${_dbTab===id ? '#f0883e' : 'rgba(255,255,255,0.1)'};border-radius:4px;background:${_dbTab===id ? 'rgba(240,136,62,0.15)' : 'transparent'};color:${_dbTab===id ? '#f0883e' : '#8b949e'};cursor:pointer">${label}</button>`;
+
+  // Episode nav helper — always jump to the debug screen after rebuild
+  const _dbEpNav = (targetEp) => `const ep=gs.episodeHistory.find(e=>e.num===${targetEp});if(ep){buildVPScreens(ep);const di=vpScreens.findIndex(s=>s.id==='debug');if(di>=0)vpCurrentScreen=di;renderVPScreen();}`;
+  const _maxEp = allEps.length ? allEps[allEps.length - 1].num : ep.num;
 
   let html = `<div class="rp-page tod-morning" style="font-size:12px">
     <div class="rp-eyebrow">Episode ${ep.num}</div>
-    <div style="font-family:var(--font-display);font-size:22px;color:#f0883e;text-align:center;margin-bottom:16px">DEBUG DATA</div>`;
-
-  // ── Threat Scores ──
-  html += `<div style="margin-bottom:20px">
-    <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#8b949e;margin-bottom:8px">THREAT SCORES</div>`;
-  const threatData = activePlayers.map(name => {
-    const s = pStats(name);
-    const ts = threatScore(name);
-    const rec = _chalRec[name] || { wins: 0, podiums: 0, bombs: 0 };
-    const tier = threatTier(ts);
-    return { name, ts, s, rec, tier };
-  }).sort((a, b) => b.ts - a.ts);
-  threatData.forEach(({ name, ts, s, rec, tier }) => {
-    html += `<div style="display:flex;align-items:center;gap:8px;padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.04)">
-      ${rpPortrait(name, 'sm')}
-      <div style="flex:1;font-weight:600;color:#e6edf3">${name}</div>
-      <div style="width:60px;text-align:right"><span style="color:${tier.color};font-weight:700">${ts.toFixed(1)}</span></div>
-      <div style="width:80px;text-align:right;color:#8b949e;font-size:10px">${tier.label}</div>
-      <div style="width:100px;text-align:right;color:#6e7681;font-size:10px">W${rec.wins} P${rec.podiums} B${rec.bombs}</div>
+    <div style="font-family:var(--font-display);font-size:22px;color:#f0883e;text-align:center;margin-bottom:8px">DEBUG DATA</div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:12px">
+      <button onclick="${_dbEpNav(Math.max(1, ep.num - 1))}" style="padding:3px 10px;font-size:11px;border:1px solid rgba(255,255,255,0.1);border-radius:4px;background:transparent;color:${ep.num <= 1 ? '#484f58' : '#8b949e'};cursor:pointer" ${ep.num <= 1 ? 'disabled' : ''}>\u25C0 Ep ${Math.max(1, ep.num - 1)}</button>
+      <div style="display:flex;gap:3px;flex-wrap:wrap;justify-content:center">${allEps.map(e => `<button onclick="${_dbEpNav(e.num)}" style="width:24px;height:24px;font-size:10px;border:1px solid ${e.num === ep.num ? '#f0883e' : 'rgba(255,255,255,0.08)'};border-radius:4px;background:${e.num === ep.num ? 'rgba(240,136,62,0.2)' : 'transparent'};color:${e.num === ep.num ? '#f0883e' : '#6e7681'};cursor:pointer">${e.num}</button>`).join('')}</div>
+      <button onclick="${_dbEpNav(Math.min(_maxEp, ep.num + 1))}" style="padding:3px 10px;font-size:11px;border:1px solid rgba(255,255,255,0.1);border-radius:4px;background:transparent;color:${ep.num >= _maxEp ? '#484f58' : '#8b949e'};cursor:pointer" ${ep.num >= _maxEp ? 'disabled' : ''}>Ep ${Math.min(_maxEp, ep.num + 1)} \u25B6</button>
+    </div>
+    <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:16px">
+      ${_tabBtn('episode', 'This Episode')}
+      ${_tabBtn('threats', 'Threats & Heat')}
+      ${_tabBtn('stats', 'Player Stats')}
+      ${_tabBtn('bonds', 'Perceived Bonds')}
+      ${_tabBtn('history', 'Hidden Moves')}
     </div>`;
-  });
-  html += `</div>`;
 
-  // ── Heat Scores (if post-merge or at tribal) ──
-  if (activePlayers.length <= 13) {
+  // ════════════════════════════════════════════════
+  // TAB: THIS EPISODE
+  // ════════════════════════════════════════════════
+  if (_dbTab === 'episode') {
+    // Eliminated
+    const _eliminated = ep.eliminated || ep.eliminatedPlayers || null;
+    if (_eliminated) {
+      const _elimNames = Array.isArray(_eliminated) ? _eliminated : [_eliminated];
+      html += `<div style="margin-bottom:16px;padding:10px;background:rgba(244,112,103,0.08);border:1px solid rgba(244,112,103,0.2);border-radius:8px">
+        <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#f47067;margin-bottom:6px">ELIMINATED</div>`;
+      _elimNames.filter(n => n && n !== 'No elimination').forEach(name => {
+        const ts = threatScore(name);
+        const votes = ep.votes?.[name] || 0;
+        html += `<div style="display:flex;align-items:center;gap:8px;padding:4px 0">
+          ${rpPortrait(name, 'sm')}
+          <div style="flex:1;color:#e6edf3;font-weight:600">${name}</div>
+          <div style="color:#f47067;font-size:11px">${votes} votes</div>
+          <div style="color:#f0883e;font-size:11px">threat ${ts.toFixed(1)}</div>
+          <div style="color:#8b949e;font-size:10px">${players.find(p => p.name === name)?.archetype || ''}</div>
+        </div>`;
+      });
+      html += `</div>`;
+    }
+    // Advantages
+    const advs = snap.advantages || gs.advantages || [];
+    const activeAdvs = advs.filter(a => activePlayers.includes(a.holder));
+    if (activeAdvs.length) {
+      html += `<div style="margin-bottom:16px">
+        <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#8b949e;margin-bottom:8px">ADVANTAGES</div>`;
+      activeAdvs.forEach(a => {
+        html += `<div style="display:flex;align-items:center;gap:8px;padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.04)">
+          ${rpPortrait(a.holder, 'sm')}
+          <div style="flex:1;color:#e6edf3">${a.holder}</div>
+          <div style="color:#d29922;font-size:11px;font-weight:600">${a.type}${a.superIdol ? ' (Super)' : ''}${a.fake ? ' (FAKE)' : ''}</div>
+          <div style="color:#6e7681;font-size:10px">ep.${a.foundEp || '?'}</div>
+        </div>`;
+      });
+      html += `</div>`;
+    }
+    // Trigger Log
+    const _trigLog = ep._pbTriggerLog || [];
+    if (_trigLog.length) {
+      html += `<div style="margin-bottom:16px;padding:10px;background:rgba(227,179,65,0.06);border:1px solid rgba(227,179,65,0.15);border-radius:8px">
+        <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#d29922;margin-bottom:6px">TRIGGER LOG (${_trigLog.length})</div>`;
+      _trigLog.forEach(log => { html += `<div style="font-size:10px;color:#8b949e;padding:2px 0">${log}</div>`; });
+      html += `</div>`;
+    }
+  }
+
+  // ════════════════════════════════════════════════
+  // TAB: THREATS & HEAT
+  // ════════════════════════════════════════════════
+  if (_dbTab === 'threats') {
     html += `<div style="margin-bottom:20px">
-      <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#8b949e;margin-bottom:8px">ESTIMATED HEAT</div>`;
-    const heatData = activePlayers.map(name => {
-      const heat = computeHeat(name, activePlayers, gs.namedAlliances || []);
-      return { name, heat };
-    }).sort((a, b) => b.heat - a.heat);
-    heatData.forEach(({ name, heat }) => {
-      const pct = Math.min(100, Math.max(0, heat * 10));
-      const col = heat >= 5 ? '#f47067' : heat >= 3 ? '#f0883e' : heat >= 1 ? '#d29922' : '#3fb950';
+      <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#8b949e;margin-bottom:8px">THREAT SCORES</div>`;
+    activePlayers.map(name => {
+      const ts = threatScore(name);
+      const rec = _chalRec[name] || { wins: 0, podiums: 0, bombs: 0 };
+      return { name, ts, rec, tier: threatTier(ts) };
+    }).sort((a, b) => b.ts - a.ts).forEach(({ name, ts, rec, tier }) => {
       html += `<div style="display:flex;align-items:center;gap:8px;padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.04)">
         ${rpPortrait(name, 'sm')}
         <div style="flex:1;font-weight:600;color:#e6edf3">${name}</div>
-        <div style="width:120px;background:rgba(255,255,255,0.05);border-radius:4px;height:8px;overflow:hidden">
-          <div style="width:${pct}%;height:100%;background:${col};border-radius:4px"></div>
-        </div>
-        <div style="width:40px;text-align:right;color:${col};font-weight:700;font-size:11px">${heat.toFixed(1)}</div>
+        <div style="width:60px;text-align:right"><span style="color:${tier.color};font-weight:700">${ts.toFixed(1)}</span></div>
+        <div style="width:80px;text-align:right;color:#8b949e;font-size:10px">${tier.label}</div>
+        <div style="width:140px;text-align:right;color:#6e7681;font-size:10px">${rec.wins}W · ${rec.podiums}P · ${rec.bombs}B</div>
       </div>`;
     });
     html += `</div>`;
+    // Heat
+    if (activePlayers.length <= 13) {
+      html += `<div style="margin-bottom:20px">
+        <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#8b949e;margin-bottom:8px">ESTIMATED HEAT</div>`;
+      activePlayers.map(name => ({ name, heat: computeHeat(name, activePlayers, gs.namedAlliances || []) }))
+        .sort((a, b) => b.heat - a.heat).forEach(({ name, heat }) => {
+        const pct = Math.min(100, Math.max(0, heat * 10));
+        const col = heat >= 5 ? '#f47067' : heat >= 3 ? '#f0883e' : heat >= 1 ? '#d29922' : '#3fb950';
+        html += `<div style="display:flex;align-items:center;gap:8px;padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.04)">
+          ${rpPortrait(name, 'sm')}
+          <div style="flex:1;font-weight:600;color:#e6edf3">${name}</div>
+          <div style="width:120px;background:rgba(255,255,255,0.05);border-radius:4px;height:8px;overflow:hidden">
+            <div style="width:${pct}%;height:100%;background:${col};border-radius:4px"></div>
+          </div>
+          <div style="width:40px;text-align:right;color:${col};font-weight:700;font-size:11px">${heat.toFixed(1)}</div>
+        </div>`;
+      });
+      html += `</div>`;
+    }
   }
 
-  // ── Perceived Bond Gaps ──
-  const pbEntries = Object.entries(_pb);
-  if (pbEntries.length) {
-    html += `<div style="margin-bottom:20px">
-      <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#8b949e;margin-bottom:8px">PERCEIVED BOND GAPS (${pbEntries.length})</div>`;
-    pbEntries.forEach(([key, entry]) => {
-      const [from, to] = key.split('→');
-      const realBond = getBond(from, to);
-      const gap = entry.perceived - realBond;
-      const gapCol = gap > 0 ? '#3fb950' : '#f47067';
-      html += `<div style="display:flex;align-items:center;gap:8px;padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.04)">
-        <div style="flex:1;color:#e6edf3;font-size:11px"><strong>${from}</strong> → ${to}</div>
-        <div style="color:#8b949e;font-size:10px">${entry.reason}</div>
-        <div style="width:80px;text-align:right;font-size:11px">
-          <span style="color:#8b949e">real:</span> <span style="color:#e6edf3">${realBond.toFixed(1)}</span>
-        </div>
-        <div style="width:90px;text-align:right;font-size:11px">
-          <span style="color:#8b949e">thinks:</span> <span style="color:${gapCol}">${entry.perceived.toFixed(1)}</span>
-        </div>
-        <div style="width:50px;text-align:right;font-size:10px;color:${gapCol}">${gap > 0 ? '+' : ''}${gap.toFixed(1)}</div>
-      </div>`;
-    });
-    html += `</div>`;
-  } else {
-    html += `<div style="margin-bottom:20px;color:#484f58;font-size:11px">No perceived bond gaps active this episode.</div>`;
-  }
-
-  // ── Player Stats Overview ──
-  html += `<div style="margin-bottom:20px">
-    <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#8b949e;margin-bottom:8px">PLAYER STATS</div>
-    <div style="overflow-x:auto">
+  // ════════════════════════════════════════════════
+  // TAB: PLAYER STATS
+  // ════════════════════════════════════════════════
+  if (_dbTab === 'stats') {
+    html += `<div style="overflow-x:auto">
     <table style="width:100%;border-collapse:collapse;font-size:10px;color:#8b949e">
       <tr style="border-bottom:1px solid rgba(255,255,255,0.08)">
         <th style="text-align:left;padding:4px;color:#e6edf3">Player</th>
@@ -27932,60 +28003,126 @@ function rpBuildDebug(ep) {
         <th style="padding:4px;color:#f0883e">Threat</th>
         <th style="padding:4px">State</th>
       </tr>`;
-  activePlayers.forEach(name => {
-    const s = pStats(name);
-    const ts = threatScore(name);
-    const state = (snap.playerStates?.[name]?.emotional || gs.playerStates?.[name]?.emotional || 'content');
-    const stateCol = state === 'desperate' ? '#f47067' : state === 'paranoid' ? '#f0883e' : state === 'uneasy' ? '#d29922' : '#8b949e';
-    const statColor = v => v >= 8 ? '#3fb950' : v >= 6 ? '#e6edf3' : v <= 3 ? '#f47067' : '#8b949e';
-    html += `<tr style="border-bottom:1px solid rgba(255,255,255,0.04)">
-      <td style="padding:4px;color:#e6edf3;font-weight:600">${name}</td>
-      <td style="padding:4px;text-align:center;color:${statColor(s.physical)}">${s.physical}</td>
-      <td style="padding:4px;text-align:center;color:${statColor(s.endurance)}">${s.endurance}</td>
-      <td style="padding:4px;text-align:center;color:${statColor(s.mental)}">${s.mental}</td>
-      <td style="padding:4px;text-align:center;color:${statColor(s.social)}">${s.social}</td>
-      <td style="padding:4px;text-align:center;color:${statColor(s.strategic)}">${s.strategic}</td>
-      <td style="padding:4px;text-align:center;color:${statColor(s.loyalty)}">${s.loyalty}</td>
-      <td style="padding:4px;text-align:center;color:${statColor(s.boldness)}">${s.boldness}</td>
-      <td style="padding:4px;text-align:center;color:${statColor(s.intuition)}">${s.intuition}</td>
-      <td style="padding:4px;text-align:center;color:${statColor(s.temperament)}">${s.temperament}</td>
-      <td style="padding:4px;text-align:center;color:#f0883e;font-weight:700">${ts.toFixed(1)}</td>
-      <td style="padding:4px;text-align:center;color:${stateCol};font-size:9px">${state}</td>
-    </tr>`;
-  });
-  html += `</table></div></div>`;
-
-  // ── Advantages ──
-  const advs = snap.advantages || gs.advantages || [];
-  const activeAdvs = advs.filter(a => activePlayers.includes(a.holder));
-  if (activeAdvs.length) {
-    html += `<div style="margin-bottom:20px">
-      <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#8b949e;margin-bottom:8px">ADVANTAGES IN PLAY</div>`;
-    activeAdvs.forEach(a => {
-      html += `<div style="display:flex;align-items:center;gap:8px;padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.04)">
-        ${rpPortrait(a.holder, 'sm')}
-        <div style="flex:1;color:#e6edf3">${a.holder}</div>
-        <div style="color:#d29922;font-size:11px;font-weight:600">${a.type}${a.superIdol ? ' (Super)' : ''}${a.fake ? ' (FAKE)' : ''}</div>
-        <div style="color:#6e7681;font-size:10px">found ep.${a.foundEp || '?'}</div>
-      </div>`;
+    activePlayers.forEach(name => {
+      const s = pStats(name);
+      const ts = threatScore(name);
+      const state = snap.playerStates?.[name]?.emotional || gs.playerStates?.[name]?.emotional || 'content';
+      const stateCol = state === 'desperate' ? '#f47067' : state === 'paranoid' ? '#f0883e' : state === 'uneasy' ? '#d29922' : '#8b949e';
+      const sc = v => v >= 8 ? '#3fb950' : v >= 6 ? '#e6edf3' : v <= 3 ? '#f47067' : '#8b949e';
+      html += `<tr style="border-bottom:1px solid rgba(255,255,255,0.04)">
+        <td style="padding:4px;color:#e6edf3;font-weight:600">${name}</td>
+        <td style="padding:4px;text-align:center;color:${sc(s.physical)}">${s.physical}</td>
+        <td style="padding:4px;text-align:center;color:${sc(s.endurance)}">${s.endurance}</td>
+        <td style="padding:4px;text-align:center;color:${sc(s.mental)}">${s.mental}</td>
+        <td style="padding:4px;text-align:center;color:${sc(s.social)}">${s.social}</td>
+        <td style="padding:4px;text-align:center;color:${sc(s.strategic)}">${s.strategic}</td>
+        <td style="padding:4px;text-align:center;color:${sc(s.loyalty)}">${s.loyalty}</td>
+        <td style="padding:4px;text-align:center;color:${sc(s.boldness)}">${s.boldness}</td>
+        <td style="padding:4px;text-align:center;color:${sc(s.intuition)}">${s.intuition}</td>
+        <td style="padding:4px;text-align:center;color:${sc(s.temperament)}">${s.temperament}</td>
+        <td style="padding:4px;text-align:center;color:#f0883e;font-weight:700">${ts.toFixed(1)}</td>
+        <td style="padding:4px;text-align:center;color:${stateCol};font-size:9px">${state}</td>
+      </tr>`;
     });
-    html += `</div>`;
+    html += `</table></div>`;
   }
 
-  // ── Scramble & Shield activations this episode ──
-  if (gs._scrambleActivations || gs._shieldActivations) {
+  // ════════════════════════════════════════════════
+  // TAB: PERCEIVED BONDS
+  // ════════════════════════════════════════════════
+  if (_dbTab === 'bonds') {
+    // Current gaps
+    const pbEntries = Object.entries(_pb);
     html += `<div style="margin-bottom:20px">
-      <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#8b949e;margin-bottom:8px">SCRAMBLE & SHIELD (this ep)</div>`;
-    if (gs._scrambleActivations) {
-      Object.entries(gs._scrambleActivations).forEach(([name, power]) => {
-        html += `<div style="padding:3px 8px;color:#d29922;font-size:11px">SCRAMBLE: ${name} (−${power.toFixed(2)} heat)</div>`;
+      <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#8b949e;margin-bottom:8px">ACTIVE GAPS (${pbEntries.length})</div>`;
+    if (pbEntries.length) {
+      pbEntries.forEach(([key, entry]) => {
+        const [from, to] = key.split('\u2192');
+        const realBond = getBond(from, to);
+        const gap = entry.perceived - realBond;
+        const gapCol = gap > 0 ? '#3fb950' : '#f47067';
+        html += `<div style="display:flex;align-items:center;gap:8px;padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.04)">
+          <div style="flex:1;color:#e6edf3;font-size:11px"><strong>${from}</strong> \u2192 ${to}</div>
+          <div style="color:#8b949e;font-size:10px">${entry.reason}</div>
+          <div style="font-size:11px"><span style="color:#8b949e">real:</span> <span style="color:#e6edf3">${realBond.toFixed(1)}</span></div>
+          <div style="font-size:11px"><span style="color:#8b949e">thinks:</span> <span style="color:${gapCol}">${entry.perceived.toFixed(1)}</span></div>
+          <div style="font-size:10px;color:${gapCol}">${gap > 0 ? '+' : ''}${gap.toFixed(1)}</div>
+        </div>`;
       });
+    } else {
+      html += `<div style="color:#484f58;font-size:11px">No gaps active this episode.</div>`;
     }
-    if (gs._shieldActivations) {
-      Object.entries(gs._shieldActivations).forEach(([name, { bonus, meatshield }]) => {
-        html += `<div style="padding:3px 8px;color:#3fb950;font-size:11px">SHIELD: ${name} behind ${meatshield} (−${bonus.toFixed(2)} heat)</div>`;
+    html += `</div>`;
+    // Season history
+    const _allPBGaps = _viewEps.flatMap(e => {
+      const pb = e.gsSnapshot?.perceivedBonds || {};
+      return Object.entries(pb).map(([key, data]) => ({ ep: e.num, key, ...data }));
+    });
+    if (_allPBGaps.length) {
+      html += `<div style="margin-bottom:20px">
+        <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#d29922;margin-bottom:8px">BOND HISTORY (${_allPBGaps.length} total across season)</div>`;
+      const _byKey = {};
+      _allPBGaps.forEach(g => { if (!_byKey[g.key]) _byKey[g.key] = []; _byKey[g.key].push(g); });
+      Object.entries(_byKey).forEach(([key, entries]) => {
+        const latest = entries[entries.length - 1];
+        const [from, to] = key.split('\u2192');
+        const epRange = entries.length === 1 ? `Ep ${entries[0].ep}` : `Ep ${entries[0].ep}\u2013${entries[entries.length-1].ep}`;
+        html += `<div style="padding:3px 8px;font-size:11px;border-bottom:1px solid rgba(255,255,255,0.04)">
+          <span style="color:#8b949e">${epRange}:</span>
+          <span style="color:#e6edf3;font-weight:600">${from}</span>\u2192${to}
+          <span style="color:#d29922">${latest.reason}</span>
+          <span style="color:#8b949e">perceived: ${latest.perceived?.toFixed(1) || '?'}</span>
+        </div>`;
       });
+      html += `</div>`;
     }
+  }
+
+  // ════════════════════════════════════════════════
+  // TAB: HIDDEN MOVES (per-episode throws/scramble/shield)
+  // ════════════════════════════════════════════════
+  if (_dbTab === 'history') {
+    // Challenge Throws — this episode only
+    const _epThrows = ep.challengeThrows || [];
+    html += `<div style="margin-bottom:20px">
+      <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#f47067;margin-bottom:8px">CHALLENGE THROWS</div>`;
+    if (_epThrows.length) {
+      _epThrows.forEach(ct => {
+        html += `<div style="padding:3px 8px;font-size:11px;border-bottom:1px solid rgba(255,255,255,0.04)">
+          <span style="color:#e6edf3;font-weight:600">${ct.thrower}</span>
+          <span style="color:${ct.caught ? '#f47067' : '#3fb950'}">${ct.caught ? 'CAUGHT by ' + (ct.detectedBy||[]).join(', ') : 'undetected'}</span>
+        </div>`;
+      });
+    } else { html += `<div style="color:#484f58;font-size:11px">No throws this episode.</div>`; }
+    html += `</div>`;
+
+    // Scramble — this episode only
+    const _epScr = ep._debugScramble || gs._scrambleActivations || null;
+    html += `<div style="margin-bottom:20px">
+      <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#d29922;margin-bottom:8px">SCRAMBLE</div>`;
+    if (_epScr && Object.keys(_epScr).length) {
+      Object.entries(_epScr).forEach(([name, power]) => {
+        html += `<div style="padding:3px 8px;font-size:11px;border-bottom:1px solid rgba(255,255,255,0.04)">
+          <span style="color:#e6edf3;font-weight:600">${name}</span>
+          <span style="color:#d29922">\u2212${(typeof power === 'number' ? power : 0).toFixed(2)} heat</span>
+        </div>`;
+      });
+    } else { html += `<div style="color:#484f58;font-size:11px">No scrambles this episode.</div>`; }
+    html += `</div>`;
+
+    // Shield — this episode only
+    const _epSh = ep._debugShield || gs._shieldActivations || null;
+    html += `<div style="margin-bottom:20px">
+      <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#3fb950;margin-bottom:8px">SHIELD NETWORK</div>`;
+    if (_epSh && Object.keys(_epSh).length) {
+      Object.entries(_epSh).forEach(([name, data]) => {
+        html += `<div style="padding:3px 8px;font-size:11px;border-bottom:1px solid rgba(255,255,255,0.04)">
+          <span style="color:#e6edf3;font-weight:600">${name}</span>
+          behind <span style="color:#8b949e">${data?.meatshield || '?'}</span>
+          <span style="color:#3fb950">\u2212${(data?.bonus || 0).toFixed(2)} heat</span>
+        </div>`;
+      });
+    } else { html += `<div style="color:#484f58;font-size:11px">No shield plays this episode.</div>`; }
     html += `</div>`;
   }
 

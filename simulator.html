@@ -8436,6 +8436,23 @@ function checkIdolPlays(tribalPlayers, votesObj, ep, voteLog = []) {
   ep.idolMisplays = ep.idolMisplays || [];
   ep.idolRehide  = ep.idolRehide  || false;
 
+  // ── Pre-check: if a Sole Vote holder will play it, suppress their other advantage plays ──
+  // Sole Vote makes all other plays redundant — your vote is the only one that counts
+  const _svPrecheckAdv = gs.advantages.find(a => a.type === 'soleVote' && tribalPlayers.includes(a.holder));
+  if (_svPrecheckAdv) {
+    const _svH = _svPrecheckAdv.holder;
+    const _svHS = pStats(_svH);
+    const _svHeat = computeHeat(_svH, tribalPlayers, []);
+    const _svVotes = votesObj[_svH] || 0;
+    const _svEffHeat = _svHeat + _svVotes * 0.5;
+    const _svForce = ep._forceAdvantages || gs.activePlayers.length <= (seasonConfig.advExpire || 4);
+    const _svChance = _svForce ? 1.0 : _svEffHeat * (0.08 + _svHS.strategic * 0.008) + _svHS.boldness * 0.005;
+    if (Math.random() < _svChance) {
+      // Sole vote WILL be played — flag the holder so idol/advantage checks skip them
+      ep._soleVoteHolder = _svH;
+    }
+  }
+
   // ── KiP fires FIRST (before any idol plays) ──
   // KiP holder picks a target and asks "Do you have an idol?" — if they're wrong, KiP is wasted
   const kip = gs.advantages.find(a => a.type === 'kip' && tribalPlayers.includes(a.holder));
@@ -8533,6 +8550,8 @@ function checkIdolPlays(tribalPlayers, votesObj, ep, voteLog = []) {
     if (_idolPlayedThisTribal.has(name)) continue; // already played an idol this tribal
     // Skip if already protected by someone else's idol play (don't waste your own)
     if (ep.idolPlays.some(p => p.playedFor === name && (p.votesNegated || 0) > 0)) continue;
+    // Skip if this player will play Sole Vote — makes idol redundant
+    if (ep._soleVoteHolder === name) continue;
     const idolIdx = gs.advantages.findIndex(a => a.holder === name && !a.superIdol && (a.type === 'idol' || (a.type === 'amulet' && a.amuletPower === 'idol')));
     if (idolIdx === -1) continue;
     const _idolAdv = gs.advantages[idolIdx];
@@ -8781,11 +8800,15 @@ function checkIdolPlays(tribalPlayers, votesObj, ep, voteLog = []) {
 // Called right after checkIdolPlays so votes object is already adjusted for idol plays.
 function checkNonIdolAdvantageUse(tribalPlayers, votesObj, ep, voteLog = []) {
   ep.idolPlays = ep.idolPlays || [];
+  // If sole vote will be played, skip extra vote / vote steal for the sole vote holder
+  // (sole vote makes them redundant — your vote is the only one)
+  const _svSkip = ep._soleVoteHolder || null;
 
   // ── Extra Vote ──
   const _evAdvs = gs.advantages.filter(a => a.type === 'extraVote' && tribalPlayers.includes(a.holder));
   for (const _adv of _evAdvs) {
     const _holder = _adv.holder;
+    if (_holder === _svSkip) continue; // sole vote makes extra vote redundant
     if (gs.lostVotes.includes(_holder)) continue; // already lost their vote this episode
     const _s = pStats(_holder);
     const _state = getPlayerState(_holder);
@@ -8840,6 +8863,7 @@ function checkNonIdolAdvantageUse(tribalPlayers, votesObj, ep, voteLog = []) {
   const _vsAdvs = gs.advantages.filter(a => a.type === 'voteSteal' && tribalPlayers.includes(a.holder));
   for (const _adv of _vsAdvs) {
     const _holder = _adv.holder;
+    if (_holder === _svSkip) continue; // sole vote makes vote steal redundant
     const _s = pStats(_holder);
     const _state = getPlayerState(_holder);
 
@@ -8993,7 +9017,8 @@ function checkNonIdolAdvantageUse(tribalPlayers, votesObj, ep, voteLog = []) {
     const _svActualVotes = votesObj[_svHolder] || 0;
     const _svEffectiveHeat = _svHeat + _svActualVotes * 0.5;
     const _svForcePlay = ep._forceAdvantages || gs.activePlayers.length <= (seasonConfig.advExpire || 4);
-    const _svPlayChance = _svForcePlay ? 1.0 : _svEffectiveHeat * (0.08 + _svS.strategic * 0.008) + _svS.boldness * 0.005;
+    const _svPreChecked = ep._soleVoteHolder === _svHolder; // already decided in checkIdolPlays pre-check
+    const _svPlayChance = _svPreChecked ? 1.0 : (_svForcePlay ? 1.0 : _svEffectiveHeat * (0.08 + _svS.strategic * 0.008) + _svS.boldness * 0.005);
     if (Math.random() >= _svPlayChance) continue;
 
     // Silence every other player's vote
@@ -21914,7 +21939,7 @@ function generateTwistScenes(ep) {
       }
     });
 
-    result.push({ label:'Journey', type:'journey', scenes:jsc });
+    if (jsc.length) result.push({ label:'Journey', type:'journey', scenes:jsc });
   }
 
   return result;
@@ -30951,7 +30976,10 @@ function rpBuildVotingPlans(ep) {
       else if (_sharedAlliance) whyNot = `${player} and ${target} are in ${_sharedAlliance.name} together. Following through means breaking ranks.`;
       else if (bond >= 2) whyNot = `${player} has a genuine connection with ${target}. This isn't a clean vote — it's personal.`;
       else if (allyCount <= 2) whyNot = `Only ${allyCount} votes behind this. Needs help from outside. High risk if nobody else follows.`;
-      else whyNot = `The numbers are there, but the timing feels off. This might not be the right moment.`;
+      else if (bond >= 1) whyNot = `There's enough of a connection with ${target} to create doubt — not a clean vote.`;
+      else if (threatScore(target) <= 3) whyNot = `${target} isn't a real threat. Spending a vote here feels wasteful.`;
+      else if (tribalPlayers.length <= 6) whyNot = `At this stage, every vote matters. Targeting ${target} might not be the smartest use of numbers.`;
+      else whyNot = `No strong reason to hesitate — but no strong reason to commit either. ${player} could flip.`;
 
       return { alliance: a.label, target, tCat, whyVote, whyNot, bond, allyCount };
     });

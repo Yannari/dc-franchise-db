@@ -21264,12 +21264,25 @@ function getTribeRelationshipHighlights(members) {
       if (seen.has(k)) return;
       seen.add(k);
       const val = gs.bonds?.[k] || 0;
-      pairs.push({ a, b, val });
+      // Check for perceived bond gap — these pairs are always notable
+      const _hasGap = gs.perceivedBonds &&
+        (gs.perceivedBonds[a + '→' + b] || gs.perceivedBonds[b + '→' + a]);
+      pairs.push({ a, b, val, hasGap: !!_hasGap });
     });
   });
-  pairs.sort((x, y) => Math.abs(y.val) - Math.abs(x.val));
-  // Show all pairs for small groups, cap at 20 for large merged groups
-  const cap = members.length <= 8 ? pairs.length : 20;
+  // Sort: gap pairs first, then non-neutral bonds, then neutral
+  pairs.sort((x, y) => {
+    if (x.hasGap && !y.hasGap) return -1;
+    if (!x.hasGap && y.hasGap) return 1;
+    const xNeutral = Math.abs(x.val) < 0.5;
+    const yNeutral = Math.abs(y.val) < 0.5;
+    if (!xNeutral && yNeutral) return -1;
+    if (xNeutral && !yNeutral) return 1;
+    return Math.abs(y.val) - Math.abs(x.val);
+  });
+  // Show all pairs for small groups, cap at 25 for large merged groups
+  // Gap pairs and non-neutral bonds are already sorted to the top — neutrals get cut first
+  const cap = members.length <= 8 ? pairs.length : 25;
   return pairs.slice(0, cap);
 }
 

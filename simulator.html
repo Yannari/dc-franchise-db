@@ -6716,18 +6716,18 @@ function simulateIndividualChallenge(pool, immune) {
   // Consecutive-win fatigue: repeat winners face increasing pressure/fatigue
   const _streaks = gs.challengeWinStreak || {};
 
-  // ── Challenge throw check (post-merge only) ──
+  // ── Challenge throw check (post-merge only, not when immunity is critical) ──
   const _throwers = new Set();
-  if (gs.isMerged) {
+  const _throwDisabled = candidates.length <= (seasonConfig.finaleSize || 3); // F3/F4 — every immunity matters
+  if (gs.isMerged && !_throwDisabled) {
     candidates.forEach(name => {
       const s = pStats(name);
       const streak = _streaks[name] || 0;
       const heat = computeHeat(name, candidates, gs.namedAlliances || []);
       // Motivation: proportional — higher heat + streak = more reason to lay low
       // Roll: strategic players recognize when to throw, bold players resist (want to win)
-      // Only throw when heat is genuinely high (>= 4) — don't throw for mild pressure
-      if (heat < 4) return;
-      const throwChance = (heat - 4) * (s.strategic * 0.008) + streak * 0.06 - s.boldness * 0.02;
+      if (heat < 2) return;
+      const throwChance = heat * (s.strategic * 0.007) + streak * 0.08 - s.boldness * 0.012;
       if (throwChance > 0 && Math.random() < throwChance) {
         _throwers.add(name);
       }
@@ -6770,10 +6770,10 @@ function simulateIndividualChallenge(pool, immune) {
     gs.challengeThrowCount[thrower] = (gs.challengeThrowCount[thrower] || 0) + 1;
     const _throwCount = gs.challengeThrowCount[thrower];
     // Detection: each other player rolls intuition to notice
-    // Escalating: each previous throw adds +0.03 detection chance (tribe gets suspicious)
+    // Lower base rate — throwing is subtle. Escalates with repeat throws.
     const _detectors = [];
     candidates.filter(p => p !== thrower).forEach(p => {
-      const _detectChance = pStats(p).intuition * 0.04 + (_throwCount - 1) * 0.03;
+      const _detectChance = pStats(p).intuition * 0.015 + (_throwCount - 1) * 0.04;
       if (Math.random() < _detectChance) _detectors.push(p);
     });
     if (_detectors.length) {

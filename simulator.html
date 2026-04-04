@@ -2846,7 +2846,7 @@ function pStats(name) {
 // Post-merge threat score — how dangerous is this player to keep?
 function threatScore(name) {
   const s = pStats(name);
-  const base = ((s.physical + s.endurance) / 2 + s.strategic + s.social + s.boldness * 0.5 + s.mental * 0.5) / 4;
+  const base = ((s.physical + s.endurance) / 2 + s.strategic + s.social + s.boldness * 0.5 + (s.intuition + s.mental) / 2) / 4;
   const rec = gs.chalRecord?.[name];
   if (!rec) return base;
   let prestige = 0;

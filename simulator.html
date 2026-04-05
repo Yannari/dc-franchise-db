@@ -6715,20 +6715,69 @@ function simulateTribeChallenge(tribes) {
         ? Math.max(0, (70 - (gs.survival[m] || 80)) * 0.03)
         : 0;
       let _moleThrowPenalty = 0;
-      // The Mole: 30% chance to throw tribe challenges (pre-merge only)
+      // The Mole: 30% chance to sabotage tribe challenges (pre-merge)
+      // Pre-merge: 40% self-throw / 60% target sabotage (pinning blame is smarter)
       if (gs.moles?.length) {
         const _mObj = gs.moles.find(ml => ml.player === m && !ml.exposed && !ml.layingLow);
         if (_mObj && Math.random() < 0.30) {
-          _moleThrowPenalty = 2 + Math.random() * 2; // -2 to -4 penalty
-          _mObj.sabotageCount++;
-          _mObj.sabotageLog.push({ ep: (gs.episode || 0) + 1, type: 'challengeThrow', tribe: tribe.name });
-          _mObj.resistance = Math.max(0.15, 0.5 - _mObj.sabotageCount * 0.03);
-          if (!gs._moleChalThrows) gs._moleChalThrows = [];
-          gs._moleChalThrows.push({ player: m, tribe: tribe.name, penalty: _moleThrowPenalty });
+          if (Math.random() < 0.40) {
+            // Self-throw: Mole reduces own score
+            _moleThrowPenalty = 2 + Math.random() * 2;
+            _mObj.sabotageCount++;
+            _mObj.sabotageLog.push({ ep: (gs.episode || 0) + 1, type: 'challengeThrow', tribe: tribe.name });
+            _mObj.resistance = Math.max(0.15, 0.5 - _mObj.sabotageCount * 0.03);
+            if (!gs._moleChalThrows) gs._moleChalThrows = [];
+            gs._moleChalThrows.push({ player: m, tribe: tribe.name, penalty: _moleThrowPenalty, mode: 'self' });
+          } else {
+            // Target sabotage: Mole sabotages someone else — deferred to after scores computed
+            if (!gs._moleChalTargetSabotage) gs._moleChalTargetSabotage = [];
+            gs._moleChalTargetSabotage.push({ mole: m, tribe: tribe.name });
+          }
         }
       }
       return { name: m, score: chal.stat(pStats(m)) - _injP - survPenalty - _moleThrowPenalty + (Math.random()*4-2) };
     });
+    // The Mole: target sabotage — reduce another player's score after all scores computed
+    if (gs._moleChalTargetSabotage?.length) {
+      const _tribeSabs = gs._moleChalTargetSabotage.filter(s => s.tribe === tribe.name);
+      _tribeSabs.forEach(sab => {
+        const _mObj = gs.moles?.find(ml => ml.player === sab.mole);
+        if (!_mObj) return;
+        const _coordMole = (seasonConfig.moleCoordination === 'coordinated' && gs.moles.length === 2)
+          ? gs.moles.find(ml => ml.player !== sab.mole)?.player : null;
+        // Pre-merge Owen mode: pick the easiest target to blame — weakest player, worst performance
+        // Nobody questions it when the tribe's weakest link has a bad day
+        const _sabPool = ms.filter(x => x.name !== sab.mole && (_coordMole ? x.name !== _coordMole : true));
+        if (!_sabPool.length) return;
+        const _avgScore = ms.reduce((s, m2) => s + m2.score, 0) / ms.length;
+        const _target = _sabPool.reduce((best, x) => {
+          const xS = pStats(x.name);
+          let sc = 0;
+          // Heavily prefer low physical/endurance — blame sticks naturally
+          sc += (10 - xS.physical) * 0.5;
+          sc += (10 - xS.endurance) * 0.3;
+          // Prefer players already performing below average this challenge
+          sc += Math.max(0, _avgScore - x.score) * 0.4;
+          // Small bonus for players with existing challenge bombs (reputation as weak)
+          const _rec = gs.chalRecord?.[x.name];
+          sc += (_rec?.bombs || 0) * 0.5;
+          sc += Math.random() * 0.8;
+          return sc > best.sc ? { name: x.name, sc } : best;
+        }, { name: _sabPool[0].name, sc: -99 });
+        // Apply penalty to the target's score
+        const _penalty = 1.5 + Math.random() * 2; // -1.5 to -3.5 (slightly less than self-throw)
+        const _targetEntry = ms.find(x => x.name === _target.name);
+        if (_targetEntry) _targetEntry.score -= _penalty;
+        // Log it
+        _mObj.sabotageCount++;
+        _mObj.sabotageLog.push({ ep: (gs.episode || 0) + 1, type: 'challengeSabotage', tribe: tribe.name, target: _target.name });
+        _mObj.resistance = Math.max(0.15, 0.5 - _mObj.sabotageCount * 0.03);
+        if (!gs._moleChalThrows) gs._moleChalThrows = [];
+        gs._moleChalThrows.push({ player: sab.mole, tribe: tribe.name, penalty: _penalty, mode: 'target', target: _target.name });
+      });
+      // Clean up this tribe's entries
+      gs._moleChalTargetSabotage = gs._moleChalTargetSabotage.filter(s => s.tribe !== tribe.name);
+    }
     ms.forEach(x => { memberScores[x.name] = x.score; });
     const avg = ms.length ? ms.reduce((s,x) => s + x.score, 0) / ms.length : 0;
     // Underdog bonus: smaller tribes can't sit out weak players, so compensate
@@ -6803,8 +6852,43 @@ function simulateIndividualChallenge(pool, immune) {
       // Challenge throw: massive score penalty to place near the bottom
       const throwPenalty = _throwers.has(name) ? 5 + Math.random() * 3 : 0; // -5 to -8
       return { name, score: base - fatigue - injPenalty - survPenalty - throwPenalty + (Math.random()*8-4), threwIt: _throwers.has(name) };
-    })
-    .sort((a, b) => b.score - a.score);
+    });
+  // ── The Mole: post-merge target sabotage (prevent someone from winning immunity) ──
+  // No self-throw post-merge — useless. Only target sabotage: make a threat lose immunity.
+  if (gs.moles?.length && gs.isMerged && !_throwDisabled) {
+    gs.moles.forEach(mole => {
+      if (mole.exposed || mole.layingLow || !candidates.includes(mole.player)) return;
+      if (Math.random() >= 0.25) return; // 25% chance post-merge (lower than pre-merge 30%)
+      const _coordMole = (seasonConfig.moleCoordination === 'coordinated' && gs.moles.length === 2)
+        ? gs.moles.find(ml => ml.player !== mole.player)?.player : null;
+      // Target: prefer high threats, players Mole wants gone, players currently winning
+      const _sabPool = scored.filter(x => x.name !== mole.player && (_coordMole ? x.name !== _coordMole : true));
+      if (!_sabPool.length) return;
+      const _target = _sabPool.reduce((best, x) => {
+        const xS = pStats(x.name);
+        let sc = 0;
+        sc += threatScore(x.name) * 0.3; // prefer threats
+        sc += x.score * 0.2; // prefer currently high scorers (deny them immunity)
+        sc += Math.max(0, -getBond(mole.player, x.name)) * 0.3; // prefer enemies
+        // Post-merge Scott mode: prefer players not in Mole's alliance
+        const _moleAlliances = (gs.namedAlliances || []).filter(a => a.active && a.members.includes(mole.player));
+        const _isAlly = _moleAlliances.some(a => a.members.includes(x.name));
+        if (!_isAlly) sc += 1.0;
+        sc += Math.random() * 0.5;
+        return sc > best.sc ? { name: x.name, sc, entry: x } : best;
+      }, { name: _sabPool[0].name, sc: -99, entry: _sabPool[0] });
+      // Apply penalty
+      const _penalty = 1.5 + Math.random() * 2.5;
+      _target.entry.score -= _penalty;
+      // Log
+      mole.sabotageCount++;
+      mole.sabotageLog.push({ ep: (gs.episode || 0) + 1, type: 'challengeSabotage', target: _target.name });
+      mole.resistance = Math.max(0.15, 0.5 - mole.sabotageCount * 0.03);
+      if (!gs._moleChalThrows) gs._moleChalThrows = [];
+      gs._moleChalThrows.push({ player: mole.player, tribe: gs.mergeName || 'merge', penalty: _penalty, mode: 'target', target: _target.name });
+    });
+  }
+  scored.sort((a, b) => b.score - a.score);
   const winner = scored[0].name;
   // Update win streaks — winner increments, everyone else resets
   if (!gs.challengeWinStreak) gs.challengeWinStreak = {};
@@ -7557,7 +7641,8 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
     }
 
     // ── THE MOLE: vote disruption — rogue vote or corrupted pitch ──
-    if (gs._moleVoteDisruption?.includes(voter) && target && allianceTarget) {
+    // Only fires if the Mole is actually at this tribal (tribalPlayers check is implicit — voter is from tribalPlayers)
+    if (gs._moleVoteDisruption?.includes(voter) && tribalPlayers.includes(voter) && target && allianceTarget) {
       // Mole votes off-plan: pick someone other than alliance target
       const _roguePool = tribalPlayers.filter(p =>
         p !== voter && p !== allianceTarget && !isImmune(p)
@@ -7590,6 +7675,13 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
         target = _rogueTarget;
         reason = 'rogue vote (Mole disruption)';
         isDefecting = true;
+        // Log the sabotage NOW — we know it actually fired
+        const _moleObj3 = gs.moles?.find(m => m.player === voter);
+        if (_moleObj3) {
+          _moleObj3.sabotageCount++;
+          _moleObj3.sabotageLog.push({ ep: (gs.episode || 0) + 1, type: 'voteDisruption' });
+          _moleObj3.resistance = Math.max(0.15, 0.5 - _moleObj3.sabotageCount * 0.03);
+        }
         // Store for post-vote camp event + suspicion rendering in patchEpisodeHistory
         if (!gs._moleVoteDisruptionEvents) gs._moleVoteDisruptionEvents = [];
         gs._moleVoteDisruptionEvents.push({ voter, originalTarget: allianceTarget, rogueTarget: _rogueTarget });
@@ -16487,13 +16579,11 @@ function checkMoleSabotage(ep) {
     }
 
     // ── VOTE DISRUPTION — 20% chance, store for use in simulateVotes ──
+    // Flag only — sabotageCount/log NOT incremented here. simulateVotes handles that
+    // because we don't know yet if the Mole's tribe goes to tribal (pre-merge).
     if (!mole.exposed && Math.random() < 0.20) {
-      // Flag the Mole for vote disruption this episode — actual disruption happens in simulateVotes
       if (!gs._moleVoteDisruption) gs._moleVoteDisruption = [];
       gs._moleVoteDisruption.push(mole.player);
-      mole.sabotageCount++;
-      mole.sabotageLog.push({ ep: curEp, type: 'voteDisruption' });
-      mole.resistance = Math.max(0.15, 0.5 - mole.sabotageCount * 0.03);
     }
 
     // ── ADVANTAGE SABOTAGE — 35% chance while holding an advantage ──
@@ -25497,38 +25587,77 @@ function patchEpisodeHistory(ep) {
   // ── The Mole: challenge throw events + vote disruption events + suspicion (all deferred to here because ep/challenge happen after checkMoleSabotage) ──
   const _pick = arr => arr[Math.floor(Math.random() * arr.length)];
 
-  // Challenge throw camp events + suspicion
+  // Challenge sabotage camp events + suspicion (self-throw and target sabotage)
   if (gs._moleChalThrows?.length && ep.campEvents && gs.moles?.length) {
     gs._moleChalThrows.forEach(thr => {
       const mole = gs.moles.find(m => m.player === thr.player);
       if (!mole) return;
       const mp = pronouns(thr.player);
-      const _throwTexts = [
-        `${thr.player} looked off during the challenge. Sluggish, unfocused — not the performance anyone expected. "Just didn't have it today," ${mp.sub} ${mp.sub === 'they' ? 'say' : 'says'} with a shrug.`,
-        `${thr.player} fumbles at a critical moment. It looks accidental. It isn't.`,
-        `The tribe loses, and ${thr.player}'s contribution was noticeably weak. Nobody says anything — but a few are thinking it.`,
-        `${thr.player} sandbagged the challenge. Dropped a puzzle piece, stumbled on the obstacle. Subtle enough to pass as a bad day. Deliberate enough to cost the tribe the win.`,
-        `${thr.player} pulls back just enough to hurt the tribe's score without making it obvious. The loss feels close — and that's by design.`,
-      ];
       const _campKey = thr.tribe || (gs.isMerged ? (gs.mergeName || 'merge') : Object.keys(ep.campEvents)[0]);
-      if (_campKey && ep.campEvents[_campKey]) {
-        const evts = ep.campEvents[_campKey].post || ep.campEvents[_campKey].pre || (Array.isArray(ep.campEvents[_campKey]) ? ep.campEvents[_campKey] : []);
-        evts.push({
-          type: 'moleChallengeThrow', text: _pick(_throwTexts),
-          players: [thr.player], badgeText: 'MOLE'
+
+      if (thr.mode === 'target' && thr.target) {
+        // Target sabotage: Mole made someone else look bad
+        const tp = pronouns(thr.target);
+        const _targetTexts = [
+          `${thr.target} struggled in the challenge — fumbling at a key moment. What nobody saw was ${thr.player} nudging things just enough to make it happen.`,
+          `The challenge came down to execution, and ${thr.target} faltered. It looked like nerves. It wasn't. ${thr.player} made sure ${tp.sub} ${tp.sub === 'they' ? 'were' : 'was'} set up to fail.`,
+          `${thr.player} was positioned right next to ${thr.target} during the challenge. A small bump, a shifted piece — nothing anyone could prove. ${thr.target} took the blame.`,
+          `${thr.target}'s challenge performance was surprisingly poor. The tribe side-eyes ${tp.obj}. ${thr.player} offers sympathetic words and hides a smile.`,
+          `${thr.player} "helped" ${thr.target} during the challenge in a way that actually made things harder. Nobody caught it. ${thr.target} just looked bad.`,
+        ];
+        if (_campKey && ep.campEvents[_campKey]) {
+          const evts = ep.campEvents[_campKey].post || ep.campEvents[_campKey].pre || (Array.isArray(ep.campEvents[_campKey]) ? ep.campEvents[_campKey] : []);
+          evts.push({
+            type: 'moleChallengeThrow', text: _pick(_targetTexts),
+            players: [thr.player, thr.target], badgeText: 'MOLE'
+          });
+        }
+        // Suspicion scales inversely with blame-ability (Dawn/Scott dynamic)
+        // If the target is already weak (low physical), blame sticks → low suspicion on Mole
+        // If the target is strong (high physical), their failure is suspicious → more suspicion on Mole
+        const _targetStats = pStats(thr.target);
+        const _blameFactor = Math.max(0.1, _targetStats.physical / 10); // physical 3 → 0.3 (easy blame), physical 9 → 0.9 (hard blame)
+        // Also factor in penalty size — big drops from good players look more suspicious
+        const _penaltyFactor = Math.min(1.0, thr.penalty / 3.5); // penalty 1.5 → 0.43, penalty 3.5 → 1.0
+        const _suspMultiplier = _blameFactor * _penaltyFactor; // low when blame sticks, high when it doesn't
+        const _tribe = gs.tribes?.find(t => t.name === thr.tribe);
+        const _tribeMembers = _tribe ? _tribe.members.filter(p => p !== thr.player) : gs.activePlayers.filter(p => p !== thr.player);
+        _tribeMembers.forEach(w => {
+          if (!gs.activePlayers.includes(w)) return;
+          const suspGain = pStats(w).intuition * 0.04 * mole.resistance * _suspMultiplier;
+          if (Math.random() < suspGain) {
+            if (!mole.suspicion[w]) mole.suspicion[w] = 0;
+            mole.suspicion[w] += 0.15 + _suspMultiplier * 0.25; // 0.15-0.40 depending on blame-ability
+          }
+        });
+      } else {
+        // Self-throw: Mole looked weak
+        const _throwTexts = [
+          `${thr.player} looked off during the challenge. Sluggish, unfocused — not the performance anyone expected. "Just didn't have it today," ${mp.sub} ${mp.sub === 'they' ? 'say' : 'says'} with a shrug.`,
+          `${thr.player} fumbles at a critical moment. It looks accidental. It isn't.`,
+          `The tribe loses, and ${thr.player}'s contribution was noticeably weak. Nobody says anything — but a few are thinking it.`,
+          `${thr.player} sandbagged the challenge. Dropped a puzzle piece, stumbled on the obstacle. Subtle enough to pass as a bad day. Deliberate enough to cost the tribe the win.`,
+          `${thr.player} pulls back just enough to hurt the tribe's score without making it obvious. The loss feels close — and that's by design.`,
+        ];
+        if (_campKey && ep.campEvents[_campKey]) {
+          const evts = ep.campEvents[_campKey].post || ep.campEvents[_campKey].pre || (Array.isArray(ep.campEvents[_campKey]) ? ep.campEvents[_campKey] : []);
+          evts.push({
+            type: 'moleChallengeThrow', text: _pick(_throwTexts),
+            players: [thr.player], badgeText: 'MOLE'
+          });
+        }
+        // Full suspicion — self-throw is more visible
+        const _tribe = gs.tribes?.find(t => t.name === thr.tribe);
+        const _tribeMembers = _tribe ? _tribe.members.filter(p => p !== thr.player) : gs.activePlayers.filter(p => p !== thr.player);
+        _tribeMembers.forEach(w => {
+          if (!gs.activePlayers.includes(w)) return;
+          const suspGain = pStats(w).intuition * 0.04 * mole.resistance;
+          if (Math.random() < suspGain) {
+            if (!mole.suspicion[w]) mole.suspicion[w] = 0;
+            mole.suspicion[w] += 0.4;
+          }
         });
       }
-      // Suspicion: tribemates with high intuition notice the throw
-      const _tribe = gs.tribes?.find(t => t.name === thr.tribe);
-      const _tribeMembers = _tribe ? _tribe.members.filter(p => p !== thr.player) : gs.activePlayers.filter(p => p !== thr.player);
-      _tribeMembers.forEach(w => {
-        if (!gs.activePlayers.includes(w)) return;
-        const suspGain = pStats(w).intuition * 0.04 * mole.resistance;
-        if (Math.random() < suspGain) {
-          if (!mole.suspicion[w]) mole.suspicion[w] = 0;
-          mole.suspicion[w] += 0.4; // challenge throws are visible
-        }
-      });
     });
     delete gs._moleChalThrows;
   }
@@ -25579,44 +25708,12 @@ function patchEpisodeHistory(ep) {
   }
   if (gs.moles?.length) {
     if (h.gsSnapshot) h.gsSnapshot.moles = gs.moles.map(m => ({ ...m, suspicion: { ...m.suspicion }, sabotageLog: [...m.sabotageLog], leaks: [...m.leaks] }));
-    // Check if a Mole was eliminated this episode without being discovered
+    // Save Mole reveal data to episode history — VP renders it in rpBuildVotes after torch snuff
     const _elimThisEp = h.eliminated || ep.eliminated;
     if (_elimThisEp) {
       const _elimMole = gs.moles.find(m => m.player === _elimThisEp && !m.exposed);
       if (_elimMole && _elimMole.sabotageCount > 0) {
-        // Inject "what the tribe never knew" reveal into camp events (viewer-only)
-        const _revealTribe = gs.isMerged ? (gs.mergeName || 'merge')
-          : gs.tribes.find(t => t.members?.includes(_elimThisEp))?.name
-          || (h.tribesAtStart || []).find(t => t.members?.includes(_elimThisEp))?.name
-          || Object.keys(ep.campEvents || {})[0];
-        if (_revealTribe && ep.campEvents?.[_revealTribe]) {
-          const mp = pronouns(_elimThisEp);
-          const _sabCount = _elimMole.sabotageCount;
-          const _sabTypes = [...new Set(_elimMole.sabotageLog.map(s => s.type))];
-          const _sabDesc = _sabTypes.map(t => t === 'bondSabotage' ? 'fabricated conflicts' : t === 'infoLeak' ? 'leaked intel' : t === 'voteDisruption' ? 'disrupted votes' : t === 'challengeThrow' ? 'threw challenges' : t === 'advantageSabotage' ? 'sabotaged advantages' : t).join(', ');
-          const _confessTexts = [
-            `What the tribe never knew: ${_elimThisEp} was The Mole. ${_sabCount} acts of sabotage — ${_sabDesc} — and nobody figured it out. ${mp.Sub} ${mp.sub === 'they' ? 'leave' : 'leaves'} with ${mp.posAdj} secret intact.`,
-            `${_elimThisEp} walks out of the game carrying a secret. ${mp.Sub} ${mp.sub === 'they' ? 'were' : 'was'} The Mole — ${_sabCount} sabotage acts, zero suspicion. The tribe will never know what hit them.`,
-            `The torch is snuffed. ${_elimThisEp} smiles on the way out. Nobody knew. ${_sabCount} acts of sabotage — ${_sabDesc}. The Mole played the game ${mp.posAdj} way, and the tribe never caught on.`,
-          ];
-          const _exitTexts = [
-            `"They never figured it out." ${_elimThisEp} grins in the final confessional. "Every fight, every broken alliance — that was me. And they voted me out for the wrong reasons."`,
-            `${_elimThisEp}'s exit confessional: "I did what I was here to do. ${_sabCount} moves, no exposure. They'll watch this back and realize I was the reason everything fell apart."`,
-            `"I played a different game than everyone else," ${_elimThisEp} says. "They think they voted out a regular player. They voted out The Mole. And I'm proud of what I did in there."`,
-          ];
-          const _pick = arr => arr[Math.floor(Math.random() * arr.length)];
-          const evts = ep.campEvents[_revealTribe].post || ep.campEvents[_revealTribe].pre || (Array.isArray(ep.campEvents[_revealTribe]) ? ep.campEvents[_revealTribe] : []);
-          evts.push({
-            type: 'moleUndiscoveredReveal', text: _pick(_confessTexts),
-            players: [_elimThisEp], badgeText: 'THE MOLE — UNDISCOVERED'
-          });
-          evts.push({
-            type: 'moleExitConfessional', text: _pick(_exitTexts),
-            players: [_elimThisEp], badgeText: 'EXIT CONFESSIONAL'
-          });
-          // Save to episode history for VP
-          h.moleReveal = { player: _elimThisEp, sabotageCount: _sabCount, sabotageLog: [..._elimMole.sabotageLog], undiscovered: true };
-        }
+        h.moleReveal = { player: _elimThisEp, sabotageCount: _elimMole.sabotageCount, sabotageLog: [..._elimMole.sabotageLog], undiscovered: true };
       }
     }
   }
@@ -29727,8 +29824,8 @@ function rpBuildDebug(ep) {
     const _moleSnap = snap.moles || gs.moles || [];
     _moleSnap.forEach((mole, mi) => {
       const _isActive = activePlayers.includes(mole.player);
-      const _statusCol = mole.exposed ? '#f47067' : _isActive ? '#3fb950' : '#484f58';
-      const _statusLabel = mole.exposed ? `EXPOSED (Ep ${mole.exposedEp} by ${mole.exposedBy})` : _isActive ? 'ACTIVE — HIDDEN' : 'ELIMINATED';
+      const _statusCol = mole.exposed ? '#f47067' : _isActive ? '#3fb950' : (mole.sabotageCount > 0 ? '#f0883e' : '#484f58');
+      const _statusLabel = mole.exposed ? `EXPOSED (Ep ${mole.exposedEp} by ${mole.exposedBy})` : _isActive ? 'ACTIVE — HIDDEN' : (mole.sabotageCount > 0 ? 'ELIMINATED — UNDISCOVERED' : 'ELIMINATED — NO SABOTAGE');
 
       html += `<div style="margin-bottom:20px;padding:12px;background:rgba(139,148,158,0.04);border:1px solid rgba(139,148,158,0.1);border-radius:8px">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
@@ -29760,8 +29857,8 @@ function rpBuildDebug(ep) {
         html += `<div style="margin-bottom:10px">
           <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:#f0883e;margin-bottom:4px">SABOTAGE LOG</div>`;
         mole.sabotageLog.forEach(s => {
-          const _typeLabel = s.type === 'bondSabotage' ? 'Bond Sabotage' : s.type === 'challengeThrow' ? 'Challenge Throw' : s.type === 'infoLeak' ? 'Info Leak' : s.type === 'voteDisruption' ? 'Vote Disruption' : s.type === 'advantageSabotage' ? 'Advantage Sabotage' : s.type;
-          const _detail = s.targets ? `→ ${s.targets.join(' vs ')}` : s.leakedTo ? `→ leaked to ${s.leakedTo}` : s.action ? `(${s.action})` : '';
+          const _typeLabel = s.type === 'bondSabotage' ? 'Bond Sabotage' : s.type === 'challengeThrow' ? 'Challenge Throw (self)' : s.type === 'challengeSabotage' ? 'Challenge Sabotage' : s.type === 'infoLeak' ? 'Info Leak' : s.type === 'voteDisruption' ? 'Vote Disruption' : s.type === 'advantageSabotage' ? 'Advantage Sabotage' : s.type;
+          const _detail = s.targets ? `→ ${s.targets.join(' vs ')}` : s.target ? `→ ${s.target}` : s.leakedTo ? `→ leaked to ${s.leakedTo}` : s.action ? `(${s.action})` : '';
           html += `<div style="padding:2px 8px;font-size:10px;border-bottom:1px solid rgba(255,255,255,0.04)">
             <span style="color:#8b949e">Ep ${s.ep}</span>
             <span style="color:#f0883e;font-weight:600;margin-left:6px">${_typeLabel}</span>
@@ -35449,6 +35546,29 @@ function rpBuildVotes(ep) {
     }
   }
 
+  // ── THE MOLE: undiscovered reveal — shows after torch snuff ──
+  if (elim && gs.moles?.length) {
+    const _moleSnap = ep.gsSnapshot?.moles || gs.moles;
+    const _elimMole = _moleSnap.find(m => m.player === elim && !m.exposed);
+    if (_elimMole && _elimMole.sabotageCount > 0) {
+      const mp = pronouns(elim);
+      const _sabTypes = [...new Set(_elimMole.sabotageLog.map(s => s.type))];
+      const _sabDesc = _sabTypes.map(t => t === 'bondSabotage' ? 'fabricated conflicts' : t === 'infoLeak' ? 'leaked intel' : t === 'voteDisruption' ? 'disrupted votes' : t === 'challengeThrow' ? 'threw challenges' : t === 'advantageSabotage' ? 'sabotaged advantages' : t).join(', ');
+      html += `<div style="margin-top:24px;padding:16px;border:2px solid rgba(248,81,73,0.4);border-radius:10px;background:rgba(248,81,73,0.04);text-align:center">
+        <div style="font-size:9px;font-weight:800;letter-spacing:3px;color:#f85149;margin-bottom:10px">WHAT THE TRIBE NEVER KNEW</div>
+        ${rpPortrait(elim, 'lg')}
+        <div style="font-family:var(--font-display);font-size:18px;color:#f85149;margin-top:8px;letter-spacing:1px">THE MOLE</div>
+        <div style="font-size:12px;color:#c9d1d9;margin-top:8px;line-height:1.6">
+          ${elim} was The Mole. <strong>${_elimMole.sabotageCount}</strong> acts of sabotage — ${_sabDesc} — and nobody figured it out.
+          ${mp.Sub} ${mp.sub === 'they' ? 'leave' : 'leaves'} with ${mp.posAdj} secret intact.
+        </div>
+        <div style="margin-top:12px;padding:10px;background:rgba(139,148,158,0.06);border-radius:6px;font-style:italic;font-size:11px;color:#8b949e;line-height:1.5">
+          "${mp.Sub === 'They' ? 'They' : mp.Sub} never figured it out. Every fight, every broken alliance — that was me. And they voted me out for the wrong reasons."
+        </div>
+      </div>`;
+    }
+  }
+
   html += `</div></div>`; // end tv-results + rp-page
   return html;
 }
@@ -36264,6 +36384,31 @@ function rpBuildVotes2(ep) {
       </div>`;
     }
   }
+
+  // ── THE MOLE: undiscovered reveal for double-boot ──
+  const _v2Elims = [ep.firstEliminated, ep.eliminated].filter(Boolean);
+  _v2Elims.forEach(_v2e => {
+    if (!_v2e || !gs.moles?.length) return;
+    const _moleSnap2 = ep.gsSnapshot?.moles || gs.moles;
+    const _elimMole2 = _moleSnap2.find(m => m.player === _v2e && !m.exposed);
+    if (_elimMole2 && _elimMole2.sabotageCount > 0) {
+      const mp = pronouns(_v2e);
+      const _sabTypes2 = [...new Set(_elimMole2.sabotageLog.map(s => s.type))];
+      const _sabDesc2 = _sabTypes2.map(t => t === 'bondSabotage' ? 'fabricated conflicts' : t === 'infoLeak' ? 'leaked intel' : t === 'voteDisruption' ? 'disrupted votes' : t === 'challengeThrow' ? 'threw challenges' : t === 'advantageSabotage' ? 'sabotaged advantages' : t).join(', ');
+      html += `<div style="margin-top:24px;padding:16px;border:2px solid rgba(248,81,73,0.4);border-radius:10px;background:rgba(248,81,73,0.04);text-align:center">
+        <div style="font-size:9px;font-weight:800;letter-spacing:3px;color:#f85149;margin-bottom:10px">WHAT THE TRIBE NEVER KNEW</div>
+        ${rpPortrait(_v2e, 'lg')}
+        <div style="font-family:var(--font-display);font-size:18px;color:#f85149;margin-top:8px;letter-spacing:1px">THE MOLE</div>
+        <div style="font-size:12px;color:#c9d1d9;margin-top:8px;line-height:1.6">
+          ${_v2e} was The Mole. <strong>${_elimMole2.sabotageCount}</strong> acts of sabotage — ${_sabDesc2} — and nobody figured it out.
+          ${mp.Sub} ${mp.sub === 'they' ? 'leave' : 'leaves'} with ${mp.posAdj} secret intact.
+        </div>
+        <div style="margin-top:12px;padding:10px;background:rgba(139,148,158,0.06);border-radius:6px;font-style:italic;font-size:11px;color:#8b949e;line-height:1.5">
+          "${mp.Sub === 'They' ? 'They' : mp.Sub} never figured it out. Every fight, every broken alliance — that was me. And they voted me out for the wrong reasons."
+        </div>
+      </div>`;
+    }
+  });
 
   html += `</div>`; // tv-results
   html += `</div>`; // rp-page

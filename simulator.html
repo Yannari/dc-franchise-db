@@ -1230,6 +1230,38 @@
                 <p class="acc-desc" id="reward-sharing-desc" style="display:none">Winning tribe can invite one person from the losing tribe to share the reward. Builds cross-tribal bonds and strategy.</p>
               </div>
             </div>
+
+            <!-- THE MOLE -->
+            <div class="accordion-item">
+              <div class="accordion-header" onclick="toggleAccordion('mole')">
+                <span>The Mole</span>
+                <span class="accordion-chevron" id="acc-chevron-mole">▼</span>
+              </div>
+              <div class="accordion-body" id="acc-body-mole" style="display:none">
+                <div class="form-group">
+                  <label class="form-label">The Mole</label>
+                  <select id="cfg-mole" class="form-select" onchange="updateMoleUI();saveConfig()">
+                    <option value="disabled">Disabled</option>
+                    <option value="1-random">1 Mole (Random)</option>
+                    <option value="2-random">2 Moles (Random)</option>
+                    <option value="choose">Choose Mole(s)</option>
+                  </select>
+                </div>
+                <div class="form-group" id="mole-choose-group" style="display:none">
+                  <label class="form-label">Select Mole(s) <span style="font-size:10px;color:#8b949e">(max 2)</span></label>
+                  <div id="mole-player-select" style="display:flex;flex-wrap:wrap;gap:4px;max-height:160px;overflow-y:auto"></div>
+                </div>
+                <div class="form-group" id="mole-coordination-group" style="display:none">
+                  <label class="form-label">Coordination</label>
+                  <select id="cfg-mole-coordination" class="form-select" onchange="saveConfig()">
+                    <option value="independent">Independent (don't know each other)</option>
+                    <option value="coordinated">Coordinated (work together)</option>
+                  </select>
+                </div>
+                <p class="acc-desc" id="mole-desc">Disabled: No Mole twist this season.</p>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
@@ -1642,6 +1674,7 @@ function defaultConfig() {
     ri: false, riReentryAt: 12, riFormat: 'redemption', riReturnPoints: 1, riSecondReturnAt: 5, journey: false, shotInDark: false,
     firemaking: false, tiebreakerMode: 'survivor', qem: false, idolRehide: false,
     advExpire: 4, foodWater: 'disabled', survivalDifficulty: 'casual',
+    mole: 'disabled', molePlayers: [], moleCoordination: 'independent',
     host: 'Chris',
     advantages: Object.fromEntries(ADVANTAGES.map(a => [a.key, { enabled: a.default > 0, count: a.default }])),
     twistSchedule: [],
@@ -2423,6 +2456,9 @@ function saveConfig() {
     advExpire:   parseInt(g('cfg-adv-expire')?.value) || 4,
     foodWater:   g('cfg-food-water')?.value || 'disabled',
     survivalDifficulty: g('cfg-survival-difficulty')?.value || 'casual',
+    mole:        g('cfg-mole')?.value || 'disabled',
+    molePlayers: seasonConfig.molePlayers || [],
+    moleCoordination: g('cfg-mole-coordination')?.value || 'independent',
     autoRewardChallenges: g('cfg-auto-reward')?.checked ?? false,
     replacementOnMedevac: g('cfg-replacement')?.checked ?? false,
     rewardSharing: g('cfg-reward-sharing')?.checked ?? false,
@@ -2528,6 +2564,10 @@ function renderConfig() {
   if (_rsRow) _rsRow.style.display = _fwOn ? '' : 'none';
   if (_rsDesc) _rsDesc.style.display = _fwOn ? '' : 'none';
   set('cfg-host', seasonConfig.host || 'Chris');
+  // The Mole
+  set('cfg-mole', seasonConfig.mole || 'disabled');
+  set('cfg-mole-coordination', seasonConfig.moleCoordination || 'independent');
+  updateMoleUI();
   // Sync slider displays
   ['teams','merge','finale','jury','adv-expire'].forEach(name => updateSlider(name));
   renderTribeBuilder(); renderTribeSelect();
@@ -3695,6 +3735,19 @@ function computeHeat(name, tribalPlayers, alliances) {
         heat -= 1.0;
       }
     });
+  }
+  // ── The Mole: exposed = massive heat spike, laying low = faster decay ──
+  if (gs.moles?.length) {
+    const _moleObj = gs.moles.find(m => m.player === name);
+    if (_moleObj) {
+      if (_moleObj.exposed && gs.moleExposedHeat?.[name]) {
+        const _epsSinceExposed = ((gs.episode || 0) + 1) - gs.moleExposedHeat[name];
+        if (_epsSinceExposed <= 2) heat += 3.0; // +3.0 for 2 episodes after exposure
+      }
+      if (_moleObj.layingLow && !_moleObj.exposed) {
+        heat *= 0.67; // 1.5x faster decay ≈ 33% heat reduction while laying low
+      }
+    }
   }
   return Math.min(10, heat);
 }
@@ -6661,7 +6714,20 @@ function simulateTribeChallenge(tribes) {
       const survPenalty = (seasonConfig.foodWater === 'enabled' && gs.survival)
         ? Math.max(0, (70 - (gs.survival[m] || 80)) * 0.03)
         : 0;
-      return { name: m, score: chal.stat(pStats(m)) - _injP - survPenalty + (Math.random()*4-2) };
+      let _moleThrowPenalty = 0;
+      // The Mole: 30% chance to throw tribe challenges (pre-merge only)
+      if (gs.moles?.length) {
+        const _mObj = gs.moles.find(ml => ml.player === m && !ml.exposed && !ml.layingLow);
+        if (_mObj && Math.random() < 0.30) {
+          _moleThrowPenalty = 2 + Math.random() * 2; // -2 to -4 penalty
+          _mObj.sabotageCount++;
+          _mObj.sabotageLog.push({ ep: (gs.episode || 0) + 1, type: 'challengeThrow', tribe: tribe.name });
+          _mObj.resistance = Math.max(0.15, 0.5 - _mObj.sabotageCount * 0.03);
+          if (!gs._moleChalThrows) gs._moleChalThrows = [];
+          gs._moleChalThrows.push({ player: m, tribe: tribe.name, penalty: _moleThrowPenalty });
+        }
+      }
+      return { name: m, score: chal.stat(pStats(m)) - _injP - survPenalty - _moleThrowPenalty + (Math.random()*4-2) };
     });
     ms.forEach(x => { memberScores[x.name] = x.score; });
     const avg = ms.length ? ms.reduce((s,x) => s + x.score, 0) / ms.length : 0;
@@ -7490,11 +7556,86 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
       defections.push({ player: voter, alliance: myAlliance.label, votedFor: target, consensusWas: allianceTarget });
     }
 
+    // ── THE MOLE: vote disruption — rogue vote or corrupted pitch ──
+    if (gs._moleVoteDisruption?.includes(voter) && target && allianceTarget) {
+      // Mole votes off-plan: pick someone other than alliance target
+      const _roguePool = tribalPlayers.filter(p =>
+        p !== voter && p !== allianceTarget && !isImmune(p)
+      );
+      if (_roguePool.length) {
+        let _rogueTarget;
+        if (gs.isMerged && _roguePool.length > 1) {
+          // Post-merge Scott mode: strategic rogue vote — target threats to the Mole
+          const _moleObj = gs.moles?.find(m => m.player === voter);
+          const _moleAlliances = (gs.namedAlliances || []).filter(a => a.active && a.members.includes(voter));
+          const _moleAllySet = new Set(_moleAlliances.flatMap(a => a.members));
+          const _scored = _roguePool.map(p => {
+            let sc = 0;
+            // Prefer high threats
+            sc += threatScore(p) * 0.3;
+            // Prefer players not allied with the Mole
+            if (!_moleAllySet.has(p)) sc += 1.0;
+            // Prefer players who've voted for the Mole recently
+            const _prevEp = gs.episodeHistory?.[gs.episodeHistory.length - 1];
+            if (_prevEp?.voteDetail?.some(v => v.voter === p && v.target === voter)) sc += 1.5;
+            // Prefer players with low bond to the Mole (enemies)
+            sc += Math.max(0, -getBond(voter, p) * 0.3);
+            return { name: p, score: sc + Math.random() * 0.5 };
+          }).sort((a, b) => b.score - a.score);
+          _rogueTarget = _scored[0].name;
+        } else {
+          // Pre-merge Owen mode: random chaos
+          _rogueTarget = _roguePool[Math.floor(Math.random() * _roguePool.length)];
+        }
+        target = _rogueTarget;
+        reason = 'rogue vote (Mole disruption)';
+        isDefecting = true;
+        // Store for post-vote camp event + suspicion rendering in patchEpisodeHistory
+        if (!gs._moleVoteDisruptionEvents) gs._moleVoteDisruptionEvents = [];
+        gs._moleVoteDisruptionEvents.push({ voter, originalTarget: allianceTarget, rogueTarget: _rogueTarget });
+      }
+    }
+    // Mole corrupted pitch: convince 1 voter to switch targets
+    if (gs._moleVoteDisruption?.length && !gs._moleVoteDisruption.includes(voter)) {
+      const _molePitcher = gs._moleVoteDisruption.find(mp =>
+        tribalPlayers.includes(mp) && mp !== voter && getBond(voter, mp) >= 1
+      );
+      if (_molePitcher && Math.random() < 0.25) { // 25% chance per eligible voter
+        const _badPool = tribalPlayers.filter(p =>
+          p !== voter && p !== _molePitcher && p !== target && !isImmune(p)
+        );
+        if (_badPool.length) {
+          let _badTarget;
+          if (gs.isMerged && _badPool.length > 1) {
+            // Post-merge: redirect toward the Mole's enemies
+            const _moleAlliances2 = (gs.namedAlliances || []).filter(a => a.active && a.members.includes(_molePitcher));
+            const _moleAllySet2 = new Set(_moleAlliances2.flatMap(a => a.members));
+            const _scored2 = _badPool.map(p => {
+              let sc = 0;
+              sc += threatScore(p) * 0.3;
+              if (!_moleAllySet2.has(p)) sc += 1.0;
+              sc += Math.max(0, -getBond(_molePitcher, p) * 0.3);
+              return { name: p, score: sc + Math.random() * 0.5 };
+            }).sort((a, b) => b.score - a.score);
+            _badTarget = _scored2[0].name;
+          } else {
+            // Pre-merge: random
+            _badTarget = _badPool[Math.floor(Math.random() * _badPool.length)];
+          }
+          target = _badTarget;
+          reason = `swayed by ${_molePitcher} (Mole misdirection)`;
+        }
+      }
+    }
+
     if (target && target !== voter) {
       votes[target] = (votes[target] || 0) + 1;
       log.push({ voter, voted: target, reason: reason || 'strategic read' });
     }
   });
+
+  // Clean up per-episode Mole vote disruption flags
+  delete gs._moleVoteDisruption;
 
   return { votes, log, defections, voteMiscommunications: _voteMiscommunications, votePitches: _votePitches.length ? _votePitches : null };
 }
@@ -11841,32 +11982,32 @@ function applyTwist(ep, twist, isPrimary = true) {
 
 const CAMP_EVENT_TYPES = [
   // ── original types ──
-  { id: 'fight',               twoPlayer: true,  weight: 14 },
-  { id: 'bond',                twoPlayer: true,  weight: 20 },
-  { id: 'dispute',             twoPlayer: true,  weight: 12 },
-  { id: 'meltdown',            twoPlayer: false, weight: 8  },
-  { id: 'hardWork',            twoPlayer: false, weight: 14 },
-  { id: 'strategicTalk',       twoPlayer: true,  weight: 16 },
+  { id: 'fight',               twoPlayer: true,  weight: 16 },
+  { id: 'bond',                twoPlayer: true,  weight: 19 },
+  { id: 'dispute',             twoPlayer: true,  weight: 14 },
+  { id: 'meltdown',            twoPlayer: false, weight: 10 },
+  { id: 'hardWork',            twoPlayer: false, weight: 13 },
+  { id: 'strategicTalk',       twoPlayer: true,  weight: 15 },
   { id: 'idolSearch',          twoPlayer: false, weight: 10 },
   { id: 'injury',              twoPlayer: false, weight: 6  },
-  { id: 'allianceForm',        twoPlayer: false, weight: 18 },
-  { id: 'rumor',               twoPlayer: true,  weight: 10 },
-  { id: 'comfort',             twoPlayer: true,  weight: 12 },
-  { id: 'overplay',            twoPlayer: false, weight: 7  },
+  { id: 'allianceForm',        twoPlayer: false, weight: 17 },
+  { id: 'rumor',               twoPlayer: true,  weight: 12 },
+  { id: 'comfort',             twoPlayer: true,  weight: 11 },
+  { id: 'overplay',            twoPlayer: false, weight: 9  },
   // ── Total Drama flavor — social & bonding ──
-  { id: 'tdBond',              twoPlayer: true,  weight: 22 },
-  { id: 'flirtation',          twoPlayer: true,  weight: 10 },
+  { id: 'tdBond',              twoPlayer: true,  weight: 19 },
+  { id: 'flirtation',          twoPlayer: true,  weight: 9  },
   { id: 'prank',               twoPlayer: true,  weight: 9  },
-  { id: 'unexpectedCompetence',twoPlayer: false, weight: 8  },
+  { id: 'unexpectedCompetence',twoPlayer: false, weight: 7  },
   { id: 'homesick',            twoPlayer: false, weight: 7  },
-  { id: 'groupLaugh',          twoPlayer: false, weight: 13 },
-  { id: 'sharedStruggle',      twoPlayer: true,  weight: 14 },
-  { id: 'rivalThaw',           twoPlayer: true,  weight: 11 },
+  { id: 'groupLaugh',          twoPlayer: false, weight: 12 },
+  { id: 'sharedStruggle',      twoPlayer: true,  weight: 13 },
+  { id: 'rivalThaw',           twoPlayer: true,  weight: 10 },
   // ── Total Drama flavor — conflict & drama ──
-  { id: 'leadershipClash',     twoPlayer: true,  weight: 8  },
-  { id: 'showboat',            twoPlayer: false, weight: 7  },
-  { id: 'foodConflict',        twoPlayer: true,  weight: 7  },
-  { id: 'intimidation',        twoPlayer: true,  weight: 6  },
+  { id: 'leadershipClash',     twoPlayer: true,  weight: 10 },
+  { id: 'showboat',            twoPlayer: false, weight: 8  },
+  { id: 'foodConflict',        twoPlayer: true,  weight: 9  },
+  { id: 'intimidation',        twoPlayer: true,  weight: 8  },
   // ── Total Drama flavor — strategy & scheming ──
   { id: 'tdStrategy',          twoPlayer: true,  weight: 17 },
   { id: 'lie',                 twoPlayer: true,  weight: 9  },
@@ -11883,23 +12024,34 @@ const CAMP_EVENT_TYPES = [
   { id: 'allianceCrack',       twoPlayer: true,  weight: 9  },
   { id: 'sideDeal',            twoPlayer: true,  weight: 10 },
   { id: 'bigMoveThoughts',     twoPlayer: false, weight: 7  },
-  { id: 'watchingYou',         twoPlayer: true,  weight: 8  },
-  { id: 'loneWolf',            twoPlayer: false, weight: 6  },
+  { id: 'watchingYou',         twoPlayer: true,  weight: 10 },
+  { id: 'loneWolf',            twoPlayer: false, weight: 8  },
   { id: 'tribeMood',           twoPlayer: false, weight: 7  },
   // ── Archetype-specific events ──
   { id: 'schemerManipulates',     twoPlayer: true,  weight: 9  },
   { id: 'mastermindOrchestrates', twoPlayer: true,  weight: 8  },
-  { id: 'hotheadExplosion',       twoPlayer: false, weight: 9  },
+  { id: 'hotheadExplosion',       twoPlayer: false, weight: 10 },
   { id: 'beastDrills',            twoPlayer: false, weight: 7  },
   { id: 'socialBoost',            twoPlayer: false, weight: 9  },
   { id: 'soldierCheckin',         twoPlayer: true,  weight: 8  },
   { id: 'wildcardPivot',          twoPlayer: false, weight: 8  },
-  { id: 'chaosAgentStirsUp',      twoPlayer: true,  weight: 9  },
+  { id: 'chaosAgentStirsUp',      twoPlayer: true,  weight: 10 },
   { id: 'floaterInvisible',       twoPlayer: false, weight: 7  },
   { id: 'underdogMoment',         twoPlayer: false, weight: 8  },
   { id: 'goatOblivious',          twoPlayer: false, weight: 7  },
   { id: 'perceptiveReads',        twoPlayer: true,  weight: 9  },
   { id: 'showmancerMoment',       twoPlayer: true,  weight: 8  },
+  // ── new positive events ──
+  { id: 'teachingMoment',         twoPlayer: true,  weight: 10 },
+  { id: 'vulnerability',          twoPlayer: true,  weight: 9  },
+  { id: 'insideJoke',             twoPlayer: true,  weight: 11 },
+  { id: 'loyaltyProof',           twoPlayer: true,  weight: 10 },
+  // ── new negative events ──
+  { id: 'jealousy',               twoPlayer: true,  weight: 10 },
+  { id: 'exclusion',              twoPlayer: false, weight: 10 },
+  { id: 'blame',                  twoPlayer: true,  weight: 10 },
+  { id: 'passiveAggressive',      twoPlayer: true,  weight: 10 },
+  { id: 'trustCrack',             twoPlayer: true,  weight: 10 },
 ];
 
 function nameNewAlliance(size) {
@@ -11973,12 +12125,17 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
   const numEvents = maxEvents ?? (Math.floor(Math.random() * 5) + Math.max(10, Math.floor(group.length * 1.5)));
   const boosts = twistBoosts || {};
   // Social players generate more bonding events — proportional boost per social player on tribe
+  // Also generates conflict — high-social tribes have more drama too (people care more → conflicts matter more)
   const _groupSocialBoost = group.reduce((sum, p) => sum + pStats(p).social * 0.01, 0);
   if (_groupSocialBoost > 0) {
-    boosts.tdBond = (boosts.tdBond || 0) + Math.round(_groupSocialBoost * 10);
-    boosts.bond = (boosts.bond || 0) + Math.round(_groupSocialBoost * 8);
-    boosts.comfort = (boosts.comfort || 0) + Math.round(_groupSocialBoost * 5);
-    boosts.groupLaugh = (boosts.groupLaugh || 0) + Math.round(_groupSocialBoost * 5);
+    boosts.tdBond = (boosts.tdBond || 0) + Math.round(_groupSocialBoost * 6);
+    boosts.bond = (boosts.bond || 0) + Math.round(_groupSocialBoost * 5);
+    boosts.comfort = (boosts.comfort || 0) + Math.round(_groupSocialBoost * 3);
+    boosts.groupLaugh = (boosts.groupLaugh || 0) + Math.round(_groupSocialBoost * 3);
+    // Social tribes also have more interpersonal friction — people who care have bigger reactions
+    boosts.dispute = (boosts.dispute || 0) + Math.round(_groupSocialBoost * 3);
+    boosts.rumor = (boosts.rumor || 0) + Math.round(_groupSocialBoost * 2);
+    boosts.watchingYou = (boosts.watchingYou || 0) + Math.round(_groupSocialBoost * 2);
   }
 
   // If any advantage was found by someone in this group, always open with that event
@@ -13396,6 +13553,235 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
         : [`${a} senses something is off with ${b} before anyone else does. ${_prA.Sub} can't explain exactly how. ${_prA.Sub} know${_prA.sub==='they'?'':'s'} what ${_prA.sub} know${_prA.sub==='they'?'':'s'}.`,
            `${a} checks in with ${b}. The response is slightly wrong. Not wrong enough for anyone else to notice. ${a} notices.`];
       events.push({ type: 'perceptiveReads', text: prLines[Math.floor(Math.random() * prLines.length)] });
+
+    // ── NEW POSITIVE EVENTS ──
+
+    } else if (eventType === 'teachingMoment') {
+      // Experienced player helps someone with a skill — requires stat gap
+      const teachers = group.filter(n => pStats(n).physical >= 7 || pStats(n).strategic >= 7 || pStats(n).mental >= 7);
+      if (!teachers.length) continue;
+      const a = _pick(teachers, n => Math.max(0.1, Math.max(pStats(n).physical, pStats(n).strategic, pStats(n).mental) * 0.4 + 1));
+      const aS = pStats(a);
+      // Pick what they teach based on their strongest stat
+      const _teachStat = aS.physical >= aS.strategic && aS.physical >= aS.mental ? 'physical'
+        : aS.strategic >= aS.mental ? 'strategic' : 'mental';
+      // Recipient must be weak in that stat
+      const learners = group.filter(p => p !== a && pStats(p)[_teachStat] <= 5);
+      if (!learners.length) continue;
+      const b = wRandom(learners, n => Math.max(0.1, (6 - pStats(n)[_teachStat]) * 0.4 + 1));
+      addBond(a, b, 0.5);
+      addBond(b, a, 0.5);
+      const pA = pronouns(a), pB = pronouns(b);
+      const _teachLines = _teachStat === 'physical'
+        ? [`${a} shows ${b} a better technique for the obstacle course. ${b} picks it up fast. The tribe watches the dynamic shift.`,
+           `${a} spends an hour coaching ${b} through a challenge drill. By the end, ${b} is noticeably better. And noticeably grateful.`,
+           `${b} was struggling with the physical demands. ${a} pulled ${pB.obj} aside and worked through it. No judgment. Just help.`]
+        : _teachStat === 'strategic'
+        ? [`${a} walks ${b} through the vote math — who's with who, where the cracks are. ${b}'s eyes widen. ${pB.Sub} didn't see it before.`,
+           `${a} and ${b} sit on the beach and ${a} breaks down the game in a way ${b} has never heard. Teacher and student. The tribe doesn't know this is happening.`,
+           `${a} doesn't tell ${b} what to do — ${pA.sub} ask${pA.sub==='they'?'':'s'} questions until ${b} figures it out. It's more effective than any alliance pitch.`]
+        : [`${a} helps ${b} with a puzzle technique. Something clicks. ${b} solves it twice as fast the second time.`,
+           `${a} shows ${b} a memory trick for keeping track of camp conversations. Small thing. But ${b} starts catching things ${pB.sub} missed before.`,
+           `${a} and ${b} practice puzzle patterns by the fire. It's quiet, focused, and by the end ${b} feels sharper. ${a} feels useful.`];
+      events.push({ type: 'teachingMoment', text: _teachLines[Math.floor(Math.random() * _teachLines.length)], players: [a, b] });
+
+    } else if (eventType === 'vulnerability') {
+      // Player opens up emotionally — requires social >= 5, temperament <= 6, bond >= 1 with recipient
+      const openers = group.filter(n => pStats(n).social >= 5 && pStats(n).temperament <= 6);
+      if (!openers.length) continue;
+      const a = _pick(openers, n => Math.max(0.1, pStats(n).social * 0.4 + (7 - pStats(n).temperament) * 0.3 + 1));
+      const trusted = group.filter(p => p !== a && getBond(a, p) >= 1);
+      if (!trusted.length) continue;
+      const b = wRandom(trusted, n => Math.max(0.1, getBond(a, n) * 0.5 + pStats(n).social * 0.2 + 1));
+      addBond(a, b, 0.6);
+      addBond(b, a, 0.6);
+      const pA = pronouns(a);
+      const _vulnLines = [
+        `${a} tells ${b} something ${pA.sub} haven't told anyone else out here. About home. About why ${pA.sub} ${pA.sub==='they'?'are':'is'} really here. ${b} listens without interrupting.`,
+        `It's late. The fire is low. ${a} opens up to ${b} about something real — not strategy, not the game. Just life. ${b} doesn't know what to say, but ${pA.sub} stay${pA.sub==='they'?'':'s'}.`,
+        `${a} breaks down in front of ${b}. Not in a dramatic way — just honestly. ${b} doesn't try to fix it. Just sits there. That's enough.`,
+        `${a} admits to ${b} that ${pA.sub}'${pA.sub==='they'?'re':'s'} scared. Not of the game — of what it's bringing out in ${pA.obj}. ${b} says something simple that lands.`,
+        `${a} talks about missing home. ${b} lets ${pA.obj} talk. By the end, something has shifted between them — not strategy, just trust.`,
+      ];
+      events.push({ type: 'vulnerability', text: _vulnLines[Math.floor(Math.random() * _vulnLines.length)], players: [a, b] });
+
+    } else if (eventType === 'insideJoke') {
+      // Two bonded players develop a running bit — bond >= 1, at least one has temperament >= 6
+      const candidates = [];
+      for (let i = 0; i < group.length; i++) {
+        for (let j = i + 1; j < group.length; j++) {
+          if (getBond(group[i], group[j]) >= 1 && (pStats(group[i]).temperament >= 6 || pStats(group[j]).temperament >= 6)) {
+            candidates.push([group[i], group[j]]);
+          }
+        }
+      }
+      if (!candidates.length) continue;
+      const [a, b] = candidates[Math.floor(Math.random() * candidates.length)];
+      addBond(a, b, 0.3);
+      const _jokeLines = [
+        `${a} and ${b} have a bit going. Nobody else gets it. Every time they make eye contact across camp, one of them breaks.`,
+        `${a} says two words and ${b} is gone. Full tears laughing. The tribe watches, confused. "You had to be there" doesn't cover it.`,
+        `${a} and ${b} have been doing a running impression of the host all day. It's gotten worse. It's gotten funnier.`,
+        `There's a noise from the jungle and ${a} and ${b} say the exact same thing at the exact same time. The tribe stares. They lose it.`,
+        `${a} and ${b} invented a handshake. It's stupid. They do it every time they pass each other. The tribe is either charmed or annoyed.`,
+      ];
+      events.push({ type: 'insideJoke', text: _jokeLines[Math.floor(Math.random() * _jokeLines.length)], players: [a, b] });
+
+    } else if (eventType === 'loyaltyProof') {
+      // Player defends someone who isn't present — loyalty >= 6, bond >= 2
+      const defenders = group.filter(n => pStats(n).loyalty >= 6);
+      if (!defenders.length) continue;
+      const a = _pick(defenders, n => Math.max(0.1, pStats(n).loyalty * 0.5 + 1));
+      // Defended person must be in the group and bonded to defender
+      const defended = group.filter(p => p !== a && getBond(a, p) >= 2);
+      if (!defended.length) continue;
+      const b = wRandom(defended, n => Math.max(0.1, getBond(a, n) * 0.4 + 1));
+      addBond(a, b, 0.8);
+      const pA = pronouns(a), pB = pronouns(b);
+      const _defLines = [
+        `Someone starts talking about ${b} when ${pB.sub}'${pB.sub==='they'?'re':'s'} not around. ${a} shuts it down. "That's not what happened." The conversation ends.`,
+        `${a} hears ${b}'s name come up as a target. ${pA.Sub} don't${pA.sub==='they'?'':'es'}n't campaign — ${pA.sub} just say${pA.sub==='they'?'':'s'} one thing: "Not ${b}." It carries weight.`,
+        `${a} catches wind of a plan against ${b} and quietly redirects the conversation. ${b} will never know. ${a} doesn't need ${pB.obj} to.`,
+        `The tribe is venting about ${b}. ${a} stays quiet until it goes too far, then says something that changes the temperature. Nobody comes for ${b} again that day.`,
+        `${a} goes to bat for ${b} in a strategy conversation. It's not subtle. The tribe reads it as loyalty — because it is.`,
+      ];
+      events.push({ type: 'loyaltyProof', text: _defLines[Math.floor(Math.random() * _defLines.length)], players: [a, b] });
+
+    // ── NEW NEGATIVE EVENTS ──
+
+    } else if (eventType === 'jealousy') {
+      // Player resents another's challenge success — worse record + loyalty <= 6
+      const _chalRec = gs.chalRecord || {};
+      const withRecords = group.filter(n => (_chalRec[n]?.wins || 0) > 0 || (_chalRec[n]?.podiums || 0) > 0);
+      if (!withRecords.length) continue;
+      // Target: someone with good challenge record
+      const target = wRandom(withRecords, n => Math.max(0.1, (_chalRec[n]?.wins || 0) * 2 + (_chalRec[n]?.podiums || 0) + 1));
+      // Jealous player: worse record AND loyalty <= 6
+      const jealousPool = group.filter(p => p !== target && pStats(p).loyalty <= 6 &&
+        ((_chalRec[p]?.wins || 0) < (_chalRec[target]?.wins || 0) || (_chalRec[p]?.podiums || 0) < (_chalRec[target]?.podiums || 0)));
+      if (!jealousPool.length) continue;
+      const a = _pick(jealousPool, n => Math.max(0.1, (7 - pStats(n).loyalty) * 0.4 + pStats(n).boldness * 0.2 + 1));
+      addBond(a, target, -0.6);
+      const pA = pronouns(a), pT = pronouns(target);
+      const _jealLines = [
+        `${a} watches ${target} get congratulated after the challenge. ${pA.Sub} clap${pA.sub==='they'?'':'s'} along. The smile doesn't reach ${pA.posAdj} eyes.`,
+        `${a} tells the confessional: "${target} wins again. Good for ${pT.obj}. I'm thrilled." ${pA.Sub} ${pA.sub==='they'?'are':'is'} not thrilled.`,
+        `${target}'s challenge streak is getting attention. ${a} notices — and not in a supportive way. The resentment is quiet but growing.`,
+        `${a} makes a comment about ${target}'s wins that sounds like a compliment but lands like something else. The tribe catches the tone.`,
+        `Every time ${target}'s name comes up as a threat, ${a} nods a little too eagerly. The jealousy is becoming strategy.`,
+      ];
+      events.push({ type: 'jealousy', text: _jealLines[Math.floor(Math.random() * _jealLines.length)], players: [a, target] });
+
+    } else if (eventType === 'exclusion') {
+      // Player left out of group conversation — low social OR minority position
+      const socialScores = group.map(n => ({ name: n, social: pStats(n).social })).sort((a, b) => a.social - b.social);
+      // Excluded: lowest social, or lowest average bond with group
+      const excluded = socialScores[0].name;
+      if (pStats(excluded).social > 5) continue; // only fires for genuinely low-social players
+      const others = group.filter(p => p !== excluded);
+      // Need at least 3 others who are bonded to each other
+      const _groupBonds = others.filter(p => others.filter(q => q !== p && getBond(p, q) >= 1).length >= 2);
+      if (_groupBonds.length < 3) continue;
+      _groupBonds.forEach(p => addBond(excluded, p, -0.4));
+      const pE = pronouns(excluded);
+      const _exclLines = [
+        `The tribe clusters into a conversation that ${excluded} isn't part of. ${pE.Sub} hover${pE.sub==='they'?'':'s'} at the edge, waiting for an opening. It doesn't come.`,
+        `${excluded} walks up to a group conversation and it goes quiet. They say it's nothing. ${excluded} knows it's not nothing.`,
+        `${excluded} eats alone today. Not by choice — the tribe just... forgot to include ${pE.obj}. Or didn't forget.`,
+        `There's a strategy meeting happening. ${excluded} finds out about it after. ${pE.Sub} pretend${pE.sub==='they'?'':'s'} not to care. The pretending is visible.`,
+        `The tribe laughs at something. ${excluded} asks what's funny. "You had to be there." ${pE.Sub} ${pE.sub==='they'?'were':'was'} there. Just not included.`,
+      ];
+      events.push({ type: 'exclusion', text: _exclLines[Math.floor(Math.random() * _exclLines.length)], players: [excluded] });
+
+    } else if (eventType === 'blame') {
+      // Someone blamed for challenge loss — target must have actually performed poorly
+      const _lastChalScores = gs.episodeHistory?.[gs.episodeHistory.length - 1]?.chalMemberScores;
+      if (!_lastChalScores) continue;
+      // Find worst performers who are in this group
+      const _groupScores = group.filter(n => _lastChalScores[n] !== undefined)
+        .map(n => ({ name: n, score: _lastChalScores[n] }))
+        .sort((a, b) => a.score - b.score);
+      if (_groupScores.length < 2) continue;
+      const target = _groupScores[0].name; // worst performer
+      // Blamer: someone who performed better and is bold enough to say it
+      const blamers = group.filter(p => p !== target && (_lastChalScores[p] || 0) > (_lastChalScores[target] || 0) && pStats(p).boldness >= 5);
+      if (!blamers.length) continue;
+      const a = _pick(blamers, n => Math.max(0.1, pStats(n).boldness * 0.4 + (10 - pStats(n).loyalty) * 0.2 + 1));
+      addBond(a, target, -0.7);
+      addBond(target, a, -0.7);
+      const pA = pronouns(a), pT = pronouns(target);
+      const _blameLines = [
+        `${a} brings it up at camp. "We lost because of that puzzle." Everyone knows ${pA.sub} mean${pA.sub==='they'?'':'s'} ${target}. ${target} knows too.`,
+        `${a} doesn't name names — but the way ${pA.sub} describe${pA.sub==='they'?'':'s'} the challenge loss makes it clear who ${pA.sub} blame${pA.sub==='they'?'':'s'}. ${target} stares at the fire.`,
+        `"We had it. We literally had it." ${a} looks at ${target} for one second too long. The accusation is silent but deafening.`,
+        `${a} replays the challenge loss out loud. Every detail points to ${target}. ${pA.Sub} ${pA.sub==='they'?'say':'says'} it's just analysis. It's not just analysis.`,
+        `${target} apologizes for the challenge performance. ${a} accepts the apology in a way that makes it worse. "It's fine." It's not fine.`,
+      ];
+      events.push({ type: 'blame', text: _blameLines[Math.floor(Math.random() * _blameLines.length)], players: [a, target] });
+
+    } else if (eventType === 'passiveAggressive') {
+      // Subtle dig — initiator: temperament <= 5, target: bond <= 1 with initiator
+      const paPool = group.filter(n => pStats(n).temperament <= 5);
+      if (!paPool.length) continue;
+      const a = _pick(paPool, n => Math.max(0.1, (6 - pStats(n).temperament) * 0.4 + pStats(n).strategic * 0.2 + 1));
+      const targets = group.filter(p => p !== a && getBond(a, p) <= 1);
+      if (!targets.length) continue;
+      const b = wRandom(targets, n => Math.max(0.1, (2 - getBond(a, n)) * 0.3 + 1));
+      addBond(a, b, -0.4);
+      // Witnesses lose respect for the initiator
+      group.filter(p => p !== a && p !== b).forEach(p => addBond(p, a, -0.2));
+      const pA = pronouns(a), pB = pronouns(b);
+      const _paLines = [
+        `${a} makes a comment about ${b}'s strategy that sounds like a compliment. It's not. Everyone at the fire shifts uncomfortably.`,
+        `"No, that's a great idea, ${b}." The way ${a} says it makes ${b} want to take it back. The tribe exchanges glances.`,
+        `${a} offers to help ${b} with camp duties in a tone that implies ${b} can't handle it alone. ${b} declines. The damage is done.`,
+        `${a} says something to ${b} with a smile. The words are fine. The delivery is surgical. The tribe pretends not to notice.`,
+        `${a} brings up something ${b} said three days ago — casually, in front of everyone. The context makes ${b} look bad. ${a} acts surprised that it landed that way.`,
+      ];
+      events.push({ type: 'passiveAggressive', text: _paLines[Math.floor(Math.random() * _paLines.length)], players: [a, b] });
+
+    } else if (eventType === 'trustCrack') {
+      // Caught in a contradiction — target must have actually contradicted themselves
+      // Detector needs intuition >= 6
+      const detectors = group.filter(n => pStats(n).intuition >= 6);
+      if (!detectors.length) continue;
+      // Target: in multiple alliances with conflicting members, OR voted differently than stated
+      const _prevEp = gs.episodeHistory?.[gs.episodeHistory.length - 1];
+      const _multiAlliancePlayers = group.filter(n => {
+        const myAlliances = (gs.namedAlliances || []).filter(a => a.active && a.members.includes(n));
+        if (myAlliances.length < 2) return false;
+        // Check if alliances have conflicting membership (members in one but not the other)
+        const allMembers = myAlliances.flatMap(a => a.members);
+        const unique = [...new Set(allMembers)];
+        return unique.length > myAlliances[0].members.length + 1; // overlapping but different groups
+      });
+      const _contradictors = _prevEp?.votingLog
+        ? group.filter(n => {
+            const vote = _prevEp.votingLog.find(v => v.voter === n);
+            if (!vote) return false;
+            // Check if they voted against their own alliance's target
+            const myAlliance = (gs.namedAlliances || []).find(a => a.active && a.members.includes(n));
+            return myAlliance && vote.voted !== n && _prevEp.votes?.[vote.voted] !== undefined;
+          })
+        : [];
+      const targets = [...new Set([..._multiAlliancePlayers, ..._contradictors])].filter(n => detectors.some(d => d !== n));
+      if (!targets.length) continue;
+      const b = targets[Math.floor(Math.random() * targets.length)];
+      const detectPool = detectors.filter(d => d !== b);
+      if (!detectPool.length) continue;
+      const a = _pick(detectPool, n => Math.max(0.1, pStats(n).intuition * 0.5 + 1));
+      addBond(a, b, -0.8);
+      const pA = pronouns(a), pB = pronouns(b);
+      const _isMulti = _multiAlliancePlayers.includes(b);
+      const _crackLines = _isMulti
+        ? [`${a} has been doing the math. ${b} is in two alliances that can't both survive. ${a} brings it up — not to ${b}. To someone who matters more.`,
+           `${a} realizes ${b} has been making promises to two different groups. The timelines don't match. ${a} files that information somewhere dangerous.`,
+           `"Who are you actually with?" ${a} asks ${b} directly. ${b}'s answer takes half a second too long. ${a} got what ${pA.sub} needed.`,
+           `${a} compares notes with someone else. ${b}'s story to them doesn't match ${b}'s story to ${a}. The contradiction is undeniable.`]
+        : [`${a} noticed something at the last tribal. ${b}'s vote didn't match what ${pB.sub} said ${pB.sub} ${pB.sub==='they'?'were':'was'} going to do. ${a} hasn't mentioned it yet. But ${pA.sub} will.`,
+           `${a} pulls the voting data apart in ${pA.posAdj} head. ${b} was supposed to vote one way. ${pB.Sub} didn't. ${a} doesn't confront — ${pA.sub} adjust${pA.sub==='they'?'':'s'}.`,
+           `Something ${b} said yesterday contradicts what ${pB.sub} did at tribal. ${a} caught it. The trust between them just cracked.`];
+      events.push({ type: 'trustCrack', text: _crackLines[Math.floor(Math.random() * _crackLines.length)], players: [a, b] });
     }
   }
 
@@ -15840,6 +16226,405 @@ function checkHeroVillainEvents(ep) {
 }
 
 // ── Social Politics: active campaigning between tribals ──
+// ══════════════════════════════════════════════════════════════════════════════
+// THE MOLE — sabotage actions + suspicion accumulation
+// ══════════════════════════════════════════════════════════════════════════════
+function checkMoleSabotage(ep) {
+  if (!gs.moles?.length || !ep.campEvents) return;
+  const _pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  const curEp = (gs.episode || 0) + 1;
+  const coordinated = seasonConfig.moleCoordination === 'coordinated' && gs.moles.length === 2;
+
+  gs.moles.forEach(mole => {
+    if (!gs.activePlayers.includes(mole.player)) return; // eliminated
+
+    // Post-exposure: no sabotage, but inject survival-mode camp events
+    if (mole.exposed) {
+      const _moleTribe = gs.isMerged ? (gs.mergeName || 'merge')
+        : gs.tribes.find(t => t.members.includes(mole.player))?.name;
+      if (_moleTribe && ep.campEvents[_moleTribe] && Math.random() < 0.40) {
+        const mp = pronouns(mole.player);
+        const _survTexts = [
+          `${mole.player} tries to rebuild. ${mp.Sub} pull${mp.sub === 'they' ? '' : 's'} people aside one by one, making ${mp.posAdj} case. "I was playing the game — same as everyone else."`,
+          `${mole.player} is scrambling. The tribe knows what ${mp.sub} did, and the trust is gone. But ${mp.sub} ${mp.sub === 'they' ? 'aren\'t' : 'isn\'t'} done yet.`,
+          `Nobody sits next to ${mole.player} at the fire anymore. ${mp.Sub} eat${mp.sub === 'they' ? '' : 's'} alone. But ${mp.sub} ${mp.sub === 'they' ? 'keep' : 'keeps'} talking, keeps working, keeps trying to find a crack.`,
+          `${mole.player} plays the victim card. "Production put me up to this — I had no choice." Some buy it. Most don't.`,
+          `${mole.player} offers information — real information — to anyone who'll listen. It's the only currency ${mp.sub} ${mp.sub === 'they' ? 'have' : 'has'} left.`,
+        ];
+        const evts = ep.campEvents[_moleTribe].post || ep.campEvents[_moleTribe].pre || (Array.isArray(ep.campEvents[_moleTribe]) ? ep.campEvents[_moleTribe] : []);
+        evts.push({
+          type: 'moleExposedSurvival', text: _pick(_survTexts),
+          players: [mole.player], badgeText: 'EXPOSED'
+        });
+      }
+      return;
+    }
+
+    // ── Laying low check: heat >= 3 → skip sabotage, faster heat decay handled in computeHeat ──
+    const _moleHeat = computeHeat(mole.player, gs.activePlayers, gs.namedAlliances || []);
+    if (_moleHeat >= 3) {
+      mole.layingLow = true;
+      // Inject a laying-low camp event
+      const _moleTribe = gs.isMerged ? (gs.mergeName || 'merge')
+        : gs.tribes.find(t => t.members.includes(mole.player))?.name;
+      if (_moleTribe && ep.campEvents[_moleTribe]) {
+        const mp = pronouns(mole.player);
+        const _layLowTexts = [
+          `${mole.player} is unusually helpful today — carrying firewood, fetching water, staying out of strategy talks. ${mp.Sub} ${mp.sub === 'they' ? 'seem' : 'seems'} to be making a point of being useful.`,
+          `${mole.player} spends the day bonding with anyone who'll listen. Jokes, stories, camp chores. No game talk. Just vibes.`,
+          `${mole.player} keeps ${mp.posAdj} head down. No scheming, no whispering. Just another day at camp. Nobody notices — which is exactly the point.`,
+          `${mole.player} volunteers to cook for the tribe. It's a small gesture, but it lands. ${mp.Sub} ${mp.sub === 'they' ? 'know' : 'knows'} the heat is on — and the best move is no move at all.`,
+          `${mole.player} is all smiles today. Checking in on alliances, affirming commitments. The perfect teammate. If only they knew.`,
+        ];
+        const evts = ep.campEvents[_moleTribe].post || ep.campEvents[_moleTribe].pre || (Array.isArray(ep.campEvents[_moleTribe]) ? ep.campEvents[_moleTribe] : []);
+        evts.push({
+          type: 'moleLayingLow', text: _pick(_layLowTexts),
+          players: [mole.player], badgeText: 'LAYING LOW'
+        });
+      }
+      return; // no sabotage this episode
+    }
+    mole.layingLow = false;
+
+    // ── BOND SABOTAGE — 20% chance per episode ──
+    if (Math.random() < 0.20) {
+      // Find the Mole's tribe/group
+      const _moleTribe = gs.isMerged ? (gs.mergeName || 'merge')
+        : gs.tribes.find(t => t.members.includes(mole.player))?.name;
+      if (!_moleTribe) return;
+      const _tribeMembers = gs.isMerged
+        ? gs.activePlayers.filter(p => p !== mole.player)
+        : (gs.tribes.find(t => t.name === _moleTribe)?.members || []).filter(p => p !== mole.player);
+
+      // Find two players with bond >= 2 to sabotage
+      const _otherMole = coordinated ? gs.moles.find(m => m.player !== mole.player)?.player : null;
+      const _candidates = [];
+      for (let i = 0; i < _tribeMembers.length; i++) {
+        for (let j = i + 1; j < _tribeMembers.length; j++) {
+          const a = _tribeMembers[i], b = _tribeMembers[j];
+          // Coordinated moles don't sabotage each other
+          if (_otherMole && (a === _otherMole || b === _otherMole)) continue;
+          if (getBond(a, b) >= 2) _candidates.push([a, b]);
+        }
+      }
+      if (!_candidates.length) return;
+
+      // Pre-merge: Owen mode — random chaos, weaken the tribe
+      // Post-merge: Scott mode — surgical, target pairs that threaten the Mole
+      let _selectedPair;
+      if (gs.isMerged && _candidates.length > 1) {
+        // Score each pair: higher = more valuable to sabotage
+        const _scored = _candidates.map(([a, b]) => {
+          let score = 0;
+          const bondAB = getBond(a, b);
+          const moleBondA = getBond(mole.player, a);
+          const moleBondB = getBond(mole.player, b);
+          // Prefer strong pairs (bigger bond = more damage when broken)
+          score += bondAB * 0.3;
+          // Prefer pairs where neither is the Mole's ally (don't wreck your own network)
+          if (moleBondA < 2) score += 0.5;
+          if (moleBondB < 2) score += 0.5;
+          // Prefer pairs containing players who are threats to the Mole
+          const threatA = threatScore(a), threatB = threatScore(b);
+          score += (threatA + threatB) * 0.15;
+          // Prefer pairs in alliances the Mole isn't part of
+          const _moleAlliances = (gs.namedAlliances || []).filter(al => al.active && al.members.includes(mole.player));
+          const _moleAllianceMembers = new Set(_moleAlliances.flatMap(al => al.members));
+          if (!_moleAllianceMembers.has(a) && !_moleAllianceMembers.has(b)) score += 1.0;
+          // Prefer players who have been voting for the Mole (weaken their support)
+          const _prevEp = gs.episodeHistory?.[gs.episodeHistory.length - 1];
+          if (_prevEp?.voteDetail) {
+            const _votedForMole = _prevEp.voteDetail.filter(v => v.target === mole.player).map(v => v.voter);
+            if (_votedForMole.includes(a)) score += 0.8;
+            if (_votedForMole.includes(b)) score += 0.8;
+          }
+          return { pair: [a, b], score: score + Math.random() * 0.5 };
+        });
+        _scored.sort((a, b) => b.score - a.score);
+        _selectedPair = _scored[0].pair;
+      } else {
+        // Pre-merge: random
+        _selectedPair = _pick(_candidates);
+      }
+
+      const [targetA, targetB] = _selectedPair;
+      const ms = pStats(mole.player);
+      // Bond damage proportional to Mole's social stat
+      const bondDmg = -(ms.social * 0.12 + 0.5);
+      addBond(targetA, targetB, bondDmg);
+
+      // Log the sabotage
+      mole.sabotageCount++;
+      mole.sabotageLog.push({ ep: curEp, type: 'bondSabotage', targets: [targetA, targetB], bondDmg });
+
+      // Erode stealth resistance
+      mole.resistance = Math.max(0.15, 0.5 - mole.sabotageCount * 0.03);
+
+      // Inject camp event
+      const mp = pronouns(mole.player);
+      const pA = pronouns(targetA), pB = pronouns(targetB);
+      const _sabTexts = [
+        `${mole.player} pulls ${targetA} aside. "You know what ${targetB} said about you?" The quote is fabricated — but ${targetA} doesn't know that. ${pA.PosAdj} expression changes.`,
+        `${mole.player} casually mentions to ${targetA} that ${targetB} has been talking about ${pA.obj} behind ${pA.posAdj} back. It's an exaggeration at best, a lie at worst — but the seed is planted.`,
+        `At camp, ${mole.player} plays telephone. A minor disagreement between ${targetA} and ${targetB} becomes a full-blown conflict after ${mp.sub} ${mp.sub === 'they' ? 'twist' : 'twists'} the words on both sides.`,
+        `${mole.player} approaches ${targetB} with concern. "I'm worried about you — ${targetA} has been saying some things." The empathy is convincing. The information is not.`,
+        `${mole.player} sits between ${targetA} and ${targetB} at the fire. By the time ${mp.sub} ${mp.sub === 'they' ? 'leave' : 'leaves'}, both think the other has been plotting against them. Neither confronts the other — they just trust ${mole.player} more.`,
+      ];
+      if (ep.campEvents[_moleTribe]) {
+        const evts = ep.campEvents[_moleTribe].pre || (Array.isArray(ep.campEvents[_moleTribe]) ? ep.campEvents[_moleTribe] : []);
+        evts.push({
+          type: 'moleBondSabotage', text: _pick(_sabTexts),
+          players: [mole.player, targetA, targetB], badgeText: 'MOLE'
+        });
+      }
+
+      // ── SUSPICION ACCUMULATION — nearby high-intuition players may notice ──
+      const _witnesses = _tribeMembers.filter(p => p !== targetA && p !== targetB);
+      _witnesses.forEach(w => {
+        const wIntuition = pStats(w).intuition;
+        // Roll: intuition * 0.04, halved by Mole's resistance
+        const suspGain = wIntuition * 0.04 * mole.resistance;
+        if (Math.random() < suspGain) {
+          if (!mole.suspicion[w]) mole.suspicion[w] = 0;
+          mole.suspicion[w] += 0.3; // bond sabotage is subtle — +0.3 per notice
+        }
+      });
+      // The targets themselves might notice the fabrication
+      [targetA, targetB].forEach(t => {
+        const tIntuition = pStats(t).intuition;
+        const suspGain = tIntuition * 0.04 * mole.resistance;
+        if (Math.random() < suspGain) {
+          if (!mole.suspicion[t]) mole.suspicion[t] = 0;
+          mole.suspicion[t] += 0.3;
+        }
+      });
+
+      // ── EXPOSURE CHECK — any observer hits suspicion threshold 3.0? ──
+      _checkMoleExposure(mole, ep, _moleTribe);
+    }
+
+    // Helper: get Mole's tribe for remaining actions
+    const _moleTribe2 = gs.isMerged ? (gs.mergeName || 'merge')
+      : gs.tribes.find(t => t.members.includes(mole.player))?.name;
+    if (!_moleTribe2) return;
+    const _tribeMembers2 = gs.isMerged
+      ? gs.activePlayers.filter(p => p !== mole.player)
+      : (gs.tribes.find(t => t.name === _moleTribe2)?.members || []).filter(p => p !== mole.player);
+    const _otherMole2 = coordinated ? gs.moles.find(m => m.player !== mole.player)?.player : null;
+
+    // NOTE: Challenge throw camp events + suspicion handled in patchEpisodeHistory
+    // (checkMoleSabotage runs BEFORE simulateTribeChallenge, so gs._moleChalThrows is empty here)
+
+    // ── INFO LEAK — 25% chance, requires Mole in an alliance with actionable intel ──
+    if (!mole.exposed && Math.random() < 0.25) {
+      const _moleAlliances = (gs.namedAlliances || []).filter(a =>
+        a.active && a.members.includes(mole.player)
+      );
+      // Actionable intel: alliance vote targets or idol knowledge
+      const _knownIdols = (gs.advantages || []).filter(a =>
+        (a.type === 'idol' || a.type === 'legacy' || a.type === 'amulet') &&
+        a.holder !== mole.player &&
+        _moleAlliances.some(al => al.members.includes(a.holder))
+      );
+      // Pick a leak recipient — someone NOT in the Mole's alliances
+      const _allianceMembers = new Set(_moleAlliances.flatMap(a => a.members));
+      const _leakTargets = _tribeMembers2.filter(p =>
+        !_allianceMembers.has(p) && (_otherMole2 ? p !== _otherMole2 : true)
+      );
+      if (_leakTargets.length && (_moleAlliances.length || _knownIdols.length)) {
+        const _leakTo = _pick(_leakTargets);
+        let _leakInfo, _leakType;
+        if (_knownIdols.length && Math.random() < 0.5) {
+          // Leak idol knowledge
+          const _idol = _pick(_knownIdols);
+          _leakInfo = `${_idol.holder} has a ${_idol.type === 'idol' ? 'Hidden Immunity Idol' : _idol.type}`;
+          _leakType = 'idolLeak';
+          // Mark the advantage as known to the leak recipient
+          if (!gs.knownIdolHoldersPersistent) gs.knownIdolHoldersPersistent = new Set();
+          gs.knownIdolHoldersPersistent.add(_idol.holder);
+        } else if (_moleAlliances.length) {
+          // Leak alliance vote target — use the most recent history or current plans
+          const _al = _pick(_moleAlliances);
+          const _alMembers = _al.members.filter(m => m !== mole.player).slice(0, 3).join(', ');
+          _leakInfo = `${_al.name} (${_alMembers}) is targeting someone — watch your back`;
+          _leakType = 'allianceLeak';
+        }
+        if (_leakInfo) {
+          addBond(mole.player, _leakTo, 0.3); // "helpful" relationship building
+          mole.sabotageCount++;
+          mole.sabotageLog.push({ ep: curEp, type: 'infoLeak', leakedTo: _leakTo, info: _leakInfo });
+          mole.leaks.push({ ep: curEp, leakedTo: _leakTo, info: _leakInfo });
+          mole.resistance = Math.max(0.15, 0.5 - mole.sabotageCount * 0.03);
+
+          const mp = pronouns(mole.player);
+          const _leakTexts = [
+            `${mole.player} pulls ${_leakTo} aside for what looks like a casual chat. By the end, ${_leakTo} knows something ${pronouns(_leakTo).sub} shouldn't: ${_leakInfo}.`,
+            `Over the fire, ${mole.player} drops a piece of intel to ${_leakTo}. "Just thought you should know." The tip is real — and it came from ${mp.posAdj} own alliance.`,
+            `${mole.player} slips ${_leakTo} a warning. It looks like friendship. It's sabotage.`,
+            `"Between you and me," ${mole.player} whispers to ${_leakTo}, "you might want to be careful." The intel is genuine — stolen from ${mp.posAdj} own alliance's plans.`,
+            `${mole.player} bonds with ${_leakTo} over shared information. What ${_leakTo} doesn't realize is that this "trust" is a tool — and ${mole.player} just weaponized ${mp.posAdj} own alliance's secrets.`,
+          ];
+          if (ep.campEvents[_moleTribe2]) {
+            const evts = ep.campEvents[_moleTribe2].pre || (Array.isArray(ep.campEvents[_moleTribe2]) ? ep.campEvents[_moleTribe2] : []);
+            evts.push({
+              type: 'moleInfoLeak', text: _pick(_leakTexts),
+              players: [mole.player, _leakTo], badgeText: 'MOLE'
+            });
+          }
+          // Suspicion: if the leaked info comes back around, alliance members notice
+          _moleAlliances.forEach(al => {
+            al.members.filter(m => m !== mole.player && gs.activePlayers.includes(m)).forEach(m => {
+              const suspGain = pStats(m).intuition * 0.04 * mole.resistance;
+              if (Math.random() < suspGain * 0.5) { // harder to trace back
+                if (!mole.suspicion[m]) mole.suspicion[m] = 0;
+                mole.suspicion[m] += 0.3;
+              }
+            });
+          });
+          _checkMoleExposure(mole, ep, _moleTribe2);
+        }
+      }
+    }
+
+    // ── VOTE DISRUPTION — 20% chance, store for use in simulateVotes ──
+    if (!mole.exposed && Math.random() < 0.20) {
+      // Flag the Mole for vote disruption this episode — actual disruption happens in simulateVotes
+      if (!gs._moleVoteDisruption) gs._moleVoteDisruption = [];
+      gs._moleVoteDisruption.push(mole.player);
+      mole.sabotageCount++;
+      mole.sabotageLog.push({ ep: curEp, type: 'voteDisruption' });
+      mole.resistance = Math.max(0.15, 0.5 - mole.sabotageCount * 0.03);
+    }
+
+    // ── ADVANTAGE SABOTAGE — 35% chance while holding an advantage ──
+    if (!mole.exposed) {
+      const _moleAdvs = (gs.advantages || []).filter(a => a.holder === mole.player);
+      if (_moleAdvs.length && Math.random() < 0.35) {
+        const _adv = _pick(_moleAdvs);
+        const mp = pronouns(mole.player);
+        let _advSabText, _advSabAction;
+
+        if (Math.random() < 0.4) {
+          // Leak advantage existence to a rival
+          const _rivals = _tribeMembers2.filter(p =>
+            getBond(mole.player, p) < 1 && (_otherMole2 ? p !== _otherMole2 : true)
+          );
+          if (_rivals.length) {
+            const _rival = _pick(_rivals);
+            _advSabAction = 'leaked';
+            const _typeLabel = _adv.type === 'idol' ? 'Hidden Immunity Idol' : _adv.type === 'extraVote' ? 'Extra Vote' : _adv.type === 'voteSteal' ? 'Vote Steal' : _adv.type;
+            _advSabText = `${mole.player} "accidentally" lets it slip to ${_rival} that ${mp.sub} ${mp.sub === 'they' ? 'have' : 'has'} a ${_typeLabel}. The leak looks careless. It's calculated — now the wrong people know.`;
+            // Mark advantage as known
+            if (_adv.type === 'idol') {
+              if (!gs.knownIdolHoldersPersistent) gs.knownIdolHoldersPersistent = new Set();
+              gs.knownIdolHoldersPersistent.add(mole.player);
+            }
+          }
+        } else if (Math.random() < 0.5) {
+          // Plant false idol/advantage location
+          _advSabAction = 'falseInfo';
+          _advSabText = `${mole.player} plants false information about where an idol might be hidden. A couple of players spend hours searching the wrong spot. ${mp.Sub} ${mp.sub === 'they' ? 'watch' : 'watches'} from a distance.`;
+          if (!gs._falseInfoPlanted) gs._falseInfoPlanted = [];
+          gs._falseInfoPlanted.push({ planter: mole.player, ep: curEp, type: 'mole' });
+        } else {
+          // Will waste the play at tribal — flag for checkIdolPlays/checkNonIdolAdvantageUse
+          _advSabAction = 'wastePlan';
+          _advSabText = `${mole.player} has a plan for ${mp.posAdj} advantage — and it's not a good one. ${mp.Sub} ${mp.sub === 'they' ? 'intend' : 'intends'} to use it at the worst possible moment. Maximum chaos, minimum strategy.`;
+          if (!gs._moleAdvWaste) gs._moleAdvWaste = [];
+          gs._moleAdvWaste.push(mole.player);
+        }
+
+        if (_advSabText) {
+          mole.sabotageCount++;
+          mole.sabotageLog.push({ ep: curEp, type: 'advantageSabotage', action: _advSabAction, advType: _adv.type });
+          mole.resistance = Math.max(0.15, 0.5 - mole.sabotageCount * 0.03);
+
+          if (ep.campEvents[_moleTribe2]) {
+            const evts = ep.campEvents[_moleTribe2].pre || (Array.isArray(ep.campEvents[_moleTribe2]) ? ep.campEvents[_moleTribe2] : []);
+            evts.push({
+              type: 'moleAdvSabotage', text: _advSabText,
+              players: [mole.player], badgeText: 'MOLE'
+            });
+          }
+          // Suspicion from advantage sabotage
+          _tribeMembers2.forEach(w => {
+            const suspGain = pStats(w).intuition * 0.04 * mole.resistance;
+            if (Math.random() < suspGain * 0.3) { // subtle
+              if (!mole.suspicion[w]) mole.suspicion[w] = 0;
+              mole.suspicion[w] += 0.2;
+            }
+          });
+          _checkMoleExposure(mole, ep, _moleTribe2);
+        }
+      }
+    }
+  });
+
+  // Clear per-episode Mole challenge throw tracking
+  delete gs._moleChalThrows;
+}
+
+function _checkMoleExposure(mole, ep, tribeName) {
+  const curEp = (gs.episode || 0) + 1;
+  const _pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  for (const [observer, susp] of Object.entries(mole.suspicion)) {
+    if (susp < 3.0) continue;
+    if (!gs.activePlayers.includes(observer)) continue;
+
+    // EXPOSED!
+    mole.exposed = true;
+    mole.exposedEp = curEp;
+    mole.exposedBy = observer;
+    mole.resistance = 1.0;
+
+    // Bond damage: -1.5 with everyone except closest ally
+    const closestAlly = gs.activePlayers.filter(p => p !== mole.player)
+      .sort((a, b) => getBond(mole.player, b) - getBond(mole.player, a))[0];
+    gs.activePlayers.forEach(p => {
+      if (p === mole.player || p === closestAlly) return;
+      addBond(mole.player, p, -1.5);
+    });
+
+    // Heat spike stored for computeHeat
+    if (!gs.moleExposedHeat) gs.moleExposedHeat = {};
+    gs.moleExposedHeat[mole.player] = curEp;
+
+    // Reveal advantages (mark as public knowledge)
+    const _moleAdvs = (gs.advantages || []).filter(a => a.holder === mole.player);
+    _moleAdvs.forEach(a => { a.knownBy = 'all'; });
+
+    // Exposure camp event
+    const op = pronouns(observer), mp = pronouns(mole.player);
+    const _expTexts = [
+      `${observer} has been watching. The patterns were too clear — the whispers, the convenient conflicts, the too-good-to-be-true alliance loyalty. ${op.Sub} ${op.sub === 'they' ? 'confront' : 'confronts'} ${mole.player} in front of the tribe. "You've been playing all of us."`,
+      `It clicks for ${observer}. Every time something went wrong at camp, ${mole.player} was nearby. Every leaked plan, every fabricated quote — it all traces back. ${op.Sub} ${op.sub === 'they' ? 'don\'t' : 'doesn\'t'} wait for tribal. "We need to talk about ${mole.player}."`,
+      `${observer} pulls the tribe together. "I've been keeping track. ${mole.player} has been sabotaging us from the inside." The evidence is damning. ${mole.player} has nowhere to hide.`,
+    ];
+    if (ep.campEvents[tribeName]) {
+      const evts = ep.campEvents[tribeName].post || ep.campEvents[tribeName].pre || (Array.isArray(ep.campEvents[tribeName]) ? ep.campEvents[tribeName] : []);
+      evts.push({
+        type: 'moleExposed', text: _pick(_expTexts),
+        players: [observer, mole.player], badgeText: 'MOLE EXPOSED'
+      });
+    }
+
+    // If coordinated, spike the other Mole's suspicion
+    if (seasonConfig.moleCoordination === 'coordinated' && gs.moles.length === 2) {
+      const otherMole = gs.moles.find(m => m.player !== mole.player);
+      if (otherMole && !otherMole.exposed) {
+        // +0.8 suspicion from all witnesses
+        gs.activePlayers.forEach(p => {
+          if (p === otherMole.player) return;
+          if (!otherMole.suspicion[p]) otherMole.suspicion[p] = 0;
+          otherMole.suspicion[p] += 0.8;
+        });
+      }
+    }
+
+    break; // only one exposure per check
+  }
+}
+
 function checkSocialPolitics(ep) {
   if (!ep.campEvents) return;
   const _pick = arr => arr[Math.floor(Math.random() * arr.length)];
@@ -18288,6 +19073,7 @@ function simulateEpisode() {
     simulateJourney(ep); findAdvantages(ep);
     if (gs._scrambleActivations) ep._debugScramble = { ...gs._scrambleActivations };
     generateCampEvents(ep, 'pre');
+    checkMoleSabotage(ep);
     updatePerceivedBonds(ep);
 
     // Run the slasher night challenge
@@ -18365,6 +19151,7 @@ function simulateEpisode() {
     simulateJourney(ep); findAdvantages(ep);
     if (gs._scrambleActivations) ep._debugScramble = { ...gs._scrambleActivations };
     generateCampEvents(ep, 'both');
+    checkMoleSabotage(ep);
     updatePerceivedBonds(ep);
 
     // Run the immunity challenge — last place is eliminated
@@ -18455,6 +19242,7 @@ function simulateEpisode() {
   if (gs._scrambleActivations) ep._debugScramble = { ...gs._scrambleActivations };
   if (gs._shieldActivations) ep._debugShield = Object.fromEntries(Object.entries(gs._shieldActivations).map(([k, v]) => [k, { ...v }]));
   generateCampEvents(ep, 'pre');
+  checkMoleSabotage(ep); // The Mole: bond sabotage, laying low events, exposure checks
   updatePerceivedBonds(ep); // close perception gaps before tribal decisions
 
   // Inject camp events for journey losers returning without their vote
@@ -24706,6 +25494,132 @@ function patchEpisodeHistory(ep) {
     const _rct = (ep.twists||[]).find(t => t.type === 'reward-challenge');
     if (_rct) h.rewardChalData = { winner: _rct.rewardWinner, winnerType: _rct.rewardWinnerType || 'individual', placements: _rct.rewardChalPlacements || [], label: _rct.rewardChalLabel || 'Reward Challenge', category: _rct.rewardChalCategory || 'mixed', desc: _rct.rewardChalDesc || '', rewardItemId: _rct.rewardItemId || null, rewardItemLabel: _rct.rewardItemLabel || null, rewardItemDesc: _rct.rewardItemDesc || null, rewardShareInvite: ep.rewardShareInvite };
   }
+  // ── The Mole: challenge throw events + vote disruption events + suspicion (all deferred to here because ep/challenge happen after checkMoleSabotage) ──
+  const _pick = arr => arr[Math.floor(Math.random() * arr.length)];
+
+  // Challenge throw camp events + suspicion
+  if (gs._moleChalThrows?.length && ep.campEvents && gs.moles?.length) {
+    gs._moleChalThrows.forEach(thr => {
+      const mole = gs.moles.find(m => m.player === thr.player);
+      if (!mole) return;
+      const mp = pronouns(thr.player);
+      const _throwTexts = [
+        `${thr.player} looked off during the challenge. Sluggish, unfocused — not the performance anyone expected. "Just didn't have it today," ${mp.sub} ${mp.sub === 'they' ? 'say' : 'says'} with a shrug.`,
+        `${thr.player} fumbles at a critical moment. It looks accidental. It isn't.`,
+        `The tribe loses, and ${thr.player}'s contribution was noticeably weak. Nobody says anything — but a few are thinking it.`,
+        `${thr.player} sandbagged the challenge. Dropped a puzzle piece, stumbled on the obstacle. Subtle enough to pass as a bad day. Deliberate enough to cost the tribe the win.`,
+        `${thr.player} pulls back just enough to hurt the tribe's score without making it obvious. The loss feels close — and that's by design.`,
+      ];
+      const _campKey = thr.tribe || (gs.isMerged ? (gs.mergeName || 'merge') : Object.keys(ep.campEvents)[0]);
+      if (_campKey && ep.campEvents[_campKey]) {
+        const evts = ep.campEvents[_campKey].post || ep.campEvents[_campKey].pre || (Array.isArray(ep.campEvents[_campKey]) ? ep.campEvents[_campKey] : []);
+        evts.push({
+          type: 'moleChallengeThrow', text: _pick(_throwTexts),
+          players: [thr.player], badgeText: 'MOLE'
+        });
+      }
+      // Suspicion: tribemates with high intuition notice the throw
+      const _tribe = gs.tribes?.find(t => t.name === thr.tribe);
+      const _tribeMembers = _tribe ? _tribe.members.filter(p => p !== thr.player) : gs.activePlayers.filter(p => p !== thr.player);
+      _tribeMembers.forEach(w => {
+        if (!gs.activePlayers.includes(w)) return;
+        const suspGain = pStats(w).intuition * 0.04 * mole.resistance;
+        if (Math.random() < suspGain) {
+          if (!mole.suspicion[w]) mole.suspicion[w] = 0;
+          mole.suspicion[w] += 0.4; // challenge throws are visible
+        }
+      });
+    });
+    delete gs._moleChalThrows;
+  }
+
+  // Vote disruption camp events + suspicion
+  if (gs._moleVoteDisruptionEvents?.length && ep.campEvents) {
+    gs._moleVoteDisruptionEvents.forEach(vd => {
+      const mp = pronouns(vd.voter);
+      const _vdTexts = [
+        `At tribal, ${vd.voter} voted for ${vd.rogueTarget} instead of the plan. The alliance expected ${vd.originalTarget}. ${mp.Sub} ${mp.sub === 'they' ? 'shrug' : 'shrugs'}. "I had my reasons."`,
+        `The vote didn't go as planned — ${vd.voter} went rogue. ${vd.rogueTarget} got a vote nobody expected. The alliance is scrambling to figure out what happened.`,
+        `${vd.voter} broke from the plan. Instead of ${vd.originalTarget}, ${mp.sub} wrote ${vd.rogueTarget}'s name down. Was it a misplay? Or something more deliberate?`,
+      ];
+      const _campKey = gs.isMerged ? (gs.mergeName || 'merge') : Object.keys(ep.campEvents)[0];
+      if (_campKey && ep.campEvents[_campKey]) {
+        const evts = ep.campEvents[_campKey].post || ep.campEvents[_campKey].pre || (Array.isArray(ep.campEvents[_campKey]) ? ep.campEvents[_campKey] : []);
+        evts.push({
+          type: 'moleVoteDisruption', text: _pick(_vdTexts),
+          players: [vd.voter, vd.rogueTarget], badgeText: 'MOLE'
+        });
+      }
+      // Suspicion from vote disruption — alliance members notice the off-plan vote
+      const mole = gs.moles?.find(m => m.player === vd.voter);
+      if (mole) {
+        const _allAlliances = gs.namedAlliances || [];
+        const _voterAlliances = _allAlliances.filter(a => a.active && a.members.includes(vd.voter));
+        _voterAlliances.forEach(al => {
+          al.members.filter(m => m !== vd.voter && gs.activePlayers.includes(m)).forEach(m => {
+            const suspGain = pStats(m).intuition * 0.04 * mole.resistance;
+            if (Math.random() < suspGain) {
+              if (!mole.suspicion[m]) mole.suspicion[m] = 0;
+              mole.suspicion[m] += 0.5; // off-plan vote is very suspicious
+            }
+          });
+        });
+        // Even non-alliance tribal attendees notice scattered votes
+        (ep.tribalPlayers || gs.activePlayers).filter(p => p !== vd.voter).forEach(p => {
+          if (!gs.activePlayers.includes(p)) return;
+          const suspGain = pStats(p).intuition * 0.04 * mole.resistance * 0.3; // weaker for non-alliance
+          if (Math.random() < suspGain) {
+            if (!mole.suspicion[p]) mole.suspicion[p] = 0;
+            mole.suspicion[p] += 0.3;
+          }
+        });
+      }
+    });
+    delete gs._moleVoteDisruptionEvents;
+  }
+  if (gs.moles?.length) {
+    if (h.gsSnapshot) h.gsSnapshot.moles = gs.moles.map(m => ({ ...m, suspicion: { ...m.suspicion }, sabotageLog: [...m.sabotageLog], leaks: [...m.leaks] }));
+    // Check if a Mole was eliminated this episode without being discovered
+    const _elimThisEp = h.eliminated || ep.eliminated;
+    if (_elimThisEp) {
+      const _elimMole = gs.moles.find(m => m.player === _elimThisEp && !m.exposed);
+      if (_elimMole && _elimMole.sabotageCount > 0) {
+        // Inject "what the tribe never knew" reveal into camp events (viewer-only)
+        const _revealTribe = gs.isMerged ? (gs.mergeName || 'merge')
+          : gs.tribes.find(t => t.members?.includes(_elimThisEp))?.name
+          || (h.tribesAtStart || []).find(t => t.members?.includes(_elimThisEp))?.name
+          || Object.keys(ep.campEvents || {})[0];
+        if (_revealTribe && ep.campEvents?.[_revealTribe]) {
+          const mp = pronouns(_elimThisEp);
+          const _sabCount = _elimMole.sabotageCount;
+          const _sabTypes = [...new Set(_elimMole.sabotageLog.map(s => s.type))];
+          const _sabDesc = _sabTypes.map(t => t === 'bondSabotage' ? 'fabricated conflicts' : t === 'infoLeak' ? 'leaked intel' : t === 'voteDisruption' ? 'disrupted votes' : t === 'challengeThrow' ? 'threw challenges' : t === 'advantageSabotage' ? 'sabotaged advantages' : t).join(', ');
+          const _confessTexts = [
+            `What the tribe never knew: ${_elimThisEp} was The Mole. ${_sabCount} acts of sabotage — ${_sabDesc} — and nobody figured it out. ${mp.Sub} ${mp.sub === 'they' ? 'leave' : 'leaves'} with ${mp.posAdj} secret intact.`,
+            `${_elimThisEp} walks out of the game carrying a secret. ${mp.Sub} ${mp.sub === 'they' ? 'were' : 'was'} The Mole — ${_sabCount} sabotage acts, zero suspicion. The tribe will never know what hit them.`,
+            `The torch is snuffed. ${_elimThisEp} smiles on the way out. Nobody knew. ${_sabCount} acts of sabotage — ${_sabDesc}. The Mole played the game ${mp.posAdj} way, and the tribe never caught on.`,
+          ];
+          const _exitTexts = [
+            `"They never figured it out." ${_elimThisEp} grins in the final confessional. "Every fight, every broken alliance — that was me. And they voted me out for the wrong reasons."`,
+            `${_elimThisEp}'s exit confessional: "I did what I was here to do. ${_sabCount} moves, no exposure. They'll watch this back and realize I was the reason everything fell apart."`,
+            `"I played a different game than everyone else," ${_elimThisEp} says. "They think they voted out a regular player. They voted out The Mole. And I'm proud of what I did in there."`,
+          ];
+          const _pick = arr => arr[Math.floor(Math.random() * arr.length)];
+          const evts = ep.campEvents[_revealTribe].post || ep.campEvents[_revealTribe].pre || (Array.isArray(ep.campEvents[_revealTribe]) ? ep.campEvents[_revealTribe] : []);
+          evts.push({
+            type: 'moleUndiscoveredReveal', text: _pick(_confessTexts),
+            players: [_elimThisEp], badgeText: 'THE MOLE — UNDISCOVERED'
+          });
+          evts.push({
+            type: 'moleExitConfessional', text: _pick(_exitTexts),
+            players: [_elimThisEp], badgeText: 'EXIT CONFESSIONAL'
+          });
+          // Save to episode history for VP
+          h.moleReveal = { player: _elimThisEp, sabotageCount: _sabCount, sabotageLog: [..._elimMole.sabotageLog], undiscovered: true };
+        }
+      }
+    }
+  }
 }
 
 function snapshotGameState() {
@@ -24846,12 +25760,38 @@ function initGameState() {
     providerHistory: {},           // { [name]: episodeCount } — how many eps as provider
     collapseWarning: {},           // { [name]: epNum } — collapse event fired
     medevacs: [],                  // medevac records for season stats
+    // The Mole
+    moles: [],                     // [{ player, exposed, exposedEp, exposedBy, suspicion, sabotageCount, sabotageLog, leaks, layingLow, resistance }]
   };
 
   // Initialize survival values when food/water system is enabled
   if (seasonConfig.foodWater === 'enabled') {
     gs.activePlayers.forEach(p => { gs.survival[p] = 80; });
     gs.tribes.forEach(t => { gs.tribeFood[t.name] = 60; });
+  }
+
+  // ── THE MOLE — assign secret saboteur(s) ──
+  if (seasonConfig.mole && seasonConfig.mole !== 'disabled') {
+    const _moleMake = (name) => ({
+      player: name, exposed: false, exposedEp: null, exposedBy: null,
+      suspicion: {}, sabotageCount: 0, sabotageLog: [], leaks: [],
+      layingLow: false, resistance: 0.5
+    });
+    if (seasonConfig.mole === '1-random') {
+      const pick = gs.activePlayers[Math.floor(Math.random() * gs.activePlayers.length)];
+      gs.moles = [_moleMake(pick)];
+    } else if (seasonConfig.mole === '2-random') {
+      const pool = [...gs.activePlayers];
+      const i1 = Math.floor(Math.random() * pool.length);
+      const p1 = pool.splice(i1, 1)[0];
+      const p2 = pool[Math.floor(Math.random() * pool.length)];
+      gs.moles = [_moleMake(p1), _moleMake(p2)];
+    } else if (seasonConfig.mole === 'choose' && seasonConfig.molePlayers?.length) {
+      gs.moles = seasonConfig.molePlayers
+        .filter(n => gs.activePlayers.includes(n))
+        .slice(0, 2)
+        .map(n => _moleMake(n));
+    }
   }
 
   saveGameState();
@@ -25223,6 +26163,57 @@ function updateSurvivalDesc() {
     desc.textContent = text[mode] || '';
   }
 }
+
+function updateMoleUI() {
+  const mode = document.getElementById('cfg-mole')?.value || 'disabled';
+  const chooseGrp = document.getElementById('mole-choose-group');
+  const coordGrp  = document.getElementById('mole-coordination-group');
+  const desc      = document.getElementById('mole-desc');
+  if (chooseGrp) chooseGrp.style.display = mode === 'choose' ? 'block' : 'none';
+  if (coordGrp) coordGrp.style.display = (mode === '2-random' || mode === 'choose') ? 'block' : 'none';
+  if (desc) {
+    const text = {
+      'disabled':  'Disabled: No Mole twist this season.',
+      '1-random':  '1 random player is secretly assigned as The Mole. They sabotage challenges, leak info, and stir conflict — all while trying to stay hidden.',
+      '2-random':  '2 random players are secretly assigned as Moles. They can operate independently or as a coordinated team.',
+      'choose':    'You choose who becomes The Mole (up to 2 players).',
+    };
+    desc.textContent = text[mode] || '';
+  }
+  // Populate player select when in choose mode — portrait grid like alliance picker
+  if (mode === 'choose') {
+    const container = document.getElementById('mole-player-select');
+    if (container && typeof players !== 'undefined' && players.length) {
+      const selected = (seasonConfig.molePlayers || []);
+      container.innerHTML = players.map(p => {
+        const sel = selected.includes(p.name);
+        const slug = p.slug || p.name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+        const init = (p.name || '?')[0].toUpperCase();
+        return `<div data-member="${p.name}" data-selected="${sel}" onclick="toggleMolePlayer('${p.name.replace(/'/g,"\\'")}')" style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;width:48px">
+          <div style="width:36px;height:36px;border-radius:50%;border:3px solid ${sel ? '#f85149' : 'transparent'};overflow:hidden;position:relative;background:var(--surface2);transition:border-color 0.15s">
+            <img src="assets/avatars/${slug}.png" style="width:100%;height:100%;object-fit:cover;border-radius:50%;${sel ? '' : 'filter:grayscale(0.5);opacity:0.6;'}transition:filter 0.15s,opacity 0.15s" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+            <span style="display:none;font-size:14px;font-weight:700;color:var(--muted);align-items:center;justify-content:center;width:100%;height:100%;position:absolute;top:0;left:0">${init}</span>
+          </div>
+          <span style="font-size:9px;color:${sel ? '#f85149' : 'var(--muted)'};text-align:center;line-height:1.1;max-width:48px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transition:color 0.15s">${p.name}</span>
+        </div>`;
+      }).join('');
+    }
+  }
+}
+
+function toggleMolePlayer(name) {
+  if (!seasonConfig.molePlayers) seasonConfig.molePlayers = [];
+  const idx = seasonConfig.molePlayers.indexOf(name);
+  if (idx >= 0) {
+    seasonConfig.molePlayers.splice(idx, 1);
+  } else if (seasonConfig.molePlayers.length < 2) {
+    seasonConfig.molePlayers.push(name);
+  }
+  // Re-render grid to update highlight states
+  updateMoleUI();
+  saveConfig();
+}
+
 
 function runFanVote() {
   const outcomes = [
@@ -28424,6 +29415,7 @@ function rpBuildDebug(ep) {
       ${_tabBtn('stats', 'Player Stats')}
       ${_tabBtn('bonds', 'Perceived Bonds')}
       ${_tabBtn('history', 'Hidden Moves')}
+      ${gs.moles?.length ? _tabBtn('mole', 'The Mole') : ''}
     </div>`;
 
   // ════════════════════════════════════════════════
@@ -28725,6 +29717,104 @@ function rpBuildDebug(ep) {
         html += `<div style="padding:3px 8px;font-size:10px;color:#8b949e;border-bottom:1px solid rgba(255,255,255,0.04)">${log}</div>`;
       });
       html += `</div>`;
+    }
+  }
+
+  // ════════════════════════════════════════════════
+  // TAB: THE MOLE
+  // ════════════════════════════════════════════════
+  if (_dbTab === 'mole' && gs.moles?.length) {
+    const _moleSnap = snap.moles || gs.moles || [];
+    _moleSnap.forEach((mole, mi) => {
+      const _isActive = activePlayers.includes(mole.player);
+      const _statusCol = mole.exposed ? '#f47067' : _isActive ? '#3fb950' : '#484f58';
+      const _statusLabel = mole.exposed ? `EXPOSED (Ep ${mole.exposedEp} by ${mole.exposedBy})` : _isActive ? 'ACTIVE — HIDDEN' : 'ELIMINATED';
+
+      html += `<div style="margin-bottom:20px;padding:12px;background:rgba(139,148,158,0.04);border:1px solid rgba(139,148,158,0.1);border-radius:8px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          ${rpPortrait(mole.player, 'sm')}
+          <div>
+            <div style="color:#e6edf3;font-weight:700;font-size:13px">${mole.player}</div>
+            <div style="font-size:10px;color:${_statusCol};font-weight:700;letter-spacing:1px">${_statusLabel}</div>
+          </div>
+          <div style="margin-left:auto;text-align:right">
+            <div style="font-size:10px;color:#8b949e">Resistance</div>
+            <div style="font-size:13px;font-weight:700;color:${mole.resistance > 0.3 ? '#3fb950' : mole.resistance > 0.15 ? '#e3b341' : '#f47067'}">${(mole.resistance * 100).toFixed(0)}%</div>
+          </div>
+        </div>`;
+
+      // Sabotage count + breakdown
+      html += `<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px">
+        <div style="padding:4px 10px;background:rgba(248,81,73,0.08);border:1px solid rgba(248,81,73,0.2);border-radius:6px">
+          <div style="font-size:9px;color:#f47067;font-weight:700;letter-spacing:1px">SABOTAGE ACTS</div>
+          <div style="font-size:18px;font-weight:700;color:#f47067">${mole.sabotageCount}</div>
+        </div>
+        <div style="padding:4px 10px;background:rgba(63,185,80,0.08);border:1px solid rgba(63,185,80,0.2);border-radius:6px">
+          <div style="font-size:9px;color:#3fb950;font-weight:700;letter-spacing:1px">LAYING LOW</div>
+          <div style="font-size:18px;font-weight:700;color:#3fb950">${mole.layingLow ? 'YES' : 'NO'}</div>
+        </div>
+      </div>`;
+
+      // Sabotage log
+      if (mole.sabotageLog?.length) {
+        html += `<div style="margin-bottom:10px">
+          <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:#f0883e;margin-bottom:4px">SABOTAGE LOG</div>`;
+        mole.sabotageLog.forEach(s => {
+          const _typeLabel = s.type === 'bondSabotage' ? 'Bond Sabotage' : s.type === 'challengeThrow' ? 'Challenge Throw' : s.type === 'infoLeak' ? 'Info Leak' : s.type === 'voteDisruption' ? 'Vote Disruption' : s.type === 'advantageSabotage' ? 'Advantage Sabotage' : s.type;
+          const _detail = s.targets ? `→ ${s.targets.join(' vs ')}` : s.leakedTo ? `→ leaked to ${s.leakedTo}` : s.action ? `(${s.action})` : '';
+          html += `<div style="padding:2px 8px;font-size:10px;border-bottom:1px solid rgba(255,255,255,0.04)">
+            <span style="color:#8b949e">Ep ${s.ep}</span>
+            <span style="color:#f0883e;font-weight:600;margin-left:6px">${_typeLabel}</span>
+            <span style="color:#6e7681;margin-left:4px">${_detail}</span>
+          </div>`;
+        });
+        html += `</div>`;
+      }
+
+      // Suspicion levels
+      const _suspEntries = Object.entries(mole.suspicion || {}).filter(([n, v]) => v > 0).sort((a, b) => b[1] - a[1]);
+      if (_suspEntries.length) {
+        html += `<div style="margin-bottom:10px">
+          <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:#d29922;margin-bottom:4px">SUSPICION LEVELS <span style="font-weight:400;color:#6e7681">(threshold: 3.0)</span></div>`;
+        _suspEntries.forEach(([name, susp]) => {
+          const _pct = Math.min(100, (susp / 3.0) * 100);
+          const _col = susp >= 2.5 ? '#f47067' : susp >= 1.5 ? '#e3b341' : '#3fb950';
+          html += `<div style="display:flex;align-items:center;gap:6px;padding:2px 8px;font-size:10px;border-bottom:1px solid rgba(255,255,255,0.04)">
+            ${rpPortrait(name, 'xs')}
+            <span style="color:#e6edf3;font-weight:600;width:80px">${name}</span>
+            <div style="flex:1;height:6px;background:rgba(139,148,158,0.15);border-radius:3px;overflow:hidden">
+              <div style="height:100%;width:${_pct}%;background:${_col};border-radius:3px"></div>
+            </div>
+            <span style="color:${_col};font-weight:700;font-family:var(--font-mono);width:32px;text-align:right">${susp.toFixed(1)}</span>
+          </div>`;
+        });
+        html += `</div>`;
+      } else {
+        html += `<div style="font-size:10px;color:#484f58;margin-bottom:10px">No suspicion accumulated yet.</div>`;
+      }
+
+      // Leaks
+      if (mole.leaks?.length) {
+        html += `<div style="margin-bottom:10px">
+          <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:#6366f1;margin-bottom:4px">INFO LEAKS</div>`;
+        mole.leaks.forEach(l => {
+          html += `<div style="padding:2px 8px;font-size:10px;border-bottom:1px solid rgba(255,255,255,0.04)">
+            <span style="color:#8b949e">Ep ${l.ep}</span>
+            <span style="color:#6366f1;margin-left:6px">→ ${l.leakedTo}</span>
+            <span style="color:#6e7681;margin-left:4px">${l.info}</span>
+          </div>`;
+        });
+        html += `</div>`;
+      }
+
+      html += `</div>`;
+    });
+
+    // Coordination mode
+    if (gs.moles.length === 2) {
+      html += `<div style="text-align:center;font-size:10px;color:#8b949e;margin-top:8px">
+        Mode: <span style="color:#f0883e;font-weight:700">${seasonConfig.moleCoordination === 'coordinated' ? 'COORDINATED' : 'INDEPENDENT'}</span>
+      </div>`;
     }
   }
 
@@ -30455,6 +31545,10 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
     const isClockingIt    = evt.type === 'clockingIt';
     const isTdStrategy    = evt.type === 'tdStrategy';
     const isSchemer       = evt.type === 'schemerManipulates';
+    const isMoleSabotage  = evt.type === 'moleBondSabotage' || evt.type === 'moleChallengeThrow' || evt.type === 'moleInfoLeak' || evt.type === 'moleAdvSabotage' || evt.type === 'moleVoteDisruption';
+    const isMoleLayLow    = evt.type === 'moleLayingLow';
+    const isMoleExposed   = evt.type === 'moleExposed' || evt.type === 'moleExposedSurvival';
+    const isMoleReveal    = evt.type === 'moleUndiscoveredReveal' || evt.type === 'moleExitConfessional';
     const isCRExposure    = evt.type === 'culturalResetExposure';
     const isCRSurvived    = evt.type === 'culturalResetSurvived';
     const isCRCracked     = evt.type === 'culturalResetCracked';
@@ -30482,11 +31576,13 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
     const isPos = ['bond','tdBond','flirtation','sideDeal','strategicTalk','comfort','allianceForm',
                    'hardWork','unexpectedCompetence','goatOblivious','underdogMoment',
                    'confessional','socialBoost','soldierCheckin',
-                   'groupLaugh','sharedStruggle','rivalThaw'].includes(evt.type);
+                   'groupLaugh','sharedStruggle','rivalThaw',
+                   'teachingMoment','vulnerability','insideJoke','loyaltyProof'].includes(evt.type);
     const isNeg = ['fight','intimidation','dispute','doubt','meltdown','allianceCrack',
                    'overplay','foodConflict','leadershipClash','watchingYou','loneWolf','rumor',
                    'chaosAgentStirsUp','idolBetrayal','socialBomb','socialBombReaction',
-                   'showboat','overconfidence','floaterInvisible'].includes(evt.type);
+                   'showboat','overconfidence','floaterInvisible',
+                   'jealousy','exclusion','blame','passiveAggressive','trustCrack'].includes(evt.type);
     const isPersonal = isRelEvt && mentioned.length === 2;
     const badgeText  = isHothead      ? '💥 \u2212 Bond damage'
                      : isLie         ? '\u2212 Info planted'
@@ -30647,6 +31743,19 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'groupLaugh'           ? '+ Tribe lightens up'
                      : evt.type === 'sharedStruggle'       ? '+ Bonded through it'
                      : evt.type === 'rivalThaw'            ? '+ Tension easing'
+                     : evt.type === 'teachingMoment'       ? '+ Mentor'
+                     : evt.type === 'vulnerability'        ? '+ Opened up'
+                     : evt.type === 'insideJoke'           ? '+ Inside joke'
+                     : evt.type === 'loyaltyProof'         ? '+ Defended'
+                     : evt.type === 'jealousy'             ? '\u2212 Jealousy'
+                     : evt.type === 'exclusion'            ? '\u2212 Left out'
+                     : evt.type === 'blame'                ? '\u2212 Blamed'
+                     : evt.type === 'passiveAggressive'    ? '\u2212 Passive-aggressive'
+                     : evt.type === 'trustCrack'           ? '\u2212 Trust cracked'
+                     : isMoleSabotage    ? (evt.badgeText || 'MOLE')
+                     : isMoleLayLow      ? (evt.badgeText || 'LAYING LOW')
+                     : isMoleExposed     ? (evt.badgeText || 'MOLE EXPOSED')
+                     : isMoleReveal      ? (evt.badgeText || 'THE MOLE')
                      : isPos && isPersonal  ? '+ Bond formed'
                      : isPos                ? '+ Bond boost'
                      : isNeg && isPersonal  ? '\u2212 Personal tension'
@@ -30728,6 +31837,10 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'pureHatred' || evt.type === 'nemesis' || evt.type === 'breakup' ? 'red'
                      : evt.type === 'unbreakableBond' || evt.type === 'rideOrDie' || evt.type === 'rekindle' ? 'green'
                      : isSchemer ? 'red'
+                     : isMoleSabotage ? 'red'
+                     : isMoleLayLow ? ''
+                     : isMoleExposed ? 'red'
+                     : isMoleReveal ? 'gold'
                      : isPos ? 'green' : isNeg ? 'red' : '';
 
     html += `<div class="rp-brant-entry">`;

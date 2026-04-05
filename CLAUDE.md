@@ -25,6 +25,10 @@ Do not split it into separate files. This is intentional.
 - `executeFirstImpressions()` — episode 1 mock vote → round-robin tribe swap (fires before all other twists)
 - `checkPerceivedBondTriggers(ep)` — creates perception gaps after vote resolution
 - `updatePerceivedBonds(ep)` — closes gaps each episode via intuition-based correction
+- `checkSocialPolitics(ep)` — side deals, info trades, loyalty tests (3-5 per episode)
+- `checkSideDealBreaks(ep)` — detects broken F2/F3 deals after votes
+- `checkConflictingDeals(ep)` — discovers double-dealing via intuition rolls
+- `checkFalseInfoBlowup(ep)` — exposes lies when false idol info is acted on
 - VP Viewer: `rpBuild*()` functions for each screen
 
 ## Core State
@@ -37,6 +41,10 @@ Do not split it into separate files. This is intentional.
 - `gs.namedAlliances[]` — named alliance objects with members, betrayals, formed ep, active flag
 - `gs.showmances[]` — objects: `{ players:[a,b], phase, sparkEp, episodesActive, jealousPlayer, tested }`
 - `gs.skippedEliminationEps[]` — episodes where Team Swap advantage cancelled elimination (shifts twist schedule)
+- `gs.sideDeals[]` — F2/F3 pacts: `{ players, initiator, madeEp, type, active, genuine }`
+- `gs.loyaltyTests[]` — planted false info: `{ tester, target, falseInfo, plantedEp, resolved }`
+- `gs._falseInfoPlanted[]` — false idol info for blowup detection
+- `gs._blowupPlayers[]` — players who had fights/meltdowns/social bombs (cleared after recovery check)
 
 ## Patterns
 - New camp event types: push into `ep.campEvents[campKey].pre` directly; add badge
@@ -107,8 +115,24 @@ is NOT actually loyal. Always check behavioral track record alongside raw stats.
 ## Threat System
 - `threatScore(name)`: `(physical*0.8 + endurance*0.3 + strategic + social + boldness*0.5 + (intuition+mental)/2 - loyalty*0.15) / 4`
 - Cast builder `threat(stats)` matches the engine formula
-- `computeHeat`: scramble effect (social+strategic reduce heat when >3, post-merge), shield network (strategic players hide behind bigger targets)
+- `computeHeat`: scramble effect (social+strategic reduce heat when >3), floater invisibility (0.85x heat)
+- Shield network removed — replaced by vote pitches in social politics system
 - Challenge category frequency: physical 1.4x, endurance 1.3x, puzzle 1.25x via `CATEGORY_FREQ`
+
+## Social Politics
+- `checkSocialPolitics(ep)`: 3-5 actions per episode (side deals, info trades, loyalty tests)
+- Vote pitches inline in `simulateVotes`: 1-2 pitchers per tribal, can flip 0-2 voters
+- `gs.sideDeals[]`: F2/F3 pacts with genuine check (loyalty + bond - existing deals). VP shows F2/F3 DEAL tags.
+- Info trades: true info = knowledge shared, false info = only villains/schemers/masterminds. Lie exposed on blowup.
+- Loyalty tests: 2-episode resolution. Spread = trust broken. No spread = trust earned.
+- Temperament recovery: after fights/meltdowns, social players can apologize next episode (social * 0.07 chance)
+- Per-pair bond dedup: max 2 bond events per pair per camp phase. Bond deltas normalized to +0.5.
+
+## Archetype Mechanics
+- Villain: bond formation 0.7x, loss 0.8x. +1.5 heat. False info trades. Camp events.
+- Hero: bond formation 1.15x. -1.0 heat. Camp events.
+- Floater: 0.85x heat (invisibility). 0.9x vote gravity (follows majority). FTC: penalized if 0 big moves (behavior-based, not archetype-specific).
+- FTC passenger penalty: 0 big moves = -0.6 jury score. 1 move = 0. 2+ = bonus up to +0.8.
 
 ## Pronouns — NEVER hardcode
 - Always use `pronouns(name)` → `{sub, obj, pos, posAdj, ref, Sub, Obj, PosAdj}`

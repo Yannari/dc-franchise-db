@@ -1656,7 +1656,7 @@ function repairGsSets(g) {
   const SET_FIELDS = ['blowupHeatNextEp', 'knownIdolHoldersThisEp', 'knownIdolHoldersPersistent',
                       'knownAmuletHoldersThisEp', 'knownAmuletHoldersPersistent',
                       'socialBombHeatThisEp', 'injuredThisEp', 'scramblingThisEp', 'beastDrillsThisEp', 'lieTargetsThisEp',
-                      'knownTeamSwapHolders', 'knownVoteBlockHolders', 'knownVoteStealHolders', 'knownSafetyNoPowerHolders', 'knownSoleVoteHolders'];
+                      'knownTeamSwapHolders', 'knownVoteBlockHolders', 'knownVoteStealHolders', 'knownSafetyNoPowerHolders', 'knownSoleVoteHolders', 'shotInDarkUsed'];
   SET_FIELDS.forEach(f => {
     if (g[f] instanceof Set) return; // already a Set
     if (Array.isArray(g[f])) { g[f] = new Set(g[f]); return; } // saved as array — restore
@@ -1669,7 +1669,7 @@ function prepGsForSave(g) {
   const SET_FIELDS = ['blowupHeatNextEp', 'knownIdolHoldersThisEp', 'knownIdolHoldersPersistent',
                       'knownAmuletHoldersThisEp', 'knownAmuletHoldersPersistent',
                       'socialBombHeatThisEp', 'injuredThisEp', 'scramblingThisEp', 'beastDrillsThisEp', 'lieTargetsThisEp',
-                      'knownTeamSwapHolders', 'knownVoteBlockHolders', 'knownVoteStealHolders', 'knownSafetyNoPowerHolders', 'knownSoleVoteHolders'];
+                      'knownTeamSwapHolders', 'knownVoteBlockHolders', 'knownVoteStealHolders', 'knownSafetyNoPowerHolders', 'knownSoleVoteHolders', 'shotInDarkUsed'];
   SET_FIELDS.forEach(f => { if (g[f] instanceof Set) g[f] = [...g[f]]; });
   return g;
 }
@@ -3655,7 +3655,7 @@ function computeHeat(name, tribalPlayers, alliances) {
   if (gs.broker?.player === name && !gs.broker.exposed) heat -= 0.5;
   if (gs.brokerExposedHeat === name && gs.brokerExposedEp && ((gs.episode || 0) + 1) - gs.brokerExposedEp <= 2) heat += 2.0;
   // ── Scramble Effect: high social/strategic players work the camp to deflect pressure ──
-  if (gs.phase === 'post-merge' && heat > 3) {
+  if (heat > 3) {
     const _scramblePower = s.social * 0.04 + s.strategic * 0.04;
     heat -= _scramblePower;
     // Track for camp event injection (done in generateCampEvents where ep is available)
@@ -3664,28 +3664,13 @@ function computeHeat(name, tribalPlayers, alliances) {
       gs._scrambleActivations[name] = _scramblePower;
     }
   }
-  // ── Shield Network: strategic players hide behind bigger targets ──
-  // Only fires when there's a real threat gap (>= 1.5) — mastermind-level strategic play
-  if (gs.phase === 'post-merge' && s.strategic >= 8) {
-    const _otherThreats = tribalPlayers.filter(p => p !== name).map(p => ({
-      name: p, threat: threatScore(p) + (gs.chalRecord?.[p]?.wins || 0) * 0.5
-    }));
-    const _biggestTarget = _otherThreats.length ? _otherThreats.sort((a, b) => b.threat - a.threat)[0] : null;
-    const _myThreat = threatScore(name) + (gs.chalRecord?.[name]?.wins || 0) * 0.5;
-    if (_biggestTarget && _biggestTarget.threat - _myThreat >= 1.5) {
-      const _gap = _biggestTarget.threat - _myThreat;
-      // Stronger formula: gap directly scales the bonus, strategic just gates entry
-      const _shieldBonus = Math.min(0.8, _gap * 0.25);
-      heat -= _shieldBonus;
-      if (_shieldBonus > 0.2) {
-        if (!gs._shieldActivations) gs._shieldActivations = {};
-        gs._shieldActivations[name] = { bonus: _shieldBonus, meatshield: _biggestTarget.name };
-      }
-    }
-  }
+  // Shield network removed — replaced by vote pitches in social politics system
   // Bold unpredictability — proportional: every point of boldness makes you slightly harder to target
   const _nameBoldness = s.boldness;
   heat -= _nameBoldness * 0.04; // stat 4=-0.16, stat 7=-0.28, stat 10=-0.40
+  // Floater invisibility — floaters fly under the radar, drawing less heat naturally
+  const _nameArch2 = players.find(p => p.name === name)?.archetype;
+  if (_nameArch2 === 'floater') heat *= 0.85; // 15% heat reduction — nobody thinks of them
   // Chaos dividend: if the last tribal was chaotic (scattered votes), bold players benefit
   // They thrive in disorganization — when nobody can agree, the wildcard survives
   const _prevEp = gs.episodeHistory?.[gs.episodeHistory.length - 1];
@@ -4635,7 +4620,10 @@ function detectBetrayals(ep) {
     // Alliance members who cast a vote in this tribal (they were present)
     const voters = alliance.members.filter(m => ep.votingLog.some(v => v.voter === m));
     if (voters.length < 2) return;
-    // Find consensus (most voted-for target among alliance members)
+    // Find consensus — prefer the alliance's PLANNED target over what the majority actually voted
+    // The plan is the commitment; voting differently is the betrayal, even if most members defected
+    const _epAlliances = ep.alliances || [];
+    const _ownPlan = _epAlliances.find(a => a.label === alliance.name)?.target;
     const tally = {};
     voters.forEach(member => {
       const entry = ep.votingLog.find(l => l.voter === member);
@@ -4643,30 +4631,15 @@ function detectBetrayals(ep) {
     });
     const sorted = Object.entries(tally).sort(([,a],[,b]) => b-a);
     if (sorted.length < 2) return; // unanimous — no betrayal
-    // 2-person alliance: any split is a betrayal. The one who voted against an alliance member is the betrayer.
-    // 3+ person alliance: need a clear majority to define consensus. Equal split = no betrayal.
-    if (voters.length >= 3 && sorted[0][1] === sorted[1][1]) return; // no clear majority in 3+ person alliance
     let consensusVote;
-    if (voters.length === 2 && sorted[0][1] === sorted[1][1]) {
-      // 2-person tie: the player who voted for the alliance's stated target (or the more popular external target) is "consensus"
-      // The one who voted for an alliance MEMBER is the betrayer
-      const _votedForAllyMember = voters.find(v => {
-        const entry = ep.votingLog.find(l => l.voter === v);
-        return entry && alliance.members.includes(entry.voted);
-      });
-      if (_votedForAllyMember) {
-        // The one who voted against an ally is the betrayer; the other's target is "consensus"
-        const _loyalVoter = voters.find(v => v !== _votedForAllyMember);
-        consensusVote = ep.votingLog.find(l => l.voter === _loyalVoter)?.voted;
-      } else {
-        // Both voted external targets — pick the one that matches THIS alliance's tribal plan
-        const _epAlliances = ep.alliances || [];
-        // Match by name first (exact alliance plan), then by member overlap (broader coordination)
-        const _ownPlan = _epAlliances.find(a => a.label === alliance.name)?.target;
-        const _anyPlan = _epAlliances.find(a => a.members.some(m => voters.includes(m)) && !alliance.members.includes(a.target))?.target;
-        consensusVote = _ownPlan || _anyPlan || sorted[0][0];
-      }
+    if (_ownPlan) {
+      // Use the alliance's stated plan as consensus — deviating from the plan = betrayal
+      consensusVote = _ownPlan;
+      // If everyone voted the plan, no betrayal
+      if (voters.every(v => ep.votingLog.find(l => l.voter === v)?.voted === _ownPlan)) return;
     } else {
+      // No explicit plan found — fall back to majority vote
+      if (voters.length >= 3 && sorted[0][1] === sorted[1][1]) return;
       consensusVote = sorted[0][0];
     }
     const formedThisEp = alliance.formed === ep.num;
@@ -7147,6 +7120,59 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
     }
   }
 
+  // ── VOTE PITCHES: active lobbying to flip voters before they decide ──
+  const _votePitches = [];
+  {
+    const _pitchCandidates = tribalPlayers.filter(p => !lostVotes.includes(p));
+    let _pitchCount = 0;
+    _pitchCandidates.forEach(pitcher => {
+      if (_pitchCount >= 2) return;
+      const pS = pStats(pitcher);
+      const pitchWeight = pS.social * 0.05 + pS.strategic * 0.03 + pS.boldness * 0.02;
+      if (Math.random() >= pitchWeight * 0.2) return;
+      // Only pitch if disagreeing with alliance target or unallied
+      const myAlliance = alliances.find(a => a.members.includes(pitcher));
+      const myTarget = myAlliance?.target;
+      // Pick who the pitcher wants out instead
+      const pitchVictims = tribalPlayers.filter(p => p !== pitcher && !_immSet.has(p) && p !== myTarget);
+      if (!pitchVictims.length) return;
+      const pitchTarget = wRandom(pitchVictims, v =>
+        Math.max(0.1, threatScore(v) * 0.4 + (-getPerceivedBond(pitcher, v)) * 0.3 + Math.random() * 0.3));
+      if (pitchTarget === myTarget) return; // already the plan — no pitch needed
+      // Lobby each voter
+      const _flipped = [];
+      _pitchCandidates.filter(v => v !== pitcher && !lostVotes.includes(v)).forEach(voter => {
+        if (_flipped.length >= 2) return;
+        const vS = pStats(voter);
+        const flipChance = pS.social * 0.03 + getPerceivedBond(voter, pitcher) * 0.04
+          - vS.loyalty * 0.02 - getPerceivedBond(voter, myTarget || '') * 0.03;
+        if (flipChance > 0 && Math.random() < flipChance) {
+          _flipped.push(voter);
+        }
+      });
+      _votePitches.push({ pitcher, pitchTarget, originalTarget: myTarget, flipped: _flipped, success: _flipped.length > 0 });
+      _pitchCount++;
+    });
+  }
+  // Store pitches for VP/debug
+  if (_votePitches.length) {
+    if (!gs._votePitchesThisEp) gs._votePitchesThisEp = [];
+    gs._votePitchesThisEp = _votePitches;
+  }
+  // Build a set of flipped voters and their new targets
+  const _flippedVoters = new Map();
+  _votePitches.forEach(p => {
+    p.flipped.forEach(voter => _flippedVoters.set(voter, p.pitchTarget));
+    // Consequences
+    if (p.success) {
+      p.flipped.forEach(v => addBond(v, p.pitcher, 0.3));
+    } else {
+      // Failed pitch: +0.3 heat next episode
+      if (!gs.pitchFailHeat) gs.pitchFailHeat = {};
+      gs.pitchFailHeat[p.pitcher] = (gs.episode || 0) + 2; // heat applies next episode
+    }
+  });
+
   tribalPlayers.forEach(voter => {
     if (lostVotes.includes(voter)) return;
 
@@ -7154,7 +7180,15 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
     // Primary alliance this player is voting with
     const myAlliance = alliances.find(a => a.type === 'alliance' && a.members.includes(voter))
                    || alliances.find(a => a.members.includes(voter));
-    const allianceTarget = myAlliance?.target;
+    let allianceTarget = myAlliance?.target;
+
+    // Vote pitch override: if this voter was flipped by a pitcher, use the pitched target
+    if (_flippedVoters.has(voter)) {
+      const _pitchedTarget = _flippedVoters.get(voter);
+      if (_pitchedTarget && tribalPlayers.includes(_pitchedTarget) && !isImmune(_pitchedTarget)) {
+        allianceTarget = _pitchedTarget;
+      }
+    }
 
     // All real alliances this player belongs to (they may be in multiple)
     const allMyAlliances = alliances.filter(a => a.type === 'alliance' && a.members.includes(voter));
@@ -7389,7 +7423,9 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
           const isSchemer   = voterArch === 'schemer' || voterArch === 'mastermind' || s.strategic * 0.1 > Math.random();
           // Vote gravity: each existing vote pulls later voters toward the same target,
           // simulating real-time consolidation at tribal. Prevents perfect round-robin scatter.
-          const voteGravity = t => (votes[t] || 0) * 0.5;
+          // Floaters feel the pull harder — they go where the numbers go
+          const _isFloater = voterArch === 'floater';
+          const voteGravity = t => (votes[t] || 0) * (_isFloater ? 0.9 : 0.5);
           if (gs.phase === 'pre-merge') {
             const stragMod = t => gs._chalStragglers?.includes(t) ? 0.5 : 0;
             target = wRandom(candidates, t => Math.max(0.1,
@@ -7460,7 +7496,7 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
     }
   });
 
-  return { votes, log, defections, voteMiscommunications: _voteMiscommunications };
+  return { votes, log, defections, voteMiscommunications: _voteMiscommunications, votePitches: _votePitches.length ? _votePitches : null };
 }
 
 // Legacy Advantage: when a holder is eliminated, will it to highest-bonded active player
@@ -7515,6 +7551,9 @@ function checkShotInDark(tribalPlayers, votes, log, ep) {
   if (!sorted.length) return;
   const [target, voteCount] = sorted[0];
   if (voteCount < 2) return; // only desperate players risk it
+  // One-time per player per season — once you roll, you can't roll again
+  if (!gs.shotInDarkUsed) gs.shotInDarkUsed = new Set();
+  if (gs.shotInDarkUsed.has(target)) return;
   // Don't play SITD if you have any protective advantage (idol, team swap, safety without power — all strictly better)
   const _sitdHasProtection = gs.advantages.some(a => a.holder === target && (a.type === 'idol' || a.type === 'teamSwap' || a.type === 'safetyNoPower' || a.type === 'soleVote' || (a.type === 'amulet' && a.amuletPower === 'idol')));
   if (_sitdHasProtection) return;
@@ -7528,6 +7567,7 @@ function checkShotInDark(tribalPlayers, votes, log, ep) {
   if (!willPlay) return;
   const safe = Math.random() < 1 / 6;
   ep.shotInDark = { player: target, safe, voteCount };
+  gs.shotInDarkUsed.add(target);
   // SID player sacrifices their vote — remove from tally but keep in log (flagged)
   // so voting plans can still show their pre-tribal strategy
   const myVoteIdx = log?.findIndex(v => v.voter === target);
@@ -11872,6 +11912,11 @@ function nameNewAlliance(size) {
       'The Foxhole', 'The Firewall', 'The Shadow Pact', 'The Backbone',
       'The Last Resort', 'The Safety Net', 'The Iron Grip', 'The Pinky Swear',
       'The Blood Oath', 'The Switchblade', 'The Velvet Rope', 'The Tightrope',
+      // Total Drama / Disventure Camp style
+      'The Drama Duo', 'The Chaos Pact', 'The Ride or Die', 'The Plot Twist',
+      'The Power Couple', 'The Secret Weapon', 'The Wildcard Pact',
+      'The Confessional Crew', 'The Elimination Insurance', 'The Marshmallow Pact',
+      'The Final Two Deal', 'The Campfire Compact', 'The Dock Deal',
     ],
     3: [
       'The Core', 'The Unit', 'The Trinity', 'The Trio', 'The Trident',
@@ -11879,12 +11924,19 @@ function nameNewAlliance(size) {
       'The Three Headed Snake', 'The Triumvirate', 'The Trifecta',
       'The Wolfpack', 'The Tripwire', 'The Third Rail', 'The Bermuda Triangle',
       'The Hat Trick', 'The Triple Threat', 'The Three Amigos',
+      // Total Drama / Disventure Camp style
+      'The Drama Triangle', 'The Chaos Trio', 'The Triple Blindside',
+      'The Three Torches', 'The Outhouse Alliance',
+      'The Camp Legends', 'The Marshmallow Club', 'The Dock Rats',
     ],
     4: [
       'The Four', 'The Bloc', 'The Circle', 'The Core Four',
       'The Fortress', 'The Iron Four', 'The Quadrant', 'The Square',
       'The Four Corners', 'The Citadel', 'The Compound', 'The Grid',
       'The Diamond', 'The Bunker', 'The Stronghold', 'The Four Walls',
+      // Total Drama / Disventure Camp style
+      'The Final Four Pact', 'The Campfire Four', 'The Drama Squad',
+      'The Chaos Crew', 'The Elimination Squad', 'The Four Horsemen',
     ],
   };
   const general = [
@@ -11893,6 +11945,13 @@ function nameNewAlliance(size) {
     'The Underground', 'The Current', 'The Pipeline', 'The Assembly',
     'The Syndicate', 'The Collective', 'The Movement', 'The Front',
     'The Guard', 'The Shield Wall', 'The Barricade', 'The War Room',
+    // Total Drama / Disventure Camp style
+    'The Drama Club', 'The Chaos Brigade',
+    'The Confessional Clique', 'The Campfire Crew', 'The Dock Pact',
+    'The Marshmallow Mafia', 'The Island Syndicate', 'The Outwit Club',
+    'The Blindside Brigade', 'The Torch Carriers', 'The Camp Takeover',
+    'The Merge Mob', 'The Tribal Terrors', 'The Immunity Hunters',
+    'The Snuff Squad',
   ];
   const pool = [...(namesBySize[size] || []), ...general];
   const used = new Set((gs.namedAlliances || []).map(a => a.name));
@@ -12000,6 +12059,12 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
     return r;
   };
 
+  // Track per-pair bond events to prevent the same pair from stacking too many in one phase
+  const _pairBondCount = {};
+  const _pairKey = (a, b) => [a, b].sort().join('|');
+  const _canBond = (a, b) => (_pairBondCount[_pairKey(a, b)] || 0) < 2; // max 2 bond events per pair per phase
+  const _trackBond = (a, b) => { const k = _pairKey(a, b); _pairBondCount[k] = (_pairBondCount[k] || 0) + 1; };
+
   for (let i = 0; i < numEvents; i++) {
     const eventType = wRandom(CAMP_EVENT_TYPES, e => e.weight + (boosts[e.id] || 0)).id;
 
@@ -12024,15 +12089,17 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
         : [`${a} pushes back on ${b} in a way that surprises everyone — they're usually so composed.`,
            `Even ${a}, who rarely reacts, finally says something to ${b}. That's how you know it's bad.`];
       events.push({ type: 'fight', text: fightLines[Math.floor(Math.random() * fightLines.length)] });
+      if (!gs._blowupPlayers) gs._blowupPlayers = [];
+      if (!gs._blowupPlayers.includes(a)) gs._blowupPlayers.push(a);
 
     } else if (eventType === 'bond') {
       // High social = initiates. High temperament = calm enough to open up genuinely.
       const a = _pick(group, n => Math.max(0.1, pStats(n).social * 0.4 + pStats(n).temperament * 0.15 + 1));
-      const others = group.filter(p => p !== a);
+      const others = group.filter(p => p !== a && _canBond(a, p));
       if (!others.length) continue;
       const b = wRandom(others, n => Math.max(0.1, getBond(a, n) * 0.3 + pStats(n).social * 0.3 + 2));
-      const delta = Math.random() < 0.45 ? 1.0 : 0.5;
-      addBond(a, b, delta);
+      addBond(a, b, 0.5);
+      _trackBond(a, b);
       const socA = pStats(a).social;
       const tmpA = pStats(a).temperament;
       const bondLines = (socA >= 8 && tmpA >= 7)
@@ -12066,6 +12133,8 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
         : [`${p}'s controlled exterior breaks down for a rare moment. The tribe takes a mental note.`,
            `${p} usually keeps it together. Not today. The cracks are visible now.`];
       events.push({ type: 'meltdown', text: meltdownLines[Math.floor(Math.random() * meltdownLines.length)] });
+      if (!gs._blowupPlayers) gs._blowupPlayers = [];
+      if (!gs._blowupPlayers.includes(p)) gs._blowupPlayers.push(p);
 
     } else if (eventType === 'hardWork') {
       const p = _pick(group, n => Math.max(0.1, pStats(n).loyalty + pStats(n).endurance * 0.2 + 1));
@@ -12375,9 +12444,12 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
     } else if (eventType === 'comfort') {
       // One player supports another after a hard day — builds a real bond
       const struggling = _pick(group, n => Math.max(0.1, (10 - pStats(n).temperament) * 0.4 + (10 - pStats(n).endurance) * 0.2 + 1));
-      const comforter = wRandom(group.filter(p => p !== struggling), n => Math.max(0.1, pStats(n).social * 0.4 + pStats(n).temperament * 0.2 + 1));
-      addBond(comforter, struggling, 1.2);
-      addBond(struggling, comforter, 0.8);
+      const comforterPool = group.filter(p => p !== struggling && _canBond(p, struggling));
+      if (!comforterPool.length) continue;
+      const comforter = wRandom(comforterPool, n => Math.max(0.1, pStats(n).social * 0.4 + pStats(n).temperament * 0.2 + 1));
+      addBond(comforter, struggling, 0.6);
+      addBond(struggling, comforter, 0.4);
+      _trackBond(comforter, struggling);
       const socC = pStats(comforter).social;
       const comfortLines = socC >= 8
         ? [`${comforter} notices ${struggling} is struggling before anyone else does. By the time the tribe catches up, the bond is already there.`,
@@ -12414,10 +12486,11 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
     } else if (eventType === 'tdBond') {
       // TD-flavored bonding — covers archetypes the generic 'bond' doesn't
       const a = _pick(group, n => Math.max(0.1, pStats(n).social * 0.4 + pStats(n).loyalty * 0.2 + 1));
-      const others = group.filter(p => p !== a);
+      const others = group.filter(p => p !== a && _canBond(a, p));
       if (!others.length) continue;
       const b = wRandom(others, n => Math.max(0.1, getBond(a, n) * 0.3 + pStats(n).social * 0.3 + 2));
-      addBond(a, b, 0.8);
+      addBond(a, b, 0.5);
+      _trackBond(a, b);
       const sA = pStats(a), sB = pStats(b);
       const tdBondLines = (sA.boldness >= 8 && sB.boldness >= 8)
         ? [`${a} and ${b} somehow get into a competition about who can go the longest without blinking. The tribe has no idea what they're watching.`,
@@ -12459,11 +12532,12 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
     } else if (eventType === 'sharedStruggle') {
       // Two players endure something hard together — builds bond even between unlikely pairs
       const a = _pick(group, n => Math.max(0.1, (10 - pStats(n).endurance) * 0.4 + 1));
-      const others = group.filter(p => p !== a);
+      const others = group.filter(p => p !== a && _canBond(a, p));
       if (!others.length) continue;
       // Prefer pairs that aren't already close — shared struggle matters more between neutrals/rivals
       const b = wRandom(others, n => Math.max(0.1, (5 - getBond(a, n)) * 0.3 + (10 - pStats(n).endurance) * 0.2 + 1));
-      addBond(a, b, 1.0);
+      addBond(a, b, 0.5);
+      _trackBond(a, b);
       const sA = pStats(a), sB = pStats(b);
       const _ssA = pronouns(a), _ssB = pronouns(b);
       const sharedStruggleLines = (sA.endurance <= 4 || sB.endurance <= 4)
@@ -13017,14 +13091,14 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
       const sdLines = [
         `${sdA} finds a quiet moment with ${sdB}. What starts as small talk becomes something deliberate.`,
         `${sdA} approaches ${sdB} away from the group. The conversation is short. The implications are not.`,
-        `${sdA} makes a quiet move toward ${sdB}. ${_sdA.Sub} don't${_sdA.sub==='they'?'':'es'} need permission from anyone. That's the point.`,
+        `${sdA} makes a quiet move toward ${sdB}. ${_sdA.Sub} ${_sdA.sub==='they'?'don\'t':'doesn\'t'} need permission from anyone. That's the point.`,
         `${sdA} tests the waters with ${sdB}. Nothing committed. But the door is open now.`,
         `${sdA} has been thinking about a different path. ${sdB} is the first person ${_sdA.sub} bring${_sdA.sub==='they'?'':'s'} it to.`,
         `${sdA} whispers something to ${sdB} on the walk back from the well. ${sdB} doesn't react publicly. Privately, the gears start turning.`,
         `${sdA} and ${sdB} have a conversation the rest of the tribe doesn't see. By tomorrow, the game might look different.`,
         `${sdA} pulls ${sdB} aside with a pitch that's either brilliant or desperate. ${sdB} is going to sleep on it.`,
       ];
-      events.push({ type: 'sideDeal', text: sdLines[Math.floor(Math.random() * sdLines.length)] });
+      events.push({ type: 'strategicApproach', text: sdLines[Math.floor(Math.random() * sdLines.length)] });
 
     } else if (eventType === 'bigMoveThoughts') {
       const p = _pick(group, n => {
@@ -14369,6 +14443,8 @@ function checkSocialBomb(ep) {
       // Vote heat for this episode's tribal
       if (!gs.socialBombHeatThisEp) gs.socialBombHeatThisEp = new Set();
       gs.socialBombHeatThisEp.add(name);
+      if (!gs._blowupPlayers) gs._blowupPlayers = [];
+      if (!gs._blowupPlayers.includes(name)) gs._blowupPlayers.push(name);
 
       // Tone: arrogant (bold) vs hothead (low temperament)
       const isArrogant = s.boldness >= 8;
@@ -15763,6 +15839,401 @@ function checkHeroVillainEvents(ep) {
   });
 }
 
+// ── Social Politics: active campaigning between tribals ──
+function checkSocialPolitics(ep) {
+  if (!ep.campEvents) return;
+  const _pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  const curEp = (gs.episode || 0) + 1;
+  if (!gs.sideDeals) gs.sideDeals = [];
+  if (!gs.loyaltyTests) gs.loyaltyTests = [];
+  if (!ep._politicsLog) ep._politicsLog = [];
+
+  // ── TEMPERAMENT RECOVERY: high-social players apologize after blowups ──
+  const prevEp = gs.episodeHistory?.find(e => e.num === curEp - 1);
+  if (prevEp && gs._blowupPlayers?.length) {
+    gs._blowupPlayers.forEach(name => {
+      if (!gs.activePlayers.includes(name)) return;
+      const s = pStats(name);
+      // Recovery chance: social determines damage control ability
+      const recoveryChance = s.social * 0.07 + s.loyalty * 0.02;
+      if (Math.random() >= recoveryChance) {
+        // No recovery — the damage stands. Low social players can't fix it.
+        return;
+      }
+      const pr = pronouns(name);
+      // Find the most damaged relationship from the blowup
+      const tribeMembers = gs.isMerged ? gs.activePlayers : (gs.tribes.find(t => t.members.includes(name))?.members || []);
+      const damaged = tribeMembers.filter(m => m !== name && getBond(name, m) < 0)
+        .sort((a, b) => getBond(name, a) - getBond(name, b));
+      if (!damaged.length) return;
+      // Recover bond with 1-2 most damaged relationships
+      const toRecover = damaged.slice(0, Math.min(2, damaged.length));
+      const recoveryAmount = s.social * 0.06; // social 10 = +0.6, social 5 = +0.3
+      toRecover.forEach(target => addBond(name, target, recoveryAmount));
+      const campKey = gs.isMerged ? (gs.mergeName || 'merge') : (gs.tribes.find(t => t.members.includes(name))?.name || 'merge');
+      if (ep.campEvents?.[campKey]?.pre) {
+        const target = toRecover[0];
+        ep.campEvents[campKey].pre.push({
+          type: 'apology', players: [name, target],
+          text: _pick([
+            `${name} finds ${target} before anyone else is up. The conversation is short. ${pr.Sub} ${pr.sub==='they'?'don\'t':'doesn\'t'} make excuses. ${target} listens. Something shifts.`,
+            `${name} pulls ${target} aside. "About yesterday — I'm sorry." ${target} doesn't respond immediately. But the wall comes down a little.`,
+            `${name} doesn't bring it up directly. ${pr.Sub} just show${pr.sub==='they'?'':'s'} up differently today — quieter, more helpful, present. ${target} notices the effort.`,
+            `${name} and ${target} sit by the fire in silence for a while. Eventually ${name} says something honest. It's not a speech — it's a sentence. It's enough.`,
+          ]),
+          badgeText: 'MAKING AMENDS', badgeClass: 'green'
+        });
+      }
+      ep._politicsLog.push(`RECOVERY: ${name} apologized to ${toRecover.join(', ')} (+${recoveryAmount.toFixed(1)} bond)`);
+    });
+    delete gs._blowupPlayers;
+  }
+
+  const groups = gs.isMerged
+    ? [{ name: gs.mergeName || 'merge', members: [...gs.activePlayers] }]
+    : gs.tribes.map(t => ({ name: t.name, members: [...t.members] }));
+
+  let budget = 3 + Math.floor(Math.random() * 3); // 3-5 actions
+
+  groups.forEach(group => {
+    const members = group.members;
+    if (members.length < 3) return;
+    const campKey = group.name;
+    const pre = ep.campEvents[campKey]?.pre;
+    if (!pre) return;
+
+    // ── SIDE DEALS ──
+    if (budget > 0) {
+      members.forEach(initiator => {
+        if (budget <= 0) return;
+        const s = pStats(initiator);
+        const dealChance = s.strategic * 0.06 + s.social * 0.02;
+        if (Math.random() >= dealChance * 0.15) return; // scale down so not everyone deals every ep
+        // Already has 3 deals? Can't make more
+        const existingDeals = gs.sideDeals.filter(d => d.active && d.players.includes(initiator));
+        if (existingDeals.length >= 3) return;
+        // Pick best partner: highest bond, not already in a deal with initiator
+        const candidates = members.filter(m => m !== initiator
+          && !gs.sideDeals.some(d => d.active && d.players.includes(initiator) && d.players.includes(m)));
+        if (!candidates.length) return;
+        const partner = wRandom(candidates, p => Math.max(0.1, getBond(initiator, p) * 0.3 + pStats(p).social * 0.05));
+        const bond = getBond(initiator, partner);
+        // Acceptance check
+        const partnerDeals = gs.sideDeals.filter(d => d.active && d.players.includes(partner)).length;
+        const acceptChance = bond * 0.08 + pStats(partner).social * 0.03 + (10 - partnerDeals * 3) * 0.05;
+        if (Math.random() >= acceptChance) return;
+        // Deal forms
+        // Genuine check: loyalty makes you honest, strong bond makes it real,
+        // multiple deals make each one less genuine, low loyalty makes you a liar
+        const _genuineChance = s.loyalty * 0.09 + getBond(initiator, partner) * 0.06
+          - (10 - s.loyalty) * 0.02 - existingDeals.length * 0.2;
+        const genuine = Math.random() < Math.max(0.15, Math.min(0.95, _genuineChance));
+        const dealType = members.length <= 5 ? 'f2' : (Math.random() < 0.3 ? 'f3' : 'f2');
+        gs.sideDeals.push({
+          players: [initiator, partner], initiator, madeEp: curEp,
+          type: dealType, active: true, genuine
+        });
+        addBond(initiator, partner, 1.0);
+        // Non-genuine: create perceived bond gap on partner
+        if (!genuine) {
+          addPerceivedBond(partner, initiator, getBond(partner, initiator) + 1.5, 'side-deal-fake');
+        }
+        const pr = pronouns(initiator);
+        const pPr = pronouns(partner);
+        pre.push({
+          type: 'sideDeal', players: [initiator, partner],
+          text: _pick([
+            `${initiator} pulled ${partner} aside after dark. "Final ${dealType === 'f2' ? 'two' : 'three'}." The conversation lasted ten minutes. When they came back, something had changed.`,
+            `${initiator} and ${partner} made a final ${dealType === 'f2' ? 'two' : 'three'} deal. Whether it means anything is a question for later.`,
+            `${initiator} looked ${partner} in the eye: "Final ${dealType === 'f2' ? 'two' : 'three'}. You and me." ${partner} didn't hesitate.`,
+            `${initiator} and ${partner} shook on a final ${dealType === 'f2' ? 'two' : 'three'} deal. Not in front of anyone. That's the point.`,
+          ]),
+          badgeText: 'SIDE DEAL', badgeClass: 'gold'
+        });
+        ep._politicsLog.push(`DEAL: ${initiator} + ${partner} (${dealType}, genuine=${genuine})`);
+        budget--;
+      });
+    }
+
+    // ── INFO TRADES ──
+    if (budget > 0) {
+      members.forEach(trader => {
+        if (budget <= 0) return;
+        const s = pStats(trader);
+        const tradeChance = s.intuition * 0.04 + s.strategic * 0.03;
+        if (Math.random() >= tradeChance * 0.12) return;
+        // Must have knowledge to trade
+        const _knownIdols = [...(gs.knownIdolHoldersPersistent || [])].filter(h => h !== trader);
+        const _inAlliance = (gs.namedAlliances || []).find(a => a.active && a.members.includes(trader));
+        const _knownAdvs = (gs.advantages || []).filter(a => a.holder !== trader &&
+          (gs.knownVoteStealHolders?.has(a.holder) || gs.knownVoteBlockHolders?.has(a.holder) || gs.knownSoleVoteHolders?.has(a.holder)));
+        if (!_knownIdols.length && !_inAlliance && !_knownAdvs.length) return;
+        // Pick trade partner
+        const targets = members.filter(m => m !== trader);
+        if (!targets.length) return;
+        const target = wRandom(targets, p => Math.max(0.1, getBond(trader, p) * 0.06 + (10 - threatScore(p)) * 0.02));
+        // False info chance — only deceptive/villainous players plant lies
+        const _traderArch = players.find(p => p.name === trader)?.archetype || '';
+        const _isDeceptive = _traderArch === 'villain' || _traderArch === 'schemer' || _traderArch === 'mastermind';
+        const _falseChance = _isDeceptive
+          ? (10 - s.loyalty) * 0.08 + 0.10  // villains/schemers: high base + loyalty scales
+          : s.loyalty >= 7 ? 0              // loyal/hero types: never plant false info
+          : (10 - s.loyalty) * 0.03;         // average players: very rare, only if low loyalty
+        const isFalse = Math.random() < _falseChance;
+        // What to trade
+        let infoType, infoDetail;
+        if (_knownIdols.length && Math.random() < 0.5) {
+          infoType = 'idol-holder';
+          infoDetail = isFalse ? members.filter(m => !_knownIdols.includes(m) && m !== trader && m !== target)[0] || _knownIdols[0] : _knownIdols[0];
+        } else if (_inAlliance && Math.random() < 0.5) {
+          infoType = 'alliance-target';
+          infoDetail = _inAlliance.name;
+        } else {
+          infoType = 'general-intel';
+          infoDetail = null;
+        }
+        addBond(trader, target, 0.5);
+        addBond(target, trader, 0.5);
+        if (isFalse && infoType === 'idol-holder') {
+          // Target now "knows" the wrong idol holder
+          if (!gs.knownIdolHoldersThisEp) gs.knownIdolHoldersThisEp = new Set();
+          gs.knownIdolHoldersThisEp.add(infoDetail);
+          // Create perceived bond gap — target trusts liar
+          addPerceivedBond(target, trader, getBond(target, trader) + 1.0, 'false-info-trade');
+          // Track for blowup detection
+          if (!gs._falseInfoPlanted) gs._falseInfoPlanted = [];
+          gs._falseInfoPlanted.push({ liar: trader, victim: target, fakeHolder: infoDetail, plantedEp: curEp });
+        } else if (!isFalse && infoType === 'idol-holder') {
+          if (!gs.knownIdolHoldersThisEp) gs.knownIdolHoldersThisEp = new Set();
+          gs.knownIdolHoldersThisEp.add(infoDetail);
+        }
+        const tPr = pronouns(trader);
+        const rPr = pronouns(target);
+        pre.push({
+          type: 'infoTrade', players: [trader, target],
+          text: _pick([
+            `${trader} sat down next to ${target} and said: "I'm going to tell you something. And then you're going to owe me." ${target} listened.`,
+            `${trader} traded information for trust. Whether the information was real is another question.`,
+            `A quiet exchange at the water well. ${trader} knows something ${target} didn't. Now ${target} knows too — or thinks ${rPr.sub} ${rPr.sub==='they'?'do':'does'}.`,
+            `${trader} whispered something to ${target} before the challenge. ${target}'s expression changed. The game just shifted for both of them.`,
+          ]),
+          badgeText: isFalse ? null : 'INFO TRADE', badgeClass: 'gold'
+        });
+        ep._politicsLog.push(`TRADE: ${trader} → ${target} (${infoType}, false=${isFalse})`);
+        budget--;
+      });
+    }
+
+    // ── LOYALTY TESTS ──
+    if (budget > 0) {
+      members.forEach(tester => {
+        if (budget <= 0) return;
+        const s = pStats(tester);
+        const testChance = s.strategic * 0.05 + (10 - s.loyalty) * 0.03;
+        if (Math.random() >= testChance * 0.08) return;
+        // Don't test if already running a test
+        if (gs.loyaltyTests.some(t => t.tester === tester && !t.resolved)) return;
+        // Pick target: someone you're unsure about
+        const targets = members.filter(m => m !== tester);
+        if (!targets.length) return;
+        const target = wRandom(targets, p => Math.max(0.1, (10 - getBond(tester, p)) * 0.05 + pStats(tester).strategic * 0.03));
+        // Counter-detection: target might realize they're being tested
+        if (Math.random() < pStats(target).intuition * 0.05) {
+          addBond(target, tester, -1.0);
+          pre.push({
+            type: 'loyaltyTestCaught', players: [target, tester],
+            text: _pick([
+              `${target} figured out what ${tester} was doing. The "information" was too convenient, too specific. ${target} said nothing — but the trust is damaged.`,
+              `${tester} tried to test ${target}. ${target} saw through it. That's worse than failing the test.`,
+            ]),
+            badgeText: 'TEST CAUGHT', badgeClass: 'red'
+          });
+          ep._politicsLog.push(`TEST CAUGHT: ${tester} tried to test ${target}, caught`);
+          budget--;
+          return;
+        }
+        // Plant the test
+        const fakeTarget = members.filter(m => m !== tester && m !== target)[Math.floor(Math.random() * (members.length - 2))] || members[0];
+        gs.loyaltyTests.push({
+          tester, target, falseInfo: `voting for ${fakeTarget}`,
+          plantedEp: curEp, resolved: false
+        });
+        const tPr = pronouns(tester);
+        pre.push({
+          type: 'loyaltyTest', players: [tester, target],
+          text: _pick([
+            `${tester} told ${target} something very specific. Something that isn't true. Now ${tester} waits.`,
+            `A test disguised as a conversation. ${tester} planted a seed with ${target}. If it grows somewhere it shouldn't, ${tester} will know who to cut.`,
+            `${tester} leaned in close to ${target}: "I heard something about the vote." What ${tester} said was a lie. The question is whether ${target} keeps it.`,
+          ]),
+          badgeText: 'LOYALTY TEST', badgeClass: 'gold'
+        });
+        ep._politicsLog.push(`TEST: ${tester} → ${target} (planted false info about ${fakeTarget})`);
+        budget--;
+      });
+    }
+  });
+
+  // ── LOYALTY TEST RESOLUTION: check pending tests ──
+  gs.loyaltyTests.filter(t => !t.resolved).forEach(test => {
+    const epsSincePlant = curEp - test.plantedEp;
+    if (epsSincePlant < 1) return; // give it at least 1 episode
+    if (!gs.activePlayers.includes(test.tester) || !gs.activePlayers.includes(test.target)) {
+      test.resolved = true; return;
+    }
+    const targetS = pStats(test.target);
+    const spreadChance = (10 - targetS.loyalty) * 0.06 + targetS.social * 0.02;
+    const spread = Math.random() < spreadChance;
+    if (spread) {
+      test.resolved = true;
+      addBond(test.tester, test.target, -1.5);
+      const campKey = gs.isMerged ? (gs.mergeName || 'merge') : (gs.tribes.find(t => t.members.includes(test.tester))?.name || 'merge');
+      if (ep.campEvents?.[campKey]?.pre) {
+        ep.campEvents[campKey].pre.push({
+          type: 'loyaltyTestFailed', players: [test.tester, test.target],
+          text: _pick([
+            `${test.tester} planted a seed. It grew. Now ${test.tester} knows exactly who can't keep their mouth shut.`,
+            `The false information came back. ${test.tester} heard it from someone else — which means ${test.target} talked. Trust revoked.`,
+          ]),
+          badgeText: 'FAILED TEST', badgeClass: 'red'
+        });
+      }
+      ep._politicsLog.push(`TEST FAILED: ${test.target} leaked (planted ep ${test.plantedEp})`);
+    } else if (epsSincePlant >= 2) {
+      test.resolved = true;
+      addBond(test.tester, test.target, 0.8);
+      const campKey = gs.isMerged ? (gs.mergeName || 'merge') : (gs.tribes.find(t => t.members.includes(test.tester))?.name || 'merge');
+      if (ep.campEvents?.[campKey]?.pre) {
+        ep.campEvents[campKey].pre.push({
+          type: 'loyaltyTestPassed', players: [test.tester, test.target],
+          text: _pick([
+            `${test.tester} told ${test.target} something nobody else knows. ${test.target} kept it quiet. That means something.`,
+            `Two episodes. Not a word. ${test.target} passed a test they didn't know they were taking.`,
+          ]),
+          badgeText: 'TRUST EARNED', badgeClass: 'green'
+        });
+      }
+      ep._politicsLog.push(`TEST PASSED: ${test.target} kept quiet (planted ep ${test.plantedEp})`);
+    }
+  });
+}
+
+// ── Side Deal Breaks: detect when someone votes against their deal partner ──
+function checkSideDealBreaks(ep) {
+  if (!gs.sideDeals?.length || !ep.votingLog?.length) return;
+  const _pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  const curEp = (gs.episode || 0) + 1;
+
+  ep.votingLog.forEach(v => {
+    if (!v.voter || v.voter === 'THE GAME' || !v.voted) return;
+    gs.sideDeals.filter(d => d.active && d.players.includes(v.voter)).forEach(deal => {
+      const partner = deal.players.find(p => p !== v.voter);
+      if (v.voted !== partner) return; // didn't vote against partner
+      // Deal broken
+      deal.active = false;
+      addBond(partner, v.voter, -2.0);
+      // Emotional state shift
+      if (gs.playerStates?.[partner]) {
+        const _pBond = getBond(partner, v.voter);
+        gs.playerStates[partner].emotional = _pBond <= -2 ? 'desperate' : 'paranoid';
+      }
+      // Camp event next episode (saved on gs for pickup)
+      if (!gs._brokenDeals) gs._brokenDeals = [];
+      gs._brokenDeals.push({ breaker: v.voter, partner, deal, ep: curEp });
+    });
+  });
+}
+
+// ── Conflicting Deal Detection: multiple F2 deals get discovered ──
+function checkConflictingDeals(ep) {
+  if (!gs.sideDeals?.length) return;
+  const _pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  const curEp = (gs.episode || 0) + 1;
+
+  // Find players with 2+ active deals
+  const dealCounts = {};
+  gs.sideDeals.filter(d => d.active).forEach(d => {
+    d.players.forEach(p => { dealCounts[p] = (dealCounts[p] || 0) + 1; });
+  });
+
+  Object.entries(dealCounts).forEach(([player, count]) => {
+    if (count < 2) return;
+    if (!gs.activePlayers.includes(player)) return;
+    // Each partner rolls intuition to discover the double-dealing
+    const deals = gs.sideDeals.filter(d => d.active && d.players.includes(player));
+    deals.forEach(deal => {
+      const partner = deal.players.find(p => p !== player);
+      if (!gs.activePlayers.includes(partner)) return;
+      const discoverChance = pStats(partner).intuition * 0.03;
+      if (Math.random() >= discoverChance) return;
+      // Discovered!
+      addBond(partner, player, -2.5);
+      deal.active = false;
+      const pr = pronouns(player);
+      const campKey = gs.isMerged ? (gs.mergeName || 'merge') : (gs.tribes.find(t => t.members.includes(player))?.name || 'merge');
+      if (ep.campEvents?.[campKey]?.pre) {
+        const otherPartners = deals.filter(d => d !== deal && d.active).map(d => d.players.find(p => p !== player)).filter(Boolean);
+        ep.campEvents[campKey].pre.push({
+          type: 'conflictingDeals', players: [partner, player, ...(otherPartners.slice(0, 1))],
+          text: _pick([
+            `${partner} found out. ${player} promised final two to ${partner} — and to ${otherPartners[0] || 'someone else'}. The math doesn't work. ${partner} knows it now.`,
+            `${player} has been making deals. Too many deals. ${partner} just figured that out the hard way.`,
+            `"How many final twos do you have?" ${partner} asked it quietly. ${player} didn't answer. That was the answer.`,
+          ]),
+          badgeText: 'DOUBLE DEALER', badgeClass: 'red'
+        });
+      }
+    });
+  });
+}
+
+// ── False Info Blowup: when planted lies get exposed ──
+function checkFalseInfoBlowup(ep) {
+  if (!gs._falseInfoPlanted?.length) return;
+  const _pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  const curEp = (gs.episode || 0) + 1;
+  // Check each false info plant — was the "idol holder" voted for but didn't play an idol?
+  for (let i = gs._falseInfoPlanted.length - 1; i >= 0; i--) {
+    const plant = gs._falseInfoPlanted[i];
+    if (!gs.activePlayers.includes(plant.victim)) { gs._falseInfoPlanted.splice(i, 1); continue; }
+    if (!gs.activePlayers.includes(plant.liar)) { gs._falseInfoPlanted.splice(i, 1); continue; }
+    // Did the victim vote for the fake idol holder this episode?
+    const _victimVote = ep.votingLog?.find(v => v.voter === plant.victim);
+    if (!_victimVote || _victimVote.voted !== plant.fakeHolder) continue;
+    // Did the fake holder NOT play an idol?
+    const _holderPlayedIdol = ep.idolPlays?.some(p => p.player === plant.fakeHolder);
+    if (_holderPlayedIdol) continue; // they actually had one — the info was accidentally right
+    // BLOWUP — the lie is exposed
+    const pr = pronouns(plant.liar);
+    const vPr = pronouns(plant.victim);
+    // Bond damage: victim → liar
+    addBond(plant.victim, plant.liar, -3.0);
+    // Tribe-wide credibility hit: everyone at tribal loses trust in the liar
+    const _tribal = ep.tribalPlayers || gs.activePlayers;
+    _tribal.filter(p => p !== plant.liar && p !== plant.victim).forEach(p => {
+      addBond(p, plant.liar, -0.5);
+    });
+    // Camp event
+    const campKey = gs.isMerged ? (gs.mergeName || 'merge') : (ep.loser?.name || gs.tribes[0]?.name || 'merge');
+    if (ep.campEvents?.[campKey]?.post) {
+      ep.campEvents[campKey].post.push({
+        type: 'falseInfoBlowup', players: [plant.victim, plant.liar],
+        text: _pick([
+          `${plant.victim} voted ${plant.fakeHolder} to flush an idol that didn't exist. The info came from ${plant.liar}. ${plant.victim} hasn't said a word to ${plant.liar} since.`,
+          `The lie traced back. ${plant.liar} told ${plant.victim} that ${plant.fakeHolder} had an idol. ${plant.fakeHolder} didn't. ${plant.victim} wasted ${vPr.pos} vote. The trust is gone.`,
+          `${plant.victim} figured it out. ${plant.liar} planted false information. The idol was never real. The alliance might not be either.`,
+        ]),
+        badgeText: 'LIE EXPOSED', badgeClass: 'red'
+      });
+    }
+    // Remove the plant — it's resolved
+    gs._falseInfoPlanted.splice(i, 1);
+    // Perceived bond correction
+    const pbKey = plant.victim + '→' + plant.liar;
+    if (gs.perceivedBonds?.[pbKey]) delete gs.perceivedBonds[pbKey];
+  }
+}
+
 function checkComfortBlindspot(ep) {
   if (!ep.campEvents) return;
   const groups = gs.isMerged
@@ -15830,7 +16301,6 @@ function generateCampEvents(ep, phase = 'both') {
   gs.beastDrillsThisEp = new Set();
   gs.lieTargetsThisEp  = new Set();
   delete gs._scrambleActivations;
-  delete gs._shieldActivations;
 
   const idolFinds = ep.idolFinds || [];
   const allTwists = ep.twists?.length ? ep.twists : (ep.twist ? [ep.twist] : []);
@@ -16181,7 +16651,7 @@ function generateCampEvents(ep, phase = 'both') {
     });
   }
 
-  // ── SCRAMBLE & SHIELD NETWORK camp events (post-merge only) ──
+  // ── SCRAMBLE camp events (post-merge only) ──
   if (gs.phase === 'post-merge' && (phase === 'pre' || phase === 'both')) {
     const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
     const _campKey = Object.keys(ep.campEvents || {}).find(k => ep.campEvents[k]?.pre) || 'merge';
@@ -16208,33 +16678,7 @@ function generateCampEvents(ep, phase = 'both') {
         ep._debugScramble = { ...gs._scrambleActivations };
         delete gs._scrambleActivations;
       }
-      // Shield Network camp events
-      if (gs._shieldActivations) {
-        ep._debugShield = Object.fromEntries(Object.entries(gs._shieldActivations).map(([k, v]) => [k, { ...v }]));
-        Object.entries(gs._shieldActivations).forEach(([name, { bonus, meatshield }]) => {
-          if (Math.random() >= 0.25) return; // ~25% chance to show the event
-          if (!meatshield || !gs.activePlayers.includes(meatshield)) return;
-          const pr = pronouns(name);
-          _pre.push({ type: 'shieldSteer', players: [name, meatshield], text: _rp([
-            `${name} mentioned the challenge wins at dinner. Not loudly. Just enough. The tribe did the rest.`,
-            `Every conversation ${name} had today ended the same way — with someone else's name.`,
-            `${name} doesn't need to campaign against anyone. ${pr.Sub} just ask${pr.sub==='they'?'':'s'} the right questions and let the tribe connect the dots.`,
-            `The target shifted overnight. ${name} was the last person seen talking to the swing vote.`,
-            `${name} brought up ${meatshield}'s threat level casually. Like an observation, not a pitch. Three people repeated it by sunset.`,
-            `"Have you thought about who wins if we don't make a move?" ${name} planted the seed. ${meatshield}'s name grew from it.`,
-          ], name + 'shield' + ep.num), badgeText: 'SHIELD PLAY', badgeClass: 'gold' });
-          // 20% chance the meatshield figures out they're being used
-          if (Math.random() < 0.20) {
-            addBond(meatshield, name, -0.3);
-            const _msP = pronouns(meatshield);
-            _pre.push({ type: 'shieldCaught', players: [meatshield, name], text: _rp([
-              `${meatshield} notices the pattern. Every time ${name} "casually" brings up threats, ${_msP.pos} name is somehow part of the conversation. ${_msP.Sub} file${_msP.sub==='they'?'':'s'} that away.`,
-              `${meatshield} catches ${name}'s game. The deflection. The subtle redirects. ${_msP.Sub} ${_msP.sub==='they'?'don\'t':'doesn\'t'} say anything — yet.`,
-            ], meatshield + 'caught' + ep.num), badgeText: 'SUSPICIOUS', badgeClass: 'red' });
-          }
-        });
-        delete gs._shieldActivations;
-      }
+      // Shield network removed — replaced by vote pitches in social politics system
     }
   }
 
@@ -16381,6 +16825,7 @@ function generateCampEvents(ep, phase = 'both') {
     checkTacticalAdvantageSnoop(ep);
     checkHeroVillainEvents(ep);
     checkComfortBlindspot(ep);
+    checkSocialPolitics(ep);
   }
 
   // ── Post-save aftermath (idol / SITD / KIP from previous episode) ──
@@ -16424,12 +16869,22 @@ function generateCampEvents(ep, phase = 'both') {
             `Someone needs to rebuild the numbers. The vote failed, the target survived, and the game has a new variable: ${save.player} playing with nothing left to lose.`,
           ]) });
         } else {
-          // SITD played but didn't save them — still dramatic
-          pre.push({ type: 'saveReaction', text: _rp([
-            `${save.player} rolled the Shot in the Dark last night. It didn't land. ${_p.Sub} ${_p.sub==='they'?'are':'is'} gone — but the fact that ${_p.sub} tried it is all anyone is talking about this morning.`,
-            `The Shot in the Dark failed. ${save.player} sacrificed their vote and still went home. The move didn't work, but it told everyone something about how ${_p.sub} ${_p.sub==='they'?'play':'plays'} this game.`,
-            `${save.player} gambled last night. The dice came up wrong. The camp is quiet about it — not because they don't care, but because it could have been any of them reaching for that slip of paper.`,
+          // SITD played but didn't save them — check if they actually went home or survived
+          const _sitdWentHome = prevEp.eliminated === save.player || (Array.isArray(prevEp.eliminated) && prevEp.eliminated.includes(save.player));
+          if (_sitdWentHome) {
+            pre.push({ type: 'saveReaction', text: _rp([
+              `${save.player} rolled the Shot in the Dark last night. It didn't land. ${_p.Sub} ${_p.sub==='they'?'are':'is'} gone — but the fact that ${_p.sub} tried it is all anyone is talking about this morning.`,
+              `The Shot in the Dark failed. ${save.player} sacrificed their vote and still went home. The move didn't work, but it told everyone something about how ${_p.sub} ${_p.sub==='they'?'play':'plays'} this game.`,
+              `${save.player} gambled last night. The dice came up wrong. The camp is quiet about it — not because they don't care, but because it could have been any of them reaching for that slip of paper.`,
           ]) });
+          } else {
+            // SITD failed but they survived anyway (someone else went home)
+            pre.push({ type: 'saveReaction', text: _rp([
+              `${save.player} rolled the Shot in the Dark last night and it didn't land. ${_p.Sub} survived anyway — but ${_p.sub} wasted ${_p.pos} vote for nothing. The tribe knows ${_p.sub} panicked.`,
+              `The Shot in the Dark failed, but ${save.player} is still here. Someone else went home instead. The desperation move didn't matter — but the tribe saw ${_p.obj} reach for it.`,
+              `${save.player} sacrificed ${_p.pos} vote on a 1-in-6 gamble. It missed. ${_p.Sub} ${_p.sub==='they'?'are':'is'} still in the game, but everyone knows ${_p.sub} felt cornered enough to try.`,
+            ]) });
+          }
         }
       } else if (save.type === 'kip') {
         const stolenLine = save.stolenFrom ? `${save.stolenFrom} woke up without the idol they had. ` : '';
@@ -17832,7 +18287,6 @@ function simulateEpisode() {
     // Pre-slasher: journey, advantages, camp events fire normally
     simulateJourney(ep); findAdvantages(ep);
     if (gs._scrambleActivations) ep._debugScramble = { ...gs._scrambleActivations };
-    if (gs._shieldActivations) ep._debugShield = Object.fromEntries(Object.entries(gs._shieldActivations).map(([k, v]) => [k, { ...v }]));
     generateCampEvents(ep, 'pre');
     updatePerceivedBonds(ep);
 
@@ -17910,7 +18364,6 @@ function simulateEpisode() {
   if (ep.isSuddenDeath) {
     simulateJourney(ep); findAdvantages(ep);
     if (gs._scrambleActivations) ep._debugScramble = { ...gs._scrambleActivations };
-    if (gs._shieldActivations) ep._debugShield = Object.fromEntries(Object.entries(gs._shieldActivations).map(([k, v]) => [k, { ...v }]));
     generateCampEvents(ep, 'both');
     updatePerceivedBonds(ep);
 
@@ -18979,7 +19432,8 @@ function simulateEpisode() {
     // Snapshot bonds before vote — triggers need pre-vote bond values
     ep._preVoteBondSnapshot = { ...gs.bonds };
 
-    const { votes, log, defections, voteMiscommunications } = simulateVotes(tribalPlayers, _allImmune, allianceSet, gs.lostVotes, ep.openVote);
+    const { votes, log, defections, voteMiscommunications, votePitches: _vpResult } = simulateVotes(tribalPlayers, _allImmune, allianceSet, gs.lostVotes, ep.openVote);
+    if (_vpResult) ep.votePitches = _vpResult;
     if (voteMiscommunications?.length) ep.voteMiscommunications = (ep.voteMiscommunications || []).concat(voteMiscommunications);
     if (defections?.length) ep.defections = [...(ep.defections || []), ...defections];
 
@@ -20848,6 +21302,7 @@ function simulateJuryRoundtable(ep) {
   detectBetrayals(ep);
   applyPostTribalConsequences(ep);
   checkAllianceRecruitment(ep); // scenario C: blindside swing voters
+  checkSideDealBreaks(ep); checkConflictingDeals(ep); checkFalseInfoBlowup(ep);
   updatePlayerStates(ep); checkPerceivedBondTriggers(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
 
   // ── PHASE CHECK ──
@@ -20929,6 +21384,8 @@ function simulateJuryRoundtable(ep) {
     allianceQuits:    ep.allianceQuits    || [],
     allianceRecruits: ep.allianceRecruits || [],
     socialBombs:      ep.socialBombs      || [],
+    _politicsLog:     ep._politicsLog     || [],
+    votePitches:      ep.votePitches      || null,
     chalThreatEvents: ep.chalThreatEvents || [],
     goatEvents:       ep.goatEvents       || [],
     openVote:          ep.openVote         || false,
@@ -20969,9 +21426,43 @@ function simulateJuryRoundtable(ep) {
   updatePlayerStates(ep); decayAllianceTrust(ep.num); recoverBonds(ep);
   updateSurvival(ep);
 
+  // Inject vote pitch camp events (after all camp event generation is complete)
+  if (ep.votePitches?.length) {
+    const _vpCampKey = gs.isMerged ? (gs.mergeName || 'merge') : (ep.loser?.name || ep.tribalTribe || gs.tribes[0]?.name || 'merge');
+    if (!ep.campEvents) ep.campEvents = {};
+    if (!ep.campEvents[_vpCampKey]) ep.campEvents[_vpCampKey] = { pre: [], post: [] };
+    if (!ep.campEvents[_vpCampKey].post) ep.campEvents[_vpCampKey].post = [];
+    const _vpPick = arr => arr[Math.floor(Math.random() * arr.length)];
+    ep.votePitches.forEach(p => {
+      const pr = pronouns(p.pitcher);
+      if (p.success) {
+        ep.campEvents[_vpCampKey].post.push({
+          type: 'votePitch', players: [p.pitcher, ...p.flipped],
+          text: _vpPick([
+            `${p.pitcher} worked the tribe before the vote. By the time they sat down, ${p.flipped.join(' and ')} had changed ${p.flipped.length > 1 ? 'their minds' : 'their mind'}. The target shifted to ${p.pitchTarget}.`,
+            `${p.pitcher} pulled ${p.flipped.join(' and ')} aside minutes before tribal. The plan changed. ${p.pitchTarget}'s name replaced ${p.originalTarget || 'the original target'}.`,
+            `Nobody saw ${p.pitcher} coming. ${pr.Sub} made ${pr.pos} case quietly, and ${p.flipped.join(' and ')} flipped. The vote landed on ${p.pitchTarget}.`,
+          ]),
+          badgeText: 'VOTE PITCH', badgeClass: 'gold'
+        });
+      } else {
+        ep.campEvents[_vpCampKey].post.push({
+          type: 'votePitchFailed', players: [p.pitcher],
+          text: _vpPick([
+            `${p.pitcher} tried to change the plan at the last minute. Nobody moved. The original target held.`,
+            `${p.pitcher} made ${pr.pos} pitch before tribal. It didn't land. The tribe had already decided.`,
+            `${p.pitcher} scrambled. ${pr.Sub} talked to everyone ${pr.sub} could. Nobody flipped.`,
+          ]),
+          badgeText: 'FAILED PITCH', badgeClass: 'red'
+        });
+      }
+    });
+    // Update saved campEvents in episode history
+    gs.episodeHistory[gs.episodeHistory.length-1].campEvents = ep.campEvents;
+  }
+
   // Save debug data to episode history before patching
   if (gs._scrambleActivations && !ep._debugScramble) ep._debugScramble = { ...gs._scrambleActivations };
-  if (gs._shieldActivations && !ep._debugShield) ep._debugShield = Object.fromEntries(Object.entries(gs._shieldActivations).map(([k, v]) => [k, { ...v }]));
   if (ep.challengeThrows?.length && !ep._debugThrows) ep._debugThrows = [...ep.challengeThrows];
   patchEpisodeHistory(ep);
   saveGameState();
@@ -21284,15 +21775,17 @@ function getTribeRelationshipHighlights(members) {
       pairs.push({ a, b, val, hasGap: !!_hasGap });
     });
   });
-  // Sort: gap pairs first, then non-neutral bonds, then neutral
+  // Sort by strongest relationship first — gaps use highest perceived/real value
+  // Neutral bonds without gaps sink to bottom
   pairs.sort((x, y) => {
-    if (x.hasGap && !y.hasGap) return -1;
-    if (!x.hasGap && y.hasGap) return 1;
-    const xNeutral = Math.abs(x.val) < 0.5;
-    const yNeutral = Math.abs(y.val) < 0.5;
-    if (!xNeutral && yNeutral) return -1;
-    if (xNeutral && !yNeutral) return 1;
-    return Math.abs(y.val) - Math.abs(x.val);
+    // For gap pairs, use the max of real + perceived values for sort priority
+    const xMax = x.hasGap ? Math.max(Math.abs(x.val), ...Object.entries(gs.perceivedBonds || {})
+      .filter(([k]) => k === x.a + '→' + x.b || k === x.b + '→' + x.a)
+      .map(([, e]) => Math.abs(e.perceived))) : Math.abs(x.val);
+    const yMax = y.hasGap ? Math.max(Math.abs(y.val), ...Object.entries(gs.perceivedBonds || {})
+      .filter(([k]) => k === y.a + '→' + y.b || k === y.b + '→' + y.a)
+      .map(([, e]) => Math.abs(e.perceived))) : Math.abs(y.val);
+    return yMax - xMax;
   });
   // Show all pairs for small groups, cap at 25 for large merged groups
   // Gap pairs and non-neutral bonds are already sorted to the top — neutrals get cut first
@@ -24145,8 +24638,9 @@ function patchEpisodeHistory(ep) {
   // Misc
   if (!h.comfortBlindspotPlayer && ep.comfortBlindspotPlayer) h.comfortBlindspotPlayer = ep.comfortBlindspotPlayer;
   if (!h._pbTriggerLog && ep._pbTriggerLog?.length) h._pbTriggerLog = ep._pbTriggerLog;
+  if (!h._politicsLog && ep._politicsLog?.length) h._politicsLog = ep._politicsLog;
+  if (!h.votePitches && ep.votePitches) h.votePitches = ep.votePitches;
   if (!h._debugScramble && ep._debugScramble) h._debugScramble = ep._debugScramble;
-  if (!h._debugShield && ep._debugShield) h._debugShield = ep._debugShield;
   if (!h.challengeThrows && ep.challengeThrows?.length) h.challengeThrows = ep.challengeThrows;
   if (!h.bewareLostVotes && ep.bewareLostVotes) h.bewareLostVotes = ep.bewareLostVotes;
   if (!h.journey && ep.journey) h.journey = ep.journey;
@@ -24254,6 +24748,7 @@ function snapshotGameState() {
     perceivedBonds: gs.perceivedBonds ? Object.fromEntries(
       Object.entries(gs.perceivedBonds).map(([k, v]) => [k, { ...v }])
     ) : {},
+    sideDeals: (gs.sideDeals || []).map(d => ({ ...d, players: [...d.players] })),
   };
 }
 
@@ -24320,7 +24815,7 @@ function initGameState() {
     tribes: tribeList,
     riPlayers: [], riReturnCount: 0, riDuelHistory: [], riLifeEvents: {},
     riArrivalEp: {}, riQuits: [], riAlliancesFormed: [],
-    eliminated: [], bonds, perceivedBonds: {}, alliances: [], episodeHistory: [],
+    eliminated: [], bonds, perceivedBonds: {}, sideDeals: [], loyaltyTests: [], alliances: [], episodeHistory: [],
     advantages: [],      // [{ holder, type, foundEp, fromBeware? }]
     idolSlots,           // { tribeName: bool }
     bewares,             // { tribeName: { hidden, holder, activated } }
@@ -25997,7 +26492,10 @@ function simulateJuryVote(finalists) {
       const _betrayalCount = (gs.namedAlliances || []).reduce((n, a) => n + (a.betrayals || []).filter(b => b.player === f).length, 0);
       const _loyaltyHonor = _betrayalCount === 0 ? 0.6 : _betrayalCount <= 1 ? 0.3 : _betrayalCount <= 2 ? 0.1 : 0;
       const _bigMoves = gs.playerStates?.[f]?.bigMoves || 0;
-      const _resumeBonus = Math.min(0.8, _bigMoves * 0.15);
+      // Zero big moves = passenger penalty. Jury doesn't respect coasting to the end.
+      const _resumeBonus = _bigMoves === 0 ? -0.6
+        : _bigMoves === 1 ? 0
+        : Math.min(0.8, _bigMoves * 0.15);
       // Survival resume: cumulative votes survived — jurors respect someone who kept getting targeted and kept surviving
       const _totalVotesReceived = gs.playerStates?.[f]?.votesReceived || 0;
       const _survivalBonus = Math.min(0.5, _totalVotesReceived * 0.04); // 5 votes = 0.2, 10 votes = 0.4, caps at 0.5
@@ -26160,7 +26658,9 @@ function projectJuryVotes(finalistSet) {
       const _loyaltyHonor = _betrayalCount === 0 ? 0.6 : _betrayalCount <= 1 ? 0.3 : _betrayalCount <= 2 ? 0.1 : 0;
       // Big moves resume: bold players who made flashy moves earn jury respect
       const _bigMoves = gs.playerStates?.[f]?.bigMoves || 0;
-      const _resumeBonus = Math.min(0.8, _bigMoves * 0.15);
+      const _resumeBonus = _bigMoves === 0 ? -0.6
+        : _bigMoves === 1 ? 0
+        : Math.min(0.8, _bigMoves * 0.15);
       // Survival resume: cumulative votes survived
       const _totalVotesReceived = gs.playerStates?.[f]?.votesReceived || 0;
       const _survivalBonus = Math.min(0.5, _totalVotesReceived * 0.04);
@@ -27973,6 +28473,61 @@ function rpBuildDebug(ep) {
       _trigLog.forEach(log => { html += `<div style="font-size:10px;color:#8b949e;padding:2px 0">${log}</div>`; });
       html += `</div>`;
     }
+    // Politics Log
+    const _polLog = ep._politicsLog || [];
+    if (_polLog.length) {
+      html += `<div style="margin-bottom:16px;padding:10px;background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.15);border-radius:8px">
+        <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#6366f1;margin-bottom:6px">SOCIAL POLITICS (${_polLog.length})</div>`;
+      _polLog.forEach(log => { html += `<div style="font-size:10px;color:#8b949e;padding:2px 0">${log}</div>`; });
+      html += `</div>`;
+    }
+    // Active Side Deals
+    const _activeDeals = (gs.sideDeals || []).filter(d => d.active);
+    if (_activeDeals.length) {
+      html += `<div style="margin-bottom:16px">
+        <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#8b949e;margin-bottom:6px">ACTIVE SIDE DEALS (${_activeDeals.length})</div>`;
+      _activeDeals.forEach(d => {
+        html += `<div style="padding:3px 8px;font-size:11px;border-bottom:1px solid rgba(255,255,255,0.04)">
+          <span style="color:#e6edf3;font-weight:600">${d.players.join(' + ')}</span>
+          <span style="color:#8b949e">${d.type.toUpperCase()} · ep ${d.madeEp}</span>
+          <span style="color:${d.genuine ? '#3fb950' : '#f47067'}">${d.genuine ? 'genuine' : 'fake'}</span>
+        </div>`;
+      });
+      html += `</div>`;
+    }
+    // Active False Info Plants
+    const _falsePlants = (gs._falseInfoPlanted || []).filter(p => gs.activePlayers.includes(p.liar) && gs.activePlayers.includes(p.victim));
+    if (_falsePlants.length) {
+      html += `<div style="margin-bottom:16px">
+        <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#f47067;margin-bottom:6px">ACTIVE FALSE INFO (${_falsePlants.length})</div>`;
+      _falsePlants.forEach(p => {
+        html += `<div style="padding:3px 8px;font-size:11px;border-bottom:1px solid rgba(255,255,255,0.04)">
+          <span style="color:#f47067;font-weight:600">${p.liar}</span>
+          <span style="color:#8b949e">told</span>
+          <span style="color:#e6edf3">${p.victim}</span>
+          <span style="color:#8b949e">that</span>
+          <span style="color:#d29922">${p.fakeHolder}</span>
+          <span style="color:#8b949e">has an idol (FALSE · ep ${p.plantedEp})</span>
+        </div>`;
+      });
+      html += `</div>`;
+    }
+    // Pending Loyalty Tests
+    const _pendingTests = (gs.loyaltyTests || []).filter(t => !t.resolved && gs.activePlayers.includes(t.tester) && gs.activePlayers.includes(t.target));
+    if (_pendingTests.length) {
+      html += `<div style="margin-bottom:16px">
+        <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#d29922;margin-bottom:6px">PENDING LOYALTY TESTS (${_pendingTests.length})</div>`;
+      _pendingTests.forEach(t => {
+        const epsWaiting = ((gs.episode || 0) + 1) - t.plantedEp;
+        html += `<div style="padding:3px 8px;font-size:11px;border-bottom:1px solid rgba(255,255,255,0.04)">
+          <span style="color:#e6edf3;font-weight:600">${t.tester}</span>
+          <span style="color:#8b949e">testing</span>
+          <span style="color:#d29922">${t.target}</span>
+          <span style="color:#8b949e">· planted ep ${t.plantedEp} · waiting ${epsWaiting} ep${epsWaiting !== 1 ? 's' : ''}</span>
+        </div>`;
+      });
+      html += `</div>`;
+    }
   }
 
   // ════════════════════════════════════════════════
@@ -28144,20 +28699,33 @@ function rpBuildDebug(ep) {
     } else { html += `<div style="color:#484f58;font-size:11px">No scrambles this episode.</div>`; }
     html += `</div>`;
 
-    // Shield — this episode only
-    const _epSh = ep._debugShield || gs._shieldActivations || null;
+    // Vote Pitches — this episode
+    const _epPitches = ep.votePitches || [];
     html += `<div style="margin-bottom:20px">
-      <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#3fb950;margin-bottom:8px">SHIELD NETWORK</div>`;
-    if (_epSh && Object.keys(_epSh).length) {
-      Object.entries(_epSh).forEach(([name, data]) => {
+      <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#6366f1;margin-bottom:8px">VOTE PITCHES</div>`;
+    if (_epPitches.length) {
+      _epPitches.forEach(p => {
+        const col = p.success ? '#3fb950' : '#f47067';
         html += `<div style="padding:3px 8px;font-size:11px;border-bottom:1px solid rgba(255,255,255,0.04)">
-          <span style="color:#e6edf3;font-weight:600">${name}</span>
-          behind <span style="color:#8b949e">${data?.meatshield || '?'}</span>
-          <span style="color:#3fb950">\u2212${(data?.bonus || 0).toFixed(2)} heat</span>
+          <span style="color:#e6edf3;font-weight:600">${p.pitcher}</span>
+          pitched <span style="color:#8b949e">${p.pitchTarget}</span>
+          (was: ${p.originalTarget || 'none'})
+          <span style="color:${col}">${p.success ? 'flipped ' + p.flipped.join(', ') : 'failed'}</span>
         </div>`;
       });
-    } else { html += `<div style="color:#484f58;font-size:11px">No shield plays this episode.</div>`; }
+    } else { html += `<div style="color:#484f58;font-size:11px">No vote pitches this episode.</div>`; }
     html += `</div>`;
+
+    // Social Politics — this episode
+    const _epPol = ep._politicsLog || [];
+    if (_epPol.length) {
+      html += `<div style="margin-bottom:20px">
+        <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#6366f1;margin-bottom:8px">SOCIAL POLITICS</div>`;
+      _epPol.forEach(log => {
+        html += `<div style="padding:3px 8px;font-size:10px;color:#8b949e;border-bottom:1px solid rgba(255,255,255,0.04)">${log}</div>`;
+      });
+      html += `</div>`;
+    }
   }
 
   html += `</div>`;
@@ -30040,6 +30608,26 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'survivalCollapse'          ? (evt.badgeText || 'COLLAPSE')
                      : evt.type === 'medevac'                   ? (evt.badgeText || 'MEDEVAC')
                      : evt.type === 'providerVotedOut'          ? (evt.badgeText || 'FOOD CRISIS')
+                     : evt.type === 'sideDeal'                  ? (evt.badgeText || 'SIDE DEAL')
+                     : evt.type === 'infoTrade'                 ? (evt.badgeText || 'INFO TRADE')
+                     : evt.type === 'loyaltyTest'               ? (evt.badgeText || 'LOYALTY TEST')
+                     : evt.type === 'loyaltyTestFailed'         ? (evt.badgeText || 'FAILED TEST')
+                     : evt.type === 'loyaltyTestPassed'         ? (evt.badgeText || 'TRUST EARNED')
+                     : evt.type === 'votePitch'                 ? (evt.badgeText || 'VOTE PITCH')
+                     : evt.type === 'apology'                   ? (evt.badgeText || 'MAKING AMENDS')
+                     : evt.type === 'votePitchFailed'           ? (evt.badgeText || 'FAILED PITCH')
+                     : evt.type === 'falseInfoBlowup'           ? (evt.badgeText || 'LIE EXPOSED')
+                     : evt.type === 'loyaltyTestCaught'         ? (evt.badgeText || 'TEST CAUGHT')
+                     : evt.type === 'conflictingDeals'          ? (evt.badgeText || 'DOUBLE DEALER')
+                     : evt.type === 'perceptionRealization'     ? (evt.badgeText || 'WAKE-UP CALL')
+                     : evt.type === 'villainManipulation'       ? (evt.badgeText || 'ONE-SIDED')
+                     : evt.type === 'goatKeeping'               ? (evt.badgeText || 'ONE-SIDED')
+                     : evt.type === 'swapLoyaltyAssumption'     ? (evt.badgeText || 'ONE-SIDED')
+                     : evt.type === 'providerEntitlement'       ? (evt.badgeText || 'ONE-SIDED')
+                     : evt.type === 'showmanceBlindspot'        ? (evt.badgeText || 'ONE-SIDED')
+                     : evt.type === 'allianceBlindspot'         ? (evt.badgeText || 'ONE-SIDED')
+                     : evt.type === 'betrayalDenial'            ? (evt.badgeText || 'ONE-SIDED')
+                     : evt.type === 'firstImpressionsSwap'      ? (evt.badgeText || 'SWAPPED')
                      : evt.type === 'paranoiaSpiral'       ? '⚠ Paranoia Spiral'
                      : evt.type === 'showmanceSpark'       ? '💕 Showmance'
                      : evt.type === 'showmanceHoneymoon'   ? '💕 Honeymoon'
@@ -30125,6 +30713,12 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'providerFishing' || evt.type === 'providerForaging' || evt.type === 'providerPraised' || evt.type === 'foodRationing' ? 'gold'
                      : evt.type === 'slackerBonding' || evt.type === 'starvationBond' ? 'green'
                      : evt.type === 'slackerCalledOut' || evt.type === 'slackerConfrontation' || evt.type === 'foodConflict' || evt.type === 'foodHoarding' || evt.type === 'foodCrisis' || evt.type === 'survivalCollapse' || evt.type === 'medevac' || evt.type === 'providerVotedOut' ? 'red'
+                     : evt.type === 'sideDeal' || evt.type === 'infoTrade' || evt.type === 'loyaltyTest' || evt.type === 'votePitch' ? 'gold'
+                     : evt.type === 'apology' ? 'green'
+                     : evt.type === 'votePitchFailed' ? 'red'
+                     : evt.type === 'loyaltyTestPassed' ? 'green'
+                     : evt.type === 'loyaltyTestFailed' || evt.type === 'loyaltyTestCaught' || evt.type === 'conflictingDeals' || evt.type === 'perceptionRealization' || evt.type === 'falseInfoBlowup' || evt.type === 'votePitchFailed' ? 'red'
+                     : evt.type === 'villainManipulation' || evt.type === 'goatKeeping' || evt.type === 'swapLoyaltyAssumption' || evt.type === 'providerEntitlement' || evt.type === 'showmanceBlindspot' || evt.type === 'allianceBlindspot' || evt.type === 'betrayalDenial' || evt.type === 'firstImpressionsSwap' ? 'gold'
                      : evt.type === 'paranoiaSpiral' ? 'red'
                      : evt.type === 'showmanceSpark' || evt.type === 'showmanceHoneymoon' || evt.type === 'showmanceRideOrDie' ? 'green'
                      : evt.type === 'showmanceNoticed' || evt.type === 'showmanceTarget' ? 'gold'
@@ -30314,11 +30908,16 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
   if (relPairs.length) {
     relPairs.forEach(p => {
       const v = p.val;
-      // Check for perception gaps in either direction
+      // Check for perception gaps — only significant ones where the tier label differs
       const _snapPB = ep.gsSnapshot?.perceivedBonds || gs.perceivedBonds || {};
       const _gapAB = _snapPB[p.a + '→' + p.b];
       const _gapBA = _snapPB[p.b + '→' + p.a];
-      const _hasGap = (_gapAB && Math.abs(_gapAB.perceived - v) >= 0.3) || (_gapBA && Math.abs(_gapBA.perceived - v) >= 0.3);
+      const _aPerceived = _gapAB ? _gapAB.perceived : v;
+      const _bPerceived = _gapBA ? _gapBA.perceived : v;
+      // Only ONE-SIDED if the two sides would show different tier labels
+      const _hasGap = (_gapAB || _gapBA) && bondLabel(_aPerceived) !== bondLabel(_bPerceived);
+      // Use the higher of real or perceived values for badge and sort priority
+      const _displayVal = Math.max(Math.abs(v), Math.abs(_aPerceived), Math.abs(_bPerceived));
       let badgeText = '', badgeClass = '';
       if (_hasGap) {
         badgeText = 'ONE-SIDED'; badgeClass = 'gold';
@@ -30337,17 +30936,20 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
       // Split display for perception gaps
       let feelingText;
       if (_hasGap) {
-        const _aPerceived = _gapAB ? _gapAB.perceived : v;
-        const _bPerceived = _gapBA ? _gapBA.perceived : v;
         const _aLabel = bondLabel(_aPerceived);
         const _bLabel = bondLabel(_bPerceived);
         feelingText = `${p.a} feels ${_aLabel}. ${p.b} feels ${_bLabel}`;
       } else {
         feelingText = bondFeeling(p.val);
       }
+      // Check for active side deal — use snapshot if available
+      const _snapDeals = ep.gsSnapshot?.sideDeals || gs.sideDeals || [];
+      const _hasDeal = _snapDeals.some(d => d.active && d.players.includes(p.a) && d.players.includes(p.b));
+      const _dealType = _hasDeal ? (_snapDeals.find(d => d.active && d.players.includes(p.a) && d.players.includes(p.b))?.type || 'f2') : null;
       html += `<div class="rp-brant-entry">
         <div class="rp-brant-portraits">${rpDuoImg(p.a, p.b)}</div>
         <div class="rp-brant-text">${p.a} & ${p.b} \u2014 ${feelingText}${note}.</div>
+        ${_hasDeal ? `<span class="rp-brant-badge gold">${_dealType === 'f3' ? 'F3 DEAL' : 'F2 DEAL'}</span>` : ''}
         ${badgeText ? `<span class="rp-brant-badge ${badgeClass}">${badgeText}</span>` : ''}
       </div>`;
     });

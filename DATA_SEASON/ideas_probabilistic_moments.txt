@@ -33,16 +33,36 @@ and the downstream consequence. None are guaranteed — all fire on a roll.
   8 triggers (low-loyalty betrayal, villain manipulation, goat-keeping, alliance blindspot,
   post-betrayal denial, showmance blindspot, provider entitlement, swap loyalty assumption),
   intuition-based correction, VP ONE-SIDED display + WAKE-UP CALL events
-[DONE] Social/Strategic Survivability — scramble effect + shield network in computeHeat
+[DONE] Social/Strategic Survivability — scramble effect in computeHeat (shield removed, replaced by vote pitches)
 [DONE] Threat Formula Update — physical*0.8, endurance*0.3, (intuition+mental)/2, -loyalty*0.15
 [DONE] Challenge Frequency Boost — CATEGORY_FREQ weights for physical/endurance/puzzle
 [DONE] Strategic Event Weighting — squared stat scaling for strategicTalk/tdStrategy
+[DONE] [SP] Social Politics — checkSocialPolitics(ep): side deals (gs.sideDeals[]),
+  info trades (true/false with blowup on lie exposure), loyalty tests (gs.loyaltyTests[],
+  2-episode resolution), vote pitches (inline in simulateVotes, flips 0-2 voters).
+  Deal genuineness based on loyalty + bond - existing deals. False info only from
+  villain/schemer/mastermind archetypes. VP: SIDE DEAL/INFO TRADE/LOYALTY TEST/VOTE PITCH
+  badges, F2/F3 DEAL tags on relationships, LIE EXPOSED blowup events.
+[DONE] Temperament Recovery — high-social players apologize after fights/meltdowns/social bombs.
+  Recovery chance: social * 0.07 + loyalty * 0.02. Green MAKING AMENDS badge.
+[DONE] FTC Passenger Penalty — 0 big moves at FTC = -0.6 jury score. Behavior-based, not archetype.
+[DONE] Floater Mechanics — heat deflection (0.85x), vote gravity (0.9x vs 0.5x for others).
+[DONE] Per-Pair Bond Dedup — max 2 bond events per pair per camp phase, bond deltas normalized to +0.5.
+[DONE] Challenge Throw Tuning — heat >= 2 gate, detection rate lowered (intuition * 0.015),
+  disabled at finale size. SITD one-time per player (gs.shotInDarkUsed Set).
+[DONE] Betrayal Detection Fix — uses alliance's planned target as consensus, not majority actual vote.
 
 
 ── REMAINING — RANKED BY PRIORITY ─────────────────────────────────────────────
 
   MEDIUM PRIORITY
   ───────────────
+
+[JM] JURY MANAGEMENT — ENDGAME TARGETING
+  Problem: players don't consider jury votes when making elimination decisions.
+  Mechanic: post-merge, strategic players factor jury math into targeting.
+  Gate: only active with jury-decided finale format.
+  Note: medium priority — FTC passenger penalty partially addresses this.
 
 [15] FINAL TRIBAL SURPRISE FLIP
   Trigger: FTC with jury, one finalist has majority locked in

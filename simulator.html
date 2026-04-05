@@ -18379,7 +18379,8 @@ function simulateEpisode() {
               `${detector} watches ${ct.thrower} at camp after the challenge. Something doesn't add up. ${ct.thrower} was fine yesterday — strong, focused. Today ${tPr.sub} ${tPr.sub==='they'?'fell':'fell'} apart? ${detector} files it away. Not forgotten.`,
               `${detector} to confessional: "I think ${ct.thrower} threw that challenge. I can't prove it, but my gut says ${tPr.sub} didn't want to win today. And that tells me ${tPr.sub} ${tPr.sub==='they'?'are':'is'} playing a different game than the rest of us."`,
             ]);
-          (ep.campEvents[_throwCampKey].post || ep.campEvents[_throwCampKey].pre || []).push({
+          if (!ep.campEvents[_throwCampKey].post) ep.campEvents[_throwCampKey].post = [];
+          ep.campEvents[_throwCampKey].post.push({
             type: 'challengeThrowCaught', players: [detector, ct.thrower], text: evtText,
             badgeText: 'THREW THE CHALLENGE', badgeClass: 'red',
           });

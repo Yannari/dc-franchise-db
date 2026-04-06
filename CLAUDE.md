@@ -29,6 +29,9 @@ Do not split it into separate files. This is intentional.
 - `checkSideDealBreaks(ep)` — detects broken F2/F3 deals after votes
 - `checkConflictingDeals(ep)` — discovers double-dealing via intuition rolls
 - `checkFalseInfoBlowup(ep)` — exposes lies when false idol info is acted on
+- `checkMoleSabotage(ep)` — Mole twist: bond sabotage, info leaks, vote disruption flags, advantage sabotage, laying low
+- `_checkMoleExposure(mole, ep, tribeName)` — fires when any observer's suspicion reaches 3.0
+- `rpBuildMoleExposed(ep)` — dedicated VP screen for Mole exposure moment
 - VP Viewer: `rpBuild*()` functions for each screen
 
 ## Core State
@@ -45,6 +48,7 @@ Do not split it into separate files. This is intentional.
 - `gs.loyaltyTests[]` — planted false info: `{ tester, target, falseInfo, plantedEp, resolved }`
 - `gs._falseInfoPlanted[]` — false idol info for blowup detection
 - `gs._blowupPlayers[]` — players who had fights/meltdowns/social bombs (cleared after recovery check)
+- `gs.moles[]` — Mole twist state: `{ player, exposed, exposedEp, exposedBy, suspicion, sabotageCount, sabotageLog, leaks, layingLow, resistance }`
 
 ## Patterns
 - New camp event types: push into `ep.campEvents[campKey].pre` directly; add badge
@@ -109,7 +113,9 @@ is NOT actually loyal. Always check behavioral track record alongside raw stats.
   `getBond(a,b)` for everything else (decay, VP display, jury, addBond).
 - 8 triggers create perception gaps: low-loyalty betrayal, villain manipulation, goat-keeping,
   alliance blindspot, post-betrayal denial, showmance blindspot, provider entitlement, swap loyalty.
-- Correction: intuition-based (`intuition * 0.07`), modifiers for receiving votes (+0.3), witnessing betrayal (+0.2).
+- Correction: intuition+mental-based (`intuition * 0.07 + mental * 0.025`), modifiers for receiving votes (+0.3), witnessing betrayal (+0.2).
+- Positive bond cooling: bonds above +4.0 drift down each episode unless reinforced by positive camp events. Floor at +3.0. Showmance pairs exempt.
+- `recoverBonds`: softens bonds below -3.0 toward -2.0 floor. Rate: 0.05-0.20/ep. Social stat slows recovery.
 - VP: ONE-SIDED badge when gap exists, split per-player tier display. WAKE-UP CALL badge on realization.
 
 ## Threat System
@@ -133,6 +139,26 @@ is NOT actually loyal. Always check behavioral track record alongside raw stats.
 - Hero: bond formation 1.15x. -1.0 heat. Camp events.
 - Floater: 0.85x heat (invisibility). 0.9x vote gravity (follows majority). FTC: penalized if 0 big moves (behavior-based, not archetype-specific).
 - FTC passenger penalty: 0 big moves = -0.6 jury score. 1 move = 0. 2+ = bonus up to +0.8.
+
+## The Mole
+- Season-level twist (not archetype): 1-2 secret saboteurs assigned via config (`cfg-mole`)
+- Config: `disabled` / `1-random` / `2-random` / `choose` + coordination mode (`independent` / `coordinated`)
+- 5 sabotage types: bond sabotage (30%), challenge throw/sabotage (30% immunity, 25% reward), info leak (30%), vote disruption (30%), advantage sabotage (35%)
+- Guaranteed 1-2 sabotage acts per episode (random type selection + independent rolls for remaining)
+- Pre-merge = Owen mode (random chaos), post-merge = Scott mode (strategic targeting)
+- Challenge sabotage: pre-merge targets easy-blame players, post-merge targets threats/suspicious players
+- Laying low: triggers at heat >= 4 OR suspicion >= 2.0 OR 4+ acts in last 2 episodes. Max 1 consecutive episode.
+- Suspicion: per-observer tracking, `(intuition * 0.04 + mental * 0.015) * (1.1 - resistance)`. Threshold 3.0 = exposure.
+- Resistance erodes: `Math.max(0.15, 0.5 - sabotageCount * 0.03)`. Formula flipped: low resistance = easier to detect.
+- Suspicion events: >= 2.0 GROWING SUSPICION (talks to others), >= 2.5 CONFRONTATION (direct challenge)
+- Exposure: -1.5 bond with all, +3.0 heat for 2 eps, advantages revealed, no more sabotage. Detective gets +0.5 bonds, -1.5 heat, +6 popularity.
+- Mole targets suspicious players: bond sabotage prefers their pairs, vote disruption targets them, info leak fabricates rumors about them
+- VP: dedicated "The Mole Exposed" screen, MOLE badges on sabotage events, undiscovered reveal on votes screen after torch snuff, debug tab with full sabotage log + suspicion levels
+
+## Mental Stat — Social Role
+- Mental is primarily a challenge stat but has a secondary social role: **information processing**
+- Boosts all intuition-based detection checks at ~35% of intuition's weight
+- `intuition * X + mental * X * 0.35` pattern across: Mole suspicion, perceived bond correction, info broker exposure, fake idol detection, advantage snooping, false info early detection
 
 ## Pronouns — NEVER hardcode
 - Always use `pronouns(name)` → `{sub, obj, pos, posAdj, ref, Sub, Obj, PosAdj}`

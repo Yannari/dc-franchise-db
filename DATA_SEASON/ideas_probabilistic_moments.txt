@@ -51,6 +51,17 @@ and the downstream consequence. None are guaranteed — all fire on a roll.
 [DONE] Challenge Throw Tuning — heat >= 2 gate, detection rate lowered (intuition * 0.015),
   disabled at finale size. SITD one-time per player (gs.shotInDarkUsed Set).
 [DONE] Betrayal Detection Fix — uses alliance's planned target as consensus, not majority actual vote.
+[DONE] [TD-2] THE MOLE — season-level twist (not archetype). Config: disabled/1-random/2-random/choose
+  + coordination (independent/coordinated). 5 sabotage types: bond sabotage, challenge
+  throw/sabotage, info leak, vote disruption, advantage sabotage. Guaranteed 1-2 acts/ep.
+  Pre-merge Owen mode (random chaos), post-merge Scott mode (strategic targeting).
+  Suspicion system: (intuition*0.04 + mental*0.015) * (1.1-resistance), threshold 3.0 = exposure.
+  Laying low at heat>=4/suspicion>=2.0. Detective rewards on exposure. Dedicated VP screen.
+  Undiscovered reveal on votes screen. Debug tab with full sabotage log + suspicion levels.
+[DONE] [STAT] MENTAL STAT — NON-CHALLENGE ROLE — mental boosts all intuition-based detection
+  at ~35% of intuition's weight. Pattern: intuition*X + mental*X*0.35 across Mole suspicion,
+  perceived bond correction, info broker exposure, fake idol detection, advantage snooping,
+  false info early detection. Keeps mental primarily a challenge stat.
 
 
 ── REMAINING — RANKED BY PRIORITY ─────────────────────────────────────────────
@@ -79,12 +90,6 @@ and the downstream consequence. None are guaranteed — all fire on a roll.
   Mechanic: winning tribe sends emissary to losing tribe's tribal. Emissary casts
     a sole vote to eliminate an additional player. Double elimination.
   Note: inspired by Disventure Camp 1. One-off or rare twist.
-
-[STAT] MENTAL STAT — NON-CHALLENGE ROLE
-  Problem: mental is almost entirely a challenge stat. Needs 1-2 social touches.
-  Ideas: emotional resilience, eavesdrop quality, fake idol detection, pressure handling.
-  Note: don't overload — keep primarily a challenge stat.
-
 
   LOW PRIORITY
   ────────────
@@ -117,6 +122,3 @@ and the downstream consequence. None are guaranteed — all fire on a roll.
   Trigger: 2 goats on same tribe, ep >= 8. ~20% once per game.
   Mechanic: goats form surprise alliance, pull swing vote, take out top threat.
 
-[TD-2] THE MOLE (Total Drama: Rock n' Rule)
-  Season-long saboteur role. Forced challenge throws, info leaks, exposure arc.
-  Note: complex — future "season archetype" feature, not a schedulable twist.

@@ -1232,7 +1232,7 @@
             </div>
 
             <!-- THE MOLE -->
-            <div class="accordion-item">
+            <div class="accordion">
               <div class="accordion-header" onclick="toggleAccordion('mole')">
                 <span>The Mole</span>
                 <span class="accordion-chevron" id="acc-chevron-mole">▼</span>
@@ -1591,6 +1591,7 @@ const TWIST_CATALOG = [
   { id:'reward-challenge', emoji:'🏅', name:'Reward Challenge',     category:'advantages', phase:'any',        desc:'A reward challenge runs before immunity. Winner picks who shares it. Tribal still runs.',     engineType:'reward-challenge'},
   { id:'fan-vote-boot',    emoji:'📱', name:'Fan Vote Save',        category:'social',     phase:'post-merge', desc:'Fans vote to save the most popular player — pre-merge: tribal immunity; post-merge: Extra Vote.',  engineType:'fan-vote-boot'   },
   { id:'jury-elimination', emoji:'⚖️', name:'Jury Elimination',     category:'elim',       phase:'post-merge', desc:'All eliminated players (jury) vote to boot one active player. Immunity winner is safe.',        engineType:'jury-elimination'},
+  { id:'tied-destinies',  emoji:'🔗', name:'Tied Destinies',       category:'elim',       phase:'post-merge', desc:'Players randomly paired. Vote someone out and their partner goes too. Paired immunity challenge. Double elimination.', engineType:'tied-destinies', incompatible:['pre-merge'] },
 ];
 
 // S10 preset data
@@ -2889,7 +2890,7 @@ function getPerceivedBond(a, b) {
 function addPerceivedBond(a, b, perceived, reason) {
   if (!gs.perceivedBonds) gs.perceivedBonds = {};
   const s = pStats(a);
-  const correctionRate = s.intuition * 0.07;
+  const correctionRate = s.intuition * 0.07 + s.mental * 0.025;
   gs.perceivedBonds[a + '→' + b] = { perceived, reason, createdEp: (gs.episode || 0) + 1, correctionRate };
 }
 function removePerceivedBondsFor(name) {
@@ -3747,6 +3748,25 @@ function computeHeat(name, tribalPlayers, alliances) {
       if (_moleObj.layingLow && !_moleObj.exposed) {
         heat *= 0.67; // 1.5x faster decay ≈ 33% heat reduction while laying low
       }
+    }
+    // Detective reward: player who exposed the Mole gets heat reduction for 2 episodes
+    if (gs.moleDetectiveHeatReduction?.[name]) {
+      const _epsSinceDetective = ((gs.episode || 0) + 1) - gs.moleDetectiveHeatReduction[name];
+      if (_epsSinceDetective <= 2) heat -= 1.5; // tribe protects the person who saved them
+    }
+  }
+  // ── Tied Destinies: pair-aware heat — voting out this player also eliminates their partner ──
+  if (gs._tiedDestiniesActive) {
+    const _tdPair = gs._tiedDestiniesActive.find(p => p.a === name || p.b === name);
+    if (_tdPair) {
+      const partner = _tdPair.a === name ? _tdPair.b : _tdPair.a;
+      const partnerThreat = threatScore(partner);
+      // If partner is a bigger threat, this player becomes a juicy target (affordable path to eliminate the threat)
+      if (partnerThreat > threatScore(name)) heat += (partnerThreat - threatScore(name)) * 0.4;
+      // If partner is an ally to many, targeting this pair has a higher cost — reduce heat
+      const _partnerAvgBond = tribalPlayers.filter(p => p !== name && p !== partner)
+        .reduce((s, p) => s + Math.max(0, getBond(p, partner)), 0) / Math.max(1, tribalPlayers.length - 2);
+      heat -= _partnerAvgBond * 0.3;
     }
   }
   return Math.min(10, heat);
@@ -6847,7 +6867,7 @@ function simulateIndividualChallenge(pool, immune) {
 
   // ── Challenge throw check (post-merge only, not when immunity is critical) ──
   const _throwers = new Set();
-  const _throwDisabled = candidates.length <= (seasonConfig.finaleSize || 3); // F3/F4 — every immunity matters
+  const _throwDisabled = candidates.length <= (seasonConfig.finaleSize || 3) || gs.activePlayers.length <= 4; // F3/F4 — every immunity matters, never throw when 4 or fewer players remain
   if (gs.isMerged && !_throwDisabled) {
     candidates.forEach(name => {
       const s = pStats(name);
@@ -6902,6 +6922,8 @@ function simulateIndividualChallenge(pool, immune) {
         const _moleAlliances = (gs.namedAlliances || []).filter(a => a.active && a.members.includes(mole.player));
         const _isAlly = _moleAlliances.some(a => a.members.includes(x.name));
         if (!_isAlly) sc += 1.0;
+        // PRIORITY: deny immunity to whoever suspects the Mole — make them vulnerable to elimination
+        if (mole.suspicion?.[x.name] >= 0.5) sc += 2.0 + (mole.suspicion[x.name] || 0) * 0.5;
         sc += Math.random() * 0.5;
         return sc > best.sc ? { name: x.name, sc, entry: x } : best;
       }, { name: _sabPool[0].name, sc: -99, entry: _sabPool[0] });
@@ -7274,6 +7296,13 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
   const _immArr = Array.isArray(immuneName) ? immuneName : immuneName ? [immuneName] : [];
   const _immSet = new Set(_immArr);
   const isImmune = p => _immSet.has(p);
+  // Tied Destinies: can't vote for your own partner
+  const _tdPartnerOf = (voter) => {
+    if (!gs._tiedDestiniesActive) return null;
+    const pair = gs._tiedDestiniesActive.find(p => p.a === voter || p.b === voter);
+    return pair ? (pair.a === voter ? pair.b : pair.a) : null;
+  };
+  const _tdBlocked = (voter, target) => _tdPartnerOf(voter) === target;
 
   const votes = {}, log = [], defections = [];
   let _voteMiscommunications = null;
@@ -7693,6 +7722,8 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
             if (_prevEp?.voteDetail?.some(v => v.voter === p && v.target === voter)) sc += 1.5;
             // Prefer players with low bond to the Mole (enemies)
             sc += Math.max(0, -getBond(voter, p) * 0.3);
+            // PRIORITY: target whoever suspects the Mole most — get them out before they talk
+            if (_moleObj?.suspicion?.[p] >= 0.5) sc += 2.0 + (_moleObj.suspicion[p] || 0) * 0.8;
             return { name: p, score: sc + Math.random() * 0.5 };
           }).sort((a, b) => b.score - a.score);
           _rogueTarget = _scored[0].name;
@@ -7735,6 +7766,9 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
               sc += threatScore(p) * 0.3;
               if (!_moleAllySet2.has(p)) sc += 1.0;
               sc += Math.max(0, -getBond(_molePitcher, p) * 0.3);
+              // PRIORITY: redirect votes toward whoever suspects the Mole
+              const _moleObj4 = gs.moles?.find(m => m.player === _molePitcher);
+              if (_moleObj4?.suspicion?.[p] >= 0.5) sc += 2.0 + (_moleObj4.suspicion[p] || 0) * 0.8;
               return { name: p, score: sc + Math.random() * 0.5 };
             }).sort((a, b) => b.score - a.score);
             _badTarget = _scored2[0].name;
@@ -7744,10 +7778,18 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
           }
           target = _badTarget;
           reason = `swayed by ${_molePitcher} (Mole misdirection)`;
+          // Track the pitch for VP rendering
+          if (!gs._moleCorruptedPitches) gs._moleCorruptedPitches = [];
+          gs._moleCorruptedPitches.push({ pitcher: _molePitcher, swayed: voter, newTarget: _badTarget, originalTarget: target });
         }
       }
     }
 
+    // Tied Destinies: can't vote for your partner — redirect to next best target
+    if (target && _tdBlocked(voter, target)) {
+      const _altTargets = tribalPlayers.filter(p => p !== voter && p !== target && !isImmune(p) && !_tdBlocked(voter, p));
+      target = _altTargets.length ? _altTargets.sort((a, b) => (computeHeat(b, tribalPlayers, alliances) || 0) - (computeHeat(a, tribalPlayers, alliances) || 0))[0] : null;
+    }
     if (target && target !== voter) {
       votes[target] = (votes[target] || 0) + 1;
       log.push({ voter, voted: target, reason: reason || 'strategic read' });
@@ -12150,6 +12192,77 @@ function applyTwist(ep, twist, isPrimary = true) {
     // Immunity winner will be excluded at resolution time (not known yet at twist setup)
     twistObj.juryElimination = true;
 
+  } else if (engineType === 'tied-destinies') {
+    // Post-merge only, even player count required
+    if (gs.phase === 'pre-merge' || gs.activePlayers.length % 2 !== 0) return;
+    // Generate random pairs
+    const _tdPool = [...gs.activePlayers].sort(() => Math.random() - 0.5);
+    const _tdPairs = [];
+    for (let i = 0; i < _tdPool.length; i += 2) {
+      _tdPairs.push({ a: _tdPool[i], b: _tdPool[i + 1] });
+    }
+    // Emotional reactions based on bond
+    const _tdReactions = {};
+    _tdPairs.forEach(pair => {
+      const bond = getBond(pair.a, pair.b);
+      const react = bond >= 3 ? 'relieved' : bond >= 0 ? 'cautious' : bond >= -5 ? 'dread' : 'fury';
+      _tdReactions[pair.a] = react;
+      _tdReactions[pair.b] = react;
+    });
+    twistObj.tiedDestinies = true;
+    twistObj.pairs = _tdPairs;
+    twistObj.reactions = _tdReactions;
+    // Store on ep for access by other systems
+    ep.tiedDestinies = { pairs: _tdPairs, reactions: _tdReactions };
+    gs._tiedDestiniesActive = _tdPairs; // for computeHeat pair-awareness
+    // Inject pair camp events
+    const campKey = gs.mergeName || 'merge';
+    if (!ep.campEvents) ep.campEvents = {};
+    if (!ep.campEvents[campKey]) ep.campEvents[campKey] = { pre: [], post: [] };
+    const _tdEvts = ep.campEvents[campKey].pre || [];
+    const _pick = arr => arr[Math.floor(Math.random() * arr.length)];
+    _tdPairs.forEach(pair => {
+      const bond = getBond(pair.a, pair.b);
+      const pA = pronouns(pair.a), pB = pronouns(pair.b);
+      if (bond < 0) {
+        // Partner tension
+        addBond(pair.a, pair.b, -0.3);
+        _tdEvts.push({ type: 'tiedDestinyTension', players: [pair.a, pair.b], badgeText: 'TIED DESTINIES', text: _pick([
+          `${pair.a} and ${pair.b} are tied together. Neither is happy about it. The silence between them says everything.`,
+          `"Of all the people..." ${pair.a} stares at ${pair.b}. ${pair.b} stares back. This is going to be a long day.`,
+          `${pair.a} and ${pair.b} are paired. The bond between them is hostile at best. If one goes, they both go — and right now, neither is sure that's the worst outcome.`,
+        ]) });
+      } else if (bond < 1) {
+        // Partner reluctance
+        addBond(pair.a, pair.b, 0.2);
+        _tdEvts.push({ type: 'tiedDestinyReluctance', players: [pair.a, pair.b], badgeText: 'TIED DESTINIES', text: _pick([
+          `${pair.a} and ${pair.b} look at each other. Not enemies. Not allies. Just... stuck. They'll have to figure it out before tribal.`,
+          `"Guess we're in this together." ${pair.a} extends a hand. ${pair.b} takes it without enthusiasm. The alliance of necessity begins.`,
+          `${pair.a} and ${pair.b} barely know each other's game. Now their fates are linked. The awkward strategy session that follows is painful to watch.`,
+        ]) });
+      } else {
+        // Partner strategy
+        addBond(pair.a, pair.b, 0.4);
+        _tdEvts.push({ type: 'tiedDestinyStrategy', players: [pair.a, pair.b], badgeText: 'TIED DESTINIES', text: _pick([
+          `${pair.a} and ${pair.b} are paired — and they're both relieved. They immediately start strategizing. "We need to make sure nobody comes for us."`,
+          `Of all the pairings, ${pair.a} and ${pair.b} got lucky. They trust each other. Now they just need the rest of the tribe to leave them alone.`,
+          `${pair.a} pulls ${pair.b} aside. "We're safe if we play this right. Nobody wants a double elimination of two strong players." The plan forms fast.`,
+        ]) });
+      }
+    });
+    // Tribe debate events
+    const _debateCount = Math.min(3, _tdPairs.length);
+    for (let d = 0; d < _debateCount; d++) {
+      const _debatePair = _tdPairs[d];
+      const _paThreat = threatScore(_debatePair.a), _pbThreat = threatScore(_debatePair.b);
+      const _combinedThreat = _paThreat + _pbThreat;
+      _tdEvts.push({ type: 'tiedDestinyDebate', players: [_debatePair.a, _debatePair.b], badgeText: 'TIED DESTINIES', text: _pick([
+        `The tribe debates: vote out ${_debatePair.a} and lose ${_debatePair.b} too. Is it worth it? The math is ugly either way.`,
+        `"If we go after ${_debatePair.a}, we lose ${_debatePair.b}." The tribe weighs the cost. Two eliminations for one vote — someone's getting a raw deal.`,
+        `Strategy sessions explode across camp. Every conversation circles back to the same question: which pair do we sacrifice?`,
+      ]) });
+    }
+
   } else if (engineType === 'shot-in-dark') {
     gs.shotInDarkEnabledThisEp = true;
   }
@@ -14629,7 +14742,7 @@ function checkInformationBroker(ep) {
   // Detector: highest intuition among all alliance members
   let bestDetector = null, bestDetectorScore = 0;
   allianceMembers.forEach(m => {
-    const score = pStats(m).intuition * 0.04 + Math.random() * 0.1;
+    const score = pStats(m).intuition * 0.04 + pStats(m).mental * 0.015 + Math.random() * 0.1;
     if (score > bestDetectorScore) { bestDetectorScore = score; bestDetector = m; }
   });
 
@@ -15328,7 +15441,7 @@ function checkFakeIdolPlant(ep) {
 
     // ── ARC 1: Planter caught crafting? ──
     const _witnesses = _campMembers.filter(p => p !== planter);
-    const _caughtBy = _witnesses.find(w => Math.random() < pStats(w).intuition * 0.03);
+    const _caughtBy = _witnesses.find(w => Math.random() < pStats(w).intuition * 0.03 + pStats(w).mental * 0.01);
     if (_caughtBy) {
       // Exposed — no fake idol enters the game
       const cPr = pronouns(_caughtBy);
@@ -16113,7 +16226,7 @@ function checkSecondLifeAmuletEvents(ep) {
     } else {
       // ── Snooping: someone spots the amulet ──
       // Proportional: any player can snoop, chance scales with intuition
-      const snooper = tribeMembers.filter(p => Math.random() < pStats(p).intuition * 0.04) // stat 4=16%, stat 7=28%, stat 10=40%
+      const snooper = tribeMembers.filter(p => Math.random() < pStats(p).intuition * 0.04 + pStats(p).mental * 0.015)
         .sort(() => Math.random() - 0.5)[0];
       if (snooper) {
         const snoopLines = [
@@ -16443,11 +16556,15 @@ function checkMoleSabotage(ep) {
       return;
     }
 
-    // ── Laying low check: heat >= 5 → skip sabotage, faster heat decay handled in computeHeat ──
-    // Threshold raised from 3 to 5 — the Mole is bolder than a normal player, they push through moderate heat
-    // Even when laying low, 20% chance they act anyway (can't help themselves)
+    // ── Laying low check — but max 2 consecutive episodes, then forced back ──
     const _moleHeat = computeHeat(mole.player, gs.activePlayers, gs.namedAlliances || []);
-    if (_moleHeat >= 5 && Math.random() > 0.20) {
+    const _maxSusp = Math.max(0, ...Object.values(mole.suspicion));
+    const _recentActs = mole.sabotageLog.filter(s => s.ep >= curEp - 2).length;
+    // Track consecutive lay-low episodes
+    if (!mole._layLowStreak) mole._layLowStreak = 0;
+    const _shouldLayLow = (_moleHeat >= 4 || _maxSusp >= 2.0 || _recentActs >= 4);
+    const _forcedBack = mole._layLowStreak >= 1; // max 1 consecutive — then the Mole acts
+    if (_shouldLayLow && !_forcedBack && Math.random() > 0.15) {
       mole.layingLow = true;
       // Inject a laying-low camp event
       const _moleTribe = gs.isMerged ? (gs.mergeName || 'merge')
@@ -16467,12 +16584,92 @@ function checkMoleSabotage(ep) {
           players: [mole.player], badgeText: 'LAYING LOW'
         });
       }
+      mole._layLowStreak = (mole._layLowStreak || 0) + 1;
       return; // no sabotage this episode
     }
     mole.layingLow = false;
+    mole._layLowStreak = 0; // reset streak — Mole is back in action
 
-    // ── BOND SABOTAGE — 30% chance per episode ──
-    if (Math.random() < 0.30) {
+    // ── SUSPICION EVENTS — players getting closer to the truth ──
+    const _moleTribeSusp = gs.isMerged ? (gs.mergeName || 'merge')
+      : gs.tribes.find(t => t.members.includes(mole.player))?.name;
+    if (_moleTribeSusp && ep.campEvents) {
+      if (!ep.campEvents[_moleTribeSusp]) ep.campEvents[_moleTribeSusp] = { pre: [], post: [] };
+      const _suspEvts = (typeof ep.campEvents[_moleTribeSusp] === 'object' && !Array.isArray(ep.campEvents[_moleTribeSusp]))
+        ? (ep.campEvents[_moleTribeSusp].pre || []) : (Array.isArray(ep.campEvents[_moleTribeSusp]) ? ep.campEvents[_moleTribeSusp] : []);
+
+      Object.entries(mole.suspicion).forEach(([observer, susp]) => {
+        if (!gs.activePlayers.includes(observer)) return;
+        const op = pronouns(observer), mp = pronouns(mole.player);
+
+        // Suspicion >= 2.0 — player starts talking to others, planting doubt
+        if (susp >= 2.0 && susp < 2.5 && Math.random() < 0.40) {
+          // Only fire once per observer (track to avoid repeat events)
+          if (!mole._suspEvtFired) mole._suspEvtFired = {};
+          if (mole._suspEvtFired[observer + '_talk']) return;
+          mole._suspEvtFired[observer + '_talk'] = true;
+          const _talkTexts = [
+            `${observer} pulls someone aside. "Have you noticed anything about ${mole.player}? Every time something goes wrong, ${mp.sub} ${mp.sub === 'they' ? 'are' : 'is'} right there." The other person pauses. They have noticed.`,
+            `${observer} has been comparing notes. The challenge where ${mole.player} underperformed. The alliance that cracked right after ${mp.sub} joined it. The leaked intel. ${observer} isn't sure yet — but the pattern is forming.`,
+            `"I'm not accusing anyone," ${observer} says carefully. "But I think we need to talk about ${mole.player}." The conversation is quiet. The implications are not.`,
+            `${observer} asks around camp: who told you that? Who started that rumor? Every answer leads back to ${mole.player}. ${observer} isn't ready to say it out loud yet. But ${op.sub} ${op.sub === 'they' ? 'are' : 'is'} getting close.`,
+          ];
+          _suspEvts.push({
+            type: 'moleSuspicionTalk', text: _pick(_talkTexts),
+            players: [observer, mole.player], badgeText: 'GROWING SUSPICION'
+          });
+          // Talking spreads suspicion — nearby players gain a small amount
+          gs.activePlayers.filter(p => p !== observer && p !== mole.player).forEach(p => {
+            if (getBond(observer, p) >= 1 && Math.random() < 0.25) {
+              if (!mole.suspicion[p]) mole.suspicion[p] = 0;
+              mole.suspicion[p] += 0.2; // word spreads
+            }
+          });
+        }
+
+        // Suspicion >= 2.5 — direct confrontation or trap
+        if (susp >= 2.5 && Math.random() < 0.50) {
+          if (!mole._suspEvtFired) mole._suspEvtFired = {};
+          if (mole._suspEvtFired[observer + '_confront']) return;
+          mole._suspEvtFired[observer + '_confront'] = true;
+          const _confrontTexts = [
+            `${observer} corners ${mole.player} at camp. "I know what you've been doing." ${mole.player} laughs it off. ${observer} doesn't laugh. The tension doesn't break.`,
+            `${observer} sets a trap — tells ${mole.player} a fake piece of intel and waits to see where it goes. If it leaks, ${observer} has ${mp.posAdj} proof.`,
+            `${observer} brings it up at the fire, in front of everyone. "Something isn't right about ${mole.player}'s game." The tribe shifts uncomfortably. ${mole.player} keeps ${mp.posAdj} face neutral. Barely.`,
+            `${observer} confronts ${mole.player} directly. "Every time you're involved in a conversation, someone ends up on the wrong side of the vote. That's not a coincidence." ${mole.player} deflects. ${observer} isn't buying it.`,
+          ];
+          _suspEvts.push({
+            type: 'moleSuspicionConfront', text: _pick(_confrontTexts),
+            players: [observer, mole.player], badgeText: 'CONFRONTATION'
+          });
+          // Confrontation damages bond and spreads suspicion faster
+          addBond(observer, mole.player, -0.5);
+          gs.activePlayers.filter(p => p !== observer && p !== mole.player).forEach(p => {
+            if (Math.random() < 0.35) {
+              if (!mole.suspicion[p]) mole.suspicion[p] = 0;
+              mole.suspicion[p] += 0.3; // public confrontation — everyone hears it
+            }
+          });
+        }
+      });
+    }
+
+    // ── GUARANTEED SABOTAGE: Mole always does at least 1-2 acts per episode ──
+    // Pick 1-2 sabotage types that are guaranteed to fire (if their gates pass)
+    // Remaining types still roll independently at normal rates
+    const _availableTypes = ['bondSabotage', 'infoLeak', 'voteDisruption', 'advantageSabotage'];
+    const _guaranteedCount = Math.random() < 0.5 ? 2 : 1; // 50% chance of 2 guaranteed
+    const _shuffled = _availableTypes.sort(() => Math.random() - 0.5);
+    const _guaranteed = new Set(_shuffled.slice(0, _guaranteedCount));
+
+    // ── THREAT ASSESSMENT: who suspects the Mole most? Target them. ──
+    const _suspEntries = Object.entries(mole.suspicion).filter(([n, v]) => v >= 0.5 && gs.activePlayers.includes(n));
+    _suspEntries.sort((a, b) => b[1] - a[1]);
+    const _moleThreat = _suspEntries.length ? _suspEntries[0][0] : null; // most suspicious player
+    const _moleThreatLevel = _moleThreat ? mole.suspicion[_moleThreat] : 0;
+
+    // ── BOND SABOTAGE — guaranteed or 30% chance ──
+    if (_guaranteed.has('bondSabotage') || Math.random() < 0.30) {
       // Find the Mole's tribe/group
       const _moleTribe = gs.isMerged ? (gs.mergeName || 'merge')
         : gs.tribes.find(t => t.members.includes(mole.player))?.name;
@@ -16523,6 +16720,10 @@ function checkMoleSabotage(ep) {
             if (_votedForMole.includes(a)) score += 0.8;
             if (_votedForMole.includes(b)) score += 0.8;
           }
+          // PRIORITY: target pairs involving the most suspicious player — weaken their social network
+          if (_moleThreat) {
+            if (a === _moleThreat || b === _moleThreat) score += 1.5 + _moleThreatLevel * 0.5;
+          }
           return { pair: [a, b], score: score + Math.random() * 0.5 };
         });
         _scored.sort((a, b) => b.score - a.score);
@@ -16568,19 +16769,19 @@ function checkMoleSabotage(ep) {
       _witnesses.forEach(w => {
         const wIntuition = pStats(w).intuition;
         // Roll: intuition * 0.04, halved by Mole's resistance
-        const suspGain = wIntuition * 0.04 * mole.resistance;
+        const suspGain = (wIntuition * 0.04 + pStats(w).mental * 0.015) * (1.1 - mole.resistance);
         if (Math.random() < suspGain) {
           if (!mole.suspicion[w]) mole.suspicion[w] = 0;
-          mole.suspicion[w] += 0.3; // bond sabotage is subtle — +0.3 per notice
+          mole.suspicion[w] += 0.4 + mole.sabotageCount * 0.03; // scales with sloppiness
         }
       });
       // The targets themselves might notice the fabrication
       [targetA, targetB].forEach(t => {
         const tIntuition = pStats(t).intuition;
-        const suspGain = tIntuition * 0.04 * mole.resistance;
+        const suspGain = (tIntuition * 0.04 + pStats(t).mental * 0.015) * (1.1 - mole.resistance);
         if (Math.random() < suspGain) {
           if (!mole.suspicion[t]) mole.suspicion[t] = 0;
-          mole.suspicion[t] += 0.3;
+          mole.suspicion[t] += 0.4 + mole.sabotageCount * 0.03;
         }
       });
 
@@ -16600,8 +16801,8 @@ function checkMoleSabotage(ep) {
     // NOTE: Challenge throw camp events + suspicion handled in patchEpisodeHistory
     // (checkMoleSabotage runs BEFORE simulateTribeChallenge, so gs._moleChalThrows is empty here)
 
-    // ── INFO LEAK — 30% chance ──
-    if (!mole.exposed && Math.random() < 0.30) {
+    // ── INFO LEAK — guaranteed or 30% chance ──
+    if (!mole.exposed && (_guaranteed.has('infoLeak') || Math.random() < 0.30)) {
       const _moleAlliances = (gs.namedAlliances || []).filter(a =>
         a.active && a.members.includes(mole.player)
       );
@@ -16633,7 +16834,11 @@ function checkMoleSabotage(ep) {
           _leakType = 'allianceLeak';
         } else {
           // No alliance, no idols — fabricate a rumor to stir paranoia
-          const _rumorTarget = _pick(_tribeMembers2.filter(p => p !== _leakTo && (_otherMole2 ? p !== _otherMole2 : true)));
+          // PRIORITY: target whoever suspects the Mole — turn others against them
+          const _rumorPool = _tribeMembers2.filter(p => p !== _leakTo && (_otherMole2 ? p !== _otherMole2 : true));
+          const _rumorTarget = (_moleThreat && _rumorPool.includes(_moleThreat) && Math.random() < 0.7)
+            ? _moleThreat
+            : _pick(_rumorPool);
           if (_rumorTarget) {
             _leakInfo = `${_rumorTarget} has been talking about making a move — you might be on the wrong side`;
             _leakType = 'fabrication';
@@ -16665,10 +16870,10 @@ function checkMoleSabotage(ep) {
           // Suspicion: if the leaked info comes back around, alliance members notice
           _moleAlliances.forEach(al => {
             al.members.filter(m => m !== mole.player && gs.activePlayers.includes(m)).forEach(m => {
-              const suspGain = pStats(m).intuition * 0.04 * mole.resistance;
+              const suspGain = (pStats(m).intuition * 0.04 + pStats(m).mental * 0.015) * (1.1 - mole.resistance);
               if (Math.random() < suspGain * 0.5) { // harder to trace back
                 if (!mole.suspicion[m]) mole.suspicion[m] = 0;
-                mole.suspicion[m] += 0.3;
+                mole.suspicion[m] += 0.4 + mole.sabotageCount * 0.03;
               }
             });
           });
@@ -16677,18 +16882,18 @@ function checkMoleSabotage(ep) {
       }
     }
 
-    // ── VOTE DISRUPTION — 30% chance, store for use in simulateVotes ──
+    // ── VOTE DISRUPTION — guaranteed or 30% chance, store for use in simulateVotes ──
     // Flag only — sabotageCount/log NOT incremented here. simulateVotes handles that
     // because we don't know yet if the Mole's tribe goes to tribal (pre-merge).
-    if (!mole.exposed && Math.random() < 0.30) {
+    if (!mole.exposed && (_guaranteed.has('voteDisruption') || Math.random() < 0.30)) {
       if (!gs._moleVoteDisruption) gs._moleVoteDisruption = [];
       gs._moleVoteDisruption.push(mole.player);
     }
 
-    // ── ADVANTAGE SABOTAGE — 35% chance while holding an advantage ──
+    // ── ADVANTAGE SABOTAGE — guaranteed or 35% chance while holding an advantage ──
     if (!mole.exposed) {
       const _moleAdvs = (gs.advantages || []).filter(a => a.holder === mole.player);
-      if (_moleAdvs.length && Math.random() < 0.35) {
+      if (_moleAdvs.length && (_guaranteed.has('advantageSabotage') || Math.random() < 0.35)) {
         const _adv = _pick(_moleAdvs);
         const mp = pronouns(mole.player);
         let _advSabText, _advSabAction;
@@ -16737,10 +16942,10 @@ function checkMoleSabotage(ep) {
           }
           // Suspicion from advantage sabotage
           _tribeMembers2.forEach(w => {
-            const suspGain = pStats(w).intuition * 0.04 * mole.resistance;
+            const suspGain = (pStats(w).intuition * 0.04 + pStats(w).mental * 0.015) * (1.1 - mole.resistance);
             if (Math.random() < suspGain * 0.3) { // subtle
               if (!mole.suspicion[w]) mole.suspicion[w] = 0;
-              mole.suspicion[w] += 0.2;
+              mole.suspicion[w] += 0.3 + mole.sabotageCount * 0.02;
             }
           });
           _checkMoleExposure(mole, ep, _moleTribe2);
@@ -16789,13 +16994,10 @@ function _checkMoleExposure(mole, ep, tribeName) {
       `It clicks for ${observer}. Every time something went wrong at camp, ${mole.player} was nearby. Every leaked plan, every fabricated quote — it all traces back. ${op.Sub} ${op.sub === 'they' ? 'don\'t' : 'doesn\'t'} wait for tribal. "We need to talk about ${mole.player}."`,
       `${observer} pulls the tribe together. "I've been keeping track. ${mole.player} has been sabotaging us from the inside." The evidence is damning. ${mole.player} has nowhere to hide.`,
     ];
-    if (ep.campEvents[tribeName]) {
-      const evts = ep.campEvents[tribeName].post || ep.campEvents[tribeName].pre || (Array.isArray(ep.campEvents[tribeName]) ? ep.campEvents[tribeName] : []);
-      evts.push({
-        type: 'moleExposed', text: _pick(_expTexts),
-        players: [observer, mole.player], badgeText: 'MOLE EXPOSED'
-      });
-    }
+    // Exposure rendered as dedicated VP screen — no camp event needed
+    // Save exposure data to gs for episode history
+    if (!gs._moleExposureEvents) gs._moleExposureEvents = [];
+    gs._moleExposureEvents.push({ mole: mole.player, exposedBy: observer, ep: curEp, sabotageCount: mole.sabotageCount });
 
     // If coordinated, spike the other Mole's suspicion
     if (seasonConfig.moleCoordination === 'coordinated' && gs.moles.length === 2) {
@@ -16808,6 +17010,20 @@ function _checkMoleExposure(mole, ep, tribeName) {
           otherMole.suspicion[p] += 0.8;
         });
       }
+    }
+
+    // ── DETECTIVE REWARDS — the player who exposed the Mole gets rewarded ──
+    // Bond boost: tribe respects the detective
+    gs.activePlayers.forEach(p => {
+      if (p === mole.player || p === observer) return;
+      addBond(observer, p, 0.5); // everyone trusts the person who figured it out
+    });
+    // Heat reduction: detective is seen as an ally, not a threat
+    if (!gs.moleDetectiveHeatReduction) gs.moleDetectiveHeatReduction = {};
+    gs.moleDetectiveHeatReduction[observer] = curEp; // tracked for computeHeat
+    // Popularity boost
+    if (gs.popularity) {
+      gs.popularity[observer] = (gs.popularity[observer] || 0) + 6; // big fan moment
     }
 
     break; // only one exposure per check
@@ -17171,6 +17387,9 @@ function checkFalseInfoBlowup(ep) {
     const plant = gs._falseInfoPlanted[i];
     if (!gs.activePlayers.includes(plant.victim)) { gs._falseInfoPlanted.splice(i, 1); continue; }
     if (!gs.activePlayers.includes(plant.liar)) { gs._falseInfoPlanted.splice(i, 1); continue; }
+    // High-mental victims may catch the lie before acting on it — mental * 0.03 chance to avoid the trap
+    const _victimMental = pStats(plant.victim).mental;
+    if (Math.random() < _victimMental * 0.03) { gs._falseInfoPlanted.splice(i, 1); continue; } // saw through it
     // Did the victim vote for the fake idol holder this episode?
     const _victimVote = ep.votingLog?.find(v => v.voter === plant.victim);
     if (!_victimVote || _victimVote.voted !== plant.fakeHolder) continue;
@@ -19615,6 +19834,30 @@ function simulateEpisode() {
       }
     }
   } else {
+    // ── TIED DESTINIES: paired immunity challenge ──
+    const _tdTwist = ep.tiedDestinies;
+    if (_tdTwist?.pairs?.length) {
+      const chal = pickChallenge('individual');
+      const _pairScores = _tdTwist.pairs.map(pair => {
+        const sA = chal.stat(pStats(pair.a)), sB = chal.stat(pStats(pair.b));
+        const bondBonus = getBond(pair.a, pair.b) * 0.1;
+        const pairScore = (sA + sB) / 2 + bondBonus + (Math.random() * 6 - 3);
+        return { pair, score: pairScore, scoreA: sA, scoreB: sB };
+      }).sort((a, b) => b.score - a.score);
+      const winPair = _pairScores[0].pair;
+      _tdTwist.immunePair = winPair;
+      _tdTwist.pairScores = _pairScores;
+      ep.challengeType = 'individual';
+      ep.immunityWinner = winPair.a; // primary winner for display
+      ep.extraImmune = [...(ep.extraImmune || []), winPair.b]; // partner also immune
+      ep.challengeLabel = chal.name || 'Paired Immunity Challenge';
+      ep.challengeCategory = chal.category || 'mixed';
+      ep.challengeDesc = chal.desc || '';
+      ep.chalPlacements = _pairScores.flatMap(ps => [ps.pair.a, ps.pair.b]);
+      ep.chalMemberScores = {};
+      _pairScores.forEach(ps => { ep.chalMemberScores[ps.pair.a] = ps.scoreA; ep.chalMemberScores[ps.pair.b] = ps.scoreB; });
+      ep.tribalPlayers = [...gs.activePlayers];
+    } else {
     const immResult = simulateIndividualChallenge(gs.activePlayers, null);
     ep.challengeType = 'individual'; ep.immunityWinner = immResult?.name || null;
     ep.challengeLabel    = immResult?.challengeLabel    || 'Immunity Challenge';
@@ -19624,6 +19867,7 @@ function simulateEpisode() {
     ep.chalMemberScores  = immResult?.chalMemberScores  || {};
     ep.challengeThrows   = immResult?.challengeThrows   || null;
     ep.tribalPlayers = [...gs.activePlayers];
+    } // end tied-destinies else
     // Store standouts/stragglers for voter-specific targeting logic (cleared after tribal)
     const _immune = ep.immunityWinner;
     const _ranked = (ep.chalPlacements || []).filter(n => n !== _immune);
@@ -20403,6 +20647,10 @@ function simulateEpisode() {
       ep.idolPlays.push({ player: _snpHolder, type: 'safetyNoPower', warned: _snpWarned, surprise: !_snpWarned, forced: _snpForcePlay });
       ep.safetyNoPowerPlayed = { holder: _snpHolder, warnedAlly: _snpWarned, surprise: !_snpWarned };
       gs.safetyNoPowerPlayed = { holder: _snpHolder, warnedAlly: _snpWarned, surprise: !_snpWarned };
+      // SNP holder leaves tribal — immune to votes AND cannot vote
+      _allImmune.push(_snpHolder);
+      if (!gs.lostVotes) gs.lostVotes = [];
+      if (!gs.lostVotes.includes(_snpHolder)) gs.lostVotes.push(_snpHolder);
       break; // one per tribal
     }
 
@@ -20665,7 +20913,7 @@ function simulateEpisode() {
       // Force-play extra votes, vote steals, and KiP
       ep._forceAdvantages = true;
       // Remove advantages that can't be used at tribal (they expire at F5)
-      const _expireTypes = ['kip', 'legacy', 'amulet'];
+      const _expireTypes = ['kip', 'legacy', 'amulet', 'safetyNoPower', 'secondLife'];
       // KiP: force-fire before idol plays (checkIdolPlays handles it, _forceAdvantages makes it auto-fire)
       // For other non-tribal advantages, just consume them
       gs.advantages = gs.advantages.filter(a => {
@@ -22182,6 +22430,42 @@ function simulateJuryRoundtable(ep) {
     if (seasonConfig.foodWater === 'enabled' && gs.currentProviders?.includes(ep.eliminated)) {
       const _elimTribe = gs.isMerged ? (gs.mergeName || 'merge') : (gs.tribes.find(t => t.members.includes(ep.eliminated))?.name || '');
       gs.providerVotedOutLastEp = { name: ep.eliminated, tribeName: _elimTribe };
+    }
+
+    // ── TIED DESTINIES: partner elimination ──
+    if (ep.tiedDestinies && ep.eliminated) {
+      const _tdPair = ep.tiedDestinies.pairs.find(p => p.a === ep.eliminated || p.b === ep.eliminated);
+      if (_tdPair) {
+        const _tdPartner = _tdPair.a === ep.eliminated ? _tdPair.b : _tdPair.a;
+        if (gs.activePlayers.includes(_tdPartner)) {
+          ep.tiedDestinies.eliminatedTarget = ep.eliminated;
+          ep.tiedDestinies.eliminatedPartner = _tdPartner;
+          // Handle partner elimination — same flow as main elimination
+          handleAdvantageInheritance(_tdPartner, ep);
+          gs.advantages = gs.advantages.filter(a => a.holder !== _tdPartner);
+          if (isRIStillActive()) {
+            if (cfg.riFormat === 'rescue') {
+              gs.riPlayers.push(_tdPartner);
+              if (!gs.riArrivalEp) gs.riArrivalEp = {};
+              gs.riArrivalEp[_tdPartner] = epNum;
+            } else {
+              gs.eliminated.push(_tdPartner);
+              if (gs.isMerged) gs.jury.push(_tdPartner);
+            }
+          } else {
+            gs.eliminated.push(_tdPartner);
+            if (gs.isMerged) gs.jury.push(_tdPartner);
+          }
+          gs.activePlayers = gs.activePlayers.filter(p => p !== _tdPartner);
+          gs.tribes = gs.tribes.map(t => ({...t, members: t.members.filter(p => p !== _tdPartner)}));
+          // Track provider voted out for food crisis
+          if (seasonConfig.foodWater === 'enabled' && gs.currentProviders?.includes(_tdPartner)) {
+            gs.providerVotedOutLastEp = gs.providerVotedOutLastEp || {};
+          }
+        }
+      }
+      // Clean up pair-aware state
+      delete gs._tiedDestiniesActive;
     }
 
     // ── BLACK VOTE: eliminated player casts a parting vote/gift (until F4) ──
@@ -25072,6 +25356,112 @@ function _textSeasonStats(ep, ln, sec) {
 }
 
 // ── WRITER EXTRAS ──
+// ── THE MOLE: text backlog formatters ──
+
+function _textTiedDestinies(ep, ln, sec) {
+  const td = (ep.twists || []).find(t => t.tiedDestinies);
+  if (!td?.pairs?.length) return;
+  sec('TIED DESTINIES');
+  ln('Players are randomly paired. Vote someone out and their partner goes too.');
+  ln('');
+  ln('PAIRS:');
+  td.pairs.forEach(pair => {
+    const bond = getBond(pair.a, pair.b);
+    const react = td.reactions?.[pair.a] || 'cautious';
+    ln(`${pair.a} & ${pair.b} — ${bondLabel(bond)} (${react})`);
+  });
+  if (ep.tiedDestinies?.immunePair) {
+    const ip = ep.tiedDestinies.immunePair;
+    ln('');
+    ln(`IMMUNE PAIR: ${ip.a} & ${ip.b}`);
+  }
+  if (ep.tiedDestinies?.eliminatedPartner) {
+    ln('');
+    ln(`COLLATERAL ELIMINATION: ${ep.tiedDestinies.eliminatedPartner} — tied to ${ep.tiedDestinies.eliminatedTarget}`);
+    ln(`${ep.tiedDestinies.eliminatedPartner} wasn't the target. The twist took them out.`);
+  }
+}
+
+function _textMoleExposed(ep, ln, sec) {
+  if (!ep.moleExposure?.length) return;
+  const exp = ep.moleExposure[0];
+  sec('THE MOLE — EXPOSED');
+  ln(`${exp.exposedBy} figured it out. ${exp.mole} has been The Mole.`);
+  ln(`Total sabotage acts: ${exp.sabotageCount}`);
+
+  // Sabotage breakdown from snapshot
+  const _moleData = (ep.gsSnapshot?.moles || gs.moles || []).find(m => m.player === exp.mole);
+  if (_moleData?.sabotageLog?.length) {
+    const _typeCounts = {};
+    _moleData.sabotageLog.forEach(s => { _typeCounts[s.type] = (_typeCounts[s.type] || 0) + 1; });
+    const _labels = { bondSabotage: 'Fabricated conflicts', challengeThrow: 'Threw challenges', challengeSabotage: 'Sabotaged challenges', infoLeak: 'Leaked intel', voteDisruption: 'Disrupted votes', advantageSabotage: 'Sabotaged advantages' };
+    ln('');
+    ln('SABOTAGE BREAKDOWN:');
+    Object.entries(_typeCounts).forEach(([type, count]) => {
+      ln(`- ${_labels[type] || type}: ${count}`);
+    });
+
+    // Most affected players
+    const _targetCounts = {};
+    _moleData.sabotageLog.forEach(s => {
+      (s.targets || []).forEach(t => { _targetCounts[t] = (_targetCounts[t] || 0) + 1; });
+      if (s.target) _targetCounts[s.target] = (_targetCounts[s.target] || 0) + 1;
+    });
+    const _topTargets = Object.entries(_targetCounts).sort((a, b) => b[1] - a[1]).slice(0, 4);
+    if (_topTargets.length) {
+      ln('');
+      ln('MOST AFFECTED:');
+      _topTargets.forEach(([name, count]) => ln(`- ${name} (${count}x)`));
+    }
+
+    // Timeline
+    ln('');
+    ln('SABOTAGE TIMELINE:');
+    _moleData.sabotageLog.forEach(s => {
+      const label = _labels[s.type] || s.type;
+      const detail = s.targets ? `${s.targets.join(' vs ')}` : s.target ? `→ ${s.target}` : s.leakedTo ? `leaked to ${s.leakedTo}` : '';
+      ln(`Ep ${s.ep}: ${label} ${detail}`);
+    });
+  }
+
+  ln('');
+  ln('CONSEQUENCES:');
+  ln('- Trust shattered: -1.5 bond with everyone');
+  ln('- Massive target: +3.0 heat for 2 episodes');
+  ln('- All advantages revealed');
+  ln('- No more sabotage powers');
+  ln('');
+  ln(`DETECTIVE REWARD: ${exp.exposedBy} gains +0.5 bond with the tribe, -1.5 heat for 2 episodes, +6 popularity.`);
+}
+
+function _textMoleDisruption(ep, ln, sec) {
+  if (!ep.moleVoteDisruptions?.length) return;
+  sec('MOLE VOTE DISRUPTION');
+  ep.moleVoteDisruptions.forEach(vd => {
+    if (vd.type === 'rogue') {
+      ln(`${vd.voter} went rogue — voted ${vd.rogueTarget} instead of the plan (${vd.originalTarget}).`);
+    } else if (vd.type === 'pitch') {
+      ln(`${vd.pitcher} whispered to ${vd.swayed} before the vote — redirected their vote to ${vd.newTarget}.`);
+    }
+  });
+}
+
+function _textMoleReveal(ep, ln, sec) {
+  if (!ep.moleReveal) return;
+  const mr = ep.moleReveal;
+  sec('THE MOLE — UNDISCOVERED');
+  ln(`${mr.player} was The Mole. ${mr.sabotageCount} acts of sabotage — and nobody figured it out.`);
+  if (mr.sabotageLog?.length) {
+    const _labels = { bondSabotage: 'Fabricated conflicts', challengeThrow: 'Threw challenges', challengeSabotage: 'Sabotaged challenges', infoLeak: 'Leaked intel', voteDisruption: 'Disrupted votes', advantageSabotage: 'Sabotaged advantages' };
+    const _typeCounts = {};
+    mr.sabotageLog.forEach(s => { _typeCounts[s.type] = (_typeCounts[s.type] || 0) + 1; });
+    Object.entries(_typeCounts).forEach(([type, count]) => {
+      ln(`- ${_labels[type] || type}: ${count}`);
+    });
+  }
+  ln(`"They never figured it out." — ${mr.player}`);
+}
+
 function _textWriterContext(ep, ln, sec) {
   sec('WRITER CONTEXT');
 
@@ -25134,10 +25524,14 @@ function generateSummaryText(ep) {
   _textTwists(ep, ln, sec);
   _textExile(ep, ln, sec);
   _textCampPost(ep, ln, sec);
+  _textMoleExposed(ep, ln, sec);
+  _textTiedDestinies(ep, ln, sec);
   _textVotingPlans(ep, ln, sec);
   _textTribalCouncil(ep, ln, sec);
   _textTheVotes(ep, ln, sec);
+  _textMoleDisruption(ep, ln, sec);
   _textWhyVote(ep, ln, sec);
+  _textMoleReveal(ep, ln, sec);
   _textSlasherNight(ep, ln, sec);
   _textAmbassadors(ep, ln, sec);
   _textRIDuel(ep, ln, sec);
@@ -25657,6 +26051,7 @@ function patchEpisodeHistory(ep) {
   h.ambassadorData = ep.ambassadorData || null;
   if (ep.alliancesPreTribal) h.alliancesPreTribal = ep.alliancesPreTribal;
   h.blackVote = ep.blackVote || null;
+  if (ep.tiedDestinies) h.tiedDestinies = ep.tiedDestinies;
   h.blackVote1 = ep.blackVote1 || null;
   h.blackVote2 = ep.blackVote2 || null;
   h.blackVoteApplied = ep.blackVoteApplied || null;
@@ -25730,17 +26125,17 @@ function patchEpisodeHistory(ep) {
         const _timesSabotaged = mole.sabotageLog.filter(s => s.type === 'challengeSabotage' && s.target === thr.target).length;
         _tribeMembers.forEach(w => {
           if (!gs.activePlayers.includes(w)) return;
-          const suspGain = pStats(w).intuition * 0.04 * mole.resistance * _suspMultiplier;
+          const suspGain = (pStats(w).intuition * 0.04 + pStats(w).mental * 0.015) * (1.1 - mole.resistance) * _suspMultiplier;
           if (Math.random() < suspGain) {
             if (!mole.suspicion[w]) mole.suspicion[w] = 0;
-            mole.suspicion[w] += 0.15 + _suspMultiplier * 0.25;
+            mole.suspicion[w] += 0.25 + _suspMultiplier * 0.3 + mole.sabotageCount * 0.02;
           }
         });
         // The TARGET gets extra suspicion — they notice the pattern of choking near the Mole
         if (gs.activePlayers.includes(thr.target)) {
           const _targetIntuition = pStats(thr.target).intuition;
           // Base chance + cumulative bonus (3rd time sabotaged = much higher chance of noticing)
-          const _targetSuspChance = _targetIntuition * 0.05 * mole.resistance + _timesSabotaged * 0.12;
+          const _targetSuspChance = (_targetIntuition * 0.05 + pStats(thr.target).mental * 0.018) * (1.1 - mole.resistance) + _timesSabotaged * 0.12;
           if (Math.random() < _targetSuspChance) {
             if (!mole.suspicion[thr.target]) mole.suspicion[thr.target] = 0;
             mole.suspicion[thr.target] += 0.3 + _timesSabotaged * 0.2; // escalates: 0.5 first time, 0.7 second, 0.9 third
@@ -25770,63 +26165,86 @@ function patchEpisodeHistory(ep) {
         const _tribeMembers = _tribe ? _tribe.members.filter(p => p !== thr.player) : gs.activePlayers.filter(p => p !== thr.player);
         _tribeMembers.forEach(w => {
           if (!gs.activePlayers.includes(w)) return;
-          const suspGain = pStats(w).intuition * 0.04 * mole.resistance;
+          const suspGain = (pStats(w).intuition * 0.04 + pStats(w).mental * 0.015) * (1.1 - mole.resistance);
           if (Math.random() < suspGain) {
             if (!mole.suspicion[w]) mole.suspicion[w] = 0;
-            mole.suspicion[w] += 0.4;
+            mole.suspicion[w] += 0.5 + mole.sabotageCount * 0.03; // self-throw most visible
           }
         });
       }
     });
+    // Exposure check after challenge suspicion gains
+    gs.moles.forEach(mole => {
+      if (mole.exposed) return;
+      const _tribeKey = gs.isMerged ? (gs.mergeName || 'merge') : (gs.tribes.find(t => t.members?.includes(mole.player))?.name || Object.keys(ep.campEvents || {})[0]);
+      if (_tribeKey) _checkMoleExposure(mole, ep, _tribeKey);
+    });
     delete gs._moleChalThrows;
   }
 
-  // Vote disruption camp events + suspicion
-  if (gs._moleVoteDisruptionEvents?.length && ep.campEvents) {
-    gs._moleVoteDisruptionEvents.forEach(vd => {
-      const mp = pronouns(vd.voter);
-      const _vdTexts = [
-        `At tribal, ${vd.voter} voted for ${vd.rogueTarget} instead of the plan. The alliance expected ${vd.originalTarget}. ${mp.Sub} ${mp.sub === 'they' ? 'shrug' : 'shrugs'}. "I had my reasons."`,
-        `The vote didn't go as planned — ${vd.voter} went rogue. ${vd.rogueTarget} got a vote nobody expected. The alliance is scrambling to figure out what happened.`,
-        `${vd.voter} broke from the plan. Instead of ${vd.originalTarget}, ${mp.sub} wrote ${vd.rogueTarget}'s name down. Was it a misplay? Or something more deliberate?`,
-      ];
-      const _campKey = gs.isMerged ? (gs.mergeName || 'merge') : Object.keys(ep.campEvents)[0];
-      if (_campKey && ep.campEvents[_campKey]) {
-        const evts = ep.campEvents[_campKey].post || ep.campEvents[_campKey].pre || (Array.isArray(ep.campEvents[_campKey]) ? ep.campEvents[_campKey] : []);
-        evts.push({
-          type: 'moleVoteDisruption', text: _pick(_vdTexts),
-          players: [vd.voter, vd.rogueTarget], badgeText: 'MOLE'
-        });
-      }
-      // Suspicion from vote disruption — alliance members notice the off-plan vote
+  // Vote disruption — save data for VP votes screen rendering (not camp events — these happen AT tribal)
+  if (gs._moleVoteDisruptionEvents?.length || gs._moleCorruptedPitches?.length) {
+    if (!h.moleVoteDisruptions) h.moleVoteDisruptions = [];
+    (gs._moleVoteDisruptionEvents || []).forEach(vd => {
+      h.moleVoteDisruptions.push({ ...vd, type: 'rogue' });
+    });
+    (gs._moleCorruptedPitches || []).forEach(cp => {
+      h.moleVoteDisruptions.push({ ...cp, type: 'pitch' });
+    });
+    delete gs._moleCorruptedPitches;
+    // Suspicion from vote disruption — process each rogue vote
+    (gs._moleVoteDisruptionEvents || []).forEach(vd => {
       const mole = gs.moles?.find(m => m.player === vd.voter);
       if (mole) {
         const _allAlliances = gs.namedAlliances || [];
         const _voterAlliances = _allAlliances.filter(a => a.active && a.members.includes(vd.voter));
         _voterAlliances.forEach(al => {
           al.members.filter(m => m !== vd.voter && gs.activePlayers.includes(m)).forEach(m => {
-            const suspGain = pStats(m).intuition * 0.04 * mole.resistance;
+            const suspGain = (pStats(m).intuition * 0.04 + pStats(m).mental * 0.015) * (1.1 - mole.resistance);
             if (Math.random() < suspGain) {
               if (!mole.suspicion[m]) mole.suspicion[m] = 0;
-              mole.suspicion[m] += 0.5; // off-plan vote is very suspicious
+              mole.suspicion[m] += 0.6 + mole.sabotageCount * 0.03;
             }
           });
         });
-        // Even non-alliance tribal attendees notice scattered votes
         (ep.tribalPlayers || gs.activePlayers).filter(p => p !== vd.voter).forEach(p => {
           if (!gs.activePlayers.includes(p)) return;
-          const suspGain = pStats(p).intuition * 0.04 * mole.resistance * 0.3; // weaker for non-alliance
+          const suspGain = (pStats(p).intuition * 0.04 + pStats(p).mental * 0.015) * (1.1 - mole.resistance) * 0.3;
           if (Math.random() < suspGain) {
             if (!mole.suspicion[p]) mole.suspicion[p] = 0;
-            mole.suspicion[p] += 0.3;
+            mole.suspicion[p] += 0.4 + mole.sabotageCount * 0.02;
           }
         });
       }
     });
+    // Exposure check after vote disruption suspicion gains
+    if (gs.moles?.length) {
+      gs.moles.forEach(mole => {
+        if (mole.exposed) return;
+        const _tribeKey2 = gs.isMerged ? (gs.mergeName || 'merge') : (gs.tribes.find(t => t.members?.includes(mole.player))?.name || Object.keys(ep.campEvents || {})[0]);
+        if (_tribeKey2) _checkMoleExposure(mole, ep, _tribeKey2);
+      });
+    }
     delete gs._moleVoteDisruptionEvents;
+  }
+  // ── Universal Mole exposure check — catches any suspicion source that pushed past 3.0 ──
+  if (gs.moles?.length && ep.campEvents) {
+    gs.moles.forEach(mole => {
+      if (mole.exposed) return;
+      if (!gs.activePlayers.includes(mole.player)) return;
+      const _tribeKeyFinal = gs.isMerged ? (gs.mergeName || 'merge')
+        : gs.tribes.find(t => t.members?.includes(mole.player))?.name
+        || Object.keys(ep.campEvents)[0];
+      if (_tribeKeyFinal) _checkMoleExposure(mole, ep, _tribeKeyFinal);
+    });
   }
   if (gs.moles?.length) {
     if (h.gsSnapshot) h.gsSnapshot.moles = gs.moles.map(m => ({ ...m, suspicion: { ...m.suspicion }, sabotageLog: [...m.sabotageLog], leaks: [...m.leaks] }));
+    // Save Mole exposure data to episode history
+    if (gs._moleExposureEvents?.length) {
+      h.moleExposure = gs._moleExposureEvents.map(e => ({ ...e }));
+      delete gs._moleExposureEvents;
+    }
     // Save Mole reveal data to episode history — VP renders it in rpBuildVotes after torch snuff
     const _elimThisEp = h.eliminated || ep.eliminated;
     if (_elimThisEp) {
@@ -25879,6 +26297,8 @@ function snapshotGameState() {
       Object.entries(gs.perceivedBonds).map(([k, v]) => [k, { ...v }])
     ) : {},
     sideDeals: (gs.sideDeals || []).map(d => ({ ...d, players: [...d.players] })),
+    bonds: gs.bonds ? { ...gs.bonds } : {},
+    moles: (gs.moles || []).map(m => ({ ...m, suspicion: { ...m.suspicion }, sabotageLog: [...m.sabotageLog], leaks: [...m.leaks] })),
   };
 }
 
@@ -26225,7 +26645,7 @@ function renderEpisodeHistory() {
       : '';
     return `<div class="ep-hist-card ${ep.num===currentNum?'active':''}" onclick="viewEpisode(${ep.num})">
       <div class="ep-hist-ep">Episode ${ep.num}${replayBtn}</div>
-      <div class="ep-hist-elim">${_spoilerFree ? '???' : ep.multiTribalElims?.length >= 2 ? ep.multiTribalElims.join(' + ') : ep.ambassadorData?.ambassadorEliminated ? `${ep.ambassadorData.ambassadorEliminated} + ${ep.eliminated||'?'}` : ep.firstEliminated ? `${ep.firstEliminated} + ${ep.eliminated||'?'}` : (ep.eliminated || (ep.isFinale ? 'FTC' : '\u2014'))}</div>
+      <div class="ep-hist-elim">${_spoilerFree ? '???' : ep.multiTribalElims?.length >= 2 ? ep.multiTribalElims.join(' + ') : ep.ambassadorData?.ambassadorEliminated ? `${ep.ambassadorData.ambassadorEliminated} + ${ep.eliminated||'?'}` : ep.tiedDestinies?.eliminatedPartner ? `${ep.eliminated||'?'} + ${ep.tiedDestinies.eliminatedPartner}` : ep.firstEliminated ? `${ep.firstEliminated} + ${ep.eliminated||'?'}` : (ep.eliminated || (ep.isFinale ? 'FTC' : '\u2014'))}</div>
       <div>${riTag}${mergeTag}${finaleTag}</div>
     </div>`;
   }).join('');
@@ -26499,6 +26919,7 @@ function buildEpisodeMap() {
     if (_allTypes.includes('slasher-night')) elims = Math.max(elims, 1);
     if (_allTypes.includes('sudden-death')) elims = Math.max(elims, 1);
     if (_allTypes.includes('ambassadors')) elims = Math.max(elims, 2);
+    if (_allTypes.includes('tied-destinies')) elims = Math.max(elims, 2);
     const returns = (_allTypes.includes('returning-player') || _allTypes.includes('second-chance')) ? 1 : 0;
 
     // RI return: fires when the episode STARTS with <= riReentryAt players.
@@ -26649,8 +27070,14 @@ function renderTwistCatalog() {
     const riBlocked = canAssign && (t.id === 'exile-duel' || t.id === 'second-chance') && seasonConfig.ri;
     const popBlocked = canAssign && t.id === 'second-chance' && !seasonConfig.popularityEnabled;
     const exileBlocked = canAssign && t.id === 'exile-island' && seasonConfig.exile;
-    const blocked = phaseBlocked || incompBlocked || tribeBlocked || riBlocked || popBlocked || exileBlocked;
-    const blockReason = phaseBlocked ? ' ⚠️ wrong phase' : incompBlocked ? ' ⚠️ conflicts with existing twist' : tribeBlocked ? ` ⚠️ needs ${t.minTribes}+ tribes` : riBlocked ? ' ⚠️ incompatible with 2nd Chance Isle' : exileBlocked ? ' ⚠️ incompatible with Exile Format' : popBlocked ? ' ⚠️ requires Popularity enabled' : '';
+    // Tied Destinies: requires even number of active players
+    const _selEpNums = [...selectedEpisodes];
+    const _tdEvenBlocked = canAssign && t.id === 'tied-destinies' && _selEpNums.some(epN => {
+      const epInfo = epMap.find(e => e.ep === epN);
+      return epInfo && epInfo.active % 2 !== 0;
+    });
+    const blocked = phaseBlocked || incompBlocked || tribeBlocked || riBlocked || popBlocked || exileBlocked || _tdEvenBlocked;
+    const blockReason = phaseBlocked ? ' ⚠️ wrong phase' : incompBlocked ? ' ⚠️ conflicts with existing twist' : tribeBlocked ? ` ⚠️ needs ${t.minTribes}+ tribes` : riBlocked ? ' ⚠️ incompatible with 2nd Chance Isle' : exileBlocked ? ' ⚠️ incompatible with Exile Format' : popBlocked ? ' ⚠️ requires Popularity enabled' : _tdEvenBlocked ? ' ⚠️ needs even player count' : '';
     return `
     <div class="twist-card ${canAssign && !blocked ? 'assignable' : ''} ${blocked ? 'phase-blocked' : ''}" onclick="${blocked ? '' : `assignTwist('${t.id}')`}">
       <div class="twist-card-top">
@@ -29601,6 +30028,212 @@ function rpBuildMergeAnnouncement(ep) {
 }
 
 // ── Debug VP Screen — hidden engine data for testing ──
+// ── THE MOLE EXPOSED — dedicated VP screen ──
+// ── TIED DESTINIES — VP announcement screen ──
+function rpBuildTiedDestinies(ep) {
+  const td = (ep.twists || []).find(t => t.tiedDestinies);
+  if (!td?.pairs?.length) return null;
+  const reactions = td.reactions || {};
+
+  let html = `<div class="rp-page tod-dusk">
+    <div class="rp-eyebrow">Episode ${ep.num}</div>
+    <div style="font-family:var(--font-display);font-size:28px;color:#818cf8;text-align:center;letter-spacing:2px;text-shadow:0 0 16px rgba(129,140,248,0.4);margin-bottom:6px">TIED DESTINIES</div>
+    <div style="font-size:12px;color:#8b949e;text-align:center;margin-bottom:24px;line-height:1.5">Your fates are linked. If one of you is voted out tonight, you both go home.</div>`;
+
+  // Pairs revealed with reaction text
+  const _reactTexts = {
+    relieved: [
+      (a, b) => `${a} exhales. Of everyone here, ${b} is someone ${pronouns(a).sub} can work with. This could have been so much worse.`,
+      (a, b) => `${a} and ${b} lock eyes and nod. They're in this together — and they're both okay with that.`,
+      (a, b) => `${a} smiles when ${b}'s name is called. "I'll take it." The relief is visible.`,
+    ],
+    cautious: [
+      (a, b) => `${a} looks at ${b}. Not the worst draw. Not the best. ${pronouns(a).Sub} ${pronouns(a).sub === 'they' ? 'keep' : 'keeps'} ${pronouns(a).posAdj} face neutral.`,
+      (a, b) => `${a} processes the pairing with ${b}. Could be worse. Could be better. The game just got more complicated.`,
+      (a, b) => `${a} nods slowly. ${b}. Okay. ${pronouns(a).Sub} can work with this — probably.`,
+    ],
+    dread: [
+      (a, b) => `${a}'s face drops. ${b}. Of all people. ${pronouns(a).Sub} ${pronouns(a).sub === 'they' ? 'try' : 'tries'} to hide the reaction. ${pronouns(a).Sub} ${pronouns(a).sub === 'they' ? 'fail' : 'fails'}.`,
+      (a, b) => `${a} stares at ${b}. The hostility between them is well-documented. Now their fates are linked. This is a nightmare.`,
+      (a, b) => `"You're kidding." ${a} looks at the host, then at ${b}. The dread is immediate.`,
+    ],
+    fury: [
+      (a, b) => `${a} doesn't even try to hide it. Paired with ${b} — the person ${pronouns(a).sub} trust${pronouns(a).sub === 'they' ? '' : 's'} least in this game. "This is a death sentence."`,
+      (a, b) => `${a} and ${b}. The tribe winces. Everyone knows the history. This pairing is a bomb with a lit fuse.`,
+      (a, b) => `${a} laughs — the kind that means nothing is funny. ${b}. The universe has a sick sense of humor.`,
+    ],
+  };
+  const _pick = arr => arr[Math.floor(Math.random() * arr.length)];
+
+  td.pairs.forEach((pair, i) => {
+    const reactA = reactions[pair.a] || 'cautious';
+    const reactB = reactions[pair.b] || 'cautious';
+    const _reactColors = { relieved: '#3fb950', cautious: '#e3b341', dread: '#f0883e', fury: '#f85149' };
+    // Pick the more dramatic reaction for the pair's text
+    const _dramOrder = ['fury', 'dread', 'cautious', 'relieved'];
+    const _mainReact = _dramOrder.indexOf(reactA) < _dramOrder.indexOf(reactB) ? reactA : reactB;
+    const _mainPlayer = _dramOrder.indexOf(reactA) <= _dramOrder.indexOf(reactB) ? pair.a : pair.b;
+    const _otherPlayer = _mainPlayer === pair.a ? pair.b : pair.a;
+    const _reactionText = _pick(_reactTexts[_mainReact])(_mainPlayer, _otherPlayer);
+
+    html += `<div style="padding:14px;margin-bottom:12px;background:rgba(129,140,248,0.04);border:1px solid rgba(129,140,248,0.15);border-radius:10px">
+      <div style="display:flex;align-items:center;justify-content:center;gap:20px;margin-bottom:8px">
+        ${rpPortrait(pair.a, 'lg')}
+        <div style="text-align:center">
+          <div style="font-size:24px;color:#818cf8">🔗</div>
+          <div style="font-size:10px;color:#8b949e;margin-top:4px">${bondLabel(getBond(pair.a, pair.b))}</div>
+        </div>
+        ${rpPortrait(pair.b, 'lg')}
+      </div>
+      <div style="font-size:12px;color:#c9d1d9;line-height:1.6;font-style:italic;padding:6px 8px;background:rgba(139,148,158,0.04);border-radius:6px">${_reactionText}</div>
+    </div>`;
+  });
+
+  html += `</div>`;
+  return html;
+}
+
+function rpBuildMoleExposed(ep) {
+  if (!ep.moleExposure?.length) return null;
+  const exp = ep.moleExposure[0]; // first exposure this episode
+  const mole = exp.mole;
+  const detective = exp.exposedBy;
+  const sabCount = exp.sabotageCount;
+  const mp = pronouns(mole), dp = pronouns(detective);
+
+  // Get sabotage log from snapshot
+  const _moleData = (ep.gsSnapshot?.moles || gs.moles || []).find(m => m.player === mole);
+  const sabLog = _moleData?.sabotageLog || [];
+
+  // Group sabotage types for the flashback
+  const _typeCounts = {};
+  sabLog.forEach(s => { _typeCounts[s.type] = (_typeCounts[s.type] || 0) + 1; });
+  const _typeLabels = {
+    bondSabotage: 'Fabricated conflicts', challengeThrow: 'Threw challenges', challengeSabotage: 'Sabotaged challenges',
+    infoLeak: 'Leaked intel', voteDisruption: 'Disrupted votes', advantageSabotage: 'Sabotaged advantages'
+  };
+
+  // Affected players — who got sabotaged most
+  const _targetCounts = {};
+  sabLog.forEach(s => {
+    (s.targets || []).forEach(t => { _targetCounts[t] = (_targetCounts[t] || 0) + 1; });
+    if (s.target) _targetCounts[s.target] = (_targetCounts[s.target] || 0) + 1;
+    if (s.leakedTo) _targetCounts[s.leakedTo] = (_targetCounts[s.leakedTo] || 0) + 1;
+  });
+  const _topTargets = Object.entries(_targetCounts).sort((a, b) => b[1] - a[1]).slice(0, 4);
+
+  let html = `<div class="rp-page tod-dusk">
+    <div class="rp-eyebrow">Episode ${ep.num}</div>
+    <div style="font-family:var(--font-display);font-size:28px;color:#f85149;text-align:center;letter-spacing:2px;text-shadow:0 0 20px rgba(248,81,73,0.4);margin-bottom:6px">THE MOLE — EXPOSED</div>
+    <div style="font-size:12px;color:#8b949e;text-align:center;margin-bottom:24px">The truth comes out.</div>`;
+
+  // ── The Confrontation ──
+  html += `<div style="display:flex;justify-content:center;gap:24px;align-items:center;margin-bottom:24px">
+    <div style="text-align:center">
+      ${rpPortrait(detective, 'xl')}
+      <div style="font-size:11px;color:#3fb950;font-weight:700;margin-top:4px;letter-spacing:1px">DETECTIVE</div>
+      <div style="font-size:13px;color:#e6edf3;font-weight:600">${detective}</div>
+    </div>
+    <div style="font-size:32px;color:#f85149">⚡</div>
+    <div style="text-align:center">
+      ${rpPortrait(mole, 'xl')}
+      <div style="font-size:11px;color:#f85149;font-weight:700;margin-top:4px;letter-spacing:1px">THE MOLE</div>
+      <div style="font-size:13px;color:#e6edf3;font-weight:600">${mole}</div>
+    </div>
+  </div>`;
+
+  // ── The Moment ──
+  const _confrontTexts = [
+    `${detective} has been watching for weeks. The patterns were too clear — the whispers, the convenient conflicts, the too-good-to-be-true loyalty. ${dp.Sub} ${dp.sub === 'they' ? 'pull' : 'pulls'} the tribe together. "I've been keeping track. ${mole} has been sabotaging us from the inside."`,
+    `It clicks for ${detective}. Every time something went wrong at camp, ${mole} was nearby. Every leaked plan, every fabricated quote — it all traces back to one person. ${dp.Sub} ${dp.sub === 'they' ? 'don\'t' : 'doesn\'t'} wait for tribal. "${mole} is The Mole."`,
+    `${detective} lays it all out. The challenge throws. The leaked intel. The fabricated conflicts. Every sabotage act ${mole} thought was invisible — ${detective} was watching. The tribe goes silent. ${mole} has nowhere to hide.`,
+  ];
+  html += `<div style="padding:16px;background:rgba(248,81,73,0.04);border:1px solid rgba(248,81,73,0.2);border-radius:10px;margin-bottom:20px">
+    <div style="font-size:13px;color:#e6edf3;line-height:1.7;font-style:italic">"${_confrontTexts[Math.floor(Math.random() * _confrontTexts.length)]}"</div>
+  </div>`;
+
+  // ── The Evidence — Sabotage Flashback ──
+  html += `<div style="margin-bottom:20px">
+    <div style="font-size:10px;font-weight:800;letter-spacing:2px;color:#f0883e;margin-bottom:10px;text-align:center">WHAT ${mole.toUpperCase()} DID — ${sabCount} ACTS OF SABOTAGE</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:12px">`;
+  Object.entries(_typeCounts).forEach(([type, count]) => {
+    const label = _typeLabels[type] || type;
+    html += `<div style="padding:6px 12px;background:rgba(248,81,73,0.08);border:1px solid rgba(248,81,73,0.2);border-radius:6px;text-align:center">
+      <div style="font-size:16px;font-weight:700;color:#f85149">${count}</div>
+      <div style="font-size:9px;color:#8b949e;letter-spacing:0.5px">${label}</div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  // Most affected players
+  if (_topTargets.length) {
+    html += `<div style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:#8b949e;text-align:center;margin-bottom:6px">MOST AFFECTED</div>
+      <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap">`;
+    _topTargets.forEach(([name, count]) => {
+      html += `<div style="display:flex;align-items:center;gap:4px">
+        ${rpPortrait(name, 'sm')}
+        <div style="font-size:11px;color:#e6edf3">${name} <span style="color:#f85149">(${count}x)</span></div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+  html += `</div>`;
+
+  // ── Sabotage Timeline — key moments ──
+  const _keyMoments = sabLog.slice(-6); // last 6 acts
+  if (_keyMoments.length) {
+    html += `<div style="margin-bottom:20px">
+      <div style="font-size:10px;font-weight:800;letter-spacing:2px;color:#f0883e;margin-bottom:8px;text-align:center">SABOTAGE TIMELINE</div>`;
+    _keyMoments.forEach(s => {
+      const _label = _typeLabels[s.type] || s.type;
+      const _detail = s.targets ? `${s.targets.join(' vs ')}` : s.target ? `→ ${s.target}` : s.leakedTo ? `leaked to ${s.leakedTo}` : '';
+      html += `<div style="display:flex;align-items:center;gap:8px;padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.04)">
+        <span style="font-size:10px;color:#484f58;width:36px">Ep ${s.ep}</span>
+        <span style="font-size:10px;color:#f85149;font-weight:600;flex:1">${_label}</span>
+        <span style="font-size:10px;color:#8b949e">${_detail}</span>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  // ── The Tribe Reacts ──
+  html += `<div style="padding:14px;background:rgba(139,148,158,0.04);border:1px solid rgba(139,148,158,0.1);border-radius:10px;margin-bottom:20px">
+    <div style="font-size:10px;font-weight:800;letter-spacing:2px;color:#d29922;margin-bottom:8px;text-align:center">CONSEQUENCES</div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center">
+      <div style="padding:6px 12px;background:rgba(248,81,73,0.08);border-radius:6px;text-align:center">
+        <div style="font-size:9px;color:#f85149;font-weight:700;letter-spacing:1px">TRUST SHATTERED</div>
+        <div style="font-size:11px;color:#e6edf3">-1.5 bond with everyone</div>
+      </div>
+      <div style="padding:6px 12px;background:rgba(248,81,73,0.08);border-radius:6px;text-align:center">
+        <div style="font-size:9px;color:#f85149;font-weight:700;letter-spacing:1px">MASSIVE TARGET</div>
+        <div style="font-size:11px;color:#e6edf3">+3.0 heat for 2 episodes</div>
+      </div>
+      <div style="padding:6px 12px;background:rgba(240,136,62,0.08);border-radius:6px;text-align:center">
+        <div style="font-size:9px;color:#f0883e;font-weight:700;letter-spacing:1px">ADVANTAGES REVEALED</div>
+        <div style="font-size:11px;color:#e6edf3">Everyone knows what ${mp.sub} ${mp.sub === 'they' ? 'have' : 'has'}</div>
+      </div>
+      <div style="padding:6px 12px;background:rgba(139,148,158,0.08);border-radius:6px;text-align:center">
+        <div style="font-size:9px;color:#8b949e;font-weight:700;letter-spacing:1px">STEALTH GONE</div>
+        <div style="font-size:11px;color:#e6edf3">No more sabotage powers</div>
+      </div>
+    </div>
+  </div>`;
+
+  // ── The Mole's Response ──
+  const _responseTexts = [
+    `${mole} doesn't deny it. ${mp.Sub} ${mp.sub === 'they' ? 'sit' : 'sits'} there and ${mp.sub === 'they' ? 'take' : 'takes'} it. When ${mp.sub} finally ${mp.sub === 'they' ? 'speak' : 'speaks'}, it's just one sentence: "I played my game."`,
+    `${mole} tries to explain. The tribe isn't listening. The damage is done — and everyone at camp is doing the math on how many times they were played.`,
+    `The silence after ${detective}'s accusation is the loudest thing that's happened all season. ${mole} looks around the camp. Nobody will meet ${mp.posAdj} eyes.`,
+    `${mole} laughs. Not because it's funny — because it's over. "You got me," ${mp.sub} ${mp.sub === 'they' ? 'say' : 'says'}. "Now what?"`,
+  ];
+  html += `<div style="padding:12px;background:rgba(139,148,158,0.03);border-radius:8px;text-align:center">
+    <div style="font-size:12px;color:#e6edf3;line-height:1.6;font-style:italic">${_responseTexts[Math.floor(Math.random() * _responseTexts.length)]}</div>
+  </div>`;
+
+  html += `</div>`;
+  return html;
+}
+
 function rpBuildDebug(ep) {
   const snap = ep.gsSnapshot || {};
   const activePlayers = snap.activePlayers || gs.activePlayers || [];
@@ -30144,7 +30777,7 @@ function rpBuildFirstImpressions(ep, twistObj) {
 // ── Screen 3: Pre-challenge twists (tribe swap, three gifts, journey, exile-island, etc.) ──
 function rpBuildPreTwist(ep) {
   const _rawTwistData = (ep.twistScenes?.length ? ep.twistScenes : generateTwistScenes(ep))
-    .filter(t => t.type !== 'exile-island' && t.type !== 'jury-elimination' && t.type !== 'kidnapping' && t.type !== 'first-impressions'); // shown in dedicated screens
+    .filter(t => t.type !== 'exile-island' && t.type !== 'jury-elimination' && t.type !== 'kidnapping' && t.type !== 'first-impressions' && t.type !== 'tied-destinies'); // shown in dedicated screens
   // Deduplicate: only show one scene per twist type (prevents double display if twist is in ep.twists twice)
   const _seenTypes = new Set();
   const twistData = _rawTwistData.filter(t => { if (_seenTypes.has(t.type)) return false; _seenTypes.add(t.type); return true; });
@@ -31764,6 +32397,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
     const isMoleSabotage  = evt.type === 'moleBondSabotage' || evt.type === 'moleChallengeThrow' || evt.type === 'moleInfoLeak' || evt.type === 'moleAdvSabotage' || evt.type === 'moleVoteDisruption';
     const isMoleLayLow    = evt.type === 'moleLayingLow';
     const isMoleExposed   = evt.type === 'moleExposed' || evt.type === 'moleExposedSurvival';
+    const isMoleSuspicion = evt.type === 'moleSuspicionTalk' || evt.type === 'moleSuspicionConfront';
     const isMoleReveal    = evt.type === 'moleUndiscoveredReveal' || evt.type === 'moleExitConfessional';
     const isCRExposure    = evt.type === 'culturalResetExposure';
     const isCRSurvived    = evt.type === 'culturalResetSurvived';
@@ -31971,6 +32605,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : isMoleSabotage    ? (evt.badgeText || 'MOLE')
                      : isMoleLayLow      ? (evt.badgeText || 'LAYING LOW')
                      : isMoleExposed     ? (evt.badgeText || 'MOLE EXPOSED')
+                     : isMoleSuspicion   ? (evt.badgeText || 'SUSPICION')
                      : isMoleReveal      ? (evt.badgeText || 'THE MOLE')
                      : isPos && isPersonal  ? '+ Bond formed'
                      : isPos                ? '+ Bond boost'
@@ -32056,6 +32691,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : isMoleSabotage ? 'red'
                      : isMoleLayLow ? ''
                      : isMoleExposed ? 'red'
+                     : isMoleSuspicion ? 'gold'
                      : isMoleReveal ? 'gold'
                      : isPos ? 'green' : isNeg ? 'red' : '';
 
@@ -32318,6 +32954,50 @@ function rpBuildChallenge(ep) {
       <div class="rp-title">${chalName}</div>
       <div style="text-align:center"><span class="rp-chal-type ${chalCat}">${chalCat}</span></div>`;
     if (chalDesc) html += `<p style="font-size:13px;color:#8b949e;line-height:1.65;margin:0 auto 16px;text-align:center;max-width:440px">${chalDesc}</p>`;
+    // Tied Destinies: paired reveal replaces individual reveal
+    if (ep.tiedDestinies?.pairScores?.length) {
+      const _tdPairs = ep.tiedDestinies.pairScores;
+      const _tdReversed = [..._tdPairs].reverse(); // worst first, winner last
+      const _tdKey = `td_chal_${ep.num}`;
+      // Store reveal data globally for the reveal functions
+      if (!window._tdRevealData) window._tdRevealData = {};
+      window._tdRevealData[_tdKey] = _tdReversed.map((ps, i) => ({
+        a: ps.pair.a, b: ps.pair.b, rank: _tdPairs.length - i, isWinner: i === _tdReversed.length - 1
+      }));
+
+      html += `<div style="margin-bottom:16px">
+        <div style="font-size:9px;font-weight:800;letter-spacing:2px;color:#818cf8;text-align:center;margin-bottom:8px">PAIRED RESULTS</div>
+        <div id="${_tdKey}" data-revealed="0">`;
+      _tdReversed.forEach((ps, i) => {
+        const rank = _tdPairs.length - i;
+        const isWinner = i === _tdReversed.length - 1;
+        // Pre-render the revealed content as a hidden element
+        const borderCol = isWinner ? 'rgba(63,185,80,0.3)' : 'rgba(139,148,158,0.1)';
+        const bgCol = isWinner ? 'rgba(63,185,80,0.04)' : 'transparent';
+        const rankCol = isWinner ? '#3fb950' : '#484f58';
+        html += `<div id="${_tdKey}-slot-${i}" style="display:flex;align-items:center;gap:10px;padding:8px 12px;margin-bottom:4px;border:1px solid rgba(139,148,158,0.1);border-radius:8px;opacity:0.15">
+          <span style="font-size:12px;font-weight:700;color:#484f58;width:20px">#${rank}</span>
+          <div style="width:36px;height:36px;border-radius:50%;background:rgba(139,148,158,0.15)"></div>
+          <div style="width:36px;height:36px;border-radius:50%;background:rgba(139,148,158,0.15)"></div>
+          <span style="flex:1;font-size:12px;color:#484f58">???</span>
+        </div>`;
+        // Hidden pre-rendered content
+        html += `<div id="${_tdKey}-content-${i}" style="display:none">
+          <span style="font-size:12px;font-weight:700;color:${rankCol};width:20px">#${rank}</span>
+          ${rpPortrait(ps.pair.a, 'sm')} ${rpPortrait(ps.pair.b, 'sm')}
+          <span style="flex:1;font-size:12px;color:#e6edf3">${ps.pair.a} &amp; ${ps.pair.b}</span>
+          ${isWinner ? '<span style="font-size:9px;font-weight:700;letter-spacing:1px;color:#3fb950;background:rgba(63,185,80,0.1);padding:2px 8px;border-radius:4px">IMMUNE</span>' : ''}
+        </div>`;
+      });
+      html += `</div>
+        <div style="text-align:center;margin-top:12px;display:flex;gap:8px;justify-content:center">
+          <button onclick="tdRevealNext('${_tdKey}')" style="padding:8px 20px;background:var(--accent-gold);border:none;border-radius:6px;color:#0d1117;font-family:var(--font-display);font-size:13px;letter-spacing:1px;cursor:pointer;font-weight:700">REVEAL NEXT</button>
+          <button onclick="tdRevealAll('${_tdKey}')" style="padding:6px 12px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:11px;cursor:pointer">Reveal All</button>
+        </div></div>`;
+      // Skip normal individual reveal for tied destinies
+      html += `</div>`;
+      return html;
+    }
     // "Needed this" section removed — spoils who's in danger before reveal
     html += `<div class="vp-section-header">Finishing order</div>
       <div id="${revealId}" data-placements='${JSON.stringify(placements)}' data-revealed="0" data-winner="${winner}" data-throwers='${JSON.stringify((ep.challengeThrows || []).filter(t => t.thrower).map(t => t.thrower))}'>
@@ -35636,6 +36316,37 @@ function rpBuildVotes(ep) {
     }
   }
 
+  // Mole exposure now has its own dedicated VP screen — no inline card here
+
+  // ── THE MOLE: vote disruption reveal (viewer-only — shows how the Mole influenced the vote) ──
+  if (ep.moleVoteDisruptions?.length) {
+    html += `<div style="margin-top:20px;padding:14px;border:2px solid rgba(248,81,73,0.3);border-radius:10px;background:rgba(248,81,73,0.03)">
+      <div style="font-size:9px;font-weight:800;letter-spacing:2px;color:#f85149;margin-bottom:10px;text-align:center">MOLE DISRUPTION</div>`;
+    ep.moleVoteDisruptions.forEach(vd => {
+      if (vd.type === 'rogue') {
+        const mp = pronouns(vd.voter);
+        html += `<div style="display:flex;align-items:center;gap:10px;padding:8px;margin-bottom:6px;background:rgba(248,81,73,0.05);border-radius:6px">
+          ${rpPortrait(vd.voter, 'sm')}
+          <div style="flex:1">
+            <div style="font-size:12px;color:#e6edf3"><strong>${vd.voter}</strong> went rogue — voted <strong style="color:#f85149">${vd.rogueTarget}</strong> instead of the plan (${vd.originalTarget}).</div>
+            <div style="font-size:10px;color:#8b949e;margin-top:2px">${mp.Sub} broke from the alliance to create chaos. The tribe doesn't know why.</div>
+          </div>
+          <span class="rp-brant-badge red" style="font-size:9px">MOLE</span>
+        </div>`;
+      } else if (vd.type === 'pitch') {
+        html += `<div style="display:flex;align-items:center;gap:10px;padding:8px;margin-bottom:6px;background:rgba(248,81,73,0.05);border-radius:6px">
+          ${rpPortrait(vd.pitcher, 'sm')}
+          <div style="flex:1">
+            <div style="font-size:12px;color:#e6edf3"><strong>${vd.pitcher}</strong> whispered to <strong>${vd.swayed}</strong> before the vote — redirecting ${pronouns(vd.swayed).posAdj} vote to <strong style="color:#f85149">${vd.newTarget}</strong>.</div>
+            <div style="font-size:10px;color:#8b949e;margin-top:2px">A quiet word at the right moment. ${vd.swayed} changed ${pronouns(vd.swayed).posAdj} vote without realizing who was pulling the strings.</div>
+          </div>
+          <span class="rp-brant-badge red" style="font-size:9px">MOLE</span>
+        </div>`;
+      }
+    });
+    html += `</div>`;
+  }
+
   // Torch-snuff: use firstEliminated for vote-1 in double boot, else use elim
   // Skip when fire-making (Second Life) — duel result shown in Aftermath, torch here would spoil it
   const _torchElim = ep.firstEliminated || (_hasFireMaking ? null : elim);
@@ -35688,12 +36399,97 @@ function rpBuildVotes(ep) {
     }
   }
 
+  // ── TIED DESTINIES: partner elimination card + partner WHY ──
+  if (ep.tiedDestinies?.eliminatedPartner && elim) {
+    const _tdPartner = ep.tiedDestinies.eliminatedPartner;
+    const _tdTarget = ep.tiedDestinies.eliminatedTarget;
+    const _tdPr = pronouns(_tdPartner);
+    const _place2 = (ep.gsSnapshot?.activePlayers ?? gs.activePlayers).length; // partner is one after
+    const _tdExitQuotes = [
+      `"I didn't get voted out. I got tied to the wrong person."`,
+      `"They weren't coming for me. But here I am."`,
+      `"I played a good game. I just got paired with the wrong person at the wrong time."`,
+      `"That's the cruelest twist this game has ever thrown. I was safe until they drew my name next to theirs."`,
+      `"${_tdTarget} took me down with ${pronouns(_tdTarget).obj}. I'll never forgive this game for that."`,
+    ];
+    html += `<div style="margin-top:28px;border-top:2px solid rgba(129,140,248,0.3);padding-top:20px">
+      <div style="font-size:9px;font-weight:800;letter-spacing:3px;color:#818cf8;text-align:center;margin-bottom:12px">TIED DESTINIES — COLLATERAL</div>
+      <div class="rp-elim">
+        <div class="rp-elim-eyebrow">${ordinal(_place2)} player eliminated</div>
+        ${rpPortrait(_tdPartner, 'xl elim')}
+        <div class="rp-elim-name">${_tdPartner}</div>
+        <div class="rp-elim-arch">${vpArchLabel(_tdPartner)}</div>
+        <div class="rp-elim-quote">${_tdExitQuotes[Math.floor(Math.random() * _tdExitQuotes.length)]}</div>
+        <div class="rp-elim-place">Eliminated by Tied Destinies — Episode ${ep.num}</div>
+      </div>
+      <div id="torch-snuff-td-${ep.num}" style="text-align:center;margin-top:16px">
+        <div class="torch-snuffed">${rpPortrait(_tdPartner, 'xl')}</div>
+        <div style="font-family:var(--font-display);font-size:20px;color:#818cf8;margin-top:12px;text-shadow:0 0 12px rgba(129,140,248,0.4)">Tied Destinies has spoken.</div>
+      </div>`;
+    // Partner WHY
+    html += `<div style="margin-top:20px;border-top:1px solid #21262d;padding-top:16px">
+      <div style="font-size:9px;font-weight:800;letter-spacing:2px;color:#484f58;margin-bottom:10px">=== WHY ${_tdPartner.toUpperCase()} WAS ELIMINATED ===</div>
+      <div style="padding:10px;background:rgba(129,140,248,0.04);border:1px solid rgba(129,140,248,0.15);border-radius:8px">
+        ${rpPortrait(_tdPartner, 'sm')}
+        <div style="font-size:12px;color:#c9d1d9;margin-top:8px;line-height:1.6">
+          ${_tdPartner} wasn't the target. ${_tdPr.Sub} ${_tdPr.sub === 'they' ? 'were' : 'was'} tied to ${_tdTarget} by the Tied Destinies twist.
+          When the tribe voted ${_tdTarget} out, ${_tdPartner} went with ${pronouns(_tdTarget).obj}.
+          ${threatScore(_tdTarget) > threatScore(_tdPartner)
+            ? `The vote was about removing ${_tdTarget} — ${_tdPartner} was collateral damage.`
+            : `Some votes may have targeted ${_tdTarget} specifically to take ${_tdPartner} out — the affordable path to a double elimination.`}
+        </div>
+      </div>
+    </div>`;
+    html += `</div>`;
+  }
+
   html += `</div></div>`; // end tv-results + rp-page
   return html;
 }
 
 // ── Interactive vote reveal ──
 const _tvState = {};
+
+// Tied Destinies paired challenge reveal
+function tdRevealNext(key) {
+  const el = document.getElementById(key);
+  if (!el) return;
+  const revealed = parseInt(el.dataset.revealed || '0');
+  const data = window._tdRevealData?.[key];
+  if (!data || revealed >= data.length) return;
+  const p = data[revealed];
+  const slot = document.getElementById(key + '-slot-' + revealed);
+  const content = document.getElementById(key + '-content-' + revealed);
+  if (slot && content) {
+    slot.innerHTML = content.innerHTML;
+    slot.style.opacity = '1';
+    slot.style.border = p.isWinner ? '1px solid rgba(63,185,80,0.3)' : '1px solid rgba(139,148,158,0.1)';
+    slot.style.background = p.isWinner ? 'rgba(63,185,80,0.04)' : 'transparent';
+    slot.style.animation = 'staggerIn 0.35s var(--ease-broadcast) both';
+    if (p.isWinner) slot.style.boxShadow = '0 0 0 1px var(--accent-gold)';
+  }
+  el.dataset.revealed = revealed + 1;
+}
+function tdRevealAll(key) {
+  const el = document.getElementById(key);
+  if (!el) return;
+  const data = window._tdRevealData?.[key];
+  if (!data) return;
+  for (let r = parseInt(el.dataset.revealed || '0'); r < data.length; r++) {
+    const p = data[r];
+    const slot = document.getElementById(key + '-slot-' + r);
+    const content = document.getElementById(key + '-content-' + r);
+    if (slot && content) {
+      slot.innerHTML = content.innerHTML;
+      slot.style.opacity = '1';
+      slot.style.border = p.isWinner ? '1px solid rgba(63,185,80,0.3)' : '1px solid rgba(139,148,158,0.1)';
+      slot.style.background = p.isWinner ? 'rgba(63,185,80,0.04)' : 'transparent';
+      slot.style.animation = 'staggerIn 0.35s var(--ease-broadcast) both';
+      if (p.isWinner) slot.style.boxShadow = '0 0 0 1px var(--accent-gold)';
+    }
+  }
+  el.dataset.revealed = data.length;
+}
 
 function tvRevealNext(epNum) {
   if (!_tvState[epNum]) _tvState[epNum] = { revealed: 0, tallyCounts: {}, revoteCounts: {} };
@@ -40608,6 +41404,10 @@ function buildVPScreens(epRecord) {
     return [{ name: gs.mergeName || 'merged', members: [...gs.activePlayers] }];
   })();
 
+  // ── 3b. Tied Destinies announcement (before camp — pairing is revealed at episode start) ──
+  const _tdAnnounceHtml = rpBuildTiedDestinies(ep);
+  if (_tdAnnounceHtml) vpScreens.push({ id:'tied-destinies', label:'Tied Destinies', html: _tdAnnounceHtml });
+
   // ── 4. Pre-Challenge Camp — one screen per tribe ──
   vpTribeGroups.forEach(tribe => {
     const phaseData = ep.campEvents?.[tribe.name];
@@ -41032,6 +41832,10 @@ function buildVPScreens(epRecord) {
       if (_mtRescLife) vpScreens.push({ id:'rescue-life', label:'Rescue Island', html: _mtRescLife });
     }
   } else if (hasTribal && !_isJuryElim) {
+    // The Mole: exposure screen fires right before tribal — the confrontation happens at camp
+    const _moleExpHtml = rpBuildMoleExposed(ep);
+    if (_moleExpHtml) vpScreens.push({ id:'mole-exposed', label:'The Mole Exposed', html: _moleExpHtml });
+    // Tied Destinies announcement screen — inserted earlier in VP flow (before camp life)
     vpScreens.push({ id:'tribal', label:'Tribal Council', html: rpBuildTribal(ep) });
     vpScreens.push({ id:'votes',  label:'The Votes',      html: rpBuildVotes(ep) });
 

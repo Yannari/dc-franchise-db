@@ -84,6 +84,29 @@ and the downstream consequence. None are guaranteed — all fire on a roll.
   into computeHeat post-merge (8 or fewer players). Count juror bonds to estimate who'd win
   FTC. Targets who'd beat them: +juryAdvantage*0.4 heat. Targets they'd beat: -0.5 heat
   (goat protection). Flows through pickTarget into alliance targeting naturally.
+[DONE] [TD-5] SCHOOLYARD PICK — schedulable pre-merge twist. Two captains (top challenge
+  performers or random) draft teams alternating. Mix-based pick logic (strategic/social/bold).
+  Bond consequences by pick position (+0.4 first picks to -0.5 last pick). Odd player count
+  sends unpicked to Exile Island (advantage search, returns to losing tribe next ep). Even
+  count: last picked gets shame/anger/fire camp events. Dedicated click-to-reveal VP screen
+  with per-pick reactions (archetype + stat + position driven). Wires into exile island system.
+  Suppresses regular exile format when active.
+[DONE] First Impressions Vote Rework — replaced simulateVotes/formAlliances with gut-feeling
+  vote system for Episode 1. No alliances, no split votes, no idol coverage. Scoring based on
+  perceived threat, social warmth, archetype snap-judgments, personal bonds. Vote reasons
+  tailored to first impressions context.
+[DONE] Aftermath Deep Rebuild — Truth or Anvil rebuilt as confrontation scenes (9 contradiction
+  types, full dialogue, archetype-flavored responses, ANVIL evidence reveal, real bond
+  consequences). Unseen Footage expanded to 10+ sources (showmance, betrayal, perception gaps,
+  challenge throws, idol finds, alliance collapse, loyalty tests). Fan Call rebuilt with 20+
+  game-data-driven question templates, category dedup, fan-type-filtered selection. Host Roast
+  rebuilt with 60+ unique templates, game-data pool per player, dedup via Set. Reunion
+  interviews made finale-format-aware (jury/challenge/fan-vote). Clean game players get quick
+  acknowledgment instead of forced confrontation.
+[DONE] Final Challenge Stage Shuffle — all 3 stages (The Perch/endurance, The Gauntlet/physical,
+  The Cipher/puzzle) fully randomized. Puzzle stage now has mental assistant boost. Last stage
+  always solo (assistants step back). Each stage has dramatic finale name when it's the closer
+  (Last One Standing, The Final Sprint, The Final Code). Smart assistant picks now matter.
 
 
 ── REMAINING — RANKED BY PRIORITY ─────────────────────────────────────────────
@@ -198,11 +221,6 @@ and the downstream consequence. None are guaranteed — all fire on a roll.
   Trigger: schedulable, replaces tribe challenge (pre-merge only).
   Mechanic: each tribe picks 1v1 champion. Win = hero moment. Lose = blame.
     Creates "why didn't you pick me?" drama.
-
-[TD-5] SCHOOLYARD PICK
-  Trigger: schedulable, alternative to random tribe swap (pre-merge only).
-  Mechanic: captains draft teams. Last picked = bottom. Creates pecking order.
-  Note: overlaps with tribe-swap. Lower priority than Raid/Champion.
 
 [14] REWARD TRIP BONDING BACKFIRE
   Trigger: reward with 2-3 winners, one has high-bond pair outside group.

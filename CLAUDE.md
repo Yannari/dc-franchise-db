@@ -160,6 +160,42 @@ is NOT actually loyal. Always check behavioral track record alongside raw stats.
 - Boosts all intuition-based detection checks at ~35% of intuition's weight
 - `intuition * X + mental * X * 0.35` pattern across: Mole suspicion, perceived bond correction, info broker exposure, fake idol detection, advantage snooping, false info early detection
 
+## Schoolyard Pick
+- Schedulable pre-merge twist: `schoolyard-pick` in TWIST_CATALOG, category `team`
+- Captain selection: top 2 individual challenge performers (fallback random)
+- Alternating draft with mix-based pick logic (strategic/social/bold captain personalities)
+- Bond consequences: +0.4 first picks → -0.5 last pick; pick position proportional
+- Odd count: unpicked player sent to Exile Island (wires into exile island system for advantage search)
+- Exile return: next episode, joins smallest tribe; `ep.tribesAtStart` refreshed after return
+- Camp events: LAST PICKED badge (shame/anger/fire), EXILE RETURN + PROVING GROUND badges
+- `gs._schoolyardExiled` persists across episodes for return; suppresses `handleExileFormat` + `exile-island` twist
+- VP: `rpBuildSchoolyardPick(ep)` — click-to-reveal draft with per-pick reactions (archetype + stat + position)
+- Text backlog: `_textSchoolyardPick(ep, ln, sec)`
+
+## Aftermath Show
+- `generateAftermathShow(ep)` — full aftermath data generation
+- **Truth or Anvil**: confrontation scene per interviewee. 9 contradiction types (vote-lie, fake-deal, bond-gap, double-agent, hidden-advantage, mole, betrayal, hidden-hatred, showmance). Full dialogue with archetype-flavored responses. Clean game = quick acknowledgment, no forced confrontation. Real bond consequences (-0.3 truth, -1.0 anvil).
+- **Unseen Footage**: 10+ sources (mole sabotage, fake deals, showmance spark/jealousy/breakup, perception gaps, undetected betrayals, challenge throws, secret idol finds, alliance collapse, loyalty tests). Scored by drama, top 3 shown.
+- **Fan Call**: 20+ game-data-driven question templates. Fan types (superfan/drama/hater/supporter) filter from shared pool. Category dedup prevents repeat topics.
+- **Host Roast**: 60+ unique templates from game data (betrayals, challenge wins/bombs, alliance count, votes received, side deals, showmances, big moves, popularity, archetype, stats). Dedup via Set.
+- **Reunion**: finale-format-aware (jury/challenge/fan-vote). Winner + runner-up interviews adapt language to match how the season was decided.
+- Active players do NOT watch the Aftermath — consequence text says "word gets back" or "when this airs", not "watching from camp"
+
+## First Impressions
+- `executeFirstImpressions()` — Episode 1 gut-feeling vote (NOT full `simulateVotes`)
+- No alliances, no split votes, no idol coverage, no jury references
+- Scoring: threat level, social warmth, archetype snap-judgments, bond factor, random variance
+- Vote reasons: "bad energy", "something feels calculated", "biggest physical threat", "hasn't connected", gut reads
+- Round-robin swap: voted-out players switch tribes
+
+## Final Challenge (finale format)
+- `simulateFinaleChallenge(finalists, assistants)` — 3-stage challenge
+- Stages: The Perch (endurance), The Gauntlet (physical), The Cipher (puzzle)
+- **All 3 stages fully randomized** — puzzle can come first, making mental assistants valuable
+- Last stage always solo (no assistant boost); assistants help first 2 stages only
+- Each stage has a dramatic finale name when it's the closer (Last One Standing / The Final Sprint / The Final Code)
+- `assistantDropoff` fires after second-to-last stage: "ASSISTANTS STEP BACK"
+
 ## Pronouns — NEVER hardcode
 - Always use `pronouns(name)` → `{sub, obj, pos, posAdj, ref, Sub, Obj, PosAdj}`
 - Never write literal "he/she/him/her" in player-describing template literals

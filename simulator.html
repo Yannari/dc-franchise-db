@@ -19532,6 +19532,8 @@ function handleExileFormat(ep) {
   if (ep.isMultiTribal || ep.isDoubleTribal || ep.isSlasherNight || ep.isSuddenDeath) return;
   // Don't double up with exile-island twist (which handles its own exile selection)
   if (ep.exileIslandPending) return;
+  // Don't double up with schoolyard pick exile (unpicked player already on exile)
+  if (ep.schoolyardPick?.exiled) return;
 
   let _exiled = null, _chooser = null, _chooserTribe = null, _chooserMembers = null;
 
@@ -26382,23 +26384,72 @@ function generateAftermathShow(ep) {
     aftermathMoments.push({ type: 'standing_ovation', players: [_popular], text: `${_popular} gets a standing ovation. The entire gallery is on their feet. Popularity score: ${_popScore}.${_popMoment ? ` The fans fell in love after episode ${_popMoment.num}.` : ''} ${_host}: "In all my years doing this — THAT is a reaction. ${_popular}, the fans adore you."` });
   }
 
-  // Host roast: always available as the closer (game-specific roasts)
+  // Host roast: always available as the closer (game-specific, unique per player)
   const _roastTargets = gs.activePlayers.slice(0, 6);
   if (_roastTargets.length >= 3) {
+    const _usedRoasts = new Set();
     const _roastLines = _roastTargets.map(p => {
       const rs = pStats(p); const rPr = pronouns(p); const rArch = rs.archetype || '';
       const _betrayals = gs.episodeHistory.filter(h => (h.defections || []).some(d => d.player === p)).length;
       const _chalWins = gs.chalRecord?.[p]?.wins || 0;
+      const _chalBombs = gs.chalRecord?.[p]?.bombs || 0;
       const _allianceCount = (gs.namedAlliances || []).filter(a => a.members.includes(p)).length;
-      // Game-specific roasts
-      if (_betrayals >= 3) return `"${p} has betrayed ${_betrayals} alliances. At this point it's not strategy — it's a personality trait."`;
-      if (_chalWins >= 3) return `"${p} has won ${_chalWins} challenges. ${rPr.Sub} can't win a conversation, but ${rPr.sub} can win a puzzle."`;
-      if (_allianceCount >= 4) return `"${p} has been in ${_allianceCount} alliances. ${rPr.Sub} ${rPr.sub === 'they' ? 'collect' : 'collects'} alliances like trading cards."`;
-      if (rArch === 'villain') return _pick([`"${p} — the only player whose alliance members sleep with one eye open."`, `"${p}. Even ${rPr.posAdj} own reflection doesn't trust ${rPr.obj}."`]);
-      if (rArch === 'floater') return _pick([`"${p} — has anyone checked if ${rPr.sub} ${rPr.sub === 'they' ? 'are' : 'is'} still playing?"`, `"I forgot ${p} was here. And I'm the HOST."`]);
-      if (rs.social >= 8) return `"${p} — friends with everyone. Trusted by nobody."`;
-      if (rs.strategic >= 8) return `"${p} thinks ${rPr.sub} ${rPr.sub === 'they' ? 'are' : 'is'} running the game. The game disagrees."`;
-      return `"${p}. I'd roast ${rPr.obj} but I genuinely don't know what ${rPr.posAdj} game is."`;
+      const _votesReceived = gs.episodeHistory.reduce((n, h) => n + ((h.votes || {})[p] || 0), 0);
+      const _bigMoves = gs.playerStates?.[p]?.bigMoves || 0;
+      const _pop = gs.popularity?.[p] || 5;
+      const _sideDeals = (gs.sideDeals || []).filter(d => d.players.includes(p)).length;
+      const _showmance = (gs.showmances || []).find(s => s.players.includes(p));
+      const _showPartner = _showmance?.players?.find(n => n !== p);
+      // Build a pool of possible roasts for this player — all game-data-driven
+      const pool = [];
+      if (_betrayals >= 3) pool.push(`"${p} has betrayed ${_betrayals} alliances. At this point it's not strategy — it's a personality trait."`);
+      if (_betrayals === 2) pool.push(`"${p} has betrayed two alliances. ${rPr.Sub} ${rPr.sub === 'they' ? 'call' : 'calls'} it 'adapting.' Everyone else calls it something different."`);
+      if (_betrayals === 1) pool.push(`"${p} betrayed ${rPr.posAdj} alliance once. Just once. But nobody's forgotten."`);
+      if (_chalWins >= 4) pool.push(`"${p} has won ${_chalWins} challenges. At what point do we just give ${rPr.obj} a trophy and send ${rPr.obj} home?"`);
+      if (_chalWins >= 2) pool.push(`"${p}, ${_chalWins} challenge wins. Impressive. Now do something strategic with that."`);
+      if (_chalBombs >= 3) pool.push(`"${p} has bombed ${_chalBombs} challenges. ${rPr.Sub} ${rPr.sub === 'they' ? 'are' : 'is'} single-handedly responsible for half ${rPr.posAdj} tribe's losses."`);
+      if (_allianceCount >= 4) pool.push(`"${p} has been in ${_allianceCount} alliances. ${rPr.Sub} ${rPr.sub === 'they' ? 'collect' : 'collects'} alliances like they expire."`);
+      if (_allianceCount >= 3) pool.push(`"${p} — three alliances deep. At this point, who ISN'T ${rPr.sub} aligned with?"`);
+      if (_votesReceived >= 6) pool.push(`"${p} has received ${_votesReceived} votes and is STILL here. Like a cockroach. A very strategic cockroach."`);
+      if (_votesReceived >= 4) pool.push(`"${p}, ${_votesReceived} votes against ${rPr.obj} so far. The tribe keeps trying. ${rPr.Sub} ${rPr.sub === 'they' ? 'keep' : 'keeps'} surviving."`);
+      if (_sideDeals >= 3) pool.push(`"${p} has made ${_sideDeals} side deals. That's not an alliance strategy — that's a Ponzi scheme."`);
+      if (_sideDeals >= 2) pool.push(`"${p} — final two deals with multiple people. ${rPr.Sub} can't take everyone to the end. Math doesn't work that way."`);
+      if (_showPartner) pool.push(`"${p} and ${_showPartner}. How romantic. How strategically foolish."`);
+      if (_bigMoves >= 3) pool.push(`"${p} has made ${_bigMoves} big moves. At some point the target on ${rPr.posAdj} back becomes a bullseye."`);
+      if (_bigMoves === 0 && gs.episodeHistory.length >= 4) pool.push(`"${p}. Zero big moves. ${rPr.Sub} ${rPr.sub === 'they' ? 'are' : 'is'} playing the 'exist and hope nobody notices' strategy."`);
+      if (_pop >= 8) pool.push(`"${p} — fan favorite. Which means everyone in the game wants ${rPr.obj} gone. Popularity is a death sentence out there."`);
+      if (_pop <= 3) pool.push(`"${p}. The fans have spoken. They just didn't say anything nice."`);
+      // Archetype-based (2+ options each to avoid repeats)
+      if (rArch === 'villain') pool.push(`"${p} — the only player whose alliance members sleep with one eye open."`, `"${p}. Even ${rPr.posAdj} own reflection doesn't trust ${rPr.obj}."`, `"${p} is playing like a villain. Not the fun kind. The kind people root against."`);
+      if (rArch === 'schemer') pool.push(`"${p} has a plan. And a backup plan. And a backup to the backup. None of them are working."`, `"${p} thinks ${rPr.sub}'${rPr.sub === 'they' ? 're' : 's'} the puppet master. The puppets disagree."`);
+      if (rArch === 'floater') pool.push(`"${p} — has anyone checked if ${rPr.sub} ${rPr.sub === 'they' ? 'are' : 'is'} still playing?"`, `"I forgot ${p} was here. And I'm the HOST."`, `"${p}'s strategy: don't be interesting enough to eliminate."`);
+      if (rArch === 'challenge-beast') pool.push(`"${p} wins challenges and nothing else. ${rPr.Sub} ${rPr.sub === 'they' ? 'have' : 'has'} the social game of a rock."`, `"${p}. Unbeatable in challenges. Invisible everywhere else."`);
+      if (rArch === 'hothead') pool.push(`"${p} — one bad comment away from a tribal council meltdown. Every episode."`, `"${p}'s temperament has its own threat level. It's currently at orange."`);
+      if (rArch === 'social-butterfly') pool.push(`"${p} talks to everyone. Commits to no one. It's giving politician."`, `"${p} knows everyone's secrets. The question is whether anyone knows ${rPr.posAdj}."`);
+      if (rArch === 'underdog') pool.push(`"${p} — the underdog story that won't end. At some point, you're just a dog."`, `"${p} has survived everything. Through skill? Luck? Nobody's sure. Including ${rPr.obj}."`);
+      if (rArch === 'hero') pool.push(`"${p} thinks ${rPr.sub}'${rPr.sub === 'they' ? 're' : 's'} the hero of this story. Somebody should tell ${rPr.obj} this isn't that kind of show."`, `"${p} — honorable, loyal, principled. Which is why ${rPr.sub}'ll finish third."`);
+      if (rArch === 'mastermind') pool.push(`"${p} wants you to think ${rPr.sub}'${rPr.sub === 'they' ? 're' : 's'} the smartest person out there. The jury will decide that."`, `"${p} — the self-proclaimed mastermind. Self-proclaimed being the key word."`);
+      if (rArch === 'chaos-agent') pool.push(`"${p} doesn't have a strategy. ${rPr.Sub} ${rPr.sub === 'they' ? 'have' : 'has'} a mood. And right now it's chaos."`, `"${p}. Nobody knows what ${rPr.sub}'ll do next. Including ${rPr.obj}."`);
+      if (rArch === 'provider') pool.push(`"${p} keeps the tribe fed. The tribe keeps writing ${rPr.posAdj} name down. Gratitude isn't a game mechanic."`);
+      // Stat-driven fallbacks (proportional — higher stat = funnier)
+      if (rs.social >= 7 && !pool.some(r => r.includes('friends'))) pool.push(`"${p} — knows everyone, trusts everyone, will be blindsided by everyone."`, `"${p}'s social game is flawless. ${rPr.Sub} ${rPr.sub === 'they' ? 'are' : 'is'} going to be DEVASTATED when it doesn't save ${rPr.obj}."`);
+      if (rs.strategic >= 7 && !pool.some(r => r.includes('running'))) pool.push(`"${p} thinks ${rPr.sub} ${rPr.sub === 'they' ? 'are' : 'is'} running this game. ${rPr.Sub} ${rPr.sub === 'they' ? 'are' : 'is'} running... something."`, `"${p} — strategic genius. Just ask ${rPr.obj}. ${rPr.Sub}'ll tell you."`);
+      if (rs.boldness >= 7) pool.push(`"${p} is the boldest player left. Which is another way of saying the most reckless."`, `"${p} makes moves. Not all of them are smart. But ${rPr.sub} make${rPr.sub === 'they' ? '' : 's'} them."`);
+      if (rs.loyalty >= 8) pool.push(`"${p} — loyal to a fault. Literally. The loyalty is going to get ${rPr.obj} eliminated."`, `"${p} has never broken a promise. How quaint. How doomed."`);
+      if (rs.loyalty <= 3) pool.push(`"${p}'s word is worth exactly nothing. And everyone knows it. Yet people KEEP making deals with ${rPr.obj}."`, `"${p} — loyalty of a weathervane. Points wherever the wind blows."`);
+      if (rs.temperament <= 3) pool.push(`"${p} is one bad tribal away from a complete meltdown. I've got the footage ready."`, `"${p}. I'd say something sharp but I'm genuinely afraid of the reaction."`);
+      // Universal fallbacks (varied enough to never repeat)
+      if (!pool.length) pool.push(
+        `"${p}. ${rPr.Sub} ${rPr.sub === 'they' ? 'have' : 'has'} been here the whole time and I still can't describe ${rPr.posAdj} game in one sentence."`,
+        `"${p} — the human equivalent of a participation trophy. Still in the game, but why?"`,
+        `"${p}. No enemies. No big moves. No story. That's not a strategy — that's a waiting room."`,
+        `"${p} is surviving, not playing. There's a difference. The jury knows it too."`
+      );
+      // Pick one that hasn't been used yet
+      const _available = pool.filter(r => !_usedRoasts.has(r));
+      const _chosen = _available.length ? _available[([...p].reduce((s,c) => s + c.charCodeAt(0), 0) + ep.num) % _available.length] : pool[0];
+      _usedRoasts.add(_chosen);
+      return _chosen;
     });
     aftermathMoments.push({ type: 'host_roast', players: _roastTargets, roasts: _roastLines, text: `${_host}: "Before we go — let's check in on the players still out there." The gallery leans forward. Nobody is safe.` });
   }
@@ -44259,8 +44310,8 @@ function buildVPScreens(epRecord) {
         });
       }
 
-      // Text fallback (emotional, standing ovation)
-      if (_mom.text && !_mom.dialogue?.length) {
+      // Text fallback (emotional, standing ovation) — not host_roast, which renders its own intro
+      if (_mom.text && !_mom.dialogue?.length && _mom.type !== 'host_roast') {
         _momHtml += `<div class="aftermath-card-gold" style="text-align:center">
           <div style="font-size:14px;color:#f5f0e8;line-height:1.7;font-style:italic">${_mom.text}</div>
         </div>`;

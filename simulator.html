@@ -1587,6 +1587,7 @@ const TWIST_CATALOG = [
   { id:'tribe-dissolve',   emoji:'💥', name:'Tribe Dissolve',       category:'team',       phase:'pre-merge',  desc:'Tribes reduced by one — all players reshuffled into fewer tribes.',         engineType:'tribe-dissolve'  },
   { id:'tribe-expansion',  emoji:'📈', name:'Tribe Expansion',      category:'team',       phase:'pre-merge',  desc:'A new tribe is formed — all players reshuffled into N+1 groups.',           engineType:'tribe-expansion' },
   { id:'mutiny',           emoji:'⚔️', name:'Mutiny',               category:'team',       phase:'pre-merge',  desc:'Players may voluntarily switch tribes during a challenge.',                  engineType:'mutiny'          },
+  { id:'schoolyard-pick',  emoji:'👆', name:'Schoolyard Pick',      category:'team',       phase:'pre-merge',  desc:'Two captains draft teams. Last picked = bottom of the pecking order. Odd count sends unpicked to exile.', engineType:'schoolyard-pick', incompatible:['no-tribal','elimination-swap'] },
   { id:'abduction',        emoji:'🫳', name:'Abduction',            category:'team',       phase:'pre-merge',  desc:'Each tribe steals one player from a competing tribe.',                      engineType:'abduction'       },
   { id:'kidnapping',       emoji:'🫳', name:'Kidnapping',           category:'team',       phase:'pre-merge',  desc:'Challenge winner tribe kidnaps one player from the losing tribe. That player skips tribal (safe) and bonds with their captors. Returns next episode.', engineType:'kidnapping' },
   { id:'first-impressions',emoji:'👀', name:'First Impressions',    category:'team',       phase:'pre-merge',  desc:'Each tribe votes someone out on first impressions alone. The "eliminated" players swap tribes instead.', engineType:'first-impressions' },
@@ -7293,6 +7294,17 @@ function buildVoteReason(voter, target, type, ctx = {}) {
       `somebody had to pull the trigger — this was the moment`,
       `the threat is too real to look past anymore`,
     ]);
+    // Jury management: voter ran the FTC math and this target wins
+    if (voterS.strategic >= 6 && gs.activePlayers?.length <= 8 && gs.jury?.length) {
+      const _tJV = (gs.jury || []).filter(j => getBond(j, target) >= 2).length;
+      const _vJV = (gs.jury || []).filter(j => getBond(j, voter) >= 2).length;
+      if (_tJV > _vJV) return pick([
+        `${target} wins the game if ${pronouns(target).sub} ${pronouns(target).sub === 'they' ? 'reach' : 'reaches'} the end — everyone in that room knows it`,
+        `jury math doesn't lie — ${target} has too many friends on the jury to let ${pronouns(target).obj} get to FTC`,
+        `can't sit next to ${target} at Final Tribal — the jury loves ${pronouns(target).obj} and that's a death sentence`,
+        `the jury would hand ${target} the win. ${pronouns(target).Sub} ${pronouns(target).sub === 'they' ? 'have' : 'has'} to go before that happens`,
+      ]);
+    }
     if (targetS.strategic >= 8 && targetS.social >= 7) return pick([
       `complete player — controls votes and has the jury wrapped`,
       `strategic and likeable is the worst combination to be sitting next to`,
@@ -9754,20 +9766,115 @@ function executeFirstImpressions(ep, twistObj) {
   const _pick = arr => arr[Math.floor(Math.random() * arr.length)];
   const results = []; // { tribe, votedOut, votes, voters, nonVoters, sentTo }
 
-  // Step 1: each tribe runs a full vote (no immune, no challenge context)
+  // Step 1: each tribe runs a gut-feeling vote (no alliances, no strategy — pure first impressions)
   gs.tribes.forEach(tribe => {
     const members = [...tribe.members];
-    const alliances = formAlliances(members, tribe.name, null);
-    const voteResult = simulateVotes(members, null, alliances, [], false);
-    // Find the target (most votes)
-    const voteCounts = voteResult.votes;
+
+    // Score each player as a target based on first impressions
+    // Higher score = more likely to be targeted
+    const targetScores = {};
+    members.forEach(p => {
+      const ps = pStats(p);
+      let score = 0;
+      // Perceived threat: strong/smart players attract attention
+      score += threatScore(p) * 0.3;
+      // Outsider energy: low social = doesn't connect quickly
+      score += (10 - ps.social) * 0.15;
+      // Intimidation: bold/aggressive players make others uncomfortable
+      score += ps.boldness * 0.1;
+      // Archetype snap judgments
+      if (ps.archetype === 'villain' || ps.archetype === 'schemer') score += 1.5;
+      if (ps.archetype === 'hothead' || ps.archetype === 'chaos-agent') score += 1.0;
+      if (ps.archetype === 'challenge-beast') score += 0.8;
+      if (ps.archetype === 'floater') score -= 0.5; // invisible
+      if (ps.archetype === 'social-butterfly') score -= 0.8; // likeable
+      if (ps.archetype === 'hero') score -= 0.3;
+      // Random variance (gut feeling isn't precise)
+      score += Math.random() * 2.5;
+      targetScores[p] = score;
+    });
+
+    // Each player votes for their highest-scored target (can't vote self)
+    const log = [];
+    const voteCounts = {};
+    members.forEach(voter => {
+      const voterS = pStats(voter);
+      // Score targets from this voter's perspective, adding personal bond factor
+      const candidates = members.filter(m => m !== voter);
+      const scored = candidates.map(t => {
+        let s = targetScores[t];
+        const bond = getBond(voter, t);
+        s -= bond * 0.4; // positive bond = less likely to target
+        // Personal gut: intuitive voters read threat better
+        if (voterS.intuition >= 7) s += threatScore(t) * 0.15;
+        // Strategic voters target threats even on day 1
+        if (voterS.strategic >= 7) s += threatScore(t) * 0.1;
+        s += Math.random() * 1.0;
+        return { name: t, score: s };
+      }).sort((a, b) => b.score - a.score);
+
+      const target = scored[0].name;
+      voteCounts[target] = (voteCounts[target] || 0) + 1;
+
+      // Generate gut-feeling reason (no alliances, no idols, no split votes)
+      const targetS = pStats(target);
+      const bond = getBond(voter, target);
+      let reason;
+      if (bond <= -2) {
+        reason = _pick([
+          `bad energy from the start — something about ${target} doesn't sit right`,
+          `first instinct said ${target} was trouble, and ${pronouns(voter).sub} ${pronouns(voter).sub==='they'?'trust':'trusts'} ${pronouns(voter).posAdj} gut`,
+          `${target} rubbed ${pronouns(voter).obj} the wrong way within minutes of meeting`,
+        ]);
+      } else if (targetS.archetype === 'villain' || targetS.archetype === 'schemer') {
+        reason = _pick([
+          `something about ${target} feels calculated — not here to make friends`,
+          `${target} was reading the room too carefully for someone who just got here`,
+          `the way ${target} carries ${pronouns(target).ref} — it's a red flag on day one`,
+        ]);
+      } else if (targetS.archetype === 'challenge-beast' || threatScore(target) >= 7) {
+        reason = _pick([
+          `${target} looks like the biggest physical threat here — better to act early`,
+          `you can see it in how ${target} carries ${pronouns(target).ref} — too dangerous to let settle in`,
+          `strategic and likeable is the worst combination to be sitting next to`,
+        ]);
+      } else if (targetS.social <= 4) {
+        reason = _pick([
+          `${target} hasn't connected with anyone — easy first target`,
+          `nobody's spoken up for ${target} — that says enough`,
+          `${target} is on the outside looking in and everyone can feel it`,
+        ]);
+      } else if (voterS.intuition >= 7) {
+        reason = _pick([
+          `gut read — ${target} is not what ${pronouns(target).sub}'${pronouns(target).sub==='they'?'re':'s'} presenting`,
+          `something is off about ${target} — can't explain it, but the instinct is strong`,
+          `first impressions matter, and ${target}'s first impression was wrong`,
+        ]);
+      } else if (targetS.boldness >= 7) {
+        reason = _pick([
+          `${target} came in too hot — drawing attention on day one is never smart`,
+          `${target} is loud and confident — which makes ${pronouns(target).obj} an easy consensus name`,
+          `the boldest person in the room is usually the first one targeted`,
+        ]);
+      } else {
+        reason = _pick([
+          `no strong feelings either way — ${target} was just the name that came up`,
+          `had to write someone's name down — ${target} felt like the safest choice`,
+          `pure gut — no strategy, no alliances, just a feeling`,
+          `${target} was the name floating around — went with the room`,
+          `didn't have enough time to build trust — ${target} was the path of least resistance`,
+        ]);
+      }
+
+      log.push({ voter, voted: target, reason });
+    });
+
     const sorted = Object.entries(voteCounts).sort((a, b) => b[1] - a[1]);
     const votedOut = sorted[0]?.[0];
     if (!votedOut) return;
-    // Track who voted for the target
-    const voters = voteResult.log.filter(l => l.voted === votedOut).map(l => l.voter);
+    const voters = log.filter(l => l.voted === votedOut).map(l => l.voter);
     const nonVoters = members.filter(m => m !== votedOut && !voters.includes(m));
-    results.push({ tribe: tribe.name, votedOut, votes: voteCounts, voters, nonVoters, log: voteResult.log });
+    results.push({ tribe: tribe.name, votedOut, votes: voteCounts, voters, nonVoters, log });
   });
 
   if (!results.length) return;
@@ -9911,6 +10018,140 @@ function applyTwist(ep, twist, isPrimary = true) {
 
   } else if (engineType === 'first-impressions') {
     executeFirstImpressions(ep, twistObj);
+
+  } else if (engineType === 'schoolyard-pick') {
+    if (gs.phase !== 'pre-merge' || gs.tribes.length < 2) return;
+    const _pick = arr => arr[Math.floor(Math.random() * arr.length)];
+    const allActive = [...gs.activePlayers];
+    const tribeNames = gs.tribes.map(t => t.name);
+
+    // ── Select captains: top 2 individual challenge performers, fallback random ──
+    let captains, captainSource;
+    const _prevEp = gs.episodeHistory[gs.episodeHistory.length - 1];
+    const _chalScores = _prevEp?.chalMemberScores;
+    if (_chalScores && Object.keys(_chalScores).length >= 2) {
+      const _ranked = Object.entries(_chalScores).filter(([n]) => allActive.includes(n)).sort((a, b) => b[1] - a[1]);
+      // Pick best from each tribe if possible
+      const _t1 = gs.tribes[0]?.name, _t2 = gs.tribes[1]?.name;
+      const _best1 = _ranked.find(([n]) => gs.tribes.find(t => t.name === _t1)?.members.includes(n));
+      const _best2 = _ranked.find(([n]) => gs.tribes.find(t => t.name === _t2)?.members.includes(n));
+      captains = [_best1?.[0] || _ranked[0][0], _best2?.[0] || _ranked[1]?.[0] || _ranked[0][0]];
+      if (captains[0] === captains[1]) captains[1] = _ranked.find(([n]) => n !== captains[0])?.[0] || allActive.find(n => n !== captains[0]);
+      captainSource = 'challenge';
+    } else {
+      const _shuffled = [...allActive].sort(() => Math.random() - 0.5);
+      captains = [_shuffled[0], _shuffled[1]];
+      captainSource = 'random';
+    }
+
+    // ── Draft: alternating picks, mix-based on captain personality ──
+    const pool = allActive.filter(n => !captains.includes(n));
+    const teams = [[], []];
+    teams[0].push(captains[0]);
+    teams[1].push(captains[1]);
+    const picks = [];
+    let pickNum = 1;
+
+    while (pool.length > 1) { // leave 1 for potential exile (odd)
+      const capIdx = (pickNum - 1) % 2;
+      const cap = captains[capIdx];
+      const capS = pStats(cap);
+      // Score each available player based on captain's personality
+      const scored = pool.map(p => {
+        let sc = 0;
+        const cw = -(pStats(p).physical * 0.3 + pStats(p).endurance * 0.2 + pStats(p).mental * 0.15); // negative = stronger
+        const bond = getBond(cap, p);
+        if (capS.strategic >= 7) sc = cw * 0.6 + bond * 0.4;
+        else if (capS.social >= 7) sc = bond * 0.6 + cw * 0.4;
+        else if (capS.boldness >= 7) sc = Math.max(0, -bond) * 0.5 + threatScore(p) * 0.5;
+        else sc = cw * 0.5 + bond * 0.5;
+        return { name: p, score: sc + Math.random() * 0.5 };
+      }).sort((a, b) => b.score - a.score);
+
+      const picked = scored[0].name;
+      pool.splice(pool.indexOf(picked), 1);
+      teams[capIdx].push(picked);
+      picks.push({ captain: cap, picked, pickNumber: pickNum });
+      pickNum++;
+
+      // If only 1 left and odd total, stop (that's the exile)
+      if (pool.length === 1 && allActive.length % 2 !== 0) break;
+      // If even, keep going until pool is empty
+      if (pool.length === 1 && allActive.length % 2 === 0) {
+        const lastCapIdx = pickNum % 2 === 1 ? 0 : 1;
+        const lastPicked = pool[0];
+        pool.splice(0, 1);
+        teams[lastCapIdx].push(lastPicked);
+        picks.push({ captain: captains[lastCapIdx], picked: lastPicked, pickNumber: pickNum });
+        break;
+      }
+    }
+
+    // ── Handle last picked / exile ──
+    const isOdd = allActive.length % 2 !== 0;
+    const exiled = isOdd && pool.length === 1 ? pool[0] : null;
+    const lastPicked = picks[picks.length - 1]?.picked;
+
+    // Emotional reaction (proportional + archetype)
+    const _emotionTarget = exiled || lastPicked;
+    let _emotionScores = { anger: 0, shame: 0, fire: 0 };
+    if (_emotionTarget) {
+      const eS = pStats(_emotionTarget);
+      const eArch = eS.archetype || '';
+      _emotionScores.anger = (10 - eS.temperament) * 0.1;
+      _emotionScores.shame = eS.temperament * 0.08;
+      _emotionScores.fire = eS.boldness * 0.1;
+      // Archetype modifiers
+      if (eArch === 'villain' || eArch === 'schemer') _emotionScores.anger += 0.3;
+      if (eArch === 'hero') _emotionScores.shame += 0.2;
+      if (eArch === 'hothead' || eArch === 'chaos-agent') _emotionScores.anger += 0.4;
+      if (eArch === 'challenge-beast') _emotionScores.fire += 0.4;
+      if (eArch === 'underdog') _emotionScores.fire += 0.3;
+      if (eArch === 'floater') _emotionScores.shame += 0.3;
+      if (eArch === 'social-butterfly') { _emotionScores.shame += 0.2; _emotionScores.anger += 0.1; }
+    }
+    const _dominantEmotion = _emotionScores.anger >= _emotionScores.shame && _emotionScores.anger >= _emotionScores.fire ? 'anger'
+      : _emotionScores.fire >= _emotionScores.shame ? 'fire' : 'shame';
+
+    // Bond consequences
+    picks.forEach((p, i) => {
+      const totalPicks = picks.length;
+      if (i <= 1) addBond(p.captain, p.picked, 0.4); // first picks
+      else if (i <= 3) addBond(p.captain, p.picked, 0.2);
+      else if (i >= totalPicks - 2) { addBond(p.captain, p.picked, -0.2); addBond(captains.find(c => c !== p.captain), p.picked, -0.2); }
+      else addBond(p.captain, p.picked, 0.1);
+    });
+    if (lastPicked) addBond(picks[picks.length - 1].captain, lastPicked, -0.5);
+
+    // Assign tribes
+    gs.tribes = tribeNames.map((name, i) => ({ name, members: [...teams[i]] }));
+
+    // Handle exile — wire into exile island system for advantage search + VP screen
+    if (exiled) {
+      gs.activePlayers = gs.activePlayers.filter(p => p !== exiled);
+      gs._schoolyardExiled = exiled;
+      gs._schoolyardExiledEmotion = _dominantEmotion;
+      gs._schoolyardExiledScores = _emotionScores;
+      // Set exiledThisEp so the exile island advantage search fires
+      gs.exiledThisEp = exiled;
+      // Inject an exile-island twist object so the VP screen renders
+      const _exileTwObj = { type: 'exile-island', catalogId: 'exile-island', name: 'Exile Island',
+        exiled, exileChooser: null, exileChooserTribe: null, exileChooserMembers: null,
+        schoolyardExile: true };
+      ep.twists.push(_exileTwObj);
+    }
+
+    // Store data
+    twistObj.schoolyardPick = true;
+    twistObj.captains = [...captains];
+    twistObj.captainSource = captainSource;
+    twistObj.picks = picks;
+    twistObj.lastPicked = lastPicked;
+    twistObj.exiled = exiled;
+    twistObj.dominantEmotion = _dominantEmotion;
+    twistObj.emotionScores = _emotionScores;
+    twistObj.newTribes = gs.tribes.map(t => ({ name: t.name, members: [...t.members] }));
+    ep.schoolyardPick = { captains: [...captains], captainSource, picks, lastPicked, exiled, dominantEmotion: _dominantEmotion, emotionScores: _emotionScores, newTribes: twistObj.newTribes };
 
   } else if (engineType === 'mutiny') {
     if (gs.phase !== 'pre-merge' || gs.tribes.length < 2) return;
@@ -10676,6 +10917,8 @@ function applyTwist(ep, twist, isPrimary = true) {
   // ── ADVANTAGES ─────────────────────────────────────────────────────
   } else if (engineType === 'exile-island') {
     if (gs.activePlayers.length < 3) return;
+    // Skip if schoolyard pick already exiled someone this episode
+    if (ep.schoolyardPick?.exiled) return;
     // Selection happens post-challenge: winner picks (pre-merge) or immunity winner picks (post-merge)
     ep.exileIslandPending = true;
 
@@ -19551,6 +19794,25 @@ function simulateEpisode() {
     delete gs.pendingFanVoteReturn;
   }
 
+  // ── Schoolyard Pick exile return: exiled player joins the tribe that lost someone last tribal ──
+  if (gs._schoolyardExiled) {
+    const _syExiled = gs._schoolyardExiled;
+    const _syEmotion = gs._schoolyardExiledEmotion || 'shame';
+    const _syScores = gs._schoolyardExiledScores || {};
+    // Find which tribe lost a member last episode — smallest tribe (player already removed from roster)
+    const _losingTribe = [...gs.tribes].sort((a, b) => a.members.length - b.members.length)[0];
+    if (_losingTribe) {
+      _losingTribe.members.push(_syExiled);
+      if (!gs.activePlayers.includes(_syExiled)) gs.activePlayers.push(_syExiled);
+      ep.schoolyardExileReturn = { player: _syExiled, tribe: _losingTribe.name, emotion: _syEmotion, emotionScores: _syScores };
+      // Refresh tribesAtStart — the snapshot was taken BEFORE this return
+      ep.tribesAtStart = gs.tribes.map(t => ({ name: t.name, members: [...t.members] }));
+    }
+    delete gs._schoolyardExiled;
+    delete gs._schoolyardExiledEmotion;
+    delete gs._schoolyardExiledScores;
+  }
+
   // Sort twist processing order: first-impressions FIRST (changes rosters) → returns → eliminations → everything else
   // First-impressions must fire before any other twist so roster changes are visible to subsequent twists
   // Returns first so returnees are in the active pool for ambassador selection
@@ -19564,7 +19826,7 @@ function simulateEpisode() {
   });
   scheduledTwists.forEach((twist, i) => applyTwist(ep, twist, i === 0));
   // Refresh tribesAtStart after team-changing twists (swap, dissolve, expansion, mutiny, abduction)
-  const _teamTwists = ['tribe-swap','tribe-dissolve','tribe-expansion','mutiny','abduction','first-impressions'];
+  const _teamTwists = ['tribe-swap','tribe-dissolve','tribe-expansion','mutiny','abduction','first-impressions','schoolyard-pick'];
   if (ep.twists.some(t => _teamTwists.includes(t.type))) {
     // Track who changed tribes for Trigger H (swap loyalty assumption)
     const _oldTribes = ep.tribesAtStart || [];
@@ -19842,6 +20104,83 @@ function simulateEpisode() {
       const text = texts[([...r.name].reduce((s,c) => s + c.charCodeAt(0), 0) + ep.num) % texts.length];
       evts.unshift({ type: 'journeyLoss', players: [r.name], text });
     });
+  }
+
+  // ── Schoolyard Pick camp events: last-picked shame/anger/fire + exile return events ──
+  if (ep.schoolyardPick?.lastPicked && ep.campEvents) {
+    const _syp = ep.schoolyardPick;
+    const _sypTarget = _syp.exiled || _syp.lastPicked;
+    const _sypEmotion = _syp.dominantEmotion || 'shame';
+    const _sypTribe = gs.tribes.find(t => t.members.includes(_sypTarget))?.name;
+    // Last picked event (only if not exiled — exiled player isn't on a tribe yet)
+    if (!_syp.exiled && _sypTribe && ep.campEvents[_sypTribe]) {
+      const _lp = _syp.lastPicked;
+      const _lpP = pronouns(_lp);
+      const _lpCap = _syp.picks[_syp.picks.length - 1]?.captain;
+      const _lastPickedTexts = {
+        anger: [
+          `${_lp} is the last one picked. ${_lpP.Sub} ${_lpP.sub==='they'?'don\'t':'doesn\'t'} say a word walking over to ${_sypTribe} — but the look ${_lpP.sub} ${_lpP.sub==='they'?'give':'gives'} ${_lpCap} says everything.`,
+          `Last pick. ${_lp} absorbs the humiliation in silence. Then ${_lpP.sub} start${_lpP.sub==='they'?'':'s'} working harder than anyone at camp. The anger is fuel.`,
+        ],
+        shame: [
+          `${_lp} walks to ${_sypTribe}'s mat — the last one chosen. ${_lpP.Sub} ${_lpP.sub==='they'?'try':'tries'} to smile, but everyone saw the order. Everyone knows what it means.`,
+          `"It's fine." ${_lp} says it twice. It is clearly not fine. Being picked last has ${_lpP.obj} questioning everything about ${_lpP.posAdj} position in this game.`,
+        ],
+        fire: [
+          `${_lp} was the last pick, and ${_lpP.sub} want${_lpP.sub==='they'?'':'s'} everyone to remember that. "Watch what happens next." The tribe exchanges glances.`,
+          `Last picked. ${_lp} takes it personally — exactly as intended. ${_lpP.Sub} ${_lpP.sub==='they'?'channel':'channels'} every ounce of that rejection into a promise: outlast them all.`,
+        ],
+      };
+      const _pick = arr => arr[Math.floor(Math.random() * arr.length)];
+      const _lpText = _pick(_lastPickedTexts[_sypEmotion]);
+      const _lpEvts = Array.isArray(ep.campEvents[_sypTribe]) ? ep.campEvents[_sypTribe] : (ep.campEvents[_sypTribe].pre || []);
+      _lpEvts.unshift({ type: 'schoolyardLastPicked', players: [_lp], text: _lpText, badgeText: 'LAST PICKED', badgeClass: 'red' });
+      // Bond damage with captain who picked them last
+      if (_lpCap) addBond(_lpCap, _lp, -0.3);
+    }
+  }
+  // Exile return camp events (injected when exile player rejoins)
+  if (ep.schoolyardExileReturn && ep.campEvents) {
+    const _ret = ep.schoolyardExileReturn;
+    const _retP = pronouns(_ret.player);
+    const _retTribe = _ret.tribe;
+    if (_retTribe && ep.campEvents[_retTribe]) {
+      const _retEvts = Array.isArray(ep.campEvents[_retTribe]) ? ep.campEvents[_retTribe] : (ep.campEvents[_retTribe].pre || []);
+      const _pick = arr => arr[Math.floor(Math.random() * arr.length)];
+      // Arrival event (bond-driven)
+      const _retMembers = gs.tribes.find(t => t.name === _retTribe)?.members.filter(m => m !== _ret.player) || [];
+      const _avgBond = _retMembers.length ? _retMembers.reduce((s, m) => s + getBond(_ret.player, m), 0) / _retMembers.length : 0;
+      const _arrivalTexts = _avgBond >= 2
+        ? [`${_ret.player} walks into ${_retTribe}'s camp and is greeted with open arms. "We're glad to have you."`,
+           `Warm reception for ${_ret.player}. The tribe needed numbers, and ${_retP.sub} ${_retP.sub==='they'?'are':'is'} someone they actually want around.`]
+        : _avgBond >= -1
+        ? [`${_ret.player} arrives at ${_retTribe}. Polite nods. No celebration. Another mouth to feed, another variable in the game.`,
+           `${_ret.player} joins ${_retTribe}. The reception is lukewarm — not hostile, but nobody's throwing a party.`]
+        : [`${_ret.player} shows up at ${_retTribe}'s camp. The silence is deafening. "Great. Just what we needed."`,
+           `Cold reception for ${_ret.player}. ${_retTribe} didn't ask for this, and they're not pretending otherwise.`];
+      _retEvts.unshift({ type: 'schoolyardExileArrival', players: [_ret.player], text: _pick(_arrivalTexts), badgeText: 'EXILE RETURN', badgeClass: 'gold' });
+      // Proving event (dominant emotion)
+      const _provingTexts = {
+        anger: [
+          `${_ret.player} doesn't ease in quietly. ${_retP.Sub} confront${_retP.sub==='they'?'':'s'} the game head-on — calling out the captains, making it clear that being left out was a mistake.`,
+          `The anger from exile hasn't faded. ${_ret.player} channels it into every interaction — aggressive strategy talk, pointed comments, a refusal to be overlooked again.`,
+        ],
+        shame: [
+          `${_ret.player} doesn't talk about exile. Instead, ${_retP.sub} ${_retP.sub==='they'?'do':'does'} everything around camp — firewood, water, cooking — without being asked. Earning respect through work.`,
+          `Quiet. Focused. ${_ret.player} lets ${_retP.posAdj} actions speak. By sundown, even the skeptics notice how much ${_retP.sub}'${_retP.sub==='they'?'ve':'s'} contributed.`,
+        ],
+        fire: [
+          `${_ret.player} came back from exile with something to prove. Everyone can see it. The fire in ${_retP.posAdj} eyes is unmistakable.`,
+          `"I'm still here." ${_ret.player} doesn't say it to anyone in particular. But everyone hears it. Exile didn't break ${_retP.obj} — it sharpened ${_retP.obj}.`,
+        ],
+      };
+      _retEvts.push({ type: 'schoolyardExileProving', players: [_ret.player], text: _pick(_provingTexts[_ret.emotion] || _provingTexts.shame), badgeText: 'PROVING GROUND', badgeClass: 'gold' });
+      // Bond effects: arrival bonds
+      _retMembers.forEach(m => {
+        if (_avgBond >= 2) addBond(_ret.player, m, 0.2);
+        else if (_avgBond < -1) addBond(_ret.player, m, -0.1);
+      });
+    }
   }
 
   // ── CHALLENGE ──
@@ -25732,6 +26071,25 @@ function _textAftermath(ep, ln, sec) {
   if (a.seasonRating) ln(`Season Rating: ${a.seasonRating.score}/10 — "${a.seasonRating.comment}"`);
 }
 
+function _textSchoolyardPick(ep, ln, sec) {
+  const sp = ep.schoolyardPick;
+  if (!sp?.picks?.length) return;
+  sec('SCHOOLYARD PICK');
+  ln(`Captains: ${sp.captains[0]} and ${sp.captains[1]} (${sp.captainSource === 'challenge' ? 'top challenge performers' : 'randomly selected'})`);
+  ln('Draft order:');
+  sp.picks.forEach(p => ln(`  #${p.pickNumber} — ${p.captain} picks ${p.picked}`));
+  if (sp.lastPicked) ln(`Last picked: ${sp.lastPicked} (dominant emotion: ${sp.dominantEmotion})`);
+  if (sp.exiled) ln(`Sent to exile: ${sp.exiled} — will return to the tribe that loses someone at tribal.`);
+  if (sp.newTribes?.length) {
+    ln('New tribes:');
+    sp.newTribes.forEach(t => ln(`  ${t.name}: ${t.members.join(', ')}`));
+  }
+  if (ep.schoolyardExileReturn) {
+    const r = ep.schoolyardExileReturn;
+    ln(`Exile return: ${r.player} rejoined ${r.tribe} (emotion: ${r.emotion}).`);
+  }
+}
+
 function _textVolunteerDuel(ep, ln, sec) {
   if (!ep.volunteerDuel) return;
   const vd = ep.volunteerDuel;
@@ -26457,6 +26815,7 @@ function generateSummaryText(ep) {
   _textWhyVote(ep, ln, sec);
   _textMoleReveal(ep, ln, sec);
   _textVolunteerDuel(ep, ln, sec);
+  _textSchoolyardPick(ep, ln, sec);
   _textAftermath(ep, ln, sec);
   _textSlasherNight(ep, ln, sec);
   _textAmbassadors(ep, ln, sec);
@@ -26982,6 +27341,8 @@ function patchEpisodeHistory(ep) {
   if (ep.volunteerDuel) h.volunteerDuel = ep.volunteerDuel;
   if (ep.fanVoteReturnee) h.fanVoteReturnee = ep.fanVoteReturnee;
   if (ep.volunteerDuelReturn) h.volunteerDuelReturn = ep.volunteerDuelReturn;
+  if (ep.schoolyardPick) h.schoolyardPick = ep.schoolyardPick;
+  if (ep.schoolyardExileReturn) h.schoolyardExileReturn = ep.schoolyardExileReturn;
   h.blackVote1 = ep.blackVote1 || null;
   h.blackVote2 = ep.blackVote2 || null;
   h.blackVoteApplied = ep.blackVoteApplied || null;
@@ -27158,14 +27519,15 @@ function patchEpisodeHistory(ep) {
     delete gs._moleVoteDisruptionEvents;
   }
   // ── Universal Mole exposure check — catches any suspicion source that pushed past 3.0 ──
-  if (gs.moles?.length && ep.campEvents) {
+  // Removed ep.campEvents requirement — exposure can fire even without camp events
+  if (gs.moles?.length) {
     gs.moles.forEach(mole => {
       if (mole.exposed) return;
       if (!gs.activePlayers.includes(mole.player)) return;
       const _tribeKeyFinal = gs.isMerged ? (gs.mergeName || 'merge')
         : gs.tribes.find(t => t.members?.includes(mole.player))?.name
-        || Object.keys(ep.campEvents)[0];
-      if (_tribeKeyFinal) _checkMoleExposure(mole, ep, _tribeKeyFinal);
+        || (ep.campEvents ? Object.keys(ep.campEvents)[0] : 'merge');
+      _checkMoleExposure(mole, ep, _tribeKeyFinal || 'merge');
     });
   }
   if (gs.moles?.length) {
@@ -27173,6 +27535,7 @@ function patchEpisodeHistory(ep) {
     // Save Mole exposure data to episode history
     if (gs._moleExposureEvents?.length) {
       h.moleExposure = gs._moleExposureEvents.map(e => ({ ...e }));
+      ep.moleExposure = h.moleExposure; // also set on ep for VP screen builder
       delete gs._moleExposureEvents;
     }
     // Save Mole reveal data to episode history — VP renders it in rpBuildVotes after torch snuff
@@ -27331,7 +27694,6 @@ function initGameState() {
     collapseWarning: {},           // { [name]: epNum } — collapse event fired
     medevacs: [],                  // medevac records for season stats
     lastAftermathEp: 0,            // last episode that had an Aftermath
-    _originalTwistSchedule: seasonConfig.twistSchedule ? JSON.parse(JSON.stringify(seasonConfig.twistSchedule)) : [],
     aftermathHistory: [],          // [{ ep, interviewees }]
     // The Mole
     moles: [],                     // [{ player, exposed, exposedEp, exposedBy, suspicion, sabotageCount, sabotageLog, leaks, layingLow, resistance }]
@@ -27373,11 +27735,6 @@ function initGameState() {
 
 function resetSeason() {
   if (!confirm('Reset season? This clears all episode history. Your cast and setup are kept.')) return;
-  // Restore original twist schedule if shifted by Team Swap advantages
-  if (gs?._originalTwistSchedule?.length) {
-    seasonConfig.twistSchedule = JSON.parse(JSON.stringify(gs._originalTwistSchedule));
-    localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
-  }
   gs = null; localStorage.removeItem('simulator_gs');
   gsCheckpoints = {};
   Object.keys(localStorage).filter(k => k.startsWith('simulator_cp_')).forEach(k => localStorage.removeItem(k));
@@ -27445,6 +27802,14 @@ function renderGameState() {
     <div class="gs-stat"><label>Active</label><strong>${d.activePlayers.length}</strong></div>
     <div class="gs-stat"><label>On RI</label><strong style="color:${d.riPlayers.length?'#f97316':'var(--muted)'}">${d.riPlayers.length}</strong></div>
   </div>`;
+
+  if (_spoilerFree) {
+    html += `<div style="margin-top:12px;font-size:11px;color:var(--muted);font-style:italic;text-align:center">Spoiler-free mode — open Visual Player to watch the episode</div>`;
+    el.innerHTML = html;
+    btn.textContent = d.phase === 'complete' ? 'Season Complete' : 'Simulate Next Episode';
+    btn.disabled = d.phase === 'complete';
+    return;
+  }
 
   if (d.phase === 'pre-merge' && d.tribes.length) {
     html += `<div style="margin-top:8px">`;
@@ -27854,6 +28219,7 @@ function buildEpisodeMap() {
   let _riReturn2Used = false;
   let _totalElimsToHere = 0;
   let _lastFVReturn = 0;
+  let _fvReturnApplied = false;
 
   while (active > finale && ep <= 100) {
     const etype = twistMap[ep] || null;
@@ -27876,12 +28242,18 @@ function buildEpisodeMap() {
     if (_allTypes.includes('exile-duel')) elims = 0;
     _totalElimsToHere += elims;
     let returns = (_allTypes.includes('returning-player') || _allTypes.includes('second-chance')) ? 1 : 0;
-    // Fan vote return: pending return adds +1 this episode
-    if (gs?.pendingFanVoteReturn && gs.eliminated?.includes(gs.pendingFanVoteReturn)) returns++;
-    // Fan vote prediction: ONCE after X total eliminations, someone comes back
+    // Fan vote return: pending return from live game adds +1 this episode
+    if (gs?.pendingFanVoteReturn && gs.eliminated?.includes(gs.pendingFanVoteReturn) && !_fvReturnApplied) {
+      returns++; _fvReturnApplied = true;
+    }
+    // Fan vote prediction: ONCE after X total eliminations, someone comes back NEXT episode
     const _fvThresholdCfg = parseInt(seasonConfig.fanVoteFrequency) || 0;
-    if (_fvThresholdCfg && !returns && !_lastFVReturn && _totalElimsToHere >= _fvThresholdCfg) {
-      returns++; _lastFVReturn = _totalElimsToHere; // only fires once
+    if (_fvThresholdCfg && !_lastFVReturn && _totalElimsToHere >= _fvThresholdCfg) {
+      _lastFVReturn = _totalElimsToHere; // mark it — return applies next iteration
+    }
+    // Apply the return on the episode AFTER the fan vote fired
+    if (_lastFVReturn && _lastFVReturn !== _totalElimsToHere && !_fvReturnApplied) {
+      returns++; _fvReturnApplied = true;
     }
 
     // RI return: fires when the episode STARTS with <= riReentryAt players.
@@ -27900,9 +28272,18 @@ function buildEpisodeMap() {
     if (!merged && active <= mergeAt) merged = true;
 
     const activeWithReturns = active + returns + riReturn;
-    eps.push({ ep, active, phase: merged ? 'post-merge' : 'pre-merge', engineType: etype });
+    const _hasFVReturn = _fvReturnApplied && returns > 0 && !eps.some(e => e.fanVoteReturn);
+    eps.push({ ep, active, phase: merged ? 'post-merge' : 'pre-merge', engineType: etype, fanVoteReturn: _hasFVReturn || false });
     active = Math.max(finale, activeWithReturns - elims);
     ep++;
+
+    // Team Swap advantage: insert blank episode right after (no elimination happened, season extends by 1)
+    if (gs?.skippedEliminationEps?.includes(ep - 1) && active > finale) {
+      if (!merged && active <= mergeAt) merged = true;
+      eps.push({ ep, active, phase: merged ? 'post-merge' : 'pre-merge', engineType: null });
+      active = Math.max(finale, active - 1);
+      ep++;
+    }
 
     // Exile Duel: insert extra episode for the duel resolution (1 elim, no twist)
     if (_allTypes.includes('exile-duel') && active > finale) {
@@ -27929,7 +28310,7 @@ function renderTimeline() {
   }
 
   let html = '';
-  epMap.forEach(({ ep, active, phase }) => {
+  epMap.forEach(({ ep, active, phase, fanVoteReturn }) => {
     const isFinale   = phase === 'finale';
     const isMergeEp  = phase === 'post-merge' && epMap.find(e => e.ep === ep - 1)?.phase === 'pre-merge';
     const isSelected = selectedEpisodes.has(ep);
@@ -31065,6 +31446,248 @@ function rpBuildTiedDestinies(ep) {
   return html;
 }
 
+function rpBuildSchoolyardPick(ep) {
+  const sp = ep.schoolyardPick;
+  if (!sp?.picks?.length) return null;
+  const stateKey = String(ep.num) + '_syp';
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: 0 };
+  const state = _tvState[stateKey];
+  // Deterministic pick: hash name to index so reactions stay stable across VP rebuilds
+  const _seedPick = (arr, name) => arr[([...name].reduce((s,c) => s + c.charCodeAt(0), 0) + ep.num) % arr.length];
+
+  // Build reveal steps: captain announce → each pick → last picked/exile → tribes
+  const steps = [];
+  steps.push({ type: 'captains' });
+  sp.picks.forEach((p, i) => {
+    steps.push({ type: 'pick', captain: p.captain, picked: p.picked, pickNumber: p.pickNumber, idx: i });
+  });
+  if (sp.exiled) steps.push({ type: 'exile', player: sp.exiled });
+  steps.push({ type: 'tribes' });
+
+  const visibleSteps = steps.slice(0, state.idx + 1);
+  const allRevealed = state.idx >= steps.length - 1;
+  const totalPicks = sp.picks.length;
+
+  const _sypReveal = (targetIdx) => `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:0};_tvState['${stateKey}'].idx=${targetIdx};const ep=gs.episodeHistory.find(e=>e.num===${ep.num});if(ep){buildVPScreens(ep);renderVPScreen();}`;
+
+  // ── Per-pick reaction generator ──
+  // Reactions based on: pick position (early/mid/late/last), archetype, stats, bond with captain
+  function _pickReaction(picked, captain, pickNum) {
+    const ps = pStats(picked);
+    const pr = pronouns(picked);
+    const bond = getBond(picked, captain);
+    const arch = ps.archetype || '';
+    const isEarly = pickNum <= 2;
+    const isMid = pickNum > 2 && pickNum <= Math.ceil(totalPicks * 0.6);
+    const isLate = pickNum > Math.ceil(totalPicks * 0.6) && picked !== sp.lastPicked;
+    const isLast = picked === sp.lastPicked;
+
+    if (isEarly) {
+      // First picks — valued, confident
+      if (arch === 'challenge-beast') return _seedPick([
+        `${picked} nods. First round. Exactly where ${pr.sub} expected to be.`,
+        `No surprise there. ${picked} is the kind of player you build a team around.`,
+        `${captain} didn't hesitate. ${picked} is ${pr.posAdj} foundation.`,
+      ], picked);
+      if (arch === 'hero') return _seedPick([
+        `${picked} walks over with quiet confidence. ${pr.Sub} earned this.`,
+        `${picked} smiles — not smug, just relieved. ${pr.Sub} ${pr.sub==='they'?'know':'knows'} ${pr.posAdj} value.`,
+      ], picked);
+      if (arch === 'villain' || arch === 'schemer') return _seedPick([
+        `${picked} smirks. First pick. ${captain} knows what ${pr.sub}'${pr.sub==='they'?'re':'s'} worth — even if ${pr.sub} ${pr.sub==='they'?'don\'t':'doesn\'t'} trust ${pr.obj}.`,
+        `"Smart choice." ${picked} joins ${captain}'s side with a look that says ${pr.sub} ${pr.sub==='they'?'were':'was'} always going to be first.`,
+      ], picked);
+      if (bond >= 3) return _seedPick([
+        `${picked} and ${captain} lock eyes. No hesitation. This was always the pick.`,
+        `${captain} calls ${picked} first. The bond between them made it obvious.`,
+      ], picked);
+      return _seedPick([
+        `${picked} steps forward — first round pick. A statement of value.`,
+        `${captain} doesn't think twice. ${picked} is the one ${pr.sub} want${pr.sub==='they'?'':'s'}.`,
+        `First pick. ${picked} carries that with ${pr.obj} for the rest of the game.`,
+      ], picked);
+    }
+
+    if (isMid) {
+      // Middle picks — solid, not dramatic
+      if (arch === 'social-butterfly') return _seedPick([
+        `${picked} joins the group and immediately starts chatting. ${pr.Sub}'ll fit in anywhere.`,
+        `${picked} nods and slides in. ${pr.Sub} ${pr.sub==='they'?'make':'makes'} it look easy.`,
+      ], picked);
+      if (arch === 'floater') return _seedPick([
+        `${picked} walks over quietly. Middle of the draft, middle of the pack. The way ${pr.sub} like${pr.sub==='they'?'':'s'} it.`,
+        `${picked} joins without fanfare. Nobody's watching too closely. Perfect.`,
+      ], picked);
+      if (ps.strategic >= 7) return _seedPick([
+        `${picked} takes note of every pick before ${pr.obj}. The order matters — and ${pr.sub}'ll remember it.`,
+        `${picked} files this away. Pick #${pickNum}. Not first, not last. ${pr.Sub}'ll use that.`,
+      ], picked);
+      if (ps.boldness >= 7) return _seedPick([
+        `${picked} shrugs as ${pr.sub} walk${pr.sub==='they'?'':'s'} over. "Took you long enough."`,
+        `"Middle of the pack?" ${picked} scoffs. ${pr.Sub}'ll prove that wrong.`,
+      ], picked);
+      return _seedPick([
+        `${picked} joins ${captain}'s team. No drama. Solid pick.`,
+        `${picked} nods and heads over. Pick #${pickNum} — could be worse.`,
+        `${captain} calls ${picked}. A practical choice. ${picked} accepts it.`,
+      ], picked);
+    }
+
+    if (isLate && !isLast) {
+      // Late picks — tension, discomfort
+      if (arch === 'hothead' || arch === 'chaos-agent') return _seedPick([
+        `${picked} doesn't hide the frustration. Pick #${pickNum}. The disrespect is real.`,
+        `${picked}'s face hardens. This late? ${pr.Sub}'ll remember who waited.`,
+      ], picked);
+      if (arch === 'underdog') return _seedPick([
+        `${picked} swallows hard but walks over. Always overlooked. But that's where underdogs start.`,
+        `Pick #${pickNum}. ${picked} adds it to the list of things that fuel ${pr.obj}.`,
+      ], picked);
+      if (ps.temperament <= 4) return _seedPick([
+        `${picked}'s jaw clenches. Pick #${pickNum}. The anger is barely contained.`,
+        `"Fine." ${picked}'s tone says more than any speech. Late pick. Message received.`,
+      ], picked);
+      if (ps.social >= 7) return _seedPick([
+        `${picked} forces a smile, but the late pick stings. Everyone saw the order.`,
+        `${picked} hides the disappointment well. Almost. The eyes give it away.`,
+      ], picked);
+      return _seedPick([
+        `${picked} walks over slowly. The wait was uncomfortable, and everyone noticed.`,
+        `Pick #${pickNum}. ${picked} tries not to read into it. But ${pr.sub} ${pr.sub==='they'?'do':'does'}.`,
+        `${picked} joins, but the late pick leaves a mark. These things get remembered.`,
+      ], picked);
+    }
+
+    // Last pick — strongest reactions
+    if (isLast) {
+      if (arch === 'villain' || arch === 'schemer') return _seedPick([
+        `Last pick. ${picked}'s smile doesn't reach ${pr.posAdj} eyes. Someone just made an enemy.`,
+        `${picked} is the last name called. ${pr.Sub} ${pr.sub==='they'?'don\'t':'doesn\'t'} react. That's how you know it's dangerous.`,
+        `"Interesting." ${picked} files this away. The captains just told ${pr.obj} exactly where ${pr.sub} stand${pr.sub==='they'?'':'s'}. That's useful information.`,
+      ], picked);
+      if (arch === 'challenge-beast') return _seedPick([
+        `Last pick? ${picked}? The entire tribe just made a mistake they'll feel in every challenge.`,
+        `${picked} looks at both teams. Last picked. Fine. ${pr.Sub}'ll carry this anger straight into the next challenge.`,
+      ], picked);
+      if (arch === 'hothead' || arch === 'chaos-agent') return _seedPick([
+        `${picked} is furious. ${pr.Sub} didn't come here to be the last one standing. Someone's going to pay for this.`,
+        `"Are you serious?" ${picked}'s face says it all. The disrespect is noted — and it won't be forgotten.`,
+      ], picked);
+      if (arch === 'underdog') return _seedPick([
+        `Last picked. Again. ${picked} knows this feeling too well. But this time, ${pr.sub}'ll make them regret it.`,
+        `${picked} doesn't say anything. Just burns this moment into memory. Fuel for later.`,
+      ], picked);
+      if (ps.boldness >= 7) return _seedPick([
+        `${picked}'s jaw sets. Last pick. Fine. Now ${pr.sub} ${pr.sub==='they'?'have':'has'} something to prove — and ${pr.sub}'ll make them regret it.`,
+        `"Remember this." ${picked} looks at both teams. The fire in ${pr.posAdj} eyes is unmistakable.`,
+      ], picked);
+      if (ps.temperament >= 7) return _seedPick([
+        `${picked} nods slowly. Last pick. ${pr.Sub} ${pr.sub==='they'?'get':'gets'} it. The hurt is there, but ${pr.sub} swallow${pr.sub==='they'?'':'s'} it.`,
+        `${picked} looks at the ground. Being picked last is the confirmation of what ${pr.sub} always feared.`,
+      ], picked);
+      return _seedPick([
+        `${picked} stares daggers at both captains. ${pr.Sub} ${pr.sub==='they'?'don\'t':'doesn\'t'} say anything. ${pr.Sub} ${pr.sub==='they'?'don\'t':'doesn\'t'} need to.`,
+        `The silence when ${picked} is the last name called says everything. Everyone saw the order.`,
+        `Last picked. ${picked} absorbs it in silence. Then ${pr.sub} start${pr.sub==='they'?'':'s'} planning.`,
+      ], picked);
+    }
+
+    return `${picked} joins the team.`;
+  }
+
+  // Captain source labels
+  const _capSourceLabel = sp.captainSource === 'challenge'
+    ? 'Selected as captains for their challenge performance.'
+    : 'Randomly chosen as captains.';
+
+  let html = `<div class="rp-page tod-dusk">
+    <div class="rp-eyebrow">Episode ${ep.num}</div>
+    <div style="font-family:var(--font-display);font-size:28px;letter-spacing:2px;text-align:center;color:var(--accent-gold);text-shadow:0 0 20px var(--accent-gold);margin-bottom:6px;animation:scrollDrop 0.5s var(--ease-broadcast) both">SCHOOLYARD PICK</div>
+    <div style="font-size:12px;color:#8b949e;text-align:center;margin-bottom:24px;line-height:1.5">Two captains. One draft. Every pick creates a pecking order.</div>`;
+
+  visibleSteps.forEach(step => {
+    if (step.type === 'captains') {
+      html += `<div style="padding:14px;margin-bottom:16px;background:rgba(227,179,65,0.06);border:1px solid rgba(227,179,65,0.2);border-radius:10px;animation:scrollDrop 0.4s var(--ease-broadcast) both">
+        <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--accent-gold);text-align:center;margin-bottom:10px">CAPTAINS</div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:24px;margin-bottom:8px">
+          <div style="text-align:center">${rpPortrait(sp.captains[0], 'lg')}<div style="font-size:13px;color:#e6edf3;margin-top:4px;font-weight:700">${sp.captains[0]}</div></div>
+          <div style="font-size:18px;color:var(--accent-gold)">vs</div>
+          <div style="text-align:center">${rpPortrait(sp.captains[1], 'lg')}<div style="font-size:13px;color:#e6edf3;margin-top:4px;font-weight:700">${sp.captains[1]}</div></div>
+        </div>
+        <div style="font-size:11px;color:#8b949e;text-align:center">${_capSourceLabel}</div>
+      </div>`;
+    } else if (step.type === 'pick') {
+      const isLastPick = step.picked === sp.lastPicked && !sp.exiled;
+      const _pickColor = step.pickNumber <= 2 ? '#3fb950' : step.pickNumber <= 4 ? '#58a6ff' : isLastPick ? '#f85149' : step.pickNumber > Math.ceil(totalPicks * 0.6) ? '#f0883e' : '#cdd9e5';
+      const _borderColor = isLastPick ? 'rgba(248,81,73,0.3)' : step.pickNumber <= 2 ? 'rgba(63,185,80,0.2)' : 'rgba(139,148,158,0.1)';
+      const reaction = _pickReaction(step.picked, step.captain, step.pickNumber);
+
+      html += `<div class="vp-card" style="border-color:${_borderColor};margin-bottom:8px;animation:scrollDrop 0.3s var(--ease-broadcast) both">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="font-size:16px;font-weight:700;color:${_pickColor};min-width:28px;text-align:center">#${step.pickNumber}</div>
+          ${rpPortrait(step.picked, 'sm')}
+          <div style="flex:1">
+            <div style="font-size:13px;color:#e6edf3;font-weight:600">${step.picked}</div>
+            <div style="font-size:10px;color:#8b949e">picked by <strong>${step.captain}</strong></div>
+          </div>
+          ${isLastPick ? `<span style="font-size:9px;font-weight:700;letter-spacing:1px;color:#f85149;border:1px solid rgba(248,81,73,0.3);padding:2px 6px;border-radius:4px">LAST PICKED</span>` : ''}
+        </div>
+        <div style="font-size:11px;color:#9198a1;line-height:1.5;font-style:italic;margin-top:6px;padding-left:38px">${reaction}</div>
+      </div>`;
+    } else if (step.type === 'exile') {
+      const ps = pStats(step.player);
+      const pr = pronouns(step.player);
+      const arch = ps.archetype || '';
+      const _exileReactions = {
+        'villain': [`Last one standing. ${step.player}'s smile doesn't reach ${pr.posAdj} eyes. The captains just made a mistake.`, `Not picked. ${step.player} absorbs it. Then starts planning revenge.`],
+        'schemer': [`${step.player} watches both teams walk away. ${pr.Sub} ${pr.sub==='they'?'weren\'t':'wasn\'t'} chosen. Fine. Exile gives ${pr.obj} time to think — and scheme.`],
+        'hothead': [`${step.player} is livid. Not picked. Not wanted. ${pr.Sub} kick${pr.sub==='they'?'':'s'} the dirt and storm${pr.sub==='they'?'':'s'} off. This isn't over.`],
+        'chaos-agent': [`${step.player} laughs — the kind that makes people nervous. "Exile? Perfect. You just let me loose."`, `Not chosen. ${step.player} doesn't look hurt. ${pr.Sub} look${pr.sub==='they'?'':'s'} unhinged.`],
+        'challenge-beast': [`${step.player} stands alone. The strongest player in the game, and nobody picked ${pr.obj}. That's a mistake they'll feel in every challenge.`],
+        'underdog': [`Not picked. ${step.player} has been here before — overlooked, underestimated. This is where the comeback story starts.`, `${step.player} watches everyone walk away. Last one left. ${pr.Sub} ${pr.sub==='they'?'don\'t':'doesn\'t'} cry. ${pr.Sub} plan${pr.sub==='they'?'':'s'}.`],
+        'hero': [`${step.player} stands alone with quiet dignity. Not chosen. It hurts — but ${pr.sub}'ll come back from this. ${pr.Sub} always ${pr.sub==='they'?'do':'does'}.`],
+        'floater': [`${step.player} watches both tribes leave. Not noticed enough to pick, not threatening enough to target. Just... forgotten.`],
+        'social-butterfly': [`${step.player}'s face crumbles. ${pr.Sub} ${pr.sub==='they'?'know':'knows'} everyone. ${pr.Sub} like${pr.sub==='they'?'':'s'} everyone. And nobody picked ${pr.obj}. That hurts differently.`],
+      };
+      const _defaultExileReactions = [
+        `${step.player} is the last one standing. Not picked. Sent to exile. The rejection hits hard.`,
+        `Both captains looked right past ${step.player}. Now ${pr.sub} walk${pr.sub==='they'?'':'s'} to exile alone, carrying nothing but a grudge.`,
+        `Not chosen. ${step.player} stares at the empty space where both tribes stood. Then turns and walks toward exile.`,
+      ];
+      const _exileText = _seedPick(_exileReactions[arch] || _defaultExileReactions, step.player);
+
+      html += `<div style="text-align:center;margin:14px 0;padding:16px;background:rgba(248,81,73,0.08);border:1px solid rgba(248,81,73,0.25);border-radius:10px;animation:scrollDrop 0.5s var(--ease-broadcast) both">
+        ${rpPortrait(step.player, 'lg')}
+        <div style="font-family:var(--font-display);font-size:16px;color:#f85149;margin-top:8px">${step.player}</div>
+        <span style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:#f85149;border:1px solid rgba(248,81,73,0.3);padding:3px 8px;border-radius:4px;display:inline-block;margin-top:6px">SENT TO EXILE</span>
+        <div style="font-size:12px;color:#c9d1d9;line-height:1.6;font-style:italic;margin-top:10px;padding:6px 8px;background:rgba(139,148,158,0.04);border-radius:6px">${_exileText}</div>
+        <div style="font-size:10px;color:#8b949e;margin-top:8px">${step.player} is headed to Exile Island.</div>
+      </div>`;
+    } else if (step.type === 'tribes') {
+      html += `<div style="margin-top:16px;border-top:1px solid rgba(255,255,255,0.06);padding-top:14px;animation:scrollDrop 0.4s var(--ease-broadcast) both">
+        <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;color:#8b949e;text-align:center;margin-bottom:12px">NEW TRIBES</div>`;
+      (sp.newTribes || []).forEach(t => {
+        html += `<div style="margin-bottom:12px">
+          <div style="font-size:14px;font-weight:700;color:#e6edf3;text-align:center;margin-bottom:6px">${t.name}</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center">${t.members.map(m => rpPortrait(m, 'sm')).join('')}</div>
+        </div>`;
+      });
+      html += `</div>`;
+    }
+  });
+
+  // Reveal controls
+  if (!allRevealed) {
+    html += `<div style="text-align:center;margin-top:16px">
+      <button class="rp-btn" onclick="${_sypReveal(state.idx + 1)}">Reveal Next</button>
+      <button class="rp-btn" style="margin-left:8px;opacity:0.6" onclick="${_sypReveal(steps.length - 1)}">Reveal All</button>
+    </div>`;
+  }
+
+  html += `</div>`;
+  return html;
+}
+
 function rpBuildMoleExposed(ep) {
   if (!ep.moleExposure?.length) return null;
   const exp = ep.moleExposure[0]; // first exposure this episode
@@ -32295,7 +32918,7 @@ function rpBuildFirstImpressions(ep, twistObj) {
 // ── Screen 3: Pre-challenge twists (tribe swap, three gifts, journey, exile-island, etc.) ──
 function rpBuildPreTwist(ep) {
   const _rawTwistData = (ep.twistScenes?.length ? ep.twistScenes : generateTwistScenes(ep))
-    .filter(t => t.type !== 'exile-island' && t.type !== 'jury-elimination' && t.type !== 'kidnapping' && t.type !== 'first-impressions' && t.type !== 'tied-destinies' && t.type !== 'aftermath' && t.type !== 'fan-vote-return'); // shown in dedicated screens
+    .filter(t => t.type !== 'exile-island' && t.type !== 'jury-elimination' && t.type !== 'kidnapping' && t.type !== 'first-impressions' && t.type !== 'tied-destinies' && t.type !== 'aftermath' && t.type !== 'fan-vote-return' && t.type !== 'schoolyard-pick'); // shown in dedicated screens
   // Deduplicate: only show one scene per twist type (prevents double display if twist is in ep.twists twice)
   const _seenTypes = new Set();
   const twistData = _rawTwistData.filter(t => { if (_seenTypes.has(t.type)) return false; _seenTypes.add(t.type); return true; });
@@ -37492,6 +38115,19 @@ function rpBuildVotes(ep) {
   } else if (ep.firstEliminated && !ep.sidFreshVote) {
     // Vote 1 clean elimination card (surprise double boot, no fresh vote)
     html += _renderElimCard(ep.firstEliminated, _v1IsBlindside, 1);
+  } else if (elim && ep.tiebreakerResult && !ep.sidFreshVote) {
+    // Tiebreaker challenge — show tie, then duel, then elimination
+    const _tbr = ep.tiebreakerResult;
+    html += `<div style="text-align:center;margin:16px 0;padding:14px;border:2px solid rgba(210,153,34,0.3);border-radius:10px;background:rgba(210,153,34,0.04)">
+      <div style="font-size:9px;font-weight:800;letter-spacing:2px;color:#d29922;margin-bottom:8px">TIE — ${(ep.tiedPlayers || _tbr.participants).join(' vs ')}</div>
+      <div style="font-size:13px;color:#c9d1d9;margin-bottom:10px">The vote is tied. Under challenge tiebreaker rules, the tied players compete head-to-head.</div>
+      <div style="font-size:11px;color:#f59e0b;font-weight:700;letter-spacing:1px;margin-bottom:8px">${_tbr.challengeLabel || 'Tiebreaker Challenge'}</div>
+      <div style="display:flex;justify-content:center;gap:16px;margin-bottom:10px">
+        ${_tbr.participants.map(p => `<div style="text-align:center">${rpPortrait(p, 'lg')}<div style="font-size:11px;color:${p === _tbr.winner ? '#3fb950' : '#f47067'};font-weight:700;margin-top:4px">${p === _tbr.winner ? 'WINS' : 'LOSES'}</div></div>`).join('')}
+      </div>
+      <div style="font-size:12px;color:#c9d1d9">${_tbr.winner} survives. ${_tbr.loser} is eliminated.</div>
+    </div>`;
+    html += _renderElimCard(elim, false, 0);
   } else if (elim && !ep.exileDuelResult && !ep.sidFreshVote && !_hasFireMaking) {
     html += _renderElimCard(elim, isBlindside, 0);
   } else if (swap) {
@@ -42920,6 +43556,12 @@ function buildVPScreens(epRecord) {
   const _preTwistHtml = rpBuildPreTwist(ep);
   if (_preTwistHtml) vpScreens.push({ id:'twist', label:'Twists', html: _preTwistHtml });
 
+  // ── 3c. Schoolyard Pick (dedicated click-to-reveal draft screen) ──
+  if (ep.schoolyardPick?.picks?.length) {
+    const _sypHtml = rpBuildSchoolyardPick(ep);
+    if (_sypHtml) vpScreens.push({ id:'schoolyard-pick', label:'Schoolyard Pick', html: _sypHtml });
+  }
+
   // ── Helper: derive tribe groups at start of episode ──
   const vpTribeGroups = (() => {
     // Post-merge: gs.tribes = [] so tribesAtStart is empty. Detect via snapshot isMerged or ep.isMerge.
@@ -42998,7 +43640,13 @@ function buildVPScreens(epRecord) {
       <div class="rp-twist-title">Exile Island</div>`;
 
     const _exPr = pronouns(_tw.exiled);
-    if (_tw.exileChooserMembers?.length) {
+    if (_tw.schoolyardExile) {
+      // Schoolyard Pick exile — not chosen by either captain
+      _exHtml += `<div style="text-align:center;margin-bottom:14px">
+        <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:#f85149;text-transform:uppercase;margin-bottom:8px">NOT CHOSEN</div>
+        <div style="font-size:13px;color:#8b949e;line-height:1.5">Neither captain picked ${_tw.exiled}. ${_exPr.Sub} ${_exPr.sub==='they'?'are':'is'} sent to Exile Island alone.</div>
+      </div>`;
+    } else if (_tw.exileChooserMembers?.length) {
       // Pre-merge: whole winning tribe decided — show portraits + tribe colour + reasoning
       const _dot = `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${_tc};margin-right:6px;vertical-align:middle"></span>`;
       const _exTargetS = pStats(_tw.exiled);
@@ -43023,7 +43671,10 @@ function buildVPScreens(epRecord) {
       _exHtml += _renderTwistScene({ text: `${_tw.exileChooser} won immunity — and used that power to send ${_tw.exiled} to Exile Island. ${_exChReason}`, players: [_tw.exileChooser, _tw.exiled] });
     }
 
-    _exHtml += _renderTwistScene({ text: `${_tw.exiled} is sent to Exile Island and will miss Tribal Council tonight.`, players: [_tw.exiled], badge: 'Sent to Exile', badgeClass: 'bad' });
+    _exHtml += _renderTwistScene({ text: _tw.schoolyardExile
+      ? `${_tw.exiled} is sent to Exile Island. ${_exPr.Sub} will skip this episode's challenge and tribal — and return to the tribe that loses a member.`
+      : `${_tw.exiled} is sent to Exile Island and will miss Tribal Council tonight.`,
+      players: [_tw.exiled], badge: 'Sent to Exile', badgeClass: 'bad' });
 
     // What did the exiled player find?
     const _exFound = _tw.exileFound;

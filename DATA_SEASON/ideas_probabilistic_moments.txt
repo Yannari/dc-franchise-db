@@ -80,6 +80,10 @@ and the downstream consequence. None are guaranteed — all fire on a roll.
   Alliance formation bond halved (+0.2). Recruitment bond halved (+0.25). Loyalty glue halved
   (+0.06). Positive bond cooling above +4.0. Social boost adds negative event weight too.
   Event weights 55/45 positive/negative. VP relationship display uses episode snapshot.
+[DONE] [JM] JURY MANAGEMENT — ENDGAME TARGETING — strategic players (>= 6) factor FTC math
+  into computeHeat post-merge (8 or fewer players). Count juror bonds to estimate who'd win
+  FTC. Targets who'd beat them: +juryAdvantage*0.4 heat. Targets they'd beat: -0.5 heat
+  (goat protection). Flows through pickTarget into alliance targeting naturally.
 
 
 ── REMAINING — RANKED BY PRIORITY ─────────────────────────────────────────────
@@ -87,11 +91,6 @@ and the downstream consequence. None are guaranteed — all fire on a roll.
   MEDIUM PRIORITY
   ───────────────
 
-[JM] JURY MANAGEMENT — ENDGAME TARGETING
-  Problem: players don't consider jury votes when making elimination decisions.
-  Mechanic: post-merge, strategic players factor jury math into targeting.
-  Gate: only active with jury-decided finale format.
-  Note: medium priority — FTC passenger penalty partially addresses this.
 
 [15] FINAL TRIBAL SURPRISE FLIP
   Trigger: FTC with jury, one finalist has majority locked in

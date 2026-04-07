@@ -740,6 +740,26 @@
       position: absolute; top: 0; width: 8px; height: 8px; border-radius: 2px;
       animation: confetti-burst ease-out forwards;
     }
+    /* ── Aftermath Show Studio Theme ── */
+    .tod-studio { background: linear-gradient(180deg, #1a1035 0%, #0c0a1a 40%, #0d0b1e 100%); }
+    .aftermath-title { font-family: var(--font-display); color: #f59e0b; text-shadow: 0 0 20px rgba(99,102,241,0.6), 0 0 40px rgba(245,158,11,0.3); letter-spacing: 3px; }
+    .aftermath-card { border: 1px solid rgba(245,158,11,0.2); background: rgba(99,102,241,0.04); border-radius: 10px; padding: 14px; margin-bottom: 10px; }
+    .aftermath-card-gold { border: 1px solid rgba(245,158,11,0.35); background: rgba(245,158,11,0.04); border-radius: 10px; padding: 14px; margin-bottom: 10px; }
+    .aftermath-filmstrip { border-left: 4px solid #f59e0b; border-right: 4px solid #f59e0b; background: rgba(0,0,0,0.3); padding: 12px 16px; border-radius: 6px; margin-bottom: 10px; }
+    .aftermath-crowd-wild { color: #10b981; font-weight: 700; font-size: 12px; }
+    .aftermath-crowd-warm { color: #8b949e; font-size: 12px; }
+    .aftermath-crowd-boos { color: #ef4444; font-weight: 700; font-size: 12px; }
+    .aftermath-anvil { color: #ef4444; font-size: 28px; font-weight: 800; letter-spacing: 3px; animation: dropIn 0.3s ease-out; }
+    .aftermath-truth { color: #10b981; font-size: 20px; font-weight: 800; letter-spacing: 2px; }
+    .aftermath-live { display: inline-block; background: #ef4444; color: white; font-size: 8px; font-weight: 800; padding: 2px 6px; border-radius: 3px; letter-spacing: 1.5px; vertical-align: middle; }
+    .aftermath-classified::after { content: 'CLASSIFIED'; position: absolute; top: 8px; right: 8px; background: rgba(239,68,68,0.9); color: white; padding: 2px 8px; border-radius: 3px; font-size: 9px; font-weight: 800; letter-spacing: 2px; transform: rotate(5deg); }
+    .aftermath-q { cursor: pointer; padding: 10px 14px; border: 1px solid rgba(245,158,11,0.15); border-radius: 8px; margin-bottom: 6px; transition: all 0.3s; }
+    .aftermath-q:hover { border-color: rgba(245,158,11,0.4); background: rgba(245,158,11,0.03); }
+    .aftermath-gallery { display: flex; flex-wrap: wrap; gap: 4px; padding: 8px; background: rgba(99,102,241,0.03); border: 1px solid rgba(99,102,241,0.1); border-radius: 8px; }
+    .aftermath-reaction { font-size: 10px; color: #8b949e; font-style: italic; padding: 4px 8px; animation: fadeIn 0.4s; }
+    .aftermath-award { border: 2px solid rgba(245,158,11,0.4); background: linear-gradient(135deg, rgba(245,158,11,0.06) 0%, rgba(99,102,241,0.04) 100%); border-radius: 12px; padding: 16px; margin-bottom: 12px; text-align: center; }
+    @keyframes dropIn { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    @keyframes slideInLeft { from { transform: translateX(-40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
   </style>
 </head>
 <body>
@@ -1004,6 +1024,33 @@
                   </select>
                 </div>
                 <p class="acc-desc">Every eliminated player (until F4) casts a secret vote or gift before leaving. Classic: extra vote against their enemy at next tribal. Modern: Extra Vote advantage to their closest ally.</p>
+              </div>
+            </div>
+
+            <div class="accordion">
+              <div class="accordion-header" onclick="toggleAccordion('aftermathshow')">
+                <span>Aftermath Show</span>
+                <span class="accordion-chevron" id="acc-chevron-aftermathshow">▼</span>
+              </div>
+              <div class="accordion-body" id="acc-body-aftermathshow" style="display:none">
+                <div class="form-group">
+                  <label class="form-label">Aftermath Show</label>
+                  <select id="cfg-aftermath" class="form-select" onchange="saveConfig()">
+                    <option value="disabled">Disabled</option>
+                    <option value="enabled">Every 3 eliminations</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Fan Vote Return</label>
+                  <select id="cfg-fan-vote-frequency" class="form-select" onchange="saveConfig()">
+                    <option value="disabled">Disabled</option>
+                    <option value="3">At Aftermath #1 (after 3 eliminations)</option>
+                    <option value="6">At Aftermath #2 (after 6 eliminations)</option>
+                    <option value="9">At Aftermath #3 (after 9 eliminations)</option>
+                    <option value="12">At Aftermath #4 (after 12 eliminations)</option>
+                  </select>
+                </div>
+                <p class="acc-desc">Aftermath: Chris interviews eliminated players, reveals secrets, shows unseen footage. Fan Vote: when enabled, the Aftermath includes a fan vote — the winner returns at the start of the next episode. No need to schedule second-chance separately.</p>
               </div>
             </div>
 
@@ -1578,7 +1625,7 @@ const TWIST_CATALOG = [
   { id:'tiebreaker-challenge', emoji:'🏅', name:'Challenge Tiebreaker (episode override)', category:'elim', phase:'any', desc:'Forces challenge tiebreaker this episode regardless of season tiebreaker mode.',              engineType:'tiebreaker-challenge' },
   { id:'auction',          emoji:'🏷️', name:'Survivor Auction',      category:'advantages', phase:'post-merge', desc:'Players receive $500 each and bid on food, comfort, advantages, and a blind-bid immunity item.', engineType:'auction' },
   { id:'elimination-swap', emoji:'🔀', name:'Elimination Swap',       category:'elim',       phase:'pre-merge',  desc:'The voted-out player is sent to another tribe instead. They pick one member of the new tribe to swap back in exchange.', engineType:'elimination-swap' },
-  // exile-duel removed — incompatible with RI/Rescue Island systems which replaced it
+  { id:'exile-duel',       emoji:'⚔️', name:'Exile Duel',            category:'elim',       phase:'any',        desc:'Voted-out player goes to exile. Next boot faces them in a duel — loser is permanently eliminated.', engineType:'exile-duel', incompatible:['ri'] },
   { id:'exile-island',     emoji:'🏝️', name:'Exile Island',         category:'advantages', phase:'any',        desc:'One player is exiled, missing tribal but getting an idol clue.',            engineType:'exile-island'    },
   { id:'journey',          emoji:'🗺️', name:'Journey',              category:'advantages', phase:'any',        desc:'Select players go on a journey for a chance at an advantage.',              engineType:'journey'         },
   // legacy-awakens removed — Legacy Advantage auto-activates at F13/F6
@@ -1591,6 +1638,7 @@ const TWIST_CATALOG = [
   { id:'reward-challenge', emoji:'🏅', name:'Reward Challenge',     category:'advantages', phase:'any',        desc:'A reward challenge runs before immunity. Winner picks who shares it. Tribal still runs.',     engineType:'reward-challenge'},
   { id:'fan-vote-boot',    emoji:'📱', name:'Fan Vote Save',        category:'social',     phase:'post-merge', desc:'Fans vote to save the most popular player — pre-merge: tribal immunity; post-merge: Extra Vote.',  engineType:'fan-vote-boot'   },
   { id:'jury-elimination', emoji:'⚖️', name:'Jury Elimination',     category:'elim',       phase:'post-merge', desc:'All eliminated players (jury) vote to boot one active player. Immunity winner is safe.',        engineType:'jury-elimination'},
+  { id:'aftermath',       emoji:'🎬', name:'Aftermath Show',       category:'social',     phase:'any',        desc:'Total Drama Aftermath: Chris interviews eliminated players, reveals secrets, shows unseen footage.', engineType:'aftermath' },
   { id:'tied-destinies',  emoji:'🔗', name:'Tied Destinies',       category:'elim',       phase:'post-merge', desc:'Players randomly paired. Vote someone out and their partner goes too. Paired immunity challenge. Double elimination.', engineType:'tied-destinies', incompatible:['pre-merge'] },
 ];
 
@@ -1676,6 +1724,8 @@ function defaultConfig() {
     firemaking: false, tiebreakerMode: 'survivor', qem: false, idolRehide: false,
     advExpire: 4, foodWater: 'disabled', survivalDifficulty: 'casual',
     mole: 'disabled', molePlayers: [], moleCoordination: 'independent',
+    aftermath: 'disabled',
+    fanVoteFrequency: 'disabled',
     host: 'Chris',
     advantages: Object.fromEntries(ADVANTAGES.map(a => [a.key, { enabled: a.default > 0, count: a.default }])),
     twistSchedule: [],
@@ -1690,7 +1740,7 @@ function repairGsSets(g) {
   const SET_FIELDS = ['blowupHeatNextEp', 'knownIdolHoldersThisEp', 'knownIdolHoldersPersistent',
                       'knownAmuletHoldersThisEp', 'knownAmuletHoldersPersistent',
                       'socialBombHeatThisEp', 'injuredThisEp', 'scramblingThisEp', 'beastDrillsThisEp', 'lieTargetsThisEp',
-                      'knownTeamSwapHolders', 'knownVoteBlockHolders', 'knownVoteStealHolders', 'knownSafetyNoPowerHolders', 'knownSoleVoteHolders', 'shotInDarkUsed'];
+                      'knownTeamSwapHolders', 'knownVoteBlockHolders', 'knownVoteStealHolders', 'knownSafetyNoPowerHolders', 'knownSoleVoteHolders', 'shotInDarkUsed', '_volunteerExileUsed'];
   SET_FIELDS.forEach(f => {
     if (g[f] instanceof Set) return; // already a Set
     if (Array.isArray(g[f])) { g[f] = new Set(g[f]); return; } // saved as array — restore
@@ -1703,7 +1753,7 @@ function prepGsForSave(g) {
   const SET_FIELDS = ['blowupHeatNextEp', 'knownIdolHoldersThisEp', 'knownIdolHoldersPersistent',
                       'knownAmuletHoldersThisEp', 'knownAmuletHoldersPersistent',
                       'socialBombHeatThisEp', 'injuredThisEp', 'scramblingThisEp', 'beastDrillsThisEp', 'lieTargetsThisEp',
-                      'knownTeamSwapHolders', 'knownVoteBlockHolders', 'knownVoteStealHolders', 'knownSafetyNoPowerHolders', 'knownSoleVoteHolders', 'shotInDarkUsed'];
+                      'knownTeamSwapHolders', 'knownVoteBlockHolders', 'knownVoteStealHolders', 'knownSafetyNoPowerHolders', 'knownSoleVoteHolders', 'shotInDarkUsed', '_volunteerExileUsed'];
   SET_FIELDS.forEach(f => { if (g[f] instanceof Set) g[f] = [...g[f]]; });
   return g;
 }
@@ -2457,6 +2507,8 @@ function saveConfig() {
     advExpire:   parseInt(g('cfg-adv-expire')?.value) || 4,
     foodWater:   g('cfg-food-water')?.value || 'disabled',
     survivalDifficulty: g('cfg-survival-difficulty')?.value || 'casual',
+    aftermath:   g('cfg-aftermath')?.value || 'disabled',
+    fanVoteFrequency: g('cfg-fan-vote-frequency')?.value || 'disabled',
     mole:        g('cfg-mole')?.value || 'disabled',
     molePlayers: seasonConfig.molePlayers || [],
     moleCoordination: g('cfg-mole-coordination')?.value || 'independent',
@@ -2565,6 +2617,9 @@ function renderConfig() {
   if (_rsRow) _rsRow.style.display = _fwOn ? '' : 'none';
   if (_rsDesc) _rsDesc.style.display = _fwOn ? '' : 'none';
   set('cfg-host', seasonConfig.host || 'Chris');
+  // Aftermath
+  set('cfg-aftermath', seasonConfig.aftermath || 'disabled');
+  set('cfg-fan-vote-frequency', seasonConfig.fanVoteFrequency || 'disabled');
   // The Mole
   set('cfg-mole', seasonConfig.mole || 'disabled');
   set('cfg-mole-coordination', seasonConfig.moleCoordination || 'independent');
@@ -3754,6 +3809,13 @@ function computeHeat(name, tribalPlayers, alliances) {
       const _epsSinceDetective = ((gs.episode || 0) + 1) - gs.moleDetectiveHeatReduction[name];
       if (_epsSinceDetective <= 2) heat -= 1.5; // tribe protects the person who saved them
     }
+  }
+  // ── Volunteer Exile Duel: volunteer WANTS to be voted out ──
+  if (gs._volunteerDuelHeat?.[name] === ((gs.episode || 0) + 1)) heat += 8.0;
+  // Volunteer duel winner returns with reduced heat
+  if (gs._volunteerDuelReturnHeat?.[name]) {
+    const _epsSinceReturn = ((gs.episode || 0) + 1) - gs._volunteerDuelReturnHeat[name];
+    if (_epsSinceReturn <= 2) heat -= 2.0;
   }
   // ── Tied Destinies: pair-aware heat — voting out this player also eliminates their partner ──
   if (gs._tiedDestiniesActive) {
@@ -5096,7 +5158,8 @@ function pickTarget(attackers, victims, challengeLabel) {
       // Solo/unallied players are easier targets — no one fights for them
       const _hasAlliance = (gs.namedAlliances || []).some(a => a.active && a.members.includes(v) && a.members.some(m => m !== v && attackers.includes(m) === false));
       const _soloMod = _hasAlliance ? 0 : 0.4;
-      return Math.max(0.1, _cwScore * 0.35 + (-avgBond) * 0.35 + _threatMod + dramaRisk + _soloMod + Math.random() * 0.5);
+      const _volunteerModPre = gs._volunteerDuelHeat?.[v] === ((gs.episode || 0) + 1) ? 5.0 : 0;
+      return Math.max(0.1, _cwScore * 0.35 + (-avgBond) * 0.35 + _threatMod + dramaRisk + _soloMod + _volunteerModPre + Math.random() * 0.5);
     } else {
       const allAtTribal = [...attackers, v];
       const maxBond = allAtTribal.filter(p => p !== v).reduce((m, p) => Math.max(m, getPerceivedBond(p, v)), 0);
@@ -5137,7 +5200,9 @@ function pickTarget(attackers, victims, challengeLabel) {
       }
       // Heat as tiebreaker: existing momentum toward this target from multiple sources
       const _heatMod = computeHeat(v, [...attackers, v], []) * 0.15;
-      return Math.max(0.1, threatScore(v) * 0.6 + (-avgBond) * 0.4 + pairThreat + standoutMod + personalityMod + _amuletMod + _heatMod + Math.random() * 0.5);
+      // Volunteer exile duel: massive targeting boost — they ASKED to go
+      const _volunteerMod = gs._volunteerDuelHeat?.[v] === ((gs.episode || 0) + 1) ? 5.0 : 0;
+      return Math.max(0.1, threatScore(v) * 0.6 + (-avgBond) * 0.4 + pairThreat + standoutMod + personalityMod + _amuletMod + _heatMod + _volunteerMod + Math.random() * 0.5);
     }
   });
 }
@@ -10550,7 +10615,7 @@ function applyTwist(ep, twist, isPrimary = true) {
     // Incompatible with RI/Rescue Island and requires popularity
     if (seasonConfig.ri) { twistObj.blocked = true; twistObj.blockedReason = 'RI active'; return; }
     if (!seasonConfig.popularityEnabled) { twistObj.blocked = true; twistObj.blockedReason = 'popularity disabled'; return; }
-    const _scElim = gs.eliminated.filter(p => !gs.riPlayers?.includes(p) && !(gs.jury||[]).includes(p));
+    const _scElim = gs.eliminated.filter(p => !gs.riPlayers?.includes(p)); // jury members CAN return via second-chance
     if (!_scElim.length) { twistObj.noReturn = true; return; }
     // Fan vote: popularity is THE primary driver — this is a fan vote, fans vote for who they like
     const _scScores = _scElim.map(name => {
@@ -10569,6 +10634,7 @@ function applyTwist(ep, twist, isPrimary = true) {
     twistObj.fanVoteResults = _scScores.map(s => ({ name: s.name, pct: Math.round(s.score / _scTotalScore * 100), popularity: s.popularity }));
     // Return the player to the game
     gs.eliminated = gs.eliminated.filter(p => p !== returnee);
+    gs.jury = (gs.jury || []).filter(p => p !== returnee); // remove from jury if they were on it
     gs.activePlayers.push(returnee);
     if (gs.phase === 'pre-merge' && gs.tribes.length) {
       const smallest = [...gs.tribes].sort((a,b) => a.members.length - b.members.length)[0];
@@ -12263,6 +12329,8 @@ function applyTwist(ep, twist, isPrimary = true) {
       ]) });
     }
 
+  } else if (engineType === 'aftermath') {
+    twistObj.aftermath = true; // generateAftermathShow handles everything in patchEpisodeHistory
   } else if (engineType === 'shot-in-dark') {
     gs.shotInDarkEnabledThisEp = true;
   }
@@ -17030,6 +17098,68 @@ function _checkMoleExposure(mole, ep, tribeName) {
   }
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+// VOLUNTEER EXILE DUEL — bold player asks to be voted out to face rival
+// ══════════════════════════════════════════════════════════════════════════════
+function checkVolunteerExileDuel(ep) {
+  // Prerequisite: exile duel must be active AND someone on exile to duel
+  if (!ep.exileDuelActive && !gs.exileDuelPlayer) return;
+  if (!gs.exileDuelPlayer) return; // nobody on exile to duel
+  const curEp = (gs.episode || 0) + 1;
+  if (curEp < 3) return; // too early
+  if (!gs._volunteerExileUsed) gs._volunteerExileUsed = new Set();
+
+  const _pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  const exileRival = gs.exileDuelPlayer;
+
+  // Check each active player for volunteer motivation
+  gs.activePlayers.forEach(name => {
+    if (gs._volunteerExileUsed.has(name)) return; // once per game
+    if (ep.volunteerDuel) return; // one volunteer per episode
+    if (name === ep.immunityWinner || (ep.extraImmune || []).includes(name)) return; // can't volunteer if immune
+    const bond = getBond(name, exileRival);
+    if (bond > -3) return; // needs genuine rivalry
+    const s = pStats(name);
+    const chance = s.boldness * 0.015 + (10 - s.temperament) * 0.01;
+    if (Math.random() >= chance) return;
+
+    // VOLUNTEER!
+    gs._volunteerExileUsed.add(name);
+    ep.volunteerDuel = { volunteer: name, rival: exileRival, granted: false, duelResult: null, heatBoost: 8.0, targetBoost: 5.0 };
+
+    // Heat boost — they WANT to be targeted
+    if (!gs._volunteerDuelHeat) gs._volunteerDuelHeat = {};
+    gs._volunteerDuelHeat[name] = curEp;
+
+    // Camp event
+    const mp = pronouns(name);
+    const campKey = gs.isMerged ? (gs.mergeName || 'merge')
+      : gs.tribes.find(t => t.members.includes(name))?.name;
+    if (campKey && ep.campEvents) {
+      if (!ep.campEvents[campKey]) ep.campEvents[campKey] = { pre: [], post: [] };
+      const _cd = ep.campEvents[campKey];
+      const evts = (typeof _cd === 'object' && !Array.isArray(_cd)) ? (_cd.pre || []) : (Array.isArray(_cd) ? _cd : []);
+
+      const _volTexts = s.temperament <= 4
+        ? [
+            `${name} stands up at camp. "Vote me out tonight. I want ${exileRival}." The tribe goes silent. ${mp.Sub} ${mp.sub === 'they' ? 'aren\'t' : 'isn\'t'} bluffing.`,
+            `"Send me to exile." ${name} says it like ${mp.sub} ${mp.sub === 'they' ? 'have' : 'has'} been thinking about it for days. ${mp.Sub} probably ${mp.sub === 'they' ? 'have' : 'has'}. "I want to look ${exileRival} in the eye and end this."`,
+            `${name} loses it at camp. "I'm done waiting. Vote me out. Let me face ${exileRival}. I'll handle this myself." The tribe watches, stunned.`,
+          ]
+        : [
+            `${name} makes the announcement calmly, but the fire behind it is obvious. "I'm volunteering. Send me to the duel. I want ${exileRival}."`,
+            `"This is my choice," ${name} tells the tribe. "Vote me out tonight. I'll beat ${exileRival} and I'll come back stronger. Trust me."`,
+            `${name} pulls the tribe together. "I know this sounds crazy. But I need to face ${exileRival}. It's personal. Send me."`,
+          ];
+
+      evts.push({
+        type: 'volunteerExileDuel', text: _pick(_volTexts),
+        players: [name, exileRival], badgeText: 'VOLUNTEER DUEL'
+      });
+    }
+  });
+}
+
 function checkSocialPolitics(ep) {
   if (!ep.campEvents) return;
   const _pick = arr => arr[Math.floor(Math.random() * arr.length)];
@@ -17802,7 +17932,8 @@ function generateCampEvents(ep, phase = 'both') {
     } else {
       const total = totalForGroup(gs.activePlayers);
       const preCount = phase === 'both' ? total : Math.ceil(total / 2);
-      const mergePreEvents = generateCampEventsForGroup(gs.activePlayers, idolFinds, boosts, preCount);
+      const _campActivePlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
+      const mergePreEvents = generateCampEventsForGroup(_campActivePlayers, idolFinds, boosts, preCount);
       if (ep.twistNarrativeEvents?.['merge']) mergePreEvents.unshift(ep.twistNarrativeEvents['merge']);
       if (!ep.campEvents) ep.campEvents = {};
       const _existingMergePre = ep.campEvents.merge?.pre || [];
@@ -18747,7 +18878,7 @@ function generateCampEvents(ep, phase = 'both') {
       const total = totalForGroup(gs.activePlayers);
       const postCount = Math.floor(Math.random() * 3) + Math.max(5, Math.ceil(total * 0.72));
       if (!ep.campEvents.merge) ep.campEvents.merge = { pre: [], post: [] };
-      ep.campEvents.merge.post = generateCampEventsForGroup(gs.activePlayers, [], postBoostsMerge, postCount);
+      ep.campEvents.merge.post = generateCampEventsForGroup(gs.activePlayers.filter(p => p !== gs.exileDuelPlayer), [], postBoostsMerge, postCount);
     }
 
     // ── Temporary bloc alignment events (non-named alliances forming for this vote) ──
@@ -19202,7 +19333,8 @@ function simulateEpisode() {
   const ep = { num: epNum, bondChanges: [], riDuel: null, isRIReentry: false, isMerge: false,
                 idolFinds: [], idolPlays: [], idolRehide: false, journey: null, twist: null, twists: [], campEvents: {},
                 revoteVotes: null, revoteLog: null, isRockDraw: false,
-                tribesAtStart: gs.tribes.map(t => ({ name: t.name, members: [...t.members] })) };
+                tribesAtStart: gs.tribes.map(t => ({ name: t.name, members: [...t.members] })),
+                exileDuelPlayerAtStart: gs.exileDuelPlayer || null };
 
   // ── RETURN KIDNAPPED PLAYER to their original tribe ──
   if (gs.kidnappedPlayer) {
@@ -19380,6 +19512,27 @@ function simulateEpisode() {
     _usedTypes.add(twist.type);
     return true;
   });
+  // ── Aftermath Fan Vote return: winner comes back at the start of this episode ──
+  if (gs.pendingFanVoteReturn) {
+    const _fvReturnee = gs.pendingFanVoteReturn;
+    if (gs.eliminated.includes(_fvReturnee) && !gs.activePlayers.includes(_fvReturnee)) {
+      gs.eliminated = gs.eliminated.filter(p => p !== _fvReturnee);
+      gs.jury = (gs.jury || []).filter(p => p !== _fvReturnee);
+      gs.activePlayers.push(_fvReturnee);
+      if (gs.phase === 'pre-merge' && gs.tribes.length) {
+        const _smallest = [...gs.tribes].sort((a, b) => a.members.length - b.members.length)[0];
+        if (_smallest) _smallest.members.push(_fvReturnee);
+      }
+      // Soften extreme negative bonds (time away shifts perspective)
+      Object.keys(gs.bonds).forEach(k => {
+        if (k.includes(_fvReturnee) && gs.bonds[k] < -1) gs.bonds[k] = -1;
+      });
+      ep.fanVoteReturnee = _fvReturnee;
+      ep.twists.push({ type: 'fan-vote-return', returnee: _fvReturnee });
+    }
+    delete gs.pendingFanVoteReturn;
+  }
+
   // Sort twist processing order: first-impressions FIRST (changes rosters) → returns → eliminations → everything else
   // First-impressions must fire before any other twist so roster changes are visible to subsequent twists
   // Returns first so returnees are in the active pool for ambassador selection
@@ -19563,9 +19716,10 @@ function simulateEpisode() {
     updatePerceivedBonds(ep);
 
     // Run the immunity challenge — last place is eliminated
-    const _sdResult = simulateIndividualChallenge(gs.activePlayers, null);
+    const _sdPool = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
+    const _sdResult = simulateIndividualChallenge(_sdPool, null);
     ep.challengeType = 'individual';
-    ep.immunityWinner = _sdResult?.name || gs.activePlayers[0];
+    ep.immunityWinner = _sdResult?.name || _sdPool[0];
     ep.challengeLabel = _sdResult?.challengeLabel || 'Sudden Death';
     ep.challengeCategory = _sdResult?.challengeCategory || 'mixed';
     ep.challengeDesc = _sdResult?.challengeDesc || '';
@@ -19651,6 +19805,7 @@ function simulateEpisode() {
   if (gs._shieldActivations) ep._debugShield = Object.fromEntries(Object.entries(gs._shieldActivations).map(([k, v]) => [k, { ...v }]));
   generateCampEvents(ep, 'pre');
   checkMoleSabotage(ep); // The Mole: bond sabotage, laying low events, exposure checks
+  checkVolunteerExileDuel(ep); // Volunteer Exile Duel: bold player asks to be voted out
   updatePerceivedBonds(ep); // close perception gaps before tribal decisions
 
   // Inject camp events for journey losers returning without their vote
@@ -19856,9 +20011,10 @@ function simulateEpisode() {
       ep.chalPlacements = _pairScores.flatMap(ps => [ps.pair.a, ps.pair.b]);
       ep.chalMemberScores = {};
       _pairScores.forEach(ps => { ep.chalMemberScores[ps.pair.a] = ps.scoreA; ep.chalMemberScores[ps.pair.b] = ps.scoreB; });
-      ep.tribalPlayers = [...gs.activePlayers];
+      ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
     } else {
-    const immResult = simulateIndividualChallenge(gs.activePlayers, null);
+    const _chalPool = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
+    const immResult = simulateIndividualChallenge(_chalPool, null);
     ep.challengeType = 'individual'; ep.immunityWinner = immResult?.name || null;
     ep.challengeLabel    = immResult?.challengeLabel    || 'Immunity Challenge';
     ep.challengeCategory = immResult?.challengeCategory || 'mixed';
@@ -19866,7 +20022,7 @@ function simulateEpisode() {
     ep.chalPlacements    = immResult?.chalPlacements    || [];
     ep.chalMemberScores  = immResult?.chalMemberScores  || {};
     ep.challengeThrows   = immResult?.challengeThrows   || null;
-    ep.tribalPlayers = [...gs.activePlayers];
+    ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
     } // end tied-destinies else
     // Store standouts/stragglers for voter-specific targeting logic (cleared after tribal)
     const _immune = ep.immunityWinner;
@@ -20441,6 +20597,17 @@ function simulateEpisode() {
   // Expose lost-vote players to formAlliances so fallbackLabel uses voter count for size labels
   gs.lostVoteThisEp = [...(gs.lostVotes || [])];
   let alliances  = formAlliances(ep.tribalPlayers, tribeLabel, ep.challengeCategory);
+  // Volunteer Exile Duel: override alliance targets to the volunteer
+  if (ep.volunteerDuel && gs._volunteerDuelHeat?.[ep.volunteerDuel.volunteer]) {
+    const _volName = ep.volunteerDuel.volunteer;
+    if (ep.tribalPlayers.includes(_volName)) {
+      // The biggest alliance should target the volunteer — they asked for it
+      const _biggestAlliance = alliances.filter(a => a.type !== 'solo').sort((a, b) => b.members.length - a.members.length)[0];
+      if (_biggestAlliance && _biggestAlliance.target !== _volName) {
+        _biggestAlliance.target = _volName;
+      }
+    }
+  }
   ep.alliances = alliances;
   // Save split vote plans for betrayal exemption + VP display
   ep.splitVotePlans = alliances.filter(a => a.splitTarget).map(a => ({
@@ -21934,6 +22101,7 @@ function simulateJuryRoundtable(ep) {
     const _slS = pStats(_slElim);
     const _slPool = ep.tribalPlayers.filter(p =>
       p !== _slElim && p !== ep.immunityWinner && !(ep.extraImmune||[]).includes(p)
+      && p !== gs.exileDuelPlayer && p !== ep.exileDuelResult?.loser && p !== ep.exileDuelResult?.exilePlayer
     );
     if (_slPool.length) {
       // Strategic players pick the weakest opponent; bold/desperate pick their enemy
@@ -22356,8 +22524,10 @@ function simulateJuryRoundtable(ep) {
       // Track skipped elimination so buildEpisodeMap extends the season
       if (!gs.skippedEliminationEps) gs.skippedEliminationEps = [];
       if (!gs.skippedEliminationEps.includes(epNum)) gs.skippedEliminationEps.push(epNum);
-      // Shift all future twists forward by 1 episode — keeps ambassadors at merge, jury-elim at top 3, etc.
-      if (seasonConfig.twistSchedule?.length) {
+      // Shift all future twists forward by 1 to match the inserted blank episode
+      if (!gs._twistShiftedForEps) gs._twistShiftedForEps = [];
+      if (!gs._twistShiftedForEps.includes(epNum) && seasonConfig.twistSchedule?.length) {
+        gs._twistShiftedForEps.push(epNum);
         seasonConfig.twistSchedule.forEach(tw => {
           if (Number(tw.episode) > epNum) tw.episode = Number(tw.episode) + 1;
         });
@@ -22365,18 +22535,13 @@ function simulateJuryRoundtable(ep) {
       }
     }
 
-  // ── EXILE DUEL SETUP: voted-out goes to exile instead of eliminated ──
-  } else if (ep.eliminated && ep.exileDuelActive) {
-    gs.exileDuelPlayer = ep.eliminated;
-    // Keep in gs.activePlayers — not permanently out, so count must not drop.
-    // Remove from tribe so they don't participate in challenges/tribal while in exile.
-    gs.tribes = gs.tribes.map(t => ({...t, members: t.members.filter(p => p !== ep.eliminated)}));
-    gs.advantages = gs.advantages.filter(a => a.holder !== ep.eliminated);
-    ep.exilePlayer = ep.eliminated;
-    ep.eliminated = null; // in exile — not permanently out yet
-
   // ── EXILE DUEL RESOLUTION: duel between exile player and this episode's boot ──
+  // Must check BEFORE exile setup — if someone is already on exile, resolve the duel first
   } else if (ep.eliminated && gs.exileDuelPlayer) {
+    // Volunteer Exile Duel: mark granted if the volunteer was voted out into the duel
+    if (ep.volunteerDuel && ep.eliminated === ep.volunteerDuel.volunteer) {
+      ep.volunteerDuel.granted = true;
+    }
     const exilePlayer = gs.exileDuelPlayer;
     const newBoot = ep.eliminated;
     ep.exileDuelVotedOut = newBoot; // preserve who was actually voted out (for WHY card)
@@ -22391,7 +22556,8 @@ function simulateJuryRoundtable(ep) {
     handleAdvantageInheritance(_edLoser, ep);
     gs.advantages = gs.advantages.filter(a => a.holder !== _edLoser);
     if (_edWinner === exilePlayer) {
-      // Exile player won — already in gs.activePlayers (was kept there during exile), just rejoin a tribe.
+      // Exile player won — add back to activePlayers and rejoin a tribe
+      if (!gs.activePlayers.includes(exilePlayer)) gs.activePlayers.push(exilePlayer);
       const _smallest = [...gs.tribes].sort((a,b) => a.members.length - b.members.length)[0];
       if (_smallest) _smallest.members.push(_edWinner);
       // New boot is the loser — already handled above, also remove from tribe/advantages
@@ -22402,6 +22568,37 @@ function simulateJuryRoundtable(ep) {
     }
     ep.eliminated = _edLoser;
     ep.riChoice = null;
+
+    // ── Volunteer Exile Duel: apply grudge bonus if the volunteer won ──
+    // Check previous episode's volunteerDuel (the volunteer was voted out last ep, duel happens this ep)
+    const _prevEpVD = gs.episodeHistory?.[gs.episodeHistory.length - 1]?.volunteerDuel;
+    if (_prevEpVD?.granted && _edWinner === _prevEpVD.volunteer) {
+      _prevEpVD.duelResult = 'won';
+      ep.volunteerDuelReturn = { volunteer: _edWinner, rival: _edLoser, result: 'won' };
+      // Grudge bonus: heat reduction, bond damage with rival, popularity
+      if (!gs._volunteerDuelReturnHeat) gs._volunteerDuelReturnHeat = {};
+      gs._volunteerDuelReturnHeat[_edWinner] = (gs.episode || 0) + 1;
+      addBond(_edWinner, _edLoser, -2.0);
+      if (gs.popularity) gs.popularity[_edWinner] = (gs.popularity[_edWinner] || 0) + 5;
+    } else if (_prevEpVD?.granted && _edLoser === _prevEpVD.volunteer) {
+      _prevEpVD.duelResult = 'lost';
+      ep.volunteerDuelReturn = { volunteer: _edLoser, rival: _edWinner, result: 'lost' };
+    }
+
+  // ── EXILE DUEL SETUP: voted-out goes to exile instead of eliminated (only when nobody is already on exile) ──
+  } else if (ep.eliminated && ep.exileDuelActive && !gs.exileDuelPlayer) {
+    // Volunteer Exile Duel: mark if the volunteer was granted their wish
+    if (ep.volunteerDuel && ep.eliminated === ep.volunteerDuel.volunteer) {
+      ep.volunteerDuel.granted = true;
+    }
+    gs.exileDuelPlayer = ep.eliminated;
+    // Remove from activePlayers AND tribes — they're on exile, not in the game right now
+    // They'll be added back if they win the duel
+    gs.activePlayers = gs.activePlayers.filter(p => p !== ep.eliminated);
+    gs.tribes = gs.tribes.map(t => ({...t, members: t.members.filter(p => p !== ep.eliminated)}));
+    gs.advantages = gs.advantages.filter(a => a.holder !== ep.eliminated);
+    ep.exilePlayer = ep.eliminated;
+    ep.eliminated = null; // in exile — not permanently out yet
 
   // ── RI CHOICE (standard elimination) — only if RI is still accepting players ──
   } else if (ep.eliminated) {
@@ -22467,6 +22664,9 @@ function simulateJuryRoundtable(ep) {
       // Clean up pair-aware state
       delete gs._tiedDestiniesActive;
     }
+
+    // Clear volunteer duel heat after tribal
+    if (gs._volunteerDuelHeat) delete gs._volunteerDuelHeat;
 
     // ── BLACK VOTE: eliminated player casts a parting vote/gift (until F4) ──
     if (cfg.blackVote && cfg.blackVote !== 'off' && gs.activePlayers.length > 4) {
@@ -25462,6 +25662,72 @@ function _textMoleReveal(ep, ln, sec) {
   ln(`"They never figured it out." — ${mr.player}`);
 }
 
+function _textAftermath(ep, ln, sec) {
+  if (!ep.aftermath) return;
+  const a = ep.aftermath;
+  sec(a.isReunion ? 'TOTAL DRAMA AFTERMATH: THE REUNION' : `AFTERMATH #${a.number}`);
+  ln(`Guests: ${a.interviewees.join(', ')}`);
+  if (a.peanutGallery.length) ln(`Peanut Gallery: ${a.peanutGallery.join(', ')}`);
+  // Interviews
+  a.interviews.forEach(iv => {
+    ln('');
+    ln(`INTERVIEW — ${iv.player}${iv.isActive ? ' (Winner)' : ` (Eliminated Ep ${iv.elimEpNum})`}`);
+    ln(`Crowd: ${iv.crowdReaction}. ${iv.entranceQuote}`);
+    ln(`Blame: ${iv.blameText}`);
+    ln(`Mistake: ${iv.mistakeText}`);
+    ln(`Prediction: ${iv.predictionText}`);
+    ln(`Last words: ${iv.lastWords}`);
+  });
+  // Truth or Anvil
+  if (a.truthOrAnvil?.length) {
+    ln('');
+    ln('TRUTH OR ANVIL:');
+    a.truthOrAnvil.forEach(toa => {
+      ln(`${toa.player}: ${toa.secret}`);
+      ln(`Result: ${toa.toldTruth ? 'TRUTH' : 'ANVIL (lied)'}. ${toa.consequence}`);
+    });
+  }
+  // Unseen Footage
+  if (a.unseenFootage?.length) {
+    ln('');
+    ln('UNSEEN FOOTAGE:');
+    a.unseenFootage.forEach(clip => ln(`Ep ${clip.sourceEp}: ${clip.description}`));
+  }
+  // Fan Call
+  if (a.fanCall) {
+    ln('');
+    ln(`FAN CALL: ${a.fanCall.fanName} asks ${a.fanCall.target}: "${a.fanCall.question}"`);
+    ln(`Answer: ${a.fanCall.answer}`);
+  }
+  // Fan Vote
+  if (a.fanVote) {
+    ln('');
+    ln('FAN VOTE RESULTS:');
+    a.fanVote.results.forEach(r => ln(`${r.name}: ${r.pct}%${r.name === a.fanVote.winner ? ' — RETURNING' : ''}`));
+  }
+  // Awards
+  if (a.awards?.length) {
+    ln('');
+    ln('SEASON AWARDS:');
+    a.awards.forEach(aw => ln(`${aw.title}: ${aw.winner} — ${aw.description}`));
+  }
+  if (a.seasonRating) ln(`Season Rating: ${a.seasonRating.score}/10 — "${a.seasonRating.comment}"`);
+}
+
+function _textVolunteerDuel(ep, ln, sec) {
+  if (!ep.volunteerDuel) return;
+  const vd = ep.volunteerDuel;
+  sec('VOLUNTEER EXILE DUEL');
+  ln(`${vd.volunteer} volunteered to be voted out to face ${vd.rival} at the exile duel.`);
+  ln(vd.granted ? 'The tribe granted the request.' : 'The tribe had other priorities.');
+  if (vd.duelResult === 'won') ln(`${vd.volunteer} WON the duel. Returned with grudge bonus.`);
+  if (vd.duelResult === 'lost') ln(`${vd.volunteer} LOST the duel. Permanently eliminated.`);
+  if (ep.volunteerDuelReturn) {
+    const vdr = ep.volunteerDuelReturn;
+    ln(`${vdr.volunteer} ${vdr.result === 'won' ? 'returned victorious — grudge bonus applied.' : 'fell at the duel. The gamble did not pay off.'}`);
+  }
+}
+
 function _textWriterContext(ep, ln, sec) {
   sec('WRITER CONTEXT');
 
@@ -25505,6 +25771,646 @@ function _textWriterContext(ep, ln, sec) {
 // ══════════════════════════════════════════════════════════════════════════════
 // MAIN — generateSummaryText
 // ══════════════════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════════════
+// AFTERMATH SHOW — generates all segment data from game state
+// ══════════════════════════════════════════════════════════════════════════════
+function generateAftermathShow(ep) {
+  const cfg = seasonConfig;
+  const curEp = ep.num || (gs.episode || 0) + 1;
+  const isFinale = !!(ep.winner && ep.isFinale); // BOTH must be true — winner decided AND engine explicitly marked it as finale
+  const isScheduled = (ep.twists || []).some(t => t.type === 'aftermath' || t.catalogId === 'aftermath');
+  const lastAftermath = gs.lastAftermathEp || 0;
+  // Count eliminations since last aftermath (not episodes — Team Swap skips mess up episode counting)
+  // Count TOTAL eliminations, not episodes — double boots count as 2, exile setups count as 0
+  const _elimsSinceLastAftermath = (gs.episodeHistory || []).filter(h => h.num > lastAftermath && h.num <= curEp).reduce((count, h) => {
+    let c = 0;
+    if (h.eliminated) c++;
+    if (h.firstEliminated) c++;
+    if (h.tiedDestinies?.eliminatedPartner) c++;
+    if (h.ambassadorData?.ambassadorEliminated && h.ambassadorData.ambassadorEliminated !== h.eliminated) c++;
+    return count + c;
+  }, 0);
+  const autoFire = cfg.aftermath === 'enabled' && _elimsSinceLastAftermath >= 3;
+  // Pre-finale aftermath: always fire right before the finale so the last aftermath covers the finalists
+  const _isPreFinale = cfg.aftermath === 'enabled' && !isFinale && gs.activePlayers.length <= (cfg.finaleSize || 3) + 1 && lastAftermath < curEp;
+  if (!isScheduled && !autoFire && !_isPreFinale && !(isFinale && cfg.aftermath === 'enabled')) return;
+
+  const _pick = arr => arr.length ? arr[Math.floor(Math.random() * arr.length)] : '';
+  const _host = cfg.host || 'Chris';
+
+  // ── Determine interviewees and gallery ──
+  // Build eliminated list from episode history (more reliable than gs.eliminated for double elims / returnees)
+  const _allElimFromHistory = [];
+  (gs.episodeHistory || []).forEach(h => {
+    if (h.eliminated) _allElimFromHistory.push(h.eliminated);
+    if (h.firstEliminated) _allElimFromHistory.push(h.firstEliminated);
+    if (h.tiedDestinies?.eliminatedPartner) _allElimFromHistory.push(h.tiedDestinies.eliminatedPartner);
+    if (h.ambassadorData?.ambassadorEliminated) _allElimFromHistory.push(h.ambassadorData.ambassadorEliminated);
+  });
+  const allEliminated = [...new Set([...(_allElimFromHistory), ...(gs.eliminated || [])])];
+  const prevInterviewed = gs.aftermathHistory?.flatMap(a => a.interviewees) || [];
+  // Returnees: remove from interviewee pool if they came back and are still active
+  const _returnees = new Set(gs.activePlayers);
+  // A player who was interviewed, returned, and got eliminated AGAIN should be re-interviewed
+  const _lastInterviewEp = {};
+  (gs.aftermathHistory || []).forEach(a => { a.interviewees.forEach(n => { _lastInterviewEp[n] = a.ep; }); });
+  const interviewees = allEliminated.filter(n => {
+    if (_returnees.has(n)) return false; // still active
+    if (!prevInterviewed.includes(n)) return true; // never interviewed
+    // Was interviewed before — check if eliminated AGAIN after the interview
+    const _lastIntEp = _lastInterviewEp[n] || 0;
+    const _reElim = (gs.episodeHistory || []).find(h => h.num > _lastIntEp && (h.eliminated === n || h.firstEliminated === n || h.ambassadorData?.ambassadorEliminated === n || h.tiedDestinies?.eliminatedPartner === n));
+    return !!_reElim; // re-eliminated after last interview
+  });
+  const peanutGallery = prevInterviewed.filter(n => !_returnees.has(n));
+
+  if (!interviewees.length && !isFinale) {
+    // No new eliminees — still reset the timer so it doesn't fire next episode
+    if (autoFire) gs.lastAftermathEp = curEp;
+    return;
+  }
+
+  const aftermathNum = (gs.aftermathHistory?.length || 0) + 1;
+  const isReunion = isFinale;
+
+  // ── BUILD INTERVIEWS ──
+  // Reunion: only interview people who haven't been interviewed yet + the finalists
+  // Everyone else is present for group discussion but doesn't get a solo interview
+  const _reunionNewGuests = isReunion ? [...gs.activePlayers, ...interviewees] : interviewees;
+  const _reunionAll = _reunionNewGuests;
+  const interviews = _reunionAll.map(name => {
+    const s = pStats(name);
+    const pr = pronouns(name);
+    const arch = s.archetype || 'unknown';
+    const isActive = gs.activePlayers.includes(name);
+    const pop = gs.popularity?.[name] || 0;
+
+    // Find their elimination episode data
+    const elimEp = gs.episodeHistory.find(h => h.eliminated === name || h.firstEliminated === name || h.tiedDestinies?.eliminatedPartner === name);
+    const elimEpNum = elimEp?.num || '?';
+    const voters = (elimEp?.votingLog || []).filter(v => v.voted === name).map(v => v.voter);
+
+    // Crowd reaction
+    const crowdReaction = pop >= 8 ? 'wild' : pop >= 3 ? 'warm' : pop >= 0 ? 'polite' : 'boos';
+
+    // Entrance quote
+    const wasBlindside = elimEp?.votingLog && voters.length >= 3;
+    const wasBetrayedBy = voters.find(v => getBond(name, v) >= 3);
+    const entranceQuote = isActive
+      ? _pick([`${name} walks on stage as the season's winner. The crowd erupts.`, `${name} takes the hot seat. The game is over — but the story isn't.`])
+      : wasBetrayedBy
+      ? _pick([`"I trusted ${wasBetrayedBy}. That's on me."`, `"${wasBetrayedBy} looked me in the eye and lied. I won't forget that."`, `"Betrayal is part of the game. Doesn't mean it doesn't sting."`])
+      : wasBlindside
+      ? _pick([`"I didn't see it coming. And honestly? I'm still processing."`, `"The blindside was clean. I'll give them that."`, `"I had no idea. Zero. That's the worst part."`])
+      : _pick([`"I knew it was my time. Doesn't make it easier."`, `"I played my game. I'm proud of what I did out there."`, `"It's over for me. But the game isn't over."`]);
+
+    // Build a POOL of possible Q&As — pick 3-4 randomly so each interview is different
+    const blameTarget = voters.sort((a, b) => getBond(name, a) - getBond(name, b))[0] || null;
+    const activeByBond = gs.activePlayers.filter(p => p !== name).sort((a, b) => getBond(name, b) - getBond(name, a));
+    const prediction = activeByBond[0] || null;
+    const enemy = gs.activePlayers.filter(p => p !== name).sort((a, b) => getBond(name, a) - getBond(name, b))[0];
+    const bestAlly = activeByBond[0];
+    const _showmance = gs.showmances?.find(sh => sh.players.includes(name));
+    const _wasMole = gs.moles?.find(m => m.player === name);
+    // Specific idol play data
+    const _idolPlayEp = gs.episodeHistory?.find(h => (h.idolPlays || []).some(ip => ip.player === name && (ip.type === 'idol' || ip.type === 'superIdol')));
+    const _idolPlay = _idolPlayEp ? (_idolPlayEp.idolPlays || []).find(ip => ip.player === name) : null;
+    // Specific betrayal data
+    const _betrayalEp = gs.episodeHistory?.find(h => (h.defections || []).some(d => d.player === name));
+    const _betrayal = _betrayalEp ? (_betrayalEp.defections || []).find(d => d.player === name) : null;
+    // Alliance history
+    const _alliances = (gs.namedAlliances || []).filter(a => a.members.includes(name));
+    const _dissolvedAlliance = _alliances.find(a => !a.active);
+    // Vote count at elimination
+    const _elimVoteCount = elimEp?.votes?.[name] || 0;
+    const _elimTotalVoters = elimEp?.votingLog?.length || 0;
+    // Challenge record
+    const _chalRec = gs.chalRecord?.[name];
+    const _chalWins = _chalRec?.wins || 0;
+
+    const _allQAs = [
+      // Blame — specific vote data
+      blameTarget && { q: `"${_elimVoteCount} votes against you in episode ${elimEpNum}. ${blameTarget} was one of them. Did you see it coming?"`, a: _pick([
+        `"${blameTarget} looked me in the eye at camp that morning and said we were good. ${_elimVoteCount} votes later, here I am."`,
+        `"I knew ${blameTarget} was capable of it. I just didn't think ${pronouns(blameTarget).sub} ${pronouns(blameTarget).sub === 'they' ? 'would' : 'would'} actually do it. ${_elimVoteCount} votes — ${pronouns(blameTarget).sub} organized that."`,
+        `"${blameTarget}. We were supposed to be close and ${pronouns(blameTarget).sub} still wrote my name. That tells you everything."`,
+      ]), cat: 'blame' },
+      // Mistake — references specific game events
+      { q: s.strategic >= 7 ? `"You were one of the most strategic players out there. ${_chalWins ? `${_chalWins} challenge wins.` : ''} But strategy didn't save you. What went wrong?"` : _dissolvedAlliance ? `"${_dissolvedAlliance.name} fell apart. You were in it. What happened?"` : `"Walk me through your game. Where did it go sideways?"`,
+        a: _dissolvedAlliance ? _pick([`"${_dissolvedAlliance.name} was solid until it wasn't. Someone flipped — and once trust breaks, it's over."`, `"We had the numbers with ${_dissolvedAlliance.name}. Then the cracks started showing around episode ${_dissolvedAlliance.formed + 2 || '?'}."`,]) : s.strategic >= 7 ? _pick([`"I saw the move three episodes out. But seeing it and executing it are different things."`, `"I had too many plans running. When one collapsed, they all did."`,]) : _pick([`"I didn't play hard enough when it mattered. By the time I woke up, it was too late."`, `"I trusted the wrong person at the wrong time. That one decision cost me everything."`,]), cat: 'mistake' },
+      // Prediction — with reasoning
+      prediction && { q: `"${gs.activePlayers.length} players left. Who takes it?"`, a: _pick([`"${prediction}. I know ${pronouns(prediction).posAdj} game better than anyone. ${pronouns(prediction).Sub} ${pronouns(prediction).sub === 'they' ? 'have' : 'has'} the path."`, `"${prediction}. ${pronouns(prediction).Sub} ${pronouns(prediction).sub === 'they' ? 'are' : 'is'} playing the game nobody else sees. Somehow still under the radar."`,]), cat: 'prediction' },
+      // Enemy — specific bond and incident
+      enemy && getBond(name, enemy) <= -2 && { q: `"You and ${enemy}. That's ${getBond(name, enemy) <= -5 ? 'hatred' : getBond(name, enemy) <= -3 ? 'serious hostility' : 'real tension'}. What happened between you two?"`, a: _pick([`"${enemy} and I clashed from day one. By episode ${Math.max(1, (elimEpNum || 5) - 3)}, it was personal."`, `"I tried to work with ${enemy}. Genuinely. But ${pronouns(enemy).sub} made it impossible. Ask anyone at camp."`, `"${enemy} played a dirty game. I played mine. We just happened to be playing against each other."`,]), cat: 'enemy' },
+      // Showmance — specific partner and phase
+      _showmance && { q: `"You and ${_showmance.players.find(p => p !== name)}. The showmance started around episode ${_showmance.sparkEp || '?'}. ${_showmance.phase === 'broken-up' ? 'And then it ended.' : 'Is it still going?'}"`, a: _showmance.phase === 'broken-up' ? _pick([`"It was real while it lasted. The game killed it. Not us."`, `"I don't regret it. Even the ending. ${_showmance.players.find(p => p !== name)} knows how I felt."`,]) : _pick([`"It's real. Whatever anyone says, it's real. ${_showmance.players.find(p => p !== name)} is the best thing that happened to me out there."`, `"The game complicates everything. But what we have? That's not complicated."`,]), cat: 'showmance' },
+      // Betrayal — specific episode and target
+      _betrayal && { q: `"Episode ${_betrayalEp.num}. You flipped on ${_betrayal.alliance || 'your alliance'}. ${_betrayal.votedFor ? `Voted ${_betrayal.votedFor} instead of the plan.` : 'Broke rank.'} Was it worth it?"`, a: _pick([`"In that moment? Absolutely. I'd do it again. The numbers were shifting and I read it right."`, `"I didn't flip. I made a strategic decision. There's a difference. The alliance was already dead — I just made it official."`, `"Worth it? I'm sitting on this couch instead of still playing. You tell me. ...Yeah. Still worth it."`,]), cat: 'betrayal' },
+      // Idol — specific episode and vote count
+      _idolPlay && { q: `"Episode ${_idolPlayEp.num}. You played your idol${_idolPlay.playedFor && _idolPlay.playedFor !== name ? ` for ${_idolPlay.playedFor}` : ''}. ${_idolPlay.votesNegated ? `${_idolPlay.votesNegated} votes cancelled.` : ''} Take us back to that moment."`, a: _idolPlay.playedFor && _idolPlay.playedFor !== name ? _pick([`"Playing it for ${_idolPlay.playedFor} was the hardest decision I made out there. ${_idolPlay.votesNegated} votes gone. The look on the tribe's face..."`, `"I knew ${_idolPlay.playedFor} was going home. I couldn't let that happen. ${_idolPlay.votesNegated} votes negated — it was the right call."`,]) : _pick([`"${_idolPlay.votesNegated || 'Those'} votes hit the table and my name was on every one. Then the idol came out. Best moment of my entire game."`, `"I'd been holding it since episode ${_idolPlayEp.num - 2 > 0 ? _idolPlayEp.num - 2 : 1}. Every tribal I debated playing it. That night I finally knew."`,]), cat: 'idol' },
+      // Mole — specific sabotage count and acts
+      _wasMole && { q: `"${_wasMole.sabotageCount} acts of sabotage. ${_wasMole.exposed ? `Exposed in episode ${_wasMole.exposedEp} by ${_wasMole.exposedBy}.` : 'Never caught.'} The Mole. Was that worth it?"`, a: _wasMole.exposed ? _pick([`"${_wasMole.sabotageCount} moves and ${_wasMole.exposedBy} figured it out. I respect that. But those ${_wasMole.sabotageCount} acts? Every single one landed."`, `"Getting caught was inevitable. I just wanted to do as much damage as possible before it happened."`,]) : _pick([`"[leans back] ${_wasMole.sabotageCount} sabotage acts. Zero detection. I played two games at once and nobody knew."`, `"Every broken alliance, every leaked plan — that was me. And I'm sitting here with a clean record. You're welcome."`,]), cat: 'mole' },
+      // Challenge record
+      _chalWins >= 2 && { q: `"${_chalWins} challenge wins. ${_chalWins >= 4 ? 'You dominated.' : 'Solid record.'} Did that help or hurt your game?"`, a: _chalWins >= 4 ? _pick([`"It painted a target. Everyone knew I could win my way to the end. That's why they came for me at tribal instead."`, `"${_chalWins} wins made me a threat. But without them I'd have been gone way earlier."`,]) : _pick([`"Every win bought me another day. But it also put me on people's radar."`, `"I earned my spot through those challenges. The social game just didn't back it up."`,]), cat: 'challenge' },
+      // General — data-specific
+      { q: `"You lasted ${elimEpNum || '?'} episodes. ${_alliances.length ? `Part of ${_alliances.length} alliance${_alliances.length > 1 ? 's' : ''}.` : 'Never found a real alliance.'} Looking back — what's the one thing you'd change?"`, a: _alliances.length >= 3 ? `"Too many alliances. I spread myself too thin. By the end nobody believed me."` : _alliances.length === 0 ? `"I'd find an alliance day one. Playing alone doesn't work. I learned that the hard way."` : _pick([`"I'd trust my gut more. There were moments I KNEW something was wrong and I ignored it."`, `"One conversation. There's one conversation I'd have differently. And I'd probably still be out there."`,]), cat: 'regret' },
+      { q: voters.length >= 3 ? `"${voters.length} people wrote your name. ${voters.slice(0, 2).join(', ')}${voters.length > 2 ? ` and ${voters.length - 2} more` : ''}. Any message for them?"` : `"Any last words for the tribe?"`, a: _pick([`"${voters[0] || 'You'} — I know what you did. And I respect it. Doesn't mean I forgive it."`, `"I hope you win. Because if you don't, that vote was for nothing."`, `"No message. They know what they did. I'll see them at the reunion."`,]), cat: 'message' },
+    ].filter(Boolean);
+
+    // Pick 3-4 unique questions, prioritizing rare/interesting ones
+    const _rarecats = ['showmance', 'mole', 'betrayal', 'idol', 'enemy'];
+    const _rareQs = _allQAs.filter(q => _rarecats.includes(q.cat));
+    const _normalQs = _allQAs.filter(q => !_rarecats.includes(q.cat));
+    const _shuffledRare = _rareQs.sort(() => Math.random() - 0.5);
+    const _shuffledNormal = _normalQs.sort(() => Math.random() - 0.5);
+    const _pickedQAs = [..._shuffledRare.slice(0, 3), ..._shuffledNormal.slice(0, 3)].slice(0, 6);
+    if (!_pickedQAs.length) _pickedQAs.push(..._shuffledNormal.slice(0, 4));
+
+    // Closing statement based on archetype
+    const lastWords = arch === 'villain' || arch === 'schemer'
+      ? _pick([`"They haven't seen the last of me."`, `"I'd do it all again. Every single move."`, `"The game needed a villain. You're welcome."`, `"I didn't lose. I just ran out of time."`])
+      : arch === 'hero'
+      ? _pick([`"Play with integrity. That's all that matters."`, `"I'm proud of the game I played."`, `"Win or lose — I stayed true to myself."`, `"I hope I inspired someone out there."`])
+      : arch === 'hothead' || arch === 'chaos-agent'
+      ? _pick([`"I hope they all turn on each other."`, `"I regret NOTHING."`, `"This isn't over. Not for me."`, `"You're welcome for the entertainment."`])
+      : arch === 'floater'
+      ? _pick([`"I played a quieter game than people realize."`, `"Nobody noticed me until it was too late. Unfortunately, it was too late for me too."`, `"I flew under the radar. It just wasn't far enough."`])
+      : arch === 'challenge-beast'
+      ? _pick([`"I gave every challenge everything I had."`, `"They couldn't beat me in challenges. So they got me at tribal."`, `"I went out swinging. Literally."`])
+      : _pick([`"It was an experience. That's what I'll take away."`, `"I gave it everything I had."`, `"No regrets. Well... maybe one or two."`, `"I'll be back. Count on it."`]);
+
+    return { player: name, isActive, elimEpNum, arch, pop, crowdReaction, entranceQuote, questions: _pickedQAs, lastWords, voters };
+  });
+
+  // ── AFTERMATH MOMENTS — ALL qualifying moments fire, not just one ──
+  const aftermathMoments = [];
+
+  // Confrontation: two interviewees who hate each other — full dialogue
+  for (let i = 0; i < interviewees.length; i++) {
+    for (let j = i + 1; j < interviewees.length; j++) {
+      const a1 = interviewees[i], a2 = interviewees[j];
+      const _cBond = getBond(a1, a2);
+      if (_cBond <= -3) {
+        const _p1 = pronouns(a1), _p2 = pronouns(a2);
+        const _incident = gs.episodeHistory.find(h => (h.defections || []).some(d => (d.player === a1 && d.votedFor === a2) || (d.player === a2 && d.votedFor === a1)));
+        const _votedA1 = gs.episodeHistory.find(h => (h.votingLog || []).some(v => v.voter === a1 && v.voted === a2));
+        const _votedA2 = gs.episodeHistory.find(h => (h.votingLog || []).some(v => v.voter === a2 && v.voted === a1));
+        // Build actual dialogue
+        const _lines = [];
+        _lines.push({ speaker: _host, text: _incident ? `"Episode ${_incident.num}. One of you betrayed the other. Let's talk about it."` : `"You two. The audience saw everything. Let's get into it."` });
+        if (_votedA1) {
+          _lines.push({ speaker: a1, text: _pick([`"I voted for ${a2} in episode ${_votedA1.num}. And I'd do it again."`, `"Yeah, I wrote ${_p2.posAdj} name. ${_p2.Sub} know${_p2.sub === 'they' ? '' : 's'} why."`, `"I had my reasons. And ${a2} knows every single one of them."`]) });
+          _lines.push({ speaker: a2, text: _pick([`"You sat there and LIED to my face. Don't act like it was just strategy."`, `"I trusted you. That's what makes it worse."`, `"I'm not surprised. I just wish you'd had the guts to say it to my face first."`]) });
+        } else {
+          _lines.push({ speaker: a1, text: _pick([`"${a2} made my life out there miserable. That's not gameplay — that's personal."`, `"I don't have anything nice to say about ${a2}. So I'll just say what's true."`, `"We tried to coexist. It didn't work. Some people just don't mix."`]) });
+          _lines.push({ speaker: a2, text: _pick([`"The feeling is mutual. Ask anyone at camp."`, `"I'm not going to sit here and pretend we're fine. We're not."`, `"${a1} says it was personal. ${_p1.Sub} ${_p1.sub === 'they' ? 'are' : 'is'} right. It was."`]) });
+        }
+        _lines.push({ speaker: _host, text: _pick([`"Okay. I think the audience gets the picture."`, `"...and on that note, let's move on before someone throws a chair."`, `"The tension in here is REAL. That's what this show is about."`]) });
+        aftermathMoments.push({ type: 'confrontation', players: [a1, a2], dialogue: _lines, text: '' });
+        break;
+      }
+    }
+  }
+
+  // Gallery eruption: gallery member hates an interviewee — full dialogue
+  peanutGallery.forEach(g => {
+    const _target = interviewees.find(iv => getBond(g, iv) <= -5);
+    if (_target) {
+      const _gPr = pronouns(g), _tPr = pronouns(_target);
+      const _gBond = getBond(g, _target);
+      const _votedOut = gs.episodeHistory.find(h => h.eliminated === g && (h.votingLog || []).some(v => v.voter === _target && v.voted === g));
+      const _lines = [];
+      _lines.push({ speaker: g, text: _votedOut ? `"I've been sitting here since episode ${_votedOut.num} waiting to say this. ${_target}, you voted me out. I thought we were good."` : `"${_target}. You KNOW what you did to me out there. Don't sit there and pretend it was just a game."` });
+      _lines.push({ speaker: _target, text: _pick([`"I played MY game. If you can't handle that, that's on you."`, `"I did what I had to do. I'm not apologizing."`, `"${g}, I hear you. But this is a competition. I made a call."`, `"...I actually feel bad about that one. But I'd still make the same choice."`]) });
+      _lines.push({ speaker: g, text: _pick([`"That's exactly what I expected you to say."`, `"The audience sees right through you. Even if the tribe didn't."`, `"Say it to my face one more time. I dare you."`]) });
+      _lines.push({ speaker: _host, text: _pick([`"And THAT is why we have a Peanut Gallery."`, `"Security is on standby. Just so everyone knows."`, `"The gallery has SPOKEN."`]) });
+      aftermathMoments.push({ type: 'gallery_eruption', players: [g, _target], dialogue: _lines, text: '' });
+    }
+  });
+
+  // Emotional moment: interviewee betrayed by close ally
+  interviewees.forEach(name => {
+    const _elimEp = gs.episodeHistory.find(h => h.eliminated === name);
+    if (!_elimEp) return;
+    const _betrayer = (_elimEp.votingLog || []).find(v => v.voted === name && getBond(name, v.voter) >= 4);
+    if (_betrayer && pStats(name).temperament <= 5) {
+      aftermathMoments.push({ type: 'emotional', players: [name], text: `${_host} brings up ${_betrayer.voter}. "${_betrayer.voter} was your closest ally. And then ${pronouns(_betrayer.voter).sub} wrote your name down." ${name} tries to answer. Can't. The crowd goes quiet. Even ${_host} gives ${pronouns(name).obj} a moment.` });
+    }
+  });
+
+  // Standing ovation: ONLY popularity >= 8
+  const _popular = interviewees.sort((a, b) => (gs.popularity?.[b] || 0) - (gs.popularity?.[a] || 0))[0];
+  if (_popular && (gs.popularity?.[_popular] || 0) >= 8) {
+    const _popScore = gs.popularity[_popular];
+    const _popMoment = gs.episodeHistory.find(h => h.popularityDeltas?.[_popular]?.some(d => d.delta >= 3));
+    aftermathMoments.push({ type: 'standing_ovation', players: [_popular], text: `${_popular} gets a standing ovation. The entire gallery is on their feet. Popularity score: ${_popScore}.${_popMoment ? ` The fans fell in love after episode ${_popMoment.num}.` : ''} ${_host}: "In all my years doing this — THAT is a reaction. ${_popular}, the fans adore you."` });
+  }
+
+  // Host roast: always available as the closer (game-specific roasts)
+  const _roastTargets = gs.activePlayers.slice(0, 6);
+  if (_roastTargets.length >= 3) {
+    const _roastLines = _roastTargets.map(p => {
+      const rs = pStats(p); const rPr = pronouns(p); const rArch = rs.archetype || '';
+      const _betrayals = gs.episodeHistory.filter(h => (h.defections || []).some(d => d.player === p)).length;
+      const _chalWins = gs.chalRecord?.[p]?.wins || 0;
+      const _allianceCount = (gs.namedAlliances || []).filter(a => a.members.includes(p)).length;
+      // Game-specific roasts
+      if (_betrayals >= 3) return `"${p} has betrayed ${_betrayals} alliances. At this point it's not strategy — it's a personality trait."`;
+      if (_chalWins >= 3) return `"${p} has won ${_chalWins} challenges. ${rPr.Sub} can't win a conversation, but ${rPr.sub} can win a puzzle."`;
+      if (_allianceCount >= 4) return `"${p} has been in ${_allianceCount} alliances. ${rPr.Sub} ${rPr.sub === 'they' ? 'collect' : 'collects'} alliances like trading cards."`;
+      if (rArch === 'villain') return _pick([`"${p} — the only player whose alliance members sleep with one eye open."`, `"${p}. Even ${rPr.posAdj} own reflection doesn't trust ${rPr.obj}."`]);
+      if (rArch === 'floater') return _pick([`"${p} — has anyone checked if ${rPr.sub} ${rPr.sub === 'they' ? 'are' : 'is'} still playing?"`, `"I forgot ${p} was here. And I'm the HOST."`]);
+      if (rs.social >= 8) return `"${p} — friends with everyone. Trusted by nobody."`;
+      if (rs.strategic >= 8) return `"${p} thinks ${rPr.sub} ${rPr.sub === 'they' ? 'are' : 'is'} running the game. The game disagrees."`;
+      return `"${p}. I'd roast ${rPr.obj} but I genuinely don't know what ${rPr.posAdj} game is."`;
+    });
+    aftermathMoments.push({ type: 'host_roast', players: _roastTargets, roasts: _roastLines, text: `${_host}: "Before we go — let's check in on the players still out there." The gallery leans forward. Nobody is safe.` });
+  }
+
+  // Remove empty/null moments
+  const aftermathMoment = aftermathMoments.length ? aftermathMoments : null;
+
+  // ── BUILD TRUTH OR ANVIL — one per interviewee, specific consequences ──
+  const truthOrAnvil = interviewees.map(name => {
+    const s = pStats(name);
+    const pr = pronouns(name);
+    // Build a pool of possible secrets from game data — pick the juiciest one
+    const _secrets = [];
+    // Dissolved alliances they were in
+    (gs.namedAlliances || []).filter(a => !a.active && a.members.includes(name)).forEach(al => {
+      const others = al.members.filter(m => m !== name);
+      _secrets.push({ secret: `${name} was part of ${al.name} — a secret alliance with ${others.join(', ')}. It collapsed. ${seasonConfig.host || 'Chris'}: "Did they know about this?"`, type: 'alliance', affected: others.filter(p => gs.activePlayers.includes(p)), drama: 3 });
+    });
+    // Side deals (especially fake ones)
+    (gs.sideDeals || []).filter(d => d.players.includes(name)).forEach(d => {
+      const other = d.players.find(p => p !== name);
+      if (!d.genuine) {
+        _secrets.push({ secret: `${name} made a ${d.type} deal with ${other} — and NEVER intended to honor it. It was a fake from day one.`, type: 'deal', affected: other && gs.activePlayers.includes(other) ? [other] : [], drama: 5 });
+      } else {
+        _secrets.push({ secret: `${name} had a genuine ${d.type} deal with ${other}. "I meant every word of it," ${pr.sub} ${pr.sub === 'they' ? 'say' : 'says'}.`, type: 'deal', affected: other && gs.activePlayers.includes(other) ? [other] : [], drama: 2 });
+      }
+    });
+    // Who they REALLY hated (worst bond among active players)
+    const _worstActive = gs.activePlayers.filter(p => p !== name).sort((a, b) => getBond(name, a) - getBond(name, b))[0];
+    if (_worstActive && getBond(name, _worstActive) <= -2) {
+      _secrets.push({ secret: `${name} despised ${_worstActive}. Bond: ${getBond(name, _worstActive).toFixed(1)}. "${_worstActive} made my life out there miserable. I never said it to ${pronouns(_worstActive).posAdj} face."`, type: 'bond', affected: [_worstActive], drama: 4 });
+    }
+    // Who they REALLY trusted (best bond that wasn't obvious)
+    const _bestActive = gs.activePlayers.filter(p => p !== name).sort((a, b) => getBond(name, b) - getBond(name, a))[0];
+    if (_bestActive && getBond(name, _bestActive) >= 4) {
+      _secrets.push({ secret: `${name}'s closest ally was ${_bestActive}. Bond: ${getBond(name, _bestActive).toFixed(1)}. "If I could've taken anyone to the end, it would've been ${_bestActive}."`, type: 'bond', affected: [_bestActive], drama: 2 });
+    }
+    // Who they voted for at their last tribal (and why)
+    const _elimEp = gs.episodeHistory.find(h => h.eliminated === name || h.firstEliminated === name);
+    if (_elimEp?.votingLog) {
+      const _theirVote = _elimEp.votingLog.find(v => v.voter === name);
+      if (_theirVote && gs.activePlayers.includes(_theirVote.voted)) {
+        _secrets.push({ secret: `At ${pr.posAdj} last tribal, ${name} voted for ${_theirVote.voted}. Reason: "${_theirVote.reason || 'strategic read'}". Does ${_theirVote.voted} know?`, type: 'vote', affected: [_theirVote.voted], drama: 3 });
+      }
+    }
+    // Mole involvement
+    if (gs.moles?.some(m => m.player === name)) {
+      _secrets.push({ secret: `${name} was The Mole. Every sabotage, every leaked plan — it was all ${pr.obj}.`, type: 'mole', affected: [], drama: 10 });
+    }
+    // Fallback
+    if (!_secrets.length) {
+      _secrets.push({ secret: `${name} played a clean game. No secrets. No betrayals. ${seasonConfig.host || 'Chris'}: "Boring, but honest."`, type: 'clean', affected: [], drama: 1 });
+    }
+
+    // Pick the highest drama secret
+    _secrets.sort((a, b) => b.drama - a.drama + (Math.random() - 0.5));
+    const chosen = _secrets[0];
+
+    const toldTruth = Math.random() < (s.loyalty * 0.08 + s.temperament * 0.03);
+
+    // Specific consequences based on who's affected
+    let consequence;
+    if (chosen.affected.length && toldTruth) {
+      const _aff = chosen.affected[0];
+      consequence = _pick([
+        `${_aff} is watching from camp. This changes everything between them and ${name}'s former allies.`,
+        `The tribe will hear about this by tomorrow. ${_aff} is going to have questions.`,
+        `${seasonConfig.host || 'Chris'}: "You just blew up ${_aff}'s game from the couch. Impressive."`,
+      ]);
+    } else if (chosen.affected.length && !toldTruth) {
+      const _aff = chosen.affected[0];
+      consequence = _pick([
+        `${seasonConfig.host || 'Chris'} pulls up the footage. "${name}, that's not what happened." The gallery gasps.`,
+        `The tape doesn't lie. ${name} just got caught. ${_aff} is watching from camp — and now ${pronouns(_aff).sub} ${pronouns(_aff).sub === 'they' ? 'know' : 'knows'} the truth.`,
+      ]);
+    } else {
+      consequence = toldTruth ? `${seasonConfig.host || 'Chris'}: "Respect. That took guts."` : `${seasonConfig.host || 'Chris'} shows the tape. The gallery reacts. ${name} has nowhere to hide.`;
+    }
+
+    return { player: name, secret: chosen.secret, secretType: chosen.type, toldTruth, consequence, affectedPlayers: chosen.affected };
+  });
+
+  // ── BUILD UNSEEN FOOTAGE ──
+  const unseenFootage = [];
+  // Mole sabotage clips
+  if (gs.moles?.length) {
+    gs.moles.forEach(mole => {
+      const recentActs = mole.sabotageLog.filter(s => s.ep > lastAftermath && s.ep <= curEp).slice(-2);
+      recentActs.forEach(act => {
+        const _labels = { bondSabotage: 'fabricated a conflict', challengeThrow: 'threw the challenge', challengeSabotage: 'sabotaged someone in the challenge', infoLeak: 'leaked intel', voteDisruption: 'disrupted the vote', advantageSabotage: 'sabotaged an advantage' };
+        const detail = act.targets ? `between ${act.targets.join(' and ')}` : act.target ? `targeting ${act.target}` : act.leakedTo ? `to ${act.leakedTo}` : '';
+        unseenFootage.push({ sourceEp: act.ep, type: 'mole', description: `In episode ${act.ep}, ${mole.player} ${_labels[act.type] || act.type} ${detail}. Nobody knew.`, players: [mole.player, ...(act.targets || []), act.target].filter(Boolean), classified: true });
+      });
+    });
+  }
+  // Secret deals
+  const _recentDeals = (gs.sideDeals || []).filter(d => d.madeEp > lastAftermath && d.madeEp <= curEp && !d.genuine);
+  _recentDeals.slice(0, 1).forEach(d => {
+    unseenFootage.push({ sourceEp: d.madeEp, type: 'deal', description: `${d.players[0]} made a ${d.type} deal with ${d.players[1]} in episode ${d.madeEp}. It was never genuine.`, players: [...d.players], classified: false });
+  });
+  // Cap at 3 clips
+  unseenFootage.splice(3);
+
+  // ── BUILD FAN CALL — full mini-interview with 3 exchanges ──
+  const _fanNames = ['Alex', 'Jordan', 'Riley', 'Casey', 'Morgan', 'Taylor', 'Drew', 'Pat', 'Quinn', 'Avery', 'Reese', 'Skyler'];
+  const _fanTarget = interviews.sort((a, b) => Math.abs(b.pop) - Math.abs(a.pop))[0]?.player || interviewees[0];
+  const _ftS = pStats(_fanTarget);
+  const _ftPr = pronouns(_fanTarget);
+  const _ftElimEp = gs.episodeHistory.find(h => h.eliminated === _fanTarget);
+  const _ftVoters = (_ftElimEp?.votingLog || []).filter(v => v.voted === _fanTarget).map(v => v.voter);
+  const _ftWorstEnemy = gs.activePlayers.filter(p => p !== _fanTarget).sort((a, b) => getBond(_fanTarget, a) - getBond(_fanTarget, b))[0];
+  const _ftBestAlly = gs.activePlayers.filter(p => p !== _fanTarget).sort((a, b) => getBond(_fanTarget, b) - getBond(_fanTarget, a))[0];
+  const _ftShowmance = gs.showmances?.find(sh => sh.players.includes(_fanTarget));
+
+  // Fan type determines tone
+  const _fanTypes = ['superfan', 'drama', 'hater', 'supporter'];
+  const _fanType = _pick(_fanTypes);
+  const _fanExchanges = [];
+
+  if (_fanType === 'superfan') {
+    _fanExchanges.push({ q: _ftElimEp ? `"In episode ${_ftElimEp.num}, the vote went ${Object.entries(_ftElimEp.votes || {}).map(([n,v]) => `${n}: ${v}`).join(', ')}. Did you see it coming?"` : `"Your game was fascinating to watch. When did you realize you were in trouble?"`,
+      a: _ftS.intuition >= 7 ? `"I had a feeling. The energy shifted the day before. But I couldn't lock down the numbers."` : `"Honestly? No. I thought I was safe. That's the worst part."` });
+    _fanExchanges.push({ q: _ftBestAlly ? `"You and ${_ftBestAlly} seemed tight. Was that real or strategic?"` : `"Who did you trust out there? Like, REALLY trust?"`,
+      a: _ftBestAlly ? `"${_ftBestAlly}? That was real. ${pronouns(_ftBestAlly).Sub} ${pronouns(_ftBestAlly).sub === 'they' ? 'are' : 'is'} one of the good ones."` : `"Trust is expensive out there. I'm not sure I could afford it."` });
+    _fanExchanges.push({ q: `"Last question — if you could go back to one specific moment and change your decision, which moment?"`,
+      a: _ftS.strategic >= 7 ? `"Episode ${Math.max(1, ((_ftElimEp?.num || 5) - 2))}. I had a window to make a move and I hesitated. That cost me."` : `"Day one. I'd play completely different from the jump."` });
+  } else if (_fanType === 'drama') {
+    _fanExchanges.push({ q: _ftShowmance ? `"Okay I HAVE to ask — you and ${_ftShowmance.players.find(p => p !== _fanTarget)}. Are you still talking? The fans NEED to know."` : `"Who was your biggest crush out there? Don't lie."`,
+      a: _ftShowmance ? `"[laughs] You're going straight for it. Yeah... we talk. That's all I'm saying."` : `"I'm not answering that. [looks at camera] Next question."` });
+    _fanExchanges.push({ q: _ftWorstEnemy && getBond(_fanTarget, _ftWorstEnemy) <= -2 ? `"You and ${_ftWorstEnemy} — what HAPPENED? The tension was insane."` : `"Who drove you the most crazy out there?"`,
+      a: _ftWorstEnemy && getBond(_fanTarget, _ftWorstEnemy) <= -2 ? `"${_ftWorstEnemy} and I just... we're wired differently. ${pronouns(_ftWorstEnemy).Sub} know${pronouns(_ftWorstEnemy).sub === 'they' ? '' : 's'} what ${pronouns(_ftWorstEnemy).sub} did."` : `"Everyone has their moments. Some people had more moments than others."` });
+    _fanExchanges.push({ q: `"If you could send one message to the people still playing — what would it be?"`,
+      a: _ftS.boldness >= 7 ? `"Watch your backs. Every single one of you."` : `"Play YOUR game. Not someone else's."` });
+  } else if (_fanType === 'hater') {
+    _fanExchanges.push({ q: _ftVoters.length ? `"${_ftVoters.slice(0, 2).join(' and ')} voted you out. But honestly, wasn't it kind of your fault?"` : `"A lot of fans think you played a weak game. What do you say to that?"`,
+      a: _ftS.temperament <= 4 ? `"Excuse me? You're sitting at home watching TV. I was OUT THERE. You have NO idea."` : `"That's fair. I could've played harder. I own that."` });
+    _fanExchanges.push({ q: `"Your biggest move was... what, exactly? Because the fans can't figure it out."`,
+      a: _ftS.strategic >= 7 ? `"My biggest move was staying as long as I did. Nobody hands you ${_ftElimEp?.num || '?'} episodes."` : `"I survived. That IS the move."` });
+    _fanExchanges.push({ q: `"One more thing — do you actually think you deserved to be here?"`,
+      a: _ftS.boldness >= 7 ? `"More than you deserve to ask me that question."` : `"I earned my spot. The game just didn't go my way."` });
+  } else {
+    _fanExchanges.push({ q: `"You were one of my favorites this season. What kept you going out there?"`,
+      a: `"Honestly? The people at home. Knowing someone was watching and rooting for me."` });
+    _fanExchanges.push({ q: _ftBestAlly ? `"Your friendship with ${_ftBestAlly} was beautiful to watch. Tell us about that."` : `"What's the one moment out there that you'll never forget?"`,
+      a: _ftBestAlly ? `"${_ftBestAlly} is a real one. What we had wasn't strategy. It was genuine."` : `"Watching the sunrise from camp on day one. Before any of the game stuff. Just the ocean and the quiet."` });
+    _fanExchanges.push({ q: `"The fans are behind you. What does that mean to you?"`,
+      a: `"Everything. Seriously. You have no idea how much that means."` });
+  }
+
+  const fanCall = { fanName: _pick(_fanNames), fanType: _fanType, target: _fanTarget, exchanges: _fanExchanges,
+    hostReactions: [
+      _fanType === 'hater' ? `${_host}: "Easy there, ${_fanExchanges[0]?.q?.includes('weak') ? 'that\'s our guest' : 'let them answer'}."` : `${_host}: "Good question."`,
+      `${_host}: "${_fanType === 'drama' ? 'The fans want what the fans want.' : 'Moving on.'}"`,
+    ] };
+
+  // ── FAN VOTE (conditional) ──
+  let fanVote = null;
+  // Fan vote: fires ONCE after X total eliminations (config), OR from scheduled second-chance twist
+  const _fvThreshold = parseInt(cfg.fanVoteFrequency) || 0;
+  const _scTwistScheduled = (cfg.twistSchedule || []).some(t => t.type === 'second-chance' && Number(t.episode) >= curEp && Number(t.episode) <= curEp + 2);
+  const _fanVoteAlreadyUsed = gs._fanVoteReturnUsed;
+  // Count total eliminations this season
+  const _totalElims = (gs.episodeHistory || []).filter(h => h.num <= curEp).reduce((c, h) => {
+    let n = 0; if (h.eliminated) n++; if (h.firstEliminated) n++;
+    if (h.tiedDestinies?.eliminatedPartner) n++; if (h.ambassadorData?.ambassadorEliminated && h.ambassadorData.ambassadorEliminated !== h.eliminated) n++;
+    return c + n;
+  }, 0);
+  const _fanVoteShouldFire = (!_fanVoteAlreadyUsed && _fvThreshold && _totalElims >= _fvThreshold) || _scTwistScheduled;
+  if (_fanVoteShouldFire && gs.eliminated.length && !isFinale) {
+    const _scElim = gs.eliminated.filter(p => !gs.activePlayers.includes(p));
+    if (_scElim.length) {
+      const _scores = _scElim.map(n => ({ name: n, score: (gs.popularity?.[n] || 0) + Math.random() * 1.5, popularity: gs.popularity?.[n] || 0 })).sort((a, b) => b.score - a.score);
+      const _total = _scores.reduce((s, r) => s + Math.max(0, r.score), 0) || 1;
+      fanVote = { results: _scores.map(s => ({ name: s.name, pct: Math.round(s.score / _total * 100), popularity: s.popularity })), winner: _scores[0].name };
+      gs.pendingFanVoteReturn = _scores[0].name;
+      if (_fvThreshold && !_scTwistScheduled) gs._fanVoteReturnUsed = true; // config fan vote: once per season
+    }
+  }
+
+  // ── REUNION DISCUSSION (finale only) — deep group conversations ──
+  let reunionDiscussion = null;
+  if (isReunion) {
+    const _allPlayers = [...gs.activePlayers, ...allEliminated];
+    const _topics = [];
+    const _winner = ep.winner;
+    const _wPr = _winner ? pronouns(_winner) : null;
+    // Find the runner-up(s)
+    const _runnerUp = gs.activePlayers.find(p => p !== _winner);
+    const _ruPr = _runnerUp ? pronouns(_runnerUp) : null;
+
+    // Find key alliances, rivalries, and moments for reference
+    const _longestAlliance = (gs.namedAlliances || []).filter(a => a.formed).sort((a, b) => (b.active ? curEp : 0) - (a.active ? curEp : 0))[0];
+    const _mostBetrayed = _allPlayers.map(p => ({ name: p, count: gs.episodeHistory.filter(h => (h.defections || []).some(d => d.player === p)).length })).sort((a, b) => b.count - a.count)[0];
+    let _worstPair = null, _worstBond = 0;
+    for (let i = 0; i < _allPlayers.length; i++) for (let j = i + 1; j < _allPlayers.length; j++) { const b = getBond(_allPlayers[i], _allPlayers[j]); if (b < _worstBond) { _worstBond = b; _worstPair = [_allPlayers[i], _allPlayers[j]]; } }
+
+    // ── TOPIC 1: The Winner's Game ──
+    if (_winner) {
+      const _winAlliances = (gs.namedAlliances || []).filter(a => a.members.includes(_winner));
+      const _winBetrayals = gs.episodeHistory.filter(h => (h.defections || []).some(d => d.player === _winner)).length;
+      const _winChalWins = gs.chalRecord?.[_winner]?.wins || 0;
+      const _winBigMoves = gs.playerStates?.[_winner]?.bigMoves || 0;
+      const _lines = [];
+      _lines.push({ speaker: _host, text: `"Let's start with the big one. ${_winner} won this season. ${_winAlliances.length} alliances. ${_winChalWins} challenge wins. ${_winBigMoves} big moves. ${_winBetrayals ? `And ${_winBetrayals} betrayal${_winBetrayals > 1 ? 's' : ''}.` : 'Clean record.'} Did ${_wPr.sub} play the best game — or just survive the longest?"` });
+
+      // Winner responds
+      _lines.push({ speaker: _winner, text: _winBetrayals >= 2 ? `"I made moves other people were afraid to make. Every betrayal had a reason — and every one of them got me closer to this seat. I'm not going to apologize for playing the game."` : _winChalWins >= 3 ? `"I earned my spot through challenges when I needed them and through relationships when I didn't. I played a complete game — physical, social, strategic. That's why I'm here."` : `"I read the room better than anyone out there. I knew when to push and when to pull back. The people who got voted out made mistakes. I didn't — or at least, I made fewer."` });
+
+      // Strongest supporter
+      const _bestAllyToWinner = _allPlayers.filter(p => p !== _winner).sort((a, b) => getBond(b, _winner) - getBond(a, _winner))[0];
+      if (_bestAllyToWinner) _lines.push({ speaker: _bestAllyToWinner, text: `"I played with ${_winner} every day. I saw the moves the cameras didn't catch — the conversations at 3 AM, the way ${_wPr.sub} ${_wPr.sub === 'they' ? 'read' : 'read'} people before they even opened their mouths. ${_wPr.Sub} earned this. The jury got it right."` });
+
+      // Strongest critic
+      const _worstEnemyOfWinner = _allPlayers.filter(p => p !== _winner).sort((a, b) => getBond(a, _winner) - getBond(b, _winner))[0];
+      if (_worstEnemyOfWinner && getBond(_worstEnemyOfWinner, _winner) <= -2) {
+        _lines.push({ speaker: _worstEnemyOfWinner, text: `"I'm going to be honest — I don't think ${_winner} played the best game. I think the best player left before the finale. ${_winner} was in the right place at the right time, surrounded by the right people. That's not strategy — that's luck."` });
+        _lines.push({ speaker: _winner, text: `"${_worstEnemyOfWinner} is entitled to ${pronouns(_worstEnemyOfWinner).posAdj} opinion. But ${pronouns(_worstEnemyOfWinner).sub} ${pronouns(_worstEnemyOfWinner).sub === 'they' ? 'are' : 'is'} sitting in that chair and I'm sitting in this one. The result speaks for itself."` });
+        _lines.push({ speaker: _host, text: `"[turns to camera] And THAT is why we do reunions."` });
+      }
+
+      // Runner-up weighs in
+      if (_runnerUp) {
+        _lines.push({ speaker: _runnerUp, text: getBond(_runnerUp, _winner) >= 2 ? `"I lost to ${_winner}. It hurts. But if I'm being honest — ${_wPr.sub} played a better game than I did in the moments that mattered. I can respect that even if I don't like it."` : `"I sat next to ${_winner} at Final Tribal and I thought I had it. The jury saw something different. I'll be thinking about what I could've done differently for a long time."` });
+      }
+      _topics.push({ title: `${_winner}'s Winning Game`, lines: _lines });
+    }
+
+    // ── TOPIC 2: The Season's Biggest Rivalry ──
+    if (_worstPair && _worstBond <= -5) {
+      const [r1, r2] = _worstPair;
+      const _r1Pr = pronouns(r1), _r2Pr = pronouns(r2);
+      const _rivalryVotes = gs.episodeHistory.filter(h => (h.votingLog || []).some(v => (v.voter === r1 && v.voted === r2) || (v.voter === r2 && v.voted === r1)));
+      const _rLines = [];
+      _rLines.push({ speaker: _host, text: `"Alright. We need to talk about this. ${r1} and ${r2}. From the first week you two clashed — and it never stopped. ${_rivalryVotes.length ? `You voted against each other ${_rivalryVotes.length} time${_rivalryVotes.length > 1 ? 's' : ''}.` : ''} The audience watched it play out all season. So here's my question — what actually happened between you two?"` });
+      _rLines.push({ speaker: r1, text: `"It started small. A disagreement at camp, a look across the fire. But by the time we hit the merge, it was personal. ${r2} made decisions that directly affected my game, and ${_r2Pr.sub} knew it. ${_r2Pr.Sub} didn't care. That's what I can't get past."` });
+      _rLines.push({ speaker: r2, text: `"See, that's the thing — ${r1} acts like I was targeting ${_r1Pr.obj} personally. I was playing the GAME. ${r1} was a threat. I treated ${_r1Pr.obj} like a threat. If ${_r1Pr.sub} can't separate that from personal, that's on ${_r1Pr.obj}."` });
+      _rLines.push({ speaker: r1, text: `"Don't give me that. You went out of your way to make my life miserable at camp. That wasn't strategy."` });
+
+      // Observer weighs in
+      const _obs = _allPlayers.filter(p => p !== r1 && p !== r2).find(p => Math.abs(getBond(p, r1)) >= 2 || Math.abs(getBond(p, r2)) >= 2);
+      if (_obs) _rLines.push({ speaker: _obs, text: `"I lived with both of them. The tension was suffocating. Every camp event, every strategy talk — it always came back to the two of them. The rest of us were just trying to survive the crossfire."` });
+
+      _rLines.push({ speaker: _host, text: `"So where do you stand now? Right now, in this studio. Is there any chance this gets resolved?"` });
+      _rLines.push({ speaker: r2, text: _pick([`"I'm willing to move on. I'm not willing to pretend it didn't happen."`, `"We're never going to be friends. But I can stop actively disliking ${_r1Pr.obj}. That's the best I've got."`, `"Time will tell. Right now? No. Honestly, no."`]) });
+      _rLines.push({ speaker: r1, text: _pick([`"...I respect the honesty. That's more than I got out there."`, `"We'll see. Ask me again in six months."`, `"I think this game ruined something that could've existed between us. And that's the part that's hard to let go of."`]) });
+      _topics.push({ title: `${r1} vs ${r2}`, lines: _rLines });
+    }
+
+    // ── TOPIC 3: Biggest Blindside — reliving the moment ──
+    const _blindsideEp = gs.episodeHistory.filter(h => h.eliminated && (h.defections?.length || 0) >= 2).sort((a, b) => (b.defections?.length || 0) - (a.defections?.length || 0))[0];
+    if (_blindsideEp) {
+      const _bsVictim = _blindsideEp.eliminated;
+      const _bsVoters = (_blindsideEp.votingLog || []).filter(v => v.voted === _bsVictim).map(v => v.voter);
+      const _bsFlippers = (_blindsideEp.defections || []).map(d => d.player).slice(0, 3);
+      const _bsVPr = _bsVictim ? pronouns(_bsVictim) : null;
+      const _bsLines = [];
+      _bsLines.push({ speaker: _host, text: `"Episode ${_blindsideEp.num}. The vote that changed everything. ${_bsVictim} goes home with ${_bsVoters.length} votes. ${_bsFlippers.length ? `${_bsFlippers.join(', ')} — you flipped on your alliance. ` : ''}Let's go back to that night. ${_bsVictim}, take us through what you were feeling."` });
+      if (_allPlayers.includes(_bsVictim)) {
+        _bsLines.push({ speaker: _bsVictim, text: `"I walked into tribal that night thinking I was safe. I had done the math — I counted the votes — and I was wrong. When ${_host} read my name the second time, something inside me just... shut off. I couldn't process it. By the third vote I knew, and I just sat there. That's the moment that replays in my head."` });
+      }
+      // The main flipper explains
+      if (_bsFlippers[0] && _allPlayers.includes(_bsFlippers[0])) {
+        _bsLines.push({ speaker: _host, text: `"${_bsFlippers[0]}, you were the swing. The alliance trusted you. Why did you flip?"` });
+        _bsLines.push({ speaker: _bsFlippers[0], text: `"Because if I didn't make that move, I was going to be sitting where ${_bsVictim} is right now — except two episodes later. I could see the path, and it didn't include me at the end. So I took the shot. It wasn't about ${_bsVictim}. It was about my game."` });
+        if (_allPlayers.includes(_bsVictim)) {
+          _bsLines.push({ speaker: _bsVictim, text: `"I hear that. I've heard it before. But you could have TOLD me. You could have given me a chance to fight. Instead you smiled at me at camp that morning and wrote my name down twelve hours later. That's what I can't forgive."` });
+        }
+      }
+      // Another player adds context
+      const _bsWitness = _allPlayers.find(p => p !== _bsVictim && !_bsFlippers.includes(p) && _bsVoters.includes(p));
+      if (_bsWitness) _bsLines.push({ speaker: _bsWitness, text: `"What people don't understand is that vote wasn't planned days in advance. It came together in the last hour before tribal. By the time we sat down, half of us still weren't sure. But once the first name was written, it was over."` });
+      _bsLines.push({ speaker: _host, text: `"That might be the defining moment of this season."` });
+      _topics.push({ title: `The Blindside — Episode ${_blindsideEp.num}`, lines: _bsLines });
+    }
+
+    // ── TOPIC 4: The Mole — if applicable ──
+    if (gs.moles?.length) {
+      gs.moles.forEach(mole => {
+        if (!mole.sabotageCount) return;
+        const _mPr = pronouns(mole.player);
+        const _sabTypes = [...new Set(mole.sabotageLog.map(s => s.type))];
+        const _victims = [...new Set(mole.sabotageLog.flatMap(s => [...(s.targets || []), s.target].filter(Boolean)))].filter(v => _allPlayers.includes(v));
+        const _mLines = [];
+        _mLines.push({ speaker: _host, text: `"Now for the moment some of you have been waiting for — and some of you have been dreading. ${mole.player}. The Mole. ${mole.sabotageCount} acts of sabotage over the course of this season. ${mole.exposed ? `${mole.exposedBy} figured it out in episode ${mole.exposedEp}.` : 'And nobody. Ever. Figured it out.'} ${mole.player}, the floor is yours."` });
+        _mLines.push({ speaker: mole.player, text: mole.exposed
+          ? `"Look — I knew eventually someone would catch on. ${mole.exposedBy} was watching me too closely. But before that? I threw challenges, I fabricated fights between people, I leaked alliance plans to the other side. And every single one of you sat around the fire with me and had no idea. That's the part I'm proud of."`
+          : `"I sat in that camp for the entire season and played two games at the same time. The game everyone saw — the alliances, the strategy, the votes. And the game nobody saw — the sabotage. I threw challenges. I turned people against each other. I leaked your plans. And not one of you ever looked at me and thought, 'maybe it's ${_mPr.obj}.'"` });
+        // Victims react with specifics
+        if (_victims[0]) {
+          const _v1Sabs = mole.sabotageLog.filter(s => (s.targets || []).includes(_victims[0]) || s.target === _victims[0]);
+          _mLines.push({ speaker: _victims[0], text: `"I had ${_v1Sabs.length} acts of sabotage against me and I didn't see ANY of them. ${mole.player}, do you know how many nights I lay awake wondering why my game kept falling apart? That was YOU?"` });
+          _mLines.push({ speaker: mole.player, text: `"...Yeah. That was me. Sorry about that. Well — not that sorry."` });
+        }
+        if (_victims[1]) {
+          _mLines.push({ speaker: _victims[1], text: `"I am genuinely angry right now. You FABRICATED things I said? You turned people against me with LIES?"` });
+          _mLines.push({ speaker: mole.player, text: `"It's a twist. I was assigned a role and I played it."` });
+          _mLines.push({ speaker: _victims[1], text: `"That doesn't make it okay."` });
+        }
+        if (mole.exposed && _allPlayers.includes(mole.exposedBy)) {
+          _mLines.push({ speaker: _host, text: `"${mole.exposedBy}, you're the one who cracked it. How did you know?"` });
+          _mLines.push({ speaker: mole.exposedBy, text: `"Patterns. Every time ${mole.player} was involved in a conversation, something went wrong the next day. I started tracking it — mentally, not on paper — and the math stopped being coincidence around episode ${Math.max(1, (mole.exposedEp || 10) - 3)}. By the time I confronted ${_mPr.obj}, I was sure."` });
+        }
+        _mLines.push({ speaker: _host, text: `"${mole.sabotageCount} acts of sabotage. One of the most chaotic forces this game has ever seen. ${mole.player}, ladies and gentlemen."` });
+        _topics.push({ title: `The Mole — ${mole.player}`, lines: _mLines });
+      });
+    }
+
+    // ── TOPIC 5: Open Floor — unfinished business ──
+    const _ufPairs = [];
+    for (let i = 0; i < _allPlayers.length && _ufPairs.length < 2; i++) {
+      for (let j = i + 1; j < _allPlayers.length; j++) {
+        if (getBond(_allPlayers[i], _allPlayers[j]) <= -4 && (!_worstPair || (_allPlayers[i] !== _worstPair[0] && _allPlayers[j] !== _worstPair[0] && _allPlayers[i] !== _worstPair[1] && _allPlayers[j] !== _worstPair[1]))) {
+          _ufPairs.push([_allPlayers[i], _allPlayers[j]]);
+          break;
+        }
+      }
+    }
+    const _ufLines = [];
+    _ufLines.push({ speaker: _host, text: `"Before we go — open floor. This is the last time all of you will be in the same room. If there's something you need to say, now is the time. No strategy, no game. Just honesty."` });
+    // Unfinished rivalries
+    _ufPairs.forEach(([a, b]) => {
+      const _aPr = pronouns(a), _bPr = pronouns(b);
+      const _abVote = gs.episodeHistory.find(h => (h.votingLog || []).some(v => (v.voter === a && v.voted === b) || (v.voter === b && v.voted === a)));
+      _ufLines.push({ speaker: a, text: _abVote ? `"${b}, I've wanted to say this since episode ${_abVote.num}. The way things ended between us wasn't right. I'm not saying I'd change my vote — but I wish we'd talked about it before it happened. You deserved that much."` : `"${b}. We never got to hash this out at camp. I need you to know — it wasn't personal. At least, it didn't start that way. By the end... yeah. It was personal. And I'm not proud of that."` });
+      _ufLines.push({ speaker: b, text: _pick([`"I appreciate you saying that. I do. I'm not sure I'm ready to fully accept it yet — but the fact that you stood up and said it in front of everyone? That means something."`, `"...That's more than I expected to hear tonight. I came in here ready for a fight. I didn't expect accountability."`, `"Okay. I hear you. I need some time. But I hear you."`]) });
+    });
+    // Someone says something positive
+    const _bestBondPair = _allPlayers.reduce((best, p, i) => { for (let j = i + 1; j < _allPlayers.length; j++) { const b = getBond(p, _allPlayers[j]); if (b > best.bond) return { a: p, b: _allPlayers[j], bond: b }; } return best; }, { a: null, b: null, bond: -99 });
+    if (_bestBondPair.a && _bestBondPair.bond >= 5) {
+      _ufLines.push({ speaker: _bestBondPair.a, text: `"I just want to say — ${_bestBondPair.b}, you were the best part of my experience out there. The game tried to pull us apart and it couldn't. That's real. That's not strategy. That's something I'm taking with me."` });
+      _ufLines.push({ speaker: _bestBondPair.b, text: `"I feel the same way. Whatever happens after this — we're good. Always."` });
+    }
+    _ufLines.push({ speaker: _host, text: `"${_allPlayers.length} players. ${gs.episodeHistory.length} episodes. One winner. And a whole lot of unfinished business. That's a wrap on this season of Total Drama. Until next time — I'm ${_host}. Good night."` });
+    if (_ufLines.length > 2) _topics.push({ title: 'Open Floor', lines: _ufLines });
+
+    reunionDiscussion = _topics.length ? _topics : null;
+  }
+
+  // ── REUNION AWARDS (finale only) ──
+  let awards = null, seasonRating = null;
+  if (isReunion) {
+    awards = [];
+    // Best Blindside
+    const _blindsides = gs.episodeHistory.filter(h => h.eliminated && h.votingLog?.length >= 3);
+    if (_blindsides.length) {
+      const _bestBS = _blindsides.sort((a, b) => {
+        const aVotes = Object.values(a.votes || {}).sort((x, y) => y - x)[0] || 0;
+        const bVotes = Object.values(b.votes || {}).sort((x, y) => y - x)[0] || 0;
+        return bVotes - aVotes;
+      })[0];
+      awards.push({ id: 'bestBlindside', title: 'Best Blindside', winner: _bestBS.eliminated, description: `Blindsided in episode ${_bestBS.num}. Never saw it coming.`, sourceEp: _bestBS.num });
+    }
+    // Biggest Betrayal
+    const _allBetrays = gs.episodeHistory.flatMap(h => (h.defections || []).map(d => ({ ...d, ep: h.num })));
+    if (_allBetrays.length) {
+      const _worstBetray = _allBetrays.sort((a, b) => { const bA = getBond(a.player, a.votedFor || ''); const bB = getBond(b.player, b.votedFor || ''); return bA - bB; })[0];
+      awards.push({ id: 'biggestBetrayal', title: 'Biggest Betrayal', winner: _worstBetray.player, description: `Betrayed ${_worstBetray.alliance || 'their alliance'} in episode ${_worstBetray.ep}.`, sourceEp: _worstBetray.ep });
+    }
+    // Best Alliance
+    const _bestAlliance = (gs.namedAlliances || []).filter(a => a.formed).sort((a, b) => {
+      const aLen = a.active ? curEp - a.formed : 0;
+      const bLen = b.active ? curEp - b.formed : 0;
+      return bLen - aLen;
+    })[0];
+    if (_bestAlliance) awards.push({ id: 'bestAlliance', title: 'Best Alliance', winner: _bestAlliance.name, description: `Formed episode ${_bestAlliance.formed}. ${_bestAlliance.active ? 'Still standing.' : 'Dissolved, but left a mark.'}`, sourceEp: _bestAlliance.formed });
+    // Fan Favorite
+    const _fanFav = Object.entries(gs.popularity || {}).sort((a, b) => b[1] - a[1])[0];
+    if (_fanFav) awards.push({ id: 'fanFavorite', title: 'Fan Favorite', winner: _fanFav[0], description: `${_fanFav[1]} popularity points. The fans have spoken.`, sourceEp: null });
+    // Season Rating
+    const _dramaCount = gs.episodeHistory.reduce((s, h) => s + (h.defections?.length || 0) + (h.paranoiaSpirals?.length || 0) + (h.moleExposure?.length || 0), 0);
+    const _idolPlays = gs.episodeHistory.reduce((s, h) => s + (h.idolPlays?.length || 0), 0);
+    const _rawRating = Math.min(10, 4 + _dramaCount * 0.3 + _idolPlays * 0.5 + (gs.moles?.length ? 1 : 0));
+    const _rating = Math.round(_rawRating * 10) / 10;
+    const _comment = _rating >= 9 ? 'Best season EVER.' : _rating >= 7 ? 'Solid. The fans will talk.' : _rating >= 5 ? 'Had its moments.' : 'We\'ll do better next time.';
+    seasonRating = { score: _rating, comment: _comment };
+  }
+
+  // ── STORE ──
+  ep.aftermath = {
+    number: aftermathNum, isReunion,
+    interviewees: [...interviewees], peanutGallery: [...peanutGallery],
+    interviews, truthOrAnvil, unseenFootage, fanCall, fanVote, aftermathMoments: aftermathMoment, reunionDiscussion, awards, seasonRating
+  };
+  gs.lastAftermathEp = curEp;
+  if (!gs.aftermathHistory) gs.aftermathHistory = [];
+  gs.aftermathHistory.push({ ep: curEp, interviewees: [...interviewees] });
+}
+
 function generateSummaryText(ep) {
   const L = [];
   const ln  = s => L.push(s);
@@ -25532,6 +26438,8 @@ function generateSummaryText(ep) {
   _textMoleDisruption(ep, ln, sec);
   _textWhyVote(ep, ln, sec);
   _textMoleReveal(ep, ln, sec);
+  _textVolunteerDuel(ep, ln, sec);
+  _textAftermath(ep, ln, sec);
   _textSlasherNight(ep, ln, sec);
   _textAmbassadors(ep, ln, sec);
   _textRIDuel(ep, ln, sec);
@@ -26052,6 +26960,10 @@ function patchEpisodeHistory(ep) {
   if (ep.alliancesPreTribal) h.alliancesPreTribal = ep.alliancesPreTribal;
   h.blackVote = ep.blackVote || null;
   if (ep.tiedDestinies) h.tiedDestinies = ep.tiedDestinies;
+  if (ep.exileDuelPlayerAtStart) h.exileDuelPlayerAtStart = ep.exileDuelPlayerAtStart;
+  if (ep.volunteerDuel) h.volunteerDuel = ep.volunteerDuel;
+  if (ep.fanVoteReturnee) h.fanVoteReturnee = ep.fanVoteReturnee;
+  if (ep.volunteerDuelReturn) h.volunteerDuelReturn = ep.volunteerDuelReturn;
   h.blackVote1 = ep.blackVote1 || null;
   h.blackVote2 = ep.blackVote2 || null;
   h.blackVoteApplied = ep.blackVoteApplied || null;
@@ -26254,6 +27166,9 @@ function patchEpisodeHistory(ep) {
       }
     }
   }
+  // ── Aftermath Show: generate after everything else is patched ──
+  if (!ep.aftermath) generateAftermathShow(ep);
+  if (ep.aftermath) h.aftermath = ep.aftermath;
 }
 
 function snapshotGameState() {
@@ -26299,6 +27214,7 @@ function snapshotGameState() {
     sideDeals: (gs.sideDeals || []).map(d => ({ ...d, players: [...d.players] })),
     bonds: gs.bonds ? { ...gs.bonds } : {},
     moles: (gs.moles || []).map(m => ({ ...m, suspicion: { ...m.suspicion }, sabotageLog: [...m.sabotageLog], leaks: [...m.leaks] })),
+    exileDuelPlayer: gs.exileDuelPlayer || null,
   };
 }
 
@@ -26396,6 +27312,9 @@ function initGameState() {
     providerHistory: {},           // { [name]: episodeCount } — how many eps as provider
     collapseWarning: {},           // { [name]: epNum } — collapse event fired
     medevacs: [],                  // medevac records for season stats
+    lastAftermathEp: 0,            // last episode that had an Aftermath
+    _originalTwistSchedule: seasonConfig.twistSchedule ? JSON.parse(JSON.stringify(seasonConfig.twistSchedule)) : [],
+    aftermathHistory: [],          // [{ ep, interviewees }]
     // The Mole
     moles: [],                     // [{ player, exposed, exposedEp, exposedBy, suspicion, sabotageCount, sabotageLog, leaks, layingLow, resistance }]
   };
@@ -26436,6 +27355,11 @@ function initGameState() {
 
 function resetSeason() {
   if (!confirm('Reset season? This clears all episode history. Your cast and setup are kept.')) return;
+  // Restore original twist schedule if shifted by Team Swap advantages
+  if (gs?._originalTwistSchedule?.length) {
+    seasonConfig.twistSchedule = JSON.parse(JSON.stringify(gs._originalTwistSchedule));
+    localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
+  }
   gs = null; localStorage.removeItem('simulator_gs');
   gsCheckpoints = {};
   Object.keys(localStorage).filter(k => k.startsWith('simulator_cp_')).forEach(k => localStorage.removeItem(k));
@@ -26669,6 +27593,14 @@ function simulateNext() {
   }
   const ep = gs.phase === 'finale' ? simulateFinale() : simulateEpisode();
   if (!ep) return;
+  // Aftermath Reunion: generate for finale since simulateFinale doesn't call patchEpisodeHistory
+  if (ep.winner && !ep.aftermath && seasonConfig.aftermath === 'enabled') {
+    generateAftermathShow(ep);
+    if (ep.aftermath) {
+      const h = gs.episodeHistory[gs.episodeHistory.length - 1];
+      if (h) h.aftermath = ep.aftermath;
+    }
+  }
   if (seasonConfig.popularityEnabled !== false) { updatePopularity(ep); saveGameState(); }
   viewingEpNum = ep.num;
   renderRunTab();
@@ -26902,6 +27834,8 @@ function buildEpisodeMap() {
   let merged  = false;
   let _riReturn1Used = false;
   let _riReturn2Used = false;
+  let _totalElimsToHere = 0;
+  let _lastFVReturn = 0;
 
   while (active > finale && ep <= 100) {
     const etype = twistMap[ep] || null;
@@ -26920,7 +27854,17 @@ function buildEpisodeMap() {
     if (_allTypes.includes('sudden-death')) elims = Math.max(elims, 1);
     if (_allTypes.includes('ambassadors')) elims = Math.max(elims, 2);
     if (_allTypes.includes('tied-destinies')) elims = Math.max(elims, 2);
-    const returns = (_allTypes.includes('returning-player') || _allTypes.includes('second-chance')) ? 1 : 0;
+    // Exile Duel: person goes to exile (0 elims this ep) — duel happens next episode (1 elim)
+    if (_allTypes.includes('exile-duel')) elims = 0;
+    _totalElimsToHere += elims;
+    let returns = (_allTypes.includes('returning-player') || _allTypes.includes('second-chance')) ? 1 : 0;
+    // Fan vote return: pending return adds +1 this episode
+    if (gs?.pendingFanVoteReturn && gs.eliminated?.includes(gs.pendingFanVoteReturn)) returns++;
+    // Fan vote prediction: ONCE after X total eliminations, someone comes back
+    const _fvThresholdCfg = parseInt(seasonConfig.fanVoteFrequency) || 0;
+    if (_fvThresholdCfg && !returns && !_lastFVReturn && _totalElimsToHere >= _fvThresholdCfg) {
+      returns++; _lastFVReturn = _totalElimsToHere; // only fires once
+    }
 
     // RI return: fires when the episode STARTS with <= riReentryAt players.
     const _riReentryAt = seasonConfig.riReentryAt || seasonConfig.mergeAt || mergeAt;
@@ -26941,6 +27885,14 @@ function buildEpisodeMap() {
     eps.push({ ep, active, phase: merged ? 'post-merge' : 'pre-merge', engineType: etype });
     active = Math.max(finale, activeWithReturns - elims);
     ep++;
+
+    // Exile Duel: insert extra episode for the duel resolution (1 elim, no twist)
+    if (_allTypes.includes('exile-duel') && active > finale) {
+      if (!merged && active <= mergeAt) merged = true;
+      eps.push({ ep, active, phase: merged ? 'post-merge' : 'pre-merge', engineType: null });
+      active = Math.max(finale, active - 1); // duel resolves — 1 person eliminated
+      ep++;
+    }
   }
 
   eps.push({ ep, active: finale, phase: 'finale', engineType: null });
@@ -27115,9 +28067,11 @@ function assignTwist(twistId) {
     if (twist?.phase === 'post-merge' && epPhase !== 'post-merge') {
       blocked.push(ep); return;
     }
+    // Duplicate check: same twist type already on this episode — skip
+    const existingOnEp = seasonConfig.twistSchedule.filter(t => Number(t.episode) === ep);
+    if (existingOnEp.some(t => t.type === twistId)) return;
     // Incompatibility check: silently skip conflicting episodes
     if (twist?.incompatible?.length) {
-      const existingOnEp = seasonConfig.twistSchedule.filter(t => Number(t.episode) === ep);
       if (existingOnEp.some(t => twist.incompatible.includes(t.type))) {
         blocked.push(ep); return;
       }
@@ -30234,6 +31188,519 @@ function rpBuildMoleExposed(ep) {
   return html;
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+// AFTERMATH SHOW — VP Screens
+// ══════════════════════════════════════════════════════════════════════════════
+function rpBuildFanVoteReturn(ep) {
+  if (!ep.fanVoteReturnee) return null;
+  const returnee = ep.fanVoteReturnee;
+  const rPr = pronouns(returnee);
+  const rS = pStats(returnee);
+  const arch = rS.archetype || '';
+  // Find which episode they were eliminated
+  const _elimEp = gs.episodeHistory?.find(h => h.eliminated === returnee || h.firstEliminated === returnee || h.ambassadorData?.ambassadorEliminated === returnee);
+  const _elimEpNum = _elimEp?.num || '?';
+  const _daysOut = ep.num - _elimEpNum;
+
+  let html = `<div class="rp-page tod-studio">
+    <div class="aftermath-live">LIVE</div>
+    <div class="aftermath-title" style="font-size:28px;text-align:center;margin:20px 0 8px">THE FANS HAVE SPOKEN</div>
+    <div style="font-size:12px;color:#8b949e;text-align:center;margin-bottom:24px">A player returns to the game.</div>`;
+
+  // Dramatic build-up
+  html += `<div class="aftermath-card-gold" style="text-align:center;margin-bottom:16px">
+    <div style="font-size:13px;color:#f5f0e8;line-height:1.6;font-style:italic;margin-bottom:12px">
+      "Last night, the fans voted. Millions of votes were cast. One eliminated player earned the right to return to this game."
+    </div>
+    <div style="font-size:11px;color:#8b949e">${seasonConfig.host || 'Chris'} pauses. The tribe holds its breath.</div>
+  </div>`;
+
+  // The reveal
+  html += `<div style="text-align:center;margin:24px 0;animation:slideInLeft 0.6s both">
+    ${rpPortrait(returnee, 'xl')}
+    <div style="font-family:var(--font-display);font-size:26px;color:#f59e0b;margin-top:10px;text-shadow:0 0 16px rgba(245,158,11,0.4)">${returnee}</div>
+    <div style="font-size:12px;color:#8b949e;margin-top:4px">${vpArchLabel(returnee)} — Eliminated Episode ${_elimEpNum}</div>
+    <div style="margin-top:8px"><span style="font-size:11px;font-weight:700;letter-spacing:2px;color:#0d1117;background:#f59e0b;padding:4px 14px;border-radius:4px">RETURNS TO THE GAME</span></div>
+  </div>`;
+
+  // Returnee quote
+  const _returnQuote = arch === 'villain' || arch === 'schemer'
+    ? `"They thought they got rid of me. ${_daysOut} days later, I'm back. And I remember every name that wrote mine down."`
+    : arch === 'hero'
+    ? `"The fans believed in me. That means more than any immunity necklace. I'm back — and this time, I'm playing for them."`
+    : arch === 'hothead'
+    ? `"I've been sitting at home watching these people make mistake after mistake. Now I get to do something about it. Let's GO."`
+    : arch === 'challenge-beast'
+    ? `"${_daysOut} days away from this game and I'm hungrier than ever. I've been training. They're not ready for what I'm bringing back."`
+    : `"Unfinished business. That's what this is. I left things out there that I need to finish. The fans gave me that chance — I'm not wasting it."`;
+
+  html += `<div style="padding:14px;background:rgba(245,158,11,0.04);border:1px solid rgba(245,158,11,0.2);border-radius:10px;text-align:center;margin-top:16px">
+    <div style="font-size:10px;color:#f59e0b;font-weight:700;margin-bottom:4px">${returnee}</div>
+    <div style="font-size:14px;color:#f5f0e8;line-height:1.7;font-style:italic">${_returnQuote}</div>
+  </div>`;
+
+  // Tribe reaction
+  const _bestAlly = gs.activePlayers.filter(p => p !== returnee).sort((a, b) => getBond(returnee, b) - getBond(returnee, a))[0];
+  const _worstEnemy = gs.activePlayers.filter(p => p !== returnee).sort((a, b) => getBond(returnee, a) - getBond(returnee, b))[0];
+  html += `<div style="margin-top:16px">
+    <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:#8b949e;text-align:center;margin-bottom:8px">TRIBE REACTS</div>`;
+  if (_bestAlly && getBond(returnee, _bestAlly) >= 2) {
+    html += `<div style="display:flex;align-items:center;gap:8px;padding:8px;margin-bottom:4px;background:rgba(16,185,129,0.04);border:1px solid rgba(16,185,129,0.15);border-radius:6px">
+      ${rpPortrait(_bestAlly, 'sm')}
+      <div><div style="font-size:10px;color:#10b981;font-weight:700">${_bestAlly}</div>
+      <div style="font-size:12px;color:#f5f0e8">"${returnee} is back. I've never been happier to see someone walk into camp."</div></div>
+    </div>`;
+  }
+  if (_worstEnemy && getBond(returnee, _worstEnemy) <= -2) {
+    html += `<div style="display:flex;align-items:center;gap:8px;padding:8px;margin-bottom:4px;background:rgba(239,68,68,0.04);border:1px solid rgba(239,68,68,0.15);border-radius:6px">
+      ${rpPortrait(_worstEnemy, 'sm')}
+      <div><div style="font-size:10px;color:#ef4444;font-weight:700">${_worstEnemy}</div>
+      <div style="font-size:12px;color:#f5f0e8">"You're kidding me. ${returnee}? Of all people? This changes everything — and not in a good way."</div></div>
+    </div>`;
+  }
+  html += `</div>`;
+
+  html += `</div>`;
+  return html;
+}
+
+function rpBuildAftermathOpening(ep) {
+  const a = ep.aftermath;
+  if (!a) return null;
+  const host = seasonConfig.host || 'Chris';
+  let html = `<div class="rp-page tod-studio">
+    <div class="aftermath-live">LIVE</div>
+    <div class="aftermath-title" style="font-size:32px;text-align:center;margin:16px 0 4px">${a.isReunion ? 'TOTAL DRAMA AFTERMATH: THE REUNION' : 'TOTAL DRAMA AFTERMATH'}</div>
+    <div style="font-size:11px;color:#8b949e;text-align:center;letter-spacing:2px;margin-bottom:20px">LIVE FROM THE AFTERMATH STUDIO${a.isReunion ? '' : ` &mdash; AFTERMATH #${a.number}`}</div>`;
+
+  // Host intro — specific to what actually happened
+  const _recentEps = gs.episodeHistory.filter(h => h.num > (gs.lastAftermathEp || 0) && h.num <= ep.num);
+  const _recentElims = _recentEps.filter(h => h.eliminated).map(h => h.eliminated);
+  const _recentBlindsides = _recentEps.filter(h => h.defections?.length >= 2);
+  const _recentIdolPlays = _recentEps.filter(h => h.idolPlays?.length);
+  const _moleExposed = _recentEps.find(h => h.moleExposure?.length);
+  const _dominantAlliance = (gs.namedAlliances || []).filter(al => al.active).sort((a, b) => b.members.length - a.members.length)[0];
+
+  // Build specific intro line from what happened
+  let _hostLine = `"Welcome back to the Aftermath. We're down to ${gs.activePlayers.length} players.`;
+  if (_moleExposed) _hostLine += ` The Mole was EXPOSED. ${_moleExposed.moleExposure[0].mole} has been outed and the tribe is reeling.`;
+  else if (_recentBlindsides.length >= 2) _hostLine += ` ${_recentBlindsides.length} blindsides since we last talked. The tribe is eating itself alive.`;
+  else if (_dominantAlliance && _dominantAlliance.members.length >= 4) _hostLine += ` ${_dominantAlliance.name} is running the show with ${_dominantAlliance.members.length} members. The question is — for how long?`;
+  else if (_recentIdolPlays.length) _hostLine += ` Idols have been flying. Nothing is safe out there.`;
+  else _hostLine += ` Things are heating up.`;
+  _hostLine += ` Tonight we hear from ${a.interviewees.filter(n => !gs.activePlayers.includes(n)).join(', ')}. And trust me — they have a LOT to say."`;
+
+  html += `<div class="aftermath-card-gold" style="display:flex;align-items:center;gap:14px">
+    <div style="font-size:40px">🎤</div>
+    <div><div style="font-size:14px;color:#f59e0b;font-weight:700">${host}</div>
+    <div style="font-size:13px;color:#f5f0e8;font-style:italic;line-height:1.5">${_hostLine}</div></div>
+  </div>`;
+
+  // Eliminated montage — all eliminated so far
+  const allElim = gs.eliminated || [];
+  if (allElim.length) {
+    html += `<div style="font-size:9px;font-weight:700;letter-spacing:2px;color:#8b949e;text-align:center;margin:16px 0 8px">THE FALLEN</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-bottom:16px">`;
+    allElim.forEach(n => {
+      const isGuest = a.interviewees.includes(n);
+      html += `<div style="text-align:center;opacity:${isGuest ? '1' : '0.5'}${isGuest ? ';border:2px solid #f59e0b;border-radius:8px;padding:2px' : ''}">
+        ${rpPortrait(n, 'sm')}
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  // Guests or full cast (reunion)
+  if (a.isReunion) {
+    // Reunion: finalists featured, then full cast
+    html += `<div style="font-size:9px;font-weight:700;letter-spacing:2px;color:#f59e0b;text-align:center;margin:16px 0 8px">THE FINALISTS</div>
+      <div style="display:flex;justify-content:center;gap:24px;margin-bottom:12px">`;
+    gs.activePlayers.forEach(n => {
+      html += `<div style="text-align:center;animation:slideInLeft 0.5s both">
+        ${rpPortrait(n, 'xl')}
+        <div style="font-size:13px;color:#f59e0b;font-weight:700;margin-top:4px">${n}</div>
+        <div style="font-size:10px;color:#8b949e">${vpArchLabel(n)}</div>
+      </div>`;
+    });
+    html += `</div>`;
+    html += `<div style="font-size:9px;font-weight:700;letter-spacing:2px;color:#8b949e;text-align:center;margin:12px 0 8px">THE FULL CAST</div>
+      <div style="display:flex;justify-content:center;gap:6px;flex-wrap:wrap;margin-bottom:16px">`;
+    allElim.forEach(n => { html += rpPortrait(n, 'sm'); });
+    html += `</div>`;
+  } else {
+    html += `<div style="font-size:9px;font-weight:700;letter-spacing:2px;color:#f59e0b;text-align:center;margin:16px 0 8px">TONIGHT'S GUESTS</div>
+      <div style="display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin-bottom:16px">`;
+    a.interviewees.filter(n => !gs.activePlayers.includes(n)).forEach(n => {
+      html += `<div style="text-align:center;animation:slideInLeft 0.5s both">
+        ${rpPortrait(n, 'lg')}
+        <div style="font-size:11px;color:#f5f0e8;font-weight:600;margin-top:4px">${n}</div>
+        <div style="font-size:9px;color:#8b949e">${vpArchLabel(n)}</div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  // Peanut Gallery (not shown on Reunion — everyone is on stage)
+  if (a.peanutGallery.length && !a.isReunion) {
+    html += `<div style="font-size:9px;font-weight:700;letter-spacing:2px;color:#6366f1;text-align:center;margin:16px 0 8px">PEANUT GALLERY</div>
+      <div class="aftermath-gallery">`;
+    a.peanutGallery.forEach(n => {
+      html += rpPortrait(n, 'xs');
+    });
+    html += `</div>`;
+  }
+
+  html += `</div>`;
+  return html;
+}
+
+function rpBuildAftermathInterview(ep, interview) {
+  if (!interview) return null;
+  const a = ep.aftermath;
+  const iv = interview;
+  const pr = pronouns(iv.player);
+  const _host = seasonConfig.host || 'Chris';
+  const _revealKey = `aftermath_iv_${ep.num}_${iv.player.replace(/\W/g, '')}`;
+
+  let html = `<div class="rp-page tod-studio">
+    <div class="aftermath-live">LIVE</div>
+    <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:#8b949e;text-align:center;margin-bottom:8px">AFTERMATH #${a.number}</div>`;
+
+  // Entrance
+  html += `<div style="text-align:center;margin-bottom:16px;animation:slideInLeft 0.5s both">
+    ${rpPortrait(iv.player, 'xl')}
+    <div style="font-family:var(--font-display);font-size:22px;color:#f5f0e8;margin-top:8px">${iv.player}</div>
+    <div style="font-size:11px;color:#8b949e">${vpArchLabel(iv.player)}${iv.isActive ? '' : ` &mdash; Eliminated Episode ${iv.elimEpNum}`}</div>
+  </div>`;
+
+  // Crowd reaction
+  const _crowdText = iv.crowdReaction === 'wild' ? 'The crowd goes WILD. Standing ovation.'
+    : iv.crowdReaction === 'warm' ? 'Warm welcome from the studio.'
+    : iv.crowdReaction === 'boos' ? 'Boos from the gallery. ' + iv.player + ' doesn\'t flinch.'
+    : 'Polite applause. The energy says enough.';
+  html += `<div class="aftermath-crowd-${iv.crowdReaction === 'wild' ? 'wild' : iv.crowdReaction === 'boos' ? 'boos' : 'warm'}" style="text-align:center;margin-bottom:12px">${_crowdText}</div>`;
+
+  // Entrance quote
+  html += `<div style="text-align:center;font-size:13px;color:#f5f0e8;font-style:italic;margin-bottom:20px;line-height:1.6">${iv.entranceQuote}</div>`;
+
+  // Interview questions — click to reveal (unique per interview from randomized pool)
+  let questions;
+  if (iv.isActive && ep.winner) {
+    const _isWinner = iv.player === ep.winner;
+    const _ivS = pStats(iv.player);
+    const _ivAlliances = (gs.namedAlliances || []).filter(al => al.members.includes(iv.player));
+    const _ivBetrayals = gs.episodeHistory.filter(h => (h.defections || []).some(d => d.player === iv.player)).length;
+    const _ivChalWins = gs.chalRecord?.[iv.player]?.wins || 0;
+    const _ivBigMoves = gs.playerStates?.[iv.player]?.bigMoves || 0;
+    const _ivShowmance = gs.showmances?.find(sh => sh.players.includes(iv.player));
+    const _otherFinalist = gs.activePlayers.find(p => p !== iv.player);
+    const _otherPr = _otherFinalist ? pronouns(_otherFinalist) : null;
+    const _ivBondWithOther = _otherFinalist ? getBond(iv.player, _otherFinalist) : 0;
+    // Key alliance — the one they were in longest
+    const _keyAlliance = _ivAlliances.sort((a, b) => (a.formed || 99) - (b.formed || 99))[0];
+    // Biggest move episode
+    const _bigMoveEp = gs.episodeHistory.find(h => (h.defections || []).some(d => d.player === iv.player));
+
+    if (_isWinner) {
+      questions = [
+        { q: `"${iv.player}, you won. ${_ivChalWins} challenge wins. ${_ivAlliances.length} alliances. ${_ivBetrayals ? `${_ivBetrayals} betrayal${_ivBetrayals > 1 ? 's' : ''}` : 'No betrayals'}. Walk us through your game — when did you first feel like you could actually win this thing?"`,
+          a: _ivBigMoves >= 2 ? `"Honestly? After my second big move. There was a point where I realized I wasn't just surviving — I was controlling the game. People were coming to ME with plans, not the other way around. That's when it shifted."` : _ivChalWins >= 3 ? `"After my third immunity win, I looked around and realized nobody could touch me. The challenges gave me the safety to play aggressively, and the social game gave me the jury votes. Everything clicked at the same time."` : `"It crept up on me. I never had one 'I'm going to win' moment. I just kept making the next right decision, and eventually I looked up and I was in the Final Tribal. The game came to me — I didn't force it."` },
+        { q: _keyAlliance ? `"${_keyAlliance.name} was your core alliance, formed episode ${_keyAlliance.formed}. How important was that to your win?"` : `"You played a lot of this game without a strong alliance. Was that by choice?"`,
+          a: _keyAlliance ? `"${_keyAlliance.name} was everything. ${_keyAlliance.members.filter(m => m !== iv.player).join(', ')} — those people kept me safe when I needed it. We didn't always agree, but we had each other's backs. Without that foundation, I don't get to the end."` : `"I realized early that alliances were targets. The big groups painted themselves. I worked from the margins — small deals, one-on-one trust — and it kept me off the radar long enough to reach the finale."` },
+        { q: _otherFinalist ? `"You and ${_otherFinalist} sat next to each other at Final Tribal. ${_ivBondWithOther >= 3 ? 'You were close all season.' : _ivBondWithOther <= -2 ? 'You two had real tension.' : 'The relationship was complicated.'} What was going through your head?"` : `"At Final Tribal — what was going through your head?"`,
+          a: _otherFinalist && _ivBondWithOther >= 3 ? `"Sitting next to ${_otherFinalist}... that was tough. ${_otherPr.Sub} ${_otherPr.sub === 'they' ? 'were' : 'was'} my ally. My friend. And I had to argue why I deserved to win more than ${_otherPr.sub} did. That moment was harder than any vote, any challenge, anything."` : _otherFinalist && _ivBondWithOther <= -2 ? `"I looked at ${_otherFinalist} and I knew — one of us was about to have the best night of ${_otherPr.posAdj} life, and the other was going to carry that loss forever. After everything between us? I was NOT losing to ${_otherPr.obj}."` : `"My hands were shaking. I'd played for this moment for ${gs.episodeHistory.length} episodes. Every decision, every vote, every sleepless night — it all came down to that room. I just tried to be honest and let the jury see who I really was."` },
+        { q: `"Last question — and be honest. Is there anything you regret? Any move you wish you could take back?"`,
+          a: _ivBetrayals >= 1 && _bigMoveEp ? `"Episode ${_bigMoveEp.num}. I know it was the right move — it got me here. But the way it affected the people involved... I think about that. I'm not apologizing for the move. But I can acknowledge it cost something that can't be measured in votes."` : `"Regrets? No. I wouldn't change a single thing. Every move, every conversation, every risk — it all led to this. If I change one thing, maybe the whole chain falls apart. So no. I own all of it."` },
+      ];
+    } else {
+      // Runner-up questions
+      questions = [
+        { q: `"${iv.player}, you made it to the end. You sat at Final Tribal. And you lost. How does that feel — right now, sitting on this stage?"`,
+          a: `"It's the worst feeling in the game. Because you're so close. You did everything — survived every vote, made it through every tribal — and then the jury looks at you and says 'not enough.' I'm proud of what I did. But losing at the final step? That stays with you."` },
+        { q: _otherFinalist ? `"Do you think ${ep.winner} played a better game than you? Honestly."` : `"Do you think the jury got it right?"`,
+          a: _ivBondWithOther >= 2 ? `"${ep.winner} played a great game. I'll give ${pronouns(ep.winner).obj} that. But different? Not better. We took different paths and the jury chose ${pronouns(ep.winner).posAdj} path. On another night, with another jury, maybe it goes my way. But tonight it didn't, and I have to live with that."` : `"Did ${pronouns(ep.winner).sub} play BETTER? Or did ${pronouns(ep.winner).sub} play differently? I think the jury voted for the game they understood. ${ep.winner} made flashier moves. I made quieter ones. Quiet doesn't win jury votes. Lesson learned."` },
+        { q: `"If you could go back to one specific moment and change your decision — one vote, one conversation, one alliance — what would it be?"`,
+          a: _bigMoveEp ? `"Episode ${_bigMoveEp.num}. I was standing at a crossroads and I went left. If I'd gone right... maybe I'm the one holding the title. Or maybe I'm out at seventh place. That's the thing about this game — you never know if the other path was better. You just know you didn't take it."` : `"Final Tribal. My answers. I prepared the wrong speech. I focused on defending my game instead of selling it. ${ep.winner} sold ${pronouns(ep.winner).posAdj} game. I defended mine. That's the difference between winning and losing."` },
+        { q: `"One last thing — if this show called you back for another season, would you play again?"`,
+          a: _ivS.boldness >= 7 ? `"In a heartbeat. I have unfinished business. I know what I'd do differently. And next time? I'm not settling for second."` : `"[long pause] ...Yeah. Yeah, I would. Because I know I can win. I just didn't. This time."` },
+      ];
+    }
+  } else {
+    questions = iv.questions || [];
+  }
+
+  const _hostReactions = [
+    `${_host}: "Interesting..."`, `${_host}: "The gallery is losing it."`, `${_host}: "I did NOT see that coming."`,
+    `${_host}: "Okay, okay. Next question."`, `${_host}: "The fans are going to LOVE this."`,
+    `${_host}: [turns to camera] "This is why we make this show."`, `${_host}: "Moving on before someone throws something."`,
+  ];
+  const _galleryReactions = [
+    '👏 Applause from the gallery', '😤 Murmuring in the gallery', '😱 Gasps from the back row',
+    '🤣 The gallery is laughing', '😢 Someone in the gallery is wiping their eyes',
+    '🔥 The gallery is HEATED', '🤫 Dead silence. You could hear a pin drop.',
+  ];
+
+  questions.forEach((qa, i) => {
+    const qId = `${_revealKey}_q${i}`;
+    html += `<div class="aftermath-q" onclick="(function(){var a=document.getElementById('${qId}-a');a.style.display=a.style.display==='none'?'block':'none'})()">
+      <div style="font-size:12px;color:#f59e0b;font-weight:600">${_host}</div>
+      <div style="font-size:13px;color:#f5f0e8;margin-top:2px">${qa.q}</div>
+      <div id="${qId}-a" style="display:none;margin-top:8px">
+        <div style="padding:8px;background:rgba(99,102,241,0.06);border-radius:6px;margin-bottom:6px">
+          <div style="font-size:12px;color:#f59e0b;font-weight:600">${iv.player}</div>
+          <div style="font-size:13px;color:#f5f0e8;line-height:1.6">${qa.a}</div>
+        </div>
+        ${i < questions.length - 1 ? `<div style="font-size:10px;color:#8b949e;font-style:italic;padding:2px 8px">${_hostReactions[i % _hostReactions.length]}</div>` : ''}
+        ${i % 2 === 1 ? `<div style="font-size:10px;color:#6366f1;font-style:italic;padding:2px 8px">${_galleryReactions[i % _galleryReactions.length]}</div>` : ''}
+      </div>
+    </div>`;
+  });
+
+  // Closing statement
+  html += `<div style="margin-top:12px;padding:10px;border-top:1px solid rgba(245,158,11,0.15)">
+    <div style="font-size:12px;color:#f59e0b;font-weight:600">${iv.player} — Final Words</div>
+    <div style="font-size:14px;color:#f5f0e8;font-style:italic;line-height:1.6;margin-top:4px">${iv.lastWords}</div>
+  </div>`;
+
+  // Gallery reactions — multiple, based on bond relationships
+  const _galleryReactors = a.peanutGallery.filter(g => Math.abs(getBond(g, iv.player)) >= 2).slice(0, 3);
+  _galleryReactors.forEach(g => {
+    const _gBond = getBond(g, iv.player);
+    const _gPr = pronouns(g);
+    const _gReact = _gBond >= 5
+      ? [`"Miss you out there, ${iv.player}."`, `"${iv.player} deserved better."`, `[stands up and applauds]`]
+      : _gBond >= 2
+      ? [`"Respect."`, `"${iv.player} played a good game."`, `[nods quietly]`]
+      : _gBond <= -5
+      ? [`"Good RIDDANCE."`, `"The tribe got it right."`, `"Karma."`, `"Finally."`]
+      : [`"Whatever."`, `"About time."`, `"[eye roll]"`];
+    html += `<div class="aftermath-reaction" style="margin-top:4px">
+      ${rpPortrait(g, 'xs')} <span style="color:#6366f1;font-weight:600">${g}:</span> ${_gReact[Math.floor(Math.random() * _gReact.length)]}
+    </div>`;
+  });
+  if (!_galleryReactors.length && a.peanutGallery.length) {
+    html += `<div class="aftermath-reaction" style="margin-top:4px">
+      <span style="color:#8b949e">The gallery watches in silence.</span>
+    </div>`;
+  }
+
+  html += `</div>`;
+  return html;
+}
+
+function rpBuildAftermathTruth(ep) {
+  const a = ep.aftermath;
+  if (!a?.truthOrAnvil?.length) return null;
+  let html = `<div class="rp-page tod-studio">
+    <div class="aftermath-live">LIVE</div>
+    <div class="aftermath-title" style="font-size:28px;text-align:center;margin:16px 0 20px">TRUTH... OR ANVIL</div>`;
+
+  a.truthOrAnvil.forEach(toa => {
+    const pr = pronouns(toa.player);
+    html += `<div class="aftermath-card" style="margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        ${rpPortrait(toa.player, 'lg')}
+        <div>
+          <div style="font-size:14px;color:#f5f0e8;font-weight:700">${toa.player}</div>
+          <div style="font-size:10px;color:#8b949e">The moment of truth.</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:#f59e0b;font-weight:600;margin-bottom:6px">${seasonConfig.host || 'Chris'}: "Tell us the truth..."</div>
+      <div style="font-size:13px;color:#f5f0e8;line-height:1.6;margin-bottom:10px;padding:8px;background:rgba(0,0,0,0.2);border-radius:6px">${toa.secret}</div>`;
+
+    if (toa.toldTruth) {
+      html += `<div class="aftermath-truth" style="text-align:center;margin:8px 0">TRUTH</div>
+        <div style="font-size:12px;color:#10b981;text-align:center">${toa.player} told the truth. ${toa.consequence}</div>`;
+    } else {
+      html += `<div class="aftermath-anvil" style="text-align:center;margin:8px 0">ANVIL!</div>
+        <div style="font-size:12px;color:#ef4444;text-align:center">${seasonConfig.host || 'Chris'}: "Actually, let's look at the tape." ${toa.consequence}</div>`;
+    }
+    html += `</div>`;
+  });
+
+  html += `</div>`;
+  return html;
+}
+
+function rpBuildAftermathFootage(ep) {
+  const a = ep.aftermath;
+  if (!a?.unseenFootage?.length) return null;
+  let html = `<div class="rp-page tod-studio">
+    <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:#f59e0b;text-align:center;margin-bottom:4px">🎬 AFTERMATH</div>
+    <div class="aftermath-title" style="font-size:24px;text-align:center;margin-bottom:6px">UNSEEN FOOTAGE</div>
+    <div style="font-size:11px;color:#8b949e;text-align:center;margin-bottom:20px">What the tribe never saw...</div>`;
+
+  a.unseenFootage.forEach(clip => {
+    html += `<div class="aftermath-filmstrip" style="position:relative;margin-bottom:12px">
+      ${clip.classified ? '<div style="position:absolute;top:8px;right:8px;background:rgba(239,68,68,0.9);color:white;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:800;letter-spacing:2px;transform:rotate(5deg)">CLASSIFIED</div>' : ''}
+      <div style="font-size:9px;color:#f59e0b;font-weight:700;letter-spacing:1px;margin-bottom:4px">EPISODE ${clip.sourceEp}</div>
+      <div style="display:flex;gap:4px;margin-bottom:6px">${clip.players.map(p => rpPortrait(p, 'xs')).join('')}</div>
+      <div style="font-size:12px;color:#f5f0e8;line-height:1.6">${clip.description}</div>
+    </div>`;
+  });
+
+  html += `</div>`;
+  return html;
+}
+
+function rpBuildAftermathFanCall(ep) {
+  const a = ep.aftermath;
+  if (!a?.fanCall) return null;
+  const fc = a.fanCall;
+  const _host = seasonConfig.host || 'Chris';
+  const _fanTypeLabels = { superfan: 'Superfan', drama: 'Drama Fan', hater: 'The Hater', supporter: 'Biggest Fan' };
+  const _fanTypeColors = { superfan: '#6366f1', drama: '#ec4899', hater: '#ef4444', supporter: '#10b981' };
+
+  let html = `<div class="rp-page tod-studio">
+    <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:#f59e0b;text-align:center;margin-bottom:4px">📱 AFTERMATH</div>
+    <div class="aftermath-title" style="font-size:24px;text-align:center;margin-bottom:6px">FAN CALL</div>
+    <div style="font-size:11px;color:#8b949e;text-align:center;margin-bottom:20px">${fc.target} takes a call from the fans</div>`;
+
+  // Fan info + target
+  html += `<div style="display:flex;gap:16px;align-items:center;justify-content:center;margin-bottom:16px">
+    <div style="text-align:center;padding:12px;border:2px solid ${_fanTypeColors[fc.fanType] || '#6366f1'}40;border-radius:10px;background:${_fanTypeColors[fc.fanType] || '#6366f1'}08">
+      <div style="font-size:28px;margin-bottom:4px">📹</div>
+      <div style="font-size:13px;color:${_fanTypeColors[fc.fanType] || '#6366f1'};font-weight:700">${fc.fanName}</div>
+      <div style="font-size:9px;color:#8b949e">${_fanTypeLabels[fc.fanType] || 'Video Guest'}</div>
+      <div class="aftermath-live" style="margin-top:4px">LIVE</div>
+    </div>
+    <div style="font-size:20px;color:#8b949e">→</div>
+    <div style="text-align:center">
+      ${rpPortrait(fc.target, 'lg')}
+      <div style="font-size:12px;color:#f5f0e8;font-weight:600;margin-top:4px">${fc.target}</div>
+    </div>
+  </div>`;
+
+  // Chat exchanges — 3 rounds of Q&A
+  const _exchanges = fc.exchanges || [];
+  _exchanges.forEach((ex, i) => {
+    // Fan question
+    html += `<div style="padding:10px 14px;background:${_fanTypeColors[fc.fanType] || '#6366f1'}08;border:1px solid ${_fanTypeColors[fc.fanType] || '#6366f1'}25;border-radius:12px 12px 12px 2px;margin-bottom:6px;margin-right:40px">
+      <div style="font-size:10px;color:${_fanTypeColors[fc.fanType] || '#6366f1'};font-weight:700;margin-bottom:2px">${fc.fanName}</div>
+      <div style="font-size:13px;color:#f5f0e8;line-height:1.5">${ex.q}</div>
+    </div>`;
+    // Player answer
+    html += `<div style="padding:10px 14px;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.2);border-radius:12px 12px 2px 12px;margin-bottom:8px;margin-left:40px">
+      <div style="font-size:10px;color:#f59e0b;font-weight:700;margin-bottom:2px">${fc.target}</div>
+      <div style="font-size:13px;color:#f5f0e8;line-height:1.5">${ex.a}</div>
+    </div>`;
+    // Host reaction between exchanges
+    if (fc.hostReactions?.[i] && i < _exchanges.length - 1) {
+      html += `<div style="font-size:10px;color:#8b949e;font-style:italic;padding:2px 8px;margin-bottom:8px">${fc.hostReactions[i]}</div>`;
+    }
+  });
+
+  // Closing
+  html += `<div style="font-size:10px;color:#8b949e;font-style:italic;text-align:center;margin-top:8px">${_host}: "Thanks for calling in, ${fc.fanName}. That's our fan segment for tonight."</div>`;
+
+  html += `</div>`;
+  return html;
+}
+
+function rpBuildAftermathFanVote(ep) {
+  const a = ep.aftermath;
+  if (!a?.fanVote) return null;
+  const fv = a.fanVote;
+  const _key = `aftermath_fv_${ep.num}`;
+  // Store reveal data globally (avoiding inline script tags)
+  if (!window._aftermathFVData) window._aftermathFVData = {};
+  const _reversed = [...fv.results].reverse();
+  window._aftermathFVData[_key] = _reversed.map(r => ({ name: r.name, isWinner: r.name === fv.winner }));
+
+  let html = `<div class="rp-page tod-studio">
+    <div class="aftermath-title" style="font-size:28px;text-align:center;margin:16px 0 6px">THE FANS HAVE VOTED</div>
+    <div style="font-size:11px;color:#8b949e;text-align:center;margin-bottom:20px">One eliminated player returns to the game.</div>
+    <div id="${_key}" data-revealed="0">`;
+
+  _reversed.forEach((r, i) => {
+    const isWinner = r.name === fv.winner;
+    html += `<div id="${_key}-slot-${i}" style="display:flex;align-items:center;gap:10px;padding:8px 12px;margin-bottom:4px;border:1px solid rgba(139,148,158,0.1);border-radius:8px;opacity:0.15">
+      <div style="width:36px;height:36px;border-radius:50%;background:rgba(139,148,158,0.15)"></div>
+      <span style="flex:1;font-size:12px;color:#484f58">???</span>
+    </div>`;
+    html += `<div id="${_key}-content-${i}" style="display:none">
+      ${rpPortrait(r.name, 'sm')}
+      <span style="flex:1;font-size:13px;color:#f5f0e8;font-weight:600">${r.name}</span>
+      <span style="font-size:11px;color:#8b949e">${r.pct}%</span>
+      ${isWinner ? '<span style="font-size:9px;font-weight:700;letter-spacing:1px;color:#f59e0b;background:rgba(245,158,11,0.15);padding:2px 8px;border-radius:4px">RETURNING</span>' : ''}
+    </div>`;
+  });
+
+  // Store reveal data
+  html += `</div>
+    <div style="text-align:center;margin-top:12px;display:flex;gap:8px;justify-content:center">
+      <button onclick="aftermathFVRevealNext('${_key}')" style="padding:8px 20px;background:#f59e0b;border:none;border-radius:6px;color:#0d1117;font-family:var(--font-display);font-size:13px;letter-spacing:1px;cursor:pointer;font-weight:700">REVEAL NEXT</button>
+      <button onclick="aftermathFVRevealAll('${_key}')" style="padding:6px 12px;background:transparent;border:1px solid rgba(245,158,11,0.3);border-radius:6px;color:#8b949e;font-size:11px;cursor:pointer">Reveal All</button>
+    </div>`;
+
+  html += `</div>`;
+  return html;
+}
+
+function rpBuildAftermathAwards(ep) {
+  const a = ep.aftermath;
+  if (!a?.awards?.length) return null;
+  const _key = `aftermath_awards_${ep.num}`;
+
+  let html = `<div class="rp-page tod-studio">
+    <div class="aftermath-title" style="font-size:28px;text-align:center;margin:16px 0 6px">SEASON AWARDS</div>
+    <div style="font-size:11px;color:#8b949e;text-align:center;margin-bottom:20px">Presented by ${seasonConfig.host || 'Chris'}</div>`;
+
+  a.awards.forEach((aw, i) => {
+    const _awId = `${_key}_${i}`;
+    html += `<div class="aftermath-award" id="${_awId}" onclick="(function(){var c=document.getElementById('${_awId}-c');c.style.display=c.style.display==='none'?'block':'none'})()" style="cursor:pointer">
+      <div style="font-size:9px;font-weight:800;letter-spacing:2px;color:#f59e0b;margin-bottom:6px">${aw.title.toUpperCase()}</div>
+      <div id="${_awId}-c" style="display:none">
+        ${typeof aw.winner === 'string' && players.find(p => p.name === aw.winner) ? rpPortrait(aw.winner, 'lg') : ''}
+        <div style="font-family:var(--font-display);font-size:18px;color:#f5f0e8;margin-top:6px">${aw.winner}</div>
+        <div style="font-size:12px;color:#8b949e;margin-top:4px;line-height:1.5">${aw.description}</div>
+      </div>
+      <div style="font-size:11px;color:#6366f1;margin-top:4px">${document.getElementById?.(_awId + '-c')?.style.display === 'none' ? 'Click to reveal' : ''}</div>
+    </div>`;
+  });
+
+  // Season Rating
+  if (a.seasonRating) {
+    html += `<div class="aftermath-card-gold" style="text-align:center;margin-top:20px">
+      <div style="font-size:9px;font-weight:800;letter-spacing:2px;color:#f59e0b;margin-bottom:6px">${(seasonConfig.host || 'Chris').toUpperCase()}'S SEASON RATING</div>
+      <div style="font-family:var(--font-display);font-size:48px;color:#f59e0b;text-shadow:0 0 20px rgba(245,158,11,0.4)">${a.seasonRating.score}</div>
+      <div style="font-size:11px;color:#8b949e">out of 10</div>
+      <div style="font-size:14px;color:#f5f0e8;font-style:italic;margin-top:8px">"${a.seasonRating.comment}"</div>
+    </div>`;
+  }
+
+  html += `</div>`;
+  return html;
+}
+
+// Fan vote reveal functions
+function aftermathFVRevealNext(key) {
+  const el = document.getElementById(key);
+  if (!el) return;
+  const revealed = parseInt(el.dataset.revealed || '0');
+  const data = window._aftermathFVData?.[key];
+  if (!data || revealed >= data.length) return;
+  const p = data[revealed];
+  const slot = document.getElementById(key + '-slot-' + revealed);
+  const content = document.getElementById(key + '-content-' + revealed);
+  if (slot && content) {
+    slot.innerHTML = content.innerHTML;
+    slot.style.opacity = '1';
+    slot.style.border = p.isWinner ? '1px solid rgba(245,158,11,0.4)' : '1px solid rgba(139,148,158,0.1)';
+    slot.style.background = p.isWinner ? 'rgba(245,158,11,0.06)' : 'transparent';
+    slot.style.animation = 'staggerIn 0.35s var(--ease-broadcast) both';
+    if (p.isWinner) slot.style.boxShadow = '0 0 0 2px #f59e0b';
+  }
+  el.dataset.revealed = revealed + 1;
+}
+function aftermathFVRevealAll(key) {
+  const el = document.getElementById(key);
+  if (!el) return;
+  const data = window._aftermathFVData?.[key];
+  if (!data) return;
+  for (let r = parseInt(el.dataset.revealed || '0'); r < data.length; r++) aftermathFVRevealNext(key);
+}
+
 function rpBuildDebug(ep) {
   const snap = ep.gsSnapshot || {};
   const activePlayers = snap.activePlayers || gs.activePlayers || [];
@@ -30567,6 +32034,39 @@ function rpBuildDebug(ep) {
       });
       html += `</div>`;
     }
+
+    // Volunteer Exile Duel
+    if (ep.volunteerDuel) {
+      const vd = ep.volunteerDuel;
+      const _resultText = vd.duelResult === 'won' ? 'WON — returned with grudge bonus' : vd.duelResult === 'lost' ? 'LOST — permanently eliminated' : vd.granted ? 'Voted out — duel pending' : 'Tribe rejected the request';
+      const _resultCol = vd.duelResult === 'won' ? '#3fb950' : vd.duelResult === 'lost' ? '#f47067' : vd.granted ? '#f0883e' : '#8b949e';
+      const _boostText = `Heat +${vd.heatBoost || 8} | Target +${vd.targetBoost || 5}`;
+      html += `<div style="margin-bottom:20px">
+        <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#818cf8;margin-bottom:8px">VOLUNTEER EXILE DUEL</div>
+        <div style="padding:8px;border:1px solid rgba(129,140,248,0.2);border-radius:8px;background:rgba(129,140,248,0.04)">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            ${rpPortrait(vd.volunteer, 'sm')}
+            <span style="color:#e6edf3;font-weight:600">${vd.volunteer}</span>
+            <span style="color:#818cf8">wants to face</span>
+            ${rpPortrait(vd.rival, 'sm')}
+            <span style="color:#e6edf3;font-weight:600">${vd.rival}</span>
+          </div>
+          <div style="font-size:11px;color:${_resultCol};font-weight:700">${_resultText}</div>
+          <div style="font-size:10px;color:#6e7681;margin-top:2px">${_boostText} (applied during tribal vote)</div>
+        </div>
+      </div>`;
+    }
+    if (ep.volunteerDuelReturn) {
+      const vdr = ep.volunteerDuelReturn;
+      html += `<div style="margin-bottom:20px">
+        <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#818cf8;margin-bottom:8px">VOLUNTEER DUEL RESULT</div>
+        <div style="padding:8px;border:1px solid rgba(129,140,248,0.2);border-radius:8px">
+          <div style="font-size:11px;color:${vdr.result === 'won' ? '#3fb950' : '#f47067'};font-weight:700">
+            ${vdr.volunteer} ${vdr.result === 'won' ? 'WON the duel — returned with grudge bonus (-2 heat, -2 bond with rival, +5 popularity)' : 'LOST the duel — permanently eliminated'}
+          </div>
+        </div>
+      </div>`;
+    }
   }
 
   // ════════════════════════════════════════════════
@@ -30777,7 +32277,7 @@ function rpBuildFirstImpressions(ep, twistObj) {
 // ── Screen 3: Pre-challenge twists (tribe swap, three gifts, journey, exile-island, etc.) ──
 function rpBuildPreTwist(ep) {
   const _rawTwistData = (ep.twistScenes?.length ? ep.twistScenes : generateTwistScenes(ep))
-    .filter(t => t.type !== 'exile-island' && t.type !== 'jury-elimination' && t.type !== 'kidnapping' && t.type !== 'first-impressions' && t.type !== 'tied-destinies'); // shown in dedicated screens
+    .filter(t => t.type !== 'exile-island' && t.type !== 'jury-elimination' && t.type !== 'kidnapping' && t.type !== 'first-impressions' && t.type !== 'tied-destinies' && t.type !== 'aftermath' && t.type !== 'fan-vote-return'); // shown in dedicated screens
   // Deduplicate: only show one scene per twist type (prevents double display if twist is in ep.twists twice)
   const _seenTypes = new Set();
   const twistData = _rawTwistData.filter(t => { if (_seenTypes.has(t.type)) return false; _seenTypes.add(t.type); return true; });
@@ -31917,6 +33417,14 @@ function _buildPostTwistBlocks(ep) {
     blocks.push({ label: 'Second Life', scenes: sc });
   }
 
+  // Reorder: Second Life before 2nd Chance Duel (Second Life fires during tribal, exile duel after)
+  const _slIdx = blocks.findIndex(b => b.label === 'Second Life');
+  const _edIdx = blocks.findIndex(b => b.label === '2nd Chance Duel');
+  if (_slIdx > _edIdx && _edIdx >= 0 && _slIdx >= 0) {
+    const _slBlock = blocks.splice(_slIdx, 1)[0];
+    blocks.splice(_edIdx, 0, _slBlock);
+  }
+
   // ── Jury Elimination — handled by dedicated rpBuildJuryConvenes/rpBuildJuryVotes; skip here ──
   const _juryElimTw = null && (ep.twists||[]).find(t => t.type === 'jury-elimination' && t.juryBooted);
   if (_juryElimTw) {
@@ -32692,6 +34200,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : isMoleLayLow ? ''
                      : isMoleExposed ? 'red'
                      : isMoleSuspicion ? 'gold'
+                     : evt.type === 'volunteerExileDuel' ? 'gold'
                      : isMoleReveal ? 'gold'
                      : isPos ? 'green' : isNeg ? 'red' : '';
 
@@ -33974,7 +35483,11 @@ function rpBuildVotingPlans(ep) {
     <div class="rp-eyebrow">Episode ${ep.num} \u2014 Before the Vote${_vpTribeLabel}</div>
     <div class="rp-title" style="color:${tc}">Voting Plans</div>
     <div class="rp-vp-subtitle">As ${tribalTribeName || 'the tribe'} approaches tribal, alliances converge and targets emerge\u2026</div>
-    ${ep.firstEliminated && (ep.twists||[]).some(t => t.catalogId === 'double-elim') ? `<div style="background:rgba(210,153,34,0.06);border:1px solid rgba(210,153,34,0.2);border-radius:6px;padding:10px 14px;margin-bottom:4px;font-size:12px;color:#d29922">&#x26A1; <strong>Double Elimination</strong> &mdash; Jeff announced it before tribal. Two players are going home tonight. One vote — the top two vote-getters both go.</div>` : ''}`;
+    ${ep.firstEliminated && (ep.twists||[]).some(t => t.catalogId === 'double-elim') ? `<div style="background:rgba(210,153,34,0.06);border:1px solid rgba(210,153,34,0.2);border-radius:6px;padding:10px 14px;margin-bottom:4px;font-size:12px;color:#d29922">&#x26A1; <strong>Double Elimination</strong> &mdash; Jeff announced it before tribal. Two players are going home tonight. One vote — the top two vote-getters both go.</div>` : ''}
+    ${ep.volunteerDuel ? `<div style="background:rgba(129,140,248,0.06);border:1px solid rgba(129,140,248,0.2);border-radius:6px;padding:10px 14px;margin-bottom:4px;font-size:12px;color:#818cf8;display:flex;align-items:center;gap:8px">
+      ${rpPortrait(ep.volunteerDuel.volunteer, 'sm')}
+      <div><strong>${ep.volunteerDuel.volunteer}</strong> volunteered to be voted out to face <strong>${ep.volunteerDuel.rival}</strong> at the exile duel. ${ep.volunteerDuel.granted ? 'The tribe granted the request.' : 'The tribe had other priorities.'}</div>
+    </div>` : ''}`;
 
   // ── Immune banners ──
   const _allImmuneVP = [...new Set([immunity, ep.sharedImmunity, ep.secondImmune, ...(ep.extraImmune || [])].filter(Boolean))];
@@ -36228,7 +37741,7 @@ function rpBuildVotes(ep) {
   const _whyBullets = (name, votelog, alliances) => vpWhyBullets(name, votelog, alliances, ep);
   const _whyCard = vpWhyCard;
 
-  const _whyElim = ep.eliminated;
+  const _whyElim = ep.exileDuelVotedOut || ep.eliminated; // exile duel: WHY is about who was voted out, not who lost the duel
   if (_whyElim) {
     let _whyInner = '';
 
@@ -36306,6 +37819,22 @@ function rpBuildVotes(ep) {
     } else if (!ep.sidFreshVote) {
       // Standard elimination (fresh vote WHY is inside the fresh vote interactive section above)
       _whyInner = _whyCard(_whyElim, _whyBullets(_whyElim, ep.votingLog, ep.alliances), `${_whyElim} was voted out because:`);
+    }
+
+    // Volunteer Exile Duel context in WHY
+    if (ep.volunteerDuel && _whyInner) {
+      const vd = ep.volunteerDuel;
+      if (vd.granted && _whyElim === vd.volunteer) {
+        _whyInner += `<div style="margin-top:12px;padding:10px;border:1px solid rgba(129,140,248,0.2);border-radius:8px;background:rgba(129,140,248,0.04)">
+          <div style="font-size:10px;color:#818cf8;font-weight:700;letter-spacing:1px;margin-bottom:4px">VOLUNTEER EXILE DUEL</div>
+          <div style="font-size:12px;color:#c9d1d9">${vd.volunteer} volunteered to be voted out — asked the tribe to send ${pronouns(vd.volunteer).obj} to face ${vd.rival} at the duel. The tribe agreed.</div>
+        </div>`;
+      } else if (!vd.granted) {
+        _whyInner += `<div style="margin-top:12px;padding:10px;border:1px solid rgba(139,148,158,0.15);border-radius:8px;background:rgba(139,148,158,0.03)">
+          <div style="font-size:10px;color:#8b949e;font-weight:700;letter-spacing:1px;margin-bottom:4px">VOLUNTEER REJECTED</div>
+          <div style="font-size:12px;color:#8b949e">${vd.volunteer} volunteered for the duel against ${vd.rival}, but the tribe had other priorities tonight.</div>
+        </div>`;
+      }
     }
 
     if (_whyInner) {
@@ -41392,9 +42921,10 @@ function buildVPScreens(epRecord) {
       }
       const snapActive = ep.gsSnapshot?.activePlayers || [];
       const eliminated = [ep.eliminated, ep.firstEliminated].filter(Boolean);
-      const members = snapActive.length
+      const _exilePlayer = ep.exileDuelPlayerAtStart || ep.exilePlayer || ep.gsSnapshot?.exileDuelPlayer || gs.exileDuelPlayer;
+      const members = (snapActive.length
         ? [...new Set([...snapActive, ...eliminated])]
-        : [...gs.activePlayers];
+        : [...gs.activePlayers]).filter(p => p !== _exilePlayer);
       return [{ name: _mergeKey, members }];
     }
     if (ep.tribesAtStart?.length) return ep.tribesAtStart;
@@ -41403,6 +42933,10 @@ function buildVPScreens(epRecord) {
     if (gs.phase === 'pre-merge' && gs.tribes?.length) return gs.tribes;
     return [{ name: gs.mergeName || 'merged', members: [...gs.activePlayers] }];
   })();
+
+  // ── 3a. Fan Vote Return (player returns at start of episode) ──
+  const _fvReturnHtml = rpBuildFanVoteReturn(ep);
+  if (_fvReturnHtml) vpScreens.push({ id: 'fan-vote-return', label: 'Fan Vote Return', html: _fvReturnHtml });
 
   // ── 3b. Tied Destinies announcement (before camp — pairing is revealed at episode start) ──
   const _tdAnnounceHtml = rpBuildTiedDestinies(ep);
@@ -42008,6 +43542,123 @@ function buildVPScreens(epRecord) {
 
     // Aftermath
     vpScreens.push({ id:'aftermath', label:'Aftermath', html: rpBuildAftermath(ep) });
+  }
+
+  // ── Aftermath Show screens ──
+  if (ep.aftermath) {
+    const _am = ep.aftermath;
+    const _amDot = `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#6366f1;margin-right:6px;flex-shrink:0"></span>`;
+    // Opening
+    const _amOpen = rpBuildAftermathOpening(ep);
+    if (_amOpen) vpScreens.push({ id: 'aftermath-opening', label: `${_amDot}${_am.isReunion ? 'The Reunion' : 'Aftermath Opening'}`, html: _amOpen });
+    // Interviews
+    _am.interviews.filter(iv => !iv.isActive).forEach((iv, i) => {
+      const _amIv = rpBuildAftermathInterview(ep, iv);
+      if (_amIv) vpScreens.push({ id: `aftermath-iv-${i}`, label: `${_amDot}Interview — ${iv.player}`, html: _amIv });
+    });
+    // Truth or Anvil
+    const _amTruth = rpBuildAftermathTruth(ep);
+    // Aftermath Moments (MULTIPLE) — dialogue-driven
+    const _momLabels = { confrontation: 'Confrontation', gallery_eruption: 'Gallery Eruption', emotional: 'Emotional Moment', standing_ovation: 'Standing Ovation', host_roast: 'Host Roast' };
+    const _momColors = { confrontation: '#ef4444', gallery_eruption: '#ec4899', emotional: '#8b949e', standing_ovation: '#10b981', host_roast: '#f59e0b' };
+    (_am.aftermathMoments || []).forEach((_mom, mi) => {
+      const _momCol = _momColors[_mom.type] || '#f59e0b';
+      let _momHtml = `<div class="rp-page tod-studio">
+        <div class="aftermath-live">LIVE</div>
+        <div class="aftermath-title" style="font-size:22px;text-align:center;margin:16px 0 16px;color:${_momCol}">${_momLabels[_mom.type] || 'AFTERMATH MOMENT'}</div>`;
+
+      // Portraits
+      if (_mom.type !== 'host_roast' && _mom.players?.length) {
+        _momHtml += `<div style="display:flex;justify-content:center;gap:16px;margin-bottom:16px">${_mom.players.map(p => `<div style="text-align:center">${rpPortrait(p, 'lg')}<div style="font-size:11px;color:#f5f0e8;font-weight:600;margin-top:4px">${p}</div></div>`).join('')}</div>`;
+      }
+
+      // Dialogue lines (confrontation, gallery eruption)
+      if (_mom.dialogue?.length) {
+        const _hostName = seasonConfig.host || 'Chris';
+        _mom.dialogue.forEach(line => {
+          const _isHost = line.speaker === _hostName;
+          const _speakerCol = _isHost ? '#f59e0b' : _momCol;
+          const _bgCol = _isHost ? 'rgba(245,158,11,0.04)' : `${_momCol}08`;
+          const _borderCol = _isHost ? 'rgba(245,158,11,0.15)' : `${_momCol}20`;
+          _momHtml += `<div style="display:flex;align-items:flex-start;gap:8px;padding:10px;margin-bottom:6px;background:${_bgCol};border:1px solid ${_borderCol};border-radius:8px">
+            ${!_isHost ? rpPortrait(line.speaker, 'sm') : '<div style="font-size:20px;width:36px;text-align:center">🎤</div>'}
+            <div style="flex:1">
+              <div style="font-size:10px;color:${_speakerCol};font-weight:700">${line.speaker}</div>
+              <div style="font-size:13px;color:#f5f0e8;line-height:1.6">${line.text}</div>
+            </div>
+          </div>`;
+        });
+      }
+
+      // Text fallback (emotional, standing ovation)
+      if (_mom.text && !_mom.dialogue?.length) {
+        _momHtml += `<div class="aftermath-card-gold" style="text-align:center">
+          <div style="font-size:14px;color:#f5f0e8;line-height:1.7;font-style:italic">${_mom.text}</div>
+        </div>`;
+      }
+
+      // Host roast cards
+      if (_mom.type === 'host_roast' && _mom.roasts?.length) {
+        _momHtml += `<div style="font-size:13px;color:#f5f0e8;font-style:italic;text-align:center;margin-bottom:12px">${_mom.text}</div>`;
+        _mom.roasts.forEach((roast, ri) => {
+          _momHtml += `<div style="display:flex;align-items:center;gap:10px;padding:10px;margin-bottom:6px;background:rgba(245,158,11,0.03);border:1px solid rgba(245,158,11,0.12);border-radius:8px;animation:slideInLeft ${0.3 + ri * 0.15}s both">
+            ${rpPortrait(_mom.players[ri], 'sm')}
+            <div style="flex:1">
+              <div style="font-size:10px;color:#f59e0b;font-weight:700">${seasonConfig.host || 'Chris'}</div>
+              <div style="font-size:13px;color:#f5f0e8;line-height:1.5">${roast}</div>
+            </div>
+          </div>`;
+        });
+      }
+
+      _momHtml += `</div>`;
+      vpScreens.push({ id: `aftermath-moment-${mi}`, label: `${_amDot}${_momLabels[_mom.type] || 'Moment'}`, html: _momHtml });
+    });
+    if (_amTruth) vpScreens.push({ id: 'aftermath-truth', label: `${_amDot}Truth or Anvil`, html: _amTruth });
+    // Unseen Footage
+    const _amFootage = rpBuildAftermathFootage(ep);
+    if (_amFootage) vpScreens.push({ id: 'aftermath-footage', label: `${_amDot}Unseen Footage`, html: _amFootage });
+    // Fan Call
+    const _amFanCall = rpBuildAftermathFanCall(ep);
+    if (_amFanCall) vpScreens.push({ id: 'aftermath-fancall', label: `${_amDot}Fan Call`, html: _amFanCall });
+    // Fan Vote
+    const _amFanVote = rpBuildAftermathFanVote(ep);
+    if (_amFanVote) vpScreens.push({ id: 'aftermath-fanvote', label: `${_amDot}Fan Vote`, html: _amFanVote });
+    // Reunion: Winner Interview + Awards
+    if (_am.isReunion) {
+      // All finalists get interviews — winner + runner(s) up
+      const _finalistIvs = _am.interviews.filter(iv => iv.isActive);
+      _finalistIvs.forEach((fiv, fi) => {
+        const _isWinner = fiv.player === ep.winner;
+        const _fLabel = _isWinner ? 'Winner Interview' : `Runner-Up — ${fiv.player}`;
+        const _fivHtml = rpBuildAftermathInterview(ep, fiv);
+        if (_fivHtml) vpScreens.push({ id: `aftermath-finalist-${fi}`, label: `${_amDot}${_fLabel}`, html: _fivHtml });
+      });
+      // Reunion Discussion — group topics with dialogue
+      if (_am.reunionDiscussion?.length) {
+        _am.reunionDiscussion.forEach((topic, ti) => {
+          let _tdHtml = `<div class="rp-page tod-studio">
+            <div class="aftermath-live">LIVE</div>
+            <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:#f59e0b;text-align:center;margin-bottom:4px">THE REUNION</div>
+            <div class="aftermath-title" style="font-size:20px;text-align:center;margin-bottom:16px">${topic.title}</div>`;
+          topic.lines.forEach(line => {
+            const _isHost = line.speaker === (seasonConfig.host || 'Chris');
+            const _spCol = _isHost ? '#f59e0b' : '#ec4899';
+            _tdHtml += `<div style="display:flex;align-items:flex-start;gap:8px;padding:10px;margin-bottom:6px;background:${_isHost ? 'rgba(245,158,11,0.04)' : 'rgba(236,72,153,0.04)'};border:1px solid ${_isHost ? 'rgba(245,158,11,0.15)' : 'rgba(236,72,153,0.12)'};border-radius:8px">
+              ${!_isHost && players.find(p => p.name === line.speaker) ? rpPortrait(line.speaker, 'sm') : '<div style="font-size:20px;width:36px;text-align:center">🎤</div>'}
+              <div style="flex:1">
+                <div style="font-size:10px;color:${_spCol};font-weight:700">${line.speaker}</div>
+                <div style="font-size:13px;color:#f5f0e8;line-height:1.6">${line.text}</div>
+              </div>
+            </div>`;
+          });
+          _tdHtml += `</div>`;
+          vpScreens.push({ id: `aftermath-discussion-${ti}`, label: `${_amDot}${topic.title}`, html: _tdHtml });
+        });
+      }
+      const _amAwards = rpBuildAftermathAwards(ep);
+      if (_amAwards) vpScreens.push({ id: 'aftermath-awards', label: `${_amDot}Season Awards`, html: _amAwards });
+    }
   }
 
   // ── Debug screen (toggleable) ──

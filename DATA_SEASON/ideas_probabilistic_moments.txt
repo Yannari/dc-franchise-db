@@ -62,6 +62,24 @@ and the downstream consequence. None are guaranteed — all fire on a roll.
   at ~35% of intuition's weight. Pattern: intuition*X + mental*X*0.35 across Mole suspicion,
   perceived bond correction, info broker exposure, fake idol detection, advantage snooping,
   false info early detection. Keeps mental primarily a challenge stat.
+[DONE] [KL-2] TIED DESTINIES — schedulable post-merge twist. Players randomly paired.
+  Paired immunity challenge (combined stats + bond synergy). Partners can't vote each other.
+  computeHeat factors pair threat. Vote someone out → partner eliminated too. Double elim.
+  Pair-specific camp events (tension/reluctance/strategy). Dedicated VP announcement screen
+  with reactions. Click-to-reveal paired challenge results. Partner gets full elimination card
+  with "Tied Destinies has spoken." Even player count required.
+[DONE] [17] VOLUNTEER EXILE DUEL — bold/impulsive player asks to be voted out to face
+  rival at exile duel. Trigger: boldness*0.015 + (10-temperament)*0.01, bond <= -3 with
+  exile player. +8 heat + +5 pickTarget boost (almost guarantees tribe grants request).
+  Alliance target override. Once per game. Grudge bonus on win: -2 heat, -2 bond, +5 pop.
+  Exile Duel re-added to twist catalog (incompatible with RI only).
+  Exile player properly excluded from camp/challenges/VP while on exile.
+[DONE] New camp events: teachingMoment, vulnerability, insideJoke, loyaltyProof (positive);
+  jealousy, exclusion, blame, passiveAggressive, trustCrack (negative). All stat-gated.
+[DONE] Bond system rebalance: recoverBonds weakened (threshold -3.0, cap -2.0, rate halved).
+  Alliance formation bond halved (+0.2). Recruitment bond halved (+0.25). Loyalty glue halved
+  (+0.06). Positive bond cooling above +4.0. Social boost adds negative event weight too.
+  Event weights 55/45 positive/negative. VP relationship display uses episode snapshot.
 
 
 ── REMAINING — RANKED BY PRIORITY ─────────────────────────────────────────────
@@ -80,19 +98,97 @@ and the downstream consequence. None are guaranteed — all fire on a roll.
   Roll: ~15% if locked-in finalist has jury member with bond <= 0
   Mechanic: re-rolls one borderline juror's vote. Only fires when margin is narrow.
 
-[17] VOLUNTEER EXILE DUEL — ASK TO BE ELIMINATED
-  Trigger: strategic >= 8, bond <= -3 with exile, ep >= 3
-  Roll: ~20% once per game. Player engineers own boot to face rival at duel.
-  Note: needs RI/exile infrastructure active.
-
 [DC-2] EMISSARY VOTE (Disventure Camp twist)
   Trigger: schedulable, post-immunity (pre-merge only).
   Mechanic: winning tribe sends emissary to losing tribe's tribal. Emissary casts
     a sole vote to eliminate an additional player. Double elimination.
   Note: inspired by Disventure Camp 1. One-off or rare twist.
 
+[DR-1] THE CLASS TRIAL (Danganronpa-inspired twist)
+  Trigger: schedulable, post-merge, one episode.
+  Mechanic: One player randomly chosen as "The Blackened" — commits a camp crime
+    (steals food, hides advantage, sabotages supplies). Tribe investigates via
+    stat-gated Truth Bullet events (intuition * 0.06, mental * 0.04, social * 0.05).
+    The Blackened plants Red Herrings (strategic * 0.05). Low-temperament Blackened
+    may crack under pressure. At tribal, a Class Trial replaces the normal vote —
+    players vote on who they think is guilty based on evidence scores, not alliances.
+  Outcomes:
+    Correct (majority identifies Blackened): EXECUTION — Blackened eliminated, crime
+      reversed, detective gets bond + popularity boost, tribe trust restored.
+    Wrong (majority picks innocent): WRONGFUL CONVICTION — innocent eliminated,
+      Blackened gets immunity next ep, crime stays, trust damage -0.5 across tribe,
+      next-ep reveal event.
+  VP: dedicated screens for The Crime, Investigation (TRUTH BULLET / MISLEADING badges),
+    Class Trial (accusation/defense/closing argument), The Verdict (EXECUTION or
+    WRONGFUL CONVICTION), The Truth (viewer-only Blackened reveal if wrong).
+  Note: complex — evidence system, trial vote mechanics, 6 new camp event types.
+    Compatible with The Mole (Mole can be Blackened). Incompatible with no-tribal.
+
+[TD-6] LOVE TRIANGLES
+  Problem: showmance system only handles pairs. TD is famous for triangles
+    (Duncan/Courtney/Gwen) where A loves B, B is drawn to C, A becomes jealous of C.
+  Mechanic: when two showmance-compatible players both have bond >= 3 with the same
+    person, a triangle forms. Creates jealousy events, forced alliance breaks, split
+    votes around the triangle. The center player must choose or lose both.
+  Events: jealousy confrontation, "pick one" ultimatum, triangle meltdown, resolution
+    (picks one → other becomes rival, or stays ambiguous → both lose trust).
+  Note: extends existing showmance system. Needs romanticCompat 3-way check.
+
+[TD-7] CHALLENGE CHEATING
+  Problem: only the Mole sabotages challenges. Regular players should cheat to WIN.
+  Mechanic: bold + low-loyalty players can cheat during challenges (extra time, stealing
+    pieces, sabotaging opponent equipment). Proportional: boldness * 0.02 + (10-loyalty) * 0.015.
+  Detection: high-intuition witnesses roll to catch the cheater (intuition * 0.04).
+  Caught: -1.5 bond with witnesses, heat spike, camp drama event. Disqualified from challenge.
+  Uncaught: challenge score boosted +2 to +4. The tribe suspects but can't prove it.
+  Camp events: caught-cheating confrontation, suspicious-performance whispers, denial.
+  Note: different from Mole (cheating to WIN, not to lose). Once per player per season.
+
+[TD-10] CHAIN OF COMMAND
+  Trigger: schedulable, post-merge only. Replaces normal vote.
+  Mechanic: immunity winner starts a chain by picking someone safe. That person picks
+    the next, and so on. Players can only pick those not yet chosen. Last person
+    unpicked is eliminated. No vote — pure social selection.
+  Targeting: each pick is bond-weighted (wRandom on perceived bond + alliance membership).
+    Early picks = close allies. Middle picks = the awkward "who do I save?" zone.
+    Last pick = devastating public rejection.
+  Consequences: creates a PUBLIC pecking order record. Late picks cause bond damage
+    ("you picked me 7th out of 8"). Early picks confirm loyalty. Camp events next
+    episode: confrontation about pick order, gratitude for early picks, resentment
+    for late picks.
+  VP: dedicated screen showing the chain forming one by one (click-to-reveal). Each
+    pick shows portrait + who picked them + reaction. Last person gets elimination card.
+  Note: best at 8-10 players. Too short at F5. Entirely social — no stats in the chain,
+    just relationships. The immunity winner has massive power (sets the tone for who's
+    valued and who's expendable).
+
+[TD-8] FEAR FACTOR CHALLENGE
+  Trigger: schedulable twist, overrides immunity challenge. Pre-merge AND post-merge versions.
+  Mechanic: challenge is gated by temperament/boldness. Each round, players face something
+    scary/disgusting. They can REFUSE — refusing = automatic last place / sit out.
+  Pre-merge: tribe challenge format. Players who refuse weaken their tribe. Tribe with
+    most refusals loses. Creates blame events against refusers.
+  Post-merge: individual format. Refusers are out. Last person standing wins immunity.
+    Creates drama when a physical threat refuses and goes home vulnerable.
+  Refuse chance: (10 - temperament) * 0.06 + (10 - boldness) * 0.04. High-temperament
+    high-boldness players almost never refuse. Low-both players bail constantly.
+  Events: refusal shame, "I can't do this" moment, clutch completion, tribe pressure.
+  Note: overrides normal challenge for the episode. Needs pre-merge tribe format +
+    post-merge individual format.
+
   LOW PRIORITY
   ────────────
+
+[TD-9] HOST INTERFERENCE (optional system)
+  Problem: some seasons are too stable/predictable. Chris McLean wouldn't allow that.
+  Mechanic: optional toggle in config. Each episode, engine checks "drama score" (count of
+    fights, betrayals, social bombs, alliance cracks from last 2 episodes). If drama is LOW
+    (score < 3), 40% chance production injects a random unscheduled mini-twist:
+    - Surprise tribe swap, public vote reveal, forced rival reward sharing,
+      bottom player gets secret advantage, immunity revocation, forced confession.
+  Auto-correcting: high drama → production sits back. Low drama → chaos injected.
+  VP: HOST INTERFERENCE badge, dedicated announcement event.
+  Note: LOW PRIORITY — user still considering. Optional toggle, never mandatory.
 
 [TD-3] TRIBE RAID
   Trigger: schedulable, post-challenge (pre-merge only).
@@ -112,11 +208,6 @@ and the downstream consequence. None are guaranteed — all fire on a roll.
 [14] REWARD TRIP BONDING BACKFIRE
   Trigger: reward with 2-3 winners, one has high-bond pair outside group.
   Mechanic: left-behind players form counter-alliance. ~15% roll.
-
-[KL-2] TIED DESTINIES (Koh-Lanta twist)
-  Trigger: post-merge, F8/10/12. Players randomly paired.
-  Mechanic: voted-out player causes partner's elimination too. Double elim.
-  Note: complex — needs pair-aware voting, double elimination path.
 
 [10] THE GOAT MUTINY
   Trigger: 2 goats on same tribe, ep >= 8. ~20% once per game.

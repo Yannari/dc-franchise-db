@@ -3676,6 +3676,24 @@ function computeHeat(name, tribalPlayers, alliances) {
     const _stratVoters = tribalPlayers.filter(p => pStats(p).strategic * 0.1 > 0.6);
     if (_stratVoters.length && gs.isMerged) heat += _stratVoters.length * 0.3; // late-game jury threat targeting
   }
+  // ── Jury Management: strategic players factor FTC math into targeting ──
+  // Only post-merge, 8 or fewer active, jury-decided finale
+  if (gs.activePlayers.length <= 8 && (gs.jury?.length || 0) >= 1) {
+    const _jury = gs.jury || [];
+    const _targetJuryVotes = _jury.filter(j => getBond(j, name) >= 2).length;
+    // Each strategic voter at tribal runs the math
+    tribalPlayers.filter(p => p !== name && pStats(p).strategic >= 6).forEach(voter => {
+      const _myJuryVotes = _jury.filter(j => getBond(j, voter) >= 2).length;
+      const _juryAdv = _targetJuryVotes - _myJuryVotes;
+      if (_juryAdv > 0) {
+        // Target would beat me at FTC — I need them gone
+        heat += _juryAdv * 0.4;
+      } else if (_juryAdv < 0) {
+        // I would beat target — protect them, they're my goat
+        heat -= 0.5;
+      }
+    });
+  }
   // Legacy holder — known holders are late-game threats (they have guaranteed immunity coming)
   const _nameHasLegacy = gs.advantages?.some(a => a.type === 'legacy' && a.holder === name);
   if (_nameHasLegacy) {

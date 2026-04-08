@@ -16461,6 +16461,7 @@ function checkLoveTriangleFormation(ep) {
             const _afBlock = ep.campEvents[_afTribe];
             const _afEvts = Array.isArray(_afBlock) ? _afBlock : (_afBlock.post || _afBlock.pre || []);
             const _afPc = pronouns(inShowmance);
+            const _pick = arr => arr[Math.floor(Math.random() * arr.length)];
             _afEvts.push({ type: 'affairSecret', text: _pick([
               `${inShowmance} has been finding excuses to be alone with ${candidate}. ${partner} doesn't notice. The cameras do.`,
               `Something shifted between ${inShowmance} and ${candidate}. It's subtle — a glance held too long, a conversation that goes quiet when ${partner} walks over. The game just got complicated.`,

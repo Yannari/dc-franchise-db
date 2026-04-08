@@ -13029,7 +13029,7 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
         `${p} checks behind the same rock for the third time this week. The idol isn't there. The paranoia is.`,
         `${p} comes back from a "walk" with dirt on ${_srP.posAdj} hands and a face that says nothing. The tribe reads everything.`,
       ];
-      events.push({ type: 'idolSearch', text: searchLines[Math.floor(Math.random() * searchLines.length)] });
+      events.push({ type: 'idolSearch', text: searchLines[Math.floor(Math.random() * searchLines.length)], players: [p] });
 
     } else if (eventType === 'injury') {
       // Low survival = more injury-prone (weakened body). Survival 80 = 1x, 40 = 1.6x, 20 = 2.2x
@@ -13855,7 +13855,7 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
         : [`${p} notices something the rest of the tribe missed. ${_rrP.Sub} don't${_rrP.sub==='they'?'':'es'} say it out loud. Not yet.`,
            `${p} watches two people talk across camp and reads the whole dynamic from body language alone.`,
            `${p} has been paying quiet attention. More than anyone realized. The picture ${_rrP.sub} ${_rrP.sub==='they'?'have':'has'} is fuller than everyone else's.`];
-      events.push({ type: 'readingRoom', text: rrLines[Math.floor(Math.random() * rrLines.length)] });
+      events.push({ type: 'readingRoom', text: rrLines[Math.floor(Math.random() * rrLines.length)], players: [p] });
 
     } else if (eventType === 'allianceCrack') {
       const naMembers = group.filter(n => gs.namedAlliances?.some(a => a.active && a.members.includes(n) && a.members.some(m => group.includes(m) && m !== n)));
@@ -36607,6 +36607,8 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'soleVoteAccomplice'    ? 'ACCOMPLICE?'
                      : evt.type === 'miscommunicationFallout' ? (evt.badgeText || 'MISFIRE')
                      : evt.type === 'hardWork'             ? '+ Earned respect'
+                     : evt.type === 'readingRoom'          ? '👁 Reading the Room'
+                     : evt.type === 'idolSearch'           ? '🔍 Searching'
                      : evt.type === 'paranoia'             ? '⚠ Spiraling'
                      : evt.type === 'strategicApproach'    ? '⚡ Making Moves'
                      : evt.type === 'unexpectedCompetence' ? '+ Surprised the tribe'
@@ -36793,7 +36795,8 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'providerFishing' || evt.type === 'providerForaging' || evt.type === 'providerPraised' || evt.type === 'foodRationing' ? 'gold'
                      : evt.type === 'slackerBonding' || evt.type === 'starvationBond' ? 'green'
                      : evt.type === 'slackerCalledOut' || evt.type === 'slackerConfrontation' || evt.type === 'foodConflict' || evt.type === 'foodHoarding' || evt.type === 'foodCrisis' || evt.type === 'survivalCollapse' || evt.type === 'medevac' || evt.type === 'providerVotedOut' ? 'red'
-                     : evt.type === 'sideDeal' || evt.type === 'infoTrade' || evt.type === 'loyaltyTest' || evt.type === 'votePitch' || evt.type === 'strategicApproach' ? 'gold'
+                     : evt.type === 'sideDeal' || evt.type === 'infoTrade' || evt.type === 'loyaltyTest' || evt.type === 'votePitch' || evt.type === 'strategicApproach' || evt.type === 'readingRoom' ? 'gold'
+                     : evt.type === 'idolSearch' ? 'gold'
                      : evt.type === 'paranoia' ? 'red'
                      : evt.type === 'apology' ? 'green'
                      : evt.type === 'votePitchFailed' ? 'red'

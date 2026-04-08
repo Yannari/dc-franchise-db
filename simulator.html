@@ -3048,10 +3048,14 @@ function updatePerceivedBonds(ep) {
           ]
         };
         const variants = _realizationText[entry.reason] || [`${from} finally sees the truth about ${to}.`];
-        ep.campEvents[campKey].pre.push({
-          type: 'perceptionRealization', players: [from, to],
-          text: _pick(variants), badgeText: 'WAKE-UP CALL', badgeClass: 'red'
-        });
+        // Cap wake-up call events at 2 per episode to avoid flooding camp feed
+        const _wakeUpCount = ep.campEvents[campKey].pre.filter(e => e.type === 'perceptionRealization').length;
+        if (_wakeUpCount < 2) {
+          ep.campEvents[campKey].pre.push({
+            type: 'perceptionRealization', players: [from, to],
+            text: _pick(variants), badgeText: 'WAKE-UP CALL', badgeClass: 'red'
+          });
+        }
       }
       // Consequences based on gap size
       const _entryGap = Math.abs(entry.perceived - real) / Math.max(0.01, 1 - Math.min(1, rate)); // estimate original gap

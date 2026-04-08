@@ -23902,6 +23902,14 @@ function updatePopularity(ep) {
       case 'showmanceTarget':     if (ps?.[0]) add(ps[0], 'drama', 2, evt.type); break;
       case 'showmanceJealousy':   if (ps?.[0]) { add(ps[0], 'drama', 3, evt.type); add(ps[0], 'like', -1, evt.type); } break;
       case 'showmanceRideOrDie':  if (ps?.[0]) { add(ps[0], 'drama', 2, evt.type); add(ps[0], 'like', 2, evt.type); } break;
+      case 'showmanceRekindle':  if (ps?.[0]) { add(ps[0], 'drama', 3, evt.type); add(ps[0], 'like', 2, evt.type); } break;
+      // Love triangle — drama + likability penalties for center (cheater), sympathy for rejected
+      case 'triangleTension':    if (ps?.[0]) add(ps[0], 'drama', 2, evt.type); break;
+      case 'triangleConfrontation': if (ps) { ps.forEach(n => add(n, 'drama', 2, evt.type)); } break;
+      case 'triangleEscalation': if (ps) { ps.forEach(n => add(n, 'drama', 2, evt.type)); } break;
+      case 'trianglePublicFight':if (ps) { ps.forEach(n => add(n, 'drama', 3, evt.type)); } break;
+      case 'triangleUltimatum':  if (ps) { ps.forEach(n => add(n, 'drama', 4, evt.type)); } break;
+      case 'triangleResolved':   if (ps) { ps.forEach(n => add(n, 'drama', 2, evt.type)); } break;
       case 'bigMoveThoughts':     if (p)       add(p, 'drama', 2, evt.type); break;
       case 'allianceCrack':       if (ps?.[0]) add(ps[0], 'drama', 2, evt.type); break;
       case 'confessional':        if (p)       add(p, 'drama', 1, evt.type); break;
@@ -23937,6 +23945,24 @@ function updatePopularity(ep) {
   (ep.socialBombs || []).forEach(sb => {
     add(sb.player, 'like', -1, 'socialBomb');
   });
+
+  // ── Showmance betrayal: voted out your own partner → likability crash ──
+  if (ep.showmanceBreakup?.voter) {
+    add(ep.showmanceBreakup.voter, 'like', -3, 'showmanceBetrayal');
+    add(ep.showmanceBreakup.voter, 'drama', 3, 'showmanceBetrayal');
+  }
+  // Showmance separation (didn't vote them): sympathy for survivor
+  if (ep.showmanceSeparation?.survivor) {
+    add(ep.showmanceSeparation.survivor, 'like', 1, 'showmanceSeparation');
+    add(ep.showmanceSeparation.survivor, 'under', 2, 'showmanceSeparation');
+  }
+  // ── Love triangle resolution: center penalized, rejected gets sympathy ──
+  if (ep.triangleResolution) {
+    const _tr = ep.triangleResolution;
+    add(_tr.center, 'like', -2, 'triangleCheater');       // led two people on
+    add(_tr.rejected, 'like', 2, 'triangleRejected');     // sympathy vote
+    add(_tr.rejected, 'under', 3, 'triangleRejected');    // underdog boost
+  }
 
   // ── Tribal blowup: +3 drama to the player who caused it ──
   if (ep.tribalBlowup?.player) {

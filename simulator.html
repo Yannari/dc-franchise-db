@@ -16352,7 +16352,7 @@ function checkLoveTriangleFormation(ep) {
             `volunteering for the same tasks. ${partner} watches from across camp, jaw tightening. ` +
             `${pCand.Sub} might not call it a crush, but ${partner} already has a word for it.`,
             `There's a new energy around ${inShowmance} that ${partner} can't quite name. ${candidate} lights up whenever ${pc.sub} walks over, ` +
-            `laughs a half-second too long at ${pc.pos} jokes. It hasn't crossed any lines yet — but the line is getting thinner every day.`
+            `laughs a half-second too long at ${pc.posAdj} jokes. It hasn't crossed any lines yet — but the line is getting thinner every day.`
           ];
           evts.push({ type: 'triangleTension', text: variants[Math.random() < 0.5 ? 0 : 1], players: [inShowmance, partner, candidate] });
         }
@@ -16409,11 +16409,26 @@ function updateLoveTrianglePhases(ep) {
     const bondC = getBond(center, suitorC);
     if (bondA < 1.0 || bondC < 1.0) {
       tri.resolved = true;
+      tri.phase = 'resolved';
       const droppedSuitor = bondA < 1.0 ? suitorA : suitorC;
       const survivingBond = droppedSuitor === suitorA ? suitorC : suitorA;
       tri.resolution = { type: 'organic', ep: epNum, survivingBond };
       ep.triangleEvents = ep.triangleEvents || [];
       ep.triangleEvents.push({ type: 'organic-resolve', phase: tri.phase, center, suitors: [suitorA, suitorC], survivingBond });
+      // Push visible camp event so the resolution isn't silent
+      const _orgTribe = gs.isMerged ? 'merge' : (gs.tribes.find(t => t.members.includes(center))?.name || 'merge');
+      if (ep.campEvents?.[_orgTribe]) {
+        const _orgBlock = ep.campEvents[_orgTribe];
+        const _orgEvts = Array.isArray(_orgBlock) ? _orgBlock : (_orgBlock.post || _orgBlock.pre || []);
+        const _pDrop = pronouns(droppedSuitor);
+        const _pick = arr => arr[Math.floor(Math.random() * arr.length)];
+        _orgEvts.push({ type: 'triangleResolved', text: _pick([
+          `It ended quietly. ${center} stopped looking at ${droppedSuitor} the way ${pronouns(center).sub} used to. No fight, no ultimatum — just distance. ${survivingBond} is still there. The triangle isn't.`,
+          `The triangle dissolved without a word. ${droppedSuitor} noticed first — ${_pDrop.sub} could feel ${center} pulling away. By the time ${_pDrop.sub} accepted it, it was already over.`,
+          `${center} and ${droppedSuitor} barely talk anymore. Whatever spark was there burned out on its own. ${survivingBond} won without having to fight for it.`,
+          `The triangle resolved itself. ${center} drifted away from ${droppedSuitor} naturally — no dramatic confrontation, just the slow fade of something that was never going to last.`,
+        ]), players: [center, survivingBond, droppedSuitor] });
+      }
       return;
     }
 
@@ -33403,6 +33418,7 @@ function rpBuildDebug(ep) {
       ${_tabBtn('bonds', 'Perceived Bonds')}
       ${_tabBtn('history', 'Hidden Moves')}
       ${gs.moles?.length ? _tabBtn('mole', 'The Mole') : ''}
+      ${(gs.showmances?.length || gs.loveTriangles?.length) ? _tabBtn('romance', 'Romance') : ''}
     </div>`;
 
   // ════════════════════════════════════════════════
@@ -33836,6 +33852,78 @@ function rpBuildDebug(ep) {
         Mode: <span style="color:#f0883e;font-weight:700">${seasonConfig.moleCoordination === 'coordinated' ? 'COORDINATED' : 'INDEPENDENT'}</span>
       </div>`;
     }
+  }
+
+  // ════════════════════════════════════════════════
+  // TAB: ROMANCE (Showmances + Love Triangles)
+  // ════════════════════════════════════════════════
+  if (_dbTab === 'romance') {
+    const _showmances = snap.showmances || gs.showmances || [];
+    const _triangles = snap.loveTriangles || gs.loveTriangles || [];
+
+    // Showmances
+    html += `<div style="margin-bottom:16px">
+      <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#d29922;margin-bottom:8px">SHOWMANCES (${_showmances.length})</div>`;
+    if (_showmances.length) {
+      _showmances.forEach(sh => {
+        const [a, b] = sh.players;
+        const bond = getBond(a, b);
+        const phaseCol = sh.phase === 'broken-up' ? '#f47067' : sh.phase === 'ride-or-die' ? '#3fb950' : sh.phase === 'target' ? '#f0883e' : '#d29922';
+        html += `<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;margin-bottom:4px;border:1px solid rgba(255,255,255,0.06);border-radius:6px;background:rgba(139,148,158,0.03)">
+          ${rpPortrait(a, 'sm')}
+          <span style="color:#e6edf3;font-weight:600">${a}</span>
+          <span style="color:#6e7681">♥</span>
+          <span style="color:#e6edf3;font-weight:600">${b}</span>
+          ${rpPortrait(b, 'sm')}
+          <div style="margin-left:auto;text-align:right">
+            <div style="font-size:10px;color:${phaseCol};font-weight:700;text-transform:uppercase">${sh.phase}</div>
+            <div style="font-size:9px;color:#6e7681">Bond: ${bond.toFixed(1)} | Ep ${sh.sparkEp} | ${sh.episodesActive} eps${sh.jealousPlayer ? ' | 3rd: ' + sh.jealousPlayer : ''}</div>
+          </div>
+        </div>`;
+      });
+    } else {
+      html += `<div style="font-size:10px;color:#484f58">No showmances this season.</div>`;
+    }
+    html += `</div>`;
+
+    // Love Triangles
+    html += `<div style="margin-bottom:16px">
+      <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#f0883e;margin-bottom:8px">LOVE TRIANGLES (${_triangles.length})</div>`;
+    if (_triangles.length) {
+      _triangles.forEach(tri => {
+        const phaseCol = tri.resolved ? '#6e7681' : tri.phase === 'ultimatum' ? '#f47067' : tri.phase === 'escalation' ? '#f0883e' : '#d29922';
+        const resText = tri.resolution
+          ? (tri.resolution.type === 'chose' ? `Chose ${tri.resolution.chosen}, rejected ${tri.resolution.rejected} (severity ${(tri.resolution.severity || 0).toFixed(1)}, crash ${(tri.resolution.bondCrash || 0).toFixed(1)})`
+            : tri.resolution.type === 'eliminated' ? `${tri.resolution.who} eliminated`
+            : tri.resolution.type === 'organic' ? `Organic — survived bond: ${tri.resolution.survivingBond}`
+            : tri.resolution.type)
+          : 'Ongoing';
+        html += `<div style="padding:8px;margin-bottom:6px;border:1px solid rgba(240,136,62,0.2);border-radius:6px;background:rgba(240,136,62,0.04)">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+            ${rpPortrait(tri.suitors[0], 'sm')}
+            <span style="color:#8b949e;font-size:10px">←</span>
+            ${rpPortrait(tri.center, 'sm')}
+            <span style="color:#e6edf3;font-weight:700">${tri.center}</span>
+            <span style="color:#8b949e;font-size:10px">→</span>
+            ${rpPortrait(tri.suitors[1], 'sm')}
+            <div style="margin-left:auto">
+              <span style="font-size:10px;color:${phaseCol};font-weight:700;text-transform:uppercase">${tri.phase}</span>
+            </div>
+          </div>
+          <div style="font-size:9px;color:#6e7681;padding-left:4px">
+            ${tri.suitors[0]} ♥ <strong style="color:#e6edf3">${tri.center}</strong> ♥ ${tri.suitors[1]}
+            | Type: ${tri.sourceType} | Ep ${tri.formedEp} | ${tri.episodesActive} eps
+            | Jealousy: <span style="color:${tri.jealousyLevel >= 7 ? '#f47067' : tri.jealousyLevel >= 4 ? '#f0883e' : '#d29922'};font-weight:600">${tri.jealousyLevel.toFixed(1)}/10</span>
+          </div>
+          <div style="font-size:9px;color:#8b949e;padding-left:4px;margin-top:2px">
+            Resolution: ${resText}
+          </div>
+        </div>`;
+      });
+    } else {
+      html += `<div style="font-size:10px;color:#484f58">No love triangles this season.</div>`;
+    }
+    html += `</div>`;
   }
 
   html += `</div>`;

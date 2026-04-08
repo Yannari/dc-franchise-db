@@ -38119,6 +38119,19 @@ function rpBuildVotingPlans(ep) {
       }
     }
 
+    // Tied Destinies: player can't vote for their TD partner — show as TD conflict instead of bond conflict
+    const _tdPairs = ep.tiedDestinies?.pairs || gs._tiedDestiniesActive || [];
+    const _tdPair = _tdPairs.find(p => p.a === player || p.b === player);
+    const _tdPartner = _tdPair ? (_tdPair.a === player ? _tdPair.b : _tdPair.a) : null;
+    if (_tdPartner) {
+      const _tdTargetAlliance = myAlliances.find(a => a.target === _tdPartner);
+      if (_tdTargetAlliance) {
+        _seenConflicted.add(player);
+        conflictedPlayers.push({ player, reason: 'td-blocked', alliances: myAlliances, tdPartner: _tdPartner });
+        return;
+      }
+    }
+
     // Bond conflict: voter has a meaningful positive bond with the alliance's target
     // Threshold scales with game stage — EP1-3 bonds are 0-2, so lower bar. Late game needs stronger bond.
     const _bondConflictThreshold = ep.num <= 3 ? 1.0 : ep.num <= 6 ? 1.5 : 2.5;
@@ -38291,7 +38304,7 @@ function rpBuildVotingPlans(ep) {
         ${rpPortrait(player)}
         <div>
           <div style="font-size:14px;font-weight:700;color:#e6edf3">${player}</div>
-          <div style="font-size:10px;color:#d29922;font-weight:600;letter-spacing:0.5px">${conflictType === 'multi-alliance' ? 'PULLED IN MULTIPLE DIRECTIONS' : 'BOND CONFLICT'}</div>
+          <div style="font-size:10px;color:#d29922;font-weight:600;letter-spacing:0.5px">${conflictType === 'multi-alliance' ? 'PULLED IN MULTIPLE DIRECTIONS' : conflictType === 'td-blocked' ? '🔗 TIED DESTINIES — CAN\'T VOTE PARTNER' : 'BOND CONFLICT'}</div>
         </div>
       </div>`;
 

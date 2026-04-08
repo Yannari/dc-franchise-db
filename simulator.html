@@ -28796,6 +28796,11 @@ function renderGameState() {
     el.innerHTML = html;
     btn.textContent = d.phase === 'complete' ? 'Season Complete' : 'Simulate Next Episode';
     btn.disabled = d.phase === 'complete';
+    const _sf5 = document.getElementById('sim-5-btn');
+    const _sfAll = document.getElementById('sim-all-btn');
+    const _sfShow = d.phase !== 'complete' && d.phase !== 'finale';
+    if (_sf5) _sf5.style.display = _sfShow ? '' : 'none';
+    if (_sfAll) _sfAll.style.display = _sfShow ? '' : 'none';
     return;
   }
 

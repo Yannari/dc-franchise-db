@@ -3766,6 +3766,19 @@ function computeHeat(name, tribalPlayers, alliances) {
     const _shmHeat = _shm.phase === 'target' ? 1.2 : _shm.phase === 'honeymoon' ? 0.6 : _shm.phase === 'ride-or-die' ? 1.5 : 0.2;
     heat += gs.phase === 'post-merge' ? _shmHeat : _shmHeat * 0.3;
   }
+  // Love triangle heat — all 3 members get collateral heat
+  const _tri = (gs.loveTriangles || []).find(t => !t.resolved && (t.center === name || t.suitors.includes(name)));
+  if (_tri) {
+    const triHeat = _tri.center === name
+      ? 0.4 * (_tri.jealousyLevel / 10)   // center gets more heat
+      : 0.2 * (_tri.jealousyLevel / 10);  // suitors get less
+    heat += gs.phase === 'post-merge' ? triHeat : triHeat * 0.3;
+  }
+  // Rejected player revenge heat (temporary, 2 episodes)
+  const _rejHeat = gs._triangleRejectionHeat?.[name];
+  if (_rejHeat && ((gs.episode || 0) + 1) <= _rejHeat.expiresEp) {
+    heat += _rejHeat.heat; // can be negative for villain sympathy
+  }
   // Information Broker — active: hard to target (-0.5), exposed: massive target (+2.0 for 2 eps)
   if (gs.broker?.player === name && !gs.broker.exposed) heat -= 0.5;
   if (gs.brokerExposedHeat === name && gs.brokerExposedEp && ((gs.episode || 0) + 1) - gs.brokerExposedEp <= 2) heat += 2.0;
@@ -16196,6 +16209,449 @@ function checkShowmanceBreakup(ep) {
   });
 }
 
+// ── Love Triangle Breakup: resolve when any member is eliminated ──
+function checkLoveTriangleBreakup(ep) {
+  if (!gs.loveTriangles?.length || !ep.eliminated) return;
+  const elim = ep.eliminated;
+  const epNum = ep.num || (gs.episode || 0) + 1;
+  gs.loveTriangles.forEach(tri => {
+    if (tri.resolved) return;
+    if (tri.center !== elim && !tri.suitors.includes(elim)) return;
+    tri.resolved = true;
+    tri.resolution = { type: 'eliminated', who: elim, ep: epNum };
+    tri.phase = 'resolved';
+    ep.triangleEvents = ep.triangleEvents || [];
+    ep.triangleEvents.push({ type: 'eliminated', center: tri.center, who: elim });
+  });
+}
+
+// ── Love Triangle Detection: dual-showmance or one-sided crush ──
+function checkLoveTriangleFormation(ep) {
+  if (!gs.showmances?.length) return;
+  gs.loveTriangles = gs.loveTriangles || [];
+  ep.triangleEvents = ep.triangleEvents || [];
+  const epNum = ep.num || (gs.episode || 0) + 1;
+
+  // Max 1 active triangle at a time
+  const activeTriangle = gs.loveTriangles.find(t => !t.resolved);
+  if (activeTriangle) return;
+
+  // 2-episode cooldown after last resolution
+  const lastResolved = gs.loveTriangles.filter(t => t.resolved).sort((a, b) => (b.resolution?.ep || 0) - (a.resolution?.ep || 0))[0];
+  if (lastResolved && epNum - (lastResolved.resolution?.ep || 0) < 2) return;
+
+  const activeShowmances = gs.showmances.filter(sh =>
+    sh.phase !== 'broken-up' && sh.players.every(p => gs.activePlayers.includes(p))
+  );
+  if (!activeShowmances.length) return;
+
+  // ── Path 1: Dual Showmance — player appears in 2 active showmances ──
+  const playerShowmanceCounts = {};
+  activeShowmances.forEach(sh => {
+    sh.players.forEach(p => {
+      playerShowmanceCounts[p] = (playerShowmanceCounts[p] || 0) + 1;
+    });
+  });
+
+  for (const center of Object.keys(playerShowmanceCounts)) {
+    if (playerShowmanceCounts[center] < 2) continue;
+    const involvedShowmances = activeShowmances.filter(sh => sh.players.includes(center));
+    const suitors = involvedShowmances.map(sh => sh.players.find(p => p !== center));
+    if (suitors.length < 2) continue;
+
+    // Clear jealousPlayer on affected showmances to avoid duplicate jealousy
+    involvedShowmances.forEach(sh => { sh.jealousPlayer = null; });
+
+    const triangle = {
+      center,
+      suitors: [suitors[0], suitors[1]],
+      formedEp: epNum,
+      phase: 'tension',
+      episodesActive: 0,
+      sourceType: 'dual-showmance',
+      showmanceRef: [center, suitors[0]],
+      jealousyLevel: 0,
+      resolved: false,
+      resolution: null
+    };
+    gs.loveTriangles.push(triangle);
+
+    // Push camp event
+    const pc = pronouns(center);
+    const ps0 = pronouns(suitors[0]);
+    const ps1 = pronouns(suitors[1]);
+    const tribeName = gs.isMerged ? 'merge' : (gs.tribes.find(t => t.members.includes(center))?.name || 'merge');
+    if (ep.campEvents?.[tribeName]) {
+      const block = ep.campEvents[tribeName];
+      const evts = Array.isArray(block) ? block : (block.post || block.pre || []);
+      const variants = [
+        `The math isn't adding up. ${center} has been spending nights whispering with ${suitors[0]} and mornings laughing with ${suitors[1]}. ` +
+        `${ps0.Sub} noticed. ${ps1.Sub} noticed. Neither has said anything yet — but the silence is louder than any confrontation.`,
+        `Everyone on the tribe can feel it: ${center} is caught between ${suitors[0]} and ${suitors[1]}, and ${pc.sub} doesn't seem to realize ` +
+        `how obvious it's become. The question isn't whether this blows up — it's when.`
+      ];
+      evts.push({ type: 'triangleTension', text: variants[Math.random() < 0.5 ? 0 : 1], players: [center, suitors[0], suitors[1]] });
+    }
+    ep.triangleEvents.push({ type: 'formation', sourceType: 'dual-showmance', center, suitors: [suitors[0], suitors[1]], ep: epNum });
+    return; // max 1 triangle
+  }
+
+  // ── Path 2: One-Sided Crush — C has high bond with B, B is in showmance with A ──
+  for (const sh of activeShowmances) {
+    const [pA, pB] = sh.players;
+    // Check both directions: someone crushing on pA or pB
+    for (const [inShowmance, partner] of [[pA, pB], [pB, pA]]) {
+      for (const candidate of gs.activePlayers) {
+        if (candidate === inShowmance || candidate === partner) continue;
+        // Already in a showmance with inShowmance? skip — that's Path 1 territory
+        if (activeShowmances.some(s => s.players.includes(candidate) && s.players.includes(inShowmance))) continue;
+
+        const bond = getBond(candidate, inShowmance);
+        if (bond < 4) continue;
+        if (!romanticCompat(inShowmance, candidate)) continue;
+
+        // Must be on same tribe
+        if (!gs.isMerged) {
+          const candidateTribe = gs.tribes.find(t => t.members.includes(candidate));
+          const targetTribe = gs.tribes.find(t => t.members.includes(inShowmance));
+          if (!candidateTribe || !targetTribe || candidateTribe.name !== targetTribe.name) continue;
+        }
+
+        // Probability: proportional to bond, capped at 0.30
+        let chance = Math.min(0.30, bond * 0.06);
+        // Ride-or-die showmance reduces chance to 0.15x
+        if (sh.phase === 'ride-or-die') chance *= 0.15;
+        if (Math.random() >= chance) continue;
+
+        // Clear jealousPlayer on affected showmance
+        sh.jealousPlayer = null;
+
+        const triangle = {
+          center: inShowmance,
+          suitors: [partner, candidate],
+          formedEp: epNum,
+          phase: 'tension',
+          episodesActive: 0,
+          sourceType: 'one-sided',
+          showmanceRef: [inShowmance, partner],
+          jealousyLevel: 0,
+          resolved: false,
+          resolution: null
+        };
+        gs.loveTriangles.push(triangle);
+
+        // Push camp event
+        const pc = pronouns(inShowmance);
+        const pCand = pronouns(candidate);
+        const tribeName = gs.isMerged ? 'merge' : (gs.tribes.find(t => t.members.includes(inShowmance))?.name || 'merge');
+        if (ep.campEvents?.[tribeName]) {
+          const block = ep.campEvents[tribeName];
+          const evts = Array.isArray(block) ? block : (block.post || block.pre || []);
+          const variants = [
+            `${candidate} has been finding every excuse to be near ${inShowmance} — carrying water together, sitting close at fire, ` +
+            `volunteering for the same tasks. ${partner} watches from across camp, jaw tightening. ` +
+            `${pCand.Sub} might not call it a crush, but ${partner} already has a word for it.`,
+            `There's a new energy around ${inShowmance} that ${partner} can't quite name. ${candidate} lights up whenever ${pc.sub} walks over, ` +
+            `laughs a half-second too long at ${pc.pos} jokes. It hasn't crossed any lines yet — but the line is getting thinner every day.`
+          ];
+          evts.push({ type: 'triangleTension', text: variants[Math.random() < 0.5 ? 0 : 1], players: [inShowmance, partner, candidate] });
+        }
+        ep.triangleEvents.push({ type: 'formation', sourceType: 'one-sided', center: inShowmance, suitors: [partner, candidate], ep: epNum });
+        return; // max 1 triangle
+      }
+    }
+  }
+}
+
+function updateLoveTrianglePhases(ep) {
+  if (!gs.loveTriangles?.length) return;
+  const epNum = (gs.episode || 0) + 1;
+  const _pick = arr => arr[Math.floor(Math.random() * arr.length)];
+
+  gs.loveTriangles.forEach(tri => {
+    if (tri.resolved) return;
+
+    const { center, suitors } = tri;
+    const suitorA = suitors[0];
+    const suitorC = suitors[1];
+    const active = gs.activePlayers;
+
+    // --- Early Resolution: elimination ---
+    const centerAlive = active.includes(center);
+    const aAlive = active.includes(suitorA);
+    const cAlive = active.includes(suitorC);
+
+    if (!centerAlive || !aAlive || !cAlive) {
+      tri.resolved = true;
+      tri.resolution = { type: 'eliminated', who: !centerAlive ? center : !aAlive ? suitorA : suitorC, ep: epNum };
+      // Both suitors eliminated same episode (double tribal) — center gets lonely event
+      if (centerAlive && !aAlive && !cAlive) {
+        const pc = pronouns(center);
+        const tribeName = gs.isMerged ? 'merge' : (gs.tribes.find(t => t.members.includes(center))?.name || 'merge');
+        if (ep.campEvents?.[tribeName]) {
+          const block = ep.campEvents[tribeName];
+          const evts = Array.isArray(block) ? block : (block.post || block.pre || []);
+          evts.push({
+            type: 'triangleLonely',
+            text: `${center} sits alone at camp, ${pc.posAdj} shelter suddenly too quiet. Both ${suitorA} and ${suitorC} are gone — ` +
+                  `the triangle resolved itself in the cruelest way possible. ${pc.Sub} stares into the fire and says nothing.`,
+            players: [center]
+          });
+        }
+        ep.triangleEvents = ep.triangleEvents || [];
+        ep.triangleEvents.push({ type: 'triangleLonely', phase: tri.phase, center, suitors: [suitorA, suitorC] });
+      }
+      return;
+    }
+
+    // --- Early Resolution: bond decay ---
+    const bondA = getBond(center, suitorA);
+    const bondC = getBond(center, suitorC);
+    if (bondA < 1.0 || bondC < 1.0) {
+      tri.resolved = true;
+      const droppedSuitor = bondA < 1.0 ? suitorA : suitorC;
+      const survivingBond = droppedSuitor === suitorA ? suitorC : suitorA;
+      tri.resolution = { type: 'organic', ep: epNum, survivingBond };
+      ep.triangleEvents = ep.triangleEvents || [];
+      ep.triangleEvents.push({ type: 'organic-resolve', phase: tri.phase, center, suitors: [suitorA, suitorC], survivingBond });
+      return;
+    }
+
+    // --- Pre-merge freeze: must all be on same tribe ---
+    if (!gs.isMerged) {
+      const tribeCenter = gs.tribes.find(t => t.members.includes(center))?.name;
+      const tribeA = gs.tribes.find(t => t.members.includes(suitorA))?.name;
+      const tribeC = gs.tribes.find(t => t.members.includes(suitorC))?.name;
+      if (!tribeCenter || tribeCenter !== tribeA || tribeCenter !== tribeC) return; // freeze
+    }
+
+    // Increment episode counter
+    tri.episodesActive++;
+
+    // --- Phase transitions ---
+    if (tri.phase === 'tension' && tri.episodesActive >= 3) tri.phase = 'escalation';
+    if (tri.phase === 'escalation' && tri.episodesActive >= 5) tri.phase = 'ultimatum';
+
+    const pc = pronouns(center);
+    const pA = pronouns(suitorA);
+    const pC = pronouns(suitorC);
+    const tribeName = gs.isMerged ? 'merge' : (gs.tribes.find(t => t.members.includes(center))?.name || 'merge');
+
+    const pushEvt = (type, text, players) => {
+      if (!ep.campEvents?.[tribeName]) return;
+      const block = ep.campEvents[tribeName];
+      const evts = Array.isArray(block) ? block : (block.post || block.pre || []);
+      evts.push({ type, text, players: players || [suitorA, center, suitorC] });
+      ep.triangleEvents = ep.triangleEvents || [];
+      ep.triangleEvents.push({ type, phase: tri.phase, center, suitors: [suitorA, suitorC] });
+    };
+
+    // ===================== TENSION PHASE =====================
+    if (tri.phase === 'tension') {
+      // Jealousy growth — proportional to center's bond with the rival
+      tri.jealousyLevel = Math.min(10, tri.jealousyLevel + 1.0 + bondC * 0.1);
+
+      // Bond erosion
+      addBond(suitorA, suitorC, -0.3);
+      addBond(suitorA, center, -0.15);
+
+      // Tension camp event
+      const tensionVariants = [
+        `${suitorA} catches ${center} and ${suitorC} sharing a coconut by the water well. ${pA.Sub} says nothing, but ${pA.posAdj} expression says everything.`,
+        `${suitorA} has started positioning ${pA.ref} between ${center} and ${suitorC} at every opportunity — at challenges, at meals, at fire. It's subtle, but ${center} has noticed.`,
+        `${suitorC} made ${center} laugh today, the kind of laugh that carries across camp. ${suitorA} heard it from the shelter and felt something twist in ${pA.posAdj} chest.`,
+        `There's a chill between ${suitorA} and ${suitorC} that wasn't there before. They still talk, but the pauses are longer, the eye contact shorter. ${center} pretends not to notice.`,
+        `${center} asked ${suitorA} to go collect firewood, but ${suitorC} volunteered first. The look ${suitorA} gave could have started a fire on its own.`,
+        `${suitorA} spent the morning building a new fishing spear — alone. Usually ${pA.sub} and ${center} do that together. ${center} was with ${suitorC} instead.`,
+        `The sleeping arrangement has become a nightly negotiation. ${suitorA} wants to be next to ${center}. So does ${suitorC}. ${center} rotates, trying to keep the peace.`,
+        `${suitorA} overheard ${suitorC} telling ${center} about ${pC.posAdj} family back home — the kind of personal story ${suitorA} thought was just between ${pA.obj} and ${center}.`
+      ];
+      pushEvt('triangleTension', _pick(tensionVariants));
+
+      // 30% chance: confrontation
+      if (Math.random() < 0.30) {
+        addBond(suitorA, center, -0.5);
+        const confrontVariants = [
+          `${suitorA} finally snapped. "What's going on with you and ${suitorC}?" ${center} stammered out a non-answer, which only made it worse.`,
+          `${suitorA} pulled ${center} aside at the water well. "I'm not blind. I see how you look at ${suitorC}." ${center} tried to deflect, but ${pA.sub} wasn't buying it.`,
+          `${suitorA} cornered ${center} after the challenge. "Are you playing me?" The accusation hung in the air. ${center} denied it, but ${pA.sub} walked away unconvinced.`,
+          `"Just tell me the truth," ${suitorA} said, voice cracking. ${center} insisted there was nothing to tell. ${pA.Sub} wanted to believe it, but couldn't.`,
+          `${suitorA} confronted ${center} at the shelter while ${suitorC} was out fishing. "I need to know where I stand." ${center} said all the right things, but ${pA.posAdj} eyes said ${pA.sub} didn't believe a word.`,
+          `After a long silence by the fire, ${suitorA} turned to ${center}. "I'm starting to feel like a backup plan." ${center} reached for ${pA.posAdj} hand, but ${pA.sub} pulled away.`,
+          `${suitorA} confronted ${center} with surprising calm. "I deserve honesty." ${center} insisted everything was fine, but ${pA.sub} could see the guilt behind ${pc.posAdj} eyes.`,
+          `It started as a whisper and ended as a shout. ${suitorA} accused ${center} of stringing ${pA.obj} along. The whole tribe heard it.`
+        ];
+        pushEvt('triangleConfrontation', _pick(confrontVariants));
+      }
+    }
+
+    // ===================== ESCALATION PHASE =====================
+    else if (tri.phase === 'escalation') {
+      // Jealousy growth — escalated
+      tri.jealousyLevel = Math.min(10, tri.jealousyLevel + 1.5 + bondC * 0.1);
+
+      // Bond erosion — intensified
+      addBond(suitorA, suitorC, -0.5);
+      addBond(suitorA, center, -0.3);
+
+      // 60% chance: escalation event
+      if (Math.random() < 0.60) {
+        const escalationVariants = [
+          `${suitorA} and ${suitorC} aren't even pretending to get along anymore. At the challenge, they refused to make eye contact. ${center} stood between them, looking miserable.`,
+          `${suitorA} told anyone who'd listen that ${suitorC} is "fake" and "only here for the game." It was clearly about more than strategy.`,
+          `${center} tried to have a normal conversation with both ${suitorA} and ${suitorC} at camp, but the tension was suffocating. ${pc.Sub} gave up and went for a walk alone.`,
+          `${suitorC} found ${center} crying by the beach. "Is this about ${suitorA}?" ${center} didn't answer, which was answer enough.`,
+          `The tribe is starting to walk on eggshells. Every interaction between ${suitorA}, ${center}, and ${suitorC} feels like it could ignite. Even fetching water has become political.`,
+          `${suitorA} made a pointed comment at the fire about "people who can't make up their minds." ${center} flinched. ${suitorC} stared straight ahead.`,
+          `${suitorA} refused to sit with ${center} at the reward feast. "Go sit with ${suitorC}. That's what you want anyway." The table went silent.`,
+          `${center} asked ${suitorA} if they could talk. ${pA.Sub} said "About what? You've made your feelings pretty clear." Then ${pA.sub} walked away.`
+        ];
+        pushEvt('triangleEscalation', _pick(escalationVariants));
+      }
+
+      // 40% chance: tribemates discuss exploiting triangle
+      if (Math.random() < 0.40) {
+        const tribeMembers = (gs.isMerged ? active : (gs.tribes.find(t => t.members.includes(center))?.members || []))
+          .filter(p => p !== center && p !== suitorA && p !== suitorC);
+        if (tribeMembers.length > 0) {
+          const schemer = _pick(tribeMembers);
+          const pS = pronouns(schemer);
+          const exploitVariants = [
+            `${schemer} pulled aside an ally. "Have you noticed the ${suitorA}-${center}-${suitorC} situation? We can use that. They're so wrapped up in each other, they're not watching us."`,
+            `${schemer} has been quietly observing the love triangle. "${pS.Sub} realized one of them is going to feel burned — and burned people make desperate allies.`,
+            `"That triangle is a ticking time bomb," ${schemer} whispered. "When it explodes, we need to be on the right side of the shrapnel."`,
+            `${schemer} grinned at ${pS.posAdj} alliance. "Let them tear each other apart over ${center}. While they're distracted, we make our move."`,
+            `${schemer} noticed the cracks in the ${suitorA}-${suitorC} relationship. "We don't even need to do anything. The triangle is doing our work for us."`,
+            `"Three people, one mess," ${schemer} said. "That's three people not thinking about the game. That's three potential votes we can control."`,
+            `${schemer} mapped it out to ${pS.posAdj} closest ally: "If ${suitorA} gets rejected, ${pA.sub}'ll be furious. That's a free number for us."`,
+            `${schemer} has been feeding small doubts to both ${suitorA} and ${suitorC}. Nothing big — just enough to keep the triangle unstable and exploitable.`
+          ];
+          pushEvt('triangleEscalation', _pick(exploitVariants), [schemer, suitorA, center, suitorC]);
+        }
+      }
+
+      // 30% chance: public fight
+      if (Math.random() < 0.30) {
+        addBond(suitorA, suitorC, -1.0);
+        const fightVariants = [
+          `It happened at the fire, in front of everyone. ${suitorA} accused ${suitorC} of "moving in" on ${center}. ${suitorC} fired back. By the time it was over, half the tribe had scattered.`,
+          `${suitorA} and ${suitorC} had been circling each other for days. Tonight, the dam broke. Voices raised, fingers pointed, and ${center} sat frozen, unable to stop it.`,
+          `The fight was ugly. ${suitorA} called ${suitorC} a snake. ${suitorC} called ${suitorA} delusional. ${center} tried to intervene but got shouted down by both.`,
+          `${suitorA} shoved past ${suitorC} on the way to the shelter. Words were exchanged. Then louder words. The tribe watched in stunned silence.`,
+          `"You don't deserve ${center}!" ${suitorA} shouted across the camp. ${suitorC} laughed — the kind of laugh that makes things worse. The rest of the tribe pretended to be asleep.`,
+          `${suitorA} confronted ${suitorC} directly for the first time. No more passive aggression. The argument lasted twenty minutes and solved nothing.`,
+          `The fight spilled out of the shelter and onto the beach. ${suitorA} and ${suitorC} screamed at each other while ${center} watched with ${pc.posAdj} head in ${pc.posAdj} hands.`,
+          `It was the worst fight the tribe had seen all season. ${suitorA} vs ${suitorC}, no holds barred. When it was finally over, ${center} whispered, "This is my fault."`
+        ];
+        pushEvt('trianglePublicFight', _pick(fightVariants));
+      }
+    }
+
+    // ===================== ULTIMATUM PHASE =====================
+    else if (tri.phase === 'ultimatum') {
+      // Center makes forced choice
+      const sA = pStats(center);
+      const bondACurrent = getBond(center, suitorA);
+      const bondCCurrent = getBond(center, suitorC);
+      const threatA = threatScore(suitorA);
+      const threatC = threatScore(suitorC);
+
+      // Relationship length from showmance reference
+      const primaryShowmance = gs.showmances?.find(sh =>
+        sh.players.includes(center) && sh.players.includes(suitorA)
+      );
+      const relationshipLengthA = primaryShowmance?.episodesActive || 0;
+
+      const scoreA = bondACurrent * 0.40
+        + (sA.loyalty * 0.03 * relationshipLengthA) * 0.30
+        + (threatC - threatA) * 0.20 * -1
+        + Math.random() * 0.10;
+
+      const scoreC = bondCCurrent * 0.40
+        + 0
+        + (threatA - threatC) * 0.20 * -1
+        + Math.random() * 0.10;
+
+      const chosen = scoreA >= scoreC ? suitorA : suitorC;
+      const rejected = chosen === suitorA ? suitorC : suitorA;
+      const pRej = pronouns(rejected);
+      const pCh = pronouns(chosen);
+      const sRej = pStats(rejected);
+
+      // Rejection severity — proportional
+      const rejBond = getBond(rejected, center);
+      const rejSeverity = sRej.loyalty * 0.3 + sRej.temperament * -0.2 + rejBond * 0.2;
+
+      let bondCrash, heatBoost;
+      const arch = sRej.archetype;
+
+      if (arch === 'villain' || arch === 'schemer') {
+        bondCrash = -(1.0 + rejSeverity * 0.1);
+        heatBoost = -0.5; // sympathy
+      } else if (sRej.strategic >= 7 && sRej.loyalty <= 4) {
+        // High strategic + low loyalty — threshold only for TEXT variant selection
+        bondCrash = -(1.0 + rejSeverity * 0.15);
+        heatBoost = 0.5;
+      } else {
+        // Default emotional
+        bondCrash = -Math.min(5, 2.0 + rejSeverity * 0.2);
+        heatBoost = Math.min(2.0, 0.5 + rejSeverity * 0.15);
+      }
+
+      // Apply bond consequences
+      addBond(center, chosen, 1.0);
+      addBond(rejected, center, bondCrash);
+      addBond(rejected, chosen, bondCrash * 0.6);
+
+      // Store rejection heat
+      gs._triangleRejectionHeat = gs._triangleRejectionHeat || {};
+      gs._triangleRejectionHeat[rejected] = { heat: heatBoost, expiresEp: epNum + 2 };
+
+      // Resolve triangle
+      tri.resolved = true;
+      tri.resolution = { type: 'chose', ep: epNum, chosen, rejected, severity: rejSeverity, bondCrash, heatBoost };
+
+      // Ultimatum event
+      const ultimatumVariants = [
+        `${center} sat ${suitorA} and ${suitorC} down at the fire. "I can't keep doing this. I have to be honest." What followed was the hardest conversation of ${pc.posAdj} game.`,
+        `${center} pulled ${chosen} aside first. "It's you. It's always been you." Then ${pc.sub} went to find ${rejected}. That conversation didn't go as smoothly.`,
+        `"I've made my decision," ${center} announced. The relief on ${chosen}'s face was matched only by the devastation on ${rejected}'s.`,
+        `${center} chose. It wasn't clean, it wasn't painless, but it was done. ${chosen} exhaled. ${rejected} walked to the beach alone.`
+      ];
+      pushEvt('triangleUltimatum', _pick(ultimatumVariants));
+
+      // Personality-specific reaction from rejected player
+      let reactionText;
+      if (arch === 'villain' || arch === 'schemer') {
+        const villainReactions = [
+          `${rejected} took it with a cold smile. "Fine. But don't think I'll forget this. ${center} just made the worst mistake of ${pc.posAdj} game." ${pRej.Sub} was already planning ${pRej.posAdj} revenge.`,
+          `${rejected} laughed when ${center} told ${pRej.obj}. "You think I'm upset? I'm free now. And you just lost the one person who was actually protecting you."`,
+          `${rejected} nodded slowly, eyes calculating. "Interesting choice." ${pRej.Sub} walked away already thinking about how to weaponize this.`
+        ];
+        reactionText = _pick(villainReactions);
+      } else if (sRej.strategic >= 7 && sRej.loyalty <= 4) {
+        const strategicReactions = [
+          `${rejected} processed it quickly. "I understand." But behind the calm facade, ${pRej.sub} was already recalculating every alliance, every vote, every path to the end.`,
+          `${rejected} barely flinched. "Game respects game, ${center}." But ${pRej.posAdj} voting hand was already itching for tribal.`,
+          `${rejected} shook ${center}'s hand. "No hard feelings." It was the most strategic handshake in the history of the game.`
+        ];
+        reactionText = _pick(strategicReactions);
+      } else {
+        const emotionalReactions = [
+          `${rejected} couldn't speak for a long time. When ${pRej.sub} finally did, ${pRej.posAdj} voice cracked. "I thought we had something real." ${pRej.Sub} spent the night alone on the beach.`,
+          `${rejected}'s eyes welled up. "After everything?" ${center} tried to explain, but ${rejected} held up a hand. "Don't. Just... don't." ${pRej.Sub} walked away before the tears came.`,
+          `${rejected} stared at ${center} like ${pRej.sub} was seeing ${pc.obj} for the first time. "I gave you everything out here." ${pRej.Sub} went silent after that — the dangerous kind of silent.`
+        ];
+        reactionText = _pick(emotionalReactions);
+      }
+      pushEvt('triangleResolved', reactionText, [center, chosen, rejected]);
+
+      // Store on episode for VP
+      ep.triangleResolution = { center, chosen, rejected, severity: rejSeverity, bondCrash, heatBoost };
+    }
+  });
+}
+
 function checkIdolConfessions(ep) {
   if (!gs.advantages?.length) return;
   if (!gs.knownIdolHoldersThisEp) gs.knownIdolHoldersThisEp = new Set();
@@ -16918,6 +17374,10 @@ function checkMoleSabotage(ep) {
     }
     mole.layingLow = false;
     mole._layLowStreak = 0; // reset streak — Mole is back in action
+
+    // Love triangle cover — drama distracts from suspicion
+    const _moleInTriangle = (gs.loveTriangles || []).some(t => !t.resolved && (t.center === mole.player || t.suitors.includes(mole.player)));
+    if (_moleInTriangle) mole.resistance = Math.min(0.85, mole.resistance + 0.15); // temporary boost this episode
 
     // ── SUSPICION EVENTS — players getting closer to the truth ──
     const _moleTribeSusp = gs.isMerged ? (gs.mergeName || 'merge')
@@ -19242,6 +19702,9 @@ function generateCampEvents(ep, phase = 'both') {
   checkShowmanceFormation(ep);
   // ── Showmance lifecycle: progress phases, generate phase-specific events ──
   updateShowmancePhases(ep);
+  // ── Love triangle: detect 3-way romantic tension + progress phases ──
+  checkLoveTriangleFormation(ep);
+  updateLoveTrianglePhases(ep);
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -26439,6 +26902,19 @@ function generateAftermathShow(ep) {
       if (rs.loyalty >= 8) pool.push(`"${p} — loyal to a fault. Literally. The loyalty is going to get ${rPr.obj} eliminated."`, `"${p} has never broken a promise. How quaint. How doomed."`);
       if (rs.loyalty <= 3) pool.push(`"${p}'s word is worth exactly nothing. And everyone knows it. Yet people KEEP making deals with ${rPr.obj}."`, `"${p} — loyalty of a weathervane. Points wherever the wind blows."`);
       if (rs.temperament <= 3) pool.push(`"${p} is one bad tribal away from a complete meltdown. I've got the footage ready."`, `"${p}. I'd say something sharp but I'm genuinely afraid of the reaction."`);
+      // Love triangle roasts
+      const _triRoast = (gs.loveTriangles || []).find(t => t.center === p || t.suitors.includes(p));
+      if (_triRoast) {
+        if (_triRoast.center === p) {
+          pool.push(`"${p} managed to have TWO showmances. Most people can't maintain one alliance, and ${rPr.sub} ${rPr.sub === 'they' ? 'are' : 'is'} out here collecting partners."`);
+          pool.push(`"${p} — the center of a love triangle. Which sounds glamorous until you realize it means TWO people want to vote you out for personal reasons."`);
+        } else if (_triRoast.resolution?.rejected === p) {
+          pool.push(`"${p} got chosen last in the love triangle. At least in Schoolyard Pick you get sent to Exile — here ${rPr.sub} just ${rPr.sub === 'they' ? 'have' : 'has'} to watch."`);
+          pool.push(`"${p}. Lost the love triangle AND the game. At least ${rPr.sub} ${rPr.sub === 'they' ? 'are' : 'is'} consistent."`);
+        } else {
+          pool.push(`"${p} won the love triangle. Congratulations. Now the entire tribe wants ${rPr.obj} both gone."`);
+        }
+      }
       // Universal fallbacks (varied enough to never repeat)
       if (!pool.length) pool.push(
         `"${p}. ${rPr.Sub} ${rPr.sub === 'they' ? 'have' : 'has'} been here the whole time and I still can't describe ${rPr.posAdj} game in one sentence."`,
@@ -26596,6 +27072,43 @@ function generateAftermathShow(ep) {
           evidence: `Showmance active since episode ${_showmance.sparkEp}. Bond: ${getBond(name, _partner).toFixed(1)}.`,
           affected: [_partner],
           type: 'showmance', drama: 4
+        });
+      }
+    }
+
+    // Love triangle secret
+    const _triangle = (gs.loveTriangles || []).find(t =>
+      t.center === name || t.suitors.includes(name));
+    if (_triangle) {
+      const _triRole = _triangle.center === name ? 'center'
+        : (_triangle.resolution?.rejected === name ? 'rejected' : 'chosen');
+      const _triResolved = _triangle.resolved;
+      const _triDrama = _triResolved && _triangle.resolution?.type === 'chose' ? 8
+        : _triResolved ? 6 : 7;
+      const _triOther1 = _triangle.center === name ? _triangle.suitors[0] : _triangle.center;
+      const _triOther2 = _triangle.center === name ? _triangle.suitors[1]
+        : _triangle.suitors.find(s => s !== name) || _triangle.center;
+
+      if (_triRole === 'center') {
+        _contradictions.push({
+          setup: `You had two people fighting for you out there. ${_triOther1} and ${_triOther2}. The whole tribe watched it happen. Did you ever actually care about both of them — or were you stringing one along?`,
+          evidence: `Love triangle formed episode ${_triangle.formedEp}. ${_triResolved && _triangle.resolution?.type === 'chose' ? `Chose ${_triangle.resolution.chosen}, rejected ${_triangle.resolution.rejected}.` : `Resolved: ${_triangle.resolution?.type || 'ongoing'}.`} Jealousy level peaked at ${_triangle.jealousyLevel.toFixed(1)}.`,
+          affected: [_triOther1, _triOther2].filter(p => [...gs.activePlayers, ...(gs.jury || [])].includes(p)),
+          type: 'love-triangle', drama: _triDrama
+        });
+      } else if (_triRole === 'rejected') {
+        _contradictions.push({
+          setup: `You and ${_triangle.center}. Everyone saw how you looked at ${pronouns(_triangle.center).obj}. And then ${_triangle.center} chose ${_triangle.resolution?.chosen || 'someone else'}. Were you blindsided — or did you see it coming?`,
+          evidence: `Rejected in episode ${_triangle.resolution?.ep || '?'}. Bond crashed by ${Math.abs(_triangle.resolution?.bondCrash || 0).toFixed(1)}. Severity: ${(_triangle.resolution?.severity || 0).toFixed(1)}.`,
+          affected: [_triangle.center].filter(p => [...gs.activePlayers, ...(gs.jury || [])].includes(p)),
+          type: 'love-triangle', drama: _triDrama
+        });
+      } else {
+        _contradictions.push({
+          setup: `You won the triangle — ${_triangle.center} chose you over ${_triangle.resolution?.rejected || 'someone else'}. But honestly... did you ever worry you were the backup plan?`,
+          evidence: `Chosen in episode ${_triangle.resolution?.ep || '?'}. Triangle lasted ${_triangle.episodesActive} episodes.`,
+          affected: [_triangle.center, _triangle.resolution?.rejected].filter(p => p && [...gs.activePlayers, ...(gs.jury || [])].includes(p)),
+          type: 'love-triangle', drama: _triDrama
         });
       }
     }
@@ -26797,6 +27310,29 @@ function generateAftermathShow(ep) {
       players: [lt.tester, lt.target], classified: true, drama: spread ? 6 : 4 });
   });
 
+  // Love triangle footage
+  (gs.loveTriangles || []).forEach(tri => {
+    const triPr = pronouns(tri.center);
+    unseenFootage.push({
+      sourceEp: tri.formedEp,
+      type: 'love-triangle',
+      description: `What the cameras caught between the fire and the shelter... ${tri.center} pulled aside by ${tri.suitors[0]}, then found talking with ${tri.suitors[1]} an hour later. The triangle the tribe suspected — confirmed.`,
+      players: [tri.suitors[0], tri.center, tri.suitors[1]],
+      classified: true,
+      drama: 7
+    });
+    if (tri.phase === 'escalation' || tri.phase === 'ultimatum' || tri.resolved) {
+      unseenFootage.push({
+        sourceEp: tri.resolution?.ep || tri.formedEp + tri.episodesActive,
+        type: 'love-triangle',
+        description: `The confrontation between ${tri.suitors[0]} and ${tri.suitors[1]} over ${tri.center}. Voices low but sharp. "${triPr.Sub} ${triPr.sub === 'they' ? 'were' : 'was'} mine first." The cameras caught every word.`,
+        players: [tri.suitors[0], tri.suitors[1]],
+        classified: true,
+        drama: 6
+      });
+    }
+  });
+
   // Sort by drama score and cap at 3 best clips
   unseenFootage.sort((a, b) => (b.drama || 0) - (a.drama || 0));
   unseenFootage.splice(3);
@@ -26909,6 +27445,27 @@ function generateAftermathShow(ep) {
   if (_ftArch === 'underdog') {
     _allQs.push({ cat: 'archetype', q: `"You were the underdog from day one. Overlooked, underestimated. How did that feel?"`,
       a: `"Honestly? It fueled me. Every person who looked past me gave me motivation. I just ran out of road."`, tone: ['supporter', 'drama'] });
+  }
+
+  // Love triangle questions
+  const _ftTriangle = (gs.loveTriangles || []).find(t => t.center === _fanTarget || t.suitors.includes(_fanTarget));
+  if (_ftTriangle) {
+    const _ftTriRole = _ftTriangle.center === _fanTarget ? 'center'
+      : (_ftTriangle.resolution?.rejected === _fanTarget ? 'rejected' : 'suitor');
+    if (_ftTriRole === 'center') {
+      _allQs.push({ cat: 'triangle', q: `"The love triangle was THE storyline this season. When did you first realize you were in the middle of it?"`,
+        a: _ftS.strategic >= 6 ? `"I knew what was happening. I just didn't know how to stop it without losing both of them."` : `"Honestly? I didn't see it until it was too late. I thought I could keep everyone happy. I was wrong."`, tone: ['superfan', 'drama'] });
+      _allQs.push({ cat: 'triangle', q: `"Be honest — did you enjoy having two people competing for your attention?"`,
+        a: _ftS.social >= 6 ? `"It wasn't like that. These were real feelings. Real people. I hated every second of hurting someone."` : `"...Maybe at first. But it stopped being fun the moment I saw what it was doing to ${_ftTriangle.suitors[0]}."`, tone: ['drama', 'hater'] });
+    } else if (_ftTriRole === 'rejected') {
+      _allQs.push({ cat: 'triangle', q: `"The audience was rooting for you in that love triangle. How are you holding up?"`,
+        a: _ftS.loyalty >= 6 ? `"I'm not going to lie — it gutted me. I thought what we had was real. Turns out I was the backup plan."` : `"I'm fine. Honestly. The game taught me something about myself. Not everyone who says they care actually does."`, tone: ['supporter', 'drama'] });
+      _allQs.push({ cat: 'triangle', q: `"You got picked second. In love and in this game. How does that feel to hear out loud?"`,
+        a: `"Terrible. Thanks for asking."`, tone: ['hater'] });
+    } else {
+      _allQs.push({ cat: 'triangle', q: `"You were part of the love triangle whether you wanted to be or not. Did you know what was happening?"`,
+        a: _ftS.intuition >= 6 ? `"I could feel it. The tension between us was impossible to miss. I just didn't want to be the one to name it."` : `"Honestly? I had no idea until it blew up. I thought ${_ftTriangle.center} and I were just friends."`, tone: ['superfan', 'supporter'] });
+    }
   }
 
   // Universal fallbacks (always available)
@@ -27729,6 +28286,7 @@ function patchEpisodeHistory(ep) {
   }
   // Showmance lifecycle
   if (!h.showmanceBreakup && !h.showmanceSeparation) checkShowmanceBreakup(ep);
+  checkLoveTriangleBreakup(ep);
   if (ep.paranoiaSpirals?.length) h.paranoiaSpirals = ep.paranoiaSpirals;
   if (ep.stolenCreditEvents?.length) h.stolenCreditEvents = ep.stolenCreditEvents;
   h.ambassadorData = ep.ambassadorData || null;
@@ -27757,6 +28315,16 @@ function patchEpisodeHistory(ep) {
   if (ep.showmanceSeparation) h.showmanceSeparation = ep.showmanceSeparation;
   if (ep.showmanceEvents?.length) h.showmanceEvents = ep.showmanceEvents;
   if (ep.showmanceTests?.length) h.showmanceTests = ep.showmanceTests;
+  // Love triangle
+  if (ep.triangleEvents?.length) h.triangleEvents = ep.triangleEvents;
+  if (ep.triangleResolution) h.triangleResolution = ep.triangleResolution;
+  // Clean expired triangle rejection heat
+  if (gs._triangleRejectionHeat) {
+    const _curEp = (gs.episode || 0) + 1;
+    for (const _trn of Object.keys(gs._triangleRejectionHeat)) {
+      if (_curEp > gs._triangleRejectionHeat[_trn].expiresEp) delete gs._triangleRejectionHeat[_trn];
+    }
+  }
   if (ep.safetyNoPowerPlayed) h.safetyNoPowerPlayed = ep.safetyNoPowerPlayed;
   if (ep.soleVotePlayed) h.soleVotePlayed = ep.soleVotePlayed;
   if (ep.exileFormatData) h.exileFormatData = ep.exileFormatData;
@@ -27986,6 +28554,7 @@ function snapshotGameState() {
     journeyLostVotes: gs.journeyLostVotes ? [...gs.journeyLostVotes] : [],
     lostVotes: gs.lostVotes ? [...gs.lostVotes] : [],
     showmances: (gs.showmances || []).map(sh => ({ ...sh, players: [...sh.players] })),
+    loveTriangles: (gs.loveTriangles || []).map(t => ({ ...t, suitors: [...t.suitors], showmanceRef: [...t.showmanceRef], resolution: t.resolution ? { ...t.resolution } : null })),
     broker: gs.broker ? { ...gs.broker, alliances: [...gs.broker.alliances] } : null,
     perceivedBonds: gs.perceivedBonds ? Object.fromEntries(
       Object.entries(gs.perceivedBonds).map(([k, v]) => [k, { ...v }])
@@ -28095,6 +28664,8 @@ function initGameState() {
     aftermathHistory: [],          // [{ ep, interviewees }]
     // The Mole
     moles: [],                     // [{ player, exposed, exposedEp, exposedBy, suspicion, sabotageCount, sabotageLog, leaks, layingLow, resistance }]
+    loveTriangles: [],             // [{ center, suitors, phase, jealousyLevel, resolved, resolution }]
+    _triangleRejectionHeat: {},    // { [name]: { heat, expiresEp } }
   };
 
   // Initialize survival values when food/water system is enabled
@@ -34987,6 +35558,10 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
     const isIdolConf    = evt.type === 'idolConfession';
     const isIdolShare   = evt.type === 'idolShare';
     const isShowmance   = evt.type === 'showmancerMoment' || evt.type?.startsWith('showmance');
+    const isTriangle    = evt.type?.startsWith('triangle');
+    const isTriangleNeg = evt.type === 'triangleConfrontation' || evt.type === 'trianglePublicFight' || evt.type === 'triangleUltimatum';
+    const isTriangleGold= evt.type === 'triangleTension' || evt.type === 'triangleEscalation';
+    const isTriangleRes = evt.type === 'triangleResolved' || evt.type === 'triangleLonely';
     const isAlliance    = evt.type === 'allianceForm';
     const isAllianceCrk   = evt.type === 'allianceCrack';
     const isSocialBomb    = evt.type === 'socialBomb';
@@ -35040,7 +35615,8 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                    'overplay','foodConflict','leadershipClash','watchingYou','loneWolf','rumor',
                    'chaosAgentStirsUp','idolBetrayal','socialBomb','socialBombReaction',
                    'showboat','overconfidence','floaterInvisible',
-                   'jealousy','exclusion','blame','passiveAggressive','trustCrack'].includes(evt.type);
+                   'jealousy','exclusion','blame','passiveAggressive','trustCrack',
+                   'triangleConfrontation','trianglePublicFight'].includes(evt.type);
     const isPersonal = isRelEvt && mentioned.length === 2;
     const badgeText  = isHothead      ? '💥 \u2212 Bond damage'
                      : isLie         ? '\u2212 Info planted'
@@ -35056,6 +35632,9 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : isIdolConf    ? 'IDOL CONFESSED'
                      : isIdolFind    ? (evt.advType && evt.advType !== 'idol' ? 'ADVANTAGE FOUND' : 'IDOL FOUND')
                      : isIdolSpot    ? (evt.advType && evt.advType !== 'idol' ? 'ADVANTAGE FOUND \u2014 SPOTTED' : 'IDOL FOUND \u2014 SPOTTED')
+                     : isTriangleNeg  ? (evt.type === 'triangleUltimatum' ? '💔 Choose One' : evt.type === 'trianglePublicFight' ? '💥 Triangle Meltdown' : '💔 Confrontation')
+                     : isTriangleGold ? (evt.type === 'triangleTension' ? '⚠ Love Triangle' : '🎯 Pick a Side')
+                     : isTriangleRes  ? (evt.type === 'triangleLonely' ? '💔 Alone' : '💔 Triangle Over')
                      : isShowmance   ? 'SHOWMANCE'
                      : isAlliance    ? 'ALLIANCE FORMED'
                      : isAllianceCrk ? 'ALLIANCE CRACKING'
@@ -35288,6 +35867,9 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'loyaltyTestFailed' || evt.type === 'loyaltyTestCaught' || evt.type === 'conflictingDeals' || evt.type === 'perceptionRealization' || evt.type === 'falseInfoBlowup' || evt.type === 'votePitchFailed' ? 'red'
                      : evt.type === 'villainManipulation' || evt.type === 'goatKeeping' || evt.type === 'swapLoyaltyAssumption' || evt.type === 'providerEntitlement' || evt.type === 'showmanceBlindspot' || evt.type === 'allianceBlindspot' || evt.type === 'betrayalDenial' || evt.type === 'firstImpressionsSwap' ? 'gold'
                      : evt.type === 'paranoiaSpiral' ? 'red'
+                     : isTriangleNeg ? 'red'
+                     : isTriangleGold ? 'gold'
+                     : isTriangleRes ? (evt.type === 'triangleLonely' ? 'red' : 'gold')
                      : evt.type === 'showmanceSpark' || evt.type === 'showmanceHoneymoon' || evt.type === 'showmanceRideOrDie' ? 'green'
                      : evt.type === 'showmanceNoticed' || evt.type === 'showmanceTarget' ? 'gold'
                      : evt.type === 'showmanceJealousy' ? 'red'

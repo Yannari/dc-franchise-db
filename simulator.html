@@ -1441,6 +1441,10 @@
         <div id="gs-summary"></div>
         <div class="divider"></div>
         <button class="btn btn-primary" id="sim-btn" onclick="simulateNext()">Initialize Season</button>
+        <div style="display:flex;gap:4px;margin-top:4px">
+          <button class="btn btn-secondary btn-sm" id="sim-5-btn" onclick="simulateMultipleEpisodes(5)" style="flex:1;display:none">+5 Eps</button>
+          <button class="btn btn-secondary btn-sm" id="sim-all-btn" onclick="simulateMultipleEpisodes()" style="flex:1;display:none">Sim All</button>
+        </div>
         <button class="btn btn-secondary btn-sm" id="replay-btn" onclick="replayEpisode(viewingEpNum||gs?.episode)" style="margin-top:4px;display:none">↺ Re-run This Episode</button>
         <button class="btn btn-secondary btn-sm" onclick="resetSeason()" style="margin-top:4px">Reset Season</button>
         <div style="font-size:10px;color:var(--muted);line-height:1.5;margin-top:4px">Reset clears all episode history but keeps your cast and setup intact.</div>
@@ -28852,12 +28856,20 @@ function renderGameState() {
   el.innerHTML = html;
 
   // Update button
+  const sim5Btn = document.getElementById('sim-5-btn');
+  const simAllBtn = document.getElementById('sim-all-btn');
   if (gs.phase === 'complete' || gs.activePlayers.length <= 1) {
     btn.textContent = 'Season Complete'; btn.disabled = true;
+    if (sim5Btn) sim5Btn.style.display = 'none';
+    if (simAllBtn) simAllBtn.style.display = 'none';
   } else if (gs.phase === 'finale') {
     btn.textContent = `Simulate Finale (Ep. ${gs.episode+1})`; btn.disabled = false;
+    if (sim5Btn) sim5Btn.style.display = 'none';
+    if (simAllBtn) simAllBtn.style.display = 'none';
   } else {
     btn.textContent = `Simulate Episode ${gs.episode+1}`; btn.disabled = false;
+    if (sim5Btn) sim5Btn.style.display = '';
+    if (simAllBtn) simAllBtn.style.display = '';
   }
 }
 
@@ -28972,6 +28984,31 @@ function simulateNext() {
   viewingEpNum = ep.num;
   renderRunTab();
   document.getElementById('run-main').scrollTop = 0;
+}
+
+function simulateMultipleEpisodes(count) {
+  if (!gs || !gs.initialized) { alert('Start a season first.'); return; }
+  const max = count || 999; // 999 = all remaining
+  let ran = 0;
+  while (ran < max && gs.activePlayers.length > 1 && gs.phase !== 'finished') {
+    const ep = gs.phase === 'finale' ? simulateFinale() : simulateEpisode();
+    if (!ep) break;
+    if (ep.winner && !ep.aftermath && seasonConfig.aftermath === 'enabled') {
+      generateAftermathShow(ep);
+      if (ep.aftermath) {
+        const h = gs.episodeHistory[gs.episodeHistory.length - 1];
+        if (h) h.aftermath = ep.aftermath;
+      }
+    }
+    if (seasonConfig.popularityEnabled !== false) { updatePopularity(ep); saveGameState(); }
+    viewingEpNum = ep.num;
+    ran++;
+    if (ep.winner) break; // season over
+  }
+  if (ran > 0) {
+    renderRunTab();
+    document.getElementById('run-main').scrollTop = 0;
+  }
 }
 
 function replayEpisode(epNum) {

@@ -16061,6 +16061,55 @@ function updateShowmancePhases(ep) {
   ep.showmanceEvents = ep.showmanceEvents || [];
 
   gs.showmances.forEach(sh => {
+    // ── REKINDLE: broken-up partner returned to the game ──
+    if (sh.phase === 'broken-up' && active.includes(sh.players[0]) && active.includes(sh.players[1])) {
+      const [a, b] = sh.players;
+      const bond = getBond(a, b);
+      const wasBetrayedBy = sh.breakupVoter; // the partner who voted them out
+      const wasSeparated = sh.breakupType === 'separated';
+
+      // Separated (didn't vote them out): rekindle if bond still positive
+      // Betrayal: much harder — need bond recovery + low chance
+      let rekindleChance = 0;
+      if (wasSeparated) {
+        // Bond stayed high after separation — strong rekindle chance
+        rekindleChance = bond >= 3 ? 0.70 : bond >= 1 ? 0.40 : bond >= 0 ? 0.15 : 0;
+      } else {
+        // Betrayal — bond probably crashed. Only rekindle if somehow recovered
+        rekindleChance = bond >= 2 ? 0.25 : bond >= 0 ? 0.08 : 0;
+      }
+
+      if (rekindleChance > 0 && Math.random() < rekindleChance) {
+        sh.phase = 'spark';
+        sh.episodesActive = 0;
+        sh.tested = false;
+        sh.jealousPlayer = null;
+        // Bond boost on rekindle — proportional, not threshold
+        addBond(a, b, wasSeparated ? 1.5 : 0.5);
+
+        const tribeName = gs.isMerged ? 'merge' : (gs.tribes.find(t => t.members.includes(a))?.name || 'merge');
+        if (ep.campEvents?.[tribeName]) {
+          const block = ep.campEvents[tribeName];
+          const evts = Array.isArray(block) ? block : (block.post || block.pre || []);
+          const _pA = pronouns(a), _pB = pronouns(b);
+          const rekindleTexts = wasSeparated ? [
+            `${a} and ${b} are back in the same camp. The first look they shared said everything the game couldn't. Whatever they had isn't over.`,
+            `The moment ${a} walked back into camp, ${b}'s face changed. Not a word. Just a look. The tribe saw it all.`,
+            `${a} and ${b} found each other by the fire that night. "I never stopped," ${_pA.sub} said. ${_pB.Sub} didn't need to answer.`,
+            `They tried to play it cool. ${a} and ${b} acted like strangers for about ten minutes. Then ${_pA.sub} sat next to ${_pB.obj} and the whole tribe knew the showmance was back.`,
+          ] : [
+            `${a} voted ${b} out. ${b} came back. They shouldn't be talking. But they are. Whatever this is, it's complicated.`,
+            `"You voted me out." "${b} said it flat. ${a} didn't deny it. But they're still drawn to each other, and the tribe can see it.`,
+            `${a} and ${b} have unfinished business. The betrayal is still there — but so is whatever made them a showmance in the first place.`,
+            `The tribe expected fireworks when ${b} returned. Instead, ${a} and ${b} had a quiet conversation on the beach. When they came back, something had shifted.`,
+          ];
+          evts.push({ type: 'showmanceRekindle', text: _pick(rekindleTexts), players: [a, b] });
+          ep.showmanceEvents.push({ type: 'showmanceRekindle', players: [a, b], phase: 'rekindle' });
+        }
+      }
+      return;
+    }
+
     if (sh.phase === 'broken-up' || sh.phase === 'ride-or-die') return;
     const [a, b] = sh.players;
     if (!active.includes(a) || !active.includes(b)) return; // one eliminated — skip
@@ -33914,8 +33963,8 @@ function rpBuildDebug(ep) {
           <span style="color:#e6edf3;font-weight:600">${b}</span>
           ${rpPortrait(b, 'sm')}
           <div style="margin-left:auto;text-align:right">
-            <div style="font-size:10px;color:${phaseCol};font-weight:700;text-transform:uppercase">${sh.phase}</div>
-            <div style="font-size:9px;color:#6e7681">Bond: ${bond.toFixed(1)} | Ep ${sh.sparkEp} | ${sh.episodesActive} eps${sh.jealousPlayer ? ' | 3rd: ' + sh.jealousPlayer : ''}</div>
+            <div style="font-size:10px;color:${phaseCol};font-weight:700;text-transform:uppercase">${sh.phase}${sh.phase === 'broken-up' ? (sh.breakupVoter ? ' (betrayal by ' + sh.breakupVoter + ')' : sh.breakupType === 'separated' ? ' (separated)' : '') : ''}</div>
+            <div style="font-size:9px;color:#6e7681">Bond: ${bond.toFixed(1)} | Ep ${sh.sparkEp}${sh.breakupEp ? '–' + sh.breakupEp : ''} | ${sh.episodesActive} eps${sh.jealousPlayer ? ' | 3rd: ' + sh.jealousPlayer : ''}</div>
           </div>
         </div>`;
       });
@@ -35761,6 +35810,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : isTriangleNeg  ? (evt.type === 'triangleUltimatum' ? '💔 Choose One' : evt.type === 'trianglePublicFight' ? '💥 Triangle Meltdown' : '💔 Confrontation')
                      : isTriangleGold ? (evt.type === 'triangleTension' ? '⚠ Love Triangle' : '🎯 Pick a Side')
                      : isTriangleRes  ? (evt.type === 'triangleLonely' ? '💔 Alone' : '💔 Triangle Over')
+                     : evt.type === 'showmanceRekindle' ? '💕 Rekindled'
                      : isShowmance   ? 'SHOWMANCE'
                      : isAlliance    ? 'ALLIANCE FORMED'
                      : isAllianceCrk ? 'ALLIANCE CRACKING'
@@ -35996,7 +36046,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : isTriangleNeg ? 'red'
                      : isTriangleGold ? 'gold'
                      : isTriangleRes ? (evt.type === 'triangleLonely' ? 'red' : 'gold')
-                     : evt.type === 'showmanceSpark' || evt.type === 'showmanceHoneymoon' || evt.type === 'showmanceRideOrDie' ? 'green'
+                     : evt.type === 'showmanceSpark' || evt.type === 'showmanceHoneymoon' || evt.type === 'showmanceRideOrDie' || evt.type === 'showmanceRekindle' ? 'green'
                      : evt.type === 'showmanceNoticed' || evt.type === 'showmanceTarget' ? 'gold'
                      : evt.type === 'showmanceJealousy' ? 'red'
                      : evt.type === 'allianceExpelled' ? 'red'

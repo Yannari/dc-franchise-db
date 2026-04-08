@@ -19308,6 +19308,11 @@ function generateCampEvents(ep, phase = 'both') {
         boost('rumor', 25); boost('homesick', 15);
         boost('weirdMoment', 15); // paranoia makes people act strange
         break;
+      case 'triple-dog-dare':
+        // Dare challenge aftermath — drama, doubt, strategic talk
+        boost('doubt', 30); boost('confessional', 30);
+        boost('strategicTalk', 25); boost('rumor', 20);
+        break;
       case 'auction':
         // After an auction — well-fed players are social; strategic players are thinking about advantages
         boost('tdBond', 20); boost('comfort', 25); boost('flirtation', 15);
@@ -21333,6 +21338,107 @@ function simulateEpisode() {
     });
     const stSN = generateSummaryText(ep);
     gs.episodeHistory[gs.episodeHistory.length-1].summaryText = stSN; ep.summaryText = stSN;
+    patchEpisodeHistory(ep); saveGameState(); return ep;
+  }
+
+  // ── TRIPLE DOG DARE — dare challenge replaces immunity + tribal ──
+  if (ep.isTripleDogDare) {
+    // Pre-challenge: journey, advantages, camp events fire normally
+    simulateJourney(ep); findAdvantages(ep);
+    if (gs._scrambleActivations) ep._debugScramble = { ...gs._scrambleActivations };
+    generateCampEvents(ep, 'pre');
+    checkMoleSabotage(ep);
+    updatePerceivedBonds(ep);
+
+    // Run the dare challenge
+    simulateTripleDogDare(ep);
+
+    // Post-challenge camp reactions
+    generateCampEvents(ep, 'post');
+
+    // Handle elimination — with RI check
+    if (ep.eliminated) {
+      handleAdvantageInheritance(ep.eliminated, ep);
+      if (isRIStillActive()) {
+        if (cfg.riFormat === 'rescue') {
+          ep.riChoice = 'RESCUE ISLAND';
+          gs.riPlayers.push(ep.eliminated);
+          if (!gs.riArrivalEp) gs.riArrivalEp = {};
+          gs.riArrivalEp[ep.eliminated] = epNum;
+        } else {
+          const _tddRiC = simulateRIChoice(ep.eliminated);
+          ep.riChoice = _tddRiC;
+          if (_tddRiC === 'REDEMPTION ISLAND') gs.riPlayers.push(ep.eliminated);
+          else { gs.eliminated.push(ep.eliminated); if (gs.isMerged) gs.jury.push(ep.eliminated); }
+        }
+      } else {
+        gs.eliminated.push(ep.eliminated);
+        if (gs.isMerged) gs.jury.push(ep.eliminated);
+      }
+      gs.activePlayers = gs.activePlayers.filter(p => p !== ep.eliminated);
+      gs.tribes = gs.tribes.map(t => ({...t, members: t.members.filter(p => p !== ep.eliminated)}));
+      gs.advantages = gs.advantages.filter(a => a.holder !== ep.eliminated);
+
+      // Tied Destinies collateral
+      if (gs._tiedDestiniesActive) {
+        const _tdPair = gs._tiedDestiniesActive.find(p => p.a === ep.eliminated || p.b === ep.eliminated);
+        if (_tdPair) {
+          const _tdPartner = _tdPair.a === ep.eliminated ? _tdPair.b : _tdPair.a;
+          if (gs.activePlayers.includes(_tdPartner)) {
+            ep.tiedDestiniesCollateral = _tdPartner;
+            handleAdvantageInheritance(_tdPartner, ep);
+            if (isRIStillActive()) {
+              if (cfg.riFormat === 'rescue') { gs.riPlayers.push(_tdPartner); }
+              else {
+                const _tdRi = simulateRIChoice(_tdPartner);
+                if (_tdRi === 'REDEMPTION ISLAND') gs.riPlayers.push(_tdPartner);
+                else { gs.eliminated.push(_tdPartner); if (gs.isMerged) gs.jury.push(_tdPartner); }
+              }
+            } else {
+              gs.eliminated.push(_tdPartner);
+              if (gs.isMerged) gs.jury.push(_tdPartner);
+            }
+            gs.activePlayers = gs.activePlayers.filter(p => p !== _tdPartner);
+            gs.tribes = gs.tribes.map(t => ({...t, members: t.members.filter(p => p !== _tdPartner)}));
+            gs.advantages = gs.advantages.filter(a => a.holder !== _tdPartner);
+          }
+        }
+      }
+    }
+
+    ep.bondChanges = updateBonds([], ep.eliminated, []);
+    detectBetrayals(ep);
+    updatePlayerStates(ep); checkPerceivedBondTriggers(ep.num); decayAllianceTrust(ep.num); recoverBonds(ep);
+    updateSurvival(ep);
+    gs.episode = epNum;
+    if (gs.activePlayers.length <= cfg.finaleSize) gs.phase = 'finale';
+
+    gs.episodeHistory.push({
+      num: epNum, eliminated: ep.eliminated || null, riChoice: ep.riChoice || null,
+      immunityWinner: null,
+      challengeType: 'triple-dog-dare', isMerge: ep.isMerge,
+      isTripleDogDare: true,
+      votes: {}, alliances: [],
+      twists: (ep.twists || []).map(t => ({...t})),
+      tribesAtStart: (ep.tribesAtStart || []).map(t => ({ name: t.name, members: [...t.members] })),
+      campEvents: ep.campEvents || null,
+      tripleDogDare: ep.tripleDogDare,
+      tiedDestiniesCollateral: ep.tiedDestiniesCollateral || null,
+      journey: ep.journey || null,
+      idolFinds: ep.idolFinds || [],
+      bewareLostVotes: ep.bewareLostVotes || [],
+      riDuel: ep.riDuel || null,
+      riPlayersPreDuel: ep.riPlayersPreDuel || null,
+      riLifeEvents: ep.riLifeEvents || [],
+      riReentry: ep.riReentry || null,
+      rescueIslandEvents: ep.rescueIslandEvents || [],
+      rescueReturnChallenge: ep.rescueReturnChallenge || null,
+      riArrival: ep.riArrival || null,
+      riQuit: ep.riQuit || null,
+      advantagesPreTribal: ep.advantagesPreTribal || null, summaryText: '', gsSnapshot: snapshotGameState()
+    });
+    const stTDD = generateSummaryText(ep);
+    gs.episodeHistory[gs.episodeHistory.length-1].summaryText = stTDD; ep.summaryText = stTDD;
     patchEpisodeHistory(ep); saveGameState(); return ep;
   }
 
@@ -29396,6 +29502,8 @@ function patchEpisodeHistory(ep) {
   if (ep.alliancesPreTribal) h.alliancesPreTribal = ep.alliancesPreTribal;
   h.blackVote = ep.blackVote || null;
   if (ep.tiedDestinies) h.tiedDestinies = ep.tiedDestinies;
+  if (ep.tripleDogDare) h.tripleDogDare = ep.tripleDogDare;
+  if (ep.isTripleDogDare) h.isTripleDogDare = true;
   if (ep.exileDuelPlayerAtStart) h.exileDuelPlayerAtStart = ep.exileDuelPlayerAtStart;
   if (ep.volunteerDuel) h.volunteerDuel = ep.volunteerDuel;
   if (ep.fanVoteReturnee) h.fanVoteReturnee = ep.fanVoteReturnee;

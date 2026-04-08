@@ -3050,7 +3050,7 @@ function updatePerceivedBonds(ep) {
         const variants = _realizationText[entry.reason] || [`${from} finally sees the truth about ${to}.`];
         // Cap wake-up call events at 2 per episode to avoid flooding camp feed
         const _wakeUpCount = ep.campEvents[campKey].pre.filter(e => e.type === 'perceptionRealization').length;
-        if (_wakeUpCount < 2) {
+        if (_wakeUpCount < 3) {
           ep.campEvents[campKey].pre.push({
             type: 'perceptionRealization', players: [from, to],
             text: _pick(variants), badgeText: 'WAKE-UP CALL', badgeClass: 'red'

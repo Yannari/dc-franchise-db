@@ -37166,6 +37166,14 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
     const isMoleExposed   = evt.type === 'moleExposed' || evt.type === 'moleExposedSurvival';
     const isMoleSuspicion = evt.type === 'moleSuspicionTalk' || evt.type === 'moleSuspicionConfront';
     const isMoleReveal    = evt.type === 'moleUndiscoveredReveal' || evt.type === 'moleExitConfessional';
+    const isDareComplete  = evt.type === 'dareCompleted';
+    const isDareMVP       = evt.type === 'dareMVP';
+    const isDareGift      = evt.type === 'freebieGift';
+    const isDarePact      = evt.type === 'darePact';
+    const isDarePactBetray= evt.type === 'darePactBetrayal';
+    const isDareAllyBetray= evt.type === 'allianceRedirectBetrayal';
+    const isDareRefusal   = evt.type === 'freebieRefusal';
+    const isDareElim      = evt.type === 'dareElimination';
     const isCRExposure    = evt.type === 'culturalResetExposure';
     const isCRSurvived    = evt.type === 'culturalResetSurvived';
     const isCRCracked     = evt.type === 'culturalResetCracked';
@@ -37415,6 +37423,14 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : isMoleExposed     ? (evt.badgeText || 'MOLE EXPOSED')
                      : isMoleSuspicion   ? (evt.badgeText || 'SUSPICION')
                      : isMoleReveal      ? (evt.badgeText || 'THE MOLE')
+                     : isDareComplete   ? (evt.badgeText || 'DARE COMPLETED')
+                     : isDareMVP        ? (evt.badgeText || 'DAREDEVIL')
+                     : isDareGift       ? (evt.badgeText || 'FREEBIE SHARED')
+                     : isDarePact       ? (evt.badgeText || 'DEAL STRUCK')
+                     : isDarePactBetray ? (evt.badgeText || 'PACT BROKEN')
+                     : isDareAllyBetray ? (evt.badgeText || 'BETRAYED')
+                     : isDareRefusal    ? (evt.badgeText || 'LEFT HANGING')
+                     : isDareElim       ? (evt.badgeText || 'COULDN\'T TAKE IT')
                      : isPos && isPersonal  ? '+ Bond formed'
                      : isPos                ? '+ Bond boost'
                      : isNeg && isPersonal  ? '\u2212 Personal tension'
@@ -37509,6 +37525,8 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : isMoleSuspicion ? 'gold'
                      : evt.type === 'volunteerExileDuel' ? 'gold'
                      : isMoleReveal ? 'gold'
+                     : isDareComplete || isDareMVP || isDareGift || isDarePact ? 'gold'
+                     : isDarePactBetray || isDareAllyBetray || isDareRefusal || isDareElim ? 'red'
                      : evt.type === 'fight' || evt.type === 'meltdown' || evt.type === 'dispute' || evt.type === 'leadershipClash' || evt.type === 'intimidation' ? 'red'
                      : evt.type === 'bond' || evt.type === 'tdBond' || evt.type === 'comfort' || evt.type === 'flirtation' ? 'green'
                      : evt.type === 'strategicTalk' || evt.type === 'bigMoveThoughts' || evt.type === 'mastermindOrchestrates' || evt.type === 'wildcardPivot' || evt.type === 'chaosAgentStirsUp' ? 'gold'
@@ -45716,6 +45734,203 @@ function rpBuildFanFavorite(ep) {
 }
 
 // ══════════════════════════════════════════════════════════════════════
+// TRIPLE DOG DARE VP SCREENS
+// ══════════════════════════════════════════════════════════════════════
+
+function rpBuildTripleDogDareAnnouncement(ep) {
+  const tdd = ep.tripleDogDare;
+  if (!tdd) return '';
+  const snap = ep.gsSnapshot || {};
+  const activePlayers = snap.activePlayers || [];
+  const playerCount = tdd.playerCount || activePlayers.length;
+
+  let html = `<div class="rp-page tod-tribal">
+    <div style="font-family:var(--font-display);font-size:28px;letter-spacing:2px;text-align:center;color:var(--accent-fire);text-shadow:0 0 20px var(--accent-fire);margin-bottom:6px;animation:scrollDrop 0.5s var(--ease-broadcast) both">TRIPLE DOG DARE</div>
+    <div style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:24px;line-height:1.6">
+      The eliminated players have written the dares.<br>
+      Accept a dare — earn a freebie. Redirect it — spend one.<br>
+      Run out of freebies and can't do the dare?<br>
+      <span style="color:var(--accent-fire);font-weight:700">You're out of the game.</span>
+    </div>
+    <div style="font-size:11px;color:var(--muted);text-align:center;margin-bottom:20px">
+      ${playerCount} players. ${tdd.rounds.length} rounds. 1 elimination. No tribal council.
+    </div>
+    <div class="rp-portrait-row" style="justify-content:center;margin-bottom:20px">
+      ${activePlayers.map(name => rpPortrait(name)).join('')}
+    </div>
+  </div>`;
+  return html;
+}
+
+function rpBuildTripleDogDareRounds(ep) {
+  const tdd = ep.tripleDogDare;
+  if (!tdd || !tdd.rounds?.length) return '';
+  const stateKey = String(ep.num) + '_tdd';
+  const snap = ep.gsSnapshot || {};
+  const activePlayers = snap.activePlayers || [];
+  const _catColor = { 'gross-out': '#3fb950', 'humiliation': '#db61a2', 'pain-fear': '#da3633', 'sacrifice': '#e3b341', 'fallback': '#8b949e' };
+  const _catLabel = { 'gross-out': 'GROSS-OUT', 'humiliation': 'HUMILIATION', 'pain-fear': 'PAIN / FEAR', 'sacrifice': 'SACRIFICE', 'fallback': 'FALLBACK' };
+
+  // Build freebie snapshot tracking
+  const _fb = {};
+  activePlayers.forEach(p => _fb[p] = 0);
+
+  let html = `<div class="rp-page tod-tribal">
+    <div style="font-family:var(--font-display);font-size:22px;letter-spacing:2px;text-align:center;color:var(--accent-fire);margin-bottom:16px">THE DARES</div>`;
+
+  // Persistent freebie counter bar
+  html += `<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:20px;padding:10px;background:var(--surface);border:1px solid var(--border);border-radius:8px">
+    ${activePlayers.map(name => {
+      const finalCount = tdd.freebiesAtEnd?.[name] || 0;
+      return `<div style="text-align:center;min-width:48px">
+        ${rpPortrait(name, 'sm')}
+        <div style="font-size:12px;font-weight:700;color:var(--accent-gold);margin-top:2px;font-family:var(--font-mono)">${finalCount}</div>
+      </div>`;
+    }).join('')}
+  </div>`;
+
+  // Freebie gifts grouped by round
+  const _giftsByRound = {};
+  (tdd.freebieGifts || []).forEach(g => { if (!_giftsByRound[g.round]) _giftsByRound[g.round] = []; _giftsByRound[g.round].push(g); });
+  // Pacts grouped by round
+  const _pactsByRound = {};
+  (tdd.pacts || []).forEach(p => { if (!_pactsByRound[p.formedRound]) _pactsByRound[p.formedRound] = []; _pactsByRound[p.formedRound].push(p); });
+
+  // Round cards
+  tdd.rounds.forEach((round, ri) => {
+    const hasElim = round.chain.some(s => s.action === 'accept' && !s.completed);
+    const catColor = _catColor[round.dareCategory] || '#8b949e';
+    const catLabel = _catLabel[round.dareCategory] || round.dareCategory;
+
+    // Pact formation before this round
+    (_pactsByRound[round.roundNum] || []).forEach(pact => {
+      html += `<div class="vp-card gold" style="margin-bottom:8px;text-align:center">
+        <span style="font-size:9px;font-weight:700;letter-spacing:1px;color:var(--accent-gold)">DEAL STRUCK</span><br>
+        <div class="rp-portrait-row" style="justify-content:center;margin:6px 0">${rpPortrait(pact.initiator, 'sm')} ${rpPortrait(pact.partner, 'sm')}</div>
+        <div style="font-size:11px;color:var(--muted)">${pact.initiator} and ${pact.partner} agree to work together — target: ${pact.target}</div>
+      </div>`;
+    });
+
+    // Freebie gifts before this round
+    (_giftsByRound[round.roundNum] || []).forEach(gift => {
+      html += `<div class="vp-card gold" style="margin-bottom:8px;text-align:center">
+        <span style="font-size:9px;font-weight:700;letter-spacing:1px;color:var(--accent-gold)">FREEBIE SHARED</span><br>
+        <div class="rp-portrait-row" style="justify-content:center;margin:6px 0">${rpPortrait(gift.from, 'sm')} <span style="font-size:16px;color:var(--accent-gold)">\u2192</span> ${rpPortrait(gift.to, 'sm')}</div>
+        <div style="font-size:11px;color:var(--muted)">${gift.from} slides a freebie to ${gift.to}</div>
+      </div>`;
+    });
+
+    // Round card
+    html += `<div class="vp-card ${hasElim ? 'fire' : ''}" style="margin-bottom:12px;cursor:pointer" onclick="tvRevealNext('${stateKey}')">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="font-size:10px;font-weight:700;color:var(--muted);font-family:var(--font-mono)">R${round.roundNum}</span>
+        <span style="font-size:9px;font-weight:700;letter-spacing:1px;color:${catColor};background:${catColor}18;padding:2px 6px;border-radius:3px">${catLabel}</span>
+      </div>`;
+
+    // Wheel spin
+    html += `<div data-reveal="${stateKey}" style="display:none">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:6px">
+        ${rpPortrait(round.eliminatedSpinner, 'sm', '', true)} <span style="vertical-align:middle">${round.eliminatedSpinner} dares you to\u2026</span>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:var(--vp-text);margin-bottom:10px;font-style:italic">"${round.dareText}"</div>`;
+
+    // Chain of events
+    round.chain.forEach((step, si) => {
+      html += `<div data-reveal="${stateKey}" style="display:none;padding:4px 0;${si > 0 ? 'margin-top:4px;border-top:1px solid var(--border);' : ''}">
+        <div style="display:flex;align-items:center;gap:8px">
+          ${rpPortrait(step.player, 'sm')}
+          <div style="flex:1">`;
+
+      if (step.action === 'accept' && step.completed) {
+        html += `<span style="font-size:12px;font-weight:600;color:#3fb950">\u2705 ${step.player} accepted — completed the dare</span>
+          <div style="font-size:10px;color:var(--accent-gold);margin-top:2px">+1 freebie</div>`;
+      } else if (step.action === 'accept' && !step.completed) {
+        html += `<span style="font-size:12px;font-weight:600;color:#da3633">\u274c ${step.player} had no choice — couldn't go through with it</span>
+          <div style="font-size:11px;font-weight:700;color:#da3633;margin-top:4px;letter-spacing:1px">ELIMINATED</div>`;
+      } else if (step.action === 'redirect') {
+        const betrayalTag = step.isBetrayal ? ` <span style="font-size:9px;font-weight:700;color:#da3633;letter-spacing:0.5px">BETRAYAL</span>` : '';
+        html += `<span style="font-size:12px;color:var(--muted)">\ud83d\udd04 ${step.player} spent a freebie — redirected to ${step.to}${betrayalTag}</span>`;
+      }
+
+      html += `</div></div></div>`;
+    });
+
+    html += `</div></div>`;
+  });
+
+  // Reveal all button
+  html += `<div style="text-align:center;margin-top:12px">
+    <button class="rp-camp-toggle-btn" style="border-color:var(--accent-fire);color:var(--accent-fire)" onclick="tvRevealAll('${stateKey}')">REVEAL ALL ROUNDS</button>
+  </div>`;
+
+  html += `</div>`;
+  return html;
+}
+
+function rpBuildTripleDogDareElimination(ep) {
+  const tdd = ep.tripleDogDare;
+  if (!tdd || !tdd.eliminated) return '';
+  const elimName = tdd.eliminated;
+  const pr = pronouns(elimName);
+  const p = players.find(x => x.name === elimName);
+  const arch = p?.archetype || 'player';
+  const archLabel = arch.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  const catColor = { 'gross-out': '#3fb950', 'humiliation': '#db61a2', 'pain-fear': '#da3633', 'sacrifice': '#e3b341', 'fallback': '#8b949e' }[tdd.eliminatedDare?.category] || '#8b949e';
+
+  const quotes = [
+    \`"I knew it was coming. I just didn't think it would end like this."\`,
+    \`"I did everything I could. Some dares are just... too much."\`,
+    \`"\${pr.Sub} \${pr.sub === 'they' ? 'weren\\'t' : 'wasn\\'t'} afraid of the game. \${pr.Sub} \${pr.sub === 'they' ? 'were' : 'was'} afraid of that."\`,
+    \`"I gave this game everything. It just asked for one thing I couldn't give."\`,
+    \`"No regrets. Okay, one regret."\`,
+  ];
+  const quote = quotes[Math.floor(Math.abs(elimName.charCodeAt(0) * 7 + ep.num * 13) % quotes.length)];
+
+  let html = `<div class="rp-page tod-tribal" style="text-align:center">
+    <div class="rp-co-eyebrow" style="color:#da3633;margin-bottom:20px">ELIMINATED</div>
+    ${rpPortrait(elimName, 'lg elim')}
+    <div class="rp-elim-name" style="margin-top:16px">${elimName}</div>
+    <div class="rp-elim-arch">${archLabel}</div>
+    <div class="rp-elim-quote">${quote}</div>`;
+
+  if (tdd.eliminatedDare && tdd.eliminatedDare.category !== 'fallback') {
+    html += `<div style="margin-bottom:16px">
+      <span style="font-size:9px;font-weight:700;letter-spacing:1px;color:${catColor};background:${catColor}18;padding:3px 8px;border-radius:3px">${(tdd.eliminatedDare.category || '').toUpperCase().replace('-', ' / ')}</span>
+    </div>
+    <div style="font-size:12px;color:var(--muted);font-style:italic;margin-bottom:16px">"${tdd.eliminatedDare.text}"</div>`;
+  }
+
+  html += `<div class="rp-elim-place">Couldn't take the dare — Round ${tdd.eliminatedRound}</div>`;
+
+  // Tied Destinies collateral
+  if (ep.tiedDestiniesCollateral) {
+    const tdName = ep.tiedDestiniesCollateral;
+    const tdPr = pronouns(tdName);
+    const tdP = players.find(x => x.name === tdName);
+    const tdArch = tdP?.archetype || 'player';
+    const tdArchLabel = tdArch.replace(/-/g, ' ').replace(/\\b\\w/g, c => c.toUpperCase());
+    html += `<div class="rp-co-divider"></div>
+      <div style="font-size:11px;font-weight:700;letter-spacing:2px;color:#da3633;margin-bottom:12px">TIED DESTINIES &mdash; COLLATERAL</div>
+      ${rpPortrait(tdName, 'lg elim')}
+      <div class="rp-elim-name" style="margin-top:12px">${tdName}</div>
+      <div class="rp-elim-arch">${tdArchLabel}</div>
+      <div class="rp-elim-quote">"${tdPr.Sub} didn't get dared. ${tdPr.Sub} got tied to the wrong person."</div>
+      <div class="rp-elim-place">Eliminated by Tied Destinies</div>`;
+  }
+
+  // Daredevil MVP
+  if (tdd.mostDares) {
+    html += `<div class="rp-co-divider"></div>
+      <div style="font-size:11px;font-weight:700;letter-spacing:2px;color:var(--accent-gold);margin-bottom:12px">DAREDEVIL</div>
+      ${rpPortrait(tdd.mostDares, 'sm')}
+      <div style="font-size:12px;color:var(--muted);margin-top:6px">${tdd.mostDares} completed the most dares (${tdd.completions?.[tdd.mostDares] || 0})</div>`;
+  }
+
+  html += `</div>`;
+  return html;
+}
+
+// ══════════════════════════════════════════════════════════════════════
 // SLASHER NIGHT VP SCREENS
 // ══════════════════════════════════════════════════════════════════════
 
@@ -46534,6 +46749,24 @@ function buildVPScreens(epRecord) {
       html: rpBuildCampTribe(ep, tribe.name, postMembers, 'post'),
     });
   });
+
+  // ── Triple Dog Dare — replaces challenge + tribal + votes ──
+  if (ep.isTripleDogDare && ep.tripleDogDare) {
+    vpScreens.push({ id:'tdd-announce', label:'Triple Dog Dare', html: rpBuildTripleDogDareAnnouncement(ep) });
+    vpScreens.push({ id:'tdd-rounds', label:'The Dares', html: rpBuildTripleDogDareRounds(ep) });
+    vpScreens.push({ id:'tdd-elimination', label:'Eliminated', html: rpBuildTripleDogDareElimination(ep) });
+    // RI/Rescue screens
+    if (ep.riLifeEvents?.length || ep.riDuel) {
+      const _tddRiLife = rpBuildRILife(ep);
+      if (_tddRiLife) vpScreens.push({ id:'ri-life', label:'RI Life', html: _tddRiLife });
+      const _tddRiDuel = rpBuildRIDuel(ep);
+      if (_tddRiDuel) vpScreens.push({ id:'ri-duel', label:'RI Duel', html: _tddRiDuel });
+    }
+    if (ep.rescueIslandEvents?.length) {
+      const _tddRescLife = rpBuildRescueIslandLife(ep);
+      if (_tddRescLife) vpScreens.push({ id:'rescue-life', label:'Rescue Island', html: _tddRescLife });
+    }
+  }
 
   // ── Slasher Night — replaces challenge + tribal + votes ──
   if (ep.isSlasherNight && ep.slasherNight) {

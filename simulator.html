@@ -45591,7 +45591,7 @@ function buildVPScreens(epRecord) {
         return [{ name: _mergeKey, members: [...ep.finaleEntrants] }];
       }
       const snapActive = ep.gsSnapshot?.activePlayers || [];
-      const eliminated = [ep.eliminated, ep.firstEliminated].filter(Boolean);
+      const eliminated = [ep.eliminated, ep.firstEliminated, ep.tiedDestinies?.eliminatedPartner].filter(Boolean);
       const _exilePlayer = ep.exileDuelPlayerAtStart || ep.exilePlayer || ep.gsSnapshot?.exileDuelPlayer || gs.exileDuelPlayer;
       const members = (snapActive.length
         ? [...new Set([...snapActive, ...eliminated])]

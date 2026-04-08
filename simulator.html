@@ -13799,7 +13799,7 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
            `${p} reads a normal conversation as something threatening. ${_paP.Sub} spend${_paP.sub==='they'?'':'s'} the rest of the day quietly processing that.`,
            `${p} is in ${_paP.posAdj} own head today. The tribe can feel the energy shift.`,
            `Something has gotten to ${p}. ${_paP.Sub} ${_paP.sub==='they'?'are':'is'} still functional — but barely.`];
-      events.push({ type: 'paranoia', text: paraLines[Math.floor(Math.random() * paraLines.length)] });
+      events.push({ type: 'paranoia', text: paraLines[Math.floor(Math.random() * paraLines.length)], players: [p] });
 
     } else if (eventType === 'scramble') {
       const a = _pick(group, n => {
@@ -13910,7 +13910,7 @@ function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = 
         `${sdA} and ${sdB} have a conversation the rest of the tribe doesn't see. By tomorrow, the game might look different.`,
         `${sdA} pulls ${sdB} aside with a pitch that's either brilliant or desperate. ${sdB} is going to sleep on it.`,
       ];
-      events.push({ type: 'strategicApproach', text: sdLines[Math.floor(Math.random() * sdLines.length)] });
+      events.push({ type: 'strategicApproach', text: sdLines[Math.floor(Math.random() * sdLines.length)], players: [sdA, sdB] });
 
     } else if (eventType === 'bigMoveThoughts') {
       const p = _pick(group, n => {
@@ -36607,6 +36607,8 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'soleVoteAccomplice'    ? 'ACCOMPLICE?'
                      : evt.type === 'miscommunicationFallout' ? (evt.badgeText || 'MISFIRE')
                      : evt.type === 'hardWork'             ? '+ Earned respect'
+                     : evt.type === 'paranoia'             ? '⚠ Spiraling'
+                     : evt.type === 'strategicApproach'    ? '⚡ Making Moves'
                      : evt.type === 'unexpectedCompetence' ? '+ Surprised the tribe'
                      : evt.type === 'underdogMoment'       ? '+ Underdog rising'
                      : evt.type === 'socialBoost'          ? '+ Lifted the mood'
@@ -36791,7 +36793,8 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'providerFishing' || evt.type === 'providerForaging' || evt.type === 'providerPraised' || evt.type === 'foodRationing' ? 'gold'
                      : evt.type === 'slackerBonding' || evt.type === 'starvationBond' ? 'green'
                      : evt.type === 'slackerCalledOut' || evt.type === 'slackerConfrontation' || evt.type === 'foodConflict' || evt.type === 'foodHoarding' || evt.type === 'foodCrisis' || evt.type === 'survivalCollapse' || evt.type === 'medevac' || evt.type === 'providerVotedOut' ? 'red'
-                     : evt.type === 'sideDeal' || evt.type === 'infoTrade' || evt.type === 'loyaltyTest' || evt.type === 'votePitch' ? 'gold'
+                     : evt.type === 'sideDeal' || evt.type === 'infoTrade' || evt.type === 'loyaltyTest' || evt.type === 'votePitch' || evt.type === 'strategicApproach' ? 'gold'
+                     : evt.type === 'paranoia' ? 'red'
                      : evt.type === 'apology' ? 'green'
                      : evt.type === 'votePitchFailed' ? 'red'
                      : evt.type === 'loyaltyTestPassed' ? 'green'

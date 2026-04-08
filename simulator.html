@@ -16100,7 +16100,7 @@ function updateShowmancePhases(ep) {
         // Bond boost on rekindle — proportional, not threshold
         addBond(a, b, wasSeparated ? 1.5 : 0.5);
 
-        const tribeName = gs.isMerged ? 'merge' : (gs.tribes.find(t => t.members.includes(a))?.name || 'merge');
+        const tribeName = gs.isMerged ? (gs.mergeName || 'merge') : (gs.tribes.find(t => t.members.includes(a))?.name || 'merge');
         if (ep.campEvents?.[tribeName]) {
           const block = ep.campEvents[tribeName];
           const evts = Array.isArray(block) ? block : (block.post || block.pre || []);
@@ -16133,11 +16133,10 @@ function updateShowmancePhases(ep) {
       sh.phase = 'broken-up';
       sh.breakupEp = epNum;
       sh.breakupType = 'faded'; // neither voted the other out — just fell apart
-      ep.showmanceBreakup = ep.showmanceBreakup || null;
-      ep.showmanceSeparation = ep.showmanceSeparation || null;
       const _pA = pronouns(a), _pB = pronouns(b);
-      const tribeName = gs.isMerged ? 'merge' : (gs.tribes.find(t => t.members.includes(a))?.name || 'merge');
-      if (ep.campEvents?.[tribeName]) {
+      const tribeName = gs.isMerged ? (gs.mergeName || 'merge') : (gs.tribes.find(t => t.members.includes(a))?.name || 'merge');
+      if (ep.campEvents) {
+        if (!ep.campEvents[tribeName]) ep.campEvents[tribeName] = { pre: [], post: [] };
         const block = ep.campEvents[tribeName];
         const evts = Array.isArray(block) ? block : (block.post || block.pre || []);
         evts.push({ type: 'showmanceBreakup', text: _pick([
@@ -16156,7 +16155,7 @@ function updateShowmancePhases(ep) {
     const bond = getBond(a, b);
     const _pA = pronouns(a), _pB = pronouns(b);
 
-    const tribeName = gs.isMerged ? 'merge' : (gs.tribes.find(t => t.members.includes(a))?.name || 'merge');
+    const tribeName = gs.isMerged ? (gs.mergeName || 'merge') : (gs.tribes.find(t => t.members.includes(a))?.name || 'merge');
     const pushEvt = (type, text, players) => {
       if (!ep.campEvents?.[tribeName]) return;
       const block = ep.campEvents[tribeName];
@@ -16372,7 +16371,7 @@ function checkLoveTriangleFormation(ep) {
     const pc = pronouns(center);
     const ps0 = pronouns(suitors[0]);
     const ps1 = pronouns(suitors[1]);
-    const tribeName = gs.isMerged ? 'merge' : (gs.tribes.find(t => t.members.includes(center))?.name || 'merge');
+    const tribeName = gs.isMerged ? (gs.mergeName || 'merge') : (gs.tribes.find(t => t.members.includes(center))?.name || 'merge');
     if (ep.campEvents?.[tribeName]) {
       const block = ep.campEvents[tribeName];
       const evts = Array.isArray(block) ? block : (block.post || block.pre || []);
@@ -16456,7 +16455,7 @@ function checkLoveTriangleFormation(ep) {
           });
 
           // Subtle formation event (the affair is secret — no big announcement)
-          const _afTribe = gs.isMerged ? 'merge' : (gs.tribes.find(t => t.members.includes(inShowmance))?.name || 'merge');
+          const _afTribe = gs.isMerged ? (gs.mergeName || 'merge') : (gs.tribes.find(t => t.members.includes(inShowmance))?.name || 'merge');
           if (ep.campEvents?.[_afTribe]) {
             const _afBlock = ep.campEvents[_afTribe];
             const _afEvts = Array.isArray(_afBlock) ? _afBlock : (_afBlock.post || _afBlock.pre || []);
@@ -16493,7 +16492,7 @@ function checkLoveTriangleFormation(ep) {
         // Push camp event
         const pc = pronouns(inShowmance);
         const pCand = pronouns(candidate);
-        const tribeName = gs.isMerged ? 'merge' : (gs.tribes.find(t => t.members.includes(inShowmance))?.name || 'merge');
+        const tribeName = gs.isMerged ? (gs.mergeName || 'merge') : (gs.tribes.find(t => t.members.includes(inShowmance))?.name || 'merge');
         if (ep.campEvents?.[tribeName]) {
           const block = ep.campEvents[tribeName];
           const evts = Array.isArray(block) ? block : (block.post || block.pre || []);
@@ -16537,7 +16536,7 @@ function updateLoveTrianglePhases(ep) {
       // Both suitors eliminated same episode (double tribal) — center gets lonely event
       if (centerAlive && !aAlive && !cAlive) {
         const pc = pronouns(center);
-        const tribeName = gs.isMerged ? 'merge' : (gs.tribes.find(t => t.members.includes(center))?.name || 'merge');
+        const tribeName = gs.isMerged ? (gs.mergeName || 'merge') : (gs.tribes.find(t => t.members.includes(center))?.name || 'merge');
         if (ep.campEvents?.[tribeName]) {
           const block = ep.campEvents[tribeName];
           const evts = Array.isArray(block) ? block : (block.post || block.pre || []);
@@ -16566,7 +16565,7 @@ function updateLoveTrianglePhases(ep) {
       ep.triangleEvents = ep.triangleEvents || [];
       ep.triangleEvents.push({ type: 'organic-resolve', phase: tri.phase, center, suitors: [suitorA, suitorC], survivingBond });
       // Push visible camp event so the resolution isn't silent
-      const _orgTribe = gs.isMerged ? 'merge' : (gs.tribes.find(t => t.members.includes(center))?.name || 'merge');
+      const _orgTribe = gs.isMerged ? (gs.mergeName || 'merge') : (gs.tribes.find(t => t.members.includes(center))?.name || 'merge');
       if (ep.campEvents?.[_orgTribe]) {
         const _orgBlock = ep.campEvents[_orgTribe];
         const _orgEvts = Array.isArray(_orgBlock) ? _orgBlock : (_orgBlock.post || _orgBlock.pre || []);
@@ -16614,7 +16613,7 @@ function updateLoveTrianglePhases(ep) {
     const pc = pronouns(center);
     const pA = pronouns(suitorA);
     const pC = pronouns(suitorC);
-    const tribeName = gs.isMerged ? 'merge' : (gs.tribes.find(t => t.members.includes(center))?.name || 'merge');
+    const tribeName = gs.isMerged ? (gs.mergeName || 'merge') : (gs.tribes.find(t => t.members.includes(center))?.name || 'merge');
 
     const pushEvt = (type, text, players) => {
       if (!ep.campEvents?.[tribeName]) return;
@@ -16872,7 +16871,7 @@ function updateAffairExposure(ep) {
 
     af.episodesActive++;
 
-    const tribeName = gs.isMerged ? 'merge' : (gs.tribes.find(t => t.members.includes(cheater))?.name || 'merge');
+    const tribeName = gs.isMerged ? (gs.mergeName || 'merge') : (gs.tribes.find(t => t.members.includes(cheater))?.name || 'merge');
     const pushEvt = (type, text, players) => {
       if (!ep.campEvents?.[tribeName]) return;
       const block = ep.campEvents[tribeName];

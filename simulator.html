@@ -27318,7 +27318,15 @@ function generateAftermathShow(ep) {
         const _it = (gs.loveTriangles || []).find(t => t.center === name || t.suitors.includes(name));
         if (!_it) return [];
         const entries = [];
-        if (_it.center === name) entries.push({ q: `"Two people. One choice. What was going through your head when you realized you were caught between ${_it.suitors[0]} and ${_it.suitors[1]}?"`, a: _pick([`"I cared about both of them. But the game doesn't let you have both."`, `"I didn't ask for this. By the time I realized, everyone was watching."`]), cat: 'triangle' });
+        if (_it.center === name) {
+          const _triCenterBondA = getBond(name, _it.suitors[0]), _triCenterBondC = getBond(name, _it.suitors[1]);
+          const _triWasReal = _triCenterBondA >= 2 && _triCenterBondC >= 2;
+          entries.push({ q: `"Two people. One choice. What was going through your head when you realized you were caught between ${_it.suitors[0]} and ${_it.suitors[1]}?"`,
+            a: _triWasReal
+              ? _pick([`"I cared about both of them. But the game doesn't let you have both."`, `"I didn't ask for this. By the time I realized, everyone was watching."`])
+              : _pick([`"It wasn't what people think. I was never torn — I knew where I stood. But the tribe made it into something it wasn't."`, `"${_it.suitors[1]} read into something that wasn't there. I was loyal to ${_it.suitors[0]} from the start."`]),
+            cat: 'triangle' });
+        }
         if (_it.resolution?.type === 'chose' && _it.center === name) entries.push({ q: `"You chose ${_it.resolution.chosen}. Do you think ${_it.resolution.rejected} will ever forgive you?"`, a: _pick([`"I hope so. But I understand if ${pronouns(_it.resolution.rejected).sub} ${pronouns(_it.resolution.rejected).sub === 'they' ? 'don\'t' : 'doesn\'t'}."`, `"Forgive me? I'm not sure I've forgiven myself."`]), cat: 'triangle' });
         if (_it.resolution?.rejected === name) entries.push({ q: `"You watched ${_it.center} choose someone else. On a scale of one to devastated — where did you land?"`, a: pStats(name).archetype === 'villain' || pStats(name).archetype === 'schemer' ? `"Devastated? No. Motivated."` : _pick([`"Off the scale. I thought what we had was real."`, `"Devastated doesn't cover it. But I'm still here."`]), cat: 'triangle' });
         if (_it.resolution?.chosen === name) entries.push({ q: `"You won the triangle. Did you feel guilty — even for a second?"`, a: _pick([`"Every second. But I can't control who ${_it.center} chooses."`, `"Guilty? A little. But I'm not going to apologize for being chosen."`]), cat: 'triangle' });
@@ -36473,7 +36481,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
     const isAffairNeg   = evt.type === 'affairExposed' || evt.type === 'affairCaught';
     const isAffairGold  = evt.type === 'affairSecret' || evt.type === 'affairRumor' || evt.type === 'affairSilent';
     const isAffairChoice= evt.type === 'affairChoice';
-    const isAlliance    = evt.type === 'allianceForm';
+    const isAlliance    = evt.type === 'allianceForm' || evt.type === 'allianceRecruit';
     const isAllianceCrk   = evt.type === 'allianceCrack';
     const isSocialBomb    = evt.type === 'socialBomb';
     const isSocialReact   = evt.type === 'socialBombReaction';
@@ -36553,7 +36561,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'showmanceRekindle' ? '💕 Rekindled'
                      : evt.type === 'showmanceBreakup' ? '💔 It\'s Over'
                      : isShowmance   ? 'SHOWMANCE'
-                     : isAlliance    ? 'ALLIANCE FORMED'
+                     : isAlliance    ? (evt.type === 'allianceRecruit' ? 'RECRUITED' : 'ALLIANCE FORMED')
                      : isAllianceCrk ? 'ALLIANCE CRACKING'
                      : isSocialBomb  ? '\u2212 SOCIAL BOMB'
                      : isSocialReact ? '\u2212 Fallout'

@@ -28988,9 +28988,15 @@ function simulateNext() {
 
 function simulateMultipleEpisodes(count) {
   if (!gs || !gs.initialized) { alert('Start a season first.'); return; }
-  const max = count || 999; // 999 = all remaining
+  const max = count || 999;
   let ran = 0;
-  while (ran < max && gs.activePlayers.length > 1 && gs.phase !== 'finished') {
+  while (ran < max && gs.phase !== 'complete') {
+    // Fire-making / Koh-Lanta override (same as simulateNext)
+    const _needsF4 = seasonConfig.firemaking || seasonConfig.finaleFormat === 'fire-making' || seasonConfig.finaleFormat === 'koh-lanta';
+    if (_needsF4) {
+      if (seasonConfig.finaleSize < 4) seasonConfig.finaleSize = 4;
+      if (gs.phase === 'finale' && gs.activePlayers.length > 4) gs.phase = 'post-merge';
+    }
     const ep = gs.phase === 'finale' ? simulateFinale() : simulateEpisode();
     if (!ep) break;
     if (ep.winner && !ep.aftermath && seasonConfig.aftermath === 'enabled') {
@@ -29003,7 +29009,7 @@ function simulateMultipleEpisodes(count) {
     if (seasonConfig.popularityEnabled !== false) { updatePopularity(ep); saveGameState(); }
     viewingEpNum = ep.num;
     ran++;
-    if (ep.winner) break; // season over
+    if (ep.winner || gs.phase === 'complete') break;
   }
   if (ran > 0) {
     renderRunTab();

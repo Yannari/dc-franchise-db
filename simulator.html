@@ -6639,9 +6639,11 @@ function simulateSayUncle(ep) {
     else if (category === 'fear')   { primary = s.boldness * 0.07;  secondary = s.endurance * 0.04; }
     else if (category === 'gross')  { primary = s.boldness * 0.07;  secondary = s.physical * 0.04; }
     else if (category === 'humiliation') { primary = s.boldness * 0.07; secondary = (10 - s.social) * 0.04; }
-    const score = primary + secondary - fatigue + (Math.random() * 0.15);
-    if (score >= 0.50) return 'dominant';
-    if (score >= 0.35) return 'pass';
+    const score = primary + secondary - fatigue + (Math.random() * 0.20 - 0.05);
+    // Stat 10/10: score ~1.10, stat 5/5: ~0.55, stat 3/3: ~0.33
+    // With these thresholds: stat 5 has ~50/50 pass, stat 3 usually fails, stat 8+ usually dominates
+    if (score >= 0.70) return 'dominant';
+    if (score >= 0.50) return 'pass';
     return 'fail';
   };
 
@@ -6836,29 +6838,16 @@ function simulateSayUncle(ep) {
         pickedBy = player;
       }
     } else {
-      // Normal pass
+      // Normal pass — survived but didn't dominate. No pick power.
       if (_pickedBy) {
+        // Backfire: picker is out (their victim survived)
         round.backfire = { picker: _pickedBy, reaction: _backfireReaction(_pickedBy, player) };
         backfires.push({ picker: _pickedBy, victim: player, round: roundNum });
         remaining.splice(remaining.indexOf(_pickedBy), 1);
         eliminated.push(_pickedBy);
         addBond(_pickedBy, player, -0.3);
         addBond(player, _pickedBy, 0.3);
-        // Victim earned pick power from backfire
-        const bfVictim = _pickVictim(player);
-        if (bfVictim) {
-          const bfCategory = _pickCategory(player, bfVictim);
-          const bfStats = pStats(bfVictim);
-          const bfConfident = bfStats.physical <= 5 || bfStats.endurance <= 5 || bfStats.boldness <= 5;
-          round.pick = {
-            victim: bfVictim, category: bfCategory,
-            reaction: _pickReaction(player, bfVictim, bfConfident),
-            categoryReason: `${player} earned the pick from the backfire. Targets ${bfVictim}'s weakness: ${bfCategory}.`,
-          };
-          nextPlayer = bfVictim;
-          nextCategory = bfCategory;
-          pickedBy = player;
-        }
+        // No pick power — next player is random
       }
     }
 
@@ -11439,7 +11428,10 @@ function applyTwist(ep, twist, isPrimary = true) {
     ep.isTripleDogDare = true;
 
   } else if (engineType === 'say-uncle') {
-    if (!gs.isMerged || gs.activePlayers.length < 3) return;
+    // Guard: post-merge only (or merge episode — twists fire before merge check)
+    const _suMerging = !gs.isMerged && gs.activePlayers.length <= (seasonConfig.mergeAt || 12);
+    if (!gs.isMerged && !_suMerging) return;
+    if (gs.activePlayers.length < 3) return;
     ep.isSayUncle = true;
 
   } else if (engineType === 'cultural-reset') {
@@ -22432,6 +22424,10 @@ function simulateEpisode() {
         ep.penaltyVoteTwistPending = false;
       }
     }
+  } else if (ep.isSayUncle) {
+    // ── SAY UNCLE: torture endurance challenge replaces immunity ──
+    simulateSayUncle(ep);
+    ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
   } else {
     // ── TIED DESTINIES: paired immunity challenge ──
     const _tdTwist = ep.tiedDestinies;
@@ -22456,11 +22452,6 @@ function simulateEpisode() {
       ep.chalMemberScores = {};
       _pairScores.forEach(ps => { ep.chalMemberScores[ps.pair.a] = ps.scoreA; ep.chalMemberScores[ps.pair.b] = ps.scoreB; });
       ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
-    } else if (ep.isSayUncle) {
-    // Say Uncle replaces the immunity challenge — normal tribal follows
-    simulateSayUncle(ep);
-    // challengeType, immunityWinner, chalPlacements already set by simulateSayUncle
-
     } else {
     const _chalPool = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
     const immResult = simulateIndividualChallenge(_chalPool, null);
@@ -47567,7 +47558,12 @@ function buildVPScreens(epRecord) {
   if (ep.isFinale && ep.challengeType && ep.immunityWinner && (seasonConfig.finaleSize >= 3 || seasonConfig.firemaking) && seasonConfig.finaleFormat !== 'final-challenge' && seasonConfig.finaleFormat !== 'koh-lanta') {
     // Finale immunity: use the same detailed challenge screen as regular episodes (koh-lanta has its own orienteering/perch screens)
     vpScreens.push({ id:'finale-challenge', label:'Final Immunity', html: rpBuildChallenge(ep) });
-  } else if (ep.challengeType && !ep.isFinale && !ep.isSlasherNight && !ep.isTripleDogDare && !ep.isSayUncle) {
+  } else if (ep.isSayUncle && ep.sayUncle) {
+    // Say Uncle replaces the normal challenge screen
+    vpScreens.push({ id:'su-announce', label:'Say Uncle', html: rpBuildSayUncleAnnouncement(ep) });
+    vpScreens.push({ id:'su-rounds', label:'The Torture', html: rpBuildSayUncleRounds(ep) });
+    vpScreens.push({ id:'su-immunity', label:'Immunity', html: rpBuildSayUncleImmunity(ep) });
+  } else if (ep.challengeType && !ep.isFinale && !ep.isSlasherNight && !ep.isTripleDogDare) {
     vpScreens.push({ id:'challenge', label:'Immunity Challenge', html: rpBuildChallenge(ep) });
   }
 
@@ -47790,13 +47786,6 @@ function buildVPScreens(epRecord) {
       html: rpBuildCampTribe(ep, tribe.name, postMembers, 'post'),
     });
   });
-
-  // ── Say Uncle — replaces challenge, shows before normal challenge screen ──
-  if (ep.isSayUncle && ep.sayUncle) {
-    vpScreens.push({ id:'su-announce', label:'Say Uncle', html: rpBuildSayUncleAnnouncement(ep) });
-    vpScreens.push({ id:'su-rounds', label:'The Torture', html: rpBuildSayUncleRounds(ep) });
-    vpScreens.push({ id:'su-immunity', label:'Immunity', html: rpBuildSayUncleImmunity(ep) });
-  }
 
   // ── Triple Dog Dare — replaces challenge + tribal + votes ──
   if (ep.isTripleDogDare && ep.tripleDogDare) {

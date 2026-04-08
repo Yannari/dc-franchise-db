@@ -133,6 +133,38 @@ and the downstream consequence. None are guaranteed — all fire on a roll.
 
 ── REMAINING — RANKED BY PRIORITY ─────────────────────────────────────────────
 
+  HIGH PRIORITY
+  ─────────────
+
+[TDD-FIX] TRIPLE DOG DARE — REDESIGN
+  Status: implemented but flow is WRONG. Needs rewrite of simulateTripleDogDare().
+  Current bug: uses willingness roll to determine if player "completes" the dare.
+  Correct flow (from the show): there is NO fail roll. If you accept, you do it. Period.
+  The challenge is about WILLINGNESS, not ability.
+
+  Corrected mechanic:
+  1. Spinner (rotation) spins wheel → dare from eliminated player
+  2. Spinner decides:
+     - ACCEPT the dare → does it, earns +1 freebie
+     - PASS the dare to someone else → targeting logic picks who
+  3. If passed to someone:
+     - Target can USE A FREEBIE to skip (-1 freebie)
+     - Target can ACCEPT → does the dare (no freebie earned, only spinners earn)
+     - Target REFUSES + 0 freebies → ELIMINATED from the game
+  4. Players can gift freebies at any time (alliance/bond driven)
+
+  Key changes from current implementation:
+  - Remove all willingness/survival rolls — acceptance is a DECISION not a stat check
+  - Decision logic: boldness + dare category modifiers determine if player WANTS to accept
+    or would rather pass/use freebie. But if they choose to accept, it always succeeds.
+  - Only way to be eliminated: 0 freebies + refuse a dare passed to you
+  - Spinner accepting their own dare = the ONLY way to earn freebies (strategic choice)
+  - Passing = offensive weapon, freebies = defensive shield
+  - Freebie sharing stays (alliance/bond/strategy driven)
+  - VP stays (sequential reveal, freebie counter, reactions)
+  - Dare pool stays (80 dares, 4 categories with titles+descriptions)
+  Spec: docs/superpowers/specs/2026-04-08-triple-dog-dare-design.md (needs update)
+
   MEDIUM PRIORITY
   ───────────────
 

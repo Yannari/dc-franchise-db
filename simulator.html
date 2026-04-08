@@ -19455,36 +19455,31 @@ function generateCampEvents(ep, phase = 'both') {
         ]) });
       } else if (save.type === 'idol-for-ally') {
         const _a = pronouns(save.playedFor);
-        pre.push({ type: 'saveReaction', text: _rp([
-          `${save.player} played their idol for ${save.playedFor} last night. ${save.playedFor} is still here because of it. The camp is absorbing what that means — not just strategically, but personally.`,
-          `What ${save.player} did at tribal last night wasn't calculated. It was a choice — put ${save.playedFor} above ${_p.posAdj} own safety. ${vn > 0 ? `${vn} ${voteWord} wiped out. ` : ''}That kind of loyalty changes things.`,
-          `${save.player} burned an idol for ${save.playedFor}. It worked. The camp woke up knowing that alliance just proved it means something real.`,
-        ]) });
-        pre.push({ type: 'saveBond', text: _rp([
-          `${save.playedFor} knows what ${save.player} gave up. That's not easy to forget — and it creates a debt that runs deeper than strategy.`,
-          `Some people in this game would never put someone else above their own idol. ${save.player} did. ${_a.Sub} ${_a.sub==='they'?'are':'is'} going to carry that.`,
-          `There's a difference between being in an alliance and proving you'd actually sacrifice for someone. ${save.player} just proved it.`,
-        ]) });
-        pre.push({ type: 'saveScramble', text: _rp([
-          `${save.player} has no idol now. That changes the math. Anyone who was counting on ${_p.obj} having insurance needs to adjust.`,
-          `${save.player} spent their protection last night. Whether it was the right move depends entirely on how loyal ${save.playedFor} turns out to be from here.`,
-          `The idol is gone. The person who played it is a different kind of threat now — no advantage, but a proven ally willing to act on it.`,
-        ]) });
+        // Consolidated idol-for-ally event — reaction + bond + scramble in one
+        const _allyReact = _rp([
+          `${save.player} played their idol for ${save.playedFor} last night. ${save.playedFor} is still here because of it.`,
+          `What ${save.player} did at tribal wasn't calculated. It was a choice — put ${save.playedFor} above ${_p.posAdj} own safety. ${vn > 0 ? `${vn} ${voteWord} wiped out.` : ''}`,
+          `${save.player} burned an idol for ${save.playedFor}. It worked. That alliance just proved it means something real.`,
+        ]);
+        const _allyAfter = _rp([
+          `${save.playedFor} knows what ${save.player} gave up. That debt runs deeper than strategy. But ${save.player} has no idol now — the math just changed for everyone.`,
+          `${save.player} spent their protection. Whether it was the right move depends on how loyal ${save.playedFor} turns out to be from here.`,
+          `The idol is gone. But a proven ally willing to sacrifice? That's a different kind of threat.`,
+        ]);
+        pre.push({ type: 'saveReaction', players: [save.player, save.playedFor], text: `${_allyReact} ${_allyAfter}` });
       } else {
-        pre.push({ type: 'saveReaction', text: _rp([
+        // Consolidated self-idol event — one event covering reaction + empowerment + scramble
+        const _selfIdolReact = _rp([
           `${save.player} wakes up this morning having played an idol and survived. ${vn} ${voteWord} wiped out. The people who cast them are watching ${_p.obj} from across the fire.`,
           `The idol play is the first thing on everyone's mind when they wake up. ${save.player} is still here. The plan failed. The game goes on.`,
           `${save.player} pulled out an idol last night and it worked. This morning ${_p.sub} ${_p.sub==='they'?'move':'moves'} around camp like nothing happened. That kind of composure is its own kind of threat.`,
-        ]) });
-        pre.push({ type: 'saveEmpowered', text: _rp([
-          `${save.player} doesn't need to say anything. The move said it. ${_p.Sub} ${_p.sub==='they'?'survive':'survives'} with ${_p.posAdj} own hand, and now ${_p.sub} ${_p.sub==='they'?'know':'knows'} ${_p.sub} ${_p.sub==='they'?'can':'can'} do it again.`,
-          `There's something different about ${save.player} this morning. Not louder — just more settled. ${_p.Sub} ${_p.sub==='they'?'played':'played'} the idol right. That's hard to fake confidence about.`,
-        ]) });
-        pre.push({ type: 'saveScramble', text: _rp([
-          `${save.player} is still the target for the people who voted against ${_p.obj}. The idol is gone, but the threat hasn't changed. Someone is already figuring out how to finish what they started.`,
-          `${vn} ${voteWord} went nowhere last night. That coalition still exists. It just needs a new shot.`,
-          `The name doesn't disappear just because the play worked. ${save.player} bought one episode. Everybody in this game knows it.`,
-        ]) });
+        ]);
+        const _selfIdolAfter = _rp([
+          `The idol is gone, but the threat hasn't changed. Someone is already figuring out how to finish what they started.`,
+          `${vn} ${voteWord} went nowhere. That coalition still exists. It just needs a new shot. ${save.player} bought one episode — everybody knows it.`,
+          `There's something different about ${save.player} this morning. ${_p.Sub} ${_p.sub==='they'?'survive':'survives'} with ${_p.posAdj} own hand. But ${_p.sub} ${_p.sub==='they'?'are':'is'} still the target.`,
+        ]);
+        pre.push({ type: 'saveReaction', text: `${_selfIdolReact} ${_selfIdolAfter}` });
       }
     });
   }

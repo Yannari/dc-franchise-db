@@ -16574,6 +16574,20 @@ function updateLoveTrianglePhases(ep) {
           `The triangle resolved itself. ${center} drifted away from ${droppedSuitor} naturally — no dramatic confrontation, just the slow fade of something that was never going to last.`,
         ]), players: [center, survivingBond, droppedSuitor] });
       }
+      // Surviving bond becomes a showmance if compatible + bond high enough + cap allows
+      const _orgBondVal = getBond(center, survivingBond);
+      const _activeShCount = (gs.showmances || []).filter(sh => sh.phase !== 'broken-up' && sh.players.every(p => active.includes(p))).length;
+      if (_orgBondVal >= 4 && romanticCompat(center, survivingBond) && _activeShCount < 2) {
+        // Check they don't already have a showmance
+        if (!gs.showmances.some(sh => sh.players.includes(center) && sh.players.includes(survivingBond) && sh.phase !== 'broken-up')) {
+          gs.showmances.push({
+            players: [center, survivingBond], phase: 'spark',
+            sparkEp: epNum, episodesActive: 0, jealousPlayer: null, tested: false
+          });
+          ep.newShowmances = ep.newShowmances || [];
+          ep.newShowmances.push({ a: center, b: survivingBond });
+        }
+      }
       return;
     }
 
@@ -16808,6 +16822,20 @@ function updateLoveTrianglePhases(ep) {
 
       // Store on episode for VP
       ep.triangleResolution = { center, chosen, rejected, severity: rejSeverity, bondCrash, heatBoost };
+
+      // Chosen pair becomes a showmance if compatible + bond high enough + cap allows
+      const _chosenBond = getBond(center, chosen);
+      const _actShCount = (gs.showmances || []).filter(sh => sh.phase !== 'broken-up' && sh.players.every(p => active.includes(p))).length;
+      if (_chosenBond >= 3 && romanticCompat(center, chosen) && _actShCount < 2) {
+        if (!gs.showmances.some(sh => sh.players.includes(center) && sh.players.includes(chosen) && sh.phase !== 'broken-up')) {
+          gs.showmances.push({
+            players: [center, chosen], phase: 'spark',
+            sparkEp: epNum, episodesActive: 0, jealousPlayer: null, tested: false
+          });
+          ep.newShowmances = ep.newShowmances || [];
+          ep.newShowmances.push({ a: center, b: chosen });
+        }
+      }
     }
   });
 }
@@ -17096,6 +17124,19 @@ function _resolveAffairExposure(af, ep, epNum, pushEvt, _pick) {
   af.resolved = true;
   af.resolution = { type: 'exposed', ep: epNum, chose, leftFor, staysWithPartner, partnerSeverity, complicit: af.complicit };
   ep.affairExposure = { cheater, partner, secretPartner, chose, leftFor, staysWithPartner, complicit: af.complicit, severity: partnerSeverity };
+
+  // If cheater left partner — new showmance with secret partner if compatible + cap allows
+  if (!staysWithPartner && romanticCompat(cheater, secretPartner)) {
+    const _afShCount = (gs.showmances || []).filter(sh => sh.phase !== 'broken-up' && sh.players.every(p => gs.activePlayers.includes(p))).length;
+    if (_afShCount < 2 && !gs.showmances.some(sh => sh.players.includes(cheater) && sh.players.includes(secretPartner) && sh.phase !== 'broken-up')) {
+      gs.showmances.push({
+        players: [cheater, secretPartner], phase: 'spark',
+        sparkEp: epNum, episodesActive: 0, jealousPlayer: null, tested: false
+      });
+      ep.newShowmances = ep.newShowmances || [];
+      ep.newShowmances.push({ a: cheater, b: secretPartner });
+    }
+  }
 }
 
 function checkIdolConfessions(ep) {

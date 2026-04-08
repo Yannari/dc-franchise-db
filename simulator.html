@@ -6488,12 +6488,12 @@ function _slasherFinalShowdown(p1, p2, scores) {
 function simulateTripleDogDare(ep) {
   const activePlayers = [...gs.activePlayers];
   const eliminated = [...gs.eliminated];
-  const maxRounds = Math.max(10, activePlayers.length * 3);
+  const maxRounds = Math.max(15, activePlayers.length * 4);
   const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
 
-  // State tracking — everyone starts with 1 freebie so there's always a redirect option early
+  // State tracking — everyone starts with 0 freebies. Early rounds you accept because you have no choice.
   const freebies = {};
-  activePlayers.forEach(p => freebies[p] = 1);
+  activePlayers.forEach(p => freebies[p] = 0);
   const rounds = [];
   const freebieGifts = [];
   const pacts = [];       // { initiator, partner, target, formedRound }
@@ -6519,16 +6519,31 @@ function simulateTripleDogDare(ep) {
   // When forced (0 freebies), a second roll determines if they can actually do it
   const _willingness = (player, category, roundNum, forced = false) => {
     const s = pStats(player);
-    const fatigue = roundNum * 0.025;
+    // Fatigue ramps up — early rounds feel brave, late rounds feel desperate
+    // Round 1-3: negligible. Round 5-7: noticeable. Round 10+: meaningful but not automatic.
+    const fatigue = Math.min(0.20, Math.pow(roundNum, 1.3) * 0.008);
     let secondary = 0;
     if (category === 'humiliation') secondary = (10 - s.social) * 0.03;
     else if (category === 'pain-fear') secondary = s.physical * 0.03;
     else if (category === 'sacrifice') secondary = (10 - s.loyalty) * 0.03;
-    const chance = s.boldness * 0.07 + secondary - fatigue;
-    // When choosing freely: higher bar — players prefer to redirect if they have freebies
-    // When forced (0 freebies): lower bar — adrenaline/desperation helps, but not guaranteed
-    const threshold = forced ? 0.25 : 0.45;
-    return Math.random() < (chance - threshold + 0.5); // probabilistic, not deterministic
+    // Freebie awareness: players know their freebie count and act accordingly
+    // 0 freebies = accept (no choice anyway, might as well commit)
+    // 1 freebie = clutch it, redirect if possible
+    // 2+ freebies = comfortable, more willing to accept
+    // 4+ freebies = very secure, almost always accept
+    const myFreebies = freebies[player] || 0;
+    const freebieComfort = myFreebies === 0 ? 0.15   // no freebies = commit (can't redirect anyway)
+      : myFreebies === 1 ? -0.12  // 1 freebie = protect it, redirect
+      : myFreebies === 2 ? 0.0    // 2 freebies = neutral
+      : myFreebies === 3 ? 0.08   // 3 freebies = comfortable
+      : 0.15;                      // 4+ = very secure, accept freely
+    // Early round safety: first 3 rounds nobody should go home — the game needs buildup
+    const earlyBoost = roundNum <= 2 ? 0.25 : roundNum <= 4 ? 0.10 : 0;
+    const chance = s.boldness * 0.07 + secondary - fatigue + freebieComfort + earlyBoost;
+    // When choosing freely: moderate bar — lean toward accepting early
+    // When forced (0 freebies): lower bar — desperation helps
+    const threshold = forced ? 0.15 : 0.35;
+    return Math.random() < (chance - threshold + 0.5);
   };
 
   // ── Helper: redirect target selection ──
@@ -6739,9 +6754,10 @@ function simulateTripleDogDare(ep) {
     // The spinner receives the dare first (they can accept or redirect)
     let currentTarget = activeSpinner;
 
-    // Redirect chain — max chain length prevents infinite bouncing
+    // Redirect chain — can't pass back to the person who just passed to you
     const chain = [];
     const MAX_CHAIN = remaining.length * 2;
+    let lastRedirector = null; // who just passed the dare — can't pass back to them
     let resolved = false;
 
     while (!resolved && chain.length < MAX_CHAIN) {
@@ -6775,8 +6791,9 @@ function simulateTripleDogDare(ep) {
           completions[currentTarget]++;
           resolved = true;
         } else {
-          // Wants to redirect — find a target (can bounce back to someone who already had it)
-          const redirectResult = _pickRedirectTarget(currentTarget, remaining);
+          // Wants to redirect — can't pass back to the person who just gave it to you
+          const _redirectPool = remaining.filter(p => p !== lastRedirector);
+          const redirectResult = _pickRedirectTarget(currentTarget, _redirectPool);
           if (!redirectResult || !redirectResult.target) {
             // No valid redirect targets — forced to accept
             const canDoIt = _willingness(currentTarget, category, roundNum, true);
@@ -6807,6 +6824,7 @@ function simulateTripleDogDare(ep) {
               betrayals.push({ player: currentTarget, target: redirectResult.target, type: 'redirect', round: roundNum });
               addBond(currentTarget, redirectResult.target, -0.8);
             }
+            lastRedirector = currentTarget;
             currentTarget = redirectResult.target;
           }
         }
@@ -46140,7 +46158,7 @@ function rpBuildTripleDogDareRounds(ep) {
   // Serialize reveal data into data attributes (inline scripts don't execute in innerHTML)
   const revealData = JSON.stringify(revealItems.map(r => r.freebieDeltas)).replace(/</g, '\\u003c');
   const startFreebies = {};
-  activePlayers.forEach(p => startFreebies[p] = 1);
+  activePlayers.forEach(p => startFreebies[p] = 0);
 
   let html = `<div class="rp-page tod-tribal" id="${uid}-page"
     data-tdd-deltas='${revealData}'
@@ -46153,7 +46171,7 @@ function rpBuildTripleDogDareRounds(ep) {
     ${activePlayers.map(name => {
       return `<div style="text-align:center;min-width:48px">
         ${rpPortrait(name, 'sm')}
-        <div id="${uid}-fb-${name.replace(/[^a-zA-Z0-9]/g, '_')}" style="font-size:14px;font-weight:700;color:var(--accent-gold);margin-top:2px;font-family:var(--font-mono)">1</div>
+        <div id="${uid}-fb-${name.replace(/[^a-zA-Z0-9]/g, '_')}" style="font-size:14px;font-weight:700;color:#da3633;margin-top:2px;font-family:var(--font-mono)">0</div>
       </div>`;
     }).join('')}
   </div>`;

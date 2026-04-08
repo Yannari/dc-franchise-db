@@ -19941,6 +19941,10 @@ function generateCampEvents(ep, phase = 'both') {
         boost('doubt', 30); boost('confessional', 30);
         boost('strategicTalk', 25); boost('rumor', 20);
         break;
+      case 'say-uncle':
+        boost('doubt', 25); boost('confessional', 30);
+        boost('strategicTalk', 20); boost('fight', 15);
+        break;
       case 'auction':
         // After an auction — well-fed players are social; strategic players are thinking about advantages
         boost('tdBond', 20); boost('comfort', 25); boost('flirtation', 15);
@@ -22452,6 +22456,11 @@ function simulateEpisode() {
       ep.chalMemberScores = {};
       _pairScores.forEach(ps => { ep.chalMemberScores[ps.pair.a] = ps.scoreA; ep.chalMemberScores[ps.pair.b] = ps.scoreB; });
       ep.tribalPlayers = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
+    } else if (ep.isSayUncle) {
+    // Say Uncle replaces the immunity challenge — normal tribal follows
+    simulateSayUncle(ep);
+    // challengeType, immunityWinner, chalPlacements already set by simulateSayUncle
+
     } else {
     const _chalPool = gs.activePlayers.filter(p => p !== gs.exileDuelPlayer);
     const immResult = simulateIndividualChallenge(_chalPool, null);
@@ -27786,6 +27795,31 @@ function _textWhyVote(ep, ln, sec) {
   else ln('No elimination.');
 }
 
+// ── SAY UNCLE ──
+function _textSayUncle(ep, ln, sec) {
+  const su = ep.sayUncle;
+  if (!su) return;
+  sec('SAY UNCLE');
+  ln(`${su.playerCount} players. ${su.rounds.length} rounds. Torture endurance.`);
+  ln('');
+  su.rounds.forEach(round => {
+    const picked = round.pickedBy ? ` [PICKED BY ${round.pickedBy}]` : '';
+    ln(`Round ${round.roundNum}: ${round.player}${picked} — [${round.dareCategory.toUpperCase()}] ${round.dareTitle}`);
+    ln(`  Result: ${round.result.toUpperCase()}`);
+    if (round.backfire) ln(`  BACKFIRE: ${round.backfire.picker} is OUT`);
+    if (round.calledIt) ln(`  CALLED IT: ${round.calledIt.picker} was right`);
+    if (round.pick) ln(`  PICKS: ${round.pick.victim} (${round.pick.category})`);
+  });
+  ln('');
+  if (su.backfires.length) {
+    ln('BACKFIRES:');
+    su.backfires.forEach(bf => ln(`- Round ${bf.round}: ${bf.picker} picked ${bf.victim} — backfired`));
+    ln('');
+  }
+  ln('PLACEMENTS:');
+  su.placements.forEach((name, i) => ln(`  ${i + 1}. ${name}${i === 0 ? ' (IMMUNITY)' : ''}`));
+}
+
 // ── TRIPLE DOG DARE ──
 function _textTripleDogDare(ep, ln, sec) {
   const tdd = ep.tripleDogDare;
@@ -29694,6 +29728,7 @@ function generateSummaryText(ep) {
   _textSchoolyardPick(ep, ln, sec);
   _textAftermath(ep, ln, sec);
   _textSlasherNight(ep, ln, sec);
+  _textSayUncle(ep, ln, sec);
   _textTripleDogDare(ep, ln, sec);
   _textAmbassadors(ep, ln, sec);
   _textRIDuel(ep, ln, sec);
@@ -30216,6 +30251,8 @@ function patchEpisodeHistory(ep) {
   h.blackVote = ep.blackVote || null;
   if (ep.tiedDestinies) h.tiedDestinies = ep.tiedDestinies;
   if (ep.tripleDogDare) h.tripleDogDare = ep.tripleDogDare;
+  if (ep.sayUncle) h.sayUncle = ep.sayUncle;
+  if (ep.isSayUncle) h.isSayUncle = true;
   if (ep.isTripleDogDare) h.isTripleDogDare = true;
   if (ep.exileDuelPlayerAtStart) h.exileDuelPlayerAtStart = ep.exileDuelPlayerAtStart;
   if (ep.volunteerDuel) h.volunteerDuel = ep.volunteerDuel;
@@ -30869,6 +30906,7 @@ function renderEpisodeHistory() {
     const finaleTag = ep.isFinale ? `<span class="ep-hist-tag" style="background:rgba(245,158,11,0.15);color:#f59e0b">FINALE</span>` : '';
     const slasherTag = ep.isSlasherNight ? `<span class="ep-hist-tag" style="background:rgba(218,54,51,0.15);color:#da3633">Slasher Night</span>` : '';
     const tddTag = ep.isTripleDogDare ? `<span class="ep-hist-tag" style="background:rgba(245,158,11,0.15);color:#f59e0b">Triple Dog Dare</span>` : '';
+    const suTag = ep.isSayUncle ? `<span class="ep-hist-tag" style="background:rgba(245,158,11,0.15);color:#f59e0b">Say Uncle</span>` : '';
     const hasCheckpoint = !!gsCheckpoints[ep.num];
     const replayBtn = hasCheckpoint
       ? `<button class="ep-hist-replay" title="Re-run this episode" onclick="event.stopPropagation();replayEpisode(${ep.num})">↺</button>`
@@ -30876,7 +30914,7 @@ function renderEpisodeHistory() {
     return `<div class="ep-hist-card ${ep.num===currentNum?'active':''}" onclick="viewEpisode(${ep.num})">
       <div class="ep-hist-ep">Episode ${ep.num}${replayBtn}</div>
       <div class="ep-hist-elim">${_spoilerFree ? '???' : ep.multiTribalElims?.length >= 2 ? ep.multiTribalElims.join(' + ') : ep.ambassadorData?.ambassadorEliminated ? `${ep.ambassadorData.ambassadorEliminated} + ${ep.eliminated||'?'}` : ep.tiedDestinies?.eliminatedPartner ? `${ep.eliminated||'?'} + ${ep.tiedDestinies.eliminatedPartner}` : ep.firstEliminated ? `${ep.firstEliminated} + ${ep.eliminated||'?'}` : (ep.eliminated || (ep.isFinale ? 'FTC' : '\u2014'))}</div>
-      <div>${riTag}${mergeTag}${finaleTag}${slasherTag}${tddTag}</div>
+      <div>${riTag}${mergeTag}${finaleTag}${slasherTag}${tddTag}${suTag}</div>
     </div>`;
   }).join('');
 }
@@ -33851,6 +33889,16 @@ function rpBuildColdOpen(ep) {
       </div>`;
     }
 
+    // ── [1c] SAY UNCLE RECAP ──
+    if (prevEp.isSayUncle && prevEp.sayUncle) {
+      const _suData = prevEp.sayUncle;
+      html += `<div class="vp-card gold" style="margin-bottom:10px">
+        <div style="font-family:var(--font-body);font-size:11px;font-weight:800;letter-spacing:1px;color:var(--accent-gold);margin-bottom:6px">SAY UNCLE</div>
+        <div style="font-size:12px;margin-bottom:4px">${_suData.immunityWinner} won immunity \u2014 last one standing after ${_suData.rounds.length} rounds</div>
+        ${_suData.backfires?.length ? `<div style="font-size:11px;color:#da3633">${_suData.backfires.length} backfire${_suData.backfires.length > 1 ? 's' : ''} \u2014 picks that blew up</div>` : ''}
+      </div>`;
+    }
+
     // ── [2] CLOSE VOTE — survived by 1 vote ──
     if (prevEp.votes && prevEp.eliminated) {
       const _sortedVotes = Object.entries(prevEp.votes).sort(([,a],[,b]) => b - a);
@@ -36254,7 +36302,7 @@ function rpBuildFirstImpressions(ep, twistObj) {
 // ── Screen 3: Pre-challenge twists (tribe swap, three gifts, journey, exile-island, etc.) ──
 function rpBuildPreTwist(ep) {
   const _rawTwistData = (ep.twistScenes?.length ? ep.twistScenes : generateTwistScenes(ep))
-    .filter(t => t.type !== 'exile-island' && t.type !== 'jury-elimination' && t.type !== 'kidnapping' && t.type !== 'first-impressions' && t.type !== 'tied-destinies' && t.type !== 'aftermath' && t.type !== 'fan-vote-return' && t.type !== 'schoolyard-pick' && t.type !== 'triple-dog-dare'); // shown in dedicated screens
+    .filter(t => t.type !== 'exile-island' && t.type !== 'jury-elimination' && t.type !== 'kidnapping' && t.type !== 'first-impressions' && t.type !== 'tied-destinies' && t.type !== 'aftermath' && t.type !== 'fan-vote-return' && t.type !== 'schoolyard-pick' && t.type !== 'triple-dog-dare' && t.type !== 'say-uncle'); // shown in dedicated screens
   // Deduplicate: only show one scene per twist type (prevents double display if twist is in ep.twists twice)
   const _seenTypes = new Set();
   const twistData = _rawTwistData.filter(t => { if (_seenTypes.has(t.type)) return false; _seenTypes.add(t.type); return true; });
@@ -37901,6 +37949,12 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
     const isDareAllyBetray= evt.type === 'allianceRedirectBetrayal';
     const isDareRefusal   = evt.type === 'freebieRefusal';
     const isDareElim      = evt.type === 'dareElimination';
+    const isSayUncleWin   = evt.type === 'sayUncleWinner';
+    const isSayUncleDom   = evt.type === 'sayUncleDominated';
+    const isSayUncleBack  = evt.type === 'sayUncleBackfire';
+    const isSayUncleCalled= evt.type === 'sayUncleCalledIt';
+    const isSayUncleFail  = evt.type === 'sayUncleFailed';
+    const isSayUncleEndure= evt.type === 'sayUncleEndured';
     const isCRExposure    = evt.type === 'culturalResetExposure';
     const isCRSurvived    = evt.type === 'culturalResetSurvived';
     const isCRCracked     = evt.type === 'culturalResetCracked';
@@ -38158,6 +38212,12 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : isDareAllyBetray ? (evt.badgeText || 'BETRAYED')
                      : isDareRefusal    ? (evt.badgeText || 'LEFT HANGING')
                      : isDareElim       ? (evt.badgeText || 'COULDN\'T TAKE IT')
+                     : isSayUncleWin    ? (evt.badgeText || 'LAST ONE STANDING')
+                     : isSayUncleDom    ? (evt.badgeText || 'DIDN\'T FLINCH')
+                     : isSayUncleBack   ? (evt.badgeText || 'BACKFIRE')
+                     : isSayUncleCalled ? (evt.badgeText || 'CALLED IT')
+                     : isSayUncleFail   ? (evt.badgeText || 'SAID UNCLE')
+                     : isSayUncleEndure ? (evt.badgeText || 'ENDURED')
                      : isPos && isPersonal  ? '+ Bond formed'
                      : isPos                ? '+ Bond boost'
                      : isNeg && isPersonal  ? '\u2212 Personal tension'
@@ -38254,6 +38314,8 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : isMoleReveal ? 'gold'
                      : isDareComplete || isDareMVP || isDareGift || isDarePact ? 'gold'
                      : isDarePactBetray || isDareAllyBetray || isDareRefusal || isDareElim ? 'red'
+                     : isSayUncleWin || isSayUncleDom || isSayUncleEndure ? 'gold'
+                     : isSayUncleBack || isSayUncleFail || isSayUncleCalled ? 'red'
                      : evt.type === 'fight' || evt.type === 'meltdown' || evt.type === 'dispute' || evt.type === 'leadershipClash' || evt.type === 'intimidation' ? 'red'
                      : evt.type === 'bond' || evt.type === 'tdBond' || evt.type === 'comfort' || evt.type === 'flirtation' ? 'green'
                      : evt.type === 'strategicTalk' || evt.type === 'bigMoveThoughts' || evt.type === 'mastermindOrchestrates' || evt.type === 'wildcardPivot' || evt.type === 'chaosAgentStirsUp' ? 'gold'
@@ -46461,6 +46523,178 @@ function rpBuildFanFavorite(ep) {
 }
 
 // ══════════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════
+// SAY UNCLE VP SCREENS
+// ══════════════════════════════════════════════════════════════════════
+
+function rpBuildSayUncleAnnouncement(ep) {
+  const su = ep.sayUncle;
+  if (!su) return '';
+  const prevEp = (gs.episodeHistory || []).filter(h => h.num < ep.num).slice(-1)[0];
+  const prevSnap = prevEp?.gsSnapshot || {};
+  const snap = ep.gsSnapshot || {};
+  const _tm = ep.tribesAtStart?.flatMap(t => t.members);
+  const activePlayers = (_tm?.length ? _tm : null) || prevSnap.activePlayers || snap.activePlayers || [];
+
+  const _hostQuotes = [
+    'Today\'s challenge is called Say Uncle. You\'ll each face a random torture. Survive ten seconds, and you move on. Quit, and you\'re done.',
+    'The Wheel of Misfortune decides your fate. Last one standing wins immunity. But dominate your dare — you get to pick who goes next. Choose wisely.',
+    'No alliances can save you here. No strategy. Just pain tolerance and the will to keep going.',
+  ];
+  const _hostQuote = _hostQuotes[Math.floor(Math.abs((ep.num || 1) * 23) % _hostQuotes.length)];
+
+  let html = `<div class="rp-page tod-arena">
+    <div style="font-family:var(--font-display);font-size:32px;letter-spacing:3px;text-align:center;color:var(--accent-fire);text-shadow:0 0 20px var(--accent-fire);margin-bottom:4px;animation:scrollDrop 0.5s var(--ease-broadcast) both">SAY UNCLE</div>
+    <div style="font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--muted);text-align:center;margin-bottom:24px">Torture Endurance Challenge</div>
+    <div style="font-size:13px;color:var(--vp-text);text-align:center;margin-bottom:24px;line-height:1.7;max-width:460px;margin-left:auto;margin-right:auto;font-style:italic">"${_hostQuote}"</div>
+    <div style="display:flex;flex-wrap:wrap;gap:16px;justify-content:center;margin-bottom:24px;max-width:500px;margin-left:auto;margin-right:auto">
+      <div class="vp-card" style="flex:1;min-width:180px;text-align:center;padding:12px">
+        <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:var(--accent-gold);margin-bottom:8px">THE RULES</div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.6;text-align:left">
+          <div style="margin-bottom:4px"><span style="color:#3fb950;font-weight:700">Survive</span> 10 seconds \u2014 move on</div>
+          <div style="margin-bottom:4px"><span style="color:var(--accent-gold);font-weight:700">Dominate</span> \u2014 pick the next victim + dare</div>
+          <div style="margin-bottom:4px"><span style="color:#da3633;font-weight:700">Victim passes</span> \u2014 YOU'RE out (backfire)</div>
+          <div><span style="color:#da3633;font-weight:700">Fail</span> \u2014 eliminated from challenge</div>
+        </div>
+      </div>
+      <div class="vp-card" style="flex:1;min-width:180px;text-align:center;padding:12px">
+        <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:var(--accent-fire);margin-bottom:8px">THE STAKES</div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.6">
+          <div style="margin-bottom:4px">${su.playerCount} players</div>
+          <div style="margin-bottom:4px">${su.rounds.length} rounds</div>
+          <div style="color:var(--accent-gold);font-weight:700">Winner gets immunity</div>
+          <div style="color:var(--muted)">Normal tribal follows</div>
+        </div>
+      </div>
+    </div>
+    <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:var(--muted);text-align:center;margin-bottom:10px">CONTESTANTS</div>
+    <div class="rp-portrait-row" style="justify-content:center">${activePlayers.map(name => rpPortrait(name)).join('')}</div>
+  </div>`;
+  return html;
+}
+
+function rpBuildSayUncleRounds(ep) {
+  const su = ep.sayUncle;
+  if (!su || !su.rounds?.length) return '';
+  const uid = 'su-' + ep.num;
+  const _catColor = { 'pain': '#da3633', 'fear': '#8957e5', 'gross': '#3fb950', 'humiliation': '#db61a2' };
+
+  const revealItems = [];
+
+  su.rounds.forEach(round => {
+    const catColor = _catColor[round.dareCategory] || '#8b949e';
+    const isFinal = round.isFinal;
+    let rh = '';
+
+    rh += `<div style="font-size:10px;font-weight:700;color:var(--muted);font-family:var(--font-mono);margin-bottom:8px">${isFinal ? 'FINAL ROUND' : 'ROUND ' + round.roundNum}</div>`;
+
+    if (round.pickedBy) {
+      rh += `<div style="font-size:11px;font-weight:700;color:#da3633;letter-spacing:0.5px;margin-bottom:6px">\uD83C\uDFAF PICKED BY ${round.pickedBy.toUpperCase()}</div>`;
+    }
+
+    rh += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      ${rpPortrait(round.player, 'sm')}
+      <div style="font-size:12px;color:var(--vp-text)">${round.player} faces the Wheel of Misfortune\u2026</div>
+    </div>
+    <div style="background:${catColor}08;border-left:3px solid ${catColor};padding:8px 12px;margin-bottom:12px;border-radius:0 6px 6px 0">
+      <div style="font-size:14px;font-weight:700;color:var(--vp-text);margin-bottom:4px">${round.dareTitle}</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.5">${round.dareText}</div>
+    </div>`;
+
+    if (round.result === 'dominant') {
+      rh += `<div style="font-size:11px;font-weight:700;color:var(--accent-gold);letter-spacing:0.5px;margin-bottom:4px">\u2B50 DOMINATED \u2014 DIDN'T FLINCH</div>`;
+    } else if (round.result === 'pass') {
+      rh += `<div style="font-size:11px;font-weight:700;color:#3fb950;letter-spacing:0.5px;margin-bottom:4px">\u2705 SURVIVED</div>`;
+    } else {
+      rh += `<div style="font-size:11px;font-weight:700;color:#da3633;letter-spacing:0.5px;margin-bottom:4px">\u274c SAID UNCLE</div>`;
+    }
+
+    if (round.reaction) rh += `<div style="font-size:12px;color:var(--vp-text);line-height:1.5;margin-bottom:8px">${round.reaction}</div>`;
+
+    if (round.backfire) {
+      rh += `<div style="border-top:1px solid var(--border);padding-top:8px;margin-top:8px">
+        <div style="font-size:11px;font-weight:700;color:#da3633;letter-spacing:1px;margin-bottom:4px">\uD83D\uDCA5 BACKFIRE</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          ${rpPortrait(round.backfire.picker, 'sm', 'elim')}
+          <div style="font-size:12px;color:var(--vp-text);line-height:1.5">${round.backfire.reaction}</div>
+        </div>
+      </div>`;
+    }
+
+    if (round.calledIt) {
+      rh += `<div style="border-top:1px solid var(--border);padding-top:8px;margin-top:8px">
+        <div style="font-size:11px;font-weight:700;color:var(--accent-gold);letter-spacing:1px;margin-bottom:4px">\u2705 CALLED IT</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.5">${round.calledIt.reaction}</div>
+      </div>`;
+    }
+
+    if (round.pick) {
+      rh += `<div style="border-top:1px solid var(--border);padding-top:8px;margin-top:8px">
+        <div style="font-size:11px;font-weight:700;color:var(--accent-fire);letter-spacing:1px;margin-bottom:4px">\uD83C\uDFAF PICKS NEXT VICTIM</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          ${rpPortrait(round.player, 'sm')}
+          <span style="font-size:14px;color:var(--accent-fire)">\u2192</span>
+          ${rpPortrait(round.pick.victim, 'sm')}
+        </div>
+        <div style="font-size:12px;color:var(--vp-text);line-height:1.5;margin-bottom:4px">${round.pick.reaction}</div>
+        <div style="font-size:10px;color:var(--muted);font-style:italic">${round.pick.categoryReason}</div>
+      </div>`;
+    }
+
+    const cardClass = round.result === 'fail' ? 'fire' : round.backfire ? 'fire' : round.result === 'dominant' ? 'gold' : '';
+    revealItems.push({ type: 'round', html: `<div class="vp-card ${cardClass}" style="margin-bottom:12px">${rh}</div>` });
+  });
+
+  let html = `<div class="rp-page tod-arena" id="${uid}-page" data-su-revealed="0" data-su-total="${revealItems.length}">
+    <div style="font-family:var(--font-display);font-size:22px;letter-spacing:2px;text-align:center;color:var(--accent-fire);margin-bottom:16px">THE TORTURE</div>
+    <div style="font-size:10px;color:var(--muted);text-align:center;margin-bottom:16px">${su.playerCount} players \u2014 ${su.rounds.length} rounds</div>`;
+
+  revealItems.forEach((item, i) => {
+    html += `<div class="${uid}-item" style="display:none" data-idx="${i}">${item.html}</div>`;
+  });
+
+  html += `<div style="display:flex;gap:10px;justify-content:center;margin-top:16px;position:sticky;bottom:10px;z-index:5">
+    <button class="rp-camp-toggle-btn" style="border-color:var(--accent-fire);color:var(--accent-fire);padding:8px 20px;font-size:12px" onclick="suRevealNext('${uid}')">NEXT \u25B6</button>
+    <button class="rp-camp-toggle-btn" style="border-color:#484f58;color:#8b949e;padding:8px 16px;font-size:11px" onclick="suRevealAll('${uid}')">REVEAL ALL</button>
+  </div>`;
+
+  html += `</div>`;
+  return html;
+}
+
+function rpBuildSayUncleImmunity(ep) {
+  const su = ep.sayUncle;
+  if (!su || !su.immunityWinner) return '';
+  const winner = su.immunityWinner;
+  const p = players.find(x => x.name === winner);
+  const arch = p?.archetype || 'player';
+  const archLabel = arch.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+  let html = `<div class="rp-page tod-arena" style="text-align:center">
+    <div class="rp-co-eyebrow" style="color:var(--accent-gold);margin-bottom:20px">IMMUNITY WINNER</div>
+    ${rpPortrait(winner, 'lg')}
+    <div class="rp-elim-name" style="margin-top:16px">${winner}</div>
+    <div class="rp-elim-arch">${archLabel}</div>
+    <div style="font-size:12px;color:var(--accent-gold);font-weight:700;letter-spacing:2px;margin-top:8px">LAST ONE STANDING</div>
+    <div class="rp-co-divider"></div>
+    <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:var(--muted);margin-bottom:12px">PLACEMENT ORDER</div>`;
+
+  su.placements.forEach((name, i) => {
+    const isWinner = i === 0;
+    const isBackfire = su.backfires.some(bf => bf.picker === name);
+    const badge = isWinner ? 'WINNER' : isBackfire ? 'BACKFIRE' : '#' + (i + 1);
+    const badgeColor = isWinner ? 'var(--accent-gold)' : isBackfire ? '#da3633' : 'var(--muted)';
+    html += `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;${i > 0 ? 'opacity:0.7' : ''}">
+      <span style="font-size:10px;font-weight:700;color:${badgeColor};font-family:var(--font-mono);width:70px;text-align:right;flex-shrink:0">${badge}</span>
+      ${rpPortrait(name, 'sm', i > 0 ? 'elim' : '')}
+      <span style="font-size:12px;color:var(--vp-text)">${name}</span>
+    </div>`;
+  });
+
+  html += `</div>`;
+  return html;
+}
+
 // TRIPLE DOG DARE VP SCREENS
 // ══════════════════════════════════════════════════════════════════════
 
@@ -47333,7 +47567,7 @@ function buildVPScreens(epRecord) {
   if (ep.isFinale && ep.challengeType && ep.immunityWinner && (seasonConfig.finaleSize >= 3 || seasonConfig.firemaking) && seasonConfig.finaleFormat !== 'final-challenge' && seasonConfig.finaleFormat !== 'koh-lanta') {
     // Finale immunity: use the same detailed challenge screen as regular episodes (koh-lanta has its own orienteering/perch screens)
     vpScreens.push({ id:'finale-challenge', label:'Final Immunity', html: rpBuildChallenge(ep) });
-  } else if (ep.challengeType && !ep.isFinale && !ep.isSlasherNight && !ep.isTripleDogDare) {
+  } else if (ep.challengeType && !ep.isFinale && !ep.isSlasherNight && !ep.isTripleDogDare && !ep.isSayUncle) {
     vpScreens.push({ id:'challenge', label:'Immunity Challenge', html: rpBuildChallenge(ep) });
   }
 
@@ -47556,6 +47790,13 @@ function buildVPScreens(epRecord) {
       html: rpBuildCampTribe(ep, tribe.name, postMembers, 'post'),
     });
   });
+
+  // ── Say Uncle — replaces challenge, shows before normal challenge screen ──
+  if (ep.isSayUncle && ep.sayUncle) {
+    vpScreens.push({ id:'su-announce', label:'Say Uncle', html: rpBuildSayUncleAnnouncement(ep) });
+    vpScreens.push({ id:'su-rounds', label:'The Torture', html: rpBuildSayUncleRounds(ep) });
+    vpScreens.push({ id:'su-immunity', label:'Immunity', html: rpBuildSayUncleImmunity(ep) });
+  }
 
   // ── Triple Dog Dare — replaces challenge + tribal + votes ──
   if (ep.isTripleDogDare && ep.tripleDogDare) {
@@ -48329,6 +48570,24 @@ function tddRevealAll(uid) {
   if (!page) return;
   const deltas = JSON.parse(page.dataset.tddDeltas || '[]');
   while ((parseInt(page.dataset.tddRevealed) || 0) < deltas.length) tddRevealNext(uid);
+}
+
+// ── Say Uncle sequential reveal ──
+function suRevealNext(uid) {
+  const page = document.getElementById(uid + '-page');
+  if (!page) return;
+  const revealed = parseInt(page.dataset.suRevealed) || 0;
+  const total = parseInt(page.dataset.suTotal) || 0;
+  if (revealed >= total) return;
+  const el = document.querySelector('.' + uid + '-item[data-idx="' + revealed + '"]');
+  if (el) { el.style.display = 'block'; el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+  page.dataset.suRevealed = revealed + 1;
+}
+function suRevealAll(uid) {
+  const page = document.getElementById(uid + '-page');
+  if (!page) return;
+  const total = parseInt(page.dataset.suTotal) || 0;
+  while ((parseInt(page.dataset.suRevealed) || 0) < total) suRevealNext(uid);
 }
 
 function vpToggleSection(id) {

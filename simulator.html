@@ -6839,21 +6839,44 @@ function simulateTripleDogDare(ep) {
           const _redirectPool = remaining.filter(p => !_touched.has(p));
           const redirectResult = _pickRedirectTarget(currentTarget, _redirectPool);
           if (!redirectResult || !redirectResult.target) {
-            // No valid redirect targets — forced to accept
-            const canDoIt = _willingness(currentTarget, category, roundNum, true);
-            if (canDoIt) {
-              chain.push({ player: currentTarget, action: 'accept', completed: true, freebieEarned: true,
-                reaction: _acceptReaction(currentTarget, category, dareTitle) });
-              freebies[currentTarget]++;
-              completions[currentTarget]++;
+            // Everyone's been touched — reset and allow the dare to loop back
+            // This drains freebies faster and forces the game toward elimination
+            _touched.clear();
+            _touched.add(currentTarget); // still can't redirect to yourself
+            const _retryResult = _pickRedirectTarget(currentTarget, remaining.filter(p => !_touched.has(p)));
+            if (_retryResult && _retryResult.target) {
+              // Loop back — redirect to someone who already had it (costs a freebie)
+              const _rdBond2 = getBond(currentTarget, _retryResult.target);
+              freebies[currentTarget]--;
+              chain.push({
+                player: currentTarget, action: 'redirect', to: _retryResult.target,
+                freebieSpent: true, isBetrayal: _retryResult.isBetrayal,
+                reaction: _redirectReaction(currentTarget, _retryResult.target, _rdBond2, _retryResult.isBetrayal),
+                receiveReaction: _receiveReaction(_retryResult.target, currentTarget, _rdBond2),
+              });
+              addBond(currentTarget, _retryResult.target, -0.2);
+              if (_retryResult.isBetrayal) {
+                betrayals.push({ player: currentTarget, target: _retryResult.target, type: 'redirect', round: roundNum });
+                addBond(currentTarget, _retryResult.target, -0.8);
+              }
+              currentTarget = _retryResult.target;
             } else {
-              chain.push({ player: currentTarget, action: 'accept', completed: false, freebieEarned: false,
-                reaction: _failReaction(currentTarget, dareTitle) });
-              eliminatedPlayer = currentTarget;
-              eliminatedRound = roundNum;
-              eliminatedDare = { category, title: dareTitle, text: dareText };
+              // Truly no one to redirect to (solo?) — forced to accept
+              const canDoIt = _willingness(currentTarget, category, roundNum, true);
+              if (canDoIt) {
+                chain.push({ player: currentTarget, action: 'accept', completed: true, freebieEarned: true,
+                  reaction: _acceptReaction(currentTarget, category, dareTitle) });
+                freebies[currentTarget]++;
+                completions[currentTarget]++;
+              } else {
+                chain.push({ player: currentTarget, action: 'accept', completed: false, freebieEarned: false,
+                  reaction: _failReaction(currentTarget, dareTitle) });
+                eliminatedPlayer = currentTarget;
+                eliminatedRound = roundNum;
+                eliminatedDare = { category, title: dareTitle, text: dareText };
+              }
+              resolved = true;
             }
-            resolved = true;
           } else {
             const _rdBond = getBond(currentTarget, redirectResult.target);
             freebies[currentTarget]--;

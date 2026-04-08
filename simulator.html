@@ -5189,7 +5189,12 @@ function pickTarget(attackers, victims, challengeLabel) {
     ...(gs.guaranteedImmuneThisEp ? [gs.guaranteedImmuneThisEp] : []),
   ]);
   const _filteredVictims = victims.filter(v => !_immune.has(v));
-  const _victims = _filteredVictims.length ? _filteredVictims : victims; // fallback if all immune
+  // Tied Destinies: never target someone who is a TD partner of one of the attackers (suicide vote)
+  const _tdPairs = gs._tiedDestiniesActive || [];
+  const _tdFiltered = _filteredVictims.filter(v => {
+    return !_tdPairs.some(p => (p.a === v && attackers.includes(p.b)) || (p.b === v && attackers.includes(p.a)));
+  });
+  const _victims = (_tdFiltered.length ? _tdFiltered : _filteredVictims.length ? _filteredVictims : victims);
   if (!_victims.length) return null;
   const phase = gs?.phase || 'pre-merge';
   // Hub personality: the lead attacker's stats influence what kind of target they prioritize
@@ -9244,13 +9249,24 @@ function checkIdolPlays(tribalPlayers, votesObj, ep, voteLog = []) {
     const _holder = _adv.holder;
     const _hVotes = votesObj[_holder] || 0;
     const _hInDanger = _hVotes >= 3 || (_hVotes / tribalPlayers.length >= 0.33);
-    if (_hInDanger) continue; // in danger themselves — self-play didn't fire, but skip ally play too
+    // Tied Destinies: check if TD partner is in danger (saving them = saving yourself)
+    const _tdPartner = (gs._tiedDestiniesActive || []).find(p => p.a === _holder || p.b === _holder);
+    const _tdAllyName = _tdPartner ? (_tdPartner.a === _holder ? _tdPartner.b : _tdPartner.a) : null;
+    const _tdAllyVotes = _tdAllyName ? (votesObj[_tdAllyName] || 0) : 0;
+    const _tdInDanger = _tdAllyName && (_tdAllyVotes >= 3 || _tdAllyVotes / tribalPlayers.length >= 0.33);
+    if (_hInDanger && !_tdInDanger) continue; // in danger themselves — self-play didn't fire, skip ally play (unless TD partner needs saving)
 
     const _hs = pStats(_holder);
-    // Find allies in danger, sorted by bond (closest first)
+
+    // Find allies in danger, sorted by bond (closest first) — TD partner jumps to front
     const _alliesInDanger = Object.entries(votesObj)
       .filter(([n, vc]) => n !== _holder && (vc >= 3 || vc / tribalPlayers.length >= 0.33))
-      .sort(([a], [b]) => getBond(_holder, b) - getBond(_holder, a));
+      .sort(([a], [b]) => {
+        // TD partner always first — their death = your death
+        if (a === _tdAllyName) return -1;
+        if (b === _tdAllyName) return 1;
+        return getBond(_holder, b) - getBond(_holder, a);
+      });
     if (!_alliesInDanger.length) continue;
 
     const [_allyName, _allyVotes] = _alliesInDanger[0];
@@ -9258,6 +9274,19 @@ function checkIdolPlays(tribalPlayers, votesObj, ep, voteLog = []) {
     const _sharedAlliance = (gs.namedAlliances || []).find(a =>
       a.active && a.members.includes(_holder) && a.members.includes(_allyName)
     );
+
+    // Tied Destinies partner in danger: near-guaranteed idol play (self-preservation)
+    if (_allyName === _tdAllyName && _tdInDanger) {
+      const _advIdx = gs.advantages.indexOf(_adv);
+      gs.advantages.splice(_advIdx, 1);
+      delete votesObj[_allyName];
+      _idolPlayedThisTribal.add(_holder);
+      ep.idolPlays.push({ player: _holder, playedFor: _allyName, votesNegated: _allyVotes, allianceName: _sharedAlliance?.name || null, tdProtection: true });
+      addBond(_holder, _allyName, 3.0);
+      addBond(_allyName, _holder, 3.0);
+      ep.idolRehide = true;
+      continue;
+    }
 
     // Tiered base chance: alliance+high bond / alliance+low bond / no alliance but deep bond
     // Scales with bond intensity: higher bond = more likely to confide
@@ -32603,8 +32632,170 @@ function rpBuildColdOpen(ep) {
     const _bottomTwo = [..._activePlayers].sort((a,b) => _avgBond(a) - _avgBond(b)).slice(0, 2);
 
     html += `<div class="rp-co-divider"></div>
-      <div class="vp-section-header">Coming in from last episode</div>`;
+      <div class="vp-section-header">Previously on…</div>`;
 
+    // ── [1] LAST TRIBAL RECAP — who went home, blindside, idol plays ──
+    if (prevEp.eliminated) {
+      const _elimName = prevEp.eliminated;
+      const _pr = pronouns(_elimName);
+      // Blindside detection: eliminated player voted for someone else (didn't see it coming)
+      const _elimVote = (prevEp.votingLog || []).find(v => v.voter === _elimName);
+      const _isBlindside = _elimVote && _elimVote.voted !== _elimName;
+      // Idol plays
+      const _idolPlays = (prevEp.idolPlays || []).filter(ip => ip.type === 'idol' || ip.type === 'superIdol' || ip.type === 'kip' || ip.type === 'legacy');
+      const _comfortBlind = prevEp.comfortBlindspotPlayer === _elimName;
+      let _elimDesc = `${_elimName} was voted out`;
+      if (_comfortBlind) _elimDesc += ` — blindsided after checking out at camp`;
+      else if (_isBlindside) _elimDesc += ` — didn't see it coming`;
+      html += `<div class="vp-card" style="margin-bottom:10px;border-color:#6e7681">
+        <div style="font-family:var(--font-body);font-size:11px;font-weight:800;letter-spacing:1px;color:#8b949e;margin-bottom:6px">LAST TRIBAL</div>
+        <div style="font-size:12px">${_elimDesc}</div>
+        ${_isBlindside ? '<span style="font-size:9px;font-weight:700;letter-spacing:1px;color:#da3633;margin-right:8px">BLINDSIDE</span>' : ''}
+        ${_comfortBlind ? '<span style="font-size:9px;font-weight:700;letter-spacing:1px;color:#f0883e;margin-right:8px">COMFORT BLINDSPOT</span>' : ''}
+        ${_idolPlays.map(ip => `<span style="font-size:9px;font-weight:700;letter-spacing:1px;color:#e3b341;margin-right:8px">${ip.player} PLAYED ${ip.type === 'superIdol' ? 'SUPER IDOL' : ip.type === 'kip' ? 'KIP' : ip.type === 'legacy' ? 'LEGACY' : 'IDOL'}${ip.playedFor && ip.playedFor !== ip.player ? ` FOR ${ip.playedFor}` : ''}${ip.misplay ? ' (MISPLAY)' : ''}</span>`).join('')}
+      </div>`;
+    }
+
+    // ── [2] CLOSE VOTE — survived by 1 vote ──
+    if (prevEp.votes && prevEp.eliminated) {
+      const _sortedVotes = Object.entries(prevEp.votes).sort(([,a],[,b]) => b - a);
+      if (_sortedVotes.length >= 2 && _sortedVotes[0][1] - _sortedVotes[1][1] <= 1) {
+        const _survivor = _sortedVotes[1][0];
+        if (_activePlayers.includes(_survivor)) {
+          html += `<div class="vp-card fire" style="margin-bottom:10px">
+            <div style="font-family:var(--font-body);font-size:11px;font-weight:800;letter-spacing:1px;color:var(--accent-fire);margin-bottom:6px">CLOSE CALL</div>
+            <div style="font-size:12px">${_survivor} survived by ${_sortedVotes[0][1] - _sortedVotes[1][1] === 0 ? 'a tiebreaker' : '1 vote'}</div>
+          </div>`;
+        }
+      }
+    }
+
+    // ── [3] ALLIANCE BETRAYALS — from last episode ──
+    const _prevAlliances = _pSnap.namedAlliances || [];
+    const _recentBetrayals = [];
+    _prevAlliances.forEach(a => {
+      (a.betrayals || []).forEach(b => {
+        if (b.ep === prevEp.num) _recentBetrayals.push({ ...b, alliance: a.name });
+      });
+    });
+    // Also check dissolved alliances
+    const _prevDissolved = _pSnap.dissolvedAlliances || [];
+    _prevDissolved.forEach(a => {
+      (a.betrayals || []).forEach(b => {
+        if (b.ep === prevEp.num) _recentBetrayals.push({ ...b, alliance: a.name });
+      });
+    });
+    if (_recentBetrayals.length) {
+      html += `<div class="vp-card fire" style="margin-bottom:10px">
+        <div style="font-family:var(--font-body);font-size:11px;font-weight:800;letter-spacing:1px;color:var(--accent-fire);margin-bottom:6px">BETRAYAL</div>
+        ${_recentBetrayals.map(b => `<div style="font-size:12px;margin-bottom:2px">${b.player} turned on <span style="font-weight:600">${b.alliance}</span> — voted ${b.votedFor} instead of ${b.consensusWas}</div>`).join('')}
+      </div>`;
+    }
+
+    // ── [4] SHOWMANCE / ROMANCE ──
+    const _prevShowmances = _pSnap.showmances || [];
+    const _activeShowmances = _prevShowmances.filter(sh => !sh.breakupEp && sh.phase !== 'broken-up' && sh.phase !== 'faded');
+    const _breakups = _prevShowmances.filter(sh => sh.breakupEp === prevEp.num);
+    const _prevTriangles = (_pSnap.loveTriangles || []).filter(t => !t.resolved);
+    const _prevAffairs = (_pSnap.affairs || []).filter(af => !af.resolved);
+    const _hasRomance = _activeShowmances.length || _breakups.length || _prevTriangles.length || _prevAffairs.length;
+    if (_hasRomance) {
+      html += `<div class="vp-card" style="margin-bottom:10px;border-color:#db61a2">
+        <div style="font-family:var(--font-body);font-size:11px;font-weight:800;letter-spacing:1px;color:#db61a2;margin-bottom:6px">ROMANCE</div>`;
+      _activeShowmances.forEach(sh => {
+        const _phaseLabel = { spark:'Just sparked', honeymoon:'Honeymoon phase', target:'Being targeted', 'ride-or-die':'Ride or die' }[sh.phase] || sh.phase;
+        html += `<div style="font-size:12px;margin-bottom:4px">💕 ${sh.players[0]} & ${sh.players[1]} — <span style="color:#db61a2">${_phaseLabel}</span></div>`;
+      });
+      _breakups.forEach(sh => {
+        html += `<div style="font-size:12px;margin-bottom:4px">💔 ${sh.players[0]} & ${sh.players[1]} — <span style="color:#da3633">Broken up</span>${sh.breakupType ? ` (${sh.breakupType})` : ''}</div>`;
+      });
+      _prevTriangles.forEach(t => {
+        const _tPhase = { tension:'Tension building', escalation:'Escalating', ultimatum:'Ultimatum looming' }[t.phase] || t.phase;
+        html += `<div style="font-size:12px;margin-bottom:4px">🔺 ${t.center} caught between ${t.suitors[0]} & ${t.suitors[1]} — <span style="color:#f0883e">${_tPhase}</span></div>`;
+      });
+      _prevAffairs.forEach(af => {
+        const _expLabel = { hidden:'Hidden', rumors:'Rumors spreading', caught:'Caught', exposed:'Fully exposed' }[af.exposure] || af.exposure;
+        const _expColor = { hidden:'#8b949e', rumors:'#f0883e', caught:'#da3633', exposed:'#da3633' }[af.exposure] || '#8b949e';
+        html += `<div style="font-size:12px;margin-bottom:4px">🤫 ${af.cheater} has a secret affair with ${af.secretPartner} — <span style="color:${_expColor}">${_expLabel}</span></div>`;
+      });
+      html += `</div>`;
+    }
+
+    // ── [5] MOLE ACTIVITY ──
+    const _prevMoles = _pSnap.moles || [];
+    const _activeSet2 = new Set(_activePlayers);
+    const _activeMoles = _prevMoles.filter(m => !m.exposed && _activeSet2.has(m.player));
+    const _exposedMoles = _prevMoles.filter(m => m.exposed && m.exposedEp === prevEp.num);
+    if (_activeMoles.length || _exposedMoles.length) {
+      html += `<div class="vp-card" style="margin-bottom:10px;border-color:#da3633">
+        <div style="font-family:var(--font-body);font-size:11px;font-weight:800;letter-spacing:1px;color:#da3633;margin-bottom:6px">THE MOLE</div>`;
+      _exposedMoles.forEach(m => {
+        html += `<div style="font-size:12px;margin-bottom:4px;color:#da3633;font-weight:600">🚨 ${m.player} was EXPOSED as the Mole by ${m.exposedBy} — ${m.sabotageCount} acts of sabotage</div>`;
+      });
+      _activeMoles.forEach(m => {
+        // Show highest suspicion without revealing who the mole is
+        const _suspEntries = Object.entries(m.suspicion || {});
+        const _topSusp = _suspEntries.sort(([,a],[,b]) => b - a)[0];
+        const _suspLevel = _topSusp ? _topSusp[1] : 0;
+        if (m.sabotageCount > 0) {
+          html += `<div style="font-size:12px;margin-bottom:4px">Someone is sabotaging the game — ${m.sabotageCount} incident${m.sabotageCount > 1 ? 's' : ''} so far</div>`;
+        }
+        if (_suspLevel >= 2.0 && _topSusp) {
+          html += `<div style="font-size:12px;margin-bottom:4px;color:#f0883e">${_topSusp[0]} is growing suspicious…</div>`;
+        }
+      });
+      html += `</div>`;
+    }
+
+    // ── [6] SIDE DEALS — active F2/F3 pacts ──
+    const _prevDeals = (_pSnap.sideDeals || []).filter(d => d.active);
+    const _brokenDeals = (_pSnap.sideDeals || []).filter(d => !d.active && d.brokenEp === prevEp.num);
+    if (_prevDeals.length || _brokenDeals.length) {
+      html += `<div class="vp-card" style="margin-bottom:10px;border-color:#484f58">
+        <div style="font-family:var(--font-body);font-size:11px;font-weight:800;letter-spacing:1px;color:#8b949e;margin-bottom:6px">DEALS IN PLAY</div>`;
+      _prevDeals.forEach(d => {
+        const _dtype = d.type === 'F2' ? 'F2' : 'F3';
+        const _genuine = d.genuine === false ? ' <span style="color:#f0883e;font-size:9px;font-weight:700">(FAKE)</span>' : '';
+        html += `<div style="font-size:12px;margin-bottom:4px">${_dtype} deal: ${d.players.join(' & ')}${_genuine}</div>`;
+      });
+      _brokenDeals.forEach(d => {
+        html += `<div style="font-size:12px;margin-bottom:4px;color:#da3633">💥 ${d.type} deal broken: ${d.players.join(' & ')}</div>`;
+      });
+      html += `</div>`;
+    }
+
+    // ── [7] FIGHTS / MELTDOWNS / PARANOIA ──
+    const _prevSpirals = prevEp.paranoiaSpirals || [];
+    const _prevStolen = prevEp.stolenCreditEvents || [];
+    if (_prevSpirals.length || _prevStolen.length) {
+      html += `<div class="vp-card" style="margin-bottom:10px;border-color:#da3633">
+        <div style="font-family:var(--font-body);font-size:11px;font-weight:800;letter-spacing:1px;color:#da3633;margin-bottom:6px">CAMP DRAMA</div>`;
+      _prevSpirals.forEach(sp => {
+        const _spName = sp.player || sp.name;
+        if (_spName) html += `<div style="font-size:12px;margin-bottom:4px">😤 ${_spName} had a paranoia spiral — trust is fractured</div>`;
+      });
+      _prevStolen.forEach(sc => {
+        if (sc.thief && sc.victim) html += `<div style="font-size:12px;margin-bottom:4px">⚡ ${sc.thief} stole credit from ${sc.victim} — confrontation at camp</div>`;
+      });
+      html += `</div>`;
+    }
+
+    // ── [8] CHALLENGE THROWS ──
+    const _prevThrows = prevEp.challengeThrows || [];
+    if (_prevThrows.length) {
+      html += `<div class="vp-card" style="margin-bottom:10px;border-color:#484f58">
+        <div style="font-family:var(--font-body);font-size:11px;font-weight:800;letter-spacing:1px;color:#8b949e;margin-bottom:6px">CHALLENGE THROW</div>`;
+      _prevThrows.forEach(ct => {
+        if (ct.caught) {
+          html += `<div style="font-size:12px;margin-bottom:4px;color:#da3633">🎭 ${ct.thrower} threw the challenge — <span style="font-weight:600">CAUGHT</span> by ${(ct.detectedBy || []).join(', ')}</div>`;
+        } else {
+          html += `<div style="font-size:12px;margin-bottom:4px">🎭 ${ct.thrower} threw the challenge — nobody noticed</div>`;
+        }
+      });
+      html += `</div>`;
+    }
+
+    // ── EXISTING: Top alliance + bottom two + recruits/quits ──
     if (_topAlliance) {
       const _activeSet = new Set(_activePlayers);
       const _members = _topAlliance.members.filter(n => _activeSet.has(n));
@@ -36487,6 +36678,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
     const isAffairGold  = evt.type === 'affairSecret' || evt.type === 'affairRumor' || evt.type === 'affairSilent';
     const isAffairChoice= evt.type === 'affairChoice';
     const isAlliance    = evt.type === 'allianceForm' || evt.type === 'allianceRecruit';
+    const isAllianceRef   = evt.type === 'allianceRefusal';
     const isAllianceCrk   = evt.type === 'allianceCrack';
     const isSocialBomb    = evt.type === 'socialBomb';
     const isSocialReact   = evt.type === 'socialBombReaction';
@@ -36567,6 +36759,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'showmanceBreakup' ? '💔 It\'s Over'
                      : isShowmance   ? 'SHOWMANCE'
                      : isAlliance    ? (evt.type === 'allianceRecruit' ? 'RECRUITED' : 'ALLIANCE FORMED')
+                     : isAllianceRef ? 'REJECTED'
                      : isAllianceCrk ? 'ALLIANCE CRACKING'
                      : isSocialBomb  ? '\u2212 SOCIAL BOMB'
                      : isSocialReact ? '\u2212 Fallout'
@@ -36763,7 +36956,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : isMastermind || isBeastD ? 'gold'
                      : isExileSelect ? 'red'
                      : isTipOff || isIdolShare || isIdolConf || isIdolFind || isIdolSpot || isShowmance ? 'gold'
-                     : isAlliance ? 'gold' : isAllianceCrk ? 'red'
+                     : isAlliance ? 'gold' : isAllianceRef ? 'red' : isAllianceCrk ? 'red'
                      : isSocialBomb || isSocialReact ? 'red'
                      : isChalThreat || isChalReact ? 'gold'
                      : isGoatId || isGoatObs ? 'gold'

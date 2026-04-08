@@ -27152,9 +27152,61 @@ function _textWhyVote(ep, ln, sec) {
     ln(`1. ${ep.firstEliminated}${cfg.ri && ep.firstRIChoice ? ` — ${ep.firstRIChoice}` : ''}`);
     ln(`2. ${elim || '???'}${cfg.ri && ep.riChoice ? ` — ${ep.riChoice}` : ''}`);
   } else if (ep.isSlasherNight && ep.slasherNight?.eliminated) ln(ep.slasherNight.eliminated + ' — Slasher Night (lowest score)');
+  else if (ep.isTripleDogDare && ep.tripleDogDare?.eliminated) ln(ep.tripleDogDare.eliminated + ' — Triple Dog Dare (failed dare)');
   else if (ep.lastChance) ln(`${ep.lastChance.loser} — Last Chance Challenge (lost to ${ep.lastChance.winner})`);
   else if (elim) { ln(elim); if (cfg.ri) ln(`Chose: ${ep.riChoice || 'N/A'}`); }
   else ln('No elimination.');
+}
+
+// ── TRIPLE DOG DARE ──
+function _textTripleDogDare(ep, ln, sec) {
+  const tdd = ep.tripleDogDare;
+  if (!tdd) return;
+  sec('TRIPLE DOG DARE');
+  ln(`${tdd.playerCount} players. ${tdd.rounds.length} rounds. Sudden-death elimination.`);
+  ln('');
+
+  if (tdd.pacts?.length) {
+    ln('PACTS:');
+    tdd.pacts.forEach(p => ln(`- ${p.initiator} + ${p.partner} → targeting ${p.target} (formed round ${p.formedRound})`));
+    ln('');
+  }
+
+  tdd.rounds.forEach(round => {
+    ln(`Round ${round.roundNum}: [${round.dareCategory.toUpperCase()}] ${round.eliminatedSpinner} dares: "${round.dareText}"`);
+    round.chain.forEach(step => {
+      if (step.action === 'accept' && step.completed) {
+        ln(`  ${step.player} ACCEPTED — completed. (+1 freebie)`);
+      } else if (step.action === 'accept' && !step.completed) {
+        ln(`  ${step.player} FORCED TO ACCEPT — FAILED. ELIMINATED.`);
+      } else if (step.action === 'redirect') {
+        ln(`  ${step.player} REDIRECTED to ${step.to} (-1 freebie)${step.isBetrayal ? ' [BETRAYAL]' : ''}`);
+      }
+    });
+  });
+  ln('');
+
+  if (tdd.freebieGifts?.length) {
+    ln('FREEBIE GIFTS:');
+    tdd.freebieGifts.forEach(g => ln(`- Round ${g.round}: ${g.from} → ${g.to}`));
+    ln('');
+  }
+
+  if (tdd.betrayals?.length) {
+    ln('BETRAYALS:');
+    tdd.betrayals.forEach(b => ln(`- Round ${b.round}: ${b.player} ${b.type === 'redirect' ? 'redirected to' : 'refused to share with'} ${b.target}`));
+    ln('');
+  }
+
+  ln('FINAL FREEBIE COUNTS:');
+  Object.entries(tdd.freebiesAtEnd || {}).sort(([,a],[,b]) => b - a).forEach(([name, count]) => {
+    ln(`  ${name}: ${count}`);
+  });
+  ln('');
+
+  ln(`ELIMINATED: ${tdd.eliminated} (round ${tdd.eliminatedRound})`);
+  if (tdd.eliminatedDare?.text) ln(`  Dare: "${tdd.eliminatedDare.text}" [${tdd.eliminatedDare.category}]`);
+  if (tdd.mostDares) ln(`DAREDEVIL: ${tdd.mostDares} (${tdd.completions?.[tdd.mostDares] || 0} dares completed)`);
 }
 
 // ── SLASHER NIGHT ──
@@ -28261,6 +28313,24 @@ function generateAftermathShow(ep) {
       }
     }
 
+    // TDD pact betrayal
+    if (ep.tripleDogDare?.pacts?.length && ep.tripleDogDare?.betrayals?.length) {
+      const _tddPactBetrayals = ep.tripleDogDare.betrayals.filter(b =>
+        ep.tripleDogDare.pacts.some(p =>
+          (p.initiator === b.player || p.partner === b.player) &&
+          (p.initiator === b.target || p.partner === b.target)
+        )
+      );
+      _tddPactBetrayals.forEach(b => {
+        _contradictions.push({
+          type: 'tdd-pact-betrayal',
+          player: b.player,
+          evidence: `Made a pact with ${b.target} during the dare challenge, then ${b.type === 'redirect' ? 'redirected a dare to them' : 'refused to share a freebie'}`,
+          drama: 7
+        });
+      });
+    }
+
     // Fallback: clean game
     if (!_contradictions.length) {
       _contradictions.push({
@@ -28513,6 +28583,20 @@ function generateAftermathShow(ep) {
       });
     }
   });
+
+  // Triple Dog Dare betrayals
+  if (ep.tripleDogDare?.betrayals?.length) {
+    ep.tripleDogDare.betrayals.forEach(b => {
+      unseenFootage.push({
+        type: 'tdd-betrayal',
+        drama: 7,
+        text: b.type === 'redirect'
+          ? `During the Triple Dog Dare, ${b.player} redirected a dare to their own ally ${b.target}. The cameras caught every second of it.`
+          : `${b.player} had a freebie to spare. ${b.target} was running on empty. ${b.player} kept it. The cameras saw.`,
+        players: [b.player, b.target]
+      });
+    });
+  }
 
   // Sort by drama score and cap at 3 best clips
   unseenFootage.sort((a, b) => (b.drama || 0) - (a.drama || 0));
@@ -28982,6 +29066,7 @@ function generateSummaryText(ep) {
   _textSchoolyardPick(ep, ln, sec);
   _textAftermath(ep, ln, sec);
   _textSlasherNight(ep, ln, sec);
+  _textTripleDogDare(ep, ln, sec);
   _textAmbassadors(ep, ln, sec);
   _textRIDuel(ep, ln, sec);
   _textJuryLife(ep, ln, sec);
@@ -30154,6 +30239,8 @@ function renderEpisodeHistory() {
     const riTag = ep.riChoice==='REDEMPTION ISLAND' ? `<span class="ep-hist-tag" style="background:rgba(249,115,22,0.15);color:#f97316">RI</span>` : ep.riChoice==='WENT HOME' ? `<span class="ep-hist-tag" style="background:rgba(148,163,184,0.1);color:var(--muted)">Home</span>` : '';
     const mergeTag = ep.isMerge ? `<span class="ep-hist-tag" style="background:rgba(16,185,129,0.15);color:var(--accent)">MERGE</span>` : '';
     const finaleTag = ep.isFinale ? `<span class="ep-hist-tag" style="background:rgba(245,158,11,0.15);color:#f59e0b">FINALE</span>` : '';
+    const slasherTag = ep.isSlasherNight ? `<span class="ep-hist-tag" style="background:rgba(218,54,51,0.15);color:#da3633">Slasher Night</span>` : '';
+    const tddTag = ep.isTripleDogDare ? `<span class="ep-hist-tag" style="background:rgba(245,158,11,0.15);color:#f59e0b">Triple Dog Dare</span>` : '';
     const hasCheckpoint = !!gsCheckpoints[ep.num];
     const replayBtn = hasCheckpoint
       ? `<button class="ep-hist-replay" title="Re-run this episode" onclick="event.stopPropagation();replayEpisode(${ep.num})">↺</button>`
@@ -30161,7 +30248,7 @@ function renderEpisodeHistory() {
     return `<div class="ep-hist-card ${ep.num===currentNum?'active':''}" onclick="viewEpisode(${ep.num})">
       <div class="ep-hist-ep">Episode ${ep.num}${replayBtn}</div>
       <div class="ep-hist-elim">${_spoilerFree ? '???' : ep.multiTribalElims?.length >= 2 ? ep.multiTribalElims.join(' + ') : ep.ambassadorData?.ambassadorEliminated ? `${ep.ambassadorData.ambassadorEliminated} + ${ep.eliminated||'?'}` : ep.tiedDestinies?.eliminatedPartner ? `${ep.eliminated||'?'} + ${ep.tiedDestinies.eliminatedPartner}` : ep.firstEliminated ? `${ep.firstEliminated} + ${ep.eliminated||'?'}` : (ep.eliminated || (ep.isFinale ? 'FTC' : '\u2014'))}</div>
-      <div>${riTag}${mergeTag}${finaleTag}</div>
+      <div>${riTag}${mergeTag}${finaleTag}${slasherTag}${tddTag}</div>
     </div>`;
   }).join('');
 }
@@ -33121,6 +33208,18 @@ function rpBuildColdOpen(ep) {
         ${_isBlindside ? '<span style="font-size:9px;font-weight:700;letter-spacing:1px;color:#da3633;margin-right:8px">BLINDSIDE</span>' : ''}
         ${_comfortBlind ? '<span style="font-size:9px;font-weight:700;letter-spacing:1px;color:#f0883e;margin-right:8px">COMFORT BLINDSPOT</span>' : ''}
         ${_idolPlays.map(ip => `<span style="font-size:9px;font-weight:700;letter-spacing:1px;color:#e3b341;margin-right:8px">${ip.player} PLAYED ${ip.type === 'superIdol' ? 'SUPER IDOL' : ip.type === 'kip' ? 'KIP' : ip.type === 'legacy' ? 'LEGACY' : 'IDOL'}${ip.playedFor && ip.playedFor !== ip.player ? ` FOR ${ip.playedFor}` : ''}${ip.misplay ? ' (MISPLAY)' : ''}</span>`).join('')}
+      </div>`;
+    }
+
+    // ── [1b] TRIPLE DOG DARE RECAP — if prev episode was TDD ──
+    if (prevEp.isTripleDogDare && prevEp.tripleDogDare) {
+      const _tddData = prevEp.tripleDogDare;
+      html += `<div class="vp-card fire" style="margin-bottom:10px">
+        <div style="font-family:var(--font-body);font-size:11px;font-weight:800;letter-spacing:1px;color:var(--accent-fire);margin-bottom:6px">TRIPLE DOG DARE</div>
+        <div style="font-size:12px;margin-bottom:4px">${_tddData.eliminated} couldn't take the dare — eliminated in round ${_tddData.eliminatedRound}</div>
+        ${_tddData.mostDares ? `<div style="font-size:11px;color:var(--accent-gold);margin-bottom:4px">\u2b50 ${_tddData.mostDares} — Daredevil (${_tddData.completions?.[_tddData.mostDares] || 0} dares)</div>` : ''}
+        ${_tddData.betrayals?.length ? `<div style="font-size:11px;color:#da3633">${_tddData.betrayals.length} betrayal${_tddData.betrayals.length > 1 ? 's' : ''} during the challenge</div>` : ''}
+        ${_tddData.pacts?.length ? `<div style="font-size:11px;color:var(--muted)">${_tddData.pacts.length} temporary deal${_tddData.pacts.length > 1 ? 's' : ''} formed</div>` : ''}
       </div>`;
     }
 

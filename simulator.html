@@ -16113,6 +16113,32 @@ function updateShowmancePhases(ep) {
     if (sh.phase === 'broken-up' || sh.phase === 'ride-or-die') return;
     const [a, b] = sh.players;
     if (!active.includes(a) || !active.includes(b)) return; // one eliminated — skip
+
+    // ── NATURAL BREAKUP: bond dropped below -1 → showmance dies organically ──
+    const _preBond = getBond(a, b);
+    if (_preBond <= -1 && sh.phase !== 'spark') {
+      sh.phase = 'broken-up';
+      sh.breakupEp = epNum;
+      sh.breakupType = 'faded'; // neither voted the other out — just fell apart
+      ep.showmanceBreakup = ep.showmanceBreakup || null;
+      ep.showmanceSeparation = ep.showmanceSeparation || null;
+      const _pA = pronouns(a), _pB = pronouns(b);
+      const tribeName = gs.isMerged ? 'merge' : (gs.tribes.find(t => t.members.includes(a))?.name || 'merge');
+      if (ep.campEvents?.[tribeName]) {
+        const block = ep.campEvents[tribeName];
+        const evts = Array.isArray(block) ? block : (block.post || block.pre || []);
+        evts.push({ type: 'showmanceBreakup', text: _pick([
+          `Whatever ${a} and ${b} had is gone. No fight, no betrayal — just two people who stopped looking at each other the same way. The tribe noticed weeks ago.`,
+          `${a} and ${b} haven't spoken in days. The showmance that started in episode ${sh.sparkEp} ended somewhere between the silence and the distance. Nobody marked the exact moment.`,
+          `It's over between ${a} and ${b}. Not with a bang — with a fade. ${_pA.Sub} moved ${_pA.posAdj} things to the other side of the shelter. ${_pB.Sub} didn't stop ${_pA.obj}.`,
+          `The showmance died the way most do out here — quietly, between missed conversations and avoided eye contact. ${a} and ${b} are done.`,
+        ]), players: [a, b] });
+        ep.showmanceEvents = ep.showmanceEvents || [];
+        ep.showmanceEvents.push({ type: 'showmanceBreakup', players: [a, b], phase: 'faded' });
+      }
+      return;
+    }
+
     sh.episodesActive = (sh.episodesActive || 0) + 1;
     const bond = getBond(a, b);
     const _pA = pronouns(a), _pB = pronouns(b);
@@ -16362,6 +16388,13 @@ function checkLoveTriangleFormation(ep) {
         const bond = getBond(candidate, inShowmance);
         if (bond < 4) continue;
         if (!romanticCompat(inShowmance, candidate)) continue;
+
+        // Prevent instant organic resolution — partner bond must be >= 1.0
+        if (getBond(inShowmance, partner) < 1.0) continue;
+
+        // Same trio can't re-form a triangle (prevents infinite reform loops)
+        const _trioKey = [inShowmance, partner, candidate].sort().join('|');
+        if (gs.loveTriangles.some(t => [t.center, ...t.suitors].sort().join('|') === _trioKey)) continue;
 
         // Must be on same tribe
         if (!gs.isMerged) {
@@ -35866,6 +35899,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : isTriangleGold ? (evt.type === 'triangleTension' ? '⚠ Love Triangle' : '🎯 Pick a Side')
                      : isTriangleRes  ? (evt.type === 'triangleLonely' ? '💔 Alone' : '💔 Triangle Over')
                      : evt.type === 'showmanceRekindle' ? '💕 Rekindled'
+                     : evt.type === 'showmanceBreakup' ? '💔 It\'s Over'
                      : isShowmance   ? 'SHOWMANCE'
                      : isAlliance    ? 'ALLIANCE FORMED'
                      : isAllianceCrk ? 'ALLIANCE CRACKING'
@@ -36103,7 +36137,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : isTriangleRes ? (evt.type === 'triangleLonely' ? 'red' : 'gold')
                      : evt.type === 'showmanceSpark' || evt.type === 'showmanceHoneymoon' || evt.type === 'showmanceRideOrDie' || evt.type === 'showmanceRekindle' ? 'green'
                      : evt.type === 'showmanceNoticed' || evt.type === 'showmanceTarget' ? 'gold'
-                     : evt.type === 'showmanceJealousy' ? 'red'
+                     : evt.type === 'showmanceJealousy' || evt.type === 'showmanceBreakup' ? 'red'
                      : evt.type === 'allianceExpelled' ? 'red'
                      : evt.type === 'journeyLoss' ? 'red'
                      : evt.type === 'pureHatred' || evt.type === 'nemesis' || evt.type === 'breakup' ? 'red'

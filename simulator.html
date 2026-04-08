@@ -6794,14 +6794,16 @@ function simulateTripleDogDare(ep) {
     // The spinner receives the dare first (they can accept or redirect)
     let currentTarget = activeSpinner;
 
-    // Redirect chain — can't pass back to the person who just passed to you
+    // Redirect chain — can't pass to anyone who already touched the dare this round
     const chain = [];
-    const MAX_CHAIN = remaining.length * 2;
-    let lastRedirector = null; // who just passed the dare — can't pass back to them
+    const MAX_CHAIN = remaining.length + 2; // at most everyone touches it once + safety
+    const _touched = new Set(); // everyone who's already had this dare
     let resolved = false;
 
     while (!resolved && chain.length < MAX_CHAIN) {
       const hasFreebie = freebies[currentTarget] > 0;
+
+      _touched.add(currentTarget);
 
       if (!hasFreebie) {
         // Forced — must attempt. Roll with lower threshold (desperation helps)
@@ -6831,8 +6833,8 @@ function simulateTripleDogDare(ep) {
           completions[currentTarget]++;
           resolved = true;
         } else {
-          // Wants to redirect — can't pass back to the person who just gave it to you
-          const _redirectPool = remaining.filter(p => p !== lastRedirector);
+          // Wants to redirect — can't pass to anyone who already touched the dare this round
+          const _redirectPool = remaining.filter(p => !_touched.has(p));
           const redirectResult = _pickRedirectTarget(currentTarget, _redirectPool);
           if (!redirectResult || !redirectResult.target) {
             // No valid redirect targets — forced to accept
@@ -6864,7 +6866,6 @@ function simulateTripleDogDare(ep) {
               betrayals.push({ player: currentTarget, target: redirectResult.target, type: 'redirect', round: roundNum });
               addBond(currentTarget, redirectResult.target, -0.8);
             }
-            lastRedirector = currentTarget;
             currentTarget = redirectResult.target;
           }
         }

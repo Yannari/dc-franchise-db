@@ -28990,31 +28990,21 @@ function simulateMultipleEpisodes(count) {
   if (!gs || !gs.initialized) { alert('Start a season first.'); return; }
   const max = count || 999;
   let ran = 0;
-  while (ran < max && gs.phase !== 'complete') {
-    // Fire-making / Koh-Lanta override (same as simulateNext)
-    const _needsF4 = seasonConfig.firemaking || seasonConfig.finaleFormat === 'fire-making' || seasonConfig.finaleFormat === 'koh-lanta';
-    if (_needsF4) {
-      if (seasonConfig.finaleSize < 4) seasonConfig.finaleSize = 4;
-      if (gs.phase === 'finale' && gs.activePlayers.length > 4) gs.phase = 'post-merge';
+  const runOne = () => {
+    if (ran >= max || gs.phase === 'complete' || gs.activePlayers.length <= 1) {
+      renderRunTab();
+      document.getElementById('run-main').scrollTop = 0;
+      return;
     }
-    const ep = gs.phase === 'finale' ? simulateFinale() : simulateEpisode();
-    if (!ep) break;
-    if (ep.winner && !ep.aftermath && seasonConfig.aftermath === 'enabled') {
-      generateAftermathShow(ep);
-      if (ep.aftermath) {
-        const h = gs.episodeHistory[gs.episodeHistory.length - 1];
-        if (h) h.aftermath = ep.aftermath;
-      }
-    }
-    if (seasonConfig.popularityEnabled !== false) { updatePopularity(ep); saveGameState(); }
-    viewingEpNum = ep.num;
+    simulateNext();
     ran++;
-    if (ep.winner || gs.phase === 'complete') break;
-  }
-  if (ran > 0) {
-    renderRunTab();
-    document.getElementById('run-main').scrollTop = 0;
-  }
+    if (gs.phase !== 'complete' && gs.activePlayers.length > 1 && ran < max) {
+      setTimeout(runOne, 0);
+    } else {
+      // already rendered by simulateNext on last call
+    }
+  };
+  runOne();
 }
 
 function replayEpisode(epNum) {

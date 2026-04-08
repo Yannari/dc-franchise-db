@@ -16294,7 +16294,7 @@ function checkShowmanceBreakup(ep) {
       // Partner didn't vote for them — they tried to save them but failed
       sh.phase = 'broken-up';
       sh.breakupEp = ep.num || (gs.episode || 0) + 1;
-      sh.breakupType = 'separated'; // not betrayal, just loss
+      sh.breakupType = 'separated'; // not betrayal — relationship intact, just physically apart
       // Bond stays high — grief, not anger
       ep.showmanceSeparation = { survivor: partner, eliminated: elim, bond: getBond(partner, elim) };
     }
@@ -34608,7 +34608,8 @@ function rpBuildDebug(ep) {
       _showmances.forEach(sh => {
         const [a, b] = sh.players;
         const bond = getBond(a, b);
-        const phaseCol = sh.phase === 'broken-up' ? '#f47067' : sh.phase === 'ride-or-die' ? '#3fb950' : sh.phase === 'target' ? '#f0883e' : '#d29922';
+        const _isSeparated = sh.phase === 'broken-up' && sh.breakupType === 'separated';
+        const phaseCol = sh.phase === 'broken-up' ? (_isSeparated ? '#d29922' : '#f47067') : sh.phase === 'ride-or-die' ? '#3fb950' : sh.phase === 'target' ? '#f0883e' : '#d29922';
         html += `<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;margin-bottom:4px;border:1px solid rgba(255,255,255,0.06);border-radius:6px;background:rgba(139,148,158,0.03)">
           ${rpPortrait(a, 'sm')}
           <span style="color:#e6edf3;font-weight:600">${a}</span>
@@ -34616,7 +34617,7 @@ function rpBuildDebug(ep) {
           <span style="color:#e6edf3;font-weight:600">${b}</span>
           ${rpPortrait(b, 'sm')}
           <div style="margin-left:auto;text-align:right">
-            <div style="font-size:10px;color:${phaseCol};font-weight:700;text-transform:uppercase">${sh.phase}${sh.phase === 'broken-up' ? (sh.breakupVoter ? ' (betrayal by ' + sh.breakupVoter + ')' : sh.breakupType === 'separated' ? ' (separated)' : '') : ''}</div>
+            <div style="font-size:10px;color:${phaseCol};font-weight:700;text-transform:uppercase">${_isSeparated ? 'SEPARATED' : sh.phase === 'broken-up' ? 'BROKEN-UP' : sh.phase}${sh.phase === 'broken-up' && sh.breakupVoter ? ' (betrayal by ' + sh.breakupVoter + ')' : ''}${sh.phase === 'broken-up' && sh.breakupType === 'faded' ? ' (faded)' : ''}</div>
             <div style="font-size:9px;color:#6e7681">Bond: ${bond.toFixed(1)} | Ep ${sh.sparkEp}${sh.breakupEp ? '–' + sh.breakupEp : ''} | ${sh.episodesActive} eps${sh.jealousPlayer ? ' | 3rd: ' + sh.jealousPlayer : ''}</div>
           </div>
         </div>`;

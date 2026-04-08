@@ -19524,24 +19524,30 @@ function generateCampEvents(ep, phase = 'both') {
     const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
     const _disc = [...gs.discoveredVotesLastEp];
     gs.discoveredVotesLastEp = []; // consume — cleared so it doesn't repeat next episode
+    // Group lost-ally events by ally so one ally's reaction is ONE consolidated event
+    const _lostAllyGroups = {};
+    _disc.filter(e => e.type === 'lost-ally').forEach(evt => {
+      const key = evt.ally + '|' + evt.elim;
+      if (!_lostAllyGroups[key]) _lostAllyGroups[key] = { ally: evt.ally, elim: evt.elim, voters: [] };
+      if (gs.activePlayers.includes(evt.voter)) _lostAllyGroups[key].voters.push(evt.voter);
+    });
+    Object.values(_lostAllyGroups).forEach(({ ally, elim: evElim, voters }) => {
+      if (!gs.activePlayers.includes(ally) || !voters.length) return;
+      const _campKey = gs.isMerged ? 'merge' : gs.tribes.find(t => t.members.includes(ally))?.name;
+      if (!_campKey || !ep.campEvents[_campKey]) return;
+      const _aP = pronouns(ally);
+      const voterList = voters.length === 1 ? voters[0] : voters.slice(0, -1).join(', ') + ' and ' + voters[voters.length - 1];
+      ep.campEvents[_campKey].pre.push({ type: 'doubt', players: [ally, ...voters], text: _rp([
+        `${ally} hasn't forgotten who voted out ${evElim}. ${voterList} — ${_aP.sub} ${_aP.sub === 'they' ? "know" : "knows"} every name. The resentment is building.`,
+        `Losing ${evElim} hit ${ally} hard. ${voterList} — ${ally} saw the votes. That's not something ${_aP.sub} ${_aP.sub === 'they' ? "are" : "is"} going to let go of easily.`,
+        `${evElim} is gone, and ${ally} knows exactly who did it. ${voterList}. ${ally} is keeping ${_aP.posAdj} mouth shut for now — but ${_aP.sub} ${_aP.sub === 'they' ? "haven't" : "hasn't"} forgiven anything.`,
+        `${ally} woke up still thinking about ${evElim}. The grief is real, but underneath it is something sharper — ${voterList} voted ${_aP.posAdj} ally out, and ${ally} isn't going to just let that go.`,
+        `${ally} isn't scrambling. ${_aP.Sub} ${_aP.sub === 'they' ? "are" : "is"} sitting with it — ${voterList} put ${evElim} on the jury. That kind of anger doesn't need to be loud to be dangerous.`,
+        `The vote is over but ${ally}'s not done with it. ${evElim} trusted this game and ${voterList} ended it. ${ally} files that away. It will come up again.`,
+      ]) });
+    });
     _disc.forEach(evt => {
-      if (evt.type === 'lost-ally') {
-        const { ally, voter, elim: evElim } = evt;
-        if (!gs.activePlayers.includes(ally) || !gs.activePlayers.includes(voter)) return;
-        const _campKey = gs.isMerged ? 'merge' : gs.tribes.find(t => t.members.includes(ally))?.name;
-        if (!_campKey || !ep.campEvents[_campKey]) return;
-        const _aP = pronouns(ally);
-        ep.campEvents[_campKey].pre.push({ type: 'doubt', players: [ally, voter], text: _rp([
-          `${ally} hasn't forgotten who voted out ${evElim}. ${voter}'s name is already forming in ${_aP.posAdj} head — not today, but the resentment is building.`,
-          `Losing ${evElim} hit ${ally} hard. ${ally} saw the votes. ${voter} was one of them. That's not something ${ally} is going to let go of easily.`,
-          `${ally} is still processing losing ${evElim}. ${voter} was one of the people who wrote that name. ${ally} hasn't brought it up — ${_aP.sub} ${_aP.sub === 'they' ? "don't" : "doesn't"} need to. Not yet.`,
-          `${evElim} is gone, and ${ally} knows exactly who put that plan together. ${voter} was part of it. ${ally} is keeping ${_aP.posAdj} mouth shut for now — but ${_aP.sub} ${_aP.sub === 'they' ? "haven't" : "hasn't"} forgiven anything.`,
-          `${ally} woke up still thinking about ${evElim}. The grief is real, but underneath it is something sharper — ${voter} voted ${_aP.posAdj} ally out, and ${ally} isn't going to just let that go.`,
-          `There's a cold energy between ${ally} and ${voter} this morning. Nobody has said anything. But ${ally} knows. ${voter} wrote ${evElim}'s name, and that's not something ${_aP.sub} ${_aP.sub === 'they' ? "forget" : "forgets"}.`,
-          `${ally} isn't scrambling. ${_aP.Sub} ${_aP.sub === 'they' ? "are" : "is"} sitting with it — the knowledge that ${voter} is the reason ${evElim} is gone. That kind of anger doesn't need to be loud to be dangerous.`,
-          `The vote is over but ${ally}'s not done with it. ${evElim} trusted this game and ${voter} cut ${_aP.obj === 'them' ? 'them' : evElim} loose. ${ally} files that away. It will come up again.`,
-        ]) });
-      } else if (evt.type === 'vote-discovery') {
+      if (evt.type === 'vote-discovery') {
         const { target, voter } = evt;
         if (!gs.activePlayers.includes(target) || !gs.activePlayers.includes(voter)) return;
         const _campKey = gs.isMerged ? 'merge' : gs.tribes.find(t => t.members.includes(target))?.name;

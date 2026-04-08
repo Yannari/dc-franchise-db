@@ -6616,6 +6616,309 @@ function _slasherFinalShowdown(p1, p2, scores) {
 }
 
 // ══════════════════════════════════════════════════════════════════════
+// ENGINE: SAY UNCLE (NO PAIN NO GAME)
+// ══════════════════════════════════════════════════════════════════════
+
+function simulateSayUncle(ep) {
+  const activePlayers = [...gs.activePlayers];
+  const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
+  const maxRounds = 50;
+
+  const remaining = [...activePlayers];
+  const eliminated = [];
+  const rounds = [];
+  const backfires = [];
+  let immunityWinner = null;
+
+  // ── Survival roll ──
+  const _survivalRoll = (player, category, roundNum) => {
+    const s = pStats(player);
+    const fatigue = Math.pow(roundNum, 1.5) * 0.006;
+    let primary = 0, secondary = 0;
+    if (category === 'pain')        { primary = s.endurance * 0.07; secondary = s.physical * 0.04; }
+    else if (category === 'fear')   { primary = s.boldness * 0.07;  secondary = s.endurance * 0.04; }
+    else if (category === 'gross')  { primary = s.boldness * 0.07;  secondary = s.physical * 0.04; }
+    else if (category === 'humiliation') { primary = s.boldness * 0.07; secondary = (10 - s.social) * 0.04; }
+    const score = primary + secondary - fatigue + (Math.random() * 0.15);
+    if (score >= 0.50) return 'dominant';
+    if (score >= 0.35) return 'pass';
+    return 'fail';
+  };
+
+  // ── Reaction text ──
+  const _surviveReaction = (player, result, dareTitle) => {
+    const pr = pronouns(player);
+    const arch = players.find(p => p.name === player)?.archetype || '';
+    if (result === 'dominant') {
+      const r = [
+        `${player} didn't flinch. Didn't blink. Looked at the host and said "next."`,
+        `${player} took it like it was nothing. The tribe is watching. ${pr.Sub} ${pr.sub === 'they' ? 'know' : 'knows'} they're watching.`,
+        `${player} finished ${dareTitle} with a smirk. That wasn't a challenge. That was a warm-up.`,
+      ];
+      if (arch === 'villain' || arch === 'mastermind') r.push(`${player} smiled through the pain. That's the scary part.`);
+      if (arch === 'hero') r.push(`${player} gritted ${pr.pos} teeth and powered through. Not a sound. The tribe respects that.`);
+      if (arch === 'chaos-agent') r.push(`${player} laughed through ${dareTitle}. Actually laughed. The tribe doesn't know what to do with that.`);
+      return _rp(r);
+    }
+    return _rp([
+      `Teeth clenched. Eyes shut. Ten seconds never felt so long. But ${player} made it.`,
+      `${player} was shaking by the end. But ${pr.sub} made it. Barely.`,
+      `${player} survived ${dareTitle}. Not gracefully. But survival doesn't need to be graceful.`,
+      `${player} hung on. The timer hit ten. ${pr.Sub} let out a breath ${pr.sub} didn't know ${pr.sub} ${pr.sub === 'they' ? 'were' : 'was'} holding.`,
+    ]);
+  };
+
+  const _failReaction = (player, dareTitle) => {
+    const pr = pronouns(player);
+    return _rp([
+      `${player} tapped out at 8 seconds. So close. Not close enough.`,
+      `${player} said uncle before the timer hit 5. The body quit before the brain did.`,
+      `${player} tried. You could see ${pr.obj} trying. But ${dareTitle} was too much.`,
+      `${player} couldn't last. ${pr.Sub} ${pr.sub === 'they' ? 'step' : 'steps'} down. The stocks await.`,
+      `${player} lasted 3 seconds. ${pr.Sub} ${pr.sub === 'they' ? 'look' : 'looks'} at the ground. "I can't."`,
+    ]);
+  };
+
+  const _pickReaction = (picker, victim, confident) => {
+    const pr = pronouns(picker);
+    if (confident) return _rp([
+      `${picker} points at ${victim}. "Your turn." No hesitation.`,
+      `${picker} picks ${victim} without blinking. ${pr.Sub} ${pr.sub === 'they' ? 'know' : 'knows'} ${victim}'s weakness.`,
+      `"${victim}." ${picker} says the name like ${pr.sub} ${pr.sub === 'they' ? 'have' : 'has'} been waiting to say it.`,
+    ]);
+    return _rp([
+      `${picker} picks ${victim}. Bold move. Could backfire.`,
+      `${picker} hesitates, then points at ${victim}. Not the safest choice.`,
+      `"${victim}." ${picker} doesn't sound sure. The tribe notices.`,
+    ]);
+  };
+
+  const _backfireReaction = (picker, victim) => _rp([
+    `The look on ${picker}'s face when ${victim} doesn't flinch. That backfire is going to sting longer than the dare.`,
+    `${victim} walks out untouched. ${picker} walks to the stocks. The tribe saw everything.`,
+    `${picker} picked wrong. ${victim} took it like nothing. Now ${picker}'s out. That's the game.`,
+  ]);
+
+  const _calledItReaction = (picker, victim) => _rp([
+    `${picker} called it. ${victim} couldn't handle it. The read was right.`,
+    `${victim} breaks. ${picker} was counting on that. Smart play.`,
+    `${picker} knew. Everybody watching knew. ${victim} wasn't built for that one.`,
+  ]);
+
+  // ── Victim targeting ──
+  const _pickVictim = (picker) => {
+    const candidates = remaining.filter(p => p !== picker);
+    if (!candidates.length) return null;
+    const partners = new Set();
+    (gs.namedAlliances || []).filter(a => a.active && a.members.includes(picker))
+      .forEach(a => a.members.forEach(m => { if (m !== picker) partners.add(m); }));
+    return wRandom(candidates, c => {
+      const bond = getBond(picker, c);
+      const heat = computeHeat(c, remaining, gs.namedAlliances || []);
+      const s = pStats(c);
+      const weakScore = ((10 - s.physical) * 0.1) + ((10 - s.endurance) * 0.1) + ((10 - s.boldness) * 0.1);
+      const chalRec = gs.chalRecord?.[c];
+      const chalWeak = chalRec ? chalRec.bombs * 0.15 : 0;
+      const isPartner = partners.has(c);
+      const partnerPenalty = isPartner ? -5.0 : 0;
+      return Math.max(0.1, (-bond * 0.3) + (heat * 0.2) + weakScore + chalWeak + partnerPenalty + Math.random() * 0.2);
+    });
+  };
+
+  // ── Category pick (target victim's weakest stat) ──
+  const _pickCategory = (picker, victim) => {
+    const s = pStats(victim);
+    const scores = {
+      pain: s.endurance * 0.07 + s.physical * 0.04,
+      fear: s.boldness * 0.07 + s.endurance * 0.04,
+      gross: s.boldness * 0.07 + s.physical * 0.04,
+      humiliation: s.boldness * 0.07 + (10 - s.social) * 0.04,
+    };
+    const pickerStrat = pStats(picker).strategic;
+    const weighted = SAY_UNCLE_CATEGORIES.map(cat => ({
+      cat, score: scores[cat] + (Math.random() * (1.1 - pickerStrat * 0.1) * 0.3)
+    }));
+    weighted.sort((a, b) => a.score - b.score);
+    return weighted[0].cat;
+  };
+
+  // ══════════════════════════════════════════════════════════════
+  // MAIN ROUND LOOP
+  // ══════════════════════════════════════════════════════════════
+  let nextPlayer = null;
+  let nextCategory = null;
+  let pickedBy = null;
+
+  for (let roundNum = 1; roundNum <= maxRounds; roundNum++) {
+    if (remaining.length <= 1) break;
+
+    // ── Final two ──
+    if (remaining.length === 2) {
+      const finalist = nextPlayer || _rp(remaining);
+      const other = remaining.find(p => p !== finalist);
+      const category = nextCategory || _rp(SAY_UNCLE_CATEGORIES);
+      const dareObj = _rp(SAY_UNCLE_POOL[category]);
+      const result = _survivalRoll(finalist, category, roundNum);
+
+      const round = {
+        roundNum, player: finalist, pickedBy, pickerCategory: nextCategory,
+        dareCategory: category, dareTitle: dareObj.title, dareText: dareObj.desc,
+        result, isFinal: true,
+        reaction: result !== 'fail' ? _surviveReaction(finalist, result, dareObj.title) : _failReaction(finalist, dareObj.title),
+        backfire: null, calledIt: null, pick: null,
+      };
+
+      if (result !== 'fail') {
+        immunityWinner = finalist;
+        eliminated.push(other);
+        if (pickedBy && pickedBy !== finalist) {
+          round.backfire = { picker: pickedBy, reaction: _backfireReaction(pickedBy, finalist) };
+        }
+      } else {
+        immunityWinner = other;
+        eliminated.push(finalist);
+        if (pickedBy) {
+          round.calledIt = { picker: pickedBy, reaction: _calledItReaction(pickedBy, finalist) };
+        }
+      }
+      rounds.push(round);
+      break;
+    }
+
+    // ── Select player ──
+    const player = nextPlayer || _rp(remaining);
+    const category = nextCategory || _rp(SAY_UNCLE_CATEGORIES);
+    const dareObj = _rp(SAY_UNCLE_POOL[category]);
+
+    const _pickedBy = pickedBy;
+    nextPlayer = null;
+    nextCategory = null;
+    pickedBy = null;
+
+    const result = _survivalRoll(player, category, roundNum);
+
+    const round = {
+      roundNum, player, pickedBy: _pickedBy, pickerCategory: _pickedBy ? category : null,
+      dareCategory: category, dareTitle: dareObj.title, dareText: dareObj.desc,
+      result, isFinal: false,
+      reaction: result !== 'fail' ? _surviveReaction(player, result, dareObj.title) : _failReaction(player, dareObj.title),
+      backfire: null, calledIt: null, pick: null,
+    };
+
+    if (result === 'fail') {
+      remaining.splice(remaining.indexOf(player), 1);
+      eliminated.push(player);
+      if (_pickedBy) {
+        round.calledIt = { picker: _pickedBy, reaction: _calledItReaction(_pickedBy, player) };
+        addBond(player, _pickedBy, -0.2);
+      }
+    } else if (result === 'dominant') {
+      if (_pickedBy) {
+        round.backfire = { picker: _pickedBy, reaction: _backfireReaction(_pickedBy, player) };
+        backfires.push({ picker: _pickedBy, victim: player, round: roundNum });
+        remaining.splice(remaining.indexOf(_pickedBy), 1);
+        eliminated.push(_pickedBy);
+        addBond(_pickedBy, player, -0.3);
+        addBond(player, _pickedBy, 0.3);
+      }
+      const victim = _pickVictim(player);
+      if (victim) {
+        const victimCategory = _pickCategory(player, victim);
+        const victimStats = pStats(victim);
+        const isConfident = victimStats.physical <= 5 || victimStats.endurance <= 5 || victimStats.boldness <= 5;
+        round.pick = {
+          victim, category: victimCategory,
+          reaction: _pickReaction(player, victim, isConfident),
+          categoryReason: `${player} targets ${victim}'s weakness: ${victimCategory}.`,
+        };
+        nextPlayer = victim;
+        nextCategory = victimCategory;
+        pickedBy = player;
+      }
+    } else {
+      // Normal pass
+      if (_pickedBy) {
+        round.backfire = { picker: _pickedBy, reaction: _backfireReaction(_pickedBy, player) };
+        backfires.push({ picker: _pickedBy, victim: player, round: roundNum });
+        remaining.splice(remaining.indexOf(_pickedBy), 1);
+        eliminated.push(_pickedBy);
+        addBond(_pickedBy, player, -0.3);
+        addBond(player, _pickedBy, 0.3);
+        // Victim earned pick power from backfire
+        const bfVictim = _pickVictim(player);
+        if (bfVictim) {
+          const bfCategory = _pickCategory(player, bfVictim);
+          const bfStats = pStats(bfVictim);
+          const bfConfident = bfStats.physical <= 5 || bfStats.endurance <= 5 || bfStats.boldness <= 5;
+          round.pick = {
+            victim: bfVictim, category: bfCategory,
+            reaction: _pickReaction(player, bfVictim, bfConfident),
+            categoryReason: `${player} earned the pick from the backfire. Targets ${bfVictim}'s weakness: ${bfCategory}.`,
+          };
+          nextPlayer = bfVictim;
+          nextCategory = bfCategory;
+          pickedBy = player;
+        }
+      }
+    }
+
+    rounds.push(round);
+  }
+
+  if (!immunityWinner && remaining.length) {
+    immunityWinner = remaining[0];
+  }
+
+  const placements = [immunityWinner, ...eliminated.reverse()].filter(Boolean);
+
+  // Set results on ep
+  ep.sayUncle = {
+    rounds, placements, backfires,
+    eliminated: [...eliminated].reverse(),
+    immunityWinner,
+    playerCount: activePlayers.length,
+  };
+
+  ep.immunityWinner = immunityWinner;
+  ep.challengeType = 'individual';
+  ep.challengeLabel = 'Say Uncle';
+  ep.challengeCategory = 'endurance';
+  ep.challengeDesc = 'Torture endurance challenge — last one standing wins immunity.';
+  ep.chalPlacements = placements;
+  ep.chalMemberScores = {};
+  placements.forEach((name, i) => { ep.chalMemberScores[name] = placements.length - i; });
+
+  // Camp events
+  const campKey = gs.mergeName || 'merge';
+  if (!ep.campEvents) ep.campEvents = {};
+  if (!ep.campEvents[campKey]) ep.campEvents[campKey] = { pre: [], post: [] };
+
+  if (immunityWinner) {
+    ep.campEvents[campKey].post.push({
+      type: 'sayUncleWinner', players: [immunityWinner],
+      text: `${immunityWinner} outlasted everyone in Say Uncle. That's immunity.`,
+      badgeText: 'LAST ONE STANDING', badgeClass: 'gold'
+    });
+  }
+
+  backfires.forEach(bf => {
+    ep.campEvents[campKey].post.push({
+      type: 'sayUncleBackfire', players: [bf.picker, bf.victim],
+      text: `${bf.picker} picked ${bf.victim} — and it backfired. ${bf.victim} passed. ${bf.picker} is out.`,
+      badgeText: 'BACKFIRE', badgeClass: 'red'
+    });
+  });
+
+  rounds.filter(r => r.result === 'dominant' && !r.isFinal).forEach(r => {
+    ep.campEvents[campKey].post.push({
+      type: 'sayUncleDominated', players: [r.player],
+      text: `${r.player} dominated ${r.dareTitle}. Didn't flinch.`,
+      badgeText: 'DIDN\'T FLINCH', badgeClass: 'gold'
+    });
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════════
 // ENGINE: TRIPLE DOG DARE YOU
 // ══════════════════════════════════════════════════════════════════════
 

@@ -6622,7 +6622,8 @@ function simulateTripleDogDare(ep) {
         const s = pStats(donor);
         const requesterThreat = threatScore(requester);
         const donorThreat = threatScore(donor);
-        const isShield = requesterThreat > donorThreat ? 0.15 : 0;
+        // Shield logic only applies with 5+ players — at F3/F4, nobody's a shield
+        const isShield = remaining.length >= 5 && requesterThreat > donorThreat ? 0.15 : 0;
         const strategicVal = s.strategic * 0.03 * (isShield ? 2 : 1);
         const selfPres = freebies[donor] <= 1 ? -0.30 : freebies[donor] === 2 ? -0.10 : 0;
         const arch = players.find(p => p.name === donor)?.archetype || '';

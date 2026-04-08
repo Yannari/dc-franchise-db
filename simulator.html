@@ -1617,6 +1617,7 @@ const TWIST_CATALOG = [
   { id:'sudden-death',     emoji:'💀', name:'Sudden Death',         category:'elim',       phase:'post-merge', desc:'No tribal council. Last place in the challenge is auto-eliminated on the spot. Pure performance — no vote, no strategy, no safety net.',  engineType:'sudden-death'    },
   { id:'slasher-night',    emoji:'🔪', name:'Slasher Night',        category:'elim',       phase:'post-merge', desc:'A slasher hunts the tribe. Players are picked off round by round. Last one standing wins immunity. Lowest scorer is eliminated. No tribal council.',  engineType:'slasher-night'   },
   { id:'triple-dog-dare',  emoji:'🎯', name:'Triple Dog Dare',      category:'elim',       phase:'post-merge', desc:'Eliminated players dare the tribe. Accept to earn freebies, redirect to spend them. Run out of freebies and fail a dare? You\'re out. No tribal council.', engineType:'triple-dog-dare' },
+  { id:'say-uncle', emoji:'💪', name:'Say Uncle', category:'immunity', phase:'post-merge', desc:'Torture endurance challenge. Survive 10 seconds or you\'re out. Dominate a dare to pick the next victim — but if they pass, YOU\'RE eliminated instead. Last one standing wins immunity.', engineType:'say-uncle' },
   { id:'cultural-reset',   emoji:'🔄', name:'Cultural Reset',       category:'elim',       phase:'any',        desc:'All alliances exposed publicly. Weak alliances dissolve, strong ones survive but become targets. Double-dippers are caught. The social game resets.',        engineType:'cultural-reset'  },
   { id:'rock-draw',        emoji:'🪨', name:'Rock Draw',            category:'elim',       phase:'any',        desc:'No re-vote on a tie — non-immune, non-tied players draw rocks. Random exit.', engineType:'rock-draw'      },
   { id:'open-vote',        emoji:'📢', name:'Open Vote',            category:'elim',       phase:'any',        desc:'Votes are public — cast one by one in an order chosen by the immunity winner. Cascade pressure builds. Everyone sees who said whose name.', engineType:'open-vote' },
@@ -1740,6 +1741,99 @@ const DARE_POOL = {
   ],
 };
 const DARE_CATEGORIES = Object.keys(DARE_POOL);
+
+// ── Say Uncle — endurance dare pools (survive 10 seconds) ──
+const SAY_UNCLE_POOL = {
+  'pain': [
+    { title: 'Turtle Puck Shots', desc: 'Stand in a hockey net while Chef fires angry snapping turtles at you.' },
+    { title: 'Electric Shock Chair', desc: 'Sit in the chair. Mild shocks every 2 seconds. Don\'t stand up.' },
+    { title: 'Ant Hill Sit', desc: 'Sit on an active anthill for 10 seconds. No brushing them off.' },
+    { title: 'Wooden Shorts', desc: 'Wear wooden shorts while a woodpecker goes to town.' },
+    { title: 'Spike Bed', desc: 'Lay down on a bed of blunt spikes. Stay flat. 10 seconds.' },
+    { title: 'Hot Coal Walk', desc: 'Walk barefoot across hot coals. One direction. No stopping.' },
+    { title: 'Ice Bucket Burial', desc: 'Get buried under 50 pounds of ice. Stay still.' },
+    { title: 'Water Balloon Headshots', desc: 'Stand still while Chef launches water balloons at your face.' },
+    { title: 'Yellow Jacket', desc: 'Have your front covered in bees. Don\'t swat.' },
+    { title: 'Grizzly Bear Log Roll', desc: 'Survive 10 seconds of log rolling against a grizzly bear.' },
+    { title: 'Cactus Shirt', desc: 'Wear a shirt lined with cactus needles. Hug yourself.' },
+    { title: 'Fire Ant Gloves', desc: 'Wear gloves full of fire ants. Keep them on.' },
+    { title: 'Rubber Band Barrage', desc: 'Stand still while the tribe snaps rubber bands at you. 10 seconds.' },
+    { title: 'Cattle Prod Poke', desc: 'One poke every 3 seconds. Four total. Don\'t move.' },
+    { title: 'Frozen Hands', desc: 'Grip two blocks of ice. Hold on for 10 seconds.' },
+    { title: 'Tar and Feather', desc: 'Get tarred and feathered. Stand there and take it.' },
+    { title: 'Pepper Spray Breeze', desc: 'Stand downwind of a pepper spray fan. Eyes open.' },
+    { title: 'Nail Bed Press', desc: 'Lay face-down on a bed of nails. Weight placed on your back.' },
+    { title: 'Thunder Clap Drums', desc: 'Sit between two massive drums being hammered. Don\'t cover your ears.' },
+    { title: 'Wrecking Ball Dodge', desc: 'Stand in a circle while a wrecking ball swings. Don\'t leave the circle.' },
+  ],
+  'fear': [
+    { title: 'Snake Box', desc: 'Step into a box full of snakes. Stay inside. 10 seconds.' },
+    { title: 'Sasquatchanakwa Crate', desc: 'Get inside a wooden crate with Sasquatchanakwa. Survive.' },
+    { title: 'Jellyfish Pool', desc: 'Jump into a pool of jellyfish. Stay submerged.' },
+    { title: 'Tarantula Face Walk', desc: 'Let a tarantula walk across your face. Mouth closed. Eyes open.' },
+    { title: 'Scorpion Pit', desc: 'Stand in a pit of scorpions. Don\'t move.' },
+    { title: 'Bat Cave Sit', desc: 'Sit in a dark cave full of bats. Don\'t run.' },
+    { title: 'Wolf Staredown', desc: 'Make eye contact with a wolf for 10 seconds. Don\'t look away.' },
+    { title: 'Shark Cage Dunk', desc: 'Get lowered into shark-infested water in a rusty cage.' },
+    { title: 'Cliff Edge Blindfold', desc: 'Stand blindfolded on the edge of a cliff. Don\'t step back.' },
+    { title: 'Coffin Close', desc: 'Lay in a coffin. Lid closes. 10 seconds in the dark.' },
+    { title: 'Croc Teeth Cleaning', desc: 'Put your hand in a crocodile\'s mouth. Clean a tooth.' },
+    { title: 'Dark Room', desc: 'Sit alone in a pitch-black room. Sounds play. Don\'t scream.' },
+    { title: 'Rat Swarm', desc: 'Stand still while rats climb over you.' },
+    { title: 'Piranha Pedicure', desc: 'Dip your feet in piranha water. They nibble. Don\'t pull out.' },
+    { title: 'Wasp Nest Poke', desc: 'Poke a wasp nest with a short stick. Stand your ground.' },
+    { title: 'Skunk Jump', desc: 'Jump over a line of skunks between rocks. Don\'t get sprayed.' },
+    { title: 'Bull Pen', desc: 'Stand in a bull pen. Don\'t run. Don\'t wave anything red.' },
+    { title: 'Bear Cave Nap', desc: 'Lay down at the entrance of a bear cave. Close your eyes.' },
+    { title: 'Quicksand Stand', desc: 'Stand in quicksand up to your waist. Don\'t panic. Don\'t struggle.' },
+    { title: 'Haunted Maze Sprint', desc: 'Sprint through a haunted maze. Finish in 10 seconds.' },
+  ],
+  'gross': [
+    { title: 'Lake Leeches Barrel', desc: 'Sit in a barrel full of water and lake leeches.' },
+    { title: 'Poison Ivy Spa', desc: 'Have your face wrapped in poison ivy. Don\'t scratch.' },
+    { title: 'Nose Hair Pull', desc: 'Have all your nose hairs pulled at once. Don\'t flinch.' },
+    { title: 'Manure Face Mask', desc: 'Get a face mask made of actual manure. Sit with it.' },
+    { title: 'Got Milk?', desc: 'Attempt to milk an angry goat. Whatever happens, happens.' },
+    { title: 'Goo Shoes', desc: 'Wear shoes filled with mystery goo. Walk 20 steps.' },
+    { title: 'Worm Bath Soak', desc: 'Lay in a bathtub full of worms. Submerge.' },
+    { title: 'Dumpster Dive Sit', desc: 'Sit inside a dumpster. Lid closes. Breathe through your mouth.' },
+    { title: 'Maggot Massage', desc: 'Lay still while maggots are spread across your back.' },
+    { title: 'Fish Scale Facial', desc: 'Get a facial made of fish scales and fish oil.' },
+    { title: 'Sewage Snorkel', desc: 'Snorkel in murky swamp water. Face down. 10 seconds.' },
+    { title: 'Slug Trail Necklace', desc: 'Wear a necklace of live slugs. They leave trails.' },
+    { title: 'Mystery Goo Helmet', desc: 'Wear a helmet filled with unknown slime. It drips down your face.' },
+    { title: 'Swamp Mud Burial', desc: 'Get buried in swamp mud up to your neck. Don\'t gag.' },
+    { title: 'Bird Dropping Shower', desc: 'Stand under a birdcage. Look up. 10 seconds.' },
+    { title: 'Catfish Kiss', desc: 'Kiss a live catfish. On the mouth. Hold it.' },
+    { title: 'Rotten Egg Sauna', desc: 'Sit in a sauna filled with rotten egg smell. Breathe normally.' },
+    { title: 'Cockroach Crown', desc: 'Wear a crown of live cockroaches on your head.' },
+    { title: 'Blister Beetle Bracelet', desc: 'Wear a bracelet of blister beetles. They secrete. Don\'t remove it.' },
+    { title: 'Roadkill Pillow', desc: 'Lay your head on a roadkill pillow. Close your eyes. 10 seconds.' },
+  ],
+  'humiliation': [
+    { title: 'Cow Costume Parade', desc: 'Wear a cow costume. Parade around camp. Moo on command.' },
+    { title: 'Wawanakwa Hair Salon', desc: 'Get a haircut from Chef. With a chainsaw.' },
+    { title: 'Baby Diaper Dance', desc: 'Wear a diaper. Do a baby dance. In front of everyone.' },
+    { title: 'Tickle Onslaught', desc: 'Endure one minute of constant tickling from two people.' },
+    { title: 'Voice to Self', desc: 'Listen to a recording of your own voice on repeat. Don\'t cringe.' },
+    { title: 'Marshmallow Waxing', desc: 'Get your face waxed using melted marshmallows.' },
+    { title: 'Wedgie Marathon', desc: 'Give yourself a wedgie. Walk the length of camp. Waving.' },
+    { title: 'Clown Makeover', desc: 'Full clown makeup. Nose. Wig. Do a routine.' },
+    { title: 'Public Love Letter', desc: 'Read a love letter you wrote (to no one) aloud to the tribe.' },
+    { title: 'Stand-Up About Yourself', desc: 'Do 60 seconds of stand-up comedy roasting yourself.' },
+    { title: 'Dunce Cap Walk', desc: 'Wear a dunce cap. Sit in the corner. Everyone watches.' },
+    { title: 'Sing Your Worst Moment', desc: 'Sing a song about your most embarrassing game moment.' },
+    { title: 'Kiss the Fish', desc: 'Kiss a dead fish on camera. Maintain eye contact with the tribe.' },
+    { title: 'Belly Flop Contest', desc: 'Do a belly flop off the dock. Maximum splash. Maximum pain.' },
+    { title: 'Dance Battle Solo', desc: 'Dance battle against nobody. No music. Full commitment.' },
+    { title: 'Serenade Your Enemy', desc: 'Serenade the person you like least. Be romantic.' },
+    { title: 'Wear Rival\'s Clothes', desc: 'Wear your rival\'s clothes for the rest of the day. Their style.' },
+    { title: 'Human Pinata', desc: 'Get hung up like a pinata. Tribe throws soft balls at you.' },
+    { title: 'Truth Serum', desc: 'Answer any question the tribe asks. Honestly. For 60 seconds.' },
+    { title: 'Walk of Shame Lap', desc: 'Walk a lap around camp while everyone slow-claps.' },
+  ],
+};
+const SAY_UNCLE_CATEGORIES = Object.keys(SAY_UNCLE_POOL);
 
 // S10 preset data
 const S10_TRIBES = [
@@ -11040,6 +11134,10 @@ function applyTwist(ep, twist, isPrimary = true) {
     // Post-merge only; need at least 3 players (original TDI episode had 3)
     if (!gs.isMerged || gs.activePlayers.length < 3) return;
     ep.isTripleDogDare = true;
+
+  } else if (engineType === 'say-uncle') {
+    if (!gs.isMerged || gs.activePlayers.length < 3) return;
+    ep.isSayUncle = true;
 
   } else if (engineType === 'cultural-reset') {
     const activePlayers = gs.activePlayers;

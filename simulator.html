@@ -34037,6 +34037,44 @@ function rpBuildDebug(ep) {
       html += `<div style="font-size:10px;color:#484f58">No love triangles this season.</div>`;
     }
     html += `</div>`;
+
+    // Romance Popularity Impact
+    const _romancePlayers = new Set();
+    _showmances.forEach(sh => { sh.players.forEach(p => _romancePlayers.add(p)); });
+    _triangles.forEach(tri => { _romancePlayers.add(tri.center); tri.suitors.forEach(s => _romancePlayers.add(s)); });
+    if (_romancePlayers.size && gs.popularity) {
+      const _popEntries = [..._romancePlayers].map(name => ({
+        name,
+        pop: gs.popularity[name] || 0,
+        arcs: gs.popularityArcs?.[name] || []
+      })).sort((a, b) => b.pop - a.pop);
+
+      html += `<div style="margin-bottom:16px">
+        <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#6366f1;margin-bottom:8px">ROMANCE POPULARITY IMPACT</div>`;
+      _popEntries.forEach(({ name, pop, arcs }) => {
+        const popCol = pop >= 5 ? '#3fb950' : pop >= 0 ? '#d29922' : '#f47067';
+        // Find romance-related deltas
+        const romanceReasons = arcs.filter(a =>
+          a.reason && (a.reason.includes('showmance') || a.reason.includes('triangle') || a.reason.includes('Cheater') || a.reason.includes('Rejected'))
+        );
+        const romanceTotal = romanceReasons.reduce((sum, a) => sum + (a.delta || 0), 0);
+        html += `<div style="display:flex;align-items:center;gap:6px;padding:3px 8px;font-size:10px;border-bottom:1px solid rgba(255,255,255,0.04)">
+          ${rpPortrait(name, 'xs')}
+          <span style="color:#e6edf3;font-weight:600;width:80px">${name}</span>
+          <span style="color:${popCol};font-weight:700;font-family:var(--font-mono);width:40px">${pop >= 0 ? '+' : ''}${pop.toFixed(1)}</span>
+          <span style="color:#8b949e;font-size:9px">total</span>
+          ${romanceReasons.length ? `<span style="color:${romanceTotal >= 0 ? '#3fb950' : '#f47067'};font-size:9px;font-weight:600;margin-left:4px">(romance: ${romanceTotal >= 0 ? '+' : ''}${romanceTotal.toFixed(1)})</span>` : ''}
+        </div>`;
+        if (romanceReasons.length) {
+          romanceReasons.forEach(a => {
+            html += `<div style="padding:1px 8px 1px 40px;font-size:9px;color:#6e7681">
+              Ep ${a.ep}: <span style="color:${a.delta >= 0 ? '#3fb950' : '#f47067'}">${a.delta >= 0 ? '+' : ''}${a.delta.toFixed(1)}</span> ${a.reason}
+            </div>`;
+          });
+        }
+      });
+      html += `</div>`;
+    }
   }
 
   html += `</div>`;

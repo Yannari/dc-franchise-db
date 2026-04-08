@@ -6559,9 +6559,10 @@ function simulateTripleDogDare(ep) {
   // When forced (0 freebies), a second roll determines if they can actually do it
   const _willingness = (player, category, roundNum, forced = false) => {
     const s = pStats(player);
-    // Fatigue ramps up — early rounds feel brave, late rounds feel desperate
-    // Round 1-3: negligible. Round 5-7: noticeable. Round 10+: meaningful but not automatic.
-    const fatigue = Math.min(0.20, Math.pow(roundNum, 1.3) * 0.008);
+    // Fatigue ramps up — early rounds feel brave, late rounds get desperate
+    // Round 1-3: negligible. Round 5-7: noticeable. Round 10+: heavy. Round 15+: brutal.
+    // No cap — eventually even boldness 10 cracks.
+    const fatigue = Math.pow(roundNum, 1.5) * 0.006;
     let secondary = 0;
     if (category === 'humiliation') secondary = (10 - s.social) * 0.03;
     else if (category === 'pain-fear') secondary = s.physical * 0.03;

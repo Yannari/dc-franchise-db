@@ -6633,17 +6633,20 @@ function simulateSayUncle(ep) {
   // ── Survival roll ──
   const _survivalRoll = (player, category, roundNum) => {
     const s = pStats(player);
-    const fatigue = Math.pow(roundNum, 1.5) * 0.006;
+    // Linear fatigue — spreads failures across rounds instead of bunching them at the end
+    // Round 1: 0.02, Round 5: 0.10, Round 10: 0.20, Round 15: 0.30
+    const fatigue = roundNum * 0.02;
     let primary = 0, secondary = 0;
     if (category === 'pain')        { primary = s.endurance * 0.07; secondary = s.physical * 0.04; }
     else if (category === 'fear')   { primary = s.boldness * 0.07;  secondary = s.endurance * 0.04; }
     else if (category === 'gross')  { primary = s.boldness * 0.07;  secondary = s.physical * 0.04; }
     else if (category === 'humiliation') { primary = s.boldness * 0.07; secondary = (10 - s.social) * 0.04; }
-    const score = primary + secondary - fatigue + (Math.random() * 0.20 - 0.05);
-    // Stat 10/10: score ~1.10, stat 5/5: ~0.55, stat 3/3: ~0.33
-    // With these thresholds: stat 5 has ~50/50 pass, stat 3 usually fails, stat 8+ usually dominates
-    if (score >= 0.70) return 'dominant';
-    if (score >= 0.50) return 'pass';
+    const score = primary + secondary - fatigue + (Math.random() * 0.25 - 0.05);
+    // Stat 7/5: ~0.69, round 1 → 0.69-0.02 = 0.67 (pass), round 8 → 0.69-0.16 = 0.53 (coin flip), round 12 → 0.69-0.24 = 0.45 (fail)
+    // Stat 5/5: ~0.55, round 1 → 0.53 (coin flip from start), round 6 → 0.43 (usually fail)
+    // Stat 3/3: ~0.33, round 1 → 0.31 (usually fail immediately)
+    if (score >= 0.65) return 'dominant';
+    if (score >= 0.45) return 'pass';
     return 'fail';
   };
 
@@ -6750,6 +6753,7 @@ function simulateSayUncle(ep) {
   let nextPlayer = null;
   let nextCategory = null;
   let pickedBy = null;
+  let _rotation = [...remaining].sort(() => Math.random() - 0.5);
 
   for (let roundNum = 1; roundNum <= maxRounds; roundNum++) {
     if (remaining.length <= 1) break;
@@ -6787,8 +6791,19 @@ function simulateSayUncle(ep) {
       break;
     }
 
-    // ── Select player ──
-    const player = nextPlayer || _rp(remaining);
+    // Select player — rotation ensures everyone gets a turn (picked victims count as a turn)
+    let player;
+    if (nextPlayer) {
+      player = nextPlayer;
+      // Remove from rotation — being picked counts as their turn
+      const _pickIdx = _rotation.indexOf(player);
+      if (_pickIdx !== -1) _rotation.splice(_pickIdx, 1);
+    } else {
+      // Clean rotation of eliminated players and reset if exhausted
+      _rotation = _rotation.filter(p => remaining.includes(p));
+      if (!_rotation.length) { _rotation = [...remaining].sort(() => Math.random() - 0.5); }
+      player = _rotation.shift();
+    }
     const category = nextCategory || _rp(SAY_UNCLE_CATEGORIES);
     const dareObj = _rp(SAY_UNCLE_POOL[category]);
 
@@ -6816,26 +6831,30 @@ function simulateSayUncle(ep) {
       }
     } else if (result === 'dominant') {
       if (_pickedBy) {
+        // Picked victim dominated — backfire on picker, but NO pick power (only random-turn players pick)
         round.backfire = { picker: _pickedBy, reaction: _backfireReaction(_pickedBy, player) };
         backfires.push({ picker: _pickedBy, victim: player, round: roundNum });
         remaining.splice(remaining.indexOf(_pickedBy), 1);
         eliminated.push(_pickedBy);
         addBond(_pickedBy, player, -0.3);
         addBond(player, _pickedBy, 0.3);
-      }
-      const victim = _pickVictim(player);
-      if (victim) {
-        const victimCategory = _pickCategory(player, victim);
-        const victimStats = pStats(victim);
-        const isConfident = victimStats.physical <= 5 || victimStats.endurance <= 5 || victimStats.boldness <= 5;
-        round.pick = {
-          victim, category: victimCategory,
-          reaction: _pickReaction(player, victim, isConfident),
-          categoryReason: `${player} targets ${victim}'s weakness: ${victimCategory}.`,
-        };
-        nextPlayer = victim;
-        nextCategory = victimCategory;
-        pickedBy = player;
+        // Next player is random — victim doesn't get pick power
+      } else {
+        // Random-turn player dominated — THEY get pick power
+        const victim = _pickVictim(player);
+        if (victim) {
+          const victimCategory = _pickCategory(player, victim);
+          const victimStats = pStats(victim);
+          const isConfident = victimStats.physical <= 5 || victimStats.endurance <= 5 || victimStats.boldness <= 5;
+          round.pick = {
+            victim, category: victimCategory,
+            reaction: _pickReaction(player, victim, isConfident),
+            categoryReason: `${player} targets ${victim}'s weakness: ${victimCategory}.`,
+          };
+          nextPlayer = victim;
+          nextCategory = victimCategory;
+          pickedBy = player;
+        }
       }
     } else {
       // Normal pass — survived but didn't dominate. No pick power.
@@ -46577,6 +46596,18 @@ function rpBuildSayUncleRounds(ep) {
     const isFinal = round.isFinal;
     let rh = '';
 
+    // Final Two announcement — show before the final round
+    if (isFinal) {
+      const _f2 = su.placements.slice(0, 2); // winner + runner-up
+      revealItems.push({ type: 'final-two', html: `<div class="vp-card gold" style="margin-bottom:12px;text-align:center">
+        <div style="font-size:12px;font-weight:700;letter-spacing:2px;color:var(--accent-gold);margin-bottom:12px">THE FINAL TWO</div>
+        <div class="rp-portrait-row" style="justify-content:center;gap:20px;margin-bottom:8px">
+          ${_f2.map(name => rpPortrait(name)).join('<span style="font-size:20px;color:var(--accent-fire);align-self:center">VS</span>')}
+        </div>
+        <div style="font-size:11px;color:var(--muted)">One more dare decides immunity.</div>
+      </div>` });
+    }
+
     rh += `<div style="font-size:10px;font-weight:700;color:var(--muted);font-family:var(--font-mono);margin-bottom:8px">${isFinal ? 'FINAL ROUND' : 'ROUND ' + round.roundNum}</div>`;
 
     if (round.pickedBy) {
@@ -46632,7 +46663,30 @@ function rpBuildSayUncleRounds(ep) {
       </div>`;
     }
 
-    const cardClass = round.result === 'fail' ? 'fire' : round.backfire ? 'fire' : round.result === 'dominant' ? 'gold' : '';
+    // Final round: show the winner
+    if (isFinal && su.immunityWinner) {
+      const _winner = su.immunityWinner;
+      const _loser = round.player;
+      if (round.result === 'fail') {
+        // Finalist failed — the other player wins
+        rh += `<div style="border-top:2px solid var(--accent-gold);padding-top:12px;margin-top:12px;text-align:center">
+          <div style="font-size:11px;font-weight:700;letter-spacing:2px;color:var(--accent-gold);margin-bottom:8px">IMMUNITY WINNER</div>
+          ${rpPortrait(_winner, 'md')}
+          <div style="font-size:14px;font-weight:700;color:var(--vp-text);margin-top:8px">${_winner}</div>
+          <div style="font-size:11px;color:var(--accent-gold)">Last one standing</div>
+        </div>`;
+      } else {
+        // Finalist passed — they win
+        rh += `<div style="border-top:2px solid var(--accent-gold);padding-top:12px;margin-top:12px;text-align:center">
+          <div style="font-size:11px;font-weight:700;letter-spacing:2px;color:var(--accent-gold);margin-bottom:8px">IMMUNITY WINNER</div>
+          ${rpPortrait(_winner, 'md')}
+          <div style="font-size:14px;font-weight:700;color:var(--vp-text);margin-top:8px">${_winner}</div>
+          <div style="font-size:11px;color:var(--accent-gold)">Survived the final dare</div>
+        </div>`;
+      }
+    }
+
+    const cardClass = round.result === 'fail' ? 'fire' : round.backfire ? 'fire' : round.result === 'dominant' ? 'gold' : isFinal ? 'gold' : '';
     revealItems.push({ type: 'round', html: `<div class="vp-card ${cardClass}" style="margin-bottom:12px">${rh}</div>` });
   });
 

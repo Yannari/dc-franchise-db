@@ -19546,26 +19546,26 @@ function generateCampEvents(ep, phase = 'both') {
         `The vote is over but ${ally}'s not done with it. ${evElim} trusted this game and ${voterList} ended it. ${ally} files that away. It will come up again.`,
       ]) });
     });
-    _disc.forEach(evt => {
-      if (evt.type === 'vote-discovery') {
-        const { target, voter } = evt;
-        if (!gs.activePlayers.includes(target) || !gs.activePlayers.includes(voter)) return;
-        const _campKey = gs.isMerged ? 'merge' : gs.tribes.find(t => t.members.includes(target))?.name;
-        if (!_campKey || !ep.campEvents[_campKey]) return;
-        const _tP = pronouns(target);
-        ep.campEvents[_campKey].pre.push({ type: 'doubt', players: [target, voter], text: _rp([
-          `${target} found out that ${voter} wrote ${_tP.posAdj} name last tribal. ${_tP.Sub} ${_tP.sub === 'they' ? "aren't" : "isn't"} confronting anyone — yet. But the trust is gone.`,
-          `${target} knows ${voter} voted for ${_tP.obj}. Whether ${_tP.sub} worked it out or someone slipped, ${_tP.sub} ${_tP.sub === 'they' ? "know" : "knows"}. ${voter} doesn't.`,
-          `The vote is over, but ${target} hasn't moved on. ${voter} wrote ${_tP.posAdj} name. That's not something ${_tP.sub} ${_tP.sub === 'they' ? "forget" : "forgets"}.`,
-          `${target} figured it out. ${voter} voted for ${_tP.obj} — and now ${_tP.sub} ${_tP.sub === 'they' ? "know" : "knows"} it. ${_tP.Sub} ${_tP.sub === 'they' ? "haven't" : "hasn't"} said a word. ${_tP.Sub} ${_tP.sub === 'they' ? "don't" : "doesn't"} need to yet.`,
-          `${voter} thinks they're in the clear. They don't know that ${target} already has ${_tP.posAdj} name written down in ${_tP.posAdj} head.`,
-          `${target} is smiling across the fire at ${voter} this morning. But ${_tP.sub} ${_tP.sub === 'they' ? "know" : "knows"} exactly what ${voter} wrote last night. That smile means nothing good.`,
-          `${target} put it together — the timing, the look, the way ${voter} avoided ${_tP.posAdj} eyes after tribal. ${voter} voted for ${_tP.obj}. ${target} is sure of it now.`,
-          `Something shifted for ${target} overnight. ${_tP.Sub} ${_tP.sub === 'they' ? "worked" : "worked"} out that ${voter} wrote ${_tP.posAdj} name. The information landed quietly. But it landed.`,
-          `${target} found out. Maybe someone told ${_tP.obj}. Maybe ${_tP.sub} ${_tP.sub === 'they' ? "worked" : "worked"} it out alone. Either way, ${voter} is no longer safe in ${_tP.posAdj} eyes — even if ${voter} doesn't know it yet.`,
-          `There are people at this camp ${target} trusts less this morning than ${_tP.sub} ${_tP.sub === 'they' ? "did" : "did"} yesterday. ${voter} is one of them. ${voter} wrote ${_tP.posAdj} name. That doesn't disappear.`,
-        ]) });
-      }
+    // Group vote-discovery events by target so one player's reaction is ONE consolidated event
+    const _voteDiscGroups = {};
+    _disc.filter(e => e.type === 'vote-discovery').forEach(evt => {
+      if (!_voteDiscGroups[evt.target]) _voteDiscGroups[evt.target] = { target: evt.target, voters: [] };
+      if (gs.activePlayers.includes(evt.voter)) _voteDiscGroups[evt.target].voters.push(evt.voter);
+    });
+    Object.values(_voteDiscGroups).forEach(({ target, voters }) => {
+      if (!gs.activePlayers.includes(target) || !voters.length) return;
+      const _campKey = gs.isMerged ? 'merge' : gs.tribes.find(t => t.members.includes(target))?.name;
+      if (!_campKey || !ep.campEvents[_campKey]) return;
+      const _tP = pronouns(target);
+      const voterList = voters.length === 1 ? voters[0] : voters.slice(0, -1).join(', ') + ' and ' + voters[voters.length - 1];
+      ep.campEvents[_campKey].pre.push({ type: 'doubt', players: [target, ...voters], text: _rp([
+        `${target} found out that ${voterList} wrote ${_tP.posAdj} name last tribal. ${_tP.Sub} ${_tP.sub === 'they' ? "aren't" : "isn't"} confronting anyone — yet. But the trust is gone.`,
+        `${target} knows. ${voterList} voted for ${_tP.obj}. Whether ${_tP.sub} worked it out or someone slipped, ${_tP.sub} ${_tP.sub === 'they' ? "know" : "knows"}. They don't.`,
+        `The vote is over, but ${target} hasn't moved on. ${voterList} wrote ${_tP.posAdj} name. That's not something ${_tP.sub} ${_tP.sub === 'they' ? "forget" : "forgets"}.`,
+        `Something shifted for ${target} overnight. ${_tP.Sub} worked out that ${voterList} wrote ${_tP.posAdj} name. The information landed quietly. But it landed.`,
+        `${target} found out. Maybe someone told ${_tP.obj}. Maybe ${_tP.sub} worked it out alone. Either way, ${voterList} ${voters.length === 1 ? 'is' : 'are'} no longer safe in ${_tP.posAdj} eyes.`,
+        `There are people at this camp ${target} trusts less this morning. ${voterList}. They wrote ${_tP.posAdj} name. That doesn't disappear.`,
+      ]) });
     });
   }
 

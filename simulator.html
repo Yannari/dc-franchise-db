@@ -34719,9 +34719,14 @@ function rpBuildDebug(ep) {
     gs.episodeHistory.filter(h => h.num <= ep.num).forEach(h => {
       if (h.showmanceBreakup) _romEvents.push({ ep: h.num, type: 'BETRAYAL', col: '#f47067', detail: `${h.showmanceBreakup.voter} voted out partner ${h.showmanceBreakup.eliminated} (bond: ${(h.showmanceBreakup.bond || 0).toFixed(1)})` });
       if (h.showmanceSeparation) _romEvents.push({ ep: h.num, type: 'SEPARATED', col: '#d29922', detail: `${h.showmanceSeparation.survivor} lost partner ${h.showmanceSeparation.eliminated} (bond: ${(h.showmanceSeparation.bond || 0).toFixed(1)})` });
-      if (h.showmanceEvents?.length) h.showmanceEvents.filter(e => e.type === 'showmanceRekindle').forEach(e => {
-        _romEvents.push({ ep: h.num, type: 'REKINDLED', col: '#3fb950', detail: `${e.players[0]} & ${e.players[1]} back together` });
-      });
+      if (h.showmanceEvents?.length) {
+        h.showmanceEvents.filter(e => e.type === 'showmanceRekindle').forEach(e => {
+          _romEvents.push({ ep: h.num, type: 'REKINDLED', col: '#3fb950', detail: `${e.players[0]} & ${e.players[1]} back together` });
+        });
+        h.showmanceEvents.filter(e => e.type === 'showmanceBreakup' && e.phase === 'faded').forEach(e => {
+          _romEvents.push({ ep: h.num, type: 'FADED', col: '#f0883e', detail: `${e.players[0]} & ${e.players[1]} — bond decayed, showmance died` });
+        });
+      }
       if (h.triangleResolution) {
         const tr = h.triangleResolution;
         _romEvents.push({ ep: h.num, type: 'TRIANGLE RESOLVED', col: '#f0883e', detail: `${tr.center} chose ${tr.chosen}, rejected ${tr.rejected} (severity: ${(tr.severity || 0).toFixed(1)}, bond crash: ${(tr.bondCrash || 0).toFixed(1)}, heat: ${tr.heatBoost >= 0 ? '+' : ''}${(tr.heatBoost || 0).toFixed(1)})` });

@@ -1616,6 +1616,7 @@ const TWIST_CATALOG = [
   { id:'penalty-vote',     emoji:'⚠️', name:'Penalty Vote',         category:'elim',       phase:'any',        desc:'A player receives a penalty vote against them at the next tribal.',         engineType:'penalty-vote'    },
   { id:'sudden-death',     emoji:'💀', name:'Sudden Death',         category:'elim',       phase:'post-merge', desc:'No tribal council. Last place in the challenge is auto-eliminated on the spot. Pure performance — no vote, no strategy, no safety net.',  engineType:'sudden-death'    },
   { id:'slasher-night',    emoji:'🔪', name:'Slasher Night',        category:'elim',       phase:'post-merge', desc:'A slasher hunts the tribe. Players are picked off round by round. Last one standing wins immunity. Lowest scorer is eliminated. No tribal council.',  engineType:'slasher-night'   },
+  { id:'triple-dog-dare',  emoji:'🎯', name:'Triple Dog Dare',      category:'elim',       phase:'post-merge', desc:'Eliminated players dare the tribe. Accept to earn freebies, redirect to spend them. Run out of freebies and fail a dare? You\'re out. No tribal council.', engineType:'triple-dog-dare' },
   { id:'cultural-reset',   emoji:'🔄', name:'Cultural Reset',       category:'elim',       phase:'any',        desc:'All alliances exposed publicly. Weak alliances dissolve, strong ones survive but become targets. Double-dippers are caught. The social game resets.',        engineType:'cultural-reset'  },
   { id:'rock-draw',        emoji:'🪨', name:'Rock Draw',            category:'elim',       phase:'any',        desc:'No re-vote on a tie — non-immune, non-tied players draw rocks. Random exit.', engineType:'rock-draw'      },
   { id:'open-vote',        emoji:'📢', name:'Open Vote',            category:'elim',       phase:'any',        desc:'Votes are public — cast one by one in an order chosen by the immunity winner. Cascade pressure builds. Everyone sees who said whose name.', engineType:'open-vote' },
@@ -1646,6 +1647,59 @@ const TWIST_CATALOG = [
   { id:'aftermath',       emoji:'🎬', name:'Aftermath Show',       category:'social',     phase:'any',        desc:'Total Drama Aftermath: Chris interviews eliminated players, reveals secrets, shows unseen footage.', engineType:'aftermath' },
   { id:'tied-destinies',  emoji:'🔗', name:'Tied Destinies',       category:'elim',       phase:'post-merge', desc:'Players randomly paired. Vote someone out and their partner goes too. Paired immunity challenge. Double elimination.', engineType:'tied-destinies', incompatible:['pre-merge'] },
 ];
+
+// ── Triple Dog Dare — dare pools by category ──
+const DARE_POOL = {
+  'gross-out': [
+    'Lick someone\'s armpit.',
+    'Eat a mystery meat slurry.',
+    'Chew a piece of gum you found under a bench.',
+    'Drink swamp water through a straw.',
+    'Eat a live bug.',
+    'Lick the bottom of someone\'s shoe.',
+    'Eat a raw egg — shell and all.',
+    'Drink blended fish guts.',
+    'Suck on a piece of someone else\'s toenail.',
+    'Eat a spoonful of mystery camp leftovers — three days old.',
+  ],
+  'humiliation': [
+    'Dress up in a ridiculous costume and do a runway walk.',
+    'Do a chicken dance in front of everyone for 60 seconds.',
+    'Slap yourself in the face — hard — five times.',
+    'Serenade the host with a love ballad.',
+    'Declare your undying love for your worst enemy.',
+    'Wear a diaper and act like a baby for 5 minutes.',
+    'Let the tribe draw on your face with permanent marker.',
+    'Give a dramatic monologue confessing your biggest weakness.',
+    'Do an interpretive dance about your game so far.',
+    'Get on your knees and beg your biggest rival for forgiveness.',
+  ],
+  'pain-fear': [
+    'Give a purple nurple to a sleeping bear.',
+    'Swim in a pool of leeches.',
+    'Sit on an anthill for 60 seconds.',
+    'Walk across hot coals barefoot.',
+    'Wrestle a raccoon.',
+    'Hold a scorpion in your hand for 30 seconds.',
+    'Stand in a swarm of bees wearing a honey-covered shirt.',
+    'Let a snake wrap around your neck.',
+    'Jump into freezing water and stay for 2 minutes.',
+    'Get blasted by a fire hose at close range.',
+  ],
+  'sacrifice': [
+    'Shave your head.',
+    'Destroy your luxury item.',
+    'Give up your next reward challenge win.',
+    'Burn your camp shoes.',
+    'Eat the entire tribe\'s rice ration for tomorrow.',
+    'Hand your closest ally\'s name to the host as your next vote.',
+    'Surrender your sleeping spot for the rest of the game.',
+    'Smash the tribe\'s fishing gear.',
+    'Let the host confiscate your personal memento.',
+    'Wear a sign that says "VOTE ME OUT" for the rest of the day.',
+  ],
+};
+const DARE_CATEGORIES = Object.keys(DARE_POOL);
 
 // S10 preset data
 const S10_TRIBES = [
@@ -10453,6 +10507,11 @@ function applyTwist(ep, twist, isPrimary = true) {
     // Post-merge only; need at least 3 players for a meaningful slasher night
     if (!gs.isMerged || gs.activePlayers.length < 3) return;
     ep.isSlasherNight = true;
+
+  } else if (engineType === 'triple-dog-dare') {
+    // Post-merge only; need at least 4 players for meaningful dare economy
+    if (!gs.isMerged || gs.activePlayers.length < 4) return;
+    ep.isTripleDogDare = true;
 
   } else if (engineType === 'cultural-reset') {
     const activePlayers = gs.activePlayers;
@@ -20516,7 +20575,7 @@ function handleExileFormat(ep) {
   if (phase === 'pre' && gs.isMerged) return;
   if (phase === 'post' && !gs.isMerged) return;
   // Don't fire on special episode types
-  if (ep.isMultiTribal || ep.isDoubleTribal || ep.isSlasherNight || ep.isSuddenDeath) return;
+  if (ep.isMultiTribal || ep.isDoubleTribal || ep.isSlasherNight || ep.isSuddenDeath || ep.isTripleDogDare) return;
   // Don't double up with exile-island twist (which handles its own exile selection)
   if (ep.exileIslandPending) return;
   // Don't double up with schoolyard pick exile (unpicked player already on exile)
@@ -26202,7 +26261,7 @@ function _textVotingPlans(ep, ln, sec) {
 
 // ── TRIBAL COUNCIL ──
 function _textTribalCouncil(ep, ln, sec) {
-  if (!ep.votingLog?.length || ep.multiTribalResults?.length || ep.isSlasherNight) return;
+  if (!ep.votingLog?.length || ep.multiTribalResults?.length || ep.isSlasherNight || ep.isTripleDogDare) return;
   sec(ep.isFireMaking ? 'TRIBAL COUNCIL — FIRE-MAKING VOTE' : ep.firstEliminated ? 'TRIBAL COUNCIL — VOTE 1 OF 2' : 'TRIBAL COUNCIL');
 
   const tribal = ep.tribalPlayers || gs.activePlayers;
@@ -26299,7 +26358,7 @@ function _textTribalCouncil(ep, ln, sec) {
 
 // ── THE VOTES (per-player reasoning) ──
 function _textTheVotes(ep, ln, sec) {
-  if (!ep.votingLog?.length || ep.multiTribalResults?.length || ep.isSlasherNight) return;
+  if (!ep.votingLog?.length || ep.multiTribalResults?.length || ep.isSlasherNight || ep.isTripleDogDare) return;
   sec('THE VOTES');
 
   if (ep.openVote && ep.openVoteOrder?.length) {
@@ -45843,7 +45902,7 @@ function buildVPScreens(epRecord) {
   if (ep.isFinale && ep.challengeType && ep.immunityWinner && (seasonConfig.finaleSize >= 3 || seasonConfig.firemaking) && seasonConfig.finaleFormat !== 'final-challenge' && seasonConfig.finaleFormat !== 'koh-lanta') {
     // Finale immunity: use the same detailed challenge screen as regular episodes (koh-lanta has its own orienteering/perch screens)
     vpScreens.push({ id:'finale-challenge', label:'Final Immunity', html: rpBuildChallenge(ep) });
-  } else if (ep.challengeType && !ep.isFinale && !ep.isSlasherNight) {
+  } else if (ep.challengeType && !ep.isFinale && !ep.isSlasherNight && !ep.isTripleDogDare) {
     vpScreens.push({ id:'challenge', label:'Immunity Challenge', html: rpBuildChallenge(ep) });
   }
 

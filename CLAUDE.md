@@ -29,9 +29,14 @@ Do not split it into separate files. This is intentional.
 - `checkSideDealBreaks(ep)` — detects broken F2/F3 deals after votes
 - `checkConflictingDeals(ep)` — discovers double-dealing via intuition rolls
 - `checkFalseInfoBlowup(ep)` — exposes lies when false idol info is acted on
+- `checkLoveTriangleFormation(ep)` — detect triangles (dual showmance or one-sided), personality fork to affairs
+- `updateLoveTrianglePhases(ep)` — triangle lifecycle: tension → escalation → ultimatum
+- `updateAffairExposure(ep)` — affair exposure tiers: hidden → rumors → caught → exposed
+- `_resolveAffairExposure(af, ep, ...)` — confrontation + choice when affair is exposed
 - `checkMoleSabotage(ep)` — Mole twist: bond sabotage, info leaks, vote disruption flags, advantage sabotage, laying low
 - `_checkMoleExposure(mole, ep, tribeName)` — fires when any observer's suspicion reaches 3.0
 - `rpBuildMoleExposed(ep)` — dedicated VP screen for Mole exposure moment
+- `simulateMultipleEpisodes(count)` — Sim All / +5 Eps buttons, chains `simulateNext()` via setTimeout
 - VP Viewer: `rpBuild*()` functions for each screen
 
 ## Core State
@@ -42,7 +47,9 @@ Do not split it into separate files. This is intentional.
 - `gs.perceivedBonds` — directional perception gaps (`"A→B": { perceived, reason, correctionRate }`)
 - `gs.advantages[]` — active idols and advantages with holder/type
 - `gs.namedAlliances[]` — named alliance objects with members, betrayals, formed ep, active flag
-- `gs.showmances[]` — objects: `{ players:[a,b], phase, sparkEp, episodesActive, jealousPlayer, tested }`
+- `gs.showmances[]` — objects: `{ players:[a,b], phase, sparkEp, episodesActive, jealousPlayer, tested, breakupEp, breakupVoter, breakupType }`
+- `gs.loveTriangles[]` — `{ center, suitors:[A,C], phase, formedEp, episodesActive, jealousyLevel, resolved, resolution }`
+- `gs.affairs[]` — `{ cheater, partner, secretPartner, exposure (hidden/rumors/caught/exposed), complicit, rumorSources[], caughtBy, resolved, resolution }`
 - `gs.skippedEliminationEps[]` — episodes where Team Swap advantage cancelled elimination (shifts twist schedule)
 - `gs.sideDeals[]` — F2/F3 pacts: `{ players, initiator, madeEp, type, active, genuine }`
 - `gs.loyaltyTests[]` — planted false info: `{ tester, target, falseInfo, plantedEp, resolved }`
@@ -54,6 +61,8 @@ Do not split it into separate files. This is intentional.
 - New camp event types: push into `ep.campEvents[campKey].pre` directly; add badge
   handling in `rpBuildCampTribe()` `badgeText`/`badgeClass` block; events MUST have
   consequences (addBond, state changes) — text-only events are cosmetic and waste screentime
+- Camp events MUST include `players: [name1, name2]` array (not `player: name`) for VP portrait rendering
+- All camp event types MUST have explicit badge text + badge color entries
 - Save episode-level data to history: `gs.episodeHistory[gs.episodeHistory.length-1].key = value`
   Fields on the live `ep` object are NOT auto-saved — must explicitly copy after push
 - `pronouns(name)` returns `{sub, obj, pos, posAdj, ref, Sub, Obj, PosAdj}` for any player
@@ -133,12 +142,39 @@ is NOT actually loyal. Always check behavioral track record alongside raw stats.
 - Loyalty tests: 2-episode resolution. Spread = trust broken. No spread = trust earned.
 - Temperament recovery: after fights/meltdowns, social players can apologize next episode (social * 0.07 chance)
 - Per-pair bond dedup: max 2 bond events per pair per camp phase. Bond deltas normalized to +0.5.
+- Camp event weight ratio: ~60/40 positive/negative. WAKE-UP CALL capped at 3 per episode per tribe.
 
 ## Archetype Mechanics
 - Villain: bond formation 0.7x, loss 0.8x. +1.5 heat. False info trades. Camp events.
 - Hero: bond formation 1.15x. -1.0 heat. Camp events.
 - Floater: 0.85x heat (invisibility). 0.9x vote gravity (follows majority). FTC: penalized if 0 big moves (behavior-based, not archetype-specific).
 - FTC passenger penalty: 0 big moves = -0.6 jury score. 1 move = 0. 2+ = bonus up to +0.8.
+
+## Romance System (Showmances, Love Triangles, Secret Affairs)
+- `checkShowmanceFormation(ep)` — pair formation: bond >= 5-6 + `romanticCompat` + archetype multiplier
+- `updateShowmancePhases(ep)` — lifecycle: spark → honeymoon → target → ride-or-die (or broken-up/faded)
+- **Natural breakup**: bond drops below -1.0 → phase `broken-up`, breakupType `faded`. Shows `💔 It's Over` badge.
+- **Rekindle**: broken-up partner returns to game → chance to restart (separated: 70%/40%/15%, betrayal: 25%/8%)
+- Showmance cap: 2 active at a time. Triangles and affairs don't count toward cap.
+- **Love Triangles** (`gs.loveTriangles[]`): one-sided crush or dual showmance → public drama
+  - Formation: bond >= 4 + romanticCompat + partner bond >= 1.0 (prevents instant resolution)
+  - Same trio can't reform. Personality fork: low-loyalty/villain types → affair instead of triangle.
+  - Phases: tension (2 eps) → escalation (2 eps) → ultimatum (forced choice)
+  - Resolution: chose (center picks), organic (bond decay), eliminated
+  - Winner becomes showmance with center if compatible + bond high enough
+- **Secret Affairs** (`gs.affairs[]`): hidden romance for low-loyalty/villain/schemer/chaos-agent/showmancer types
+  - 4 exposure tiers: hidden → rumors → caught → exposed. Pressure cooker: +6% detection/episode.
+  - Complicit check: does secret partner know about the showmance?
+  - Caught tier: catcher decides to tell or stay silent (leverage mechanic)
+  - Exposure: cheater chooses partner or secret partner (same formula as triangle ultimatum)
+  - If cheater leaves → old showmance breaks up, new one forms with secret partner
+- **Popularity**: showmance betrayal -3 like/+3 drama. Triangle center -2 like. Affair cheater -4 like.
+  Rejected/betrayed players get sympathy (+2-3 like, +3-4 underdog).
+- **Aftermath**: all romance events feed into Truth or Anvil (drama 7-9), interviews (role-specific),
+  Fan Call, Unseen Footage, Host Roast. Affair is drama 9 (highest romance event).
+- **VP**: Romance debug tab shows showmances (with breakup type), triangles, affairs + event log.
+  All camp events have explicit badges.
+- **Merge tribe key**: always use `gs.mergeName || 'merge'` for post-merge camp event pushes, never just `'merge'`
 
 ## The Mole
 - Season-level twist (not archetype): 1-2 secret saboteurs assigned via config (`cfg-mole`)
@@ -174,7 +210,7 @@ is NOT actually loyal. Always check behavioral track record alongside raw stats.
 
 ## Aftermath Show
 - `generateAftermathShow(ep)` — full aftermath data generation
-- **Truth or Anvil**: confrontation scene per interviewee. 9 contradiction types (vote-lie, fake-deal, bond-gap, double-agent, hidden-advantage, mole, betrayal, hidden-hatred, showmance). Full dialogue with archetype-flavored responses. Clean game = quick acknowledgment, no forced confrontation. Real bond consequences (-0.3 truth, -1.0 anvil).
+- **Truth or Anvil**: confrontation scene per interviewee. 12 contradiction types (vote-lie, fake-deal, bond-gap, double-agent, hidden-advantage, mole, betrayal, hidden-hatred, showmance, showmance-betrayal, love-triangle, affair). Full dialogue with archetype-flavored responses. Clean game = quick acknowledgment, no forced confrontation. Real bond consequences (-0.3 truth, -1.0 anvil).
 - **Unseen Footage**: 10+ sources (mole sabotage, fake deals, showmance spark/jealousy/breakup, perception gaps, undetected betrayals, challenge throws, secret idol finds, alliance collapse, loyalty tests). Scored by drama, top 3 shown.
 - **Fan Call**: 20+ game-data-driven question templates. Fan types (superfan/drama/hater/supporter) filter from shared pool. Category dedup prevents repeat topics.
 - **Host Roast**: 60+ unique templates from game data (betrayals, challenge wins/bombs, alliance count, votes received, side deals, showmances, big moves, popularity, archetype, stats). Dedup via Set.

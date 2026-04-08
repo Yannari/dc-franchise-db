@@ -107,6 +107,28 @@ and the downstream consequence. None are guaranteed — all fire on a roll.
   The Cipher/puzzle) fully randomized. Puzzle stage now has mental assistant boost. Last stage
   always solo (assistants step back). Each stage has dramatic finale name when it's the closer
   (Last One Standing, The Final Sprint, The Final Code). Smart assistant picks now matter.
+[DONE] [TD-6] LOVE TRIANGLES — extends showmance system. One-sided crush or dual showmance
+  triggers public triangle with 3 phases (tension → escalation → ultimatum). Center chooses,
+  rejected player reacts based on personality. Triangle winner becomes showmance if compatible.
+  Same trio can't reform. Partner bond < 1.0 prevents formation (avoids instant resolution).
+  Full Aftermath: Truth or Anvil (drama 7-8), interviews, fan call, unseen footage, host roast.
+  Popularity: center -2 like, rejected +2 like/+3 underdog. VP badges for all 6 event types.
+[DONE] [TD-6B] SECRET AFFAIRS — personality fork from triangle detection. Low-loyalty/villain/
+  schemer/chaos-agent/showmancer types start hidden affairs instead of public triangles.
+  4 exposure tiers: hidden → rumors → caught → exposed. Pressure cooker (+6%/ep detection).
+  Complicit check for secret partner. Caught tier has leverage mechanic (catcher stays silent
+  or tells). Exposure: cheater chooses partner or secret partner. Leaves → new showmance forms.
+  Full Aftermath: Truth or Anvil (drama 9), role-specific interviews for all 4 roles + catcher,
+  fan call, unseen footage (drama 9), host roast. Popularity: cheater -4/-6 like, betrayed
+  +3 like/+3 underdog. VP badges for all 6 affair event types. Debug tab with full affair state.
+[DONE] Showmance system improvements — natural breakup when bond < -1.0 (faded type), rekindle
+  mechanic when partner returns (separated 70%/40%/15%, betrayal 25%/8%), showmance betrayal
+  (voting out partner) upgraded in Aftermath (drama 8 Truth or Anvil, dedicated interview +
+  fan call questions). Camp event weight rebalance to 60/40 positive/negative. WAKE-UP CALL
+  capped at 3/ep/tribe. Lost-ally and vote-discovery events consolidated into single grouped
+  events. Idol play aftermath consolidated from 3 events to 1. All camp events given explicit
+  badges + players field. Sim All / +5 Eps buttons. Romance debug tab with event log.
+  Merge tribe key fix: gs.mergeName || 'merge' for post-merge camp event pushes.
 
 
 ── REMAINING — RANKED BY PRIORITY ─────────────────────────────────────────────
@@ -145,16 +167,6 @@ and the downstream consequence. None are guaranteed — all fire on a roll.
     WRONGFUL CONVICTION), The Truth (viewer-only Blackened reveal if wrong).
   Note: complex — evidence system, trial vote mechanics, 6 new camp event types.
     Compatible with The Mole (Mole can be Blackened). Incompatible with no-tribal.
-
-[TD-6] LOVE TRIANGLES
-  Problem: showmance system only handles pairs. TD is famous for triangles
-    (Duncan/Courtney/Gwen) where A loves B, B is drawn to C, A becomes jealous of C.
-  Mechanic: when two showmance-compatible players both have bond >= 3 with the same
-    person, a triangle forms. Creates jealousy events, forced alliance breaks, split
-    votes around the triangle. The center player must choose or lose both.
-  Events: jealousy confrontation, "pick one" ultimatum, triangle meltdown, resolution
-    (picks one → other becomes rival, or stays ambiguous → both lose trust).
-  Note: extends existing showmance system. Needs romanticCompat 3-way check.
 
 [TD-7] CHALLENGE CHEATING
   Problem: only the Mole sabotages challenges. Regular players should cheat to WIN.

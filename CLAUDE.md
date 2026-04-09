@@ -78,6 +78,9 @@ Do not split it into separate files. This is intentional.
 - Alliance acceptance is relationship-driven (bond with recruiter + group avg bond), not stat-driven
 - Advantages force-play at top 5 (`activePlayers.length <= 5`)
 - `handleAdvantageInheritance(eliminatedName, ep)` must be called BEFORE stripping advantages on every elimination path
+- **Season presets MUST always overwrite tribes**, not conditionally (`if (!tribes?.length)`).
+  Previous preset tribes bleed through otherwise. Always set `seasonConfig.tribes = [...]` and
+  call `renderConfig()` after preset load.
 - **Every new feature MUST have both VP display AND text backlog output.** VP screens (`rpBuild*`) show
   the visual viewer; text backlog (`_text*` functions in `_textRewardChallenge`, `_textCampPost`, etc.)
   provides the plain-text log. Neither is optional — features without text backlog are invisible to

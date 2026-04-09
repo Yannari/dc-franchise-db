@@ -34811,8 +34811,96 @@ function vpGetConfessionalRole(name, ep) {
 // VISUAL PLAYER — BrantSteele-inspired rebuild
 // ══════════════════════════════════════════════════════════════════════
 
+// ── Screen 0a: Dock Arrival — Episode 1 replacement for Cold Open ──
+function _rpBuildDockArrival(ep) {
+  const arrivals = ep.dockArrivals;
+  const host = seasonConfig.host || 'Chris';
+  const seasonName = seasonConfig.name || 'Total Drama';
+  const stateKey = `dock_arrivals_${ep.num}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+
+  const allRevealed = state.idx >= arrivals.length - 1;
+  const _daReveal = (targetIdx) => `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=${targetIdx};const ep=gs.episodeHistory.find(e=>e.num===${ep.num});if(ep){buildVPScreens(ep);renderVPScreen();}`;
+
+  const returneeCount = arrivals.filter(a => a.isReturnee).length;
+  const newbieCount = arrivals.length - returneeCount;
+  const isAllReturnees = newbieCount === 0;
+  const isMixed = returneeCount > 0 && newbieCount > 0;
+
+  const hostMonologue = isAllReturnees
+    ? `"They've played before. They've been voted out, blindsided, betrayed. And they all came back for more. I'm ${host}, and this is ${seasonName} — All Stars. ${arrivals.length} returning players. One winner. Let's see who learned from their mistakes... and who's about to make new ones."`
+    : isMixed
+    ? `"Tonight, ${returneeCount} returning player${returneeCount>1?'s':''} face${returneeCount===1?'s':''} off against ${newbieCount} brand new competitor${newbieCount>1?'s':''}. The veterans think they know this game. The rookies think they can beat it. I'm ${host}, and this is ${seasonName}. Let's find out who's right."`
+    : `"Yo! We're coming at you live from Camp Wawanakwa! I'm your host, ${host}. ${arrivals.length} players have signed up to spend eight weeks at this crummy old summer camp. They'll compete in challenges, vote each other out at tribal council, and the last one standing wins the prize. Every moment will be caught on camera. Who will crumble? Who will rise? Find out right here on... ${seasonName}!"`;
+
+  let html = `<div class="rp-page tod-dawn">
+    <div class="rp-co-eyebrow">${seasonName}</div>
+    <div style="font-family:var(--font-display);font-size:32px;letter-spacing:3px;text-align:center;color:var(--accent-gold);text-shadow:0 0 20px var(--accent-gold);margin:10px 0 6px;animation:scrollDrop 0.5s var(--ease-broadcast) both">THE ARRIVAL</div>
+    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:20px">${arrivals.length} players. One island. No idea what they signed up for.</div>
+    <div style="padding:14px;background:rgba(227,179,65,0.06);border:1px solid rgba(227,179,65,0.15);border-radius:10px;text-align:center;margin-bottom:20px">
+      <div style="font-size:10px;color:#f0a500;font-weight:700;letter-spacing:1px;margin-bottom:4px">${host.toUpperCase()}</div>
+      <div style="font-size:13px;color:#e6edf3;line-height:1.7;font-style:italic">${hostMonologue}</div>
+    </div>`;
+
+  arrivals.forEach((a, i) => {
+    const isVisible = i <= state.idx;
+    if (!isVisible) {
+      html += `<div id="dock-arr-${i}" style="padding:10px;margin-bottom:6px;border:1px solid var(--border);border-radius:8px;opacity:0.12;text-align:center;font-size:11px;color:var(--muted)">Arrival #${i + 1} — ?</div>`;
+      return;
+    }
+    const returnBadge = a.isReturnee ? `<span style="font-size:9px;font-weight:700;letter-spacing:1px;color:#f59e0b;background:rgba(245,158,11,0.12);padding:2px 6px;border-radius:3px;margin-left:6px">RETURNING</span>` : '';
+    html += `<div id="dock-arr-${i}" class="vp-card" style="border-color:rgba(227,179,65,0.12);margin-bottom:8px;animation:scrollDrop 0.3s var(--ease-broadcast) both">
+      <div style="display:flex;align-items:flex-start;gap:12px">
+        ${rpPortrait(a.name, 'md')}
+        <div style="flex:1">
+          <div style="font-family:var(--font-display);font-size:15px;color:#e6edf3;margin-bottom:2px">${a.name}${returnBadge}</div>
+          <div style="font-size:10px;color:#8b949e;margin-bottom:6px">${ARCHETYPE_NAMES[a.archetype] || a.archetype}</div>
+          <div style="font-size:11px;color:#f0a500;font-style:italic;margin-bottom:4px">${host}: ${a.hostLine}</div>
+          <div style="font-size:13px;color:#e6edf3;line-height:1.6">${a.name}: ${a.playerLine}</div>
+          ${a.dockReaction ? `<div style="font-size:12px;color:#8b949e;font-style:italic;margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.04)">${a.dockReaction.text}</div>` : ''}
+        </div>
+      </div>
+    </div>`;
+  });
+
+  if (!allRevealed) {
+    html += `<div style="text-align:center;margin-top:16px">
+      <button class="rp-btn" onclick="${_daReveal(state.idx + 1)}">NEXT ARRIVAL (${state.idx + 2}/${arrivals.length})</button>
+      <button class="rp-btn" style="margin-left:8px;opacity:0.6" onclick="${_daReveal(arrivals.length - 1)}">Reveal All</button>
+    </div>`;
+  } else {
+    html += `<div style="text-align:center;margin-top:20px;padding:16px;border:1px solid rgba(227,179,65,0.15);border-radius:10px;background:rgba(227,179,65,0.04)">
+      <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:#f0a500;margin-bottom:10px">GROUP PHOTO</div>
+      <div style="font-size:12px;color:#8b949e;font-style:italic;margin-bottom:12px">"Everybody on the dock! ...try not to break it this time."</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center">${arrivals.map(a => rpPortrait(a.name, 'sm')).join('')}</div>
+    </div>`;
+
+    const tribes = ep.tribesAtStart || gs.tribes || [];
+    if (tribes.length >= 2) {
+      html += `<div style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.06)">
+        <div style="font-family:var(--font-display);font-size:18px;letter-spacing:2px;text-align:center;color:#e6edf3;margin-bottom:12px">THE TEAMS</div>`;
+      tribes.forEach(t => {
+        const tc = tribeColor(t.name);
+        html += `<div style="margin-bottom:12px">
+          <div style="font-size:14px;font-weight:700;color:${tc};text-align:center;margin-bottom:6px">${t.name}</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center">${(t.members||[]).map(m => rpPortrait(m, 'sm')).join('')}</div>
+        </div>`;
+      });
+      html += `</div>`;
+    }
+  }
+
+  html += `</div>`;
+  return html;
+}
+
 // ── Screen 0: Cold Open — full cast status grid ──
 function rpBuildColdOpen(ep) {
+  // ── Episode 1: Dock Arrival Sequence ──
+  if (ep.num === 1 && ep.dockArrivals?.length) {
+    return _rpBuildDockArrival(ep);
+  }
   // Use the PREVIOUS episode's snapshot for eliminated/RI status — the current
   // ep.gsSnapshot is taken after this episode ran, so it already includes this boot.
   const prevEp   = (gs.episodeHistory || []).filter(h => h.num < ep.num).slice(-1)[0];

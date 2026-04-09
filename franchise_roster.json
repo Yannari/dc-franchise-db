@@ -152,7 +152,8 @@
         "boldness": 7,
         "intuition": 9,
         "temperament": 6
-      }
+      },
+      "isReturnee": true
     },
     {
       "name": "Brick",
@@ -169,7 +170,8 @@
         "boldness": 4,
         "intuition": 5,
         "temperament": 8
-      }
+      },
+      "isReturnee": true
     },
     {
       "name": "Bridgette",
@@ -271,7 +273,8 @@
         "boldness": 4,
         "intuition": 8,
         "temperament": 8
-      }
+      },
+      "isReturnee": true
     },
     {
       "name": "Chase",
@@ -356,7 +359,8 @@
         "boldness": 4,
         "intuition": 9,
         "temperament": 8
-      }
+      },
+      "isReturnee": true
     },
     {
       "name": "Courtney",
@@ -373,7 +377,8 @@
         "boldness": 8,
         "intuition": 7,
         "temperament": 2
-      }
+      },
+      "isReturnee": true
     },
     {
       "name": "Crimson",
@@ -698,7 +703,8 @@
         "boldness": 6,
         "intuition": 7,
         "temperament": 4
-      }
+      },
+      "isReturnee": true
     },
     {
       "name": "Harold",
@@ -750,7 +756,7 @@
         "intuition": 9,
         "temperament": 7
       },
-      "isReturnee": false
+      "isReturnee": true
     },
     {
       "name": "Izzy",
@@ -802,7 +808,8 @@
         "boldness": 5,
         "intuition": 8,
         "temperament": 8
-      }
+      },
+      "isReturnee": true
     },
     {
       "name": "Jay",
@@ -870,7 +877,8 @@
         "boldness": 8,
         "intuition": 5,
         "temperament": 2
-      }
+      },
+      "isReturnee": true
     },
     {
       "name": "Julia",
@@ -1143,7 +1151,8 @@
         "boldness": 5,
         "intuition": 8,
         "temperament": 6
-      }
+      },
+      "isReturnee": true
     },
     {
       "name": "Mike",
@@ -1298,7 +1307,8 @@
         "boldness": 7,
         "intuition": 8,
         "temperament": 6
-      }
+      },
+      "isReturnee": true
     },
     {
       "name": "Raj",
@@ -1384,7 +1394,8 @@
         "boldness": 5,
         "intuition": 5,
         "temperament": 8
-      }
+      },
+      "isReturnee": true
     },
     {
       "name": "Sadie",
@@ -1407,18 +1418,19 @@
       "name": "Sam",
       "slug": "sam",
       "gender": "m",
-      "archetype": "floater",
+      "archetype": "",
       "stats": {
         "physical": 4,
         "endurance": 2,
-        "mental": 8,
+        "mental": 6,
         "social": 6,
         "strategic": 2,
         "loyalty": 10,
         "boldness": 2,
         "intuition": 7,
         "temperament": 10
-      }
+      },
+      "isReturnee": true
     },
     {
       "name": "Samey",
@@ -1453,7 +1465,8 @@
         "boldness": 4,
         "intuition": 7,
         "temperament": 10
-      }
+      },
+      "isReturnee": true
     },
     {
       "name": "Scarlett",
@@ -1504,7 +1517,8 @@
         "boldness": 9,
         "intuition": 6,
         "temperament": 4
-      }
+      },
+      "isReturnee": true
     },
     {
       "name": "Shawn",
@@ -1606,7 +1620,8 @@
         "boldness": 8,
         "intuition": 6,
         "temperament": 2
-      }
+      },
+      "isReturnee": true
     },
     {
       "name": "Sugar",
@@ -1726,7 +1741,8 @@
         "boldness": 4,
         "intuition": 4,
         "temperament": 10
-      }
+      },
+      "isReturnee": true
     },
     {
       "name": "Wayne",
@@ -1777,7 +1793,8 @@
         "boldness": 4,
         "intuition": 9,
         "temperament": 8
-      }
+      },
+      "isReturnee": true
     }
   ]
 }

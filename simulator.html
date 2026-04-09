@@ -6940,16 +6940,15 @@ function simulateCliffDive(ep) {
 
   // ── Challenge record: full weight (this is an immunity challenge, not a reward) ──
   if (!gs.chalRecord) gs.chalRecord = {};
-  // Standout per tribe: +1 podium
+  // Standout: +1 podium on winning tribe, +0.5 on safe/losing (still showed courage)
+  // Chickens: +1 bomb on losing tribe, +0.5 on safe tribe, +0.5 on winning tribe
   tribeResults.forEach(t => {
+    const isWinner = t.name === winner.name;
+    const isLoser = t.name === loser.name;
     if (t.standout) {
       if (!gs.chalRecord[t.standout]) gs.chalRecord[t.standout] = { wins: 0, podiums: 0, bombs: 0 };
-      gs.chalRecord[t.standout].podiums += 1;
+      gs.chalRecord[t.standout].podiums += isWinner ? 1 : 0.5;
     }
-  });
-  // Chickens: +1 bomb on losing tribe (cost the team), +0.5 on winning tribe (noticed but didn't matter)
-  tribeResults.forEach(t => {
-    const isLoser = t.name === loser.name;
     t.chickens.forEach(c => {
       if (!gs.chalRecord[c]) gs.chalRecord[c] = { wins: 0, podiums: 0, bombs: 0 };
       gs.chalRecord[c].bombs += isLoser ? 1 : 0.5;

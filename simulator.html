@@ -6930,17 +6930,43 @@ function simulatePhobiaFactor(ep) {
     }
   });
 
-  // Camp events — challenge results (post)
+  // Determine blame BEFORE generating camp events so we can merge badges
+  const loserFailures = finalLoser.members.filter(p => results[p] === 'fail');
+  // Clutch redeems: if the clutch player passed, they're no longer blamed
+  const clutchRedeemed = clutch && clutch.result === 'pass' ? clutch.player : null;
+  const blamedPlayers = new Set(
+    loserFailures.length && loserFailures.length < finalLoser.members.length
+      ? loserFailures.filter(p => p !== clutchRedeemed)
+      : []
+  );
+
+  // Blame heat
+  if (blamedPlayers.size) {
+    if (!gs._phobiaBlame) gs._phobiaBlame = {};
+    const blamePerPlayer = 2.0 / blamedPlayers.size;
+    blamedPlayers.forEach(player => {
+      gs._phobiaBlame[player] = blamePerPlayer;
+      finalLoser.members.forEach(tm => {
+        if (tm !== player) addBond(tm, player, -0.3);
+      });
+    });
+  }
+
+  // Camp events — only failures and blame matter (conquering is the expectation, not worth an event)
   allPlayers.forEach(player => {
     const tribeName = tribes.find(t => t.members.includes(player))?.name;
     if (tribeName && ep.campEvents?.[tribeName]) {
-      const block = ep.campEvents[tribeName];
       const passed = results[player] === 'pass';
+      if (passed) return; // conquering your fear = expected, no camp event needed
+      const block = ep.campEvents[tribeName];
+      const isBlamed = blamedPlayers.has(player);
       (block.post = block.post || []).push({
-        type: passed ? 'phobiaConquered' : 'phobiaFailed',
-        players: [player], text: reactions[player],
-        badgeText: passed ? 'CONQUERED' : 'COULDN\'T DO IT',
-        badgeClass: passed ? 'gold' : 'red',
+        type: isBlamed ? 'phobiaBlame' : 'phobiaFailed',
+        players: [player], text: isBlamed
+          ? `${player} couldn't face ${fears[player]?.title || 'their fear'}, and now the tribe is going to tribal. ${reactions[player]}`
+          : reactions[player],
+        badgeText: isBlamed ? 'COST THE TRIBE' : 'COULDN\'T DO IT',
+        badgeClass: 'red',
       });
     }
   });
@@ -6968,34 +6994,15 @@ function simulatePhobiaFactor(ep) {
         badgeClass: clutch.result === 'pass' ? 'gold' : 'red',
       });
     }
-  }
-
-  // Blame heat: players who failed on the LOSING tribe get heat boost (they cost the game)
-  // This feeds into computeHeat via gs._phobiaBlame so voting targets the weak link
-  const loserFailures = finalLoser.members.filter(p => results[p] === 'fail');
-  if (loserFailures.length && loserFailures.length < finalLoser.members.length) {
-    // Only blame if SOME failed (not all — if everyone failed, nobody's singled out)
-    if (!gs._phobiaBlame) gs._phobiaBlame = {};
-    const blamePerPlayer = 2.0 / loserFailures.length; // split blame — 1 failure = 2.0 heat, 2 = 1.0 each
-    loserFailures.forEach(player => {
-      gs._phobiaBlame[player] = blamePerPlayer;
-      // Bond damage: tribe resents the failure
+    // Choking the clutch = massive heat (you had the chance to save the tribe and blew it)
+    if (clutch.result === 'fail') {
+      if (!gs._phobiaBlame) gs._phobiaBlame = {};
+      gs._phobiaBlame[clutch.player] = (gs._phobiaBlame[clutch.player] || 0) + 3.0;
+      // Extra bond damage — the tribe trusted you with everything
       finalLoser.members.forEach(tm => {
-        if (tm !== player) addBond(tm, player, -0.3);
+        if (tm !== clutch.player) addBond(tm, clutch.player, -0.5);
       });
-    });
-    // Blame camp events
-    loserFailures.forEach(player => {
-      const pr = pronouns(player);
-      const fear = fears[player]?.title || 'their fear';
-      if (ep.campEvents?.[finalLoser.name]) {
-        (ep.campEvents[finalLoser.name].post = ep.campEvents[finalLoser.name].post || []).push({
-          type: 'phobiaBlame', players: [player],
-          text: `The tribe is trying not to say it. But ${player} couldn't face ${fear}, and now they're going to tribal. ${pr.Sub} ${pr.sub === 'they' ? 'know' : 'knows'} the math.`,
-          badgeText: 'COST THE TRIBE', badgeClass: 'red',
-        });
-      }
-    });
+    }
   }
 }
 

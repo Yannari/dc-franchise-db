@@ -7032,13 +7032,13 @@ function simulateAwakeAThon(ep) {
     let eventsThisRound = 0;
     const maxEvents = Math.min(2, Math.floor(awakePlayers.length / 3));
 
-    // Bonding (~40%)
+    // Bonding (~40%) — low threshold: staying awake together creates bonds, even between strangers
     if (eventsThisRound < maxEvents && Math.random() < 0.40 && awakePlayers.length >= 2) {
       for (let bi = 0; bi < awakePlayers.length && eventsThisRound < maxEvents; bi++) {
         for (let bj = bi + 1; bj < awakePlayers.length; bj++) {
           const pairKey = [awakePlayers[bi], awakePlayers[bj]].sort().join('|');
           if (socialEventsDone.bonds.has(pairKey)) continue;
-          if (getBond(awakePlayers[bi], awakePlayers[bj]) >= 1.0) {
+          if (getBond(awakePlayers[bi], awakePlayers[bj]) >= -1.0) { // anyone who isn't enemies
             addBond(awakePlayers[bi], awakePlayers[bj], 0.3);
             socialEventsDone.bonds.add(pairKey);
             roundSocialEvents.push({
@@ -7059,7 +7059,7 @@ function simulateAwakeAThon(ep) {
       const strategists = awakePlayers.filter(p => pStats(p).strategic >= 6);
       for (const initiator of strategists) {
         if (socialEventsDone.alliances.has(initiator)) continue;
-        const partner = awakePlayers.find(p => p !== initiator && !socialEventsDone.alliances.has(p) && getBond(initiator, p) >= 0.5);
+        const partner = awakePlayers.find(p => p !== initiator && !socialEventsDone.alliances.has(p) && getBond(initiator, p) >= -0.5); // low bar — late nights make people talk
         if (!partner) continue;
         const alreadyAllied = (gs.namedAlliances || []).some(a => a.active && a.members.includes(initiator) && a.members.includes(partner));
         if (alreadyAllied) continue;
@@ -7096,7 +7096,7 @@ function simulateAwakeAThon(ep) {
         for (let si = 0; si < awakePlayers.length; si++) {
           for (let sj = si + 1; sj < awakePlayers.length; sj++) {
             const a = awakePlayers[si], b = awakePlayers[sj];
-            if (getBond(a, b) >= 4 && romanticCompat(a, b)) {
+            if (getBond(a, b) >= 2 && romanticCompat(a, b)) { // lower threshold — late night vulnerability
               const alreadyShowmance = (gs.showmances || []).some(s => s.players.includes(a) && s.players.includes(b));
               if (alreadyShowmance) continue;
               if (!gs.showmances) gs.showmances = [];

@@ -1,6 +1,6 @@
 ## Project
 DC Franchise Simulator — a Survivor-style franchise simulator.
-Everything lives in a single file: `simulator.html` (~20,000+ lines).
+Everything lives in a single file: `simulator.html` (~49,000+ lines).
 Do not split it into separate files. This is intentional.
 
 ## Architecture
@@ -37,6 +37,9 @@ Do not split it into separate files. This is intentional.
 - `_checkMoleExposure(mole, ep, tribeName)` — fires when any observer's suspicion reaches 3.0
 - `rpBuildMoleExposed(ep)` — dedicated VP screen for Mole exposure moment
 - `simulateMultipleEpisodes(count)` — Sim All / +5 Eps buttons, chains `simulateNext()` via setTimeout
+- `simulatePhobiaFactor(ep)` — pre-merge fear challenge (tribe scoring, blame, clutch)
+- `simulateSayUncle(ep)` — post-merge endurance challenge (dominator picks, backfire)
+- `simulateTripleDogDare(ep)` — post-merge sudden death (spinner accept/pass, freebie economy)
 - VP Viewer: `rpBuild*()` functions for each screen
 
 ## Core State
@@ -243,6 +246,61 @@ is NOT actually loyal. Always check behavioral track record alongside raw stats.
 - **Behavior > stats.** Check actions alongside raw stat numbers.
 - Camp events MUST have gameplay consequences (bond changes, state changes, knowledge tracking).
 - When a mechanic creates information (leak, snoop, confession), it must flow into targeting (computeHeat, simulateVotes) or it's cosmetic.
+
+## Challenge System (Total Drama-Inspired)
+Three schedulable challenge twists replace the normal immunity challenge. Each has its own
+dare/fear pool, VP screens (sequential click-to-reveal), camp events, and episode history.
+Twist category: `challenge` in TWIST_CATALOG. Separate from immunity modifiers.
+
+### Phobia Factor (`phobia-factor`) — Pre-merge tribe challenge
+- `simulatePhobiaFactor(ep)` — assigns random fears, campfire confessions, tribe scoring
+- Each player faces a randomly assigned phobia (60 fears across 4 categories: pain/fear/gross/humiliation)
+- Tribe with best completion % wins immunity. Worst tribe goes to tribal.
+- Campfire confessions fire after Cold Open (VP screen 1b)
+- **Triple Points Clutch**: if losing tribe is 20%+ behind, one player gets a triple-points dare
+- **Blame system**: `gs._phobiaBlame` adds temporary heat to players who failed on losing tribe
+  - Clutch pass cancels blame (redemption). Clutch fail adds +3.0 extra heat.
+  - Blame cleared after tribal via `delete gs._phobiaBlame`
+- Conquered fears = no camp event (expected outcome). Only failures, blame, shared fears, clutch shown.
+- `PHOBIA_POOL` / `PHOBIA_CATEGORIES` constants (separate from Say Uncle / TDD pools)
+
+### Say Uncle (`say-uncle`) — Post-merge individual endurance
+- `simulateSayUncle(ep)` — survival rolls, dominator picks, backfire rule, placements
+- Players endure tortures — survive 10 seconds or you're out. Last standing wins immunity.
+- **Dominator pick**: rare dominant performance → pick next victim + choose dare category
+  - Only random-turn dominators can pick (picked victims cannot pick even if they dominate)
+  - Backfire: if victim passes, picker is OUT
+- Normal tribal follows. Sets `ep.immunityWinner`, `ep.challengeType = 'individual'`.
+- Rotation-based turns (everyone gets one before repeats, picks count as turns)
+- `SAY_UNCLE_POOL` / `SAY_UNCLE_CATEGORIES` constants (80 dares, 4 categories)
+
+### Triple Dog Dare (`triple-dog-dare`) — Post-merge sudden death elimination
+- `simulateTripleDogDare(ep)` — spinner accept/pass model, freebie economy, pacts
+- **Replaces BOTH challenge AND tribal** — one player eliminated directly, no vote
+- Flow: spinner spins → accept own dare (earn freebie) OR pass to someone
+  - Passed target: use freebie to skip, push through (willingness roll), or refuse (eliminated if 0 freebies)
+- Freebie sharing: bond/loyalty/strategy-driven (not alliance-locked)
+- Temporary pacts: strategic players form in-challenge deals
+- `DARE_POOL` / `DARE_CATEGORIES` constants (80 dares, 4 categories with titles + descriptions)
+- VP: sequential click-to-reveal with live freebie counter bar
+
+### Challenge VP Pattern
+All three use the same VP approach:
+- Sequential click-to-reveal (NEXT button + REVEAL ALL)
+- Global reveal functions: `tddRevealNext(uid)`, `suRevealNext(uid)`, `pfRevealNext(uid)`
+- Data stored in `data-*` attributes on container (innerHTML doesn't execute scripts)
+- Registered in `buildVPScreens()` — replace normal challenge screen when active
+
+### Camp Event Integration
+- Challenge-system events push to `ep.campEvents[tribeName].post` BEFORE `generateCampEvents`
+- `generateCampEvents(ep, 'post')` preserves existing `.post` events (appends, doesn't overwrite)
+- `generateCampEvents(ep, 'pre')` preserves existing `.post` events (fixed — was resetting to [])
+
+## Cold Open — "Previously On"
+- `rpBuildColdOpen(ep)` — dynamic narrative threads from previous episode
+- Shows: last tribal recap, close vote, betrayals, romance, mole, side deals, fights, challenge throws
+- Triple Dog Dare / Say Uncle / Phobia Factor recap cards
+- Uses `prevSnap` (previous episode snapshot) to avoid spoilers
 
 ## Backlog Files
 - `DATA_SEASON/ideas_probabilistic_moments.txt` — feature ideas with priority order

@@ -129,17 +129,14 @@ and the downstream consequence. None are guaranteed — all fire on a roll.
   events. Idol play aftermath consolidated from 3 events to 1. All camp events given explicit
   badges + players field. Sim All / +5 Eps buttons. Romance debug tab with event log.
   Merge tribe key fix: gs.mergeName || 'merge' for post-merge camp event pushes.
+[DONE-8] FEAR FACTOR CHALLENGE
+
 
 
 ── REMAINING — RANKED BY PRIORITY ─────────────────────────────────────────────
 
   HIGH PRIORITY
   ─────────────
-
-[DONE] [TDD-FIX] TRIPLE DOG DARE — REDESIGN
-  Redesigned: spinner accept/pass model. Willingness roll = hesitation decision, not
-  completion. Spinner accepts = earn freebie. Pass to target = they skip (freebie), push
-  through (willingness roll), or refuse (eliminated if 0 freebies). No redirect chains.
 
 [TD-CHALLENGE-PACK] TOTAL DRAMA CHALLENGE PACK — Future batch implementation
   Ambition: recreate all iconic Total Drama Island challenges as schedulable twists.
@@ -173,25 +170,6 @@ and the downstream consequence. None are guaranteed — all fire on a roll.
     a sole vote to eliminate an additional player. Double elimination.
   Note: inspired by Disventure Camp 1. One-off or rare twist.
 
-[DR-1] THE CLASS TRIAL (Danganronpa-inspired twist)
-  Trigger: schedulable, post-merge, one episode.
-  Mechanic: One player randomly chosen as "The Blackened" — commits a camp crime
-    (steals food, hides advantage, sabotages supplies). Tribe investigates via
-    stat-gated Truth Bullet events (intuition * 0.06, mental * 0.04, social * 0.05).
-    The Blackened plants Red Herrings (strategic * 0.05). Low-temperament Blackened
-    may crack under pressure. At tribal, a Class Trial replaces the normal vote —
-    players vote on who they think is guilty based on evidence scores, not alliances.
-  Outcomes:
-    Correct (majority identifies Blackened): EXECUTION — Blackened eliminated, crime
-      reversed, detective gets bond + popularity boost, tribe trust restored.
-    Wrong (majority picks innocent): WRONGFUL CONVICTION — innocent eliminated,
-      Blackened gets immunity next ep, crime stays, trust damage -0.5 across tribe,
-      next-ep reveal event.
-  VP: dedicated screens for The Crime, Investigation (TRUTH BULLET / MISLEADING badges),
-    Class Trial (accusation/defense/closing argument), The Verdict (EXECUTION or
-    WRONGFUL CONVICTION), The Truth (viewer-only Blackened reveal if wrong).
-  Note: complex — evidence system, trial vote mechanics, 6 new camp event types.
-    Compatible with The Mole (Mole can be Blackened). Incompatible with no-tribal.
 
 [TD-7] CHALLENGE CHEATING
   Problem: only the Mole sabotages challenges. Regular players should cheat to WIN.
@@ -221,19 +199,6 @@ and the downstream consequence. None are guaranteed — all fire on a roll.
     just relationships. The immunity winner has massive power (sets the tone for who's
     valued and who's expendable).
 
-[TD-8] FEAR FACTOR CHALLENGE
-  Trigger: schedulable twist, overrides immunity challenge. Pre-merge AND post-merge versions.
-  Mechanic: challenge is gated by temperament/boldness. Each round, players face something
-    scary/disgusting. They can REFUSE — refusing = automatic last place / sit out.
-  Pre-merge: tribe challenge format. Players who refuse weaken their tribe. Tribe with
-    most refusals loses. Creates blame events against refusers.
-  Post-merge: individual format. Refusers are out. Last person standing wins immunity.
-    Creates drama when a physical threat refuses and goes home vulnerable.
-  Refuse chance: (10 - temperament) * 0.06 + (10 - boldness) * 0.04. High-temperament
-    high-boldness players almost never refuse. Low-both players bail constantly.
-  Events: refusal shame, "I can't do this" moment, clutch completion, tribe pressure.
-  Note: overrides normal challenge for the episode. Needs pre-merge tribe format +
-    post-merge individual format.
 
   LOW PRIORITY
   ────────────
@@ -266,4 +231,24 @@ and the downstream consequence. None are guaranteed — all fire on a roll.
 [10] THE GOAT MUTINY
   Trigger: 2 goats on same tribe, ep >= 8. ~20% once per game.
   Mechanic: goats form surprise alliance, pull swing vote, take out top threat.
+
+[DR-1] THE CLASS TRIAL (Danganronpa-inspired twist)
+  Trigger: schedulable, post-merge, one episode.
+  Mechanic: One player randomly chosen as "The Blackened" — commits a camp crime
+    (steals food, hides advantage, sabotages supplies). Tribe investigates via
+    stat-gated Truth Bullet events (intuition * 0.06, mental * 0.04, social * 0.05).
+    The Blackened plants Red Herrings (strategic * 0.05). Low-temperament Blackened
+    may crack under pressure. At tribal, a Class Trial replaces the normal vote —
+    players vote on who they think is guilty based on evidence scores, not alliances.
+  Outcomes:
+    Correct (majority identifies Blackened): EXECUTION — Blackened eliminated, crime
+      reversed, detective gets bond + popularity boost, tribe trust restored.
+    Wrong (majority picks innocent): WRONGFUL CONVICTION — innocent eliminated,
+      Blackened gets immunity next ep, crime stays, trust damage -0.5 across tribe,
+      next-ep reveal event.
+  VP: dedicated screens for The Crime, Investigation (TRUTH BULLET / MISLEADING badges),
+    Class Trial (accusation/defense/closing argument), The Verdict (EXECUTION or
+    WRONGFUL CONVICTION), The Truth (viewer-only Blackened reveal if wrong).
+  Note: complex — evidence system, trial vote mechanics, 6 new camp event types.
+    Compatible with The Mole (Mole can be Blackened). Incompatible with no-tribal.
 

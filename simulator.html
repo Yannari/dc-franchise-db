@@ -6820,10 +6820,10 @@ function simulatePhobiaFactor(ep) {
       else if (f.category === 'fear')   { primary = s.boldness * 0.07;  secondary = s.endurance * 0.04; }
       else if (f.category === 'gross')  { primary = s.boldness * 0.07;  secondary = s.physical * 0.04; }
       else if (f.category === 'humiliation') { primary = s.boldness * 0.07; secondary = (10 - s.social) * 0.04; }
-      // Higher variance + higher threshold — phobias are personal, unpredictable
-      // ~60% pass rate for average stats, ~80% for high stats, ~35% for low stats
-      const score = primary + secondary + (Math.random() * 0.35 - 0.10);
-      const passed = score >= 0.50;
+      // Phobias are deeply personal — even strong players can freeze
+      // ~50% pass for average stats, ~75% for high, ~25% for low
+      const score = primary + secondary + (Math.random() * 0.40 - 0.15);
+      const passed = score >= 0.55;
       results[player] = passed ? 'pass' : 'fail';
       reactions[player] = passed ? _conquerReaction(player, f.title, f.desc) : _failReaction(player, f.title, f.desc);
       if (passed) completions++;
@@ -20383,7 +20383,8 @@ function generateCampEvents(ep, phase = 'both') {
         if (ep.giftNarrativeEvents?.[tribe.name]) preEvents.unshift(ep.giftNarrativeEvents[tribe.name]);
         if (ep.twistNarrativeEvents?.[tribe.name]) preEvents.unshift(ep.twistNarrativeEvents[tribe.name]);
         const _existingPre = ep.campEvents[tribe.name]?.pre || [];
-        ep.campEvents[tribe.name] = { pre: [..._existingPre, ...preEvents], post: [] };
+        const _existingPost = ep.campEvents[tribe.name]?.post || [];
+        ep.campEvents[tribe.name] = { pre: [..._existingPre, ...preEvents], post: [..._existingPost] };
 
         // ── PRE-MERGE SPECIFIC EVENTS: drama unique to small tribal camps ──
         const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
@@ -31759,7 +31760,7 @@ function renderTwistCatalog() {
   const container = document.getElementById('fd-catalog');
   if (!container) return;
   const search = (document.getElementById('fd-search')?.value || '').toLowerCase();
-  const cats   = ['team','immunity','elim','returns','advantages','social'];
+  const cats   = ['team','immunity','challenge','elim','returns','advantages','social'];
 
   // Update counts
   cats.forEach(cat => {

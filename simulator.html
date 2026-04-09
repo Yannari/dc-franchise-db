@@ -48125,7 +48125,7 @@ function rpBuildCliffDive(ep) {
   cd.tribes.forEach(t => {
     const tc = tribeColor(t.name);
     html += `<div style="margin-bottom:16px">
-      <div style="font-family:var(--font-display);font-size:16px;color:${tc};text-align:center;margin-bottom:8px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06)">${t.name} <span style="font-size:11px;color:#8b949e">(${t.jumpCount}/${t.members.length} jumped)</span></div>`;
+      <div style="font-family:var(--font-display);font-size:16px;color:${tc};text-align:center;margin-bottom:8px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06)">${t.name}</div>`;
 
     t.reactions.forEach(r => {
       const isVisible = globalIdx <= state.idx;

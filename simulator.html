@@ -872,6 +872,16 @@
         </div>
         <input type="file" id="import-file" accept=".json" style="display:none" onchange="importCast(event)">
         <div class="divider"></div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:2px">Franchise Roster</div>
+        <div class="btn-row">
+          <button class="btn btn-secondary" onclick="syncCastToRoster()" title="Push current cast edits back to the franchise roster">Save Cast to Roster</button>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-secondary" onclick="exportRoster()">Export Roster</button>
+          <button class="btn btn-secondary" onclick="document.getElementById('import-roster-file').click()">Import Roster</button>
+        </div>
+        <input type="file" id="import-roster-file" accept=".json" style="display:none" onchange="importRoster(event)">
+        <div class="divider"></div>
         <div style="font-size:11px;color:var(--muted);margin-bottom:2px">Presets</div>
         <div class="btn-row">
           <button class="btn btn-secondary" onclick="savePreset()" style="background:#6366f1;color:#fff">Save Preset</button>
@@ -2402,8 +2412,47 @@ function exportCast() {
 function importCast(event) {
   const file = event.target.files[0]; if(!file) return;
   const reader = new FileReader();
-  reader.onload = e => { try { const data=JSON.parse(e.target.result); if(!Array.isArray(data)) throw new Error(); players=data; saveCast(); renderCast(); } catch { alert('Invalid JSON file.'); } };
+  reader.onload = e => { try { const raw=JSON.parse(e.target.result); const data=Array.isArray(raw) ? raw : (raw.players && Array.isArray(raw.players)) ? raw.players : null; if(!data) throw new Error(); players=data; saveCast(); renderCast(); renderTribeBuilder(); renderTribeSelect(); } catch { alert('Invalid JSON file.'); } };
   reader.readAsText(file); event.target.value='';
+}
+
+// ── Franchise Roster Management ──
+function exportRoster() {
+  const blob = new Blob([JSON.stringify({ players: FRANCHISE_ROSTER }, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'franchise_roster.json'; a.click();
+}
+function importRoster(event) {
+  const file = event.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const raw = JSON.parse(e.target.result);
+      const data = Array.isArray(raw) ? raw : (raw.players && Array.isArray(raw.players)) ? raw.players : null;
+      if (!data || !data.length) throw new Error();
+      FRANCHISE_ROSTER = data;
+      try { localStorage.setItem('simulator_franchise_roster', JSON.stringify(data)); } catch(err) {}
+      alert(`Roster imported: ${data.length} players.`);
+    } catch { alert('Invalid JSON file. Expected { "players": [...] } or a bare array.'); }
+  };
+  reader.readAsText(file); event.target.value = '';
+}
+function syncCastToRoster() {
+  if (!players.length) { alert('No cast to sync.'); return; }
+  let updated = 0;
+  players.forEach(p => {
+    const ri = FRANCHISE_ROSTER.findIndex(r => r.name === p.name || r.slug === p.slug);
+    if (ri !== -1) {
+      FRANCHISE_ROSTER[ri] = { ...FRANCHISE_ROSTER[ri], archetype: p.archetype, stats: { ...p.stats }, gender: p.gender };
+      if (p.sexuality) FRANCHISE_ROSTER[ri].sexuality = p.sexuality;
+      if (p.isReturnee !== undefined) FRANCHISE_ROSTER[ri].isReturnee = p.isReturnee;
+      updated++;
+    } else {
+      FRANCHISE_ROSTER.push({ name: p.name, slug: p.slug, gender: p.gender, archetype: p.archetype, stats: { ...p.stats } });
+      updated++;
+    }
+  });
+  try { localStorage.setItem('simulator_franchise_roster', JSON.stringify(FRANCHISE_ROSTER)); } catch(err) {}
+  alert(`Roster updated: ${updated} player${updated !== 1 ? 's' : ''} synced.`);
 }
 
 // ── Preset System: save/load full season setups ──
@@ -31991,16 +32040,29 @@ window.addEventListener('DOMContentLoaded', () => {
   const _sfCb = document.getElementById('cfg-spoiler-free');
   if (_sfCb) { _sfCb.checked = _sfSaved; }
   _spoilerFree = _sfSaved;
-  // Load roster from JSON — works on GitHub Pages (HTTP), fails silently on file://
-  fetch('franchise_roster.json')
-    .then(r => r.json())
-    .then(data => {
-      if (data?.players?.length) {
-        FRANCHISE_ROSTER = data.players;
-        console.log(`Roster loaded from JSON: ${data.players.length} players`);
+  // Load roster: localStorage edits > fetched JSON > embedded fallback
+  const _savedRoster = localStorage.getItem('simulator_franchise_roster');
+  if (_savedRoster) {
+    try {
+      const _parsed = JSON.parse(_savedRoster);
+      if (Array.isArray(_parsed) && _parsed.length) {
+        FRANCHISE_ROSTER = _parsed;
+        console.log(`Roster loaded from localStorage: ${_parsed.length} players`);
       }
-    })
-    .catch(() => {}); // silent fallback to embedded copy
+    } catch(e) {}
+  }
+  // Also try fetching the JSON (GitHub Pages) — but localStorage edits take priority
+  if (!_savedRoster) {
+    fetch('franchise_roster.json')
+      .then(r => r.json())
+      .then(data => {
+        if (data?.players?.length) {
+          FRANCHISE_ROSTER = data.players;
+          console.log(`Roster loaded from JSON: ${data.players.length} players`);
+        }
+      })
+      .catch(() => {}); // silent fallback to embedded copy
+  }
 });
 function toggleSpoilerFree() {
   _spoilerFree = document.getElementById('cfg-spoiler-free')?.checked || false;

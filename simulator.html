@@ -2363,6 +2363,8 @@ function fillFromRoster(p) {
   document.getElementById('f-archetype').value = p.archetype || '';
   document.getElementById('archetype-desc').textContent = ARCHETYPES[p.archetype]?.desc || '';
   if (p.stats) putStats(p.stats);
+  // Always default to non-returnee when adding from roster — set per-season in cast builder
+  const retEl = document.getElementById('f-returnee'); if (retEl) retEl.checked = false;
 }
 
 // Close dropdown when clicking outside
@@ -2391,7 +2393,7 @@ function loadS9Preset() {
   players = S9_TRIBES.map((t,i) => {
     const r = rosterMap[t.name];
     if (!r) { console.warn('S9 preset: missing roster entry for', t.name); return null; }
-    return { ...r, tribe: t.tribe, id: 's9-'+i };
+    return { ...r, tribe: t.tribe, id: 's9-'+i, isReturnee: false };
   }).filter(Boolean);
   seasonConfig.tribes = [{ name:'Yellow', color:'#f59e0b' }, { name:'Red', color:'#ef4444' }, { name:'Blue', color:'#3b82f6' }];
   localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));

@@ -3789,10 +3789,13 @@ function updateChalRecord(ep) {
     gs.chalRecord[immWinner].wins++;
   }
 
-  // Top-2 = podium, bottom-2 = bomb (applies to both individual and tribe challenges)
-  if (n >= 2) {
-    ranked.slice(0, 2).forEach(p => { gs.chalRecord[p].podiums++; });
-    ranked.slice(Math.max(0, n - 2)).forEach(p => { gs.chalRecord[p].bombs++; });
+  // Pre-merge: top-3 podium, bottom-3 bomb (larger tribes, more spread)
+  // Post-merge: top-2 podium, bottom-2 bomb (smaller field, tighter competition)
+  const _podiumCount = gs.isMerged ? 2 : 3;
+  const _bombCount = gs.isMerged ? 2 : 3;
+  if (n >= _podiumCount) {
+    ranked.slice(0, _podiumCount).forEach(p => { gs.chalRecord[p].podiums++; });
+    ranked.slice(Math.max(0, n - _bombCount)).forEach(p => { gs.chalRecord[p].bombs++; });
   }
 
   // Inject chalThreat event for any player who just crossed a visible threshold
@@ -6938,22 +6941,14 @@ function simulateCliffDive(ep) {
     }
   });
 
-  // ── Challenge record: same as regular challenges — rank all players, top-2 podium, bottom-2 bomb ──
-  // Jumpers ranked above chickens. Within jumpers: standouts first, then by boldness. Within chickens: random.
-  if (!gs.chalRecord) gs.chalRecord = {};
-  const _cdAllPlayers = tribeResults.flatMap(t =>
-    t.members.map(m => ({
-      name: m,
-      score: t.jumpers.includes(m) ? (m === t.standout ? 100 : 10 + pStats(m).boldness) : 0,
-    }))
-  ).sort((a, b) => b.score - a.score);
-  _cdAllPlayers.forEach(p => {
-    if (!gs.chalRecord[p.name]) gs.chalRecord[p.name] = { wins: 0, podiums: 0, bombs: 0 };
+  // ── Challenge member scores: feed into updateChalRecord (same system as all challenges) ──
+  // Jumpers ranked above chickens. Within jumpers: standouts first, then by boldness.
+  ep.chalMemberScores = {};
+  tribeResults.forEach(t => {
+    t.members.forEach(m => {
+      ep.chalMemberScores[m] = t.jumpers.includes(m) ? (m === t.standout ? 100 : 10 + pStats(m).boldness) : 0;
+    });
   });
-  if (_cdAllPlayers.length >= 2) {
-    _cdAllPlayers.slice(0, 2).forEach(p => { gs.chalRecord[p.name].podiums++; });
-    _cdAllPlayers.slice(Math.max(0, _cdAllPlayers.length - 2)).forEach(p => { gs.chalRecord[p.name].bombs++; });
-  }
 
   ep.cliffDive = {
     tribes: tribeResults,

@@ -10578,8 +10578,10 @@ function checkIdolPlays(tribalPlayers, votesObj, ep, voteLog = []) {
     const _hs = pStats(_holder);
 
     // Find allies in danger, sorted by bond (closest first) — TD partner jumps to front
+    // EXCLUDE anyone the holder voted for — you don't save someone you're trying to eliminate
+    const _holderVotedFor = (voteLog || []).find(v => v.voter === _holder)?.voted;
     const _alliesInDanger = Object.entries(votesObj)
-      .filter(([n, vc]) => n !== _holder && (vc >= 3 || vc / tribalPlayers.length >= 0.33))
+      .filter(([n, vc]) => n !== _holder && n !== _holderVotedFor && (vc >= 3 || vc / tribalPlayers.length >= 0.33))
       .sort(([a], [b]) => {
         // TD partner always first — their death = your death
         if (a === _tdAllyName) return -1;

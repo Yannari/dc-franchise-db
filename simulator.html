@@ -1838,73 +1838,89 @@ const SAY_UNCLE_CATEGORIES = Object.keys(SAY_UNCLE_POOL);
 
 // ── Phobia Factor — fear pools (face your phobia) ──
 const PHOBIA_POOL = {
+  // Fears framed as real phobias — "I'm afraid of X" not "do this dare"
+  // The challenge is: face the thing you said you're scared of
   'pain': [
-    { title: 'Hot Coals', desc: 'Walk barefoot across hot coals.' },
-    { title: 'Bee Stings', desc: 'Stand still while bees land on you.' },
-    { title: 'Ice Water Immersion', desc: 'Submerge yourself in ice water for 10 seconds.' },
-    { title: 'Cactus Walk', desc: 'Walk through a cactus patch barefoot.' },
-    { title: 'Electric Shock', desc: 'Sit in a chair that delivers mild shocks.' },
-    { title: 'Fire Walk', desc: 'Walk between two walls of flame.' },
-    { title: 'Pepper Spray', desc: 'Stand in a mist of pepper spray. Eyes open.' },
-    { title: 'Ant Swarm', desc: 'Let fire ants crawl over your hands.' },
-    { title: 'Jellyfish Touch', desc: 'Touch a jellyfish with your bare hand.' },
-    { title: 'Nail Bed', desc: 'Lay on a bed of nails for 10 seconds.' },
-    { title: 'Rubber Band Snap', desc: 'Let the tribe snap rubber bands at your arms.' },
-    { title: 'Slap Challenge', desc: 'Get slapped across the face. Don\'t flinch.' },
-    { title: 'Branding Iron', desc: 'Hold a fake branding iron close to your skin. Don\'t pull away.' },
-    { title: 'Sunburn Box', desc: 'Sit in a box under heat lamps for 10 seconds.' },
-    { title: 'Hail Storm', desc: 'Stand under a machine that pelts you with ice.' },
+    { title: 'Bees', desc: 'Stand still in a swarm of bees. Don\'t swat. Don\'t run.' },
+    { title: 'Needles', desc: 'Get a (fake) injection. Sit still. Watch the needle go in.' },
+    { title: 'Ice', desc: 'Submerge your hands in ice water until the timer runs out.' },
+    { title: 'Fire', desc: 'Stand between two walls of flame. Stay centered. Don\'t flinch.' },
+    { title: 'Jellyfish', desc: 'Walk into water where jellyfish are swimming. Stay in.' },
+    { title: 'Ants', desc: 'Let fire ants crawl over your hands and arms. Don\'t shake them off.' },
+    { title: 'Hail', desc: 'Stand under pelting hail. Small but deadly. Don\'t move.' },
+    { title: 'Electric Eels', desc: 'Put your hand in a tank with electric eels. Keep it there.' },
+    { title: 'Wasps', desc: 'Stand next to a wasp nest. Stay calm. Stay still.' },
+    { title: 'Hot Sauce', desc: 'Eat a ghost pepper. Chew slowly. No water for 5 minutes.' },
+    { title: 'Thorns', desc: 'Walk barefoot through a patch of thorny bushes.' },
+    { title: 'Sunburn', desc: 'Sit in a heat box under intense UV lamps. Don\'t leave.' },
+    { title: 'Freezing Cold', desc: 'Stand outside in freezing conditions wearing only a swimsuit.' },
+    { title: 'Mosquitoes', desc: 'Sit in a mosquito-filled tent. No repellent. Don\'t scratch.' },
+    { title: 'Stinging Nettles', desc: 'Walk through a field of stinging nettles. Arms out.' },
+    { title: 'Boiling Water', desc: 'Hold your hand over a pot of boiling water. Steam rising. Don\'t pull away.' },
+    { title: 'Paper Cuts', desc: 'Shuffle a deck of cards bare-handed. Faster. Don\'t stop.' },
+    { title: 'Cactus', desc: 'Hug a cactus. Shirtless. 5 seconds.' },
   ],
   'fear': [
-    { title: 'Snakes', desc: 'Pick up a live snake. Hold it.' },
-    { title: 'Spiders', desc: 'Let a tarantula walk on your hand.' },
-    { title: 'Buried Alive', desc: 'Get sealed in a glass box under sand for 5 minutes.' },
-    { title: 'Heights', desc: 'Stand on the edge of a cliff. Look down.' },
-    { title: 'Darkness', desc: 'Get locked in a pitch-black room for 60 seconds.' },
-    { title: 'Confined Spaces', desc: 'Climb into a coffin. Lid closes. 10 seconds.' },
-    { title: 'Deep Water', desc: 'Get lowered into deep water in a shark cage.' },
-    { title: 'Rats', desc: 'Stand in a room full of rats.' },
-    { title: 'Bats', desc: 'Sit in a cave full of bats. Don\'t run.' },
-    { title: 'Thunder', desc: 'Sit through a simulated thunderstorm at close range.' },
-    { title: 'Clowns', desc: 'Sit in a room with a clown staring at you.' },
-    { title: 'Being Chased', desc: 'Get chased by a masked figure through the woods.' },
-    { title: 'Wolves', desc: 'Make eye contact with a wolf for 10 seconds.' },
-    { title: 'Quicksand', desc: 'Stand in quicksand up to your waist. Don\'t struggle.' },
-    { title: 'Haunted House', desc: 'Walk through a haunted house alone.' },
+    { title: 'Snakes', desc: 'Pick up a live snake. Let it wrap around your arm.' },
+    { title: 'Spiders', desc: 'Let a tarantula crawl across your hand and up your arm.' },
+    { title: 'Being Buried Alive', desc: 'Get sealed in a glass box under sand. 5 minutes.' },
+    { title: 'Heights', desc: 'Stand on the edge of a cliff and look straight down.' },
+    { title: 'The Dark', desc: 'Get locked in a pitch-black room. Alone. 60 seconds.' },
+    { title: 'Tight Spaces', desc: 'Crawl into a coffin-sized box. Lid closes. 10 seconds.' },
+    { title: 'Deep Water', desc: 'Get lowered into deep, dark water in a rusty cage.' },
+    { title: 'Rats', desc: 'Stand in a room while rats run around your feet.' },
+    { title: 'Bats', desc: 'Sit in a pitch-black cave full of bats. Don\'t run.' },
+    { title: 'Thunderstorms', desc: 'Sit through a simulated thunderstorm at deafening volume.' },
+    { title: 'Clowns', desc: 'Sit in a room with a silent clown staring at you. 60 seconds.' },
+    { title: 'Being Alone in the Woods', desc: 'Spend 6 hours alone in the forest. At night.' },
+    { title: 'Wolves', desc: 'Make eye contact with a wolf. Don\'t look away.' },
+    { title: 'Flying', desc: 'Ride in a rickety plane that shakes, dips, and nearly crashes.' },
+    { title: 'Sumo Wrestlers', desc: 'Face off against a sumo wrestler. In the ring. Alone.' },
+    { title: 'Mimes', desc: 'A mime follows you everywhere. Imitates everything you do. 10 minutes.' },
+    { title: 'Zombies', desc: 'Walk through a zombie obstacle course. They grab at you.' },
+    { title: 'Open Water', desc: 'Float in the middle of a lake. Can\'t see the bottom. Can\'t touch.' },
+    { title: 'Dolls', desc: 'Sit in a room full of porcelain dolls. They stare. You sit.' },
+    { title: 'The Dentist', desc: 'Sit in a dentist chair. Mouth open. Drill sounds. 60 seconds.' },
   ],
   'gross': [
-    { title: 'Worms', desc: 'Jump into a pool of worms. Submerge.' },
-    { title: 'Leeches', desc: 'Sit in a barrel of leeches.' },
-    { title: 'Cockroaches', desc: 'Let cockroaches crawl on your face.' },
-    { title: 'Sewage', desc: 'Snorkel in swamp water. Face down.' },
-    { title: 'Rotten Food', desc: 'Eat a spoonful of week-old camp food.' },
-    { title: 'Maggots', desc: 'Let maggots be spread on your back. Lay still.' },
-    { title: 'Fish Guts', desc: 'Stick your hands into a bucket of fish guts.' },
-    { title: 'Slug Bath', desc: 'Lay in a bathtub of slugs.' },
-    { title: 'Bird Droppings', desc: 'Stand under a birdcage. Look up.' },
-    { title: 'Dumpster', desc: 'Sit inside a closed dumpster for 30 seconds.' },
-    { title: 'Mystery Meat', desc: 'Eat a mystery meat patty. Don\'t ask what it is.' },
-    { title: 'Swamp Mud', desc: 'Get buried in swamp mud up to your neck.' },
-    { title: 'Catfish', desc: 'Kiss a live catfish on the mouth.' },
-    { title: 'Roadkill', desc: 'Lay your head on a roadkill pillow.' },
-    { title: 'Nose Hair Pull', desc: 'Have all your nose hairs pulled at once.' },
+    { title: 'Worms', desc: 'Jump into a pool full of worms. Let them crawl on you.' },
+    { title: 'Leeches', desc: 'Sit in a barrel of water with leeches. They attach.' },
+    { title: 'Cockroaches', desc: 'Let cockroaches crawl across your face and neck.' },
+    { title: 'Vomit', desc: 'Watch the most disgusting compilation ever made. Don\'t gag.' },
+    { title: 'Rotten Eggs', desc: 'Sit in a sauna that smells like rotten eggs. Breathe normally.' },
+    { title: 'Maggots', desc: 'Let maggots crawl on your bare skin. Lay still.' },
+    { title: 'Raw Meat', desc: 'Stick your hands into a bucket of raw organs. Fish around.' },
+    { title: 'Slugs', desc: 'Let slugs crawl across your arms. They leave trails.' },
+    { title: 'Sewage', desc: 'Wade through knee-deep swamp water. Don\'t think about what\'s in it.' },
+    { title: 'Dumpsters', desc: 'Climb into a dumpster. Close the lid. Sit there.' },
+    { title: 'Mold', desc: 'Eat a piece of bread covered in mold. Chew slowly.' },
+    { title: 'Mud', desc: 'Get buried in thick mud up to your neck. Stay calm.' },
+    { title: 'Blood', desc: 'Watch a (fake) blood draw happening on your own arm. Don\'t look away.' },
+    { title: 'Bad Breath', desc: 'Let someone breathe directly in your face for 30 seconds.' },
+    { title: 'Dirty Water', desc: 'Gargle swamp water. 10 seconds. Don\'t spit.' },
+    { title: 'Fungus', desc: 'Walk barefoot through a mushroom-covered forest floor.' },
+    { title: 'Hair', desc: 'Eat a meal with someone else\'s hair in it. Every bite.' },
+    { title: 'Earwigs', desc: 'Let earwigs crawl on your ears. Stay perfectly still.' },
   ],
   'humiliation': [
-    { title: 'Green Jelly Pool', desc: 'Dive into a pool of green jelly from a high board.' },
-    { title: 'Chicken Costume', desc: 'Wear a chicken costume and cluck for 60 seconds.' },
-    { title: 'Public Singing', desc: 'Sing your worst song in front of everyone.' },
-    { title: 'Baby Outfit', desc: 'Wear a baby outfit and cry for your bottle.' },
-    { title: 'Clown Makeup', desc: 'Get full clown makeup. Do a routine.' },
-    { title: 'Wedgie Walk', desc: 'Give yourself a wedgie and walk the length of camp.' },
-    { title: 'Dance Solo', desc: 'Dance alone in front of everyone. No music.' },
-    { title: 'Love Confession', desc: 'Confess love to the person you like least. On camera.' },
-    { title: 'Dunce Cap', desc: 'Wear a dunce cap and sit in the corner while everyone watches.' },
-    { title: 'Ugly Wig', desc: 'Wear the ugliest wig imaginable. All day.' },
-    { title: 'Cow Costume', desc: 'Wear a cow costume. Parade around camp. Moo on command.' },
-    { title: 'Truth Serum', desc: 'Answer any question the tribe asks. Honestly.' },
-    { title: 'Belly Flop', desc: 'Do a belly flop off the dock. Maximum splash.' },
-    { title: 'Being Mocked', desc: 'Stand on stage while the tribe roasts you for 60 seconds.' },
-    { title: 'Walk of Shame', desc: 'Walk a lap around camp while everyone slow-claps.' },
+    { title: 'Green Jelly', desc: 'Dive into a pool of green jelly from a high diving board.' },
+    { title: 'Chickens', desc: 'Sit in a chicken pen for 3 minutes. They peck. They cluck. They judge.' },
+    { title: 'Singing in Public', desc: 'Sing a love song in front of everyone. Badly. Loudly.' },
+    { title: 'Bad Haircuts', desc: 'Let Chef cut your hair. With clippers. Whatever happens, happens.' },
+    { title: 'Being Laughed At', desc: 'Stand on stage while the entire tribe laughs at you. 60 seconds.' },
+    { title: 'Wearing a Costume', desc: 'Wear a ridiculous costume all day. Cow, chicken, baby — your choice.' },
+    { title: 'Public Crying', desc: 'Watch the saddest video ever made in front of everyone. Don\'t hide it.' },
+    { title: 'Dancing', desc: 'Dance alone in front of everyone. No music. Full commitment.' },
+    { title: 'Embarrassing Secrets', desc: 'Tell the tribe your most embarrassing secret. The real one.' },
+    { title: 'Nudity', desc: 'Strip down to your underwear and stand in front of everyone. 30 seconds.' },
+    { title: 'Being Ignored', desc: 'Talk to the tribe for 2 minutes while they all pretend you don\'t exist.' },
+    { title: 'Public Speaking', desc: 'Give a speech about yourself. 3 minutes. No notes. No stopping.' },
+    { title: 'Being a Baby', desc: 'Wear a diaper. Suck a pacifier. Crawl around camp. 5 minutes.' },
+    { title: 'Love Confessions', desc: 'Confess your love to the person you like least. Mean it. Or fake it convincingly.' },
+    { title: 'Looking Ugly', desc: 'Wear the ugliest wig and the worst outfit available. All day. No mirror.' },
+    { title: 'Being Vulnerable', desc: 'Tell the tribe what you\'re really afraid of losing. Not the game — in life.' },
+    { title: 'Rejection', desc: 'Ask every tribe member if they like you. Listen to the honest answers.' },
+    { title: 'Being the Joke', desc: 'Let the tribe roast you for 60 seconds. You can\'t respond.' },
   ],
 };
 const PHOBIA_CATEGORIES = Object.keys(PHOBIA_POOL);
@@ -6759,25 +6775,29 @@ function simulatePhobiaFactor(ep) {
   // Step 3: Run the challenge
   const results = {};
   const tribeScores = {};
-  const _conquerReaction = (player, fear) => {
+  const _conquerReaction = (player, fear, desc) => {
     const pr = pronouns(player);
     const arch = players.find(p => p.name === player)?.archetype || '';
     const r = [
-      `${player} closes ${pr.pos} eyes. Heart pounding. But ${pr.sub} ${pr.sub === 'they' ? 'do' : 'does'} it. The fear doesn't own ${pr.obj} anymore.`,
-      `${player} is shaking the whole time. But ${pr.sub} lasted. And that's enough.`,
-      `${player} pushes through ${fear}. Every second is agony. But ${pr.sub} ${pr.sub === 'they' ? 'make' : 'makes'} it.`,
+      `${player} stares at what's in front of ${pr.obj}. ${desc} ${pr.Sub} ${pr.sub === 'they' ? 'do' : 'does'} it. Hands shaking. Eyes wet. But ${pr.sub} ${pr.sub === 'they' ? 'do' : 'does'} it.`,
+      `"${fear}." ${player} says it out loud. Then ${pr.sub} ${pr.sub === 'they' ? 'walk' : 'walks'} toward it. The tribe holds its breath. ${pr.Sub} ${pr.sub === 'they' ? 'come' : 'comes'} out the other side.`,
+      `${player} almost quits. You can see it \u2014 the moment where ${pr.sub} nearly ${pr.sub === 'they' ? 'turn' : 'turns'} around. But ${pr.sub} ${pr.sub === 'they' ? 'don\'t' : 'doesn\'t'}. ${pr.Sub} ${pr.sub === 'they' ? 'push' : 'pushes'} through. The tribe erupts.`,
+      `${player} takes the longest 10 seconds of ${pr.pos} life. ${desc} When the timer hits zero, ${pr.sub} ${pr.sub === 'they' ? 'collapse' : 'collapses'} into a heap. But ${pr.sub} did it.`,
     ];
-    if (arch === 'hero') r.push(`${player} faces ${fear} head-on. No hesitation. The tribe watches in respect.`);
-    if (arch === 'chaos-agent') r.push(`${player} actually seems to enjoy ${fear}. The tribe isn't sure what to do with that.`);
+    if (arch === 'hero') r.push(`${player} locks ${pr.pos} jaw and walks straight into ${fear}. Not a word. Not a flinch. The tribe watches in silence.`);
+    if (arch === 'villain' || arch === 'mastermind') r.push(`${player} smirks through ${fear}. Whether ${pr.sub} ${pr.sub === 'they' ? 'are' : 'is'} actually scared or just performing, nobody can tell.`);
+    if (arch === 'chaos-agent') r.push(`${player} laughs through ${fear}. Actually laughs. "${pr.Sub} ${pr.sub === 'they' ? 'don\'t' : 'doesn\'t'} know why everyone's so worried."`);
+    if (arch === 'floater') r.push(`${player} does it so quietly nobody even realizes it's done. No drama. No spectacle. Just conquered.`);
     return _rp(r);
   };
-  const _failReaction = (player, fear) => {
+  const _failReaction = (player, fear, desc) => {
     const pr = pronouns(player);
     return _rp([
-      `${player} freezes. Can't move. Can't breathe. ${fear} wins this one.`,
-      `${player} tries to step forward. Every muscle says no. ${pr.Sub} backs away.`,
-      `${player} starts — then stops. "I can't. I'm sorry." The tribe watches ${pr.obj} sit down.`,
-      `${player} takes one look at ${fear} and the color drains from ${pr.pos} face. It's over before it starts.`,
+      `${player} takes one look at ${fear} and the color drains from ${pr.pos} face. ${pr.Sub} ${pr.sub === 'they' ? 'back' : 'backs'} away. "I can't. I physically cannot do this."`,
+      `${player} gets within arm's reach of ${fear}. Then ${pr.pos} whole body locks up. ${pr.Sub} can't move forward. The tribe watches ${pr.obj} give up.`,
+      `"No. No no no." ${player} is already shaking before it starts. ${desc} ${pr.Sub} ${pr.sub === 'they' ? 'don\'t' : 'doesn\'t'} even attempt it. The phobia wins.`,
+      `${player} tries. You can see ${pr.obj} trying. ${pr.Sub} ${pr.sub === 'they' ? 'get' : 'gets'} halfway through and panics. "${fear} is just \u2014 it's too much." The tribe is sympathetic. The scoreboard doesn't care.`,
+      `${player} stands there for a long time. Nobody rushes ${pr.obj}. But eventually ${pr.sub} ${pr.sub === 'they' ? 'sit' : 'sits'} down. "${fear}" is all ${pr.sub} ${pr.sub === 'they' ? 'say' : 'says'}.`,
     ]);
   };
   const reactions = {};
@@ -6792,10 +6812,12 @@ function simulatePhobiaFactor(ep) {
       else if (f.category === 'fear')   { primary = s.boldness * 0.07;  secondary = s.endurance * 0.04; }
       else if (f.category === 'gross')  { primary = s.boldness * 0.07;  secondary = s.physical * 0.04; }
       else if (f.category === 'humiliation') { primary = s.boldness * 0.07; secondary = (10 - s.social) * 0.04; }
-      const score = primary + secondary + (Math.random() * 0.25 - 0.05);
-      const passed = score >= 0.45;
+      // Higher variance + higher threshold — phobias are personal, unpredictable
+      // ~60% pass rate for average stats, ~80% for high stats, ~35% for low stats
+      const score = primary + secondary + (Math.random() * 0.35 - 0.10);
+      const passed = score >= 0.50;
       results[player] = passed ? 'pass' : 'fail';
-      reactions[player] = passed ? _conquerReaction(player, f.title) : _failReaction(player, f.title);
+      reactions[player] = passed ? _conquerReaction(player, f.title, f.desc) : _failReaction(player, f.title, f.desc);
       if (passed) completions++;
     });
     tribeScores[tribe.name] = {
@@ -6876,6 +6898,17 @@ function simulatePhobiaFactor(ep) {
   ep.challengeDesc = 'Face your fear. Tribe with the best completion rate wins immunity.';
   ep.tribalPlayers = [...finalLoser.members];
   ep.challengePlacements = finalRanked.map(t => ({ name: t.name, members: [...t.members] }));
+
+  // Challenge member scores — feeds into standout/weak link system
+  // Failed = bottom (score 1), Passed = decent (score 5), Clutch pass = podium (score 9)
+  ep.chalMemberScores = {};
+  allPlayers.forEach(player => {
+    if (results[player] === 'pass') ep.chalMemberScores[player] = 5;
+    else ep.chalMemberScores[player] = 1; // failed — bottom
+  });
+  if (clutch && clutch.result === 'pass') {
+    ep.chalMemberScores[clutch.player] = 9; // clutch hero — podium
+  }
 
   // Camp events — confessions (pre)
   confessions.forEach(conf => {
@@ -48025,6 +48058,11 @@ function buildVPScreens(epRecord) {
   // ── 1. Cold Open (always) ──
   vpScreens.push({ id:'cold-open', label:'Cold Open', html: rpBuildColdOpen(ep) });
 
+  // ── 1b. Phobia Factor Confessions — campfire scene, right after cold open ──
+  if (ep.isPhobiaFactor && ep.phobiaFactor) {
+    vpScreens.push({ id:'pf-confessions', label:'Confessions', html: rpBuildPhobiaConfessions(ep) });
+  }
+
   // ── First Impressions — mock vote + tribe swap (episode 1 twist) ──
   const _fiTw = (ep.twists || []).find(t => t.type === 'first-impressions' && t.firstImpressions?.length);
   if (_fiTw) {
@@ -48145,7 +48183,7 @@ function buildVPScreens(epRecord) {
     vpScreens.push({ id:'finale-challenge', label:'Final Immunity', html: rpBuildChallenge(ep) });
   // ── Phobia Factor — replaces tribe challenge ──
   } else if (ep.isPhobiaFactor && ep.phobiaFactor) {
-    vpScreens.push({ id:'pf-confessions', label:'Confessions', html: rpBuildPhobiaConfessions(ep) });
+    // Confessions already registered after Cold Open (section 1b)
     vpScreens.push({ id:'pf-announce', label:'Phobia Factor', html: rpBuildPhobiaAnnouncement(ep) });
     vpScreens.push({ id:'pf-challenge', label:'The Challenge', html: rpBuildPhobiaChallenge(ep) });
     if (ep.phobiaFactor.clutch) {

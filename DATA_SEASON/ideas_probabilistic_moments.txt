@@ -136,34 +136,27 @@ and the downstream consequence. None are guaranteed — all fire on a roll.
   HIGH PRIORITY
   ─────────────
 
-[TDD-FIX] TRIPLE DOG DARE — REDESIGN
-  Status: implemented but flow is WRONG. Needs rewrite of simulateTripleDogDare().
-  Current bug: uses willingness roll to determine if player "completes" the dare.
-  Correct flow (from the show): there is NO fail roll. If you accept, you do it. Period.
-  The challenge is about WILLINGNESS, not ability.
+[DONE] [TDD-FIX] TRIPLE DOG DARE — REDESIGN
+  Redesigned: spinner accept/pass model. Willingness roll = hesitation decision, not
+  completion. Spinner accepts = earn freebie. Pass to target = they skip (freebie), push
+  through (willingness roll), or refuse (eliminated if 0 freebies). No redirect chains.
 
-  Corrected mechanic:
-  1. Spinner (rotation) spins wheel → dare from eliminated player
-  2. Spinner decides:
-     - ACCEPT the dare → does it, earns +1 freebie
-     - PASS the dare to someone else → targeting logic picks who
-  3. If passed to someone:
-     - Target can USE A FREEBIE to skip (-1 freebie)
-     - Target can ACCEPT → does the dare (no freebie earned, only spinners earn)
-     - Target REFUSES + 0 freebies → ELIMINATED from the game
-  4. Players can gift freebies at any time (alliance/bond driven)
-
-  Key changes from current implementation:
-  - Remove all willingness/survival rolls — acceptance is a DECISION not a stat check
-  - Decision logic: boldness + dare category modifiers determine if player WANTS to accept
-    or would rather pass/use freebie. But if they choose to accept, it always succeeds.
-  - Only way to be eliminated: 0 freebies + refuse a dare passed to you
-  - Spinner accepting their own dare = the ONLY way to earn freebies (strategic choice)
-  - Passing = offensive weapon, freebies = defensive shield
-  - Freebie sharing stays (alliance/bond/strategy driven)
-  - VP stays (sequential reveal, freebie counter, reactions)
-  - Dare pool stays (80 dares, 4 categories with titles+descriptions)
-  Spec: docs/superpowers/specs/2026-04-08-triple-dog-dare-design.md (needs update)
+[TD-CHALLENGE-PACK] TOTAL DRAMA CHALLENGE PACK — Future batch implementation
+  Ambition: recreate all iconic Total Drama Island challenges as schedulable twists.
+  Already done: Phobia Factor (pre-merge), Say Uncle (post-merge), Triple Dog Dare (post-merge).
+  Remaining TD:I challenges to adapt (do as a batch later, not one at a time):
+  - Dodge Brawl (ep 4) — dodgeball tournament, tribe vs tribe
+  - The Big Sleep (ep 7) — endurance/awake-a-thon, last awake wins
+  - Who Can You Trust? (ep 8) — trust-based pair challenges (blind trapeze, food prep)
+  - Basic Straining (ep 10) — military boot camp, endurance gauntlet
+  - X-Treme Torture (ep 13) — extreme sports (bronco riding, mud skiing, sofa surfing)
+  - Brunch of Disgustingness (ep 14) — gross food eating competition, tribe vs tribe
+  - Search and Do Not Destroy (ep 16) — treasure hunt with keys, individual
+  - Hide and Be Sneaky (ep 17) — hide and seek, last hidden wins
+  - Are We There Yeti? (ep 23) — wilderness navigation race
+  - Camp Castaways (ep 24) — survival challenge after camp floods
+  Note: prioritize breadth (Chain of Command, Challenge Cheating) over more challenges.
+  These are a polish pass, not a core feature. Do them as a relaxation project.
 
   MEDIUM PRIORITY
   ───────────────

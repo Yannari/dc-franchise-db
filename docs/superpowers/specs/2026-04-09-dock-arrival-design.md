@@ -253,7 +253,7 @@ If a player's top stat is >= 8, the host line may be replaced with a stat-specif
 
 ### Returnee Variant Pool
 
-When `cfg.isAllStars` is true, returnees draw from a separate archetype-driven pool:
+When a player has `isReturnee: true` (set per-player in cast builder), they draw from a separate archetype-driven pool:
 
 **villain returnee:**
 - `"Miss me? No? Good. That means I did my job last time."`
@@ -417,7 +417,7 @@ Inside `rpBuildColdOpen(ep)`, when `ep.num === 1 && ep.dockArrivals?.length`:
    - Host line in gold italic (small, 11px)
    - Player reaction in white (main dialogue, 13px)
    - Dock reaction below in muted gray if present (12px, italic)
-   - Returnee badge `RETURNING` on portrait if `isReturnee`
+   - Returnee badge `RETURNING` on portrait if `player.isReturnee`
 5. **After all revealed**: "GROUP PHOTO" card — all portraits in a flex grid, host one-liner below
 6. **Tribe assignment card**: "THE TEAMS" — show tribe names + members (connects to First Impressions if active)
 
@@ -461,8 +461,15 @@ ep.dockArrivals = [
 
 ## Config
 
-- `cfg.isAllStars` — checkbox in season config. When true, all players use returnee dialogue pools instead of newbie pools
-- Displayed in the season setup accordion near existing config options
+- Per-player `isReturnee` flag set in the cast builder. Each player row gets a small toggle/checkbox.
+- When `isReturnee` is true, that player draws from the returnee dialogue pool. When false, newbie pool.
+- Mixed seasons (Fans vs Favorites, Champions vs Contenders) work naturally — some players are returnees, some aren't.
+- All-Stars seasons: just set every player's flag to true.
+- The flag is stored on the player object in the cast array (e.g. `players[i].isReturnee = true`).
+- Host opening monologue detects whether the season is all-returnees, all-newbies, or mixed:
+  - All newbies: standard TDI opening
+  - All returnees: All-Stars opening
+  - Mixed: `"Tonight, ${returneeCount} returning players face off against ${newbieCount} brand new competitors. The veterans think they know this game. The rookies think they can beat it. I'm ${host}, and this is ${seasonName}. Let's find out who's right."`
 
 ## Scope
 
@@ -471,13 +478,13 @@ ep.dockArrivals = [
 - VP rendering in `rpBuildColdOpen` (ep1 special path)
 - Text backlog `_textDockArrivals`
 - Episode history save
-- `cfg.isAllStars` config toggle
+- Per-player `isReturnee` flag in cast builder
 - 15 archetype dialogue pools (newbie + returnee) + stat flavor overrides
 - 10 chemistry pair reaction pools
 - Host opening monologue
 
 ### Not Included
 - Per-player custom lines in roster JSON (YAGNI — archetype pools provide enough variety)
-- Cross-season placement tracking (YAGNI — `isAllStars` toggle is sufficient)
+- Cross-season placement tracking (YAGNI — per-player `isReturnee` flag is sufficient)
 - Bond changes from arrival interactions (pure narrative, no gameplay)
 - Arrival animations/transitions beyond the reveal pattern

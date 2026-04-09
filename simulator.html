@@ -48551,7 +48551,7 @@ function rpBuildAwakeAThon(ep) {
   steps.push({ type: 'winner', winner: aat.winner, lastAwake: aat.lastAwake });
 
   const allRevealed = state.idx >= steps.length - 1;
-  const _aatReveal = (targetIdx) => `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=${targetIdx};const ep=gs.episodeHistory.find(e=>e.num===${ep.num});if(ep){buildVPScreens(ep);renderVPScreen();setTimeout(()=>{const m=document.querySelector('.rp-main');if(m)m.scrollTop=m.scrollHeight;},50);}`;
+  const _aatReveal = (targetIdx) => `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=${targetIdx};const ep=gs.episodeHistory.find(e=>e.num===${ep.num});if(ep){const m=document.querySelector('.rp-main');const st=m?m.scrollTop:0;buildVPScreens(ep);renderVPScreen();if(m)m.scrollTop=st;}`;
 
   let html = `<div class="rp-page tod-deepnight">
     <div class="rp-eyebrow">Episode ${ep.num}</div>
@@ -48643,7 +48643,7 @@ function rpBuildCliffDive(ep) {
     t.reactions.map(r => ({ ...r, tribe: t.name, isStandout: r.name === t.standout }))
   );
   const allRevealed = state.idx >= allReactions.length - 1;
-  const _cdReveal = (targetIdx) => `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=${targetIdx};const ep=gs.episodeHistory.find(e=>e.num===${ep.num});if(ep){buildVPScreens(ep);renderVPScreen();setTimeout(()=>{const m=document.querySelector('.rp-main');if(m)m.scrollTop=m.scrollHeight;},50);}`;
+  const _cdReveal = (targetIdx) => `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=${targetIdx};const ep=gs.episodeHistory.find(e=>e.num===${ep.num});if(ep){const m=document.querySelector('.rp-main');const st=m?m.scrollTop:0;buildVPScreens(ep);renderVPScreen();if(m)m.scrollTop=st;}`;
 
   let html = `<div class="rp-page tod-dawn">
     <div class="rp-eyebrow">Episode ${ep.num}</div>

@@ -28893,6 +28893,63 @@ function _textVolunteerDuel(ep, ln, sec) {
   }
 }
 
+function _textFirstImpressions(ep, ln, sec) {
+  const _tw = (ep.twists || []).find(t => t.type === 'first-impressions' || t.catalogId === 'first-impressions');
+  const fi = _tw?.firstImpressions;
+  if (!fi?.length) return;
+  sec('FIRST IMPRESSIONS');
+  ln('No camp. No alliances. Just gut feeling. Each tribe votes one person out immediately.');
+  fi.forEach(tribe => {
+    ln(`${tribe.tribe}:`);
+    (tribe.log || []).forEach(v => {
+      ln(`  ${v.voter} voted ${v.voted}${v.reason ? ` — "${v.reason}"` : ''}`);
+    });
+    const sortedVotes = Object.entries(tribe.votes || {}).sort(([,a],[,b]) => b - a);
+    ln(`  Result: ${tribe.votedOut} (${sortedVotes.map(([n,c]) => `${n}: ${c}`).join(', ')})`);
+  });
+  ln('TWIST: Voted-out players are NOT eliminated — they swap tribes.');
+  fi.forEach(tribe => {
+    ln(`  ${tribe.votedOut}: ${tribe.tribe} → ${tribe.sentTo}`);
+  });
+  if (_tw.newTribes?.length) {
+    ln('New tribe compositions:');
+    _tw.newTribes.forEach(t => ln(`  ${t.name}: ${t.members.join(', ')}`));
+  }
+}
+
+function _textSecondChanceVote(ep, ln, sec) {
+  const _tw = (ep.twists || []).find(t => t.type === 'second-chance' || t.catalogId === 'second-chance' || (t.type === 'returning-player' && t.catalogId === 'second-chance'));
+  if (!_tw?.returnee) return;
+  sec('SECOND CHANCE VOTE');
+  ln('The fans have voted. One eliminated player returns to the game.');
+  const results = _tw.fanVoteResults || [];
+  if (results.length) {
+    ln('Fan vote standings:');
+    results.forEach((r, i) => ln(`  ${i + 1}. ${r.name} — ${r.votes || r.score || '?'} votes${r.name === _tw.returnee ? ' ★ WINNER' : ''}`));
+  }
+  ln(`RESULT: ${_tw.returnee} returns to the game.`);
+}
+
+function _textFeast(ep, ln, sec) {
+  const evts = ep.feastEvents;
+  if (!evts?.length) return;
+  const _tw = (ep.twists || []).find(t => t.type === 'the-feast' || t.type === 'merge-reward' || t.catalogId === 'the-feast' || t.catalogId === 'merge-reward');
+  const isMerge = _tw?.type === 'merge-reward' || _tw?.catalogId === 'merge-reward';
+  sec(isMerge ? 'THE MERGE FEAST' : 'THE FEAST');
+  evts.forEach(evt => {
+    const badge = evt.badgeText ? `[${evt.badgeText}] ` : '';
+    ln(`- ${badge}${evt.text}`);
+  });
+}
+
+function _textFanVoteReturn(ep, ln, sec) {
+  if (!ep.fanVoteReturnee) return;
+  sec('FAN VOTE RETURN');
+  ln(`The fans have voted. ${ep.fanVoteReturnee} returns to the game.`);
+  const _elimEp = gs.episodeHistory?.find(h => h.eliminated === ep.fanVoteReturnee || h.firstEliminated === ep.fanVoteReturnee || h.ambassadorData?.ambassadorEliminated === ep.fanVoteReturnee);
+  if (_elimEp) ln(`Originally eliminated: Episode ${_elimEp.num}`);
+}
+
 function _textWriterContext(ep, ln, sec) {
   sec('WRITER CONTEXT');
 
@@ -30272,7 +30329,11 @@ function generateSummaryText(ep) {
   // Episode flow — VP screen order
   _textColdOpen(ep, ln, sec);
   _textReturns(ep, ln, sec);
+  _textFirstImpressions(ep, ln, sec);
+  _textFanVoteReturn(ep, ln, sec);
+  _textSecondChanceVote(ep, ln, sec);
   _textMerge(ep, ln, sec);
+  _textFeast(ep, ln, sec);
   _textCampPre(ep, ln, sec);
   _textRewardChallenge(ep, ln, sec);
   _textImmunityChallenge(ep, ln, sec);

@@ -37838,7 +37838,7 @@ function rpBuildFirstImpressions(ep, twistObj) {
 // ── Screen 3: Pre-challenge twists (tribe swap, three gifts, journey, exile-island, etc.) ──
 function rpBuildPreTwist(ep) {
   const _rawTwistData = (ep.twistScenes?.length ? ep.twistScenes : generateTwistScenes(ep))
-    .filter(t => t.type !== 'exile-island' && t.type !== 'jury-elimination' && t.type !== 'kidnapping' && t.type !== 'first-impressions' && t.type !== 'tied-destinies' && t.type !== 'aftermath' && t.type !== 'fan-vote-return' && t.type !== 'schoolyard-pick' && t.type !== 'triple-dog-dare' && t.type !== 'say-uncle' && t.type !== 'phobia-factor'); // shown in dedicated screens
+    .filter(t => t.type !== 'exile-island' && t.type !== 'jury-elimination' && t.type !== 'kidnapping' && t.type !== 'first-impressions' && t.type !== 'tied-destinies' && t.type !== 'aftermath' && t.type !== 'fan-vote-return' && t.type !== 'schoolyard-pick' && t.type !== 'triple-dog-dare' && t.type !== 'say-uncle' && t.type !== 'phobia-factor' && t.type !== 'cliff-dive'); // shown in dedicated screens
   // Deduplicate: only show one scene per twist type (prevents double display if twist is in ep.twists twice)
   const _seenTypes = new Set();
   const twistData = _rawTwistData.filter(t => { if (_seenTypes.has(t.type)) return false; _seenTypes.add(t.type); return true; });
@@ -48135,8 +48135,8 @@ function rpBuildCliffDive(ep) {
         const jumpBadge = r.jumped
           ? '<span style="font-size:9px;font-weight:700;letter-spacing:1px;color:#3fb950;background:rgba(63,185,80,0.12);padding:2px 6px;border-radius:3px">JUMPED</span>'
           : '<span style="font-size:9px;font-weight:700;letter-spacing:1px;color:#f85149;background:rgba(248,81,73,0.12);padding:2px 6px;border-radius:3px">CHICKENED OUT</span>';
-        const standoutBorder = r.isStandout ? 'border-color:rgba(240,165,0,0.4);background:rgba(240,165,0,0.04)' : '';
-        const standoutLabel = r.isStandout ? `<span style="font-size:9px;font-weight:700;letter-spacing:1px;color:#f0a500;background:rgba(240,165,0,0.12);padding:2px 6px;border-radius:3px;margin-left:4px">FIRST TO JUMP</span>` : '';
+        const standoutBorder = r.isStandout ? 'border-color:rgba(240,165,0,0.5);background:rgba(240,165,0,0.08);box-shadow:0 0 12px rgba(240,165,0,0.15)' : '';
+        const standoutLabel = r.isStandout ? `<span style="font-size:9px;font-weight:700;letter-spacing:1px;color:#0d1117;background:#f0a500;padding:2px 8px;border-radius:3px;margin-left:4px">★ FIRST TO JUMP</span>` : '';
         html += `<div class="vp-card" style="margin-bottom:4px;${standoutBorder};animation:scrollDrop 0.3s var(--ease-broadcast) both">
           <div style="display:flex;align-items:center;gap:10px">
             ${rpPortrait(r.name, 'sm')}

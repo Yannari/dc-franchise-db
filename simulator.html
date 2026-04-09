@@ -11528,7 +11528,7 @@ const DOCK_CHEMISTRY_PAIRS = [
     (name,pr,reactor,rPr) => `"Great," ${reactor} mutters. "This should be fun."`,
   ]},
   { newArch: ['hero'], reactArch: ['villain'], chemType: 'sizing-up', lines: [
-    (name,pr,reactor,rPr) => `${reactor} smirks. "Oh, we've got a Boy Scout."`,
+    (name,pr,reactor,rPr) => `${reactor} smirks. "Oh, we've got a ${pr.sub==='she'?'Girl':'Boy'} Scout."`,
     (name,pr,reactor,rPr) => `${reactor} looks ${name} up and down. Competition.`,
     (name,pr,reactor,rPr) => `Something flickers behind ${reactor}'s eyes. This one could be a problem.`,
   ]},
@@ -11576,6 +11576,13 @@ const DOCK_CHEMISTRY_PAIRS = [
 
 function generateDockArrivals(ep) {
   const _pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  // Pick without repeating lines already used this season
+  const _pickUnique = (arr, usedSet) => {
+    const unused = arr.filter(x => !usedSet.has(typeof x === 'function' ? x.toString() : x));
+    const choice = unused.length ? _pick(unused) : _pick(arr);
+    usedSet.add(typeof choice === 'function' ? choice.toString() : choice);
+    return choice;
+  };
   const host = seasonConfig.host || 'Chris';
   const allPlayers = [...players];
   if (!allPlayers.length) return;
@@ -11614,44 +11621,56 @@ function generateDockArrivals(ep) {
   // ── Step 4: Generate dialogue for each arrival ──
   const arrivals = [];
   const onDock = [];
+  const usedHostLines = new Set();     // dedup host lines across season
+  const usedPlayerLines = new Set();   // dedup player lines across season
+  const usedStatFlavors = new Set();   // max 2 stat flavor overrides per stat type
+  const reactedPlayers = new Set();    // each player reacts at most once
 
   ordered.forEach((p, i) => {
     const arch = p.archetype || 'floater';
     const pr = pronouns(p.name);
     const s = pStats(p.name);
 
-    // Host line: 40% chance of stat flavor override
+    // Host line: 25% chance of stat flavor override (capped: max 2 per stat type)
     let hostLine, statFlavor = null;
     const topStat = DOCK_STAT_FLAVOR.find(sf => {
       if (sf.stat === 'temperament') return s.temperament <= (sf.max || 3);
       return s[sf.stat] >= sf.min;
     });
-    if (topStat && Math.random() < 0.40) {
+    if (topStat && Math.random() < 0.25 && (usedStatFlavors.has(topStat.stat) ? [...usedStatFlavors].filter(x => x === topStat.stat).length < 2 : true)) {
       hostLine = topStat.fn(p.name, pr);
       statFlavor = topStat.stat;
+      usedStatFlavors.add(topStat.stat);
     } else {
       const pool = DOCK_HOST_LINES[arch] || DOCK_HOST_LINES.floater;
-      hostLine = _pick(pool)(p.name, pr, host);
+      const chosen = _pickUnique(pool, usedHostLines);
+      hostLine = chosen(p.name, pr, host);
     }
 
-    // Player reaction line
+    // Player reaction line — dedup across season
     const isReturnee = p.isReturnee || false;
     const playerPool = isReturnee
       ? (DOCK_RETURNEE_LINES[arch] || DOCK_RETURNEE_LINES.floater)
       : (DOCK_PLAYER_LINES[arch] || DOCK_PLAYER_LINES.floater);
-    const playerLine = _pick(playerPool);
+    const playerLine = _pickUnique(playerPool, usedPlayerLines);
 
-    // Dock reaction (30-40%): check chemistry pairs with players on dock
+    // Dock reaction: each reactor can only react once
     let dockReaction = null;
     if (onDock.length >= 1) {
       const matchingPairs = DOCK_CHEMISTRY_PAIRS.filter(cp => cp.newArch.includes(arch));
       if (matchingPairs.length) {
-        for (const pair of matchingPairs) {
-          const reactor = onDock.find(d => pair.reactArch.includes(d.archetype || 'floater'));
-          if (reactor && Math.random() < 0.60) {
+        // Shuffle pairs so it's not always the first match
+        const shuffledPairs = [...matchingPairs].sort(() => Math.random() - 0.5);
+        for (const pair of shuffledPairs) {
+          // Find a reactor who hasn't reacted yet
+          const reactor = onDock.find(d =>
+            pair.reactArch.includes(d.archetype || 'floater') && !reactedPlayers.has(d.name)
+          );
+          if (reactor && Math.random() < 0.50) {
             const rPr = pronouns(reactor.name);
             const reactionText = _pick(pair.lines)(p.name, pr, reactor.name, rPr);
             dockReaction = { reactor: reactor.name, text: reactionText, chemType: pair.chemType };
+            reactedPlayers.add(reactor.name);
             break;
           }
         }
@@ -34900,7 +34919,7 @@ function _rpBuildDockArrival(ep) {
   const isMixed = returneeCount > 0 && newbieCount > 0;
 
   const hostMonologue = isAllReturnees
-    ? `"They've played before. They've been voted out, blindsided, betrayed. And they all came back for more. I'm ${host}, and this is ${seasonName} — All Stars. ${arrivals.length} returning players. One winner. Let's see who learned from their mistakes... and who's about to make new ones."`
+    ? `"They've played before. They've won, they've lost, they've been blindsided and betrayed. And they all came back for more. I'm ${host}, and this is ${seasonName} — All Stars. ${arrivals.length} returning players. One winner. Let's see who learned from their mistakes... and who's about to make new ones."`
     : isMixed
     ? `"Tonight, ${returneeCount} returning player${returneeCount>1?'s':''} face${returneeCount===1?'s':''} off against ${newbieCount} brand new competitor${newbieCount>1?'s':''}. The veterans think they know this game. The rookies think they can beat it. I'm ${host}, and this is ${seasonName}. Let's find out who's right."`
     : `"Yo! We're coming at you live from Camp Wawanakwa! I'm your host, ${host}. ${arrivals.length} players have signed up to spend eight weeks at this crummy old summer camp. They'll compete in challenges, vote each other out at tribal council, and the last one standing wins the prize. Every moment will be caught on camera. Who will crumble? Who will rise? Find out right here on... ${seasonName}!"`;

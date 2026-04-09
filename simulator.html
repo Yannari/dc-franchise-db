@@ -21416,7 +21416,8 @@ function generateCampEvents(ep, phase = 'both') {
           ? Math.floor(Math.random() * 4) + Math.max(6, Math.ceil(total * 0.8))
           : Math.floor(Math.random() * 3) + Math.max(5, Math.ceil(total * 0.7));
         if (!ep.campEvents[tribe.name]) ep.campEvents[tribe.name] = { pre: [], post: [] };
-        ep.campEvents[tribe.name].post = generateCampEventsForGroup(present, [], tribeBoosts, postCount);
+        const _existingPostEvts = ep.campEvents[tribe.name].post || [];
+        ep.campEvents[tribe.name].post = [..._existingPostEvts, ...generateCampEventsForGroup(present, [], tribeBoosts, postCount)];
       });
       // ── Sit-out narrative events ──
       if (ep.chalSitOuts) {
@@ -21475,7 +21476,8 @@ function generateCampEvents(ep, phase = 'both') {
       const total = totalForGroup(gs.activePlayers);
       const postCount = Math.floor(Math.random() * 3) + Math.max(5, Math.ceil(total * 0.72));
       if (!ep.campEvents.merge) ep.campEvents.merge = { pre: [], post: [] };
-      ep.campEvents.merge.post = generateCampEventsForGroup(gs.activePlayers.filter(p => p !== gs.exileDuelPlayer), [], postBoostsMerge, postCount);
+      const _existingMergePost = ep.campEvents.merge.post || [];
+      ep.campEvents.merge.post = [..._existingMergePost, ...generateCampEventsForGroup(gs.activePlayers.filter(p => p !== gs.exileDuelPlayer), [], postBoostsMerge, postCount)];
     }
 
     // ── Temporary bloc alignment events (non-named alliances forming for this vote) ──

@@ -4137,6 +4137,8 @@ function computeHeat(name, tribalPlayers, alliances) {
       if (_epsSinceDetective <= 2) heat -= 1.5; // tribe protects the person who saved them
     }
   }
+  // ── Phobia Factor blame: player who failed their fear and cost the tribe ──
+  if (gs._phobiaBlame?.[name]) heat += gs._phobiaBlame[name];
   // ── Volunteer Exile Duel: volunteer WANTS to be voted out ──
   if (gs._volunteerDuelHeat?.[name] === ((gs.episode || 0) + 1)) heat += 8.0;
   // Volunteer duel winner returns with reduced heat
@@ -6960,6 +6962,34 @@ function simulatePhobiaFactor(ep) {
         badgeClass: clutch.result === 'pass' ? 'gold' : 'red',
       });
     }
+  }
+
+  // Blame heat: players who failed on the LOSING tribe get heat boost (they cost the game)
+  // This feeds into computeHeat via gs._phobiaBlame so voting targets the weak link
+  const loserFailures = finalLoser.members.filter(p => results[p] === 'fail');
+  if (loserFailures.length && loserFailures.length < finalLoser.members.length) {
+    // Only blame if SOME failed (not all — if everyone failed, nobody's singled out)
+    if (!gs._phobiaBlame) gs._phobiaBlame = {};
+    const blamePerPlayer = 2.0 / loserFailures.length; // split blame — 1 failure = 2.0 heat, 2 = 1.0 each
+    loserFailures.forEach(player => {
+      gs._phobiaBlame[player] = blamePerPlayer;
+      // Bond damage: tribe resents the failure
+      finalLoser.members.forEach(tm => {
+        if (tm !== player) addBond(tm, player, -0.3);
+      });
+    });
+    // Blame camp events
+    loserFailures.forEach(player => {
+      const pr = pronouns(player);
+      const fear = fears[player]?.title || 'their fear';
+      if (ep.campEvents?.[finalLoser.name]) {
+        (ep.campEvents[finalLoser.name].post = ep.campEvents[finalLoser.name].post || []).push({
+          type: 'phobiaBlame', players: [player],
+          text: `The tribe is trying not to say it. But ${player} couldn't face ${fear}, and now they're going to tribal. ${pr.Sub} ${pr.sub === 'they' ? 'know' : 'knows'} the math.`,
+          badgeText: 'COST THE TRIBE', badgeClass: 'red',
+        });
+      }
+    });
   }
 }
 
@@ -25437,6 +25467,8 @@ function simulateJuryRoundtable(ep) {
 
     // Clear volunteer duel heat after tribal
     if (gs._volunteerDuelHeat) delete gs._volunteerDuelHeat;
+    // Clear phobia blame after tribal
+    if (gs._phobiaBlame) delete gs._phobiaBlame;
 
     // ── BLACK VOTE: eliminated player casts a parting vote/gift (until F4) ──
     if (cfg.blackVote && cfg.blackVote !== 'off' && gs.activePlayers.length > 4) {
@@ -38330,6 +38362,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
     const isPhobiaClutchP = evt.type === 'phobiaClutchPass';
     const isPhobiaClutchF = evt.type === 'phobiaClutchFail';
     const isPhobiaShared  = evt.type === 'phobiaSharedFear';
+    const isPhobiaBlame   = evt.type === 'phobiaBlame';
     const isCRExposure    = evt.type === 'culturalResetExposure';
     const isCRSurvived    = evt.type === 'culturalResetSurvived';
     const isCRCracked     = evt.type === 'culturalResetCracked';
@@ -38599,6 +38632,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : isPhobiaClutchP ? (evt.badgeText || 'CLUTCH')
                      : isPhobiaClutchF ? (evt.badgeText || 'CHOKED')
                      : isPhobiaShared  ? (evt.badgeText || 'SHARED FEAR')
+                     : isPhobiaBlame   ? (evt.badgeText || 'COST THE TRIBE')
                      : isPos && isPersonal  ? '+ Bond formed'
                      : isPos                ? '+ Bond boost'
                      : isNeg && isPersonal  ? '\u2212 Personal tension'
@@ -38698,7 +38732,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : isSayUncleWin || isSayUncleDom || isSayUncleEndure ? 'gold'
                      : isSayUncleBack || isSayUncleFail || isSayUncleCalled ? 'red'
                      : isPhobiaConf || isPhobiaConq || isPhobiaClutchP || isPhobiaShared ? 'gold'
-                     : isPhobiaFail || isPhobiaClutchF ? 'red'
+                     : isPhobiaFail || isPhobiaClutchF || isPhobiaBlame ? 'red'
                      : evt.type === 'fight' || evt.type === 'meltdown' || evt.type === 'dispute' || evt.type === 'leadershipClash' || evt.type === 'intimidation' ? 'red'
                      : evt.type === 'bond' || evt.type === 'tdBond' || evt.type === 'comfort' || evt.type === 'flirtation' ? 'green'
                      : evt.type === 'strategicTalk' || evt.type === 'bigMoveThoughts' || evt.type === 'mastermindOrchestrates' || evt.type === 'wildcardPivot' || evt.type === 'chaosAgentStirsUp' ? 'gold'

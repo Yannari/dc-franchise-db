@@ -1,6 +1,4 @@
 {
-  "version": 1,
-  "count": 104,
   "players": [
     {
       "name": "Alejandro",
@@ -1408,18 +1406,19 @@
       "name": "Sam",
       "slug": "sam",
       "gender": "m",
-      "archetype": "loyal-soldier",
+      "archetype": "",
       "stats": {
         "physical": 4,
         "endurance": 2,
-        "mental": 8,
+        "mental": 6,
         "social": 6,
         "strategic": 2,
         "loyalty": 10,
         "boldness": 2,
         "intuition": 7,
         "temperament": 10
-      }
+      },
+      "isReturnee": false
     },
     {
       "name": "Samey",

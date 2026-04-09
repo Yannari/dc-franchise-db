@@ -20226,6 +20226,10 @@ function generateCampEvents(ep, phase = 'both') {
         boost('doubt', 25); boost('confessional', 30);
         boost('strategicTalk', 20); boost('fight', 15);
         break;
+      case 'phobia-factor':
+        boost('confessional', 35); boost('vulnerability', 25);
+        boost('bond', 20); boost('doubt', 15);
+        break;
       case 'auction':
         // After an auction — well-fed players are social; strategic players are thinking about advantages
         boost('tdBond', 20); boost('comfort', 25); boost('flirtation', 15);
@@ -22588,6 +22592,10 @@ function simulateEpisode() {
     ep.loser = result.loser || ep.multiTribalLosingTribes[ep.multiTribalLosingTribes.length - 1]; // worst performer
     ep.multiTribalResults = [];
     ep.tribalPlayers = ep.multiTribalLosingTribes.flatMap(t => [...t.members]); // combined for display
+  } else if (ep.isPhobiaFactor && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
+    // Phobia Factor replaces the tribe challenge
+    simulatePhobiaFactor(ep);
+    // winner, loser, challengeType, tribalPlayers already set by simulatePhobiaFactor
   } else if (gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
     const result = simulateTribeChallenge(gs.tribes);
     ep.challengeType = 'tribe';
@@ -28075,6 +28083,33 @@ function _textWhyVote(ep, ln, sec) {
   else ln('No elimination.');
 }
 
+// ── PHOBIA FACTOR ──
+function _textPhobiaFactor(ep, ln, sec) {
+  const pf = ep.phobiaFactor;
+  if (!pf) return;
+  sec('PHOBIA FACTOR');
+  ln('Campfire Confessions:');
+  (pf.confessions || []).forEach(c => ln(`  ${c.player}: ${c.fear} (${c.category})`));
+  ln('');
+  ln('Challenge Results:');
+  const tribes = ep.tribesAtStart || [];
+  tribes.forEach(tribe => {
+    const ts = pf.tribeScores[tribe.name] || {};
+    ln(`  ${tribe.name}: ${ts.completions}/${ts.total} (${Math.round((ts.percentage || 0) * 100)}%)`);
+    tribe.members.forEach(name => {
+      ln(`    ${name}: ${pf.results[name]?.toUpperCase()} \u2014 ${pf.fears[name]?.title}`);
+    });
+  });
+  if (pf.clutch) {
+    ln('');
+    ln(`TRIPLE POINTS: ${pf.clutch.player} (${pf.clutch.tribe}) \u2014 ${pf.clutch.fear.title} \u2014 ${pf.clutch.result.toUpperCase()}`);
+    if (pf.clutch.overturned) ln('  RESULT OVERTURNED!');
+  }
+  ln('');
+  ln(`WINNER: ${pf.winningTribe}`);
+  ln(`LOSER: ${pf.losingTribe} \u2014 goes to tribal`);
+}
+
 // ── SAY UNCLE ──
 function _textSayUncle(ep, ln, sec) {
   const su = ep.sayUncle;
@@ -30014,6 +30049,7 @@ function generateSummaryText(ep) {
   _textSchoolyardPick(ep, ln, sec);
   _textAftermath(ep, ln, sec);
   _textSlasherNight(ep, ln, sec);
+  _textPhobiaFactor(ep, ln, sec);
   _textSayUncle(ep, ln, sec);
   _textTripleDogDare(ep, ln, sec);
   _textAmbassadors(ep, ln, sec);
@@ -30539,6 +30575,8 @@ function patchEpisodeHistory(ep) {
   if (ep.tripleDogDare) h.tripleDogDare = ep.tripleDogDare;
   if (ep.sayUncle) h.sayUncle = ep.sayUncle;
   if (ep.isSayUncle) h.isSayUncle = true;
+  if (ep.phobiaFactor) h.phobiaFactor = ep.phobiaFactor;
+  if (ep.isPhobiaFactor) h.isPhobiaFactor = true;
   if (ep.isTripleDogDare) h.isTripleDogDare = true;
   if (ep.exileDuelPlayerAtStart) h.exileDuelPlayerAtStart = ep.exileDuelPlayerAtStart;
   if (ep.volunteerDuel) h.volunteerDuel = ep.volunteerDuel;
@@ -31193,6 +31231,7 @@ function renderEpisodeHistory() {
     const slasherTag = ep.isSlasherNight ? `<span class="ep-hist-tag" style="background:rgba(218,54,51,0.15);color:#da3633">Slasher Night</span>` : '';
     const tddTag = ep.isTripleDogDare ? `<span class="ep-hist-tag" style="background:rgba(245,158,11,0.15);color:#f59e0b">Triple Dog Dare</span>` : '';
     const suTag = ep.isSayUncle ? `<span class="ep-hist-tag" style="background:rgba(245,158,11,0.15);color:#f59e0b">Say Uncle</span>` : '';
+    const pfTag = ep.isPhobiaFactor ? `<span class="ep-hist-tag" style="background:rgba(139,92,246,0.15);color:#8957e5">Phobia Factor</span>` : '';
     const hasCheckpoint = !!gsCheckpoints[ep.num];
     const replayBtn = hasCheckpoint
       ? `<button class="ep-hist-replay" title="Re-run this episode" onclick="event.stopPropagation();replayEpisode(${ep.num})">↺</button>`
@@ -31200,7 +31239,7 @@ function renderEpisodeHistory() {
     return `<div class="ep-hist-card ${ep.num===currentNum?'active':''}" onclick="viewEpisode(${ep.num})">
       <div class="ep-hist-ep">Episode ${ep.num}${replayBtn}</div>
       <div class="ep-hist-elim">${_spoilerFree ? '???' : ep.multiTribalElims?.length >= 2 ? ep.multiTribalElims.join(' + ') : ep.ambassadorData?.ambassadorEliminated ? `${ep.ambassadorData.ambassadorEliminated} + ${ep.eliminated||'?'}` : ep.tiedDestinies?.eliminatedPartner ? `${ep.eliminated||'?'} + ${ep.tiedDestinies.eliminatedPartner}` : ep.firstEliminated ? `${ep.firstEliminated} + ${ep.eliminated||'?'}` : (ep.eliminated || (ep.isFinale ? 'FTC' : '\u2014'))}</div>
-      <div>${riTag}${mergeTag}${finaleTag}${slasherTag}${tddTag}${suTag}</div>
+      <div>${riTag}${mergeTag}${finaleTag}${slasherTag}${tddTag}${suTag}${pfTag}</div>
     </div>`;
   }).join('');
 }
@@ -34185,6 +34224,17 @@ function rpBuildColdOpen(ep) {
       </div>`;
     }
 
+    // ── [1d] PHOBIA FACTOR RECAP ──
+    if (prevEp.isPhobiaFactor && prevEp.phobiaFactor) {
+      const _pfData = prevEp.phobiaFactor;
+      const _pfWinPct = Math.round((_pfData.tribeScores[_pfData.winningTribe]?.percentage || 0) * 100);
+      html += `<div class="vp-card gold" style="margin-bottom:10px">
+        <div style="font-family:var(--font-body);font-size:11px;font-weight:800;letter-spacing:1px;color:var(--accent-gold);margin-bottom:6px">PHOBIA FACTOR</div>
+        <div style="font-size:12px;margin-bottom:4px">${_pfData.winningTribe} won immunity (${_pfWinPct}% conquered their fears)</div>
+        ${_pfData.clutch ? `<div style="font-size:11px;color:${_pfData.clutch.result === 'pass' ? 'var(--accent-gold)' : '#da3633'}">${_pfData.clutch.player} ${_pfData.clutch.result === 'pass' ? 'hit the clutch triple points!' : 'choked on triple points'}</div>` : ''}
+      </div>`;
+    }
+
     // ── [2] CLOSE VOTE — survived by 1 vote ──
     if (prevEp.votes && prevEp.eliminated) {
       const _sortedVotes = Object.entries(prevEp.votes).sort(([,a],[,b]) => b - a);
@@ -36588,7 +36638,7 @@ function rpBuildFirstImpressions(ep, twistObj) {
 // ── Screen 3: Pre-challenge twists (tribe swap, three gifts, journey, exile-island, etc.) ──
 function rpBuildPreTwist(ep) {
   const _rawTwistData = (ep.twistScenes?.length ? ep.twistScenes : generateTwistScenes(ep))
-    .filter(t => t.type !== 'exile-island' && t.type !== 'jury-elimination' && t.type !== 'kidnapping' && t.type !== 'first-impressions' && t.type !== 'tied-destinies' && t.type !== 'aftermath' && t.type !== 'fan-vote-return' && t.type !== 'schoolyard-pick' && t.type !== 'triple-dog-dare' && t.type !== 'say-uncle'); // shown in dedicated screens
+    .filter(t => t.type !== 'exile-island' && t.type !== 'jury-elimination' && t.type !== 'kidnapping' && t.type !== 'first-impressions' && t.type !== 'tied-destinies' && t.type !== 'aftermath' && t.type !== 'fan-vote-return' && t.type !== 'schoolyard-pick' && t.type !== 'triple-dog-dare' && t.type !== 'say-uncle' && t.type !== 'phobia-factor'); // shown in dedicated screens
   // Deduplicate: only show one scene per twist type (prevents double display if twist is in ep.twists twice)
   const _seenTypes = new Set();
   const twistData = _rawTwistData.filter(t => { if (_seenTypes.has(t.type)) return false; _seenTypes.add(t.type); return true; });
@@ -38241,6 +38291,12 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
     const isSayUncleCalled= evt.type === 'sayUncleCalledIt';
     const isSayUncleFail  = evt.type === 'sayUncleFailed';
     const isSayUncleEndure= evt.type === 'sayUncleEndured';
+    const isPhobiaConf    = evt.type === 'phobiaConfession';
+    const isPhobiaConq    = evt.type === 'phobiaConquered';
+    const isPhobiaFail    = evt.type === 'phobiaFailed';
+    const isPhobiaClutchP = evt.type === 'phobiaClutchPass';
+    const isPhobiaClutchF = evt.type === 'phobiaClutchFail';
+    const isPhobiaShared  = evt.type === 'phobiaSharedFear';
     const isCRExposure    = evt.type === 'culturalResetExposure';
     const isCRSurvived    = evt.type === 'culturalResetSurvived';
     const isCRCracked     = evt.type === 'culturalResetCracked';
@@ -38504,6 +38560,12 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : isSayUncleCalled ? (evt.badgeText || 'CALLED IT')
                      : isSayUncleFail   ? (evt.badgeText || 'SAID UNCLE')
                      : isSayUncleEndure ? (evt.badgeText || 'ENDURED')
+                     : isPhobiaConf    ? (evt.badgeText || 'CONFESSION')
+                     : isPhobiaConq    ? (evt.badgeText || 'CONQUERED')
+                     : isPhobiaFail    ? (evt.badgeText || 'COULDN\'T DO IT')
+                     : isPhobiaClutchP ? (evt.badgeText || 'CLUTCH')
+                     : isPhobiaClutchF ? (evt.badgeText || 'CHOKED')
+                     : isPhobiaShared  ? (evt.badgeText || 'SHARED FEAR')
                      : isPos && isPersonal  ? '+ Bond formed'
                      : isPos                ? '+ Bond boost'
                      : isNeg && isPersonal  ? '\u2212 Personal tension'
@@ -38602,6 +38664,8 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : isDarePactBetray || isDareAllyBetray || isDareRefusal || isDareElim ? 'red'
                      : isSayUncleWin || isSayUncleDom || isSayUncleEndure ? 'gold'
                      : isSayUncleBack || isSayUncleFail || isSayUncleCalled ? 'red'
+                     : isPhobiaConf || isPhobiaConq || isPhobiaClutchP || isPhobiaShared ? 'gold'
+                     : isPhobiaFail || isPhobiaClutchF ? 'red'
                      : evt.type === 'fight' || evt.type === 'meltdown' || evt.type === 'dispute' || evt.type === 'leadershipClash' || evt.type === 'intimidation' ? 'red'
                      : evt.type === 'bond' || evt.type === 'tdBond' || evt.type === 'comfort' || evt.type === 'flirtation' ? 'green'
                      : evt.type === 'strategicTalk' || evt.type === 'bigMoveThoughts' || evt.type === 'mastermindOrchestrates' || evt.type === 'wildcardPivot' || evt.type === 'chaosAgentStirsUp' ? 'gold'
@@ -46809,6 +46873,172 @@ function rpBuildFanFavorite(ep) {
 }
 
 // ══════════════════════════════════════════════════════════════════════
+// PHOBIA FACTOR VP SCREENS
+// ══════════════════════════════════════════════════════════════════════
+
+function rpBuildPhobiaConfessions(ep) {
+  const pf = ep.phobiaFactor;
+  if (!pf) return '';
+  const uid = 'pf-conf-' + ep.num;
+  const confessions = pf.confessions || [];
+  const _catColor = { 'pain': '#da3633', 'fear': '#8957e5', 'gross': '#3fb950', 'humiliation': '#db61a2' };
+
+  let html = `<div class="rp-page tod-dusk" id="${uid}-page" data-pf-revealed="0" data-pf-total="${confessions.length}">
+    <div style="font-family:var(--font-display);font-size:28px;letter-spacing:2px;text-align:center;color:var(--accent-fire);text-shadow:0 0 20px var(--accent-fire);margin-bottom:4px;animation:scrollDrop 0.5s var(--ease-broadcast) both">CAMPFIRE CONFESSIONS</div>
+    <div style="font-size:11px;color:var(--muted);text-align:center;margin-bottom:20px">"What are you afraid of?"</div>`;
+
+  confessions.forEach((conf, i) => {
+    const f = pf.fears[conf.player];
+    const catCol = _catColor[f?.category] || '#8b949e';
+    html += `<div class="${uid}-item" style="display:none" data-idx="${i}">
+      <div class="vp-card" style="margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          ${rpPortrait(conf.player, 'sm')}
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:700;color:var(--vp-text)">${conf.player}</div>
+            <span style="font-size:9px;font-weight:700;letter-spacing:1px;color:${catCol};background:${catCol}18;padding:2px 6px;border-radius:3px">${f?.title || 'Unknown'}</span>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--vp-text);line-height:1.5;font-style:italic">${conf.reaction}</div>
+      </div>
+    </div>`;
+  });
+
+  html += `<div style="display:flex;gap:10px;justify-content:center;margin-top:16px;position:sticky;bottom:10px;z-index:5">
+    <button class="rp-camp-toggle-btn" style="border-color:var(--accent-fire);color:var(--accent-fire);padding:8px 20px;font-size:12px" onclick="pfRevealNext('${uid}')">NEXT \u25B6</button>
+    <button class="rp-camp-toggle-btn" style="border-color:#484f58;color:#8b949e;padding:8px 16px;font-size:11px" onclick="pfRevealAll('${uid}')">REVEAL ALL</button>
+  </div></div>`;
+  return html;
+}
+
+function rpBuildPhobiaAnnouncement(ep) {
+  const pf = ep.phobiaFactor;
+  if (!pf) return '';
+  const tribes = ep.tribesAtStart || gs.tribes || [];
+
+  let html = `<div class="rp-page tod-dawn">
+    <div style="font-family:var(--font-display);font-size:32px;letter-spacing:3px;text-align:center;color:var(--accent-fire);text-shadow:0 0 20px var(--accent-fire);margin-bottom:4px;animation:scrollDrop 0.5s var(--ease-broadcast) both">PHOBIA FACTOR</div>
+    <div style="font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--muted);text-align:center;margin-bottom:20px">Face Your Fear</div>
+    <div style="font-size:13px;color:var(--vp-text);text-align:center;margin-bottom:24px;line-height:1.7;max-width:460px;margin-left:auto;margin-right:auto;font-style:italic">
+      "We watched the tapes. We know what you're afraid of. Today's challenge: face your fear. Tribe with the best completion rate wins immunity."
+    </div>`;
+
+  tribes.forEach(tribe => {
+    const tc = tribeColor(tribe.name);
+    html += `<div class="rp-tribe" style="margin-bottom:16px">
+      <div class="rp-tribe-head" style="color:${tc};border-color:${tc}">${tribe.name}</div>`;
+    tribe.members.forEach(name => {
+      const f = pf.fears[name];
+      if (!f) return;
+      const _catColor = { 'pain': '#da3633', 'fear': '#8957e5', 'gross': '#3fb950', 'humiliation': '#db61a2' }[f.category] || '#8b949e';
+      html += `<div style="display:flex;align-items:center;gap:8px;padding:4px 0">
+        ${rpPortrait(name, 'sm')}
+        <span style="font-size:12px;color:var(--vp-text);flex:1">${name}</span>
+        <span style="font-size:10px;font-weight:700;letter-spacing:0.5px;color:${_catColor}">${f.title}</span>
+      </div>`;
+    });
+    html += `</div>`;
+  });
+
+  html += `</div>`;
+  return html;
+}
+
+function rpBuildPhobiaChallenge(ep) {
+  const pf = ep.phobiaFactor;
+  if (!pf) return '';
+  const uid = 'pf-chal-' + ep.num;
+  const tribes = ep.tribesAtStart || gs.tribes || [];
+  const _catColor = { 'pain': '#da3633', 'fear': '#8957e5', 'gross': '#3fb950', 'humiliation': '#db61a2' };
+  const revealItems = [];
+
+  tribes.forEach(tribe => {
+    const tc = tribeColor(tribe.name);
+    const ts = pf.tribeScores[tribe.name] || {};
+    revealItems.push({ type: 'header', html: `<div style="font-size:13px;font-weight:700;letter-spacing:2px;color:${tc};border-bottom:2px solid ${tc};padding-bottom:6px;margin:16px 0 8px">${tribe.name} <span style="color:var(--muted);font-weight:400">${ts.completions || 0}/${ts.total || 0}</span></div>` });
+    tribe.members.forEach(name => {
+      const f = pf.fears[name];
+      const result = pf.results[name];
+      const reaction = pf.reactions[name];
+      const catCol = _catColor[f?.category] || '#8b949e';
+      const passed = result === 'pass';
+      revealItems.push({ type: 'player', html: `<div class="vp-card ${passed ? '' : 'fire'}" style="margin-bottom:8px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          ${rpPortrait(name, 'sm')}
+          <div style="flex:1">
+            <div style="font-size:12px;font-weight:700;color:var(--vp-text)">${name}</div>
+            <div style="font-size:10px;color:${catCol};font-weight:600">${f?.title || '?'}</div>
+          </div>
+          <span style="font-size:10px;font-weight:700;letter-spacing:1px;color:${passed ? '#3fb950' : '#da3633'}">${passed ? '\u2705 CONQUERED' : '\u274c FAILED'}</span>
+        </div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.5">${f?.desc || ''}</div>
+        <div style="font-size:12px;color:var(--vp-text);line-height:1.5;margin-top:6px">${reaction || ''}</div>
+      </div>` });
+    });
+  });
+
+  let html = `<div class="rp-page tod-arena" id="${uid}-page" data-pf-revealed="0" data-pf-total="${revealItems.length}">
+    <div style="font-family:var(--font-display);font-size:22px;letter-spacing:2px;text-align:center;color:var(--accent-fire);margin-bottom:16px">THE CHALLENGE</div>`;
+  revealItems.forEach((item, i) => {
+    html += `<div class="${uid}-item" style="display:none" data-idx="${i}">${item.html}</div>`;
+  });
+  html += `<div style="display:flex;gap:10px;justify-content:center;margin-top:16px;position:sticky;bottom:10px;z-index:5">
+    <button class="rp-camp-toggle-btn" style="border-color:var(--accent-fire);color:var(--accent-fire);padding:8px 20px;font-size:12px" onclick="pfRevealNext('${uid}')">NEXT \u25B6</button>
+    <button class="rp-camp-toggle-btn" style="border-color:#484f58;color:#8b949e;padding:8px 16px;font-size:11px" onclick="pfRevealAll('${uid}')">REVEAL ALL</button>
+  </div></div>`;
+  return html;
+}
+
+function rpBuildPhobiaClutch(ep) {
+  const pf = ep.phobiaFactor;
+  if (!pf?.clutch) return '';
+  const c = pf.clutch;
+  const _catColor = { 'pain': '#da3633', 'fear': '#8957e5', 'gross': '#3fb950', 'humiliation': '#db61a2' }[c.fear.category] || '#8b949e';
+  const passed = c.result === 'pass';
+
+  let html = `<div class="rp-page tod-arena" style="text-align:center">
+    <div style="font-family:var(--font-display);font-size:24px;letter-spacing:2px;color:var(--accent-fire);margin-bottom:8px">TRIPLE POINTS</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:16px">${c.tribe} is behind. One last chance. Triple the stakes.</div>
+    ${rpPortrait(c.player, 'lg')}
+    <div style="font-size:14px;font-weight:700;color:var(--vp-text);margin-top:12px">${c.player}</div>
+    <div style="margin:12px 0">
+      <span style="font-size:10px;font-weight:700;letter-spacing:1px;color:${_catColor};background:${_catColor}18;padding:3px 8px;border-radius:3px">${c.fear.title}</span>
+    </div>
+    <div style="font-size:12px;color:var(--muted);font-style:italic;margin-bottom:16px">${c.fear.desc}</div>
+    <div style="font-size:14px;font-weight:700;letter-spacing:2px;color:${passed ? 'var(--accent-gold)' : '#da3633'};margin-bottom:8px">${passed ? '\u2705 CLUTCH' : '\u274c CHOKED'}</div>
+    <div style="font-size:12px;color:var(--vp-text);line-height:1.5">${pf.reactions['_clutch'] || ''}</div>
+    ${c.overturned ? '<div style="font-size:12px;font-weight:700;color:var(--accent-gold);margin-top:12px;letter-spacing:1px">THE RESULT IS OVERTURNED!</div>' : ''}
+  </div>`;
+  return html;
+}
+
+function rpBuildPhobiaResults(ep) {
+  const pf = ep.phobiaFactor;
+  if (!pf) return '';
+  const tribes = ep.tribesAtStart || gs.tribes || [];
+  const ranked = [...tribes].sort((a, b) => (pf.tribeScores[b.name]?.percentage || 0) - (pf.tribeScores[a.name]?.percentage || 0));
+
+  let html = `<div class="rp-page tod-dawn" style="text-align:center">
+    <div style="font-family:var(--font-display);font-size:22px;letter-spacing:2px;color:var(--accent-gold);margin-bottom:16px">RESULTS</div>`;
+  ranked.forEach(tribe => {
+    const ts = pf.tribeScores[tribe.name] || {};
+    const tc = tribeColor(tribe.name);
+    const isWinner = tribe.name === pf.winningTribe;
+    const isLoser = tribe.name === pf.losingTribe;
+    const pct = Math.round((ts.percentage || 0) * 100);
+    html += `<div class="vp-card ${isWinner ? 'gold' : isLoser ? 'fire' : ''}" style="margin-bottom:12px;text-align:left">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="font-size:14px;font-weight:700;color:${tc}">${tribe.name}</div>
+        <div style="flex:1;text-align:right;font-size:14px;font-weight:700;font-family:var(--font-mono);color:${isWinner ? 'var(--accent-gold)' : isLoser ? '#da3633' : 'var(--muted)'}">${ts.completions}/${ts.total} (${pct}%)</div>
+      </div>
+      <div style="font-size:11px;font-weight:700;letter-spacing:1px;margin-top:6px;color:${isWinner ? 'var(--accent-gold)' : isLoser ? '#da3633' : 'var(--muted)'}">${isWinner ? 'WINS IMMUNITY' : isLoser ? 'GOES TO TRIBAL' : 'SAFE'}</div>
+    </div>`;
+  });
+  html += `</div>`;
+  return html;
+}
+
+// ══════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════
 // SAY UNCLE VP SCREENS
 // ══════════════════════════════════════════════════════════════════════
@@ -47913,12 +48143,21 @@ function buildVPScreens(epRecord) {
   if (ep.isFinale && ep.challengeType && ep.immunityWinner && (seasonConfig.finaleSize >= 3 || seasonConfig.firemaking) && seasonConfig.finaleFormat !== 'final-challenge' && seasonConfig.finaleFormat !== 'koh-lanta') {
     // Finale immunity: use the same detailed challenge screen as regular episodes (koh-lanta has its own orienteering/perch screens)
     vpScreens.push({ id:'finale-challenge', label:'Final Immunity', html: rpBuildChallenge(ep) });
+  // ── Phobia Factor — replaces tribe challenge ──
+  } else if (ep.isPhobiaFactor && ep.phobiaFactor) {
+    vpScreens.push({ id:'pf-confessions', label:'Confessions', html: rpBuildPhobiaConfessions(ep) });
+    vpScreens.push({ id:'pf-announce', label:'Phobia Factor', html: rpBuildPhobiaAnnouncement(ep) });
+    vpScreens.push({ id:'pf-challenge', label:'The Challenge', html: rpBuildPhobiaChallenge(ep) });
+    if (ep.phobiaFactor.clutch) {
+      vpScreens.push({ id:'pf-clutch', label:'Triple Points', html: rpBuildPhobiaClutch(ep) });
+    }
+    vpScreens.push({ id:'pf-results', label:'Results', html: rpBuildPhobiaResults(ep) });
   } else if (ep.isSayUncle && ep.sayUncle) {
     // Say Uncle replaces the normal challenge screen
     vpScreens.push({ id:'su-announce', label:'Say Uncle', html: rpBuildSayUncleAnnouncement(ep) });
     vpScreens.push({ id:'su-rounds', label:'The Torture', html: rpBuildSayUncleRounds(ep) });
     vpScreens.push({ id:'su-immunity', label:'Immunity', html: rpBuildSayUncleImmunity(ep) });
-  } else if (ep.challengeType && !ep.isFinale && !ep.isSlasherNight && !ep.isTripleDogDare) {
+  } else if (ep.challengeType && !ep.isFinale && !ep.isSlasherNight && !ep.isTripleDogDare && !ep.isPhobiaFactor) {
     vpScreens.push({ id:'challenge', label:'Immunity Challenge', html: rpBuildChallenge(ep) });
   }
 
@@ -48932,6 +49171,24 @@ function suRevealAll(uid) {
   if (!page) return;
   const total = parseInt(page.dataset.suTotal) || 0;
   while ((parseInt(page.dataset.suRevealed) || 0) < total) suRevealNext(uid);
+}
+
+// ── Phobia Factor sequential reveal ──
+function pfRevealNext(uid) {
+  const page = document.getElementById(uid + '-page');
+  if (!page) return;
+  const revealed = parseInt(page.dataset.pfRevealed) || 0;
+  const total = parseInt(page.dataset.pfTotal) || 0;
+  if (revealed >= total) return;
+  const el = document.querySelector('.' + uid + '-item[data-idx="' + revealed + '"]');
+  if (el) { el.style.display = 'block'; el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+  page.dataset.pfRevealed = revealed + 1;
+}
+function pfRevealAll(uid) {
+  const page = document.getElementById(uid + '-page');
+  if (!page) return;
+  const total = parseInt(page.dataset.pfTotal) || 0;
+  while ((parseInt(page.dataset.pfRevealed) || 0) < total) pfRevealNext(uid);
 }
 
 function vpToggleSection(id) {

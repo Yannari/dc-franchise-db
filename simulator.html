@@ -6938,17 +6938,19 @@ function simulateCliffDive(ep) {
     }
   });
 
+  // ── Challenge record: full weight (this is an immunity challenge, not a reward) ──
+  if (!gs.chalRecord) gs.chalRecord = {};
+  // Standout per tribe: +1 podium
   tribeResults.forEach(t => {
     if (t.standout) {
-      if (!gs.chalRecord) gs.chalRecord = {};
       if (!gs.chalRecord[t.standout]) gs.chalRecord[t.standout] = { wins: 0, podiums: 0, bombs: 0 };
-      gs.chalRecord[t.standout].podiums += 0.5;
+      gs.chalRecord[t.standout].podiums += 1;
     }
-    t.chickens.forEach(c => {
-      if (!gs.chalRecord) gs.chalRecord = {};
-      if (!gs.chalRecord[c]) gs.chalRecord[c] = { wins: 0, podiums: 0, bombs: 0 };
-      gs.chalRecord[c].bombs += 0.5;
-    });
+  });
+  // Chickens on losing tribe: +1 bomb each (they cost the team)
+  loser.chickens.forEach(c => {
+    if (!gs.chalRecord[c]) gs.chalRecord[c] = { wins: 0, podiums: 0, bombs: 0 };
+    gs.chalRecord[c].bombs += 1;
   });
 
   ep.cliffDive = {

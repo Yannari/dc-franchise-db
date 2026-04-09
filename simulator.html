@@ -4200,6 +4200,7 @@ function computeHeat(name, tribalPlayers, alliances) {
   // ── Phobia Factor blame: player who failed their fear and cost the tribe ──
   if (gs._phobiaBlame?.[name]) heat += gs._phobiaBlame[name];
   if (gs._cliffDiveBlame?.[name]) heat += gs._cliffDiveBlame[name];
+  if (gs._awakeAThonBlame?.[name]) heat += gs._awakeAThonBlame[name];
   // ── Volunteer Exile Duel: volunteer WANTS to be voted out ──
   if (gs._volunteerDuelHeat?.[name] === ((gs.episode || 0) + 1)) heat += 8.0;
   // Volunteer duel winner returns with reduced heat
@@ -26698,6 +26699,7 @@ function simulateJuryRoundtable(ep) {
     // Clear phobia blame after tribal
     if (gs._phobiaBlame) delete gs._phobiaBlame;
     if (gs._cliffDiveBlame) delete gs._cliffDiveBlame;
+    if (gs._awakeAThonBlame) delete gs._awakeAThonBlame;
     // Clear reward backfire heat after tribal
     if (gs._rewardBackfireHeat && (gs.episode || 0) + 1 >= gs._rewardBackfireHeat.expiresEp) delete gs._rewardBackfireHeat;
 
@@ -29394,6 +29396,36 @@ function _textWhyVote(ep, ln, sec) {
   else ln('No elimination.');
 }
 
+// ── AWAKE-A-THON ──
+function _textAwakeAThon(ep, ln, sec) {
+  if (!ep.awakeAThon?.rounds?.length) return;
+  const aat = ep.awakeAThon;
+  sec('AWAKE-A-THON');
+  ln('Phase 1 — The Run:');
+  const finished = aat.runResults.filter(r => r.finished);
+  const dnf = aat.runResults.filter(r => !r.finished);
+  if (finished.length) ln(`  FINISHED: ${finished.map(r => r.name).join(', ')}`);
+  if (dnf.length) ln(`  DNF: ${dnf.map(r => r.name).join(', ')}`);
+  ln('Phase 2 — The Feast (the trap):');
+  ln(`  Feast eaters: ${aat.feastEaters.join(', ')} (-0.15 stay-awake penalty)`);
+  ln('');
+  ln('Phase 3 — The Awake-A-Thon:');
+  aat.rounds.forEach(r => {
+    if (aat.phaseMarkers.fairyTales === r.round) ln('  [24 HOURS — FAIRY TALES]');
+    if (aat.phaseMarkers.historyOfCanada === r.round) ln('  [85 HOURS — HISTORY OF CANADA]');
+    ln(`  Round ${r.round}: ${r.dropout.name} falls asleep (${r.dropout.tribe})`);
+    r.socialEvents.forEach(evt => {
+      ln(`    [${evt.badgeText}] ${evt.text}`);
+    });
+  });
+  ln('');
+  ln(`RESULT: ${aat.winner} wins immunity. Last awake: ${aat.lastAwake || 'N/A'} (IRON WILL)`);
+  if (aat.firstOut) ln(`First out: ${aat.firstOut.name} (${aat.firstOut.tribe})`);
+  if (aat.cheaters?.length) {
+    aat.cheaters.forEach(c => ln(`Cheater: ${c.name} — ${c.caught ? `caught by ${c.caughtBy}` : 'uncaught'}`));
+  }
+}
+
 // ── PHOBIA FACTOR ──
 function _textCliffDive(ep, ln, sec) {
   if (!ep.cliffDive?.tribes?.length) return;
@@ -31469,6 +31501,7 @@ function generateSummaryText(ep) {
   _textSchoolyardPick(ep, ln, sec);
   _textAftermath(ep, ln, sec);
   _textSlasherNight(ep, ln, sec);
+  _textAwakeAThon(ep, ln, sec);
   _textCliffDive(ep, ln, sec);
   _textPhobiaFactor(ep, ln, sec);
   _textSayUncle(ep, ln, sec);
@@ -32001,6 +32034,8 @@ function patchEpisodeHistory(ep) {
   if (ep.isPhobiaFactor) h.isPhobiaFactor = true;
   if (ep.isCliffDive) h.isCliffDive = true;
   if (!h.cliffDive && ep.cliffDive) h.cliffDive = ep.cliffDive;
+  if (ep.isAwakeAThon) h.isAwakeAThon = true;
+  if (!h.awakeAThon && ep.awakeAThon) h.awakeAThon = ep.awakeAThon;
   if (ep.isTripleDogDare) h.isTripleDogDare = true;
   if (ep.exileDuelPlayerAtStart) h.exileDuelPlayerAtStart = ep.exileDuelPlayerAtStart;
   if (ep.volunteerDuel) h.volunteerDuel = ep.volunteerDuel;
@@ -32670,6 +32705,7 @@ function renderEpisodeHistory() {
     const suTag = ep.isSayUncle ? `<span class="ep-hist-tag" style="background:rgba(245,158,11,0.15);color:#f59e0b">Say Uncle</span>` : '';
     const pfTag = ep.isPhobiaFactor ? `<span class="ep-hist-tag" style="background:rgba(139,92,246,0.15);color:#8957e5">Phobia Factor</span>` : '';
     const cdTag = ep.isCliffDive ? `<span class="ep-hist-tag" style="background:rgba(244,112,103,0.15);color:#f47067">Cliff Dive</span>` : '';
+    const aatTag = ep.isAwakeAThon ? `<span class="ep-hist-tag" style="background:rgba(139,92,246,0.15);color:#8b5cf6">Awake-A-Thon</span>` : '';
     const hasCheckpoint = !!gsCheckpoints[ep.num];
     const replayBtn = hasCheckpoint
       ? `<button class="ep-hist-replay" title="Re-run this episode" onclick="event.stopPropagation();replayEpisode(${ep.num})">↺</button>`
@@ -32677,7 +32713,7 @@ function renderEpisodeHistory() {
     return `<div class="ep-hist-card ${ep.num===currentNum?'active':''}" onclick="viewEpisode(${ep.num})">
       <div class="ep-hist-ep">Episode ${ep.num}${replayBtn}</div>
       <div class="ep-hist-elim">${_spoilerFree ? '???' : ep.multiTribalElims?.length >= 2 ? ep.multiTribalElims.join(' + ') : ep.ambassadorData?.ambassadorEliminated ? `${ep.ambassadorData.ambassadorEliminated} + ${ep.eliminated||'?'}` : ep.tiedDestinies?.eliminatedPartner ? `${ep.eliminated||'?'} + ${ep.tiedDestinies.eliminatedPartner}` : ep.firstEliminated ? `${ep.firstEliminated} + ${ep.eliminated||'?'}` : (ep.eliminated || (ep.isFinale ? 'FTC' : '\u2014'))}</div>
-      <div>${riTag}${mergeTag}${finaleTag}${slasherTag}${tddTag}${suTag}${pfTag}${cdTag}</div>
+      <div>${riTag}${mergeTag}${finaleTag}${slasherTag}${tddTag}${suTag}${pfTag}${cdTag}${aatTag}</div>
     </div>`;
   }).join('');
 }
@@ -35760,6 +35796,13 @@ function rpBuildColdOpen(ep) {
           <div style="font-size:12px;color:#8b949e">${_cdChickens.length} player${_cdChickens.length>1?'s':''} chickened out: ${_cdChickens.join(', ')}. ${_cd.winner} won immunity.</div>
         </div>`;
       }
+    }
+    if (prevEp.isAwakeAThon && prevEp.awakeAThon) {
+      const _aat = prevEp.awakeAThon;
+      html += `<div class="vp-card" style="border-color:rgba(139,92,246,0.15);margin-bottom:8px">
+        <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:#8b5cf6;margin-bottom:4px">AWAKE-A-THON</div>
+        <div style="font-size:12px;color:#8b949e">${_aat.lastAwake ? `${_aat.lastAwake} was the last one standing.` : ''} ${_aat.winner} won immunity.${_aat.firstOut ? ` ${_aat.firstOut.name} was first to fall asleep.` : ''}</div>
+      </div>`;
     }
     if (prevEp.isPhobiaFactor && prevEp.phobiaFactor) {
       const _pfData = prevEp.phobiaFactor;
@@ -40040,6 +40083,13 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'providerVotedOut'          ? (evt.badgeText || 'FOOD CRISIS')
                      : evt.type === 'cliffDiveChicken'         ? (evt.badgeText || 'CHICKEN')
                      : evt.type === 'cliffDiveStandout'        ? (evt.badgeText || 'FIRST TO JUMP')
+                     : evt.type === 'awakeAThonBond'           ? (evt.badgeText || 'STAYING AWAKE TOGETHER')
+                     : evt.type === 'awakeAThonDeal'           ? (evt.badgeText || 'LATE NIGHT DEAL')
+                     : evt.type === 'awakeAThonRomance'        ? (evt.badgeText || 'SLEEPLESS ROMANCE')
+                     : evt.type === 'awakeAThonCheat'          ? (evt.badgeText || 'CAUGHT CHEATING')
+                     : evt.type === 'awakeAThonScheme'         ? (evt.badgeText || 'SABOTAGE')
+                     : evt.type === 'awakeAThonIronWill'       ? (evt.badgeText || 'IRON WILL')
+                     : evt.type === 'awakeAThonFirstOut'       ? (evt.badgeText || 'FIRST OUT')
                      : evt.type === 'rewardBackfireAlliance'   ? (evt.badgeText || 'BACKFIRE')
                      : evt.type === 'rewardBackfireBloc'       ? (evt.badgeText || 'LEFT BEHIND')
                      : evt.type === 'sideDeal'                  ? (evt.badgeText || 'SIDE DEAL')
@@ -48445,6 +48495,116 @@ function rpBuildFanFavorite(ep) {
 // CLIFF DIVE VP SCREEN
 // ══════════════════════════════════════════════════════════════════════
 
+function rpBuildAwakeAThon(ep) {
+  const aat = ep.awakeAThon;
+  if (!aat?.rounds?.length) return null;
+
+  const stateKey = `aat_reveal_${ep.num}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+
+  const steps = [];
+  steps.push({ type: 'run-results', runResults: aat.runResults, feastEaters: aat.feastEaters });
+  steps.push({ type: 'feast' });
+
+  let phaseMarkerShown = { fairyTales: false, historyOfCanada: false };
+  aat.rounds.forEach(r => {
+    if (!phaseMarkerShown.fairyTales && aat.phaseMarkers.fairyTales && r.round >= aat.phaseMarkers.fairyTales) {
+      steps.push({ type: 'phase-marker', phase: 'fairyTales', label: '24 HOURS — FAIRY TALES', desc: `${seasonConfig.host || 'Chris'} reads fairy tales while Chef, dressed as a pink sheep, plays the harp.` });
+      phaseMarkerShown.fairyTales = true;
+    }
+    if (!phaseMarkerShown.historyOfCanada && aat.phaseMarkers.historyOfCanada && r.round >= aat.phaseMarkers.historyOfCanada) {
+      steps.push({ type: 'phase-marker', phase: 'historyOfCanada', label: '85 HOURS — HISTORY OF CANADA', desc: `${seasonConfig.host || 'Chris'} pulls out a pop-up book. The History of Canada. This is the endgame.` });
+      phaseMarkerShown.historyOfCanada = true;
+    }
+    steps.push({ type: 'dropout', ...r.dropout, round: r.round });
+    r.socialEvents.forEach(evt => {
+      steps.push({ type: 'social', ...evt });
+    });
+  });
+  steps.push({ type: 'winner', winner: aat.winner, lastAwake: aat.lastAwake });
+
+  const allRevealed = state.idx >= steps.length - 1;
+  const _aatReveal = (targetIdx) => `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=${targetIdx};const ep=gs.episodeHistory.find(e=>e.num===${ep.num});if(ep){buildVPScreens(ep);renderVPScreen();}`;
+
+  let html = `<div class="rp-page tod-deepnight">
+    <div class="rp-eyebrow">Episode ${ep.num}</div>
+    <div style="font-family:var(--font-display);font-size:28px;letter-spacing:2px;text-align:center;color:#8b5cf6;text-shadow:0 0 20px rgba(139,92,246,0.3);margin-bottom:6px">AWAKE-A-THON</div>
+    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:6px">20km run. A feast. Then the real challenge: stay awake.</div>
+    <div style="text-align:center;font-size:11px;color:#6e7681;margin-bottom:20px">Last team with someone awake wins immunity.</div>`;
+
+  steps.forEach((step, i) => {
+    const isVisible = i <= state.idx;
+
+    if (step.type === 'run-results') {
+      if (!isVisible) { html += `<div style="padding:10px;margin-bottom:6px;border:1px solid var(--border);border-radius:8px;opacity:0.12;text-align:center;font-size:11px;color:var(--muted)">Phase 1 — The Run</div>`; return; }
+      const finished = step.runResults.filter(r => r.finished);
+      const dnf = step.runResults.filter(r => !r.finished);
+      html += `<div style="padding:14px;margin-bottom:8px;border-radius:10px;border:1px solid rgba(139,92,246,0.2);background:rgba(139,92,246,0.04)">
+        <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:#8b5cf6;margin-bottom:8px">PHASE 1 — THE RUN</div>
+        <div style="font-size:12px;color:#8b949e;margin-bottom:10px">20 kilometres around the lake. ${finished.length} finish. ${dnf.length} don't.</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px">${finished.map(r => `<div style="text-align:center">${rpPortrait(r.name, 'sm')}<div style="font-size:8px;color:#3fb950;font-weight:700">FINISHED</div></div>`).join('')}</div>
+        ${dnf.length ? `<div style="display:flex;flex-wrap:wrap;gap:4px">${dnf.map(r => `<div style="text-align:center">${rpPortrait(r.name, 'sm')}<div style="font-size:8px;color:#f85149;font-weight:700">DNF</div></div>`).join('')}</div>` : ''}
+      </div>`;
+    } else if (step.type === 'feast') {
+      if (!isVisible) { html += `<div style="padding:10px;margin-bottom:6px;border:1px solid var(--border);border-radius:8px;opacity:0.12;text-align:center;font-size:11px;color:var(--muted)">Phase 2 — The Feast</div>`; return; }
+      html += `<div style="padding:14px;margin-bottom:8px;border-radius:10px;border:1px solid rgba(227,179,65,0.2);background:rgba(227,179,65,0.04)">
+        <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:#e3b341;margin-bottom:8px">PHASE 2 — THE FEAST</div>
+        <div style="font-size:12px;color:#8b949e;line-height:1.6">"Congratulations on finishing the run. As a reward — a feast!" The campers eat like they've never seen food before. What they don't know: the real challenge hasn't started yet.</div>
+        <div style="font-size:10px;color:#f0883e;margin-top:8px">Every player who ate gets a -0.15 stay-awake penalty. The feast was the trap.</div>
+      </div>`;
+    } else if (step.type === 'phase-marker') {
+      if (!isVisible) { html += `<div style="padding:8px;margin-bottom:4px;border:1px solid var(--border);border-radius:6px;opacity:0.12;text-align:center;font-size:11px;color:var(--muted)">?</div>`; return; }
+      html += `<div style="text-align:center;padding:14px;margin:12px 0;border-radius:8px;border:1px solid rgba(139,92,246,0.3);background:rgba(139,92,246,0.06)">
+        <div style="font-family:var(--font-display);font-size:16px;letter-spacing:2px;color:#8b5cf6">${step.label}</div>
+        <div style="font-size:11px;color:#8b949e;margin-top:4px">${step.desc}</div>
+      </div>`;
+    } else if (step.type === 'dropout') {
+      if (!isVisible) { html += `<div style="padding:8px;margin-bottom:4px;border:1px solid var(--border);border-radius:6px;opacity:0.12;text-align:center;font-size:11px;color:var(--muted)">?</div>`; return; }
+      const tc = tribeColor(step.tribe);
+      html += `<div style="padding:10px 14px;margin-bottom:4px;border-radius:8px;border:1px solid var(--border);background:var(--surface);animation:scrollDrop 0.3s var(--ease-broadcast) both">
+        <div style="display:flex;align-items:center;gap:10px">
+          ${rpPortrait(step.name, 'sm')}
+          <div style="flex:1">
+            <span style="font-size:13px;font-weight:600;color:#e6edf3">${step.name}</span>
+            <span style="font-size:10px;color:${tc};margin-left:6px">${step.tribe}</span>
+          </div>
+          <span style="font-size:9px;font-weight:700;letter-spacing:1px;color:#8b949e;background:rgba(139,148,158,0.1);padding:2px 8px;border-radius:3px">💤 FALLS ASLEEP</span>
+        </div>
+      </div>`;
+    } else if (step.type === 'social') {
+      if (!isVisible) { html += `<div style="padding:8px;margin-bottom:4px;border:1px solid var(--border);border-radius:6px;opacity:0.12;text-align:center;font-size:11px;color:var(--muted)">?</div>`; return; }
+      const badgeColors = { gold: '#e3b341', blue: '#58a6ff', pink: '#db61a2', red: '#f85149', 'red-orange': '#f0883e' };
+      const bc = badgeColors[step.badgeClass] || '#8b949e';
+      html += `<div style="padding:10px 14px;margin-bottom:4px;border-radius:8px;border:1px solid ${bc}33;background:${bc}0a;animation:scrollDrop 0.3s var(--ease-broadcast) both">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          ${(step.players || []).map(p => rpPortrait(p, 'sm')).join('')}
+          <span style="font-size:9px;font-weight:700;letter-spacing:1px;color:${bc};background:${bc}1a;padding:2px 8px;border-radius:3px">${step.badgeText}</span>
+        </div>
+        <div style="font-size:12px;color:#8b949e;line-height:1.5">${step.text}</div>
+      </div>`;
+    } else if (step.type === 'winner') {
+      if (!isVisible) { html += `<div style="padding:10px;margin-bottom:6px;border:1px solid var(--border);border-radius:8px;opacity:0.12;text-align:center;font-size:11px;color:var(--muted)">Winner — ?</div>`; return; }
+      const tc = tribeColor(step.winner);
+      html += `<div style="padding:16px;margin-top:12px;border-radius:10px;border:2px solid rgba(63,185,80,0.3);background:rgba(63,185,80,0.06);text-align:center">
+        <div style="font-family:var(--font-display);font-size:20px;letter-spacing:2px;color:#3fb950;margin-bottom:8px">IMMUNITY</div>
+        <div style="font-size:16px;font-weight:700;color:${tc}">${step.winner}</div>
+        ${step.lastAwake ? `<div style="margin-top:10px">${rpPortrait(step.lastAwake, 'md')}<div style="font-size:11px;color:#e3b341;font-weight:700;margin-top:4px">★ IRON WILL — ${step.lastAwake}</div><div style="font-size:10px;color:#8b949e">Last one standing.</div></div>` : ''}
+      </div>`;
+    }
+  });
+
+  if (!allRevealed) {
+    html += `<div style="position:sticky;bottom:0;padding:12px 0;background:linear-gradient(transparent,rgba(7,9,13,0.95) 20%);text-align:center;z-index:5">
+      <button class="rp-btn" onclick="${_aatReveal(state.idx + 1)}">NEXT (${state.idx + 2}/${steps.length})</button>
+      <button class="rp-btn" style="margin-left:8px;opacity:0.6" onclick="${_aatReveal(steps.length - 1)}">Reveal All</button>
+    </div>`;
+  }
+
+  html += `</div>`;
+  return html;
+}
+
 function rpBuildCliffDive(ep) {
   const cd = ep.cliffDive;
   if (!cd?.tribes?.length) return null;
@@ -49899,6 +50059,8 @@ function buildVPScreens(epRecord) {
   // ── Phobia Factor — replaces tribe challenge ──
   } else if (ep.isCliffDive && ep.cliffDive) {
     vpScreens.push({ id:'cliff-dive', label:'Cliff Dive', html: rpBuildCliffDive(ep) });
+  } else if (ep.isAwakeAThon && ep.awakeAThon) {
+    vpScreens.push({ id:'awake-a-thon', label:'Awake-A-Thon', html: rpBuildAwakeAThon(ep) });
   } else if (ep.isPhobiaFactor && ep.phobiaFactor) {
     // Confessions already registered after Cold Open (section 1b)
     vpScreens.push({ id:'pf-announce', label:'Phobia Factor', html: rpBuildPhobiaAnnouncement(ep) });

@@ -2381,11 +2381,9 @@ function loadS10Preset() {
     if (!r) { console.warn('S10 preset: missing roster entry for', t.name); return null; }
     return { ...r, tribe: t.tribe, id: 's10-'+i, isReturnee: true };
   }).filter(Boolean);
-  if (!seasonConfig.tribes?.length) {
-    seasonConfig.tribes = [{ name:'Champions', color:'#f59e0b' }, { name:'Contenders', color:'#ef4444' }];
-    localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
-  }
-  saveCast(); cancelEdit(); renderCast(); renderTribeBuilder(); renderTribeSelect();
+  seasonConfig.tribes = [{ name:'Champions', color:'#f59e0b' }, { name:'Contenders', color:'#ef4444' }];
+  localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
+  saveCast(); cancelEdit(); renderCast(); renderTribeBuilder(); renderTribeSelect(); renderConfig();
 }
 function loadS9Preset() {
   if (players.length>0 && !confirm('Replace cast with S9 Land of Powers (18 newbies)?')) return;
@@ -2395,11 +2393,9 @@ function loadS9Preset() {
     if (!r) { console.warn('S9 preset: missing roster entry for', t.name); return null; }
     return { ...r, tribe: t.tribe, id: 's9-'+i };
   }).filter(Boolean);
-  if (!seasonConfig.tribes?.length) {
-    seasonConfig.tribes = [{ name:'Yellow', color:'#f59e0b' }, { name:'Red', color:'#ef4444' }, { name:'Blue', color:'#3b82f6' }];
-    localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
-  }
-  saveCast(); cancelEdit(); renderCast(); renderTribeBuilder(); renderTribeSelect();
+  seasonConfig.tribes = [{ name:'Yellow', color:'#f59e0b' }, { name:'Red', color:'#ef4444' }, { name:'Blue', color:'#3b82f6' }];
+  localStorage.setItem('simulator_config', JSON.stringify(seasonConfig));
+  saveCast(); cancelEdit(); renderCast(); renderTribeBuilder(); renderTribeSelect(); renderConfig();
 }
 function exportCast() {
   const blob = new Blob([JSON.stringify(players,null,2)],{type:'application/json'});

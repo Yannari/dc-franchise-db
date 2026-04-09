@@ -11160,6 +11160,375 @@ function simulateJourney(ep) {
   gs.journeyHistory.push({ ep: ep.num, travelers, results });
 }
 
+// ══════════════════════════════════════════════════════════════════════
+// DOCK ARRIVAL — DIALOGUE POOLS
+// ══════════════════════════════════════════════════════════════════════
+
+const DOCK_ARRIVAL_TIERS = {
+  chill: ['floater','loyal-soldier','social-butterfly','showmancer','underdog'],
+  intense: ['hero','challenge-beast','perceptive-player','mastermind'],
+  volatile: ['villain','hothead','chaos-agent','schemer','wildcard','goat'],
+};
+
+const DOCK_HOST_LINES = {
+  villain: [
+    (n,pr,h) => `"Watch your backs, everyone. ${n} just arrived."`,
+    (n,pr,h) => `"Oh, this should be interesting. Everyone, meet ${n}."`,
+    (n,pr,h) => `"${n} is here. And no, ${pr.sub} ${pr.sub==='they'?"don't":"doesn't"} play nice."`,
+    (n,pr,h) => `"Ladies and gentlemen... trouble just docked."`,
+    (n,pr,h) => `"I'd say play nice, ${n}, but we both know that's not happening."`,
+  ],
+  hero: [
+    (n,pr,h) => `"Give it up for ${n}!"`,
+    (n,pr,h) => `"${n} is here. Finally, someone the audience can root for."`,
+    (n,pr,h) => `"The golden child has arrived. Welcome, ${n}."`,
+    (n,pr,h) => `"${n}! The one everyone wants on their team."`,
+  ],
+  schemer: [
+    (n,pr,h) => `"${n}, welcome. Try not to scheme too hard on day one."`,
+    (n,pr,h) => `"${n} is here. ${pr.Sub} already ${pr.sub==='they'?'look':'looks'} like ${pr.sub}'${pr.sub==='they'?"re":"s"} planning something."`,
+    (n,pr,h) => `"Everyone smile at ${n}. ${pr.Sub}'${pr.sub==='they'?"re":"s"} definitely smiling at you."`,
+    (n,pr,h) => `"Welcome, ${n}. I'm sure your intentions are pure."`,
+  ],
+  mastermind: [
+    (n,pr,h) => `"${n} just arrived. ${pr.Sub}'${pr.sub==='they'?"re":"s"} already three moves ahead."`,
+    (n,pr,h) => `"Welcome, ${n}. Try to enjoy the game, not just win it."`,
+    (n,pr,h) => `"${n} is here. I can practically hear the gears turning."`,
+    (n,pr,h) => `"Everyone, this is ${n}. The smartest person here just got competition."`,
+  ],
+  hothead: [
+    (n,pr,h) => `"${n} is here, and ${pr.sub} already ${pr.sub==='they'?'look':'looks'} annoyed."`,
+    (n,pr,h) => `"Welcome, ${n}. Deep breaths, we just started."`,
+    (n,pr,h) => `"${n}! Try not to break anything on day one."`,
+    (n,pr,h) => `"Aaaaand the temperature on the dock just went up. ${n}, everyone."`,
+  ],
+  'chaos-agent': [
+    (n,pr,h) => `"Brace yourselves. ${n} just arrived."`,
+    (n,pr,h) => `"${n} is here. Lock up the supplies."`,
+    (n,pr,h) => `"Welcome, ${n}. I'm already nervous."`,
+    (n,pr,h) => `"Everyone, meet ${n}. No, I can't predict what happens next either."`,
+  ],
+  'loyal-soldier': [
+    (n,pr,h) => `"${n}! Good to have you here."`,
+    (n,pr,h) => `"Welcome, ${n}. Solid, dependable — exactly what a team needs."`,
+    (n,pr,h) => `"${n} is here. Someone you want in your corner."`,
+    (n,pr,h) => `"Give it up for ${n}. The kind of player who keeps their word."`,
+  ],
+  'social-butterfly': [
+    (n,pr,h) => `"${n} is here, and ${pr.sub}'${pr.sub==='they'?"re":"s"} already making friends."`,
+    (n,pr,h) => `"Everyone's new best friend just arrived. Welcome, ${n}."`,
+    (n,pr,h) => `"${n}! I give it five minutes before ${pr.sub} ${pr.sub==='they'?'know':'knows'} everyone's name."`,
+    (n,pr,h) => `"Welcome, ${n}. The social game starts now."`,
+  ],
+  showmancer: [
+    (n,pr,h) => `"${n} is here. Try to focus, people."`,
+    (n,pr,h) => `"Welcome, ${n}. I see some heads turning already."`,
+    (n,pr,h) => `"${n} just arrived. This should complicate things."`,
+    (n,pr,h) => `"Ladies and gentlemen, ${n}. Hearts will be broken."`,
+  ],
+  'challenge-beast': [
+    (n,pr,h) => `"${n} is here. The challenges just got a lot more interesting."`,
+    (n,pr,h) => `"Welcome, ${n}. You look like you could win every single one of these."`,
+    (n,pr,h) => `"${n}! Built for this. Literally."`,
+    (n,pr,h) => `"Everyone, meet your biggest challenge threat. ${n}, welcome."`,
+  ],
+  floater: [
+    (n,pr,h) => `"${n}, welcome to the island."`,
+    (n,pr,h) => `"And here's ${n}. Flying under the radar already."`,
+    (n,pr,h) => `"${n} is here. Quiet entrance — noted."`,
+    (n,pr,h) => `"Welcome, ${n}. Sometimes the quiet ones go the furthest."`,
+  ],
+  wildcard: [
+    (n,pr,h) => `"${n} just docked. Your guess is as good as mine."`,
+    (n,pr,h) => `"Welcome, ${n}. I genuinely don't know what to expect from you."`,
+    (n,pr,h) => `"${n} is here. Even the producers aren't sure what's going to happen."`,
+    (n,pr,h) => `"Everyone, this is ${n}. Expect the unexpected."`,
+  ],
+  'perceptive-player': [
+    (n,pr,h) => `"${n} is here. ${pr.Sub}'${pr.sub==='they'?"re":"s"} already reading everyone."`,
+    (n,pr,h) => `"Welcome, ${n}. Nothing gets past this one."`,
+    (n,pr,h) => `"${n} just arrived. ${pr.Sub} probably already ${pr.sub==='they'?'know':'knows'} who's lying."`,
+    (n,pr,h) => `"Everyone, meet ${n}. The human lie detector."`,
+  ],
+  underdog: [
+    (n,pr,h) => `"${n} is here. Don't count ${pr.obj} out."`,
+    (n,pr,h) => `"Welcome, ${n}. The underdog story starts now."`,
+    (n,pr,h) => `"${n}! Small in stature, big in heart."`,
+    (n,pr,h) => `"Everyone, this is ${n}. ${pr.Sub}'ll surprise you."`,
+  ],
+  goat: [
+    (n,pr,h) => `"${n}, welcome!"`,
+    (n,pr,h) => `"And here's ${n}. Welcome to the island."`,
+    (n,pr,h) => `"${n} is here. Let's see what ${pr.sub} ${pr.sub==='they'?'bring':'brings'} to the table."`,
+    (n,pr,h) => `"Welcome, ${n}. Make yourself at home."`,
+  ],
+};
+
+const DOCK_STAT_FLAVOR = [
+  { stat: 'physical', min: 8, fn: (n,pr) => `"${n} just stepped off the boat looking like ${pr.sub} could flip it over."` },
+  { stat: 'strategic', min: 8, fn: (n,pr) => `"${n} is here. I give it ten minutes before ${pr.sub} ${pr.sub==='they'?'have':'has'} a plan."` },
+  { stat: 'social', min: 8, fn: (n,pr) => `"${n} just arrived, and somehow half the dock already likes ${pr.obj}."` },
+  { stat: 'endurance', min: 8, fn: (n,pr) => `"${n} is here. Good luck outlasting this one."` },
+  { stat: 'mental', min: 8, fn: (n,pr) => `"${n} just docked. The smartest person on this island might have just arrived."` },
+  { stat: 'boldness', min: 8, fn: (n,pr) => `"${n} is here. ${pr.Sub} ${pr.sub==='they'?"don't":"doesn't"} do subtle."` },
+  { stat: 'intuition', min: 8, fn: (n,pr) => `"${n} is here. ${pr.Sub} can read a room before ${pr.sub} even ${pr.sub==='they'?'walk':'walks'} into it."` },
+  { stat: 'temperament', min: -1, max: 3, fn: (n,pr) => `"${n} just arrived. Let's hope nobody makes ${pr.obj} angry."` },
+];
+
+const DOCK_PLAYER_LINES = {
+  villain: [
+    `"Cute camp. I give it a week before I run this place."`,
+    `"So this is the competition? This'll be easier than I thought."`,
+    `"Already see a few people I can work with. And a few I'll enjoy watching leave."`,
+    `"Don't worry, everyone. I'll be nice. For now."`,
+    `"Everyone here is a pawn. They just don't know it yet."`,
+  ],
+  hero: [
+    `"Hey everyone! This is going to be amazing."`,
+    `"Camp looks rough, but that's half the fun, right?"`,
+    `"I'm here to compete, make friends, and do this the right way."`,
+    `"Whatever this place throws at us, we handle it together."`,
+    `"Let's go! I've been waiting for this."`,
+  ],
+  schemer: [
+    `"Nice to meet everyone. I mean that. Mostly."`,
+    `"This camp has potential. Just needs the right person pulling the strings."`,
+    `"I'm already thinking three steps ahead. Can't help it."`,
+    `"Everyone looks so trusting. That's... useful."`,
+    `"The alliances start now. In my head, at least."`,
+  ],
+  mastermind: [
+    `"Interesting. I've already identified four potential alliance structures."`,
+    `"The game started the moment I stepped off that boat."`,
+    `"Camp's fine. The people are what matter. And I'm watching."`,
+    `"Let's not pretend this isn't a chess match. I'm ready."`,
+    `"Everyone's playing checkers. I brought a chess set."`,
+  ],
+  hothead: [
+    `"This place better have food because I'm already in a mood."`,
+    `"If anyone tries anything, they'll hear about it. Loudly."`,
+    `"I'm not here to make friends. I'm here to win."`,
+    `"Someone already looked at me wrong. We're gonna have problems."`,
+    `"Alright. Let's get this over with."`,
+  ],
+  'chaos-agent': [
+    `"This place is a dump. I LOVE it."`,
+    `"So when do things start getting weird? Because I'm ready."`,
+    `"Everyone looks so serious. That's gonna change."`,
+    `"I brought fireworks. Not metaphorical ones."`,
+    `"Rules? Sure, I'll learn them. Then break them."`,
+  ],
+  'loyal-soldier': [
+    `"Hey, good to be here. Let's do this."`,
+    `"Camp looks solid. I've seen worse."`,
+    `"Just point me to my team and I'm ready to work."`,
+    `"I'm here to compete hard and keep my word. Simple as that."`,
+    `"Tell me what needs doing and I'll do it."`,
+  ],
+  'social-butterfly': [
+    `"Oh my gosh, hi everyone! This is SO exciting!"`,
+    `"I already love this place. And all of you. Seriously."`,
+    `"I've been looking forward to this for months. Let's be friends!"`,
+    `"This camp is giving me summer camp vibes and I am HERE for it."`,
+    `"I want to know everyone's name by dinner."`,
+  ],
+  showmancer: [
+    `"Well, hello everyone."`,
+    `"I see some interesting people here. Very interesting."`,
+    `"I'm here for the experience. Whatever happens... happens."`,
+    `"Nice camp. Better company, though."`,
+    `"This could be a very memorable summer."`,
+  ],
+  'challenge-beast': [
+    `"Where's the gym? Kidding. Sort of."`,
+    `"This place looks tough. Good. I like tough."`,
+    `"I've been training for this. Bring on the challenges."`,
+    `"If there's a physical challenge on day one, I'm winning it."`,
+    `"Point me at a challenge. Any challenge."`,
+  ],
+  floater: [
+    `"Hey. Cool. So... where do I put my stuff?"`,
+    `"This seems fine."`,
+    `"Not bad. I can work with this."`,
+    `"I'm just gonna hang back and see how this plays out."`,
+    `"Yeah, I'm here. Don't mind me."`,
+  ],
+  wildcard: [
+    `"Is that a raccoon? I love raccoons."`,
+    `"I don't really have a plan. Plans are boring."`,
+    `"Whatever everyone else is doing, I'm probably doing the opposite."`,
+    `"This camp smells weird. I'm into it."`,
+    `"I have no idea what I'm doing and I've never felt more alive."`,
+  ],
+  'perceptive-player': [
+    `"Interesting group. I can already tell who's faking it."`,
+    `"I've been watching everyone from the boat. Already have notes."`,
+    `"Camp's fine. The real game is the people. And they're fascinating."`,
+    `"Three people here are already lying. It's been five minutes."`,
+    `"I see everything. I just don't say everything."`,
+  ],
+  underdog: [
+    `"I know I don't look like much. That's the point."`,
+    `"Everyone always underestimates me. That's fine. Keep doing it."`,
+    `"This place is rough. Perfect. I'm used to rough."`,
+    `"Hi everyone. Remember my face — you're going to see a lot of it."`,
+    `"Nobody expects me to win. Good."`,
+  ],
+  goat: [
+    `"Wow, this is a real camp! With trees and everything!"`,
+    `"Hi! Is this where we sleep? It's so... outdoorsy."`,
+    `"I just want to have fun and not get voted out first. Is that too much to ask?"`,
+    `"Everyone seems really intense. Am I supposed to be intense too?"`,
+    `"So excited to be here! Where's the bathroom?"`,
+  ],
+};
+
+const DOCK_RETURNEE_LINES = {
+  villain: [
+    `"Miss me? No? Good. That means I did my job last time."`,
+    `"I'm back. And I remember every name that wrote mine down."`,
+    `"Round two. This time they know what I am — and they still can't stop me."`,
+    `"The villain returns. Try to act surprised."`,
+  ],
+  hero: [
+    `"Unfinished business. That's why I'm here."`,
+    `"Last time I played with honor. This time I play smarter AND with honor."`,
+    `"I'm back, and I'm not leaving until I finish what I started."`,
+    `"Being back feels right. This time I know what I'm up against."`,
+  ],
+  schemer: [
+    `"They really invited me back? Their mistake."`,
+    `"Last time was practice. This is the real game."`,
+    `"I learned a lot last time. Mostly what NOT to get caught doing."`,
+    `"Back for round two. New plans, same brain."`,
+  ],
+  mastermind: [
+    `"I've replayed every move from last time. I know exactly what went wrong."`,
+    `"Back with a better playbook. Let's see if anyone can keep up."`,
+    `"Experience is the ultimate advantage. And I've got plenty."`,
+    `"I've had time to think. That should scare everyone."`,
+  ],
+  hothead: [
+    `"Yeah, I'm back. And I'm still angry about how last time went."`,
+    `"Same camp, same game. Different me. Maybe. We'll see."`,
+    `"They told me to stay calm this time. I'll try. No promises."`,
+    `"Last time I let my temper get me. This time... okay, it might still get me."`,
+  ],
+  'chaos-agent': [
+    `"You thought last time was chaotic? Buckle up."`,
+    `"I'm baaack! Did you miss the chaos? I missed the chaos."`,
+    `"Round two of me is going to be so much worse for everyone. I can't wait."`,
+    `"They invited me back KNOWING what I did last time. I respect that."`,
+  ],
+  'loyal-soldier': [
+    `"Back again. Same player, same values. Let's go."`,
+    `"I kept my word last time and I'll keep it this time too."`,
+    `"Being back feels like coming home. Weird, smelly home. But home."`,
+    `"I know this game now. Loyalty still wins. I'll prove it."`,
+  ],
+  'social-butterfly': [
+    `"Oh my gosh, I'm BACK! I missed this place!"`,
+    `"New people to meet! Well, not new, but we get to start over, right?"`,
+    `"Last time was amazing. This time is going to be BETTER."`,
+    `"I already know everyone and I already love everyone. Let's GO."`,
+  ],
+  showmancer: [
+    `"Back for more. And yes, I'm single. In case anyone's wondering."`,
+    `"Last time the romance distracted me. This time... well, we'll see."`,
+    `"I'm here to play, not to fall in love again. Probably."`,
+    `"Same dock, same butterflies. Some things don't change."`,
+  ],
+  'challenge-beast': [
+    `"I've been training since the day I left. Nobody's beating me this time."`,
+    `"Back and stronger. The challenges don't scare me. The people might."`,
+    `"Last time I relied on winning. This time I've got a social game too. Sort of."`,
+    `"Round two. Let's see if anyone can keep up."`,
+  ],
+  floater: [
+    `"Yep, I'm back. Surprised? Most people are."`,
+    `"Last time I flew under the radar. This time... probably the same thing."`,
+    `"Nobody expected me to come back. That's kind of my whole thing."`,
+    `"Back again. Still here. Still quiet. Still dangerous."`,
+  ],
+  wildcard: [
+    `"They let me come back! That's either brave or stupid."`,
+    `"Round two! I have no idea what I'm doing and that's the plan!"`,
+    `"Last time was a wild ride. This time I brought snacks."`,
+    `"Back and even more unpredictable. You're welcome."`,
+  ],
+  'perceptive-player': [
+    `"I know everyone's game this time. That's a problem — for them."`,
+    `"Back with better reads. Last time I saw everything. This time I'll use it."`,
+    `"Everyone's tells are exactly the same. This should be fun."`,
+    `"I've been watching from home. I know who's fake. All of them."`,
+  ],
+  underdog: [
+    `"I wasn't supposed to make it last time. I wasn't supposed to come back. Yet here I am."`,
+    `"They counted me out once. They'll do it again. And I'll prove them wrong again."`,
+    `"Back with something to prove. Same as always."`,
+    `"The underdog returns. Honestly, this is my favorite role."`,
+  ],
+  goat: [
+    `"I'm back! I actually got invited back! Can you believe it?"`,
+    `"Last time I didn't really know what was going on. Now I kind of do!"`,
+    `"Everyone told me I'd never come back. WELL HERE I AM."`,
+    `"I'm so excited. Is it weird that I'm excited? I don't care, I'm excited."`,
+  ],
+};
+
+const DOCK_CHEMISTRY_PAIRS = [
+  { newArch: ['villain'], reactArch: ['hero'], chemType: 'tension', lines: [
+    (name,pr,reactor,rPr) => `${reactor} crosses ${rPr.posAdj} arms and says nothing. The look says everything.`,
+    (name,pr,reactor,rPr) => `${reactor} watches ${name} step off the boat. ${rPr.Sub} already ${rPr.sub==='they'?"don't":"doesn't"} trust ${pr.obj}.`,
+    (name,pr,reactor,rPr) => `"Great," ${reactor} mutters. "This should be fun."`,
+  ]},
+  { newArch: ['hero'], reactArch: ['villain'], chemType: 'sizing-up', lines: [
+    (name,pr,reactor,rPr) => `${reactor} smirks. "Oh, we've got a Boy Scout."`,
+    (name,pr,reactor,rPr) => `${reactor} looks ${name} up and down. Competition.`,
+    (name,pr,reactor,rPr) => `Something flickers behind ${reactor}'s eyes. This one could be a problem.`,
+  ]},
+  { newArch: ['hothead'], reactArch: ['floater','social-butterfly','loyal-soldier','goat','underdog'], chemType: 'intimidation', lines: [
+    (name,pr,reactor,rPr) => `${reactor} takes a small step back. Just instinct.`,
+    (name,pr,reactor,rPr) => `The dock gets quieter when ${name} arrives. ${reactor} notices.`,
+    (name,pr,reactor,rPr) => `${reactor} glances at ${name} and decides to stand somewhere else.`,
+  ]},
+  { newArch: ['showmancer'], reactArch: ['social-butterfly','showmancer','hero'], chemType: 'attraction', lines: [
+    (name,pr,reactor,rPr) => `${reactor} does a double take. Tries to play it cool. Fails.`,
+    (name,pr,reactor,rPr) => `${reactor} suddenly becomes very interested in fixing ${rPr.posAdj} hair.`,
+    (name,pr,reactor,rPr) => `Something about ${name} catches ${reactor}'s attention. ${rPr.Sub} ${rPr.sub==='they'?"don't":"doesn't"} look away fast enough.`,
+  ]},
+  { newArch: ['chaos-agent'], reactArch: ['loyal-soldier','perceptive-player'], chemType: 'dread', lines: [
+    (name,pr,reactor,rPr) => `${reactor} watches ${name} arrive and gets a bad feeling about this.`,
+    (name,pr,reactor,rPr) => `"Oh no," ${reactor} says quietly. ${rPr.Sub} can already tell.`,
+    (name,pr,reactor,rPr) => `${reactor} and ${name} make eye contact. It's instantly clear they're going to have problems.`,
+  ]},
+  { newArch: ['challenge-beast'], reactArch: ['challenge-beast','hero'], chemType: 'rivalry', lines: [
+    (name,pr,reactor,rPr) => `${reactor} sizes up ${name}. Finally, some real competition.`,
+    (name,pr,reactor,rPr) => `${reactor} stands a little taller when ${name} steps onto the dock.`,
+    (name,pr,reactor,rPr) => `Two athletes. One dock. ${reactor} and ${name} exchange a nod. Game on.`,
+  ]},
+  { newArch: ['goat'], reactArch: ['villain','schemer'], chemType: 'predatory', lines: [
+    (name,pr,reactor,rPr) => `${reactor}'s eyes light up. Not in a nice way.`,
+    (name,pr,reactor,rPr) => `${reactor} watches ${name} fumble off the boat and smiles. Perfect.`,
+    (name,pr,reactor,rPr) => `${reactor} just found ${rPr.posAdj} new best friend. ${name} has no idea.`,
+  ]},
+  { newArch: ['underdog'], reactArch: ['hero','loyal-soldier'], chemType: 'encouragement', lines: [
+    (name,pr,reactor,rPr) => `${reactor} gives ${name} a genuine smile. "Welcome."`,
+    (name,pr,reactor,rPr) => `${reactor} nods at ${name}. Sees something the others don't.`,
+    (name,pr,reactor,rPr) => `"Hey, glad you're here," ${reactor} says to ${name}. And means it.`,
+  ]},
+  { newArch: ['mastermind'], reactArch: ['mastermind','perceptive-player'], chemType: 'recognition', lines: [
+    (name,pr,reactor,rPr) => `${reactor} and ${name} lock eyes. They both know what the other is.`,
+    (name,pr,reactor,rPr) => `${reactor} nods once at ${name}. Respect. And concern.`,
+    (name,pr,reactor,rPr) => `Two people in this game just realized they can't fool each other.`,
+  ]},
+  { newArch: ['wildcard'], reactArch: ['perceptive-player','mastermind'], chemType: 'curiosity', lines: [
+    (name,pr,reactor,rPr) => `${reactor} can't quite figure ${name} out. That almost never happens.`,
+    (name,pr,reactor,rPr) => `${reactor} tilts ${rPr.posAdj} head. ${name} is... different.`,
+    (name,pr,reactor,rPr) => `${reactor} watches ${name} carefully. No read yet. Interesting.`,
+  ]},
+];
+
 // ── FIRST IMPRESSIONS: mock vote → round-robin tribe swap ──
 function executeFirstImpressions(ep, twistObj) {
   if (gs.phase !== 'pre-merge' || gs.tribes.length < 2) return;

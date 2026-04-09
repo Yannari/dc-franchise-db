@@ -6947,10 +6947,13 @@ function simulateCliffDive(ep) {
       gs.chalRecord[t.standout].podiums += 1;
     }
   });
-  // Chickens on losing tribe: +1 bomb each (they cost the team)
-  loser.chickens.forEach(c => {
-    if (!gs.chalRecord[c]) gs.chalRecord[c] = { wins: 0, podiums: 0, bombs: 0 };
-    gs.chalRecord[c].bombs += 1;
+  // Chickens: +1 bomb on losing tribe (cost the team), +0.5 on winning tribe (noticed but didn't matter)
+  tribeResults.forEach(t => {
+    const isLoser = t.name === loser.name;
+    t.chickens.forEach(c => {
+      if (!gs.chalRecord[c]) gs.chalRecord[c] = { wins: 0, podiums: 0, bombs: 0 };
+      gs.chalRecord[c].bombs += isLoser ? 1 : 0.5;
+    });
   });
 
   ep.cliffDive = {

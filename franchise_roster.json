@@ -262,17 +262,16 @@
       "gender": "f",
       "archetype": "showmancer",
       "stats": {
-        "physical": 5,
-        "endurance": 5,
-        "mental": 5,
-        "social": 9,
-        "strategic": 5,
+        "physical": 4,
+        "endurance": 6,
+        "mental": 6,
+        "social": 10,
+        "strategic": 6,
         "loyalty": 8,
-        "boldness": 6,
-        "intuition": 6,
+        "boldness": 4,
+        "intuition": 8,
         "temperament": 8
-      },
-      "isReturnee": false
+      }
     },
     {
       "name": "Chase",
@@ -1408,19 +1407,18 @@
       "name": "Sam",
       "slug": "sam",
       "gender": "m",
-      "archetype": "",
+      "archetype": "floater",
       "stats": {
         "physical": 4,
         "endurance": 2,
-        "mental": 6,
+        "mental": 8,
         "social": 6,
         "strategic": 2,
         "loyalty": 10,
         "boldness": 2,
         "intuition": 7,
         "temperament": 10
-      },
-      "isReturnee": false
+      }
     },
     {
       "name": "Samey",

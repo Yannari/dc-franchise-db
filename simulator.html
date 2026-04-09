@@ -48520,7 +48520,7 @@ function rpBuildAwakeAThon(ep) {
     }
     steps.push({ type: 'dropout', ...r.dropout, round: r.round });
     r.socialEvents.forEach(evt => {
-      steps.push({ type: 'social', ...evt });
+      steps.push({ ...evt, stepType: 'social' });
     });
   });
   steps.push({ type: 'winner', winner: aat.winner, lastAwake: aat.lastAwake });
@@ -48573,7 +48573,7 @@ function rpBuildAwakeAThon(ep) {
           <span style="font-size:9px;font-weight:700;letter-spacing:1px;color:#8b949e;background:rgba(139,148,158,0.1);padding:2px 8px;border-radius:3px">💤 FALLS ASLEEP</span>
         </div>
       </div>`;
-    } else if (step.type === 'social') {
+    } else if (step.stepType === 'social') {
       if (!isVisible) { html += `<div style="padding:8px;margin-bottom:4px;border:1px solid var(--border);border-radius:6px;opacity:0.12;text-align:center;font-size:11px;color:var(--muted)">?</div>`; return; }
       const badgeColors = { gold: '#e3b341', blue: '#58a6ff', pink: '#db61a2', red: '#f85149', 'red-orange': '#f0883e' };
       const bc = badgeColors[step.badgeClass] || '#8b949e';

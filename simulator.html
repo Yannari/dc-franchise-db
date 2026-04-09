@@ -6938,22 +6938,22 @@ function simulateCliffDive(ep) {
     }
   });
 
-  // ── Challenge record: full weight (this is an immunity challenge, not a reward) ──
+  // ── Challenge record: same as regular challenges — rank all players, top-2 podium, bottom-2 bomb ──
+  // Jumpers ranked above chickens. Within jumpers: standouts first, then by boldness. Within chickens: random.
   if (!gs.chalRecord) gs.chalRecord = {};
-  // Standout: +1 podium on winning tribe, +0.5 on safe/losing (still showed courage)
-  // Chickens: +1 bomb on losing tribe, +0.5 on safe tribe, +0.5 on winning tribe
-  tribeResults.forEach(t => {
-    const isWinner = t.name === winner.name;
-    const isLoser = t.name === loser.name;
-    if (t.standout) {
-      if (!gs.chalRecord[t.standout]) gs.chalRecord[t.standout] = { wins: 0, podiums: 0, bombs: 0 };
-      gs.chalRecord[t.standout].podiums += isWinner ? 1 : 0.5;
-    }
-    t.chickens.forEach(c => {
-      if (!gs.chalRecord[c]) gs.chalRecord[c] = { wins: 0, podiums: 0, bombs: 0 };
-      gs.chalRecord[c].bombs += isLoser ? 1 : 0.5;
-    });
+  const _cdAllPlayers = tribeResults.flatMap(t =>
+    t.members.map(m => ({
+      name: m,
+      score: t.jumpers.includes(m) ? (m === t.standout ? 100 : 10 + pStats(m).boldness) : 0,
+    }))
+  ).sort((a, b) => b.score - a.score);
+  _cdAllPlayers.forEach(p => {
+    if (!gs.chalRecord[p.name]) gs.chalRecord[p.name] = { wins: 0, podiums: 0, bombs: 0 };
   });
+  if (_cdAllPlayers.length >= 2) {
+    _cdAllPlayers.slice(0, 2).forEach(p => { gs.chalRecord[p.name].podiums++; });
+    _cdAllPlayers.slice(Math.max(0, _cdAllPlayers.length - 2)).forEach(p => { gs.chalRecord[p.name].bombs++; });
+  }
 
   ep.cliffDive = {
     tribes: tribeResults,

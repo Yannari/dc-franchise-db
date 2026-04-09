@@ -48130,10 +48130,9 @@ function rpBuildCliffDive(ep) {
   if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
   const state = _tvState[stateKey];
 
-  const allReactions = cd.tribes.flatMap(t => {
-    console.log('[CliffDive VP] tribe:', t.name, 'standout:', t.standout, 'reactions:', t.reactions?.map(r => r.name));
-    return t.reactions.map(r => ({ ...r, tribe: t.name, isStandout: r.name === t.standout }));
-  });
+  const allReactions = cd.tribes.flatMap(t =>
+    t.reactions.map(r => ({ ...r, tribe: t.name, isStandout: r.name === t.standout }))
+  );
   const allRevealed = state.idx >= allReactions.length - 1;
   const _cdReveal = (targetIdx) => `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=${targetIdx};const ep=gs.episodeHistory.find(e=>e.num===${ep.num});if(ep){buildVPScreens(ep);renderVPScreen();}`;
 
@@ -48157,22 +48156,35 @@ function rpBuildCliffDive(ep) {
         const jumpBadge = r.jumped
           ? '<span style="font-size:9px;font-weight:700;letter-spacing:1px;color:#3fb950;background:rgba(63,185,80,0.12);padding:2px 6px;border-radius:3px">JUMPED</span>'
           : '<span style="font-size:9px;font-weight:700;letter-spacing:1px;color:#f85149;background:rgba(248,81,73,0.12);padding:2px 6px;border-radius:3px">CHICKENED OUT</span>';
-        const standoutLabel = r.isStandout ? `<span style="font-size:9px;font-weight:700;letter-spacing:1px;color:#0d1117;background:#f0a500;padding:2px 8px;border-radius:3px;margin-left:4px">★ FIRST TO JUMP</span>` : '';
-        const cardStyle = r.isStandout
-          ? 'padding:14px 16px;margin-bottom:4px;border-radius:8px;border:2px solid #f0a500;background:rgba(240,165,0,0.1);box-shadow:0 0 16px rgba(240,165,0,0.25);animation:scrollDrop 0.3s var(--ease-broadcast) both'
-          : 'padding:14px 16px;margin-bottom:4px;border-radius:8px;border:1px solid var(--border);background:var(--surface);animation:scrollDrop 0.3s var(--ease-broadcast) both';
-        html += `<div style="${cardStyle}">
-          <div style="display:flex;align-items:center;gap:10px">
-            ${rpPortrait(r.name, 'sm')}
-            <div style="flex:1">
-              <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
-                <span style="font-size:13px;font-weight:600;color:#e6edf3">${r.name}</span>
-                ${jumpBadge}${standoutLabel}
+        const standoutLabel = r.isStandout ? `<div style="font-size:9px;font-weight:700;letter-spacing:2px;color:#f0a500;margin-bottom:6px">★ FIRST TO JUMP ★</div>` : '';
+        if (r.isStandout) {
+          html += `<div style="padding:16px;margin-bottom:6px;border-radius:10px;border:2px solid #f0a500;background:linear-gradient(135deg,rgba(240,165,0,0.12) 0%,rgba(240,165,0,0.04) 100%);box-shadow:0 0 20px rgba(240,165,0,0.2),inset 0 0 30px rgba(240,165,0,0.05);animation:scrollDrop 0.3s var(--ease-broadcast) both">
+            ${standoutLabel}
+            <div style="display:flex;align-items:center;gap:10px">
+              ${rpPortrait(r.name, 'md')}
+              <div style="flex:1">
+                <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+                  <span style="font-size:15px;font-weight:700;color:#f0a500">${r.name}</span>
+                  ${jumpBadge}
+                </div>
+                <div style="font-size:13px;color:#e6edf3;line-height:1.6">${r.text}</div>
               </div>
-              <div style="font-size:12px;color:#8b949e;line-height:1.5">${r.text}</div>
             </div>
-          </div>
-        </div>`;
+          </div>`;
+        } else {
+          html += `<div style="padding:14px 16px;margin-bottom:4px;border-radius:8px;border:1px solid var(--border);background:var(--surface);animation:scrollDrop 0.3s var(--ease-broadcast) both">
+            <div style="display:flex;align-items:center;gap:10px">
+              ${rpPortrait(r.name, 'sm')}
+              <div style="flex:1">
+                <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+                  <span style="font-size:13px;font-weight:600;color:#e6edf3">${r.name}</span>
+                  ${jumpBadge}
+                </div>
+                <div style="font-size:12px;color:#8b949e;line-height:1.5">${r.text}</div>
+              </div>
+            </div>
+          </div>`;
+        }
       }
       globalIdx++;
     });

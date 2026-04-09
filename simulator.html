@@ -4195,6 +4195,7 @@ function computeHeat(name, tribalPlayers, alliances) {
   }
   // ── Phobia Factor blame: player who failed their fear and cost the tribe ──
   if (gs._phobiaBlame?.[name]) heat += gs._phobiaBlame[name];
+  if (gs._cliffDiveBlame?.[name]) heat += gs._cliffDiveBlame[name];
   // ── Volunteer Exile Duel: volunteer WANTS to be voted out ──
   if (gs._volunteerDuelHeat?.[name] === ((gs.episode || 0) + 1)) heat += 8.0;
   // Volunteer duel winner returns with reduced heat
@@ -26369,6 +26370,7 @@ function simulateJuryRoundtable(ep) {
     if (gs._volunteerDuelHeat) delete gs._volunteerDuelHeat;
     // Clear phobia blame after tribal
     if (gs._phobiaBlame) delete gs._phobiaBlame;
+    if (gs._cliffDiveBlame) delete gs._cliffDiveBlame;
     // Clear reward backfire heat after tribal
     if (gs._rewardBackfireHeat && (gs.episode || 0) + 1 >= gs._rewardBackfireHeat.expiresEp) delete gs._rewardBackfireHeat;
 
@@ -29066,6 +29068,25 @@ function _textWhyVote(ep, ln, sec) {
 }
 
 // ── PHOBIA FACTOR ──
+function _textCliffDive(ep, ln, sec) {
+  if (!ep.cliffDive?.tribes?.length) return;
+  const cd = ep.cliffDive;
+  sec('CLIFF DIVE');
+  ln('Phase 1 — The Jump:');
+  cd.tribes.forEach(t => {
+    ln(`  ${t.name} (${t.jumpCount}/${t.members.length} jumped):`);
+    if (t.jumpers.length) ln(`    JUMPED: ${t.jumpers.join(', ')}`);
+    if (t.chickens.length) ln(`    CHICKENED OUT: ${t.chickens.join(', ')}`);
+    if (t.standout) ln(`    First to jump: ${t.standout}${t.standoutIsUnderdog ? ' (underdog moment)' : ''}`);
+  });
+  if (cd.wagonWinner) ln(`Wagon advantage: ${cd.wagonWinner}`);
+  ln('Phase 2 — Haul Crates:');
+  cd.tribes.forEach(t => ln(`  ${t.name}: ${t.haulScore}${t.name === cd.wagonWinner ? ' (wagons)' : ''}`));
+  ln('Phase 3 — Build Hot Tub:');
+  cd.tribes.forEach(t => ln(`  ${t.name}: ${t.buildScore}`));
+  ln(`RESULT: ${cd.winner} wins immunity (${cd.tribes.map(t => `${t.name}: ${t.totalScore}`).join(' vs ')})`);
+}
+
 function _textPhobiaFactor(ep, ln, sec) {
   const pf = ep.phobiaFactor;
   if (!pf) return;
@@ -31104,6 +31125,7 @@ function generateSummaryText(ep) {
   _textSchoolyardPick(ep, ln, sec);
   _textAftermath(ep, ln, sec);
   _textSlasherNight(ep, ln, sec);
+  _textCliffDive(ep, ln, sec);
   _textPhobiaFactor(ep, ln, sec);
   _textSayUncle(ep, ln, sec);
   _textTripleDogDare(ep, ln, sec);
@@ -31633,6 +31655,8 @@ function patchEpisodeHistory(ep) {
   if (ep.isSayUncle) h.isSayUncle = true;
   if (ep.phobiaFactor) h.phobiaFactor = ep.phobiaFactor;
   if (ep.isPhobiaFactor) h.isPhobiaFactor = true;
+  if (ep.isCliffDive) h.isCliffDive = true;
+  if (!h.cliffDive && ep.cliffDive) h.cliffDive = ep.cliffDive;
   if (ep.isTripleDogDare) h.isTripleDogDare = true;
   if (ep.exileDuelPlayerAtStart) h.exileDuelPlayerAtStart = ep.exileDuelPlayerAtStart;
   if (ep.volunteerDuel) h.volunteerDuel = ep.volunteerDuel;
@@ -32301,6 +32325,7 @@ function renderEpisodeHistory() {
     const tddTag = ep.isTripleDogDare ? `<span class="ep-hist-tag" style="background:rgba(245,158,11,0.15);color:#f59e0b">Triple Dog Dare</span>` : '';
     const suTag = ep.isSayUncle ? `<span class="ep-hist-tag" style="background:rgba(245,158,11,0.15);color:#f59e0b">Say Uncle</span>` : '';
     const pfTag = ep.isPhobiaFactor ? `<span class="ep-hist-tag" style="background:rgba(139,92,246,0.15);color:#8957e5">Phobia Factor</span>` : '';
+    const cdTag = ep.isCliffDive ? `<span class="ep-hist-tag" style="background:rgba(244,112,103,0.15);color:#f47067">Cliff Dive</span>` : '';
     const hasCheckpoint = !!gsCheckpoints[ep.num];
     const replayBtn = hasCheckpoint
       ? `<button class="ep-hist-replay" title="Re-run this episode" onclick="event.stopPropagation();replayEpisode(${ep.num})">↺</button>`
@@ -32308,7 +32333,7 @@ function renderEpisodeHistory() {
     return `<div class="ep-hist-card ${ep.num===currentNum?'active':''}" onclick="viewEpisode(${ep.num})">
       <div class="ep-hist-ep">Episode ${ep.num}${replayBtn}</div>
       <div class="ep-hist-elim">${_spoilerFree ? '???' : ep.multiTribalElims?.length >= 2 ? ep.multiTribalElims.join(' + ') : ep.ambassadorData?.ambassadorEliminated ? `${ep.ambassadorData.ambassadorEliminated} + ${ep.eliminated||'?'}` : ep.tiedDestinies?.eliminatedPartner ? `${ep.eliminated||'?'} + ${ep.tiedDestinies.eliminatedPartner}` : ep.firstEliminated ? `${ep.firstEliminated} + ${ep.eliminated||'?'}` : (ep.eliminated || (ep.isFinale ? 'FTC' : '\u2014'))}</div>
-      <div>${riTag}${mergeTag}${finaleTag}${slasherTag}${tddTag}${suTag}${pfTag}</div>
+      <div>${riTag}${mergeTag}${finaleTag}${slasherTag}${tddTag}${suTag}${pfTag}${cdTag}</div>
     </div>`;
   }).join('');
 }
@@ -35382,6 +35407,16 @@ function rpBuildColdOpen(ep) {
     }
 
     // ── [1d] PHOBIA FACTOR RECAP ──
+    if (prevEp.isCliffDive && prevEp.cliffDive) {
+      const _cd = prevEp.cliffDive;
+      const _cdChickens = _cd.tribes.flatMap(t => t.chickens);
+      if (_cdChickens.length) {
+        html += `<div class="vp-card" style="border-color:rgba(244,112,103,0.15);margin-bottom:8px">
+          <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:#f47067;margin-bottom:4px">CLIFF DIVE</div>
+          <div style="font-size:12px;color:#8b949e">${_cdChickens.length} player${_cdChickens.length>1?'s':''} chickened out: ${_cdChickens.join(', ')}. ${_cd.winner} won immunity.</div>
+        </div>`;
+      }
+    }
     if (prevEp.isPhobiaFactor && prevEp.phobiaFactor) {
       const _pfData = prevEp.phobiaFactor;
       const _pfWinPct = Math.round((_pfData.tribeScores[_pfData.winningTribe]?.percentage || 0) * 100);
@@ -39659,6 +39694,8 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'survivalCollapse'          ? (evt.badgeText || 'COLLAPSE')
                      : evt.type === 'medevac'                   ? (evt.badgeText || 'MEDEVAC')
                      : evt.type === 'providerVotedOut'          ? (evt.badgeText || 'FOOD CRISIS')
+                     : evt.type === 'cliffDiveChicken'         ? (evt.badgeText || 'CHICKEN')
+                     : evt.type === 'cliffDiveStandout'        ? (evt.badgeText || 'FIRST TO JUMP')
                      : evt.type === 'rewardBackfireAlliance'   ? (evt.badgeText || 'BACKFIRE')
                      : evt.type === 'rewardBackfireBloc'       ? (evt.badgeText || 'LEFT BEHIND')
                      : evt.type === 'sideDeal'                  ? (evt.badgeText || 'SIDE DEAL')
@@ -48061,6 +48098,104 @@ function rpBuildFanFavorite(ep) {
 }
 
 // ══════════════════════════════════════════════════════════════════════
+// CLIFF DIVE VP SCREEN
+// ══════════════════════════════════════════════════════════════════════
+
+function rpBuildCliffDive(ep) {
+  const cd = ep.cliffDive;
+  if (!cd?.tribes?.length) return null;
+
+  const stateKey = `cd_reveal_${ep.num}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+
+  const allReactions = cd.tribes.flatMap(t =>
+    t.reactions.map(r => ({ ...r, tribe: t.name, isStandout: r.name === t.standout }))
+  );
+  const allRevealed = state.idx >= allReactions.length - 1;
+  const _cdReveal = (targetIdx) => `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=${targetIdx};const ep=gs.episodeHistory.find(e=>e.num===${ep.num});if(ep){buildVPScreens(ep);renderVPScreen();}`;
+
+  let html = `<div class="rp-page tod-dawn">
+    <div class="rp-eyebrow">Episode ${ep.num}</div>
+    <div style="font-family:var(--font-display);font-size:28px;letter-spacing:2px;text-align:center;color:#f47067;text-shadow:0 0 20px rgba(244,112,103,0.3);margin-bottom:6px">CLIFF DIVE</div>
+    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:6px">One thousand feet. Shark-infested waters. A tiny safe zone.</div>
+    <div style="text-align:center;font-size:11px;color:#6e7681;margin-bottom:20px">Jump and score a point for your team. Chicken out and wear the hat of shame.</div>`;
+
+  let globalIdx = 0;
+  cd.tribes.forEach(t => {
+    const tc = tribeColor(t.name);
+    html += `<div style="margin-bottom:16px">
+      <div style="font-family:var(--font-display);font-size:16px;color:${tc};text-align:center;margin-bottom:8px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06)">${t.name} <span style="font-size:11px;color:#8b949e">(${t.jumpCount}/${t.members.length} jumped)</span></div>`;
+
+    t.reactions.forEach(r => {
+      const isVisible = globalIdx <= state.idx;
+      if (!isVisible) {
+        html += `<div style="padding:8px;margin-bottom:4px;border:1px solid var(--border);border-radius:6px;opacity:0.12;font-size:11px;color:var(--muted);text-align:center">?</div>`;
+      } else {
+        const jumpBadge = r.jumped
+          ? '<span style="font-size:9px;font-weight:700;letter-spacing:1px;color:#3fb950;background:rgba(63,185,80,0.12);padding:2px 6px;border-radius:3px">JUMPED</span>'
+          : '<span style="font-size:9px;font-weight:700;letter-spacing:1px;color:#f85149;background:rgba(248,81,73,0.12);padding:2px 6px;border-radius:3px">CHICKENED OUT</span>';
+        const standoutBorder = r.isStandout ? 'border-color:rgba(240,165,0,0.4);background:rgba(240,165,0,0.04)' : '';
+        const standoutLabel = r.isStandout ? `<span style="font-size:9px;font-weight:700;letter-spacing:1px;color:#f0a500;background:rgba(240,165,0,0.12);padding:2px 6px;border-radius:3px;margin-left:4px">FIRST TO JUMP</span>` : '';
+        html += `<div class="vp-card" style="margin-bottom:4px;${standoutBorder};animation:scrollDrop 0.3s var(--ease-broadcast) both">
+          <div style="display:flex;align-items:center;gap:10px">
+            ${rpPortrait(r.name, 'sm')}
+            <div style="flex:1">
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+                <span style="font-size:13px;font-weight:600;color:#e6edf3">${r.name}</span>
+                ${jumpBadge}${standoutLabel}
+              </div>
+              <div style="font-size:12px;color:#8b949e;line-height:1.5">${r.text}</div>
+            </div>
+          </div>
+        </div>`;
+      }
+      globalIdx++;
+    });
+    html += `</div>`;
+  });
+
+  if (!allRevealed) {
+    html += `<div style="text-align:center;margin-top:12px">
+      <button class="rp-btn" onclick="${_cdReveal(state.idx + 1)}">NEXT (${state.idx + 2}/${allReactions.length})</button>
+      <button class="rp-btn" style="margin-left:8px;opacity:0.6" onclick="${_cdReveal(allReactions.length - 1)}">Reveal All</button>
+    </div>`;
+  } else {
+    html += `<div style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.06)">`;
+
+    if (cd.wagonWinner) {
+      html += `<div style="text-align:center;margin-bottom:12px;padding:8px;background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.15);border-radius:6px">
+        <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:#3fb950;margin-bottom:4px">WAGON ADVANTAGE</div>
+        <div style="font-size:12px;color:#e6edf3">${cd.wagonWinner} had the most jumpers — they get wagons to haul the crates.</div>
+      </div>`;
+    }
+
+    cd.tribes.forEach(t => {
+      const tc = tribeColor(t.name);
+      const isWinner = t.name === cd.winner;
+      html += `<div style="display:flex;align-items:center;gap:10px;padding:8px;margin-bottom:4px;border-radius:6px;border:1px solid ${isWinner ? 'rgba(63,185,80,0.2)' : 'var(--border)'}">
+        <span style="font-size:13px;font-weight:700;color:${tc};min-width:100px">${t.name}</span>
+        <span style="font-size:11px;color:#8b949e">Haul: ${t.haulScore}${t.name === cd.wagonWinner ? ' (wagons)' : ''}</span>
+        <span style="font-size:11px;color:#8b949e">Build: ${t.buildScore}</span>
+        <span style="font-size:12px;font-weight:700;color:${isWinner ? '#3fb950' : '#8b949e'};margin-left:auto">${t.totalScore}</span>
+        ${isWinner ? '<span style="font-size:9px;font-weight:700;letter-spacing:1px;color:#3fb950;background:rgba(63,185,80,0.12);padding:2px 6px;border-radius:3px">WIN</span>' : ''}
+      </div>`;
+    });
+    html += `</div>`;
+
+    const allChickens = cd.tribes.flatMap(t => t.chickens);
+    if (allChickens.length) {
+      html += `<div style="margin-top:14px;text-align:center;padding:10px;background:rgba(248,81,73,0.04);border:1px solid rgba(248,81,73,0.12);border-radius:8px">
+        <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:#f85149;margin-bottom:8px">CHICKEN HAT GALLERY</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center">${allChickens.map(c => rpPortrait(c, 'sm')).join('')}</div>
+      </div>`;
+    }
+  }
+
+  html += `</div>`;
+  return html;
+}
+
 // PHOBIA FACTOR VP SCREENS
 // ══════════════════════════════════════════════════════════════════════
 
@@ -49337,6 +49472,8 @@ function buildVPScreens(epRecord) {
     // Finale immunity: use the same detailed challenge screen as regular episodes (koh-lanta has its own orienteering/perch screens)
     vpScreens.push({ id:'finale-challenge', label:'Final Immunity', html: rpBuildChallenge(ep) });
   // ── Phobia Factor — replaces tribe challenge ──
+  } else if (ep.isCliffDive && ep.cliffDive) {
+    vpScreens.push({ id:'cliff-dive', label:'Cliff Dive', html: rpBuildCliffDive(ep) });
   } else if (ep.isPhobiaFactor && ep.phobiaFactor) {
     // Confessions already registered after Cold Open (section 1b)
     vpScreens.push({ id:'pf-announce', label:'Phobia Factor', html: rpBuildPhobiaAnnouncement(ep) });

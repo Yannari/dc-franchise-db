@@ -6717,6 +6717,10 @@ function simulatePhobiaFactor(ep) {
   const tribes = gs.tribes;
   const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
 
+  // Initialize camp events for each tribe (may not exist yet — challenge runs before generateCampEvents)
+  if (!ep.campEvents) ep.campEvents = {};
+  tribes.forEach(t => { if (!ep.campEvents[t.name]) ep.campEvents[t.name] = { pre: [], post: [] }; });
+
   // Step 1: Assign random fears to each player
   const fears = {};
   const allPlayers = tribes.flatMap(t => t.members);
@@ -36139,16 +36143,24 @@ function rpBuildDebug(ep) {
     // Heat — always show, active + eliminated
     html += `<div style="margin-bottom:20px">
       <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#8b949e;margin-bottom:8px">ESTIMATED HEAT</div>`;
+    // Phobia blame data (saved on episode for debug visibility — gs._phobiaBlame is cleared after tribal)
+    const _pfBlame = ep.phobiaFactor ? Object.fromEntries(
+      Object.entries(ep.phobiaFactor.results || {}).filter(([, r]) => r === 'fail')
+        .filter(([p]) => ep.phobiaFactor.losingTribe && (ep.tribesAtStart || gs.tribes || []).find(t => t.name === ep.phobiaFactor.losingTribe)?.members?.includes(p))
+        .map(([p]) => [p, 2.0 / Object.entries(ep.phobiaFactor.results).filter(([pp, r]) => r === 'fail' && (ep.tribesAtStart || gs.tribes || []).find(t => t.name === ep.phobiaFactor.losingTribe)?.members?.includes(pp)).length])
+    ) : {};
     _allPlayers.map(name => {
       const isElim = _elimName.includes(name);
       const heat = computeHeat(name, _allPlayers, gs.namedAlliances || []);
-      return { name, heat, isElim };
-    }).sort((a, b) => b.heat - a.heat).forEach(({ name, heat, isElim }) => {
+      const blame = _pfBlame[name] || 0;
+      return { name, heat, isElim, blame };
+    }).sort((a, b) => b.heat - a.heat).forEach(({ name, heat, isElim, blame }) => {
       const pct = Math.min(100, Math.max(0, heat * 10));
       const col = heat >= 5 ? '#f47067' : heat >= 3 ? '#f0883e' : heat >= 1 ? '#d29922' : '#3fb950';
+      const blameTag = blame > 0 ? ` <span style="color:#f47067;font-size:9px;font-weight:700">+${blame.toFixed(1)} BLAME</span>` : '';
       html += `<div style="display:flex;align-items:center;gap:8px;padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.04);${isElim ? 'opacity:0.5;background:rgba(244,112,103,0.06)' : ''}">
         ${rpPortrait(name, 'sm')}
-        <div style="flex:1;font-weight:600;color:#e6edf3">${name}${isElim ? ' <span style="color:#f47067;font-size:9px">ELIM</span>' : ''}</div>
+        <div style="flex:1;font-weight:600;color:#e6edf3">${name}${isElim ? ' <span style="color:#f47067;font-size:9px">ELIM</span>' : ''}${blameTag}</div>
         <div style="width:120px;background:rgba(255,255,255,0.05);border-radius:4px;height:8px;overflow:hidden">
           <div style="width:${pct}%;height:100%;background:${col};border-radius:4px"></div>
         </div>

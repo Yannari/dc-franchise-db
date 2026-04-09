@@ -2378,7 +2378,7 @@ function loadS10Preset() {
   players = S10_TRIBES.map((t,i) => {
     const r = rosterMap[t.name];
     if (!r) { console.warn('S10 preset: missing roster entry for', t.name); return null; }
-    return { ...r, tribe: t.tribe, id: 's10-'+i };
+    return { ...r, tribe: t.tribe, id: 's10-'+i, isReturnee: true };
   }).filter(Boolean);
   if (!seasonConfig.tribes?.length) {
     seasonConfig.tribes = [{ name:'Champions', color:'#f59e0b' }, { name:'Contenders', color:'#ef4444' }];

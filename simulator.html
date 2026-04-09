@@ -6690,6 +6690,247 @@ function _slasherFinalShowdown(p1, p2, scores) {
 }
 
 // ══════════════════════════════════════════════════════════════════════
+// ENGINE: PHOBIA FACTOR
+// ══════════════════════════════════════════════════════════════════════
+
+function simulatePhobiaFactor(ep) {
+  const tribes = gs.tribes;
+  const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
+
+  // Step 1: Assign random fears to each player
+  const fears = {};
+  const allPlayers = tribes.flatMap(t => t.members);
+  allPlayers.forEach(player => {
+    const category = _rp(PHOBIA_CATEGORIES);
+    const fear = _rp(PHOBIA_POOL[category]);
+    fears[player] = { category, title: fear.title, desc: fear.desc };
+  });
+
+  // Detect shared fears
+  const sharedFears = [];
+  const fearsByTitle = {};
+  Object.entries(fears).forEach(([player, f]) => {
+    if (!fearsByTitle[f.title]) fearsByTitle[f.title] = [];
+    fearsByTitle[f.title].push(player);
+  });
+  Object.entries(fearsByTitle).forEach(([title, fPlayers]) => {
+    if (fPlayers.length >= 2) {
+      sharedFears.push({ players: [...fPlayers], fear: title });
+      for (let i = 0; i < fPlayers.length; i++) {
+        for (let j = i + 1; j < fPlayers.length; j++) {
+          addBond(fPlayers[i], fPlayers[j], 0.2);
+        }
+      }
+    }
+  });
+
+  // Step 2: Campfire confessions
+  const confessions = [];
+  allPlayers.forEach(player => {
+    const f = fears[player];
+    const pr = pronouns(player);
+    const arch = players.find(p => p.name === player)?.archetype || '';
+    let confText;
+    if (arch === 'villain' || arch === 'mastermind') {
+      confText = _rp([
+        `${player} hesitates before speaking. "I don't have fears." Nobody believes ${pr.obj}. Finally: "${f.title}."`,
+        `${player} says "${f.title}" like it's a strategic move. Maybe it is.`,
+      ]);
+    } else if (arch === 'hero') {
+      confText = _rp([
+        `${player} doesn't flinch. "${f.title}. I'm not proud of it, but it's real."`,
+        `${player} looks into the fire. "${f.title}." ${pr.Sub} ${pr.sub === 'they' ? 'say' : 'says'} it like ${pr.sub} ${pr.sub === 'they' ? 'are' : 'is'} already preparing to face it.`,
+      ]);
+    } else if (arch === 'chaos-agent') {
+      confText = _rp([
+        `${player} blurts it out: "${f.title}. Don't judge me." The tribe can't tell if ${pr.sub} ${pr.sub === 'they' ? 'are' : 'is'} serious.`,
+        `"${f.title}," ${player} says cheerfully. "Terrifies me. Can we talk about something else?"`,
+      ]);
+    } else {
+      confText = _rp([
+        `${player} stares into the fire. "${f.title}." The tribe goes quiet.`,
+        `"You want to know my fear? ${f.title}." ${player} looks away. The vulnerability is real.`,
+        `${player} admits ${pr.pos} fear quietly: ${f.title}. ${pr.Sub} ${pr.sub === 'they' ? 'don\'t' : 'doesn\'t'} want to talk about it.`,
+      ]);
+    }
+    confessions.push({ player, fear: f.title, category: f.category, reaction: confText });
+  });
+
+  // Step 3: Run the challenge
+  const results = {};
+  const tribeScores = {};
+  const _conquerReaction = (player, fear) => {
+    const pr = pronouns(player);
+    const arch = players.find(p => p.name === player)?.archetype || '';
+    const r = [
+      `${player} closes ${pr.pos} eyes. Heart pounding. But ${pr.sub} ${pr.sub === 'they' ? 'do' : 'does'} it. The fear doesn't own ${pr.obj} anymore.`,
+      `${player} is shaking the whole time. But ${pr.sub} lasted. And that's enough.`,
+      `${player} pushes through ${fear}. Every second is agony. But ${pr.sub} ${pr.sub === 'they' ? 'make' : 'makes'} it.`,
+    ];
+    if (arch === 'hero') r.push(`${player} faces ${fear} head-on. No hesitation. The tribe watches in respect.`);
+    if (arch === 'chaos-agent') r.push(`${player} actually seems to enjoy ${fear}. The tribe isn't sure what to do with that.`);
+    return _rp(r);
+  };
+  const _failReaction = (player, fear) => {
+    const pr = pronouns(player);
+    return _rp([
+      `${player} freezes. Can't move. Can't breathe. ${fear} wins this one.`,
+      `${player} tries to step forward. Every muscle says no. ${pr.Sub} backs away.`,
+      `${player} starts — then stops. "I can't. I'm sorry." The tribe watches ${pr.obj} sit down.`,
+      `${player} takes one look at ${fear} and the color drains from ${pr.pos} face. It's over before it starts.`,
+    ]);
+  };
+  const reactions = {};
+
+  tribes.forEach(tribe => {
+    let completions = 0;
+    tribe.members.forEach(player => {
+      const f = fears[player];
+      const s = pStats(player);
+      let primary = 0, secondary = 0;
+      if (f.category === 'pain')        { primary = s.endurance * 0.07; secondary = s.physical * 0.04; }
+      else if (f.category === 'fear')   { primary = s.boldness * 0.07;  secondary = s.endurance * 0.04; }
+      else if (f.category === 'gross')  { primary = s.boldness * 0.07;  secondary = s.physical * 0.04; }
+      else if (f.category === 'humiliation') { primary = s.boldness * 0.07; secondary = (10 - s.social) * 0.04; }
+      const score = primary + secondary + (Math.random() * 0.25 - 0.05);
+      const passed = score >= 0.45;
+      results[player] = passed ? 'pass' : 'fail';
+      reactions[player] = passed ? _conquerReaction(player, f.title) : _failReaction(player, f.title);
+      if (passed) completions++;
+    });
+    tribeScores[tribe.name] = {
+      completions, total: tribe.members.length,
+      percentage: tribe.members.length ? completions / tribe.members.length : 0,
+    };
+  });
+
+  // Step 4: Determine winner + loser
+  const ranked = [...tribes].sort((a, b) => {
+    const diff = tribeScores[b.name].percentage - tribeScores[a.name].percentage;
+    return diff !== 0 ? diff : tribeScores[b.name].completions - tribeScores[a.name].completions || (Math.random() - 0.5);
+  });
+  let winningTribe = ranked[0];
+  let losingTribe = ranked[ranked.length - 1];
+
+  // Step 5: Triple points clutch
+  let clutch = null;
+  const winPct = tribeScores[winningTribe.name].percentage;
+  const losePct = tribeScores[losingTribe.name].percentage;
+  if (winPct - losePct >= 0.20 && losingTribe.members.length >= 2) {
+    const clutchPlayer = [...losingTribe.members].sort((a, b) => pStats(a).boldness - pStats(b).boldness)[0];
+    const cs = pStats(clutchPlayer);
+    const catScores = {
+      pain: cs.endurance * 0.07 + cs.physical * 0.04,
+      fear: cs.boldness * 0.07 + cs.endurance * 0.04,
+      gross: cs.boldness * 0.07 + cs.physical * 0.04,
+      humiliation: cs.boldness * 0.07 + (10 - cs.social) * 0.04,
+    };
+    const weakestCat = [...PHOBIA_CATEGORIES].sort((a, b) => catScores[a] - catScores[b])[0];
+    const clutchFear = _rp(PHOBIA_POOL[weakestCat]);
+    let cPrimary = 0, cSecondary = 0;
+    if (weakestCat === 'pain')        { cPrimary = cs.endurance * 0.07; cSecondary = cs.physical * 0.04; }
+    else if (weakestCat === 'fear')   { cPrimary = cs.boldness * 0.07;  cSecondary = cs.endurance * 0.04; }
+    else if (weakestCat === 'gross')  { cPrimary = cs.boldness * 0.07;  cSecondary = cs.physical * 0.04; }
+    else if (weakestCat === 'humiliation') { cPrimary = cs.boldness * 0.07; cSecondary = (10 - cs.social) * 0.04; }
+    const clutchScore = cPrimary + cSecondary + (Math.random() * 0.25 - 0.05);
+    const clutchPassed = clutchScore >= 0.45;
+    clutch = {
+      player: clutchPlayer,
+      fear: { category: weakestCat, title: clutchFear.title, desc: clutchFear.desc },
+      result: clutchPassed ? 'pass' : 'fail',
+      tribe: losingTribe.name,
+      overturned: false,
+    };
+    const cpr = pronouns(clutchPlayer);
+    reactions['_clutch'] = clutchPassed
+      ? `Triple points on the line. The whole tribe is watching. ${clutchPlayer} stares at ${clutchFear.title}. And ${cpr.sub} ${cpr.sub === 'they' ? 'do' : 'does'} it.`
+      : `${clutchPlayer} can't. Not with everyone watching. Not with this. The tribe's hope dies right there.`;
+    if (clutchPassed) {
+      tribeScores[losingTribe.name].completions += 3;
+      tribeScores[losingTribe.name].percentage = tribeScores[losingTribe.name].completions / tribeScores[losingTribe.name].total;
+    }
+  }
+
+  // Final ranking after potential clutch
+  const finalRanked = [...tribes].sort((a, b) => {
+    const diff = tribeScores[b.name].percentage - tribeScores[a.name].percentage;
+    return diff !== 0 ? diff : tribeScores[b.name].completions - tribeScores[a.name].completions || (Math.random() - 0.5);
+  });
+  const finalWinner = finalRanked[0];
+  const finalLoser = finalRanked[finalRanked.length - 1];
+  if (clutch && finalWinner.name !== winningTribe.name) clutch.overturned = true;
+
+  // Set results on ep
+  ep.phobiaFactor = {
+    fears, sharedFears, results, tribeScores, clutch, confessions, reactions,
+    winningTribe: finalWinner.name, losingTribe: finalLoser.name,
+  };
+
+  // Standard challenge fields
+  ep.challengeType = 'tribe';
+  ep.winner = finalWinner;
+  ep.loser = finalLoser;
+  ep.safeTribes = finalRanked.slice(1, -1);
+  ep.challengeLabel = 'Phobia Factor';
+  ep.challengeCategory = 'mixed';
+  ep.challengeDesc = 'Face your fear. Tribe with the best completion rate wins immunity.';
+  ep.tribalPlayers = [...finalLoser.members];
+  ep.challengePlacements = finalRanked.map(t => ({ name: t.name, members: [...t.members] }));
+
+  // Camp events — confessions (pre)
+  confessions.forEach(conf => {
+    const tribeName = tribes.find(t => t.members.includes(conf.player))?.name;
+    if (tribeName && ep.campEvents?.[tribeName]) {
+      const block = ep.campEvents[tribeName];
+      (block.pre = block.pre || []).push({
+        type: 'phobiaConfession', players: [conf.player],
+        text: conf.reaction, badgeText: 'CONFESSION', badgeClass: 'gold'
+      });
+    }
+  });
+
+  // Camp events — challenge results (post)
+  allPlayers.forEach(player => {
+    const tribeName = tribes.find(t => t.members.includes(player))?.name;
+    if (tribeName && ep.campEvents?.[tribeName]) {
+      const block = ep.campEvents[tribeName];
+      const passed = results[player] === 'pass';
+      (block.post = block.post || []).push({
+        type: passed ? 'phobiaConquered' : 'phobiaFailed',
+        players: [player], text: reactions[player],
+        badgeText: passed ? 'CONQUERED' : 'COULDN\'T DO IT',
+        badgeClass: passed ? 'gold' : 'red',
+      });
+    }
+  });
+
+  // Shared fear events
+  sharedFears.forEach(sf => {
+    const tribeName = tribes.find(t => t.members.includes(sf.players[0]))?.name;
+    if (tribeName && ep.campEvents?.[tribeName]) {
+      (ep.campEvents[tribeName].post = ep.campEvents[tribeName].post || []).push({
+        type: 'phobiaSharedFear', players: sf.players,
+        text: `${sf.players.join(' and ')} share the same fear: ${sf.fear}. They faced it knowing the other was watching.`,
+        badgeText: 'SHARED FEAR', badgeClass: 'gold',
+      });
+    }
+  });
+
+  // Clutch events
+  if (clutch) {
+    const tribeName = clutch.tribe;
+    if (ep.campEvents?.[tribeName]) {
+      (ep.campEvents[tribeName].post = ep.campEvents[tribeName].post || []).push({
+        type: clutch.result === 'pass' ? 'phobiaClutchPass' : 'phobiaClutchFail',
+        players: [clutch.player], text: reactions['_clutch'],
+        badgeText: clutch.result === 'pass' ? 'CLUTCH' : 'CHOKED',
+        badgeClass: clutch.result === 'pass' ? 'gold' : 'red',
+      });
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════
 // ENGINE: SAY UNCLE (NO PAIN NO GAME)
 // ══════════════════════════════════════════════════════════════════════
 

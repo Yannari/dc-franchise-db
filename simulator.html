@@ -1618,6 +1618,7 @@ const TWIST_CATALOG = [
   { id:'slasher-night',    emoji:'🔪', name:'Slasher Night',        category:'elim',       phase:'post-merge', desc:'A slasher hunts the tribe. Players are picked off round by round. Last one standing wins immunity. Lowest scorer is eliminated. No tribal council.',  engineType:'slasher-night'   },
   { id:'triple-dog-dare',  emoji:'🎯', name:'Triple Dog Dare',      category:'elim',       phase:'post-merge', desc:'Eliminated players dare the tribe. Accept to earn freebies, redirect to spend them. Run out of freebies and fail a dare? You\'re out. No tribal council.', engineType:'triple-dog-dare' },
   { id:'say-uncle', emoji:'💪', name:'Say Uncle', category:'immunity', phase:'post-merge', desc:'Torture endurance challenge. Survive 10 seconds or you\'re out. Dominate a dare to pick the next victim — but if they pass, YOU\'RE eliminated instead. Last one standing wins immunity.', engineType:'say-uncle' },
+  { id:'phobia-factor', emoji:'😱', name:'Phobia Factor', category:'immunity', phase:'pre-merge', desc:'Each player faces their worst fear. Tribe with the best completion rate wins immunity. Worst tribe goes to tribal. Triple points clutch for losing tribe.', engineType:'phobia-factor' },
   { id:'cultural-reset',   emoji:'🔄', name:'Cultural Reset',       category:'elim',       phase:'any',        desc:'All alliances exposed publicly. Weak alliances dissolve, strong ones survive but become targets. Double-dippers are caught. The social game resets.',        engineType:'cultural-reset'  },
   { id:'rock-draw',        emoji:'🪨', name:'Rock Draw',            category:'elim',       phase:'any',        desc:'No re-vote on a tie — non-immune, non-tied players draw rocks. Random exit.', engineType:'rock-draw'      },
   { id:'open-vote',        emoji:'📢', name:'Open Vote',            category:'elim',       phase:'any',        desc:'Votes are public — cast one by one in an order chosen by the immunity winner. Cascade pressure builds. Everyone sees who said whose name.', engineType:'open-vote' },
@@ -1834,6 +1835,79 @@ const SAY_UNCLE_POOL = {
   ],
 };
 const SAY_UNCLE_CATEGORIES = Object.keys(SAY_UNCLE_POOL);
+
+// ── Phobia Factor — fear pools (face your phobia) ──
+const PHOBIA_POOL = {
+  'pain': [
+    { title: 'Hot Coals', desc: 'Walk barefoot across hot coals.' },
+    { title: 'Bee Stings', desc: 'Stand still while bees land on you.' },
+    { title: 'Ice Water Immersion', desc: 'Submerge yourself in ice water for 10 seconds.' },
+    { title: 'Cactus Walk', desc: 'Walk through a cactus patch barefoot.' },
+    { title: 'Electric Shock', desc: 'Sit in a chair that delivers mild shocks.' },
+    { title: 'Fire Walk', desc: 'Walk between two walls of flame.' },
+    { title: 'Pepper Spray', desc: 'Stand in a mist of pepper spray. Eyes open.' },
+    { title: 'Ant Swarm', desc: 'Let fire ants crawl over your hands.' },
+    { title: 'Jellyfish Touch', desc: 'Touch a jellyfish with your bare hand.' },
+    { title: 'Nail Bed', desc: 'Lay on a bed of nails for 10 seconds.' },
+    { title: 'Rubber Band Snap', desc: 'Let the tribe snap rubber bands at your arms.' },
+    { title: 'Slap Challenge', desc: 'Get slapped across the face. Don\'t flinch.' },
+    { title: 'Branding Iron', desc: 'Hold a fake branding iron close to your skin. Don\'t pull away.' },
+    { title: 'Sunburn Box', desc: 'Sit in a box under heat lamps for 10 seconds.' },
+    { title: 'Hail Storm', desc: 'Stand under a machine that pelts you with ice.' },
+  ],
+  'fear': [
+    { title: 'Snakes', desc: 'Pick up a live snake. Hold it.' },
+    { title: 'Spiders', desc: 'Let a tarantula walk on your hand.' },
+    { title: 'Buried Alive', desc: 'Get sealed in a glass box under sand for 5 minutes.' },
+    { title: 'Heights', desc: 'Stand on the edge of a cliff. Look down.' },
+    { title: 'Darkness', desc: 'Get locked in a pitch-black room for 60 seconds.' },
+    { title: 'Confined Spaces', desc: 'Climb into a coffin. Lid closes. 10 seconds.' },
+    { title: 'Deep Water', desc: 'Get lowered into deep water in a shark cage.' },
+    { title: 'Rats', desc: 'Stand in a room full of rats.' },
+    { title: 'Bats', desc: 'Sit in a cave full of bats. Don\'t run.' },
+    { title: 'Thunder', desc: 'Sit through a simulated thunderstorm at close range.' },
+    { title: 'Clowns', desc: 'Sit in a room with a clown staring at you.' },
+    { title: 'Being Chased', desc: 'Get chased by a masked figure through the woods.' },
+    { title: 'Wolves', desc: 'Make eye contact with a wolf for 10 seconds.' },
+    { title: 'Quicksand', desc: 'Stand in quicksand up to your waist. Don\'t struggle.' },
+    { title: 'Haunted House', desc: 'Walk through a haunted house alone.' },
+  ],
+  'gross': [
+    { title: 'Worms', desc: 'Jump into a pool of worms. Submerge.' },
+    { title: 'Leeches', desc: 'Sit in a barrel of leeches.' },
+    { title: 'Cockroaches', desc: 'Let cockroaches crawl on your face.' },
+    { title: 'Sewage', desc: 'Snorkel in swamp water. Face down.' },
+    { title: 'Rotten Food', desc: 'Eat a spoonful of week-old camp food.' },
+    { title: 'Maggots', desc: 'Let maggots be spread on your back. Lay still.' },
+    { title: 'Fish Guts', desc: 'Stick your hands into a bucket of fish guts.' },
+    { title: 'Slug Bath', desc: 'Lay in a bathtub of slugs.' },
+    { title: 'Bird Droppings', desc: 'Stand under a birdcage. Look up.' },
+    { title: 'Dumpster', desc: 'Sit inside a closed dumpster for 30 seconds.' },
+    { title: 'Mystery Meat', desc: 'Eat a mystery meat patty. Don\'t ask what it is.' },
+    { title: 'Swamp Mud', desc: 'Get buried in swamp mud up to your neck.' },
+    { title: 'Catfish', desc: 'Kiss a live catfish on the mouth.' },
+    { title: 'Roadkill', desc: 'Lay your head on a roadkill pillow.' },
+    { title: 'Nose Hair Pull', desc: 'Have all your nose hairs pulled at once.' },
+  ],
+  'humiliation': [
+    { title: 'Green Jelly Pool', desc: 'Dive into a pool of green jelly from a high board.' },
+    { title: 'Chicken Costume', desc: 'Wear a chicken costume and cluck for 60 seconds.' },
+    { title: 'Public Singing', desc: 'Sing your worst song in front of everyone.' },
+    { title: 'Baby Outfit', desc: 'Wear a baby outfit and cry for your bottle.' },
+    { title: 'Clown Makeup', desc: 'Get full clown makeup. Do a routine.' },
+    { title: 'Wedgie Walk', desc: 'Give yourself a wedgie and walk the length of camp.' },
+    { title: 'Dance Solo', desc: 'Dance alone in front of everyone. No music.' },
+    { title: 'Love Confession', desc: 'Confess love to the person you like least. On camera.' },
+    { title: 'Dunce Cap', desc: 'Wear a dunce cap and sit in the corner while everyone watches.' },
+    { title: 'Ugly Wig', desc: 'Wear the ugliest wig imaginable. All day.' },
+    { title: 'Cow Costume', desc: 'Wear a cow costume. Parade around camp. Moo on command.' },
+    { title: 'Truth Serum', desc: 'Answer any question the tribe asks. Honestly.' },
+    { title: 'Belly Flop', desc: 'Do a belly flop off the dock. Maximum splash.' },
+    { title: 'Being Mocked', desc: 'Stand on stage while the tribe roasts you for 60 seconds.' },
+    { title: 'Walk of Shame', desc: 'Walk a lap around camp while everyone slow-claps.' },
+  ],
+};
+const PHOBIA_CATEGORIES = Object.keys(PHOBIA_POOL);
 
 // S10 preset data
 const S10_TRIBES = [
@@ -11400,6 +11474,13 @@ function applyTwist(ep, twist, isPrimary = true) {
     if (!gs.isMerged && !_suMerging) return;
     if (gs.activePlayers.length < 3) return;
     ep.isSayUncle = true;
+
+  } else if (engineType === 'phobia-factor') {
+    // Pre-merge only, not episode 1, need 2+ tribes
+    if (gs.isMerged || gs.tribes.length < 2) return;
+    const epNum = (gs.episode || 0) + 1;
+    if (epNum < 2) return;
+    ep.isPhobiaFactor = true;
 
   } else if (engineType === 'cultural-reset') {
     const activePlayers = gs.activePlayers;

@@ -224,9 +224,12 @@ and the downstream consequence. None are guaranteed — all fire on a roll.
   Mechanic: each tribe picks 1v1 champion. Win = hero moment. Lose = blame.
     Creates "why didn't you pick me?" drama.
 
-[14] REWARD TRIP BONDING BACKFIRE
-  Trigger: reward with 2-3 winners, one has high-bond pair outside group.
-  Mechanic: left-behind players form counter-alliance. ~15% roll.
+[DONE] [14] REWARD TRIP BONDING BACKFIRE — post-merge individual reward backfire.
+  4 gates: snubbed player (bond >= 3 with winner), left-behind cohesion (bond >= 1.5 pair),
+  15% roll. Path A (avg bond >= 2.0): counter-alliance formed via gs.namedAlliances, bond +0.4,
+  heat +1.5 on winner / +0.8 on companions. Path B (avg bond < 2.0): voting bloc, bond +0.3,
+  heat +1.0 on winner, F2 side deal between top-bonded snubbed pair. Camp events with BACKFIRE
+  / LEFT BEHIND badges. VP card on reward screen. ~5-8% effective fire rate.
 
 [10] THE GOAT MUTINY
   Trigger: 2 goats on same tribe, ep >= 8. ~20% once per game.

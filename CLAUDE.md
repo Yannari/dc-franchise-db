@@ -78,6 +78,10 @@ Do not split it into separate files. This is intentional.
 - Alliance acceptance is relationship-driven (bond with recruiter + group avg bond), not stat-driven
 - Advantages force-play at top 5 (`activePlayers.length <= 5`)
 - `handleAdvantageInheritance(eliminatedName, ep)` must be called BEFORE stripping advantages on every elimination path
+- **Every new feature MUST have both VP display AND text backlog output.** VP screens (`rpBuild*`) show
+  the visual viewer; text backlog (`_text*` functions in `_textRewardChallenge`, `_textCampPost`, etc.)
+  provides the plain-text log. Neither is optional — features without text backlog are invisible to
+  the text viewer, features without VP are invisible to the visual viewer.
 
 ## Advantage System
 - `ADVANTAGES` array: idol, beware, voteSteal, extraVote, kip, legacy, amulet, secondLife, teamSwap, voteBlock, safetyNoPower, soleVote

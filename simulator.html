@@ -3936,6 +3936,8 @@ function computeHeat(name, tribalPlayers, alliances) {
   // Challenge throw: caught = suspicion heat. Uncaught = significant heat reduction (the whole point of throwing)
   if (gs.challengeThrowHeat?.[name] >= ((gs.episode || 0) + 1) - 1) heat += 0.8;
   if (gs.challengeThrowHeatReduction?.[name] >= ((gs.episode || 0) + 1) - 1) heat -= 1.0;
+  // Reward backfire: left-behind players organized against reward group
+  if (gs._rewardBackfireHeat?.targets?.[name] && gs._rewardBackfireHeat.expiresEp > (gs.episode || 0)) heat += gs._rewardBackfireHeat.targets[name];
   // Survival: provider protection + villain/schemer targeting + slacker resentment
   if (seasonConfig.foodWater === 'enabled') {
     if (gs.currentProviders?.includes(name)) {
@@ -24963,6 +24965,7 @@ function simulateJuryRoundtable(ep) {
           rewardSnubs: rct.rewardSnubs || null, rewardAlliancePitched: rct.rewardAlliancePitched || false, rewardAllianceFormed: rct.rewardAllianceFormed || null, rewardAllianceFailed: rct.rewardAllianceFailed || false, rewardAllianceMembers: rct.rewardAllianceMembers || null, rewardAllianceStrengthened: rct.rewardAllianceStrengthened || null, rewardFailedPairs: rct.rewardFailedPairs || null, rewardPitchLeaks: rct.rewardPitchLeaks || null,
           rewardMaxCompanions: rct.rewardMaxCompanions || null,
           rewardCluedPlayer: rct.rewardCluedPlayer || null, rewardShareInvite: rct.rewardShareInvite || null,
+          rewardBackfire: rct.rewardBackfire || null,
         };
       })(),
       tribalTribe: null,
@@ -25623,6 +25626,8 @@ function simulateJuryRoundtable(ep) {
     if (gs._volunteerDuelHeat) delete gs._volunteerDuelHeat;
     // Clear phobia blame after tribal
     if (gs._phobiaBlame) delete gs._phobiaBlame;
+    // Clear reward backfire heat after tribal
+    if (gs._rewardBackfireHeat && (gs.episode || 0) + 1 >= gs._rewardBackfireHeat.expiresEp) delete gs._rewardBackfireHeat;
 
     // ── BLACK VOTE: eliminated player casts a parting vote/gift (until F4) ──
     if (cfg.blackVote && cfg.blackVote !== 'off' && gs.activePlayers.length > 4) {
@@ -25757,6 +25762,7 @@ function simulateJuryRoundtable(ep) {
         rewardSnubs: rct.rewardSnubs || null, rewardAlliancePitched: rct.rewardAlliancePitched || false, rewardAllianceFormed: rct.rewardAllianceFormed || null, rewardAllianceFailed: rct.rewardAllianceFailed || false, rewardAllianceMembers: rct.rewardAllianceMembers || null, rewardAllianceStrengthened: rct.rewardAllianceStrengthened || null, rewardFailedPairs: rct.rewardFailedPairs || null, rewardPitchLeaks: rct.rewardPitchLeaks || null,
         rewardMaxCompanions: rct.rewardMaxCompanions || null,
         rewardCluedPlayer: rct.rewardCluedPlayer || null,
+        rewardBackfire: rct.rewardBackfire || null,
       };
     })(),
     tribalTribe: ep.loser?.name || null,
@@ -27399,6 +27405,13 @@ function _textRewardChallenge(ep, ln, sec) {
     if (_isTribeRew) (_rcTwist.rewardChalPlacements||[]).forEach(t => Object.assign(_rcScores, t.memberScores||{}));
     else Object.assign(_rcScores, _rcTwist.rewardMemberScores||{});
     generateChallengeNotes(_rcTwist.rewardChalPlacements, _rcScores, 2).forEach(n => ln(n));
+    if (_rcTwist.rewardBackfire?.fired) {
+      if (_rcTwist.rewardBackfire.path === 'alliance') {
+        ln(`BACKFIRE: Left-behind players formed alliance "${_rcTwist.rewardBackfire.allianceName}" (${(_rcTwist.rewardBackfire.allianceMembers||[]).join(', ')}). Heat +1.5 on ${_rcTwist.rewardBackfire.heatTarget}.`);
+      } else {
+        ln(`LEFT BEHIND: Snubbed players bonded. Heat +1.0 on ${_rcTwist.rewardBackfire.heatTarget}.${_rcTwist.rewardBackfire.blocPair ? ` F2 deal: ${_rcTwist.rewardBackfire.blocPair.join(' + ')}.` : ''}`);
+      }
+    }
   }
   // Standalone reward challenge data
   if (ep.rewardChalData && !_rcTwist) {
@@ -27413,6 +27426,13 @@ function _textRewardChallenge(ep, ln, sec) {
     if (rc.rewardAllianceFailed) ln(`Alliance pitch FAILED during reward.`);
     if (rc.rewardAllianceStrengthened) ln(`Alliance ${rc.rewardAllianceStrengthened} STRENGTHENED during reward.`);
     if (rc.rewardPitchLeaks?.length) rc.rewardPitchLeaks.forEach(l => ln(`LEAKED: ${l.leaker} told ${l.toldTo} about the failed pitch.`));
+    if (rc.rewardBackfire?.fired) {
+      if (rc.rewardBackfire.path === 'alliance') {
+        ln(`BACKFIRE: Left-behind players formed alliance "${rc.rewardBackfire.allianceName}" (${(rc.rewardBackfire.allianceMembers||[]).join(', ')}). Heat +1.5 on ${rc.rewardBackfire.heatTarget}.`);
+      } else {
+        ln(`LEFT BEHIND: Snubbed players bonded. Heat +1.0 on ${rc.rewardBackfire.heatTarget}.${rc.rewardBackfire.blocPair ? ` F2 deal: ${rc.rewardBackfire.blocPair.join(' + ')}.` : ''}`);
+      }
+    }
     if (rc.rewardShareInvite) ln(`REWARD SHARED: ${rc.rewardShareInvite.invited} invited by ${rc.rewardShareInvite.invitedBy} (${rc.rewardShareInvite.reason})`);
   }
 }
@@ -38721,6 +38741,8 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'survivalCollapse'          ? (evt.badgeText || 'COLLAPSE')
                      : evt.type === 'medevac'                   ? (evt.badgeText || 'MEDEVAC')
                      : evt.type === 'providerVotedOut'          ? (evt.badgeText || 'FOOD CRISIS')
+                     : evt.type === 'rewardBackfireAlliance'   ? (evt.badgeText || 'BACKFIRE')
+                     : evt.type === 'rewardBackfireBloc'       ? (evt.badgeText || 'LEFT BEHIND')
                      : evt.type === 'sideDeal'                  ? (evt.badgeText || 'SIDE DEAL')
                      : evt.type === 'infoTrade'                 ? (evt.badgeText || 'INFO TRADE')
                      : evt.type === 'loyaltyTest'               ? (evt.badgeText || 'LOYALTY TEST')
@@ -39641,6 +39663,25 @@ function rpBuildRewardChallenge(ep) {
       html += `<div style="padding:8px 12px;background:rgba(227,179,65,0.06);border:1px solid rgba(227,179,65,0.15);border-radius:6px;margin-bottom:8px;font-size:11px;color:#e3b341">
         <strong>ALLIANCE STRENGTHENED</strong> — ${rc.rewardAllianceStrengthened} used the reward to solidify their deal. Private time, no distractions.
       </div>`;
+    }
+    // ── Reward Backfire card ──
+    if (rc.rewardBackfire?.fired) {
+      const _bf = rc.rewardBackfire;
+      if (_bf.path === 'alliance') {
+        html += `<div style="padding:10px 12px;background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.2);border-radius:6px;margin-bottom:8px">
+          <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:#f0883e;margin-bottom:4px">BACKFIRE</div>
+          <div style="font-size:12px;color:#e6edf3">While <strong>${_bf.heatTarget}</strong> feasted, the camp organized. <strong>${_bf.allianceName}</strong> was born from resentment.</div>
+          <div style="display:flex;gap:4px;margin-top:6px">${(_bf.allianceMembers || []).map(m => rpPortrait(m, 'sm')).join('')}</div>
+          <div style="font-size:10px;color:#f0883e;margin-top:6px">+1.5 heat on ${_bf.heatTarget}${_bf.heatCompanions?.length ? `, +0.8 on ${_bf.heatCompanions.join(', ')}` : ''}</div>
+        </div>`;
+      } else {
+        html += `<div style="padding:10px 12px;background:rgba(248,81,73,0.04);border:1px solid rgba(248,81,73,0.12);border-radius:6px;margin-bottom:8px">
+          <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:#f85149;margin-bottom:4px">LEFT BEHIND</div>
+          <div style="font-size:12px;color:#8b949e">The ones left behind found common ground.${_bf.blocPair ? ` ${_bf.blocPair[0]} and ${_bf.blocPair[1]} made an F2 deal.` : ''}</div>
+          <div style="display:flex;gap:4px;margin-top:6px">${(_bf.snubbedPlayers || []).map(m => rpPortrait(m, 'sm')).join('')}</div>
+          <div style="font-size:10px;color:#f85149;margin-top:6px">+1.0 heat on ${_bf.heatTarget}</div>
+        </div>`;
+      }
     }
 
     html += `</div>`;

@@ -29369,6 +29369,17 @@ function _textVolunteerDuel(ep, ln, sec) {
   }
 }
 
+function _textDockArrivals(ep, ln, sec) {
+  if (!ep.dockArrivals?.length) return;
+  sec('THE ARRIVAL');
+  const host = seasonConfig.host || 'Chris';
+  ep.dockArrivals.forEach(a => {
+    ln(`[${host}] ${a.hostLine}`);
+    ln(`[${a.name}] ${a.playerLine}`);
+    if (a.dockReaction) ln(`  ${a.dockReaction.text}`);
+  });
+}
+
 function _textFirstImpressions(ep, ln, sec) {
   const _tw = (ep.twists || []).find(t => t.type === 'first-impressions' || t.catalogId === 'first-impressions');
   const fi = _tw?.firstImpressions;
@@ -30805,6 +30816,7 @@ function generateSummaryText(ep) {
   // Episode flow — VP screen order
   _textColdOpen(ep, ln, sec);
   _textReturns(ep, ln, sec);
+  _textDockArrivals(ep, ln, sec);
   _textFirstImpressions(ep, ln, sec);
   _textFanVoteReturn(ep, ln, sec);
   _textSecondChanceVote(ep, ln, sec);
@@ -31320,6 +31332,7 @@ function patchEpisodeHistory(ep) {
   if (!h.loser && ep.loser) h.loser = { name: ep.loser.name, members: [...(ep.loser.members||[])] };
   // Tribes at start
   if (!h.tribesAtStart && ep.tribesAtStart) h.tribesAtStart = ep.tribesAtStart.map(t => ({ name: t.name, members: [...t.members] }));
+  if (!h.dockArrivals && ep.dockArrivals) h.dockArrivals = ep.dockArrivals;
   // Save tie/revote state so VP can detect ties for display
   if (ep.isTie !== undefined && !h.isTie) h.isTie = ep.isTie;
   if (ep.tiedPlayers?.length && !h.tiedPlayers) h.tiedPlayers = [...ep.tiedPlayers];

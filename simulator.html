@@ -48156,7 +48156,7 @@ function rpBuildCliffDive(ep) {
   });
 
   if (!allRevealed) {
-    html += `<div style="text-align:center;margin-top:12px">
+    html += `<div style="position:sticky;bottom:0;padding:12px 0;background:linear-gradient(transparent,rgba(7,9,13,0.95) 20%);text-align:center;z-index:5">
       <button class="rp-btn" onclick="${_cdReveal(state.idx + 1)}">NEXT (${state.idx + 2}/${allReactions.length})</button>
       <button class="rp-btn" style="margin-left:8px;opacity:0.6" onclick="${_cdReveal(allReactions.length - 1)}">Reveal All</button>
     </div>`;

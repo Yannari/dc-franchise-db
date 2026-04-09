@@ -7033,18 +7033,25 @@ function simulateAwakeAThon(ep) {
     // At least 1 event when 4+ awake, up to 2 when 6+
     const maxEvents = awakePlayers.length >= 6 ? 2 : awakePlayers.length >= 4 ? 1 : 0;
 
-    // Bonding (~50%) — low threshold: staying awake together creates bonds, even between strangers
+    // Bonding (~50%) — social-butterfly/hero/showmancer/loyal-soldier more likely to initiate
     if (eventsThisRound < maxEvents && Math.random() < 0.50 && awakePlayers.length >= 2) {
-      for (let bi = 0; bi < awakePlayers.length && eventsThisRound < maxEvents; bi++) {
-        for (let bj = bi + 1; bj < awakePlayers.length; bj++) {
-          const pairKey = [awakePlayers[bi], awakePlayers[bj]].sort().join('|');
+      // Sort by social inclination: social archetypes first, then by social stat
+      const _bondArchBoost = { 'social-butterfly': 3, hero: 2, showmancer: 2, 'loyal-soldier': 1, underdog: 1, villain: -1, floater: -1 };
+      const bondCandidates = [...awakePlayers].sort((a, b) => {
+        const aArch = players.find(p => p.name === a)?.archetype || '';
+        const bArch = players.find(p => p.name === b)?.archetype || '';
+        return ((_bondArchBoost[bArch] || 0) + pStats(b).social * 0.1) - ((_bondArchBoost[aArch] || 0) + pStats(a).social * 0.1);
+      });
+      for (let bi = 0; bi < bondCandidates.length && eventsThisRound < maxEvents; bi++) {
+        for (let bj = bi + 1; bj < bondCandidates.length; bj++) {
+          const pairKey = [bondCandidates[bi], bondCandidates[bj]].sort().join('|');
           if (socialEventsDone.bonds.has(pairKey)) continue;
-          if (getBond(awakePlayers[bi], awakePlayers[bj]) >= -1.0) { // anyone who isn't enemies
-            addBond(awakePlayers[bi], awakePlayers[bj], 0.3);
+          if (getBond(bondCandidates[bi], bondCandidates[bj]) >= -1.0) {
+            addBond(bondCandidates[bi], bondCandidates[bj], 0.3);
             socialEventsDone.bonds.add(pairKey);
             roundSocialEvents.push({
-              type: 'awakeAThonBond', players: [awakePlayers[bi], awakePlayers[bj]],
-              text: `${awakePlayers[bi]} and ${awakePlayers[bj]} talk quietly to stay awake. The conversation runs deeper than either expected.`,
+              type: 'awakeAThonBond', players: [bondCandidates[bi], bondCandidates[bj]],
+              text: `${bondCandidates[bi]} and ${bondCandidates[bj]} talk quietly to stay awake. The conversation runs deeper than either expected.`,
               badgeText: 'STAYING AWAKE TOGETHER', badgeClass: 'gold'
             });
             eventsThisRound++;
@@ -7055,9 +7062,13 @@ function simulateAwakeAThon(ep) {
       }
     }
 
-    // Alliance pitch (~25%)
+    // Alliance pitch (~25%) — mastermind/schemer/villain archetypes boosted
     if (eventsThisRound < maxEvents && Math.random() < 0.25 && awakePlayers.length >= 2) {
-      const strategists = awakePlayers.filter(p => pStats(p).strategic >= 6);
+      const _dealArchs = ['mastermind', 'schemer', 'villain'];
+      const strategists = awakePlayers.filter(p => {
+        const arch = players.find(pl => pl.name === p)?.archetype || '';
+        return pStats(p).strategic >= 6 || _dealArchs.includes(arch);
+      });
       for (const initiator of strategists) {
         if (socialEventsDone.alliances.has(initiator)) continue;
         const partner = awakePlayers.find(p => p !== initiator && !socialEventsDone.alliances.has(p) && getBond(initiator, p) >= -0.5); // low bar — late nights make people talk
@@ -7090,14 +7101,17 @@ function simulateAwakeAThon(ep) {
       }
     }
 
-    // Showmance spark (~15%)
+    // Showmance spark (~15%) — showmancer archetype gets lower bond threshold
     if (eventsThisRound < maxEvents && Math.random() < 0.15 && awakePlayers.length >= 2) {
       const showmanceCount = (gs.showmances || []).filter(s => s.phase !== 'broken-up').length;
       if (showmanceCount < 2) {
         for (let si = 0; si < awakePlayers.length; si++) {
           for (let sj = si + 1; sj < awakePlayers.length; sj++) {
             const a = awakePlayers[si], b = awakePlayers[sj];
-            if (getBond(a, b) >= 2 && romanticCompat(a, b)) { // lower threshold — late night vulnerability
+            const _aIsShowmancer = players.find(p => p.name === a)?.archetype === 'showmancer';
+            const _bIsShowmancer = players.find(p => p.name === b)?.archetype === 'showmancer';
+            const _bondReq = (_aIsShowmancer || _bIsShowmancer) ? 0.5 : 2; // showmancers connect faster
+            if (getBond(a, b) >= _bondReq && romanticCompat(a, b)) {
               const alreadyShowmance = (gs.showmances || []).some(s => s.players.includes(a) && s.players.includes(b));
               if (alreadyShowmance) continue;
               if (!gs.showmances) gs.showmances = [];

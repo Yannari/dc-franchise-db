@@ -1630,6 +1630,7 @@ const TWIST_CATALOG = [
   { id:'triple-dog-dare',  emoji:'🎯', name:'Triple Dog Dare',      category:'challenge',  phase:'post-merge', desc:'Eliminated players dare the tribe. Accept to earn freebies, redirect to spend them. Run out of freebies and fail a dare? You\'re out. No tribal council.', engineType:'triple-dog-dare' },
   { id:'say-uncle', emoji:'💪', name:'Say Uncle', category:'challenge', phase:'post-merge', desc:'Torture endurance challenge. Survive 10 seconds or you\'re out. Dominate a dare to pick the next victim — but if they pass, YOU\'RE eliminated instead. Last one standing wins immunity.', engineType:'say-uncle' },
   { id:'phobia-factor', emoji:'😱', name:'Phobia Factor', category:'challenge', phase:'pre-merge', desc:'Each player faces their worst fear. Tribe with the best completion rate wins immunity. Worst tribe goes to tribal. Triple points clutch for losing tribe.', engineType:'phobia-factor' },
+  { id:'cliff-dive', emoji:'🏔️', name:'Cliff Dive', category:'challenge', phase:'pre-merge', desc:'Three-phase tribe challenge: cliff jump (willingness), crate haul (physical), hot tub build (mental). Chickens get blame on losing tribe.', engineType:'cliff-dive' },
   { id:'cultural-reset',   emoji:'🔄', name:'Cultural Reset',       category:'elim',       phase:'any',        desc:'All alliances exposed publicly. Weak alliances dissolve, strong ones survive but become targets. Double-dippers are caught. The social game resets.',        engineType:'cultural-reset'  },
   { id:'rock-draw',        emoji:'🪨', name:'Rock Draw',            category:'elim',       phase:'any',        desc:'No re-vote on a tie — non-immune, non-tied players draw rocks. Random exit.', engineType:'rock-draw'      },
   { id:'open-vote',        emoji:'📢', name:'Open Vote',            category:'elim',       phase:'any',        desc:'Votes are public — cast one by one in an order chosen by the immunity winner. Cascade pressure builds. Everyone sees who said whose name.', engineType:'open-vote' },
@@ -6759,6 +6760,200 @@ function _slasherFinalShowdown(p1, p2, scores) {
     shieldPush: winMethod.id === 'uses-shield',
     heroicSacrifice: loseMethod.id === 'heroic-sacrifice',
     bondChanges
+  };
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// CLIFF DIVE — REACTION POOLS
+// ══════════════════════════════════════════════════════════════════════
+
+const CLIFF_DIVE_JUMPED = {
+  high: [
+    (n,pr) => `${n} doesn't even pause. ${pr.Sub} ${pr.sub==='they'?'walk':'walks'} to the edge and jumps.`,
+    (n,pr) => `${n} takes one look down and grins. ${pr.Sub} ${pr.sub==='they'?'are':'is'} already in the air.`,
+    (n,pr) => `No hesitation from ${n}. Off the cliff like it's nothing.`,
+    (n,pr) => `${n} cracks ${pr.posAdj} neck, backs up for a running start, and launches.`,
+  ],
+  mid: [
+    (n,pr) => `${n} takes a deep breath. Closes ${pr.posAdj} eyes. Jumps.`,
+    (n,pr) => `${n} looks down, looks at ${pr.posAdj} team, looks down again. Then jumps.`,
+    (n,pr) => `It takes ${n} a moment. But ${pr.sub} ${pr.sub==='they'?'do':'does'} it.`,
+    (n,pr) => `${n} whispers something to ${pr.ref}, backs up, and goes for it.`,
+  ],
+  low: [
+    (n,pr) => `${n} is visibly shaking. But ${pr.sub} ${pr.sub==='they'?'jump':'jumps'} anyway. The scream echoes off the cliff.`,
+    (n,pr) => `Nobody expected ${n} to jump. ${n} didn't expect it either. But there ${pr.sub} ${pr.sub==='they'?'go':'goes'}.`,
+    (n,pr) => `${n} closes ${pr.posAdj} eyes, plugs ${pr.posAdj} nose, and falls forward. It counts.`,
+    (n,pr) => `${n}'s legs are shaking so hard the cliff might crumble. ${pr.Sub} ${pr.sub==='they'?'jump':'jumps'} before ${pr.sub} can change ${pr.posAdj} mind.`,
+  ],
+};
+
+const CLIFF_DIVE_CHICKEN = [
+  (n,pr) => `${n} looks over the edge, shakes ${pr.posAdj} head, and steps back. Not happening.`,
+  (n,pr) => `${n} crosses ${pr.posAdj} arms. "I'm not doing this." The chicken hat goes on.`,
+  (n,pr) => `${n} peers down at the water. At the sharks. Back at the water. "No." Chicken hat.`,
+  (n,pr) => `${n} starts walking toward the edge, stops, and walks back. "Sorry." Chicken hat.`,
+  (n,pr) => `${n} sits down on the cliff. ${pr.Sub} ${pr.sub==='they'?'aren\'t':'isn\'t'} going anywhere.`,
+];
+
+function simulateCliffDive(ep) {
+  const tribes = gs.tribes;
+  const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
+
+  if (!ep.campEvents) ep.campEvents = {};
+  tribes.forEach(t => { if (!ep.campEvents[t.name]) ep.campEvents[t.name] = { pre: [], post: [] }; });
+
+  const tribeResults = [];
+
+  tribes.forEach(tribe => {
+    const members = [...tribe.members];
+    const jumpers = [];
+    const chickens = [];
+    const reactions = [];
+
+    members.forEach(name => {
+      const s = pStats(name);
+      const pr = pronouns(name);
+      const jumpChance = s.boldness * 0.06 + s.physical * 0.02 + s.loyalty * 0.03 + 0.10;
+      const jumped = Math.random() < jumpChance;
+
+      if (jumped) {
+        jumpers.push(name);
+        const tier = s.boldness >= 7 ? 'high' : s.boldness <= 3 ? 'low' : 'mid';
+        const text = _rp(CLIFF_DIVE_JUMPED[tier])(name, pr);
+        reactions.push({ name, jumped: true, text, boldness: s.boldness });
+      } else {
+        chickens.push(name);
+        const text = _rp(CLIFF_DIVE_CHICKEN)(name, pr);
+        reactions.push({ name, jumped: false, text, boldness: s.boldness });
+      }
+    });
+
+    let standout = null, standoutIsUnderdog = false;
+    if (jumpers.length) {
+      if (Math.random() < 0.15) {
+        standout = jumpers.reduce((a, b) => pStats(a).boldness < pStats(b).boldness ? a : b);
+        standoutIsUnderdog = true;
+      } else {
+        const scored = jumpers.map(name => ({
+          name, score: pStats(name).boldness * 0.07 + 0.3 + Math.random() * 0.2
+        })).sort((a, b) => b.score - a.score);
+        standout = scored[0].name;
+        standoutIsUnderdog = pStats(standout).boldness <= 4;
+      }
+    }
+
+    const manpowerMult = members.length > 0 ? jumpers.length / members.length : 0;
+    const avgPhysical = members.reduce((s, n) => s + pStats(n).physical, 0) / members.length;
+    const avgEndurance = members.reduce((s, n) => s + pStats(n).endurance, 0) / members.length;
+    const haulScore = (avgPhysical * 0.5 + avgEndurance * 0.5) * manpowerMult;
+
+    const avgMental = members.reduce((s, n) => s + pStats(n).mental, 0) / members.length;
+    const avgSocial = members.reduce((s, n) => s + pStats(n).social, 0) / members.length;
+    const buildScore = (avgMental * 0.5 + avgSocial * 0.5) * manpowerMult;
+
+    const totalScore = haulScore + buildScore;
+
+    tribeResults.push({
+      name: tribe.name, members, jumpers, chickens, standout, standoutIsUnderdog,
+      jumpCount: jumpers.length, haulScore: Math.round(haulScore * 100) / 100,
+      buildScore: Math.round(buildScore * 100) / 100, totalScore: Math.round(totalScore * 100) / 100,
+      reactions,
+    });
+  });
+
+  const maxJumps = Math.max(...tribeResults.map(t => t.jumpCount));
+  const wagonCandidates = tribeResults.filter(t => t.jumpCount === maxJumps);
+  const wagonWinner = wagonCandidates.length === 1 ? wagonCandidates[0].name : null;
+  if (wagonWinner) {
+    const wt = tribeResults.find(t => t.name === wagonWinner);
+    wt.haulScore = Math.round(wt.haulScore * 1.3 * 100) / 100;
+    wt.totalScore = Math.round((wt.haulScore + wt.buildScore) * 100) / 100;
+  }
+
+  tribeResults.sort((a, b) => b.totalScore - a.totalScore || b.jumpCount - a.jumpCount);
+  const winner = tribeResults[0];
+  const loser = tribeResults[tribeResults.length - 1];
+
+  ep.challengeType = 'tribe';
+  ep.winner = gs.tribes.find(t => t.name === winner.name);
+  ep.loser = gs.tribes.find(t => t.name === loser.name);
+  ep.safeTribes = tribeResults.length > 2
+    ? tribeResults.slice(1, -1).map(t => gs.tribes.find(tr => tr.name === t.name)).filter(Boolean)
+    : [];
+  ep.challengeLabel = 'Cliff Dive';
+  ep.challengeCategory = 'mixed';
+  ep.challengeDesc = 'Three-phase challenge: cliff jump, crate haul, hot tub build.';
+  ep.tribalPlayers = [...loser.members];
+  ep.challengePlacements = tribeResults.map(t => ({
+    name: t.name, members: [...(gs.tribes.find(tr => tr.name === t.name)?.members || [])],
+    memberScores: Object.fromEntries(t.members.map(m => [m, t.jumpers.includes(m) ? 1 : 0])),
+  }));
+
+  if (!gs._cliffDiveBlame) gs._cliffDiveBlame = {};
+  loser.chickens.forEach(chicken => {
+    gs._cliffDiveBlame[chicken] = 1.0;
+    loser.jumpers.forEach(jumper => addBond(jumper, chicken, -0.3));
+  });
+  tribeResults.filter(t => t.name !== loser.name).forEach(t => {
+    t.chickens.forEach(chicken => {
+      t.jumpers.forEach(jumper => addBond(jumper, chicken, -0.15));
+    });
+  });
+
+  tribeResults.forEach(t => {
+    if (t.standout) {
+      t.members.filter(m => m !== t.standout).forEach(m => addBond(m, t.standout, 0.3));
+    }
+  });
+
+  tribeResults.forEach(t => {
+    if (!ep.campEvents[t.name]) ep.campEvents[t.name] = { pre: [], post: [] };
+    if (!ep.campEvents[t.name].post) ep.campEvents[t.name].post = [];
+
+    t.chickens.forEach(chicken => {
+      const pr = pronouns(chicken);
+      const isLoser = t.name === loser.name;
+      ep.campEvents[t.name].post.push({
+        type: 'cliffDiveChicken',
+        players: [chicken, ...t.jumpers.slice(0, 2)],
+        text: `${chicken} is wearing the chicken hat. ${t.jumpers.length} teammate${t.jumpers.length !== 1 ? 's' : ''} jumped. ${pr.Sub} didn't.`,
+        consequences: `Bond damage from teammates.${isLoser ? ' Heat +1.0.' : ''}`,
+        badgeText: 'CHICKEN', badgeClass: 'red'
+      });
+    });
+
+    if (t.standout) {
+      const pr = pronouns(t.standout);
+      ep.campEvents[t.name].post.push({
+        type: 'cliffDiveStandout',
+        players: [t.standout],
+        text: t.standoutIsUnderdog
+          ? `Nobody expected ${t.standout} to go first. ${pr.Sub} surprised everyone — including ${pr.ref}.`
+          : `${t.standout} stepped up when nobody else would. First off the cliff. The team needed that.`,
+        consequences: 'Bond +0.3 from teammates.',
+        badgeText: 'FIRST TO JUMP', badgeClass: 'gold'
+      });
+    }
+  });
+
+  tribeResults.forEach(t => {
+    if (t.standout) {
+      if (!gs.chalRecord) gs.chalRecord = {};
+      if (!gs.chalRecord[t.standout]) gs.chalRecord[t.standout] = { wins: 0, podiums: 0, bombs: 0 };
+      gs.chalRecord[t.standout].podiums += 0.5;
+    }
+    t.chickens.forEach(c => {
+      if (!gs.chalRecord) gs.chalRecord = {};
+      if (!gs.chalRecord[c]) gs.chalRecord[c] = { wins: 0, podiums: 0, bombs: 0 };
+      gs.chalRecord[c].bombs += 0.5;
+    });
+  });
+
+  ep.cliffDive = {
+    tribes: tribeResults,
+    wagonWinner,
+    winner: winner.name,
   };
 }
 
@@ -12341,6 +12536,10 @@ function applyTwist(ep, twist, isPrimary = true) {
     const epNum = (gs.episode || 0) + 1;
     if (epNum < 2) return;
     ep.isPhobiaFactor = true;
+
+  } else if (engineType === 'cliff-dive') {
+    if (gs.isMerged || gs.tribes.length < 2) return;
+    ep.isCliffDive = true;
 
   } else if (engineType === 'cultural-reset') {
     const activePlayers = gs.activePlayers;
@@ -23352,6 +23551,9 @@ function simulateEpisode() {
     ep.loser = result.loser || ep.multiTribalLosingTribes[ep.multiTribalLosingTribes.length - 1]; // worst performer
     ep.multiTribalResults = [];
     ep.tribalPlayers = ep.multiTribalLosingTribes.flatMap(t => [...t.members]); // combined for display
+  } else if (ep.isCliffDive && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
+    simulateCliffDive(ep);
+    // winner, loser, challengeType, tribalPlayers already set by simulateCliffDive
   } else if (ep.isPhobiaFactor && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
     // Phobia Factor replaces the tribe challenge
     simulatePhobiaFactor(ep);

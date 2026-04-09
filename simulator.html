@@ -7030,10 +7030,11 @@ function simulateAwakeAThon(ep) {
     const roundSocialEvents = [];
     const awakePlayers = [...awake];
     let eventsThisRound = 0;
-    const maxEvents = Math.min(2, Math.floor(awakePlayers.length / 3));
+    // At least 1 event when 4+ awake, up to 2 when 6+
+    const maxEvents = awakePlayers.length >= 6 ? 2 : awakePlayers.length >= 4 ? 1 : 0;
 
-    // Bonding (~40%) — low threshold: staying awake together creates bonds, even between strangers
-    if (eventsThisRound < maxEvents && Math.random() < 0.40 && awakePlayers.length >= 2) {
+    // Bonding (~50%) — low threshold: staying awake together creates bonds, even between strangers
+    if (eventsThisRound < maxEvents && Math.random() < 0.50 && awakePlayers.length >= 2) {
       for (let bi = 0; bi < awakePlayers.length && eventsThisRound < maxEvents; bi++) {
         for (let bj = bi + 1; bj < awakePlayers.length; bj++) {
           const pairKey = [awakePlayers[bi], awakePlayers[bj]].sort().join('|');
@@ -7054,8 +7055,8 @@ function simulateAwakeAThon(ep) {
       }
     }
 
-    // Alliance pitch (~15%)
-    if (eventsThisRound < maxEvents && Math.random() < 0.15 && awakePlayers.length >= 2) {
+    // Alliance pitch (~25%)
+    if (eventsThisRound < maxEvents && Math.random() < 0.25 && awakePlayers.length >= 2) {
       const strategists = awakePlayers.filter(p => pStats(p).strategic >= 6);
       for (const initiator of strategists) {
         if (socialEventsDone.alliances.has(initiator)) continue;
@@ -7089,8 +7090,8 @@ function simulateAwakeAThon(ep) {
       }
     }
 
-    // Showmance spark (~10%)
-    if (eventsThisRound < maxEvents && Math.random() < 0.10 && awakePlayers.length >= 2) {
+    // Showmance spark (~15%)
+    if (eventsThisRound < maxEvents && Math.random() < 0.15 && awakePlayers.length >= 2) {
       const showmanceCount = (gs.showmances || []).filter(s => s.phase !== 'broken-up').length;
       if (showmanceCount < 2) {
         for (let si = 0; si < awakePlayers.length; si++) {
@@ -7116,8 +7117,8 @@ function simulateAwakeAThon(ep) {
       }
     }
 
-    // Cheating (~8%)
-    if (eventsThisRound < maxEvents && Math.random() < 0.08 && awakePlayers.length >= 3) {
+    // Cheating (~12%)
+    if (eventsThisRound < maxEvents && Math.random() < 0.12 && awakePlayers.length >= 3) {
       for (const cheater of awakePlayers) {
         if (socialEventsDone.cheaters.has(cheater)) continue;
         const s = pStats(cheater);
@@ -7147,8 +7148,8 @@ function simulateAwakeAThon(ep) {
       }
     }
 
-    // Scheming (~10%)
-    if (eventsThisRound < maxEvents && Math.random() < 0.10 && awakePlayers.length >= 2) {
+    // Scheming (~15%)
+    if (eventsThisRound < maxEvents && Math.random() < 0.15 && awakePlayers.length >= 2) {
       const schemers = awakePlayers.filter(p => {
         const arch = players.find(pl => pl.name === p)?.archetype || '';
         return arch === 'villain' || arch === 'schemer';

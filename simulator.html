@@ -7178,9 +7178,13 @@ function simulateTripleDogDare(ep) {
   // ══════════════════════════════════════════════════════════════
   // MAIN ROUND LOOP
   // ══════════════════════════════════════════════════════════════
+  // Flow per round:
+  // 1. Spinner spins wheel -> dare assigned
+  // 2. Spinner decides: ACCEPT own dare (earn +1 freebie) or PASS to someone
+  // 3. If passed: target can USE FREEBIE to skip, or ATTEMPT (willingness roll).
+  //    Fail willingness with 0 freebies = ELIMINATED.
   let remaining = [...activePlayers];
-  let rotation = [...remaining].sort(() => Math.random() - 0.5);
-  let rotIdx = 0;
+  let _rotation = [...remaining].sort(() => Math.random() - 0.5);
 
   for (let roundNum = 1; roundNum <= maxRounds; roundNum++) {
     if (eliminatedPlayer) break;
@@ -7190,149 +7194,90 @@ function simulateTripleDogDare(ep) {
     // Freebie sharing (every 2 rounds)
     if (roundNum % 2 === 0) _checkFreebieSharing(roundNum, remaining);
 
-    // Active player whose turn it is to spin (rotating order)
-    if (rotIdx >= rotation.length) { rotation = [...remaining]; rotIdx = 0; }
-    const activeSpinner = rotation[rotIdx];
-    rotIdx++;
-    // Wheel lands on a random eliminated player (who wrote the dare)
+    // Spinner: next in rotation
+    _rotation = _rotation.filter(p => remaining.includes(p));
+    if (!_rotation.length) _rotation = [...remaining].sort(() => Math.random() - 0.5);
+    const activeSpinner = _rotation.shift();
+
+    // Wheel lands on eliminated player (who wrote the dare)
     const wheelLanding = eliminated.length ? _rp(eliminated) : 'The Host';
-    // Draw a dare
     const category = _rp(DARE_CATEGORIES);
     const dareObj = _rp(DARE_POOL[category]);
     const dareTitle = dareObj.title;
     const dareText = dareObj.desc;
-    // The spinner receives the dare first (they can accept or redirect)
-    let currentTarget = activeSpinner;
 
-    // Redirect chain — you can redirect as long as you have freebies
     const chain = [];
-    const MAX_CHAIN = 20; // safety cap
-    const _touched = new Set(); // who's been offered this pass
-    let resolved = false;
 
-    while (!resolved && chain.length < MAX_CHAIN) {
-      _touched.add(currentTarget);
-      const hasFreebie = freebies[currentTarget] > 0;
+    // Step 1: Spinner decides -- accept own dare or pass?
+    const spinnerWilling = _willingness(activeSpinner, category, roundNum, false);
 
-      if (!hasFreebie) {
-        // Forced — must attempt. Roll with lower threshold (desperation helps)
-        const canDoIt = _willingness(currentTarget, category, roundNum, true);
-        if (canDoIt) {
-          chain.push({ player: currentTarget, action: 'accept', completed: true, freebieEarned: true,
-            reaction: _acceptReaction(currentTarget, category, dareTitle) });
-          freebies[currentTarget]++;
-          completions[currentTarget]++;
-          resolved = true;
-        } else {
-          chain.push({ player: currentTarget, action: 'accept', completed: false, freebieEarned: false,
-            reaction: _failReaction(currentTarget, dareTitle) });
-          eliminatedPlayer = currentTarget;
-          eliminatedRound = roundNum;
-          eliminatedDare = { category, title: dareTitle, text: dareText };
-          resolved = true;
-        }
+    if (spinnerWilling) {
+      // Spinner accepts their own dare -> earns +1 freebie
+      chain.push({ player: activeSpinner, action: 'accept', completed: true, freebieEarned: true,
+        isSpinner: true, reaction: _acceptReaction(activeSpinner, category, dareTitle) });
+      freebies[activeSpinner]++;
+      completions[activeSpinner]++;
+    } else {
+      // Spinner passes the dare to someone else
+      const redirectResult = _pickRedirectTarget(activeSpinner, remaining);
+      if (!redirectResult || !redirectResult.target) {
+        // No valid targets (solo?) -- spinner must accept
+        chain.push({ player: activeSpinner, action: 'accept', completed: true, freebieEarned: true,
+          isSpinner: true, reaction: _acceptReaction(activeSpinner, category, dareTitle) });
+        freebies[activeSpinner]++;
+        completions[activeSpinner]++;
       } else {
-        // Has freebies — choose: accept (brave) or redirect (strategic)?
-        const wantsToAccept = _willingness(currentTarget, category, roundNum, false);
-        if (wantsToAccept) {
-          // Voluntarily accepts — always completes (they chose to do it)
-          chain.push({ player: currentTarget, action: 'accept', completed: true, freebieEarned: true,
-            reaction: _acceptReaction(currentTarget, category, dareTitle) });
-          freebies[currentTarget]++;
-          completions[currentTarget]++;
-          resolved = true;
-        } else {
-          // Wants to redirect — can't pass to anyone who already touched the dare this round
-          const _redirectPool = remaining.filter(p => !_touched.has(p));
-          const redirectResult = _pickRedirectTarget(currentTarget, _redirectPool);
-          if (!redirectResult || !redirectResult.target) {
-            // Everyone's been touched — new pass, use normal targeting (who you want gone)
-            if (freebies[currentTarget] > 0) {
-              _touched.clear();
-              _touched.add(currentTarget);
-              const _loopResult = _pickRedirectTarget(currentTarget, remaining.filter(p => !_touched.has(p)));
-              if (_loopResult && _loopResult.target) {
-                const _rdBond2 = getBond(currentTarget, _loopResult.target);
-                freebies[currentTarget]--;
-                chain.push({
-                  player: currentTarget, action: 'redirect', to: _loopResult.target,
-                  freebieSpent: true, isBetrayal: _loopResult.isBetrayal,
-                  reaction: _redirectReaction(currentTarget, _loopResult.target, _rdBond2, _loopResult.isBetrayal),
-                  receiveReaction: _receiveReaction(_loopResult.target, currentTarget, _rdBond2),
-                });
-                addBond(currentTarget, _loopResult.target, -0.2);
-                if (_loopResult.isBetrayal) {
-                  betrayals.push({ player: currentTarget, target: _loopResult.target, type: 'redirect', round: roundNum });
-                  addBond(currentTarget, _loopResult.target, -0.8);
-                }
-                currentTarget = _loopResult.target;
-              } else {
-                // Shouldn't happen (solo?) — forced accept
-                const canDoIt = _willingness(currentTarget, category, roundNum, true);
-                if (canDoIt) {
-                  chain.push({ player: currentTarget, action: 'accept', completed: true, freebieEarned: true,
-                    reaction: _acceptReaction(currentTarget, category, dareTitle) });
-                  freebies[currentTarget]++;
-                  completions[currentTarget]++;
-                } else {
-                  chain.push({ player: currentTarget, action: 'accept', completed: false, freebieEarned: false,
-                    reaction: _failReaction(currentTarget, dareTitle) });
-                  eliminatedPlayer = currentTarget;
-                  eliminatedRound = roundNum;
-                  eliminatedDare = { category, title: dareTitle, text: dareText };
-                }
-                resolved = true;
-              }
-            } else {
-              // Nobody has freebies or solo player — must accept
-              const canDoIt = _willingness(currentTarget, category, roundNum, true);
-              if (canDoIt) {
-                chain.push({ player: currentTarget, action: 'accept', completed: true, freebieEarned: true,
-                  reaction: _acceptReaction(currentTarget, category, dareTitle) });
-                freebies[currentTarget]++;
-                completions[currentTarget]++;
-              } else {
-                chain.push({ player: currentTarget, action: 'accept', completed: false, freebieEarned: false,
-                  reaction: _failReaction(currentTarget, dareTitle) });
-                eliminatedPlayer = currentTarget;
-                eliminatedRound = roundNum;
-                eliminatedDare = { category, title: dareTitle, text: dareText };
-              }
-              resolved = true;
-            }
+        const target = redirectResult.target;
+        const _rdBond = getBond(activeSpinner, target);
+        chain.push({
+          player: activeSpinner, action: 'pass', to: target, isSpinner: true,
+          isBetrayal: redirectResult.isBetrayal,
+          reaction: _redirectReaction(activeSpinner, target, _rdBond, redirectResult.isBetrayal),
+          receiveReaction: _receiveReaction(target, activeSpinner, _rdBond),
+        });
+        addBond(activeSpinner, target, -0.2);
+        if (redirectResult.isBetrayal) {
+          betrayals.push({ player: activeSpinner, target, type: 'redirect', round: roundNum });
+          addBond(activeSpinner, target, -0.8);
+        }
+
+        // Remove target from rotation (being targeted counts as their turn)
+        const _tIdx = _rotation.indexOf(target);
+        if (_tIdx !== -1) _rotation.splice(_tIdx, 1);
+
+        // Step 2: Target deals with the dare
+        if (freebies[target] > 0) {
+          // Has freebies -- will they use one or push through?
+          const targetWilling = _willingness(target, category, roundNum, false);
+          if (targetWilling) {
+            // Target pushes through (no freebie earned -- only spinners earn)
+            chain.push({ player: target, action: 'accept', completed: true, freebieEarned: false,
+              isSpinner: false, reaction: _acceptReaction(target, category, dareTitle) });
+            completions[target]++;
           } else {
-            const _rdBond = getBond(currentTarget, redirectResult.target);
-            freebies[currentTarget]--;
-            chain.push({
-              player: currentTarget, action: 'redirect', to: redirectResult.target,
-              freebieSpent: true, isBetrayal: redirectResult.isBetrayal,
-              reaction: _redirectReaction(currentTarget, redirectResult.target, _rdBond, redirectResult.isBetrayal),
-              receiveReaction: _receiveReaction(redirectResult.target, currentTarget, _rdBond),
-            });
-            addBond(currentTarget, redirectResult.target, -0.2);
-            if (redirectResult.isBetrayal) {
-              betrayals.push({ player: currentTarget, target: redirectResult.target, type: 'redirect', round: roundNum });
-              addBond(currentTarget, redirectResult.target, -0.8);
-            }
-            currentTarget = redirectResult.target;
+            // Target uses a freebie to skip
+            freebies[target]--;
+            const pr = pronouns(target);
+            chain.push({ player: target, action: 'freebie-skip', freebieSpent: true,
+              reaction: `${target} pulls out a freebie. "Not today." ${pr.Sub} ${pr.sub === 'they' ? 'slide' : 'slides'} it across and sits back down.` });
+          }
+        } else {
+          // 0 freebies -- MUST face the dare. Willingness determines fate.
+          const canDoIt = _willingness(target, category, roundNum, true);
+          if (canDoIt) {
+            // Pushes through despite having no safety net
+            chain.push({ player: target, action: 'accept', completed: true, freebieEarned: false,
+              isSpinner: false, reaction: _acceptReaction(target, category, dareTitle) });
+            completions[target]++;
+          } else {
+            // Can't do it, no freebie to save them -- ELIMINATED
+            chain.push({ player: target, action: 'refuse', completed: false,
+              reaction: _failReaction(target, dareTitle) });
+            eliminatedPlayer = target;
+            eliminatedRound = roundNum;
+            eliminatedDare = { category, title: dareTitle, text: dareText };
           }
         }
-      }
-    }
-    // Safety: if chain hit max length without resolving, force last target to accept
-    if (!resolved && chain.length >= MAX_CHAIN) {
-      const canDoIt = _willingness(currentTarget, category, roundNum, true);
-      if (canDoIt) {
-        chain.push({ player: currentTarget, action: 'accept', completed: true, freebieEarned: true,
-          reaction: _acceptReaction(currentTarget, category, dareTitle) });
-        freebies[currentTarget]++;
-        completions[currentTarget]++;
-      } else {
-        chain.push({ player: currentTarget, action: 'accept', completed: false, freebieEarned: false,
-          reaction: _failReaction(currentTarget, dareTitle) });
-        eliminatedPlayer = currentTarget;
-        eliminatedRound = roundNum;
-        eliminatedDare = { category, title: dareTitle, text: dareText };
       }
     }
 
@@ -27850,10 +27795,16 @@ function _textTripleDogDare(ep, ln, sec) {
   tdd.rounds.forEach(round => {
     ln(`Round ${round.roundNum}: [${round.dareCategory.toUpperCase()}] ${round.eliminatedSpinner} dares: "${round.dareText}"`);
     round.chain.forEach(step => {
-      if (step.action === 'accept' && step.completed) {
-        ln(`  ${step.player} ACCEPTED — completed. (+1 freebie)`);
-      } else if (step.action === 'accept' && !step.completed) {
-        ln(`  ${step.player} FORCED TO ACCEPT — FAILED. ELIMINATED.`);
+      if (step.action === 'accept' && step.freebieEarned) {
+        ln(`  ${step.player} ACCEPTS — earns a freebie.`);
+      } else if (step.action === 'accept') {
+        ln(`  ${step.player} PUSHES THROUGH — no freebie (passed dare).`);
+      } else if (step.action === 'pass') {
+        ln(`  ${step.player} PASSES to ${step.to}${step.isBetrayal ? ' [BETRAYAL]' : ''}`);
+      } else if (step.action === 'freebie-skip') {
+        ln(`  ${step.player} USES A FREEBIE to skip.`);
+      } else if (step.action === 'refuse') {
+        ln(`  ${step.player} REFUSES — no freebies left. ELIMINATED.`);
       } else if (step.action === 'redirect') {
         ln(`  ${step.player} REDIRECTED to ${step.to} (-1 freebie)${step.isBetrayal ? ' [BETRAYAL]' : ''}`);
       }
@@ -46889,16 +46840,41 @@ function rpBuildTripleDogDareRounds(ep) {
           ${rpPortrait(step.player, 'sm')}
           <div style="flex:1">`;
 
-      if (step.action === 'accept' && step.completed) {
+      if (step.action === 'accept' && step.freebieEarned) {
+        // Spinner accepted their own dare — earns a freebie
         deltas[step.player] = (deltas[step.player] || 0) + 1;
-        chainHtml += `<div style="font-size:11px;font-weight:700;color:#3fb950;letter-spacing:0.5px;margin-bottom:4px">\u2705 ACCEPTED \u2014 COMPLETED</div>`;
+        chainHtml += `<div style="font-size:11px;font-weight:700;color:#3fb950;letter-spacing:0.5px;margin-bottom:4px">\u2705 ACCEPTS THE DARE</div>`;
         if (step.reaction) chainHtml += `<div style="font-size:12px;color:var(--vp-text);line-height:1.5;margin-bottom:4px">${step.reaction}</div>`;
-        chainHtml += `<div style="font-size:10px;color:var(--accent-gold)">+1 freebie</div>`;
-      } else if (step.action === 'accept' && !step.completed) {
-        chainHtml += `<div style="font-size:11px;font-weight:700;color:#da3633;letter-spacing:0.5px;margin-bottom:4px">\u274c COULDN'T DO IT</div>`;
+        chainHtml += `<div style="font-size:10px;color:var(--accent-gold)">+1 freebie earned</div>`;
+      } else if (step.action === 'accept' && !step.freebieEarned) {
+        // Target accepted a passed dare — no freebie
+        chainHtml += `<div style="font-size:11px;font-weight:700;color:#3fb950;letter-spacing:0.5px;margin-bottom:4px">\u2705 PUSHES THROUGH</div>`;
+        if (step.reaction) chainHtml += `<div style="font-size:12px;color:var(--vp-text);line-height:1.5;margin-bottom:4px">${step.reaction}</div>`;
+      } else if (step.action === 'pass') {
+        // Spinner passes the dare to someone
+        const betrayalTag = step.isBetrayal ? ' <span style="font-size:9px;font-weight:700;color:#da3633;letter-spacing:0.5px;vertical-align:middle">BETRAYAL</span>' : '';
+        chainHtml += `<div style="font-size:11px;font-weight:700;color:var(--accent-fire);letter-spacing:0.5px;margin-bottom:4px">\uD83C\uDFAF PASSES THE DARE${betrayalTag}</div>`;
+        if (step.reaction) chainHtml += `<div style="font-size:12px;color:var(--vp-text);line-height:1.5;margin-bottom:4px">${step.reaction}</div>`;
+        if (step.receiveReaction && step.to) {
+          chainHtml += `</div></div>
+          <div style="display:flex;align-items:flex-start;gap:8px;margin-top:8px;padding-left:16px">
+            ${rpPortrait(step.to, 'sm')}
+            <div style="flex:1">
+              <div style="font-size:12px;color:var(--vp-text);line-height:1.5;font-style:italic">${step.receiveReaction}</div>`;
+        }
+      } else if (step.action === 'freebie-skip') {
+        // Target used a freebie to skip
+        deltas[step.player] = (deltas[step.player] || 0) - 1;
+        chainHtml += `<div style="font-size:11px;font-weight:700;color:var(--accent-gold);letter-spacing:0.5px;margin-bottom:4px">\uD83C\uDDF8 USES A FREEBIE</div>`;
+        if (step.reaction) chainHtml += `<div style="font-size:12px;color:var(--vp-text);line-height:1.5;margin-bottom:4px">${step.reaction}</div>`;
+        chainHtml += `<div style="font-size:10px;color:var(--muted)">\u22121 freebie</div>`;
+      } else if (step.action === 'refuse') {
+        // Target refused with 0 freebies — eliminated
+        chainHtml += `<div style="font-size:11px;font-weight:700;color:#da3633;letter-spacing:0.5px;margin-bottom:4px">\u274c REFUSES \u2014 NO FREEBIES LEFT</div>`;
         if (step.reaction) chainHtml += `<div style="font-size:12px;color:var(--vp-text);line-height:1.5;margin-bottom:4px">${step.reaction}</div>`;
         chainHtml += `<div style="font-size:12px;font-weight:700;color:#da3633;letter-spacing:1px;margin-top:4px">ELIMINATED</div>`;
       } else if (step.action === 'redirect') {
+        // Legacy support for old saves
         deltas[step.player] = (deltas[step.player] || 0) - 1;
         const betrayalTag = step.isBetrayal ? ' <span style="font-size:9px;font-weight:700;color:#da3633;letter-spacing:0.5px;vertical-align:middle">BETRAYAL</span>' : '';
         chainHtml += `<div style="font-size:11px;font-weight:700;color:var(--accent-gold);letter-spacing:0.5px;margin-bottom:4px">\uD83D\uDD04 REDIRECTED${betrayalTag}</div>`;

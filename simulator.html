@@ -29072,19 +29072,36 @@ function _textCliffDive(ep, ln, sec) {
   if (!ep.cliffDive?.tribes?.length) return;
   const cd = ep.cliffDive;
   sec('CLIFF DIVE');
+  ln('One thousand feet. Shark-infested waters. A tiny safe zone.');
+  ln('');
   ln('Phase 1 — The Jump:');
   cd.tribes.forEach(t => {
-    ln(`  ${t.name} (${t.jumpCount}/${t.members.length} jumped):`);
-    if (t.jumpers.length) ln(`    JUMPED: ${t.jumpers.join(', ')}`);
-    if (t.chickens.length) ln(`    CHICKENED OUT: ${t.chickens.join(', ')}`);
-    if (t.standout) ln(`    First to jump: ${t.standout}${t.standoutIsUnderdog ? ' (underdog moment)' : ''}`);
+    ln(`  ${t.name}:`);
+    (t.reactions || []).forEach(r => {
+      const badge = r.jumped ? 'JUMPED' : 'CHICKENED OUT';
+      const standoutTag = r.name === t.standout ? ' [★ FIRST TO JUMP]' : '';
+      ln(`    [${badge}]${standoutTag} ${r.text}`);
+    });
+    ln(`    Score: ${t.jumpCount}/${t.members.length} jumped`);
   });
   if (cd.wagonWinner) ln(`Wagon advantage: ${cd.wagonWinner}`);
+  ln('');
   ln('Phase 2 — Haul Crates:');
-  cd.tribes.forEach(t => ln(`  ${t.name}: ${t.haulScore}${t.name === cd.wagonWinner ? ' (wagons)' : ''}`));
+  cd.tribes.forEach(t => {
+    const manpower = t.members.length > 0 ? Math.round(t.jumpers.length / t.members.length * 100) : 0;
+    ln(`  ${t.name}: ${t.haulScore} (${manpower}% manpower${t.name === cd.wagonWinner ? ', wagons 1.3x' : ''})`);
+  });
+  ln('');
   ln('Phase 3 — Build Hot Tub:');
-  cd.tribes.forEach(t => ln(`  ${t.name}: ${t.buildScore}`));
-  ln(`RESULT: ${cd.winner} wins immunity (${cd.tribes.map(t => `${t.name}: ${t.totalScore}`).join(' vs ')})`);
+  cd.tribes.forEach(t => {
+    const manpower = t.members.length > 0 ? Math.round(t.jumpers.length / t.members.length * 100) : 0;
+    ln(`  ${t.name}: ${t.buildScore} (${manpower}% manpower)`);
+  });
+  ln('');
+  ln(`RESULT: ${cd.winner} wins immunity`);
+  cd.tribes.forEach(t => ln(`  ${t.name}: Jump ${t.jumpCount} · Haul ${t.haulScore} · Build ${t.buildScore} · Total ${t.totalScore}${t.name === cd.winner ? ' ★ WINNER' : ''}`));
+  const allChickens = cd.tribes.flatMap(t => t.chickens);
+  if (allChickens.length) ln(`Chicken hats: ${allChickens.join(', ')}`);
 }
 
 function _textPhobiaFactor(ep, ln, sec) {
@@ -48135,9 +48152,9 @@ function rpBuildCliffDive(ep) {
         const jumpBadge = r.jumped
           ? '<span style="font-size:9px;font-weight:700;letter-spacing:1px;color:#3fb950;background:rgba(63,185,80,0.12);padding:2px 6px;border-radius:3px">JUMPED</span>'
           : '<span style="font-size:9px;font-weight:700;letter-spacing:1px;color:#f85149;background:rgba(248,81,73,0.12);padding:2px 6px;border-radius:3px">CHICKENED OUT</span>';
-        const standoutBorder = r.isStandout ? 'border-color:rgba(240,165,0,0.5);background:rgba(240,165,0,0.08);box-shadow:0 0 12px rgba(240,165,0,0.15)' : '';
+        const standoutStyle = r.isStandout ? 'border:2px solid #f0a500 !important;background:rgba(240,165,0,0.1);box-shadow:0 0 16px rgba(240,165,0,0.2)' : '';
         const standoutLabel = r.isStandout ? `<span style="font-size:9px;font-weight:700;letter-spacing:1px;color:#0d1117;background:#f0a500;padding:2px 8px;border-radius:3px;margin-left:4px">★ FIRST TO JUMP</span>` : '';
-        html += `<div class="vp-card" style="margin-bottom:4px;${standoutBorder};animation:scrollDrop 0.3s var(--ease-broadcast) both">
+        html += `<div class="vp-card" style="margin-bottom:4px;${standoutStyle};animation:scrollDrop 0.3s var(--ease-broadcast) both">
           <div style="display:flex;align-items:center;gap:10px">
             ${rpPortrait(r.name, 'sm')}
             <div style="flex:1">

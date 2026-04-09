@@ -738,18 +738,19 @@
       "name": "Hicks",
       "slug": "hicks",
       "gender": "m",
-      "archetype": "social-butterfly",
+      "archetype": "perceptive-player",
       "stats": {
-        "physical": 6,
-        "endurance": 8,
-        "mental": 6,
+        "physical": 5,
+        "endurance": 5,
+        "mental": 7,
         "social": 8,
         "strategic": 6,
-        "loyalty": 8,
-        "boldness": 5,
-        "intuition": 7,
-        "temperament": 8
-      }
+        "loyalty": 7,
+        "boldness": 4,
+        "intuition": 9,
+        "temperament": 7
+      },
+      "isReturnee": false
     },
     {
       "name": "Izzy",

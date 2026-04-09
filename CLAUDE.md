@@ -143,6 +143,11 @@ is NOT actually loyal. Always check behavioral track record alongside raw stats.
 - `computeHeat`: scramble effect (social+strategic reduce heat when >3), floater invisibility (0.85x heat)
 - Shield network removed — replaced by vote pitches in social politics system
 - Challenge category frequency: physical 1.4x, endurance 1.3x, puzzle 1.25x via `CATEGORY_FREQ`
+- **All challenges (including twist challenges) MUST use `updateChalRecord(ep)` for podium/bomb tracking.**
+  Set `ep.chalMemberScores` with per-player scores, then `updateChalRecord` handles the rest.
+  No custom `gs.chalRecord` manipulation — one system for everything.
+  Pre-merge: top 3 podium + bottom 3 bomb. Post-merge: top 2 + bottom 2.
+  Reward challenges: top 2 / bottom 2 at half weight (0.5), separate code.
 
 ## Social Politics
 - `checkSocialPolitics(ep)`: 3-5 actions per episode (side deals, info trades, loyalty tests)

@@ -7418,7 +7418,7 @@ function simulateTripleDogDare(ep) {
     const needy = remaining.filter(p => freebies[p] <= 1 && p !== eliminatedPlayer);
     for (const requester of needy) {
       // Only donate if after giving, the requester won't exceed donor's remaining count
-      const donors = remaining.filter(p => p !== requester && freebies[p] >= 2 && (freebies[requester] + 1) <= (freebies[p] - 1));
+      const donors = remaining.filter(p => p !== requester && freebies[p] >= 3 && (freebies[requester] + 1) <= (freebies[p] - 1));
       for (const donor of donors) {
         const bond = getBond(donor, requester);
         const s = pStats(donor);
@@ -7427,14 +7427,17 @@ function simulateTripleDogDare(ep) {
         // Shield logic only applies with 5+ players — at F3/F4, nobody's a shield
         const isShield = remaining.length >= 5 && requesterThreat > donorThreat ? 0.15 : 0;
         const strategicVal = s.strategic * 0.03 * (isShield ? 2 : 1);
-        const selfPres = freebies[donor] <= 1 ? -0.30 : freebies[donor] === 2 ? -0.10 : 0;
+        // Surplus factor: proportional to how many freebies you can afford to give
+        // 3 freebies (minimum to donate) = 0.0, 4 = 0.06, 5 = 0.12, 6 = 0.18, 7+ = 0.24+
+        const _surplus = freebies[donor] - 3; // 0 at threshold, grows with stockpile
+        const surplusMod = _surplus * 0.06;
         const arch = players.find(p => p.name === donor)?.archetype || '';
-        const archMod = arch === 'hero' || arch === 'loyal-soldier' ? 0.08
-                       : arch === 'social-butterfly' ? 0.04
+        const archMod = arch === 'hero' || arch === 'loyal-soldier' ? 0.06
+                       : arch === 'social-butterfly' ? 0.03
                        : arch === 'villain' || arch === 'mastermind' ? 0.00
-                       : arch === 'chaos-agent' ? Math.random() * 0.10
+                       : arch === 'chaos-agent' ? Math.random() * 0.06
                        : 0;
-        const shareChance = bond * 0.05 + s.loyalty * 0.05 + strategicVal + selfPres + archMod;
+        const shareChance = bond * 0.03 + s.loyalty * 0.03 + strategicVal + surplusMod + archMod - 0.10;
         if (Math.random() < shareChance) {
           freebies[donor]--;
           freebies[requester]++;
@@ -7584,8 +7587,8 @@ function simulateTripleDogDare(ep) {
 
     // Pact formation (every 3 rounds)
     if (roundNum % 3 === 1) _checkPactFormation(roundNum, remaining);
-    // Freebie sharing (every 2 rounds)
-    if (roundNum % 2 === 0) _checkFreebieSharing(roundNum, remaining);
+    // Freebie sharing (every 3 rounds — giving away freebies is costly, shouldn't be constant)
+    if (roundNum % 3 === 0) _checkFreebieSharing(roundNum, remaining);
 
     // Spinner: next in rotation
     _rotation = _rotation.filter(p => remaining.includes(p));

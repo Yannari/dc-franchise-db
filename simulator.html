@@ -6642,10 +6642,13 @@ function simulateSayUncle(ep) {
     else if (category === 'gross')  { primary = s.boldness * 0.07;  secondary = s.physical * 0.04; }
     else if (category === 'humiliation') { primary = s.boldness * 0.07; secondary = (10 - s.social) * 0.04; }
     const score = primary + secondary - fatigue + (Math.random() * 0.25 - 0.05);
-    // Stat 7/5: ~0.69, round 1 → 0.69-0.02 = 0.67 (pass), round 8 → 0.69-0.16 = 0.53 (coin flip), round 12 → 0.69-0.24 = 0.45 (fail)
-    // Stat 5/5: ~0.55, round 1 → 0.53 (coin flip from start), round 6 → 0.43 (usually fail)
-    // Stat 3/3: ~0.33, round 1 → 0.31 (usually fail immediately)
-    if (score >= 0.65) return 'dominant';
+    // Dominant is rare — only truly exceptional performances (stat 9+ or lucky roll)
+    // Stat 9/7: ~0.83+variance → dominates sometimes. Stat 7/5: ~0.69 → almost never dominates.
+    // Pass is the normal success. Fail = couldn't handle it.
+    // Dominant threshold scales down with fatigue so picks can happen mid/late game too
+    // Round 1: 0.74, Round 5: 0.70, Round 10: 0.65, Round 15: 0.60
+    const dominantThreshold = Math.max(0.58, 0.75 - roundNum * 0.01);
+    if (score >= dominantThreshold) return 'dominant';
     if (score >= 0.45) return 'pass';
     return 'fail';
   };

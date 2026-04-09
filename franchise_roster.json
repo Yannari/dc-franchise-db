@@ -228,7 +228,7 @@
       "name": "Caleb",
       "slug": "caleb",
       "gender": "m",
-      "archetype": "social-butterfly",
+      "archetype": "showmancer",
       "stats": {
         "physical": 10,
         "endurance": 8,
@@ -279,7 +279,7 @@
       "name": "Chase",
       "slug": "chase",
       "gender": "m",
-      "archetype": "social-butterfly",
+      "archetype": "floater",
       "stats": {
         "physical": 4,
         "endurance": 4,
@@ -1288,7 +1288,7 @@
       "name": "Priya",
       "slug": "priya",
       "gender": "f",
-      "archetype": "mastermind",
+      "archetype": "hero",
       "stats": {
         "physical": 10,
         "endurance": 8,

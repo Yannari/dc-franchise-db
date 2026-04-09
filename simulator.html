@@ -1631,6 +1631,7 @@ const TWIST_CATALOG = [
   { id:'say-uncle', emoji:'💪', name:'Say Uncle', category:'challenge', phase:'post-merge', desc:'Torture endurance challenge. Survive 10 seconds or you\'re out. Dominate a dare to pick the next victim — but if they pass, YOU\'RE eliminated instead. Last one standing wins immunity.', engineType:'say-uncle' },
   { id:'phobia-factor', emoji:'😱', name:'Phobia Factor', category:'challenge', phase:'pre-merge', desc:'Each player faces their worst fear. Tribe with the best completion rate wins immunity. Worst tribe goes to tribal. Triple points clutch for losing tribe.', engineType:'phobia-factor' },
   { id:'cliff-dive', emoji:'🏔️', name:'Cliff Dive', category:'challenge', phase:'pre-merge', desc:'Three-phase tribe challenge: cliff jump (willingness), crate haul (physical), hot tub build (mental). Chickens get blame on losing tribe.', engineType:'cliff-dive' },
+  { id:'awake-a-thon', emoji:'😴', name:'Awake-A-Thon', category:'challenge', phase:'pre-merge', desc:'Three-phase endurance: 20km run, feast trap, then stay awake. Last team standing wins. Mid-challenge social events fire between dropouts.', engineType:'awake-a-thon' },
   { id:'cultural-reset',   emoji:'🔄', name:'Cultural Reset',       category:'elim',       phase:'any',        desc:'All alliances exposed publicly. Weak alliances dissolve, strong ones survive but become targets. Double-dippers are caught. The social game resets.',        engineType:'cultural-reset'  },
   { id:'rock-draw',        emoji:'🪨', name:'Rock Draw',            category:'elim',       phase:'any',        desc:'No re-vote on a tie — non-immune, non-tied players draw rocks. Random exit.', engineType:'rock-draw'      },
   { id:'open-vote',        emoji:'📢', name:'Open Vote',            category:'elim',       phase:'any',        desc:'Votes are public — cast one by one in an order chosen by the immunity winner. Cascade pressure builds. Everyone sees who said whose name.', engineType:'open-vote' },
@@ -6954,6 +6955,326 @@ function simulateCliffDive(ep) {
     tribes: tribeResults,
     wagonWinner,
     winner: winner.name,
+  };
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// AWAKE-A-THON CHALLENGE
+// ══════════════════════════════════════════════════════════════════════
+
+function simulateAwakeAThon(ep) {
+  const tribes = gs.tribes;
+  const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
+  const host = seasonConfig.host || 'Chris';
+
+  if (!ep.campEvents) ep.campEvents = {};
+  tribes.forEach(t => { if (!ep.campEvents[t.name]) ep.campEvents[t.name] = { pre: [], post: [] }; });
+
+  const allMembers = tribes.flatMap(t => t.members);
+
+  // ── Phase 1: The Run ──
+  const runResults = [];
+  allMembers.forEach(name => {
+    const s = pStats(name);
+    const finishChance = s.physical * 0.06 + s.endurance * 0.05 + 0.20;
+    runResults.push({ name, finished: Math.random() < finishChance });
+  });
+  const feastEaters = runResults.filter(r => r.finished).map(r => r.name);
+  const feastSet = new Set(feastEaters);
+
+  // ── Phase 3: The Awake-A-Thon (sequential dropout) ──
+  const awake = new Set(allMembers);
+  const rounds = [];
+  const socialEventsDone = { bonds: new Set(), alliances: new Set(), schemes: new Set(), cheaters: new Set() };
+  let roundNum = 0;
+  const totalPlayers = allMembers.length;
+  const fairyTaleThreshold = Math.ceil(totalPlayers * 0.30);
+  const canadaThreshold = Math.ceil(totalPlayers * 0.70);
+  let fairyTaleRound = null, canadaRound = null;
+  let totalDropouts = 0;
+
+  const tribeOf = {};
+  tribes.forEach(t => t.members.forEach(m => { tribeOf[m] = t.name; }));
+
+  while (true) {
+    roundNum++;
+
+    const tribeAwake = {};
+    tribes.forEach(t => { tribeAwake[t.name] = t.members.filter(m => awake.has(m)).length; });
+    const deadTribes = tribes.filter(t => tribeAwake[t.name] === 0);
+    if (deadTribes.length > 0) break;
+
+    const rolls = [];
+    awake.forEach(name => {
+      const s = pStats(name);
+      const feastDebuff = feastSet.has(name) ? -0.15 : 0;
+      const stayChance = s.endurance * 0.07 + s.mental * 0.04 + s.physical * 0.02 + 0.10 + feastDebuff;
+      const roll = Math.random();
+      rolls.push({ name, roll, passed: roll < stayChance, stayChance });
+    });
+
+    rolls.sort((a, b) => {
+      if (!a.passed && b.passed) return -1;
+      if (a.passed && !b.passed) return 1;
+      return a.roll - b.roll;
+    });
+    const dropout = rolls[0];
+    awake.delete(dropout.name);
+    totalDropouts++;
+
+    if (!fairyTaleRound && totalDropouts >= fairyTaleThreshold) fairyTaleRound = roundNum;
+    if (!canadaRound && totalDropouts >= canadaThreshold) canadaRound = roundNum;
+
+    // ── Mid-challenge social events ──
+    const roundSocialEvents = [];
+    const awakePlayers = [...awake];
+    let eventsThisRound = 0;
+    const maxEvents = Math.min(2, Math.floor(awakePlayers.length / 3));
+
+    // Bonding (~40%)
+    if (eventsThisRound < maxEvents && Math.random() < 0.40 && awakePlayers.length >= 2) {
+      for (let bi = 0; bi < awakePlayers.length && eventsThisRound < maxEvents; bi++) {
+        for (let bj = bi + 1; bj < awakePlayers.length; bj++) {
+          const pairKey = [awakePlayers[bi], awakePlayers[bj]].sort().join('|');
+          if (socialEventsDone.bonds.has(pairKey)) continue;
+          if (getBond(awakePlayers[bi], awakePlayers[bj]) >= 1.0) {
+            addBond(awakePlayers[bi], awakePlayers[bj], 0.3);
+            socialEventsDone.bonds.add(pairKey);
+            roundSocialEvents.push({
+              type: 'awakeAThonBond', players: [awakePlayers[bi], awakePlayers[bj]],
+              text: `${awakePlayers[bi]} and ${awakePlayers[bj]} talk quietly to stay awake. The conversation runs deeper than either expected.`,
+              badgeText: 'STAYING AWAKE TOGETHER', badgeClass: 'gold'
+            });
+            eventsThisRound++;
+            break;
+          }
+        }
+        if (eventsThisRound > 0) break;
+      }
+    }
+
+    // Alliance pitch (~15%)
+    if (eventsThisRound < maxEvents && Math.random() < 0.15 && awakePlayers.length >= 2) {
+      const strategists = awakePlayers.filter(p => pStats(p).strategic >= 6);
+      for (const initiator of strategists) {
+        if (socialEventsDone.alliances.has(initiator)) continue;
+        const partner = awakePlayers.find(p => p !== initiator && !socialEventsDone.alliances.has(p) && getBond(initiator, p) >= 0.5);
+        if (!partner) continue;
+        const alreadyAllied = (gs.namedAlliances || []).some(a => a.active && a.members.includes(initiator) && a.members.includes(partner));
+        if (alreadyAllied) continue;
+        const activeAlliances = (gs.namedAlliances || []).filter(a => a.active).length;
+        const globalCap = Math.max(2, Math.floor(gs.activePlayers.length * 0.4));
+        if (activeAlliances >= globalCap) continue;
+        const s = pStats(initiator);
+        const genuineChance = s.loyalty * 0.09 + getBond(initiator, partner) * 0.06
+          - (10 - s.loyalty) * 0.02
+          - ((gs.sideDeals || []).filter(d => d.active && d.players.includes(initiator)).length) * 0.2;
+        const genuine = Math.random() < Math.max(0.15, Math.min(0.95, genuineChance));
+        if (!gs.sideDeals) gs.sideDeals = [];
+        gs.sideDeals.push({
+          players: [initiator, partner], initiator, madeEp: (gs.episode || 0) + 1,
+          type: 'f2', active: true, genuine
+        });
+        addBond(initiator, partner, 1.0);
+        socialEventsDone.alliances.add(initiator);
+        const phaseLabel = totalDropouts >= canadaThreshold ? '85 hours' : totalDropouts >= fairyTaleThreshold ? '24 hours' : '12 hours';
+        roundSocialEvents.push({
+          type: 'awakeAThonDeal', players: [initiator, partner],
+          text: `At ${phaseLabel} in, ${initiator} leans over to ${partner}. "You and me. Final two. What do you say?"`,
+          badgeText: 'LATE NIGHT DEAL', badgeClass: 'blue'
+        });
+        eventsThisRound++;
+        break;
+      }
+    }
+
+    // Showmance spark (~10%)
+    if (eventsThisRound < maxEvents && Math.random() < 0.10 && awakePlayers.length >= 2) {
+      const showmanceCount = (gs.showmances || []).filter(s => s.phase !== 'broken-up').length;
+      if (showmanceCount < 2) {
+        for (let si = 0; si < awakePlayers.length; si++) {
+          for (let sj = si + 1; sj < awakePlayers.length; sj++) {
+            const a = awakePlayers[si], b = awakePlayers[sj];
+            if (getBond(a, b) >= 4 && romanticCompat(a, b)) {
+              const alreadyShowmance = (gs.showmances || []).some(s => s.players.includes(a) && s.players.includes(b));
+              if (alreadyShowmance) continue;
+              if (!gs.showmances) gs.showmances = [];
+              gs.showmances.push({ players: [a, b], phase: 'spark', sparkEp: (gs.episode || 0) + 1, episodesActive: 0 });
+              addBond(a, b, 1.0);
+              roundSocialEvents.push({
+                type: 'awakeAThonRomance', players: [a, b],
+                text: `${a} and ${b} have been talking for hours. At some point the conversation stopped being about the game.`,
+                badgeText: 'SLEEPLESS ROMANCE', badgeClass: 'pink'
+              });
+              eventsThisRound++;
+              break;
+            }
+          }
+          if (eventsThisRound >= maxEvents) break;
+        }
+      }
+    }
+
+    // Cheating (~8%)
+    if (eventsThisRound < maxEvents && Math.random() < 0.08 && awakePlayers.length >= 3) {
+      for (const cheater of awakePlayers) {
+        if (socialEventsDone.cheaters.has(cheater)) continue;
+        const s = pStats(cheater);
+        const cheatChance = s.boldness * 0.04 + (10 - s.loyalty) * 0.03;
+        if (Math.random() >= cheatChance) continue;
+        const detectors = awakePlayers.filter(p => p !== cheater);
+        const caught = detectors.some(d => Math.random() < pStats(d).intuition * 0.05);
+        socialEventsDone.cheaters.add(cheater);
+        if (caught) {
+          const caughtBy = detectors.find(d => Math.random() < pStats(d).intuition * 0.05) || detectors[0];
+          awake.delete(cheater);
+          totalDropouts++;
+          const cheaterTribe = tribeOf[cheater];
+          tribes.find(t => t.name === cheaterTribe)?.members.filter(m => m !== cheater).forEach(m => addBond(m, cheater, -0.5));
+          if (!gs._awakeAThonBlame) gs._awakeAThonBlame = {};
+          gs._awakeAThonBlame[cheater] = (gs._awakeAThonBlame[cheater] || 0) + 1.0;
+          roundSocialEvents.push({
+            type: 'awakeAThonCheat', players: [cheater, caughtBy],
+            text: `${caughtBy} catches ${cheater} with ${pronouns(cheater).posAdj} eyes painted open. "Nice try." ${cheater} is disqualified.`,
+            badgeText: 'CAUGHT CHEATING', badgeClass: 'red'
+          });
+          if (!ep.chalMemberScores) ep.chalMemberScores = {};
+          ep.chalMemberScores[cheater] = 0;
+          eventsThisRound++;
+        }
+        break;
+      }
+    }
+
+    // Scheming (~10%)
+    if (eventsThisRound < maxEvents && Math.random() < 0.10 && awakePlayers.length >= 2) {
+      const schemers = awakePlayers.filter(p => {
+        const arch = players.find(pl => pl.name === p)?.archetype || '';
+        return arch === 'villain' || arch === 'schemer';
+      });
+      for (const schemer of schemers) {
+        if (socialEventsDone.schemes.has(schemer)) continue;
+        const sleepers = allMembers.filter(m => !awake.has(m) && tribeOf[m] !== tribeOf[schemer]);
+        if (!sleepers.length) continue;
+        const target = sleepers[Math.floor(Math.random() * sleepers.length)];
+        if (!gs._awakeAThonBlame) gs._awakeAThonBlame = {};
+        gs._awakeAThonBlame[target] = (gs._awakeAThonBlame[target] || 0) + 0.8;
+        socialEventsDone.schemes.add(schemer);
+        const witnesses = awakePlayers.filter(p => p !== schemer && tribeOf[p] === tribeOf[target]);
+        witnesses.forEach(w => addBond(w, schemer, -0.3));
+        roundSocialEvents.push({
+          type: 'awakeAThonScheme', players: [schemer, target],
+          text: `While ${target} sleeps, ${schemer} makes ${pronouns(schemer).posAdj} move. By morning, ${target} will have a much harder time at camp.`,
+          badgeText: 'SABOTAGE', badgeClass: 'red-orange'
+        });
+        eventsThisRound++;
+        break;
+      }
+    }
+
+    rounds.push({
+      round: roundNum,
+      dropout: { name: dropout.name, tribe: tribeOf[dropout.name], roll: Math.round(dropout.roll * 1000) / 1000 },
+      socialEvents: roundSocialEvents,
+    });
+
+    const tribeAwakePost = {};
+    tribes.forEach(t => { tribeAwakePost[t.name] = t.members.filter(m => awake.has(m)).length; });
+    const deadTribesPost = tribes.filter(t => tribeAwakePost[t.name] === 0);
+    if (deadTribesPost.length > 0) break;
+  }
+
+  // ── Determine winner ──
+  const tribeAwakeFinal = {};
+  tribes.forEach(t => { tribeAwakeFinal[t.name] = t.members.filter(m => awake.has(m)).length; });
+  const tribeSorted = [...tribes].sort((a, b) => tribeAwakeFinal[b.name] - tribeAwakeFinal[a.name]);
+  const winner = tribeSorted[0];
+  const loser = tribeSorted[tribeSorted.length - 1];
+  const lastAwake = winner.members.find(m => awake.has(m)) || null;
+  const firstOut = rounds[0]?.dropout || null;
+
+  // ── Set episode fields ──
+  ep.challengeType = 'tribe';
+  ep.winner = gs.tribes.find(t => t.name === winner.name);
+  ep.loser = gs.tribes.find(t => t.name === loser.name);
+  ep.safeTribes = tribeSorted.length > 2
+    ? tribeSorted.slice(1, -1).map(t => gs.tribes.find(tr => tr.name === t.name)).filter(Boolean)
+    : [];
+  ep.challengeLabel = 'Awake-A-Thon';
+  ep.challengeCategory = 'endurance';
+  ep.challengeDesc = 'Three-phase endurance: 20km run, feast trap, stay awake.';
+  ep.tribalPlayers = [...loser.members];
+  ep.challengePlacements = tribeSorted.map(t => ({
+    name: t.name, members: [...(gs.tribes.find(tr => tr.name === t.name)?.members || [])],
+    memberScores: {},
+  }));
+
+  // ── Challenge member scores ──
+  if (!ep.chalMemberScores) ep.chalMemberScores = {};
+  allMembers.forEach(name => {
+    if (ep.chalMemberScores[name] !== undefined) return;
+    const dropRound = rounds.find(r => r.dropout.name === name);
+    ep.chalMemberScores[name] = dropRound ? dropRound.round : roundNum + 1;
+  });
+
+  // ── Blame: first out on losing tribe ──
+  if (firstOut && firstOut.tribe === loser.name) {
+    if (!gs._awakeAThonBlame) gs._awakeAThonBlame = {};
+    gs._awakeAThonBlame[firstOut.name] = (gs._awakeAThonBlame[firstOut.name] || 0) + 1.0;
+  }
+
+  // ── Standout: last awake bond boost ──
+  if (lastAwake) {
+    winner.members.filter(m => m !== lastAwake).forEach(m => addBond(m, lastAwake, 0.4));
+  }
+
+  // ── Camp events ──
+  if (lastAwake) {
+    const pr = pronouns(lastAwake);
+    const campKey = winner.name;
+    if (!ep.campEvents[campKey]) ep.campEvents[campKey] = { pre: [], post: [] };
+    if (!ep.campEvents[campKey].post) ep.campEvents[campKey].post = [];
+    ep.campEvents[campKey].post.push({
+      type: 'awakeAThonIronWill', players: [lastAwake],
+      text: `${lastAwake} was the last one standing. ${roundNum} rounds. ${pr.Sub} never closed ${pr.posAdj} eyes.`,
+      consequences: 'Bond +0.4 from teammates.',
+      badgeText: 'IRON WILL', badgeClass: 'gold'
+    });
+  }
+  if (firstOut && firstOut.tribe === loser.name) {
+    const pr = pronouns(firstOut.name);
+    const campKey = firstOut.tribe;
+    if (!ep.campEvents[campKey]) ep.campEvents[campKey] = { pre: [], post: [] };
+    if (!ep.campEvents[campKey].post) ep.campEvents[campKey].post = [];
+    ep.campEvents[campKey].post.push({
+      type: 'awakeAThonFirstOut', players: [firstOut.name],
+      text: `${firstOut.name} was the first to fall asleep. ${pr.Sub} didn't even make it past the twelve-hour mark.`,
+      consequences: 'Heat +1.0.',
+      badgeText: 'FIRST OUT', badgeClass: 'red'
+    });
+  }
+  rounds.forEach(r => {
+    r.socialEvents.forEach(evt => {
+      const evtTribe = tribeOf[evt.players[0]] || winner.name;
+      if (!ep.campEvents[evtTribe]) ep.campEvents[evtTribe] = { pre: [], post: [] };
+      if (!ep.campEvents[evtTribe].post) ep.campEvents[evtTribe].post = [];
+      ep.campEvents[evtTribe].post.push(evt);
+    });
+  });
+
+  // ── Save to episode ──
+  ep.awakeAThon = {
+    runResults,
+    feastEaters,
+    rounds,
+    phaseMarkers: { fairyTales: fairyTaleRound, historyOfCanada: canadaRound },
+    winner: winner.name,
+    lastAwake,
+    firstOut,
+    cheaters: [...socialEventsDone.cheaters].map(c => {
+      const cheatEvt = rounds.flatMap(r => r.socialEvents).find(e => e.type === 'awakeAThonCheat' && e.players[0] === c);
+      return { name: c, caught: !!cheatEvt, caughtBy: cheatEvt?.players[1] || null };
+    }),
   };
 }
 
@@ -12540,6 +12861,10 @@ function applyTwist(ep, twist, isPrimary = true) {
   } else if (engineType === 'cliff-dive') {
     if (gs.isMerged || gs.tribes.length < 2) return;
     ep.isCliffDive = true;
+
+  } else if (engineType === 'awake-a-thon') {
+    if (gs.isMerged || gs.tribes.length < 2) return;
+    ep.isAwakeAThon = true;
 
   } else if (engineType === 'cultural-reset') {
     const activePlayers = gs.activePlayers;
@@ -23554,6 +23879,9 @@ function simulateEpisode() {
   } else if (ep.isCliffDive && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
     simulateCliffDive(ep);
     // winner, loser, challengeType, tribalPlayers already set by simulateCliffDive
+  } else if (ep.isAwakeAThon && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
+    simulateAwakeAThon(ep);
+    // winner, loser, challengeType, tribalPlayers already set by simulateAwakeAThon
   } else if (ep.isPhobiaFactor && gs.phase === 'pre-merge' && gs.tribes.length >= 2) {
     // Phobia Factor replaces the tribe challenge
     simulatePhobiaFactor(ep);
@@ -37854,7 +38182,7 @@ function rpBuildFirstImpressions(ep, twistObj) {
 // ── Screen 3: Pre-challenge twists (tribe swap, three gifts, journey, exile-island, etc.) ──
 function rpBuildPreTwist(ep) {
   const _rawTwistData = (ep.twistScenes?.length ? ep.twistScenes : generateTwistScenes(ep))
-    .filter(t => t.type !== 'exile-island' && t.type !== 'jury-elimination' && t.type !== 'kidnapping' && t.type !== 'first-impressions' && t.type !== 'tied-destinies' && t.type !== 'aftermath' && t.type !== 'fan-vote-return' && t.type !== 'schoolyard-pick' && t.type !== 'triple-dog-dare' && t.type !== 'say-uncle' && t.type !== 'phobia-factor' && t.type !== 'cliff-dive'); // shown in dedicated screens
+    .filter(t => t.type !== 'exile-island' && t.type !== 'jury-elimination' && t.type !== 'kidnapping' && t.type !== 'first-impressions' && t.type !== 'tied-destinies' && t.type !== 'aftermath' && t.type !== 'fan-vote-return' && t.type !== 'schoolyard-pick' && t.type !== 'triple-dog-dare' && t.type !== 'say-uncle' && t.type !== 'phobia-factor' && t.type !== 'cliff-dive' && t.type !== 'awake-a-thon'); // shown in dedicated screens
   // Deduplicate: only show one scene per twist type (prevents double display if twist is in ep.twists twice)
   const _seenTypes = new Set();
   const twistData = _rawTwistData.filter(t => { if (_seenTypes.has(t.type)) return false; _seenTypes.add(t.type); return true; });

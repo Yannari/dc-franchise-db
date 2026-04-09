@@ -7037,28 +7037,32 @@ function simulateAwakeAThon(ep) {
     if (eventsThisRound < maxEvents && Math.random() < 0.50 && awakePlayers.length >= 2) {
       // Sort by social inclination: social archetypes first, then by social stat
       const _bondArchBoost = { 'social-butterfly': 3, hero: 2, showmancer: 2, 'loyal-soldier': 1, underdog: 1, villain: -1, floater: -1 };
-      const bondCandidates = [...awakePlayers].sort((a, b) => {
-        const aArch = players.find(p => p.name === a)?.archetype || '';
-        const bArch = players.find(p => p.name === b)?.archetype || '';
-        return ((_bondArchBoost[bArch] || 0) + pStats(b).social * 0.1) - ((_bondArchBoost[aArch] || 0) + pStats(a).social * 0.1);
-      });
-      for (let bi = 0; bi < bondCandidates.length && eventsThisRound < maxEvents; bi++) {
-        for (let bj = bi + 1; bj < bondCandidates.length; bj++) {
-          const pairKey = [bondCandidates[bi], bondCandidates[bj]].sort().join('|');
+      // Build all possible pairs, score by archetype + social + same-tribe bonus
+      const _bondPairs = [];
+      for (let _bpi = 0; _bpi < awakePlayers.length; _bpi++) {
+        for (let _bpj = _bpi + 1; _bpj < awakePlayers.length; _bpj++) {
+          const a = awakePlayers[_bpi], b = awakePlayers[_bpj];
+          const pairKey = [a, b].sort().join('|');
           if (socialEventsDone.bonds.has(pairKey)) continue;
-          if (getBond(bondCandidates[bi], bondCandidates[bj]) >= -1.0) {
-            addBond(bondCandidates[bi], bondCandidates[bj], 0.3);
-            socialEventsDone.bonds.add(pairKey);
-            roundSocialEvents.push({
-              type: 'awakeAThonBond', players: [bondCandidates[bi], bondCandidates[bj]],
-              text: `${bondCandidates[bi]} and ${bondCandidates[bj]} talk quietly to stay awake. The conversation runs deeper than either expected.`,
-              badgeText: 'STAYING AWAKE TOGETHER', badgeClass: 'gold'
-            });
-            eventsThisRound++;
-            break;
-          }
+          if (getBond(a, b) < -1.0) continue;
+          const aArch = players.find(p => p.name === a)?.archetype || '';
+          const bArch = players.find(p => p.name === b)?.archetype || '';
+          const sameTribe = tribeOf[a] === tribeOf[b] ? 3.0 : 0; // strong same-tribe bias
+          const score = (_bondArchBoost[aArch] || 0) + (_bondArchBoost[bArch] || 0) + (pStats(a).social + pStats(b).social) * 0.05 + sameTribe + Math.random() * 1.5;
+          _bondPairs.push({ a, b, pairKey, score });
         }
-        if (eventsThisRound > 0) break;
+      }
+      _bondPairs.sort((x, y) => y.score - x.score);
+      if (_bondPairs.length) {
+        const pick = _bondPairs[0];
+        addBond(pick.a, pick.b, 0.3);
+        socialEventsDone.bonds.add(pick.pairKey);
+        roundSocialEvents.push({
+          type: 'awakeAThonBond', players: [pick.a, pick.b],
+          text: `${pick.a} and ${pick.b} talk quietly to stay awake. The conversation runs deeper than either expected.`,
+          badgeText: 'STAYING AWAKE TOGETHER', badgeClass: 'gold'
+        });
+        eventsThisRound++;
       }
     }
 
@@ -7071,7 +7075,14 @@ function simulateAwakeAThon(ep) {
       });
       for (const initiator of strategists) {
         if (socialEventsDone.alliances.has(initiator)) continue;
-        const partner = awakePlayers.find(p => p !== initiator && !socialEventsDone.alliances.has(p) && getBond(initiator, p) >= -0.5); // low bar — late nights make people talk
+        // Prefer same-tribe partners but cross-tribe possible
+        const _dealCandidates = awakePlayers.filter(p => p !== initiator && !socialEventsDone.alliances.has(p) && getBond(initiator, p) >= -0.5)
+          .sort((a, b) => {
+            const aSame = tribeOf[a] === tribeOf[initiator] ? 2.0 : 0;
+            const bSame = tribeOf[b] === tribeOf[initiator] ? 2.0 : 0;
+            return (bSame + getBond(initiator, b)) - (aSame + getBond(initiator, a));
+          });
+        const partner = _dealCandidates[0];
         if (!partner) continue;
         const alreadyAllied = (gs.namedAlliances || []).some(a => a.active && a.members.includes(initiator) && a.members.includes(partner));
         if (alreadyAllied) continue;

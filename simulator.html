@@ -38752,6 +38752,7 @@ function rpBuildDebug(ep) {
       ${_tabBtn('history', 'Hidden Moves')}
       ${gs.moles?.length ? _tabBtn('mole', 'The Mole') : ''}
       ${(gs.showmances?.length || gs.loveTriangles?.length || gs.affairs?.length) ? _tabBtn('romance', 'Romance') : ''}
+      ${ep.chalMemberScores ? _tabBtn('challenge', 'Challenge') : ''}
     </div>`;
 
   // ════════════════════════════════════════════════
@@ -39452,6 +39453,101 @@ function rpBuildFirstImpressions(ep, twistObj) {
       <button class="rp-btn" onclick="${_fiReveal(state.idx + 1)}">Reveal Next</button>
       <button class="rp-btn" style="margin-left:8px;opacity:0.6" onclick="${_fiReveal(steps.length - 1)}">Reveal All</button>
     </div>`;
+  }
+
+  // ════════════════════════════════════════════════
+  // TAB: CHALLENGE (per-player scores + ranking for challenge twist episodes)
+  // ════════════════════════════════════════════════
+  if (_dbTab === 'challenge') {
+    const _chalScores = ep.chalMemberScores || {};
+    const _chalLabel = ep.challengeLabel || 'Challenge';
+    const _chalType = ep.isDodgebrawl ? 'Dodgebrawl' : ep.isCliffDive ? 'Cliff Dive' : ep.isAwakeAThon ? 'Awake-A-Thon' : ep.isPhobiaFactor ? 'Phobia Factor' : ep.isSayUncle ? 'Say Uncle' : _chalLabel;
+
+    html += `<div style="margin-bottom:12px">
+      <div style="font-family:var(--font-display);font-size:14px;color:#f0883e;margin-bottom:8px">${_chalType} — Player Rankings</div>`;
+
+    // Sort all players by score descending
+    const _ranked = Object.entries(_chalScores).sort(([,a], [,b]) => b - a);
+    const _maxScore = _ranked[0]?.[1] || 1;
+
+    if (_ranked.length) {
+      html += `<table style="width:100%;border-collapse:collapse;font-size:11px">
+        <tr style="color:#8b949e;border-bottom:1px solid rgba(255,255,255,0.08)">
+          <th style="text-align:left;padding:4px 6px;width:30px">#</th>
+          <th style="text-align:left;padding:4px 6px">Player</th>
+          <th style="text-align:left;padding:4px 6px">Tribe</th>
+          <th style="text-align:right;padding:4px 6px">Score</th>
+          <th style="text-align:left;padding:4px 6px;width:40%">Bar</th>
+        </tr>`;
+
+      // Pre-merge podium/bomb thresholds
+      const _podiumCount = 3;
+      const _bombCount = 3;
+
+      _ranked.forEach(([name, score], idx) => {
+        const tribe = (ep.tribesAtStart || []).find(t => t.members?.includes(name))?.name || '?';
+        const tc = tribeColor(tribe);
+        const pct = Math.max(2, (score / _maxScore) * 100);
+        const isPodium = idx < _podiumCount;
+        const isBomb = idx >= _ranked.length - _bombCount;
+        const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '';
+        const bombIcon = isBomb ? '💣' : '';
+        const rowBg = isPodium ? 'rgba(63,185,80,0.04)' : isBomb ? 'rgba(248,81,73,0.04)' : 'transparent';
+
+        html += `<tr style="border-bottom:1px solid rgba(255,255,255,0.04);background:${rowBg}">
+          <td style="padding:4px 6px;color:#8b949e;font-weight:700">${idx + 1} ${medal}${bombIcon}</td>
+          <td style="padding:4px 6px;display:flex;align-items:center;gap:4px">${rpPortrait(name, 'xs')} <span style="color:#e6edf3">${name}</span></td>
+          <td style="padding:4px 6px;color:${tc}">${tribe}</td>
+          <td style="padding:4px 6px;text-align:right;font-weight:600;color:${isPodium ? '#3fb950' : isBomb ? '#f85149' : '#e6edf3'}">${score.toFixed(1)}</td>
+          <td style="padding:4px 6px"><div style="height:8px;border-radius:4px;background:${isPodium ? '#3fb950' : isBomb ? '#f85149' : tc};width:${pct}%;opacity:0.6"></div></td>
+        </tr>`;
+      });
+
+      html += `</table>`;
+      html += `<div style="margin-top:8px;font-size:10px;color:#8b949e">🥇🥈🥉 = Podium (top ${_podiumCount}) &nbsp; 💣 = Bomb (bottom ${_bombCount})</div>`;
+    } else {
+      html += `<div style="color:#8b949e">No challenge scores this episode.</div>`;
+    }
+
+    // Per-round breakdown for dodgebrawl
+    if (ep.dodgebrawl?.rounds?.length) {
+      html += `<div style="font-family:var(--font-display);font-size:13px;color:#f0883e;margin:16px 0 8px">Per-Round Breakdown</div>`;
+      ep.dodgebrawl.rounds.forEach(r => {
+        html += `<div style="margin-bottom:10px;padding:8px;border-radius:6px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05)">
+          <div style="font-size:11px;font-weight:700;margin-bottom:4px">Round ${r.num} — <span style="color:${tribeColor(r.winner)}">${r.winner} wins</span></div>`;
+        const _rScores = Object.entries(r.scores || {}).flatMap(([tribe, ps]) => Object.entries(ps).map(([p, s]) => ({ name: p, score: s, tribe })));
+        _rScores.sort((a, b) => b.score - a.score).forEach((p, i) => {
+          const tc = tribeColor(p.tribe);
+          html += `<div style="display:flex;align-items:center;gap:6px;padding:2px 0;font-size:10px">
+            <span style="width:16px;color:#8b949e;text-align:right">${i + 1}.</span>
+            <span style="color:${tc}">${p.name}</span>
+            <span style="color:#8b949e;margin-left:auto">${p.score.toFixed(1)}</span>
+          </div>`;
+        });
+        html += `</div>`;
+      });
+    }
+
+    // Per-round breakdown for awake-a-thon
+    if (ep.awakeAThon?.rounds?.length) {
+      html += `<div style="font-family:var(--font-display);font-size:13px;color:#f0883e;margin:16px 0 8px">Dropout Order</div>`;
+      ep.awakeAThon.rounds.forEach((r, i) => {
+        if (r.dropped) {
+          html += `<div style="font-size:10px;padding:2px 0;color:#8b949e">${i + 1}. ${r.dropped} drops out (${r.dropped_tribe || '?'})</div>`;
+        }
+      });
+    }
+
+    // Cliff dive phase scores
+    if (ep.cliffDive?.tribes?.length) {
+      html += `<div style="font-family:var(--font-display);font-size:13px;color:#f0883e;margin:16px 0 8px">Cliff Dive — Per Tribe</div>`;
+      ep.cliffDive.tribes.forEach(t => {
+        const tc = tribeColor(t.name);
+        html += `<div style="font-size:10px;padding:2px 0"><span style="color:${tc};font-weight:700">${t.name}</span> — Jumpers: ${t.jumpCount}/${t.reactions.length}, Haul: ${(t.haulScore||0).toFixed(1)}, Build: ${(t.buildScore||0).toFixed(1)}</div>`;
+      });
+    }
+
+    html += `</div>`;
   }
 
   html += `</div>`;

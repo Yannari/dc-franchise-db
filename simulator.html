@@ -9177,7 +9177,7 @@ function simulateTalentShow(ep) {
     auditionDrama, backstageEvents,
     tribeScores,
     winner: winnerName, loser: loserName,
-    mvp: performances.slice().sort((a, b) => b.chefScore - a.chefScore)[0]?.name || null,
+    mvp: performances.slice().sort((a, b) => b.showScore - a.showScore)[0]?.name || null,
   };
 }
 

@@ -38742,7 +38742,7 @@ function rpBuildDebug(ep) {
       ${_tabBtn('history', 'Hidden Moves')}
       ${gs.moles?.length ? _tabBtn('mole', 'The Mole') : ''}
       ${(gs.showmances?.length || gs.loveTriangles?.length || gs.affairs?.length) ? _tabBtn('romance', 'Romance') : ''}
-      ${ep.chalMemberScores ? _tabBtn('challenge', 'Challenge') : ''}
+      ${(ep.chalMemberScores || ep.isDodgebrawl || ep.isCliffDive || ep.isAwakeAThon || ep.isPhobiaFactor || ep.isSayUncle || ep.isTripleDogDare) ? _tabBtn('challenge', 'Challenge') : ''}
     </div>`;
 
   // ════════════════════════════════════════════════
@@ -39449,7 +39449,18 @@ function rpBuildFirstImpressions(ep, twistObj) {
   // TAB: CHALLENGE (per-player scores + ranking for challenge twist episodes)
   // ════════════════════════════════════════════════
   if (_dbTab === 'challenge') {
-    const _chalScores = ep.chalMemberScores || {};
+    // Try ep.chalMemberScores first, fall back to rebuilding from dodgebrawl/challenge data
+    let _chalScores = ep.chalMemberScores || {};
+    // Fallback: rebuild from dodgebrawl round data if chalMemberScores wasn't saved
+    if (!Object.keys(_chalScores).length && ep.dodgebrawl?.rounds?.length) {
+      ep.dodgebrawl.rounds.forEach(r => {
+        Object.entries(r.scores || {}).forEach(([tribe, ps]) => {
+          Object.entries(ps).forEach(([name, score]) => {
+            _chalScores[name] = (_chalScores[name] || 0) + score;
+          });
+        });
+      });
+    }
     const _chalLabel = ep.challengeLabel || 'Challenge';
     const _chalType = ep.isDodgebrawl ? 'Dodgebrawl' : ep.isCliffDive ? 'Cliff Dive' : ep.isAwakeAThon ? 'Awake-A-Thon' : ep.isPhobiaFactor ? 'Phobia Factor' : ep.isSayUncle ? 'Say Uncle' : _chalLabel;
 

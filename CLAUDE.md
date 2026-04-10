@@ -24,6 +24,7 @@ Do not split it into separate files. This is intentional.
 - `patchEpisodeHistory(ep)` — universal helper patching missing fields after every history push
 - `simulateEmissaryVote(ep)` — emissary picks second elimination after normal tribal (pre-merge only)
 - `generateEmissaryScoutEvents(ep)` — scouting period: pitches, observation, cross-tribe deal
+- `simulateDodgebrawl(ep)` — multi-round dodgeball challenge (pre-merge, first to 3)
 - `executeFirstImpressions()` — episode 1 mock vote → round-robin tribe swap (fires before all other twists)
 - `checkPerceivedBondTriggers(ep)` — creates perception gaps after vote resolution
 - `updatePerceivedBonds(ep)` — closes gaps each episode via intuition-based correction
@@ -61,6 +62,7 @@ Do not split it into separate files. This is intentional.
 - `gs._falseInfoPlanted[]` — false idol info for blowup detection
 - `gs._blowupPlayers[]` — players who had fights/meltdowns/social bombs (cleared after recovery check)
 - `gs._emissaryHeat` — temporary heat for emissary (+1.5 for 2 episodes after pick)
+- `gs._dodgebrawlHeat` — temporary heat from dodgebrawl (refusal, rage mode, liability)
 - `gs.moles[]` — Mole twist state: `{ player, exposed, exposedEp, exposedBy, suspicion, sabotageCount, sabotageLog, leaks, layingLow, resistance }`
 
 ## Patterns
@@ -238,6 +240,19 @@ is NOT actually loyal. Always check behavioral track record alongside raw stats.
 - Heat: emissary +1.5 for 2 episodes. Popularity: emissary -2 like, picked player +3 underdog.
 - VP: `rpBuildEmissaryVote(ep)` — 3-phase click-to-reveal (selection, scouting, the pick)
 - Incompatible with: ambassadors, double-tribal, multi-tribal, kidnapping
+
+## Dodgebrawl
+- Schedulable pre-merge challenge (`dodgebrawl` in TWIST_CATALOG, category `challenge`)
+- Multi-round dodgeball: all tribes on court simultaneously, first to 3 round wins gets immunity
+- Court size: 5v5 default, matches smallest tribe if fewer than 5. Minimum 2v2.
+- Sit-outs: rotation enforced. 1 refuser per tribe (low boldness + loyalty).
+- Score: `physical * 0.35 + intuition * 0.30 + endurance * 0.20 + mental * 0.15 + random`
+- 6 highlight types: trick shot, rage mode, clutch dodge, rush strategy, friendly fire, refusal
+- Max 3 highlights per round. Highlights have bond/heat/bigMoves consequences.
+- 2 camp events per tribe (1 positive, 1 negative): team player, hero, redemption, choked, liability, refusal
+- 3+ tribes: all on court, first to 3. Loser = fewest wins (tiebreaker: lowest cumulative score).
+- VP: `rpBuildDodgebrawl(ep)` — click-to-reveal per round with live scoreboard
+- Text backlog: `_textDodgebrawl(ep, ln, sec)`
 
 ## Aftermath Show
 - `generateAftermathShow(ep)` — full aftermath data generation

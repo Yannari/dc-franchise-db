@@ -8737,7 +8737,7 @@ function simulateTalentShow(ep) {
         if (backstageEvents.length >= maxBackstage) return;
         const arch = players.find(p => p.name === name)?.archetype || '';
         if (!['villain', 'schemer', 'mastermind'].includes(arch)) return;
-        if (Math.random() >= 0.50) return; // 50% per villain/schemer
+        if (Math.random() >= 0.20) return; // 20% per villain/schemer
         const ally = t.members.find(m => m !== name && getBond(name, m) >= 1);
         if (!ally) return;
         const otherTribes = tribeMembers.filter(ot => ot.name !== t.name);

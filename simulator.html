@@ -4206,6 +4206,7 @@ function computeHeat(name, tribalPlayers, alliances) {
   if (gs._awakeAThonBlame?.[name]) heat += gs._awakeAThonBlame[name];
   if (gs._emissaryHeat?.[name] && ((gs.episode || 0) + 1) < gs._emissaryHeat[name].expiresEp) heat += gs._emissaryHeat[name].amount;
   if (gs._dodgebrawlHeat?.[name] && ((gs.episode || 0) + 1) < gs._dodgebrawlHeat[name].expiresEp) heat += gs._dodgebrawlHeat[name].amount;
+  if (gs._talentShowHeat?.[name] && ((gs.episode || 0) + 1) < gs._talentShowHeat[name].expiresEp) heat += gs._talentShowHeat[name].amount;
   // ── Volunteer Exile Duel: volunteer WANTS to be voted out ──
   if (gs._volunteerDuelHeat?.[name] === ((gs.episode || 0) + 1)) heat += 8.0;
   // Volunteer duel winner returns with reduced heat
@@ -7911,6 +7912,535 @@ function simulateDodgebrawl(ep) {
     winner: winnerName, loser: loserName,
     finalScore: tribeWins,
     mvp: Object.entries(playerTotalScores).sort(([,a], [,b]) => b - a)[0]?.[0] || null,
+  };
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// ENGINE: TALENT SHOW — talent pool (30 talents, 5 categories)
+// ══════════════════════════════════════════════════════════════════════
+const TALENT_POOL = {
+  physical: [
+    { id: 'gymnastics', name: 'Gymnastics Routine',
+      audition: (p, pr) => `${p} nails a backflip in the dirt. The tribe watches, impressed.`,
+      performance: (p, pr) => `Full floor routine — handsprings, aerials, stuck landing. Chef nods.`,
+      disaster: (p, pr) => `${p} lands wrong on the dismount. ${pr.PosAdj} ankle buckles. ${pr.sub === 'they' ? pr.sub + ' limp' : pr.sub + ' limps'} offstage to silence.`,
+      clutch: (p, pr) => `${p} wobbles on the landing but saves it with a spin nobody saw coming. Perfect recovery.`,
+    },
+    { id: 'martial-arts', name: 'Martial Arts Demo',
+      audition: (p, pr) => `${p} throws kicks at the air with scary precision. Nobody claps ironically.`,
+      performance: (p, pr) => `Board breaks. Roundhouse. Flying knee. The stage shakes.`,
+      disaster: (p, pr) => `${p} tries a spinning kick, slips, falls flat. The board doesn't break. Neither does the silence.`,
+      clutch: (p, pr) => `${p} almost loses balance on the flying kick — catches it mid-air and SNAPS the board clean. Gasps.`,
+    },
+    { id: 'strength', name: 'Strength Display',
+      audition: (p, pr) => `${p} lifts a log over ${pr.pos} head. Simple. Effective.`,
+      performance: (p, pr) => `${p} deadlifts a canoe. Then puts a person in it and lifts again.`,
+      disaster: (p, pr) => `The canoe doesn't budge. ${p} strains. Face goes red. Nothing.`,
+      clutch: (p, pr) => `${p} is struggling — the canoe starts to tip — then SLAMS it overhead with a roar. Standing ovation.`,
+    },
+    { id: 'parkour', name: 'Parkour Run',
+      audition: (p, pr) => `${p} vaults over a bench, rolls, sticks the landing. Quick and clean.`,
+      performance: (p, pr) => `Full obstacle run — wall flip, rail slide, precision jump to the stage.`,
+      disaster: (p, pr) => `${p} clips the rail. Eats dirt. Rolls into the front row.`,
+      clutch: (p, pr) => `${p} slips on the rail — but grabs it one-handed, swings, lands on the stage mark. Showstopper.`,
+    },
+    { id: 'wrestling', name: 'Wrestling Showcase',
+      audition: (p, pr) => `${p} throws a dummy around like it insulted ${pr.obj}.`,
+      performance: (p, pr) => `${p} suplexes a training dummy off the stage. The crowd flinches.`,
+      disaster: (p, pr) => `The dummy fights back. Or rather, gets tangled. Embarrassing struggle.`,
+      clutch: (p, pr) => `The dummy catches on something — ${p} rips it free mid-move and launches it into the lake. Legend.`,
+    },
+    { id: 'endurance-hold', name: 'Endurance Hold',
+      audition: (p, pr) => `${p} holds a handstand for two minutes straight during auditions. No wobble.`,
+      performance: (p, pr) => `${p} planks on the edge of the stage while balancing objects. Pure control.`,
+      disaster: (p, pr) => `${pr.PosAdj} arms give out. ${p} crashes down. Objects scatter everywhere.`,
+      clutch: (p, pr) => `Arms shaking, sweat dripping — ${p} holds it. And holds it. And holds it. Chef slow-claps.`,
+    },
+  ],
+  performanceArt: [
+    { id: 'singing', name: 'Singing',
+      audition: (p, pr) => `${p} hums a few bars. Voice is actually good. Tribe goes quiet.`,
+      performance: (p, pr) => `Full song. No backing track. Just ${pr.pos} voice. The forest goes still.`,
+      disaster: (p, pr) => `${pr.PosAdj} voice cracks on the high note. ${p} tries to recover. Cracks again. Walks off.`,
+      clutch: (p, pr) => `${pr.PosAdj} voice cracks — ${p} pauses — then belts the note raw and perfect. Chills.`,
+    },
+    { id: 'comedy', name: 'Comedy Standup',
+      audition: (p, pr) => `${p} tells one joke at audition. Gets a real laugh, not a pity one.`,
+      performance: (p, pr) => `Five minutes. ${p} reads the crowd. Callbacks. Timing. They're crying laughing.`,
+      disaster: (p, pr) => `${p} opens with a joke. Silence. Tries another. Worse silence. Panic sweats.`,
+      clutch: (p, pr) => `${p} is bombing hard — then pivots to self-roast. "This is going great, right?" The crowd loses it.`,
+    },
+    { id: 'monologue', name: 'Dramatic Monologue',
+      audition: (p, pr) => `${p} delivers three lines from memory. The vibe shifts. Everyone leans in.`,
+      performance: (p, pr) => `Full monologue. Eye contact. Pauses that hit. Someone in the back is crying.`,
+      disaster: (p, pr) => `${p} forgets the lines. Freezes. Mumbles something. Walks offstage staring at the ground.`,
+      clutch: (p, pr) => `${p} goes blank — improvises from the heart. It's not the script. It's better.`,
+    },
+    { id: 'dance', name: 'Dance Routine',
+      audition: (p, pr) => `Quick choreo. Nothing fancy. But the rhythm is there and the confidence sells it.`,
+      performance: (p, pr) => `Full choreographed piece. ${p} uses the whole stage. Every beat lands.`,
+      disaster: (p, pr) => `${p} steps on ${pr.pos} own foot. Stumbles. Tries to style it out. Doesn't work.`,
+      clutch: (p, pr) => `${p} stumbles mid-spin — turns it into a slide. The crowd thinks it was planned.`,
+    },
+    { id: 'impressions', name: 'Impressions',
+      audition: (p, pr) => `${p} does the host. It's uncanny. Even the host laughs.`,
+      performance: (p, pr) => `Five impressions in a row — host, Chef, tribemates. Each one lands.`,
+      disaster: (p, pr) => `${p} does an impression of someone in the audience. It's mean. Nobody laughs.`,
+      clutch: (p, pr) => `The first three are rough — then ${p} nails the host so perfectly that Chef breaks character laughing.`,
+    },
+    { id: 'spoken-word', name: 'Spoken Word',
+      audition: (p, pr) => `${p} recites something original. Short. Intense. The fire crackles louder.`,
+      performance: (p, pr) => `Full piece. Raw. Personal. You can hear the silence between the words.`,
+      disaster: (p, pr) => `${p} mumbles. Loses the thread. Reads from a crumpled paper. Nobody connects.`,
+      clutch: (p, pr) => `${p} loses the paper — recites from memory. Voice shaking. Realer than the rehearsed version.`,
+    },
+  ],
+  skill: [
+    { id: 'beatboxing', name: 'Beatboxing',
+      audition: (p, pr) => `${p} drops a beat. It's actually complex. People start nodding.`,
+      performance: (p, pr) => `Full routine — bass, snare, vocal scratch, melody. All at once. Inhuman.`,
+      disaster: (p, pr) => `${p} tries to go too fast. Chokes on spit. Coughs into the mic.`,
+      clutch: (p, pr) => `${p} keeps building layers until it sounds like a full band. Nobody can believe it's one person.`,
+    },
+    { id: 'card-tricks', name: 'Card Tricks',
+      audition: (p, pr) => `${p} fans the deck. Pulls the right card. Clean. No fumbles.`,
+      performance: (p, pr) => `Full act — cards appear, vanish, end up in someone's pocket. Gasps throughout.`,
+      disaster: (p, pr) => `${p} drops the deck. Cards scatter. The trick is exposed. Everyone sees the double lift.`,
+      clutch: (p, pr) => `${p} drops the deck — catches a single card mid-air. It's their card. Mic drop.`,
+    },
+    { id: 'speed-solve', name: 'Speed-Solving',
+      audition: (p, pr) => `${p} solves a puzzle in 40 seconds at audition. Tribe times it.`,
+      performance: (p, pr) => `${p} solves three puzzles simultaneously. Blindfolded for the last one.`,
+      disaster: (p, pr) => `${p} can't find the last piece. Panics. Time runs out with one piece missing.`,
+      clutch: (p, pr) => `${p} is stuck on the last move — closes ${pr.pos} eyes — solves it by feel. Record time.`,
+    },
+    { id: 'fire-staff', name: 'Fire Staff',
+      audition: (p, pr) => `${p} spins a lit staff with precision. Controlled. Mesmerizing.`,
+      performance: (p, pr) => `Full fire performance — spins, tosses, catches behind the back. Shadows dance.`,
+      disaster: (p, pr) => `The staff slips. Fire hits the ground. Someone stomps it out. Smoke everywhere.`,
+      clutch: (p, pr) => `${p} tosses high — catches blind behind the back. The fire traces an arc in the dark. Perfect.`,
+    },
+    { id: 'knife-throwing', name: 'Knife Throwing',
+      audition: (p, pr) => `${p} plants three knives in a target. Thunk thunk thunk. Clean grouping.`,
+      performance: (p, pr) => `Full act — ${p} throws blindfolded. Splits a fruit on someone's head.`,
+      disaster: (p, pr) => `${p} misses the target. Knife sticks in the stage. Awkward silence. Very awkward.`,
+      clutch: (p, pr) => `Last throw goes wide — then curves and hits the bullseye. Nobody knows how.`,
+    },
+    { id: 'rubiks', name: "Rubik's Cube Solve",
+      audition: (p, pr) => `Sub-minute solve during audition. ${pr.PosAdj} hands blurring.`,
+      performance: (p, pr) => `${p} solves two cubes simultaneously — one in each hand. Audience counts along.`,
+      disaster: (p, pr) => `${p} gets stuck. Turns and turns. Time passes. Still stuck. People start looking away.`,
+      clutch: (p, pr) => `${p} is frozen for 10 seconds — then a burst of moves and both cubes lock in. Under a minute.`,
+    },
+  ],
+  daredevil: [
+    { id: 'fire-eating', name: 'Fire-Eating',
+      audition: (p, pr) => `${p} breathes a small flame at audition. Controlled. Eyebrows intact.`,
+      performance: (p, pr) => `Full fire-breathing display — arcs of flame light up the stage.`,
+      disaster: (p, pr) => `${p} singes ${pr.pos} own face. Coughs smoke. Medic jogs over.`,
+      clutch: (p, pr) => `Flame sputters — then ROARS. Biggest arc of the night. The crowd screams.`,
+    },
+    { id: 'knife-juggling', name: 'Knife Juggling',
+      audition: (p, pr) => `${p} juggles two knives casually. No fear.`,
+      performance: (p, pr) => `Three knives. Then four. ${p} catches the last one between ${pr.pos} fingers.`,
+      disaster: (p, pr) => `${p} drops one. It sticks in the stage an inch from ${pr.pos} foot. Everyone gasps for the wrong reason.`,
+      clutch: (p, pr) => `${p} fumbles the third — kicks it up with ${pr.pos} foot and catches it. Unplanned but incredible.`,
+    },
+    { id: 'high-dive', name: 'High Dive',
+      audition: (p, pr) => `${p} jumps off a tall stump into water. Clean entry.`,
+      performance: (p, pr) => `Full dive from the highest point at camp. Flip. Twist. Barely a splash.`,
+      disaster: (p, pr) => `Belly flop. The sound echoes. The water doesn't forgive.`,
+      clutch: (p, pr) => `${p} over-rotates — somehow adjusts mid-air and enters clean. The splash is nothing.`,
+    },
+    { id: 'eating-challenge', name: 'Eating Challenge',
+      audition: (p, pr) => `${p} eats something terrible without flinching. Audition complete.`,
+      performance: (p, pr) => `${p} eats progressively worse things on stage. Hot sauce. Bugs. Mystery meat. Never flinches.`,
+      disaster: (p, pr) => `${p} gags on the second item. Runs offstage. Sounds of regret from backstage.`,
+      clutch: (p, pr) => `On the verge of puking — ${p} swallows it, smiles, and asks for more. The crowd is horrified and impressed.`,
+    },
+    { id: 'balance-walk', name: 'Balance Walk',
+      audition: (p, pr) => `${p} walks a narrow beam without wobbling. Casual.`,
+      performance: (p, pr) => `${p} walks a tightrope over the campfire. Blindfolded for the last third.`,
+      disaster: (p, pr) => `${p} falls off. Into the mud. Or worse, into the audience.`,
+      clutch: (p, pr) => `${p} wobbles — drops to one knee on the rope — stands back up and finishes. Nails the dismount.`,
+    },
+    { id: 'extreme-yoyo', name: 'Extreme Yo-Yo',
+      audition: (p, pr) => `${p} does a few tricks. One goes wrong, string tangles, recovers fast.`,
+      performance: (p, pr) => `Full speed routine — around the world, walk the dog, cradle, all flawless.`,
+      disaster: (p, pr) => `String wraps around ${pr.pos} own neck. Tribe watches in horror. Has to be untangled.`,
+      clutch: (p, pr) => `String tangles — ${p} whips it free and launches into the hardest trick clean. Nobody saw that coming.`,
+    },
+  ],
+  creative: [
+    { id: 'instrument', name: 'Musical Instrument',
+      audition: (p, pr) => `${p} plays a few chords. Melody is there. Tribe goes quiet for the right reasons.`,
+      performance: (p, pr) => `Full song. Original composition. The fire crackles in time.`,
+      disaster: (p, pr) => `String breaks mid-song. ${p} tries to keep going. Can't. Stops. Silence.`,
+      clutch: (p, pr) => `String breaks — ${p} switches to humming the melody while finger-tapping the body. Haunting.`,
+    },
+    { id: 'painting', name: 'Painting/Drawing',
+      audition: (p, pr) => `${p} sketches a portrait in two minutes. It's actually good.`,
+      performance: (p, pr) => `Live portrait of the host. Every detail. ${p} reveals it at the end. Gasps.`,
+      disaster: (p, pr) => `The portrait looks nothing like anyone. Maybe a raccoon? The host squints.`,
+      clutch: (p, pr) => `Running out of time — last three strokes bring the whole thing together. It's perfect.`,
+    },
+    { id: 'poetry', name: 'Poetry Recital',
+      audition: (p, pr) => `${p} reads an original poem. Short. Three lines. They land.`,
+      performance: (p, pr) => `Full poem. About the island, the game, the people. Specific. Painful. Real.`,
+      disaster: (p, pr) => `${p} reads from paper. Monotone. Nobody connects. A cricket literally chirps.`,
+      clutch: (p, pr) => `${p} puts the paper down. Makes eye contact. Recites from the gut. Voice breaks. It hits.`,
+    },
+    { id: 'magic', name: 'Magic Show',
+      audition: (p, pr) => `One trick at audition. Clean vanish. Crowd leans in.`,
+      performance: (p, pr) => `Full act — levitation illusion, escape trick, finale with fire. Theatrical.`,
+      disaster: (p, pr) => `The trick fails. The hidden card falls out. The rabbit escapes. Everything falls apart.`,
+      clutch: (p, pr) => `Trick fails — ${p} plays it off as part of the act. "That's what you THINK happened." Recovers brilliantly.`,
+    },
+    { id: 'puppet-show', name: 'Puppet Show',
+      audition: (p, pr) => `Quick bit with a sock puppet. Gets a laugh.`,
+      performance: (p, pr) => `Full show — voices, story, callbacks to camp drama. The puppet roasts people.`,
+      disaster: (p, pr) => `The puppet falls apart. Literally. Stuffing everywhere.`,
+      clutch: (p, pr) => `Puppet's head falls off — ${p} uses it as a prop. "This is what happens when you cross me." Biggest laugh of the night.`,
+    },
+    { id: 'freestyle', name: 'Rap/Freestyle',
+      audition: (p, pr) => `${p} spits 8 bars about camp life. Flow is there. Words are sharp.`,
+      performance: (p, pr) => `Full freestyle — calls out names, references real events, rhyme scheme holds.`,
+      disaster: (p, pr) => `Rhyme falls apart. ${p} mumbles. Loses the beat. Stares at shoes.`,
+      clutch: (p, pr) => `${p} goes off-beat — stops — restarts with a completely different flow that's twice as hard. Jaw drop.`,
+    },
+  ],
+};
+
+const TALENT_CATEGORIES = [
+  { id: 'physical', stats: ['physical', 'endurance'] },
+  { id: 'performanceArt', stats: ['social', 'boldness'] },
+  { id: 'skill', stats: ['mental', 'intuition'] },
+  { id: 'daredevil', stats: ['boldness', 'physical'] },
+  { id: 'creative', stats: ['mental', 'social'] },
+];
+
+const SABOTAGE_TYPES = [
+  { id: 'diary', text: (saboteur, target, pr) => `${saboteur} reads ${target}'s private writings aloud to the audience. ${target} is humiliated. The crowd is silent — then the whispering starts.` },
+  { id: 'props', text: (saboteur, target, pr) => `${saboteur} replaced ${target}'s props with broken ones. ${target} reaches for the guitar — wrong strings. The cards — marked. Nothing works.` },
+  { id: 'rumors', text: (saboteur, target, pr) => `${saboteur} told everyone ${target} was planning to throw the challenge. The crowd is hostile before the act even starts.` },
+  { id: 'psych', text: (saboteur, target, pr) => `${saboteur} whispered something to ${target} right before ${pr.sub} went on stage. Whatever it was, it worked. ${target} looks shaken.` },
+];
+
+const AUDIENCE_REACTIONS = {
+  high: {
+    hero: p => `${p}: "That's my tribe right there. That's what we do."`,
+    loyal: p => `${p}: "That's my tribe right there."`,
+    villain: p => `${p} slow-claps. Calculating. Already thinking about how to use this.`,
+    schemer: p => `${p} slow-claps. Filing it away.`,
+    floater: p => `${p} claps along. Relieved someone else carried the weight.`,
+    showmancer: p => `${p} locks eyes with the performer. That was attractive.`,
+    wildcard: p => `${p} loses it. Standing on the bench screaming.`,
+    'chaos-agent': p => `${p} loses it. Standing on the bench screaming.`,
+    mastermind: p => `${p} nods. That just bought the tribe safety. Good.`,
+    _default: p => `${p} nods approvingly.`,
+  },
+  mid: {
+    hero: p => `${p}: "Good effort." Means it, kind of.`,
+    villain: p => `${p} is unimpressed. Expected more.`,
+    floater: p => `${p} claps at the same speed as everyone else.`,
+    mastermind: p => `${p}: "We need the next act to be better."`,
+    _default: p => `${p} gives a polite clap.`,
+  },
+  low: {
+    hero: p => `${p} looks away. Doesn't pile on. But the disappointment is visible.`,
+    loyal: p => `${p} looks away. The disappointment is visible.`,
+    villain: p => `${p} smirks. Files it away. That's a vote target now.`,
+    schemer: p => `${p} smirks. That's a vote target now.`,
+    floater: p => { const pr = pronouns(p); return `${p} cringes. Glad it wasn't ${pr.obj} up there.`; },
+    showmancer: p => { const pr = pronouns(p); return `${p} covers ${pr.pos} mouth. Second-hand embarrassment.`; },
+    wildcard: p => `${p} laughs out loud. Can't help it. Gets dirty looks.`,
+    'chaos-agent': p => `${p} laughs out loud. Can't help it.`,
+    mastermind: p => `${p} is already running numbers. Can the other two acts make up for this?`,
+    _default: p => `${p} winces.`,
+  },
+  sabotage: {
+    hero: p => `${p} is furious. Stands up. Has to be held back.`,
+    loyal: p => `${p}: shock. Disbelief. Then quiet rage.`,
+    villain: p => { const pr = pronouns(p); return `${p} is impressed despite ${pr.ref}.`; },
+    'social-butterfly': p => `${p} immediately comforts the victim.`,
+    _default: p => `${p} stares in disbelief.`,
+  },
+};
+
+function simulateTalentShow(ep) {
+  const tribes = gs.tribes.filter(t => t.members.filter(m => gs.activePlayers.includes(m)).length >= 2);
+  if (tribes.length < 2) return;
+
+  const tribeMembers = tribes.map(t => ({
+    name: t.name,
+    members: t.members.filter(m => gs.activePlayers.includes(m))
+  }));
+
+  // ── Assign talent type to each player based on highest stat combo ──
+  function assignTalent(name) {
+    const s = pStats(name);
+    let bestCat = TALENT_CATEGORIES[0], bestScore = 0;
+    TALENT_CATEGORIES.forEach(cat => {
+      const score = s[cat.stats[0]] + s[cat.stats[1]] + Math.random() * 2;
+      if (score > bestScore) { bestScore = score; bestCat = cat; }
+    });
+    const pool = TALENT_POOL[bestCat.id];
+    const talent = pool[Math.floor(Math.random() * pool.length)];
+    return { category: bestCat.id, primaryStat: bestCat.stats[0], secondaryStat: bestCat.stats[1], talent };
+  }
+
+  // ── Audition scoring ──
+  function auditionScore(name, talent) {
+    const s = pStats(name);
+    return s[talent.primaryStat] * 0.35 + s[talent.secondaryStat] * 0.25 + s.social * 0.15 + s.temperament * 0.10 + Math.random() * 3.0;
+  }
+
+  // ── Show scoring (fresh random) ──
+  function showScore(name, talent) {
+    const s = pStats(name);
+    return s[talent.primaryStat] * 0.35 + s[talent.secondaryStat] * 0.25 + s.social * 0.15 + s.temperament * 0.10 + Math.random() * 3.0;
+  }
+
+  function chefScore(raw) {
+    return Math.min(9, Math.max(0, Math.round(raw - 2)));
+  }
+
+  // ── Auditions ──
+  const auditions = {};
+  const captains = {};
+  tribeMembers.forEach(t => {
+    // Captain: highest social+strategic
+    const captain = t.members.slice().sort((a, b) => {
+      const sA = pStats(a), sB = pStats(b);
+      return (sB.social * 0.5 + sB.strategic * 0.5) - (sA.social * 0.5 + sA.strategic * 0.5);
+    })[0];
+    captains[t.name] = captain;
+
+    // Everyone auditions
+    const results = t.members.map(name => {
+      const talentInfo = assignTalent(name);
+      const score = auditionScore(name, talentInfo);
+      return { name, ...talentInfo, auditionScore: score, selected: false };
+    }).sort((a, b) => b.auditionScore - a.auditionScore);
+
+    // Top 3 selected (or 2 if tribe has exactly 2 members)
+    const actsCount = Math.min(3, t.members.length);
+    results.slice(0, actsCount).forEach(r => { r.selected = true; });
+    auditions[t.name] = results;
+  });
+
+  // ── Sabotage check (villain/schemer on opposing tribe, max 1) ──
+  let sabotage = null;
+  tribeMembers.forEach(t => {
+    if (sabotage) return;
+    t.members.forEach(name => {
+      if (sabotage) return;
+      const s = pStats(name);
+      if (!['villain', 'schemer', 'mastermind'].includes(s.archetype)) return;
+      if (Math.random() >= s.strategic * 0.03) return;
+      // Pick target: highest audition scorer on an opposing tribe
+      const otherTribes = tribeMembers.filter(ot => ot.name !== t.name);
+      const targets = otherTribes.flatMap(ot => (auditions[ot.name] || []).filter(a => a.selected));
+      if (!targets.length) return;
+      const target = targets.sort((a, b) => b.auditionScore - a.auditionScore)[0];
+      const sabType = SABOTAGE_TYPES[Math.floor(Math.random() * SABOTAGE_TYPES.length)];
+      sabotage = {
+        saboteur: name, saboteurTribe: t.name,
+        target: target.name, targetTribe: otherTribes.find(ot => (auditions[ot.name] || []).some(a => a.name === target.name))?.name,
+        type: sabType.id,
+        text: sabType.text(name, target.name, pronouns(target.name)),
+      };
+    });
+  });
+
+  // ── The Show: perform acts (interleaved) ──
+  const performances = [];
+  const maxActs = Math.max(...Object.values(auditions).map(a => a.filter(r => r.selected).length));
+  for (let actIdx = 0; actIdx < maxActs; actIdx++) {
+    tribeMembers.forEach(t => {
+      const selected = (auditions[t.name] || []).filter(r => r.selected);
+      if (actIdx >= selected.length) return;
+      const performer = selected[actIdx];
+      const name = performer.name;
+      const pr = pronouns(name);
+      const s = pStats(name);
+      const talent = performer.talent;
+
+      let rawScore = showScore(name, performer);
+      let outcome = 'normal';
+
+      // Sabotage penalty
+      const isSabotaged = sabotage?.target === name;
+      if (isSabotaged) {
+        rawScore -= 3 + Math.random();
+        outcome = 'sabotaged';
+      }
+
+      // Disaster check (only if not already sabotaged into oblivion)
+      const disasterChance = (10 - s.temperament) * 0.03;
+      if (outcome === 'normal' && Math.random() < disasterChance) {
+        rawScore = 1 + Math.random();
+        outcome = 'disaster';
+      }
+
+      // Clutch check: only for lowest audition scorer of the selected 3
+      const lowestAuditioner = selected[selected.length - 1]?.name;
+      if (outcome === 'normal' && name === lowestAuditioner) {
+        const clutchChance = s.boldness * 0.02;
+        if (Math.random() < clutchChance) {
+          rawScore = 8 + Math.random();
+          outcome = 'clutch';
+        }
+      }
+
+      const chef = chefScore(rawScore);
+      const textKey = outcome === 'disaster' ? 'disaster' : outcome === 'clutch' ? 'clutch' : 'performance';
+      const performanceText = talent[textKey](name, pr);
+
+      // Audience reactions (2-3 from same tribe)
+      const reactors = t.members.filter(m => m !== name).slice(0, 3);
+      const scoreLevel = chef >= 7 ? 'high' : chef <= 3 ? 'low' : 'mid';
+      const reactions = reactors.map(r => {
+        const rArch = pStats(r).archetype || '_default';
+        const pool = isSabotaged ? AUDIENCE_REACTIONS.sabotage : AUDIENCE_REACTIONS[scoreLevel];
+        const fn = pool[rArch] || pool._default;
+        return { name: r, text: fn(r) };
+      });
+
+      performances.push({
+        name, tribe: t.name, talent: talent.name, talentId: talent.id,
+        category: performer.category,
+        auditionScore: performer.auditionScore,
+        showScore: rawScore, chefScore: chef, outcome,
+        performanceText, sabotageText: isSabotaged ? sabotage.text : null,
+        reactions,
+      });
+    });
+  }
+
+  // ── Determine winner/loser ──
+  const tribeScores = {};
+  tribeMembers.forEach(t => { tribeScores[t.name] = 0; });
+  performances.forEach(p => { tribeScores[p.tribe] += p.chefScore; });
+
+  const sortedTribes = Object.entries(tribeScores).sort(([,a], [,b]) => b - a);
+  const winnerName = sortedTribes[0][0];
+  const loserName = sortedTribes[sortedTribes.length - 1][0];
+  const winner = gs.tribes.find(t => t.name === winnerName);
+  const loser = gs.tribes.find(t => t.name === loserName);
+
+  // ── chalMemberScores: only performers ──
+  const playerScores = {};
+  performances.forEach(p => { playerScores[p.name] = p.showScore; });
+
+  // ── Set ep fields ──
+  ep.winner = winner;
+  ep.loser = loser;
+  ep.challengeType = 'tribe';
+  ep.tribalPlayers = [...loser.members];
+  ep.challengeLabel = 'Talent Show';
+  ep.challengeCategory = 'social';
+  ep.challengeDesc = 'Camp talent show. Each tribe auditions, captain picks 3 acts. Chef scores 0-9.';
+  ep.chalMemberScores = playerScores;
+  ep.chalSitOuts = {};
+  updateChalRecord(ep);
+
+  // ── Camp events (2 per tribe) ──
+  if (!ep.campEvents) ep.campEvents = {};
+  tribeMembers.forEach(t => {
+    const key = t.name;
+    if (!ep.campEvents[key]) ep.campEvents[key] = { pre: [], post: [] };
+    if (!ep.campEvents[key].post) ep.campEvents[key].post = [];
+
+    const tribePerfs = performances.filter(p => p.tribe === t.name);
+    const tribeAuditions = auditions[t.name] || [];
+
+    // ── POSITIVE ──
+    // Unlikely Hero: lowest auditioner who clutched
+    const clutchPerf = tribePerfs.find(p => p.outcome === 'clutch');
+    // Standing Ovation: highest chef score
+    const bestPerf = tribePerfs.slice().sort((a, b) => b.chefScore - a.chefScore)[0];
+    // Team Support: highest social non-performer
+    const nonPerformers = t.members.filter(m => !tribePerfs.some(p => p.name === m));
+    const supporter = nonPerformers.sort((a, b) => pStats(b).social - pStats(a).social)[0];
+
+    if (clutchPerf) {
+      const pr = pronouns(clutchPerf.name);
+      ep.campEvents[key].post.push({
+        type: 'talentShowUnlikelyHero', players: [clutchPerf.name],
+        text: `Nobody expected ${clutchPerf.name} to steal the show. ${pr.Sub} almost didn't make the cut. Then ${pr.sub} walked on stage and changed everything.`,
+        consequences: '+0.4 bond from tribemates.',
+        badgeText: 'UNLIKELY HERO', badgeClass: 'gold'
+      });
+      t.members.filter(m => m !== clutchPerf.name).forEach(m => addBond(m, clutchPerf.name, 0.4));
+    } else if (bestPerf && bestPerf.chefScore >= 7) {
+      const pr = pronouns(bestPerf.name);
+      ep.campEvents[key].post.push({
+        type: 'talentShowStandingOvation', players: [bestPerf.name],
+        text: `${bestPerf.name} brought the house down. Chef gave ${pr.obj} a ${bestPerf.chefScore}. The tribe carried ${pr.obj} off the stage.`,
+        consequences: '+0.5 bond from tribemates, +2 popularity.',
+        badgeText: 'STANDING OVATION', badgeClass: 'gold'
+      });
+      t.members.filter(m => m !== bestPerf.name).forEach(m => addBond(m, bestPerf.name, 0.5));
+      if (!gs.popularity) gs.popularity = {};
+      gs.popularity[bestPerf.name] = (gs.popularity[bestPerf.name] || 0) + 2;
+    } else if (supporter) {
+      const pr = pronouns(supporter);
+      ep.campEvents[key].post.push({
+        type: 'talentShowTeamSupport', players: [supporter, ...(tribePerfs[0] ? [tribePerfs[0].name] : [])],
+        text: `${supporter} didn't perform, but ${pr.sub} ${pr.sub === 'they' ? 'were' : 'was'} the loudest voice in the crowd. Every cheer, every clap — the performers felt it.`,
+        consequences: '+0.3 bond with performers.',
+        badgeText: 'TEAM SUPPORT', badgeClass: 'gold'
+      });
+      tribePerfs.forEach(p => addBond(p.name, supporter, 0.3));
+    }
+
+    // ── NEGATIVE ──
+    const sabotaged = sabotage && sabotage.saboteurTribe !== t.name && tribePerfs.some(p => p.outcome === 'sabotaged');
+    const disasterPerf = tribePerfs.find(p => p.outcome === 'disaster');
+    const bitterReject = tribeAuditions.find((a, idx) => !a.selected && idx < 4); // close to cutoff
+
+    if (sabotaged && sabotage) {
+      const pr = pronouns(sabotage.saboteur);
+      ep.campEvents[key].post.push({
+        type: 'talentShowSabotageFallout', players: [sabotage.target, sabotage.saboteur],
+        text: `What ${sabotage.saboteur} did to ${sabotage.target} won't be forgotten. The tribe is furious.`,
+        consequences: '-0.5 bond with saboteur, +1.5 heat.',
+        badgeText: 'SABOTAGE', badgeClass: 'red'
+      });
+      t.members.forEach(m => addBond(m, sabotage.saboteur, -0.5));
+      if (!gs._talentShowHeat) gs._talentShowHeat = {};
+      gs._talentShowHeat[sabotage.saboteur] = { amount: 1.5, expiresEp: ((gs.episode || 0) + 1) + 2 };
+    } else if (disasterPerf) {
+      const pr = pronouns(disasterPerf.name);
+      ep.campEvents[key].post.push({
+        type: 'talentShowDisaster', players: [disasterPerf.name],
+        text: `${disasterPerf.name} choked on stage. Chef gave ${pr.obj} a ${disasterPerf.chefScore}. The tribe tries not to talk about it. They fail.`,
+        consequences: '-0.3 bond from tribemates, +0.5 heat.',
+        badgeText: 'STAGE DISASTER', badgeClass: 'red'
+      });
+      t.members.filter(m => m !== disasterPerf.name).forEach(m => addBond(m, disasterPerf.name, -0.3));
+      if (!gs._talentShowHeat) gs._talentShowHeat = {};
+      gs._talentShowHeat[disasterPerf.name] = { amount: 0.5, expiresEp: ((gs.episode || 0) + 1) + 1 };
+    } else if (bitterReject) {
+      const captain = captains[t.name];
+      const pr = pronouns(bitterReject.name);
+      ep.campEvents[key].post.push({
+        type: 'talentShowBitterReject', players: [bitterReject.name, captain],
+        text: `${bitterReject.name} was THIS close to making the cut. ${captain} chose someone else. ${pr.Sub} ${pr.sub === 'they' ? 'haven\'t' : 'hasn\'t'} forgotten.`,
+        consequences: '-0.4 bond with captain.',
+        badgeText: 'BITTER REJECTION', badgeClass: 'red'
+      });
+      addBond(bitterReject.name, captain, -0.4);
+    }
+  });
+
+  // ── Store data ──
+  ep.talentShow = {
+    auditions, performances, captains, sabotage,
+    tribeScores,
+    winner: winnerName, loser: loserName,
+    mvp: performances.slice().sort((a, b) => b.chefScore - a.chefScore)[0]?.name || null,
   };
 }
 
@@ -27734,6 +28264,13 @@ function simulateJuryRoundtable(ep) {
         if (((gs.episode || 0) + 1) >= gs._dodgebrawlHeat[k].expiresEp) delete gs._dodgebrawlHeat[k];
       });
       if (!Object.keys(gs._dodgebrawlHeat).length) delete gs._dodgebrawlHeat;
+    }
+    // Clear expired talent show heat
+    if (gs._talentShowHeat) {
+      Object.keys(gs._talentShowHeat).forEach(k => {
+        if (((gs.episode || 0) + 1) >= gs._talentShowHeat[k].expiresEp) delete gs._talentShowHeat[k];
+      });
+      if (!Object.keys(gs._talentShowHeat).length) delete gs._talentShowHeat;
     }
 
     // ── BLACK VOTE: eliminated player casts a parting vote/gift (until F4) ──

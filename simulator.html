@@ -15450,6 +15450,117 @@ function allCampEvents(ep) {
   );
 }
 
+  // ── EMISSARY VOTE: scouting events at losing tribe's camp ──
+  function generateEmissaryScoutEvents(ep) {
+    if (!ep.emissary) return;
+    const emissary = ep.emissary.name;
+    const emS = pStats(emissary);
+    const emPr = pronouns(emissary);
+    const emArch = emS.archetype || 'neutral';
+    const loseTribeName = ep.emissary.targetTribe;
+    const loseTribe = gs.tribes.find(t => t.name === loseTribeName);
+    if (!loseTribe) return;
+    const loseMembers = loseTribe.members.filter(m => gs.activePlayers.includes(m));
+    if (!loseMembers.length) return;
+
+    ep.emissaryScoutEvents = [];
+    const _evCampKey = loseTribeName;
+    if (!ep.campEvents) ep.campEvents = {};
+    if (!ep.campEvents[_evCampKey]) ep.campEvents[_evCampKey] = { pre: [], post: [] };
+    if (!ep.campEvents[_evCampKey].post) ep.campEvents[_evCampKey].post = [];
+
+    // ── 1. PITCHES (1-2 losing tribe members approach the emissary) ──
+    const _evPitchCandidates = loseMembers.map(name => {
+      const s = pStats(name);
+      const heat = computeHeat(name, loseMembers, ep);
+      const bond = getBond(emissary, name);
+      return { name, score: s.social * 0.05 + s.strategic * 0.04 + heat * 0.03 + bond * 0.02 + Math.random() * 0.10 };
+    }).sort((a, b) => b.score - a.score);
+
+    const _evPitchCount = Math.min(_evPitchCandidates.length, Math.random() < 0.4 ? 2 : 1);
+    const _evPitchers = _evPitchCandidates.slice(0, _evPitchCount);
+
+    _evPitchers.forEach(pitcher => {
+      const pS = pStats(pitcher.name);
+      const pPr = pronouns(pitcher.name);
+      const _evRivals = loseMembers.filter(p => p !== pitcher.name)
+        .map(p => ({ name: p, bond: getBond(pitcher.name, p) }))
+        .sort((a, b) => a.bond - b.bond);
+      const pitchTarget = _evRivals[0]?.name || null;
+      if (!pitchTarget) return;
+
+      const receptiveness = getBond(emissary, pitcher.name) * 0.10 + pS.social * 0.05 + Math.random() * 0.15;
+      const pitchStrength = Math.max(0, Math.min(1, receptiveness));
+
+      const pitchEvent = {
+        type: 'emissaryPitch',
+        players: [pitcher.name, emissary],
+        pitcher: pitcher.name,
+        pitchTarget: pitchTarget,
+        pitchStrength: pitchStrength,
+        text: `${pitcher.name} pulls ${emissary} aside. "${pitchTarget} is the weakest link here. Trust me on this."`,
+        consequences: `Pitch influence: ${(pitchStrength * 100).toFixed(0)}% receptiveness.`,
+        badgeText: 'PITCH', badgeClass: 'gold'
+      };
+      ep.emissaryScoutEvents.push(pitchEvent);
+      ep.campEvents[_evCampKey].post.push(pitchEvent);
+
+      addBond(pitcher.name, emissary, 0.3);
+      addBond(emissary, pitcher.name, pitchStrength * 0.4);
+    });
+
+    // ── 2. OBSERVATION (emissary reads the tribe) ──
+    const _evObsQuality = emS.intuition * 0.07 + emS.mental * 0.025 + Math.random() * 0.10;
+    const _evMostIsolated = loseMembers.map(name => {
+      const avgBond = loseMembers.filter(p => p !== name).reduce((sum, p) => sum + getBond(name, p), 0) / Math.max(1, loseMembers.length - 1);
+      return { name, avgBond };
+    }).sort((a, b) => a.avgBond - b.avgBond)[0];
+
+    const obsText = _evObsQuality > 0.5
+      ? `${emissary} watches carefully. ${emPr.Sub} notices ${_evMostIsolated?.name || 'tension'} seems isolated — conversations stop when ${pronouns(_evMostIsolated?.name || emissary).sub} walks by.`
+      : `${emissary} tries to read the tribe, but it's hard to tell who's really on the outs.`;
+
+    const obsEvent = {
+      type: 'emissaryObservation',
+      players: [emissary, ...(_evMostIsolated ? [_evMostIsolated.name] : [])],
+      text: obsText,
+      observationQuality: _evObsQuality,
+      isolatedPlayer: _evMostIsolated?.name || null,
+      consequences: _evObsQuality > 0.5 ? `${emissary} identified ${_evMostIsolated?.name} as isolated.` : 'Surface-level read only.',
+      badgeText: 'EMISSARY', badgeClass: 'blue'
+    };
+    ep.emissaryScoutEvents.push(obsEvent);
+    ep.campEvents[_evCampKey].post.push(obsEvent);
+
+    // ── 3. ALLIANCE OFFER (optional — if emissary has strong existing bond) ──
+    const _evAllyCandidate = loseMembers.find(p => getBond(emissary, p) >= 3.0);
+    if (_evAllyCandidate && Math.random() < 0.6) {
+      const _evAllyBond = getBond(emissary, _evAllyCandidate);
+      if (!gs.sideDeals) gs.sideDeals = [];
+      const _evGenuine = emS.loyalty * 0.08 + _evAllyBond * 0.05 + Math.random() * 0.15 > 0.5;
+      gs.sideDeals.push({
+        players: [emissary, _evAllyCandidate],
+        initiator: emissary,
+        madeEp: (gs.episode || 0) + 1,
+        type: 'f2',
+        active: true,
+        genuine: _evGenuine
+      });
+
+      const dealEvent = {
+        type: 'emissaryDeal',
+        players: [emissary, _evAllyCandidate],
+        text: `${emissary} and ${_evAllyCandidate} make a cross-tribe deal. "When we merge, we look out for each other."`,
+        consequences: `F2 pact formed (${_evGenuine ? 'genuine' : 'strategic'}).`,
+        badgeText: 'CROSS-TRIBE DEAL', badgeClass: 'gold'
+      };
+      ep.emissaryScoutEvents.push(dealEvent);
+      ep.campEvents[_evCampKey].post.push(dealEvent);
+      addBond(emissary, _evAllyCandidate, 0.5);
+      addBond(_evAllyCandidate, emissary, 0.5);
+    }
+  }
+
 function generateCampEventsForGroup(group, finds, twistBoosts = {}, maxEvents = null) {
   const events = [];
   if (group.length < 2) return events;
@@ -24425,6 +24536,9 @@ function simulateEpisode() {
       }
     }
   }
+
+  // ── Emissary Vote: scouting events at losing tribe camp ──
+  if (ep.emissary) generateEmissaryScoutEvents(ep);
 
   // ── POST-CHALLENGE CAMP EVENTS (outcome now known — exiled player already excluded) ──
   generateCampEvents(ep, 'post');

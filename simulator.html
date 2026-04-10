@@ -8961,7 +8961,7 @@ function simulateTalentShow(ep) {
   }
 
   // Pre-Show Jitters — general mood event (always available as filler)
-  if (backstageEvents.length < maxBackstage && backstageEvents.length < 2) {
+  if (backstageEvents.length < maxBackstage && backstageEvents.length < 3) {
     const randomPerformer = Object.values(auditions).flatMap(a => a.filter(r => r.selected))[Math.floor(Math.random() * 6)] || Object.values(auditions).flatMap(a => a.filter(r => r.selected))[0];
     if (randomPerformer) {
       const pr = pronouns(randomPerformer.name);
@@ -8980,7 +8980,7 @@ function simulateTalentShow(ep) {
   }
 
   // ── Backstage fallback: guarantee at least 2 events ──
-  if (backstageEvents.length < 2) {
+  if (backstageEvents.length < 3) {
     // Fallback pep talk: find ANY performer + ANY non-performer with decent social
     for (const t of tribeMembers) {
       if (backstageEvents.length >= 2) break;

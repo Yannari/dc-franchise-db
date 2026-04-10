@@ -31674,13 +31674,27 @@ function _textTalentShow(ep, ln, sec) {
   sec('TALENT SHOW');
   Object.entries(ts.auditions).forEach(([tribe, results]) => {
     ln(`${tribe} (Captain: ${ts.captains[tribe]})`);
-    results.forEach(r => ln(`  ${r.selected ? '+' : '-'} ${r.name} — ${r.talent.name} (${r.auditionScore.toFixed(1)})`));
+    results.forEach(r => ln(`  ${r.selected ? '+' : '-'} ${r.name} — ${r.talentName || r.talent?.name || '?'} (${r.auditionScore.toFixed(1)})`));
   });
+  // Audition drama
+  if (ts.auditionDrama) {
+    Object.entries(ts.auditionDrama).forEach(([tribe, drama]) => {
+      ln(`  ${tribe} DRAMA: [${drama.badge}] ${drama.text}`);
+    });
+  }
+  // Backstage
+  if (ts.backstageEvents?.length) {
+    ln('');
+    ln('BACKSTAGE:');
+    ts.backstageEvents.forEach(evt => ln(`  [${evt.badge}] ${evt.text}`));
+  }
   if (ts.sabotage) ln(`SABOTAGE: ${ts.sabotage.saboteur} sabotaged ${ts.sabotage.target} (${ts.sabotage.type})`);
   ln('');
   ts.performances.forEach(p => {
     const tag = p.outcome === 'disaster' ? ' [DISASTER]' : p.outcome === 'clutch' ? ' [CLUTCH]' : p.outcome === 'sabotaged' ? ' [SABOTAGED]' : '';
     ln(`${p.tribe} — ${p.name}: ${p.talent} — Chef: ${p.chefScore}/9${tag}`);
+    const beats = p.performanceBeats || (typeof p.performanceText === 'string' ? [p.performanceText] : p.performanceText) || [];
+    beats.forEach(b => { if (b) ln(`  ${b}`); });
   });
   ln(`Final: ${Object.entries(ts.tribeScores).map(([t, s]) => `${t} ${s}`).join(' — ')}`);
   ln(`Winner: ${ts.winner}. ${ts.loser} goes to tribal.`);
@@ -42643,6 +42657,14 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'talentShowSabotageFallout' ? (evt.badgeText || 'SABOTAGE')
                      : evt.type === 'talentShowDisaster'        ? (evt.badgeText || 'STAGE DISASTER')
                      : evt.type === 'talentShowBitterReject'    ? (evt.badgeText || 'BITTER REJECTION')
+                     : evt.type === 'spyMission'              ? (evt.badgeText || evt.badge || 'SPY MISSION')
+                     : evt.type === 'sabotageSetup'            ? (evt.badgeText || evt.badge || 'SABOTAGE SETUP')
+                     : evt.type === 'pepTalk'                  ? (evt.badgeText || evt.badge || 'PEP TALK')
+                     : evt.type === 'rivalryConfrontation'     ? (evt.badgeText || evt.badge || 'RIVALRY')
+                     : evt.type === 'accidentInjury'           ? (evt.badgeText || evt.badge || 'ACCIDENT')
+                     : evt.type === 'accidentSubstitution'     ? (evt.badgeText || evt.badge || 'SUBSTITUTION')
+                     : evt.type === 'secretRehearsalSubIn'     ? (evt.badgeText || evt.badge || 'SECRET REHEARSAL')
+                     : evt.type === 'secretRehearsalAlone'     ? (evt.badgeText || evt.badge || 'SECRET REHEARSAL')
                      : evt.type === 'rewardBackfireAlliance'   ? (evt.badgeText || 'BACKFIRE')
                      : evt.type === 'rewardBackfireBloc'       ? (evt.badgeText || 'LEFT BEHIND')
                      : evt.type === 'emissaryVolunteer'       ? (evt.badgeText || 'EMISSARY')
@@ -42822,6 +42844,8 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'dodgebrawlRefusal' || evt.type === 'dodgebrawlChoke' || evt.type === 'dodgebrawlLiability' ? 'red'
                      : evt.type === 'talentShowStandingOvation' || evt.type === 'talentShowUnlikelyHero' || evt.type === 'talentShowTeamSupport' ? 'gold'
                      : evt.type === 'talentShowSabotageFallout' || evt.type === 'talentShowDisaster' || evt.type === 'talentShowBitterReject' ? 'red'
+                     : evt.type === 'spyMission' || evt.type === 'pepTalk' || evt.type === 'accidentSubstitution' || evt.type === 'secretRehearsalSubIn' || evt.type === 'secretRehearsalAlone' ? 'gold'
+                     : evt.type === 'sabotageSetup' || evt.type === 'rivalryConfrontation' || evt.type === 'accidentInjury' ? 'red'
                      : isMoleReveal ? 'gold'
                      : isDareComplete || isDareMVP || isDareGift || isDarePact ? 'gold'
                      : isDarePactBetray || isDareAllyBetray || isDareRefusal || isDareElim ? 'red'

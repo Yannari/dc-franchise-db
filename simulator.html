@@ -40105,7 +40105,7 @@ function rpBuildFirstImpressions(ep, twistObj) {
 // ── Screen 3: Pre-challenge twists (tribe swap, three gifts, journey, exile-island, etc.) ──
 function rpBuildPreTwist(ep) {
   const _rawTwistData = (ep.twistScenes?.length ? ep.twistScenes : generateTwistScenes(ep))
-    .filter(t => t.type !== 'exile-island' && t.type !== 'jury-elimination' && t.type !== 'kidnapping' && t.type !== 'first-impressions' && t.type !== 'tied-destinies' && t.type !== 'aftermath' && t.type !== 'fan-vote-return' && t.type !== 'schoolyard-pick' && t.type !== 'triple-dog-dare' && t.type !== 'say-uncle' && t.type !== 'phobia-factor' && t.type !== 'cliff-dive' && t.type !== 'awake-a-thon' && t.type !== 'emissary-vote' && t.type !== 'dodgebrawl'); // shown in dedicated screens
+    .filter(t => t.type !== 'exile-island' && t.type !== 'jury-elimination' && t.type !== 'kidnapping' && t.type !== 'first-impressions' && t.type !== 'tied-destinies' && t.type !== 'aftermath' && t.type !== 'fan-vote-return' && t.type !== 'schoolyard-pick' && t.type !== 'triple-dog-dare' && t.type !== 'say-uncle' && t.type !== 'phobia-factor' && t.type !== 'cliff-dive' && t.type !== 'awake-a-thon' && t.type !== 'emissary-vote' && t.type !== 'dodgebrawl' && t.type !== 'talent-show'); // shown in dedicated screens
   // Deduplicate: only show one scene per twist type (prevents double display if twist is in ep.twists twice)
   const _seenTypes = new Set();
   const twistData = _rawTwistData.filter(t => { if (_seenTypes.has(t.type)) return false; _seenTypes.add(t.type); return true; });
@@ -50507,6 +50507,211 @@ function rpBuildAwakeAThon(ep) {
   return html;
 }
 
+function rpBuildTalentAuditions(ep) {
+  const ts = ep.talentShow;
+  if (!ts?.auditions) return null;
+
+  const stateKey = `ts_aud_${ep.num}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+
+  const tribeNames = Object.keys(ts.auditions);
+  const totalItems = tribeNames.length;
+  const allRevealed = state.idx >= totalItems - 1;
+
+  const _tsReveal = (targetIdx) => `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=${targetIdx};const ep=gs.episodeHistory.find(e=>e.num===${ep.num});if(ep){const m=document.querySelector('.rp-main');const st=m?m.scrollTop:0;buildVPScreens(ep);renderVPScreen();if(m)m.scrollTop=st;}`;
+
+  let html = `<div class="rp-page tod-dawn">
+    <div class="rp-eyebrow">Episode ${ep.num}</div>
+    <div style="font-family:var(--font-display);font-size:28px;letter-spacing:2px;text-align:center;color:#8b5cf6;text-shadow:0 0 20px rgba(139,92,246,0.3);margin-bottom:6px">🎭 TALENT SHOW — AUDITIONS</div>
+    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:20px">Each tribe auditions. Captain picks the 3 best acts for the show.</div>`;
+
+  tribeNames.forEach((tribeName, tIdx) => {
+    const isVisible = tIdx <= state.idx;
+    if (!isVisible) {
+      html += `<div style="padding:14px;margin-bottom:6px;border:1px solid var(--border);border-radius:8px;opacity:0.12;text-align:center;color:var(--muted)">${tribeName} Auditions</div>`;
+      return;
+    }
+
+    const tc = tribeColor(tribeName);
+    const captain = ts.captains[tribeName];
+    const results = ts.auditions[tribeName] || [];
+
+    html += `<div style="margin-bottom:16px;padding:14px;border-radius:10px;border:1px solid ${tc}44;background:${tc}08;animation:scrollDrop 0.3s var(--ease-broadcast) both">`;
+    html += `<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <div style="font-family:var(--font-display);font-size:14px;letter-spacing:1px;color:${tc}">${tribeName.toUpperCase()} AUDITIONS</div>`;
+    if (captain) {
+      html += `<div style="display:flex;align-items:center;gap:4px;margin-left:auto">
+        ${rpPortrait(captain, 'xs')}
+        <span style="font-size:9px;font-weight:700;letter-spacing:1px;color:#f0a500">CAPTAIN</span>
+      </div>`;
+    }
+    html += `</div>`;
+
+    results.forEach((r, i) => {
+      const pr = pronouns(r.name);
+      const badgeColor = r.selected ? '#3fb950' : (i === 3 ? '#f0a500' : '#f85149');
+      const badgeText = r.selected ? 'SELECTED' : (i === 3 ? 'CLOSE CALL' : 'CUT');
+      const opacity = r.selected ? '1' : '0.5';
+      html += `<div style="display:flex;align-items:center;gap:10px;padding:8px;margin-bottom:4px;border-radius:6px;background:rgba(255,255,255,0.02);opacity:${opacity}">
+        ${rpPortrait(r.name, 'sm')}
+        <div style="flex:1;min-width:0">
+          <div style="font-size:12px;font-weight:600;color:#e6edf3">${r.name}</div>
+          <div style="font-size:10px;color:#8b949e">${r.talent.name}</div>
+          <div style="font-size:10px;color:#6e7681;font-style:italic;margin-top:2px">${r.talent.audition(r.name, pr)}</div>
+        </div>
+        <div style="text-align:right">
+          <span style="font-size:9px;font-weight:700;letter-spacing:1px;color:${badgeColor};background:${badgeColor}18;padding:2px 6px;border-radius:3px">${badgeText}</span>
+          <div style="font-size:10px;color:#8b949e;margin-top:2px">${r.auditionScore.toFixed(1)}</div>
+        </div>
+      </div>`;
+    });
+
+    html += `</div>`;
+  });
+
+  if (!allRevealed) {
+    html += `<div style="position:sticky;bottom:0;padding:12px 0;text-align:center;background:linear-gradient(transparent,var(--bg-primary) 30%)">
+      <button class="rp-btn" onclick="${_tsReveal(state.idx + 1)}">NEXT (${state.idx + 2}/${totalItems})</button>
+      <button class="rp-btn rp-btn-secondary" onclick="${_tsReveal(totalItems - 1)}" style="margin-left:8px">REVEAL ALL</button>
+    </div>`;
+  }
+
+  html += `</div>`;
+  return html;
+}
+
+function rpBuildTalentShowStage(ep) {
+  const ts = ep.talentShow;
+  if (!ts?.performances?.length) return null;
+
+  const stateKey = `ts_show_${ep.num}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+
+  const totalItems = ts.performances.length;
+  const allRevealed = state.idx >= totalItems - 1;
+
+  const _tsReveal = (targetIdx) => `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=${targetIdx};const ep=gs.episodeHistory.find(e=>e.num===${ep.num});if(ep){const m=document.querySelector('.rp-main');const st=m?m.scrollTop:0;buildVPScreens(ep);renderVPScreen();if(m)m.scrollTop=st;}`;
+
+  // Live scoreboard based on revealed acts
+  const revealedScores = {};
+  Object.keys(ts.tribeScores).forEach(t => { revealedScores[t] = 0; });
+  ts.performances.forEach((p, i) => { if (i <= state.idx) revealedScores[p.tribe] += p.chefScore; });
+
+  let html = `<div class="rp-page tod-deepnight" style="background:linear-gradient(180deg,rgba(30,20,50,1) 0%,rgba(15,10,25,1) 100%)">
+    <div class="rp-eyebrow">Episode ${ep.num}</div>
+    <div style="font-family:var(--font-display);font-size:28px;letter-spacing:3px;text-align:center;color:#f0a500;text-shadow:0 0 30px rgba(240,165,0,0.4);margin-bottom:4px">🎭 THE TALENT SHOW</div>
+    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:16px">Chef scores each act 0-9. Highest tribe total wins immunity.</div>`;
+
+  // Scoreboard
+  html += `<div style="display:flex;justify-content:center;gap:20px;margin-bottom:16px;padding:10px;border-radius:8px;background:rgba(255,255,255,0.03)">`;
+  Object.entries(revealedScores).forEach(([tribe, score], i, arr) => {
+    const tc = tribeColor(tribe);
+    const isWinner = allRevealed && tribe === ts.winner;
+    html += `<div style="text-align:center;${isWinner ? 'text-shadow:0 0 12px ' + tc : ''}">
+      <div style="font-family:var(--font-display);font-size:${isWinner ? '28' : '22'}px;color:${tc};font-weight:700">${score}</div>
+      <div style="font-size:10px;color:${tc};opacity:0.8">${tribe}</div>
+    </div>`;
+    if (i < arr.length - 1) html += `<div style="font-size:20px;color:#484f58;align-self:center">—</div>`;
+  });
+  html += `</div>`;
+
+  // Per-act cards
+  ts.performances.forEach((perf, i) => {
+    const isVisible = i <= state.idx;
+    if (!isVisible) {
+      html += `<div style="padding:14px;margin-bottom:6px;border:1px solid var(--border);border-radius:8px;opacity:0.12;text-align:center;color:var(--muted)">Act ${i + 1}</div>`;
+      return;
+    }
+
+    const tc = tribeColor(perf.tribe);
+    const isDisaster = perf.outcome === 'disaster';
+    const isClutch = perf.outcome === 'clutch';
+    const isSabotaged = perf.outcome === 'sabotaged';
+    const glowColor = isDisaster ? '#f85149' : isClutch ? '#f0a500' : isSabotaged ? '#da3633' : tc;
+
+    html += `<div style="margin-bottom:10px;padding:16px;border-radius:10px;border:1px solid ${glowColor}44;background:linear-gradient(135deg,${glowColor}08 0%,transparent 60%);animation:scrollDrop 0.3s var(--ease-broadcast) both">`;
+
+    // Sabotage card (if sabotaged, shows before the act)
+    if (isSabotaged && perf.sabotageText) {
+      html += `<div style="padding:10px;margin-bottom:10px;border-radius:6px;background:rgba(218,54,51,0.1);border:1px solid rgba(218,54,51,0.3)">
+        <span style="font-size:9px;font-weight:700;letter-spacing:1px;color:#da3633">SABOTAGE</span>
+        <div style="display:flex;align-items:center;gap:6px;margin:6px 0">
+          ${rpPortrait(ts.sabotage.saboteur, 'sm')}
+          <span style="font-size:11px;color:#da3633">${ts.sabotage.saboteur}</span>
+        </div>
+        <div style="font-size:12px;color:#e6edf3;font-style:italic">${perf.sabotageText}</div>
+      </div>`;
+    }
+
+    // Performer (large, centered, spotlight glow)
+    html += `<div style="text-align:center;margin-bottom:10px">
+      <div style="display:inline-block;border-radius:50%;box-shadow:0 0 30px ${glowColor}40;padding:3px">
+        ${rpPortrait(perf.name, 'md')}
+      </div>
+      <div style="font-size:14px;font-weight:700;color:#e6edf3;margin-top:6px">${perf.name}</div>
+      <div style="font-size:10px;color:${tc}">${perf.tribe} — ${perf.talent}</div>
+    </div>`;
+
+    // Outcome badge
+    if (isDisaster) html += `<div style="text-align:center;margin-bottom:6px"><span style="font-size:10px;font-weight:700;letter-spacing:1px;color:#f85149;background:rgba(248,81,73,0.15);padding:3px 8px;border-radius:4px">DISASTER</span></div>`;
+    if (isClutch) html += `<div style="text-align:center;margin-bottom:6px"><span style="font-size:10px;font-weight:700;letter-spacing:1px;color:#f0a500;background:rgba(240,165,0,0.15);padding:3px 8px;border-radius:4px">SURPRISE HIT</span></div>`;
+
+    // Performance text
+    html += `<div style="font-size:12px;color:#cdd9e5;text-align:center;line-height:1.6;margin-bottom:12px;font-style:italic">${perf.performanceText}</div>`;
+
+    // Chef-O-Meter bar
+    html += `<div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px">
+      <span style="font-size:20px">👨‍🍳</span>
+      <div style="display:flex;gap:2px">`;
+    for (let seg = 0; seg < 9; seg++) {
+      const filled = seg < perf.chefScore;
+      const segColor = filled ? (perf.chefScore >= 7 ? '#3fb950' : perf.chefScore >= 4 ? '#f0a500' : '#f85149') : 'rgba(255,255,255,0.08)';
+      html += `<div style="width:20px;height:14px;border-radius:2px;background:${segColor};${filled ? 'animation:scrollDrop 0.2s var(--ease-broadcast) both;animation-delay:' + (seg * 0.06) + 's' : ''}"></div>`;
+    }
+    html += `</div>
+      <span style="font-size:16px;font-weight:800;color:${perf.chefScore >= 7 ? '#3fb950' : perf.chefScore >= 4 ? '#f0a500' : '#f85149'}">${perf.chefScore}</span>
+    </div>`;
+
+    // Audience reactions
+    if (perf.reactions?.length) {
+      html += `<div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06)">`;
+      perf.reactions.forEach(r => {
+        html += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+          ${rpPortrait(r.name, 'xs')}
+          <span style="font-size:10px;color:#8b949e;font-style:italic">${r.text}</span>
+        </div>`;
+      });
+      html += `</div>`;
+    }
+
+    html += `</div>`;
+  });
+
+  // Final result
+  if (allRevealed) {
+    const wTC = tribeColor(ts.winner);
+    html += `<div style="padding:16px;margin-top:10px;border-radius:10px;border:2px solid ${wTC};background:${wTC}0c;text-align:center">
+      <div style="font-family:var(--font-display);font-size:18px;color:${wTC};margin-bottom:4px">${ts.winner.toUpperCase()} WINS THE TALENT SHOW</div>
+      <div style="font-size:12px;color:#8b949e">${ts.loser} goes to tribal council.</div>
+      <div style="font-size:11px;color:#8b949e;margin-top:6px">Final: ${Object.entries(revealedScores).map(([t, s]) => `${t} ${s}`).join(' — ')}</div>
+      ${ts.mvp ? `<div style="margin-top:8px">${rpPortrait(ts.mvp, 'sm')}<div style="font-size:10px;color:#8b949e;margin-top:2px">MVP: ${ts.mvp}</div></div>` : ''}
+    </div>`;
+  }
+
+  // Buttons
+  if (!allRevealed) {
+    html += `<div style="position:sticky;bottom:0;padding:12px 0;text-align:center;background:linear-gradient(transparent,rgba(15,10,25,1) 30%)">
+      <button class="rp-btn" onclick="${_tsReveal(state.idx + 1)}">NEXT ACT (${state.idx + 2}/${totalItems})</button>
+      <button class="rp-btn rp-btn-secondary" onclick="${_tsReveal(totalItems - 1)}" style="margin-left:8px">REVEAL ALL</button>
+    </div>`;
+  }
+
+  html += `</div>`;
+  return html;
+}
+
 function rpBuildDodgebrawl(ep) {
   const db = ep.dodgebrawl;
   if (!db?.rounds?.length) return null;
@@ -52223,6 +52428,10 @@ function buildVPScreens(epRecord) {
     vpScreens.push({ id:'cliff-dive', label:'Cliff Dive', html: rpBuildCliffDive(ep) });
   } else if (ep.isAwakeAThon && ep.awakeAThon) {
     vpScreens.push({ id:'awake-a-thon', label:'Awake-A-Thon', html: rpBuildAwakeAThon(ep) });
+  } else if (ep.isTalentShow && ep.talentShow) {
+    vpScreens.push({ id:'talent-auditions', label:'Auditions', html: rpBuildTalentAuditions(ep) });
+    const _tsShowHtml = rpBuildTalentShowStage(ep);
+    if (_tsShowHtml) vpScreens.push({ id:'talent-show', label:'The Show', html: _tsShowHtml });
   } else if (ep.isDodgebrawl && ep.dodgebrawl) {
     vpScreens.push({ id:'dodgebrawl', label:'Dodgebrawl', html: rpBuildDodgebrawl(ep) });
   } else if (ep.isPhobiaFactor && ep.phobiaFactor) {

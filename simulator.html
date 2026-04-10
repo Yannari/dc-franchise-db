@@ -7350,23 +7350,22 @@ function simulateDodgebrawl(ep) {
 
   function pickLineup(tribeName, refusedThisRound) {
     const pool = rotationPools[tribeName];
-    const available = tribeMembers.find(t => t.name === tribeName).members.filter(m => !refusedThisRound.includes(m));
+    const allMembers = tribeMembers.find(t => t.name === tribeName).members;
+    const available = allMembers.filter(m => !refusedThisRound.includes(m));
     const lineup = [];
-    // Fill from queue first (rotation), skipping refusers
-    const filteredQueue = pool.queue.filter(m => !refusedThisRound.includes(m));
-    while (lineup.length < courtSize && filteredQueue.length > 0) {
-      lineup.push(filteredQueue.shift());
+    // Pull from queue (rotation order), skipping refusers
+    while (lineup.length < courtSize && pool.queue.length > 0) {
+      const next = pool.queue.shift();
+      if (refusedThisRound.includes(next)) continue; // skip refuser, they're removed from queue
+      lineup.push(next);
     }
-    // Reset queue from available if exhausted
+    // If queue exhausted before lineup full, reset with everyone who hasn't played this cycle
     if (lineup.length < courtSize) {
-      const remaining = available.filter(m => !lineup.includes(m));
-      while (lineup.length < courtSize && remaining.length > 0) {
-        lineup.push(remaining.shift());
+      pool.queue = available.filter(m => !lineup.includes(m));
+      while (lineup.length < courtSize && pool.queue.length > 0) {
+        lineup.push(pool.queue.shift());
       }
     }
-    // Rebuild queue without those just used
-    pool.queue = available.filter(m => !lineup.includes(m));
-    lineup.forEach(m => pool.played.add(m));
     return lineup;
   }
 

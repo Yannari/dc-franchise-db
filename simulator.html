@@ -30249,6 +30249,30 @@ function _textAwakeAThon(ep, ln, sec) {
   }
 }
 
+// ── DODGEBRAWL ──
+function _textDodgebrawl(ep, ln, sec) {
+  if (!ep.isDodgebrawl || !ep.dodgebrawl) return;
+  const db = ep.dodgebrawl;
+  sec('DODGEBRAWL');
+  ln(`${db.courtSize}v${db.courtSize} dodgeball — first to 3 wins immunity.`);
+  if (db.refusers?.length) ln(`Refused to play: ${db.refusers.map(r => r.name).join(', ')}`);
+  db.rounds.forEach(r => {
+    let line = `Round ${r.num}: ${r.winner} wins.`;
+    r.highlights.forEach(h => {
+      if (h.type === 'trickShot') line += ` ${h.player} trick shot.`;
+      else if (h.type === 'rageMode') line += ` ${h.player} rage mode.`;
+      else if (h.type === 'clutchDodge') line += ` ${h.player} clutch dodge.`;
+      else if (h.type === 'rushStrategy') line += ` ${h.player} calls rush strategy.`;
+      else if (h.type === 'friendlyFire') line += ` ${h.player} friendly fire on ${h.victim}.`;
+      else if (h.type === 'refusal') line += ` ${h.player} sat out again.`;
+    });
+    ln(line);
+  });
+  ln(`Final: ${Object.entries(db.finalScore).map(([t, w]) => `${t} ${w}`).join(' — ')}`);
+  ln(`Winner: ${db.winner}. ${db.loser} goes to tribal.`);
+  if (db.mvp) ln(`MVP: ${db.mvp}`);
+}
+
 // ── PHOBIA FACTOR ──
 function _textCliffDive(ep, ln, sec) {
   if (!ep.cliffDive?.tribes?.length) return;
@@ -32325,6 +32349,7 @@ function generateSummaryText(ep) {
   _textAftermath(ep, ln, sec);
   _textSlasherNight(ep, ln, sec);
   _textAwakeAThon(ep, ln, sec);
+  _textDodgebrawl(ep, ln, sec);
   _textCliffDive(ep, ln, sec);
   _textPhobiaFactor(ep, ln, sec);
   _textSayUncle(ep, ln, sec);
@@ -33539,6 +33564,7 @@ function renderEpisodeHistory() {
     const cdTag = ep.isCliffDive ? `<span class="ep-hist-tag" style="background:rgba(244,112,103,0.15);color:#f47067">Cliff Dive</span>` : '';
     const aatTag = ep.isAwakeAThon ? `<span class="ep-hist-tag" style="background:rgba(139,92,246,0.15);color:#8b5cf6">Awake-A-Thon</span>` : '';
     const evTag = ep.emissaryEliminated ? `<span class="ep-hist-tag" style="background:rgba(240,165,0,0.15);color:#f0a500">Emissary Vote</span>` : '';
+    const dbTag = ep.isDodgebrawl ? `<span class="ep-hist-tag" style="background:rgba(224,96,48,0.15);color:#e06030">Dodgebrawl</span>` : '';
     const hasCheckpoint = !!gsCheckpoints[ep.num];
     const replayBtn = hasCheckpoint
       ? `<button class="ep-hist-replay" title="Re-run this episode" onclick="event.stopPropagation();replayEpisode(${ep.num})">↺</button>`
@@ -33546,7 +33572,7 @@ function renderEpisodeHistory() {
     return `<div class="ep-hist-card ${ep.num===currentNum?'active':''}" onclick="viewEpisode(${ep.num})">
       <div class="ep-hist-ep">Episode ${ep.num}${replayBtn}</div>
       <div class="ep-hist-elim">${_spoilerFree ? '???' : ep.multiTribalElims?.length >= 2 ? ep.multiTribalElims.join(' + ') : ep.ambassadorData?.ambassadorEliminated ? `${ep.ambassadorData.ambassadorEliminated} + ${ep.eliminated||'?'}` : ep.tiedDestinies?.eliminatedPartner ? `${ep.eliminated||'?'} + ${ep.tiedDestinies.eliminatedPartner}` : ep.emissaryEliminated ? `${ep.eliminated||'?'} + ${ep.emissaryEliminated}` : ep.firstEliminated ? `${ep.firstEliminated} + ${ep.eliminated||'?'}` : (ep.eliminated || (ep.isFinale ? 'FTC' : '\u2014'))}</div>
-      <div>${riTag}${mergeTag}${finaleTag}${slasherTag}${tddTag}${suTag}${pfTag}${cdTag}${aatTag}${evTag}</div>
+      <div>${riTag}${mergeTag}${finaleTag}${slasherTag}${tddTag}${suTag}${pfTag}${cdTag}${aatTag}${evTag}${dbTag}</div>
     </div>`;
   }).join('');
 }
@@ -36638,6 +36664,14 @@ function rpBuildColdOpen(ep) {
         <div style="font-size:12px;color:#8b949e">${_aat.lastAwake ? `${_aat.lastAwake} was the last one standing.` : ''} ${_aat.winner} won immunity.${_aat.firstOut ? ` ${_aat.firstOut.name} was first to fall asleep.` : ''}</div>
       </div>`;
     }
+    if (prevEp.isDodgebrawl && prevEp.dodgebrawl) {
+      const _db = prevEp.dodgebrawl;
+      const _dbScore = Object.entries(_db.finalScore).map(([t, w]) => `${t} ${w}`).join('–');
+      html += `<div class="vp-card" style="border-color:rgba(224,96,48,0.15);margin-bottom:8px">
+        <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:#e06030;margin-bottom:4px">DODGEBRAWL</div>
+        <div style="font-size:12px;color:#8b949e">${_db.winner} won immunity (${_dbScore}).${_db.mvp ? ` MVP: ${_db.mvp}.` : ''}${_db.refusers?.length ? ` ${_db.refusers[0].name} refused to play.` : ''}</div>
+      </div>`;
+    }
     if (prevEp.isPhobiaFactor && prevEp.phobiaFactor) {
       const _pfData = prevEp.phobiaFactor;
       const _pfWinPct = Math.round((_pfData.tribeScores[_pfData.winningTribe]?.percentage || 0) * 100);
@@ -39190,7 +39224,7 @@ function rpBuildFirstImpressions(ep, twistObj) {
 // ── Screen 3: Pre-challenge twists (tribe swap, three gifts, journey, exile-island, etc.) ──
 function rpBuildPreTwist(ep) {
   const _rawTwistData = (ep.twistScenes?.length ? ep.twistScenes : generateTwistScenes(ep))
-    .filter(t => t.type !== 'exile-island' && t.type !== 'jury-elimination' && t.type !== 'kidnapping' && t.type !== 'first-impressions' && t.type !== 'tied-destinies' && t.type !== 'aftermath' && t.type !== 'fan-vote-return' && t.type !== 'schoolyard-pick' && t.type !== 'triple-dog-dare' && t.type !== 'say-uncle' && t.type !== 'phobia-factor' && t.type !== 'cliff-dive' && t.type !== 'awake-a-thon' && t.type !== 'emissary-vote'); // shown in dedicated screens
+    .filter(t => t.type !== 'exile-island' && t.type !== 'jury-elimination' && t.type !== 'kidnapping' && t.type !== 'first-impressions' && t.type !== 'tied-destinies' && t.type !== 'aftermath' && t.type !== 'fan-vote-return' && t.type !== 'schoolyard-pick' && t.type !== 'triple-dog-dare' && t.type !== 'say-uncle' && t.type !== 'phobia-factor' && t.type !== 'cliff-dive' && t.type !== 'awake-a-thon' && t.type !== 'emissary-vote' && t.type !== 'dodgebrawl'); // shown in dedicated screens
   // Deduplicate: only show one scene per twist type (prevents double display if twist is in ep.twists twice)
   const _seenTypes = new Set();
   const twistData = _rawTwistData.filter(t => { if (_seenTypes.has(t.type)) return false; _seenTypes.add(t.type); return true; });

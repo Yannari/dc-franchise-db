@@ -50643,34 +50643,77 @@ function rpBuildTalentShowStage(ep) {
 
   const _tsReveal = (targetIdx) => `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=${targetIdx};const ep=gs.episodeHistory.find(e=>e.num===${ep.num});if(ep){const m=document.querySelector('.rp-main');const st=m?m.scrollTop:0;buildVPScreens(ep);renderVPScreen();if(m)m.scrollTop=st;}`;
 
-  // Live scoreboard based on revealed acts
+  // Live scoreboard
   const revealedScores = {};
   Object.keys(ts.tribeScores).forEach(t => { revealedScores[t] = 0; });
   ts.performances.forEach((p, i) => { if (i <= state.idx) revealedScores[p.tribe] += p.chefScore; });
 
-  let html = `<div class="rp-page tod-deepnight" style="background:linear-gradient(180deg,rgba(30,20,50,1) 0%,rgba(15,10,25,1) 100%)">
-    <div class="rp-eyebrow">Episode ${ep.num}</div>
-    <div style="font-family:var(--font-display);font-size:28px;letter-spacing:3px;text-align:center;color:#f0a500;text-shadow:0 0 30px rgba(240,165,0,0.4);margin-bottom:4px">🎭 THE TALENT SHOW</div>
-    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:16px">Chef scores each act 0-9. Highest tribe total wins immunity.</div>`;
+  // ═══ STAGE AMBIENCE ═══
+  // Deep dark stage with red velvet curtain drapes at top, wood floor at bottom, spotlight cone
+  let html = `<div class="rp-page" style="
+    background:
+      linear-gradient(180deg, #2a0a0a 0%, #1a0505 4%, #0d0915 12%, #08060f 30%, #0a0710 70%, #1a1008 92%, #2a1a0c 100%);
+    position:relative;overflow:hidden;
+  ">`;
 
-  // Scoreboard
-  html += `<div style="display:flex;justify-content:center;gap:20px;margin-bottom:16px;padding:10px;border-radius:8px;background:rgba(255,255,255,0.03)">`;
+  // Curtain drapes (CSS pseudo-elements via inline divs)
+  html += `<div style="position:absolute;top:0;left:0;right:0;height:60px;pointer-events:none;
+    background:linear-gradient(180deg,
+      #5c1515 0%, #4a1010 30%, #3a0a0a 60%, transparent 100%);
+    mask-image:linear-gradient(180deg, black 0%, black 50%, transparent 100%);
+    -webkit-mask-image:linear-gradient(180deg, black 0%, black 50%, transparent 100%);
+  "></div>`;
+  // Left curtain fold
+  html += `<div style="position:absolute;top:0;left:0;width:30px;height:200px;pointer-events:none;
+    background:linear-gradient(90deg, #6b1a1a 0%, #4a1010 40%, transparent 100%);
+    opacity:0.6;
+  "></div>`;
+  // Right curtain fold
+  html += `<div style="position:absolute;top:0;right:0;width:30px;height:200px;pointer-events:none;
+    background:linear-gradient(-90deg, #6b1a1a 0%, #4a1010 40%, transparent 100%);
+    opacity:0.6;
+  "></div>`;
+  // Stage floor (wood planks at bottom)
+  html += `<div style="position:absolute;bottom:0;left:0;right:0;height:40px;pointer-events:none;
+    background:linear-gradient(0deg, #3d2b1a 0%, #2a1c10 60%, transparent 100%);
+    opacity:0.5;
+  "></div>`;
+
+  // Header
+  html += `<div style="position:relative;z-index:1">
+    <div class="rp-eyebrow" style="color:#8b6040">Episode ${ep.num}</div>
+    <div style="font-family:var(--font-display);font-size:30px;letter-spacing:4px;text-align:center;
+      color:#f0a500;text-shadow:0 0 40px rgba(240,165,0,0.5),0 0 80px rgba(240,165,0,0.2);
+      margin-bottom:4px">THE TALENT SHOW</div>
+    <div style="text-align:center;font-size:11px;color:#8b7060;margin-bottom:16px;letter-spacing:1px">
+      CHEF SCORES EACH ACT 0–9 &nbsp;·&nbsp; HIGHEST TOTAL WINS IMMUNITY</div>`;
+
+  // ═══ SCOREBOARD (gilded frame look) ═══
+  html += `<div style="display:flex;justify-content:center;gap:20px;margin:0 auto 20px;padding:12px 20px;
+    border-radius:8px;border:1px solid rgba(240,165,0,0.15);
+    background:linear-gradient(135deg,rgba(240,165,0,0.04) 0%,rgba(0,0,0,0.3) 100%);
+    box-shadow:inset 0 1px 0 rgba(240,165,0,0.1),0 4px 20px rgba(0,0,0,0.4)">`;
   Object.entries(revealedScores).forEach(([tribe, score], i, arr) => {
     const tc = tribeColor(tribe);
     const isWinner = allRevealed && tribe === ts.winner;
-    html += `<div style="text-align:center;${isWinner ? 'text-shadow:0 0 12px ' + tc : ''}">
-      <div style="font-family:var(--font-display);font-size:${isWinner ? '28' : '22'}px;color:${tc};font-weight:700">${score}</div>
-      <div style="font-size:10px;color:${tc};opacity:0.8">${tribe}</div>
+    html += `<div style="text-align:center;${isWinner ? 'text-shadow:0 0 15px ' + tc + ',0 0 30px ' + tc : ''}">
+      <div style="font-family:var(--font-display);font-size:${isWinner ? '32' : '24'}px;color:${tc};font-weight:700;
+        ${isWinner ? 'animation:scrollDrop 0.4s var(--ease-broadcast) both' : ''}">${score}</div>
+      <div style="font-size:9px;color:${tc};opacity:0.7;letter-spacing:1px;text-transform:uppercase">${tribe}</div>
     </div>`;
-    if (i < arr.length - 1) html += `<div style="font-size:20px;color:#484f58;align-self:center">—</div>`;
+    if (i < arr.length - 1) html += `<div style="font-size:18px;color:#3d2b1a;align-self:center">·</div>`;
   });
   html += `</div>`;
 
-  // Per-act cards
+  // ═══ PER-ACT CARDS ═══
   ts.performances.forEach((perf, i) => {
     const isVisible = i <= state.idx;
     if (!isVisible) {
-      html += `<div style="padding:14px;margin-bottom:6px;border:1px solid var(--border);border-radius:8px;opacity:0.12;text-align:center;color:var(--muted)">Act ${i + 1}</div>`;
+      // Dimmed placeholder — like an unlit stage
+      html += `<div style="padding:20px;margin-bottom:8px;border-radius:10px;
+        background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.04);
+        text-align:center;color:#3d2b1a;font-size:12px;font-style:italic;
+        letter-spacing:1px">Act ${i + 1} — waiting in the wings...</div>`;
       return;
     }
 
@@ -50678,86 +50721,156 @@ function rpBuildTalentShowStage(ep) {
     const isDisaster = perf.outcome === 'disaster';
     const isClutch = perf.outcome === 'clutch';
     const isSabotaged = perf.outcome === 'sabotaged';
-    const glowColor = isDisaster ? '#f85149' : isClutch ? '#f0a500' : isSabotaged ? '#da3633' : tc;
+    const spotlightColor = isDisaster ? '#f85149' : isClutch ? '#f0a500' : isSabotaged ? '#da3633' : tc;
 
-    html += `<div style="margin-bottom:10px;padding:16px;border-radius:10px;border:1px solid ${glowColor}44;background:linear-gradient(135deg,${glowColor}08 0%,transparent 60%);animation:scrollDrop 0.3s var(--ease-broadcast) both">`;
+    // Act card with spotlight cone
+    html += `<div style="position:relative;margin-bottom:12px;padding:20px;border-radius:12px;
+      background:radial-gradient(ellipse 70% 120% at 50% -10%, ${spotlightColor}18 0%, transparent 70%),
+        linear-gradient(180deg,rgba(0,0,0,0.2) 0%,rgba(0,0,0,0.4) 100%);
+      border:1px solid ${spotlightColor}22;
+      box-shadow:0 0 40px ${spotlightColor}08,inset 0 1px 0 rgba(255,255,255,0.03);
+      animation:scrollDrop 0.4s var(--ease-broadcast) both">`;
 
-    // Sabotage card (if sabotaged, shows before the act)
+    // Sabotage pre-card
     if (isSabotaged && perf.sabotageText) {
-      html += `<div style="padding:10px;margin-bottom:10px;border-radius:6px;background:rgba(218,54,51,0.1);border:1px solid rgba(218,54,51,0.3)">
-        <span style="font-size:9px;font-weight:700;letter-spacing:1px;color:#da3633">SABOTAGE</span>
-        <div style="display:flex;align-items:center;gap:6px;margin:6px 0">
+      html += `<div style="padding:12px;margin-bottom:14px;border-radius:8px;
+        background:linear-gradient(135deg,rgba(218,54,51,0.12) 0%,rgba(218,54,51,0.04) 100%);
+        border:1px solid rgba(218,54,51,0.25);
+        box-shadow:0 0 20px rgba(218,54,51,0.08)">
+        <div style="font-size:10px;font-weight:800;letter-spacing:2px;color:#da3633;margin-bottom:8px">🗡️ SABOTAGE</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
           ${rpPortrait(ts.sabotage.saboteur, 'sm')}
-          <span style="font-size:11px;color:#da3633">${ts.sabotage.saboteur}</span>
+          <span style="font-size:12px;font-weight:600;color:#da3633">${ts.sabotage.saboteur}</span>
         </div>
-        <div style="font-size:12px;color:#e6edf3;font-style:italic">${perf.sabotageText}</div>
+        <div style="font-size:12px;color:#e6edf3;font-style:italic;line-height:1.5">${perf.sabotageText}</div>
       </div>`;
     }
 
-    // Performer (large, centered, spotlight glow)
-    html += `<div style="text-align:center;margin-bottom:10px">
-      <div style="display:inline-block;border-radius:50%;box-shadow:0 0 30px ${glowColor}40;padding:3px">
+    // ═══ PERFORMER: centered with spotlight glow ═══
+    html += `<div style="text-align:center;margin-bottom:14px;position:relative">
+      <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+        width:120px;height:120px;border-radius:50%;
+        background:radial-gradient(circle,${spotlightColor}20 0%,${spotlightColor}08 40%,transparent 70%);
+        pointer-events:none"></div>
+      <div style="position:relative;display:inline-block;
+        border-radius:50%;padding:4px;
+        box-shadow:0 0 20px ${spotlightColor}30,0 0 60px ${spotlightColor}10;
+        border:2px solid ${spotlightColor}30">
         ${rpPortrait(perf.name, 'md')}
       </div>
-      <div style="font-size:14px;font-weight:700;color:#e6edf3;margin-top:6px">${perf.name}</div>
-      <div style="font-size:10px;color:${tc}">${perf.tribe} — ${perf.talent}</div>
+      <div style="font-family:var(--font-display);font-size:16px;font-weight:700;color:#e6edf3;
+        margin-top:8px;text-shadow:0 0 10px rgba(0,0,0,0.5)">${perf.name}</div>
+      <div style="font-size:10px;color:${tc};letter-spacing:1px;text-transform:uppercase;margin-top:2px">${perf.tribe}</div>
+      <div style="font-size:11px;color:#8b7060;margin-top:4px">${perf.talent}</div>
     </div>`;
 
-    // Outcome badge
-    if (isDisaster) html += `<div style="text-align:center;margin-bottom:6px"><span style="font-size:10px;font-weight:700;letter-spacing:1px;color:#f85149;background:rgba(248,81,73,0.15);padding:3px 8px;border-radius:4px">DISASTER</span></div>`;
-    if (isClutch) html += `<div style="text-align:center;margin-bottom:6px"><span style="font-size:10px;font-weight:700;letter-spacing:1px;color:#f0a500;background:rgba(240,165,0,0.15);padding:3px 8px;border-radius:4px">SURPRISE HIT</span></div>`;
+    // Outcome badge (prominent, centered)
+    if (isDisaster) {
+      html += `<div style="text-align:center;margin-bottom:10px">
+        <span style="font-size:11px;font-weight:800;letter-spacing:2px;color:#f85149;
+          background:rgba(248,81,73,0.15);padding:5px 14px;border-radius:20px;
+          border:1px solid rgba(248,81,73,0.3);
+          box-shadow:0 0 15px rgba(248,81,73,0.15)">💥 DISASTER</span>
+      </div>`;
+    }
+    if (isClutch) {
+      html += `<div style="text-align:center;margin-bottom:10px">
+        <span style="font-size:11px;font-weight:800;letter-spacing:2px;color:#f0a500;
+          background:rgba(240,165,0,0.15);padding:5px 14px;border-radius:20px;
+          border:1px solid rgba(240,165,0,0.3);
+          box-shadow:0 0 15px rgba(240,165,0,0.15)">⭐ SURPRISE HIT</span>
+      </div>`;
+    }
 
-    // Performance text
-    html += `<div style="font-size:12px;color:#cdd9e5;text-align:center;line-height:1.6;margin-bottom:12px;font-style:italic">${perf.performanceText}</div>`;
+    // Performance text (centered, dramatic)
+    html += `<div style="font-size:13px;color:#cdd9e5;text-align:center;line-height:1.7;
+      margin-bottom:16px;font-style:italic;max-width:340px;margin-left:auto;margin-right:auto;
+      text-shadow:0 1px 2px rgba(0,0,0,0.3)">${perf.performanceText}</div>`;
 
-    // Chef-O-Meter bar
-    html += `<div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px">
-      <span style="font-size:20px">👨‍🍳</span>
-      <div style="display:flex;gap:2px">`;
+    // ═══ CHEF-O-METER (spoon-style, bigger, bouncier) ═══
+    const scoreColor = perf.chefScore >= 7 ? '#3fb950' : perf.chefScore >= 4 ? '#f0a500' : '#f85149';
+    html += `<div style="display:flex;align-items:center;justify-content:center;gap:10px;
+      margin-bottom:12px;padding:10px;border-radius:8px;
+      background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.05)">
+      <div style="font-size:28px;filter:drop-shadow(0 0 8px rgba(240,165,0,0.3))">👨‍🍳</div>
+      <div style="display:flex;gap:3px;align-items:center">`;
     for (let seg = 0; seg < 9; seg++) {
       const filled = seg < perf.chefScore;
-      const segColor = filled ? (perf.chefScore >= 7 ? '#3fb950' : perf.chefScore >= 4 ? '#f0a500' : '#f85149') : 'rgba(255,255,255,0.08)';
-      html += `<div style="width:20px;height:14px;border-radius:2px;background:${segColor};${filled ? 'animation:scrollDrop 0.2s var(--ease-broadcast) both;animation-delay:' + (seg * 0.06) + 's' : ''}"></div>`;
+      const segBg = filled ? scoreColor : 'rgba(255,255,255,0.06)';
+      const delay = filled ? seg * 0.08 : 0;
+      html += `<div style="width:22px;height:18px;border-radius:3px;
+        background:${segBg};
+        ${filled ? `box-shadow:0 0 6px ${scoreColor}40;animation:scrollDrop 0.3s var(--ease-broadcast) both;animation-delay:${delay}s` : ''}
+      "></div>`;
     }
     html += `</div>
-      <span style="font-size:16px;font-weight:800;color:${perf.chefScore >= 7 ? '#3fb950' : perf.chefScore >= 4 ? '#f0a500' : '#f85149'}">${perf.chefScore}</span>
+      <div style="font-family:var(--font-display);font-size:24px;font-weight:800;
+        color:${scoreColor};text-shadow:0 0 12px ${scoreColor}40;min-width:28px;text-align:center">${perf.chefScore}</div>
     </div>`;
 
-    // Audience reactions
+    // ═══ AUDIENCE REACTIONS (speech bubbles that pop in) ═══
     if (perf.reactions?.length) {
-      html += `<div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06)">`;
-      perf.reactions.forEach(r => {
-        html += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+      html += `<div style="margin-top:10px;padding-top:10px;
+        border-top:1px solid rgba(255,255,255,0.04)">
+        <div style="font-size:8px;font-weight:700;letter-spacing:1.5px;color:#3d2b1a;
+          text-transform:uppercase;margin-bottom:8px;text-align:center">AUDIENCE</div>`;
+      perf.reactions.forEach((r, rIdx) => {
+        html += `<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;
+          animation:scrollDrop 0.25s var(--ease-broadcast) both;animation-delay:${0.5 + rIdx * 0.12}s">
           ${rpPortrait(r.name, 'xs')}
-          <span style="font-size:10px;color:#8b949e;font-style:italic">${r.text}</span>
+          <div style="position:relative;flex:1;padding:6px 10px;border-radius:8px;border-top-left-radius:2px;
+            background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06)">
+            <span style="font-size:10px;color:#a0a0a0;font-style:italic;line-height:1.4">${r.text}</span>
+          </div>
         </div>`;
       });
       html += `</div>`;
     }
 
-    html += `</div>`;
+    html += `</div>`; // end act card
   });
 
-  // Final result
+  // ═══ FINAL RESULT ═══
   if (allRevealed) {
     const wTC = tribeColor(ts.winner);
-    html += `<div style="padding:16px;margin-top:10px;border-radius:10px;border:2px solid ${wTC};background:${wTC}0c;text-align:center">
-      <div style="font-family:var(--font-display);font-size:18px;color:${wTC};margin-bottom:4px">${ts.winner.toUpperCase()} WINS THE TALENT SHOW</div>
-      <div style="font-size:12px;color:#8b949e">${ts.loser} goes to tribal council.</div>
-      <div style="font-size:11px;color:#8b949e;margin-top:6px">Final: ${Object.entries(revealedScores).map(([t, s]) => `${t} ${s}`).join(' — ')}</div>
-      ${ts.mvp ? `<div style="margin-top:8px">${rpPortrait(ts.mvp, 'sm')}<div style="font-size:10px;color:#8b949e;margin-top:2px">MVP: ${ts.mvp}</div></div>` : ''}
+    const lTC = tribeColor(ts.loser);
+    html += `<div style="padding:20px;margin-top:14px;border-radius:12px;
+      border:2px solid ${wTC};
+      background:radial-gradient(ellipse at 50% 0%, ${wTC}15 0%, transparent 60%),
+        linear-gradient(180deg,rgba(0,0,0,0.2) 0%,rgba(0,0,0,0.4) 100%);
+      box-shadow:0 0 40px ${wTC}15;
+      text-align:center;animation:scrollDrop 0.5s var(--ease-broadcast) both">
+      <div style="font-family:var(--font-display);font-size:22px;letter-spacing:3px;
+        color:${wTC};text-shadow:0 0 20px ${wTC},0 0 40px ${wTC}80;
+        margin-bottom:6px">${ts.winner.toUpperCase()} WINS</div>
+      <div style="font-size:12px;color:#8b949e;margin-bottom:8px">${ts.loser} goes to tribal council.</div>
+      <div style="font-size:11px;color:#6e7681;margin-bottom:10px">
+        Final: ${Object.entries(revealedScores).map(([t, s]) => {
+          const tc2 = tribeColor(t);
+          return `<span style="color:${tc2};font-weight:700">${t} ${s}</span>`;
+        }).join(' <span style="color:#3d2b1a">·</span> ')}</div>
+      ${ts.mvp ? `<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06)">
+        <div style="font-size:8px;font-weight:700;letter-spacing:1.5px;color:#f0a500;margin-bottom:6px">SHOW MVP</div>
+        ${rpPortrait(ts.mvp, 'sm')}
+        <div style="font-size:11px;color:#e6edf3;margin-top:4px">${ts.mvp}</div>
+      </div>` : ''}
     </div>`;
   }
 
-  // Buttons
+  // ═══ NEXT ACT BUTTON ═══
   if (!allRevealed) {
-    html += `<div style="position:sticky;bottom:0;padding:12px 0;text-align:center;background:linear-gradient(transparent,rgba(15,10,25,1) 30%)">
-      <button class="rp-btn" onclick="${_tsReveal(state.idx + 1)}">NEXT ACT (${state.idx + 2}/${totalItems})</button>
+    html += `<div style="position:sticky;bottom:0;padding:14px 0;text-align:center;
+      background:linear-gradient(transparent,#0a0710 25%)">
+      <button class="rp-btn" style="background:linear-gradient(135deg,#f0a500,#d4900a);color:#000;font-weight:700;
+        border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-size:12px;letter-spacing:1px;
+        box-shadow:0 0 15px rgba(240,165,0,0.2)"
+        onclick="${_tsReveal(state.idx + 1)}">NEXT ACT (${state.idx + 2}/${totalItems})</button>
       <button class="rp-btn rp-btn-secondary" onclick="${_tsReveal(totalItems - 1)}" style="margin-left:8px">REVEAL ALL</button>
     </div>`;
   }
 
-  html += `</div>`;
+  html += `</div>`; // close z-index wrapper
+  html += `</div>`; // close rp-page
   return html;
 }
 

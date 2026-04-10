@@ -29039,6 +29039,28 @@ function _textTwists(ep, ln, sec) {
         else { ln(`  DEADLOCKED: No agreement. Rock draw.`); ln(`  ${am.rockDrawLoser} drew the wrong rock — eliminated.`); }
         am.returnEvents?.forEach(re => ln(`  ${re.tribe}: ${re.type === 'safe' ? 'Safe' : re.type === 'ambassador-eliminated' ? 'Ambassador lost' : 'Tribemate eliminated'}`));
       }
+    } else if (tw.type === 'emissary-vote') {
+      ln('EMISSARY VOTE — winning tribe sends an emissary to losing tribe\'s tribal.');
+      if (ep.emissary) {
+        ln(`${ep.emissary.name} (${ep.emissary.tribe}) volunteers to visit ${ep.emissary.targetTribe}'s tribal council.`);
+      }
+      if (ep.emissaryScoutEvents?.length) {
+        ln('  Scouting:');
+        ep.emissaryScoutEvents.forEach(evt => {
+          if (evt.type === 'emissaryPitch') ln(`    PITCH: ${evt.pitcher} lobbies against ${evt.pitchTarget} (${(evt.pitchStrength * 100).toFixed(0)}% receptiveness)`);
+          else if (evt.type === 'emissaryObservation') ln(`    OBSERVATION: ${evt.text}`);
+          else if (evt.type === 'emissaryDeal') ln(`    DEAL: ${evt.players.join(' & ')} — cross-tribe F2 pact`);
+        });
+      }
+      if (ep.emissaryPick) {
+        ln(`  EMISSARY PICK: ${ep.emissaryPick.name} — ${ep.emissaryPick.reason}`);
+      }
+      if (ep.emissaryBondShifts?.length) {
+        const grudges = ep.emissaryBondShifts.filter(s => s.reason === 'ally-grudge');
+        const grateful = ep.emissaryBondShifts.filter(s => s.reason === 'gratitude');
+        if (grudges.length) ln(`  Grudges: ${grudges.map(s => s.from).join(', ')}`);
+        if (grateful.length) ln(`  Grateful: ${grateful.map(s => s.from).join(', ')}`);
+      }
     } else if (tw.type === 'fan-vote-boot') {
       if (tw.fanVoteSaved) { const _fvr = tw.fanVoteIsPreMerge ? 'tribal immunity' : 'an Extra Vote'; ln(`FAN VOTE — fans saved ${tw.fanVoteSaved} (score ${tw.fanVoteScore || 0}). Receives ${_fvr}.`); }
     } else if (tw.type === 'legacy-awakens') {
@@ -29771,6 +29793,7 @@ function _textWhyVote(ep, ln, sec) {
   else if (ep.lastChance) ln(`${ep.lastChance.loser} — Last Chance Challenge (lost to ${ep.lastChance.winner})`);
   else if (elim) { ln(elim); if (cfg.ri) ln(`Chose: ${ep.riChoice || 'N/A'}`); }
   else ln('No elimination.');
+  if (ep.emissaryEliminated) ln(`EMISSARY ELIMINATED: ${ep.emissaryEliminated}`);
 }
 
 // ── AWAKE-A-THON ──
@@ -36193,6 +36216,13 @@ function rpBuildColdOpen(ep) {
         <div style="font-family:var(--font-body);font-size:11px;font-weight:800;letter-spacing:1px;color:var(--accent-gold);margin-bottom:6px">PHOBIA FACTOR</div>
         <div style="font-size:12px;margin-bottom:4px">${_pfData.winningTribe} won immunity (${_pfWinPct}% conquered their fears)</div>
         ${_pfData.clutch ? `<div style="font-size:11px;color:${_pfData.clutch.result === 'pass' ? 'var(--accent-gold)' : '#da3633'}">${_pfData.clutch.player} ${_pfData.clutch.result === 'pass' ? 'hit the clutch triple points!' : 'choked on triple points'}</div>` : ''}
+      </div>`;
+    }
+
+    if (prevEp.emissaryPick) {
+      html += `<div class="vp-card" style="border-color:rgba(240,165,0,0.15);margin-bottom:8px">
+        <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:#f0a500;margin-bottom:4px">EMISSARY VOTE</div>
+        <div style="font-size:12px;color:#8b949e">${prevEp.emissary?.name} eliminated ${prevEp.emissaryPick.name} — ${prevEp.emissaryPick.reason}</div>
       </div>`;
     }
 

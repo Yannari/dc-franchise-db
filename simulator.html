@@ -8708,7 +8708,7 @@ function simulateTalentShow(ep) {
       if (sabotage) return;
       const s = pStats(name);
       if (!['villain', 'schemer', 'mastermind'].includes(s.archetype)) return;
-      if (Math.random() >= s.strategic * 0.06) return; // strategic 10 = 60% chance
+      if (Math.random() >= s.strategic * 0.08 + 0.05) return; // strategic 10 = 85%, strategic 5 = 45%
       // Pick target: highest audition scorer on an opposing tribe
       const otherTribes = tribeMembers.filter(ot => ot.name !== t.name);
       const targets = otherTribes.flatMap(ot => (auditions[ot.name] || []).filter(a => a.selected));
@@ -8890,6 +8890,93 @@ function simulateTalentShow(ep) {
         });
       }
     });
+  }
+
+  // Stage Fright — performer panicking, considering dropping out
+  if (backstageEvents.length < maxBackstage) {
+    tribeMembers.forEach(t => {
+      if (backstageEvents.length >= maxBackstage) return;
+      const selected = (auditions[t.name] || []).filter(a => a.selected);
+      const scared = selected.find(s => pStats(s.name).boldness <= 4 && pStats(s.name).temperament <= 5);
+      if (!scared || Math.random() >= 0.35) return;
+      const pr = pronouns(scared.name);
+      const _texts = [
+        `${scared.name} is pacing behind the stage. "I can't do this. I can't go out there." ${pr.PosAdj} hands are shaking.`,
+        `${scared.name} is sitting alone, head in ${pr.posAdj} hands. "What if I freeze?" The doubt is eating ${pr.obj} alive.`,
+        `${scared.name} tried to leave twice. Both times someone brought ${pr.obj} back. The show starts in five minutes.`,
+      ];
+      backstageEvents.push({
+        type: 'stageFright', players: [scared.name],
+        text: _texts[Math.floor(Math.random() * _texts.length)],
+        badge: 'STAGE FRIGHT', badgeClass: 'red',
+      });
+      scared._tempDebuff = (scared._tempDebuff || 0) + 1; // nerves make disaster more likely
+    });
+  }
+
+  // Trash Talk — bold player taunts a performer from another tribe
+  if (backstageEvents.length < maxBackstage) {
+    tribeMembers.forEach(t => {
+      if (backstageEvents.length >= maxBackstage) return;
+      const trashTalker = t.members.find(m => pStats(m).boldness >= 7 && ['villain', 'schemer', 'wildcard', 'chaos-agent'].includes(players.find(p => p.name === m)?.archetype || ''));
+      if (!trashTalker || Math.random() >= 0.30) return;
+      const otherTribes = tribeMembers.filter(ot => ot.name !== t.name);
+      const targetTribe = otherTribes[Math.floor(Math.random() * otherTribes.length)];
+      const targetPerformer = (auditions[targetTribe.name] || []).filter(a => a.selected)[0];
+      if (!targetPerformer) return;
+      const _texts = [
+        `${trashTalker} corners ${targetPerformer.name} near the stage. "You know you're going to choke, right? Everyone knows." ${targetPerformer.name} says nothing.`,
+        `${trashTalker} walks past ${targetPerformer.name} and mutters: "Save yourself the embarrassment." Loud enough for everyone to hear.`,
+        `${trashTalker} watches ${targetPerformer.name} warm up and laughs. "That's your act? Seriously?" The confidence drain is visible.`,
+      ];
+      addBond(targetPerformer.name, trashTalker, -0.3);
+      backstageEvents.push({
+        type: 'trashTalk', players: [trashTalker, targetPerformer.name],
+        text: _texts[Math.floor(Math.random() * _texts.length)],
+        badge: 'TRASH TALK', badgeClass: 'red',
+      });
+    });
+  }
+
+  // Alliance Huddle — alliance members strategize about who should perform
+  if (backstageEvents.length < maxBackstage) {
+    const activeAlliances = (gs.namedAlliances || []).filter(a => a.active && a.members.length >= 3);
+    if (activeAlliances.length && Math.random() < 0.30) {
+      const alliance = activeAlliances[Math.floor(Math.random() * activeAlliances.length)];
+      const huddle = alliance.members.filter(m => gs.activePlayers.includes(m)).slice(0, 3);
+      if (huddle.length >= 2) {
+        backstageEvents.push({
+          type: 'allianceHuddle', players: huddle,
+          text: `${huddle.join(' and ')} pull each other aside. Quick whispers. They're not just thinking about the show — they're thinking about what comes after. If they lose, who goes home?`,
+          badge: 'ALLIANCE HUDDLE', badgeClass: 'gold',
+        });
+        // Small bond reinforcement
+        for (let i = 0; i < huddle.length; i++) {
+          for (let j = i + 1; j < huddle.length; j++) {
+            addBond(huddle[i], huddle[j], 0.15);
+          }
+        }
+      }
+    }
+  }
+
+  // Pre-Show Jitters — general mood event (always available as filler)
+  if (backstageEvents.length < maxBackstage && backstageEvents.length < 2) {
+    const randomPerformer = Object.values(auditions).flatMap(a => a.filter(r => r.selected))[Math.floor(Math.random() * 6)] || Object.values(auditions).flatMap(a => a.filter(r => r.selected))[0];
+    if (randomPerformer) {
+      const pr = pronouns(randomPerformer.name);
+      const _texts = [
+        `The stage is set. The curtain's about to go up. ${randomPerformer.name} takes one last look at ${pr.posAdj} hands. Still shaking. Good.`,
+        `Someone peeks through the curtain. "Chef looks angry." "Chef always looks angry." "No, like... MORE angry." The performers exchange glances.`,
+        `The camp is buzzing. Everyone's picking their seats. The performers backstage can hear the noise building. This is real now.`,
+        `${randomPerformer.name} rehearses ${pr.posAdj} opening one more time. Mumbles it under ${pr.posAdj} breath. Adjusts ${pr.posAdj} stance. Nods. Ready. Maybe.`,
+      ];
+      backstageEvents.push({
+        type: 'preShowJitters', players: [randomPerformer.name],
+        text: _texts[Math.floor(Math.random() * _texts.length)],
+        badge: 'PRE-SHOW', badgeClass: 'gold',
+      });
+    }
   }
 
   // ── Backstage fallback: guarantee at least 2 events ──
@@ -42827,6 +42914,10 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'accidentSubstitution'     ? (evt.badgeText || evt.badge || 'SUBSTITUTION')
                      : evt.type === 'secretRehearsalSubIn'     ? (evt.badgeText || evt.badge || 'SECRET REHEARSAL')
                      : evt.type === 'secretRehearsalAlone'     ? (evt.badgeText || evt.badge || 'SECRET REHEARSAL')
+                     : evt.type === 'stageFright'              ? (evt.badgeText || evt.badge || 'STAGE FRIGHT')
+                     : evt.type === 'trashTalk'                ? (evt.badgeText || evt.badge || 'TRASH TALK')
+                     : evt.type === 'allianceHuddle'           ? (evt.badgeText || evt.badge || 'ALLIANCE HUDDLE')
+                     : evt.type === 'preShowJitters'           ? (evt.badgeText || evt.badge || 'PRE-SHOW')
                      : evt.type === 'rewardBackfireAlliance'   ? (evt.badgeText || 'BACKFIRE')
                      : evt.type === 'rewardBackfireBloc'       ? (evt.badgeText || 'LEFT BEHIND')
                      : evt.type === 'emissaryVolunteer'       ? (evt.badgeText || 'EMISSARY')
@@ -43007,7 +43098,8 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'talentShowStandingOvation' || evt.type === 'talentShowUnlikelyHero' || evt.type === 'talentShowTeamSupport' ? 'gold'
                      : evt.type === 'talentShowSabotageFallout' || evt.type === 'talentShowDisaster' || evt.type === 'talentShowBitterReject' ? 'red'
                      : evt.type === 'spyMission' || evt.type === 'pepTalk' || evt.type === 'accidentSubstitution' || evt.type === 'secretRehearsalSubIn' || evt.type === 'secretRehearsalAlone' ? 'gold'
-                     : evt.type === 'sabotageSetup' || evt.type === 'rivalryConfrontation' || evt.type === 'accidentInjury' ? 'red'
+                     : evt.type === 'sabotageSetup' || evt.type === 'rivalryConfrontation' || evt.type === 'accidentInjury' || evt.type === 'stageFright' || evt.type === 'trashTalk' ? 'red'
+                     : evt.type === 'allianceHuddle' || evt.type === 'preShowJitters' ? 'gold'
                      : isMoleReveal ? 'gold'
                      : isDareComplete || isDareMVP || isDareGift || isDarePact ? 'gold'
                      : isDarePactBetray || isDareAllyBetray || isDareRefusal || isDareElim ? 'red'

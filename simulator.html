@@ -7482,37 +7482,31 @@ function simulateDodgebrawl(ep) {
       const aliveTribes = tribeNames.filter(tn => activePlayers[tn].some(p => p.alive));
       if (aliveTribes.length <= 1) break;
 
-      // Best alive thrower from any tribe (highest power)
-      let bestThrower = null;
-      let bestThrowerTribe = null;
-      aliveTribes.forEach(tn => {
-        activePlayers[tn].filter(p => p.alive).forEach(p => {
-          if (!bestThrower || p.power > bestThrower.power) {
-            bestThrower = p;
-            bestThrowerTribe = tn;
-          }
-        });
-      });
+      // Pick thrower: rotate through alive players (weighted random, not always the best)
+      const allAlive = aliveTribes.flatMap(tn => activePlayers[tn].filter(p => p.alive).map(p => ({ ...p, tribe: tn })));
+      if (allAlive.length < 2) break;
+      // Weighted random pick — higher power = more likely but not guaranteed
+      const throwerPool = allAlive.map(p => ({ ...p, weight: p.power + Math.random() * 1.5 })).sort((a, b) => b.weight - a.weight);
+      const bestThrower = activePlayers[throwerPool[0].tribe].find(p => p.name === throwerPool[0].name);
+      const bestThrowerTribe = throwerPool[0].tribe;
       if (!bestThrower) break;
 
-      // Weakest alive player from an opposing tribe
+      // Target: weighted random from opposing tribes (lower power = more likely to be targeted)
       const opposingTribes = aliveTribes.filter(tn => tn !== bestThrowerTribe);
       if (!opposingTribes.length) break;
-      let weakestTarget = null;
-      let weakestTargetTribe = null;
-      opposingTribes.forEach(tn => {
-        activePlayers[tn].filter(p => p.alive).forEach(p => {
-          if (!weakestTarget || p.power < weakestTarget.power) {
-            weakestTarget = p;
-            weakestTargetTribe = tn;
-          }
-        });
-      });
+      const targetPool = opposingTribes.flatMap(tn => activePlayers[tn].filter(p => p.alive).map(p => ({ ...p, tribe: tn })));
+      if (!targetPool.length) break;
+      const targetWeighted = targetPool.map(p => ({ ...p, weight: (12 - p.power) + Math.random() * 2.0 })).sort((a, b) => b.weight - a.weight);
+      const weakestTarget = activePlayers[targetWeighted[0].tribe].find(p => p.name === targetWeighted[0].name);
+      const weakestTargetTribe = targetWeighted[0].tribe;
       if (!weakestTarget) break;
 
-      // Catch check: 10% if catcher intuition >= 6
+      // After throwing, reduce thrower's power so they don't dominate every turn
+      bestThrower.power = Math.max(0.5, bestThrower.power - 0.8);
+
+      // Catch check: 5% base, proportional to intuition (max ~8% at intuition 10)
       const catcherStats = pStats(weakestTarget.name);
-      const canCatch = catcherStats.intuition >= 6 && Math.random() < 0.10;
+      const canCatch = Math.random() < catcherStats.intuition * 0.008;
       if (canCatch) {
         // Catcher catches — thrower is eliminated instead
         bestThrower.alive = false;
@@ -49902,7 +49896,7 @@ function rpBuildDodgebrawl(ep) {
         <span style="font-size:9px;color:#484f58">hits</span>
         ${rpPortrait(ev.eliminated, 'xs')}
         <span style="font-size:10px;color:#8b949e">${ev.eliminated}</span>
-        <span style="font-size:9px;font-weight:700;color:#f85149;margin-left:auto">OUT</span>
+        <span style="font-size:9px;font-weight:700;color:#f85149;margin-left:auto">ELIMINATED</span>
       </div>`;
     }
     if (ev.method === 'caught') {
@@ -49913,7 +49907,7 @@ function rpBuildDodgebrawl(ep) {
         <span style="font-size:9px;color:#484f58">${ev.eliminatedBy} catches</span>
         ${rpPortrait(ev.eliminated, 'xs')}
         <span style="font-size:10px;color:#8b949e">${ev.eliminated}</span>
-        <span style="font-size:9px;font-weight:700;color:#f85149;margin-left:auto">OUT</span>
+        <span style="font-size:9px;font-weight:700;color:#f85149;margin-left:auto">ELIMINATED</span>
       </div>`;
     }
     if (ev.method === 'friendlyFire') {
@@ -49923,7 +49917,7 @@ function rpBuildDodgebrawl(ep) {
         <span style="font-size:9px;color:#484f58">hits teammate</span>
         ${rpPortrait(ev.eliminated, 'xs')}
         <span style="font-size:10px;color:#8b949e">${ev.eliminated}</span>
-        <span style="font-size:9px;font-weight:700;color:#f85149;margin-left:auto">OUT</span>
+        <span style="font-size:9px;font-weight:700;color:#f85149;margin-left:auto">ELIMINATED</span>
       </div>`;
     }
     if (ev.method === 'dodged') {
@@ -49992,12 +49986,11 @@ function rpBuildDodgebrawl(ep) {
       });
       html += `</div>`;
 
-      // ── Elimination sequence ──
+      // ── Elimination sequence with alive counters ──
       const hitEvents = (r.eliminations || []).filter(e => e.method !== 'dodged');
       const dodgeEvents = (r.eliminations || []).filter(e => e.method === 'dodged');
-      // Show key dodges (max 2) interspersed, then all elimination events
+      // Weave in max 2 notable dodges
       const displayEvents = [];
-      // Weave in up to 2 notable dodge events among the eliminations
       const notableDodges = dodgeEvents.slice(0, 2);
       let dodgeIdx = 0;
       hitEvents.forEach((ev, idx) => {
@@ -50009,8 +50002,25 @@ function rpBuildDodgebrawl(ep) {
       while (dodgeIdx < notableDodges.length) displayEvents.push(notableDodges[dodgeIdx++]);
 
       if (displayEvents.length) {
+        // Track alive counts as we render
+        const aliveCount = {};
+        tribeNames.forEach(tn => { aliveCount[tn] = (r.lineups[tn] || []).length; });
         html += `<div style="margin-bottom:8px">`;
-        displayEvents.forEach(ev => { html += renderEliminationCard(ev); });
+        // Alive counter bar
+        const counterBar = () => tribeNames.map(tn => {
+          const tc = tribeColor(tn);
+          return `<span style="font-size:9px;color:${tc};font-weight:700">${tn}: ${aliveCount[tn]}</span>`;
+        }).join(' <span style="color:#484f58">|</span> ');
+        html += `<div style="display:flex;justify-content:center;gap:8px;padding:4px;margin-bottom:6px;font-size:9px;color:#8b949e;background:rgba(255,255,255,0.02);border-radius:4px">${counterBar()}</div>`;
+        displayEvents.forEach(ev => {
+          html += renderEliminationCard(ev);
+          // Update alive count after elimination events
+          if (ev.eliminated && ev.tribe) {
+            aliveCount[ev.tribe] = Math.max(0, (aliveCount[ev.tribe] || 1) - 1);
+            // Show updated counter after this elimination
+            html += `<div style="display:flex;justify-content:center;gap:8px;padding:2px;font-size:8px;color:#484f58">${counterBar()}</div>`;
+          }
+        });
         html += `</div>`;
       } else {
         html += `<div style="font-size:12px;color:#8b949e;margin-bottom:8px">${r.winner} wins the round in clean fashion.</div>`;

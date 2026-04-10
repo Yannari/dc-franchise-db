@@ -22,6 +22,8 @@ Do not split it into separate files. This is intentional.
 - `handleAdvantageInheritance()` — called BEFORE stripping advantages on elimination
 - `simulateFinale()` — handles finaleSize 2/3/4, all finale formats
 - `patchEpisodeHistory(ep)` — universal helper patching missing fields after every history push
+- `simulateEmissaryVote(ep)` — emissary picks second elimination after normal tribal (pre-merge only)
+- `generateEmissaryScoutEvents(ep)` — scouting period: pitches, observation, cross-tribe deal
 - `executeFirstImpressions()` — episode 1 mock vote → round-robin tribe swap (fires before all other twists)
 - `checkPerceivedBondTriggers(ep)` — creates perception gaps after vote resolution
 - `updatePerceivedBonds(ep)` — closes gaps each episode via intuition-based correction
@@ -58,6 +60,7 @@ Do not split it into separate files. This is intentional.
 - `gs.loyaltyTests[]` — planted false info: `{ tester, target, falseInfo, plantedEp, resolved }`
 - `gs._falseInfoPlanted[]` — false idol info for blowup detection
 - `gs._blowupPlayers[]` — players who had fights/meltdowns/social bombs (cleared after recovery check)
+- `gs._emissaryHeat` — temporary heat for emissary (+1.5 for 2 episodes after pick)
 - `gs.moles[]` — Mole twist state: `{ player, exposed, exposedEp, exposedBy, suspicion, sabotageCount, sabotageLog, leaks, layingLow, resistance }`
 
 ## Patterns
@@ -222,6 +225,19 @@ is NOT actually loyal. Always check behavioral track record alongside raw stats.
 - `gs._schoolyardExiled` persists across episodes for return; suppresses `handleExileFormat` + `exile-island` twist
 - VP: `rpBuildSchoolyardPick(ep)` — click-to-reveal draft with per-pick reactions (archetype + stat + position)
 - Text backlog: `_textSchoolyardPick(ep, ln, sec)`
+
+## Emissary Vote
+- Schedulable pre-merge twist (`emissary-vote` in TWIST_CATALOG, category `elim`)
+- Winning tribe sends emissary (boldness+strategic+social scored volunteer) to losing tribe's tribal
+- Scouting: 1-2 pitches (losing tribe lobbies emissary), observation (intuition read), optional cross-tribe F2 deal
+- After normal vote eliminates someone, emissary picks a second player to eliminate — no idol protection
+- Pick scoring: `threatScore * 0.30 + pitchInfluence * 0.25 - bond * 0.20 + heat * 0.15 + random * 0.10`
+- Archetype modifiers: villain/schemer → threat 0.40, hero/loyal → bond 0.30, floater → heat 0.25
+- Bond consequences: allies of picked player grudge emissary (-1.5 scaled), voters against picked grateful (+0.8), neutral resentment (-0.3)
+- Emissary's own tribe: strategic approve high-threat pick (+0.4), hero/loyal disapprove low-threat (-0.3)
+- Heat: emissary +1.5 for 2 episodes. Popularity: emissary -2 like, picked player +3 underdog.
+- VP: `rpBuildEmissaryVote(ep)` — 3-phase click-to-reveal (selection, scouting, the pick)
+- Incompatible with: ambassadors, double-tribal, multi-tribal, kidnapping
 
 ## Aftermath Show
 - `generateAftermathShow(ep)` — full aftermath data generation

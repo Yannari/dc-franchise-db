@@ -36659,6 +36659,109 @@ function _renderTwistScene(scene) {
   return h;
 }
 
+// ── Emissary Vote Screen ──
+function rpBuildEmissaryVote(ep) {
+  if (!ep.emissary || !ep.emissaryPick) return '';
+  const emissary = ep.emissary.name;
+  const pick = ep.emissaryPick;
+  const scoutEvents = ep.emissaryScoutEvents || [];
+  const bondShifts = ep.emissaryBondShifts || [];
+
+  const stateKey = `ev_reveal_${ep.num}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+
+  // Total items: scout events + 1 (the pick reveal)
+  const totalItems = scoutEvents.length + 1;
+  const allRevealed = state.idx >= totalItems - 1;
+
+  const _evReveal = (targetIdx) => `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=${targetIdx};const ep=gs.episodeHistory.find(e=>e.num===${ep.num});if(ep){const m=document.querySelector('.rp-main');const st=m?m.scrollTop:0;buildVPScreens(ep);renderVPScreen();if(m)m.scrollTop=st;}`;
+
+  let html = `<div class="rp-page tod-night">
+    <div class="rp-eyebrow">Episode ${ep.num}</div>
+    <div style="font-family:var(--font-display);font-size:28px;letter-spacing:2px;text-align:center;color:#f0a500;text-shadow:0 0 20px rgba(240,165,0,0.3);margin-bottom:6px">🕵️ THE EMISSARY VOTE</div>
+    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:20px">${ep.emissary.tribe} sends an emissary to ${ep.emissary.targetTribe}'s tribal council.</div>`;
+
+  // ── Phase 1: Emissary Selection (always visible) ──
+  const emTC = tribeColor(ep.emissary.tribe);
+  html += `<div style="margin-bottom:16px;padding:14px;border-radius:10px;border:1px solid ${emTC}44;background:${emTC}0a">
+    <div style="font-family:var(--font-display);font-size:14px;letter-spacing:1px;color:${emTC};margin-bottom:10px">EMISSARY SELECTED</div>
+    <div style="display:flex;align-items:center;gap:12px">
+      ${rpPortrait(emissary, 'md')}
+      <div>
+        <div style="font-weight:700;font-size:14px">${emissary}</div>
+        <div style="font-size:11px;color:#8b949e">from ${ep.emissary.tribe}</div>
+      </div>
+    </div>`;
+  // Find volunteer quote
+  const volEvt = Object.values(ep.campEvents || {}).flatMap(c => [...(c.pre||[]), ...(c.post||[])]).find(e => e.type === 'emissaryVolunteer');
+  if (volEvt?.text) html += `<div style="font-style:italic;color:#8b949e;margin-top:8px;font-size:12px">"${volEvt.text.replace(/^[^"]*"/, '').replace(/"[^"]*$/, '')}"</div>`;
+  html += `</div>`;
+
+  // ── Phase 2: Scouting Period (click-to-reveal) ──
+  const loseTC = tribeColor(ep.emissary.targetTribe);
+  html += `<div style="margin-bottom:16px">
+    <div style="font-family:var(--font-display);font-size:14px;letter-spacing:1px;color:${loseTC};margin-bottom:10px">SCOUTING — ${ep.emissary.targetTribe.toUpperCase()}</div>`;
+
+  scoutEvents.forEach((evt, i) => {
+    const isVisible = i <= state.idx;
+    if (!isVisible) {
+      html += `<div style="padding:10px;margin-bottom:4px;border:1px solid var(--border);border-radius:6px;opacity:0.12;font-size:11px;text-align:center;color:var(--muted)">?</div>`;
+    } else {
+      const badgeColor = evt.type === 'emissaryPitch' ? '#f0a500' : evt.type === 'emissaryDeal' ? '#3fb950' : '#58a6ff';
+      const badgeLabel = evt.badgeText || (evt.type === 'emissaryPitch' ? 'PITCH' : evt.type === 'emissaryDeal' ? 'CROSS-TRIBE DEAL' : 'OBSERVATION');
+      html += `<div style="padding:12px;margin-bottom:6px;border-radius:8px;border-left:3px solid ${badgeColor};background:${badgeColor}08;animation:scrollDrop 0.3s var(--ease-broadcast) both">
+        <span style="font-size:9px;font-weight:700;letter-spacing:1px;color:${badgeColor};background:${badgeColor}18;padding:2px 6px;border-radius:3px">${badgeLabel}</span>
+        <div style="display:flex;gap:8px;margin:8px 0">
+          ${(evt.players || []).map(p => rpPortrait(p, 'sm')).join('')}
+        </div>
+        <div style="font-size:12px">${evt.text}</div>`;
+      if (evt.consequences) html += `<div style="font-size:10px;color:#8b949e;margin-top:4px">${evt.consequences}</div>`;
+      html += `</div>`;
+    }
+  });
+  html += `</div>`;
+
+  // ── Phase 3: The Pick (last reveal item) ──
+  const pickIdx = scoutEvents.length;
+  const pickVisible = pickIdx <= state.idx;
+  if (!pickVisible) {
+    html += `<div style="padding:20px;margin-bottom:4px;border:2px solid var(--border);border-radius:10px;opacity:0.15;text-align:center;font-size:14px;color:var(--muted)">THE EMISSARY'S CHOICE</div>`;
+  } else {
+    html += `<div style="padding:16px;margin-bottom:6px;border-radius:10px;border:2px solid #f85149;background:linear-gradient(135deg,rgba(248,81,73,0.12) 0%,rgba(248,81,73,0.04) 100%);box-shadow:0 0 20px rgba(248,81,73,0.15);animation:scrollDrop 0.3s var(--ease-broadcast) both">
+      <div style="font-family:var(--font-display);font-size:14px;letter-spacing:2px;color:#f85149;margin-bottom:12px;text-align:center">🎯 THE EMISSARY'S CHOICE</div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:12px">
+        ${rpPortrait(emissary, 'md')}
+        <div style="font-size:24px;color:#f85149">→</div>
+        ${rpPortrait(pick.name, 'md')}
+      </div>
+      <div style="text-align:center;font-size:14px;font-weight:700;margin-bottom:6px">${pick.name} is eliminated by the emissary.</div>
+      <div style="text-align:center;font-style:italic;color:#8b949e;font-size:12px">${pick.reason}</div>`;
+
+    // Bond fallout summary
+    if (bondShifts.length) {
+      const grudges = bondShifts.filter(s => s.reason === 'ally-grudge');
+      const grateful = bondShifts.filter(s => s.reason === 'gratitude');
+      html += `<div style="margin-top:12px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06);font-size:11px">`;
+      if (grudges.length) html += `<div style="color:#f85149">😤 ${grudges.map(s => s.from).join(', ')} — grudge against ${emissary}</div>`;
+      if (grateful.length) html += `<div style="color:#3fb950">🤝 ${grateful.map(s => s.from).join(', ')} — grateful</div>`;
+      html += `</div>`;
+    }
+    html += `</div>`;
+  }
+
+  // ── NEXT / REVEAL ALL buttons ──
+  if (!allRevealed) {
+    html += `<div style="position:sticky;bottom:0;padding:12px 0;text-align:center;background:linear-gradient(transparent,var(--bg-primary) 30%)">
+      <button class="rp-btn" onclick="${_evReveal(state.idx + 1)}">NEXT</button>
+      <button class="rp-btn rp-btn-secondary" onclick="${_evReveal(totalItems - 1)}" style="margin-left:8px">REVEAL ALL</button>
+    </div>`;
+  }
+
+  html += `</div>`;
+  return html;
+}
+
 // ── Ambassadors Screen (pre-merge twist) ──
 function rpBuildAmbassadors(ep) {
   const data = ep.ambassadorData;
@@ -50894,6 +50997,12 @@ function buildVPScreens(epRecord) {
     // Tied Destinies announcement screen — inserted earlier in VP flow (before camp life)
     vpScreens.push({ id:'tribal', label:'Tribal Council', html: rpBuildTribal(ep) });
     vpScreens.push({ id:'votes',  label:'The Votes',      html: rpBuildVotes(ep) });
+
+    // ── Emissary Vote screen (after normal tribal vote) ──
+    if (ep.emissaryPick) {
+      const _evHtml = rpBuildEmissaryVote(ep);
+      if (_evHtml) vpScreens.push({ id:'emissary-vote', label:'Emissary Vote', html: _evHtml });
+    }
 
     // ── Surprise double boot: announcement + vote 2 plans + vote 2 reveal ──
     // Must come BEFORE RI screens — RI shows the eliminated player arriving, which spoils the vote

@@ -8708,7 +8708,7 @@ function simulateTalentShow(ep) {
       if (sabotage) return;
       const s = pStats(name);
       if (!['villain', 'schemer', 'mastermind'].includes(s.archetype)) return;
-      if (Math.random() >= s.strategic * 0.03) return;
+      if (Math.random() >= s.strategic * 0.06) return; // strategic 10 = 60% chance
       // Pick target: highest audition scorer on an opposing tribe
       const otherTribes = tribeMembers.filter(ot => ot.name !== t.name);
       const targets = otherTribes.flatMap(ot => (auditions[ot.name] || []).filter(a => a.selected));
@@ -8727,7 +8727,7 @@ function simulateTalentShow(ep) {
 
   // ── Backstage Events (2-3 between auditions and show) ──
   const backstageEvents = [];
-  const maxBackstage = 3;
+  const maxBackstage = 4;
 
   // Spy Mission — villain/schemer sends ally to watch other tribe rehearse
   if (backstageEvents.length < maxBackstage) {
@@ -8870,9 +8870,11 @@ function simulateTalentShow(ep) {
           });
         }
       } else {
+        // Even without a sub-in, the practice pays off — score buff if they perform later
+        bold._tempBuff = (bold._tempBuff || 0) + 1.5;
         backstageEvents.push({
           type: 'secretRehearsalAlone', players: [bold.name],
-          text: `${bold.name} didn't make the cut, but ${pronouns(bold.name).sub} ${pronouns(bold.name).sub === 'they' ? 'haven\'t' : 'hasn\'t'} stopped practicing. Alone. Behind the cabins. Nobody saw it. This time.`,
+          text: `${bold.name} didn't make the cut, but ${pronouns(bold.name).sub} ${pronouns(bold.name).sub === 'they' ? 'haven\'t' : 'hasn\'t'} stopped practicing. Alone. Behind the cabins. The extra reps won't go to waste.`,
           badge: 'SECRET REHEARSAL', badgeClass: 'gold',
         });
       }

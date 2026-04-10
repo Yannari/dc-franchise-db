@@ -7000,10 +7000,11 @@ function simulateAwakeAThon(ep) {
   while (true) {
     roundNum++;
 
+    // Challenge ends when only 1 tribe has awake members (all others eliminated)
     const tribeAwake = {};
     tribes.forEach(t => { tribeAwake[t.name] = t.members.filter(m => awake.has(m)).length; });
-    const deadTribes = tribes.filter(t => tribeAwake[t.name] === 0);
-    if (deadTribes.length > 0) break;
+    const aliveTribes = tribes.filter(t => tribeAwake[t.name] > 0);
+    if (aliveTribes.length <= 1) break;
 
     const rolls = [];
     awake.forEach(name => {
@@ -7171,12 +7172,7 @@ function simulateAwakeAThon(ep) {
           if (!ep.chalMemberScores) ep.chalMemberScores = {};
           ep.chalMemberScores[cheater] = 0;
           eventsThisRound++;
-          // Check if cheater's tribe is now fully asleep — if so, need to end challenge
-          const _cheatTribeAwake = tribes.find(t => t.name === cheaterTribe)?.members.filter(m => awake.has(m)).length || 0;
-          if (_cheatTribeAwake === 0) {
-            // Push this round's events and break the main loop
-            rounds.push({ round: roundNum, dropout: { name: cheater, tribe: cheaterTribe, roll: 0 }, socialEvents: roundSocialEvents });
-          }
+          // Note: cheater removal may kill a tribe — the aliveTribesPost check at end of round handles this
         }
         break;
       }
@@ -7216,16 +7212,23 @@ function simulateAwakeAThon(ep) {
 
     const tribeAwakePost = {};
     tribes.forEach(t => { tribeAwakePost[t.name] = t.members.filter(m => awake.has(m)).length; });
-    const deadTribesPost = tribes.filter(t => tribeAwakePost[t.name] === 0);
-    if (deadTribesPost.length > 0) break;
+    const aliveTribesPost = tribes.filter(t => tribeAwakePost[t.name] > 0);
+    if (aliveTribesPost.length <= 1) break;
   }
 
   // ── Determine winner ──
   const tribeAwakeFinal = {};
   tribes.forEach(t => { tribeAwakeFinal[t.name] = t.members.filter(m => awake.has(m)).length; });
   const tribeSorted = [...tribes].sort((a, b) => tribeAwakeFinal[b.name] - tribeAwakeFinal[a.name]);
-  const winner = tribeSorted[0];
-  const loser = tribeSorted[tribeSorted.length - 1];
+  const winner = tribeSorted[0]; // most awake members
+  // Loser = tribe whose last member fell asleep most recently (latest round with 0 awake)
+  const deadTribesWithRound = tribeSorted.filter(t => tribeAwakeFinal[t.name] === 0).map(t => {
+    const lastDropRound = [...rounds].reverse().find(r => r.dropout.tribe === t.name)?.round || 0;
+    return { tribe: t, lastDropRound };
+  });
+  // The tribe that died FIRST (earliest lastDropRound) is the biggest loser — they go to tribal
+  deadTribesWithRound.sort((a, b) => a.lastDropRound - b.lastDropRound);
+  const loser = deadTribesWithRound[0]?.tribe || tribeSorted[tribeSorted.length - 1];
   const lastAwake = winner.members.find(m => awake.has(m)) || null;
   const firstOut = rounds[0]?.dropout || null;
 

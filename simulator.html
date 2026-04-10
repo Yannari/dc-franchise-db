@@ -8708,7 +8708,10 @@ function simulateTalentShow(ep) {
       if (sabotage) return;
       const s = pStats(name);
       const arch = players.find(p => p.name === name)?.archetype || '';
-      if (!['villain', 'schemer', 'mastermind'].includes(arch)) return;
+      // Sabotage: villain/schemer/mastermind with low social, or chaos-agent with high mental
+      const isLowSocialSchemer = ['villain', 'schemer', 'mastermind'].includes(arch) && s.social <= 5;
+      const isChaosPlanner = arch === 'chaos-agent' && s.mental >= 7;
+      if (!isLowSocialSchemer && !isChaosPlanner) return;
       if (Math.random() >= s.strategic * 0.03) return; // strategic 10 = 30%, strategic 7 = 21%
       // Pick target: highest audition scorer on an opposing tribe
       const otherTribes = tribeMembers.filter(ot => ot.name !== t.name);

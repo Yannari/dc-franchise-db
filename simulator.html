@@ -28428,6 +28428,8 @@ function simulateJuryRoundtable(ep) {
     emissaryDissolve: ep.emissaryDissolve || null,
     isDodgebrawl:       ep.isDodgebrawl       || false,
     dodgebrawl:         ep.dodgebrawl         || null,
+    isTalentShow:       ep.isTalentShow       || false,
+    talentShow:         ep.talentShow         || null,
     exilePlayer:      ep.exilePlayer      || null,
     exileDuelResult:  ep.exileDuelResult  || null,
     exileDuelVotedOut: ep.exileDuelVotedOut || null,
@@ -33666,6 +33668,8 @@ function patchEpisodeHistory(ep) {
   if (!h.awakeAThon && ep.awakeAThon) h.awakeAThon = ep.awakeAThon;
   if (ep.isDodgebrawl) h.isDodgebrawl = true;
   if (!h.dodgebrawl && ep.dodgebrawl) h.dodgebrawl = ep.dodgebrawl;
+  if (ep.isTalentShow) h.isTalentShow = true;
+  if (!h.talentShow && ep.talentShow) h.talentShow = ep.talentShow;
   if (ep.isTripleDogDare) h.isTripleDogDare = true;
   if (ep.exileDuelPlayerAtStart) h.exileDuelPlayerAtStart = ep.exileDuelPlayerAtStart;
   if (ep.volunteerDuel) h.volunteerDuel = ep.volunteerDuel;
@@ -41972,6 +41976,12 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'dodgebrawlRefusal'       ? (evt.badgeText || 'REFUSED TO PLAY')
                      : evt.type === 'dodgebrawlChoke'         ? (evt.badgeText || 'CHOKED')
                      : evt.type === 'dodgebrawlLiability'     ? (evt.badgeText || 'LIABILITY')
+                     : evt.type === 'talentShowStandingOvation' ? (evt.badgeText || 'STANDING OVATION')
+                     : evt.type === 'talentShowUnlikelyHero'    ? (evt.badgeText || 'UNLIKELY HERO')
+                     : evt.type === 'talentShowTeamSupport'     ? (evt.badgeText || 'TEAM SUPPORT')
+                     : evt.type === 'talentShowSabotageFallout' ? (evt.badgeText || 'SABOTAGE')
+                     : evt.type === 'talentShowDisaster'        ? (evt.badgeText || 'STAGE DISASTER')
+                     : evt.type === 'talentShowBitterReject'    ? (evt.badgeText || 'BITTER REJECTION')
                      : evt.type === 'rewardBackfireAlliance'   ? (evt.badgeText || 'BACKFIRE')
                      : evt.type === 'rewardBackfireBloc'       ? (evt.badgeText || 'LEFT BEHIND')
                      : evt.type === 'emissaryVolunteer'       ? (evt.badgeText || 'EMISSARY')
@@ -42149,6 +42159,8 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'emissaryObservation' ? ''
                      : evt.type === 'dodgebrawlTeamPlayer' || evt.type === 'dodgebrawlHero' || evt.type === 'dodgebrawlRedemption' ? 'gold'
                      : evt.type === 'dodgebrawlRefusal' || evt.type === 'dodgebrawlChoke' || evt.type === 'dodgebrawlLiability' ? 'red'
+                     : evt.type === 'talentShowStandingOvation' || evt.type === 'talentShowUnlikelyHero' || evt.type === 'talentShowTeamSupport' ? 'gold'
+                     : evt.type === 'talentShowSabotageFallout' || evt.type === 'talentShowDisaster' || evt.type === 'talentShowBitterReject' ? 'red'
                      : isMoleReveal ? 'gold'
                      : isDareComplete || isDareMVP || isDareGift || isDarePact ? 'gold'
                      : isDarePactBetray || isDareAllyBetray || isDareRefusal || isDareElim ? 'red'

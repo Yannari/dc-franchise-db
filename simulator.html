@@ -8480,10 +8480,22 @@ const TALENT_CATEGORIES = [
 ];
 
 const SABOTAGE_TYPES = [
-  { id: 'diary', text: (saboteur, target, pr) => `${saboteur} reads ${target}'s private writings aloud to the audience. ${target} is humiliated. The crowd is silent — then the whispering starts.` },
-  { id: 'props', text: (saboteur, target, pr) => `${saboteur} replaced ${target}'s props with broken ones. ${target} reaches for the guitar — wrong strings. The cards — marked. Nothing works.` },
-  { id: 'rumors', text: (saboteur, target, pr) => `${saboteur} told everyone ${target} was planning to throw the challenge. The crowd is hostile before the act even starts.` },
-  { id: 'psych', text: (saboteur, target, pr) => `${saboteur} whispered something to ${target} right before ${pr.sub} went on stage. Whatever it was, it worked. ${target} looks shaken.` },
+  { id: 'props', effect: 'disaster', // target uses disaster text — props are broken
+    text: (saboteur, target, pr) => `Before the show, ${saboteur} got backstage access to ${target}'s setup. Wrong strings on the guitar. Marked cards. Loosened joints. When ${target} reaches for ${pr.pos} props on stage, nothing works right.`,
+    stageText: (saboteur, target, pr) => `${target} reaches for ${pr.pos} equipment — something's wrong. The strings are off. The props don't fit. ${pr.Sub} ${pr.sub === 'they' ? 'try' : 'tries'} to adapt, but the whole act falls apart.`,
+  },
+  { id: 'rumors', effect: 'penalty', penalty: -2, // crowd hostile, Chef scores harsher
+    text: (saboteur, target, pr) => `${saboteur} spent the afternoon whispering to anyone who'd listen: "${target} is going to throw the challenge." By showtime, the crowd's arms are crossed before ${target} even walks on.`,
+    stageText: (saboteur, target, pr) => `${target} feels it from the first step. The crowd is cold. Every move gets judged harder. Even a good performance can't cut through the hostility ${saboteur} planted.`,
+  },
+  { id: 'psych', effect: 'tempDebuff', debuff: -3, // massive temperament drop → higher disaster chance
+    text: (saboteur, target, pr) => `${saboteur} catches ${target} alone right before ${pr.sub} ${pr.sub === 'they' ? 'go' : 'goes'} on. Whispers something. ${target}'s face changes. Whatever ${saboteur} said, it landed.`,
+    stageText: (saboteur, target, pr) => `${target} walks on stage but ${pr.sub} ${pr.sub === 'they' ? 'aren\'t' : 'isn\'t'} all there. The confidence from rehearsal is gone. ${pr.PosAdj} hands are shaking.`,
+  },
+  { id: 'replace', effect: 'selfScore0', // saboteur scores 0 on OWN act, but target gets massive temp debuff
+    text: (saboteur, target, pr) => `${saboteur} doesn't perform ${pr.pos} talent. Instead, ${pr.sub} ${pr.sub === 'they' ? 'use' : 'uses'} ${pr.pos} stage time to publicly call out ${target}. Secrets. Accusations. The camp goes dead silent.`,
+    stageText: (saboteur, target, pr) => `${saboteur} walks to center stage. No props. No act. Just a mic and a grudge. "${target}. Let's talk about what you really are." What follows is three minutes of calculated demolition. ${target} watches from the crowd, frozen.`,
+  },
 ];
 
 const AUDIENCE_REACTIONS = {
@@ -8706,8 +8718,9 @@ function simulateTalentShow(ep) {
       sabotage = {
         saboteur: name, saboteurTribe: t.name,
         target: target.name, targetTribe: otherTribes.find(ot => (auditions[ot.name] || []).some(a => a.name === target.name))?.name,
-        type: sabType.id,
+        type: sabType.id, effect: sabType.effect,
         text: sabType.text(name, target.name, pronouns(target.name)),
+        stageText: sabType.stageText(name, target.name, pronouns(target.name)),
       };
     });
   });
@@ -8896,18 +8909,44 @@ function simulateTalentShow(ep) {
       if (performer._tempBuff) rawScore += performer._tempBuff * 0.3; // pep talk temperament buff
       if (performer._scorePenalty) rawScore += performer._scorePenalty; // accident penalty
 
-      // Sabotage penalty
+      // Sabotage effects (type-specific)
       const isSabotaged = sabotage?.target === name;
-      if (isSabotaged) {
-        rawScore -= 3 + Math.random();
-        outcome = 'sabotaged';
+      const sabType = isSabotaged ? SABOTAGE_TYPES.find(st => st.id === sabotage.type) : null;
+      if (isSabotaged && sabType) {
+        if (sabType.effect === 'disaster') {
+          // Props sabotage: force disaster outcome (use disaster text)
+          rawScore = 1 + Math.random();
+          outcome = 'disaster';
+        } else if (sabType.effect === 'penalty') {
+          // Rumors: score penalty, crowd hostile
+          rawScore += sabType.penalty || -2;
+          outcome = 'sabotaged';
+        } else if (sabType.effect === 'tempDebuff') {
+          // Psych warfare: temperament drop → increased disaster chance (don't force it)
+          outcome = 'sabotaged'; // mark as sabotaged for VP
+        }
+        // 'selfScore0' (replace) is handled separately — affects the saboteur's own act, not the target's
       }
 
-      // Disaster check (only if not already sabotaged into oblivion)
-      const disasterChance = (10 - s.temperament) * 0.03;
-      if (outcome === 'normal' && Math.random() < disasterChance) {
-        rawScore = 1 + Math.random();
-        outcome = 'disaster';
+      // Check if saboteur replaced their own act (type 'replace') — applies to saboteur, not target
+      const isSaboteurReplacingAct = sabotage?.saboteur === name && sabotage?.type === 'replace';
+      if (isSaboteurReplacingAct) {
+        rawScore = 0; // saboteur scores 0 — didn't perform a talent
+        outcome = 'saboteurReplace';
+        // The target gets a temperament debuff for their next performance
+        const targetPerformer = Object.values(auditions).flatMap(a => a).find(a => a.name === sabotage.target && a.selected);
+        if (targetPerformer) targetPerformer._tempDebuff = (targetPerformer._tempDebuff || 0) + 3;
+      }
+
+      // Disaster check (fires normally, but psych sabotage increases chance via temp debuff)
+      if (outcome === 'normal' || outcome === 'sabotaged') {
+        const tempMod = (performer._tempDebuff || 0);
+        const effectiveTemp = Math.max(0, s.temperament - tempMod);
+        const disasterChance = (10 - effectiveTemp) * 0.03;
+        if (outcome !== 'disaster' && Math.random() < disasterChance) {
+          rawScore = 1 + Math.random();
+          outcome = 'disaster';
+        }
       }
 
       // Clutch check: only for lowest audition scorer of the selected 3
@@ -8940,7 +8979,10 @@ function simulateTalentShow(ep) {
         category: performer.category,
         auditionScore: performer.auditionScore,
         showScore: rawScore, chefScore: chef, outcome,
-        performanceBeats, sabotageText: isSabotaged ? sabotage.text : null,
+        performanceBeats: outcome === 'saboteurReplace' ? [sabotage.stageText] : performanceBeats,
+        sabotageText: isSabotaged ? sabotage.text : null,
+        sabotageStageText: isSabotaged ? sabotage.stageText : null,
+        sabotageType: isSabotaged ? sabotage.type : (isSaboteurReplacingAct ? 'replace' : null),
         reactions,
       });
     });

@@ -8936,18 +8936,21 @@ function simulateTalentShow(ep) {
         const _sabTarget = sabotage.target;
 
         // ── SOCIAL DESTRUCTION: the real payoff ──
-        // Target: publicly humiliated — bond damage from everyone who witnessed
-        gs.activePlayers.forEach(p => {
-          if (p === name || p === _sabTarget) return;
-          addBond(p, _sabTarget, -0.3); // mild negative — people distance from the humiliated
-        });
-        // Target's own tribe rallies around them (sympathy)
+        // Target's OWN tribe takes bond damage — the diary/secrets are about THEM
+        // (crushes, complaints, real opinions — now public)
         const _sabTargetTribe = tribeMembers.find(tm => tm.members.includes(_sabTarget));
         if (_sabTargetTribe) {
           _sabTargetTribe.members.filter(m => m !== _sabTarget).forEach(m => {
-            addBond(m, _sabTarget, 0.5); // sympathy rally
+            addBond(m, _sabTarget, -0.5); // hurt — the diary said things about them
           });
         }
+        // Other tribes: sympathy for the victim (they weren't in the diary)
+        tribeMembers.filter(tm => !tm.members.includes(_sabTarget)).forEach(tm => {
+          tm.members.forEach(m => {
+            if (m === name) return; // saboteur doesn't sympathize
+            addBond(m, _sabTarget, 0.3); // sympathy from outsiders
+          });
+        });
         // Target: sympathy boost (victim edit). Saboteur: popularity tanks (villain edit).
         if (!gs.popularity) gs.popularity = {};
         gs.popularity[_sabTarget] = (gs.popularity[_sabTarget] || 0) + 3; // sympathy underdog

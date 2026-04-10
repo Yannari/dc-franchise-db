@@ -153,6 +153,11 @@ is NOT actually loyal. Always check behavioral track record alongside raw stats.
   No custom `gs.chalRecord` manipulation — one system for everything.
   Pre-merge: top 3 podium + bottom 3 bomb. Post-merge: top 2 + bottom 2.
   Reward challenges: top 2 / bottom 2 at half weight (0.5), separate code.
+- **Every challenge twist MUST have a Debug → Challenge tab breakdown.** The `rpBuildDebug`
+  Challenge tab (`_dbTab === 'challenge'`) must show detailed per-player rankings and
+  twist-specific data (per-round scores for Dodgebrawl, dropout order for Awake-A-Thon,
+  phase scores for Cliff Dive, etc.). This is non-negotiable — if you create a new challenge
+  twist, add its debug breakdown in the same PR. No challenge ships without debug visibility.
 
 ## Social Politics
 - `checkSocialPolitics(ep)`: 3-5 actions per episode (side deals, info trades, loyalty tests)

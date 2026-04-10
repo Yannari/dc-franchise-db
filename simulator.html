@@ -7499,7 +7499,7 @@ function simulateDodgebrawl(ep) {
       if (allAlive.length < 2) break;
       // Weighted random pick — higher power = more likely but not guaranteed
       const throwerPool = allAlive.map(p => ({ ...p, weight: p.power + Math.random() * 1.5 })).sort((a, b) => b.weight - a.weight);
-      const bestThrower = activePlayers[throwerPool[0].tribe].find(p => p.name === throwerPool[0].name);
+      const bestThrower = activePlayers[throwerPool[0].tribe].find(p => p.name === throwerPool[0].name && p.alive);
       const bestThrowerTribe = throwerPool[0].tribe;
       if (!bestThrower) break;
 
@@ -7509,8 +7509,9 @@ function simulateDodgebrawl(ep) {
       const targetPool = opposingTribes.flatMap(tn => activePlayers[tn].filter(p => p.alive).map(p => ({ ...p, tribe: tn })));
       if (!targetPool.length) break;
       const targetWeighted = targetPool.map(p => ({ ...p, weight: (12 - p.power) + Math.random() * 2.0 })).sort((a, b) => b.weight - a.weight);
-      const weakestTarget = activePlayers[targetWeighted[0].tribe].find(p => p.name === targetWeighted[0].name);
+      const weakestTarget = activePlayers[targetWeighted[0].tribe].find(p => p.name === targetWeighted[0].name && p.alive);
       const weakestTargetTribe = targetWeighted[0].tribe;
+      if (!weakestTarget) continue; // safety: target already eliminated between pool build and lookup
       if (!weakestTarget) break;
 
       // After throwing, reduce thrower's power so they don't dominate every turn

@@ -14571,6 +14571,66 @@ function applyTwist(ep, twist, isPrimary = true) {
       ep.ambassadorData = twistObj;
     }
 
+  } else if (engineType === 'emissary-vote') {
+    // ── EMISSARY VOTE: winning tribe sends emissary to losing tribe's tribal ──
+    if (gs.isMerged || !ep.winner || !ep.loser) {
+      twistObj.blocked = true;
+      twistObj.blockedReason = 'requires pre-merge with winning/losing tribes';
+      return;
+    }
+    const _evWinTribe = ep.winner;
+    const _evLoseTribe = ep.loser;
+    const _evWinMembers = _evWinTribe.members.filter(m => gs.activePlayers.includes(m));
+    if (_evWinMembers.length < 2) {
+      twistObj.blocked = true;
+      twistObj.blockedReason = 'winning tribe too small';
+      return;
+    }
+
+    // ── Emissary selection: boldness + strategic + social scoring ──
+    const _evScores = _evWinMembers.map(name => {
+      const s = pStats(name);
+      return { name, score: s.boldness * 0.06 + s.strategic * 0.05 + s.social * 0.04 + Math.random() * 0.15 };
+    }).sort((a, b) => b.score - a.score);
+    const _evEmissary = _evScores[0].name;
+    const _evEmS = pStats(_evEmissary);
+    const _evEmPr = pronouns(_evEmissary);
+    const _evArch = _evEmS.archetype || 'neutral';
+
+    ep.emissary = { name: _evEmissary, tribe: _evWinTribe.name, targetTribe: _evLoseTribe.name };
+
+    // ── Archetype-flavored volunteer dialogue ──
+    const _evVolunteerText = ['villain','schemer','mastermind'].includes(_evArch)
+      ? `${_evEmissary} volunteers with a thin smile. "I'll handle this."`
+      : ['hero','loyal','protector'].includes(_evArch)
+      ? `${_evEmissary} steps forward reluctantly. "Someone has to do it. Might as well be me."`
+      : ['floater','follower'].includes(_evArch)
+      ? `${_evEmissary} shrugs and volunteers. "Sure, I'll go check it out."`
+      : `${_evEmissary} volunteers. "I want to see what's going on over there."`;
+
+    // ── Own tribe bond shifts ──
+    _evWinMembers.filter(p => p !== _evEmissary).forEach(p => {
+      const pS = pStats(p);
+      if (['villain','schemer','mastermind'].includes(_evArch) && pS.intuition >= 6) {
+        addBond(p, _evEmissary, -0.2);
+      } else {
+        addBond(p, _evEmissary, 0.3);
+      }
+    });
+
+    // ── Camp event on winning tribe ──
+    const _evWinKey = _evWinTribe.name;
+    if (!ep.campEvents) ep.campEvents = {};
+    if (!ep.campEvents[_evWinKey]) ep.campEvents[_evWinKey] = { pre: [], post: [] };
+    if (!ep.campEvents[_evWinKey].post) ep.campEvents[_evWinKey].post = [];
+    ep.campEvents[_evWinKey].post.push({
+      type: 'emissaryVolunteer',
+      players: [_evEmissary, ..._evWinMembers.filter(p => p !== _evEmissary).slice(0, 2)],
+      text: _evVolunteerText,
+      consequences: `${_evEmissary} will visit ${_evLoseTribe.name}'s tribal council.`,
+      badgeText: 'EMISSARY', badgeClass: 'gold'
+    });
+
   } else if (engineType === 'reward-challenge') {
     const rchal = pickChallenge();
     twistObj.rewardChallenge = true;

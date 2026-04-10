@@ -7499,9 +7499,11 @@ function simulateDodgebrawl(ep) {
       if (allAlive.length < 2) break;
       // Weighted random pick — higher power = more likely but not guaranteed
       const throwerPool = allAlive.map(p => ({ ...p, weight: p.power + Math.random() * 1.5 })).sort((a, b) => b.weight - a.weight);
-      const bestThrower = activePlayers[throwerPool[0].tribe].find(p => p.name === throwerPool[0].name && p.alive);
-      const bestThrowerTribe = throwerPool[0].tribe;
-      if (!bestThrower) break;
+      // Pick thrower directly from alive pool — no separate find() that can desync
+      const throwerEntry = throwerPool[0];
+      const bestThrower = activePlayers[throwerEntry.tribe].find(p => p.name === throwerEntry.name && p.alive);
+      const bestThrowerTribe = throwerEntry.tribe;
+      if (!bestThrower) continue; // stale pool entry — retry
 
       // Target: weighted random from opposing tribes (lower power = more likely to be targeted)
       const opposingTribes = aliveTribes.filter(tn => tn !== bestThrowerTribe);
@@ -7509,10 +7511,10 @@ function simulateDodgebrawl(ep) {
       const targetPool = opposingTribes.flatMap(tn => activePlayers[tn].filter(p => p.alive).map(p => ({ ...p, tribe: tn })));
       if (!targetPool.length) break;
       const targetWeighted = targetPool.map(p => ({ ...p, weight: (12 - p.power) + Math.random() * 2.0 })).sort((a, b) => b.weight - a.weight);
-      const weakestTarget = activePlayers[targetWeighted[0].tribe].find(p => p.name === targetWeighted[0].name && p.alive);
-      const weakestTargetTribe = targetWeighted[0].tribe;
-      if (!weakestTarget) continue; // safety: target already eliminated between pool build and lookup
-      if (!weakestTarget) break;
+      const targetEntry = targetWeighted[0];
+      const weakestTarget = activePlayers[targetEntry.tribe].find(p => p.name === targetEntry.name && p.alive);
+      const weakestTargetTribe = targetEntry.tribe;
+      if (!weakestTarget) continue; // stale pool entry — retry
 
       // After throwing, reduce thrower's power so they don't dominate every turn
       bestThrower.power = Math.max(0.5, bestThrower.power - 0.8);
@@ -7669,20 +7671,20 @@ function simulateDodgebrawl(ep) {
       });
     });
 
-    // Clutch Dodge: dodged 2+ throws and was on a losing tribe
+    // Clutch Dodge: last survivor on a losing tribe who dodged 2+ throws (max 1 per round)
     loserTribes.forEach(lt => {
       if (highlights.length >= 3) return;
-      (lineups[lt] || []).forEach(name => {
-        if (highlights.length >= 3) return;
-        if ((perPlayerDodges[name] || 0) >= 2 && !highlights.some(h => h.player === name)) {
-          const pr = pronouns(name);
-          highlights.push({
-            type: 'clutchDodge', player: name, tribe: lt,
-            text: pickText(HIGHLIGHT_TEXTS.clutchDodge, name, pr, lt),
-          });
-          (lineups[lt] || []).filter(p => p !== name).forEach(p => addBond(p, name, 0.3));
-        }
-      });
+      // Find who was eliminated last on this tribe (they held out the longest)
+      const ltElims = eliminations.filter(e => e.eliminated && e.tribe === lt);
+      const lastElim = ltElims.length ? ltElims[ltElims.length - 1].eliminated : null;
+      if (lastElim && (perPlayerDodges[lastElim] || 0) >= 2 && !highlights.some(h => h.player === lastElim)) {
+        const pr = pronouns(lastElim);
+        highlights.push({
+          type: 'clutchDodge', player: lastElim, tribe: lt,
+          text: pickText(HIGHLIGHT_TEXTS.clutchDodge, lastElim, pr, lt),
+        });
+        (lineups[lt] || []).filter(p => p !== lastElim).forEach(p => addBond(p, lastElim, 0.3));
+      }
     });
 
     // Rush Strategy: strategic >= 7 player on winning tribe, first 2 eliminations target same player

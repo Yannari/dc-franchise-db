@@ -8780,7 +8780,7 @@ function simulateTalentShow(ep) {
       if (!nervousPerformer) return;
       const nonPerformers = t.members.filter(m => !selected.some(s => s.name === m));
       const talker = nonPerformers.sort((a, b) => pStats(b).social - pStats(a).social)[0];
-      if (!talker || Math.random() >= 0.60) return; // 60% chance per tribe
+      if (!talker || Math.random() >= 0.30) return; // 30% chance per tribe
       const pr = pronouns(nervousPerformer.name);
       // Buff: +1 temperament for the show (stored on performer object)
       nervousPerformer._tempBuff = (nervousPerformer._tempBuff || 0) + 1;
@@ -8803,7 +8803,7 @@ function simulateTalentShow(ep) {
         const bTribe = tribeMembers.find(t => t.members.includes(b))?.name;
         if (aTribe === bTribe) continue; // same tribe — not a rivalry
         if (getBond(a, b) > -1) continue; // lower threshold
-        if (Math.random() >= 0.40) continue; // 40% chance
+        if (Math.random() >= 0.25) continue; // 25% chance
         addBond(a, b, -0.4);
         backstageEvents.push({
           type: 'rivalryConfrontation', players: [a, b],
@@ -8821,7 +8821,7 @@ function simulateTalentShow(ep) {
       if (backstageEvents.length >= maxBackstage) return;
       const selected = (auditions[t.name] || []).filter(a => a.selected);
       const clumsy = selected.find(s => pStats(s.name).temperament <= 4);
-      if (!clumsy || Math.random() >= 0.35) return; // 35% chance per clumsy performer
+      if (!clumsy || Math.random() >= 0.25) return; // 25% chance per clumsy performer
       const pr = pronouns(clumsy.name);
       // Coin flip: self-injury (-2 score) or prop break (substitution)
       if (Math.random() < 0.5) {
@@ -8854,7 +8854,7 @@ function simulateTalentShow(ep) {
       if (backstageEvents.length >= maxBackstage) return;
       const cut = (auditions[t.name] || []).filter(a => !a.selected);
       const bold = cut.find(c => pStats(c.name).boldness >= 6);
-      if (!bold || Math.random() >= 0.40) return; // 40% chance per bold cut player
+      if (!bold || Math.random() >= 0.30) return; // 30% chance per bold cut player
       // 40% chance of being subbed in
       if (Math.random() < 0.40) {
         const selected = (auditions[t.name] || []).filter(a => a.selected);

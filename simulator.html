@@ -7066,8 +7066,8 @@ function simulateAwakeAThon(ep) {
       }
     }
 
-    // Alliance pitch (~25%) — mastermind/schemer/villain archetypes boosted
-    if (eventsThisRound < maxEvents && Math.random() < 0.25 && awakePlayers.length >= 2) {
+    // Alliance pitch (~20%, max 2 per challenge) — mastermind/schemer/villain archetypes boosted
+    if (eventsThisRound < maxEvents && socialEventsDone.alliances.size < 2 && Math.random() < 0.20 && awakePlayers.length >= 2) {
       const _dealArchs = ['mastermind', 'schemer', 'villain'];
       const strategists = awakePlayers.filter(p => {
         const arch = players.find(pl => pl.name === p)?.archetype || '';
@@ -7142,8 +7142,11 @@ function simulateAwakeAThon(ep) {
       }
     }
 
-    // Cheating (~12%)
-    if (eventsThisRound < maxEvents && Math.random() < 0.12 && awakePlayers.length >= 3) {
+    // Cheating (~5%, max 1 per challenge) — rare and dramatic when it happens
+    const _totalCheats = [...socialEventsDone.cheaters].filter(c => {
+      return rounds.flatMap(r => r.socialEvents).some(e => e.type === 'awakeAThonCheat' && e.players[0] === c);
+    }).length;
+    if (eventsThisRound < maxEvents && _totalCheats < 1 && Math.random() < 0.05 && awakePlayers.length >= 3) {
       for (const cheater of awakePlayers) {
         if (socialEventsDone.cheaters.has(cheater)) continue;
         const s = pStats(cheater);
@@ -7168,6 +7171,12 @@ function simulateAwakeAThon(ep) {
           if (!ep.chalMemberScores) ep.chalMemberScores = {};
           ep.chalMemberScores[cheater] = 0;
           eventsThisRound++;
+          // Check if cheater's tribe is now fully asleep — if so, need to end challenge
+          const _cheatTribeAwake = tribes.find(t => t.name === cheaterTribe)?.members.filter(m => awake.has(m)).length || 0;
+          if (_cheatTribeAwake === 0) {
+            // Push this round's events and break the main loop
+            rounds.push({ round: roundNum, dropout: { name: cheater, tribe: cheaterTribe, roll: 0 }, socialEvents: roundSocialEvents });
+          }
         }
         break;
       }

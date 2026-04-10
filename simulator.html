@@ -14646,67 +14646,10 @@ function applyTwist(ep, twist, isPrimary = true) {
     }
 
   } else if (engineType === 'emissary-vote') {
-    // ── EMISSARY VOTE: winning tribe sends emissary to losing tribe's tribal ──
-    if (gs.isMerged || !ep.winner || !ep.loser) {
-      twistObj.blocked = true;
-      twistObj.blockedReason = 'requires pre-merge with winning/losing tribes';
-      return;
-    }
-    const _evWinTribe = ep.winner;
-    const _evLoseTribe = ep.loser;
-    const _evWinMembers = _evWinTribe.members.filter(m => gs.activePlayers.includes(m));
-    if (_evWinMembers.length < 2) {
-      twistObj.blocked = true;
-      twistObj.blockedReason = 'winning tribe too small';
-      return;
-    }
-
-    // ── Emissary selection: boldness + strategic + social scoring ──
-    const _evScores = _evWinMembers.map(name => {
-      const s = pStats(name);
-      return { name, score: s.boldness * 0.06 + s.strategic * 0.05 + s.social * 0.04 + Math.random() * 0.15 };
-    }).sort((a, b) => b.score - a.score);
-    const _evEmissary = _evScores[0].name;
-    const _evEmS = pStats(_evEmissary);
-    const _evEmPr = pronouns(_evEmissary);
-    const _evArch = _evEmS.archetype || 'neutral';
-
-    ep.emissary = { name: _evEmissary, tribe: _evWinTribe.name, targetTribe: _evLoseTribe.name };
-
-    // ── Archetype-flavored volunteer dialogue ──
-    const _evVolunteerText = ['villain','schemer','mastermind'].includes(_evArch)
-      ? `${_evEmissary} volunteers with a thin smile. "I'll handle this."`
-      : ['hero','loyal','protector'].includes(_evArch)
-      ? `${_evEmissary} steps forward reluctantly. "Someone has to do it. Might as well be me."`
-      : ['floater','follower'].includes(_evArch)
-      ? `${_evEmissary} shrugs and volunteers. "Sure, I'll go check it out."`
-      : `${_evEmissary} volunteers. "I want to see what's going on over there."`;
-
-    // ── Own tribe bond shifts ──
-    _evWinMembers.filter(p => p !== _evEmissary).forEach(p => {
-      const pS = pStats(p);
-      // Suspicious archetypes: intuitive tribemates see through the act (proportional)
-      if (['villain','schemer','mastermind'].includes(_evArch)) {
-        const suspicion = -pS.intuition * 0.04; // intuition 10 = -0.4, intuition 1 = -0.04
-        const admiration = 0.3;
-        addBond(p, _evEmissary, admiration + suspicion); // net ranges from +0.26 to -0.1
-      } else {
-        addBond(p, _evEmissary, 0.3);
-      }
-    });
-
-    // ── Camp event on winning tribe ──
-    const _evWinKey = _evWinTribe.name;
-    if (!ep.campEvents) ep.campEvents = {};
-    if (!ep.campEvents[_evWinKey]) ep.campEvents[_evWinKey] = { pre: [], post: [] };
-    if (!ep.campEvents[_evWinKey].post) ep.campEvents[_evWinKey].post = [];
-    ep.campEvents[_evWinKey].post.push({
-      type: 'emissaryVolunteer',
-      players: [_evEmissary, ..._evWinMembers.filter(p => p !== _evEmissary).slice(0, 2)],
-      text: _evVolunteerText,
-      consequences: `${_evEmissary} will visit ${_evLoseTribe.name}'s tribal council.`,
-      badgeText: 'EMISSARY', badgeClass: 'gold'
-    });
+    // ── EMISSARY VOTE: set flag only — actual selection runs post-challenge in simulateEpisode ──
+    // (applyTwist fires BEFORE the challenge, so ep.winner/ep.loser don't exist yet)
+    if (gs.isMerged) { twistObj.blocked = true; twistObj.blockedReason = 'pre-merge only'; return; }
+    ep.isEmissaryVote = true;
 
   } else if (engineType === 'reward-challenge') {
     const rchal = pickChallenge();
@@ -15526,6 +15469,60 @@ function allCampEvents(ep) {
     Array.isArray(v) ? v : [...(v.pre || []), ...(v.post || [])]
   );
 }
+
+  // ── EMISSARY VOTE: post-challenge selection (called from simulateEpisode after challenge) ──
+  function executeEmissarySelection(ep) {
+    if (!ep.isEmissaryVote || !ep.winner || !ep.loser) return;
+    const _evWinTribe = ep.winner;
+    const _evLoseTribe = ep.loser;
+    const _evWinMembers = _evWinTribe.members.filter(m => gs.activePlayers.includes(m));
+    if (_evWinMembers.length < 2) return;
+
+    // ── Emissary selection: boldness + strategic + social scoring ──
+    const _evScores = _evWinMembers.map(name => {
+      const s = pStats(name);
+      return { name, score: s.boldness * 0.06 + s.strategic * 0.05 + s.social * 0.04 + Math.random() * 0.15 };
+    }).sort((a, b) => b.score - a.score);
+    const _evEmissary = _evScores[0].name;
+    const _evEmS = pStats(_evEmissary);
+    const _evArch = _evEmS.archetype || 'neutral';
+
+    ep.emissary = { name: _evEmissary, tribe: _evWinTribe.name, targetTribe: _evLoseTribe.name };
+
+    // ── Archetype-flavored volunteer dialogue ──
+    const _evVolunteerText = ['villain','schemer','mastermind'].includes(_evArch)
+      ? `${_evEmissary} volunteers with a thin smile. "I'll handle this."`
+      : ['hero','loyal','protector'].includes(_evArch)
+      ? `${_evEmissary} steps forward reluctantly. "Someone has to do it. Might as well be me."`
+      : ['floater','follower'].includes(_evArch)
+      ? `${_evEmissary} shrugs and volunteers. "Sure, I'll go check it out."`
+      : `${_evEmissary} volunteers. "I want to see what's going on over there."`;
+
+    // ── Own tribe bond shifts ──
+    _evWinMembers.filter(p => p !== _evEmissary).forEach(p => {
+      const pS = pStats(p);
+      if (['villain','schemer','mastermind'].includes(_evArch)) {
+        const suspicion = -pS.intuition * 0.04;
+        const admiration = 0.3;
+        addBond(p, _evEmissary, admiration + suspicion);
+      } else {
+        addBond(p, _evEmissary, 0.3);
+      }
+    });
+
+    // ── Camp event on winning tribe ──
+    const _evWinKey = _evWinTribe.name;
+    if (!ep.campEvents) ep.campEvents = {};
+    if (!ep.campEvents[_evWinKey]) ep.campEvents[_evWinKey] = { pre: [], post: [] };
+    if (!ep.campEvents[_evWinKey].post) ep.campEvents[_evWinKey].post = [];
+    ep.campEvents[_evWinKey].post.push({
+      type: 'emissaryVolunteer',
+      players: [_evEmissary, ..._evWinMembers.filter(p => p !== _evEmissary).slice(0, 2)],
+      text: _evVolunteerText,
+      consequences: `${_evEmissary} will visit ${_evLoseTribe.name}'s tribal council.`,
+      badgeText: 'EMISSARY', badgeClass: 'gold'
+    });
+  }
 
   // ── EMISSARY VOTE: scouting events at losing tribe's camp ──
   function generateEmissaryScoutEvents(ep) {
@@ -24620,7 +24617,8 @@ function simulateEpisode() {
     }
   }
 
-  // ── Emissary Vote: scouting events at losing tribe camp ──
+  // ── Emissary Vote: selection + scouting (runs post-challenge, needs ep.winner/ep.loser) ──
+  if (ep.isEmissaryVote) executeEmissarySelection(ep);
   if (ep.emissary) generateEmissaryScoutEvents(ep);
 
   // ── POST-CHALLENGE CAMP EVENTS (outcome now known — exiled player already excluded) ──
@@ -32455,6 +32453,7 @@ function patchEpisodeHistory(ep) {
   if (ep.volunteerDuelReturn) h.volunteerDuelReturn = ep.volunteerDuelReturn;
   if (ep.schoolyardPick) h.schoolyardPick = ep.schoolyardPick;
   if (ep.schoolyardExileReturn) h.schoolyardExileReturn = ep.schoolyardExileReturn;
+  if (ep.isEmissaryVote) h.isEmissaryVote = true;
   if (ep.emissary) h.emissary = ep.emissary;
   if (ep.emissaryPick) h.emissaryPick = ep.emissaryPick;
   if (ep.emissaryEliminated) h.emissaryEliminated = ep.emissaryEliminated;

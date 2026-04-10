@@ -8481,7 +8481,7 @@ const TALENT_CATEGORIES = [
 
 const SABOTAGE_TYPES = [
   { id: 'props', effect: 'disaster', // target uses disaster text — props are broken
-    text: (saboteur, target, pr) => `Before the show, ${saboteur} got backstage access to ${target}'s setup. Wrong strings on the guitar. Marked cards. Loosened joints. When ${target} reaches for ${pr.pos} props on stage, nothing works right.`,
+    text: (saboteur, target, pr) => `Before the show, ${saboteur} got backstage access to ${target}'s setup. Wrong strings on the guitar. Marked cards. Loosened joints. When ${target} reaches for ${pr.posAdj} props on stage, nothing works right.`,
     stageText: (saboteur, target, pr) => `${target} reaches for ${pr.pos} equipment — something's wrong. The strings are off. The props don't fit. ${pr.Sub} ${pr.sub === 'they' ? 'try' : 'tries'} to adapt, but the whole act falls apart.`,
   },
   { id: 'rumors', effect: 'penalty', penalty: -2, // crowd hostile, Chef scores harsher
@@ -8729,12 +8729,13 @@ function simulateTalentShow(ep) {
   const backstageEvents = [];
   const maxBackstage = 4;
 
-  // Spy Mission — villain/schemer sends ally to watch other tribe rehearse
+  // Spy Mission — villain/schemer sends ally to watch other tribe rehearse (max 1)
+  let _spyFired = false;
   if (backstageEvents.length < maxBackstage) {
     tribeMembers.forEach(t => {
-      if (backstageEvents.length >= maxBackstage) return;
+      if (backstageEvents.length >= maxBackstage || _spyFired) return;
       t.members.forEach(name => {
-        if (backstageEvents.length >= maxBackstage) return;
+        if (backstageEvents.length >= maxBackstage || _spyFired) return;
         const arch = players.find(p => p.name === name)?.archetype || '';
         if (!['villain', 'schemer', 'mastermind'].includes(arch)) return;
         if (Math.random() >= 0.20) return; // 20% per villain/schemer
@@ -8751,6 +8752,7 @@ function simulateTalentShow(ep) {
         // Bond boost: teamwork between sender and spy
         addBond(name, ally, 0.4);
         addBond(ally, name, 0.3);
+        _spyFired = true;
         backstageEvents.push({
           type: 'spyMission', players: [name, ally, bestPerformer.name],
           text: `${name} sends ${ally} to spy on ${targetTribe.name}'s rehearsal. ${ally} comes back with intel: "${bestPerformer.name} is their best. That's who we target."`,
@@ -8793,21 +8795,30 @@ function simulateTalentShow(ep) {
     });
   }
 
-  // Rivalry Confrontation — cross-tribe bond <= -2
+  // Rivalry Confrontation — cross-tribe bond <= -2 (max 1 per episode)
+  let _rivalryFired = false;
   if (backstageEvents.length < maxBackstage) {
     const allPlayers = tribeMembers.flatMap(t => t.members);
-    for (let i = 0; i < allPlayers.length && backstageEvents.length < maxBackstage; i++) {
+    for (let i = 0; i < allPlayers.length && backstageEvents.length < maxBackstage && !_rivalryFired; i++) {
       for (let j = i + 1; j < allPlayers.length; j++) {
+        if (_rivalryFired) break;
         const a = allPlayers[i], b = allPlayers[j];
         const aTribe = tribeMembers.find(t => t.members.includes(a))?.name;
         const bTribe = tribeMembers.find(t => t.members.includes(b))?.name;
-        if (aTribe === bTribe) continue; // same tribe — not a rivalry
-        if (getBond(a, b) > -1) continue; // lower threshold
-        if (Math.random() >= 0.25) continue; // 25% chance
+        if (aTribe === bTribe) continue;
+        if (getBond(a, b) > -2) continue; // bond <= -2 required
+        if (Math.random() >= 0.25) continue;
         addBond(a, b, -0.4);
+        _rivalryFired = true;
+        const _rivalryTexts = [
+          `${a} and ${b} cross paths backstage. Words are exchanged. It starts quiet and gets loud. Someone has to step between them.`,
+          `${a} spots ${b} near the stage. Neither looks away. The tension is thick enough to cut. A tribemate pulls ${a} back before it escalates.`,
+          `${b} bumps into ${a} backstage. "Watch it." "Make me." It takes three people to keep them apart.`,
+          `${a} makes a comment about ${b}'s audition. ${b} hears it. The conversation that follows isn't about talent.`,
+        ];
         backstageEvents.push({
           type: 'rivalryConfrontation', players: [a, b],
-          text: `${a} and ${b} cross paths backstage. Words are exchanged. It starts quiet and gets loud. Someone has to step between them.`,
+          text: _rivalryTexts[Math.floor(Math.random() * _rivalryTexts.length)],
           badge: 'RIVALRY', badgeClass: 'red',
         });
         break;
@@ -8828,7 +8839,7 @@ function simulateTalentShow(ep) {
         clumsy._scorePenalty = (clumsy._scorePenalty || 0) - 2;
         backstageEvents.push({
           type: 'accidentInjury', players: [clumsy.name],
-          text: `${clumsy.name} was practicing backstage and something went wrong. ${pr.Sub} ${pr.sub === 'they' ? 'are' : 'is'} nursing ${pr.pos} hand. "I'm fine. I can still go." ${pr.Sub} ${pr.sub === 'they' ? 'aren\'t' : 'isn\'t'} fine.`,
+          text: `${clumsy.name} was practicing backstage and something went wrong. ${pr.Sub} ${pr.sub === 'they' ? 'are' : 'is'} nursing ${pr.posAdj} hand. "I'm fine. I can still go." ${pr.Sub} ${pr.sub === 'they' ? 'aren\'t' : 'isn\'t'} fine.`,
           badge: 'ACCIDENT', badgeClass: 'red',
         });
       } else {
@@ -8840,7 +8851,7 @@ function simulateTalentShow(ep) {
           sub.selected = true;
           backstageEvents.push({
             type: 'accidentSubstitution', players: [clumsy.name, sub.name],
-            text: `${clumsy.name} broke something backstage — ${pr.pos} props are ruined. ${sub.name} gets the call. "You're in." The Harold moment.`,
+            text: `${clumsy.name} broke something backstage — ${pr.posAdj} props are ruined. ${sub.name} gets the call. "You're in." The Harold moment.`,
             badge: 'SUBSTITUTION', badgeClass: 'gold',
           });
         }

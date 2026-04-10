@@ -7923,17 +7923,17 @@ const TALENT_POOL = {
     { id: 'gymnastics', name: 'Gymnastics Routine',
       audition: (p, pr) => `${p} nails a backflip in the dirt. The tribe watches, impressed.`,
       performance: [
-        (p, pr) => `The lights hit as ${p} walks to center stage. ${pr.Sub} ${pr.sub === 'they' ? 'roll' : 'rolls'} ${pr.pos} shoulders back. The crowd leans forward.`,
+        (p, pr) => `The lights hit as ${p} walks to center stage. ${pr.Sub} ${pr.sub === 'they' ? 'roll' : 'rolls'} ${pr.posAdj} shoulders back. The crowd leans forward.`,
         (p, pr) => `Backflip. Handspring. Aerial cartwheel. Every landing sticks. The stage shakes with each impact but ${p} doesn't flinch.`,
         (p, pr) => `Stuck landing. Arms up. The tribe erupts. Chef's eyebrows go up — and that's as close to impressed as he gets.`,
       ],
       disaster: [
         (p, pr) => `${p} bounces onto the stage full of energy. Too much energy. The first handspring is already off-center.`,
-        (p, pr) => `The aerial goes sideways. ${p} lands on ${pr.pos} ankle wrong — buckles — crashes into the edge of the stage. Gasps from the crowd.`,
+        (p, pr) => `The aerial goes sideways. ${p} lands on ${pr.posAdj} ankle wrong — buckles — crashes into the edge of the stage. Gasps from the crowd.`,
         (p, pr) => `${p} ${pr.sub === 'they' ? 'limp' : 'limps'} off. The tribe stares at the floor. Chef marks his spoon without looking up.`,
       ],
       clutch: [
-        (p, pr) => `${p} steps out looking stiff. Nervous. The tribe can see ${pr.pos} hands shaking from the front row.`,
+        (p, pr) => `${p} steps out looking stiff. Nervous. The tribe can see ${pr.posAdj} hands shaking from the front row.`,
         (p, pr) => `The first flip wobbles. But the second is cleaner. By the third, something clicks — ${p} launches into a spinning aerial nobody knew ${pr.sub} could do.`,
         (p, pr) => `Stuck landing. Dead silence — then the camp goes ballistic. Chef's spoon climbs higher than anyone expected.`,
       ],
@@ -7941,14 +7941,14 @@ const TALENT_POOL = {
     { id: 'martial-arts', name: 'Martial Arts Demo',
       audition: (p, pr) => `${p} throws kicks at the air with scary precision. Nobody claps ironically.`,
       performance: [
-        (p, pr) => `${p} walks to center stage barefoot. No music. No props. Just ${pr.pos} body and whatever's about to happen.`,
+        (p, pr) => `${p} walks to center stage barefoot. No music. No props. Just ${pr.posAdj} body and whatever's about to happen.`,
         (p, pr) => `Three rapid kicks. A spinning roundhouse that whistles through the air. Then the board — CRACK. Clean break. Splinters scatter.`,
         (p, pr) => `${p} bows. The tribe is too stunned to clap immediately. Then it hits. Chef nods once — high praise from him.`,
       ],
       disaster: [
         (p, pr) => `${p} takes position. Deep breath. The crowd is watching. The board is waiting.`,
         (p, pr) => `The spinning kick clips nothing but air. ${p} slips. Falls flat. The board sits there, unbroken and mocking.`,
-        (p, pr) => `Dead silence. Someone coughs. ${p} picks ${pr.pos}self up and walks off. Chef doesn't even pick up his spoon.`,
+        (p, pr) => `Dead silence. Someone coughs. ${p} picks ${pr.posAdj}self up and walks off. Chef doesn't even pick up his spoon.`,
       ],
       clutch: [
         (p, pr) => `${p} looks uncertain stepping out. The tribe saw better at auditions. This doesn't look like the same person.`,
@@ -7957,14 +7957,14 @@ const TALENT_POOL = {
       ],
     },
     { id: 'strength', name: 'Strength Display',
-      audition: (p, pr) => `${p} lifts a log over ${pr.pos} head. Simple. Effective.`,
+      audition: (p, pr) => `${p} lifts a log over ${pr.posAdj} head. Simple. Effective.`,
       performance: [
         (p, pr) => `${p} walks out, grabs the canoe by one end. No warm-up. No speech. Just raw intent.`,
         (p, pr) => `One clean lift. The canoe goes overhead. Then ${p} lowers it, puts a person in it, and lifts again. The stage groans.`,
         (p, pr) => `The camp watches in silence — then pure noise. Chef marks high. That was primal.`,
       ],
       disaster: [
-        (p, pr) => `${p} steps up to the canoe with total confidence. Grips it. Plants ${pr.pos} feet. Here we go.`,
+        (p, pr) => `${p} steps up to the canoe with total confidence. Grips it. Plants ${pr.posAdj} feet. Here we go.`,
         (p, pr) => `It doesn't budge. ${p} strains harder. Face turns red. Veins. Nothing. The canoe wins.`,
         (p, pr) => `${p} lets go and walks off. The tribe tries not to make eye contact. Chef marks a 1 and moves on.`,
       ],
@@ -7977,7 +7977,7 @@ const TALENT_POOL = {
     { id: 'parkour', name: 'Parkour Run',
       audition: (p, pr) => `${p} vaults over a bench, rolls, sticks the landing. Quick and clean.`,
       performance: [
-        (p, pr) => `${p} sizes up the obstacle course. Cracks ${pr.pos} neck. The tribe watches from the bleachers.`,
+        (p, pr) => `${p} sizes up the obstacle course. Cracks ${pr.posAdj} neck. The tribe watches from the bleachers.`,
         (p, pr) => `Wall flip — clean. Rail slide — smooth. Precision jump to the stage mark — perfect. Every move connected.`,
         (p, pr) => `${p} sticks the final landing, arms wide. The camp erupts. Chef's spoon fills fast.`,
       ],
@@ -8001,7 +8001,7 @@ const TALENT_POOL = {
       ],
       disaster: [
         (p, pr) => `${p} grabs the dummy with authority. This should be quick and impressive.`,
-        (p, pr) => `The dummy's arm catches on ${pr.pos} shirt. What follows is two minutes of ${p} wrestling with fabric. The dummy appears to be winning.`,
+        (p, pr) => `The dummy's arm catches on ${pr.posAdj} shirt. What follows is two minutes of ${p} wrestling with fabric. The dummy appears to be winning.`,
         (p, pr) => `${p} gives up and walks off. The dummy stays on stage. Someone has to go retrieve it. Chef gives a 1.`,
       ],
       clutch: [
@@ -8013,7 +8013,7 @@ const TALENT_POOL = {
     { id: 'endurance-hold', name: 'Endurance Hold',
       audition: (p, pr) => `${p} holds a handstand for two minutes straight during auditions. No wobble.`,
       performance: [
-        (p, pr) => `${p} assumes the position — plank on the stage edge, objects balanced on ${pr.pos} back. No movement. No complaints.`,
+        (p, pr) => `${p} assumes the position — plank on the stage edge, objects balanced on ${pr.posAdj} back. No movement. No complaints.`,
         (p, pr) => `One minute. Two minutes. Objects stacked higher. The crowd counts along. ${p} doesn't shake. Doesn't breathe hard.`,
         (p, pr) => `When ${p} finally releases, the crowd roars. Pure discipline. Chef's spoon goes high for the sheer control.`,
       ],
@@ -8033,13 +8033,13 @@ const TALENT_POOL = {
     { id: 'singing', name: 'Singing',
       audition: (p, pr) => `${p} hums a few bars. Voice is actually good. Tribe goes quiet.`,
       performance: [
-        (p, pr) => `The stage goes quiet as ${p} steps into the spotlight. ${pr.Sub} ${pr.sub === 'they' ? 'close' : 'closes'} ${pr.pos} eyes. No backing track. No safety net.`,
+        (p, pr) => `The stage goes quiet as ${p} steps into the spotlight. ${pr.Sub} ${pr.sub === 'they' ? 'close' : 'closes'} ${pr.posAdj} eyes. No backing track. No safety net.`,
         (p, pr) => `The first note lands clean. Then the second. By the chorus, the entire camp is still. Even Chef stops scowling.`,
         (p, pr) => `${p} finishes. Silence. Then the applause hits all at once. Chef raises his spoon.`,
       ],
       disaster: [
-        (p, pr) => `${p} takes the mic. The confidence from auditions is there. ${pr.Sub} ${pr.sub === 'they' ? 'open' : 'opens'} ${pr.pos} mouth.`,
-        (p, pr) => `The first note cracks. ${p} tries to push through — cracks again. The mic picks up ${pr.pos} breathing. ${pr.Sub} ${pr.sub === 'they' ? 'stop' : 'stops'} mid-verse.`,
+        (p, pr) => `${p} takes the mic. The confidence from auditions is there. ${pr.Sub} ${pr.sub === 'they' ? 'open' : 'opens'} ${pr.posAdj} mouth.`,
+        (p, pr) => `The first note cracks. ${p} tries to push through — cracks again. The mic picks up ${pr.posAdj} breathing. ${pr.Sub} ${pr.sub === 'they' ? 'stop' : 'stops'} mid-verse.`,
         (p, pr) => `${p} walks offstage. Nobody claps. Chef doesn't even lift the spoon.`,
       ],
       clutch: [
@@ -8057,7 +8057,7 @@ const TALENT_POOL = {
       ],
       disaster: [
         (p, pr) => `${p} takes the stage with a grin. "Hey everyone. So—" Silence already feels wrong.`,
-        (p, pr) => `First joke. Nothing. Second joke. A cough from the back. ${p} starts sweating. The third attempt dies in ${pr.pos} throat.`,
+        (p, pr) => `First joke. Nothing. Second joke. A cough from the back. ${p} starts sweating. The third attempt dies in ${pr.posAdj} throat.`,
         (p, pr) => `${p} mumbles "thanks" and walks off to no applause. Chef marks a 1. Someone whispers "that was rough."`,
       ],
       clutch: [
@@ -8093,8 +8093,8 @@ const TALENT_POOL = {
       ],
       disaster: [
         (p, pr) => `${p} starts strong. The first eight counts are smooth. The crowd is into it.`,
-        (p, pr) => `Then ${p} steps on ${pr.pos} own foot. Stumbles. Tries to style it out — makes it worse. The rhythm is gone.`,
-        (p, pr) => `${p} finishes awkwardly, half a beat off from the music in ${pr.pos} head. The clapping is polite at best. Chef shrugs.`,
+        (p, pr) => `Then ${p} steps on ${pr.posAdj} own foot. Stumbles. Tries to style it out — makes it worse. The rhythm is gone.`,
+        (p, pr) => `${p} finishes awkwardly, half a beat off from the music in ${pr.posAdj} head. The clapping is polite at best. Chef shrugs.`,
       ],
       clutch: [
         (p, pr) => `${p} looks stiff walking out. The audition energy isn't there. The tribe braces for mediocre.`,
@@ -8128,7 +8128,7 @@ const TALENT_POOL = {
         (p, pr) => `When ${p} finishes, the camp doesn't clap immediately. They're processing. Then it comes — deep, real. Chef respects it.`,
       ],
       disaster: [
-        (p, pr) => `${p} pulls out a crumpled paper. Smooths it against ${pr.pos} leg. Begins reading.`,
+        (p, pr) => `${p} pulls out a crumpled paper. Smooths it against ${pr.posAdj} leg. Begins reading.`,
         (p, pr) => `Monotone. Every word lands flat. ${p} reads from the page without looking up. The connection isn't there. A cricket chirps.`,
         (p, pr) => `${p} finishes reading and folds the paper up. The polite clap is almost worse than silence. Chef marks low.`,
       ],
@@ -8149,7 +8149,7 @@ const TALENT_POOL = {
       ],
       disaster: [
         (p, pr) => `${p} steps up to the mic. Breathes in. The first beat starts strong.`,
-        (p, pr) => `Tries to speed up — chokes on ${pr.pos} own spit. Coughs into the mic. The speakers feed it back. Awful.`,
+        (p, pr) => `Tries to speed up — chokes on ${pr.posAdj} own spit. Coughs into the mic. The speakers feed it back. Awful.`,
         (p, pr) => `${p} waves it off and walks backstage. The camp cringes. Chef marks bottom of the spoon.`,
       ],
       clutch: [
@@ -8167,7 +8167,7 @@ const TALENT_POOL = {
       ],
       disaster: [
         (p, pr) => `${p} pulls out the deck with a flourish. "Watch closely." The camp watches.`,
-        (p, pr) => `Fumbles the fan. Drops the deck. Cards scatter everywhere. The hidden card falls out of ${pr.pos} sleeve. The trick is completely exposed.`,
+        (p, pr) => `Fumbles the fan. Drops the deck. Cards scatter everywhere. The hidden card falls out of ${pr.posAdj} sleeve. The trick is completely exposed.`,
         (p, pr) => `${p} picks up the cards in silence while the camp watches. Chef doesn't even bother scoring high enough for it to matter.`,
       ],
       clutch: [
@@ -8179,7 +8179,7 @@ const TALENT_POOL = {
     { id: 'speed-solve', name: 'Speed-Solving',
       audition: (p, pr) => `${p} solves a puzzle in 40 seconds at audition. Tribe times it.`,
       performance: [
-        (p, pr) => `${p} sets three puzzles on a table. Cracks ${pr.pos} knuckles. The camp watches, skeptical.`,
+        (p, pr) => `${p} sets three puzzles on a table. Cracks ${pr.posAdj} knuckles. The camp watches, skeptical.`,
         (p, pr) => `Hands blur. First puzzle done. Second puzzle done. For the third — ${p} puts on a blindfold. Solves it by feel. Under a minute.`,
         (p, pr) => `The camp is speechless. That wasn't a performance — that was a brain on display. Chef gives top marks.`,
       ],
@@ -8190,7 +8190,7 @@ const TALENT_POOL = {
       ],
       clutch: [
         (p, pr) => `${p} starts slow. Too slow. The crowd can see ${pr.sub === 'they' ? "they're" : `${pr.sub}'s`} overthinking every move. This might be a train wreck.`,
-        (p, pr) => `Stuck on the last section. Ten seconds of nothing. Then ${p} closes ${pr.pos} eyes — and the hands move on their own. Click. Click. Done.`,
+        (p, pr) => `Stuck on the last section. Ten seconds of nothing. Then ${p} closes ${pr.posAdj} eyes — and the hands move on their own. Click. Click. Done.`,
         (p, pr) => `Under a minute. The camp goes from worried to screaming. Chef's spoon jumps. That was dramatic.`,
       ],
     },
@@ -8226,7 +8226,7 @@ const TALENT_POOL = {
       ],
       clutch: [
         (p, pr) => `${p} looks shaky taking aim. First throw — off center. Second — barely hits the board. The crowd is nervous.`,
-        (p, pr) => `Last throw. ${p} exhales. The knife leaves ${pr.pos} hand and curves — somehow — right into the bullseye.`,
+        (p, pr) => `Last throw. ${p} exhales. The knife leaves ${pr.posAdj} hand and curves — somehow — right into the bullseye.`,
         (p, pr) => `Nobody knows how that last one hit. Least of all ${p}. The camp screams. Chef's spoon jumps on the drama alone.`,
       ],
     },
@@ -8255,11 +8255,11 @@ const TALENT_POOL = {
       performance: [
         (p, pr) => `${p} steps out with a torch. The camp goes silent. The flame reflects in everyone's eyes.`,
         (p, pr) => `Deep breath — and the arc of flame lights up the entire stage. Then another, bigger. The heat reaches the front row.`,
-        (p, pr) => `${p} extinguishes the torch with ${pr.pos} tongue. Bows. The camp erupts. Chef marks high for sheer guts.`,
+        (p, pr) => `${p} extinguishes the torch with ${pr.posAdj} tongue. Bows. The camp erupts. Chef marks high for sheer guts.`,
       ],
       disaster: [
-        (p, pr) => `${p} brings the torch to ${pr.pos} lips. Confident. The camp leans forward.`,
-        (p, pr) => `The flame sputters — then licks ${pr.pos} face. ${p} recoils. Coughs smoke. The medic starts jogging over.`,
+        (p, pr) => `${p} brings the torch to ${pr.posAdj} lips. Confident. The camp leans forward.`,
+        (p, pr) => `The flame sputters — then licks ${pr.posAdj} face. ${p} recoils. Coughs smoke. The medic starts jogging over.`,
         (p, pr) => `${p} waves off the medic but the damage is done. Singed eyebrows and shattered confidence. Chef gives mercy points.`,
       ],
       clutch: [
@@ -8272,17 +8272,17 @@ const TALENT_POOL = {
       audition: (p, pr) => `${p} juggles two knives casually. No fear.`,
       performance: [
         (p, pr) => `${p} tosses one knife up. Catches it. Two. Three. The camp counts along.`,
-        (p, pr) => `Four knives now. The pattern is hypnotic. ${p} adds a fifth — catches it between ${pr.pos} fingers without looking.`,
+        (p, pr) => `Four knives now. The pattern is hypnotic. ${p} adds a fifth — catches it between ${pr.posAdj} fingers without looking.`,
         (p, pr) => `All five land safely. The camp breathes again and applauds. Chef scores high for the controlled danger.`,
       ],
       disaster: [
         (p, pr) => `${p} starts with three knives. Clean pattern. Looking good. The crowd relaxes.`,
-        (p, pr) => `The fourth knife wobbles — drops — sticks in the stage an inch from ${pr.pos} foot. The crowd gasps for all the wrong reasons.`,
+        (p, pr) => `The fourth knife wobbles — drops — sticks in the stage an inch from ${pr.posAdj} foot. The crowd gasps for all the wrong reasons.`,
         (p, pr) => `${p} backs away from the knife in the floor. The camp is white-knuckled. Chef gives a low score and a concerned look.`,
       ],
       clutch: [
         (p, pr) => `${p} starts juggling and it's shaky. A wobble on the second knife. The crowd tenses.`,
-        (p, pr) => `The third knife fumbles — ${p} kicks it up with ${pr.pos} foot, catches it mid-air, and adds it back to the rotation without breaking rhythm.`,
+        (p, pr) => `The third knife fumbles — ${p} kicks it up with ${pr.posAdj} foot, catches it mid-air, and adds it back to the rotation without breaking rhythm.`,
         (p, pr) => `The save was more impressive than a clean run would have been. The camp goes wild. Chef marks it up.`,
       ],
     },
@@ -8307,9 +8307,9 @@ const TALENT_POOL = {
     { id: 'eating-challenge', name: 'Eating Challenge',
       audition: (p, pr) => `${p} eats something terrible without flinching. Audition complete.`,
       performance: [
-        (p, pr) => `The table is set. Hot sauce. Bugs. Mystery meat. Things that shouldn't be eaten. ${p} sits down and cracks ${pr.pos} knuckles.`,
+        (p, pr) => `The table is set. Hot sauce. Bugs. Mystery meat. Things that shouldn't be eaten. ${p} sits down and cracks ${pr.posAdj} knuckles.`,
         (p, pr) => `One by one. No hesitation. No face. The hot sauce goes down smooth. The bug crunches. The mystery meat disappears. ${p} doesn't even water up.`,
-        (p, pr) => `${p} wipes ${pr.pos} mouth, stands, and takes a bow. The camp is horrified and impressed in equal measure. Chef scores high.`,
+        (p, pr) => `${p} wipes ${pr.posAdj} mouth, stands, and takes a bow. The camp is horrified and impressed in equal measure. Chef scores high.`,
       ],
       disaster: [
         (p, pr) => `${p} looks at the table. Picks up the first item. Takes a bite. So far so good.`,
@@ -8345,11 +8345,11 @@ const TALENT_POOL = {
       performance: [
         (p, pr) => `${p} pulls out a yo-yo. The camp smirks. Then ${p} starts spinning it at full speed. Nobody smirks anymore.`,
         (p, pr) => `Around the world. Walk the dog. Cradle. Every trick flows into the next — a blur of string and precision.`,
-        (p, pr) => `Final trick — the yo-yo rockets out and snaps back into ${pr.pos} palm. Clean. The camp applauds the absurdity. Chef scores surprisingly high.`,
+        (p, pr) => `Final trick — the yo-yo rockets out and snaps back into ${pr.posAdj} palm. Clean. The camp applauds the absurdity. Chef scores surprisingly high.`,
       ],
       disaster: [
         (p, pr) => `${p} pulls the yo-yo out. Confident. A few tricks should do it. The camp watches, amused.`,
-        (p, pr) => `The string wraps around ${pr.pos} neck. Then ${pr.pos} arm. ${p} is being eaten by a yo-yo on stage. The tribe watches in horror.`,
+        (p, pr) => `The string wraps around ${pr.posAdj} neck. Then ${pr.posAdj} arm. ${p} is being eaten by a yo-yo on stage. The tribe watches in horror.`,
         (p, pr) => `Someone has to untangle ${p}. The performance is officially a rescue operation. Chef gives a 1 for surviving.`,
       ],
       clutch: [
@@ -8424,11 +8424,11 @@ const TALENT_POOL = {
       disaster: [
         (p, pr) => `${p} comes out with a top hat and confidence. "Watch closely." The camp watches.`,
         (p, pr) => `The coin doesn't vanish — it drops. The card was visible the whole time. The hidden dove escapes. Everything falls apart simultaneously.`,
-        (p, pr) => `${p} stands in the wreckage of ${pr.pos} act surrounded by escaped props. Chef marks a 1.`,
+        (p, pr) => `${p} stands in the wreckage of ${pr.posAdj} act surrounded by escaped props. Chef marks a 1.`,
       ],
       clutch: [
         (p, pr) => `${p} starts the first trick and it fails. Badly. The hidden mechanism is visible. The camp groans.`,
-        (p, pr) => `${p} doesn't flinch. "That's what you THINK happened." Waves ${pr.pos} hand — the failed trick was the setup for a bigger one.`,
+        (p, pr) => `${p} doesn't flinch. "That's what you THINK happened." Waves ${pr.posAdj} hand — the failed trick was the setup for a bigger one.`,
         (p, pr) => `The camp buys it. The save was smoother than the trick. Chef marks high, genuinely fooled.`,
       ],
     },
@@ -8459,7 +8459,7 @@ const TALENT_POOL = {
       ],
       disaster: [
         (p, pr) => `${p} starts freestyling. The first bar is fine. The second reaches for a rhyme that isn't there.`,
-        (p, pr) => `Mumbles. Loses the beat. Tries to restart — the rhythm is gone. Stares at ${pr.pos} shoes. The clapping stops.`,
+        (p, pr) => `Mumbles. Loses the beat. Tries to restart — the rhythm is gone. Stares at ${pr.posAdj} shoes. The clapping stops.`,
         (p, pr) => `${p} walks off mid-verse. The camp is quiet. Chef marks the minimum.`,
       ],
       clutch: [
@@ -8629,8 +8629,8 @@ function simulateTalentShow(ep) {
 
     // Priority 1: Captain's Controversial Cut — cut player within 0.5 of 3rd pick
     const thirdPick = selected[selected.length - 1];
-    const closestCut = cut[0]; // highest-scoring cut player
-    if (closestCut && thirdPick && Math.abs(closestCut.auditionScore - thirdPick.auditionScore) < 0.5) {
+    const closestCut = cut.find(c => c.name !== captain); // highest-scoring cut player (not the captain)
+    if (closestCut && thirdPick && closestCut.name !== captain && Math.abs(closestCut.auditionScore - thirdPick.auditionScore) < 0.5) {
       const arch = players.find(p => p.name === closestCut.name)?.archetype || '';
       const pr = pronouns(closestCut.name);
       const text = ['hero', 'loyal', 'protector'].includes(arch)

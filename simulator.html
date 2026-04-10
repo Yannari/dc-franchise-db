@@ -9170,10 +9170,17 @@ function simulateTalentShow(ep) {
         category: performer.category,
         auditionScore: performer.auditionScore,
         showScore: rawScore, chefScore: chef, outcome,
-        performanceBeats: outcome === 'saboteurReplace' ? [sabotage.stageText] : performanceBeats,
+        performanceBeats: outcome === 'saboteurReplace'
+          ? [`${name} was supposed to perform ${performer.talentName}. Instead, ${pronouns(name).sub} ${pronouns(name).sub === 'they' ? 'walk' : 'walks'} to the mic with something else in mind.`,
+             sabotage.stageText,
+             `Chef marks a 0. No talent was performed. But the damage is done.`]
+          : performanceBeats,
+        // Sabotage card: on TARGET's act (including replace type). Never on saboteur's own act.
         sabotageText: isSabotaged ? sabotage.text : null,
-        sabotageStageText: isSabotaged ? sabotage.stageText : null,
-        sabotageType: isSabotaged ? sabotage.type : (isSaboteurReplacingAct ? 'replace' : null),
+        sabotageStageText: isSabotaged ? (sabotage.type === 'replace'
+          ? `${sabotage.saboteur} used ${pronouns(sabotage.saboteur).posAdj} stage time to publicly attack ${name}. The fallout is still landing.`
+          : sabotage.stageText) : null,
+        sabotageType: isSabotaged ? sabotage.type : (isSaboteurReplacingAct ? 'saboteurReplace' : null),
         reactions,
       });
     });

@@ -7430,31 +7430,41 @@ function simulateDodgebrawl(ep) {
   while (!Object.values(tribeWins).some(w => w >= maxWins) && roundNum < 7) {
     roundNum++;
 
-    // ── Per-round refusal check ──
+    // ── Pick lineups FIRST (rotation decides who's supposed to play) ──
+    const lineups = {};
+    tribeMembers.forEach(t => {
+      lineups[t.name] = pickLineup(t.name, []);
+    });
+
+    // ── Per-round refusal check: only players IN the lineup can refuse ──
+    // Refusal = it's your turn but you say no (the Noah move). Max 1 per tribe.
     const roundRefusals = [];
     tribeMembers.forEach(t => {
-      if (t.members.length <= courtSize) return; // no bench — can't refuse
-      const candidates = t.members.map(name => {
+      const lineup = lineups[t.name];
+      if (!lineup?.length) return;
+      // Only check lineup players — bench players aren't refusing, they're just sitting out
+      let refuser = null;
+      for (const name of lineup) {
         const s = pStats(name);
         let chance = (10 - s.boldness) * 0.02 + (10 - s.loyalty) * 0.015;
-        if (refusedLastRound.has(name)) chance *= 0.4; // lower chance if already refused
-        return { name, chance };
-      }).filter(c => Math.random() < c.chance);
-      if (candidates.length) {
-        const refuser = candidates.sort((a, b) => b.chance - a.chance)[0].name;
+        if (refusedLastRound.has(name)) chance *= 0.4;
+        if (Math.random() < chance) { refuser = name; break; } // max 1
+      }
+      if (refuser) {
         roundRefusals.push({ name: refuser, tribe: t.name });
         if (!allGameRefusals.some(r => r.name === refuser)) allGameRefusals.push({ name: refuser, tribe: t.name });
+        // Pull refuser from lineup, replace with bench player if available
+        const bench = t.members.filter(m => !lineup.includes(m));
+        const idx = lineup.indexOf(refuser);
+        if (bench.length) {
+          lineup[idx] = bench[0]; // substitute from bench
+        } else {
+          lineup.splice(idx, 1); // no replacement — team plays short
+        }
       }
     });
     refusedLastRound.clear();
     roundRefusals.forEach(r => refusedLastRound.add(r.name));
-
-    // ── Pick lineups ──
-    const lineups = {};
-    tribeMembers.forEach(t => {
-      const refused = roundRefusals.filter(r => r.tribe === t.name).map(r => r.name);
-      lineups[t.name] = pickLineup(t.name, refused);
-    });
 
     // ── Per-player elimination simulation within the round ──
     // Active players per tribe (with power scores + random variance)

@@ -8949,6 +8949,7 @@ function simulateTalentShow(ep) {
           if (m === name || m === _sabTarget) return;
           const bond = getBond(m, _sabTarget);
           if (bond >= 2) addBond(m, _sabTarget, 0.5); // close friend rallies
+          if (bond <= -1) addBond(m, name, 0.2); // people who disliked the victim warm to the saboteur
         });
         // Target: sympathy boost (victim edit). Saboteur: popularity tanks (villain edit).
         if (!gs.popularity) gs.popularity = {};

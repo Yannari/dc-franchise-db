@@ -31055,6 +31055,26 @@ function _textDodgebrawl(ep, ln, sec) {
   if (db.mvp) ln(`MVP: ${db.mvp}`);
 }
 
+// ── TALENT SHOW ──
+function _textTalentShow(ep, ln, sec) {
+  if (!ep.isTalentShow || !ep.talentShow) return;
+  const ts = ep.talentShow;
+  sec('TALENT SHOW');
+  Object.entries(ts.auditions).forEach(([tribe, results]) => {
+    ln(`${tribe} (Captain: ${ts.captains[tribe]})`);
+    results.forEach(r => ln(`  ${r.selected ? '+' : '-'} ${r.name} — ${r.talent.name} (${r.auditionScore.toFixed(1)})`));
+  });
+  if (ts.sabotage) ln(`SABOTAGE: ${ts.sabotage.saboteur} sabotaged ${ts.sabotage.target} (${ts.sabotage.type})`);
+  ln('');
+  ts.performances.forEach(p => {
+    const tag = p.outcome === 'disaster' ? ' [DISASTER]' : p.outcome === 'clutch' ? ' [CLUTCH]' : p.outcome === 'sabotaged' ? ' [SABOTAGED]' : '';
+    ln(`${p.tribe} — ${p.name}: ${p.talent} — Chef: ${p.chefScore}/9${tag}`);
+  });
+  ln(`Final: ${Object.entries(ts.tribeScores).map(([t, s]) => `${t} ${s}`).join(' — ')}`);
+  ln(`Winner: ${ts.winner}. ${ts.loser} goes to tribal.`);
+  if (ts.mvp) ln(`MVP: ${ts.mvp}`);
+}
+
 // ── PHOBIA FACTOR ──
 function _textCliffDive(ep, ln, sec) {
   if (!ep.cliffDive?.tribes?.length) return;
@@ -33132,6 +33152,7 @@ function generateSummaryText(ep) {
   _textSlasherNight(ep, ln, sec);
   _textAwakeAThon(ep, ln, sec);
   _textDodgebrawl(ep, ln, sec);
+  _textTalentShow(ep, ln, sec);
   _textCliffDive(ep, ln, sec);
   _textPhobiaFactor(ep, ln, sec);
   _textSayUncle(ep, ln, sec);
@@ -34349,6 +34370,7 @@ function renderEpisodeHistory() {
     const aatTag = ep.isAwakeAThon ? `<span class="ep-hist-tag" style="background:rgba(139,92,246,0.15);color:#8b5cf6">Awake-A-Thon</span>` : '';
     const evTag = ep.emissaryEliminated ? `<span class="ep-hist-tag" style="background:rgba(240,165,0,0.15);color:#f0a500">Emissary Vote</span>` : '';
     const dbTag = ep.isDodgebrawl ? `<span class="ep-hist-tag" style="background:rgba(224,96,48,0.15);color:#e06030">Dodgebrawl</span>` : '';
+    const tsTag = ep.isTalentShow ? `<span class="ep-hist-tag" style="background:rgba(139,92,246,0.15);color:#8b5cf6">Talent Show</span>` : '';
     const hasCheckpoint = !!gsCheckpoints[ep.num];
     const replayBtn = hasCheckpoint
       ? `<button class="ep-hist-replay" title="Re-run this episode" onclick="event.stopPropagation();replayEpisode(${ep.num})">↺</button>`
@@ -34356,7 +34378,7 @@ function renderEpisodeHistory() {
     return `<div class="ep-hist-card ${ep.num===currentNum?'active':''}" onclick="viewEpisode(${ep.num})">
       <div class="ep-hist-ep">Episode ${ep.num}${replayBtn}</div>
       <div class="ep-hist-elim">${_spoilerFree ? '???' : ep.multiTribalElims?.length >= 2 ? ep.multiTribalElims.join(' + ') : ep.ambassadorData?.ambassadorEliminated ? `${ep.ambassadorData.ambassadorEliminated} + ${ep.eliminated||'?'}` : ep.tiedDestinies?.eliminatedPartner ? `${ep.eliminated||'?'} + ${ep.tiedDestinies.eliminatedPartner}` : ep.emissaryEliminated ? `${ep.eliminated||'?'} + ${ep.emissaryEliminated}` : ep.firstEliminated ? `${ep.firstEliminated} + ${ep.eliminated||'?'}` : (ep.eliminated || (ep.isFinale ? 'FTC' : '\u2014'))}</div>
-      <div>${riTag}${mergeTag}${finaleTag}${slasherTag}${tddTag}${suTag}${pfTag}${cdTag}${aatTag}${evTag}${dbTag}</div>
+      <div>${riTag}${mergeTag}${finaleTag}${slasherTag}${tddTag}${suTag}${pfTag}${cdTag}${aatTag}${evTag}${dbTag}${tsTag}</div>
     </div>`;
   }).join('');
 }
@@ -37456,6 +37478,14 @@ function rpBuildColdOpen(ep) {
         <div style="font-size:12px;color:#8b949e">${_db.winner} won immunity (${_dbScore}).${_db.mvp ? ` MVP: ${_db.mvp}.` : ''}${_db.refusers?.length ? ` ${_db.refusers[0].name} refused to play.` : ''}</div>
       </div>`;
     }
+    if (prevEp.isTalentShow && prevEp.talentShow) {
+      const _ts = prevEp.talentShow;
+      const _tsScore = Object.entries(_ts.tribeScores).map(([t, s]) => `${t} ${s}`).join('–');
+      html += `<div class="vp-card" style="border-color:rgba(139,92,246,0.15);margin-bottom:8px">
+        <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:#8b5cf6;margin-bottom:4px">TALENT SHOW</div>
+        <div style="font-size:12px;color:#8b949e">${_ts.winner} won (${_tsScore}).${_ts.mvp ? ` MVP: ${_ts.mvp}.` : ''}${_ts.sabotage ? ` ${_ts.sabotage.saboteur} sabotaged ${_ts.sabotage.target}.` : ''}</div>
+      </div>`;
+    }
     if (prevEp.isPhobiaFactor && prevEp.phobiaFactor) {
       const _pfData = prevEp.phobiaFactor;
       const _pfWinPct = Math.round((_pfData.tribeScores[_pfData.winningTribe]?.percentage || 0) * 100);
@@ -39299,7 +39329,7 @@ function rpBuildDebug(ep) {
       ${_tabBtn('history', 'Hidden Moves')}
       ${gs.moles?.length ? _tabBtn('mole', 'The Mole') : ''}
       ${(gs.showmances?.length || gs.loveTriangles?.length || gs.affairs?.length) ? _tabBtn('romance', 'Romance') : ''}
-      ${(ep.chalMemberScores || ep.isDodgebrawl || ep.isCliffDive || ep.isAwakeAThon || ep.isPhobiaFactor || ep.isSayUncle || ep.isTripleDogDare) ? _tabBtn('challenge', 'Challenge') : ''}
+      ${(ep.chalMemberScores || ep.isDodgebrawl || ep.isCliffDive || ep.isAwakeAThon || ep.isPhobiaFactor || ep.isSayUncle || ep.isTripleDogDare || ep.isTalentShow) ? _tabBtn('challenge', 'Challenge') : ''}
     </div>`;
 
   // ════════════════════════════════════════════════
@@ -39914,7 +39944,7 @@ function rpBuildDebug(ep) {
       });
     }
     const _chalLabel = ep.challengeLabel || 'Challenge';
-    const _chalType = ep.isDodgebrawl ? 'Dodgebrawl' : ep.isCliffDive ? 'Cliff Dive' : ep.isAwakeAThon ? 'Awake-A-Thon' : ep.isPhobiaFactor ? 'Phobia Factor' : ep.isSayUncle ? 'Say Uncle' : _chalLabel;
+    const _chalType = ep.isDodgebrawl ? 'Dodgebrawl' : ep.isCliffDive ? 'Cliff Dive' : ep.isAwakeAThon ? 'Awake-A-Thon' : ep.isPhobiaFactor ? 'Phobia Factor' : ep.isSayUncle ? 'Say Uncle' : ep.isTalentShow ? 'Talent Show' : _chalLabel;
 
     html += `<div style="margin-bottom:12px">
       <div style="font-family:var(--font-display);font-size:14px;color:#f0883e;margin-bottom:8px">${_chalType} — Player Rankings</div>`;
@@ -39990,6 +40020,25 @@ function rpBuildDebug(ep) {
         const tc = tribeColor(t.name);
         html += `<div style="font-size:10px;padding:2px 0"><span style="color:${tc};font-weight:700">${t.name}</span> — Jumpers: ${t.jumpCount}/${t.reactions.length}, Haul: ${(t.haulScore||0).toFixed(1)}, Build: ${(t.buildScore||0).toFixed(1)}</div>`;
       });
+    }
+
+    // Talent show breakdown
+    if (ep.talentShow?.performances?.length) {
+      html += `<div style="font-family:var(--font-display);font-size:13px;color:#f0883e;margin:16px 0 8px">Talent Show — Performances</div>`;
+      ep.talentShow.performances.forEach((p, i) => {
+        const tc = tribeColor(p.tribe);
+        const tag = p.outcome === 'disaster' ? ' DISASTER' : p.outcome === 'clutch' ? ' CLUTCH' : p.outcome === 'sabotaged' ? ' SABOTAGED' : '';
+        html += `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:10px">
+          <span style="width:16px;color:#8b949e;text-align:right">${i + 1}.</span>
+          <span style="color:${tc}">${p.name}</span>
+          <span style="color:#8b949e">${p.talent}</span>
+          <span style="font-weight:700;color:${p.chefScore >= 7 ? '#3fb950' : p.chefScore <= 3 ? '#f85149' : '#e6edf3'};margin-left:auto">Chef: ${p.chefScore}/9${tag}</span>
+        </div>`;
+      });
+      if (ep.talentShow.sabotage) {
+        const sab = ep.talentShow.sabotage;
+        html += `<div style="margin-top:6px;padding:4px 8px;border-radius:4px;background:rgba(218,54,51,0.08);font-size:10px;color:#da3633">Sabotage: ${sab.saboteur} → ${sab.target} (${sab.type})</div>`;
+      }
     }
 
     html += `</div>`;

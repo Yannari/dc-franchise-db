@@ -25102,7 +25102,10 @@ function simulateEpisode() {
   }
 
   // ── CHALLENGE RECORD UPDATE: track wins/podiums/bombs, inject chalThreat events ──
-  updateChalRecord(ep);
+  // Skip if a challenge twist already called updateChalRecord (dodgebrawl, cliff-dive, etc.)
+  if (!ep.isDodgebrawl && !ep.isCliffDive && !ep.isAwakeAThon && !ep.isPhobiaFactor && !ep.isSayUncle && !ep.isTripleDogDare && !ep.isSlasherNight) {
+    updateChalRecord(ep);
+  }
 
   // ── CHALLENGE THROW CAMP EVENTS ──
   if (ep.challengeThrows?.length) {

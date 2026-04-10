@@ -4202,6 +4202,7 @@ function computeHeat(name, tribalPlayers, alliances) {
   if (gs._phobiaBlame?.[name]) heat += gs._phobiaBlame[name];
   if (gs._cliffDiveBlame?.[name]) heat += gs._cliffDiveBlame[name];
   if (gs._awakeAThonBlame?.[name]) heat += gs._awakeAThonBlame[name];
+  if (gs._emissaryHeat?.[name] && ((gs.episode || 0) + 1) < gs._emissaryHeat[name].expiresEp) heat += gs._emissaryHeat[name].amount;
   // ── Volunteer Exile Duel: volunteer WANTS to be voted out ──
   if (gs._volunteerDuelHeat?.[name] === ((gs.episode || 0) + 1)) heat += 8.0;
   // Volunteer duel winner returns with reduced heat
@@ -9358,6 +9359,79 @@ function buildVoteReason(voter, target, type, ctx = {}) {
     `the game needed a name — ${target}'s was available`,
   ]);
 }
+
+  // ── EMISSARY VOTE: emissary picks a second elimination after normal tribal ──
+  function simulateEmissaryVote(ep) {
+    if (!ep.emissary) return null;
+    const emissary = ep.emissary.name;
+    const emS = pStats(emissary);
+    const emPr = pronouns(emissary);
+    const emArch = emS.archetype || 'neutral';
+
+    // Pool: remaining tribal players minus the just-eliminated player and immune players
+    const pool = (ep.tribalPlayers || []).filter(p =>
+      p !== ep.eliminated && gs.activePlayers.includes(p) && p !== ep.immunityWinner && !(ep.extraImmune || []).includes(p)
+    );
+    if (!pool.length) return null;
+
+    // ── Collect pitch influence from scouting ──
+    const pitchInfluence = {};
+    (ep.emissaryScoutEvents || []).forEach(evt => {
+      if (evt.type === 'emissaryPitch' && evt.pitchTarget) {
+        pitchInfluence[evt.pitchTarget] = (pitchInfluence[evt.pitchTarget] || 0) + (evt.pitchStrength || 0.3);
+      }
+    });
+
+    // ── Archetype weight modifiers ──
+    let threatWeight = 0.30, bondWeight = 0.20, heatWeight = 0.15;
+    if (['villain', 'schemer', 'mastermind'].includes(emArch)) {
+      threatWeight = 0.40;
+    } else if (['hero', 'loyal', 'protector'].includes(emArch)) {
+      bondWeight = 0.30;
+    } else if (['floater', 'follower'].includes(emArch)) {
+      heatWeight = 0.25;
+    }
+
+    // ── Score each candidate ──
+    const scores = pool.map(target => {
+      const tThreat = threatScore(target);
+      const tBond = getBond(emissary, target);
+      const tHeat = computeHeat(target, pool, ep);
+      const tPitch = pitchInfluence[target] || 0;
+
+      const score = tThreat * threatWeight
+                  + tPitch * 0.25
+                  - tBond * bondWeight
+                  + tHeat * heatWeight
+                  + Math.random() * 0.10;
+
+      return { name: target, score, threat: tThreat, bond: tBond, heat: tHeat, pitch: tPitch };
+    }).sort((a, b) => b.score - a.score);
+
+    const pick = scores[0];
+    if (!pick) return null;
+
+    // ── Generate reason text ──
+    const pickPr = pronouns(pick.name);
+    let reason;
+    if (pick.pitch > 0.3) {
+      const pitcher = (ep.emissaryScoutEvents || []).find(e => e.type === 'emissaryPitch' && e.pitchTarget === pick.name)?.pitcher;
+      reason = pitcher
+        ? `${emissary} was swayed by ${pitcher}'s pitch against ${pick.name}.`
+        : `${emissary} heard enough to make ${emPr.pos} mind up about ${pick.name}.`;
+    } else if (pick.bond <= -1) {
+      reason = `${emissary} and ${pick.name} have history. This is personal.`;
+    } else if (pick.threat > 6) {
+      reason = `${emissary} points at the biggest threat. "${pick.name}. You're too dangerous to keep around."`;
+    } else if (pick.heat > 3) {
+      reason = `${emissary} reads the room. "${pick.name}. Your own tribe wanted you gone."`;
+    } else {
+      reason = `${emissary} makes ${emPr.pos} choice. "${pick.name}."`;
+    }
+
+    ep.emissaryPick = { name: pick.name, reason, scores: scores.slice(0, 5) };
+    return ep.emissaryPick;
+  }
 
 function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], openVote = false) {
   // immuneName may be a string or an array — normalise to a Set for O(1) lookup
@@ -26907,6 +26981,84 @@ function simulateJuryRoundtable(ep) {
       delete gs._tiedDestiniesActive;
     }
 
+    // ── EMISSARY VOTE: second elimination by emissary pick ──
+    if (ep.emissary && !ep.eliminationSwap) {
+      const _evPick = simulateEmissaryVote(ep);
+      if (_evPick) {
+        ep.emissaryEliminated = _evPick.name;
+        // ── Bond consequences ──
+        const _evEmissary = ep.emissary.name;
+        const _evPickName = _evPick.name;
+        ep.emissaryBondShifts = [];
+        const _evLoseMembers = (ep.tribalPlayers || []).filter(p => p !== ep.eliminated && p !== _evPickName && gs.activePlayers.includes(p));
+
+        // Allies of the picked player: grudge (-1.5 scaled by bond)
+        _evLoseMembers.forEach(p => {
+          const allyBond = getBond(p, _evPickName);
+          if (allyBond >= 2.0) {
+            const grudge = -(1.5 * allyBond * 0.15);
+            addBond(p, _evEmissary, grudge);
+            ep.emissaryBondShifts.push({ from: p, to: _evEmissary, delta: grudge, reason: 'ally-grudge' });
+          } else {
+            addBond(p, _evEmissary, -0.3);
+            ep.emissaryBondShifts.push({ from: p, to: _evEmissary, delta: -0.3, reason: 'resentment' });
+          }
+        });
+
+        // Players who pitched against the picked player or had them as vote target: gratitude
+        const _evVotersAgainst = (ep.votingLog || []).filter(l => l.voted === _evPickName).map(l => l.voter);
+        const _evPitchersAgainst = (ep.emissaryScoutEvents || []).filter(e => e.type === 'emissaryPitch' && e.pitchTarget === _evPickName).map(e => e.pitcher);
+        const _evGrateful = [...new Set([..._evVotersAgainst, ..._evPitchersAgainst])].filter(p => p !== _evPickName && gs.activePlayers.includes(p));
+        _evGrateful.forEach(p => {
+          addBond(p, _evEmissary, 0.8);
+          ep.emissaryBondShifts.push({ from: p, to: _evEmissary, delta: 0.8, reason: 'gratitude' });
+        });
+
+        // Emissary's own tribe: strategic tribemates approve high-threat pick, hero/loyal disapprove low-threat
+        const _evOwnMembers = (gs.tribes.find(t => t.name === ep.emissary.tribe)?.members || []).filter(p => p !== _evEmissary && gs.activePlayers.includes(p));
+        const _evPickThreat = threatScore(_evPickName);
+        _evOwnMembers.forEach(p => {
+          const pS = pStats(p);
+          if (_evPickThreat >= 5 && pS.strategic >= 5) {
+            addBond(p, _evEmissary, 0.4);
+            ep.emissaryBondShifts.push({ from: p, to: _evEmissary, delta: 0.4, reason: 'good-move' });
+          } else if (_evPickThreat < 4 && ['hero', 'loyal', 'protector'].includes(pS.archetype)) {
+            addBond(p, _evEmissary, -0.3);
+            ep.emissaryBondShifts.push({ from: p, to: _evEmissary, delta: -0.3, reason: 'cruel-pick' });
+          }
+        });
+
+        // ── Heat: emissary gets +1.5 heat for 2 episodes ──
+        if (!gs._emissaryHeat) gs._emissaryHeat = {};
+        gs._emissaryHeat[_evEmissary] = { amount: 1.5, expiresEp: ((gs.episode || 0) + 1) + 2 };
+
+        // ── Popularity ──
+        if (!gs.popularity) gs.popularity = {};
+        gs.popularity[_evEmissary] = (gs.popularity[_evEmissary] || 0) - 2;
+        gs.popularity[_evPickName] = (gs.popularity[_evPickName] || 0) + 3;
+
+        // ── Eliminate the emissary's pick ──
+        if (isRIStillActive()) {
+          if (cfg.riFormat === 'rescue') {
+            gs.riPlayers.push(_evPickName);
+            if (!gs.riArrivalEp) gs.riArrivalEp = {};
+            gs.riArrivalEp[_evPickName] = (gs.episode || 0) + 1;
+          } else {
+            const _evRIChoice = simulateRIChoice(_evPickName);
+            if (_evRIChoice === 'REDEMPTION ISLAND') gs.riPlayers.push(_evPickName);
+            else { gs.eliminated.push(_evPickName); if (gs.isMerged) gs.jury.push(_evPickName); }
+          }
+        } else {
+          gs.eliminated.push(_evPickName);
+          if (gs.isMerged) gs.jury.push(_evPickName);
+        }
+        gs.activePlayers = gs.activePlayers.filter(p => p !== _evPickName);
+        gs.tribes = gs.tribes.map(t => ({...t, members: t.members.filter(p => p !== _evPickName)}));
+        handleAdvantageInheritance(_evPickName, ep);
+        gs.advantages = gs.advantages.filter(a => a.holder !== _evPickName);
+      }
+    }
+
     // Clear volunteer duel heat after tribal
     if (gs._volunteerDuelHeat) delete gs._volunteerDuelHeat;
     // Clear phobia blame after tribal
@@ -26915,6 +27067,13 @@ function simulateJuryRoundtable(ep) {
     if (gs._awakeAThonBlame) delete gs._awakeAThonBlame;
     // Clear reward backfire heat after tribal
     if (gs._rewardBackfireHeat && (gs.episode || 0) + 1 >= gs._rewardBackfireHeat.expiresEp) delete gs._rewardBackfireHeat;
+    // Clear expired emissary heat
+    if (gs._emissaryHeat) {
+      Object.keys(gs._emissaryHeat).forEach(k => {
+        if (((gs.episode || 0) + 1) >= gs._emissaryHeat[k].expiresEp) delete gs._emissaryHeat[k];
+      });
+      if (!Object.keys(gs._emissaryHeat).length) delete gs._emissaryHeat;
+    }
 
     // ── BLACK VOTE: eliminated player casts a parting vote/gift (until F4) ──
     if (cfg.blackVote && cfg.blackVote !== 'off' && gs.activePlayers.length > 4) {

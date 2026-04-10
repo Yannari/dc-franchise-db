@@ -39465,7 +39465,8 @@ function rpBuildFirstImpressions(ep, twistObj) {
     const _chalType = ep.isDodgebrawl ? 'Dodgebrawl' : ep.isCliffDive ? 'Cliff Dive' : ep.isAwakeAThon ? 'Awake-A-Thon' : ep.isPhobiaFactor ? 'Phobia Factor' : ep.isSayUncle ? 'Say Uncle' : _chalLabel;
 
     html += `<div style="margin-bottom:12px">
-      <div style="font-family:var(--font-display);font-size:14px;color:#f0883e;margin-bottom:8px">${_chalType} — Player Rankings</div>`;
+      <div style="font-family:var(--font-display);font-size:14px;color:#f0883e;margin-bottom:8px">${_chalType} — Player Rankings</div>
+      <div style="font-size:9px;color:#6e7681;margin-bottom:6px">chalMemberScores: ${Object.keys(ep.chalMemberScores || {}).length} entries | dodgebrawl rounds: ${ep.dodgebrawl?.rounds?.length || 0} | rebuilt: ${Object.keys(_chalScores).length} entries</div>`;
 
     // Sort all players by score descending
     const _ranked = Object.entries(_chalScores).sort(([,a], [,b]) => b - a);

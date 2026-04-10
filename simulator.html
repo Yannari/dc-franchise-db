@@ -29795,7 +29795,10 @@ function _textWhyVote(ep, ln, sec) {
   ln('');
   ln('VOTED OUT THIS EPISODE:');
   if (ep.multiTribalElims?.length) ln(ep.multiTribalElims.join(', '));
-  else if (ep.firstEliminated) {
+  else if (ep.emissaryEliminated) {
+    ln(`1. ${elim || '???'} — Tribal Vote`);
+    ln(`2. ${ep.emissaryEliminated} — Emissary Pick (${ep.emissary?.name || 'emissary'})`);
+  } else if (ep.firstEliminated) {
     ln(`1. ${ep.firstEliminated}${cfg.ri && ep.firstRIChoice ? ` — ${ep.firstRIChoice}` : ''}`);
     ln(`2. ${elim || '???'}${cfg.ri && ep.riChoice ? ` — ${ep.riChoice}` : ''}`);
   } else if (ep.isSlasherNight && ep.slasherNight?.eliminated) ln(ep.slasherNight.eliminated + ' — Slasher Night (lowest score)');
@@ -29803,7 +29806,6 @@ function _textWhyVote(ep, ln, sec) {
   else if (ep.lastChance) ln(`${ep.lastChance.loser} — Last Chance Challenge (lost to ${ep.lastChance.winner})`);
   else if (elim) { ln(elim); if (cfg.ri) ln(`Chose: ${ep.riChoice || 'N/A'}`); }
   else ln('No elimination.');
-  if (ep.emissaryEliminated) ln(`EMISSARY ELIMINATED: ${ep.emissaryEliminated}`);
 }
 
 // ── AWAKE-A-THON ──
@@ -33121,14 +33123,15 @@ function renderEpisodeHistory() {
     const pfTag = ep.isPhobiaFactor ? `<span class="ep-hist-tag" style="background:rgba(139,92,246,0.15);color:#8957e5">Phobia Factor</span>` : '';
     const cdTag = ep.isCliffDive ? `<span class="ep-hist-tag" style="background:rgba(244,112,103,0.15);color:#f47067">Cliff Dive</span>` : '';
     const aatTag = ep.isAwakeAThon ? `<span class="ep-hist-tag" style="background:rgba(139,92,246,0.15);color:#8b5cf6">Awake-A-Thon</span>` : '';
+    const evTag = ep.emissaryEliminated ? `<span class="ep-hist-tag" style="background:rgba(240,165,0,0.15);color:#f0a500">Emissary Vote</span>` : '';
     const hasCheckpoint = !!gsCheckpoints[ep.num];
     const replayBtn = hasCheckpoint
       ? `<button class="ep-hist-replay" title="Re-run this episode" onclick="event.stopPropagation();replayEpisode(${ep.num})">↺</button>`
       : '';
     return `<div class="ep-hist-card ${ep.num===currentNum?'active':''}" onclick="viewEpisode(${ep.num})">
       <div class="ep-hist-ep">Episode ${ep.num}${replayBtn}</div>
-      <div class="ep-hist-elim">${_spoilerFree ? '???' : ep.multiTribalElims?.length >= 2 ? ep.multiTribalElims.join(' + ') : ep.ambassadorData?.ambassadorEliminated ? `${ep.ambassadorData.ambassadorEliminated} + ${ep.eliminated||'?'}` : ep.tiedDestinies?.eliminatedPartner ? `${ep.eliminated||'?'} + ${ep.tiedDestinies.eliminatedPartner}` : ep.firstEliminated ? `${ep.firstEliminated} + ${ep.eliminated||'?'}` : (ep.eliminated || (ep.isFinale ? 'FTC' : '\u2014'))}</div>
-      <div>${riTag}${mergeTag}${finaleTag}${slasherTag}${tddTag}${suTag}${pfTag}${cdTag}${aatTag}</div>
+      <div class="ep-hist-elim">${_spoilerFree ? '???' : ep.multiTribalElims?.length >= 2 ? ep.multiTribalElims.join(' + ') : ep.ambassadorData?.ambassadorEliminated ? `${ep.ambassadorData.ambassadorEliminated} + ${ep.eliminated||'?'}` : ep.tiedDestinies?.eliminatedPartner ? `${ep.eliminated||'?'} + ${ep.tiedDestinies.eliminatedPartner}` : ep.emissaryEliminated ? `${ep.eliminated||'?'} + ${ep.emissaryEliminated}` : ep.firstEliminated ? `${ep.firstEliminated} + ${ep.eliminated||'?'}` : (ep.eliminated || (ep.isFinale ? 'FTC' : '\u2014'))}</div>
+      <div>${riTag}${mergeTag}${finaleTag}${slasherTag}${tddTag}${suTag}${pfTag}${cdTag}${aatTag}${evTag}</div>
     </div>`;
   }).join('');
 }
@@ -33434,6 +33437,7 @@ function buildEpisodeMap() {
     if (_allTypes.includes('sudden-death')) elims = Math.max(elims, 1);
     if (_allTypes.includes('ambassadors')) elims = Math.max(elims, 2);
     if (_allTypes.includes('tied-destinies')) elims = Math.max(elims, 2);
+    if (_allTypes.includes('emissary-vote')) elims = Math.max(elims, 2);
     // Exile Duel: person goes to exile (0 elims this ep) — duel happens next episode (1 elim)
     if (_allTypes.includes('exile-duel')) elims = 0;
     _totalElimsToHere += elims;

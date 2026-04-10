@@ -8732,6 +8732,12 @@ function simulateTalentShow(ep) {
         const bestPerformer = (auditions[targetTribe.name] || []).filter(a => a.selected).sort((a, b) => b.auditionScore - a.auditionScore)[0];
         if (!bestPerformer) return;
         const pr = pronouns(name);
+        // Consequence: spy intel forces sabotage to target this specific player
+        if (!ep._spyIntel) ep._spyIntel = {};
+        ep._spyIntel[name] = bestPerformer.name; // saboteur → forced target
+        // Bond boost: teamwork between sender and spy
+        addBond(name, ally, 0.4);
+        addBond(ally, name, 0.3);
         backstageEvents.push({
           type: 'spyMission', players: [name, ally, bestPerformer.name],
           text: `${name} sends ${ally} to spy on ${targetTribe.name}'s rehearsal. ${ally} comes back with intel: "${bestPerformer.name} is their best. That's who we target."`,
@@ -8858,6 +8864,17 @@ function simulateTalentShow(ep) {
         });
       }
     });
+  }
+
+  // ── Apply spy intel to sabotage targeting ──
+  if (sabotage && ep._spyIntel?.[sabotage.saboteur]) {
+    const spiedTarget = ep._spyIntel[sabotage.saboteur];
+    // Override sabotage target if the spied player is a selected performer
+    const allSelected = Object.values(auditions).flatMap(a => a.filter(r => r.selected));
+    if (allSelected.some(s => s.name === spiedTarget)) {
+      sabotage.target = spiedTarget;
+      sabotage.spyAssisted = true;
+    }
   }
 
   // ── The Show: perform acts (interleaved) ──

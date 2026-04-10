@@ -27064,6 +27064,40 @@ function simulateJuryRoundtable(ep) {
         gs.tribes = gs.tribes.map(t => ({...t, members: t.members.filter(p => p !== _evPickName)}));
         handleAdvantageInheritance(_evPickName, ep);
         gs.advantages = gs.advantages.filter(a => a.holder !== _evPickName);
+
+        // ── Post-emissary tribe dissolution: if losing tribe has ≤1 member, dissolve ──
+        const _evLoseTribe = gs.tribes.find(t => t.name === ep.emissary.targetTribe);
+        const _evLoseActive = _evLoseTribe?.members.filter(m => gs.activePlayers.includes(m)) || [];
+        if (_evLoseTribe && _evLoseActive.length <= 1 && _evLoseActive.length > 0) {
+          const _evSolo = _evLoseActive[0];
+          const _evFromName = _evLoseTribe.name;
+          // Send to smallest tribe; if tied, random
+          const _evCandTribes = gs.tribes.filter(t => t.name !== _evFromName && t.members.filter(m => gs.activePlayers.includes(m)).length >= 1);
+          if (_evCandTribes.length) {
+            const _evSorted = _evCandTribes.slice().sort((a, b) => {
+              const aSize = a.members.filter(m => gs.activePlayers.includes(m)).length;
+              const bSize = b.members.filter(m => gs.activePlayers.includes(m)).length;
+              return aSize - bSize || (Math.random() - 0.5); // smallest first, random tiebreak
+            });
+            const _evDestTribe = _evSorted[0];
+            ep.emissaryDissolve = { player: _evSolo, fromTribe: _evFromName, toTribe: _evDestTribe.name };
+            gs.tribes = gs.tribes
+              .filter(t => t.name !== _evFromName)
+              .map(t => t.name === _evDestTribe.name ? { ...t, members: [...t.members, _evSolo] } : t);
+            // Camp event for the arrival
+            const _edPr = pronouns(_evSolo);
+            const _evArrKey = _evDestTribe.name;
+            if (!ep.campEvents) ep.campEvents = {};
+            if (!ep.campEvents[_evArrKey]) ep.campEvents[_evArrKey] = { pre: [], post: [] };
+            if (!ep.campEvents[_evArrKey].post) ep.campEvents[_evArrKey].post = [];
+            ep.campEvents[_evArrKey].post.push({
+              type: 'tribeArrival',
+              players: [_evSolo],
+              text: `${_evFromName} is gone. ${_evSolo} joins ${_evDestTribe.name} — the emissary vote wiped out ${_edPr.posAdj} entire tribe. ${_edPr.Sub} ${_edPr.sub==='they'?'have':'has'} to start over.`,
+              badgeText: 'TRIBE DISSOLVED', badgeClass: 'red'
+            });
+          }
+        }
       }
     }
 
@@ -27235,6 +27269,7 @@ function simulateJuryRoundtable(ep) {
     emissaryEliminated: ep.emissaryEliminated || null,
     emissaryScoutEvents: ep.emissaryScoutEvents || null,
     emissaryBondShifts: ep.emissaryBondShifts || null,
+    emissaryDissolve: ep.emissaryDissolve || null,
     exilePlayer:      ep.exilePlayer      || null,
     exileDuelResult:  ep.exileDuelResult  || null,
     exileDuelVotedOut: ep.exileDuelVotedOut || null,
@@ -32459,6 +32494,7 @@ function patchEpisodeHistory(ep) {
   if (ep.emissaryEliminated) h.emissaryEliminated = ep.emissaryEliminated;
   if (ep.emissaryScoutEvents) h.emissaryScoutEvents = ep.emissaryScoutEvents;
   if (ep.emissaryBondShifts) h.emissaryBondShifts = ep.emissaryBondShifts;
+  if (ep.emissaryDissolve) h.emissaryDissolve = ep.emissaryDissolve;
   h.blackVote1 = ep.blackVote1 || null;
   h.blackVote2 = ep.blackVote2 || null;
   h.blackVoteApplied = ep.blackVoteApplied || null;
@@ -36807,6 +36843,20 @@ function rpBuildEmissaryChoice(ep) {
     html += `</div>`;
   }
   html += `</div>`;
+
+  // ── Tribe Dissolution (if losing tribe wiped to 1 member) ──
+  if (ep.emissaryDissolve) {
+    const d = ep.emissaryDissolve;
+    const dPr = pronouns(d.player);
+    html += `<div style="padding:14px;margin-top:12px;border-radius:10px;border:1px solid rgba(248,81,73,0.3);background:rgba(248,81,73,0.06)">
+      <div style="font-family:var(--font-display);font-size:12px;letter-spacing:1px;color:#f85149;margin-bottom:8px">TRIBE DISSOLVED</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        ${rpPortrait(d.player, 'sm')}
+        <div style="font-size:12px"><strong>${d.fromTribe}</strong> has been wiped out. <strong>${d.player}</strong> — the last one standing — joins <strong>${d.toTribe}</strong>.</div>
+      </div>
+      <div style="font-size:11px;color:#8b949e;font-style:italic">${d.player} ${dPr.sub === 'they' ? 'have' : 'has'} to start over with strangers.</div>
+    </div>`;
+  }
 
   html += `</div>`;
   return html;

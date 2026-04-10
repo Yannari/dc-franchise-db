@@ -49584,6 +49584,117 @@ function rpBuildAwakeAThon(ep) {
   return html;
 }
 
+function rpBuildDodgebrawl(ep) {
+  const db = ep.dodgebrawl;
+  if (!db?.rounds?.length) return null;
+
+  const stateKey = `db_reveal_${ep.num}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+
+  const totalItems = db.rounds.length;
+  const allRevealed = state.idx >= totalItems - 1;
+
+  const _dbReveal = (targetIdx) => `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=${targetIdx};const ep=gs.episodeHistory.find(e=>e.num===${ep.num});if(ep){const m=document.querySelector('.rp-main');const st=m?m.scrollTop:0;buildVPScreens(ep);renderVPScreen();if(m)m.scrollTop=st;}`;
+
+  // Build live scoreboard based on revealed rounds
+  const revealedWins = {};
+  Object.keys(db.tribeWins).forEach(t => { revealedWins[t] = 0; });
+  db.rounds.forEach((r, i) => { if (i <= state.idx) revealedWins[r.winner]++; });
+
+  let html = `<div class="rp-page tod-dawn">
+    <div class="rp-eyebrow">Episode ${ep.num}</div>
+    <div style="font-family:var(--font-display);font-size:28px;letter-spacing:2px;text-align:center;color:#e06030;text-shadow:0 0 20px rgba(224,96,48,0.3);margin-bottom:4px">🏐 DODGEBRAWL</div>
+    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:6px">${db.courtSize}v${db.courtSize} · First to 3 wins immunity</div>`;
+
+  // Scoreboard bar
+  const scoreEntries = Object.entries(revealedWins);
+  html += `<div style="display:flex;justify-content:center;gap:16px;margin-bottom:16px;padding:8px;border-radius:8px;background:rgba(255,255,255,0.03)">`;
+  scoreEntries.forEach(([tribe, wins], i) => {
+    const tc = tribeColor(tribe);
+    const isWinner = allRevealed && tribe === db.winner;
+    html += `<div style="text-align:center;${isWinner ? 'text-shadow:0 0 10px ' + tc : ''}">
+      <div style="font-family:var(--font-display);font-size:${isWinner ? '24' : '20'}px;color:${tc};font-weight:700">${wins}</div>
+      <div style="font-size:10px;color:${tc};opacity:0.8">${tribe}</div>
+    </div>`;
+    if (i < scoreEntries.length - 1) html += `<div style="font-size:16px;color:#8b949e;align-self:center">—</div>`;
+  });
+  html += `</div>`;
+
+  // Refusers callout
+  if (db.refusers?.length) {
+    db.refusers.forEach(r => {
+      html += `<div style="padding:6px 10px;margin-bottom:8px;border-radius:6px;background:rgba(248,81,73,0.08);border-left:3px solid #f85149;font-size:11px">
+        <span style="font-weight:700;color:#f85149">REFUSING TO PLAY:</span> ${rpPortrait(r.name, 'xs')} <span style="color:#8b949e">${r.name} (${r.tribe}) sits on the bench every round.</span>
+      </div>`;
+    });
+  }
+
+  // Per-round cards
+  db.rounds.forEach((r, i) => {
+    const isVisible = i <= state.idx;
+    if (!isVisible) {
+      html += `<div style="padding:12px;margin-bottom:4px;border:1px solid var(--border);border-radius:6px;opacity:0.12;font-size:12px;text-align:center;color:var(--muted)">Round ${r.num}</div>`;
+    } else {
+      const rTC = tribeColor(r.winner);
+      // Find round MVP
+      const allRoundScores = Object.entries(r.scores).flatMap(([tribe, ps]) => Object.entries(ps).map(([p, s]) => ({ name: p, score: s, tribe })));
+      const mvp = allRoundScores.sort((a, b) => b.score - a.score)[0];
+
+      html += `<div style="padding:12px;margin-bottom:6px;border-radius:8px;border-left:3px solid ${rTC};background:${rTC}08;animation:scrollDrop 0.3s var(--ease-broadcast) both">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-family:var(--font-display);font-size:13px;letter-spacing:1px">ROUND ${r.num}</span>
+          <span style="font-size:11px;font-weight:700;color:${rTC}">${r.winner} WINS</span>
+        </div>`;
+
+      // Narrative paragraph with highlights
+      if (r.highlights.length) {
+        r.highlights.forEach(h => {
+          const hColor = h.type === 'friendlyFire' || h.type === 'refusal' ? '#f85149' : h.type === 'clutchDodge' ? '#58a6ff' : '#f0a500';
+          const hLabel = h.type === 'trickShot' ? 'TRICK SHOT' : h.type === 'rageMode' ? 'RAGE MODE' : h.type === 'clutchDodge' ? 'CLUTCH DODGE' : h.type === 'rushStrategy' ? 'RUSH STRATEGY' : h.type === 'friendlyFire' ? 'FRIENDLY FIRE' : 'REFUSED';
+          html += `<div style="margin-bottom:6px;padding:6px 8px;border-radius:4px;background:${hColor}0a">
+            <span style="font-size:9px;font-weight:700;letter-spacing:1px;color:${hColor}">${hLabel}</span>
+            <div style="display:inline-flex;gap:4px;vertical-align:middle;margin-left:4px">${rpPortrait(h.player, 'xs')}</div>
+            <div style="font-size:12px;margin-top:4px">${h.text}</div>
+          </div>`;
+        });
+      } else {
+        html += `<div style="font-size:12px;color:#8b949e">${r.winner} takes the round. No standout moments — just solid play across the board.</div>`;
+      }
+
+      // Round MVP
+      if (mvp) {
+        html += `<div style="display:flex;align-items:center;gap:6px;margin-top:6px;font-size:10px;color:#8b949e">
+          ${rpPortrait(mvp.name, 'xs')} <span>MVP: <strong>${mvp.name}</strong></span>
+        </div>`;
+      }
+      html += `</div>`;
+    }
+  });
+
+  // Final result (after all revealed)
+  if (allRevealed) {
+    const wTC = tribeColor(db.winner);
+    const lTC = tribeColor(db.loser);
+    html += `<div style="padding:14px;margin-top:8px;border-radius:10px;border:2px solid ${wTC};background:${wTC}0a;text-align:center">
+      <div style="font-family:var(--font-display);font-size:16px;color:${wTC};margin-bottom:4px">${db.winner} WINS IMMUNITY</div>
+      <div style="font-size:12px;color:#8b949e">${db.loser} goes to tribal council.</div>
+      ${db.mvp ? `<div style="margin-top:8px;font-size:11px;color:#8b949e">Challenge MVP: ${rpPortrait(db.mvp, 'sm')}</div>` : ''}
+    </div>`;
+  }
+
+  // Buttons
+  if (!allRevealed) {
+    html += `<div style="position:sticky;bottom:0;padding:12px 0;text-align:center;background:linear-gradient(transparent,var(--bg-primary) 30%)">
+      <button class="rp-btn" onclick="${_dbReveal(state.idx + 1)}">NEXT</button>
+      <button class="rp-btn rp-btn-secondary" onclick="${_dbReveal(totalItems - 1)}" style="margin-left:8px">REVEAL ALL</button>
+    </div>`;
+  }
+
+  html += `</div>`;
+  return html;
+}
+
 function rpBuildCliffDive(ep) {
   const cd = ep.cliffDive;
   if (!cd?.tribes?.length) return null;
@@ -51040,6 +51151,8 @@ function buildVPScreens(epRecord) {
     vpScreens.push({ id:'cliff-dive', label:'Cliff Dive', html: rpBuildCliffDive(ep) });
   } else if (ep.isAwakeAThon && ep.awakeAThon) {
     vpScreens.push({ id:'awake-a-thon', label:'Awake-A-Thon', html: rpBuildAwakeAThon(ep) });
+  } else if (ep.isDodgebrawl && ep.dodgebrawl) {
+    vpScreens.push({ id:'dodgebrawl', label:'Dodgebrawl', html: rpBuildDodgebrawl(ep) });
   } else if (ep.isPhobiaFactor && ep.phobiaFactor) {
     // Confessions already registered after Cold Open (section 1b)
     vpScreens.push({ id:'pf-announce', label:'Phobia Factor', html: rpBuildPhobiaAnnouncement(ep) });

@@ -9010,9 +9010,23 @@ function simulateTalentShow(ep) {
       }
 
       const chef = chefScore(rawScore);
-      const performanceBeats = outcome === 'disaster' ? performer.disasterText
+      const _preBeats = outcome === 'disaster' ? performer.disasterText
         : outcome === 'clutch' ? performer.clutchText
         : performer.performanceText; // array of [setup, act, landing]
+      // Replace the landing beat (3rd) with a score-reactive line — pre-rendered text
+      // assumes success but the actual Chef score may be low
+      const _scoreLandings = chef >= 8
+        ? [`${name} finishes. The camp erupts. Chef's spoon shoots to ${chef}. That was special.`]
+        : chef >= 6
+        ? [`${name} finishes to solid applause. Chef gives a ${chef}. Respectable — the tribe will take it.`]
+        : chef >= 4
+        ? [`${name} finishes. Polite clapping. Chef marks a ${chef}. Not what the tribe was hoping for.`]
+        : chef >= 2
+        ? [`${name} finishes to near-silence. Chef's spoon barely moves. A ${chef}. That hurt.`]
+        : [`${name} finishes — if you can call it that. Chef marks a ${chef}. Nobody makes eye contact.`];
+      const performanceBeats = Array.isArray(_preBeats) && _preBeats.length >= 2
+        ? [_preBeats[0], _preBeats[1], _scoreLandings[0]]
+        : _preBeats;
 
       // Audience reactions (2-3 from same tribe)
       const reactors = t.members.filter(m => m !== name).slice(0, 3);

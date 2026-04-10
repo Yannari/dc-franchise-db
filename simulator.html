@@ -7446,8 +7446,10 @@ function simulateDodgebrawl(ep) {
       let refuser = null;
       for (const name of lineup) {
         const s = pStats(name);
-        let chance = (10 - s.boldness) * 0.02 + (10 - s.loyalty) * 0.015;
-        if (refusedLastRound.has(name)) chance *= 0.4;
+        // Refusal is RARE — only truly low boldness + low loyalty players (the Noah type)
+        // Boldness 2 / loyalty 2 = ~4.5%. Boldness 5 / loyalty 5 = ~0%. Must be extreme stats.
+        let chance = Math.max(0, (7 - s.boldness) * 0.01 + (7 - s.loyalty) * 0.008 - 0.05);
+        if (refusedLastRound.has(name)) chance *= 2.0; // MORE likely if already established the pattern
         if (Math.random() < chance) { refuser = name; break; } // max 1
       }
       if (refuser) {

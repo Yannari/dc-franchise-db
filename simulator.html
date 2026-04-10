@@ -8625,9 +8625,9 @@ function simulateTalentShow(ep) {
     const captain = captains[t.name];
     const selected = results.filter(r => r.selected);
     const cut = results.filter(r => !r.selected);
-    if (!selected.length || !cut.length) return;
+    if (!selected.length) return;
 
-    // Priority 1: Captain's Controversial Cut — cut player within 0.5 of 3rd pick
+    // Priority 1: Captain's Controversial Cut — cut player within 0.5 of 3rd pick (needs cuts)
     const thirdPick = selected[selected.length - 1];
     const closestCut = cut.find(c => c.name !== captain); // highest-scoring cut player (not the captain)
     if (closestCut && thirdPick && closestCut.name !== captain && Math.abs(closestCut.auditionScore - thirdPick.auditionScore) < 0.5) {
@@ -8679,7 +8679,7 @@ function simulateTalentShow(ep) {
       auditionDrama[t.name] = {
         type: 'terribleAudition',
         players: [worst.name, reactor],
-        text: `${worst.name}'s audition was... something. ${reactor} covers ${rPr.pos} mouth trying not to laugh. "Was that... on purpose?"`,
+        text: `${worst.name}'s audition was... something. ${reactor} covers ${rPr.posAdj} mouth trying not to laugh. "Was that... on purpose?"`,
         badge: 'ROASTED', badgeClass: 'red'
       };
       return;

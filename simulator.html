@@ -8606,6 +8606,88 @@ function simulateTalentShow(ep) {
     auditions[t.name] = results;
   });
 
+  // ── Audition Drama (1 per tribe, priority order) ──
+  const auditionDrama = {};
+  tribeMembers.forEach(t => {
+    const results = auditions[t.name] || [];
+    const captain = captains[t.name];
+    const selected = results.filter(r => r.selected);
+    const cut = results.filter(r => !r.selected);
+    if (!selected.length || !cut.length) return;
+
+    // Priority 1: Captain's Controversial Cut — cut player within 0.5 of 3rd pick
+    const thirdPick = selected[selected.length - 1];
+    const closestCut = cut[0]; // highest-scoring cut player
+    if (closestCut && thirdPick && Math.abs(closestCut.auditionScore - thirdPick.auditionScore) < 0.5) {
+      const arch = players.find(p => p.name === closestCut.name)?.archetype || '';
+      const pr = pronouns(closestCut.name);
+      const text = ['hero', 'loyal', 'protector'].includes(arch)
+        ? `${closestCut.name} stares at ${captain}. "You're cutting me? After what I did for this tribe?" The silence is brutal.`
+        : ['villain', 'schemer', 'mastermind'].includes(arch)
+        ? `${closestCut.name} smiles. Cold. "Fine. Remember this when we're at tribal." ${captain} pretends not to hear.`
+        : `${closestCut.name} takes it hard. Scored nearly as high as the people who made it. ${captain}'s call. Not everyone agrees.`;
+      addBond(closestCut.name, captain, -0.4);
+      auditionDrama[t.name] = { type: 'controversialCut', players: [closestCut.name, captain], text, badge: 'CONTROVERSIAL CUT', badgeClass: 'red' };
+      return;
+    }
+
+    // Priority 2: Last Spot Fight — 3rd and 4th within 0.3
+    if (closestCut && thirdPick && Math.abs(closestCut.auditionScore - thirdPick.auditionScore) < 0.3) {
+      addBond(closestCut.name, thirdPick.name, -0.3);
+      auditionDrama[t.name] = {
+        type: 'lastSpotFight',
+        players: [thirdPick.name, closestCut.name],
+        text: `${thirdPick.name} and ${closestCut.name} both know only one of them is getting on that stage. ${thirdPick.name} got it. ${closestCut.name} hasn't stopped staring since.`,
+        badge: 'FIGHT FOR THE SPOT', badgeClass: 'red'
+      };
+      return;
+    }
+
+    // Priority 3: Diva Moment — highest scorer with boldness >= 7
+    const topScorer = selected[0];
+    const topS = pStats(topScorer.name);
+    if (topS.boldness >= 7) {
+      const lowBoldness = t.members.filter(m => m !== topScorer.name && pStats(m).boldness < 5);
+      lowBoldness.forEach(m => addBond(m, topScorer.name, -0.2));
+      auditionDrama[t.name] = {
+        type: 'divaMoment',
+        players: [topScorer.name],
+        text: `${topScorer.name} scored highest and wants everyone to know it. "I go first. I close the show. I AM the show." Half the tribe rolls their eyes.`,
+        badge: 'DIVA', badgeClass: 'gold'
+      };
+      return;
+    }
+
+    // Priority 4: Terrible Audition Roast — lowest score < 2.0
+    const worst = results[results.length - 1];
+    if (worst && worst.auditionScore < 2.0) {
+      const reactor = t.members.find(m => m !== worst.name && pStats(m).social >= 5) || t.members.find(m => m !== worst.name);
+      const rPr = pronouns(reactor);
+      addBond(worst.name, reactor, -0.1);
+      auditionDrama[t.name] = {
+        type: 'terribleAudition',
+        players: [worst.name, reactor],
+        text: `${worst.name}'s audition was... something. ${reactor} covers ${rPr.pos} mouth trying not to laugh. "Was that... on purpose?"`,
+        badge: 'ROASTED', badgeClass: 'red'
+      };
+      return;
+    }
+
+    // Priority 5: Confidence Boost — high social selected encourages cut player
+    const supporter = selected.find(s => pStats(s.name).social >= 6);
+    if (supporter && cut.length) {
+      const cutPlayer = cut[0];
+      addBond(supporter.name, cutPlayer.name, 0.3);
+      addBond(cutPlayer.name, supporter.name, 0.3);
+      auditionDrama[t.name] = {
+        type: 'confidenceBoost',
+        players: [supporter.name, cutPlayer.name],
+        text: `${supporter.name} finds ${cutPlayer.name} after the audition. "Hey. You were good. This doesn't mean anything about you." ${cutPlayer.name} nods. Needed to hear that.`,
+        badge: 'ENCOURAGEMENT', badgeClass: 'gold'
+      };
+    }
+  });
+
   // ── Sabotage check (villain/schemer on opposing tribe, max 1) ──
   let sabotage = null;
   tribeMembers.forEach(t => {
@@ -8630,6 +8712,154 @@ function simulateTalentShow(ep) {
     });
   });
 
+  // ── Backstage Events (2-3 between auditions and show) ──
+  const backstageEvents = [];
+  const maxBackstage = 3;
+
+  // Spy Mission — villain/schemer sends ally to watch other tribe rehearse
+  if (backstageEvents.length < maxBackstage) {
+    tribeMembers.forEach(t => {
+      if (backstageEvents.length >= maxBackstage) return;
+      t.members.forEach(name => {
+        if (backstageEvents.length >= maxBackstage) return;
+        const arch = players.find(p => p.name === name)?.archetype || '';
+        if (!['villain', 'schemer', 'mastermind'].includes(arch)) return;
+        if (Math.random() >= 0.25) return;
+        const ally = t.members.find(m => m !== name && getBond(name, m) >= 1);
+        if (!ally) return;
+        const otherTribes = tribeMembers.filter(ot => ot.name !== t.name);
+        const targetTribe = otherTribes[Math.floor(Math.random() * otherTribes.length)];
+        const bestPerformer = (auditions[targetTribe.name] || []).filter(a => a.selected).sort((a, b) => b.auditionScore - a.auditionScore)[0];
+        if (!bestPerformer) return;
+        const pr = pronouns(name);
+        backstageEvents.push({
+          type: 'spyMission', players: [name, ally, bestPerformer.name],
+          text: `${name} sends ${ally} to spy on ${targetTribe.name}'s rehearsal. ${ally} comes back with intel: "${bestPerformer.name} is their best. That's who we target."`,
+          badge: 'SPY MISSION', badgeClass: 'gold',
+        });
+      });
+    });
+  }
+
+  // Sabotage Setup — narrative card if sabotage fires
+  if (sabotage && backstageEvents.length < maxBackstage) {
+    const pr = pronouns(sabotage.saboteur);
+    backstageEvents.push({
+      type: 'sabotageSetup', players: [sabotage.saboteur],
+      text: `${sabotage.saboteur} slips away while the tribe rehearses. ${pr.Sub} ${pr.sub === 'they' ? 'have' : 'has'} a plan for ${sabotage.target}. It's not about winning the show. It's about making sure someone else loses.`,
+      badge: 'SABOTAGE SETUP', badgeClass: 'red',
+    });
+    addBond(sabotage.saboteur, sabotage.target, -0.2);
+  }
+
+  // Pep Talk — high social non-performer comforts nervous performer
+  if (backstageEvents.length < maxBackstage) {
+    tribeMembers.forEach(t => {
+      if (backstageEvents.length >= maxBackstage) return;
+      const selected = (auditions[t.name] || []).filter(a => a.selected);
+      const nervousPerformer = selected.find(s => pStats(s.name).temperament <= 5);
+      if (!nervousPerformer) return;
+      const nonPerformers = t.members.filter(m => !selected.some(s => s.name === m));
+      const talker = nonPerformers.sort((a, b) => pStats(b).social - pStats(a).social)[0];
+      if (!talker || Math.random() >= 0.30) return;
+      const pr = pronouns(nervousPerformer.name);
+      // Buff: +1 temperament for the show (stored on performer object)
+      nervousPerformer._tempBuff = (nervousPerformer._tempBuff || 0) + 1;
+      addBond(nervousPerformer.name, talker, 0.3);
+      backstageEvents.push({
+        type: 'pepTalk', players: [talker, nervousPerformer.name],
+        text: `${talker} finds ${nervousPerformer.name} backstage, pacing. "Hey. You practiced this. You're ready." ${nervousPerformer.name} takes a breath. ${pr.Sub} needed that.`,
+        badge: 'PEP TALK', badgeClass: 'gold',
+      });
+    });
+  }
+
+  // Rivalry Confrontation — cross-tribe bond <= -2
+  if (backstageEvents.length < maxBackstage) {
+    const allPlayers = tribeMembers.flatMap(t => t.members);
+    for (let i = 0; i < allPlayers.length && backstageEvents.length < maxBackstage; i++) {
+      for (let j = i + 1; j < allPlayers.length; j++) {
+        const a = allPlayers[i], b = allPlayers[j];
+        const aTribe = tribeMembers.find(t => t.members.includes(a))?.name;
+        const bTribe = tribeMembers.find(t => t.members.includes(b))?.name;
+        if (aTribe === bTribe) continue; // same tribe — not a rivalry
+        if (getBond(a, b) > -2) continue;
+        if (Math.random() >= 0.20) continue;
+        addBond(a, b, -0.4);
+        backstageEvents.push({
+          type: 'rivalryConfrontation', players: [a, b],
+          text: `${a} and ${b} cross paths backstage. Words are exchanged. It starts quiet and gets loud. Someone has to step between them.`,
+          badge: 'RIVALRY', badgeClass: 'red',
+        });
+        break;
+      }
+    }
+  }
+
+  // Accident — performer with temperament <= 4 practicing backstage
+  if (backstageEvents.length < maxBackstage) {
+    tribeMembers.forEach(t => {
+      if (backstageEvents.length >= maxBackstage) return;
+      const selected = (auditions[t.name] || []).filter(a => a.selected);
+      const clumsy = selected.find(s => pStats(s.name).temperament <= 4);
+      if (!clumsy || Math.random() >= 0.15) return;
+      const pr = pronouns(clumsy.name);
+      // Coin flip: self-injury (-2 score) or prop break (substitution)
+      if (Math.random() < 0.5) {
+        clumsy._scorePenalty = (clumsy._scorePenalty || 0) - 2;
+        backstageEvents.push({
+          type: 'accidentInjury', players: [clumsy.name],
+          text: `${clumsy.name} was practicing backstage and something went wrong. ${pr.Sub} ${pr.sub === 'they' ? 'are' : 'is'} nursing ${pr.pos} hand. "I'm fine. I can still go." ${pr.Sub} ${pr.sub === 'they' ? 'aren\'t' : 'isn\'t'} fine.`,
+          badge: 'ACCIDENT', badgeClass: 'red',
+        });
+      } else {
+        // Substitution: swap with best non-selected
+        const cut = (auditions[t.name] || []).filter(a => !a.selected);
+        const sub = cut[0]; // best cut player
+        if (sub) {
+          clumsy.selected = false;
+          sub.selected = true;
+          backstageEvents.push({
+            type: 'accidentSubstitution', players: [clumsy.name, sub.name],
+            text: `${clumsy.name} broke something backstage — ${pr.pos} props are ruined. ${sub.name} gets the call. "You're in." The Harold moment.`,
+            badge: 'SUBSTITUTION', badgeClass: 'gold',
+          });
+        }
+      }
+    });
+  }
+
+  // Secret Rehearsal — cut player with boldness >= 6, practicing alone
+  if (backstageEvents.length < maxBackstage) {
+    tribeMembers.forEach(t => {
+      if (backstageEvents.length >= maxBackstage) return;
+      const cut = (auditions[t.name] || []).filter(a => !a.selected);
+      const bold = cut.find(c => pStats(c.name).boldness >= 6);
+      if (!bold || Math.random() >= 0.20) return;
+      // 40% chance of being subbed in
+      if (Math.random() < 0.40) {
+        const selected = (auditions[t.name] || []).filter(a => a.selected);
+        const weakest = selected[selected.length - 1]; // lowest scorer
+        if (weakest) {
+          weakest.selected = false;
+          bold.selected = true;
+          const pr = pronouns(bold.name);
+          backstageEvents.push({
+            type: 'secretRehearsalSubIn', players: [bold.name, weakest.name],
+            text: `Someone spots ${bold.name} practicing alone behind the cabins. Word gets back to the captain. "${bold.name} looks good." A last-minute swap. ${weakest.name} is out. ${bold.name} is in.`,
+            badge: 'SECRET REHEARSAL', badgeClass: 'gold',
+          });
+        }
+      } else {
+        backstageEvents.push({
+          type: 'secretRehearsalAlone', players: [bold.name],
+          text: `${bold.name} didn't make the cut, but ${pronouns(bold.name).sub} ${pronouns(bold.name).sub === 'they' ? 'haven\'t' : 'hasn\'t'} stopped practicing. Alone. Behind the cabins. Nobody saw it. This time.`,
+          badge: 'SECRET REHEARSAL', badgeClass: 'gold',
+        });
+      }
+    });
+  }
+
   // ── The Show: perform acts (interleaved) ──
   const performances = [];
   const maxActs = Math.max(...Object.values(auditions).map(a => a.filter(r => r.selected).length));
@@ -8644,6 +8874,10 @@ function simulateTalentShow(ep) {
 
       let rawScore = showScore(name, performer);
       let outcome = 'normal';
+
+      // Backstage modifiers
+      if (performer._tempBuff) rawScore += performer._tempBuff * 0.3; // pep talk temperament buff
+      if (performer._scorePenalty) rawScore += performer._scorePenalty; // accident penalty
 
       // Sabotage penalty
       const isSabotaged = sabotage?.target === name;
@@ -8815,6 +9049,7 @@ function simulateTalentShow(ep) {
   // ── Store data ──
   ep.talentShow = {
     auditions, performances, captains, sabotage,
+    auditionDrama, backstageEvents,
     tribeScores,
     winner: winnerName, loser: loserName,
     mvp: performances.slice().sort((a, b) => b.chefScore - a.chefScore)[0]?.name || null,

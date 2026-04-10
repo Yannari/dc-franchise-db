@@ -49872,10 +49872,12 @@ function rpBuildDodgebrawl(ep) {
   Object.keys(db.tribeWins).forEach(t => { revealedWins[t] = 0; });
   db.rounds.forEach((r, i) => { if (i <= state.idx) revealedWins[r.winner]++; });
 
-  // ── Helper: render a small tribe lineup strip ──
-  function renderLineup(tribeName, lineupArr, refusalsThisRound) {
+  // ── Helper: render a small tribe lineup strip (court + sit-outs + refusals) ──
+  function renderLineup(tribeName, lineupArr, refusalsThisRound, allTribeMembers) {
     const tc = tribeColor(tribeName);
     const refusedNames = (refusalsThisRound || []).filter(r => r.tribe === tribeName).map(r => r.name);
+    const lineupSet = new Set(lineupArr || []);
+    const sitOuts = (allTribeMembers || []).filter(m => !lineupSet.has(m) && !refusedNames.includes(m));
     let out = `<div style="flex:1;min-width:0">
       <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:${tc};margin-bottom:6px;text-transform:uppercase">${tribeName} <span style="color:#8b949e;font-weight:400">(${(lineupArr||[]).length} on court)</span></div>
       <div style="display:flex;flex-wrap:wrap;gap:4px">`;
@@ -49886,10 +49888,17 @@ function rpBuildDodgebrawl(ep) {
         <span style="font-size:8px;color:#8b949e;max-width:40px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name.split(' ')[0]}</span>
       </div>`;
     });
-    // Refusers shown separately, greyed out
-    refusedNames.forEach(name => {
+    // Sit-outs: greyed out with SIT OUT badge
+    sitOuts.forEach(name => {
       out += `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;opacity:0.35">
         ${rpPortrait(name, 'xs')}
+        <span style="font-size:7px;font-weight:600;color:#8b949e;letter-spacing:0.5px">SIT OUT</span>
+      </div>`;
+    });
+    // Refusers: greyed out with red border + REFUSED badge
+    refusedNames.forEach(name => {
+      out += `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;opacity:0.4">
+        <div style="border:2px solid #f85149;border-radius:50%;padding:1px">${rpPortrait(name, 'xs')}</div>
         <span style="font-size:7px;font-weight:700;color:#f85149;letter-spacing:0.5px">REFUSED</span>
       </div>`;
     });
@@ -50005,7 +50014,8 @@ function rpBuildDodgebrawl(ep) {
       // ── Lineups ──
       html += `<div style="display:flex;gap:12px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,0.05)">`;
       tribeNames.forEach(tn => {
-        html += renderLineup(tn, r.lineups[tn], r.refusals);
+        const _allMembers = (ep.tribesAtStart || []).find(t => t.name === tn)?.members || r.lineups[tn] || [];
+        html += renderLineup(tn, r.lineups[tn], r.refusals, _allMembers);
       });
       html += `</div>`;
 

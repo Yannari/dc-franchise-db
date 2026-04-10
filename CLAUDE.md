@@ -25,6 +25,7 @@ Do not split it into separate files. This is intentional.
 - `simulateEmissaryVote(ep)` — emissary picks second elimination after normal tribal (pre-merge only)
 - `generateEmissaryScoutEvents(ep)` — scouting period: pitches, observation, cross-tribe deal
 - `simulateDodgebrawl(ep)` — multi-round dodgeball challenge (pre-merge, first to 3)
+- `simulateTalentShow(ep)` — talent show challenge (pre-merge, auditions + Chef-O-Meter scoring)
 - `executeFirstImpressions()` — episode 1 mock vote → round-robin tribe swap (fires before all other twists)
 - `checkPerceivedBondTriggers(ep)` — creates perception gaps after vote resolution
 - `updatePerceivedBonds(ep)` — closes gaps each episode via intuition-based correction
@@ -63,6 +64,7 @@ Do not split it into separate files. This is intentional.
 - `gs._blowupPlayers[]` — players who had fights/meltdowns/social bombs (cleared after recovery check)
 - `gs._emissaryHeat` — temporary heat for emissary (+1.5 for 2 episodes after pick)
 - `gs._dodgebrawlHeat` — temporary heat from dodgebrawl (refusal, rage mode, liability)
+- `gs._talentShowHeat` — temporary heat from talent show (sabotage, disaster)
 - `gs.moles[]` — Mole twist state: `{ player, exposed, exposedEp, exposedBy, suspicion, sabotageCount, sabotageLog, leaks, layingLow, resistance }`
 
 ## Patterns
@@ -258,6 +260,21 @@ is NOT actually loyal. Always check behavioral track record alongside raw stats.
 - 3+ tribes: all on court, first to 3. Loser = fewest wins (tiebreaker: lowest cumulative score).
 - VP: `rpBuildDodgebrawl(ep)` — click-to-reveal per round with live scoreboard
 - Text backlog: `_textDodgebrawl(ep, ln, sec)`
+
+## Talent Show
+- Schedulable pre-merge challenge (`talent-show` in TWIST_CATALOG, category `challenge`)
+- All tribe members audition; captain (highest social+strategic) picks 3 to perform
+- Audition score: `primaryStat * 0.35 + secondaryStat * 0.25 + social * 0.15 + temperament * 0.10 + random(0, 3.0)`
+- 5 talent categories (physical/performanceArt/skill/daredevil/creative), 6 talents each, assigned by highest stat combo
+- Each talent has 4 text variants: audition, performance, disaster, clutch
+- Show score: fresh roll, mapped to Chef 0-9. Disaster: `(10-temperament)*0.03`. Clutch: `boldness*0.02` (lowest auditioner only).
+- Sabotage: villain/schemer/mastermind, `strategic*0.03`, max 1 per game, targets opponent's best performer
+- Audience reactions: 2-3 per act, archetype-driven, keyed to high/mid/low score
+- 2 camp events per tribe: standing ovation/unlikely hero/team support (positive), sabotage fallout/disaster/bitter rejection (negative)
+- VP: `rpBuildTalentAuditions(ep)` (casual) + `rpBuildTalentShowStage(ep)` (stage with Chef-O-Meter bars)
+- Chef-O-Meter: 9 segments, green/orange/red fill with CSS animation
+- Only performers in `chalMemberScores` — non-performers excluded from challenge records
+- Text backlog: `_textTalentShow(ep, ln, sec)`
 
 ## Aftermath Show
 - `generateAftermathShow(ep)` — full aftermath data generation

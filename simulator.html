@@ -7342,31 +7342,21 @@ function simulateDodgebrawl(ep) {
     return s.physical * 0.35 + s.intuition * 0.30 + s.endurance * 0.20 + s.mental * 0.15;
   }
 
-  // ── Build rotation pools (refusers tracked per round) ──
-  const rotationPools = {};
-  tribeMembers.forEach(t => {
-    rotationPools[t.name] = { queue: [...t.members], played: new Set() };
-  });
+  // ── Rotation: advancing sit-out index each round ──
+  // With 6 members and 5 court spots, player at index 0 sits round 1, index 1 sits round 2, etc.
+  const sitOutIndex = {};
+  tribeMembers.forEach(t => { sitOutIndex[t.name] = 0; });
 
   function pickLineup(tribeName, refusedThisRound) {
-    const pool = rotationPools[tribeName];
     const allMembers = tribeMembers.find(t => t.name === tribeName).members;
     const available = allMembers.filter(m => !refusedThisRound.includes(m));
-    const lineup = [];
-    // Pull from queue (rotation order), skipping refusers
-    while (lineup.length < courtSize && pool.queue.length > 0) {
-      const next = pool.queue.shift();
-      if (refusedThisRound.includes(next)) continue; // skip refuser, they're removed from queue
-      lineup.push(next);
-    }
-    // If queue exhausted before lineup full, reset with everyone who hasn't played this cycle
-    if (lineup.length < courtSize) {
-      pool.queue = available.filter(m => !lineup.includes(m));
-      while (lineup.length < courtSize && pool.queue.length > 0) {
-        lineup.push(pool.queue.shift());
-      }
-    }
-    return lineup;
+    if (available.length <= courtSize) return [...available]; // everyone plays
+
+    // The player at the current sit-out index sits this round
+    const idx = sitOutIndex[tribeName] % available.length;
+    const sittingOut = available[idx];
+    sitOutIndex[tribeName]++;
+    return available.filter(m => m !== sittingOut);
   }
 
   // ── Highlight text pools ──

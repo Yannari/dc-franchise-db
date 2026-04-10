@@ -8590,10 +8590,11 @@ function simulateTalentShow(ep) {
         talentName: t_.name,
         talentId: t_.id,
         // Pre-rendered text strings (survive serialization)
+        // 3-beat arrays: [setup, act, landing]
         auditionText: t_.audition(name, pr),
-        performanceText: t_.performance(name, pr),
-        disasterText: t_.disaster(name, pr),
-        clutchText: t_.clutch(name, pr),
+        performanceText: Array.isArray(t_.performance) ? t_.performance.map(fn => fn(name, pr)) : [t_.performance(name, pr)],
+        disasterText: Array.isArray(t_.disaster) ? t_.disaster.map(fn => fn(name, pr)) : [t_.disaster(name, pr)],
+        clutchText: Array.isArray(t_.clutch) ? t_.clutch.map(fn => fn(name, pr)) : [t_.clutch(name, pr)],
         auditionScore: score,
         selected: false,
       };
@@ -8669,9 +8670,9 @@ function simulateTalentShow(ep) {
       }
 
       const chef = chefScore(rawScore);
-      const performanceText = outcome === 'disaster' ? performer.disasterText
+      const performanceBeats = outcome === 'disaster' ? performer.disasterText
         : outcome === 'clutch' ? performer.clutchText
-        : performer.performanceText;
+        : performer.performanceText; // array of [setup, act, landing]
 
       // Audience reactions (2-3 from same tribe)
       const reactors = t.members.filter(m => m !== name).slice(0, 3);
@@ -8688,7 +8689,7 @@ function simulateTalentShow(ep) {
         category: performer.category,
         auditionScore: performer.auditionScore,
         showScore: rawScore, chefScore: chef, outcome,
-        performanceText, sabotageText: isSabotaged ? sabotage.text : null,
+        performanceBeats, sabotageText: isSabotaged ? sabotage.text : null,
         reactions,
       });
     });

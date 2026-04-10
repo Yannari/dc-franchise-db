@@ -49862,13 +49862,20 @@ function rpBuildDodgebrawl(ep) {
     const tc = tribeColor(tribeName);
     const refusedNames = (refusalsThisRound || []).filter(r => r.tribe === tribeName).map(r => r.name);
     let out = `<div style="flex:1;min-width:0">
-      <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:${tc};margin-bottom:6px;text-transform:uppercase">${tribeName}</div>
+      <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:${tc};margin-bottom:6px;text-transform:uppercase">${tribeName} <span style="color:#8b949e;font-weight:400">(${(lineupArr||[]).length} on court)</span></div>
       <div style="display:flex;flex-wrap:wrap;gap:4px">`;
+    // Active players on court
     (lineupArr || []).forEach(name => {
-      const isRefuser = refusedNames.includes(name);
-      out += `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;opacity:${isRefuser ? '0.4' : '1'}">
-        ${rpPortrait(name, 'xs', isRefuser ? 'REFUSED' : '')}
-        <span style="font-size:8px;color:${isRefuser ? '#f85149' : '#8b949e'};max-width:40px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name.split(' ')[0]}</span>
+      out += `<div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+        ${rpPortrait(name, 'xs')}
+        <span style="font-size:8px;color:#8b949e;max-width:40px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name.split(' ')[0]}</span>
+      </div>`;
+    });
+    // Refusers shown separately, greyed out
+    refusedNames.forEach(name => {
+      out += `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;opacity:0.35">
+        ${rpPortrait(name, 'xs')}
+        <span style="font-size:7px;font-weight:700;color:#f85149;letter-spacing:0.5px">REFUSED</span>
       </div>`;
     });
     out += `</div></div>`;
@@ -49951,16 +49958,7 @@ function rpBuildDodgebrawl(ep) {
   });
   html += `</div>`;
 
-  // ── All-game refusers callout (persistent) ──
-  if (db.allGameRefusals?.length) {
-    db.allGameRefusals.forEach(r => {
-      html += `<div style="padding:6px 10px;margin-bottom:8px;border-radius:6px;background:rgba(248,81,73,0.07);border-left:3px solid #f85149;font-size:11px;display:flex;align-items:center;gap:8px">
-        <span style="font-weight:700;color:#f85149;letter-spacing:1px;font-size:9px">REFUSING TO PLAY</span>
-        ${rpPortrait(r.name, 'xs')}
-        <span style="color:#8b949e">${r.name} <span style="color:#6e7681">(${r.tribe})</span></span>
-      </div>`;
-    });
-  }
+  // Refusals shown per-round in lineup (REFUSED badge on greyed portraits) — no global callout
 
   // ── Per-round cards (one reveal click per round) ──
   db.rounds.forEach((r, i) => {

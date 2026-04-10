@@ -8216,11 +8216,27 @@ function simulateTalentShow(ep) {
     })[0];
     captains[t.name] = captain;
 
-    // Everyone auditions
+    // Everyone auditions — pre-render all text (functions don't survive JSON serialization)
     const results = t.members.map(name => {
       const talentInfo = assignTalent(name);
       const score = auditionScore(name, talentInfo);
-      return { name, ...talentInfo, auditionScore: score, selected: false };
+      const pr = pronouns(name);
+      const t_ = talentInfo.talent;
+      return {
+        name,
+        category: talentInfo.category,
+        primaryStat: talentInfo.primaryStat,
+        secondaryStat: talentInfo.secondaryStat,
+        talentName: t_.name,
+        talentId: t_.id,
+        // Pre-rendered text strings (survive serialization)
+        auditionText: t_.audition(name, pr),
+        performanceText: t_.performance(name, pr),
+        disasterText: t_.disaster(name, pr),
+        clutchText: t_.clutch(name, pr),
+        auditionScore: score,
+        selected: false,
+      };
     }).sort((a, b) => b.auditionScore - a.auditionScore);
 
     // Top 3 selected (or 2 if tribe has exactly 2 members)
@@ -8264,7 +8280,6 @@ function simulateTalentShow(ep) {
       const name = performer.name;
       const pr = pronouns(name);
       const s = pStats(name);
-      const talent = performer.talent;
 
       let rawScore = showScore(name, performer);
       let outcome = 'normal';
@@ -8294,21 +8309,22 @@ function simulateTalentShow(ep) {
       }
 
       const chef = chefScore(rawScore);
-      const textKey = outcome === 'disaster' ? 'disaster' : outcome === 'clutch' ? 'clutch' : 'performance';
-      const performanceText = talent[textKey](name, pr);
+      const performanceText = outcome === 'disaster' ? performer.disasterText
+        : outcome === 'clutch' ? performer.clutchText
+        : performer.performanceText;
 
       // Audience reactions (2-3 from same tribe)
       const reactors = t.members.filter(m => m !== name).slice(0, 3);
       const scoreLevel = chef >= 7 ? 'high' : chef <= 3 ? 'low' : 'mid';
       const reactions = reactors.map(r => {
-        const rArch = pStats(r).archetype || '_default';
+        const rArch = players.find(p => p.name === r)?.archetype || '_default';
         const pool = isSabotaged ? AUDIENCE_REACTIONS.sabotage : AUDIENCE_REACTIONS[scoreLevel];
         const fn = pool[rArch] || pool._default;
         return { name: r, text: fn(r) };
       });
 
       performances.push({
-        name, tribe: t.name, talent: talent.name, talentId: talent.id,
+        name, tribe: t.name, talent: performer.talentName, talentId: performer.talentId,
         category: performer.category,
         auditionScore: performer.auditionScore,
         showScore: rawScore, chefScore: chef, outcome,
@@ -50606,8 +50622,8 @@ function rpBuildTalentAuditions(ep) {
         ${rpPortrait(r.name, 'sm')}
         <div style="flex:1;min-width:0">
           <div style="font-size:12px;font-weight:600;color:#e6edf3">${r.name}</div>
-          <div style="font-size:10px;color:#8b949e">${r.talent.name}</div>
-          <div style="font-size:10px;color:#6e7681;font-style:italic;margin-top:2px">${r.talent.audition(r.name, pr)}</div>
+          <div style="font-size:10px;color:#8b949e">${r.talentName || r.talent?.name || '?'}</div>
+          <div style="font-size:10px;color:#6e7681;font-style:italic;margin-top:2px">${r.auditionText || ''}</div>
         </div>
         <div style="text-align:right">
           <span style="font-size:9px;font-weight:700;letter-spacing:1px;color:${badgeColor};background:${badgeColor}18;padding:2px 6px;border-radius:3px">${badgeText}</span>
@@ -50753,7 +50769,7 @@ function rpBuildTalentShowStage(ep) {
         background:radial-gradient(circle,${spotlightColor}20 0%,${spotlightColor}08 40%,transparent 70%);
         pointer-events:none"></div>
       <div style="position:relative;display:inline-block;
-        border-radius:50%;padding:4px;
+        border-radius:12px;padding:4px;
         box-shadow:0 0 20px ${spotlightColor}30,0 0 60px ${spotlightColor}10;
         border:2px solid ${spotlightColor}30">
         ${rpPortrait(perf.name, 'md')}

@@ -49905,47 +49905,57 @@ function rpBuildDodgebrawl(ep) {
   }
 
   // ── Helper: render one elimination event card ──
+  // Layout: [LEFT portrait+name] — [CENTER action] — [RIGHT portrait+name] + ELIMINATED badge on the out player
   function renderEliminationCard(ev) {
     if (!ev) return '';
+    const _portraitBlock = (name, tribe, isOut) => {
+      const tc = tribe ? tribeColor(tribe) : '#8b949e';
+      return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;min-width:50px;max-width:65px${isOut ? ';opacity:0.6' : ''}">
+        ${rpPortrait(name, 'sm')}
+        <span style="font-size:9px;color:${tc};font-weight:600;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:65px">${name}</span>
+        ${isOut ? '<span style="font-size:8px;font-weight:800;letter-spacing:1px;color:#f85149;background:rgba(248,81,73,0.15);padding:1px 5px;border-radius:3px">ELIMINATED</span>' : ''}
+      </div>`;
+    };
+
     if (ev.method === 'hit') {
-      const tc = tribeColor(ev.eliminatedByTribe || '');
-      return `<div style="display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:5px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);margin-bottom:3px">
-        ${rpPortrait(ev.eliminatedBy, 'xs')}
-        <span style="font-size:10px;color:${tc};font-weight:600">${ev.eliminatedBy}</span>
-        <span style="font-size:9px;color:#484f58">hits</span>
-        ${rpPortrait(ev.eliminated, 'xs')}
-        <span style="font-size:10px;color:#8b949e">${ev.eliminated}</span>
-        <span style="font-size:9px;font-weight:700;color:#f85149;margin-left:auto">ELIMINATED</span>
+      return `<div style="display:flex;align-items:center;justify-content:center;gap:14px;padding:10px;margin-bottom:6px;border-radius:8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06)">
+        ${_portraitBlock(ev.eliminatedBy, ev.eliminatedByTribe, false)}
+        <div style="display:flex;flex-direction:column;align-items:center">
+          <span style="font-size:13px;font-weight:800;letter-spacing:2px;color:#e6edf3">HITS</span>
+          <span style="font-size:18px">🏐</span>
+        </div>
+        ${_portraitBlock(ev.eliminated, ev.tribe, true)}
       </div>`;
     }
     if (ev.method === 'caught') {
-      const tc = tribeColor(ev.eliminatedByTribe || '');
-      return `<div style="display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:5px;background:rgba(63,185,80,0.05);border:1px solid rgba(63,185,80,0.15);margin-bottom:3px">
-        ${rpPortrait(ev.eliminatedBy, 'xs')}
-        <span style="font-size:10px;color:#3fb950;font-weight:700">CATCH!</span>
-        <span style="font-size:9px;color:#484f58">${ev.eliminatedBy} catches</span>
-        ${rpPortrait(ev.eliminated, 'xs')}
-        <span style="font-size:10px;color:#8b949e">${ev.eliminated}</span>
-        <span style="font-size:9px;font-weight:700;color:#f85149;margin-left:auto">ELIMINATED</span>
+      return `<div style="display:flex;align-items:center;justify-content:center;gap:14px;padding:10px;margin-bottom:6px;border-radius:8px;background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.2)">
+        ${_portraitBlock(ev.eliminatedBy, ev.eliminatedByTribe, false)}
+        <div style="display:flex;flex-direction:column;align-items:center">
+          <span style="font-size:13px;font-weight:800;letter-spacing:2px;color:#3fb950">CATCH!</span>
+          <span style="font-size:18px">🤲</span>
+        </div>
+        ${_portraitBlock(ev.eliminated, ev.tribe, true)}
       </div>`;
     }
     if (ev.method === 'friendlyFire') {
-      return `<div style="display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:5px;background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.18);margin-bottom:3px">
-        ${rpPortrait(ev.eliminatedBy, 'xs')}
-        <span style="font-size:9px;font-weight:700;color:#f85149">FRIENDLY FIRE!</span>
-        <span style="font-size:9px;color:#484f58">hits teammate</span>
-        ${rpPortrait(ev.eliminated, 'xs')}
-        <span style="font-size:10px;color:#8b949e">${ev.eliminated}</span>
-        <span style="font-size:9px;font-weight:700;color:#f85149;margin-left:auto">ELIMINATED</span>
+      return `<div style="display:flex;align-items:center;justify-content:center;gap:14px;padding:10px;margin-bottom:6px;border-radius:8px;background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.2)">
+        ${_portraitBlock(ev.eliminatedBy, ev.eliminatedByTribe, false)}
+        <div style="display:flex;flex-direction:column;align-items:center">
+          <span style="font-size:11px;font-weight:800;letter-spacing:1px;color:#f85149">FRIENDLY</span>
+          <span style="font-size:11px;font-weight:800;letter-spacing:1px;color:#f85149">FIRE!</span>
+          <span style="font-size:18px">💥</span>
+        </div>
+        ${_portraitBlock(ev.eliminated, ev.eliminatedByTribe, true)}
       </div>`;
     }
     if (ev.method === 'dodged') {
-      return `<div style="display:flex;align-items:center;gap:6px;padding:4px 8px;border-radius:5px;background:rgba(88,166,255,0.04);border:1px solid rgba(88,166,255,0.10);margin-bottom:3px">
-        ${rpPortrait(ev.dodger, 'xs')}
-        <span style="font-size:10px;color:#58a6ff">${ev.dodger}</span>
-        <span style="font-size:9px;color:#484f58">dodges a throw from</span>
-        ${rpPortrait(ev.eliminatedBy, 'xs')}
-        <span style="font-size:10px;color:#8b949e">${ev.eliminatedBy}</span>
+      return `<div style="display:flex;align-items:center;justify-content:center;gap:14px;padding:8px;margin-bottom:6px;border-radius:8px;background:rgba(88,166,255,0.04);border:1px solid rgba(88,166,255,0.12)">
+        ${_portraitBlock(ev.eliminatedBy, ev.eliminatedByTribe, false)}
+        <div style="display:flex;flex-direction:column;align-items:center">
+          <span style="font-size:13px;font-weight:800;letter-spacing:2px;color:#58a6ff">DODGES</span>
+          <span style="font-size:18px">💨</span>
+        </div>
+        ${_portraitBlock(ev.dodger, ev.dodgerTribe, false)}
       </div>`;
     }
     return '';

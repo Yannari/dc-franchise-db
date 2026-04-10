@@ -14318,6 +14318,7 @@ function executeFirstImpressions(ep, twistObj) {
     const targetScores = {};
     members.forEach(p => {
       const ps = pStats(p);
+      const pArch = players.find(x => x.name === p)?.archetype || '';
       let score = 0;
       // Perceived threat: strong/smart players attract attention
       score += threatScore(p) * 0.3;
@@ -14326,12 +14327,12 @@ function executeFirstImpressions(ep, twistObj) {
       // Intimidation: bold/aggressive players make others uncomfortable
       score += ps.boldness * 0.1;
       // Archetype snap judgments
-      if (ps.archetype === 'villain' || ps.archetype === 'schemer') score += 1.5;
-      if (ps.archetype === 'hothead' || ps.archetype === 'chaos-agent') score += 1.0;
-      if (ps.archetype === 'challenge-beast') score += 0.8;
-      if (ps.archetype === 'floater') score -= 0.5; // invisible
-      if (ps.archetype === 'social-butterfly') score -= 0.8; // likeable
-      if (ps.archetype === 'hero') score -= 0.3;
+      if (pArch === 'villain' || pArch === 'schemer') score += 1.5;
+      if (pArch === 'hothead' || pArch === 'chaos-agent') score += 1.0;
+      if (pArch === 'challenge-beast') score += 0.8;
+      if (pArch === 'floater') score -= 0.5; // invisible
+      if (pArch === 'social-butterfly') score -= 0.8; // likeable
+      if (pArch === 'hero') score -= 0.3;
       // Random variance (gut feeling isn't precise)
       score += Math.random() * 2.5;
       targetScores[p] = score;
@@ -32830,7 +32831,7 @@ function generateAftermathShow(ep) {
             cat: 'triangle' });
         }
         if (_it.resolution?.type === 'chose' && _it.center === name) entries.push({ q: `"You chose ${_it.resolution.chosen}. Do you think ${_it.resolution.rejected} will ever forgive you?"`, a: _pick([`"I hope so. But I understand if ${pronouns(_it.resolution.rejected).sub} ${pronouns(_it.resolution.rejected).sub === 'they' ? 'don\'t' : 'doesn\'t'}."`, `"Forgive me? I'm not sure I've forgiven myself."`]), cat: 'triangle' });
-        if (_it.resolution?.rejected === name) entries.push({ q: `"You watched ${_it.center} choose someone else. On a scale of one to devastated — where did you land?"`, a: pStats(name).archetype === 'villain' || pStats(name).archetype === 'schemer' ? `"Devastated? No. Motivated."` : _pick([`"Off the scale. I thought what we had was real."`, `"Devastated doesn't cover it. But I'm still here."`]), cat: 'triangle' });
+        if (_it.resolution?.rejected === name) entries.push({ q: `"You watched ${_it.center} choose someone else. On a scale of one to devastated — where did you land?"`, a: (players.find(p => p.name === name)?.archetype === 'villain' || players.find(p => p.name === name)?.archetype === 'schemer') ? `"Devastated? No. Motivated."` : _pick([`"Off the scale. I thought what we had was real."`, `"Devastated doesn't cover it. But I'm still here."`]), cat: 'triangle' });
         if (_it.resolution?.chosen === name) entries.push({ q: `"You won the triangle. Did you feel guilty — even for a second?"`, a: _pick([`"Every second. But I can't control who ${_it.center} chooses."`, `"Guilty? A little. But I'm not going to apologize for being chosen."`]), cat: 'triangle' });
         return entries;
       })(),

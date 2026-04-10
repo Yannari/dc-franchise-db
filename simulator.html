@@ -8718,7 +8718,10 @@ function simulateTalentShow(ep) {
       const targets = otherTribes.flatMap(ot => (auditions[ot.name] || []).filter(a => a.selected));
       if (!targets.length) return;
       const target = targets.sort((a, b) => b.auditionScore - a.auditionScore)[0];
-      const sabType = SABOTAGE_TYPES[Math.floor(Math.random() * SABOTAGE_TYPES.length)];
+      // Only allow 'replace' (diary reading) if saboteur is a performer — they need stage time to hijack
+      const isPerformer = (auditions[t.name] || []).some(a => a.name === name && a.selected);
+      const availableTypes = isPerformer ? SABOTAGE_TYPES : SABOTAGE_TYPES.filter(st => st.id !== 'replace');
+      const sabType = availableTypes[Math.floor(Math.random() * availableTypes.length)];
       sabotage = {
         saboteur: name, saboteurTribe: t.name,
         target: target.name, targetTribe: otherTribes.find(ot => (auditions[ot.name] || []).some(a => a.name === target.name))?.name,

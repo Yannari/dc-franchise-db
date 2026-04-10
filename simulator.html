@@ -8707,7 +8707,8 @@ function simulateTalentShow(ep) {
     t.members.forEach(name => {
       if (sabotage) return;
       const s = pStats(name);
-      if (!['villain', 'schemer', 'mastermind'].includes(s.archetype)) return;
+      const arch = players.find(p => p.name === name)?.archetype || '';
+      if (!['villain', 'schemer', 'mastermind'].includes(arch)) return;
       if (Math.random() >= s.strategic * 0.08 + 0.05) return; // strategic 10 = 85%, strategic 5 = 45%
       // Pick target: highest audition scorer on an opposing tribe
       const otherTribes = tribeMembers.filter(ot => ot.name !== t.name);

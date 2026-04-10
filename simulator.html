@@ -51228,6 +51228,21 @@ function rpBuildTalentAuditions(ep) {
       </div>`;
     });
 
+    // Audition drama card (if one fired for this tribe)
+    const drama = ts.auditionDrama?.[tribeName];
+    if (drama) {
+      const dColor = drama.badgeClass === 'gold' ? '#f0a500' : '#f85149';
+      html += `<div style="margin-top:10px;padding:10px;border-radius:8px;
+        border-left:3px solid ${dColor};background:${dColor}08;
+        animation:scrollDrop 0.3s var(--ease-broadcast) both">
+        <span style="font-size:9px;font-weight:700;letter-spacing:1px;color:${dColor}">${drama.badge}</span>
+        <div style="display:flex;gap:6px;margin:6px 0">
+          ${(drama.players || []).map(p => rpPortrait(p, 'xs')).join('')}
+        </div>
+        <div style="font-size:11px;color:#cdd9e5;font-style:italic;line-height:1.5">${drama.text}</div>
+      </div>`;
+    }
+
     html += `</div>`;
   });
 
@@ -51235,6 +51250,57 @@ function rpBuildTalentAuditions(ep) {
     html += `<div style="position:sticky;bottom:0;padding:12px 0;text-align:center;background:linear-gradient(transparent,var(--bg-primary) 30%)">
       <button class="rp-btn" onclick="${_tsReveal(state.idx + 1)}">NEXT (${state.idx + 2}/${totalItems})</button>
       <button class="rp-btn rp-btn-secondary" onclick="${_tsReveal(totalItems - 1)}" style="margin-left:8px">REVEAL ALL</button>
+    </div>`;
+  }
+
+  html += `</div>`;
+  return html;
+}
+
+function rpBuildTalentBackstage(ep) {
+  const ts = ep.talentShow;
+  const events = ts?.backstageEvents;
+  if (!events?.length) return null;
+
+  const stateKey = `ts_back_${ep.num}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+  const allRevealed = state.idx >= events.length - 1;
+
+  const _bsReveal = (targetIdx) => `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=${targetIdx};const ep=gs.episodeHistory.find(e=>e.num===${ep.num});if(ep){const m=document.querySelector('.rp-main');const st=m?m.scrollTop:0;buildVPScreens(ep);renderVPScreen();if(m)m.scrollTop=st;}`;
+
+  let html = `<div class="rp-page tod-dusk" style="background:linear-gradient(180deg,rgba(25,18,35,1) 0%,rgba(15,12,20,1) 100%)">
+    <div class="rp-eyebrow">Episode ${ep.num}</div>
+    <div style="font-family:var(--font-display);font-size:24px;letter-spacing:2px;text-align:center;
+      color:#8b5cf6;text-shadow:0 0 20px rgba(139,92,246,0.3);margin-bottom:4px">BACKSTAGE</div>
+    <div style="text-align:center;font-size:11px;color:#6e7681;margin-bottom:20px;letter-spacing:1px">
+      Between auditions and the show, things happen in the shadows.</div>`;
+
+  events.forEach((evt, i) => {
+    const isVisible = i <= state.idx;
+    if (!isVisible) {
+      html += `<div style="padding:12px;margin-bottom:6px;border:1px solid var(--border);border-radius:8px;
+        opacity:0.1;text-align:center;color:var(--muted);font-style:italic">Something is happening backstage...</div>`;
+      return;
+    }
+    const bColor = evt.badgeClass === 'gold' ? '#f0a500' : evt.badgeClass === 'red' ? '#f85149' : '#8b5cf6';
+    html += `<div style="padding:14px;margin-bottom:8px;border-radius:10px;
+      border-left:3px solid ${bColor};
+      background:linear-gradient(135deg,${bColor}08 0%,transparent 60%);
+      animation:scrollDrop 0.3s var(--ease-broadcast) both">
+      <span style="font-size:9px;font-weight:700;letter-spacing:1px;color:${bColor}">${evt.badge}</span>
+      <div style="display:flex;gap:8px;margin:8px 0">
+        ${(evt.players || []).map(p => rpPortrait(p, 'sm')).join('')}
+      </div>
+      <div style="font-size:12px;color:#cdd9e5;line-height:1.6;font-style:italic">${evt.text}</div>
+    </div>`;
+  });
+
+  if (!allRevealed) {
+    html += `<div style="position:sticky;bottom:0;padding:12px 0;text-align:center;
+      background:linear-gradient(transparent,rgba(15,12,20,1) 30%)">
+      <button class="rp-btn" onclick="${_bsReveal(state.idx + 1)}">NEXT (${state.idx + 2}/${events.length})</button>
+      <button class="rp-btn rp-btn-secondary" onclick="${_bsReveal(events.length - 1)}" style="margin-left:8px">REVEAL ALL</button>
     </div>`;
   }
 
@@ -51394,10 +51460,18 @@ function rpBuildTalentShowStage(ep) {
       </div>`;
     }
 
-    // Performance text (centered, dramatic)
-    html += `<div style="font-size:13px;color:#cdd9e5;text-align:center;line-height:1.7;
-      margin-bottom:16px;font-style:italic;max-width:340px;margin-left:auto;margin-right:auto;
-      text-shadow:0 1px 2px rgba(0,0,0,0.3)">${perf.performanceText}</div>`;
+    // 3-beat performance narrative
+    const beats = perf.performanceBeats || (typeof perf.performanceText === 'string' ? [perf.performanceText] : perf.performanceText) || [''];
+    beats.forEach((beat, bIdx) => {
+      if (!beat) return;
+      const delay = bIdx * 0.15;
+      const opacity = bIdx === 0 ? '0.7' : bIdx === 2 ? '1' : '0.85';
+      const size = bIdx === 1 ? '13px' : '11px'; // act text is larger
+      html += `<div style="font-size:${size};color:#cdd9e5;text-align:center;line-height:1.7;
+        margin-bottom:${bIdx < 2 ? '8' : '16'}px;font-style:italic;max-width:360px;margin-left:auto;margin-right:auto;
+        opacity:${opacity};text-shadow:0 1px 2px rgba(0,0,0,0.3);
+        animation:scrollDrop 0.3s var(--ease-broadcast) both;animation-delay:${delay}s">${beat}</div>`;
+    });
 
     // ═══ CHEF-O-METER (spoon-style, bigger, bouncier) ═══
     const scoreColor = perf.chefScore >= 7 ? '#3fb950' : perf.chefScore >= 4 ? '#f0a500' : '#f85149';
@@ -53204,6 +53278,8 @@ function buildVPScreens(epRecord) {
     vpScreens.push({ id:'awake-a-thon', label:'Awake-A-Thon', html: rpBuildAwakeAThon(ep) });
   } else if (ep.isTalentShow && ep.talentShow) {
     vpScreens.push({ id:'talent-auditions', label:'Auditions', html: rpBuildTalentAuditions(ep) });
+    const _bsHtml = rpBuildTalentBackstage(ep);
+    if (_bsHtml) vpScreens.push({ id:'talent-backstage', label:'Backstage', html: _bsHtml });
     const _tsShowHtml = rpBuildTalentShowStage(ep);
     if (_tsShowHtml) vpScreens.push({ id:'talent-show', label:'The Show', html: _tsShowHtml });
   } else if (ep.isDodgebrawl && ep.dodgebrawl) {

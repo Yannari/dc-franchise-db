@@ -7336,51 +7336,82 @@ function simulateDodgebrawl(ep) {
   const smallestSize = Math.min(...tribeMembers.map(t => t.members.length));
   const courtSize = Math.min(5, smallestSize);
 
-  // ── Refusers: max 1 per tribe, low boldness + low loyalty ──
-  const refusers = [];
-  tribeMembers.forEach(t => {
-    if (t.members.length <= courtSize) return; // no sit-outs needed, no refusal possible
-    const candidates = t.members.map(name => {
-      const s = pStats(name);
-      const chance = (10 - s.boldness) * 0.03 + (10 - s.loyalty) * 0.02;
-      return { name, chance };
-    }).filter(c => Math.random() < c.chance);
-    if (candidates.length) {
-      const refuser = candidates.sort((a, b) => b.chance - a.chance)[0].name;
-      refusers.push({ name: refuser, tribe: t.name });
-    }
-  });
+  // ── Per-player "power" base for throw / catch / dodge ──
+  function playerPower(name) {
+    const s = pStats(name);
+    return s.physical * 0.35 + s.intuition * 0.30 + s.endurance * 0.20 + s.mental * 0.15;
+  }
 
-  // ── Build rotation pools (exclude refusers) ──
+  // ── Build rotation pools (refusers tracked per round) ──
   const rotationPools = {};
   tribeMembers.forEach(t => {
-    const available = t.members.filter(m => !refusers.some(r => r.name === m));
-    rotationPools[t.name] = { available, queue: [...available], played: new Set() };
+    rotationPools[t.name] = { queue: [...t.members], played: new Set() };
   });
 
-  // ── Helper: pick lineup for a tribe this round ──
-  function pickLineup(tribeName) {
+  function pickLineup(tribeName, refusedThisRound) {
     const pool = rotationPools[tribeName];
+    const available = tribeMembers.find(t => t.name === tribeName).members.filter(m => !refusedThisRound.includes(m));
     const lineup = [];
-    // Fill from queue first (rotation)
-    while (lineup.length < courtSize && pool.queue.length > 0) {
-      lineup.push(pool.queue.shift());
+    // Fill from queue first (rotation), skipping refusers
+    const filteredQueue = pool.queue.filter(m => !refusedThisRound.includes(m));
+    while (lineup.length < courtSize && filteredQueue.length > 0) {
+      lineup.push(filteredQueue.shift());
     }
-    // If queue exhausted, reset rotation
+    // Reset queue from available if exhausted
     if (lineup.length < courtSize) {
-      pool.queue = pool.available.filter(m => !lineup.includes(m));
-      while (lineup.length < courtSize && pool.queue.length > 0) {
-        lineup.push(pool.queue.shift());
+      const remaining = available.filter(m => !lineup.includes(m));
+      while (lineup.length < courtSize && remaining.length > 0) {
+        lineup.push(remaining.shift());
       }
     }
+    // Rebuild queue without those just used
+    pool.queue = available.filter(m => !lineup.includes(m));
     lineup.forEach(m => pool.played.add(m));
     return lineup;
   }
 
-  // ── Score formula ──
-  function dodgeballScore(name) {
-    const s = pStats(name);
-    return s.physical * 0.35 + s.intuition * 0.30 + s.endurance * 0.20 + s.mental * 0.15 + Math.random() * 2.0;
+  // ── Highlight text pools ──
+  const HIGHLIGHT_TEXTS = {
+    trickShot: [
+      (p) => `${p} winds up and spins the ball sideways. It curves right around a defender and nails the target. Nobody saw it coming.`,
+      (p) => `${p} reads the court, fakes left, then snaps the ball at a sharp angle. Clean trick shot. The other tribe just watches.`,
+      (p) => `${p} bounces the ball off the back wall — it comes around perfectly. Trick shot. The crowd loses it.`,
+    ],
+    rageMode: [
+      (p, pr) => `${p} switches gears. ${pr.Sub} ${pr.sub === 'they' ? 'stop' : 'stops'} playing defense and just start${pr.sub === 'they' ? '' : 's'} throwing. Three players go down in thirty seconds.`,
+      (p, pr) => `Something clicks for ${p}. ${pr.Sub} ${pr.sub === 'they' ? 'grab' : 'grabs'} every ball ${pr.sub} can find and unloads. It's a demolition.`,
+      (p, pr) => `${p} goes full berserker. ${pr.PosAdj} tribe just stays out of the way. Four throws, four hits.`,
+    ],
+    clutchDodge: [
+      (p, pr, tribe) => `${p} is the last one left for ${tribe}. ${pr.Sub} ${pr.sub === 'they' ? 'dodge' : 'dodges'} two throws, sidestepping both. Not enough to win, but impossible not to respect.`,
+      (p, pr, tribe) => `Everyone else on ${tribe} is out. ${p} alone. ${pr.Sub} ${pr.sub === 'they' ? 'duck' : 'ducks'} a throw, spin${pr.sub === 'they' ? '' : 's'} away from another — then finally ${pr.sub} ${pr.sub === 'they' ? 'go' : 'goes'} down.`,
+      (p, pr, tribe) => `${p} refuses to quit. Last standing for ${tribe}, ${pr.sub} ${pr.sub === 'they' ? 'dodge' : 'dodges'} and weave${pr.sub === 'they' ? '' : 's'} until there's nowhere left to go.`,
+    ],
+    rushStrategy: [
+      (p, target) => `${p} points at ${target}. "That one. Everyone." They all fire at once. ${target} goes down under a wall of rubber.`,
+      (p, target) => `${p} clocks who to target — ${target}. Calls the shot. The tribe executes. ${target} is out before ${target.split(' ')[0]} can react.`,
+      (p, target) => `Calculated. ${p} spots the weak link — ${target} — and directs all fire there. Clean strategy. One coordinated rush.`,
+    ],
+    friendlyFire: [
+      (p, victim, pr) => `${p} releases the throw wild — it sails straight into ${victim}. ${pr.PosAdj} own teammate. The court goes silent, then erupts.`,
+      (p, victim, pr) => `${p} panics, throws too early, and nails ${victim} in the shoulder. ${pr.PosAdj} own tribe. The look on ${victim}'s face says everything.`,
+      (p, victim, pr) => `Friendly fire. ${p}'s throw misses completely and clips ${victim} on the side of the head. ${pr.PosAdj} own player. Chaos.`,
+    ],
+    caught: [
+      (catcher, thrower) => `${catcher} CATCHES it. ${thrower} is out — eliminated by ${catcher}'s own hands. The court goes silent.`,
+      (catcher, thrower) => `${thrower} throws hard — ${catcher} reaches out and snatches it clean. Catch. ${thrower} walks off in disbelief.`,
+      (catcher, thrower) => `${catcher} holds position, reads the throw, and catches it with both hands. ${thrower} is done.`,
+    ],
+    refusalLoss: [
+      (p, pr, tribe) => `${p} watched every second from the sideline. ${pr.PosAdj} tribe just lost and ${pr.sub} didn't lift a finger.`,
+      (p, pr, tribe) => `${tribe} loses, and ${p} was right there on the bench. ${pr.Sub} ${pr.sub === 'they' ? 'didn\'t' : 'didn\'t'} even flinch.`,
+      (p, pr) => `${p} sat this one out. Voluntarily. The tribe remembers.`,
+    ],
+  };
+
+  function pickText(pool, ...args) {
+    const hash = args.join('').split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+    return pool[hash % pool.length](...args);
   }
 
   // ── Simulate rounds ──
@@ -7389,136 +7420,338 @@ function simulateDodgebrawl(ep) {
   const cumulativeScores = {};
   tribes.forEach(t => { tribeWins[t.name] = 0; cumulativeScores[t.name] = 0; });
   const playerTotalScores = {};
+  // Track per-player refusal history for lower-chance-next-round logic
+  const refusedLastRound = new Set();
+  // All-game refusers (for camp events): players who refused at least once
+  const allGameRefusals = [];
 
   let roundNum = 0;
   const maxWins = 3;
   while (!Object.values(tribeWins).some(w => w >= maxWins) && roundNum < 7) {
     roundNum++;
-    const roundData = { num: roundNum, lineups: {}, scores: {}, tribeScores: {}, highlights: [], winner: null };
 
-    // Pick lineups and score
+    // ── Per-round refusal check ──
+    const roundRefusals = [];
     tribeMembers.forEach(t => {
-      const lineup = pickLineup(t.name);
-      roundData.lineups[t.name] = lineup;
-      const playerScores = {};
-      let tribeTotal = 0;
-      lineup.forEach(name => {
-        const score = dodgeballScore(name);
-        playerScores[name] = score;
-        tribeTotal += score;
-        playerTotalScores[name] = (playerTotalScores[name] || 0) + score;
-      });
-      roundData.scores[t.name] = playerScores;
-      roundData.tribeScores[t.name] = tribeTotal;
-      cumulativeScores[t.name] += tribeTotal;
-    });
-
-    // Determine round winner (highest tribe score)
-    const sortedTribes = Object.entries(roundData.tribeScores).sort(([,a], [,b]) => b - a);
-    roundData.winner = sortedTribes[0][0];
-    tribeWins[roundData.winner]++;
-
-    // ── Generate highlights (max 3 per round) ──
-    const allScoresThisRound = Object.values(roundData.scores).flatMap(ts => Object.entries(ts));
-    const roundAvg = allScoresThisRound.reduce((s, [,v]) => s + v, 0) / Math.max(1, allScoresThisRound.length);
-    const winnerScores = roundData.scores[roundData.winner] || {};
-    const loserTribes = sortedTribes.slice(1).map(([name]) => name);
-
-    // Trick Shot: top scorer with high mental
-    const topScorer = allScoresThisRound.sort(([,a], [,b]) => b - a)[0];
-    if (topScorer && pStats(topScorer[0]).mental >= 7 && roundData.highlights.length < 3) {
-      const pr = pronouns(topScorer[0]);
-      roundData.highlights.push({
-        type: 'trickShot', player: topScorer[0],
-        text: `${topScorer[0]} pulls off a trick shot — the ball curves mid-air and finds its target. The court goes silent.`,
-      });
-      addBond(topScorer[0], Object.keys(winnerScores).find(p => p !== topScorer[0]) || topScorer[0], 0.3);
-    }
-
-    // Rage Mode: someone scores 2x round average
-    const rageCandidates = allScoresThisRound.filter(([,s]) => s >= roundAvg * 2);
-    if (rageCandidates.length && roundData.highlights.length < 3) {
-      const rager = rageCandidates.sort(([,a], [,b]) => b - a)[0];
-      const pr = pronouns(rager[0]);
-      roundData.highlights.push({
-        type: 'rageMode', player: rager[0],
-        text: `Something snaps in ${rager[0]}. ${pr.Sub} ${pr.sub === 'they' ? 'grab' : 'grabs'} every ball in reach and starts firing. Three players go down before anyone can react.`,
-      });
-      if (!gs._dodgebrawlHeat) gs._dodgebrawlHeat = {};
-      gs._dodgebrawlHeat[rager[0]] = { amount: 1.0, expiresEp: ((gs.episode || 0) + 1) + 1 };
-    }
-
-    // Clutch Dodge: losing tribe's top scorer carried (>60% of tribe total)
-    loserTribes.forEach(lt => {
-      const ltScores = roundData.scores[lt] || {};
-      const ltTotal = roundData.tribeScores[lt] || 1;
-      const ltTop = Object.entries(ltScores).sort(([,a], [,b]) => b - a)[0];
-      if (ltTop && ltTop[1] > ltTotal * 0.6 && roundData.highlights.length < 3) {
-        const pr = pronouns(ltTop[0]);
-        roundData.highlights.push({
-          type: 'clutchDodge', player: ltTop[0],
-          text: `${ltTop[0]} is the last one standing for ${lt}. ${pr.Sub} ${pr.sub === 'they' ? 'dodge' : 'dodges'} three throws in a row — but it's not enough.`,
-        });
-        // Bond boost from impressed teammates
-        Object.keys(ltScores).filter(p => p !== ltTop[0]).forEach(p => addBond(p, ltTop[0], 0.3));
+      if (t.members.length <= courtSize) return; // no bench — can't refuse
+      const candidates = t.members.map(name => {
+        const s = pStats(name);
+        let chance = (10 - s.boldness) * 0.02 + (10 - s.loyalty) * 0.015;
+        if (refusedLastRound.has(name)) chance *= 0.4; // lower chance if already refused
+        return { name, chance };
+      }).filter(c => Math.random() < c.chance);
+      if (candidates.length) {
+        const refuser = candidates.sort((a, b) => b.chance - a.chance)[0].name;
+        roundRefusals.push({ name: refuser, tribe: t.name });
+        if (!allGameRefusals.some(r => r.name === refuser)) allGameRefusals.push({ name: refuser, tribe: t.name });
       }
     });
+    refusedLastRound.clear();
+    roundRefusals.forEach(r => refusedLastRound.add(r.name));
 
-    // Rush Strategy: winning tribe has high strategic player
-    const winnerPlayers = Object.keys(winnerScores);
-    const strategist = winnerPlayers.find(p => pStats(p).strategic >= 7);
-    if (strategist && roundData.highlights.length < 3 && roundNum >= 2) {
-      const pr = pronouns(strategist);
-      const targetTribe = loserTribes[0];
-      const targetPlayer = Object.entries(roundData.scores[targetTribe] || {}).sort(([,a], [,b]) => b - a)[0]?.[0];
-      roundData.highlights.push({
-        type: 'rushStrategy', player: strategist, target: targetPlayer,
-        text: `${strategist} calls the shots. "Everyone throw at ${targetPlayer || 'their best player'}. Now." The rush strategy works — ${targetPlayer || 'the target'} goes down under a wall of rubber.`,
-      });
-      const _bmState = gs.playerStates?.[strategist] || {};
-      _bmState.bigMoves = (_bmState.bigMoves || 0) + 1;
-      if (!gs.playerStates) gs.playerStates = {};
-      gs.playerStates[strategist] = _bmState;
-      if (!gs.bigMoveEarnersThisEp) gs.bigMoveEarnersThisEp = [];
-      if (!gs.bigMoveEarnersThisEp.includes(strategist)) gs.bigMoveEarnersThisEp.push(strategist);
-    }
-
-    // Friendly Fire: bottom scorer on losing tribe, low physical, 15% chance
-    loserTribes.forEach(lt => {
-      const ltScores = Object.entries(roundData.scores[lt] || {}).sort(([,a], [,b]) => a - b);
-      const worst = ltScores[0];
-      if (worst && pStats(worst[0]).physical <= 4 && Math.random() < 0.15 && roundData.highlights.length < 3) {
-        const victim = ltScores[1]?.[0] || ltScores[0]?.[0];
-        const pr = pronouns(worst[0]);
-        roundData.highlights.push({
-          type: 'friendlyFire', player: worst[0], victim,
-          text: `${worst[0]} winds up and throws — straight into ${victim}'s back. ${pr.Pos} own teammate. The court erupts.`,
-        });
-        addBond(victim, worst[0], -0.5);
-      }
+    // ── Pick lineups ──
+    const lineups = {};
+    tribeMembers.forEach(t => {
+      const refused = roundRefusals.filter(r => r.tribe === t.name).map(r => r.name);
+      lineups[t.name] = pickLineup(t.name, refused);
     });
 
-    // Refusal: refuser's tribe lost this round
-    refusers.forEach(r => {
-      if (loserTribes.includes(r.tribe) && roundData.highlights.length < 3) {
+    // ── Per-player elimination simulation within the round ──
+    // Active players per tribe (with power scores + random variance)
+    const activePlayers = {};
+    tribeMembers.forEach(t => {
+      activePlayers[t.name] = lineups[t.name].map(name => ({
+        name,
+        power: playerPower(name) + Math.random() * 2.0,
+        alive: true,
+        elimsThisRound: 0,
+        dodgesThisRound: 0,
+      }));
+    });
+
+    const tribeNames = tribeMembers.map(t => t.name);
+    const eliminations = []; // { eliminated, eliminatedBy, tribe, eliminatedByTribe, method }
+
+    // Track per-player counts for highlight derivation
+    const perPlayerElims = {}; // name -> count eliminated
+    const perPlayerDodges = {}; // name -> count dodged
+
+    // Elimination loop: continue until only 1 tribe has survivors
+    let loopGuard = 0;
+    while (loopGuard++ < 200) {
+      const aliveTribes = tribeNames.filter(tn => activePlayers[tn].some(p => p.alive));
+      if (aliveTribes.length <= 1) break;
+
+      // Best alive thrower from any tribe (highest power)
+      let bestThrower = null;
+      let bestThrowerTribe = null;
+      aliveTribes.forEach(tn => {
+        activePlayers[tn].filter(p => p.alive).forEach(p => {
+          if (!bestThrower || p.power > bestThrower.power) {
+            bestThrower = p;
+            bestThrowerTribe = tn;
+          }
+        });
+      });
+      if (!bestThrower) break;
+
+      // Weakest alive player from an opposing tribe
+      const opposingTribes = aliveTribes.filter(tn => tn !== bestThrowerTribe);
+      if (!opposingTribes.length) break;
+      let weakestTarget = null;
+      let weakestTargetTribe = null;
+      opposingTribes.forEach(tn => {
+        activePlayers[tn].filter(p => p.alive).forEach(p => {
+          if (!weakestTarget || p.power < weakestTarget.power) {
+            weakestTarget = p;
+            weakestTargetTribe = tn;
+          }
+        });
+      });
+      if (!weakestTarget) break;
+
+      // Catch check: 10% if catcher intuition >= 6
+      const catcherStats = pStats(weakestTarget.name);
+      const canCatch = catcherStats.intuition >= 6 && Math.random() < 0.10;
+      if (canCatch) {
+        // Catcher catches — thrower is eliminated instead
+        bestThrower.alive = false;
+        perPlayerElims[weakestTarget.name] = (perPlayerElims[weakestTarget.name] || 0) + 1;
+        eliminations.push({
+          eliminated: bestThrower.name,
+          eliminatedBy: weakestTarget.name,
+          tribe: bestThrowerTribe,
+          eliminatedByTribe: weakestTargetTribe,
+          method: 'caught',
+        });
+      } else {
+        // Dodge check: dodge chance = intuition * 0.06 + endurance * 0.03 + random(0, 0.15)
+        const dodgeChance = catcherStats.intuition * 0.06 + catcherStats.endurance * 0.03 + Math.random() * 0.15;
+        if (dodgeChance > 0.5) {
+          // Dodged — nothing happens this turn, reduce target power slightly so game progresses
+          weakestTarget.dodgesThisRound++;
+          perPlayerDodges[weakestTarget.name] = (perPlayerDodges[weakestTarget.name] || 0) + 1;
+          weakestTarget.power = Math.max(0, weakestTarget.power - 0.5);
+          eliminations.push({
+            eliminated: null,
+            eliminatedBy: bestThrower.name,
+            tribe: null,
+            eliminatedByTribe: bestThrowerTribe,
+            method: 'dodged',
+            dodger: weakestTarget.name,
+            dodgerTribe: weakestTargetTribe,
+          });
+        } else {
+          // Friendly fire check: low physical thrower, 10% per throw
+          const throwerStats = pStats(bestThrower.name);
+          const friendlyFireChance = throwerStats.physical <= 4 ? 0.10 : 0;
+          const isFriendlyFire = Math.random() < friendlyFireChance;
+          if (isFriendlyFire) {
+            // Find an alive friendly teammate
+            const friendlyTeammates = activePlayers[bestThrowerTribe].filter(p => p.alive && p.name !== bestThrower.name);
+            if (friendlyTeammates.length) {
+              const victim = friendlyTeammates[Math.floor(Math.random() * friendlyTeammates.length)];
+              victim.alive = false;
+              perPlayerElims[bestThrower.name] = (perPlayerElims[bestThrower.name] || 0) + 1;
+              eliminations.push({
+                eliminated: victim.name,
+                eliminatedBy: bestThrower.name,
+                tribe: bestThrowerTribe,
+                eliminatedByTribe: bestThrowerTribe,
+                method: 'friendlyFire',
+              });
+            } else {
+              // No friendly to hit — normal hit instead
+              weakestTarget.alive = false;
+              perPlayerElims[bestThrower.name] = (perPlayerElims[bestThrower.name] || 0) + 1;
+              eliminations.push({
+                eliminated: weakestTarget.name,
+                eliminatedBy: bestThrower.name,
+                tribe: weakestTargetTribe,
+                eliminatedByTribe: bestThrowerTribe,
+                method: 'hit',
+              });
+            }
+          } else {
+            weakestTarget.alive = false;
+            perPlayerElims[bestThrower.name] = (perPlayerElims[bestThrower.name] || 0) + 1;
+            eliminations.push({
+              eliminated: weakestTarget.name,
+              eliminatedBy: bestThrower.name,
+              tribe: weakestTargetTribe,
+              eliminatedByTribe: bestThrowerTribe,
+              method: 'hit',
+            });
+          }
+        }
+      }
+    }
+
+    // ── Determine round winner: tribe with surviving players ──
+    const aliveAfter = tribeNames.filter(tn => activePlayers[tn].some(p => p.alive));
+    const roundWinner = aliveAfter.length === 1
+      ? aliveAfter[0]
+      // Tiebreaker: most alive players, then highest combined power
+      : tribeNames.reduce((best, tn) => {
+          const aliveCount = activePlayers[tn].filter(p => p.alive).length;
+          const bestAlive = activePlayers[best]?.filter(p => p.alive).length || 0;
+          if (aliveCount > bestAlive) return tn;
+          if (aliveCount === bestAlive) {
+            const tnPower = activePlayers[tn].filter(p => p.alive).reduce((s, p) => s + p.power, 0);
+            const bestPower = activePlayers[best].filter(p => p.alive).reduce((s, p) => s + p.power, 0);
+            return tnPower > bestPower ? tn : best;
+          }
+          return best;
+        }, tribeNames[0]);
+
+    tribeWins[roundWinner]++;
+
+    // ── Derive scores from elimination data ──
+    const roundScores = {};
+    tribeMembers.forEach(t => {
+      roundScores[t.name] = {};
+      (lineups[t.name] || []).forEach(name => {
+        const elimsBy = (perPlayerElims[name] || 0);
+        const dodges = (perPlayerDodges[name] || 0);
+        const base = playerPower(name);
+        roundScores[t.name][name] = base + elimsBy * 1.5 + dodges * 0.5;
+        playerTotalScores[name] = (playerTotalScores[name] || 0) + roundScores[t.name][name];
+        cumulativeScores[t.name] = (cumulativeScores[t.name] || 0) + roundScores[t.name][name];
+      });
+    });
+    const tribeTotals = {};
+    tribeMembers.forEach(t => {
+      tribeTotals[t.name] = Object.values(roundScores[t.name]).reduce((s, v) => s + v, 0);
+    });
+
+    // ── Derive highlights from elimination sequence ──
+    const highlights = [];
+    const loserTribes = tribeNames.filter(tn => tn !== roundWinner);
+
+    // Trick Shot: mental >= 7 AND eliminated 2+ players this round
+    tribeNames.forEach(tn => {
+      if (highlights.length >= 3) return;
+      (lineups[tn] || []).forEach(name => {
+        if (highlights.length >= 3) return;
+        if (pStats(name).mental >= 7 && (perPlayerElims[name] || 0) >= 2) {
+          highlights.push({
+            type: 'trickShot', player: name, tribe: tn,
+            text: pickText(HIGHLIGHT_TEXTS.trickShot, name),
+          });
+          // Bond with teammate
+          const teammate = (lineups[tn] || []).find(p => p !== name);
+          if (teammate) addBond(name, teammate, 0.3);
+        }
+      });
+    });
+
+    // Rage Mode: eliminated 3+ players in one round
+    tribeNames.forEach(tn => {
+      if (highlights.length >= 3) return;
+      (lineups[tn] || []).forEach(name => {
+        if (highlights.length >= 3) return;
+        if ((perPlayerElims[name] || 0) >= 3 && !highlights.some(h => h.player === name)) {
+          const pr = pronouns(name);
+          highlights.push({
+            type: 'rageMode', player: name, tribe: tn,
+            text: pickText(HIGHLIGHT_TEXTS.rageMode, name, pr),
+          });
+          if (!gs._dodgebrawlHeat) gs._dodgebrawlHeat = {};
+          gs._dodgebrawlHeat[name] = { amount: 1.0, expiresEp: ((gs.episode || 0) + 1) + 1 };
+        }
+      });
+    });
+
+    // Clutch Dodge: dodged 2+ throws and was on a losing tribe
+    loserTribes.forEach(lt => {
+      if (highlights.length >= 3) return;
+      (lineups[lt] || []).forEach(name => {
+        if (highlights.length >= 3) return;
+        if ((perPlayerDodges[name] || 0) >= 2 && !highlights.some(h => h.player === name)) {
+          const pr = pronouns(name);
+          highlights.push({
+            type: 'clutchDodge', player: name, tribe: lt,
+            text: pickText(HIGHLIGHT_TEXTS.clutchDodge, name, pr, lt),
+          });
+          (lineups[lt] || []).filter(p => p !== name).forEach(p => addBond(p, name, 0.3));
+        }
+      });
+    });
+
+    // Rush Strategy: strategic >= 7 player on winning tribe, first 2 eliminations target same player
+    if (highlights.length < 3 && roundNum >= 2) {
+      const firstElims = eliminations.filter(e => e.method === 'hit' && e.tribe && loserTribes.includes(e.tribe));
+      if (firstElims.length >= 2 && firstElims[0].eliminated === firstElims[1].eliminated) {
+        // Shouldn't happen with one-at-a-time, but check for same-tribe targeting
+      }
+      const strategist = (lineups[roundWinner] || []).find(p => pStats(p).strategic >= 7);
+      // Rush: 2+ eliminations on the same opposing tribe early
+      const firstTarget = eliminations.find(e => e.method === 'hit' && e.tribe && loserTribes.includes(e.tribe))?.eliminated;
+      if (strategist && firstTarget && !highlights.some(h => h.player === strategist)) {
+        const pr = pronouns(strategist);
+        highlights.push({
+          type: 'rushStrategy', player: strategist, target: firstTarget, tribe: roundWinner,
+          text: pickText(HIGHLIGHT_TEXTS.rushStrategy, strategist, firstTarget),
+        });
+        if (!gs.playerStates) gs.playerStates = {};
+        const _bm = gs.playerStates[strategist] || {};
+        _bm.bigMoves = (_bm.bigMoves || 0) + 1;
+        gs.playerStates[strategist] = _bm;
+        if (!gs.bigMoveEarnersThisEp) gs.bigMoveEarnersThisEp = [];
+        if (!gs.bigMoveEarnersThisEp.includes(strategist)) gs.bigMoveEarnersThisEp.push(strategist);
+      }
+    }
+
+    // Friendly Fire: if any friendly fire happened this round
+    const ffEvent = eliminations.find(e => e.method === 'friendlyFire');
+    if (ffEvent && highlights.length < 3 && !highlights.some(h => h.player === ffEvent.eliminatedBy)) {
+      const pr = pronouns(ffEvent.eliminatedBy);
+      highlights.push({
+        type: 'friendlyFire', player: ffEvent.eliminatedBy, victim: ffEvent.eliminated, tribe: ffEvent.tribe,
+        text: pickText(HIGHLIGHT_TEXTS.friendlyFire, ffEvent.eliminatedBy, ffEvent.eliminated, pr),
+      });
+      addBond(ffEvent.eliminated, ffEvent.eliminatedBy, -0.5);
+    }
+
+    // Catch: if any catch happened this round
+    const catchEvent = eliminations.find(e => e.method === 'caught');
+    if (catchEvent && highlights.length < 3 && !highlights.some(h => h.player === catchEvent.eliminatedBy)) {
+      highlights.push({
+        type: 'caught', player: catchEvent.eliminatedBy, victim: catchEvent.eliminated, tribe: catchEvent.eliminatedByTribe,
+        text: pickText(HIGHLIGHT_TEXTS.caught, catchEvent.eliminatedBy, catchEvent.eliminated),
+      });
+    }
+
+    // Refusal + loss: check per round
+    roundRefusals.forEach(r => {
+      if (loserTribes.includes(r.tribe) && highlights.length < 3) {
+        const pr = pronouns(r.name);
+        highlights.push({
+          type: 'refusalLoss', player: r.name, tribe: r.tribe,
+          text: pickText(HIGHLIGHT_TEXTS.refusalLoss, r.name, pr, r.tribe),
+        });
         const rMembers = tribeMembers.find(t => t.name === r.tribe)?.members.filter(m => m !== r.name) || [];
-        roundData.highlights.push({
-          type: 'refusal', player: r.name,
-          text: `${r.name} watches from the bench. Again. ${pronouns(r.name).Pos} tribe just lost and ${pronouns(r.name).sub} didn't lift a finger.`,
-        });
         rMembers.forEach(m => addBond(m, r.name, -0.5));
         if (!gs._dodgebrawlHeat) gs._dodgebrawlHeat = {};
         gs._dodgebrawlHeat[r.name] = { amount: 1.5, expiresEp: ((gs.episode || 0) + 1) + 1 };
       }
     });
 
-    rounds.push(roundData);
+    rounds.push({
+      num: roundNum,
+      winner: roundWinner,
+      lineups,
+      refusals: roundRefusals,
+      eliminations,
+      highlights,
+      scores: roundScores,
+      tribeScores: tribeTotals,
+    });
   }
 
   // ── Determine winner and loser ──
   const finalSorted = Object.entries(tribeWins).sort(([,a], [,b]) => b - a);
   const winnerName = finalSorted[0][0];
-  // Loser: fewest wins, tiebreaker = lowest cumulative score
   const loserCandidates = finalSorted.filter(([,w]) => w === finalSorted[finalSorted.length - 1][1]);
   const loserName = loserCandidates.length === 1
     ? loserCandidates[0][0]
@@ -7528,9 +7761,9 @@ function simulateDodgebrawl(ep) {
   const loser = gs.tribes.find(t => t.name === loserName);
 
   // ── Refusers get score 0 ──
-  refusers.forEach(r => { playerTotalScores[r.name] = 0; });
+  allGameRefusals.forEach(r => { playerTotalScores[r.name] = 0; });
 
-  // ── Set ep fields (same pattern as other challenge twists) ──
+  // ── Set ep fields ──
   ep.winner = winner;
   ep.loser = loser;
   ep.challengeType = 'tribe';
@@ -7541,15 +7774,13 @@ function simulateDodgebrawl(ep) {
   ep.chalMemberScores = playerTotalScores;
   ep.chalSitOuts = {};
 
-  // Build sit-out list per tribe
   tribeMembers.forEach(t => {
     const allPlayed = new Set();
-    rounds.forEach(r => (r.lineups[t.name] || []).forEach(p => allPlayed.add(p)));
+    rounds.forEach(r => Object.keys(r.lineups[t.name] ? r.lineups[t.name].reduce((o, p) => { o[p] = 1; return o; }, {}) : {}).forEach(p => allPlayed.add(p)));
     const satOut = t.members.filter(m => !allPlayed.has(m));
     if (satOut.length) ep.chalSitOuts[t.name] = satOut;
   });
 
-  // ── Update challenge record ──
   updateChalRecord(ep);
 
   // ── Generate camp events (2 per tribe: 1 positive + 1 negative) ──
@@ -7569,7 +7800,6 @@ function simulateDodgebrawl(ep) {
     // ── POSITIVE EVENT ──
     const mvp = sorted[0];
     const nonMvpSorted = sorted.slice(1);
-    // Check for Redemption first
     const round1Scores = rounds[0]?.scores[t.name] || {};
     const redemptionCandidate = sorted.find(p => {
       const r1Score = round1Scores[p.name] || 0;
@@ -7593,7 +7823,6 @@ function simulateDodgebrawl(ep) {
       });
       t.members.filter(m => m !== redemptionCandidate.name).forEach(m => addBond(m, redemptionCandidate.name, 0.3));
     } else if (nonMvpSorted.length) {
-      // Team Player: highest social+loyalty among non-MVPs
       const teamPlayer = nonMvpSorted.sort((a, b) => {
         const sA = pStats(a.name); const sB = pStats(b.name);
         return (sB.social * 0.5 + sB.loyalty * 0.5) - (sA.social * 0.5 + sA.loyalty * 0.5);
@@ -7609,7 +7838,6 @@ function simulateDodgebrawl(ep) {
         t.members.filter(m => m !== teamPlayer.name).slice(0, 2).forEach(m => addBond(m, teamPlayer.name, 0.4));
       }
     } else {
-      // Solo tribe MVP — just give hero event
       const pr = pronouns(mvp.name);
       ep.campEvents[key].post.push({
         type: 'dodgebrawlHero', players: [mvp.name],
@@ -7623,12 +7851,12 @@ function simulateDodgebrawl(ep) {
     }
 
     // ── NEGATIVE EVENT ──
-    const refuser = refusers.find(r => r.tribe === t.name);
+    const refuser = allGameRefusals.find(r => r.tribe === t.name);
     if (refuser) {
       const pr = pronouns(refuser.name);
       ep.campEvents[key].post.push({
         type: 'dodgebrawlRefusal', players: [refuser.name],
-        text: `${refuser.name} sat out every round. ${pr.Sub} gave the team nothing but attitude and sarcastic commentary from the bench.`,
+        text: `${refuser.name} sat out. ${pr.Sub} gave the team nothing — just commentary from the sideline.`,
         consequences: '-0.5 bond from all tribemates, +1.5 heat.',
         badgeText: 'REFUSED TO PLAY', badgeClass: 'red'
       });
@@ -7636,9 +7864,8 @@ function simulateDodgebrawl(ep) {
       if (!gs._dodgebrawlHeat) gs._dodgebrawlHeat = {};
       gs._dodgebrawlHeat[refuser.name] = { amount: 1.5, expiresEp: ((gs.episode || 0) + 1) + 1 };
     } else {
-      // Choked vs Liability: pick the bigger underperformer
       const worstPerformer = sorted[sorted.length - 1];
-      const biggestChoke = memberScores.sort((a, b) => (a.total - a.expected) - (b.total - b.expected))[0];
+      const biggestChoke = [...memberScores].sort((a, b) => (a.total - a.expected) - (b.total - b.expected))[0];
       const chokeGap = biggestChoke ? biggestChoke.expected - biggestChoke.total : 0;
       const useChoke = chokeGap > 1.5 && biggestChoke.name !== worstPerformer?.name;
 
@@ -7658,7 +7885,7 @@ function simulateDodgebrawl(ep) {
         const isLoser = t.name === loserName;
         ep.campEvents[key].post.push({
           type: 'dodgebrawlLiability', players: [worstPerformer.name],
-          text: `${worstPerformer.name} was the weakest link on the court. ${isLoser ? 'The tribe knows exactly who cost them.' : `Even in a win, the tribe noticed.`}`,
+          text: `${worstPerformer.name} was the weakest link on the court. ${isLoser ? 'The tribe knows exactly who cost them.' : 'Even in a win, the tribe noticed.'}`,
           consequences: `${isLoser ? '-0.3 bond, +0.5 heat.' : '-0.2 bond.'}`,
           badgeText: 'LIABILITY', badgeClass: 'red'
         });
@@ -7674,7 +7901,7 @@ function simulateDodgebrawl(ep) {
 
   // ── Store dodgebrawl data ──
   ep.dodgebrawl = {
-    rounds, courtSize, refusers, tribeWins, cumulativeScores,
+    rounds, courtSize, allGameRefusals, tribeWins, cumulativeScores,
     winner: winnerName, loser: loserName,
     finalScore: tribeWins,
     mvp: Object.entries(playerTotalScores).sort(([,a], [,b]) => b - a)[0]?.[0] || null,
@@ -49631,96 +49858,198 @@ function rpBuildDodgebrawl(ep) {
 
   const _dbReveal = (targetIdx) => `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=${targetIdx};const ep=gs.episodeHistory.find(e=>e.num===${ep.num});if(ep){const m=document.querySelector('.rp-main');const st=m?m.scrollTop:0;buildVPScreens(ep);renderVPScreen();if(m)m.scrollTop=st;}`;
 
-  // Build live scoreboard based on revealed rounds
+  // Live win tracker based on revealed rounds
   const revealedWins = {};
   Object.keys(db.tribeWins).forEach(t => { revealedWins[t] = 0; });
   db.rounds.forEach((r, i) => { if (i <= state.idx) revealedWins[r.winner]++; });
 
+  // ── Helper: render a small tribe lineup strip ──
+  function renderLineup(tribeName, lineupArr, refusalsThisRound) {
+    const tc = tribeColor(tribeName);
+    const refusedNames = (refusalsThisRound || []).filter(r => r.tribe === tribeName).map(r => r.name);
+    let out = `<div style="flex:1;min-width:0">
+      <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:${tc};margin-bottom:6px;text-transform:uppercase">${tribeName}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px">`;
+    (lineupArr || []).forEach(name => {
+      const isRefuser = refusedNames.includes(name);
+      out += `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;opacity:${isRefuser ? '0.4' : '1'}">
+        ${rpPortrait(name, 'xs', isRefuser ? 'REFUSED' : '')}
+        <span style="font-size:8px;color:${isRefuser ? '#f85149' : '#8b949e'};max-width:40px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name.split(' ')[0]}</span>
+      </div>`;
+    });
+    out += `</div></div>`;
+    return out;
+  }
+
+  // ── Helper: badge style by type ──
+  function highlightStyle(type) {
+    if (type === 'friendlyFire' || type === 'refusalLoss') return { color: '#f85149', label: type === 'friendlyFire' ? 'FRIENDLY FIRE' : 'REFUSED' };
+    if (type === 'clutchDodge') return { color: '#58a6ff', label: 'CLUTCH DODGE' };
+    if (type === 'caught') return { color: '#3fb950', label: 'CAUGHT!' };
+    if (type === 'rageMode') return { color: '#da3633', label: 'RAGE MODE' };
+    if (type === 'rushStrategy') return { color: '#d2a8ff', label: 'RUSH STRATEGY' };
+    return { color: '#f0a500', label: 'TRICK SHOT' };
+  }
+
+  // ── Helper: render one elimination event card ──
+  function renderEliminationCard(ev) {
+    if (!ev) return '';
+    if (ev.method === 'hit') {
+      const tc = tribeColor(ev.eliminatedByTribe || '');
+      return `<div style="display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:5px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);margin-bottom:3px">
+        ${rpPortrait(ev.eliminatedBy, 'xs')}
+        <span style="font-size:10px;color:${tc};font-weight:600">${ev.eliminatedBy}</span>
+        <span style="font-size:9px;color:#484f58">hits</span>
+        ${rpPortrait(ev.eliminated, 'xs')}
+        <span style="font-size:10px;color:#8b949e">${ev.eliminated}</span>
+        <span style="font-size:9px;font-weight:700;color:#f85149;margin-left:auto">OUT</span>
+      </div>`;
+    }
+    if (ev.method === 'caught') {
+      const tc = tribeColor(ev.eliminatedByTribe || '');
+      return `<div style="display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:5px;background:rgba(63,185,80,0.05);border:1px solid rgba(63,185,80,0.15);margin-bottom:3px">
+        ${rpPortrait(ev.eliminatedBy, 'xs')}
+        <span style="font-size:10px;color:#3fb950;font-weight:700">CATCH!</span>
+        <span style="font-size:9px;color:#484f58">${ev.eliminatedBy} catches</span>
+        ${rpPortrait(ev.eliminated, 'xs')}
+        <span style="font-size:10px;color:#8b949e">${ev.eliminated}</span>
+        <span style="font-size:9px;font-weight:700;color:#f85149;margin-left:auto">OUT</span>
+      </div>`;
+    }
+    if (ev.method === 'friendlyFire') {
+      return `<div style="display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:5px;background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.18);margin-bottom:3px">
+        ${rpPortrait(ev.eliminatedBy, 'xs')}
+        <span style="font-size:9px;font-weight:700;color:#f85149">FRIENDLY FIRE!</span>
+        <span style="font-size:9px;color:#484f58">hits teammate</span>
+        ${rpPortrait(ev.eliminated, 'xs')}
+        <span style="font-size:10px;color:#8b949e">${ev.eliminated}</span>
+        <span style="font-size:9px;font-weight:700;color:#f85149;margin-left:auto">OUT</span>
+      </div>`;
+    }
+    if (ev.method === 'dodged') {
+      return `<div style="display:flex;align-items:center;gap:6px;padding:4px 8px;border-radius:5px;background:rgba(88,166,255,0.04);border:1px solid rgba(88,166,255,0.10);margin-bottom:3px">
+        ${rpPortrait(ev.dodger, 'xs')}
+        <span style="font-size:10px;color:#58a6ff">${ev.dodger}</span>
+        <span style="font-size:9px;color:#484f58">dodges a throw from</span>
+        ${rpPortrait(ev.eliminatedBy, 'xs')}
+        <span style="font-size:10px;color:#8b949e">${ev.eliminatedBy}</span>
+      </div>`;
+    }
+    return '';
+  }
+
   let html = `<div class="rp-page tod-dawn">
     <div class="rp-eyebrow">Episode ${ep.num}</div>
-    <div style="font-family:var(--font-display);font-size:28px;letter-spacing:2px;text-align:center;color:#e06030;text-shadow:0 0 20px rgba(224,96,48,0.3);margin-bottom:4px">🏐 DODGEBRAWL</div>
+    <div style="font-family:var(--font-display);font-size:28px;letter-spacing:2px;text-align:center;color:#e06030;text-shadow:0 0 20px rgba(224,96,48,0.3);margin-bottom:4px">DODGEBRAWL</div>
     <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:6px">${db.courtSize}v${db.courtSize} · First to 3 wins immunity</div>`;
 
-  // Scoreboard bar
+  // ── Live scoreboard ──
   const scoreEntries = Object.entries(revealedWins);
-  html += `<div style="display:flex;justify-content:center;gap:16px;margin-bottom:16px;padding:8px;border-radius:8px;background:rgba(255,255,255,0.03)">`;
+  html += `<div style="display:flex;justify-content:center;gap:16px;margin-bottom:16px;padding:10px;border-radius:8px;background:rgba(255,255,255,0.03)">`;
   scoreEntries.forEach(([tribe, wins], i) => {
     const tc = tribeColor(tribe);
     const isWinner = allRevealed && tribe === db.winner;
     html += `<div style="text-align:center;${isWinner ? 'text-shadow:0 0 10px ' + tc : ''}">
-      <div style="font-family:var(--font-display);font-size:${isWinner ? '24' : '20'}px;color:${tc};font-weight:700">${wins}</div>
+      <div style="font-family:var(--font-display);font-size:${isWinner ? '28' : '22'}px;color:${tc};font-weight:700">${wins}</div>
       <div style="font-size:10px;color:${tc};opacity:0.8">${tribe}</div>
     </div>`;
-    if (i < scoreEntries.length - 1) html += `<div style="font-size:16px;color:#8b949e;align-self:center">—</div>`;
+    if (i < scoreEntries.length - 1) html += `<div style="font-size:20px;color:#484f58;align-self:center;padding:0 4px">—</div>`;
   });
   html += `</div>`;
 
-  // Refusers callout
-  if (db.refusers?.length) {
-    db.refusers.forEach(r => {
-      html += `<div style="padding:6px 10px;margin-bottom:8px;border-radius:6px;background:rgba(248,81,73,0.08);border-left:3px solid #f85149;font-size:11px">
-        <span style="font-weight:700;color:#f85149">REFUSING TO PLAY:</span> ${rpPortrait(r.name, 'xs')} <span style="color:#8b949e">${r.name} (${r.tribe}) sits on the bench every round.</span>
+  // ── All-game refusers callout (persistent) ──
+  if (db.allGameRefusals?.length) {
+    db.allGameRefusals.forEach(r => {
+      html += `<div style="padding:6px 10px;margin-bottom:8px;border-radius:6px;background:rgba(248,81,73,0.07);border-left:3px solid #f85149;font-size:11px;display:flex;align-items:center;gap:8px">
+        <span style="font-weight:700;color:#f85149;letter-spacing:1px;font-size:9px">REFUSING TO PLAY</span>
+        ${rpPortrait(r.name, 'xs')}
+        <span style="color:#8b949e">${r.name} <span style="color:#6e7681">(${r.tribe})</span></span>
       </div>`;
     });
   }
 
-  // Per-round cards
+  // ── Per-round cards (one reveal click per round) ──
   db.rounds.forEach((r, i) => {
     const isVisible = i <= state.idx;
     if (!isVisible) {
-      html += `<div style="padding:12px;margin-bottom:4px;border:1px solid var(--border);border-radius:6px;opacity:0.12;font-size:12px;text-align:center;color:var(--muted)">Round ${r.num}</div>`;
+      html += `<div style="padding:12px;margin-bottom:4px;border:1px solid var(--border);border-radius:6px;opacity:0.10;font-size:12px;text-align:center;color:var(--muted)">Round ${r.num}</div>`;
     } else {
       const rTC = tribeColor(r.winner);
-      // Find round MVP
-      const allRoundScores = Object.entries(r.scores).flatMap(([tribe, ps]) => Object.entries(ps).map(([p, s]) => ({ name: p, score: s, tribe })));
-      const mvp = allRoundScores.sort((a, b) => b.score - a.score)[0];
+      const tribeNames = Object.keys(r.lineups || {});
 
-      html += `<div style="padding:12px;margin-bottom:6px;border-radius:8px;border-left:3px solid ${rTC};background:${rTC}08;animation:scrollDrop 0.3s var(--ease-broadcast) both">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <span style="font-family:var(--font-display);font-size:13px;letter-spacing:1px">ROUND ${r.num}</span>
-          <span style="font-size:11px;font-weight:700;color:${rTC}">${r.winner} WINS</span>
-        </div>`;
+      html += `<div style="padding:14px;margin-bottom:8px;border-radius:10px;border-left:3px solid ${rTC};background:${rTC}06;animation:scrollDrop 0.3s var(--ease-broadcast) both">`;
 
-      // Narrative paragraph with highlights
-      if (r.highlights.length) {
+      // Round header
+      html += `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span style="font-family:var(--font-display);font-size:12px;letter-spacing:1px;color:#6e7681">ROUND ${r.num}</span>
+        <span style="font-size:11px;font-weight:700;color:${rTC};letter-spacing:1px">${r.winner} WINS</span>
+      </div>`;
+
+      // ── Lineups ──
+      html += `<div style="display:flex;gap:12px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,0.05)">`;
+      tribeNames.forEach(tn => {
+        html += renderLineup(tn, r.lineups[tn], r.refusals);
+      });
+      html += `</div>`;
+
+      // ── Elimination sequence ──
+      const hitEvents = (r.eliminations || []).filter(e => e.method !== 'dodged');
+      const dodgeEvents = (r.eliminations || []).filter(e => e.method === 'dodged');
+      // Show key dodges (max 2) interspersed, then all elimination events
+      const displayEvents = [];
+      // Weave in up to 2 notable dodge events among the eliminations
+      const notableDodges = dodgeEvents.slice(0, 2);
+      let dodgeIdx = 0;
+      hitEvents.forEach((ev, idx) => {
+        if (dodgeIdx < notableDodges.length && idx === Math.floor(hitEvents.length / 3)) {
+          displayEvents.push(notableDodges[dodgeIdx++]);
+        }
+        displayEvents.push(ev);
+      });
+      while (dodgeIdx < notableDodges.length) displayEvents.push(notableDodges[dodgeIdx++]);
+
+      if (displayEvents.length) {
+        html += `<div style="margin-bottom:8px">`;
+        displayEvents.forEach(ev => { html += renderEliminationCard(ev); });
+        html += `</div>`;
+      } else {
+        html += `<div style="font-size:12px;color:#8b949e;margin-bottom:8px">${r.winner} wins the round in clean fashion.</div>`;
+      }
+
+      // ── Highlights ──
+      if (r.highlights?.length) {
         r.highlights.forEach(h => {
-          const hColor = h.type === 'friendlyFire' || h.type === 'refusal' ? '#f85149' : h.type === 'clutchDodge' ? '#58a6ff' : '#f0a500';
-          const hLabel = h.type === 'trickShot' ? 'TRICK SHOT' : h.type === 'rageMode' ? 'RAGE MODE' : h.type === 'clutchDodge' ? 'CLUTCH DODGE' : h.type === 'rushStrategy' ? 'RUSH STRATEGY' : h.type === 'friendlyFire' ? 'FRIENDLY FIRE' : 'REFUSED';
-          html += `<div style="margin-bottom:6px;padding:6px 8px;border-radius:4px;background:${hColor}0a">
-            <span style="font-size:9px;font-weight:700;letter-spacing:1px;color:${hColor}">${hLabel}</span>
-            <div style="display:inline-flex;gap:4px;vertical-align:middle;margin-left:4px">${rpPortrait(h.player, 'xs')}</div>
-            <div style="font-size:12px;margin-top:4px">${h.text}</div>
+          const hs = highlightStyle(h.type);
+          html += `<div style="margin-bottom:5px;padding:7px 9px;border-radius:5px;background:${hs.color}0a;border-left:2px solid ${hs.color}">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+              <span style="font-size:9px;font-weight:700;letter-spacing:1px;color:${hs.color}">${hs.label}</span>
+              ${rpPortrait(h.player, 'xs')}
+            </div>
+            <div style="font-size:12px;color:#e6edf3;line-height:1.5">${h.text}</div>
           </div>`;
         });
-      } else {
-        html += `<div style="font-size:12px;color:#8b949e">${r.winner} takes the round. No standout moments — just solid play across the board.</div>`;
       }
 
-      // Round MVP
-      if (mvp) {
-        html += `<div style="display:flex;align-items:center;gap:6px;margin-top:6px;font-size:10px;color:#8b949e">
-          ${rpPortrait(mvp.name, 'xs')} <span>MVP: <strong>${mvp.name}</strong></span>
-        </div>`;
-      }
-      html += `</div>`;
+      html += `</div>`; // end round card
     }
   });
 
-  // Final result (after all revealed)
+  // ── Final result ──
   if (allRevealed) {
     const wTC = tribeColor(db.winner);
-    const lTC = tribeColor(db.loser);
-    html += `<div style="padding:14px;margin-top:8px;border-radius:10px;border:2px solid ${wTC};background:${wTC}0a;text-align:center">
-      <div style="font-family:var(--font-display);font-size:16px;color:${wTC};margin-bottom:4px">${db.winner} WINS IMMUNITY</div>
-      <div style="font-size:12px;color:#8b949e">${db.loser} goes to tribal council.</div>
-      ${db.mvp ? `<div style="margin-top:8px;font-size:11px;color:#8b949e">Challenge MVP: ${rpPortrait(db.mvp, 'sm')}</div>` : ''}
+    html += `<div style="padding:16px;margin-top:8px;border-radius:10px;border:2px solid ${wTC};background:${wTC}0a;text-align:center">
+      <div style="font-family:var(--font-display);font-size:18px;color:${wTC};margin-bottom:4px;letter-spacing:2px">${db.winner} WINS IMMUNITY</div>
+      <div style="font-size:12px;color:#8b949e;margin-bottom:${db.mvp ? '10px' : '0'}">${db.loser} goes to tribal council.</div>
+      ${db.mvp ? `<div style="display:flex;align-items:center;justify-content:center;gap:8px;font-size:11px;color:#8b949e">
+        <span>Challenge MVP:</span>${rpPortrait(db.mvp, 'sm')} <span style="color:#f0a500;font-weight:600">${db.mvp}</span>
+      </div>` : ''}
     </div>`;
   }
 
-  // Buttons
+  // ── Sticky nav buttons ──
   if (!allRevealed) {
-    html += `<div style="position:sticky;bottom:0;padding:12px 0;text-align:center;background:linear-gradient(transparent,var(--bg-primary) 30%)">
-      <button class="rp-btn" onclick="${_dbReveal(state.idx + 1)}">NEXT</button>
+    html += `<div style="position:sticky;bottom:0;padding:12px 0;text-align:center;background:linear-gradient(transparent,rgba(7,9,13,0.95) 30%)">
+      <button class="rp-btn" onclick="${_dbReveal(state.idx + 1)}">NEXT (${state.idx + 2}/${totalItems})</button>
       <button class="rp-btn rp-btn-secondary" onclick="${_dbReveal(totalItems - 1)}" style="margin-left:8px">REVEAL ALL</button>
     </div>`;
   }

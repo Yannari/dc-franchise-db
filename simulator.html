@@ -50022,21 +50022,28 @@ function rpBuildDodgebrawl(ep) {
       html += `</div>`;
 
       // ── Elimination sequence with alive counters ──
-      const hitEvents = (r.eliminations || []).filter(e => e.method !== 'dodged');
-      const dodgeEvents = (r.eliminations || []).filter(e => e.method === 'dodged');
-      // Weave in max 2 notable dodges
+      // Show events in original order, but filter dodges to only those where both players are still alive
+      const eliminatedSoFar = new Set();
       const displayEvents = [];
-      const notableDodges = dodgeEvents.slice(0, 2);
-      let dodgeIdx = 0;
-      hitEvents.forEach((ev, idx) => {
-        if (dodgeIdx < notableDodges.length && idx === Math.floor(hitEvents.length / 3)) {
-          displayEvents.push(notableDodges[dodgeIdx++]);
+      (r.eliminations || []).forEach(ev => {
+        if (ev.method === 'dodged') {
+          // Only show dodge if neither player has been eliminated yet
+          if (!eliminatedSoFar.has(ev.dodger) && !eliminatedSoFar.has(ev.eliminatedBy)) {
+            displayEvents.push(ev);
+          }
+        } else {
+          displayEvents.push(ev);
+          if (ev.eliminated) eliminatedSoFar.add(ev.eliminated);
         }
-        displayEvents.push(ev);
       });
-      while (dodgeIdx < notableDodges.length) displayEvents.push(notableDodges[dodgeIdx++]);
+      // Cap dodges at 3 total to keep it readable
+      let dodgeCount = 0;
+      const filteredEvents = displayEvents.filter(ev => {
+        if (ev.method === 'dodged') { dodgeCount++; return dodgeCount <= 3; }
+        return true;
+      });
 
-      if (displayEvents.length) {
+      if (filteredEvents.length) {
         // Track alive counts as we render
         const aliveCount = {};
         tribeNames.forEach(tn => { aliveCount[tn] = (r.lineups[tn] || []).length; });
@@ -50047,7 +50054,7 @@ function rpBuildDodgebrawl(ep) {
           return `<span style="font-size:9px;color:${tc};font-weight:700">${tn}: ${aliveCount[tn]}</span>`;
         }).join(' <span style="color:#484f58">|</span> ');
         html += `<div style="display:flex;justify-content:center;gap:8px;padding:4px;margin-bottom:6px;font-size:9px;color:#8b949e;background:rgba(255,255,255,0.02);border-radius:4px">${counterBar()}</div>`;
-        displayEvents.forEach(ev => {
+        filteredEvents.forEach(ev => {
           html += renderEliminationCard(ev);
           // Update alive count after elimination events
           if (ev.eliminated && ev.tribe) {
@@ -50060,6 +50067,12 @@ function rpBuildDodgebrawl(ep) {
       } else {
         html += `<div style="font-size:12px;color:#8b949e;margin-bottom:8px">${r.winner} wins the round in clean fashion.</div>`;
       }
+
+      // ── Round winner announcement ──
+      const rWinTC = tribeColor(r.winner);
+      html += `<div style="text-align:center;padding:10px;margin:8px 0;border-radius:8px;border:2px solid ${rWinTC};background:${rWinTC}0c">
+        <span style="font-family:var(--font-display);font-size:16px;letter-spacing:2px;color:${rWinTC}">${r.winner.toUpperCase()} WINS ROUND ${r.num}</span>
+      </div>`;
 
       // ── Highlights ──
       if (r.highlights?.length) {

@@ -7352,11 +7352,16 @@ function simulateDodgebrawl(ep) {
     const available = allMembers.filter(m => !refusedThisRound.includes(m));
     if (available.length <= courtSize) return [...available]; // everyone plays
 
-    // The player at the current sit-out index sits this round
-    const idx = sitOutIndex[tribeName] % available.length;
-    const sittingOut = available[idx];
-    sitOutIndex[tribeName]++;
-    return available.filter(m => m !== sittingOut);
+    // Rotating window: sit-out index advances each round, wrapping around
+    // With 8 available and court 5, sit out indices [0,1,2], then [3,4,5], then [6,7,0], etc.
+    const numSitOut = available.length - courtSize;
+    const startIdx = sitOutIndex[tribeName] % available.length;
+    const sittingOutSet = new Set();
+    for (let i = 0; i < numSitOut; i++) {
+      sittingOutSet.add(available[(startIdx + i) % available.length]);
+    }
+    sitOutIndex[tribeName] += numSitOut; // advance by number sat out
+    return available.filter(m => !sittingOutSet.has(m));
   }
 
   // ── Highlight text pools ──

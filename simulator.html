@@ -8933,9 +8933,56 @@ function simulateTalentShow(ep) {
       if (isSaboteurReplacingAct) {
         rawScore = 0; // saboteur scores 0 — didn't perform a talent
         outcome = 'saboteurReplace';
-        // The target gets a temperament debuff for their next performance
-        const targetPerformer = Object.values(auditions).flatMap(a => a).find(a => a.name === sabotage.target && a.selected);
+        const _sabTarget = sabotage.target;
+
+        // ── SOCIAL DESTRUCTION: the real payoff ──
+        // Target: publicly humiliated — bond damage from everyone who witnessed
+        gs.activePlayers.forEach(p => {
+          if (p === name || p === _sabTarget) return;
+          addBond(p, _sabTarget, -0.3); // mild negative — people distance from the humiliated
+        });
+        // Target's own tribe rallies around them (sympathy)
+        const _sabTargetTribe = tribeMembers.find(tm => tm.members.includes(_sabTarget));
+        if (_sabTargetTribe) {
+          _sabTargetTribe.members.filter(m => m !== _sabTarget).forEach(m => {
+            addBond(m, _sabTarget, 0.5); // sympathy rally
+          });
+        }
+        // Target: popularity tanks, emotional devastation
+        if (!gs.popularity) gs.popularity = {};
+        gs.popularity[_sabTarget] = (gs.popularity[_sabTarget] || 0) - 4;
+        gs.popularity[_sabTarget + '_underdog'] = (gs.popularity[_sabTarget + '_underdog'] || 0) + 3; // sympathy underdog
+        // Target: temperament debuff for their performance
+        const targetPerformer = Object.values(auditions).flatMap(a => a).find(a => a.name === _sabTarget && a.selected);
         if (targetPerformer) targetPerformer._tempDebuff = (targetPerformer._tempDebuff || 0) + 3;
+
+        // ── SABOTEUR CONSEQUENCES ──
+        // +bigMoves credit (this IS a big move, even if evil)
+        const _sabState = gs.playerStates?.[name] || {};
+        _sabState.bigMoves = (_sabState.bigMoves || 0) + 1;
+        if (!gs.playerStates) gs.playerStates = {};
+        gs.playerStates[name] = _sabState;
+        if (!gs.bigMoveEarnersThisEp) gs.bigMoveEarnersThisEp = [];
+        if (!gs.bigMoveEarnersThisEp.includes(name)) gs.bigMoveEarnersThisEp.push(name);
+        // Heat: massive target on their back
+        if (!gs._talentShowHeat) gs._talentShowHeat = {};
+        gs._talentShowHeat[name] = { amount: 2.0, expiresEp: ((gs.episode || 0) + 1) + 2 };
+        // Saboteur's own tribe: mixed reactions
+        const _sabOwnTribe = tribeMembers.find(tm => tm.members.includes(name));
+        if (_sabOwnTribe) {
+          _sabOwnTribe.members.filter(m => m !== name).forEach(m => {
+            const mArch = players.find(p => p.name === m)?.archetype || '';
+            if (['villain', 'schemer', 'mastermind'].includes(mArch)) {
+              addBond(m, name, 0.2); // respect the play
+            } else {
+              addBond(m, name, -0.3); // that was cruel
+            }
+          });
+        }
+        // Cross-tribe: everyone hates the saboteur
+        gs.activePlayers.filter(p => p !== name && !(_sabOwnTribe?.members.includes(p))).forEach(p => {
+          addBond(p, name, -0.5);
+        });
       }
 
       // Disaster check (fires normally, but psych sabotage increases chance via temp debuff)

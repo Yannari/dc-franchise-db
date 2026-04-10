@@ -8775,7 +8775,15 @@ function simulateTalentShow(ep) {
     const pr = pronouns(sabotage.saboteur);
     backstageEvents.push({
       type: 'sabotageSetup', players: [sabotage.saboteur],
-      text: `${sabotage.saboteur} slips away while the tribe rehearses. ${pr.Sub} ${pr.sub === 'they' ? 'have' : 'has'} a plan for ${sabotage.target}. It's not about winning the show. It's about making sure someone else loses.`,
+      text: sabotage.type === 'props'
+        ? `${sabotage.saboteur} sneaks backstage to ${sabotage.target}'s setup. ${pr.Sub} ${pr.sub === 'they' ? 'tamper' : 'tampers'} with the props — loosened joints, wrong strings, marked cards. By the time ${sabotage.target} notices, it'll be too late.`
+        : sabotage.type === 'rumors'
+        ? `${sabotage.saboteur} works the crowd before the show. "I heard ${sabotage.target} is planning to throw the challenge." The whisper spreads. By showtime, half the audience believes it.`
+        : sabotage.type === 'psych'
+        ? `${sabotage.saboteur} finds ${sabotage.target} alone backstage. A few words — quiet, personal, calculated. ${sabotage.target}'s face changes. Whatever ${sabotage.saboteur} said, it hit a nerve.`
+        : sabotage.type === 'replace'
+        ? `${sabotage.saboteur} isn't rehearsing ${pr.posAdj} act. ${pr.Sub} ${pr.sub === 'they' ? 'are' : 'is'} rehearsing something else entirely — something aimed at ${sabotage.target}. This won't be a performance. It'll be a public execution.`
+        : `${sabotage.saboteur} slips away while the tribe rehearses. ${pr.Sub} ${pr.sub === 'they' ? 'have' : 'has'} a plan for ${sabotage.target}.`,
       badge: 'SABOTAGE SETUP', badgeClass: 'red',
     });
     addBond(sabotage.saboteur, sabotage.target, -0.2);

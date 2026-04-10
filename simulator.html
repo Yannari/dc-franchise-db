@@ -7517,9 +7517,9 @@ function simulateDodgebrawl(ep) {
       // After throwing, reduce thrower's power so they don't dominate every turn
       bestThrower.power = Math.max(0.5, bestThrower.power - 0.8);
 
-      // Catch check: 5% base, proportional to intuition (max ~8% at intuition 10)
+      // Catch check: RARE — max ~2% at intuition 10. Catches are highlight moments, not routine.
       const catcherStats = pStats(weakestTarget.name);
-      const canCatch = Math.random() < catcherStats.intuition * 0.008;
+      const canCatch = Math.random() < catcherStats.intuition * 0.002;
       if (canCatch) {
         // Catcher catches — thrower is eliminated instead
         bestThrower.alive = false;

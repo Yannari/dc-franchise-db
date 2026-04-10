@@ -7534,10 +7534,12 @@ function simulateDodgebrawl(ep) {
           method: 'caught',
         });
       } else {
-        // Dodge check: dodge chance = intuition * 0.06 + endurance * 0.03 + random(0, 0.15)
-        const dodgeChance = catcherStats.intuition * 0.06 + catcherStats.endurance * 0.03 + Math.random() * 0.15;
-        if (dodgeChance > 0.5) {
-          // Dodged — nothing happens this turn, reduce target power slightly so game progresses
+        // Dodge check: base chance from stats, decreases with each dodge (fatigue)
+        // First dodge ~40% for high stats, drops ~12% per consecutive dodge so rounds always end
+        const dodgeFatigue = (weakestTarget.dodgesThisRound || 0) * 0.12;
+        const dodgeChance = catcherStats.intuition * 0.03 + catcherStats.endurance * 0.015 + Math.random() * 0.15 - dodgeFatigue;
+        if (dodgeChance > 0.25) {
+          // Dodged — fatigue accumulates so eventually they'll get hit
           weakestTarget.dodgesThisRound++;
           perPlayerDodges[weakestTarget.name] = (perPlayerDodges[weakestTarget.name] || 0) + 1;
           weakestTarget.power = Math.max(0, weakestTarget.power - 0.5);

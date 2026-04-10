@@ -8782,7 +8782,7 @@ function simulateTalentShow(ep) {
       if (!nervousPerformer) return;
       const nonPerformers = t.members.filter(m => !selected.some(s => s.name === m));
       const talker = nonPerformers.sort((a, b) => pStats(b).social - pStats(a).social)[0];
-      if (!talker || Math.random() >= 0.30) return; // 30% chance per tribe
+      if (!talker || Math.random() >= 0.45) return; // 45% chance per tribe
       const pr = pronouns(nervousPerformer.name);
       // Buff: +1 temperament for the show (stored on performer object)
       nervousPerformer._tempBuff = (nervousPerformer._tempBuff || 0) + 1;
@@ -8832,7 +8832,7 @@ function simulateTalentShow(ep) {
       if (backstageEvents.length >= maxBackstage) return;
       const selected = (auditions[t.name] || []).filter(a => a.selected);
       const clumsy = selected.find(s => pStats(s.name).temperament <= 4);
-      if (!clumsy || Math.random() >= 0.25) return; // 25% chance per clumsy performer
+      if (!clumsy || Math.random() >= 0.35) return; // 35% chance per clumsy performer
       const pr = pronouns(clumsy.name);
       // Coin flip: self-injury (-2 score) or prop break (substitution)
       if (Math.random() < 0.5) {
@@ -8865,7 +8865,7 @@ function simulateTalentShow(ep) {
       if (backstageEvents.length >= maxBackstage) return;
       const cut = (auditions[t.name] || []).filter(a => !a.selected);
       const bold = cut.find(c => pStats(c.name).boldness >= 6);
-      if (!bold || Math.random() >= 0.30) return; // 30% chance per bold cut player
+      if (!bold || Math.random() >= 0.40) return; // 40% chance per bold cut player
       // 40% chance of being subbed in
       if (Math.random() < 0.40) {
         const selected = (auditions[t.name] || []).filter(a => a.selected);
@@ -8890,6 +8890,32 @@ function simulateTalentShow(ep) {
         });
       }
     });
+  }
+
+  // ── Backstage fallback: guarantee at least 2 events ──
+  if (backstageEvents.length < 2) {
+    // Fallback pep talk: find ANY performer + ANY non-performer with decent social
+    for (const t of tribeMembers) {
+      if (backstageEvents.length >= 2) break;
+      const selected = (auditions[t.name] || []).filter(a => a.selected);
+      const nonPerformers = t.members.filter(m => !selected.some(s => s.name === m));
+      const talker = nonPerformers.find(m => pStats(m).social >= 4);
+      const performer = selected[0];
+      if (talker && performer && !backstageEvents.some(e => e.type === 'pepTalk' && e.players.includes(talker))) {
+        const pr = pronouns(performer.name);
+        const _pepTexts = [
+          `${talker} finds ${performer.name} backstage. "You've got this." ${performer.name} nods. Simple words, but they land.`,
+          `${talker} catches ${performer.name} staring at the stage. "Nervous?" "Terrified." "Good. Means you care." ${performer.name} half-smiles.`,
+          `${talker} sits next to ${performer.name}. Doesn't say anything for a while. Then: "I'd pick you every time." ${performer.name} takes a breath.`,
+        ];
+        backstageEvents.push({
+          type: 'pepTalk', players: [talker, performer.name],
+          text: _pepTexts[Math.floor(Math.random() * _pepTexts.length)],
+          badge: 'PEP TALK', badgeClass: 'gold',
+        });
+        addBond(performer.name, talker, 0.3);
+      }
+    }
   }
 
   // ── Apply spy intel to sabotage targeting ──

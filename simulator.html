@@ -51678,7 +51678,7 @@ function rpBuildTalentShowStage(ep) {
     const tc = tribeColor(perf.tribe);
     const isDisaster = perf.outcome === 'disaster';
     const isClutch = perf.outcome === 'clutch';
-    const isSabotaged = perf.outcome === 'sabotaged';
+    const isSabotaged = perf.outcome === 'sabotaged' || !!perf.sabotageText || !!perf.sabotageType;
     const spotlightColor = isDisaster ? '#f85149' : isClutch ? '#f0a500' : isSabotaged ? '#da3633' : tc;
 
     // Act card with spotlight cone
@@ -51690,17 +51690,20 @@ function rpBuildTalentShowStage(ep) {
       animation:scrollDrop 0.4s var(--ease-broadcast) both">`;
 
     // Sabotage pre-card
-    if (isSabotaged && perf.sabotageText) {
+    if (isSabotaged && (perf.sabotageText || perf.sabotageStageText)) {
+      const _sabText = perf.sabotageStageText || perf.sabotageText;
+      const _saboteur = ts.sabotage?.saboteur;
       html += `<div style="padding:12px;margin-bottom:14px;border-radius:8px;
         background:linear-gradient(135deg,rgba(218,54,51,0.12) 0%,rgba(218,54,51,0.04) 100%);
         border:1px solid rgba(218,54,51,0.25);
         box-shadow:0 0 20px rgba(218,54,51,0.08)">
-        <div style="font-size:10px;font-weight:800;letter-spacing:2px;color:#da3633;margin-bottom:8px">🗡️ SABOTAGE</div>
+        <div style="font-size:10px;font-weight:800;letter-spacing:2px;color:#da3633;margin-bottom:8px">🗡️ SABOTAGED BY ${(_saboteur || 'UNKNOWN').toUpperCase()}</div>
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-          ${rpPortrait(ts.sabotage.saboteur, 'sm')}
-          <span style="font-size:12px;font-weight:600;color:#da3633">${ts.sabotage.saboteur}</span>
+          ${_saboteur ? rpPortrait(_saboteur, 'sm') : ''}
+          <span style="font-size:11px;color:#da3633">→</span>
+          ${rpPortrait(perf.name, 'sm')}
         </div>
-        <div style="font-size:12px;color:#e6edf3;font-style:italic;line-height:1.5">${perf.sabotageText}</div>
+        <div style="font-size:12px;color:#e6edf3;font-style:italic;line-height:1.5">${_sabText}</div>
       </div>`;
     }
 

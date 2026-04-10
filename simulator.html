@@ -27222,6 +27222,11 @@ function simulateJuryRoundtable(ep) {
     revoteLog:        ep.revoteLog        || [],
     revoteVotes:      ep.revoteVotes      || null,
     swapResult:       ep.swapResult       || null,
+    emissary:           ep.emissary           || null,
+    emissaryPick:       ep.emissaryPick       || null,
+    emissaryEliminated: ep.emissaryEliminated || null,
+    emissaryScoutEvents: ep.emissaryScoutEvents || null,
+    emissaryBondShifts: ep.emissaryBondShifts || null,
     exilePlayer:      ep.exilePlayer      || null,
     exileDuelResult:  ep.exileDuelResult  || null,
     exileDuelVotedOut: ep.exileDuelVotedOut || null,
@@ -32415,6 +32420,11 @@ function patchEpisodeHistory(ep) {
   if (ep.volunteerDuelReturn) h.volunteerDuelReturn = ep.volunteerDuelReturn;
   if (ep.schoolyardPick) h.schoolyardPick = ep.schoolyardPick;
   if (ep.schoolyardExileReturn) h.schoolyardExileReturn = ep.schoolyardExileReturn;
+  if (ep.emissary) h.emissary = ep.emissary;
+  if (ep.emissaryPick) h.emissaryPick = ep.emissaryPick;
+  if (ep.emissaryEliminated) h.emissaryEliminated = ep.emissaryEliminated;
+  if (ep.emissaryScoutEvents) h.emissaryScoutEvents = ep.emissaryScoutEvents;
+  if (ep.emissaryBondShifts) h.emissaryBondShifts = ep.emissaryBondShifts;
   h.blackVote1 = ep.blackVote1 || null;
   h.blackVote2 = ep.blackVote2 || null;
   h.blackVoteApplied = ep.blackVoteApplied || null;
@@ -40464,6 +40474,11 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'awakeAThonFirstOut'       ? (evt.badgeText || 'FIRST OUT')
                      : evt.type === 'rewardBackfireAlliance'   ? (evt.badgeText || 'BACKFIRE')
                      : evt.type === 'rewardBackfireBloc'       ? (evt.badgeText || 'LEFT BEHIND')
+                     : evt.type === 'emissaryVolunteer'       ? (evt.badgeText || 'EMISSARY')
+                     : evt.type === 'emissaryPitch'           ? (evt.badgeText || 'PITCH')
+                     : evt.type === 'emissaryObservation'     ? (evt.badgeText || 'EMISSARY')
+                     : evt.type === 'emissaryDeal'            ? (evt.badgeText || 'CROSS-TRIBE DEAL')
+                     : evt.type === 'emissaryPickEvent'       ? (evt.badgeText || 'EMISSARY PICK')
                      : evt.type === 'sideDeal'                  ? (evt.badgeText || 'SIDE DEAL')
                      : evt.type === 'infoTrade'                 ? (evt.badgeText || 'INFO TRADE')
                      : evt.type === 'loyaltyTest'               ? (evt.badgeText || 'LOYALTY TEST')

@@ -8708,15 +8708,25 @@ function simulateTalentShow(ep) {
       if (sabotage) return;
       const s = pStats(name);
       const arch = players.find(p => p.name === name)?.archetype || '';
-      // Sabotage: villain/schemer/mastermind with low social, chaos-agent with high mental, hothead with high strategic
-      const isLowSocialSchemer = ['villain', 'schemer', 'mastermind'].includes(arch) && s.social <= 5;
-      const isChaosPlanner = arch === 'chaos-agent' && s.mental >= 7;
-      const isStrategicHothead = arch === 'hothead' && s.strategic >= 7;
-      if (!isLowSocialSchemer && !isChaosPlanner && !isStrategicHothead) return;
-      // Base chance from strategic, boosted by boldness. Hotheads with high social think twice.
-      let sabChance = s.strategic * 0.03 + s.boldness * 0.01;
-      if (isStrategicHothead && s.social >= 6) sabChance *= 0.4; // high social hotheads hold back
-      if (Math.random() >= sabChance) return;
+      // Block nice archetypes entirely — they don't sabotage
+      if (['hero', 'loyal', 'loyal-soldier', 'protector', 'social-butterfly', 'showmancer'].includes(arch)) return;
+      // Proportional sabotage chance — every stat point matters, no thresholds
+      // villain/schemer/mastermind: strategic drives it, low social boosts it
+      // chaos-agent: mental drives it
+      // hothead: strategic drives it, social dampens it
+      // everyone else with the right stats: tiny base chance
+      let sabChance = 0;
+      if (['villain', 'schemer', 'mastermind'].includes(arch)) {
+        sabChance = s.strategic * 0.03 + (10 - s.social) * 0.01 + s.boldness * 0.008;
+      } else if (arch === 'chaos-agent') {
+        sabChance = s.mental * 0.02 + s.boldness * 0.01;
+      } else if (arch === 'hothead') {
+        sabChance = s.strategic * 0.025 + s.boldness * 0.01 - s.social * 0.015;
+      } else {
+        // Non-blocked archetypes: very low base from boldness + low loyalty
+        sabChance = s.boldness * 0.005 + (10 - s.loyalty) * 0.005 - 0.05;
+      }
+      if (Math.random() >= Math.max(0, sabChance)) return;
       // Pick target: highest audition scorer on an opposing tribe
       const otherTribes = tribeMembers.filter(ot => ot.name !== t.name);
       const targets = otherTribes.flatMap(ot => (auditions[ot.name] || []).filter(a => a.selected));
@@ -8748,8 +8758,11 @@ function simulateTalentShow(ep) {
       t.members.forEach(name => {
         if (backstageEvents.length >= maxBackstage || _spyFired) return;
         const arch = players.find(p => p.name === name)?.archetype || '';
-        if (!['villain', 'schemer', 'mastermind'].includes(arch)) return;
-        if (Math.random() >= 0.20) return; // 20% per villain/schemer
+        const _niceArchs = ['hero', 'loyal', 'loyal-soldier', 'protector', 'social-butterfly', 'showmancer'];
+        if (_niceArchs.includes(arch)) return; // nice archetypes don't spy
+        const _spyS = pStats(name);
+        // Proportional: strategic drives spy missions
+        if (Math.random() >= _spyS.strategic * 0.025) return; // strategic 8 = 20%, strategic 5 = 12%
         const ally = t.members.find(m => m !== name && getBond(name, m) >= 1);
         if (!ally) return;
         const otherTribes = tribeMembers.filter(ot => ot.name !== t.name);
@@ -8797,11 +8810,12 @@ function simulateTalentShow(ep) {
     tribeMembers.forEach(t => {
       if (backstageEvents.length >= maxBackstage) return;
       const selected = (auditions[t.name] || []).filter(a => a.selected);
-      const nervousPerformer = selected.find(s => pStats(s.name).temperament <= 6);
-      if (!nervousPerformer) return;
+      // Proportional: lower temperament = more likely to need a pep talk
+      const nervousPerformer = selected.slice().sort((a, b) => pStats(a.name).temperament - pStats(b.name).temperament)[0];
+      if (!nervousPerformer || Math.random() >= (10 - pStats(nervousPerformer.name).temperament) * 0.06) return; // temp 3 = 42%, temp 7 = 18%
       const nonPerformers = t.members.filter(m => !selected.some(s => s.name === m));
       const talker = nonPerformers.sort((a, b) => pStats(b).social - pStats(a).social)[0];
-      if (!talker || Math.random() >= 0.45) return; // 45% chance per tribe
+      if (!talker) return;
       const pr = pronouns(nervousPerformer.name);
       // Buff: +1 temperament for the show (stored on performer object)
       nervousPerformer._tempBuff = (nervousPerformer._tempBuff || 0) + 1;
@@ -8850,8 +8864,9 @@ function simulateTalentShow(ep) {
     tribeMembers.forEach(t => {
       if (backstageEvents.length >= maxBackstage) return;
       const selected = (auditions[t.name] || []).filter(a => a.selected);
-      const clumsy = selected.find(s => pStats(s.name).temperament <= 4);
-      if (!clumsy || Math.random() >= 0.35) return; // 35% chance per clumsy performer
+      // Proportional: lower temperament = more accident-prone
+      const clumsy = selected.slice().sort((a, b) => pStats(a.name).temperament - pStats(b.name).temperament)[0];
+      if (!clumsy || Math.random() >= (10 - pStats(clumsy.name).temperament) * 0.04) return; // temp 2 = 32%, temp 6 = 16%
       const pr = pronouns(clumsy.name);
       // Coin flip: self-injury (-2 score) or prop break (substitution)
       if (Math.random() < 0.5) {
@@ -8883,8 +8898,9 @@ function simulateTalentShow(ep) {
     tribeMembers.forEach(t => {
       if (backstageEvents.length >= maxBackstage) return;
       const cut = (auditions[t.name] || []).filter(a => !a.selected);
-      const bold = cut.find(c => pStats(c.name).boldness >= 6);
-      if (!bold || Math.random() >= 0.40) return; // 40% chance per bold cut player
+      // Proportional: higher boldness = more likely to keep practicing after being cut
+      const bold = cut.slice().sort((a, b) => pStats(b.name).boldness - pStats(a.name).boldness)[0];
+      if (!bold || Math.random() >= pStats(bold.name).boldness * 0.04) return; // boldness 8 = 32%, boldness 5 = 20%
       // 40% chance of being subbed in
       if (Math.random() < 0.40) {
         const selected = (auditions[t.name] || []).filter(a => a.selected);
@@ -8916,8 +8932,13 @@ function simulateTalentShow(ep) {
     tribeMembers.forEach(t => {
       if (backstageEvents.length >= maxBackstage) return;
       const selected = (auditions[t.name] || []).filter(a => a.selected);
-      const scared = selected.find(s => pStats(s.name).boldness <= 4 && pStats(s.name).temperament <= 5);
-      if (!scared || Math.random() >= 0.35) return;
+      // Proportional: low boldness + low temperament = stage fright. Higher stats = less fear.
+      const scared = selected.slice().sort((a, b) => {
+        const aS = pStats(a.name), bS = pStats(b.name);
+        return (aS.boldness + aS.temperament) - (bS.boldness + bS.temperament);
+      })[0];
+      const _fearScore = scared ? ((10 - pStats(scared.name).boldness) * 0.02 + (10 - pStats(scared.name).temperament) * 0.02) : 0;
+      if (!scared || Math.random() >= _fearScore) return; // boldness 3+temp 3 = 28%, boldness 7+temp 7 = 12%
       const pr = pronouns(scared.name);
       const _texts = [
         `${scared.name} is pacing behind the stage. "I can't do this. I can't go out there." ${pr.PosAdj} hands are shaking.`,
@@ -8937,8 +8958,11 @@ function simulateTalentShow(ep) {
   if (backstageEvents.length < maxBackstage) {
     tribeMembers.forEach(t => {
       if (backstageEvents.length >= maxBackstage) return;
-      const trashTalker = t.members.find(m => pStats(m).boldness >= 7 && ['villain', 'schemer', 'wildcard', 'chaos-agent'].includes(players.find(p => p.name === m)?.archetype || ''));
-      if (!trashTalker || Math.random() >= 0.30) return;
+      // Proportional: boldness drives trash talk. Block nice archetypes.
+      const _niceArchs = ['hero', 'loyal', 'loyal-soldier', 'protector', 'social-butterfly', 'showmancer'];
+      const trashCandidates = t.members.filter(m => !_niceArchs.includes(players.find(p => p.name === m)?.archetype || ''));
+      const trashTalker = trashCandidates.sort((a, b) => pStats(b).boldness - pStats(a).boldness)[0];
+      if (!trashTalker || Math.random() >= pStats(trashTalker).boldness * 0.035) return; // boldness 8 = 28%, boldness 5 = 17%
       const otherTribes = tribeMembers.filter(ot => ot.name !== t.name);
       const targetTribe = otherTribes[Math.floor(Math.random() * otherTribes.length)];
       const targetPerformer = (auditions[targetTribe.name] || []).filter(a => a.selected)[0];

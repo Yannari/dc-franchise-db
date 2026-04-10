@@ -1636,7 +1636,7 @@ const TWIST_CATALOG = [
   { id:'rock-draw',        emoji:'🪨', name:'Rock Draw',            category:'elim',       phase:'any',        desc:'No re-vote on a tie — non-immune, non-tied players draw rocks. Random exit.', engineType:'rock-draw'      },
   { id:'open-vote',        emoji:'📢', name:'Open Vote',            category:'elim',       phase:'any',        desc:'Votes are public — cast one by one in an order chosen by the immunity winner. Cascade pressure builds. Everyone sees who said whose name.', engineType:'open-vote' },
   { id:'ambassadors',     emoji:'🤝', name:'Ambassadors',          category:'elim',       phase:'any',       desc:'Schedule on the merge episode. Each tribe names an ambassador. They meet and must agree on one elimination — or one ambassador draws the wrong rock.',  engineType:'ambassadors' },
-  { id:'emissary-vote', emoji:'🕵️', name:'Emissary Vote', category:'elim', phase:'pre-merge', desc:'Winning tribe sends an emissary to losing tribe\'s tribal. After the normal vote, the emissary eliminates a second player.', engineType:'emissary-vote', incompatible:['ambassadors','double-tribal','multi-tribal','kidnapping'], minTribes:2 },
+  { id:'emissary-vote', emoji:'🕵️', name:'Emissary Vote', category:'elim', phase:'pre-merge', desc:'Winning tribe sends an emissary to losing tribe\'s tribal. After the normal vote, the emissary eliminates a second player.', engineType:'emissary-vote', incompatible:['ambassadors','double-tribal','multi-tribal','kidnapping','no-tribal'], minTribes:2 },
   // Returns
   { id:'returning-player', emoji:'🔁', name:'Returning Player',     category:'returns',    phase:'any',        desc:'A previously eliminated player returns. Tribal still runs — someone goes home. Net zero change in count.',  engineType:'returning-player'},
   { id:'spirit-island',    emoji:'👻', name:'Spirit Island',        category:'returns',    phase:'post-merge', desc:'A jury member returns to camp for one day as a temporary visitor. They observe, reconnect, and share what the jury thinks.',    engineType:'spirit-island'   },
@@ -14685,8 +14685,11 @@ function applyTwist(ep, twist, isPrimary = true) {
     // ── Own tribe bond shifts ──
     _evWinMembers.filter(p => p !== _evEmissary).forEach(p => {
       const pS = pStats(p);
-      if (['villain','schemer','mastermind'].includes(_evArch) && pS.intuition >= 6) {
-        addBond(p, _evEmissary, -0.2);
+      // Suspicious archetypes: intuitive tribemates see through the act (proportional)
+      if (['villain','schemer','mastermind'].includes(_evArch)) {
+        const suspicion = -pS.intuition * 0.04; // intuition 10 = -0.4, intuition 1 = -0.04
+        const admiration = 0.3;
+        addBond(p, _evEmissary, admiration + suspicion); // net ranges from +0.26 to -0.1
       } else {
         addBond(p, _evEmissary, 0.3);
       }
@@ -15572,7 +15575,13 @@ function allCampEvents(ep) {
         pitcher: pitcher.name,
         pitchTarget: pitchTarget,
         pitchStrength: pitchStrength,
-        text: `${pitcher.name} pulls ${emissary} aside. "${pitchTarget} is the weakest link here. Trust me on this."`,
+        text: (['villain','schemer','mastermind'].includes(pS.archetype)
+          ? `${pitcher.name} corners ${emissary}. "Get rid of ${pitchTarget}. ${pronouns(pitchTarget).Sub} ${pronouns(pitchTarget).sub==='they'?'are':'is'} playing everyone."`
+          : pS.strategic >= 7
+          ? `${pitcher.name} lays out the case to ${emissary}. "${pitchTarget} is the biggest threat here. The numbers don't lie."`
+          : pS.social >= 7
+          ? `${pitcher.name} pulls ${emissary} aside. "Nobody here would miss ${pitchTarget}. Trust me on this."`
+          : `${pitcher.name} approaches ${emissary}. "${pitchTarget} is the weakest link. Just saying."`),
         consequences: `Pitch influence: ${(pitchStrength * 100).toFixed(0)}% receptiveness.`,
         badgeText: 'PITCH', badgeClass: 'gold'
       };
@@ -26992,17 +27001,14 @@ function simulateJuryRoundtable(ep) {
         ep.emissaryBondShifts = [];
         const _evLoseMembers = (ep.tribalPlayers || []).filter(p => p !== ep.eliminated && p !== _evPickName && gs.activePlayers.includes(p));
 
-        // Allies of the picked player: grudge (-1.5 scaled by bond)
+        // Allies of the picked player: grudge proportional to bond, resentment for neutrals
         _evLoseMembers.forEach(p => {
           const allyBond = getBond(p, _evPickName);
-          if (allyBond >= 2.0) {
-            const grudge = -(1.5 * allyBond * 0.15);
-            addBond(p, _evEmissary, grudge);
-            ep.emissaryBondShifts.push({ from: p, to: _evEmissary, delta: grudge, reason: 'ally-grudge' });
-          } else {
-            addBond(p, _evEmissary, -0.3);
-            ep.emissaryBondShifts.push({ from: p, to: _evEmissary, delta: -0.3, reason: 'resentment' });
-          }
+          // Proportional: positive bond = scaled grudge, neutral/negative = flat resentment
+          const delta = allyBond > 0 ? -(allyBond * 0.22) : -0.3;
+          const reason = allyBond > 0 ? 'ally-grudge' : 'resentment';
+          addBond(p, _evEmissary, delta);
+          ep.emissaryBondShifts.push({ from: p, to: _evEmissary, delta, reason });
         });
 
         // Players who pitched against the picked player or had them as vote target: gratitude
@@ -27019,12 +27025,16 @@ function simulateJuryRoundtable(ep) {
         const _evPickThreat = threatScore(_evPickName);
         _evOwnMembers.forEach(p => {
           const pS = pStats(p);
-          if (_evPickThreat >= 5 && pS.strategic >= 5) {
-            addBond(p, _evEmissary, 0.4);
-            ep.emissaryBondShifts.push({ from: p, to: _evEmissary, delta: 0.4, reason: 'good-move' });
-          } else if (_evPickThreat < 4 && ['hero', 'loyal', 'protector'].includes(pS.archetype)) {
-            addBond(p, _evEmissary, -0.3);
-            ep.emissaryBondShifts.push({ from: p, to: _evEmissary, delta: -0.3, reason: 'cruel-pick' });
+          // Proportional: strategic players approve proportional to target's threat
+          const approval = _evPickThreat * 0.04 * pS.strategic * 0.04; // max ~0.64 at threat 10/strat 10
+          // Hero/loyal types disapprove proportional to how NON-threatening the pick was
+          const disapproval = ['hero', 'loyal', 'protector'].includes(pS.archetype)
+            ? (10 - _evPickThreat) * 0.03 * pS.loyalty * 0.03 // max ~0.27 at threat 1/loyalty 10
+            : 0;
+          const delta = approval - disapproval;
+          if (Math.abs(delta) > 0.02) {
+            addBond(p, _evEmissary, delta);
+            ep.emissaryBondShifts.push({ from: p, to: _evEmissary, delta, reason: delta > 0 ? 'good-move' : 'cruel-pick' });
           }
         });
 
@@ -40611,7 +40621,6 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'emissaryPitch'           ? (evt.badgeText || 'PITCH')
                      : evt.type === 'emissaryObservation'     ? (evt.badgeText || 'EMISSARY')
                      : evt.type === 'emissaryDeal'            ? (evt.badgeText || 'CROSS-TRIBE DEAL')
-                     : evt.type === 'emissaryPickEvent'       ? (evt.badgeText || 'EMISSARY PICK')
                      : evt.type === 'sideDeal'                  ? (evt.badgeText || 'SIDE DEAL')
                      : evt.type === 'infoTrade'                 ? (evt.badgeText || 'INFO TRADE')
                      : evt.type === 'loyaltyTest'               ? (evt.badgeText || 'LOYALTY TEST')
@@ -40779,6 +40788,8 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : isMoleExposed ? 'red'
                      : isMoleSuspicion ? 'gold'
                      : evt.type === 'volunteerExileDuel' ? 'gold'
+                     : evt.type === 'emissaryVolunteer' || evt.type === 'emissaryPitch' || evt.type === 'emissaryDeal' ? 'gold'
+                     : evt.type === 'emissaryObservation' ? ''
                      : isMoleReveal ? 'gold'
                      : isDareComplete || isDareMVP || isDareGift || isDarePact ? 'gold'
                      : isDarePactBetray || isDareAllyBetray || isDareRefusal || isDareElim ? 'red'

@@ -9396,7 +9396,7 @@ function buildVoteReason(voter, target, type, ctx = {}) {
     const scores = pool.map(target => {
       const tThreat = threatScore(target);
       const tBond = getBond(emissary, target);
-      const tHeat = computeHeat(target, pool, ep);
+      const tHeat = computeHeat(target, pool, ep.alliances || []);
       const tPitch = pitchInfluence[target] || 0;
 
       const score = tThreat * threatWeight
@@ -15546,7 +15546,7 @@ function allCampEvents(ep) {
     // ── 1. PITCHES (1-2 losing tribe members approach the emissary) ──
     const _evPitchCandidates = loseMembers.map(name => {
       const s = pStats(name);
-      const heat = computeHeat(name, loseMembers, ep);
+      const heat = computeHeat(name, loseMembers, ep.alliances || []);
       const bond = getBond(emissary, name);
       return { name, score: s.social * 0.05 + s.strategic * 0.04 + heat * 0.03 + bond * 0.02 + Math.random() * 0.10 };
     }).sort((a, b) => b.score - a.score);

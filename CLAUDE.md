@@ -260,8 +260,8 @@ is NOT actually loyal. Always check behavioral track record alongside raw stats.
 - When a mechanic creates information (leak, snoop, confession), it must flow into targeting (computeHeat, simulateVotes) or it's cosmetic.
 
 ## Challenge System (Total Drama-Inspired)
-Three schedulable challenge twists replace the normal immunity challenge. Each has its own
-dare/fear pool, VP screens (sequential click-to-reveal), camp events, and episode history.
+Five schedulable challenge twists replace the normal immunity challenge. Each has its own
+VP screens (sequential click-to-reveal), camp events, and episode history.
 Twist category: `challenge` in TWIST_CATALOG. Separate from immunity modifiers.
 
 ### Phobia Factor (`phobia-factor`) — Pre-merge tribe challenge
@@ -296,22 +296,53 @@ Twist category: `challenge` in TWIST_CATALOG. Separate from immunity modifiers.
 - `DARE_POOL` / `DARE_CATEGORIES` constants (80 dares, 4 categories with titles + descriptions)
 - VP: sequential click-to-reveal with live freebie counter bar
 
+### Cliff Dive (`cliff-dive`) — Pre-merge tribe challenge
+- `simulateCliffDive(ep)` — 3-phase: jump willingness, crate haul, hot tub build
+- Jump: `boldness * 0.06 + physical * 0.02 + loyalty * 0.03 + 0.10` per player
+- Chickens get chicken hat camp event + blame heat on losing tribe (`gs._cliffDiveBlame`)
+- Standout: first to volunteer per tribe (boldness-scored, 15% underdog chance)
+- Phase 2 haul: avg physical+endurance, manpower penalty for chickens, wagon advantage for most jumpers
+- Phase 3 build: avg mental+social, same manpower penalty
+- Winner: combined haul+build score. Tiebreaker: jump count.
+- VP: click-to-reveal per player with JUMPED/CHICKENED OUT + phase score bars + chicken hat gallery
+- `CLIFF_DIVE_JUMPED` (3 tiers) / `CLIFF_DIVE_CHICKEN` reaction text pools
+
+### Awake-A-Thon (`awake-a-thon`) — Pre-merge tribe endurance
+- `simulateAwakeAThon(ep)` — 3-phase: 20km run, feast trap, stay awake
+- Run: `physical * 0.06 + endurance * 0.05 + 0.20`. DNF players skip feast.
+- Feast: trap — eaters get `-0.15` stay-awake penalty
+- Awake-A-Thon: sequential dropout, `endurance * 0.07 + mental * 0.04 + physical * 0.02 + 0.10 + feastDebuff`
+- **Mid-challenge social events** fire between dropouts (the core innovation):
+  - Bonding (~50%): social-butterfly/hero/showmancer prioritized, same-tribe bias +3.0
+  - Alliance pitch (~20%, max 2): mastermind/schemer/villain archetypes, same-tribe bias +2.0
+  - Showmance (~15%): showmancer archetype gets lower bond threshold (0.5 vs 2.0)
+  - Cheating (~5%, max 1): boldness+low-loyalty, caught by intuition, disqualified if caught
+  - Scheming (~15%): villain/schemer only, targets sleeping player from OTHER tribe
+- Phase markers at 30%/70% dropout: "12 Hours", "24 Hours — Fairy Tales", "85 Hours — History of Canada"
+- Winner: last tribe with someone awake. With 3 tribes: continues until only 1 tribe remains.
+- Iron Will: last player standing gets +0.4 bond from teammates
+- Blame: first out on losing tribe gets `gs._awakeAThonBlame` +1.0 heat
+
 ### Challenge VP Pattern
-All three use the same VP approach:
-- Sequential click-to-reveal (NEXT button + REVEAL ALL)
-- Global reveal functions: `tddRevealNext(uid)`, `suRevealNext(uid)`, `pfRevealNext(uid)`
-- Data stored in `data-*` attributes on container (innerHTML doesn't execute scripts)
+All five use the same VP approach:
+- Sequential click-to-reveal (NEXT button + REVEAL ALL) with sticky bottom buttons
+- `_tvState[key]` pattern for reveal state (idx tracks progress)
+- Reveal onclick must save+restore `.rp-main` scrollTop to prevent scroll reset
 - Registered in `buildVPScreens()` — replace normal challenge screen when active
+- Social event steps: use `stepType` key (not `type`) to avoid collision with event's own `type` field
 
 ### Camp Event Integration
 - Challenge-system events push to `ep.campEvents[tribeName].post` BEFORE `generateCampEvents`
 - `generateCampEvents(ep, 'post')` preserves existing `.post` events (appends, doesn't overwrite)
 - `generateCampEvents(ep, 'pre')` preserves existing `.post` events (fixed — was resetting to [])
 
-## Cold Open — "Previously On"
+## Cold Open — "Previously On" + Dock Arrival
 - `rpBuildColdOpen(ep)` — dynamic narrative threads from previous episode
-- Shows: last tribal recap, close vote, betrayals, romance, mole, side deals, fights, challenge throws
-- Triple Dog Dare / Say Uncle / Phobia Factor recap cards
+- **Episode 1 special**: renders `_rpBuildDockArrival(ep)` instead — TDI-style player arrival
+  sequence with archetype-based dialogue, dock chemistry reactions, host monologue
+  (adapts for all-newbie / all-returnee / mixed cast via per-player `isReturnee` flag)
+- Episodes 2+: last tribal recap, close vote, betrayals, romance, mole, side deals, fights, challenge throws
+- Cliff Dive / Awake-A-Thon / Triple Dog Dare / Say Uncle / Phobia Factor recap cards
 - Uses `prevSnap` (previous episode snapshot) to avoid spoilers
 
 ## Backlog Files

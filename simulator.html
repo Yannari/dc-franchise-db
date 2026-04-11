@@ -9587,6 +9587,218 @@ function checkFirstMove(ep) {
   });
 }
 
+function checkShowmanceSabotage(ep) {
+  if (seasonConfig.romance === 'disabled') return;
+  if (!gs.showmances?.length) return;
+
+  const NICE_ARCHS = new Set(['hero', 'loyal', 'loyal-soldier', 'protector', 'social-butterfly', 'showmancer']);
+  const activeShowmances = gs.showmances.filter(sh =>
+    sh.phase !== 'broken-up' && sh.players.every(p => gs.activePlayers.includes(p))
+  );
+  if (!activeShowmances.length) return;
+
+  // Find potential saboteurs
+  gs.activePlayers.forEach(saboteur => {
+    const arch = players.find(p => p.name === saboteur)?.archetype || '';
+    if (!['villain', 'schemer', 'mastermind'].includes(arch)) return;
+    const sS = pStats(saboteur);
+
+    // Proportional chance
+    const chance = (10 - sS.loyalty) * 0.02 + sS.strategic * 0.015;
+    if (Math.random() >= chance) return;
+
+    // Find a showmance where saboteur hates one member
+    const targetShowmance = activeShowmances.find(sh => {
+      return sh.players.some(p => getBond(saboteur, p) <= -2) &&
+        !sh.players.includes(saboteur);
+    });
+    if (!targetShowmance) return;
+
+    // Target = the one the saboteur hates. Partner = the one they'll kiss.
+    const target = targetShowmance.players.find(p => getBond(saboteur, p) <= -2);
+    const partner = targetShowmance.players.find(p => p !== target);
+    if (!target || !partner) return;
+
+    // Must be accessible (same tribe or post-merge)
+    const accessible = gs.isMerged || gs.tribes.some(t => t.members.includes(saboteur) && t.members.includes(partner));
+    if (!accessible) return;
+
+    const prS = pronouns(saboteur);
+    const prP = pronouns(partner);
+    const prT = pronouns(target);
+
+    const _sabTexts = [
+      `${saboteur} corners ${partner} alone. What follows looks romantic from a distance — and that's exactly what ${saboteur} wanted. By the time ${target} walks around the corner, the damage is done.`,
+      `${saboteur} kisses ${partner}. It's calculated. ${partner} is confused. ${target} sees everything. The showmance will never be the same.`,
+      `${saboteur} engineers a private moment with ${partner}. A touch, a whisper, a look that lasts too long. ${target} doesn't catch them — but someone else does, and word travels fast.`,
+      `"I just thought you should know what your partner is really like." ${saboteur} doesn't need to lie. ${prS.Sub} just needs to create doubt. The kiss was the weapon. The rumor is the bullet.`,
+    ];
+
+    // Consequences
+    addBond(target, partner, -2.0);
+    addBond(partner, saboteur, -1.5);
+    addBond(partner, target, -1.0);
+
+    // Partner gets heat (looks like cheater)
+    if (!gs._upTheCreekHeat) gs._upTheCreekHeat = {};
+    gs._upTheCreekHeat[partner] = { amount: 1.0, expiresEp: ((gs.episode || 0) + 1) + 1 };
+    // Saboteur gets heat
+    gs._upTheCreekHeat[saboteur] = { amount: 1.5, expiresEp: ((gs.episode || 0) + 1) + 2 };
+
+    // Popularity
+    if (!gs.popularity) gs.popularity = {};
+    gs.popularity[target] = (gs.popularity[target] || 0) + 3; // sympathy
+    gs.popularity[partner] = (gs.popularity[partner] || 0) - 1; // looks bad
+
+    // BigMoves for saboteur
+    if (!gs.playerStates) gs.playerStates = {};
+    if (!gs.playerStates[saboteur]) gs.playerStates[saboteur] = {};
+    gs.playerStates[saboteur].bigMoves = (gs.playerStates[saboteur].bigMoves || 0) + 1;
+
+    // People who disliked the target warm to saboteur
+    gs.activePlayers.forEach(m => {
+      if (m === saboteur || m === target || m === partner) return;
+      if (getBond(m, target) <= -1) addBond(m, saboteur, 0.2);
+    });
+
+    // Witness bond damage to saboteur
+    gs.activePlayers.filter(m => m !== saboteur && m !== target && m !== partner).forEach(m => {
+      addBond(m, saboteur, -0.5);
+    });
+
+    // Showmance enters tested phase — 30% instant breakup
+    targetShowmance.tested = true;
+    if (Math.random() < 0.30) {
+      targetShowmance.phase = 'broken-up';
+      targetShowmance.breakupEp = (gs.episode || 0) + 1;
+      targetShowmance.breakupType = 'sabotaged';
+    }
+
+    // Create fake spark (never becomes real)
+    if (!gs.romanticSparks) gs.romanticSparks = [];
+    gs.romanticSparks.push({
+      players: [saboteur, partner], sparkEp: (gs.episode || 0) + 1,
+      context: 'sabotage', intensity: 0, fake: true, saboteur: saboteur,
+    });
+
+    // Camp event
+    const campKey = gs.isMerged ? (gs.mergeName || 'merge') : (gs.tribes.find(t => t.members.includes(saboteur))?.name || 'merge');
+    if (!ep.campEvents) ep.campEvents = {};
+    if (!ep.campEvents[campKey]) ep.campEvents[campKey] = { pre: [], post: [] };
+    if (!ep.campEvents[campKey].post) ep.campEvents[campKey].post = [];
+    ep.campEvents[campKey].post.push({
+      type: 'showmanceSabotage', players: [saboteur, partner, target],
+      text: _sabTexts[Math.floor(Math.random() * _sabTexts.length)],
+      badgeText: 'SHOWMANCE SABOTAGE', badgeClass: 'red'
+    });
+  });
+}
+
+function _checkShowmanceChalMoment(ep, phaseKey, phases, personalScores, triggerType, tribeMembers) {
+  if (seasonConfig.romance === 'disabled') return;
+  if (!gs.showmances?.length) return;
+
+  const activeShowmances = gs.showmances.filter(sh =>
+    sh.phase !== 'broken-up' && sh.players.every(p => gs.activePlayers.includes(p))
+  );
+  if (!activeShowmances.length) return;
+
+  // Max 1 showmance moment per challenge call
+  let fired = false;
+
+  activeShowmances.forEach(sh => {
+    if (fired) return;
+    const [a, b] = sh.players;
+    // Both must be in the challenge (in tribeMembers)
+    const allMembers = tribeMembers ? tribeMembers.flatMap(t => t.members || []) : gs.activePlayers;
+    if (!allMembers.includes(a) || !allMembers.includes(b)) return;
+
+    const prA = pronouns(a), prB = pronouns(b);
+    const bond = getBond(a, b);
+
+    // Select moment based on trigger type
+    let moment = null;
+
+    if (triggerType === 'danger' && Math.random() < 0.4) {
+      // Protective Instinct
+      const protector = pStats(a).boldness >= pStats(b).boldness ? a : b;
+      const protected_ = protector === a ? b : a;
+      const prP = pronouns(protector);
+      const _texts = [
+        `${protector} drops everything and grabs ${protected_}. "Stay behind me." The tribe loses a few seconds. ${protector} doesn't care.`,
+        `${protector} puts ${prP.posAdj} body between ${protected_} and the danger. Instinct, not strategy. The tribe notices.`,
+        `${protector} reaches for ${protected_} first. Not the canoe. Not the supplies. ${protected_}. That says everything.`,
+      ];
+      personalScores[protector] = (personalScores[protector] || 0) - 0.5;
+      addBond(a, b, 0.4);
+      if (!gs.popularity) gs.popularity = {};
+      gs.popularity[protector] = (gs.popularity[protector] || 0) + 1;
+      moment = { type: 'showmanceProtective', players: [protector, protected_],
+        text: _texts[Math.floor(Math.random() * _texts.length)],
+        personalScores: { [protector]: -0.5 }, badgeText: 'PROTECTIVE', badgeClass: 'gold' };
+
+    } else if (triggerType === 'partner-interaction' && Math.random() < 0.3) {
+      // Jealousy Flare
+      const jealous = Math.random() < 0.5 ? a : b;
+      const other = jealous === a ? b : a;
+      const prJ = pronouns(jealous);
+      const _texts = [
+        `${jealous} sees ${other} laughing with someone else. ${prJ.PosAdj} jaw tightens. ${prJ.Sub} ${prJ.sub === 'they' ? 'say' : 'says'} nothing. The silence is loud.`,
+        `${jealous} watches ${other} from across the camp. When ${other} finally comes back, the conversation is clipped. Something's wrong.`,
+        `"Who was that?" ${jealous} tries to sound casual. ${prJ.Sub} ${prJ.sub === 'they' ? "don't" : "doesn't"}. ${other} notices.`,
+      ];
+      addBond(a, b, -0.3);
+      moment = { type: 'showmanceJealousy', players: [jealous, other],
+        text: _texts[Math.floor(Math.random() * _texts.length)],
+        personalScores: {}, badgeText: 'JEALOUSY', badgeClass: 'red' };
+
+    } else if (triggerType === 'teamwork' && Math.random() < 0.3) {
+      // Sacrifice Play
+      const sacrificer = pStats(a).loyalty >= pStats(b).loyalty ? a : b;
+      const beneficiary = sacrificer === a ? b : a;
+      const prS = pronouns(sacrificer);
+      const _texts = [
+        `${sacrificer} gives up ${prS.posAdj} share to ${beneficiary}. The tribe sees it. Some think it's sweet. Others think it's a liability.`,
+        `${sacrificer} takes the harder task so ${beneficiary} doesn't have to. ${prS.Sub} ${prS.sub === 'they' ? "don't" : "doesn't"} even hesitate.`,
+        `"Take mine." ${sacrificer} hands ${prS.posAdj} advantage to ${beneficiary}. The tribe is split between admiration and concern.`,
+      ];
+      personalScores[sacrificer] = (personalScores[sacrificer] || 0) - 1.0;
+      addBond(a, b, 0.5);
+      if (!gs.popularity) gs.popularity = {};
+      gs.popularity[sacrificer] = (gs.popularity[sacrificer] || 0) + 2;
+      const _bmState = gs.playerStates?.[sacrificer] || {};
+      _bmState.bigMoves = (_bmState.bigMoves || 0) + 1;
+      if (!gs.playerStates) gs.playerStates = {};
+      gs.playerStates[sacrificer] = _bmState;
+      moment = { type: 'showmanceSacrifice', players: [sacrificer, beneficiary],
+        text: _texts[Math.floor(Math.random() * _texts.length)],
+        personalScores: { [sacrificer]: -1.0 }, badgeText: 'SACRIFICE', badgeClass: 'gold' };
+
+    } else if (Math.random() < 0.25) {
+      // PDA Reaction (default fallback)
+      const _texts = [
+        `${a} and ${b} are not being subtle. The tribe has opinions. Some smile. Some roll their eyes. One person starts planning how to use it.`,
+        `Everyone can see ${a} and ${b}. The looks. The whispered conversations. The tribe is watching and taking notes.`,
+        `${a} and ${b} forget there are cameras. And a tribe. And a game. Someone coughs loudly. They don't notice.`,
+      ];
+      // Tribe reactions — bond shifts from observers
+      allMembers.filter(m => m !== a && m !== b).forEach(m => {
+        const mArch = players.find(p => p.name === m)?.archetype || '';
+        if (['hero', 'loyal', 'social-butterfly'].includes(mArch)) addBond(m, a, 0.1);
+        else if (['villain', 'schemer'].includes(mArch)) addBond(m, a, -0.1); // target forming
+      });
+      moment = { type: 'showmancePDA', players: [a, b],
+        text: _texts[Math.floor(Math.random() * _texts.length)],
+        personalScores: {}, badgeText: 'PDA', badgeClass: 'gold' };
+    }
+
+    if (moment) {
+      phases[phaseKey].push({ ...moment, phase: phaseKey });
+      fired = true;
+    }
+  });
+}
+
 function simulateSuckyOutdoors(ep) {
   const tribes = gs.tribes;
   const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
@@ -10410,6 +10622,9 @@ function simulateSuckyOutdoors(ep) {
   // Bonus events for 2-tribe seasons (Phase 3)
   tribes.forEach(t => _bonusEvents('nightfall', t));
 
+  // Showmance challenge moment — teamwork scenario (fireside bonding context)
+  _checkShowmanceChalMoment(ep, 'nightfall', phases, personalScores, 'teamwork', tribes);
+
   // ══ PHASE 4: The Night (3-4 events per tribe, severity from camp quality) ══
   const lostPlayers = []; // { name, tribe, lostInPhase, returnDelay }
 
@@ -10646,6 +10861,9 @@ function simulateSuckyOutdoors(ep) {
 
   // Bonus events for 2-tribe seasons (Phase 4)
   tribes.forEach(t => _bonusEvents('theNight', t));
+
+  // Showmance challenge moment — danger scenario (bear encounter context)
+  _checkShowmanceChalMoment(ep, 'theNight', phases, personalScores, 'danger', tribes);
 
   // ══ PHASE 5: Morning Race (1-2 events per tribe) ══
   const raceScores = {};
@@ -11491,6 +11709,9 @@ function simulateUpTheCreek(ep) {
     });
   });
 
+  // Showmance challenge moment — partner-interaction scenario (canoe bonding context)
+  tribes.forEach(t => _checkShowmanceChalMoment(ep, 'paddleOut', phases, personalScores, 'partner-interaction', tribes));
+
   // ══ PHASE 2: PORTAGE (3-5 encounters per tribe) ══
   const ALL_PORTAGE = [
     'woolly-beavers', 'giant-geese', 'quicksand', 'injury', 'shortcut', 'dangerous-crossing',
@@ -12008,6 +12229,9 @@ function simulateUpTheCreek(ep) {
       } // end switch
     }); // end portage encounters
   }); // end tribes portage
+
+  // Showmance challenge moment — danger scenario (portage danger context)
+  tribes.forEach(t => _checkShowmanceChalMoment(ep, 'portage', phases, personalScores, 'danger', tribes));
 
   // ══ PHASE 3: BUILD FIRE ══
   const fireScores = {};
@@ -28460,6 +28684,8 @@ function generateCampEvents(ep, phase = 'both') {
   updateRomanticSparks(ep);
   // ── First move: fire when spark intensity crosses archetype threshold ──
   checkFirstMove(ep);
+  // ── Showmance sabotage: villain/schemer engineers romantic crisis to destroy a couple ──
+  checkShowmanceSabotage(ep);
   // ── Showmance formation: check all pairs after bonds are updated this episode ──
   checkShowmanceFormation(ep);
   // ── Showmance lifecycle: progress phases, generate phase-specific events ──
@@ -46551,6 +46777,11 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'firstImpressionsSwap'      ? (evt.badgeText || 'SWAPPED')
                      : evt.type === 'paranoiaSpiral'       ? '⚠ Paranoia Spiral'
                      : evt.type === 'firstMove'            ? (evt.badgeText || 'FIRST MOVE')
+                     : evt.type === 'showmanceProtective'  ? (evt.badgeText || 'PROTECTIVE')
+                     : evt.type === 'showmanceJealousy' && evt.badgeText ? evt.badgeText
+                     : evt.type === 'showmanceSacrifice'   ? (evt.badgeText || 'SACRIFICE')
+                     : evt.type === 'showmancePDA'         ? (evt.badgeText || 'PDA')
+                     : evt.type === 'showmanceSabotage'    ? (evt.badgeText || 'SHOWMANCE SABOTAGE')
                      : evt.type === 'showmanceSpark'       ? '💕 Showmance'
                      : evt.type === 'showmanceHoneymoon'   ? '💕 Honeymoon'
                      : evt.type === 'showmanceNoticed'     ? '⚠ Power Couple'
@@ -46685,6 +46916,8 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : isAffairNeg || isAffairChoice ? 'red'
                      : isAffairGold ? 'gold'
                      : evt.type === 'firstMove' ? 'gold'
+                     : evt.type === 'showmanceProtective' || evt.type === 'showmanceSacrifice' || evt.type === 'showmancePDA' ? 'gold'
+                     : evt.type === 'showmanceSabotage' ? 'red'
                      : evt.type === 'showmanceSpark' || evt.type === 'showmanceHoneymoon' || evt.type === 'showmanceRideOrDie' || evt.type === 'showmanceRekindle' ? 'green'
                      : evt.type === 'showmanceNoticed' || evt.type === 'showmanceTarget' ? 'gold'
                      : evt.type === 'showmanceJealousy' || evt.type === 'showmanceBreakup' ? 'red'

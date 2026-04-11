@@ -13903,9 +13903,18 @@ function simulatePaintballHunt(ep) {
     const roundMatchups = matchups.filter(m => m.round === roundNum);
     const _nothingM = roundMatchups.filter(m => m.result === 'nothing');
     const _realM = roundMatchups.filter(m => m.result !== 'nothing');
+    // Collect deer painted this round (by matchups or friendly fire) — events involving them are invalid
+    const _paintedThisRound = new Set(
+      _realM.filter(m => m.result === 'hit' || m.result === 'ambush' || m.result === 'sneak' || m.result === 'double-hit' || m.result === 'friendly-fire').map(m => m.target)
+    );
+    // Filter events: drop any event where a deer player was painted out this round
+    const _validEvents = roundEvents.filter(ev => {
+      if (!ev.players?.length) return true;
+      return !ev.players.some(p => _paintedThisRound.has(p) && isDeer(p));
+    });
     const _timeline = [];
     _realM.forEach(m => _timeline.push({ kind: 'matchup', ...m }));
-    roundEvents.forEach(ev => _timeline.push({ kind: 'event', ...ev }));
+    _validEvents.forEach(ev => _timeline.push({ kind: 'event', ...ev }));
     // Shuffle for natural interleaving
     for (let _ti = _timeline.length - 1; _ti > 0; _ti--) {
       const _tj = Math.floor(Math.random() * (_ti + 1));

@@ -46887,6 +46887,9 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'utcCursedIdol'           ? (evt.badgeText || evt.badge || 'CURSED IDOL')
                      : evt.type === 'utcBoneyMist'            ? (evt.badgeText || evt.badge || 'BONEY MIST')
                      : evt.type === 'utcSkeletonFind'         ? (evt.badgeText || evt.badge || 'BONES')
+                     : evt.type === 'utcMVP'                  ? (evt.badgeText || 'MVP PADDLER')
+                     : evt.type === 'utcHeroMoment'           ? (evt.badgeText || 'HERO MOMENT')
+                     : evt.type === 'utcWeakLink'             ? (evt.badgeText || 'WEAK LINK')
                      : evt.type === 'soMorale'                 ? (evt.badgeText || evt.badge || 'MORALE BOOST')
                      : evt.type === 'soFireConfession'         ? (evt.badgeText || evt.badge || 'CONFESSION')
                      : evt.type === 'soSurvivor'               ? (evt.badgeText || evt.badge || 'SURVIVOR')
@@ -47095,7 +47098,8 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'utcPartnerPick' || evt.type === 'utcFastPair' || evt.type === 'utcShortcut' || evt.type === 'utcLighter' || evt.type === 'utcFireStarter' || evt.type === 'utcSwimmerHero' || evt.type === 'utcSprintFinish' || evt.type === 'utcMotivational' || evt.type === 'utcSoloPaddler' || evt.type === 'utcCanoeRomance' ? 'gold'
                      : evt.type === 'utcRejected' || evt.type === 'utcSlowPair' || evt.type === 'utcCapsized' || evt.type === 'utcDroppedCanoe' || evt.type === 'utcPaddleBurn' || evt.type === 'utcAdviceGiver' || evt.type === 'utcCheating' || evt.type === 'utcInjury' ? 'red'
                      : evt.type === 'utcWildlife' || evt.type === 'utcQuicksand' || evt.type === 'utcPhotoFinish' || evt.type === 'utcBoneyMist' || evt.type === 'utcSkeletonFind' ? ''
-                     : evt.type === 'utcCursedIdol' ? 'red'
+                     : evt.type === 'utcCursedIdol' || evt.type === 'utcWeakLink' ? 'red'
+                     : evt.type === 'utcMVP' || evt.type === 'utcHeroMoment' ? 'gold'
                      : isMoleReveal ? 'gold'
                      : isDareComplete || isDareMVP || isDareGift || isDarePact ? 'gold'
                      : isDarePactBetray || isDareAllyBetray || isDareRefusal || isDareElim ? 'red'

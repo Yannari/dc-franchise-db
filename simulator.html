@@ -13907,14 +13907,30 @@ function simulatePaintballHunt(ep) {
     mudSlid.clear();
     newMudSlid.forEach(d => mudSlid.add(d));
 
+    // ── Build interleaved timeline (matchups + events shuffled together, stored once) ──
+    const roundMatchups = matchups.filter(m => m.round === roundNum);
+    const _nothingM = roundMatchups.filter(m => m.result === 'nothing');
+    const _realM = roundMatchups.filter(m => m.result !== 'nothing');
+    const _timeline = [];
+    _realM.forEach(m => _timeline.push({ kind: 'matchup', ...m }));
+    roundEvents.forEach(ev => _timeline.push({ kind: 'event', ...ev }));
+    // Shuffle for natural interleaving
+    for (let _ti = _timeline.length - 1; _ti > 0; _ti--) {
+      const _tj = Math.floor(Math.random() * (_ti + 1));
+      [_timeline[_ti], _timeline[_tj]] = [_timeline[_tj], _timeline[_ti]];
+    }
+    // Append "nothing" batch at the end
+    if (_nothingM.length) _timeline.push({ kind: 'nothing-batch', hunters: _nothingM.map(m => m.hunter) });
+
     // ── Save round data ──
     rounds.push({
       round: roundNum,
       name: roundName,
-      matchups: matchups.filter(m => m.round === roundNum),
+      timeline: _timeline,
+      matchups: roundMatchups,
       events: roundEvents,
       unpaintedByTribe: Object.fromEntries(tribes.map(t => [t.name, [...unpaintedDeer[t.name]]])),
-      paintedThisRound: matchups.filter(m => m.round === roundNum && (m.result === 'hit' || m.result === 'ambush' || m.result === 'sneak' || m.result === 'double-hit' || m.result === 'friendly-fire')).map(m => m.target)
+      paintedThisRound: roundMatchups.filter(m => m.result === 'hit' || m.result === 'ambush' || m.result === 'sneak' || m.result === 'double-hit' || m.result === 'friendly-fire').map(m => m.target)
     });
   }
 
@@ -57828,34 +57844,17 @@ function rpBuildPaintballHunt(ep) {
   const state = _tvState[stateKey];
 
   // Build flat steps array: each round's matchups + events become sequential reveal steps
+  // Use pre-shuffled timeline from simulation (stable across re-renders)
   const steps = [];
   pb.rounds.forEach(r => {
-    // Interleave matchups and events — shuffle them together for a natural timeline
-    const roundSteps = [];
-    const nothingHunters = [];
-    (r.matchups || []).forEach(m => {
-      if (m.result === 'nothing') {
-        nothingHunters.push(m.hunter);
-      } else {
-        roundSteps.push({ type: 'matchup', data: m, round: r.round, roundName: r.name, unpaintedByTribe: r.unpaintedByTribe });
-      }
+    (r.timeline || []).forEach(item => {
+      // stepType = 'matchup', 'event', or 'nothing-batch' (item.kind)
+      // data = the item itself (has all original properties: hunter/target/result for matchups, type/text/players for events)
+      steps.push({ stepType: item.kind, data: item, round: r.round, roundName: r.name, unpaintedByTribe: r.unpaintedByTribe });
     });
-    (r.events || []).forEach(ev => {
-      roundSteps.push({ type: 'event', data: ev, round: r.round, roundName: r.name, unpaintedByTribe: r.unpaintedByTribe });
-    });
-    // Shuffle the round's steps so matchups and events interleave
-    for (let i = roundSteps.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [roundSteps[i], roundSteps[j]] = [roundSteps[j], roundSteps[i]];
-    }
-    steps.push(...roundSteps);
-    // "Found nothing" batch always at end of round (minor detail, not dramatic)
-    if (nothingHunters.length) {
-      steps.push({ type: 'nothing-batch', hunters: nothingHunters, round: r.round, roundName: r.name });
-    }
   });
   // Final result step
-  steps.push({ type: 'result', round: 'final' });
+  steps.push({ stepType: 'result', data: {}, round: 'final' });
 
   const totalSteps = steps.length;
   const allRevealed = state.idx >= totalSteps - 1;
@@ -57874,7 +57873,7 @@ function rpBuildPaintballHunt(ep) {
   const revealedPainted = new Set();
   steps.forEach((step, i) => {
     if (i > state.idx) return;
-    if (step.type === 'matchup') {
+    if (step.stepType === 'matchup') {
       const m = step.data;
       if (m.result === 'hit' || m.result === 'ambush' || m.result === 'sneak' || m.result === 'double-hit' || m.result === 'friendly-fire') {
         revealedPainted.add(m.target);
@@ -57974,7 +57973,7 @@ function rpBuildPaintballHunt(ep) {
     }
 
     // ── Visible card ──
-    if (step.type === 'event') {
+    if (step.stepType === 'event') {
       const ev = step.data;
       // Color-code by event type
       let borderColor = '#8b949e', glowStyle = '', emoji = '📢';
@@ -58023,7 +58022,7 @@ function rpBuildPaintballHunt(ep) {
       html += `<div style="font-size:11px;color:#c9d1d9;line-height:1.5">${emoji} ${ev.text || ''}</div>`;
       html += `</div>`;
 
-    } else if (step.type === 'matchup') {
+    } else if (step.stepType === 'matchup') {
       const m = step.data;
       const isHit = m.result === 'hit' || m.result === 'ambush' || m.result === 'sneak' || m.result === 'double-hit' || m.result === 'friendly-fire';
       const isMiss = m.result === 'miss' || m.result === 'double-miss';
@@ -58101,14 +58100,14 @@ function rpBuildPaintballHunt(ep) {
         html += `</div></div>`;
       }
 
-    } else if (step.type === 'nothing-batch' && isVisible) {
+    } else if (step.stepType === 'nothing-batch' && isVisible) {
       // ── COLLAPSED "FOUND NOTHING" ──
-      const names = step.hunters.map(h => h.split(' ')[0]).join(', ');
+      const names = (step.data.hunters || []).map(h => h.split(' ')[0]).join(', ');
       html += `<div style="padding:8px 12px;margin-bottom:4px;border-radius:6px;border:1px solid rgba(255,255,255,0.04);background:rgba(255,255,255,0.01);opacity:0.5;animation:scrollDrop 0.2s var(--ease-broadcast) both">
         <span style="font-size:10px;color:#6e7681">❓ Lost in the woods: ${names}</span>
       </div>`;
 
-    } else if (step.type === 'result' && allRevealed) {
+    } else if (step.stepType === 'result' && allRevealed) {
       // ── FINAL RESULT ──
       const winTC = tribeColor(pb.winner);
       const loseTC = tribeColor(pb.loser);

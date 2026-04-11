@@ -53041,9 +53041,10 @@ function rpBuildSuckyOutdoors(ep) {
   if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
   const state = _tvState[stateKey];
 
-  // 5 phases, one reveal each
+  // 6 reveals: announcement, hike, camp, nightfall, night, morning
   const PHASES = [
-    { key: 'announcement', label: '🥾 ANNOUNCEMENT + HIKE',  bg: 'linear-gradient(180deg,#1a2a1a 0%,#0f1a0f 100%)', accent: '#3fb950' },
+    { key: 'announcement', label: '📢 CHALLENGE ANNOUNCEMENT', bg: 'linear-gradient(180deg,#1a2a1a 0%,#0f1a0f 100%)', accent: '#3fb950', isAnnouncement: true },
+    { key: 'hike',         label: '🥾 THE HIKE',               bg: 'linear-gradient(180deg,#1a2a1a 0%,#0f1a0f 100%)', accent: '#3fb950' },
     { key: 'setupCamp',    label: '🏕️ SETUP CAMP',           bg: 'linear-gradient(180deg,#2a1a0a 0%,#1a0f05 100%)', accent: '#f0a500' },
     { key: 'nightfall',    label: '🌙 NIGHTFALL',             bg: 'linear-gradient(180deg,#0a0a2a 0%,#050515 100%)', accent: '#8b5cf6' },
     { key: 'theNight',     label: '🌑 THE NIGHT',             bg: 'linear-gradient(180deg,#0a0508 0%,#050305 100%)', accent: '#f85149' },
@@ -53098,7 +53099,10 @@ function rpBuildSuckyOutdoors(ep) {
   // Render each phase
   PHASES.forEach((phase, phaseIdx) => {
     const isVisible = phaseIdx <= state.idx;
-    const events = so.phases?.[phase.key] || [];
+    // 'hike' phase reads from 'announcement' data; 'announcement' phase shows navigator selection only
+    const events = phase.key === 'hike' ? (so.phases?.announcement || [])
+      : phase.key === 'announcement' ? [] // announcement shows navigators, not events
+      : (so.phases?.[phase.key] || []);
 
     if (!isVisible) {
       html += `<div style="padding:12px;margin-bottom:8px;border:1px solid rgba(255,255,255,0.06);border-radius:8px;opacity:0.12;text-align:center;font-size:11px;color:var(--muted)">${phase.label}</div>`;
@@ -53111,6 +53115,23 @@ function rpBuildSuckyOutdoors(ep) {
     html += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:10px 14px;border-radius:8px;background:${phase.accent}14;border-left:3px solid ${phase.accent}">
       <span style="font-family:var(--font-display);font-size:14px;letter-spacing:1.5px;color:${phase.accent}">${phase.label}</span>
     </div>`;
+
+    // Announcement phase: show navigator selection per tribe
+    if (phase.isAnnouncement && so.navigators) {
+      html += `<div style="font-size:12px;color:#cdd9e5;text-align:center;margin-bottom:12px;font-style:italic">Survive one night in the woods. Return to camp in the morning. First tribe back wins immunity.</div>`;
+      Object.entries(so.navigators).forEach(([tribe, nav]) => {
+        const tc = tribeColor(tribe);
+        const pr = pronouns(nav);
+        html += `<div style="display:flex;align-items:center;gap:10px;padding:10px;margin-bottom:6px;border-radius:8px;border:1px solid ${tc}44;background:${tc}08">
+          ${rpPortrait(nav, 'sm')}
+          <div>
+            <div style="font-size:12px;font-weight:700;color:${tc}">${tribe}</div>
+            <div style="font-size:11px;color:#cdd9e5"><strong>${nav}</strong> takes the map and compass. ${pr.Sub} ${pr.sub === 'they' ? 'lead' : 'leads'} the way.</div>
+          </div>
+          <span style="font-size:9px;font-weight:700;letter-spacing:1px;color:${tc};margin-left:auto;background:${tc}18;padding:2px 8px;border-radius:3px">NAVIGATOR</span>
+        </div>`;
+      });
+    }
 
     // Camp quality indicator for setupCamp phase
     if (phase.key === 'setupCamp' && so.campQuality) {
@@ -53126,12 +53147,37 @@ function rpBuildSuckyOutdoors(ep) {
       html += `</div>`;
     }
 
-    // Events
-    if (events.length === 0) {
+    // Events grouped by tribe
+    if (events.length === 0 && !phase.isAnnouncement) {
       html += `<div style="font-size:11px;color:#6e7681;text-align:center;padding:10px">No events this phase.</div>`;
     }
 
+    // Group events by tribe (use first player's tribe, or 'general' for cross-tribe)
+    const _tribeGroups = {};
+    const _tribeOrder = (ep.tribesAtStart || []).map(t => t.name);
     events.forEach(evt => {
+      const firstPlayer = evt.players?.[0];
+      let evtTribe = 'general';
+      if (firstPlayer) {
+        for (const t of (ep.tribesAtStart || [])) {
+          if (t.members?.includes(firstPlayer)) { evtTribe = t.name; break; }
+        }
+      }
+      if (!_tribeGroups[evtTribe]) _tribeGroups[evtTribe] = [];
+      _tribeGroups[evtTribe].push(evt);
+    });
+
+    // Render in tribe order, then general
+    const _renderOrder = [..._tribeOrder.filter(t => _tribeGroups[t]), ...(_tribeGroups.general ? ['general'] : [])];
+    _renderOrder.forEach(tribeName => {
+      const tribeEvents = _tribeGroups[tribeName] || [];
+      if (!tribeEvents.length) return;
+      if (tribeName !== 'general') {
+        const tc = tribeColor(tribeName);
+        html += `<div style="font-family:var(--font-display);font-size:12px;letter-spacing:1px;color:${tc};margin:10px 0 6px;padding-bottom:4px;border-bottom:1px solid ${tc}22">${tribeName.toUpperCase()}</div>`;
+      }
+
+    tribeEvents.forEach(evt => {
       const isLostEvt = evt.type === 'soLost' || evt.type === 'soCostTribe';
       const bc = _bc(evt.badgeClass || (isLostEvt ? 'red' : 'gold'));
       const players = evt.players || [];
@@ -53157,7 +53203,8 @@ function rpBuildSuckyOutdoors(ep) {
           <div style="font-size:12px;color:#8b949e;line-height:1.5">${evt.text}</div>
         </div>`;
       }
-    });
+    }); // end tribeEvents.forEach
+    }); // end _renderOrder.forEach
 
     // Morning race: show tribe score bars
     if (phase.key === 'morningRace' && so.survivalScores) {

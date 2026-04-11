@@ -13609,8 +13609,10 @@ function simulatePaintballHunt(ep) {
           }
         }
 
-        // ── Sympathy shot: hunter shoots already-painted deer ──
-        if (Math.random() < 0.06) {
+        // ── Sympathy shot: hunter shoots already-painted deer (petty archetypes only) ──
+        const _sympArch = players.find(p => p.name === hunter)?.archetype || '';
+        const _sympPetty = ['villain', 'chaos-agent', 'schemer', 'hothead'].includes(_sympArch);
+        if (_sympPetty && Math.random() < s.boldness * 0.02 + (10 - s.loyalty) * 0.01) {
           const alreadyPainted = [...paintedOut].filter(d => tribeOf[d] !== hunterTribe);
           if (alreadyPainted.length) {
             const sympTarget = _rp(alreadyPainted);
@@ -57676,12 +57678,12 @@ function rpBuildPaintballHunt(ep) {
   // Build flat steps array: each round's matchups + events become sequential reveal steps
   const steps = [];
   pb.rounds.forEach(r => {
-    // One step per event, then one step per matchup
-    (r.events || []).forEach(ev => {
-      steps.push({ type: 'event', data: ev, round: r.round, roundName: r.name, unpaintedByTribe: r.unpaintedByTribe });
-    });
+    // Matchups first (hits/misses), then events (drama reactions)
     (r.matchups || []).forEach(m => {
       steps.push({ type: 'matchup', data: m, round: r.round, roundName: r.name, unpaintedByTribe: r.unpaintedByTribe });
+    });
+    (r.events || []).forEach(ev => {
+      steps.push({ type: 'event', data: ev, round: r.round, roundName: r.name, unpaintedByTribe: r.unpaintedByTribe });
     });
   });
   // Final result step
@@ -57737,8 +57739,8 @@ function rpBuildPaintballHunt(ep) {
         <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:3px">`;
     (r.hunters || []).forEach(h => {
       html += `<div style="display:flex;flex-direction:column;align-items:center;gap:1px">
-        ${rpPortrait(h, 'xs')}
-        <span style="font-size:7px">🔫</span>
+        ${rpPortrait(h, 'sm')}
+        <span style="font-size:8px">🔫</span>
       </div>`;
     });
     html += `</div></div>
@@ -57747,8 +57749,8 @@ function rpBuildPaintballHunt(ep) {
         <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:3px">`;
     (r.deer || []).forEach(d => {
       html += `<div style="display:flex;flex-direction:column;align-items:center;gap:1px">
-        ${rpPortrait(d, 'xs')}
-        <span style="font-size:7px">🦌</span>
+        ${rpPortrait(d, 'sm')}
+        <span style="font-size:8px">🦌</span>
       </div>`;
     });
     html += `</div></div>
@@ -57770,10 +57772,10 @@ function rpBuildPaintballHunt(ep) {
     allDeer.forEach(d => {
       const isPainted = revealedPainted.has(d);
       if (isPainted) {
-        html += `<div style="position:relative"><div style="filter:grayscale(1);opacity:0.4">${rpPortrait(d, 'xs')}</div>
-          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(5deg);width:20px;height:20px;border-radius:50%;background:radial-gradient(circle,${tc}cc,${tc}44);pointer-events:none"></div></div>`;
+        html += `<div style="position:relative"><div style="filter:grayscale(1);opacity:0.4">${rpPortrait(d, 'sm')}</div>
+          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(5deg);width:28px;height:28px;border-radius:50%;background:radial-gradient(circle,${tc}cc,${tc}44);pointer-events:none"></div></div>`;
       } else {
-        html += `<div style="border:1px solid #3fb95066;border-radius:6px;padding:1px">${rpPortrait(d, 'xs')}</div>`;
+        html += `<div style="border:1px solid #3fb95066;border-radius:6px;padding:1px">${rpPortrait(d, 'sm')}</div>`;
       }
     });
     html += `</div></div>`;
@@ -57844,11 +57846,7 @@ function rpBuildPaintballHunt(ep) {
       if (ev.players?.length) {
         html += `<div style="display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap">`;
         ev.players.forEach(p => {
-          const tc = tribeOf[p] ? tribeColor(tribeOf[p]) : '#8b949e';
-          html += `<div style="display:flex;flex-direction:column;align-items:center;gap:2px">
-            ${rpPortrait(p, 'sm')}
-            <span style="font-size:8px;color:${tc};font-weight:600;max-width:50px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.split(' ')[0]}</span>
-          </div>`;
+          html += rpPortrait(p, 'sm');
         });
         html += `</div>`;
       }
@@ -57876,8 +57874,7 @@ function rpBuildPaintballHunt(ep) {
         // Hunter portrait
         html += `<div style="display:flex;flex-direction:column;align-items:center;gap:2px">
           ${rpPortrait(m.hunter, 'sm')}
-          <span style="font-size:9px;color:${hunterTC};font-weight:600">${m.hunter.split(' ')[0]}</span>
-          <span style="font-size:7px;color:#8b949e">HUNTER</span>
+          <span style="font-size:7px;color:#8b949e;font-weight:600">HUNTER</span>
         </div>`;
         // Arrow
         html += `<div style="font-size:18px;color:${targetTC}">→</div>`;
@@ -57887,7 +57884,6 @@ function rpBuildPaintballHunt(ep) {
             <div style="filter:grayscale(1);opacity:0.6">${rpPortrait(m.target, 'sm')}</div>
             <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(5deg);width:32px;height:32px;border-radius:50%;background:radial-gradient(circle,${targetTC}cc,${targetTC}44);animation:paintSplat 0.5s ease-out both;pointer-events:none"></div>
           </div>
-          <span style="font-size:9px;color:${targetTC};font-weight:600">${m.target.split(' ')[0]}</span>
           <span style="font-size:7px;color:#f85149;font-weight:700">ELIMINATED</span>
         </div>`;
         html += `</div>`;
@@ -57901,15 +57897,9 @@ function rpBuildPaintballHunt(ep) {
         html += `<div style="padding:12px;margin-bottom:6px;border-radius:8px;border:1px solid rgba(63,185,80,0.15);background:rgba(63,185,80,0.03);animation:scrollDrop 0.3s var(--ease-broadcast) both">`;
         html += `<div style="display:inline-block;font-size:9px;font-weight:800;letter-spacing:1px;color:#3fb950;background:rgba(63,185,80,0.15);padding:2px 8px;border-radius:3px;margin-bottom:8px">DODGED</div>`;
         html += `<div style="display:flex;align-items:center;justify-content:center;gap:14px">`;
-        html += `<div style="display:flex;flex-direction:column;align-items:center;gap:2px">
-          ${rpPortrait(m.hunter, 'sm')}
-          <span style="font-size:9px;color:${hunterTC};font-weight:600">${m.hunter.split(' ')[0]}</span>
-        </div>`;
+        html += rpPortrait(m.hunter, 'sm');
         html += `<div style="font-size:14px;color:#f85149">✗</div>`;
-        html += `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;animation:dodgeSlide 0.6s ease-out">
-          ${rpPortrait(m.target, 'sm')}
-          <span style="font-size:9px;color:${targetTC};font-weight:600">${m.target.split(' ')[0]}</span>
-        </div>`;
+        html += `<div style="animation:dodgeSlide 0.6s ease-out">${rpPortrait(m.target, 'sm')}</div>`;
         html += `</div>`;
         html += `<div style="text-align:center;font-size:10px;color:#8b949e;margin-top:6px">💨 ${m.target?.split(' ')[0] || 'Deer'} dodges!</div>`;
         html += `</div>`;
@@ -57930,15 +57920,9 @@ function rpBuildPaintballHunt(ep) {
         html += `<div style="padding:12px;margin-bottom:6px;border-radius:8px;border:1px solid rgba(210,168,255,0.3);background:rgba(210,168,255,0.05);animation:scrollDrop 0.3s var(--ease-broadcast) both">`;
         html += `<div style="display:inline-block;font-size:9px;font-weight:800;letter-spacing:1px;color:#d2a8ff;background:rgba(210,168,255,0.15);padding:2px 8px;border-radius:3px;margin-bottom:8px">PROTECTION</div>`;
         html += `<div style="display:flex;align-items:center;justify-content:center;gap:14px">`;
-        html += `<div style="display:flex;flex-direction:column;align-items:center;gap:2px">
-          ${rpPortrait(m.hunter, 'sm')}
-          <span style="font-size:9px;color:${hunterTC};font-weight:600">${m.hunter.split(' ')[0]}</span>
-        </div>`;
+        html += rpPortrait(m.hunter, 'sm');
         html += `<div style="font-size:18px">💖</div>`;
-        html += `<div style="display:flex;flex-direction:column;align-items:center;gap:2px">
-          ${rpPortrait(m.target, 'sm')}
-          <span style="font-size:9px;color:${targetTC};font-weight:600">${m.target.split(' ')[0]}</span>
-        </div>`;
+        html += rpPortrait(m.target, 'sm');
         html += `</div>`;
         html += `<div style="text-align:center;font-size:10px;color:#d2a8ff;margin-top:6px">Couldn't pull the trigger...</div>`;
         html += `</div>`;
@@ -57948,14 +57932,10 @@ function rpBuildPaintballHunt(ep) {
         html += `<div style="padding:12px;margin-bottom:6px;border-radius:8px;border:1px solid rgba(63,185,80,0.2);background:rgba(63,185,80,0.03);animation:scrollDrop 0.3s var(--ease-broadcast) both">`;
         html += `<div style="display:inline-block;font-size:9px;font-weight:800;letter-spacing:1px;color:#3fb950;background:rgba(63,185,80,0.15);padding:2px 8px;border-radius:3px;margin-bottom:8px">DECOY</div>`;
         html += `<div style="display:flex;align-items:center;justify-content:center;gap:14px">`;
-        html += `<div style="display:flex;flex-direction:column;align-items:center;gap:2px">
-          ${rpPortrait(m.target, 'sm')}
-          <span style="font-size:9px;color:${targetTC};font-weight:600">${m.target.split(' ')[0]}</span>
-        </div>`;
+        html += rpPortrait(m.target, 'sm');
         html += `<div style="font-size:14px;color:#3fb950">🪤</div>`;
-        html += `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;opacity:0.5">
+        html += `<div style="opacity:0.5;display:flex;flex-direction:column;align-items:center;gap:2px">
           ${rpPortrait(m.hunter, 'sm')}
-          <span style="font-size:9px;color:${hunterTC};font-weight:600">${m.hunter.split(' ')[0]}</span>
           <span style="font-size:7px;color:#f85149">FOOLED</span>
         </div>`;
         html += `</div></div>`;

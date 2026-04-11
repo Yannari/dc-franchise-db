@@ -24786,11 +24786,16 @@ function updateShowmancePhases(ep) {
     // ── JEALOUSY / THIRD WHEEL (~20% per episode when conditions met) ──
     if (!sh.jealousPlayer && sh.episodesActive >= 2 && Math.random() < 0.20) {
       // Find a 3rd player who has bond >= 3 with one partner but feels excluded
+      // Must be romantically compatible to trigger romantic jealousy (potential triangle)
+      // Friendship jealousy (not compat) doesn't create a 3rd wheel
       const candidates = active.filter(p => {
         if (p === a || p === b) return false;
         const bondA = getBond(p, a), bondB = getBond(p, b);
-        // Close to one, not close to the other — the asymmetry creates jealousy
-        return (bondA >= 3 && bondB < 1) || (bondB >= 3 && bondA < 1);
+        const hasAsymmetry = (bondA >= 3 && bondB < 1) || (bondB >= 3 && bondA < 1);
+        if (!hasAsymmetry) return false;
+        // Only romantic jealousy — must be compatible with the partner they're close to
+        const closerTo = bondA > bondB ? a : b;
+        return typeof romanticCompat === 'function' ? romanticCompat(p, closerTo) : true;
       });
       if (candidates.length) {
         const jealous = candidates[Math.floor(Math.random() * candidates.length)];

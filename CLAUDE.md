@@ -27,6 +27,7 @@ Do not split it into separate files. This is intentional.
 - `simulateDodgebrawl(ep)` — multi-round dodgeball challenge (pre-merge, first to 3)
 - `simulateTalentShow(ep)` — talent show challenge (pre-merge, auditions + Chef-O-Meter scoring)
 - `simulateSuckyOutdoors(ep)` — overnight survival challenge (pre-merge, 5 phases, personal scoring)
+- `simulateUpTheCreek(ep)` — canoe race challenge (pre-merge, 4 phases, partner selection)
 - `executeFirstImpressions()` — episode 1 mock vote → round-robin tribe swap (fires before all other twists)
 - `checkPerceivedBondTriggers(ep)` — creates perception gaps after vote resolution
 - `updatePerceivedBonds(ep)` — closes gaps each episode via intuition-based correction
@@ -67,6 +68,7 @@ Do not split it into separate files. This is intentional.
 - `gs._dodgebrawlHeat` — temporary heat from dodgebrawl (refusal, rage mode, liability)
 - `gs._talentShowHeat` — temporary heat from talent show (sabotage, disaster)
 - `gs._suckyOutdoorsHeat` — temporary heat from sucky outdoors (lost players)
+- `gs._upTheCreekHeat` — temporary heat from up the creek (advice givers, canoe droppers)
 - `gs.moles[]` — Mole twist state: `{ player, exposed, exposedEp, exposedBy, suspicion, sabotageCount, sabotageLog, leaks, layingLow, resistance }`
 
 ## Patterns
@@ -289,6 +291,16 @@ is NOT actually loyal. Always check behavioral track record alongside raw stats.
 - Lost pair: bond >= 3 both lost → +0.3 bond (survived together), tribe penalty doubles.
 - VP: `rpBuildSuckyOutdoors(ep)` — 5-phase click-to-reveal with ambiance progression (dawn→dusk→night→dawn)
 - Text backlog: `_textSuckyOutdoors(ep, ln, sec)`
+
+## Up the Creek
+- Schedulable pre-merge challenge (`up-the-creek` in TWIST_CATALOG, category `challenge`)
+- 4-phase canoe race: paddle out, portage (15 encounter types), build fire (5 methods), paddle back (13 events)
+- Self-selected canoe partners: boldest picks first, bond + physical drives choices
+- Partner chemistry: bond affects paddle speed (+0.5 at bond >= 2, -0.5 at bond <= -1)
+- Fire methods: lighter (villain), homemade starter (chaos, 50/50 risk), paddle burn (+fire, -paddles), traditional, advice to enemy
+- Paddles burned → Phase 4 requires swimmer hero (`physical*0.06 + endurance*0.05`)
+- VP: `rpBuildUpTheCreek(ep)` — partner selection reveal + 4-phase with water/jungle/fire/sunset ambiance
+- Text backlog: `_textUpTheCreek(ep, ln, sec)`
 
 ## Aftermath Show
 - `generateAftermathShow(ep)` — full aftermath data generation

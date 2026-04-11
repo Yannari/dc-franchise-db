@@ -9417,6 +9417,9 @@ function simulateSuckyOutdoors(ep) {
       const _txt = _navGoodTexts[_hash(nav + 'navgood', _navGoodTexts.length)];
       personalScores[nav] += 2.0;
       members.filter(m => m !== nav).forEach(m => addBond(m, nav, 0.3));
+      if (!gs.playerStates) gs.playerStates = {};
+      if (!gs.playerStates[nav]) gs.playerStates[nav] = {};
+      gs.playerStates[nav].bigMoves = (gs.playerStates[nav].bigMoves || 0) + 1;
       phases.announcement.push({
         type: 'soNavigator', phase: 'announcement', players: [nav],
         text: _txt, personalScores: { [nav]: 2.0 }, badge: 'NAVIGATOR', badgeClass: 'gold'
@@ -9470,6 +9473,8 @@ function simulateSuckyOutdoors(ep) {
       ];
       personalScores[spotter] += 1.5;
       members.filter(m => m !== spotter).forEach(m => addBond(m, spotter, 0.2));
+      if (!gs.popularity) gs.popularity = {};
+      gs.popularity[spotter] = (gs.popularity[spotter] || 0) + 1;
       phases.announcement.push({
         type: 'soProvider', phase: 'announcement', players: [spotter],
         text: _foodTexts[_hash(spotter + 'food', _foodTexts.length)],
@@ -9574,6 +9579,24 @@ function simulateSuckyOutdoors(ep) {
         });
       }
     }
+
+    // Event 5 (NEW): Tribe Morale — high social player boosts spirits on the trail
+    const moraleBoosters = members.filter(m => m !== nav).sort((a, b) => pStats(b).social - pStats(a).social);
+    const booster = moraleBoosters[0];
+    if (booster && Math.random() < pStats(booster).social * 0.04) {
+      const _moraleTexts = [
+        `${booster} starts a chant on the trail. Silly at first — then everyone joins in. The hike feels shorter.`,
+        `${booster} cracks jokes the whole way. By the time they arrive, the tribe is laughing instead of complaining.`,
+        `${booster} keeps the energy up. Checks on stragglers. Shares water. The tribe arrives as a unit.`,
+      ];
+      personalScores[booster] = (personalScores[booster] || 0) + 1.0;
+      members.filter(m => m !== booster).forEach(m => addBond(m, booster, 0.2));
+      phases.announcement.push({
+        type: 'soMorale', phase: 'announcement', players: [booster],
+        text: _moraleTexts[_hash(booster + 'morale', _moraleTexts.length)],
+        personalScores: { [booster]: 1.0 }, badge: 'MORALE BOOST', badgeClass: 'gold'
+      });
+    }
   });
 
   // ══ PHASE 2: Setup Camp (3-4 events per tribe) ══
@@ -9615,6 +9638,8 @@ function simulateSuckyOutdoors(ep) {
       const pr = pronouns(fireStarter);
       personalScores[fireStarter] += 1.5;
       members.filter(m => m !== fireStarter).forEach(m => addBond(m, fireStarter, 0.3));
+      if (!gs.popularity) gs.popularity = {};
+      gs.popularity[fireStarter] = (gs.popularity[fireStarter] || 0) + 1;
       phases.setupCamp.push({
         type: 'soFire', phase: 'setupCamp', players: [fireStarter],
         text: _fireTexts[_hash(fireStarter + 'fire', _fireTexts.length)],
@@ -9640,6 +9665,8 @@ function simulateSuckyOutdoors(ep) {
       ];
       personalScores[slacker] -= 1.5;
       members.filter(m => m !== slacker).forEach(m => addBond(m, slacker, -0.3));
+      if (!gs._suckyOutdoorsHeat) gs._suckyOutdoorsHeat = {};
+      gs._suckyOutdoorsHeat[slacker] = { amount: 0.5, expiresEp: ((gs.episode || 0) + 1) + 1 };
       phases.setupCamp.push({
         type: 'soSlacker', phase: 'setupCamp', players: [slacker],
         text: _slackerTexts[_hash(slacker + 'slacker', _slackerTexts.length)],
@@ -9711,6 +9738,8 @@ function simulateSuckyOutdoors(ep) {
           ];
           personalScores[fisher] += 1.5;
           members.filter(m => m !== fisher).forEach(m => addBond(m, fisher, 0.3));
+          if (!gs.popularity) gs.popularity = {};
+          gs.popularity[fisher] = (gs.popularity[fisher] || 0) + 2;
           phases.setupCamp.push({
             type: 'soProvider', phase: 'setupCamp', players: [fisher],
             text: _fishTexts[_hash(fisher + 'fish', _fishTexts.length)],
@@ -9731,6 +9760,8 @@ function simulateSuckyOutdoors(ep) {
           ];
           personalScores[forager] += 1.0;
           members.filter(m => m !== forager).forEach(m => addBond(m, forager, 0.2));
+          if (!gs.popularity) gs.popularity = {};
+          gs.popularity[forager] = (gs.popularity[forager] || 0) + 2;
           phases.setupCamp.push({
             type: 'soProvider', phase: 'setupCamp', players: [forager],
             text: _forageTexts[_hash(forager + 'forage', _forageTexts.length)],
@@ -9738,6 +9769,25 @@ function simulateSuckyOutdoors(ep) {
           });
         }
       }
+    }
+
+    // Event 6 (NEW): Campsite Argument — who gets the best sleeping spot
+    const spotFighters = members.filter(m => pStats(m).boldness * 0.03 + (10 - pStats(m).social) * 0.02 > Math.random() * 0.8);
+    if (spotFighters.length >= 2) {
+      const f1 = spotFighters[0], f2 = spotFighters[1];
+      const _spotTexts = [
+        `${f1} and ${f2} argue about who gets the spot closest to the fire. It gets personal fast.`,
+        `"I built the shelter, I pick my spot." ${f2} disagrees. Loudly.`,
+        `${f1} claims the driest corner. ${f2} was already lying there. Neither moves.`,
+      ];
+      personalScores[f1] = (personalScores[f1] || 0) - 0.5;
+      personalScores[f2] = (personalScores[f2] || 0) - 0.5;
+      addBond(f1, f2, -0.2);
+      phases.setupCamp.push({
+        type: 'soArgument', phase: 'setupCamp', players: [f1, f2],
+        text: _spotTexts[_hash(f1 + f2 + 'spot', _spotTexts.length)],
+        personalScores: { [f1]: -0.5, [f2]: -0.5 }, badge: 'ARGUMENT', badgeClass: 'red'
+      });
     }
   });
 
@@ -9762,6 +9812,8 @@ function simulateSuckyOutdoors(ep) {
         ];
         personalScores[storyteller] += 1.0;
         members.filter(m => m !== storyteller).forEach(m => addBond(m, storyteller, 0.2));
+        if (!gs.popularity) gs.popularity = {};
+        gs.popularity[storyteller] = (gs.popularity[storyteller] || 0) + 1;
 
         // Scared reaction — least bold player
         const scaredPlayer = members.filter(m => m !== storyteller).sort((a, b) => pStats(a).boldness - pStats(b).boldness)[0];
@@ -9857,6 +9909,10 @@ function simulateSuckyOutdoors(ep) {
           ];
           personalScores[prankster] -= 1.0;
           addBond(target, prankster, -0.4);
+          if (!gs._suckyOutdoorsHeat) gs._suckyOutdoorsHeat = {};
+          gs._suckyOutdoorsHeat[prankster] = { amount: 0.5, expiresEp: ((gs.episode || 0) + 1) + 1 };
+          if (!gs.popularity) gs.popularity = {};
+          gs.popularity[prankster] = (gs.popularity[prankster] || 0) - 1;
           phases.nightfall.push({
             type: 'soPrank', phase: 'nightfall', players: [prankster, target],
             text: _prankTexts[_hash(prankster + target + 'prank', _prankTexts.length)],
@@ -9930,6 +9986,9 @@ function simulateSuckyOutdoors(ep) {
         ];
         personalScores[a] += 1.0; personalScores[b] += 1.0;
         addBond(a, b, 0.5);
+        if (!gs.popularity) gs.popularity = {};
+        gs.popularity[a] = (gs.popularity[a] || 0) + 1;
+        gs.popularity[b] = (gs.popularity[b] || 0) + 1;
         phases.nightfall.push({
           type: 'soStargazing', phase: 'nightfall', players: [a, b],
           text: _starTexts[_hash(a + b + 'star', _starTexts.length)],
@@ -9956,6 +10015,36 @@ function simulateSuckyOutdoors(ep) {
           personalScores: { [anxious]: -0.5 }, badge: 'SLEEPLESS', badgeClass: 'red'
         });
         nightfallCount++;
+      }
+    }
+
+    // Event (NEW): Confession by the Fire — someone opens up about their game or personal life
+    if (nightfallCount < maxNightfall) {
+      const confessors = members.filter(m => {
+        const ms = pStats(m);
+        return Math.random() < ms.social * 0.03 + ms.temperament * 0.02;
+      });
+      if (confessors.length) {
+        const confessor = confessors[0];
+        const listener = members.filter(m => m !== confessor).sort((a, b) => getBond(confessor, b) - getBond(confessor, a))[0];
+        if (listener) {
+          const pr = pronouns(confessor);
+          const _confessTexts = [
+            `The fire is low. ${confessor} starts talking — not about strategy. About home. About why ${pr.sub} ${pr.sub === 'they' ? 'are' : 'is'} really here. ${listener} listens without interrupting.`,
+            `${confessor} admits something ${pr.sub} ${pr.sub === 'they' ? 'haven\'t' : 'hasn\'t'} told anyone. ${listener} nods. "I get it." The silence that follows is comfortable.`,
+            `${confessor} and ${listener} are the last ones awake. The conversation goes somewhere real. Neither of them expected that.`,
+          ];
+          personalScores[confessor] = (personalScores[confessor] || 0) + 1.0;
+          personalScores[listener] = (personalScores[listener] || 0) + 0.5;
+          addBond(confessor, listener, 0.5);
+          addBond(listener, confessor, 0.4);
+          phases.nightfall.push({
+            type: 'soFireConfession', phase: 'nightfall', players: [confessor, listener],
+            text: _confessTexts[_hash(confessor + listener + 'confess', _confessTexts.length)],
+            personalScores: { [confessor]: 1.0, [listener]: 0.5 }, badge: 'CONFESSION', badgeClass: 'gold'
+          });
+          nightfallCount++;
+        }
       }
     }
   });
@@ -10011,6 +10100,12 @@ function simulateSuckyOutdoors(ep) {
         ];
         personalScores[brave] += 1.5; personalScores[panicker] -= 1.0;
         addBond(brave, panicker, 0.3);
+        if (!gs.popularity) gs.popularity = {};
+        gs.popularity[brave] = (gs.popularity[brave] || 0) + 2;
+        gs.popularity[panicker] = (gs.popularity[panicker] || 0) - 1;
+        if (!gs.playerStates) gs.playerStates = {};
+        if (!gs.playerStates[brave]) gs.playerStates[brave] = {};
+        gs.playerStates[brave].bigMoves = (gs.playerStates[brave].bigMoves || 0) + 1;
         phases.theNight.push({
           type: 'soBear', phase: 'theNight', players: [brave, panicker],
           text: _bearTexts[_hash(brave + panicker + 'bear', _bearTexts.length)],
@@ -10140,6 +10235,32 @@ function simulateSuckyOutdoors(ep) {
         nightCount++;
       }
     }
+
+    // Event (NEW): Strange Noise Investigation — brave player investigates, scared player reacts
+    if (nightCount < maxNight && Math.random() < 0.35) {
+      const investigators = members.filter(m => !lostPlayers.some(lp => lp.name === m));
+      if (investigators.length >= 2) {
+        const brave2 = investigators.slice().sort((a, b) => pStats(b).boldness - pStats(a).boldness)[0];
+        const scared2 = investigators.slice().sort((a, b) => pStats(a).boldness - pStats(b).boldness)[0];
+        if (brave2 !== scared2) {
+          const pr2 = pronouns(brave2);
+          const _noiseInvTexts = [
+            `Something crashes in the dark. ${scared2} freezes. ${brave2} grabs a stick and goes to check. Turns out it's a raccoon. ${brave2} comes back grinning. ${scared2} hasn't unclenched yet.`,
+            `Footsteps outside the shelter. ${brave2} goes alone. Comes back thirty seconds later. "Just a deer." ${scared2} doesn't sleep for another hour.`,
+            `A scream echoes through the woods. ${brave2} stands up immediately. "${pr2.Sub} will be right back." ${scared2} waits in silence, counting the seconds.`,
+          ];
+          personalScores[brave2] = (personalScores[brave2] || 0) + 1.0;
+          personalScores[scared2] = (personalScores[scared2] || 0) - 0.5;
+          addBond(scared2, brave2, 0.3);
+          phases.theNight.push({
+            type: 'soScaryNoise', phase: 'theNight', players: [brave2, scared2],
+            text: _noiseInvTexts[_hash(brave2 + scared2 + 'noiseinv', _noiseInvTexts.length)],
+            personalScores: { [brave2]: 1.0, [scared2]: -0.5 }, badge: 'INVESTIGATION', badgeClass: 'gold'
+          });
+          nightCount++;
+        }
+      }
+    }
   });
 
   // ══ PHASE 5: Morning Race (1-2 events per tribe) ══
@@ -10228,6 +10349,9 @@ function simulateSuckyOutdoors(ep) {
         personalScores[shortcutFinder] += 2.0;
         racers.filter(m => m !== shortcutFinder).forEach(m => addBond(m, shortcutFinder, 0.3));
         raceScores[t.name] += 2.0; // shortcut bonus
+        if (!gs.playerStates) gs.playerStates = {};
+        if (!gs.playerStates[shortcutFinder]) gs.playerStates[shortcutFinder] = {};
+        gs.playerStates[shortcutFinder].bigMoves = (gs.playerStates[shortcutFinder].bigMoves || 0) + 1;
         phases.morningRace.push({
           type: 'soShortcut', phase: 'morningRace', players: [shortcutFinder],
           text: _scTexts[_hash(shortcutFinder + 'shortcut', _scTexts.length)],
@@ -10253,10 +10377,31 @@ function simulateSuckyOutdoors(ep) {
         ];
         personalScores[carrier] += 1.5;
         addBond(carrier, carried, 0.5);
+        if (!gs.popularity) gs.popularity = {};
+        gs.popularity[carrier] = (gs.popularity[carrier] || 0) + 2;
         phases.morningRace.push({
           type: 'soCarried', phase: 'morningRace', players: [carrier, carried],
           text: _carryTexts[_hash(carrier + carried + 'carry', _carryTexts.length)],
           personalScores: { [carrier]: 1.5 }, badge: 'CARRIED', badgeClass: 'gold'
+        });
+        raceEventCount++;
+      }
+    }
+
+    // Event (NEW): Stumble on the way back — low endurance player takes a fall
+    if (raceEventCount < maxRaceEvents) {
+      const stumbler = racers.slice().sort((a, b) => pStats(a).endurance - pStats(b).endurance)[0];
+      if (stumbler && Math.random() < (10 - pStats(stumbler).endurance) * 0.03) {
+        const pr = pronouns(stumbler);
+        const _stumbleTexts = [
+          `${stumbler} trips on a root and goes down hard. ${pr.Sub} ${pr.sub === 'they' ? 'get' : 'gets'} up limping. The tribe slows down.`,
+          `${stumbler}'s legs give out on a hill. The night took everything ${pr.sub} had. Someone has to help ${pr.obj} the rest of the way.`,
+        ];
+        personalScores[stumbler] = (personalScores[stumbler] || 0) - 1.0;
+        phases.morningRace.push({
+          type: 'soLagger', phase: 'morningRace', players: [stumbler],
+          text: _stumbleTexts[_hash(stumbler + 'stumble', _stumbleTexts.length)],
+          personalScores: { [stumbler]: -1.0 }, badge: 'STUMBLE', badgeClass: 'red'
         });
         raceEventCount++;
       }
@@ -44107,6 +44252,8 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'soRaceLeader'             ? (evt.badgeText || evt.badge || 'FRONT RUNNER')
                      : evt.type === 'soCantSleep'              ? (evt.badgeText || evt.badge || 'CAN\'T SLEEP')
                      : evt.type === 'soBearPrank'              ? (evt.badgeText || evt.badge || 'BEAR PRANK')
+                     : evt.type === 'soMorale'                 ? (evt.badgeText || evt.badge || 'MORALE BOOST')
+                     : evt.type === 'soFireConfession'         ? (evt.badgeText || evt.badge || 'CONFESSION')
                      : evt.type === 'rewardBackfireAlliance'   ? (evt.badgeText || 'BACKFIRE')
                      : evt.type === 'rewardBackfireBloc'       ? (evt.badgeText || 'LEFT BEHIND')
                      : evt.type === 'emissaryVolunteer'       ? (evt.badgeText || 'EMISSARY')
@@ -44289,7 +44436,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'spyMission' || evt.type === 'pepTalk' || evt.type === 'accidentSubstitution' || evt.type === 'secretRehearsalSubIn' || evt.type === 'secretRehearsalAlone' ? 'gold'
                      : evt.type === 'sabotageSetup' || evt.type === 'rivalryConfrontation' || evt.type === 'accidentInjury' || evt.type === 'stageFright' || evt.type === 'trashTalk' ? 'red'
                      : evt.type === 'allianceHuddle' || evt.type === 'preShowJitters' ? 'gold'
-                     : evt.type === 'soNavigator' || evt.type === 'soShelter' || evt.type === 'soFire' || evt.type === 'soProvider' || evt.type === 'soFireside' || evt.type === 'soShortcut' || evt.type === 'soCarried' || evt.type === 'soStargazing' || evt.type === 'soBonding' || evt.type === 'soFoodSpotted' || evt.type === 'soShowmance' || evt.type === 'soRaceLeader' ? 'gold'
+                     : evt.type === 'soNavigator' || evt.type === 'soShelter' || evt.type === 'soFire' || evt.type === 'soProvider' || evt.type === 'soFireside' || evt.type === 'soShortcut' || evt.type === 'soCarried' || evt.type === 'soStargazing' || evt.type === 'soBonding' || evt.type === 'soFoodSpotted' || evt.type === 'soShowmance' || evt.type === 'soRaceLeader' || evt.type === 'soMorale' || evt.type === 'soFireConfession' ? 'gold'
                      : evt.type === 'soLost' || evt.type === 'soCostTribe' || evt.type === 'soSlacker' || evt.type === 'soPrank' || evt.type === 'soTentFire' || evt.type === 'soRainstorm' || evt.type === 'soWanderedOff' || evt.type === 'soArgument' || evt.type === 'soShelterCollapse' || evt.type === 'soBearPrank' ? 'red'
                      : evt.type === 'soGhostStory' || evt.type === 'soBear' || evt.type === 'soCuddling' || evt.type === 'soScheme' || evt.type === 'soScaryNoise' || evt.type === 'soNightmare' || evt.type === 'soCantSleep' || evt.type === 'soSneakOff' || evt.type === 'soLagger' ? ''
                      : isMoleReveal ? 'gold'

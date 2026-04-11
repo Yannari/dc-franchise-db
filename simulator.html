@@ -9508,7 +9508,7 @@ function checkFirstMove(ep) {
     ],
     'chaos-agent': [
       (a, b, pr) => `Mid-argument. ${a} grabs ${b} and kisses ${pr.obj}. Everyone stares. ${a} shrugs. "What? It was obvious."`,
-      (a, b, pr) => `${a} kisses ${b} during the challenge. In front of everyone. At the worst possible moment. Nobody saw it coming.`,
+      (a, b, pr) => `${a} kisses ${b} out of nowhere. In front of everyone. At the worst possible moment. Nobody saw it coming.`,
       (a, b, pr) => `${a} interrupts ${b} mid-sentence with a kiss. The timing is insane. The tribe doesn't know whether to cheer or cringe.`,
     ],
     'villain': [
@@ -44505,7 +44505,7 @@ function rpBuildDebug(ep) {
           <div style="margin-left:auto;text-align:right">
             <div style="font-size:10px;color:${phaseCol};font-weight:700;text-transform:uppercase">${_isSeparated ? 'SEPARATED' : sh.phase === 'broken-up' ? 'BROKEN-UP' : sh.phase}${sh.phase === 'broken-up' && sh.breakupVoter ? ' (betrayal by ' + sh.breakupVoter + ')' : ''}${sh.phase === 'broken-up' && sh.breakupType === 'faded' ? ' (faded)' : ''}${sh.phase === 'broken-up' && sh.breakupType === 'sabotaged' ? ' (sabotaged)' : ''}</div>
             <div style="font-size:9px;color:#6e7681">Bond: ${bond.toFixed(1)} | Ep ${sh.sparkEp}${sh.firstMoveEp ? ' → move Ep ' + sh.firstMoveEp : ''}${sh.breakupEp ? ' → end Ep ' + sh.breakupEp : ''} | ${sh.episodesActive} eps${sh.firstMoveBy ? ' | 1st move: ' + sh.firstMoveBy : ''}${sh.jealousPlayer ? ' | 3rd: ' + sh.jealousPlayer : ''}</div>
-            ${sh.origin || sh.sparkContext ? `<div style="font-size:8px;color:#484f58">${sh.origin ? '<span style="color:#8b5cf6;font-weight:600">' + sh.origin.toUpperCase() + '</span>' : ''}${sh.sparkContext ? ' — ' + sh.sparkContext : ''}</div>` : ''}
+            ${sh.origin || sh.sparkContext ? `<div style="font-size:8px;color:#484f58">${sh.origin ? '<span style="color:#8b5cf6;font-weight:600">Type: ' + sh.origin.toUpperCase() + '</span>' : ''}${sh.sparkContext ? ' <span style="color:#6e7681">| Sparked from: ' + sh.sparkContext + '</span>' : ''}</div>` : ''}
           </div>
         </div>`;
       });

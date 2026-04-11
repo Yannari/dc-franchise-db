@@ -36866,6 +36866,36 @@ function _textUpTheCreek(ep, ln, sec) {
   ln(`Winner: ${utc.winner}. ${utc.loser} goes to tribal.`);
 }
 
+function _textPaintballHunt(ep, ln, sec) {
+  if (!ep.isPaintballHunt || !ep.paintballHunt) return;
+  const pb = ep.paintballHunt;
+  sec('PAINTBALL DEER HUNTER');
+  ln('Hunters vs deer. Last tribe with unpainted deer wins.');
+  Object.entries(pb.roles || {}).forEach(([tribe, roles]) => {
+    ln(`${tribe} — Hunters: ${roles.hunters.join(', ')} | Deer: ${roles.deer.join(', ')}`);
+  });
+  (pb.rounds || []).forEach(r => {
+    ln('');
+    ln(`── ROUND ${r.round} — ${r.name || ''} ──`);
+    (r.matchups || []).forEach(m => {
+      if (m.result === 'hit' || m.result === 'ambush' || m.result === 'sneak' || m.result === 'double-hit') ln(`  [HIT] ${m.hunter} → ${m.target} PAINTED OUT`);
+      else if (m.result === 'miss' || m.result === 'double-miss') ln(`  [MISS] ${m.hunter} → ${m.target} DODGED`);
+      else if (m.result === 'nothing') ln(`  [---] ${m.hunter} found nothing`);
+      else if (m.result === 'protect') ln(`  [♥] ${m.hunter} refused to shoot ${m.target}`);
+      else if (m.result === 'decoy') ln(`  [DECOY] ${m.target} tricked ${m.hunter}`);
+    });
+    (r.events || []).forEach(evt => {
+      ln(`  [${evt.badge || evt.badgeText || evt.type}] ${evt.text}`);
+    });
+    Object.entries(r.unpaintedByTribe || {}).forEach(([tribe, remaining]) => {
+      ln(`  ${tribe}: ${remaining.length} deer remaining`);
+    });
+  });
+  if (pb.bearMauled?.length) ln(`BEAR MAULED: ${pb.bearMauled.join(', ')}`);
+  ln(`Winner: ${pb.winner}. ${pb.loser} goes to tribal.`);
+  if (pb.mvp) ln(`MVP: ${pb.mvp}`);
+}
+
 // ── PHOBIA FACTOR ──
 function _textCliffDive(ep, ln, sec) {
   if (!ep.cliffDive?.tribes?.length) return;
@@ -38946,6 +38976,7 @@ function generateSummaryText(ep) {
   _textTalentShow(ep, ln, sec);
   _textSuckyOutdoors(ep, ln, sec);
   _textUpTheCreek(ep, ln, sec);
+  _textPaintballHunt(ep, ln, sec);
   _textCliffDive(ep, ln, sec);
   _textPhobiaFactor(ep, ln, sec);
   _textSayUncle(ep, ln, sec);
@@ -40173,6 +40204,7 @@ function renderEpisodeHistory() {
     const tsTag = ep.isTalentShow ? `<span class="ep-hist-tag" style="background:rgba(139,92,246,0.15);color:#8b5cf6">Talent Show</span>` : '';
     const soTag = ep.isSuckyOutdoors ? `<span class="ep-hist-tag" style="background:rgba(63,185,80,0.15);color:#3fb950">Sucky Outdoors</span>` : '';
     const utcTag = ep.isUpTheCreek ? `<span class="ep-hist-tag" style="background:rgba(88,166,255,0.15);color:#58a6ff">Up the Creek</span>` : '';
+    const phTag = ep.isPaintballHunt ? `<span class="ep-hist-tag" style="background:rgba(63,185,80,0.15);color:#3fb950">Paintball Hunt</span>` : '';
     const hasCheckpoint = !!gsCheckpoints[ep.num];
     const replayBtn = hasCheckpoint
       ? `<button class="ep-hist-replay" title="Re-run this episode" onclick="event.stopPropagation();replayEpisode(${ep.num})">↺</button>`
@@ -40180,7 +40212,7 @@ function renderEpisodeHistory() {
     return `<div class="ep-hist-card ${ep.num===currentNum?'active':''}" onclick="viewEpisode(${ep.num})">
       <div class="ep-hist-ep">Episode ${ep.num}${replayBtn}</div>
       <div class="ep-hist-elim">${_spoilerFree ? '???' : ep.multiTribalElims?.length >= 2 ? ep.multiTribalElims.join(' + ') : ep.ambassadorData?.ambassadorEliminated ? `${ep.ambassadorData.ambassadorEliminated} + ${ep.eliminated||'?'}` : ep.tiedDestinies?.eliminatedPartner ? `${ep.eliminated||'?'} + ${ep.tiedDestinies.eliminatedPartner}` : ep.emissaryEliminated ? `${ep.eliminated||'?'} + ${ep.emissaryEliminated}` : ep.firstEliminated ? `${ep.firstEliminated} + ${ep.eliminated||'?'}` : (ep.eliminated || (ep.isFinale ? 'FTC' : '\u2014'))}</div>
-      <div>${riTag}${mergeTag}${finaleTag}${slasherTag}${tddTag}${suTag}${pfTag}${cdTag}${aatTag}${evTag}${dbTag}${tsTag}${soTag}${utcTag}</div>
+      <div>${riTag}${mergeTag}${finaleTag}${slasherTag}${tddTag}${suTag}${pfTag}${cdTag}${aatTag}${evTag}${dbTag}${tsTag}${soTag}${utcTag}${phTag}</div>
     </div>`;
   }).join('');
 }
@@ -43302,6 +43334,13 @@ function rpBuildColdOpen(ep) {
         <div style="font-size:12px;color:#8b949e">${_utc.winner} won the canoe race.${_utc.swimmerHero ? ` ${_utc.swimmerHero} swam the tribe home.` : ''}${Object.values(_utc.paddlesBurned || {}).some(v => v) ? ' Someone burned the paddles.' : ''}</div>
       </div>`;
     }
+    if (prevEp.isPaintballHunt && prevEp.paintballHunt) {
+      const _pb = prevEp.paintballHunt;
+      html += `<div class="vp-card" style="border-color:rgba(63,185,80,0.15);margin-bottom:8px">
+        <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:#3fb950;margin-bottom:4px">PAINTBALL DEER HUNTER</div>
+        <div style="font-size:12px;color:#8b949e">${_pb.winner} won the hunt.${_pb.mvp ? ` MVP: ${_pb.mvp}.` : ''}${_pb.bearMauled?.length ? ` ${_pb.bearMauled[0]} was mauled by a bear.` : ''}${_pb.paintballWar?.length ? ' A paintball war broke out.' : ''}</div>
+      </div>`;
+    }
     if (prevEp.isPhobiaFactor && prevEp.phobiaFactor) {
       const _pfData = prevEp.phobiaFactor;
       const _pfWinPct = Math.round((_pfData.tribeScores[_pfData.winningTribe]?.percentage || 0) * 100);
@@ -45145,7 +45184,7 @@ function rpBuildDebug(ep) {
       ${_tabBtn('history', 'Hidden Moves')}
       ${gs.moles?.length ? _tabBtn('mole', 'The Mole') : ''}
       ${(gs.showmances?.length || gs.loveTriangles?.length || gs.affairs?.length) ? _tabBtn('romance', 'Romance') : ''}
-      ${(ep.chalMemberScores || ep.isDodgebrawl || ep.isCliffDive || ep.isAwakeAThon || ep.isPhobiaFactor || ep.isSayUncle || ep.isTripleDogDare || ep.isTalentShow || ep.isSuckyOutdoors || ep.isUpTheCreek) ? _tabBtn('challenge', 'Challenge') : ''}
+      ${(ep.chalMemberScores || ep.isDodgebrawl || ep.isCliffDive || ep.isAwakeAThon || ep.isPhobiaFactor || ep.isSayUncle || ep.isTripleDogDare || ep.isTalentShow || ep.isSuckyOutdoors || ep.isUpTheCreek || ep.isPaintballHunt) ? _tabBtn('challenge', 'Challenge') : ''}
     </div>`;
 
   // ════════════════════════════════════════════════
@@ -45823,7 +45862,7 @@ function rpBuildDebug(ep) {
       });
     }
     const _chalLabel = ep.challengeLabel || 'Challenge';
-    const _chalType = ep.isDodgebrawl ? 'Dodgebrawl' : ep.isCliffDive ? 'Cliff Dive' : ep.isAwakeAThon ? 'Awake-A-Thon' : ep.isPhobiaFactor ? 'Phobia Factor' : ep.isSayUncle ? 'Say Uncle' : ep.isTalentShow ? 'Talent Show' : ep.isSuckyOutdoors ? 'Sucky Outdoors' : ep.isUpTheCreek ? 'Up the Creek' : _chalLabel;
+    const _chalType = ep.isDodgebrawl ? 'Dodgebrawl' : ep.isCliffDive ? 'Cliff Dive' : ep.isAwakeAThon ? 'Awake-A-Thon' : ep.isPhobiaFactor ? 'Phobia Factor' : ep.isSayUncle ? 'Say Uncle' : ep.isTalentShow ? 'Talent Show' : ep.isSuckyOutdoors ? 'Sucky Outdoors' : ep.isUpTheCreek ? 'Up the Creek' : ep.isPaintballHunt ? 'Paintball Hunt' : _chalLabel;
 
     html += `<div style="margin-bottom:12px">
       <div style="font-family:var(--font-display);font-size:14px;color:#f0883e;margin-bottom:8px">${_chalType} — Player Rankings</div>`;
@@ -45968,6 +46007,28 @@ function rpBuildDebug(ep) {
           html += `<div style="font-size:9px;color:${tc}">${tribe}: ${score.toFixed(1)}${utc.paddlesBurned?.[tribe] ? ' (PADDLES BURNED)' : ''}</div>`;
         });
       }
+    }
+
+    if (ep.paintballHunt?.rounds) {
+      html += `<div style="font-family:var(--font-display);font-size:13px;color:#3fb950;margin:16px 0 8px">Paintball Hunt — Summary</div>`;
+      const pb = ep.paintballHunt;
+      Object.entries(pb.roles || {}).forEach(([tribe, roles]) => {
+        const tc = tribeColor(tribe);
+        html += `<div style="font-size:10px;color:${tc};font-weight:700;margin-top:4px">${tribe}</div>`;
+        html += `<div style="font-size:9px;color:#6e7681">Hunters: ${roles.hunters.join(', ')} | Deer: ${roles.deer.join(', ')}</div>`;
+      });
+      pb.rounds.forEach(r => {
+        html += `<div style="font-size:10px;font-weight:700;color:#8b949e;margin-top:6px">Round ${r.round} — ${r.name || ''} (${(r.matchups||[]).length} matchups)</div>`;
+        (r.matchups||[]).forEach(m => {
+          const col = (m.result === 'hit' || m.result === 'ambush' || m.result === 'sneak' || m.result === 'double-hit') ? '#3fb950' : m.result === 'miss' || m.result === 'double-miss' ? '#f85149' : '#6e7681';
+          html += `<div style="font-size:9px;color:${col}">${m.result === 'nothing' ? m.hunter + ' found nothing' : m.hunter + ' → ' + (m.target||'?') + ' ' + m.result.toUpperCase()}</div>`;
+        });
+        (r.events||[]).forEach(evt => {
+          html += `<div style="font-size:9px;color:#484f58">[${evt.badge||evt.badgeText||evt.type}] ${(evt.text||'').substring(0,80)}</div>`;
+        });
+      });
+      if (pb.bearMauled?.length) html += `<div style="font-size:9px;color:#f85149;margin-top:4px">Bear mauled: ${pb.bearMauled.join(', ')}</div>`;
+      html += `<div style="font-size:9px;color:#8b949e;margin-top:4px">Winner: ${pb.winner} | Loser: ${pb.loser}${pb.mvp ? ' | MVP: ' + pb.mvp : ''}</div>`;
     }
 
     html += `</div>`;

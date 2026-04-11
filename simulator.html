@@ -30389,6 +30389,8 @@ function simulateJuryRoundtable(ep) {
     dodgebrawl:         ep.dodgebrawl         || null,
     isTalentShow:       ep.isTalentShow       || false,
     talentShow:         ep.talentShow         || null,
+    isSuckyOutdoors:    ep.isSuckyOutdoors    || false,
+    suckyOutdoors:      ep.suckyOutdoors      || null,
     exilePlayer:      ep.exilePlayer      || null,
     exileDuelResult:  ep.exileDuelResult  || null,
     exileDuelVotedOut: ep.exileDuelVotedOut || null,
@@ -35664,6 +35666,8 @@ function patchEpisodeHistory(ep) {
   if (!h.dodgebrawl && ep.dodgebrawl) h.dodgebrawl = ep.dodgebrawl;
   if (ep.isTalentShow) h.isTalentShow = true;
   if (!h.talentShow && ep.talentShow) h.talentShow = ep.talentShow;
+  if (ep.isSuckyOutdoors) h.isSuckyOutdoors = true;
+  if (!h.suckyOutdoors && ep.suckyOutdoors) h.suckyOutdoors = ep.suckyOutdoors;
   if (ep.isTripleDogDare) h.isTripleDogDare = true;
   if (ep.exileDuelPlayerAtStart) h.exileDuelPlayerAtStart = ep.exileDuelPlayerAtStart;
   if (ep.volunteerDuel) h.volunteerDuel = ep.volunteerDuel;
@@ -44016,6 +44020,37 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'trashTalk'                ? (evt.badgeText || evt.badge || 'TRASH TALK')
                      : evt.type === 'allianceHuddle'           ? (evt.badgeText || evt.badge || 'ALLIANCE HUDDLE')
                      : evt.type === 'preShowJitters'           ? (evt.badgeText || evt.badge || 'PRE-SHOW')
+                     : evt.type === 'soNavigator'              ? (evt.badgeText || evt.badge || 'NAVIGATOR')
+                     : evt.type === 'soShelter'                ? (evt.badgeText || evt.badge || 'SHELTER BUILT')
+                     : evt.type === 'soFire'                   ? (evt.badgeText || evt.badge || 'FIRE STARTED')
+                     : evt.type === 'soProvider'               ? (evt.badgeText || evt.badge || 'PROVIDER')
+                     : evt.type === 'soGhostStory'             ? (evt.badgeText || evt.badge || 'GHOST STORY')
+                     : evt.type === 'soFireside'               ? (evt.badgeText || evt.badge || 'FIRESIDE')
+                     : evt.type === 'soPrank'                  ? (evt.badgeText || evt.badge || 'PRANK')
+                     : evt.type === 'soBear'                   ? (evt.badgeText || evt.badge || 'BEAR ENCOUNTER')
+                     : evt.type === 'soLost'                   ? (evt.badgeText || evt.badge || 'LOST')
+                     : evt.type === 'soCostTribe'              ? (evt.badgeText || evt.badge || 'COST THE TRIBE')
+                     : evt.type === 'soShortcut'               ? (evt.badgeText || evt.badge || 'SHORTCUT')
+                     : evt.type === 'soCarried'                ? (evt.badgeText || evt.badge || 'CARRIED')
+                     : evt.type === 'soSlacker'                ? (evt.badgeText || evt.badge || 'SLACKER')
+                     : evt.type === 'soWanderedOff'            ? (evt.badgeText || evt.badge || 'WANDERED OFF')
+                     : evt.type === 'soRainstorm'              ? (evt.badgeText || evt.badge || 'RAINSTORM')
+                     : evt.type === 'soTentFire'               ? (evt.badgeText || evt.badge || 'TENT FIRE')
+                     : evt.type === 'soStargazing'             ? (evt.badgeText || evt.badge || 'STARGAZING')
+                     : evt.type === 'soCuddling'               ? (evt.badgeText || evt.badge || 'CUDDLING')
+                     : evt.type === 'soScheme'                 ? (evt.badgeText || evt.badge || 'SCHEMING')
+                     : evt.type === 'soLagger'                 ? (evt.badgeText || evt.badge || 'LAGGING')
+                     : evt.type === 'soFoodSpotted'            ? (evt.badgeText || evt.badge || 'FOOD SPOTTED')
+                     : evt.type === 'soArgument'               ? (evt.badgeText || evt.badge || 'ARGUMENT')
+                     : evt.type === 'soBonding'                ? (evt.badgeText || evt.badge || 'BONDING')
+                     : evt.type === 'soScaryNoise'             ? (evt.badgeText || evt.badge || 'SCARY NOISE')
+                     : evt.type === 'soNightmare'              ? (evt.badgeText || evt.badge || 'NIGHTMARE')
+                     : evt.type === 'soSneakOff'               ? (evt.badgeText || evt.badge || 'SNUCK OFF')
+                     : evt.type === 'soShelterCollapse'        ? (evt.badgeText || evt.badge || 'COLLAPSED')
+                     : evt.type === 'soShowmance'              ? (evt.badgeText || evt.badge || 'SHOWMANCE')
+                     : evt.type === 'soRaceLeader'             ? (evt.badgeText || evt.badge || 'FRONT RUNNER')
+                     : evt.type === 'soCantSleep'              ? (evt.badgeText || evt.badge || 'CAN\'T SLEEP')
+                     : evt.type === 'soBearPrank'              ? (evt.badgeText || evt.badge || 'BEAR PRANK')
                      : evt.type === 'rewardBackfireAlliance'   ? (evt.badgeText || 'BACKFIRE')
                      : evt.type === 'rewardBackfireBloc'       ? (evt.badgeText || 'LEFT BEHIND')
                      : evt.type === 'emissaryVolunteer'       ? (evt.badgeText || 'EMISSARY')
@@ -44198,6 +44233,9 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'spyMission' || evt.type === 'pepTalk' || evt.type === 'accidentSubstitution' || evt.type === 'secretRehearsalSubIn' || evt.type === 'secretRehearsalAlone' ? 'gold'
                      : evt.type === 'sabotageSetup' || evt.type === 'rivalryConfrontation' || evt.type === 'accidentInjury' || evt.type === 'stageFright' || evt.type === 'trashTalk' ? 'red'
                      : evt.type === 'allianceHuddle' || evt.type === 'preShowJitters' ? 'gold'
+                     : evt.type === 'soNavigator' || evt.type === 'soShelter' || evt.type === 'soFire' || evt.type === 'soProvider' || evt.type === 'soFireside' || evt.type === 'soShortcut' || evt.type === 'soCarried' || evt.type === 'soStargazing' || evt.type === 'soBonding' || evt.type === 'soFoodSpotted' || evt.type === 'soShowmance' || evt.type === 'soRaceLeader' ? 'gold'
+                     : evt.type === 'soLost' || evt.type === 'soCostTribe' || evt.type === 'soSlacker' || evt.type === 'soPrank' || evt.type === 'soTentFire' || evt.type === 'soRainstorm' || evt.type === 'soWanderedOff' || evt.type === 'soArgument' || evt.type === 'soShelterCollapse' || evt.type === 'soBearPrank' ? 'red'
+                     : evt.type === 'soGhostStory' || evt.type === 'soBear' || evt.type === 'soCuddling' || evt.type === 'soScheme' || evt.type === 'soScaryNoise' || evt.type === 'soNightmare' || evt.type === 'soCantSleep' || evt.type === 'soSneakOff' || evt.type === 'soLagger' ? ''
                      : isMoleReveal ? 'gold'
                      : isDareComplete || isDareMVP || isDareGift || isDarePact ? 'gold'
                      : isDarePactBetray || isDareAllyBetray || isDareRefusal || isDareElim ? 'red'

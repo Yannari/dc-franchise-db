@@ -4235,6 +4235,7 @@ function computeHeat(name, tribalPlayers, alliances) {
   if (gs._talentShowHeat?.[name] && ((gs.episode || 0) + 1) < gs._talentShowHeat[name].expiresEp) heat += gs._talentShowHeat[name].amount;
   if (gs._suckyOutdoorsHeat?.[name] && ((gs.episode || 0) + 1) < gs._suckyOutdoorsHeat[name].expiresEp) heat += gs._suckyOutdoorsHeat[name].amount;
   if (gs._upTheCreekHeat?.[name] && ((gs.episode || 0) + 1) < gs._upTheCreekHeat[name].expiresEp) heat += gs._upTheCreekHeat[name].amount;
+  if (gs._paintballHeat?.[name] && ((gs.episode || 0) + 1) < gs._paintballHeat[name].expiresEp) heat += gs._paintballHeat[name].amount;
   // ── Volunteer Exile Duel: volunteer WANTS to be voted out ──
   if (gs._volunteerDuelHeat?.[name] === ((gs.episode || 0) + 1)) heat += 8.0;
   // Volunteer duel winner returns with reduced heat
@@ -12919,6 +12920,1020 @@ function simulateUpTheCreek(ep) {
   ep.challengeCategory = 'physical';
   ep.chalMemberScores = personalScores;
 
+  updateChalRecord(ep);
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// ENGINE: PAINTBALL HUNT — multi-round paintball deer hunt (pre-merge)
+// ══════════════════════════════════════════════════════════════════════
+
+function simulatePaintballHunt(ep) {
+  const tribes = gs.tribes;
+  const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
+  const host = seasonConfig.host || 'Chris';
+
+  if (!ep.campEvents) ep.campEvents = {};
+  tribes.forEach(t => { if (!ep.campEvents[t.name]) ep.campEvents[t.name] = { pre: [], post: [] }; });
+
+  const allMembers = tribes.flatMap(t => t.members);
+  const tribeOf = {};
+  tribes.forEach(t => t.members.forEach(m => { tribeOf[m] = t.name; }));
+
+  // ── Scoring constants ──
+  const HUNTER_HIT = 2.0, HUNTER_MISS = -0.5, HUNTER_NOTHING = -0.3;
+  const HUNTER_EVENT_BONUS = 1.5, HUNTER_NEGATIVE = -2.0, HUNTER_STANDOFF = -1.0;
+  const DEER_DODGE = 2.0, DEER_PER_ROUND = 1.0, DEER_SURVIVOR = 4.0;
+  const DEER_PAINTED = -1.5, DEER_EVENT_BONUS = 1.5;
+
+  const ROUND_NAMES = [
+    'THE HUNT BEGINS', 'INTO THE WOODS', 'THEY\'RE GETTING CLOSER',
+    'DOWN TO THE WIRE', 'THE FINAL CHASE', 'ENDGAME',
+    'LAST ONES STANDING', 'THE BITTER END'
+  ];
+
+  // ── Role Assignment ──
+  const roles = {};
+  tribes.forEach(t => {
+    const shuffled = [...t.members].sort(() => Math.random() - 0.5);
+    const numDeer = Math.ceil(shuffled.length / 2);
+    roles[t.name] = {
+      deer: shuffled.slice(0, numDeer),
+      hunters: shuffled.slice(numDeer)
+    };
+  });
+
+  // ── State tracking ──
+  const personalScores = {};
+  allMembers.forEach(m => { personalScores[m] = 0; });
+  const paintedOut = new Set(); // deer that got hit
+  const unpaintedDeer = {}; // tribe -> Set of deer still alive
+  tribes.forEach(t => { unpaintedDeer[t.name] = new Set(roles[t.name].deer); });
+  const paintCounter = {}; // name -> total paint hits taken
+  allMembers.forEach(m => { paintCounter[m] = 0; });
+  const hunterHits = {}; // hunter -> hit count
+  const hunterMisses = {}; // hunter -> miss count
+  tribes.forEach(t => roles[t.name].hunters.forEach(h => { hunterHits[h] = 0; hunterMisses[h] = 0; }));
+  const friendlyFireLog = [];
+  const paintballWarLog = [];
+  const bearMauledList = [];
+  const rounds = [];
+  const camouflaged = new Set(); // deer safe this round
+  const treeClimbed = new Set(); // deer stuck in tree (safe but stuck)
+  const mudSlid = new Set(); // deer easier to hit next round
+  const obsessiveTargets = {}; // hunter -> last target
+
+  // Role lookup helpers
+  const isHunter = name => {
+    const tribe = tribeOf[name];
+    return roles[tribe].hunters.includes(name);
+  };
+  const isDeer = name => {
+    const tribe = tribeOf[name];
+    return roles[tribe].deer.includes(name);
+  };
+
+  // ── Helper: get opposing tribes' unpainted deer ──
+  function getOpposingDeer(hunterTribe) {
+    const result = [];
+    tribes.forEach(t => {
+      if (t.name !== hunterTribe) {
+        unpaintedDeer[t.name].forEach(d => result.push(d));
+      }
+    });
+    return result;
+  }
+
+  // ── Helper: weighted deer pick (lower survival = easier to find) ──
+  function pickTargetDeer(candidates) {
+    if (!candidates.length) return null;
+    const filtered = candidates.filter(d => !camouflaged.has(d) && !treeClimbed.has(d));
+    if (!filtered.length) return null;
+    const weights = filtered.map(d => {
+      const s = pStats(d);
+      return Math.max(0.1, 10 - s.endurance * 0.5 - s.intuition * 0.3 + (mudSlid.has(d) ? 3 : 0));
+    });
+    const total = weights.reduce((a, b) => a + b, 0);
+    let roll = Math.random() * total;
+    for (let i = 0; i < filtered.length; i++) {
+      roll -= weights[i];
+      if (roll <= 0) return filtered[i];
+    }
+    return filtered[filtered.length - 1];
+  }
+
+  // ── Helper: add score ──
+  function addScore(name, delta) {
+    personalScores[name] = (personalScores[name] || 0) + delta;
+  }
+
+  // ── Phases container for romance helpers ──
+  const phases = {};
+
+  // ══════════════════════════════════════════════════════════════════
+  // ROUND LOOP
+  // ══════════════════════════════════════════════════════════════════
+  let roundNum = 0;
+  const MAX_ROUNDS = 8;
+
+  while (roundNum < MAX_ROUNDS) {
+    roundNum++;
+    const roundName = ROUND_NAMES[Math.min(roundNum - 1, ROUND_NAMES.length - 1)];
+    const roundKey = 'round' + roundNum;
+    phases[roundKey] = [];
+
+    // Check if hunt should end: only 1 tribe has unpainted deer
+    const tribesWithDeer = tribes.filter(t => unpaintedDeer[t.name].size > 0);
+    if (tribesWithDeer.length <= 1) break;
+
+    // Clear per-round statuses
+    camouflaged.clear();
+    treeClimbed.clear();
+    const newMudSlid = new Set();
+
+    const roundEvents = [];
+    const matchups = [];
+    let specialEventsThisRound = 0;
+    const maxSpecialEvents = 3 + Math.floor(Math.random() * 3); // 3-5
+
+    // ── Pre-matchup special events (deer-side) ──
+
+    // Deer stampede: 3+ deer alive same tribe, social proportional
+    tribes.forEach(t => {
+      const aliveDeer = [...unpaintedDeer[t.name]];
+      if (aliveDeer.length >= 3 && specialEventsThisRound < maxSpecialEvents) {
+        const leader = aliveDeer.reduce((best, d) => pStats(d).social > pStats(best).social ? d : best, aliveDeer[0]);
+        const stampedeChance = pStats(leader).social * 0.03;
+        if (Math.random() < stampedeChance) {
+          specialEventsThisRound++;
+          const pr = pronouns(leader);
+          roundEvents.push({
+            type: 'pbDeerStampede', players: aliveDeer,
+            text: `${leader} rallies ${pr.posAdj} fellow deer into a stampede! The herd runs together, making them harder to pick off.`,
+            badge: 'STAMPEDE', badgeText: 'STAMPEDE', badgeClass: 'gold'
+          });
+          // Dodge bonus applied during matchups via stampede set
+          aliveDeer.forEach(d => addScore(d, 0.5));
+        }
+      }
+    });
+    const stampedeDeer = new Set(roundEvents.filter(e => e.type === 'pbDeerStampede').flatMap(e => e.players));
+
+    // Camouflage: deer intuition proportional
+    [...allMembers].filter(m => isDeer(m) && !paintedOut.has(m) && specialEventsThisRound < maxSpecialEvents).forEach(d => {
+      const s = pStats(d);
+      if (Math.random() < s.intuition * 0.04) {
+        specialEventsThisRound++;
+        camouflaged.add(d);
+        addScore(d, DEER_EVENT_BONUS);
+        const pr = pronouns(d);
+        roundEvents.push({
+          type: 'pbCamouflage', players: [d],
+          text: `${d} covers ${pr.ref} in mud and leaves — completely invisible to the hunters this round.`,
+          badge: 'CAMO', badgeText: 'CAMO', badgeClass: 'gold'
+        });
+      }
+    });
+
+    // Tree climb: physical proportional per deer
+    [...allMembers].filter(m => isDeer(m) && !paintedOut.has(m) && !camouflaged.has(m) && specialEventsThisRound < maxSpecialEvents).forEach(d => {
+      const s = pStats(d);
+      if (Math.random() < s.physical * 0.03) {
+        specialEventsThisRound++;
+        treeClimbed.add(d);
+        addScore(d, DEER_EVENT_BONUS);
+        const pr = pronouns(d);
+        roundEvents.push({
+          type: 'pbTreeClimb', players: [d],
+          text: `${d} scrambles up a tree and hides in the branches. Safe this round, but ${pr.Sub}'s stuck up there.`,
+          badge: 'TREE CLIMB', badgeText: 'TREE CLIMB', badgeClass: ''
+        });
+      }
+    });
+
+    // Mud slide: (10-endurance) proportional per deer
+    [...allMembers].filter(m => isDeer(m) && !paintedOut.has(m) && !camouflaged.has(m) && !treeClimbed.has(m)).forEach(d => {
+      const s = pStats(d);
+      if (Math.random() < (10 - s.endurance) * 0.02 && specialEventsThisRound < maxSpecialEvents) {
+        specialEventsThisRound++;
+        newMudSlid.add(d);
+        const pr = pronouns(d);
+        roundEvents.push({
+          type: 'pbMudSlide', players: [d],
+          text: `${d} slips in the mud and faceplants. ${pr.Sub}'ll be an easier target next round.`,
+          badge: 'MUD SLIDE', badgeText: 'MUD SLIDE', badgeClass: 'red'
+        });
+      }
+    });
+
+    // Bear encounter: 5% per deer per round
+    [...allMembers].filter(m => isDeer(m) && !paintedOut.has(m)).forEach(d => {
+      if (Math.random() < 0.05 && specialEventsThisRound < maxSpecialEvents) {
+        specialEventsThisRound++;
+        const pr = pronouns(d);
+        if (!gs.lingeringInjuries) gs.lingeringInjuries = {};
+        gs.lingeringInjuries[d] = { ep: (gs.episode || 0) + 1, duration: 2, type: 'bear-mauled', penalty: 1.5 + Math.random() };
+        if (!gs._paintballHeat) gs._paintballHeat = {};
+        gs._paintballHeat[d] = { amount: 2.0, expiresEp: (gs.episode || 0) + 1 + 2 };
+        bearMauledList.push(d);
+        roundEvents.push({
+          type: 'pbBearEncounter', players: [d],
+          text: `A BEAR charges out of the woods and mauls ${d}! ${pr.Sub}'s hurt bad — this is going to linger.`,
+          badge: 'BEAR MAULED', badgeText: 'BEAR MAULED', badgeClass: 'red'
+        });
+      }
+    });
+
+    // Antlers locked: two deer different tribes, random low chance
+    if (specialEventsThisRound < maxSpecialEvents) {
+      const allAliveDeer = tribes.flatMap(t => [...unpaintedDeer[t.name]]);
+      if (allAliveDeer.length >= 2) {
+        for (let ai = 0; ai < allAliveDeer.length && specialEventsThisRound < maxSpecialEvents; ai++) {
+          for (let aj = ai + 1; aj < allAliveDeer.length; aj++) {
+            if (tribeOf[allAliveDeer[ai]] !== tribeOf[allAliveDeer[aj]] && Math.random() < 0.04) {
+              const d1 = allAliveDeer[ai], d2 = allAliveDeer[aj];
+              specialEventsThisRound++;
+              addBond(d1, d2, 0.3);
+              roundEvents.push({
+                type: 'pbAntlersLocked', players: [d1, d2],
+                text: `${d1} and ${d2} literally crash into each other and get tangled up. They're stuck together like... antlers locked. Easy targets, but the comedy writes itself.`,
+                badge: 'ANTLERS LOCKED', badgeText: 'ANTLERS LOCKED', badgeClass: ''
+              });
+              // Romance spark check
+              if (seasonConfig.romance !== 'disabled') {
+                _challengeRomanceSpark(d1, d2, ep, roundKey, phases, personalScores, 'antlers-locked');
+              }
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    // ── Rebellion: deer boldness proportional — steals hunter's gun ──
+    const rebellionDeer = new Set();
+    [...allMembers].filter(m => isDeer(m) && !paintedOut.has(m) && !camouflaged.has(m) && !treeClimbed.has(m)).forEach(d => {
+      const s = pStats(d);
+      if (Math.random() < s.boldness * 0.03 && specialEventsThisRound < maxSpecialEvents) {
+        specialEventsThisRound++;
+        rebellionDeer.add(d);
+        addScore(d, DEER_EVENT_BONUS);
+        const pr = pronouns(d);
+        // Pick a random opposing hunter
+        const oppHunters = tribes.filter(t => t.name !== tribeOf[d]).flatMap(t => roles[t.name].hunters);
+        if (oppHunters.length) {
+          const victim = _rp(oppHunters);
+          addScore(victim, HUNTER_NEGATIVE);
+          roundEvents.push({
+            type: 'pbRebellion', players: [d, victim],
+            text: `${d} snatches the paintball gun right out of ${victim}'s hands and shoots ${pronouns(victim).obj} point blank! The deer becomes the hunter.`,
+            badge: 'REBELLION', badgeText: 'REBELLION', badgeClass: 'gold'
+          });
+        }
+      }
+    });
+
+    // ── Paintball misfire: (10-mental) proportional per hunter ──
+    const misfiredHunters = new Set();
+    tribes.forEach(t => {
+      roles[t.name].hunters.forEach(h => {
+        const s = pStats(h);
+        if (Math.random() < (10 - s.mental) * 0.02 && specialEventsThisRound < maxSpecialEvents) {
+          specialEventsThisRound++;
+          misfiredHunters.add(h);
+          addScore(h, HUNTER_NOTHING);
+          const pr = pronouns(h);
+          roundEvents.push({
+            type: 'pbMisfire', players: [h],
+            text: `${h}'s paintball gun jams! ${pr.Sub} spends the entire round trying to fix it. Wasted turn.`,
+            badge: 'MISFIRE', badgeText: 'MISFIRE', badgeClass: 'red'
+          });
+        }
+      });
+    });
+
+    // ── Social events during hunt ──
+
+    // Alliance rebellion: hunter bond <= -1 with own team deer, refuses orders
+    tribes.forEach(t => {
+      roles[t.name].hunters.forEach(h => {
+        roles[t.name].deer.filter(d => !paintedOut.has(d)).forEach(d => {
+          if (getBond(h, d) <= -1 && Math.random() < 0.3 && specialEventsThisRound < maxSpecialEvents) {
+            specialEventsThisRound++;
+            addScore(h, HUNTER_STANDOFF);
+            const pr = pronouns(h);
+            roundEvents.push({
+              type: 'pbAllianceRebellion', players: [h, d],
+              text: `${h} refuses to coordinate with ${d}. ${pr.Sub} goes off on ${pr.posAdj} own, wasting valuable hunting time.`,
+              badge: 'REBELLION', badgeText: 'REBELLION', badgeClass: 'red'
+            });
+          }
+        });
+      });
+    });
+
+    // Deer-to-deer bonding: two deer hiding together, bond >= 2
+    const allAliveDeerForSocial = tribes.flatMap(t => [...unpaintedDeer[t.name]]);
+    for (let di = 0; di < allAliveDeerForSocial.length && specialEventsThisRound < maxSpecialEvents; di++) {
+      for (let dj = di + 1; dj < allAliveDeerForSocial.length; dj++) {
+        const d1 = allAliveDeerForSocial[di], d2 = allAliveDeerForSocial[dj];
+        if (tribeOf[d1] === tribeOf[d2] && getBond(d1, d2) >= 2 && Math.random() < 0.25) {
+          specialEventsThisRound++;
+          addBond(d1, d2, 0.3);
+          addScore(d1, 0.5);
+          addScore(d2, 0.5);
+          roundEvents.push({
+            type: 'pbDeerBonding', players: [d1, d2],
+            text: `${d1} and ${d2} hide behind the same log, whispering and keeping watch for each other. The fear brings them closer.`,
+            badge: 'BOND', badgeText: 'BOND', badgeClass: 'gold'
+          });
+          // Romance spark for deer hiding together
+          if (seasonConfig.romance !== 'disabled') {
+            _challengeRomanceSpark(d1, d2, ep, roundKey, phases, personalScores, 'deer-hiding');
+          }
+          break;
+        }
+      }
+    }
+
+    // Cross-tribe deer encounter
+    for (let di = 0; di < allAliveDeerForSocial.length && specialEventsThisRound < maxSpecialEvents; di++) {
+      for (let dj = di + 1; dj < allAliveDeerForSocial.length; dj++) {
+        const d1 = allAliveDeerForSocial[di], d2 = allAliveDeerForSocial[dj];
+        if (tribeOf[d1] !== tribeOf[d2] && Math.random() < 0.12) {
+          specialEventsThisRound++;
+          const rivalry = getBond(d1, d2) < 0;
+          if (rivalry) {
+            addBond(d1, d2, -0.2);
+            roundEvents.push({
+              type: 'pbCrossTribeEncounter', players: [d1, d2],
+              text: `${d1} and ${d2} spot each other hiding in the same thicket. The tension is palpable — no alliance here.`,
+              badge: 'STANDOFF', badgeText: 'STANDOFF', badgeClass: 'red'
+            });
+          } else {
+            addBond(d1, d2, 0.2);
+            roundEvents.push({
+              type: 'pbCrossTribeEncounter', players: [d1, d2],
+              text: `${d1} and ${d2} from different tribes find themselves hiding side by side. A nod of mutual respect — for now.`,
+              badge: 'TRUCE', badgeText: 'TRUCE', badgeClass: ''
+            });
+          }
+          break;
+        }
+      }
+    }
+
+    // Deer-to-deer pact: strategic proportional
+    for (let di = 0; di < allAliveDeerForSocial.length && specialEventsThisRound < maxSpecialEvents; di++) {
+      for (let dj = di + 1; dj < allAliveDeerForSocial.length; dj++) {
+        const d1 = allAliveDeerForSocial[di], d2 = allAliveDeerForSocial[dj];
+        if (tribeOf[d1] === tribeOf[d2]) {
+          const s1 = pStats(d1), s2 = pStats(d2);
+          if (Math.random() < (s1.strategic + s2.strategic) * 0.015) {
+            specialEventsThisRound++;
+            // Side deal formation
+            if (!gs.sideDeals) gs.sideDeals = [];
+            gs.sideDeals.push({ a: d1, b: d2, ep: gs.episode || 0, type: 'paintball-pact' });
+            roundEvents.push({
+              type: 'pbDeerPact', players: [d1, d2],
+              text: `While hiding together, ${d1} and ${d2} whisper a side deal — protect each other at the next tribal, no matter what.`,
+              badge: 'PACT', badgeText: 'PACT', badgeClass: 'gold'
+            });
+            break;
+          }
+        }
+      }
+    }
+
+    // Hunter-to-hunter scheming: strategic proportional
+    const allHunters = tribes.flatMap(t => roles[t.name].hunters);
+    for (let hi = 0; hi < allHunters.length && specialEventsThisRound < maxSpecialEvents; hi++) {
+      for (let hj = hi + 1; hj < allHunters.length; hj++) {
+        const h1 = allHunters[hi], h2 = allHunters[hj];
+        if (tribeOf[h1] === tribeOf[h2]) {
+          const s1 = pStats(h1), s2 = pStats(h2);
+          if (Math.random() < (s1.strategic + s2.strategic) * 0.015) {
+            specialEventsThisRound++;
+            roundEvents.push({
+              type: 'pbHunterScheme', players: [h1, h2],
+              text: `${h1} and ${h2} crouch together between rounds, whispering about who to target at the next tribal.`,
+              badge: 'SCHEMING', badgeText: 'SCHEMING', badgeClass: ''
+            });
+            break;
+          }
+        }
+      }
+    }
+
+    // Cross-role whisper: hunter finds own team deer, bond >= 2
+    tribes.forEach(t => {
+      roles[t.name].hunters.forEach(h => {
+        roles[t.name].deer.filter(d => !paintedOut.has(d)).forEach(d => {
+          if (getBond(h, d) >= 2 && Math.random() < 0.15 && specialEventsThisRound < maxSpecialEvents) {
+            specialEventsThisRound++;
+            addBond(h, d, 0.2);
+            roundEvents.push({
+              type: 'pbCrossRoleWhisper', players: [h, d],
+              text: `${h} stumbles upon ${d} — ${pronouns(h).posAdj} own teammate. Instead of moving on, they exchange intel about enemy positions.`,
+              badge: 'WHISPER', badgeText: 'WHISPER', badgeClass: ''
+            });
+          }
+        });
+      });
+    });
+
+    // Alliance meeting: villain/schemer + alliance member
+    tribes.forEach(t => {
+      roles[t.name].hunters.forEach(h => {
+        const arch = players.find(p => p.name === h)?.archetype;
+        if ((arch === 'villain' || arch === 'schemer') && specialEventsThisRound < maxSpecialEvents) {
+          const ally = roles[t.name].hunters.find(h2 => h2 !== h && getBond(h, h2) >= 1);
+          if (ally && Math.random() < 0.2) {
+            specialEventsThisRound++;
+            roundEvents.push({
+              type: 'pbAllianceMeeting', players: [h, ally],
+              text: `${h} pulls ${ally} aside during the hunt for a quick strategy session. This isn't just about paintball anymore.`,
+              badge: 'PLOTTING', badgeText: 'PLOTTING', badgeClass: ''
+            });
+          }
+        }
+      });
+    });
+
+    // ── HUNTER MATCHUPS ──
+    tribes.forEach(t => {
+      roles[t.name].hunters.forEach(hunter => {
+        if (misfiredHunters.has(hunter)) return; // gun jammed
+
+        const s = pStats(hunter);
+        const hunterTribe = t.name;
+        const opposingDeer = getOpposingDeer(hunterTribe);
+        if (!opposingDeer.length) return;
+
+        // Search check
+        const searchScore = s.intuition * 0.06 + Math.random() * 0.2;
+        if (searchScore < 0.4) {
+          addScore(hunter, HUNTER_NOTHING);
+          matchups.push({ hunter, result: 'nothing', round: roundNum });
+          return;
+        }
+
+        // Target found
+        const target = pickTargetDeer(opposingDeer);
+        if (!target) {
+          addScore(hunter, HUNTER_NOTHING);
+          matchups.push({ hunter, result: 'nothing', round: roundNum });
+          return;
+        }
+
+        // ── Hunter protects deer (showmance with opposing deer) ──
+        if (seasonConfig.romance !== 'disabled' && gs.showmances?.length) {
+          const showmancePair = gs.showmances.find(sm =>
+            (sm.players[0] === hunter && sm.players[1] === target) ||
+            (sm.players[1] === hunter && sm.players[0] === target)
+          );
+          if (showmancePair && specialEventsThisRound < maxSpecialEvents) {
+            specialEventsThisRound++;
+            addScore(hunter, -1.5);
+            const pr = pronouns(hunter);
+            roundEvents.push({
+              type: 'pbHunterProtects', players: [hunter, target],
+              text: `${hunter} has ${target} dead to rights... but lowers ${pr.posAdj} gun. ${pr.Sub} can't shoot ${pronouns(target).obj}. Not ${pronouns(target).obj}.`,
+              badge: 'PROTECTION', badgeText: 'PROTECTION', badgeClass: 'gold'
+            });
+            _checkShowmanceChalMoment(ep, roundKey, phases, personalScores, 'danger', [hunter, target]);
+            matchups.push({ hunter, target, result: 'protect', round: roundNum });
+            return;
+          }
+        }
+
+        // ── Ambush: strategic proportional ──
+        let ambushed = false;
+        if (Math.random() < s.strategic * 0.04 && specialEventsThisRound < maxSpecialEvents) {
+          specialEventsThisRound++;
+          ambushed = true;
+          addScore(hunter, HUNTER_HIT + HUNTER_EVENT_BONUS);
+          addScore(target, DEER_PAINTED);
+          paintedOut.add(target);
+          unpaintedDeer[tribeOf[target]].delete(target);
+          paintCounter[target] = (paintCounter[target] || 0) + 1;
+          hunterHits[hunter] = (hunterHits[hunter] || 0) + 1;
+          roundEvents.push({
+            type: 'pbAmbush', players: [hunter, target],
+            text: `${hunter} ambushes ${target} from behind a tree! Perfect shot — ${target} never saw it coming.`,
+            badge: 'AMBUSH', badgeText: 'AMBUSH', badgeClass: 'gold'
+          });
+          matchups.push({ hunter, target, result: 'ambush', round: roundNum });
+          return;
+        }
+
+        // ── Sneak attack: intuition proportional ──
+        if (!ambushed && Math.random() < s.intuition * 0.05 && specialEventsThisRound < maxSpecialEvents) {
+          specialEventsThisRound++;
+          addScore(hunter, HUNTER_HIT + HUNTER_EVENT_BONUS);
+          addScore(target, DEER_PAINTED);
+          paintedOut.add(target);
+          unpaintedDeer[tribeOf[target]].delete(target);
+          paintCounter[target] = (paintCounter[target] || 0) + 1;
+          hunterHits[hunter] = (hunterHits[hunter] || 0) + 1;
+          roundEvents.push({
+            type: 'pbSneakAttack', players: [hunter, target],
+            text: `${hunter} creeps through the undergrowth and catches ${target} completely off guard. Splat!`,
+            badge: 'SNEAK ATTACK', badgeText: 'SNEAK ATTACK', badgeClass: 'gold'
+          });
+          matchups.push({ hunter, target, result: 'sneak', round: roundNum });
+          return;
+        }
+
+        // ── Decoy: deer strategic proportional ──
+        const targetStats = pStats(target);
+        if (Math.random() < targetStats.strategic * 0.03 && specialEventsThisRound < maxSpecialEvents) {
+          specialEventsThisRound++;
+          addScore(target, DEER_EVENT_BONUS);
+          addScore(hunter, HUNTER_NOTHING);
+          const pr = pronouns(target);
+          roundEvents.push({
+            type: 'pbDecoy', players: [target, hunter],
+            text: `${target} leaves a decoy and lures ${hunter} in completely the wrong direction. ${pr.Sub} bought ${pr.ref} another round.`,
+            badge: 'DECOY', badgeText: 'DECOY', badgeClass: 'gold'
+          });
+          matchups.push({ hunter, target, result: 'decoy', round: roundNum });
+          return;
+        }
+
+        // ── Taunt: deer boldness + disloyalty proportional ──
+        if (Math.random() < (targetStats.boldness * 0.03 + (10 - targetStats.loyalty) * 0.02) && specialEventsThisRound < maxSpecialEvents) {
+          specialEventsThisRound++;
+          addScore(hunter, -0.5);
+          addScore(target, 1.0);
+          const pr = pronouns(target);
+          roundEvents.push({
+            type: 'pbTaunt', players: [target, hunter],
+            text: `${target} taunts ${hunter} from behind cover, waving ${pr.posAdj} arms and making faces. ${hunter} is NOT amused.`,
+            badge: 'TAUNT', badgeText: 'TAUNT', badgeClass: ''
+          });
+        }
+
+        // ── Standard shot attempt ──
+        const hunterScore = s.physical * 0.03 + s.intuition * 0.04 + Math.random() * 0.2;
+        const dodgeBonus = stampedeDeer.has(target) ? 0.2 : 0;
+        const deerScore = targetStats.endurance * 0.04 + targetStats.intuition * 0.03 + targetStats.boldness * 0.02 + Math.random() * 0.15 + dodgeBonus;
+
+        // Epic chase: scores within 10%
+        const scoreDiff = Math.abs(hunterScore - deerScore);
+        const avgScore = (hunterScore + deerScore) / 2;
+        if (avgScore > 0 && scoreDiff / avgScore < 0.10 && specialEventsThisRound < maxSpecialEvents) {
+          specialEventsThisRound++;
+          addScore(hunter, 1.0);
+          addScore(target, 1.0);
+          roundEvents.push({
+            type: 'pbEpicChase', players: [hunter, target],
+            text: `${hunter} and ${target} go blow for blow through the forest — dodging, shooting, diving. The camera crew can barely keep up.`,
+            badge: 'EPIC CHASE', badgeText: 'EPIC CHASE', badgeClass: 'gold'
+          });
+        }
+
+        // Obsessive chase: hunter targets same deer twice
+        if (obsessiveTargets[hunter] === target && specialEventsThisRound < maxSpecialEvents) {
+          specialEventsThisRound++;
+          if (hunterScore > deerScore) {
+            addScore(hunter, 1.0); // bonus on top of hit
+            roundEvents.push({
+              type: 'pbObsessiveChase', players: [hunter, target],
+              text: `${hunter} tracked ${target} AGAIN — and this time ${pronouns(hunter).Sub} finishes the job. Obsession pays off.`,
+              badge: 'OBSESSED', badgeText: 'OBSESSED', badgeClass: 'gold'
+            });
+          } else {
+            addScore(hunter, -1.5); // penalty for missing again
+            roundEvents.push({
+              type: 'pbObsessiveChase', players: [hunter, target],
+              text: `${hunter} went after ${target} AGAIN and missed AGAIN. This is getting embarrassing.`,
+              badge: 'OBSESSED', badgeText: 'OBSESSED', badgeClass: 'red'
+            });
+          }
+        }
+        obsessiveTargets[hunter] = target;
+
+        if (hunterScore > deerScore) {
+          // HIT
+          addScore(hunter, HUNTER_HIT);
+          addScore(target, DEER_PAINTED);
+          paintedOut.add(target);
+          unpaintedDeer[tribeOf[target]].delete(target);
+          paintCounter[target] = (paintCounter[target] || 0) + 1;
+          hunterHits[hunter] = (hunterHits[hunter] || 0) + 1;
+          matchups.push({ hunter, target, result: 'hit', round: roundNum });
+        } else {
+          // MISS
+          addScore(hunter, HUNTER_MISS);
+          addScore(target, DEER_DODGE);
+          hunterMisses[hunter] = (hunterMisses[hunter] || 0) + 1;
+          matchups.push({ hunter, target, result: 'miss', round: roundNum });
+        }
+
+        // ── Rare double find: intuition proportional ──
+        if (Math.random() < s.intuition * 0.02) {
+          const secondTargetPool = getOpposingDeer(hunterTribe).filter(d => d !== target && !camouflaged.has(d) && !treeClimbed.has(d));
+          if (secondTargetPool.length) {
+            const target2 = pickTargetDeer(secondTargetPool) || _rp(secondTargetPool);
+            const ts2 = pStats(target2);
+            const hunterScore2 = s.physical * 0.03 + s.intuition * 0.04 + Math.random() * 0.2;
+            const deerScore2 = ts2.endurance * 0.04 + ts2.intuition * 0.03 + ts2.boldness * 0.02 + Math.random() * 0.15;
+            if (hunterScore2 > deerScore2) {
+              addScore(hunter, HUNTER_HIT);
+              addScore(target2, DEER_PAINTED);
+              paintedOut.add(target2);
+              unpaintedDeer[tribeOf[target2]].delete(target2);
+              paintCounter[target2] = (paintCounter[target2] || 0) + 1;
+              hunterHits[hunter] = (hunterHits[hunter] || 0) + 1;
+              matchups.push({ hunter, target: target2, result: 'double-hit', round: roundNum });
+              roundEvents.push({
+                type: 'pbDoublefind', players: [hunter, target2],
+                text: `${hunter} spots a SECOND deer — ${target2}! Two for one. Splat!`,
+                badge: 'DOUBLE FIND', badgeText: 'DOUBLE FIND', badgeClass: 'gold'
+              });
+            } else {
+              addScore(hunter, HUNTER_MISS);
+              addScore(target2, DEER_DODGE);
+              hunterMisses[hunter] = (hunterMisses[hunter] || 0) + 1;
+              matchups.push({ hunter, target: target2, result: 'double-miss', round: roundNum });
+            }
+          }
+        }
+
+        // ── Sympathy shot: hunter shoots already-painted deer ──
+        if (Math.random() < 0.06) {
+          const alreadyPainted = [...paintedOut].filter(d => tribeOf[d] !== hunterTribe);
+          if (alreadyPainted.length) {
+            const sympTarget = _rp(alreadyPainted);
+            addBond(hunter, sympTarget, -0.5);
+            paintCounter[sympTarget] = (paintCounter[sympTarget] || 0) + 1;
+            roundEvents.push({
+              type: 'pbSympathyShot', players: [hunter, sympTarget],
+              text: `${hunter} shoots ${sympTarget} even though ${pronouns(sympTarget).Sub}'s already out! Just piling on at this point.`,
+              badge: 'PILING ON', badgeText: 'PILING ON', badgeClass: 'red'
+            });
+          }
+        }
+      });
+    });
+
+    // ── Hunter rivalry: two hunters targeting same deer, both high boldness ──
+    const hunterTargetMap = {};
+    matchups.filter(m => m.round === roundNum && m.target).forEach(m => {
+      if (!hunterTargetMap[m.target]) hunterTargetMap[m.target] = [];
+      hunterTargetMap[m.target].push(m.hunter);
+    });
+    Object.entries(hunterTargetMap).forEach(([target, hunters]) => {
+      if (hunters.length >= 2 && specialEventsThisRound < maxSpecialEvents) {
+        const h1 = hunters[0], h2 = hunters[1];
+        const b1 = pStats(h1).boldness, b2 = pStats(h2).boldness;
+        if ((b1 + b2) * 0.04 > Math.random()) {
+          specialEventsThisRound++;
+          addBond(h1, h2, -0.3);
+          roundEvents.push({
+            type: 'pbHunterRivalry', players: [h1, h2, target],
+            text: `${h1} and ${h2} both zero in on ${target} — and end up competing against each other instead. Neither gets the shot.`,
+            badge: 'RIVALRY', badgeText: 'RIVALRY', badgeClass: 'red'
+          });
+        }
+      }
+    });
+
+    // ── Friendly fire: accidental and deliberate ──
+    tribes.forEach(t => {
+      roles[t.name].hunters.forEach(hunter => {
+        if (misfiredHunters.has(hunter)) return;
+        const s = pStats(hunter);
+
+        // Own team deer
+        const ownDeer = roles[t.name].deer.filter(d => !paintedOut.has(d));
+        if (!ownDeer.length) return;
+
+        // Accidental friendly fire
+        const accidentChance = (10 - s.intuition) * 0.015 + (10 - s.mental) * 0.01;
+        if (Math.random() < accidentChance) {
+          const victim = _rp(ownDeer);
+          const pr = pronouns(hunter);
+          addBond(hunter, victim, -0.5);
+          paintCounter[victim] = (paintCounter[victim] || 0) + 1;
+          friendlyFireLog.push({ hunter, victim, type: 'accidental', round: roundNum });
+          roundEvents.push({
+            type: 'pbFriendlyFireAccident', players: [hunter, victim],
+            text: `${hunter} accidentally shoots ${pr.posAdj} OWN teammate ${victim}! "${pronouns(victim).Sub}'s on YOUR team!" someone yells.`,
+            badge: 'FRIENDLY FIRE', badgeText: 'FRIENDLY FIRE', badgeClass: 'red'
+          });
+          return;
+        }
+
+        // Deliberate friendly fire: bond <= -2 with own deer
+        ownDeer.forEach(d => {
+          if (getBond(hunter, d) <= -2) {
+            const deliberateChance = (10 - s.loyalty) * 0.02 + s.boldness * 0.015;
+            if (Math.random() < deliberateChance) {
+              addBond(hunter, d, -1.0);
+              addScore(hunter, HUNTER_NEGATIVE);
+              paintCounter[d] = (paintCounter[d] || 0) + 1;
+              friendlyFireLog.push({ hunter, victim: d, type: 'deliberate', round: roundNum });
+              const pr = pronouns(hunter);
+              roundEvents.push({
+                type: 'pbFriendlyFireDeliberate', players: [hunter, d],
+                text: `${hunter} DELIBERATELY shoots ${d} — ${pr.posAdj} own teammate! That was NO accident.`,
+                badge: 'BETRAYAL', badgeText: 'BETRAYAL', badgeClass: 'red'
+              });
+
+              // ── Paintball War escalation ──
+              // Retaliation
+              const dStats = pStats(d);
+              if (Math.random() < dStats.boldness * 0.06) {
+                addBond(d, hunter, -0.5);
+                const dpr = pronouns(d);
+                paintballWarLog.push({ instigator: hunter, retaliator: d, round: roundNum });
+                roundEvents.push({
+                  type: 'pbRetaliation', players: [d, hunter],
+                  text: `${d} grabs a paintball gun and shoots ${hunter} right back! ${dpr.Sub}'s not taking that lying down.`,
+                  badge: 'RETALIATION', badgeText: 'RETALIATION', badgeClass: 'red'
+                });
+
+                // Witnesses join
+                const witnesses = t.members.filter(m => m !== hunter && m !== d && Math.random() < 0.3);
+                if (witnesses.length) {
+                  witnesses.forEach(w => addBond(w, hunter, -0.3));
+                  roundEvents.push({
+                    type: 'pbWarEscalation', players: [d, hunter, ...witnesses],
+                    text: `It's a full-on PAINTBALL WAR! ${witnesses.join(' and ')} jump${witnesses.length === 1 ? 's' : ''} in. Paint is flying everywhere.`,
+                    badge: 'PAINTBALL WAR', badgeText: 'PAINTBALL WAR', badgeClass: 'red'
+                  });
+                }
+
+                // Opposing hunters get free shots
+                const oppHunters = tribes.filter(ot => ot.name !== t.name).flatMap(ot => roles[ot.name].hunters);
+                const freeShooter = oppHunters.length ? _rp(oppHunters) : null;
+                if (freeShooter) {
+                  const freeTarget = ownDeer.find(od => !paintedOut.has(od));
+                  if (freeTarget) {
+                    addScore(freeShooter, HUNTER_HIT);
+                    addScore(freeTarget, DEER_PAINTED);
+                    paintedOut.add(freeTarget);
+                    unpaintedDeer[t.name].delete(freeTarget);
+                    paintCounter[freeTarget] = (paintCounter[freeTarget] || 0) + 1;
+                    hunterHits[freeShooter] = (hunterHits[freeShooter] || 0) + 1;
+                    roundEvents.push({
+                      type: 'pbWarFreeShot', players: [freeShooter, freeTarget],
+                      text: `While ${t.name} fights among themselves, ${freeShooter} picks off ${freeTarget} with a free shot! Chaos is opportunity.`,
+                      badge: 'FREE SHOT', badgeText: 'FREE SHOT', badgeClass: 'gold'
+                    });
+                  }
+                }
+              }
+            }
+          }
+        });
+      });
+    });
+
+    // ── Showmance moments via helper ──
+    if (seasonConfig.romance !== 'disabled') {
+      _checkShowmanceChalMoment(ep, roundKey, phases, personalScores, 'danger', allMembers);
+    }
+
+    // ── Award per-round survival to unpainted deer ──
+    tribes.forEach(t => {
+      unpaintedDeer[t.name].forEach(d => {
+        addScore(d, DEER_PER_ROUND);
+      });
+    });
+
+    // Update mud slide set for next round
+    mudSlid.clear();
+    newMudSlid.forEach(d => mudSlid.add(d));
+
+    // ── Save round data ──
+    rounds.push({
+      round: roundNum,
+      name: roundName,
+      matchups: matchups.filter(m => m.round === roundNum),
+      events: roundEvents,
+      unpaintedByTribe: Object.fromEntries(tribes.map(t => [t.name, [...unpaintedDeer[t.name]]])),
+      paintedThisRound: matchups.filter(m => m.round === roundNum && (m.result === 'hit' || m.result === 'ambush' || m.result === 'sneak' || m.result === 'double-hit')).map(m => m.target)
+    });
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // WINNER DETERMINATION
+  // ══════════════════════════════════════════════════════════════════
+  const tribesWithDeerLeft = tribes.filter(t => unpaintedDeer[t.name].size > 0);
+  let winner, loser;
+
+  if (tribes.length >= 3) {
+    // First tribe fully painted out = loser
+    const eliminationOrder = [];
+    rounds.forEach(r => {
+      tribes.forEach(t => {
+        if (!eliminationOrder.includes(t.name) && unpaintedDeer[t.name].size === 0) {
+          eliminationOrder.push(t.name);
+        }
+      });
+    });
+    // Also add any still-painted-out tribes
+    tribes.forEach(t => {
+      if (!eliminationOrder.includes(t.name) && unpaintedDeer[t.name].size === 0) {
+        eliminationOrder.push(t.name);
+      }
+    });
+
+    loser = tribes.find(t => t.name === eliminationOrder[0]) || tribes.find(t => unpaintedDeer[t.name].size === 0);
+    // Winner: tribe with most unpainted deer; tiebreak: fewer total paint hits
+    const candidates = tribes.filter(t => t !== loser);
+    candidates.sort((a, b) => {
+      const aDeer = unpaintedDeer[a.name].size;
+      const bDeer = unpaintedDeer[b.name].size;
+      if (bDeer !== aDeer) return bDeer - aDeer;
+      const aHits = a.members.reduce((sum, m) => sum + (paintCounter[m] || 0), 0);
+      const bHits = b.members.reduce((sum, m) => sum + (paintCounter[m] || 0), 0);
+      return aHits - bHits;
+    });
+    winner = candidates[0];
+    if (!loser) loser = candidates[candidates.length - 1];
+  } else {
+    // 2 tribes
+    if (tribesWithDeerLeft.length === 1) {
+      winner = tribesWithDeerLeft[0];
+      loser = tribes.find(t => t !== winner);
+    } else if (tribesWithDeerLeft.length === 0) {
+      // Both wiped out — tiebreaker: fewer total paint hits
+      const sorted = [...tribes].sort((a, b) => {
+        const aHits = a.members.reduce((sum, m) => sum + (paintCounter[m] || 0), 0);
+        const bHits = b.members.reduce((sum, m) => sum + (paintCounter[m] || 0), 0);
+        return aHits - bHits;
+      });
+      winner = sorted[0];
+      loser = sorted[1];
+    } else {
+      // Both still have deer — tiebreaker
+      const sorted = [...tribes].sort((a, b) => {
+        const aDeer = unpaintedDeer[a.name].size;
+        const bDeer = unpaintedDeer[b.name].size;
+        if (bDeer !== aDeer) return bDeer - aDeer;
+        const aHits = a.members.reduce((sum, m) => sum + (paintCounter[m] || 0), 0);
+        const bHits = b.members.reduce((sum, m) => sum + (paintCounter[m] || 0), 0);
+        return aHits - bHits;
+      });
+      winner = sorted[0];
+      loser = sorted[1];
+    }
+  }
+
+  // ── MVP: last deer standing on winning tribe ──
+  let mvp = null;
+  const winnerDeerAlive = [...unpaintedDeer[winner.name]];
+  if (winnerDeerAlive.length) {
+    // Pick the one with highest personal score
+    mvp = winnerDeerAlive.reduce((best, d) => (personalScores[d] || 0) > (personalScores[best] || 0) ? d : best, winnerDeerAlive[0]);
+    addScore(mvp, DEER_SURVIVOR);
+    if (!gs.popularity) gs.popularity = {};
+    gs.popularity[mvp] = (gs.popularity[mvp] || 0) + 2;
+  }
+
+  // ── Award full-hunt survival bonus to all surviving deer ──
+  tribes.forEach(t => {
+    unpaintedDeer[t.name].forEach(d => {
+      if (d !== mvp) addScore(d, DEER_SURVIVOR);
+    });
+  });
+
+  // ══════════════════════════════════════════════════════════════════
+  // CAMP EVENTS
+  // ══════════════════════════════════════════════════════════════════
+
+  // MVP Hunter: most hits on winning tribe
+  const winnerHunters = roles[winner.name].hunters;
+  if (winnerHunters.length) {
+    const topHunter = winnerHunters.reduce((best, h) => (hunterHits[h] || 0) > (hunterHits[best] || 0) ? h : best, winnerHunters[0]);
+    if ((hunterHits[topHunter] || 0) > 0) {
+      const pr = pronouns(topHunter);
+      ep.campEvents[winner.name].post.push({
+        type: 'pbMVPHunter', players: [topHunter],
+        text: `${topHunter} was the deadliest hunter out there — ${hunterHits[topHunter]} hit${hunterHits[topHunter] !== 1 ? 's' : ''}. ${pr.Sub} carried the team.`,
+        consequences: 'Challenge MVP recognition.',
+        badgeText: 'TOP HUNTER', badgeClass: 'gold'
+      });
+    }
+  }
+
+  // Last Deer Standing
+  if (mvp) {
+    const pr = pronouns(mvp);
+    ep.campEvents[winner.name].post.push({
+      type: 'pbLastDeer', players: [mvp],
+      text: `${mvp} was the last deer standing — untouched, uncatchable. ${pr.Sub} single-handedly won this for ${pr.posAdj} tribe.`,
+      consequences: '+4.0 score, +2 popularity.',
+      badgeText: 'LAST DEER', badgeClass: 'gold'
+    });
+  }
+
+  // Rebellion Hero (if any rebellion events)
+  const rebellionEvents = rounds.flatMap(r => r.events).filter(e => e.type === 'pbRebellion');
+  if (rebellionEvents.length) {
+    const hero = rebellionEvents[0].players[0];
+    ep.campEvents[tribeOf[hero]].post.push({
+      type: 'pbRebellionHero', players: [hero],
+      text: `${hero} stole a hunter's gun and turned the tables. Legend.`,
+      consequences: 'Rebellion hero status.',
+      badgeText: 'REBELLION HERO', badgeClass: 'gold'
+    });
+  }
+
+  // Negative: Friendly Fire culprit
+  if (friendlyFireLog.length) {
+    const culprit = friendlyFireLog[0].hunter;
+    const pr = pronouns(culprit);
+    const campKey = tribeOf[culprit];
+    ep.campEvents[campKey].post.push({
+      type: 'pbFriendlyFireCulprit', players: [culprit],
+      text: `${culprit} shot ${pr.posAdj} own teammate. ${friendlyFireLog[0].type === 'deliberate' ? 'And it wasn\'t an accident.' : 'At least... it looked like an accident.'}`,
+      consequences: 'Bond damage with victim.',
+      badgeText: 'FRIENDLY FIRE', badgeClass: 'red'
+    });
+  }
+
+  // Negative: First Deer Painted
+  const firstPainted = matchups.find(m => m.result === 'hit' || m.result === 'ambush' || m.result === 'sneak');
+  if (firstPainted) {
+    const target = firstPainted.target;
+    const pr = pronouns(target);
+    const campKey = tribeOf[target];
+    ep.campEvents[campKey].post.push({
+      type: 'pbFirstPainted', players: [target],
+      text: `${target} was the first deer painted out. ${pr.Sub} didn't last five minutes.`,
+      consequences: 'First out shame.',
+      badgeText: 'FIRST PAINTED', badgeClass: 'red'
+    });
+  }
+
+  // Negative: Paintball War instigator
+  if (paintballWarLog.length) {
+    const instigator = paintballWarLog[0].instigator;
+    const campKey = tribeOf[instigator];
+    ep.campEvents[campKey].post.push({
+      type: 'pbWarInstigator', players: [instigator],
+      text: `${instigator} started a paintball war with ${pronouns(instigator).posAdj} own tribe. The other team loved it.`,
+      consequences: 'Bond damage, free shots for opponents.',
+      badgeText: 'WAR STARTER', badgeClass: 'red'
+    });
+  }
+
+  // Negative: Bear Mauled
+  bearMauledList.forEach(name => {
+    const pr = pronouns(name);
+    const campKey = tribeOf[name];
+    ep.campEvents[campKey].post.push({
+      type: 'pbBearMauled', players: [name],
+      text: `${name} got mauled by a bear during the hunt. ${pr.Sub}'s going to feel that for a while.`,
+      consequences: 'Lingering injury (2 episodes), +2.0 heat.',
+      badgeText: 'BEAR MAULED', badgeClass: 'red'
+    });
+  });
+
+  // ── Push round social events to campEvents ──
+  rounds.forEach(r => {
+    r.events.forEach(evt => {
+      if (evt.players?.length) {
+        const evtTribe = tribeOf[evt.players[0]] || winner.name;
+        if (!ep.campEvents[evtTribe]) ep.campEvents[evtTribe] = { pre: [], post: [] };
+        if (!ep.campEvents[evtTribe].post) ep.campEvents[evtTribe].post = [];
+        // Don't duplicate — only push social/bond events (hunt events already covered above)
+        if (['pbDeerBonding', 'pbCrossTribeEncounter', 'pbDeerPact', 'pbHunterScheme', 'pbCrossRoleWhisper', 'pbAllianceMeeting', 'pbAllianceRebellion'].includes(evt.type)) {
+          ep.campEvents[evtTribe].post.push(evt);
+        }
+      }
+    });
+  });
+
+  // ══════════════════════════════════════════════════════════════════
+  // EPISODE DATA + FINALIZATION
+  // ══════════════════════════════════════════════════════════════════
+  ep.paintballHunt = {
+    roles,
+    rounds,
+    paintCounter,
+    friendlyFire: friendlyFireLog,
+    paintballWar: paintballWarLog,
+    bearMauled: bearMauledList,
+    winner: winner.name,
+    loser: loser.name,
+    mvp
+  };
+
+  ep.winner = winner.name;
+  ep.loser = loser.name;
+  ep.challengeType = 'tribe';
+  ep.immunePlayers = winner.members.slice();
+  ep.tribalPlayers = loser.members.slice();
+  ep.challengeLabel = 'Paintball Hunt';
+  ep.challengeCategory = 'physical';
+
+  // ── Challenge member scores ──
+  ep.chalMemberScores = personalScores;
   updateChalRecord(ep);
 }
 
@@ -32895,6 +33910,12 @@ function simulateJuryRoundtable(ep) {
         if (((gs.episode || 0) + 1) >= gs._upTheCreekHeat[k].expiresEp) delete gs._upTheCreekHeat[k];
       });
       if (!Object.keys(gs._upTheCreekHeat).length) delete gs._upTheCreekHeat;
+    }
+    if (gs._paintballHeat) {
+      Object.keys(gs._paintballHeat).forEach(k => {
+        if (((gs.episode || 0) + 1) >= gs._paintballHeat[k].expiresEp) delete gs._paintballHeat[k];
+      });
+      if (!Object.keys(gs._paintballHeat).length) delete gs._paintballHeat;
     }
 
     // ── BLACK VOTE: eliminated player casts a parting vote/gift (until F4) ──

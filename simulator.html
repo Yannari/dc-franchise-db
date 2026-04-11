@@ -13831,12 +13831,13 @@ function simulatePaintballHunt(ep) {
               unpaintedDeer[tribeOf[target2]].delete(target2);
               paintCounter[target2] = (paintCounter[target2] || 0) + 1;
               hunterHits[hunter] = (hunterHits[hunter] || 0) + 1;
-              matchups.push({ hunter, target: target2, result: 'double-hit', round: roundNum });
-              roundEvents.push({
-                type: 'pbDoublefind', players: [hunter, target2],
-                text: `${hunter} spots a SECOND deer — ${target2}! Two for one. Splat!`,
-                badge: 'DOUBLE FIND', badgeText: 'DOUBLE FIND', badgeClass: 'gold'
-              });
+              const _dfTexts = [
+                `${hunter} spots a SECOND deer — ${target2}! ${pronouns(hunter).Sub}'s lining up another shot...`,
+                `${hunter} catches movement in the corner of ${pronouns(hunter).posAdj} eye — ${target2} is right there. Going for the double.`,
+                `${hunter} isn't done. ${pronouns(hunter).Sub}'s already locked onto ${target2}. Two in one round.`,
+              ];
+              matchups.push({ hunter, target: target2, result: 'double-hit', round: roundNum,
+                text: _rp(_dfTexts) });
             } else {
               addScore(hunter, HUNTER_MISS);
               addScore(target2, DEER_DODGE);
@@ -58062,7 +58063,7 @@ function rpBuildPaintballHunt(ep) {
         </div>`;
         html += `</div>`;
         // Hit text + narrative if present
-        const hitLabel = m.result === 'ambush' ? 'Ambush!' : m.result === 'sneak' ? 'Sneak attack!' : m.result === 'double-hit' ? 'Double find!' : m.result === 'friendly-fire' ? '🔥 FRIENDLY FIRE!' : 'Direct hit!';
+        const hitLabel = m.result === 'ambush' ? 'Ambush!' : m.result === 'sneak' ? 'Sneak attack!' : m.result === 'double-hit' ? 'Second shot connects!' : m.result === 'friendly-fire' ? '🔥 FRIENDLY FIRE!' : 'Direct hit!';
         html += `<div style="text-align:center;font-size:10px;color:${m.result === 'friendly-fire' ? '#f85149' : '#8b949e'};margin-top:6px">${m.result === 'friendly-fire' ? '' : '🎯 '}${hitLabel}</div>`;
         if (m.text) html += `<div style="text-align:center;font-size:11px;color:#c9d1d9;margin-top:4px;line-height:1.4">${m.text}</div>`;
         html += `</div>`;

@@ -13666,6 +13666,10 @@ function simulatePaintballHunt(ep) {
           const victim = _rp(ownDeer);
           const pr = pronouns(hunter);
           addBond(hunter, victim, -0.5);
+          addScore(hunter, HUNTER_NEGATIVE);
+          addScore(victim, DEER_PAINTED);
+          paintedOut.add(victim);
+          unpaintedDeer[t.name].delete(victim);
           paintCounter[victim] = (paintCounter[victim] || 0) + 1;
           friendlyFireLog.push({ hunter, victim, type: 'accidental', round: roundNum });
           roundEvents.push({
@@ -13673,6 +13677,7 @@ function simulatePaintballHunt(ep) {
             text: `${hunter} accidentally shoots ${pr.posAdj} OWN teammate ${victim}! "${pronouns(victim).Sub}'s on YOUR team!" someone yells.`,
             badge: 'FRIENDLY FIRE', badgeText: 'FRIENDLY FIRE', badgeClass: 'red'
           });
+          matchups.push({ hunter, target: victim, result: 'friendly-fire', round: roundNum });
           return;
         }
 
@@ -13683,8 +13688,12 @@ function simulatePaintballHunt(ep) {
             if (Math.random() < deliberateChance) {
               addBond(hunter, d, -1.0);
               addScore(hunter, HUNTER_NEGATIVE);
+              addScore(d, DEER_PAINTED);
+              paintedOut.add(d);
+              unpaintedDeer[t.name].delete(d);
               paintCounter[d] = (paintCounter[d] || 0) + 1;
               friendlyFireLog.push({ hunter, victim: d, type: 'deliberate', round: roundNum });
+              matchups.push({ hunter, target: d, result: 'friendly-fire', round: roundNum });
               const pr = pronouns(hunter);
               roundEvents.push({
                 type: 'pbFriendlyFireDeliberate', players: [hunter, d],
@@ -13765,7 +13774,7 @@ function simulatePaintballHunt(ep) {
       matchups: matchups.filter(m => m.round === roundNum),
       events: roundEvents,
       unpaintedByTribe: Object.fromEntries(tribes.map(t => [t.name, [...unpaintedDeer[t.name]]])),
-      paintedThisRound: matchups.filter(m => m.round === roundNum && (m.result === 'hit' || m.result === 'ambush' || m.result === 'sneak' || m.result === 'double-hit')).map(m => m.target)
+      paintedThisRound: matchups.filter(m => m.round === roundNum && (m.result === 'hit' || m.result === 'ambush' || m.result === 'sneak' || m.result === 'double-hit' || m.result === 'friendly-fire')).map(m => m.target)
     });
   }
 
@@ -13909,7 +13918,7 @@ function simulatePaintballHunt(ep) {
 
   // Negative: First Deer Painted
   const allMatchups = rounds.flatMap(r => r.matchups || []);
-  const firstPainted = allMatchups.find(m => m.result === 'hit' || m.result === 'ambush' || m.result === 'sneak');
+  const firstPainted = allMatchups.find(m => m.result === 'hit' || m.result === 'ambush' || m.result === 'sneak' || m.result === 'friendly-fire');
   if (firstPainted) {
     const target = firstPainted.target;
     const pr = pronouns(target);
@@ -36911,7 +36920,7 @@ function _textPaintballHunt(ep, ln, sec) {
     ln('');
     ln(`── ROUND ${r.round} — ${r.name || ''} ──`);
     (r.matchups || []).forEach(m => {
-      if (m.result === 'hit' || m.result === 'ambush' || m.result === 'sneak' || m.result === 'double-hit') ln(`  [HIT] ${m.hunter} → ${m.target} PAINTED OUT`);
+      if (m.result === 'hit' || m.result === 'ambush' || m.result === 'sneak' || m.result === 'double-hit' || m.result === 'friendly-fire') ln(`  [HIT] ${m.hunter} → ${m.target} PAINTED OUT`);
       else if (m.result === 'miss' || m.result === 'double-miss') ln(`  [MISS] ${m.hunter} → ${m.target} DODGED`);
       else if (m.result === 'nothing') ln(`  [---] ${m.hunter} found nothing`);
       else if (m.result === 'protect') ln(`  [♥] ${m.hunter} refused to shoot ${m.target}`);
@@ -46053,7 +46062,7 @@ function rpBuildDebug(ep) {
       pb.rounds.forEach(r => {
         html += `<div style="font-size:10px;font-weight:700;color:#8b949e;margin-top:6px">Round ${r.round} — ${r.name || ''} (${(r.matchups||[]).length} matchups)</div>`;
         (r.matchups||[]).forEach(m => {
-          const col = (m.result === 'hit' || m.result === 'ambush' || m.result === 'sneak' || m.result === 'double-hit') ? '#3fb950' : m.result === 'miss' || m.result === 'double-miss' ? '#f85149' : '#6e7681';
+          const col = (m.result === 'hit' || m.result === 'ambush' || m.result === 'sneak' || m.result === 'double-hit' || m.result === 'friendly-fire') ? '#3fb950' : m.result === 'miss' || m.result === 'double-miss' ? '#f85149' : '#6e7681';
           html += `<div style="font-size:9px;color:${col}">${m.result === 'nothing' ? m.hunter + ' found nothing' : m.hunter + ' → ' + (m.target||'?') + ' ' + m.result.toUpperCase()}</div>`;
         });
         (r.events||[]).forEach(evt => {
@@ -57708,7 +57717,7 @@ function rpBuildPaintballHunt(ep) {
     if (i > state.idx) return;
     if (step.type === 'matchup') {
       const m = step.data;
-      if (m.result === 'hit' || m.result === 'ambush' || m.result === 'sneak' || m.result === 'double-hit') {
+      if (m.result === 'hit' || m.result === 'ambush' || m.result === 'sneak' || m.result === 'double-hit' || m.result === 'friendly-fire') {
         revealedPainted.add(m.target);
       }
     }
@@ -57857,7 +57866,7 @@ function rpBuildPaintballHunt(ep) {
 
     } else if (step.type === 'matchup') {
       const m = step.data;
-      const isHit = m.result === 'hit' || m.result === 'ambush' || m.result === 'sneak' || m.result === 'double-hit';
+      const isHit = m.result === 'hit' || m.result === 'ambush' || m.result === 'sneak' || m.result === 'double-hit' || m.result === 'friendly-fire';
       const isMiss = m.result === 'miss' || m.result === 'double-miss';
       const isNothing = m.result === 'nothing';
       const isProtect = m.result === 'protect';
@@ -57888,7 +57897,7 @@ function rpBuildPaintballHunt(ep) {
         </div>`;
         html += `</div>`;
         // Hit text
-        const hitLabel = m.result === 'ambush' ? 'Ambush!' : m.result === 'sneak' ? 'Sneak attack!' : m.result === 'double-hit' ? 'Double find!' : 'Direct hit!';
+        const hitLabel = m.result === 'ambush' ? 'Ambush!' : m.result === 'sneak' ? 'Sneak attack!' : m.result === 'double-hit' ? 'Double find!' : m.result === 'friendly-fire' ? 'FRIENDLY FIRE!' : 'Direct hit!';
         html += `<div style="text-align:center;font-size:10px;color:#8b949e;margin-top:6px">🎯 ${hitLabel}</div>`;
         html += `</div>`;
 

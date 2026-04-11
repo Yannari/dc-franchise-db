@@ -57830,21 +57830,29 @@ function rpBuildPaintballHunt(ep) {
   // Build flat steps array: each round's matchups + events become sequential reveal steps
   const steps = [];
   pb.rounds.forEach(r => {
-    // Batch "nothing" matchups into one step, show real matchups individually
+    // Interleave matchups and events — shuffle them together for a natural timeline
+    const roundSteps = [];
     const nothingHunters = [];
     (r.matchups || []).forEach(m => {
       if (m.result === 'nothing') {
         nothingHunters.push(m.hunter);
       } else {
-        steps.push({ type: 'matchup', data: m, round: r.round, roundName: r.name, unpaintedByTribe: r.unpaintedByTribe });
+        roundSteps.push({ type: 'matchup', data: m, round: r.round, roundName: r.name, unpaintedByTribe: r.unpaintedByTribe });
       }
     });
+    (r.events || []).forEach(ev => {
+      roundSteps.push({ type: 'event', data: ev, round: r.round, roundName: r.name, unpaintedByTribe: r.unpaintedByTribe });
+    });
+    // Shuffle the round's steps so matchups and events interleave
+    for (let i = roundSteps.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [roundSteps[i], roundSteps[j]] = [roundSteps[j], roundSteps[i]];
+    }
+    steps.push(...roundSteps);
+    // "Found nothing" batch always at end of round (minor detail, not dramatic)
     if (nothingHunters.length) {
       steps.push({ type: 'nothing-batch', hunters: nothingHunters, round: r.round, roundName: r.name });
     }
-    (r.events || []).forEach(ev => {
-      steps.push({ type: 'event', data: ev, round: r.round, roundName: r.name, unpaintedByTribe: r.unpaintedByTribe });
-    });
   });
   // Final result step
   steps.push({ type: 'result', round: 'final' });

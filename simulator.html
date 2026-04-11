@@ -57679,10 +57679,18 @@ function rpBuildPaintballHunt(ep) {
   // Build flat steps array: each round's matchups + events become sequential reveal steps
   const steps = [];
   pb.rounds.forEach(r => {
-    // Matchups first (hits/misses), then events (drama reactions)
+    // Batch "nothing" matchups into one step, show real matchups individually
+    const nothingHunters = [];
     (r.matchups || []).forEach(m => {
-      steps.push({ type: 'matchup', data: m, round: r.round, roundName: r.name, unpaintedByTribe: r.unpaintedByTribe });
+      if (m.result === 'nothing') {
+        nothingHunters.push(m.hunter);
+      } else {
+        steps.push({ type: 'matchup', data: m, round: r.round, roundName: r.name, unpaintedByTribe: r.unpaintedByTribe });
+      }
     });
+    if (nothingHunters.length) {
+      steps.push({ type: 'nothing-batch', hunters: nothingHunters, round: r.round, roundName: r.name });
+    }
     (r.events || []).forEach(ev => {
       steps.push({ type: 'event', data: ev, round: r.round, roundName: r.name, unpaintedByTribe: r.unpaintedByTribe });
     });
@@ -57908,17 +57916,6 @@ function rpBuildPaintballHunt(ep) {
         html += `<div style="text-align:center;font-size:10px;color:#8b949e;margin-top:6px">💨 ${m.target?.split(' ')[0] || 'Deer'} dodges!</div>`;
         html += `</div>`;
 
-      } else if (isNothing) {
-        // ── NOT FOUND CARD ──
-        html += `<div style="padding:10px;margin-bottom:6px;border-radius:8px;border:1px solid rgba(255,255,255,0.05);background:rgba(255,255,255,0.01);opacity:0.6;animation:scrollDrop 0.3s var(--ease-broadcast) both">`;
-        html += `<div style="display:flex;align-items:center;gap:10px">`;
-        html += `<div style="position:relative">
-          ${rpPortrait(m.hunter, 'sm')}
-          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:18px;text-shadow:0 0 6px #000">❓</div>
-        </div>`;
-        html += `<div style="font-size:11px;color:#8b949e;font-style:italic">${m.hunter.split(' ')[0]} got lost in the woods...</div>`;
-        html += `</div></div>`;
-
       } else if (isProtect) {
         // ── PROTECT CARD ──
         html += `<div style="padding:12px;margin-bottom:6px;border-radius:8px;border:1px solid rgba(210,168,255,0.3);background:rgba(210,168,255,0.05);animation:scrollDrop 0.3s var(--ease-broadcast) both">`;
@@ -57944,6 +57941,13 @@ function rpBuildPaintballHunt(ep) {
         </div>`;
         html += `</div></div>`;
       }
+
+    } else if (step.type === 'nothing-batch' && isVisible) {
+      // ── COLLAPSED "FOUND NOTHING" ──
+      const names = step.hunters.map(h => h.split(' ')[0]).join(', ');
+      html += `<div style="padding:8px 12px;margin-bottom:4px;border-radius:6px;border:1px solid rgba(255,255,255,0.04);background:rgba(255,255,255,0.01);opacity:0.5;animation:scrollDrop 0.2s var(--ease-broadcast) both">
+        <span style="font-size:10px;color:#6e7681">❓ Lost in the woods: ${names}</span>
+      </div>`;
 
     } else if (step.type === 'result' && allRevealed) {
       // ── FINAL RESULT ──

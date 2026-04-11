@@ -73,6 +73,7 @@ Bond changes, state changes, or information flow. Text-only events are cosmetic 
 - `getPerceivedBond(a,b)` — what player A *thinks* the bond is (for votes/alliances/heat)
 - `gs.advantages[]`, `gs.namedAlliances[]`, `gs.showmances[]`, `gs.loveTriangles[]`, `gs.affairs[]`
 - `gs.sideDeals[]`, `gs.moles[]`, `gs.perceivedBonds`
+- `gs.romanticSparks[]` — slow-burn romance sparks (intensity grows → first move → showmance)
 - Temporary heat: `gs._emissaryHeat`, `gs._dodgebrawlHeat`, `gs._talentShowHeat`, `gs._suckyOutdoorsHeat`, `gs._upTheCreekHeat` (all use `{ amount, expiresEp }` pattern)
 
 ## Scope Gotchas
@@ -117,7 +118,15 @@ Bond changes, state changes, or information flow. Text-only events are cosmetic 
 ## Other Key Systems
 
 ### Romance
-Showmances → love triangles → secret affairs. Full lifecycle with bond/popularity/camp event consequences.
+- Toggle: `seasonConfig.romance = 'enabled' | 'disabled'`. Guards on ALL romance functions.
+- Slow burn pipeline: spark → intensity growth → first move → showmance
+- `gs.romanticSparks[]`: `{ players, sparkEp, intensity, fake, saboteur }`. Intensity grows ~0.1-0.3/ep.
+- `checkFirstMove(ep)`: fires when intensity reaches archetype threshold (showmancer 0.5, hero 1.0, loyal 1.2)
+- Challenge showmance moments: protective, jealousy, sacrifice, PDA — via `_checkShowmanceChalMoment()`
+- Showmance sabotage: villain kisses partner to destroy couple — `checkShowmanceSabotage(ep)`
+- Asexual orientation: `romanticCompat` returns false. Blocks all romantic triggers.
+- When disabled: bonding events use platonic text. No sparks, no showmances, no triangles, no affairs.
+- Showmances → love triangles → secret affairs. Full lifecycle with bond/popularity/camp event consequences.
 
 ### The Mole
 Season-level twist. 5 sabotage types. Per-observer suspicion tracking. Exposure at threshold 3.0.

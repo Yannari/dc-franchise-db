@@ -44613,9 +44613,12 @@ function rpBuildDebug(ep) {
         const label = e.type === 'showmanceProtective' ? 'PROTECTIVE' : e.type === 'showmanceJealousy' ? 'JEALOUSY' : e.type === 'showmanceSacrifice' ? 'SACRIFICE' : 'PDA';
         _romEvents.push({ ep: h.num, type: label, col: e.type === 'showmanceJealousy' ? '#f85149' : '#d29922', detail: `${e.players.join(' & ')}` });
       });
-      // Phobia comfort/support sparks
+      // Phobia comfort/support — only show if a spark ALSO fired in the same episode for the same pair
       _allCampEvts.filter(e => e.type === 'phobiaComfort' || e.type === 'phobiaSupport').forEach(e => {
-        _romEvents.push({ ep: h.num, type: e.type === 'phobiaComfort' ? 'COMFORT' : 'SUPPORT', col: '#3fb950', detail: `${e.players[0]} → ${e.players[1]}` });
+        const hasSpark = _allCampEvts.some(s => s.badge === 'ROMANCE SPARK' && s.players?.includes(e.players[0]) && s.players?.includes(e.players[1]));
+        if (hasSpark) {
+          _romEvents.push({ ep: h.num, type: e.type === 'phobiaComfort' ? 'COMFORT → SPARK' : 'SUPPORT → SPARK', col: '#3fb950', detail: `${e.players[0]} → ${e.players[1]}` });
+        }
       });
       // New showmance formed (from episode data)
       if (h.newShowmances?.length) {

@@ -13826,31 +13826,40 @@ function simulatePaintballHunt(ep) {
         }
 
         // Deliberate friendly fire: bond <= -2 with own deer
+        // Does NOT eliminate deer — it's a betrayal that triggers the war. Deer can retaliate.
         ownDeer.forEach(d => {
           if (getBond(hunter, d) <= -2) {
             const deliberateChance = (10 - s.loyalty) * 0.02 + s.boldness * 0.015;
             if (Math.random() < deliberateChance) {
               addBond(hunter, d, -1.0);
               addScore(hunter, HUNTER_NEGATIVE);
-              addScore(d, DEER_PAINTED);
-              paintedOut.add(d);
-              unpaintedDeer[t.name].delete(d);
+              addScore(d, -0.5); // hurts but doesn't eliminate
               paintCounter[d] = (paintCounter[d] || 0) + 1;
               friendlyFireLog.push({ hunter, victim: d, type: 'deliberate', round: roundNum });
               const pr = pronouns(hunter);
-              matchups.push({ hunter, target: d, result: 'friendly-fire', round: roundNum,
-                text: `${hunter} DELIBERATELY shoots ${d} — ${pr.posAdj} own teammate! That was NO accident.` });
+              roundEvents.push({
+                type: 'pbFriendlyFireDeliberate', players: [hunter, d],
+                text: `${hunter} DELIBERATELY shoots ${d} — ${pr.posAdj} own teammate! That was NO accident.`,
+                badge: 'BETRAYAL', badgeText: 'BETRAYAL', badgeClass: 'red'
+              });
 
               // ── Paintball War escalation ──
-              // Retaliation
+              // Retaliation — deer is alive and fights back. Hunter loses next turn.
               const dStats = pStats(d);
               if (Math.random() < dStats.boldness * 0.06) {
                 addBond(d, hunter, -0.5);
+                addScore(d, DEER_EVENT_BONUS); // fighting spirit
+                misfiredHunters.add(hunter); // hunter can't shoot — busy fighting
                 const dpr = pronouns(d);
                 paintballWarLog.push({ instigator: hunter, retaliator: d, round: roundNum });
+                const _retalTexts = [
+                  `${d} grabs a paintball gun and shoots ${hunter} right back! ${dpr.Sub}'s not taking that lying down.`,
+                  `${d} charges ${hunter} and wrestles the gun away. Two shots to the chest. "How's THAT feel?!"`,
+                  `${d} doesn't run. ${dpr.Sub} picks up a dropped gun and unloads on ${hunter}. The deer has become the hunter.`,
+                ];
                 roundEvents.push({
                   type: 'pbRetaliation', players: [d, hunter],
-                  text: `${d} grabs a paintball gun and shoots ${hunter} right back! ${dpr.Sub}'s not taking that lying down.`,
+                  text: _rp(_retalTexts),
                   badge: 'RETALIATION', badgeText: 'RETALIATION', badgeClass: 'red'
                 });
 

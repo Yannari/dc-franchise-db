@@ -13042,21 +13042,24 @@ function simulatePaintballHunt(ep) {
   }
 
   // ── Helper: weighted deer pick (lower survival = easier to find) ──
+  // Evasion bonuses: dodge boost for this round (stacks)
+  const deerDodgeBonus = {}; // name -> bonus to dodge score
+
   function pickTargetDeer(candidates) {
     if (!candidates.length) return null;
-    const filtered = candidates.filter(d => !camouflaged.has(d) && !treeClimbed.has(d));
-    if (!filtered.length) return null;
-    const weights = filtered.map(d => {
+    const weights = candidates.map(d => {
       const s = pStats(d);
-      return Math.max(0.1, 10 - s.endurance * 0.5 - s.intuition * 0.3 + (mudSlid.has(d) ? 3 : 0) + (ep._pbMarked?.[d] || 0));
+      // Hiding deer are harder to find (low weight) but not impossible
+      const hideBonus = (camouflaged.has(d) ? -4 : 0) + (treeClimbed.has(d) ? -3 : 0);
+      return Math.max(0.1, 10 - s.endurance * 0.5 - s.intuition * 0.3 + (mudSlid.has(d) ? 3 : 0) + (ep._pbMarked?.[d] || 0) + hideBonus);
     });
     const total = weights.reduce((a, b) => a + b, 0);
     let roll = Math.random() * total;
-    for (let i = 0; i < filtered.length; i++) {
+    for (let i = 0; i < candidates.length; i++) {
       roll -= weights[i];
-      if (roll <= 0) return filtered[i];
+      if (roll <= 0) return candidates[i];
     }
-    return filtered[filtered.length - 1];
+    return candidates[candidates.length - 1];
   }
 
   // ── Helper: add score ──
@@ -13127,8 +13130,9 @@ function simulatePaintballHunt(ep) {
       camoWinners.forEach(({ d }) => {
         if (specialEventsThisRound >= maxSpecialEvents) return;
         specialEventsThisRound++;
-        camouflaged.add(d);
-        addScore(d, DEER_EVENT_BONUS);
+        camouflaged.add(d); // reduces find weight
+        deerDodgeBonus[d] = (deerDodgeBonus[d] || 0) + 0.15; // dodge boost
+        addScore(d, 1.0);
         const pr = pronouns(d);
         const _camoTexts = [
           `${d} covers ${pr.ref} in mud and leaves — completely invisible to the hunters this round.`,
@@ -13149,8 +13153,9 @@ function simulatePaintballHunt(ep) {
         treeRolls.sort((a, b) => b.roll - a.roll);
         const d = treeRolls[0].d;
         specialEventsThisRound++;
-        treeClimbed.add(d);
-        addScore(d, DEER_EVENT_BONUS);
+        treeClimbed.add(d); // reduces find weight
+        deerDodgeBonus[d] = (deerDodgeBonus[d] || 0) + 0.12; // dodge boost
+        addScore(d, 1.0);
         const pr = pronouns(d);
         const _treeTexts = [
           `${d} scrambles up a tree and hides in the branches. Safe this round, but ${pr.sub}'s stuck up there.`,
@@ -13159,6 +13164,69 @@ function simulatePaintballHunt(ep) {
           `${d} climbs so high the camera crew can barely see ${pr.obj}. Bold strategy.`,
         ];
         roundEvents.push({ type: 'pbTreeClimb', players: [d], text: _rp(_treeTexts), badge: 'TREE CLIMB', badgeText: 'TREE CLIMB', badgeClass: '' });
+      }
+    }
+
+    // Water dive: deer jumps into water/stream — hard to track, dodge boost (endurance)
+    if (specialEventsThisRound < maxSpecialEvents) {
+      const waterCandidates = aliveDeerAll.filter(d => !camouflaged.has(d) && !treeClimbed.has(d));
+      const waterRolls = waterCandidates.map(d => ({ d, roll: Math.random() < pStats(d).endurance * 0.025 ? pStats(d).endurance + Math.random() : -1 })).filter(r => r.roll > 0);
+      if (waterRolls.length) {
+        waterRolls.sort((a, b) => b.roll - a.roll);
+        const d = waterRolls[0].d;
+        specialEventsThisRound++;
+        deerDodgeBonus[d] = (deerDodgeBonus[d] || 0) + 0.12;
+        addScore(d, 1.0);
+        const pr = pronouns(d);
+        const _waterTexts = [
+          `${d} dives into a stream and lets the current carry ${pr.obj} downstream. The hunters lose the trail completely.`,
+          `${d} wades into a creek and crouches with only ${pr.posAdj} eyes above the waterline. The paint washes right off.`,
+          `${d} spots a pond and submerges. The hunters check the area and move on. ${pr.Sub} surfaces, gasping, alive.`,
+          `${d} crawls through a drainage ditch, soaking wet but impossible to track. The water kills the scent trail.`,
+        ];
+        roundEvents.push({ type: 'pbWaterDive', players: [d], text: _rp(_waterTexts), badge: 'WATER ESCAPE', badgeText: 'WATER ESCAPE', badgeClass: 'gold' });
+      }
+    }
+
+    // Decoy trail: deer creates false tracks — misdirection, dodge boost (strategic)
+    if (specialEventsThisRound < maxSpecialEvents) {
+      const decoyCandidates = aliveDeerAll.filter(d => !camouflaged.has(d) && !treeClimbed.has(d));
+      const decoyRolls = decoyCandidates.map(d => ({ d, roll: Math.random() < pStats(d).strategic * 0.025 ? pStats(d).strategic + Math.random() : -1 })).filter(r => r.roll > 0);
+      if (decoyRolls.length) {
+        decoyRolls.sort((a, b) => b.roll - a.roll);
+        const d = decoyRolls[0].d;
+        specialEventsThisRound++;
+        deerDodgeBonus[d] = (deerDodgeBonus[d] || 0) + 0.10;
+        addScore(d, 0.8);
+        const pr = pronouns(d);
+        const _decoyTrailTexts = [
+          `${d} breaks branches in one direction and doubles back the other way. The hunters follow the false trail.`,
+          `${d} drags ${pr.posAdj} jacket through the bushes and leaves it as bait. Two hunters waste five minutes on it.`,
+          `${d} scatters footprints toward the cliff edge, then circles back through the trees. Textbook misdirection.`,
+          `${d} throws rocks into the bushes to draw hunters away, then slips out the other side.`,
+        ];
+        roundEvents.push({ type: 'pbDecoyTrail', players: [d], text: _rp(_decoyTrailTexts), badge: 'FALSE TRAIL', badgeText: 'FALSE TRAIL', badgeClass: 'gold' });
+      }
+    }
+
+    // Sprint burst: deer just flat-out runs — makes them harder to hit even if found (physical)
+    if (specialEventsThisRound < maxSpecialEvents) {
+      const sprintCandidates = aliveDeerAll.filter(d => !camouflaged.has(d) && !treeClimbed.has(d));
+      const sprintRolls = sprintCandidates.map(d => ({ d, roll: Math.random() < pStats(d).physical * 0.02 ? pStats(d).physical + Math.random() : -1 })).filter(r => r.roll > 0);
+      if (sprintRolls.length) {
+        sprintRolls.sort((a, b) => b.roll - a.roll);
+        const d = sprintRolls[0].d;
+        specialEventsThisRound++;
+        deerDodgeBonus[d] = (deerDodgeBonus[d] || 0) + 0.10;
+        addScore(d, 0.5);
+        const pr = pronouns(d);
+        const _sprintTexts = [
+          `${d} breaks into a dead sprint through the forest. ${pr.Sub}'s a blur between the trees — good luck hitting that.`,
+          `Something spooks ${d} and ${pr.sub} BOLTS. Full speed, zigzagging, impossible to track.`,
+          `${d} decides hiding is for cowards and just runs. Fast. Really fast. The hunters can barely keep up.`,
+          `${d} launches into a sprint so explosive the camera operator trips trying to follow. Pure adrenaline.`,
+        ];
+        roundEvents.push({ type: 'pbSprintBurst', players: [d], text: _rp(_sprintTexts), badge: 'SPRINT', badgeText: 'SPRINT', badgeClass: '' });
       }
     }
 
@@ -13759,7 +13827,7 @@ function simulatePaintballHunt(ep) {
         // ── Standard shot attempt ──
         // ~45% hit rate — with ~55% find rate and ~2 shots/tribe/round, expect ~1 elimination per round across all tribes
         const hunterScore = s.physical * 0.03 + s.intuition * 0.035 + Math.random() * 0.18;
-        const dodgeBonus = stampedeDeer.has(target) ? 0.15 : 0;
+        const dodgeBonus = (stampedeDeer.has(target) ? 0.15 : 0) + (deerDodgeBonus[target] || 0);
         const normPenalty = (deerNorm[tribeOf[target]] - 1) * 0.05;
         const deerScore = targetStats.endurance * 0.035 + targetStats.intuition * 0.03 + targetStats.boldness * 0.02 + Math.random() * 0.17 + dodgeBonus - normPenalty;
 
@@ -48343,6 +48411,9 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'pbConfessional'          ? (evt.badgeText || 'CONFESSIONAL')
                      : evt.type === 'pbHunterTrashTalk'       ? (evt.badgeText || 'TRASH TALK')
                      : evt.type === 'pbCloseCall'             ? (evt.badgeText || 'CLOSE CALL')
+                     : evt.type === 'pbWaterDive'             ? (evt.badgeText || 'WATER ESCAPE')
+                     : evt.type === 'pbDecoyTrail'            ? (evt.badgeText || 'FALSE TRAIL')
+                     : evt.type === 'pbSprintBurst'           ? (evt.badgeText || 'SPRINT')
                      : evt.type === 'soMorale'                 ? (evt.badgeText || evt.badge || 'MORALE BOOST')
                      : evt.type === 'soFireConfession'         ? (evt.badgeText || evt.badge || 'CONFESSION')
                      : evt.type === 'soSurvivor'               ? (evt.badgeText || evt.badge || 'SURVIVOR')
@@ -48554,9 +48625,9 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'utcWildlife' || evt.type === 'utcQuicksand' || evt.type === 'utcPhotoFinish' || evt.type === 'utcBoneyMist' || evt.type === 'utcSkeletonFind' ? ''
                      : evt.type === 'utcCursedIdol' || evt.type === 'utcWeakLink' ? 'red'
                      : evt.type === 'utcMVP' || evt.type === 'utcHeroMoment' ? 'gold'
-                     : evt.type === 'pbAmbush' || evt.type === 'pbSneakAttack' || evt.type === 'pbMVPHunter' || evt.type === 'pbLastDeer' || evt.type === 'pbRebellionHero' || evt.type === 'pbDoublefind' || evt.type === 'pbWarFreeShot' || evt.type === 'pbDeerStampede' || evt.type === 'pbCamouflage' || evt.type === 'pbRebellion' || evt.type === 'pbDecoy' || evt.type === 'pbDeerBonding' || evt.type === 'pbDeerPact' || evt.type === 'pbTreeClimb' || evt.type === 'pbEpicChase' || evt.type === 'pbHunterProtects' ? 'gold'
+                     : evt.type === 'pbAmbush' || evt.type === 'pbSneakAttack' || evt.type === 'pbMVPHunter' || evt.type === 'pbLastDeer' || evt.type === 'pbRebellionHero' || evt.type === 'pbDoublefind' || evt.type === 'pbWarFreeShot' || evt.type === 'pbDeerStampede' || evt.type === 'pbCamouflage' || evt.type === 'pbRebellion' || evt.type === 'pbDecoy' || evt.type === 'pbDeerBonding' || evt.type === 'pbDeerPact' || evt.type === 'pbTreeClimb' || evt.type === 'pbEpicChase' || evt.type === 'pbHunterProtects' || evt.type === 'pbWaterDive' || evt.type === 'pbDecoyTrail' ? 'gold'
                      : evt.type === 'pbBearEncounter' || evt.type === 'pbFriendlyFireAccident' || evt.type === 'pbFriendlyFireDeliberate' || evt.type === 'pbRetaliation' || evt.type === 'pbWarEscalation' || evt.type === 'pbSympathyShot' || evt.type === 'pbBearMauled' || evt.type === 'pbFriendlyFireCulprit' || evt.type === 'pbWarInstigator' || evt.type === 'pbFirstPainted' || evt.type === 'pbMudSlide' || evt.type === 'pbMisfire' || evt.type === 'pbHunterRivalry' || evt.type === 'pbAllianceRebellion' ? 'red'
-                     : evt.type === 'pbMiss' || evt.type === 'pbNotFound' || evt.type === 'pbAntlersLocked' || evt.type === 'pbObsessiveChase' || evt.type === 'pbAllianceStandoff' || evt.type === 'pbTaunt' || evt.type === 'pbCrossTribeEncounter' || evt.type === 'pbHunterScheme' || evt.type === 'pbCrossRoleWhisper' || evt.type === 'pbAllianceMeeting' || evt.type === 'pbHit' || evt.type === 'pbConfessional' || evt.type === 'pbHunterTrashTalk' || evt.type === 'pbCloseCall' ? ''
+                     : evt.type === 'pbMiss' || evt.type === 'pbNotFound' || evt.type === 'pbAntlersLocked' || evt.type === 'pbObsessiveChase' || evt.type === 'pbAllianceStandoff' || evt.type === 'pbTaunt' || evt.type === 'pbCrossTribeEncounter' || evt.type === 'pbHunterScheme' || evt.type === 'pbCrossRoleWhisper' || evt.type === 'pbAllianceMeeting' || evt.type === 'pbHit' || evt.type === 'pbConfessional' || evt.type === 'pbHunterTrashTalk' || evt.type === 'pbCloseCall' || evt.type === 'pbSprintBurst' ? ''
                      : isMoleReveal ? 'gold'
                      : isDareComplete || isDareMVP || isDareGift || isDarePact ? 'gold'
                      : isDarePactBetray || isDareAllyBetray || isDareRefusal || isDareElim ? 'red'

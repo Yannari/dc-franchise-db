@@ -57984,7 +57984,7 @@ function rpBuildPaintballHunt(ep) {
   // ── NEXT / REVEAL ALL buttons ──
   html += `<div style="position:sticky;bottom:0;background:linear-gradient(transparent,var(--bg) 30%);padding:16px 0 8px;display:flex;gap:8px;justify-content:center">`;
   if (!allRevealed) {
-    html += `<button class="btn-sm" onclick="${_pbReveal('(_tvState[\\'' + stateKey + '\\'].idx||0)+1')}">NEXT</button>`;
+    html += `<button class="btn-sm" onclick="${_pbReveal(state.idx + 1)}">NEXT (${state.idx + 2}/${totalSteps})</button>`;
     html += `<button class="btn-sm" style="opacity:0.6" onclick="${_pbReveal(totalSteps - 1)}">REVEAL ALL</button>`;
   }
   html += `</div>`;

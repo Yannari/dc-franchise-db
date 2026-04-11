@@ -13091,17 +13091,19 @@ function simulatePaintballHunt(ep) {
     const roundEvents = [];
     const matchups = [];
     let specialEventsThisRound = 0;
-    const maxSpecialEvents = 3 + Math.floor(Math.random() * 3); // 3-5
+    const maxSpecialEvents = 4 + Math.floor(Math.random() * 3); // 4-6
 
-    // ── Pre-matchup special events (deer-side) ──
+    // ── Pre-matchup special events ──
+    // Process order: social/drama first (priority), then defensive (capped), then negative
+
+    const aliveDeerAll = [...allMembers].filter(m => isDeer(m) && !paintedOut.has(m));
 
     // Deer stampede: 3+ deer alive same tribe, social proportional
     tribes.forEach(t => {
       const aliveDeer = [...unpaintedDeer[t.name]];
       if (aliveDeer.length >= 3 && specialEventsThisRound < maxSpecialEvents) {
         const leader = aliveDeer.reduce((best, d) => pStats(d).social > pStats(best).social ? d : best, aliveDeer[0]);
-        const stampedeChance = pStats(leader).social * 0.03;
-        if (Math.random() < stampedeChance) {
+        if (Math.random() < pStats(leader).social * 0.03) {
           specialEventsThisRound++;
           const pr = pronouns(leader);
           const _stampTexts = [
@@ -13109,22 +13111,21 @@ function simulatePaintballHunt(ep) {
             `${leader} signals the others and they bolt as a group — the hunters can't isolate a single target.`,
             `The ${tribeOf[leader]} deer run in formation behind ${leader}. Safety in numbers.`,
           ];
-          roundEvents.push({
-            type: 'pbDeerStampede', players: aliveDeer,
-            text: _rp(_stampTexts),
-            badge: 'STAMPEDE', badgeText: 'STAMPEDE', badgeClass: 'gold'
-          });
-          // Dodge bonus applied during matchups via stampede set
+          roundEvents.push({ type: 'pbDeerStampede', players: aliveDeer, text: _rp(_stampTexts), badge: 'STAMPEDE', badgeText: 'STAMPEDE', badgeClass: 'gold' });
           aliveDeer.forEach(d => addScore(d, 0.5));
         }
       }
     });
     const stampedeDeer = new Set(roundEvents.filter(e => e.type === 'pbDeerStampede').flatMap(e => e.players));
 
-    // Camouflage: deer intuition proportional
-    [...allMembers].filter(m => isDeer(m) && !paintedOut.has(m) && specialEventsThisRound < maxSpecialEvents).forEach(d => {
-      const s = pStats(d);
-      if (Math.random() < s.intuition * 0.04) {
+    // Camouflage: MAX 1 per round — pick best candidate
+    if (specialEventsThisRound < maxSpecialEvents) {
+      const camoCandidates = aliveDeerAll.filter(d => !camouflaged.has(d));
+      // Weighted pick by intuition
+      const camoRolls = camoCandidates.map(d => ({ d, roll: Math.random() < pStats(d).intuition * 0.04 ? pStats(d).intuition + Math.random() : -1 })).filter(r => r.roll > 0);
+      if (camoRolls.length) {
+        camoRolls.sort((a, b) => b.roll - a.roll);
+        const d = camoRolls[0].d;
         specialEventsThisRound++;
         camouflaged.add(d);
         addScore(d, DEER_EVENT_BONUS);
@@ -13136,18 +13137,17 @@ function simulatePaintballHunt(ep) {
           `${d} presses flat against a mossy rock, barely breathing. ${pr.Sub} blends right in.`,
           `${d} wedges into a thicket so dense no hunter could spot ${pr.obj}. Perfect hide.`,
         ];
-        roundEvents.push({
-          type: 'pbCamouflage', players: [d],
-          text: _rp(_camoTexts),
-          badge: 'CAMO', badgeText: 'CAMO', badgeClass: 'gold'
-        });
+        roundEvents.push({ type: 'pbCamouflage', players: [d], text: _rp(_camoTexts), badge: 'CAMO', badgeText: 'CAMO', badgeClass: 'gold' });
       }
-    });
+    }
 
-    // Tree climb: physical proportional per deer
-    [...allMembers].filter(m => isDeer(m) && !paintedOut.has(m) && !camouflaged.has(m) && specialEventsThisRound < maxSpecialEvents).forEach(d => {
-      const s = pStats(d);
-      if (Math.random() < s.physical * 0.03) {
+    // Tree climb: MAX 1 per round — pick best candidate
+    if (specialEventsThisRound < maxSpecialEvents) {
+      const treeCandidates = aliveDeerAll.filter(d => !camouflaged.has(d) && !treeClimbed.has(d));
+      const treeRolls = treeCandidates.map(d => ({ d, roll: Math.random() < pStats(d).physical * 0.03 ? pStats(d).physical + Math.random() : -1 })).filter(r => r.roll > 0);
+      if (treeRolls.length) {
+        treeRolls.sort((a, b) => b.roll - a.roll);
+        const d = treeRolls[0].d;
         specialEventsThisRound++;
         treeClimbed.add(d);
         addScore(d, DEER_EVENT_BONUS);
@@ -13158,18 +13158,17 @@ function simulatePaintballHunt(ep) {
           `${d} swings onto a low branch and pulls ${pr.ref} up. The hunters search below, clueless.`,
           `${d} climbs so high the camera crew can barely see ${pr.obj}. Bold strategy.`,
         ];
-        roundEvents.push({
-          type: 'pbTreeClimb', players: [d],
-          text: _rp(_treeTexts),
-          badge: 'TREE CLIMB', badgeText: 'TREE CLIMB', badgeClass: ''
-        });
+        roundEvents.push({ type: 'pbTreeClimb', players: [d], text: _rp(_treeTexts), badge: 'TREE CLIMB', badgeText: 'TREE CLIMB', badgeClass: '' });
       }
-    });
+    }
 
-    // Mud slide: (10-endurance) proportional per deer
-    [...allMembers].filter(m => isDeer(m) && !paintedOut.has(m) && !camouflaged.has(m) && !treeClimbed.has(m)).forEach(d => {
-      const s = pStats(d);
-      if (Math.random() < (10 - s.endurance) * 0.02 && specialEventsThisRound < maxSpecialEvents) {
+    // Mud slide: MAX 1 per round
+    if (specialEventsThisRound < maxSpecialEvents) {
+      const mudCandidates = aliveDeerAll.filter(d => !camouflaged.has(d) && !treeClimbed.has(d));
+      const mudRolls = mudCandidates.map(d => ({ d, roll: Math.random() < (10 - pStats(d).endurance) * 0.02 ? (10 - pStats(d).endurance) + Math.random() : -1 })).filter(r => r.roll > 0);
+      if (mudRolls.length) {
+        mudRolls.sort((a, b) => b.roll - a.roll);
+        const d = mudRolls[0].d;
         specialEventsThisRound++;
         newMudSlid.add(d);
         const pr = pronouns(d);
@@ -13179,13 +13178,9 @@ function simulatePaintballHunt(ep) {
           `${d} loses ${pr.posAdj} footing on a wet slope and slides right into the open. Bad timing.`,
           `${d} steps on a rotten log, breaks through, and crashes down. Every hunter within earshot turns around.`,
         ];
-        roundEvents.push({
-          type: 'pbMudSlide', players: [d],
-          text: _rp(_mudTexts),
-          badge: 'MUD SLIDE', badgeText: 'MUD SLIDE', badgeClass: 'red'
-        });
+        roundEvents.push({ type: 'pbMudSlide', players: [d], text: _rp(_mudTexts), badge: 'MUD SLIDE', badgeText: 'MUD SLIDE', badgeClass: 'red' });
       }
-    });
+    }
 
     // Bear encounter: rare (~8% chance total per hunt, max 1 per hunt)
     if (!bearMauledList.length) [...allMembers].filter(m => isDeer(m) && !paintedOut.has(m)).forEach(d => {
@@ -13321,7 +13316,7 @@ function simulatePaintballHunt(ep) {
     for (let di = 0; di < allAliveDeerForSocial.length && specialEventsThisRound < maxSpecialEvents; di++) {
       for (let dj = di + 1; dj < allAliveDeerForSocial.length; dj++) {
         const d1 = allAliveDeerForSocial[di], d2 = allAliveDeerForSocial[dj];
-        if (tribeOf[d1] === tribeOf[d2] && getBond(d1, d2) >= 2 && Math.random() < 0.25) {
+        if (tribeOf[d1] === tribeOf[d2] && getBond(d1, d2) >= 1 && Math.random() < 0.35) {
           specialEventsThisRound++;
           addBond(d1, d2, 0.3);
           addScore(d1, 0.5);
@@ -13350,7 +13345,7 @@ function simulatePaintballHunt(ep) {
     for (let di = 0; di < allAliveDeerForSocial.length && specialEventsThisRound < maxSpecialEvents; di++) {
       for (let dj = di + 1; dj < allAliveDeerForSocial.length; dj++) {
         const d1 = allAliveDeerForSocial[di], d2 = allAliveDeerForSocial[dj];
-        if (tribeOf[d1] !== tribeOf[d2] && Math.random() < 0.12) {
+        if (tribeOf[d1] !== tribeOf[d2] && Math.random() < 0.20) {
           specialEventsThisRound++;
           const rivalry = getBond(d1, d2) < 0;
           if (rivalry) {
@@ -13439,7 +13434,7 @@ function simulatePaintballHunt(ep) {
     tribes.forEach(t => {
       roles[t.name].hunters.forEach(h => {
         roles[t.name].deer.filter(d => !paintedOut.has(d)).forEach(d => {
-          if (getBond(h, d) >= 2 && Math.random() < 0.15 && specialEventsThisRound < maxSpecialEvents) {
+          if (getBond(h, d) >= 1 && Math.random() < 0.25 && specialEventsThisRound < maxSpecialEvents) {
             specialEventsThisRound++;
             addBond(h, d, 0.2);
             const _whisperTexts = [
@@ -13463,7 +13458,7 @@ function simulatePaintballHunt(ep) {
         const arch = players.find(p => p.name === h)?.archetype;
         if ((arch === 'villain' || arch === 'schemer') && specialEventsThisRound < maxSpecialEvents) {
           const ally = roles[t.name].hunters.find(h2 => h2 !== h && getBond(h, h2) >= 1);
-          if (ally && Math.random() < 0.2) {
+          if (ally && Math.random() < 0.3) {
             specialEventsThisRound++;
             const _plotTexts = [
               `${h} pulls ${ally} aside during the hunt for a quick strategy session. This isn't just about paintball anymore.`,
@@ -13483,7 +13478,7 @@ function simulatePaintballHunt(ep) {
     // ── NEW: Deer confessional — deer talks to camera mid-hunt ──
     if (specialEventsThisRound < maxSpecialEvents) {
       const confCandidates = [...allMembers].filter(m => isDeer(m) && !paintedOut.has(m));
-      if (confCandidates.length && Math.random() < 0.15) {
+      if (confCandidates.length && Math.random() < 0.25) {
         const d = _rp(confCandidates);
         const pr = pronouns(d);
         specialEventsThisRound++;
@@ -13505,7 +13500,7 @@ function simulatePaintballHunt(ep) {
     // ── NEW: Hunter trash talk — hunter taunts from position of power ──
     if (specialEventsThisRound < maxSpecialEvents) {
       const trashTalkers = tribes.flatMap(t => roles[t.name].hunters).filter(h => !misfiredHunters.has(h) && pStats(h).boldness >= 5);
-      if (trashTalkers.length && Math.random() < 0.12) {
+      if (trashTalkers.length && Math.random() < 0.22) {
         const h = _rp(trashTalkers);
         const pr = pronouns(h);
         specialEventsThisRound++;
@@ -13526,7 +13521,7 @@ function simulatePaintballHunt(ep) {
     // ── NEW: Close call — deer barely avoids being spotted ──
     if (specialEventsThisRound < maxSpecialEvents) {
       const closeCandidates = [...allMembers].filter(m => isDeer(m) && !paintedOut.has(m) && !camouflaged.has(m) && !treeClimbed.has(m));
-      if (closeCandidates.length && Math.random() < 0.15) {
+      if (closeCandidates.length && Math.random() < 0.25) {
         const d = _rp(closeCandidates);
         const pr = pronouns(d);
         specialEventsThisRound++;

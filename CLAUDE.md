@@ -1,435 +1,134 @@
 ## Project
 DC Franchise Simulator — a Survivor-style franchise simulator.
-Everything lives in a single file: `simulator.html` (~49,000+ lines).
+Everything lives in a single file: `simulator.html` (~55,000+ lines).
 Do not split it into separate files. This is intentional.
 
 ## Architecture
-- `simulator.html` — the entire app: CSS in <style>, engine in <script>
+- `simulator.html` — the entire app: CSS + engine in one file
 - `franchise_roster.json` — player database (name, stats, archetype, slug)
-- `DATA_SEASON/` — ideas backlog, viewer improvement notes, season planning
 - `assets/avatars/` — player portrait images (slug-named PNGs)
-- `season*-data.json` — per-season statistics
-- `seasons_database.json` — franchise-level metadata across all seasons
+- `DATA_SEASON/` — ideas backlog, season planning notes
+
+## Non-Negotiable Rules
+
+### Stats are ALWAYS Proportional
+**NEVER use `if (stat >= X)` threshold checks for gameplay effects.** Use `stat * factor` so every point matters. Thresholds are ONLY acceptable for narrative TEXT variant selection.
+
+### Behavior > Stats
+A loyalty 10 player who betrayed 3 times is NOT loyal. Check behavioral track record alongside raw stats.
+
+### Archetype Access
+`pStats(name)` returns stats ONLY — no archetype. Use `players.find(p => p.name === name)?.archetype` for archetype lookup. This has caused bugs multiple times.
+
+### Pronouns — NEVER Hardcode
+`pronouns(name)` → `{sub, obj, pos, posAdj, ref, Sub, Obj, PosAdj}`. Use `posAdj` before nouns ("her head"), `pos` standalone ("it's hers"). NO `Pos` property exists.
+
+### Serialization
+Functions don't survive `JSON.stringify`. Pre-render all text as strings at simulation time. Sets need `prepGsForSave()`/`repairGsSets()`.
+
+### Every Feature Needs Both VP + Text Backlog
+VP screens (`rpBuild*`) for visual viewer. Text backlog (`_text*` functions) for plain-text log. Neither is optional.
+
+### Camp Events Must Have Consequences
+Bond changes, state changes, or information flow. Text-only events are cosmetic and waste screentime. Events MUST include `players: []` array + `badgeText`/`badgeClass`.
+
+## Challenge System Rules
+
+### Scoring Balance
+**Tribe scores MUST use averages per member, NEVER raw sums.** A 5-member tribe must have the same chance as an 8-member tribe. Balanced: avg/member, percentage, fixed count, last-standing. Broken: summing all members' scores.
+
+### Required Per Challenge
+- `updateChalRecord(ep)` with `ep.chalMemberScores` for podium/bomb tracking
+- Debug → Challenge tab breakdown (non-negotiable)
+- VP screen + text backlog + cold open recap + timeline tag
+- Badge text + badge class entries for all event types
+- Episode history fields + `patchEpisodeHistory`
+- All challenge twists mutually incompatible
+- Skip main `updateChalRecord` call (add to the skip list in simulateEpisode)
+
+### VP Pattern
+- `_tvState[key]` with `idx: -1` for click-to-reveal
+- Save/restore `.rp-main` scrollTop on reveal clicks
+- Registered in `buildVPScreens()` — exclude from `rpBuildPreTwist` filter
 
 ## Key Engine Functions
-- `simulateVotes()` — tribal vote logic, alliance loyalty, defection
-- `checkIdolPlays()` — idol auto-play + Legacy auto-activation + amulet-as-idol
-- `checkNonIdolAdvantageUse()` — extra votes, vote steals, amulet coordinated play, team swap, vote block
+- `simulateVotes()` — tribal vote logic
+- `checkIdolPlays()` / `checkNonIdolAdvantageUse()` — advantage plays at tribal
+- `computeHeat()` — vote targeting pressure. Third param is alliances array (NOT ep).
+- `resolveVotes()` — elimination + tie handling
+- `handleAdvantageInheritance()` — called BEFORE stripping advantages on every elimination
+- `formAlliances()` — pre-tribal alliance formation
 - `generateCampEvents()` / `generateCampEventsForGroup()` — camp narrative
-- `formAlliances()` — pre-tribal alliance formation (5 triggers)
-- `computeHeat()` — vote targeting pressure
-- `resolveVotes()` — determines elimination; handles all-votes-cancelled deadlock
-- `handleAdvantageInheritance()` — called BEFORE stripping advantages on elimination
-- `simulateFinale()` — handles finaleSize 2/3/4, all finale formats
-- `patchEpisodeHistory(ep)` — universal helper patching missing fields after every history push
-- `simulateEmissaryVote(ep)` — emissary picks second elimination after normal tribal (pre-merge only)
-- `generateEmissaryScoutEvents(ep)` — scouting period: pitches, observation, cross-tribe deal
-- `simulateDodgebrawl(ep)` — multi-round dodgeball challenge (pre-merge, first to 3)
-- `simulateTalentShow(ep)` — talent show challenge (pre-merge, auditions + Chef-O-Meter scoring)
-- `simulateSuckyOutdoors(ep)` — overnight survival challenge (pre-merge, 5 phases, personal scoring)
-- `simulateUpTheCreek(ep)` — canoe race challenge (pre-merge, 4 phases, partner selection)
-- `executeFirstImpressions()` — episode 1 mock vote → round-robin tribe swap (fires before all other twists)
-- `checkPerceivedBondTriggers(ep)` — creates perception gaps after vote resolution
-- `updatePerceivedBonds(ep)` — closes gaps each episode via intuition-based correction
-- `checkSocialPolitics(ep)` — side deals, info trades, loyalty tests (3-5 per episode)
-- `checkSideDealBreaks(ep)` — detects broken F2/F3 deals after votes
-- `checkConflictingDeals(ep)` — discovers double-dealing via intuition rolls
-- `checkFalseInfoBlowup(ep)` — exposes lies when false idol info is acted on
-- `checkLoveTriangleFormation(ep)` — detect triangles (dual showmance or one-sided), personality fork to affairs
-- `updateLoveTrianglePhases(ep)` — triangle lifecycle: tension → escalation → ultimatum
-- `updateAffairExposure(ep)` — affair exposure tiers: hidden → rumors → caught → exposed
-- `_resolveAffairExposure(af, ep, ...)` — confrontation + choice when affair is exposed
-- `checkMoleSabotage(ep)` — Mole twist: bond sabotage, info leaks, vote disruption flags, advantage sabotage, laying low
-- `_checkMoleExposure(mole, ep, tribeName)` — fires when any observer's suspicion reaches 3.0
-- `rpBuildMoleExposed(ep)` — dedicated VP screen for Mole exposure moment
-- `simulateMultipleEpisodes(count)` — Sim All / +5 Eps buttons, chains `simulateNext()` via setTimeout
-- `simulatePhobiaFactor(ep)` — pre-merge fear challenge (tribe scoring, blame, clutch)
-- `simulateSayUncle(ep)` — post-merge endurance challenge (dominator picks, backfire)
-- `simulateTripleDogDare(ep)` — post-merge sudden death (spinner accept/pass, freebie economy)
-- VP Viewer: `rpBuild*()` functions for each screen
+- `patchEpisodeHistory(ep)` — patches missing fields after history push
+- `checkSocialPolitics(ep)` — side deals, info trades, loyalty tests
+- `checkPerceivedBondTriggers(ep)` / `updatePerceivedBonds(ep)` — perception gaps
 
 ## Core State
-- `gs` — global game state (tribes, players, alliances, bonds, advantages)
-- `gs.episodeHistory[]` — full episode log, used by VP viewer
-- `getBond(a,b)` / `addBond(a,b,delta)` — symmetric bond system
-- `getPerceivedBond(a,b)` — returns what player A *thinks* the bond is (overlay or real)
-- `gs.perceivedBonds` — directional perception gaps (`"A→B": { perceived, reason, correctionRate }`)
-- `gs.advantages[]` — active idols and advantages with holder/type
-- `gs.namedAlliances[]` — named alliance objects with members, betrayals, formed ep, active flag
-- `gs.showmances[]` — objects: `{ players:[a,b], phase, sparkEp, episodesActive, jealousPlayer, tested, breakupEp, breakupVoter, breakupType }`
-- `gs.loveTriangles[]` — `{ center, suitors:[A,C], phase, formedEp, episodesActive, jealousyLevel, resolved, resolution }`
-- `gs.affairs[]` — `{ cheater, partner, secretPartner, exposure (hidden/rumors/caught/exposed), complicit, rumorSources[], caughtBy, resolved, resolution }`
-- `gs.skippedEliminationEps[]` — episodes where Team Swap advantage cancelled elimination (shifts twist schedule)
-- `gs.sideDeals[]` — F2/F3 pacts: `{ players, initiator, madeEp, type, active, genuine }`
-- `gs.loyaltyTests[]` — planted false info: `{ tester, target, falseInfo, plantedEp, resolved }`
-- `gs._falseInfoPlanted[]` — false idol info for blowup detection
-- `gs._blowupPlayers[]` — players who had fights/meltdowns/social bombs (cleared after recovery check)
-- `gs._emissaryHeat` — temporary heat for emissary (+1.5 for 2 episodes after pick)
-- `gs._dodgebrawlHeat` — temporary heat from dodgebrawl (refusal, rage mode, liability)
-- `gs._talentShowHeat` — temporary heat from talent show (sabotage, disaster)
-- `gs._suckyOutdoorsHeat` — temporary heat from sucky outdoors (lost players)
-- `gs._upTheCreekHeat` — temporary heat from up the creek (advice givers, canoe droppers)
-- `gs.moles[]` — Mole twist state: `{ player, exposed, exposedEp, exposedBy, suspicion, sabotageCount, sabotageLog, leaks, layingLow, resistance }`
-
-## Patterns
-- New camp event types: push into `ep.campEvents[campKey].pre` directly; add badge
-  handling in `rpBuildCampTribe()` `badgeText`/`badgeClass` block; events MUST have
-  consequences (addBond, state changes) — text-only events are cosmetic and waste screentime
-- Camp events MUST include `players: [name1, name2]` array (not `player: name`) for VP portrait rendering
-- All camp event types MUST have explicit badge text + badge color entries
-- Save episode-level data to history: `gs.episodeHistory[gs.episodeHistory.length-1].key = value`
-  Fields on the live `ep` object are NOT auto-saved — must explicitly copy after push
-- `pronouns(name)` returns `{sub, obj, pos, posAdj, ref, Sub, Obj, PosAdj}` for any player
-- `pStats(name)` returns player stats object; `threatScore(name)` returns numeric threat
-- Interactive reveals use `_tvState[key]` pattern: `tvRevealNext(key)` / `tvRevealAll(key)`
-- Revote cards tagged with `data-revote="1"` — Live Tally ignores them
-- `ep.isRockDraw` MUST be set for every rock draw path
-- VP screens use `ep.gsSnapshot` (from episodeHistory) not live `gs`
-- VP advantage displays use `ep.advantagesPreTribal` to prevent spoiling eliminations
-- Alliance acceptance is relationship-driven (bond with recruiter + group avg bond), not stat-driven
-- Advantages force-play at top 5 (`activePlayers.length <= 5`)
-- `handleAdvantageInheritance(eliminatedName, ep)` must be called BEFORE stripping advantages on every elimination path
-- **Season presets MUST always overwrite tribes**, not conditionally (`if (!tribes?.length)`).
-  Previous preset tribes bleed through otherwise. Always set `seasonConfig.tribes = [...]` and
-  call `renderConfig()` after preset load.
-- **Every new feature MUST have both VP display AND text backlog output.** VP screens (`rpBuild*`) show
-  the visual viewer; text backlog (`_text*` functions in `_textRewardChallenge`, `_textCampPost`, etc.)
-  provides the plain-text log. Neither is optional — features without text backlog are invisible to
-  the text viewer, features without VP are invisible to the visual viewer.
-
-## Advantage System
-- `ADVANTAGES` array: idol, beware, voteSteal, extraVote, kip, legacy, amulet, secondLife, teamSwap, voteBlock, safetyNoPower, soleVote
-- `findAdvantages()` handles camp discovery; `checkIdolPlays()` handles idol/KiP/legacy use at tribal
-- `checkNonIdolAdvantageUse()` handles extra votes, vote steals, amulet coordinated play, team swap, vote block, sole vote
-- Sole vote suppresses redundant plays: `ep._soleVoteHolder` pre-check skips idol/extra vote/vote steal for the holder
-- `handleAdvantageInheritance()` — Legacy wills to highest-bond active player; Amulet upgrades remaining holders
-- Super Idol: `superIdol` flag on idol, plays AFTER votes read (post-`resolveVotes`)
-- Team Swap advantage cancelling elimination → shifts twist schedule forward by 1 via `gs.skippedEliminationEps`
-
-## Redemption Island / Rescue Island
-- Two return systems (mutually exclusive, `cfg.riFormat`): `'redemption'` (1v1 duels) or `'rescue'` (all eliminees, social game)
-- `isRIStillActive()` checks if RI still accepting players
-- EVERY elimination path checks `isRIStillActive()` before sending to RI vs permanent elimination
+- `gs` — global game state. `gs.episodeHistory[]` for VP viewer.
+- `getBond(a,b)` / `addBond(a,b,delta)` — symmetric bonds (-10 to +10)
+- `getPerceivedBond(a,b)` — what player A *thinks* the bond is (for votes/alliances/heat)
+- `gs.advantages[]`, `gs.namedAlliances[]`, `gs.showmances[]`, `gs.loveTriangles[]`, `gs.affairs[]`
+- `gs.sideDeals[]`, `gs.moles[]`, `gs.perceivedBonds`
+- Temporary heat: `gs._emissaryHeat`, `gs._dodgebrawlHeat`, `gs._talentShowHeat`, `gs._suckyOutdoorsHeat`, `gs._upTheCreekHeat` (all use `{ amount, expiresEp }` pattern)
 
 ## Scope Gotchas
-- `ep` is NOT available in: `generateCampEventsForGroup`, `simulateIndividualChallenge`,
-  `simulateTribeChallenge`, `computeHeat`. Use `(gs.episode || 0) + 1` for episode number.
-- `_pick` is scoped to `applyTwist` — not available in `simulateEpisode` or event generators.
-- Pre-merge (`ep.challengeType === 'tribe'`) and post-merge (`individual`) are separate branches.
-  Features for BOTH must be placed AFTER the if/else block.
-- `ep.extraImmune` is written by multiple systems. Always MERGE, never overwrite.
-
-## Serialization
-- Sets don't survive `JSON.stringify` — use `prepGsForSave()` before save, `repairGsSets()` on load.
-  New Set fields must be added to `SET_FIELDS` array in both functions.
-- JSON in `onclick` attributes breaks HTML. Use `data-*` attributes instead.
-- `forEach` + `splice` skips entries — use reverse for-loop when removing during iteration.
-
-## Stat Philosophy
-
-### Rule 1: ALWAYS Proportional
-**NEVER use `if (stat >= X)` threshold checks for gameplay effects.** Every stat effect MUST
-use `stat * factor` so that every point matters. Stat 10 > stat 9 > stat 8, always.
-- Threshold checks (`>= X`) are ONLY acceptable for selecting narrative TEXT variants, never for gameplay values
-
-### Rule 2: Behavior > Stats
-**Stats set tendency, actions define reputation.** A loyalty 10 player who betrayed 3 times
-is NOT actually loyal. Always check behavioral track record alongside raw stats.
+- `ep` NOT available in: `generateCampEventsForGroup`, `simulateIndividualChallenge`, `simulateTribeChallenge`, `computeHeat`
+- Pre-merge vs post-merge are separate branches — features for BOTH go AFTER the if/else
+- `ep.extraImmune` written by multiple systems — always MERGE, never overwrite
+- `applyTwist` fires BEFORE the challenge — `ep.winner`/`ep.loser` don't exist yet. Challenge twists must set flags in applyTwist, then run logic in simulateEpisode after the challenge.
+- Merge tribe key: `gs.mergeName || 'merge'` for post-merge camp events
 
 ## Bond System
-- Full range: -10 to +10. 11 tiers in `REL_TYPES`.
-- Use proportional formulas (`bond * 0.10`) not binary thresholds (`bond >= 3`).
-- Perceived bond overlay: `getPerceivedBond(a,b)` for decision systems (votes, alliances, heat).
-  `getBond(a,b)` for everything else (decay, VP display, jury, addBond).
-- 8 triggers create perception gaps: low-loyalty betrayal, villain manipulation, goat-keeping,
-  alliance blindspot, post-betrayal denial, showmance blindspot, provider entitlement, swap loyalty.
-- Correction: intuition+mental-based (`intuition * 0.07 + mental * 0.025`), modifiers for receiving votes (+0.3), witnessing betrayal (+0.2).
-- Positive bond cooling: bonds above +4.0 drift down each episode unless reinforced by positive camp events. Floor at +3.0. Showmance pairs exempt.
-- `recoverBonds`: softens bonds below -3.0 toward -2.0 floor. Rate: 0.05-0.20/ep. Social stat slows recovery.
-- VP: ONE-SIDED badge when gap exists, split per-player tier display. WAKE-UP CALL badge on realization.
+- Range: -10 to +10. `getPerceivedBond` for decision systems, `getBond` for everything else.
+- Positive cooling: bonds above +4.0 drift down (floor +3.0, showmances exempt)
+- Recovery: bonds below -3.0 soften toward -2.0 floor
 
-## Threat System
-- `threatScore(name)`: `(physical*0.8 + endurance*0.3 + strategic + social + boldness*0.5 + (intuition+mental)/2 - loyalty*0.15) / 4`
-- Cast builder `threat(stats)` matches the engine formula
-- `computeHeat`: scramble effect (social+strategic reduce heat when >3), floater invisibility (0.85x heat)
-- Shield network removed — replaced by vote pitches in social politics system
-- Challenge category frequency: physical 1.4x, endurance 1.3x, puzzle 1.25x via `CATEGORY_FREQ`
-- **All challenges (including twist challenges) MUST use `updateChalRecord(ep)` for podium/bomb tracking.**
-  Set `ep.chalMemberScores` with per-player scores, then `updateChalRecord` handles the rest.
-  No custom `gs.chalRecord` manipulation — one system for everything.
-  Pre-merge: top 3 podium + bottom 3 bomb. Post-merge: top 2 + bottom 2.
-  Reward challenges: top 2 / bottom 2 at half weight (0.5), separate code.
-- **Challenge scoring MUST be balanced regardless of tribe size.** Tribe scores must use
-  averages per member (or percentages/fixed counts), NEVER raw sums. A 5-member tribe must
-  have the same chance as an 8-member tribe — skill per player matters, not headcount.
-  Balanced patterns: avg score per member, completion percentage, fixed performer count,
-  last-tribe-standing. Broken pattern: summing all members' scores (bigger tribe always wins).
-- **Every challenge twist MUST have a Debug → Challenge tab breakdown.** The `rpBuildDebug`
-  Challenge tab (`_dbTab === 'challenge'`) must show detailed per-player rankings and
-  twist-specific data (per-round scores for Dodgebrawl, dropout order for Awake-A-Thon,
-  phase scores for Cliff Dive, etc.). This is non-negotiable — if you create a new challenge
-  twist, add its debug breakdown in the same PR. No challenge ships without debug visibility.
+## Advantage System
+- Types: idol, beware, voteSteal, extraVote, kip, legacy, amulet, secondLife, teamSwap, voteBlock, safetyNoPower, soleVote
+- `handleAdvantageInheritance()` on every elimination path
+- Super Idol plays AFTER votes read. Team Swap shifts twist schedule.
+- RI check: `isRIStillActive()` before every elimination
 
-## Social Politics
-- `checkSocialPolitics(ep)`: 3-5 actions per episode (side deals, info trades, loyalty tests)
-- Vote pitches inline in `simulateVotes`: 1-2 pitchers per tribal, can flip 0-2 voters
-- `gs.sideDeals[]`: F2/F3 pacts with genuine check (loyalty + bond - existing deals). VP shows F2/F3 DEAL tags.
-- Info trades: true info = knowledge shared, false info = only villains/schemers/masterminds. Lie exposed on blowup.
-- Loyalty tests: 2-episode resolution. Spread = trust broken. No spread = trust earned.
-- Temperament recovery: after fights/meltdowns, social players can apologize next episode (social * 0.07 chance)
-- Per-pair bond dedup: max 2 bond events per pair per camp phase. Bond deltas normalized to +0.5.
-- Camp event weight ratio: ~60/40 positive/negative. WAKE-UP CALL capped at 3 per episode per tribe.
+## Challenge Twists (Pre-Merge)
 
-## Archetype Mechanics
-- Villain: bond formation 0.7x, loss 0.8x. +1.5 heat. False info trades. Camp events.
-- Hero: bond formation 1.15x. -1.0 heat. Camp events.
-- Floater: 0.85x heat (invisibility). 0.9x vote gravity (follows majority). FTC: penalized if 0 big moves (behavior-based, not archetype-specific).
-- FTC passenger penalty: 0 big moves = -0.6 jury score. 1 move = 0. 2+ = bonus up to +0.8.
+| ID | Name | Key Mechanic | VP |
+|---|---|---|---|
+| `phobia-factor` | Phobia Factor | Fear completion %, clutch triple points | Confessions + challenge |
+| `cliff-dive` | Cliff Dive | 3-phase: jump/haul/build, chicken blame | Per-player reveal |
+| `awake-a-thon` | Awake-A-Thon | 3-phase: run/feast/awake, mid-challenge social events | Sequential dropout |
+| `dodgebrawl` | Dodgebrawl | Multi-round dodgeball, per-player elimination tracking | Per-round with counters |
+| `talent-show` | Talent Show | Auditions → backstage → show with Chef-O-Meter, sabotage | Auditions + backstage + stage |
+| `sucky-outdoors` | Sucky Outdoors | 5-phase overnight survival, lost player auto-loss | Ambiance progression |
+| `up-the-creek` | Up the Creek | 4-phase canoe race, partner selection, Boney Island, fire building | Water/jungle/fire/sunset |
 
-## Romance System (Showmances, Love Triangles, Secret Affairs)
-- `checkShowmanceFormation(ep)` — pair formation: bond >= 5-6 + `romanticCompat` + archetype multiplier
-- `updateShowmancePhases(ep)` — lifecycle: spark → honeymoon → target → ride-or-die (or broken-up/faded)
-- **Natural breakup**: bond drops below -1.0 → phase `broken-up`, breakupType `faded`. Shows `💔 It's Over` badge.
-- **Rekindle**: broken-up partner returns to game → chance to restart (separated: 70%/40%/15%, betrayal: 25%/8%)
-- Showmance cap: 2 active at a time. Triangles and affairs don't count toward cap.
-- **Love Triangles** (`gs.loveTriangles[]`): one-sided crush or dual showmance → public drama
-  - Formation: bond >= 4 + romanticCompat + partner bond >= 1.0 (prevents instant resolution)
-  - Same trio can't reform. Personality fork: low-loyalty/villain types → affair instead of triangle.
-  - Phases: tension (2 eps) → escalation (2 eps) → ultimatum (forced choice)
-  - Resolution: chose (center picks), organic (bond decay), eliminated
-  - Winner becomes showmance with center if compatible + bond high enough
-- **Secret Affairs** (`gs.affairs[]`): hidden romance for low-loyalty/villain/schemer/chaos-agent/showmancer types
-  - 4 exposure tiers: hidden → rumors → caught → exposed. Pressure cooker: +6% detection/episode.
-  - Complicit check: does secret partner know about the showmance?
-  - Caught tier: catcher decides to tell or stay silent (leverage mechanic)
-  - Exposure: cheater chooses partner or secret partner (same formula as triangle ultimatum)
-  - If cheater leaves → old showmance breaks up, new one forms with secret partner
-- **Popularity**: showmance betrayal -3 like/+3 drama. Triangle center -2 like. Affair cheater -4 like.
-  Rejected/betrayed players get sympathy (+2-3 like, +3-4 underdog).
-- **Aftermath**: all romance events feed into Truth or Anvil (drama 7-9), interviews (role-specific),
-  Fan Call, Unseen Footage, Host Roast. Affair is drama 9 (highest romance event).
-- **VP**: Romance debug tab shows showmances (with breakup type), triangles, affairs + event log.
-  All camp events have explicit badges.
-- **Merge tribe key**: always use `gs.mergeName || 'merge'` for post-merge camp event pushes, never just `'merge'`
+### Challenge Twists (Post-Merge)
 
-## The Mole
-- Season-level twist (not archetype): 1-2 secret saboteurs assigned via config (`cfg-mole`)
-- Config: `disabled` / `1-random` / `2-random` / `choose` + coordination mode (`independent` / `coordinated`)
-- 5 sabotage types: bond sabotage (30%), challenge throw/sabotage (30% immunity, 25% reward), info leak (30%), vote disruption (30%), advantage sabotage (35%)
-- Guaranteed 1-2 sabotage acts per episode (random type selection + independent rolls for remaining)
-- Pre-merge = Owen mode (random chaos), post-merge = Scott mode (strategic targeting)
-- Challenge sabotage: pre-merge targets easy-blame players, post-merge targets threats/suspicious players
-- Laying low: triggers at heat >= 4 OR suspicion >= 2.0 OR 4+ acts in last 2 episodes. Max 1 consecutive episode.
-- Suspicion: per-observer tracking, `(intuition * 0.04 + mental * 0.015) * (1.1 - resistance)`. Threshold 3.0 = exposure.
-- Resistance erodes: `Math.max(0.15, 0.5 - sabotageCount * 0.03)`. Formula flipped: low resistance = easier to detect.
-- Suspicion events: >= 2.0 GROWING SUSPICION (talks to others), >= 2.5 CONFRONTATION (direct challenge)
-- Exposure: -1.5 bond with all, +3.0 heat for 2 eps, advantages revealed, no more sabotage. Detective gets +0.5 bonds, -1.5 heat, +6 popularity.
-- Mole targets suspicious players: bond sabotage prefers their pairs, vote disruption targets them, info leak fabricates rumors about them
-- VP: dedicated "The Mole Exposed" screen, MOLE badges on sabotage events, undiscovered reveal on votes screen after torch snuff, debug tab with full sabotage log + suspicion levels
+| ID | Name | Key Mechanic |
+|---|---|---|
+| `say-uncle` | Say Uncle | Endurance torture, dominator pick + backfire |
+| `triple-dog-dare` | Triple Dog Dare | Sudden death, freebie economy, replaces tribal |
+| `sudden-death` | Sudden Death | Last place auto-eliminated |
+| `slasher-night` | Slasher Night | Round-by-round hunt, lowest scorer eliminated |
 
-## Mental Stat — Social Role
-- Mental is primarily a challenge stat but has a secondary social role: **information processing**
-- Boosts all intuition-based detection checks at ~35% of intuition's weight
-- `intuition * X + mental * X * 0.35` pattern across: Mole suspicion, perceived bond correction, info broker exposure, fake idol detection, advantage snooping, false info early detection
+## Other Key Systems
 
-## Schoolyard Pick
-- Schedulable pre-merge twist: `schoolyard-pick` in TWIST_CATALOG, category `team`
-- Captain selection: top 2 individual challenge performers (fallback random)
-- Alternating draft with mix-based pick logic (strategic/social/bold captain personalities)
-- Bond consequences: +0.4 first picks → -0.5 last pick; pick position proportional
-- Odd count: unpicked player sent to Exile Island (wires into exile island system for advantage search)
-- Exile return: next episode, joins smallest tribe; `ep.tribesAtStart` refreshed after return
-- Camp events: LAST PICKED badge (shame/anger/fire), EXILE RETURN + PROVING GROUND badges
-- `gs._schoolyardExiled` persists across episodes for return; suppresses `handleExileFormat` + `exile-island` twist
-- VP: `rpBuildSchoolyardPick(ep)` — click-to-reveal draft with per-pick reactions (archetype + stat + position)
-- Text backlog: `_textSchoolyardPick(ep, ln, sec)`
+### Romance
+Showmances → love triangles → secret affairs. Full lifecycle with bond/popularity/camp event consequences.
 
-## Emissary Vote
-- Schedulable pre-merge twist (`emissary-vote` in TWIST_CATALOG, category `elim`)
-- Winning tribe sends emissary (boldness+strategic+social scored volunteer) to losing tribe's tribal
-- Scouting: 1-2 pitches (losing tribe lobbies emissary), observation (intuition read), optional cross-tribe F2 deal
-- After normal vote eliminates someone, emissary picks a second player to eliminate — no idol protection
-- Pick scoring: `threatScore * 0.30 + pitchInfluence * 0.25 - bond * 0.20 + heat * 0.15 + random * 0.10`
-- Archetype modifiers: villain/schemer → threat 0.40, hero/loyal → bond 0.30, floater → heat 0.25
-- Bond consequences: allies of picked player grudge emissary (-1.5 scaled), voters against picked grateful (+0.8), neutral resentment (-0.3)
-- Emissary's own tribe: strategic approve high-threat pick (+0.4), hero/loyal disapprove low-threat (-0.3)
-- Heat: emissary +1.5 for 2 episodes. Popularity: emissary -2 like, picked player +3 underdog.
-- VP: `rpBuildEmissaryVote(ep)` — 3-phase click-to-reveal (selection, scouting, the pick)
-- Incompatible with: ambassadors, double-tribal, multi-tribal, kidnapping
+### The Mole
+Season-level twist. 5 sabotage types. Per-observer suspicion tracking. Exposure at threshold 3.0.
 
-## Dodgebrawl
-- Schedulable pre-merge challenge (`dodgebrawl` in TWIST_CATALOG, category `challenge`)
-- Multi-round dodgeball: all tribes on court simultaneously, first to 3 round wins gets immunity
-- Court size: 5v5 default, matches smallest tribe if fewer than 5. Minimum 2v2.
-- Sit-outs: rotation enforced. 1 refuser per tribe (low boldness + loyalty).
-- Score: `physical * 0.35 + intuition * 0.30 + endurance * 0.20 + mental * 0.15 + random`
-- 6 highlight types: trick shot, rage mode, clutch dodge, rush strategy, friendly fire, refusal
-- Max 3 highlights per round. Highlights have bond/heat/bigMoves consequences.
-- 2 camp events per tribe (1 positive, 1 negative): team player, hero, redemption, choked, liability, refusal
-- 3+ tribes: all on court, first to 3. Loser = fewest wins (tiebreaker: lowest cumulative score).
-- VP: `rpBuildDodgebrawl(ep)` — click-to-reveal per round with live scoreboard
-- Text backlog: `_textDodgebrawl(ep, ln, sec)`
+### Social Politics
+3-5 actions/episode: side deals, info trades, loyalty tests. Vote pitches at tribal.
 
-## Talent Show
-- Schedulable pre-merge challenge (`talent-show` in TWIST_CATALOG, category `challenge`)
-- All tribe members audition; captain (highest social+strategic) picks 3 to perform
-- Audition score: `primaryStat * 0.35 + secondaryStat * 0.25 + social * 0.15 + temperament * 0.10 + random(0, 3.0)`
-- 5 talent categories (physical/performanceArt/skill/daredevil/creative), 6 talents each, assigned by highest stat combo
-- Each talent has 4 text variants: audition, performance, disaster, clutch
-- Show score: fresh roll, mapped to Chef 0-9. Disaster: `(10-temperament)*0.03`. Clutch: `boldness*0.02` (lowest auditioner only).
-- Sabotage: villain/schemer/mastermind, `strategic*0.03`, max 1 per game, targets opponent's best performer
-- Audience reactions: 2-3 per act, archetype-driven, keyed to high/mid/low score
-- 2 camp events per tribe: standing ovation/unlikely hero/team support (positive), sabotage fallout/disaster/bitter rejection (negative)
-- VP: `rpBuildTalentAuditions(ep)` (casual) + `rpBuildTalentShowStage(ep)` (stage with Chef-O-Meter bars)
-- Chef-O-Meter: 9 segments, green/orange/red fill with CSS animation
-- Only performers in `chalMemberScores` — non-performers excluded from challenge records
-- Text backlog: `_textTalentShow(ep, ln, sec)`
+### Aftermath Show
+Truth or Anvil (12 contradiction types), Unseen Footage, Fan Call, Host Roast, Reunion.
 
-## The Sucky Outdoors
-- Schedulable pre-merge challenge (`sucky-outdoors` in TWIST_CATALOG, category `challenge`)
-- 5-phase overnight survival: announcement+hike, camp setup, nightfall, the night, morning race
-- Navigator per tribe: highest `mental * 0.5 + strategic * 0.3 + intuition * 0.2`
-- Camp quality: avg `(endurance + mental) / 2` — affects Phase 4 severity
-- 14-19 events per tribe. Each event awards personal survival score.
-- Lost player mechanic: `(10-intuition)*0.02 + (10-mental)*0.015`. Lost = -3.0 score, -5.0 tribe penalty, +2.0 heat.
-- Auto-loss: if lost members arrive after all other tribes finish → tribe auto-loses regardless of score.
-- Lost pair: bond >= 3 both lost → +0.3 bond (survived together), tribe penalty doubles.
-- VP: `rpBuildSuckyOutdoors(ep)` — 5-phase click-to-reveal with ambiance progression (dawn→dusk→night→dawn)
-- Text backlog: `_textSuckyOutdoors(ep, ln, sec)`
-
-## Up the Creek
-- Schedulable pre-merge challenge (`up-the-creek` in TWIST_CATALOG, category `challenge`)
-- 4-phase canoe race: paddle out, portage (15 encounter types), build fire (5 methods), paddle back (13 events)
-- Self-selected canoe partners: boldest picks first, bond + physical drives choices
-- Partner chemistry: bond affects paddle speed (+0.5 at bond >= 2, -0.5 at bond <= -1)
-- Fire methods: lighter (villain), homemade starter (chaos, 50/50 risk), paddle burn (+fire, -paddles), traditional, advice to enemy
-- Paddles burned → Phase 4 requires swimmer hero (`physical*0.06 + endurance*0.05`)
-- VP: `rpBuildUpTheCreek(ep)` — partner selection reveal + 4-phase with water/jungle/fire/sunset ambiance
-- Text backlog: `_textUpTheCreek(ep, ln, sec)`
-
-## Aftermath Show
-- `generateAftermathShow(ep)` — full aftermath data generation
-- **Truth or Anvil**: confrontation scene per interviewee. 12 contradiction types (vote-lie, fake-deal, bond-gap, double-agent, hidden-advantage, mole, betrayal, hidden-hatred, showmance, showmance-betrayal, love-triangle, affair). Full dialogue with archetype-flavored responses. Clean game = quick acknowledgment, no forced confrontation. Real bond consequences (-0.3 truth, -1.0 anvil).
-- **Unseen Footage**: 10+ sources (mole sabotage, fake deals, showmance spark/jealousy/breakup, perception gaps, undetected betrayals, challenge throws, secret idol finds, alliance collapse, loyalty tests). Scored by drama, top 3 shown.
-- **Fan Call**: 20+ game-data-driven question templates. Fan types (superfan/drama/hater/supporter) filter from shared pool. Category dedup prevents repeat topics.
-- **Host Roast**: 60+ unique templates from game data (betrayals, challenge wins/bombs, alliance count, votes received, side deals, showmances, big moves, popularity, archetype, stats). Dedup via Set.
-- **Reunion**: finale-format-aware (jury/challenge/fan-vote). Winner + runner-up interviews adapt language to match how the season was decided.
-- Active players do NOT watch the Aftermath — consequence text says "word gets back" or "when this airs", not "watching from camp"
-
-## First Impressions
-- `executeFirstImpressions()` — Episode 1 gut-feeling vote (NOT full `simulateVotes`)
-- No alliances, no split votes, no idol coverage, no jury references
-- Scoring: threat level, social warmth, archetype snap-judgments, bond factor, random variance
-- Vote reasons: "bad energy", "something feels calculated", "biggest physical threat", "hasn't connected", gut reads
-- Round-robin swap: voted-out players switch tribes
-
-## Final Challenge (finale format)
-- `simulateFinaleChallenge(finalists, assistants)` — 3-stage challenge
-- Stages: The Perch (endurance), The Gauntlet (physical), The Cipher (puzzle)
-- **All 3 stages fully randomized** — puzzle can come first, making mental assistants valuable
-- Last stage always solo (no assistant boost); assistants help first 2 stages only
-- Each stage has a dramatic finale name when it's the closer (Last One Standing / The Final Sprint / The Final Code)
-- `assistantDropoff` fires after second-to-last stage: "ASSISTANTS STEP BACK"
-
-## Pronouns — NEVER hardcode
-- Always use `pronouns(name)` → `{sub, obj, pos, posAdj, ref, Sub, Obj, PosAdj}`
-- Never write literal "he/she/him/her" in player-describing template literals
+### Emissary Vote
+Winning tribe sends emissary to losing tribe's tribal → second elimination. No idol protection.
 
 ## Collaboration Style
-- Think independently — brainstorm improvements and propose them, don't just copy exact words.
-- Always propose ideas before implementing — never silently add features.
-- **Stats are ALWAYS proportional.** Non-negotiable.
-- **Behavior > stats.** Check actions alongside raw stat numbers.
-- Camp events MUST have gameplay consequences (bond changes, state changes, knowledge tracking).
-- When a mechanic creates information (leak, snoop, confession), it must flow into targeting (computeHeat, simulateVotes) or it's cosmetic.
-
-## Challenge System (Total Drama-Inspired)
-Five schedulable challenge twists replace the normal immunity challenge. Each has its own
-VP screens (sequential click-to-reveal), camp events, and episode history.
-Twist category: `challenge` in TWIST_CATALOG. Separate from immunity modifiers.
-
-### Phobia Factor (`phobia-factor`) — Pre-merge tribe challenge
-- `simulatePhobiaFactor(ep)` — assigns random fears, campfire confessions, tribe scoring
-- Each player faces a randomly assigned phobia (60 fears across 4 categories: pain/fear/gross/humiliation)
-- Tribe with best completion % wins immunity. Worst tribe goes to tribal.
-- Campfire confessions fire after Cold Open (VP screen 1b)
-- **Triple Points Clutch**: if losing tribe is 20%+ behind, one player gets a triple-points dare
-- **Blame system**: `gs._phobiaBlame` adds temporary heat to players who failed on losing tribe
-  - Clutch pass cancels blame (redemption). Clutch fail adds +3.0 extra heat.
-  - Blame cleared after tribal via `delete gs._phobiaBlame`
-- Conquered fears = no camp event (expected outcome). Only failures, blame, shared fears, clutch shown.
-- `PHOBIA_POOL` / `PHOBIA_CATEGORIES` constants (separate from Say Uncle / TDD pools)
-
-### Say Uncle (`say-uncle`) — Post-merge individual endurance
-- `simulateSayUncle(ep)` — survival rolls, dominator picks, backfire rule, placements
-- Players endure tortures — survive 10 seconds or you're out. Last standing wins immunity.
-- **Dominator pick**: rare dominant performance → pick next victim + choose dare category
-  - Only random-turn dominators can pick (picked victims cannot pick even if they dominate)
-  - Backfire: if victim passes, picker is OUT
-- Normal tribal follows. Sets `ep.immunityWinner`, `ep.challengeType = 'individual'`.
-- Rotation-based turns (everyone gets one before repeats, picks count as turns)
-- `SAY_UNCLE_POOL` / `SAY_UNCLE_CATEGORIES` constants (80 dares, 4 categories)
-
-### Triple Dog Dare (`triple-dog-dare`) — Post-merge sudden death elimination
-- `simulateTripleDogDare(ep)` — spinner accept/pass model, freebie economy, pacts
-- **Replaces BOTH challenge AND tribal** — one player eliminated directly, no vote
-- Flow: spinner spins → accept own dare (earn freebie) OR pass to someone
-  - Passed target: use freebie to skip, push through (willingness roll), or refuse (eliminated if 0 freebies)
-- Freebie sharing: bond/loyalty/strategy-driven (not alliance-locked)
-- Temporary pacts: strategic players form in-challenge deals
-- `DARE_POOL` / `DARE_CATEGORIES` constants (80 dares, 4 categories with titles + descriptions)
-- VP: sequential click-to-reveal with live freebie counter bar
-
-### Cliff Dive (`cliff-dive`) — Pre-merge tribe challenge
-- `simulateCliffDive(ep)` — 3-phase: jump willingness, crate haul, hot tub build
-- Jump: `boldness * 0.06 + physical * 0.02 + loyalty * 0.03 + 0.10` per player
-- Chickens get chicken hat camp event + blame heat on losing tribe (`gs._cliffDiveBlame`)
-- Standout: first to volunteer per tribe (boldness-scored, 15% underdog chance)
-- Phase 2 haul: avg physical+endurance, manpower penalty for chickens, wagon advantage for most jumpers
-- Phase 3 build: avg mental+social, same manpower penalty
-- Winner: combined haul+build score. Tiebreaker: jump count.
-- VP: click-to-reveal per player with JUMPED/CHICKENED OUT + phase score bars + chicken hat gallery
-- `CLIFF_DIVE_JUMPED` (3 tiers) / `CLIFF_DIVE_CHICKEN` reaction text pools
-
-### Awake-A-Thon (`awake-a-thon`) — Pre-merge tribe endurance
-- `simulateAwakeAThon(ep)` — 3-phase: 20km run, feast trap, stay awake
-- Run: `physical * 0.06 + endurance * 0.05 + 0.20`. DNF players skip feast.
-- Feast: trap — eaters get `-0.15` stay-awake penalty
-- Awake-A-Thon: sequential dropout, `endurance * 0.07 + mental * 0.04 + physical * 0.02 + 0.10 + feastDebuff`
-- **Mid-challenge social events** fire between dropouts (the core innovation):
-  - Bonding (~50%): social-butterfly/hero/showmancer prioritized, same-tribe bias +3.0
-  - Alliance pitch (~20%, max 2): mastermind/schemer/villain archetypes, same-tribe bias +2.0
-  - Showmance (~15%): showmancer archetype gets lower bond threshold (0.5 vs 2.0)
-  - Cheating (~5%, max 1): boldness+low-loyalty, caught by intuition, disqualified if caught
-  - Scheming (~15%): villain/schemer only, targets sleeping player from OTHER tribe
-- Phase markers at 30%/70% dropout: "12 Hours", "24 Hours — Fairy Tales", "85 Hours — History of Canada"
-- Winner: last tribe with someone awake. With 3 tribes: continues until only 1 tribe remains.
-- Iron Will: last player standing gets +0.4 bond from teammates
-- Blame: first out on losing tribe gets `gs._awakeAThonBlame` +1.0 heat
-
-### Challenge VP Pattern
-All five use the same VP approach:
-- Sequential click-to-reveal (NEXT button + REVEAL ALL) with sticky bottom buttons
-- `_tvState[key]` pattern for reveal state (idx tracks progress)
-- Reveal onclick must save+restore `.rp-main` scrollTop to prevent scroll reset
-- Registered in `buildVPScreens()` — replace normal challenge screen when active
-- Social event steps: use `stepType` key (not `type`) to avoid collision with event's own `type` field
-
-### Camp Event Integration
-- Challenge-system events push to `ep.campEvents[tribeName].post` BEFORE `generateCampEvents`
-- `generateCampEvents(ep, 'post')` preserves existing `.post` events (appends, doesn't overwrite)
-- `generateCampEvents(ep, 'pre')` preserves existing `.post` events (fixed — was resetting to [])
-
-## Cold Open — "Previously On" + Dock Arrival
-- `rpBuildColdOpen(ep)` — dynamic narrative threads from previous episode
-- **Episode 1 special**: renders `_rpBuildDockArrival(ep)` instead — TDI-style player arrival
-  sequence with archetype-based dialogue, dock chemistry reactions, host monologue
-  (adapts for all-newbie / all-returnee / mixed cast via per-player `isReturnee` flag)
-- Episodes 2+: last tribal recap, close vote, betrayals, romance, mole, side deals, fights, challenge throws
-- Cliff Dive / Awake-A-Thon / Triple Dog Dare / Say Uncle / Phobia Factor recap cards
-- Uses `prevSnap` (previous episode snapshot) to avoid spoilers
-
-## Backlog Files
-- `DATA_SEASON/ideas_probabilistic_moments.txt` — feature ideas with priority order
-- `DATA_SEASON/ideas.txt` — larger feature designs
-- `DATA_SEASON/viewer_improvements.txt` — VP viewer gap list
+- Think independently — brainstorm and propose, don't copy exact words
+- Always propose ideas before implementing
+- Camp events MUST have gameplay consequences
+- When a mechanic creates information, it must flow into targeting or it's cosmetic

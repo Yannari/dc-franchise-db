@@ -32971,6 +32971,56 @@ function simulateJuryRoundtable(ep) {
     else if (ep.loser) gs.idolSlots[ep.loser.name] = (gs.idolSlots[ep.loser.name] || 0) + 1;
   }
 
+  // ── TRIBE DISSOLUTION: if any tribe has ≤2 members with 3+ tribes, dissolve and distribute ──
+  if (!gs.isMerged && !ep.isMerge && gs.tribes.length >= 3) {
+    const _activeTribes = gs.tribes.filter(t => t.members.filter(m => gs.activePlayers.includes(m)).length >= 1);
+    if (_activeTribes.length >= 3) {
+      const _tinyTribes = _activeTribes.filter(t => t.members.filter(m => gs.activePlayers.includes(m)).length <= 2);
+      _tinyTribes.forEach(_tinyTribe => {
+        const _tinyMembers = _tinyTribe.members.filter(m => gs.activePlayers.includes(m));
+        if (_tinyMembers.length === 0 || _tinyMembers.length > 2) return;
+        // Only dissolve if there are still 3+ tribes after removal
+        const _remainingTribes = gs.tribes.filter(t => t.name !== _tinyTribe.name && t.members.filter(m => gs.activePlayers.includes(m)).length >= 1);
+        if (_remainingTribes.length < 2) return;
+
+        // Distribute members: each goes to the tribe with fewest members (alternating if tie)
+        const _dissolved = [];
+        _tinyMembers.forEach(member => {
+          const dest = _remainingTribes.slice().sort((a, b) => {
+            const aSize = a.members.filter(m => gs.activePlayers.includes(m)).length;
+            const bSize = b.members.filter(m => gs.activePlayers.includes(m)).length;
+            return aSize - bSize || (Math.random() - 0.5);
+          })[0];
+          if (dest) {
+            _tinyTribe.members = _tinyTribe.members.filter(m => m !== member);
+            dest.members.push(member);
+            _dissolved.push({ player: member, fromTribe: _tinyTribe.name, toTribe: dest.name });
+          }
+        });
+
+        if (_dissolved.length) {
+          // Remove the empty tribe
+          gs.tribes = gs.tribes.filter(t => t.members.filter(m => gs.activePlayers.includes(m)).length >= 1);
+          // Store dissolution data
+          if (!ep.tribeDissolutions) ep.tribeDissolutions = [];
+          ep.tribeDissolutions.push({ tribe: _tinyTribe.name, members: _dissolved });
+          // Camp events for arrivals
+          _dissolved.forEach(d => {
+            const pr = pronouns(d.player);
+            if (!ep.campEvents) ep.campEvents = {};
+            if (!ep.campEvents[d.toTribe]) ep.campEvents[d.toTribe] = { pre: [], post: [] };
+            if (!ep.campEvents[d.toTribe].post) ep.campEvents[d.toTribe].post = [];
+            ep.campEvents[d.toTribe].post.push({
+              type: 'tribeArrival', players: [d.player],
+              text: `${_tinyTribe.name} is gone. ${d.player} joins ${d.toTribe}. ${pr.Sub} ${pr.sub === 'they' ? 'arrive' : 'arrives'} with nothing but ${pr.posAdj} bag and a game to rebuild.`,
+              badgeText: 'TRIBE DISSOLVED', badgeClass: 'red'
+            });
+          });
+        }
+      });
+    }
+  }
+
   // ── BOND UPDATES ──
   ep.bondChanges = updateBonds(ep.votingLog, ep.eliminated, alliances);
   // Open vote: public declarations carry extra bond damage — being named to your face stings more

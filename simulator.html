@@ -4210,6 +4210,7 @@ function computeHeat(name, tribalPlayers, alliances) {
   if (gs._dodgebrawlHeat?.[name] && ((gs.episode || 0) + 1) < gs._dodgebrawlHeat[name].expiresEp) heat += gs._dodgebrawlHeat[name].amount;
   if (gs._talentShowHeat?.[name] && ((gs.episode || 0) + 1) < gs._talentShowHeat[name].expiresEp) heat += gs._talentShowHeat[name].amount;
   if (gs._suckyOutdoorsHeat?.[name] && ((gs.episode || 0) + 1) < gs._suckyOutdoorsHeat[name].expiresEp) heat += gs._suckyOutdoorsHeat[name].amount;
+  if (gs._upTheCreekHeat?.[name] && ((gs.episode || 0) + 1) < gs._upTheCreekHeat[name].expiresEp) heat += gs._upTheCreekHeat[name].amount;
   // ── Volunteer Exile Duel: volunteer WANTS to be voted out ──
   if (gs._volunteerDuelHeat?.[name] === ((gs.episode || 0) + 1)) heat += 8.0;
   // Volunteer duel winner returns with reduced heat
@@ -10787,6 +10788,1548 @@ function simulateSuckyOutdoors(ep) {
     loser: loser.name,
     autoLoseTribe: autoLoseTribes.size ? [...autoLoseTribes][0] : null,
   };
+
+  updateChalRecord(ep);
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// ENGINE: UP THE CREEK
+// ══════════════════════════════════════════════════════════════════════
+
+function simulateUpTheCreek(ep) {
+  const tribes = gs.tribes;
+  const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
+  const _hash = (str, n) => { let h = 0; for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) & 0xfffffff; return h % n; };
+  const NICE_ARCHS = new Set(['hero', 'loyal', 'loyal-soldier', 'protector', 'social-butterfly', 'showmancer']);
+  // _utcMembers: local flat list for iteration (distinct from global `players`)
+  const _utcMembers = tribes.flatMap(t => t.members.map(m => ({ name: m, tribe: t.name })));
+
+  if (!ep.campEvents) ep.campEvents = {};
+  tribes.forEach(t => { if (!ep.campEvents[t.name]) ep.campEvents[t.name] = { pre: [], post: [] }; });
+
+  // ── Personal scores per player ──
+  const personalScores = {};
+  _utcMembers.forEach(p => { personalScores[p.name] = 0; });
+
+  // ── Phase storage ──
+  const phases = { partnerSelection: [], paddleOut: [], portage: [], buildFire: [], paddleBack: [] };
+
+  // ── Tribe-level accumulators ──
+  const tribePhase1Score = {};
+  const tribePhase2Score = {};
+  const tribePhase3Score = {};
+  const tribePhase4Score = {};
+  tribes.forEach(t => {
+    tribePhase1Score[t.name] = 0;
+    tribePhase2Score[t.name] = 0;
+    tribePhase3Score[t.name] = 0;
+    tribePhase4Score[t.name] = 0;
+  });
+
+  // ── Canoe pair data ──
+  const canoePairs = {};   // { tribeName: [{ a, b, scenario, chemistry, speed }] }
+  const soloCanoe = {};    // { tribeName: name || null }
+  const paddlesBurned = {};  // { tribeName: bool }
+  let swimmerHero = null;
+
+  // ══ PHASE 0: PARTNER SELECTION ══
+  tribes.forEach(t => {
+    const members = t.members.slice();
+    canoePairs[t.name] = [];
+    soloCanoe[t.name] = null;
+    paddlesBurned[t.name] = false;
+
+    // Sort by boldness descending — boldest picks first
+    const byBoldness = members.slice().sort((a, b) => pStats(b).boldness - pStats(a).boldness);
+    const unpicked = new Set(members);
+    const paired = new Set();
+    const pairs = [];
+
+    // Check active showmances
+    const activeShowmances = (gs.showmances || []).filter(sm => sm.phase !== 'broken-up' && sm.phase !== 'faded');
+    const showmancePairs = new Set();
+    activeShowmances.forEach(sm => {
+      const [smA, smB] = sm.players;
+      if (members.includes(smA) && members.includes(smB)) {
+        showmancePairs.add(smA + '|||' + smB);
+        showmancePairs.add(smB + '|||' + smA);
+      }
+    });
+
+    // Determine each player's most-wanted partner: bond * 0.5 + (physical + endurance) * 0.1
+    const wantedBy = {};
+    members.forEach(picker => {
+      const others = members.filter(m => m !== picker);
+      if (!others.length) return;
+      wantedBy[picker] = others.slice().sort((a, b) => {
+        const sA = pStats(a), sB = pStats(b);
+        const bondA = getBond(picker, a), bondB = getBond(picker, b);
+        return (bondB * 0.5 + (sB.physical + sB.endurance) * 0.1) - (bondA * 0.5 + (sA.physical + sA.endurance) * 0.1);
+      })[0];
+    });
+
+    // Determine solo canoe: if odd members, lowest boldness player gets solo canoe
+    let soloPlayer = null;
+    if (members.length % 2 === 1) {
+      soloPlayer = members.slice().sort((a, b) => pStats(a).boldness - pStats(b).boldness)[0];
+      unpicked.delete(soloPlayer);
+      paired.add(soloPlayer);
+      soloCanoe[t.name] = soloPlayer;
+      const prSolo = pronouns(soloPlayer);
+      const soloTexts = [
+        `${soloPlayer} is the last one standing on the dock. Solo canoe. The tribe is already in the water.`,
+        `Nobody picked ${soloPlayer}. ${prSolo.Sub} ${prSolo.sub === 'they' ? 'drag' : 'drags'} the canoe into the water alone. Quiet.`,
+        `${soloPlayer} pushes off solo. The others are paired up and laughing. ${prSolo.Sub} ${prSolo.sub === 'they' ? 'paddle' : 'paddles'} harder.`,
+      ];
+      personalScores[soloPlayer] -= 0.5;
+      addBond(soloPlayer, members.filter(m => m !== soloPlayer)[0] || soloPlayer, -0.1);
+      const soloText = soloTexts[_hash(soloPlayer + 'solo', soloTexts.length)];
+      phases.partnerSelection.push({
+        type: 'utcSoloPaddler', phase: 'partnerSelection', players: [soloPlayer],
+        text: soloText, personalScores: { [soloPlayer]: -0.5 }, badge: 'SOLO CANOE', badgeClass: 'red'
+      });
+    }
+
+    // Pick order: boldest first (skip solo player)
+    const pickOrder = byBoldness.filter(m => m !== soloPlayer);
+
+    pickOrder.forEach(picker => {
+      if (paired.has(picker)) return;
+      const available = [...unpicked].filter(m => m !== picker && !paired.has(m));
+      if (!available.length) return;
+
+      // Check showmance shortcut
+      const showmanceTarget = available.find(m => showmancePairs.has(picker + '|||' + m));
+
+      let chosen;
+      if (showmanceTarget) {
+        chosen = showmanceTarget;
+      } else {
+        // Pick highest bond * 0.5 + (phys + end) * 0.1
+        chosen = available.slice().sort((a, b) => {
+          const sA = pStats(a), sB = pStats(b);
+          const bondA = getBond(picker, a), bondB = getBond(picker, b);
+          return (bondB * 0.5 + (sB.physical + sB.endurance) * 0.1) - (bondA * 0.5 + (sA.physical + sA.endurance) * 0.1);
+        })[0];
+      }
+
+      paired.add(picker);
+      paired.add(chosen);
+      unpicked.delete(picker);
+      unpicked.delete(chosen);
+
+      const bond = getBond(picker, chosen);
+      const sP = pStats(picker), sC = pStats(chosen);
+      const chemistry = bond * 0.15 + (sP.physical + sP.endurance + sC.physical + sC.endurance) / 4 * 0.25;
+
+      // Determine scenario
+      const isShowmance = !!showmanceTarget;
+      const mutual = wantedBy[picker] === chosen && wantedBy[chosen] === picker;
+      const oneSided = wantedBy[picker] === chosen && wantedBy[chosen] !== picker;
+      const rivalForced = !isShowmance && bond <= -1 && available.length === 1; // last option
+      const wasRejected = wantedBy[chosen] !== picker && wantedBy[chosen] && !paired.has(wantedBy[chosen]) === false;
+
+      let scenario, text, bondDelta;
+      const prPicker = pronouns(picker), prChosen = pronouns(chosen);
+
+      if (isShowmance) {
+        scenario = 'showmance';
+        const showTexts = [
+          `${picker} and ${chosen} don't even hesitate. Same canoe. The tribe rolls their eyes.`,
+          `${picker} holds the canoe steady for ${chosen}. The tenderness is visible. Someone gags.`,
+          `'You and me?' 'Always.' The canoe practically launched itself.`,
+        ];
+        text = showTexts[_hash(picker + chosen + 'show', showTexts.length)];
+        bondDelta = 0.2;
+      } else if (rivalForced) {
+        scenario = 'rivals-forced';
+        const rivalTexts = [
+          `${picker} and ${chosen} stare at the last canoe, then at each other. This is going to be a long paddle.`,
+          `'Absolutely not.' 'You don't have a choice.' They get in. Neither sits comfortably.`,
+          `${picker} takes the front. ${chosen} takes the back. They haven't looked at each other once.`,
+        ];
+        text = rivalTexts[_hash(picker + chosen + 'rival', rivalTexts.length)];
+        bondDelta = -0.3;
+      } else if (mutual) {
+        scenario = 'mutual';
+        const mutualTexts = [
+          `${picker} and ${chosen} grab the same canoe. No words needed. They both knew.`,
+          `${picker} nods at ${chosen}. ${prChosen.Sub} nods back. They're already in the water before anyone else has picked.`,
+          `${chosen} grins when ${picker} walks over. 'I was hoping you'd ask.' 'I wasn't asking.'`,
+        ];
+        text = mutualTexts[_hash(picker + chosen + 'mutual', mutualTexts.length)];
+        bondDelta = 0.3;
+      } else if (oneSided) {
+        scenario = 'one-sided';
+        const oneSideTexts = [
+          `${chosen} hesitates. Looks at ${wantedBy[chosen] || 'the others'}. Then at ${picker}. Gets in the canoe. Says nothing.`,
+          `${picker} is thrilled. ${chosen} is... managing expectations.`,
+          `'Come on, it'll be fun,' ${picker} says. ${prChosen.Sub} ${prChosen.sub === 'they' ? 'don\'t' : 'doesn\'t'} look convinced.`,
+        ];
+        text = oneSideTexts[_hash(picker + chosen + 'one', oneSideTexts.length)];
+        bondDelta = -0.2;
+        addBond(picker, chosen, bondDelta);
+      } else {
+        scenario = 'standard';
+        const stdTexts = [
+          `${picker} and ${chosen} pair up without fanfare. Practical choice.`,
+          `${picker} walks over to ${chosen}. 'You and me?' ${prChosen.Sub} shrugs. 'Sure.'`,
+          `${picker} taps ${chosen} on the shoulder. They're in the same canoe before anyone else makes a move.`,
+        ];
+        text = stdTexts[_hash(picker + chosen + 'std', stdTexts.length)];
+        bondDelta = 0.1;
+      }
+
+      addBond(picker, chosen, bondDelta);
+
+      const pairScoreDelta = isShowmance ? 0.3 : mutual ? 0.3 : oneSided ? 0 : rivalForced ? -0.3 : 0.1;
+      personalScores[picker] += pairScoreDelta;
+      personalScores[chosen] += pairScoreDelta;
+
+      pairs.push({ a: picker, b: chosen, scenario, chemistry, speed: 0 });
+
+      const badgeTextMap = { 'showmance': 'POWER COUPLE', 'mutual': 'PERFECT MATCH', 'one-sided': 'RELUCTANT PAIR', 'rivals-forced': 'RIVALS', 'standard': 'CANOE PAIR' };
+      const badgeClassMap = { 'showmance': 'gold', 'mutual': 'gold', 'one-sided': '', 'rivals-forced': 'red', 'standard': '' };
+
+      phases.partnerSelection.push({
+        type: 'utcPartnerPick', phase: 'partnerSelection', players: [picker, chosen],
+        text, personalScores: { [picker]: pairScoreDelta, [chosen]: pairScoreDelta },
+        badge: badgeTextMap[scenario] || 'CANOE PAIR', badgeClass: badgeClassMap[scenario] || ''
+      });
+
+      // Rejected: whoever chosen's wantedBy was, if available and didn't get them
+      const rejectedWanted = wantedBy[chosen];
+      if (rejectedWanted && rejectedWanted !== picker && !paired.has(rejectedWanted) === false) {
+        // Fire a rejection event if the rejected player exists
+      }
+    });
+
+    // Fire rejection events for players who lost their wanted pick
+    members.filter(m => m !== soloPlayer).forEach(loser => {
+      const wanted = wantedBy[loser];
+      if (!wanted) return;
+      const loserPair = pairs.find(p => p.a === loser || p.b === loser);
+      const wantedPair = pairs.find(p => p.a === wanted || p.b === wanted);
+      if (!loserPair || !wantedPair) return;
+      const takerName = wantedPair.a === wanted ? wantedPair.b : wantedPair.a;
+      if (takerName === loser) return; // loser actually got their pick
+      // loser didn't get who they wanted
+      const prLoser = pronouns(loser);
+      const rejTexts = [
+        `${loser} watches ${wanted} paddle off with ${takerName}. ${prLoser.Sub} pretends it doesn't sting. It stings.`,
+        `${loser} stood there a second too long. By the time ${prLoser.sub} moved, ${wanted} was already gone.`,
+        `'Whatever,' ${loser} mutters, grabbing the next available canoe. ${prLoser.Sub} ${prLoser.sub === 'they' ? 'don\'t' : 'doesn\'t'} look back.`,
+      ];
+      addBond(loser, takerName, -0.3);
+      personalScores[loser] -= 0.2;
+      phases.partnerSelection.push({
+        type: 'utcRejected', phase: 'partnerSelection', players: [loser, wanted, takerName],
+        text: rejTexts[_hash(loser + wanted + 'rej', rejTexts.length)],
+        personalScores: { [loser]: -0.2 }, badge: 'REJECTED', badgeClass: 'red'
+      });
+    });
+
+    canoePairs[t.name] = pairs;
+  });
+
+  // ══ PHASE 1: PADDLE TO BONEY ISLAND (3-4 events per tribe) ══
+  tribes.forEach(t => {
+    const members = t.members;
+    const pairs = canoePairs[t.name];
+    const solo = soloCanoe[t.name];
+    let p1EventCount = 0;
+    const maxP1 = 3 + (Math.random() < 0.5 ? 1 : 0);
+
+    // Calculate pair speeds
+    pairs.forEach(pair => {
+      const bond = getBond(pair.a, pair.b);
+      const sA = pStats(pair.a), sB = pStats(pair.b);
+      const avgPhysEnd = ((sA.physical + sA.endurance + sB.physical + sB.endurance) / 2);
+      let speed = bond * 0.15 + avgPhysEnd * 0.25 + Math.random() * 1.5;
+      if (bond >= 2) speed += 0.5;
+      if (bond <= -1) speed -= 0.5;
+      speed = Math.max(0.1, speed);
+      pair.speed = speed;
+      tribePhase1Score[t.name] += speed;
+    });
+
+    // Solo canoe speed
+    let soloSpeed = 0;
+    if (solo) {
+      const sS = pStats(solo);
+      soloSpeed = sS.physical * 0.3 + sS.endurance * 0.25 + Math.random() * 1.0;
+      tribePhase1Score[t.name] += soloSpeed;
+    }
+
+    // Event 1: Fast pair leads the way
+    if (p1EventCount < maxP1 && pairs.length) {
+      const topPair = pairs.slice().sort((a, b) => b.speed - a.speed)[0];
+      const prA = pronouns(topPair.a), prB = pronouns(topPair.b);
+      const fastTexts = [
+        `${topPair.a} and ${topPair.b} are already twenty meters ahead. Something clicks when they paddle together.`,
+        `${topPair.a} calls the strokes. ${topPair.b} matches every one. They cut through the water like they've done this before.`,
+        `The gap between ${topPair.a} and ${topPair.b}'s canoe and the rest of the tribe is embarrassing for everyone else.`,
+      ];
+      personalScores[topPair.a] += 1.5; personalScores[topPair.b] += 1.5;
+      addBond(topPair.a, topPair.b, 0.2);
+      phases.paddleOut.push({
+        type: 'utcFastPair', phase: 'paddleOut', players: [topPair.a, topPair.b],
+        text: fastTexts[_hash(topPair.a + topPair.b + 'fast', fastTexts.length)],
+        personalScores: { [topPair.a]: 1.5, [topPair.b]: 1.5 }, badge: 'FAST PAIR', badgeClass: 'gold'
+      });
+      p1EventCount++;
+    }
+
+    // Event 2: Slow pair holds tribe back
+    if (p1EventCount < maxP1 && pairs.length > 1) {
+      const bottomPair = pairs.slice().sort((a, b) => a.speed - b.speed)[0];
+      const slowTexts = [
+        `${bottomPair.a} and ${bottomPair.b} can't sync their strokes. One pulls left, one pulls right. They spin in a slow, mortifying circle.`,
+        `The tribe waits for ${bottomPair.a} and ${bottomPair.b} to catch up. Again. The silence is pointed.`,
+        `${bottomPair.a} is paddling. ${bottomPair.b} is splashing water. These are two different activities.`,
+      ];
+      personalScores[bottomPair.a] -= 1.0; personalScores[bottomPair.b] -= 1.0;
+      addBond(bottomPair.a, bottomPair.b, -0.2);
+      phases.paddleOut.push({
+        type: 'utcSlowPair', phase: 'paddleOut', players: [bottomPair.a, bottomPair.b],
+        text: slowTexts[_hash(bottomPair.a + bottomPair.b + 'slow', slowTexts.length)],
+        personalScores: { [bottomPair.a]: -1.0, [bottomPair.b]: -1.0 }, badge: 'SLOW PAIR', badgeClass: 'red'
+      });
+      p1EventCount++;
+    }
+
+    // Event 3: Argument in canoe (bond <= 0)
+    if (p1EventCount < maxP1 && Math.random() < 0.45) {
+      const argPairs = pairs.filter(p => getBond(p.a, p.b) <= 0);
+      if (argPairs.length) {
+        const argPair = _rp(argPairs);
+        const argTexts = [
+          `${argPair.a} and ${argPair.b} are arguing about paddle technique. In the middle of the race.`,
+          `'You're going too fast.' 'You're going too slow.' ${argPair.a} and ${argPair.b} have ground to a halt.`,
+          `${argPair.a} snaps at ${argPair.b} over the steering. ${argPair.b} snaps back. The canoe drifts sideways.`,
+        ];
+        personalScores[argPair.a] -= 0.5; personalScores[argPair.b] -= 0.5;
+        addBond(argPair.a, argPair.b, -0.3);
+        phases.paddleOut.push({
+          type: 'utcArgument', phase: 'paddleOut', players: [argPair.a, argPair.b],
+          text: argTexts[_hash(argPair.a + argPair.b + 'arg1', argTexts.length)],
+          personalScores: { [argPair.a]: -0.5, [argPair.b]: -0.5 }, badge: 'PADDLING ARGUMENT', badgeClass: 'red'
+        });
+        p1EventCount++;
+      }
+    }
+
+    // Event 4: Bonding in canoe (bond >= 2)
+    if (p1EventCount < maxP1 && Math.random() < 0.45) {
+      const bondPairs = pairs.filter(p => getBond(p.a, p.b) >= 2);
+      if (bondPairs.length) {
+        const bondPair = _rp(bondPairs);
+        const bondTexts = [
+          `${bondPair.a} and ${bondPair.b} are laughing halfway across. Paddling together like they've done it a hundred times.`,
+          `Between strokes, ${bondPair.a} and ${bondPair.b} are talking. The kind of easy conversation that only happens when you genuinely like someone.`,
+          `${bondPair.a} and ${bondPair.b} sync up without thinking. The canoe cuts clean. The tribe notices.`,
+        ];
+        personalScores[bondPair.a] += 0.5; personalScores[bondPair.b] += 0.5;
+        addBond(bondPair.a, bondPair.b, 0.3);
+        phases.paddleOut.push({
+          type: 'utcBonding', phase: 'paddleOut', players: [bondPair.a, bondPair.b],
+          text: bondTexts[_hash(bondPair.a + bondPair.b + 'bond', bondTexts.length)],
+          personalScores: { [bondPair.a]: 0.5, [bondPair.b]: 0.5 }, badge: 'CANOE CHEMISTRY', badgeClass: 'gold'
+        });
+        p1EventCount++;
+      }
+    }
+
+    // Event: Capsized (proportional to low endurance)
+    if (p1EventCount < maxP1 && Math.random() < 0.30) {
+      const capsizePairs = pairs.slice().sort((a, b) => {
+        const endA = (pStats(a.a).endurance + pStats(a.b).endurance) / 2;
+        const endB = (pStats(b.a).endurance + pStats(b.b).endurance) / 2;
+        return endA - endB; // lowest endurance most likely
+      });
+      const capPair = capsizePairs[0];
+      if (capPair && Math.random() < (10 - Math.min(pStats(capPair.a).endurance, pStats(capPair.b).endurance)) * 0.04) {
+        const capTexts = [
+          `${capPair.a} and ${capPair.b} go over. Completely. The canoe floats upside down. They're fine. The time loss is not fine.`,
+          `A wave catches ${capPair.a} and ${capPair.b}'s canoe sideways. One moment paddling, next moment swimming.`,
+          `${capPair.a} shifts weight at the wrong time. Over they go. ${capPair.b} comes up spitting water.`,
+        ];
+        personalScores[capPair.a] -= 1.5; personalScores[capPair.b] -= 1.5;
+        phases.paddleOut.push({
+          type: 'utcCapsized', phase: 'paddleOut', players: [capPair.a, capPair.b],
+          text: capTexts[_hash(capPair.a + capPair.b + 'cap', capTexts.length)],
+          personalScores: { [capPair.a]: -1.5, [capPair.b]: -1.5 }, badge: 'CAPSIZED', badgeClass: 'red'
+        });
+        tribePhase1Score[t.name] -= 1.5;
+        p1EventCount++;
+      }
+    }
+
+    // Event: Wildlife spotted
+    if (p1EventCount < maxP1 && Math.random() < 0.35) {
+      const spotter = members.slice().sort((a, b) => pStats(b).intuition - pStats(a).intuition)[0];
+      if (spotter) {
+        const sS = pStats(spotter);
+        const spotScore = sS.intuition * 0.04;
+        if (Math.random() < spotScore + 0.2) {
+          const prSpot = pronouns(spotter);
+          const wildTexts = [
+            `${spotter} points out a great blue heron watching them from the reeds. The tribe slows down to look. Worth it.`,
+            `${spotter} calls out a school of fish under the canoe. Everyone peers over the side. For five seconds, nobody's playing Survivor.`,
+            `A family of otters slides past ${spotter}'s canoe. ${prSpot.Sub} grins. Even the tribe's most jaded members can't help it.`,
+          ];
+          const spotterPair = pairs.find(p => p.a === spotter || p.b === spotter);
+          const partner = spotterPair ? (spotterPair.a === spotter ? spotterPair.b : spotterPair.a) : null;
+          personalScores[spotter] += 0.5;
+          if (partner) { personalScores[partner] += 0.2; addBond(spotter, partner, 0.2); }
+          phases.paddleOut.push({
+            type: 'utcWildlife', phase: 'paddleOut', players: partner ? [spotter, partner] : [spotter],
+            text: wildTexts[_hash(spotter + 'wild', wildTexts.length)],
+            personalScores: partner ? { [spotter]: 0.5, [partner]: 0.2 } : { [spotter]: 0.5 },
+            badge: 'WILDLIFE', badgeClass: ''
+          });
+          p1EventCount++;
+        }
+      }
+    }
+
+    // Event: Solo canoe struggles or impresses
+    if (solo && p1EventCount < maxP1) {
+      const sS = pStats(solo);
+      const physScore = sS.physical * 0.04;
+      const prSolo = pronouns(solo);
+      if (Math.random() < physScore + 0.15) {
+        const impressTexts = [
+          `${solo} paddles alone and somehow keeps pace with the paired canoes. The tribe is quietly impressed.`,
+          `${solo} is pulling the canoe through the water like ${prSolo.sub} has something to prove. ${prSolo.Sub} might.`,
+          `No partner, no problem. ${solo} drives a single canoe with enough force that the tribe starts checking if ${prSolo.sub === 'they' ? 'they\'re' : prSolo.sub + '\'re'} even human.`,
+        ];
+        personalScores[solo] += 1.5;
+        members.filter(m => m !== solo).forEach(m => addBond(m, solo, 0.3));
+        phases.paddleOut.push({
+          type: 'utcSoloPaddler', phase: 'paddleOut', players: [solo],
+          text: impressTexts[_hash(solo + 'soloim', impressTexts.length)],
+          personalScores: { [solo]: 1.5 }, badge: 'SOLO CANOE', badgeClass: 'gold'
+        });
+      } else {
+        const strugTexts = [
+          `${solo} is paddling alone and falling behind. The tribe keeps having to wait.`,
+          `${solo} steers the solo canoe into a reed bed. Extracting it takes two minutes and a lot of muttering.`,
+          `Without a partner to stabilize the canoe, ${solo} is zigzagging across the water. It's painful to watch.`,
+        ];
+        personalScores[solo] -= 0.5;
+        phases.paddleOut.push({
+          type: 'utcSoloStruggles', phase: 'paddleOut', players: [solo],
+          text: strugTexts[_hash(solo + 'solostrg', strugTexts.length)],
+          personalScores: { [solo]: -0.5 }, badge: 'STRUGGLING SOLO', badgeClass: 'red'
+        });
+      }
+      p1EventCount++;
+    }
+  });
+
+  // ══ PHASE 2: PORTAGE (3-5 encounters per tribe) ══
+  const ALL_PORTAGE = [
+    'wildlife-attack', 'quicksand', 'injury', 'shortcut', 'dangerous-crossing',
+    'dropped-canoe', 'creepy-ruins', 'insect-swarm', 'dense-fog', 'rival-spotted',
+    'falls-behind', 'mysterious-sounds', 'steep-hill', 'food-discovery', 'creek-crossing'
+  ];
+
+  tribes.forEach(t => {
+    const members = t.members;
+    const numPortage = 3 + Math.floor(Math.random() * 3); // 3-5
+    const pool = ALL_PORTAGE.slice().sort(() => Math.random() - 0.5).slice(0, numPortage);
+
+    pool.forEach(encounter => {
+      switch (encounter) {
+
+        case 'wildlife-attack': {
+          const brave = members.slice().sort((a, b) => pStats(b).boldness - pStats(a).boldness)[0];
+          const panicker = members.slice().sort((a, b) => pStats(a).boldness - pStats(b).boldness)[0];
+          if (!brave || brave === panicker) break;
+          const prBrave = pronouns(brave);
+          const animals = ['a family of angry geese', 'a territorial beaver', 'a black bear'];
+          const animal = _rp(animals);
+          const wildTexts = [
+            `${animal.charAt(0).toUpperCase() + animal.slice(1)} on the trail. ${panicker} freezes. ${brave} steps forward. After forty seconds of tense standoff, the threat retreats. ${panicker} is still frozen.`,
+            `${brave} spots ${animal} ahead and immediately moves to draw it away from the group. ${panicker} does not help. The tribe makes it through anyway.`,
+            `${animal} charges. ${brave} doesn't run. Stands ${prBrave.posAdj} ground, arms out. It works. ${panicker} is already twenty meters back.`,
+          ];
+          const braveScore = pStats(brave).boldness * 0.15;
+          personalScores[brave] += 1.5; personalScores[panicker] -= 1.0;
+          addBond(brave, panicker, 0.3);
+          tribePhase2Score[t.name] += braveScore;
+          phases.portage.push({
+            type: 'utcWildlife', phase: 'portage', players: [brave, panicker],
+            text: wildTexts[_hash(brave + panicker + 'wildat', wildTexts.length)],
+            personalScores: { [brave]: 1.5, [panicker]: -1.0 }, badge: 'WILDLIFE', badgeClass: ''
+          });
+          break;
+        }
+
+        case 'quicksand': {
+          const trapped = members.slice().sort((a, b) => pStats(a).intuition - pStats(b).intuition)[0];
+          const rescuer = members.filter(m => m !== trapped).slice().sort((a, b) => {
+            return (pStats(b).physical * 0.5 + pStats(b).loyalty * 0.5) - (pStats(a).physical * 0.5 + pStats(a).loyalty * 0.5);
+          })[0];
+          if (!trapped || !rescuer) break;
+          const prTrapped = pronouns(trapped);
+          const qsTexts = [
+            `${trapped} steps off the path and goes straight into a muddy sinkhole. Both legs. ${rescuer} hauls ${prTrapped.obj} out by ${prTrapped.posAdj} arms. The whole tribe stops.`,
+            `${trapped} is in to the knee before ${prTrapped.sub === 'they' ? 'they realize' : prTrapped.sub + ' realizes'} what's happened. ${rescuer} doesn't hesitate. In up to ${pronouns(rescuer).posAdj} elbows, pulling.`,
+            `The mud trap catches ${trapped} mid-stride. ${rescuer} ties rope around ${prTrapped.posAdj} wrist and braces. Takes three minutes. Everyone is watching.`,
+          ];
+          personalScores[trapped] -= 1.5; personalScores[rescuer] += 2.0;
+          addBond(rescuer, trapped, 0.5);
+          tribePhase2Score[t.name] -= 0.5;
+          phases.portage.push({
+            type: 'utcQuicksand', phase: 'portage', players: [trapped, rescuer],
+            text: qsTexts[_hash(trapped + rescuer + 'qs', qsTexts.length)],
+            personalScores: { [trapped]: -1.5, [rescuer]: 2.0 }, badge: 'QUICKSAND', badgeClass: ''
+          });
+          break;
+        }
+
+        case 'injury': {
+          const injured = members.slice().sort((a, b) => {
+            return ((10 - pStats(a).endurance) * 0.07) - ((10 - pStats(b).endurance) * 0.07);
+          })[members.length - 1]; // most likely injured = lowest endurance proportional
+          const carrier = members.filter(m => m !== injured).slice().sort((a, b) => pStats(b).social - pStats(a).social)[0];
+          if (!injured || !carrier) break;
+          const prInj = pronouns(injured);
+          const injTexts = [
+            `${injured} catches a splinter from a portage post — deep, under the nail. ${carrier} stops to help dig it out. The rest of the tribe barely slows.`,
+            `${injured} rolls an ankle on a root. ${carrier} takes ${prInj.posAdj} load without being asked. Nobody says anything. They keep moving.`,
+            `${injured} slips carrying the canoe and catches the hull with ${prInj.posAdj} arm. ${carrier} takes the front end for the next stretch.`,
+          ];
+          personalScores[injured] -= 1.0; personalScores[carrier] += 0.5;
+          addBond(carrier, injured, 0.3);
+          phases.portage.push({
+            type: 'utcInjury', phase: 'portage', players: [injured, carrier],
+            text: injTexts[_hash(injured + carrier + 'inj', injTexts.length)],
+            personalScores: { [injured]: -1.0, [carrier]: 0.5 }, badge: 'INJURY', badgeClass: 'red'
+          });
+          break;
+        }
+
+        case 'shortcut': {
+          const finder = members.slice().sort((a, b) => {
+            const sA = pStats(a), sB = pStats(b);
+            return (sB.intuition * 0.5 + sB.mental * 0.5) - (sA.intuition * 0.5 + sA.mental * 0.5);
+          })[0];
+          if (!finder) break;
+          const prFinder = pronouns(finder);
+          const shortTexts = [
+            `${finder} spots a gap in the tree line — barely a trail, but it cuts the route in half. The tribe follows. They gain time.`,
+            `${finder} holds up ${prFinder.posAdj} hand. 'This way.' Nobody argues. They're back on the water ten minutes ahead of schedule.`,
+            `${finder} has been reading the terrain the whole way. When ${prFinder.sub === 'they' ? 'they point' : prFinder.sub + ' points'} left instead of right, the tribe trusts ${prFinder.obj}. Smart call.`,
+          ];
+          const finderScore = pStats(finder).intuition * 0.2 + pStats(finder).mental * 0.2;
+          personalScores[finder] += 2.0; tribePhase2Score[t.name] += finderScore;
+          members.filter(m => m !== finder).forEach(m => addBond(m, finder, 0.2));
+          phases.portage.push({
+            type: 'utcShortcut', phase: 'portage', players: [finder],
+            text: shortTexts[_hash(finder + 'short', shortTexts.length)],
+            personalScores: { [finder]: 2.0 }, badge: 'SHORTCUT', badgeClass: 'gold'
+          });
+          break;
+        }
+
+        case 'dangerous-crossing': {
+          const leader = members.slice().sort((a, b) => {
+            const sA = pStats(a), sB = pStats(b);
+            return (sB.physical * 0.5 + sB.boldness * 0.5) - (sA.physical * 0.5 + sA.boldness * 0.5);
+          })[0];
+          if (!leader) break;
+          const sL = pStats(leader);
+          const crossScore = sL.physical * 0.06 + sL.boldness * 0.05;
+          const success = Math.random() < crossScore + 0.3;
+          const prL = pronouns(leader);
+          const crossSuccTexts = [
+            `The log bridge over the ravine looks terrible. ${leader} tests it, nods, and crosses first — canoe overhead. The tribe follows.`,
+            `${leader} scouts the cliff edge crossing and picks the safest line. Everyone makes it. Nobody mentions how close the drop was.`,
+            `The river ford is waist-deep and fast. ${leader} wades in first, turns to brace for the next person. The system works.`,
+          ];
+          const crossFailTexts = [
+            `${leader} takes the lead on the crossing — and misjudges the depth. Half the tribe gets soaked. Time lost.`,
+            `The log bridge collapses under the canoe weight. ${leader}'s fault for rushing. Everyone makes it but the delay stings.`,
+            `${leader} picks the wrong route across the cliff. The tribe spends fifteen minutes backtracking.`,
+          ];
+          if (success) {
+            personalScores[leader] += 1.5; tribePhase2Score[t.name] += 1.0;
+            phases.portage.push({
+              type: 'utcDangerousCrossing', phase: 'portage', players: [leader],
+              text: crossSuccTexts[_hash(leader + 'csucc', crossSuccTexts.length)],
+              personalScores: { [leader]: 1.5 }, badge: 'DANGEROUS CROSSING', badgeClass: 'gold'
+            });
+          } else {
+            personalScores[leader] -= 1.0; tribePhase2Score[t.name] -= 0.5;
+            phases.portage.push({
+              type: 'utcDangerousCrossing', phase: 'portage', players: [leader],
+              text: crossFailTexts[_hash(leader + 'cfail', crossFailTexts.length)],
+              personalScores: { [leader]: -1.0 }, badge: 'DANGEROUS CROSSING', badgeClass: 'red'
+            });
+          }
+          break;
+        }
+
+        case 'dropped-canoe': {
+          const dropper = members.slice().sort((a, b) => {
+            return ((10 - pStats(a).physical) * 0.07) - ((10 - pStats(b).physical) * 0.07);
+          })[members.length - 1];
+          if (!dropper) break;
+          const dropScore = (10 - pStats(dropper).physical) * 0.07;
+          const prDrop = pronouns(dropper);
+          const dropTexts = [
+            `${dropper} loses grip on the canoe going uphill. It slides back and clips two tribemates. Grumbling all around.`,
+            `'I've got it.' ${dropper} does not have it. The canoe bounces off a rock. Everyone winces.`,
+            `${dropper} drops ${prDrop.posAdj} end of the canoe at the worst possible moment — halfway up a slope. The whole tribe scrambles.`,
+          ];
+          personalScores[dropper] -= 1.5;
+          members.filter(m => m !== dropper).forEach(m => addBond(m, dropper, -0.2));
+          tribePhase2Score[t.name] -= dropScore * 2;
+          // Add heat
+          if (!gs._upTheCreekHeat) gs._upTheCreekHeat = {};
+          gs._upTheCreekHeat[dropper] = { amount: 0.5, expiresEp: ((gs.episode || 0) + 1) + 1 };
+          phases.portage.push({
+            type: 'utcDroppedCanoe', phase: 'portage', players: [dropper],
+            text: dropTexts[_hash(dropper + 'drop', dropTexts.length)],
+            personalScores: { [dropper]: -1.5 }, badge: 'DROPPED', badgeClass: 'red'
+          });
+          break;
+        }
+
+        case 'creepy-ruins': {
+          const explorer = members.slice().sort((a, b) => {
+            const sA = pStats(a), sB = pStats(b);
+            return (sB.boldness * 0.5 + sB.intuition * 0.5) - (sA.boldness * 0.5 + sA.intuition * 0.5);
+          })[0];
+          if (!explorer) break;
+          const sEx = pStats(explorer);
+          const exploreScore = sEx.boldness * 0.05 + sEx.intuition * 0.04;
+          const prEx = pronouns(explorer);
+          if (Math.random() < exploreScore + 0.3) {
+            const ruinTexts = [
+              `${explorer} finds the ruins of an old dock half-buried in the trees. ${prEx.Sub} calls the tribe over. There's nothing useful but it's eerie and everyone is unsettled for different reasons.`,
+              `${explorer} spots stonework in the undergrowth. ${prEx.Sub} pushes through to look. Nothing dangerous, but the cave drawings are a conversation starter for the next kilometer.`,
+              `${explorer} checks the cave first — alone. Comes back with a handful of old coins. 'Souvenir.' The tribe moves faster after that.`,
+            ];
+            personalScores[explorer] += 1.0; tribePhase2Score[t.name] += 0.5;
+            phases.portage.push({
+              type: 'utcCreepyRuins', phase: 'portage', players: [explorer],
+              text: ruinTexts[_hash(explorer + 'ruins', ruinTexts.length)],
+              personalScores: { [explorer]: 1.0 }, badge: 'EXPLORED RUINS', badgeClass: 'gold'
+            });
+          } else {
+            const scaredTexts = [
+              `Something in the ruins freaks ${explorer} out enough to stop ${prEx.posAdj} cold. The tribe has to physically pull ${prEx.obj} away. Time lost.`,
+              `${explorer} refuses to go near the cave. Categorically refuses. The tribe routes around it at significant cost.`,
+              `${explorer} turns back at the ruins entrance. ${prEx.Sub} ${prEx.sub === 'they' ? 'don\'t' : 'doesn\'t'} explain. Nobody pushes. They go around.`,
+            ];
+            personalScores[explorer] -= 0.5;
+            phases.portage.push({
+              type: 'utcCreepyRuins', phase: 'portage', players: [explorer],
+              text: scaredTexts[_hash(explorer + 'scared', scaredTexts.length)],
+              personalScores: { [explorer]: -0.5 }, badge: 'SPOOKED', badgeClass: 'red'
+            });
+          }
+          break;
+        }
+
+        case 'insect-swarm': {
+          const calm = members.slice().sort((a, b) => pStats(b).temperament - pStats(a).temperament)[0];
+          const panicker = members.slice().sort((a, b) => pStats(a).temperament - pStats(b).temperament)[0];
+          if (!calm || calm === panicker) break;
+          const prP = pronouns(panicker);
+          const insectTexts = [
+            `Black flies, everywhere, all at once. ${calm} keeps moving. ${panicker} is flailing, swatting, retreating. Chaos.`,
+            `A cloud of mosquitoes descends on the tribe mid-portage. ${calm} pulls out bug spray and keeps walking. ${panicker} is not calm.`,
+            `Hornets' nest — kicked by accident. ${calm} says 'keep moving, don't swat' and walks through. ${panicker} does not follow this advice.`,
+          ];
+          personalScores[calm] += 0.5; personalScores[panicker] -= 0.5;
+          phases.portage.push({
+            type: 'utcInsectSwarm', phase: 'portage', players: [calm, panicker],
+            text: insectTexts[_hash(calm + panicker + 'bugs', insectTexts.length)],
+            personalScores: { [calm]: 0.5, [panicker]: -0.5 }, badge: 'INSECT SWARM', badgeClass: 'red'
+          });
+          break;
+        }
+
+        case 'dense-fog': {
+          const navigator = members.slice().sort((a, b) => {
+            const sA = pStats(a), sB = pStats(b);
+            return (sB.mental * 0.5 + sB.intuition * 0.5) - (sA.mental * 0.5 + sA.intuition * 0.5);
+          })[0];
+          if (!navigator) break;
+          const sNav = pStats(navigator);
+          const navScore = sNav.mental * 0.06 + sNav.intuition * 0.04;
+          const prNav = pronouns(navigator);
+          if (Math.random() < navScore + 0.3) {
+            const fogSuccTexts = [
+              `The fog rolls in thick. ${navigator} tells the tribe to stay close and keep calling out. They make it through without losing anyone.`,
+              `${navigator} uses the sound of running water to stay on course through zero-visibility fog. Smart. The tribe gives ${prNav.obj} credit.`,
+              `${navigator} marks trees as they go. When the fog lifts, they're exactly on course.`,
+            ];
+            personalScores[navigator] += 1.5; tribePhase2Score[t.name] += 1.0;
+            members.filter(m => m !== navigator).forEach(m => addBond(m, navigator, 0.2));
+            phases.portage.push({
+              type: 'utcDenseFog', phase: 'portage', players: [navigator],
+              text: fogSuccTexts[_hash(navigator + 'fogsucc', fogSuccTexts.length)],
+              personalScores: { [navigator]: 1.5 }, badge: 'NAVIGATED FOG', badgeClass: 'gold'
+            });
+          } else {
+            const fogFailTexts = [
+              `The fog takes the tribe off-trail. ${navigator} insists they're on course. They're not. They backtrack for twenty minutes.`,
+              `${navigator} leads the tribe in a slow arc back toward where they started. Nobody realizes until the fog thins.`,
+              `${navigator} loses the trail in the fog. The tribe splits trying to find it. Regrouping costs them serious time.`,
+            ];
+            personalScores[navigator] -= 1.5; tribePhase2Score[t.name] -= 1.0;
+            phases.portage.push({
+              type: 'utcDenseFog', phase: 'portage', players: [navigator],
+              text: fogFailTexts[_hash(navigator + 'fogfail', fogFailTexts.length)],
+              personalScores: { [navigator]: -1.5 }, badge: 'LOST IN FOG', badgeClass: 'red'
+            });
+          }
+          break;
+        }
+
+        case 'rival-spotted': {
+          const strategist = members.slice().sort((a, b) => {
+            const sA = pStats(a), sB = pStats(b);
+            return (sB.strategic * 0.5 + sB.social * 0.5) - (sA.strategic * 0.5 + sA.social * 0.5);
+          })[0];
+          if (!strategist) break;
+          // Cross-tribe bond interaction: find a player from another tribe
+          const otherTribeMembers = tribes.filter(ot => ot.name !== t.name).flatMap(ot => ot.members);
+          if (!otherTribeMembers.length) break;
+          const rival = _rp(otherTribeMembers);
+          const prStrat = pronouns(strategist);
+          const rivalTexts = [
+            `${strategist} catches sight of the rival tribe through the trees. ${prStrat.Sub} immediately clocks their position and pace. The tribe picks it up.`,
+            `Voices ahead — the other tribe. ${strategist} signals to slow down and listen. They hear enough. The tribe adjusts its route.`,
+            `${strategist} spots ${rival} struggling on the portage. ${prStrat.Sub} files that away. Quietly.`,
+          ];
+          personalScores[strategist] += 0.5;
+          const existingBond = getBond(strategist, rival);
+          addBond(strategist, rival, existingBond >= 0 ? 0.3 : -0.3);
+          phases.portage.push({
+            type: 'utcRivalSpotted', phase: 'portage', players: [strategist, rival],
+            text: rivalTexts[_hash(strategist + rival + 'rival', rivalTexts.length)],
+            personalScores: { [strategist]: 0.5 }, badge: 'RIVAL SPOTTED', badgeClass: ''
+          });
+          break;
+        }
+
+        case 'falls-behind': {
+          const straggler = members.slice().sort((a, b) => {
+            const sA = pStats(a), sB = pStats(b);
+            return ((10 - sA.endurance) * 0.5 + (10 - sA.physical) * 0.5) - ((10 - sB.endurance) * 0.5 + (10 - sB.physical) * 0.5);
+          })[members.length - 1];
+          const helper = members.filter(m => m !== straggler).slice().sort((a, b) => pStats(b).social - pStats(a).social)[0];
+          if (!straggler || !helper) break;
+          const prStr = pronouns(straggler);
+          const fallTexts = [
+            `${straggler} falls back on the uphill. ${helper} drops behind to match ${prStr.posAdj} pace. Nobody is left behind.`,
+            `${helper} notices ${straggler} is struggling and drifts back without saying anything. Just walks alongside. That's enough.`,
+            `${straggler} isn't keeping up. ${helper} passes ${prStr.obj} ${prStr.posAdj} water without comment. They finish together.`,
+          ];
+          personalScores[straggler] -= 1.0; personalScores[helper] += 0.5;
+          addBond(helper, straggler, 0.3);
+          phases.portage.push({
+            type: 'utcFallsBehind', phase: 'portage', players: [straggler, helper],
+            text: fallTexts[_hash(straggler + helper + 'fall', fallTexts.length)],
+            personalScores: { [straggler]: -1.0, [helper]: 0.5 }, badge: 'FALLS BEHIND', badgeClass: 'red'
+          });
+          break;
+        }
+
+        case 'mysterious-sounds': {
+          const brave = members.slice().sort((a, b) => pStats(b).boldness - pStats(a).boldness)[0];
+          const comforter = members.filter(m => m !== brave).slice().sort((a, b) => pStats(b).social - pStats(a).social)[0];
+          const scared = members.filter(m => m !== brave && m !== comforter).slice().sort((a, b) => pStats(a).boldness - pStats(b).boldness)[0];
+          if (!brave || !comforter) break;
+          const prCom = pronouns(comforter);
+          const soundTexts = [
+            `Something large moves in the undergrowth. ${brave} doesn't flinch. ${comforter} immediately reads the group's anxiety and makes a joke. The tension breaks.`,
+            `Low sounds, rhythmic, like breathing. ${brave} says 'it's nothing' and is probably right. ${comforter} puts ${prCom.posAdj} hand on someone's shoulder. The tribe keeps moving.`,
+            `Crackling. Then silence. ${brave} keeps walking, doesn't look back. ${comforter} falls into step next to ${scared || 'the most anxious-looking tribemate'}.`,
+          ];
+          personalScores[brave] += 0.5; personalScores[comforter] += 0.5;
+          if (scared) addBond(comforter, scared, 0.3);
+          phases.portage.push({
+            type: 'utcMysteriousSounds', phase: 'portage', players: scared ? [brave, comforter, scared] : [brave, comforter],
+            text: soundTexts[_hash(brave + comforter + 'sound', soundTexts.length)],
+            personalScores: scared ? { [brave]: 0.5, [comforter]: 0.5, [scared]: 0 } : { [brave]: 0.5, [comforter]: 0.5 },
+            badge: 'MYSTERIOUS SOUNDS', badgeClass: ''
+          });
+          break;
+        }
+
+        case 'steep-hill': {
+          const hillScore = members.reduce((sum, m) => {
+            const s = pStats(m);
+            return sum + s.physical * 0.06 + s.endurance * 0.05;
+          }, 0) / members.length;
+          const weakest = members.slice().sort((a, b) => {
+            const sA = pStats(a), sB = pStats(b);
+            return (sA.physical + sA.endurance) - (sB.physical + sB.endurance);
+          })[0];
+          const prWeak = pronouns(weakest);
+          const hillTexts = [
+            `The hill is worse than it looks. The canoes double the misery. ${weakest} is gasping by the top — the tribe had to slow its pace.`,
+            `Everyone hits the hill running. ${weakest} is the last to crest it. Nobody waits too long, but nobody pretends they didn't notice.`,
+            `The portage hill. Everyone hates it. ${weakest} hates it specifically in a way that ${prWeak.sub === 'they' ? 'show' : 'shows'}.`,
+          ];
+          personalScores[weakest] -= 0.2;
+          tribePhase2Score[t.name] += hillScore;
+          phases.portage.push({
+            type: 'utcSteepHill', phase: 'portage', players: [weakest],
+            text: hillTexts[_hash(weakest + 'hill', hillTexts.length)],
+            personalScores: { [weakest]: -0.2 }, badge: 'STEEP HILL', badgeClass: 'red'
+          });
+          break;
+        }
+
+        case 'food-discovery': {
+          const spotter = members.slice().sort((a, b) => {
+            const sA = pStats(a), sB = pStats(b);
+            return (sB.intuition * 0.5 + sB.mental * 0.5) - (sA.intuition * 0.5 + sA.mental * 0.5);
+          })[0];
+          if (!spotter) break;
+          const sSpot = pStats(spotter);
+          const identScore = sSpot.mental * 0.06 + sSpot.intuition * 0.04;
+          const goodFind = Math.random() < identScore + 0.3;
+          const prSpot = pronouns(spotter);
+          if (goodFind) {
+            const foodTexts = [
+              `${spotter} spots wild blueberries off the trail and correctly identifies them. The tribe takes two minutes to eat and gains morale.`,
+              `${spotter} recognizes a wild apple tree and announces it immediately. Fifteen seconds of foraging. Worth it.`,
+              `${spotter} picks up a handful of berries, pops one in ${prSpot.posAdj} mouth, thinks, and says 'edible.' The tribe is grateful.`,
+            ];
+            personalScores[spotter] += 1.0;
+            members.filter(m => m !== spotter).forEach(m => addBond(m, spotter, 0.2));
+            tribePhase2Score[t.name] += 0.5;
+            phases.portage.push({
+              type: 'utcFoodDiscovery', phase: 'portage', players: [spotter],
+              text: foodTexts[_hash(spotter + 'food', foodTexts.length)],
+              personalScores: { [spotter]: 1.0 }, badge: 'FOOD DISCOVERY', badgeClass: 'gold'
+            });
+          } else {
+            const sickTexts = [
+              `${spotter} finds berries and confidently eats them. They are not the right berries. ${prSpot.Sub} ${prSpot.sub === 'they' ? 'spend' : 'spends'} the next kilometer looking ill.`,
+              `${spotter} misidentifies what turns out to be mildly toxic berries. Not dangerous. Just deeply unpleasant for the rest of the portage.`,
+              `${spotter} hands out what ${prSpot.sub === 'they' ? 'they call' : prSpot.sub + ' calls'} 'trail snacks.' The tribe's collective stomach disagrees.`,
+            ];
+            personalScores[spotter] -= 1.0;
+            tribePhase2Score[t.name] -= 0.5;
+            phases.portage.push({
+              type: 'utcFoodDiscovery', phase: 'portage', players: [spotter],
+              text: sickTexts[_hash(spotter + 'sick', sickTexts.length)],
+              personalScores: { [spotter]: -1.0 }, badge: 'WRONG BERRIES', badgeClass: 'red'
+            });
+          }
+          break;
+        }
+
+        case 'creek-crossing': {
+          const teamScore = members.reduce((sum, m) => {
+            const s = pStats(m);
+            return sum + s.physical * 0.06 + s.loyalty * 0.04;
+          }, 0) / members.length;
+          const coordinated = teamScore > 0.6;
+          const coordinator = members.slice().sort((a, b) => {
+            return (pStats(b).loyalty + pStats(b).social) - (pStats(a).loyalty + pStats(a).social);
+          })[0];
+          if (!coordinator) break;
+          const prCoord = pronouns(coordinator);
+          if (coordinated) {
+            const coordTexts = [
+              `${coordinator} organizes the crossing — pairs, timing, canoe placement. The whole tribe moves as a unit. Smooth.`,
+              `Creek crossing with canoes. ${coordinator} calls it out. The tribe locks arms and wades across together. Not a single canoe hits a rock.`,
+              `${coordinator} has everyone staged on the bank before anyone enters the water. The crossing is fast, efficient, and actually kind of impressive.`,
+            ];
+            personalScores[coordinator] += 1.0; tribePhase2Score[t.name] += 1.0;
+            phases.portage.push({
+              type: 'utcCreekCrossing', phase: 'portage', players: [coordinator],
+              text: coordTexts[_hash(coordinator + 'ccoord', coordTexts.length)],
+              personalScores: { [coordinator]: 1.0 }, badge: 'CREEK CROSSING', badgeClass: 'gold'
+            });
+          } else {
+            const messTexts = [
+              `The creek crossing with canoes devolves fast. Everyone is doing something different. Someone drops a canoe in the water. They make it through eventually.`,
+              `The tribe tries to cross with canoes and fails to coordinate. Two near-drops, one actual drop, and fifteen minutes of chaos.`,
+              `'Everyone at once' was the plan. It was not a good plan. The canoes end up wedged and someone has to wade out to free them.`,
+            ];
+            tribePhase2Score[t.name] -= 0.5;
+            phases.portage.push({
+              type: 'utcCreekCrossing', phase: 'portage', players: members.slice(0, 2),
+              text: messTexts[_hash(t.name + 'cuncord', messTexts.length)],
+              personalScores: {}, badge: 'CREEK CROSSING', badgeClass: 'red'
+            });
+          }
+          break;
+        }
+
+      } // end switch
+    }); // end portage encounters
+  }); // end tribes portage
+
+  // ══ PHASE 3: BUILD FIRE ══
+  const fireScores = {};
+
+  tribes.forEach(t => {
+    const members = t.members;
+
+    // Best fire builder: mental * 0.04 + boldness * 0.03
+    const builder = members.slice().sort((a, b) => {
+      const sA = pStats(a), sB = pStats(b);
+      return (sB.mental * 0.04 + sB.boldness * 0.03) - (sA.mental * 0.04 + sA.boldness * 0.03);
+    })[0];
+    if (!builder) { fireScores[t.name] = 0; return; }
+
+    const sBuilder = pStats(builder);
+    let fireScore = sBuilder.mental * 0.04 + sBuilder.boldness * 0.03 + Math.random() * 1.5;
+    const prBuilder = pronouns(builder);
+    let fireMethod = 'traditional';
+    let fireMethodText = '';
+
+    // Check special methods
+    const arch = players.find(p => p.name === builder)?.archetype || '';
+    const isVillainType = ['villain', 'schemer', 'wildcard', 'chaos-agent'].includes(arch);
+    const isChaosType = ['chaos-agent', 'wildcard'].includes(arch);
+
+    // 1. Lighter (villain/schemer/wildcard)
+    if (isVillainType && Math.random() < sBuilder.boldness * 0.06 + 0.15) {
+      fireScore += 3.0;
+      fireMethod = 'lighter';
+      fireMethodText = ` 'No rule against it,' ${builder} says, clicking a lighter.`;
+      personalScores[builder] += 1.5;
+      phases.buildFire.push({
+        type: 'utcLighter', phase: 'buildFire', players: [builder],
+        text: `${builder} produces a lighter from ${prBuilder.posAdj} pocket.${fireMethodText} The fire is enormous. The tribe doesn't know whether to be impressed or suspicious.`,
+        personalScores: { [builder]: 1.5 }, badge: 'LIGHTER', badgeClass: 'gold'
+      });
+    }
+    // 2. Homemade fire-starter (chaos/wildcard, 50/50 risk) — only if no lighter
+    else if (isChaosType && Math.random() < sBuilder.boldness * 0.05 + 0.20) {
+      const explosion = Math.random() < 0.5;
+      fireMethod = 'homemade-starter';
+      if (!explosion) {
+        fireScore += 4.0;
+        personalScores[builder] += 2.0;
+        phases.buildFire.push({
+          type: 'utcFireStarter', phase: 'buildFire', players: [builder],
+          text: `${builder} pulls out a homemade fire-starter concoction. It goes off exactly as planned — an enormous column of fire. Controlled. Barely. The tribe is speechless.`,
+          personalScores: { [builder]: 2.0 }, badge: 'FIRE STARTER', badgeClass: 'gold'
+        });
+      } else {
+        fireScore -= 2.0;
+        personalScores[builder] -= 1.5;
+        phases.buildFire.push({
+          type: 'utcFireStarter', phase: 'buildFire', players: [builder],
+          text: `${builder}'s homemade fire-starter does not go as planned. The initial explosion singes ${prBuilder.posAdj} eyebrows. The tribe rebuilds from scratch. Time lost.`,
+          personalScores: { [builder]: -1.5 }, badge: 'EXPLOSION', badgeClass: 'red'
+        });
+      }
+    }
+    // 3. Throw paddles in fire (low mental + high boldness proportional) — only for non-nice archetypes
+    else if (!NICE_ARCHS.has(arch) && Math.random() < (10 - sBuilder.mental) * 0.02 + sBuilder.boldness * 0.03) {
+      fireScore += 2.0;
+      fireMethod = 'paddle-burn';
+      paddlesBurned[t.name] = true;
+      personalScores[builder] -= 0.5; // short-term gain, long-term cost
+      // Anger from tribe
+      members.filter(m => m !== builder).forEach(m => addBond(m, builder, -0.3));
+      // Add heat
+      if (!gs._upTheCreekHeat) gs._upTheCreekHeat = {};
+      gs._upTheCreekHeat[builder] = { amount: 1.0, expiresEp: ((gs.episode || 0) + 1) + 2 };
+      phases.buildFire.push({
+        type: 'utcPaddleBurn', phase: 'buildFire', players: [builder],
+        text: `${builder} looks at the paddles. Looks at the fire. Makes the decision in about one second. In go the paddles. The fire roars. The tribe stares. 'We don't need them.' Technically true. Practically disastrous.`,
+        personalScores: { [builder]: -0.5 }, badge: 'PADDLES BURNED', badgeClass: 'red'
+      });
+    }
+    // 4. Advice to enemy (social * 0.04 + (10-strategic) * 0.03, only social/low-strategic types) — only if no other special method
+    else if (!NICE_ARCHS.has(arch) === false && !isVillainType && Math.random() < sBuilder.social * 0.04 + (10 - sBuilder.strategic) * 0.03 - 0.3) {
+      const otherTribes = tribes.filter(ot => ot.name !== t.name);
+      if (otherTribes.length) {
+        const enemyTribe = otherTribes[Math.floor(Math.random() * otherTribes.length)];
+        fireMethod = 'advice-to-enemy';
+        fireScore -= 0.5;
+        fireScores[enemyTribe.name] = (fireScores[enemyTribe.name] || 0) + 2.0;
+        personalScores[builder] -= 0.5;
+        members.filter(m => m !== builder).forEach(m => addBond(m, builder, -0.5));
+        // Add heat
+        if (!gs._upTheCreekHeat) gs._upTheCreekHeat = {};
+        gs._upTheCreekHeat[builder] = { amount: 1.5, expiresEp: ((gs.episode || 0) + 1) + 2 };
+        phases.buildFire.push({
+          type: 'utcAdviceGiver', phase: 'buildFire', players: [builder],
+          text: `${builder} wanders over to ${enemyTribe.name}'s fire and just... helps them. The tips are good. ${enemyTribe.name}'s fire improves dramatically. ${builder}'s own tribe is silent with fury.`,
+          personalScores: { [builder]: -0.5 }, badge: 'HELPED THE ENEMY', badgeClass: 'red'
+        });
+      }
+    }
+
+    // Traditional fire-building (default, always fires if no other method)
+    if (fireMethod === 'traditional') {
+      const tradTexts = [
+        `${builder} gets down on ${prBuilder.posAdj} knees and works the friction method. Steady, patient, experienced. The coal forms. The fire catches.`,
+        `${builder} sets up the tinder, the kindling, the fuel — in order, correctly. The tribe watches. The fire starts on the first try.`,
+        `${builder} has done this before. The technique is clean. The fire is solid. Nothing flashy — just competent.`,
+      ];
+      personalScores[builder] += 0.5;
+      phases.buildFire.push({
+        type: 'utcFireBuilt', phase: 'buildFire', players: [builder],
+        text: tradTexts[_hash(builder + 'tradfire', tradTexts.length)],
+        personalScores: { [builder]: 0.5 }, badge: 'FIRE BUILT', badgeClass: 'gold'
+      });
+    }
+
+    fireScore = Math.max(0, fireScore);
+    // Only set if not already incremented by advice-to-enemy above
+    if (!fireScores[t.name]) fireScores[t.name] = 0;
+    fireScores[t.name] += fireScore;
+    tribePhase3Score[t.name] = fireScores[t.name];
+  });
+
+  // Determine fire winner: gets +3.0 for Phase 4
+  const fireWinner = tribes.slice().sort((a, b) => (fireScores[b.name] || 0) - (fireScores[a.name] || 0))[0];
+
+  // ══ PHASE 4: PADDLE BACK (3-5 events per tribe) ══
+  tribes.forEach(t => {
+    const members = t.members;
+    const pairs = canoePairs[t.name];
+    const solo = soloCanoe[t.name];
+    let p4EventCount = 0;
+    const maxP4 = 3 + Math.floor(Math.random() * 3); // 3-5
+
+    // Recalculate pair speeds for paddle back (same formula)
+    pairs.forEach(pair => {
+      const bond = getBond(pair.a, pair.b);
+      const sA = pStats(pair.a), sB = pStats(pair.b);
+      const avgPhysEnd = ((sA.physical + sA.endurance + sB.physical + sB.endurance) / 2);
+      let speed = bond * 0.15 + avgPhysEnd * 0.25 + Math.random() * 1.5;
+      if (bond >= 2) speed += 0.5;
+      if (bond <= -1) speed -= 0.5;
+      speed = Math.max(0.1, speed);
+      tribePhase4Score[t.name] += speed;
+    });
+
+    // Fire winner bonus
+    if (fireWinner && fireWinner.name === t.name) {
+      tribePhase4Score[t.name] += 3.0;
+    }
+
+    // Paddles burned: swimmer hero mechanic
+    if (paddlesBurned[t.name]) {
+      const heroCandidate = members.slice().sort((a, b) => {
+        const sA = pStats(a), sB = pStats(b);
+        return (sB.physical * 0.06 + sB.endurance * 0.05) - (sA.physical * 0.06 + sA.endurance * 0.05);
+      })[0];
+      if (heroCandidate) {
+        const sH = pStats(heroCandidate);
+        const swimScore = sH.physical * 0.06 + sH.endurance * 0.05 + Math.random() * 2.0;
+        const prH = pronouns(heroCandidate);
+        if (swimScore > 1.2) {
+          swimmerHero = heroCandidate;
+          personalScores[heroCandidate] += 3.0;
+          tribePhase4Score[t.name] += swimScore;
+          phases.paddleBack.push({
+            type: 'utcSwimmerHero', phase: 'paddleBack', players: [heroCandidate],
+            text: `No paddles. ${heroCandidate} strips to ${prH.posAdj} shorts and goes in the water. ${prH.Sub} ${prH.sub === 'they' ? 'push' : 'pushes'} the canoe from behind for the entire stretch. The tribe rides. ${heroCandidate} swims. Somehow they make it.`,
+            personalScores: { [heroCandidate]: 3.0 }, badge: 'SWIMMER HERO', badgeClass: 'gold'
+          });
+          p4EventCount++;
+        } else {
+          personalScores[heroCandidate] -= 1.0;
+          tribePhase4Score[t.name] -= 1.5;
+          phases.paddleBack.push({
+            type: 'utcSwimmerHero', phase: 'paddleBack', players: [heroCandidate],
+            text: `No paddles. The plan is for ${heroCandidate} to swim and push the canoe. The plan does not survive first contact with the current. The tribe barely moves.`,
+            personalScores: { [heroCandidate]: -1.0 }, badge: 'STRUGGLING SWIMMER', badgeClass: 'red'
+          });
+          p4EventCount++;
+        }
+      }
+    }
+
+    // Solo canoe Phase 4
+    if (solo && !paddlesBurned[t.name]) {
+      const sS = pStats(solo);
+      tribePhase4Score[t.name] += sS.physical * 0.3 + sS.endurance * 0.25 + Math.random() * 1.0;
+    }
+
+    // Event pool for Phase 4
+    const P4_EVENTS = [
+      'strong-current', 'capsized', 'sprint-finish', 'paddling-argument',
+      'wildlife-in-water', 'wave-hits', 'cheating', 'canoe-leak',
+      'motivational-speech', 'exhaustion', 'drafting', 'photo-finish'
+    ];
+    const p4Pool = P4_EVENTS.slice().sort(() => Math.random() - 0.5).slice(0, maxP4 - p4EventCount);
+
+    p4Pool.forEach(evtType => {
+      if (p4EventCount >= maxP4) return;
+
+      switch (evtType) {
+        case 'strong-current': {
+          const allPairs = pairs.slice().sort((a, b) => {
+            const sA = pStats(a.a).physical + pStats(a.b).physical;
+            const sB = pStats(b.a).physical + pStats(b.b).physical;
+            return sA - sB; // weakest most affected
+          });
+          const weakPair = allPairs[0];
+          if (!weakPair) break;
+          const currTexts = [
+            `Strong current hits the tribe on the home stretch. Every pair fights it. ${weakPair.a} and ${weakPair.b} feel it the most.`,
+            `The current pushes back hard. ${weakPair.a} and ${weakPair.b}'s canoe is going sideways. The stronger pairs power through.`,
+            `Current. Strong. The kind that turns a five-minute stretch into fifteen. ${weakPair.a} and ${weakPair.b} are exhausted by it.`,
+          ];
+          personalScores[weakPair.a] -= 0.5; personalScores[weakPair.b] -= 0.5;
+          tribePhase4Score[t.name] -= 0.8;
+          phases.paddleBack.push({
+            type: 'utcStrongCurrent', phase: 'paddleBack', players: [weakPair.a, weakPair.b],
+            text: currTexts[_hash(weakPair.a + weakPair.b + 'curr', currTexts.length)],
+            personalScores: { [weakPair.a]: -0.5, [weakPair.b]: -0.5 }, badge: 'STRONG CURRENT', badgeClass: 'red'
+          });
+          p4EventCount++;
+          break;
+        }
+
+        case 'capsized': {
+          if (!pairs.length) break;
+          const capPair = pairs.slice().sort((a, b) => {
+            const endA = (pStats(a.a).endurance + pStats(a.b).endurance) / 2;
+            const endB = (pStats(b.a).endurance + pStats(b.b).endurance) / 2;
+            return endA - endB;
+          })[0];
+          if (capPair && Math.random() < 0.35) {
+            const prCA = pronouns(capPair.a);
+            const capBackTexts = [
+              `${capPair.a} and ${capPair.b} capsize on the final stretch. Time gone. The crowd on shore watches them flip.`,
+              `${capPair.a} overcorrects on the approach and the whole canoe goes over. ${capPair.b} comes up furious.`,
+              `The wake from another canoe catches ${capPair.a} and ${capPair.b} wrong. They're in the water before they can blink.`,
+            ];
+            personalScores[capPair.a] -= 1.5; personalScores[capPair.b] -= 1.5;
+            addBond(capPair.a, capPair.b, -0.3);
+            tribePhase4Score[t.name] -= 1.5;
+            phases.paddleBack.push({
+              type: 'utcCapsized', phase: 'paddleBack', players: [capPair.a, capPair.b],
+              text: capBackTexts[_hash(capPair.a + capPair.b + 'capback', capBackTexts.length)],
+              personalScores: { [capPair.a]: -1.5, [capPair.b]: -1.5 }, badge: 'CAPSIZED', badgeClass: 'red'
+            });
+            p4EventCount++;
+          }
+          break;
+        }
+
+        case 'sprint-finish': {
+          const sprinter = members.slice().sort((a, b) => {
+            const sA = pStats(a), sB = pStats(b);
+            return (sB.physical + sB.endurance) - (sA.physical + sA.endurance);
+          })[0];
+          if (!sprinter) break;
+          const prSpr = pronouns(sprinter);
+          const sprintTexts = [
+            `${sprinter} calls it in the last 200 meters — full sprint. The canoe surges. The tribe rides the energy all the way to shore.`,
+            `${sprinter} switches to power strokes on the final stretch. The canoe hits the beach at full speed. The tribe piles out.`,
+            `${sprinter} sees the shore and just goes. The pace is brutal and the tribe matches it. They arrive in a heap, breathing hard.`,
+          ];
+          personalScores[sprinter] += 2.0; tribePhase4Score[t.name] += 1.5;
+          phases.paddleBack.push({
+            type: 'utcSprintFinish', phase: 'paddleBack', players: [sprinter],
+            text: sprintTexts[_hash(sprinter + 'sprint', sprintTexts.length)],
+            personalScores: { [sprinter]: 2.0 }, badge: 'SPRINT FINISH', badgeClass: 'gold'
+          });
+          p4EventCount++;
+          break;
+        }
+
+        case 'paddling-argument': {
+          const argPairs4 = pairs.filter(p => getBond(p.a, p.b) <= 0);
+          if (!argPairs4.length) break;
+          const argPair4 = _rp(argPairs4);
+          const argBack4 = [
+            `${argPair4.a} and ${argPair4.b} are screaming at each other mid-race. Actual screaming. The other tribes can hear it.`,
+            `'PADDLE LEFT.' 'I AM PADDLING LEFT.' ${argPair4.a} and ${argPair4.b} are going in circles.`,
+            `${argPair4.a} stops paddling to make a point. ${argPair4.b} responds by paddling the wrong way. The canoe drifts.`,
+          ];
+          personalScores[argPair4.a] -= 0.5; personalScores[argPair4.b] -= 0.5;
+          addBond(argPair4.a, argPair4.b, -0.3);
+          tribePhase4Score[t.name] -= 0.8;
+          phases.paddleBack.push({
+            type: 'utcPaddlingArg', phase: 'paddleBack', players: [argPair4.a, argPair4.b],
+            text: argBack4[_hash(argPair4.a + argPair4.b + 'argback', argBack4.length)],
+            personalScores: { [argPair4.a]: -0.5, [argPair4.b]: -0.5 }, badge: 'PADDLING ARGUMENT', badgeClass: 'red'
+          });
+          p4EventCount++;
+          break;
+        }
+
+        case 'wildlife-in-water': {
+          const braveMem = members.slice().sort((a, b) => pStats(b).boldness - pStats(a).boldness)[0];
+          const scaredMem = members.slice().sort((a, b) => pStats(a).boldness - pStats(b).boldness)[0];
+          if (!braveMem || braveMem === scaredMem) break;
+          const wildWater = ['snapping turtle', 'large pike fish', 'snapping catfish'];
+          const creature = _rp(wildWater);
+          const prBW = pronouns(braveMem);
+          const waterWildTexts = [
+            `A ${creature} surfaces alongside ${scaredMem}'s canoe. ${scaredMem} flinches hard enough to rock it. ${braveMem} doesn't even blink. Keeps paddling.`,
+            `${creature} circles the lead canoe. ${scaredMem} pulls ${pronouns(scaredMem).posAdj} paddle in. ${braveMem} says 'it's fine' and it is fine.`,
+            `${braveMem} spots the ${creature} first and says nothing, just steers around it. ${scaredMem} finds out thirty seconds later and is not pleased.`,
+          ];
+          personalScores[braveMem] += 1.0; personalScores[scaredMem] -= 0.5;
+          phases.paddleBack.push({
+            type: 'utcWildlife', phase: 'paddleBack', players: [braveMem, scaredMem],
+            text: waterWildTexts[_hash(braveMem + scaredMem + 'waterwild', waterWildTexts.length)],
+            personalScores: { [braveMem]: 1.0, [scaredMem]: -0.5 }, badge: 'WILDLIFE', badgeClass: ''
+          });
+          p4EventCount++;
+          break;
+        }
+
+        case 'wave-hits': {
+          const weakEnd = members.slice().sort((a, b) => pStats(a).endurance - pStats(b).endurance)[0];
+          if (!weakEnd) break;
+          const prWE = pronouns(weakEnd);
+          const waveTexts = [
+            `A wake from a passing boat hits ${weakEnd}'s canoe sideways. ${prWE.Sub} ${prWE.sub === 'they' ? 'spend' : 'spends'} the next minute bailing.`,
+            `The wave doesn't capsize ${weakEnd}'s canoe but it doesn't help. ${prWE.Sub} ${prWE.sub === 'they' ? 'arrive' : 'arrives'} soaked and behind.`,
+            `${weakEnd} takes a wave full in the face. The canoe slows. The race continues. ${prWE.Sub} wipes ${prWE.posAdj} eyes and keeps paddling.`,
+          ];
+          personalScores[weakEnd] -= 0.5; tribePhase4Score[t.name] -= 0.5;
+          phases.paddleBack.push({
+            type: 'utcWaveHit', phase: 'paddleBack', players: [weakEnd],
+            text: waveTexts[_hash(weakEnd + 'wave', waveTexts.length)],
+            personalScores: { [weakEnd]: -0.5 }, badge: 'WAVE HIT', badgeClass: 'red'
+          });
+          p4EventCount++;
+          break;
+        }
+
+        case 'cheating': {
+          const cheaterCandidates = members.filter(m => {
+            const s = pStats(m);
+            const arch2 = players.find(p => p.name === m)?.archetype || '';
+            return (10 - s.loyalty) * 0.02 + s.strategic * 0.03 > 0.3 && !NICE_ARCHS.has(arch2);
+          });
+          if (!cheaterCandidates.length) break;
+          const cheater = _rp(cheaterCandidates);
+          const observer = tribes.filter(ot => ot.name !== t.name).flatMap(ot => ot.members)
+            .sort((a, b) => pStats(b).intuition - pStats(a).intuition)[0];
+          const sCh = pStats(cheater);
+          const caught = observer && Math.random() < pStats(observer).intuition * 0.05;
+          const prCh = pronouns(cheater);
+          if (!caught) {
+            const cheatTexts = [
+              `${cheater} cuts through the restricted zone when no one is looking. Gains serious time. Nobody notices.`,
+              `${cheater} takes the direct line that was marked as off-limits. ${prCh.Sub} ${prCh.sub === 'they' ? 'make' : 'makes'} it back looking casual.`,
+              `${cheater} shortcircuits the final buoy. Clean, quick, undetected. The time gain is real.`,
+            ];
+            personalScores[cheater] += 1.5; tribePhase4Score[t.name] += 2.0;
+            phases.paddleBack.push({
+              type: 'utcCheating', phase: 'paddleBack', players: [cheater],
+              text: cheatTexts[_hash(cheater + 'cheat', cheatTexts.length)],
+              personalScores: { [cheater]: 1.5 }, badge: 'CHEATING', badgeClass: 'red'
+            });
+          } else {
+            const caughtTexts = [
+              `${cheater} cuts through the restricted zone. ${observer} from the other tribe calls it out immediately. The tribe is assessed a penalty.`,
+              `${cheater} tries the shortcut. ${observer} points. Everyone sees. The time penalty hurts more than the attempt helped.`,
+              `${observer} spots ${cheater}'s canoe inside the marker. The call goes up. ${cheater} has to backtrack in front of everyone.`,
+            ];
+            personalScores[cheater] -= 1.0; tribePhase4Score[t.name] -= 1.5;
+            phases.paddleBack.push({
+              type: 'utcCheating', phase: 'paddleBack', players: [cheater, observer],
+              text: caughtTexts[_hash(cheater + 'caught', caughtTexts.length)],
+              personalScores: { [cheater]: -1.0 }, badge: 'CHEATING', badgeClass: 'red'
+            });
+          }
+          p4EventCount++;
+          break;
+        }
+
+        case 'canoe-leak': {
+          if (!pairs.length) break;
+          const leakPair = _rp(pairs);
+          if (Math.random() < 0.3) {
+            const prLA = pronouns(leakPair.a);
+            const sLB = pStats(leakPair.b);
+            const bailerScore = sLB.physical * 0.05;
+            const leakTexts = [
+              `${leakPair.a} and ${leakPair.b}'s canoe springs a leak. ${leakPair.a} bails. ${leakPair.b} solos the paddling. They're slowing.`,
+              `A crack in the hull. ${leakPair.a} is on bail duty. ${leakPair.b} paddles hard enough for both of them.`,
+              `Water in the canoe. ${leakPair.a} cups it out with ${prLA.posAdj} hands. ${leakPair.b} tries to compensate with power strokes.`,
+            ];
+            personalScores[leakPair.a] -= 0.5; personalScores[leakPair.b] += bailerScore;
+            tribePhase4Score[t.name] -= 0.8;
+            phases.paddleBack.push({
+              type: 'utcCanoeLeak', phase: 'paddleBack', players: [leakPair.a, leakPair.b],
+              text: leakTexts[_hash(leakPair.a + leakPair.b + 'leak', leakTexts.length)],
+              personalScores: { [leakPair.a]: -0.5, [leakPair.b]: bailerScore }, badge: 'CANOE LEAK', badgeClass: 'red'
+            });
+            p4EventCount++;
+          }
+          break;
+        }
+
+        case 'motivational-speech': {
+          const speechmaker = members.slice().sort((a, b) => {
+            const sA = pStats(a), sB = pStats(b);
+            return (sB.social * 0.04 + sB.boldness * 0.03) - (sA.social * 0.04 + sA.boldness * 0.03);
+          })[0];
+          if (!speechmaker) break;
+          const prSM = pronouns(speechmaker);
+          const speechTexts = [
+            `${speechmaker} stands up in the canoe — briefly, dangerously — and screams something motivational. Somehow it works. The tribe's pace jumps.`,
+            `${speechmaker}'s speech between strokes is short: 'We're doing this. Right now. Let's go.' The tribe goes.`,
+            `${speechmaker} calls out cadence. Left, right, left, right. The tribe locks in. The canoes start moving as one.`,
+          ];
+          const sS = pStats(speechmaker);
+          const speechBoost = sS.social * 0.04 + sS.boldness * 0.03;
+          personalScores[speechmaker] += 1.5;
+          members.filter(m => m !== speechmaker).forEach(m => personalScores[m] += 0.3);
+          tribePhase4Score[t.name] += speechBoost * 5;
+          phases.paddleBack.push({
+            type: 'utcMotivational', phase: 'paddleBack', players: [speechmaker],
+            text: speechTexts[_hash(speechmaker + 'speech', speechTexts.length)],
+            personalScores: Object.fromEntries(members.map(m => [m, m === speechmaker ? 1.5 : 0.3])),
+            badge: 'RALLY CRY', badgeClass: 'gold'
+          });
+          p4EventCount++;
+          break;
+        }
+
+        case 'exhaustion': {
+          const exhausted = members.slice().sort((a, b) => pStats(a).endurance - pStats(b).endurance)[0];
+          if (!exhausted) break;
+          const prEx = pronouns(exhausted);
+          const exhTexts = [
+            `${exhausted} hits the wall in the final stretch. ${prEx.Sub} ${prEx.sub === 'they' ? 'keep' : 'keeps'} paddling but the pace drops. The tribe absorbs the loss.`,
+            `${exhausted}'s arms give out in the last kilometer. ${prEx.Sub} ${prEx.sub === 'they' ? 'switch' : 'switches'} to half-strokes. It costs the tribe.`,
+            `${exhausted} was spent before the paddle back even started. Now it's showing. The canoe drifts left every time ${prEx.sub} ${prEx.sub === 'they' ? 'drop' : 'drops'} ${prEx.posAdj} paddle.`,
+          ];
+          personalScores[exhausted] -= 1.0; tribePhase4Score[t.name] -= 1.0;
+          phases.paddleBack.push({
+            type: 'utcExhaustion', phase: 'paddleBack', players: [exhausted],
+            text: exhTexts[_hash(exhausted + 'exh', exhTexts.length)],
+            personalScores: { [exhausted]: -1.0 }, badge: 'EXHAUSTED', badgeClass: 'red'
+          });
+          p4EventCount++;
+          break;
+        }
+
+        case 'drafting': {
+          const drafter = members.slice().sort((a, b) => pStats(b).strategic - pStats(a).strategic)[0];
+          if (!drafter) break;
+          const prDr = pronouns(drafter);
+          const draftTexts = [
+            `${drafter} steers the canoe right behind the rival tribe's lead canoe. Riding their draft. They're gaining without the effort.`,
+            `${drafter} notices the wake pocket from the tribe ahead and positions into it. Smart paddling. The rivals haven't caught on.`,
+            `${drafter} drafts the rival canoe until they notice. The trash talk starts. The pace increases. This is good.`,
+          ];
+          personalScores[drafter] += 1.0; tribePhase4Score[t.name] += 0.8;
+          phases.paddleBack.push({
+            type: 'utcDrafting', phase: 'paddleBack', players: [drafter],
+            text: draftTexts[_hash(drafter + 'draft', draftTexts.length)],
+            personalScores: { [drafter]: 1.0 }, badge: 'DRAFTING', badgeClass: 'gold'
+          });
+          p4EventCount++;
+          break;
+        }
+
+      } // end p4 switch
+    }); // end p4 events
+
+    // Check for photo finish (only vs other tribes, within 10% of score)
+    // This runs after all events are generated, checked once per tribe pair
+  }); // end tribes phase 4
+
+  // Photo finish check (once, between top 2 tribes)
+  const tribeScores = tribes.map(t => ({
+    name: t.name,
+    total: tribePhase1Score[t.name] + tribePhase2Score[t.name] + tribePhase3Score[t.name] + tribePhase4Score[t.name]
+  })).sort((a, b) => b.total - a.total);
+
+  if (tribeScores.length >= 2) {
+    const top1 = tribeScores[0], top2 = tribeScores[1];
+    const gap = Math.abs(top1.total - top2.total);
+    const threshold = top1.total * 0.10;
+    if (gap <= threshold) {
+      // Photo finish! Random tiebreaker
+      const winner = Math.random() < 0.5 ? top1 : top2;
+      const loserPF = winner === top1 ? top2 : top1;
+      // Small boost to the winner
+      tribePhase4Score[winner.name] += 0.5;
+      const t1Members = tribes.find(t => t.name === winner.name)?.members || [];
+      const t2Members = tribes.find(t => t.name === loserPF.name)?.members || [];
+      const allPFPlayers = [...t1Members, ...t2Members];
+      phases.paddleBack.push({
+        type: 'utcPhotoFinish', phase: 'paddleBack', players: allPFPlayers.slice(0, 3),
+        text: `${winner.name} and ${loserPF.name} hit the beach almost simultaneously. Close enough that nobody can call it until the post arrives. ${winner.name} edges it. Barely.`,
+        personalScores: {}, badge: 'PHOTO FINISH', badgeClass: ''
+      });
+    }
+  }
+
+  // ══ WINNER DETERMINATION ══
+  const finalScores = tribes.map(t => ({
+    tribe: t,
+    total: tribePhase1Score[t.name] + tribePhase2Score[t.name] + tribePhase3Score[t.name] + tribePhase4Score[t.name]
+  })).sort((a, b) => b.total - a.total);
+
+  let winner = finalScores[0].tribe;
+  let loser = finalScores[finalScores.length - 1].tribe;
+
+  // Tiebreaker: fire score, then portage score
+  if (finalScores.length >= 2 && finalScores[0].total === finalScores[1].total) {
+    const tied = finalScores.filter(fs => fs.total === finalScores[0].total);
+    const byFire = tied.slice().sort((a, b) => (fireScores[b.tribe.name] || 0) - (fireScores[a.tribe.name] || 0));
+    winner = byFire[0].tribe;
+  }
+  if (finalScores.length >= 2 && finalScores[finalScores.length - 1].total === finalScores[finalScores.length - 2].total) {
+    const tiedLast = finalScores.filter(fs => fs.total === finalScores[finalScores.length - 1].total);
+    const byPortage = tiedLast.slice().sort((a, b) => tribePhase2Score[a.tribe.name] - tribePhase2Score[b.tribe.name]);
+    loser = byPortage[0].tribe;
+  }
+
+  // ══ CAMP EVENTS: 2 positive + 1-2 negative per tribe ══
+  tribes.forEach(t => {
+    const members = t.members;
+    const key = t.name;
+    const usedPlayers = new Set();
+
+    // Positive 1: MVP paddler (top personal score from this tribe)
+    const mvp = members.slice().sort((a, b) => (personalScores[b] || 0) - (personalScores[a] || 0))[0];
+    if (mvp) {
+      const prMVP = pronouns(mvp);
+      const mvpTexts = [
+        `${mvp} was the engine of ${t.name}'s canoe race today. Strong paddle, calm head, no panic. The tribe noticed.`,
+        `${mvp}'s performance out there gave the tribe something to build on. ${prMVP.Sub} was first in the water and last to tire.`,
+        `${mvp} set the pace all day. Portage, paddles, fire — ${prMVP.sub} showed up everywhere it mattered.`,
+      ];
+      personalScores[mvp] += 0.5;
+      members.filter(m => m !== mvp).forEach(m => addBond(m, mvp, 0.2));
+      ep.campEvents[key].post.push({
+        type: 'utcMVP', players: [mvp],
+        text: mvpTexts[_hash(mvp + 'mvp', mvpTexts.length)],
+        consequences: '+0.2 bond with all tribemates.',
+        badgeText: 'MVP PADDLER', badgeClass: 'gold'
+      });
+      usedPlayers.add(mvp);
+    }
+
+    // Positive 2: Fire hero / swimmer hero / rescue moment
+    let posHero = null;
+    if (swimmerHero && members.includes(swimmerHero) && !usedPlayers.has(swimmerHero)) {
+      posHero = swimmerHero;
+    } else {
+      // Rescue or shortcut finder
+      const rescueEvent = phases.portage.find(e => (e.type === 'utcQuicksand' || e.type === 'utcFallsBehind') && e.players && e.players.some(p => members.includes(p) && !usedPlayers.has(p)));
+      if (rescueEvent) {
+        // The rescuer is the second player in quicksand (rescuer) or helper in falls behind
+        const heroName = rescueEvent.players.find(p => members.includes(p) && !usedPlayers.has(p) && p !== rescueEvent.players[0]);
+        if (heroName) posHero = heroName;
+      }
+    }
+    if (posHero) {
+      const prH2 = pronouns(posHero);
+      const heroTexts = [
+        `${posHero} proved something today. When the challenge got hard, ${prH2.sub} ${prH2.sub === 'they' ? 'were' : 'was'} the one who stepped up.`,
+        `The tribe is talking about what ${posHero} did out there today. The kind of effort that doesn't get forgotten.`,
+        `${posHero} put the tribe on ${prH2.posAdj} back when it mattered. Back at camp, the mood around ${prH2.obj} is warm.`,
+      ];
+      personalScores[posHero] += 0.5;
+      members.filter(m => m !== posHero).forEach(m => addBond(m, posHero, 0.3));
+      ep.campEvents[key].post.push({
+        type: 'utcHeroMoment', players: [posHero],
+        text: heroTexts[_hash(posHero + 'hero', heroTexts.length)],
+        consequences: '+0.3 bond with all tribemates.',
+        badgeText: 'HERO MOMENT', badgeClass: 'gold'
+      });
+      usedPlayers.add(posHero);
+    }
+
+    // Negative 1: Worst performer (lowest personal score)
+    const worstPerformer = members.filter(m => !usedPlayers.has(m)).slice().sort((a, b) => (personalScores[a] || 0) - (personalScores[b] || 0))[0];
+    if (worstPerformer) {
+      const prW = pronouns(worstPerformer);
+      const worstTexts = [
+        `${worstPerformer} had a rough one today. Back at camp, ${prW.sub} ${prW.sub === 'they' ? 'keep' : 'keeps'} to ${prW.posAdj} corner. The tribe isn't piling on. But nobody's going out of their way either.`,
+        `What ${worstPerformer} did — or didn't do — out there is being replayed in a few heads right now. Quietly.`,
+        `${worstPerformer} wasn't the reason they lost. But ${prW.sub} ${prW.sub === 'they' ? 'weren\'t' : 'wasn\'t'} the reason they won either. That matters.`,
+      ];
+      members.filter(m => m !== worstPerformer).forEach(m => addBond(m, worstPerformer, -0.15));
+      ep.campEvents[key].post.push({
+        type: 'utcWeakLink', players: [worstPerformer],
+        text: worstTexts[_hash(worstPerformer + 'weak', worstTexts.length)],
+        consequences: '-0.15 bond with all tribemates.',
+        badgeText: 'WEAK LINK', badgeClass: 'red'
+      });
+      usedPlayers.add(worstPerformer);
+    }
+
+    // Negative 2 (optional): Paddle burner or advice giver
+    const paddleBurner = phases.buildFire.find(e => e.type === 'utcPaddleBurn' && e.players && e.players.some(p => members.includes(p) && !usedPlayers.has(p)));
+    const adviceGiver = phases.buildFire.find(e => e.type === 'utcAdviceGiver' && e.players && e.players.some(p => members.includes(p) && !usedPlayers.has(p)));
+
+    if (paddleBurner) {
+      const burner = paddleBurner.players.find(p => members.includes(p) && !usedPlayers.has(p));
+      if (burner) {
+        const prBurn = pronouns(burner);
+        const burnTexts = [
+          `${burner}'s decision to burn the paddles is all anyone is talking about. The defense — 'the fire needed it' — is not landing.`,
+          `${burner} burned the paddles. The tribe made it home. But 'we survived it' is a low bar and everyone knows it.`,
+          `${prBurn.Sub} thought it was tactical. The tribe thought it was reckless. These are not compatible assessments.`,
+        ];
+        members.filter(m => m !== burner).forEach(m => addBond(m, burner, -0.3));
+        ep.campEvents[key].post.push({
+          type: 'utcPaddleBurnFallout', players: [burner],
+          text: burnTexts[_hash(burner + 'burnfall', burnTexts.length)],
+          consequences: '-0.3 bond with all tribemates.',
+          badgeText: 'PADDLE BURN FALLOUT', badgeClass: 'red'
+        });
+        usedPlayers.add(burner);
+      }
+    } else if (adviceGiver) {
+      const giver = adviceGiver.players.find(p => members.includes(p) && !usedPlayers.has(p));
+      if (giver) {
+        const prGiv = pronouns(giver);
+        const giveTexts = [
+          `${giver} helped the other tribe. The tribe has not forgotten this. Back at camp, it's unspoken but present — a cold current under everything.`,
+          `${prGiv.Sub} helped the enemy. Some are charitable: 'just being friendly.' Others are not: 'we almost lost.' The divide is forming.`,
+          `${giver}'s helpfulness is the topic of conversation after dark. Nobody is saying 'vote ${prGiv.obj} out.' But nobody is saying the opposite either.`,
+        ];
+        members.filter(m => m !== giver).forEach(m => addBond(m, giver, -0.4));
+        ep.campEvents[key].post.push({
+          type: 'utcAdviceGiverFallout', players: [giver],
+          text: giveTexts[_hash(giver + 'advgfall', giveTexts.length)],
+          consequences: '-0.4 bond with all tribemates.',
+          badgeText: 'HELPED THE ENEMY', badgeClass: 'red'
+        });
+        usedPlayers.add(giver);
+      }
+    }
+  });
+
+  // ══ STORE EPISODE DATA ══
+  ep.upTheCreek = {
+    canoePairs,
+    soloCanoe,
+    phases,
+    fireScores,
+    paddlesBurned,
+    swimmerHero,
+    winner: winner.name,
+    loser: loser.name,
+    tribeScores: Object.fromEntries(finalScores.map(fs => [fs.tribe.name, fs.total]))
+  };
+  ep.winner = winner;
+  ep.loser = loser;
+  ep.challengeType = 'tribe';
+  ep.tribalPlayers = [...loser.members];
+  ep.challengeLabel = 'Up the Creek';
+  ep.challengeCategory = 'physical';
+  ep.chalMemberScores = personalScores;
 
   updateChalRecord(ep);
 }
@@ -30639,6 +32182,12 @@ function simulateJuryRoundtable(ep) {
         if (((gs.episode || 0) + 1) >= gs._suckyOutdoorsHeat[k].expiresEp) delete gs._suckyOutdoorsHeat[k];
       });
       if (!Object.keys(gs._suckyOutdoorsHeat).length) delete gs._suckyOutdoorsHeat;
+    }
+    if (gs._upTheCreekHeat) {
+      Object.keys(gs._upTheCreekHeat).forEach(k => {
+        if (((gs.episode || 0) + 1) >= gs._upTheCreekHeat[k].expiresEp) delete gs._upTheCreekHeat[k];
+      });
+      if (!Object.keys(gs._upTheCreekHeat).length) delete gs._upTheCreekHeat;
     }
 
     // ── BLACK VOTE: eliminated player casts a parting vote/gift (until F4) ──

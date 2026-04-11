@@ -53619,12 +53619,12 @@ function rpBuildSuckyOutdoors(ep) {
     // Morning race: show tribe score bars
     if (phase.key === 'morningRace' && so.survivalScores) {
       const scores = Object.entries(so.survivalScores);
-      const maxScore = Math.max(...scores.map(([,v]) => v), 1);
+      const maxScore = Math.max(...scores.map(([,v]) => Math.abs(v)), 1);
       html += `<div style="margin-top:12px;padding:12px;border-radius:8px;border:1px solid rgba(240,165,0,0.2);background:rgba(240,165,0,0.04)">
         <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:#f0a500;margin-bottom:10px">FINAL SURVIVAL SCORES</div>`;
       scores.sort((a,b) => b[1] - a[1]).forEach(([tribe, score]) => {
         const tc = tribeColor(tribe);
-        const pct = Math.round((score / maxScore) * 100);
+        const pct = score > 0 ? Math.round((score / maxScore) * 100) : 0;
         const isWinner = tribe === so.winner;
         html += `<div style="margin-bottom:8px">
           <div style="display:flex;justify-content:space-between;margin-bottom:3px">

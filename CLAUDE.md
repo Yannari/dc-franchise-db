@@ -159,6 +159,11 @@ is NOT actually loyal. Always check behavioral track record alongside raw stats.
   No custom `gs.chalRecord` manipulation — one system for everything.
   Pre-merge: top 3 podium + bottom 3 bomb. Post-merge: top 2 + bottom 2.
   Reward challenges: top 2 / bottom 2 at half weight (0.5), separate code.
+- **Challenge scoring MUST be balanced regardless of tribe size.** Tribe scores must use
+  averages per member (or percentages/fixed counts), NEVER raw sums. A 5-member tribe must
+  have the same chance as an 8-member tribe — skill per player matters, not headcount.
+  Balanced patterns: avg score per member, completion percentage, fixed performer count,
+  last-tribe-standing. Broken pattern: summing all members' scores (bigger tribe always wins).
 - **Every challenge twist MUST have a Debug → Challenge tab breakdown.** The `rpBuildDebug`
   Challenge tab (`_dbTab === 'challenge'`) must show detailed per-player rankings and
   twist-specific data (per-round scores for Dodgebrawl, dropout order for Awake-A-Thon,

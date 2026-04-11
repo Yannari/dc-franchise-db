@@ -34525,7 +34525,7 @@ function simulateJuryRoundtable(ep) {
     tribalPlayers: ep.tribalPlayers ? [...ep.tribalPlayers] : null,
     votes: ep.votes, alliances: ep.alliances.map(a=>({...a})),
     tribesAtStart: (ep.tribesAtStart || []).map(t => ({ name: t.name, members: [...t.members] })),
-    twistScenes: [], campEvents: null, summaryText: '', gsSnapshot: snapshotGameState(),
+    twistScenes: [], campEvents: ep.campEvents || null, tribeDissolutions: ep.tribeDissolutions || null, summaryText: '', gsSnapshot: snapshotGameState(),
     // Post-elimination twist results — saved here so VP can rebuild them on reload
     twists: (ep.twists||[]).map(t => ({...t})),
     votingLog:        ep.votingLog        || [],
@@ -39918,6 +39918,7 @@ function patchEpisodeHistory(ep) {
   if (!h.upTheCreek && ep.upTheCreek) h.upTheCreek = ep.upTheCreek;
   if (ep.isPaintballHunt) h.isPaintballHunt = true;
   if (!h.paintballHunt && ep.paintballHunt) h.paintballHunt = ep.paintballHunt;
+  if (!h.tribeDissolutions && ep.tribeDissolutions) h.tribeDissolutions = ep.tribeDissolutions;
   if (ep.isTripleDogDare) h.isTripleDogDare = true;
   if (ep.exileDuelPlayerAtStart) h.exileDuelPlayerAtStart = ep.exileDuelPlayerAtStart;
   if (ep.volunteerDuel) h.volunteerDuel = ep.volunteerDuel;
@@ -43753,6 +43754,18 @@ function rpBuildColdOpen(ep) {
         <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:#f0a500;margin-bottom:4px">EMISSARY VOTE</div>
         <div style="font-size:12px;color:#8b949e">${prevEp.emissary?.name} eliminated ${prevEp.emissaryPick.name} — ${prevEp.emissaryPick.reason}</div>
       </div>`;
+    }
+
+    // ── TRIBE DISSOLUTION announcement ──
+    if (prevEp.tribeDissolutions?.length) {
+      prevEp.tribeDissolutions.forEach(td => {
+        const destinations = td.members.map(m => `${m.player} → ${m.toTribe}`).join(', ');
+        html += `<div class="vp-card" style="border-color:rgba(248,81,73,0.3);margin-bottom:8px;background:rgba(248,81,73,0.05)">
+          <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:#f85149;margin-bottom:4px">💥 TRIBE DISSOLVED</div>
+          <div style="font-size:13px;color:#e6edf3;font-weight:600;margin-bottom:4px">${td.tribe} is no more.</div>
+          <div style="font-size:11px;color:#8b949e">${destinations}</div>
+        </div>`;
+      });
     }
 
     // ── [2] CLOSE VOTE — survived by 1 vote ──

@@ -13048,7 +13048,7 @@ function simulatePaintballHunt(ep) {
     if (!filtered.length) return null;
     const weights = filtered.map(d => {
       const s = pStats(d);
-      return Math.max(0.1, 10 - s.endurance * 0.5 - s.intuition * 0.3 + (mudSlid.has(d) ? 3 : 0));
+      return Math.max(0.1, 10 - s.endurance * 0.5 - s.intuition * 0.3 + (mudSlid.has(d) ? 3 : 0) + (ep._pbMarked?.[d] || 0));
     });
     const total = weights.reduce((a, b) => a + b, 0);
     let roll = Math.random() * total;
@@ -13870,30 +13870,17 @@ function simulatePaintballHunt(ep) {
                   witnesses.forEach(w => addBond(w, hunter, -0.3));
                   roundEvents.push({
                     type: 'pbWarEscalation', players: [d, hunter, ...witnesses],
-                    text: `It's a full-on PAINTBALL WAR! ${witnesses.join(' and ')} jump${witnesses.length === 1 ? 's' : ''} in. Paint is flying everywhere.`,
+                    text: `It's a full-on PAINTBALL WAR! ${witnesses.join(' and ')} jump${witnesses.length === 1 ? 's' : ''} in. Paint is flying everywhere. The commotion gives away ${d}'s position to every hunter in the forest.`,
                     badge: 'PAINTBALL WAR', badgeText: 'PAINTBALL WAR', badgeClass: 'red'
                   });
                 }
 
-                // Opposing hunters get free shots
-                const oppHunters = tribes.filter(ot => ot.name !== t.name).flatMap(ot => roles[ot.name].hunters);
-                const freeShooter = oppHunters.length ? _rp(oppHunters) : null;
-                if (freeShooter) {
-                  const freeTarget = ownDeer.find(od => !paintedOut.has(od));
-                  if (freeTarget) {
-                    addScore(freeShooter, HUNTER_HIT);
-                    addScore(freeTarget, DEER_PAINTED);
-                    paintedOut.add(freeTarget);
-                    unpaintedDeer[t.name].delete(freeTarget);
-                    paintCounter[freeTarget] = (paintCounter[freeTarget] || 0) + 1;
-                    hunterHits[freeShooter] = (hunterHits[freeShooter] || 0) + 1;
-                    roundEvents.push({
-                      type: 'pbWarFreeShot', players: [freeShooter, freeTarget],
-                      text: `While ${t.name} fights among themselves, ${freeShooter} picks off ${freeTarget} with a free shot! Chaos is opportunity.`,
-                      badge: 'FREE SHOT', badgeText: 'FREE SHOT', badgeClass: 'gold'
-                    });
-                  }
-                }
+                // War aftermath: deer has a massive target — exposed for next round
+                // mudSlid = easier to find, camouflage/tree climb blocked
+                newMudSlid.add(d); // already added above but reinforce
+                // Also add a "marked" flag so pickTargetDeer heavily weights this deer
+                if (!ep._pbMarked) ep._pbMarked = {};
+                ep._pbMarked[d] = (ep._pbMarked[d] || 0) + 5; // huge targeting weight bonus
               }
             }
           }

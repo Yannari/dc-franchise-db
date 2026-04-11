@@ -32349,6 +32349,8 @@ function simulateJuryRoundtable(ep) {
     talentShow:         ep.talentShow         || null,
     isSuckyOutdoors:    ep.isSuckyOutdoors    || false,
     suckyOutdoors:      ep.suckyOutdoors      || null,
+    isUpTheCreek:       ep.isUpTheCreek       || false,
+    upTheCreek:         ep.upTheCreek         || null,
     exilePlayer:      ep.exilePlayer      || null,
     exileDuelResult:  ep.exileDuelResult  || null,
     exileDuelVotedOut: ep.exileDuelVotedOut || null,
@@ -37654,6 +37656,8 @@ function patchEpisodeHistory(ep) {
   if (!h.talentShow && ep.talentShow) h.talentShow = ep.talentShow;
   if (ep.isSuckyOutdoors) h.isSuckyOutdoors = true;
   if (!h.suckyOutdoors && ep.suckyOutdoors) h.suckyOutdoors = ep.suckyOutdoors;
+  if (ep.isUpTheCreek) h.isUpTheCreek = true;
+  if (!h.upTheCreek && ep.upTheCreek) h.upTheCreek = ep.upTheCreek;
   if (ep.isTripleDogDare) h.isTripleDogDare = true;
   if (ep.exileDuelPlayerAtStart) h.exileDuelPlayerAtStart = ep.exileDuelPlayerAtStart;
   if (ep.volunteerDuel) h.volunteerDuel = ep.volunteerDuel;
@@ -46065,6 +46069,26 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'soRaceLeader'             ? (evt.badgeText || evt.badge || 'FRONT RUNNER')
                      : evt.type === 'soCantSleep'              ? (evt.badgeText || evt.badge || 'CAN\'T SLEEP')
                      : evt.type === 'soBearPrank'              ? (evt.badgeText || evt.badge || 'BEAR PRANK')
+                     : evt.type === 'utcPartnerPick'           ? (evt.badgeText || evt.badge || 'PARTNER PICK')
+                     : evt.type === 'utcRejected'              ? (evt.badgeText || evt.badge || 'REJECTED')
+                     : evt.type === 'utcSoloPaddler'           ? (evt.badgeText || evt.badge || 'SOLO CANOE')
+                     : evt.type === 'utcFastPair'              ? (evt.badgeText || evt.badge || 'FAST PAIR')
+                     : evt.type === 'utcSlowPair'              ? (evt.badgeText || evt.badge || 'SLOW PAIR')
+                     : evt.type === 'utcCapsized'              ? (evt.badgeText || evt.badge || 'CAPSIZED')
+                     : evt.type === 'utcWildlife'              ? (evt.badgeText || evt.badge || 'WILDLIFE')
+                     : evt.type === 'utcQuicksand'             ? (evt.badgeText || evt.badge || 'QUICKSAND')
+                     : evt.type === 'utcInjury'                ? (evt.badgeText || evt.badge || 'INJURY')
+                     : evt.type === 'utcShortcut'              ? (evt.badgeText || evt.badge || 'SHORTCUT')
+                     : evt.type === 'utcDroppedCanoe'          ? (evt.badgeText || evt.badge || 'DROPPED')
+                     : evt.type === 'utcLighter'               ? (evt.badgeText || evt.badge || 'LIGHTER')
+                     : evt.type === 'utcFireStarter'           ? (evt.badgeText || evt.badge || 'FIRE STARTER')
+                     : evt.type === 'utcPaddleBurn'            ? (evt.badgeText || evt.badge || 'PADDLES BURNED')
+                     : evt.type === 'utcAdviceGiver'           ? (evt.badgeText || evt.badge || 'HELPED THE ENEMY')
+                     : evt.type === 'utcSwimmerHero'           ? (evt.badgeText || evt.badge || 'SWIMMER HERO')
+                     : evt.type === 'utcSprintFinish'          ? (evt.badgeText || evt.badge || 'SPRINT FINISH')
+                     : evt.type === 'utcPhotoFinish'           ? (evt.badgeText || evt.badge || 'PHOTO FINISH')
+                     : evt.type === 'utcCheating'              ? (evt.badgeText || evt.badge || 'CHEATING')
+                     : evt.type === 'utcMotivational'          ? (evt.badgeText || evt.badge || 'RALLY CRY')
                      : evt.type === 'soMorale'                 ? (evt.badgeText || evt.badge || 'MORALE BOOST')
                      : evt.type === 'soFireConfession'         ? (evt.badgeText || evt.badge || 'CONFESSION')
                      : evt.type === 'soSurvivor'               ? (evt.badgeText || evt.badge || 'SURVIVOR')
@@ -46259,6 +46283,9 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'soNavigator' || evt.type === 'soShelter' || evt.type === 'soFire' || evt.type === 'soProvider' || evt.type === 'soFireside' || evt.type === 'soShortcut' || evt.type === 'soCarried' || evt.type === 'soStargazing' || evt.type === 'soBonding' || evt.type === 'soFoodSpotted' || evt.type === 'soShowmance' || evt.type === 'soRaceLeader' || evt.type === 'soMorale' || evt.type === 'soFireConfession' || evt.type === 'soSurvivor' || evt.type === 'soCampBuilder' || evt.type === 'soBrave' || evt.type === 'soPeacemaker' ? 'gold'
                      : evt.type === 'soLost' || evt.type === 'soCostTribe' || evt.type === 'soSlacker' || evt.type === 'soPrank' || evt.type === 'soTentFire' || evt.type === 'soRainstorm' || evt.type === 'soWanderedOff' || evt.type === 'soArgument' || evt.type === 'soShelterCollapse' || evt.type === 'soBearPrank' || evt.type === 'soDeadWeight' || evt.type === 'soTroublemaker' || evt.type === 'soQuitter' ? 'red'
                      : evt.type === 'soGhostStory' || evt.type === 'soBear' || evt.type === 'soCuddling' || evt.type === 'soScheme' || evt.type === 'soScaryNoise' || evt.type === 'soNightmare' || evt.type === 'soCantSleep' || evt.type === 'soSneakOff' || evt.type === 'soLagger' ? ''
+                     : evt.type === 'utcPartnerPick' || evt.type === 'utcFastPair' || evt.type === 'utcShortcut' || evt.type === 'utcLighter' || evt.type === 'utcFireStarter' || evt.type === 'utcSwimmerHero' || evt.type === 'utcSprintFinish' || evt.type === 'utcMotivational' || evt.type === 'utcSoloPaddler' ? 'gold'
+                     : evt.type === 'utcRejected' || evt.type === 'utcSlowPair' || evt.type === 'utcCapsized' || evt.type === 'utcDroppedCanoe' || evt.type === 'utcPaddleBurn' || evt.type === 'utcAdviceGiver' || evt.type === 'utcCheating' || evt.type === 'utcInjury' ? 'red'
+                     : evt.type === 'utcWildlife' || evt.type === 'utcQuicksand' || evt.type === 'utcPhotoFinish' ? ''
                      : isMoleReveal ? 'gold'
                      : isDareComplete || isDareMVP || isDareGift || isDarePact ? 'gold'
                      : isDarePactBetray || isDareAllyBetray || isDareRefusal || isDareElim ? 'red'

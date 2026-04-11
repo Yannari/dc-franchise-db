@@ -13834,6 +13834,7 @@ function simulatePaintballHunt(ep) {
               addBond(hunter, d, -1.0);
               addScore(hunter, HUNTER_NEGATIVE);
               addScore(d, -0.5); // hurts but doesn't eliminate
+              newMudSlid.add(d); // exposed — easier target next round
               paintCounter[d] = (paintCounter[d] || 0) + 1;
               friendlyFireLog.push({ hunter, victim: d, type: 'deliberate', round: roundNum });
               const pr = pronouns(hunter);
@@ -13844,9 +13845,9 @@ function simulatePaintballHunt(ep) {
               });
 
               // ── Paintball War escalation ──
-              // Retaliation — deer is alive and fights back. Hunter loses next turn.
+              // Retaliation — deer is alive and fights back. Very likely after deliberate betrayal.
               const dStats = pStats(d);
-              if (Math.random() < dStats.boldness * 0.06) {
+              if (Math.random() < 0.5 + dStats.boldness * 0.05) { // 55-100% chance
                 addBond(d, hunter, -0.5);
                 addScore(d, DEER_EVENT_BONUS); // fighting spirit
                 misfiredHunters.add(hunter); // hunter can't shoot — busy fighting
@@ -13863,8 +13864,8 @@ function simulatePaintballHunt(ep) {
                   badge: 'RETALIATION', badgeText: 'RETALIATION', badgeClass: 'red'
                 });
 
-                // Witnesses join
-                const witnesses = t.members.filter(m => m !== hunter && m !== d && Math.random() < 0.3);
+                // Witnesses join — high chance, the whole tribe sees the betrayal
+                const witnesses = t.members.filter(m => m !== hunter && m !== d && Math.random() < 0.6);
                 if (witnesses.length) {
                   witnesses.forEach(w => addBond(w, hunter, -0.3));
                   roundEvents.push({

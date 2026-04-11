@@ -13104,9 +13104,14 @@ function simulatePaintballHunt(ep) {
         if (Math.random() < stampedeChance) {
           specialEventsThisRound++;
           const pr = pronouns(leader);
+          const _stampTexts = [
+            `${leader} rallies ${pr.posAdj} fellow deer into a stampede! The herd runs together, making them harder to pick off.`,
+            `${leader} signals the others and they bolt as a group — the hunters can't isolate a single target.`,
+            `The ${tribeOf[leader]} deer run in formation behind ${leader}. Safety in numbers.`,
+          ];
           roundEvents.push({
             type: 'pbDeerStampede', players: aliveDeer,
-            text: `${leader} rallies ${pr.posAdj} fellow deer into a stampede! The herd runs together, making them harder to pick off.`,
+            text: _rp(_stampTexts),
             badge: 'STAMPEDE', badgeText: 'STAMPEDE', badgeClass: 'gold'
           });
           // Dodge bonus applied during matchups via stampede set
@@ -13124,9 +13129,16 @@ function simulatePaintballHunt(ep) {
         camouflaged.add(d);
         addScore(d, DEER_EVENT_BONUS);
         const pr = pronouns(d);
+        const _camoTexts = [
+          `${d} covers ${pr.ref} in mud and leaves — completely invisible to the hunters this round.`,
+          `${d} ducks behind a fallen tree and doesn't move a muscle. The hunters walk right past ${pr.obj}.`,
+          `${d} finds a hollow log and crawls inside. The hunters have no idea ${pr.sub}'s three feet away.`,
+          `${d} presses flat against a mossy rock, barely breathing. ${pr.Sub} blends right in.`,
+          `${d} wedges into a thicket so dense no hunter could spot ${pr.obj}. Perfect hide.`,
+        ];
         roundEvents.push({
           type: 'pbCamouflage', players: [d],
-          text: `${d} covers ${pr.ref} in mud and leaves — completely invisible to the hunters this round.`,
+          text: _rp(_camoTexts),
           badge: 'CAMO', badgeText: 'CAMO', badgeClass: 'gold'
         });
       }
@@ -13140,9 +13152,15 @@ function simulatePaintballHunt(ep) {
         treeClimbed.add(d);
         addScore(d, DEER_EVENT_BONUS);
         const pr = pronouns(d);
+        const _treeTexts = [
+          `${d} scrambles up a tree and hides in the branches. Safe this round, but ${pr.sub}'s stuck up there.`,
+          `${d} shimmies up an oak tree like ${pr.posAdj} life depends on it — because it does. No one thinks to look up.`,
+          `${d} swings onto a low branch and pulls ${pr.ref} up. The hunters search below, clueless.`,
+          `${d} climbs so high the camera crew can barely see ${pr.obj}. Bold strategy.`,
+        ];
         roundEvents.push({
           type: 'pbTreeClimb', players: [d],
-          text: `${d} scrambles up a tree and hides in the branches. Safe this round, but ${pr.Sub}'s stuck up there.`,
+          text: _rp(_treeTexts),
           badge: 'TREE CLIMB', badgeText: 'TREE CLIMB', badgeClass: ''
         });
       }
@@ -13155,9 +13173,15 @@ function simulatePaintballHunt(ep) {
         specialEventsThisRound++;
         newMudSlid.add(d);
         const pr = pronouns(d);
+        const _mudTexts = [
+          `${d} slips in the mud and faceplants. ${pr.Sub}'ll be an easier target next round.`,
+          `${d} trips over a root and goes sprawling. Not exactly stealthy.`,
+          `${d} loses ${pr.posAdj} footing on a wet slope and slides right into the open. Bad timing.`,
+          `${d} steps on a rotten log, breaks through, and crashes down. Every hunter within earshot turns around.`,
+        ];
         roundEvents.push({
           type: 'pbMudSlide', players: [d],
-          text: `${d} slips in the mud and faceplants. ${pr.Sub}'ll be an easier target next round.`,
+          text: _rp(_mudTexts),
           badge: 'MUD SLIDE', badgeText: 'MUD SLIDE', badgeClass: 'red'
         });
       }
@@ -13191,9 +13215,14 @@ function simulatePaintballHunt(ep) {
               const d1 = allAliveDeer[ai], d2 = allAliveDeer[aj];
               specialEventsThisRound++;
               addBond(d1, d2, 0.3);
+              const _antlerTexts = [
+                `${d1} and ${d2} literally crash into each other and get tangled up. Easy targets, but the comedy writes itself.`,
+                `${d1} dives for cover and lands right on top of ${d2}. They're stuck. The camera crew is in tears.`,
+                `${d1} and ${d2} collide at full speed running from different hunters. Neither can get up. Pure slapstick.`,
+              ];
               roundEvents.push({
                 type: 'pbAntlersLocked', players: [d1, d2],
-                text: `${d1} and ${d2} literally crash into each other and get tangled up. They're stuck together like... antlers locked. Easy targets, but the comedy writes itself.`,
+                text: _rp(_antlerTexts),
                 badge: 'ANTLERS LOCKED', badgeText: 'ANTLERS LOCKED', badgeClass: ''
               });
               // Romance spark check
@@ -13221,9 +13250,16 @@ function simulatePaintballHunt(ep) {
         if (oppHunters.length) {
           const victim = _rp(oppHunters);
           addScore(victim, HUNTER_NEGATIVE);
+          const prV = pronouns(victim);
+          const _rebellTexts = [
+            `${d} snatches the paintball gun right out of ${victim}'s hands and shoots ${prV.obj} point blank! The deer becomes the hunter.`,
+            `${d} tackles ${victim}, grabs ${prV.posAdj} gun, and opens fire. ${pr.Sub} was done running.`,
+            `${d} ambushes ${victim} from behind, disarms ${prV.obj}, and paints ${prV.obj} head to toe. Role reversal.`,
+            `${d} waits until ${victim} puts the gun down to check the map, then grabs it. "My turn." Splat.`,
+          ];
           roundEvents.push({
             type: 'pbRebellion', players: [d, victim],
-            text: `${d} snatches the paintball gun right out of ${victim}'s hands and shoots ${pronouns(victim).obj} point blank! The deer becomes the hunter.`,
+            text: _rp(_rebellTexts),
             badge: 'REBELLION', badgeText: 'REBELLION', badgeClass: 'gold'
           });
         }
@@ -13240,9 +13276,15 @@ function simulatePaintballHunt(ep) {
           misfiredHunters.add(h);
           addScore(h, HUNTER_NOTHING);
           const pr = pronouns(h);
+          const _misfireTexts = [
+            `${h}'s paintball gun jams! ${pr.Sub} spends the entire round trying to fix it. Wasted turn.`,
+            `${h} pulls the trigger and the gun just... clicks. Nothing. ${pr.Sub} shakes it furiously.`,
+            `${h}'s gun misfires and paints the tree next to ${pr.obj}. ${pr.Sub} stares at it, mortified.`,
+            `${h} accidentally fires into the ground while reloading. The noise scares off every deer in range.`,
+          ];
           roundEvents.push({
             type: 'pbMisfire', players: [h],
-            text: `${h}'s paintball gun jams! ${pr.Sub} spends the entire round trying to fix it. Wasted turn.`,
+            text: _rp(_misfireTexts),
             badge: 'MISFIRE', badgeText: 'MISFIRE', badgeClass: 'red'
           });
         }
@@ -13259,9 +13301,14 @@ function simulatePaintballHunt(ep) {
             specialEventsThisRound++;
             addScore(h, HUNTER_STANDOFF);
             const pr = pronouns(h);
+            const _allyRebTexts = [
+              `${h} refuses to coordinate with ${d}. ${pr.Sub} goes off on ${pr.posAdj} own, wasting valuable hunting time.`,
+              `${d} tries to give ${h} directions but ${h} ignores ${pronouns(d).obj} completely. "I don't take orders from you."`,
+              `${h} and ${d} get into an argument in the middle of the woods. The enemy hunters can hear everything.`,
+            ];
             roundEvents.push({
               type: 'pbAllianceRebellion', players: [h, d],
-              text: `${h} refuses to coordinate with ${d}. ${pr.Sub} goes off on ${pr.posAdj} own, wasting valuable hunting time.`,
+              text: _rp(_allyRebTexts),
               badge: 'REBELLION', badgeText: 'REBELLION', badgeClass: 'red'
             });
           }
@@ -13279,9 +13326,15 @@ function simulatePaintballHunt(ep) {
           addBond(d1, d2, 0.3);
           addScore(d1, 0.5);
           addScore(d2, 0.5);
+          const _bondTexts = [
+            `${d1} and ${d2} hide behind the same log, whispering and keeping watch for each other. The fear brings them closer.`,
+            `${d1} grabs ${d2}'s arm and pulls ${pronouns(d2).obj} behind cover just as a hunter passes. They share a look.`,
+            `${d1} and ${d2} take turns on lookout while the other rests. Teamwork born from terror.`,
+            `Huddled in the dark, ${d1} and ${d2} swap stories to stay calm. Something real is forming here.`,
+          ];
           roundEvents.push({
             type: 'pbDeerBonding', players: [d1, d2],
-            text: `${d1} and ${d2} hide behind the same log, whispering and keeping watch for each other. The fear brings them closer.`,
+            text: _rp(_bondTexts),
             badge: 'BOND', badgeText: 'BOND', badgeClass: 'gold'
           });
           // Romance spark for deer hiding together
@@ -13302,16 +13355,26 @@ function simulatePaintballHunt(ep) {
           const rivalry = getBond(d1, d2) < 0;
           if (rivalry) {
             addBond(d1, d2, -0.2);
+            const _rivalTexts = [
+              `${d1} and ${d2} spot each other hiding in the same thicket. The tension is palpable — no alliance here.`,
+              `${d1} and ${d2} lock eyes across a clearing. Neither moves. Neither blinks. This is personal now.`,
+              `${d1} gestures for ${d2} to leave. ${d2} gestures back — not politely. The standoff continues.`,
+            ];
             roundEvents.push({
               type: 'pbCrossTribeEncounter', players: [d1, d2],
-              text: `${d1} and ${d2} spot each other hiding in the same thicket. The tension is palpable — no alliance here.`,
+              text: _rp(_rivalTexts),
               badge: 'STANDOFF', badgeText: 'STANDOFF', badgeClass: 'red'
             });
           } else {
             addBond(d1, d2, 0.2);
+            const _truceTexts = [
+              `${d1} and ${d2} from different tribes find themselves hiding side by side. A nod of mutual respect — for now.`,
+              `${d1} nearly shoots ${d2} before realizing they're both deer. An awkward laugh, then silence. Neither gives up the other's position.`,
+              `${d1} and ${d2} share a hiding spot without a word. Enemy tribes, but right now they're just two people trying not to get painted.`,
+            ];
             roundEvents.push({
               type: 'pbCrossTribeEncounter', players: [d1, d2],
-              text: `${d1} and ${d2} from different tribes find themselves hiding side by side. A nod of mutual respect — for now.`,
+              text: _rp(_truceTexts),
               badge: 'TRUCE', badgeText: 'TRUCE', badgeClass: ''
             });
           }
@@ -13331,9 +13394,14 @@ function simulatePaintballHunt(ep) {
             // Side deal formation
             if (!gs.sideDeals) gs.sideDeals = [];
             gs.sideDeals.push({ a: d1, b: d2, ep: gs.episode || 0, type: 'paintball-pact' });
+            const _pactTexts = [
+              `While hiding together, ${d1} and ${d2} whisper a side deal — protect each other at the next tribal, no matter what.`,
+              `${d1} turns to ${d2}: "If we both survive this, we've got each other's backs." A handshake in the dark.`,
+              `Fear makes strange alliances. ${d1} and ${d2} make a pact between dodging paintballs: final four, no betrayals.`,
+            ];
             roundEvents.push({
               type: 'pbDeerPact', players: [d1, d2],
-              text: `While hiding together, ${d1} and ${d2} whisper a side deal — protect each other at the next tribal, no matter what.`,
+              text: _rp(_pactTexts),
               badge: 'PACT', badgeText: 'PACT', badgeClass: 'gold'
             });
             break;
@@ -13351,9 +13419,14 @@ function simulatePaintballHunt(ep) {
           const s1 = pStats(h1), s2 = pStats(h2);
           if (Math.random() < (s1.strategic + s2.strategic) * 0.015) {
             specialEventsThisRound++;
+            const _schemeTexts = [
+              `${h1} and ${h2} crouch together between rounds, whispering about who to target at the next tribal.`,
+              `${h1} and ${h2} set up a joint ambush position and use the downtime to talk strategy. "After this, we need to talk about the vote."`,
+              `"You thinking what I'm thinking?" ${h1} asks ${h2} between shots. They are. The tribal just got interesting.`,
+            ];
             roundEvents.push({
               type: 'pbHunterScheme', players: [h1, h2],
-              text: `${h1} and ${h2} crouch together between rounds, whispering about who to target at the next tribal.`,
+              text: _rp(_schemeTexts),
               badge: 'SCHEMING', badgeText: 'SCHEMING', badgeClass: ''
             });
             break;
@@ -13369,9 +13442,14 @@ function simulatePaintballHunt(ep) {
           if (getBond(h, d) >= 2 && Math.random() < 0.15 && specialEventsThisRound < maxSpecialEvents) {
             specialEventsThisRound++;
             addBond(h, d, 0.2);
+            const _whisperTexts = [
+              `${h} stumbles upon ${d} — ${pronouns(h).posAdj} own teammate. Instead of moving on, they exchange intel about enemy positions.`,
+              `${h} nearly shoots ${d} before realizing it's ${pronouns(h).posAdj} own deer. "Don't DO that!" Quick intel swap, then they split.`,
+              `${h} finds ${d} hiding and slips ${pronouns(d).obj} a heads-up on where the enemy hunters are patrolling.`,
+            ];
             roundEvents.push({
               type: 'pbCrossRoleWhisper', players: [h, d],
-              text: `${h} stumbles upon ${d} — ${pronouns(h).posAdj} own teammate. Instead of moving on, they exchange intel about enemy positions.`,
+              text: _rp(_whisperTexts),
               badge: 'WHISPER', badgeText: 'WHISPER', badgeClass: ''
             });
           }
@@ -13387,15 +13465,85 @@ function simulatePaintballHunt(ep) {
           const ally = roles[t.name].hunters.find(h2 => h2 !== h && getBond(h, h2) >= 1);
           if (ally && Math.random() < 0.2) {
             specialEventsThisRound++;
+            const _plotTexts = [
+              `${h} pulls ${ally} aside during the hunt for a quick strategy session. This isn't just about paintball anymore.`,
+              `${h} signals ${ally} to fall back from the group. "I have a plan for after this." ${ally} listens carefully.`,
+              `Between rounds, ${h} corners ${ally}: "We need to talk about the vote." The paintball hunt is just the excuse.`,
+            ];
             roundEvents.push({
               type: 'pbAllianceMeeting', players: [h, ally],
-              text: `${h} pulls ${ally} aside during the hunt for a quick strategy session. This isn't just about paintball anymore.`,
+              text: _rp(_plotTexts),
               badge: 'PLOTTING', badgeText: 'PLOTTING', badgeClass: ''
             });
           }
         }
       });
     });
+
+    // ── NEW: Deer confessional — deer talks to camera mid-hunt ──
+    if (specialEventsThisRound < maxSpecialEvents) {
+      const confCandidates = [...allMembers].filter(m => isDeer(m) && !paintedOut.has(m));
+      if (confCandidates.length && Math.random() < 0.15) {
+        const d = _rp(confCandidates);
+        const pr = pronouns(d);
+        specialEventsThisRound++;
+        const _confTexts = [
+          `${d} finds a camera and whispers into it: "I am NOT going out like this." ${pr.Sub} looks genuinely scared.`,
+          `${d} crouches behind a bush and talks directly to camera: "If I survive this, I'm coming for everyone who laughed."`,
+          `${d} stares into the camera, covered in dirt: "This is the worst day of my life." Long pause. "...I love it."`,
+          `${d} grabs a camera operator: "Are you getting this?! I've been running for twenty minutes! WHERE IS EVERYONE?!"`,
+          `${d}, breathing hard, looks at the camera: "I just want to say... if I don't make it... ${pronouns(_rp(confCandidates.filter(c => c !== d) || confCandidates)).Sub}'s fault."`,
+        ];
+        roundEvents.push({
+          type: 'pbConfessional', players: [d],
+          text: _rp(_confTexts),
+          badge: 'CONFESSIONAL', badgeText: 'CONFESSIONAL', badgeClass: ''
+        });
+      }
+    }
+
+    // ── NEW: Hunter trash talk — hunter taunts from position of power ──
+    if (specialEventsThisRound < maxSpecialEvents) {
+      const trashTalkers = tribes.flatMap(t => roles[t.name].hunters).filter(h => !misfiredHunters.has(h) && pStats(h).boldness >= 5);
+      if (trashTalkers.length && Math.random() < 0.12) {
+        const h = _rp(trashTalkers);
+        const pr = pronouns(h);
+        specialEventsThisRound++;
+        const _trashTexts = [
+          `${h} stands on a rock and yells into the forest: "YOU CAN'T HIDE FOREVER!" The deer disagree.`,
+          `${h} is openly walking through the woods, gun raised, narrating ${pr.posAdj} own hunt like a nature documentary.`,
+          `${h} starts counting out loud: "That's ${hunterHits[h] || 0} down... who's next?" Confident. Maybe too confident.`,
+          `${h} whistles casually while patrolling. Either ${pr.sub}'s brave or ${pr.sub}'s trying to scare them out.`,
+        ];
+        roundEvents.push({
+          type: 'pbHunterTrashTalk', players: [h],
+          text: _rp(_trashTexts),
+          badge: 'TRASH TALK', badgeText: 'TRASH TALK', badgeClass: ''
+        });
+      }
+    }
+
+    // ── NEW: Close call — deer barely avoids being spotted ──
+    if (specialEventsThisRound < maxSpecialEvents) {
+      const closeCandidates = [...allMembers].filter(m => isDeer(m) && !paintedOut.has(m) && !camouflaged.has(m) && !treeClimbed.has(m));
+      if (closeCandidates.length && Math.random() < 0.15) {
+        const d = _rp(closeCandidates);
+        const pr = pronouns(d);
+        specialEventsThisRound++;
+        const nearHunter = _rp(tribes.filter(t => t.name !== tribeOf[d]).flatMap(t => roles[t.name].hunters));
+        const _closeTexts = [
+          `${nearHunter} walks within inches of ${d}'s hiding spot. ${d} holds ${pr.posAdj} breath. The hunter moves on. CLOSE.`,
+          `A branch snaps under ${d}'s foot. ${nearHunter} whips around — but ${d} is already gone. Heart pounding.`,
+          `${d} ducks behind a tree just as ${nearHunter} sweeps the area. ${pr.Sub} can hear ${pronouns(nearHunter).posAdj} footsteps. Too close.`,
+          `${nearHunter}'s paintball whizzes past ${d}'s ear. An inch to the left and ${pr.sub}'d be out. ${d} doesn't breathe for ten seconds.`,
+        ];
+        roundEvents.push({
+          type: 'pbCloseCall', players: [d, nearHunter],
+          text: _rp(_closeTexts),
+          badge: 'CLOSE CALL', badgeText: 'CLOSE CALL', badgeClass: ''
+        });
+      }
+    }
 
     // ── HUNTER MATCHUPS ──
     // Balance: each tribe gets the same number of shots per round (= min hunter count across tribes)
@@ -48165,6 +48313,9 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'pbFirstPainted'         ? (evt.badgeText || 'FIRST PAINTED')
                      : evt.type === 'pbWarInstigator'        ? (evt.badgeText || 'WAR STARTER')
                      : evt.type === 'pbBearMauled'           ? (evt.badgeText || 'BEAR MAULED')
+                     : evt.type === 'pbConfessional'          ? (evt.badgeText || 'CONFESSIONAL')
+                     : evt.type === 'pbHunterTrashTalk'       ? (evt.badgeText || 'TRASH TALK')
+                     : evt.type === 'pbCloseCall'             ? (evt.badgeText || 'CLOSE CALL')
                      : evt.type === 'soMorale'                 ? (evt.badgeText || evt.badge || 'MORALE BOOST')
                      : evt.type === 'soFireConfession'         ? (evt.badgeText || evt.badge || 'CONFESSION')
                      : evt.type === 'soSurvivor'               ? (evt.badgeText || evt.badge || 'SURVIVOR')
@@ -48378,7 +48529,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'utcMVP' || evt.type === 'utcHeroMoment' ? 'gold'
                      : evt.type === 'pbAmbush' || evt.type === 'pbSneakAttack' || evt.type === 'pbMVPHunter' || evt.type === 'pbLastDeer' || evt.type === 'pbRebellionHero' || evt.type === 'pbDoublefind' || evt.type === 'pbWarFreeShot' || evt.type === 'pbDeerStampede' || evt.type === 'pbCamouflage' || evt.type === 'pbRebellion' || evt.type === 'pbDecoy' || evt.type === 'pbDeerBonding' || evt.type === 'pbDeerPact' || evt.type === 'pbTreeClimb' || evt.type === 'pbEpicChase' || evt.type === 'pbHunterProtects' ? 'gold'
                      : evt.type === 'pbBearEncounter' || evt.type === 'pbFriendlyFireAccident' || evt.type === 'pbFriendlyFireDeliberate' || evt.type === 'pbRetaliation' || evt.type === 'pbWarEscalation' || evt.type === 'pbSympathyShot' || evt.type === 'pbBearMauled' || evt.type === 'pbFriendlyFireCulprit' || evt.type === 'pbWarInstigator' || evt.type === 'pbFirstPainted' || evt.type === 'pbMudSlide' || evt.type === 'pbMisfire' || evt.type === 'pbHunterRivalry' || evt.type === 'pbAllianceRebellion' ? 'red'
-                     : evt.type === 'pbMiss' || evt.type === 'pbNotFound' || evt.type === 'pbAntlersLocked' || evt.type === 'pbObsessiveChase' || evt.type === 'pbAllianceStandoff' || evt.type === 'pbTaunt' || evt.type === 'pbCrossTribeEncounter' || evt.type === 'pbHunterScheme' || evt.type === 'pbCrossRoleWhisper' || evt.type === 'pbAllianceMeeting' || evt.type === 'pbHit' ? ''
+                     : evt.type === 'pbMiss' || evt.type === 'pbNotFound' || evt.type === 'pbAntlersLocked' || evt.type === 'pbObsessiveChase' || evt.type === 'pbAllianceStandoff' || evt.type === 'pbTaunt' || evt.type === 'pbCrossTribeEncounter' || evt.type === 'pbHunterScheme' || evt.type === 'pbCrossRoleWhisper' || evt.type === 'pbAllianceMeeting' || evt.type === 'pbHit' || evt.type === 'pbConfessional' || evt.type === 'pbHunterTrashTalk' || evt.type === 'pbCloseCall' ? ''
                      : isMoleReveal ? 'gold'
                      : isDareComplete || isDareMVP || isDareGift || isDarePact ? 'gold'
                      : isDarePactBetray || isDareAllyBetray || isDareRefusal || isDareElim ? 'red'

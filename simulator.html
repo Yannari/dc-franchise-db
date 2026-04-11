@@ -12965,10 +12965,11 @@ function simulatePaintballHunt(ep) {
   tribes.forEach(t => t.members.forEach(m => { tribeOf[m] = t.name; }));
 
   // ── Scoring constants ──
-  const HUNTER_HIT = 2.0, HUNTER_MISS = -0.2, HUNTER_NOTHING = -0.1;
+  // Balanced: hunter avg ~4.0, deer avg ~4.0 across a 5-round hunt
+  const HUNTER_HIT = 2.5, HUNTER_MISS = -0.2, HUNTER_NOTHING = -0.1;
   const HUNTER_EVENT_BONUS = 1.5, HUNTER_NEGATIVE = -2.0, HUNTER_STANDOFF = -1.0;
-  const DEER_DODGE = 2.0, DEER_PER_ROUND = 1.0, DEER_SURVIVOR = 4.0;
-  const DEER_PAINTED = -1.5, DEER_EVENT_BONUS = 1.5;
+  const DEER_DODGE = 1.5, DEER_PER_ROUND = 0.4, DEER_SURVIVOR = 2.5;
+  const DEER_PAINTED = -1.0, DEER_EVENT_BONUS = 1.0;
 
   const ROUND_NAMES = [
     'THE HUNT BEGINS', 'INTO THE WOODS', 'THEY\'RE GETTING CLOSER',
@@ -13853,22 +13854,32 @@ function simulatePaintballHunt(ep) {
           return;
         }
 
-        // ── Hunter protects deer (showmance with opposing deer) ──
-        if (seasonConfig.romance !== 'disabled' && gs.showmances?.length) {
-          const showmancePair = gs.showmances.find(sm =>
+        // ── Hunter protects deer (showmance, spark, or high bond with opposing deer) ──
+        if (seasonConfig.romance !== 'disabled' && specialEventsThisRound < maxSpecialEvents) {
+          const _hasShowmance = gs.showmances?.some(sm =>
             (sm.players[0] === hunter && sm.players[1] === target) ||
             (sm.players[1] === hunter && sm.players[0] === target)
           );
-          if (showmancePair && specialEventsThisRound < maxSpecialEvents) {
+          const _hasSpark = gs.romanticSparks?.some(sp =>
+            sp.players.includes(hunter) && sp.players.includes(target) && !sp.fake
+          );
+          const _highBond = getBond(hunter, target) >= 4;
+          if (_hasShowmance || _hasSpark || (_highBond && Math.random() < 0.3)) {
             specialEventsThisRound++;
             addScore(hunter, -1.5);
             const pr = pronouns(hunter);
+            const _protTexts = [
+              `${hunter} has ${target} dead to rights... but lowers ${pr.posAdj} gun. ${pr.Sub} can't shoot ${pronouns(target).obj}. Not ${pronouns(target).obj}.`,
+              `${hunter} freezes. The gun is aimed at ${target}. ${pr.Sub} knows what ${pr.sub} should do. ${pr.Sub} can't.`,
+              `${hunter} and ${target} lock eyes through the scope. ${hunter} lowers the gun. "Go. Just go."`,
+              `${hunter} spots ${target} — easy shot. But ${pr.posAdj} finger won't pull the trigger. Some things matter more than winning.`,
+            ];
             roundEvents.push({
               type: 'pbHunterProtects', players: [hunter, target],
-              text: `${hunter} has ${target} dead to rights... but lowers ${pr.posAdj} gun. ${pr.Sub} can't shoot ${pronouns(target).obj}. Not ${pronouns(target).obj}.`,
+              text: _rp(_protTexts),
               badge: 'PROTECTION', badgeText: 'PROTECTION', badgeClass: 'gold'
             });
-            _checkShowmanceChalMoment(ep, roundKey, phases, personalScores, 'danger', tribes);
+            if (_hasShowmance || _hasSpark) _checkShowmanceChalMoment(ep, roundKey, phases, personalScores, 'danger', tribes);
             matchups.push({ hunter, target, result: 'protect', round: roundNum });
             return;
           }
@@ -13991,13 +14002,27 @@ function simulatePaintballHunt(ep) {
           unpaintedDeer[tribeOf[target]].delete(target);
           paintCounter[target] = (paintCounter[target] || 0) + 1;
           hunterHits[hunter] = (hunterHits[hunter] || 0) + 1;
-          matchups.push({ hunter, target, result: 'hit', round: roundNum });
+          const _hitTexts = [
+            `${hunter} takes aim and fires — ${target} takes a paintball right to the chest. Out.`,
+            `${hunter} catches ${target} in the open. One shot. Done.`,
+            `${target} turns a corner and walks right into ${hunter}'s line of fire. Splat.`,
+            `${hunter} lines up the shot and pulls the trigger. ${target} goes down in ${tribeColor(tribeOf[hunter])} paint.`,
+            `${target} thought ${pronouns(target).sub} was safe. ${hunter} proves otherwise. Clean hit.`,
+          ];
+          matchups.push({ hunter, target, result: 'hit', round: roundNum, text: _rp(_hitTexts) });
         } else {
           // MISS
           addScore(hunter, HUNTER_MISS);
           addScore(target, DEER_DODGE);
           hunterMisses[hunter] = (hunterMisses[hunter] || 0) + 1;
-          matchups.push({ hunter, target, result: 'miss', round: roundNum });
+          const _missTexts = [
+            `${hunter} fires — ${target} dives behind a log just in time. The paint splatters the tree behind ${pronouns(target).obj}.`,
+            `${hunter} squeezes the trigger but ${target} is already moving. The shot goes wide.`,
+            `${target} hears the shot coming and drops flat. The paintball sails over ${pronouns(target).posAdj} head.`,
+            `${hunter} aims, shoots — and watches ${target} dodge at the last second. So close.`,
+            `${target} jukes left and ${hunter}'s shot hits nothing but air. ${pronouns(target).Sub}'s still alive.`,
+          ];
+          matchups.push({ hunter, target, result: 'miss', round: roundNum, text: _rp(_missTexts) });
         }
 
         // ── Rare double find: intuition proportional ──
@@ -58291,7 +58316,8 @@ function rpBuildPaintballHunt(ep) {
         html += `<div style="font-size:14px;color:#f85149">✗</div>`;
         html += `<div style="animation:dodgeSlide 0.6s ease-out">${rpPortrait(m.target, 'pb-sm')}</div>`;
         html += `</div>`;
-        html += `<div style="text-align:center;font-size:10px;color:#8b949e;margin-top:6px">💨 ${m.target?.split(' ')[0] || 'Deer'} dodges!</div>`;
+        if (m.text) html += `<div style="text-align:center;font-size:11px;color:#c9d1d9;margin-top:4px;line-height:1.4">${m.text}</div>`;
+        else html += `<div style="text-align:center;font-size:10px;color:#8b949e;margin-top:6px">💨 ${m.target?.split(' ')[0] || 'Deer'} dodges!</div>`;
         html += `</div>`;
 
       } else if (isProtect) {

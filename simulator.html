@@ -13400,7 +13400,7 @@ function simulatePaintballHunt(ep) {
               text: `${hunter} has ${target} dead to rights... but lowers ${pr.posAdj} gun. ${pr.Sub} can't shoot ${pronouns(target).obj}. Not ${pronouns(target).obj}.`,
               badge: 'PROTECTION', badgeText: 'PROTECTION', badgeClass: 'gold'
             });
-            _checkShowmanceChalMoment(ep, roundKey, phases, personalScores, 'danger', [hunter, target]);
+            _checkShowmanceChalMoment(ep, roundKey, phases, personalScores, 'danger', tribes);
             matchups.push({ hunter, target, result: 'protect', round: roundNum });
             return;
           }
@@ -13693,7 +13693,7 @@ function simulatePaintballHunt(ep) {
 
     // ── Showmance moments via helper ──
     if (seasonConfig.romance !== 'disabled') {
-      _checkShowmanceChalMoment(ep, roundKey, phases, personalScores, 'danger', allMembers);
+      _checkShowmanceChalMoment(ep, roundKey, phases, personalScores, 'danger', tribes);
     }
 
     // ── Award per-round survival to unpainted deer ──
@@ -13924,8 +13924,9 @@ function simulatePaintballHunt(ep) {
     mvp
   };
 
-  ep.winner = winner.name;
-  ep.loser = loser.name;
+  ep.winner = winner;
+  ep.loser = loser;
+  ep.safeTribes = tribes.length > 2 ? tribes.filter(t => t !== winner && t !== loser) : [];
   ep.challengeType = 'tribe';
   ep.immunePlayers = winner.members.slice();
   ep.tribalPlayers = loser.members.slice();

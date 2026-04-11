@@ -13672,12 +13672,8 @@ function simulatePaintballHunt(ep) {
           unpaintedDeer[t.name].delete(victim);
           paintCounter[victim] = (paintCounter[victim] || 0) + 1;
           friendlyFireLog.push({ hunter, victim, type: 'accidental', round: roundNum });
-          roundEvents.push({
-            type: 'pbFriendlyFireAccident', players: [hunter, victim],
-            text: `${hunter} accidentally shoots ${pr.posAdj} OWN teammate ${victim}! "${pronouns(victim).Sub}'s on YOUR team!" someone yells.`,
-            badge: 'FRIENDLY FIRE', badgeText: 'FRIENDLY FIRE', badgeClass: 'red'
-          });
-          matchups.push({ hunter, target: victim, result: 'friendly-fire', round: roundNum });
+          matchups.push({ hunter, target: victim, result: 'friendly-fire', round: roundNum,
+            text: `${hunter} accidentally shoots ${pr.posAdj} OWN teammate ${victim}! "${pronouns(victim).Sub}'s on YOUR team!" someone yells.` });
           return;
         }
 
@@ -13693,13 +13689,9 @@ function simulatePaintballHunt(ep) {
               unpaintedDeer[t.name].delete(d);
               paintCounter[d] = (paintCounter[d] || 0) + 1;
               friendlyFireLog.push({ hunter, victim: d, type: 'deliberate', round: roundNum });
-              matchups.push({ hunter, target: d, result: 'friendly-fire', round: roundNum });
               const pr = pronouns(hunter);
-              roundEvents.push({
-                type: 'pbFriendlyFireDeliberate', players: [hunter, d],
-                text: `${hunter} DELIBERATELY shoots ${d} — ${pr.posAdj} own teammate! That was NO accident.`,
-                badge: 'BETRAYAL', badgeText: 'BETRAYAL', badgeClass: 'red'
-              });
+              matchups.push({ hunter, target: d, result: 'friendly-fire', round: roundNum,
+                text: `${hunter} DELIBERATELY shoots ${d} — ${pr.posAdj} own teammate! That was NO accident.` });
 
               // ── Paintball War escalation ──
               // Retaliation
@@ -57877,8 +57869,10 @@ function rpBuildPaintballHunt(ep) {
 
       if (isHit) {
         // ── HIT CARD ──
-        html += `<div style="padding:12px;margin-bottom:6px;border-radius:8px;background:radial-gradient(circle at 70% 50%,${targetTC}15,transparent 70%);border:1px solid ${targetTC}33;animation:scrollDrop 0.3s var(--ease-broadcast) both">`;
-        html += `<div style="display:inline-block;font-size:9px;font-weight:800;letter-spacing:1px;color:${targetTC};background:${targetTC}22;padding:2px 8px;border-radius:3px;margin-bottom:8px">PAINTED OUT</div>`;
+        const ffColor = m.result === 'friendly-fire' ? '#f85149' : targetTC;
+        const ffLabel = m.result === 'friendly-fire' ? 'FRIENDLY FIRE' : 'PAINTED OUT';
+        html += `<div style="padding:12px;margin-bottom:6px;border-radius:8px;background:radial-gradient(circle at 70% 50%,${ffColor}15,transparent 70%);border:1px solid ${ffColor}33;animation:scrollDrop 0.3s var(--ease-broadcast) both">`;
+        html += `<div style="display:inline-block;font-size:9px;font-weight:800;letter-spacing:1px;color:${ffColor};background:${ffColor}22;padding:2px 8px;border-radius:3px;margin-bottom:8px">${ffLabel}</div>`;
         html += `<div style="display:flex;align-items:center;justify-content:center;gap:14px">`;
         // Hunter portrait
         html += `<div style="display:flex;flex-direction:column;align-items:center;gap:2px">
@@ -57896,9 +57890,10 @@ function rpBuildPaintballHunt(ep) {
           <span style="font-size:7px;color:#f85149;font-weight:700">ELIMINATED</span>
         </div>`;
         html += `</div>`;
-        // Hit text
-        const hitLabel = m.result === 'ambush' ? 'Ambush!' : m.result === 'sneak' ? 'Sneak attack!' : m.result === 'double-hit' ? 'Double find!' : m.result === 'friendly-fire' ? 'FRIENDLY FIRE!' : 'Direct hit!';
-        html += `<div style="text-align:center;font-size:10px;color:#8b949e;margin-top:6px">🎯 ${hitLabel}</div>`;
+        // Hit text + narrative if present
+        const hitLabel = m.result === 'ambush' ? 'Ambush!' : m.result === 'sneak' ? 'Sneak attack!' : m.result === 'double-hit' ? 'Double find!' : m.result === 'friendly-fire' ? '🔥 FRIENDLY FIRE!' : 'Direct hit!';
+        html += `<div style="text-align:center;font-size:10px;color:${m.result === 'friendly-fire' ? '#f85149' : '#8b949e'};margin-top:6px">${m.result === 'friendly-fire' ? '' : '🎯 '}${hitLabel}</div>`;
+        if (m.text) html += `<div style="text-align:center;font-size:11px;color:#c9d1d9;margin-top:4px;line-height:1.4">${m.text}</div>`;
         html += `</div>`;
 
       } else if (isMiss) {

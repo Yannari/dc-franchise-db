@@ -55181,11 +55181,11 @@ function rpBuildUpTheCreek(ep) {
 
   // 5 reveals: partner selection + 4 phases
   const PHASES = [
-    { key: 'partnerSelection', label: '🛶 PARTNER SELECTION',  bg: 'linear-gradient(180deg,#0a1a2a 0%,#051525 100%)', accent: '#58a6ff' },
-    { key: 'paddleOut',        label: '🌊 PADDLE OUT',         bg: 'linear-gradient(180deg,#0a1a2a 0%,#051525 100%)', accent: '#58a6ff' },
-    { key: 'portage',          label: '🌿 PORTAGE',            bg: 'linear-gradient(180deg,#0a2a0a 0%,#051a05 100%)', accent: '#3fb950' },
-    { key: 'buildFire',        label: '🔥 BUILD FIRE',         bg: 'linear-gradient(180deg,#2a1a0a 0%,#1a0f05 100%)', accent: '#f0a500' },
-    { key: 'paddleBack',       label: '🌅 PADDLE BACK',        bg: 'linear-gradient(180deg,#2a1508 0%,#1a0c04 100%)', accent: '#e06030' },
+    { key: 'partnerSelection', label: '🛶 PARTNER SELECTION', icon: '🌊', accent: '#58a6ff', atmos: 'water' },
+    { key: 'paddleOut',        label: '🌊 PADDLE OUT',         icon: '🌊', accent: '#58a6ff', atmos: 'water' },
+    { key: 'portage',          label: '🌿 PORTAGE',            icon: '💀', accent: '#3fb950', atmos: 'jungle' },
+    { key: 'buildFire',        label: '🔥 BUILD FIRE',         icon: '🔥', accent: '#f0a500', atmos: 'fire' },
+    { key: 'paddleBack',       label: '🌅 PADDLE BACK',        icon: '🌅', accent: '#e06030', atmos: 'sunset' },
   ];
   const totalPhases = PHASES.length;
   const allRevealed = state.idx >= totalPhases - 1;
@@ -55207,31 +55207,160 @@ function rpBuildUpTheCreek(ep) {
     }).join('');
   };
 
-  const ambientPhaseIdx = Math.max(0, Math.min(state.idx, totalPhases - 1));
-  const ambientBg = PHASES[ambientPhaseIdx].bg;
+  // Atmosphere backgrounds keyed by atmos type
+  const _atmosBg = {
+    water:  'linear-gradient(180deg,#0a1a30 0%,#0d2545 30%,#0a1a30 70%,#061220 100%)',
+    jungle: 'linear-gradient(180deg,#050f05 0%,#0a1a0a 20%,#081508 50%,#0a0808 80%,#0d0508 100%)',
+    fire:   'radial-gradient(ellipse at 50% 70%,rgba(240,165,0,0.12) 0%,transparent 50%),linear-gradient(180deg,#1a0f05 0%,#0d0805 50%,#0a0505 100%)',
+    sunset: 'linear-gradient(180deg,#1a0a2a 0%,#2a1030 15%,#4a1520 35%,#6a2010 50%,#3a1808 70%,#0d0815 100%)',
+  };
+
+  const ambientPhaseIdx = Math.max(0, Math.min(state.idx < 0 ? 0 : state.idx, totalPhases - 1));
+  const ambientAtmos = PHASES[ambientPhaseIdx].atmos;
   const ambientAccent = PHASES[ambientPhaseIdx].accent;
+  const ambientBg = _atmosBg[ambientAtmos];
 
-  let html = `<div class="rp-page" style="background:${ambientBg};transition:background 0.8s ease">
-    <div class="rp-eyebrow">Episode ${ep.num}</div>
-    <div style="font-family:var(--font-display);font-size:28px;letter-spacing:2px;text-align:center;color:${ambientAccent};text-shadow:0 0 20px ${ambientAccent}44;margin-bottom:6px">UP THE CREEK</div>
-    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:4px">Canoe race to Boney Island and back. Pick your partner. Portage through danger.</div>
-    <div style="text-align:center;font-size:11px;color:#6e7681;margin-bottom:20px">Build a fire. Race home. The losing tribe faces tribal council.</div>`;
+  // Helper: group events by tribe
+  const _groupByTribe = (events) => {
+    const groups = {};
+    const tribeOrder = (ep.tribesAtStart || []).map(t => t.name);
+    events.forEach(evt => {
+      const firstPlayer = evt.players?.[0];
+      let evtTribe = 'general';
+      if (firstPlayer) {
+        for (const t of (ep.tribesAtStart || [])) {
+          if (t.members?.includes(firstPlayer)) { evtTribe = t.name; break; }
+        }
+      }
+      if (!groups[evtTribe]) groups[evtTribe] = [];
+      groups[evtTribe].push(evt);
+    });
+    return { groups, renderOrder: [...tribeOrder.filter(t => groups[t]), ...(groups.general ? ['general'] : [])] };
+  };
 
+  // Helper: render a tribe sub-header
+  const _tribeSubHeader = (tribeName) => {
+    const tc = tribeColor(tribeName);
+    return `<div style="font-family:var(--font-display);font-size:12px;letter-spacing:1px;color:${tc};margin:12px 0 6px;padding-bottom:4px;border-bottom:1px solid ${tc}22">${tribeName.toUpperCase()}</div>`;
+  };
+
+  // Helper: render a generic event card with phase-aware glow
+  const _eventCard = (evt, phaseAccent, overrides = {}) => {
+    const bc = overrides.bc || _bc(evt.badgeClass || '');
+    const accent = overrides.forceAccent ? bc : phaseAccent;
+    const players = evt.players || [];
+    const isSpecial = overrides.special;
+    const borderStyle = isSpecial
+      ? `2px solid ${bc}55`
+      : `1px solid ${accent}20`;
+    const bgStyle = isSpecial
+      ? `${bc}09`
+      : `linear-gradient(135deg,${accent}07 0%,transparent 60%)`;
+    const glowStyle = isSpecial
+      ? `0 0 20px ${bc}12`
+      : `0 0 15px ${accent}08`;
+    return `<div style="padding:${isSpecial ? '14px' : '10px 14px'};margin-bottom:${isSpecial ? '10px' : '6px'};border-radius:${isSpecial ? '10px' : '8px'};border:${borderStyle};background:${bgStyle};box-shadow:${glowStyle};animation:scrollDrop 0.3s var(--ease-broadcast) both">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        ${players.map(p => rpPortrait(p, 'sm')).join('')}
+        <span style="font-size:9px;font-weight:700;letter-spacing:1px;color:${bc};background:${bc}18;padding:2px 8px;border-radius:3px;${isSpecial ? 'letter-spacing:1.5px;' : ''}">${evt.badge || evt.type || ''}</span>
+        ${_scoreDelta(evt.personalScores) ? `<div style="margin-left:auto">${_scoreDelta(evt.personalScores)}</div>` : ''}
+      </div>
+      <div style="font-size:12px;color:${isSpecial ? '#cdd9e5' : '#8b949e'};line-height:1.5">${evt.text || ''}</div>
+    </div>`;
+  };
+
+  // ── Keyframes + inline styles ──
+  let html = `<style>
+    @keyframes utcWaveShimmer{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+    @keyframes utcEmberFloat{0%{transform:translateY(0) scale(1);opacity:0.8}100%{transform:translateY(-40px) scale(0.3);opacity:0}}
+    @keyframes utcFogPulse{0%,100%{opacity:0.15}50%{opacity:0.35}}
+    @keyframes utcFireGlow{0%,100%{box-shadow:0 0 30px rgba(240,165,0,0.2),0 0 60px rgba(240,130,0,0.1)}50%{box-shadow:0 0 50px rgba(240,165,0,0.4),0 0 100px rgba(240,130,0,0.2)}}
+    @keyframes utcLightningFlash{0%,90%,100%{opacity:0}92%,96%{opacity:0.3}}
+    @keyframes utcGoldPulse{0%,100%{box-shadow:0 0 20px rgba(240,165,0,0.25),0 0 40px rgba(240,165,0,0.1)}50%{box-shadow:0 0 40px rgba(240,165,0,0.5),0 0 80px rgba(240,165,0,0.25)}}
+    @keyframes utcSunsetShimmer{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+  </style>`;
+
+  // ── Page wrapper ──
+  html += `<div class="rp-page" style="position:relative;background:${ambientBg};transition:background 1s ease;overflow:hidden">`;
+
+  // ── Atmosphere overlays (water shimmer, fog, embers, sunset shimmer) ──
+  if (ambientAtmos === 'water' || ambientAtmos === 'sunset') {
+    const shimmerColor = ambientAtmos === 'water' ? 'rgba(88,166,255,0.06)' : 'rgba(224,96,48,0.04)';
+    const shimmerDur = ambientAtmos === 'water' ? '4s' : '3s';
+    html += `<div style="position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:0;
+      background:linear-gradient(90deg,transparent,${shimmerColor},transparent);
+      background-size:200% 100%;animation:utcWaveShimmer ${shimmerDur} ease-in-out infinite"></div>`;
+    // Wave bar at bottom
+    html += `<div style="position:absolute;bottom:0;left:0;right:0;height:40px;pointer-events:none;z-index:0;
+      background:repeating-linear-gradient(100deg,transparent,transparent 20px,${ambientAtmos === 'water' ? 'rgba(88,166,255,0.08)' : 'rgba(224,96,48,0.06)'} 20px,${ambientAtmos === 'water' ? 'rgba(88,166,255,0.08)' : 'rgba(224,96,48,0.06)'} 22px)"></div>`;
+  }
+  if (ambientAtmos === 'jungle') {
+    // Canopy overlay
+    html += `<div style="position:absolute;top:0;left:0;right:0;height:120px;pointer-events:none;z-index:0;
+      background:linear-gradient(180deg,rgba(10,40,10,0.8) 0%,transparent 100%)"></div>`;
+    // Fog pulse
+    html += `<div style="position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:0;
+      background:radial-gradient(ellipse at 50% 60%,rgba(200,200,200,0.12) 0%,transparent 60%);
+      animation:utcFogPulse 6s ease-in-out infinite"></div>`;
+    // Skull corners
+    html += `<div style="position:absolute;top:12px;left:12px;font-size:32px;opacity:0.06;pointer-events:none;z-index:0;user-select:none">💀</div>`;
+    html += `<div style="position:absolute;top:12px;right:12px;font-size:32px;opacity:0.06;pointer-events:none;z-index:0;user-select:none">💀</div>`;
+  }
+  if (ambientAtmos === 'fire') {
+    // Ember particles — 8 staggered
+    const emberPositions = [8,18,30,42,55,67,78,90];
+    const emberDelays = [0,0.7,1.4,0.3,1.1,0.5,1.8,0.9];
+    emberPositions.forEach((left, i) => {
+      html += `<div style="position:absolute;bottom:20px;left:${left}%;width:3px;height:3px;border-radius:50%;background:#f0a500;pointer-events:none;z-index:0;
+        animation:utcEmberFloat ${1.8 + (i % 3) * 0.4}s ease-out ${emberDelays[i]}s infinite"></div>`;
+    });
+  }
+
+  // ── Content wrapper (above overlays) ──
+  html += `<div style="position:relative;z-index:1">`;
+
+  // ── Page header ──
+  html += `<div class="rp-eyebrow">Episode ${ep.num}</div>
+  <div style="font-family:var(--font-display);font-size:28px;letter-spacing:2px;text-align:center;color:${ambientAccent};text-shadow:0 0 20px ${ambientAccent}44;margin-bottom:6px">UP THE CREEK</div>
+  <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:4px">Canoe race to Boney Island and back. Pick your partner. Portage through danger.</div>
+  <div style="text-align:center;font-size:11px;color:#6e7681;margin-bottom:20px">Build a fire. Race home. The losing tribe faces tribal council.</div>`;
+
+  // ── Phase reveals ──
   PHASES.forEach((phase, phaseIdx) => {
     const isVisible = phaseIdx <= state.idx;
+    const isActive = phaseIdx === state.idx;
+    const phaseAtmosBg = _atmosBg[phase.atmos];
 
     if (!isVisible) {
       html += `<div style="padding:12px;margin-bottom:8px;border:1px solid rgba(255,255,255,0.06);border-radius:8px;opacity:0.12;text-align:center;font-size:11px;color:var(--muted)">${phase.label}</div>`;
       return;
     }
 
-    html += `<div style="margin-bottom:20px;animation:scrollDrop 0.3s var(--ease-broadcast) both">`;
+    // Phase atmosphere wrapper
+    html += `<div style="position:relative;margin-bottom:20px;border-radius:12px;overflow:hidden;animation:scrollDrop 0.3s var(--ease-broadcast) both;${phase.atmos === 'fire' ? 'animation:utcFireGlow 3s ease-in-out infinite;' : ''}">`;
 
-    html += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:10px 14px;border-radius:8px;background:${phase.accent}14;border-left:3px solid ${phase.accent}">
+    // Phase background tint layer
+    html += `<div style="position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:0;background:${phaseAtmosBg};opacity:0.5"></div>`;
+
+    // Lightning flash for jungle cursed idol events
+    if (phase.atmos === 'jungle') {
+      html += `<div style="position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:0;background:rgba(180,120,255,0.15);animation:utcLightningFlash 8s ease-in-out infinite"></div>`;
+    }
+
+    // Phase content (above tint)
+    html += `<div style="position:relative;z-index:1;padding:14px">`;
+
+    // Phase header bar
+    const phaseDecoEmoji = phase.atmos === 'water' ? '🌊' : phase.atmos === 'jungle' ? '🦫💀' : phase.atmos === 'fire' ? '🔥' : '🌅';
+    html += `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding:10px 14px;border-radius:8px;
+      background:${phase.accent}14;border-left:3px solid ${phase.accent};
+      box-shadow:0 0 20px ${phase.accent}12">
       <span style="font-family:var(--font-display);font-size:14px;letter-spacing:1.5px;color:${phase.accent}">${phase.label}</span>
-    </div>`;
+      <span style="font-size:18px;opacity:0.7">${phaseDecoEmoji}</span>
+    </div>
+    <div style="height:2px;border-radius:1px;background:linear-gradient(90deg,${phase.accent}44,transparent);margin-bottom:14px"></div>`;
 
-    // ── Partner Selection phase: show canoe pairs per tribe ──
+    // ── Partner Selection ──
     if (phase.key === 'partnerSelection') {
       html += `<div style="font-size:12px;color:#cdd9e5;text-align:center;margin-bottom:16px;font-style:italic">Teams pick their canoe partners — bold players choose first. Chemistry matters on the water.</div>`;
 
@@ -55251,7 +55380,7 @@ function rpBuildUpTheCreek(ep) {
           const scenarioBadgeText = pair.scenario === 'mutual'     ? 'MUTUAL PICK'
             : pair.scenario === 'one-sided' ? 'ONE-SIDED'
             : pair.scenario === 'rejected'  ? 'REJECTED'
-            : pair.scenario === 'showmance' ? '♥ SHOWMANCE'
+            : pair.scenario === 'showmance' ? '💕 SHOWMANCE'
             : pair.scenario === 'rivals'    ? 'RIVALS'
             : pair.scenario === 'last-pick' ? 'LAST PICK'
             : 'PARTNERS';
@@ -55259,15 +55388,34 @@ function rpBuildUpTheCreek(ep) {
             : pair.scenario === 'showmance' ? '#db61a2'
             : pair.scenario === 'one-sided' ? '#f0a500'
             : '#58a6ff';
+          const isRivals = pair.scenario === 'rejected' || pair.scenario === 'rivals';
+          const isShowmance = pair.scenario === 'showmance';
 
           const chemSign = (pair.chemistry || 0) >= 0 ? '+' : '';
           const chemCol = (pair.chemistry || 0) >= 1 ? '#3fb950' : (pair.chemistry || 0) >= 0 ? '#8b949e' : '#f85149';
 
-          html += `<div style="padding:12px;margin-bottom:6px;border-radius:8px;border:1px solid ${scenarioBadgeCol}28;background:${scenarioBadgeCol}07;animation:scrollDrop 0.3s var(--ease-broadcast) both">
+          // Water reflection portrait helper
+          const _reflectedPortrait = (name) => {
+            const base = rpPortrait(name, 'sm');
+            return `<div style="position:relative;display:inline-block">
+              ${base}
+              <div style="position:absolute;top:100%;left:0;right:0;height:18px;overflow:hidden;transform:scaleY(-1);opacity:0.15;pointer-events:none">
+                ${base}
+              </div>
+              <div style="position:absolute;top:100%;left:0;right:0;height:18px;background:linear-gradient(180deg,transparent,rgba(10,26,48,0.8));pointer-events:none"></div>
+            </div>`;
+          };
+
+          html += `<div style="padding:12px;margin-bottom:8px;border-radius:10px;
+            border:1px solid ${scenarioBadgeCol}${isRivals ? '44' : '28'};
+            background:linear-gradient(135deg,${scenarioBadgeCol}09 0%,transparent 60%);
+            box-shadow:0 0 ${isRivals ? '20px' : '15px'} ${scenarioBadgeCol}${isRivals ? '14' : '08'};
+            animation:scrollDrop 0.3s var(--ease-broadcast) both">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-              ${rpPortrait(pair.a, 'sm')}
+              ${_reflectedPortrait(pair.a)}
               <span style="font-size:14px;color:#6e7681">+</span>
-              ${rpPortrait(pair.b, 'sm')}
+              ${_reflectedPortrait(pair.b)}
+              ${isShowmance ? '<span style="font-size:16px;margin:0 2px">💕</span>' : ''}
               <span style="font-size:9px;font-weight:700;letter-spacing:1px;color:${scenarioBadgeCol};background:${scenarioBadgeCol}18;padding:2px 8px;border-radius:3px;margin-left:auto">${scenarioBadgeText}</span>
               <span style="font-size:10px;color:${chemCol};font-weight:700">${chemSign}${(pair.chemistry || 0).toFixed(1)}</span>
             </div>
@@ -55275,9 +55423,13 @@ function rpBuildUpTheCreek(ep) {
           </div>`;
         });
 
-        // Solo canoe player — dramatic card
+        // Solo canoe player — dramatic red card
         if (solo) {
-          html += `<div style="padding:14px;margin-bottom:6px;border-radius:10px;border:2px solid rgba(248,81,73,0.35);background:rgba(248,81,73,0.07);animation:scrollDrop 0.3s var(--ease-broadcast) both">
+          html += `<div style="padding:14px;margin-bottom:8px;border-radius:10px;
+            border:2px solid rgba(248,81,73,0.35);
+            background:linear-gradient(135deg,rgba(248,81,73,0.08) 0%,transparent 60%);
+            box-shadow:0 0 20px rgba(248,81,73,0.1);
+            animation:scrollDrop 0.3s var(--ease-broadcast) both">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
               ${rpPortrait(solo, 'sm')}
               <span style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:#f85149;background:rgba(248,81,73,0.18);padding:3px 10px;border-radius:3px">SOLO CANOE</span>
@@ -55289,83 +55441,57 @@ function rpBuildUpTheCreek(ep) {
         html += `</div>`;
       });
 
-      // Also show partnerSelection events (if any)
+      // partnerSelection events
       const psEvents = utc.phases?.partnerSelection || [];
       if (psEvents.length) {
         psEvents.forEach(evt => {
-          const bc = _bc(evt.badgeClass || 'gold');
-          const players = evt.players || [];
-          html += `<div style="padding:10px 14px;margin-bottom:6px;border-radius:8px;border:1px solid ${bc}28;background:${bc}07">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-              ${players.map(p => rpPortrait(p, 'sm')).join('')}
-              <span style="font-size:9px;font-weight:700;letter-spacing:1px;color:${bc};background:${bc}18;padding:2px 8px;border-radius:3px">${evt.badge || evt.type}</span>
-              ${_scoreDelta(evt.personalScores) ? `<div style="margin-left:auto">${_scoreDelta(evt.personalScores)}</div>` : ''}
-            </div>
-            <div style="font-size:12px;color:#8b949e;line-height:1.5">${evt.text}</div>
-          </div>`;
+          html += _eventCard(evt, phase.accent);
         });
       }
     }
 
-    // ── Build Fire phase: fire scores + bonus method badges ──
+    // ── Build Fire ──
     else if (phase.key === 'buildFire') {
       const events = utc.phases?.buildFire || [];
+      const { groups, renderOrder } = _groupByTribe(events);
 
-      // Group events by tribe
-      const _tribeGroups = {};
-      const _tribeOrder = (ep.tribesAtStart || []).map(t => t.name);
-      events.forEach(evt => {
-        const firstPlayer = evt.players?.[0];
-        let evtTribe = 'general';
-        if (firstPlayer) {
-          for (const t of (ep.tribesAtStart || [])) {
-            if (t.members?.includes(firstPlayer)) { evtTribe = t.name; break; }
-          }
-        }
-        if (!_tribeGroups[evtTribe]) _tribeGroups[evtTribe] = [];
-        _tribeGroups[evtTribe].push(evt);
-      });
-
-      const _renderOrder = [..._tribeOrder.filter(t => _tribeGroups[t]), ...(_tribeGroups.general ? ['general'] : [])];
-      _renderOrder.forEach(tribeName => {
-        const tribeEvents = _tribeGroups[tribeName] || [];
+      renderOrder.forEach(tribeName => {
+        const tribeEvents = groups[tribeName] || [];
         if (!tribeEvents.length) return;
-        if (tribeName !== 'general') {
-          const tc = tribeColor(tribeName);
-          html += `<div style="font-family:var(--font-display);font-size:12px;letter-spacing:1px;color:${tc};margin:10px 0 6px;padding-bottom:4px;border-bottom:1px solid ${tc}22">${tribeName.toUpperCase()}</div>`;
-        }
+        if (tribeName !== 'general') html += _tribeSubHeader(tribeName);
+
         tribeEvents.forEach(evt => {
-          const bc = _bc(evt.badgeClass || 'gold');
-          const players = evt.players || [];
           const isPaddleBurn = evt.type === 'utcPaddleBurn';
           const isAdvice = evt.type === 'utcAdviceGiver';
+
           if (isPaddleBurn) {
-            html += `<div style="padding:14px;margin-bottom:8px;border-radius:10px;border:2px solid rgba(248,81,73,0.4);background:rgba(248,81,73,0.08);animation:scrollDrop 0.3s var(--ease-broadcast) both">
+            html += `<div style="padding:14px;margin-bottom:10px;border-radius:10px;
+              border:2px solid rgba(248,81,73,0.5);
+              background:linear-gradient(135deg,rgba(248,81,73,0.1) 0%,rgba(240,120,0,0.05) 100%);
+              box-shadow:0 0 25px rgba(248,81,73,0.15);
+              animation:scrollDrop 0.3s var(--ease-broadcast) both">
               <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-                ${players.map(p => rpPortrait(p, 'sm')).join('')}
+                ${(evt.players || []).map(p => rpPortrait(p, 'sm')).join('')}
                 <span style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:#f85149;background:rgba(248,81,73,0.18);padding:3px 10px;border-radius:3px">🔥 PADDLES BURNED</span>
               </div>
               <div style="font-size:12px;color:#cdd9e5;line-height:1.6">${evt.text}</div>
               ${_scoreDelta(evt.personalScores) ? `<div style="margin-top:6px">${_scoreDelta(evt.personalScores)}</div>` : ''}
             </div>`;
           } else if (isAdvice) {
-            html += `<div style="padding:14px;margin-bottom:8px;border-radius:10px;border:2px solid rgba(248,81,73,0.3);background:rgba(248,81,73,0.06);animation:scrollDrop 0.3s var(--ease-broadcast) both">
+            html += `<div style="padding:14px;margin-bottom:8px;border-radius:10px;
+              border:2px solid rgba(248,81,73,0.3);
+              background:linear-gradient(135deg,rgba(248,81,73,0.07) 0%,transparent 60%);
+              box-shadow:0 0 15px rgba(248,81,73,0.08);
+              animation:scrollDrop 0.3s var(--ease-broadcast) both">
               <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-                ${players.map(p => rpPortrait(p, 'sm')).join('')}
+                ${(evt.players || []).map(p => rpPortrait(p, 'sm')).join('')}
                 <span style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:#f85149;background:rgba(248,81,73,0.18);padding:3px 10px;border-radius:3px">HELPED THE ENEMY</span>
               </div>
               <div style="font-size:12px;color:#8b949e;line-height:1.5">${evt.text}</div>
               ${_scoreDelta(evt.personalScores) ? `<div style="margin-top:6px">${_scoreDelta(evt.personalScores)}</div>` : ''}
             </div>`;
           } else {
-            html += `<div style="padding:10px 14px;margin-bottom:6px;border-radius:8px;border:1px solid ${bc}28;background:${bc}07;animation:scrollDrop 0.3s var(--ease-broadcast) both">
-              <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-                ${players.map(p => rpPortrait(p, 'sm')).join('')}
-                <span style="font-size:9px;font-weight:700;letter-spacing:1px;color:${bc};background:${bc}18;padding:2px 8px;border-radius:3px">${evt.badge || evt.type}</span>
-                ${_scoreDelta(evt.personalScores) ? `<div style="margin-left:auto">${_scoreDelta(evt.personalScores)}</div>` : ''}
-              </div>
-              <div style="font-size:12px;color:#8b949e;line-height:1.5">${evt.text}</div>
-            </div>`;
+            html += _eventCard(evt, phase.accent);
           }
         });
       });
@@ -55374,22 +55500,25 @@ function rpBuildUpTheCreek(ep) {
       if (utc.fireScores && Object.keys(utc.fireScores).length) {
         const fireEntries = Object.entries(utc.fireScores);
         const maxFire = Math.max(...fireEntries.map(([,v]) => v), 1);
-        html += `<div style="margin-top:14px;padding:12px;border-radius:8px;border:1px solid rgba(240,165,0,0.2);background:rgba(240,165,0,0.04)">
-          <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:#f0a500;margin-bottom:10px">FIRE SCORES</div>`;
+        html += `<div style="margin-top:14px;padding:14px;border-radius:10px;
+          border:1px solid rgba(240,165,0,0.25);
+          background:linear-gradient(135deg,rgba(240,165,0,0.06) 0%,transparent 60%);
+          box-shadow:0 0 20px rgba(240,165,0,0.08);animation:utcFireGlow 3s ease-in-out infinite">
+          <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:#f0a500;margin-bottom:10px">🔥 FIRE SCORES</div>`;
         fireEntries.sort((a,b) => b[1] - a[1]).forEach(([tribe, score]) => {
           const tc = tribeColor(tribe);
           const pct = Math.round((score / maxFire) * 100);
           const burned = utc.paddlesBurned?.[tribe];
-          html += `<div style="margin-bottom:8px">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+          html += `<div style="margin-bottom:10px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
               <span style="font-size:11px;font-weight:700;color:${tc}">${tribe}${burned ? ' 🔥' : ''}</span>
               <div style="display:flex;align-items:center;gap:6px">
                 ${burned ? '<span style="font-size:8px;font-weight:700;color:#f85149;background:rgba(248,81,73,0.15);padding:1px 6px;border-radius:3px">PADDLES BURNED</span>' : ''}
                 <span style="font-size:11px;color:#8b949e">${score.toFixed(1)}</span>
               </div>
             </div>
-            <div style="height:6px;border-radius:3px;background:rgba(255,255,255,0.06)">
-              <div style="height:6px;border-radius:3px;background:${burned ? '#f85149' : tc};width:${pct}%;transition:width 0.6s ease"></div>
+            <div style="height:7px;border-radius:4px;background:rgba(255,255,255,0.06)">
+              <div style="height:7px;border-radius:4px;background:${burned ? 'linear-gradient(90deg,#f85149,#c0392b)' : `linear-gradient(90deg,${tc},${tc}99)`};width:${pct}%;transition:width 0.6s ease;box-shadow:0 0 8px ${burned ? 'rgba(248,81,73,0.4)' : tc + '44'}"></div>
             </div>
           </div>`;
         });
@@ -55397,129 +55526,172 @@ function rpBuildUpTheCreek(ep) {
       }
     }
 
-    // ── Paddle Back: swimmer hero card if paddles burned ──
+    // ── Paddle Back ──
     else if (phase.key === 'paddleBack') {
       const events = utc.phases?.paddleBack || [];
 
-      // Swimmer hero — dramatic card shown first
+      // Swimmer hero — dramatic hero card
       if (utc.swimmerHero) {
         const pr = pronouns(utc.swimmerHero);
-        html += `<div style="padding:16px;margin-bottom:14px;border-radius:10px;border:2px solid rgba(88,166,255,0.35);background:rgba(88,166,255,0.06);animation:scrollDrop 0.3s var(--ease-broadcast) both">
-          <div style="text-align:center;font-size:9px;font-weight:700;letter-spacing:2px;color:#58a6ff;margin-bottom:8px">🌊 SWIMMER HERO</div>
-          <div style="display:flex;align-items:center;gap:12px;justify-content:center">
+        html += `<div style="padding:18px;margin-bottom:16px;border-radius:12px;
+          border:2px solid rgba(88,166,255,0.4);
+          background:linear-gradient(135deg,rgba(88,166,255,0.1) 0%,rgba(88,166,255,0.03) 100%);
+          box-shadow:0 0 30px rgba(88,166,255,0.15);
+          animation:scrollDrop 0.3s var(--ease-broadcast) both">
+          <div style="text-align:center;font-size:9px;font-weight:700;letter-spacing:2px;color:#58a6ff;margin-bottom:10px">🌊 SWIMMER HERO</div>
+          <div style="display:flex;align-items:center;gap:14px;justify-content:center">
             ${rpPortrait(utc.swimmerHero, 'md')}
             <div>
-              <div style="font-size:16px;font-weight:700;color:#58a6ff;margin-bottom:4px">${utc.swimmerHero}</div>
+              <div style="font-size:17px;font-weight:700;color:#58a6ff;margin-bottom:5px">${utc.swimmerHero}</div>
               <div style="font-size:12px;color:#cdd9e5;line-height:1.6">${pr.Sub} can't paddle — the paddles are ash. So ${pr.sub} does the next best thing: ${pr.sub} jumps in and pushes the canoe home.</div>
             </div>
           </div>
         </div>`;
       }
 
-      // Events grouped by tribe
-      const _tribeGroups = {};
-      const _tribeOrder = (ep.tribesAtStart || []).map(t => t.name);
-      events.forEach(evt => {
-        const firstPlayer = evt.players?.[0];
-        let evtTribe = 'general';
-        if (firstPlayer) {
-          for (const t of (ep.tribesAtStart || [])) {
-            if (t.members?.includes(firstPlayer)) { evtTribe = t.name; break; }
-          }
-        }
-        if (!_tribeGroups[evtTribe]) _tribeGroups[evtTribe] = [];
-        _tribeGroups[evtTribe].push(evt);
-      });
-      const _renderOrder = [..._tribeOrder.filter(t => _tribeGroups[t]), ...(_tribeGroups.general ? ['general'] : [])];
-      _renderOrder.forEach(tribeName => {
-        const tribeEvents = _tribeGroups[tribeName] || [];
+      const { groups, renderOrder } = _groupByTribe(events);
+      renderOrder.forEach(tribeName => {
+        const tribeEvents = groups[tribeName] || [];
         if (!tribeEvents.length) return;
-        if (tribeName !== 'general') {
-          const tc = tribeColor(tribeName);
-          html += `<div style="font-family:var(--font-display);font-size:12px;letter-spacing:1px;color:${tc};margin:10px 0 6px;padding-bottom:4px;border-bottom:1px solid ${tc}22">${tribeName.toUpperCase()}</div>`;
-        }
+        if (tribeName !== 'general') html += _tribeSubHeader(tribeName);
+
         tribeEvents.forEach(evt => {
+          const isPhotoFinish = evt.type === 'utcPhotoFinish' || (evt.badge || '').includes('PHOTO FINISH');
+          const isQuicksand = evt.type === 'utcQuicksand' || (evt.badge || '').toUpperCase().includes('QUICKSAND');
           const bc = _bc(evt.badgeClass || '');
-          const players = evt.players || [];
-          html += `<div style="padding:10px 14px;margin-bottom:6px;border-radius:8px;border:1px solid ${bc}28;background:${bc}07;animation:scrollDrop 0.3s var(--ease-broadcast) both">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-              ${players.map(p => rpPortrait(p, 'sm')).join('')}
-              <span style="font-size:9px;font-weight:700;letter-spacing:1px;color:${bc};background:${bc}18;padding:2px 8px;border-radius:3px">${evt.badge || evt.type}</span>
-              ${_scoreDelta(evt.personalScores) ? `<div style="margin-left:auto">${_scoreDelta(evt.personalScores)}</div>` : ''}
-            </div>
-            <div style="font-size:12px;color:#8b949e;line-height:1.5">${evt.text}</div>
-          </div>`;
+
+          if (isPhotoFinish) {
+            html += `<div style="padding:14px;margin-bottom:10px;border-radius:10px;
+              border:2px solid transparent;
+              background:linear-gradient(135deg,rgba(240,96,48,0.1) 0%,rgba(240,165,0,0.08) 100%);
+              box-shadow:0 0 25px rgba(240,96,48,0.2),0 0 8px rgba(240,165,0,0.1);
+              outline:2px solid transparent;
+              animation:scrollDrop 0.3s var(--ease-broadcast) both;
+              border-image:linear-gradient(135deg,#e06030,#f0a500) 1">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                ${(evt.players || []).map(p => rpPortrait(p, 'sm')).join('')}
+                <span style="font-size:9px;font-weight:700;letter-spacing:1.5px;background:linear-gradient(135deg,#e06030,#f0a500);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;border:1px solid #e0603044;padding:2px 10px;border-radius:3px">${evt.badge || '📸 PHOTO FINISH'}</span>
+              </div>
+              <div style="font-size:12px;color:#cdd9e5;line-height:1.5">${evt.text}</div>
+              ${_scoreDelta(evt.personalScores) ? `<div style="margin-top:6px">${_scoreDelta(evt.personalScores)}</div>` : ''}
+            </div>`;
+          } else if (isQuicksand) {
+            html += `<div style="padding:12px 14px;margin-bottom:8px;border-radius:8px;
+              border:1px solid rgba(139,100,60,0.4);
+              background:linear-gradient(135deg,rgba(100,70,30,0.12) 0%,rgba(80,50,20,0.06) 100%);
+              box-shadow:0 0 15px rgba(100,70,30,0.1);
+              animation:scrollDrop 0.3s var(--ease-broadcast) both">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                ${(evt.players || []).map(p => rpPortrait(p, 'sm')).join('')}
+                <span style="font-size:9px;font-weight:700;letter-spacing:1px;color:#8b6040;background:rgba(139,96,64,0.2);padding:2px 8px;border-radius:3px">${evt.badge || 'QUICKSAND'}</span>
+                ${_scoreDelta(evt.personalScores) ? `<div style="margin-left:auto">${_scoreDelta(evt.personalScores)}</div>` : ''}
+              </div>
+              <div style="font-size:12px;color:#8b949e;line-height:1.5">${evt.text}</div>
+            </div>`;
+          } else {
+            html += _eventCard(evt, phase.accent);
+          }
         });
       });
     }
 
-    // ── Generic phase: paddleOut, portage ──
+    // ── Generic phases: paddleOut, portage ──
     else {
       const events = utc.phases?.[phase.key] || [];
       if (!events.length) {
         html += `<div style="font-size:11px;color:#6e7681;text-align:center;padding:10px">No events this phase.</div>`;
       }
 
-      const _tribeGroups = {};
-      const _tribeOrder = (ep.tribesAtStart || []).map(t => t.name);
-      events.forEach(evt => {
-        const firstPlayer = evt.players?.[0];
-        let evtTribe = 'general';
-        if (firstPlayer) {
-          for (const t of (ep.tribesAtStart || [])) {
-            if (t.members?.includes(firstPlayer)) { evtTribe = t.name; break; }
-          }
-        }
-        if (!_tribeGroups[evtTribe]) _tribeGroups[evtTribe] = [];
-        _tribeGroups[evtTribe].push(evt);
-      });
-      const _renderOrder = [..._tribeOrder.filter(t => _tribeGroups[t]), ...(_tribeGroups.general ? ['general'] : [])];
-      _renderOrder.forEach(tribeName => {
-        const tribeEvents = _tribeGroups[tribeName] || [];
+      const { groups, renderOrder } = _groupByTribe(events);
+      renderOrder.forEach(tribeName => {
+        const tribeEvents = groups[tribeName] || [];
         if (!tribeEvents.length) return;
-        if (tribeName !== 'general') {
-          const tc = tribeColor(tribeName);
-          html += `<div style="font-family:var(--font-display);font-size:12px;letter-spacing:1px;color:${tc};margin:10px 0 6px;padding-bottom:4px;border-bottom:1px solid ${tc}22">${tribeName.toUpperCase()}</div>`;
-        }
+        if (tribeName !== 'general') html += _tribeSubHeader(tribeName);
+
         tribeEvents.forEach(evt => {
           const bc = _bc(evt.badgeClass || '');
-          const players = evt.players || [];
-          html += `<div style="padding:10px 14px;margin-bottom:6px;border-radius:8px;border:1px solid ${bc}28;background:${bc}07;animation:scrollDrop 0.3s var(--ease-broadcast) both">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-              ${players.map(p => rpPortrait(p, 'sm')).join('')}
-              <span style="font-size:9px;font-weight:700;letter-spacing:1px;color:${bc};background:${bc}18;padding:2px 8px;border-radius:3px">${evt.badge || evt.type}</span>
-              ${_scoreDelta(evt.personalScores) ? `<div style="margin-left:auto">${_scoreDelta(evt.personalScores)}</div>` : ''}
-            </div>
-            <div style="font-size:12px;color:#8b949e;line-height:1.5">${evt.text}</div>
-          </div>`;
+          // Special treatments for portage danger events
+          const isDanger = phase.key === 'portage' && (
+            (evt.type || '').toLowerCase().includes('beaver') ||
+            (evt.type || '').toLowerCase().includes('geese') ||
+            (evt.badge || '').toLowerCase().includes('beaver') ||
+            (evt.badge || '').toLowerCase().includes('geese')
+          );
+          const isCursed = phase.key === 'portage' && (
+            (evt.type || '').toLowerCase().includes('cursed') ||
+            (evt.badge || '').toLowerCase().includes('cursed')
+          );
+
+          if (isDanger) {
+            html += `<div style="padding:12px 14px;margin-bottom:8px;border-radius:8px;
+              border:2px solid rgba(248,81,73,0.4);
+              background:linear-gradient(135deg,rgba(248,81,73,0.09) 0%,transparent 60%);
+              box-shadow:0 0 15px rgba(248,81,73,0.12),0 0 0 1px rgba(248,81,73,0.08);
+              animation:scrollDrop 0.3s var(--ease-broadcast) both">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                ${(evt.players || []).map(p => rpPortrait(p, 'sm')).join('')}
+                <span style="font-size:9px;font-weight:700;letter-spacing:1px;color:#f85149;background:rgba(248,81,73,0.18);padding:2px 8px;border-radius:3px">${evt.badge || evt.type}</span>
+                ${_scoreDelta(evt.personalScores) ? `<div style="margin-left:auto">${_scoreDelta(evt.personalScores)}</div>` : ''}
+              </div>
+              <div style="font-size:12px;color:#8b949e;line-height:1.5">${evt.text}</div>
+            </div>`;
+          } else if (isCursed) {
+            const cursedTaken = !(evt.badge || '').toLowerCase().includes('left') && !(evt.text || '').toLowerCase().includes('left behind');
+            html += `<div style="padding:12px 14px;margin-bottom:8px;border-radius:8px;
+              border:2px solid ${cursedTaken ? 'rgba(180,80,255,0.4)' : 'rgba(63,185,80,0.35)'};
+              background:${cursedTaken ? 'linear-gradient(135deg,rgba(120,50,200,0.1) 0%,rgba(80,20,150,0.05) 100%)' : 'linear-gradient(135deg,rgba(63,185,80,0.08) 0%,transparent 60%)'};
+              box-shadow:0 0 18px ${cursedTaken ? 'rgba(180,80,255,0.12)' : 'rgba(63,185,80,0.1)'};
+              animation:scrollDrop 0.3s var(--ease-broadcast) both">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                ${(evt.players || []).map(p => rpPortrait(p, 'sm')).join('')}
+                ${cursedTaken ? '<span style="font-size:14px">💀</span>' : ''}
+                <span style="font-size:9px;font-weight:700;letter-spacing:1px;color:${cursedTaken ? '#b450ff' : '#3fb950'};background:${cursedTaken ? 'rgba(180,80,255,0.15)' : 'rgba(63,185,80,0.15)'};padding:2px 8px;border-radius:3px">${evt.badge || evt.type}</span>
+                ${_scoreDelta(evt.personalScores) ? `<div style="margin-left:auto">${_scoreDelta(evt.personalScores)}</div>` : ''}
+              </div>
+              <div style="font-size:12px;color:#8b949e;line-height:1.5">${evt.text}</div>
+            </div>`;
+          } else {
+            html += _eventCard(evt, phase.accent);
+          }
         });
       });
     }
 
-    html += `</div>`; // close phase wrapper
+    html += `</div></div>`; // close phase content + atmosphere wrapper
   });
 
   // ── Final result card (only after all phases revealed) ──
   if (allRevealed && utc.winner) {
     const winnerColor = tribeColor(utc.winner);
-    const loserColor = tribeColor(utc.loser);
+    const loserColor = utc.loser ? tribeColor(utc.loser) : '#f85149';
 
-    html += `<div style="padding:18px;margin-top:4px;border-radius:12px;border:2px solid ${winnerColor}44;background:${winnerColor}0a;text-align:center">
-      <div style="font-family:var(--font-display);font-size:22px;letter-spacing:2px;color:#58a6ff;margin-bottom:6px">IMMUNITY</div>
-      <div style="font-size:18px;font-weight:700;color:${winnerColor};margin-bottom:4px">${utc.winner}</div>
+    html += `<div style="padding:20px;margin-top:8px;border-radius:14px;
+      border:2px solid ${winnerColor}55;
+      background:linear-gradient(135deg,${winnerColor}0d 0%,transparent 60%);
+      box-shadow:0 0 40px ${winnerColor}20,0 0 80px ${winnerColor}0a;
+      text-align:center;animation:utcGoldPulse 3s ease-in-out infinite">
+      <div style="font-size:22px;margin-bottom:6px">🏆</div>
+      <div style="font-family:var(--font-display);font-size:22px;letter-spacing:2px;color:#f0a500;margin-bottom:8px;text-shadow:0 0 20px rgba(240,165,0,0.4)">IMMUNITY</div>
+      <div style="font-size:20px;font-weight:700;color:${winnerColor};margin-bottom:4px;text-shadow:0 0 15px ${winnerColor}55">${utc.winner}</div>
       <div style="font-size:11px;color:#8b949e">First tribe to paddle home wins.</div>
     </div>`;
 
     if (utc.loser) {
-      html += `<div style="padding:12px;margin-top:8px;border-radius:8px;border:1px solid rgba(248,81,73,0.2);background:rgba(248,81,73,0.04);text-align:center">
-        <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:#f85149;margin-bottom:4px">TRIBAL COUNCIL</div>
-        <div style="font-size:14px;font-weight:700;color:${loserColor}">${utc.loser}</div>
+      html += `<div style="padding:14px;margin-top:8px;border-radius:10px;
+        border:1px solid rgba(248,81,73,0.3);
+        background:linear-gradient(135deg,rgba(248,81,73,0.06) 0%,transparent 60%);
+        text-align:center">
+        <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:#f85149;margin-bottom:5px">TRIBAL COUNCIL</div>
+        <div style="font-size:16px;font-weight:700;color:${loserColor}">${utc.loser}</div>
       </div>`;
     }
 
     // Swimmer hero shoutout in final result
     if (utc.swimmerHero) {
-      html += `<div style="padding:10px;margin-top:8px;border-radius:8px;background:rgba(88,166,255,0.06);border:1px solid rgba(88,166,255,0.2);display:flex;align-items:center;gap:10px">
+      html += `<div style="padding:12px;margin-top:8px;border-radius:8px;
+        background:linear-gradient(135deg,rgba(88,166,255,0.08) 0%,transparent 60%);
+        border:1px solid rgba(88,166,255,0.25);
+        display:flex;align-items:center;gap:12px">
         ${rpPortrait(utc.swimmerHero, 'sm')}
         <div>
           <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:#58a6ff">★ SWIMMER HERO</div>
@@ -55531,16 +55703,16 @@ function rpBuildUpTheCreek(ep) {
 
   // ── Sticky NEXT / REVEAL ALL buttons ──
   if (!allRevealed) {
-    const currentBg = PHASES[Math.max(0, state.idx >= 0 ? state.idx : 0)].bg;
-    const bgStop = currentBg.split(',')[1]?.split(')')[0] || 'rgba(5,21,37,0.95)';
-    html += `<div style="position:sticky;bottom:0;padding:12px 0;text-align:center;background:linear-gradient(transparent,${bgStop} 30%);z-index:5">
-      <button class="rp-btn" style="background:linear-gradient(135deg,#58a6ff,#2f74c0);color:#000;font-weight:700;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-size:12px;letter-spacing:1px;box-shadow:0 0 12px rgba(88,166,255,0.2)"
+    const nextAccent = PHASES[Math.min(state.idx + 1, totalPhases - 1)].accent;
+    html += `<div style="position:sticky;bottom:0;padding:14px 0;text-align:center;
+      background:linear-gradient(transparent,rgba(6,18,32,0.97) 30%);z-index:5">
+      <button class="rp-btn" style="background:linear-gradient(135deg,${nextAccent},${nextAccent}aa);color:#000;font-weight:700;border:none;padding:9px 22px;border-radius:6px;cursor:pointer;font-size:12px;letter-spacing:1px;box-shadow:0 0 16px ${nextAccent}33"
         onclick="${_utcReveal(state.idx + 1)}">NEXT (${state.idx + 2}/${totalPhases})</button>
       <button class="rp-btn rp-btn-secondary" onclick="${_utcReveal(totalPhases - 1)}" style="margin-left:8px">REVEAL ALL</button>
     </div>`;
   }
 
-  html += `</div>`;
+  html += `</div></div>`; // close content wrapper + page
   return html;
 }
 

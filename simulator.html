@@ -9398,6 +9398,79 @@ function simulateSuckyOutdoors(ep) {
   // ── Wanderers tracker (Phase 1 → Phase 4) ──
   const wanderers = new Set();
 
+  // ── Event density scaling: fewer tribes = more events per tribe ──
+  // 2 tribes get bonus events per phase so total matches 3-tribe seasons
+  function _bonusEvents(phaseKey, t) {
+    if (tribes.length > 2) return; // only fire for 2-tribe seasons
+    const members = t.members;
+    if (members.length < 3) return;
+
+    // Pick 2 random members for a bonus interaction
+    const shuffled = members.slice().sort(() => Math.random() - 0.5);
+    const a = shuffled[0], b = shuffled[1];
+    const bond = getBond(a, b);
+    const aS = pStats(a), bS = pStats(b);
+    const aPr = pronouns(a), bPr = pronouns(b);
+
+    // Positive or negative based on existing bond
+    if (bond >= 0 && Math.random() < 0.5) {
+      // Positive: bonding moment
+      const _texts = [
+        `${a} and ${b} share a quiet moment away from the group. No strategy — just two people who might actually like each other.`,
+        `${b} offers ${a} the last of ${bPr.posAdj} water. Small gesture. ${a} won't forget it.`,
+        `${a} catches ${b} staring at the stars. They sit together without talking. Sometimes that's enough.`,
+        `${a} and ${b} find common ground over something nobody else cares about. An inside joke forms. The tribe notices.`,
+        `${b} stumbles on the trail. ${a} catches ${bPr.obj} without thinking. "Thanks." "Don't mention it." They walk closer after that.`,
+      ];
+      personalScores[a] = (personalScores[a] || 0) + 0.5;
+      personalScores[b] = (personalScores[b] || 0) + 0.5;
+      addBond(a, b, 0.3);
+      phases[phaseKey].push({
+        type: 'soBonding', phase: phaseKey, players: [a, b],
+        text: _texts[Math.floor(Math.random() * _texts.length)],
+        personalScores: { [a]: 0.5, [b]: 0.5 }, badge: 'BONDING', badgeClass: 'gold'
+      });
+    } else if (bond < 0 || Math.random() < 0.4) {
+      // Negative: friction
+      const _texts = [
+        `${a} and ${b} are not getting along. The looks are getting sharper. Everyone can feel it.`,
+        `${b} mutters something about ${a} under ${bPr.posAdj} breath. ${a} hears it. The silence that follows is heavy.`,
+        `${a} refuses to walk near ${b}. The tribe has to rearrange. Nobody asks why.`,
+        `Something ${a} said earlier is still bothering ${b}. It comes out sideways — a snapped comment, a cold shoulder. The tribe tenses up.`,
+        `${a} and ${b} disagree on everything. Water, direction, pace, rest stops. It's exhausting for everyone within earshot.`,
+      ];
+      personalScores[a] = (personalScores[a] || 0) - 0.3;
+      personalScores[b] = (personalScores[b] || 0) - 0.3;
+      addBond(a, b, -0.2);
+      phases[phaseKey].push({
+        type: 'soArgument', phase: phaseKey, players: [a, b],
+        text: _texts[Math.floor(Math.random() * _texts.length)],
+        personalScores: { [a]: -0.3, [b]: -0.3 }, badge: 'TENSION', badgeClass: 'red'
+      });
+    }
+
+    // Second bonus: a solo moment for a third member
+    if (shuffled.length >= 3) {
+      const c = shuffled[2];
+      const cS = pStats(c);
+      const cPr = pronouns(c);
+      if (Math.random() < 0.5) {
+        const _soloTexts = [
+          `${c} sits apart from the group. Not sulking — thinking. ${cPr.Sub} ${cPr.sub === 'they' ? 'are' : 'is'} playing a longer game than anyone realizes.`,
+          `${c} volunteers for every task without being asked. Quiet. Consistent. The tribe doesn't notice yet, but they will.`,
+          `${c} takes a walk alone to clear ${cPr.posAdj} head. Comes back sharper. More focused. Something shifted.`,
+          `${c} watches the tribe dynamics from the edge of camp. Who talks to whom. Who avoids whom. ${cPr.Sub} ${cPr.sub === 'they' ? 'are' : 'is'} cataloguing it.`,
+        ];
+        personalScores[c] = (personalScores[c] || 0) + 0.5;
+        phases[phaseKey].push({
+          type: 'soSneakOff', phase: phaseKey, players: [c],
+          text: _soloTexts[Math.floor(Math.random() * _soloTexts.length)],
+          personalScores: { [c]: 0.5 }, badge: 'SOLO MOMENT', badgeClass: 'gold'
+        });
+      }
+    }
+  }
+
   // ══ PHASE 1: Announcement + Hike (3-4 events per tribe) ══
   tribes.forEach(t => {
     const nav = navigators[t.name];
@@ -9616,6 +9689,9 @@ function simulateSuckyOutdoors(ep) {
     }
   });
 
+  // Bonus events for 2-tribe seasons (Phase 1)
+  tribes.forEach(t => _bonusEvents('announcement', t));
+
   // ══ PHASE 2: Setup Camp (3-4 events per tribe) ══
   tribes.forEach(t => {
     const members = t.members;
@@ -9823,6 +9899,9 @@ function simulateSuckyOutdoors(ep) {
       });
     }
   });
+
+  // Bonus events for 2-tribe seasons (Phase 2)
+  tribes.forEach(t => _bonusEvents('setupCamp', t));
 
   // ══ PHASE 3: Nightfall (4-5 events per tribe) ══
   tribes.forEach(t => {
@@ -10098,6 +10177,9 @@ function simulateSuckyOutdoors(ep) {
     }
   });
 
+  // Bonus events for 2-tribe seasons (Phase 3)
+  tribes.forEach(t => _bonusEvents('nightfall', t));
+
   // ══ PHASE 4: The Night (3-4 events per tribe, severity from camp quality) ══
   const lostPlayers = []; // { name, tribe, lostInPhase, returnDelay }
 
@@ -10329,6 +10411,9 @@ function simulateSuckyOutdoors(ep) {
       }
     }
   });
+
+  // Bonus events for 2-tribe seasons (Phase 4)
+  tribes.forEach(t => _bonusEvents('theNight', t));
 
   // ══ PHASE 5: Morning Race (1-2 events per tribe) ══
   const raceScores = {};

@@ -13163,9 +13163,9 @@ function simulatePaintballHunt(ep) {
       }
     });
 
-    // Bear encounter: 5% per deer per round
-    [...allMembers].filter(m => isDeer(m) && !paintedOut.has(m)).forEach(d => {
-      if (Math.random() < 0.05 && specialEventsThisRound < maxSpecialEvents) {
+    // Bear encounter: rare (~8% chance total per hunt, max 1 per hunt)
+    if (!bearMauledList.length) [...allMembers].filter(m => isDeer(m) && !paintedOut.has(m)).forEach(d => {
+      if (Math.random() < 0.012 && specialEventsThisRound < maxSpecialEvents && !bearMauledList.length) {
         specialEventsThisRound++;
         const pr = pronouns(d);
         if (!gs.lingeringInjuries) gs.lingeringInjuries = {};

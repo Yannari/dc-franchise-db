@@ -13649,9 +13649,9 @@ function simulatePaintballHunt(ep) {
         const opposingDeer = getOpposingDeer(hunterTribe);
         if (!opposingDeer.length) return;
 
-        // Search check — hunters should find targets most of the time
-        const searchScore = s.intuition * 0.05 + s.physical * 0.02 + Math.random() * 0.25;
-        if (searchScore < 0.3) {
+        // Search check — ~65% find rate for average hunter, hunt lasts 4-5 rounds
+        const searchScore = s.intuition * 0.05 + s.physical * 0.015 + Math.random() * 0.2;
+        if (searchScore < 0.35) {
           addScore(hunter, HUNTER_NOTHING);
           matchups.push({ hunter, result: 'nothing', round: roundNum });
           return;
@@ -13754,11 +13754,11 @@ function simulatePaintballHunt(ep) {
         }
 
         // ── Standard shot attempt ──
-        // Hunter favored slightly — hunts should resolve in 2-3 rounds
-        const hunterScore = s.physical * 0.04 + s.intuition * 0.04 + Math.random() * 0.2;
+        // Slight hunter edge — hunts should last 4-5 rounds
+        const hunterScore = s.physical * 0.035 + s.intuition * 0.04 + Math.random() * 0.18;
         const dodgeBonus = stampedeDeer.has(target) ? 0.15 : 0;
         const normPenalty = (deerNorm[tribeOf[target]] - 1) * 0.05;
-        const deerScore = targetStats.endurance * 0.03 + targetStats.intuition * 0.03 + targetStats.boldness * 0.01 + Math.random() * 0.15 + dodgeBonus - normPenalty;
+        const deerScore = targetStats.endurance * 0.035 + targetStats.intuition * 0.03 + targetStats.boldness * 0.015 + Math.random() * 0.15 + dodgeBonus - normPenalty;
 
         // Epic chase: scores within 10%
         const scoreDiff = Math.abs(hunterScore - deerScore);
@@ -13818,8 +13818,8 @@ function simulatePaintballHunt(ep) {
           if (secondTargetPool.length) {
             const target2 = pickTargetDeer(secondTargetPool) || _rp(secondTargetPool);
             const ts2 = pStats(target2);
-            const hunterScore2 = s.physical * 0.04 + s.intuition * 0.04 + Math.random() * 0.2;
-            const deerScore2 = ts2.endurance * 0.03 + ts2.intuition * 0.03 + ts2.boldness * 0.01 + Math.random() * 0.15;
+            const hunterScore2 = s.physical * 0.035 + s.intuition * 0.04 + Math.random() * 0.18;
+            const deerScore2 = ts2.endurance * 0.035 + ts2.intuition * 0.03 + ts2.boldness * 0.015 + Math.random() * 0.15;
             if (hunterScore2 > deerScore2) {
               addScore(hunter, HUNTER_HIT);
               addScore(target2, DEER_PAINTED);

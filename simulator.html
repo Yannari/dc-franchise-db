@@ -9412,6 +9412,8 @@ function simulateSuckyOutdoors(ep) {
         `${nav} scouts the trail head and reads the map with quiet confidence. The tribe moves efficiently into the forest.`,
         `${nav} sets a brisk pace through the trees. "This way — trust me." The tribe follows without question.`,
         `${nav} spots landmarks the others missed. By midday, the tribe is further ahead than any of them expected.`,
+        `${nav} reads the terrain like a book. Every fork, every ridge — ${pr.sub} ${pr.sub === 'they' ? 'know' : 'knows'} which way. The tribe doesn't question it.`,
+        `${nav} barely checks the map. ${pr.Sub} ${pr.sub === 'they' ? 'navigate' : 'navigates'} by instinct — sun position, moss growth, wind direction. The tribe arrives early.`,
       ];
       const pr = pronouns(nav);
       const _txt = _navGoodTexts[_hash(nav + 'navgood', _navGoodTexts.length)];
@@ -9429,6 +9431,8 @@ function simulateSuckyOutdoors(ep) {
         `${nav} leads the tribe in a wide circle for forty minutes before admitting they're lost. The tribe is not amused.`,
         `"I know exactly where we're going," ${nav} says with total confidence. Twenty minutes later: a dead end.`,
         `${nav} argues with the map. The map wins. The tribe backtracks twice before finding the right trail.`,
+        `${nav} keeps squinting at the compass like it's personally offending ${pr.obj}. Eventually ${pr.sub} ${pr.sub === 'they' ? 'hand' : 'hands'} it to someone else. Nobody says anything.`,
+        `The trail ${nav} picked looked right on the map. It is not right in real life. The tribe spends an extra hour retracing ${pr.posAdj} steps.`,
       ];
       const pr = pronouns(nav);
       const _txt = _navBadTexts[_hash(nav + 'navbad', _navBadTexts.length)];
@@ -9450,6 +9454,8 @@ function simulateSuckyOutdoors(ep) {
         `${lagger} falls behind almost immediately. The tribe slows down for ${pr.obj}. Not everyone looks happy about it.`,
         `${lagger} is laboring on the trail. ${pr.Sub} ${pr.sub === 'they' ? 'stop' : 'stops'} to rest three times before the first mile marker.`,
         `The tribe has to keep waiting for ${lagger} to catch up. Someone mutters something under their breath.`,
+        `${lagger} is visibly struggling and knows it. ${pr.Sub} ${pr.sub === 'they' ? 'wave' : 'waves'} the tribe on, then immediately regrets it when nobody waits.`,
+        `${lagger} drags ${pr.posAdj} feet along the trail, wheezing. At one point ${pr.sub} ${pr.sub === 'they' ? 'sit' : 'sits'} on a rock. The whole tribe has to stop.`,
       ];
       personalScores[lagger] -= 1.0;
       addBond(annoyed, lagger, -0.2);
@@ -9470,6 +9476,8 @@ function simulateSuckyOutdoors(ep) {
         `${spotter} spots wild berries off the trail and calls the tribe over. A small windfall — and morale gets a much-needed boost.`,
         `${spotter} notices a stream through the trees. Clean water. The tribe is grateful — and a little impressed.`,
         `${spotter} finds edible mushrooms growing near a fallen log. "These are safe, I'm pretty sure." They are.`,
+        `${spotter} peels off the trail and comes back with two handfuls of something edible. Nobody asked. Nobody is complaining.`,
+        `${spotter} stops and crouches down mid-hike. "Hold on." ${pr.Sub} ${pr.sub === 'they' ? 'come' : 'comes'} back up with wild herbs and something that might be a yam. The tribe is impressed despite themselves.`,
       ];
       personalScores[spotter] += 1.5;
       members.filter(m => m !== spotter).forEach(m => addBond(m, spotter, 0.2));
@@ -9497,6 +9505,8 @@ function simulateSuckyOutdoors(ep) {
           `${a} insists the trail veers left. ${b} says right. Neither backs down. Fifteen minutes of arguing later, they go left — and have to backtrack.`,
           `"We've passed that rock before," ${b} says. "We have NOT," ${a} snaps. Someone has to step between them before they come to blows.`,
           `The direction argument between ${a} and ${b} is so heated that the rest of the tribe just sits down and waits it out.`,
+          `${a} snatches the map from ${b}. ${b} snatches it back. A brief and extremely undignified tug-of-war happens in the middle of the forest.`,
+          `${a} and ${b} have been bickering about the route since the start. It boils over at a fork in the trail. Voices are raised. Gestures are made. The tribe takes the third option and goes around both of them.`,
         ];
         personalScores[a] -= 0.5; personalScores[b] -= 0.5;
         addBond(a, b, -0.3);
@@ -9523,6 +9533,8 @@ function simulateSuckyOutdoors(ep) {
           `${a} and ${b} fall back from the group and find their own rhythm on the trail. By the time they catch up, something has solidified between them.`,
           `${a} tells ${b} something they haven't told anyone else yet. The hike is long — there's time for that kind of honesty.`,
           `${b} slows down to walk with ${a}. The rest of the tribe gets ahead of them. Neither seems to mind.`,
+          `${a} and ${b} spend two miles talking over each other and finishing each other's sentences. By the end of it they're laughing.`,
+          `The trail is long enough that ${a} and ${b} run out of small talk and start saying things they actually mean. The tribe barely notices they've fallen behind.`,
         ];
         personalScores[a] += 0.5; personalScores[b] += 0.5;
         addBond(a, b, 0.4);
@@ -9551,6 +9563,8 @@ function simulateSuckyOutdoors(ep) {
           `${wanderer} spots something glinting off the trail and drifts away to investigate. By the time anyone notices, ${pr.sub} ${pr.sub === 'they' ? 'are' : 'is'} nowhere to be seen.`,
           `${wanderer} wasn't paying attention to the group. Now ${pr.sub} ${pr.sub === 'they' ? 'are' : 'is'} following a different trail entirely. ${pr.Sub} catches up eventually, but everyone noticed.`,
           `"I'm just checking something," ${wanderer} says, veering off into the brush. ${pr.Sub} ${pr.sub === 'they' ? 'come' : 'comes'} back looking guilty.`,
+          `${wanderer} disappears between two trees and doesn't reappear. The tribe spends several confusing minutes trying to figure out where ${pr.sub} went. ${pr.Sub} ${pr.sub === 'they' ? 'emerge' : 'emerges'} from completely the wrong direction.`,
+          `One minute ${wanderer} is right there. The next — gone. The tribe calls ${pr.posAdj} name twice before ${pr.sub} ${pr.sub === 'they' ? 'answer' : 'answers'} from somewhere inexplicably far away.`,
         ];
         personalScores[wanderer] -= 1.5;
         phases.announcement.push({
@@ -9569,6 +9583,8 @@ function simulateSuckyOutdoors(ep) {
           `Something large moves in the bushes. ${panicker} grabs ${prPanic.posAdj} tribemate. ${brave} steps forward without hesitation. It's a squirrel.`,
           `A crashing sound from the trees sends ${panicker} scrambling backward into ${brave}, who looks almost amused.`,
           `${panicker} hears it first. "DID YOU HEAR THAT?" ${brave} walks toward the sound. It's a fallen branch. ${panicker}'s pulse takes a while to settle.`,
+          `Something in the brush makes a noise that has no good explanation. ${panicker} goes absolutely still. ${brave} picks up a rock and walks toward it, looking unbothered.`,
+          `${panicker} grabs ${brave}'s sleeve and ${brave} just pats ${prPanic.posAdj} hand and keeps walking. Whatever it is, ${brave} is going to find it. It turns out to be a bird.`,
         ];
         personalScores[panicker] -= 0.5; personalScores[brave] += 0.5;
         addBond(brave, panicker, 0.3);
@@ -9588,6 +9604,8 @@ function simulateSuckyOutdoors(ep) {
         `${booster} starts a chant on the trail. Silly at first — then everyone joins in. The hike feels shorter.`,
         `${booster} cracks jokes the whole way. By the time they arrive, the tribe is laughing instead of complaining.`,
         `${booster} keeps the energy up. Checks on stragglers. Shares water. The tribe arrives as a unit.`,
+        `${booster} turns a brutal uphill stretch into something almost fun — pure force of personality. The grumbling dies down.`,
+        `When spirits start to flag, ${booster} is the first one talking. ${pronouns(booster).Sub} ${pronouns(booster).sub === 'they' ? 'don\'t' : 'doesn\'t'} let anyone spiral. By the end of the hike, the tribe feels weirdly bonded.`,
       ];
       personalScores[booster] = (personalScores[booster] || 0) + 1.0;
       members.filter(m => m !== booster).forEach(m => addBond(m, booster, 0.2));
@@ -9612,6 +9630,8 @@ function simulateSuckyOutdoors(ep) {
       `${builders[0]} and ${builders[1]} take charge of shelter construction. By sunset, they have something that might actually keep the rain out.`,
       `${builders.join(' and ')} build the shelter frame while the others gather materials. It goes up faster than expected.`,
       `${builders[0]} drives the construction while ${builders[1]} follows ${pronouns(builders[0]).posAdj} lead. The structure holds.`,
+      `${builders[0]} and ${builders[1]} spend two hours engineering a shelter that's more ambitious than it had any right to be. The tribe looks genuinely surprised.`,
+      `Nobody asks ${builders[0]} and ${builders[1]} to take the lead — they just do it. The shelter is up before the others are done arguing about where to put it.`,
     ];
     builders.forEach(b => {
       personalScores[b] += 2.0;
@@ -9634,6 +9654,8 @@ function simulateSuckyOutdoors(ep) {
         `${fireStarter} gets the fire going on the third try. The tribe presses in close, grateful for the warmth.`,
         `${fireStarter} builds a fire with deliberate calm — flint, tinder, patience. The first flame catches to scattered applause.`,
         `Everyone watches ${fireStarter} work the fire bow for fifteen minutes before smoke turns to flame. Someone starts cheering.`,
+        `${fireStarter} gets a spark on the first try and nurses it into a proper fire in under five minutes. Nobody comments — but everyone notices.`,
+        `The damp wood makes it hard. ${fireStarter} doesn't give up. Twenty-two minutes in, ${pronouns(fireStarter).sub === 'they' ? 'they have' : pronouns(fireStarter).sub + ' has'} a fire. The tribe huddles around it immediately.`,
       ];
       const pr = pronouns(fireStarter);
       personalScores[fireStarter] += 1.5;
@@ -9662,6 +9684,8 @@ function simulateSuckyOutdoors(ep) {
         `${slacker} finds a comfortable log and sits on it while everyone else works. Eventually someone snaps, "Are you going to help or what?" ${pr.Sub} ${pr.sub === 'they' ? 'shrug' : 'shrugs'}.`,
         `${slacker} disappears for two hours and returns when the shelter is already up. "It looks great, you guys." No one says anything.`,
         `While the tribe builds camp, ${slacker} is nowhere to be found. ${pr.Sub} shows up for dinner, though. ${pr.Sub} ${pr.sub === 'they' ? 'are' : 'is'} always there for dinner.`,
+        `${slacker} makes a very great show of helping for about six minutes, then quietly stops. ${pr.Sub} ${pr.sub === 'they' ? 'hope' : 'hopes'} nobody noticed. Several people noticed.`,
+        `${slacker} announces that ${pr.sub} ${pr.sub === 'they' ? 'need' : 'needs'} to "survey the area" and walks off. ${pr.Sub} ${pr.sub === 'they' ? 'are' : 'is'} gone for forty minutes. The tribe finishes camp without ${pr.obj}.`,
       ];
       personalScores[slacker] -= 1.5;
       members.filter(m => m !== slacker).forEach(m => addBond(m, slacker, -0.3));
@@ -9689,6 +9713,8 @@ function simulateSuckyOutdoors(ep) {
           `${a} thinks ${b} should be hauling water. ${b} thinks ${a} should. The argument is circular and loud and ends with both of them hauling water.`,
           `The work distribution is a sore subject. ${a} and ${b} debate whose job is harder for ten minutes before the tribe intervenes.`,
           `"That's not what I said I'd do," ${b} tells ${a}. "That's literally exactly what you said," ${a} says. They don't agree.`,
+          `${a} keeps score on who has done what. ${b} keeps a different score. The two numbers do not match and they are both very sure they're right.`,
+          `${a} drops what ${pronouns(a).sub === 'they' ? 'they\'re' : pronouns(a).sub + '\'re'} doing and tells ${b} to do it instead. ${b} says ${pronouns(b).sub === 'they' ? 'they have' : pronouns(b).sub + ' has'} their own job. Neither task gets done for a while.`,
         ];
         personalScores[a] -= 0.5; personalScores[b] -= 0.5;
         addBond(a, b, -0.3);
@@ -9711,6 +9737,8 @@ function simulateSuckyOutdoors(ep) {
         `The wall ${worstBuilder} reinforced collapses in the middle of the night. The tribe scrambles to fix it. Everyone knows whose work it was.`,
         `${worstBuilder}'s section of the shelter gives way before they even finish eating dinner. "I can fix it," ${pr.sub} says. ${pr.Sub} cannot fix it.`,
         `Something ${worstBuilder} did wrong becomes apparent around 2am when the roof comes down on three people.`,
+        `${worstBuilder} tied the knots on ${pr.posAdj} section. They come undone two hours into the night. The shelter lists, then leans, then gives.`,
+        `The supporting pole ${worstBuilder} planted is about four inches short of the ground. This becomes everyone's problem at midnight.`,
       ];
       personalScores[worstBuilder] -= 1.0;
       members.filter(m => m !== worstBuilder).forEach(m => addBond(m, worstBuilder, -0.2));
@@ -9735,6 +9763,8 @@ function simulateSuckyOutdoors(ep) {
             `${fisher} builds a makeshift fishing trap from supplies in ${pr.posAdj} pack and hauls out enough to feed everyone. The tribe is stunned.`,
             `${fisher} wades into the stream with ${pr.posAdj} bare hands and actually catches something. Multiple times. The tribe roasts fish over the fire.`,
             `${fisher} rigs up a crude rod from a stick and some cordage and spends two hours fishing. ${pr.Sub} comes back with dinner.`,
+            `${fisher} disappears to the creek for an hour. ${pr.Sub} ${pr.sub === 'they' ? 'come' : 'comes'} back carrying enough fish to make the tribe go quiet with something resembling gratitude.`,
+            `"I know how to catch fish," ${fisher} says, and then goes and proves it. Three, cleaned and ready to cook. The tribe eats well.`,
           ];
           personalScores[fisher] += 1.5;
           members.filter(m => m !== fisher).forEach(m => addBond(m, fisher, 0.3));
@@ -9757,6 +9787,8 @@ function simulateSuckyOutdoors(ep) {
             `${forager} wanders into the tree line and comes back with an armful of edible plants and roots. Not glamorous, but it's dinner.`,
             `${forager} identifies three edible species off the trail. The tribe eats well — better than they expected on night one.`,
             `${forager} pulls out plants from ${pr.posAdj} pack they gathered on the hike. "I was saving these." Smart.`,
+            `${forager} spends an hour working the perimeter of camp, picking things that look awful and taste edible. The tribe is fed. Nobody says thank you loudly enough.`,
+            `${forager} lays out everything ${pr.sub} ${pr.sub === 'they' ? 'found' : 'found'} like a tiny market stall. It's not much but it fills the gap. The tribe seems impressed.`,
           ];
           personalScores[forager] += 1.0;
           members.filter(m => m !== forager).forEach(m => addBond(m, forager, 0.2));
@@ -9779,6 +9811,8 @@ function simulateSuckyOutdoors(ep) {
         `${f1} and ${f2} argue about who gets the spot closest to the fire. It gets personal fast.`,
         `"I built the shelter, I pick my spot." ${f2} disagrees. Loudly.`,
         `${f1} claims the driest corner. ${f2} was already lying there. Neither moves.`,
+        `${f1} marks out a sleeping spot with their pack. ${f2} puts their pack there too. A standoff develops.`,
+        `The best spot in the shelter — close to the fire, away from the drafty wall — is claimed by both ${f1} and ${f2} simultaneously. The subsequent negotiation is unpleasant.`,
       ];
       personalScores[f1] = (personalScores[f1] || 0) - 0.5;
       personalScores[f2] = (personalScores[f2] || 0) - 0.5;
@@ -9809,6 +9843,8 @@ function simulateSuckyOutdoors(ep) {
           `${storyteller} waits until the fire is low and everyone is settled. Then ${pr.sub} ${pr.sub === 'they' ? 'start' : 'starts'}: "There's a story about these woods…" Nobody sleeps well after.`,
           `${storyteller} tells a ghost story with unsettling specificity. ${pr.Sub} ${pr.sub === 'they' ? 'make' : 'makes'} eye contact with different people at the worst moments. Someone shrieks.`,
           `The ghost story ${storyteller} tells is technically about a different forest. But somehow every detail matches exactly where they are. No one says anything.`,
+          `${storyteller} starts quietly. The kind of story where you don't realize you're leaning in until you're already too close. By the end, no one moves.`,
+          `"I'm only going to tell this once," ${storyteller} says. Good. Once is enough. Two people claim they're not scared. They are.`,
         ];
         personalScores[storyteller] += 1.0;
         members.filter(m => m !== storyteller).forEach(m => addBond(m, storyteller, 0.2));
@@ -9852,6 +9888,8 @@ function simulateSuckyOutdoors(ep) {
           `${a} and ${b} stay up after everyone else turns in. The fire pops. They talk until it goes out.`,
           `${a} sits close to ${b} by the fire. Something about the dark and the warmth makes honesty come easy.`,
           `${b} and ${a} watch the sparks rise and talk about things they haven't told their other tribemates. The night holds everything still.`,
+          `Everyone else falls asleep. ${a} and ${b} stay where they are, voices low, fire small. The conversation feels like a different world from the game.`,
+          `${a} pokes at the fire. ${b} says something surprising. ${a} says something back. They stay out there for a long time.`,
         ];
         personalScores[a] += 0.5; personalScores[b] += 0.5;
         addBond(a, b, 0.5);
@@ -9876,6 +9914,8 @@ function simulateSuckyOutdoors(ep) {
           `${sa} and ${sb} drift away from the group when the fire dies down. They come back looking suspiciously content.`,
           `${sb} leans on ${sa} by the fire. Everyone sees it. Nobody says anything — yet.`,
           `Under a sky full of stars, ${sa} and ${sb} find a quiet corner of camp. It's disgustingly sweet.`,
+          `${sa} and ${sb} take the longest possible route to get water and somehow nobody says anything about how long they were gone.`,
+          `The whole tribe can see it. ${sa} and ${sb} are not being subtle. Someone sighs. Someone else rolls their eyes. The two of them don't notice.`,
         ];
         personalScores[sa] += 0.5; personalScores[sb] += 0.5;
         addBond(sa, sb, 0.3);
@@ -9906,6 +9946,8 @@ function simulateSuckyOutdoors(ep) {
             `${prankster} waits until ${target} is asleep and puts something cold on ${pronouns(target).posAdj} face. The scream that follows wakes the entire camp.`,
             `${prankster} rearranges ${target}'s pack while ${pronouns(target).sub} sleeps. ${target} won't find everything for three days.`,
             `${prankster} makes an unsettling noise outside the shelter. The chaos ${prP.sub} ${prP.sub === 'they' ? 'cause' : 'causes'} is considerable. ${prP.Sub} ${prP.sub === 'they' ? 'think' : 'thinks'} it's hilarious. ${target} does not.`,
+            `${prankster} moves ${target}'s shoes three feet away while ${pronouns(target).sub} sleeps. ${target} finds this out at 4am in the dark. The language used is not appropriate.`,
+            `${prankster} ties a knot in ${target}'s sleeping bag. A masterclass in pettiness. ${prP.Sub} ${prP.sub === 'they' ? 'are' : 'is'} very proud. ${target} is furious.`,
           ];
           personalScores[prankster] -= 1.0;
           addBond(target, prankster, -0.4);
@@ -9944,6 +9986,8 @@ function simulateSuckyOutdoors(ep) {
             `${schemer} waits until the tribe settles, then leans over to ${confideeTo}. Something is being planned. The fire masks their voices — mostly.`,
             `${schemer} has been watching. Now ${pr.sub} ${pr.sub === 'they' ? 'talk' : 'talks'} to ${confideeTo} in the dark, laying out a quiet strategy.`,
             `${schemer} and ${confideeTo} aren't sleeping. They're planning. Out here, with nothing to do but sit and think, strategy fills the silence.`,
+            `${schemer} keeps ${pr.posAdj} voice low and ${pr.posAdj} eyes on the camp. ${confideeTo} nods slowly. Something is being put in motion.`,
+            `The fire crackles. Everyone else is asleep. ${schemer} starts talking to ${confideeTo} and doesn't stop for twenty minutes. It's clearly important. And it's clearly not good for someone.`,
           ];
           personalScores[schemer] += 0.5;
           const evtPlayers = hearer ? [schemer, confideeTo, hearer] : [schemer, confideeTo];
@@ -9983,6 +10027,8 @@ function simulateSuckyOutdoors(ep) {
           `${a} and ${b} lie on their backs looking up. Far from camp, far from the game. ${a} says something real. ${b} responds in kind.`,
           `The stars are out, fully. ${b} points out a constellation. ${a} tells ${pronouns(b).obj} something ${pronouns(a).sub === 'they' ? 'they\'ve' : 'they\'ve'} never told anyone out here.`,
           `${a} and ${b} stay outside the shelter long after everyone else is asleep. The kind of conversation that only happens at 3am under a clear sky.`,
+          `It's quiet. ${a} and ${b} are the only ones not asleep yet. The sky is clear. Eventually one of them says, "I trust you." The other one means it when they say it back.`,
+          `${a} and ${b} lie in the dark and talk about things that have nothing to do with the game. For a while, the game stops existing.`,
         ];
         personalScores[a] += 1.0; personalScores[b] += 1.0;
         addBond(a, b, 0.5);
@@ -10007,6 +10053,8 @@ function simulateSuckyOutdoors(ep) {
           `${anxious} cannot sleep. ${pr.Sub} ${pr.sub === 'they' ? 'lie' : 'lies'} awake listening to every crack and rustle in the forest, running through scenarios.`,
           `${anxious} is up before dawn having barely slept. ${pr.Sub} ${pr.sub === 'they' ? 'look' : 'looks'} exhausted already, and the challenge hasn't even started.`,
           `Every sound in the forest jolts ${anxious} awake. By morning ${pr.sub} ${pr.sub === 'they' ? 'have' : 'has'} slept maybe ninety minutes.`,
+          `${anxious} stares at the ceiling of the shelter for hours, running tribal scenarios on a loop. ${pr.Sub} is completely wrecked by morning.`,
+          `${anxious} closes ${pr.posAdj} eyes and immediately opens them again. And again. The forest sounds won't let ${pr.obj} rest. Eventually ${pr.sub} ${pr.sub === 'they' ? 'give' : 'gives'} up and just sits there until sunrise.`,
         ];
         personalScores[anxious] -= 0.5;
         phases.nightfall.push({
@@ -10033,6 +10081,8 @@ function simulateSuckyOutdoors(ep) {
             `The fire is low. ${confessor} starts talking — not about strategy. About home. About why ${pr.sub} ${pr.sub === 'they' ? 'are' : 'is'} really here. ${listener} listens without interrupting.`,
             `${confessor} admits something ${pr.sub} ${pr.sub === 'they' ? 'haven\'t' : 'hasn\'t'} told anyone. ${listener} nods. "I get it." The silence that follows is comfortable.`,
             `${confessor} and ${listener} are the last ones awake. The conversation goes somewhere real. Neither of them expected that.`,
+            `${confessor} says something ${pr.sub} ${pr.sub === 'they' ? 'have' : 'has'} clearly been holding in. ${listener} doesn't fill the silence after. Just lets it sit. That's exactly right.`,
+            `The fire burns down to embers. ${confessor} starts talking and doesn't stop for twenty minutes. ${listener} doesn't move. By the end, something between them is different.`,
           ];
           personalScores[confessor] = (personalScores[confessor] || 0) + 1.0;
           personalScores[listener] = (personalScores[listener] || 0) + 0.5;
@@ -10067,11 +10117,15 @@ function simulateSuckyOutdoors(ep) {
             `Rain hits the camp hard. The shelter — barely adequate to begin with — is not adequate for this. Everyone gets wet. Some more than others.`,
             `The storm rolls in without warning. The shelter fails. The tribe spends the night huddled under a tarp that covers maybe half of them.`,
             `By 1am the rain is relentless. The poorly-built shelter is a puddle. No one is sleeping. Everyone is miserable.`,
+            `It rains sideways for three hours. The shelter, optimistically assembled this afternoon, does not pass the test. The tribe presses together for warmth and says very little.`,
+            `The rain starts gentle and ends catastrophic. By 3am, the shelter has become a funnel. Wet, cold, furious — and they still have a race to run in the morning.`,
           ]
           : [
             `Rain comes down in the night. The shelter holds. It's not comfortable, but everyone stays mostly dry.`,
             `A light rain passes through. The fire dies. They relight it in the morning. Nobody panics.`,
             `The shelter creaks in the rain but doesn't fail. A small victory.`,
+            `A proper downpour at 2am. The shelter does its job. Everyone pulls their things in from the edges and goes back to sleep. It's fine.`,
+            `Rain drums on the shelter roof. Not pleasant. But the structure holds, and by morning the sky is clear. They got lucky.`,
           ];
         const isHardRain = quality < 5;
         if (isHardRain) {
@@ -10097,6 +10151,8 @@ function simulateSuckyOutdoors(ep) {
           `Something large crashes through the brush outside the shelter. ${panicker} goes rigid with panic. ${brave} grabs a stick and walks toward it. It's a raccoon.`,
           `A bear gets into the supplies. ${panicker} screams. ${brave} yells at the bear, which works. Bears are apparently intimidated by ${brave}.`,
           `The tribe hears heavy breathing outside. ${panicker} is already halfway up a tree. ${brave} turns on a flashlight and walks out to look. "It's gone." Nobody slept after that either way.`,
+          `Something large is circling the camp in the dark. ${panicker} makes a sound that is not quite a word. ${brave} grabs a torch and steps outside. There is a long silence. Then: "It's fine."`,
+          `The bear — and it is definitely a bear — knocks over a supply crate five feet from the shelter. ${panicker} dives into ${prP.posAdj} sleeping bag. ${brave} stands up, claps ${prB.posAdj} hands, and shouts. The bear leaves. The tribe does not sleep again.`,
         ];
         personalScores[brave] += 1.5; personalScores[panicker] -= 1.0;
         addBond(brave, panicker, 0.3);
@@ -10137,6 +10193,8 @@ function simulateSuckyOutdoors(ep) {
           `${lost} slipped away to use the bathroom and didn't come back. The tribe spent an hour calling ${pr.posAdj} name into the dark before realizing — ${pr.sub} ${pr.sub === 'they' ? 'are' : 'is'} genuinely gone.`,
           `${lost} got up in the middle of the night and walked in the wrong direction. By the time ${pr.sub} ${pr.sub === 'they' ? 'realize' : 'realizes'} it, the camp is nowhere to be found.`,
           `"I'll be right back," ${lost} says. ${pr.Sub} ${pr.sub === 'they' ? 'are' : 'is'} not right back. Search parties go out. Nothing. Production has a tracker, but the tribe doesn't know that.`,
+          `${lost} takes a walk to clear ${pr.posAdj} head and loses track of every single landmark. By the time ${pr.sub} ${pr.sub === 'they' ? 'admit' : 'admits'} ${pr.sub} ${pr.sub === 'they' ? 'are' : 'is'} lost, ${pr.sub} ${pr.sub === 'they' ? 'are' : 'is'} very lost.`,
+          `The tribe wakes up and ${lost} is simply not there. No note. No explanation. The best guess is bathroom. The reality is that ${pr.sub} ${pr.sub === 'they' ? 'have' : 'has'} been wandering in the forest for two hours.`,
         ];
 
         // Check for a lost pair (two with bond >= 3)
@@ -10150,6 +10208,8 @@ function simulateSuckyOutdoors(ep) {
           const _lostPairTexts = [
             `${lost} and ${alsoLost} both get turned around in the dark. They eventually find each other — but not the camp. By sunrise, they're together, lost, and significantly behind.`,
             `${alsoLost} goes looking for ${lost} and also gets lost. The tribe has now lost two people and is very, very upset.`,
+            `${lost} wanders off. ${alsoLost} follows. Neither one makes a sound decision for the next four hours. Production eventually has to intervene.`,
+            `${lost} and ${alsoLost} end up in the same part of the wrong forest by pure coincidence. They bond over how thoroughly they're both lost. The tribe is not moved by this.`,
           ];
           phases.theNight.push({
             type: 'soLost', phase: 'theNight', players: [lost, alsoLost],
@@ -10176,6 +10236,8 @@ function simulateSuckyOutdoors(ep) {
           `${culprit} knocks a torch into the shelter wall. The resulting chaos is brief but spectacular. Everyone scrambles. No one is hurt, but the shelter needs emergency repairs.`,
           `${culprit} rolls too close to the fire in ${pr.posAdj} sleep and wakes up to the smell of burning. The tribe puts it out, fast. ${pr.Sub} is very sorry.`,
           `A small fire starts near ${culprit}'s sleeping spot. No one knows exactly how. ${culprit} definitely knows how. ${pr.Sub} ${pr.sub === 'they' ? 'aren\'t' : 'isn\'t'} saying.`,
+          `${culprit} insists the torch was well away from the shelter. It was not well away from the shelter. The corner of the shelter is now on fire.`,
+          `At 1am, ${culprit} stumbles awake and steps directly into the fire pit. What follows is six minutes of chaos, one bucket of water, and a shelter that now has a hole in it.`,
         ];
         personalScores[culprit] -= 2.0;
         members.filter(m => m !== culprit).forEach(m => addBond(m, culprit, -0.3));
@@ -10204,6 +10266,8 @@ function simulateSuckyOutdoors(ep) {
           `It's cold. ${a} and ${b} end up back-to-back for warmth. Nobody says anything about it in the morning.`,
           `${a} and ${b} are pressed together for warmth by midnight. Practical. Completely practical.`,
           `${b} shuffles over to ${a} in the night. "I'm freezing." "${a} is also freezing." They're both warmer for it.`,
+          `At some point in the night, ${a} and ${b} are sharing one sleeping bag. Nobody asks how that happened. Nobody is cold.`,
+          `${a} wakes up with ${b} tucked against ${pronouns(a).posAdj} side. ${pronouns(a).Sub} doesn't move. It's warm. It's fine. Nobody mentions it.`,
         ];
         personalScores[a] += 0.5; personalScores[b] += 0.5;
         addBond(a, b, 0.3);
@@ -10225,6 +10289,8 @@ function simulateSuckyOutdoors(ep) {
           `${dreamer} talks in ${pr.posAdj} sleep. Something about votes. Something about a name. The tribemates who are awake look at each other.`,
           `${dreamer} bolts upright at 3am, gasping. ${pr.Sub} says ${pr.sub === 'they' ? 'they\'re' : pr.sub + '\'s'} fine. ${pr.Sub} ${pr.sub === 'they' ? 'don\'t' : 'doesn\'t'} look fine.`,
           `${dreamer} mutters names in ${pr.posAdj} sleep. No one is sure what they mean. Two people quietly note which names were said.`,
+          `${dreamer} starts thrashing in ${pr.posAdj} sleep and wakes up half the shelter. ${pr.Sub} ${pr.sub === 'they' ? 'don\'t' : 'doesn\'t'} remember the dream. Others definitely remember the commotion.`,
+          `${dreamer} says "no" in ${pr.posAdj} sleep very clearly three times. Nobody does anything. In the morning it's one of those things that happened but nobody brings up.`,
         ];
         personalScores[dreamer] -= 0.5;
         phases.theNight.push({
@@ -10248,6 +10314,8 @@ function simulateSuckyOutdoors(ep) {
             `Something crashes in the dark. ${scared2} freezes. ${brave2} grabs a stick and goes to check. Turns out it's a raccoon. ${brave2} comes back grinning. ${scared2} hasn't unclenched yet.`,
             `Footsteps outside the shelter. ${brave2} goes alone. Comes back thirty seconds later. "Just a deer." ${scared2} doesn't sleep for another hour.`,
             `A scream echoes through the woods. ${brave2} stands up immediately. "${pr2.Sub} will be right back." ${scared2} waits in silence, counting the seconds.`,
+            `Something knocks over a crate in the dark. ${scared2} grabs ${brave2}'s arm. ${brave2} peels ${scared2}'s hand off, picks up a flashlight, and walks out. Back in sixty seconds: "Nothing. Go to sleep."`,
+            `The noise is indescribable — not quite an animal, not quite the wind. ${scared2} doesn't breathe. ${brave2} goes toward it. The camp waits. ${brave2} returns. "No idea what that was." This is not reassuring.`,
           ];
           personalScores[brave2] = (personalScores[brave2] || 0) + 1.0;
           personalScores[scared2] = (personalScores[scared2] || 0) - 0.5;
@@ -10297,6 +10365,8 @@ function simulateSuckyOutdoors(ep) {
           `${topRacer} sets the pace on the way back. The tribe runs hard. ${pr.Sub} ${pr.sub === 'they' ? 'don\'t' : 'doesn\'t'} slow down until they see the finish.`,
           `${topRacer} is running before anyone else is ready. The tribe scrambles to keep up.`,
           `${topRacer} takes the lead on the morning race back. ${pr.Sub} ${pr.sub === 'they' ? 'push' : 'pushes'} the pace and the tribe follows.`,
+          `${topRacer} doesn't wait for the signal — ${pr.sub} ${pr.sub === 'they' ? 'are' : 'is'} already moving. The tribe chases. They are not going to lose this thing.`,
+          `${topRacer} runs the morning race like ${pr.sub} ${pr.sub === 'they' ? 'have' : 'has'} something to prove. Maybe ${pr.sub} ${pr.sub === 'they' ? 'do' : 'does'}. The tribe keeps up. Barely.`,
         ];
         personalScores[topRacer] += 2.0;
         phases.morningRace.push({
@@ -10315,10 +10385,14 @@ function simulateSuckyOutdoors(ep) {
           `${tribeLostNames[0]} finally staggers in — long after the other tribes are done. The tribe had to wait, and waited too long.`,
           `${tribeLostNames[0]} returns from the night with leaves in ${pronouns(tribeLostNames[0]).posAdj} hair and panic in ${pronouns(tribeLostNames[0]).posAdj} eyes. The tribe lost because of it.`,
           `Production guides ${tribeLostNames[0]} back to the course. ${pronouns(tribeLostNames[0]).Sub} ${pronouns(tribeLostNames[0]).sub === 'they' ? 'arrive' : 'arrives'} last. Way, way last.`,
+          `${tribeLostNames[0]} shows up to the finish line while the other tribes are already sitting down. The tribe can't hide how furious they are.`,
+          `By the time ${tribeLostNames[0]} limps in, the race is already decided. ${pronouns(tribeLostNames[0]).Sub} ${pronouns(tribeLostNames[0]).sub === 'they' ? 'look' : 'looks'} like ${pronouns(tribeLostNames[0]).sub} ${pronouns(tribeLostNames[0]).sub === 'they' ? 'have' : 'has'} been through a lot. The tribe has too, waiting.`,
         ]
         : [
           `${tribeLostNames.join(' and ')} come stumbling back together just as the other tribes are finishing. A disaster.`,
           `Two players, one forest, zero sense of direction. ${tribeLostNames.join(' and ')} return long after anyone else.`,
+          `${tribeLostNames.join(' and ')} appear from the wrong direction, looking bewildered. The race has been over for ten minutes. The tribe says nothing. Their faces say everything.`,
+          `The tribe waits. And waits. ${tribeLostNames.join(' and ')} eventually emerge from the treeline together, covered in mud, already arguing about whose fault it is.`,
         ];
       tribeLostNames.forEach(lostName => {
         personalScores[lostName] -= 5.0; // race penalty applied to score too
@@ -10345,6 +10419,8 @@ function simulateSuckyOutdoors(ep) {
           `${shortcutFinder} spots a gap in the trees and calls the tribe over. The shortcut saves them a quarter mile. Crucial.`,
           `${shortcutFinder} cuts left off the trail and waves the tribe through. ${pr.Sub} ${pr.sub === 'they' ? 'were' : 'was'} right. It's shorter.`,
           `"This way," ${shortcutFinder} says with quiet certainty. ${pr.Sub} ${pr.sub === 'they' ? 'lead' : 'leads'} the tribe around the ridge and down the fast way.`,
+          `${shortcutFinder} doesn't explain — just veers off into the trees. The tribe hesitates, then follows. Three minutes later they're on a straighter path. Nobody questions it.`,
+          `${shortcutFinder} saw the shortcut on the way in. ${pr.Sub} ${pr.sub === 'they' ? 'have' : 'has'} been waiting to use it. The tribe emerges half a mile ahead of where they'd have been otherwise.`,
         ];
         personalScores[shortcutFinder] += 2.0;
         racers.filter(m => m !== shortcutFinder).forEach(m => addBond(m, shortcutFinder, 0.3));
@@ -10374,6 +10450,8 @@ function simulateSuckyOutdoors(ep) {
           `${carrier} notices ${carried} falling behind and grabs ${prR.posAdj} arm. "Come on. We're going together." They finish together.`,
           `${carried} is slowing down. ${carrier} doesn't leave ${prR.obj} behind — ${prC.sub} ${prC.sub === 'they' ? 'half-carry' : 'half-carries'} ${prR.obj} the last stretch.`,
           `${carrier} drops back and pushes ${carried} from behind for the last quarter mile. ${prC.Sub} ${prC.sub === 'they' ? 'refuse' : 'refuses'} to let anyone fall behind.`,
+          `${carried} hits a wall in the last mile. ${carrier} grabs ${prR.posAdj} pack, takes the extra weight, and sets the pace. "Just keep moving."`,
+          `${carrier} could have run ahead. ${prC.Sub} ${prC.sub === 'they' ? 'don\'t' : 'doesn\'t'}. ${prC.Sub} ${prC.sub === 'they' ? 'stay' : 'stays'} with ${carried} the whole way. The tribe notices.`,
         ];
         personalScores[carrier] += 1.5;
         addBond(carrier, carried, 0.5);
@@ -10396,6 +10474,8 @@ function simulateSuckyOutdoors(ep) {
         const _stumbleTexts = [
           `${stumbler} trips on a root and goes down hard. ${pr.Sub} ${pr.sub === 'they' ? 'get' : 'gets'} up limping. The tribe slows down.`,
           `${stumbler}'s legs give out on a hill. The night took everything ${pr.sub} had. Someone has to help ${pr.obj} the rest of the way.`,
+          `${stumbler} hits the ground face-first on a rocky patch. ${pr.Sub} ${pr.sub === 'they' ? 'get' : 'gets'} up waving everyone off. ${pr.Sub} is clearly not fine.`,
+          `The trail is brutal in the morning light and ${stumbler} is running on no sleep. One bad step, and ${pr.sub} ${pr.sub === 'they' ? 'go' : 'goes'} down. The tribe waits for ${pr.obj}. They don't have time to wait.`,
         ];
         personalScores[stumbler] = (personalScores[stumbler] || 0) - 1.0;
         phases.morningRace.push({
@@ -10469,46 +10549,138 @@ function simulateSuckyOutdoors(ep) {
   ep.chalMemberScores = { ...personalScores };
   ep.isSuckyOutdoors = true;
 
-  // ══ Camp events: 2 per tribe (1 positive, 1 negative) ══
+  // ══ Camp events: 3-4 per tribe (2 positive, 1-2 negative) ══
   tribes.forEach(t => {
     const key = t.name;
     if (!ep.campEvents[key]) ep.campEvents[key] = { pre: [], post: [] };
     if (!ep.campEvents[key].post) ep.campEvents[key].post = [];
 
-    // Positive: navigator or strongest performer
-    const nav = navigators[t.name];
-    const topPerformer = t.members.slice().sort((a, b) => (personalScores[b] || 0) - (personalScores[a] || 0))[0];
+    const usedPlayers = new Set();
+    const sortedDesc = t.members.slice().sort((a, b) => (personalScores[b] || 0) - (personalScores[a] || 0));
+    const sortedAsc  = t.members.slice().sort((a, b) => (personalScores[a] || 0) - (personalScores[b] || 0));
+    const tribeLostNames = lostPlayers.filter(lp => lp.tribe === t.name).map(lp => lp.name);
+
+    // ── POSITIVE #1: SURVIVOR — top personal scorer ──
+    const topPerformer = sortedDesc.find(m => !usedPlayers.has(m));
     if (topPerformer && (personalScores[topPerformer] || 0) > 0) {
       const pr = pronouns(topPerformer);
+      t.members.filter(m => m !== topPerformer).forEach(m => addBond(m, topPerformer, 0.2));
+      if (!gs.popularity) gs.popularity = {};
+      gs.popularity[topPerformer] = (gs.popularity[topPerformer] || 0) + 2;
       ep.campEvents[key].post.push({
-        type: 'soStandout', players: [topPerformer],
-        text: `${topPerformer} was the standout of the overnight challenge — ${pr.sub} ${pr.sub === 'they' ? 'kept' : 'kept'} the tribe together when things got rough.`,
-        consequences: 'Strong performance in the outdoors.',
-        badgeText: 'MVP', badgeClass: 'gold'
+        type: 'soSurvivor', players: [topPerformer],
+        text: `${topPerformer} carried the tribe through the night. Every phase, ${pr.sub} ${pr.sub === 'they' ? 'were' : 'was'} the one people leaned on. The tribe feels it.`,
+        consequences: '+0.5 bond with all tribemates, +2 popularity.',
+        badgeText: 'SURVIVOR', badgeClass: 'gold'
       });
+      usedPlayers.add(topPerformer);
     }
 
-    // Negative: lost player or worst performer
-    const tribeLostNames = lostPlayers.filter(lp => lp.tribe === t.name).map(lp => lp.name);
+    // ── POSITIVE #2: CAMP BUILDER, BRAVE, or PEACEMAKER (pick one) ──
+    const pos2Roll = Math.random();
+    if (pos2Roll < 0.40) {
+      // CAMP BUILDER — top shelter/fire contributor (endurance+mental)
+      const builder = t.members.filter(m => !usedPlayers.has(m)).slice().sort((a, b) => {
+        const sA = pStats(a), sB = pStats(b);
+        return (sB.endurance * 0.04 + sB.mental * 0.03) - (sA.endurance * 0.04 + sA.mental * 0.03);
+      })[0];
+      if (builder) {
+        const pr = pronouns(builder);
+        t.members.filter(m => m !== builder).forEach(m => addBond(m, builder, 0.15));
+        ep.campEvents[key].post.push({
+          type: 'soCampBuilder', players: [builder],
+          text: `${builder} built the shelter that kept everyone alive. Without ${pr.obj}, the night would have been a disaster.`,
+          consequences: '+0.3 bond with all tribemates.',
+          badgeText: 'CAMP BUILDER', badgeClass: 'gold'
+        });
+        usedPlayers.add(builder);
+      }
+    } else if (pos2Roll < 0.70) {
+      // BRAVE — highest boldness among non-used players
+      const braveEv = t.members.filter(m => !usedPlayers.has(m)).slice().sort((a, b) => pStats(b).boldness - pStats(a).boldness)[0];
+      if (braveEv && pStats(braveEv).boldness >= 5) {
+        const pr = pronouns(braveEv);
+        t.members.filter(m => m !== braveEv).forEach(m => addBond(m, braveEv, 0.15));
+        if (!gs.playerStates) gs.playerStates = {};
+        if (!gs.playerStates[braveEv]) gs.playerStates[braveEv] = {};
+        gs.playerStates[braveEv].bigMoves = (gs.playerStates[braveEv].bigMoves || 0) + 1;
+        ep.campEvents[key].post.push({
+          type: 'soBrave', players: [braveEv],
+          text: `When things went sideways in the night, ${braveEv} stepped up. ${pr.Sub} ${pr.sub === 'they' ? 'didn\'t' : 'didn\'t'} hesitate — and the tribe noticed.`,
+          consequences: '+0.3 bond with all tribemates, +1 big move.',
+          badgeText: 'BRAVE', badgeClass: 'gold'
+        });
+        usedPlayers.add(braveEv);
+      }
+    } else {
+      // PEACEMAKER — highest social among non-used players
+      const peacemaker = t.members.filter(m => !usedPlayers.has(m)).slice().sort((a, b) => pStats(b).social - pStats(a).social)[0];
+      if (peacemaker && pStats(peacemaker).social >= 5) {
+        const pr = pronouns(peacemaker);
+        t.members.filter(m => m !== peacemaker).forEach(m => addBond(m, peacemaker, 0.15));
+        ep.campEvents[key].post.push({
+          type: 'soPeacemaker', players: [peacemaker],
+          text: `${peacemaker} kept the tribe from falling apart. ${pr.Sub} ${pr.sub === 'they' ? 'smoothed' : 'smoothed'} over the arguments and held everyone together.`,
+          consequences: '+0.3 bond with all tribemates.',
+          badgeText: 'PEACEMAKER', badgeClass: 'gold'
+        });
+        usedPlayers.add(peacemaker);
+      }
+    }
+
+    // ── NEGATIVE #1: COST THE TRIBE — always fires if someone was lost ──
     if (tribeLostNames.length > 0) {
       const lostName = tribeLostNames[0];
-      const pr = pronouns(lostName);
-      ep.campEvents[key].post.push({
-        type: 'soCostTribe', players: [lostName],
-        text: `${lostName} getting lost in the woods cost the tribe precious time in the morning race. Nobody is letting ${pr.obj} forget it.`,
-        consequences: '+2.0 heat for 2 episodes.',
-        badgeText: 'COST THE TRIBE', badgeClass: 'red'
-      });
-    } else {
-      const bottomPerformer = t.members.slice().sort((a, b) => (personalScores[a] || 0) - (personalScores[b] || 0))[0];
-      if (bottomPerformer && (personalScores[bottomPerformer] || 0) < 0) {
-        const pr = pronouns(bottomPerformer);
+      if (!usedPlayers.has(lostName)) {
+        const pr = pronouns(lostName);
         ep.campEvents[key].post.push({
-          type: 'soSlacker', players: [bottomPerformer],
-          text: `${bottomPerformer} struggled in the overnight challenge. ${pr.Sub} ${pr.sub === 'they' ? 'weren\'t' : 'wasn\'t'} much help — and the tribe noticed.`,
-          consequences: 'Poor performance noted by tribemates.',
-          badgeText: 'SLACKER', badgeClass: 'red'
+          type: 'soCostTribe', players: [lostName],
+          text: `${lostName} getting lost in the woods cost the tribe precious time in the morning race. Nobody is letting ${pr.obj} forget it.`,
+          consequences: '+2.0 heat for 2 episodes.',
+          badgeText: 'COST THE TRIBE', badgeClass: 'red'
         });
+        usedPlayers.add(lostName);
+      }
+    }
+
+    // ── NEGATIVE #2: DEAD WEIGHT, TROUBLEMAKER, or QUITTER ──
+    const neg2Roll = Math.random();
+    const neg2Candidate = sortedAsc.find(m => !usedPlayers.has(m) && (personalScores[m] || 0) < 0);
+    if (neg2Candidate) {
+      const pr = pronouns(neg2Candidate);
+      const negArch = players.find(p => p.name === neg2Candidate)?.archetype || '';
+      if (neg2Roll < 0.40) {
+        // DEAD WEIGHT — lowest personal scorer
+        t.members.filter(m => m !== neg2Candidate).forEach(m => addBond(m, neg2Candidate, -0.15));
+        if (!gs._suckyOutdoorsHeat) gs._suckyOutdoorsHeat = {};
+        gs._suckyOutdoorsHeat[neg2Candidate] = gs._suckyOutdoorsHeat[neg2Candidate] || { amount: 0.5, expiresEp: ((gs.episode || 0) + 1) + 1 };
+        ep.campEvents[key].post.push({
+          type: 'soDeadWeight', players: [neg2Candidate],
+          text: `${neg2Candidate} was the weak link last night. ${pr.Sub} ${pr.sub === 'they' ? 'scored' : 'scored'} at the bottom in nearly every phase, and the tribe isn't forgetting it.`,
+          consequences: '-0.3 bond with all tribemates, +0.5 heat.',
+          badgeText: 'DEAD WEIGHT', badgeClass: 'red'
+        });
+        usedPlayers.add(neg2Candidate);
+      } else if (neg2Roll < 0.70 && !NICE_ARCHS.has(negArch)) {
+        // TROUBLEMAKER — prank/mischief type
+        t.members.filter(m => m !== neg2Candidate).forEach(m => addBond(m, neg2Candidate, -0.15));
+        ep.campEvents[key].post.push({
+          type: 'soTroublemaker', players: [neg2Candidate],
+          text: `${neg2Candidate} made a bad night worse. Whatever ${pr.sub} ${pr.sub === 'they' ? 'did' : 'did'}, the tribe didn't need it — and they're still annoyed about it.`,
+          consequences: '-0.3 bond with all tribemates.',
+          badgeText: 'TROUBLEMAKER', badgeClass: 'red'
+        });
+        usedPlayers.add(neg2Candidate);
+      } else {
+        // QUITTER — slacker/refusal type
+        t.members.filter(m => m !== neg2Candidate).forEach(m => addBond(m, neg2Candidate, -0.15));
+        ep.campEvents[key].post.push({
+          type: 'soQuitter', players: [neg2Candidate],
+          text: `${neg2Candidate} gave up before the night even started. ${pr.Sub} ${pr.sub === 'they' ? 'found' : 'found'} reasons not to help at every turn. The tribe worked around ${pr.obj}.`,
+          consequences: '-0.3 bond with all tribemates.',
+          badgeText: 'QUITTER', badgeClass: 'red'
+        });
+        usedPlayers.add(neg2Candidate);
       }
     }
   });
@@ -44254,6 +44426,13 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'soBearPrank'              ? (evt.badgeText || evt.badge || 'BEAR PRANK')
                      : evt.type === 'soMorale'                 ? (evt.badgeText || evt.badge || 'MORALE BOOST')
                      : evt.type === 'soFireConfession'         ? (evt.badgeText || evt.badge || 'CONFESSION')
+                     : evt.type === 'soSurvivor'               ? (evt.badgeText || evt.badge || 'SURVIVOR')
+                     : evt.type === 'soCampBuilder'            ? (evt.badgeText || evt.badge || 'CAMP BUILDER')
+                     : evt.type === 'soBrave'                  ? (evt.badgeText || evt.badge || 'BRAVE')
+                     : evt.type === 'soPeacemaker'             ? (evt.badgeText || evt.badge || 'PEACEMAKER')
+                     : evt.type === 'soDeadWeight'             ? (evt.badgeText || evt.badge || 'DEAD WEIGHT')
+                     : evt.type === 'soTroublemaker'           ? (evt.badgeText || evt.badge || 'TROUBLEMAKER')
+                     : evt.type === 'soQuitter'                ? (evt.badgeText || evt.badge || 'QUITTER')
                      : evt.type === 'rewardBackfireAlliance'   ? (evt.badgeText || 'BACKFIRE')
                      : evt.type === 'rewardBackfireBloc'       ? (evt.badgeText || 'LEFT BEHIND')
                      : evt.type === 'emissaryVolunteer'       ? (evt.badgeText || 'EMISSARY')
@@ -44436,8 +44615,8 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'spyMission' || evt.type === 'pepTalk' || evt.type === 'accidentSubstitution' || evt.type === 'secretRehearsalSubIn' || evt.type === 'secretRehearsalAlone' ? 'gold'
                      : evt.type === 'sabotageSetup' || evt.type === 'rivalryConfrontation' || evt.type === 'accidentInjury' || evt.type === 'stageFright' || evt.type === 'trashTalk' ? 'red'
                      : evt.type === 'allianceHuddle' || evt.type === 'preShowJitters' ? 'gold'
-                     : evt.type === 'soNavigator' || evt.type === 'soShelter' || evt.type === 'soFire' || evt.type === 'soProvider' || evt.type === 'soFireside' || evt.type === 'soShortcut' || evt.type === 'soCarried' || evt.type === 'soStargazing' || evt.type === 'soBonding' || evt.type === 'soFoodSpotted' || evt.type === 'soShowmance' || evt.type === 'soRaceLeader' || evt.type === 'soMorale' || evt.type === 'soFireConfession' ? 'gold'
-                     : evt.type === 'soLost' || evt.type === 'soCostTribe' || evt.type === 'soSlacker' || evt.type === 'soPrank' || evt.type === 'soTentFire' || evt.type === 'soRainstorm' || evt.type === 'soWanderedOff' || evt.type === 'soArgument' || evt.type === 'soShelterCollapse' || evt.type === 'soBearPrank' ? 'red'
+                     : evt.type === 'soNavigator' || evt.type === 'soShelter' || evt.type === 'soFire' || evt.type === 'soProvider' || evt.type === 'soFireside' || evt.type === 'soShortcut' || evt.type === 'soCarried' || evt.type === 'soStargazing' || evt.type === 'soBonding' || evt.type === 'soFoodSpotted' || evt.type === 'soShowmance' || evt.type === 'soRaceLeader' || evt.type === 'soMorale' || evt.type === 'soFireConfession' || evt.type === 'soSurvivor' || evt.type === 'soCampBuilder' || evt.type === 'soBrave' || evt.type === 'soPeacemaker' ? 'gold'
+                     : evt.type === 'soLost' || evt.type === 'soCostTribe' || evt.type === 'soSlacker' || evt.type === 'soPrank' || evt.type === 'soTentFire' || evt.type === 'soRainstorm' || evt.type === 'soWanderedOff' || evt.type === 'soArgument' || evt.type === 'soShelterCollapse' || evt.type === 'soBearPrank' || evt.type === 'soDeadWeight' || evt.type === 'soTroublemaker' || evt.type === 'soQuitter' ? 'red'
                      : evt.type === 'soGhostStory' || evt.type === 'soBear' || evt.type === 'soCuddling' || evt.type === 'soScheme' || evt.type === 'soScaryNoise' || evt.type === 'soNightmare' || evt.type === 'soCantSleep' || evt.type === 'soSneakOff' || evt.type === 'soLagger' ? ''
                      : isMoleReveal ? 'gold'
                      : isDareComplete || isDareMVP || isDareGift || isDarePact ? 'gold'

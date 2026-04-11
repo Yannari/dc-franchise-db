@@ -34130,6 +34130,8 @@ function simulateJuryRoundtable(ep) {
     suckyOutdoors:      ep.suckyOutdoors      || null,
     isUpTheCreek:       ep.isUpTheCreek       || false,
     upTheCreek:         ep.upTheCreek         || null,
+    isPaintballHunt:    ep.isPaintballHunt    || false,
+    paintballHunt:      ep.paintballHunt      || null,
     exilePlayer:      ep.exilePlayer      || null,
     exileDuelResult:  ep.exileDuelResult  || null,
     exileDuelVotedOut: ep.exileDuelVotedOut || null,
@@ -39467,6 +39469,8 @@ function patchEpisodeHistory(ep) {
   if (!h.suckyOutdoors && ep.suckyOutdoors) h.suckyOutdoors = ep.suckyOutdoors;
   if (ep.isUpTheCreek) h.isUpTheCreek = true;
   if (!h.upTheCreek && ep.upTheCreek) h.upTheCreek = ep.upTheCreek;
+  if (ep.isPaintballHunt) h.isPaintballHunt = true;
+  if (!h.paintballHunt && ep.paintballHunt) h.paintballHunt = ep.paintballHunt;
   if (ep.isTripleDogDare) h.isTripleDogDare = true;
   if (ep.exileDuelPlayerAtStart) h.exileDuelPlayerAtStart = ep.exileDuelPlayerAtStart;
   if (ep.volunteerDuel) h.volunteerDuel = ep.volunteerDuel;
@@ -48007,6 +48011,46 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'utcMVP'                  ? (evt.badgeText || 'MVP PADDLER')
                      : evt.type === 'utcHeroMoment'           ? (evt.badgeText || 'HERO MOMENT')
                      : evt.type === 'utcWeakLink'             ? (evt.badgeText || 'WEAK LINK')
+                     : evt.type === 'pbHit'                  ? (evt.badgeText || 'PAINTED OUT')
+                     : evt.type === 'pbMiss'                 ? (evt.badgeText || 'DODGED')
+                     : evt.type === 'pbNotFound'             ? (evt.badgeText || 'LOST IN WOODS')
+                     : evt.type === 'pbDeerStampede'         ? (evt.badgeText || 'STAMPEDE')
+                     : evt.type === 'pbCamouflage'           ? (evt.badgeText || 'CAMO')
+                     : evt.type === 'pbTreeClimb'            ? (evt.badgeText || 'TREE CLIMB')
+                     : evt.type === 'pbMudSlide'             ? (evt.badgeText || 'MUD SLIDE')
+                     : evt.type === 'pbBearEncounter'        ? (evt.badgeText || 'BEAR MAULED')
+                     : evt.type === 'pbAntlersLocked'        ? (evt.badgeText || 'ANTLERS LOCKED')
+                     : evt.type === 'pbRebellion'            ? (evt.badgeText || 'REBELLION')
+                     : evt.type === 'pbMisfire'              ? (evt.badgeText || 'MISFIRE')
+                     : evt.type === 'pbAllianceRebellion'    ? (evt.badgeText || 'REBELLION')
+                     : evt.type === 'pbDeerBonding'          ? (evt.badgeText || 'BOND')
+                     : evt.type === 'pbCrossTribeEncounter'  ? (evt.badgeText || 'ENCOUNTER')
+                     : evt.type === 'pbDeerPact'             ? (evt.badgeText || 'PACT')
+                     : evt.type === 'pbHunterScheme'         ? (evt.badgeText || 'SCHEMING')
+                     : evt.type === 'pbCrossRoleWhisper'     ? (evt.badgeText || 'WHISPER')
+                     : evt.type === 'pbAllianceMeeting'      ? (evt.badgeText || 'PLOTTING')
+                     : evt.type === 'pbHunterProtects'       ? (evt.badgeText || 'PROTECTION')
+                     : evt.type === 'pbAmbush'               ? (evt.badgeText || 'AMBUSH')
+                     : evt.type === 'pbSneakAttack'          ? (evt.badgeText || 'SNEAK ATTACK')
+                     : evt.type === 'pbDecoy'                ? (evt.badgeText || 'DECOY')
+                     : evt.type === 'pbTaunt'                ? (evt.badgeText || 'TAUNT')
+                     : evt.type === 'pbEpicChase'            ? (evt.badgeText || 'EPIC CHASE')
+                     : evt.type === 'pbObsessiveChase'       ? (evt.badgeText || 'OBSESSED')
+                     : evt.type === 'pbDoublefind'           ? (evt.badgeText || 'DOUBLE FIND')
+                     : evt.type === 'pbSympathyShot'         ? (evt.badgeText || 'PILING ON')
+                     : evt.type === 'pbHunterRivalry'        ? (evt.badgeText || 'RIVALRY')
+                     : evt.type === 'pbFriendlyFireAccident' ? (evt.badgeText || 'FRIENDLY FIRE')
+                     : evt.type === 'pbFriendlyFireDeliberate'? (evt.badgeText || 'BETRAYAL')
+                     : evt.type === 'pbRetaliation'          ? (evt.badgeText || 'RETALIATION')
+                     : evt.type === 'pbWarEscalation'        ? (evt.badgeText || 'PAINTBALL WAR')
+                     : evt.type === 'pbWarFreeShot'          ? (evt.badgeText || 'FREE SHOT')
+                     : evt.type === 'pbMVPHunter'            ? (evt.badgeText || 'TOP HUNTER')
+                     : evt.type === 'pbLastDeer'             ? (evt.badgeText || 'LAST DEER')
+                     : evt.type === 'pbRebellionHero'        ? (evt.badgeText || 'REBELLION HERO')
+                     : evt.type === 'pbFriendlyFireCulprit'  ? (evt.badgeText || 'FRIENDLY FIRE')
+                     : evt.type === 'pbFirstPainted'         ? (evt.badgeText || 'FIRST PAINTED')
+                     : evt.type === 'pbWarInstigator'        ? (evt.badgeText || 'WAR STARTER')
+                     : evt.type === 'pbBearMauled'           ? (evt.badgeText || 'BEAR MAULED')
                      : evt.type === 'soMorale'                 ? (evt.badgeText || evt.badge || 'MORALE BOOST')
                      : evt.type === 'soFireConfession'         ? (evt.badgeText || evt.badge || 'CONFESSION')
                      : evt.type === 'soSurvivor'               ? (evt.badgeText || evt.badge || 'SURVIVOR')
@@ -48218,6 +48262,9 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'utcWildlife' || evt.type === 'utcQuicksand' || evt.type === 'utcPhotoFinish' || evt.type === 'utcBoneyMist' || evt.type === 'utcSkeletonFind' ? ''
                      : evt.type === 'utcCursedIdol' || evt.type === 'utcWeakLink' ? 'red'
                      : evt.type === 'utcMVP' || evt.type === 'utcHeroMoment' ? 'gold'
+                     : evt.type === 'pbAmbush' || evt.type === 'pbSneakAttack' || evt.type === 'pbMVPHunter' || evt.type === 'pbLastDeer' || evt.type === 'pbRebellionHero' || evt.type === 'pbDoublefind' || evt.type === 'pbWarFreeShot' || evt.type === 'pbDeerStampede' || evt.type === 'pbCamouflage' || evt.type === 'pbRebellion' || evt.type === 'pbDecoy' || evt.type === 'pbDeerBonding' || evt.type === 'pbDeerPact' || evt.type === 'pbTreeClimb' || evt.type === 'pbEpicChase' || evt.type === 'pbHunterProtects' ? 'gold'
+                     : evt.type === 'pbBearEncounter' || evt.type === 'pbFriendlyFireAccident' || evt.type === 'pbFriendlyFireDeliberate' || evt.type === 'pbRetaliation' || evt.type === 'pbWarEscalation' || evt.type === 'pbSympathyShot' || evt.type === 'pbBearMauled' || evt.type === 'pbFriendlyFireCulprit' || evt.type === 'pbWarInstigator' || evt.type === 'pbFirstPainted' || evt.type === 'pbMudSlide' || evt.type === 'pbMisfire' || evt.type === 'pbHunterRivalry' || evt.type === 'pbAllianceRebellion' ? 'red'
+                     : evt.type === 'pbMiss' || evt.type === 'pbNotFound' || evt.type === 'pbAntlersLocked' || evt.type === 'pbObsessiveChase' || evt.type === 'pbAllianceStandoff' || evt.type === 'pbTaunt' || evt.type === 'pbCrossTribeEncounter' || evt.type === 'pbHunterScheme' || evt.type === 'pbCrossRoleWhisper' || evt.type === 'pbAllianceMeeting' || evt.type === 'pbHit' ? ''
                      : isMoleReveal ? 'gold'
                      : isDareComplete || isDareMVP || isDareGift || isDarePact ? 'gold'
                      : isDarePactBetray || isDareAllyBetray || isDareRefusal || isDareElim ? 'red'

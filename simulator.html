@@ -9407,6 +9407,7 @@ function simulateSuckyOutdoors(ep) {
     // Event 1: Navigator leads well or gets confused (proportional — always fires)
     const navScore = navS.mental * 0.06 + navS.intuition * 0.04;
     const navSuccess = Math.random() < navScore;
+    const pr = pronouns(nav);
     if (navSuccess) {
       const _navGoodTexts = [
         `${nav} scouts the trail head and reads the map with quiet confidence. The tribe moves efficiently into the forest.`,
@@ -9415,7 +9416,6 @@ function simulateSuckyOutdoors(ep) {
         `${nav} reads the terrain like a book. Every fork, every ridge — ${pr.sub} ${pr.sub === 'they' ? 'know' : 'knows'} which way. The tribe doesn't question it.`,
         `${nav} barely checks the map. ${pr.Sub} ${pr.sub === 'they' ? 'navigate' : 'navigates'} by instinct — sun position, moss growth, wind direction. The tribe arrives early.`,
       ];
-      const pr = pronouns(nav);
       const _txt = _navGoodTexts[_hash(nav + 'navgood', _navGoodTexts.length)];
       personalScores[nav] += 2.0;
       members.filter(m => m !== nav).forEach(m => addBond(m, nav, 0.3));
@@ -9434,7 +9434,6 @@ function simulateSuckyOutdoors(ep) {
         `${nav} keeps squinting at the compass like it's personally offending ${pr.obj}. Eventually ${pr.sub} ${pr.sub === 'they' ? 'hand' : 'hands'} it to someone else. Nobody says anything.`,
         `The trail ${nav} picked looked right on the map. It is not right in real life. The tribe spends an extra hour retracing ${pr.posAdj} steps.`,
       ];
-      const pr = pronouns(nav);
       const _txt = _navBadTexts[_hash(nav + 'navbad', _navBadTexts.length)];
       personalScores[nav] -= 2.0;
       members.filter(m => m !== nav).forEach(m => addBond(m, nav, -0.2));

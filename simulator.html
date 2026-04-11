@@ -13545,6 +13545,91 @@ function simulatePaintballHunt(ep) {
       }
     }
 
+    // ── Friendly fire: accidental and deliberate (runs BEFORE matchups so eliminations are respected) ──
+    tribes.forEach(t => {
+      roles[t.name].hunters.forEach(hunter => {
+        if (misfiredHunters.has(hunter)) return;
+        const s = pStats(hunter);
+
+        // Own team deer
+        const ownDeer = roles[t.name].deer.filter(d => !paintedOut.has(d));
+        if (!ownDeer.length) return;
+
+        // Accidental friendly fire
+        const accidentChance = (10 - s.intuition) * 0.015 + (10 - s.mental) * 0.01;
+        if (Math.random() < accidentChance) {
+          const victim = _rp(ownDeer);
+          const pr = pronouns(hunter);
+          addBond(hunter, victim, -0.5);
+          addScore(hunter, HUNTER_NEGATIVE);
+          addScore(victim, DEER_PAINTED);
+          paintedOut.add(victim);
+          unpaintedDeer[t.name].delete(victim);
+          paintCounter[victim] = (paintCounter[victim] || 0) + 1;
+          friendlyFireLog.push({ hunter, victim, type: 'accidental', round: roundNum });
+          matchups.push({ hunter, target: victim, result: 'friendly-fire', round: roundNum,
+            text: `${hunter} accidentally shoots ${pr.posAdj} OWN teammate ${victim}! "${pronouns(victim).Sub}'s on YOUR team!" someone yells.` });
+          return;
+        }
+
+        // Deliberate friendly fire: bond <= -2 with own deer
+        // Does NOT eliminate deer — betrayal that marks them as easy target
+        ownDeer.forEach(d => {
+          if (getBond(hunter, d) <= -2) {
+            const deliberateChance = (10 - s.loyalty) * 0.02 + s.boldness * 0.015;
+            if (Math.random() < deliberateChance) {
+              addBond(hunter, d, -1.0);
+              addScore(hunter, HUNTER_NEGATIVE);
+              addScore(d, -0.5);
+              newMudSlid.add(d);
+              paintCounter[d] = (paintCounter[d] || 0) + 1;
+              friendlyFireLog.push({ hunter, victim: d, type: 'deliberate', round: roundNum });
+              const pr = pronouns(hunter);
+              roundEvents.push({
+                type: 'pbFriendlyFireDeliberate', players: [hunter, d],
+                text: `${hunter} DELIBERATELY shoots ${d} — ${pr.posAdj} own teammate! That was NO accident.`,
+                badge: 'BETRAYAL', badgeText: 'BETRAYAL', badgeClass: 'red'
+              });
+
+              // ALWAYS: deer is marked — paint + noise = easy to spot next round
+              if (!ep._pbMarked) ep._pbMarked = {};
+              ep._pbMarked[d] = (ep._pbMarked[d] || 0) + 5;
+
+              // SOMETIMES: Retaliation — deer fights back (boldness proportional)
+              const dStats = pStats(d);
+              if (Math.random() < dStats.boldness * 0.08) {
+                addBond(d, hunter, -0.5);
+                addScore(d, DEER_EVENT_BONUS);
+                misfiredHunters.add(hunter);
+                const dpr = pronouns(d);
+                paintballWarLog.push({ instigator: hunter, retaliator: d, round: roundNum });
+                const _retalTexts = [
+                  `${d} grabs a paintball gun and shoots ${hunter} right back! ${dpr.Sub}'s not taking that lying down.`,
+                  `${d} charges ${hunter} and wrestles the gun away. Two shots to the chest. "How's THAT feel?!"`,
+                  `${d} doesn't run. ${dpr.Sub} picks up a dropped gun and unloads on ${hunter}. The deer has become the hunter.`,
+                ];
+                roundEvents.push({
+                  type: 'pbRetaliation', players: [d, hunter],
+                  text: _rp(_retalTexts),
+                  badge: 'RETALIATION', badgeText: 'RETALIATION', badgeClass: 'red'
+                });
+
+                const witnesses = t.members.filter(m => m !== hunter && m !== d && Math.random() < 0.5);
+                if (witnesses.length) {
+                  witnesses.forEach(w => addBond(w, hunter, -0.3));
+                  roundEvents.push({
+                    type: 'pbWarEscalation', players: [d, hunter, ...witnesses],
+                    text: `It's a full-on PAINTBALL WAR! ${witnesses.join(' and ')} jump${witnesses.length === 1 ? 's' : ''} in. Paint is flying everywhere.`,
+                    badge: 'PAINTBALL WAR', badgeText: 'PAINTBALL WAR', badgeClass: 'red'
+                  });
+                }
+              }
+            }
+          }
+        });
+      });
+    });
+
     // ── HUNTER MATCHUPS ──
     // Balance: each tribe gets the same number of shots per round (= min hunter count across tribes)
     // Extra hunters rotate — they sit out this round but contribute to events
@@ -13796,92 +13881,6 @@ function simulatePaintballHunt(ep) {
           });
         }
       }
-    });
-
-    // ── Friendly fire: accidental and deliberate ──
-    tribes.forEach(t => {
-      roles[t.name].hunters.forEach(hunter => {
-        if (misfiredHunters.has(hunter)) return;
-        const s = pStats(hunter);
-
-        // Own team deer
-        const ownDeer = roles[t.name].deer.filter(d => !paintedOut.has(d));
-        if (!ownDeer.length) return;
-
-        // Accidental friendly fire
-        const accidentChance = (10 - s.intuition) * 0.015 + (10 - s.mental) * 0.01;
-        if (Math.random() < accidentChance) {
-          const victim = _rp(ownDeer);
-          const pr = pronouns(hunter);
-          addBond(hunter, victim, -0.5);
-          addScore(hunter, HUNTER_NEGATIVE);
-          addScore(victim, DEER_PAINTED);
-          paintedOut.add(victim);
-          unpaintedDeer[t.name].delete(victim);
-          paintCounter[victim] = (paintCounter[victim] || 0) + 1;
-          friendlyFireLog.push({ hunter, victim, type: 'accidental', round: roundNum });
-          matchups.push({ hunter, target: victim, result: 'friendly-fire', round: roundNum,
-            text: `${hunter} accidentally shoots ${pr.posAdj} OWN teammate ${victim}! "${pronouns(victim).Sub}'s on YOUR team!" someone yells.` });
-          return;
-        }
-
-        // Deliberate friendly fire: bond <= -2 with own deer
-        // Does NOT eliminate deer — it's a betrayal that triggers the war. Deer can retaliate.
-        ownDeer.forEach(d => {
-          if (getBond(hunter, d) <= -2) {
-            const deliberateChance = (10 - s.loyalty) * 0.02 + s.boldness * 0.015;
-            if (Math.random() < deliberateChance) {
-              addBond(hunter, d, -1.0);
-              addScore(hunter, HUNTER_NEGATIVE);
-              addScore(d, -0.5); // hurts but doesn't eliminate
-              newMudSlid.add(d); // exposed — easier target next round
-              paintCounter[d] = (paintCounter[d] || 0) + 1;
-              friendlyFireLog.push({ hunter, victim: d, type: 'deliberate', round: roundNum });
-              const pr = pronouns(hunter);
-              roundEvents.push({
-                type: 'pbFriendlyFireDeliberate', players: [hunter, d],
-                text: `${hunter} DELIBERATELY shoots ${d} — ${pr.posAdj} own teammate! That was NO accident.`,
-                badge: 'BETRAYAL', badgeText: 'BETRAYAL', badgeClass: 'red'
-              });
-
-              // ── ALWAYS: deer is marked — paint + noise = easy to spot next round ──
-              if (!ep._pbMarked) ep._pbMarked = {};
-              ep._pbMarked[d] = (ep._pbMarked[d] || 0) + 5; // huge targeting weight bonus
-
-              // ── SOMETIMES: Retaliation — deer fights back (boldness proportional) ──
-              const dStats = pStats(d);
-              if (Math.random() < dStats.boldness * 0.08) {
-                addBond(d, hunter, -0.5);
-                addScore(d, DEER_EVENT_BONUS); // fighting spirit
-                misfiredHunters.add(hunter); // hunter can't shoot — busy fighting
-                const dpr = pronouns(d);
-                paintballWarLog.push({ instigator: hunter, retaliator: d, round: roundNum });
-                const _retalTexts = [
-                  `${d} grabs a paintball gun and shoots ${hunter} right back! ${dpr.Sub}'s not taking that lying down.`,
-                  `${d} charges ${hunter} and wrestles the gun away. Two shots to the chest. "How's THAT feel?!"`,
-                  `${d} doesn't run. ${dpr.Sub} picks up a dropped gun and unloads on ${hunter}. The deer has become the hunter.`,
-                ];
-                roundEvents.push({
-                  type: 'pbRetaliation', players: [d, hunter],
-                  text: _rp(_retalTexts),
-                  badge: 'RETALIATION', badgeText: 'RETALIATION', badgeClass: 'red'
-                });
-
-                // Witnesses join if retaliation happens
-                const witnesses = t.members.filter(m => m !== hunter && m !== d && Math.random() < 0.5);
-                if (witnesses.length) {
-                  witnesses.forEach(w => addBond(w, hunter, -0.3));
-                  roundEvents.push({
-                    type: 'pbWarEscalation', players: [d, hunter, ...witnesses],
-                    text: `It's a full-on PAINTBALL WAR! ${witnesses.join(' and ')} jump${witnesses.length === 1 ? 's' : ''} in. Paint is flying everywhere.`,
-                    badge: 'PAINTBALL WAR', badgeText: 'PAINTBALL WAR', badgeClass: 'red'
-                  });
-                }
-              }
-            }
-          }
-        });
-      });
     });
 
     // ── Showmance moments via helper ──

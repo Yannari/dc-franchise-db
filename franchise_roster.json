@@ -66,7 +66,8 @@
         "boldness": 6,
         "intuition": 4,
         "temperament": 3
-      }
+      },
+      "isReturnee": false
     },
     {
       "name": "B",
@@ -153,7 +154,7 @@
         "intuition": 9,
         "temperament": 6
       },
-      "isReturnee": true
+      "isReturnee": false
     },
     {
       "name": "Brick",
@@ -205,7 +206,8 @@
         "boldness": 6,
         "intuition": 8,
         "temperament": 6
-      }
+      },
+      "isReturnee": false
     },
     {
       "name": "Brody",
@@ -239,7 +241,8 @@
         "boldness": 7,
         "intuition": 7,
         "temperament": 6
-      }
+      },
+      "isReturnee": false
     },
     {
       "name": "Cameron",
@@ -291,7 +294,8 @@
         "boldness": 5,
         "intuition": 6,
         "temperament": 8
-      }
+      },
+      "isReturnee": false
     },
     {
       "name": "Chef Hatchet",
@@ -430,7 +434,8 @@
         "boldness": 4,
         "intuition": 8,
         "temperament": 8
-      }
+      },
+      "isReturnee": false
     },
     {
       "name": "Dave",
@@ -600,7 +605,8 @@
         "boldness": 8,
         "intuition": 6,
         "temperament": 2
-      }
+      },
+      "isReturnee": false
     },
     {
       "name": "Ennui",
@@ -756,7 +762,7 @@
         "intuition": 9,
         "temperament": 7
       },
-      "isReturnee": true
+      "isReturnee": false
     },
     {
       "name": "Izzy",
@@ -895,7 +901,8 @@
         "boldness": 9,
         "intuition": 6,
         "temperament": 4
-      }
+      },
+      "isReturnee": false
     },
     {
       "name": "Junior",
@@ -1203,7 +1210,8 @@
         "boldness": 5,
         "intuition": 7,
         "temperament": 6
-      }
+      },
+      "isReturnee": false
     },
     {
       "name": "MK",
@@ -1221,7 +1229,8 @@
         "boldness": 7,
         "intuition": 6,
         "temperament": 8
-      }
+      },
+      "isReturnee": false
     },
     {
       "name": "Nichelle",
@@ -1238,7 +1247,8 @@
         "boldness": 5,
         "intuition": 7,
         "temperament": 4
-      }
+      },
+      "isReturnee": false
     },
     {
       "name": "Noah",
@@ -1308,7 +1318,7 @@
         "intuition": 8,
         "temperament": 6
       },
-      "isReturnee": true
+      "isReturnee": false
     },
     {
       "name": "Raj",
@@ -1326,7 +1336,8 @@
         "boldness": 3,
         "intuition": 4,
         "temperament": 10
-      }
+      },
+      "isReturnee": false
     },
     {
       "name": "Ripper",
@@ -1343,7 +1354,8 @@
         "boldness": 6,
         "intuition": 3,
         "temperament": 6
-      }
+      },
+      "isReturnee": false
     },
     {
       "name": "Rock",
@@ -1500,7 +1512,9 @@
         "boldness": 7,
         "intuition": 3,
         "temperament": 2
-      }
+      },
+      "sexuality": "asexual",
+      "isReturnee": false
     },
     {
       "name": "Scott",
@@ -1759,7 +1773,8 @@
         "boldness": 3,
         "intuition": 5,
         "temperament": 10
-      }
+      },
+      "isReturnee": false
     },
     {
       "name": "Zee",
@@ -1776,7 +1791,8 @@
         "boldness": 3,
         "intuition": 7,
         "temperament": 10
-      }
+      },
+      "isReturnee": false
     },
     {
       "name": "Zoey",

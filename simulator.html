@@ -13118,14 +13118,14 @@ function simulatePaintballHunt(ep) {
     });
     const stampedeDeer = new Set(roundEvents.filter(e => e.type === 'pbDeerStampede').flatMap(e => e.players));
 
-    // Camouflage: MAX 1 per round — pick best candidate
+    // Camouflage: MAX 2 per round — pick best candidates
     if (specialEventsThisRound < maxSpecialEvents) {
       const camoCandidates = aliveDeerAll.filter(d => !camouflaged.has(d));
-      // Weighted pick by intuition
       const camoRolls = camoCandidates.map(d => ({ d, roll: Math.random() < pStats(d).intuition * 0.04 ? pStats(d).intuition + Math.random() : -1 })).filter(r => r.roll > 0);
-      if (camoRolls.length) {
-        camoRolls.sort((a, b) => b.roll - a.roll);
-        const d = camoRolls[0].d;
+      camoRolls.sort((a, b) => b.roll - a.roll);
+      const camoWinners = camoRolls.slice(0, 2); // up to 2
+      camoWinners.forEach(({ d }) => {
+        if (specialEventsThisRound >= maxSpecialEvents) return;
         specialEventsThisRound++;
         camouflaged.add(d);
         addScore(d, DEER_EVENT_BONUS);
@@ -13138,7 +13138,7 @@ function simulatePaintballHunt(ep) {
           `${d} wedges into a thicket so dense no hunter could spot ${pr.obj}. Perfect hide.`,
         ];
         roundEvents.push({ type: 'pbCamouflage', players: [d], text: _rp(_camoTexts), badge: 'CAMO', badgeText: 'CAMO', badgeClass: 'gold' });
-      }
+      });
     }
 
     // Tree climb: MAX 1 per round — pick best candidate

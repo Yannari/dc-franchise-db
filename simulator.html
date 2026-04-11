@@ -38626,6 +38626,7 @@ function snapshotGameState() {
     advantages: (gs.advantages || []).map(a => ({ ...a })),
     journeyLostVotes: gs.journeyLostVotes ? [...gs.journeyLostVotes] : [],
     lostVotes: gs.lostVotes ? [...gs.lostVotes] : [],
+    romanticSparks: (gs.romanticSparks || []).map(sp => ({ ...sp, players: [...sp.players] })),
     showmances: (gs.showmances || []).map(sh => ({ ...sh, players: [...sh.players] })),
     loveTriangles: (gs.loveTriangles || []).map(t => ({ ...t, suitors: [...t.suitors], showmanceRef: [...t.showmanceRef], resolution: t.resolution ? { ...t.resolution } : null })),
     affairs: (gs.affairs || []).map(af => ({ ...af, rumorSources: [...af.rumorSources], showmanceRef: [...af.showmanceRef], resolution: af.resolution ? { ...af.resolution } : null })),
@@ -44450,6 +44451,33 @@ function rpBuildDebug(ep) {
     const _showmances = snap.showmances || gs.showmances || [];
     const _triangles = snap.loveTriangles || gs.loveTriangles || [];
 
+    // Romantic Sparks (slow burn)
+    const _sparks = snap.romanticSparks || gs.romanticSparks || [];
+    if (_sparks.length) {
+      html += `<div style="margin-bottom:16px">
+        <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#f0a500;margin-bottom:8px">ROMANTIC SPARKS (${_sparks.length})</div>`;
+      _sparks.forEach(sp => {
+        const [a, b] = sp.players;
+        const bond = getBond(a, b);
+        const fakeTag = sp.fake ? '<span style="color:#f85149;font-weight:700"> FAKE (sabotage)</span>' : '';
+        const intensityPct = Math.min(100, Math.round(sp.intensity * 100));
+        const intensityColor = sp.intensity >= 0.8 ? '#3fb950' : sp.intensity >= 0.5 ? '#f0a500' : '#8b949e';
+        html += `<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;margin-bottom:4px;border:1px solid rgba(240,165,0,0.15);border-radius:6px;background:rgba(240,165,0,0.03)">
+          ${rpPortrait(a, 'xs')} <span style="color:#e6edf3;font-size:10px">${a}</span>
+          <span style="color:#f0a500">✦</span>
+          <span style="color:#e6edf3;font-size:10px">${b}</span> ${rpPortrait(b, 'xs')}
+          <div style="margin-left:auto;text-align:right">
+            <div style="font-size:9px;color:${intensityColor};font-weight:700">Intensity: ${sp.intensity.toFixed(2)} (${intensityPct}%)${fakeTag}</div>
+            <div style="font-size:8px;color:#6e7681">Spark Ep ${sp.sparkEp} | Bond: ${bond.toFixed(1)} | ${sp.context}${sp.saboteur ? ' | by ' + sp.saboteur : ''}</div>
+            <div style="height:3px;width:60px;border-radius:2px;background:rgba(255,255,255,0.06);margin-top:2px">
+              <div style="height:3px;border-radius:2px;background:${intensityColor};width:${intensityPct}%"></div>
+            </div>
+          </div>
+        </div>`;
+      });
+      html += `</div>`;
+    }
+
     // Showmances
     html += `<div style="margin-bottom:16px">
       <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#d29922;margin-bottom:8px">SHOWMANCES (${_showmances.length})</div>`;
@@ -44467,7 +44495,7 @@ function rpBuildDebug(ep) {
           ${rpPortrait(b, 'sm')}
           <div style="margin-left:auto;text-align:right">
             <div style="font-size:10px;color:${phaseCol};font-weight:700;text-transform:uppercase">${_isSeparated ? 'SEPARATED' : sh.phase === 'broken-up' ? 'BROKEN-UP' : sh.phase}${sh.phase === 'broken-up' && sh.breakupVoter ? ' (betrayal by ' + sh.breakupVoter + ')' : ''}${sh.phase === 'broken-up' && sh.breakupType === 'faded' ? ' (faded)' : ''}</div>
-            <div style="font-size:9px;color:#6e7681">Bond: ${bond.toFixed(1)} | Ep ${sh.sparkEp}${sh.breakupEp ? '–' + sh.breakupEp : ''} | ${sh.episodesActive} eps${sh.jealousPlayer ? ' | 3rd: ' + sh.jealousPlayer : ''}</div>
+            <div style="font-size:9px;color:#6e7681">Bond: ${bond.toFixed(1)} | Ep ${sh.sparkEp}${sh.firstMoveEp ? ' → move Ep ' + sh.firstMoveEp : ''}${sh.breakupEp ? ' → end Ep ' + sh.breakupEp : ''} | ${sh.episodesActive} eps${sh.firstMoveBy ? ' | 1st move: ' + sh.firstMoveBy : ''}${sh.jealousPlayer ? ' | 3rd: ' + sh.jealousPlayer : ''}</div>
           </div>
         </div>`;
       });

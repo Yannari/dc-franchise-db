@@ -44149,7 +44149,7 @@ function rpBuildFirstImpressions(ep, twistObj) {
 // ── Screen 3: Pre-challenge twists (tribe swap, three gifts, journey, exile-island, etc.) ──
 function rpBuildPreTwist(ep) {
   const _rawTwistData = (ep.twistScenes?.length ? ep.twistScenes : generateTwistScenes(ep))
-    .filter(t => t.type !== 'exile-island' && t.type !== 'jury-elimination' && t.type !== 'kidnapping' && t.type !== 'first-impressions' && t.type !== 'tied-destinies' && t.type !== 'aftermath' && t.type !== 'fan-vote-return' && t.type !== 'schoolyard-pick' && t.type !== 'triple-dog-dare' && t.type !== 'say-uncle' && t.type !== 'phobia-factor' && t.type !== 'cliff-dive' && t.type !== 'awake-a-thon' && t.type !== 'emissary-vote' && t.type !== 'dodgebrawl' && t.type !== 'talent-show' && t.type !== 'sucky-outdoors'); // shown in dedicated screens
+    .filter(t => t.type !== 'exile-island' && t.type !== 'jury-elimination' && t.type !== 'kidnapping' && t.type !== 'first-impressions' && t.type !== 'tied-destinies' && t.type !== 'aftermath' && t.type !== 'fan-vote-return' && t.type !== 'schoolyard-pick' && t.type !== 'triple-dog-dare' && t.type !== 'say-uncle' && t.type !== 'phobia-factor' && t.type !== 'cliff-dive' && t.type !== 'awake-a-thon' && t.type !== 'emissary-vote' && t.type !== 'dodgebrawl' && t.type !== 'talent-show' && t.type !== 'sucky-outdoors' && t.type !== 'up-the-creek'); // shown in dedicated screens
   // Deduplicate: only show one scene per twist type (prevents double display if twist is in ep.twists twice)
   const _seenTypes = new Set();
   const twistData = _rawTwistData.filter(t => { if (_seenTypes.has(t.type)) return false; _seenTypes.add(t.type); return true; });
@@ -55027,6 +55027,379 @@ function rpBuildTalentShowStage(ep) {
   return html;
 }
 
+function rpBuildUpTheCreek(ep) {
+  const utc = ep.upTheCreek;
+  if (!utc?.phases) return null;
+
+  const stateKey = `utc_${ep.num}`;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+
+  // 5 reveals: partner selection + 4 phases
+  const PHASES = [
+    { key: 'partnerSelection', label: '🛶 PARTNER SELECTION',  bg: 'linear-gradient(180deg,#0a1a2a 0%,#051525 100%)', accent: '#58a6ff' },
+    { key: 'paddleOut',        label: '🌊 PADDLE OUT',         bg: 'linear-gradient(180deg,#0a1a2a 0%,#051525 100%)', accent: '#58a6ff' },
+    { key: 'portage',          label: '🌿 PORTAGE',            bg: 'linear-gradient(180deg,#0a2a0a 0%,#051a05 100%)', accent: '#3fb950' },
+    { key: 'buildFire',        label: '🔥 BUILD FIRE',         bg: 'linear-gradient(180deg,#2a1a0a 0%,#1a0f05 100%)', accent: '#f0a500' },
+    { key: 'paddleBack',       label: '🌅 PADDLE BACK',        bg: 'linear-gradient(180deg,#2a1508 0%,#1a0c04 100%)', accent: '#e06030' },
+  ];
+  const totalPhases = PHASES.length;
+  const allRevealed = state.idx >= totalPhases - 1;
+
+  const _utcReveal = (targetIdx) =>
+    `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};` +
+    `_tvState['${stateKey}'].idx=${targetIdx};` +
+    `const ep=gs.episodeHistory.find(e=>e.num===${ep.num});` +
+    `if(ep){const m=document.querySelector('.rp-main');const st=m?m.scrollTop:0;buildVPScreens(ep);renderVPScreen();if(m)m.scrollTop=st;}`;
+
+  const _bc = (cls) => cls === 'gold' ? '#f0a500' : cls === 'red' ? '#f85149' : cls === 'blue' ? '#58a6ff' : cls === 'pink' ? '#db61a2' : '#8b949e';
+
+  const _scoreDelta = (scores) => {
+    if (!scores || !Object.keys(scores).length) return '';
+    return Object.entries(scores).map(([n, d]) => {
+      const sign = d >= 0 ? '+' : '';
+      const col = d >= 0 ? '#3fb950' : '#f85149';
+      return `<span style="font-size:9px;font-weight:700;color:${col};margin-right:4px">${n}: ${sign}${d.toFixed(1)}</span>`;
+    }).join('');
+  };
+
+  const ambientPhaseIdx = Math.max(0, Math.min(state.idx, totalPhases - 1));
+  const ambientBg = PHASES[ambientPhaseIdx].bg;
+  const ambientAccent = PHASES[ambientPhaseIdx].accent;
+
+  let html = `<div class="rp-page" style="background:${ambientBg};transition:background 0.8s ease">
+    <div class="rp-eyebrow">Episode ${ep.num}</div>
+    <div style="font-family:var(--font-display);font-size:28px;letter-spacing:2px;text-align:center;color:${ambientAccent};text-shadow:0 0 20px ${ambientAccent}44;margin-bottom:6px">UP THE CREEK</div>
+    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:4px">Canoe race to Boney Island and back. Pick your partner. Portage through danger.</div>
+    <div style="text-align:center;font-size:11px;color:#6e7681;margin-bottom:20px">Build a fire. Race home. The losing tribe faces tribal council.</div>`;
+
+  PHASES.forEach((phase, phaseIdx) => {
+    const isVisible = phaseIdx <= state.idx;
+
+    if (!isVisible) {
+      html += `<div style="padding:12px;margin-bottom:8px;border:1px solid rgba(255,255,255,0.06);border-radius:8px;opacity:0.12;text-align:center;font-size:11px;color:var(--muted)">${phase.label}</div>`;
+      return;
+    }
+
+    html += `<div style="margin-bottom:20px;animation:scrollDrop 0.3s var(--ease-broadcast) both">`;
+
+    html += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:10px 14px;border-radius:8px;background:${phase.accent}14;border-left:3px solid ${phase.accent}">
+      <span style="font-family:var(--font-display);font-size:14px;letter-spacing:1.5px;color:${phase.accent}">${phase.label}</span>
+    </div>`;
+
+    // ── Partner Selection phase: show canoe pairs per tribe ──
+    if (phase.key === 'partnerSelection') {
+      html += `<div style="font-size:12px;color:#cdd9e5;text-align:center;margin-bottom:16px;font-style:italic">Teams pick their canoe partners — bold players choose first. Chemistry matters on the water.</div>`;
+
+      const tribeOrder = (ep.tribesAtStart || []).map(t => t.name);
+      const tribesToRender = tribeOrder.length ? tribeOrder : Object.keys(utc.canoePairs || {});
+
+      tribesToRender.forEach(tribeName => {
+        const tc = tribeColor(tribeName);
+        const pairs = utc.canoePairs?.[tribeName] || [];
+        const solo = utc.soloCanoe?.[tribeName];
+        if (!pairs.length && !solo) return;
+
+        html += `<div style="margin-bottom:16px">
+          <div style="font-family:var(--font-display);font-size:12px;letter-spacing:1px;color:${tc};margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid ${tc}22">${tribeName.toUpperCase()}</div>`;
+
+        pairs.forEach(pair => {
+          const scenarioBadgeText = pair.scenario === 'mutual'     ? 'MUTUAL PICK'
+            : pair.scenario === 'one-sided' ? 'ONE-SIDED'
+            : pair.scenario === 'rejected'  ? 'REJECTED'
+            : pair.scenario === 'showmance' ? '♥ SHOWMANCE'
+            : pair.scenario === 'rivals'    ? 'RIVALS'
+            : pair.scenario === 'last-pick' ? 'LAST PICK'
+            : 'PARTNERS';
+          const scenarioBadgeCol = pair.scenario === 'rejected' || pair.scenario === 'rivals' ? '#f85149'
+            : pair.scenario === 'showmance' ? '#db61a2'
+            : pair.scenario === 'one-sided' ? '#f0a500'
+            : '#58a6ff';
+
+          const chemSign = (pair.chemistry || 0) >= 0 ? '+' : '';
+          const chemCol = (pair.chemistry || 0) >= 1 ? '#3fb950' : (pair.chemistry || 0) >= 0 ? '#8b949e' : '#f85149';
+
+          html += `<div style="padding:12px;margin-bottom:6px;border-radius:8px;border:1px solid ${scenarioBadgeCol}28;background:${scenarioBadgeCol}07;animation:scrollDrop 0.3s var(--ease-broadcast) both">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+              ${rpPortrait(pair.a, 'sm')}
+              <span style="font-size:14px;color:#6e7681">+</span>
+              ${rpPortrait(pair.b, 'sm')}
+              <span style="font-size:9px;font-weight:700;letter-spacing:1px;color:${scenarioBadgeCol};background:${scenarioBadgeCol}18;padding:2px 8px;border-radius:3px;margin-left:auto">${scenarioBadgeText}</span>
+              <span style="font-size:10px;color:${chemCol};font-weight:700">${chemSign}${(pair.chemistry || 0).toFixed(1)}</span>
+            </div>
+            ${pair.reactionText ? `<div style="font-size:12px;color:#8b949e;line-height:1.5;font-style:italic">${pair.reactionText}</div>` : ''}
+          </div>`;
+        });
+
+        // Solo canoe player — dramatic card
+        if (solo) {
+          html += `<div style="padding:14px;margin-bottom:6px;border-radius:10px;border:2px solid rgba(248,81,73,0.35);background:rgba(248,81,73,0.07);animation:scrollDrop 0.3s var(--ease-broadcast) both">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+              ${rpPortrait(solo, 'sm')}
+              <span style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:#f85149;background:rgba(248,81,73,0.18);padding:3px 10px;border-radius:3px">SOLO CANOE</span>
+            </div>
+            <div style="font-size:12px;color:#8b949e;line-height:1.5">${solo} paddles alone. No partner to share the load — or the blame.</div>
+          </div>`;
+        }
+
+        html += `</div>`;
+      });
+
+      // Also show partnerSelection events (if any)
+      const psEvents = utc.phases?.partnerSelection || [];
+      if (psEvents.length) {
+        psEvents.forEach(evt => {
+          const bc = _bc(evt.badgeClass || 'gold');
+          const players = evt.players || [];
+          html += `<div style="padding:10px 14px;margin-bottom:6px;border-radius:8px;border:1px solid ${bc}28;background:${bc}07">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+              ${players.map(p => rpPortrait(p, 'sm')).join('')}
+              <span style="font-size:9px;font-weight:700;letter-spacing:1px;color:${bc};background:${bc}18;padding:2px 8px;border-radius:3px">${evt.badge || evt.type}</span>
+              ${_scoreDelta(evt.personalScores) ? `<div style="margin-left:auto">${_scoreDelta(evt.personalScores)}</div>` : ''}
+            </div>
+            <div style="font-size:12px;color:#8b949e;line-height:1.5">${evt.text}</div>
+          </div>`;
+        });
+      }
+    }
+
+    // ── Build Fire phase: fire scores + bonus method badges ──
+    else if (phase.key === 'buildFire') {
+      const events = utc.phases?.buildFire || [];
+
+      // Group events by tribe
+      const _tribeGroups = {};
+      const _tribeOrder = (ep.tribesAtStart || []).map(t => t.name);
+      events.forEach(evt => {
+        const firstPlayer = evt.players?.[0];
+        let evtTribe = 'general';
+        if (firstPlayer) {
+          for (const t of (ep.tribesAtStart || [])) {
+            if (t.members?.includes(firstPlayer)) { evtTribe = t.name; break; }
+          }
+        }
+        if (!_tribeGroups[evtTribe]) _tribeGroups[evtTribe] = [];
+        _tribeGroups[evtTribe].push(evt);
+      });
+
+      const _renderOrder = [..._tribeOrder.filter(t => _tribeGroups[t]), ...(_tribeGroups.general ? ['general'] : [])];
+      _renderOrder.forEach(tribeName => {
+        const tribeEvents = _tribeGroups[tribeName] || [];
+        if (!tribeEvents.length) return;
+        if (tribeName !== 'general') {
+          const tc = tribeColor(tribeName);
+          html += `<div style="font-family:var(--font-display);font-size:12px;letter-spacing:1px;color:${tc};margin:10px 0 6px;padding-bottom:4px;border-bottom:1px solid ${tc}22">${tribeName.toUpperCase()}</div>`;
+        }
+        tribeEvents.forEach(evt => {
+          const bc = _bc(evt.badgeClass || 'gold');
+          const players = evt.players || [];
+          const isPaddleBurn = evt.type === 'utcPaddleBurn';
+          const isAdvice = evt.type === 'utcAdviceGiver';
+          if (isPaddleBurn) {
+            html += `<div style="padding:14px;margin-bottom:8px;border-radius:10px;border:2px solid rgba(248,81,73,0.4);background:rgba(248,81,73,0.08);animation:scrollDrop 0.3s var(--ease-broadcast) both">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                ${players.map(p => rpPortrait(p, 'sm')).join('')}
+                <span style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:#f85149;background:rgba(248,81,73,0.18);padding:3px 10px;border-radius:3px">🔥 PADDLES BURNED</span>
+              </div>
+              <div style="font-size:12px;color:#cdd9e5;line-height:1.6">${evt.text}</div>
+              ${_scoreDelta(evt.personalScores) ? `<div style="margin-top:6px">${_scoreDelta(evt.personalScores)}</div>` : ''}
+            </div>`;
+          } else if (isAdvice) {
+            html += `<div style="padding:14px;margin-bottom:8px;border-radius:10px;border:2px solid rgba(248,81,73,0.3);background:rgba(248,81,73,0.06);animation:scrollDrop 0.3s var(--ease-broadcast) both">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                ${players.map(p => rpPortrait(p, 'sm')).join('')}
+                <span style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:#f85149;background:rgba(248,81,73,0.18);padding:3px 10px;border-radius:3px">HELPED THE ENEMY</span>
+              </div>
+              <div style="font-size:12px;color:#8b949e;line-height:1.5">${evt.text}</div>
+              ${_scoreDelta(evt.personalScores) ? `<div style="margin-top:6px">${_scoreDelta(evt.personalScores)}</div>` : ''}
+            </div>`;
+          } else {
+            html += `<div style="padding:10px 14px;margin-bottom:6px;border-radius:8px;border:1px solid ${bc}28;background:${bc}07;animation:scrollDrop 0.3s var(--ease-broadcast) both">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                ${players.map(p => rpPortrait(p, 'sm')).join('')}
+                <span style="font-size:9px;font-weight:700;letter-spacing:1px;color:${bc};background:${bc}18;padding:2px 8px;border-radius:3px">${evt.badge || evt.type}</span>
+                ${_scoreDelta(evt.personalScores) ? `<div style="margin-left:auto">${_scoreDelta(evt.personalScores)}</div>` : ''}
+              </div>
+              <div style="font-size:12px;color:#8b949e;line-height:1.5">${evt.text}</div>
+            </div>`;
+          }
+        });
+      });
+
+      // Fire scores per tribe
+      if (utc.fireScores && Object.keys(utc.fireScores).length) {
+        const fireEntries = Object.entries(utc.fireScores);
+        const maxFire = Math.max(...fireEntries.map(([,v]) => v), 1);
+        html += `<div style="margin-top:14px;padding:12px;border-radius:8px;border:1px solid rgba(240,165,0,0.2);background:rgba(240,165,0,0.04)">
+          <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:#f0a500;margin-bottom:10px">FIRE SCORES</div>`;
+        fireEntries.sort((a,b) => b[1] - a[1]).forEach(([tribe, score]) => {
+          const tc = tribeColor(tribe);
+          const pct = Math.round((score / maxFire) * 100);
+          const burned = utc.paddlesBurned?.[tribe];
+          html += `<div style="margin-bottom:8px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+              <span style="font-size:11px;font-weight:700;color:${tc}">${tribe}${burned ? ' 🔥' : ''}</span>
+              <div style="display:flex;align-items:center;gap:6px">
+                ${burned ? '<span style="font-size:8px;font-weight:700;color:#f85149;background:rgba(248,81,73,0.15);padding:1px 6px;border-radius:3px">PADDLES BURNED</span>' : ''}
+                <span style="font-size:11px;color:#8b949e">${score.toFixed(1)}</span>
+              </div>
+            </div>
+            <div style="height:6px;border-radius:3px;background:rgba(255,255,255,0.06)">
+              <div style="height:6px;border-radius:3px;background:${burned ? '#f85149' : tc};width:${pct}%;transition:width 0.6s ease"></div>
+            </div>
+          </div>`;
+        });
+        html += `</div>`;
+      }
+    }
+
+    // ── Paddle Back: swimmer hero card if paddles burned ──
+    else if (phase.key === 'paddleBack') {
+      const events = utc.phases?.paddleBack || [];
+
+      // Swimmer hero — dramatic card shown first
+      if (utc.swimmerHero) {
+        const pr = pronouns(utc.swimmerHero);
+        html += `<div style="padding:16px;margin-bottom:14px;border-radius:10px;border:2px solid rgba(88,166,255,0.35);background:rgba(88,166,255,0.06);animation:scrollDrop 0.3s var(--ease-broadcast) both">
+          <div style="text-align:center;font-size:9px;font-weight:700;letter-spacing:2px;color:#58a6ff;margin-bottom:8px">🌊 SWIMMER HERO</div>
+          <div style="display:flex;align-items:center;gap:12px;justify-content:center">
+            ${rpPortrait(utc.swimmerHero, 'md')}
+            <div>
+              <div style="font-size:16px;font-weight:700;color:#58a6ff;margin-bottom:4px">${utc.swimmerHero}</div>
+              <div style="font-size:12px;color:#cdd9e5;line-height:1.6">${pr.Sub} can't paddle — the paddles are ash. So ${pr.sub} does the next best thing: ${pr.sub} jumps in and pushes the canoe home.</div>
+            </div>
+          </div>
+        </div>`;
+      }
+
+      // Events grouped by tribe
+      const _tribeGroups = {};
+      const _tribeOrder = (ep.tribesAtStart || []).map(t => t.name);
+      events.forEach(evt => {
+        const firstPlayer = evt.players?.[0];
+        let evtTribe = 'general';
+        if (firstPlayer) {
+          for (const t of (ep.tribesAtStart || [])) {
+            if (t.members?.includes(firstPlayer)) { evtTribe = t.name; break; }
+          }
+        }
+        if (!_tribeGroups[evtTribe]) _tribeGroups[evtTribe] = [];
+        _tribeGroups[evtTribe].push(evt);
+      });
+      const _renderOrder = [..._tribeOrder.filter(t => _tribeGroups[t]), ...(_tribeGroups.general ? ['general'] : [])];
+      _renderOrder.forEach(tribeName => {
+        const tribeEvents = _tribeGroups[tribeName] || [];
+        if (!tribeEvents.length) return;
+        if (tribeName !== 'general') {
+          const tc = tribeColor(tribeName);
+          html += `<div style="font-family:var(--font-display);font-size:12px;letter-spacing:1px;color:${tc};margin:10px 0 6px;padding-bottom:4px;border-bottom:1px solid ${tc}22">${tribeName.toUpperCase()}</div>`;
+        }
+        tribeEvents.forEach(evt => {
+          const bc = _bc(evt.badgeClass || '');
+          const players = evt.players || [];
+          html += `<div style="padding:10px 14px;margin-bottom:6px;border-radius:8px;border:1px solid ${bc}28;background:${bc}07;animation:scrollDrop 0.3s var(--ease-broadcast) both">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+              ${players.map(p => rpPortrait(p, 'sm')).join('')}
+              <span style="font-size:9px;font-weight:700;letter-spacing:1px;color:${bc};background:${bc}18;padding:2px 8px;border-radius:3px">${evt.badge || evt.type}</span>
+              ${_scoreDelta(evt.personalScores) ? `<div style="margin-left:auto">${_scoreDelta(evt.personalScores)}</div>` : ''}
+            </div>
+            <div style="font-size:12px;color:#8b949e;line-height:1.5">${evt.text}</div>
+          </div>`;
+        });
+      });
+    }
+
+    // ── Generic phase: paddleOut, portage ──
+    else {
+      const events = utc.phases?.[phase.key] || [];
+      if (!events.length) {
+        html += `<div style="font-size:11px;color:#6e7681;text-align:center;padding:10px">No events this phase.</div>`;
+      }
+
+      const _tribeGroups = {};
+      const _tribeOrder = (ep.tribesAtStart || []).map(t => t.name);
+      events.forEach(evt => {
+        const firstPlayer = evt.players?.[0];
+        let evtTribe = 'general';
+        if (firstPlayer) {
+          for (const t of (ep.tribesAtStart || [])) {
+            if (t.members?.includes(firstPlayer)) { evtTribe = t.name; break; }
+          }
+        }
+        if (!_tribeGroups[evtTribe]) _tribeGroups[evtTribe] = [];
+        _tribeGroups[evtTribe].push(evt);
+      });
+      const _renderOrder = [..._tribeOrder.filter(t => _tribeGroups[t]), ...(_tribeGroups.general ? ['general'] : [])];
+      _renderOrder.forEach(tribeName => {
+        const tribeEvents = _tribeGroups[tribeName] || [];
+        if (!tribeEvents.length) return;
+        if (tribeName !== 'general') {
+          const tc = tribeColor(tribeName);
+          html += `<div style="font-family:var(--font-display);font-size:12px;letter-spacing:1px;color:${tc};margin:10px 0 6px;padding-bottom:4px;border-bottom:1px solid ${tc}22">${tribeName.toUpperCase()}</div>`;
+        }
+        tribeEvents.forEach(evt => {
+          const bc = _bc(evt.badgeClass || '');
+          const players = evt.players || [];
+          html += `<div style="padding:10px 14px;margin-bottom:6px;border-radius:8px;border:1px solid ${bc}28;background:${bc}07;animation:scrollDrop 0.3s var(--ease-broadcast) both">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+              ${players.map(p => rpPortrait(p, 'sm')).join('')}
+              <span style="font-size:9px;font-weight:700;letter-spacing:1px;color:${bc};background:${bc}18;padding:2px 8px;border-radius:3px">${evt.badge || evt.type}</span>
+              ${_scoreDelta(evt.personalScores) ? `<div style="margin-left:auto">${_scoreDelta(evt.personalScores)}</div>` : ''}
+            </div>
+            <div style="font-size:12px;color:#8b949e;line-height:1.5">${evt.text}</div>
+          </div>`;
+        });
+      });
+    }
+
+    html += `</div>`; // close phase wrapper
+  });
+
+  // ── Final result card (only after all phases revealed) ──
+  if (allRevealed && utc.winner) {
+    const winnerColor = tribeColor(utc.winner);
+    const loserColor = tribeColor(utc.loser);
+
+    html += `<div style="padding:18px;margin-top:4px;border-radius:12px;border:2px solid ${winnerColor}44;background:${winnerColor}0a;text-align:center">
+      <div style="font-family:var(--font-display);font-size:22px;letter-spacing:2px;color:#58a6ff;margin-bottom:6px">IMMUNITY</div>
+      <div style="font-size:18px;font-weight:700;color:${winnerColor};margin-bottom:4px">${utc.winner}</div>
+      <div style="font-size:11px;color:#8b949e">First tribe to paddle home wins.</div>
+    </div>`;
+
+    if (utc.loser) {
+      html += `<div style="padding:12px;margin-top:8px;border-radius:8px;border:1px solid rgba(248,81,73,0.2);background:rgba(248,81,73,0.04);text-align:center">
+        <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:#f85149;margin-bottom:4px">TRIBAL COUNCIL</div>
+        <div style="font-size:14px;font-weight:700;color:${loserColor}">${utc.loser}</div>
+      </div>`;
+    }
+
+    // Swimmer hero shoutout in final result
+    if (utc.swimmerHero) {
+      html += `<div style="padding:10px;margin-top:8px;border-radius:8px;background:rgba(88,166,255,0.06);border:1px solid rgba(88,166,255,0.2);display:flex;align-items:center;gap:10px">
+        ${rpPortrait(utc.swimmerHero, 'sm')}
+        <div>
+          <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:#58a6ff">★ SWIMMER HERO</div>
+          <div style="font-size:12px;color:#e6edf3;margin-top:2px">${utc.swimmerHero} swam the tribe home when the paddles were gone.</div>
+        </div>
+      </div>`;
+    }
+  }
+
+  // ── Sticky NEXT / REVEAL ALL buttons ──
+  if (!allRevealed) {
+    const currentBg = PHASES[Math.max(0, state.idx >= 0 ? state.idx : 0)].bg;
+    const bgStop = currentBg.split(',')[1]?.split(')')[0] || 'rgba(5,21,37,0.95)';
+    html += `<div style="position:sticky;bottom:0;padding:12px 0;text-align:center;background:linear-gradient(transparent,${bgStop} 30%);z-index:5">
+      <button class="rp-btn" style="background:linear-gradient(135deg,#58a6ff,#2f74c0);color:#000;font-weight:700;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-size:12px;letter-spacing:1px;box-shadow:0 0 12px rgba(88,166,255,0.2)"
+        onclick="${_utcReveal(state.idx + 1)}">NEXT (${state.idx + 2}/${totalPhases})</button>
+      <button class="rp-btn rp-btn-secondary" onclick="${_utcReveal(totalPhases - 1)}" style="margin-left:8px">REVEAL ALL</button>
+    </div>`;
+  }
+
+  html += `</div>`;
+  return html;
+}
+
 function rpBuildSuckyOutdoors(ep) {
   const so = ep.suckyOutdoors;
   if (!so?.phases) return null;
@@ -57006,6 +57379,8 @@ function buildVPScreens(epRecord) {
     if (_tsShowHtml) vpScreens.push({ id:'talent-show', label:'The Show', html: _tsShowHtml });
   } else if (ep.isSuckyOutdoors && ep.suckyOutdoors) {
     vpScreens.push({ id:'sucky-outdoors', label:'The Sucky Outdoors', html: rpBuildSuckyOutdoors(ep) });
+  } else if (ep.isUpTheCreek && ep.upTheCreek) {
+    vpScreens.push({ id:'up-the-creek', label:'Up the Creek', html: rpBuildUpTheCreek(ep) });
   } else if (ep.isDodgebrawl && ep.dodgebrawl) {
     vpScreens.push({ id:'dodgebrawl', label:'Dodgebrawl', html: rpBuildDodgebrawl(ep) });
   } else if (ep.isPhobiaFactor && ep.phobiaFactor) {

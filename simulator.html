@@ -14342,7 +14342,7 @@ function simulatePaintballHunt(ep) {
   ep.safeTribes = tribes.length > 2 ? tribes.filter(t => t !== winner && t !== loser) : [];
   ep.challengeType = 'tribe';
   ep.immunePlayers = winner.members.slice();
-  ep.tribalPlayers = loser.members.slice();
+  ep.tribalPlayers = loser.members.filter(m => gs.activePlayers.includes(m));
   ep.challengeLabel = 'Paintball Hunt';
   ep.challengeCategory = 'physical';
 
@@ -31942,7 +31942,8 @@ function simulateEpisode() {
   // ── LAST CHANCE CHALLENGE: 2-player tribe loses → 1v1 duel, loser out, winner absorbed ──
   // Last Chance only fires when tribe would dissolve AND there are 3+ tribes remaining
   // (otherwise run a normal tribal — 2 people can still vote each other out)
-  if (ep.tribalPlayers?.length === 2 && ep.challengeType === 'tribe' && gs.tribes.filter(t => t.members.filter(m => gs.activePlayers.includes(m)).length >= 1).length >= 3) {
+  // Last Chance: disabled — 2-person tribes go to normal tribal, dissolution handled post-vote
+  if (false && ep.tribalPlayers?.length === 2 && ep.challengeType === 'tribe' && gs.tribes.filter(t => t.members.filter(m => gs.activePlayers.includes(m)).length >= 1).length >= 3) {
     const [_lcA, _lcB] = ep.tribalPlayers;
     const _lc = simulateLastChance(_lcA, _lcB);
     ep.lastChance = _lc;

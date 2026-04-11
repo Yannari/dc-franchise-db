@@ -45,6 +45,10 @@ Bond changes, state changes, or information flow. Text-only events are cosmetic 
 - Episode history fields + `patchEpisodeHistory`
 - All challenge twists mutually incompatible
 - Skip main `updateChalRecord` call (add to the skip list in simulateEpisode)
+- **Showmance moments:** Check if the challenge structure supports romantic moments (downtime,
+  partner interactions, danger). If yes, add showmance challenge moments. If not, don't force it.
+  Challenges with intimate/social phases (overnight, canoe partners) = yes.
+  Pure competition challenges (dodgeball, sudden death) = no.
 
 ### VP Pattern
 - `_tvState[key]` with `idx: -1` for click-to-reveal

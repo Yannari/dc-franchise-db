@@ -7766,7 +7766,11 @@ function simulateDodgebrawl(ep) {
   const loserCandidates = finalSorted.filter(([,w]) => w === finalSorted[finalSorted.length - 1][1]);
   const loserName = loserCandidates.length === 1
     ? loserCandidates[0][0]
-    : loserCandidates.sort(([a], [b]) => (cumulativeScores[a] || 0) - (cumulativeScores[b] || 0))[0][0];
+    : loserCandidates.sort(([a], [b]) => {
+        const aSize = tribeMembers.find(t => t.name === a)?.members.length || 1;
+        const bSize = tribeMembers.find(t => t.name === b)?.members.length || 1;
+        return ((cumulativeScores[a] || 0) / aSize) - ((cumulativeScores[b] || 0) / bSize);
+      })[0][0];
 
   const winner = gs.tribes.find(t => t.name === winnerName);
   const loser = gs.tribes.find(t => t.name === loserName);
@@ -10575,11 +10579,14 @@ function simulateSuckyOutdoors(ep) {
   });
 
   // ══ Determine Winner + Loser ══
-  // Total survival score = sum of personal scores for tribe + race score bonus
+  // Total survival score = AVERAGE personal score per member + race score (normalized)
+  // Using averages so tribe size doesn't determine the winner
   const survivalScores = {};
   tribes.forEach(t => {
     const tribePersonalTotal = t.members.reduce((sum, m) => sum + (personalScores[m] || 0), 0);
-    survivalScores[t.name] = tribePersonalTotal + raceScores[t.name];
+    const avgPersonal = tribePersonalTotal / Math.max(1, t.members.length);
+    const avgRace = (raceScores[t.name] || 0) / Math.max(1, t.members.length);
+    survivalScores[t.name] = avgPersonal + avgRace;
   });
 
   // Auto-loss override: tribe whose lost players arrive after ALL other tribes finish
@@ -12217,9 +12224,12 @@ function simulateUpTheCreek(ep) {
   }); // end tribes phase 4
 
   // Photo finish check (once, between top 2 tribes)
+  // Normalize all phase scores by tribe size so smaller tribes aren't disadvantaged
+  const _utcNorm = (score, tribeName) => score / Math.max(1, tribes.find(t_ => t_.name === tribeName)?.members.length || 1);
   const tribeScores = tribes.map(t => ({
     name: t.name,
-    total: tribePhase1Score[t.name] + tribePhase2Score[t.name] + tribePhase3Score[t.name] + tribePhase4Score[t.name]
+    total: _utcNorm(tribePhase1Score[t.name], t.name) + _utcNorm(tribePhase2Score[t.name], t.name) + tribePhase3Score[t.name] + _utcNorm(tribePhase4Score[t.name], t.name)
+    // Phase 3 (fire) NOT normalized — it's already fixed (best builder + bonus method, not per-member)
   })).sort((a, b) => b.total - a.total);
 
   if (tribeScores.length >= 2) {
@@ -12244,9 +12254,10 @@ function simulateUpTheCreek(ep) {
   }
 
   // ══ WINNER DETERMINATION ══
+  // Normalized scores — same formula as photo finish check
   const finalScores = tribes.map(t => ({
     tribe: t,
-    total: tribePhase1Score[t.name] + tribePhase2Score[t.name] + tribePhase3Score[t.name] + tribePhase4Score[t.name]
+    total: _utcNorm(tribePhase1Score[t.name], t.name) + _utcNorm(tribePhase2Score[t.name], t.name) + tribePhase3Score[t.name] + _utcNorm(tribePhase4Score[t.name], t.name)
   })).sort((a, b) => b.total - a.total);
 
   let winner = finalScores[0].tribe;

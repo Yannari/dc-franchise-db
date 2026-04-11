@@ -25014,7 +25014,7 @@ function checkLoveTriangleFormation(ep) {
 
         // ── PERSONALITY FORK: secret affair vs public triangle ──
         const _cheaterStats = pStats(inShowmance);
-        const _cheaterArch = _cheaterStats.archetype || '';
+        const _cheaterArch = players.find(p => p.name === inShowmance)?.archetype || '';
         const _isSecretType = _cheaterStats.loyalty <= 5 || ['villain','schemer','chaos-agent','showmancer'].includes(_cheaterArch);
 
         if (_isSecretType) {

@@ -13844,10 +13844,13 @@ function simulatePaintballHunt(ep) {
                 badge: 'BETRAYAL', badgeText: 'BETRAYAL', badgeClass: 'red'
               });
 
-              // ── Paintball War escalation ──
-              // Retaliation — deer is alive and fights back. Very likely after deliberate betrayal.
+              // ── ALWAYS: deer is marked — paint + noise = easy to spot next round ──
+              if (!ep._pbMarked) ep._pbMarked = {};
+              ep._pbMarked[d] = (ep._pbMarked[d] || 0) + 5; // huge targeting weight bonus
+
+              // ── SOMETIMES: Retaliation — deer fights back (boldness proportional) ──
               const dStats = pStats(d);
-              if (Math.random() < 0.5 + dStats.boldness * 0.05) { // 55-100% chance
+              if (Math.random() < dStats.boldness * 0.08) {
                 addBond(d, hunter, -0.5);
                 addScore(d, DEER_EVENT_BONUS); // fighting spirit
                 misfiredHunters.add(hunter); // hunter can't shoot — busy fighting
@@ -13864,23 +13867,16 @@ function simulatePaintballHunt(ep) {
                   badge: 'RETALIATION', badgeText: 'RETALIATION', badgeClass: 'red'
                 });
 
-                // Witnesses join — high chance, the whole tribe sees the betrayal
-                const witnesses = t.members.filter(m => m !== hunter && m !== d && Math.random() < 0.6);
+                // Witnesses join if retaliation happens
+                const witnesses = t.members.filter(m => m !== hunter && m !== d && Math.random() < 0.5);
                 if (witnesses.length) {
                   witnesses.forEach(w => addBond(w, hunter, -0.3));
                   roundEvents.push({
                     type: 'pbWarEscalation', players: [d, hunter, ...witnesses],
-                    text: `It's a full-on PAINTBALL WAR! ${witnesses.join(' and ')} jump${witnesses.length === 1 ? 's' : ''} in. Paint is flying everywhere. The commotion gives away ${d}'s position to every hunter in the forest.`,
+                    text: `It's a full-on PAINTBALL WAR! ${witnesses.join(' and ')} jump${witnesses.length === 1 ? 's' : ''} in. Paint is flying everywhere.`,
                     badge: 'PAINTBALL WAR', badgeText: 'PAINTBALL WAR', badgeClass: 'red'
                   });
                 }
-
-                // War aftermath: deer has a massive target — exposed for next round
-                // mudSlid = easier to find, camouflage/tree climb blocked
-                newMudSlid.add(d); // already added above but reinforce
-                // Also add a "marked" flag so pickTargetDeer heavily weights this deer
-                if (!ep._pbMarked) ep._pbMarked = {};
-                ep._pbMarked[d] = (ep._pbMarked[d] || 0) + 5; // huge targeting weight bonus
               }
             }
           }

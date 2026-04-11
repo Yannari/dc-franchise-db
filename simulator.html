@@ -10541,12 +10541,17 @@ function simulateSuckyOutdoors(ep) {
       starPairs.sort((x, y) => y.score - x.score);
       if (starPairs.length) {
         const { a, b } = starPairs[0];
-        const _starTexts = [
+        const _romanceOn = seasonConfig.romance !== 'disabled';
+        const _starTexts = _romanceOn ? [
           `${a} and ${b} lie on their backs looking up. Far from camp, far from the game. ${a} says something real. ${b} responds in kind.`,
           `The stars are out, fully. ${b} points out a constellation. ${a} tells ${pronouns(b).obj} something ${pronouns(a).sub === 'they' ? 'they\'ve' : 'they\'ve'} never told anyone out here.`,
           `${a} and ${b} stay outside the shelter long after everyone else is asleep. The kind of conversation that only happens at 3am under a clear sky.`,
           `It's quiet. ${a} and ${b} are the only ones not asleep yet. The sky is clear. Eventually one of them says, "I trust you." The other one means it when they say it back.`,
           `${a} and ${b} lie in the dark and talk about things that have nothing to do with the game. For a while, the game stops existing.`,
+        ] : [
+          `${a} and ${b} share a quiet moment under the stars. Talking about home. About life after the game. A friendship that'll last.`,
+          `${a} and ${b} are the last ones awake. The sky is clear. They talk about everything except strategy. Sometimes that's what you need.`,
+          `${a} points out a constellation. ${b} makes up a name for it. They both laugh. The game feels far away.`,
         ];
         personalScores[a] += 1.0; personalScores[b] += 1.0;
         addBond(a, b, 0.5);
@@ -10788,12 +10793,17 @@ function simulateSuckyOutdoors(ep) {
       cuddlePairs.sort((x, y) => y.bond - x.bond);
       if (cuddlePairs.length) {
         const { a, b } = cuddlePairs[0];
-        const _cuddleTexts = [
+        const _romOn = seasonConfig.romance !== 'disabled';
+        const _cuddleTexts = _romOn ? [
           `It's cold. ${a} and ${b} end up back-to-back for warmth. Nobody says anything about it in the morning.`,
           `${a} and ${b} are pressed together for warmth by midnight. Practical. Completely practical.`,
           `${b} shuffles over to ${a} in the night. "I'm freezing." "${a} is also freezing." They're both warmer for it.`,
           `At some point in the night, ${a} and ${b} are sharing one sleeping bag. Nobody asks how that happened. Nobody is cold.`,
           `${a} wakes up with ${b} tucked against ${pronouns(a).posAdj} side. ${pronouns(a).Sub} doesn't move. It's warm. It's fine. Nobody mentions it.`,
+        ] : [
+          `It's freezing. ${a} and ${b} huddle together for warmth. Survival, nothing more. But the trust is real.`,
+          `${a} and ${b} share body heat to get through the night. When the sun comes up, they both pretend they weren't that cold.`,
+          `The temperature drops hard. ${a} and ${b} end up back-to-back. Tribemates, keeping each other alive.`,
         ];
         personalScores[a] += 0.5; personalScores[b] += 0.5;
         addBond(a, b, 0.3);
@@ -11690,11 +11700,16 @@ function simulateUpTheCreek(ep) {
       if (bond < 3) return;
       if (Math.random() >= bond * 0.06) return; // proportional: bond 5 = 30%, bond 8 = 48%
       const prA = pronouns(pair.a), prB = pronouns(pair.b);
-      const _canoeRomTexts = [
+      const _romEnabled = seasonConfig.romance !== 'disabled';
+      const _canoeRomTexts = _romEnabled ? [
         `The paddle rhythm syncs. ${pair.a} and ${pair.b} stop talking strategy and start talking about something else entirely. The canoe drifts. Neither notices.`,
         `${pair.b} catches ${pair.a} staring. "What?" "Nothing." It's not nothing. The tribe in the next canoe pretends not to see.`,
         `Halfway across the lake, ${pair.a} and ${pair.b} stop paddling. Just floating. The conversation turns personal. The other canoes pull ahead. They don't care.`,
         `${pair.a} reaches for the paddle at the same time as ${pair.b}. Their hands touch. Neither pulls away.`,
+      ] : [
+        `${pair.a} and ${pair.b} paddle in perfect sync. No words needed. They just work. The canoe cuts through the water like it has a mind of its own.`,
+        `${pair.a} and ${pair.b} are talking about everything except the game. The paddle rhythm is automatic. The friendship is natural.`,
+        `The best canoe pair on the water. ${pair.a} and ${pair.b} move as one. Trust built stroke by stroke.`,
       ];
       addBond(pair.a, pair.b, 0.4);
       phases.paddleOut.push({

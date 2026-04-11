@@ -13128,6 +13128,7 @@ function simulatePaintballHunt(ep) {
       const camoCandidates = aliveDeerAll.filter(d => !camouflaged.has(d));
       const camoRolls = camoCandidates.map(d => ({ d, roll: Math.random() < pStats(d).intuition * 0.04 ? pStats(d).intuition + Math.random() : -1 })).filter(r => r.roll > 0);
       camoRolls.sort((a, b) => b.roll - a.roll);
+      const camoWinners = camoRolls.slice(0, 2);
       camoWinners.forEach(({ d }) => {
         if (deerEvasionCount >= 2 || specialEventsThisRound >= maxSpecialEvents) return;
         deerEvasionCount++;

@@ -13563,6 +13563,8 @@ function simulatePaintballHunt(ep) {
           addBond(hunter, victim, -0.4);
           addScore(hunter, -1.0);
           addScore(victim, -0.5); // hurt but NOT eliminated
+          camouflaged.delete(victim); // paint ruins any camo
+          treeClimbed.delete(victim); // knocked out of tree
           newMudSlid.add(victim); // exposed
           paintCounter[victim] = (paintCounter[victim] || 0) + 1;
           if (!ep._pbMarked) ep._pbMarked = {};
@@ -13585,6 +13587,8 @@ function simulatePaintballHunt(ep) {
               addBond(hunter, d, -1.0);
               addScore(hunter, HUNTER_NEGATIVE);
               addScore(d, -0.5);
+              camouflaged.delete(d); // paint ruins any camo
+              treeClimbed.delete(d); // knocked out of tree
               newMudSlid.add(d);
               paintCounter[d] = (paintCounter[d] || 0) + 1;
               friendlyFireLog.push({ hunter, victim: d, type: 'deliberate', round: roundNum });
@@ -13912,10 +13916,16 @@ function simulatePaintballHunt(ep) {
     const _paintedThisRound = new Set(
       _realM.filter(m => m.result === 'hit' || m.result === 'ambush' || m.result === 'sneak' || m.result === 'double-hit' || m.result === 'friendly-fire').map(m => m.target)
     );
-    // Filter events: drop any event where a deer player was painted out this round
+    // Also track FF victims this round — their camo/tree events are invalid (paint ruined it)
+    const _ffVictims = new Set(friendlyFireLog.filter(f => f.round === roundNum).map(f => f.victim));
+    // Filter events: drop events for eliminated deer OR protective events for FF victims
     const _validEvents = roundEvents.filter(ev => {
       if (!ev.players?.length) return true;
-      return !ev.players.some(p => _paintedThisRound.has(p) && isDeer(p));
+      // Drop any event involving eliminated deer
+      if (ev.players.some(p => _paintedThisRound.has(p) && isDeer(p))) return false;
+      // Drop camo/tree for FF victims (paint ruins the hide)
+      if ((ev.type === 'pbCamouflage' || ev.type === 'pbTreeClimb') && ev.players.some(p => _ffVictims.has(p))) return false;
+      return true;
     });
     const _timeline = [];
     _realM.forEach(m => _timeline.push({ kind: 'matchup', ...m }));

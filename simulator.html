@@ -11230,9 +11230,10 @@ function simulateUpTheCreek(ep) {
 
   // ══ PHASE 2: PORTAGE (3-5 encounters per tribe) ══
   const ALL_PORTAGE = [
-    'wildlife-attack', 'quicksand', 'injury', 'shortcut', 'dangerous-crossing',
-    'dropped-canoe', 'creepy-ruins', 'insect-swarm', 'dense-fog', 'rival-spotted',
-    'falls-behind', 'mysterious-sounds', 'steep-hill', 'food-discovery', 'creek-crossing'
+    'woolly-beavers', 'giant-geese', 'quicksand', 'injury', 'shortcut', 'dangerous-crossing',
+    'dropped-canoe', 'cursed-idol', 'insect-swarm', 'boney-fog', 'rival-spotted',
+    'falls-behind', 'spooky-sounds', 'steep-hill', 'food-discovery', 'creek-crossing',
+    'boney-mist', 'skeleton-find'
   ];
 
   tribes.forEach(t => {
@@ -11243,26 +11244,51 @@ function simulateUpTheCreek(ep) {
     pool.forEach(encounter => {
       switch (encounter) {
 
-        case 'wildlife-attack': {
+        case 'woolly-beavers': {
           const brave = members.slice().sort((a, b) => pStats(b).boldness - pStats(a).boldness)[0];
           const panicker = members.slice().sort((a, b) => pStats(a).boldness - pStats(b).boldness)[0];
           if (!brave || brave === panicker) break;
           const prBrave = pronouns(brave);
-          const animals = ['a family of angry geese', 'a territorial beaver', 'a black bear'];
-          const animal = _rp(animals);
-          const wildTexts = [
-            `${animal.charAt(0).toUpperCase() + animal.slice(1)} on the trail. ${panicker} freezes. ${brave} steps forward. After forty seconds of tense standoff, the threat retreats. ${panicker} is still frozen.`,
-            `${brave} spots ${animal} ahead and immediately moves to draw it away from the group. ${panicker} does not help. The tribe makes it through anyway.`,
-            `${animal} charges. ${brave} doesn't run. Stands ${prBrave.posAdj} ground, arms out. It works. ${panicker} is already twenty meters back.`,
+          const _wbTexts = [
+            `Woolly beavers. Three of them, blocking the trail. Teeth like steak knives. ${panicker} screams. ${brave} grabs a stick and charges. The beavers scatter — but they don't look happy about it.`,
+            `The bushes erupt with woolly beavers — remnants of the Pleistocene Era, and they eat meat. ${brave} holds the line while the tribe sprints past. ${panicker} is already gone.`,
+            `${brave} spots the beaver dam first. "Nobody move." The woolly beavers circle. ${prBrave.Sub} ${prBrave.sub === 'they' ? 'hold' : 'holds'} ${prBrave.posAdj} ground until they lose interest. ${panicker} hasn't stopped shaking.`,
+            `A woolly beaver the size of a dog lunges from the undergrowth. ${panicker} drops the canoe. ${brave} kicks it away. The tribe runs. The beaver gives chase for 200 meters.`,
           ];
-          const braveScore = pStats(brave).boldness * 0.15;
           personalScores[brave] += 1.5; personalScores[panicker] -= 1.0;
           addBond(brave, panicker, 0.3);
-          tribePhase2Score[t.name] += braveScore;
+          if (!gs.popularity) gs.popularity = {};
+          gs.popularity[brave] = (gs.popularity[brave] || 0) + 1;
+          tribePhase2Score[t.name] += pStats(brave).boldness * 0.15;
           phases.portage.push({
             type: 'utcWildlife', phase: 'portage', players: [brave, panicker],
-            text: wildTexts[_hash(brave + panicker + 'wildat', wildTexts.length)],
-            personalScores: { [brave]: 1.5, [panicker]: -1.0 }, badge: 'WILDLIFE', badgeClass: ''
+            text: _wbTexts[_hash(brave + panicker + 'woolly', _wbTexts.length)],
+            personalScores: { [brave]: 1.5, [panicker]: -1.0 }, badge: 'WOOLLY BEAVERS', badgeClass: 'red'
+          });
+          break;
+        }
+
+        case 'giant-geese': {
+          // Owen's underwear moment — someone does something stupid that wakes the geese
+          const troublemaker = members.slice().sort((a, b) => {
+            return (pStats(b).boldness * 0.5 + (10 - pStats(b).mental) * 0.3) - (pStats(a).boldness * 0.5 + (10 - pStats(a).mental) * 0.3);
+          })[0];
+          const saver = members.filter(m => m !== troublemaker).sort((a, b) => pStats(b).intuition - pStats(a).intuition)[0];
+          if (!troublemaker || !saver) break;
+          const prT = pronouns(troublemaker);
+          const _ggTexts = [
+            `${troublemaker} makes too much noise and wakes a flock of giant geese. They're huge. They're angry. The tribe runs. ${saver} throws food to distract them — it works, barely.`,
+            `Giant geese. Prehistoric, enormous, and territorial. ${troublemaker} startled them. ${saver} spots an escape route and guides the tribe through. ${troublemaker} brings up the rear, still apologizing.`,
+            `The ground shakes. Giant geese — six of them — stampede through the clearing. ${troublemaker} caused this. ${saver} pulls everyone behind a rock formation until the flock passes.`,
+            `"What is THAT?" Giant geese. ${troublemaker} threw something at them. Now they're chasing. ${saver} finds cover. The tribe hides until the flock loses interest.`,
+          ];
+          personalScores[troublemaker] -= 1.0; personalScores[saver] += 1.5;
+          addBond(troublemaker, saver, -0.2);
+          tribePhase2Score[t.name] += pStats(saver).intuition * 0.1;
+          phases.portage.push({
+            type: 'utcWildlife', phase: 'portage', players: [troublemaker, saver],
+            text: _ggTexts[_hash(troublemaker + saver + 'geese', _ggTexts.length)],
+            personalScores: { [troublemaker]: -1.0, [saver]: 1.5 }, badge: 'GIANT GEESE', badgeClass: 'red'
           });
           break;
         }
@@ -11399,38 +11425,42 @@ function simulateUpTheCreek(ep) {
           break;
         }
 
-        case 'creepy-ruins': {
-          const explorer = members.slice().sort((a, b) => {
-            const sA = pStats(a), sB = pStats(b);
-            return (sB.boldness * 0.5 + sB.intuition * 0.5) - (sA.boldness * 0.5 + sA.intuition * 0.5);
-          })[0];
-          if (!explorer) break;
-          const sEx = pStats(explorer);
-          const exploreScore = sEx.boldness * 0.05 + sEx.intuition * 0.04;
-          const prEx = pronouns(explorer);
-          if (Math.random() < exploreScore + 0.3) {
-            const ruinTexts = [
-              `${explorer} finds the ruins of an old dock half-buried in the trees. ${prEx.Sub} calls the tribe over. There's nothing useful but it's eerie and everyone is unsettled for different reasons.`,
-              `${explorer} spots stonework in the undergrowth. ${prEx.Sub} pushes through to look. Nothing dangerous, but the cave drawings are a conversation starter for the next kilometer.`,
-              `${explorer} checks the cave first — alone. Comes back with a handful of old coins. 'Souvenir.' The tribe moves faster after that.`,
+        case 'cursed-idol': {
+          // The Beth moment — someone finds a tiki idol on Boney Island
+          // "Anyone who removes an item from the island will be cursed forever"
+          const finder = members.slice().sort((a, b) => {
+            return (pStats(b).boldness * 0.3 + (10 - pStats(b).intuition) * 0.4) - (pStats(a).boldness * 0.3 + (10 - pStats(a).intuition) * 0.4);
+          })[0]; // bold + low intuition = most likely to pick it up
+          if (!finder) break;
+          const prF = pronouns(finder);
+          const tookIt = Math.random() < (10 - pStats(finder).intuition) * 0.07 + pStats(finder).boldness * 0.03;
+          if (tookIt) {
+            const _tookTexts = [
+              `${finder} spots a carved tiki idol half-buried in the dirt. "${prF.Sub} ${prF.sub === 'they' ? 'are' : 'is'} keeping this." Nobody mentions Chris's warning. Maybe ${prF.sub} wasn't listening.`,
+              `${finder} finds a wooden idol near an old shrine. It looks cool. ${prF.Sub} ${prF.sub === 'they' ? 'pocket' : 'pockets'} it. The island seems to get quieter after that.`,
+              `"Look what I found!" ${finder} holds up a carved tiki figure. The tribe stares. "What? It's a souvenir." Lightning flashes in the distance. Nobody connects the dots.`,
+              `${finder} picks up the cursed tiki idol and calls it ${prF.posAdj} new lucky charm. It is not a lucky charm.`,
             ];
-            personalScores[explorer] += 1.0; tribePhase2Score[t.name] += 0.5;
+            personalScores[finder] -= 2.0; // curse penalty
+            // The curse: bad luck for the rest of the challenge
+            if (!gs._upTheCreekHeat) gs._upTheCreekHeat = {};
+            gs._upTheCreekHeat[finder] = { amount: 1.0, expiresEp: ((gs.episode || 0) + 1) + 3 }; // curse lasts 3 episodes
             phases.portage.push({
-              type: 'utcCreepyRuins', phase: 'portage', players: [explorer],
-              text: ruinTexts[_hash(explorer + 'ruins', ruinTexts.length)],
-              personalScores: { [explorer]: 1.0 }, badge: 'EXPLORED RUINS', badgeClass: 'gold'
+              type: 'utcCursedIdol', phase: 'portage', players: [finder],
+              text: _tookTexts[_hash(finder + 'idol', _tookTexts.length)],
+              personalScores: { [finder]: -2.0 }, badge: 'CURSED IDOL', badgeClass: 'red'
             });
           } else {
-            const scaredTexts = [
-              `Something in the ruins freaks ${explorer} out enough to stop ${prEx.posAdj} cold. The tribe has to physically pull ${prEx.obj} away. Time lost.`,
-              `${explorer} refuses to go near the cave. Categorically refuses. The tribe routes around it at significant cost.`,
-              `${explorer} turns back at the ruins entrance. ${prEx.Sub} ${prEx.sub === 'they' ? 'don\'t' : 'doesn\'t'} explain. Nobody pushes. They go around.`,
+            const _leftTexts = [
+              `${finder} spots a carved idol on a stone pedestal. Reaches for it — then remembers Chris's warning. "Nah." Walks away. Smart.`,
+              `${finder} sees the tiki idol. Something about it feels wrong. ${prF.Sub} ${prF.sub === 'they' ? 'leave' : 'leaves'} it where it is. The island approves.`,
+              `"Don't touch anything on this island." ${finder} remembers. The idol stays. ${finder} moves on.`,
             ];
-            personalScores[explorer] -= 0.5;
+            personalScores[finder] += 0.5; // wisdom bonus
             phases.portage.push({
-              type: 'utcCreepyRuins', phase: 'portage', players: [explorer],
-              text: scaredTexts[_hash(explorer + 'scared', scaredTexts.length)],
-              personalScores: { [explorer]: -0.5 }, badge: 'SPOOKED', badgeClass: 'red'
+              type: 'utcCursedIdol', phase: 'portage', players: [finder],
+              text: _leftTexts[_hash(finder + 'noidol', _leftTexts.length)],
+              personalScores: { [finder]: 0.5 }, badge: 'WISE CHOICE', badgeClass: 'gold'
             });
           }
           break;
@@ -11455,7 +11485,7 @@ function simulateUpTheCreek(ep) {
           break;
         }
 
-        case 'dense-fog': {
+        case 'boney-fog': {
           const navigator = members.slice().sort((a, b) => {
             const sA = pStats(a), sB = pStats(b);
             return (sB.mental * 0.5 + sB.intuition * 0.5) - (sA.mental * 0.5 + sA.intuition * 0.5);
@@ -11543,7 +11573,7 @@ function simulateUpTheCreek(ep) {
           break;
         }
 
-        case 'mysterious-sounds': {
+        case 'spooky-sounds': {
           const brave = members.slice().sort((a, b) => pStats(b).boldness - pStats(a).boldness)[0];
           const comforter = members.filter(m => m !== brave).slice().sort((a, b) => pStats(b).social - pStats(a).social)[0];
           const scared = members.filter(m => m !== brave && m !== comforter).slice().sort((a, b) => pStats(a).boldness - pStats(b).boldness)[0];
@@ -11667,6 +11697,48 @@ function simulateUpTheCreek(ep) {
               personalScores: {}, badge: 'CREEK CROSSING', badgeClass: 'red'
             });
           }
+          break;
+        }
+
+        case 'boney-mist': {
+          // Boney Island's signature eerie mist rolls in
+          const nervous = members.slice().sort((a, b) => pStats(a).boldness - pStats(b).boldness)[0];
+          const steady = members.slice().sort((a, b) => pStats(b).temperament - pStats(a).temperament)[0];
+          if (!nervous || nervous === steady) break;
+          const prN = pronouns(nervous);
+          const _mistTexts = [
+            `The mist rolls in without warning. Thick, cold, unnatural. Visibility drops to five feet. ${nervous} grabs someone's arm. ${steady} keeps walking like nothing's wrong.`,
+            `Boney Island's mist swallows the tribe. ${nervous} starts breathing fast. "I can't see anything." ${steady}: "Then follow my voice." They push through.`,
+            `The air turns cold. The mist is so thick ${nervous} can't see ${prN.posAdj} own hands. Something moves in the white. Nobody knows what. ${steady} keeps the tribe moving.`,
+            `White fog, everywhere. ${nervous} swears something touched ${prN.posAdj} shoulder. ${steady} says it was a branch. Neither of them is sure.`,
+          ];
+          personalScores[nervous] = (personalScores[nervous] || 0) - 0.5;
+          personalScores[steady] = (personalScores[steady] || 0) + 0.5;
+          phases.portage.push({
+            type: 'utcBoneyMist', phase: 'portage', players: [nervous, steady],
+            text: _mistTexts[_hash(nervous + steady + 'mist', _mistTexts.length)],
+            personalScores: { [nervous]: -0.5, [steady]: 0.5 }, badge: 'BONEY MIST', badgeClass: ''
+          });
+          break;
+        }
+
+        case 'skeleton-find': {
+          // Someone finds bones/skulls — Boney Island got its name for a reason
+          const finder = members[Math.floor(Math.random() * members.length)];
+          if (!finder) break;
+          const prFi = pronouns(finder);
+          const _skelTexts = [
+            `${finder} trips over something. Looks down. Bones. Old ones. Boney Island earned its name. ${prFi.Sub} doesn't trip again — ${prFi.sub} ${prFi.sub === 'they' ? 'watch' : 'watches'} every step after that.`,
+            `"Hey, what's—" ${finder} stops mid-sentence. A skull, half-buried in the mud. Human or animal, nobody can tell. Nobody wants to look closer.`,
+            `${finder} finds a skeleton arranged in a sitting position against a tree. Like it was waiting. The tribe walks faster after that.`,
+            `Bones scattered across the trail. ${finder} counts at least three different sets. "What happened here?" Nobody answers. Nobody wants to.`,
+          ];
+          personalScores[finder] = (personalScores[finder] || 0) - 0.3;
+          phases.portage.push({
+            type: 'utcSkeletonFind', phase: 'portage', players: [finder],
+            text: _skelTexts[_hash(finder + 'skeleton', _skelTexts.length)],
+            personalScores: { [finder]: -0.3 }, badge: 'BONES', badgeClass: ''
+          });
           break;
         }
 
@@ -46157,6 +46229,9 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'utcPhotoFinish'           ? (evt.badgeText || evt.badge || 'PHOTO FINISH')
                      : evt.type === 'utcCheating'              ? (evt.badgeText || evt.badge || 'CHEATING')
                      : evt.type === 'utcMotivational'          ? (evt.badgeText || evt.badge || 'RALLY CRY')
+                     : evt.type === 'utcCursedIdol'           ? (evt.badgeText || evt.badge || 'CURSED IDOL')
+                     : evt.type === 'utcBoneyMist'            ? (evt.badgeText || evt.badge || 'BONEY MIST')
+                     : evt.type === 'utcSkeletonFind'         ? (evt.badgeText || evt.badge || 'BONES')
                      : evt.type === 'soMorale'                 ? (evt.badgeText || evt.badge || 'MORALE BOOST')
                      : evt.type === 'soFireConfession'         ? (evt.badgeText || evt.badge || 'CONFESSION')
                      : evt.type === 'soSurvivor'               ? (evt.badgeText || evt.badge || 'SURVIVOR')
@@ -46353,7 +46428,8 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'soGhostStory' || evt.type === 'soBear' || evt.type === 'soCuddling' || evt.type === 'soScheme' || evt.type === 'soScaryNoise' || evt.type === 'soNightmare' || evt.type === 'soCantSleep' || evt.type === 'soSneakOff' || evt.type === 'soLagger' ? ''
                      : evt.type === 'utcPartnerPick' || evt.type === 'utcFastPair' || evt.type === 'utcShortcut' || evt.type === 'utcLighter' || evt.type === 'utcFireStarter' || evt.type === 'utcSwimmerHero' || evt.type === 'utcSprintFinish' || evt.type === 'utcMotivational' || evt.type === 'utcSoloPaddler' ? 'gold'
                      : evt.type === 'utcRejected' || evt.type === 'utcSlowPair' || evt.type === 'utcCapsized' || evt.type === 'utcDroppedCanoe' || evt.type === 'utcPaddleBurn' || evt.type === 'utcAdviceGiver' || evt.type === 'utcCheating' || evt.type === 'utcInjury' ? 'red'
-                     : evt.type === 'utcWildlife' || evt.type === 'utcQuicksand' || evt.type === 'utcPhotoFinish' ? ''
+                     : evt.type === 'utcWildlife' || evt.type === 'utcQuicksand' || evt.type === 'utcPhotoFinish' || evt.type === 'utcBoneyMist' || evt.type === 'utcSkeletonFind' ? ''
+                     : evt.type === 'utcCursedIdol' ? 'red'
                      : isMoleReveal ? 'gold'
                      : isDareComplete || isDareMVP || isDareGift || isDarePact ? 'gold'
                      : isDarePactBetray || isDareAllyBetray || isDareRefusal || isDareElim ? 'red'

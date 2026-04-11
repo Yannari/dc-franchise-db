@@ -24798,6 +24798,7 @@ function updateShowmancePhases(ep) {
         return typeof romanticCompat === 'function' ? romanticCompat(p, closerTo) : true;
       });
       if (candidates.length) {
+        // Romantic jealousy — potential love triangle
         const jealous = candidates[Math.floor(Math.random() * candidates.length)];
         sh.jealousPlayer = jealous;
         const closerTo = getBond(jealous, a) > getBond(jealous, b) ? a : b;
@@ -24809,6 +24810,33 @@ function updateShowmancePhases(ep) {
           `Something shifted between ${jealous} and ${closerTo}. It happened the day ${closerTo} started spending every free moment with ${other}. ${jealous} clocked it. The distance is growing.`,
           `${jealous} sat alone at the fire last night while ${closerTo} and ${other} whispered on the beach. "I'm happy for them," ${jealous} said. Nobody believed it.`,
         ]), [jealous, closerTo, other]);
+      } else {
+        // Friendship jealousy — NOT romantic, but the friend feels sidelined
+        const friendCandidates = active.filter(p => {
+          if (p === a || p === b) return false;
+          const bondA = getBond(p, a), bondB = getBond(p, b);
+          return (bondA >= 4 && bondB < 1) || (bondB >= 4 && bondA < 1);
+        });
+        if (friendCandidates.length && Math.random() < 0.25) {
+          const sidelined = friendCandidates[Math.floor(Math.random() * friendCandidates.length)];
+          const bestFriend = getBond(sidelined, a) > getBond(sidelined, b) ? a : b;
+          const partner = bestFriend === a ? b : a;
+          const prS = pronouns(sidelined);
+          // Damage the partner bond harder — they "stole" the friend
+          addBond(sidelined, partner, -0.8);
+          // Mild damage with the friend — hurt but won't say it
+          addBond(sidelined, bestFriend, -0.3);
+          // Heat on sidelined player — isolation makes them a target
+          if (!gs._upTheCreekHeat) gs._upTheCreekHeat = {};
+          gs._upTheCreekHeat[sidelined] = { amount: 0.5, expiresEp: ((gs.episode || 0) + 1) + 1 };
+          pushEvt('friendshipJealousy', _pick([
+            `${sidelined} and ${bestFriend} used to be inseparable. Now ${bestFriend} is always with ${partner}. ${sidelined} eats alone. Sleeps facing the wall. The distance is growing and nobody's talking about it.`,
+            `${sidelined} watches ${bestFriend} and ${partner} from across camp. ${prS.Sub} ${prS.sub === 'they' ? 'don\'t' : 'doesn\'t'} say anything. But the way ${prS.sub} ${prS.sub === 'they' ? 'look' : 'looks'} at ${partner} isn't warm anymore.`,
+            `"We used to talk about everything." ${sidelined} said that to no one in particular. ${bestFriend} was too busy with ${partner} to hear it.`,
+            `${sidelined} tried to sit with ${bestFriend} at the fire. ${partner} was already there. ${sidelined} walked away. The tribe saw it. Nobody intervened.`,
+            `${bestFriend} doesn't even notice ${sidelined} pulling away. That's the part that hurts the most.`,
+          ]), [sidelined, bestFriend, partner]);
+        }
       }
     }
   });
@@ -44614,6 +44642,10 @@ function rpBuildDebug(ep) {
         _romEvents.push({ ep: h.num, type: 'SABOTAGE', col: '#f85149', detail: `${e.players[0]} kissed ${e.players[1]} to hurt ${e.players[2]}` });
       });
       // Challenge romance moments
+      // Friendship jealousy
+      _allCampEvts.filter(e => e.type === 'friendshipJealousy').forEach(e => {
+        _romEvents.push({ ep: h.num, type: 'FRIENDSHIP JEALOUSY', col: '#f0883e', detail: `${e.players[0]} sidelined by ${e.players[1]} + ${e.players[2]}` });
+      });
       _allCampEvts.filter(e => ['showmanceProtective','showmanceJealousy','showmanceSacrifice','showmancePDA'].includes(e.type)).forEach(e => {
         const label = e.type === 'showmanceProtective' ? 'PROTECTIVE' : e.type === 'showmanceJealousy' ? 'JEALOUSY' : e.type === 'showmanceSacrifice' ? 'SACRIFICE' : 'PDA';
         _romEvents.push({ ep: h.num, type: label, col: e.type === 'showmanceJealousy' ? '#f85149' : '#d29922', detail: `${e.players.join(' & ')}` });
@@ -46938,6 +46970,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'showmancePDA'         ? (evt.badgeText || 'PDA')
                      : evt.type === 'phobiaComfort'         ? (evt.badgeText || 'COMFORT')
                      : evt.type === 'phobiaSupport'         ? (evt.badgeText || 'SUPPORT')
+                     : evt.type === 'friendshipJealousy'    ? (evt.badgeText || 'FEELING LEFT OUT')
                      : evt.type === 'showmanceSabotage'    ? (evt.badgeText || 'SHOWMANCE SABOTAGE')
                      : evt.type === 'showmanceSpark'       ? '💕 Showmance'
                      : evt.type === 'showmanceHoneymoon'   ? '💕 Honeymoon'
@@ -47077,7 +47110,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'showmanceSabotage' ? 'red'
                      : evt.type === 'showmanceSpark' || evt.type === 'showmanceHoneymoon' || evt.type === 'showmanceRideOrDie' || evt.type === 'showmanceRekindle' ? 'green'
                      : evt.type === 'showmanceNoticed' || evt.type === 'showmanceTarget' ? 'gold'
-                     : evt.type === 'showmanceJealousy' || evt.type === 'showmanceBreakup' ? 'red'
+                     : evt.type === 'showmanceJealousy' || evt.type === 'showmanceBreakup' || evt.type === 'friendshipJealousy' ? 'red'
                      : evt.type === 'allianceExpelled' ? 'red'
                      : evt.type === 'journeyLoss' ? 'red'
                      : evt.type === 'pureHatred' || evt.type === 'nemesis' || evt.type === 'breakup' ? 'red'

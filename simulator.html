@@ -9367,6 +9367,57 @@ function simulateTalentShow(ep) {
 // ENGINE: THE SUCKY OUTDOORS — 5-phase overnight survival challenge
 // ══════════════════════════════════════════════════════════════════════
 
+// ── Challenge Romance Spark: check if a bonding moment triggers a new showmance ──
+function _challengeRomanceSpark(a, b, ep, phaseKey, phases, personalScores, context) {
+  if (!gs.showmances) gs.showmances = [];
+  // Cap: max 2 active showmances
+  const activeShowmances = gs.showmances.filter(sh => sh.phase !== 'broken-up' && sh.players.every(p => gs.activePlayers.includes(p)));
+  if (activeShowmances.length >= 2) return false;
+  // Already a showmance?
+  if (gs.showmances.some(sh => sh.players.includes(a) && sh.players.includes(b))) return false;
+  // Romantic compatibility
+  if (typeof romanticCompat === 'function' && !romanticCompat(a, b)) return false;
+  // Bond check — challenge moments use lower threshold since the moment itself is romantic
+  const bond = getBond(a, b);
+  const aArch = players.find(p => p.name === a)?.archetype || '';
+  const bArch = players.find(p => p.name === b)?.archetype || '';
+  const isShowmancer = aArch === 'showmancer' || bArch === 'showmancer';
+  const threshold = isShowmancer ? 3.5 : 4.5; // lower than normal (5-6) because the moment is charged
+  if (bond < threshold) return false;
+  // Proportional spark chance
+  const sparkChance = (bond - threshold) * 0.08 + (isShowmancer ? 0.10 : 0.03);
+  if (Math.random() >= sparkChance) return false;
+
+  // SPARK! Create the showmance
+  const epNum = (gs.episode || 0) + 1;
+  gs.showmances.push({
+    players: [a, b], phase: 'spark', sparkEp: epNum,
+    episodesActive: 0, tested: false, breakupEp: null, breakupVoter: null, breakupType: null,
+  });
+  const prA = pronouns(a), prB = pronouns(b);
+  const _sparkTexts = [
+    `Something shifts between ${a} and ${b} during the ${context}. A look. A touch. By the time it's over, the tribe can see it.`,
+    `${a} and ${b} were close before. After the ${context}, they're something else. The tribe notices. Everyone notices.`,
+    `It started as teamwork. But the way ${a} looks at ${b} after the ${context} — that's not strategy. That's a spark.`,
+    `${b} catches ${a} staring during the ${context}. Neither looks away. The showmance has begun.`,
+    `The ${context} changed things between ${a} and ${b}. What was friendship is now something the tribe is going to have opinions about.`,
+  ];
+  const sparkText = _sparkTexts[Math.floor(Math.random() * _sparkTexts.length)];
+  addBond(a, b, 0.5);
+  if (personalScores) { personalScores[a] = (personalScores[a] || 0) + 0.5; personalScores[b] = (personalScores[b] || 0) + 0.5; }
+  if (!gs.popularity) gs.popularity = {};
+  gs.popularity[a] = (gs.popularity[a] || 0) + 2;
+  gs.popularity[b] = (gs.popularity[b] || 0) + 2;
+  if (phases && phaseKey) {
+    phases[phaseKey].push({
+      type: 'soShowmance', phase: phaseKey, players: [a, b],
+      text: sparkText, personalScores: { [a]: 0.5, [b]: 0.5 },
+      badge: 'ROMANCE SPARK', badgeClass: 'gold'
+    });
+  }
+  return true;
+}
+
 function simulateSuckyOutdoors(ep) {
   const tribes = gs.tribes;
   const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
@@ -9982,6 +10033,8 @@ function simulateSuckyOutdoors(ep) {
           text: _fsTexts[_hash(a + b + 'fireside', _fsTexts.length)],
           personalScores: { [a]: 0.5, [b]: 0.5 }, badge: 'FIRESIDE', badgeClass: 'gold'
         });
+        // Romance spark check — fireside bonding can turn romantic
+        _challengeRomanceSpark(a, b, ep, 'nightfall', phases, personalScores, 'fireside moment');
         nightfallCount++;
       }
     }
@@ -10124,6 +10177,8 @@ function simulateSuckyOutdoors(ep) {
           text: _starTexts[_hash(a + b + 'star', _starTexts.length)],
           personalScores: { [a]: 1.0, [b]: 1.0 }, badge: 'STARGAZING', badgeClass: 'gold'
         });
+        // Romance spark check — stargazing is a charged moment
+        _challengeRomanceSpark(a, b, ep, 'nightfall', phases, personalScores, 'stargazing');
         nightfallCount++;
       }
     }
@@ -10363,6 +10418,8 @@ function simulateSuckyOutdoors(ep) {
           text: _cuddleTexts[_hash(a + b + 'cuddle', _cuddleTexts.length)],
           personalScores: { [a]: 0.5, [b]: 0.5 }, badge: 'CUDDLING', badgeClass: 'gold'
         });
+        // Romance spark check — cuddling for warmth can become something more
+        _challengeRomanceSpark(a, b, ep, 'theNight', phases, personalScores, 'night in the woods');
         nightCount++;
       }
     }
@@ -11084,6 +11141,8 @@ function simulateUpTheCreek(ep) {
         text: fastTexts[_hash(topPair.a + topPair.b + 'fast', fastTexts.length)],
         personalScores: { [topPair.a]: 1.5, [topPair.b]: 1.5 }, badge: 'FAST PAIR', badgeClass: 'gold'
       });
+      // Romance spark check — paddling in sync can build chemistry
+      _challengeRomanceSpark(topPair.a, topPair.b, ep, 'paddleOut', phases, personalScores, 'canoe ride');
       p1EventCount++;
     }
 
@@ -11233,6 +11292,34 @@ function simulateUpTheCreek(ep) {
       }
       p1EventCount++;
     }
+  });
+
+  // ── Canoe romance check: mutual-pick pairs with good chemistry get a romance moment ──
+  tribes.forEach(t => {
+    const pairs = canoePairs[t.name] || [];
+    pairs.forEach(pair => {
+      if (pair.scenario !== 'mutual' && pair.scenario !== 'showmance') return;
+      const bond = getBond(pair.a, pair.b);
+      if (bond < 3) return;
+      if (Math.random() >= bond * 0.06) return; // proportional: bond 5 = 30%, bond 8 = 48%
+      const prA = pronouns(pair.a), prB = pronouns(pair.b);
+      const _canoeRomTexts = [
+        `The paddle rhythm syncs. ${pair.a} and ${pair.b} stop talking strategy and start talking about something else entirely. The canoe drifts. Neither notices.`,
+        `${pair.b} catches ${pair.a} staring. "What?" "Nothing." It's not nothing. The tribe in the next canoe pretends not to see.`,
+        `Halfway across the lake, ${pair.a} and ${pair.b} stop paddling. Just floating. The conversation turns personal. The other canoes pull ahead. They don't care.`,
+        `${pair.a} reaches for the paddle at the same time as ${pair.b}. Their hands touch. Neither pulls away.`,
+      ];
+      addBond(pair.a, pair.b, 0.4);
+      phases.paddleOut.push({
+        type: 'utcCanoeRomance', phase: 'paddleOut', players: [pair.a, pair.b],
+        text: _canoeRomTexts[Math.floor(Math.random() * _canoeRomTexts.length)],
+        personalScores: { [pair.a]: 0.5, [pair.b]: 0.5 }, badge: 'CANOE MOMENT', badgeClass: 'gold'
+      });
+      personalScores[pair.a] = (personalScores[pair.a] || 0) + 0.5;
+      personalScores[pair.b] = (personalScores[pair.b] || 0) + 0.5;
+      // Romance spark check
+      _challengeRomanceSpark(pair.a, pair.b, ep, 'paddleOut', phases, personalScores, 'canoe ride across the lake');
+    });
   });
 
   // ══ PHASE 2: PORTAGE (3-5 encounters per tribe) ══
@@ -46240,6 +46327,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'utcPhotoFinish'           ? (evt.badgeText || evt.badge || 'PHOTO FINISH')
                      : evt.type === 'utcCheating'              ? (evt.badgeText || evt.badge || 'CHEATING')
                      : evt.type === 'utcMotivational'          ? (evt.badgeText || evt.badge || 'RALLY CRY')
+                     : evt.type === 'utcCanoeRomance'         ? (evt.badgeText || evt.badge || 'CANOE MOMENT')
                      : evt.type === 'utcCursedIdol'           ? (evt.badgeText || evt.badge || 'CURSED IDOL')
                      : evt.type === 'utcBoneyMist'            ? (evt.badgeText || evt.badge || 'BONEY MIST')
                      : evt.type === 'utcSkeletonFind'         ? (evt.badgeText || evt.badge || 'BONES')
@@ -46437,7 +46525,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'soNavigator' || evt.type === 'soShelter' || evt.type === 'soFire' || evt.type === 'soProvider' || evt.type === 'soFireside' || evt.type === 'soShortcut' || evt.type === 'soCarried' || evt.type === 'soStargazing' || evt.type === 'soBonding' || evt.type === 'soFoodSpotted' || evt.type === 'soShowmance' || evt.type === 'soRaceLeader' || evt.type === 'soMorale' || evt.type === 'soFireConfession' || evt.type === 'soSurvivor' || evt.type === 'soCampBuilder' || evt.type === 'soBrave' || evt.type === 'soPeacemaker' ? 'gold'
                      : evt.type === 'soLost' || evt.type === 'soCostTribe' || evt.type === 'soSlacker' || evt.type === 'soPrank' || evt.type === 'soTentFire' || evt.type === 'soRainstorm' || evt.type === 'soWanderedOff' || evt.type === 'soArgument' || evt.type === 'soShelterCollapse' || evt.type === 'soBearPrank' || evt.type === 'soDeadWeight' || evt.type === 'soTroublemaker' || evt.type === 'soQuitter' ? 'red'
                      : evt.type === 'soGhostStory' || evt.type === 'soBear' || evt.type === 'soCuddling' || evt.type === 'soScheme' || evt.type === 'soScaryNoise' || evt.type === 'soNightmare' || evt.type === 'soCantSleep' || evt.type === 'soSneakOff' || evt.type === 'soLagger' ? ''
-                     : evt.type === 'utcPartnerPick' || evt.type === 'utcFastPair' || evt.type === 'utcShortcut' || evt.type === 'utcLighter' || evt.type === 'utcFireStarter' || evt.type === 'utcSwimmerHero' || evt.type === 'utcSprintFinish' || evt.type === 'utcMotivational' || evt.type === 'utcSoloPaddler' ? 'gold'
+                     : evt.type === 'utcPartnerPick' || evt.type === 'utcFastPair' || evt.type === 'utcShortcut' || evt.type === 'utcLighter' || evt.type === 'utcFireStarter' || evt.type === 'utcSwimmerHero' || evt.type === 'utcSprintFinish' || evt.type === 'utcMotivational' || evt.type === 'utcSoloPaddler' || evt.type === 'utcCanoeRomance' ? 'gold'
                      : evt.type === 'utcRejected' || evt.type === 'utcSlowPair' || evt.type === 'utcCapsized' || evt.type === 'utcDroppedCanoe' || evt.type === 'utcPaddleBurn' || evt.type === 'utcAdviceGiver' || evt.type === 'utcCheating' || evt.type === 'utcInjury' ? 'red'
                      : evt.type === 'utcWildlife' || evt.type === 'utcQuicksand' || evt.type === 'utcPhotoFinish' || evt.type === 'utcBoneyMist' || evt.type === 'utcSkeletonFind' ? ''
                      : evt.type === 'utcCursedIdol' ? 'red'

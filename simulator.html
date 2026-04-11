@@ -44592,9 +44592,37 @@ function rpBuildDebug(ep) {
     }
     html += `</div>`;
 
-    // Romance Events Log — betrayals, separations, rekindles, triangle resolutions
+    // Romance Events Log — full timeline of all romance events
     const _romEvents = [];
     gs.episodeHistory.filter(h => h.num <= ep.num).forEach(h => {
+      // Spark formations (from camp events)
+      const _allCampEvts = h.campEvents ? Object.values(h.campEvents).flatMap(c => [...(c.pre||[]), ...(c.post||[])]) : [];
+      _allCampEvts.filter(e => e.type === 'soShowmance' && e.badge === 'ROMANCE SPARK').forEach(e => {
+        _romEvents.push({ ep: h.num, type: 'SPARK', col: '#f0a500', detail: `${e.players[0]} ✦ ${e.players[1]} — ${e.text?.substring(0, 60) || 'romantic spark'}...` });
+      });
+      // First move events
+      _allCampEvts.filter(e => e.type === 'firstMove').forEach(e => {
+        _romEvents.push({ ep: h.num, type: 'FIRST MOVE', col: '#d29922', detail: `${e.players[0]} → ${e.players[1]} — ${e.text?.substring(0, 60) || 'made the first move'}...` });
+      });
+      // Showmance sabotage
+      _allCampEvts.filter(e => e.type === 'showmanceSabotage').forEach(e => {
+        _romEvents.push({ ep: h.num, type: 'SABOTAGE', col: '#f85149', detail: `${e.players[0]} kissed ${e.players[1]} to hurt ${e.players[2]}` });
+      });
+      // Challenge romance moments
+      _allCampEvts.filter(e => ['showmanceProtective','showmanceJealousy','showmanceSacrifice','showmancePDA'].includes(e.type)).forEach(e => {
+        const label = e.type === 'showmanceProtective' ? 'PROTECTIVE' : e.type === 'showmanceJealousy' ? 'JEALOUSY' : e.type === 'showmanceSacrifice' ? 'SACRIFICE' : 'PDA';
+        _romEvents.push({ ep: h.num, type: label, col: e.type === 'showmanceJealousy' ? '#f85149' : '#d29922', detail: `${e.players.join(' & ')}` });
+      });
+      // Phobia comfort/support sparks
+      _allCampEvts.filter(e => e.type === 'phobiaComfort' || e.type === 'phobiaSupport').forEach(e => {
+        _romEvents.push({ ep: h.num, type: e.type === 'phobiaComfort' ? 'COMFORT' : 'SUPPORT', col: '#3fb950', detail: `${e.players[0]} → ${e.players[1]}` });
+      });
+      // New showmance formed (from episode data)
+      if (h.newShowmances?.length) {
+        h.newShowmances.forEach(ns => {
+          _romEvents.push({ ep: h.num, type: 'SHOWMANCE FORMED', col: '#d29922', detail: `${ns.a} ♥ ${ns.b}` });
+        });
+      }
       if (h.showmanceBreakup) _romEvents.push({ ep: h.num, type: 'BETRAYAL', col: '#f47067', detail: `${h.showmanceBreakup.voter} voted out partner ${h.showmanceBreakup.eliminated} (bond: ${(h.showmanceBreakup.bond || 0).toFixed(1)})` });
       if (h.showmanceSeparation) _romEvents.push({ ep: h.num, type: 'SEPARATED', col: '#d29922', detail: `${h.showmanceSeparation.survivor} lost partner ${h.showmanceSeparation.eliminated} (bond: ${(h.showmanceSeparation.bond || 0).toFixed(1)})` });
       if (h.showmanceEvents?.length) {

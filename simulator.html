@@ -13560,15 +13560,19 @@ function simulatePaintballHunt(ep) {
         if (Math.random() < accidentChance) {
           const victim = _rp(ownDeer);
           const pr = pronouns(hunter);
-          addBond(hunter, victim, -0.5);
-          addScore(hunter, HUNTER_NEGATIVE);
-          addScore(victim, DEER_PAINTED);
-          paintedOut.add(victim);
-          unpaintedDeer[t.name].delete(victim);
+          addBond(hunter, victim, -0.4);
+          addScore(hunter, -1.0);
+          addScore(victim, -0.5); // hurt but NOT eliminated
+          newMudSlid.add(victim); // exposed
           paintCounter[victim] = (paintCounter[victim] || 0) + 1;
+          if (!ep._pbMarked) ep._pbMarked = {};
+          ep._pbMarked[victim] = (ep._pbMarked[victim] || 0) + 4; // big target increase
           friendlyFireLog.push({ hunter, victim, type: 'accidental', round: roundNum });
-          matchups.push({ hunter, target: victim, result: 'friendly-fire', round: roundNum,
-            text: `${hunter} accidentally shoots ${pr.posAdj} OWN teammate ${victim}! "${pronouns(victim).Sub}'s on YOUR team!" someone yells.` });
+          roundEvents.push({
+            type: 'pbFriendlyFireAccident', players: [hunter, victim],
+            text: `${hunter} accidentally shoots ${pr.posAdj} OWN teammate ${victim}! "${pronouns(victim).Sub}'s on YOUR team!" someone yells. The paint gives away ${pronouns(victim).posAdj} position.`,
+            badge: 'FRIENDLY FIRE', badgeText: 'FRIENDLY FIRE', badgeClass: 'red'
+          });
           return;
         }
 

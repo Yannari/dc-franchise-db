@@ -33050,6 +33050,33 @@ function _textTalentShow(ep, ln, sec) {
   if (ts.mvp) ln(`MVP: ${ts.mvp}`);
 }
 
+// ── SUCKY OUTDOORS ──
+function _textSuckyOutdoors(ep, ln, sec) {
+  if (!ep.isSuckyOutdoors || !ep.suckyOutdoors) return;
+  const so = ep.suckyOutdoors;
+  sec('THE SUCKY OUTDOORS');
+  ln('Overnight survival challenge — first tribe back in the morning wins.');
+  Object.entries(so.navigators || {}).forEach(([tribe, nav]) => ln(`${tribe} navigator: ${nav}`));
+  ['announcement', 'setupCamp', 'nightfall', 'theNight', 'morningRace'].forEach(phase => {
+    const events = so.phases?.[phase] || [];
+    if (!events.length) return;
+    const labels = { announcement: 'HIKE', setupCamp: 'CAMP SETUP', nightfall: 'NIGHTFALL', theNight: 'THE NIGHT', morningRace: 'MORNING RACE' };
+    ln('');
+    ln(`── ${labels[phase] || phase} ──`);
+    events.forEach(evt => {
+      const scores = Object.entries(evt.personalScores || {}).map(([n, d]) => `${n}:${d > 0 ? '+' : ''}${d.toFixed(1)}`).join(', ');
+      ln(`  [${evt.badge || evt.type}] ${evt.text}${scores ? ` (${scores})` : ''}`);
+    });
+  });
+  if (so.lostPlayers?.length) {
+    ln('');
+    ln('LOST PLAYERS:');
+    so.lostPlayers.forEach(lp => ln(`  ${lp.name} (${lp.tribe}) — lost in ${lp.lostInPhase}`));
+  }
+  Object.entries(so.campQuality || {}).forEach(([tribe, q]) => ln(`${tribe} camp quality: ${q.toFixed(1)}`));
+  ln(`Winner: ${so.winner}. ${so.loser} goes to tribal.`);
+}
+
 // ── PHOBIA FACTOR ──
 function _textCliffDive(ep, ln, sec) {
   if (!ep.cliffDive?.tribes?.length) return;
@@ -35128,6 +35155,7 @@ function generateSummaryText(ep) {
   _textAwakeAThon(ep, ln, sec);
   _textDodgebrawl(ep, ln, sec);
   _textTalentShow(ep, ln, sec);
+  _textSuckyOutdoors(ep, ln, sec);
   _textCliffDive(ep, ln, sec);
   _textPhobiaFactor(ep, ln, sec);
   _textSayUncle(ep, ln, sec);
@@ -36348,6 +36376,7 @@ function renderEpisodeHistory() {
     const evTag = ep.emissaryEliminated ? `<span class="ep-hist-tag" style="background:rgba(240,165,0,0.15);color:#f0a500">Emissary Vote</span>` : '';
     const dbTag = ep.isDodgebrawl ? `<span class="ep-hist-tag" style="background:rgba(224,96,48,0.15);color:#e06030">Dodgebrawl</span>` : '';
     const tsTag = ep.isTalentShow ? `<span class="ep-hist-tag" style="background:rgba(139,92,246,0.15);color:#8b5cf6">Talent Show</span>` : '';
+    const soTag = ep.isSuckyOutdoors ? `<span class="ep-hist-tag" style="background:rgba(63,185,80,0.15);color:#3fb950">Sucky Outdoors</span>` : '';
     const hasCheckpoint = !!gsCheckpoints[ep.num];
     const replayBtn = hasCheckpoint
       ? `<button class="ep-hist-replay" title="Re-run this episode" onclick="event.stopPropagation();replayEpisode(${ep.num})">↺</button>`
@@ -36355,7 +36384,7 @@ function renderEpisodeHistory() {
     return `<div class="ep-hist-card ${ep.num===currentNum?'active':''}" onclick="viewEpisode(${ep.num})">
       <div class="ep-hist-ep">Episode ${ep.num}${replayBtn}</div>
       <div class="ep-hist-elim">${_spoilerFree ? '???' : ep.multiTribalElims?.length >= 2 ? ep.multiTribalElims.join(' + ') : ep.ambassadorData?.ambassadorEliminated ? `${ep.ambassadorData.ambassadorEliminated} + ${ep.eliminated||'?'}` : ep.tiedDestinies?.eliminatedPartner ? `${ep.eliminated||'?'} + ${ep.tiedDestinies.eliminatedPartner}` : ep.emissaryEliminated ? `${ep.eliminated||'?'} + ${ep.emissaryEliminated}` : ep.firstEliminated ? `${ep.firstEliminated} + ${ep.eliminated||'?'}` : (ep.eliminated || (ep.isFinale ? 'FTC' : '\u2014'))}</div>
-      <div>${riTag}${mergeTag}${finaleTag}${slasherTag}${tddTag}${suTag}${pfTag}${cdTag}${aatTag}${evTag}${dbTag}${tsTag}</div>
+      <div>${riTag}${mergeTag}${finaleTag}${slasherTag}${tddTag}${suTag}${pfTag}${cdTag}${aatTag}${evTag}${dbTag}${tsTag}${soTag}</div>
     </div>`;
   }).join('');
 }
@@ -39463,6 +39492,13 @@ function rpBuildColdOpen(ep) {
         <div style="font-size:12px;color:#8b949e">${_ts.winner} won (${_tsScore}).${_ts.mvp ? ` MVP: ${_ts.mvp}.` : ''}${_ts.sabotage ? ` ${_ts.sabotage.saboteur} sabotaged ${_ts.sabotage.target}.` : ''}</div>
       </div>`;
     }
+    if (prevEp.isSuckyOutdoors && prevEp.suckyOutdoors) {
+      const _so = prevEp.suckyOutdoors;
+      html += `<div class="vp-card" style="border-color:rgba(63,185,80,0.15);margin-bottom:8px">
+        <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:#3fb950;margin-bottom:4px">THE SUCKY OUTDOORS</div>
+        <div style="font-size:12px;color:#8b949e">${_so.winner} survived the night and returned first.${_so.lostPlayers?.length ? ` ${_so.lostPlayers.map(lp => lp.name).join(' & ')} got lost.` : ''}</div>
+      </div>`;
+    }
     if (prevEp.isPhobiaFactor && prevEp.phobiaFactor) {
       const _pfData = prevEp.phobiaFactor;
       const _pfWinPct = Math.round((_pfData.tribeScores[_pfData.winningTribe]?.percentage || 0) * 100);
@@ -41306,7 +41342,7 @@ function rpBuildDebug(ep) {
       ${_tabBtn('history', 'Hidden Moves')}
       ${gs.moles?.length ? _tabBtn('mole', 'The Mole') : ''}
       ${(gs.showmances?.length || gs.loveTriangles?.length || gs.affairs?.length) ? _tabBtn('romance', 'Romance') : ''}
-      ${(ep.chalMemberScores || ep.isDodgebrawl || ep.isCliffDive || ep.isAwakeAThon || ep.isPhobiaFactor || ep.isSayUncle || ep.isTripleDogDare || ep.isTalentShow) ? _tabBtn('challenge', 'Challenge') : ''}
+      ${(ep.chalMemberScores || ep.isDodgebrawl || ep.isCliffDive || ep.isAwakeAThon || ep.isPhobiaFactor || ep.isSayUncle || ep.isTripleDogDare || ep.isTalentShow || ep.isSuckyOutdoors) ? _tabBtn('challenge', 'Challenge') : ''}
     </div>`;
 
   // ════════════════════════════════════════════════
@@ -41921,7 +41957,7 @@ function rpBuildDebug(ep) {
       });
     }
     const _chalLabel = ep.challengeLabel || 'Challenge';
-    const _chalType = ep.isDodgebrawl ? 'Dodgebrawl' : ep.isCliffDive ? 'Cliff Dive' : ep.isAwakeAThon ? 'Awake-A-Thon' : ep.isPhobiaFactor ? 'Phobia Factor' : ep.isSayUncle ? 'Say Uncle' : ep.isTalentShow ? 'Talent Show' : _chalLabel;
+    const _chalType = ep.isDodgebrawl ? 'Dodgebrawl' : ep.isCliffDive ? 'Cliff Dive' : ep.isAwakeAThon ? 'Awake-A-Thon' : ep.isPhobiaFactor ? 'Phobia Factor' : ep.isSayUncle ? 'Say Uncle' : ep.isTalentShow ? 'Talent Show' : ep.isSuckyOutdoors ? 'Sucky Outdoors' : _chalLabel;
 
     html += `<div style="margin-bottom:12px">
       <div style="font-family:var(--font-display);font-size:14px;color:#f0883e;margin-bottom:8px">${_chalType} — Player Rankings</div>`;
@@ -42016,6 +42052,26 @@ function rpBuildDebug(ep) {
         const sab = ep.talentShow.sabotage;
         html += `<div style="margin-top:6px;padding:4px 8px;border-radius:4px;background:rgba(218,54,51,0.08);font-size:10px;color:#da3633">Sabotage: ${sab.saboteur} → ${sab.target} (${sab.type})</div>`;
       }
+    }
+
+    // Sucky Outdoors breakdown
+    if (ep.suckyOutdoors?.phases) {
+      html += `<div style="font-family:var(--font-display);font-size:13px;color:#f0883e;margin:16px 0 8px">Sucky Outdoors — Phase Summary</div>`;
+      const so = ep.suckyOutdoors;
+      Object.entries(so.phases).forEach(([phase, events]) => {
+        const labels = { announcement: 'Hike', setupCamp: 'Camp Setup', nightfall: 'Nightfall', theNight: 'The Night', morningRace: 'Morning Race' };
+        html += `<div style="font-size:10px;font-weight:700;color:#8b949e;margin-top:6px">${labels[phase] || phase} (${events.length} events)</div>`;
+        events.forEach(evt => {
+          const scores = Object.entries(evt.personalScores || {}).map(([n, d]) => `${n}:${d > 0 ? '+' : ''}${d.toFixed(1)}`).join(', ');
+          html += `<div style="font-size:9px;padding:1px 0;color:#6e7681">[${evt.badge || evt.type}] ${evt.text.substring(0, 80)}${evt.text.length > 80 ? '...' : ''}${scores ? ` <span style="color:#8b949e">(${scores})</span>` : ''}</div>`;
+        });
+      });
+      if (so.lostPlayers?.length) {
+        html += `<div style="margin-top:6px;padding:4px 8px;border-radius:4px;background:rgba(248,81,73,0.08);font-size:10px;color:#f85149">Lost: ${so.lostPlayers.map(lp => `${lp.name} (${lp.tribe})`).join(', ')}</div>`;
+      }
+      Object.entries(so.campQuality || {}).forEach(([tribe, q]) => {
+        html += `<div style="font-size:9px;color:#6e7681">${tribe} camp quality: ${q.toFixed(1)}</div>`;
+      });
     }
 
     html += `</div>`;

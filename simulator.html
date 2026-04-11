@@ -13038,6 +13038,68 @@ function simulatePhobiaFactor(ep) {
     };
   });
 
+  // Step 3b: Romance moments — comforting after failure OR celebrating a conquered fear
+  if (seasonConfig.romance !== 'disabled') {
+    tribes.forEach(tribe => {
+      // Find a failed player and a high-bond/social tribemate who comforted them
+      const failed = tribe.members.filter(m => results[m] === 'fail');
+      const passed = tribe.members.filter(m => results[m] === 'pass');
+
+      // Comfort after failure — spark opportunity
+      failed.forEach(failedPlayer => {
+        const comforters = tribe.members.filter(m => m !== failedPlayer && getBond(m, failedPlayer) >= 2)
+          .sort((a, b) => (pStats(b).social * 0.5 + getBond(b, failedPlayer) * 0.3) - (pStats(a).social * 0.5 + getBond(a, failedPlayer) * 0.3));
+        const comforter = comforters[0];
+        if (!comforter) return;
+        if (Math.random() >= pStats(comforter).social * 0.03 + getBond(comforter, failedPlayer) * 0.02) return;
+
+        const prC = pronouns(comforter);
+        const prF = pronouns(failedPlayer);
+        const f = fears[failedPlayer];
+        const _comfortTexts = [
+          `${failedPlayer} walks away after failing ${f.title}. ${comforter} follows. Sits next to ${prF.obj}. Doesn't say anything for a while. Then: "That took guts to even try."`,
+          `${comforter} finds ${failedPlayer} alone after ${prF.posAdj} fear won. "${prC.Sub} ${prC.sub === 'they' ? 'put' : 'puts'} a hand on ${failedPlayer}'s shoulder. "You're braver than you think."`,
+          `${failedPlayer} can't look anyone in the eye. ${comforter} sits down. "I would've frozen too." It's not true, but it helps.`,
+          `${comforter} brings ${failedPlayer} water after ${prF.posAdj} breakdown. No speech. No pep talk. Just presence. ${failedPlayer} takes a breath. "Thanks."`,
+        ];
+        addBond(failedPlayer, comforter, 0.4);
+        addBond(comforter, failedPlayer, 0.3);
+        ep.campEvents[tribe.name].post.push({
+          type: 'phobiaComfort', players: [comforter, failedPlayer],
+          text: _comfortTexts[Math.floor(Math.random() * _comfortTexts.length)],
+          badgeText: 'COMFORT', badgeClass: 'gold'
+        });
+        // Romance spark — comforting someone after vulnerability is a charged moment
+        _challengeRomanceSpark(comforter, failedPlayer, ep, null, null, null, 'comforting after fear');
+      });
+
+      // Celebrating a conquered fear — spark opportunity
+      passed.forEach(conquerer => {
+        const supporters = tribe.members.filter(m => m !== conquerer && getBond(m, conquerer) >= 3)
+          .sort((a, b) => getBond(b, conquerer) - getBond(a, conquerer));
+        const supporter = supporters[0];
+        if (!supporter) return;
+        if (Math.random() >= getBond(supporter, conquerer) * 0.03) return;
+
+        const prS = pronouns(supporter);
+        const prQ = pronouns(conquerer);
+        const f = fears[conquerer];
+        const _cheerTexts = [
+          `${conquerer} conquers ${f.title} and ${supporter} is the first one there. Arms around ${prQ.obj}. "I knew you could do it." The hug lasts a beat too long.`,
+          `${supporter} screams louder than anyone when ${conquerer} beats ${prQ.posAdj} fear. Runs over. The pride on ${prS.posAdj} face is personal, not tribal.`,
+          `${conquerer} is shaking after ${f.title}. ${supporter} grabs ${prQ.posAdj} hands. "Look at me. You did it." Neither lets go right away.`,
+        ];
+        addBond(conquerer, supporter, 0.3);
+        ep.campEvents[tribe.name].post.push({
+          type: 'phobiaSupport', players: [supporter, conquerer],
+          text: _cheerTexts[Math.floor(Math.random() * _cheerTexts.length)],
+          badgeText: 'SUPPORT', badgeClass: 'gold'
+        });
+        _challengeRomanceSpark(supporter, conquerer, ep, null, null, null, 'cheering on a conquered fear');
+      });
+    });
+  }
+
   // Step 4: Determine winner + loser
   const ranked = [...tribes].sort((a, b) => {
     const diff = tribeScores[b.name].percentage - tribeScores[a.name].percentage;
@@ -46797,6 +46859,8 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'showmanceJealousy' && evt.badgeText ? evt.badgeText
                      : evt.type === 'showmanceSacrifice'   ? (evt.badgeText || 'SACRIFICE')
                      : evt.type === 'showmancePDA'         ? (evt.badgeText || 'PDA')
+                     : evt.type === 'phobiaComfort'         ? (evt.badgeText || 'COMFORT')
+                     : evt.type === 'phobiaSupport'         ? (evt.badgeText || 'SUPPORT')
                      : evt.type === 'showmanceSabotage'    ? (evt.badgeText || 'SHOWMANCE SABOTAGE')
                      : evt.type === 'showmanceSpark'       ? '💕 Showmance'
                      : evt.type === 'showmanceHoneymoon'   ? '💕 Honeymoon'
@@ -46932,7 +46996,7 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : isAffairNeg || isAffairChoice ? 'red'
                      : isAffairGold ? 'gold'
                      : evt.type === 'firstMove' ? 'gold'
-                     : evt.type === 'showmanceProtective' || evt.type === 'showmanceSacrifice' || evt.type === 'showmancePDA' ? 'gold'
+                     : evt.type === 'showmanceProtective' || evt.type === 'showmanceSacrifice' || evt.type === 'showmancePDA' || evt.type === 'phobiaComfort' || evt.type === 'phobiaSupport' ? 'gold'
                      : evt.type === 'showmanceSabotage' ? 'red'
                      : evt.type === 'showmanceSpark' || evt.type === 'showmanceHoneymoon' || evt.type === 'showmanceRideOrDie' || evt.type === 'showmanceRekindle' ? 'green'
                      : evt.type === 'showmanceNoticed' || evt.type === 'showmanceTarget' ? 'gold'

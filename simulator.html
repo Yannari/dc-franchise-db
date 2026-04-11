@@ -4208,6 +4208,7 @@ function computeHeat(name, tribalPlayers, alliances) {
   if (gs._emissaryHeat?.[name] && ((gs.episode || 0) + 1) < gs._emissaryHeat[name].expiresEp) heat += gs._emissaryHeat[name].amount;
   if (gs._dodgebrawlHeat?.[name] && ((gs.episode || 0) + 1) < gs._dodgebrawlHeat[name].expiresEp) heat += gs._dodgebrawlHeat[name].amount;
   if (gs._talentShowHeat?.[name] && ((gs.episode || 0) + 1) < gs._talentShowHeat[name].expiresEp) heat += gs._talentShowHeat[name].amount;
+  if (gs._suckyOutdoorsHeat?.[name] && ((gs.episode || 0) + 1) < gs._suckyOutdoorsHeat[name].expiresEp) heat += gs._suckyOutdoorsHeat[name].amount;
   // ── Volunteer Exile Duel: volunteer WANTS to be voted out ──
   if (gs._volunteerDuelHeat?.[name] === ((gs.episode || 0) + 1)) heat += 8.0;
   // Volunteer duel winner returns with reduced heat
@@ -9354,6 +9355,1038 @@ function simulateTalentShow(ep) {
     winner: winnerName, loser: loserName,
     mvp: performances.slice().sort((a, b) => b.showScore - a.showScore)[0]?.name || null,
   };
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// ENGINE: THE SUCKY OUTDOORS — 5-phase overnight survival challenge
+// ══════════════════════════════════════════════════════════════════════
+
+function simulateSuckyOutdoors(ep) {
+  const tribes = gs.tribes;
+  const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
+  const _hash = (str, n) => { let h = 0; for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) & 0xfffffff; return h % n; };
+  const NICE_ARCHS = new Set(['hero', 'loyal', 'loyal-soldier', 'protector', 'social-butterfly', 'showmancer']);
+
+  if (!ep.campEvents) ep.campEvents = {};
+  tribes.forEach(t => { if (!ep.campEvents[t.name]) ep.campEvents[t.name] = { pre: [], post: [] }; });
+
+  const tribeOf = {};
+  tribes.forEach(t => t.members.forEach(m => { tribeOf[m] = t.name; }));
+
+  // ── Navigator selection per tribe ──
+  const navigators = {};
+  tribes.forEach(t => {
+    navigators[t.name] = t.members.slice().sort((a, b) => {
+      const sA = pStats(a), sB = pStats(b);
+      return (sB.mental * 0.5 + sB.strategic * 0.3 + sB.intuition * 0.2) - (sA.mental * 0.5 + sA.strategic * 0.3 + sA.intuition * 0.2);
+    })[0];
+  });
+
+  // ── Personal scores per player ──
+  const personalScores = {};
+  tribes.flatMap(t => t.members).forEach(m => { personalScores[m] = 0; });
+
+  // ── Camp quality per tribe ──
+  const campQuality = {};
+  tribes.forEach(t => {
+    campQuality[t.name] = t.members.reduce((sum, m) => { const s = pStats(m); return sum + s.endurance + s.mental; }, 0) / (t.members.length * 2);
+  });
+
+  // ── Phase storage ──
+  const phases = { announcement: [], setupCamp: [], nightfall: [], theNight: [], morningRace: [] };
+
+  // ── Wanderers tracker (Phase 1 → Phase 4) ──
+  const wanderers = new Set();
+
+  // ══ PHASE 1: Announcement + Hike (3-4 events per tribe) ══
+  tribes.forEach(t => {
+    const nav = navigators[t.name];
+    const navS = pStats(nav);
+    const members = t.members;
+
+    // Event 1: Navigator leads well or gets confused (proportional — always fires)
+    const navScore = navS.mental * 0.06 + navS.intuition * 0.04;
+    const navSuccess = Math.random() < navScore;
+    if (navSuccess) {
+      const _navGoodTexts = [
+        `${nav} scouts the trail head and reads the map with quiet confidence. The tribe moves efficiently into the forest.`,
+        `${nav} sets a brisk pace through the trees. "This way — trust me." The tribe follows without question.`,
+        `${nav} spots landmarks the others missed. By midday, the tribe is further ahead than any of them expected.`,
+      ];
+      const pr = pronouns(nav);
+      const _txt = _navGoodTexts[_hash(nav + 'navgood', _navGoodTexts.length)];
+      personalScores[nav] += 2.0;
+      members.filter(m => m !== nav).forEach(m => addBond(m, nav, 0.3));
+      phases.announcement.push({
+        type: 'soNavigator', phase: 'announcement', players: [nav],
+        text: _txt, personalScores: { [nav]: 2.0 }, badge: 'NAVIGATOR', badgeClass: 'gold'
+      });
+    } else {
+      const _navBadTexts = [
+        `${nav} leads the tribe in a wide circle for forty minutes before admitting they're lost. The tribe is not amused.`,
+        `"I know exactly where we're going," ${nav} says with total confidence. Twenty minutes later: a dead end.`,
+        `${nav} argues with the map. The map wins. The tribe backtracks twice before finding the right trail.`,
+      ];
+      const pr = pronouns(nav);
+      const _txt = _navBadTexts[_hash(nav + 'navbad', _navBadTexts.length)];
+      personalScores[nav] -= 2.0;
+      members.filter(m => m !== nav).forEach(m => addBond(m, nav, -0.2));
+      phases.announcement.push({
+        type: 'soNavigator', phase: 'announcement', players: [nav],
+        text: _txt, personalScores: { [nav]: -2.0 }, badge: 'NAVIGATOR', badgeClass: 'red'
+      });
+    }
+
+    // Event 2: Someone lags behind (proportional — low endurance more likely)
+    const laggerCandidates = members.filter(m => m !== nav).sort((a, b) => pStats(a).endurance - pStats(b).endurance);
+    const lagger = laggerCandidates[0];
+    if (lagger && Math.random() < (10 - pStats(lagger).endurance) * 0.04) {
+      const pr = pronouns(lagger);
+      const annoyed = members.filter(m => m !== lagger)[Math.floor(Math.random() * (members.length - 1))];
+      const _lagTexts = [
+        `${lagger} falls behind almost immediately. The tribe slows down for ${pr.obj}. Not everyone looks happy about it.`,
+        `${lagger} is laboring on the trail. ${pr.Sub} ${pr.sub === 'they' ? 'stop' : 'stops'} to rest three times before the first mile marker.`,
+        `The tribe has to keep waiting for ${lagger} to catch up. Someone mutters something under their breath.`,
+      ];
+      personalScores[lagger] -= 1.0;
+      addBond(annoyed, lagger, -0.2);
+      phases.announcement.push({
+        type: 'soLagger', phase: 'announcement', players: [lagger, annoyed],
+        text: _lagTexts[_hash(lagger + 'lag', _lagTexts.length)],
+        personalScores: { [lagger]: -1.0 }, badge: 'FELL BEHIND', badgeClass: 'red'
+      });
+    }
+
+    // Event 3: Food spotted, OR argument about direction, OR bonding on trail (pick 1 by random)
+    const midRoll = Math.random();
+    if (midRoll < 0.30) {
+      // Food spotted
+      const spotter = members.slice().sort((a, b) => pStats(b).intuition - pStats(a).intuition)[0];
+      const pr = pronouns(spotter);
+      const _foodTexts = [
+        `${spotter} spots wild berries off the trail and calls the tribe over. A small windfall — and morale gets a much-needed boost.`,
+        `${spotter} notices a stream through the trees. Clean water. The tribe is grateful — and a little impressed.`,
+        `${spotter} finds edible mushrooms growing near a fallen log. "These are safe, I'm pretty sure." They are.`,
+      ];
+      personalScores[spotter] += 1.5;
+      members.filter(m => m !== spotter).forEach(m => addBond(m, spotter, 0.2));
+      phases.announcement.push({
+        type: 'soProvider', phase: 'announcement', players: [spotter],
+        text: _foodTexts[_hash(spotter + 'food', _foodTexts.length)],
+        personalScores: { [spotter]: 1.5 }, badge: 'PROVIDER', badgeClass: 'gold'
+      });
+    } else if (midRoll < 0.55) {
+      // Argument about direction — find two bold players with weak bond
+      const boldPairs = [];
+      for (let i = 0; i < members.length; i++) {
+        for (let j = i + 1; j < members.length; j++) {
+          const bond = getBond(members[i], members[j]);
+          const score = (pStats(members[i]).boldness + pStats(members[j]).boldness) * 0.03 + (bond <= 0 ? 0.2 : 0);
+          boldPairs.push({ a: members[i], b: members[j], bond, score });
+        }
+      }
+      boldPairs.sort((x, y) => y.score - x.score);
+      if (boldPairs.length) {
+        const { a, b } = boldPairs[0];
+        const _argTexts = [
+          `${a} insists the trail veers left. ${b} says right. Neither backs down. Fifteen minutes of arguing later, they go left — and have to backtrack.`,
+          `"We've passed that rock before," ${b} says. "We have NOT," ${a} snaps. Someone has to step between them before they come to blows.`,
+          `The direction argument between ${a} and ${b} is so heated that the rest of the tribe just sits down and waits it out.`,
+        ];
+        personalScores[a] -= 0.5; personalScores[b] -= 0.5;
+        addBond(a, b, -0.3);
+        phases.announcement.push({
+          type: 'soArgument', phase: 'announcement', players: [a, b],
+          text: _argTexts[_hash(a + b + 'arg', _argTexts.length)],
+          personalScores: { [a]: -0.5, [b]: -0.5 }, badge: 'ARGUMENT', badgeClass: 'red'
+        });
+      }
+    } else if (midRoll < 0.80) {
+      // Bonding on the trail — high social pair
+      const bondPairs = [];
+      for (let i = 0; i < members.length; i++) {
+        for (let j = i + 1; j < members.length; j++) {
+          if (getBond(members[i], members[j]) < 1) continue;
+          const score = (pStats(members[i]).social + pStats(members[j]).social) * 0.04 + Math.random() * 0.5;
+          bondPairs.push({ a: members[i], b: members[j], score });
+        }
+      }
+      bondPairs.sort((x, y) => y.score - x.score);
+      if (bondPairs.length) {
+        const { a, b } = bondPairs[0];
+        const _bondTexts = [
+          `${a} and ${b} fall back from the group and find their own rhythm on the trail. By the time they catch up, something has solidified between them.`,
+          `${a} tells ${b} something they haven't told anyone else yet. The hike is long — there's time for that kind of honesty.`,
+          `${b} slows down to walk with ${a}. The rest of the tribe gets ahead of them. Neither seems to mind.`,
+        ];
+        personalScores[a] += 0.5; personalScores[b] += 0.5;
+        addBond(a, b, 0.4);
+        phases.announcement.push({
+          type: 'soTrailBond', phase: 'announcement', players: [a, b],
+          text: _bondTexts[_hash(a + b + 'bond', _bondTexts.length)],
+          personalScores: { [a]: 0.5, [b]: 0.5 }, badge: 'TRAIL TALK', badgeClass: 'gold'
+        });
+      }
+    }
+
+    // Event 4: Scary noise OR someone wanders off
+    const lateRoll = Math.random();
+    if (lateRoll < 0.25) {
+      // Someone wanders off — low loyalty + boldness
+      const wanderCandidates = members.slice().sort((a, b) => {
+        const sA = pStats(a), sB = pStats(b);
+        return ((10 - sA.loyalty) * 0.03 + sA.boldness * 0.02) - ((10 - sB.loyalty) * 0.03 + sB.boldness * 0.02);
+      }).reverse();
+      const arch0 = players.find(p => p.name === wanderCandidates[0])?.archetype || '';
+      const wanderer = wanderCandidates[0];
+      if (wanderer && Math.random() < (10 - pStats(wanderer).loyalty) * 0.03 + pStats(wanderer).boldness * 0.02) {
+        wanderers.add(wanderer);
+        const pr = pronouns(wanderer);
+        const _wanderTexts = [
+          `${wanderer} spots something glinting off the trail and drifts away to investigate. By the time anyone notices, ${pr.sub} ${pr.sub === 'they' ? 'are' : 'is'} nowhere to be seen.`,
+          `${wanderer} wasn't paying attention to the group. Now ${pr.sub} ${pr.sub === 'they' ? 'are' : 'is'} following a different trail entirely. ${pr.Sub} catches up eventually, but everyone noticed.`,
+          `"I'm just checking something," ${wanderer} says, veering off into the brush. ${pr.Sub} ${pr.sub === 'they' ? 'come' : 'comes'} back looking guilty.`,
+        ];
+        personalScores[wanderer] -= 1.5;
+        phases.announcement.push({
+          type: 'soWanderedOff', phase: 'announcement', players: [wanderer],
+          text: _wanderTexts[_hash(wanderer + 'wander', _wanderTexts.length)],
+          personalScores: { [wanderer]: -1.5 }, badge: 'WANDERED OFF', badgeClass: 'red'
+        });
+      }
+    } else if (lateRoll < 0.70) {
+      // Scary noise — boldest player is brave, least bold panics
+      const sorted = members.slice().sort((a, b) => pStats(b).boldness - pStats(a).boldness);
+      const brave = sorted[0], panicker = sorted[sorted.length - 1];
+      if (brave && panicker && brave !== panicker) {
+        const prPanic = pronouns(panicker);
+        const _noiseTexts = [
+          `Something large moves in the bushes. ${panicker} grabs ${prPanic.posAdj} tribemate. ${brave} steps forward without hesitation. It's a squirrel.`,
+          `A crashing sound from the trees sends ${panicker} scrambling backward into ${brave}, who looks almost amused.`,
+          `${panicker} hears it first. "DID YOU HEAR THAT?" ${brave} walks toward the sound. It's a fallen branch. ${panicker}'s pulse takes a while to settle.`,
+        ];
+        personalScores[panicker] -= 0.5; personalScores[brave] += 0.5;
+        addBond(brave, panicker, 0.3);
+        phases.announcement.push({
+          type: 'soScaryNoise', phase: 'announcement', players: [panicker, brave],
+          text: _noiseTexts[_hash(panicker + brave + 'noise', _noiseTexts.length)],
+          personalScores: { [panicker]: -0.5, [brave]: 0.5 }, badge: 'SCARY NOISE', badgeClass: 'gold'
+        });
+      }
+    }
+  });
+
+  // ══ PHASE 2: Setup Camp (3-4 events per tribe) ══
+  tribes.forEach(t => {
+    const members = t.members;
+
+    // Event 1: Shelter building — top 2 by endurance+mental
+    const builders = members.slice().sort((a, b) => {
+      const sA = pStats(a), sB = pStats(b);
+      return (sB.endurance * 0.04 + sB.mental * 0.03) - (sA.endurance * 0.04 + sA.mental * 0.03);
+    }).slice(0, 2);
+    const _shelterTexts = [
+      `${builders[0]} and ${builders[1]} take charge of shelter construction. By sunset, they have something that might actually keep the rain out.`,
+      `${builders.join(' and ')} build the shelter frame while the others gather materials. It goes up faster than expected.`,
+      `${builders[0]} drives the construction while ${builders[1]} follows ${pronouns(builders[0]).posAdj} lead. The structure holds.`,
+    ];
+    builders.forEach(b => {
+      personalScores[b] += 2.0;
+      members.filter(m => m !== b).forEach(m => addBond(m, b, 0.2));
+    });
+    phases.setupCamp.push({
+      type: 'soShelter', phase: 'setupCamp', players: [...builders],
+      text: _shelterTexts[_hash(builders.join('') + 'shelter', _shelterTexts.length)],
+      personalScores: Object.fromEntries(builders.map(b => [b, 2.0])),
+      badge: 'SHELTER BUILT', badgeClass: 'gold'
+    });
+
+    // Event 2: Fire starting — highest mental+boldness
+    const fireStarter = members.slice().sort((a, b) => {
+      const sA = pStats(a), sB = pStats(b);
+      return (sB.mental * 0.05 + sB.boldness * 0.02) - (sA.mental * 0.05 + sA.boldness * 0.02);
+    })[0];
+    if (fireStarter) {
+      const _fireTexts = [
+        `${fireStarter} gets the fire going on the third try. The tribe presses in close, grateful for the warmth.`,
+        `${fireStarter} builds a fire with deliberate calm — flint, tinder, patience. The first flame catches to scattered applause.`,
+        `Everyone watches ${fireStarter} work the fire bow for fifteen minutes before smoke turns to flame. Someone starts cheering.`,
+      ];
+      const pr = pronouns(fireStarter);
+      personalScores[fireStarter] += 1.5;
+      members.filter(m => m !== fireStarter).forEach(m => addBond(m, fireStarter, 0.3));
+      phases.setupCamp.push({
+        type: 'soFire', phase: 'setupCamp', players: [fireStarter],
+        text: _fireTexts[_hash(fireStarter + 'fire', _fireTexts.length)],
+        personalScores: { [fireStarter]: 1.5 }, badge: 'FIRE STARTED', badgeClass: 'gold'
+      });
+    }
+
+    // Event 3: Refuses to help OR division of labor argument (proportional)
+    const slackerCandidates = members.slice().sort((a, b) => {
+      const sA = pStats(a), sB = pStats(b);
+      return ((10 - sB.loyalty) * 0.04 + (10 - sB.social) * 0.02) - ((10 - sA.loyalty) * 0.04 + (10 - sA.social) * 0.02);
+    });
+    const slacker = slackerCandidates[0];
+    const slackerArch = players.find(p => p.name === slacker)?.archetype || '';
+    const slackerChance = (10 - pStats(slacker).loyalty) * 0.04 + (10 - pStats(slacker).social) * 0.02;
+
+    if (Math.random() < slackerChance * 0.4 && !NICE_ARCHS.has(slackerArch)) {
+      const pr = pronouns(slacker);
+      const _slackerTexts = [
+        `${slacker} finds a comfortable log and sits on it while everyone else works. Eventually someone snaps, "Are you going to help or what?" ${pr.Sub} ${pr.sub === 'they' ? 'shrug' : 'shrugs'}.`,
+        `${slacker} disappears for two hours and returns when the shelter is already up. "It looks great, you guys." No one says anything.`,
+        `While the tribe builds camp, ${slacker} is nowhere to be found. ${pr.Sub} shows up for dinner, though. ${pr.Sub} ${pr.sub === 'they' ? 'are' : 'is'} always there for dinner.`,
+      ];
+      personalScores[slacker] -= 1.5;
+      members.filter(m => m !== slacker).forEach(m => addBond(m, slacker, -0.3));
+      phases.setupCamp.push({
+        type: 'soSlacker', phase: 'setupCamp', players: [slacker],
+        text: _slackerTexts[_hash(slacker + 'slacker', _slackerTexts.length)],
+        personalScores: { [slacker]: -1.5 }, badge: 'SLACKER', badgeClass: 'red'
+      });
+    } else if (Math.random() < 0.30) {
+      // Division of labor argument
+      const laborPairs = [];
+      for (let i = 0; i < members.length; i++) {
+        for (let j = i + 1; j < members.length; j++) {
+          const score = ((10 - pStats(members[i]).loyalty) * 0.03 + pStats(members[i]).boldness * 0.03)
+                      + ((10 - pStats(members[j]).loyalty) * 0.03 + pStats(members[j]).boldness * 0.03);
+          laborPairs.push({ a: members[i], b: members[j], score });
+        }
+      }
+      laborPairs.sort((x, y) => y.score - x.score);
+      if (laborPairs.length) {
+        const { a, b } = laborPairs[0];
+        const _laborTexts = [
+          `${a} thinks ${b} should be hauling water. ${b} thinks ${a} should. The argument is circular and loud and ends with both of them hauling water.`,
+          `The work distribution is a sore subject. ${a} and ${b} debate whose job is harder for ten minutes before the tribe intervenes.`,
+          `"That's not what I said I'd do," ${b} tells ${a}. "That's literally exactly what you said," ${a} says. They don't agree.`,
+        ];
+        personalScores[a] -= 0.5; personalScores[b] -= 0.5;
+        addBond(a, b, -0.3);
+        phases.setupCamp.push({
+          type: 'soLaborArg', phase: 'setupCamp', players: [a, b],
+          text: _laborTexts[_hash(a + b + 'labor', _laborTexts.length)],
+          personalScores: { [a]: -0.5, [b]: -0.5 }, badge: 'ARGUMENT', badgeClass: 'red'
+        });
+      }
+    }
+
+    // Event 4: Shelter collapses — worst builder takes the hit (proportional)
+    const worstBuilder = members.slice().sort((a, b) => {
+      const sA = pStats(a), sB = pStats(b);
+      return (sA.mental - sB.mental); // lowest mental first
+    })[0];
+    if (worstBuilder && Math.random() < (10 - pStats(worstBuilder).mental) * 0.03) {
+      const pr = pronouns(worstBuilder);
+      const _collapseTexts = [
+        `The wall ${worstBuilder} reinforced collapses in the middle of the night. The tribe scrambles to fix it. Everyone knows whose work it was.`,
+        `${worstBuilder}'s section of the shelter gives way before they even finish eating dinner. "I can fix it," ${pr.sub} says. ${pr.Sub} cannot fix it.`,
+        `Something ${worstBuilder} did wrong becomes apparent around 2am when the roof comes down on three people.`,
+      ];
+      personalScores[worstBuilder] -= 1.0;
+      members.filter(m => m !== worstBuilder).forEach(m => addBond(m, worstBuilder, -0.2));
+      phases.setupCamp.push({
+        type: 'soCollapse', phase: 'setupCamp', players: [worstBuilder],
+        text: _collapseTexts[_hash(worstBuilder + 'collapse', _collapseTexts.length)],
+        personalScores: { [worstBuilder]: -1.0 }, badge: 'SHELTER FAIL', badgeClass: 'red'
+      });
+    }
+
+    // Event 5: Food hunt (fishing or foraging — proportional, ~50% chance)
+    if (Math.random() < 0.50) {
+      const fishRoll = Math.random() < 0.5;
+      if (fishRoll) {
+        const fisher = members.slice().sort((a, b) => {
+          const sA = pStats(a), sB = pStats(b);
+          return (sB.physical * 0.04 + sB.intuition * 0.03) - (sA.physical * 0.04 + sA.intuition * 0.03);
+        })[0];
+        if (fisher) {
+          const pr = pronouns(fisher);
+          const _fishTexts = [
+            `${fisher} builds a makeshift fishing trap from supplies in ${pr.posAdj} pack and hauls out enough to feed everyone. The tribe is stunned.`,
+            `${fisher} wades into the stream with ${pr.posAdj} bare hands and actually catches something. Multiple times. The tribe roasts fish over the fire.`,
+            `${fisher} rigs up a crude rod from a stick and some cordage and spends two hours fishing. ${pr.Sub} comes back with dinner.`,
+          ];
+          personalScores[fisher] += 1.5;
+          members.filter(m => m !== fisher).forEach(m => addBond(m, fisher, 0.3));
+          phases.setupCamp.push({
+            type: 'soProvider', phase: 'setupCamp', players: [fisher],
+            text: _fishTexts[_hash(fisher + 'fish', _fishTexts.length)],
+            personalScores: { [fisher]: 1.5 }, badge: 'PROVIDER', badgeClass: 'gold'
+          });
+        }
+      } else {
+        const forager = members.slice().sort((a, b) => {
+          const sA = pStats(a), sB = pStats(b);
+          return (sB.intuition * 0.04 + sB.mental * 0.02) - (sA.intuition * 0.04 + sA.mental * 0.02);
+        })[0];
+        if (forager) {
+          const pr = pronouns(forager);
+          const _forageTexts = [
+            `${forager} wanders into the tree line and comes back with an armful of edible plants and roots. Not glamorous, but it's dinner.`,
+            `${forager} identifies three edible species off the trail. The tribe eats well — better than they expected on night one.`,
+            `${forager} pulls out plants from ${pr.posAdj} pack they gathered on the hike. "I was saving these." Smart.`,
+          ];
+          personalScores[forager] += 1.0;
+          members.filter(m => m !== forager).forEach(m => addBond(m, forager, 0.2));
+          phases.setupCamp.push({
+            type: 'soProvider', phase: 'setupCamp', players: [forager],
+            text: _forageTexts[_hash(forager + 'forage', _forageTexts.length)],
+            personalScores: { [forager]: 1.0 }, badge: 'PROVIDER', badgeClass: 'gold'
+          });
+        }
+      }
+    }
+  });
+
+  // ══ PHASE 3: Nightfall (4-5 events per tribe) ══
+  tribes.forEach(t => {
+    const members = t.members;
+    let nightfallCount = 0;
+    const maxNightfall = 4 + (Math.random() < 0.5 ? 1 : 0);
+
+    // Ghost story — highest boldness+social tells it
+    if (nightfallCount < maxNightfall) {
+      const storyteller = members.slice().sort((a, b) => {
+        const sA = pStats(a), sB = pStats(b);
+        return (sB.boldness * 0.04 + sB.social * 0.03) - (sA.boldness * 0.04 + sA.social * 0.03);
+      })[0];
+      if (storyteller) {
+        const pr = pronouns(storyteller);
+        const _ghostTexts = [
+          `${storyteller} waits until the fire is low and everyone is settled. Then ${pr.sub} ${pr.sub === 'they' ? 'start' : 'starts'}: "There's a story about these woods…" Nobody sleeps well after.`,
+          `${storyteller} tells a ghost story with unsettling specificity. ${pr.Sub} ${pr.sub === 'they' ? 'make' : 'makes'} eye contact with different people at the worst moments. Someone shrieks.`,
+          `The ghost story ${storyteller} tells is technically about a different forest. But somehow every detail matches exactly where they are. No one says anything.`,
+        ];
+        personalScores[storyteller] += 1.0;
+        members.filter(m => m !== storyteller).forEach(m => addBond(m, storyteller, 0.2));
+
+        // Scared reaction — least bold player
+        const scaredPlayer = members.filter(m => m !== storyteller).sort((a, b) => pStats(a).boldness - pStats(b).boldness)[0];
+        if (scaredPlayer) {
+          const prSc = pronouns(scaredPlayer);
+          const scoreChanges = { [storyteller]: 1.0, [scaredPlayer]: -0.5 };
+          personalScores[scaredPlayer] -= 0.5;
+          phases.nightfall.push({
+            type: 'soGhostStory', phase: 'nightfall', players: [storyteller, scaredPlayer],
+            text: _ghostTexts[_hash(storyteller + 'ghost', _ghostTexts.length)] + ` ${scaredPlayer} ${prSc.sub === 'they' ? 'don\'t' : 'doesn\'t'} think it\'s funny.`,
+            personalScores: scoreChanges, badge: 'GHOST STORY', badgeClass: 'gold'
+          });
+        } else {
+          phases.nightfall.push({
+            type: 'soGhostStory', phase: 'nightfall', players: [storyteller],
+            text: _ghostTexts[_hash(storyteller + 'ghost', _ghostTexts.length)],
+            personalScores: { [storyteller]: 1.0 }, badge: 'GHOST STORY', badgeClass: 'gold'
+          });
+        }
+        nightfallCount++;
+      }
+    }
+
+    // Fireside bonding — highest social pair
+    if (nightfallCount < maxNightfall) {
+      const firesidePairs = [];
+      for (let i = 0; i < members.length; i++) {
+        for (let j = i + 1; j < members.length; j++) {
+          firesidePairs.push({ a: members[i], b: members[j], score: (pStats(members[i]).social + pStats(members[j]).social) * 0.05 + Math.random() * 0.5 });
+        }
+      }
+      firesidePairs.sort((x, y) => y.score - x.score);
+      if (firesidePairs.length) {
+        const { a, b } = firesidePairs[0];
+        const _fsTexts = [
+          `${a} and ${b} stay up after everyone else turns in. The fire pops. They talk until it goes out.`,
+          `${a} sits close to ${b} by the fire. Something about the dark and the warmth makes honesty come easy.`,
+          `${b} and ${a} watch the sparks rise and talk about things they haven't told their other tribemates. The night holds everything still.`,
+        ];
+        personalScores[a] += 0.5; personalScores[b] += 0.5;
+        addBond(a, b, 0.5);
+        phases.nightfall.push({
+          type: 'soFireside', phase: 'nightfall', players: [a, b],
+          text: _fsTexts[_hash(a + b + 'fireside', _fsTexts.length)],
+          personalScores: { [a]: 0.5, [b]: 0.5 }, badge: 'FIRESIDE', badgeClass: 'gold'
+        });
+        nightfallCount++;
+      }
+    }
+
+    // Showmance moment — existing showmance or romanticCompat pair
+    if (nightfallCount < maxNightfall && Math.random() < 0.40) {
+      const existingShowmance = (gs.showmances || []).find(sm =>
+        sm.phase !== 'broken-up' && sm.phase !== 'faded' &&
+        members.includes(sm.players[0]) && members.includes(sm.players[1])
+      );
+      if (existingShowmance) {
+        const [sa, sb] = existingShowmance.players;
+        const _showTexts = [
+          `${sa} and ${sb} drift away from the group when the fire dies down. They come back looking suspiciously content.`,
+          `${sb} leans on ${sa} by the fire. Everyone sees it. Nobody says anything — yet.`,
+          `Under a sky full of stars, ${sa} and ${sb} find a quiet corner of camp. It's disgustingly sweet.`,
+        ];
+        personalScores[sa] += 0.5; personalScores[sb] += 0.5;
+        addBond(sa, sb, 0.3);
+        phases.nightfall.push({
+          type: 'soShowmance', phase: 'nightfall', players: [sa, sb],
+          text: _showTexts[_hash(sa + sb + 'show', _showTexts.length)],
+          personalScores: { [sa]: 0.5, [sb]: 0.5 }, badge: 'MOMENT', badgeClass: 'gold'
+        });
+        nightfallCount++;
+      }
+    }
+
+    // Prank — NOT nice archetypes
+    if (nightfallCount < maxNightfall && Math.random() < 0.25) {
+      const prankCandidates = members.filter(m => {
+        const arch = players.find(p => p.name === m)?.archetype || '';
+        return !NICE_ARCHS.has(arch);
+      }).sort((a, b) => {
+        const sA = pStats(a), sB = pStats(b);
+        return (sB.boldness * 0.04 + (10 - sB.loyalty) * 0.02) - (sA.boldness * 0.04 + (10 - sA.loyalty) * 0.02);
+      });
+      if (prankCandidates.length) {
+        const prankster = prankCandidates[0];
+        const target = members.filter(m => m !== prankster)[Math.floor(Math.random() * (members.length - 1))];
+        if (target) {
+          const prP = pronouns(prankster);
+          const _prankTexts = [
+            `${prankster} waits until ${target} is asleep and puts something cold on ${pronouns(target).posAdj} face. The scream that follows wakes the entire camp.`,
+            `${prankster} rearranges ${target}'s pack while ${pronouns(target).sub} sleeps. ${target} won't find everything for three days.`,
+            `${prankster} makes an unsettling noise outside the shelter. The chaos ${prP.sub} ${prP.sub === 'they' ? 'cause' : 'causes'} is considerable. ${prP.Sub} ${prP.sub === 'they' ? 'think' : 'thinks'} it's hilarious. ${target} does not.`,
+          ];
+          personalScores[prankster] -= 1.0;
+          addBond(target, prankster, -0.4);
+          phases.nightfall.push({
+            type: 'soPrank', phase: 'nightfall', players: [prankster, target],
+            text: _prankTexts[_hash(prankster + target + 'prank', _prankTexts.length)],
+            personalScores: { [prankster]: -1.0 }, badge: 'PRANK', badgeClass: 'red'
+          });
+          nightfallCount++;
+        }
+      }
+    }
+
+    // Strategic whispers — NOT nice archetypes
+    if (nightfallCount < maxNightfall && Math.random() < 0.35) {
+      const schemers = members.filter(m => {
+        const arch = players.find(p => p.name === m)?.archetype || '';
+        return !NICE_ARCHS.has(arch) && (pStats(m).strategic >= 5 || ['schemer','mastermind','villain','chaos-agent'].includes(arch));
+      }).sort((a, b) => pStats(b).strategic - pStats(a).strategic);
+      if (schemers.length) {
+        const schemer = schemers[0];
+        const pr = pronouns(schemer);
+        const confideeTo = members.filter(m => m !== schemer).sort((a, b) => getBond(schemer, b) - getBond(schemer, a))[0];
+
+        // Overheard check — highest intuition non-participant
+        const eavesdroppers = members.filter(m => m !== schemer && m !== confideeTo);
+        const overheard = eavesdroppers.length && Math.random() < pStats(eavesdroppers.sort((a, b) => pStats(b).intuition - pStats(a).intuition)[0]).intuition * 0.04;
+        const hearer = overheard ? eavesdroppers[0] : null;
+
+        if (confideeTo) {
+          const _schemeTexts = [
+            `${schemer} waits until the tribe settles, then leans over to ${confideeTo}. Something is being planned. The fire masks their voices — mostly.`,
+            `${schemer} has been watching. Now ${pr.sub} ${pr.sub === 'they' ? 'talk' : 'talks'} to ${confideeTo} in the dark, laying out a quiet strategy.`,
+            `${schemer} and ${confideeTo} aren't sleeping. They're planning. Out here, with nothing to do but sit and think, strategy fills the silence.`,
+          ];
+          personalScores[schemer] += 0.5;
+          const evtPlayers = hearer ? [schemer, confideeTo, hearer] : [schemer, confideeTo];
+          const evtScores = { [schemer]: 0.5 };
+          if (hearer) {
+            personalScores[hearer] += 0.5;
+            personalScores[schemer] -= 0.5;
+            evtScores[hearer] = 0.5;
+            evtScores[schemer] = -0.5;
+            addBond(hearer, schemer, -0.4);
+          }
+          phases.nightfall.push({
+            type: hearer ? 'soOverheard' : 'soScheme', phase: 'nightfall', players: evtPlayers,
+            text: _schemeTexts[_hash(schemer + 'scheme', _schemeTexts.length)] + (hearer ? ` ${hearer} catches just enough to understand what's happening.` : ''),
+            personalScores: evtScores, badge: hearer ? 'OVERHEARD' : 'SCHEMING', badgeClass: hearer ? 'red' : 'gold'
+          });
+          nightfallCount++;
+        }
+      }
+    }
+
+    // Stargazing confession — highest social+temperament pair (if slots remain)
+    if (nightfallCount < maxNightfall && Math.random() < 0.30) {
+      const starPairs = [];
+      for (let i = 0; i < members.length; i++) {
+        for (let j = i + 1; j < members.length; j++) {
+          const score = (pStats(members[i]).social * 0.03 + pStats(members[i]).temperament * 0.03)
+                      + (pStats(members[j]).social * 0.03 + pStats(members[j]).temperament * 0.03)
+                      + Math.random() * 0.5;
+          starPairs.push({ a: members[i], b: members[j], score });
+        }
+      }
+      starPairs.sort((x, y) => y.score - x.score);
+      if (starPairs.length) {
+        const { a, b } = starPairs[0];
+        const _starTexts = [
+          `${a} and ${b} lie on their backs looking up. Far from camp, far from the game. ${a} says something real. ${b} responds in kind.`,
+          `The stars are out, fully. ${b} points out a constellation. ${a} tells ${pronouns(b).obj} something ${pronouns(a).sub === 'they' ? 'they\'ve' : 'they\'ve'} never told anyone out here.`,
+          `${a} and ${b} stay outside the shelter long after everyone else is asleep. The kind of conversation that only happens at 3am under a clear sky.`,
+        ];
+        personalScores[a] += 1.0; personalScores[b] += 1.0;
+        addBond(a, b, 0.5);
+        phases.nightfall.push({
+          type: 'soStargazing', phase: 'nightfall', players: [a, b],
+          text: _starTexts[_hash(a + b + 'star', _starTexts.length)],
+          personalScores: { [a]: 1.0, [b]: 1.0 }, badge: 'STARGAZING', badgeClass: 'gold'
+        });
+        nightfallCount++;
+      }
+    }
+
+    // Can't sleep — anxious player (proportional to low temperament)
+    if (nightfallCount < maxNightfall && Math.random() < 0.35) {
+      const anxious = members.slice().sort((a, b) => pStats(a).temperament - pStats(b).temperament)[0];
+      if (anxious && Math.random() < (10 - pStats(anxious).temperament) * 0.04) {
+        const pr = pronouns(anxious);
+        const _anxTexts = [
+          `${anxious} cannot sleep. ${pr.Sub} ${pr.sub === 'they' ? 'lie' : 'lies'} awake listening to every crack and rustle in the forest, running through scenarios.`,
+          `${anxious} is up before dawn having barely slept. ${pr.Sub} ${pr.sub === 'they' ? 'look' : 'looks'} exhausted already, and the challenge hasn't even started.`,
+          `Every sound in the forest jolts ${anxious} awake. By morning ${pr.sub} ${pr.sub === 'they' ? 'have' : 'has'} slept maybe ninety minutes.`,
+        ];
+        personalScores[anxious] -= 0.5;
+        phases.nightfall.push({
+          type: 'soCantSleep', phase: 'nightfall', players: [anxious],
+          text: _anxTexts[_hash(anxious + 'sleep', _anxTexts.length)],
+          personalScores: { [anxious]: -0.5 }, badge: 'SLEEPLESS', badgeClass: 'red'
+        });
+        nightfallCount++;
+      }
+    }
+  });
+
+  // ══ PHASE 4: The Night (3-4 events per tribe, severity from camp quality) ══
+  const lostPlayers = []; // { name, tribe, lostInPhase, returnDelay }
+
+  tribes.forEach(t => {
+    const members = t.members;
+    const quality = campQuality[t.name]; // 1-10 scale
+    let nightCount = 0;
+    const maxNight = 3 + (Math.random() < 0.5 ? 1 : 0);
+
+    // Rainstorm — severity inversely proportional to camp quality
+    if (nightCount < maxNight) {
+      const stormSeverity = Math.max(0, (10 - quality) * 0.1); // 0 to 1 scale
+      if (Math.random() < stormSeverity + 0.2) {
+        const _rainTexts = quality < 5
+          ? [
+            `Rain hits the camp hard. The shelter — barely adequate to begin with — is not adequate for this. Everyone gets wet. Some more than others.`,
+            `The storm rolls in without warning. The shelter fails. The tribe spends the night huddled under a tarp that covers maybe half of them.`,
+            `By 1am the rain is relentless. The poorly-built shelter is a puddle. No one is sleeping. Everyone is miserable.`,
+          ]
+          : [
+            `Rain comes down in the night. The shelter holds. It's not comfortable, but everyone stays mostly dry.`,
+            `A light rain passes through. The fire dies. They relight it in the morning. Nobody panics.`,
+            `The shelter creaks in the rain but doesn't fail. A small victory.`,
+          ];
+        const isHardRain = quality < 5;
+        if (isHardRain) {
+          members.forEach(m => { personalScores[m] -= 1.0; });
+        }
+        const evtScores = isHardRain ? Object.fromEntries(members.map(m => [m, -1.0])) : {};
+        phases.theNight.push({
+          type: 'soRainstorm', phase: 'theNight', players: [...members],
+          text: _rainTexts[_hash(t.name + 'rain', _rainTexts.length)],
+          personalScores: evtScores, badge: 'RAINSTORM', badgeClass: isHardRain ? 'red' : 'gold'
+        });
+        nightCount++;
+      }
+    }
+
+    // Bear encounter — brave vs panicker
+    if (nightCount < maxNight && Math.random() < 0.35) {
+      const sorted = members.slice().sort((a, b) => pStats(b).boldness - pStats(a).boldness);
+      const brave = sorted[0], panicker = sorted[sorted.length - 1];
+      if (brave && panicker && brave !== panicker) {
+        const prB = pronouns(brave); const prP = pronouns(panicker);
+        const _bearTexts = [
+          `Something large crashes through the brush outside the shelter. ${panicker} goes rigid with panic. ${brave} grabs a stick and walks toward it. It's a raccoon.`,
+          `A bear gets into the supplies. ${panicker} screams. ${brave} yells at the bear, which works. Bears are apparently intimidated by ${brave}.`,
+          `The tribe hears heavy breathing outside. ${panicker} is already halfway up a tree. ${brave} turns on a flashlight and walks out to look. "It's gone." Nobody slept after that either way.`,
+        ];
+        personalScores[brave] += 1.5; personalScores[panicker] -= 1.0;
+        addBond(brave, panicker, 0.3);
+        phases.theNight.push({
+          type: 'soBear', phase: 'theNight', players: [brave, panicker],
+          text: _bearTexts[_hash(brave + panicker + 'bear', _bearTexts.length)],
+          personalScores: { [brave]: 1.5, [panicker]: -1.0 }, badge: 'BEAR ENCOUNTER', badgeClass: 'gold'
+        });
+        nightCount++;
+      }
+    }
+
+    // Someone gets LOST — proportional check
+    if (nightCount < maxNight) {
+      const lostCandidates = members.filter(m => {
+        // Max 2 lost per tribe
+        const tribeLost = lostPlayers.filter(lp => lp.tribe === t.name).length;
+        if (tribeLost >= 2) return false;
+        const s = pStats(m);
+        const chance = (10 - s.intuition) * 0.02 + (10 - s.mental) * 0.015 + (wanderers.has(m) ? 0.1 : 0);
+        return Math.random() < chance;
+      });
+      if (lostCandidates.length > 0) {
+        const lost = lostCandidates[0];
+        const lostS = pStats(lost);
+        const returnDelay = (10 - lostS.intuition) * 0.5;
+        lostPlayers.push({ name: lost, tribe: t.name, lostInPhase: 'theNight', returnDelay });
+        personalScores[lost] -= 3.0;
+        members.filter(m => m !== lost).forEach(m => addBond(m, lost, -0.5));
+        const pr = pronouns(lost);
+        const _lostTexts = [
+          `${lost} slipped away to use the bathroom and didn't come back. The tribe spent an hour calling ${pr.posAdj} name into the dark before realizing — ${pr.sub} ${pr.sub === 'they' ? 'are' : 'is'} genuinely gone.`,
+          `${lost} got up in the middle of the night and walked in the wrong direction. By the time ${pr.sub} ${pr.sub === 'they' ? 'realize' : 'realizes'} it, the camp is nowhere to be found.`,
+          `"I'll be right back," ${lost} says. ${pr.Sub} ${pr.sub === 'they' ? 'are' : 'is'} not right back. Search parties go out. Nothing. Production has a tracker, but the tribe doesn't know that.`,
+        ];
+
+        // Check for a lost pair (two with bond >= 3)
+        const alsoLost = lostCandidates[1];
+        if (alsoLost && getBond(lost, alsoLost) >= 3 && lostPlayers.filter(lp => lp.tribe === t.name).length < 2) {
+          const returnDelay2 = (10 - pStats(alsoLost).intuition) * 0.5;
+          lostPlayers.push({ name: alsoLost, tribe: t.name, lostInPhase: 'theNight', returnDelay: returnDelay2, pairedWith: lost });
+          personalScores[alsoLost] -= 3.0;
+          members.filter(m => m !== alsoLost).forEach(m => addBond(m, alsoLost, -0.5));
+          addBond(lost, alsoLost, 0.3); // survived together
+          const _lostPairTexts = [
+            `${lost} and ${alsoLost} both get turned around in the dark. They eventually find each other — but not the camp. By sunrise, they're together, lost, and significantly behind.`,
+            `${alsoLost} goes looking for ${lost} and also gets lost. The tribe has now lost two people and is very, very upset.`,
+          ];
+          phases.theNight.push({
+            type: 'soLost', phase: 'theNight', players: [lost, alsoLost],
+            text: _lostPairTexts[_hash(lost + alsoLost + 'lostpair', _lostPairTexts.length)],
+            personalScores: { [lost]: -3.0, [alsoLost]: -3.0 }, badge: 'LOST', badgeClass: 'red'
+          });
+        } else {
+          phases.theNight.push({
+            type: 'soLost', phase: 'theNight', players: [lost],
+            text: _lostTexts[_hash(lost + 'lost', _lostTexts.length)],
+            personalScores: { [lost]: -3.0 }, badge: 'LOST', badgeClass: 'red'
+          });
+        }
+        nightCount++;
+      }
+    }
+
+    // Tent/shelter fire — low temperament culprit
+    if (nightCount < maxNight && Math.random() < 0.20) {
+      const culprit = members.slice().sort((a, b) => pStats(a).temperament - pStats(b).temperament)[0];
+      if (culprit && Math.random() < (10 - pStats(culprit).temperament) * 0.03) {
+        const pr = pronouns(culprit);
+        const _fireTexts = [
+          `${culprit} knocks a torch into the shelter wall. The resulting chaos is brief but spectacular. Everyone scrambles. No one is hurt, but the shelter needs emergency repairs.`,
+          `${culprit} rolls too close to the fire in ${pr.posAdj} sleep and wakes up to the smell of burning. The tribe puts it out, fast. ${pr.Sub} is very sorry.`,
+          `A small fire starts near ${culprit}'s sleeping spot. No one knows exactly how. ${culprit} definitely knows how. ${pr.Sub} ${pr.sub === 'they' ? 'aren\'t' : 'isn\'t'} saying.`,
+        ];
+        personalScores[culprit] -= 2.0;
+        members.filter(m => m !== culprit).forEach(m => addBond(m, culprit, -0.3));
+        phases.theNight.push({
+          type: 'soTentFire', phase: 'theNight', players: [culprit],
+          text: _fireTexts[_hash(culprit + 'tentfire', _fireTexts.length)],
+          personalScores: { [culprit]: -2.0 }, badge: 'TENT FIRE', badgeClass: 'red'
+        });
+        nightCount++;
+      }
+    }
+
+    // Cuddling for warmth — bond >= 2 pair or showmance
+    if (nightCount < maxNight && Math.random() < 0.40) {
+      const cuddlePairs = [];
+      for (let i = 0; i < members.length; i++) {
+        for (let j = i + 1; j < members.length; j++) {
+          const bond = getBond(members[i], members[j]);
+          if (bond >= 2) cuddlePairs.push({ a: members[i], b: members[j], bond });
+        }
+      }
+      cuddlePairs.sort((x, y) => y.bond - x.bond);
+      if (cuddlePairs.length) {
+        const { a, b } = cuddlePairs[0];
+        const _cuddleTexts = [
+          `It's cold. ${a} and ${b} end up back-to-back for warmth. Nobody says anything about it in the morning.`,
+          `${a} and ${b} are pressed together for warmth by midnight. Practical. Completely practical.`,
+          `${b} shuffles over to ${a} in the night. "I'm freezing." "${a} is also freezing." They're both warmer for it.`,
+        ];
+        personalScores[a] += 0.5; personalScores[b] += 0.5;
+        addBond(a, b, 0.3);
+        phases.theNight.push({
+          type: 'soCuddling', phase: 'theNight', players: [a, b],
+          text: _cuddleTexts[_hash(a + b + 'cuddle', _cuddleTexts.length)],
+          personalScores: { [a]: 0.5, [b]: 0.5 }, badge: 'CUDDLING', badgeClass: 'gold'
+        });
+        nightCount++;
+      }
+    }
+
+    // Nightmare / sleep talking
+    if (nightCount < maxNight && Math.random() < 0.25) {
+      const dreamer = members.slice().sort((a, b) => pStats(a).temperament - pStats(b).temperament)[0];
+      if (dreamer && Math.random() < (10 - pStats(dreamer).temperament) * 0.03) {
+        const pr = pronouns(dreamer);
+        const _nightmareTexts = [
+          `${dreamer} talks in ${pr.posAdj} sleep. Something about votes. Something about a name. The tribemates who are awake look at each other.`,
+          `${dreamer} bolts upright at 3am, gasping. ${pr.Sub} says ${pr.sub === 'they' ? 'they\'re' : pr.sub + '\'s'} fine. ${pr.Sub} ${pr.sub === 'they' ? 'don\'t' : 'doesn\'t'} look fine.`,
+          `${dreamer} mutters names in ${pr.posAdj} sleep. No one is sure what they mean. Two people quietly note which names were said.`,
+        ];
+        personalScores[dreamer] -= 0.5;
+        phases.theNight.push({
+          type: 'soNightmare', phase: 'theNight', players: [dreamer],
+          text: _nightmareTexts[_hash(dreamer + 'nightmare', _nightmareTexts.length)],
+          personalScores: { [dreamer]: -0.5 }, badge: 'NIGHTMARE', badgeClass: 'red'
+        });
+        nightCount++;
+      }
+    }
+  });
+
+  // ══ PHASE 5: Morning Race (1-2 events per tribe) ══
+  const raceScores = {};
+  const tribeRaceTimes = {};
+
+  tribes.forEach(t => {
+    const members = t.members;
+    const tribeLostNames = lostPlayers.filter(lp => lp.tribe === t.name).map(lp => lp.name);
+    const racers = members.filter(m => !tribeLostNames.includes(m));
+    const penalty = tribeLostNames.length * 5.0;
+
+    // Race score from physical+endurance
+    const rawRace = racers.reduce((sum, m) => {
+      const s = pStats(m);
+      return sum + s.physical * 0.04 + s.endurance * 0.03;
+    }, 0);
+    raceScores[t.name] = rawRace - penalty;
+    // "Time" inversely proportional to raw score — higher = faster
+    tribeRaceTimes[t.name] = 100 / Math.max(0.1, rawRace);
+
+    let raceEventCount = 0;
+    const maxRaceEvents = 1 + (Math.random() < 0.5 ? 1 : 0);
+
+    // Sprint back — top scorer gets bonus
+    if (racers.length) {
+      const topRacer = racers.slice().sort((a, b) => {
+        const sA = pStats(a), sB = pStats(b);
+        return (sB.physical * 0.04 + sB.endurance * 0.03) - (sA.physical * 0.04 + sA.endurance * 0.03);
+      })[0];
+      if (topRacer) {
+        const pr = pronouns(topRacer);
+        const _sprintTexts = [
+          `${topRacer} sets the pace on the way back. The tribe runs hard. ${pr.Sub} ${pr.sub === 'they' ? 'don\'t' : 'doesn\'t'} slow down until they see the finish.`,
+          `${topRacer} is running before anyone else is ready. The tribe scrambles to keep up.`,
+          `${topRacer} takes the lead on the morning race back. ${pr.Sub} ${pr.sub === 'they' ? 'push' : 'pushes'} the pace and the tribe follows.`,
+        ];
+        personalScores[topRacer] += 2.0;
+        phases.morningRace.push({
+          type: 'soSprint', phase: 'morningRace', players: [topRacer],
+          text: _sprintTexts[_hash(topRacer + 'sprint', _sprintTexts.length)],
+          personalScores: { [topRacer]: 2.0 }, badge: 'FRONT RUNNER', badgeClass: 'gold'
+        });
+        raceEventCount++;
+      }
+    }
+
+    // Lost player delay event
+    if (tribeLostNames.length > 0) {
+      const _costTexts = tribeLostNames.length === 1
+        ? [
+          `${tribeLostNames[0]} finally staggers in — long after the other tribes are done. The tribe had to wait, and waited too long.`,
+          `${tribeLostNames[0]} returns from the night with leaves in ${pronouns(tribeLostNames[0]).posAdj} hair and panic in ${pronouns(tribeLostNames[0]).posAdj} eyes. The tribe lost because of it.`,
+          `Production guides ${tribeLostNames[0]} back to the course. ${pronouns(tribeLostNames[0]).Sub} ${pronouns(tribeLostNames[0]).sub === 'they' ? 'arrive' : 'arrives'} last. Way, way last.`,
+        ]
+        : [
+          `${tribeLostNames.join(' and ')} come stumbling back together just as the other tribes are finishing. A disaster.`,
+          `Two players, one forest, zero sense of direction. ${tribeLostNames.join(' and ')} return long after anyone else.`,
+        ];
+      tribeLostNames.forEach(lostName => {
+        personalScores[lostName] -= 5.0; // race penalty applied to score too
+        members.filter(m => m !== lostName).forEach(m => addBond(m, lostName, -0.5));
+      });
+      phases.morningRace.push({
+        type: 'soCostTribe', phase: 'morningRace', players: [...tribeLostNames],
+        text: _costTexts[_hash(tribeLostNames.join('') + 'cost', _costTexts.length)],
+        personalScores: Object.fromEntries(tribeLostNames.map(n => [n, -5.0])),
+        badge: 'COST THE TRIBE', badgeClass: 'red'
+      });
+      raceEventCount++;
+    }
+
+    // Shortcut finder — proportional intuition+mental
+    if (raceEventCount < maxRaceEvents && Math.random() < 0.25) {
+      const shortcutFinder = racers.slice().sort((a, b) => {
+        const sA = pStats(a), sB = pStats(b);
+        return (sB.intuition * 0.04 + sB.mental * 0.03) - (sA.intuition * 0.04 + sA.mental * 0.03);
+      })[0];
+      if (shortcutFinder && Math.random() < pStats(shortcutFinder).intuition * 0.04 + pStats(shortcutFinder).mental * 0.03) {
+        const pr = pronouns(shortcutFinder);
+        const _scTexts = [
+          `${shortcutFinder} spots a gap in the trees and calls the tribe over. The shortcut saves them a quarter mile. Crucial.`,
+          `${shortcutFinder} cuts left off the trail and waves the tribe through. ${pr.Sub} ${pr.sub === 'they' ? 'were' : 'was'} right. It's shorter.`,
+          `"This way," ${shortcutFinder} says with quiet certainty. ${pr.Sub} ${pr.sub === 'they' ? 'lead' : 'leads'} the tribe around the ridge and down the fast way.`,
+        ];
+        personalScores[shortcutFinder] += 2.0;
+        racers.filter(m => m !== shortcutFinder).forEach(m => addBond(m, shortcutFinder, 0.3));
+        raceScores[t.name] += 2.0; // shortcut bonus
+        phases.morningRace.push({
+          type: 'soShortcut', phase: 'morningRace', players: [shortcutFinder],
+          text: _scTexts[_hash(shortcutFinder + 'shortcut', _scTexts.length)],
+          personalScores: { [shortcutFinder]: 2.0 }, badge: 'SHORTCUT', badgeClass: 'gold'
+        });
+        raceEventCount++;
+      }
+    }
+
+    // Carries slow teammate — loyalty+physical
+    if (raceEventCount < maxRaceEvents && racers.length >= 2 && Math.random() < 0.20) {
+      const carrier = racers.slice().sort((a, b) => {
+        const sA = pStats(a), sB = pStats(b);
+        return (sB.loyalty * 0.04 + sB.physical * 0.03) - (sA.loyalty * 0.04 + sA.physical * 0.03);
+      })[0];
+      const carried = racers.filter(m => m !== carrier).sort((a, b) => pStats(a).endurance - pStats(b).endurance)[0];
+      if (carrier && carried) {
+        const prC = pronouns(carrier); const prR = pronouns(carried);
+        const _carryTexts = [
+          `${carrier} notices ${carried} falling behind and grabs ${prR.posAdj} arm. "Come on. We're going together." They finish together.`,
+          `${carried} is slowing down. ${carrier} doesn't leave ${prR.obj} behind — ${prC.sub} ${prC.sub === 'they' ? 'half-carry' : 'half-carries'} ${prR.obj} the last stretch.`,
+          `${carrier} drops back and pushes ${carried} from behind for the last quarter mile. ${prC.Sub} ${prC.sub === 'they' ? 'refuse' : 'refuses'} to let anyone fall behind.`,
+        ];
+        personalScores[carrier] += 1.5;
+        addBond(carrier, carried, 0.5);
+        phases.morningRace.push({
+          type: 'soCarried', phase: 'morningRace', players: [carrier, carried],
+          text: _carryTexts[_hash(carrier + carried + 'carry', _carryTexts.length)],
+          personalScores: { [carrier]: 1.5 }, badge: 'CARRIED', badgeClass: 'gold'
+        });
+        raceEventCount++;
+      }
+    }
+  });
+
+  // ══ Determine Winner + Loser ══
+  // Total survival score = sum of personal scores for tribe + race score bonus
+  const survivalScores = {};
+  tribes.forEach(t => {
+    const tribePersonalTotal = t.members.reduce((sum, m) => sum + (personalScores[m] || 0), 0);
+    survivalScores[t.name] = tribePersonalTotal + raceScores[t.name];
+  });
+
+  // Auto-loss override: tribe whose lost players arrive after ALL other tribes finish
+  const autoLoseTribes = new Set();
+  tribes.forEach(t => {
+    const tribeLost = lostPlayers.filter(lp => lp.tribe === t.name);
+    if (!tribeLost.length) return;
+    const maxDelay = Math.max(...tribeLost.map(lp => lp.returnDelay));
+    // Check if any other tribe with no lost players finishes faster
+    const otherTribes = tribes.filter(tr => tr.name !== t.name);
+    const fastestOther = Math.min(...otherTribes.map(tr => tribeRaceTimes[tr.name]));
+    if (maxDelay > fastestOther) autoLoseTribes.add(t.name);
+  });
+
+  // Sort tribes by survival score (auto-loss tribes go to bottom)
+  const tribesSorted = [...tribes].sort((a, b) => {
+    const aAuto = autoLoseTribes.has(a.name) ? -1000 : 0;
+    const bAuto = autoLoseTribes.has(b.name) ? -1000 : 0;
+    return (survivalScores[b.name] + bAuto) - (survivalScores[a.name] + aAuto);
+  });
+
+  const winner = tribesSorted[0];
+  let loser = tribesSorted[tribesSorted.length - 1];
+
+  // Tiebreaker for loser: fewer lost players, then higher camp quality
+  const loserCandidates = tribesSorted.filter((t, i) => i > 0 && survivalScores[t.name] === survivalScores[loser.name] && !autoLoseTribes.has(t.name) && !autoLoseTribes.has(loser.name));
+  if (loserCandidates.length) {
+    const loserGroup = [loser, ...loserCandidates];
+    loserGroup.sort((a, b) => {
+      const aLost = lostPlayers.filter(lp => lp.tribe === a.name).length;
+      const bLost = lostPlayers.filter(lp => lp.tribe === b.name).length;
+      if (bLost !== aLost) return bLost - aLost; // more lost = worse
+      return campQuality[a.name] - campQuality[b.name]; // lower quality = worse
+    });
+    loser = loserGroup[0];
+  }
+
+  // ══ Set episode fields ══
+  ep.challengeType = 'tribe';
+  ep.winner = gs.tribes.find(t => t.name === winner.name);
+  ep.loser = gs.tribes.find(t => t.name === loser.name);
+  ep.safeTribes = tribes.length > 2
+    ? tribesSorted.slice(1, -1).map(t => gs.tribes.find(tr => tr.name === t.name)).filter(Boolean)
+    : [];
+  ep.challengeLabel = 'The Sucky Outdoors';
+  ep.challengeCategory = 'endurance';
+  ep.challengeDesc = 'Overnight survival. First tribe back in the morning wins.';
+  ep.tribalPlayers = [...loser.members];
+  ep.challengePlacements = tribesSorted.map(t => ({
+    name: t.name, members: [...(gs.tribes.find(tr => tr.name === t.name)?.members || [])],
+    memberScores: {},
+  }));
+  ep.chalMemberScores = { ...personalScores };
+  ep.isSuckyOutdoors = true;
+
+  // ══ Camp events: 2 per tribe (1 positive, 1 negative) ══
+  tribes.forEach(t => {
+    const key = t.name;
+    if (!ep.campEvents[key]) ep.campEvents[key] = { pre: [], post: [] };
+    if (!ep.campEvents[key].post) ep.campEvents[key].post = [];
+
+    // Positive: navigator or strongest performer
+    const nav = navigators[t.name];
+    const topPerformer = t.members.slice().sort((a, b) => (personalScores[b] || 0) - (personalScores[a] || 0))[0];
+    if (topPerformer && (personalScores[topPerformer] || 0) > 0) {
+      const pr = pronouns(topPerformer);
+      ep.campEvents[key].post.push({
+        type: 'soStandout', players: [topPerformer],
+        text: `${topPerformer} was the standout of the overnight challenge — ${pr.sub} ${pr.sub === 'they' ? 'kept' : 'kept'} the tribe together when things got rough.`,
+        consequences: 'Strong performance in the outdoors.',
+        badgeText: 'MVP', badgeClass: 'gold'
+      });
+    }
+
+    // Negative: lost player or worst performer
+    const tribeLostNames = lostPlayers.filter(lp => lp.tribe === t.name).map(lp => lp.name);
+    if (tribeLostNames.length > 0) {
+      const lostName = tribeLostNames[0];
+      const pr = pronouns(lostName);
+      ep.campEvents[key].post.push({
+        type: 'soCostTribe', players: [lostName],
+        text: `${lostName} getting lost in the woods cost the tribe precious time in the morning race. Nobody is letting ${pr.obj} forget it.`,
+        consequences: '+2.0 heat for 2 episodes.',
+        badgeText: 'COST THE TRIBE', badgeClass: 'red'
+      });
+    } else {
+      const bottomPerformer = t.members.slice().sort((a, b) => (personalScores[a] || 0) - (personalScores[b] || 0))[0];
+      if (bottomPerformer && (personalScores[bottomPerformer] || 0) < 0) {
+        const pr = pronouns(bottomPerformer);
+        ep.campEvents[key].post.push({
+          type: 'soSlacker', players: [bottomPerformer],
+          text: `${bottomPerformer} struggled in the overnight challenge. ${pr.Sub} ${pr.sub === 'they' ? 'weren\'t' : 'wasn\'t'} much help — and the tribe noticed.`,
+          consequences: 'Poor performance noted by tribemates.',
+          badgeText: 'SLACKER', badgeClass: 'red'
+        });
+      }
+    }
+  });
+
+  // ══ Heat for lost players ══
+  if (!gs._suckyOutdoorsHeat) gs._suckyOutdoorsHeat = {};
+  lostPlayers.forEach(lp => {
+    gs._suckyOutdoorsHeat[lp.name] = { amount: 2.0, expiresEp: ((gs.episode || 0) + 1) + 2 };
+  });
+
+  // ══ Store episode data ══
+  ep.suckyOutdoors = {
+    phases,
+    navigators,
+    campQuality,
+    lostPlayers,
+    survivalScores,
+    winner: winner.name,
+    loser: loser.name,
+    autoLoseTribe: autoLoseTribes.size ? [...autoLoseTribes][0] : null,
+  };
+
+  updateChalRecord(ep);
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -29191,6 +30224,12 @@ function simulateJuryRoundtable(ep) {
         if (((gs.episode || 0) + 1) >= gs._talentShowHeat[k].expiresEp) delete gs._talentShowHeat[k];
       });
       if (!Object.keys(gs._talentShowHeat).length) delete gs._talentShowHeat;
+    }
+    if (gs._suckyOutdoorsHeat) {
+      Object.keys(gs._suckyOutdoorsHeat).forEach(k => {
+        if (((gs.episode || 0) + 1) >= gs._suckyOutdoorsHeat[k].expiresEp) delete gs._suckyOutdoorsHeat[k];
+      });
+      if (!Object.keys(gs._suckyOutdoorsHeat).length) delete gs._suckyOutdoorsHeat;
     }
 
     // ── BLACK VOTE: eliminated player casts a parting vote/gift (until F4) ──

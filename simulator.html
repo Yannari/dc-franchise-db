@@ -124,6 +124,25 @@
       from { transform: scaleY(0); transform-origin: top center; opacity: 0; }
       to   { transform: scaleY(1); transform-origin: top center; opacity: 1; }
     }
+    @keyframes paintSplat {
+      0% { transform: scale(0) rotate(0deg); opacity: 1; }
+      50% { transform: scale(1.5) rotate(15deg); opacity: 0.8; }
+      100% { transform: scale(1) rotate(5deg); opacity: 0.6; }
+    }
+    @keyframes paintDrip {
+      0% { height: 0; opacity: 0.8; }
+      100% { height: 20px; opacity: 0.3; }
+    }
+    @keyframes dodgeSlide {
+      0% { transform: translateX(0); }
+      30% { transform: translateX(-15px); }
+      60% { transform: translateX(5px); }
+      100% { transform: translateX(0); }
+    }
+    @keyframes targetPulse {
+      0%, 100% { box-shadow: 0 0 0 rgba(255,0,0,0); }
+      50% { box-shadow: 0 0 15px rgba(255,0,0,0.3); }
+    }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; font-size: 14px; }
@@ -46064,7 +46083,7 @@ function rpBuildFirstImpressions(ep, twistObj) {
 // ── Screen 3: Pre-challenge twists (tribe swap, three gifts, journey, exile-island, etc.) ──
 function rpBuildPreTwist(ep) {
   const _rawTwistData = (ep.twistScenes?.length ? ep.twistScenes : generateTwistScenes(ep))
-    .filter(t => t.type !== 'exile-island' && t.type !== 'jury-elimination' && t.type !== 'kidnapping' && t.type !== 'first-impressions' && t.type !== 'tied-destinies' && t.type !== 'aftermath' && t.type !== 'fan-vote-return' && t.type !== 'schoolyard-pick' && t.type !== 'triple-dog-dare' && t.type !== 'say-uncle' && t.type !== 'phobia-factor' && t.type !== 'cliff-dive' && t.type !== 'awake-a-thon' && t.type !== 'emissary-vote' && t.type !== 'dodgebrawl' && t.type !== 'talent-show' && t.type !== 'sucky-outdoors' && t.type !== 'up-the-creek'); // shown in dedicated screens
+    .filter(t => t.type !== 'exile-island' && t.type !== 'jury-elimination' && t.type !== 'kidnapping' && t.type !== 'first-impressions' && t.type !== 'tied-destinies' && t.type !== 'aftermath' && t.type !== 'fan-vote-return' && t.type !== 'schoolyard-pick' && t.type !== 'triple-dog-dare' && t.type !== 'say-uncle' && t.type !== 'phobia-factor' && t.type !== 'cliff-dive' && t.type !== 'awake-a-thon' && t.type !== 'emissary-vote' && t.type !== 'dodgebrawl' && t.type !== 'talent-show' && t.type !== 'sucky-outdoors' && t.type !== 'up-the-creek' && t.type !== 'paintball-hunt'); // shown in dedicated screens
   // Deduplicate: only show one scene per twist type (prevents double display if twist is in ep.twists twice)
   const _seenTypes = new Set();
   const twistData = _rawTwistData.filter(t => { if (_seenTypes.has(t.type)) return false; _seenTypes.add(t.type); return true; });
@@ -57551,6 +57570,368 @@ function rpBuildUpTheCreek(ep) {
   return html;
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+// VP: PAINTBALL DEER HUNTER
+// ══════════════════════════════════════════════════════════════════════════════
+function rpBuildPaintballHunt(ep) {
+  const pb = ep.paintballHunt;
+  if (!pb?.rounds?.length) return null;
+
+  const stateKey = 'pb_reveal_' + ep.num;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+
+  // Build flat steps array: each round's matchups + events become sequential reveal steps
+  const steps = [];
+  pb.rounds.forEach(r => {
+    // One step per event, then one step per matchup
+    (r.events || []).forEach(ev => {
+      steps.push({ type: 'event', data: ev, round: r.round, roundName: r.name, unpaintedByTribe: r.unpaintedByTribe });
+    });
+    (r.matchups || []).forEach(m => {
+      steps.push({ type: 'matchup', data: m, round: r.round, roundName: r.name, unpaintedByTribe: r.unpaintedByTribe });
+    });
+  });
+  // Final result step
+  steps.push({ type: 'result', round: 'final' });
+
+  const totalSteps = steps.length;
+  const allRevealed = state.idx >= totalSteps - 1;
+
+  const _pbReveal = (targetIdx) => `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=${targetIdx};const ep=gs.episodeHistory.find(e=>e.num===${ep.num});if(ep){const m=document.querySelector('.rp-main');const st=m?m.scrollTop:0;buildVPScreens(ep);renderVPScreen();if(m)m.scrollTop=st;}`;
+
+  // ── Tribe helpers ──
+  const tribeNames = Object.keys(pb.roles);
+  const tribeOf = {};
+  tribeNames.forEach(tn => {
+    (pb.roles[tn].hunters || []).forEach(h => { tribeOf[h] = tn; });
+    (pb.roles[tn].deer || []).forEach(d => { tribeOf[d] = tn; });
+  });
+
+  // ── Compute revealed painted deer up to current step ──
+  const revealedPainted = new Set();
+  steps.forEach((step, i) => {
+    if (i > state.idx) return;
+    if (step.type === 'matchup') {
+      const m = step.data;
+      if (m.result === 'hit' || m.result === 'ambush' || m.result === 'sneak' || m.result === 'double-hit') {
+        revealedPainted.add(m.target);
+      }
+    }
+  });
+
+  // Current round tracking
+  let currentRound = 0;
+
+  // ── PAGE HEADER ──
+  let html = `<div class="rp-page" style="background:linear-gradient(180deg,#0a1a0a 0%,#0d1117 40%,#0d1117 100%);padding-bottom:60px">
+    <div class="rp-eyebrow" style="color:#3fb950">Episode ${ep.num}</div>
+    <div style="font-family:var(--font-display);font-size:28px;letter-spacing:3px;text-align:center;color:#3fb950;text-shadow:0 0 20px rgba(63,185,80,0.4);margin-bottom:4px">
+      PAINTBALL DEER HUNTER
+    </div>
+    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:16px">
+      ${tribeNames.map(tn => `<span style="color:${tribeColor(tn)}">${tn}</span>`).join(' vs ')}
+    </div>`;
+
+  // ── ROLE ASSIGNMENT ──
+  html += `<div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap">`;
+  tribeNames.forEach(tn => {
+    const tc = tribeColor(tn);
+    const r = pb.roles[tn];
+    html += `<div style="flex:1;min-width:140px;padding:10px;border-radius:8px;border:1px solid ${tc}33;background:${tc}08">
+      <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:${tc};margin-bottom:8px;text-transform:uppercase">${tn}</div>
+      <div style="margin-bottom:6px">
+        <span style="font-size:9px;color:#8b949e;font-weight:600">HUNTERS</span>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:3px">`;
+    (r.hunters || []).forEach(h => {
+      html += `<div style="display:flex;flex-direction:column;align-items:center;gap:1px">
+        ${rpPortrait(h, 'xs')}
+        <span style="font-size:7px;color:#8b949e;max-width:36px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h.split(' ')[0]}</span>
+        <span style="font-size:8px">🔫</span>
+      </div>`;
+    });
+    html += `</div></div>
+      <div>
+        <span style="font-size:9px;color:#8b949e;font-weight:600">DEER</span>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:3px">`;
+    (r.deer || []).forEach(d => {
+      html += `<div style="display:flex;flex-direction:column;align-items:center;gap:1px">
+        ${rpPortrait(d, 'xs')}
+        <span style="font-size:7px;color:#8b949e;max-width:36px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.split(' ')[0]}</span>
+        <span style="font-size:8px">🦌</span>
+      </div>`;
+    });
+    html += `</div></div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  // ── PAINT COUNTER BAR ──
+  html += `<div style="padding:10px;border-radius:8px;background:rgba(255,255,255,0.03);border:1px solid var(--border);margin-bottom:16px">
+    <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:#8b949e;margin-bottom:8px;text-align:center">DEER STATUS</div>`;
+  tribeNames.forEach(tn => {
+    const tc = tribeColor(tn);
+    const allDeer = pb.roles[tn].deer || [];
+    const unpaintedCount = allDeer.filter(d => !revealedPainted.has(d)).length;
+    html += `<div style="margin-bottom:6px">
+      <div style="font-size:9px;color:${tc};font-weight:600;margin-bottom:4px">${tn}: ${unpaintedCount}/${allDeer.length} deer remaining</div>
+      <div style="display:flex;gap:4px;flex-wrap:wrap">`;
+    allDeer.forEach(d => {
+      const isPainted = revealedPainted.has(d);
+      if (isPainted) {
+        html += `<div style="position:relative;display:inline-block">
+          <div style="filter:grayscale(1);opacity:0.5">${rpPortrait(d, 'xs')}</div>
+          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(5deg);width:24px;height:24px;border-radius:50%;background:radial-gradient(circle,${tc}cc,${tc}44);animation:paintSplat 0.5s ease-out both;pointer-events:none"></div>
+        </div>`;
+      } else {
+        html += `<div style="border:2px solid #3fb95066;border-radius:50%;padding:1px;animation:targetPulse 2s infinite">${rpPortrait(d, 'xs')}</div>`;
+      }
+    });
+    html += `</div></div>`;
+  });
+  html += `</div>`;
+
+  // ── PER-STEP REVEAL CARDS ──
+  steps.forEach((step, i) => {
+    const isVisible = i <= state.idx;
+
+    // Round header when round changes
+    if (step.round !== 'final' && (i === 0 || steps[i - 1].round !== step.round)) {
+      const roundColor = step.round <= 2 ? '#3fb950' : step.round <= 4 ? '#f0a500' : '#f85149';
+      html += `<div style="text-align:center;padding:8px 0;margin:12px 0 6px">
+        <span style="font-family:var(--font-display);font-size:14px;letter-spacing:2px;color:${roundColor};text-shadow:0 0 10px ${roundColor}33">
+          ROUND ${step.round} — ${step.roundName}
+        </span>
+      </div>`;
+    }
+
+    if (!isVisible) {
+      // Hidden placeholder
+      html += `<div style="padding:10px;margin-bottom:4px;border:1px solid var(--border);border-radius:6px;opacity:0.08;text-align:center;cursor:pointer"
+        onclick="${_pbReveal(i)}">
+        <span style="font-size:11px;color:var(--muted)">▶</span>
+      </div>`;
+      return;
+    }
+
+    // ── Visible card ──
+    if (step.type === 'event') {
+      const ev = step.data;
+      // Color-code by event type
+      let borderColor = '#8b949e', glowStyle = '', emoji = '📢';
+      if (ev.type?.includes('Bear') || ev.type?.includes('bear')) { borderColor = '#f85149'; glowStyle = 'box-shadow:0 0 12px rgba(248,81,73,0.3);'; emoji = '🐻'; }
+      else if (ev.type?.includes('War') || ev.type?.includes('war') || ev.type?.includes('Retaliation') || ev.type?.includes('retaliation')) { borderColor = '#f85149'; glowStyle = 'animation:targetPulse 1s infinite;'; emoji = '💥'; }
+      else if (ev.type?.includes('Rebellion') || ev.type?.includes('rebellion')) { borderColor = '#f0a500'; emoji = '⚔️'; }
+      else if (ev.type?.includes('Stampede') || ev.type?.includes('stampede')) { borderColor = '#f0a500'; emoji = '🦌'; }
+      else if (ev.type?.includes('Camo') || ev.type?.includes('camo')) { borderColor = '#3fb950'; emoji = '🌿'; }
+      else if (ev.type?.includes('Tree') || ev.type?.includes('tree')) { borderColor = '#3fb950'; emoji = '🌲'; }
+      else if (ev.type?.includes('Mud') || ev.type?.includes('mud')) { borderColor = '#a57030'; emoji = '💦'; }
+      else if (ev.type?.includes('Pact') || ev.type?.includes('pact') || ev.type?.includes('Bond') || ev.type?.includes('bond')) { borderColor = '#d2a8ff'; emoji = '🤝'; }
+      else if (ev.type?.includes('Friendly') || ev.type?.includes('friendly')) { borderColor = '#f85149'; emoji = '🔥'; }
+      else if (ev.type?.includes('Misfire') || ev.type?.includes('misfire')) { borderColor = '#f85149'; emoji = '🔧'; }
+      else if (ev.type?.includes('Ambush') || ev.type?.includes('ambush') || ev.type?.includes('Sneak') || ev.type?.includes('sneak')) { borderColor = '#f0a500'; emoji = '🎯'; }
+      else if (ev.type?.includes('Epic') || ev.type?.includes('epic')) { borderColor = '#58a6ff'; emoji = '🏃'; }
+      else if (ev.type?.includes('Scheme') || ev.type?.includes('scheme') || ev.type?.includes('Alliance') || ev.type?.includes('alliance') || ev.type?.includes('Plot') || ev.type?.includes('plot')) { borderColor = '#d2a8ff'; emoji = '🗣️'; }
+      else if (ev.type?.includes('Whisper') || ev.type?.includes('whisper') || ev.type?.includes('CrossRole') || ev.type?.includes('crossRole')) { borderColor = '#58a6ff'; emoji = '💬'; }
+      else if (ev.type?.includes('Taunt') || ev.type?.includes('taunt')) { borderColor = '#f0a500'; emoji = '😤'; }
+      else if (ev.type?.includes('Protect') || ev.type?.includes('protect')) { borderColor = '#d2a8ff'; emoji = '💖'; }
+      else if (ev.type?.includes('Decoy') || ev.type?.includes('decoy')) { borderColor = '#3fb950'; emoji = '🪤'; }
+      else if (ev.type?.includes('Obsessive') || ev.type?.includes('obsessive')) { borderColor = '#f85149'; emoji = '👁️'; }
+      else if (ev.type?.includes('Rivalry') || ev.type?.includes('rivalry')) { borderColor = '#f85149'; emoji = '⚡'; }
+      else if (ev.type?.includes('CrossTribe') || ev.type?.includes('crossTribe') || ev.type?.includes('Truce') || ev.type?.includes('Standoff')) { borderColor = '#58a6ff'; emoji = '🤞'; }
+      else if (ev.type?.includes('Sympathy') || ev.type?.includes('sympathy') || ev.type?.includes('Piling')) { borderColor = '#f85149'; emoji = '😬'; }
+      else if (ev.type?.includes('Double') || ev.type?.includes('double')) { borderColor = '#f0a500'; emoji = '🎯'; }
+
+      const badgeColor = ev.badgeClass === 'gold' ? '#f0a500' : ev.badgeClass === 'red' ? '#f85149' : '#58a6ff';
+
+      html += `<div style="padding:12px;margin-bottom:6px;border-radius:8px;border-left:3px solid ${borderColor};background:rgba(255,255,255,0.02);${glowStyle};animation:scrollDrop 0.3s var(--ease-broadcast) both">`;
+
+      // Badge
+      if (ev.badgeText) {
+        html += `<div style="display:inline-block;font-size:9px;font-weight:800;letter-spacing:1px;color:${badgeColor};background:${badgeColor}18;padding:2px 8px;border-radius:3px;margin-bottom:6px">${ev.badgeText}</div>`;
+      }
+
+      // Player portraits
+      if (ev.players?.length) {
+        html += `<div style="display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap">`;
+        ev.players.forEach(p => {
+          const tc = tribeOf[p] ? tribeColor(tribeOf[p]) : '#8b949e';
+          html += `<div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+            ${rpPortrait(p, 'sm')}
+            <span style="font-size:8px;color:${tc};font-weight:600;max-width:50px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.split(' ')[0]}</span>
+          </div>`;
+        });
+        html += `</div>`;
+      }
+
+      // Event text
+      html += `<div style="font-size:11px;color:#c9d1d9;line-height:1.5">${emoji} ${ev.text || ''}</div>`;
+      html += `</div>`;
+
+    } else if (step.type === 'matchup') {
+      const m = step.data;
+      const isHit = m.result === 'hit' || m.result === 'ambush' || m.result === 'sneak' || m.result === 'double-hit';
+      const isMiss = m.result === 'miss' || m.result === 'double-miss';
+      const isNothing = m.result === 'nothing';
+      const isProtect = m.result === 'protect';
+      const isDecoy = m.result === 'decoy';
+
+      const hunterTC = tribeOf[m.hunter] ? tribeColor(tribeOf[m.hunter]) : '#8b949e';
+      const targetTC = m.target && tribeOf[m.target] ? tribeColor(tribeOf[m.target]) : '#8b949e';
+
+      if (isHit) {
+        // ── HIT CARD ──
+        html += `<div style="padding:12px;margin-bottom:6px;border-radius:8px;background:radial-gradient(circle at 70% 50%,${targetTC}15,transparent 70%);border:1px solid ${targetTC}33;animation:scrollDrop 0.3s var(--ease-broadcast) both">`;
+        html += `<div style="display:inline-block;font-size:9px;font-weight:800;letter-spacing:1px;color:${targetTC};background:${targetTC}22;padding:2px 8px;border-radius:3px;margin-bottom:8px">PAINTED OUT</div>`;
+        html += `<div style="display:flex;align-items:center;justify-content:center;gap:14px">`;
+        // Hunter portrait
+        html += `<div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+          ${rpPortrait(m.hunter, 'sm')}
+          <span style="font-size:9px;color:${hunterTC};font-weight:600">${m.hunter.split(' ')[0]}</span>
+          <span style="font-size:7px;color:#8b949e">HUNTER</span>
+        </div>`;
+        // Arrow
+        html += `<div style="font-size:18px;color:${targetTC}">→</div>`;
+        // Deer portrait (greyscale + splat)
+        html += `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;position:relative">
+          <div style="position:relative">
+            <div style="filter:grayscale(1);opacity:0.6">${rpPortrait(m.target, 'sm')}</div>
+            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(5deg);width:32px;height:32px;border-radius:50%;background:radial-gradient(circle,${targetTC}cc,${targetTC}44);animation:paintSplat 0.5s ease-out both;pointer-events:none"></div>
+          </div>
+          <span style="font-size:9px;color:${targetTC};font-weight:600">${m.target.split(' ')[0]}</span>
+          <span style="font-size:7px;color:#f85149;font-weight:700">ELIMINATED</span>
+        </div>`;
+        html += `</div>`;
+        // Hit text
+        const hitLabel = m.result === 'ambush' ? 'Ambush!' : m.result === 'sneak' ? 'Sneak attack!' : m.result === 'double-hit' ? 'Double find!' : 'Direct hit!';
+        html += `<div style="text-align:center;font-size:10px;color:#8b949e;margin-top:6px">🎯 ${hitLabel}</div>`;
+        html += `</div>`;
+
+      } else if (isMiss) {
+        // ── MISS CARD ──
+        html += `<div style="padding:12px;margin-bottom:6px;border-radius:8px;border:1px solid rgba(63,185,80,0.15);background:rgba(63,185,80,0.03);animation:scrollDrop 0.3s var(--ease-broadcast) both">`;
+        html += `<div style="display:inline-block;font-size:9px;font-weight:800;letter-spacing:1px;color:#3fb950;background:rgba(63,185,80,0.15);padding:2px 8px;border-radius:3px;margin-bottom:8px">DODGED</div>`;
+        html += `<div style="display:flex;align-items:center;justify-content:center;gap:14px">`;
+        html += `<div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+          ${rpPortrait(m.hunter, 'sm')}
+          <span style="font-size:9px;color:${hunterTC};font-weight:600">${m.hunter.split(' ')[0]}</span>
+        </div>`;
+        html += `<div style="font-size:14px;color:#f85149">✗</div>`;
+        html += `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;animation:dodgeSlide 0.6s ease-out">
+          ${rpPortrait(m.target, 'sm')}
+          <span style="font-size:9px;color:${targetTC};font-weight:600">${m.target.split(' ')[0]}</span>
+        </div>`;
+        html += `</div>`;
+        html += `<div style="text-align:center;font-size:10px;color:#8b949e;margin-top:6px">💨 ${m.target?.split(' ')[0] || 'Deer'} dodges!</div>`;
+        html += `</div>`;
+
+      } else if (isNothing) {
+        // ── NOT FOUND CARD ──
+        html += `<div style="padding:10px;margin-bottom:6px;border-radius:8px;border:1px solid rgba(255,255,255,0.05);background:rgba(255,255,255,0.01);opacity:0.6;animation:scrollDrop 0.3s var(--ease-broadcast) both">`;
+        html += `<div style="display:flex;align-items:center;gap:10px">`;
+        html += `<div style="position:relative">
+          ${rpPortrait(m.hunter, 'sm')}
+          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:18px;text-shadow:0 0 6px #000">❓</div>
+        </div>`;
+        html += `<div style="font-size:11px;color:#8b949e;font-style:italic">${m.hunter.split(' ')[0]} got lost in the woods...</div>`;
+        html += `</div></div>`;
+
+      } else if (isProtect) {
+        // ── PROTECT CARD ──
+        html += `<div style="padding:12px;margin-bottom:6px;border-radius:8px;border:1px solid rgba(210,168,255,0.3);background:rgba(210,168,255,0.05);animation:scrollDrop 0.3s var(--ease-broadcast) both">`;
+        html += `<div style="display:inline-block;font-size:9px;font-weight:800;letter-spacing:1px;color:#d2a8ff;background:rgba(210,168,255,0.15);padding:2px 8px;border-radius:3px;margin-bottom:8px">PROTECTION</div>`;
+        html += `<div style="display:flex;align-items:center;justify-content:center;gap:14px">`;
+        html += `<div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+          ${rpPortrait(m.hunter, 'sm')}
+          <span style="font-size:9px;color:${hunterTC};font-weight:600">${m.hunter.split(' ')[0]}</span>
+        </div>`;
+        html += `<div style="font-size:18px">💖</div>`;
+        html += `<div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+          ${rpPortrait(m.target, 'sm')}
+          <span style="font-size:9px;color:${targetTC};font-weight:600">${m.target.split(' ')[0]}</span>
+        </div>`;
+        html += `</div>`;
+        html += `<div style="text-align:center;font-size:10px;color:#d2a8ff;margin-top:6px">Couldn't pull the trigger...</div>`;
+        html += `</div>`;
+
+      } else if (isDecoy) {
+        // ── DECOY CARD ──
+        html += `<div style="padding:12px;margin-bottom:6px;border-radius:8px;border:1px solid rgba(63,185,80,0.2);background:rgba(63,185,80,0.03);animation:scrollDrop 0.3s var(--ease-broadcast) both">`;
+        html += `<div style="display:inline-block;font-size:9px;font-weight:800;letter-spacing:1px;color:#3fb950;background:rgba(63,185,80,0.15);padding:2px 8px;border-radius:3px;margin-bottom:8px">DECOY</div>`;
+        html += `<div style="display:flex;align-items:center;justify-content:center;gap:14px">`;
+        html += `<div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+          ${rpPortrait(m.target, 'sm')}
+          <span style="font-size:9px;color:${targetTC};font-weight:600">${m.target.split(' ')[0]}</span>
+        </div>`;
+        html += `<div style="font-size:14px;color:#3fb950">🪤</div>`;
+        html += `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;opacity:0.5">
+          ${rpPortrait(m.hunter, 'sm')}
+          <span style="font-size:9px;color:${hunterTC};font-weight:600">${m.hunter.split(' ')[0]}</span>
+          <span style="font-size:7px;color:#f85149">FOOLED</span>
+        </div>`;
+        html += `</div></div>`;
+      }
+
+    } else if (step.type === 'result' && allRevealed) {
+      // ── FINAL RESULT ──
+      const winTC = tribeColor(pb.winner);
+      const loseTC = tribeColor(pb.loser);
+
+      html += `<div style="margin-top:20px;padding:16px;border-radius:10px;border:2px solid ${winTC};background:linear-gradient(135deg,${winTC}10,transparent);text-align:center;animation:scrollDrop 0.4s var(--ease-broadcast) both">`;
+      html += `<div style="font-family:var(--font-display);font-size:22px;letter-spacing:2px;color:${winTC};text-shadow:0 0 15px ${winTC}44;margin-bottom:4px">
+        🏆 ${pb.winner} WINS
+      </div>`;
+      html += `<div style="font-size:11px;color:#8b949e;margin-bottom:12px">Immunity secured</div>`;
+
+      // MVP spotlight
+      if (pb.mvp) {
+        const mvpTC = tribeOf[pb.mvp] ? tribeColor(tribeOf[pb.mvp]) : winTC;
+        html += `<div style="display:inline-block;padding:12px 20px;border-radius:10px;border:2px solid #f0a500;background:rgba(240,165,0,0.08);margin-bottom:12px">
+          <div style="font-size:9px;font-weight:800;letter-spacing:1px;color:#f0a500;margin-bottom:6px">MVP — LAST DEER STANDING</div>
+          ${rpPortrait(pb.mvp, 'md')}
+          <div style="font-size:13px;color:${mvpTC};font-weight:700;margin-top:4px">${pb.mvp}</div>
+        </div>`;
+      }
+
+      // Loser: all deer splattered
+      html += `<div style="margin-top:12px;padding:10px;border-radius:8px;background:rgba(255,255,255,0.02)">
+        <div style="font-size:10px;color:${loseTC};font-weight:600;margin-bottom:6px">${pb.loser} — all deer painted out</div>
+        <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap">`;
+      (pb.roles[pb.loser]?.deer || []).forEach(d => {
+        html += `<div style="position:relative;display:inline-block">
+          <div style="filter:grayscale(1);opacity:0.4">${rpPortrait(d, 'sm')}</div>
+          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(5deg);width:32px;height:32px;border-radius:50%;background:radial-gradient(circle,${loseTC}cc,${loseTC}44);pointer-events:none"></div>
+        </div>`;
+      });
+      html += `</div></div>`;
+
+      // Friendly fire / paintball war summary
+      if (pb.friendlyFire?.length) {
+        html += `<div style="margin-top:8px;font-size:10px;color:#f85149">🔥 ${pb.friendlyFire.length} friendly fire incident${pb.friendlyFire.length !== 1 ? 's' : ''}</div>`;
+      }
+      if (pb.paintballWar?.length) {
+        html += `<div style="font-size:10px;color:#f85149">💥 ${pb.paintballWar.length} paintball war${pb.paintballWar.length !== 1 ? 's' : ''} erupted</div>`;
+      }
+      if (pb.bearMauled?.length) {
+        html += `<div style="font-size:10px;color:#f85149">🐻 ${pb.bearMauled.join(', ')} mauled by bear</div>`;
+      }
+
+      html += `</div>`;
+    }
+  });
+
+  // ── NEXT / REVEAL ALL buttons ──
+  html += `<div style="position:sticky;bottom:0;background:linear-gradient(transparent,var(--bg) 30%);padding:16px 0 8px;display:flex;gap:8px;justify-content:center">`;
+  if (!allRevealed) {
+    html += `<button class="btn-sm" onclick="${_pbReveal('(_tvState[\\'' + stateKey + '\\'].idx||0)+1')}">NEXT</button>`;
+    html += `<button class="btn-sm" style="opacity:0.6" onclick="${_pbReveal(totalSteps - 1)}">REVEAL ALL</button>`;
+  }
+  html += `</div>`;
+
+  html += `</div>`; // close rp-page
+  return html;
+}
+
 function rpBuildSuckyOutdoors(ep) {
   const so = ep.suckyOutdoors;
   if (!so?.phases) return null;
@@ -59532,6 +59913,8 @@ function buildVPScreens(epRecord) {
     vpScreens.push({ id:'sucky-outdoors', label:'The Sucky Outdoors', html: rpBuildSuckyOutdoors(ep) });
   } else if (ep.isUpTheCreek && ep.upTheCreek) {
     vpScreens.push({ id:'up-the-creek', label:'Up the Creek', html: rpBuildUpTheCreek(ep) });
+  } else if (ep.isPaintballHunt && ep.paintballHunt) {
+    vpScreens.push({ id:'paintball-hunt', label:'Paintball Hunt', html: rpBuildPaintballHunt(ep) });
   } else if (ep.isDodgebrawl && ep.dodgebrawl) {
     vpScreens.push({ id:'dodgebrawl', label:'Dodgebrawl', html: rpBuildDodgebrawl(ep) });
   } else if (ep.isPhobiaFactor && ep.phobiaFactor) {

@@ -13876,7 +13876,8 @@ function simulatePaintballHunt(ep) {
   }
 
   // Negative: First Deer Painted
-  const firstPainted = matchups.find(m => m.result === 'hit' || m.result === 'ambush' || m.result === 'sneak');
+  const allMatchups = rounds.flatMap(r => r.matchups || []);
+  const firstPainted = allMatchups.find(m => m.result === 'hit' || m.result === 'ambush' || m.result === 'sneak');
   if (firstPainted) {
     const target = firstPainted.target;
     const pr = pronouns(target);

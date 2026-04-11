@@ -414,11 +414,19 @@
     /* ── Portrait grid ── */
     .rp-portrait-row { display:flex; flex-wrap:wrap; gap:14px; }
     .rp-portrait { text-align:center; width:72px; flex-shrink:0; }
+    .rp-portrait.xs { width:36px; }
+    .rp-portrait.sm { width:48px; }
+    .rp-portrait.md { width:60px; }
     .rp-portrait.lg { width:90px; }
     .rp-portrait.xl { width:120px; }
     .rp-portrait-img { width:72px; height:72px; border-radius:8px; background:#161b22; border:2px solid #21262d; overflow:hidden; display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:800; color:#30363d; margin:0 auto; }
+    .rp-portrait.xs  .rp-portrait-img { width:36px;  height:36px;  border-radius:5px; font-size:12px; border-width:1px; }
+    .rp-portrait.sm  .rp-portrait-img { width:48px;  height:48px;  border-radius:6px; font-size:16px; }
+    .rp-portrait.md  .rp-portrait-img { width:60px;  height:60px;  font-size:18px; }
     .rp-portrait.lg  .rp-portrait-img { width:90px;  height:90px;  font-size:28px; }
     .rp-portrait.xl  .rp-portrait-img { width:120px; height:120px; font-size:36px; }
+    .rp-portrait.xs  .rp-portrait-name { font-size:8px; margin-top:3px; }
+    .rp-portrait.sm  .rp-portrait-name { font-size:9px; margin-top:4px; }
     .rp-portrait-img img { width:100%; height:100%; object-fit:cover; border-radius:6px; }
     .rp-portrait.immune .rp-portrait-img { border-color:#3fb950; }
     .rp-portrait.sitd   .rp-portrait-img { border-color:#d29922; }
@@ -12981,6 +12989,17 @@ function simulatePaintballHunt(ep) {
     };
   });
 
+  // ── Balance: deer count normalization ──
+  // Tribes with more deer should be easier to eliminate per-deer
+  // (more targets running around = each individual is easier to spot)
+  const deerCounts = tribes.map(t => roles[t.name].deer.length);
+  const avgDeerCount = deerCounts.reduce((a, b) => a + b, 0) / deerCounts.length;
+  // deerNorm[tribe] > 1 if tribe has more deer than avg (each deer easier to find)
+  const deerNorm = {};
+  tribes.forEach(t => {
+    deerNorm[t.name] = roles[t.name].deer.length / avgDeerCount;
+  });
+
   // ── State tracking ──
   const personalScores = {};
   allMembers.forEach(m => { personalScores[m] = 0; });
@@ -13379,9 +13398,18 @@ function simulatePaintballHunt(ep) {
     });
 
     // ── HUNTER MATCHUPS ──
+    // Balance: each tribe gets the same number of shots per round (= min hunter count across tribes)
+    // Extra hunters rotate — they sit out this round but contribute to events
+    const minHunters = Math.min(...tribes.map(t => roles[t.name].hunters.filter(h => !misfiredHunters.has(h)).length));
+    const shotsPerTribe = Math.max(1, minHunters); // at least 1 shot per tribe
+
     tribes.forEach(t => {
-      roles[t.name].hunters.forEach(hunter => {
-        if (misfiredHunters.has(hunter)) return; // gun jammed
+      const availableHunters = roles[t.name].hunters.filter(h => !misfiredHunters.has(h));
+      // Rotate which hunters shoot: shuffle and take shotsPerTribe
+      const shuffledHunters = [...availableHunters].sort(() => Math.random() - 0.5);
+      const activeHunters = shuffledHunters.slice(0, shotsPerTribe);
+
+      activeHunters.forEach(hunter => {
 
         const s = pStats(hunter);
         const hunterTribe = t.name;
@@ -13495,7 +13523,9 @@ function simulatePaintballHunt(ep) {
         // ── Standard shot attempt ──
         const hunterScore = s.physical * 0.03 + s.intuition * 0.04 + Math.random() * 0.2;
         const dodgeBonus = stampedeDeer.has(target) ? 0.2 : 0;
-        const deerScore = targetStats.endurance * 0.04 + targetStats.intuition * 0.03 + targetStats.boldness * 0.02 + Math.random() * 0.15 + dodgeBonus;
+        // Balance: deer on larger teams get slightly less dodge (more targets = easier to spot each one)
+        const normPenalty = (deerNorm[tribeOf[target]] - 1) * 0.05; // >0 if tribe has more deer than avg
+        const deerScore = targetStats.endurance * 0.04 + targetStats.intuition * 0.03 + targetStats.boldness * 0.02 + Math.random() * 0.15 + dodgeBonus - normPenalty;
 
         // Epic chase: scores within 10%
         const scoreDiff = Math.abs(hunterScore - deerScore);
@@ -57708,8 +57738,7 @@ function rpBuildPaintballHunt(ep) {
     (r.hunters || []).forEach(h => {
       html += `<div style="display:flex;flex-direction:column;align-items:center;gap:1px">
         ${rpPortrait(h, 'xs')}
-        <span style="font-size:7px;color:#8b949e;max-width:36px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h.split(' ')[0]}</span>
-        <span style="font-size:8px">🔫</span>
+        <span style="font-size:7px">🔫</span>
       </div>`;
     });
     html += `</div></div>
@@ -57719,8 +57748,7 @@ function rpBuildPaintballHunt(ep) {
     (r.deer || []).forEach(d => {
       html += `<div style="display:flex;flex-direction:column;align-items:center;gap:1px">
         ${rpPortrait(d, 'xs')}
-        <span style="font-size:7px;color:#8b949e;max-width:36px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.split(' ')[0]}</span>
-        <span style="font-size:8px">🦌</span>
+        <span style="font-size:7px">🦌</span>
       </div>`;
     });
     html += `</div></div>
@@ -57729,29 +57757,28 @@ function rpBuildPaintballHunt(ep) {
   html += `</div>`;
 
   // ── PAINT COUNTER BAR ──
-  html += `<div style="padding:10px;border-radius:8px;background:rgba(255,255,255,0.03);border:1px solid var(--border);margin-bottom:16px">
-    <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:#8b949e;margin-bottom:8px;text-align:center">DEER STATUS</div>`;
+  html += `<div style="padding:8px 12px;border-radius:8px;background:rgba(255,255,255,0.03);border:1px solid var(--border);margin-bottom:16px">
+    <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:#8b949e;margin-bottom:6px;text-align:center">DEER STATUS</div>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">`;
   tribeNames.forEach(tn => {
     const tc = tribeColor(tn);
     const allDeer = pb.roles[tn].deer || [];
     const unpaintedCount = allDeer.filter(d => !revealedPainted.has(d)).length;
-    html += `<div style="margin-bottom:6px">
-      <div style="font-size:9px;color:${tc};font-weight:600;margin-bottom:4px">${tn}: ${unpaintedCount}/${allDeer.length} deer remaining</div>
-      <div style="display:flex;gap:4px;flex-wrap:wrap">`;
+    html += `<div style="text-align:center">
+      <div style="font-size:8px;color:${tc};font-weight:700;margin-bottom:3px">${tn} ${unpaintedCount}/${allDeer.length}</div>
+      <div style="display:flex;gap:3px">`;
     allDeer.forEach(d => {
       const isPainted = revealedPainted.has(d);
       if (isPainted) {
-        html += `<div style="position:relative;display:inline-block">
-          <div style="filter:grayscale(1);opacity:0.5">${rpPortrait(d, 'xs')}</div>
-          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(5deg);width:24px;height:24px;border-radius:50%;background:radial-gradient(circle,${tc}cc,${tc}44);animation:paintSplat 0.5s ease-out both;pointer-events:none"></div>
-        </div>`;
+        html += `<div style="position:relative"><div style="filter:grayscale(1);opacity:0.4">${rpPortrait(d, 'xs')}</div>
+          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(5deg);width:20px;height:20px;border-radius:50%;background:radial-gradient(circle,${tc}cc,${tc}44);pointer-events:none"></div></div>`;
       } else {
-        html += `<div style="border:2px solid #3fb95066;border-radius:50%;padding:1px;animation:targetPulse 2s infinite">${rpPortrait(d, 'xs')}</div>`;
+        html += `<div style="border:1px solid #3fb95066;border-radius:6px;padding:1px">${rpPortrait(d, 'xs')}</div>`;
       }
     });
     html += `</div></div>`;
   });
-  html += `</div>`;
+  html += `</div></div>`;
 
   // ── PER-STEP REVEAL CARDS ──
   steps.forEach((step, i) => {
@@ -57985,8 +58012,8 @@ function rpBuildPaintballHunt(ep) {
   // ── NEXT / REVEAL ALL buttons ──
   html += `<div style="position:sticky;bottom:0;background:linear-gradient(transparent,var(--bg) 30%);padding:16px 0 8px;display:flex;gap:8px;justify-content:center">`;
   if (!allRevealed) {
-    html += `<button class="btn-sm" onclick="${_pbReveal(state.idx + 1)}">NEXT (${state.idx + 2}/${totalSteps})</button>`;
-    html += `<button class="btn-sm" style="opacity:0.6" onclick="${_pbReveal(totalSteps - 1)}">REVEAL ALL</button>`;
+    html += `<button class="rp-btn" onclick="${_pbReveal(state.idx + 1)}">NEXT (${state.idx + 2}/${totalSteps})</button>`;
+    html += `<button class="rp-btn" style="opacity:0.5" onclick="${_pbReveal(totalSteps - 1)}">REVEAL ALL</button>`;
   }
   html += `</div>`;
 

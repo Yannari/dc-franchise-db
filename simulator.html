@@ -16524,17 +16524,43 @@ function simulateHellsKitchen(ep) {
       });
     }
 
-    // Fridge lock drama
+    // Fridge lock drama — deep consequences depending on win/lose
     if (fridgeLock && t.members.includes(fridgeLock.victim)) {
-      ep.campEvents[t.name].post.push({
-        type: 'fridge-lock-drama',
-        players: [fridgeLock.victim, ...fridgeLock.rebels],
-        text: t === winner
-          ? `The fridge lock is already legend. ${fridgeLock.rebels[0]} locked ${fridgeLock.victim} in — and they WON. The rebels are heroes.`
-          : `${fridgeLock.rebels[0]} locked ${fridgeLock.victim} in the fridge. And they LOST. "You cost us the game." The blame is thick.`,
-        badgeText: `Fridge Lock: ${fridgeLock.victim}`,
-        badgeClass: 'badge-danger'
-      });
+      const _flVictim = fridgeLock.victim;
+      const _flRebels = fridgeLock.rebels;
+      const _flLead = _flRebels[0];
+      const _flVPr = pronouns(_flVictim);
+      const _flTeamWon = t === winner;
+
+      if (_flTeamWon) {
+        // Team won WITHOUT the tyrant — rebels are vindicated
+        _flRebels.forEach(r => { addBond(r, _flVictim, -0.3); }); // rebels don't regret it
+        _flRebels.forEach(r => { gs.popularity = gs.popularity || {}; gs.popularity[r] = (gs.popularity[r] || 0) + 1; }); // rebels gain popularity
+        addCookingHeat(_flVictim, 0.5, 1); // chef gets minor heat — they were proven unnecessary
+        ep.campEvents[t.name].post.push({
+          type: 'fridge-lock-drama',
+          players: [_flVictim, ..._flRebels],
+          text: `The fridge lock is already camp legend. ${_flLead} locked ${_flVictim} in the fridge — and they WON without ${_flVPr.obj}. "${_flVPr.Sub} ${_flVPr.sub === 'they' ? 'weren\'t' : 'wasn\'t'} even needed," ${_flLead} says. ${_flVictim} seethes in silence. The power dynamic has shifted.`,
+          consequences: 'Rebels gain popularity. Chef takes minor heat. Bond damage persists.',
+          badgeText: 'FRIDGE LOCK — REBELS WIN', badgeClass: 'badge-danger'
+        });
+      } else {
+        // Team lost — rebels are blamed for the loss
+        _flRebels.forEach(r => { addCookingHeat(r, 1.5, 2); }); // rebels get targeted
+        _flRebels.forEach(r => { addBond(r, _flVictim, -0.5); }); // relationship worsens
+        // Non-rebel teammates may side with the chef
+        const _nonRebels = t.members.filter(m => m !== _flVictim && !_flRebels.includes(m));
+        _nonRebels.forEach(m => { addBond(m, _flLead, -0.3); addBond(m, _flVictim, 0.2); });
+        gs.popularity = gs.popularity || {};
+        gs.popularity[_flVictim] = (gs.popularity[_flVictim] || 0) + 2; // sympathy popularity
+        ep.campEvents[t.name].post.push({
+          type: 'fridge-lock-drama',
+          players: [_flVictim, ..._flRebels],
+          text: `${_flLead} locked ${_flVictim} in the fridge. And they LOST. "You cost us the game," ${_nonRebels.length ? _nonRebels[0] : 'someone'} says to ${_flLead}. ${_flVictim} says nothing — ${_flVPr.sub} doesn't have to. Everyone knows who's getting the votes tonight.`,
+          consequences: 'Rebels take heat (1.5 for 2 episodes). Non-rebels side with chef. Chef gets sympathy popularity.',
+          badgeText: 'FRIDGE LOCK — REBELS BLAMED', badgeClass: 'badge-danger'
+        });
+      }
     }
 
     // Saboteur exposed

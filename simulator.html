@@ -15259,8 +15259,10 @@ function simulateHellsKitchen(ep) {
           }
         }
 
-        // Food gobbler
-        if (s.physical * 0.02 + (10 - s.mental) * 0.015 + Math.random() * 0.15 > 0.25) {
+        // Food gobbler — only certain archetypes: physical beast, chaos-agent, comic-relief, glutton types
+        const _gobblerArch = players.find(pl => pl.name === p)?.archetype || '';
+        const _isGobbler = ['chaos-agent', 'wildcard', 'floater', 'comic-relief'].includes(_gobblerArch) || (s.physical >= 7 && s.mental <= 4);
+        if (_isGobbler && (10 - s.mental) * 0.02 + Math.random() * 0.08 > 0.15) {
           if (eventsThisCourse >= numEvents) return;
           const ateAmount = 0.15 + Math.random() * 0.15;
           const confess = s.loyalty * 0.06 + Math.random() * 0.3 > 0.5;

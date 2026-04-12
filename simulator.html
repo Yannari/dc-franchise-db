@@ -15195,7 +15195,7 @@ function simulateHellsKitchen(ep) {
         const pr = pronouns(p);
 
         // Flambé explosion (dessert only)
-        if (course === 'dessert' && (10 - s.mental) * 0.02 > Math.random() * 0.6 && Math.random() < 0.28) {
+        if (course === 'dessert' && (10 - s.mental) * 0.015 + Math.random() * 0.12 > 0.18) {
           if (disasterPrevented[t.name] > 0) { disasterPrevented[t.name]--; }
           else {
             raw -= 0.2;
@@ -15245,7 +15245,7 @@ function simulateHellsKitchen(ep) {
         }
 
         // Food gobbler
-        if (s.physical * 0.03 + (10 - s.mental) * 0.02 > Math.random() * 0.7 && Math.random() < 0.22) {
+        if (s.physical * 0.02 + (10 - s.mental) * 0.015 + Math.random() * 0.15 > 0.25) {
           if (eventsThisCourse >= numEvents) return;
           const ateAmount = 0.15 + Math.random() * 0.15;
           const confess = s.loyalty * 0.06 + Math.random() * 0.3 > 0.5;
@@ -15288,7 +15288,7 @@ function simulateHellsKitchen(ep) {
         }
 
         // Ingredient drop
-        if ((10 - s.physical) * 0.02 > Math.random() * 0.6 && Math.random() < 0.25) {
+        if ((10 - s.physical) * 0.012 + Math.random() * 0.12 > 0.15) {
           if (eventsThisCourse >= numEvents) return;
           // Improvisation check
           const improvRoll = s.intuition * 0.05 + Math.random() * 0.2;
@@ -15321,7 +15321,7 @@ function simulateHellsKitchen(ep) {
         }
 
         // Kitchen fire
-        if ((10 - s.mental) * 0.015 > Math.random() * 0.5 && Math.random() < 0.22) {
+        if ((10 - s.mental) * 0.012 + Math.random() * 0.12 > 0.16) {
           if (eventsThisCourse >= numEvents) return;
           if (disasterPrevented[t.name] > 0) { disasterPrevented[t.name]--; }
           else {
@@ -15365,7 +15365,7 @@ function simulateHellsKitchen(ep) {
         }
 
         // Knife slip
-        if ((10 - s.physical) * 0.01 > Math.random() * 0.5 && Math.random() < 0.25) {
+        if ((10 - s.physical) * 0.01 + Math.random() * 0.1 > 0.14) {
           if (eventsThisCourse >= numEvents) return;
           raw -= 0.05;
           const enduranceCheck = s.endurance * 0.06 + Math.random() * 0.2 > 0.4;
@@ -15416,7 +15416,7 @@ function simulateHellsKitchen(ep) {
         }
 
         // Spill disaster
-        if ((10 - s.endurance) * 0.015 > Math.random() * 0.5 && Math.random() < 0.18) {
+        if ((10 - s.endurance) * 0.012 + Math.random() * 0.12 > 0.16) {
           if (eventsThisCourse >= numEvents) return;
           raw -= 0.075; // halved from full penalty
           personalScores[p] = (personalScores[p] || 0) - 2.0;
@@ -15438,7 +15438,7 @@ function simulateHellsKitchen(ep) {
         }
 
         // Wrong recipe
-        if ((10 - s.mental) * 0.01 > Math.random() * 0.5 && Math.random() < 0.18) {
+        if ((10 - s.mental) * 0.01 + Math.random() * 0.12 > 0.15) {
           if (eventsThisCourse >= numEvents) return;
           raw -= 0.15;
           personalScores[p] = (personalScores[p] || 0) - 2.0;
@@ -15455,7 +15455,7 @@ function simulateHellsKitchen(ep) {
         }
 
         // Raw food scare
-        if ((10 - s.intuition) * 0.015 > Math.random() * 0.5 && Math.random() < 0.18) {
+        if ((10 - s.intuition) * 0.012 + Math.random() * 0.12 > 0.15) {
           if (eventsThisCourse >= numEvents) return;
           raw -= 0.2;
           personalScores[p] = (personalScores[p] || 0) - 2.0;
@@ -15776,7 +15776,7 @@ function simulateHellsKitchen(ep) {
         const s = pStats(p);
 
         // Natural talent
-        if (s.intuition >= 7 && Math.random() < 0.28) {
+        if (s.intuition + Math.random() * 4 >= 8 && Math.random() < 0.22) {
           raw += 0.1;
           personalScores[p] = (personalScores[p] || 0) + 1.5;
           pushEvent({
@@ -15792,7 +15792,7 @@ function simulateHellsKitchen(ep) {
         }
 
         // Plating artist
-        if (s.mental >= 7 && Math.random() < 0.28 && eventsThisCourse < numEvents) {
+        if (s.mental + Math.random() * 4 >= 8 && Math.random() < 0.22 && eventsThisCourse < numEvents) {
           raw += 0.05;
           pushEvent({
             type: 'plating-artist',
@@ -15807,7 +15807,7 @@ function simulateHellsKitchen(ep) {
         }
 
         // Taste tester hero
-        if (s.intuition * 0.03 > Math.random() * 0.25 && Math.random() < 0.25 && eventsThisCourse < numEvents) {
+        if (s.intuition * 0.02 + Math.random() * 0.12 > 0.18 && eventsThisCourse < numEvents) {
           raw += 0.1;
           personalScores[p] = (personalScores[p] || 0) + 1.5;
           pushEvent({
@@ -15838,7 +15838,7 @@ function simulateHellsKitchen(ep) {
         }
 
         // Flavor breakthrough
-        if (s.intuition * 0.025 > Math.random() * 0.2 && Math.random() < 0.22 && eventsThisCourse < numEvents) {
+        if (s.intuition * 0.018 + Math.random() * 0.12 > 0.17 && eventsThisCourse < numEvents) {
           raw += 0.08;
           pushEvent({
             type: 'flavor-breakthrough',
@@ -15853,7 +15853,7 @@ function simulateHellsKitchen(ep) {
         }
 
         // Garnish save
-        if (s.mental * 0.02 > Math.random() * 0.2 && Math.random() < 0.25 && eventsThisCourse < numEvents) {
+        if (s.mental * 0.015 + Math.random() * 0.12 > 0.16 && eventsThisCourse < numEvents) {
           raw += 0.05;
           pushEvent({
             type: 'garnish-save',
@@ -15868,7 +15868,7 @@ function simulateHellsKitchen(ep) {
         }
 
         // Efficient prep
-        if (s.endurance >= 6 && Math.random() < 0.22 && eventsThisCourse < numEvents) {
+        if (s.endurance + Math.random() * 3 >= 7 && Math.random() < 0.20 && eventsThisCourse < numEvents) {
           raw += 0.03;
           pushEvent({
             type: 'efficient-prep',
@@ -15883,7 +15883,7 @@ function simulateHellsKitchen(ep) {
         }
 
         // Clean station (prevents future disaster)
-        if (s.endurance >= 5 && s.mental >= 5 && Math.random() < 0.22 && eventsThisCourse < numEvents) {
+        if (s.endurance + Math.random() * 3 >= 6 && s.mental + Math.random() * 3 >= 6 && Math.random() < 0.20 && eventsThisCourse < numEvents) {
           disasterPrevented[t.name]++;
           pushEvent({
             type: 'clean-station',
@@ -15898,7 +15898,7 @@ function simulateHellsKitchen(ep) {
         }
 
         // Presentation disaster
-        if ((10 - s.mental) * 0.01 > Math.random() * 0.3 && Math.random() < 0.18 && eventsThisCourse < numEvents) {
+        if ((10 - s.mental) * 0.008 + Math.random() * 0.1 > 0.13 && eventsThisCourse < numEvents) {
           raw -= 0.08;
           pushEvent({
             type: 'presentation-disaster',

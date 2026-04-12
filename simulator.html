@@ -36482,6 +36482,8 @@ function simulateJuryRoundtable(ep) {
     upTheCreek:         ep.upTheCreek         || null,
     isPaintballHunt:    ep.isPaintballHunt    || false,
     paintballHunt:      ep.paintballHunt      || null,
+    isHellsKitchen:     ep.isHellsKitchen     || false,
+    hellsKitchen:       ep.hellsKitchen        || null,
     exilePlayer:      ep.exilePlayer      || null,
     exileDuelResult:  ep.exileDuelResult  || null,
     exileDuelVotedOut: ep.exileDuelVotedOut || null,
@@ -41852,6 +41854,8 @@ function patchEpisodeHistory(ep) {
   if (!h.upTheCreek && ep.upTheCreek) h.upTheCreek = ep.upTheCreek;
   if (ep.isPaintballHunt) h.isPaintballHunt = true;
   if (!h.paintballHunt && ep.paintballHunt) h.paintballHunt = ep.paintballHunt;
+  if (ep.isHellsKitchen) h.isHellsKitchen = true;
+  if (!h.hellsKitchen && ep.hellsKitchen) h.hellsKitchen = ep.hellsKitchen;
   if (!h.tribeDissolutions && ep.tribeDissolutions) h.tribeDissolutions = ep.tribeDissolutions;
   if (ep.isTripleDogDare) h.isTripleDogDare = true;
   if (ep.exileDuelPlayerAtStart) h.exileDuelPlayerAtStart = ep.exileDuelPlayerAtStart;
@@ -50486,6 +50490,77 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'pbBaitTrap'              ? (evt.badgeText || 'BAIT TRAP')
                      : evt.type === 'pbGrossOut'              ? (evt.badgeText || 'GROSS OUT')
                      : evt.type === 'pbPatience'              ? (evt.badgeText || 'PATIENCE')
+                     : evt.type === 'chef-showdown'           ? (evt.badgeText || 'CHEF SHOWDOWN')
+                     : evt.type === 'tyrannical-chef'         ? (evt.badgeText || 'KITCHEN TYRANT')
+                     : evt.type === 'fridge-lock'             ? (evt.badgeText || 'FRIDGE LOCK')
+                     : evt.type === 'motivational-chef'       ? (evt.badgeText || 'TEAM CAPTAIN')
+                     : evt.type === 'chef-delegation'         ? (evt.badgeText || 'MASTER DELEGATOR')
+                     : evt.type === 'chaos-chef'              ? (evt.badgeText || 'CHAOS KITCHEN')
+                     : evt.type === 'hype-chef'               ? (evt.badgeText || 'HYPE CHEF')
+                     : evt.type === 'improviser-chef'         ? (evt.badgeText || 'IMPROV KITCHEN')
+                     : evt.type === 'micromanager'            ? (evt.badgeText || 'MICROMANAGER')
+                     : evt.type === 'chef-ego-success'        ? (evt.badgeText || 'CHEF EGO WIN')
+                     : evt.type === 'chef-ego-fail'           ? (evt.badgeText || 'CHEF EGO FAIL')
+                     : evt.type === 'chef-meltdown'           ? (evt.badgeText || 'CHEF MELTDOWN')
+                     : evt.type === 'flambe-explosion'        ? (evt.badgeText || 'FLAMBE FAIL')
+                     : evt.type === 'showmance-fire-reaction' ? (evt.badgeText || 'PROTECTIVE INSTINCT')
+                     : evt.type === 'food-gobbler-confess'    ? (evt.badgeText || 'FOOD THIEF (CONFESSED)')
+                     : evt.type === 'food-gobbler-hide'       ? (evt.badgeText || 'FOOD THIEF (HIDDEN)')
+                     : evt.type === 'ingredient-drop-save'    ? (evt.badgeText || 'IMPROV SAVE')
+                     : evt.type === 'ingredient-drop'         ? (evt.badgeText || 'INGREDIENT DROP')
+                     : evt.type === 'kitchen-fire'            ? (evt.badgeText || 'KITCHEN FIRE')
+                     : evt.type === 'team-rally'              ? (evt.badgeText || 'TEAM RALLY')
+                     : evt.type === 'knife-slip-hero'         ? (evt.badgeText || 'COOKING THROUGH PAIN')
+                     : evt.type === 'knife-slip-out'          ? (evt.badgeText || 'KNIFE INJURY')
+                     : evt.type === 'allergic-reaction'       ? (evt.badgeText || 'ALLERGIC REACTION')
+                     : evt.type === 'spill-disaster'          ? (evt.badgeText || 'SPILL DISASTER')
+                     : evt.type === 'wrong-recipe'            ? (evt.badgeText || 'WRONG RECIPE')
+                     : evt.type === 'raw-food-scare'          ? (evt.badgeText || 'RAW FOOD')
+                     : evt.type === 'oven-malfunction-share'  ? (evt.badgeText || 'OVEN MALFUNCTION')
+                     : evt.type === 'oven-malfunction'        ? (evt.badgeText || 'OVEN DOWN')
+                     : evt.type === 'food-fight-flirt'        ? (evt.badgeText || 'FOOD FIGHT FLIRT')
+                     : evt.type === 'food-fight'              ? (evt.badgeText || 'FOOD FIGHT')
+                     : evt.type === 'taste-war'               ? (evt.badgeText || 'TASTE WAR')
+                     : evt.type === 'perfect-pairing'         ? (evt.badgeText || 'PERFECT PAIRING')
+                     : evt.type === 'cooking-spark'           ? (evt.badgeText || 'COOKING SPARK')
+                     : evt.type === 'dish-stealing'           ? (evt.badgeText || 'CREDIT THIEF')
+                     : evt.type === 'chopping-competition'    ? (evt.badgeText || 'CHOP-OFF')
+                     : evt.type === 'kitchen-dance'           ? (evt.badgeText || 'KITCHEN DANCE')
+                     : evt.type === 'comfort-cooking-success' ? (evt.badgeText || 'COMFORT FOOD')
+                     : evt.type === 'comfort-cooking-fail'    ? (evt.badgeText || 'OFF-SCRIPT FAIL')
+                     : evt.type === 'mentor-moment'           ? (evt.badgeText || 'MENTOR')
+                     : evt.type === 'encouragement'           ? (evt.badgeText || 'ENCOURAGEMENT')
+                     : evt.type === 'natural-talent'          ? (evt.badgeText || 'NATURAL TALENT')
+                     : evt.type === 'plating-artist'          ? (evt.badgeText || 'PLATING ARTIST')
+                     : evt.type === 'taste-tester-hero'       ? (evt.badgeText || 'TASTE TESTER HERO')
+                     : evt.type === 'crowd-pleaser'           ? (evt.badgeText || 'CROWD PLEASER')
+                     : evt.type === 'flavor-breakthrough'     ? (evt.badgeText || 'FLAVOR BREAKTHROUGH')
+                     : evt.type === 'garnish-save'            ? (evt.badgeText || 'GARNISH SAVE')
+                     : evt.type === 'efficient-prep'          ? (evt.badgeText || 'SPEED PREP')
+                     : evt.type === 'clean-station'           ? (evt.badgeText || 'CLEAN STATION')
+                     : evt.type === 'presentation-disaster'   ? (evt.badgeText || 'UGLY DISH')
+                     : evt.type === 'sous-chef-clutch'        ? (evt.badgeText || 'SOUS CHEF HERO')
+                     : evt.type === 'underdog-cook'           ? (evt.badgeText || 'UNDERDOG COOK')
+                     : evt.type === 'ingredient-theft-caught' ? (evt.badgeText || 'SABOTEUR CAUGHT')
+                     : evt.type === 'ingredient-theft-success'? (evt.badgeText || 'INGREDIENT THIEF')
+                     : evt.type === 'spice-bomb-caught'       ? (evt.badgeText || 'SPICE BOMB FAIL')
+                     : evt.type === 'spice-bomb-success'      ? (evt.badgeText || 'SPICE BOMB')
+                     : evt.type === 'distraction-play'        ? (evt.badgeText || 'DISTRACTION')
+                     : evt.type === 'trash-talk'              ? (evt.badgeText || 'TRASH TALK')
+                     : evt.type === 'copycat-accusation'      ? (evt.badgeText || 'COPYCAT ACCUSATION')
+                     : evt.type === 'kitchen-spy'             ? (evt.badgeText || 'KITCHEN SPY')
+                     : evt.type === 'teamwork-montage'        ? (evt.badgeText || 'TEAMWORK MONTAGE')
+                     : evt.type === 'mvp-chef'                ? (evt.badgeText || 'MVP CHEF')
+                     : evt.type === 'sous-chef-hero'          ? (evt.badgeText || 'SOUS CHEF HERO')
+                     : evt.type === 'underdog-cook-camp'      ? (evt.badgeText || 'HIDDEN CHEF')
+                     : evt.type === 'kitchen-couple'          ? (evt.badgeText || 'KITCHEN COUPLE')
+                     : evt.type === 'disaster-culprit'        ? (evt.badgeText || 'KITCHEN DISASTER')
+                     : evt.type === 'fridge-lock-drama'       ? (evt.badgeText || 'FRIDGE LOCK')
+                     : evt.type === 'saboteur-exposed'        ? (evt.badgeText || 'SABOTEUR')
+                     : evt.type === 'food-gobbler-shame'      ? (evt.badgeText || 'FOOD THIEF SUSPECT')
+                     : evt.type === 'tyrant-backlash'         ? (evt.badgeText || 'TYRANT BACKLASH')
+                     : evt.type === 'quiet-leader'            ? (evt.badgeText || 'QUIET LEADER')
+                     : evt.type === 'group-shame'             ? (evt.badgeText || 'KITCHEN DISASTER')
                      : evt.type === 'soMorale'                 ? (evt.badgeText || evt.badge || 'MORALE BOOST')
                      : evt.type === 'soFireConfession'         ? (evt.badgeText || evt.badge || 'CONFESSION')
                      : evt.type === 'soSurvivor'               ? (evt.badgeText || evt.badge || 'SURVIVOR')
@@ -50700,6 +50775,9 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'pbAmbush' || evt.type === 'pbSneakAttack' || evt.type === 'pbMVPHunter' || evt.type === 'pbLastDeer' || evt.type === 'pbRebellionHero' || evt.type === 'pbDoublefind' || evt.type === 'pbWarFreeShot' || evt.type === 'pbDeerStampede' || evt.type === 'pbCamouflage' || evt.type === 'pbRebellion' || evt.type === 'pbDecoy' || evt.type === 'pbDeerBonding' || evt.type === 'pbDeerPact' || evt.type === 'pbTreeClimb' || evt.type === 'pbEpicChase' || evt.type === 'pbHunterProtects' || evt.type === 'pbWaterDive' || evt.type === 'pbDecoyTrail' || evt.type === 'pbScentTrack' || evt.type === 'pbHighGround' || evt.type === 'pbBaitTrap' ? 'gold'
                      : evt.type === 'pbBearEncounter' || evt.type === 'pbFriendlyFireAccident' || evt.type === 'pbFriendlyFireDeliberate' || evt.type === 'pbRetaliation' || evt.type === 'pbWarEscalation' || evt.type === 'pbSympathyShot' || evt.type === 'pbBearMauled' || evt.type === 'pbFriendlyFireCulprit' || evt.type === 'pbWarInstigator' || evt.type === 'pbFirstPainted' || evt.type === 'pbMudSlide' || evt.type === 'pbMisfire' || evt.type === 'pbHunterRivalry' || evt.type === 'pbAllianceRebellion' ? 'red'
                      : evt.type === 'pbMiss' || evt.type === 'pbNotFound' || evt.type === 'pbAntlersLocked' || evt.type === 'pbObsessiveChase' || evt.type === 'pbAllianceStandoff' || evt.type === 'pbTaunt' || evt.type === 'pbCrossTribeEncounter' || evt.type === 'pbHunterScheme' || evt.type === 'pbCrossRoleWhisper' || evt.type === 'pbAllianceMeeting' || evt.type === 'pbHit' || evt.type === 'pbConfessional' || evt.type === 'pbHunterTrashTalk' || evt.type === 'pbCloseCall' || evt.type === 'pbSprintBurst' || evt.type === 'pbGrossOut' || evt.type === 'pbPatience' ? ''
+                     : evt.type === 'chef-showdown' || evt.type === 'motivational-chef' || evt.type === 'chef-delegation' || evt.type === 'hype-chef' || evt.type === 'chef-ego-success' || evt.type === 'showmance-fire-reaction' || evt.type === 'ingredient-drop-save' || evt.type === 'team-rally' || evt.type === 'knife-slip-hero' || evt.type === 'perfect-pairing' || evt.type === 'cooking-spark' || evt.type === 'kitchen-dance' || evt.type === 'comfort-cooking-success' || evt.type === 'mentor-moment' || evt.type === 'encouragement' || evt.type === 'natural-talent' || evt.type === 'plating-artist' || evt.type === 'taste-tester-hero' || evt.type === 'crowd-pleaser' || evt.type === 'flavor-breakthrough' || evt.type === 'garnish-save' || evt.type === 'efficient-prep' || evt.type === 'clean-station' || evt.type === 'sous-chef-clutch' || evt.type === 'underdog-cook' || evt.type === 'teamwork-montage' || evt.type === 'mvp-chef' || evt.type === 'sous-chef-hero' || evt.type === 'underdog-cook-camp' || evt.type === 'kitchen-couple' || evt.type === 'quiet-leader' ? 'gold'
+                     : evt.type === 'tyrannical-chef' || evt.type === 'fridge-lock' || evt.type === 'chef-ego-fail' || evt.type === 'chef-meltdown' || evt.type === 'flambe-explosion' || evt.type === 'food-gobbler-hide' || evt.type === 'ingredient-drop' || evt.type === 'kitchen-fire' || evt.type === 'knife-slip-out' || evt.type === 'allergic-reaction' || evt.type === 'spill-disaster' || evt.type === 'wrong-recipe' || evt.type === 'raw-food-scare' || evt.type === 'oven-malfunction' || evt.type === 'dish-stealing' || evt.type === 'presentation-disaster' || evt.type === 'ingredient-theft-caught' || evt.type === 'spice-bomb-caught' || evt.type === 'disaster-culprit' || evt.type === 'fridge-lock-drama' || evt.type === 'saboteur-exposed' || evt.type === 'food-gobbler-shame' || evt.type === 'tyrant-backlash' || evt.type === 'group-shame' ? 'red'
+                     : evt.type === 'chaos-chef' || evt.type === 'improviser-chef' || evt.type === 'micromanager' || evt.type === 'food-gobbler-confess' || evt.type === 'oven-malfunction-share' || evt.type === 'food-fight' || evt.type === 'food-fight-flirt' || evt.type === 'taste-war' || evt.type === 'chopping-competition' || evt.type === 'comfort-cooking-fail' || evt.type === 'ingredient-theft-success' || evt.type === 'spice-bomb-success' || evt.type === 'distraction-play' || evt.type === 'trash-talk' || evt.type === 'copycat-accusation' || evt.type === 'kitchen-spy' ? ''
                      : isMoleReveal ? 'gold'
                      : isDareComplete || isDareMVP || isDareGift || isDarePact ? 'gold'
                      : isDarePactBetray || isDareAllyBetray || isDareRefusal || isDareElim ? 'red'

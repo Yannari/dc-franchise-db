@@ -14715,7 +14715,7 @@ function simulateHellsKitchen(ep) {
   // ── Helper: push event ──
   function pushEvent(evt) {
     allEvents.push(evt);
-    timeline.push({ type: 'event', ...evt });
+    timeline.push({ kind: 'event', ...evt });
   }
 
   // ── Helper: add cooking heat ──
@@ -16014,7 +16014,7 @@ function simulateHellsKitchen(ep) {
 
       // Timeline: course result
       timeline.push({
-        type: 'course-result',
+        kind: 'course-result',
         tribe: t.name,
         course,
         dish: dishes[t.name][course],
@@ -60487,7 +60487,7 @@ function rpBuildHellsKitchen(ep) {
   // Build steps array from pre-shuffled timeline
   const steps = [];
   (hk.timeline || []).forEach(item => {
-    steps.push({ stepType: item.type, data: item });
+    steps.push({ stepType: item.kind, data: item });
   });
   // Final scoreboard step
   steps.push({ stepType: 'final', data: {} });

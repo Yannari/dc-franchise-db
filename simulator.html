@@ -14851,7 +14851,6 @@ function simulateHellsKitchen(ep) {
       };
 
     } else if (chef.style === 'motivator') {
-      // Motivational chef: bond + mild boost
       COURSES.forEach(c => { courseModifiers[t.name][c] += 0.05; });
       teammates.forEach(m => { addBond(chef.name, m, 0.2); });
       const motivTexts = [
@@ -14859,17 +14858,12 @@ function simulateHellsKitchen(ep) {
         `${chef.name} puts a hand on each teammate's shoulder before they start cooking. "I trust you," ${pr.sub} says. And ${pr.sub} means it.`,
         `${chef.name} leads by example — first one at the station, last one to rest. ${pr.Sub} doesn't yell, doesn't threaten. Just cooks. The team follows.`
       ];
-      pushEvent({
-        type: 'motivational-chef',
-        course: 'all',
-        players: [chef.name, ...teammates],
-        text: _rp(motivTexts),
-        badge: 'Team Captain',
-        badgeText: `${chef.name} inspires the team`,
-        badgeClass: 'badge-success'
-      });
+      pushEvent({ type: 'motivational-chef', course: 'all', players: [chef.name, ...teammates], text: _rp(motivTexts), badge: 'Team Captain', badgeText: `${chef.name} inspires the team`, badgeClass: 'badge-success' });
+      // Escalation state: inspiration → desperation → meltdown if losing
+      if (!ep._chefEscalation) ep._chefEscalation = {};
+      ep._chefEscalation[t.name] = { style: 'motivator', chef: chef.name, phase: 'inspired' };
+
     } else if (chef.style === 'delegator') {
-      // Perfect delegation
       COURSES.forEach(c => { courseModifiers[t.name][c] += 0.10; });
       teammates.forEach(m => { addBond(chef.name, m, 0.1); });
       const delegTexts = [
@@ -14877,34 +14871,22 @@ function simulateHellsKitchen(ep) {
         `"You're on appetizer because your plating is beautiful. You two, main course — you've got the stamina." ${chef.name} knows exactly what ${pr.sub}'s doing.`,
         `${chef.name} barely raises ${pr.posAdj} voice. Every assignment comes with a reason, every reason makes sense. The team runs like clockwork.`
       ];
-      pushEvent({
-        type: 'chef-delegation',
-        course: 'all',
-        players: [chef.name, ...teammates],
-        text: _rp(delegTexts),
-        badge: 'Master Delegator',
-        badgeText: `${chef.name} assigns the team perfectly`,
-        badgeClass: 'badge-success'
-      });
+      pushEvent({ type: 'chef-delegation', course: 'all', players: [chef.name, ...teammates], text: _rp(delegTexts), badge: 'Master Delegator', badgeText: `${chef.name} assigns the team perfectly`, badgeClass: 'badge-success' });
+      if (!ep._chefEscalation) ep._chefEscalation = {};
+      ep._chefEscalation[t.name] = { style: 'delegator', chef: chef.name, phase: 'confident' };
+
     } else if (chef.style === 'chaos') {
-      // Chaos chef: high variance per course
       COURSES.forEach(c => { courseModifiers[t.name][c] += (Math.random() - 0.5) * 0.2; });
       const chaosTexts = [
         `${chef.name} changes the plan three times in the first five minutes. Nobody knows what they're cooking, but the energy is... electric?`,
         `"Forget the recipe. We're doing it MY way." ${chef.name} throws the cookbook in the trash. This could go very well or very badly.`,
         `${chef.name}'s kitchen is pure anarchy — and somehow, that might be exactly what they need.`
       ];
-      pushEvent({
-        type: 'chaos-chef',
-        course: 'all',
-        players: [chef.name, ...teammates],
-        text: _rp(chaosTexts),
-        badge: 'Chaos Kitchen',
-        badgeText: `${chef.name} runs the kitchen by instinct`,
-        badgeClass: 'badge-warning'
-      });
+      pushEvent({ type: 'chaos-chef', course: 'all', players: [chef.name, ...teammates], text: _rp(chaosTexts), badge: 'Chaos Kitchen', badgeText: `${chef.name} runs the kitchen by instinct`, badgeClass: 'badge-warning' });
+      if (!ep._chefEscalation) ep._chefEscalation = {};
+      ep._chefEscalation[t.name] = { style: 'chaos', chef: chef.name, phase: 'wild' };
+
     } else if (chef.style === 'hype') {
-      // Hype chef: morale, group events more likely
       COURSES.forEach(c => { courseModifiers[t.name][c] += 0.04; });
       teammates.forEach(m => { addBond(chef.name, m, 0.15); });
       const hypeTexts = [
@@ -14912,32 +14894,20 @@ function simulateHellsKitchen(ep) {
         `"ENERGY! I need ENERGY!" ${chef.name} claps ${pr.posAdj} hands together. The team can't help but smile.`,
         `${chef.name} treats every dish like it's the best thing ever made. The hype is infectious — everyone starts cooking with swagger.`
       ];
-      pushEvent({
-        type: 'hype-chef',
-        course: 'all',
-        players: [chef.name, ...teammates],
-        text: _rp(hypeTexts),
-        badge: 'Hype Chef',
-        badgeText: `${chef.name} brings the energy`,
-        badgeClass: 'badge-info'
-      });
+      pushEvent({ type: 'hype-chef', course: 'all', players: [chef.name, ...teammates], text: _rp(hypeTexts), badge: 'Hype Chef', badgeText: `${chef.name} brings the energy`, badgeClass: 'badge-info' });
+      if (!ep._chefEscalation) ep._chefEscalation = {};
+      ep._chefEscalation[t.name] = { style: 'hype', chef: chef.name, phase: 'vibing' };
+
     } else if (chef.style === 'improviser') {
-      // Improviser: unique variance
       COURSES.forEach(c => { courseModifiers[t.name][c] += (Math.random() * 0.12); });
       const improvTexts = [
         `${chef.name} takes one look at the assigned dishes and starts riffing. "We're adding a twist to everything." The team exchanges nervous looks.`,
         `"Rules are suggestions." ${chef.name} improvises the entire menu. Either genius or disaster — there's no middle ground.`,
         `${chef.name} trusts ${pr.posAdj} instincts completely. No recipes, no measurements, just vibes. The kitchen smells amazing... or concerning.`
       ];
-      pushEvent({
-        type: 'improviser-chef',
-        course: 'all',
-        players: [chef.name, ...teammates],
-        text: _rp(improvTexts),
-        badge: 'Improv Kitchen',
-        badgeText: `${chef.name} improvises the whole menu`,
-        badgeClass: 'badge-info'
-      });
+      pushEvent({ type: 'improviser-chef', course: 'all', players: [chef.name, ...teammates], text: _rp(improvTexts), badge: 'Improv Kitchen', badgeText: `${chef.name} improvises the whole menu`, badgeClass: 'badge-info' });
+      if (!ep._chefEscalation) ep._chefEscalation = {};
+      ep._chefEscalation[t.name] = { style: 'improviser', chef: chef.name, phase: 'experimenting', lastResult: null };
     }
 
     // Micromanager check (strategic >= 7, social <= 4 on any chef style)
@@ -15135,6 +15105,167 @@ function simulateHellsKitchen(ep) {
               badgeText: `${chef.name} locked in the fridge`,
               badgeClass: 'badge-danger'
             });
+          }
+        }
+      }
+
+      // ── NON-TYRANT CHEF ESCALATION (per-course) ──
+      const _ce = ep._chefEscalation?.[t.name];
+      if (_ce && _ce.style !== 'tyrant') {
+        const _cePr = pronouns(_ce.chef);
+        const _ceTeammates = t.members.filter(m => m !== _ce.chef);
+
+        // ── MOTIVATOR: inspired → desperate → meltdown ──
+        if (_ce.style === 'motivator') {
+          const prevScore = courseIdx > 0 ? (courseScores[t.name]?.[COURSES[courseIdx - 1]]?.rating || 5) : 5;
+          if (courseIdx === 1 && prevScore <= 4) {
+            _ce.phase = 'desperate';
+            const _despTexts = [
+              `${_ce.chef} is rattled after the low appetizer score. "Come on, come ON! We're better than this!" The encouragement is starting to sound like panic.`,
+              `The positivity is cracking. ${_ce.chef} pushes harder — too hard. "We HAVE to nail this course." The team feels the pressure shift.`,
+              `${_ce.chef} won't stop pacing. ${_cePr.Sub} keeps saying "it's fine, it's fine" but ${_cePr.posAdj} voice says otherwise.`,
+            ];
+            pushEvent({ type: 'motivator-desperate', course, players: [_ce.chef, ..._ceTeammates.slice(0, 2)], text: _rp(_despTexts), badge: 'Desperation', badgeText: `${_ce.chef} is losing composure`, badgeClass: 'badge-warning' });
+            _ceTeammates.forEach(m => addBond(_ce.chef, m, -0.1));
+          }
+          if (courseIdx === 2 && _ce.phase === 'desperate') {
+            const mainScore = courseScores[t.name]?.[COURSES[1]]?.rating || 5;
+            if (mainScore <= 5 && Math.random() < 0.5) {
+              _ce.phase = 'meltdown';
+              courseModifiers[t.name].dessert -= 0.08;
+              const _meltTexts = [
+                `${_ce.chef} breaks. ${_cePr.Sub} sits on the floor and puts ${_cePr.posAdj} head in ${_cePr.posAdj} hands. "I can't do this." The team has to cook dessert without their leader.`,
+                `The motivator is gone. ${_ce.chef} can't even look at the food. ${_cePr.Sub} walks to the corner and stares at the wall. Someone else takes over.`,
+              ];
+              pushEvent({ type: 'motivator-meltdown', course, players: [_ce.chef], text: _rp(_meltTexts), badge: 'Meltdown', badgeText: `${_ce.chef} breaks down`, badgeClass: 'badge-danger' });
+              personalScores[_ce.chef] = (personalScores[_ce.chef] || 0) - 1.5;
+            }
+          }
+        }
+
+        // ── DELEGATOR: confident → self-doubt → micromanage ──
+        if (_ce.style === 'delegator') {
+          const prevScore = courseIdx > 0 ? (courseScores[t.name]?.[COURSES[courseIdx - 1]]?.rating || 5) : 5;
+          if (courseIdx === 1 && prevScore <= 3) {
+            _ce.phase = 'doubting';
+            const _doubtTexts = [
+              `${_ce.chef} stares at the appetizer score. "I put the wrong people on that course." ${_cePr.Sub} blames ${_cePr.ref}. The team sees the confidence crack.`,
+              `"Maybe I should have..." ${_ce.chef} trails off. For the first time, the delegator doesn't have a plan. The team notices.`,
+            ];
+            pushEvent({ type: 'delegator-doubt', course, players: [_ce.chef], text: _rp(_doubtTexts), badge: 'Self-Doubt', badgeText: `${_ce.chef} questions ${_cePr.posAdj} assignments`, badgeClass: 'badge-warning' });
+          }
+          if (courseIdx === 2 && _ce.phase === 'doubting') {
+            // Delegator switches to micromanaging — loses delegation bonus, gains micromanage bonus
+            _ce.phase = 'micromanaging';
+            courseModifiers[t.name].dessert -= 0.05; // lost the trust dynamic
+            _ceTeammates.forEach(m => addBond(_ce.chef, m, -0.15));
+            const _microTexts = [
+              `${_ce.chef} has abandoned the delegation approach entirely. ${_cePr.Sub}'s hovering over every station, redoing work, second-guessing everything. The team that was running like clockwork is now a mess.`,
+              `"Let me do it." ${_ce.chef} pushes ${_rp(_ceTeammates)} aside and takes over. The brilliant strategist is now just another micromanager.`,
+            ];
+            pushEvent({ type: 'delegator-micromanage', course, players: [_ce.chef, ..._ceTeammates.slice(0, 2)], text: _rp(_microTexts), badge: 'Lost Control', badgeText: `${_ce.chef} micromanages the dessert`, badgeClass: 'badge-danger' });
+          }
+        }
+
+        // ── CHAOS: wild → spiral → takeover OR miracle ──
+        if (_ce.style === 'chaos') {
+          const prevScore = courseIdx > 0 ? (courseScores[t.name]?.[COURSES[courseIdx - 1]]?.rating || 5) : 5;
+          if (courseIdx === 1) {
+            if (prevScore <= 4) {
+              _ce.phase = 'spiraling';
+              const _spiralTexts = [
+                `The chaos is no longer fun. ${_ce.chef}'s kitchen is falling apart — dishes are wrong, stations are dirty, nobody knows what they're making anymore.`,
+                `The appetizer was a disaster and ${_ce.chef}'s response is to change EVERYTHING for the main. The team looks terrified.`,
+              ];
+              pushEvent({ type: 'chaos-spiral', course, players: [_ce.chef, ..._ceTeammates.slice(0, 2)], text: _rp(_spiralTexts), badge: 'Spiral', badgeText: `${t.name}'s kitchen is falling apart`, badgeClass: 'badge-danger' });
+              courseModifiers[t.name].main -= 0.06;
+            } else if (prevScore >= 7) {
+              _ce.phase = 'riding-high';
+              const _rideTexts = [
+                `The chaos WORKED. ${_ce.chef} is now fully convinced ${_cePr.posAdj} approach is genius. The team is buying in. The energy doubles.`,
+                `After that appetizer score, ${_ce.chef}'s kitchen goes from chaotic to electric. Nobody questions the method anymore.`,
+              ];
+              pushEvent({ type: 'chaos-momentum', course, players: [_ce.chef, ..._ceTeammates.slice(0, 2)], text: _rp(_rideTexts), badge: 'Momentum', badgeText: `${t.name}'s chaos is working`, badgeClass: 'badge-success' });
+              courseModifiers[t.name].main += 0.04;
+            }
+          }
+          if (courseIdx === 2 && _ce.phase === 'spiraling') {
+            // Someone takes over — sous chef clutch
+            const takeoverCandidate = _ceTeammates.reduce((best, m) => pStats(m).mental > pStats(best).mental ? m : best, _ceTeammates[0]);
+            if (takeoverCandidate && Math.random() < 0.5) {
+              const tkPr = pronouns(takeoverCandidate);
+              courseModifiers[t.name].dessert += 0.06;
+              personalScores[takeoverCandidate] = (personalScores[takeoverCandidate] || 0) + 1.5;
+              addBond(takeoverCandidate, _ce.chef, -0.2);
+              const _takeoverTexts = [
+                `${takeoverCandidate} has seen enough. ${tkPr.Sub} quietly takes over the dessert station. ${_ce.chef} doesn't even notice — ${_cePr.sub}'s too busy arguing with the oven.`,
+                `"${_ce.chef}, sit down." ${takeoverCandidate} takes charge. The kitchen goes from chaos to calm in thirty seconds. The real chef was here all along.`,
+              ];
+              pushEvent({ type: 'chaos-takeover', course, players: [takeoverCandidate, _ce.chef], text: _rp(_takeoverTexts), badge: 'Takeover', badgeText: `${takeoverCandidate} takes over from ${_ce.chef}`, badgeClass: 'badge-success' });
+            }
+          }
+        }
+
+        // ── HYPE: vibing → unfocused → reality check ──
+        if (_ce.style === 'hype') {
+          if (courseIdx === 1 && Math.random() < 0.35) {
+            _ce.phase = 'unfocused';
+            courseModifiers[t.name].main -= 0.04;
+            const _unfocTexts = [
+              `The vibes are immaculate. The food is... not. ${_ce.chef}'s team is having the time of their lives and absolutely nobody is watching the stove.`,
+              `${_ce.chef}'s kitchen is all energy and no execution. Someone's dancing. Something's burning. The hype has become the problem.`,
+            ];
+            pushEvent({ type: 'hype-unfocused', course, players: [_ce.chef, ..._ceTeammates.slice(0, 2)], text: _rp(_unfocTexts), badge: 'Unfocused', badgeText: `${t.name} is vibing too hard`, badgeClass: 'badge-warning' });
+          }
+          if (courseIdx === 2 && _ce.phase === 'unfocused') {
+            // Reality check — someone calls it out
+            const caller = _ceTeammates.reduce((best, m) => pStats(m).strategic > pStats(best).strategic ? m : best, _ceTeammates[0]);
+            if (caller && Math.random() < 0.5) {
+              _ce.phase = 'refocused';
+              courseModifiers[t.name].dessert += 0.05;
+              addBond(caller, _ce.chef, -0.1);
+              const calPr = pronouns(caller);
+              const _callTexts = [
+                `"Hey. HEY." ${caller} grabs ${_ce.chef}'s arm. "We're about to lose this thing. Can we please just COOK?" The music stops. The team refocuses.`,
+                `${caller} turns off the music. "I love the energy, but we're down. Time to actually cook." ${_ce.chef} nods. The party's over. The cooking starts.`,
+              ];
+              pushEvent({ type: 'hype-reality-check', course, players: [caller, _ce.chef], text: _rp(_callTexts), badge: 'Reality Check', badgeText: `${caller} refocuses the team`, badgeClass: 'badge-info' });
+            }
+          }
+        }
+
+        // ── IMPROVISER: experimenting → bold → panic ──
+        if (_ce.style === 'improviser') {
+          const prevScore = courseIdx > 0 ? (courseScores[t.name]?.[COURSES[courseIdx - 1]]?.rating || 5) : 5;
+          if (courseIdx === 1) {
+            if (prevScore >= 7) {
+              _ce.phase = 'bold';
+              courseModifiers[t.name].main += 0.05;
+              const _boldTexts = [
+                `The first improvisation landed. ${_ce.chef} is emboldened — the main course is getting an even WILDER twist. "If it ain't broke, make it weirder."`,
+                `Success breeds confidence. ${_ce.chef} is now improvising the improvisation. The team can't keep up but the food keeps getting better.`,
+              ];
+              pushEvent({ type: 'improviser-bold', course, players: [_ce.chef], text: _rp(_boldTexts), badge: 'Going Bolder', badgeText: `${_ce.chef} doubles down on improvisation`, badgeClass: 'badge-success' });
+            } else if (prevScore <= 4) {
+              _ce.phase = 'panic';
+              courseModifiers[t.name].main -= 0.04;
+              const _panicTexts = [
+                `The improvisation flopped. ${_ce.chef} panics and reaches for the recipe book. "Okay, okay, we're going conventional for the main." The team exhales.`,
+                `${_ce.chef} stares at the appetizer score. The confidence is gone. "Forget the twist. Just... cook it normal." The improviser becomes a follower.`,
+              ];
+              pushEvent({ type: 'improviser-panic', course, players: [_ce.chef], text: _rp(_panicTexts), badge: 'Back to Basics', badgeText: `${_ce.chef} abandons improvisation`, badgeClass: 'badge-warning' });
+            }
+          }
+          if (courseIdx === 2 && _ce.phase === 'bold') {
+            // Going too bold on dessert — risky
+            if (Math.random() < 0.4) {
+              courseModifiers[t.name].dessert += (Math.random() - 0.3) * 0.15; // high variance, slightly negative lean
+              const _tooBoldTexts = [
+                `${_ce.chef} is adding something nobody recognizes to the dessert. The team watches in horror. "Trust the process," ${_cePr.sub} says. Nobody trusts the process.`,
+                `The dessert is either going to be the best thing ${host} has ever tasted or the worst. There is no middle ground. ${_ce.chef} grins.`,
+              ];
+              pushEvent({ type: 'improviser-risky', course, players: [_ce.chef], text: _rp(_tooBoldTexts), badge: 'Wild Card', badgeText: `${_ce.chef}'s dessert is a gamble`, badgeClass: 'badge-warning' });
+            }
           }
         }
       }
@@ -50778,6 +50909,18 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'chef-ego-success'        ? (evt.badgeText || 'CHEF EGO WIN')
                      : evt.type === 'chef-ego-fail'           ? (evt.badgeText || 'CHEF EGO FAIL')
                      : evt.type === 'chef-meltdown'           ? (evt.badgeText || 'CHEF MELTDOWN')
+                     : evt.type === 'motivator-desperate'     ? (evt.badgeText || 'DESPERATION')
+                     : evt.type === 'motivator-meltdown'      ? (evt.badgeText || 'MELTDOWN')
+                     : evt.type === 'delegator-doubt'         ? (evt.badgeText || 'SELF-DOUBT')
+                     : evt.type === 'delegator-micromanage'   ? (evt.badgeText || 'LOST CONTROL')
+                     : evt.type === 'chaos-spiral'            ? (evt.badgeText || 'SPIRAL')
+                     : evt.type === 'chaos-momentum'          ? (evt.badgeText || 'MOMENTUM')
+                     : evt.type === 'chaos-takeover'          ? (evt.badgeText || 'TAKEOVER')
+                     : evt.type === 'hype-unfocused'          ? (evt.badgeText || 'UNFOCUSED')
+                     : evt.type === 'hype-reality-check'      ? (evt.badgeText || 'REALITY CHECK')
+                     : evt.type === 'improviser-bold'         ? (evt.badgeText || 'GOING BOLDER')
+                     : evt.type === 'improviser-panic'        ? (evt.badgeText || 'BACK TO BASICS')
+                     : evt.type === 'improviser-risky'        ? (evt.badgeText || 'WILD CARD')
                      : evt.type === 'flambe-explosion'        ? (evt.badgeText || 'FLAMBE FAIL')
                      : evt.type === 'showmance-fire-reaction' ? (evt.badgeText || 'PROTECTIVE INSTINCT')
                      : evt.type === 'food-gobbler-confess'    ? (evt.badgeText || 'FOOD THIEF (CONFESSED)')
@@ -51052,8 +51195,9 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'pbBearEncounter' || evt.type === 'pbFriendlyFireAccident' || evt.type === 'pbFriendlyFireDeliberate' || evt.type === 'pbRetaliation' || evt.type === 'pbWarEscalation' || evt.type === 'pbSympathyShot' || evt.type === 'pbBearMauled' || evt.type === 'pbFriendlyFireCulprit' || evt.type === 'pbWarInstigator' || evt.type === 'pbFirstPainted' || evt.type === 'pbMudSlide' || evt.type === 'pbMisfire' || evt.type === 'pbHunterRivalry' || evt.type === 'pbAllianceRebellion' ? 'red'
                      : evt.type === 'pbMiss' || evt.type === 'pbNotFound' || evt.type === 'pbAntlersLocked' || evt.type === 'pbObsessiveChase' || evt.type === 'pbAllianceStandoff' || evt.type === 'pbTaunt' || evt.type === 'pbCrossTribeEncounter' || evt.type === 'pbHunterScheme' || evt.type === 'pbCrossRoleWhisper' || evt.type === 'pbAllianceMeeting' || evt.type === 'pbHit' || evt.type === 'pbConfessional' || evt.type === 'pbHunterTrashTalk' || evt.type === 'pbCloseCall' || evt.type === 'pbSprintBurst' || evt.type === 'pbGrossOut' || evt.type === 'pbPatience' ? ''
                      : evt.type === 'chef-showdown' || evt.type === 'motivational-chef' || evt.type === 'chef-delegation' || evt.type === 'hype-chef' || evt.type === 'chef-ego-success' || evt.type === 'showmance-fire-reaction' || evt.type === 'ingredient-drop-save' || evt.type === 'team-rally' || evt.type === 'knife-slip-hero' || evt.type === 'perfect-pairing' || evt.type === 'cooking-spark' || evt.type === 'kitchen-dance' || evt.type === 'comfort-cooking-success' || evt.type === 'mentor-moment' || evt.type === 'encouragement' || evt.type === 'natural-talent' || evt.type === 'plating-artist' || evt.type === 'taste-tester-hero' || evt.type === 'crowd-pleaser' || evt.type === 'flavor-breakthrough' || evt.type === 'garnish-save' || evt.type === 'efficient-prep' || evt.type === 'clean-station' || evt.type === 'sous-chef-clutch' || evt.type === 'underdog-cook' || evt.type === 'teamwork-montage' || evt.type === 'mvp-chef' || evt.type === 'sous-chef-hero' || evt.type === 'underdog-cook-camp' || evt.type === 'kitchen-couple' || evt.type === 'quiet-leader' ? 'gold'
-                     : evt.type === 'tyrannical-chef' || evt.type === 'fridge-lock' || evt.type === 'chef-ego-fail' || evt.type === 'chef-meltdown' || evt.type === 'flambe-explosion' || evt.type === 'food-gobbler-hide' || evt.type === 'ingredient-drop' || evt.type === 'kitchen-fire' || evt.type === 'knife-slip-out' || evt.type === 'allergic-reaction' || evt.type === 'spill-disaster' || evt.type === 'wrong-recipe' || evt.type === 'raw-food-scare' || evt.type === 'oven-malfunction' || evt.type === 'dish-stealing' || evt.type === 'presentation-disaster' || evt.type === 'ingredient-theft-caught' || evt.type === 'spice-bomb-caught' || evt.type === 'disaster-culprit' || evt.type === 'fridge-lock-drama' || evt.type === 'saboteur-exposed' || evt.type === 'food-gobbler-shame' || evt.type === 'tyrant-backlash' || evt.type === 'group-shame' || evt.type === 'tyrant-singles-out' || evt.type === 'tyrant-errand' || evt.type === 'tyrant-pressure' ? 'red'
-                     : evt.type === 'chaos-chef' || evt.type === 'improviser-chef' || evt.type === 'micromanager' || evt.type === 'food-gobbler-confess' || evt.type === 'oven-malfunction-share' || evt.type === 'food-fight' || evt.type === 'food-fight-flirt' || evt.type === 'taste-war' || evt.type === 'chopping-competition' || evt.type === 'comfort-cooking-fail' || evt.type === 'ingredient-theft-success' || evt.type === 'spice-bomb-success' || evt.type === 'distraction-play' || evt.type === 'trash-talk' || evt.type === 'copycat-accusation' || evt.type === 'kitchen-spy' || evt.type === 'tyrant-snapback' || evt.type === 'tyrant-conspiracy' ? ''
+                     : evt.type === 'tyrannical-chef' || evt.type === 'fridge-lock' || evt.type === 'chef-ego-fail' || evt.type === 'chef-meltdown' || evt.type === 'flambe-explosion' || evt.type === 'food-gobbler-hide' || evt.type === 'ingredient-drop' || evt.type === 'kitchen-fire' || evt.type === 'knife-slip-out' || evt.type === 'allergic-reaction' || evt.type === 'spill-disaster' || evt.type === 'wrong-recipe' || evt.type === 'raw-food-scare' || evt.type === 'oven-malfunction' || evt.type === 'dish-stealing' || evt.type === 'presentation-disaster' || evt.type === 'ingredient-theft-caught' || evt.type === 'spice-bomb-caught' || evt.type === 'disaster-culprit' || evt.type === 'fridge-lock-drama' || evt.type === 'saboteur-exposed' || evt.type === 'food-gobbler-shame' || evt.type === 'tyrant-backlash' || evt.type === 'group-shame' || evt.type === 'tyrant-singles-out' || evt.type === 'tyrant-errand' || evt.type === 'tyrant-pressure' || evt.type === 'motivator-meltdown' || evt.type === 'delegator-micromanage' || evt.type === 'chaos-spiral' ? 'red'
+                     : evt.type === 'chaos-chef' || evt.type === 'improviser-chef' || evt.type === 'micromanager' || evt.type === 'food-gobbler-confess' || evt.type === 'oven-malfunction-share' || evt.type === 'food-fight' || evt.type === 'food-fight-flirt' || evt.type === 'taste-war' || evt.type === 'chopping-competition' || evt.type === 'comfort-cooking-fail' || evt.type === 'ingredient-theft-success' || evt.type === 'spice-bomb-success' || evt.type === 'distraction-play' || evt.type === 'trash-talk' || evt.type === 'copycat-accusation' || evt.type === 'kitchen-spy' || evt.type === 'tyrant-snapback' || evt.type === 'tyrant-conspiracy' || evt.type === 'motivator-desperate' || evt.type === 'delegator-doubt' || evt.type === 'hype-unfocused' || evt.type === 'improviser-panic' || evt.type === 'improviser-risky' || evt.type === 'hype-reality-check' ? ''
+                     : evt.type === 'chaos-momentum' || evt.type === 'chaos-takeover' || evt.type === 'improviser-bold' ? 'gold'
                      : isMoleReveal ? 'gold'
                      : isDareComplete || isDareMVP || isDareGift || isDarePact ? 'gold'
                      : isDarePactBetray || isDareAllyBetray || isDareRefusal || isDareElim ? 'red'

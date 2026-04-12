@@ -1621,10 +1621,10 @@ const ARCHETYPE_NAMES = {
   'showmancer': 'Showmancer',
 };
 const THREAT_TIERS = [
-  { max: 1.0, label: 'Low', color: '#10b981' },
-  { max: 2.0, label: 'Medium', color: '#f59e0b' },
-  { max: 3.0, label: 'High', color: '#f97316' },
-  { max: 5.0, label: 'Extreme', color: '#ef4444' },
+  { max: 3.0, label: 'Low', color: '#10b981' },
+  { max: 5.0, label: 'Medium', color: '#f59e0b' },
+  { max: 7.0, label: 'High', color: '#f97316' },
+  { max: 10,  label: 'Extreme', color: '#ef4444' },
 ];
 const REL_TYPES = {
   hatred:      { label: 'Pure Hatred',     color: '#7f1d1d', bond:-10, bg: 'rgba(127,29,29,0.15)' },
@@ -2199,10 +2199,10 @@ function putStats(stats) { STATS.forEach(s => setSlider(s.key, stats[s.key] || 5
 
 function overall(stats) { return (STATS.reduce((t,s) => t+(stats[s.key]||0),0)/STATS.length).toFixed(1); }
 function threat(stats)  {
-  // Cast builder: raw stat potential only (no game state). Scale 0-5.
-  const chal = (stats.physical * 0.2 + stats.endurance * 0.15 + stats.mental * 0.1 + stats.intuition * 0.1) / 1.1; // 0-5 range
-  const soc = (stats.social * 0.3 + stats.temperament * 0.1) / 0.8; // likeable + stable
-  const strat = (stats.strategic * 0.25 + stats.boldness * 0.1 + stats.intuition * 0.1) / 0.9; // game sense
+  // Cast builder: raw stat potential only (no game state). Scale 0-10.
+  const chal = (stats.physical * 0.2 + stats.endurance * 0.15 + stats.mental * 0.1 + stats.intuition * 0.1) / 0.55;
+  const soc = (stats.social * 0.3 + stats.temperament * 0.1) / 0.4;
+  const strat = (stats.strategic * 0.25 + stats.boldness * 0.1 + stats.intuition * 0.1) / 0.45;
   return ((chal + soc + strat) / 3).toFixed(1);
 }
 function threatTier(score) { return THREAT_TIERS.find(t => score <= t.max) || THREAT_TIERS[THREAT_TIERS.length-1]; }
@@ -48153,11 +48153,12 @@ function rpBuildDebug(ep) {
     // Threat scores — active + eliminated
     html += `<div style="margin-bottom:20px">
       <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#8b949e;margin-bottom:8px">THREAT SCORES</div>`;
+    const _igThreatTier = (s) => s <= 1.0 ? { label: 'Low', color: '#10b981' } : s <= 2.0 ? { label: 'Medium', color: '#f59e0b' } : s <= 3.0 ? { label: 'High', color: '#f97316' } : { label: 'Extreme', color: '#ef4444' };
     _allPlayers.map(name => {
       const ts = threatScore(name);
       const rec = _chalRec[name] || { wins: 0, podiums: 0, bombs: 0 };
       const isElim = _elimName.includes(name);
-      return { name, ts, rec, tier: threatTier(ts), isElim };
+      return { name, ts, rec, tier: _igThreatTier(ts), isElim };
     }).sort((a, b) => b.ts - a.ts).forEach(({ name, ts, rec, tier, isElim }) => {
       html += `<div style="display:flex;align-items:center;gap:8px;padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.04);${isElim ? 'opacity:0.5;background:rgba(244,112,103,0.06)' : ''}">
         ${rpPortrait(name, 'sm')}

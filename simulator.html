@@ -60590,7 +60590,15 @@ function rpBuildHellsKitchen(ep) {
     <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:#8b949e;text-align:center;margin-bottom:8px;text-transform:uppercase">Kitchen Timeline</div>`;
 
   steps.forEach((step, i) => {
-    if (i > state.idx) return; // not yet revealed
+    const isVisible = i <= state.idx;
+    if (!isVisible) {
+      // Hidden placeholder
+      html += `<div style="padding:10px;margin-bottom:4px;border:1px solid var(--border);border-radius:6px;opacity:0.08;text-align:center;cursor:pointer"
+        onclick="${_hkReveal(i)}">
+        <span style="font-size:11px;color:var(--muted)">▶</span>
+      </div>`;
+      return;
+    }
 
     if (step.stepType === 'event') {
       // Event card

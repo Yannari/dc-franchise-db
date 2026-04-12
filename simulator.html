@@ -3819,17 +3819,45 @@ function pStats(name) {
 // Post-merge threat score — how dangerous is this player to keep?
 function threatScore(name) {
   const s = pStats(name);
-  const base = (s.physical * 0.8 + s.endurance * 0.3 + s.strategic + s.social + s.boldness * 0.5 + (s.intuition + s.mental) / 2 - s.loyalty * 0.15) / 4;
-  const rec = gs.chalRecord?.[name];
-  if (!rec) return base;
-  let prestige = 0;
-  // Individual wins (post-merge only — high value, "can't vote them out" pressure)
-  prestige += rec.wins * 0.6;
-  // Podiums = top-2 in any challenge (pre + post) — consistent challenge force
-  prestige += rec.podiums * 0.2;
-  // Bombs = poor performances — drags down threat perception
-  prestige -= rec.bombs * 0.15;
-  return base + prestige;
+  const rec = gs.chalRecord?.[name] || { wins: 0, podiums: 0, bombs: 0 };
+
+  // ── 1. CHALLENGE THREAT (what you've DONE in challenges) ──
+  // Stats are early-game fallback, record takes over as episodes progress
+  const chalStatBase = s.physical * 0.15 + s.endurance * 0.12 + s.mental * 0.08 + s.intuition * 0.08;
+  const recordScore = rec.podiums * 1.0 + rec.wins * 1.5 - rec.bombs * 0.8;
+  const episodesPlayed = Math.max(1, gs.episode || 1);
+  const recordWeight = Math.min(0.7, episodesPlayed * 0.1);
+  const challengeThreat = chalStatBase * (1 - recordWeight) + recordScore * recordWeight;
+
+  // ── 2. SOCIAL THREAT (how liked/connected — observable data only) ──
+  const _activePlayers = (gs.activePlayers || []).filter(p => p !== name);
+  const avgBond = _activePlayers.length
+    ? _activePlayers.reduce((sum, p) => sum + getBond(name, p), 0) / _activePlayers.length
+    : 0;
+  const highBondCount = _activePlayers.filter(p => getBond(name, p) >= 3).length;
+  const hasShowmance = gs.showmances?.some(sh =>
+    sh.phase !== 'broken-up' && sh.players.includes(name) && sh.players.every(p => (gs.activePlayers || []).includes(p))
+  ) || false;
+  const hasSpark = gs.romanticSparks?.some(sp => sp.players.includes(name) && !sp.fake) || false;
+  const showmanceBonus = hasShowmance ? 0.5 : (hasSpark ? 0.2 : 0);
+  const socialThreat = avgBond * 0.5 + highBondCount * 0.15 + showmanceBonus + s.social * 0.08;
+
+  // ── 3. STRATEGIC THREAT (how much control — alliances, deals, advantages) ──
+  const activeAlliances = (gs.namedAlliances || []).filter(a =>
+    a.active && a.members.includes(name) && a.members.some(m => m !== name && (gs.activePlayers || []).includes(m))
+  );
+  const alliancePower = activeAlliances.reduce((sum, a) => {
+    const activeMembers = a.members.filter(m => (gs.activePlayers || []).includes(m)).length;
+    return sum + activeMembers * 0.2;
+  }, 0);
+  const activeSideDeals = (gs.sideDeals || []).filter(d =>
+    d.active && d.players?.includes(name) && d.players.every(p => (gs.activePlayers || []).includes(p))
+  ).length;
+  const hasAdvantage = gs.advantages?.some(a => a.holder === name) ? 0.8 : 0;
+  const strategicThreat = alliancePower + activeSideDeals * 0.15 + hasAdvantage + s.strategic * 0.08;
+
+  // ── COMBINED: equal weight across all three dimensions ──
+  return challengeThreat * 0.33 + socialThreat * 0.33 + strategicThreat * 0.33;
 }
 
 // [16] CUMULATIVE CHALLENGE PERFORMANCE — track wins/podiums/bombs per player.
@@ -5555,7 +5583,7 @@ function formAlliances(members, tribeLabel, challengeLabel) {
     const _confirmedIdol = gs.knownIdolHoldersThisEp?.has(a.target) || gs.knownIdolHoldersPersistent?.has(a.target);
     // Check: suspected idol? Strategic roll.
     const _maxStrategic = Math.max(..._atTribal.map(m => pStats(m).strategic));
-    const _suspectedIdol = !_confirmedIdol && threatScore(a.target) >= 5 && Math.random() < _maxStrategic * 0.06;
+    const _suspectedIdol = !_confirmedIdol && threatScore(a.target) >= 2.0 && Math.random() < _maxStrategic * 0.06;
 
     if (!_confirmedIdol && !_suspectedIdol) return;
 
@@ -5629,7 +5657,7 @@ function pickTarget(attackers, victims, challengeLabel) {
       // Pre-merge: challenge weakness matters but bonds, threat, and personal friction also drive votes
       // Strong players CAN be targeted if relationships are bad enough or they're strategic threats
       const _cwScore = challengeWeakness(v, challengeLabel);
-      const _threatMod = threatScore(v) >= 6 ? (threatScore(v) - 5) * 0.3 : 0; // emerging threats targetable even pre-merge
+      const _threatMod = threatScore(v) >= 2.5 ? (threatScore(v) - 2.0) * 0.3 : 0; // emerging threats targetable even pre-merge
       // Solo/unallied players are easier targets — no one fights for them
       const _hasAlliance = (gs.namedAlliances || []).some(a => a.active && a.members.includes(v) && a.members.some(m => m !== v && attackers.includes(m) === false));
       const _soloMod = _hasAlliance ? 0 : 0.4;
@@ -35273,8 +35301,8 @@ function simulateEpisode() {
             if (sA.strategic >= 7 && sB.strategic >= 7) addBond(a, b, 0.3);
             else if (sA.physical >= 8 && sB.physical >= 8) addBond(a, b, 0.2);
             // Reputation-based first impression: high-threat strangers are targets, not allies
-            if (threatScore(b) >= 7 && sA.strategic >= 6) addBond(a, b, -0.5);
-            if (threatScore(a) >= 7 && sB.strategic >= 6) addBond(b, a, -0.5);
+            if (threatScore(b) >= 3.0 && sA.strategic >= 6) addBond(a, b, -0.5);
+            if (threatScore(a) >= 3.0 && sB.strategic >= 6) addBond(b, a, -0.5);
           });
         });
       });
@@ -52138,7 +52166,7 @@ function rpBuildVotingPlans(ep) {
 
     // ── REMAINING ──
     if (s.loyalty <= 3) return { label: 'Wildcard', color: '#e3b341' };
-    if (threatScore(name) >= 6) return { label: 'Emerging Threat', color: '#e3b341' };
+    if (threatScore(name) >= 2.5) return { label: 'Emerging Threat', color: '#e3b341' };
     if (_heat >= 3) return { label: 'Target on Their Back', color: '#e3b341' };
     if (_avgBond <= 0.5 && _epNum <= 4) return { label: 'On the Outs', color: '#e3b341' };
     return { label: 'Active Player', color: '#484f58' };
@@ -52257,7 +52285,7 @@ function rpBuildVotingPlans(ep) {
       `The tribe can't afford to keep losing. ${target} is the reason they are.`,
       `Challenges matter. ${target} isn't pulling their weight. The tribe noticed.`,
     ]);
-    if (threatScore(target) >= 6) return _pick([
+    if (threatScore(target) >= 2.5) return _pick([
       `Threat level is climbing. ${target} is getting harder to vote out with every episode.`,
       `${target}'s game is getting louder. The people paying attention are moving before it's too late.`,
     ]);
@@ -63207,7 +63235,7 @@ function buildVPScreens(epRecord) {
       // Post-merge: immunity winner's personal call + reasoning
       const _exChBond = getBond(_tw.exileChooser, _tw.exiled);
       const _exChReason = _exChBond <= -1 ? `There's bad blood between them. This was personal.`
-        : threatScore(_tw.exiled) >= 6 ? `${_tw.exiled} is too dangerous to leave at camp unchecked.`
+        : threatScore(_tw.exiled) >= 2.5 ? `${_tw.exiled} is too dangerous to leave at camp unchecked.`
         : `${_tw.exileChooser} wants ${_tw.exiled} isolated before the vote.`;
       _exHtml += _renderTwistScene({ text: `${_tw.exileChooser} won immunity — and used that power to send ${_tw.exiled} to Exile Island. ${_exChReason}`, players: [_tw.exileChooser, _tw.exiled] });
     }
@@ -63271,7 +63299,7 @@ function buildVPScreens(epRecord) {
       const _exfTarget = _exfData.exiled;
       const _exfChBond = getBond(_exfData.chooser, _exfTarget);
       const _exfChReason = _exfChBond <= -1 ? `There's bad blood between them. This was personal.`
-        : threatScore(_exfTarget) >= 6 ? `${_exfTarget} is too dangerous to leave at camp unchecked.`
+        : threatScore(_exfTarget) >= 2.5 ? `${_exfTarget} is too dangerous to leave at camp unchecked.`
         : `${_exfData.chooser} wants ${_exfTarget} isolated before the vote.`;
       _exfHtml += _renderTwistScene({ text: `${_exfData.chooser} won immunity — and used that power to send ${_exfTarget} to Exile Island. ${_exfChReason}`, players: [_exfData.chooser, _exfTarget] });
     }

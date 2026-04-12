@@ -15259,10 +15259,10 @@ function simulateHellsKitchen(ep) {
           }
         }
 
-        // Food gobbler — only certain archetypes: physical beast, chaos-agent, comic-relief, glutton types
+        // Food gobbler — only on main/dessert (food is ready to snack on), specific archetypes only
         const _gobblerArch = players.find(pl => pl.name === p)?.archetype || '';
         const _isGobbler = ['chaos-agent', 'wildcard', 'floater', 'comic-relief'].includes(_gobblerArch) || (s.physical >= 7 && s.mental <= 4);
-        if (_isGobbler && (10 - s.mental) * 0.02 + Math.random() * 0.08 > 0.15) {
+        if (_isGobbler && course !== 'appetizer' && (10 - s.mental) * 0.02 + Math.random() * 0.08 > 0.15) {
           if (eventsThisCourse >= numEvents) return;
           const ateAmount = 0.15 + Math.random() * 0.15;
           const confess = s.loyalty * 0.06 + Math.random() * 0.3 > 0.5;
@@ -15271,9 +15271,9 @@ function simulateHellsKitchen(ep) {
           if (confess) {
             teammates.forEach(m => { if (m !== p) addBond(p, m, -0.15); });
             const confessTexts = [
-              `${p} ate a third of the ${dishes[t.name][course]}. ${pr.Sub} confesses immediately. "I'm sorry, I was SO hungry." The team is annoyed but appreciates the honesty.`,
-              `"I... I ate it. I ate some of the food." ${p} hangs ${pr.posAdj} head. The team sighs. At least ${pr.sub} owned up to it.`,
-              `${p} walks up to the chef with crumbs on ${pr.posAdj} face. "I have a confession." The team groans.`
+              `${p} has been snacking on the ingredients while nobody was looking. When half the ${dishes[t.name][course]} prep is gone, ${pr.sub} confesses. "I was SO hungry." The team stares.`,
+              `"I... I ate some of the prep." ${p} holds up empty hands. The team has to start over with what's left.`,
+              `${p} comes clean — ${pr.sub}'s been eating the ingredients between steps. There's barely enough left to plate. The team scrambles.`
             ];
             _pushCourseEvent({
               type: 'food-gobbler-confess',
@@ -15287,9 +15287,9 @@ function simulateHellsKitchen(ep) {
           } else {
             addCookingHeat(p, 1.5, 2);
             const hideTexts = [
-              `The ${dishes[t.name][course]} is suspiciously smaller than it should be. ${p} wipes ${pr.posAdj} mouth and says nothing. Nobody saw... right?`,
-              `${p} ate a huge portion of the dish and hid the evidence. If the team scores low, they'll figure it out.`,
-              `Someone raided the ${dishes[t.name][course]}. ${p} points at the other team. "Must have been them." It was not them.`
+              `The prep station is suspiciously emptier than it should be. ${p} wipes ${pr.posAdj} mouth and says nothing. Nobody saw... right?`,
+              `${p} has been sneaking bites of the ingredients all through cooking. The portion size is noticeably smaller. ${pr.Sub} blames the recipe.`,
+              `Ingredients keep disappearing. ${p} points at the other team. "Must have been them." It was not them.`
             ];
             _pushCourseEvent({
               type: 'food-gobbler-hide',

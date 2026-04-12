@@ -14135,13 +14135,26 @@ function simulatePaintballHunt(ep) {
       if ((ev.type === 'pbCamouflage' || ev.type === 'pbTreeClimb') && ev.players.some(p => _ffVictims.has(p))) return false;
       return true;
     });
-    const _timeline = [];
-    _realM.forEach(m => _timeline.push({ kind: 'matchup', ...m }));
-    _validEvents.forEach(ev => _timeline.push({ kind: 'event', ...ev }));
-    // Shuffle for natural interleaving
-    for (let _ti = _timeline.length - 1; _ti > 0; _ti--) {
+    // Separate FF chains (betrayal→retaliation→war must stay in order) from shuffleable items
+    const _ffChainTypes = new Set(['pbFriendlyFireAccident', 'pbFriendlyFireDeliberate', 'pbRetaliation', 'pbWarEscalation']);
+    const _ffChain = _validEvents.filter(ev => _ffChainTypes.has(ev.type));
+    const _nonChainEvents = _validEvents.filter(ev => !_ffChainTypes.has(ev.type));
+
+    // Build shuffleable items (matchups + non-chain events)
+    const _shuffleable = [];
+    _realM.forEach(m => _shuffleable.push({ kind: 'matchup', ...m }));
+    _nonChainEvents.forEach(ev => _shuffleable.push({ kind: 'event', ...ev }));
+    for (let _ti = _shuffleable.length - 1; _ti > 0; _ti--) {
       const _tj = Math.floor(Math.random() * (_ti + 1));
-      [_timeline[_ti], _timeline[_tj]] = [_timeline[_tj], _timeline[_ti]];
+      [_shuffleable[_ti], _shuffleable[_tj]] = [_shuffleable[_tj], _shuffleable[_ti]];
+    }
+
+    // Insert FF chain as a block at a random position in the shuffled timeline
+    const _timeline = [..._shuffleable];
+    if (_ffChain.length) {
+      const _insertAt = Math.floor(Math.random() * (_timeline.length + 1));
+      const _chainItems = _ffChain.map(ev => ({ kind: 'event', ...ev }));
+      _timeline.splice(_insertAt, 0, ..._chainItems);
     }
     // Append "nothing" batch at the end
     if (_nothingM.length) _timeline.push({ kind: 'nothing-batch', hunters: _nothingM.map(m => m.hunter) });

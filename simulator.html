@@ -4320,6 +4320,7 @@ function computeHeat(name, tribalPlayers, alliances) {
   if (gs._upTheCreekHeat?.[name] && ((gs.episode || 0) + 1) < gs._upTheCreekHeat[name].expiresEp) heat += gs._upTheCreekHeat[name].amount;
   if (gs._paintballHeat?.[name] && ((gs.episode || 0) + 1) < gs._paintballHeat[name].expiresEp) heat += gs._paintballHeat[name].amount;
   if (gs._cookingHeat?.[name] && ((gs.episode || 0) + 1) < gs._cookingHeat[name].expiresEp) heat += gs._cookingHeat[name].amount;
+  if (gs._trustHeat?.[name] && ((gs.episode || 0) + 1) < gs._trustHeat[name].expiresEp) heat += gs._trustHeat[name].amount;
   // ── Volunteer Exile Duel: volunteer WANTS to be voted out ──
   if (gs._volunteerDuelHeat?.[name] === ((gs.episode || 0) + 1)) heat += 8.0;
   // Volunteer duel winner returns with reduced heat
@@ -16748,6 +16749,1444 @@ function simulateHellsKitchen(ep) {
   ep.tribalPlayers = loser.members.filter(m => gs.activePlayers.includes(m));
   ep.challengeLabel = "Hell's Kitchen";
   ep.challengeCategory = 'mental';
+
+  // ── Challenge member scores ──
+  ep.chalMemberScores = personalScores;
+  updateChalRecord(ep);
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// ENGINE: WHO CAN YOU TRUST?
+// ══════════════════════════════════════════════════════════════════════
+
+function simulateTrustChallenge(ep) {
+  const tribes = gs.tribes;
+  const _rp = arr => arr[Math.floor(Math.random() * arr.length)];
+  const host = seasonConfig.host || 'Chris';
+  const epNum = (gs.episode || 0) + 1;
+
+  if (!ep.campEvents) ep.campEvents = {};
+  tribes.forEach(t => { if (!ep.campEvents[t.name]) ep.campEvents[t.name] = { pre: [], post: [] }; });
+
+  const allMembers = tribes.flatMap(t => t.members);
+  const tribeOf = {};
+  tribes.forEach(t => t.members.forEach(m => { tribeOf[m] = t.name; }));
+
+  const personalScores = {};
+  allMembers.forEach(m => { personalScores[m] = 0; });
+
+  const phases = { pairReveal: [], round1: [], round2: [], round3a: [], round3b: [], round3c: [], result: [] };
+  const allEvents = [];
+  const timeline = [];
+  const sabotageLog = [];
+  const poisonedLog = [];
+  let ruleBreakData = null;
+  let redemptionData = null;
+
+  if (!gs._trustHeat) gs._trustHeat = {};
+  if (!gs.lingeringInjuries) gs.lingeringInjuries = {};
+
+  // ── Archetype clash detection ──
+  const CLASH_PAIRS = [['villain','hero'],['schemer','loyal-soldier'],['chaos-agent','mastermind'],['hothead','strategist']];
+  function isArchetypeClash(a, b) {
+    const archA = players.find(p => p.name === a)?.archetype || '';
+    const archB = players.find(p => p.name === b)?.archetype || '';
+    return CLASH_PAIRS.some(([x,y]) => (archA === x && archB === y) || (archA === y && archB === x));
+  }
+
+  // ── Emotional state debuff: recent loss, betrayal, showmance breakup ──
+  function hasEmotionalDebuff(name) {
+    const prevEp = gs.episodeHistory?.length ? gs.episodeHistory[gs.episodeHistory.length - 1] : null;
+    if (prevEp?.eliminated && getBond(name, prevEp.eliminated) >= 3) return true;
+    if (gs.showmances?.some(s => s.broken && s.players.includes(name))) return true;
+    return false;
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // STEP 1: PAIR SELECTION — Chris picks for maximum drama
+  // ══════════════════════════════════════════════════════════════════
+  const pairsData = {}; // tribeName -> { round1, round2, round3a, round3b, round3c }
+  const rolesData = {}; // tribeName -> { round1: { climber, belayer }, round2: { cook, eater }, ... }
+  const negotiationData = {}; // tribeName -> { round1: { score, correct, event }, ... }
+  const usedPlayers = {}; // tribeName -> Set of players already assigned to rounds 1-2
+  const poisonedPlayers = new Set(); // players who got food poisoned, can't do round 3
+
+  tribes.forEach(t => {
+    pairsData[t.name] = {};
+    rolesData[t.name] = {};
+    negotiationData[t.name] = {};
+    usedPlayers[t.name] = new Set();
+    const members = t.members.filter(m => gs.activePlayers.includes(m));
+
+    // ── Round 1 — Drama Pair: lowest bond ──
+    let bestPair = null, bestBond = Infinity;
+    for (let i = 0; i < members.length; i++) {
+      for (let j = i + 1; j < members.length; j++) {
+        const b = getBond(members[i], members[j]);
+        if (b < bestBond) { bestBond = b; bestPair = [members[i], members[j]]; }
+      }
+    }
+    // If no pair has bond <= 1, pick biggest archetype clash
+    if (bestBond > 1) {
+      let found = false;
+      for (let i = 0; i < members.length && !found; i++) {
+        for (let j = i + 1; j < members.length && !found; j++) {
+          if (isArchetypeClash(members[i], members[j])) {
+            bestPair = [members[i], members[j]];
+            found = true;
+          }
+        }
+      }
+      if (!found) bestPair = [members[0], members[1]]; // fallback
+    }
+    pairsData[t.name].round1 = bestPair;
+    usedPlayers[t.name].add(bestPair[0]);
+    usedPlayers[t.name].add(bestPair[1]);
+
+    // ── Round 2 — Wild Card Pair ──
+    const remaining2 = members.filter(m => !usedPlayers[t.name].has(m));
+    let r2Pair = null;
+
+    // Try showmance/spark pair
+    if (seasonConfig.romance === 'enabled') {
+      const sparkPair = remaining2.length >= 2 ? gs.showmances?.find(s => s.players.every(p => remaining2.includes(p))) ||
+        gs.romanticSparks?.find(s => s.players.every(p => remaining2.includes(p))) : null;
+      if (sparkPair) r2Pair = [...sparkPair.players];
+    }
+
+    // Try archetype clash from remaining
+    if (!r2Pair && remaining2.length >= 2) {
+      for (let i = 0; i < remaining2.length && !r2Pair; i++) {
+        for (let j = i + 1; j < remaining2.length && !r2Pair; j++) {
+          if (isArchetypeClash(remaining2[i], remaining2[j])) r2Pair = [remaining2[i], remaining2[j]];
+        }
+      }
+    }
+
+    // Most neutral pair (bond closest to 0)
+    if (!r2Pair && remaining2.length >= 2) {
+      let bestNeutral = null, bestDist = Infinity;
+      for (let i = 0; i < remaining2.length; i++) {
+        for (let j = i + 1; j < remaining2.length; j++) {
+          const dist = Math.abs(getBond(remaining2[i], remaining2[j]));
+          if (dist < bestDist) { bestDist = dist; bestNeutral = [remaining2[i], remaining2[j]]; }
+        }
+      }
+      r2Pair = bestNeutral;
+    }
+
+    // Fallback: just pick two remaining
+    if (!r2Pair) {
+      if (remaining2.length >= 2) r2Pair = [remaining2[0], remaining2[1]];
+      else {
+        // Less than 2 remaining — reuse from all members
+        const pool = members.filter(m => !usedPlayers[t.name].has(m) || remaining2.length < 2);
+        r2Pair = pool.length >= 2 ? [pool[0], pool[1]] : [members[0], members[1]];
+      }
+    }
+    pairsData[t.name].round2 = r2Pair;
+    usedPlayers[t.name].add(r2Pair[0]);
+    usedPlayers[t.name].add(r2Pair[1]);
+
+    // ── Round 3 — Remaining players, 3 sub-rounds ──
+    // Will be filled after round 2 (poisoned players removed)
+  });
+
+  // ══════════════════════════════════════════════════════════════════
+  // ROLE NEGOTIATION HELPER
+  // ══════════════════════════════════════════════════════════════════
+  function negotiateRoles(a, b, rolePrimary, roleSecondary, primaryStat, tribeName, roundKey) {
+    const sA = pStats(a), sB = pStats(b);
+    const bond = getBond(a, b);
+    const avgTemp = (sA.temperament + sB.temperament) / 2;
+    const maxBold = Math.max(sA.boldness, sB.boldness);
+    const negScore = bond * 0.03 + avgTemp * 0.04 + (10 - maxBold) * 0.02 + Math.random() * 0.15;
+    const correct = negScore > 0.5;
+
+    let primary, secondary;
+    if (correct) {
+      // Best-stat player gets the matching role
+      primary = sA[primaryStat] >= sB[primaryStat] ? a : b;
+      secondary = primary === a ? b : a;
+    } else {
+      // Wrong assignment — worse-stat player insists on the glory role
+      primary = sA[primaryStat] < sB[primaryStat] ? a : b;
+      secondary = primary === a ? b : a;
+    }
+
+    // Negotiation event text
+    const prA = pronouns(a), prB = pronouns(b);
+    let negEvent = '';
+    if (sA.boldness >= 6 && sB.boldness >= 6 && avgTemp < 5) {
+      negEvent = _rp([
+        `"I'M doing this." "No, I'M doing this." ${a} and ${b} are nose to nose. Neither budges.`,
+        `${a} grabs the gear. ${b} grabs it back. ${host} watches, amused. "Work it out, people."`,
+        `"You think YOU can handle this?" ${a} snaps. ${b} fires back: "Better than you." The pair squares off.`,
+      ]);
+    } else if (bond >= 3 && avgTemp >= 6) {
+      negEvent = _rp([
+        `${a} nods at ${b}. "You ${rolePrimary === primary ? rolePrimary : roleSecondary}, I'll ${rolePrimary === primary ? roleSecondary : rolePrimary}. I trust you." ${b}: "Deal."`,
+        `They barely need to discuss it. ${a} and ${b} have worked together enough to know their strengths.`,
+        `"You're better at this," ${a} says honestly. ${b} appreciates the maturity. They sort it out calmly.`,
+      ]);
+    } else if (sA.boldness >= 7 && sB.boldness <= 4) {
+      negEvent = _rp([
+        `${a} takes charge immediately. ${b} says nothing — but ${prB.posAdj} jaw tightens.`,
+        `"I'll handle this." ${a} doesn't ask. ${b} lets it happen. For now.`,
+      ]);
+    } else if (sB.boldness >= 7 && sA.boldness <= 4) {
+      negEvent = _rp([
+        `${b} takes charge immediately. ${a} says nothing — but ${prA.posAdj} jaw tightens.`,
+        `"I'll handle this." ${b} doesn't ask. ${a} lets it happen. For now.`,
+      ]);
+    } else if (sA.boldness <= 4 && sB.boldness <= 4) {
+      negEvent = _rp([
+        `${a} and ${b} stare at each other. Neither wants to decide. "You go." "No, you go." Painful.`,
+        `An awkward silence hangs between them. ${host} taps ${host === 'Chris' ? 'his' : 'the'} watch. "Any day now."`,
+      ]);
+    } else if (sA.strategic >= 7 || sB.strategic >= 7) {
+      const strategist = sA.strategic >= 7 ? a : b;
+      const other = strategist === a ? b : a;
+      negEvent = _rp([
+        `${strategist} analyzes the situation. "You're better at this. I'll support." ${other} blinks — nobody's been that honest before.`,
+        `"Statistically, you should take the lead here." ${strategist}'s logic is hard to argue with. ${other} agrees.`,
+      ]);
+    } else {
+      negEvent = _rp([
+        `They work it out with minimal drama. Not friends, not enemies — just practical.`,
+        `A brief discussion. ${a} takes one role, ${b} the other. It's decided.`,
+      ]);
+    }
+
+    // Personal score for role negotiation
+    if (correct) { personalScores[a] = (personalScores[a] || 0) + 0.5; personalScores[b] = (personalScores[b] || 0) + 0.5; }
+    else { personalScores[a] = (personalScores[a] || 0) - 0.5; personalScores[b] = (personalScores[b] || 0) - 0.5; }
+
+    negotiationData[tribeName][roundKey] = { score: negScore, correct, event: negEvent };
+
+    const roles = {};
+    roles[rolePrimary] = primary;
+    roles[roleSecondary] = secondary;
+    rolesData[tribeName][roundKey] = roles;
+    return { primary, secondary, correct, negScore, negEvent };
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // PAIR REVEAL PHASE — timeline items
+  // ══════════════════════════════════════════════════════════════════
+  tribes.forEach(t => {
+    const r1 = pairsData[t.name].round1;
+    const r2 = pairsData[t.name].round2;
+    const bond1 = getBond(r1[0], r1[1]);
+    const bond2 = getBond(r2[0], r2[1]);
+    const bondLabel = b => b <= 0 ? 'rivals' : b <= 3 ? 'uncertain' : 'allies';
+
+    phases.pairReveal.push({
+      kind: 'event', _tribe: t.name,
+      type: 'pair-reveal-r1',
+      text: `${host} pairs ${r1[0]} and ${r1[1]} for the Rock Climb. Bond: ${bond1.toFixed(1)} (${bondLabel(bond1)}).`,
+      players: [...r1], tribe: t.name
+    });
+    phases.pairReveal.push({
+      kind: 'event', _tribe: t.name,
+      type: 'pair-reveal-r2',
+      text: `${host} pairs ${r2[0]} and ${r2[1]} for the Fugu Cook. Bond: ${bond2.toFixed(1)} (${bondLabel(bond2)}).`,
+      players: [...r2], tribe: t.name
+    });
+  });
+
+  // ══════════════════════════════════════════════════════════════════
+  // ROUND 1 — EXTREME ROCK CLIMB
+  // ══════════════════════════════════════════════════════════════════
+  const roundScores = {};
+  tribes.forEach(t => { roundScores[t.name] = {}; });
+  const roundWinners = {};
+
+  tribes.forEach(t => {
+    const pair = pairsData[t.name].round1;
+    const neg = negotiateRoles(pair[0], pair[1], 'climber', 'belayer', 'physical', t.name, 'round1');
+    const climberName = neg.primary, belayerName = neg.secondary;
+    const sClimber = pStats(climberName), sBelayer = pStats(belayerName);
+    const bond = getBond(climberName, belayerName);
+    const prClimber = pronouns(climberName), prBelayer = pronouns(belayerName);
+    const archBelayer = players.find(p => p.name === belayerName)?.archetype || '';
+
+    // Negotiation event
+    phases.round1.push({
+      kind: 'event', _tribe: t.name, type: 'negotiation-r1',
+      text: neg.negEvent, players: [climberName, belayerName], tribe: t.name
+    });
+
+    let climbScore = sClimber.physical * 0.04 + sClimber.endurance * 0.03 + Math.random() * 0.12
+                     + bond * 0.025 + sBelayer.loyalty * 0.02 + sBelayer.temperament * 0.015;
+
+    // Emotional debuff
+    if (hasEmotionalDebuff(climberName)) climbScore -= 0.05;
+    if (hasEmotionalDebuff(belayerName)) climbScore -= 0.03;
+
+    let sabotaged = false;
+    let heroicCatch = false;
+
+    // ── Belayer sabotage check ──
+    if (bond <= 0 && ['villain','schemer','chaos-agent'].includes(archBelayer)) {
+      const sabChance = (10 - sBelayer.loyalty) * 0.02 + (0 - bond) * 0.015 + (10 - sBelayer.temperament) * 0.01;
+      if (Math.random() < sabChance) {
+        sabotaged = true;
+        const isHumiliation = Math.random() < 0.35;
+        if (isHumiliation) {
+          // Humiliation pull
+          climbScore -= 0.1;
+          addBond(climberName, belayerName, -1.5);
+          personalScores[climberName] = (personalScores[climberName] || 0) - 0.5;
+          personalScores[belayerName] = (personalScores[belayerName] || 0) - 2.0;
+          gs._trustHeat[belayerName] = { amount: 1.0, expiresEp: epNum + 1 };
+          // Popularity shifts
+          if (typeof updatePopularity === 'function') { updatePopularity(climberName, 3); updatePopularity(belayerName, -2); }
+
+          const sabText = _rp([
+            `${belayerName} smirks and pulls the second rope. ${climberName} is humiliated in front of everyone.`,
+            `A yank on the wrong line — ${climberName}'s harness goes haywire. ${belayerName} doesn't even try to hide the grin.`,
+            `"Oops." ${belayerName}'s voice is dripping with sarcasm as ${prClimber.Sub} ${prClimber.sub === 'they' ? 'dangle' : 'dangles'} in shame.`,
+          ]);
+          phases.round1.push({ kind: 'event', _tribe: t.name, type: 'sabotage-humiliation', text: sabText, players: [belayerName, climberName], tribe: t.name });
+          allEvents.push({ type: 'sabotage-humiliation', tribe: t.name, saboteur: belayerName, victim: climberName, text: sabText });
+          sabotageLog.push({ round: 'round1', type: 'humiliation', saboteur: belayerName, victim: climberName, tribe: t.name });
+
+          // Tribe reaction
+          t.members.filter(m => m !== climberName && m !== belayerName).forEach(m => {
+            const mArch = players.find(p => p.name === m)?.archetype || '';
+            if (['villain','schemer'].includes(mArch)) addBond(m, belayerName, 0.2);
+            else if (['hero','loyal-soldier'].includes(mArch)) addBond(m, belayerName, -0.3);
+            else addBond(m, belayerName, -0.1);
+          });
+
+          ep.campEvents[t.name].post.push({
+            type: 'trustSabotageHumiliation', players: [belayerName, climberName],
+            text: `Everyone's talking about what ${belayerName} did to ${climberName} on the wall. The humiliation was public.`,
+            consequences: `${climberName} popularity +3. ${belayerName} becomes the villain of the episode.`,
+            badgeText: 'SABOTAGE', badgeClass: 'red'
+          });
+        } else {
+          // Rope drop
+          climbScore = -999; // auto-lose
+          addBond(climberName, belayerName, -2.0);
+          personalScores[climberName] = (personalScores[climberName] || 0) - 0.5;
+          personalScores[belayerName] = (personalScores[belayerName] || 0) - 2.0;
+          gs._trustHeat[belayerName] = { amount: 2.5, expiresEp: epNum + 3 };
+
+          const sabText = _rp([
+            `${belayerName} lets go of the rope. ${climberName} plummets. The silence is deafening.`,
+            `The rope goes slack. ${climberName} falls. ${belayerName} watches. Doesn't flinch.`,
+            `"Hold the rope!" ${climberName} screams. ${belayerName}'s hands are already at ${prBelayer.posAdj} sides.`,
+          ]);
+          phases.round1.push({ kind: 'event', _tribe: t.name, type: 'sabotage-ropedrop', text: sabText, players: [belayerName, climberName], tribe: t.name });
+          allEvents.push({ type: 'sabotage-ropedrop', tribe: t.name, saboteur: belayerName, victim: climberName, text: sabText });
+          sabotageLog.push({ round: 'round1', type: 'rope-drop', saboteur: belayerName, victim: climberName, tribe: t.name });
+
+          // Tribe reaction
+          t.members.filter(m => m !== climberName && m !== belayerName).forEach(m => {
+            const mArch = players.find(p => p.name === m)?.archetype || '';
+            if (['villain','schemer'].includes(mArch)) addBond(m, belayerName, 0.2);
+            else if (['hero','loyal-soldier'].includes(mArch)) addBond(m, belayerName, -0.3);
+            else addBond(m, belayerName, -0.15);
+          });
+
+          // Spectators react
+          allMembers.filter(m => tribeOf[m] !== t.name).forEach(m => {
+            addBond(m, belayerName, -0.3);
+          });
+
+          ep.campEvents[t.name].post.push({
+            type: 'trustSabotageRopeDrop', players: [belayerName, climberName],
+            text: `${belayerName} dropped ${climberName}. On purpose. The tribe is fractured — do they vote out the saboteur or the one who provoked it?`,
+            consequences: `Bond crash -2.0. Heat +2.5 for 3 episodes. Tribal wedge.`,
+            badgeText: 'SABOTAGE', badgeClass: 'red'
+          });
+        }
+      }
+    }
+
+    // ── Obstacles (if no sabotage) ──
+    if (!sabotaged) {
+      // Explosion (30%)
+      if (Math.random() < 0.30) {
+        const endCheck = sClimber.endurance * 0.04 + Math.random() * 0.15;
+        if (endCheck > 0.35) {
+          climbScore += 0.03;
+          personalScores[climberName] = (personalScores[climberName] || 0) + 0.5;
+          addBond(climberName, belayerName, 0.2);
+          const txt = _rp([
+            `An explosion rocks the wall! ${climberName} grabs hold — fingers white — and keeps climbing. ${belayerName} is impressed.`,
+            `BOOM. The wall shakes. ${climberName} slips but catches ${prClimber.ref}. Pure grit.`,
+          ]);
+          phases.round1.push({ kind: 'event', _tribe: t.name, type: 'explosion-pass', text: txt, players: [climberName, belayerName], tribe: t.name });
+          allEvents.push({ type: 'explosion-pass', tribe: t.name, text: txt });
+        } else {
+          climbScore -= 0.05;
+          // Belayer response
+          if (sBelayer.loyalty >= 5) {
+            heroicCatch = true;
+            addBond(climberName, belayerName, 0.3);
+            personalScores[belayerName] = (personalScores[belayerName] || 0) + 1.5;
+            const txt = _rp([
+              `The explosion sends ${climberName} falling — but ${belayerName} holds the rope. Hands burning. Doesn't let go.`,
+              `${climberName} falls. ${belayerName} digs in, catches the weight. "I got you!"`,
+            ]);
+            phases.round1.push({ kind: 'event', _tribe: t.name, type: 'heroic-catch', text: txt, players: [belayerName, climberName], tribe: t.name });
+            allEvents.push({ type: 'heroic-catch', tribe: t.name, catcher: belayerName, fallen: climberName, text: txt });
+          } else {
+            addBond(climberName, belayerName, -0.2);
+            const txt = `${climberName} falls after the explosion. ${belayerName} reacts late — barely catches ${prClimber.obj}. ${climberName} hangs there, staring up. The trust is gone.`;
+            phases.round1.push({ kind: 'event', _tribe: t.name, type: 'explosion-fail', text: txt, players: [climberName, belayerName], tribe: t.name });
+            allEvents.push({ type: 'explosion-fail', tribe: t.name, text: txt });
+          }
+        }
+      }
+
+      // Habanero spray (25%)
+      if (Math.random() < 0.25) {
+        const mentalCheck = sClimber.mental * 0.04 + Math.random() * 0.15;
+        if (mentalCheck > 0.35) {
+          const txt = `Habanero spray hits ${climberName} in the face. ${prClimber.Sub} doesn't flinch. ${belayerName} gains respect.`;
+          addBond(climberName, belayerName, 0.1);
+          phases.round1.push({ kind: 'event', _tribe: t.name, type: 'habanero-pass', text: txt, players: [climberName], tribe: t.name });
+          allEvents.push({ type: 'habanero-pass', tribe: t.name, text: txt });
+        } else {
+          if (bond > 0 && sBelayer.loyalty >= 5) {
+            climbScore += bond * 0.01;
+            addBond(climberName, belayerName, 0.3);
+            const txt = `Habanero spray! ${climberName} screams, loses grip. ${belayerName} pulls the slack tight — saves ${prClimber.obj}. "I've got the rope. Focus."`;
+            phases.round1.push({ kind: 'event', _tribe: t.name, type: 'habanero-save', text: txt, players: [belayerName, climberName], tribe: t.name });
+            allEvents.push({ type: 'habanero-save', tribe: t.name, text: txt });
+          } else {
+            climbScore -= 0.04;
+            const txt = _rp([
+              `Habanero spray blinds ${climberName}. ${prClimber.Sub} grabs ${prClimber.posAdj} face, loses grip. ${belayerName} laughs. "Not my problem."`,
+              `${climberName} gets a face full of habanero. ${belayerName} watches. Doesn't help. Doesn't care.`,
+            ]);
+            phases.round1.push({ kind: 'event', _tribe: t.name, type: 'habanero-fail', text: txt, players: [climberName, belayerName], tribe: t.name });
+            allEvents.push({ type: 'habanero-fail', tribe: t.name, text: txt });
+          }
+        }
+      }
+
+      // Oil slick (20%)
+      if (Math.random() < 0.20) {
+        const physCheck = sClimber.physical * 0.04 + Math.random() * 0.15;
+        if (physCheck > 0.35) {
+          const txt = `Oil slick on the wall! ${climberName} adjusts ${prClimber.posAdj} grip and keeps going. Smooth recovery.`;
+          phases.round1.push({ kind: 'event', _tribe: t.name, type: 'oil-pass', text: txt, players: [climberName], tribe: t.name });
+          allEvents.push({ type: 'oil-pass', tribe: t.name, text: txt });
+        } else {
+          climbScore -= 0.04;
+          if (sBelayer.loyalty >= 5 && bond > 0) {
+            const txt = `${climberName} hits the oil slick and slides. ${belayerName} was watching — catches the slack immediately. Safe.`;
+            phases.round1.push({ kind: 'event', _tribe: t.name, type: 'oil-caught', text: txt, players: [belayerName, climberName], tribe: t.name });
+          } else {
+            addBond(climberName, belayerName, -0.5);
+            const isBelayerDistracted = bond <= 0 || sBelayer.strategic >= 7;
+            const txt = isBelayerDistracted
+              ? `${climberName} slips on oil. ${belayerName} was ${bond <= 0 ? 'talking to spectators' : 'thinking about the game'} — reacts too late. ${climberName} hits the ground.`
+              : `${climberName} slips. ${belayerName} fumbles the rope. ${climberName} crashes down hard.`;
+            phases.round1.push({ kind: 'event', _tribe: t.name, type: 'oil-crash', text: txt, players: [climberName, belayerName], tribe: t.name });
+            allEvents.push({ type: 'oil-crash', tribe: t.name, text: txt });
+            // Possible injury
+            if (Math.random() < 0.25) {
+              gs.lingeringInjuries[climberName] = { ep: epNum, duration: 1, type: 'climbing-fall', penalty: 0.5 + Math.random() * 0.5 };
+            }
+          }
+        }
+      }
+
+      // Belayer encouragement (bond >= 3)
+      if (bond >= 3 && !sabotaged) {
+        climbScore += 0.05;
+        addBond(climberName, belayerName, 0.2);
+        const txt = _rp([
+          `"You've got this! Keep going!" ${belayerName} shouts genuine encouragement. ${climberName} pushes harder.`,
+          `${belayerName} locks eyes with ${climberName}: "I'm right here. Trust the rope." ${climberName} climbs on.`,
+        ]);
+        phases.round1.push({ kind: 'event', _tribe: t.name, type: 'belayer-encourage', text: txt, players: [belayerName, climberName], tribe: t.name });
+        allEvents.push({ type: 'belayer-encourage', tribe: t.name, text: txt });
+      }
+
+      // Belayer distraction (bond <= 0)
+      if (bond <= 0 && !sabotaged) {
+        addBond(climberName, belayerName, -0.2);
+        const txt = _rp([
+          `${belayerName} checks ${prBelayer.posAdj} nails while ${climberName} climbs. ${climberName} notices.`,
+          `${belayerName} is chatting with the spectators. ${climberName} is twenty feet up. The rope is loose.`,
+        ]);
+        phases.round1.push({ kind: 'event', _tribe: t.name, type: 'belayer-distracted', text: txt, players: [belayerName, climberName], tribe: t.name });
+        allEvents.push({ type: 'belayer-distracted', tribe: t.name, text: txt });
+        ep.campEvents[t.name].post.push({
+          type: 'trustBelayerDistracted', players: [climberName, belayerName],
+          text: `"I saw you not paying attention up there. I was trusting you with my life." ${climberName} confronts ${belayerName} at camp.`,
+          consequences: 'Bond -0.2. Tribal talking point.', badgeText: 'DISTRUST', badgeClass: 'orange'
+        });
+      }
+
+      // Summit moment
+      if (climbScore > 0) {
+        if (bond <= 0 && !sabotaged) {
+          addBond(climberName, belayerName, 0.3);
+          const txt = _rp([
+            `${climberName} reaches the top. Looks down at ${belayerName}. "I didn't think you'd hold the rope." "${prBelayer.Sub === 'They' ? 'They' : prBelayer.Sub} almost didn't."`,
+            `Summit. ${climberName} and ${belayerName} share a look. Not friendship — but something shifted.`,
+          ]);
+          phases.round1.push({ kind: 'event', _tribe: t.name, type: 'summit-rivals', text: txt, players: [climberName, belayerName], tribe: t.name });
+        } else if (!sabotaged) {
+          const txt = `${climberName} reaches the top! ${belayerName} cheers from below. High-five at the bottom.`;
+          phases.round1.push({ kind: 'event', _tribe: t.name, type: 'summit-success', text: txt, players: [climberName, belayerName], tribe: t.name });
+        }
+      }
+    }
+
+    roundScores[t.name].round1 = climbScore;
+  });
+
+  // Determine round 1 winner
+  {
+    const sorted = [...tribes].sort((a, b) => (roundScores[b.name].round1 || -999) - (roundScores[a.name].round1 || -999));
+    const r1Winner = sorted[0];
+    roundWinners.round1 = r1Winner.name;
+    // Personal scores for round win/loss
+    tribes.forEach(t => {
+      const pair = pairsData[t.name].round1;
+      if (t.name === r1Winner.name) {
+        pair.forEach(p => { personalScores[p] = (personalScores[p] || 0) + 2.0; });
+      } else {
+        pair.forEach(p => { personalScores[p] = (personalScores[p] || 0) - 0.5; });
+      }
+    });
+    const r1Text = `Round 1 — Rock Climb: ${r1Winner.name} wins!`;
+    phases.round1.push({ kind: 'event', _tribe: 'cross', type: 'round1-result', text: r1Text, players: [] });
+    timeline.push({ kind: 'event', type: 'round-result', round: 1, winner: r1Winner.name, text: r1Text });
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // ROUND 2 — FUGU SASHIMI
+  // ══════════════════════════════════════════════════════════════════
+  tribes.forEach(t => {
+    const pair = pairsData[t.name].round2;
+    const neg = negotiateRoles(pair[0], pair[1], 'cook', 'eater', 'intuition', t.name, 'round2');
+    const cookName = neg.primary, eaterName = neg.secondary;
+    const sCook = pStats(cookName), sEater = pStats(eaterName);
+    const bond = getBond(cookName, eaterName);
+    const prCook = pronouns(cookName), prEater = pronouns(eaterName);
+    const archCook = players.find(p => p.name === cookName)?.archetype || '';
+
+    // Negotiation event
+    phases.round2.push({
+      kind: 'event', _tribe: t.name, type: 'negotiation-r2',
+      text: neg.negEvent, players: [cookName, eaterName], tribe: t.name
+    });
+
+    let cookScore = sCook.intuition * 0.04 + sCook.mental * 0.03 + Math.random() * 0.12
+                    + bond * 0.02 + sCook.loyalty * 0.02;
+
+    if (hasEmotionalDebuff(cookName)) cookScore -= 0.05;
+
+    let wasPoisoned = false;
+    let sabotaged2 = false;
+    let eaterRefused = false;
+
+    // ── Cook sabotage check ──
+    if (bond <= -1 && ['villain','schemer'].includes(archCook)) {
+      const botchChance = (10 - sCook.loyalty) * 0.02;
+      if (Math.random() < botchChance) {
+        sabotaged2 = true;
+        wasPoisoned = true;
+        addBond(cookName, eaterName, -2.0);
+        personalScores[cookName] = (personalScores[cookName] || 0) - 2.0;
+        personalScores[eaterName] = (personalScores[eaterName] || 0) - 1.0;
+        gs._trustHeat[cookName] = { amount: 2.0, expiresEp: epNum + 2 };
+        gs.lingeringInjuries[eaterName] = { ep: epNum, duration: 1, type: 'food-poisoned', penalty: 1.0 + Math.random() };
+        poisonedPlayers.add(eaterName);
+        cookScore = -999; // auto-lose
+
+        const sabText = _rp([
+          `${cookName} prepares the fugu with a little too much precision. ${eaterName} bites in — and immediately turns green.`,
+          `"Here. Eat." ${cookName} slides the plate over. ${eaterName} tastes it. Five seconds later — face whack, screaming, collapse.`,
+          `Did ${cookName} do it on purpose? The kitchen cameras will tell. ${eaterName} is already on the ground.`,
+        ]);
+        phases.round2.push({ kind: 'event', _tribe: t.name, type: 'deliberate-botch', text: sabText, players: [cookName, eaterName], tribe: t.name });
+        allEvents.push({ type: 'deliberate-botch', tribe: t.name, saboteur: cookName, victim: eaterName, text: sabText });
+        sabotageLog.push({ round: 'round2', type: 'deliberate-botch', saboteur: cookName, victim: eaterName, tribe: t.name });
+
+        ep.campEvents[t.name].post.push({
+          type: 'trustDeliberatePoisoning', players: [cookName, eaterName],
+          text: `"Did ${cookName} poison ${eaterName} on purpose?" The tribe is split. ${cookName}'s allies look away. Everyone else wants answers.`,
+          consequences: `Heat +2.0 for 2 episodes. Bond crash -2.0.`,
+          badgeText: 'POISONED', badgeClass: 'red'
+        });
+      }
+    }
+
+    // ── Poisoning check (accidental) ──
+    if (!sabotaged2) {
+      const poisonRisk = (10 - sCook.mental) * 0.03 + (10 - sCook.intuition) * 0.02 + Math.random() * 0.1;
+      if (poisonRisk > 0.4) {
+        wasPoisoned = true;
+        personalScores[eaterName] = (personalScores[eaterName] || 0) - 1.0;
+        gs.lingeringInjuries[eaterName] = { ep: epNum, duration: 1, type: 'food-poisoned', penalty: 1.0 + Math.random() };
+        poisonedPlayers.add(eaterName);
+        cookScore = -999; // auto-lose
+
+        if (sCook.loyalty >= 5) {
+          addBond(cookName, eaterName, 0.1);
+          const txt = _rp([
+            `${eaterName} bites in. Hits ${prEater.ref} in the face. Screams. Turns pale. Collapses. ${cookName}: "I'm so sorry! I tried!"`,
+            `The fugu was wrong. ${eaterName} is down. ${cookName} rushes over — genuinely terrified. "I didn't mean to—"`,
+          ]);
+          phases.round2.push({ kind: 'event', _tribe: t.name, type: 'poison-honest', text: txt, players: [eaterName, cookName], tribe: t.name });
+          allEvents.push({ type: 'poison-honest', tribe: t.name, text: txt });
+        } else {
+          addBond(cookName, eaterName, -0.5);
+          const txt = _rp([
+            `${eaterName} takes a bite. Face whack. Screaming. Laughing. Pale. Collapse. ${cookName} just stares. "Huh."`,
+            `Food poisoning. ${eaterName} is down. ${cookName} shrugs. "I told you I couldn't cook."`,
+          ]);
+          phases.round2.push({ kind: 'event', _tribe: t.name, type: 'poison-negligent', text: txt, players: [eaterName, cookName], tribe: t.name });
+          allEvents.push({ type: 'poison-negligent', tribe: t.name, text: txt });
+
+          ep.campEvents[t.name].post.push({
+            type: 'trustPoisoning', players: [eaterName, cookName],
+            text: `"${cookName} almost killed me and ${prCook.sub} doesn't even care." ${eaterName} is sick. The tribe is shaken.`,
+            consequences: 'Bond -0.5. Eater incapacitated for round 3.', badgeText: 'POISONED', badgeClass: 'orange'
+          });
+        }
+        poisonedLog.push({ cook: cookName, eater: eaterName, deliberate: false, tribe: t.name });
+      }
+    }
+
+    // ── Eater hesitation check (only if not already poisoned) ──
+    if (!wasPoisoned) {
+      const hesitation = (0 - bond) * 0.03 + (10 - sEater.boldness) * 0.02 + Math.random() * 0.1;
+      if (hesitation > 0.4) {
+        // Boldness check to force eat
+        const boldCheck = sEater.boldness * 0.04 + Math.random() * 0.15;
+        if (boldCheck > 0.3) {
+          // Eater bravery — overcame fear
+          addBond(cookName, eaterName, 0.3);
+          personalScores[eaterName] = (personalScores[eaterName] || 0) + 1.5;
+          if (typeof updatePopularity === 'function') updatePopularity(eaterName, 1);
+          const txt = _rp([
+            `${eaterName} stares at the plate. Hands shaking. "If I die, you're going home next." Takes the bite. Survives.`,
+            `${eaterName} picks up the fugu. Sniffs it. Puts it down. Picks it up again. Finally eats. "...Okay. I'm alive."`,
+            `The fear is written all over ${prEater.posAdj} face. But ${eaterName} eats it anyway. Bond earned.`,
+          ]);
+          phases.round2.push({ kind: 'event', _tribe: t.name, type: 'eater-bravery', text: txt, players: [eaterName, cookName], tribe: t.name });
+          allEvents.push({ type: 'eater-bravery', tribe: t.name, text: txt });
+          ep.campEvents[t.name].post.push({
+            type: 'trustBravery', players: [eaterName],
+            text: `${eaterName} ate the fugu despite being terrified. The tribe respects the courage.`,
+            consequences: 'Popularity +1. Bond +0.3 with cook.', badgeText: 'BRAVE', badgeClass: 'green'
+          });
+        } else {
+          // Eater refuses
+          eaterRefused = true;
+          cookScore = -999; // auto-lose
+          personalScores[eaterName] = (personalScores[eaterName] || 0) - 0.5;
+          const txt = _rp([
+            `${eaterName} pushes the plate away. "No. I'm not eating that." ${cookName}: "Are you SERIOUS?!" Round over.`,
+            `"You first." ${eaterName} says. ${cookName} says no. ${eaterName} says no. The round ends with an untouched plate.`,
+          ]);
+          phases.round2.push({ kind: 'event', _tribe: t.name, type: 'eater-refused', text: txt, players: [eaterName, cookName], tribe: t.name });
+          allEvents.push({ type: 'eater-refused', tribe: t.name, text: txt });
+        }
+      }
+    }
+
+    // ── Suspicious eater (bond <= 0, eater sniffs food) ──
+    if (!wasPoisoned && !eaterRefused && bond <= 0) {
+      const txt = _rp([
+        `${eaterName} picks up the dish. Sniffs it. Pokes it. "You first." ${cookName}: "It's fine!" ${eaterName}: "Then YOU eat it."`,
+        `${eaterName} eyes the fugu suspiciously. Doesn't touch it for a full thirty seconds. The tension is unbearable.`,
+      ]);
+      if (sCook.loyalty >= 6) {
+        addBond(cookName, eaterName, 0.3);
+        phases.round2.push({ kind: 'event', _tribe: t.name, type: 'suspicious-cook-eats', text: txt + ` ${cookName} takes a bite first. ${eaterName} relaxes — slightly.`, players: [eaterName, cookName], tribe: t.name });
+      } else {
+        addBond(cookName, eaterName, -0.3);
+        phases.round2.push({ kind: 'event', _tribe: t.name, type: 'suspicious-standoff', text: txt + ` ${cookName} refuses. The suspicion deepens.`, players: [eaterName, cookName], tribe: t.name });
+      }
+    }
+
+    // ── Perfect dish ──
+    if (!wasPoisoned && !eaterRefused && cookScore > 0.6) {
+      addBond(cookName, eaterName, 0.4);
+      personalScores[cookName] = (personalScores[cookName] || 0) + 1.5;
+      const archC = players.find(p => p.name === cookName)?.archetype || '';
+      const txt = bond <= 0
+        ? `${eaterName} takes a bite. Eyes widen. "This is... actually incredible?" "I hate that you're good at this."`
+        : `${eaterName} tastes it. Stunned. "${cookName}, this is amazing." The pair grins.`;
+      phases.round2.push({ kind: 'event', _tribe: t.name, type: 'perfect-dish', text: txt, players: [cookName, eaterName], tribe: t.name });
+      allEvents.push({ type: 'perfect-dish', tribe: t.name, cook: cookName, text: txt });
+
+      if (bond <= 0) {
+        ep.campEvents[t.name].post.push({
+          type: 'trustPerfectDish', players: [cookName, eaterName],
+          text: `Nobody expected ${cookName} to nail the fugu. ${eaterName} gave an unlikely compliment. The dynamic is shifting.`,
+          consequences: 'Bond +0.4. Reveals hidden competence.', badgeText: 'CHEF', badgeClass: 'green'
+        });
+      }
+    }
+
+    // ── Cook panic (mental <= 4) ──
+    if (!wasPoisoned && !eaterRefused && !sabotaged2 && sCook.mental <= 4) {
+      const txt = _rp([
+        `"Wait... which part is poisonous again?!" ${cookName} stares at the fish in terror. ${eaterName}: "YOU DON'T KNOW?!"`,
+        `${cookName}'s hands are shaking. The knife is wrong. The cut is wrong. Everything is wrong. "${cookName}!" ${eaterName} shouts.`,
+      ]);
+      if (sEater.temperament >= 6) {
+        addBond(cookName, eaterName, 0.3);
+        personalScores[eaterName] = (personalScores[eaterName] || 0) + 1.5;
+        phases.round2.push({ kind: 'event', _tribe: t.name, type: 'cook-panic-saved', text: txt + ` ${eaterName} talks ${prCook.obj} through it. The EATER saves the dish.`, players: [eaterName, cookName], tribe: t.name });
+      } else if (sEater.temperament <= 3) {
+        cookScore = -999;
+        const storm = ` ${eaterName} storms off. "I'm NOT eating anything you make." Round over.`;
+        phases.round2.push({ kind: 'event', _tribe: t.name, type: 'cook-panic-abandon', text: txt + storm, players: [eaterName, cookName], tribe: t.name });
+      } else {
+        phases.round2.push({ kind: 'event', _tribe: t.name, type: 'cook-panic', text: txt, players: [cookName, eaterName], tribe: t.name });
+      }
+      allEvents.push({ type: 'cook-panic', tribe: t.name, text: txt });
+    }
+
+    // ── Cook confidence (intuition >= 7) ──
+    if (!wasPoisoned && !eaterRefused && !sabotaged2 && sCook.intuition >= 7) {
+      const txt = `"Trust me. I know exactly what I'm doing." ${cookName} works with precision. ${eaterName} watches, impressed.`;
+      if (cookScore > 0.4) {
+        addBond(cookName, eaterName, 0.3);
+        phases.round2.push({ kind: 'event', _tribe: t.name, type: 'cook-confidence-delivers', text: txt + ` And ${prCook.sub} delivers.`, players: [cookName, eaterName], tribe: t.name });
+      } else {
+        const dmg = -0.2;
+        addBond(cookName, eaterName, dmg);
+        phases.round2.push({ kind: 'event', _tribe: t.name, type: 'cook-confidence-fails', text: txt + ` ...The dish is mediocre. "All that confidence and THIS is what you made?"`, players: [cookName, eaterName], tribe: t.name });
+      }
+    }
+
+    // ── "You first" standoff (both boldness <= 4) ──
+    if (!wasPoisoned && !eaterRefused && !sabotaged2 && sEater.boldness <= 4 && sCook.boldness <= 4) {
+      cookScore -= 0.05;
+      const breaker = sEater.temperament < sCook.temperament ? eaterName : cookName;
+      personalScores[breaker] = (personalScores[breaker] || 0) + 0.5;
+      const txt = `Neither wants to touch the fish. "You go." "No, you go." ${host} sighs. Finally ${breaker} snaps: "FINE, I'll do it!" and grabs the knife.`;
+      phases.round2.push({ kind: 'event', _tribe: t.name, type: 'you-first-standoff', text: txt, players: [cookName, eaterName], tribe: t.name });
+      allEvents.push({ type: 'you-first-standoff', tribe: t.name, text: txt });
+    }
+
+    // Romance check for round 2 pair
+    if (seasonConfig.romance === 'enabled') {
+      _challengeRomanceSpark(cookName, eaterName, ep, 'round2', phases, personalScores, 'life-or-death cooking');
+    }
+
+    roundScores[t.name].round2 = cookScore;
+  });
+
+  // Determine round 2 winner
+  {
+    const sorted = [...tribes].sort((a, b) => (roundScores[b.name].round2 || -999) - (roundScores[a.name].round2 || -999));
+    const r2Winner = sorted[0];
+    roundWinners.round2 = r2Winner.name;
+    tribes.forEach(t => {
+      const pair = pairsData[t.name].round2;
+      if (t.name === r2Winner.name) {
+        pair.forEach(p => { personalScores[p] = (personalScores[p] || 0) + 2.0; });
+      } else {
+        pair.forEach(p => { personalScores[p] = (personalScores[p] || 0) - 0.5; });
+      }
+    });
+    const r2Text = `Round 2 — Fugu Sashimi: ${r2Winner.name} wins!`;
+    phases.round2.push({ kind: 'event', _tribe: 'cross', type: 'round2-result', text: r2Text, players: [] });
+    timeline.push({ kind: 'event', type: 'round-result', round: 2, winner: r2Winner.name, text: r2Text });
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // ROUND 3 — THREE BLIND CHALLENGES (best of 3 sub-rounds)
+  // ══════════════════════════════════════════════════════════════════
+  const BLIND_SUBS = ['round3a', 'round3b', 'round3c'];
+  const BLIND_LABELS = { round3a: 'Blind William Tell', round3b: 'Blind Trapeze', round3c: 'Blind Toboggan' };
+  const BLIND_ROLES = {
+    round3a: { primary: 'shooter', secondary: 'target', stat: 'intuition' },
+    round3b: { primary: 'catcher', secondary: 'jumper', stat: 'physical' },
+    round3c: { primary: 'navigator', secondary: 'driver', stat: 'intuition' }
+  };
+
+  // Assign round 3 pairs for each tribe
+  tribes.forEach(t => {
+    const members = t.members.filter(m => gs.activePlayers.includes(m));
+    const available = members.filter(m => !usedPlayers[t.name].has(m) && !poisonedPlayers.has(m));
+    // Also include poisoned-player replacements from already-used pool
+    const allAvailable = [...available];
+
+    // Need 3 pairs (6 slots). Fill from available, then reuse.
+    const pairList = [];
+    const usedR3 = new Set();
+
+    function pickPair() {
+      const free = allAvailable.filter(m => !usedR3.has(m));
+      if (free.length >= 2) {
+        const a = free[0], b = free[1];
+        usedR3.add(a); usedR3.add(b);
+        return [a, b];
+      } else if (free.length === 1) {
+        // Need to reuse one player
+        const a = free[0];
+        usedR3.add(a);
+        const reuse = members.filter(m => m !== a && !poisonedPlayers.has(m));
+        const b = reuse.length ? reuse[Math.floor(Math.random() * reuse.length)] : members[0];
+        return [a, b];
+      } else {
+        // All used — pick from members (reuse)
+        const pool = members.filter(m => !poisonedPlayers.has(m));
+        if (pool.length >= 2) {
+          const shuffled = [...pool].sort(() => Math.random() - 0.5);
+          return [shuffled[0], shuffled[1]];
+        }
+        return [members[0], members[1 % members.length]];
+      }
+    }
+
+    BLIND_SUBS.forEach(sub => {
+      pairsData[t.name][sub] = pickPair();
+    });
+  });
+
+  // ── Run each blind sub-round ──
+  const subRoundWinners = {};
+
+  BLIND_SUBS.forEach(sub => {
+    const phaseKey = sub;
+    const roleInfo = BLIND_ROLES[sub];
+
+    tribes.forEach(t => {
+      const pair = pairsData[t.name][sub];
+      const neg = negotiateRoles(pair[0], pair[1], roleInfo.primary, roleInfo.secondary, roleInfo.stat, t.name, sub);
+      const primaryName = neg.primary, secondaryName = neg.secondary;
+      const sPrimary = pStats(primaryName), sSecondary = pStats(secondaryName);
+      const bond = getBond(primaryName, secondaryName);
+      const prPrimary = pronouns(primaryName), prSecondary = pronouns(secondaryName);
+      const archPrimary = players.find(p => p.name === primaryName)?.archetype || '';
+      const archSecondary = players.find(p => p.name === secondaryName)?.archetype || '';
+
+      phases[phaseKey].push({
+        kind: 'event', _tribe: t.name, type: `negotiation-${sub}`,
+        text: neg.negEvent, players: [primaryName, secondaryName], tribe: t.name
+      });
+
+      let score = 0;
+
+      // ════════════════════════════════════════════
+      // 3a: BLIND WILLIAM TELL
+      // ════════════════════════════════════════════
+      if (sub === 'round3a') {
+        const shooterName = rolesData[t.name][sub].shooter;
+        const targetName = rolesData[t.name][sub].target;
+        const sShooter = pStats(shooterName), sTarget = pStats(targetName);
+        const prShooter = pronouns(shooterName), prTarget = pronouns(targetName);
+
+        score = sShooter.intuition * 0.03 + Math.random() * 0.2
+                + bond * 0.03 + sShooter.loyalty * 0.025 + sShooter.temperament * 0.015;
+
+        // Target flinch (low bond)
+        if (bond < 0) {
+          score -= 0.05;
+          const txt = `${targetName} flinches every time ${shooterName} draws the bow. Makes it harder to aim.`;
+          phases[phaseKey].push({ kind: 'event', _tribe: t.name, type: 'target-flinch', text: txt, players: [targetName, shooterName], tribe: t.name });
+        }
+
+        // Wild shooter — Sadie moment
+        if (sShooter.intuition <= 3 && sShooter.temperament <= 4 && Math.random() < 0.5) {
+          score = -999;
+          personalScores[shooterName] = (personalScores[shooterName] || 0) - 1.0;
+          addBond(targetName, shooterName, -0.5);
+          // Hit bystanders
+          const bystanders = t.members.filter(m => m !== shooterName && m !== targetName).slice(0, 2);
+          bystanders.forEach(b => addBond(b, shooterName, -0.2));
+
+          const txt = _rp([
+            `${shooterName} keeps firing after the round is called. Arrows EVERYWHERE. ${targetName}, the audience, a seagull — nobody is safe.`,
+            `${shooterName} can't stop shooting. Arrows hit the target's face, a camera, ${host}'s coffee. Complete chaos.`,
+            `"STOP SHOOTING!" ${host} yells. ${shooterName} fires three more. One hits a tree. One hits a bird. One almost hits ${host}.`,
+          ]);
+          phases[phaseKey].push({ kind: 'event', _tribe: t.name, type: 'wild-shooter', text: txt, players: [shooterName, targetName, ...bystanders], tribe: t.name });
+          allEvents.push({ type: 'wild-shooter', tribe: t.name, shooter: shooterName, text: txt });
+
+          ep.campEvents[t.name].post.push({
+            type: 'trustWildShooter', players: [shooterName, targetName, ...bystanders],
+            text: `"Remember when ${shooterName} almost killed everyone?" It's the only thing anyone is talking about.`,
+            consequences: 'Bond -0.5 with target. -0.2 with bystanders hit. Comedy but lasting damage.', badgeText: 'WILD', badgeClass: 'orange'
+          });
+        }
+        // Perfect hit
+        else if (score > 0.6) {
+          addBond(shooterName, targetName, 0.4);
+          personalScores[shooterName] = (personalScores[shooterName] || 0) + 1.5;
+          const txt = _rp([
+            `${shooterName} fires. Arrow knocks clean off the apple. ${targetName} doesn't flinch. Pure trust. "I told you I wouldn't miss."`,
+            `Bullseye. The apple splits. ${targetName} exhales. ${shooterName}: "See? I've got you."`,
+          ]);
+          phases[phaseKey].push({ kind: 'event', _tribe: t.name, type: 'perfect-hit', text: txt, players: [shooterName, targetName], tribe: t.name });
+          allEvents.push({ type: 'perfect-hit', tribe: t.name, text: txt });
+        }
+        // Face hit (low score)
+        else if (score < 0.25 && score > -900) {
+          addBond(targetName, shooterName, sShooter.temperament >= 5 ? 0.1 : -0.3);
+          const txt = sShooter.temperament >= 5
+            ? `Apple hits ${targetName} in the face. ${shooterName}: "Oh god, are you okay?!" Genuinely sorry.`
+            : `Apple hits ${targetName} square in the face. ${shooterName}: "Oops." No remorse. ${targetName} will remember this.`;
+          phases[phaseKey].push({ kind: 'event', _tribe: t.name, type: 'face-hit', text: txt, players: [shooterName, targetName], tribe: t.name });
+          allEvents.push({ type: 'face-hit', tribe: t.name, text: txt });
+        }
+      }
+
+      // ════════════════════════════════════════════
+      // 3b: BLIND TRAPEZE
+      // ════════════════════════════════════════════
+      if (sub === 'round3b') {
+        const catcherName = rolesData[t.name][sub].catcher;
+        const jumperName = rolesData[t.name][sub].jumper;
+        const sCatcher = pStats(catcherName), sJumper = pStats(jumperName);
+        const prCatcher = pronouns(catcherName), prJumper = pronouns(jumperName);
+        const archCatcher = players.find(p => p.name === catcherName)?.archetype || '';
+
+        score = sCatcher.physical * 0.03 + Math.random() * 0.15
+                + bond * 0.03 + sCatcher.loyalty * 0.025 + sCatcher.temperament * 0.015;
+
+        const communication = bond * 0.04 + sCatcher.temperament * 0.03 + sCatcher.loyalty * 0.02;
+
+        // Catcher sabotage
+        if (bond <= -1 && ['villain','schemer'].includes(archCatcher) && Math.random() < 0.3) {
+          score = -999;
+          addBond(jumperName, catcherName, -2.0);
+          personalScores[catcherName] = (personalScores[catcherName] || 0) - 2.0;
+          gs._trustHeat[catcherName] = { amount: 2.0, expiresEp: epNum + 2 };
+          const txt = _rp([
+            `"Jump!" ${catcherName} calls — at exactly the wrong time. ${jumperName} leaps into jellyfish-filled water. ${catcherName} watches. Doesn't move.`,
+            `${catcherName} deliberately miscalls the timing. ${jumperName} falls. The splash is followed by screaming. Jellyfish.`,
+          ]);
+          phases[phaseKey].push({ kind: 'event', _tribe: t.name, type: 'catcher-sabotage', text: txt, players: [catcherName, jumperName], tribe: t.name });
+          allEvents.push({ type: 'catcher-sabotage', tribe: t.name, saboteur: catcherName, victim: jumperName, text: txt });
+          sabotageLog.push({ round: sub, type: 'catcher-sabotage', saboteur: catcherName, victim: jumperName, tribe: t.name });
+
+          // Minor injury
+          gs.lingeringInjuries[jumperName] = { ep: epNum, duration: 1, type: 'jellyfish-stings', penalty: 0.3 };
+
+          ep.campEvents[t.name].post.push({
+            type: 'trustCatcherSabotage', players: [catcherName, jumperName],
+            text: `${catcherName} let ${jumperName} fall into the jellyfish. Everyone saw it. Heat is coming.`,
+            consequences: `Heat +2.0. Bond crash -2.0.`, badgeText: 'SABOTAGE', badgeClass: 'red'
+          });
+        }
+        // Trust leap (bold jumper)
+        else if (sJumper.boldness >= 7 && Math.random() < 0.5) {
+          if (sCatcher.physical >= 5 && Math.random() < 0.6) {
+            // Catcher was ready — perfect catch
+            score += 0.15;
+            addBond(jumperName, catcherName, 0.5);
+            personalScores[jumperName] = (personalScores[jumperName] || 0) + 1.5;
+            const txt = `${jumperName} doesn't wait for the call. Just JUMPS. ${catcherName}: "YOU PSYCHO!" But ${prCatcher.sub} catches ${prJumper.obj}. Mid-air. Perfect. The crowd erupts.`;
+            phases[phaseKey].push({ kind: 'event', _tribe: t.name, type: 'trust-leap-caught', text: txt, players: [jumperName, catcherName], tribe: t.name });
+            allEvents.push({ type: 'trust-leap-caught', tribe: t.name, text: txt });
+          } else {
+            // Miss — jellyfish
+            score -= 0.1;
+            addBond(jumperName, catcherName, -0.3);
+            gs.lingeringInjuries[jumperName] = { ep: epNum, duration: 1, type: 'jellyfish-stings', penalty: 0.3 };
+            const txt = `${jumperName} leaps without warning. ${catcherName} wasn't ready. Splash. Jellyfish. Screaming.`;
+            phases[phaseKey].push({ kind: 'event', _tribe: t.name, type: 'trust-leap-miss', text: txt, players: [jumperName, catcherName], tribe: t.name });
+            allEvents.push({ type: 'trust-leap-miss', tribe: t.name, text: txt });
+          }
+        }
+        // Frozen jumper (low boldness)
+        else if (sJumper.boldness <= 3 && Math.random() < 0.6) {
+          if (bond >= 2) {
+            addBond(jumperName, catcherName, 0.3);
+            score -= 0.03; // time penalty but they jump
+            const txt = `${jumperName} is frozen on the platform. Can't jump. ${catcherName}: "I'll catch you. I promise." Silence. Then — ${prJumper.sub} ${prJumper.sub === 'they' ? 'jump' : 'jumps'}.`;
+            phases[phaseKey].push({ kind: 'event', _tribe: t.name, type: 'frozen-jump', text: txt, players: [jumperName, catcherName], tribe: t.name });
+            allEvents.push({ type: 'frozen-jump', tribe: t.name, text: txt });
+          } else {
+            score -= 0.08; // severe time penalty
+            const txt = `${jumperName} stands on the platform. Frozen. "Why would I trust YOU?" ${prJumper.Sub} refuses. Time ticks away.`;
+            phases[phaseKey].push({ kind: 'event', _tribe: t.name, type: 'frozen-refuse', text: txt, players: [jumperName, catcherName], tribe: t.name });
+            allEvents.push({ type: 'frozen-refuse', tribe: t.name, text: txt });
+
+            ep.campEvents[t.name].post.push({
+              type: 'trustFrozenRefuse', players: [jumperName, catcherName],
+              text: `${jumperName} couldn't jump. The frozen moment reveals how broken the pair's trust is.`,
+              consequences: 'Severe time penalty. The refusal is discussed at camp.', badgeText: 'FROZEN', badgeClass: 'orange'
+            });
+          }
+        }
+        // Jellyfish fall (bad communication)
+        else if (communication < 0.3) {
+          score -= 0.1;
+          addBond(jumperName, catcherName, -0.4);
+          gs.lingeringInjuries[jumperName] = { ep: epNum, duration: 1, type: 'jellyfish-stings', penalty: 0.3 };
+          if (sCatcher.loyalty >= 6 && sCatcher.temperament >= 5) {
+            addBond(jumperName, catcherName, 0.2); // partial recovery
+            const txt = `Bad timing call! ${jumperName} falls into jellyfish. Screaming. But ${catcherName} dives in to help. "I'm so sorry!"`;
+            phases[phaseKey].push({ kind: 'event', _tribe: t.name, type: 'jellyfish-sorry', text: txt, players: [jumperName, catcherName], tribe: t.name });
+          } else {
+            if (sCatcher.temperament <= 4) addBond(jumperName, catcherName, -0.4); // extra for laughing
+            const txt = sCatcher.temperament <= 4
+              ? `"JUMP!" — wrong time. ${jumperName} hits the jellyfish. ${catcherName} LAUGHS. "You dropped me in JELLYFISH." This goes to tribal.`
+              : `${catcherName} miscalls the jump. ${jumperName} falls into jellyfish. Electric stings. Screaming.`;
+            phases[phaseKey].push({ kind: 'event', _tribe: t.name, type: 'jellyfish-fall', text: txt, players: [jumperName, catcherName], tribe: t.name });
+            allEvents.push({ type: 'jellyfish-fall', tribe: t.name, text: txt });
+
+            ep.campEvents[t.name].post.push({
+              type: 'trustJellyfishFall', players: [jumperName, catcherName],
+              text: `"You dropped me in JELLYFISH." ${jumperName} is furious. ${catcherName} has no excuse.`,
+              consequences: 'Bond -0.4. Tribal ammunition.', badgeText: 'JELLYFISH', badgeClass: 'orange'
+            });
+          }
+        }
+        // Perfect catch
+        else if (score > 0.6) {
+          addBond(jumperName, catcherName, 0.5);
+          personalScores[catcherName] = (personalScores[catcherName] || 0) + 1.5;
+          const txt = _rp([
+            `Dramatic mid-air catch! ${jumperName} lands in ${catcherName}'s arms. Pure trust.`,
+            `${catcherName} catches ${jumperName} perfectly. The timing was flawless. "I can't believe you actually caught me."`,
+          ]);
+          phases[phaseKey].push({ kind: 'event', _tribe: t.name, type: 'perfect-catch', text: txt, players: [catcherName, jumperName], tribe: t.name });
+          allEvents.push({ type: 'perfect-catch', tribe: t.name, text: txt });
+
+          // Romance spark for perfect catch with showmance pair
+          if (seasonConfig.romance === 'enabled') {
+            _challengeRomanceSpark(catcherName, jumperName, ep, phaseKey, phases, personalScores, 'dramatic mid-air catch');
+          }
+        }
+      }
+
+      // ════════════════════════════════════════════
+      // 3c: BLIND TOBOGGAN
+      // ════════════════════════════════════════════
+      if (sub === 'round3c') {
+        const navigatorName = rolesData[t.name][sub].navigator;
+        const driverName = rolesData[t.name][sub].driver;
+        const sNavigator = pStats(navigatorName), sDriver = pStats(driverName);
+        const prNavigator = pronouns(navigatorName), prDriver = pronouns(driverName);
+
+        score = sDriver.physical * 0.03 + sNavigator.intuition * 0.03 + Math.random() * 0.15
+                + bond * 0.03 + ((sDriver.loyalty + sNavigator.loyalty) / 2) * 0.025 + ((sDriver.temperament + sNavigator.temperament) / 2) * 0.015;
+
+        const communication = bond * 0.04 + sNavigator.temperament * 0.03 + sNavigator.loyalty * 0.02;
+
+        // Navigator sabotage (wrong directions)
+        if (bond <= 0 && Math.random() < 0.15) {
+          const navArch = players.find(p => p.name === navigatorName)?.archetype || '';
+          if (['villain','schemer','chaos-agent'].includes(navArch)) {
+            score -= 0.15;
+            if (sDriver.intuition >= 6) {
+              addBond(driverName, navigatorName, -1.0);
+              const txt = `"Turn LEFT!" — ${navigatorName} says. ${driverName} turns right. "You did that on purpose." The driver's intuition caught the lie.`;
+              phases[phaseKey].push({ kind: 'event', _tribe: t.name, type: 'nav-sabotage-caught', text: txt, players: [navigatorName, driverName], tribe: t.name });
+              allEvents.push({ type: 'nav-sabotage-caught', tribe: t.name, text: txt });
+            } else {
+              // Driver doesn't realize — delayed bond crash
+              const txt = `${navigatorName} gives bad directions. ${driverName} crashes. Blames ${prDriver.ref}. ${navigatorName} got away with it — for now.`;
+              phases[phaseKey].push({ kind: 'event', _tribe: t.name, type: 'nav-sabotage-hidden', text: txt, players: [navigatorName, driverName], tribe: t.name });
+              allEvents.push({ type: 'nav-sabotage-hidden', tribe: t.name, navigator: navigatorName, driver: driverName, text: txt });
+              sabotageLog.push({ round: sub, type: 'wrong-directions', saboteur: navigatorName, victim: driverName, tribe: t.name, hidden: true });
+            }
+          }
+        }
+
+        // Explosions along the course (20%)
+        if (Math.random() < 0.20) {
+          if (communication > 0.3) {
+            score += 0.03;
+            const txt = `Explosion ahead! ${navigatorName} screams a direction. ${driverName} reacts perfectly. Dodge!`;
+            phases[phaseKey].push({ kind: 'event', _tribe: t.name, type: 'explosion-dodge', text: txt, players: [navigatorName, driverName], tribe: t.name });
+          } else {
+            score -= 0.08;
+            const txt = `Explosion! ${navigatorName}: "LEFT! NO, RIGHT! NO—" ${driverName} drives straight into it.`;
+            phases[phaseKey].push({ kind: 'event', _tribe: t.name, type: 'explosion-hit', text: txt, players: [navigatorName, driverName], tribe: t.name });
+          }
+        }
+
+        // Navigator screaming (low temperament)
+        if (sNavigator.temperament <= 3 && Math.random() < 0.5) {
+          score -= 0.05;
+          if (bond <= 0) {
+            // Driver ignores navigator, steers by instinct
+            const physCheck = sDriver.physical * 0.04 + Math.random() * 0.15;
+            if (physCheck > 0.35) {
+              score += 0.03;
+              const txt = `${navigatorName} is SCREAMING contradicting directions. ${driverName} ignores ${prNavigator.obj} entirely and steers by instinct. It works.`;
+              phases[phaseKey].push({ kind: 'event', _tribe: t.name, type: 'nav-screaming-ignore', text: txt, players: [driverName, navigatorName], tribe: t.name });
+            } else {
+              const txt = `${navigatorName} is screaming. ${driverName} ignores ${prNavigator.obj}. Crashes anyway.`;
+              phases[phaseKey].push({ kind: 'event', _tribe: t.name, type: 'nav-screaming-crash', text: txt, players: [driverName, navigatorName], tribe: t.name });
+            }
+          } else {
+            const txt = `${navigatorName} panics. Screams every direction at once. ${driverName} tries to follow. It's chaos.`;
+            phases[phaseKey].push({ kind: 'event', _tribe: t.name, type: 'nav-screaming', text: txt, players: [navigatorName, driverName], tribe: t.name });
+          }
+          allEvents.push({ type: 'nav-screaming', tribe: t.name, text: `${navigatorName} loses composure` });
+        }
+
+        // Rule break DQ (the DJ moment)
+        const hasEmotionalTrigger = hasEmotionalDebuff(driverName) ? 1 : 0;
+        const ruleBreakChance = (10 - sDriver.strategic) * 0.02 + hasEmotionalTrigger * 0.15;
+        if (Math.random() < ruleBreakChance && Math.random() < 0.15 && !ruleBreakData) {
+          ruleBreakData = { driver: driverName, navigator: navigatorName, tribe: t.name, sub };
+          const prevScore = score;
+          score = -999; // DQ
+          personalScores[driverName] = (personalScores[driverName] || 0) - 2.0;
+          gs._trustHeat[driverName] = { amount: 2.0, expiresEp: epNum + 2 };
+
+          // Partner reaction based on archetype
+          const navArch = players.find(p => p.name === navigatorName)?.archetype || '';
+          if (['strategic','schemer','mastermind'].includes(navArch)) {
+            addBond(navigatorName, driverName, -0.5);
+          } else if (['hero','loyal-soldier'].includes(navArch)) {
+            addBond(navigatorName, driverName, 0.3);
+          }
+
+          const txt = _rp([
+            `${driverName} rips off the blindfold. They were WINNING. But the rule is clear: blindfold on at all times. Disqualified.`,
+            `"I can't do this blind." ${driverName} removes the blindfold. ${host}: "That's a DQ." The team that was winning... isn't anymore.`,
+            `${driverName} tears the blindfold off. Something emotional broke through. The race was theirs. Now it's nothing.`,
+          ]);
+          phases[phaseKey].push({ kind: 'event', _tribe: t.name, type: 'rule-break-dq', text: txt, players: [driverName, navigatorName], tribe: t.name });
+          allEvents.push({ type: 'rule-break-dq', tribe: t.name, driver: driverName, text: txt });
+
+          ep.campEvents[t.name].post.push({
+            type: 'trustRuleBreak', players: [driverName, navigatorName],
+            text: `Was it selfish or noble? ${driverName} broke the one rule. The tribe debates whether the DQ was worth it.`,
+            consequences: `Heat +2.0 for 2 episodes. Partner bond depends on archetype.`, badgeText: 'DQ', badgeClass: 'red'
+          });
+        }
+      }
+
+      roundScores[t.name][sub] = score;
+    });
+
+    // Determine sub-round winner
+    const sorted = [...tribes].sort((a, b) => (roundScores[b.name][sub] || -999) - (roundScores[a.name][sub] || -999));
+    subRoundWinners[sub] = sorted[0].name;
+
+    // Personal scores for sub-round
+    tribes.forEach(t => {
+      const pair = pairsData[t.name][sub];
+      if (t.name === sorted[0].name) {
+        pair.forEach(p => { personalScores[p] = (personalScores[p] || 0) + 0.67; }); // ~2.0 total for winning all 3
+      } else {
+        pair.forEach(p => { personalScores[p] = (personalScores[p] || 0) - 0.17; }); // ~-0.5 total for losing all 3
+      }
+    });
+
+    const subText = `${BLIND_LABELS[sub]}: ${sorted[0].name} wins!`;
+    phases[phaseKey].push({ kind: 'event', _tribe: 'cross', type: `${sub}-result`, text: subText, players: [] });
+  });
+
+  // Determine round 3 overall winner (best of 3 sub-rounds)
+  {
+    const subWinCounts = {};
+    tribes.forEach(t => { subWinCounts[t.name] = 0; });
+    BLIND_SUBS.forEach(sub => { subWinCounts[subRoundWinners[sub]]++; });
+
+    let r3Winner = null;
+    const maxWins = Math.max(...Object.values(subWinCounts));
+    const tied = Object.keys(subWinCounts).filter(k => subWinCounts[k] === maxWins);
+    if (tied.length === 1) {
+      r3Winner = tied[0];
+    } else {
+      // Tiebreak: total score across sub-rounds
+      let bestTotal = -Infinity, bestTribe = null;
+      tied.forEach(tn => {
+        const total = BLIND_SUBS.reduce((sum, sub) => sum + (roundScores[tn][sub] || 0), 0);
+        if (total > bestTotal) { bestTotal = total; bestTribe = tn; }
+      });
+      r3Winner = bestTribe;
+    }
+    roundWinners.round3 = r3Winner;
+
+    const r3Text = `Round 3 — Blind Challenges: ${r3Winner} wins! (${subWinCounts[r3Winner]}/3 sub-rounds)`;
+    timeline.push({ kind: 'event', type: 'round-result', round: 3, winner: r3Winner, text: r3Text });
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // HIDDEN MOMENTS — Redemption Act
+  // ══════════════════════════════════════════════════════════════════
+  {
+    const REDEMPTION_ARCHETYPES = ['villain','schemer','hothead','chaos-agent'];
+    // Find non-competing players (not in any pair for the current round — use round 3 since it's the most active)
+    const allPaired = new Set();
+    tribes.forEach(t => {
+      Object.values(pairsData[t.name]).forEach(pair => { if (pair) pair.forEach(p => allPaired.add(p)); });
+    });
+    const bystanders = allMembers.filter(m => !allPaired.has(m) && gs.activePlayers.includes(m));
+    const candidates = bystanders.filter(m => {
+      const arch = players.find(p => p.name === m)?.archetype || '';
+      return REDEMPTION_ARCHETYPES.includes(arch);
+    });
+
+    if (candidates.length > 0) {
+      const candidate = candidates[Math.floor(Math.random() * candidates.length)];
+      const sCand = pStats(candidate);
+      const redemptionChance = sCand.loyalty * 0.02 + (10 - sCand.boldness) * 0.015 + Math.random() * 0.1;
+
+      if (redemptionChance > 0.3) {
+        // Find witness — highest intuition bystander (not the candidate)
+        const witnesses = allMembers.filter(m => m !== candidate && gs.activePlayers.includes(m));
+        let bestWitness = null, bestInt = -1;
+        witnesses.forEach(w => {
+          const sW = pStats(w);
+          if (sW.intuition > bestInt) { bestInt = sW.intuition; bestWitness = w; }
+        });
+
+        if (bestWitness) {
+          addBond(bestWitness, candidate, 0.5);
+          personalScores[candidate] = (personalScores[candidate] || 0) + 1.0;
+          personalScores[bestWitness] = (personalScores[bestWitness] || 0) + 0.5;
+
+          const prCand = pronouns(candidate), prWit = pronouns(bestWitness);
+          const archWit = players.find(p => p.name === bestWitness)?.archetype || '';
+          const archCand = players.find(p => p.name === candidate)?.archetype || '';
+
+          const kindAct = _rp([
+            `${candidate} quietly helps an injured player off the sidelines. Nobody sees — except ${bestWitness}.`,
+            `${candidate} finds a lost item and returns it without a word. ${bestWitness} watches from behind a tree.`,
+            `${candidate} covers for someone's mistake during setup. ${bestWitness} catches the whole thing.`,
+            `${candidate} brings water to someone sitting out with an injury. No cameras. No audience. Just kindness. ${bestWitness} sees it.`,
+          ]);
+
+          let witnessReaction = '';
+          if (['hero','loyal-soldier'].includes(archWit)) {
+            witnessReaction = _rp([
+              `${bestWitness} (confessional): "I saw what ${candidate} did. Maybe ${prCand.sub} ${prCand.sub === 'they' ? 'aren\'t' : 'isn\'t'} so bad. I won't tell anyone."`,
+              `${bestWitness} gains quiet respect for ${candidate}. Won't exploit it. Just... remembers.`,
+            ]);
+          } else if (['schemer','villain','mastermind'].includes(archWit)) {
+            witnessReaction = _rp([
+              `${bestWitness} (confessional): "Interesting. ${candidate} has a soft side. That could be useful."`,
+              `${bestWitness} files this information away. Leverage. For later.`,
+            ]);
+          } else {
+            witnessReaction = _rp([
+              `${bestWitness} (confessional): "I saw what ${candidate} did. ${prCand.Sub} ${prCand.sub === 'they' ? 'aren\'t' : 'isn\'t'} who I thought ${prCand.sub} ${prCand.sub === 'they' ? 'were' : 'was'}."`,
+              `${bestWitness} is surprised. ${candidate} being kind? That changes things.`,
+            ]);
+          }
+
+          // Romance spark if witness has showmance/spark with candidate
+          if (seasonConfig.romance === 'enabled') {
+            const hasSpark = gs.romanticSparks?.some(s => s.players.includes(candidate) && s.players.includes(bestWitness));
+            const hasShowmance = gs.showmances?.some(s => s.players.includes(candidate) && s.players.includes(bestWitness));
+            if (hasSpark || hasShowmance) {
+              witnessReaction += ` "You're actually nice." Something shifts between them.`;
+              const spark = gs.romanticSparks?.find(s => s.players.includes(candidate) && s.players.includes(bestWitness));
+              if (spark) spark.intensity = (spark.intensity || 0) + 0.3;
+            }
+          }
+
+          redemptionData = { player: candidate, witness: bestWitness, act: kindAct, reaction: witnessReaction };
+
+          phases.result.push({
+            kind: 'event', _tribe: tribeOf[candidate] || 'cross', type: 'redemption-act',
+            text: kindAct + ' ' + witnessReaction,
+            players: [candidate, bestWitness], tribe: tribeOf[candidate] || ''
+          });
+          allEvents.push({ type: 'redemption-act', player: candidate, witness: bestWitness, text: kindAct });
+
+          // Private camp event — confessional from witness
+          const witTribe = tribeOf[bestWitness];
+          if (witTribe && ep.campEvents[witTribe]) {
+            ep.campEvents[witTribe].post.push({
+              type: 'trustRedemptionWitness', players: [bestWitness, candidate],
+              text: `${bestWitness} (confessional): "I saw ${candidate} do something nobody else saw. ${prCand.Sub} ${prCand.sub === 'they' ? 'aren\'t' : 'isn\'t'} who everyone thinks ${prCand.sub} ${prCand.sub === 'they' ? 'are' : 'is'}."`,
+              consequences: 'Private bond +0.5. Asymmetric knowledge — witness knows, player doesn\'t know they were seen.',
+              badgeText: 'WITNESS', badgeClass: 'gold'
+            });
+          }
+        }
+      }
+    }
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // POST-ROUND SOCIAL EVENTS
+  // ══════════════════════════════════════════════════════════════════
+  tribes.forEach(t => {
+    // Post-round arguments (losing pairs with low temperament)
+    ['round1', 'round2'].forEach(rk => {
+      if (roundWinners[rk] !== t.name) {
+        const pair = pairsData[t.name][rk];
+        const s0 = pStats(pair[0]), s1 = pStats(pair[1]);
+        if (s0.temperament <= 4 || s1.temperament <= 4) {
+          addBond(pair[0], pair[1], -0.5);
+          const arguer = s0.temperament <= s1.temperament ? pair[0] : pair[1];
+          const other = arguer === pair[0] ? pair[1] : pair[0];
+          const txt = _rp([
+            `"This is YOUR fault." ${arguer} is in ${other}'s face. "MY fault? You couldn't even hold a ROPE."`,
+            `The losing pair explodes. ${arguer} and ${other} go at it. Teammates pick sides.`,
+            `"I SAID I should have done it." ${arguer} won't let it go. ${other} fires back. The camp is split.`,
+          ]);
+          // Tribe picks sides
+          t.members.filter(m => m !== pair[0] && m !== pair[1]).forEach(m => {
+            const bondA = getBond(m, pair[0]), bondB = getBond(m, pair[1]);
+            if (bondA > bondB) addBond(m, pair[1], -0.1);
+            else if (bondB > bondA) addBond(m, pair[0], -0.1);
+          });
+          allEvents.push({ type: 'post-round-argument', tribe: t.name, pair: [...pair], text: txt });
+          ep.campEvents[t.name].post.push({
+            type: 'trustPostArgument', players: [...pair],
+            text: txt, consequences: 'Bond -0.5. Tribe picks sides — camp rift.',
+            badgeText: 'FIGHT', badgeClass: 'red'
+          });
+        }
+      }
+    });
+
+    // Post-round bonding (winning pairs that started with low bond)
+    ['round1', 'round2'].forEach(rk => {
+      if (roundWinners[rk] === t.name) {
+        const pair = pairsData[t.name][rk];
+        const preBond = getBond(pair[0], pair[1]);
+        if (preBond < 2) {
+          addBond(pair[0], pair[1], 0.5);
+          const txt = _rp([
+            `"I didn't think we could do it." "Neither did I." ${pair[0]} and ${pair[1]} share a quiet moment.`,
+            `Enemies who succeed together bond MORE than friends. ${pair[0]} and ${pair[1]} proved something today.`,
+          ]);
+          allEvents.push({ type: 'grudging-respect', tribe: t.name, pair: [...pair], text: txt });
+          ep.campEvents[t.name].post.push({
+            type: 'trustGrudgingRespect', players: [...pair],
+            text: txt, consequences: 'Bond +0.5. New alliance possibility from unexpected pair.',
+            badgeText: 'RESPECT', badgeClass: 'green'
+          });
+        }
+      }
+    });
+
+    // Spectator reactions to sabotage
+    sabotageLog.filter(s => s.tribe === t.name).forEach(sab => {
+      t.members.filter(m => m !== sab.saboteur && m !== sab.victim).forEach(m => {
+        addBond(m, sab.saboteur, -0.3);
+      });
+      // Other tribe spectators also react
+      allMembers.filter(m => tribeOf[m] !== t.name).forEach(m => {
+        addBond(m, sab.saboteur, -0.15);
+      });
+    });
+  });
+
+  // Showmance check for trust challenge (partner-interaction theme)
+  if (seasonConfig.romance === 'enabled') {
+    _checkShowmanceChalMoment(ep, 'round2', phases, personalScores, 'partner-interaction', tribes);
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // WINNER DETERMINATION
+  // ══════════════════════════════════════════════════════════════════
+  const roundWinCounts = {};
+  tribes.forEach(t => { roundWinCounts[t.name] = 0; });
+  ['round1', 'round2', 'round3'].forEach(rk => {
+    if (roundWinners[rk]) roundWinCounts[roundWinners[rk]]++;
+  });
+
+  let winner = null, loser = null;
+  const maxRoundWins = Math.max(...Object.values(roundWinCounts));
+  const winnerCandidates = tribes.filter(t => roundWinCounts[t.name] === maxRoundWins);
+
+  if (winnerCandidates.length === 1) {
+    winner = winnerCandidates[0];
+  } else {
+    // Tiebreak: total score across all rounds
+    let bestTotal = -Infinity;
+    winnerCandidates.forEach(t => {
+      const total = Object.values(roundScores[t.name]).reduce((s, v) => s + (v > -900 ? v : 0), 0);
+      if (total > bestTotal) { bestTotal = total; winner = t; }
+    });
+    if (!winner) winner = winnerCandidates[0];
+  }
+
+  // Loser: worst performing tribe
+  const loserCandidates = tribes.filter(t => t !== winner);
+  if (loserCandidates.length === 1) {
+    loser = loserCandidates[0];
+  } else {
+    let worstWins = Infinity;
+    loserCandidates.forEach(t => {
+      if (roundWinCounts[t.name] < worstWins) { worstWins = roundWinCounts[t.name]; loser = t; }
+    });
+    if (!loser) {
+      // Still tied — use total score
+      let worstTotal = Infinity;
+      loserCandidates.forEach(t => {
+        const total = Object.values(roundScores[t.name]).reduce((s, v) => s + (v > -900 ? v : 0), 0);
+        if (total < worstTotal) { worstTotal = total; loser = t; }
+      });
+    }
+    if (!loser) loser = loserCandidates[0];
+  }
+
+  // MVP — highest personal score on winning team
+  let mvp = null, mvpScore = -Infinity;
+  winner.members.forEach(m => {
+    if ((personalScores[m] || 0) > mvpScore) { mvpScore = personalScores[m] || 0; mvp = m; }
+  });
+  if (mvp && typeof updatePopularity === 'function') updatePopularity(mvp, 2);
+
+  // Final result timeline
+  const finalText = `${winner.name} wins Who Can You Trust! (${roundWinCounts[winner.name]}/3 rounds). ${loser.name} goes to tribal council.${mvp ? ` MVP: ${mvp}.` : ''}`;
+  phases.result.push({ kind: 'event', _tribe: 'cross', type: 'final-result', text: finalText, players: mvp ? [mvp] : [] });
+  timeline.push({ kind: 'event', type: 'final-result', winner: winner.name, loser: loser.name, mvp, text: finalText });
+
+  // ══════════════════════════════════════════════════════════════════
+  // BUILD EPISODE DATA
+  // ══════════════════════════════════════════════════════════════════
+  ep.isTrustChallenge = true;
+  ep.trustChallenge = {
+    pairs: pairsData,
+    roles: rolesData,
+    negotiation: negotiationData,
+    roundScores,
+    roundWinners,
+    rounds: {
+      round1: { label: 'Extreme Rock Climb', pairs: {}, roles: {}, scores: {}, winner: roundWinners.round1, events: allEvents.filter(e => e.type?.startsWith('sabotage') || e.type?.includes('climb') || e.type?.includes('explosion') || e.type?.includes('heroic') || e.type?.includes('habanero') || e.type?.includes('oil') || e.type?.includes('summit') || e.type?.includes('belayer')) },
+      round2: { label: 'Fugu Sashimi', pairs: {}, roles: {}, scores: {}, winner: roundWinners.round2, events: allEvents.filter(e => e.type?.includes('dish') || e.type?.includes('poison') || e.type?.includes('botch') || e.type?.includes('bravery') || e.type?.includes('cook') || e.type?.includes('eater') || e.type?.includes('standoff')) },
+      round3: { label: 'Three Blind Challenges', pairs: {}, roles: {}, scores: {}, winner: roundWinners.round3, events: allEvents.filter(e => e.type?.includes('shooter') || e.type?.includes('hit') || e.type?.includes('catch') || e.type?.includes('jelly') || e.type?.includes('trapeze') || e.type?.includes('toboggan') || e.type?.includes('frozen') || e.type?.includes('leap') || e.type?.includes('nav') || e.type?.includes('dq') || e.type?.includes('rule')) }
+    },
+    events: allEvents,
+    timeline,
+    sabotage: sabotageLog,
+    poisoned: poisonedLog,
+    ruleBreak: ruleBreakData,
+    redemption: redemptionData,
+    winner: winner.name,
+    loser: loser.name,
+    mvp
+  };
+
+  // Fill per-round pair/role/score data
+  tribes.forEach(t => {
+    ep.trustChallenge.rounds.round1.pairs[t.name] = pairsData[t.name].round1;
+    ep.trustChallenge.rounds.round1.roles[t.name] = rolesData[t.name].round1;
+    ep.trustChallenge.rounds.round1.scores[t.name] = roundScores[t.name].round1;
+    ep.trustChallenge.rounds.round2.pairs[t.name] = pairsData[t.name].round2;
+    ep.trustChallenge.rounds.round2.roles[t.name] = rolesData[t.name].round2;
+    ep.trustChallenge.rounds.round2.scores[t.name] = roundScores[t.name].round2;
+    ep.trustChallenge.rounds.round3.pairs[t.name] = { round3a: pairsData[t.name].round3a, round3b: pairsData[t.name].round3b, round3c: pairsData[t.name].round3c };
+    ep.trustChallenge.rounds.round3.roles[t.name] = { round3a: rolesData[t.name].round3a, round3b: rolesData[t.name].round3b, round3c: rolesData[t.name].round3c };
+    ep.trustChallenge.rounds.round3.scores[t.name] = { round3a: roundScores[t.name].round3a, round3b: roundScores[t.name].round3b, round3c: roundScores[t.name].round3c };
+  });
+
+  // ── Set episode properties ──
+  ep.winner = winner;
+  ep.loser = loser;
+  ep.safeTribes = tribes.length > 2 ? tribes.filter(t => t !== winner && t !== loser) : [];
+  ep.challengeType = 'tribe';
+  ep.immunePlayers = winner.members.slice();
+  ep.tribalPlayers = loser.members.filter(m => gs.activePlayers.includes(m));
+  ep.challengeLabel = "Who Can You Trust?";
+  ep.challengeCategory = 'social';
 
   // ── Challenge member scores ──
   ep.chalMemberScores = personalScores;
@@ -36759,6 +38198,12 @@ function simulateJuryRoundtable(ep) {
         if (((gs.episode || 0) + 1) >= gs._cookingHeat[k].expiresEp) delete gs._cookingHeat[k];
       });
       if (!Object.keys(gs._cookingHeat).length) delete gs._cookingHeat;
+    }
+    if (gs._trustHeat) {
+      Object.keys(gs._trustHeat).forEach(k => {
+        if (((gs.episode || 0) + 1) >= gs._trustHeat[k].expiresEp) delete gs._trustHeat[k];
+      });
+      if (!Object.keys(gs._trustHeat).length) delete gs._trustHeat;
     }
 
     // ── BLACK VOTE: eliminated player casts a parting vote/gift (until F4) ──

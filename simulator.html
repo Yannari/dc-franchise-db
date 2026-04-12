@@ -1621,10 +1621,10 @@ const ARCHETYPE_NAMES = {
   'showmancer': 'Showmancer',
 };
 const THREAT_TIERS = [
-  { max: 3.9, label: 'Low', color: '#10b981' },
-  { max: 5.9, label: 'Medium', color: '#f59e0b' },
-  { max: 7.4, label: 'High', color: '#f97316' },
-  { max: 10,  label: 'Extreme', color: '#ef4444' },
+  { max: 1.0, label: 'Low', color: '#10b981' },
+  { max: 2.0, label: 'Medium', color: '#f59e0b' },
+  { max: 3.0, label: 'High', color: '#f97316' },
+  { max: 5.0, label: 'Extreme', color: '#ef4444' },
 ];
 const REL_TYPES = {
   hatred:      { label: 'Pure Hatred',     color: '#7f1d1d', bond:-10, bg: 'rgba(127,29,29,0.15)' },
@@ -2198,7 +2198,7 @@ function putStats(stats) { STATS.forEach(s => setSlider(s.key, stats[s.key] || 5
 // ══════════════════════════════════════════════════════════════════════
 
 function overall(stats) { return (STATS.reduce((t,s) => t+(stats[s.key]||0),0)/STATS.length).toFixed(1); }
-function threat(stats)  { return ((stats.physical*0.8+stats.endurance*0.3+stats.strategic+stats.social+stats.boldness*0.5+(stats.intuition+stats.mental)/2-stats.loyalty*0.15)/4).toFixed(1); }
+function threat(stats)  { return ((stats.physical*0.15+stats.endurance*0.12+stats.mental*0.08+stats.intuition*0.08)*0.33 + (stats.social*0.08+0.5)*0.33 + (stats.strategic*0.08+0.3)*0.33).toFixed(1); }
 function threatTier(score) { return THREAT_TIERS.find(t => score <= t.max) || THREAT_TIERS[THREAT_TIERS.length-1]; }
 function tribeColor(tribe) {
   if (!tribe) return '#6366f1';

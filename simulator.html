@@ -18208,7 +18208,30 @@ function simulateTrustChallenge(ep) {
       round3: { label: 'Three Blind Challenges', pairs: {}, roles: {}, scores: {}, winner: roundWinners.round3, events: allEvents.filter(e => e.type?.includes('shooter') || e.type?.includes('hit') || e.type?.includes('catch') || e.type?.includes('jelly') || e.type?.includes('trapeze') || e.type?.includes('toboggan') || e.type?.includes('frozen') || e.type?.includes('leap') || e.type?.includes('nav') || e.type?.includes('dq') || e.type?.includes('rule')) }
     },
     events: allEvents,
-    timeline,
+    timeline: (() => {
+      // Build full timeline from phases (all events) + round results
+      const _tl = [];
+      // Round 1 events then result
+      (phases.round1 || []).forEach(ev => _tl.push(ev));
+      const _r1res = timeline.find(t => t.round === 1);
+      if (_r1res) _tl.push(_r1res);
+      // Round 2 events then result
+      (phases.round2 || []).forEach(ev => _tl.push(ev));
+      const _r2res = timeline.find(t => t.round === 2);
+      if (_r2res) _tl.push(_r2res);
+      // Round 3: sub-rounds interleaved with sub-results
+      ['round3a', 'round3b', 'round3c'].forEach(rk => {
+        (phases[rk] || []).forEach(ev => _tl.push(ev));
+      });
+      const _r3res = timeline.find(t => t.round === 3);
+      if (_r3res) _tl.push(_r3res);
+      // Post-round social events
+      (phases.result || []).forEach(ev => _tl.push(ev));
+      // Final result
+      const _finalRes = timeline.find(t => t.type === 'final-result');
+      if (_finalRes) _tl.push(_finalRes);
+      return _tl;
+    })(),
     sabotage: sabotageLog,
     poisoned: poisonedLog,
     ruleBreak: ruleBreakData,

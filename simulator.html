@@ -14713,9 +14713,12 @@ function simulateHellsKitchen(ep) {
   });
 
   // ── Helper: push event ──
+  // Events are tagged with current course phase for later interleaving
+  let _currentCourse = 'pre'; // 'pre', 'appetizer', 'main', 'dessert', 'post'
+  const eventsByCourse = { pre: [], appetizer: [], main: [], dessert: [], post: [] };
   function pushEvent(evt) {
     allEvents.push(evt);
-    timeline.push({ kind: 'event', ...evt });
+    eventsByCourse[_currentCourse].push({ kind: 'event', ...evt });
   }
 
   // ── Helper: add cooking heat ──
@@ -14998,6 +15001,7 @@ function simulateHellsKitchen(ep) {
   tribes.forEach(t => { courseScores[t.name] = {}; });
 
   COURSES.forEach((course, courseIdx) => {
+    _currentCourse = course;
     const phaseKey = course;
     phases[phaseKey] = [];
 
@@ -16263,6 +16267,26 @@ function simulateHellsKitchen(ep) {
     }
   });
 
+  // ── Build interleaved timeline from per-course events + course results ──
+  // Pre-cooking events first, then per course: shuffle events, append course results
+  const _finalTimeline = [...eventsByCourse.pre];
+  COURSES.forEach(course => {
+    const courseEvents = [...(eventsByCourse[course] || [])];
+    // Shuffle events within this course
+    for (let _ti = courseEvents.length - 1; _ti > 0; _ti--) {
+      const _tj = Math.floor(Math.random() * (_ti + 1));
+      [courseEvents[_ti], courseEvents[_tj]] = [courseEvents[_tj], courseEvents[_ti]];
+    }
+    _finalTimeline.push(...courseEvents);
+    // Then course results for each tribe (the scoring reveal)
+    tribes.forEach(t => {
+      const cr = timeline.find(item => item.kind === 'course-result' && item.course === course && item.tribe === t.name);
+      if (cr) _finalTimeline.push(cr);
+    });
+  });
+  // Post events
+  _finalTimeline.push(...(eventsByCourse.post || []));
+
   // ── Build ep data ──
   ep.isHellsKitchen = true;
   ep.hellsKitchen = {
@@ -16270,7 +16294,7 @@ function simulateHellsKitchen(ep) {
     assignments,
     dishes,
     courseScores,
-    timeline,
+    timeline: _finalTimeline,
     events: allEvents,
     fridgeLock,
     sabotage: sabotageLog,
@@ -60487,7 +60511,7 @@ function rpBuildHellsKitchen(ep) {
   // Build steps array from pre-shuffled timeline
   const steps = [];
   (hk.timeline || []).forEach(item => {
-    steps.push({ stepType: item.kind, data: item });
+    steps.push({ stepType: item.kind || (item.rating !== undefined ? 'course-result' : 'event'), data: item });
   });
   // Final scoreboard step
   steps.push({ stepType: 'final', data: {} });

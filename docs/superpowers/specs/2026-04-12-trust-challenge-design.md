@@ -302,55 +302,61 @@ Team that wins 2+ out of 3 rounds wins immunity.
 | Awkward silence | both boldness ≤ 4 | Nobody wants to decide. They stare at each other. |
 | Strategic assignment | one strategic ≥ 7 | "You're better at this. I'll support." Optimal roles. |
 
-### Climb Events
-| Event | Trigger | 
-|---|---|
-| Explosion recovery | endurance check |
-| Habanero spray | mental check |
-| Oil slick slip | physical check |
-| Belayer encouragement | bond ≥ 3 |
-| Belayer distraction | bond ≤ 0 |
-| Rope drop sabotage | villain + bond ≤ 0 |
-| Humiliation pull | schemer + bond ≤ 0 |
-| Heroic catch | belayer saves falling climber, bond +0.5 |
-| Summit moment | climber reaches top, celebration/relief |
+### Climb Events (Deep Consequences)
 
-### Fugu Events
-| Event | Trigger |
-|---|---|
-| Perfect dish | high cookScore |
-| Suspicious eater | bond ≤ 0 |
-| Poisoning collapse | poisonRisk fires |
-| Cook confidence | intuition ≥ 7 |
-| Eater bravery | ate despite fear |
-| Cook panic | mental ≤ 4 |
-| Deliberate botch | villain sabotage |
-| "You first" standoff | both low boldness |
+| Event | Trigger | Deep Consequence |
+|---|---|---|
+| Explosion recovery | random 30%, endurance check | **Pass:** climber pushes through, +0.5 personal score, belayer impressed → bond +0.2. **Fail:** climber falls, belayer's reaction matters — high loyalty belayer catches them (bond +0.3), low loyalty belayer lets them dangle (bond -0.2). The catch/drop moment defines the pair's relationship going forward. |
+| Habanero spray | random 25%, mental check | **Pass:** climber doesn't flinch, belayer gains respect. **Fail:** climber screams, grabs face, loses grip. Belayer's bond determines if they pull slack tight (saves them, bond +0.3) or laugh ("Not my problem"). Low temperament belayer might snap at Chris instead of helping. |
+| Oil slick slip | random 20%, physical check | **Pass:** climber adjusts grip, keeps climbing. **Fail:** climber slides down. If belayer is paying attention (loyalty ≥ 5) → caught safely. If belayer is distracted (bond ≤ 0 or strategic ≥ 7 — thinking about the game instead of the rope) → climber hits the ground. Bond crash -0.5 + injury risk. |
+| Belayer encouragement | bond ≥ 3 | Belayer shouts genuine encouragement. "You've got this! Keep going!" Climber gets +0.05 score boost. Bond +0.2. This moment gets referenced at tribal: "You were there for me on that wall." Becomes an alliance seed. |
+| Belayer distraction | bond ≤ 0 | Belayer checks their nails, talks to spectators, looks bored. Climber notices. Bond -0.2. If climber falls during this → belayer reacts late, barely catches them. Camp event: "I saw you not paying attention. I was up there trusting you." Creates a tribal talking point. |
+| Rope drop sabotage | villain/schemer + bond ≤ 0 | Belayer deliberately lets the rope go slack. Climber falls. Auto-lose round. Bond crash -2.0. Heat +2.5 for 3 episodes. BUT: the saboteur's own tribe reacts by archetype. Villains approve (+0.2 bond with other villains). Heroes/loyals are disgusted (-0.3 bond). Creates a tribal council wedge: "Do we vote out the saboteur or the person who provoked it?" |
+| Humiliation pull | schemer + bond ≤ -1 | The Heather move — belayer pulls a second rope that embarrasses the climber (clothing rip, paint splash, etc.). Climber is humiliated but NOT dropped. Score -0.1, climber bond -1.5 with belayer. BUT: +3 popularity for the victim (sympathy) and -2 popularity for the saboteur. Camp event: everyone talks about it. The humiliator becomes the villain of the episode. Tribal target unless they have numbers. |
+| Heroic catch | belayer saves falling climber after obstacle | Climber falls, belayer digs in and holds. The rope burns their hands but they don't let go. Bond +0.5. Climber: "You actually saved me." Belayer: "Don't make it weird." This is the moment enemies become allies. If the pair had bond ≤ 0 before this → camp event: "grudging respect." The save gets referenced in future episodes as a trust anchor. +1.5 personal score for belayer. |
+| Summit moment | climber reaches top | If pair was enemies: "I didn't think you'd hold the rope." "I almost didn't." Bond +0.3 from shared adversity. If pair was friends: celebration, high-five at the bottom. If sabotage happened earlier in the climb: climber reaches top DESPITE the sabotage → hero moment, +2 popularity, saboteur exposed as petty. |
 
-### Blind Challenge Events
-| Event | Trigger |
-|---|---|
-| Perfect catch/hit | high score |
-| Face hit (William Tell) | low score |
-| Wild shooter (Sadie) | very low intuition + temperament |
-| Jellyfish fall (trapeze) | bad communication |
-| Trust leap | high boldness jumper |
-| Frozen jumper | low boldness |
-| Explosion dodge (toboggan) | navigator warning + driver reaction |
-| Rule break DQ | emotional trigger |
-| Navigator screaming | low temperament navigator |
-| Wrong direction call | bond ≤ 0, navigator gives bad directions |
+### Fugu Events (Deep Consequences)
 
-### Social/Drama Events
-| Event | Trigger |
-|---|---|
-| Redemption act | villain does something kind |
-| Witness moment | someone sees the redemption |
-| Post-round argument | pair that lost, low temperament |
-| Post-round bonding | pair that won, bond boost |
-| Spectator reaction | watching players react to drama |
-| "I told you so" | pair member who wanted the other role |
-| Grudging respect | enemy pair that succeeded together |
+| Event | Trigger | Deep Consequence |
+|---|---|---|
+| Perfect dish | cookScore > 0.6 | Eater takes a bite, eyes widen. "This is... actually incredible?" The moment redefines the pair. Bond +0.4. If they were enemies: "I hate that you're good at this." Camp event: unlikely compliment. If cook is a villain/schemer: reveals hidden competence — they're not just scheming, they have skills. Changes how others perceive them. |
+| Suspicious eater | bond ≤ 0, eater sniffs food | Eater picks up the dish, smells it, pokes it with a fork. "You first." Cook: "It's fine!" Eater: "Then YOU eat it." Standoff. If cook eats a bite first (loyalty ≥ 6) → eater relaxes, bond +0.3. If cook refuses → eater's suspicion deepens, bond -0.3. Spectators watch and form opinions about who's trustworthy. |
+| Poisoning collapse | poisonRisk > 0.4 | The Trent moment. Eater takes a bite → face whack → screams → laughs → turns pale → collapses. Injury system: 1-2 episodes of lingering sickness. Eater can't compete in round 3. If cook TRIED their best (loyalty ≥ 5): "I'm so sorry, I tried!" Bond +0.1 (honest failure). If cook was negligent (mental ≤ 4): bond -0.5, camp event: "They almost killed me and they don't even care." If deliberate: see sabotage below. |
+| Cook confidence | cook intuition ≥ 7 | "Trust me. I know exactly what I'm doing." Cook works with precision. Eater watches, impressed. If cook actually delivers (high score): eater gains lasting trust → bond +0.3 + camp event about competence. If cook was confident but dish is mediocre: "All that confidence and THIS is what you made?" Bond damage proportional to how confident they were. |
+| Eater bravery | hesitation check passed despite fear | Eater is visibly terrified but eats anyway. "If I die, you're going home next." Takes the bite. If dish is good → bond +0.4, +1 popularity for bravery. The pair earned each other's respect through mutual risk. If dish is bad but not poisonous → "I can't believe I trusted you." Bond -0.3 but +0.5 popularity (they were brave even though it sucked). |
+| Cook panic | cook mental ≤ 4 | "Wait... which part is poisonous again?!" Cook stares at the fish with terror. Eater: "YOU DON'T KNOW?!" Low temperament eater may storm off (auto-lose). High temperament eater talks cook through it (bond +0.3, coach moment). If cook panics AND eater helps → the EATER saves the dish. Role reversal. +1.5 personal for eater. |
+| Deliberate botch | villain/schemer + bond ≤ -1 | Cook intentionally prepares it wrong. Not to kill — to make them sick enough to suffer. Guarantees poisoning. Bond crash -2.0. Heat +2.0 for 2 episodes. Camp event: "Did they poison them on purpose?" Other players' reactions depend on their bond with the cook: allies look away, enemies demand accountability. Creates a tribal storyline about whether the cook can be trusted. |
+| "You first" standoff | both boldness ≤ 4 | Neither wants to eat the fish. Neither wants to cook it. They stand there, staring at each other, while the other team finishes. Comedy moment but real consequences: time penalty on score -0.05. Low temperament player eventually snaps: "FINE, I'll do it!" and grabs the knife. The one who breaks first gets +0.5 personal score for stepping up. |
+
+### Blind Challenge Events (Deep Consequences)
+
+| Event | Trigger | Deep Consequence |
+|---|---|---|
+| Perfect hit (William Tell) | high tellScore | Shooter knocks the arrow clean off. Target doesn't flinch. Pure trust. Bond +0.4. "I told you I wouldn't miss." Camp event: becomes a trust reference for the rest of the season. The pair is now a proven unit. |
+| Face hit | low tellScore | Apple hits the target's face instead of the arrow. Target recoils in pain. Shooter: "Are you okay?!" or "Oops" (temperament determines reaction). Bond -0.3 if shooter seems to not care. +0.1 if genuinely sorry. Comedy moment but the target remembers — camp event: "You hit me in the face and LAUGHED." |
+| Wild shooter (Sadie moment) | intuition ≤ 3 + temperament ≤ 4 | Shooter keeps firing after the round is called. Hits target, spectators, animals, Chris. Nobody is safe. Comedy gold but -1.0 personal score. Target loses ALL trust: bond -0.5. Camp event: everyone references it. "Remember when Sadie almost killed everyone?" Becomes that player's defining moment. Spectators who got hit: bond -0.2 with shooter. |
+| Perfect catch (trapeze) | high trapezeScore | Dramatic mid-air catch. Jumper lands in catcher's arms. Moment of genuine trust. Bond +0.5. If showmance pair: romantic moment → spark intensity +0.3, `_challengeRomanceSpark`. If enemies: "I can't believe you actually caught me." Grudging respect that shifts the entire dynamic. |
+| Jellyfish fall | communication < 0.3 | Catcher calls "JUMP!" at the wrong time. Jumper leaps into jellyfish-filled water. Electric stings, screaming, comedy. Minor injury (1 ep, low penalty). Bond -0.4. BUT: if catcher is genuinely sorry (loyalty ≥ 6, temperament ≥ 5) → helps pull them out → partial bond recovery +0.2. If catcher LAUGHS → bond crash -0.8. Camp event: "You dropped me in JELLYFISH." Tribal ammunition. |
+| Catcher sabotage (trapeze) | villain + bond ≤ -1 | Deliberately calls jump at the wrong time. Jumper falls in jellyfish. Auto-fail. Same heat/bond consequences as rope drop sabotage. The visual: the catcher watches the jumper fall and doesn't move. Everyone sees it. Heat +2.0. |
+| Trust leap | jumper boldness ≥ 7 | Jumper doesn't wait for the call. Just jumps. If catcher was ready → perfect catch, bond +0.5, "You PSYCHO!" + laughter. If catcher wasn't ready → miss, jellyfish. The jumper's boldness either creates a legendary moment or a catastrophe. Either way, it's compelling. |
+| Frozen jumper | jumper boldness ≤ 3 | Can't jump. Stands on the platform frozen. Catcher has to talk them down. "I'll catch you. I promise." If bond ≥ 2: eventually jumps, bond +0.3 (trust earned). If bond ≤ 0: "Why would I trust YOU?" Refuses. Time penalty. The refusal is honest — and it reveals how broken the pair is. Camp event: the frozen moment is discussed. |
+| Explosion dodge (toboggan) | random 20%, communication check | Navigator screams a direction. Driver reacts. High communication → dodge, score +0.03. Low communication → hit, score -0.08. Low temperament navigator screams contradicting directions: "LEFT! NO, RIGHT! NO, LEFT!" Driver ignores them → crashes OR trusts them → survives. The chaos of blind trust. |
+| Rule break DQ | emotional trigger | The DJ/Bunny moment. Driver removes blindfold because something emotional happens (sees a friend hurt, hears a showmance partner, etc.). They were WINNING — but the DQ voids everything. Bond with partner: partner WANTED to win but the driver chose something personal over the game. Strategic partner: bond -0.5 ("You cost us the win for THAT?"). Loyal/hero partner: bond +0.3 ("I get it. Some things matter more."). Creates a tribal debate: was it selfish or noble? |
+| Navigator screaming | temperament ≤ 3 | Navigator loses it. Screams every direction at once, panics, can't communicate clearly. Driver is navigating blind with a screaming partner. Score -0.05. Comedy moment. Low temperament navigator + low bond driver = driver ignores navigator entirely and steers by instinct (physical check). |
+| Wrong direction (sabotage) | bond ≤ 0, navigator intentionally misleads | Navigator gives deliberately bad directions. "Turn LEFT" when they should turn right. Driver crashes. If driver realizes (intuition ≥ 6): "You did that on purpose." Bond crash -1.0. If driver doesn't realize: blames themselves. Navigator gets away with it — until someone reviews the footage at camp. Delayed bond crash next episode. |
+
+### Social/Drama Events (Deep Consequences)
+
+| Event | Trigger | Deep Consequence |
+|---|---|---|
+| Redemption act | villain/schemer/hothead does something kind during round they're not competing in | See Hidden Moments section above. The key: this creates ASYMMETRIC information. The witness knows something nobody else does. This becomes leverage, blackmail, or genuine connection depending on the witness's archetype. The kind player's reputation doesn't change publicly — only privately with the witness. |
+| Witness moment | highest-intuition bystander sees the redemption | The witness's reaction depends on THEIR archetype, not the redeemer's. Hero witness: quiet respect, won't exploit it. Schemer witness: files it for later. Showmance witness: sees a new side of them, spark grows. This is a slow-burn narrative seed that pays off episodes later. |
+| Post-round argument | pair that lost, at least one temperament ≤ 4 | The losing pair explodes at each other. "This is YOUR fault." "MY fault? You couldn't even hold a ROPE." Bond -0.5. Other tribe members pick sides — allies of each player back their friend, creating a camp rift. If the argument gets physical (both temperament ≤ 3, both boldness ≥ 6): someone has to break it up. Camp event: "The fight after the trust challenge." |
+| Post-round bonding | pair that won, bond started below 2 | The unexpected part: enemies who succeed together bond MORE than friends who succeed. The surprise of working together overcomes the hostility. Bond +0.5 (higher than normal win bonus). Camp event: "I didn't think we could do it." "Neither did I." Creates a new alliance possibility from a pair nobody expected. |
+| Spectator reaction | watching players react to key moments | Players on the sideline react to what they see. If they watch a sabotage: bond -0.3 with the saboteur. If they watch a heroic catch: bond +0.2 with the hero. If they watch a poisoning: fear of the cook. Spectator reactions create SECONDARY bond changes that ripple through the tribe. |
+| "I told you so" | pair member who argued for the other role assignment, and their role assignment failed | "I SAID I should climb. But no, you had to be the hero." Bond -0.3. If the arguer was right (their stats were better for the role): +0.5 personal score, camp event about being ignored. If the arguer was wrong (they would have done worse): the other player fires back and the arguer loses credibility. |
+| Grudging respect | enemy pair (bond ≤ 0) that won their round | The most powerful social event. Two people who hate each other just proved they can work together. Bond +0.5. The grudging respect isn't friendship — it's acknowledgment. "I don't like you. But you held the rope." Camp event: other players notice the shift. Alliance possibilities open. If either player is a schemer: they file this as useful information for later. |
 
 ---
 

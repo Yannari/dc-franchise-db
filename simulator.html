@@ -42644,6 +42644,9 @@ function snapshotGameState() {
     bonds: gs.bonds ? { ...gs.bonds } : {},
     moles: (gs.moles || []).map(m => ({ ...m, suspicion: { ...m.suspicion }, sabotageLog: [...m.sabotageLog], leaks: [...m.leaks] })),
     exileDuelPlayer: gs.exileDuelPlayer || null,
+    chalRecord: gs.chalRecord ? Object.fromEntries(
+      Object.entries(gs.chalRecord).map(([k, v]) => [k, { ...v }])
+    ) : {},
   };
 }
 

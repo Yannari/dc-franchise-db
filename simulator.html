@@ -15028,7 +15028,8 @@ function simulateHellsKitchen(ep) {
           // Course 2 (main): tension escalates. Singled-out player might snap back.
           addBond(chef.name, _ts.target, -0.3);
           const tgtPr = pronouns(_ts.target);
-          const snapChance = 0.15 + pStats(_ts.target).boldness * 0.06; // base 15% + boldness
+          const _tgtStats = pStats(_ts.target);
+          const snapChance = 0.15 + _tgtStats.boldness * 0.06 + (10 - _tgtStats.temperament) * 0.03; // boldness + hot temper
           if (Math.random() < snapChance) {
             _ts.tensionLevel = 2;
             const _snapTexts = [
@@ -15127,12 +15128,15 @@ function simulateHellsKitchen(ep) {
       if (_ce && _ce.style !== 'tyrant') {
         const _cePr = pronouns(_ce.chef);
         const _ceTeammates = t.members.filter(m => m !== _ce.chef);
+        // Low temperament = cracks easier (threshold boost: temp 2 → +2, temp 5 → +0, temp 8 → -1)
+        const _chefTemp = pStats(_ce.chef).temperament || 5;
+        const _tempBonus = Math.round((5 - _chefTemp) * 0.5); // low temp = positive = wider trigger
 
         // ── MOTIVATOR: inspired → desperate → meltdown ──
         if (_ce.style === 'motivator') {
           const prevScore = courseIdx > 0 ? (courseScores[t.name]?.[COURSES[courseIdx - 1]]?.rating || 5) : 5;
           // Trigger: any previous course scored poorly, OR phase already set
-          if (_ce.phase === 'inspired' && courseIdx >= 1 && prevScore <= 6) {
+          if (_ce.phase === 'inspired' && courseIdx >= 1 && prevScore <= 6 + _tempBonus) {
             _ce.phase = 'desperate';
             // Desperation creates pressure — bonds crack, next course penalized
             _ceTeammates.forEach(m => addBond(_ce.chef, m, -0.3));
@@ -15147,7 +15151,7 @@ function simulateHellsKitchen(ep) {
           if (courseIdx >= 1 && _ce.phase === 'desperate') {
             // Meltdown more likely because desperation already penalized the main course
             const mainScore = courseScores[t.name]?.[COURSES[1]]?.rating || 5;
-            if (mainScore <= 7 && Math.random() < 0.55) {
+            if (mainScore <= 7 + _tempBonus && Math.random() < 0.55 + (5 - _chefTemp) * 0.05) {
               _ce.phase = 'meltdown';
               courseModifiers[t.name][course] -= 0.08;
               personalScores[_ce.chef] = (personalScores[_ce.chef] || 0) - 1.5;
@@ -15165,7 +15169,7 @@ function simulateHellsKitchen(ep) {
         // ── DELEGATOR: confident → self-doubt → micromanage ──
         if (_ce.style === 'delegator') {
           const prevScore = courseIdx > 0 ? (courseScores[t.name]?.[COURSES[courseIdx - 1]]?.rating || 5) : 5;
-          if (_ce.phase === "confident" && courseIdx >= 1 && prevScore <= 5) {
+          if (_ce.phase === "confident" && courseIdx >= 1 && prevScore <= 5 + _tempBonus) {
             _ce.phase = 'doubting';
             // Self-doubt makes chef hesitant — small penalty to main
             courseModifiers[t.name][course] -= 0.03;
@@ -15194,7 +15198,7 @@ function simulateHellsKitchen(ep) {
         if (_ce.style === 'chaos') {
           const prevScore = courseIdx > 0 ? (courseScores[t.name]?.[COURSES[courseIdx - 1]]?.rating || 5) : 5;
           if (courseIdx >= 1 && _ce.phase === "wild") {
-            if (prevScore <= 5) {
+            if (prevScore <= 5 + _tempBonus) {
               _ce.phase = 'spiraling';
               // Spiral tanks the next course AND creates tension
               courseModifiers[t.name][course] -= 0.06;
@@ -15243,7 +15247,7 @@ function simulateHellsKitchen(ep) {
         // ── HYPE: vibing → unfocused → reality check ──
         if (_ce.style === 'hype') {
           const prevScore = courseIdx > 0 ? (courseScores[t.name]?.[COURSES[courseIdx - 1]]?.rating || 5) : 5;
-          if (courseIdx >= 1 && _ce.phase === 'vibing' && (Math.random() < 0.35 || prevScore <= 5)) {
+          if (courseIdx >= 1 && _ce.phase === 'vibing' && (Math.random() < 0.35 + (5 - _chefTemp) * 0.05 || prevScore <= 5 + _tempBonus)) {
             _ce.phase = 'unfocused';
             courseModifiers[t.name][course] -= 0.05;
             // The fun is real but so is the problem — something burns
@@ -15291,7 +15295,7 @@ function simulateHellsKitchen(ep) {
                 `Success breeds confidence. ${_ce.chef} is now improvising the improvisation. The team can't keep up but the food keeps getting better.`,
               ];
               pushEvent({ type: 'improviser-bold', course, players: [_ce.chef], text: _rp(_boldTexts), badge: 'Going Bolder', badgeText: `${_ce.chef} doubles down on improvisation`, badgeClass: 'badge-success' });
-            } else if (prevScore <= 5) {
+            } else if (prevScore <= 5 + _tempBonus) {
               _ce.phase = 'panic';
               courseModifiers[t.name][course] -= 0.04;
               const _panicTexts = [

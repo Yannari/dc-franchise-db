@@ -15017,23 +15017,24 @@ function simulateHellsKitchen(ep) {
 
       let raw = 0;
       if (cookA && cookB) {
-        raw = cookA.intuition * 0.04 + cookB.mental * 0.04 + (cookA.social + cookB.social) * 0.01 + Math.random() * 0.2;
+        // Avg stats (5,5,5) → ~0.35. High stats (8,8,8) → ~0.50. Needs events/chef to reach 7+
+        raw = cookA.intuition * 0.025 + cookB.mental * 0.025 + (cookA.social + cookB.social) * 0.005 + Math.random() * 0.15;
       } else if (cookA) {
-        // Solo cook — halved base
-        raw = (cookA.intuition * 0.04 + cookA.mental * 0.04 + cookA.social * 0.02 + Math.random() * 0.2) * 0.5;
+        // Solo cook — reduced base
+        raw = (cookA.intuition * 0.025 + cookA.mental * 0.025 + cookA.social * 0.01 + Math.random() * 0.15) * 0.6;
       } else {
         raw = Math.random() * 0.15; // No cook, disaster
       }
 
       // Chef bonus (style-dependent)
       let chefBonus = 0;
-      if (chef.style === 'delegator') chefBonus = 0.10;
-      else if (chef.style === 'tyrant') chefBonus = 0.08;
-      else if (chef.style === 'motivator') chefBonus = 0.05;
-      else if (chef.style === 'hype') chefBonus = 0.04;
-      else if (chef.style === 'chaos') chefBonus = (Math.random() - 0.5) * 0.2;
-      else if (chef.style === 'improviser') chefBonus = Math.random() * 0.12;
-      else chefBonus = 0.03;
+      if (chef.style === 'delegator') chefBonus = 0.06;
+      else if (chef.style === 'tyrant') chefBonus = 0.05;
+      else if (chef.style === 'motivator') chefBonus = 0.03;
+      else if (chef.style === 'hype') chefBonus = 0.03;
+      else if (chef.style === 'chaos') chefBonus = (Math.random() - 0.5) * 0.12;
+      else if (chef.style === 'improviser') chefBonus = Math.random() * 0.08;
+      else chefBonus = 0.02;
 
       // If chef locked out this course, no chef bonus
       if (chefLockedOut[t.name] === course) chefBonus = 0;
@@ -15043,14 +15044,14 @@ function simulateHellsKitchen(ep) {
       // Pair bond modifier
       if (pair.length === 2) {
         const bond = getBond(pair[0], pair[1]);
-        if (bond >= 2) raw += (bond - 2) * 0.03;
-        else if (bond < 0) raw += bond * 0.04; // negative
+        if (bond >= 2) raw += (bond - 2) * 0.015;
+        else if (bond < 0) raw += bond * 0.02; // negative
       }
 
       // Floater contribution
       if (floater && !satOutPlayers.has(floater)) {
         const floaterS = pStats(floater);
-        raw += floaterS.intuition * 0.005 + floaterS.social * 0.005;
+        raw += floaterS.intuition * 0.003 + floaterS.social * 0.003;
         personalScores[floater] = (personalScores[floater] || 0) + 0.3;
       }
 

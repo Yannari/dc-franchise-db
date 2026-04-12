@@ -48146,17 +48146,24 @@ function rpBuildDebug(ep) {
   // TAB: THREATS & HEAT
   // ════════════════════════════════════════════════
   if (_dbTab === 'threats') {
+    // Use the episode's snapshot so threat/heat reflects THAT episode, not current state
+    const _savedGs = gs;
+    const _snap = ep.gsSnapshot;
+    if (_snap) { gs = _snap; if (typeof repairGsSets === 'function') repairGsSets(gs); }
+
     // Include eliminated player for this episode
     const _elimName = ep.eliminated && ep.eliminated !== 'No elimination' ? (Array.isArray(ep.eliminated) ? ep.eliminated : [ep.eliminated]) : [];
-    const _allPlayers = [...activePlayers, ..._elimName.filter(n => n && !activePlayers.includes(n))];
+    const _snapActive = _snap?.activePlayers || activePlayers;
+    const _allPlayers = [..._snapActive, ..._elimName.filter(n => n && !_snapActive.includes(n))];
 
-    // Threat scores — active + eliminated
+    // Threat scores — from snapshot state
     html += `<div style="margin-bottom:20px">
-      <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#8b949e;margin-bottom:8px">THREAT SCORES</div>`;
+      <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#8b949e;margin-bottom:8px">THREAT SCORES (Episode ${ep.num})</div>`;
     const _igThreatTier = (s) => s <= 1.0 ? { label: 'Low', color: '#10b981' } : s <= 2.0 ? { label: 'Medium', color: '#f59e0b' } : s <= 3.0 ? { label: 'High', color: '#f97316' } : { label: 'Extreme', color: '#ef4444' };
+    const _snapChalRec = _snap?.chalRecord || _chalRec || {};
     _allPlayers.map(name => {
       const ts = threatScore(name);
-      const rec = _chalRec[name] || { wins: 0, podiums: 0, bombs: 0 };
+      const rec = _snapChalRec[name] || { wins: 0, podiums: 0, bombs: 0 };
       const isElim = _elimName.includes(name);
       return { name, ts, rec, tier: _igThreatTier(ts), isElim };
     }).sort((a, b) => b.ts - a.ts).forEach(({ name, ts, rec, tier, isElim }) => {
@@ -48169,10 +48176,9 @@ function rpBuildDebug(ep) {
       </div>`;
     });
     html += `</div>`;
-    // Heat — always show, active + eliminated
+    // Heat — from snapshot state
     html += `<div style="margin-bottom:20px">
-      <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#8b949e;margin-bottom:8px">ESTIMATED HEAT</div>`;
-    // Phobia blame data (saved on episode for debug visibility — gs._phobiaBlame is cleared after tribal)
+      <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#8b949e;margin-bottom:8px">ESTIMATED HEAT (Episode ${ep.num})</div>`;
     const _pfBlame = ep.phobiaFactor ? Object.fromEntries(
       Object.entries(ep.phobiaFactor.results || {}).filter(([, r]) => r === 'fail')
         .filter(([p]) => ep.phobiaFactor.losingTribe && (ep.tribesAtStart || gs.tribes || []).find(t => t.name === ep.phobiaFactor.losingTribe)?.members?.includes(p))
@@ -48180,7 +48186,7 @@ function rpBuildDebug(ep) {
     ) : {};
     _allPlayers.map(name => {
       const isElim = _elimName.includes(name);
-      const heat = computeHeat(name, _allPlayers, gs.namedAlliances || []);
+      const heat = computeHeat(name, _allPlayers, (gs.namedAlliances || []));
       const blame = _pfBlame[name] || 0;
       return { name, heat, isElim, blame };
     }).sort((a, b) => b.heat - a.heat).forEach(({ name, heat, isElim, blame }) => {
@@ -48197,6 +48203,8 @@ function rpBuildDebug(ep) {
       </div>`;
       });
       html += `</div>`;
+    // Restore gs after snapshot-based computation
+    if (_snap) gs = _savedGs;
   }
 
   // ════════════════════════════════════════════════

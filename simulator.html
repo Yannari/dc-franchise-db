@@ -15552,9 +15552,10 @@ function simulateHellsKitchen(ep) {
           eventsThisCourse++;
         }
 
-        // Allergic reaction
-        if (Math.random() < 0.25) {
+        // Allergic reaction — rare, max 1 per challenge
+        if (!ep._hkAllergyFired && Math.random() < 0.03) {
           if (eventsThisCourse >= numEvents) return;
+          ep._hkAllergyFired = true;
           satOutPlayers.add(p);
           teammates.forEach(m => { if (m !== p) addBond(m, p, 0.2); });
           _pushCourseEvent({

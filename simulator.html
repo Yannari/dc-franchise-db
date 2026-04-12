@@ -62944,127 +62944,196 @@ function rpBuildTrustChallenge(ep) {
 
   const _tcReveal = (targetIdx) => `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=${targetIdx};const ep=gs.episodeHistory.find(e=>e.num===${ep.num});if(ep){const m=document.querySelector('.rp-main');const st=m?m.scrollTop:0;buildVPScreens(ep);renderVPScreen();if(m)m.scrollTop=st;}`;
 
-  // Build flat steps from timeline, subdividing round3 by kind
+  const tribeNames = Object.keys(tc.pairs || {});
+  const CYAN = '#38bdf8';
+  const SUB_LABELS = { round3a: '🎯 BLIND WILLIAM TELL', round3b: '🎪 BLIND TRAPEZE', round3c: '🛷 BLIND TOBOGGAN' };
+  const ROLE_EMOJIS = { climber: '🧗', belayer: '🪢', cook: '🔪', eater: '😰', shooter: '🏹', target: '🎯', catcher: '🤲', jumper: '🤸', navigator: '🧭', driver: '🛷' };
+
+  // ── Build rich timeline steps from available data ──
   const steps = [];
-  (tc.timeline || []).forEach(item => {
-    steps.push({ stepType: item.kind || 'event', data: item });
-  });
+
+  // Step builder: pair reveal for a round
+  const addPairReveal = (roundKey, label, roundColor) => {
+    steps.push({ stepType: 'round-header', roundKey, label, color: roundColor });
+    // Pair cards for this round
+    if (roundKey === 'round3') {
+      ['round3a','round3b','round3c'].forEach(sub => {
+        steps.push({ stepType: 'sub-round-header', sub, label: SUB_LABELS[sub], color: '#8b5cf6' });
+        steps.push({ stepType: 'pair-cards', roundKey, sub });
+        // Negotiation events for sub-round
+        tribeNames.forEach(tn => {
+          const neg = tc.negotiation?.[tn]?.[sub];
+          if (neg?.event) steps.push({ stepType: 'event', data: { type: 'negotiation-' + sub, text: neg.event, tribe: tn, _tribe: tn } });
+        });
+        // Drama events for this sub-round
+        const subEvents = (tc.rounds?.round3?.events || []).filter(e => {
+          const t = e.type || '';
+          if (sub === 'round3a') return t.includes('shooter') || t.includes('hit') || t.includes('face') || t.includes('wild') || t.includes('flinch');
+          if (sub === 'round3b') return t.includes('catch') || t.includes('jump') || t.includes('leap') || t.includes('jelly') || t.includes('trapeze') || t.includes('frozen');
+          if (sub === 'round3c') return t.includes('nav') || t.includes('toboggan') || t.includes('driver') || t.includes('dq') || t.includes('rule');
+          return false;
+        });
+        subEvents.forEach(evt => { steps.push({ stepType: 'event', data: evt }); });
+      });
+    } else {
+      steps.push({ stepType: 'pair-cards', roundKey, sub: null });
+      // Negotiation events
+      tribeNames.forEach(tn => {
+        const neg = tc.negotiation?.[tn]?.[roundKey];
+        if (neg?.event) steps.push({ stepType: 'event', data: { type: 'negotiation-' + roundKey, text: neg.event, tribe: tn, _tribe: tn } });
+      });
+      // Drama events for this round
+      const roundEvents = tc.rounds?.[roundKey]?.events || [];
+      roundEvents.forEach(evt => { steps.push({ stepType: 'event', data: evt }); });
+    }
+    // Round result from timeline
+    const roundNum = roundKey === 'round1' ? 1 : roundKey === 'round2' ? 2 : 3;
+    const resultItem = (tc.timeline || []).find(t => t.type === 'round-result' && t.round === roundNum);
+    if (resultItem) steps.push({ stepType: 'round-result', data: resultItem, color: roundColor });
+  };
+
+  addPairReveal('round1', '🧗 ROUND 1 — EXTREME ROCK CLIMB', '#f85149');
+  addPairReveal('round2', '🐡 ROUND 2 — FUGU SASHIMI', '#f0a500');
+  addPairReveal('round3', '🎯 ROUND 3 — THREE BLIND CHALLENGES', '#8b5cf6');
+
+  // Events not captured by round filtering (post-round arguments, grudging respect, etc.)
+  const roundEventTypes = new Set((tc.rounds?.round1?.events || []).concat(tc.rounds?.round2?.events || []).concat(tc.rounds?.round3?.events || []).map(e => e.type + '|' + e.text));
+  const unclaimedEvents = (tc.events || []).filter(evt => !roundEventTypes.has(evt.type + '|' + evt.text) && evt.type !== 'redemption-act');
+  if (unclaimedEvents.length) {
+    unclaimedEvents.forEach(evt => { steps.push({ stepType: 'event', data: evt }); });
+  }
+
+  // Redemption
+  if (tc.redemption) steps.push({ stepType: 'redemption', data: tc.redemption });
+
+  // Final scoreboard
   steps.push({ stepType: 'final', data: {} });
 
   const totalSteps = steps.length;
   const allRevealed = state.idx >= totalSteps - 1;
 
-  const tribeNames = Object.keys(tc.pairs || {});
-  const CYAN = '#38bdf8';
-
-  // Bond indicator bar helper
-  const bondBar = (bond) => {
-    const pct = Math.max(2, Math.min(100, ((bond + 10) / 20) * 100));
-    const col = bond <= 0 ? '#f85149' : bond <= 3 ? '#f0a500' : '#3fb950';
-    const label = bond <= 0 ? 'rivals' : bond <= 3 ? 'uncertain' : 'allies';
-    return `<div style="margin-top:4px">
-      <div style="display:flex;align-items:center;gap:4px">
-        <div style="flex:1;height:4px;border-radius:2px;background:#21262d;overflow:hidden">
-          <div style="height:100%;width:${pct}%;background:${col};border-radius:2px"></div>
-        </div>
-        <span style="font-size:9px;color:${col};font-weight:700">${bond.toFixed(1)} (${label})</span>
-      </div>
-    </div>`;
-  };
-
-  // Pair card helper
-  const pairCard = (tname, pair, roles, score, accentColor) => {
-    if (!pair || pair.length < 2) return '';
-    const roleEntries = roles ? Object.entries(roles) : [];
-    const roleLabels = roleEntries.map(([role, player]) => `<span style="font-size:9px;background:${accentColor}22;color:${accentColor};padding:1px 5px;border-radius:3px;font-weight:700;text-transform:uppercase">${role}: ${player}</span>`).join(' ');
-    return `<div style="flex:1;min-width:140px;padding:10px;border-radius:8px;border:1px solid ${accentColor}33;background:${accentColor}08;text-align:center">
-      <div style="font-size:9px;font-weight:700;color:${accentColor};margin-bottom:6px;text-transform:uppercase;border-bottom:1px solid ${accentColor}22;padding-bottom:4px">${tname}</div>
-      <div style="display:flex;gap:6px;justify-content:center;margin-bottom:4px">
-        ${pair.map(p => rpPortrait(p, 'pb-sm')).join('')}
-      </div>
-      <div style="display:flex;gap:3px;justify-content:center;flex-wrap:wrap;margin-bottom:4px">${roleLabels}</div>
-      ${bondBar(getBond(pair[0], pair[1]))}
-      ${score !== undefined && score > -900 ? `<div style="font-size:10px;color:#8b949e;margin-top:4px">Score: ${score.toFixed(3)}</div>` : score !== undefined ? '<div style="font-size:10px;color:#f85149;margin-top:4px">AUTO-LOSS</div>' : ''}
-    </div>`;
-  };
-
-  // Event border color
+  // ── Helper: event border color ──
   const evtBorderColor = (evt) => {
     const t = evt.type || '';
     if (['sabotage-humiliation','sabotage-ropedrop','deliberate-botch','catcher-sabotage','rule-break-dq','nav-sabotage-caught','nav-sabotage-hidden'].includes(t)) return '#f85149';
-    if (['poison-honest','poison-negligent','eater-refused','habanero-fail','oil-crash','jellyfish-fall','jellyfish-sorry','frozen-refuse','wild-shooter','face-hit','explosion-fail','belayer-distracted'].includes(t)) return '#f0a500';
-    if (['heroic-catch','eater-bravery','perfect-dish','belayer-encourage','perfect-hit','perfect-catch','trust-leap-caught','summit-rivals','summit-success','cook-confidence-delivers','explosion-pass','habanero-pass','habanero-save','oil-pass','oil-caught','frozen-jump','explosion-dodge','nav-screaming-ignore'].includes(t)) return '#3fb950';
+    if (['poison-honest','poison-negligent','eater-refused','habanero-fail','oil-crash','jellyfish-fall','jellyfish-sorry','frozen-refuse','wild-shooter','face-hit','explosion-fail','belayer-distracted','cook-panic','trust-leap-miss'].includes(t)) return '#f0a500';
+    if (['heroic-catch','eater-bravery','perfect-dish','belayer-encourage','perfect-hit','perfect-catch','trust-leap-caught','summit-rivals','summit-success','cook-confidence-delivers','explosion-pass','habanero-pass','habanero-save','oil-pass','oil-caught','frozen-jump','explosion-dodge','nav-screaming-ignore','cook-panic-saved','grudging-respect'].includes(t)) return '#3fb950';
     if (['redemption-act'].includes(t)) return '#faca15';
+    if (t.includes('negotiation')) return '#58a6ff';
     if (t.includes('blind') || t.includes('target-flinch')) return '#8b5cf6';
+    if (t.includes('post-round-argument')) return '#f85149';
+    if (t.includes('you-first-standoff') || t.includes('suspicious')) return '#f0a500';
     return CYAN;
   };
 
-  // ── PAGE HEADER ──
-  let html = `<div class="rp-page" style="background:linear-gradient(180deg,#001a2e 0%,#0d1117 40%,#0d1117 100%);padding-bottom:60px">
-    <div class="rp-eyebrow" style="color:${CYAN}">Episode ${ep.num}</div>
-    <div style="font-family:var(--font-display);font-size:26px;letter-spacing:3px;text-align:center;color:${CYAN};animation:trustGlow 2.5s ease-in-out infinite;margin-bottom:4px">
-      WHO CAN YOU TRUST?
-    </div>
-    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:16px">
-      ${tribeNames.map(tn => `<span style="color:${tribeColor(tn)}">${tn}</span>`).join(' vs ')}
-    </div>`;
-
-  // ── ROUND SECTION HEADERS + pair cards for each round ──
-  const ROUND_META = {
-    round1: { label: '🧗 ROUND 1 — EXTREME ROCK CLIMB', color: '#f85149', accentKey: 'round1' },
-    round2: { label: '🐡 ROUND 2 — FUGU SASHIMI', color: '#f0a500', accentKey: 'round2' },
-    round3: { label: '🎯 ROUND 3 — THREE BLIND CHALLENGES', color: '#8b5cf6', accentKey: 'round3' },
+  // ── Helper: extract player names from event data ──
+  const evtPlayers = (evt) => {
+    if (evt.players?.length) return evt.players;
+    const names = [];
+    if (evt.saboteur) names.push(evt.saboteur);
+    if (evt.victim) names.push(evt.victim);
+    if (evt.cook) names.push(evt.cook);
+    if (evt.catcher) names.push(evt.catcher);
+    if (evt.fallen) names.push(evt.fallen);
+    if (evt.shooter) names.push(evt.shooter);
+    if (evt.navigator) names.push(evt.navigator);
+    if (evt.driver) names.push(evt.driver);
+    if (evt.pair?.length) names.push(...evt.pair);
+    // Fallback: try to get pair from tribe + round data
+    if (!names.length && evt.tribe) {
+      const t = evt.type || '';
+      let rk = null;
+      if (t.includes('climb') || t.includes('belayer') || t.includes('summit') || t.includes('explosion') || t.includes('habanero') || t.includes('oil') || t.includes('rope')) rk = 'round1';
+      else if (t.includes('cook') || t.includes('dish') || t.includes('eater') || t.includes('poison') || t.includes('botch') || t.includes('standoff') || t.includes('panic')) rk = 'round2';
+      if (rk) {
+        const pair = tc.rounds?.[rk]?.pairs?.[evt.tribe];
+        if (pair?.length) names.push(...pair);
+      }
+    }
+    return names;
   };
 
-  // ── TIMELINE (click-to-reveal) ──
-  html += `<div style="margin-bottom:16px">
-    <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:#8b949e;text-align:center;margin-bottom:8px;text-transform:uppercase">Challenge Timeline</div>`;
+  // ── Helper: trust meter bar ──
+  const trustMeter = (a, b) => {
+    const bond = getBond(a, b);
+    const sA = pStats(a), sB = pStats(b);
+    const trustPct = Math.max(2, Math.min(100, (bond * 0.05 + ((sA?.loyalty || 5) + (sB?.loyalty || 5)) / 2 * 0.04) * 100));
+    const bondLabel = bond <= 0 ? 'rivals' : bond <= 3 ? 'uncertain' : 'allies';
+    const bondEmoji = bond <= 0 ? '💔' : bond <= 3 ? '❓' : '🔗';
+    const bondColor = bond <= 0 ? '#f85149' : bond <= 3 ? '#8b949e' : '#58a6ff';
+    return `<div style="margin-top:6px">
+      <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:4px">
+        <span style="font-size:14px">${bondEmoji}</span>
+        <span style="font-size:9px;color:${bondColor};font-weight:700;text-transform:uppercase">${bondLabel}</span>
+        <span style="font-size:9px;color:#6e7681">(${bond.toFixed(1)})</span>
+      </div>
+      <div style="height:6px;border-radius:3px;background:#21262d;overflow:hidden;position:relative">
+        <div style="height:100%;width:${trustPct}%;background:linear-gradient(90deg,#f85149,#f0a500,#3fb950);border-radius:3px;transition:width 0.5s ease"></div>
+      </div>
+    </div>`;
+  };
 
-  let _lastRound = null;
-  const SUB_LABELS = { round3a: 'Blind William Tell', round3b: 'Blind Trapeze', round3c: 'Blind Toboggan' };
+  // ── Helper: pair card with portraits, bond indicator, role badges, trust meter ──
+  const pairCard = (tname, pair, roles, score, accentColor) => {
+    if (!pair || pair.length < 2) return '';
+    const roleEntries = roles ? Object.entries(roles) : [];
+    return `<div style="flex:1;min-width:160px;padding:12px;border-radius:10px;border:1px solid ${accentColor}33;background:${accentColor}08;text-align:center">
+      <div style="font-size:9px;font-weight:700;color:${accentColor};margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid ${accentColor}22;padding-bottom:4px">${tname}</div>
+      <div style="display:flex;gap:4px;justify-content:center;align-items:center;margin-bottom:6px">
+        ${rpPortrait(pair[0], 'pb-sm')}
+        <div style="font-size:16px;margin:0 2px">${getBond(pair[0], pair[1]) <= 0 ? '💔' : getBond(pair[0], pair[1]) <= 3 ? '❓' : '🔗'}</div>
+        ${rpPortrait(pair[1], 'pb-sm')}
+      </div>
+      <div style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap;margin-bottom:6px">
+        ${roleEntries.map(([role, player]) => `<span style="font-size:9px;background:${accentColor}18;color:${accentColor};padding:2px 6px;border-radius:4px;font-weight:700;text-transform:uppercase">${ROLE_EMOJIS[role] || ''} ${role}: ${player.split(' ')[0]}</span>`).join('')}
+      </div>
+      ${trustMeter(pair[0], pair[1])}
+      ${score !== undefined && score > -900 ? `<div style="font-size:10px;color:#8b949e;margin-top:6px">Score: <span style="font-weight:700;color:#e6edf3">${score.toFixed(3)}</span></div>` : score !== undefined ? '<div style="font-size:10px;color:#f85149;margin-top:6px;font-weight:700">AUTO-LOSS</div>' : ''}
+    </div>`;
+  };
+
+  // ══════════════════════════════════════════════════════════════════
+  // PAGE HEADER
+  // ══════════════════════════════════════════════════════════════════
+  let html = `<div class="rp-page" style="background:linear-gradient(180deg,#001a2e 0%,#0d1117 40%,#0d1117 100%);padding-bottom:60px">
+    <div class="rp-eyebrow" style="color:${CYAN}">Episode ${ep.num}</div>
+    <div style="font-family:var(--font-display);font-size:28px;letter-spacing:3px;text-align:center;color:${CYAN};animation:trustGlow 2.5s ease-in-out infinite;margin-bottom:4px">
+      WHO CAN YOU TRUST?
+    </div>
+    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:6px">
+      ${tribeNames.map(tn => `<span style="color:${tribeColor(tn)};font-weight:700">${tn}</span>`).join(' <span style="color:#6e7681">vs</span> ')}
+    </div>
+    <div style="text-align:center;font-size:10px;color:#6e7681;margin-bottom:20px">Three rounds. Two-person trust pairs. One tribe goes to tribal.</div>`;
+
+  // ══════════════════════════════════════════════════════════════════
+  // CLICK-TO-REVEAL TIMELINE
+  // ══════════════════════════════════════════════════════════════════
+  html += `<div style="margin-bottom:16px">`;
 
   steps.forEach((step, i) => {
     const isVisible = i <= state.idx;
 
-    // Round header injection from timeline event type
-    const evtType = step.data?.type || '';
-    const roundKey = evtType.includes('round1') || evtType === 'negotiation-r1' ? 'round1'
-                   : evtType.includes('round2') || evtType === 'negotiation-r2' ? 'round2'
-                   : evtType.includes('round3') || evtType.includes('3a') || evtType.includes('3b') || evtType.includes('3c') || evtType === 'negotiation-round3a' || evtType === 'negotiation-round3b' || evtType === 'negotiation-round3c' ? 'round3'
-                   : evtType === 'round-result' ? (step.data?.round === 1 ? 'round1' : step.data?.round === 2 ? 'round2' : step.data?.round === 3 ? 'round3' : null)
-                   : null;
-
-    if (roundKey && roundKey !== _lastRound && ROUND_META[roundKey]) {
-      _lastRound = roundKey;
-      const rm = ROUND_META[roundKey];
+    // ── ROUND HEADER ──
+    if (step.stepType === 'round-header') {
       if (isVisible || i <= state.idx + 1) {
-        // Show round header when within current reveal range
-        html += `<div style="text-align:center;padding:10px 0 4px;margin:12px 0 6px;border-top:1px solid ${rm.color}22">
-          <span style="font-family:var(--font-display);font-size:14px;letter-spacing:2px;color:${rm.color}">${rm.label}</span>
+        html += `<div style="text-align:center;padding:14px 0 6px;margin:16px 0 8px;border-top:2px solid ${step.color}33">
+          <div style="font-family:var(--font-display);font-size:16px;letter-spacing:2px;color:${step.color};text-shadow:0 0 15px ${step.color}33">${step.label}</div>
         </div>`;
-        // Show pair cards for this round
-        html += `<div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">`;
-        tribeNames.forEach(tn => {
-          const tcol = tribeColor(tn);
-          if (roundKey === 'round3') {
-            // Show sub-round pairs
-            ['round3a','round3b','round3c'].forEach(sub => {
-              const pair = tc.rounds?.round3?.pairs?.[tn]?.[sub];
-              const roles = tc.rounds?.round3?.roles?.[tn]?.[sub];
-              const score = tc.rounds?.round3?.scores?.[tn]?.[sub];
-              if (pair) html += pairCard(tn + ' — ' + SUB_LABELS[sub], pair, roles, score, tcol);
-            });
-          } else {
-            const pair = tc.rounds?.[roundKey]?.pairs?.[tn];
-            const roles = tc.rounds?.[roundKey]?.roles?.[tn];
-            const score = tc.rounds?.[roundKey]?.scores?.[tn];
-            html += pairCard(tn, pair, roles, score, tcol);
-          }
-        });
-        html += `</div>`;
       }
+      return; // Round headers are always visible (no reveal needed)
     }
 
+    // ── SUB-ROUND HEADER ──
+    if (step.stepType === 'sub-round-header') {
+      if (isVisible || i <= state.idx + 1) {
+        html += `<div style="text-align:center;padding:8px 0 4px;margin:10px 0 6px;border-top:1px dashed ${step.color}22">
+          <span style="font-size:12px;font-weight:700;letter-spacing:1.5px;color:${step.color}">${step.label}</span>
+        </div>`;
+      }
+      return;
+    }
+
+    // Hidden placeholder for unrevealed steps
     if (!isVisible) {
       html += `<div style="padding:10px;margin-bottom:4px;border:1px solid var(--border);border-radius:6px;opacity:0.08;text-align:center;cursor:pointer"
         onclick="${_tcReveal(i)}">
@@ -63073,103 +63142,213 @@ function rpBuildTrustChallenge(ep) {
       return;
     }
 
+    // ── PAIR CARDS ──
+    if (step.stepType === 'pair-cards') {
+      html += `<div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap">`;
+      tribeNames.forEach(tn => {
+        const tcol = tribeColor(tn);
+        if (step.roundKey === 'round3' && step.sub) {
+          const pair = tc.rounds?.round3?.pairs?.[tn]?.[step.sub];
+          const roles = tc.rounds?.round3?.roles?.[tn]?.[step.sub];
+          const score = tc.rounds?.round3?.scores?.[tn]?.[step.sub];
+          if (pair) html += pairCard(tn, pair, roles, score, tcol);
+        } else if (step.roundKey !== 'round3') {
+          const pair = tc.rounds?.[step.roundKey]?.pairs?.[tn];
+          const roles = tc.rounds?.[step.roundKey]?.roles?.[tn];
+          const score = tc.rounds?.[step.roundKey]?.scores?.[tn];
+          html += pairCard(tn, pair, roles, score, tcol);
+        }
+      });
+      html += `</div>`;
+      return;
+    }
+
+    // ── EVENT CARD ──
     if (step.stepType === 'event') {
       const evt = step.data;
       const border = evtBorderColor(evt);
-      const evtPlayers = evt.players || [];
-      const badge = evt.badge || evt.badgeText || null;
+      const pList = evtPlayers(evt);
+      const evtType = evt.type || '';
+      const badge = evt.badge || evt.badgeText || (evtType.includes('negotiation') ? 'NEGOTIATION' : evtType.includes('sabotage') || evtType.includes('botch') ? 'SABOTAGE' : evtType.includes('heroic') || evtType.includes('save') ? 'HEROIC' : evtType.includes('poison') ? 'POISON' : evtType.includes('perfect') ? 'PERFECT' : evtType.includes('panic') ? 'PANIC' : evtType.includes('argument') ? 'ARGUMENT' : evtType.includes('respect') ? 'BONDING' : null);
+      const tribeLabel = evt.tribe || evt._tribe || '';
+      const tribeLabelColor = tribeLabel && tribeLabel !== 'cross' ? tribeColor(tribeLabel) : '#8b949e';
 
-      html += `<div style="padding:10px;border-radius:8px;border-left:3px solid ${border};background:rgba(255,255,255,0.03);margin-bottom:8px">`;
-      if (evtPlayers.length) {
-        html += `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px">`;
-        evtPlayers.forEach(p => { html += rpPortrait(p, 'pb-sm'); });
-        html += `</div>`;
+      html += `<div style="padding:10px 12px;border-radius:8px;border-left:3px solid ${border};background:rgba(255,255,255,0.03);margin-bottom:8px;animation:scrollDrop 0.3s var(--ease-broadcast) both">`;
+      // Tribe label + badge row
+      html += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap">`;
+      if (tribeLabel && tribeLabel !== 'cross') {
+        html += `<span style="font-size:8px;font-weight:700;color:${tribeLabelColor};text-transform:uppercase;letter-spacing:0.5px">${tribeLabel}</span>`;
       }
       if (badge) {
-        html += `<div style="display:inline-block;padding:1px 6px;border-radius:3px;font-size:9px;font-weight:700;background:${border}22;color:${border};margin-bottom:4px">${badge}</div>`;
+        html += `<span style="font-size:8px;font-weight:800;letter-spacing:0.5px;color:${border};background:${border}18;padding:1px 6px;border-radius:3px">${badge}</span>`;
       }
-      html += `<div style="font-size:11px;color:#c9d1d9;line-height:1.5">${evt.text || ''}</div>`;
       html += `</div>`;
+      // Player portraits
+      if (pList.length) {
+        html += `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px">`;
+        pList.forEach(p => { html += rpPortrait(p, 'pb-sm'); });
+        html += `</div>`;
+      }
+      // Narrative text
+      html += `<div style="font-size:11px;color:#c9d1d9;line-height:1.6">${evt.text || ''}</div>`;
+      html += `</div>`;
+      return;
+    }
 
-    } else if (step.stepType === 'final') {
-      // ── FINAL SCOREBOARD ──
+    // ── ROUND RESULT ──
+    if (step.stepType === 'round-result') {
+      const rd = step.data;
+      const winTribe = rd.winner;
+      const winColor = winTribe ? tribeColor(winTribe) : '#3fb950';
+      html += `<div style="padding:12px;border-radius:10px;border:2px solid ${winColor}44;background:linear-gradient(135deg,${winColor}10,transparent);margin-bottom:12px;text-align:center;animation:scrollDrop 0.3s var(--ease-broadcast) both">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:#8b949e;text-transform:uppercase;margin-bottom:4px">Round ${rd.round} Result</div>
+        <div style="font-size:14px;font-weight:700;color:${winColor};margin-bottom:4px">
+          🏆 <span style="color:${winColor}">${winTribe}</span> WINS!
+        </div>
+        <div style="font-size:11px;color:#c9d1d9;line-height:1.5">${rd.text || ''}</div>
+        <div style="display:flex;gap:12px;justify-content:center;margin-top:8px">`;
+      // Show scores for all tribes
+      tribeNames.forEach(tn => {
+        const tcol = tribeColor(tn);
+        const isWin = tn === winTribe;
+        let scoreVal;
+        if (rd.round === 3) {
+          const sub3 = tc.rounds?.round3?.scores?.[tn] || {};
+          scoreVal = Object.values(sub3).reduce((s, v) => s + (v > -900 ? v : 0), 0);
+        } else {
+          const rk = 'round' + rd.round;
+          scoreVal = tc.roundScores?.[tn]?.[rk];
+        }
+        const scoreTxt = scoreVal !== undefined && scoreVal > -900 ? scoreVal.toFixed(2) : 'DQ';
+        html += `<div style="padding:6px 12px;border-radius:6px;border:1px solid ${tcol}${isWin ? '55' : '22'};background:${tcol}${isWin ? '15' : '05'}">
+          <div style="font-size:9px;font-weight:700;color:${tcol}">${tn}</div>
+          <div style="font-size:16px;font-weight:700;color:${isWin ? '#3fb950' : '#8b949e'}">${scoreTxt}</div>
+          <div style="font-size:12px">${isWin ? '✓' : '✗'}</div>
+        </div>`;
+      });
+      html += `</div></div>`;
+      return;
+    }
+
+    // ── REDEMPTION / HIDDEN MOMENT ──
+    if (step.stepType === 'redemption') {
+      const r = step.data;
+      html += `<div style="padding:14px;border-radius:10px;border:2px solid rgba(250,204,21,0.4);background:rgba(250,204,21,0.05);margin-bottom:12px;animation:secretGlow2 3s ease-in-out infinite">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+          <span style="font-size:14px">🔒</span>
+          <span style="font-size:10px;font-weight:700;letter-spacing:1px;color:#faca15;text-transform:uppercase">Private Moment</span>
+          <span style="font-size:9px;color:#8b949e;font-style:italic">Only ${r.witness} saw this</span>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          ${rpPortrait(r.player, 'pb-sm')}
+          <div style="flex:1">
+            <div style="font-size:11px;color:#e6edf3;margin-bottom:4px;line-height:1.6">${r.act}</div>
+            <div style="font-size:10px;color:#8b949e;font-style:italic;line-height:1.5">${r.reaction}</div>
+            <div style="display:flex;gap:6px;align-items:center;margin-top:6px">
+              ${rpPortrait(r.witness, 'pb-sm')}
+              <span style="font-size:9px;color:#faca15;font-weight:700">WITNESS</span>
+            </div>
+          </div>
+        </div>
+      </div>`;
+      return;
+    }
+
+    // ── FINAL SCOREBOARD ──
+    if (step.stepType === 'final') {
       const winnerColor = tribeColor(tc.winner);
       const loserColor = tc.loser ? tribeColor(tc.loser) : '#f85149';
       const ROUNDS = ['round1', 'round2', 'round3'];
+      const ROUND_NAMES = { round1: 'Rock Climb', round2: 'Fugu Sashimi', round3: 'Blind Challenges' };
 
-      html += `<div style="padding:14px;border-radius:8px;border:1px solid ${CYAN}33;background:rgba(56,189,248,0.05);margin-bottom:12px">
-        <div style="font-size:12px;font-weight:700;letter-spacing:2px;color:${CYAN};text-align:center;margin-bottom:10px;text-transform:uppercase">Final Scoreboard</div>
+      // Winner celebration
+      html += `<div style="text-align:center;padding:16px;margin-bottom:12px;border-radius:10px;border:2px solid ${winnerColor};background:linear-gradient(135deg,${winnerColor}15,transparent);animation:scrollDrop 0.4s var(--ease-broadcast) both">
+        <div style="font-family:var(--font-display);font-size:22px;letter-spacing:2px;color:${winnerColor};text-shadow:0 0 15px ${winnerColor}44;margin-bottom:4px">
+          🏆 ${tc.winner} WINS
+        </div>
+        <div style="font-size:11px;color:#8b949e;margin-bottom:4px">Who Can You Trust? — Immunity secured.</div>
+        <div style="font-size:11px;color:${loserColor};font-weight:700">${tc.loser} → Tribal Council</div>
+      </div>`;
+
+      // Scoreboard grid
+      html += `<div style="padding:14px;border-radius:10px;border:1px solid ${CYAN}33;background:rgba(56,189,248,0.04);margin-bottom:12px">
+        <div style="font-size:11px;font-weight:700;letter-spacing:2px;color:${CYAN};text-align:center;margin-bottom:12px;text-transform:uppercase">Final Scoreboard</div>
         <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center">`;
       tribeNames.forEach(tn => {
         const ttc = tribeColor(tn);
-        html += `<div style="flex:1;min-width:120px;text-align:center;padding:10px;border-radius:6px;border:1px solid ${ttc}33;background:${ttc}08">
-          <div style="font-size:11px;font-weight:700;color:${ttc};margin-bottom:8px;text-transform:uppercase">${tn}</div>`;
+        html += `<div style="flex:1;min-width:130px;text-align:center;padding:12px;border-radius:8px;border:1px solid ${ttc}33;background:${ttc}08">
+          <div style="font-size:11px;font-weight:700;color:${ttc};margin-bottom:10px;text-transform:uppercase">${tn}</div>`;
         ROUNDS.forEach(rk => {
           const won = tc.rounds?.[rk]?.winner === tn;
-          html += `<div style="font-size:10px;margin-bottom:2px">
-            <span style="color:#8b949e">${rk === 'round1' ? 'Rock Climb' : rk === 'round2' ? 'Fugu' : 'Blind'}:</span>
-            <span style="color:${won ? '#3fb950' : '#f85149'};font-weight:700;margin-left:4px">${won ? '✓' : '✗'}</span>
+          html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:3px 8px;margin-bottom:3px;border-radius:4px;background:${won ? '#3fb95010' : '#f8514910'}">
+            <span style="font-size:9px;color:#8b949e">${ROUND_NAMES[rk]}</span>
+            <span style="font-size:14px;font-weight:700;color:${won ? '#3fb950' : '#f85149'}">${won ? '✓' : '✗'}</span>
           </div>`;
         });
         const wins = ROUNDS.filter(rk => tc.rounds?.[rk]?.winner === tn).length;
-        html += `<div style="border-top:1px solid ${ttc}33;margin-top:6px;padding-top:6px">
-            <div style="font-size:10px;color:#8b949e">Rounds Won</div>
-            <div style="font-size:28px;font-weight:700;color:${ttc}">${wins}/3</div>
+        html += `<div style="border-top:1px solid ${ttc}33;margin-top:8px;padding-top:8px">
+            <div style="font-size:9px;color:#8b949e;text-transform:uppercase">Rounds Won</div>
+            <div style="font-size:32px;font-weight:700;color:${ttc}">${wins}<span style="font-size:14px;color:#6e7681">/3</span></div>
           </div>`;
         if (tn === tc.winner) {
-          html += `<div style="margin-top:6px;padding:3px 8px;border-radius:4px;background:#3fb95022;color:#3fb950;font-size:10px;font-weight:700;display:inline-block">🏆 WINNER</div>`;
+          html += `<div style="margin-top:6px;padding:3px 10px;border-radius:4px;background:#3fb95022;color:#3fb950;font-size:10px;font-weight:700;display:inline-block">🏆 WINNER</div>`;
         } else if (tn === tc.loser) {
-          html += `<div style="margin-top:6px;padding:3px 8px;border-radius:4px;background:#f8514922;color:#f85149;font-size:10px;font-weight:700;display:inline-block">TRIBAL COUNCIL</div>`;
+          html += `<div style="margin-top:6px;padding:3px 10px;border-radius:4px;background:#f8514922;color:#f85149;font-size:10px;font-weight:700;display:inline-block">TRIBAL COUNCIL</div>`;
         }
         html += `</div>`;
       });
       html += `</div></div>`;
 
-      // ── MVP ──
+      // MVP card
       if (tc.mvp) {
-        html += `<div style="padding:12px;border-radius:8px;border:2px solid ${CYAN}55;background:${CYAN}08;text-align:center;margin-bottom:12px">
-          <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:${CYAN};text-transform:uppercase;margin-bottom:6px">Challenge MVP</div>
+        html += `<div style="padding:14px;border-radius:10px;border:2px solid #f0a500;background:rgba(240,165,0,0.06);text-align:center;margin-bottom:12px">
+          <div style="font-size:18px;margin-bottom:4px">⭐</div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:#f0a500;text-transform:uppercase;margin-bottom:6px">Challenge MVP</div>
           ${rpPortrait(tc.mvp)}
         </div>`;
       }
 
-      // ── SABOTAGE LOG ──
+      // Sabotage log
       if (tc.sabotage?.length) {
-        html += `<div style="padding:10px;border-radius:8px;border:1px solid rgba(248,81,73,0.3);background:rgba(248,81,73,0.05);margin-bottom:10px">
-          <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:#f85149;margin-bottom:6px">SABOTAGE LOG</div>`;
+        html += `<div style="padding:12px;border-radius:8px;border:1px solid rgba(248,81,73,0.3);background:rgba(248,81,73,0.04);margin-bottom:10px">
+          <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:#f85149;margin-bottom:8px">🗡️ SABOTAGE LOG</div>`;
         tc.sabotage.forEach(s => {
-          html += `<div style="font-size:10px;color:#c9d1d9;padding:2px 0">
-            <span style="color:#f85149;font-weight:700">${s.type.toUpperCase()}</span>
-            — ${s.saboteur} → ${s.victim || ''} (${s.tribe}, ${s.round})
+          html += `<div style="display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid rgba(248,81,73,0.1)">
+            ${rpPortrait(s.saboteur, 'pb-sm')}
+            <div>
+              <span style="font-size:9px;color:#f85149;font-weight:700">${(s.type || '').toUpperCase()}</span>
+              <span style="font-size:10px;color:#c9d1d9"> ${s.saboteur} → ${s.victim || '?'}</span>
+              <span style="font-size:9px;color:#6e7681"> (${s.tribe}, ${s.round})</span>
+            </div>
           </div>`;
         });
         html += `</div>`;
       }
 
-      // ── HIDDEN MOMENT (redemption) ──
-      if (tc.redemption) {
-        html += `<div style="padding:14px;border-radius:10px;border:2px solid rgba(250,204,21,0.4);background:rgba(250,204,21,0.05);margin-bottom:12px;animation:secretGlow2 3s ease-in-out infinite">
-          <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:#faca15;margin-bottom:8px;text-transform:uppercase">★ Hidden Moment</div>
-          <div style="display:flex;gap:8px;align-items:flex-start">
-            ${rpPortrait(tc.redemption.player, 'pb-sm')}
-            <div>
-              <div style="font-size:11px;color:#e6edf3;margin-bottom:4px;line-height:1.5">${tc.redemption.act}</div>
-              <div style="font-size:10px;color:#8b949e;font-style:italic;line-height:1.5">${tc.redemption.reaction}</div>
-              <div style="font-size:9px;color:#faca15;margin-top:4px">Witnessed by: ${tc.redemption.witness}</div>
-            </div>
-          </div>
-        </div>`;
+      // Poisoned log
+      if (tc.poisoned?.length) {
+        html += `<div style="padding:12px;border-radius:8px;border:1px solid rgba(240,165,0,0.3);background:rgba(240,165,0,0.04);margin-bottom:10px">
+          <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:#f0a500;margin-bottom:8px">☠️ POISONED</div>`;
+        tc.poisoned.forEach(p => {
+          html += `<div style="font-size:10px;color:#c9d1d9;padding:3px 0">
+            <span style="color:#f0a500;font-weight:700">${p.deliberate ? 'DELIBERATE' : 'ACCIDENTAL'}</span>
+            — ${p.eater} poisoned by ${p.cook}
+          </div>`;
+        });
+        html += `</div>`;
       }
+
+      return;
     }
   });
 
-  html += `</div>`; // close timeline
+  html += `</div>`; // close timeline container
 
   // ── REVEAL BUTTONS ──
   if (!allRevealed) {
-    html += `<div style="position:sticky;bottom:12px;display:flex;gap:8px;justify-content:center;margin-top:12px">
-      <button class="rp-btn" onclick="${_tcReveal(state.idx + 1)}">NEXT</button>
-      <button class="rp-btn" onclick="${_tcReveal(totalSteps - 1)}" style="opacity:0.7">REVEAL ALL</button>
+    html += `<div style="position:sticky;bottom:0;background:linear-gradient(transparent,#0d1117 30%);padding:16px 0 8px;display:flex;gap:8px;justify-content:center">
+      <button class="rp-btn" onclick="${_tcReveal(state.idx + 1)}">NEXT (${state.idx + 2}/${totalSteps})</button>
+      <button class="rp-btn" style="opacity:0.5" onclick="${_tcReveal(totalSteps - 1)}">REVEAL ALL</button>
     </div>`;
   }
 

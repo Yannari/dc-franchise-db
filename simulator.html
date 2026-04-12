@@ -15131,11 +15131,12 @@ function simulateHellsKitchen(ep) {
         // ── MOTIVATOR: inspired → desperate → meltdown ──
         if (_ce.style === 'motivator') {
           const prevScore = courseIdx > 0 ? (courseScores[t.name]?.[COURSES[courseIdx - 1]]?.rating || 5) : 5;
-          if (courseIdx === 1 && prevScore <= 6) {
+          // Trigger: any previous course scored poorly, OR phase already set
+          if (_ce.phase === 'inspired' && courseIdx >= 1 && prevScore <= 6) {
             _ce.phase = 'desperate';
             // Desperation creates pressure — bonds crack, next course penalized
             _ceTeammates.forEach(m => addBond(_ce.chef, m, -0.3));
-            courseModifiers[t.name].main -= 0.04;
+            courseModifiers[t.name][course] -= 0.04;
             const _despTexts = [
               `${_ce.chef} is rattled. "Come on, come ON! We're better than this!" The encouragement sounds like panic now. ${_cePr.Sub} starts hovering, correcting, pushing.`,
               `The positivity is cracking. ${_ce.chef} pushes harder — too hard. "We HAVE to nail this." The team feels the shift from inspiring to suffocating.`,
@@ -15143,15 +15144,15 @@ function simulateHellsKitchen(ep) {
             ];
             pushEvent({ type: 'motivator-desperate', course, players: [_ce.chef, ..._ceTeammates.slice(0, 2)], text: _rp(_despTexts), badge: 'Desperation', badgeText: `${_ce.chef} is losing composure`, badgeClass: 'badge-warning' });
           }
-          if (courseIdx === 2 && _ce.phase === 'desperate') {
+          if (courseIdx >= 1 && _ce.phase === 'desperate') {
             // Meltdown more likely because desperation already penalized the main course
             const mainScore = courseScores[t.name]?.[COURSES[1]]?.rating || 5;
             if (mainScore <= 7 && Math.random() < 0.55) {
               _ce.phase = 'meltdown';
-              courseModifiers[t.name].dessert -= 0.08;
+              courseModifiers[t.name][course] -= 0.08;
               personalScores[_ce.chef] = (personalScores[_ce.chef] || 0) - 1.5;
               const stepUp = _ceTeammates.reduce((best, m) => pStats(m).mental > pStats(best).mental ? m : best, _ceTeammates[0]);
-              if (stepUp) { personalScores[stepUp] = (personalScores[stepUp] || 0) + 1.5; courseModifiers[t.name].dessert += 0.04; addBond(stepUp, _ce.chef, 0.3); }
+              if (stepUp) { personalScores[stepUp] = (personalScores[stepUp] || 0) + 1.5; courseModifiers[t.name][course] += 0.04; addBond(stepUp, _ce.chef, 0.3); }
               const _meltTexts = [
                 `${_ce.chef} breaks. ${_cePr.Sub} sits on the floor. "I can't do this."${stepUp ? ` ${stepUp} quietly takes over. "I've got the dessert."` : ''}`,
                 `The motivator is gone. ${_ce.chef} can't look at the food.${stepUp ? ` ${stepUp} steps in without being asked. The team follows.` : ' Someone else takes over.'}`,
@@ -15164,19 +15165,19 @@ function simulateHellsKitchen(ep) {
         // ── DELEGATOR: confident → self-doubt → micromanage ──
         if (_ce.style === 'delegator') {
           const prevScore = courseIdx > 0 ? (courseScores[t.name]?.[COURSES[courseIdx - 1]]?.rating || 5) : 5;
-          if (courseIdx === 1 && prevScore <= 5) {
+          if (_ce.phase === "confident" && courseIdx >= 1 && prevScore <= 5) {
             _ce.phase = 'doubting';
             // Self-doubt makes chef hesitant — small penalty to main
-            courseModifiers[t.name].main -= 0.03;
+            courseModifiers[t.name][course] -= 0.03;
             const _doubtTexts = [
               `${_ce.chef} stares at the appetizer score. "I put the wrong people on that course." ${_cePr.Sub} blames ${_cePr.ref}. The confidence is cracking.`,
               `"Maybe I should have..." ${_ce.chef} trails off. For the first time, the delegator doesn't have a plan. ${_cePr.Sub} starts second-guessing every assignment.`,
             ];
             pushEvent({ type: 'delegator-doubt', course, players: [_ce.chef], text: _rp(_doubtTexts), badge: 'Self-Doubt', badgeText: `${_ce.chef} questions ${_cePr.posAdj} decisions`, badgeClass: 'badge-warning' });
           }
-          if (courseIdx === 2 && _ce.phase === 'doubting') {
+          if (courseIdx >= 1 && _ce.phase === 'doubting') {
             _ce.phase = 'micromanaging';
-            courseModifiers[t.name].dessert -= 0.05;
+            courseModifiers[t.name][course] -= 0.05;
             _ceTeammates.forEach(m => addBond(_ce.chef, m, -0.3));
             // Team pushback — someone calls out the change
             const pushback = _ceTeammates.find(m => pStats(m).boldness >= 5);
@@ -15192,11 +15193,11 @@ function simulateHellsKitchen(ep) {
         // ── CHAOS: wild → spiral → takeover OR miracle ──
         if (_ce.style === 'chaos') {
           const prevScore = courseIdx > 0 ? (courseScores[t.name]?.[COURSES[courseIdx - 1]]?.rating || 5) : 5;
-          if (courseIdx === 1) {
+          if (courseIdx >= 1 && _ce.phase === "wild") {
             if (prevScore <= 5) {
               _ce.phase = 'spiraling';
               // Spiral tanks the next course AND creates tension
-              courseModifiers[t.name].main -= 0.06;
+              courseModifiers[t.name][course] -= 0.06;
               _ceTeammates.forEach(m => addBond(m, _ce.chef, -0.3)); // team blames the chaos
               const _spiralTexts = [
                 `The chaos is no longer fun. ${_ce.chef}'s kitchen is falling apart — dishes are wrong, stations are dirty, nobody knows what they're making anymore.`,
@@ -15205,7 +15206,7 @@ function simulateHellsKitchen(ep) {
               pushEvent({ type: 'chaos-spiral', course, players: [_ce.chef, ..._ceTeammates.slice(0, 2)], text: _rp(_spiralTexts), badge: 'Spiral', badgeText: `${t.name}'s kitchen is falling apart`, badgeClass: 'badge-danger' });
             } else if (prevScore >= 7) {
               _ce.phase = 'riding-high';
-              courseModifiers[t.name].main += 0.04;
+              courseModifiers[t.name][course] += 0.04;
               _ceTeammates.forEach(m => addBond(m, _ce.chef, 0.2));
               const _rideTexts = [
                 `The chaos WORKED. ${_ce.chef} is fully convinced ${_cePr.posAdj} approach is genius. The team buys in. The energy doubles.`,
@@ -15214,11 +15215,11 @@ function simulateHellsKitchen(ep) {
               pushEvent({ type: 'chaos-momentum', course, players: [_ce.chef, ..._ceTeammates.slice(0, 2)], text: _rp(_rideTexts), badge: 'Momentum', badgeText: `${t.name}'s chaos is working`, badgeClass: 'badge-success' });
             }
           }
-          if (courseIdx === 2 && _ce.phase === 'spiraling') {
+          if (courseIdx >= 1 && _ce.phase === 'spiraling') {
             const takeoverCandidate = _ceTeammates.reduce((best, m) => pStats(m).mental > pStats(best).mental ? m : best, _ceTeammates[0]);
             if (takeoverCandidate && Math.random() < 0.55) {
               const tkPr = pronouns(takeoverCandidate);
-              courseModifiers[t.name].dessert += 0.06;
+              courseModifiers[t.name][course] += 0.06;
               personalScores[takeoverCandidate] = (personalScores[takeoverCandidate] || 0) + 1.5;
               addBond(takeoverCandidate, _ce.chef, -0.4);
               addCookingHeat(_ce.chef, 1.0, 1); // chaos chef takes heat for the spiral
@@ -15229,7 +15230,7 @@ function simulateHellsKitchen(ep) {
               pushEvent({ type: 'chaos-takeover', course, players: [takeoverCandidate, _ce.chef], text: _rp(_takeoverTexts), badge: 'Takeover', badgeText: `${takeoverCandidate} takes over`, badgeClass: 'badge-success' });
             } else {
               // No takeover — spiral continues to dessert, full disaster
-              courseModifiers[t.name].dessert -= 0.08;
+              courseModifiers[t.name][course] -= 0.08;
               const _fullChaosTexts = [
                 `Nobody steps up. The chaos continues into dessert. ${_ce.chef} is now yelling at the ingredients. It's not going well.`,
                 `The spiral is complete. ${t.name}'s kitchen looks like a crime scene. The dessert is... happening. Somehow.`,
@@ -15242,9 +15243,9 @@ function simulateHellsKitchen(ep) {
         // ── HYPE: vibing → unfocused → reality check ──
         if (_ce.style === 'hype') {
           const prevScore = courseIdx > 0 ? (courseScores[t.name]?.[COURSES[courseIdx - 1]]?.rating || 5) : 5;
-          if (courseIdx === 1 && (Math.random() < 0.35 || prevScore <= 5)) {
+          if (courseIdx >= 1 && _ce.phase === 'vibing' && (Math.random() < 0.35 || prevScore <= 5)) {
             _ce.phase = 'unfocused';
-            courseModifiers[t.name].main -= 0.05;
+            courseModifiers[t.name][course] -= 0.05;
             // The fun is real but so is the problem — something burns
             const burnVictim = _rp(_ceTeammates);
             addBond(burnVictim, _ce.chef, -0.2);
@@ -15254,11 +15255,11 @@ function simulateHellsKitchen(ep) {
             ];
             pushEvent({ type: 'hype-unfocused', course, players: [_ce.chef, burnVictim], text: _rp(_unfocTexts), badge: 'Unfocused', badgeText: `${t.name} is vibing too hard`, badgeClass: 'badge-warning' });
           }
-          if (courseIdx === 2 && _ce.phase === 'unfocused') {
+          if (courseIdx >= 1 && _ce.phase === 'unfocused') {
             const caller = _ceTeammates.reduce((best, m) => pStats(m).strategic > pStats(best).strategic ? m : best, _ceTeammates[0]);
             if (caller && Math.random() < 0.55) {
               _ce.phase = 'refocused';
-              courseModifiers[t.name].dessert += 0.05;
+              courseModifiers[t.name][course] += 0.05;
               addBond(caller, _ce.chef, -0.2);
               personalScores[caller] = (personalScores[caller] || 0) + 1.0;
               const _callTexts = [
@@ -15268,7 +15269,7 @@ function simulateHellsKitchen(ep) {
               pushEvent({ type: 'hype-reality-check', course, players: [caller, _ce.chef], text: _rp(_callTexts), badge: 'Reality Check', badgeText: `${caller} refocuses the team`, badgeClass: 'badge-info' });
             } else {
               // No one calls it out — hype continues, dessert suffers
-              courseModifiers[t.name].dessert -= 0.06;
+              courseModifiers[t.name][course] -= 0.06;
               const _nocheckTexts = [
                 `Nobody stops the party. The dessert is an afterthought. ${_ce.chef} is still hyping while the soufflé collapses.`,
                 `The music keeps playing. The dessert keeps burning. This is the most fun anyone's had while losing a cooking challenge.`,
@@ -15281,10 +15282,10 @@ function simulateHellsKitchen(ep) {
         // ── IMPROVISER: experimenting → bold → panic ──
         if (_ce.style === 'improviser') {
           const prevScore = courseIdx > 0 ? (courseScores[t.name]?.[COURSES[courseIdx - 1]]?.rating || 5) : 5;
-          if (courseIdx === 1) {
+          if (courseIdx >= 1 && _ce.phase === 'experimenting') {
             if (prevScore >= 7) {
               _ce.phase = 'bold';
-              courseModifiers[t.name].main += 0.05;
+              courseModifiers[t.name][course] += 0.05;
               const _boldTexts = [
                 `The first improvisation landed. ${_ce.chef} is emboldened — the main course is getting an even WILDER twist. "If it ain't broke, make it weirder."`,
                 `Success breeds confidence. ${_ce.chef} is now improvising the improvisation. The team can't keep up but the food keeps getting better.`,
@@ -15292,7 +15293,7 @@ function simulateHellsKitchen(ep) {
               pushEvent({ type: 'improviser-bold', course, players: [_ce.chef], text: _rp(_boldTexts), badge: 'Going Bolder', badgeText: `${_ce.chef} doubles down on improvisation`, badgeClass: 'badge-success' });
             } else if (prevScore <= 5) {
               _ce.phase = 'panic';
-              courseModifiers[t.name].main -= 0.04;
+              courseModifiers[t.name][course] -= 0.04;
               const _panicTexts = [
                 `The improvisation flopped. ${_ce.chef} panics and reaches for the recipe book. "Okay, okay, we're going conventional for the main." The team exhales.`,
                 `${_ce.chef} stares at the appetizer score. The confidence is gone. "Forget the twist. Just... cook it normal." The improviser becomes a follower.`,
@@ -15300,10 +15301,10 @@ function simulateHellsKitchen(ep) {
               pushEvent({ type: 'improviser-panic', course, players: [_ce.chef], text: _rp(_panicTexts), badge: 'Back to Basics', badgeText: `${_ce.chef} abandons improvisation`, badgeClass: 'badge-warning' });
             }
           }
-          if (courseIdx === 2 && _ce.phase === 'bold') {
+          if (courseIdx >= 1 && _ce.phase === 'bold') {
             // Going too bold on dessert — risky
             if (Math.random() < 0.4) {
-              courseModifiers[t.name].dessert += (Math.random() - 0.3) * 0.15; // high variance, slightly negative lean
+              courseModifiers[t.name][course] += (Math.random() - 0.3) * 0.15; // high variance, slightly negative lean
               const _tooBoldTexts = [
                 `${_ce.chef} is adding something nobody recognizes to the dessert. The team watches in horror. "Trust the process," ${_cePr.sub} says. Nobody trusts the process.`,
                 `The dessert is either going to be the best thing ${host} has ever tasted or the worst. There is no middle ground. ${_ce.chef} grins.`,

@@ -14715,10 +14715,12 @@ function simulateHellsKitchen(ep) {
   // ── Helper: push event ──
   // Events are tagged with current course phase for later interleaving
   let _currentCourse = 'pre'; // 'pre', 'appetizer', 'main', 'dessert', 'post'
+  let _currentTribe = null; // tracks which tribe's events we're generating
   const eventsByCourse = { pre: [], appetizer: [], main: [], dessert: [], post: [] };
   function pushEvent(evt) {
+    const tagged = { kind: 'event', _tribe: _currentTribe || 'cross', ...evt };
     allEvents.push(evt);
-    eventsByCourse[_currentCourse].push({ kind: 'event', ...evt });
+    eventsByCourse[_currentCourse].push(tagged);
   }
 
   // ── Helper: add cooking heat ──
@@ -14730,6 +14732,7 @@ function simulateHellsKitchen(ep) {
   }
 
   // ── Step 3: Chef Showdown (pre-cooking cross-tribe event) ──
+  _currentTribe = null; // cross-tribe
   if (tribes.length >= 2) {
     const chefList = tribes.map(t => chefs[t.name]);
     const c1 = chefList[0], c2 = chefList[1];
@@ -14762,6 +14765,7 @@ function simulateHellsKitchen(ep) {
 
   // ── Step 4: Leadership Events (fire once per tribe before courses) ──
   tribes.forEach(t => {
+    _currentTribe = t.name;
     const chef = chefs[t.name];
     const teammates = t.members.filter(m => m !== chef.name);
     const chefStats = pStats(chef.name);
@@ -15034,6 +15038,7 @@ function simulateHellsKitchen(ep) {
     phases[phaseKey] = [];
 
     tribes.forEach(t => {
+      _currentTribe = t.name;
       const chef = chefs[t.name];
       const pair = (assignments[t.name][course] || []).filter(m => !satOutPlayers.has(m));
       const floater = assignments[t.name].floater;
@@ -15184,8 +15189,8 @@ function simulateHellsKitchen(ep) {
       // Apply accumulated modifiers from events
       raw += courseModifiers[t.name][course];
 
-      // ── Course Events (2-4 per tribe per course, ~6-12 total across all tribes) ──
-      const numEvents = 2 + Math.floor(Math.random() * 3);
+      // ── Course Events (3-6 per tribe per course) ──
+      const numEvents = 3 + Math.floor(Math.random() * 4);
       let eventsThisCourse = 0;
       const _firedTypesThisCourse = new Set();
       // Override pushEvent for this scope to track duplicates + cap
@@ -15963,6 +15968,7 @@ function simulateHellsKitchen(ep) {
       }
 
       // ── Cross-team events ──
+      _currentTribe = null; // cross-tribe
       if (tribes.length >= 2 && eventsThisCourse < numEvents) {
         const otherTribe = tribes.find(ot => ot !== t);
         if (otherTribe) {
@@ -16404,18 +16410,42 @@ function simulateHellsKitchen(ep) {
     }
   });
 
-  // ── Build interleaved timeline from per-course events + course results ──
-  // Pre-cooking events first, then per course: shuffle events, append course results
-  const _finalTimeline = [...eventsByCourse.pre];
+  // ── Build timeline: grouped by tribe per course, cross-tribe events separate ──
+  // Structure per course: [tribe1 events] → [tribe2 events] → [cross events] → [score reveals]
+  const _finalTimeline = [];
+
+  // Pre-cooking: group by tribe, then cross-tribe
+  const _preByTribe = {};
+  const _preCross = [];
+  (eventsByCourse.pre || []).forEach(ev => {
+    if (!ev._tribe || ev._tribe === 'cross') _preCross.push(ev);
+    else { if (!_preByTribe[ev._tribe]) _preByTribe[ev._tribe] = []; _preByTribe[ev._tribe].push(ev); }
+  });
+  // Cross-tribe first (chef showdown), then per-tribe leadership
+  _finalTimeline.push(..._preCross);
+  tribes.forEach(t => { if (_preByTribe[t.name]) _finalTimeline.push(..._preByTribe[t.name]); });
+
+  // Per course: tribe groups → cross-tribe → score reveals
   COURSES.forEach(course => {
     const courseEvents = [...(eventsByCourse[course] || [])];
-    // Shuffle events within this course
-    for (let _ti = courseEvents.length - 1; _ti > 0; _ti--) {
-      const _tj = Math.floor(Math.random() * (_ti + 1));
-      [courseEvents[_ti], courseEvents[_tj]] = [courseEvents[_tj], courseEvents[_ti]];
-    }
-    _finalTimeline.push(...courseEvents);
-    // Then course results for each tribe (the scoring reveal)
+    const _byTribe = {};
+    const _cross = [];
+    courseEvents.forEach(ev => {
+      if (!ev._tribe || ev._tribe === 'cross') _cross.push(ev);
+      else { if (!_byTribe[ev._tribe]) _byTribe[ev._tribe] = []; _byTribe[ev._tribe].push(ev); }
+    });
+    // Shuffle within each tribe group
+    tribes.forEach(t => {
+      const group = _byTribe[t.name] || [];
+      for (let _ti = group.length - 1; _ti > 0; _ti--) {
+        const _tj = Math.floor(Math.random() * (_ti + 1));
+        [group[_ti], group[_tj]] = [group[_tj], group[_ti]];
+      }
+      _finalTimeline.push(...group);
+    });
+    // Cross-tribe events
+    if (_cross.length) _finalTimeline.push(..._cross);
+    // Score reveals per tribe
     tribes.forEach(t => {
       const cr = timeline.find(item => item.kind === 'course-result' && item.course === course && item.tribe === t.name);
       if (cr) _finalTimeline.push(cr);
@@ -60755,15 +60785,26 @@ function rpBuildHellsKitchen(ep) {
   html += `<div style="margin-bottom:16px">
     <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:#8b949e;text-align:center;margin-bottom:8px;text-transform:uppercase">Kitchen Timeline</div>`;
 
+  let _lastShownTribe = null;
   steps.forEach((step, i) => {
     const isVisible = i <= state.idx;
     if (!isVisible) {
-      // Hidden placeholder
       html += `<div style="padding:10px;margin-bottom:4px;border:1px solid var(--border);border-radius:6px;opacity:0.08;text-align:center;cursor:pointer"
         onclick="${_hkReveal(i)}">
         <span style="font-size:11px;color:var(--muted)">▶</span>
       </div>`;
       return;
+    }
+
+    // Tribe header when tribe group changes
+    const stepTribe = step.data?._tribe || (step.stepType === 'course-result' ? step.data?.tribe : null);
+    if (stepTribe && stepTribe !== _lastShownTribe && stepTribe !== 'cross') {
+      const tc = tribeColor(stepTribe);
+      html += `<div style="font-size:10px;font-weight:700;letter-spacing:1px;color:${tc};margin:10px 0 4px;padding-left:4px;border-left:3px solid ${tc};text-transform:uppercase">${stepTribe}'s Kitchen</div>`;
+      _lastShownTribe = stepTribe;
+    } else if (stepTribe === 'cross' && _lastShownTribe !== 'cross') {
+      html += `<div style="font-size:10px;font-weight:700;letter-spacing:1px;color:#f97316;margin:10px 0 4px;text-align:center">⚔️ CROSS-TRIBE</div>`;
+      _lastShownTribe = 'cross';
     }
 
     if (step.stepType === 'event') {

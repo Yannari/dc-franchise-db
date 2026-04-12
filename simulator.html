@@ -13576,7 +13576,7 @@ function simulatePaintballHunt(ep) {
             specialEventsThisRound++;
             // Side deal formation
             if (!gs.sideDeals) gs.sideDeals = [];
-            gs.sideDeals.push({ a: d1, b: d2, ep: gs.episode || 0, type: 'paintball-pact' });
+            gs.sideDeals.push({ players: [d1, d2], initiator: d1, madeEp: (gs.episode || 0) + 1, type: 'paintball-pact', active: true, genuine: true });
             const _pactTexts = [
               `While hiding together, ${d1} and ${d2} whisper a side deal — protect each other at the next tribal, no matter what.`,
               `${d1} turns to ${d2}: "If we both survive this, we've got each other's backs." A handshake in the dark.`,

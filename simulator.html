@@ -17001,8 +17001,8 @@ function simulateTrustChallenge(ep) {
       const strategist = sA.strategic >= 7 ? a : b;
       const other = strategist === a ? b : a;
       negEvent = _rp([
-        `${strategist} analyzes the situation. "You're better at this. I'll support." ${other} blinks — nobody's been that honest before.`,
-        `"Statistically, you should take the lead here." ${strategist}'s logic is hard to argue with. ${other} agrees.`,
+        `${strategist} analyzes the situation. "You ${rolePrimary}, I'll ${roleSecondary}." ${other} blinks — nobody's been that honest before.`,
+        `"Statistically, you should ${rolePrimary} here." ${strategist}'s logic is hard to argue with. ${other} agrees.`,
       ]);
     } else {
       negEvent = _rp([
@@ -17268,7 +17268,8 @@ function simulateTrustChallenge(ep) {
         addBond(climberName, belayerName, -0.2);
         const txt = _rp([
           `${belayerName} checks ${prBelayer.posAdj} nails while ${climberName} climbs. ${climberName} notices.`,
-          `${belayerName} is chatting with the spectators. ${climberName} is twenty feet up. The rope is loose.`,
+          `${belayerName} is chatting with the other players on the ground. ${climberName} is twenty feet up. The rope is loose.`,
+          `${belayerName} isn't even watching. ${prBelayer.Sub}'s joking around with the team while ${climberName} hangs on for dear life.`,
         ]);
         phases.round1.push({ kind: 'event', _tribe: t.name, type: 'belayer-distracted', text: txt, players: [belayerName, climberName], tribe: t.name });
         allEvents.push({ type: 'belayer-distracted', tribe: t.name, text: txt });

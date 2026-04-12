@@ -3822,8 +3822,8 @@ function pStats(name) {
   return p?.stats ? { ...DEFAULT_STATS, ...p.stats } : { ...DEFAULT_STATS };
 }
 
-// Post-merge threat score — how dangerous is this player to keep?
-function threatScore(name) {
+// Threat score — how dangerous is this player to keep? Pass detailed=true for component breakdown.
+function threatScore(name, detailed) {
   const s = pStats(name);
   const rec = gs.chalRecord?.[name] || { wins: 0, podiums: 0, bombs: 0 };
 
@@ -3863,7 +3863,9 @@ function threatScore(name) {
   const strategicThreat = alliancePower + activeSideDeals * 0.15 + hasAdvantage + s.strategic * 0.08;
 
   // ── COMBINED: equal weight across all three dimensions ──
-  return challengeThreat * 0.33 + socialThreat * 0.33 + strategicThreat * 0.33;
+  const total = challengeThreat * 0.33 + socialThreat * 0.33 + strategicThreat * 0.33;
+  if (detailed) return { total, challenge: challengeThreat, social: socialThreat, strategic: strategicThreat };
+  return total;
 }
 
 // [16] CUMULATIVE CHALLENGE PERFORMANCE — track wins/podiums/bombs per player.
@@ -48177,17 +48179,22 @@ function rpBuildDebug(ep) {
     const _igThreatTier = (s) => s <= 1.0 ? { label: 'Low', color: '#10b981' } : s <= 2.0 ? { label: 'Medium', color: '#f59e0b' } : s <= 3.0 ? { label: 'High', color: '#f97316' } : { label: 'Extreme', color: '#ef4444' };
     const _snapChalRec = _snap?.chalRecord || _chalRec || {};
     _allPlayers.map(name => {
-      const ts = threatScore(name);
+      const td = threatScore(name, true);
       const rec = _snapChalRec[name] || { wins: 0, podiums: 0, bombs: 0 };
       const isElim = _elimName.includes(name);
-      return { name, ts, rec, tier: _igThreatTier(ts), isElim };
-    }).sort((a, b) => b.ts - a.ts).forEach(({ name, ts, rec, tier, isElim }) => {
-      html += `<div style="display:flex;align-items:center;gap:8px;padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.04);${isElim ? 'opacity:0.5;background:rgba(244,112,103,0.06)' : ''}">
+      return { name, td, rec, tier: _igThreatTier(td.total), isElim };
+    }).sort((a, b) => b.td.total - a.td.total).forEach(({ name, td, rec, tier, isElim }) => {
+      html += `<div style="display:flex;align-items:center;gap:6px;padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.04);${isElim ? 'opacity:0.5;background:rgba(244,112,103,0.06)' : ''}">
         ${rpPortrait(name, 'sm')}
         <div style="flex:1;font-weight:600;color:#e6edf3">${name}${isElim ? ' <span style="color:#f47067;font-size:9px">ELIMINATED</span>' : ''}</div>
-        <div style="width:60px;text-align:right"><span style="color:${tier.color};font-weight:700">${ts.toFixed(1)}</span></div>
-        <div style="width:80px;text-align:right;color:#8b949e;font-size:10px">${tier.label}</div>
-        <div style="width:140px;text-align:right;color:#6e7681;font-size:10px">${rec.wins}W · ${rec.podiums}P · ${rec.bombs}B</div>
+        <div style="width:50px;text-align:right"><span style="color:${tier.color};font-weight:700">${td.total.toFixed(1)}</span></div>
+        <div style="width:65px;text-align:right;color:#8b949e;font-size:10px">${tier.label}</div>
+        <div style="width:145px;text-align:right;font-size:9px">
+          <span style="color:#f97316" title="Challenge">⚔${td.challenge.toFixed(1)}</span>
+          <span style="color:#38bdf8" title="Social">♥${td.social.toFixed(1)}</span>
+          <span style="color:#a78bfa" title="Strategic">★${td.strategic.toFixed(1)}</span>
+        </div>
+        <div style="width:100px;text-align:right;color:#6e7681;font-size:9px">${rec.wins}W · ${rec.podiums}P · ${rec.bombs}B</div>
       </div>`;
     });
     html += `</div>`;

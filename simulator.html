@@ -15399,23 +15399,23 @@ function simulateHellsKitchen(ep) {
           raw -= ateAmount;
           personalScores[p] = (personalScores[p] || 0) - 2.0;
 
-          // Step 1: always fire the hidden theft first
+          // Step 1: hidden theft — marked as chain start so it won't be separated from confession
           const hideTexts = [
             `The prep station is suspiciously emptier than it should be. ${p} wipes ${pr.posAdj} mouth and says nothing. Nobody saw... right?`,
             `${p} has been sneaking bites of the ingredients all through cooking. The portion size is noticeably smaller. ${pr.Sub} blames the recipe.`,
             `Ingredients keep disappearing. ${p} points at the other team. "Must have been them." It was not them.`,
           ];
-          _pushCourseEvent({
-            type: 'food-gobbler-hide',
-            course,
+          const hideEvt = {
+            type: 'food-gobbler-hide', _tribe: _currentTribe, course,
             players: [p],
             text: _rp(hideTexts),
-            badge: 'Food Thief',
-            badgeText: `Someone's been eating the ingredients...`,
-            badgeClass: 'badge-danger'
-          });
+            badge: 'Food Thief', badgeText: `Someone's been eating the ingredients...`, badgeClass: 'badge-danger',
+            _chainId: 'gobble-' + p // unique chain ID
+          };
+          allEvents.push(hideEvt);
+          eventsByCourse[_currentCourse].push({ kind: 'event', ...hideEvt });
 
-          // Step 2: confession fires as a separate follow-up event (loyalty proportional)
+          // Step 2: confession fires as follow-up (loyalty proportional)
           const confessChance = s.loyalty * 0.06 + Math.random() * 0.3;
           if (confessChance > 0.5) {
             teammates.forEach(m => { if (m !== p) addBond(p, m, -0.15); });
@@ -15424,18 +15424,17 @@ function simulateHellsKitchen(ep) {
               `${p} pulls the chef aside. "I have to tell you something..." The confession spills out. The team groans, but at least they know.`,
               `${p} cracks under the pressure. "I've been eating the prep! I couldn't stop!" Honesty — but the damage is done.`,
             ];
-            // Chain after the hidden theft — not shuffled independently
             const confEvt = {
               type: 'food-gobbler-confess', _tribe: _currentTribe, course,
               players: [p, ...teammates.filter(m => m !== p).slice(0, 2)],
               text: _rp(confessTexts),
               badge: 'Confession', badgeText: `${p} confesses to eating the food`, badgeClass: 'badge-warning',
-              _chainAfter: 'food-gobbler-hide'
+              _chainAfter: 'gobble-' + p // chains to the specific theft
             };
             allEvents.push(confEvt);
             eventsByCourse[_currentCourse].push({ kind: 'event', ...confEvt });
           } else {
-            addCookingHeat(p, 1.5, 2); // hid it — heat if team figures it out later
+            addCookingHeat(p, 1.5, 2);
           }
           eventsThisCourse++;
         }
@@ -16585,12 +16584,12 @@ function simulateHellsKitchen(ep) {
         const _tj = Math.floor(Math.random() * (_ti + 1));
         [shuffleable[_ti], shuffleable[_tj]] = [shuffleable[_tj], shuffleable[_ti]];
       }
-      // Re-insert chain items after their parent
+      // Re-insert chain items after their parent (match by _chainId or type)
       const ordered = [...shuffleable];
       chains.forEach(ch => {
-        const parentIdx = ordered.findIndex(ev => ev.type === ch._chainAfter);
+        const parentIdx = ordered.findIndex(ev => (ev._chainId && ev._chainId === ch._chainAfter) || ev.type === ch._chainAfter);
         if (parentIdx >= 0) ordered.splice(parentIdx + 1, 0, ch);
-        else ordered.push(ch); // parent not found, append
+        else ordered.push(ch);
       });
       _finalTimeline.push(...ordered);
     });

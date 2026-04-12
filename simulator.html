@@ -15265,41 +15265,45 @@ function simulateHellsKitchen(ep) {
         if (_isGobbler && course !== 'appetizer' && (10 - s.mental) * 0.02 + Math.random() * 0.08 > 0.15) {
           if (eventsThisCourse >= numEvents) return;
           const ateAmount = 0.15 + Math.random() * 0.15;
-          const confess = s.loyalty * 0.06 + Math.random() * 0.3 > 0.5;
           raw -= ateAmount;
           personalScores[p] = (personalScores[p] || 0) - 2.0;
-          if (confess) {
+
+          // Step 1: always fire the hidden theft first
+          const hideTexts = [
+            `The prep station is suspiciously emptier than it should be. ${p} wipes ${pr.posAdj} mouth and says nothing. Nobody saw... right?`,
+            `${p} has been sneaking bites of the ingredients all through cooking. The portion size is noticeably smaller. ${pr.Sub} blames the recipe.`,
+            `Ingredients keep disappearing. ${p} points at the other team. "Must have been them." It was not them.`,
+          ];
+          _pushCourseEvent({
+            type: 'food-gobbler-hide',
+            course,
+            players: [p],
+            text: _rp(hideTexts),
+            badge: 'Food Thief',
+            badgeText: `Someone's been eating the ingredients...`,
+            badgeClass: 'badge-danger'
+          });
+
+          // Step 2: confession fires as a separate follow-up event (loyalty proportional)
+          const confessChance = s.loyalty * 0.06 + Math.random() * 0.3;
+          if (confessChance > 0.5) {
             teammates.forEach(m => { if (m !== p) addBond(p, m, -0.15); });
             const confessTexts = [
-              `${p} has been snacking on the ingredients while nobody was looking. When half the ${dishes[t.name][course]} prep is gone, ${pr.sub} confesses. "I was SO hungry." The team stares.`,
-              `"I... I ate some of the prep." ${p} holds up empty hands. The team has to start over with what's left.`,
-              `${p} comes clean — ${pr.sub}'s been eating the ingredients between steps. There's barely enough left to plate. The team scrambles.`
+              `${p} can't take the guilt. "It was me. I ate it. I'm sorry." The team stares in disbelief.`,
+              `${p} pulls the chef aside. "I have to tell you something..." The confession spills out. The team groans, but at least they know.`,
+              `${p} cracks under the pressure. "I've been eating the prep! I couldn't stop!" Honesty — but the damage is done.`,
             ];
             _pushCourseEvent({
               type: 'food-gobbler-confess',
               course,
               players: [p, ...teammates.filter(m => m !== p).slice(0, 2)],
               text: _rp(confessTexts),
-              badge: 'Food Thief (Confessed)',
-              badgeText: `${p} ate the team's food and confessed`,
+              badge: 'Confession',
+              badgeText: `${p} confesses to eating the food`,
               badgeClass: 'badge-warning'
             });
           } else {
-            addCookingHeat(p, 1.5, 2);
-            const hideTexts = [
-              `The prep station is suspiciously emptier than it should be. ${p} wipes ${pr.posAdj} mouth and says nothing. Nobody saw... right?`,
-              `${p} has been sneaking bites of the ingredients all through cooking. The portion size is noticeably smaller. ${pr.Sub} blames the recipe.`,
-              `Ingredients keep disappearing. ${p} points at the other team. "Must have been them." It was not them.`
-            ];
-            _pushCourseEvent({
-              type: 'food-gobbler-hide',
-              course,
-              players: [p],
-              text: _rp(hideTexts),
-              badge: 'Food Thief (Hidden)',
-              badgeText: `${p} secretly ate the team's food`,
-              badgeClass: 'badge-danger'
-            });
+            addCookingHeat(p, 1.5, 2); // hid it — heat if team figures it out later
           }
           eventsThisCourse++;
         }

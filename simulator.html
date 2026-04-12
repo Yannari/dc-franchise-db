@@ -48190,9 +48190,9 @@ function rpBuildDebug(ep) {
         <div style="width:50px;text-align:right"><span style="color:${tier.color};font-weight:700">${td.total.toFixed(1)}</span></div>
         <div style="width:65px;text-align:right;color:#8b949e;font-size:10px">${tier.label}</div>
         <div style="width:145px;text-align:right;font-size:9px">
-          <span style="color:#f97316" title="Challenge">⚔${td.challenge.toFixed(1)}</span>
-          <span style="color:#38bdf8" title="Social">♥${td.social.toFixed(1)}</span>
-          <span style="color:#a78bfa" title="Strategic">★${td.strategic.toFixed(1)}</span>
+          <span style="color:#f97316;cursor:help" title="Challenge Threat: podiums, wins, bombs + physical/endurance/mental/intuition stats (fades as record grows)">⚔${td.challenge.toFixed(1)}</span>
+          <span style="color:#38bdf8;cursor:help" title="Social Threat: avg bond with all players, friends (bond≥3), showmance/spark + social stat">♥${td.social.toFixed(1)}</span>
+          <span style="color:#a78bfa;cursor:help" title="Strategic Threat: alliance sizes, side deals, idol/advantage held + strategic stat">★${td.strategic.toFixed(1)}</span>
         </div>
         <div style="width:100px;text-align:right;color:#6e7681;font-size:9px">${rec.wins}W · ${rec.podiums}P · ${rec.bombs}B</div>
       </div>`;

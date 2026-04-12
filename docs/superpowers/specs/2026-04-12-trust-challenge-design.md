@@ -240,7 +240,9 @@ Only fires for players with archetype villain/schemer/hothead/chaos-agent (unlik
 
 ---
 
-## Personal Scoring
+## Personal Scoring → `chalMemberScores` (podium/bomb tracking)
+
+Every player gets a personal score accumulated across all rounds they participate in. Stored in `ep.chalMemberScores` and fed to `updateChalRecord(ep)` for top 3 (podium) / bottom 3 (bomb) tracking.
 
 | Action | Score |
 |---|---|
@@ -257,6 +259,11 @@ Only fires for players with archetype villain/schemer/hothead/chaos-agent (unlik
 | Rule break (DQ) | -2.0 |
 | Redemption act (witness saw) | +1.0 (hidden) |
 | Private bond moment | +0.5 |
+| Spectator (didn't compete in any round) | +0.0 (neutral) |
+
+**Balance target:** Players who competed in winning rounds avg ~3.0-4.0. Players who competed in losing rounds avg ~0.5-1.0. Saboteurs/DQ avg -1.0 to -2.0. Non-participants get 0 (no podium or bomb — they didn't play).
+
+**MVP:** Highest personal score on winning team. +2 popularity.
 
 ---
 

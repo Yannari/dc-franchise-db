@@ -14731,36 +14731,42 @@ function simulateHellsKitchen(ep) {
     gs._cookingHeat[name] = { amount, expiresEp: epNum + duration };
   }
 
-  // ── Step 3: Chef Showdown (pre-cooking cross-tribe event) ──
+  // ── Step 3: Chef Showdown (pre-cooking, all chefs face off) ──
   _currentTribe = null; // cross-tribe
   if (tribes.length >= 2) {
-    const chefList = tribes.map(t => chefs[t.name]);
-    const c1 = chefList[0], c2 = chefList[1];
-    const s1 = pStats(c1.name), s2 = pStats(c2.name);
-    const showdown1 = s1.boldness * 0.05 + s1.social * 0.03 + Math.random() * 0.15;
-    const showdown2 = s2.boldness * 0.05 + s2.social * 0.03 + Math.random() * 0.15;
-    const sdWinner = showdown1 >= showdown2 ? c1 : c2;
-    const sdLoser = showdown1 >= showdown2 ? c2 : c1;
-    const sdWinTribe = Object.keys(chefs).find(k => chefs[k].name === sdWinner.name);
-    const sdLoseTribe = Object.keys(chefs).find(k => chefs[k].name === sdLoser.name);
-    courseModifiers[sdWinTribe].appetizer += 0.05;
-    courseModifiers[sdWinTribe].main += 0.05;
-    courseModifiers[sdWinTribe].dessert += 0.05;
-    const pr1 = pronouns(sdWinner.name), pr2 = pronouns(sdLoser.name);
-    const showdownTexts = [
-      `${sdWinner.name} and ${sdLoser.name} face off before the cooking starts. ${sdWinner.name} gets in ${sdLoser.name}'s head with a devastating one-liner. ${pr1.Sub} wins the trash talk round — ${pr1.posAdj} team rides the momentum.`,
-      `The chefs meet at center kitchen for the traditional stare-down. ${sdWinner.name} doesn't blink. ${sdLoser.name} looks away first. ${sdWinTribe} gets the psychological edge.`,
-      `${sdWinner.name} cracks a joke that has both tribes laughing — except ${sdLoser.name}, who's fuming. The mental game is already over.`
-    ];
-    pushEvent({
-      type: 'chef-showdown',
-      course: 'pre',
-      players: [sdWinner.name, sdLoser.name],
-      text: _rp(showdownTexts),
-      badge: 'Chef Showdown',
-      badgeText: `${sdWinner.name} wins the chef showdown`,
-      badgeClass: 'badge-warning'
-    });
+    const chefList = tribes.map(t => ({ ...chefs[t.name], tribe: t.name }));
+    // Score all chefs
+    const sdScores = chefList.map(c => {
+      const s = pStats(c.name);
+      return { ...c, sdScore: s.boldness * 0.05 + s.social * 0.03 + Math.random() * 0.15 };
+    }).sort((a, b) => b.sdScore - a.sdScore);
+
+    const sdWinner = sdScores[0];
+    const sdLoser = sdScores[sdScores.length - 1];
+    const sdMiddle = sdScores.length > 2 ? sdScores.slice(1, -1) : [];
+
+    // Winner gets morale boost
+    COURSES.forEach(c => { courseModifiers[sdWinner.tribe][c] += 0.04; });
+    const prW = pronouns(sdWinner.name);
+
+    if (tribes.length === 2) {
+      const showdownTexts = [
+        `${sdWinner.name} and ${sdLoser.name} face off before the cooking starts. ${sdWinner.name} gets in ${sdLoser.name}'s head with a devastating one-liner. ${prW.Sub} wins the trash talk round — ${prW.posAdj} team rides the momentum.`,
+        `The chefs meet at center kitchen for the traditional stare-down. ${sdWinner.name} doesn't blink. ${sdLoser.name} looks away first. ${sdWinner.tribe} gets the psychological edge.`,
+        `${sdWinner.name} cracks a joke that has both tribes laughing — except ${sdLoser.name}, who's fuming. The mental game is already over.`,
+      ];
+      pushEvent({ type: 'chef-showdown', course: 'pre', players: [sdWinner.name, sdLoser.name], text: _rp(showdownTexts), badge: 'Chef Showdown', badgeText: `${sdWinner.name} wins the showdown`, badgeClass: 'badge-warning' });
+    } else {
+      // 3+ chefs: multi-way showdown
+      const allNames = sdScores.map(c => c.name);
+      const middleNames = sdMiddle.map(c => c.name).join(', ');
+      const showdownTexts = [
+        `All ${sdScores.length} chefs face off before the cooking starts. ${sdWinner.name} dominates the trash talk — ${sdLoser.name} wilts under the pressure.${sdMiddle.length ? ` ${middleNames} stay${sdMiddle.length === 1 ? 's' : ''} quiet and watch.` : ''}`,
+        `The chefs circle up for the pre-game stare-down. ${sdWinner.name} owns the room — ${prW.sub} hasn't even cooked yet and ${prW.posAdj} team already feels like winners. ${sdLoser.name} looks rattled.`,
+        `${sdWinner.name} trash-talks every other chef by name. ${sdLoser.name} tries to clap back but stumbles on ${pronouns(sdLoser.name).posAdj} words.${sdMiddle.length ? ` ${middleNames} wisely stay${sdMiddle.length === 1 ? 's' : ''} out of it.` : ''} The kitchen belongs to ${sdWinner.name} before a single dish is made.`,
+      ];
+      pushEvent({ type: 'chef-showdown', course: 'pre', players: allNames, text: _rp(showdownTexts), badge: 'Chef Showdown', badgeText: `${sdWinner.name} dominates the showdown`, badgeClass: 'badge-warning' });
+    }
   }
 
   // ── Step 4: Leadership Events (fire once per tribe before courses) ──

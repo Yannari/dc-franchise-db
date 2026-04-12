@@ -64440,6 +64440,113 @@ function openVisualPlayer(epNum) {
   vpStartParticles();
 }
 
+// ── VP Search ──
+let _vpSearchMatches = [];
+let _vpSearchIdx = -1;
+
+function vpToggleSearch() {
+  const bar = document.getElementById('vp-search-bar');
+  if (!bar) return;
+  const visible = bar.style.display !== 'none';
+  bar.style.display = visible ? 'none' : 'block';
+  if (!visible) {
+    const input = document.getElementById('vp-search-input');
+    if (input) { input.value = ''; input.focus(); }
+    vpSearchClear();
+  } else {
+    vpSearchClear();
+  }
+}
+
+function vpSearchClear() {
+  const content = document.getElementById('vp-screen-content');
+  if (!content) return;
+  content.querySelectorAll('.vp-search-hl').forEach(el => {
+    const parent = el.parentNode;
+    parent.replaceChild(document.createTextNode(el.textContent), el);
+    parent.normalize();
+  });
+  _vpSearchMatches = [];
+  _vpSearchIdx = -1;
+  const counter = document.getElementById('vp-search-count');
+  if (counter) counter.textContent = '';
+}
+
+function vpSearchHighlight(query) {
+  vpSearchClear();
+  if (!query || query.length < 2) return;
+  const content = document.getElementById('vp-screen-content');
+  if (!content) return;
+
+  const walker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT, null, false);
+  const textNodes = [];
+  while (walker.nextNode()) textNodes.push(walker.currentNode);
+
+  const lowerQ = query.toLowerCase();
+  textNodes.forEach(node => {
+    const text = node.textContent;
+    const lower = text.toLowerCase();
+    const idx = lower.indexOf(lowerQ);
+    if (idx === -1) return;
+    // Split and wrap match
+    const before = text.substring(0, idx);
+    const match = text.substring(idx, idx + query.length);
+    const after = text.substring(idx + query.length);
+    const span = document.createElement('span');
+    span.className = 'vp-search-hl';
+    span.style.cssText = 'background:#f0a50066;color:#fff;border-radius:2px;padding:0 1px';
+    span.textContent = match;
+    const parent = node.parentNode;
+    if (before) parent.insertBefore(document.createTextNode(before), node);
+    parent.insertBefore(span, node);
+    if (after) parent.insertBefore(document.createTextNode(after), node);
+    parent.removeChild(node);
+  });
+
+  _vpSearchMatches = [...content.querySelectorAll('.vp-search-hl')];
+  _vpSearchIdx = -1;
+  const counter = document.getElementById('vp-search-count');
+  if (counter) counter.textContent = _vpSearchMatches.length ? `${_vpSearchMatches.length} found` : 'no matches';
+  if (_vpSearchMatches.length) vpSearchNext();
+}
+
+function vpSearchNext() {
+  if (!_vpSearchMatches.length) return;
+  // Remove active highlight from previous
+  if (_vpSearchIdx >= 0 && _vpSearchMatches[_vpSearchIdx]) {
+    _vpSearchMatches[_vpSearchIdx].style.background = '#f0a50066';
+  }
+  _vpSearchIdx = (_vpSearchIdx + 1) % _vpSearchMatches.length;
+  const el = _vpSearchMatches[_vpSearchIdx];
+  el.style.background = '#f0a500cc';
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  const counter = document.getElementById('vp-search-count');
+  if (counter) counter.textContent = `${_vpSearchIdx + 1}/${_vpSearchMatches.length}`;
+}
+
+function vpSearchPrev() {
+  if (!_vpSearchMatches.length) return;
+  if (_vpSearchIdx >= 0 && _vpSearchMatches[_vpSearchIdx]) {
+    _vpSearchMatches[_vpSearchIdx].style.background = '#f0a50066';
+  }
+  _vpSearchIdx = (_vpSearchIdx - 1 + _vpSearchMatches.length) % _vpSearchMatches.length;
+  const el = _vpSearchMatches[_vpSearchIdx];
+  el.style.background = '#f0a500cc';
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  const counter = document.getElementById('vp-search-count');
+  if (counter) counter.textContent = `${_vpSearchIdx + 1}/${_vpSearchMatches.length}`;
+}
+
+// Ctrl+F override inside VP
+document.addEventListener('keydown', e => {
+  const vp = document.getElementById('visual-player');
+  if (!vp || vp.style.display === 'none') return;
+  if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+    e.preventDefault();
+    vpToggleSearch();
+  }
+});
+
 function closeVisualPlayer() {
   vpStopParticles();
   document.getElementById('visual-player').style.display = 'none';
@@ -64491,6 +64598,15 @@ init();
       <button class="rp-btn" id="vp-next-btn" onclick="vpNext()">Continue →</button>
       <button class="rp-btn" onclick="(function(){const on=localStorage.getItem('vp_debug')!=='true';localStorage.setItem('vp_debug',on?'true':'false');const ep=gs.episodeHistory.find(e=>e.num===vpEpNum);if(ep){buildVPScreens(ep);renderVPScreen();}})()" style="font-size:9px;opacity:0.5;padding:2px 6px" title="Toggle Debug Screen">🔧</button>
       <button class="rp-btn close" onclick="closeVisualPlayer()">✕</button>
+    </div>
+    <div id="vp-search-bar" style="display:none;padding:6px 16px;background:rgba(7,9,13,0.95);border-bottom:1px solid #151e28">
+      <div style="display:flex;gap:6px;align-items:center">
+        <input id="vp-search-input" type="text" placeholder="Search in VP..." style="flex:1;padding:4px 8px;border-radius:4px;border:1px solid #30363d;background:#0d1117;color:#e6edf3;font-size:12px;outline:none" oninput="vpSearchHighlight(this.value)" onkeydown="if(event.key==='Escape'){vpToggleSearch();event.preventDefault();}if(event.key==='Enter'){vpSearchNext();event.preventDefault();}">
+        <span id="vp-search-count" style="font-size:10px;color:#8b949e;min-width:40px"></span>
+        <button class="rp-btn" onclick="vpSearchNext()" style="padding:2px 8px;font-size:10px">↓</button>
+        <button class="rp-btn" onclick="vpSearchPrev()" style="padding:2px 8px;font-size:10px">↑</button>
+        <button class="rp-btn" onclick="vpToggleSearch()" style="padding:2px 6px;font-size:10px">✕</button>
+      </div>
     </div>
     <div id="vp-screen-content"></div>
   </div>

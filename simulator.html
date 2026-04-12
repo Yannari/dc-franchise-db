@@ -3830,7 +3830,7 @@ function threatScore(name, detailed) {
   // ── 1. CHALLENGE THREAT (what you've DONE in challenges) ──
   // Stats are early-game fallback, record takes over as episodes progress
   const chalStatBase = s.physical * 0.15 + s.endurance * 0.12 + s.mental * 0.08 + s.intuition * 0.08;
-  const recordScore = rec.podiums * 1.0 + rec.wins * 1.5 - rec.bombs * 0.8;
+  const recordScore = rec.podiums * 1.0 + rec.wins * 2.0 - rec.bombs * 0.8;
   const episodesPlayed = Math.max(1, gs.episode || 1);
   const recordWeight = Math.min(0.7, episodesPlayed * 0.1);
   const challengeThreat = chalStatBase * (1 - recordWeight) + recordScore * recordWeight;
@@ -3862,9 +3862,12 @@ function threatScore(name, detailed) {
   const hasAdvantage = gs.advantages?.some(a => a.holder === name) ? 0.8 : 0;
   const strategicThreat = alliancePower + activeSideDeals * 0.15 + hasAdvantage + s.strategic * 0.08;
 
-  // ── COMBINED: equal weight across all three dimensions ──
-  const total = challengeThreat * 0.33 + socialThreat * 0.33 + strategicThreat * 0.33;
-  if (detailed) return { total, challenge: challengeThreat, social: socialThreat, strategic: strategicThreat };
+  // ── COMBINED: equal weight, floor each at 0 (can't have negative threat) ──
+  const _chal = Math.max(0, challengeThreat);
+  const _soc = Math.max(0, socialThreat);
+  const _strat = Math.max(0, strategicThreat);
+  const total = _chal * 0.33 + _soc * 0.33 + _strat * 0.33;
+  if (detailed) return { total, challenge: _chal, social: _soc, strategic: _strat };
   return total;
 }
 

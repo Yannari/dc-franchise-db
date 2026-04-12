@@ -41243,6 +41243,102 @@ function _textHellsKitchen(ep, ln, sec) {
   if (hk.mvp) ln(`MVP: ${hk.mvp}`);
 }
 
+// ── TRUST CHALLENGE ──
+function _textTrustChallenge(ep, ln, sec) {
+  if (!ep.isTrustChallenge || !ep.trustChallenge) return;
+  const tc = ep.trustChallenge;
+  sec('WHO CAN YOU TRUST?');
+  ln('Three-round trust challenge: Rock Climb, Fugu Sashimi, Three Blind Challenges.');
+  ln('');
+
+  // Round 1 — Rock Climb
+  ln('── ROUND 1: EXTREME ROCK CLIMB ──');
+  Object.entries(tc.rounds?.round1?.pairs || {}).forEach(([tribe, pair]) => {
+    if (!pair) return;
+    const roles = tc.rounds?.round1?.roles?.[tribe];
+    const score = tc.rounds?.round1?.scores?.[tribe];
+    const climber = roles?.climber || pair[0];
+    const belayer = roles?.belayer || pair[1];
+    const scoreTxt = score > -900 ? score.toFixed(3) : 'AUTO-LOSS';
+    ln(`  ${tribe}: ${climber} (climber) + ${belayer} (belayer) → ${scoreTxt}`);
+  });
+  if (tc.rounds?.round1?.winner) ln(`  Round 1 Winner: ${tc.rounds.round1.winner}`);
+
+  // Round 2 — Fugu Sashimi
+  ln('');
+  ln('── ROUND 2: FUGU SASHIMI ──');
+  Object.entries(tc.rounds?.round2?.pairs || {}).forEach(([tribe, pair]) => {
+    if (!pair) return;
+    const roles = tc.rounds?.round2?.roles?.[tribe];
+    const score = tc.rounds?.round2?.scores?.[tribe];
+    const cook = roles?.cook || pair[0];
+    const eater = roles?.eater || pair[1];
+    const scoreTxt = score > -900 ? score.toFixed(3) : 'AUTO-LOSS';
+    ln(`  ${tribe}: ${cook} (cook) + ${eater} (eater) → ${scoreTxt}`);
+  });
+  if (tc.rounds?.round2?.winner) ln(`  Round 2 Winner: ${tc.rounds.round2.winner}`);
+
+  // Round 3 — Three Blind Challenges
+  ln('');
+  ln('── ROUND 3: THREE BLIND CHALLENGES ──');
+  const SUB_LABELS = { round3a: 'William Tell', round3b: 'Trapeze', round3c: 'Toboggan' };
+  ['round3a','round3b','round3c'].forEach(sub => {
+    ln(`  ${SUB_LABELS[sub]}:`);
+    Object.entries(tc.rounds?.round3?.pairs || {}).forEach(([tribe, subPairs]) => {
+      const pair = subPairs?.[sub];
+      const roles = tc.rounds?.round3?.roles?.[tribe]?.[sub];
+      const score = tc.rounds?.round3?.scores?.[tribe]?.[sub];
+      if (!pair) return;
+      const roleStr = roles ? Object.entries(roles).map(([r, p]) => `${p} (${r})`).join(' + ') : pair.join(' + ');
+      const scoreTxt = score !== undefined && score > -900 ? score.toFixed(3) : score !== undefined ? 'AUTO-LOSS' : '?';
+      ln(`    ${tribe}: ${roleStr} → ${scoreTxt}`);
+    });
+  });
+  if (tc.rounds?.round3?.winner) ln(`  Round 3 Winner: ${tc.rounds.round3.winner}`);
+
+  // Events
+  if (tc.events?.length) {
+    ln('');
+    ln('── NOTABLE EVENTS ──');
+    tc.events.forEach(evt => {
+      ln(`  [${evt.type}] ${evt.text}`);
+    });
+  }
+
+  // Sabotage
+  if (tc.sabotage?.length) {
+    ln('');
+    ln('── SABOTAGE ──');
+    tc.sabotage.forEach(s => {
+      ln(`  ${s.type.toUpperCase()} — ${s.saboteur} → ${s.victim || '?'} (${s.round}, ${s.tribe})`);
+    });
+  }
+
+  // Poisoned
+  if (tc.poisoned?.length) {
+    ln('');
+    tc.poisoned.forEach(p => {
+      ln(`  POISONED: ${p.eater} by ${p.cook} (${p.deliberate ? 'deliberate' : 'accidental'})`);
+    });
+  }
+
+  // Rule break
+  if (tc.ruleBreak) {
+    ln(`  RULE BREAK DQ: ${tc.ruleBreak.driver} (${tc.ruleBreak.sub}, ${tc.ruleBreak.tribe})`);
+  }
+
+  // Redemption
+  if (tc.redemption) {
+    ln('');
+    ln(`  [HIDDEN MOMENT] ${tc.redemption.act}`);
+    ln(`  Witnessed by ${tc.redemption.witness}: ${tc.redemption.reaction}`);
+  }
+
+  ln('');
+  ln(`Winner: ${tc.winner}. ${tc.loser} goes to tribal.`);
+  if (tc.mvp) ln(`MVP: ${tc.mvp}`);
+}
+
 // ── PHOBIA FACTOR ──
 function _textCliffDive(ep, ln, sec) {
   if (!ep.cliffDive?.tribes?.length) return;
@@ -43325,6 +43421,7 @@ function generateSummaryText(ep) {
   _textUpTheCreek(ep, ln, sec);
   _textPaintballHunt(ep, ln, sec);
   _textHellsKitchen(ep, ln, sec);
+  _textTrustChallenge(ep, ln, sec);
   _textCliffDive(ep, ln, sec);
   _textPhobiaFactor(ep, ln, sec);
   _textSayUncle(ep, ln, sec);
@@ -44562,6 +44659,7 @@ function renderEpisodeHistory() {
     const utcTag = ep.isUpTheCreek ? `<span class="ep-hist-tag" style="background:rgba(88,166,255,0.15);color:#58a6ff">Up the Creek</span>` : '';
     const phTag = ep.isPaintballHunt ? `<span class="ep-hist-tag" style="background:rgba(63,185,80,0.15);color:#3fb950">Paintball Hunt</span>` : '';
     const hkTag = ep.isHellsKitchen ? `<span class="ep-hist-tag" style="background:rgba(249,115,22,0.15);color:#f97316">Hell's Kitchen</span>` : '';
+    const tcTag = ep.isTrustChallenge ? `<span class="ep-hist-tag" style="background:rgba(56,189,248,0.15);color:#38bdf8">Trust Challenge</span>` : '';
     const hasCheckpoint = !!gsCheckpoints[ep.num];
     const replayBtn = hasCheckpoint
       ? `<button class="ep-hist-replay" title="Re-run this episode" onclick="event.stopPropagation();replayEpisode(${ep.num})">↺</button>`
@@ -44569,7 +44667,7 @@ function renderEpisodeHistory() {
     return `<div class="ep-hist-card ${ep.num===currentNum?'active':''}" onclick="viewEpisode(${ep.num})">
       <div class="ep-hist-ep">Episode ${ep.num}${replayBtn}</div>
       <div class="ep-hist-elim">${_spoilerFree ? '???' : ep.multiTribalElims?.length >= 2 ? ep.multiTribalElims.join(' + ') : ep.ambassadorData?.ambassadorEliminated ? `${ep.ambassadorData.ambassadorEliminated} + ${ep.eliminated||'?'}` : ep.tiedDestinies?.eliminatedPartner ? `${ep.eliminated||'?'} + ${ep.tiedDestinies.eliminatedPartner}` : ep.emissaryEliminated ? `${ep.eliminated||'?'} + ${ep.emissaryEliminated}` : ep.firstEliminated ? `${ep.firstEliminated} + ${ep.eliminated||'?'}` : (ep.eliminated || (ep.isFinale ? 'FTC' : '\u2014'))}</div>
-      <div>${riTag}${mergeTag}${finaleTag}${slasherTag}${tddTag}${suTag}${pfTag}${cdTag}${aatTag}${evTag}${dbTag}${tsTag}${soTag}${utcTag}${phTag}${hkTag}</div>
+      <div>${riTag}${mergeTag}${finaleTag}${slasherTag}${tddTag}${suTag}${pfTag}${cdTag}${aatTag}${evTag}${dbTag}${tsTag}${soTag}${utcTag}${phTag}${hkTag}${tcTag}</div>
     </div>`;
   }).join('');
 }
@@ -47706,6 +47804,14 @@ function rpBuildColdOpen(ep) {
         <div style="font-size:12px;color:#8b949e">${_hk.winner} won ${_hkTotal(_hk.winner)}-${_hkTotal(_hk.loser)}.${_hk.mvp ? ` MVP: ${_hk.mvp}.` : ''}${_hk.fridgeLock ? ` ${_hk.fridgeLock.victim} was locked in the fridge!` : ''}</div>
       </div>`;
     }
+    if (prevEp.isTrustChallenge && prevEp.trustChallenge) {
+      const _tc = prevEp.trustChallenge;
+      const _sabCount = _tc.sabotage?.length || 0;
+      html += `<div class="vp-card" style="border-color:rgba(56,189,248,0.15);margin-bottom:8px">
+        <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:#38bdf8;margin-bottom:4px">WHO CAN YOU TRUST?</div>
+        <div style="font-size:12px;color:#8b949e">${_tc.winner} won immunity (${['round1','round2','round3'].filter(r => _tc.rounds?.[r]?.winner === _tc.winner).length}/3 rounds).${_tc.mvp ? ` MVP: ${_tc.mvp}.` : ''}${_sabCount ? ` ${_sabCount} sabotage${_sabCount > 1 ? 's' : ''} this episode.` : ''}${_tc.redemption ? ` Hidden moment: ${_tc.redemption.player}.` : ''}</div>
+      </div>`;
+    }
     if (prevEp.isPhobiaFactor && prevEp.phobiaFactor) {
       const _pfData = prevEp.phobiaFactor;
       const _pfWinPct = Math.round((_pfData.tribeScores[_pfData.winningTribe]?.percentage || 0) * 100);
@@ -49561,7 +49667,7 @@ function rpBuildDebug(ep) {
       ${_tabBtn('history', 'Hidden Moves')}
       ${gs.moles?.length ? _tabBtn('mole', 'The Mole') : ''}
       ${(gs.showmances?.length || gs.loveTriangles?.length || gs.affairs?.length) ? _tabBtn('romance', 'Romance') : ''}
-      ${(ep.chalMemberScores || ep.isDodgebrawl || ep.isCliffDive || ep.isAwakeAThon || ep.isPhobiaFactor || ep.isSayUncle || ep.isTripleDogDare || ep.isTalentShow || ep.isSuckyOutdoors || ep.isUpTheCreek || ep.isPaintballHunt || ep.isHellsKitchen) ? _tabBtn('challenge', 'Challenge') : ''}
+      ${(ep.chalMemberScores || ep.isDodgebrawl || ep.isCliffDive || ep.isAwakeAThon || ep.isPhobiaFactor || ep.isSayUncle || ep.isTripleDogDare || ep.isTalentShow || ep.isSuckyOutdoors || ep.isUpTheCreek || ep.isPaintballHunt || ep.isHellsKitchen || ep.isTrustChallenge) ? _tabBtn('challenge', 'Challenge') : ''}
     </div>`;
 
   // ════════════════════════════════════════════════
@@ -50259,7 +50365,7 @@ function rpBuildDebug(ep) {
       });
     }
     const _chalLabel = ep.challengeLabel || 'Challenge';
-    const _chalType = ep.isDodgebrawl ? 'Dodgebrawl' : ep.isCliffDive ? 'Cliff Dive' : ep.isAwakeAThon ? 'Awake-A-Thon' : ep.isPhobiaFactor ? 'Phobia Factor' : ep.isSayUncle ? 'Say Uncle' : ep.isTalentShow ? 'Talent Show' : ep.isSuckyOutdoors ? 'Sucky Outdoors' : ep.isUpTheCreek ? 'Up the Creek' : ep.isPaintballHunt ? 'Paintball Hunt' : ep.isHellsKitchen ? "Hell's Kitchen" : _chalLabel;
+    const _chalType = ep.isDodgebrawl ? 'Dodgebrawl' : ep.isCliffDive ? 'Cliff Dive' : ep.isAwakeAThon ? 'Awake-A-Thon' : ep.isPhobiaFactor ? 'Phobia Factor' : ep.isSayUncle ? 'Say Uncle' : ep.isTalentShow ? 'Talent Show' : ep.isSuckyOutdoors ? 'Sucky Outdoors' : ep.isUpTheCreek ? 'Up the Creek' : ep.isPaintballHunt ? 'Paintball Hunt' : ep.isHellsKitchen ? "Hell's Kitchen" : ep.isTrustChallenge ? 'Trust Challenge' : _chalLabel;
 
     html += `<div style="margin-bottom:12px">
       <div style="font-family:var(--font-display);font-size:14px;color:#f0883e;margin-bottom:8px">${_chalType} — Player Rankings</div>`;
@@ -50448,6 +50554,50 @@ function rpBuildDebug(ep) {
         html += `<div style="font-size:9px;color:#484f58">[${evt.badge||evt.badgeText||evt.type}] ${(evt.text||'').substring(0,80)}</div>`;
       });
       html += `<div style="font-size:9px;color:#8b949e;margin-top:4px">Winner: ${hk.winner} | Loser: ${hk.loser}${hk.mvp ? ' | MVP: ' + hk.mvp : ''}</div>`;
+    }
+
+    if (ep.trustChallenge) {
+      html += `<div style="font-family:var(--font-display);font-size:13px;color:#38bdf8;margin:16px 0 8px">Who Can You Trust? — Summary</div>`;
+      const _tc = ep.trustChallenge;
+      const ROUND_LABELS = { round1: 'Rock Climb', round2: 'Fugu', round3: 'Blind Challenges' };
+      ['round1','round2','round3'].forEach(rk => {
+        const rnd = _tc.rounds?.[rk];
+        if (!rnd) return;
+        html += `<div style="font-size:10px;font-weight:700;color:#8b949e;margin-top:6px">${ROUND_LABELS[rk]} — Winner: <span style="color:#38bdf8">${rnd.winner || '?'}</span></div>`;
+        Object.entries(rnd.pairs || {}).forEach(([tribe, pair]) => {
+          if (!pair) return;
+          const tcol = tribeColor(tribe);
+          const roles = rnd.roles?.[tribe];
+          const score = rnd.scores?.[tribe];
+          if (rk === 'round3') {
+            // Sub-rounds
+            ['round3a','round3b','round3c'].forEach(sub => {
+              const subPair = pair?.[sub];
+              const subScore = score?.[sub];
+              if (!subPair) return;
+              const scoreTxt = subScore !== undefined && subScore > -900 ? subScore.toFixed(3) : subScore !== undefined ? 'AUTO-LOSS' : '?';
+              html += `<div style="font-size:9px;color:${tcol}">${tribe} (${sub}): ${subPair.join(' + ')} → ${scoreTxt}</div>`;
+            });
+          } else {
+            const roleStr = roles ? Object.entries(roles).map(([r, p]) => `${p}=${r}`).join(', ') : (pair?.join(' + ') || '?');
+            const scoreTxt = score !== undefined && score > -900 ? score.toFixed(3) : score !== undefined ? 'AUTO-LOSS' : '?';
+            html += `<div style="font-size:9px;color:${tcol}">${tribe}: ${roleStr} → ${scoreTxt}</div>`;
+          }
+        });
+      });
+      if (_tc.sabotage?.length) {
+        html += `<div style="font-size:10px;font-weight:700;color:#f85149;margin-top:6px">Sabotage</div>`;
+        _tc.sabotage.forEach(s => {
+          html += `<div style="font-size:9px;color:#f85149">${s.type}: ${s.saboteur} → ${s.victim || '?'} (${s.tribe})</div>`;
+        });
+      }
+      if (_tc.ruleBreak) {
+        html += `<div style="font-size:9px;color:#f85149;margin-top:2px">DQ: ${_tc.ruleBreak.driver} (${_tc.ruleBreak.sub}, ${_tc.ruleBreak.tribe})</div>`;
+      }
+      (_tc.events || []).forEach(evt => {
+        html += `<div style="font-size:9px;color:#484f58">[${evt.type}] ${(evt.text||'').substring(0,80)}</div>`;
+      });
+      html += `<div style="font-size:9px;color:#8b949e;margin-top:4px">Winner: ${_tc.winner} | Loser: ${_tc.loser}${_tc.mvp ? ' | MVP: ' + _tc.mvp : ''}</div>`;
     }
 
     html += `</div>`;

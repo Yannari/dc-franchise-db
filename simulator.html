@@ -147,6 +147,55 @@
       0%, 100% { text-shadow: 0 0 10px rgba(255,100,0,0.3); }
       50% { text-shadow: 0 0 20px rgba(255,100,0,0.6), 0 0 40px rgba(255,50,0,0.2); }
     }
+    @keyframes trustGlow {
+      0%, 100% { box-shadow: 0 0 0 rgba(56,189,248,0); }
+      50% { box-shadow: 0 0 20px rgba(56,189,248,0.4); }
+    }
+    @keyframes distrustCrack {
+      0% { opacity: 0; transform: scaleY(0); }
+      50% { opacity: 1; transform: scaleY(1.2); }
+      100% { opacity: 0.8; transform: scaleY(1); }
+    }
+    @keyframes ropeDrop {
+      0% { transform: translateY(-30px); opacity: 0; }
+      60% { transform: translateY(5px); opacity: 1; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+    @keyframes ropeSnap {
+      0% { transform: translateY(0); }
+      20% { transform: translateY(-10px); }
+      100% { transform: translateY(80px); opacity: 0; }
+    }
+    @keyframes climbUp {
+      0% { transform: translateY(20px); opacity: 0.5; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+    @keyframes poisonPulse {
+      0%, 100% { filter: hue-rotate(0deg); }
+      50% { filter: hue-rotate(80deg) brightness(0.8); }
+    }
+    @keyframes blindfoldReveal {
+      0% { clip-path: inset(0 0 0 100%); }
+      100% { clip-path: inset(0 0 0 0); }
+    }
+    @keyframes jellyZap {
+      0%, 100% { opacity: 0.3; }
+      10%, 30%, 50% { opacity: 1; text-shadow: 0 0 8px #38bdf8; }
+      20%, 40% { opacity: 0.5; }
+    }
+    @keyframes tobogganShake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-4px) rotate(-1deg); }
+      75% { transform: translateX(4px) rotate(1deg); }
+    }
+    @keyframes trustBuild {
+      0% { width: 0; }
+      100% { width: var(--trust-pct); }
+    }
+    @keyframes secretGlow2 {
+      0%, 100% { box-shadow: 0 0 0 rgba(250,204,21,0); border-color: rgba(250,204,21,0.2); }
+      50% { box-shadow: 0 0 20px rgba(250,204,21,0.15); border-color: rgba(250,204,21,0.5); }
+    }
     @keyframes steamRise {
       0% { opacity: 0.6; transform: translateY(0) scaleX(1); }
       100% { opacity: 0; transform: translateY(-30px) scaleX(1.5); }
@@ -38421,6 +38470,8 @@ function simulateJuryRoundtable(ep) {
     paintballHunt:      ep.paintballHunt      || null,
     isHellsKitchen:     ep.isHellsKitchen     || false,
     hellsKitchen:       ep.hellsKitchen        || null,
+    isTrustChallenge:   ep.isTrustChallenge   || false,
+    trustChallenge:     ep.trustChallenge      || null,
     exilePlayer:      ep.exilePlayer      || null,
     exileDuelResult:  ep.exileDuelResult  || null,
     exileDuelVotedOut: ep.exileDuelVotedOut || null,
@@ -43820,6 +43871,8 @@ function patchEpisodeHistory(ep) {
   if (!h.paintballHunt && ep.paintballHunt) h.paintballHunt = ep.paintballHunt;
   if (ep.isHellsKitchen) h.isHellsKitchen = true;
   if (!h.hellsKitchen && ep.hellsKitchen) h.hellsKitchen = ep.hellsKitchen;
+  if (ep.isTrustChallenge) h.isTrustChallenge = true;
+  if (!h.trustChallenge && ep.trustChallenge) h.trustChallenge = ep.trustChallenge;
   if (!h.tribeDissolutions && ep.tribeDissolutions) h.tribeDissolutions = ep.tribeDissolutions;
   if (ep.isTripleDogDare) h.isTripleDogDare = true;
   if (ep.exileDuelPlayerAtStart) h.exileDuelPlayerAtStart = ep.exileDuelPlayerAtStart;
@@ -50510,7 +50563,7 @@ function rpBuildFirstImpressions(ep, twistObj) {
 // ── Screen 3: Pre-challenge twists (tribe swap, three gifts, journey, exile-island, etc.) ──
 function rpBuildPreTwist(ep) {
   const _rawTwistData = (ep.twistScenes?.length ? ep.twistScenes : generateTwistScenes(ep))
-    .filter(t => t.type !== 'exile-island' && t.type !== 'jury-elimination' && t.type !== 'kidnapping' && t.type !== 'first-impressions' && t.type !== 'tied-destinies' && t.type !== 'aftermath' && t.type !== 'fan-vote-return' && t.type !== 'schoolyard-pick' && t.type !== 'triple-dog-dare' && t.type !== 'say-uncle' && t.type !== 'phobia-factor' && t.type !== 'cliff-dive' && t.type !== 'awake-a-thon' && t.type !== 'emissary-vote' && t.type !== 'dodgebrawl' && t.type !== 'talent-show' && t.type !== 'sucky-outdoors' && t.type !== 'up-the-creek' && t.type !== 'paintball-hunt' && t.type !== 'hells-kitchen'); // shown in dedicated screens
+    .filter(t => t.type !== 'exile-island' && t.type !== 'jury-elimination' && t.type !== 'kidnapping' && t.type !== 'first-impressions' && t.type !== 'tied-destinies' && t.type !== 'aftermath' && t.type !== 'fan-vote-return' && t.type !== 'schoolyard-pick' && t.type !== 'triple-dog-dare' && t.type !== 'say-uncle' && t.type !== 'phobia-factor' && t.type !== 'cliff-dive' && t.type !== 'awake-a-thon' && t.type !== 'emissary-vote' && t.type !== 'dodgebrawl' && t.type !== 'talent-show' && t.type !== 'sucky-outdoors' && t.type !== 'up-the-creek' && t.type !== 'paintball-hunt' && t.type !== 'hells-kitchen' && t.type !== 'trust-challenge'); // shown in dedicated screens
   // Deduplicate: only show one scene per twist type (prevents double display if twist is in ep.twists twice)
   const _seenTypes = new Set();
   const twistData = _rawTwistData.filter(t => { if (_seenTypes.has(t.type)) return false; _seenTypes.add(t.type); return true; });
@@ -52508,6 +52561,21 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'pbBaitTrap'              ? (evt.badgeText || 'BAIT TRAP')
                      : evt.type === 'pbGrossOut'              ? (evt.badgeText || 'GROSS OUT')
                      : evt.type === 'pbPatience'              ? (evt.badgeText || 'PATIENCE')
+                     : evt.type === 'trustSabotageHumiliation' ? (evt.badgeText || 'SABOTAGE')
+                     : evt.type === 'trustSabotageRopeDrop'   ? (evt.badgeText || 'SABOTAGE')
+                     : evt.type === 'trustBelayerDistracted'  ? (evt.badgeText || 'DISTRUST')
+                     : evt.type === 'trustDeliberatePoisoning'? (evt.badgeText || 'POISONED')
+                     : evt.type === 'trustPoisoning'          ? (evt.badgeText || 'POISONED')
+                     : evt.type === 'trustBravery'            ? (evt.badgeText || 'BRAVE')
+                     : evt.type === 'trustWildShooter'        ? (evt.badgeText || 'WILD SHOOTER')
+                     : evt.type === 'trustCatcherSabotage'    ? (evt.badgeText || 'SABOTAGE')
+                     : evt.type === 'trustFrozenRefuse'       ? (evt.badgeText || 'FROZEN')
+                     : evt.type === 'trustJellyfishFall'      ? (evt.badgeText || 'JELLYFISH')
+                     : evt.type === 'trustRuleBreak'          ? (evt.badgeText || 'DQ')
+                     : evt.type === 'trustPostArgument'       ? (evt.badgeText || 'FIGHT')
+                     : evt.type === 'trustGrudgingRespect'    ? (evt.badgeText || 'RESPECT')
+                     : evt.type === 'trustPerfectDish'        ? (evt.badgeText || 'CHEF')
+                     : evt.type === 'trustRedemptionWitness'  ? (evt.badgeText || 'WITNESS')
                      : evt.type === 'chef-showdown'           ? (evt.badgeText || 'CHEF SHOWDOWN')
                      : evt.type === 'tyrannical-chef'         ? (evt.badgeText || 'KITCHEN TYRANT')
                      : evt.type === 'tyrant-singles-out'      ? (evt.badgeText || 'SINGLED OUT')
@@ -52814,6 +52882,9 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'tyrannical-chef' || evt.type === 'fridge-lock' || evt.type === 'chef-ego-fail' || evt.type === 'chef-meltdown' || evt.type === 'flambe-explosion' || evt.type === 'food-gobbler-hide' || evt.type === 'ingredient-drop' || evt.type === 'kitchen-fire' || evt.type === 'knife-slip-out' || evt.type === 'allergic-reaction' || evt.type === 'spill-disaster' || evt.type === 'wrong-recipe' || evt.type === 'raw-food-scare' || evt.type === 'oven-malfunction' || evt.type === 'dish-stealing' || evt.type === 'presentation-disaster' || evt.type === 'ingredient-theft-caught' || evt.type === 'spice-bomb-caught' || evt.type === 'disaster-culprit' || evt.type === 'fridge-lock-drama' || evt.type === 'saboteur-exposed' || evt.type === 'food-gobbler-shame' || evt.type === 'tyrant-backlash' || evt.type === 'group-shame' || evt.type === 'tyrant-singles-out' || evt.type === 'tyrant-errand' || evt.type === 'tyrant-pressure' || evt.type === 'motivator-meltdown' || evt.type === 'delegator-micromanage' || evt.type === 'chaos-spiral' ? 'red'
                      : evt.type === 'chaos-chef' || evt.type === 'improviser-chef' || evt.type === 'micromanager' || evt.type === 'food-gobbler-confess' || evt.type === 'oven-malfunction-share' || evt.type === 'food-fight' || evt.type === 'food-fight-flirt' || evt.type === 'taste-war' || evt.type === 'chopping-competition' || evt.type === 'comfort-cooking-fail' || evt.type === 'ingredient-theft-success' || evt.type === 'spice-bomb-success' || evt.type === 'distraction-play' || evt.type === 'trash-talk' || evt.type === 'copycat-accusation' || evt.type === 'kitchen-spy' || evt.type === 'tyrant-snapback' || evt.type === 'tyrant-conspiracy' || evt.type === 'motivator-desperate' || evt.type === 'delegator-doubt' || evt.type === 'hype-unfocused' || evt.type === 'improviser-panic' || evt.type === 'improviser-risky' || evt.type === 'hype-reality-check' ? ''
                      : evt.type === 'chaos-momentum' || evt.type === 'chaos-takeover' || evt.type === 'improviser-bold' ? 'gold'
+                     : evt.type === 'trustGrudgingRespect' || evt.type === 'trustBravery' || evt.type === 'trustPerfectDish' || evt.type === 'trustRedemptionWitness' ? 'gold'
+                     : evt.type === 'trustSabotageHumiliation' || evt.type === 'trustSabotageRopeDrop' || evt.type === 'trustDeliberatePoisoning' || evt.type === 'trustCatcherSabotage' || evt.type === 'trustRuleBreak' || evt.type === 'trustPostArgument' ? 'red'
+                     : evt.type === 'trustBelayerDistracted' || evt.type === 'trustPoisoning' || evt.type === 'trustWildShooter' || evt.type === 'trustFrozenRefuse' || evt.type === 'trustJellyfishFall' ? 'red'
                      : isMoleReveal ? 'gold'
                      : isDareComplete || isDareMVP || isDareGift || isDarePact ? 'gold'
                      : isDarePactBetray || isDareAllyBetray || isDareRefusal || isDareElim ? 'red'
@@ -62695,6 +62766,252 @@ function rpBuildHellsKitchen(ep) {
   return html;
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+// VP: WHO CAN YOU TRUST?
+// ══════════════════════════════════════════════════════════════════════════════
+function rpBuildTrustChallenge(ep) {
+  const tc = ep.trustChallenge;
+  if (!tc) return null;
+
+  const stateKey = 'tc_reveal_' + ep.num;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+
+  const _tcReveal = (targetIdx) => `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=${targetIdx};const ep=gs.episodeHistory.find(e=>e.num===${ep.num});if(ep){const m=document.querySelector('.rp-main');const st=m?m.scrollTop:0;buildVPScreens(ep);renderVPScreen();if(m)m.scrollTop=st;}`;
+
+  // Build flat steps from timeline, subdividing round3 by kind
+  const steps = [];
+  (tc.timeline || []).forEach(item => {
+    steps.push({ stepType: item.kind || 'event', data: item });
+  });
+  steps.push({ stepType: 'final', data: {} });
+
+  const totalSteps = steps.length;
+  const allRevealed = state.idx >= totalSteps - 1;
+
+  const tribeNames = Object.keys(tc.pairs || {});
+  const CYAN = '#38bdf8';
+
+  // Bond indicator bar helper
+  const bondBar = (bond) => {
+    const pct = Math.max(2, Math.min(100, ((bond + 10) / 20) * 100));
+    const col = bond <= 0 ? '#f85149' : bond <= 3 ? '#f0a500' : '#3fb950';
+    const label = bond <= 0 ? 'rivals' : bond <= 3 ? 'uncertain' : 'allies';
+    return `<div style="margin-top:4px">
+      <div style="display:flex;align-items:center;gap:4px">
+        <div style="flex:1;height:4px;border-radius:2px;background:#21262d;overflow:hidden">
+          <div style="height:100%;width:${pct}%;background:${col};border-radius:2px"></div>
+        </div>
+        <span style="font-size:9px;color:${col};font-weight:700">${bond.toFixed(1)} (${label})</span>
+      </div>
+    </div>`;
+  };
+
+  // Pair card helper
+  const pairCard = (tname, pair, roles, score, accentColor) => {
+    if (!pair || pair.length < 2) return '';
+    const roleEntries = roles ? Object.entries(roles) : [];
+    const roleLabels = roleEntries.map(([role, player]) => `<span style="font-size:9px;background:${accentColor}22;color:${accentColor};padding:1px 5px;border-radius:3px;font-weight:700;text-transform:uppercase">${role}: ${player}</span>`).join(' ');
+    return `<div style="flex:1;min-width:140px;padding:10px;border-radius:8px;border:1px solid ${accentColor}33;background:${accentColor}08;text-align:center">
+      <div style="font-size:9px;font-weight:700;color:${accentColor};margin-bottom:6px;text-transform:uppercase;border-bottom:1px solid ${accentColor}22;padding-bottom:4px">${tname}</div>
+      <div style="display:flex;gap:6px;justify-content:center;margin-bottom:4px">
+        ${pair.map(p => rpPortrait(p, 'pb-sm')).join('')}
+      </div>
+      <div style="display:flex;gap:3px;justify-content:center;flex-wrap:wrap;margin-bottom:4px">${roleLabels}</div>
+      ${bondBar(getBond(pair[0], pair[1]))}
+      ${score !== undefined && score > -900 ? `<div style="font-size:10px;color:#8b949e;margin-top:4px">Score: ${score.toFixed(3)}</div>` : score !== undefined ? '<div style="font-size:10px;color:#f85149;margin-top:4px">AUTO-LOSS</div>' : ''}
+    </div>`;
+  };
+
+  // Event border color
+  const evtBorderColor = (evt) => {
+    const t = evt.type || '';
+    if (['sabotage-humiliation','sabotage-ropedrop','deliberate-botch','catcher-sabotage','rule-break-dq','nav-sabotage-caught','nav-sabotage-hidden'].includes(t)) return '#f85149';
+    if (['poison-honest','poison-negligent','eater-refused','habanero-fail','oil-crash','jellyfish-fall','jellyfish-sorry','frozen-refuse','wild-shooter','face-hit','explosion-fail','belayer-distracted'].includes(t)) return '#f0a500';
+    if (['heroic-catch','eater-bravery','perfect-dish','belayer-encourage','perfect-hit','perfect-catch','trust-leap-caught','summit-rivals','summit-success','cook-confidence-delivers','explosion-pass','habanero-pass','habanero-save','oil-pass','oil-caught','frozen-jump','explosion-dodge','nav-screaming-ignore'].includes(t)) return '#3fb950';
+    if (['redemption-act'].includes(t)) return '#faca15';
+    if (t.includes('blind') || t.includes('target-flinch')) return '#8b5cf6';
+    return CYAN;
+  };
+
+  // ── PAGE HEADER ──
+  let html = `<div class="rp-page" style="background:linear-gradient(180deg,#001a2e 0%,#0d1117 40%,#0d1117 100%);padding-bottom:60px">
+    <div class="rp-eyebrow" style="color:${CYAN}">Episode ${ep.num}</div>
+    <div style="font-family:var(--font-display);font-size:26px;letter-spacing:3px;text-align:center;color:${CYAN};animation:trustGlow 2.5s ease-in-out infinite;margin-bottom:4px">
+      WHO CAN YOU TRUST?
+    </div>
+    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:16px">
+      ${tribeNames.map(tn => `<span style="color:${tribeColor(tn)}">${tn}</span>`).join(' vs ')}
+    </div>`;
+
+  // ── ROUND SECTION HEADERS + pair cards for each round ──
+  const ROUND_META = {
+    round1: { label: '🧗 ROUND 1 — EXTREME ROCK CLIMB', color: '#f85149', accentKey: 'round1' },
+    round2: { label: '🐡 ROUND 2 — FUGU SASHIMI', color: '#f0a500', accentKey: 'round2' },
+    round3: { label: '🎯 ROUND 3 — THREE BLIND CHALLENGES', color: '#8b5cf6', accentKey: 'round3' },
+  };
+
+  // ── TIMELINE (click-to-reveal) ──
+  html += `<div style="margin-bottom:16px">
+    <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:#8b949e;text-align:center;margin-bottom:8px;text-transform:uppercase">Challenge Timeline</div>`;
+
+  let _lastRound = null;
+  const SUB_LABELS = { round3a: 'Blind William Tell', round3b: 'Blind Trapeze', round3c: 'Blind Toboggan' };
+
+  steps.forEach((step, i) => {
+    const isVisible = i <= state.idx;
+
+    // Round header injection from timeline event type
+    const evtType = step.data?.type || '';
+    const roundKey = evtType.includes('round1') || evtType === 'negotiation-r1' ? 'round1'
+                   : evtType.includes('round2') || evtType === 'negotiation-r2' ? 'round2'
+                   : evtType.includes('round3') || evtType.includes('3a') || evtType.includes('3b') || evtType.includes('3c') || evtType === 'negotiation-round3a' || evtType === 'negotiation-round3b' || evtType === 'negotiation-round3c' ? 'round3'
+                   : evtType === 'round-result' ? (step.data?.round === 1 ? 'round1' : step.data?.round === 2 ? 'round2' : step.data?.round === 3 ? 'round3' : null)
+                   : null;
+
+    if (roundKey && roundKey !== _lastRound && ROUND_META[roundKey]) {
+      _lastRound = roundKey;
+      const rm = ROUND_META[roundKey];
+      if (isVisible || i <= state.idx + 1) {
+        // Show round header when within current reveal range
+        html += `<div style="text-align:center;padding:10px 0 4px;margin:12px 0 6px;border-top:1px solid ${rm.color}22">
+          <span style="font-family:var(--font-display);font-size:14px;letter-spacing:2px;color:${rm.color}">${rm.label}</span>
+        </div>`;
+        // Show pair cards for this round
+        html += `<div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">`;
+        tribeNames.forEach(tn => {
+          const tcol = tribeColor(tn);
+          if (roundKey === 'round3') {
+            // Show sub-round pairs
+            ['round3a','round3b','round3c'].forEach(sub => {
+              const pair = tc.rounds?.round3?.pairs?.[tn]?.[sub];
+              const roles = tc.rounds?.round3?.roles?.[tn]?.[sub];
+              const score = tc.rounds?.round3?.scores?.[tn]?.[sub];
+              if (pair) html += pairCard(tn + ' — ' + SUB_LABELS[sub], pair, roles, score, tcol);
+            });
+          } else {
+            const pair = tc.rounds?.[roundKey]?.pairs?.[tn];
+            const roles = tc.rounds?.[roundKey]?.roles?.[tn];
+            const score = tc.rounds?.[roundKey]?.scores?.[tn];
+            html += pairCard(tn, pair, roles, score, tcol);
+          }
+        });
+        html += `</div>`;
+      }
+    }
+
+    if (!isVisible) {
+      html += `<div style="padding:10px;margin-bottom:4px;border:1px solid var(--border);border-radius:6px;opacity:0.08;text-align:center;cursor:pointer"
+        onclick="${_tcReveal(i)}">
+        <span style="font-size:11px;color:var(--muted)">▶</span>
+      </div>`;
+      return;
+    }
+
+    if (step.stepType === 'event') {
+      const evt = step.data;
+      const border = evtBorderColor(evt);
+      const evtPlayers = evt.players || [];
+      const badge = evt.badge || evt.badgeText || null;
+
+      html += `<div style="padding:10px;border-radius:8px;border-left:3px solid ${border};background:rgba(255,255,255,0.03);margin-bottom:8px">`;
+      if (evtPlayers.length) {
+        html += `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px">`;
+        evtPlayers.forEach(p => { html += rpPortrait(p, 'pb-sm'); });
+        html += `</div>`;
+      }
+      if (badge) {
+        html += `<div style="display:inline-block;padding:1px 6px;border-radius:3px;font-size:9px;font-weight:700;background:${border}22;color:${border};margin-bottom:4px">${badge}</div>`;
+      }
+      html += `<div style="font-size:11px;color:#c9d1d9;line-height:1.5">${evt.text || ''}</div>`;
+      html += `</div>`;
+
+    } else if (step.stepType === 'final') {
+      // ── FINAL SCOREBOARD ──
+      const winnerColor = tribeColor(tc.winner);
+      const loserColor = tc.loser ? tribeColor(tc.loser) : '#f85149';
+      const ROUNDS = ['round1', 'round2', 'round3'];
+
+      html += `<div style="padding:14px;border-radius:8px;border:1px solid ${CYAN}33;background:rgba(56,189,248,0.05);margin-bottom:12px">
+        <div style="font-size:12px;font-weight:700;letter-spacing:2px;color:${CYAN};text-align:center;margin-bottom:10px;text-transform:uppercase">Final Scoreboard</div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center">`;
+      tribeNames.forEach(tn => {
+        const ttc = tribeColor(tn);
+        html += `<div style="flex:1;min-width:120px;text-align:center;padding:10px;border-radius:6px;border:1px solid ${ttc}33;background:${ttc}08">
+          <div style="font-size:11px;font-weight:700;color:${ttc};margin-bottom:8px;text-transform:uppercase">${tn}</div>`;
+        ROUNDS.forEach(rk => {
+          const won = tc.rounds?.[rk]?.winner === tn;
+          html += `<div style="font-size:10px;margin-bottom:2px">
+            <span style="color:#8b949e">${rk === 'round1' ? 'Rock Climb' : rk === 'round2' ? 'Fugu' : 'Blind'}:</span>
+            <span style="color:${won ? '#3fb950' : '#f85149'};font-weight:700;margin-left:4px">${won ? '✓' : '✗'}</span>
+          </div>`;
+        });
+        const wins = ROUNDS.filter(rk => tc.rounds?.[rk]?.winner === tn).length;
+        html += `<div style="border-top:1px solid ${ttc}33;margin-top:6px;padding-top:6px">
+            <div style="font-size:10px;color:#8b949e">Rounds Won</div>
+            <div style="font-size:28px;font-weight:700;color:${ttc}">${wins}/3</div>
+          </div>`;
+        if (tn === tc.winner) {
+          html += `<div style="margin-top:6px;padding:3px 8px;border-radius:4px;background:#3fb95022;color:#3fb950;font-size:10px;font-weight:700;display:inline-block">🏆 WINNER</div>`;
+        } else if (tn === tc.loser) {
+          html += `<div style="margin-top:6px;padding:3px 8px;border-radius:4px;background:#f8514922;color:#f85149;font-size:10px;font-weight:700;display:inline-block">TRIBAL COUNCIL</div>`;
+        }
+        html += `</div>`;
+      });
+      html += `</div></div>`;
+
+      // ── MVP ──
+      if (tc.mvp) {
+        html += `<div style="padding:12px;border-radius:8px;border:2px solid ${CYAN}55;background:${CYAN}08;text-align:center;margin-bottom:12px">
+          <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:${CYAN};text-transform:uppercase;margin-bottom:6px">Challenge MVP</div>
+          ${rpPortrait(tc.mvp)}
+        </div>`;
+      }
+
+      // ── SABOTAGE LOG ──
+      if (tc.sabotage?.length) {
+        html += `<div style="padding:10px;border-radius:8px;border:1px solid rgba(248,81,73,0.3);background:rgba(248,81,73,0.05);margin-bottom:10px">
+          <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:#f85149;margin-bottom:6px">SABOTAGE LOG</div>`;
+        tc.sabotage.forEach(s => {
+          html += `<div style="font-size:10px;color:#c9d1d9;padding:2px 0">
+            <span style="color:#f85149;font-weight:700">${s.type.toUpperCase()}</span>
+            — ${s.saboteur} → ${s.victim || ''} (${s.tribe}, ${s.round})
+          </div>`;
+        });
+        html += `</div>`;
+      }
+
+      // ── HIDDEN MOMENT (redemption) ──
+      if (tc.redemption) {
+        html += `<div style="padding:14px;border-radius:10px;border:2px solid rgba(250,204,21,0.4);background:rgba(250,204,21,0.05);margin-bottom:12px;animation:secretGlow2 3s ease-in-out infinite">
+          <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:#faca15;margin-bottom:8px;text-transform:uppercase">★ Hidden Moment</div>
+          <div style="display:flex;gap:8px;align-items:flex-start">
+            ${rpPortrait(tc.redemption.player, 'pb-sm')}
+            <div>
+              <div style="font-size:11px;color:#e6edf3;margin-bottom:4px;line-height:1.5">${tc.redemption.act}</div>
+              <div style="font-size:10px;color:#8b949e;font-style:italic;line-height:1.5">${tc.redemption.reaction}</div>
+              <div style="font-size:9px;color:#faca15;margin-top:4px">Witnessed by: ${tc.redemption.witness}</div>
+            </div>
+          </div>
+        </div>`;
+      }
+    }
+  });
+
+  html += `</div>`; // close timeline
+
+  // ── REVEAL BUTTONS ──
+  if (!allRevealed) {
+    html += `<div style="position:sticky;bottom:12px;display:flex;gap:8px;justify-content:center;margin-top:12px">
+      <button class="rp-btn" onclick="${_tcReveal(state.idx + 1)}">NEXT</button>
+      <button class="rp-btn" onclick="${_tcReveal(totalSteps - 1)}" style="opacity:0.7">REVEAL ALL</button>
+    </div>`;
+  }
+
+  html += `</div>`; // close rp-page
+  return html;
+}
+
 function rpBuildSuckyOutdoors(ep) {
   const so = ep.suckyOutdoors;
   if (!so?.phases) return null;
@@ -64680,6 +64997,8 @@ function buildVPScreens(epRecord) {
     vpScreens.push({ id:'paintball-hunt', label:'Paintball Hunt', html: rpBuildPaintballHunt(ep) });
   } else if (ep.isHellsKitchen && ep.hellsKitchen) {
     vpScreens.push({ id:'hells-kitchen', label:"Hell's Kitchen", html: rpBuildHellsKitchen(ep) });
+  } else if (ep.isTrustChallenge && ep.trustChallenge) {
+    vpScreens.push({ id:'trust-challenge', label:"Who Can You Trust?", html: rpBuildTrustChallenge(ep) });
   } else if (ep.isDodgebrawl && ep.dodgebrawl) {
     vpScreens.push({ id:'dodgebrawl', label:'Dodgebrawl', html: rpBuildDodgebrawl(ep) });
   } else if (ep.isPhobiaFactor && ep.phobiaFactor) {

@@ -7070,6 +7070,8 @@ function simulateCliffDive(ep) {
     wagonWinner,
     winner: winner.name,
   };
+
+  updateChalRecord(ep);
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -7428,6 +7430,8 @@ function simulateAwakeAThon(ep) {
       return { name: c, caught: !!cheatEvt, caughtBy: cheatEvt?.players[1] || null };
     }),
   };
+
+  updateChalRecord(ep);
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -17101,6 +17105,8 @@ function simulatePhobiaFactor(ep) {
       });
     }
   }
+
+  updateChalRecord(ep);
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -17415,6 +17421,8 @@ function simulateSayUncle(ep) {
       badgeText: 'DIDN\'T FLINCH', badgeClass: 'gold'
     });
   });
+
+  updateChalRecord(ep);
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -17851,6 +17859,8 @@ function simulateTripleDogDare(ep) {
       badgeText: 'DAREDEVIL', badgeClass: 'gold'
     });
   }
+
+  updateChalRecord(ep);
 }
 
 /**
@@ -18203,6 +18213,8 @@ function simulateSlasherNight(ep) {
     eliminated,
     leaderboard
   };
+
+  updateChalRecord(ep);
 }
 
 function pickChallenge(mode = 'both') {

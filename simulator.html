@@ -22489,7 +22489,7 @@ function applyTwist(ep, twist, isPrimary = true) {
 // ══════════════════════════════════════════════════════════════════════
 
 const CAMP_EVENT_TYPES = [
-  // ── POSITIVE: bonding, comfort, growth (~230 total) ──
+  // ═══ POSITIVE (~300 weight = 50%) — bonding, comfort, growth, alliance building ═══
   { id: 'bond',                twoPlayer: true,  weight: 18 },
   { id: 'tdBond',              twoPlayer: true,  weight: 18 },
   { id: 'comfort',             twoPlayer: true,  weight: 12 },
@@ -22508,53 +22508,53 @@ const CAMP_EVENT_TYPES = [
   { id: 'soldierCheckin',      twoPlayer: true,  weight: 8  },
   { id: 'underdogMoment',      twoPlayer: false, weight: 8  },
   { id: 'beastDrills',         twoPlayer: false, weight: 7  },
-  // ── NEGATIVE: conflict, damage, drama (~230 total) ──
-  { id: 'fight',               twoPlayer: true,  weight: 16 },
-  { id: 'dispute',             twoPlayer: true,  weight: 14 },
+  { id: 'allianceForm',        twoPlayer: false, weight: 18 }, // builds protection structure
+  { id: 'sideDeal',            twoPlayer: true,  weight: 10 }, // builds connection
+  { id: 'idolSearch',          twoPlayer: false, weight: 10 }, // empowers finder
+  { id: 'wildcardPivot',       twoPlayer: false, weight: 8  }, // wildcard finds new path (positive for them)
+  // ═══ NEGATIVE (~270 weight = 45%) — conflict, damage, drama, scheming, suspicion ═══
+  { id: 'fight',               twoPlayer: true,  weight: 15 },
+  { id: 'dispute',             twoPlayer: true,  weight: 13 },
   { id: 'meltdown',            twoPlayer: false, weight: 10 },
   { id: 'injury',              twoPlayer: false, weight: 7  },
   { id: 'rumor',               twoPlayer: true,  weight: 12 },
   { id: 'overplay',            twoPlayer: false, weight: 10 },
   { id: 'leadershipClash',     twoPlayer: true,  weight: 12 },
-  { id: 'foodConflict',        twoPlayer: true,  weight: 10 },
-  { id: 'intimidation',        twoPlayer: true,  weight: 10 },
-  { id: 'lie',                 twoPlayer: true,  weight: 12 },
-  { id: 'hotheadExplosion',    twoPlayer: false, weight: 12 },
-  { id: 'chaosAgentStirsUp',   twoPlayer: true,  weight: 12 },
-  { id: 'jealousy',            twoPlayer: true,  weight: 12 },
-  { id: 'exclusion',           twoPlayer: false, weight: 10 },
-  { id: 'blame',               twoPlayer: true,  weight: 11 },
-  { id: 'passiveAggressive',   twoPlayer: true,  weight: 10 },
-  { id: 'trustCrack',          twoPlayer: true,  weight: 11 },
-  { id: 'allianceCrack',       twoPlayer: true,  weight: 12 },
-  // ── NEUTRAL: strategy, info, flavor ──
-  { id: 'strategicTalk',       twoPlayer: true,  weight: 16 },
-  { id: 'idolSearch',          twoPlayer: false, weight: 10 },
-  { id: 'allianceForm',        twoPlayer: false, weight: 18 },
-  { id: 'tdStrategy',          twoPlayer: true,  weight: 17 },
-  { id: 'eavesdrop',           twoPlayer: true,  weight: 9  },
-  { id: 'confessional',        twoPlayer: false, weight: 13 },
-  { id: 'doubt',               twoPlayer: false, weight: 9  },
-  { id: 'weirdMoment',         twoPlayer: false, weight: 8  },
+  { id: 'foodConflict',        twoPlayer: true,  weight: 9  },
+  { id: 'intimidation',        twoPlayer: true,  weight: 9  },
+  { id: 'lie',                 twoPlayer: true,  weight: 11 },
+  { id: 'hotheadExplosion',    twoPlayer: false, weight: 11 },
+  { id: 'chaosAgentStirsUp',   twoPlayer: true,  weight: 11 },
+  { id: 'jealousy',            twoPlayer: true,  weight: 11 },
+  { id: 'exclusion',           twoPlayer: false, weight: 9  },
+  { id: 'blame',               twoPlayer: true,  weight: 10 },
+  { id: 'passiveAggressive',   twoPlayer: true,  weight: 9  },
+  { id: 'trustCrack',          twoPlayer: true,  weight: 10 },
+  { id: 'allianceCrack',       twoPlayer: true,  weight: 11 },
+  { id: 'eavesdrop',           twoPlayer: true,  weight: 9  }, // creates suspicion
   { id: 'paranoia',            twoPlayer: false, weight: 8  },
-  { id: 'scramble',            twoPlayer: true,  weight: 9  },
-  { id: 'overconfidence',      twoPlayer: false, weight: 7  },
-  { id: 'readingRoom',         twoPlayer: false, weight: 8  },
-  { id: 'sideDeal',            twoPlayer: true,  weight: 10 },
-  { id: 'bigMoveThoughts',     twoPlayer: false, weight: 7  },
-  { id: 'watchingYou',         twoPlayer: true,  weight: 8  },
-  { id: 'loneWolf',            twoPlayer: false, weight: 7  },
-  { id: 'tribeMood',           twoPlayer: false, weight: 7  },
-  { id: 'prank',               twoPlayer: true,  weight: 10 },
-  { id: 'homesick',            twoPlayer: false, weight: 8  },
-  { id: 'showboat',            twoPlayer: false, weight: 6  },
-  // ── Archetype-specific (mixed) ──
-  { id: 'schemerManipulates',     twoPlayer: true,  weight: 9  },
-  { id: 'mastermindOrchestrates', twoPlayer: true,  weight: 8  },
-  { id: 'wildcardPivot',          twoPlayer: false, weight: 8  },
-  { id: 'floaterInvisible',       twoPlayer: false, weight: 7  },
-  { id: 'goatOblivious',          twoPlayer: false, weight: 7  },
-  { id: 'perceptiveReads',        twoPlayer: true,  weight: 9  },
+  { id: 'scramble',            twoPlayer: true,  weight: 9  }, // desperation
+  { id: 'overconfidence',      twoPlayer: false, weight: 7  }, // blindside setup
+  { id: 'doubt',               twoPlayer: false, weight: 8  },
+  { id: 'watchingYou',         twoPlayer: true,  weight: 8  }, // surveillance = negative
+  { id: 'prank',               twoPlayer: true,  weight: 9  }, // usually causes friction
+  { id: 'showboat',            twoPlayer: false, weight: 6  }, // rubs people wrong
+  { id: 'schemerManipulates',  twoPlayer: true,  weight: 9  },
+  { id: 'mastermindOrchestrates',twoPlayer: true, weight: 8  },
+  { id: 'goatOblivious',       twoPlayer: false, weight: 7  }, // negative perception
+  // ═══ TRUE NEUTRAL (~30 weight = 5%) — pure flavor, no real consequences ═══
+  { id: 'confessional',        twoPlayer: false, weight: 8  },
+  { id: 'weirdMoment',         twoPlayer: false, weight: 5  },
+  { id: 'readingRoom',         twoPlayer: false, weight: 5  },
+  { id: 'tribeMood',           twoPlayer: false, weight: 4  },
+  { id: 'homesick',            twoPlayer: false, weight: 4  },
+  { id: 'loneWolf',            twoPlayer: false, weight: 4  },
+  // ═══ MIXED (lean positive or negative based on context) ═══
+  { id: 'strategicTalk',       twoPlayer: true,  weight: 14 },
+  { id: 'tdStrategy',          twoPlayer: true,  weight: 14 },
+  { id: 'bigMoveThoughts',     twoPlayer: false, weight: 6  },
+  { id: 'perceptiveReads',     twoPlayer: true,  weight: 8  },
+  { id: 'floaterInvisible',    twoPlayer: false, weight: 6  },
 ];
 
 function nameNewAlliance(size) {

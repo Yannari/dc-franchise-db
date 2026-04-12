@@ -14768,56 +14768,84 @@ function simulateHellsKitchen(ep) {
     const pr = pronouns(chef.name);
 
     if (chef.style === 'tyrant') {
-      // Tyrannical chef: efficiency boost + bond damage
-      COURSES.forEach(c => { courseModifiers[t.name][c] += 0.08; });
-      teammates.forEach(m => { addBond(chef.name, m, -0.3); });
+      // ── TYRANT ESCALATION: multi-course chain (tyranny → tension → fridge lock) ──
+      // Efficiency boost always applies
+      COURSES.forEach(c => { courseModifiers[t.name][c] += 0.05; });
+
+      // Course 1 — Tyranny begins. Bond damage, possible singling out.
+      teammates.forEach(m => { addBond(chef.name, m, -0.2); });
       const tyrantTexts = [
-        `${chef.name} runs ${pr.posAdj} kitchen like a drill sergeant. Every order is barked, every mistake is punished. The food might be good, but the morale is in the garbage.`,
+        `${chef.name} runs ${pr.posAdj} kitchen like a drill sergeant. Every order is barked, every mistake is punished.`,
         `"I didn't ask for your opinion, I asked for your OBEDIENCE!" ${chef.name} screams at ${_rp(teammates)}. The kitchen falls silent.`,
-        `${chef.name} makes ${pr.posAdj} team redo every dish twice. ${pr.Sub}'s a tyrant, but the food is undeniably better for it.`
+        `${chef.name} makes ${pr.posAdj} team redo every dish twice. ${pr.Sub}'s a tyrant, but the food is undeniably better for it.`,
+        `${chef.name} stands at the center of the kitchen and points at each teammate in turn. "You. Chop. You. Stir. You. Stay out of my way."`,
       ];
       pushEvent({
         type: 'tyrannical-chef',
-        course: 'all',
+        course: 'pre',
         players: [chef.name, ...teammates],
         text: _rp(tyrantTexts),
         badge: 'Kitchen Tyrant',
-        badgeText: `${chef.name} runs the kitchen with an iron fist`,
+        badgeText: `${chef.name} rules with an iron fist`,
         badgeClass: 'badge-danger'
       });
 
-      // Rebellion check: any teammate with bond <= 0 with chef
-      const rebel = teammates.find(m => getBond(m, chef.name) <= 0);
-      if (rebel && Math.random() < 0.45) {
-        const rebelPr = pronouns(rebel);
-        const otherRebels = teammates.filter(m => m !== rebel && getBond(m, chef.name) <= 1);
-        const allRebels = [rebel, ...otherRebels.slice(0, Math.min(2, otherRebels.length))];
+      // Single out the teammate with lowest bond — the "Leshawna"
+      const _tyrantTarget = teammates.length ? teammates.reduce((worst, m) =>
+        getBond(chef.name, m) < getBond(chef.name, worst) ? m : worst, teammates[0]) : null;
+      const _hasSingledOut = _tyrantTarget && getBond(chef.name, _tyrantTarget) <= 1;
 
-        // Lock the chef out of a course
-        const lockedCourse = _rp(COURSES);
-        chefLockedOut[t.name] = lockedCourse;
-        fridgeLock = { victim: chef.name, rebels: allRebels.slice(), course: lockedCourse };
-
-        allRebels.forEach(r => {
-          allRebels.forEach(r2 => { if (r !== r2) addBond(r, r2, 0.4); });
-        });
-        personalScores[chef.name] = (personalScores[chef.name] || 0) - 1.0;
-
-        const rebellionTexts = [
-          `${rebel} has had ENOUGH. ${rebelPr.Sub} rallies ${allRebels.length > 1 ? allRebels.filter(r=>r!==rebel).join(' and ') : 'the team'} and locks ${chef.name} in the walk-in fridge during the ${lockedCourse} course. The kitchen erupts.`,
-          `"You're NOT the boss of me!" ${rebel} slams the fridge door shut with ${chef.name} inside. The rebels take over the ${lockedCourse} course.`,
-          `The ${t.name} kitchen descends into chaos as ${rebel} leads a full mutiny. ${chef.name} pounds on the fridge door while ${pr.posAdj} team cooks without ${pr.obj}.`
+      if (_hasSingledOut) {
+        addBond(chef.name, _tyrantTarget, -0.2);
+        const tgtPr = pronouns(_tyrantTarget);
+        const _singleTexts = [
+          `${chef.name} keeps singling out ${_tyrantTarget}. "Did I stutter? Do it AGAIN." ${_tyrantTarget} bites ${tgtPr.posAdj} tongue. For now.`,
+          `Every mistake ${_tyrantTarget} makes gets called out in front of everyone. ${chef.name} won't let anything slide.`,
+          `${chef.name} assigns ${_tyrantTarget} the worst jobs — cleaning, peeling, carrying. ${tgtPr.Sub} can feel the disrespect.`,
         ];
         pushEvent({
-          type: 'fridge-lock',
-          course: lockedCourse,
-          players: [chef.name, ...allRebels],
-          text: _rp(rebellionTexts),
-          badge: 'Fridge Lock!',
-          badgeText: `${chef.name} gets locked in the fridge by ${rebel}`,
+          type: 'tyrant-singles-out',
+          course: 'pre',
+          players: [chef.name, _tyrantTarget],
+          text: _rp(_singleTexts),
+          badge: 'Singled Out',
+          badgeText: `${chef.name} targets ${_tyrantTarget}`,
           badgeClass: 'badge-danger'
         });
       }
+
+      // Errand humiliation subplot (~20%): chef sends someone on a humiliating task
+      if (teammates.length >= 2 && Math.random() < 0.20) {
+        const _errandRunner = _rp(teammates.filter(m => m !== _tyrantTarget) || teammates);
+        const erPr = pronouns(_errandRunner);
+        const _errandTexts = [
+          `${chef.name} sends ${_errandRunner} to fetch more ingredients from the truck. ${_errandRunner} comes back covered in bee stings, barely standing. ${chef.name} doesn't even look up.`,
+          `${chef.name} orders ${_errandRunner} to get ${pr.posAdj} makeup bag from the cabin. ${_errandRunner} steps on a rake on the way back, trips, and drops everything. Comedy of errors.`,
+          `"Go get me fresh herbs from the garden." ${_errandRunner} comes back muddy, scratched, and holding three wilted leaves. ${chef.name}: "Useless."`,
+          `${chef.name} makes ${_errandRunner} carry a full crate across camp. ${erPr.Sub} trips and oranges go everywhere. One hits a teammate in the face.`,
+        ];
+        addBond(_errandRunner, chef.name, -0.3);
+        personalScores[_errandRunner] = (personalScores[_errandRunner] || 0) - 0.5;
+        pushEvent({
+          type: 'tyrant-errand',
+          course: 'pre',
+          players: [chef.name, _errandRunner],
+          text: _rp(_errandTexts),
+          badge: 'Errand Run',
+          badgeText: `${_errandRunner} sent on a humiliating errand`,
+          badgeClass: 'badge-danger'
+        });
+      }
+
+      // Store tyrant state for mid-course escalation (checked during course loop)
+      if (!ep._tyrantState) ep._tyrantState = {};
+      ep._tyrantState[t.name] = {
+        chef: chef.name,
+        target: _hasSingledOut ? _tyrantTarget : null,
+        tensionLevel: _hasSingledOut ? 1 : 0, // 0=mild, 1=singled out, 2=snap-back, 3=conspiracy
+        rebels: [],
+      };
+
     } else if (chef.style === 'motivator') {
       // Motivational chef: bond + mild boost
       COURSES.forEach(c => { courseModifiers[t.name][c] += 0.05; });
@@ -15010,6 +15038,101 @@ function simulateHellsKitchen(ep) {
       const pair = (assignments[t.name][course] || []).filter(m => !satOutPlayers.has(m));
       const floater = assignments[t.name].floater;
       const teammates = t.members.filter(m => m !== chef.name);
+      const pr = pronouns(chef.name);
+
+      // ── TYRANT ESCALATION (per-course) ──
+      const _ts = ep._tyrantState?.[t.name];
+      if (_ts && chef.style === 'tyrant') {
+        if (courseIdx === 1 && _ts.tensionLevel >= 1 && _ts.target) {
+          // Course 2 (main): tension escalates. Singled-out player might snap back.
+          addBond(chef.name, _ts.target, -0.3);
+          const tgtPr = pronouns(_ts.target);
+          const snapChance = pStats(_ts.target).boldness * 0.06;
+          if (Math.random() < snapChance) {
+            _ts.tensionLevel = 2;
+            const _snapTexts = [
+              `${_ts.target} slams down ${tgtPr.posAdj} knife. "You want to do this yourself? Because I'm DONE." ${chef.name} stares. The kitchen holds its breath.`,
+              `"Stop. Talking. To me. Like that." ${_ts.target} gets in ${chef.name}'s face. For a second, it looks like it might get physical.`,
+              `${_ts.target} turns to the team: "Is anyone else tired of this?" Silence. Then a few nods. ${chef.name} notices.`,
+              `${_ts.target} throws ${tgtPr.posAdj} apron on the counter. "I'd rather lose than take one more second of this." ${chef.name}'s authority cracks.`,
+            ];
+            pushEvent({
+              type: 'tyrant-snapback',
+              course,
+              players: [_ts.target, chef.name],
+              text: _rp(_snapTexts),
+              badge: 'Snap Back',
+              badgeText: `${_ts.target} stands up to ${chef.name}`,
+              badgeClass: 'badge-warning'
+            });
+            // Conspiracy forms: teammates with bond ≤ 1 with chef join
+            _ts.rebels = teammates.filter(m => getBond(m, chef.name) <= 1);
+            if (!_ts.rebels.includes(_ts.target)) _ts.rebels.unshift(_ts.target);
+            if (_ts.rebels.length >= 2) {
+              _ts.tensionLevel = 3;
+              const _conspTexts = [
+                `Between courses, ${_ts.rebels.slice(0, 3).join(', ')} huddle by the fridge. They're planning something.`,
+                `${_ts.target} whispers to ${_ts.rebels.find(r => r !== _ts.target) || _rp(teammates)}: "Next course. We're locking ${pr.obj} in." A nod. It's happening.`,
+              ];
+              pushEvent({
+                type: 'tyrant-conspiracy',
+                course,
+                players: _ts.rebels.slice(0, 4),
+                text: _rp(_conspTexts),
+                badge: 'Conspiracy',
+                badgeText: `The team is plotting against ${chef.name}`,
+                badgeClass: 'badge-warning'
+              });
+            }
+          } else {
+            // No snap — tension builds but no action. Chef doubles down.
+            const _pressureTexts = [
+              `${chef.name} criticizes ${_ts.target}'s work in front of everyone. Again. ${_ts.target} says nothing. The resentment is visible.`,
+              `${chef.name} redoes ${_ts.target}'s entire prep. "If you want something done right..." ${_ts.target} clenches ${tgtPr.posAdj} jaw.`,
+            ];
+            pushEvent({
+              type: 'tyrant-pressure',
+              course,
+              players: [chef.name, _ts.target],
+              text: _rp(_pressureTexts),
+              badge: 'Pressure',
+              badgeText: `${chef.name} keeps pushing ${_ts.target}`,
+              badgeClass: 'badge-danger'
+            });
+          }
+        }
+
+        if (courseIdx === 2 && _ts.tensionLevel >= 3 && _ts.rebels.length >= 2) {
+          // Course 3 (dessert): FRIDGE LOCK fires
+          const lockChance = _ts.rebels.length * 0.15 + pStats(_ts.rebels[0]).boldness * 0.04;
+          if (Math.random() < lockChance) {
+            chefLockedOut[t.name] = 'dessert';
+            fridgeLock = { victim: chef.name, rebels: _ts.rebels.slice(), course: 'dessert' };
+            _ts.rebels.forEach(r => {
+              _ts.rebels.forEach(r2 => { if (r !== r2) addBond(r, r2, 0.4); });
+            });
+            personalScores[chef.name] = (personalScores[chef.name] || 0) - 1.0;
+            addBond(chef.name, _ts.rebels[0], -0.5);
+            const leadRebel = _ts.rebels[0];
+            const lrPr = pronouns(leadRebel);
+            const _lockTexts = [
+              `${leadRebel} has had ENOUGH. ${lrPr.Sub} rallies ${_ts.rebels.length > 1 ? _ts.rebels.filter(r=>r!==leadRebel).join(' and ') : 'the team'} and slams the walk-in fridge door shut with ${chef.name} inside. The kitchen erupts.`,
+              `"You're NOT the boss of me!" ${leadRebel} shoves ${chef.name} into the fridge and locks the door. ${pr.Sub} pounds on the door. Nobody opens it.`,
+              `The ${t.name} kitchen descends into chaos. ${leadRebel} locks ${chef.name} in the fridge while the rest of the team takes over dessert. ${pr.Sub} can be heard yelling from inside.`,
+              `It happens fast. ${leadRebel} opens the fridge, ${_ts.rebels.filter(r=>r!==leadRebel).join(' and ')} push${_ts.rebels.length > 2 ? '' : 'es'} ${chef.name} in, and the door slams shut. "Cook the dessert yourself," ${leadRebel} says to the closed door.`,
+            ];
+            pushEvent({
+              type: 'fridge-lock',
+              course: 'dessert',
+              players: [chef.name, ..._ts.rebels],
+              text: _rp(_lockTexts),
+              badge: 'FRIDGE LOCK!',
+              badgeText: `${chef.name} locked in the fridge`,
+              badgeClass: 'badge-danger'
+            });
+          }
+        }
+      }
 
       // Base cook score
       let cookA = pair[0] ? pStats(pair[0]) : null;
@@ -50594,6 +50717,11 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'pbPatience'              ? (evt.badgeText || 'PATIENCE')
                      : evt.type === 'chef-showdown'           ? (evt.badgeText || 'CHEF SHOWDOWN')
                      : evt.type === 'tyrannical-chef'         ? (evt.badgeText || 'KITCHEN TYRANT')
+                     : evt.type === 'tyrant-singles-out'      ? (evt.badgeText || 'SINGLED OUT')
+                     : evt.type === 'tyrant-errand'           ? (evt.badgeText || 'ERRAND RUN')
+                     : evt.type === 'tyrant-snapback'         ? (evt.badgeText || 'SNAP BACK')
+                     : evt.type === 'tyrant-conspiracy'       ? (evt.badgeText || 'CONSPIRACY')
+                     : evt.type === 'tyrant-pressure'         ? (evt.badgeText || 'PRESSURE')
                      : evt.type === 'fridge-lock'             ? (evt.badgeText || 'FRIDGE LOCK')
                      : evt.type === 'motivational-chef'       ? (evt.badgeText || 'TEAM CAPTAIN')
                      : evt.type === 'chef-delegation'         ? (evt.badgeText || 'MASTER DELEGATOR')
@@ -50878,8 +51006,8 @@ function rpBuildCampTribe(ep, tribeName, members, phase) {
                      : evt.type === 'pbBearEncounter' || evt.type === 'pbFriendlyFireAccident' || evt.type === 'pbFriendlyFireDeliberate' || evt.type === 'pbRetaliation' || evt.type === 'pbWarEscalation' || evt.type === 'pbSympathyShot' || evt.type === 'pbBearMauled' || evt.type === 'pbFriendlyFireCulprit' || evt.type === 'pbWarInstigator' || evt.type === 'pbFirstPainted' || evt.type === 'pbMudSlide' || evt.type === 'pbMisfire' || evt.type === 'pbHunterRivalry' || evt.type === 'pbAllianceRebellion' ? 'red'
                      : evt.type === 'pbMiss' || evt.type === 'pbNotFound' || evt.type === 'pbAntlersLocked' || evt.type === 'pbObsessiveChase' || evt.type === 'pbAllianceStandoff' || evt.type === 'pbTaunt' || evt.type === 'pbCrossTribeEncounter' || evt.type === 'pbHunterScheme' || evt.type === 'pbCrossRoleWhisper' || evt.type === 'pbAllianceMeeting' || evt.type === 'pbHit' || evt.type === 'pbConfessional' || evt.type === 'pbHunterTrashTalk' || evt.type === 'pbCloseCall' || evt.type === 'pbSprintBurst' || evt.type === 'pbGrossOut' || evt.type === 'pbPatience' ? ''
                      : evt.type === 'chef-showdown' || evt.type === 'motivational-chef' || evt.type === 'chef-delegation' || evt.type === 'hype-chef' || evt.type === 'chef-ego-success' || evt.type === 'showmance-fire-reaction' || evt.type === 'ingredient-drop-save' || evt.type === 'team-rally' || evt.type === 'knife-slip-hero' || evt.type === 'perfect-pairing' || evt.type === 'cooking-spark' || evt.type === 'kitchen-dance' || evt.type === 'comfort-cooking-success' || evt.type === 'mentor-moment' || evt.type === 'encouragement' || evt.type === 'natural-talent' || evt.type === 'plating-artist' || evt.type === 'taste-tester-hero' || evt.type === 'crowd-pleaser' || evt.type === 'flavor-breakthrough' || evt.type === 'garnish-save' || evt.type === 'efficient-prep' || evt.type === 'clean-station' || evt.type === 'sous-chef-clutch' || evt.type === 'underdog-cook' || evt.type === 'teamwork-montage' || evt.type === 'mvp-chef' || evt.type === 'sous-chef-hero' || evt.type === 'underdog-cook-camp' || evt.type === 'kitchen-couple' || evt.type === 'quiet-leader' ? 'gold'
-                     : evt.type === 'tyrannical-chef' || evt.type === 'fridge-lock' || evt.type === 'chef-ego-fail' || evt.type === 'chef-meltdown' || evt.type === 'flambe-explosion' || evt.type === 'food-gobbler-hide' || evt.type === 'ingredient-drop' || evt.type === 'kitchen-fire' || evt.type === 'knife-slip-out' || evt.type === 'allergic-reaction' || evt.type === 'spill-disaster' || evt.type === 'wrong-recipe' || evt.type === 'raw-food-scare' || evt.type === 'oven-malfunction' || evt.type === 'dish-stealing' || evt.type === 'presentation-disaster' || evt.type === 'ingredient-theft-caught' || evt.type === 'spice-bomb-caught' || evt.type === 'disaster-culprit' || evt.type === 'fridge-lock-drama' || evt.type === 'saboteur-exposed' || evt.type === 'food-gobbler-shame' || evt.type === 'tyrant-backlash' || evt.type === 'group-shame' ? 'red'
-                     : evt.type === 'chaos-chef' || evt.type === 'improviser-chef' || evt.type === 'micromanager' || evt.type === 'food-gobbler-confess' || evt.type === 'oven-malfunction-share' || evt.type === 'food-fight' || evt.type === 'food-fight-flirt' || evt.type === 'taste-war' || evt.type === 'chopping-competition' || evt.type === 'comfort-cooking-fail' || evt.type === 'ingredient-theft-success' || evt.type === 'spice-bomb-success' || evt.type === 'distraction-play' || evt.type === 'trash-talk' || evt.type === 'copycat-accusation' || evt.type === 'kitchen-spy' ? ''
+                     : evt.type === 'tyrannical-chef' || evt.type === 'fridge-lock' || evt.type === 'chef-ego-fail' || evt.type === 'chef-meltdown' || evt.type === 'flambe-explosion' || evt.type === 'food-gobbler-hide' || evt.type === 'ingredient-drop' || evt.type === 'kitchen-fire' || evt.type === 'knife-slip-out' || evt.type === 'allergic-reaction' || evt.type === 'spill-disaster' || evt.type === 'wrong-recipe' || evt.type === 'raw-food-scare' || evt.type === 'oven-malfunction' || evt.type === 'dish-stealing' || evt.type === 'presentation-disaster' || evt.type === 'ingredient-theft-caught' || evt.type === 'spice-bomb-caught' || evt.type === 'disaster-culprit' || evt.type === 'fridge-lock-drama' || evt.type === 'saboteur-exposed' || evt.type === 'food-gobbler-shame' || evt.type === 'tyrant-backlash' || evt.type === 'group-shame' || evt.type === 'tyrant-singles-out' || evt.type === 'tyrant-errand' || evt.type === 'tyrant-pressure' ? 'red'
+                     : evt.type === 'chaos-chef' || evt.type === 'improviser-chef' || evt.type === 'micromanager' || evt.type === 'food-gobbler-confess' || evt.type === 'oven-malfunction-share' || evt.type === 'food-fight' || evt.type === 'food-fight-flirt' || evt.type === 'taste-war' || evt.type === 'chopping-competition' || evt.type === 'comfort-cooking-fail' || evt.type === 'ingredient-theft-success' || evt.type === 'spice-bomb-success' || evt.type === 'distraction-play' || evt.type === 'trash-talk' || evt.type === 'copycat-accusation' || evt.type === 'kitchen-spy' || evt.type === 'tyrant-snapback' || evt.type === 'tyrant-conspiracy' ? ''
                      : isMoleReveal ? 'gold'
                      : isDareComplete || isDareMVP || isDareGift || isDarePact ? 'gold'
                      : isDarePactBetray || isDareAllyBetray || isDareRefusal || isDareElim ? 'red'

@@ -354,51 +354,184 @@ Team that wins 2+ out of 3 rounds wins immunity.
 
 ---
 
-## VP Screen
+## VP Screen — Overdrive
 
 ### Theme
-Trust aesthetic — two-tone split (warm vs cool), rope/harness imagery, blindfold motifs.
+Trust/danger aesthetic — split dual-tone backgrounds (one side per pair member), rope textures, blindfold overlays, trust/distrust visual language. Each round has its own sub-theme.
 
-**Background:** `linear-gradient(180deg, #0a0d17 0%, #0d1117 100%)`
+**Page background:** `linear-gradient(180deg, #060a14 0%, #0d1117 40%, #0a0d17 100%)` with subtle rope-pattern CSS overlay
 
 ### CSS Animations
 ```css
-@keyframes ropeDrop {
-  0% { transform: translateY(0); }
-  50% { transform: translateY(20px); }
-  100% { transform: translateY(0); }
-}
-@keyframes blindfoldPulse {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 0.8; }
-}
 @keyframes trustGlow {
   0%, 100% { box-shadow: 0 0 0 rgba(56,189,248,0); }
-  50% { box-shadow: 0 0 15px rgba(56,189,248,0.3); }
+  50% { box-shadow: 0 0 20px rgba(56,189,248,0.4); }
+}
+@keyframes distrustCrack {
+  0% { opacity: 0; transform: scaleY(0); }
+  50% { opacity: 1; transform: scaleY(1.2); }
+  100% { opacity: 0.8; transform: scaleY(1); }
+}
+@keyframes ropeDrop {
+  0% { transform: translateY(-30px); opacity: 0; }
+  60% { transform: translateY(5px); opacity: 1; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+@keyframes ropeSnap {
+  0% { transform: translateY(0); }
+  20% { transform: translateY(-10px); }
+  100% { transform: translateY(80px); opacity: 0; }
+}
+@keyframes climbUp {
+  0% { transform: translateY(20px); opacity: 0.5; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+@keyframes poisonPulse {
+  0%, 100% { filter: hue-rotate(0deg); }
+  50% { filter: hue-rotate(80deg) brightness(0.8); }
+}
+@keyframes blindfoldReveal {
+  0% { clip-path: inset(0 0 0 100%); }
+  100% { clip-path: inset(0 0 0 0); }
+}
+@keyframes jellyZap {
+  0%, 100% { opacity: 0.3; }
+  10%, 30%, 50% { opacity: 1; text-shadow: 0 0 8px #38bdf8; }
+  20%, 40% { opacity: 0.5; }
+}
+@keyframes tobogganShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px) rotate(-1deg); }
+  75% { transform: translateX(4px) rotate(1deg); }
+}
+@keyframes trustBuild {
+  0% { width: 0; }
+  100% { width: var(--trust-pct); }
+}
+@keyframes secretGlow {
+  0%, 100% { box-shadow: 0 0 0 rgba(250,204,21,0); border-color: rgba(250,204,21,0.2); }
+  50% { box-shadow: 0 0 20px rgba(250,204,21,0.15); border-color: rgba(250,204,21,0.5); }
 }
 ```
 
 ### Page Structure
-1. **Header** — "WHO CAN YOU TRUST?" in cyan/teal (#38bdf8) with trustGlow animation
-2. **Pair Assignment Cards** — per round, show the two (or three for 3+ tribes) pairs. Chris's pairing rationale shown ("Chris picks the rivals...")
-3. **Round sections** (click-to-reveal):
-   - Round header (ROUND 1 — EXTREME ROCK CLIMB)
-   - Role negotiation event
-   - Per-pair challenge events interleaved
-   - Round result with winner announcement
-4. **Round 3** subdivided into 3a/3b/3c with sub-round results
-5. **Final result** — scoreboard (rounds won per tribe), winner celebration
-6. **Hidden moment card** — gold border, private, "Only [witness] saw this..."
 
-### Pair Cards
-- Two portraits side-by-side with bond indicator between them (green heart / red crack / grey question mark)
-- Role badges under each portrait (CLIMBER / BELAYER)
-- Trust meter: visual bar from red (distrust) to green (trust) based on bond + loyalty
+1. **Header** — "WHO CAN YOU TRUST?" in cyan (#38bdf8) with `trustGlow` animation. Rope-textured divider below. Subtitle: tribe matchup.
 
-### Round Result Cards
-- Winner pair highlighted in green
-- Score comparison
-- Key moment text
+2. **Pair Reveal Cards** — per round, dramatic pair reveal:
+   - Split card: left portrait vs right portrait with a **crack** or **chain** between them
+   - **Enemy pairs** (bond ≤ 0): red crack line between portraits with `distrustCrack` animation. Text: "Chris pairs the rivals."
+   - **Neutral pairs** (bond 1-3): grey chain link. Text: "Chris picks an interesting combo."
+   - **Allied pairs** (bond ≥ 4): blue chain with glow. Text: "Can trust survive the test?"
+   - **Trust meter bar** under each pair: animated gradient from red → yellow → green based on `bond * 0.05 + loyalty * 0.04`. Uses `trustBuild` animation on reveal.
+   - Role badges appear below portraits with `ropeDrop` animation: 🧗 CLIMBER / 🪢 BELAYER, 🔪 COOK / 😰 EATER, etc.
+
+3. **Round Sections** (click-to-reveal, each with its own visual theme):
+
+   **ROUND 1 — EXTREME ROCK CLIMB:**
+   - Rocky cliff background gradient (dark brown → grey)
+   - Events use `climbUp` animation as they appear
+   - Sabotage event: `ropeSnap` animation on the rope between portraits — the visual connection breaks
+   - Obstacle events: small explosion/oil/pepper emoji effects
+   - Summit success: portraits rise to top with `climbUp`, green glow
+
+   **ROUND 2 — FUGU SASHIMI:**
+   - Kitchen/danger background (dark with subtle green poison tint)
+   - Cook events: plate emoji with steam
+   - Poisoning event: eater portrait gets `poisonPulse` animation — green tint pulsing
+   - "You first" standoff: both portraits face each other with question marks
+   - Perfect dish: golden plate reveal
+
+   **ROUND 3 — BLIND CHALLENGES:**
+   - Dark background with blindfold motif (horizontal stripe overlay at 30% opacity)
+   - Sub-round headers: 🎯 BLIND WILLIAM TELL / 🎪 BLIND TRAPEZE / 🛷 BLIND TOBOGGAN
+   - Blind events use `blindfoldReveal` — content slides in from behind a "blindfold" clip-path
+   - Jellyfish fall: `jellyZap` animation on the portrait (electric blue flashes)
+   - Toboggan events: `tobogganShake` on the event card
+   - Rule break DQ: red X stamp slams over the winning result. `distrustCrack` animation.
+   - Wild shooter (Sadie moment): apple emojis flying in random directions (CSS scatter)
+
+4. **Round Result Cards:**
+   - Split comparison: left tribe vs right tribe
+   - Winner side glows green (`trustGlow`), loser side dims
+   - Score numbers animate in with `scoreReveal` (reuse from Hell's Kitchen)
+   - Key moment quote in italic below
+
+5. **Hidden Moment Card** (if redemption fired):
+   - Gold border with `secretGlow` animation (pulsing warm glow)
+   - "🔒 PRIVATE MOMENT — Only [witness] saw this"
+   - Two portraits: the kind player + the witness
+   - Event text in warm gold (#fbbf24)
+   - Feels different from all other cards — quiet, intimate, secret
+
+6. **Final Scoreboard:**
+   - Rounds won displayed as large checkmarks (✓) or X marks per tribe
+   - 2/3 or 3/3 = winner celebration
+   - Loser tribe: "TRIBAL COUNCIL" stamp
+   - MVP spotlight card with trust theme (chain link emoji)
+
+7. **NEXT / REVEAL ALL buttons** — `rp-btn` class, sticky bottom
+
+### Card Design Details
+
+**Trust Meter (on pair cards):**
+```
+┌─────────────────────────────────┐
+│  [Portrait A]  ⛓️  [Portrait B]  │
+│   CLIMBER          BELAYER       │
+│                                  │
+│  TRUST: ████████░░░░ 65%         │
+│         red    yellow   green    │
+│                                  │
+│  "Chris pairs the rivals..."     │
+└─────────────────────────────────┘
+```
+
+**Sabotage Card:**
+```
+┌──────────────────────────────────┐
+│  ⚠️ SABOTAGE                      │
+│                                   │
+│  [Portrait A]  💔  [Portrait B]   │
+│     ~~rope snaps animation~~      │
+│                                   │
+│  "Heather smirks and lets go     │
+│   of the slack. Gwen plummets."  │
+│                                   │
+│  Bond: -2.0 | Heat: +2.5         │
+└──────────────────────────────────┘
+```
+
+**Poisoning Card:**
+```
+┌──────────────────────────────────┐
+│  ☠️ FOOD POISONING                │
+│                                   │
+│  [Portrait - green pulse anim]    │
+│                                   │
+│  "Trent bites in. Hits himself.  │
+│   Screams. Laughs. Turns pale.   │
+│   Collapses."                     │
+│                                   │
+│  Injury: 1 episode | Round lost   │
+└──────────────────────────────────┘
+```
+
+**Rule Break DQ Card:**
+```
+┌──────────────────────────────────┐
+│  ❌ DISQUALIFIED                   │
+│                                   │
+│  [Winning score]  ← VOIDED       │
+│     ~~red X stamp animation~~     │
+│                                   │
+│  "DJ removes his blindfold.      │
+│   They won the race — but broke  │
+│   the one rule that mattered."    │
+│                                   │
+│  Other team wins by default.      │
+└──────────────────────────────────┘
+```
 
 ---
 

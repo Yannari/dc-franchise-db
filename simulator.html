@@ -60987,8 +60987,21 @@ function rpBuildHellsKitchen(ep) {
     <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:#8b949e;text-align:center;margin-bottom:8px;text-transform:uppercase">Kitchen Timeline</div>`;
 
   let _lastShownTribe = null;
+  let _lastShownCourse = null;
+  const _courseLabels = { pre: '🔪 PRE-COOKING', appetizer: '🥗 APPETIZER', main: '🍖 MAIN COURSE', dessert: '🍰 DESSERT' };
   steps.forEach((step, i) => {
     const isVisible = i <= state.idx;
+
+    // Course phase header when course changes (show even for hidden steps)
+    const stepCourse = step.data?.course || (step.stepType === 'course-result' ? step.data?.course : null);
+    if (stepCourse && stepCourse !== _lastShownCourse && _courseLabels[stepCourse]) {
+      _lastShownCourse = stepCourse;
+      _lastShownTribe = null; // reset tribe tracking for new course
+      html += `<div style="text-align:center;padding:12px 0 6px;margin:16px 0 8px;border-top:1px solid rgba(249,115,22,0.15)">
+        <span style="font-family:var(--font-display);font-size:16px;letter-spacing:2px;color:#f97316;animation:flamePulse 2s infinite">${_courseLabels[stepCourse]}</span>
+      </div>`;
+    }
+
     if (!isVisible) {
       html += `<div style="padding:10px;margin-bottom:4px;border:1px solid var(--border);border-radius:6px;opacity:0.08;text-align:center;cursor:pointer"
         onclick="${_hkReveal(i)}">

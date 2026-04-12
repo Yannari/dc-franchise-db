@@ -15424,15 +15424,16 @@ function simulateHellsKitchen(ep) {
               `${p} pulls the chef aside. "I have to tell you something..." The confession spills out. The team groans, but at least they know.`,
               `${p} cracks under the pressure. "I've been eating the prep! I couldn't stop!" Honesty — but the damage is done.`,
             ];
-            _pushCourseEvent({
-              type: 'food-gobbler-confess',
-              course,
+            // Chain after the hidden theft — not shuffled independently
+            const confEvt = {
+              type: 'food-gobbler-confess', _tribe: _currentTribe, course,
               players: [p, ...teammates.filter(m => m !== p).slice(0, 2)],
               text: _rp(confessTexts),
-              badge: 'Confession',
-              badgeText: `${p} confesses to eating the food`,
-              badgeClass: 'badge-warning'
-            });
+              badge: 'Confession', badgeText: `${p} confesses to eating the food`, badgeClass: 'badge-warning',
+              _chainAfter: 'food-gobbler-hide'
+            };
+            allEvents.push(confEvt);
+            eventsByCourse[_currentCourse].push({ kind: 'event', ...confEvt });
           } else {
             addCookingHeat(p, 1.5, 2); // hid it — heat if team figures it out later
           }
@@ -15497,20 +15498,21 @@ function simulateHellsKitchen(ep) {
             });
             eventsThisCourse++;
 
-            // Team rally after fire
+            // Team rally after fire — chained directly (not shuffled separately)
             if (Math.random() < 0.4) {
               raw += 0.05;
               const neutralPairs = teammates.filter(m => m !== p && getBond(m, p) > -2 && getBond(m, p) < 3);
               neutralPairs.forEach(m => { addBond(m, p, 0.2); });
-              _pushCourseEvent({
-                type: 'team-rally',
-                course,
+              // Push to allEvents but mark as _chainAfter so timeline builder keeps it with the fire
+              const rallyEvt = {
+                type: 'team-rally', _tribe: _currentTribe, course,
                 players: [p, ...neutralPairs.slice(0, 3)],
                 text: `After the fire, something shifts. The team comes together. ${neutralPairs.length > 0 ? neutralPairs[0] + ' puts a hand on ' + p + "'s shoulder. \"We've got this.\"" : 'They rally around the wreckage.'}`,
-                badge: 'Team Rally',
-                badgeText: `${t.name} rallies after the fire`,
-                badgeClass: 'badge-success'
-              });
+                badge: 'Team Rally', badgeText: `${t.name} rallies after the fire`, badgeClass: 'badge-success',
+                _chainAfter: 'kitchen-fire'
+              };
+              allEvents.push(rallyEvt);
+              eventsByCourse[_currentCourse].push({ kind: 'event', ...rallyEvt });
               eventsThisCourse++;
             }
           }
@@ -16571,14 +16573,25 @@ function simulateHellsKitchen(ep) {
       if (!ev._tribe || ev._tribe === 'cross') _cross.push(ev);
       else { if (!_byTribe[ev._tribe]) _byTribe[ev._tribe] = []; _byTribe[ev._tribe].push(ev); }
     });
-    // Shuffle within each tribe group
+    // Shuffle within each tribe group, then fix chain ordering
     tribes.forEach(t => {
       const group = _byTribe[t.name] || [];
-      for (let _ti = group.length - 1; _ti > 0; _ti--) {
+      // Separate chain items from shuffleable items
+      const chains = group.filter(ev => ev._chainAfter);
+      const shuffleable = group.filter(ev => !ev._chainAfter);
+      // Shuffle non-chain items
+      for (let _ti = shuffleable.length - 1; _ti > 0; _ti--) {
         const _tj = Math.floor(Math.random() * (_ti + 1));
-        [group[_ti], group[_tj]] = [group[_tj], group[_ti]];
+        [shuffleable[_ti], shuffleable[_tj]] = [shuffleable[_tj], shuffleable[_ti]];
       }
-      _finalTimeline.push(...group);
+      // Re-insert chain items after their parent
+      const ordered = [...shuffleable];
+      chains.forEach(ch => {
+        const parentIdx = ordered.findIndex(ev => ev.type === ch._chainAfter);
+        if (parentIdx >= 0) ordered.splice(parentIdx + 1, 0, ch);
+        else ordered.push(ch); // parent not found, append
+      });
+      _finalTimeline.push(...ordered);
     });
     // Cross-tribe events
     if (_cross.length) _finalTimeline.push(..._cross);

@@ -15017,11 +15017,14 @@ function simulateHellsKitchen(ep) {
 
       let raw = 0;
       if (cookA && cookB) {
-        // Avg stats (5,5,5) → ~0.35. High stats (8,8,8) → ~0.50. Needs events/chef to reach 7+
-        raw = cookA.intuition * 0.025 + cookB.mental * 0.025 + (cookA.social + cookB.social) * 0.005 + Math.random() * 0.15;
+        // Pair: avg of both players' cooking ability + chemistry
+        const avgInt = (cookA.intuition + cookB.intuition) / 2;
+        const avgMen = (cookA.mental + cookB.mental) / 2;
+        const avgSoc = (cookA.social + cookB.social) / 2;
+        raw = avgInt * 0.025 + avgMen * 0.025 + avgSoc * 0.005 + Math.random() * 0.15;
       } else if (cookA) {
-        // Solo cook — reduced base
-        raw = (cookA.intuition * 0.025 + cookA.mental * 0.025 + cookA.social * 0.01 + Math.random() * 0.15) * 0.6;
+        // Solo cook — same formula, no partner penalty (they're doing double duty)
+        raw = cookA.intuition * 0.025 + cookA.mental * 0.025 + cookA.social * 0.005 + Math.random() * 0.15;
       } else {
         raw = Math.random() * 0.15; // No cook, disaster
       }

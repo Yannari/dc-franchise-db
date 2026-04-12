@@ -48767,8 +48767,9 @@ function rpBuildDebug(ep) {
           <th style="text-align:right;padding:4px 6px">Score</th>
           <th style="text-align:left;padding:4px 6px;width:40%">Bar</th>
         </tr>`;
-      const _podiumCount = 3;
-      const _bombCount = 3;
+      const _isMergedEp = ep.isMerge || ep.gsSnapshot?.isMerged || false;
+      const _podiumCount = _isMergedEp ? 2 : 3;
+      const _bombCount = _isMergedEp ? 2 : 3;
       _ranked.forEach(([name, score], idx) => {
         const tribe = (ep.tribesAtStart || []).find(t => t.members?.includes(name))?.name || '?';
         const tc = tribeColor(tribe);

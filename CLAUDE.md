@@ -74,7 +74,7 @@ Bond changes, state changes, or information flow. Text-only events are cosmetic 
 - `gs.advantages[]`, `gs.namedAlliances[]`, `gs.showmances[]`, `gs.loveTriangles[]`, `gs.affairs[]`
 - `gs.sideDeals[]`, `gs.moles[]`, `gs.perceivedBonds`
 - `gs.romanticSparks[]` — slow-burn romance sparks (intensity grows → first move → showmance)
-- Temporary heat: `gs._emissaryHeat`, `gs._dodgebrawlHeat`, `gs._talentShowHeat`, `gs._suckyOutdoorsHeat`, `gs._upTheCreekHeat`, `gs._paintballHeat`, `gs._cookingHeat`, `gs._trustHeat` (all use `{ amount, expiresEp }` pattern)
+- Temporary heat: `gs._emissaryHeat`, `gs._dodgebrawlHeat`, `gs._talentShowHeat`, `gs._suckyOutdoorsHeat`, `gs._upTheCreekHeat`, `gs._paintballHeat`, `gs._cookingHeat`, `gs._trustHeat` (all use `{ amount, expiresEp }` pattern), `gs._basicStrainingHeat` (uses `{ target, amount, expiresEp }` — bullying resentment targets bully's ally)
 
 ## Scope Gotchas
 - `ep` NOT available in: `generateCampEventsForGroup`, `simulateIndividualChallenge`, `simulateTribeChallenge`, `computeHeat`
@@ -108,6 +108,7 @@ Bond changes, state changes, or information flow. Text-only events are cosmetic 
 | `paintball-hunt` | Paintball Hunt | Hunter/deer split, round-based elimination, paintball war, bear injury | Forest + splatter effects |
 | `hells-kitchen` | Hell's Kitchen | 3-course cooking, head chef, kitchen chaos, sabotage, food fights | Cooking show + score reveals |
 | `trust-challenge` | Who Can You Trust? | 3-round pair trust tests, Chris picks rivals, sabotage, fugu poisoning, blind challenges | Trust meters + per-round themes |
+| `basic-straining` | Basic Straining | 6-phase boot camp, Chef as drill sergeant, defiance arc, bell-quit mechanic, boathouse scene | Military dog-tag overdrive |
 
 ### Challenge Twists (Post-Merge)
 

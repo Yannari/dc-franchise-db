@@ -143,6 +143,23 @@
       0%, 100% { box-shadow: 0 0 0 rgba(255,0,0,0); }
       50% { box-shadow: 0 0 15px rgba(255,0,0,0.3); }
     }
+    @keyframes flamePulse {
+      0%, 100% { text-shadow: 0 0 10px rgba(255,100,0,0.3); }
+      50% { text-shadow: 0 0 20px rgba(255,100,0,0.6), 0 0 40px rgba(255,50,0,0.2); }
+    }
+    @keyframes steamRise {
+      0% { opacity: 0.6; transform: translateY(0) scaleX(1); }
+      100% { opacity: 0; transform: translateY(-30px) scaleX(1.5); }
+    }
+    @keyframes scoreReveal {
+      0% { transform: scale(0.5); opacity: 0; }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    @keyframes plateSlide {
+      0% { transform: translateX(-30px); opacity: 0; }
+      100% { transform: translateX(0); opacity: 1; }
+    }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; font-size: 14px; }
@@ -48492,7 +48509,7 @@ function rpBuildFirstImpressions(ep, twistObj) {
 // ── Screen 3: Pre-challenge twists (tribe swap, three gifts, journey, exile-island, etc.) ──
 function rpBuildPreTwist(ep) {
   const _rawTwistData = (ep.twistScenes?.length ? ep.twistScenes : generateTwistScenes(ep))
-    .filter(t => t.type !== 'exile-island' && t.type !== 'jury-elimination' && t.type !== 'kidnapping' && t.type !== 'first-impressions' && t.type !== 'tied-destinies' && t.type !== 'aftermath' && t.type !== 'fan-vote-return' && t.type !== 'schoolyard-pick' && t.type !== 'triple-dog-dare' && t.type !== 'say-uncle' && t.type !== 'phobia-factor' && t.type !== 'cliff-dive' && t.type !== 'awake-a-thon' && t.type !== 'emissary-vote' && t.type !== 'dodgebrawl' && t.type !== 'talent-show' && t.type !== 'sucky-outdoors' && t.type !== 'up-the-creek' && t.type !== 'paintball-hunt'); // shown in dedicated screens
+    .filter(t => t.type !== 'exile-island' && t.type !== 'jury-elimination' && t.type !== 'kidnapping' && t.type !== 'first-impressions' && t.type !== 'tied-destinies' && t.type !== 'aftermath' && t.type !== 'fan-vote-return' && t.type !== 'schoolyard-pick' && t.type !== 'triple-dog-dare' && t.type !== 'say-uncle' && t.type !== 'phobia-factor' && t.type !== 'cliff-dive' && t.type !== 'awake-a-thon' && t.type !== 'emissary-vote' && t.type !== 'dodgebrawl' && t.type !== 'talent-show' && t.type !== 'sucky-outdoors' && t.type !== 'up-the-creek' && t.type !== 'paintball-hunt' && t.type !== 'hells-kitchen'); // shown in dedicated screens
   // Deduplicate: only show one scene per twist type (prevents double display if twist is in ep.twists twice)
   const _seenTypes = new Set();
   const twistData = _rawTwistData.filter(t => { if (_seenTypes.has(t.type)) return false; _seenTypes.add(t.type); return true; });
@@ -60400,6 +60417,233 @@ function rpBuildPaintballHunt(ep) {
   return html;
 }
 
+function rpBuildHellsKitchen(ep) {
+  const hk = ep.hellsKitchen;
+  if (!hk) return null;
+
+  const stateKey = 'hk_reveal_' + ep.num;
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+  const state = _tvState[stateKey];
+
+  const _hkReveal = (targetIdx) => `if(!_tvState['${stateKey}'])_tvState['${stateKey}']={idx:-1};_tvState['${stateKey}'].idx=${targetIdx};const ep=gs.episodeHistory.find(e=>e.num===${ep.num});if(ep){const m=document.querySelector('.rp-main');const st=m?m.scrollTop:0;buildVPScreens(ep);renderVPScreen();if(m)m.scrollTop=st;}`;
+
+  // Build steps array from pre-shuffled timeline
+  const steps = [];
+  (hk.timeline || []).forEach(item => {
+    steps.push({ stepType: item.type, data: item });
+  });
+  // Final scoreboard step
+  steps.push({ stepType: 'final', data: {} });
+
+  const totalSteps = steps.length;
+  const allRevealed = state.idx >= totalSteps - 1;
+
+  // Tribe helpers
+  const tribeNames = Object.keys(hk.chefs);
+
+  // Chef style flavor text
+  const styleDesc = (style) => {
+    if (style === 'tyrant') return 'takes charge with an iron fist';
+    if (style === 'motivator') return 'leads by example';
+    if (style === 'delegator') return 'assigns the perfect roles';
+    if (style === 'hype') return 'brings the hype';
+    if (style === 'chaos') return 'thrives in chaos';
+    if (style === 'improviser') return 'improvises everything';
+    return 'runs a solid kitchen';
+  };
+
+  // Event border color
+  const eventBorderColor = (evt) => {
+    const t = evt.type || '';
+    if (['food-fight-flirt', 'showmance-fire-reaction', 'cooking-spark'].includes(t)) return '#f472b6'; // pink
+    if (['sabotage', 'spice-bomb', 'cross-tribe-sabotage', 'food-gobbler-hide'].includes(t)) return '#a855f7'; // purple
+    if (['food-fight', 'food-fight-drama', 'taste-war', 'fridge-lock', 'chef-meltdown', 'chef-ego-fail'].includes(t)) return '#f97316'; // orange
+    if (['ingredient-drop-save', 'team-rally', 'teamwork-montage', 'motivational-chef', 'chef-delegation', 'chef-ego-success', 'knife-slip-hero', 'improv-save', 'clean-station-save', 'oven-malfunction-share'].includes(t)) return '#3fb950'; // green
+    if (['kitchen-fire', 'flambe-explosion', 'spill-disaster', 'raw-food-scare', 'wrong-recipe', 'knife-slip-out', 'allergic-reaction', 'ingredient-drop', 'oven-malfunction', 'food-gobbler-confess'].includes(t)) return '#f85149'; // red
+    // Default by badge class
+    if (evt.badgeClass === 'badge-success') return '#3fb950';
+    if (evt.badgeClass === 'badge-danger') return '#f85149';
+    if (evt.badgeClass === 'badge-warning') return '#f97316';
+    if (evt.badgeClass === 'badge-pink') return '#f472b6';
+    if (evt.badgeClass === 'badge-info') return '#58a6ff';
+    return '#8b949e';
+  };
+
+  // Score color
+  const scoreColor = (rating) => {
+    if (rating >= 7) return '#3fb950';
+    if (rating >= 4) return '#f0a500';
+    return '#f85149';
+  };
+
+  // ── PAGE HEADER ──
+  let html = `<div class="rp-page" style="background:linear-gradient(180deg,#1a0a00 0%,#0d1117 40%,#0d1117 100%);padding-bottom:60px">
+    <div class="rp-eyebrow" style="color:#f97316">Episode ${ep.num}</div>
+    <div style="font-family:var(--font-display);font-size:28px;letter-spacing:3px;text-align:center;color:#f97316;animation:flamePulse 2s ease-in-out infinite;margin-bottom:4px">
+      HELL'S KITCHEN
+    </div>
+    <div style="text-align:center;font-size:12px;color:#8b949e;margin-bottom:16px">
+      ${tribeNames.map(tn => `<span style="color:${tribeColor(tn)}">${tn}</span>`).join(' vs ')}
+    </div>`;
+
+  // ── CHEF SELECTION CARDS ──
+  html += `<div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap">`;
+  tribeNames.forEach(tn => {
+    const tc = tribeColor(tn);
+    const chef = hk.chefs[tn];
+    html += `<div style="flex:1;min-width:160px;padding:12px;border-radius:8px;border:1px solid ${tc}44;background:${tc}0a;text-align:center">
+      <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:${tc};margin-bottom:8px;text-transform:uppercase">${tn}</div>
+      ${rpPortrait(chef.name)}
+      <div style="font-size:18px;margin:4px 0">👨‍🍳</div>
+      <div style="font-size:11px;font-weight:700;color:#e6edf3;margin-bottom:2px">Head Chef</div>
+      <div style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:9px;font-weight:700;letter-spacing:0.5px;background:${tc}22;color:${tc};text-transform:uppercase;margin-bottom:4px">${chef.style}</div>
+      <div style="font-size:10px;color:#8b949e;font-style:italic">${styleDesc(chef.style)}</div>
+      <div style="font-size:9px;color:#8b949e;margin-top:4px">Leadership: ${chef.score.toFixed(2)}</div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  // ── COURSE ASSIGNMENTS ──
+  html += `<div style="margin-bottom:16px">
+    <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:#8b949e;text-align:center;margin-bottom:8px;text-transform:uppercase">Course Assignments</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">`;
+  tribeNames.forEach(tn => {
+    const tc = tribeColor(tn);
+    const a = hk.assignments[tn];
+    html += `<div style="flex:1;min-width:140px;padding:8px;border-radius:6px;border:1px solid ${tc}22;background:${tc}06">
+      <div style="font-size:9px;font-weight:700;color:${tc};margin-bottom:6px;text-transform:uppercase">${tn}</div>`;
+    ['appetizer', 'main', 'dessert'].forEach(c => {
+      const pair = a[c] || [];
+      const dish = hk.dishes[tn]?.[c] || '?';
+      html += `<div style="margin-bottom:4px">
+        <span style="font-size:9px;font-weight:600;color:#e6edf3;text-transform:uppercase">${c === 'main' ? 'Main Course' : c.charAt(0).toUpperCase() + c.slice(1)}</span>
+        <div style="font-size:10px;color:#c9d1d9">${pair.join(' & ')}</div>
+        <div style="font-size:9px;color:#f97316;font-style:italic">${dish}</div>
+      </div>`;
+    });
+    if (a.floater) {
+      html += `<div style="font-size:9px;color:#8b949e;margin-top:2px">Floater: <span style="color:#c9d1d9">${a.floater}</span></div>`;
+    }
+    html += `</div>`;
+  });
+  html += `</div></div>`;
+
+  // ── TIMELINE (click-to-reveal) ──
+  html += `<div style="margin-bottom:16px">
+    <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:#8b949e;text-align:center;margin-bottom:8px;text-transform:uppercase">Kitchen Timeline</div>`;
+
+  steps.forEach((step, i) => {
+    if (i > state.idx) return; // not yet revealed
+
+    if (step.stepType === 'event') {
+      // Event card
+      const evt = step.data;
+      const border = eventBorderColor(evt);
+      const evtPlayers = evt.players || [];
+      html += `<div style="padding:10px;border-radius:8px;border-left:3px solid ${border};background:rgba(255,255,255,0.03);margin-bottom:8px">`;
+      if (evtPlayers.length) {
+        html += `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px">`;
+        evtPlayers.forEach(p => { html += rpPortrait(p, 'pb-sm'); });
+        html += `</div>`;
+      }
+      if (evt.badge || evt.badgeText) {
+        html += `<div style="display:inline-block;padding:1px 6px;border-radius:3px;font-size:9px;font-weight:700;background:${border}22;color:${border};margin-bottom:4px">${evt.badge || evt.badgeText}</div>`;
+      }
+      html += `<div style="font-size:11px;color:#c9d1d9;line-height:1.5">${evt.text || ''}</div>`;
+      html += `</div>`;
+
+    } else if (step.stepType === 'course-result') {
+      // Course result card
+      const cr = step.data;
+      const tc = cr.tribeColor || tribeColor(cr.tribe);
+      const rating = cr.rating || 0;
+      const sc = scoreColor(rating);
+      const courseName = (cr.course || '').toUpperCase();
+      html += `<div style="padding:12px;border-radius:8px;border:1px solid ${tc}44;background:${tc}08;margin-bottom:10px">`;
+      // Course header
+      html += `<div style="font-size:12px;font-weight:700;letter-spacing:2px;color:#f97316;text-transform:uppercase;margin-bottom:4px">${courseName}</div>`;
+      html += `<div style="font-size:10px;font-weight:700;color:${tc};margin-bottom:6px">${cr.tribe}</div>`;
+      // Cook portraits
+      if (cr.cooks?.length) {
+        html += `<div style="display:flex;gap:6px;margin-bottom:8px">`;
+        cr.cooks.forEach(c => { html += rpPortrait(c, 'pb-sm'); });
+        html += `</div>`;
+      }
+      // Dish name + desc with plateSlide animation
+      html += `<div style="animation:plateSlide 0.5s ease-out both">
+        <div style="font-size:14px;font-weight:700;color:#e6edf3;font-style:italic">${cr.dish || '?'}</div>
+        <div style="font-size:10px;color:#8b949e;margin-bottom:8px">${cr.dishDesc || ''}</div>
+      </div>`;
+      // Steam effect
+      html += `<div style="text-align:center;font-size:16px;animation:steamRise 2s ease-out infinite;pointer-events:none">♨️</div>`;
+      // Score with scoreReveal animation
+      html += `<div style="text-align:center;margin:6px 0">
+        <span style="font-size:32px;font-weight:700;color:${sc};animation:scoreReveal 0.5s ease-out both">${rating}</span>
+        <span style="font-size:12px;color:#8b949e">/10</span>
+      </div>`;
+      // Host reaction
+      if (cr.hostReaction) {
+        html += `<div style="font-size:11px;color:#8b949e;font-style:italic;line-height:1.5">${cr.hostReaction}</div>`;
+      }
+      html += `</div>`;
+
+    } else if (step.stepType === 'final') {
+      // ── FINAL SCOREBOARD ──
+      html += `<div style="padding:14px;border-radius:8px;border:1px solid #f9731644;background:rgba(249,115,22,0.05);margin-bottom:12px">
+        <div style="font-size:12px;font-weight:700;letter-spacing:2px;color:#f97316;text-align:center;margin-bottom:10px;text-transform:uppercase">Final Scoreboard</div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center">`;
+      tribeNames.forEach(tn => {
+        const tc = tribeColor(tn);
+        const cs = hk.courseScores[tn] || {};
+        let total = 0;
+        html += `<div style="flex:1;min-width:130px;text-align:center;padding:10px;border-radius:6px;border:1px solid ${tc}33;background:${tc}08">
+          <div style="font-size:11px;font-weight:700;color:${tc};margin-bottom:8px;text-transform:uppercase">${tn}</div>`;
+        ['appetizer', 'main', 'dessert'].forEach(c => {
+          const r = cs[c]?.rating || 0;
+          total += r;
+          html += `<div style="margin-bottom:4px">
+            <span style="font-size:9px;color:#8b949e;text-transform:uppercase">${c}</span>
+            <div style="font-size:18px;font-weight:700;color:${scoreColor(r)}">${r}</div>
+          </div>`;
+        });
+        html += `<div style="border-top:1px solid ${tc}33;margin-top:6px;padding-top:6px">
+            <div style="font-size:10px;color:#8b949e;text-transform:uppercase">Total</div>
+            <div style="font-size:28px;font-weight:700;color:${tc}">${total}</div>
+          </div>`;
+        if (tn === hk.winner) {
+          html += `<div style="margin-top:6px;padding:3px 8px;border-radius:4px;background:#3fb95022;color:#3fb950;font-size:10px;font-weight:700;display:inline-block">🏆 WINNER</div>`;
+        } else if (tn === hk.loser) {
+          html += `<div style="margin-top:6px;padding:3px 8px;border-radius:4px;background:#f8514922;color:#f85149;font-size:10px;font-weight:700;display:inline-block">TRIBAL COUNCIL</div>`;
+        }
+        html += `</div>`;
+      });
+      html += `</div></div>`;
+
+      // ── MVP CARD ──
+      if (hk.mvp) {
+        html += `<div style="padding:12px;border-radius:8px;border:2px solid #f0a500;background:rgba(240,165,0,0.06);text-align:center;margin-bottom:12px">
+          <div style="font-size:18px;margin-bottom:4px">👨‍🍳</div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:#f0a500;text-transform:uppercase;margin-bottom:6px">Kitchen MVP</div>
+          ${rpPortrait(hk.mvp)}
+        </div>`;
+      }
+    }
+  });
+
+  html += `</div>`; // close timeline
+
+  // ── REVEAL BUTTONS ──
+  if (!allRevealed) {
+    html += `<div style="position:sticky;bottom:12px;display:flex;gap:8px;justify-content:center;margin-top:12px">
+      <button class="rp-btn" onclick="${_hkReveal(state.idx + 1)}">NEXT</button>
+      <button class="rp-btn" onclick="${_hkReveal(totalSteps - 1)}" style="opacity:0.7">REVEAL ALL</button>
+    </div>`;
+  }
+
+  html += `</div>`; // close rp-page
+  return html;
+}
+
 function rpBuildSuckyOutdoors(ep) {
   const so = ep.suckyOutdoors;
   if (!so?.phases) return null;
@@ -62383,6 +62627,8 @@ function buildVPScreens(epRecord) {
     vpScreens.push({ id:'up-the-creek', label:'Up the Creek', html: rpBuildUpTheCreek(ep) });
   } else if (ep.isPaintballHunt && ep.paintballHunt) {
     vpScreens.push({ id:'paintball-hunt', label:'Paintball Hunt', html: rpBuildPaintballHunt(ep) });
+  } else if (ep.isHellsKitchen && ep.hellsKitchen) {
+    vpScreens.push({ id:'hells-kitchen', label:"Hell's Kitchen", html: rpBuildHellsKitchen(ep) });
   } else if (ep.isDodgebrawl && ep.dodgebrawl) {
     vpScreens.push({ id:'dodgebrawl', label:'Dodgebrawl', html: rpBuildDodgebrawl(ep) });
   } else if (ep.isPhobiaFactor && ep.phobiaFactor) {

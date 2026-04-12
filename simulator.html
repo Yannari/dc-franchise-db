@@ -63034,7 +63034,12 @@ function rpBuildTrustChallenge(ep) {
   steps.push({ stepType: 'final', data: {} });
 
   const totalSteps = steps.length;
+  const _nonHeaderTypes = new Set(['round-header', 'sub-round-header']);
+  const _revealableCount = steps.filter(s => !_nonHeaderTypes.has(s.stepType)).length;
   const allRevealed = state.idx >= totalSteps - 1;
+  // Find next revealable step (skip headers)
+  let _nextIdx = state.idx + 1;
+  while (_nextIdx < totalSteps && _nonHeaderTypes.has(steps[_nextIdx]?.stepType)) _nextIdx++;
 
   // ── Helper: event border color ──
   const evtBorderColor = (evt) => {
@@ -63137,23 +63142,19 @@ function rpBuildTrustChallenge(ep) {
   steps.forEach((step, i) => {
     const isVisible = i <= state.idx;
 
-    // ── ROUND HEADER ──
+    // ── ROUND HEADER — always visible, doesn't count as a reveal step ──
     if (step.stepType === 'round-header') {
-      if (isVisible || i <= state.idx + 1) {
-        html += `<div style="text-align:center;padding:14px 0 6px;margin:16px 0 8px;border-top:2px solid ${step.color}33">
-          <div style="font-family:var(--font-display);font-size:16px;letter-spacing:2px;color:${step.color};text-shadow:0 0 15px ${step.color}33">${step.label}</div>
-        </div>`;
-      }
-      return; // Round headers are always visible (no reveal needed)
+      html += `<div style="text-align:center;padding:14px 0 6px;margin:16px 0 8px;border-top:2px solid ${step.color}33">
+        <div style="font-family:var(--font-display);font-size:16px;letter-spacing:2px;color:${step.color};text-shadow:0 0 15px ${step.color}33">${step.label}</div>
+      </div>`;
+      return;
     }
 
-    // ── SUB-ROUND HEADER ──
+    // ── SUB-ROUND HEADER — always visible ──
     if (step.stepType === 'sub-round-header') {
-      if (isVisible || i <= state.idx + 1) {
-        html += `<div style="text-align:center;padding:8px 0 4px;margin:10px 0 6px;border-top:1px dashed ${step.color}22">
-          <span style="font-size:12px;font-weight:700;letter-spacing:1.5px;color:${step.color}">${step.label}</span>
-        </div>`;
-      }
+      html += `<div style="text-align:center;padding:8px 0 4px;margin:10px 0 6px;border-top:1px dashed ${step.color}22">
+        <span style="font-size:12px;font-weight:700;letter-spacing:1.5px;color:${step.color}">${step.label}</span>
+      </div>`;
       return;
     }
 
@@ -63371,7 +63372,7 @@ function rpBuildTrustChallenge(ep) {
   // ── REVEAL BUTTONS ──
   if (!allRevealed) {
     html += `<div style="position:sticky;bottom:0;background:linear-gradient(transparent,#0d1117 30%);padding:16px 0 8px;display:flex;gap:8px;justify-content:center">
-      <button class="rp-btn" onclick="${_tcReveal(state.idx + 1)}">NEXT (${state.idx + 2}/${totalSteps})</button>
+      <button class="rp-btn" onclick="${_tcReveal(_nextIdx)}">NEXT</button>
       <button class="rp-btn" style="opacity:0.5" onclick="${_tcReveal(totalSteps - 1)}">REVEAL ALL</button>
     </div>`;
   }

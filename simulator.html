@@ -14797,8 +14797,7 @@ function simulateHellsKitchen(ep) {
       // Single out the teammate with lowest bond — the "Leshawna"
       const _tyrantTarget = teammates.length ? teammates.reduce((worst, m) =>
         getBond(chef.name, m) < getBond(chef.name, worst) ? m : worst, teammates[0]) : null;
-      // Tyrant always singles out their weakest-bonded teammate (they're a tyrant — they pick on someone)
-      const _hasSingledOut = _tyrantTarget && getBond(chef.name, _tyrantTarget) <= 3;
+      const _hasSingledOut = _tyrantTarget && getBond(chef.name, _tyrantTarget) <= 1;
 
       if (_hasSingledOut) {
         addBond(chef.name, _tyrantTarget, -0.2);
@@ -15032,6 +15031,13 @@ function simulateHellsKitchen(ep) {
               `${_ts.target} turns to the team: "Is anyone else tired of this?" Silence. Then a few nods. ${chef.name} notices.`,
               `${_ts.target} throws ${tgtPr.posAdj} apron on the counter. "I'd rather lose than take one more second of this." ${chef.name}'s authority cracks.`,
             ];
+            // The public confrontation crashes bonds — chef retaliates, team picks sides
+            addBond(chef.name, _ts.target, -1.5); // chef vs target: war
+            teammates.forEach(m => {
+              if (m === _ts.target) return;
+              // Teammates who don't strongly like the chef side with the underdog
+              if (getBond(m, chef.name) < 4) addBond(m, chef.name, -0.5);
+            });
             pushEvent({
               type: 'tyrant-snapback',
               course,
@@ -15041,8 +15047,8 @@ function simulateHellsKitchen(ep) {
               badgeText: `${_ts.target} stands up to ${chef.name}`,
               badgeClass: 'badge-warning'
             });
-            // Conspiracy forms: teammates who don't love the chef join (bond ≤ 3)
-            _ts.rebels = teammates.filter(m => getBond(m, chef.name) <= 3);
+            // Conspiracy: now that bonds crashed, check who's willing to rebel
+            _ts.rebels = teammates.filter(m => getBond(m, chef.name) <= 1);
             if (!_ts.rebels.includes(_ts.target)) _ts.rebels.unshift(_ts.target);
             if (_ts.rebels.length >= 2) {
               _ts.tensionLevel = 3;

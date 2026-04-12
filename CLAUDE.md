@@ -74,7 +74,7 @@ Bond changes, state changes, or information flow. Text-only events are cosmetic 
 - `gs.advantages[]`, `gs.namedAlliances[]`, `gs.showmances[]`, `gs.loveTriangles[]`, `gs.affairs[]`
 - `gs.sideDeals[]`, `gs.moles[]`, `gs.perceivedBonds`
 - `gs.romanticSparks[]` — slow-burn romance sparks (intensity grows → first move → showmance)
-- Temporary heat: `gs._emissaryHeat`, `gs._dodgebrawlHeat`, `gs._talentShowHeat`, `gs._suckyOutdoorsHeat`, `gs._upTheCreekHeat`, `gs._paintballHeat` (all use `{ amount, expiresEp }` pattern)
+- Temporary heat: `gs._emissaryHeat`, `gs._dodgebrawlHeat`, `gs._talentShowHeat`, `gs._suckyOutdoorsHeat`, `gs._upTheCreekHeat`, `gs._paintballHeat`, `gs._cookingHeat` (all use `{ amount, expiresEp }` pattern)
 
 ## Scope Gotchas
 - `ep` NOT available in: `generateCampEventsForGroup`, `simulateIndividualChallenge`, `simulateTribeChallenge`, `computeHeat`
@@ -106,6 +106,7 @@ Bond changes, state changes, or information flow. Text-only events are cosmetic 
 | `sucky-outdoors` | Sucky Outdoors | 5-phase overnight survival, lost player auto-loss | Ambiance progression |
 | `up-the-creek` | Up the Creek | 4-phase canoe race, partner selection, Boney Island, fire building | Water/jungle/fire/sunset |
 | `paintball-hunt` | Paintball Hunt | Hunter/deer split, round-based elimination, paintball war, bear injury | Forest + splatter effects |
+| `hells-kitchen` | Hell's Kitchen | 3-course cooking, head chef, kitchen chaos, sabotage, food fights | Cooking show + score reveals |
 
 ### Challenge Twists (Post-Merge)
 

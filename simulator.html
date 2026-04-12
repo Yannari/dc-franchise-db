@@ -15184,9 +15184,19 @@ function simulateHellsKitchen(ep) {
       // Apply accumulated modifiers from events
       raw += courseModifiers[t.name][course];
 
-      // ── Course Events (5-8 per tribe per course) ──
-      const numEvents = 5 + Math.floor(Math.random() * 4);
+      // ── Course Events (2-4 per tribe per course, ~6-12 total across all tribes) ──
+      const numEvents = 2 + Math.floor(Math.random() * 3);
       let eventsThisCourse = 0;
+      const _firedTypesThisCourse = new Set();
+      // Override pushEvent for this scope to track duplicates + cap
+      const _pushCourseEvent = (evt) => {
+        if (eventsThisCourse >= numEvents) return false;
+        if (_firedTypesThisCourse.has(evt.type)) return false;
+        _firedTypesThisCourse.add(evt.type);
+        eventsThisCourse++;
+        pushEvent(evt);
+        return true;
+      };
 
       // Kitchen Disasters
       pair.forEach(p => {
@@ -15208,7 +15218,7 @@ function simulateHellsKitchen(ep) {
               `The flambé goes wrong — very, very wrong. ${p} stumbles backward, face blackened. The kitchen smells like burned hair.`,
               `${p} lights the rum sauce and it EXPLODES. ${pr.Sub}'s fine — physically. Emotionally? That's another story.`
             ];
-            pushEvent({
+            _pushCourseEvent({
               type: 'flambe-explosion',
               course,
               players: [p],
@@ -15227,7 +15237,7 @@ function simulateHellsKitchen(ep) {
                 if (partner && t.members.includes(partner)) {
                   addBond(partner, p, 0.5);
                   const partPr = pronouns(partner);
-                  pushEvent({
+                  _pushCourseEvent({
                     type: 'showmance-fire-reaction',
                     course,
                     players: [partner, p],
@@ -15258,7 +15268,7 @@ function simulateHellsKitchen(ep) {
               `"I... I ate it. I ate some of the food." ${p} hangs ${pr.posAdj} head. The team sighs. At least ${pr.sub} owned up to it.`,
               `${p} walks up to the chef with crumbs on ${pr.posAdj} face. "I have a confession." The team groans.`
             ];
-            pushEvent({
+            _pushCourseEvent({
               type: 'food-gobbler-confess',
               course,
               players: [p, ...teammates.filter(m => m !== p).slice(0, 2)],
@@ -15274,7 +15284,7 @@ function simulateHellsKitchen(ep) {
               `${p} ate a huge portion of the dish and hid the evidence. If the team scores low, they'll figure it out.`,
               `Someone raided the ${dishes[t.name][course]}. ${p} points at the other team. "Must have been them." It was not them.`
             ];
-            pushEvent({
+            _pushCourseEvent({
               type: 'food-gobbler-hide',
               course,
               players: [p],
@@ -15295,7 +15305,7 @@ function simulateHellsKitchen(ep) {
           if (improvRoll > 0.4) {
             raw += 0.05; // Actually improved!
             personalScores[p] = (personalScores[p] || 0) + 0.5;
-            pushEvent({
+            _pushCourseEvent({
               type: 'ingredient-drop-save',
               course,
               players: [p],
@@ -15307,7 +15317,7 @@ function simulateHellsKitchen(ep) {
           } else {
             raw -= 0.1;
             personalScores[p] = (personalScores[p] || 0) - 0.5;
-            pushEvent({
+            _pushCourseEvent({
               type: 'ingredient-drop',
               course,
               players: [p],
@@ -15334,7 +15344,7 @@ function simulateHellsKitchen(ep) {
               `${p} leaves the burner on max and walks away. By the time anyone notices, half the ${course} is on fire.`,
               `A grease fire erupts at ${p}'s station. The team rallies to put it out, but the damage is done.`
             ];
-            pushEvent({
+            _pushCourseEvent({
               type: 'kitchen-fire',
               course,
               players: [p, ...teammates.filter(m => m !== p).slice(0, 2)],
@@ -15350,7 +15360,7 @@ function simulateHellsKitchen(ep) {
               raw += 0.05;
               const neutralPairs = teammates.filter(m => m !== p && getBond(m, p) > -2 && getBond(m, p) < 3);
               neutralPairs.forEach(m => { addBond(m, p, 0.2); });
-              pushEvent({
+              _pushCourseEvent({
                 type: 'team-rally',
                 course,
                 players: [p, ...neutralPairs.slice(0, 3)],
@@ -15373,7 +15383,7 @@ function simulateHellsKitchen(ep) {
             personalScores[p] = (personalScores[p] || 0) + 0.5;
             if (!gs.lingeringInjuries) gs.lingeringInjuries = {};
             gs.lingeringInjuries[p] = { ep: epNum, duration: 1, type: 'cut-hand', penalty: 0.3 };
-            pushEvent({
+            _pushCourseEvent({
               type: 'knife-slip-hero',
               course,
               players: [p],
@@ -15385,7 +15395,7 @@ function simulateHellsKitchen(ep) {
           } else {
             personalScores[p] = (personalScores[p] || 0) - 0.5;
             satOutPlayers.add(p);
-            pushEvent({
+            _pushCourseEvent({
               type: 'knife-slip-out',
               course,
               players: [p],
@@ -15403,7 +15413,7 @@ function simulateHellsKitchen(ep) {
           if (eventsThisCourse >= numEvents) return;
           satOutPlayers.add(p);
           teammates.forEach(m => { if (m !== p) addBond(m, p, 0.2); });
-          pushEvent({
+          _pushCourseEvent({
             type: 'allergic-reaction',
             course,
             players: [p, ...teammates.filter(m => m !== p).slice(0, 2)],
@@ -15425,7 +15435,7 @@ function simulateHellsKitchen(ep) {
           if (['villain', 'schemer'].includes(arch)) reactionText = `${_rp(teammates.filter(m=>m!==p)) || 'The chef'} immediately blames ${p}. "This is YOUR fault!"`;
           else if (['hero', 'loyal-soldier'].includes(arch)) reactionText = `${_rp(teammates.filter(m=>m!==p)) || 'The chef'} puts a hand on ${p}'s shoulder. "It's okay. We'll figure it out."`;
           else reactionText = `${_rp(teammates.filter(m=>m!==p)) || 'The chef'} stares at the mess in disbelief.`;
-          pushEvent({
+          _pushCourseEvent({
             type: 'spill-disaster',
             course,
             players: [p],
@@ -15442,7 +15452,7 @@ function simulateHellsKitchen(ep) {
           if (eventsThisCourse >= numEvents) return;
           raw -= 0.15;
           personalScores[p] = (personalScores[p] || 0) - 2.0;
-          pushEvent({
+          _pushCourseEvent({
             type: 'wrong-recipe',
             course,
             players: [p],
@@ -15462,7 +15472,7 @@ function simulateHellsKitchen(ep) {
           if (chefs[t.name].style === 'delegator') {
             addCookingHeat(chefs[t.name].name, 0.5, 1); // Chef blame
           }
-          pushEvent({
+          _pushCourseEvent({
             type: 'raw-food-scare',
             course,
             players: [p],
@@ -15482,7 +15492,7 @@ function simulateHellsKitchen(ep) {
         const sharing = otherTribe ? Math.random() < 0.5 : false;
         if (sharing && otherTribe) {
           addBond(chef.name, chefs[otherTribe.name].name, 0.2);
-          pushEvent({
+          _pushCourseEvent({
             type: 'oven-malfunction-share',
             course,
             players: [chefs[t.name].name, chefs[otherTribe.name].name],
@@ -15492,7 +15502,7 @@ function simulateHellsKitchen(ep) {
             badgeClass: 'badge-warning'
           });
         } else {
-          pushEvent({
+          _pushCourseEvent({
             type: 'oven-malfunction',
             course,
             players: t.members.slice(0, 3),
@@ -15536,7 +15546,7 @@ function simulateHellsKitchen(ep) {
               `The "food fight" between ${pair[0]} and ${pair[1]} involves a lot of close proximity, a lot of eye contact, and custard in ${pair[1]}'s hair. ${pr0.Sub} wipes it off slowly. The kitchen watches.`,
               `${pair[0]} smears sauce on ${pair[1]}'s face. ${pair[1]} does it right back. They're grinning. This isn't a fight — this is foreplay.`
             ];
-            pushEvent({
+            _pushCourseEvent({
               type: 'food-fight-flirt',
               course,
               players: [pair[0], pair[1]],
@@ -15551,7 +15561,7 @@ function simulateHellsKitchen(ep) {
               `A full-on food fight erupts between ${pair[0]} and ${pair[1]}. Sauce on the ceiling, flour everywhere. The ${course} is a casualty.`,
               `${pair[0]} throws a spatula at ${pair[1]}. ${pair[1]} throws it back. The chef screams. Nobody's cooking.`
             ];
-            pushEvent({
+            _pushCourseEvent({
               type: 'food-fight',
               course,
               players: [pair[0], pair[1]],
@@ -15573,7 +15583,7 @@ function simulateHellsKitchen(ep) {
           const loserArch = players.find(p => p.name === twLoser)?.archetype || '';
           if (['villain', 'schemer'].includes(loserArch)) addBond(twLoser, twWinner, -0.3);
           else addBond(twLoser, twWinner, 0.1);
-          pushEvent({
+          _pushCourseEvent({
             type: 'taste-war',
             course,
             players: [twWinner, twLoser],
@@ -15607,7 +15617,7 @@ function simulateHellsKitchen(ep) {
 
           if (showmanceMoment) {
             const pr0 = pronouns(pair[0]);
-            pushEvent({
+            _pushCourseEvent({
               type: 'cooking-spark',
               course,
               players: [pair[0], pair[1]],
@@ -15617,7 +15627,7 @@ function simulateHellsKitchen(ep) {
               badgeClass: 'badge-pink'
             });
           } else {
-            pushEvent({
+            _pushCourseEvent({
               type: 'perfect-pairing',
               course,
               players: [pair[0], pair[1]],
@@ -15642,7 +15652,7 @@ function simulateHellsKitchen(ep) {
             personalScores[victim] = (personalScores[victim] || 0) - 1.0;
             addBond(victim, thief, -1.5);
             const pr = pronouns(thief);
-            pushEvent({
+            _pushCourseEvent({
               type: 'dish-stealing',
               course,
               players: [thief, victim],
@@ -15665,7 +15675,7 @@ function simulateHellsKitchen(ep) {
           personalScores[chopWin] = (personalScores[chopWin] || 0) + 0.5;
           const loserTemp = pStats(chopLose).temperament;
           if (loserTemp < 4) addBond(chopLose, chopWin, -0.15);
-          pushEvent({
+          _pushCourseEvent({
             type: 'chopping-competition',
             course,
             players: [chopWin, chopLose],
@@ -15682,7 +15692,7 @@ function simulateHellsKitchen(ep) {
           const avgSocial = (pStats(pair[0]).social + pStats(pair[1]).social) * 0.05;
           raw += 0.03 * avgSocial;
           addBond(pair[0], pair[1], 0.3);
-          pushEvent({
+          _pushCourseEvent({
             type: 'kitchen-dance',
             course,
             players: [pair[0], pair[1]],
@@ -15703,7 +15713,7 @@ function simulateHellsKitchen(ep) {
             raw += 0.05;
             const taster = pair.find(p => p !== comforter) || _rp(teammates);
             if (taster) addBond(taster, comforter, 0.3);
-            pushEvent({
+            _pushCourseEvent({
               type: 'comfort-cooking-success',
               course,
               players: [comforter, taster].filter(Boolean),
@@ -15714,7 +15724,7 @@ function simulateHellsKitchen(ep) {
             });
           } else {
             raw -= 0.05;
-            pushEvent({
+            _pushCourseEvent({
               type: 'comfort-cooking-fail',
               course,
               players: [comforter],
@@ -15735,7 +15745,7 @@ function simulateHellsKitchen(ep) {
             raw += 0.05;
             addBond(highMental, lowMental, 0.4);
             personalScores[highMental] = (personalScores[highMental] || 0) + 0.5;
-            pushEvent({
+            _pushCourseEvent({
               type: 'mentor-moment',
               course,
               players: [highMental, lowMental],
@@ -15756,7 +15766,7 @@ function simulateHellsKitchen(ep) {
             personalScores[struggler] = (personalScores[struggler] || 0) + 0.5;
             raw += 0.05;
             addBond(encourager, struggler, 0.2);
-            pushEvent({
+            _pushCourseEvent({
               type: 'encouragement',
               course,
               players: [encourager, struggler],
@@ -15779,7 +15789,7 @@ function simulateHellsKitchen(ep) {
         if (s.intuition + Math.random() * 4 >= 8 && Math.random() < 0.22) {
           raw += 0.1;
           personalScores[p] = (personalScores[p] || 0) + 1.5;
-          pushEvent({
+          _pushCourseEvent({
             type: 'natural-talent',
             course,
             players: [p],
@@ -15794,7 +15804,7 @@ function simulateHellsKitchen(ep) {
         // Plating artist
         if (s.mental + Math.random() * 4 >= 8 && Math.random() < 0.22 && eventsThisCourse < numEvents) {
           raw += 0.05;
-          pushEvent({
+          _pushCourseEvent({
             type: 'plating-artist',
             course,
             players: [p],
@@ -15810,7 +15820,7 @@ function simulateHellsKitchen(ep) {
         if (s.intuition * 0.02 + Math.random() * 0.12 > 0.18 && eventsThisCourse < numEvents) {
           raw += 0.1;
           personalScores[p] = (personalScores[p] || 0) + 1.5;
-          pushEvent({
+          _pushCourseEvent({
             type: 'taste-tester-hero',
             course,
             players: [p],
@@ -15825,7 +15835,7 @@ function simulateHellsKitchen(ep) {
         // Crowd pleaser
         if (s.intuition >= 6 && s.boldness >= 5 && Math.random() < 0.25 && eventsThisCourse < numEvents) {
           raw += 0.08;
-          pushEvent({
+          _pushCourseEvent({
             type: 'crowd-pleaser',
             course,
             players: [p],
@@ -15840,7 +15850,7 @@ function simulateHellsKitchen(ep) {
         // Flavor breakthrough
         if (s.intuition * 0.018 + Math.random() * 0.12 > 0.17 && eventsThisCourse < numEvents) {
           raw += 0.08;
-          pushEvent({
+          _pushCourseEvent({
             type: 'flavor-breakthrough',
             course,
             players: [p],
@@ -15855,7 +15865,7 @@ function simulateHellsKitchen(ep) {
         // Garnish save
         if (s.mental * 0.015 + Math.random() * 0.12 > 0.16 && eventsThisCourse < numEvents) {
           raw += 0.05;
-          pushEvent({
+          _pushCourseEvent({
             type: 'garnish-save',
             course,
             players: [p],
@@ -15870,7 +15880,7 @@ function simulateHellsKitchen(ep) {
         // Efficient prep
         if (s.endurance + Math.random() * 3 >= 7 && Math.random() < 0.20 && eventsThisCourse < numEvents) {
           raw += 0.03;
-          pushEvent({
+          _pushCourseEvent({
             type: 'efficient-prep',
             course,
             players: [p],
@@ -15885,7 +15895,7 @@ function simulateHellsKitchen(ep) {
         // Clean station (prevents future disaster)
         if (s.endurance + Math.random() * 3 >= 6 && s.mental + Math.random() * 3 >= 6 && Math.random() < 0.20 && eventsThisCourse < numEvents) {
           disasterPrevented[t.name]++;
-          pushEvent({
+          _pushCourseEvent({
             type: 'clean-station',
             course,
             players: [p],
@@ -15900,7 +15910,7 @@ function simulateHellsKitchen(ep) {
         // Presentation disaster
         if ((10 - s.mental) * 0.008 + Math.random() * 0.1 > 0.13 && eventsThisCourse < numEvents) {
           raw -= 0.08;
-          pushEvent({
+          _pushCourseEvent({
             type: 'presentation-disaster',
             course,
             players: [p],
@@ -15919,7 +15929,7 @@ function simulateHellsKitchen(ep) {
         if (sousChef) {
           raw += 0.1;
           personalScores[sousChef] = (personalScores[sousChef] || 0) + 1.5;
-          pushEvent({
+          _pushCourseEvent({
             type: 'sous-chef-clutch',
             course,
             players: [sousChef],

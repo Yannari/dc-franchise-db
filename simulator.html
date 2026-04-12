@@ -16832,6 +16832,10 @@ function simulateTrustChallenge(ep) {
   let ruleBreakData = null;
   let redemptionData = null;
 
+  // Event density boost for 2-tribe games (fewer pairs = fewer events, need to compensate)
+  const _eventBoost = tribes.length === 2 ? 1.4 : 1.0;
+  const _evRoll = (baseChance) => Math.random() < baseChance * _eventBoost; // use instead of Math.random() < X
+
   if (!gs._trustHeat) gs._trustHeat = {};
   if (!gs.lingeringInjuries) gs.lingeringInjuries = {};
 
@@ -17081,7 +17085,7 @@ function simulateTrustChallenge(ep) {
       const sabChance = (10 - sBelayer.loyalty) * 0.02 + (0 - bond) * 0.015 + (10 - sBelayer.temperament) * 0.01;
       if (Math.random() < sabChance) {
         sabotaged = true;
-        const isHumiliation = Math.random() < 0.35;
+        const isHumiliation = _evRoll(0.35);
         if (isHumiliation) {
           // Humiliation pull
           climbScore -= 0.1;
@@ -17158,7 +17162,7 @@ function simulateTrustChallenge(ep) {
     // ── Obstacles (if no sabotage) ──
     if (!sabotaged) {
       // Explosion (30%)
-      if (Math.random() < 0.30) {
+      if (_evRoll(0.30)) {
         const endCheck = sClimber.endurance * 0.04 + Math.random() * 0.15;
         if (endCheck > 0.35) {
           climbScore += 0.03;
@@ -17193,7 +17197,7 @@ function simulateTrustChallenge(ep) {
       }
 
       // Habanero spray (25%)
-      if (Math.random() < 0.25) {
+      if (_evRoll(0.25)) {
         const mentalCheck = sClimber.mental * 0.04 + Math.random() * 0.15;
         if (mentalCheck > 0.35) {
           const txt = `Habanero spray hits ${climberName} in the face. ${prClimber.Sub} doesn't flinch. ${belayerName} gains respect.`;
@@ -17220,7 +17224,7 @@ function simulateTrustChallenge(ep) {
       }
 
       // Oil slick (20%)
-      if (Math.random() < 0.20) {
+      if (_evRoll(0.20)) {
         const physCheck = sClimber.physical * 0.04 + Math.random() * 0.15;
         if (physCheck > 0.35) {
           const txt = `Oil slick on the wall! ${climberName} adjusts ${prClimber.posAdj} grip and keeps going. Smooth recovery.`;
@@ -17240,7 +17244,7 @@ function simulateTrustChallenge(ep) {
             phases.round1.push({ kind: 'event', _tribe: t.name, type: 'oil-crash', text: txt, players: [climberName, belayerName], tribe: t.name });
             allEvents.push({ type: 'oil-crash', tribe: t.name, text: txt });
             // Possible injury
-            if (Math.random() < 0.25) {
+            if (_evRoll(0.25)) {
               gs.lingeringInjuries[climberName] = { ep: epNum, duration: 1, type: 'climbing-fall', penalty: 0.5 + Math.random() * 0.5 };
             }
           }
@@ -17826,7 +17830,7 @@ function simulateTrustChallenge(ep) {
         const communication = bond * 0.04 + sNavigator.temperament * 0.03 + sNavigator.loyalty * 0.02;
 
         // Navigator sabotage (wrong directions)
-        if (bond <= 0 && Math.random() < 0.15) {
+        if (bond <= 0 && _evRoll(0.15)) {
           const navArch = players.find(p => p.name === navigatorName)?.archetype || '';
           if (['villain','schemer','chaos-agent'].includes(navArch)) {
             score -= 0.15;
@@ -17846,7 +17850,7 @@ function simulateTrustChallenge(ep) {
         }
 
         // Explosions along the course (20%)
-        if (Math.random() < 0.20) {
+        if (_evRoll(0.20)) {
           if (communication > 0.3) {
             score += 0.03;
             const txt = `Explosion ahead! ${navigatorName} screams a direction. ${driverName} reacts perfectly. Dodge!`;
@@ -17882,7 +17886,7 @@ function simulateTrustChallenge(ep) {
         // Rule break DQ (the DJ moment)
         const hasEmotionalTrigger = hasEmotionalDebuff(driverName) ? 1 : 0;
         const ruleBreakChance = (10 - sDriver.strategic) * 0.02 + hasEmotionalTrigger * 0.15;
-        if (Math.random() < ruleBreakChance && Math.random() < 0.15 && !ruleBreakData) {
+        if (Math.random() < ruleBreakChance && _evRoll(0.15) && !ruleBreakData) {
           ruleBreakData = { driver: driverName, navigator: navigatorName, tribe: t.name, sub };
           const prevScore = score;
           score = -999; // DQ

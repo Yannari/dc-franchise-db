@@ -20820,7 +20820,13 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
             reason = buildVoteReason(voter, target, underlyingType, underlyingCtx);
           }
         } else {
-          target = allianceTarget;
+          // Fallback: alliance target if not immune, else ANY non-immune player
+          if (allianceTarget && !isImmune(allianceTarget)) {
+            target = allianceTarget;
+          } else {
+            const _fallbackCandidates = tribalPlayers.filter(p => p !== voter && !isImmune(p));
+            target = _fallbackCandidates.length ? _fallbackCandidates[Math.floor(Math.random() * _fallbackCandidates.length)] : null;
+          }
           reason = 'no other options';
           isDefecting = false;
         }
@@ -20924,6 +20930,11 @@ function simulateVotes(tribalPlayers, immuneName, alliances, lostVotes = [], ope
     if (target && _tdBlocked(voter, target)) {
       const _altTargets = tribalPlayers.filter(p => p !== voter && p !== target && !isImmune(p) && !_tdBlocked(voter, p));
       target = _altTargets.length ? _altTargets.sort((a, b) => (computeHeat(b, tribalPlayers, alliances) || 0) - (computeHeat(a, tribalPlayers, alliances) || 0))[0] : null;
+    }
+    // Final safety: NEVER vote for an immune player regardless of how target was selected
+    if (target && isImmune(target)) {
+      const _safetyFallback = tribalPlayers.filter(p => p !== voter && !isImmune(p));
+      target = _safetyFallback.length ? _safetyFallback[Math.floor(Math.random() * _safetyFallback.length)] : null;
     }
     if (target && target !== voter) {
       votes[target] = (votes[target] || 0) + 1;

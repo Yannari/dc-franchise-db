@@ -48211,6 +48211,11 @@ function rpBuildDebug(ep) {
   // TAB: PLAYER STATS
   // ════════════════════════════════════════════════
   if (_dbTab === 'stats') {
+    // Use snapshot for threat column so it reflects this episode
+    const _statsSavedGs = gs;
+    const _statsSnap = ep.gsSnapshot;
+    if (_statsSnap) { gs = _statsSnap; if (typeof repairGsSets === 'function') repairGsSets(gs); }
+
     html += `<div style="overflow-x:auto">
     <table style="width:100%;border-collapse:collapse;font-size:10px;color:#8b949e">
       <tr style="border-bottom:1px solid rgba(255,255,255,0.08)">
@@ -48243,6 +48248,7 @@ function rpBuildDebug(ep) {
       </tr>`;
     });
     html += `</table></div>`;
+    if (_statsSnap) gs = _statsSavedGs;
   }
 
   // ════════════════════════════════════════════════

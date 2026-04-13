@@ -1,0 +1,138 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e4]:
+      - img "DC" [ref=e5]
+      - text: DC Franchise Simulator
+    - navigation [ref=e6]:
+      - button "Cast Builder" [ref=e7] [cursor=pointer]
+      - button "Season Setup" [ref=e8] [cursor=pointer]
+      - button "Run Episode" [ref=e9] [cursor=pointer]
+      - button "Results" [ref=e10] [cursor=pointer]
+  - generic [ref=e12]:
+    - complementary [ref=e13]:
+      - generic [ref=e14]: Game State
+      - generic [ref=e15]:
+        - generic [ref=e16]:
+          - generic [ref=e17]:
+            - generic [ref=e18]: Episode
+            - strong [ref=e19]: "6"
+          - generic [ref=e20]:
+            - generic [ref=e21]: Phase
+            - strong [ref=e22]: Pre-Merge
+          - generic [ref=e23]:
+            - generic [ref=e24]: Active
+            - strong [ref=e25]: "12"
+          - generic [ref=e26]:
+            - generic [ref=e27]: On RI
+            - strong [ref=e28]: "0"
+        - generic [ref=e29]:
+          - generic [ref=e30]:
+            - generic [ref=e31]: Yellow (4)
+            - generic [ref=e32]: Bowie · Ripper · Nichelle · Axel
+          - generic [ref=e33]:
+            - generic [ref=e34]: Red (5)
+            - generic [ref=e35]: Zee · Hicks · Emmah · Millie · Caleb
+          - generic [ref=e36]:
+            - generic [ref=e37]: Blue (3)
+            - generic [ref=e38]: Wayne · Priya · MK
+        - generic [ref=e39]:
+          - generic [ref=e40]: Alliances
+          - generic [ref=e41]:
+            - text: The Dock Pact · 2 betrayals
+            - generic [ref=e42]: Priya, MK
+          - generic [ref=e43]:
+            - text: The Diamond · 2 betrayals · 3 quits
+            - generic [ref=e44]: Nichelle, Ripper
+          - generic [ref=e45]:
+            - text: The Outwit Club
+            - generic [ref=e46]: Millie, Zee
+        - generic [ref=e47]:
+          - generic [ref=e48]: Eliminated
+          - generic [ref=e49]: Julia, Raj, Chase, Brightly, Damien, Scary Girl
+      - button "Simulate Episode 7" [ref=e51] [cursor=pointer]
+      - generic [ref=e52]:
+        - button "+5 Eps" [ref=e53] [cursor=pointer]
+        - button "Sim All" [ref=e54] [cursor=pointer]
+      - button "↺ Re-run This Episode" [ref=e55] [cursor=pointer]
+      - button "Reset Season" [ref=e56] [cursor=pointer]
+      - generic [ref=e57]: Reset clears all episode history but keeps your cast and setup intact.
+      - generic [ref=e59]: Season Save
+      - button "Save Season" [ref=e60] [cursor=pointer]
+      - button "Export Season" [ref=e61] [cursor=pointer]
+      - button "Import Season" [ref=e62] [cursor=pointer]
+      - combobox [ref=e63]:
+        - option "— Load saved season —" [selected]
+      - generic [ref=e64]:
+        - button "Load" [ref=e65] [cursor=pointer]
+        - button "Delete" [ref=e66] [cursor=pointer]
+    - main [ref=e67]:
+      - generic [ref=e68]:
+        - generic [ref=e70]:
+          - generic [ref=e71]:
+            - generic [ref=e72]: Episode 6
+            - generic [ref=e73]: Pre-merge
+          - generic [ref=e74]:
+            - generic [ref=e75]:
+              - generic [ref=e76]: Immunity
+              - text: —
+            - generic [ref=e77]:
+              - generic [ref=e78]: Tribal
+              - text: Vote follows
+            - generic [ref=e79]:
+              - generic [ref=e80]: Eliminated
+              - text: Scary Girl
+            - generic [ref=e81]:
+              - generic [ref=e82]: Votes
+              - text: 5 cast
+          - generic [ref=e83]:
+            - generic [ref=e84]: Vote breakdown
+            - generic [ref=e85]:
+              - generic [ref=e86]: "Scary Girl: 3"
+              - generic [ref=e87]: "Nichelle: 1"
+              - generic [ref=e88]: "Axel: 1"
+        - generic [ref=e89]:
+          - generic [ref=e90]:
+            - generic [ref=e91]: Episode Summary Output
+            - generic [ref=e92]: Paste into current-season.html → skip BrantSteele field → Generate Episode
+            - button "▶ View Episode" [ref=e93] [cursor=pointer]
+            - button "Copy" [ref=e94] [cursor=pointer]
+            - button "Export to Pipeline" [ref=e95] [cursor=pointer]
+          - textbox [ref=e96]: "=== META === Season: Unknown | Episode: 6 | Phase: pre-merge | Players Remaining: 12 === CAST (ALL) === STARTING CAST (18): Bowie Chase Ripper Scary Girl Nichelle Axel Zee Brightly Hicks Emmah Millie Caleb Wayne Raj Julia Priya MK Damien === TRIBES (ACTIVE) === Yellow Tribe (5): Bowie, Ripper, Scary Girl, Nichelle, Axel Red Tribe (5): Zee, Hicks, Emmah, Millie, Caleb Blue Tribe (3): Wayne, Priya, MK === ELIMINATED (PERMANENT) === Julia, Raj, Chase, Brightly, Damien, Scary Girl === COLD OPEN === Ep.5: Damien was voted out. Priya broke The Dock Pact — voted Damien instead of Wayne. Why: following The Drama Club. The person they voted for was eliminated anyway. The relationship with remaining members has taken damage. MK broke The Drama Club — voted Wayne instead of Damien. Why: ran the plan publicly, privately voted elsewhere. Their alliance's target still went home. The alliance had only just formed that episode — no time to build trust before the vote fractured it. The relationship with remaining members has taken damage. Wayne broke The Drama Club — voted MK instead of Damien. Their alliance's target still went home. The alliance had only just formed that episode — no time to build trust before the vote fractured it. The relationship with remaining members has taken damage. === CAMP — PRE-CHALLENGE — YELLOW === ADVANTAGES: - The Yellow Hidden Immunity Idol is currently hidden. === CAMP — PRE-CHALLENGE — RED === ADVANTAGES: - Millie has the Red Hidden Immunity Idol (found ep.3). - Zee has the Extra Vote (found ep.3). === CAMP — PRE-CHALLENGE — BLUE === ADVANTAGES: - The Blue Hidden Immunity Idol is not currently in play. CAMP EVENTS: YELLOW CAMP: - Nichelle makes a joke at exactly the right moment. The whole tribe is laughing. Even the people who don't like her are laughing. - Bowie and Nichelle have a bit going. Nobody else gets it. Every time they make eye contact across camp, one of them breaks. - Axel has been playing it safe for too long. She knows it. The game is moving past her. - [Social Read] Axel doesn't need to eavesdrop. She just listens — really listens — and by sunset she knows Scary Girl's name is floating. Nobody told her directly. She just pieced it together. RED CAMP: - Caleb cuts his hand badly at camp. Medical checks on him. The tribe watches nervously. - Zee tells the confessional that he cares about everyone here. Then pauses. \"That's going to be a problem, isn't it.\" - Emmah offers to help Millie with camp duties in a tone that implies Millie can't handle it alone. Millie declines. The damage is done. - Hicks absorbs what Emmah said when she thought no one was listening. No reaction. Perfect poker face. The information is already being processed. - [INFO TRADE] A quiet exchange at the water well. Zee knows something Emmah didn't. Now Emmah knows too — or thinks she does. - [DOUBLE DEALER] Zee found out. Caleb promised final two to Zee — and to Brightly. The math doesn't work. Zee knows it now. BLUE CAMP: - Priya and Wayne are both convinced they're the leader today. The tribe has a third opinion about who's actually in charge: nobody. - MK and Priya overhear the host say something they weren't meant to hear. Neither of them brings it up. It haunts them both — and brings them closer. - MK tells Priya exactly the right things — each word calculated. Priya walks away feeling trusted. That was the goal. - MK pulls the voting data apart in her head. Priya was supposed to vote one way. She didn't. MK doesn't confront — she adjusts. - Wayne whispers something to Priya on the walk back from the well. Priya doesn't react publicly. Privately, the gears start turning. - [Protecting the Weak] Everyone else is circling Wayne. Priya is the only one who extends a hand instead of writing a name. - Priya played their idol for Wayne last night. Wayne is still here because of it. Wayne knows what Priya gave up. That debt runs deeper than strategy. But Priya has no idol now — the math just changed for everyone. - The vote is over, but MK hasn't moved on. Wayne wrote her name. That's not something she forgets. - Wayne knows. MK voted for him. Whether he worked it out or someone slipped, he knows. They don't. RELATIONSHIPS — YELLOW: - Bowie and Nichelle feel mutual deep-rooted hostility toward one another. - Ripper and Scary Girl feel mutual deep-rooted hostility toward one another. - Ripper and Axel feel a mutual strong bond toward one another. - Nichelle and Axel feel a mutual strong bond toward one another. - Ripper and Nichelle feel a mutual strong bond toward one another. - Nichelle and Scary Girl feel mutual strong dislike toward one another. - Axel and Scary Girl feel mutual strong dislike toward one another. - Bowie and Scary Girl feel mutual strong dislike toward one another. - Bowie and Axel feel a mutual very slight bond toward one another. - Bowie and Ripper have a neutral relationship with each other. RELATIONSHIPS — RED: - Zee and Emmah feel a mutual strong bond toward one another. - Hicks and Millie feel a mutual solid bond toward one another. - Emmah and Millie feel mutual strong dislike toward one another. - Emmah and Caleb feel a mutual slight bond toward one another. - Zee and Hicks feel a mutual slight bond toward one another. - Zee and Millie feel a mutual slight bond toward one another. - Hicks and Emmah feel a mutual slight bond toward one another. - Hicks and Caleb feel mutual dislike toward one another. - Zee and Caleb have a neutral relationship with each other. - Millie and Caleb have a neutral relationship with each other. RELATIONSHIPS — BLUE: - Wayne and Priya feel a mutual unbreakable bond toward one another. - Wayne and MK feel mutual deep-rooted hostility toward one another. - Priya and MK have a neutral relationship with each other. ALLIANCES: The Dock Pact (formed ep.2): Priya, MK > MK betrayed ep.2 — voted Raj instead of Damien (brand new alliance) — going with The Inner Circle for now, not out of pure loyalty > Priya betrayed ep.5 — voted Damien instead of Wayne — following The Drama Club The Diamond (formed ep.3): Nichelle, Ripper > Scary Girl betrayed ep.3 — voted Ripper instead of Chase — voted against own ally (brand new alliance) — Ripper hasn't pulled their weight, especially in mental > Bowie betrayed ep.6 — voted Nichelle instead of Scary Girl — voted against own ally — publicly committed to Scary Girl, privately chose Nichelle > Scary Girl left ep.3 (expelled — betrayed the alliance) > Ripper left ep.4 (betrayed by alliance member) > Bowie left ep.6 (expelled — betrayed the alliance) The Outwit Club (formed ep.4): Millie, Zee === IMMUNITY CHALLENGE === TRIBE IMMUNITY (Dig Deep challenge — endurance) Dig through sand to find buried puzzle pieces, then solve the puzzle. Stamina to dig, brains to solve. The combination matters. 1. Blue — WIN, immune Standings: Priya (standout) > Wayne > MK (weak link) 2. Red — safe Standings: Zee (standout) > Caleb > Millie (weak link) Sat out: Hicks, Emmah 3. Yellow — LAST, goes to tribal Standings: Scary Girl (standout) > Axel > Bowie (weak link) Sat out: Nichelle, Ripper RESULT: Yellow go to tribal council. NOTE: Blue built an early lead and it was never in doubt. NOTE: Blue's win was carried almost entirely by Priya — the rest of the tribe was mid-pack. === CAMP — POST-CHALLENGE === YELLOW CAMP: - Ripper says the right thing at the right moment. Camp exhales. - Bowie and Scary Girl map out the next three votes over cold rice and bad water. The plan is solid. Whether it holds is another question. - Axel tells the confessional they're fine. She are not fine. She knows she is not fine. - Nichelle replays a conversation from earlier. The more she thinks about it, the less comfortable she feels. - There's a noise from the jungle and Bowie and Nichelle say the exact same thing at the exact same time. The tribe stares. They lose it. - Axel doesn't need to threaten anyone. She just exists in the space and everyone adjusts around her. - Ripper and Bowie have a conversation that looks like small talk and functions as architecture. - Inside The Diamond, Nichelle watches Ripper and wonders how much of it is real. The trust is thinning. - Bowie: \"I've been patient. Too patient. Something has to change — and I'm the one who changes it.\" - The Diamond is showing cracks. Bowie questions whether the alliance can actually last. - The loss stings harder with someone watching from the sideline. Nichelle didn't compete today, and somebody is going to bring that up. - Another sit-out for Nichelle. She doesn't make an issue of it — which might be the issue. - The loss stings harder with someone watching from the sideline. Ripper didn't compete today, and somebody is going to bring that up. - Bowie snaps at someone over something small. The volume surprises the tribe. The target doesn't forget. - Nichelle sees the whole thing. She waits until Bowie is out of earshot, then says exactly nothing. The look on her face was enough. - She was fine all morning. Then something trips her and the version of Nichelle that emerges is the one the tribe has been quietly bracing for. - Bowie pulls someone aside after. Not to campaign — just to confirm he saw what he saw. He did. RED CAMP: - Hicks eats Hicks's share and then some. Caleb tracks every bite. This will come up later. - Hicks absorbs what Caleb said when he thought no one was listening. No reaction. Perfect poker face. The information is already being processed. - Caleb hears his name came up in a conversation he wasn't part of. The paranoia sets in quietly. - Millie and Hicks clash over who's actually in control. The argument is quiet — but the damage is real. - Zee makes a joke at exactly the right moment. The whole tribe is laughing. Even the people who don't like him are laughing. - Emmah makes a comment about Millie's strategy that sounds like a compliment. It's not. Everyone at the fire shifts uncomfortably. - Millie and Caleb have a conversation that looks like small talk and functions as architecture. - Emmah catches more fish before breakfast than the tribe has seen all week. The tribe does a quiet recount of who they thought Emmah was. - Hicks has sat out more than once now. Whether it's strategy or necessity, someone is going to use it. - Emmah has sat out more than once now. Whether it's strategy or necessity, someone is going to use it. - Millie is back in the lineup today after sitting out last time. She throws everything into it. The bench wasn't her preference. - Hicks goes off. It isn't the words so much as the tone — the kind that makes people around a fire suddenly find somewhere else to be. - Zee sees the whole thing. He waits until Hicks is out of earshot, then says exactly nothing. The look on his face was enough. - She was fine all morning. Then something trips her and the version of Millie that emerges is the one the tribe has been quietly bracing for. - Zee pulls someone aside after. Not to campaign — just to confirm he saw what he saw. He did. BLUE CAMP: - Priya is quietly building a challenge résumé. No one's panicking yet — but the number is getting hard to ignore. - MK brings it up — carefully, just to one person, like it's a casual observation. It isn't. - Priya takes charge. MK takes charge louder. The tribe picks sides based on who they find less annoying. - MK and Wayne both try to take control of camp at the same time. The tribe stops listening to either. - MK stirs something between Priya and Wayne with one offhand comment. Whether it was intentional is the question. - Wayne and MK have been circling each other for days. Then — quietly, away from camp — they actually talk. Not strategy. Just talk. Neither will admit it changed anything. - MK usually keeps it together. Not today. The cracks are visible now. - Someone starts talking about Priya when she's not around. Wayne shuts it down. \"That's not what happened.\" The conversation ends. - Wayne pulls Priya aside with a pitch that's either brilliant or desperate. Priya is going to sleep on it. - Wayne starts organizing the group. MK undercuts it with a different plan. Nobody wants to pick a side, so nothing happens. - MK knows the jury is watching. She knows she needs a moment she can point to. - Wayne tells the confessional: \"Priya is the only person in this game I trust completely. That's either going to save me or get me killed. I'm okay with both.\" === VOTING PLANS — YELLOW === ALLIANCE PLANS: The Diamond (3 members, 3 can vote) TARGET: Scary Girl REASONING: following The Diamond — it's the right call for now MEMBERS: Bowie, Nichelle, Ripper SPEARHEADER: Bowie CONFLICTED: Bowie: Actually voted Nichelle — publicly committed to Scary Girl, privately chose Nichelle — Nichelle hasn't pulled their weight, especially in endurance — broke own bloc — broke The Diamond INDEPENDENT VOTES: Scary Girl → Axel — too much history to trust — the only honest vote they could make Axel → Scary Girl — The Diamond agreed on this name — going along with it GOING INTO TRIBAL: Primary Target: Scary Girl (3 votes) KEY CONFESSIONALS: Bowie [Conflicted]: \"publicly committed to Scary Girl, privately chose Nichelle — Nichelle hasn't pulled their weight, especially in endurance — broke own bloc — broke The Diamond\" === TRIBAL COUNCIL === Attendees: Bowie, Ripper, Scary Girl, Nichelle, Axel WORD AT CAMP: #1 TARGET: Scary Girl — Challenge dominance. (Numbers are pointing here) #2 TARGET: Nichelle — Too well-liked. Jury threat. (Floated as a possibility) #3 WATCH: Axel — Challenge dominance. (Floated as a possibility) AT TRIBAL COUNCIL: Chris leans forward toward Scary Girl. \"I want to ask you directly — how are you feeling right now?\" Scary Girl: \"I'm nervous, yeah. I've put in the work here. I've been loyal. I just hope that's worth something tonight.\" -> Scary Girl shows their hand. The vulnerability is visible — allies feel pressure to follow through, or freedom to bail. Chris asks Bowie point blank: \"If tonight's vote goes sideways — and it might — how much of that lands on you?\" Bowie: \"Plans change. What matters is whether you've done the work before tonight. I have.\" -> Bowie deflects cleanly. But the tribe just named them the chess player — and everyone heard it. Chris asks Ripper directly: \"Does tonight feel like a game move to you, or does it feel personal?\" Ripper: \"Game, always. I've tried to keep the emotion out of it. Tonight is no different.\" -> Ripper plays it clean. A little too clean — somebody here doesn't buy it. Chris studies the group for a long moment. \"Scary Girl, Bowie — there's tension there. Are you two actually okay?\" Scary Girl: \"I'm going to trust the relationships I've built. Either they hold or they don't.\" Bowie: \"I think Scary Girl is a smart player. That's exactly why we're having this conversation.\" -> The confrontation is out. The tribe absorbs it — some shifting, some very still. The air has changed. \"The votes have been cast.\" === THE VOTES === Bowie voted for Nichelle — publicly committed to Scary Girl, privately chose Nichelle — Nichelle hasn't pulled their weight, especially in endurance — broke own bloc — broke The Diamond Ripper voted for Scary Girl — the dislike is mutual and it's been simmering for weeks Scary Girl voted for Axel — too much history to trust — the only honest vote they could make Nichelle voted for Scary Girl — following The Diamond — it's the right call for now Axel voted for Scary Girl — The Diamond agreed on this name — going along with it === WHY THIS VOTE HAPPENED === Scary Girl was voted out because: - Personal tension — the vote was driven by distrust and friction - Voted out by: Ripper, Nichelle, Axel TRIBAL BLOWUP — Scary Girl: \"Are you KIDDING me?! Bowie! Every vote — EVERY vote — has been Bowie's call! And you all just go along with it like that's okay!\" -> Bowie exposed as the strategic center. Bond hits with all tribemates. \"The Diamond! Does anyone here even KNOW about The Diamond?! They've had this entire game locked from the start and none of you are in it!\" -> The Diamond alliance is now public. Members carry heat into the next tribal. Scary Girl (Wildcard) — the tribe has spoken. VOTED OUT THIS EPISODE: Scary Girl === CAMP OVERVIEW === ADVANTAGES IN PLAY: - Millie: Hidden Immunity Idol (found ep.3) - Zee: Extra Vote (found ep.3) YELLOW (4): Bowie, Ripper, Nichelle, Axel RED (5): Zee, Hicks, Emmah, Millie, Caleb BLUE (3): Wayne, Priya, MK Permanently out: Julia, Raj, Chase, Brightly, Damien, Scary Girl === WRITER CONTEXT === COLD OPEN HOOK: Millie has a secret. They carry it quietly through the morning — fire, water, small talk. Nobody knows. Not yet. NEXT EPISODE QUESTIONS: - The merge is close. Who has the numbers to survive it? - Bowie controlled the numbers again. At what point does the rest of the tribe decide enough is enough? - Millie is holding an idol. Does the tribe know? And if they do — what's the plan? - The Dock Pact is showing cracks. How long before someone exploits it?"
+        - generic [ref=e97]:
+          - generic [ref=e98]:
+            - generic [ref=e99]: Episode History
+            - generic [ref=e100] [cursor=pointer]:
+              - checkbox "Spoiler-free" [ref=e101]
+              - text: Spoiler-free
+          - generic [ref=e102]:
+            - generic [ref=e103] [cursor=pointer]:
+              - generic [ref=e104]:
+                - text: Episode 1
+                - button "↺" [ref=e105]
+              - generic [ref=e106]: Julia
+            - generic [ref=e107] [cursor=pointer]:
+              - generic [ref=e108]:
+                - text: Episode 2
+                - button "↺" [ref=e109]
+              - generic [ref=e110]: Raj
+              - generic [ref=e112]: Awake-A-Thon
+            - generic [ref=e113] [cursor=pointer]:
+              - generic [ref=e114]:
+                - text: Episode 3
+                - button "↺" [ref=e115]
+              - generic [ref=e116]: Chase
+            - generic [ref=e117] [cursor=pointer]:
+              - generic [ref=e118]:
+                - text: Episode 4
+                - button "↺" [ref=e119]
+              - generic [ref=e120]: Brightly
+            - generic [ref=e121] [cursor=pointer]:
+              - generic [ref=e122]:
+                - text: Episode 5
+                - button "↺" [ref=e123]
+              - generic [ref=e124]: Damien
+            - generic [ref=e125] [cursor=pointer]:
+              - generic [ref=e126]:
+                - text: Episode 6
+                - button "↺" [ref=e127]
+              - generic [ref=e128]: Scary Girl

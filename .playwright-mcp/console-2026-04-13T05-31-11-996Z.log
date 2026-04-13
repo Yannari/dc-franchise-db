@@ -1,0 +1,3 @@
+[     202ms] [LOG] Roster loaded from JSON: 104 players @ http://127.0.0.1:8084/simulator.html:47479
+[   32110ms] TypeError: Cannot set properties of undefined (setting 'idx')
+    at eval (eval at evaluate (:302:30), <anonymous>:14:46)

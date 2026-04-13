@@ -1,0 +1,112 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e4]:
+      - img "DC" [ref=e5]
+      - text: DC Franchise Simulator
+    - navigation [ref=e6]:
+      - button "Cast Builder" [ref=e7] [cursor=pointer]
+      - button "Season Setup" [ref=e8] [cursor=pointer]
+      - button "Run Episode" [ref=e9] [cursor=pointer]
+      - button "Results" [ref=e10] [cursor=pointer]
+  - generic [ref=e12]:
+    - complementary [ref=e13]:
+      - generic [ref=e14]: Game State
+      - generic [ref=e15]:
+        - generic [ref=e16]:
+          - generic [ref=e17]:
+            - generic [ref=e18]: Episode
+            - strong [ref=e19]: "2"
+          - generic [ref=e20]:
+            - generic [ref=e21]: Phase
+            - strong [ref=e22]: Pre-Merge
+          - generic [ref=e23]:
+            - generic [ref=e24]: Active
+            - strong [ref=e25]: "16"
+          - generic [ref=e26]:
+            - generic [ref=e27]: On RI
+            - strong [ref=e28]: "0"
+        - generic [ref=e29]:
+          - generic [ref=e30]:
+            - generic [ref=e31]: Yellow (5)
+            - generic [ref=e32]: Bowie · Chase · Ripper · Scary Girl · Nichelle
+          - generic [ref=e33]:
+            - generic [ref=e34]: Red (6)
+            - generic [ref=e35]: Zee · Brightly · Hicks · Emmah · Millie · Caleb
+          - generic [ref=e36]:
+            - generic [ref=e37]: Blue (5)
+            - generic [ref=e38]: Wayne · Raj · Priya · MK · Damien
+        - generic [ref=e39]:
+          - generic [ref=e40]: Alliances
+          - generic [ref=e41]:
+            - text: The Final Four Pact · 1 betrayal · 1 quit
+            - generic [ref=e42]: Raj, Wayne, Damien
+        - generic [ref=e43]:
+          - generic [ref=e44]: Eliminated
+          - generic [ref=e45]: Julia, Axel
+      - button "Simulate Episode 3" [ref=e47] [cursor=pointer]
+      - generic [ref=e48]:
+        - button "+5 Eps" [ref=e49] [cursor=pointer]
+        - button "Sim All" [ref=e50] [cursor=pointer]
+      - button "↺ Re-run This Episode" [ref=e51] [cursor=pointer]
+      - button "Reset Season" [ref=e52] [cursor=pointer]
+      - generic [ref=e53]: Reset clears all episode history but keeps your cast and setup intact.
+      - generic [ref=e55]: Season Save
+      - button "Save Season" [ref=e56] [cursor=pointer]
+      - button "Export Season" [ref=e57] [cursor=pointer]
+      - button "Import Season" [ref=e58] [cursor=pointer]
+      - combobox [ref=e59]:
+        - option "— Load saved season —" [selected]
+      - generic [ref=e60]:
+        - button "Load" [ref=e61] [cursor=pointer]
+        - button "Delete" [ref=e62] [cursor=pointer]
+    - main [ref=e63]:
+      - generic [ref=e64]:
+        - generic [ref=e66]:
+          - generic [ref=e67]:
+            - generic [ref=e68]: Episode 2
+            - generic [ref=e69]: Pre-merge
+          - generic [ref=e70]:
+            - generic [ref=e71]:
+              - generic [ref=e72]: Immunity
+              - text: —
+            - generic [ref=e73]:
+              - generic [ref=e74]: Tribal
+              - text: Vote follows
+            - generic [ref=e75]:
+              - generic [ref=e76]: Eliminated
+              - text: Axel
+            - generic [ref=e77]:
+              - generic [ref=e78]: Votes
+              - text: 6 cast
+          - generic [ref=e79]:
+            - generic [ref=e80]: Vote breakdown
+            - generic [ref=e81]:
+              - generic [ref=e82]: "Scary Girl: 2"
+              - generic [ref=e83]: "Nichelle: 2"
+              - generic [ref=e84]: "Chase: 2"
+        - generic [ref=e85]:
+          - generic [ref=e86]:
+            - generic [ref=e87]: Episode Summary Output
+            - generic [ref=e88]: Paste into current-season.html → skip BrantSteele field → Generate Episode
+            - button "▶ View Episode" [ref=e89] [cursor=pointer]
+            - button "Copy" [ref=e90] [cursor=pointer]
+            - button "Export to Pipeline" [ref=e91] [cursor=pointer]
+          - textbox [ref=e92]: "=== META === Season: Unknown | Episode: 2 | Phase: pre-merge | Players Remaining: 16 === CAST (ALL) === STARTING CAST (18): Bowie Chase Ripper Scary Girl Nichelle Axel Zee Brightly Hicks Emmah Millie Caleb Wayne Raj Julia Priya MK Damien === TRIBES (ACTIVE) === Yellow Tribe (6): Bowie, Chase, Ripper, Scary Girl, Nichelle, Axel Red Tribe (6): Zee, Brightly, Hicks, Emmah, Millie, Caleb Blue Tribe (5): Wayne, Raj, Priya, MK, Damien === ELIMINATED (PERMANENT) === Julia, Axel === COLD OPEN === Ep.1: Julia was voted out. MK broke The Final Four Pact — voted Raj instead of Julia. Why: tribe comes first. Their alliance's target still went home. The alliance had only just formed that episode — no time to build trust before the vote fractured it. The relationship with remaining members has taken damage. === CAMP — PRE-CHALLENGE — YELLOW === ADVANTAGES: - The Yellow Hidden Immunity Idol is currently hidden. === CAMP — PRE-CHALLENGE — RED === ADVANTAGES: - The Red Hidden Immunity Idol is currently hidden. === CAMP — PRE-CHALLENGE — BLUE === ADVANTAGES: - The Blue Hidden Immunity Idol is currently hidden. CAMP EVENTS: YELLOW CAMP: - Bowie breaks down in front of Ripper. Not in a dramatic way — just honestly. Ripper doesn't try to fix it. Just sits there. That's enough. - Ripper sits with Axel after a rough stretch. Nobody else checked in. Ripper did. - Scary Girl and Nichelle take a walk that lasts too long to be casual. They come back with the same energy. - Bowie and Axel find themselves alone together. The conversation that follows is nothing like the ones they've had in front of everyone else. - Ripper checks in with Nichelle. The response is slightly wrong. Not wrong enough for anyone else to notice. Ripper notices. - [MAKING AMENDS] Bowie doesn't bring it up directly. He just shows up differently today — quieter, more helpful, present. Chase notices the effort. - [MAKING AMENDS] Chase and Nichelle sit by the fire in silence for a while. Eventually Chase says something honest. It's not a speech — it's a sentence. It's enough. - [MAKING AMENDS] Axel and Nichelle sit by the fire in silence for a while. Eventually Axel says something honest. It's not a speech — it's a sentence. It's enough. - [Alliance Dissolved] The Syndicate is finished. The relationships inside it eroded past the point of repair. Average trust: -1/10. That's not an alliance — that's a name on a list. RED CAMP: - Emmah and Brightly end up in a full prank war that the rest of the tribe watches like a sporting event. - Hicks makes a comment about how \"the vote is obvious tonight.\" Three people in earshot disagree silently. - Brightly and Emmah get into a huge fight — and then immediately start laughing about it. The tribe has no idea how to process this. - Emmah and Zee share a quiet moment. Something real is forming between them. - [MAKING AMENDS] Emmah and Zee sit by the fire in silence for a while. Eventually Emmah says something honest. It's not a speech — it's a sentence. It's enough. BLUE CAMP: - Damien contemplates a move that could flip everything. He runs it over and over. - Damien gets wind that his name was thrown out. He brushes it off in public — but quietly starts paying closer attention. - Priya does a dead-on impression of the host. Wayne loses it completely. The whole camp is laughing. - MK and Damien have been circling each other for days. Then — quietly, away from camp — they actually talk. Not strategy. Just talk. Neither will admit it changed anything. - The vote is over, but Raj hasn't moved on. MK wrote his name. That's not something he forgets. - [EXPELLED] The Final Four Pact had a conversation this morning. MK wasn't invited. By the time she realized what was happening, her name was already off the list. Raj, Wayne and Damien made the call together. RELATIONSHIPS — YELLOW: - Chase and Nichelle feel mutual strong dislike toward one another. - Ripper and Axel feel a mutual slight bond toward one another. - Chase and Scary Girl feel a mutual slight bond toward one another. - Bowie and Ripper feel a mutual slight bond toward one another. - Ripper and Nichelle feel a mutual slight bond toward one another. - Bowie and Axel feel a mutual slight bond toward one another. - Bowie and Scary Girl feel mutual slight dislike toward one another. - Ripper and Scary Girl feel a mutual very slight bond toward one another. - Chase and Ripper feel mutual slight dislike toward one another. - Bowie and Nichelle feel a mutual very slight bond toward one another. - Nichelle and Axel have a neutral relationship with each other. - Scary Girl and Axel have a neutral relationship with each other. - Chase and Axel have a neutral relationship with each other. - Scary Girl and Nichelle have a neutral relationship with each other. - Bowie and Chase have a neutral relationship with each other. RELATIONSHIPS — RED: - Zee and Emmah feel mutual dislike toward one another. - Zee and Brightly feel a mutual slight bond toward one another. - Brightly and Hicks feel a mutual slight bond toward one another. - Hicks and Millie feel a mutual slight bond toward one another. - Brightly and Millie feel a mutual slight bond toward one another. - Brightly and Emmah feel a mutual slight bond toward one another. - Emmah and Millie feel a mutual slight bond toward one another. - Zee and Hicks feel a mutual slight bond toward one another. - Zee and Caleb feel mutual dislike toward one another. - Brightly and Caleb feel a mutual very slight bond toward one another. - Emmah and Caleb feel a mutual very slight bond toward one another. - Hicks and Caleb have a neutral relationship with each other. - Zee and Millie have a neutral relationship with each other. - Millie and Caleb have a neutral relationship with each other. - Hicks and Emmah have a neutral relationship with each other. RELATIONSHIPS — BLUE: - Wayne and Priya feel a mutual strong bond toward one another. - Raj and Priya feel a mutual solid bond toward one another. - Wayne and Raj feel a mutual solid bond toward one another. - Wayne and Damien feel a mutual solid bond toward one another. - MK and Damien feel mutual dislike toward one another. - Wayne and MK feel mutual dislike toward one another. - Raj and Damien feel a mutual slight bond toward one another. - Raj and MK feel mutual dislike toward one another. - Priya and Damien feel a mutual slight bond toward one another. - Priya and MK feel mutual slight dislike toward one another. ALLIANCES: The Final Four Pact (formed ep.1): Raj, Wayne, Damien > MK betrayed ep.1 — voted Raj instead of Julia — voted against own ally (brand new alliance) — tribe comes first > MK left ep.1 (expelled — betrayed the alliance) === IMMUNITY CHALLENGE === TRIBE IMMUNITY (Dodgebrawl challenge — physical) Multi-round dodgeball. First to 3 wins immunity. Red win. Yellow go to tribal council. RESULT: Yellow go to tribal council. === TWISTS === === CAMP — POST-CHALLENGE === YELLOW CAMP: - [TEAM PLAYER] Bowie didn't need the spotlight. He kept feeding balls to Axel, set up plays, covered gaps. That kind of selflessness doesn't go unnoticed. - [CHOKED] Bowie was supposed to be good at this. He wasn't. The tribe expected more and got less. - Bowie doesn't mean to overhear — but does. The game just changed, quietly. - Scary Girl vents to the confessional for three uninterrupted minutes. It is deeply sincere. None of it is suitable for camp. - Nichelle slips away from camp while everyone else is distracted. She comes back empty-handed — for now. - Bowie pulls Chase close with information that sounds valuable. Some of it is. The rest is useful to Bowie. - Ripper and Bowie get into a tense back-and-forth. Neither raises their voice — but the edge is there. - Chase checks in on everyone individually. Nobody felt singled out. Everyone felt seen. - Something has gotten to Ripper. He is still functional — but barely. - Ripper tells the confessional they're fine. He are not fine. He knows he is not fine. - Bowie says two words and Ripper is gone. Full tears laughing. The tribe watches, confused. \"You had to be there\" doesn't cover it. RED CAMP: - [TEAM PLAYER] Zee didn't need the spotlight. He kept feeding balls to Caleb, set up plays, covered gaps. That kind of selflessness doesn't go unnoticed. - [CHOKED] Zee was supposed to be good at this. He wasn't. The tribe expected more and got less. - Emmah refuses to sit still — fishing, fixing the shelter, hauling water. She is making herself indispensable. - Caleb and Emmah check in on the tribe's mood together. By the end they have the same read — and the same target. - Zee barely sleeps. The bags under his eyes tell a story. The tribe sees a liability forming. - Brightly clocks that Caleb has been paying close attention and adjust accordingly. - Hicks has everyone in tears — a story from before the game that somehow lands perfectly out here. For a few minutes the game doesn't exist. - Hicks reads the game out loud to Zee. Zee mostly listens. Both leave knowing more than they did. - Emmah watches Brightly get congratulated after the challenge. She claps along. The smile doesn't reach her eyes. - Emmah explodes at camp. No single trigger. Pure accumulated pressure finally breaking the seal. - Caleb picks a fight over nothing and wins the argument and loses the game. The tribe saw exactly who he is today. - Zee don't overreact. He just makes a mental note. Caleb did the work for him today. BLUE CAMP: - [TEAM PLAYER] Wayne didn't need the spotlight. He kept feeding balls to Priya, set up plays, covered gaps. That kind of selflessness doesn't go unnoticed. - [LIABILITY] MK was the weakest link on the court. Even in a win, the tribe noticed. - Damien hasn't been told the full The Final Four Pact plan in two days. The exclusion is quiet but deliberate. - MK has been watching everyone too carefully. The tribe notices the noticing. - MK takes the last of the rice without asking. Raj saw it happen and says nothing — at camp. - Raj and MK are both running on empty. They don't say much — but they don't leave each other's side either. Something about surviving this together changes things. - Priya protects Wayne from a conversation that would have changed his whole read of the game. Priya needs Wayne exactly as he is. - Wayne catches Raj in a conversation that wasn't meant for him. The Final Four Pact has a leak. - Priya tells Raj something she haven't told anyone else out here. About home. About why she is really here. Raj listens without interrupting. - Raj makes a joke at the fire. MK laughs before she can stop herself. It's the first real laugh between them in a long time. The tribe notices. === VOTING PLANS — YELLOW === ALLIANCE PLANS: The Anti-Scary Girl Coalition (3 members, 3 can vote) TARGET: Scary Girl REASONING: Nichelle agreed on this name — going along with it MEMBERS: Bowie, Nichelle, Ripper SPEARHEADER: Bowie CONFLICTED: Nichelle: Actually voted Chase — can't shake the feeling — Chase is not safe to keep Ripper: Actually voted Chase — tribe comes first — Chase is the weakest link and everyone knows it Chase's Three (3 members, 3 can vote) TARGET: Nichelle REASONING: follows Axel — for now MEMBERS: Chase, Scary Girl, Axel SPEARHEADER: Chase CONFLICTED: Axel: Actually voted Scary Girl — the threat is real enough that keeping them another round feels like a mistake GOING INTO TRIBAL: Primary Target: Scary Girl (2 votes) Counter Target: Nichelle (2 votes) Dark Horse: Chase (2 votes) KEY CONFESSIONALS: Bowie [Spearheader]: \"Nichelle agreed on this name — going along with it\" Chase [Spearheader]: \"follows Axel — for now\" Ripper [Conflicted]: \"tribe comes first — Chase is the weakest link and everyone knows it\" === TRIBAL COUNCIL === Attendees: Bowie, Chase, Ripper, Scary Girl, Nichelle, Axel WORD AT CAMP: #1 TARGET: Scary Girl — Challenge dominance. (The tribe is watching) #2 TARGET: Nichelle — Too well-liked. Jury threat. (The tribe is watching) #3 WATCH: Chase — Too well-liked. Jury threat. (The tribe is watching) AT TRIBAL COUNCIL: Chris leans forward toward Scary Girl. \"I want to ask you directly — how are you feeling right now?\" Scary Girl: \"I'm nervous, yeah. I've put in the work here. I've been loyal. I just hope that's worth something tonight.\" -> Scary Girl shows their hand. The vulnerability is visible — allies feel pressure to follow through, or freedom to bail. Chris looks at Bowie. \"You've been one of the more vocal voices about the direction of this game. Is tonight going the way you planned?\" Bowie: \"Plans change. What matters is whether you've done the work before tonight. I have.\" -> Bowie deflects cleanly. But the tribe just named them the chess player — and everyone heard it. Chris asks Chase directly: \"Does tonight feel like a game move to you, or does it feel personal?\" Chase: \"Game, always. I've tried to keep the emotion out of it. Tonight is no different.\" -> Chase plays it clean. A little too clean — somebody here doesn't buy it. Chris leans back, scanning the fire. \"There's clearly something unspoken between some of you. Anyone want to put it on the table?\" Scary Girl: \"I think the tribe has a clear idea of what the right move is. Whether they make it is a different question.\" Bowie: \"That's the thing about Scary Girl — always making it about personalities when it's really just strategy.\" -> The confrontation is out. The tribe absorbs it — some shifting, some very still. The air has changed. \"The votes have been cast.\" === THE VOTES === Bowie voted for Scary Girl — Nichelle agreed on this name — going along with it; voted for Nichelle on revote — flipped to avoid rocks Chase voted for Nichelle — follows Axel — for now Ripper voted for Chase — tribe comes first — Chase is the weakest link and everyone knows it; voted for Scary Girl on revote — flipped to avoid rocks Scary Girl voted for Nichelle — too likeable — wins any jury vote that's asked to compare Nichelle voted for Chase — can't shake the feeling — Chase is not safe to keep Axel voted for Scary Girl — the threat is real enough that keeping them another round feels like a mistake; voted for Chase on revote — flipped to avoid rocks Nichelle — could not vote on revote (was in the tie) Scary Girl — could not vote on revote (was in the tie) Chase — could not vote on revote (was in the tie) === WHY THIS VOTE HAPPENED === Axel was eliminated by rock draw — was NOT in the tie and never received a vote. Pure chance. Axel (Hothead) — the tribe has spoken. VOTED OUT THIS EPISODE: Axel === DODGEBRAWL === 5v5 dodgeball — first to 3 wins immunity. Round 1: Red wins. Hicks trick shot. Caleb rage mode. Round 2: Red wins. Hicks trick shot. Priya clutch dodge. Emmah calls rush strategy. Round 3: Red wins. Damien trick shot. Caleb rage mode. Priya clutch dodge. Final: Yellow 0 — Red 3 — Blue 0 Winner: Red. Yellow goes to tribal. MVP: Caleb === CAMP OVERVIEW === YELLOW (5): Bowie, Chase, Ripper, Scary Girl, Nichelle RED (6): Zee, Brightly, Hicks, Emmah, Millie, Caleb BLUE (5): Wayne, Raj, Priya, MK, Damien Permanently out: Julia, Axel === WRITER CONTEXT === COLD OPEN HOOK: Nobody chose to send Axel home. A rock did. The tribe sits in silence at camp, processing something nobody knows how to talk about. NEXT EPISODE QUESTIONS: - Bowie ran the vote tonight. Can anyone break that grip before it's too late? - Nichelle survived by a single vote. Do they scramble or play it cool? - Bowie and Chase are both on the outside. Do they find each other?"
+        - generic [ref=e93]:
+          - generic [ref=e94]:
+            - generic [ref=e95]: Episode History
+            - generic [ref=e96] [cursor=pointer]:
+              - checkbox "Spoiler-free" [ref=e97]
+              - text: Spoiler-free
+          - generic [ref=e98]:
+            - generic [ref=e99] [cursor=pointer]:
+              - generic [ref=e100]:
+                - text: Episode 1
+                - button "↺" [ref=e101]
+              - generic [ref=e102]: Julia
+            - generic [ref=e103] [cursor=pointer]:
+              - generic [ref=e104]:
+                - text: Episode 2
+                - button "↺" [ref=e105]
+              - generic [ref=e106]: Axel
+              - generic [ref=e108]: Dodgebrawl

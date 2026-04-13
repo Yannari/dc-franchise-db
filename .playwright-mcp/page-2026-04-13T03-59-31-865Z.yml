@@ -1,0 +1,151 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e4]:
+      - img "DC" [ref=e5]
+      - text: DC Franchise Simulator
+    - navigation [ref=e6]:
+      - button "Cast Builder" [ref=e7] [cursor=pointer]
+      - button "Season Setup" [active] [ref=e8] [cursor=pointer]
+      - button "Run Episode" [ref=e9] [cursor=pointer]
+      - button "Results" [ref=e10] [cursor=pointer]
+  - generic [ref=e1308]:
+    - generic [ref=e1309]:
+      - button "Season Setup" [ref=e1310] [cursor=pointer]
+      - button "Episode Format Designer" [ref=e1311] [cursor=pointer]
+      - button "Relationships" [ref=e1312] [cursor=pointer]
+      - button "Alliances" [ref=e1313] [cursor=pointer]
+    - generic [ref=e1315]:
+      - generic [ref=e1316]:
+        - generic [ref=e1317]: SEASON BASICS
+        - generic [ref=e1318]:
+          - generic [ref=e1319]: Season Title
+          - textbox "e.g. Champions vs Contenders" [ref=e1320]
+        - generic [ref=e1321]:
+          - generic [ref=e1322]:
+            - generic [ref=e1323]: Season Year
+            - textbox "2024" [ref=e1324]
+          - generic [ref=e1325]:
+            - generic [ref=e1326]: Length (Days)
+            - spinbutton [ref=e1327]: "39"
+        - generic [ref=e1328]:
+          - generic [ref=e1329]: Host
+          - combobox [ref=e1330]:
+            - option "Chris McLean" [selected]
+            - option "Chef Hatchet"
+            - option "Jeff Probst"
+        - generic [ref=e1331]:
+          - generic [ref=e1332]: Game Mode
+          - generic [ref=e1333]:
+            - button "Spectator" [ref=e1334] [cursor=pointer]
+            - button "Interactive" [ref=e1335] [cursor=pointer]
+        - generic [ref=e1337]: FORMATS & TWISTS
+        - generic [ref=e1339] [cursor=pointer]:
+          - generic [ref=e1340]: Tiebreaker Mode
+          - generic [ref=e1341]: ▼
+        - generic [ref=e1343] [cursor=pointer]:
+          - generic [ref=e1344]: 2nd Chance Isle Format
+          - generic [ref=e1345]: ▼
+        - generic [ref=e1347] [cursor=pointer]:
+          - generic [ref=e1348]: Shot in the Dark
+          - generic [ref=e1349]: ▼
+        - generic [ref=e1351] [cursor=pointer]:
+          - generic [ref=e1352]: Black Vote
+          - generic [ref=e1353]: ▼
+        - generic [ref=e1355] [cursor=pointer]:
+          - generic [ref=e1356]: Aftermath Show
+          - generic [ref=e1357]: ▼
+        - generic [ref=e1359] [cursor=pointer]:
+          - generic [ref=e1360]: Romance
+          - generic [ref=e1361]: ▼
+        - generic [ref=e1363] [cursor=pointer]:
+          - generic [ref=e1364]: Journey Format
+          - generic [ref=e1365]: ▼
+        - generic [ref=e1367] [cursor=pointer]:
+          - generic [ref=e1368]: Exile Island Format
+          - generic [ref=e1369]: ▼
+        - generic [ref=e1371] [cursor=pointer]:
+          - generic [ref=e1372]: Fan Decided Format
+          - generic [ref=e1373]: ▼
+        - generic [ref=e1375]: Quick load
+        - generic [ref=e1376]:
+          - button "S9 Defaults" [ref=e1377] [cursor=pointer]
+          - button "S10 Defaults" [ref=e1378] [cursor=pointer]
+          - button "DC4 Defaults" [ref=e1379] [cursor=pointer]
+      - generic [ref=e1380]:
+        - generic [ref=e1381]: TRIBES
+        - generic [ref=e1382]:
+          - generic [ref=e1383]:
+            - generic "Click to change color" [ref=e1384] [cursor=pointer]
+            - textbox "Tribe name" [ref=e1385]: Yellow
+            - button "✕" [ref=e1386] [cursor=pointer]
+          - generic [ref=e1387]:
+            - generic "Click to change color" [ref=e1388] [cursor=pointer]
+            - textbox "Tribe name" [ref=e1389]: Red
+            - button "✕" [ref=e1390] [cursor=pointer]
+          - generic [ref=e1391]:
+            - generic "Click to change color" [ref=e1392] [cursor=pointer]
+            - textbox "Tribe name" [ref=e1393]: Blue
+            - button "✕" [ref=e1394] [cursor=pointer]
+        - button "+ Add Tribe" [ref=e1395] [cursor=pointer]
+        - generic [ref=e1397]: SEASON STRUCTURE
+        - generic [ref=e1399]:
+          - generic [ref=e1400]:
+            - text: "Cast Size:"
+            - strong [ref=e1401]: "18"
+            - text: Players
+          - generic [ref=e1402]: Set in Cast Builder
+        - generic [ref=e1405]: SEASON OPTIONS
+        - generic [ref=e1406]:
+          - generic [ref=e1407]:
+            - text: "Initial Teams:"
+            - strong [ref=e1408]: "2"
+          - slider [ref=e1409] [cursor=pointer]: "2"
+        - generic [ref=e1410]:
+          - generic [ref=e1411]:
+            - text: Merge at
+            - strong [ref=e1412]: "12"
+            - text: Players Left
+          - slider [ref=e1413] [cursor=pointer]: "12"
+        - generic [ref=e1414]: END GAME
+        - generic [ref=e1415]:
+          - generic [ref=e1416]:
+            - text: "Finale Size: Final"
+            - strong [ref=e1417]: "3"
+          - slider [ref=e1418] [cursor=pointer]: "3"
+        - generic [ref=e1419]:
+          - generic [ref=e1420]: Finale Format
+          - combobox [ref=e1421]:
+            - option "Council Vote (Traditional)" [selected]
+            - option "Winner's Cut (immunity winner picks who goes to FTC)"
+            - option "Fan Vote Finale"
+            - option "Final Challenge (No Jury)"
+            - option "Fire-Making (F4 → duel → F3 FTC)"
+            - option "Koh-Lanta (F4 orienteering → F3 perch → F2 FTC)"
+          - generic [ref=e1422]:
+            - checkbox "Enable Assistants (Final Challenge)" [ref=e1423]
+            - text: Enable Assistants (Final Challenge)
+        - generic [ref=e1424]:
+          - generic [ref=e1425]:
+            - text: "Council Size:"
+            - strong [ref=e1426]: "9"
+            - text: Members
+          - slider [ref=e1427] [cursor=pointer]: "9"
+        - generic [ref=e1428]: SETTINGS & MECHANICS
+        - generic [ref=e1430] [cursor=pointer]:
+          - generic [ref=e1431]: Hidden Immunity Idol Settings
+          - generic [ref=e1432]: ▼
+        - generic [ref=e1434] [cursor=pointer]:
+          - generic [ref=e1435]: Advantage Settings
+          - generic [ref=e1436]: ▼
+        - generic [ref=e1438] [cursor=pointer]:
+          - generic [ref=e1439]: Quits, Expulsions & Medevacs
+          - generic [ref=e1440]: ▼
+        - generic [ref=e1442] [cursor=pointer]:
+          - generic [ref=e1443]: Popularity System
+          - generic [ref=e1444]: ▼
+        - generic [ref=e1446] [cursor=pointer]:
+          - generic [ref=e1447]: Survival Mechanics
+          - generic [ref=e1448]: ▼
+        - generic [ref=e1450] [cursor=pointer]:
+          - generic [ref=e1451]: The Mole
+          - generic [ref=e1452]: ▼

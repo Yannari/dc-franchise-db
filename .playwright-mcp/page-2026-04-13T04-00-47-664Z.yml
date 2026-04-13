@@ -1,0 +1,115 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e4]:
+      - img "DC" [ref=e5]
+      - text: DC Franchise Simulator
+    - navigation [ref=e6]:
+      - button "Cast Builder" [ref=e7] [cursor=pointer]
+      - button "Season Setup" [ref=e8] [cursor=pointer]
+      - button "Run Episode" [ref=e9] [cursor=pointer]
+      - button "Results" [ref=e10] [cursor=pointer]
+  - generic [ref=e1453]:
+    - complementary [ref=e1454]:
+      - generic [ref=e1455]: Game State
+      - generic [ref=e1456]:
+        - generic [ref=e1569]:
+          - generic [ref=e1570]:
+            - generic [ref=e1571]: Episode
+            - strong [ref=e1572]: "2"
+          - generic [ref=e1573]:
+            - generic [ref=e1574]: Phase
+            - strong [ref=e1575]: Pre-Merge
+          - generic [ref=e1576]:
+            - generic [ref=e1577]: Active
+            - strong [ref=e1578]: "16"
+          - generic [ref=e1579]:
+            - generic [ref=e1580]: On RI
+            - strong [ref=e1581]: "0"
+        - generic [ref=e1582]:
+          - generic [ref=e1583]:
+            - generic [ref=e1584]: Yellow (6)
+            - generic [ref=e1585]: Bowie · Chase · Ripper · Scary Girl · Nichelle · Axel
+          - generic [ref=e1586]:
+            - generic [ref=e1587]: Red (6)
+            - generic [ref=e1588]: Zee · Brightly · Hicks · Emmah · Millie · Caleb
+          - generic [ref=e1589]:
+            - generic [ref=e1590]: Blue (4)
+            - generic [ref=e1591]: Wayne · Priya · MK · Damien
+        - generic [ref=e1592]:
+          - generic [ref=e1593]: Alliances
+          - generic [ref=e1594]:
+            - text: The Inner Circle · 1 betrayal · 1 quit
+            - generic [ref=e1595]: MK, Damien
+          - generic [ref=e1596]:
+            - text: The Dock Pact · 1 betrayal
+            - generic [ref=e1597]: Priya, MK
+        - generic [ref=e1598]:
+          - generic [ref=e1599]: Eliminated
+          - generic [ref=e1600]: Julia, Raj
+      - button "Simulate Episode 3" [active] [ref=e1601] [cursor=pointer]
+      - generic [ref=e1482]:
+        - button "+5 Eps" [ref=e1483] [cursor=pointer]
+        - button "Sim All" [ref=e1484] [cursor=pointer]
+      - button "↺ Re-run This Episode" [ref=e1539] [cursor=pointer]
+      - button "Reset Season" [ref=e1485] [cursor=pointer]
+      - generic [ref=e1486]: Reset clears all episode history but keeps your cast and setup intact.
+      - generic [ref=e1488]: Season Save
+      - button "Save Season" [ref=e1489] [cursor=pointer]
+      - button "Export Season" [ref=e1490] [cursor=pointer]
+      - button "Import Season" [ref=e1491] [cursor=pointer]
+      - combobox [ref=e1492]:
+        - option "— Load saved season —" [selected]
+      - generic [ref=e1493]:
+        - button "Load" [ref=e1494] [cursor=pointer]
+        - button "Delete" [ref=e1495] [cursor=pointer]
+    - main [ref=e1496]:
+      - generic [ref=e1497]:
+        - generic [ref=e1602]:
+          - generic [ref=e1603]:
+            - generic [ref=e1604]: Episode 2
+            - generic [ref=e1605]: Pre-merge
+          - generic [ref=e1606]:
+            - generic [ref=e1607]:
+              - generic [ref=e1608]: Immunity
+              - text: —
+            - generic [ref=e1609]:
+              - generic [ref=e1610]: Tribal
+              - text: Vote follows
+            - generic [ref=e1611]:
+              - generic [ref=e1612]: Eliminated
+              - text: Raj
+            - generic [ref=e1613]:
+              - generic [ref=e1614]: Votes
+              - text: 5 cast
+          - generic [ref=e1615]:
+            - generic [ref=e1616]: Vote breakdown
+            - generic [ref=e1617]:
+              - generic [ref=e1618]: "Damien: 2"
+              - generic [ref=e1619]: "Raj: 2"
+              - generic [ref=e1620]: "MK: 1"
+        - generic [ref=e1498]:
+          - generic [ref=e1499]:
+            - generic [ref=e1500]: Episode Summary Output
+            - generic [ref=e1501]: Paste into current-season.html → skip BrantSteele field → Generate Episode
+            - button "▶ View Episode" [ref=e1502] [cursor=pointer]
+            - button "Copy" [ref=e1503] [cursor=pointer]
+            - button "Export to Pipeline" [ref=e1504] [cursor=pointer]
+          - textbox [ref=e1505]: "=== META === Season: Unknown | Episode: 2 | Phase: pre-merge | Players Remaining: 16 === CAST (ALL) === STARTING CAST (18): Bowie Chase Ripper Scary Girl Nichelle Axel Zee Brightly Hicks Emmah Millie Caleb Wayne Raj Julia Priya MK Damien === TRIBES (ACTIVE) === Yellow Tribe (6): Bowie, Chase, Ripper, Scary Girl, Nichelle, Axel Red Tribe (6): Zee, Brightly, Hicks, Emmah, Millie, Caleb Blue Tribe (5): Wayne, Raj, Priya, MK, Damien === ELIMINATED (PERMANENT) === Julia, Raj === COLD OPEN === Ep.1: Julia was voted out. === CAMP — PRE-CHALLENGE — YELLOW === ADVANTAGES: - The Yellow Hidden Immunity Idol is currently hidden. === CAMP — PRE-CHALLENGE — RED === ADVANTAGES: - The Red Hidden Immunity Idol is currently hidden. === CAMP — PRE-CHALLENGE — BLUE === ADVANTAGES: - The Blue Hidden Immunity Idol is currently hidden. CAMP EVENTS: YELLOW CAMP: - Scary Girl can feel Bowie's eyes on her during every group conversation. It's not paranoia. It's accurate. - Chase keeps the energy at camp from collapsing today. It's not a dramatic thing. It's a dozen small things. - Bowie tells someone he isn't worried about tonight. Word travels. Now other people are worried about Bowie. - Axel and Ripper spend the afternoon working together. By sunset they feel like a unit. - [MAKING AMENDS] Axel pulls Chase aside. \"About yesterday — I'm sorry.\" Chase doesn't respond immediately. But the wall comes down a little. RED CAMP: - Zee is still going when everyone else has stopped. The tribe files it away: challenge threat. Real one. - Zee and Emmah have been circling each other for days. Then — quietly, away from camp — they actually talk. Not strategy. Just talk. Neither will admit it changed anything. - Hicks makes a comment about how \"the vote is obvious tonight.\" Three people in earshot disagree silently. - Caleb hauls a log that Hicks couldn't move yesterday. Hicks watches and doesn't say anything. - Millie does more at camp than anyone expected. Not because she is the best at any of it. Because she won't stop trying. - [SIDE DEAL] Emmah pulled Brightly aside after dark. \"Final three.\" The conversation lasted ten minutes. When they came back, something had changed. BLUE CAMP: - The tribe clusters into a conversation that MK isn't part of. She hovers at the edge, waiting for an opening. It doesn't come. - Damien and Raj do a full check-in after camp duties. Damien sees angles Raj hasn't noticed yet. - Priya sets up something ridiculous and Wayne walks right into it. Even Wayne has to admit it was good. - Damien hits a wall. Wayne notices before anyone else does and stays close without making it a big deal. He doesn't forget it. - Raj and MK have been circling each other for days. Then — quietly, away from camp — they actually talk. Not strategy. Just talk. Neither will admit it changed anything. - Wayne makes Damien feel like the most important person on the tribe. Whether that's intentional doesn't matter. RELATIONSHIPS — YELLOW: - Bowie and Ripper feel a mutual slight bond toward one another. - Chase and Axel feel mutual dislike toward one another. - Bowie and Nichelle feel a mutual slight bond toward one another. - Nichelle and Axel feel a mutual slight bond toward one another. - Scary Girl and Nichelle feel a mutual slight bond toward one another. - Chase and Nichelle feel a mutual slight bond toward one another. - Chase and Scary Girl feel a mutual slight bond toward one another. - Ripper and Nichelle feel a mutual slight bond toward one another. - Bowie and Scary Girl feel a mutual slight bond toward one another. - Ripper and Axel feel a mutual slight bond toward one another. - Bowie and Chase feel mutual slight dislike toward one another. - Scary Girl and Axel feel a mutual very slight bond toward one another. - Bowie and Axel feel mutual slight dislike toward one another. - Chase and Ripper have a neutral relationship with each other. - Ripper and Scary Girl have a neutral relationship with each other. RELATIONSHIPS — RED: - Brightly and Caleb feel a mutual solid bond toward one another. - Brightly and Emmah feel a mutual slight bond toward one another. - Millie and Caleb feel a mutual slight bond toward one another. - Zee and Hicks feel a mutual slight bond toward one another. - Brightly and Hicks feel a mutual slight bond toward one another. - Zee and Millie feel a mutual slight bond toward one another. - Zee and Brightly feel a mutual slight bond toward one another. - Zee and Caleb feel a mutual slight bond toward one another. - Hicks and Millie feel a mutual very slight bond toward one another. - Zee and Emmah feel a mutual very slight bond toward one another. - Hicks and Emmah feel a mutual very slight bond toward one another. - Hicks and Caleb have a neutral relationship with each other. - Emmah and Millie have a neutral relationship with each other. - Emmah and Caleb have a neutral relationship with each other. - Brightly and Millie have a neutral relationship with each other. RELATIONSHIPS — BLUE: - Wayne and Priya feel a mutual solid bond toward one another. - Priya and Raj feel a mutual solid bond toward one another. - Wayne and Raj feel a mutual slight bond toward one another. - MK and Damien feel a mutual slight bond toward one another. - Wayne and MK feel mutual dislike toward one another. - Priya and MK feel a mutual slight bond toward one another. - Priya and Damien feel a mutual very slight bond toward one another. - Wayne and Damien feel mutual slight dislike toward one another. - MK and Raj feel a mutual very slight bond toward one another. - Damien and Raj have a neutral relationship with each other. ALLIANCES: The Inner Circle (formed ep.1): MK, Damien > Wayne betrayed ep.2 — voted MK instead of Raj — voted against own ally — the real target was Raj but they couldn't pull the trigger > Wayne left ep.2 (expelled — betrayed the alliance) The Dock Pact (formed ep.2) — FORMED THIS EPISODE: Priya, MK > MK betrayed ep.2 — voted Raj instead of Damien (brand new alliance) — going with The Inner Circle for now, not out of pure loyalty The Elimination Insurance (formed ep.1) — DISSOLVED: Wayne > Wayne betrayed ep.2 — voted MK instead of Damien — the real target was Raj but they couldn't pull the trigger === IMMUNITY CHALLENGE === TRIBE IMMUNITY (Awake-A-Thon challenge — endurance) Three-phase endurance: 20km run, feast trap, stay awake. 1. Red — WIN, immune Standings: Caleb (standout) > Zee > Hicks > Brightly > Emmah > Millie (weak link) 2. Yellow — safe Standings: Scary Girl (standout) > Nichelle > Axel > Bowie > Chase > Ripper (weak link) 3. Blue — LAST, goes to tribal Standings: Damien (standout) > Raj > Priya > Wayne > MK (weak link) RESULT: Blue go to tribal council. NOTE: Red and Yellow were separated by almost nothing — it could have gone either way. NOTE: Red's win was carried almost entirely by Caleb — the rest of the tribe was mid-pack. === TWISTS === === CAMP — POST-CHALLENGE === YELLOW CAMP: - [LATE NIGHT DEAL] At 12 hours in, Bowie leans over to Nichelle. \"You and me. Final two. What do you say?\" - [STAYING AWAKE TOGETHER] Bowie and Nichelle talk quietly to stay awake. The conversation runs deeper than either expected. - [STAYING AWAKE TOGETHER] Nichelle and Axel talk quietly to stay awake. The conversation runs deeper than either expected. - A quiet morning at camp. For one hour, nobody talks about the game. - Bowie doesn't mean to overhear — but does. The game just changed, quietly. - Nichelle doesn't have proof — but she has enough. She starts adjusting accordingly. - Bowie admits to Ripper that he's scared. Not of the game — of what it's bringing out in him. Ripper says something simple that lands. - Axel wanders far from camp, searching for a hidden advantage. No one notices she's gone. - Chase keeps the energy at camp from collapsing today. It's not a dramatic thing. It's a dozen small things. - Axel and Nichelle find a spot away from camp. A check-in becomes a full strategic session. - Even Chase, who rarely reacts, finally says something to Axel. That's how you know it's bad. - Chase moves differently today — not toward the obvious play. The tribe tries to read it. RED CAMP: - [IRON WILL] Caleb was the last one standing. 16 rounds. He never closed his eyes. - [STAYING AWAKE TOGETHER] Zee and Caleb talk quietly to stay awake. The conversation runs deeper than either expected. - [SLEEPLESS ROMANCE] Brightly and Caleb have been talking for hours. At some point the conversation stopped being about the game. - [STAYING AWAKE TOGETHER] Zee and Hicks talk quietly to stay awake. The conversation runs deeper than either expected. - [LATE NIGHT DEAL] At 85 hours in, Caleb leans over to Zee. \"You and me. Final two. What do you say?\" - [STAYING AWAKE TOGETHER] Zee and Damien talk quietly to stay awake. The conversation runs deeper than either expected. - Emmah and Hicks stay up talking long after everyone else is asleep. - Zee makes Hicks feel like the most important person on the tribe. Whether that's intentional doesn't matter. - Millie gets into a one-sided argument with a seagull. The seagull wins. The tribe pretends not to notice. - Millie makes Caleb feel like an equal partner. The split of power in their arrangement is not equal. - Something is happening between Caleb and Brightly. It started as nothing. It's not nothing anymore. - Brightly finds a quiet moment with Emmah. What starts as small talk becomes something deliberate. - Caleb picks a fight over nothing and wins the argument and loses the game. The tribe saw exactly who he is today. - Zee don't overreact. He just makes a mental note. Caleb did the work for him today. BLUE CAMP: - [STAYING AWAKE TOGETHER] Wayne and Priya talk quietly to stay awake. The conversation runs deeper than either expected. - MK's calm energy draws Wayne in. They talk for hours. Neither wanted to stop. - Priya positions MK for a move she won't make until next week. MK has no idea she's already that far ahead. - No pitch. No strategy talk. Priya and MK just looked at each other and knew. The Dock Pact forms naturally — the way the best alliances do. - Wayne says something that makes MK laugh and then immediately looks around to see if anyone else caught it. Everyone did. - Damien contemplates a move that could flip everything. He runs it over and over. - Even Raj, who rarely reacts, finally says something to Damien. That's how you know it's bad. - MK: \"I've been patient. Too patient. Something has to change — and I'm the one who changes it.\" - Raj says the right thing at the right moment. Camp exhales. - Wayne overhears something MK said about him. Not cruel — worse. Dismissive. Like the bond was a phase MK has moved past. === VOTING PLANS — BLUE === ALLIANCE PLANS: The Inner Circle (3 members, 3 can vote) TARGET: Raj REASONING: The Inner Circle made the call and they're committed MEMBERS: Damien, MK, Wayne SPEARHEADER: MK CONFLICTED: Wayne: Actually voted MK — the real target was Raj but they couldn't pull the trigger — MK instead — broke own bloc — broke The Elimination Insurance — broke The Inner Circle The Raj & Priya Pact (2 members, 2 can vote) TARGET: Damien REASONING: trust is everything out here — following The Raj & Priya Pact MEMBERS: Raj, Priya SPEARHEADER: Priya The Elimination Insurance (2 members, 2 can vote) TARGET: Damien REASONING: trust is everything out here — following The Raj & Priya Pact MEMBERS: Wayne, Raj SPEARHEADER: Wayne CONFLICTED: Wayne: Actually voted MK — the real target was Raj but they couldn't pull the trigger — MK instead — broke own bloc — broke The Elimination Insurance — broke The Inner Circle The Dock Pact (2 members, 2 can vote) TARGET: Damien REASONING: goes with The Raj & Priya Pact's read — no reason to deviate MEMBERS: Priya, MK SPEARHEADER: Priya CONFLICTED: MK: Actually voted Raj — going with The Inner Circle for now, not out of pure loyalty — broke The Dock Pact (alliance formed this episode — bonds never had time to solidify) GOING INTO TRIBAL: Primary Target: Damien (2 votes) Counter Target: Raj (2 votes) KEY CONFESSIONALS: MK [Spearheader]: \"going with The Inner Circle for now, not out of pure loyalty — broke The Dock Pact (alliance formed this episode — bonds never had time to solidify)\" Priya [Spearheader]: \"goes with The Raj & Priya Pact's read — no reason to deviate\" Wayne [Conflicted]: \"the real target was Raj but they couldn't pull the trigger — MK instead — broke own bloc — broke The Elimination Insurance — broke The Inner Circle\" === TRIBAL COUNCIL === Attendees: Wayne, Raj, Priya, MK, Damien WORD AT CAMP: #1 TARGET: Damien — The Raj & Priya Pact made the call. (The tribe is watching) #2 TARGET: Raj — Challenge dominance. (The tribe is watching) #3 WATCH: MK — Strategic threat — hard to beat at FTC. (Floated as a possibility) AT TRIBAL COUNCIL: Chris leans forward toward Damien. \"I want to ask you directly — how are you feeling right now?\" Damien: \"I'm nervous, yeah. I've put in the work here. I've been loyal. I just hope that's worth something tonight.\" -> Damien shows their hand. The vulnerability is visible — allies feel pressure to follow through, or freedom to bail. Chris asks MK point blank: \"If tonight's vote goes sideways — and it might — how much of that lands on you?\" MK: \"Plans change. What matters is whether you've done the work before tonight. I have.\" -> MK deflects cleanly. But the tribe just named them the chess player — and everyone heard it. \"The votes have been cast.\" === THE VOTES === Wayne voted for MK — the real target was Raj but they couldn't pull the trigger — MK instead — broke own bloc — broke The Elimination Insurance — broke The Inner Circle; voted for Raj on revote — flipped to avoid rocks — chose numbers over loyalty Raj voted for Damien — trust is everything out here — following The Raj & Priya Pact Priya voted for Damien — goes with The Raj & Priya Pact's read — no reason to deviate; voted for Raj on revote — flipped to avoid rocks — chose numbers over loyalty MK voted for Raj — going with The Inner Circle for now, not out of pure loyalty — broke The Dock Pact (alliance formed this episode — bonds never had time to solidify); voted for Damien on revote — flipped to avoid rocks Damien voted for Raj — The Inner Circle made the call and they're committed Damien — could not vote on revote (was in the tie) Raj — could not vote on revote (was in the tie) === WHY THIS VOTE HAPPENED === Raj was voted out on the revote after tying 2-2 with Damien: - The tie: MK, Damien voted Raj / Raj, Priya voted Damien - On the revote, Damien and Raj could not vote - Wayne flipped from MK to Raj — flipped to avoid rocks — chose numbers over loyalty - Priya flipped from Damien to Raj — flipped to avoid rocks — chose numbers over loyalty - MK flipped from Raj to Damien — flipped to avoid rocks - Final revote: Raj (2): Wayne, Priya | Damien (1): MK - Raj went home because nobody held firm on the original anti-Raj vote — all flippers landed on Raj - Went to a revote Raj (Loyal Soldier) — the tribe has spoken. VOTED OUT THIS EPISODE: Raj === AWAKE-A-THON === Phase 1 — The Run: FINISHED: Bowie, Chase, Ripper, Scary Girl, Axel, Zee, Hicks, Emmah, Millie, Caleb, Wayne, Raj, Priya, MK DNF: Nichelle, Brightly, Damien Phase 2 — The Feast (the trap): Feast eaters: Bowie, Chase, Ripper, Scary Girl, Axel, Zee, Hicks, Emmah, Millie, Caleb, Wayne, Raj, Priya, MK (-0.15 stay-awake penalty) Phase 3 — The Awake-A-Thon: Round 1: Ripper falls asleep (Yellow) Round 2: Millie falls asleep (Red) Round 3: MK falls asleep (Blue) [STAYING AWAKE TOGETHER] Zee and Caleb talk quietly to stay awake. The conversation runs deeper than either expected. Round 4: Chase falls asleep (Yellow) [LATE NIGHT DEAL] At 12 hours in, Bowie leans over to Nichelle. \"You and me. Final two. What do you say?\" [SLEEPLESS ROMANCE] Brightly and Caleb have been talking for hours. At some point the conversation stopped being about the game. Round 5: Emmah falls asleep (Red) [STAYING AWAKE TOGETHER] Wayne and Priya talk quietly to stay awake. The conversation runs deeper than either expected. [24 HOURS — FAIRY TALES] Round 6: Wayne falls asleep (Blue) Round 7: Priya falls asleep (Blue) [STAYING AWAKE TOGETHER] Bowie and Nichelle talk quietly to stay awake. The conversation runs deeper than either expected. Round 8: Brightly falls asleep (Red) [STAYING AWAKE TOGETHER] Zee and Hicks talk quietly to stay awake. The conversation runs deeper than either expected. Round 9: Raj falls asleep (Blue) Round 10: Bowie falls asleep (Yellow) [STAYING AWAKE TOGETHER] Nichelle and Axel talk quietly to stay awake. The conversation runs deeper than either expected. Round 11: Hicks falls asleep (Red) [85 HOURS — HISTORY OF CANADA] Round 12: Axel falls asleep (Yellow) [LATE NIGHT DEAL] At 85 hours in, Caleb leans over to Zee. \"You and me. Final two. What do you say?\" Round 13: Nichelle falls asleep (Yellow) [STAYING AWAKE TOGETHER] Zee and Damien talk quietly to stay awake. The conversation runs deeper than either expected. Round 14: Zee falls asleep (Red) Round 15: Damien falls asleep (Blue) Round 16: Scary Girl falls asleep (Yellow) RESULT: Red wins immunity. Last awake: Caleb (IRON WILL) First out: Ripper (Yellow) === CAMP OVERVIEW === YELLOW (6): Bowie, Chase, Ripper, Scary Girl, Nichelle, Axel RED (6): Zee, Brightly, Hicks, Emmah, Millie, Caleb BLUE (4): Wayne, Priya, MK, Damien Permanently out: Julia, Raj === WRITER CONTEXT === COLD OPEN HOOK: Wayne volunteers for everything today. Firewood. Water. Cooking. The tribe is grateful. They should also be suspicious. NEXT EPISODE QUESTIONS: - Damien ran the vote tonight. Can anyone break that grip before it's too late? - Bowie and Chase are both on the outside. Do they find each other?"
+        - generic [ref=e1559]:
+          - generic [ref=e1560]:
+            - generic [ref=e1561]: Episode History
+            - generic [ref=e1562] [cursor=pointer]:
+              - checkbox "Spoiler-free" [ref=e1563]
+              - text: Spoiler-free
+          - generic [ref=e1564]:
+            - generic [ref=e1621] [cursor=pointer]:
+              - generic [ref=e1622]:
+                - text: Episode 1
+                - button "↺" [ref=e1623]
+              - generic [ref=e1624]: Julia
+            - generic [ref=e1625] [cursor=pointer]:
+              - generic [ref=e1626]:
+                - text: Episode 2
+                - button "↺" [ref=e1627]
+              - generic [ref=e1628]: Raj
+              - generic [ref=e1630]: Awake-A-Thon

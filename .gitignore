@@ -6,3 +6,9 @@
 
 # Git worktrees
 .worktrees/
+
+# Playwright test artifacts
+.playwright-mcp/
+
+# Test screenshots
+*-test-*.png

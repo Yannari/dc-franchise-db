@@ -1,6 +1,6 @@
 ## Project
 DC Franchise Simulator — a Survivor-style franchise simulator.
-Single file: `simulator.html` (~60,000+ lines). Do not split.
+Single file: `simulator.html` (~76,000+ lines). Do not split.
 
 ## Architecture
 - `simulator.html` — CSS + engine in one file
@@ -75,11 +75,13 @@ Tribe scores: averages per member, NEVER raw sums.
 | `hells-kitchen` | Hell's Kitchen | 3-course cooking, sabotage, food fights |
 | `trust-challenge` | Who Can You Trust? | 3-round pair trust, narrative arc per round |
 | `basic-straining` | Basic Straining | 6-phase boot camp, defiance, food raid, boathouse elimination |
+| `x-treme-torture` | X-Treme Torture | 3 extreme sport events (skydiving, moose rodeo, mud skiing). One player per tribe per event. |
 
 ### Post-Merge
 | ID | Name | Key Mechanic |
 |---|---|---|
-| `say-uncle` | Say Uncle | Endurance torture, dominator pick + backfire |
+| `say-uncle` | Say Uncle | 4-phase Dungeon of Misfortune: Wheel→Gauntlet→Rack→Final Sentence. Pillory spectators, showmance moments, host commentary. Dominator pick + backfire. |
+| `brunch-of-disgustingness` | Brunch of Disgustingness | Boys vs girls merge split. Cabin dynamics (7-8 events/team). 9-course eating: refusals, pressure-to-eat, chain vomit. Eat-off tiebreaker. Winning team immunity. |
 | `triple-dog-dare` | Triple Dog Dare | Sudden death, freebie economy |
 | `sudden-death` | Sudden Death | Last place auto-eliminated |
 | `slasher-night` | Slasher Night | Round-by-round hunt, lowest eliminated |
@@ -88,6 +90,16 @@ Tribe scores: averages per member, NEVER raw sums.
 | ID | Name | Key Mechanic |
 |---|---|---|
 | `basic-straining` | Basic Straining | Pre: first tribe to zero loses. Post: last standing wins immunity. |
+
+## Returning Player Twist
+Configurable 1-3 returnees per episode. Each slot has a "reason for returning" that drives selection weights:
+- `random` — baseline strategic + noise
+- `unfinished-business` — bond strength with active players, was blindsided
+- `entertainment` — showmance involvement, social stat, boldness
+- `strategic-threat` — strategic stat, alliance membership, enemy count
+- `underdog` — eliminated early, low threat
+
+UI: count dropdown (1-3) + per-slot reason dropdown in Episode Format Designer.
 
 ## Key Systems
 

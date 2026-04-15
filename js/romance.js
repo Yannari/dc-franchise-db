@@ -2,6 +2,7 @@
 import { gs, players, seasonConfig } from './core.js';
 import { pStats, pronouns, romanticCompat, threatScore } from './players.js';
 import { getBond, addBond } from './bonds.js';
+import { SHOWMANCE_ARCHETYPE_MULT } from './camp-events.js';
 
 export function _challengeRomanceSpark(a, b, ep, phaseKey, phases, personalScores, context) {
   if (seasonConfig.romance === 'disabled') return false;

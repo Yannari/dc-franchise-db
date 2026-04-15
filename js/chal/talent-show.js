@@ -1,6 +1,632 @@
 // js/chal/talent-show.js
 import { gs, players } from '../core.js';
 import { pStats, pronouns, tribeColor, updateChalRecord } from '../players.js';
+
+// ══════════════════════════════════════════════════════════════════════
+// ENGINE: TALENT SHOW — talent pool (30 talents, 5 categories)
+// ══════════════════════════════════════════════════════════════════════
+
+const TALENT_POOL = {
+  physical: [
+    { id: 'gymnastics', name: 'Gymnastics Routine',
+      audition: (p, pr) => `${p} nails a backflip in the dirt. The tribe watches, impressed.`,
+      performance: [
+        (p, pr) => `The lights hit as ${p} walks to center stage. ${pr.Sub} ${pr.sub === 'they' ? 'roll' : 'rolls'} ${pr.posAdj} shoulders back. The crowd leans forward.`,
+        (p, pr) => `Backflip. Handspring. Aerial cartwheel. Every landing sticks. The stage shakes with each impact but ${p} doesn't flinch.`,
+        (p, pr) => `Stuck landing. Arms up. The tribe erupts. Chef's eyebrows go up — and that's as close to impressed as he gets.`,
+      ],
+      disaster: [
+        (p, pr) => `${p} bounces onto the stage full of energy. Too much energy. The first handspring is already off-center.`,
+        (p, pr) => `The aerial goes sideways. ${p} lands on ${pr.posAdj} ankle wrong — buckles — crashes into the edge of the stage. Gasps from the crowd.`,
+        (p, pr) => `${p} ${pr.sub === 'they' ? 'limp' : 'limps'} off. The tribe stares at the floor. Chef marks his spoon without looking up.`,
+      ],
+      clutch: [
+        (p, pr) => `${p} steps out looking stiff. Nervous. The tribe can see ${pr.posAdj} hands shaking from the front row.`,
+        (p, pr) => `The first flip wobbles. But the second is cleaner. By the third, something clicks — ${p} launches into a spinning aerial nobody knew ${pr.sub} could do.`,
+        (p, pr) => `Stuck landing. Dead silence — then the camp goes ballistic. Chef's spoon climbs higher than anyone expected.`,
+      ],
+    },
+    { id: 'martial-arts', name: 'Martial Arts Demo',
+      audition: (p, pr) => `${p} throws kicks at the air with scary precision. Nobody claps ironically.`,
+      performance: [
+        (p, pr) => `${p} walks to center stage barefoot. No music. No props. Just ${pr.posAdj} body and whatever's about to happen.`,
+        (p, pr) => `Three rapid kicks. A spinning roundhouse that whistles through the air. Then the board — CRACK. Clean break. Splinters scatter.`,
+        (p, pr) => `${p} bows. The tribe is too stunned to clap immediately. Then it hits. Chef nods once — high praise from him.`,
+      ],
+      disaster: [
+        (p, pr) => `${p} takes position. Deep breath. The crowd is watching. The board is waiting.`,
+        (p, pr) => `The spinning kick clips nothing but air. ${p} slips. Falls flat. The board sits there, unbroken and mocking.`,
+        (p, pr) => `Dead silence. Someone coughs. ${p} picks ${pr.posAdj}self up and walks off. Chef doesn't even pick up his spoon.`,
+      ],
+      clutch: [
+        (p, pr) => `${p} looks uncertain stepping out. The tribe saw better at auditions. This doesn't look like the same person.`,
+        (p, pr) => `The first kick is sloppy. But then — focus. The roundhouse snaps. The flying knee connects with the board mid-air and CRACKS it clean.`,
+        (p, pr) => `The crowd goes from worried to screaming. ${p} didn't just recover — ${pr.sub} peaked. Chef leans back, impressed.`,
+      ],
+    },
+    { id: 'strength', name: 'Strength Display',
+      audition: (p, pr) => `${p} lifts a log over ${pr.posAdj} head. Simple. Effective.`,
+      performance: [
+        (p, pr) => `${p} walks out, grabs the canoe by one end. No warm-up. No speech. Just raw intent.`,
+        (p, pr) => `One clean lift. The canoe goes overhead. Then ${p} lowers it, puts a person in it, and lifts again. The stage groans.`,
+        (p, pr) => `The camp watches in silence — then pure noise. Chef marks high. That was primal.`,
+      ],
+      disaster: [
+        (p, pr) => `${p} steps up to the canoe with total confidence. Grips it. Plants ${pr.posAdj} feet. Here we go.`,
+        (p, pr) => `It doesn't budge. ${p} strains harder. Face turns red. Veins. Nothing. The canoe wins.`,
+        (p, pr) => `${p} lets go and walks off. The tribe tries not to make eye contact. Chef marks a 1 and moves on.`,
+      ],
+      clutch: [
+        (p, pr) => `${p} looks nervous at the weight. This looked easier at auditions. The camp can see the doubt.`,
+        (p, pr) => `Straining — the canoe barely lifts — starts to tip — and then ${p} ROARS and slams it overhead. One brutal push.`,
+        (p, pr) => `The camp loses it. ${p} didn't do it pretty. ${pr.Sub} did it angry. Chef's spoon jumps. That was real.`,
+      ],
+    },
+    { id: 'parkour', name: 'Parkour Run',
+      audition: (p, pr) => `${p} vaults over a bench, rolls, sticks the landing. Quick and clean.`,
+      performance: [
+        (p, pr) => `${p} sizes up the obstacle course. Cracks ${pr.posAdj} neck. The tribe watches from the bleachers.`,
+        (p, pr) => `Wall flip — clean. Rail slide — smooth. Precision jump to the stage mark — perfect. Every move connected.`,
+        (p, pr) => `${p} sticks the final landing, arms wide. The camp erupts. Chef's spoon fills fast.`,
+      ],
+      disaster: [
+        (p, pr) => `${p} sprints toward the first wall with total commitment. The approach is good. The execution is not.`,
+        (p, pr) => `Clips the rail. Eats dirt. Rolls sideways into the front row. A camper spills their drink.`,
+        (p, pr) => `${p} sits in the dirt for a long moment before standing up. The camp is quiet out of mercy. Chef marks low.`,
+      ],
+      clutch: [
+        (p, pr) => `${p} hesitates at the start line. Auditions went better. The tribe can feel the nerves.`,
+        (p, pr) => `The wall flip is shaky. The rail slide — ${p} slips — but grabs it one-handed, swings underneath, and launches onto the stage mark.`,
+        (p, pr) => `The save was better than the trick. The camp screams. Chef's spoon shoots up. Improvised excellence.`,
+      ],
+    },
+    { id: 'wrestling', name: 'Wrestling Showcase',
+      audition: (p, pr) => `${p} throws a dummy around like it insulted ${pr.obj}.`,
+      performance: [
+        (p, pr) => `${p} drags the training dummy to center stage. The dummy didn't agree to this.`,
+        (p, pr) => `Suplex. Slam. The dummy goes airborne, crashes backstage. ${p} stands over the wreckage, breathing hard.`,
+        (p, pr) => `Terrifying. The tribe claps because they're scared not to. Chef marks high — respect for violence.`,
+      ],
+      disaster: [
+        (p, pr) => `${p} grabs the dummy with authority. This should be quick and impressive.`,
+        (p, pr) => `The dummy's arm catches on ${pr.posAdj} shirt. What follows is two minutes of ${p} wrestling with fabric. The dummy appears to be winning.`,
+        (p, pr) => `${p} gives up and walks off. The dummy stays on stage. Someone has to go retrieve it. Chef gives a 1.`,
+      ],
+      clutch: [
+        (p, pr) => `${p} looks unsure approaching the dummy. The camp saw better at auditions. This feels like a different person.`,
+        (p, pr) => `First grab slips. The dummy catches on something — ${p} rips it free with a sudden fury, launches it into the rafters.`,
+        (p, pr) => `Accidental intensity. That wasn't skill — that was rage. And it worked. Chef marks it up. The camp cheers the chaos.`,
+      ],
+    },
+    { id: 'endurance-hold', name: 'Endurance Hold',
+      audition: (p, pr) => `${p} holds a handstand for two minutes straight during auditions. No wobble.`,
+      performance: [
+        (p, pr) => `${p} assumes the position — plank on the stage edge, objects balanced on ${pr.posAdj} back. No movement. No complaints.`,
+        (p, pr) => `One minute. Two minutes. Objects stacked higher. The crowd counts along. ${p} doesn't shake. Doesn't breathe hard.`,
+        (p, pr) => `When ${p} finally releases, the crowd roars. Pure discipline. Chef's spoon goes high for the sheer control.`,
+      ],
+      disaster: [
+        (p, pr) => `${p} sets up the hold. Looks strong. Looks steady. The first 30 seconds are fine.`,
+        (p, pr) => `Then the shake starts. Objects slide. ${p} tries to correct — crashes. Everything scatters. Someone in the front row catches a book.`,
+        (p, pr) => `${p} lies face-down on stage for a moment. The tribe watches in painful silence. Chef marks the minimum.`,
+      ],
+      clutch: [
+        (p, pr) => `${p} gets into position but the shake is there from the start. The tribe winces. This doesn't look good.`,
+        (p, pr) => `Forty seconds. A minute. The shake gets worse — but ${p} locks in. Jaw clenched. Eyes closed. Holds. And holds. And holds.`,
+        (p, pr) => `When time runs out, ${p} collapses to applause. That wasn't talent — that was willpower. Chef slow-claps with the spoon hand.`,
+      ],
+    },
+  ],
+  performanceArt: [
+    { id: 'singing', name: 'Singing',
+      audition: (p, pr) => `${p} hums a few bars. Voice is actually good. Tribe goes quiet.`,
+      performance: [
+        (p, pr) => `The stage goes quiet as ${p} steps into the spotlight. ${pr.Sub} ${pr.sub === 'they' ? 'close' : 'closes'} ${pr.posAdj} eyes. No backing track. No safety net.`,
+        (p, pr) => `The first note lands clean. Then the second. By the chorus, the entire camp is still. Even Chef stops scowling.`,
+        (p, pr) => `${p} finishes. Silence. Then the applause hits all at once. Chef raises his spoon.`,
+      ],
+      disaster: [
+        (p, pr) => `${p} takes the mic. The confidence from auditions is there. ${pr.Sub} ${pr.sub === 'they' ? 'open' : 'opens'} ${pr.posAdj} mouth.`,
+        (p, pr) => `The first note cracks. ${p} tries to push through — cracks again. The mic picks up ${pr.posAdj} breathing. ${pr.Sub} ${pr.sub === 'they' ? 'stop' : 'stops'} mid-verse.`,
+        (p, pr) => `${p} walks offstage. Nobody claps. Chef doesn't even lift the spoon.`,
+      ],
+      clutch: [
+        (p, pr) => `${p} steps up looking nervous. Hands shaking. The tribe holds its breath.`,
+        (p, pr) => `The first note cracks — ${p} pauses. Swallows. Then belts the next one raw and perfect. The camp goes silent for a completely different reason.`,
+        (p, pr) => `${p} finishes and the eruption is instant. Chef's spoon hits high before the applause dies down.`,
+      ],
+    },
+    { id: 'comedy', name: 'Comedy Standup',
+      audition: (p, pr) => `${p} tells one joke at audition. Gets a real laugh, not a pity one.`,
+      performance: [
+        (p, pr) => `${p} walks up, grabs an invisible mic. "So... I've been living in the woods with strangers for a week now." Beat. "It's going GREAT."`,
+        (p, pr) => `Five minutes. Every joke lands. Callbacks to camp moments that everyone recognizes. The timing is surgical.`,
+        (p, pr) => `The camp is crying laughing. Even Chef cracks a smile — then immediately hides it. The spoon goes high.`,
+      ],
+      disaster: [
+        (p, pr) => `${p} takes the stage with a grin. "Hey everyone. So—" Silence already feels wrong.`,
+        (p, pr) => `First joke. Nothing. Second joke. A cough from the back. ${p} starts sweating. The third attempt dies in ${pr.posAdj} throat.`,
+        (p, pr) => `${p} mumbles "thanks" and walks off to no applause. Chef marks a 1. Someone whispers "that was rough."`,
+      ],
+      clutch: [
+        (p, pr) => `${p} opens with a joke that goes nowhere. Then another. The crowd shifts uncomfortably. This is dying.`,
+        (p, pr) => `${p} stops. Looks at the crowd. "Okay, this is going terrible. Let me try something." Pivots to raw self-deprecation. The crowd breaks.`,
+        (p, pr) => `By the end they're howling. The comeback was better than any prepared set. Chef's spoon jumps. Redemption.`,
+      ],
+    },
+    { id: 'monologue', name: 'Dramatic Monologue',
+      audition: (p, pr) => `${p} delivers three lines from memory. The vibe shifts. Everyone leans in.`,
+      performance: [
+        (p, pr) => `${p} walks to center stage. No props. No music. Just eye contact with the front row. The camp quiets down fast.`,
+        (p, pr) => `Full monologue. Every pause hits. ${p} builds to a crescendo that pins people to their seats. Someone in the back has tears.`,
+        (p, pr) => `Silence. Then thunderous applause. Chef marks high without hesitation. That was real.`,
+      ],
+      disaster: [
+        (p, pr) => `${p} steps out, takes a breath, and begins. The first two lines are fine. Then the eyes go blank.`,
+        (p, pr) => `Forgot the lines. Freezes. Mouth opens, nothing comes out. ${p} mumbles something that might be the next verse.`,
+        (p, pr) => `${p} walks offstage staring at the ground. The tribe watches in secondhand agony. Chef gives mercy points.`,
+      ],
+      clutch: [
+        (p, pr) => `${p} starts uncertain. The lines feel rehearsed. Flat. The camp's attention starts drifting.`,
+        (p, pr) => `Then ${p} drops the script. Makes eye contact. Improvises from somewhere real. The words aren't written — they're lived.`,
+        (p, pr) => `The camp is frozen. That wasn't an act. Chef's spoon rises slowly, like he's not sure what he just witnessed.`,
+      ],
+    },
+    { id: 'dance', name: 'Dance Routine',
+      audition: (p, pr) => `Quick choreo. Nothing fancy. But the rhythm is there and the confidence sells it.`,
+      performance: [
+        (p, pr) => `${p} waits for the imaginary beat to start. When it hits, ${pr.sub} ${pr.sub === 'they' ? 'move' : 'moves'}. The camp didn't know ${pr.sub} could move like that.`,
+        (p, pr) => `Full choreographed routine. Uses the whole stage. Every beat lands. The rhythm is infectious — people start bobbing along.`,
+        (p, pr) => `Final pose. Breathing hard but smiling. The tribe roars. Chef gives a solid score.`,
+      ],
+      disaster: [
+        (p, pr) => `${p} starts strong. The first eight counts are smooth. The crowd is into it.`,
+        (p, pr) => `Then ${p} steps on ${pr.posAdj} own foot. Stumbles. Tries to style it out — makes it worse. The rhythm is gone.`,
+        (p, pr) => `${p} finishes awkwardly, half a beat off from the music in ${pr.posAdj} head. The clapping is polite at best. Chef shrugs.`,
+      ],
+      clutch: [
+        (p, pr) => `${p} looks stiff walking out. The audition energy isn't there. The tribe braces for mediocre.`,
+        (p, pr) => `First few moves are rough — then the beat takes over. ${p} stumbles into a slide that looks completely intentional. The crowd buys it.`,
+        (p, pr) => `By the end ${pr.sub === 'they' ? "they're" : `${pr.sub}'s`} freestyling and the camp is clapping along. Chef gives it more than anyone expected.`,
+      ],
+    },
+    { id: 'impressions', name: 'Impressions',
+      audition: (p, pr) => `${p} does the host. It's uncanny. Even the host laughs.`,
+      performance: [
+        (p, pr) => `${p} walks out and immediately becomes someone else. The posture changes. The voice changes. The camp starts grinning.`,
+        (p, pr) => `Five impressions back to back — the host, Chef, three campers. Each one is devastating. People are pointing and dying.`,
+        (p, pr) => `The final impression nails someone in the front row. The camp loses it. Chef scores high while trying not to laugh.`,
+      ],
+      disaster: [
+        (p, pr) => `${p} steps out confident. "Okay, you're gonna love this." Does the host's voice. It sounds nothing like the host.`,
+        (p, pr) => `Tries Chef next. Even worse. The crowd isn't laughing with ${p}. Tries a tribemate — the tribemate's face says everything.`,
+        (p, pr) => `${p} retreats to silence. Chef marks low. The real host whispers, "I don't sound like that."`,
+      ],
+      clutch: [
+        (p, pr) => `${p} opens with two impressions that land flat. The crowd isn't connecting. This is going south.`,
+        (p, pr) => `Last attempt — the host. ${p} nails it so perfectly that the host does a double-take. The camp ERUPTS.`,
+        (p, pr) => `One good impression saved the whole set. Chef breaks character laughing and marks the spoon high.`,
+      ],
+    },
+    { id: 'spoken-word', name: 'Spoken Word',
+      audition: (p, pr) => `${p} recites something original. Short. Intense. The fire crackles louder.`,
+      performance: [
+        (p, pr) => `${p} steps up to the mic. No paper. No notes. Just ${p} and the fire crackling behind the stage.`,
+        (p, pr) => `Full piece. Raw. Personal. About the island, the game, the people sitting right there. You can hear the silence between the words.`,
+        (p, pr) => `When ${p} finishes, the camp doesn't clap immediately. They're processing. Then it comes — deep, real. Chef respects it.`,
+      ],
+      disaster: [
+        (p, pr) => `${p} pulls out a crumpled paper. Smooths it against ${pr.posAdj} leg. Begins reading.`,
+        (p, pr) => `Monotone. Every word lands flat. ${p} reads from the page without looking up. The connection isn't there. A cricket chirps.`,
+        (p, pr) => `${p} finishes reading and folds the paper up. The polite clap is almost worse than silence. Chef marks low.`,
+      ],
+      clutch: [
+        (p, pr) => `${p} starts from the paper, voice shaking. The words sound rehearsed and hollow. The camp is drifting.`,
+        (p, pr) => `${p} stops. Puts the paper down. Makes eye contact with someone in the front row. Starts over — from memory, from the gut.`,
+        (p, pr) => `Voice breaks on the last line. It's realer than anything prepared could be. The camp sits in stunned silence. Chef's spoon climbs.`,
+      ],
+    },
+  ],
+  skill: [
+    { id: 'beatboxing', name: 'Beatboxing',
+      audition: (p, pr) => `${p} drops a beat. It's actually complex. People start nodding.`,
+      performance: [
+        (p, pr) => `${p} leans into the mic. Tests it with a pop. The camp goes quiet, curious.`,
+        (p, pr) => `Bass drop. Snare roll. Then layers — vocal scratch, melody, all at once. The sound shouldn't be possible from one person.`,
+        (p, pr) => `${p} finishes with a final bass hit and the camp erupts. Chef's head was bobbing. He tries to pretend it wasn't. High marks.`,
+      ],
+      disaster: [
+        (p, pr) => `${p} steps up to the mic. Breathes in. The first beat starts strong.`,
+        (p, pr) => `Tries to speed up — chokes on ${pr.posAdj} own spit. Coughs into the mic. The speakers feed it back. Awful.`,
+        (p, pr) => `${p} waves it off and walks backstage. The camp cringes. Chef marks bottom of the spoon.`,
+      ],
+      clutch: [
+        (p, pr) => `${p} starts with a basic beat. Nothing special. The crowd's energy is flat. This isn't what auditions promised.`,
+        (p, pr) => `Then the layers start. One by one. Bass, hi-hat, melody, harmony — building until it sounds like a full band.`,
+        (p, pr) => `By the end, nobody can believe it's one person. The camp is on their feet. Chef's spoon hits the ceiling.`,
+      ],
+    },
+    { id: 'card-tricks', name: 'Card Tricks',
+      audition: (p, pr) => `${p} fans the deck. Pulls the right card. Clean. No fumbles.`,
+      performance: [
+        (p, pr) => `${p} fans a deck of cards and walks to the front row. "Pick a card." The camp leans in.`,
+        (p, pr) => `The card vanishes. Reappears in someone's pocket. Then in Chef's hat. The moves are invisible — pure sleight of hand.`,
+        (p, pr) => `For the finale, the entire deck rearranges itself mid-air. Gasps. Then applause. Chef scores high.`,
+      ],
+      disaster: [
+        (p, pr) => `${p} pulls out the deck with a flourish. "Watch closely." The camp watches.`,
+        (p, pr) => `Fumbles the fan. Drops the deck. Cards scatter everywhere. The hidden card falls out of ${pr.posAdj} sleeve. The trick is completely exposed.`,
+        (p, pr) => `${p} picks up the cards in silence while the camp watches. Chef doesn't even bother scoring high enough for it to matter.`,
+      ],
+      clutch: [
+        (p, pr) => `${p} starts the routine and it's rough. A card sticks. Another one bends wrong. The crowd sees the mechanics.`,
+        (p, pr) => `On the final trick — drops everything. Reaches down. Catches a single card mid-air. Flips it. It's their card.`,
+        (p, pr) => `The recovery is better than the trick would have been. The camp explodes. Chef marks it way up.`,
+      ],
+    },
+    { id: 'speed-solve', name: 'Speed-Solving',
+      audition: (p, pr) => `${p} solves a puzzle in 40 seconds at audition. Tribe times it.`,
+      performance: [
+        (p, pr) => `${p} sets three puzzles on a table. Cracks ${pr.posAdj} knuckles. The camp watches, skeptical.`,
+        (p, pr) => `Hands blur. First puzzle done. Second puzzle done. For the third — ${p} puts on a blindfold. Solves it by feel. Under a minute.`,
+        (p, pr) => `The camp is speechless. That wasn't a performance — that was a brain on display. Chef gives top marks.`,
+      ],
+      disaster: [
+        (p, pr) => `${p} starts the puzzle with practiced confidence. The first moves are quick. This should be easy.`,
+        (p, pr) => `Then ${p} freezes. Wrong piece. Backtracks. Wrong again. The clock is running and the crowd is watching the panic.`,
+        (p, pr) => `Time runs out with one piece missing. ${p} stares at the puzzle. The camp stares at ${p}. Chef marks barely above zero.`,
+      ],
+      clutch: [
+        (p, pr) => `${p} starts slow. Too slow. The crowd can see ${pr.sub === 'they' ? "they're" : `${pr.sub}'s`} overthinking every move. This might be a train wreck.`,
+        (p, pr) => `Stuck on the last section. Ten seconds of nothing. Then ${p} closes ${pr.posAdj} eyes — and the hands move on their own. Click. Click. Done.`,
+        (p, pr) => `Under a minute. The camp goes from worried to screaming. Chef's spoon jumps. That was dramatic.`,
+      ],
+    },
+    { id: 'fire-staff', name: 'Fire Staff',
+      audition: (p, pr) => `${p} spins a lit staff with precision. Controlled. Mesmerizing.`,
+      performance: [
+        (p, pr) => `The stage lights dim. ${p} steps out with a lit staff. The fire paints shadows on the curtain.`,
+        (p, pr) => `Spins. Tosses. Catches behind the back. The fire traces arcs in the dark — controlled chaos. The camp is mesmerized.`,
+        (p, pr) => `Final toss — high — spinning — caught clean. The camp exhales and erupts. Chef scores high in the glow.`,
+      ],
+      disaster: [
+        (p, pr) => `${p} steps out with the lit staff. Spins it once — looks good. The camp holds its breath.`,
+        (p, pr) => `The staff slips. Fire hits the ground. Someone stomps on it. Smoke billows. Someone shouts for water.`,
+        (p, pr) => `The stage smells like burned grass. ${p} stands in the smoke, defeated. Chef gives a sympathy score.`,
+      ],
+      clutch: [
+        (p, pr) => `${p} grips the staff too tight. The first spin is awkward. The flame wobbles. The camp winces.`,
+        (p, pr) => `Deep breath — tosses high. Catches blind behind the back. The fire traces a perfect arc in the darkness.`,
+        (p, pr) => `One move saved everything. The camp gasps, then roars. Chef's spoon goes higher than anyone expected.`,
+      ],
+    },
+    { id: 'knife-throwing', name: 'Knife Throwing',
+      audition: (p, pr) => `${p} plants three knives in a target. Thunk thunk thunk. Clean grouping.`,
+      performance: [
+        (p, pr) => `${p} faces the target. Three knives in hand. The camp goes dead quiet. Nobody blinks.`,
+        (p, pr) => `Thunk. Thunk. Thunk. Three knives, tight grouping, center mass. Then the blindfold goes on. One more throw. Bullseye.`,
+        (p, pr) => `The camp erupts. Chef marks high — the blindfold throw sold it.`,
+      ],
+      disaster: [
+        (p, pr) => `${p} takes aim. The camp holds its breath. The first knife flies.`,
+        (p, pr) => `It misses the target. Sticks in the stage floor. The second goes wide — lodges in a support beam. The crowd ducks.`,
+        (p, pr) => `${p} puts the last knife down. Walks off. Smart move. Chef marks the minimum.`,
+      ],
+      clutch: [
+        (p, pr) => `${p} looks shaky taking aim. First throw — off center. Second — barely hits the board. The crowd is nervous.`,
+        (p, pr) => `Last throw. ${p} exhales. The knife leaves ${pr.posAdj} hand and curves — somehow — right into the bullseye.`,
+        (p, pr) => `Nobody knows how that last one hit. Least of all ${p}. The camp screams. Chef's spoon jumps on the drama alone.`,
+      ],
+    },
+    { id: 'rubiks', name: "Rubik's Cube Solve",
+      audition: (p, pr) => `Sub-minute solve during audition. ${pr.PosAdj} hands blurring.`,
+      performance: [
+        (p, pr) => `${p} holds up two cubes. One in each hand. The camp starts counting along.`,
+        (p, pr) => `Both hands move simultaneously — different patterns, different solutions. The crowd loses track trying to follow. It's inhuman.`,
+        (p, pr) => `Click. Click. Both done. Under a minute. The camp counts the time and explodes. Chef gives full marks.`,
+      ],
+      disaster: [
+        (p, pr) => `${p} holds up the cube. Starts turning. The first moves look practiced and confident.`,
+        (p, pr) => `Then ${p} freezes. Turns one way. Back. The other way. The cube isn't cooperating. The seconds stretch out unbearably.`,
+        (p, pr) => `Time runs out. The cube is half-solved. ${p} stares at it like it betrayed ${pr.obj}. Chef marks the bottom.`,
+      ],
+      clutch: [
+        (p, pr) => `${p} starts solving and it's slow. Way slower than auditions. The crowd can see ${pr.sub === 'they' ? "they're" : `${pr.sub}'s`} second-guessing.`,
+        (p, pr) => `Frozen for ten seconds. The camp thinks it's over. Then — a burst of rapid moves. Both hands flying.`,
+        (p, pr) => `Click. Done. Just under the wire. The camp goes from funeral to frenzy. Chef marks it up high.`,
+      ],
+    },
+  ],
+  daredevil: [
+    { id: 'fire-eating', name: 'Fire-Eating',
+      audition: (p, pr) => `${p} breathes a small flame at audition. Controlled. Eyebrows intact.`,
+      performance: [
+        (p, pr) => `${p} steps out with a torch. The camp goes silent. The flame reflects in everyone's eyes.`,
+        (p, pr) => `Deep breath — and the arc of flame lights up the entire stage. Then another, bigger. The heat reaches the front row.`,
+        (p, pr) => `${p} extinguishes the torch with ${pr.posAdj} tongue. Bows. The camp erupts. Chef marks high for sheer guts.`,
+      ],
+      disaster: [
+        (p, pr) => `${p} brings the torch to ${pr.posAdj} lips. Confident. The camp leans forward.`,
+        (p, pr) => `The flame sputters — then licks ${pr.posAdj} face. ${p} recoils. Coughs smoke. The medic starts jogging over.`,
+        (p, pr) => `${p} waves off the medic but the damage is done. Singed eyebrows and shattered confidence. Chef gives mercy points.`,
+      ],
+      clutch: [
+        (p, pr) => `${p} lights the torch and hesitates. The flame looks bigger up close than it did at auditions. The camp can see the doubt.`,
+        (p, pr) => `First attempt — the flame sputters weakly. Then ${p} commits. Full breath. The arc ROARS — biggest of the night.`,
+        (p, pr) => `The camp screams. That wasn't technique — that was someone overcoming fear in real time. Chef's spoon flies up.`,
+      ],
+    },
+    { id: 'knife-juggling', name: 'Knife Juggling',
+      audition: (p, pr) => `${p} juggles two knives casually. No fear.`,
+      performance: [
+        (p, pr) => `${p} tosses one knife up. Catches it. Two. Three. The camp counts along.`,
+        (p, pr) => `Four knives now. The pattern is hypnotic. ${p} adds a fifth — catches it between ${pr.posAdj} fingers without looking.`,
+        (p, pr) => `All five land safely. The camp breathes again and applauds. Chef scores high for the controlled danger.`,
+      ],
+      disaster: [
+        (p, pr) => `${p} starts with three knives. Clean pattern. Looking good. The crowd relaxes.`,
+        (p, pr) => `The fourth knife wobbles — drops — sticks in the stage an inch from ${pr.posAdj} foot. The crowd gasps for all the wrong reasons.`,
+        (p, pr) => `${p} backs away from the knife in the floor. The camp is white-knuckled. Chef gives a low score and a concerned look.`,
+      ],
+      clutch: [
+        (p, pr) => `${p} starts juggling and it's shaky. A wobble on the second knife. The crowd tenses.`,
+        (p, pr) => `The third knife fumbles — ${p} kicks it up with ${pr.posAdj} foot, catches it mid-air, and adds it back to the rotation without breaking rhythm.`,
+        (p, pr) => `The save was more impressive than a clean run would have been. The camp goes wild. Chef marks it up.`,
+      ],
+    },
+    { id: 'high-dive', name: 'High Dive',
+      audition: (p, pr) => `${p} jumps off a tall stump into water. Clean entry.`,
+      performance: [
+        (p, pr) => `${p} climbs to the highest point at camp. Looks down. The camp looks up. It's far.`,
+        (p, pr) => `Perfect form. Flip. Twist. The entry is clean — barely a splash. The lake doesn't even flinch.`,
+        (p, pr) => `${p} surfaces to screaming. Chef scores high. That was textbook.`,
+      ],
+      disaster: [
+        (p, pr) => `${p} stands at the top. Looks down. The crowd can see the resolve forming. ${pr.Sub} ${pr.sub === 'they' ? 'jump' : 'jumps'}.`,
+        (p, pr) => `Over-rotates. The belly flop echoes across camp. The splash is enormous. The sound is worse.`,
+        (p, pr) => `${p} surfaces to silence and sympathy. Chef marks low. The lake got the best performance.`,
+      ],
+      clutch: [
+        (p, pr) => `${p} hesitates at the top. The crowd waits. The height seems to grow the longer ${pr.sub} ${pr.sub === 'they' ? 'stand' : 'stands'} there.`,
+        (p, pr) => `${p} jumps — over-rotates — but somehow adjusts mid-air. The entry isn't pretty but it's clean enough.`,
+        (p, pr) => `Surfaces to huge cheers. The crowd saw the save happen in real-time. Chef marks it up for the drama.`,
+      ],
+    },
+    { id: 'eating-challenge', name: 'Eating Challenge',
+      audition: (p, pr) => `${p} eats something terrible without flinching. Audition complete.`,
+      performance: [
+        (p, pr) => `The table is set. Hot sauce. Bugs. Mystery meat. Things that shouldn't be eaten. ${p} sits down and cracks ${pr.posAdj} knuckles.`,
+        (p, pr) => `One by one. No hesitation. No face. The hot sauce goes down smooth. The bug crunches. The mystery meat disappears. ${p} doesn't even water up.`,
+        (p, pr) => `${p} wipes ${pr.posAdj} mouth, stands, and takes a bow. The camp is horrified and impressed in equal measure. Chef scores high.`,
+      ],
+      disaster: [
+        (p, pr) => `${p} looks at the table. Picks up the first item. Takes a bite. So far so good.`,
+        (p, pr) => `The second item hits different. ${p} gags. Tries to swallow. Gags again. Runs offstage. Sounds of regret echo from backstage.`,
+        (p, pr) => `The table sits there, mostly unconquered. The camp tries not to laugh. Chef marks the minimum.`,
+      ],
+      clutch: [
+        (p, pr) => `${p} stares at the items on the table. The confidence from auditions is nowhere to be found. ${pr.PosAdj} face says "what did I sign up for."`,
+        (p, pr) => `First item — almost quits. Second item — on the verge. Then something snaps. ${p} eats the rest without stopping. Asks for more.`,
+        (p, pr) => `The camp goes from pity to pandemonium. Chef marks it up high. That was willpower, not talent — and somehow that's better.`,
+      ],
+    },
+    { id: 'balance-walk', name: 'Balance Walk',
+      audition: (p, pr) => `${p} walks a narrow beam without wobbling. Casual.`,
+      performance: [
+        (p, pr) => `The tightrope stretches over the campfire. ${p} puts one foot on it. The crowd holds its breath.`,
+        (p, pr) => `Step by step. No wobble. For the last third, ${p} puts on a blindfold. The crowd gasps. The steps don't change.`,
+        (p, pr) => `${p} reaches the end. Removes the blindfold. Steps down to thunderous applause. Chef's spoon goes high.`,
+      ],
+      disaster: [
+        (p, pr) => `${p} gets on the rope. First few steps are solid. The crowd starts to relax.`,
+        (p, pr) => `Then the wobble. ${p} overcorrects — and falls. Into the mud. Or worse, into the audience. Either way, it's over.`,
+        (p, pr) => `${p} stands up covered in mud (or audience). The camp is torn between sympathy and laughter. Chef scores low.`,
+      ],
+      clutch: [
+        (p, pr) => `${p} gets on the rope and immediately wobbles. The crowd inhales sharply. This looks bad from step one.`,
+        (p, pr) => `Drops to one knee on the rope. Hangs there. The crowd thinks it's over — then ${p} stands back up. Finishes the walk. Nails the dismount.`,
+        (p, pr) => `That knee-save was the most dramatic moment of the night. The camp erupts. Chef marks it way up.`,
+      ],
+    },
+    { id: 'extreme-yoyo', name: 'Extreme Yo-Yo',
+      audition: (p, pr) => `${p} does a few tricks. One goes wrong, string tangles, recovers fast.`,
+      performance: [
+        (p, pr) => `${p} pulls out a yo-yo. The camp smirks. Then ${p} starts spinning it at full speed. Nobody smirks anymore.`,
+        (p, pr) => `Around the world. Walk the dog. Cradle. Every trick flows into the next — a blur of string and precision.`,
+        (p, pr) => `Final trick — the yo-yo rockets out and snaps back into ${pr.posAdj} palm. Clean. The camp applauds the absurdity. Chef scores surprisingly high.`,
+      ],
+      disaster: [
+        (p, pr) => `${p} pulls the yo-yo out. Confident. A few tricks should do it. The camp watches, amused.`,
+        (p, pr) => `The string wraps around ${pr.posAdj} neck. Then ${pr.posAdj} arm. ${p} is being eaten by a yo-yo on stage. The tribe watches in horror.`,
+        (p, pr) => `Someone has to untangle ${p}. The performance is officially a rescue operation. Chef gives a 1 for surviving.`,
+      ],
+      clutch: [
+        (p, pr) => `${p} starts and it tangles immediately. The camp winces. This has "disaster" written all over it.`,
+        (p, pr) => `${p} whips the string free — and in the same motion launches into the hardest trick clean. The yo-yo becomes a weapon of precision.`,
+        (p, pr) => `From disaster to masterclass in three seconds. The camp is bewildered and impressed. Chef's spoon shoots up.`,
+      ],
+    },
+  ],
+  creative: [
+    { id: 'instrument', name: 'Musical Instrument',
+      audition: (p, pr) => `${p} plays a few chords. Melody is there. Tribe goes quiet for the right reasons.`,
+      performance: [
+        (p, pr) => `${p} picks up the instrument. Tunes it. The camp quiets down — they know what's coming.`,
+        (p, pr) => `Original composition. Every chord hits. The fire crackles in time. It's not loud — it doesn't need to be.`,
+        (p, pr) => `The last note fades. The camp sits with it for a moment. Then warm applause. Chef marks high.`,
+      ],
+      disaster: [
+        (p, pr) => `${p} settles in and starts playing. The first few chords are promising.`,
+        (p, pr) => `String breaks. The twang echoes through camp. ${p} tries to keep going — can't. Stops. Stares at the broken string.`,
+        (p, pr) => `${p} sets the instrument down and walks off in silence. The camp doesn't know what to say. Chef marks low.`,
+      ],
+      clutch: [
+        (p, pr) => `${p} starts playing and it's rough. Missed notes. Wrong chords. The camp politely watches.`,
+        (p, pr) => `The string breaks — and ${p} doesn't stop. Starts humming the melody. Finger-tapping the body as percussion. It becomes something new.`,
+        (p, pr) => `Haunting. The broken instrument made it better. The camp sits in stunned silence, then erupts. Chef's spoon climbs.`,
+      ],
+    },
+    { id: 'painting', name: 'Painting/Drawing',
+      audition: (p, pr) => `${p} sketches a portrait in two minutes. It's actually good.`,
+      performance: [
+        (p, pr) => `${p} sets up an easel on stage. Canvas. Paints. The camp watches, curious. Two minutes on the clock.`,
+        (p, pr) => `Brush strokes. Fast, confident. The image takes shape — it's a portrait of the host. Every detail. The resemblance is uncanny.`,
+        (p, pr) => `${p} turns the canvas around. Gasps. Laughter. Chef sees himself rendered perfectly. Marks high while trying not to smile.`,
+      ],
+      disaster: [
+        (p, pr) => `${p} sets up the easel. Two minutes. The crowd watches the brush move with confident strokes.`,
+        (p, pr) => `${p} turns the canvas. It looks like... a raccoon? Maybe? The host squints. The crowd squints harder.`,
+        (p, pr) => `${p} tries to explain the artistic vision. Nobody's buying it. Chef marks low with a visible wince.`,
+      ],
+      clutch: [
+        (p, pr) => `${p} starts painting and the first strokes look random. Messy. The crowd exchanges concerned looks.`,
+        (p, pr) => `Nothing makes sense for 90 seconds. Then, in the last 30 — three decisive strokes bring the whole thing together. A face emerges.`,
+        (p, pr) => `The reveal gets gasps. Nobody saw it coming. Chef's spoon goes high. Art takes time, even when it doesn't look like it.`,
+      ],
+    },
+    { id: 'poetry', name: 'Poetry Recital',
+      audition: (p, pr) => `${p} reads an original poem. Short. Three lines. They land.`,
+      performance: [
+        (p, pr) => `${p} walks to the mic. No paper. No notes. The camp quiets down. This is either brave or foolish.`,
+        (p, pr) => `Full poem. About the island. The game. The people sitting right there. Every line is specific. Painful. Real.`,
+        (p, pr) => `The last line lands like a punch. The camp is quiet — processing. Then deep, genuine applause. Chef marks high.`,
+      ],
+      disaster: [
+        (p, pr) => `${p} pulls out a crumpled paper. Unfolds it. Begins reading without looking up.`,
+        (p, pr) => `Every word is monotone. The poem might be good on paper. On stage, it's a grocery list. A cricket actually chirps.`,
+        (p, pr) => `${p} finishes. Folds the paper. The applause is the kind that's worse than silence. Chef marks the minimum.`,
+      ],
+      clutch: [
+        (p, pr) => `${p} starts reading from paper. It's flat. Rehearsed. The camp's attention is drifting.`,
+        (p, pr) => `${p} stops. Crumples the paper. Makes eye contact with someone in the front row. Starts over — from memory. Voice shaking.`,
+        (p, pr) => `The voice breaks on the last line. It's raw. Realer than anything written could be. The camp is stunned. Chef's spoon rises slow.`,
+      ],
+    },
+    { id: 'magic', name: 'Magic Show',
+      audition: (p, pr) => `One trick at audition. Clean vanish. Crowd leans in.`,
+      performance: [
+        (p, pr) => `${p} walks out in a makeshift cape. The camp is skeptical. Magic at camp? Really?`,
+        (p, pr) => `A coin vanishes. A card appears behind someone's ear. For the finale — a full levitation illusion. The camp loses its mind.`,
+        (p, pr) => `The reveal bow. The camp gives the biggest reaction of the night. Chef scores high. Showmanship counts.`,
+      ],
+      disaster: [
+        (p, pr) => `${p} comes out with a top hat and confidence. "Watch closely." The camp watches.`,
+        (p, pr) => `The coin doesn't vanish — it drops. The card was visible the whole time. The hidden dove escapes. Everything falls apart simultaneously.`,
+        (p, pr) => `${p} stands in the wreckage of ${pr.posAdj} act surrounded by escaped props. Chef marks a 1.`,
+      ],
+      clutch: [
+        (p, pr) => `${p} starts the first trick and it fails. Badly. The hidden mechanism is visible. The camp groans.`,
+        (p, pr) => `${p} doesn't flinch. "That's what you THINK happened." Waves ${pr.posAdj} hand — the failed trick was the setup for a bigger one.`,
+        (p, pr) => `The camp buys it. The save was smoother than the trick. Chef marks high, genuinely fooled.`,
+      ],
+    },
+    { id: 'puppet-show', name: 'Puppet Show',
+      audition: (p, pr) => `Quick bit with a sock puppet. Gets a laugh.`,
+      performance: [
+        (p, pr) => `${p} ducks behind a makeshift stage. A sock puppet appears. It starts talking. The camp laughs immediately.`,
+        (p, pr) => `Full show — voices, story, callbacks to actual camp drama. The puppet roasts specific people by name. The targets love it.`,
+        (p, pr) => `For the finale, the puppet takes a bow. Then ${p} stands up and bows. Double applause. Chef marks high, entertained.`,
+      ],
+      disaster: [
+        (p, pr) => `The puppet appears. ${p} does a voice. It's... not great. But the effort is there.`,
+        (p, pr) => `The puppet's head falls off. Stuffing spills out. ${p} tries to hold it together — literally. The seams keep splitting.`,
+        (p, pr) => `${p} emerges from behind the stage holding a pile of felt. The camp gives sympathy laughs. Chef marks low.`,
+      ],
+      clutch: [
+        (p, pr) => `${p} starts the puppet show and the voice is rough. The puppet is barely holding together. The camp braces.`,
+        (p, pr) => `The head falls off. ${p} pauses — then picks it up. "This is what happens when you cross me." Uses the severed head as a prop.`,
+        (p, pr) => `The improvisation kills. The camp laughs harder at the broken puppet than the working one. Chef's spoon shoots up.`,
+      ],
+    },
+    { id: 'freestyle', name: 'Rap/Freestyle',
+      audition: (p, pr) => `${p} spits 8 bars about camp life. Flow is there. Words are sharp.`,
+      performance: [
+        (p, pr) => `${p} asks for a beat. Someone starts clapping. Another person taps a table. That's enough.`,
+        (p, pr) => `Eight bars. Then sixteen. Every line calls out real people, real events. The rhyme scheme holds. The flow is vicious.`,
+        (p, pr) => `${p} drops the last line and the camp erupts. Even the people who got roasted are applauding. Chef marks high.`,
+      ],
+      disaster: [
+        (p, pr) => `${p} starts freestyling. The first bar is fine. The second reaches for a rhyme that isn't there.`,
+        (p, pr) => `Mumbles. Loses the beat. Tries to restart — the rhythm is gone. Stares at ${pr.posAdj} shoes. The clapping stops.`,
+        (p, pr) => `${p} walks off mid-verse. The camp is quiet. Chef marks the minimum.`,
+      ],
+      clutch: [
+        (p, pr) => `${p} starts and the flow is off. Wrong tempo. The crowd's clapping slows down. This is going nowhere.`,
+        (p, pr) => `${p} stops. "Hold up." Restarts with a completely different flow — double-time, harder, sharper. Everything clicks.`,
+        (p, pr) => `By the last bar the camp is standing. Chef's spoon hits the top. That restart was the most confident thing anyone did all night.`,
+      ],
+    },
+  ],
+};
+
+const TALENT_CATEGORIES = [
+  { id: 'physical', stats: ['physical', 'endurance'] },
+  { id: 'performanceArt', stats: ['social', 'boldness'] },
+  { id: 'skill', stats: ['mental', 'intuition'] },
+  { id: 'daredevil', stats: ['boldness', 'physical'] },
+  { id: 'creative', stats: ['mental', 'social'] },
+];
+
+const SABOTAGE_TYPES = [
+  { id: 'props', effect: 'disaster', // target uses disaster text — props are broken
+    text: (saboteur, target, pr) => `Before the show, ${saboteur} got backstage access to ${target}'s setup. Wrong strings on the guitar. Marked cards. Loosened joints. When ${target} reaches for ${pr.posAdj} props on stage, nothing works right.`,
+    stageText: (saboteur, target, pr) => `${target} reaches for ${pr.pos} equipment — something's wrong. The strings are off. The props don't fit. ${pr.Sub} ${pr.sub === 'they' ? 'try' : 'tries'} to adapt, but the whole act falls apart.`,
+  },
+  { id: 'rumors', effect: 'penalty', penalty: -2, // crowd hostile, Chef scores harsher
+    text: (saboteur, target, pr) => `${saboteur} spent the afternoon whispering to anyone who'd listen: "${target} is going to throw the challenge." By showtime, the crowd's arms are crossed before ${target} even walks on.`,
+    stageText: (saboteur, target, pr) => `${target} feels it from the first step. The crowd is cold. Every move gets judged harder. Even a good performance can't cut through the hostility ${saboteur} planted.`,
+  },
+  { id: 'psych', effect: 'tempDebuff', debuff: -3, // massive temperament drop → higher disaster chance
+    text: (saboteur, target, pr) => `${saboteur} catches ${target} alone right before ${pr.sub} ${pr.sub === 'they' ? 'go' : 'goes'} on. Whispers something. ${target}'s face changes. Whatever ${saboteur} said, it landed.`,
+    stageText: (saboteur, target, pr) => `${target} walks on stage but ${pr.sub} ${pr.sub === 'they' ? 'aren\'t' : 'isn\'t'} all there. The confidence from rehearsal is gone. ${pr.PosAdj} hands are shaking.`,
+  },
+  { id: 'replace', effect: 'selfScore0', // saboteur scores 0 on OWN act, but target gets massive temp debuff
+    text: (saboteur, target, pr) => `${saboteur} doesn't perform ${pr.pos} talent. Instead, ${pr.sub} ${pr.sub === 'they' ? 'use' : 'uses'} ${pr.pos} stage time to publicly call out ${target}. Secrets. Accusations. The camp goes dead silent.`,
+    stageText: (saboteur, target, pr) => `${saboteur} walks to center stage. No props. No act. Just a mic and a grudge. "${target}. Let's talk about what you really are." What follows is three minutes of calculated demolition. ${target} watches from the crowd, frozen.`,
+  },
+];
+
+const AUDIENCE_REACTIONS = {
+  high: {
+    hero: p => `${p}: "That's my tribe right there. That's what we do."`,
+    loyal: p => `${p}: "That's my tribe right there."`,
+    villain: p => `${p} slow-claps. Calculating. Already thinking about how to use this.`,
+    schemer: p => `${p} slow-claps. Filing it away.`,
+    floater: p => `${p} claps along. Relieved someone else carried the weight.`,
+    showmancer: p => `${p} locks eyes with the performer. That was attractive.`,
+    wildcard: p => `${p} loses it. Standing on the bench screaming.`,
+    'chaos-agent': p => `${p} loses it. Standing on the bench screaming.`,
+    mastermind: p => `${p} nods. That just bought the tribe safety. Good.`,
+    _default: p => `${p} nods approvingly.`,
+  },
+  mid: {
+    hero: p => `${p}: "Good effort." Means it, kind of.`,
+    villain: p => `${p} is unimpressed. Expected more.`,
+    floater: p => `${p} claps at the same speed as everyone else.`,
+    mastermind: p => `${p}: "We need the next act to be better."`,
+    _default: p => `${p} gives a polite clap.`,
+  },
+  low: {
+    hero: p => `${p} looks away. Doesn't pile on. But the disappointment is visible.`,
+    loyal: p => `${p} looks away. The disappointment is visible.`,
+    villain: p => `${p} smirks. Files it away. That's a vote target now.`,
+    schemer: p => `${p} smirks. That's a vote target now.`,
+    floater: p => { const pr = pronouns(p); return `${p} cringes. Glad it wasn't ${pr.obj} up there.`; },
+    showmancer: p => { const pr = pronouns(p); return `${p} covers ${pr.pos} mouth. Second-hand embarrassment.`; },
+    wildcard: p => `${p} laughs out loud. Can't help it. Gets dirty looks.`,
+    'chaos-agent': p => `${p} laughs out loud. Can't help it.`,
+    mastermind: p => `${p} is already running numbers. Can the other two acts make up for this?`,
+    _default: p => `${p} winces.`,
+  },
+  sabotage: {
+    hero: p => `${p} is furious. Stands up. Has to be held back.`,
+    loyal: p => `${p}: shock. Disbelief. Then quiet rage.`,
+    villain: p => { const pr = pronouns(p); return `${p} is impressed despite ${pr.ref}.`; },
+    'social-butterfly': p => `${p} immediately comforts the victim.`,
+    _default: p => `${p} stares in disbelief.`,
+  },
+};
+
 import { addBond, getBond } from '../bonds.js';
 
 export function simulateTalentShow(ep) {

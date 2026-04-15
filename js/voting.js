@@ -961,3 +961,77 @@ export function simulateRevote(tribalPlayers, tiedPlayers, lostVotes, originalLo
   return { votes, log };
 }
 
+
+// ── EMISSARY VOTE: emissary picks a second elimination after normal tribal ──
+export function simulateEmissaryVote(ep) {
+  if (!ep.emissary) return null;
+  const emissary = ep.emissary.name;
+  const emS = pStats(emissary);
+  const emPr = pronouns(emissary);
+  const emArch = emS.archetype || 'neutral';
+
+  // Pool: remaining tribal players minus the just-eliminated player and immune players
+  const pool = (ep.tribalPlayers || []).filter(p =>
+    p !== ep.eliminated && gs.activePlayers.includes(p) && p !== ep.immunityWinner && !(ep.extraImmune || []).includes(p)
+  );
+  if (!pool.length) return null;
+
+  // ── Collect pitch influence from scouting ──
+  const pitchInfluence = {};
+  (ep.emissaryScoutEvents || []).forEach(evt => {
+    if (evt.type === 'emissaryPitch' && evt.pitchTarget) {
+      pitchInfluence[evt.pitchTarget] = (pitchInfluence[evt.pitchTarget] || 0) + (evt.pitchStrength || 0.3);
+    }
+  });
+
+  // ── Archetype weight modifiers ──
+  let threatWeight = 0.30, bondWeight = 0.20, heatWeight = 0.15;
+  if (['villain', 'schemer', 'mastermind'].includes(emArch)) {
+    threatWeight = 0.40;
+  } else if (['hero', 'loyal', 'protector'].includes(emArch)) {
+    bondWeight = 0.30;
+  } else if (['floater', 'follower'].includes(emArch)) {
+    heatWeight = 0.25;
+  }
+
+  // ── Score each candidate ──
+  const scores = pool.map(target => {
+    const tThreat = threatScore(target);
+    const tBond = getBond(emissary, target);
+    const tHeat = computeHeat(target, pool, ep.alliances || []);
+    const tPitch = pitchInfluence[target] || 0;
+
+    const score = tThreat * threatWeight
+                + tPitch * 0.25
+                - tBond * bondWeight
+                + tHeat * heatWeight
+                + Math.random() * 0.10;
+
+    return { name: target, score, threat: tThreat, bond: tBond, heat: tHeat, pitch: tPitch };
+  }).sort((a, b) => b.score - a.score);
+
+  const pick = scores[0];
+  if (!pick) return null;
+
+  // ── Generate reason text ──
+  const pickPr = pronouns(pick.name);
+  let reason;
+  if (pick.pitch > 0.3) {
+    const pitcher = (ep.emissaryScoutEvents || []).find(e => e.type === 'emissaryPitch' && e.pitchTarget === pick.name)?.pitcher;
+    reason = pitcher
+      ? `${emissary} was swayed by ${pitcher}'s pitch against ${pick.name}.`
+      : `${emissary} heard enough to make ${emPr.pos} mind up about ${pick.name}.`;
+  } else if (pick.bond <= -1) {
+    reason = `${emissary} and ${pick.name} have history. This is personal.`;
+  } else if (pick.threat > 6) {
+    reason = `${emissary} points at the biggest threat. "${pick.name}. You're too dangerous to keep around."`;
+  } else if (pick.heat > 3) {
+    reason = `${emissary} reads the room. "${pick.name}. Your own tribe wanted you gone."`;
+  } else {
+    reason = `${emissary} makes ${emPr.pos} choice. "${pick.name}."`;
+  }
+
+  ep.emissaryPick = { name: pick.name, reason, scores: scores.slice(0, 5) };
+  return ep.emissaryPick;
+}
+

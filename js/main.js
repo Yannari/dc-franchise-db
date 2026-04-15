@@ -1,6 +1,5 @@
 // ══════════════════════════════════════════════════════════════════════
-// main.js — Bridge between ES modules and inline <script defer>
-// Imports from core.js and exposes everything on window for onclick handlers
+// main.js — Module bridge: imports ES modules and exposes on window
 // ══════════════════════════════════════════════════════════════════════
 
 import * as core from './core.js';
@@ -41,6 +40,7 @@ import * as runUiMod from './run-ui.js';
 import * as vpScreensMod from './vp-screens.js';
 import * as vpFinaleMod from './vp-finale.js';
 import * as vpUiMod from './vp-ui.js';
+import * as savestateMod from './savestate.js';
 
 // ── Expose mutable state as getters/setters on window ──
 // This is critical: window.gs must always return the CURRENT module-scoped value.
@@ -83,6 +83,7 @@ const constants = [
   'PHOBIA_POOL', 'PHOBIA_CATEGORIES',
   'S10_TRIBES', 'S10_BONDS_PRESET',
   'S9_TRIBES', 'S9_BONDS_PRESET',
+  'DEFAULT_STATS', 'CHALLENGE_DB', 'REWARD_POOL',
 ];
 
 for (const name of constants) {
@@ -117,6 +118,7 @@ const extractedModules = [
   socialManipMod, campEventsMod, twistsMod, rescueIslandMod,
   episodeMod, finaleMod, textBacklogMod, aftermathMod,
   castUiMod, runUiMod, vpScreensMod, vpFinaleMod, vpUiMod,
+  savestateMod,
 ];
 
 for (const mod of extractedModules) {
@@ -189,3 +191,32 @@ window.CHALLENGES = {
   'triple-dog-dare': { simulate: tripleDogDareMod.simulateTripleDogDare, rpBuild: tripleDogDareMod.rpBuildTripleDogDareAnnouncement, text: tripleDogDareMod._textTripleDogDare },
   'slasher-night': { simulate: slasherNightMod.simulateSlasherNight, rpBuild: slasherNightMod.rpBuildSlasherAnnouncement, text: slasherNightMod._textSlasherNight },
 };
+
+// ══════════════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════════════
+
+function init() {
+  buildStatSliders();
+  buildAdvantageList();
+  loadAll();
+  renderCast();
+  renderConfig();
+  renderRelList();
+  renderAllianceList();
+  renderPresetList();
+  renderSeasonSaveList();
+  // Restore spoiler-free state BEFORE rendering tabs (so episode history respects it)
+  const _sfSaved2 = localStorage.getItem('simulator_spoilerFree') === 'true';
+  const _sfCb2 = document.getElementById('cfg-spoiler-free');
+  if (_sfCb2) _sfCb2.checked = _sfSaved2;
+  _spoilerFree = _sfSaved2;
+
+  // Restore last active tab
+  const _savedTab = localStorage.getItem('simulator_activeTab');
+  if (_savedTab && ['cast','setup','run','results'].includes(_savedTab)) {
+    showTab(_savedTab);
+  }
+}
+
+init();

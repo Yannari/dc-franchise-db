@@ -2,6 +2,672 @@
 import { gs, players } from '../core.js';
 import { pStats, pronouns, updateChalRecord } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
+
+// ═══════════════════════════════════════════════════════════════════
+// SLASHER NIGHT — Event Pool & Scoring Constants
+// ═══════════════════════════════════════════════════════════════════
+
+const SLASHER_ROUND_SURVIVAL_BONUS = 2;
+const SLASHER_DIMINISHING_RETURNS = { 1: 0, 2: -1, 3: -2 };
+const SLASHER_OVERCONFIDENCE_CHANCE = 0.20;
+const SLASHER_GROUP_CATCH_MOD = { solo: 2, pair: 0, group: -1 };
+
+const SLASHER_EVENTS = {
+  positive: [
+    {
+      id: 'stand-and-fight', points: 4, type: 'positive',
+      statCheck: s => s.physical >= 7 || s.boldness >= 7,
+      bondEffect: { target: 'witnesses', delta: 0.3 },
+      textVariants: [
+        `{name} grabs a canoe paddle and swings at the slasher. Direct hit. The slasher staggers.`,
+        `{name} picks up a rock the size of {pr.pos} head. The slasher reconsiders.`,
+        `{name} squares up. No weapon, just fists. The slasher takes a step back.`,
+        `{name} rips a branch off a tree and holds it like a bat. 'Come on then.'`
+      ]
+    },
+    {
+      id: 'set-a-trap', points: 3, type: 'positive',
+      statCheck: s => s.strategic >= 6 || s.mental >= 7,
+      bondEffect: null,
+      textVariants: [
+        `{name} rigs a tripwire using fishing line across the path. The slasher goes down hard.`,
+        `{name} leaves a trail leading to a pit. It works.`,
+        `{name} sets up chairs in a maze pattern near the shelter. The slasher gets tangled.`,
+        `{name} pours cooking oil across the mess hall floor. The slasher slides into the wall.`
+      ]
+    },
+    {
+      id: 'find-hiding-spot', points: 2, type: 'positive',
+      statCheck: s => s.intuition >= 6,
+      bondEffect: null,
+      flags: { isHiding: true },
+      textVariants: [
+        `{name} slides under the cabin and doesn't breathe for two minutes.`,
+        `{name} finds a hollow tree trunk. The slasher walks right past.`,
+        `{name} slips behind the waterfall. Invisible.`,
+        `{name} climbs inside the supply crate. Darkness. Silence. Safety.`
+      ]
+    },
+    {
+      id: 'warn-ally', points: 2, type: 'positive',
+      statCheck: s => s.loyalty >= 6,
+      requiresAlly: true, requiresBond: 2,
+      bondEffect: { target: 'ally', delta: 1.0 },
+      textVariants: [
+        `{name} spots the slasher heading toward {ally}. One whistle — their signal. {ally} vanishes.`,
+        `{name} grabs {ally}'s arm and pulls {pr.obj} into the bush. Just in time.`,
+        `{name} throws a pebble at {ally}'s foot. {ally} looks up, sees the shadow, and moves.`
+      ]
+    },
+    {
+      id: 'protect-someone', points: 3, type: 'positive',
+      statCheck: s => s.loyalty >= 7,
+      requiresAlly: true,
+      bondEffect: { target: 'ally', delta: 1.5 },
+      textVariants: [
+        `{name} stands between {ally} and the slasher. {pr.Sub} {pr.sub==='they'?'are':'is'} not moving.`,
+        `{name} shoves {ally} behind {pr.obj}. 'Run. I got this.'`,
+        `{name} throws {pr.ref} in the slasher's path so {ally} can escape.`
+      ]
+    },
+    {
+      id: 'stay-calm', points: 1, type: 'positive',
+      statCheck: s => s.temperament >= 7,
+      bondEffect: null,
+      textVariants: [
+        `{name} breathes. Counts to ten. Moves quietly. The panic doesn't touch {pr.obj}.`,
+        `Everyone around {name} is losing it. {pr.Sub} {pr.sub==='they'?'are':'is'} steady. Focused. Still here.`,
+        `{name} finds a corner, closes {pr.pos} eyes, and waits. When {pr.sub} open{pr.sub==='they'?'':'s'} them, the slasher has moved on.`
+      ]
+    },
+    {
+      id: 'rally-the-group', points: 2, type: 'positive',
+      statCheck: s => s.social >= 7,
+      requiresGroup: true,
+      bondEffect: { target: 'witnesses', delta: 0.5 },
+      flags: { groupBonus: 1 },
+      textVariants: [
+        `{name} takes charge. 'Everyone — behind the mess hall. Now. Stay together.' They listen.`,
+        `{name} grabs {ally}'s shoulder. 'We're not dying tonight. Follow me.' The group falls in line.`,
+        `{name} organizes the group into a formation. It shouldn't work. It does.`
+      ]
+    },
+    {
+      id: 'barricade', points: 2, type: 'positive',
+      statCheck: s => s.physical >= 6 && s.mental >= 5,
+      bondEffect: null,
+      flags: { isBarricaded: true },
+      textVariants: [
+        `{name} shoves a table against the door and stacks everything heavy on top. It holds.`,
+        `{name} blocks the cabin entrance with supply crates. The slasher pushes. Doesn't get through.`,
+        `{name} rips the cabin door off its hinges and wedges it against the window. Improvised. Effective.`
+      ]
+    },
+    {
+      id: 'distraction', points: 3, type: 'positive',
+      statCheck: s => s.strategic >= 7 && s.boldness >= 5,
+      bondEffect: null,
+      textVariants: [
+        `{name} throws a torch down the far trail. The slasher follows it. Bought everyone a round.`,
+        `{name} tips over a barrel and lets it roll downhill. The noise draws the slasher away.`,
+        `{name} triggers a tripwire on the far side of camp. The slasher's head snaps toward it. Time to move.`
+      ]
+    },
+    {
+      id: 'weapon-grab', points: 2, type: 'positive',
+      statCheck: s => s.physical >= 6 && s.boldness >= 6,
+      bondEffect: null,
+      textVariants: [
+        `{name} finds a machete near the fire pit. {pr.Sub} feel{pr.sub==='they'?'':'s'} a lot braver now.`,
+        `{name} grabs a metal pipe from the tool shed. Not ideal, but better than nothing.`,
+        `{name} picks up a cast-iron pan. It's heavy. It'll do.`
+      ]
+    },
+    {
+      id: 'rooftop-escape', points: 2, type: 'positive',
+      statCheck: s => s.physical >= 7 && s.endurance >= 6,
+      bondEffect: null,
+      textVariants: [
+        `{name} scrambles onto the cabin roof. The slasher circles below but can't follow.`,
+        `{name} pulls {pr.ref} up the side of the mess hall. From the roof, {pr.sub} can see everything.`,
+        `{name} leaps from the porch railing to the overhang and hauls {pr.ref} up. Out of reach.`
+      ]
+    },
+    {
+      id: 'read-the-pattern', points: 3, type: 'positive',
+      statCheck: s => s.intuition >= 7 && s.strategic >= 6,
+      bondEffect: null,
+      textVariants: [
+        `{name} maps the slasher's patrol in {pr.pos} head. Left, right, left, pause. {pr.Sub} move{pr.sub==='they'?'':'s'} during the pause.`,
+        `{name} realizes the slasher always checks the cabins first. {pr.Sub} head{pr.sub==='they'?'':'s'} for the beach.`,
+        `{name} watches the flashlight pattern. Every twelve seconds it sweeps left. That's the window.`
+      ]
+    },
+    {
+      id: 'accidental-hero', points: 4, type: 'positive',
+      statCheck: s => s.physical <= 5 && Math.random() < 0.10,
+      bondEffect: { target: 'witnesses', delta: 0.5 },
+      textVariants: [
+        `{name} trips and falls into the slasher, knocking them both down. Everyone escapes. {name} has no idea what just happened.`,
+        `{name} stumbles backward into a shelf. The shelf falls on the slasher. Pure accident. {name} is a hero and has no idea why.`,
+        `{name} throws a coconut in panic. It hits the slasher square in the mask. The slasher drops. Nobody is more surprised than {name}.`
+      ]
+    },
+    {
+      id: 'comfort-offering', points: 2, type: 'positive',
+      statCheck: s => s.social >= 6,
+      requiresAlly: true, requiresBond: 2,
+      requiresVictimCheck: s => s.temperament <= 4,
+      bondEffect: { target: 'ally', delta: 1.0 },
+      flags: { preventsPanic: true },
+      textVariants: [
+        `{ally} finds {name} curled up behind the cabin, shaking. {ally} sits next to {pr.obj}. 'Hey. We're getting out of this.' {name} nods. They move together.`,
+        `{ally} puts a hand on {name}'s shoulder. 'Breathe. I'm right here.' {name} stops shaking. They both make it through this round.`,
+        `{name} is hyperventilating behind the mess hall. {ally} crouches down. Doesn't say anything. Just stays. That's enough.`
+      ]
+    },
+    {
+      id: 'the-decoy', points: 5, type: 'positive',
+      statCheck: s => s.strategic >= 7 && s.loyalty >= 6,
+      requiresAlly: true,
+      bondEffect: { target: 'ally', delta: 1.5 },
+      flags: { decoyCatchBoost: 3 },
+      textVariants: [
+        `{name} runs out into the open, waving and yelling. The slasher turns. The group behind the cabin escapes. {name} barely makes it back.`,
+        `{name} throws a lit torch down the trail and sprints the other way. The slasher follows the light. The alliance owes {name} their game tonight.`,
+        `{name} starts banging pots together near the kitchen. Every head turns — including the slasher's. The group behind {name} disappears into the dark.`
+      ]
+    },
+    {
+      id: 'the-fake-out', points: 3, type: 'positive',
+      statCheck: s => s.strategic >= 7 && s.boldness >= 6,
+      bondEffect: null,
+      flags: { immuneFromCatch: true, witnessPanic: -2 },
+      textVariants: [
+        `{name} plays dead. Face down in the dirt. The slasher walks past. When the footsteps fade, {name} gets up and runs.`,
+        `{name} goes completely limp behind a bush. The slasher looks right at {pr.obj}. Keeps walking. {name} doesn't exhale for another thirty seconds.`,
+        `{name} collapses dramatically in the open. The slasher prods {pr.obj} with a boot. {name} doesn't flinch. The slasher moves on. Performance of a lifetime.`
+      ]
+    },
+    {
+      id: 'confession-under-pressure', points: 1, type: 'positive',
+      statCheck: s => true,
+      requiresAlly: true, requiresBond: 3,
+      requiresSurvivedRounds: 2,
+      bondEffect: { target: 'ally', delta: 2.0 },
+      textVariants: [
+        `Hiding in the dark, {name} tells {ally} something real. Not strategy — something personal. The kind of thing you only say when you think you might not make it.`,
+        `{name} and {ally} are pressed against the same wall, breathing hard. {name} says 'If we don't make it — I want you to know I had your back the whole time.' The silence after is different.`,
+        `The fear strips everything else away. {name} tells {ally} the truth about how {pr.sub} feel{pr.sub==='they'?'':'s'} about this game, about the alliances, about what matters. {ally} listens.`
+      ]
+    },
+    {
+      id: 'the-snack-break', points: 1, type: 'positive',
+      statCheck: s => s.endurance >= 7 && s.boldness <= 4,
+      bondEffect: null,
+      textVariants: [
+        `{name} is in the kitchen making a sandwich. The slasher walks past the window. {name} doesn't notice. Somehow this works.`,
+        `While everyone else is running for their lives, {name} finds leftover rice in the pot and eats it. Standing in the kitchen. In the dark. Completely fine.`,
+        `{name} opens the fridge. The light illuminates the whole kitchen. The slasher is outside. {name} grabs a mango and closes it. Oblivious and alive.`
+      ]
+    },
+    {
+      id: 'heroic-stand', points: 3, type: 'positive',
+      statCheck: s => s.loyalty >= 7 && s.physical >= 6,
+      requiresAlly: true,
+      bondEffect: { target: 'ally', delta: 1.0 },
+      textVariants: [
+        `{name} puts {pr.ref} between {ally} and the darkness. Whatever comes, it goes through {name} first.`,
+        `{name} doesn't run. {pr.Sub} plant{pr.sub==='they'?'':'s'} {pr.pos} feet and stare{pr.sub==='they'?'':'s'} into the dark. {ally} escapes behind {pr.obj}.`,
+        `{name} grabs a stick and faces the sound. 'Go,' {pr.sub} tell{pr.sub==='they'?'':'s'} {ally}. {ally} goes.`
+      ]
+    }
+  ],
+
+  negative: [
+    {
+      id: 'scream-panic', points: -3, type: 'negative',
+      statCheck: s => s.temperament <= 4,
+      bondEffect: null,
+      flags: { justScreamed: true },
+      textVariants: [
+        `{name} sees a shadow and screams. The entire camp knows where {pr.sub} {pr.sub==='they'?'are':'is'} now.`,
+        `{name} hears a branch snap and lets out a sound that echoes off the mountains.`,
+        `{name} tries to hold it in. {pr.Sub} can't. The scream comes out strangled and worse.`
+      ]
+    },
+    {
+      id: 'run-blindly', points: -2, type: 'negative',
+      statCheck: s => s.boldness <= 4,
+      requiresSolo: true,
+      bondEffect: null,
+      textVariants: [
+        `{name} bolts into the jungle with no plan. Branches whip {pr.pos} face. {pr.Sub} {pr.sub==='they'?'have':'has'} no idea where {pr.sub} {pr.sub==='they'?'are':'is'}.`,
+        `{name} runs. No direction, no destination. Just away. It costs {pr.obj} position.`,
+        `{name} sprints into the dark and trips over a root. Gets up. Runs again. Wrong direction.`
+      ]
+    },
+    {
+      id: 'freeze-up', points: -2, type: 'negative',
+      statCheck: s => s.boldness <= 3,
+      bondEffect: null,
+      textVariants: [
+        `{name} freezes. Legs won't move. The slasher is getting closer and {pr.sub} can't do anything.`,
+        `{name} sees the mask and every muscle locks. By the time {pr.sub} can move again, the advantage is gone.`,
+        `{name}'s brain says run. {pr.Sub} {pr.sub==='they'?'don\'t':'doesn\'t'}. The fear wins.`
+      ]
+    },
+    {
+      id: 'abandon-ally', points: -4, type: 'negative',
+      statCheck: s => s.loyalty <= 4,
+      requiresAlly: true,
+      bondEffect: { target: 'ally', delta: -2.0 },
+      textVariants: [
+        `{name} hears {ally} yell for help. {pr.Sub} calculate{pr.sub==='they'?'':'s'} the odds and keeps running.`,
+        `{name} sees {ally} cornered and decides that's not {pr.pos} problem.`,
+        `{name} whispers 'sorry' and disappears into the dark. {ally} heard it.`
+      ]
+    },
+    {
+      id: 'push-toward-slasher', points: -5, type: 'negative',
+      statCheck: s => s.loyalty <= 3 && s.strategic >= 6,
+      requiresEnemy: true, requiresBond: -1,
+      bondEffect: { target: 'victim', delta: -3.0 },
+      flags: { victimCaught: true },
+      textVariants: [
+        `{name} shoves {victim} into the slasher's path and disappears.`,
+        `{name} redirects the slasher by pointing at {victim}'s hiding spot.`,
+        `{name} trips {victim} and uses the head start to escape.`
+      ]
+    },
+    {
+      id: 'trip-and-fall', points: -1, type: 'negative',
+      statCheck: s => s.physical <= 4,
+      bondEffect: null,
+      textVariants: [
+        `{name} trips over a root and goes face-first into the dirt. The slasher's footsteps pause.`,
+        `{name} catches {pr.pos} foot on a vine and stumbles hard. Lost ground.`,
+        `{name} slips on wet rock and goes down. Gets up slower than {pr.sub} should.`
+      ]
+    },
+    {
+      id: 'go-off-alone', points: -2, type: 'negative',
+      statCheck: s => s.social <= 3,
+      requiresSolo: true,
+      bondEffect: null,
+      textVariants: [
+        `{name} ditches the group and heads into the jungle alone. Nobody follows.`,
+        `{name} decides {pr.sub} {pr.sub==='they'?'are':'is'} better off alone. {pr.Sub} {pr.sub==='they'?'aren\'t':'isn\'t'}.`,
+        `{name} slips away without telling anyone. Solo in the dark.`
+      ]
+    },
+    {
+      id: 'argue-at-worst-time', points: -3, type: 'negative',
+      statCheck: s => s.temperament <= 3,
+      requiresAlly: true,
+      bondEffect: { target: 'ally', delta: -1.0 },
+      flags: { justArgued: true },
+      textVariants: [
+        `{name} and {ally} disagree on which way to go. The whispered argument gets louder. The slasher doesn't need a map.`,
+        `{name} snaps at {ally} in the dark. 'This is YOUR fault.' The timing could not be worse.`,
+        `{name} and {ally} are fighting over who made a noise. Meanwhile, the actual threat is ten feet away.`
+      ]
+    },
+    {
+      id: 'check-the-noise', points: -2, type: 'negative',
+      statCheck: s => s.intuition <= 4 && s.boldness >= 5,
+      bondEffect: null,
+      textVariants: [
+        `{name} hears something and goes to investigate. That's never the right call.`,
+        `{name} peeks around the corner. The slasher peeks back.`,
+        `{name} follows the sound. It leads exactly where {pr.sub} shouldn't be.`
+      ]
+    },
+    {
+      id: 'false-sense-of-safety', points: -3, type: 'negative',
+      statCheck: s => s.boldness >= 6,
+      requiresHighScore: true,
+      bondEffect: null,
+      textVariants: [
+        `{name} gets cocky. 'I think we lost them.' {pr.Sub} didn't.`,
+        `{name} relaxes too early. Drops {pr.pos} guard. The slasher was waiting for exactly that.`,
+        `{name} starts walking instead of running. Confidence is not the same as safety.`
+      ]
+    },
+    {
+      id: 'showmance-distraction', points: -3, type: 'negative',
+      statCheck: s => s.strategic <= 5,
+      requiresShowmance: true,
+      bondEffect: null,
+      textVariants: [
+        `{name} and {ally} are too focused on each other to notice the slasher. Classic.`,
+        `{name} stops running to check on {ally}. Sweet. Also stupid.`,
+        `{name} and {ally} are holding hands while hiding. It slows them both down.`
+      ]
+    },
+    {
+      id: 'open-a-door', points: -2, type: 'negative',
+      statCheck: s => s.intuition <= 5,
+      bondEffect: null,
+      textVariants: [
+        `{name} opens a door that should stay closed. The creak echoes.`,
+        `{name} pushes open the supply shed. Something inside moves. {pr.Sub} slam{pr.sub==='they'?'':'s'} it shut.`,
+        `{name} checks the bathroom. The mirror shows something behind {pr.obj}. Too late.`
+      ]
+    },
+    {
+      id: 'flashlight-dies', points: -1, type: 'negative',
+      statCheck: () => Math.random() < 0.15,
+      bondEffect: null,
+      textVariants: [
+        `{name}'s flashlight flickers and dies. Darkness. Complete.`,
+        `The batteries in {name}'s torch give out. {pr.Sub} {pr.sub==='they'?'are':'is'} blind now.`,
+        `{name}'s light source dies at the worst possible moment. The dark swallows everything.`
+      ]
+    },
+    {
+      id: 'scared-by-teammate', points: -3, type: 'negative',
+      statCheck: s => s.temperament <= 5,
+      requiresAlly: true,
+      bondEffect: { target: 'ally', delta: -0.5 },
+      flags: { justScreamed: true },
+      textVariants: [
+        `{name} rounds a corner and sees {ally} in the dark. {pr.Sub} scream{pr.sub==='they'?'':'s'} before {pr.sub} even realize{pr.sub==='they'?'':'s'} who it is. Half the camp heard that.`,
+        `{ally} steps out of a cabin doorway. {name} swings at {pr.obj} before recognizing the face. Both of them are shaking.`,
+        `{ally} is wearing a towel over {pr.pos} head. {name} sees the silhouette and bolts. By the time {name} stops running, {pr.sub} {pr.sub==='they'?'are':'is'} three hundred feet from camp.`,
+        `{name} walks into the bathroom and sees {ally}'s shadow in the mirror. The scream is loud enough to echo. {ally} just stands there, confused.`,
+        `{name} and {ally} walk toward each other in the dark. Neither sees the other. They collide. Both scream. The slasher now knows exactly where they are.`
+      ]
+    },
+    {
+      id: 'scare-teammate-on-purpose', points: -1, type: 'negative',
+      statCheck: s => s.boldness >= 7,
+      requiresVictimNearby: true,
+      bondEffect: { target: 'victim', delta: -1.0 },
+      flags: { justScreamed: true, victimPoints: -3 },
+      textVariants: [
+        `{name} hides behind a tree and jumps out at {victim}. {victim} screams so loud the birds take off. {name} is doubled over laughing. The slasher is now heading their way.`,
+        `{name} sneaks up behind {victim} and grabs {pr.pos} shoulders. {victim} nearly passes out. {name} thinks it's the funniest thing that's happened all night.`,
+        `{name} puts on a mask they found in the supply shed and walks toward {victim}. {victim} doesn't recognize {name} for a full five seconds. Those five seconds cost both of them.`,
+        `{name} whispers {victim}'s name from behind a bush in a low voice. {victim} freezes, then runs. {name} can't stop laughing. The slasher can't stop listening.`
+      ]
+    },
+    {
+      id: 'betrayal-discovery', points: -2, type: 'negative',
+      statCheck: s => true,
+      requiresAlly: true, requiresBond: 2,
+      requiresBetrayedLastEp: true,
+      bondEffect: { target: 'ally', delta: -1.5 },
+      textVariants: [
+        `While hiding in the supply shed, {name} finds a note {ally} wrote. It has {name}'s name on it. The trust dies right there in the dark.`,
+        `{name} overhears {ally} whispering to someone else: 'We get rid of {name} next.' Hiding two feet away. Hearing every word.`,
+        `In the panic, {ally}'s bag spills open. {name} sees the vote parchment. {pr.Sub} read{pr.sub==='they'?'':'s'} {pr.pos} own name. The look {name} gives {ally} says everything.`
+      ]
+    },
+    {
+      id: 'rivalry-flares', points: -3, type: 'negative',
+      statCheck: s => true,
+      requiresEnemy: true, requiresBond: -3,
+      bondEffect: { target: 'enemy', delta: -1.0 },
+      flags: { justArgued: true, bothAffected: true, catchBoost: 2 },
+      textVariants: [
+        `{name} and {enemy} end up in the same hiding spot. Neither will leave. The whispered argument escalates. The slasher doesn't even need to look.`,
+        `{name} sees {enemy} hiding behind the same rock. 'Are you serious.' The mutual disgust is louder than either of them intended.`,
+        `{name} and {enemy} are forced to share a cabin. They'd rather face the slasher. Almost do.`
+      ]
+    },
+    {
+      id: 'someone-falls-asleep', points: -4, type: 'negative',
+      statCheck: s => s.endurance <= 4,
+      requiresLateRound: 4,
+      bondEffect: null,
+      flags: { autoCatchIfRolled: true },
+      textVariants: [
+        `{name} hasn't slept in two days. {pr.Sub} sit{pr.sub==='they'?'':'s'} down behind the cabin for 'just a second.' The next thing {pr.sub} know{pr.sub==='they'?'':'s'}, the slasher is standing over {pr.obj}.`,
+        `The adrenaline crash hits {name} like a wall. Eyes close. Just for a moment. When they open, the mask is three feet away.`,
+        `{name} leans against a tree and the exhaustion wins. {pr.Sub} wake{pr.sub==='they'?'':'s'} up to a hand on {pr.pos} shoulder. It's not a friend.`
+      ]
+    },
+    {
+      id: 'alliance-fracture', points: -2, type: 'negative',
+      statCheck: s => true,
+      requiresAllyWithLowLoyalty: 4,
+      requiresNamedAlliance: true,
+      bondEffect: { target: 'ally', delta: -2.5 },
+      textVariants: [
+        `{name} calls out for {ally}. {ally} is right there. {ally} does nothing. The alliance dies in that silence.`,
+        `{name} reaches for {ally}'s hand. {ally} pulls away. Turns. Runs. {name} stands there for a second too long.`,
+        `The slasher is closing in. {name} looks at {ally} — 'Help me.' {ally} looks back. Then {ally} looks away. That's the answer.`
+      ]
+    },
+    {
+      id: 'horror-movie-cliche', points: -2, type: 'negative',
+      statCheck: () => Math.random() < 0.12,
+      bondEffect: null,
+      textVariants: [
+        `{name} says 'I think we're safe now.' Nobody should ever say that.`,
+        `{name} says 'I'll be right back.' {pr.Sub} won't.`,
+        `{name} asks 'Did you hear that?' — the last useful question anyone asks tonight.`,
+        `{name} suggests they split up. That is never the answer.`,
+        `{name} opens the basement door. There's no reason to open the basement door.`
+      ]
+    }
+  ]
+};
+
+const SLASHER_CAUGHT_SCENES = [
+  {
+    id: 'grabbed-from-behind',
+    statCheck: s => s.intuition <= 5,
+    text: `A hand on the shoulder. By the time {name} turns around, it's over.`
+  },
+  {
+    id: 'cornered',
+    statCheck: () => true,
+    text: `{name} hits a wall. The slasher blocks the only exit.`
+  },
+  {
+    id: 'outsmarted',
+    statCheck: s => s.mental <= 5,
+    text: `The slasher herded {name} exactly where it wanted.`
+  },
+  {
+    id: 'betrayed-by-noise',
+    requiresFlag: 'justScreamed',
+    statCheck: () => true,
+    text: `{name}'s own voice gave {pr.obj} away.`
+  },
+  {
+    id: 'partner-caught-first',
+    requiresFlag: 'partnerCaught',
+    statCheck: () => true,
+    text: `{name} watches {ally} go down. The hesitation costs everything.`
+  },
+  {
+    id: 'jumped-from-above',
+    statCheck: () => Math.random() < 0.15,
+    text: `The slasher drops from the roof. {name} never looked up.`
+  },
+  {
+    id: 'lured-by-fake-sound',
+    statCheck: s => s.intuition <= 4,
+    text: `A voice calls {name}'s name. It's not who {pr.sub} think{pr.sub==='they'?'':'s'}.`
+  },
+  {
+    id: 'exhaustion',
+    statCheck: s => s.endurance <= 4,
+    requiresLateRound: 3,
+    text: `{name} can't run anymore. The slasher didn't hurry.`
+  },
+  {
+    id: 'overconfidence',
+    requiresFlag: 'highScore',
+    statCheck: () => true,
+    text: `{name} thought {pr.sub} had it figured out. The slasher doesn't follow rules.`
+  },
+  {
+    id: 'found-hiding',
+    requiresFlag: 'isHiding',
+    statCheck: () => true,
+    text: `The slasher checks under the cabin. {name} is there. Eyes meet.`
+  },
+  {
+    id: 'the-slow-walk',
+    statCheck: s => s.boldness <= 4,
+    text: `The slasher doesn't even run. It walks. {name} knows and can't do anything.`
+  },
+  {
+    id: 'classic-catch',
+    statCheck: () => true,
+    text: `The slasher finds {name}. No tricks, no drama. Just caught.`
+  }
+];
+
+const SLASHER_ATMOSPHERE = [
+  `A scream cuts through the night. Then silence. Someone is gone.`,
+  `The rain starts. Visibility drops to nothing.`,
+  `The slasher's chainsaw revs in the distance. Closer than last time.`,
+  `The camp lights flicker and die. Pure dark from here.`,
+  `Something drags across the ground near the mess hall.`,
+  `The remaining players can hear each other's breathing. The slasher can too.`,
+  `A cabin door slams shut on its own.`,
+  `The fire pit goes cold. The only light left is the moon.`,
+  `Footsteps on gravel. Then they stop. Then they start again. Closer.`,
+  `The generator cuts out. The hum that everyone ignored is suddenly the loudest absence in the world.`,
+  `A branch cracks somewhere in the tree line. Nobody moves.`,
+  `The wind shifts and carries a sound that shouldn't be there.`
+];
+
+const SLASHER_FINAL_WIN = [
+  {
+    id: 'fights-the-slasher',
+    statCheck: s => s.physical >= 8 || s.boldness >= 7,
+    priority: s => s.physical * 0.6 + s.boldness * 0.4,
+    bondEffect: { target: 'tribe', delta: 0.3 },
+    textVariants: [
+      `{name} doesn't run. {pr.Sub} turn{pr.sub==='they'?'':'s'} and fight{pr.sub==='they'?'':'s'}. One swing. The slasher goes down. Raw strength. It's over.`,
+      `{name} grabs the slasher by the mask and rips it off. The slasher stumbles back. {name} doesn't stop. The tribe watches from the treeline.`,
+      `{name} charges. No weapon, no plan, just fury. The slasher takes a hit and retreats into the dark. {name} stands alone. Standing.`
+    ]
+  },
+  {
+    id: 'outsmarts',
+    statCheck: s => s.strategic >= 7 || s.mental >= 8,
+    priority: s => s.strategic * 0.5 + s.mental * 0.5,
+    bondEffect: null,
+    textVariants: [
+      `{name} lures the slasher into a trap — a rigged net drops from the trees. Calculated. Cold. Effective.`,
+      `{name} leads the slasher down a dead-end trail with a pit at the end. The slasher falls. {name} watches. Strategic respect from everyone who saw it.`,
+      `{name} sets up a decoy and waits. The slasher takes the bait. By the time it realizes, {name} is already gone. Outplayed.`
+    ]
+  },
+  {
+    id: 'outlasts',
+    statCheck: s => s.endurance >= 8,
+    priority: s => s.endurance,
+    bondEffect: null,
+    textVariants: [
+      `{name} runs. And runs. And runs. The slasher slows. {name} doesn't. Pure stamina. The slasher gives up first.`,
+      `{name} has been moving all night. {pr.Sub} {pr.sub==='they'?'don\'t':'doesn\'t'} stop now. The slasher falls behind. Endurance wins.`,
+      `Hours pass. The slasher is winded. {name} is still going. Lungs burning, legs screaming, but still moving. That's enough.`
+    ]
+  },
+  {
+    id: 'uses-shield',
+    statCheck: s => s.loyalty <= 4 && s.strategic >= 6,
+    requiresLowBondWithOpponent: true,
+    priority: s => (10 - s.loyalty) * 0.5 + s.strategic * 0.5,
+    bondEffect: { target: 'opponent', delta: -3.0 },
+    textVariants: [
+      `{name} shoves {loser} toward the slasher and disappears into the dark. Wins — but the tribe saw it. They all saw it.`,
+      `{name} pushes {loser} into the slasher's path. Uses the head start to escape. Cold. Calculated. Unforgettable.`,
+      `{name} redirects the slasher at {loser}. It works. {name} survives. The cost is everything else.`
+    ]
+  },
+  {
+    id: 'terror-escape',
+    statCheck: s => s.physical <= 5 && s.strategic <= 5,
+    priority: () => Math.random() * 4,
+    bondEffect: null,
+    textVariants: [
+      `{name} just runs screaming into the jungle. No plan. No direction. Somehow — somehow — {pr.sub} make{pr.sub==='they'?'':'s'} it. Nobody understands how. Including {name}.`,
+      `{name} panics, trips, rolls downhill, crashes through a bush, and lands in a creek. The slasher loses the trail. Dumb luck is still luck.`,
+      `{name} hides in a garbage bin. The slasher walks past. {name} stays in there for another twenty minutes. Wins by default. A legend for all the wrong reasons.`
+    ]
+  },
+  {
+    id: 'talks-down',
+    statCheck: s => s.social >= 8,
+    priority: s => s.social,
+    bondEffect: { target: 'tribe', delta: 0.5 },
+    textVariants: [
+      `{name} starts talking. To the slasher. About life, about fear, about why this doesn't have to end this way. The slasher stops. Nobody can believe it. Neither can {name}.`,
+      `{name} holds up {pr.pos} hands. 'Wait. Just — wait.' The slasher pauses. {name} keeps talking. Calm. Steady. The slasher backs off. The tribe is stunned.`,
+      `{name} sits down. In the open. Looks at the slasher and says, 'I'm done running.' The slasher stands there. Then turns. Then leaves. Nobody will ever explain this.`
+    ]
+  }
+];
+
+const SLASHER_FINAL_LOSE = [
+  {
+    id: 'pushed-as-shield',
+    statCheck: () => true,
+    requiresWinMethod: 'uses-shield',
+    textVariants: [
+      `{name} feels the shove before {pr.sub} understand{pr.sub==='they'?'':'s'} it. {winner} pushes {pr.obj} into the slasher's path. Used as bait. The tribe remembers.`,
+      `{name} reaches for {winner}'s hand. {winner} pushes it away — and pushes {name} forward. The slasher takes what's offered.`,
+      `{name} didn't see it coming. One second {winner} was beside {pr.obj}. The next, {name} was alone with the slasher. The betrayal registers last.`
+    ]
+  },
+  {
+    id: 'freezes',
+    statCheck: s => s.boldness <= 4,
+    textVariants: [
+      `{name} freezes. {pr.Sub} can see {winner} escaping. {pr.Sub} can't follow. The fear wins.`,
+      `{name}'s legs lock. The slasher closes the gap. {winner} disappears into the dark. {name} can't.`,
+      `{name} stops. Not by choice. The body just won't move. The last thing {pr.sub} see{pr.sub==='they'?'':'s'} is {winner} getting away.`
+    ]
+  },
+  {
+    id: 'trips',
+    statCheck: s => s.physical <= 4,
+    textVariants: [
+      `{name} trips. Classic. The slasher doesn't even slow down. {winner} gets away clean.`,
+      `{name} catches a root and goes down hard. By the time {pr.sub} get{pr.sub==='they'?'':'s'} up, {winner} is gone and the slasher is here.`,
+      `{name} stumbles on the trail. {winner} keeps running. {name} doesn't get back up in time.`
+    ]
+  },
+  {
+    id: 'wrong-direction',
+    statCheck: s => s.intuition <= 4,
+    textVariants: [
+      `{name} runs left. The exit was right. {winner} knew. {name} didn't.`,
+      `{name} heads for the cabin. The slasher came from the cabin. Wrong call.`,
+      `{name} and {winner} split up. {name} picks the wrong path. The slasher was waiting at the end of it.`
+    ]
+  },
+  {
+    id: 'heroic-sacrifice',
+    statCheck: s => s.loyalty >= 8,
+    requiresHighBondWithWinner: 4,
+    bondEffect: { target: 'winner', delta: 3.0, tribeBonus: 0.5 },
+    textVariants: [
+      `{name} sees the slasher closing on {winner}. {pr.Sub} step{pr.sub==='they'?'':'s'} in front. 'Go. Now.' {winner} goes. {name} doesn't. Legendary.`,
+      `{name} grabs the slasher's attention. Waves. Shouts. Draws the pursuit away from {winner}. It costs {name} everything. {pr.Sub} know{pr.sub==='they'?'':'s'} it will.`,
+      `{name} doesn't hesitate. {pr.Sub} put{pr.sub==='they'?'':'s'} {pr.ref} between {winner} and the slasher. The tribe will talk about this for seasons.`
+    ]
+  },
+  {
+    id: 'outsmarted-by-slasher',
+    statCheck: s => s.mental <= 4,
+    textVariants: [
+      `{name} thought {pr.sub} had a plan. The slasher had a better one.`,
+      `{name} zigged. The slasher anticipated it. {winner} zagged. The slasher didn't.`,
+      `{name} was focused on the wrong thing. The slasher was focused on {name}.`
+    ]
+  }
+];
+
 import { wRandom } from '../alliances.js';
 
 function _slasherResolveText(template, ctx) {

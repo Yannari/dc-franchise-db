@@ -2,6 +2,446 @@
 import { gs, players, seasonConfig } from '../core.js';
 import { pStats, pronouns, romanticCompat, tribeColor, updateChalRecord } from '../players.js';
 import { addBond, getBond, getPerceivedBond } from '../bonds.js';
+
+// ══════════════════════════════════════════════════════════════════════
+// X-TREME TORTURE TEXT POOLS (composable segments)
+// ══════════════════════════════════════════════════════════════════════
+
+const XT_SKY_PLANE = {
+  high: [
+    (n,pr) => `${n} is already at the open hatch, peering out. ${pr.Sub} ${pr.sub==='they'?'look':'looks'} delighted. Unsettlingly delighted.`,
+    (n,pr) => `${n} is practically bouncing. "This is INCREDIBLE!" ${pr.Sub} ${pr.sub==='they'?'have':'has'} to be restrained from jumping early.`,
+    (n,pr) => `${n} does a practice jump crouch mid-aisle. Nobody asked. ${pr.Sub} ${pr.sub==='they'?'do':'does'} it again.`,
+    (n,pr) => `The wind is howling through the hatch. ${n} leans into it, hair whipping, arms spread. ${pr.Sub} ${pr.sub==='they'?'look':'looks'} like ${pr.sub} ${pr.sub==='they'?'belong':'belongs'} up here.`,
+    (n,pr) => `"Let's GO already!" ${n} shouts over the engine noise. The instructor checks the gear one more time. ${n} checks it too — faster.`,
+  ],
+  mid: [
+    (n,pr) => `${n} takes a seat near the hatch and peers out. Nervous. But curious. ${pr.Sub} ${pr.sub==='they'?'can':'can'} do this.`,
+    (n,pr) => `${n} is breathing through ${pr.posAdj} nose. Controlled. Focused. ${pr.Sub} keeps telling ${pr.ref} it's just a step.`,
+    (n,pr) => `${n} watches the others prep and does the same. No wasted energy. ${pr.Sub} ${pr.sub==='they'?'know':'knows'} what ${pr.sub} signed up for.`,
+    (n,pr) => `${n} tightens ${pr.posAdj} harness one extra notch, then stares at the floor of the plane. Working something out internally. ${pr.Sub} ${pr.sub==='they'?'get':'gets'} there.`,
+    (n,pr) => `${n} murmurs something under ${pr.posAdj} breath — a pep talk, maybe a prayer — then squares ${pr.posAdj} shoulders and moves toward the hatch.`,
+  ],
+  low: [
+    (n,pr) => `${n} is plastered against the back wall of the plane. Not happening. Except it is.`,
+    (n,pr) => `${n} grips the seat so hard ${pr.posAdj} knuckles are white. ${pr.Sub} ${pr.sub==='they'?'haven\'t':'hasn\'t'} looked out the window once.`,
+    (n,pr) => `${n} is praying. Or bargaining. Hard to tell. Either way, ${pr.sub} ${pr.sub==='they'?'look':'looks'} terrible.`,
+    (n,pr) => `${n}'s eyes are closed. ${pr.Sub} ${pr.sub==='they'?'haven\'t':'hasn\'t'} moved since takeoff. The instructor taps ${pr.posAdj} shoulder. ${n} flinches like ${pr.sub} ${pr.sub==='they'?'forgot':'forgot'} where ${pr.sub} ${pr.sub==='they'?'were':'was'}.`,
+    (n,pr) => `Every turbulence bump earns a strangled noise from ${n}. ${pr.Sub} ${pr.sub==='they'?'are':'is'} technically conscious and technically cooperative. That's about all that can be said.`,
+  ],
+};
+
+const XT_SKY_JUMP = {
+  willing: [
+    (n,pr) => `${n} steps to the edge and goes. Clean exit. No hesitation.`,
+    (n,pr) => `${n} doesn't even pause. One step, then freefall. ${pr.Sub} ${pr.sub==='they'?'whoop':'whoops'} on the way down.`,
+    (n,pr) => `${n} gives a thumbs-up to the camera and launches. Showboat. It works.`,
+    (n,pr) => `Without a word, ${n} walks to the hatch and steps off. No ceremony. Just gone. The wind takes ${pr.obj}.`,
+    (n,pr) => `${n} grins at the instructor. "Race you." Then ${pr.sub} ${pr.sub==='they'?'dive':'dives'} headfirst out of the plane.`,
+  ],
+  hesitant: [
+    (n,pr) => `${n} gets to the edge. Steps back. Steps forward. Steps back. Then — goes.`,
+    (n,pr) => `${n} stands at the hatch for a long, silent moment. Then something clicks. ${pr.Sub} ${pr.sub==='they'?'jump':'jumps'}.`,
+    (n,pr) => `${n} squeezes ${pr.posAdj} eyes shut, counts to three out loud, and falls forward. It counts.`,
+    (n,pr) => `${n} talks ${pr.ref} through it in real time. "Okay. Okay. OKAY." Then ${pr.sub} ${pr.sub==='they'?'tip':'tips'} forward. Gone.`,
+    (n,pr) => `${n} stares down for a full ten seconds, jaw locked. Then ${pr.posAdj} head drops, ${pr.posAdj} legs bend — and ${pr.sub} ${pr.sub==='they'?'fall':'falls'}.`,
+  ],
+  pushed: [
+    (n,pr,pusher) => `${n} is frozen at the edge. ${pusher} puts a hand on ${pr.posAdj} shoulder — and nudges. ${n} is airborne.`,
+    (n,pr,pusher) => `${pusher} loses patience. One firm push. ${n} screams all the way down, but ${pr.sub} ${pr.sub==='they'?'go':'goes'}.`,
+    (n,pr,pusher) => `"On three," says ${pusher}. ${n} nods. ${pusher} doesn't count. ${n} is already gone.`,
+  ],
+  refused: [
+    (n,pr) => `${n} shakes ${pr.posAdj} head. Sits down. Crosses ${pr.posAdj} arms. The instructor gives up.`,
+    (n,pr) => `${n} looks out the hatch once, looks back at the crew, and says "Absolutely not." The plane circles back.`,
+    (n,pr) => `${n} refuses. Politely but firmly. ${pr.Sub} ${pr.sub==='they'?'wave':'waves'} as the others jump.`,
+  ],
+};
+
+const XT_SKY_CHECK = {
+  exit: {
+    pass: [
+      (n,pr) => `Clean exit. ${n} steps off the edge and drops.`,
+      (n,pr) => `${n} launches cleanly — no hesitation at the door.`,
+      (n,pr) => `Good exit. ${n} clears the plane and enters freefall in control.`,
+      (n,pr) => `${n} pushes off the ramp with both feet. Clean separation. Airborne.`,
+      (n,pr) => `One breath. Then ${n} is gone. Smooth exit — body straight, arms tucked.`,
+    ],
+    fail: [
+      (n,pr) => `${n} clips the door frame on the way out. Bad angle from the start.`,
+      (n,pr) => `Ugly exit. ${n} tumbles sideways off the ramp — already spinning.`,
+      (n,pr) => `${n} catches a boot on the threshold and somersaults out. Not ideal.`,
+      (n,pr) => `${n} freezes at the door, gets nudged by the wind, and falls out more than jumps.`,
+      (n,pr) => `${n}'s shoulder hits the edge of the hatch. The spin starts immediately.`,
+    ]
+  },
+  freefall: {
+    pass: [
+      (n,pr) => `${n} stabilizes mid-air. Arms out, body flat — textbook freefall form.`,
+      (n,pr) => `Freefall body control is solid. ${n} finds ${pr.posAdj} center and holds it.`,
+      (n,pr) => `${n} spreads out and stops spinning. Stable. The ground is getting closer.`,
+      (n,pr) => `${n} arches ${pr.posAdj} back and the tumbling stops. Belly-to-earth. Controlled.`,
+      (n,pr) => `Wind roars but ${n} holds position. Limbs out, chin up. Riding the air.`,
+    ],
+    fail: [
+      (n,pr) => `${n} is tumbling. Can't stabilize — arms flailing, wind tearing at ${pr.obj}.`,
+      (n,pr) => `Freefall goes wrong fast. ${n} is spinning and can't stop. The ground is a blur.`,
+      (n,pr) => `${n} curls up instinctively — the worst thing to do. Now ${pr.sub}'s a spinning ball.`,
+      (n,pr) => `The wind has ${n}. ${pr.Sub} ${pr.sub==='they'?'try':'tries'} to spread out but the rotation is too fast.`,
+      (n,pr) => `${n} is face-up, face-down, face-up again. No control. Pure chaos at 120 mph.`,
+    ]
+  },
+  deploy: {
+    pass: [
+      (n,pr) => `Chute deploys clean. The canopy blooms above ${n} and the world slows down.`,
+      (n,pr) => `${n} pulls the cord. The parachute opens perfectly — one smooth snap.`,
+      (n,pr) => `Textbook deploy. ${n} feels the jerk, looks up — full canopy. Relief.`,
+      (n,pr) => `The ripcord finds ${n}'s hand on the first grab. The chute billows open. Controlled descent.`,
+      (n,pr) => `${n} deploys at the perfect altitude. The canopy catches air and ${pr.sub} ${pr.sub==='they'?'float':'floats'}.`,
+    ],
+    fail: [
+      (n,pr) => `${n} grabs for the cord — misses — grabs again. The chute half-opens, tangles.`,
+      (n,pr) => `Late pull. The chute rips open violently, jerking ${n} like a ragdoll.`,
+      (n,pr) => `Something's wrong with the lines. ${n} kicks and yanks until the chute catches. Barely.`,
+      (n,pr) => `${n} pulls the cord and nothing happens. Pulls harder. The chute sputters open — twisted.`,
+      (n,pr) => `The canopy opens lopsided. ${n} is descending way too fast on one side.`,
+    ]
+  },
+  steer: {
+    pass: [
+      (n,pr) => `${n} pulls the toggles and steers toward the target. Clean approach angle.`,
+      (n,pr) => `Steering on point. ${n} tracks toward the sofa bed, making small corrections.`,
+      (n,pr) => `${n} reads the wind and adjusts. The landing zone is dead ahead.`,
+      (n,pr) => `Left toggle, right toggle — ${n} threads through the crosswind and lines up the target.`,
+      (n,pr) => `${n} makes it look easy. Gentle S-turns, losing altitude on purpose. The circle grows bigger.`,
+    ],
+    fail: [
+      (n,pr) => `${n} pulls the wrong toggle. Drifting off course — the target is getting farther away.`,
+      (n,pr) => `Wind catches the chute and drags ${n} sideways. ${pr.Sub} can't correct in time.`,
+      (n,pr) => `${n} overcorrects. Then overcorrects the correction. Now ${pr.sub}'s heading for the trees.`,
+      (n,pr) => `${n} can see the sofa bed below but the wind is pushing ${pr.obj} past it. No toggle response.`,
+      (n,pr) => `Steering fails. ${n} is committed to the wrong approach and there's no time to fix it.`,
+    ]
+  },
+  flare: {
+    pass: [
+      (n,pr) => `Perfect flare. ${n} pulls both toggles at the right height. Soft touchdown.`,
+      (n,pr) => `${n} times the flare perfectly — feet down, knees bent, absorbs the impact.`,
+      (n,pr) => `Last second: flare. ${n} bleeds speed and touches down smooth.`,
+      (n,pr) => `${n} sinks both toggles at ten feet. The chute stalls gently. Feather landing.`,
+      (n,pr) => `Flare on point. ${n} goes from full speed to standing in two seconds flat.`,
+    ],
+    fail: [
+      (n,pr) => `${n} flares too late. Hits the ground at full speed. Legs buckle.`,
+      (n,pr) => `No flare. ${n} comes in hot and just... impacts. The ground wins.`,
+      (n,pr) => `${n} flares too early, stalls, and drops the last ten feet like a stone.`,
+      (n,pr) => `${n} forgets to flare entirely. Feet hit first, then knees, then face.`,
+      (n,pr) => `The timing is off. ${n} yanks the toggles but it's already too late — full-speed arrival.`,
+    ]
+  }
+};
+
+const XT_SKY_FALL = {
+  perfect: [
+    (n,pr) => `${n} pulls the chute at exactly the right moment. Textbook deployment. The canopy blooms clean.`,
+    (n,pr) => `The chute opens with a satisfying crack. ${n} checks ${pr.posAdj} altitude, adjusts course. Completely in control.`,
+    (n,pr) => `Perfect pull. The canopy snaps open above ${n} and ${pr.sub} ${pr.sub==='they'?'drift':'drifts'} down like ${pr.sub} ${pr.sub==='they'?'own':'owns'} the sky.`,
+    (n,pr) => `${n} deploys with precision — not too early, not too late. The chute billows clean. ${pr.Sub} ${pr.sub==='they'?'steer':'steers'} immediately.`,
+    (n,pr) => `Flawless execution. ${n} pulls the ripcord and the chute unfurls without a hiccup. ${pr.Sub} ${pr.sub==='they'?'float':'floats'} down calm as anything.`,
+  ],
+  late: [
+    (n,pr) => `${n} pulls late. The canopy rips open with a violent jerk. ${pr.Sub} ${pr.sub==='they'?'yelp':'yelps'}. But it opens.`,
+    (n,pr) => `${n} waits a beat too long. The ground looks very real. The chute catches. Just.`,
+  ],
+  tangled: [
+    (n,pr) => `${n}'s chute deploys — then tangles. ${pr.Sub} ${pr.sub==='they'?'spin':'spins'} like a top for fifteen horrifying seconds before it sorts itself.`,
+    (n,pr) => `Lines crossed. Chute half-open. ${n} kicks and yanks and swears until it shakes loose. Not graceful. Effective.`,
+  ],
+  forgot: [
+    (n,pr) => `${n} forgets to pull. The instructor on the ground is losing ${pr.posAdj} mind. ${n} remembers. Eventually.`,
+    (n,pr) => `Three seconds of pure silence from ${n}'s radio. Then: "Oh — RIGHT!" The chute fires.`,
+  ],
+};
+
+const XT_SKY_GROUND = {
+  perfect: [
+    (n,pr) => `The ground crew is in position. ${n} has a clear target. Everything lined up.`,
+    (n,pr) => `Flawless. The crew locks the sofa bed dead center and holds it there. ${n} has an unmissable target.`,
+    (n,pr) => `Someone took charge down there and it worked. The crew moves as a unit, calling out adjustments until the circle is perfect.`,
+    (n,pr) => `From up there, the crew looks like a machine. ${n} steers straight at them without hesitation.`,
+    (n,pr) => `The anchor holds the circle rigid, the coordinator keeps everyone in line. ${n} drifts in with a clear bullseye below.`,
+  ],
+  decent: [
+    (n,pr) => `Ground crew is close enough. A little scattered, but ${n} makes it work.`,
+    (n,pr) => `Not a perfect setup, but the crew adjusts. ${n} has a workable landing zone.`,
+    (n,pr) => `Off by a foot, but close enough. ${n} adjusts in the last ten seconds and threads it.`,
+    (n,pr) => `Two members pull in different directions for a moment before someone overrules them. The circle ends up a little crooked, but usable.`,
+    (n,pr) => `Someone almost trips carrying the sofa bed into position. They recover. ${n} pretends not to have seen it.`,
+  ],
+  chaos: [
+    (n,pr,sleeper) => sleeper
+      ? `The ground crew is all over the place. ${sleeper} is literally asleep in the target circle. ${n} is coming in hot.`
+      : `The ground crew is all over the place. Someone's in the wrong spot. Someone else is checking their phone. ${n} is coming in hot.`,
+    (n,pr,sleeper) => sleeper
+      ? `Ground crew chaos. ${sleeper} has wandered off. The target circle is basically decorative at this point.`
+      : `Ground crew chaos. People facing the wrong way. The target circle is basically decorative at this point.`,
+    (n,pr,sleeper) => sleeper
+      ? `Two crew members argue about which direction ${sleeper} is supposed to face. ${n} is already in freefall. Nobody agrees.`
+      : `Two crew members argue about which direction to carry the sofa bed. ${n} is already in freefall. Nobody agrees.`,
+    (n,pr,sleeper) => `The sofa bed wheel locks up mid-carry. The crew abandons it and just stands in a vague cluster. ${n} is going to have to improvise.`,
+    (n,pr,sleeper) => sleeper
+      ? `Half the ground crew drifts over to watch ${sleeper} instead of doing their job. The landing circle is basically a suggestion.`
+      : `Half the ground crew starts watching ${n}'s descent instead of staying in position. Nobody notices they're not holding the circle anymore.`,
+  ],
+};
+
+const XT_SKY_LANDING = {
+  perfect: [
+    (n,pr) => `${n} lands in the circle with both feet. Sticks it. The ground crew actually cheers.`,
+    (n,pr) => `Textbook landing. ${n} touches down soft and centered. ${pr.Sub} ${pr.sub==='they'?'make':'makes'} it look easy.`,
+    (n,pr) => `Bullseye. ${n} drifts straight into the center of the circle and touches down like it's nothing. The crew goes wild.`,
+    (n,pr) => `${n} hits the target clean — two feet, standing, barely a stumble. ${pr.Sub} ${pr.sub==='they'?'look':'looks'} around like ${pr.sub} ${pr.sub==='they'?'want':'wants'} to do it again.`,
+    (n,pr) => `Dead center. ${n} touches down and stays up — barely a bend in ${pr.posAdj} knees. Surgical.`,
+  ],
+  good: [
+    (n,pr) => `Not perfect, but solid. ${n} touches down a few feet off-center and stumbles, but stays upright. Respectable.`,
+    (n,pr) => `${n} comes in a little hot. The landing isn't pretty — knees buckle, hands hit dirt — but ${pr.sub}'s in the zone. It counts.`,
+    (n,pr) => `${n} clips the edge of the sofa bed and tumbles, but rolls to ${pr.posAdj} feet. Not elegant. Not a disaster either.`,
+    (n,pr) => `Decent landing. ${n} overshoots by a few feet and has to scramble back to the circle. Close enough.`,
+    (n,pr) => `${n} lands standing but immediately staggers sideways. Catches ${pr.ref}. "That was on purpose." It wasn't.`,
+  ],
+  rough: [
+    (n,pr) => `${n} comes in sideways and rolls hard. ${pr.Sub} ${pr.sub==='they'?'bounce':'bounces'} once, twice, stops just inside the circle. Counts.`,
+    (n,pr) => `Rough approach. ${n} hits the ground running and keeps going for about forty feet. Still on target.`,
+    (n,pr) => `${n} belly-flops into the landing zone. Sand in every crevice. But technically in bounds.`,
+    (n,pr) => `The sofa bed is close. ${n} is not. ${pr.Sub} hits dirt three feet short and skids the rest of the way. Ugly but valid.`,
+    (n,pr) => `${n} lands hard enough to leave an impression in the ground. Literally. ${pr.Sub}'s shaped hole in the sand. But in the circle.`,
+  ],
+  crash: [
+    (n,pr) => `${n} crashes into the circle like a lawn dart. Mud everywhere. ${pr.Sub} ${pr.sub==='they'?'give':'gives'} a thumbs up from the ground.`,
+    (n,pr) => `${n} lands face-first just inside the boundary. ${pr.Sub} ${pr.sub==='they'?'lie':'lies'} there for a moment. Then: "I'm okay!"`,
+  ],
+  injury: [
+    (n,pr) => `${n} lands wrong — ankle twists on impact. ${pr.Sub} ${pr.sub==='they'?'go':'goes'} down immediately. Medic rushes over.`,
+    (n,pr) => `Hard landing. ${n} hits the edge of the circle and buckles. ${pr.Sub} ${pr.sub==='they'?'are':'is'} helped up slowly. Points deducted. Pain acquired.`,
+  ],
+};
+
+// ── MOOSE RIDING ─────────────────────────────────────────────────────
+
+const XT_MOOSE_APPROACH = {
+  high: [
+    (n,pr,mooseType) => `${n} sees the ${mooseType} and ${pr.posAdj} face splits into a grin. ${pr.Sub} ${pr.sub==='they'?'crack':'cracks'} ${pr.posAdj} knuckles. Let's go.`,
+    (n,pr,mooseType) => `The ${mooseType} stares ${n} down. ${n} stares back. This is already personal.`,
+  ],
+  mid: [
+    (n,pr,mooseType) => `${n} approaches the ${mooseType} carefully. Measured steps. ${pr.Sub} ${pr.sub==='they'?'have':'has'} clearly thought about this.`,
+    (n,pr,mooseType) => `${n} looks the ${mooseType} over. Checks the hooves. Checks the antlers. Nods slowly. Okay then.`,
+  ],
+  low: [
+    (n,pr,mooseType) => `${n} takes one look at the ${mooseType} and ${pr.posAdj} whole body language changes. ${pr.Sub} ${pr.sub==='they'?'want':'wants'} no part of this.`,
+    (n,pr,mooseType) => `${n} stops three feet from the ${mooseType} and just stares. The ${mooseType} snorts. ${n} flinches.`,
+  ],
+};
+
+const XT_MOOSE_MOUNT = {
+  success: [
+    (n,pr) => `${n} grabs the antlers and swings up in one motion. The moose barely reacts. Seated.`,
+    (n,pr) => `First try. ${n} hauls ${pr.ref} up and settles in. The moose flicks an ear. Not impressed, but tolerating it.`,
+  ],
+  fail: [
+    (n,pr) => `${n} gets one leg over — then slides right off the other side. Lands in the dirt. The moose looks down at ${pr.obj}.`,
+    (n,pr) => `Three attempts. The moose sidesteps every single time. ${n} is getting winded before the riding even starts.`,
+  ],
+};
+
+const XT_MOOSE_BUCK = {
+  hold: [
+    (n,pr,round) => round === 1
+      ? `The moose BUCKS. Hard. ${n} grips the antlers and squeezes — holds on! Round one to ${n}.`
+      : round === 2
+      ? `Second buck. Harder this time. ${n} leans into it, weight low — stays seated!`
+      : `The moose is furious now. Violent lurch. ${n} somehow absorbs it. Unbelievable.`,
+    (n,pr,round) => round === 1
+      ? `First buck and ${n} barely moves. ${pr.Sub} ${pr.sub==='they'?'look':'looks'} almost comfortable up there.`
+      : round === 2
+      ? `The moose rears. ${n} pulls forward on the antlers, compensates perfectly. Still on.`
+      : `Round ${round}. The moose has tried everything. ${n} is still there. This is getting embarrassing — for the moose.`,
+    (n,pr,round) => round === 1
+      ? `The moose bucks left. ${n} goes right — and somehow that cancels out. Still mounted.`
+      : round === 2
+      ? `Massive buck. ${n} slips to one side — catches ${pr.ref}. Barely. Still on!`
+      : `The moose throws a full-body shimmy. ${n} has no explanation for how ${pr.sub} ${pr.sub==='they'?'survive':'survives'} it.`,
+    (n,pr,round) => round === 1
+      ? `The moose launches into a full rear. ${n} drops ${pr.posAdj} weight and clamps down — rides it through. Still on.`
+      : round === 2
+      ? `${n} is white-knuckling the antlers by round two, but ${pr.sub} ${pr.sub==='they'?'don\'t':'doesn\'t'} let go.`
+      : `Round ${round} and ${n} is still there, jaw set, refusing to be thrown. The moose seems confused.`,
+    (n,pr,round) => round === 1
+      ? `${n} absorbs round one like it's a speed bump. Eyes forward, grip steady. This isn't over.`
+      : round === 2
+      ? `The moose goes sideways, ${n} goes with it — and recovers. Body memory. Still seated.`
+      : `Round ${round}. The crowd has gone quiet. ${n} is still on. Nobody knows how.`,
+  ],
+  thrown: [
+    (n,pr,round) => round === 1
+      ? `First buck. Gone. ${n} is airborne immediately, lands in a heap. That was quick.`
+      : round === 2
+      ? `${n} made it to round two, which is something. The moose bucks again — and ${n} goes flying.`
+      : `${n} hung on this long, which is impressive. The moose finally finds the angle and ${n} launches.`,
+    (n,pr,round) => round === 1
+      ? `The moose barely shrugs and ${n} is off. ${pr.Sub} ${pr.sub==='they'?'look':'looks'} genuinely surprised.`
+      : round === 2
+      ? `Round two. The moose means business. ${n} doesn't stand a chance. Off.`
+      : `Round ${round} ends the same as all the others eventually do. ${n} hits the dirt.`,
+    (n,pr,round) => round === 1
+      ? `Zero seconds. ${n} is ejected before the buzzer. A new record, probably.`
+      : round === 2
+      ? `The moose waits until ${n} relaxes slightly. Then bucks. Timing is everything.`
+      : `The moose won. Eventually. ${n} put up a real fight. Round ${round} was just too much.`,
+    (n,pr,round) => round === 1
+      ? `The moose doesn't warm up. First move, full force. ${n} doesn't even get to react before ${pr.sub} ${pr.sub==='they'?'are':'is'} airborne.`
+      : round === 2
+      ? `${n} held on for round one by instinct. Round two, the moose corrects for that. Off they go.`
+      : `Round ${round}. The moose found the angle — that particular shimmy ${n} couldn't counter. ${pr.Sub} ${pr.sub==='they'?'sail':'sails'}.`,
+    (n,pr,round) => round === 1
+      ? `${n} is off before ${pr.posAdj} whole weight even settles. The moose is not interested in passengers.`
+      : round === 2
+      ? `Made it past the first buck, but the second one is always meaner. ${n} learns this firsthand.`
+      : `The moose has been escalating this whole time. Round ${round}, ${n} finally runs out of answers.`,
+  ],
+};
+
+const XT_MOOSE_DISMOUNT_LOCATION = [
+  (n) => `a pile of socks`,
+  (n) => `the lake`,
+  (n) => `a large bush`,
+  (n) => `craft services`,
+  (n) => `the cameraman`,
+  (n) => `Chef's lunch`,
+  (n) => `the confessional outhouse`,
+];
+
+const XT_MOOSE_DISMOUNT = {
+  graceful: [
+    (n,pr) => `${n} slides off the moose cleanly and lands on both feet. Actually applause-worthy.`,
+    (n,pr) => `Controlled dismount. ${n} steps off like ${pr.sub} ${pr.sub==='they'?'do':'does'} this every day. The moose is indifferent.`,
+    (n,pr) => `${n} times the last buck and uses the momentum to land clean. Style points.`,
+  ],
+  thrown: [
+    (n,pr,location) => `${n} goes SAILING and lands directly in ${location}. The moose trots away satisfied.`,
+    (n,pr,location) => `The moose wins. ${n} ends up in ${location}. Nobody saw that coming. Especially not ${n}.`,
+    (n,pr,location) => `One final buck. ${n} achieves impressive hangtime and touches down in ${location}.`,
+  ],
+};
+
+// ── MUD SKIING ───────────────────────────────────────────────────────
+
+const XT_SKI_START = {
+  clean: [
+    (skier,driver,spr) => `${driver} guns the jet ski and ${skier} rises up clean. ${skier} finds ${spr.posAdj} stance immediately. Clean start.`,
+    (skier,driver,spr) => `Smooth acceleration. ${skier} gets up first try, skis tracking through the mud. ${driver} keeps it straight.`,
+  ],
+  jolt: [
+    (skier,driver,spr) => `${driver} hits the throttle too hard. ${skier} is YANKED off ${spr.posAdj} feet and dragged face-first before recovering.`,
+    (skier,driver,spr) => `Bad start. ${driver} lurches forward and ${skier} gets pulled sideways, fighting the rope to stay upright.`,
+  ],
+  joltResisted: [
+    (skier,driver,spr) => `${driver} guns it wrong but ${skier} anticipates the jolt and leans into it. ${spr.Sub} ${spr.sub==='they'?'absorb':'absorbs'} the shock. Still up.`,
+    (skier,driver,spr) => `Rough takeoff from ${driver}, but ${skier} ${spr.sub==='they'?'are':'is'} ready for it. ${spr.Sub} ${spr.sub==='they'?'ride':'rides'} it out and finds ${spr.posAdj} footing.`,
+  ],
+};
+
+const XT_SKI_FLAG = {
+  collect: [
+    (skier,flagNum,spr,driver) => `Flag ${flagNum}. ${skier} angles hard and snatches it clean. One-handed.`,
+    (skier,flagNum,spr,driver) => `${skier} times it perfectly — grabs flag ${flagNum} without breaking stride.`,
+    (skier,flagNum,spr,driver) => `Flag ${flagNum} to ${skier}. Clean grab. ${driver} held the line.`,
+    (skier,flagNum,spr,driver) => `${skier} reaches early, tracks the arc, and rips flag ${flagNum} at full speed.`,
+    (skier,flagNum,spr,driver) => `Flag ${flagNum}. ${skier} barely has to adjust — perfect positioning from ${driver}.`,
+    (skier,flagNum,spr,driver) => `${skier} leans way out for flag ${flagNum} — the kind of reach that should fail. It doesn't.`,
+    (skier,flagNum,spr,driver) => `Mud flying. ${skier} punches through the spray and comes out holding flag ${flagNum}.`,
+    (skier,flagNum,spr,driver) => `Flag ${flagNum} is at a weird angle. ${skier} adjusts mid-slide and plucks it clean.`,
+    (skier,flagNum,spr,driver) => flagNum >= 4 ? `Flag ${flagNum}. ${skier} is in a groove now. Making it look routine.` : `${skier} gets flag ${flagNum} with a smooth backhand swipe. Style points.`,
+    (skier,flagNum,spr,driver) => flagNum >= 4 ? `Flags piling up. ${skier} grabs number ${flagNum} almost lazily. ${spr.Sub}'s dialed in.` : `Flag ${flagNum} down. ${skier} flicks mud off ${spr.posAdj} hand and refocuses.`,
+  ],
+  miss: [
+    (skier,flagNum,spr,driver) => `${skier} reaches for flag ${flagNum} — fingertips brush it but can't grip. Gone.`,
+    (skier,flagNum,spr,driver) => `Flag ${flagNum} stays up. ${skier} was close but the angle was wrong.`,
+    (skier,flagNum,spr,driver) => `${skier} lunges for flag ${flagNum} and nearly falls off the skis. Misses by inches.`,
+    (skier,flagNum,spr,driver) => `The mud kicks up right as ${skier} goes for flag ${flagNum}. Can't see it. Can't grab it.`,
+    (skier,flagNum,spr,driver) => `Flag ${flagNum}. ${skier} commits to the wrong side. By the time ${spr.sub} ${spr.sub==='they'?'correct':'corrects'}, it's too late.`,
+  ],
+  swerved: [
+    (skier,flagNum,spr,driver) => `${skier} lines up for flag ${flagNum} — then ${driver} swerves. ${skier} goes wide. Flag untouched.`,
+    (skier,flagNum,spr,driver) => `${driver} pulls right at flag ${flagNum}. ${skier} loses the line completely.`,
+    (skier,flagNum,spr,driver) => `Just as ${skier} reaches for flag ${flagNum}, the jet ski jerks left. ${driver} claims it was the mud.`,
+    (skier,flagNum,spr,driver) => `Flag ${flagNum} was right there. Then ${driver} "adjusts the course" and ${skier}'s angle is ruined.`,
+    (skier,flagNum,spr,driver) => `${driver} accelerates through flag ${flagNum}'s zone. ${skier} barely has time to reach. Miss.`,
+  ],
+};
+
+const XT_SKI_SABOTAGE = {
+  attempt: [
+    (driver,skier,dpr,spr) => `${driver} watches ${skier} set up for a flag and yanks the wheel. Deliberate. ${skier} has to know that was on purpose.`,
+    (driver,skier,dpr,spr) => `${driver} starts drifting the jet ski off course. Plausible deniability — except ${dpr.sub} ${dpr.sub==='they'?'glance':'glances'} back with a smirk.`,
+  ],
+  backfire: [
+    (driver,skier,dpr,spr) => `${driver} swerves to ruin ${skier}'s flag grab — but oversteers and nearly dumps them both. ${skier} grabs the flag anyway.`,
+    (driver,skier,dpr,spr) => `Sabotage attempt from ${driver} goes wrong. The sudden jerk throws ${dpr.posAdj} own balance and ${skier} stays on, reaching the flag unimpeded.`,
+  ],
+  success: [
+    (driver,skier,dpr,spr) => `${driver} kills the line at the worst possible moment. ${skier} is left grasping at nothing. Flag stays up.`,
+    (driver,skier,dpr,spr) => `${driver}'s drift is textbook — pulls ${skier} wide of the flag with nowhere to adjust. Clean sabotage.`,
+  ],
+};
+
+const XT_SKI_FINISH = {
+  clean: [
+    (skier,driver,spr) => `${skier} rides it out to the finish line. ${driver} cuts the engine and ${spr.sub} ${spr.sub==='they'?'glide':'glides'} in. Clean run.`,
+    (skier,driver,spr) => `Full course completed. ${skier} drops the rope at the finish and ${spr.sub} ${spr.sub==='they'?'coast':'coasts'} to a stop. Well done.`,
+  ],
+  driverRefused: [
+    (skier,driver,spr) => `${driver} kills the engine mid-course. Just stops. ${skier} sinks into the mud, flags still uncollected.`,
+    (skier,driver,spr) => `${driver} refuses to complete the run. ${skier} is left standing in the mud looking furious.`,
+  ],
+  momentumSuccess: [
+    (skier,driver,spr) => `${driver} opens the throttle wide at the finish. ${skier} is pulled fast — but uses the speed to grab one last flag. Momentum play pays off.`,
+    (skier,driver,spr) => `Full throttle finish from ${driver}. ${skier} is barely hanging on but snatches the final flag before the line.`,
+  ],
+  momentumFail: [
+    (skier,driver,spr) => `${driver} floors it at the end. ${skier} gets dragged through the last gate sideways and loses ${spr.posAdj} grip. Finish achieved, flag lost.`,
+    (skier,driver,spr) => `Excessive speed from ${driver} sends ${skier} fishtailing into the finish. ${spr.Sub} ${spr.sub==='they'?'cross':'crosses'} the line but ${spr.sub} ${spr.sub==='they'?'miss':'misses'} the last grab.`,
+  ],
+};
+
+// ── SELECTION ────────────────────────────────────────────────────────
+
+const XT_SELECTION = {
+  volunteer: [
+    (n,pr,event) => `${n} steps forward before anyone else can. "I'll do ${event}." No hesitation.`,
+    (n,pr,event) => `${n} raises ${pr.posAdj} hand. "${event}? Yeah, that's me." Grins at the camera.`,
+    (n,pr,event) => `${n} is already walking toward the sign-up table before the event is even finished being explained. "${event}. Obvious choice." ${pr.Sub} doesn't turn around.`,
+    (n,pr,event) => `"Who wants ${event}?" Silence. Then ${n}, already lacing up: "Done. Move on."`,
+    (n,pr,event) => `${n} physically nudges someone out of the way to get to the sign-up for ${event}. Politely. Sort of.`,
+  ],
+  assigned: [
+    (n,pr,event) => `${n} gets assigned to ${event}. ${pr.Sub} ${pr.sub==='they'?'take':'takes'} a breath and nods. Okay. Fine.`,
+    (n,pr,event) => `Nobody volunteers for ${event}. Eyes drift to ${n}. ${pr.Sub} ${pr.sub==='they'?'shrug':'shrugs'}. "Sure, whatever."`,
+    (n,pr,event) => `The tribe goes quiet. Someone says ${n}'s name first. ${pr.Sub} ${pr.sub==='they'?'look':'looks'} around, finds no objections, and agrees. "${event}. Alright."`,
+    (n,pr,event) => `${n} gets the nod from the group. ${pr.Sub} ${pr.sub==='they'?'don\'t':'doesn\'t'} look thrilled, but ${pr.sub} ${pr.sub==='they'?'don\'t':'doesn\'t'} argue either. "Fine. ${event}. Let's just do it."`,
+    (n,pr,event) => `A quiet consensus lands on ${n} for ${event}. ${pr.Sub} ${pr.sub==='they'?'accept':'accepts'} it with a single nod and zero further commentary.`,
+  ],
+  forced: [
+    (n,pr,event) => `${n} is volunteered — by everyone else — for ${event}. ${pr.Sub} ${pr.sub==='they'?'look':'looks'} thrilled. ${pr.Sub} ${pr.sub==='they'?'don\'t':'doesn\'t'} look thrilled.`,
+    (n,pr,event) => `"${n}'s doing ${event}." Three people said it simultaneously. ${n} opens ${pr.posAdj} mouth. Closes it. Fine.`,
+  ],
+  refused: [
+    (n,pr,event,refuser) => `${n} won't do ${event}. Period. ${refuser ? refuser + ' will have to find someone else.' : 'The team scrambles to find a replacement.'}`,
+    (n,pr,event,refuser) => `${event}? ${n} shakes ${pr.posAdj} head. Hard no. ${refuser ? refuser + ' stares, then moves on.' : 'Moving on.'}`,
+  ],
+};
+
 import { _challengeRomanceSpark } from '../romance.js';
 
 export function simulateXtremeTorture(ep) {

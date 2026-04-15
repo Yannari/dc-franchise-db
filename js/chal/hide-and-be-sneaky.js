@@ -801,6 +801,24 @@ export function simulateHideAndBeSneaky(ep) {
     updateChalRecord(caught[0].name, 'loss');
   }
 
+  // Build chalMemberScores for debug ranking: hiding quality + survival rounds + chase score
+  ep.chalMemberScores = {};
+  activePlayers.forEach(name => {
+    let score = phase1.initialQuality[name] || 0;
+    // Bonus for surviving longer
+    const caughtEntry = caught.find(c => c.name === name);
+    const escapedEntry = escaped.find(e => e.name === name);
+    if (caughtEntry && typeof caughtEntry.round === 'number') score += caughtEntry.round * 0.5;
+    else if (escapedEntry && typeof escapedEntry.round === 'number') score += escapedEntry.round * 0.5 + 3;
+    else score += totalRounds * 0.5; // survived all rounds
+    // Chase score from showdown
+    if (phase5?.results?.[name]) score += phase5.results[name] * 0.3;
+    // Immunity bonus
+    if (immunityWinners.includes(name)) score += 5;
+    ep.chalMemberScores[name] = score;
+  });
+  ep.chalPlacements = Object.entries(ep.chalMemberScores).sort(([,a],[,b]) => b - a).map(([n]) => n);
+
   ep.hideAndBeSneaky = {
     phase1,
     phase2,

@@ -36,6 +36,7 @@ import { simulateLuckyHunt } from './chal/lucky-hunt.js';
 import { simulateSayUncle } from './chal/say-uncle.js';
 import { simulateTripleDogDare } from './chal/triple-dog-dare.js';
 import { simulateSlasherNight } from './chal/slasher-night.js';
+import { simulateHideAndBeSneaky } from './chal/hide-and-be-sneaky.js';
 
 // Functions still in simulator.html inline script — accessed via window at call time:
 //   patchEpisodeHistory, saveGameState, snapshotGameState, buildCrashout
@@ -1942,6 +1943,12 @@ export function simulateEpisode() {
     // ── LUCKY HUNT: post-merge scavenger hunt replaces immunity ──
     simulateLuckyHunt(ep);
     ep.tribalPlayers = gs.activePlayers.filter(p => p !== ep.immunityWinner && p !== gs.exileDuelPlayer);
+  } else if (ep.isHideAndBeSneaky) {
+    // ── HIDE AND BE SNEAKY: post-merge hide-and-seek manhunt ──
+    simulateHideAndBeSneaky(ep);
+    if (!ep.tribalPlayers) {
+      ep.tribalPlayers = gs.activePlayers.filter(p => p !== ep.immunityWinner && !(ep.extraImmune || []).includes(p) && p !== gs.exileDuelPlayer);
+    }
   } else {
     // ── TIED DESTINIES: paired immunity challenge ──
     const _tdTwist = ep.tiedDestinies;
@@ -2138,7 +2145,7 @@ export function simulateEpisode() {
 
   // ── CHALLENGE RECORD UPDATE: track wins/podiums/bombs, inject chalThreat events ──
   // Skip if a challenge twist already called updateChalRecord (dodgebrawl, cliff-dive, etc.)
-  if (!ep.isDodgebrawl && !ep.isCliffDive && !ep.isAwakeAThon && !ep.isPhobiaFactor && !ep.isSayUncle && !ep.isTripleDogDare && !ep.isSlasherNight && !ep.isTalentShow && !ep.isSuckyOutdoors && !ep.isUpTheCreek && !ep.isPaintballHunt && !ep.isHellsKitchen && !ep.isTrustChallenge && !ep.isBasicStraining && !ep.isXtremeTorture && !ep.isBrunchOfDisgustingness && !ep.isLuckyHunt) {
+  if (!ep.isDodgebrawl && !ep.isCliffDive && !ep.isAwakeAThon && !ep.isPhobiaFactor && !ep.isSayUncle && !ep.isTripleDogDare && !ep.isSlasherNight && !ep.isTalentShow && !ep.isSuckyOutdoors && !ep.isUpTheCreek && !ep.isPaintballHunt && !ep.isHellsKitchen && !ep.isTrustChallenge && !ep.isBasicStraining && !ep.isXtremeTorture && !ep.isBrunchOfDisgustingness && !ep.isLuckyHunt && !ep.isHideAndBeSneaky) {
     updateChalRecord(ep);
   }
 

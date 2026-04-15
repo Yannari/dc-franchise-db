@@ -27,6 +27,7 @@ import * as luckyHuntMod from './chal/lucky-hunt.js';
 import * as sayUncleMod from './chal/say-uncle.js';
 import * as tripleDogDareMod from './chal/triple-dog-dare.js';
 import * as slasherNightMod from './chal/slasher-night.js';
+import * as hideAndBeSneakyMod from './chal/hide-and-be-sneaky.js';
 import * as socialManipMod from './social-manipulation.js';
 import * as campEventsMod from './camp-events.js';
 import * as twistsMod from './twists.js';
@@ -136,6 +137,7 @@ window._ftcState = vpUiMod._ftcState;
 window._vpa = vpUiMod._vpa;
 window._alliancePermDesc = castUiMod._alliancePermDesc;
 window.TRIBE_PALETTE = castUiMod.TRIBE_PALETTE;
+window._hsReveal = hideAndBeSneakyMod._hsReveal;
 
 // Mutable let variables — getters + explicit setter functions
 // ES module live bindings work for reads but not writes; use setter functions for writes
@@ -190,6 +192,7 @@ window.CHALLENGES = {
   'say-uncle': { simulate: sayUncleMod.simulateSayUncle, rpBuild: sayUncleMod.rpBuildSayUncleAnnouncement, text: sayUncleMod._textSayUncle },
   'triple-dog-dare': { simulate: tripleDogDareMod.simulateTripleDogDare, rpBuild: tripleDogDareMod.rpBuildTripleDogDareAnnouncement, text: tripleDogDareMod._textTripleDogDare },
   'slasher-night': { simulate: slasherNightMod.simulateSlasherNight, rpBuild: slasherNightMod.rpBuildSlasherAnnouncement, text: slasherNightMod._textSlasherNight },
+  'hide-and-be-sneaky': { simulate: hideAndBeSneakyMod.simulateHideAndBeSneaky, rpBuild: hideAndBeSneakyMod.rpBuildHideAndBeSneaky, text: hideAndBeSneakyMod._textHideAndBeSneaky },
 };
 
 // ══════════════════════════════════════════════════════════════════════

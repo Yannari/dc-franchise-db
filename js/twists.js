@@ -1283,6 +1283,15 @@ export function applyTwist(ep, twist, isPrimary = true) {
     if (gs.activePlayers.length < 6) return;
     ep.isLuckyHunt = true;
 
+  } else if (engineType === 'hide-and-be-sneaky') {
+    // Post-merge only, need at least 6 players
+    if (!gs.isMerged) {
+      const _hsMerging = gs.activePlayers.length <= (seasonConfig.mergeAt || 12);
+      if (!_hsMerging) return;
+    }
+    if (gs.activePlayers.length < 6) return;
+    ep.isHideAndBeSneaky = true;
+
   } else if (engineType === 'brunch-of-disgustingness') {
     if (!gs.isMerged && gs.activePlayers.length > (seasonConfig.mergeAt || 12)) return;
     if (gs.activePlayers.length < 4) return;

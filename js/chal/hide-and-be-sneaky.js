@@ -229,9 +229,9 @@ export function simulateHideAndBeSneaky(ep) {
   };
 
   // ── PHASE 2: HUNT ──
-  const totalRounds = Math.ceil(n * 0.7);
-  const baseDetection = 4.5;
-  const escalation = 0.6;
+  const totalRounds = Math.ceil(n * 0.8);
+  const baseDetection = 3.0;
+  const escalation = 0.8;
   let hidden = [...activePlayers];
   const caught = [];
   const escaped = [];
@@ -454,55 +454,62 @@ export function simulateHideAndBeSneaky(ep) {
       hidden.forEach(h => { hidingQuality[h] += 0.2; });
     }
 
-    // Detection: find lowest quality hider
+    // Detection: find weakest hiders — catch 1 early, 1-2 in later rounds
     const sortedByQuality = [...hidden].sort((a, b) => hidingQuality[a] - hidingQuality[b]);
-    const weakest = sortedByQuality[0];
-    const weakestQ = hidingQuality[weakest];
+    const catchCount = (r > totalRounds * 0.5 && hidden.length > 3) ? Math.min(2, hidden.length - 2) : 1;
+    const caughtThisRound = [];
 
-    if (weakestQ < chefDetection) {
-      const escScore = calcEscapeScore(weakest);
-      const sprayAccuracy = 5 + r * 0.3;
-      const didEscape = escScore > sprayAccuracy && Math.random() < 0.18;
-      const wPr = pronouns(weakest);
-      const spot = spotAssignments[weakest];
+    for (let ci = 0; ci < catchCount; ci++) {
+      const target = sortedByQuality[ci];
+      if (!target || !hidden.includes(target)) continue;
+      const targetQ = hidingQuality[target];
+      if (targetQ >= chefDetection) continue; // safe
 
-      // Generate escape attempt beats
+      const escScore = calcEscapeScore(target);
+      const sprayAccuracy = 4.5 + r * 0.4;
+      const didEscape = escScore > sprayAccuracy; // straight stat check — no extra RNG gate
+      const tPr = pronouns(target);
+      const spot = spotAssignments[target];
+
+      // Generate escape attempt beats (2-3 for a proper story)
       const escBeats = [];
       const availBeats = [...CHASE_BEATS].sort(() => Math.random() - 0.5);
-      const beatCount = 1 + (Math.random() < 0.4 ? 1 : 0);
+      const beatCount = 2 + (Math.random() < 0.4 ? 1 : 0);
       for (let bi = 0; bi < beatCount && bi < availBeats.length; bi++) {
         const bt = availBeats[bi];
         const isLast = bi === beatCount - 1;
-        const beatWin = isLast ? didEscape : Math.random() < 0.5;
-        escBeats.push({ id: bt.id, text: bt.text(weakest, wPr, beatWin), win: beatWin });
+        const beatWin = isLast ? didEscape : Math.random() < 0.55;
+        escBeats.push({ id: bt.id, text: bt.text(target, tPr, beatWin), win: beatWin });
       }
 
       // Discovery text
+      const spotDesc = spot?.name || 'in hiding';
       const discoveryTexts = [
-        `Chef spotted ${weakest} ${spot?.name || 'in hiding'} and closed in!`,
-        `A noise gave away ${weakest}'s position ${spot?.name ? 'at ' + spot.name : ''} — Chef zeroed in!`,
-        `Chef's sweep uncovered ${weakest} ${spot?.name || 'hiding nearby'}!`,
+        `Chef spotted ${target} hiding — ${tPr.sub} was ${spotDesc}!`,
+        `A noise from ${spotDesc} gave away ${target}'s position — Chef zeroed in!`,
+        `Chef found ${target} ${spotDesc} and raised the water cannon!`,
+        `${target}'s cover was blown — Chef caught ${tPr.obj} ${spotDesc}!`,
       ];
       const discoveryText = discoveryTexts[Math.floor(Math.random() * discoveryTexts.length)];
 
       if (didEscape) {
-        escaped.push({ name: weakest, round: r });
-        roundData.escaped = { name: weakest, escapeScore: escScore, beats: escBeats, discoveryText };
-        badges[weakest] = 'hideSeekClutch';
-        popDelta(weakest, 2);
+        escaped.push({ name: target, round: r });
+        caughtThisRound.push({ name: target, escaped: true, escapeScore: escScore, beats: escBeats, discoveryText });
+        badges[target] = 'hideSeekClutch';
+        popDelta(target, 2);
       } else {
-        caught.push({ name: weakest, round: r, method: 'found', escapeAttempted: true });
-        roundData.found = { name: weakest, escaped: false, beats: escBeats, discoveryText };
-        const lastEvt = roundData.events.find(e => e.targets?.includes(weakest) && e.type === 'detection');
+        caught.push({ name: target, round: r, method: 'found', escapeAttempted: true });
+        caughtThisRound.push({ name: target, escaped: false, beats: escBeats, discoveryText });
+        const lastEvt = roundData.events.find(e => e.targets?.includes(target) && e.type === 'detection');
         if (lastEvt && ['animal-skunk', 'sneeze', 'stomach-growl', 'bug-swarm'].includes(lastEvt.id)) {
-          badges[weakest] = 'hideSeekFlush';
-          popDelta(weakest, -1);
+          badges[target] = 'hideSeekFlush';
+          popDelta(target, -1);
         }
       }
-      hidden = hidden.filter(h => h !== weakest);
-    } else {
-      roundData.found = null;
+      hidden = hidden.filter(h => h !== target);
     }
+    roundData.found = caughtThisRound.filter(c => !c.escaped);
+    roundData.escaped = caughtThisRound.filter(c => c.escaped);
 
     roundData.hiddenAfter = hidden.length;
     rounds.push(roundData);
@@ -821,9 +828,9 @@ export function _textHideAndBeSneaky(ep, ln, sec) {
   sec('The Hunt');
   const huntRounds = hs.phase2.rounds;
   if (huntRounds.length) {
-    const firstFound = huntRounds.find(r => r.found);
-    if (firstFound?.found) {
-      ln(`${firstFound.found.name} was the first player found — discovered in round ${firstFound.num}.`);
+    const firstFoundRound = huntRounds.find(r => r.found?.length);
+    if (firstFoundRound?.found?.[0]) {
+      ln(`${firstFoundRound.found[0].name} was the first player found — discovered in round ${firstFoundRound.num}.`);
     }
     const bigEvents = huntRounds.flatMap(r => r.events).filter(e => e.delta && Math.abs(e.delta) >= 1.5);
     bigEvents.slice(0, 3).forEach(e => { if (e.text) ln(e.text); });
@@ -972,11 +979,14 @@ export function rpBuildHideAndBeSneaky(ep) {
         </div>`;
     });
 
-    // Discovery + escape attempt narrative
-    if (round.found) {
-      const f = round.found;
-      let foundHtml = `
-        <div class="nv-card" style="border-color:rgba(255,100,50,0.4);background:rgba(255,100,50,0.06)">
+    // Discovery + escape attempt narratives (now arrays — can catch 1-2 per round)
+    const allCaughtThisRound = [...(round.found || []), ...(round.escaped || [])];
+    allCaughtThisRound.forEach(f => {
+      const isEscape = f.escaped;
+      const borderColor = isEscape ? 'rgba(255,215,0,0.4)' : 'rgba(255,100,50,0.4)';
+      const bgColor = isEscape ? 'rgba(255,215,0,0.06)' : 'rgba(255,100,50,0.06)';
+      let cardHtml = `
+        <div class="nv-card" style="border-color:${borderColor};background:${bgColor}">
           <div style="display:flex;align-items:center;gap:12px;margin-bottom:${f.beats?.length ? '8px' : '0'}">
             ${rpPortrait(f.name, 'sm')}
             <div style="flex:1;font-size:12px;color:#cdd9e5">${f.discoveryText || f.name + ' was discovered by Chef!'}</div>
@@ -984,33 +994,17 @@ export function rpBuildHideAndBeSneaky(ep) {
           </div>`;
       if (f.beats?.length) {
         f.beats.forEach(b => {
-          foundHtml += `<div style="font-size:11px;color:#aaa;margin-top:4px;padding-left:12px;border-left:2px solid ${b.win ? 'rgba(0,255,65,0.3)' : 'rgba(255,100,50,0.3)'}">${b.text}</div>`;
+          cardHtml += `<div style="font-size:11px;color:#aaa;margin-top:4px;padding-left:12px;border-left:2px solid ${b.win ? 'rgba(0,255,65,0.3)' : 'rgba(255,100,50,0.3)'}">${b.text}</div>`;
         });
       }
-      foundHtml += `
-          <div style="margin-top:6px;text-align:right"><span class="nv-status nv-soaked">SOAKED</span></div>
+      const outcomeTag = isEscape
+        ? `<span class="nv-status nv-immune">ESCAPED TO HOME BASE — IMMUNE</span>`
+        : `<span class="nv-status nv-soaked">SOAKED</span>`;
+      cardHtml += `
+          <div style="margin-top:6px;text-align:right">${outcomeTag}</div>
         </div>`;
-      roundHtml += foundHtml;
-    }
-    if (round.escaped) {
-      const e = round.escaped;
-      let escHtml = `
-        <div class="nv-card" style="border-color:rgba(255,215,0,0.4);background:rgba(255,215,0,0.06)">
-          <div style="display:flex;align-items:center;gap:12px;margin-bottom:${e.beats?.length ? '8px' : '0'}">
-            ${rpPortrait(e.name, 'sm')}
-            <div style="flex:1;font-size:12px;color:#cdd9e5">${e.discoveryText || e.name + ' was spotted by Chef!'}</div>
-            <span class="nv-status nv-found">FOUND</span>
-          </div>`;
-      if (e.beats?.length) {
-        e.beats.forEach(b => {
-          escHtml += `<div style="font-size:11px;color:#aaa;margin-top:4px;padding-left:12px;border-left:2px solid ${b.win ? 'rgba(0,255,65,0.3)' : 'rgba(255,100,50,0.3)'}">${b.text}</div>`;
-        });
-      }
-      escHtml += `
-          <div style="margin-top:6px;text-align:right"><span class="nv-status nv-immune">ESCAPED — IMMUNE</span></div>
-        </div>`;
-      roundHtml += escHtml;
-    }
+      roundHtml += cardHtml;
+    });
 
     steps.push({ type: 'hunt-round', html: roundHtml });
   });

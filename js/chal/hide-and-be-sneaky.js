@@ -1077,8 +1077,8 @@ export function rpBuildHideAndBeSneaky(ep) {
 }
 
 export function _hsReveal(stateKey, totalSteps) {
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
   const state = _tvState[stateKey];
-  if (!state) return;
   const nextIdx = state.idx + 1;
   if (nextIdx >= totalSteps) return;
   const el = document.getElementById(`hs-step-${stateKey}-${nextIdx}`);

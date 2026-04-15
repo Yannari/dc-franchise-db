@@ -843,3 +843,258 @@ export function _textHideAndBeSneaky(ep, ln, sec) {
     ln(`${hs.immunityWinners.join(' and ')} both won immunity!`);
   }
 }
+
+// ══════════════════════════════════════════════════════════════
+// VP SCREEN — NIGHT-VISION SURVEILLANCE THEME
+// ══════════════════════════════════════════════════════════════
+
+const NV_STYLES = `
+  .nv-page { background:#0a0f0a; color:#00ff41; font-family:'Courier New',monospace; position:relative; overflow:hidden; padding:24px; }
+  .nv-page::before { content:''; position:absolute; top:0; left:0; right:0; bottom:0; background:repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,65,0.03) 2px, rgba(0,255,65,0.03) 4px); pointer-events:none; z-index:1; }
+  .nv-header { display:flex; align-items:center; gap:8px; margin-bottom:20px; position:relative; z-index:2; }
+  .nv-rec { display:inline-block; width:8px; height:8px; border-radius:50%; background:#f00; animation:nv-blink 1.5s infinite; }
+  @keyframes nv-blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+  .nv-title { font-size:20px; font-weight:800; letter-spacing:4px; text-transform:uppercase; color:#00ff41; text-shadow:0 0 10px rgba(0,255,65,0.5); }
+  .nv-card { background:rgba(0,255,65,0.05); border:1px solid rgba(0,255,65,0.15); border-radius:6px; padding:10px 14px; margin-bottom:8px; position:relative; z-index:2; }
+  .nv-status { display:inline-block; padding:2px 8px; border-radius:3px; font-size:10px; font-weight:700; letter-spacing:1px; }
+  .nv-hidden { background:rgba(0,255,65,0.15); color:#00ff41; }
+  .nv-found { background:rgba(255,100,50,0.2); color:#ff6432; }
+  .nv-soaked { background:rgba(100,100,100,0.2); color:#666; }
+  .nv-immune { background:rgba(255,215,0,0.2); color:#ffd700; }
+  .nv-tracking { background:rgba(255,50,50,0.2); color:#f55; }
+  .nv-loyal { background:rgba(0,200,100,0.2); color:#0c6; }
+  .nv-delta-up { color:#00ff41; font-weight:700; }
+  .nv-delta-down { color:#ff6432; font-weight:700; }
+  .nv-sector { font-size:11px; font-weight:800; letter-spacing:3px; color:#33ff66; text-transform:uppercase; margin:20px 0 12px; border-top:1px solid rgba(0,255,65,0.15); padding-top:16px; }
+  .nv-reveal-btn { background:rgba(0,255,65,0.1); border:1px solid rgba(0,255,65,0.3); color:#00ff41; padding:8px 20px; border-radius:4px; cursor:pointer; font-family:'Courier New',monospace; font-size:12px; letter-spacing:2px; text-transform:uppercase; margin:12px 0; }
+  .nv-reveal-btn:hover { background:rgba(0,255,65,0.2); }
+`;
+
+export function rpBuildHideAndBeSneaky(ep) {
+  const hs = ep.hideAndBeSneaky;
+  if (!hs) return '';
+  const stateKey = String(ep.num) + '_hideSeek';
+  if (!_tvState[stateKey]) _tvState[stateKey] = { idx: -1 };
+
+  const steps = [];
+
+  // Mission Briefing
+  steps.push({
+    type: 'briefing',
+    html: `
+      <div class="nv-card" style="text-align:center;max-width:500px;margin:0 auto 20px">
+        <div style="font-size:36px;margin-bottom:8px">🔫</div>
+        <div class="nv-title" style="font-size:16px;margin-bottom:8px">HIDE AND BE SNEAKY</div>
+        <div style="font-size:12px;color:#33ff66;line-height:1.8">
+          ${hs.activePlayers.length} operatives deployed. Chef Hatchet is armed and hunting.<br>
+          <strong style="color:#00ff41">Stay hidden, escape to home base, or betray your allies.</strong><br>
+          <span style="color:#ffd700">1-2 operatives will earn immunity.</span>
+        </div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:16px">
+        ${hs.activePlayers.map(n => rpPortrait(n, 'sm')).join('')}
+      </div>
+    `
+  });
+
+  // Phase 1: Deployment
+  hs.activePlayers.forEach(name => {
+    const spot = hs.spotAssignments[name];
+    const q = hs.phase1.initialQuality[name];
+    const qLabel = q >= 7 ? 'EXCELLENT' : q >= 5 ? 'GOOD' : q >= 3 ? 'FAIR' : 'POOR';
+    const qColor = q >= 7 ? '#00ff41' : q >= 5 ? '#33ff66' : q >= 3 ? '#ffa500' : '#ff6432';
+    const badge = hs.badges[name];
+    const badgeTag = badge === 'hideSeekStalker' ? ' <span class="nv-status nv-tracking">STALKER</span>' : '';
+    steps.push({
+      type: 'deployment',
+      html: `
+        <div class="nv-card" style="display:flex;align-items:center;gap:12px">
+          ${rpPortrait(name, 'sm')}
+          <div style="flex:1">
+            <div style="font-size:13px;color:#cdd9e5;font-weight:600">${name}${badgeTag}</div>
+            <div style="font-size:11px;color:#33ff66;margin-top:2px">Location: ${spot?.name || 'unknown'}</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:10px;color:${qColor};font-weight:700;letter-spacing:1px">${qLabel}</div>
+            <div style="font-size:11px;color:#33ff66;opacity:0.7">${q.toFixed(1)}</div>
+          </div>
+        </div>
+      `
+    });
+  });
+
+  // Phase 2: Hunt Rounds
+  hs.phase2.rounds.forEach(round => {
+    let roundHtml = `<div class="nv-sector">SCANNING SECTOR ${round.num} &mdash; ${round.hiddenCount} OPERATIVES REMAIN</div>`;
+
+    round.events.forEach(evt => {
+      if (!evt.text) return;
+      const delta = evt.delta || 0;
+      const deltaTag = delta > 0 ? `<span class="nv-delta-up">+${delta.toFixed(1)}</span>` :
+                        delta < 0 ? `<span class="nv-delta-down">${delta.toFixed(1)}</span>` : '';
+      roundHtml += `
+        <div class="nv-card" style="display:flex;align-items:center;gap:10px">
+          <div style="flex:1;font-size:12px;color:#cdd9e5">${evt.text}</div>
+          ${deltaTag ? `<div>${deltaTag}</div>` : ''}
+        </div>`;
+    });
+
+    if (round.found) {
+      const f = round.found;
+      roundHtml += `
+        <div class="nv-card" style="border-color:rgba(255,100,50,0.4);background:rgba(255,100,50,0.06);display:flex;align-items:center;gap:12px">
+          ${rpPortrait(f.name, 'sm')}
+          <div style="flex:1;font-size:12px;color:#cdd9e5">${f.name} was discovered by Chef!</div>
+          <span class="nv-status nv-found">${f.escaped ? 'ESCAPED' : 'SOAKED'}</span>
+        </div>`;
+    }
+    if (round.escaped) {
+      const e = round.escaped;
+      roundHtml += `
+        <div class="nv-card" style="border-color:rgba(255,215,0,0.4);background:rgba(255,215,0,0.06);display:flex;align-items:center;gap:12px">
+          ${rpPortrait(e.name, 'sm')}
+          <div style="flex:1;font-size:12px;color:#ffd700;font-weight:600">${e.name} escaped to home base!</div>
+          <span class="nv-status nv-immune">IMMUNE</span>
+        </div>`;
+    }
+
+    steps.push({ type: 'hunt-round', html: roundHtml });
+  });
+
+  // Phase 3: Intel Report
+  if (hs.phase3.betrayals.length || hs.phase3.loyals.length) {
+    let intelHtml = `<div class="nv-sector">INTEL REPORT — LOYALTY ASSESSMENT</div>`;
+    hs.phase3.betrayals.forEach(b => {
+      intelHtml += `
+        <div class="nv-card" style="border-color:rgba(255,50,50,0.3);display:flex;align-items:center;gap:12px">
+          ${rpPortrait(b.betrayer, 'sm')}
+          <div style="flex:1;font-size:12px;color:#cdd9e5">
+            <strong>${b.betrayer}</strong> uploaded intel on <strong>${b.target}</strong>
+            <div style="font-size:10px;color:#ff6432;margin-top:2px">Quality: ${b.intelQuality.toUpperCase()} &mdash; hiding penalty: -${b.penalty.toFixed(1)}</div>
+          </div>
+          <span class="nv-status nv-tracking">INTEL UPLOAD</span>
+        </div>`;
+    });
+    hs.phase3.loyals.forEach(name => {
+      intelHtml += `
+        <div class="nv-card" style="border-color:rgba(0,200,100,0.3);display:flex;align-items:center;gap:12px">
+          ${rpPortrait(name, 'sm')}
+          <div style="flex:1;font-size:12px;color:#cdd9e5"><strong>${name}</strong> refused to betray anyone.</div>
+          <span class="nv-status nv-loyal">SIGNAL REFUSED</span>
+        </div>`;
+    });
+    steps.push({ type: 'intel', html: intelHtml });
+  }
+
+  // Phase 4: Perimeter Breach
+  if (hs.phase4.attempts.length) {
+    let breachHtml = `<div class="nv-sector">PERIMETER BREACH — FIGHT OR FLIGHT</div>`;
+    hs.phase4.attempts.forEach(a => {
+      const outcomeTag = a.success
+        ? `<span class="nv-status ${a.decision === 'run' ? 'nv-immune' : 'nv-hidden'}">${a.decision === 'run' ? 'EXTRACTED' : 'STILL HIDDEN'}</span>`
+        : `<span class="nv-status nv-soaked">COMPROMISED</span>`;
+      let beatTexts = a.beats.map(b => `<div style="font-size:11px;color:#aaa;margin-top:4px;padding-left:12px;border-left:2px solid ${b.win ? 'rgba(0,255,65,0.3)' : 'rgba(255,100,50,0.3)'}">${b.text}</div>`).join('');
+      breachHtml += `
+        <div class="nv-card">
+          <div style="display:flex;align-items:center;gap:12px">
+            ${rpPortrait(a.name, 'sm')}
+            <div style="flex:1">
+              <div style="font-size:12px;color:#cdd9e5"><strong>${a.name}</strong> chose to ${a.decision === 'run' ? 'BREAK FOR HOME BASE' : 'STAY HIDDEN'}</div>
+            </div>
+            ${outcomeTag}
+          </div>
+          ${beatTexts}
+        </div>`;
+    });
+    steps.push({ type: 'breach', html: breachHtml });
+  }
+
+  // Phase 5: Final Pursuit
+  if (hs.phase5) {
+    let pursuitHtml = `<div class="nv-sector">FINAL PURSUIT — ALL OPERATIVES FLUSHED</div>`;
+    hs.phase5.ranking.forEach(({ name, score }) => {
+      const beats = hs.phase5.beats[name] || [];
+      const isWinner = name === hs.phase5.winner;
+      const borderColor = isWinner ? 'rgba(255,215,0,0.4)' : 'rgba(0,255,65,0.15)';
+      let beatTexts = beats.map(b => `<div style="font-size:11px;color:#aaa;margin-top:4px;padding-left:12px;border-left:2px solid ${b.win ? 'rgba(0,255,65,0.3)' : 'rgba(255,100,50,0.3)'}">${b.text}</div>`).join('');
+      pursuitHtml += `
+        <div class="nv-card" style="border-color:${borderColor}${isWinner ? ';background:rgba(255,215,0,0.04)' : ''}">
+          <div style="display:flex;align-items:center;gap:12px">
+            ${rpPortrait(name, 'sm')}
+            <div style="flex:1">
+              <div style="font-size:13px;color:#cdd9e5;font-weight:600">${name}</div>
+              <div style="font-size:10px;color:#33ff66">Chase score: ${score.toFixed(1)}</div>
+            </div>
+            ${isWinner ? '<span class="nv-status nv-immune">OPERATIVE EXTRACTED</span>' : '<span class="nv-status nv-soaked">CAUGHT</span>'}
+          </div>
+          ${beatTexts}
+        </div>`;
+    });
+    steps.push({ type: 'pursuit', html: pursuitHtml });
+  }
+
+  // Debrief
+  let debriefHtml = `<div class="nv-sector">DEBRIEF — FINAL STATUS</div>`;
+  debriefHtml += `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">`;
+  hs.activePlayers.forEach(name => {
+    const isImmune = hs.immunityWinners.includes(name);
+    const badge = hs.badges[name];
+    const statusClass = isImmune ? 'nv-immune' : badge === 'hideSeekTracker' ? 'nv-tracking' : badge === 'hideSeekLoyal' ? 'nv-loyal' : 'nv-soaked';
+    const statusText = isImmune ? 'IMMUNE' : badge === 'hideSeekTracker' ? 'TRACKER' : badge === 'hideSeekLoyal' ? 'LOYAL' : badge === 'hideSeekClutch' ? 'CLUTCH' : badge === 'hideSeekStalker' ? 'STALKER' : badge === 'hideSeekFlush' ? 'FLUSHED' : 'SOAKED';
+    debriefHtml += `
+      <div style="text-align:center;width:80px">
+        ${rpPortrait(name, 'sm')}
+        <span class="nv-status ${statusClass}" style="margin-top:4px;display:block;font-size:9px">${statusText}</span>
+      </div>`;
+  });
+  debriefHtml += `</div>`;
+
+  if (hs.immunityWinners.length) {
+    debriefHtml += `<div class="nv-card" style="text-align:center;border-color:rgba(255,215,0,0.3);background:rgba(255,215,0,0.05)">
+      <div style="font-size:14px;color:#ffd700;font-weight:700">${hs.immunityWinners.length === 1 ? hs.immunityWinners[0] + ' wins immunity!' : hs.immunityWinners.join(' and ') + ' win immunity!'}</div>
+    </div>`;
+  }
+  steps.push({ type: 'debrief', html: debriefHtml });
+
+  // Build final HTML with click-to-reveal
+  const state = _tvState[stateKey];
+  let html = `<style>${NV_STYLES}</style><div class="nv-page rp-page">
+    <div class="nv-header">
+      <span class="nv-rec"></span>
+      <span style="font-size:10px;letter-spacing:2px;color:#33ff66">SURVEILLANCE FEED</span>
+      <span style="margin-left:auto;font-size:10px;color:#33ff66;opacity:0.5">EP ${ep.num}</span>
+    </div>`;
+
+  steps.forEach((step, i) => {
+    const visible = i <= state.idx;
+    html += `<div id="hs-step-${stateKey}-${i}" style="${visible ? '' : 'display:none'}">${step.html}</div>`;
+  });
+
+  if (state.idx < steps.length - 1) {
+    html += `<button class="nv-reveal-btn" onclick="window._hsReveal('${stateKey}', ${steps.length})">▶ NEXT SCAN</button>`;
+  }
+
+  html += `</div>`;
+  return html;
+}
+
+export function _hsReveal(stateKey, totalSteps) {
+  const state = _tvState[stateKey];
+  if (!state) return;
+  state.idx = Math.min(state.idx + 1, totalSteps - 1);
+  const el = document.getElementById(`hs-step-${stateKey}-${state.idx}`);
+  if (el) el.style.display = '';
+  if (typeof buildVPScreens === 'function') {
+    const currentScreen = window.vpCurrentScreen;
+    buildVPScreens();
+    if (currentScreen !== undefined) {
+      const screens = document.querySelectorAll('.vp-screen');
+      for (let i = 0; i < screens.length; i++) {
+        if (screens[i].dataset?.id?.includes('hide-seek')) {
+          window.vpCurrentScreen = i;
+          break;
+        }
+      }
+    }
+  }
+}

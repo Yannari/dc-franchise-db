@@ -28,6 +28,10 @@ import * as luckyHuntMod from './chal/lucky-hunt.js';
 import * as sayUncleMod from './chal/say-uncle.js';
 import * as tripleDogDareMod from './chal/triple-dog-dare.js';
 import * as slasherNightMod from './chal/slasher-night.js';
+import * as socialManipMod from './social-manipulation.js';
+import * as campEventsMod from './camp-events.js';
+import * as twistsMod from './twists.js';
+import * as rescueIslandMod from './rescue-island.js';
 
 // ── Expose mutable state as getters/setters on window ──
 // This is critical: window.gs must always return the CURRENT module-scoped value.
@@ -101,6 +105,7 @@ const extractedModules = [
   suckyOutdoorsMod, upTheCreekMod, paintballHuntMod, hellsKitchenMod,
   trustMod, basicStrainingMod, xtremeTortureMod, phobiaFactorMod,
   brunchMod, luckyHuntMod, sayUncleMod, tripleDogDareMod, slasherNightMod,
+  socialManipMod, campEventsMod, twistsMod, rescueIslandMod,
 ];
 
 for (const mod of extractedModules) {

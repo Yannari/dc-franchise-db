@@ -1070,9 +1070,7 @@ export function rpBuildHideAndBeSneaky(ep) {
     html += `<div id="hs-step-${stateKey}-${i}" style="${visible ? '' : 'display:none'}">${step.html}</div>`;
   });
 
-  if (state.idx < steps.length - 1) {
-    html += `<button class="nv-reveal-btn" onclick="window._hsReveal('${stateKey}', ${steps.length})">▶ NEXT SCAN</button>`;
-  }
+  html += `<button class="nv-reveal-btn" id="hs-btn-${stateKey}" onclick="window._hsReveal('${stateKey}', ${steps.length})"${state.idx >= steps.length - 1 ? ' style="display:none"' : ''}>▶ NEXT SCAN (${state.idx + 2}/${steps.length})</button>`;
 
   html += `</div>`;
   return html;
@@ -1081,20 +1079,15 @@ export function rpBuildHideAndBeSneaky(ep) {
 export function _hsReveal(stateKey, totalSteps) {
   const state = _tvState[stateKey];
   if (!state) return;
-  state.idx = Math.min(state.idx + 1, totalSteps - 1);
-  const el = document.getElementById(`hs-step-${stateKey}-${state.idx}`);
-  if (el) el.style.display = '';
-  if (typeof buildVPScreens === 'function') {
-    const currentScreen = window.vpCurrentScreen;
-    buildVPScreens();
-    if (currentScreen !== undefined) {
-      const screens = document.querySelectorAll('.vp-screen');
-      for (let i = 0; i < screens.length; i++) {
-        if (screens[i].dataset?.id?.includes('hide-seek')) {
-          window.vpCurrentScreen = i;
-          break;
-        }
-      }
-    }
+  const nextIdx = state.idx + 1;
+  if (nextIdx >= totalSteps) return;
+  const el = document.getElementById(`hs-step-${stateKey}-${nextIdx}`);
+  if (el) { el.style.display = ''; el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+  state.idx = nextIdx;
+  const btn = document.getElementById(`hs-btn-${stateKey}`);
+  if (nextIdx >= totalSteps - 1) {
+    if (btn) btn.style.display = 'none';
+  } else {
+    if (btn) btn.textContent = `▶ NEXT SCAN (${nextIdx + 2}/${totalSteps})`;
   }
 }

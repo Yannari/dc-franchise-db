@@ -484,3 +484,287 @@ export function simulateHideAndBeSneaky(ep) {
   }
 
   const phase2 = { rounds, caught: [...caught], escaped: [...escaped] };
+
+  // ── PHASE 3: BETRAYAL ──
+  const betrayals = [];
+  const loyals = [];
+
+  caught.forEach(({ name }) => {
+    let willing = false;
+
+    if (isVillainArch(name)) {
+      willing = true;
+    } else if (isNiceArch(name)) {
+      willing = false;
+      loyals.push(name);
+      popDelta(name, 1);
+    } else if (isNeutralArch(name)) {
+      willing = neutralWouldBetray(name);
+      if (!willing) loyals.push(name);
+    }
+
+    if (willing && hidden.length > 0) {
+      const target = [...hidden].sort((a, b) => getBond(name, a) - getBond(name, b))[0];
+      const intel = calcIntelScore(name);
+      const observationData = observedBy[name]?.[target] || 0;
+      const effectiveIntel = intel * 0.6 + observationData * 0.4;
+
+      let penalty;
+      if (effectiveIntel > 7) penalty = 3.0;
+      else if (effectiveIntel > 4) penalty = 1.5;
+      else penalty = 0.5;
+
+      hidingQuality[target] -= penalty;
+
+      const bondDmg = -(2 + Math.floor(penalty));
+      addBond(name, target, bondDmg);
+
+      const targetLikability = (gs.popularity?.[target] || 0);
+      let popHit = targetLikability > 0 ? -Math.min(3, Math.ceil(targetLikability / 2)) : -1;
+      if (isVillainArch(name)) popHit = Math.ceil(popHit / 2);
+      popDelta(name, popHit);
+
+      betrayals.push({
+        betrayer: name, target, intelQuality: effectiveIntel > 7 ? 'high' : effectiveIntel > 4 ? 'medium' : 'low',
+        penalty, targetFound: false,
+      });
+
+      badges[name] = 'hideSeekTracker';
+
+      hidden.forEach(h => {
+        if (h === target) return;
+        const s = pStats(h);
+        if (s.intuition >= 7 && Math.random() < 0.4) {
+          addBond(h, name, -1);
+        }
+      });
+    }
+  });
+
+  loyals.forEach(l => {
+    hidden.forEach(h => { addBond(l, h, 1); });
+    badges[l] = badges[l] || 'hideSeekLoyal';
+  });
+
+  const phase3 = { betrayals: [...betrayals], loyals: [...loyals] };
+
+  // ── PHASE 4: ESCAPE (fight-or-flight) ──
+  const escapeAttempts = [];
+  const dangerThreshold = baseDetection + totalRounds * escalation - 1.5;
+
+  const atRisk = hidden.filter(h => hidingQuality[h] < dangerThreshold);
+
+  atRisk.forEach(name => {
+    const s = pStats(name);
+    const arch = getArchetype(name);
+
+    let runsForIt = false;
+    if (s.boldness >= 7 && s.physical >= 6) runsForIt = true;
+    else if (s.mental >= 7 && hidingQuality[name] >= dangerThreshold - 1) runsForIt = false;
+    else if (s.boldness <= 4) runsForIt = false;
+    else if (arch === 'challenge-beast') runsForIt = true;
+    else if (arch === 'mastermind') runsForIt = false;
+    else if (arch === 'wildcard') runsForIt = Math.random() < 0.5;
+    else runsForIt = s.physical + s.boldness > s.mental + s.intuition;
+
+    if (runsForIt) {
+      const escScore = calcEscapeScore(name);
+      const sprayAcc = 5 + totalRounds * 0.3 + (1 / Math.max(1, hidden.length));
+      const success = escScore > sprayAcc;
+
+      const beatCount = 2 + (Math.random() < 0.4 ? 1 : 0);
+      const beats = [];
+      const availBeats = [...CHASE_BEATS].sort(() => Math.random() - 0.5);
+      for (let i = 0; i < beatCount && i < availBeats.length; i++) {
+        const bt = availBeats[i];
+        const pr = pronouns(name);
+        const isLastBeat = i === beatCount - 1;
+        const beatWin = isLastBeat ? success : Math.random() < 0.6;
+        beats.push({ id: bt.id, text: bt.text(name, pr, beatWin), win: beatWin });
+      }
+
+      if (success) {
+        escaped.push({ name, round: 'phase4' });
+        badges[name] = 'hideSeekClutch';
+        popDelta(name, 2);
+      } else {
+        caught.push({ name, round: 'phase4', method: 'escape-fail', escapeAttempted: true });
+      }
+      hidden = hidden.filter(h => h !== name);
+      escapeAttempts.push({ name, decision: 'run', beats, success });
+    } else {
+      const survivalChance = hidingQuality[name] / dangerThreshold;
+      const survived = Math.random() < Math.min(0.8, survivalChance);
+      if (!survived) {
+        caught.push({ name, round: 'phase4', method: 'found', escapeAttempted: false });
+        hidden = hidden.filter(h => h !== name);
+      } else {
+        hidingQuality[name] += 1.0;
+      }
+      escapeAttempts.push({ name, decision: 'stay', beats: [], success: survived });
+    }
+  });
+
+  const phase4 = { attempts: escapeAttempts, safeHiders: hidden.filter(h => !atRisk.includes(h)) };
+
+  // ── PHASE 5: SHOWDOWN (cat-and-mouse chase) ──
+  let showdown = null;
+  let immunityWinners = [...escaped.map(e => e.name)];
+
+  if (hidden.length === 1) {
+    immunityWinners.push(hidden[0]);
+    badges[hidden[0]] = 'hideSeekImmune';
+    popDelta(hidden[0], 2);
+  } else if (hidden.length >= 2) {
+    const chaseResults = {};
+    const showdownBeats = {};
+
+    hidden.forEach(name => {
+      const s = pStats(name);
+      let totalScore = 0;
+      const beats = [];
+      const beatCount = 3 + (Math.random() < 0.3 ? 1 : 0);
+      const availBeats = [...CHASE_BEATS].sort(() => Math.random() - 0.5);
+
+      for (let i = 0; i < beatCount && i < availBeats.length; i++) {
+        const bt = availBeats[i];
+        let beatScore;
+        if (bt.id === 'dodge') beatScore = s.physical * 0.3 + s.intuition * 0.3 + s.boldness * 0.2 + (Math.random() * 2 - 1);
+        else if (bt.id === 'obstacle') beatScore = s.physical * 0.4 + s.boldness * 0.3 + (Math.random() * 2 - 1);
+        else if (bt.id === 'shortcut') beatScore = s.mental * 0.3 + s.boldness * 0.4 + (Math.random() * 2 - 1);
+        else if (bt.id === 'last-stand' || bt.id === 'combat') beatScore = s.boldness * 0.4 + s.physical * 0.3 + s.social * 0.15 + (Math.random() * 2 - 1);
+        else beatScore = s.physical * 0.3 + s.boldness * 0.3 + (Math.random() * 2 - 1);
+
+        const beatWin = beatScore >= 4.5;
+        totalScore += beatWin ? beatScore : -1;
+
+        const pr = pronouns(name);
+        beats.push({ id: bt.id, text: bt.text(name, pr, beatWin), win: beatWin, score: beatScore });
+      }
+
+      caught.forEach(({ name: caughtP }) => {
+        const bond = getBond(caughtP, name);
+        if (bond >= 3 && Math.random() < 0.3) {
+          totalScore += 1.5;
+          addBond(caughtP, name, 2);
+          beats.push({ id:'interference', text: `${caughtP} "accidentally" tripped Chef, buying ${name} precious seconds!`, win: true, score: 1.5 });
+        } else if (bond <= -3 && Math.random() < 0.3) {
+          totalScore -= 1.5;
+          addBond(caughtP, name, -2);
+          beats.push({ id:'interference', text: `${caughtP} pointed Chef right at ${name}!`, win: false, score: -1.5 });
+        }
+      });
+
+      const showmance = (gs.showmances || []).find(sh =>
+        sh.phase !== 'broken-up' && sh.players.includes(name) &&
+        sh.players.some(p => p !== name && hidden.includes(p))
+      );
+      if (showmance) {
+        const partner = showmance.players.find(p => p !== name);
+        if (pStats(name).loyalty >= 7 && Math.random() < 0.3) {
+          totalScore -= 3;
+          chaseResults[partner] = (chaseResults[partner] || 0) + 3;
+          addBond(name, partner, 3);
+          popDelta(name, 3);
+          beats.push({ id:'sacrifice', text: `${name} drew Chef's fire to protect ${partner} — a heroic sacrifice!`, win: false, score: -3 });
+        }
+      }
+
+      hidden.forEach(rival => {
+        if (rival === name) return;
+        if (getBond(name, rival) <= -4 && Math.random() < 0.25) {
+          totalScore -= 0.5;
+          chaseResults[rival] = (chaseResults[rival] || 0) - 1.5;
+          addBond(name, rival, -2);
+          beats.push({ id:'rivalry', text: `${name} shoved ${rival} into Chef's path!`, win: false, score: -0.5 });
+        }
+      });
+
+      chaseResults[name] = (chaseResults[name] || 0) + totalScore;
+      showdownBeats[name] = beats;
+    });
+
+    const showdownRanking = Object.entries(chaseResults).sort(([,a], [,b]) => b - a);
+    const winner = showdownRanking[0][0];
+    immunityWinners.push(winner);
+    badges[winner] = 'hideSeekImmune';
+    popDelta(winner, 2);
+
+    const winnerBeats = showdownBeats[winner];
+    if (winnerBeats.some(b => b.id === 'combat' && b.win)) {
+      popDelta(winner, 2);
+    }
+
+    showdown = {
+      participants: [...hidden],
+      results: chaseResults,
+      ranking: showdownRanking.map(([name, score]) => ({ name, score })),
+      beats: showdownBeats,
+      winner,
+    };
+  }
+
+  // Stalker badge
+  activePlayers.forEach(name => {
+    if (spotAssignments[name]?.id === 'stalker') {
+      if (immunityWinners.includes(name) || hidden.includes(name)) {
+        badges[name] = 'hideSeekStalker';
+        popDelta(name, 2);
+      } else {
+        badges[name] = badges[name] || 'hideSeekStalker';
+        popDelta(name, -1);
+      }
+    }
+  });
+
+  const phase5 = showdown;
+
+  // ── RESULTS ──
+  if (immunityWinners.length > 2) immunityWinners = immunityWinners.slice(0, 2);
+  if (immunityWinners.length === 0 && hidden.length === 1) {
+    immunityWinners.push(hidden[0]);
+    badges[hidden[0]] = 'hideSeekImmune';
+  }
+
+  betrayals.forEach(b => {
+    if (caught.some(c => c.name === b.target)) b.targetFound = true;
+  });
+
+  if (!gs._hideSeekHeat) gs._hideSeekHeat = {};
+  betrayals.forEach(b => {
+    gs._hideSeekHeat[b.target] = {
+      target: b.betrayer,
+      amount: b.penalty * 1.5,
+      expiresEp: (gs.episode || 0) + 4,
+    };
+  });
+
+  const primaryWinner = immunityWinners[0] || null;
+  ep.immunityWinner = primaryWinner;
+  if (immunityWinners.length > 1) {
+    ep.extraImmune = [...new Set([...(ep.extraImmune || []), ...immunityWinners.slice(1)])];
+  }
+  ep.challengeType = 'individual';
+  ep.challengeLabel = 'Hide and Be Sneaky';
+  ep.challengeCategory = 'mixed';
+  ep.challengeDesc = 'An extreme hide-and-seek game with a water gun-wielding Chef Hatchet.';
+  ep.tribalPlayers = gs.activePlayers.filter(p => !immunityWinners.includes(p) && p !== gs.exileDuelPlayer);
+
+  immunityWinners.forEach(w => updateChalRecord(w, 'win'));
+  if (caught.length) {
+    updateChalRecord(caught[0].name, 'loss');
+  }
+
+  ep.hideAndBeSneaky = {
+    phase1,
+    phase2,
+    phase3,
+    phase4,
+    phase5,
+    immunityWinners,
+    badges,
+    spotAssignments,
+    hidingQuality,
+    activePlayers,
+  };
+}

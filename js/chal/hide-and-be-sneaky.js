@@ -456,7 +456,8 @@ export function simulateHideAndBeSneaky(ep) {
 
     // Detection: find weakest hiders — catch 1 early, 1-2 in later rounds
     const sortedByQuality = [...hidden].sort((a, b) => hidingQuality[a] - hidingQuality[b]);
-    const catchCount = (r > totalRounds * 0.5 && hidden.length > 3) ? Math.min(2, hidden.length - 2) : 1;
+    // Catch 1 early, 2 mid-game, up to 3 in final rounds — keep field shrinking fast
+    const catchCount = hidden.length <= 3 ? 1 : r > totalRounds * 0.6 ? Math.min(3, hidden.length - 2) : r > totalRounds * 0.3 ? Math.min(2, hidden.length - 2) : 1;
     const caughtThisRound = [];
 
     for (let ci = 0; ci < catchCount; ci++) {
@@ -636,6 +637,16 @@ export function simulateHideAndBeSneaky(ep) {
       escapeAttempts.push({ name, decision: 'stay', beats: [], success: survived });
     }
   });
+
+  // Hard cap: if more than 3 still hidden, Chef catches the weakest until 3 remain
+  const maxShowdown = 3;
+  while (hidden.length > maxShowdown) {
+    const worst = [...hidden].sort((a, b) => hidingQuality[a] - hidingQuality[b])[0];
+    caught.push({ name: worst, round: 'phase4-sweep', method: 'found', escapeAttempted: false });
+    hidden = hidden.filter(h => h !== worst);
+    const wPr = pronouns(worst);
+    escapeAttempts.push({ name: worst, decision: 'swept', beats: [{ id: 'sweep', text: `Chef's final sweep caught ${worst} — ${wPr.sub} had nowhere left to hide!`, win: false }], success: false });
+  }
 
   const phase4 = { attempts: escapeAttempts, safeHiders: hidden.filter(h => !atRisk.includes(h)) };
 

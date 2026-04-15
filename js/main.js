@@ -36,6 +36,11 @@ import * as episodeMod from './episode.js';
 import * as finaleMod from './finale.js';
 import * as textBacklogMod from './text-backlog.js';
 import * as aftermathMod from './aftermath.js';
+import * as castUiMod from './cast-ui.js';
+import * as runUiMod from './run-ui.js';
+import * as vpScreensMod from './vp-screens.js';
+import * as vpFinaleMod from './vp-finale.js';
+import * as vpUiMod from './vp-ui.js';
 
 // ── Expose mutable state as getters/setters on window ──
 // This is critical: window.gs must always return the CURRENT module-scoped value.
@@ -111,6 +116,7 @@ const extractedModules = [
   brunchMod, luckyHuntMod, sayUncleMod, tripleDogDareMod, slasherNightMod,
   socialManipMod, campEventsMod, twistsMod, rescueIslandMod,
   episodeMod, finaleMod, textBacklogMod, aftermathMod,
+  castUiMod, runUiMod, vpScreensMod, vpFinaleMod, vpUiMod,
 ];
 
 for (const mod of extractedModules) {
@@ -119,6 +125,48 @@ for (const mod of extractedModules) {
       window[key] = val;
     }
   }
+}
+
+// ── Expose UI module state variables on window ──
+// Objects/constants — direct assignment (mutated in place, not reassigned)
+window._tvState = vpScreensMod._tvState;
+window._ftcState = vpUiMod._ftcState;
+window._vpa = vpUiMod._vpa;
+window._alliancePermDesc = castUiMod._alliancePermDesc;
+window.TRIBE_PALETTE = castUiMod.TRIBE_PALETTE;
+
+// Mutable let variables — getters + explicit setter functions
+// ES module live bindings work for reads but not writes; use setter functions for writes
+const uiStateGettersSetters = [
+  ['vpCurrentScreen', () => vpScreensMod.vpCurrentScreen, vpScreensMod.setVpCurrentScreen],
+  ['vpScreens',       () => vpScreensMod.vpScreens,       vpScreensMod.setVpScreens],
+  ['vpEpNum',         () => vpScreensMod.vpEpNum,          vpScreensMod.setVpEpNum],
+  ['_spoilerFree',    () => runUiMod._spoilerFree,         runUiMod.set_spoilerFree],
+  ['FRANCHISE_ROSTER',() => castUiMod.FRANCHISE_ROSTER,    castUiMod.setFRANCHISE_ROSTER],
+];
+
+for (const [prop, getter, setter] of uiStateGettersSetters) {
+  Object.defineProperty(window, prop, {
+    get: getter,
+    set: setter,
+    configurable: true,
+  });
+}
+
+// Read-only live bindings (only modified within their own module)
+const uiStateReadOnly = [
+  ['_reunionRevealed', () => vpFinaleMod._reunionRevealed],
+  ['_gcRevealed',      () => vpFinaleMod._gcRevealed],
+  ['_vpSearchMatches', () => vpUiMod._vpSearchMatches],
+  ['_vpSearchIdx',     () => vpUiMod._vpSearchIdx],
+  ['rosterHighlight',  () => castUiMod.rosterHighlight],
+];
+
+for (const [prop, getter] of uiStateReadOnly) {
+  Object.defineProperty(window, prop, {
+    get: getter,
+    configurable: true,
+  });
 }
 
 // ── Challenge registry ──

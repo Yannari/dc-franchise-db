@@ -141,3 +141,346 @@ function popDelta(name, delta) {
   if (!gs.popularity) gs.popularity = {};
   gs.popularity[name] = (gs.popularity[name] || 0) + delta;
 }
+
+// ══════════════════════════════════════════════════════════════
+// SIMULATE
+// ══════════════════════════════════════════════════════════════
+export function simulateHideAndBeSneaky(ep) {
+  const activePlayers = [...gs.activePlayers];
+  const n = activePlayers.length;
+
+  // ── PHASE 1: HIDE ──
+  const spotAssignments = {};
+  const hidingQuality = {};
+  const observedBy = {};
+  const usedSpots = new Set();
+
+  activePlayers.forEach(name => {
+    const s = pStats(name);
+    const arch = getArchetype(name);
+
+    let preferredCat = 'mental';
+    if (['challenge-beast'].includes(arch)) preferredCat = 'physical';
+    if (['schemer', 'mastermind', 'villain'].includes(arch)) preferredCat = 'social';
+    if (['wildcard', 'chaos-agent'].includes(arch) && s.boldness >= 6) preferredCat = 'boldness';
+    if (['social-butterfly', 'hero'].includes(arch)) preferredCat = 'social';
+    if (['underdog', 'floater', 'perceptive-player'].includes(arch)) preferredCat = 'mental';
+    if (s.physical >= 8) preferredCat = 'physical';
+
+    // Stalker strategy: wildcards/chaos-agents with high boldness+intuition
+    if (['wildcard', 'chaos-agent'].includes(arch) && s.boldness >= 7 && s.intuition >= 6 && Math.random() < 0.4) {
+      const stalkerSpot = HIDING_SPOTS.find(sp => sp.id === 'stalker');
+      spotAssignments[name] = stalkerSpot;
+      hidingQuality[name] = calcHidingQuality(name, stalkerSpot);
+      const stalkerCheck = s.boldness * 0.4 + s.intuition * 0.3 + s.physical * 0.3 + (Math.random() * 2 - 1);
+      if (stalkerCheck < 6) {
+        hidingQuality[name] -= 3;
+      } else {
+        hidingQuality[name] += 2;
+      }
+      usedSpots.add('stalker');
+      return;
+    }
+
+    const available = HIDING_SPOTS.filter(sp => !usedSpots.has(sp.id) && sp.id !== 'stalker');
+    const preferred = available.filter(sp => sp.cat === preferredCat);
+    const spotPool = preferred.length ? preferred : available;
+    const spot = spotPool[Math.floor(Math.random() * spotPool.length)] || available[0];
+    spotAssignments[name] = spot;
+    usedSpots.add(spot.id);
+    hidingQuality[name] = calcHidingQuality(name, spot);
+
+    if (arch === 'underdog') hidingQuality[name] += 1.0;
+    if (arch === 'goat') hidingQuality[name] -= 1.0;
+    if (arch === 'hothead') hidingQuality[name] -= 0.5;
+    if (arch === 'floater') hidingQuality[name] += 0.3;
+    if (arch === 'perceptive-player') hidingQuality[name] += 0.5;
+    if (arch === 'showmancer') {
+      const showmance = (gs.showmances || []).find(sh =>
+        sh.phase !== 'broken-up' && sh.players.includes(name) &&
+        sh.players.some(p => p !== name && activePlayers.includes(p))
+      );
+      if (showmance) hidingQuality[name] -= 0.5;
+    }
+  });
+
+  // Build observable intel
+  activePlayers.forEach(observer => {
+    observedBy[observer] = {};
+    activePlayers.forEach(target => {
+      if (target === observer) return;
+      observedBy[observer][target] = calcObservation(observer);
+    });
+    if (['schemer', 'mastermind'].includes(getArchetype(observer))) {
+      Object.keys(observedBy[observer]).forEach(t => { observedBy[observer][t] += 1.5; });
+    }
+    if (getArchetype(observer) === 'hero') {
+      Object.keys(observedBy[observer]).forEach(t => { observedBy[observer][t] += 0.5; });
+    }
+  });
+
+  const phase1 = {
+    spots: { ...spotAssignments },
+    initialQuality: { ...hidingQuality },
+  };
+
+  // ── PHASE 2: HUNT ──
+  const totalRounds = Math.ceil(n * 0.7);
+  const baseDetection = 4.5;
+  const escalation = 0.6;
+  let hidden = [...activePlayers];
+  const caught = [];
+  const escaped = [];
+  const rounds = [];
+  const persistingEffects = { rain:false, fog:false, sunset:false };
+  const badges = {};
+
+  for (let r = 1; r <= totalRounds; r++) {
+    if (hidden.length <= 1) break;
+    const chefDetection = baseDetection + r * escalation;
+    const roundData = { num: r, events: [], found: null, escaped: null, hiddenCount: hidden.length };
+
+    const eventCount = 3 + (Math.random() < 0.5 ? 1 : 0);
+    const roundBonuses = {};
+
+    for (let e = 0; e < eventCount; e++) {
+      const lateGame = r / totalRounds;
+      const catRoll = Math.random();
+      let pool;
+      if (catRoll < 0.25 + lateGame * 0.15) pool = DETECTION_EVENTS;
+      else if (catRoll < 0.5) pool = EVASION_EVENTS;
+      else if (catRoll < 0.7) pool = ENVIRONMENTAL_EVENTS;
+      else pool = SOCIAL_EVENTS;
+
+      const template = wPick(pool);
+      const evt = { id: template.id, type: pool === DETECTION_EVENTS ? 'detection' : pool === EVASION_EVENTS ? 'evasion' : pool === ENVIRONMENTAL_EVENTS ? 'environmental' : 'social' };
+
+      if (pool === ENVIRONMENTAL_EVENTS) {
+        evt.text = template.text();
+        if (template.persists) persistingEffects[template.id] = true;
+
+        if (template.id === 'rain') {
+          hidden.forEach(h => {
+            const spot = spotAssignments[h];
+            const delta = spot.indoor ? 1.0 : -1.0;
+            hidingQuality[h] += delta;
+            roundBonuses[h] = (roundBonuses[h] || 0) + delta;
+          });
+        } else if (template.id === 'wind') {
+          hidden.forEach(h => {
+            const spot = spotAssignments[h];
+            if (['treetop', 'rooftop', 'outhouse-roof'].includes(spot.id)) {
+              const s = pStats(h);
+              const physCheck = s.physical + (Math.random() * 2 - 1);
+              const delta = physCheck >= 6 ? -0.5 : -1.5;
+              hidingQuality[h] += delta;
+              roundBonuses[h] = (roundBonuses[h] || 0) + delta;
+            }
+          });
+        } else if (template.id === 'power-outage') {
+          hidden.forEach(h => {
+            if (spotAssignments[h].indoor) {
+              hidingQuality[h] += 1.5;
+              roundBonuses[h] = (roundBonuses[h] || 0) + 1.5;
+            }
+          });
+        } else if (template.id === 'chef-decoy') {
+          hidden.forEach(h => {
+            hidingQuality[h] += 0.5;
+            roundBonuses[h] = (roundBonuses[h] || 0) + 0.5;
+          });
+        } else if (template.id === 'stampede') {
+          hidden.forEach(h => {
+            hidingQuality[h] -= 1.0;
+            roundBonuses[h] = (roundBonuses[h] || 0) - 1.0;
+          });
+        } else if (template.id === 'sunset' || template.id === 'fog') {
+          hidden.forEach(h => {
+            hidingQuality[h] += 1.0;
+            roundBonuses[h] = (roundBonuses[h] || 0) + 1.0;
+          });
+        } else if (template.id === 'loudspeaker') {
+          hidden.forEach(h => {
+            hidingQuality[h] -= 0.5;
+            roundBonuses[h] = (roundBonuses[h] || 0) - 0.5;
+          });
+        }
+        evt.targets = [...hidden];
+      } else if (pool === SOCIAL_EVENTS) {
+        if (template.id === 'taunt' || template.id === 'caught-cheer') {
+          if (!caught.length || !hidden.length) continue;
+          const caughtP = caught[Math.floor(Math.random() * caught.length)].name;
+          const cPr = pronouns(caughtP);
+          const sorted = [...hidden].sort((a, b) =>
+            template.id === 'taunt' ? getBond(caughtP, a) - getBond(caughtP, b) : getBond(caughtP, b) - getBond(caughtP, a)
+          );
+          const target = sorted[0];
+          evt.text = template.text(caughtP, cPr, target);
+          evt.targets = [caughtP, target];
+
+          if (template.id === 'taunt') {
+            hidingQuality[target] -= 1.5;
+            roundBonuses[target] = (roundBonuses[target] || 0) - 1.5;
+            addBond(caughtP, target, -1);
+          } else {
+            hidingQuality[target] += 0.5;
+            hidingQuality[target] -= 1.0;
+            roundBonuses[target] = (roundBonuses[target] || 0) - 0.5;
+            addBond(caughtP, target, 1);
+          }
+        } else {
+          if (hidden.length < 2) continue;
+          let a, b;
+          if (template.id === 'showmance') {
+            const sh = (gs.showmances || []).find(s =>
+              s.phase !== 'broken-up' && s.players.every(p => hidden.includes(p))
+            );
+            if (!sh) continue;
+            [a, b] = sh.players;
+          } else if (template.id === 'rivalry') {
+            let worstBond = Infinity, bestPair = null;
+            for (let i = 0; i < hidden.length; i++) {
+              for (let j = i + 1; j < hidden.length; j++) {
+                const bond = getBond(hidden[i], hidden[j]);
+                if (bond < worstBond) { worstBond = bond; bestPair = [hidden[i], hidden[j]]; }
+              }
+            }
+            if (!bestPair || worstBond >= 0) continue;
+            [a, b] = bestPair;
+          } else {
+            const shuffled = [...hidden].sort(() => Math.random() - 0.5);
+            a = shuffled[0]; b = shuffled[1];
+          }
+          const aPr = pronouns(a);
+          evt.text = template.text(a, aPr, b);
+          evt.targets = [a, b];
+
+          if (template.id === 'solidarity') {
+            hidingQuality[a] += 0.5; hidingQuality[b] += 0.5;
+            roundBonuses[a] = (roundBonuses[a] || 0) + 0.5;
+            roundBonuses[b] = (roundBonuses[b] || 0) + 0.5;
+            addBond(a, b, 1);
+          } else if (template.id === 'showmance') {
+            hidingQuality[a] -= 0.5; hidingQuality[b] -= 0.5;
+            roundBonuses[a] = (roundBonuses[a] || 0) - 0.5;
+            roundBonuses[b] = (roundBonuses[b] || 0) - 0.5;
+            addBond(a, b, 1);
+          } else if (template.id === 'rivalry') {
+            if (isVillainArch(a)) {
+              hidingQuality[b] -= 1.5;
+              roundBonuses[b] = (roundBonuses[b] || 0) - 1.5;
+              addBond(a, b, -2);
+            } else if (isVillainArch(b)) {
+              hidingQuality[a] -= 1.5;
+              roundBonuses[a] = (roundBonuses[a] || 0) - 1.5;
+              addBond(b, a, -2);
+            }
+          } else if (template.id === 'spot-another') {
+            if (observedBy[a]) observedBy[a][b] = (observedBy[a][b] || 0) + 2.0;
+          }
+        }
+      } else {
+        if (template.id === 'shared-spot' || template.id === 'buddy-system') {
+          if (hidden.length < 2) continue;
+          const shuffled = [...hidden].sort(() => Math.random() - 0.5);
+          const a = shuffled[0], b = shuffled[1];
+          const aPr = pronouns(a);
+          evt.text = template.text(a, aPr, b);
+          evt.targets = [a, b];
+          if (template.id === 'shared-spot') {
+            hidingQuality[a] -= 1.5; hidingQuality[b] -= 1.5;
+            roundBonuses[a] = (roundBonuses[a] || 0) - 1.5;
+            roundBonuses[b] = (roundBonuses[b] || 0) - 1.5;
+          } else {
+            hidingQuality[a] -= 1.0; hidingQuality[b] += 2.0;
+            roundBonuses[a] = (roundBonuses[a] || 0) - 1.0;
+            roundBonuses[b] = (roundBonuses[b] || 0) + 2.0;
+            addBond(a, b, 1);
+          }
+        } else {
+          const target = hidden[Math.floor(Math.random() * hidden.length)];
+          const tPr = pronouns(target);
+          evt.text = template.text(target, tPr);
+          evt.targets = [target];
+
+          let delta = 0;
+          if (pool === DETECTION_EVENTS) {
+            if (template.id === 'trip-wire') delta = -2.0;
+            else if (template.id === 'animal-skunk') delta = -2.5;
+            else if (template.id === 'animal-squirrel' || template.id === 'animal-bird') delta = -1.5;
+            else if (template.id === 'panic-breath') {
+              delta = pStats(target).boldness >= 6 ? -0.5 : -1.5;
+            } else if (template.id === 'spot-decay') delta = -1.5;
+            else if (template.id === 'cramp') {
+              delta = pStats(target).physical >= 6 ? -0.5 : -1.0;
+            } else delta = -1.0;
+          } else {
+            if (template.id === 'reposition') {
+              delta = pStats(target).intuition >= 5 ? 1.5 : 0.5;
+            } else if (template.id === 'camo-improve') {
+              delta = pStats(target).mental >= 6 ? 1.5 : 0.5;
+            } else if (template.id === 'perfect-still') {
+              delta = pStats(target).mental >= 6 && pStats(target).intuition >= 6 ? 1.5 : 0.5;
+            } else if (template.id === 'decoy-works') {
+              delta = pStats(target).mental >= 7 ? 1.5 : 0.5;
+            } else if (template.id === 'chef-distracted') {
+              hidden.forEach(h => {
+                hidingQuality[h] += 0.5;
+                roundBonuses[h] = (roundBonuses[h] || 0) + 0.5;
+              });
+              delta = 0;
+            } else delta = 1.0;
+          }
+          hidingQuality[target] += delta;
+          roundBonuses[target] = (roundBonuses[target] || 0) + delta;
+          evt.delta = delta;
+        }
+      }
+      roundData.events.push(evt);
+    }
+
+    // Persisting effects
+    if (persistingEffects.rain) {
+      hidden.forEach(h => {
+        const spot = spotAssignments[h];
+        hidingQuality[h] += spot.indoor ? 0.3 : -0.3;
+      });
+    }
+    if (persistingEffects.fog || persistingEffects.sunset) {
+      hidden.forEach(h => { hidingQuality[h] += 0.2; });
+    }
+
+    // Detection: find lowest quality hider
+    const sortedByQuality = [...hidden].sort((a, b) => hidingQuality[a] - hidingQuality[b]);
+    const weakest = sortedByQuality[0];
+    const weakestQ = hidingQuality[weakest];
+
+    if (weakestQ < chefDetection) {
+      const escScore = calcEscapeScore(weakest);
+      const sprayAccuracy = 5 + r * 0.3;
+      const didEscape = escScore > sprayAccuracy && Math.random() < 0.18;
+
+      if (didEscape) {
+        escaped.push({ name: weakest, round: r });
+        roundData.escaped = { name: weakest, escapeScore: escScore };
+        badges[weakest] = 'hideSeekClutch';
+        popDelta(weakest, 2);
+      } else {
+        caught.push({ name: weakest, round: r, method: 'found', escapeAttempted: true });
+        roundData.found = { name: weakest, escaped: false };
+        const lastEvt = roundData.events.find(e => e.targets?.includes(weakest) && e.type === 'detection');
+        if (lastEvt && ['animal-skunk', 'sneeze', 'stomach-growl', 'bug-swarm'].includes(lastEvt.id)) {
+          badges[weakest] = 'hideSeekFlush';
+          popDelta(weakest, -1);
+        }
+      }
+      hidden = hidden.filter(h => h !== weakest);
+    } else {
+      roundData.found = null;
+    }
+
+    roundData.hiddenAfter = hidden.length;
+    rounds.push(roundData);
+  }
+
+  const phase2 = { rounds, caught: [...caught], escaped: [...escaped] };

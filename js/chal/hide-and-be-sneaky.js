@@ -467,8 +467,10 @@ export function simulateHideAndBeSneaky(ep) {
       if (targetQ >= chefDetection) continue; // safe
 
       const escScore = calcEscapeScore(target);
-      const sprayAccuracy = 4.5 + r * 0.4;
-      const didEscape = escScore > sprayAccuracy; // straight stat check — no extra RNG gate
+      const sprayAccuracy = 5.5 + r * 0.3;
+      // Must beat spray AND win a coin flip weighted by margin — makes escape rare (0-1 per game)
+      const margin = escScore - sprayAccuracy;
+      const didEscape = margin > 0 && Math.random() < Math.min(0.5, margin * 0.15);
       const tPr = pronouns(target);
       const spot = spotAssignments[target];
 
@@ -483,13 +485,13 @@ export function simulateHideAndBeSneaky(ep) {
         escBeats.push({ id: bt.id, text: bt.text(target, tPr, beatWin), win: beatWin });
       }
 
-      // Discovery text — always place spot name after "hiding" or in "was at" form
-      const spotDesc = spot?.name || 'somewhere nearby';
+      // Discovery text — use "hiding spot:" pattern to avoid preposition issues
+      const spotLabel = spot?.name || 'somewhere nearby';
       const discoveryTexts = [
-        `Chef spotted ${target} — ${tPr.sub} was hiding ${spotDesc}!`,
-        `A noise gave away ${target}'s position. ${tPr.Sub} was ${spotDesc}!`,
-        `Chef zeroed in on ${spotDesc} and found ${target} hiding there!`,
-        `${target}'s cover was blown! ${tPr.Sub} had been hiding ${spotDesc} the whole time!`,
+        `Chef discovered ${target}! Hiding spot: ${spotLabel}.`,
+        `A noise gave ${target} away — Chef closed in fast!`,
+        `Chef tracked down ${target} and raised the water cannon!`,
+        `${target}'s cover was blown — nowhere to run!`,
       ];
       const discoveryText = discoveryTexts[Math.floor(Math.random() * discoveryTexts.length)];
 
@@ -602,8 +604,9 @@ export function simulateHideAndBeSneaky(ep) {
 
     if (runsForIt) {
       const escScore = calcEscapeScore(name);
-      const sprayAcc = 5 + totalRounds * 0.3 + (1 / Math.max(1, hidden.length));
-      const success = escScore > sprayAcc;
+      const sprayAcc = 5.5 + totalRounds * 0.3;
+      const margin = escScore - sprayAcc;
+      const success = margin > 0 && Math.random() < Math.min(0.5, margin * 0.15);
 
       const beatCount = 2 + (Math.random() < 0.4 ? 1 : 0);
       const beats = [];

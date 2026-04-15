@@ -248,7 +248,7 @@ export function renderEpisodeHistory() {
     const tcTag = ep.isTrustChallenge ? `<span class="ep-hist-tag" style="background:rgba(56,189,248,0.15);color:#38bdf8">Trust Challenge</span>` : '';
     const xtTag = ep.isXtremeTorture ? `<span class="ep-hist-tag" style="background:rgba(239,68,68,0.15);color:#ef4444">X-Treme Torture</span>` : '';
     const lhTag = ep.isLuckyHunt ? `<span class="ep-hist-tag" style="background:rgba(180,130,70,0.15);color:#d4a853">Lucky Hunt</span>` : '';
-    const hsTag = ep.isHideAndBeSneaky ? `<span class="ep-hist-tag" style="background:rgba(0,255,65,0.12);color:#00ff41">Hide & Be Sneaky</span>` : '';
+    const hsTag = ep.isHideAndBeSneaky ? `<span class="ep-hist-tag" style="background:rgba(0,255,65,0.12);color:#00ff41">Hide&Seek</span>` : '';
     const hasCheckpoint = !!gsCheckpoints[ep.num];
     const replayBtn = hasCheckpoint
       ? `<button class="ep-hist-replay" title="Re-run this episode" onclick="event.stopPropagation();replayEpisode(${ep.num})">↺</button>`

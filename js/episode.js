@@ -1,8 +1,8 @@
 // js/episode.js - Main episode orchestration: simulation loop, survival, popularity, tribal aftermath
 import { gs, seasonConfig, players, repairGsSets } from './core.js';
-import { pStats, pronouns, getPlayerState, updateChalRecord } from './players.js';
+import { pStats, pronouns, getPlayerState, updateChalRecord, isAllianceBottom, threatScore } from './players.js';
 import { getBond, addBond, checkPerceivedBondTriggers, updateBonds, updatePerceivedBonds, recoverBonds } from './bonds.js';
-import { wRandom, computeHeat, formAlliances, isAllianceBottom, threatScore, detectBetrayals, decayAllianceTrust } from './alliances.js';
+import { wRandom, computeHeat, formAlliances, detectBetrayals, decayAllianceTrust } from './alliances.js';
 import { simulateVotes, resolveVotes, checkShotInDark, simulateRevote } from './voting.js';
 import { checkIdolPlays, checkIdolPreTribal, checkNonIdolAdvantageUse, findAdvantages, handleAdvantageInheritance } from './advantages.js';
 import { simulateIndividualChallenge, simulateTribeChallenge, pickChallenge, simulateLastChance } from './challenges-core.js';

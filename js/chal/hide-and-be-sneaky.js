@@ -979,8 +979,9 @@ export function rpBuildHideAndBeSneaky(ep) {
         </div>`;
     });
 
-    // Discovery + escape attempt narratives (now arrays — can catch 1-2 per round)
-    const allCaughtThisRound = [...(round.found || []), ...(round.escaped || [])];
+    // Discovery + escape attempt narratives
+    const _toArr = v => !v ? [] : Array.isArray(v) ? v : [v];
+    const allCaughtThisRound = [..._toArr(round.found), ..._toArr(round.escaped)];
     allCaughtThisRound.forEach(f => {
       const isEscape = f.escaped;
       const borderColor = isEscape ? 'rgba(255,215,0,0.4)' : 'rgba(255,100,50,0.4)';

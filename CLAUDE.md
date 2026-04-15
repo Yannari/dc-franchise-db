@@ -1,11 +1,42 @@
 ## Project
 DC Franchise Simulator — a Survivor-style franchise simulator.
-Single file: `simulator.html` (~80,000+ lines). Do not split.
+ES modules, no build step. Open `simulator.html` in a browser.
 
 ## Architecture
-- `simulator.html` — CSS + engine in one file
+- `simulator.html` — CSS + HTML shell (no JS, loads `js/main.js`)
+- `js/main.js` — entry point, imports all modules, exposes on window for onclick handlers
+- `js/core.js` — shared state (`gs`, `players`), constants, config, serialization
+- `js/players.js` — `pStats`, `pronouns`, `romanticCompat`, threat utilities
+- `js/bonds.js` — bond system + perceived bonds
+- `js/alliances.js` — alliance formation, targeting, heat, betrayals
+- `js/voting.js` — vote simulation, resolution, SITD
+- `js/advantages.js` — advantage finding, idol/non-idol plays
+- `js/romance.js` — full romance pipeline (sparks -> showmance -> breakup)
+- `js/episode.js` — `simulateEpisode` orchestrator, player state, survival, popularity
+- `js/camp-events.js` — camp events, social politics, mole, hero/villain
+- `js/social-manipulation.js` — forge note, lies, kiss trap, whisper, rally
+- `js/twists.js` — `applyTwist`, dock arrivals, first impressions, journey
+- `js/rescue-island.js` — RI choice, duel, reentry, life events
+- `js/finale.js` — finale simulation, jury vote, FTC, fan campaign
+- `js/challenges-core.js` — `pickChallenge`, tribe/individual challenge dispatch
+- `js/chal/*.js` — one file per challenge (simulate + rpBuild + _text)
+- `js/text-backlog.js` — non-challenge text generation, summaries, storylines
+- `js/aftermath.js` — aftermath show generation + VP
+- `js/vp-screens.js` — `buildVPScreens`, non-challenge/non-finale rpBuild*
+- `js/vp-finale.js` — finale rpBuild* screens
+- `js/vp-ui.js` — VP navigation, reveals, particles, search
+- `js/cast-ui.js` — cast builder, roster, presets, config, relationships UI
+- `js/run-ui.js` — run tab, timeline, twist catalog, episode history
+- `js/savestate.js` — save/load, snapshots, `patchEpisodeHistory`
 - `franchise_roster.json` — player database (name, stats, archetype, slug)
 - `assets/avatars/` — player portrait PNGs
+
+### Module Pattern
+- `core.js` exports mutable state with setter functions (`setGs()`, `setPlayers()`)
+- `main.js` uses `Object.defineProperty` to expose state on `window` as getters/setters
+- All exported functions are exposed on `window` for onclick handlers
+- Modules import from each other; no circular dependencies
+- `core.js` is a leaf — imports nothing from the project
 
 ## Non-Negotiable Rules
 

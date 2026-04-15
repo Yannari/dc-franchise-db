@@ -22,6 +22,9 @@ const stateVars = {
   'viewingEpNum':       'setViewingEpNum',
   'selectedEpisodes':   'setSelectedEpisodes',
   'currentTwistFilter': 'setCurrentTwistFilter',
+  'preGameAlliances':   'setPreGameAlliances',
+  'editingAllianceId':  'setEditingAllianceId',
+  'alliancePerm':       'setAlliancePerm',
 };
 
 for (const [prop, setter] of Object.entries(stateVars)) {
@@ -57,6 +60,7 @@ const functions = [
   'setRelationships', 'setEditingRelId', 'setActiveRelType',
   'setGs', 'setGsCheckpoints', 'setViewingEpNum',
   'setSelectedEpisodes', 'setCurrentTwistFilter',
+  'setPreGameAlliances', 'setEditingAllianceId', 'setAlliancePerm',
 ];
 
 for (const name of functions) {

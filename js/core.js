@@ -754,6 +754,9 @@ export let gsCheckpoints = {};     // { [epNum]: deep clone of gs before that ep
 export let viewingEpNum  = null;   // which episode is displayed in run tab
 export let selectedEpisodes  = new Set();
 export let currentTwistFilter = 'all';
+export let preGameAlliances = JSON.parse(localStorage.getItem('simulator_prealliances') || '[]');
+export let editingAllianceId = null;
+export let alliancePerm = 'normal';
 
 // Setter functions for mutable state (used by window getters/setters in main.js)
 export function setPlayers(v) { players = v; }
@@ -768,6 +771,9 @@ export function setGsCheckpoints(v) { gsCheckpoints = v; }
 export function setViewingEpNum(v) { viewingEpNum = v; }
 export function setSelectedEpisodes(v) { selectedEpisodes = v; }
 export function setCurrentTwistFilter(v) { currentTwistFilter = v; }
+export function setPreGameAlliances(v) { preGameAlliances = v; }
+export function setEditingAllianceId(v) { editingAllianceId = v; }
+export function setAlliancePerm(v) { alliancePerm = v; }
 
 // ══════════════════════════════════════════════════════════════════════
 // SERIALIZATION

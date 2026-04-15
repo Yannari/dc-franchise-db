@@ -2,9 +2,8 @@
 import { SAY_UNCLE_CATEGORIES, SAY_UNCLE_POOL, gs, players } from '../core.js';
 import { pStats, pronouns, updateChalRecord } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
-import { wRandom } from '../alliances.js';
+import { wRandom, computeHeat } from '../alliances.js';
 import { _challengeRomanceSpark } from '../romance.js';
-import { computeHeat } from '../challenges-core.js';
 
 export function simulateSayUncle(ep) {
   const activePlayers = [...gs.activePlayers];

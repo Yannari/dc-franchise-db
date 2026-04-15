@@ -2,8 +2,7 @@
 import { DARE_CATEGORIES, DARE_POOL, gs, players } from '../core.js';
 import { pStats, pronouns, updateChalRecord } from '../players.js';
 import { addBond, getBond } from '../bonds.js';
-import { wRandom } from '../alliances.js';
-import { computeHeat } from '../challenges-core.js';
+import { wRandom, computeHeat } from '../alliances.js';
 
 export function simulateTripleDogDare(ep) {
   const activePlayers = [...gs.activePlayers];

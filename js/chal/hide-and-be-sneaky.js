@@ -459,15 +459,36 @@ export function simulateHideAndBeSneaky(ep) {
       const escScore = calcEscapeScore(weakest);
       const sprayAccuracy = 5 + r * 0.3;
       const didEscape = escScore > sprayAccuracy && Math.random() < 0.18;
+      const wPr = pronouns(weakest);
+      const spot = spotAssignments[weakest];
+
+      // Generate escape attempt beats
+      const escBeats = [];
+      const availBeats = [...CHASE_BEATS].sort(() => Math.random() - 0.5);
+      const beatCount = 1 + (Math.random() < 0.4 ? 1 : 0);
+      for (let bi = 0; bi < beatCount && bi < availBeats.length; bi++) {
+        const bt = availBeats[bi];
+        const isLast = bi === beatCount - 1;
+        const beatWin = isLast ? didEscape : Math.random() < 0.5;
+        escBeats.push({ id: bt.id, text: bt.text(weakest, wPr, beatWin), win: beatWin });
+      }
+
+      // Discovery text
+      const discoveryTexts = [
+        `Chef spotted ${weakest} ${spot?.name || 'in hiding'} and closed in!`,
+        `A noise gave away ${weakest}'s position ${spot?.name ? 'at ' + spot.name : ''} — Chef zeroed in!`,
+        `Chef's sweep uncovered ${weakest} ${spot?.name || 'hiding nearby'}!`,
+      ];
+      const discoveryText = discoveryTexts[Math.floor(Math.random() * discoveryTexts.length)];
 
       if (didEscape) {
         escaped.push({ name: weakest, round: r });
-        roundData.escaped = { name: weakest, escapeScore: escScore };
+        roundData.escaped = { name: weakest, escapeScore: escScore, beats: escBeats, discoveryText };
         badges[weakest] = 'hideSeekClutch';
         popDelta(weakest, 2);
       } else {
         caught.push({ name: weakest, round: r, method: 'found', escapeAttempted: true });
-        roundData.found = { name: weakest, escaped: false };
+        roundData.found = { name: weakest, escaped: false, beats: escBeats, discoveryText };
         const lastEvt = roundData.events.find(e => e.targets?.includes(weakest) && e.type === 'detection');
         if (lastEvt && ['animal-skunk', 'sneeze', 'stomach-growl', 'bug-swarm'].includes(lastEvt.id)) {
           badges[weakest] = 'hideSeekFlush';
@@ -932,30 +953,59 @@ export function rpBuildHideAndBeSneaky(ep) {
       const delta = evt.delta || 0;
       const deltaTag = delta > 0 ? `<span class="nv-delta-up">+${delta.toFixed(1)}</span>` :
                         delta < 0 ? `<span class="nv-delta-down">${delta.toFixed(1)}</span>` : '';
+      // Show portrait(s) for targeted events
+      const targetPortraits = (evt.targets && evt.targets.length <= 2)
+        ? evt.targets.map(t => rpPortrait(t, 'sm')).join('')
+        : '';
+      const evtBorder = evt.type === 'detection' ? 'border-color:rgba(255,100,50,0.2)' :
+                         evt.type === 'evasion' ? 'border-color:rgba(0,255,65,0.2)' :
+                         evt.type === 'social' ? 'border-color:rgba(56,189,248,0.2)' : '';
       roundHtml += `
-        <div class="nv-card" style="display:flex;align-items:center;gap:10px">
+        <div class="nv-card" style="display:flex;align-items:center;gap:10px;${evtBorder}">
+          ${targetPortraits}
           <div style="flex:1;font-size:12px;color:#cdd9e5">${evt.text}</div>
           ${deltaTag ? `<div>${deltaTag}</div>` : ''}
         </div>`;
     });
 
+    // Discovery + escape attempt narrative
     if (round.found) {
       const f = round.found;
-      roundHtml += `
-        <div class="nv-card" style="border-color:rgba(255,100,50,0.4);background:rgba(255,100,50,0.06);display:flex;align-items:center;gap:12px">
-          ${rpPortrait(f.name, 'sm')}
-          <div style="flex:1;font-size:12px;color:#cdd9e5">${f.name} was discovered by Chef!</div>
-          <span class="nv-status nv-found">${f.escaped ? 'ESCAPED' : 'SOAKED'}</span>
+      let foundHtml = `
+        <div class="nv-card" style="border-color:rgba(255,100,50,0.4);background:rgba(255,100,50,0.06)">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:${f.beats?.length ? '8px' : '0'}">
+            ${rpPortrait(f.name, 'sm')}
+            <div style="flex:1;font-size:12px;color:#cdd9e5">${f.discoveryText || f.name + ' was discovered by Chef!'}</div>
+            <span class="nv-status nv-found">FOUND</span>
+          </div>`;
+      if (f.beats?.length) {
+        f.beats.forEach(b => {
+          foundHtml += `<div style="font-size:11px;color:#aaa;margin-top:4px;padding-left:12px;border-left:2px solid ${b.win ? 'rgba(0,255,65,0.3)' : 'rgba(255,100,50,0.3)'}">${b.text}</div>`;
+        });
+      }
+      foundHtml += `
+          <div style="margin-top:6px;text-align:right"><span class="nv-status nv-soaked">SOAKED</span></div>
         </div>`;
+      roundHtml += foundHtml;
     }
     if (round.escaped) {
       const e = round.escaped;
-      roundHtml += `
-        <div class="nv-card" style="border-color:rgba(255,215,0,0.4);background:rgba(255,215,0,0.06);display:flex;align-items:center;gap:12px">
-          ${rpPortrait(e.name, 'sm')}
-          <div style="flex:1;font-size:12px;color:#ffd700;font-weight:600">${e.name} escaped to home base!</div>
-          <span class="nv-status nv-immune">IMMUNE</span>
+      let escHtml = `
+        <div class="nv-card" style="border-color:rgba(255,215,0,0.4);background:rgba(255,215,0,0.06)">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:${e.beats?.length ? '8px' : '0'}">
+            ${rpPortrait(e.name, 'sm')}
+            <div style="flex:1;font-size:12px;color:#cdd9e5">${e.discoveryText || e.name + ' was spotted by Chef!'}</div>
+            <span class="nv-status nv-found">FOUND</span>
+          </div>`;
+      if (e.beats?.length) {
+        e.beats.forEach(b => {
+          escHtml += `<div style="font-size:11px;color:#aaa;margin-top:4px;padding-left:12px;border-left:2px solid ${b.win ? 'rgba(0,255,65,0.3)' : 'rgba(255,100,50,0.3)'}">${b.text}</div>`;
+        });
+      }
+      escHtml += `
+          <div style="margin-top:6px;text-align:right"><span class="nv-status nv-immune">ESCAPED — IMMUNE</span></div>
         </div>`;
+      roundHtml += escHtml;
     }
 
     steps.push({ type: 'hunt-round', html: roundHtml });

@@ -128,6 +128,8 @@ export function patchEpisodeHistory(ep) {
   if (!h.xtremeTorture && ep.xtremeTorture) h.xtremeTorture = ep.xtremeTorture;
   if (!h.tribeDissolutions && ep.tribeDissolutions) h.tribeDissolutions = ep.tribeDissolutions;
   if (ep.isTripleDogDare) h.isTripleDogDare = true;
+  if (ep.isHideAndBeSneaky) h.isHideAndBeSneaky = true;
+  if (!h.hideAndBeSneaky && ep.hideAndBeSneaky) h.hideAndBeSneaky = ep.hideAndBeSneaky;
   if (ep.exileDuelPlayerAtStart) h.exileDuelPlayerAtStart = ep.exileDuelPlayerAtStart;
   if (ep.volunteerDuel) h.volunteerDuel = ep.volunteerDuel;
   if (ep.fanVoteReturnee) h.fanVoteReturnee = ep.fanVoteReturnee;

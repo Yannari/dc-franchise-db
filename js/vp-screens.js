@@ -2,6 +2,8 @@
 // vp-screens.js — VP screen builders, helpers, and the main buildVPScreens controller
 // ══════════════════════════════════════════════════════════════════════
 
+import { rpBuildHideAndBeSneaky } from './chal/hide-and-be-sneaky.js';
+
 // ══════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════
 // VISUAL EPISODE PLAYER
@@ -10204,7 +10206,9 @@ export function buildVPScreens(epRecord) {
     vpScreens.push({ id:'br-cabins', label:'Cabins', html: rpBuildBrunchCabins(ep) });
     vpScreens.push({ id:'br-courses', label:'The Brunch', html: rpBuildBrunchCourses(ep) });
     vpScreens.push({ id:'br-results', label:'Results', html: rpBuildBrunchResults(ep) });
-  } else if (ep.challengeType && !ep.isFinale && !ep.isSlasherNight && !ep.isTripleDogDare && !ep.isPhobiaFactor) {
+  } else if (ep.isHideAndBeSneaky && ep.hideAndBeSneaky) {
+    vpScreens.push({ id:'hide-seek', label:'Hide and Be Sneaky', html: rpBuildHideAndBeSneaky(ep) });
+  } else if (ep.challengeType && !ep.isFinale && !ep.isSlasherNight && !ep.isTripleDogDare && !ep.isPhobiaFactor && !ep.isHideAndBeSneaky) {
     vpScreens.push({ id:'challenge', label:'Immunity Challenge', html: rpBuildChallenge(ep) });
   }
 

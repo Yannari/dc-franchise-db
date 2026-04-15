@@ -288,6 +288,12 @@ export function computeHeat(name, tribalPlayers, alliances) {
       if (data.target === name && tribalPlayers.includes(victim) && ((gs.episode || 0) + 1) < data.expiresEp) heat += data.amount;
     });
   }
+  // Hide and Be Sneaky: betrayal targets seek revenge on their betrayer
+  if (gs._hideSeekHeat) {
+    Object.entries(gs._hideSeekHeat).forEach(([victim, data]) => {
+      if (data.target === name && tribalPlayers.includes(victim) && ((gs.episode || 0) + 1) < data.expiresEp) heat += data.amount;
+    });
+  }
   // ── Volunteer Exile Duel: volunteer WANTS to be voted out ──
   if (gs._volunteerDuelHeat?.[name] === ((gs.episode || 0) + 1)) heat += 8.0;
   // Volunteer duel winner returns with reduced heat

@@ -21,6 +21,7 @@ import { _textLuckyHunt } from './chal/lucky-hunt.js';
 import { _textSayUncle } from './chal/say-uncle.js';
 import { _textTripleDogDare } from './chal/triple-dog-dare.js';
 import { _textSlasherNight } from './chal/slasher-night.js';
+import { _textHideAndBeSneaky } from './chal/hide-and-be-sneaky.js';
 
 export function _textStripHtml(s) { return s ? s.replace(/<[^>]+>/g, '') : ''; }
 
@@ -1918,6 +1919,7 @@ export function generateSummaryText(ep) {
   _textBasicStraining(ep, ln, sec);
   _textXtremeTorture(ep, ln, sec);
   _textTripleDogDare(ep, ln, sec);
+  _textHideAndBeSneaky(ep, ln, sec);
   _textAmbassadors(ep, ln, sec);
   _textRIDuel(ep, ln, sec);
   _textJuryLife(ep, ln, sec);

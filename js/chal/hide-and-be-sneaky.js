@@ -768,3 +768,78 @@ export function simulateHideAndBeSneaky(ep) {
     activePlayers,
   };
 }
+
+// ══════════════════════════════════════════════════════════════
+// TEXT BACKLOG
+// ══════════════════════════════════════════════════════════════
+export function _textHideAndBeSneaky(ep, ln, sec) {
+  if (!ep.isHideAndBeSneaky || !ep.hideAndBeSneaky) return;
+  const hs = ep.hideAndBeSneaky;
+
+  sec('HIDE AND BE SNEAKY');
+  ln(`${hs.activePlayers.length} players scattered across Wawanakwa Island as Chef Hatchet loaded his water cannon.`);
+
+  sec('The Hiding Phase');
+  const sortedByQuality = [...hs.activePlayers].sort((a, b) => hs.phase1.initialQuality[b] - hs.phase1.initialQuality[a]);
+  const best = sortedByQuality[0];
+  const worst = sortedByQuality[sortedByQuality.length - 1];
+  const bestPr = pronouns(best);
+  const worstPr = pronouns(worst);
+  ln(`${best} found an incredible hiding spot — ${hs.spotAssignments[best]?.name || 'somewhere clever'}. ${bestPr.Sub} was practically invisible.`);
+  ln(`${worst}, on the other hand, hid ${hs.spotAssignments[worst]?.name ? 'at ' + hs.spotAssignments[worst].name : 'poorly'}. ${worstPr.Sub} wouldn't last long.`);
+  const stalker = hs.activePlayers.find(p => hs.spotAssignments[p]?.id === 'stalker');
+  if (stalker) {
+    const stPr = pronouns(stalker);
+    ln(`${stalker} went full Izzy — stalking Chef around the island, hiding behind ${stPr.obj} at every turn!`);
+  }
+
+  sec('The Hunt');
+  const huntRounds = hs.phase2.rounds;
+  if (huntRounds.length) {
+    const firstFound = huntRounds.find(r => r.found);
+    if (firstFound?.found) {
+      ln(`${firstFound.found.name} was the first player found — discovered in round ${firstFound.num}.`);
+    }
+    const bigEvents = huntRounds.flatMap(r => r.events).filter(e => e.delta && Math.abs(e.delta) >= 1.5);
+    bigEvents.slice(0, 3).forEach(e => { if (e.text) ln(e.text); });
+    hs.phase2.escaped.forEach(({ name }) => {
+      const pr = pronouns(name);
+      ln(`${name} broke free and sprinted to home base — ${pr.sub} made it!`);
+    });
+  }
+
+  if (hs.phase3.betrayals.length || hs.phase3.loyals.length) {
+    sec('Betrayal and Loyalty');
+    hs.phase3.betrayals.forEach(b => {
+      const quality = b.intelQuality === 'high' ? 'with pinpoint accuracy' : b.intelQuality === 'medium' ? 'with a rough idea' : 'with bad info';
+      ln(`${b.betrayer} ratted out ${b.target} to Chef ${quality}!${b.targetFound ? ` It worked — ${b.target} was found.` : ` But ${b.target} survived anyway.`}`);
+    });
+    if (hs.phase3.loyals.length) {
+      ln(`${hs.phase3.loyals.join(', ')} refused to betray anyone — earning respect from the remaining hiders.`);
+    }
+  }
+
+  if (hs.phase4.attempts.length || hs.phase5) {
+    sec('The Chase');
+    hs.phase4.attempts.filter(a => a.decision === 'run').forEach(a => {
+      const lastBeat = a.beats[a.beats.length - 1];
+      if (lastBeat) ln(lastBeat.text);
+    });
+    if (hs.phase5) {
+      ln(`${hs.phase5.participants.length} players were flushed from hiding for the final showdown!`);
+      const winner = hs.phase5.winner;
+      const winBeats = hs.phase5.beats[winner];
+      if (winBeats?.length) {
+        const flashiest = winBeats.find(b => b.win && ['combat', 'window', 'last-stand'].includes(b.id)) || winBeats[winBeats.length - 1];
+        if (flashiest) ln(flashiest.text);
+      }
+    }
+  }
+
+  sec('Immunity Results');
+  if (hs.immunityWinners.length === 1) {
+    ln(`${hs.immunityWinners[0]} won immunity!`);
+  } else if (hs.immunityWinners.length > 1) {
+    ln(`${hs.immunityWinners.join(' and ')} both won immunity!`);
+  }
+}

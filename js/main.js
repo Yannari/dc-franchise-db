@@ -4,6 +4,13 @@
 // ══════════════════════════════════════════════════════════════════════
 
 import * as core from './core.js';
+import * as playersMod from './players.js';
+import * as bondsMod from './bonds.js';
+import * as alliancesMod from './alliances.js';
+import * as votingMod from './voting.js';
+import * as advantagesMod from './advantages.js';
+import * as romanceMod from './romance.js';
+import * as challengesCoreMod from './challenges-core.js';
 
 // ── Expose mutable state as getters/setters on window ──
 // This is critical: window.gs must always return the CURRENT module-scoped value.
@@ -66,5 +73,19 @@ const functions = [
 for (const name of functions) {
   if (typeof core[name] === 'function') {
     window[name] = core[name];
+  }
+}
+
+// ── Expose extracted module functions on window ──
+const extractedModules = [
+  playersMod, bondsMod, alliancesMod, votingMod,
+  advantagesMod, romanceMod, challengesCoreMod,
+];
+
+for (const mod of extractedModules) {
+  for (const [key, val] of Object.entries(mod)) {
+    if (typeof val === 'function') {
+      window[key] = val;
+    }
   }
 }

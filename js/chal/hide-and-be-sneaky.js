@@ -102,13 +102,13 @@ function wPick(arr) {
 
 function calcHidingQuality(name, spot) {
   const s = pStats(name);
-  // Center around 5 by subtracting baseline, then rescale for wider spread
+  // Weighted stat sum centered around 5, spread to 1-9 range
   const raw = s.mental * 0.3 + s.intuition * 0.25 + s.physical * 0.2 + s.social * 0.15 + s.boldness * 0.1;
-  let q = (raw - 5.0) * 2.5 + 5.0; // spreads 4-6 range to 2.5-7.5
-  if (spot.statBias && s[spot.statBias]) q += (s[spot.statBias] - 5) * 0.3; // bias only helps above-average
-  if (spot.risk) q += s.boldness * 0.2 - 1.5; // risky spots need boldness 8+ to break even
-  q += (Math.random() * 4) - 2.0; // wider noise
-  return q;
+  let q = (raw - 5.0) * 1.5 + 5.0; // stats 3→2, stats 5→5, stats 7→8
+  if (spot.statBias && s[spot.statBias]) q += (s[spot.statBias] - 5) * 0.2;
+  if (spot.risk) q += s.boldness * 0.15 - 1.2;
+  q += (Math.random() * 3) - 1.5;
+  return Math.max(0, Math.min(10, q)); // clamp 0-10
 }
 
 function calcObservation(observerName) {

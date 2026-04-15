@@ -115,7 +115,7 @@ const extractedModules = [
   cliffDiveMod, awakeAThonMod, dodgebrawlMod, talentShowMod,
   suckyOutdoorsMod, upTheCreekMod, paintballHuntMod, hellsKitchenMod,
   trustMod, basicStrainingMod, xtremeTortureMod, phobiaFactorMod,
-  brunchMod, luckyHuntMod, sayUncleMod, tripleDogDareMod, slasherNightMod,
+  brunchMod, luckyHuntMod, sayUncleMod, tripleDogDareMod, slasherNightMod, hideAndBeSneakyMod,
   socialManipMod, campEventsMod, twistsMod, rescueIslandMod,
   episodeMod, finaleMod, textBacklogMod, aftermathMod,
   castUiMod, runUiMod, vpScreensMod, vpFinaleMod, vpUiMod,

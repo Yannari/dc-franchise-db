@@ -102,10 +102,12 @@ function wPick(arr) {
 
 function calcHidingQuality(name, spot) {
   const s = pStats(name);
-  let q = s.mental * 0.3 + s.intuition * 0.25 + s.physical * 0.2 + s.social * 0.15 + s.boldness * 0.1;
-  if (spot.statBias && s[spot.statBias]) q += s[spot.statBias] * 0.1;
-  if (spot.risk) q += s.boldness * 0.15 - 1.0;
-  q += (Math.random() * 3) - 1.5;
+  // Center around 5 by subtracting baseline, then rescale for wider spread
+  const raw = s.mental * 0.3 + s.intuition * 0.25 + s.physical * 0.2 + s.social * 0.15 + s.boldness * 0.1;
+  let q = (raw - 5.0) * 2.5 + 5.0; // spreads 4-6 range to 2.5-7.5
+  if (spot.statBias && s[spot.statBias]) q += (s[spot.statBias] - 5) * 0.3; // bias only helps above-average
+  if (spot.risk) q += s.boldness * 0.2 - 1.5; // risky spots need boldness 8+ to break even
+  q += (Math.random() * 4) - 2.0; // wider noise
   return q;
 }
 
@@ -190,11 +192,13 @@ export function simulateHideAndBeSneaky(ep) {
     usedSpots.add(spot.id);
     hidingQuality[name] = calcHidingQuality(name, spot);
 
-    if (arch === 'underdog') hidingQuality[name] += 1.0;
-    if (arch === 'goat') hidingQuality[name] -= 1.0;
-    if (arch === 'hothead') hidingQuality[name] -= 0.5;
-    if (arch === 'floater') hidingQuality[name] += 0.3;
-    if (arch === 'perceptive-player') hidingQuality[name] += 0.5;
+    if (arch === 'underdog') hidingQuality[name] += 1.5;
+    if (arch === 'goat') hidingQuality[name] -= 2.5; // terrible spot choice
+    if (arch === 'hothead') hidingQuality[name] -= 1.5; // picked too fast, impatient
+    if (arch === 'floater') hidingQuality[name] += 0.5;
+    if (arch === 'perceptive-player') hidingQuality[name] += 1.0;
+    if (arch === 'social-butterfly') hidingQuality[name] -= 0.5; // too used to being around people
+    if (arch === 'challenge-beast') hidingQuality[name] -= 0.5; // brute force, not stealth
     if (arch === 'showmancer') {
       const showmance = (gs.showmances || []).find(sh =>
         sh.phase !== 'broken-up' && sh.players.includes(name) &&
@@ -922,8 +926,8 @@ export function rpBuildHideAndBeSneaky(ep) {
   hs.activePlayers.forEach(name => {
     const spot = hs.spotAssignments[name];
     const q = hs.phase1.initialQuality[name];
-    const qLabel = q >= 7 ? 'EXCELLENT' : q >= 5 ? 'GOOD' : q >= 3 ? 'FAIR' : 'POOR';
-    const qColor = q >= 7 ? '#00ff41' : q >= 5 ? '#33ff66' : q >= 3 ? '#ffa500' : '#ff6432';
+    const qLabel = q >= 7 ? 'EXCELLENT' : q >= 5 ? 'GOOD' : q >= 3 ? 'FAIR' : q >= 1 ? 'POOR' : 'TERRIBLE';
+    const qColor = q >= 7 ? '#00ff41' : q >= 5 ? '#33ff66' : q >= 3 ? '#ffa500' : q >= 1 ? '#ff6432' : '#f00';
     const badge = hs.badges[name];
     const badgeTag = badge === 'hideSeekStalker' ? ' <span class="nv-status nv-tracking">STALKER</span>' : '';
     steps.push({

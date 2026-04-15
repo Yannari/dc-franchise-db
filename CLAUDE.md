@@ -98,11 +98,13 @@ Tribe scores: averages per member, NEVER raw sums.
 - Temporary heat: `gs._emissaryHeat`, `gs._dodgebrawlHeat`, `gs._talentShowHeat`, `gs._suckyOutdoorsHeat`, `gs._upTheCreekHeat`, `gs._paintballHeat`, `gs._cookingHeat`, `gs._trustHeat` (`{ amount, expiresEp }`), `gs._basicStrainingHeat` (`{ target, amount, expiresEp }`), `gs._cliffDiveBlame`, `gs._luckyHuntHeat`, `gs._schemeHeat`
 
 ## Scope Gotchas
-- `ep` NOT available in: `generateCampEventsForGroup`, `simulateIndividualChallenge`, `simulateTribeChallenge`, `computeHeat`
+- `ep` NOT available in: `generateCampEventsForGroup` (camp-events.js), `simulateIndividualChallenge`/`simulateTribeChallenge` (challenges-core.js), `computeHeat` (alliances.js)
 - `ep.extraImmune` — always MERGE, never overwrite
-- `applyTwist` fires BEFORE challenge — set flags there, run logic after
+- `applyTwist` (twists.js) fires BEFORE challenge — set flags there, run logic after
 - Merge camp key: `gs.mergeName || 'merge'`
-- `romanticCompat(a, b)` — check before any romance/kiss events (real or fake)
+- `romanticCompat(a, b)` (players.js) — check before any romance/kiss events (real or fake)
+- Module state mutations: use setter functions (`setGs()`, `setPlayers()`) from core.js, not direct assignment on imports
+- Cross-module function calls: functions on `window` work as bare calls in module code; for explicit imports use `import { fn } from './module.js'`
 
 ## Challenge Twists
 

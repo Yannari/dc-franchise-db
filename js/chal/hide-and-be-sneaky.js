@@ -786,7 +786,7 @@ export function _textHideAndBeSneaky(ep, ln, sec) {
   const bestPr = pronouns(best);
   const worstPr = pronouns(worst);
   ln(`${best} found an incredible hiding spot — ${hs.spotAssignments[best]?.name || 'somewhere clever'}. ${bestPr.Sub} was practically invisible.`);
-  ln(`${worst}, on the other hand, hid ${hs.spotAssignments[worst]?.name ? 'at ' + hs.spotAssignments[worst].name : 'poorly'}. ${worstPr.Sub} wouldn't last long.`);
+  ln(`${worst}, on the other hand, hid ${hs.spotAssignments[worst]?.name || 'poorly'}. ${worstPr.Sub} wouldn't last long.`);
   const stalker = hs.activePlayers.find(p => hs.spotAssignments[p]?.id === 'stalker');
   if (stalker) {
     const stPr = pronouns(stalker);
